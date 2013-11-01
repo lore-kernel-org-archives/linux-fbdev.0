@@ -1,41 +1,52 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 25 Nov 2013 20:46:04 +0000
-Subject: Re: randconfig build error in next-20131125, in drivers/video/kyro
-Message-Id: <CAMuHMdXGXKUHw8jVrn-_n0Y9QPaWA5hQ9Mim+W1t+-LGezuh3A@mail.gmail.com>
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Date: Fri, 01 Nov 2013 11:10:20 +0000
+Subject: Re: [PATCH v2] efifb: prevent null-deref when iterating dmi_list
+Message-Id: <20131101111020.GD18477@ns203013.ovh.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CA+r1Zhh83TzjeJJWqtBADD807FYw-LPdq4nzyoE5xN2mf9Hniw@mail.gmail.com>
-In-Reply-To: <CA+r1Zhh83TzjeJJWqtBADD807FYw-LPdq4nzyoE5xN2mf9Hniw@mail.gmail.com>
+References: <1380732056-5387-1-git-send-email-dh.herrmann@gmail.com>
+ <20131031104549.GZ18477@ns203013.ovh.net>
+ <CANq1E4QAwOG8Vdw2nCb8+LirZ278w58j+wpieeKvnNepga+baw@mail.gmail.com>
+In-Reply-To: <CANq1E4QAwOG8Vdw2nCb8+LirZ278w58j+wpieeKvnNepga+baw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jim Davis <jim.epost@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Linux-Next <linux-next@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: David Herrmann <dh.herrmann@gmail.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, James Bates <james.h.bates@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, James Bates <james.h.bates@yahoo.com>
 
-On Mon, Nov 25, 2013 at 8:49 PM, Jim Davis <jim.epost@gmail.com> wrote:
-> /home/jim/linux/arch/x86/include/asm/uaccess.h: In function ‘kyrofb_ioctl’:
-> /home/jim/linux/arch/x86/include/asm/uaccess.h:633: error: call to
-> ‘copy_to_user_overflow’ declared with attribute error: copy_to_user()
-> buffer size is too small
+On 17:17 Thu 31 Oct     , David Herrmann wrote:
+> Hi
+> 
+> On Thu, Oct 31, 2013 at 11:45 AM, Jean-Christophe PLAGNIOL-VILLARD
+> <plagnioj@jcrosoft.com> wrote:
+> > On 18:40 Wed 02 Oct     , David Herrmann wrote:
+> >> The dmi_list array is initialized using gnu designated initializers, and
+> >> therefore may contain fewer explicitly defined entries as there are
+> >> elements in it. This is because the enum above with M_xyz constants
+> >> contains more items than the designated initializer. Those elements not
+> >> explicitly initialized are implicitly set to 0.
+> >>
+> >> Now efifb_setup() loops through all these array elements, and performs
+> >> a strcmp on each item. For non explicitly initialized elements this will
+> >> be a null pointer:
+> >>
+> >> This patch swaps the check order in the if statement, thus checks first
+> >> whether dmi_list[i].base is null.
+> >>
+> >> Signed-off-by: James Bates <james.h.bates@yahoo.com>
+> >> Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+> >
+> > with the simpleDRM arriving next merge I'm wondering if we need to keep it?
+> 
+> SimpleDRM is not coming next merge-window. It's basically finished,
+> but I'm still working on the user-space side as its KMS api is highly
+> reduced compared to fully-featured DRM/KMS drivers. Maybe 3.13 will
+> work out.
 
-Cool!
+do you have a git tree for the simpleDRM that I can pull?
+> 
+> Anyhow, this patch is still needed as it fixes a serious bug for simplefb.
 
-        case KYRO_IOCTL_UVSTRIDE:
-                if (copy_to_user(argp, &deviceInfo.ulOverlayUVStride,
-sizeof(unsigned long)))
-
-ulOverlayUVStride is u32, while unsigned long is 8 bytes on 64 bit.
-
-I guess it should use "sizeof(u32)", or better
-"sizeof(deviceInfo.ulOverlayUVStride)"
-instead.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+ok
+> 
+> Thanks
+> David

@@ -1,326 +1,218 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 18 Nov 2013 12:50:05 +0000
-Subject: [PATCH 2/6] OMAPDSS: DISPC: Remove context restore
-Message-Id: <1384779009-10512-3-git-send-email-tomi.valkeinen@ti.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Mon, 04 Nov 2013 16:15:22 +0000
+Subject: [PATCHv4][ 4/6] video: mx3fb: Introduce regulator support.
+Message-Id: <1383581724-14817-4-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1383581724-14817-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1383581724-14817-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Now that the apply layer writes the registers after DISPC has been
-resumed, we can remove all the context restore code.
+This commit is based on the following commit by Fabio Estevam:
+  4344429 video: mxsfb: Introduce regulator support
 
-Only _omap_dispc_initial_config call is needed on resume, which
-configures the non-user-configurable registers.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
 ---
- drivers/video/omap2/dss/dispc.c | 255 +---------------------------------------
- 1 file changed, 1 insertion(+), 254 deletions(-)
+ChangeLog v3->v4:
+- Some code style fixes.
+- Improved error handling in eremap.
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 91c687f..54716ad 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -43,9 +43,6 @@
- #include "dss_features.h"
- #include "dispc.h"
- 
--/* DISPC */
--#define DISPC_SZ_REGS			SZ_4K
--
- enum omap_burst_size {
- 	BURST_SIZE_X2 = 0,
- 	BURST_SIZE_X4 = 1,
-@@ -98,8 +95,6 @@ static struct {
- 	struct platform_device *pdev;
- 	void __iomem    *base;
- 
--	int		ctx_loss_cnt;
--
- 	int irq;
- 
- 	unsigned long core_clk_rate;
-@@ -109,9 +104,6 @@ static struct {
- 	/* maps which plane is using a fifo. fifo-id -> plane-id */
- 	int fifo_assignment[DISPC_MAX_NR_FIFOS];
- 
--	bool		ctx_valid;
--	u32		ctx[DISPC_SZ_REGS / sizeof(u32)];
--
- 	const struct dispc_features *feat;
- } dispc;
- 
-@@ -248,249 +240,6 @@ static void mgr_fld_write(enum omap_channel channel,
- 	REG_FLD_MOD(rfld.reg, val, rfld.high, rfld.low);
- }
- 
--#define SR(reg) \
--	dispc.ctx[DISPC_##reg / sizeof(u32)] = dispc_read_reg(DISPC_##reg)
--#define RR(reg) \
--	dispc_write_reg(DISPC_##reg, dispc.ctx[DISPC_##reg / sizeof(u32)])
--
--static void dispc_save_context(void)
--{
--	int i, j;
--
--	DSSDBG("dispc_save_context\n");
--
--	SR(IRQENABLE);
--	SR(CONTROL);
--	SR(CONFIG);
--	SR(LINE_NUMBER);
--	if (dss_has_feature(FEAT_ALPHA_FIXED_ZORDER) ||
--			dss_has_feature(FEAT_ALPHA_FREE_ZORDER))
--		SR(GLOBAL_ALPHA);
--	if (dss_has_feature(FEAT_MGR_LCD2)) {
--		SR(CONTROL2);
--		SR(CONFIG2);
--	}
--	if (dss_has_feature(FEAT_MGR_LCD3)) {
--		SR(CONTROL3);
--		SR(CONFIG3);
--	}
--
--	for (i = 0; i < dss_feat_get_num_mgrs(); i++) {
--		SR(DEFAULT_COLOR(i));
--		SR(TRANS_COLOR(i));
--		SR(SIZE_MGR(i));
--		if (i = OMAP_DSS_CHANNEL_DIGIT)
--			continue;
--		SR(TIMING_H(i));
--		SR(TIMING_V(i));
--		SR(POL_FREQ(i));
--		SR(DIVISORo(i));
--
--		SR(DATA_CYCLE1(i));
--		SR(DATA_CYCLE2(i));
--		SR(DATA_CYCLE3(i));
--
--		if (dss_has_feature(FEAT_CPR)) {
--			SR(CPR_COEF_R(i));
--			SR(CPR_COEF_G(i));
--			SR(CPR_COEF_B(i));
--		}
--	}
--
--	for (i = 0; i < dss_feat_get_num_ovls(); i++) {
--		SR(OVL_BA0(i));
--		SR(OVL_BA1(i));
--		SR(OVL_POSITION(i));
--		SR(OVL_SIZE(i));
--		SR(OVL_ATTRIBUTES(i));
--		SR(OVL_FIFO_THRESHOLD(i));
--		SR(OVL_ROW_INC(i));
--		SR(OVL_PIXEL_INC(i));
--		if (dss_has_feature(FEAT_PRELOAD))
--			SR(OVL_PRELOAD(i));
--		if (i = OMAP_DSS_GFX) {
--			SR(OVL_WINDOW_SKIP(i));
--			SR(OVL_TABLE_BA(i));
--			continue;
--		}
--		SR(OVL_FIR(i));
--		SR(OVL_PICTURE_SIZE(i));
--		SR(OVL_ACCU0(i));
--		SR(OVL_ACCU1(i));
--
--		for (j = 0; j < 8; j++)
--			SR(OVL_FIR_COEF_H(i, j));
--
--		for (j = 0; j < 8; j++)
--			SR(OVL_FIR_COEF_HV(i, j));
--
--		for (j = 0; j < 5; j++)
--			SR(OVL_CONV_COEF(i, j));
--
--		if (dss_has_feature(FEAT_FIR_COEF_V)) {
--			for (j = 0; j < 8; j++)
--				SR(OVL_FIR_COEF_V(i, j));
--		}
--
--		if (dss_has_feature(FEAT_HANDLE_UV_SEPARATE)) {
--			SR(OVL_BA0_UV(i));
--			SR(OVL_BA1_UV(i));
--			SR(OVL_FIR2(i));
--			SR(OVL_ACCU2_0(i));
--			SR(OVL_ACCU2_1(i));
--
--			for (j = 0; j < 8; j++)
--				SR(OVL_FIR_COEF_H2(i, j));
--
--			for (j = 0; j < 8; j++)
--				SR(OVL_FIR_COEF_HV2(i, j));
--
--			for (j = 0; j < 8; j++)
--				SR(OVL_FIR_COEF_V2(i, j));
--		}
--		if (dss_has_feature(FEAT_ATTR2))
--			SR(OVL_ATTRIBUTES2(i));
--	}
--
--	if (dss_has_feature(FEAT_CORE_CLK_DIV))
--		SR(DIVISOR);
--
--	dispc.ctx_loss_cnt = dss_get_ctx_loss_count();
--	dispc.ctx_valid = true;
--
--	DSSDBG("context saved, ctx_loss_count %d\n", dispc.ctx_loss_cnt);
--}
--
--static void dispc_restore_context(void)
--{
--	int i, j, ctx;
--
--	DSSDBG("dispc_restore_context\n");
--
--	if (!dispc.ctx_valid)
--		return;
--
--	ctx = dss_get_ctx_loss_count();
--
--	if (ctx >= 0 && ctx = dispc.ctx_loss_cnt)
--		return;
--
--	DSSDBG("ctx_loss_count: saved %d, current %d\n",
--			dispc.ctx_loss_cnt, ctx);
--
--	/*RR(IRQENABLE);*/
--	/*RR(CONTROL);*/
--	RR(CONFIG);
--	RR(LINE_NUMBER);
--	if (dss_has_feature(FEAT_ALPHA_FIXED_ZORDER) ||
--			dss_has_feature(FEAT_ALPHA_FREE_ZORDER))
--		RR(GLOBAL_ALPHA);
--	if (dss_has_feature(FEAT_MGR_LCD2))
--		RR(CONFIG2);
--	if (dss_has_feature(FEAT_MGR_LCD3))
--		RR(CONFIG3);
--
--	for (i = 0; i < dss_feat_get_num_mgrs(); i++) {
--		RR(DEFAULT_COLOR(i));
--		RR(TRANS_COLOR(i));
--		RR(SIZE_MGR(i));
--		if (i = OMAP_DSS_CHANNEL_DIGIT)
--			continue;
--		RR(TIMING_H(i));
--		RR(TIMING_V(i));
--		RR(POL_FREQ(i));
--		RR(DIVISORo(i));
--
--		RR(DATA_CYCLE1(i));
--		RR(DATA_CYCLE2(i));
--		RR(DATA_CYCLE3(i));
--
--		if (dss_has_feature(FEAT_CPR)) {
--			RR(CPR_COEF_R(i));
--			RR(CPR_COEF_G(i));
--			RR(CPR_COEF_B(i));
--		}
--	}
--
--	for (i = 0; i < dss_feat_get_num_ovls(); i++) {
--		RR(OVL_BA0(i));
--		RR(OVL_BA1(i));
--		RR(OVL_POSITION(i));
--		RR(OVL_SIZE(i));
--		RR(OVL_ATTRIBUTES(i));
--		RR(OVL_FIFO_THRESHOLD(i));
--		RR(OVL_ROW_INC(i));
--		RR(OVL_PIXEL_INC(i));
--		if (dss_has_feature(FEAT_PRELOAD))
--			RR(OVL_PRELOAD(i));
--		if (i = OMAP_DSS_GFX) {
--			RR(OVL_WINDOW_SKIP(i));
--			RR(OVL_TABLE_BA(i));
--			continue;
--		}
--		RR(OVL_FIR(i));
--		RR(OVL_PICTURE_SIZE(i));
--		RR(OVL_ACCU0(i));
--		RR(OVL_ACCU1(i));
--
--		for (j = 0; j < 8; j++)
--			RR(OVL_FIR_COEF_H(i, j));
--
--		for (j = 0; j < 8; j++)
--			RR(OVL_FIR_COEF_HV(i, j));
--
--		for (j = 0; j < 5; j++)
--			RR(OVL_CONV_COEF(i, j));
--
--		if (dss_has_feature(FEAT_FIR_COEF_V)) {
--			for (j = 0; j < 8; j++)
--				RR(OVL_FIR_COEF_V(i, j));
--		}
--
--		if (dss_has_feature(FEAT_HANDLE_UV_SEPARATE)) {
--			RR(OVL_BA0_UV(i));
--			RR(OVL_BA1_UV(i));
--			RR(OVL_FIR2(i));
--			RR(OVL_ACCU2_0(i));
--			RR(OVL_ACCU2_1(i));
--
--			for (j = 0; j < 8; j++)
--				RR(OVL_FIR_COEF_H2(i, j));
--
--			for (j = 0; j < 8; j++)
--				RR(OVL_FIR_COEF_HV2(i, j));
--
--			for (j = 0; j < 8; j++)
--				RR(OVL_FIR_COEF_V2(i, j));
--		}
--		if (dss_has_feature(FEAT_ATTR2))
--			RR(OVL_ATTRIBUTES2(i));
--	}
--
--	if (dss_has_feature(FEAT_CORE_CLK_DIV))
--		RR(DIVISOR);
--
--	/* enable last, because LCD & DIGIT enable are here */
--	RR(CONTROL);
--	if (dss_has_feature(FEAT_MGR_LCD2))
--		RR(CONTROL2);
--	if (dss_has_feature(FEAT_MGR_LCD3))
--		RR(CONTROL3);
--	/* clear spurious SYNC_LOST_DIGIT interrupts */
--	dispc_clear_irqstatus(DISPC_IRQ_SYNC_LOST_DIGIT);
--
--	/*
--	 * enable last so IRQs won't trigger before
--	 * the context is fully restored
--	 */
--	RR(IRQENABLE);
--
--	DSSDBG("context restored\n");
--}
--
--#undef SR
--#undef RR
--
- int dispc_runtime_get(void)
+ChangeLog v2->v3:
+- The prints are now replaced with non line wrapped prints.
+- The regulator retrival has been adapted to the new DT bindings which looks
+  more like the IPUv3 ones.
+- The regulator_is_enabled checks were kept, because regulator_disable do n=
+ot
+  do such check.
+---
+ drivers/video/mx3fb.c |   71 +++++++++++++++++++++++++++++++++++++++++++++=
++++-
+ 1 file changed, 70 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index 75087c8..fd8df64 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -27,6 +27,7 @@
+ #include <linux/clk.h>
+ #include <linux/mutex.h>
+ #include <linux/dma/ipu-dma.h>
++#include <linux/regulator/consumer.h>
+=20
+ #include <linux/platform_data/dma-imx.h>
+ #include <linux/platform_data/video-mx3fb.h>
+@@ -269,6 +270,7 @@ struct mx3fb_info {
+ 	struct dma_async_tx_descriptor	*txd;
+ 	dma_cookie_t			cookie;
+ 	struct scatterlist		sg[2];
++	struct regulator		*reg_lcd;
+=20
+ 	struct fb_var_screeninfo	cur_var; /* current var info */
+ };
+@@ -1005,6 +1007,7 @@ static void __blank(int blank, struct fb_info *fbi)
+ 	struct mx3fb_info *mx3_fbi =3D fbi->par;
+ 	struct mx3fb_data *mx3fb =3D mx3_fbi->mx3fb;
+ 	int was_blank =3D mx3_fbi->blank;
++	int ret;
+=20
+ 	mx3_fbi->blank =3D blank;
+=20
+@@ -1023,6 +1026,15 @@ static void __blank(int blank, struct fb_info *fbi)
+ 	case FB_BLANK_HSYNC_SUSPEND:
+ 	case FB_BLANK_NORMAL:
+ 		sdc_set_brightness(mx3fb, 0);
++		if (mx3_fbi->reg_lcd) {
++			if (regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_disable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(fbi->device,
++						 "lcd regulator disable failed with error: %d\n",
++						 ret);
++			}
++		}
+ 		memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
+ 		/* Give LCD time to update - enough for 50 and 60 Hz */
+ 		msleep(25);
+@@ -1030,6 +1042,15 @@ static void __blank(int blank, struct fb_info *fbi)
+ 		break;
+ 	case FB_BLANK_UNBLANK:
+ 		sdc_enable_channel(mx3_fbi);
++		if (mx3_fbi->reg_lcd) {
++			if (!regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_enable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(fbi->device,
++						 "lcd regulator enable failed with error: %d\n",
++						 ret);
++			}
++		}
+ 		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
+ 		break;
+ 	}
+@@ -1206,6 +1227,7 @@ static int mx3fb_suspend(struct platform_device *pdev=
+, pm_message_t state)
  {
- 	int r;
-@@ -3726,14 +3475,12 @@ static int __exit omap_dispchw_remove(struct platform_device *pdev)
- 
- static int dispc_runtime_suspend(struct device *dev)
- {
--	dispc_save_context();
+ 	struct mx3fb_data *mx3fb =3D platform_get_drvdata(pdev);
+ 	struct mx3fb_info *mx3_fbi =3D mx3fb->fbi->par;
++	int ret;
+=20
+ 	console_lock();
+ 	fb_set_suspend(mx3fb->fbi, 1);
+@@ -1214,7 +1236,15 @@ static int mx3fb_suspend(struct platform_device *pde=
+v, pm_message_t state)
+ 	if (mx3_fbi->blank =3D FB_BLANK_UNBLANK) {
+ 		sdc_disable_channel(mx3_fbi);
+ 		sdc_set_brightness(mx3fb, 0);
 -
++		if (mx3_fbi->reg_lcd) {
++			if (regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_disable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(&pdev->dev,
++						 "lcd regulator disable failed with error: %d\n",
++						 ret);
++			}
++		}
+ 	}
  	return 0;
  }
- 
- static int dispc_runtime_resume(struct device *dev)
+@@ -1226,10 +1256,20 @@ static int mx3fb_resume(struct platform_device *pde=
+v)
  {
--	dispc_restore_context();
-+	_omap_dispc_initial_config();
- 
+ 	struct mx3fb_data *mx3fb =3D platform_get_drvdata(pdev);
+ 	struct mx3fb_info *mx3_fbi =3D mx3fb->fbi->par;
++	int ret;
+=20
+ 	if (mx3_fbi->blank =3D FB_BLANK_UNBLANK) {
+ 		sdc_enable_channel(mx3_fbi);
+ 		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
++		if (mx3_fbi->reg_lcd) {
++			if (!regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_enable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(&pdev->dev,
++						 "lcd regulator enable failed with error: %d\n",
++						 ret);
++			}
++		}
+ 	}
+=20
+ 	console_lock();
+@@ -1373,6 +1413,7 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, str=
+uct idmac_channel *ichan)
+ 	struct mx3fb_platform_data *mx3fb_pdata =3D dev->platform_data;
+ 	struct device_node *np =3D dev->of_node;
+ 	const char *name;
++	const char *regulator_name;
+ 	const char *ipu_disp_format;
+ 	unsigned int irq;
+ 	struct fb_info *fbi;
+@@ -1389,6 +1430,9 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, str=
+uct idmac_channel *ichan)
+ 			return -EINVAL;
+ 		}
+=20
++		of_property_read_string(display_np, "regulator-name",
++					&regulator_name);
++
+ 		of_property_read_string(display_np, "interface-pix-fmt",
+ 					&ipu_disp_format);
+ 		if (!ipu_disp_format) {
+@@ -1503,6 +1547,25 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, st=
+ruct idmac_channel *ichan)
+ 	if (ret < 0)
+ 		goto erfb;
+=20
++	/* In dt mode,
++	 * using devm_regulator_get would require that the proprety referencing
++	 * the regulator phandle has to be inside the mx3fb node.
++	 */
++	if (np) {
++		if (regulator_name)
++			mx3fbi->reg_lcd =3D regulator_get(NULL, regulator_name);
++	} else {
++		mx3fbi->reg_lcd =3D devm_regulator_get(dev, "lcd");
++	}
++
++	if (IS_ERR(mx3fbi->reg_lcd)) {
++		dev_warn(mx3fb->dev, "Operating without regulator \"lcd\"\n");
++		mx3fbi->reg_lcd =3D NULL;
++	} else {
++		dev_info(mx3fb->dev, "Using \"%s\" Regulator\n",
++			 regulator_name);
++	}
++
  	return 0;
- }
--- 
-1.8.3.2
+=20
+ erfb:
+@@ -1569,6 +1632,7 @@ static int mx3fb_probe(struct platform_device *pdev)
+ 	dma_cap_mask_t mask;
+ 	struct dma_chan *chan;
+ 	struct dma_chan_request rq;
++	struct mx3fb_info *mx3_fbi;
+=20
+ 	/*
+ 	 * Display Interface (DI) and Synchronous Display Controller (SDC)
+@@ -1624,6 +1688,11 @@ ersdc0:
+ 	dmaengine_put();
+ 	iounmap(mx3fb->reg_base);
+ eremap:
++	if (mx3fb->fbi) {
++		mx3_fbi =3D mx3fb->fbi->par;
++		if (mx3_fbi->reg_lcd)
++			regulator_put(mx3_fbi->reg_lcd);
++	}
+ 	kfree(mx3fb);
+ 	dev_err(dev, "mx3fb: failed to register fb\n");
+ 	return ret;
+--=20
+1.7.9.5
 

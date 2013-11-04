@@ -1,23 +1,38 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Mon, 25 Nov 2013 08:39:05 +0000
-Subject: Re: [PATCHv9][ 1/3] Input: tsc2007: Add device tree support.
-Message-Id: <52930CA9.4060606@eukrea.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 04 Nov 2013 08:42:30 +0000
+Subject: [PATCH] video/logo: Remove MIPS-specific include section
+Message-Id: <1383554550-20901-1-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383916659-9988-1-git-send-email-denis@eukrea.com>
- <20131119211102.GA14888@core.coreip.homeip.net>
-In-Reply-To: <20131119211102.GA14888@core.coreip.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-fbdev@vger.kernel.org, linux-mips@linux-mips.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On 11/19/2013 10:11 PM, Dmitry Torokhov wrote:
- > Input: tsc2007 misc fixes
- >
- > From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
- >
- > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Since commit 41702d9a4fffa9e25b2ad9d4af09b3013fa155e1 ("logo.c: get rid of
+mips_machgroup") there's no longer a need to include <asm/bootinfo.h> on
+MIPS.
 
-Tested-by: Denis Carikli <denis@eukrea.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/video/logo/logo.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-Denis.
+diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
+index 080c35b34bbb..b670cbda38e3 100644
+--- a/drivers/video/logo/logo.c
++++ b/drivers/video/logo/logo.c
+@@ -17,10 +17,6 @@
+ #include <asm/setup.h>
+ #endif
+ 
+-#ifdef CONFIG_MIPS
+-#include <asm/bootinfo.h>
+-#endif
+-
+ static bool nologo;
+ module_param(nologo, bool, 0);
+ MODULE_PARM_DESC(nologo, "Disables startup logo");
+-- 
+1.7.9.5
+

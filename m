@@ -1,7 +1,7 @@
 From: Denis Carikli <denis@eukrea.com>
-Date: Tue, 05 Nov 2013 14:39:10 +0000
-Subject: [PATCHv11][ 3/7] video: Kconfig: Allow more broad selection of the imxfb framebuffer driver.
-Message-Id: <1383662354-22417-3-git-send-email-denis@eukrea.com>
+Date: Tue, 05 Nov 2013 14:39:09 +0000
+Subject: [PATCHv11][ 2/7] video: imxfb: Also add pwmr for the device tree.
+Message-Id: <1383662354-22417-2-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1383662354-22417-1-git-send-email-denis@eukrea.com>
 In-Reply-To: <1383662354-22417-1-git-send-email-denis@eukrea.com>
@@ -10,10 +10,8 @@ Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-Without that patch, a user can't select the imxfb driver when the i.MX25 an=
-d/or
-  the i.MX27 device tree board are selected and that no boards that selects
-  IMX_HAVE_PLATFORM_IMX_FB are compiled in.
+pwmr has to be set to get the imxfb backlight work,
+though pwmr was only configurable trough the platform data.
 
 Cc: Rob Herring <rob.herring@calxeda.com>
 Cc: Pawel Moll <pawel.moll@arm.com>
@@ -21,39 +19,50 @@ Cc: Mark Rutland <mark.rutland@arm.com>
 Cc: Stephen Warren <swarren@wwwdotorg.org>
 Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
 Cc: devicetree@vger.kernel.org
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Russell King <linux@arm.linux.org.uk>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-fbdev@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
 Cc: Eric B=C3=A9nard <eric@eukrea.com>
 Signed-off-by: Denis Carikli <denis@eukrea.com>
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
 Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Acked-by: Grant Likely <grant.likely@linaro.org>
 ---
-ChangeLog v10->v11:
-- moved my signed-off-by.
+ .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
+ drivers/video/imxfb.c                              |    2 ++
+ 2 files changed, 5 insertions(+)
 
-ChangeLog v8->v9:
-- Added Jean-Christophe PLAGNIOL-VILLARD's ACK.
----
- drivers/video/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 84b685f..f65e577 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -363,7 +363,7 @@ config FB_SA1100
+diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Docum=
+entation/devicetree/bindings/video/fsl,imx-fb.txt
+index 46da08d..ac457ae 100644
+--- a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
++++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
+@@ -17,6 +17,9 @@ Required nodes:
+ Optional properties:
+ - fsl,dmacr: DMA Control Register value. This is optional. By default, the
+ 	register is not modified as recommended by the datasheet.
++- fsl,pwmr:  LCDC PWM Contrast Control Register value. That property is
++	optional, but defining it is necessary to get the backlight working. If t=
+hat
++	property is ommited, the register is zeroed.
+ - fsl,lscr1: LCDC Sharp Configuration Register value.
 =20
- config FB_IMX
- 	tristate "Freescale i.MX1/21/25/27 LCD support"
--	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
-+	depends on FB && ARCH_MXC
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+ Example:
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index a2fe8bd..d2447d2 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -835,6 +835,8 @@ static int imxfb_init_fbinfo(struct platform_device *pd=
+ev)
+=20
+ 		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
+=20
++		of_property_read_u32(np, "fsl,pwmr", &fbi->pwmr);
++
+ 		/* These two function pointers could be used by some specific
+ 		 * platforms. */
+ 		fbi->lcd_power =3D NULL;
 --=20
 1.7.9.5
 

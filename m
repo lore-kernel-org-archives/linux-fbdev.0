@@ -1,7 +1,7 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 04 Nov 2013 19:01:41 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Tue, 05 Nov 2013 13:47:46 +0000
 Subject: Re: [PATCHv4][ 1/6] fbdev: Add the lacking FB_SYNC_* for matching the DISPLAY_FLAGS_*
-Message-Id: <CAMuHMdVmQCeYd5=r6zqmKRTbTFhh_5RHmeVVhaoq0BVwXoFgsA@mail.gmail.com>
+Message-Id: <20131105134746.GR16735@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1383581724-14817-1-git-send-email-denis@eukrea.com>
 In-Reply-To: <1383581724-14817-1-git-send-email-denis@eukrea.com>
@@ -10,22 +10,23 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Nov 4, 2013 at 5:15 PM, Denis Carikli <denis@eukrea.com> wrote:
-> --- a/include/uapi/linux/fb.h
-> +++ b/include/uapi/linux/fb.h
+On Mon, Nov 04, 2013 at 05:15:19PM +0100, Denis Carikli wrote:
+> Without that fix, drivers using the fb_videomode_from_videomode
+>   function will not be able to get certain information because
+>   some DISPLAY_FLAGS_* have no corresponding FB_SYNC_*.
 
-> +#define FB_SYNC_DE_HIGH_ACT    64      /* data enable high active */
-> +#define FB_SYNC_PIXDAT_HIGH_ACT        128     /* data enable high active */
+Please describe how userspace knows how to set these flags.
 
-copy and paste of the comment above?
+Flags such as the polarity of the hsync and vsync signals are fairly well
+defined based upon the display mode, but aren't things like data enable
+and the pixel clock edge a property of the attached LCD panel, which is
+something that is configured according to the panel which is attached.
 
-Gr{oetje,eeting}s,
+In other words, this information should not be passed from userspace, but
+should be part of the DT description about the connected panel.  So should
+be the polarity of the line and frame pulses (iow, hsync and vsync pulses)
+in the case of a connected panel.
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Moreover, in the case of a connected LCD panel, chances are it can only
+support a very limited number of settings, so support for userspace
+changing the timings is arguably incorrect from a system point of view.

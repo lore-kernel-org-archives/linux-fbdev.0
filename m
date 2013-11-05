@@ -1,34 +1,59 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 28 Nov 2013 03:20:29 +0000
-Subject: [PATCH 07/28] video: cyber2000fb: use DEFINE_PCI_DEVICE_TABLE macro
-Message-Id: <002f01ceebe8$ca281e90$5e785bb0$%han@samsung.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Tue, 05 Nov 2013 14:39:10 +0000
+Subject: [PATCHv11][ 3/7] video: Kconfig: Allow more broad selection of the imxfb framebuffer driver.
+Message-Id: <1383662354-22417-3-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1383662354-22417-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1383662354-22417-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-This macro is used to create a struct pci_device_id array.
+Without that patch, a user can't select the imxfb driver when the i.MX25 an=
+d/or
+  the i.MX27 device tree board are selected and that no boards that selects
+  IMX_HAVE_PLATFORM_IMX_FB are compiled in.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 ---
- drivers/video/cyber2000fb.c |    2 +-
+ChangeLog v10->v11:
+- moved my signed-off-by.
+
+ChangeLog v8->v9:
+- Added Jean-Christophe PLAGNIOL-VILLARD's ACK.
+---
+ drivers/video/Kconfig |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/cyber2000fb.c b/drivers/video/cyber2000fb.c
-index b0a950f..760200d 100644
---- a/drivers/video/cyber2000fb.c
-+++ b/drivers/video/cyber2000fb.c
-@@ -1837,7 +1837,7 @@ static int cyberpro_pci_resume(struct pci_dev *dev)
- 	return 0;
- }
- 
--static struct pci_device_id cyberpro_pci_table[] = {
-+static DEFINE_PCI_DEVICE_TABLE(cyberpro_pci_table) = {
- /*	Not yet
-  *	{ PCI_VENDOR_ID_INTERG, PCI_DEVICE_ID_INTERG_1682,
-  *		PCI_ANY_ID, PCI_ANY_ID, 0, 0, ID_IGA_1682 },
--- 
-1.7.10.4
-
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 84b685f..f65e577 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -363,7 +363,7 @@ config FB_SA1100
+=20
+ config FB_IMX
+ 	tristate "Freescale i.MX1/21/25/27 LCD support"
+-	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
++	depends on FB && ARCH_MXC
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+--=20
+1.7.9.5
 

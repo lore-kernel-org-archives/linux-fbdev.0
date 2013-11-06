@@ -1,50 +1,47 @@
-From: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Date: Wed, 20 Nov 2013 19:13:30 +0000
-Subject: Re: [PATCH v2] video: add OpenCores VGA/LCD framebuffer driver
-Message-Id: <20131120191328.GA30494@chokladfabriken.org>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Wed, 06 Nov 2013 21:24:30 +0000
+Subject: [PATCH] ARM: OMAPFB: panel-sony-acx565akm: fix bad unlock balance
+Message-Id: <1383773070-15114-1-git-send-email-aaro.koskinen@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384920820-18740-1-git-send-email-stefan.kristiansson@saunalahti.fi>
- <000701cee5b8$9b61e3b0$d225ab10$%han@samsung.com>
-In-Reply-To: <000701cee5b8$9b61e3b0$d225ab10$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, stable@vger.kernel.org
 
-On Wed, Nov 20, 2013 at 03:20:28PM +0900, Jingoo Han wrote:
-> On Wednesday, November 20, 2013 1:14 PM, Stefan Kristiansson wrote:
-> 
-> > +static int ocfb_probe(struct platform_device *pdev)
-> > +{
-> > +	int ret = 0;
-> > +	struct ocfb_dev *fbdev;
-> > +	struct ocfb_par *par = &ocfb_par_priv;
-> > +	struct resource *res;
-> > +	struct resource *mmio;
-> > +	int fbsize;
-> > +
-> > +	fbdev = kzalloc(sizeof(*fbdev), GFP_KERNEL);
-> 
-> Please use devm_kzalloc() instead of kzalloc().
-> In this case, kfree() can be removed from ocfb_probe()
-> and ocfb_remove(). Thus, it will make the code smaller.
-> 
+When booting Nokia N900 smartphone with v3.12 + omap2plus_defconfig
+(LOCKDEP enabled) and CONFIG_DISPLAY_PANEL_SONY_ACX565AKM enabled,
+the following BUG is seen during the boot:
 
-Nice, thanks for the hint!
-Consider it done.
+[    7.302154] ==================[    7.307128] [ BUG: bad unlock balance detected! ]
+[    7.312103] 3.12.0-los.git-2093492-00120-g5e01dc7 #3 Not tainted
+[    7.318450] -------------------------------------
+[    7.323425] kworker/u2:1/12 is trying to release lock (&ddata->mutex) at:
+[    7.330657] [<c031b760>] acx565akm_enable+0x12c/0x18c
+[    7.335998] but there are no more locks to release!
 
-> [.....]
-> 
-> > +
-> > +#ifdef MODULE
-> 
-> I don't think that '#ifdef MODULE' is necessary.
-> Is there any reason?
-> 
+Fix by removing the extra mutex_unlock().
 
-You're right, that's not necessary, I'll remove that.
+Reported-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: stable@vger.kernel.org
+---
+ drivers/video/omap2/displays-new/panel-sony-acx565akm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks alot for taking the time to review it!
+diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+index e6d56f7..72fe2a8 100644
+--- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
++++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+@@ -616,7 +616,7 @@ static int acx565akm_enable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&ddata->mutex);
+ 	r = acx565akm_panel_power_on(dssdev);
+-	mutex_unlock(&ddata->mutex);
++	/* NOTE: acx565akm_panel_power_on() will unlock the mutex. */
+ 
+ 	if (r)
+ 		return r;
+-- 
+1.8.4.2
 
-Stefan

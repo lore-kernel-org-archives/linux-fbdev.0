@@ -1,67 +1,46 @@
-From: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
-Date: Mon, 18 Nov 2013 14:00:20 +0000
-Subject: Re: [PATCH 0/3] omapdss: venc: Add support for bypass and acbias.
-Message-Id: <3C198737-CAE0-40B4-803F-31C132911265@goldelico.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 06 Nov 2013 08:57:27 +0000
+Subject: [PATCH -v2] fbdev: sh_mobile_meram: Fix defined but not used compiler warnings
+Message-Id: <1383728247-19294-1-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381784555-18344-1-git-send-email-marek@goldelico.com>
- <CAAfyv34j+YhEjtHyf7zg5oBoCV5ROEXow8VV0PQNHLTF5uDZJg@mail.gmail.com>
- <5280DBA6.50303@ti.com> <FB10035C-B13C-4A03-BE9C-0576806F2577@goldelico.com>
- <5280E617.3000004@ti.com>
- <F97741D2-FC6F-4DBD-A0DD-E35304501993@goldelico.com>
- <528A1652.4000806@ti.com>
-In-Reply-To: <528A1652.4000806@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Tomi,
+If both CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME are not set:
 
-Am 18.11.2013 um 14:29 schrieb Tomi Valkeinen:
+drivers/video/sh_mobile_meram.c:573: warning: ‘sh_mobile_meram_suspend’ defined but not used
+drivers/video/sh_mobile_meram.c:597: warning: ‘sh_mobile_meram_resume’ defined but not used
 
-> On 2013-11-11 16:30, Dr. H. Nikolaus Schaller wrote:
-> 
->> Maybe it looks as if it is an unsolvable problem. The OPA works only if acbias
->> and bypass are enabled, but is not allowed to tell that it is there.
-> 
-> That's why the board file or dts file is there, to have "glue" data to
-> make different pieces work together.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+v2: Both functions are used if CONFIG_PM_SLEEP || CONFIG_PM_RUNTIME,
+    as pointed out by Laurent
 
-Our implementation idea was that this makes the board file developer to specify knowlegde that the
-drivers already could have and to reduce the risk of misconfiguration.
+ drivers/video/sh_mobile_meram.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-So we tried to model the invert property of the connector which is also backpropagated
-to VENC.
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index e0f098562a74..a297de5cc859 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -569,6 +569,7 @@ EXPORT_SYMBOL_GPL(sh_mobile_meram_cache_update);
+  * Power management
+  */
+ 
++#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_RUNTIME)
+ static int sh_mobile_meram_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+@@ -611,6 +612,7 @@ static int sh_mobile_meram_resume(struct device *dev)
+ 		meram_write_reg(priv->base, common_regs[i], priv->regs[i]);
+ 	return 0;
+ }
++#endif /* CONFIG_PM_SLEEP || CONFIG_PM_RUNTIME */
+ 
+ static UNIVERSAL_DEV_PM_OPS(sh_mobile_meram_dev_pm_ops,
+ 			    sh_mobile_meram_suspend,
+-- 
+1.7.9.5
 
-But of course there are different ways of doing it and different priorities of contradicting
-requirements.
-
-> 
-> The perfect (?) solution would be a CDF like data. The idea would be
-> that in the board file, you would describe configuration options for
-> VENC and for OPA. In this particular case, you'd tell VENC that it needs
-> to enable acbias and bypass when OPA is to be connected to VENC. Then
-> there could be more entries for VENC, saying disable acbias and bypass
-> when BAR is to be connected to VENC.
-> 
-> However, we don't have such support (yet).
-> 
-> For now, I hope it's enough if we handle VENC in a "single
-> configuration" manner, i.e. you'll tell VENC to enable acbias and bypass
-> when VENC is enabled. This means you can't have board setups where you'd
-> change the VENC->OPA connection to some other analog tv output at
-> runtime. I hope that's the case (i.e. OPA is always in use on that board).
-
-I also don't think that there is a need for runtime modifications, so your proposal
-looks ok.
-
-> If so, then I think you can just pass the acbias and bypass
-> configuration values via omapdss platform data. And VENC driver will use
-> them to configure those. OPA doesn't know anything about this at all.
-
-We will change it that way.
-
-Do you see a chance to get it into the merge window of 3.13?
-
-BR,
-Nikolaus

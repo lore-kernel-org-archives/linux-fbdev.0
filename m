@@ -1,81 +1,59 @@
-From: Michal Nazarewicz <mpn@google.com>
-Date: Fri, 29 Nov 2013 16:51:43 +0000
-Subject: [PATCH RESEND] drivers: video: metronomefb: avoid out-of-bounds array access
-Message-Id: <1385743903-9079-1-git-send-email-mpn@google.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Wed, 06 Nov 2013 08:52:14 +0000
+Subject: [PATCHv12][ 3/8] video: Kconfig: Allow more broad selection of the imxfb framebuffer driver.
+Message-Id: <1383727939-4190-3-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1383727939-4190-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1383727939-4190-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-From: Michal Nazarewicz <mina86@mina86.com>
+Without that patch, a user can't select the imxfb driver when the i.MX25 an=
+d/or
+  the i.MX27 device tree board are selected and that no boards that selects
+  IMX_HAVE_PLATFORM_IMX_FB are compiled in.
 
-load_waveform function checks whether padding bytes in stuff2a
-and stuff2b are all zero, but does so by treating those arrays
-as a single longer array.  Since the structure is packed, and
-the size sum matches, it all works, but creates some confusion
-in the code.
-
-This commit changes the stuff2a and stuff2b arrays into pad1 and
-pad2 fields such that they cover the same bytes as the arrays
-covered, and changes the check in the load_waveform function so
-that the fields are read instead of iterating over an arary.
-
-It also renames the other “stuff” fields to “ignore*” fields to
-give them more semantic meaning.
-
-Signed-off-by: Michal Nazarewicz <mina86@mina86.com>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 ---
- drivers/video/metronomefb.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+ChangeLog v10->v11:
+- moved my signed-off-by.
 
-diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
-index 195cc2d..4f36a2b 100644
---- a/drivers/video/metronomefb.c
-+++ b/drivers/video/metronomefb.c
-@@ -126,7 +126,7 @@ static struct fb_var_screeninfo metronomefb_var = {
- 
- /* the waveform structure that is coming from userspace firmware */
- struct waveform_hdr {
--	u8 stuff[32];
-+	u8 ignore1[32];
- 
- 	u8 wmta[3];
- 	u8 fvsn;
-@@ -134,13 +134,14 @@ struct waveform_hdr {
- 	u8 luts;
- 	u8 mc;
- 	u8 trc;
--	u8 stuff3;
-+	u8 ignore2;
- 
- 	u8 endb;
- 	u8 swtb;
--	u8 stuff2a[2];
-+	u32 pad1; /* u16 halfof(pad1) */
- 
--	u8 stuff2b[3];
-+	/* u16 halfof(pad1) */
-+	u8 pad2;
- 	u8 wfm_cs;
- } __attribute__ ((packed));
- 
-@@ -210,11 +211,9 @@ static int load_waveform(u8 *mem, size_t size, int m, int t,
- 	}
- 	wfm_hdr->mc += 1;
- 	wfm_hdr->trc += 1;
--	for (i = 0; i < 5; i++) {
--		if (*(wfm_hdr->stuff2a + i) != 0) {
--			dev_err(dev, "Error: unexpected value in padding\n");
--			return -EINVAL;
--		}
-+	if (wfm_hdr->pad1 || wfm_hdr->pad2) {
-+		dev_err(dev, "Error: unexpected value in padding\n");
-+		return -EINVAL;
- 	}
- 
- 	/* calculating trn. trn is something used to index into
--- 
-1.8.4.1
+ChangeLog v8->v9:
+- Added Jean-Christophe PLAGNIOL-VILLARD's ACK.
+---
+ drivers/video/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 84b685f..f65e577 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -363,7 +363,7 @@ config FB_SA1100
+=20
+ config FB_IMX
+ 	tristate "Freescale i.MX1/21/25/27 LCD support"
+-	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
++	depends on FB && ARCH_MXC
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+--=20
+1.7.9.5
 

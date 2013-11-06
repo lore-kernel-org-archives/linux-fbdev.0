@@ -1,50 +1,68 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 18 Nov 2013 12:50:03 +0000
-Subject: [PATCH 0/6] OMAPDSS: suspend/resume improvements
-Message-Id: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Wed, 06 Nov 2013 08:52:13 +0000
+Subject: [PATCHv12][ 2/8] video: imxfb: Also add pwmr for the device tree.
+Message-Id: <1383727939-4190-2-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1383727939-4190-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1383727939-4190-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-DISPC's suspend/resume works ok on mainline, but there was recently a bug with
-TI's kernel containing support for newer SoCs. The bug was that not all DISPC
-registers were restored correctly on resume.
+pwmr has to be set to get the imxfb backlight work,
+though pwmr was only configurable trough the platform data.
 
-While this bug is not in the mainline, I realized that the current
-suspend/resume support in DISPC is rather silly, and can be done much more
-efficiently.
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Acked-by: Grant Likely <grant.likely@linaro.org>
+---
+ .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
+ drivers/video/imxfb.c                              |    2 ++
+ 2 files changed, 5 insertions(+)
 
-This series improves the suspend/resume, making introducing similar bugs as
-seen in TI kernel not possible, and cleans up the code quite a bit.
-
-There's also a patch to use runtime PM's autosuspend with DSS devices, which
-should reduce the on/off cycles when e.g. starting omapdss.
-
- Tomi
-
-Tomi Valkeinen (6):
-  OMAPDSS: APPLY: set infos to dirty on enable
-  OMAPDSS: DISPC: Remove context restore
-  OMAPDSS: DSS remove ctx stuff
-  OMAPDSS: remove dss_get_ctx_loss_count
-  OMAPDSS: add debug print for runtime suspend/resume
-  OMAPDSS: use runtime PM's autosuspend
-
- arch/arm/mach-omap2/display.c   |   1 -
- drivers/video/omap2/dss/apply.c |  22 ++++
- drivers/video/omap2/dss/dispc.c | 262 ++--------------------------------------
- drivers/video/omap2/dss/dsi.c   |   9 +-
- drivers/video/omap2/dss/dss.c   | 103 ++++++----------
- drivers/video/omap2/dss/dss.h   |   4 +-
- drivers/video/omap2/dss/hdmi4.c |   9 +-
- drivers/video/omap2/dss/rfbi.c  |   9 +-
- drivers/video/omap2/dss/venc.c  |   9 +-
- include/video/omapdss.h         |   1 -
- 10 files changed, 101 insertions(+), 328 deletions(-)
-
--- 
-1.8.3.2
+diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Docum=
+entation/devicetree/bindings/video/fsl,imx-fb.txt
+index 46da08d..ac457ae 100644
+--- a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
++++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
+@@ -17,6 +17,9 @@ Required nodes:
+ Optional properties:
+ - fsl,dmacr: DMA Control Register value. This is optional. By default, the
+ 	register is not modified as recommended by the datasheet.
++- fsl,pwmr:  LCDC PWM Contrast Control Register value. That property is
++	optional, but defining it is necessary to get the backlight working. If t=
+hat
++	property is ommited, the register is zeroed.
+ - fsl,lscr1: LCDC Sharp Configuration Register value.
+=20
+ Example:
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index a2fe8bd..d2447d2 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -835,6 +835,8 @@ static int imxfb_init_fbinfo(struct platform_device *pd=
+ev)
+=20
+ 		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
+=20
++		of_property_read_u32(np, "fsl,pwmr", &fbi->pwmr);
++
+ 		/* These two function pointers could be used by some specific
+ 		 * platforms. */
+ 		fbi->lcd_power =3D NULL;
+--=20
+1.7.9.5
 

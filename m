@@ -1,60 +1,417 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Fri, 01 Nov 2013 12:09:20 +0000
-Subject: Re: [PATCH v2] efifb: prevent null-deref when iterating dmi_list
-Message-Id: <CANq1E4SWmKQp9y+8ay4q3zK=XTwAekNnmNeeR6VVut75PRbs=Q@mail.gmail.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Fri, 08 Nov 2013 13:17:37 +0000
+Subject: [PATCHv9][ 1/3] Input: tsc2007: Add device tree support.
+Message-Id: <1383916659-9988-1-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380732056-5387-1-git-send-email-dh.herrmann@gmail.com>
-	<20131031104549.GZ18477@ns203013.ovh.net>
-	<CANq1E4QAwOG8Vdw2nCb8+LirZ278w58j+wpieeKvnNepga+baw@mail.gmail.com>
-	<20131101111020.GD18477@ns203013.ovh.net>
-In-Reply-To: <20131101111020.GD18477@ns203013.ovh.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, James Bates <james.h.bates@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, James Bates <james.h.bates@yahoo.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-arm-kernel@lists.infradead.org
 
-Hi
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: devicetree@vger.kernel.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Lothar Waßmann <LW@KARO-electronics.de>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Eric Bénard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+---
+ChangeLog v8->v9:
+- Added Grant Likely in the Cc list.
+- Removed the mention of the pinctrl properties in the documentation.
 
-On Fri, Nov 1, 2013 at 12:10 PM, Jean-Christophe PLAGNIOL-VILLARD
-<plagnioj@jcrosoft.com> wrote:
-> On 17:17 Thu 31 Oct     , David Herrmann wrote:
->> Hi
->>
->> On Thu, Oct 31, 2013 at 11:45 AM, Jean-Christophe PLAGNIOL-VILLARD
->> <plagnioj@jcrosoft.com> wrote:
->> > On 18:40 Wed 02 Oct     , David Herrmann wrote:
->> >> The dmi_list array is initialized using gnu designated initializers, and
->> >> therefore may contain fewer explicitly defined entries as there are
->> >> elements in it. This is because the enum above with M_xyz constants
->> >> contains more items than the designated initializer. Those elements not
->> >> explicitly initialized are implicitly set to 0.
->> >>
->> >> Now efifb_setup() loops through all these array elements, and performs
->> >> a strcmp on each item. For non explicitly initialized elements this will
->> >> be a null pointer:
->> >>
->> >> This patch swaps the check order in the if statement, thus checks first
->> >> whether dmi_list[i].base is null.
->> >>
->> >> Signed-off-by: James Bates <james.h.bates@yahoo.com>
->> >> Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
->> >
->> > with the simpleDRM arriving next merge I'm wondering if we need to keep it?
->>
->> SimpleDRM is not coming next merge-window. It's basically finished,
->> but I'm still working on the user-space side as its KMS api is highly
->> reduced compared to fully-featured DRM/KMS drivers. Maybe 3.13 will
->> work out.
->
-> do you have a git tree for the simpleDRM that I can pull?
+ChangeLog v7->v8:
+- Fixed the lack of x and z fuzz properties.
+- The pendown gpio is better documented.
+- Added Shawn Guo in the cc list.
+---
+ .../bindings/input/touchscreen/tsc2007.txt         |   41 ++++
+ drivers/input/touchscreen/tsc2007.c                |  204 ++++++++++++++++----
+ 2 files changed, 204 insertions(+), 41 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/input/touchscreen/tsc2007.txt
 
-Sure, I usually push it to my fdo tree:
-  http://cgit.freedesktop.org/~dvdhrm/linux/log/?h=simpledrm
-But note that you shouldn't be using it right now. User-space fails on
-it as SimpleDRM only provides a single KMS-FB. It also needs to be
-adjusted to the new x86-sysfb changes and I am reworking the handover
-to real drivers.
+diff --git a/Documentation/devicetree/bindings/input/touchscreen/tsc2007.txt b/Documentation/devicetree/bindings/input/touchscreen/tsc2007.txt
+new file mode 100644
+index 0000000..028aba66d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/input/touchscreen/tsc2007.txt
+@@ -0,0 +1,41 @@
++* Texas Instruments tsc2007 touchscreen controller
++
++Required properties:
++- compatible: must be "ti,tsc2007".
++- reg: I2C address of the chip.
++- ti,x-plate-ohms: X-plate resistance in ohms.
++
++Optional properties:
++- gpios: the interrupt gpio the chip is connected to (trough the penirq pin).
++  The penirq pin goes to low when the panel is touched.
++  (see GPIO binding[1] for more details).
++- interrupt-parent: the phandle for the gpio controller
++  (see interrupt binding[0]).
++- interrupts: (gpio) interrupt to which the chip is connected
++  (see interrupt binding[0]).
++- ti,max-rt: maximum pressure.
++- ti,fuzzx: specifies the absolute input fuzz x value.
++  If set, it will permit noise in the data up to +- the value given to the fuzz
++  parameter, that is used to filter noise from the event stream.
++- ti,fuzzy: specifies the absolute input fuzz y value.
++- ti,fuzzz: specifies the absolute input fuzz z value.
++- ti,poll-period: how much time to wait(in millisecond) before reading again the
++  values from the tsc2007.
++
++[0]: Documentation/devicetree/bindings/interrupt-controller/interrupts.txt
++[1]: Documentation/devicetree/bindings/gpio/gpio.txt
++
++Example:
++	&i2c1 {
++		/* ... */
++		tsc2007@49 {
++			compatible = "ti,tsc2007";
++			reg = <0x49>;
++			interrupt-parent = <&gpio4>;
++			interrupts = <0x0 0x8>;
++			gpios = <&gpio4 0 0>;
++			ti,x-plate-ohms = <180>;
++		};
++
++		/* ... */
++	};
+diff --git a/drivers/input/touchscreen/tsc2007.c b/drivers/input/touchscreen/tsc2007.c
+index 0b67ba4..3168a99 100644
+--- a/drivers/input/touchscreen/tsc2007.c
++++ b/drivers/input/touchscreen/tsc2007.c
+@@ -26,6 +26,9 @@
+ #include <linux/interrupt.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c/tsc2007.h>
++#include <linux/of_device.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
+ 
+ #define TSC2007_MEASURE_TEMP0		(0x0 << 4)
+ #define TSC2007_MEASURE_AUX		(0x2 << 4)
+@@ -74,7 +77,12 @@ struct tsc2007 {
+ 	u16			max_rt;
+ 	unsigned long		poll_delay;
+ 	unsigned long		poll_period;
++	int			fuzzx;
++	int			fuzzy;
++	int			fuzzz;
++	char			of;
+ 
++	unsigned		gpio;
+ 	int			irq;
+ 
+ 	wait_queue_head_t	wait;
+@@ -84,6 +92,11 @@ struct tsc2007 {
+ 	void			(*clear_penirq)(void);
+ };
+ 
++static int tsc2007_get_pendown_state_dt(struct tsc2007 *ts)
++{
++	return !gpio_get_value(ts->gpio);
++}
++
+ static inline int tsc2007_xfer(struct tsc2007 *tsc, u8 cmd)
+ {
+ 	s32 data;
+@@ -142,6 +155,14 @@ static u32 tsc2007_calculate_pressure(struct tsc2007 *tsc, struct ts_event *tc)
+ 	return rt;
+ }
+ 
++static bool tsc2007_is_pen_down_valid(struct tsc2007 *ts)
++{
++	if (ts->of)
++		return gpio_is_valid(ts->gpio);
++	else
++		return ts->get_pendown_state ? true : false;
++}
++
+ static bool tsc2007_is_pen_down(struct tsc2007 *ts)
+ {
+ 	/*
+@@ -158,10 +179,13 @@ static bool tsc2007_is_pen_down(struct tsc2007 *ts)
+ 	 * to fall back on the pressure reading.
+ 	 */
+ 
+-	if (!ts->get_pendown_state)
++	if (!tsc2007_is_pen_down_valid(ts))
+ 		return true;
+ 
+-	return ts->get_pendown_state();
++	if (ts->of)
++		return tsc2007_get_pendown_state_dt(ts);
++	else
++		return ts->get_pendown_state();
+ }
+ 
+ static irqreturn_t tsc2007_soft_irq(int irq, void *handle)
+@@ -178,7 +202,7 @@ static irqreturn_t tsc2007_soft_irq(int irq, void *handle)
+ 
+ 		rt = tsc2007_calculate_pressure(ts, &tc);
+ 
+-		if (rt = 0 && !ts->get_pendown_state) {
++		if (!rt && !tsc2007_is_pen_down_valid(ts)) {
+ 			/*
+ 			 * If pressure reported is 0 and we don't have
+ 			 * callback to check pendown state, we have to
+@@ -228,7 +252,7 @@ static irqreturn_t tsc2007_hard_irq(int irq, void *handle)
+ {
+ 	struct tsc2007 *ts = handle;
+ 
+-	if (!ts->get_pendown_state || likely(ts->get_pendown_state()))
++	if (tsc2007_is_pen_down(ts))
+ 		return IRQ_WAKE_THREAD;
+ 
+ 	if (ts->clear_penirq)
+@@ -273,34 +297,71 @@ static void tsc2007_close(struct input_dev *input_dev)
+ 	tsc2007_stop(ts);
+ }
+ 
+-static int tsc2007_probe(struct i2c_client *client,
+-				   const struct i2c_device_id *id)
++#ifdef CONFIG_OF
++static int tsc2007_probe_dt(struct i2c_client *client, struct tsc2007 *ts,
++			    struct device_node *np)
+ {
+-	struct tsc2007 *ts;
+-	struct tsc2007_platform_data *pdata = client->dev.platform_data;
+-	struct input_dev *input_dev;
+-	int err;
+-
+-	if (!pdata) {
+-		dev_err(&client->dev, "platform data is required!\n");
++	int err = 0;
++	u32 val32;
++	u64 val64;
++
++	if (!of_property_read_u32(np, "ti,max-rt", &val32))
++		ts->max_rt = val32;
++	else
++		ts->max_rt = MAX_12BIT;
++
++	if (!of_property_read_u32(np, "ti,fuzzx", &val32))
++		ts->fuzzx = val32;
++
++	if (!of_property_read_u32(np, "ti,fuzzy", &val32))
++		ts->fuzzy = val32;
++
++	if (!of_property_read_u32(np, "ti,fuzzz", &val32))
++		ts->fuzzz = val32;
++
++	if (!of_property_read_u64(np, "ti,poll-period", &val64))
++		ts->poll_period = val64;
++	else
++		ts->poll_period = 1;
++
++	if (!of_property_read_u32(np, "ti,x-plate-ohms", &val32)) {
++		ts->x_plate_ohms = val32;
++	} else {
++		dev_err(&client->dev,
++			"Error: lacking ti,x-plate-ohms devicetree property. (err %d).",
++			err);
+ 		return -EINVAL;
+ 	}
+ 
+-	if (!i2c_check_functionality(client->adapter,
+-				     I2C_FUNC_SMBUS_READ_WORD_DATA))
+-		return -EIO;
++	ts->gpio = of_get_gpio(np, 0);
++	if (!gpio_is_valid(ts->gpio))
++		dev_err(&client->dev,
++			"GPIO not found (of_get_gpio returned %d)\n",
++			ts->gpio);
+ 
+-	ts = kzalloc(sizeof(struct tsc2007), GFP_KERNEL);
+-	input_dev = input_allocate_device();
+-	if (!ts || !input_dev) {
+-		err = -ENOMEM;
+-		goto err_free_mem;
+-	}
++	/* Used to detect if it is probed trough the device tree,
++	 * in order to be able to use that information in the IRQ handler.
++	 */
++	ts->of = 1;
+ 
+-	ts->client = client;
+-	ts->irq = client->irq;
+-	ts->input = input_dev;
+-	init_waitqueue_head(&ts->wait);
++	return 0;
++}
++#else
++static int tsc2007_probe_dt(struct i2c_client *client, struct tsc2007 *ts,
++			    struct device_node *np)
++{
++	return -ENODEV;
++}
++#endif
++
++static int tsc2007_probe_pdev(struct i2c_client *client, struct tsc2007 *ts,
++			      struct tsc2007_platform_data *pdata,
++			      const struct i2c_device_id *id)
++{
++	if (!pdata) {
++		dev_err(&client->dev, "platform data is required!\n");
++		return -EINVAL;
++	}
+ 
+ 	ts->model             = pdata->model;
+ 	ts->x_plate_ohms      = pdata->x_plate_ohms;
+@@ -309,13 +370,59 @@ static int tsc2007_probe(struct i2c_client *client,
+ 	ts->poll_period       = pdata->poll_period ? : 1;
+ 	ts->get_pendown_state = pdata->get_pendown_state;
+ 	ts->clear_penirq      = pdata->clear_penirq;
++	ts->fuzzx             = pdata->fuzzx;
++	ts->fuzzy             = pdata->fuzzy;
++	ts->fuzzz             = pdata->fuzzz;
+ 
+ 	if (pdata->x_plate_ohms = 0) {
+ 		dev_err(&client->dev, "x_plate_ohms is not set up in platform data");
+-		err = -EINVAL;
+-		goto err_free_mem;
++		return -EINVAL;
+ 	}
+ 
++	/* Used to detect if it is probed trough the device tree,
++	 * in order to be able to use that information in the IRQ handler.
++	 */
++	ts->of = 0;
++
++	return 0;
++}
++
++static int tsc2007_probe(struct i2c_client *client,
++			 const struct i2c_device_id *id)
++{
++	struct device_node *np = client->dev.of_node;
++	struct tsc2007_platform_data *pdata = client->dev.platform_data;
++	struct tsc2007 *ts;
++	struct input_dev *input_dev;
++	int err = 0;
++
++	ts = devm_kzalloc(&client->dev, sizeof(struct tsc2007), GFP_KERNEL);
++	if (!ts)
++		return -ENOMEM;
++
++	if (np)
++		err = tsc2007_probe_dt(client, ts, np);
++	else
++		err = tsc2007_probe_pdev(client, ts, pdata, id);
++
++	if (err)
++		return err;
++
++	if (!i2c_check_functionality(client->adapter,
++				     I2C_FUNC_SMBUS_READ_WORD_DATA))
++		return -EIO;
++
++	input_dev = input_allocate_device();
++	if (!input_dev) {
++		err = -ENOMEM;
++		goto err_free_input;
++	};
++
++	ts->client = client;
++	ts->irq = client->irq;
++	ts->input = input_dev;
++	init_waitqueue_head(&ts->wait);
++
+ 	snprintf(ts->phys, sizeof(ts->phys),
+ 		 "%s/input0", dev_name(&client->dev));
+ 
+@@ -331,19 +438,21 @@ static int tsc2007_probe(struct i2c_client *client,
+ 	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
+ 	input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
+ 
+-	input_set_abs_params(input_dev, ABS_X, 0, MAX_12BIT, pdata->fuzzx, 0);
+-	input_set_abs_params(input_dev, ABS_Y, 0, MAX_12BIT, pdata->fuzzy, 0);
++	input_set_abs_params(input_dev, ABS_X, 0, MAX_12BIT, ts->fuzzx, 0);
++	input_set_abs_params(input_dev, ABS_Y, 0, MAX_12BIT, ts->fuzzy, 0);
+ 	input_set_abs_params(input_dev, ABS_PRESSURE, 0, MAX_12BIT,
+-			pdata->fuzzz, 0);
++			     ts->fuzzz, 0);
+ 
+-	if (pdata->init_platform_hw)
+-		pdata->init_platform_hw();
++	if (!np) {
++		if (pdata->init_platform_hw)
++			pdata->init_platform_hw();
++	}
+ 
+ 	err = request_threaded_irq(ts->irq, tsc2007_hard_irq, tsc2007_soft_irq,
+ 				   IRQF_ONESHOT, client->dev.driver->name, ts);
+ 	if (err < 0) {
+ 		dev_err(&client->dev, "irq %d busy?\n", ts->irq);
+-		goto err_free_mem;
++		goto err_free_input;
+ 	}
+ 
+ 	tsc2007_stop(ts);
+@@ -358,23 +467,27 @@ static int tsc2007_probe(struct i2c_client *client,
+ 
+  err_free_irq:
+ 	free_irq(ts->irq, ts);
+-	if (pdata->exit_platform_hw)
+-		pdata->exit_platform_hw();
+- err_free_mem:
++	if (!np) {
++		if (pdata->exit_platform_hw)
++			pdata->exit_platform_hw();
++	}
++ err_free_input:
+ 	input_free_device(input_dev);
+-	kfree(ts);
+ 	return err;
+ }
+ 
+ static int tsc2007_remove(struct i2c_client *client)
+ {
++	struct device_node *np = client->dev.of_node;
+ 	struct tsc2007	*ts = i2c_get_clientdata(client);
+ 	struct tsc2007_platform_data *pdata = client->dev.platform_data;
+ 
+ 	free_irq(ts->irq, ts);
+ 
+-	if (pdata->exit_platform_hw)
+-		pdata->exit_platform_hw();
++	if (!np) {
++		if (pdata->exit_platform_hw)
++			pdata->exit_platform_hw();
++	}
+ 
+ 	input_unregister_device(ts->input);
+ 	kfree(ts);
+@@ -389,10 +502,19 @@ static const struct i2c_device_id tsc2007_idtable[] = {
+ 
+ MODULE_DEVICE_TABLE(i2c, tsc2007_idtable);
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id tsc2007_of_match[] = {
++	{ .compatible = "ti,tsc2007" },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, tsc2007_of_match);
++#endif
++
+ static struct i2c_driver tsc2007_driver = {
+ 	.driver = {
+ 		.owner	= THIS_MODULE,
+-		.name	= "tsc2007"
++		.name	= "tsc2007",
++		.of_match_table = of_match_ptr(tsc2007_of_match),
+ 	},
+ 	.id_table	= tsc2007_idtable,
+ 	.probe		= tsc2007_probe,
+-- 
+1.7.9.5
 
-Cheers
-David

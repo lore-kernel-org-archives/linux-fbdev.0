@@ -1,39 +1,74 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Thu, 14 Nov 2013 08:19:18 +0000
-Subject: [patch 1/2] video: mmp: delete a stray mutex_unlock()
-Message-Id: <20131114081918.GB8150@elgon.mountain>
+From: Denis Carikli <denis@eukrea.com>
+Date: Fri, 08 Nov 2013 13:17:39 +0000
+Subject: [PATCHv9][ 3/3] ARM: dts: cpuimx35 Add touchscreen support.
+Message-Id: <1383916659-9988-3-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1383916659-9988-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1383916659-9988-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-arm-kernel@lists.infradead.org
 
-We aren't holding the disp_lock so we shouldn't release it.
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: devicetree@vger.kernel.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Lothar Waßmann <LW@KARO-electronics.de>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Eric Bénard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+---
+ChangeLog v8->v9:
+- Added Grant Likely in the cc list.
+- Adapted to the removal of the pinctrl properties in the tsc2007 documentation.
+- Fixed the gpios property (before, it was set to active high by error).
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+ChangeLog v7->v8:
+- Added Shawn Guo in the cc list.
+---
+ arch/arm/boot/dts/imx35-eukrea-cpuimx35.dtsi |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/drivers/video/mmp/core.c b/drivers/video/mmp/core.c
-index 84de263..c8d4265 100644
---- a/drivers/video/mmp/core.c
-+++ b/drivers/video/mmp/core.c
-@@ -173,7 +173,7 @@ struct mmp_path *mmp_register_path(struct mmp_path_info *info)
- 		+ sizeof(struct mmp_overlay) * info->overlay_num;
- 	path = kzalloc(size, GFP_KERNEL);
- 	if (!path)
--		goto failed;
-+		return NULL;
+diff --git a/arch/arm/boot/dts/imx35-eukrea-cpuimx35.dtsi b/arch/arm/boot/dts/imx35-eukrea-cpuimx35.dtsi
+index b9cb5a5..f25a40f 100644
+--- a/arch/arm/boot/dts/imx35-eukrea-cpuimx35.dtsi
++++ b/arch/arm/boot/dts/imx35-eukrea-cpuimx35.dtsi
+@@ -36,6 +36,27 @@
+ 		compatible = "nxp,pcf8563";
+ 		reg = <0x51>;
+ 	};
++
++	tsc2007: tsc2007@48 {
++		compatible = "ti,tsc2007";
++		reg = <0x48>;
++		interrupt-parent = <&gpio3>;
++		interrupts = <0x2 0x8>;
++		gpios = <&gpio3 2 1>;
++		ti,x-plate-ohms = <180>;
++        };
++
++};
++
++&iomuxc {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_hog>;
++
++	imx35-eukrea {
++		pinctrl_hog: hoggrp {
++			fsl,pins = <MX35_PAD_ATA_DA2__GPIO3_2 0x80000000>;
++		};
++	};
+ };
  
- 	/* path set */
- 	mutex_init(&path->access_ok);
-@@ -219,11 +219,6 @@ struct mmp_path *mmp_register_path(struct mmp_path_info *info)
- 
- 	mutex_unlock(&disp_lock);
- 	return path;
--
--failed:
--	kfree(path);
--	mutex_unlock(&disp_lock);
--	return NULL;
- }
- EXPORT_SYMBOL_GPL(mmp_register_path);
- 
+ &nfc {
+-- 
+1.7.9.5
+

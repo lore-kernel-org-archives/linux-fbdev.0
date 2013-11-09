@@ -1,63 +1,87 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 18 Nov 2013 13:13:22 +0000
-Subject: Re: [RFC 03/23] OMAPDSS: raw read and write endian fix
-Message-Id: <528A1272.5060905@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="33kiFDp1ikqsBMNg4htjFshQ4ATeeU8Oq"
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Sat, 09 Nov 2013 14:13:28 +0000
+Subject: Re: [PATCH 11/12] fbdev: shmobile-hdmi: Convert to clk_prepare/unprepare
+Message-Id: <1388008.xjh7MrPrF3@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384560086-11994-1-git-send-email-taras.kondratiuk@linaro.org> <1384560086-11994-4-git-send-email-taras.kondratiuk@linaro.org>
-In-Reply-To: <1384560086-11994-4-git-send-email-taras.kondratiuk@linaro.org>
-To: Taras Kondratiuk <taras.kondratiuk@linaro.org>, linux-omap@vger.kernel.org
-Cc: linaro-networking@linaro.org, Victor Kamensky <victor.kamensky@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1383000569-8916-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+ <1383000569-8916-12-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+ <20131031104809.GB18477@ns203013.ovh.net>
+In-Reply-To: <20131031104809.GB18477@ns203013.ovh.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---33kiFDp1ikqsBMNg4htjFshQ4ATeeU8Oq
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Jean-Christophe,
 
-On 2013-11-16 02:01, Taras Kondratiuk wrote:
-> From: Victor Kamensky <victor.kamensky@linaro.org>
->=20
-> All OMAP IP blocks expect LE data, but CPU may operate in BE mode.
-> Need to use endian neutral functions to read/write h/w registers.
-> I.e instead of __raw_read[lw] and __raw_write[lw] functions code
-> need to use read[lw]_relaxed and write[lw]_relaxed functions.
-> If the first simply reads/writes register, the second will byteswap
-> it if host operates in BE mode.
->=20
-> Changes are trivial sed like replacement of __raw_xxx functions
-> with xxx_relaxed variant.
->=20
+On Thursday 31 October 2013 11:48:09 Jean-Christophe PLAGNIOL-VILLARD wrote:
+> On 23:49 Mon 28 Oct     , Laurent Pinchart wrote:
+> > Turn clk_enable() and clk_disable() calls into clk_prepare_enable() and
+> > clk_disable_unprepare() to get ready for the migration to the common
+> > clock framework.
+> > 
+> > Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> 
+> Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 
-Looks fine to me. Quick test with o4 panda works fine.
+Thank you. Could you please pick patches 11/12 and 12/12 up for v3.13 or v3.14 
+?
 
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> > Cc: linux-fbdev@vger.kernel.org
+> > Signed-off-by: Laurent Pinchart
+> > <laurent.pinchart+renesas@ideasonboard.com>
+> > ---
+> > 
+> >  drivers/video/sh_mobile_hdmi.c | 6 +++---
+> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/video/sh_mobile_hdmi.c
+> > b/drivers/video/sh_mobile_hdmi.c index bfe4728..190145e 100644
+> > --- a/drivers/video/sh_mobile_hdmi.c
+> > +++ b/drivers/video/sh_mobile_hdmi.c
+> > @@ -1326,7 +1326,7 @@ static int __init sh_hdmi_probe(struct
+> > platform_device *pdev)> 
+> >  		goto erate;
+> >  	
+> >  	}
+> > 
+> > -	ret = clk_enable(hdmi->hdmi_clk);
+> > +	ret = clk_prepare_enable(hdmi->hdmi_clk);
+> > 
+> >  	if (ret < 0) {
+> >  	
+> >  		dev_err(hdmi->dev, "Cannot enable clock: %d\n", ret);
+> >  		goto erate;
+> > 
+> > @@ -1404,7 +1404,7 @@ emap_htop1:
+> >  emap:
+> >  	release_mem_region(res->start, resource_size(res));
+> >  
+> >  ereqreg:
+> > -	clk_disable(hdmi->hdmi_clk);
+> > +	clk_disable_unprepare(hdmi->hdmi_clk);
+> > 
+> >  erate:
+> >  	clk_put(hdmi->hdmi_clk);
+> >  
+> >  egetclk:
+> > @@ -1427,7 +1427,7 @@ static int __exit sh_hdmi_remove(struct
+> > platform_device *pdev)> 
+> >  	cancel_delayed_work_sync(&hdmi->edid_work);
+> >  	pm_runtime_put(&pdev->dev);
+> >  	pm_runtime_disable(&pdev->dev);
+> > 
+> > -	clk_disable(hdmi->hdmi_clk);
+> > +	clk_disable_unprepare(hdmi->hdmi_clk);
+> > 
+> >  	clk_put(hdmi->hdmi_clk);
+> >  	if (hdmi->htop1)
+> >  	
+> >  		iounmap(hdmi->htop1);
 
- Tomi
+-- 
+Regards,
 
+Laurent Pinchart
 
-
---33kiFDp1ikqsBMNg4htjFshQ4ATeeU8Oq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSihJyAAoJEPo9qoy8lh71+NUP/1m1RwKvK3huisQeWvEw7+wI
-s0BDaaApbGboGavEtINAkdLoY295IrszG7hNMJ9zVk0k0+4zgmdCsoVn7oSuzMM2
-YgC1pfWAbGt/VJwO+ZXb5oxl0QlzMJwqsG7WikibxcUVeRYR2atrIjFU444M0yi2
-86Ywnz0V4ymJPPh7oQSK4h8olOq0JjY89/1QxVtDJYGwKXuVwZDT2ysDtvQdEcrL
-+tS1rmVlwbv3KSoHJsNltMHWQl2N31DJP9yd905OY8Fx9VUFfpQxnsCMsvU9xzNA
-5wl5G2oaqe+JVKNgeIRsuPX8/ON/kSiG+aq3VPkb9AU2pThp1KILiG0fEG+hN+z8
-okG1YtQwlb/8azXXnjHgKgPFiD00VKt58BqFmQTeyGtDwFkwflhVc1cljNf6OFZx
-A3N/G4uccRXsGErSAjg6vlm3OyiOnF4sNNzFsnpBQZUyjgR2BYLr5N8RR9zlkOgW
-j7dOnaP1ZXGtD3wKlgBZPxRFlxM9wqoSJD+lpt+Y9P7eD2+S1kcBz/u/4/6U8yyX
-jeLu9IFs5aAvzzeX6rcNrMAoU53YHIY+5sTnVyuLjsMFYhyrFp/b6wwuy/b08rfX
-SFI7klMNSf3q/Urkjn6Rbrgj/Zu3CpbN9cVGlfXmq33c9zeqm6i0JRFlMY57xpDR
-1+Jg47MGlvengt62ReL5
-=99tS
------END PGP SIGNATURE-----
-
---33kiFDp1ikqsBMNg4htjFshQ4ATeeU8Oq--

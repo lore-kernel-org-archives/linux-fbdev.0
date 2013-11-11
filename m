@@ -1,7 +1,7 @@
 From: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
-Date: Mon, 11 Nov 2013 14:30:08 +0000
+Date: Mon, 11 Nov 2013 14:39:57 +0000
 Subject: Re: [PATCH 0/3] omapdss: venc: Add support for bypass and acbias.
-Message-Id: <F97741D2-FC6F-4DBD-A0DD-E35304501993@goldelico.com>
+Message-Id: <37D5EFEB-D329-4652-A88D-8423276359B4@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1381784555-18344-1-git-send-email-marek@goldelico.com>
  <CAAfyv34j+YhEjtHyf7zg5oBoCV5ROEXow8VV0PQNHLTF5uDZJg@mail.gmail.com>
@@ -51,18 +51,6 @@ Am 11.11.2013 um 15:13 schrieb Tomi Valkeinen:
 > The file is getting a bit large, so I'm not against splitting it. But I
 > don't think there's point to add omap3-tvout.c file, which most likely
 > will ever contain only that one function.
-
-Yes that is very likely true.
-
-The problem is that there is no other official API to modify the DEFCONF1
-register. Therefore we introduced this (propsal).
-
-Our first idea was a readDEFCONF1() and writeDEFCONF1() and use the
-constants (bit patterns) you suggested below.
-
-But we thought that it is not robust enough because a VENC driver or other
-one could then change bits it is not responsible for.
-
 > 
 >>> Also, func(bool, bool)
 >>> style functions are rather confusing to read. Maybe an enum would be
@@ -79,11 +67,6 @@ one could then change bits it is not responsible for.
 > or
 > 
 > func(OMAP_VENC_TVOUTBYPASS | OMAP_VENC_TVACEN);
-
-Hm. Depends on. If the func is explaining enough it is clear. Or if I have
-access to some header file. If I don't, the enum values are probably more
-readable.
-
 > 
 >>> But the main issue is: while this series probably works well, I really
 >>> don't like it that the OPA driver needs to pass bypass and acbias. It
@@ -101,8 +84,9 @@ readable.
 > and it should be something that only the DSS glue code in mach-omap2/
 > and the venc driver know about.
 
-Well, there must be a method how the OPA can tell the VENC that it exists
-and the VENC can tell the SoC DEFCONF1 to enable bias and bypass.
+What about calling it prepare_venc_for_external_amplifier (or similar). Then,
+venc.c can hide that really has to be done and call whatever SoC API is
+needed to program DEFCONF1?
 
 > 
 >> I would see it similar as a driver must be able to control power. Here
@@ -111,10 +95,6 @@ and the VENC can tell the SoC DEFCONF1 to enable bias and bypass.
 > The difference is that on all possible SoCs where you could add OPA
 > chip, you'll need to manage the power for OPA, and it's done in a common
 > way. Whereas the bypass and acbias are OMAP specific things.
-
-Maybe it looks as if it is an unsolvable problem. The OPA works only if acbias
-and bypass are enabled, but is not allowed to tell that it is there.
-
 > 
 >>> I'll try to find time to think about this more, but I don't think I can
 >>> merge this for 3.13.
@@ -125,18 +105,10 @@ and bypass are enabled, but is not allowed to tell that it is there.
 >> and we can then fix it in the weeks while release candidates are pushed.
 > 
 > If it was purely omapdss code, I could possibly take it. But it contains
-> arch/arm code also,
-
-because we think that it is unavoidable (no API to control the DEFCONF1
-register exists yet).
-
-Maybe one of the omap3 core maintainers can comment as well?
-
-> and I don't want to cause needless changes on code
+> arch/arm code also, and I don't want to cause needless changes on code
 > that I do not maintain.
-
-Yes, this should be avoided of course.
-
-BR,
-Nikolaus
+> 
+> Tomi
+> 
+> 
 

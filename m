@@ -1,81 +1,126 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Nov 2013 14:35:34 +0000
-Subject: Re: [PATCH] video: exynos_mipi_dsim: Remove unused variable
-Message-Id: <5294B1B6.1070606@ti.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 11 Nov 2013 09:39:57 +0000
+Subject: Re: [PATCH] pwm-backlight: add support for device tree gpio control
+Message-Id: <20131111093956.GI3884@ulmo.nvidia.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="pjjoPl5ov60xplEBGnw9KW8P4HutX4Acw"
+Content-Type: multipart/mixed; boundary="TKDEsImF70pdVIl+"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384463364-28864-1-git-send-email-olof@lixom.net> <CAK9yfHw7poMXWgRYBojzWsdoTxCMRf24YjdbxBhw=gohPrtwmA@mail.gmail.com>
-In-Reply-To: <CAK9yfHw7poMXWgRYBojzWsdoTxCMRf24YjdbxBhw=gohPrtwmA@mail.gmail.com>
-To: Sachin Kamat <sachin.kamat@linaro.org>, Olof Johansson <olof@lixom.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kishon Vijay Abraham I <kishon@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>
+References: <1378236372-15711-1-git-send-email-mikedunn@newsguy.com>
+ <20130910172130.GC22111@ulmo>
+ <523056A6.5060000@newsguy.com>
+ <524408BE.40402@ti.com>
+ <20130926120248.GB1680@ulmo>
+ <524427E5.50403@ti.com>
+ <20130926125020.GA2141@ulmo>
+ <524589A3.50700@newsguy.com>
+In-Reply-To: <524589A3.50700@newsguy.com>
+To: Mike Dunn <mikedunn@newsguy.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Marek Vasut <marex@denx.de>
 
---pjjoPl5ov60xplEBGnw9KW8P4HutX4Acw
-Content-Type: text/plain; charset=ISO-8859-1
+
+--TKDEsImF70pdVIl+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 2013-11-15 04:52, Sachin Kamat wrote:
-> + Tomi
+On Fri, Sep 27, 2013 at 06:35:31AM -0700, Mike Dunn wrote:
+> On 09/26/2013 05:50 AM, Thierry Reding wrote:
+> > On Thu, Sep 26, 2013 at 03:26:13PM +0300, Tomi Valkeinen wrote:
+> >> On 26/09/13 15:02, Thierry Reding wrote:
+> >>> On Thu, Sep 26, 2013 at 01:13:18PM +0300, Tomi Valkeinen wrote:
+> >>>> On 11/09/13 14:40, Mike Dunn wrote:
+> >>>>> On 09/10/2013 10:21 AM, Thierry Reding wrote:
+> >>>>
+> >>>>>> Do you have a real setup that actually needs multiple GPIOs? Usual=
+ly
+> >>>>>> such a setup requires some kind of timing or other additional cons=
+traint
+> >>>>>> which can't be represented by this simple binding.
+> >>>>>>
+> >>>>>> Looking at the Palm Treo code it seems like the reason why multiple
+> >>>>>> GPIOs are needed is because one is to enable the backlight, while =
+the
+> >>>>>> other is in fact used to enable the LCD panel.=20
+> >>>>>
+> >>>>>
+> >>>>> There are actually four GPIOs involved!  (There is an embarrasingly=
+ horrible
+> >>>>> hack in arch/arm/mach-pxa/palmtreo.c that handles the others.)  One=
+ is almost
+> >>>>> certainly simply backlight power.  The other three are probably LCD=
+ related.
+> >>>>
+> >>>> When you say "power", do you mean the gpio enables a regulator to fe=
+ed
+> >>>> power to the backlight? If so, wouldn't that be a regulator, not gpi=
+o,
+> >>>> from the bl driver's point of view?
+> >>>>
+> >>>> Generally speaking, this same problem appears in many places, but for
+> >>>> some reason especially in display. I'm a bit hesitant in adding "free
+> >>>> form" gpio/regulator support for drivers, as, as Thierry pointed out,
+> >>>> there are often timing requirements, or sometimes the gpios are
+> >>>> inverted, or sometimes the gpio is, in fact, a reset gpio, where you=
+'ll
+> >>>> assert the gpio for a short moment only.
+> >>>
+> >>> I sent out another series a few days ago that somewhat obsoletes this
+> >>> patch. What it does is basically add a single enable GPIO that can be
+> >>> used to turn the backlight on and off. In a separate patch, support is
+> >>> added for a power regulator. The combination of both should be able to
+> >>> cover the majority of use-cases.
+> >>
+> >> But Mike's case required 4 GPIOs? Or can that be reduced to one gpio a=
+nd
+> >> one regulator?
+> >=20
+> > Well, at least for the backlight it only seemed to involve a single
+> > GPIO. The other three were probably related to LCD and therefore not
+> > really suitable for a backlight driver. Traditionally it has been that
+> > the backlight driver handled these things as well (via the callbacks
+> > installed by board setup code). While really they should be handled by a
+> > separate driver (for the LCD).
 >=20
-> Hi Olof,
 >=20
-> On 15 November 2013 02:39, Olof Johansson <olof@lixom.net> wrote:
->> commit 7e0be9f9f7cba3356f75b86737dbe3a005da067e ('video: exynos_mipi_d=
-sim:
->> Use the generic PHY driver') resulted in a warning about an unused
->> variable:
->>
->> drivers/video/exynos/exynos_mipi_dsi.c:144:26: warning: unused variabl=
-e
->>     'pdev' [-Wunused-variable]
->>
->> It is indeed unused; remove it.
->>
->> Signed-off-by: Olof Johansson <olof@lixom.net>
->> Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
->> ---
+> Yes, this is currently my best guess.  This is reverse-engineered and
+> unfortunately I'm not yet able to accurately describe my particular use-c=
+ase.
+> Probably as wacky as anything you can imagine, Thierry :)
 >=20
-> I had already sent a similar patch to fix this issue [1] which is
-> reviewed by Kishon.
-> But the patch that caused the warning was in Greg's tree at that time
-> and he wanted
-> the follow up patch to go through the video tree. I have pinged Tomi ye=
-sterday
-> regarding this (now that his tree as well as the original patches are m=
-erged).
->=20
-> [1] http://www.spinics.net/lists/linux-fbdev/msg12755.html
->=20
+> The gpio and regulator patches will probably suffice.  Thierry, can you p=
+lease
+> point me to those patches?  I don't see them in your gitorious tree.  If =
+they
+> were posted to linux-pwm, I missed them; sorry.
 
-The one from Olof seems to have been merged, so I'll drop the one from
-Sachin in my tree.
+I've stumbled across this email and it's not marked as answered, so here
+goes: these patches will be part of my pull request for 3.13. They
+should now be in my tree, although that's now moved to kernel.org. You
+can find it here:
 
- Tomi
+	https://git.kernel.org/cgit/linux/kernel/git/thierry.reding/linux-pwm.git
 
+Thierry
 
-
---pjjoPl5ov60xplEBGnw9KW8P4HutX4Acw
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--TKDEsImF70pdVIl+
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSlLG2AAoJEPo9qoy8lh71rM4P/ibWprz5prdzVoU6ehI4+9/B
-/lMMcBN2eDbzBg8E0kmezhhjj7M8+YmlxVIpLqTC68edRgFtdJRsY9yPf0XE3YmS
-XCKkWuPAEDAJOSWXrvnENQnS1/2QAs0tcc5xzNp/7/NH40VGwFPRRBaBIocByXH+
-3CbCtfsIcGgVeQBIZoKrrbXRLPlC2QdjYzAg0sgNLrpS0x8eYA3vAp0fZOSqxHYe
-ADTXtsIasFNfhipVhlV9col+R62X5AVqFpotmQJO3Su/KvoqQlSk+M/WdF/8NQg4
-fH2hdn9PhlAf8FSFx60iRHxBZns79gbRFEJcZkYtq1F1QM1Ggx5yydrnovU3kVDf
-FBd32ERaVQbKX7DwROLmqc4CuHdqdOeElWvg4d/sCgPakxWJ9A6smaGlJaxq4hja
-zt4sB+WjYncPBhWfM2FFqxuHq4XktstVnyKlYlXt9bmzatBhdfhg0U42WgQ9vclC
-Chv/cbbROTPGLbL/khZxtl0GExcu5O+FWJxJHzMu5dEQ3zZf4bGvtIHy1mLEM7i9
-pe/Ev+PuHg19g6fyDfIYlgLcSOx4GvOAqgEa+V/sSOMhbPJoUu4HKh4v8gB1dmcX
-3D0z3wg1TPfNATcBZ2msYVU3scH0e/ZFECt/QIGTvNZ60U0i45V1UFFRZ07jXCo5
-HoRPDVfCWTtJ44iB7N5x
-=ae0/
+iQIcBAEBAgAGBQJSgKXsAAoJEN0jrNd/PrOhHYMP/3F/glcpTv7m1AY8cAM7CLdT
+OnSK+tM+5pWDgEkrTQesLireAZhmSNRte3WoJW0yOs+GZTO2F3GyPfZFaZcWkYPU
+5qgNoe/1lVWYr3vUbBQ/cLh2rbLiNC33FHuac76XffEgxVV+sTeKmTlbMeB+uhfQ
+7HqT4AcROMz+KxdheuFSCMjwLlahWvItsTtmFIOeBY8JiIUeHaHRKLGLR6O20Vas
+OYk+rfBd7fv7f1YwVswpAUbayDrHki9KJD4c5IzZtZjzTedssKlk1pSJvRmArRd3
+Mox7qSrpQLm/ovRt9fLu2hMszNtf89OAfvZmPh/HpnVmK2k4VLifiDmObP90sOUz
+HBdRJJjVVTfVk4wjqWFftDa3CV+GMrHWtEH3hJGX8WNsqjU/Xw8yAt5BotwLFc4U
+cvVYOnFyWZu0DxN2k+bPhJMqChjsc+7Gk3iy/gZdSB6NIC9Fzsmr7bq5Fa4sC1Ps
+ptu0vN0qjLqf5C+8TKE4BbvSTfLIPQtO4xUlqEVlGvFPe13uGKMBgvpVcfOPnFz5
+Sc10s6f0q/UExWjoWPduMbsZzaKfpX5137+Sm/eGgRtD5asD/SrCjTcv1/iFiuBT
+fLbzHKdNqRkVUFHFWG/plCsQoLyuGuAMECX25fWZ7AppGLQwG1YLfN14TUfJfkDB
+EYRiI+dZ+eFnSNXHOSJc
+=WHTv
 -----END PGP SIGNATURE-----
 
---pjjoPl5ov60xplEBGnw9KW8P4HutX4Acw--
+--TKDEsImF70pdVIl+--

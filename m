@@ -1,61 +1,80 @@
-From: Belisko Marek <marek.belisko@gmail.com>
-Date: Tue, 05 Nov 2013 07:24:08 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 11 Nov 2013 13:29:10 +0000
 Subject: Re: [PATCH 0/3] omapdss: venc: Add support for bypass and acbias.
-Message-Id: <CAAfyv34j+YhEjtHyf7zg5oBoCV5ROEXow8VV0PQNHLTF5uDZJg@mail.gmail.com>
+Message-Id: <5280DBA6.50303@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="uT8p3dMaVFhkCoRJa5DBOdlfE1WFnvCgv"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1381784555-18344-1-git-send-email-marek@goldelico.com>
-In-Reply-To: <1381784555-18344-1-git-send-email-marek@goldelico.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <CAAfyv34j+YhEjtHyf7zg5oBoCV5ROEXow8VV0PQNHLTF5uDZJg@mail.gmail.com>
+In-Reply-To: <CAAfyv34j+YhEjtHyf7zg5oBoCV5ROEXow8VV0PQNHLTF5uDZJg@mail.gmail.com>
 To: linux-arm-kernel@lists.infradead.org
+
+--uT8p3dMaVFhkCoRJa5DBOdlfE1WFnvCgv
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-ping.
+On 2013-11-05 09:24, Belisko Marek wrote:
+> Hi,
+>=20
+> ping.
+>=20
+> On Mon, Oct 14, 2013 at 11:02 PM, Marek Belisko <marek@goldelico.com> w=
+rote:
+>> This patches is adding bypass and acbias functionality to omapdss venc=
+ driver.
+>> In first patch we export updatin bypass and acbias in devconf1 registe=
+r. Next patch
+>> add handling for updating in venc driver and last patch add driver for=
+ opa362 which
+>> is used on gta04 board and set bypass + acbias.
+> Is there a chance to get this series to 3.13? Thanks.
 
-On Mon, Oct 14, 2013 at 11:02 PM, Marek Belisko <marek@goldelico.com> wrote:
-> This patches is adding bypass and acbias functionality to omapdss venc driver.
-> In first patch we export updatin bypass and acbias in devconf1 register. Next patch
-> add handling for updating in venc driver and last patch add driver for opa362 which
-> is used on gta04 board and set bypass + acbias.
-Is there a chance to get this series to 3.13? Thanks.
->
-> Marek Belisko (3):
->   arm: omap2: Export devconf1 bypass and acbias.
->   video: venc: Add new callback and handling for bypass and acbias
->     setup.
->   omapdss: Add OPA362 analog video amplifier driver.
->
->  arch/arm/mach-omap2/Makefile                       |   2 +
->  arch/arm/mach-omap2/control.h                      |   2 +
->  arch/arm/mach-omap2/omap3-tvout.c                  |  36 +++
->  drivers/video/omap2/displays-new/Kconfig           |   6 +
->  drivers/video/omap2/displays-new/Makefile          |   1 +
->  .../video/omap2/displays-new/amplifier-opa362.c    | 294 +++++++++++++++++++++
->  drivers/video/omap2/dss/venc.c                     |  21 ++
->  include/linux/omap-tvout.h                         |  14 +
->  include/video/omap-panel-data.h                    |  17 ++
->  include/video/omapdss.h                            |   2 +
->  10 files changed, 395 insertions(+)
->  create mode 100644 arch/arm/mach-omap2/omap3-tvout.c
->  create mode 100644 drivers/video/omap2/displays-new/amplifier-opa362.c
->  create mode 100644 include/linux/omap-tvout.h
->
-> --
-> 1.8.1.2
->
+Sorry, I haven't had time to do much reviewing.
 
-Marek
+The code in omap3-tvout.c should be included in the display.c file,
+which already contains some things like muxing. Also, func(bool, bool)
+style functions are rather confusing to read. Maybe an enum would be
+better, so you'd instead have something like:
 
--- 
-as simple and primitive as possible
--------------------------------------------------
-Marek Belisko - OPEN-NANDRA
-Freelance Developer
+func(OMAP_VENC_TVOUTBYPASS | OMAP_VENC_TVACEN)
 
-Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
-Tel: +421 915 052 184
-skype: marekwhite
-twitter: #opennandra
-web: http://open-nandra.com
+But the main issue is: while this series probably works well, I really
+don't like it that the OPA driver needs to pass bypass and acbias. It
+shouldn't know anything about such things. I'm just not certain how to
+implement that with the current omapdss driver.
+
+I'll try to find time to think about this more, but I don't think I can
+merge this for 3.13.
+
+ Tomi
+
+
+
+--uT8p3dMaVFhkCoRJa5DBOdlfE1WFnvCgv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSgNumAAoJEPo9qoy8lh71fkAQAKtYe/77ezfI7KXDURRdjqBW
+xHV1k6+uzQ8WTCZlb8bGSRnmP2wEmfCQ9o5rQGPoNT0d7fYONfmms5UhM4LFGDHw
+n7tcknLe0NjTQjlEicIQcdeYSOPmnlwTs4Ehl2xxcB6a6R5rNSTogoWIxwI+joyR
+jRP6dOzK9Bd0SFBr7kcrUCuwSl6OUpB+9aPCP9btu4yZKdpDorsiHFaWlS5IhgMm
+fHfLqvYYMSVZlJ0orAhRG6Q7YQ3jjPv21aFVGGLqyf+koiamARMd7mEAJXYEtoIk
+dfuxKa2V4ansD1vfz30Y9nmNrj4TDtnV0YITPsO7RPPgWKNwEq9tYH9Uu9KY4TPa
+z4i5yyKSXuExUayFRDqozKkd8gvgJn1POsOHvpRZeB3/g8JpmGKCUABNK67P/2x4
+fIzidRPyjBFET5p3DxanqeX0lRnBFRGD3guMf+2VVKwe4L7nuK0b+8xa4CoU09zM
+uZWomZS5/sZ0DLD20Ms6BeUtDMCzboUTmkxsdMmj/BUt60v2ElXJ2quKTjilJX7V
+42fgfhYtbqOzSMG8jN5JLjp9g/YJBJ4lhCu78z6P76doJQ34VZjgNkhqHjkb/cHi
+l5DBVqvmc73E5X0Nu3hwvSiU18Fu7FLRdTRRxRbFFJkuAhc6dRu1RL9wgKFAJj7M
+gyIjjDBD2hnkFG4n/dLJ
+=BZwM
+-----END PGP SIGNATURE-----
+
+--uT8p3dMaVFhkCoRJa5DBOdlfE1WFnvCgv--

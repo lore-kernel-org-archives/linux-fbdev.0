@@ -1,34 +1,45 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 28 Nov 2013 03:30:53 +0000
-Subject: [PATCH 22/28] video: savagefb: use DEFINE_PCI_DEVICE_TABLE macro
-Message-Id: <003e01ceebea$3e4f6bb0$baee4310$%han@samsung.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 12 Nov 2013 03:32:12 +0000
+Subject: [PATCH 5/5] pcmcia: sa1111: make use of device clock
+Message-Id: <1384227132-10501-5-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1384227132-10501-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1384227132-10501-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-This macro is used to create a struct pci_device_id array.
+Use per-device clock (instead of calling cpufreq_get(0), which can
+return 0 if no cpu frequency driver is selected) to program timings.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- drivers/video/savage/savagefb_driver.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pcmcia/sa1111_generic.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
-index 4dbf45f..d2d8fcf 100644
---- a/drivers/video/savage/savagefb_driver.c
-+++ b/drivers/video/savage/savagefb_driver.c
-@@ -2440,7 +2440,7 @@ static int savagefb_resume(struct pci_dev* dev)
- }
+diff --git a/drivers/pcmcia/sa1111_generic.c b/drivers/pcmcia/sa1111_generic.c
+index 65b02c3..c5988be 100644
+--- a/drivers/pcmcia/sa1111_generic.c
++++ b/drivers/pcmcia/sa1111_generic.c
+@@ -145,6 +145,9 @@ int sa1111_pcmcia_add(struct sa1111_dev *dev, struct pcmcia_low_level *ops,
+ 			return -ENOMEM;
  
- 
--static struct pci_device_id savagefb_devices[] = {
-+static DEFINE_PCI_DEVICE_TABLE(savagefb_devices) = {
- 	{PCI_VENDOR_ID_S3, PCI_CHIP_SUPSAV_MX128,
- 	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, FB_ACCEL_SUPERSAVAGE},
+ 		s->soc.nr = ops->first + i;
++		s->soc.clk = clk_get(&dev->dev, NULL);
++		if (IS_ERR(s->soc.clk))
++			return -ENODEV;
+ 		soc_pcmcia_init_one(&s->soc, ops, &dev->dev);
+ 		s->dev = dev;
+ 		if (s->soc.nr) {
+@@ -220,6 +223,7 @@ static int pcmcia_remove(struct sa1111_dev *dev)
+ 	for (; s; s = next) {
+ 		next = s->next;
+ 		soc_pcmcia_remove_one(&s->soc);
++		clk_put(s->soc.clk);
+ 		kfree(s);
+ 	}
  
 -- 
-1.7.10.4
-
+1.8.4.2
 

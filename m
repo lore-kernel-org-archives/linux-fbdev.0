@@ -1,79 +1,60 @@
-From: Kyungmin Park <kmpark@infradead.org>
-Date: Tue, 12 Nov 2013 00:54:04 +0000
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Date: Tue, 12 Nov 2013 00:56:28 +0000
 Subject: Re: [PATCH] video: backlight: Remove backlight sysfs uevent
-Message-Id: <CAH9JG2V0_aFdJaNcVBOYnE=s1YP8hfFhQPjdQ=+HBr0Afy5fLw@mail.gmail.com>
+Message-Id: <20131112005628.GA2914@khazad-dum.debian.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20131112004436.GA30125@july>
-In-Reply-To: <20131112004436.GA30125@july>
+References: <20131111235700.GA29987@july>
+ <002901cedf3c$a7e77a00$f7b66e00$%han@samsung.com>
+In-Reply-To: <002901cedf3c$a7e77a00$f7b66e00$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kay@vrfy.org
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: 'Kyungmin Park' <kmpark@infradead.org>, 'Henrique de Moraes Holschuh' <ibm-acpi@hmh.eng.br>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kay@vrfy.org, 'Richard Purdie' <rpurdie@rpsys.net>, ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org
 
-Please ignore it. strange mail system.
+On Tue, 12 Nov 2013, Jingoo Han wrote:
+> On Tuesday, November 12, 2013 8:57 AM, Kyungmin Park wrote:
+> > From: Kyungmin Park <kyungmin.park@samsung.com>
+> > 
+> > The most mobile phones have Ambient Light Sensors and it changes brightness according lux.
+> > It means it changes backlight brightness frequently by just writing sysfs node, so it generates uevent.
+> > 
+> > Usually there's no user to use this backlight changes. But it forks udev worker threads and it takes
+> > about 5ms. The main problem is that it hurts other process activities. so remove it.
+> > 
+> > Kay said
+> > "Uevents are for the major, low-frequent, global device state-changes,
+> >  not for carrying-out any sort of measurement data. Subsystems which
+> >  need that should use other facilities like poll()-able sysfs file or
+> >  any other subscription-based, client-tracking interface which does not
+> >  cause overhead if it isn't used. Uevents are not the right thing to
+> >  use here, and upstream udev should not paper-over broken kernel
+> >  subsystems."
 
-After feedback from previous mail, I'll re-send it.
+True.
 
-Thank you,
-Kyungmin Park
+Now, let's take a look at reality: should you poll()/select() on a sysfs
+node that doesn't suport it, it will wait until the poll/select timeout
+happens (or EINTR happens), and userspace has absolutely NO way to detect
+whether a sysfs node has poll/select support.
 
-On Tue, Nov 12, 2013 at 9:44 AM, Kyungmin Park <kmpark@infradead.org> wrote:
-> From: Kyungmin Park <kyungmin.park@samsung.com>
->
-> The most mobile phones have Ambient Light Sensors and it changes brightness according lux.
-> It means it changes backlight brightness frequently by just writing sysfs node, so it generates uevent.
->
-> Usually there's no user to use this backlight changes. But it forks udev worker threads and it takes about 5ms. The main problem is that it hurts other process activities. so remove it.
->
-> Kay said
-> "Uevents are for the major, low-frequent, global device state-changes,
->  not for carrying-out any sort of measurement data. Subsystems which
->  need that should use other facilities like poll()-able sysfs file or
->  any other subscription-based, client-tracking interface which does not
->  cause overhead if it isn't used. Uevents are not the right thing to
->  use here, and upstream udev should not paper-over broken kernel
->  subsystems."
->
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> ---
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-> index 94a403a..441272d 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -88,9 +88,6 @@ static void backlight_generate_event(struct backlight_device *bd,
->         char *envp[2];
->
->         switch (reason) {
-> -       case BACKLIGHT_UPDATE_SYSFS:
-> -               envp[0] = "SOURCE=sysfs";
-> -               break;
->         case BACKLIGHT_UPDATE_HOTKEY:
->                 envp[0] = "SOURCE=hotkey";
->                 break;
-> @@ -172,8 +169,6 @@ static ssize_t brightness_store(struct device *dev,
->         }
->         mutex_unlock(&bd->ops_lock);
->
-> -       backlight_generate_event(bd, BACKLIGHT_UPDATE_SYSFS);
-> -
->         return rc;
->  }
->  static DEVICE_ATTR_RW(brightness);
-> diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-> index 53b7794..d2a27dd 100644
-> --- a/include/linux/backlight.h
-> +++ b/include/linux/backlight.h
-> @@ -29,7 +29,6 @@
->
->  enum backlight_update_reason {
->         BACKLIGHT_UPDATE_HOTKEY,
-> -       BACKLIGHT_UPDATE_SYSFS,
->  };
->
->  enum backlight_type {
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+What happens if the sysfs interface did not provide poll/select support
+since day one, but rather added it later?  Nobody will use it for a *long*
+time, if ever... unless you actually took pains to version the sysfs
+interface, and people actually care.
+
+> 'thinkpad_acpi.c' uses the 'BACKLIGHT_UPDATE_SYSFS'.
+> Henrique, can we remove it?
+
+Can't you fix this by rate-limiting, or otherwise adding an attribute that
+backlight devices should set when they need to supress change events?
+
+Is there a proper on-screen-display support path for the backlight class
+nowadays?  Otherwise, you'd be removing the only way userspace ever had to
+do proper OSD of backlight changes...
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh

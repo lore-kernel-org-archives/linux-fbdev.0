@@ -1,100 +1,100 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Date: Fri, 01 Nov 2013 00:01:25 +0000
-Subject: Re: [PATCH v3 21/32] drm/exynos: Move dp driver from video/ to drm/
-Message-Id: <1744421.OF2LGcKCh7@flatron>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 12 Nov 2013 03:32:08 +0000
+Subject: [PATCH 1/5] arm: sa1100: add cpu clock
+Message-Id: <1384227132-10501-1-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383063198-10526-1-git-send-email-seanpaul@chromium.org>
-	<10329504.DMev7iL3eL@flatron>
-	<003801ced694$a3342310$e99c6930$%han@samsung.com>
-In-Reply-To: <003801ced694$a3342310$e99c6930$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, dri-devel@lists.freedesktop.org, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, marcheu@chromium.org, 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>
+To: linux-arm-kernel@lists.infradead.org
 
-On Friday 01 of November 2013 08:55:12 Jingoo Han wrote:
-> On Friday, November 01, 2013 8:27 AM, Tomasz Figa wrote:
-> > On Friday 01 of November 2013 08:23:59 Jingoo Han wrote:
-> > > On Friday, November 01, 2013 8:12 AM, Tomasz Figa wrote:
-> > > > On Friday 01 of November 2013 08:06:00 Jingoo Han wrote:
-> > > > > On Thursday, October 31, 2013 7:47 PM, Inki Dae wrote:
-> > > > > > CCing Jingoo,
-> > > > > > 
-> > > > > > Is that ok to remove eDP driver from video/exynos? Isn't this
-> > > > > > driver
-> > > > > > really used by Linux framebuffer driver, s3c-fb.c?
-> > > > > 
-> > > > > +cc Tomi Valkeinen, Jean-Christophe PLAGNIOL-VILLARD,
-> > > > > 
-> > > > >      linux-fbdev list, linux-samsung-soc list
-> > > > > 
-> > > > > Yes, it is used by s3c-fb.c.
-> > > > > 
-> > > > > > Of course, now s3c-fb driver is dead code because this driver
-> > > > > > doesn't
-> > > > > > support device tree yet but we would need more reviews and
-> > > > > > discussions
-> > > > > > about moving this driver into drm side. Let's watch new rules
-> > > > > > for
-> > > > > > device tree bindings of DRM world. So I'd not like to merge
-> > > > > > this
-> > > > > > driver yet.
-> > > > > 
-> > > > > 's3c-fb' driver is still used for other mass products projects.
-> > > > > Just, device tree support patch is not yet submitted.
-> > > > 
-> > > > Current in-tree users of s3c-fb drivers are s3c2443, non-DT
-> > > > s3c64xx
-> > > > and
-> > > > all s5p* SoCs. It is not used on Exynos SoCs anymore.
-> > > 
-> > > Hi Tomasz Figa,
-> > 
-> > Just Tomasz. ;)
-> 
-> Hi Tomasz, :-)
-> 
-> > > Some mass product projects using Exynos5250 and etc, use s3c-fb
-> > > driver
-> > > and dp driver. Also, these projects are still using Framebuffer, not
-> > > DRM.
-> > 
-> > Well, those are based on vendor trees anyway, so do not really affect
-> > mainline kernel.
-> 
-> OK, I see.
-> 
-> > > > As for Exynos DP driver, what SoCs does it support? If only Exynos
-> > > > (as
-> > > > the name suggests) then there is no point in keeping it at
-> > > > video/exynos and making it a part of Exynos DRM driver seems
-> > > > reasonable to me.
-> > > 
-> > > However, when considering only mainline kernel, I have no strong
-> > > objection. As you know, many Linux kernel based OS projects using
-> > > Exynos, are using DRM, not Framebuffer.
-> > 
-> > Generally, fbdev is strongly discouraged in any new systems and DRM is
-> > the way to go, so I don't think we should ever want to bring s3c-fb
-> > support back to Exynos platforms.
-> 
-> Yes, you're right.
-> Personally, I think that all Exynos platforms should go into DRM, not
-> FB.
-> 
-> One more thing, then how about moving Exynos MIPI to DRM side?
-> Is there any plan on Exynos MIPI?
+Both SA1100 framebuffer and PCMCIA drivers require knowledge of cpu
+frequency to correctly program timings.  Currently they receive timing
+information by calling cpufreq_get(0).  However if cpu frequency driver
+is not enabled (e.g. due to unsupported DRAM chip/board on sa1110)
+cpufreq_get(0) returns 0, causing incorrect timings to be programmed.
 
-Well, it will eventually have to be moved somewhere else than it is, but I 
-believe this will have to wait for Common Display Framework.
+Add cpu clock returning cpu frequency, to be used by sa11x0 fb and
+pcmcia drivers.
 
-This is because the case of MIPI DSI is slightly different from 
-DisplayPort, since it is not an enumerable/auto-configurable interface and 
-requires dedicated panel drivers and static data provided by board 
-designers (in DT for example). Handling of such things in a generic way 
-will be done by CDF.
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/arm/mach-sa1100/clock.c | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-Best regards,
-Tomasz
+diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
+index 172ebd0..abf1dc1 100644
+--- a/arch/arm/mach-sa1100/clock.c
++++ b/arch/arm/mach-sa1100/clock.c
+@@ -15,10 +15,12 @@
+ #include <linux/clkdev.h>
+ 
+ #include <mach/hardware.h>
++#include <mach/generic.h>
+ 
+ struct clkops {
+ 	void			(*enable)(struct clk *);
+ 	void			(*disable)(struct clk *);
++	unsigned long		(*get_rate)(struct clk *);
+ };
+ 
+ struct clk {
+@@ -51,6 +53,19 @@ static void clk_gpio27_disable(struct clk *clk)
+ 	GAFR &= ~GPIO_32_768kHz;
+ }
+ 
++static void clk_cpu_enable(struct clk *clk)
++{
++}
++
++static void clk_cpu_disable(struct clk *clk)
++{
++}
++
++static unsigned long clk_cpu_get_rate(struct clk *clk)
++{
++	return sa11x0_getspeed(0) * 1000;
++}
++
+ int clk_enable(struct clk *clk)
+ {
+ 	unsigned long flags;
+@@ -80,16 +95,35 @@ void clk_disable(struct clk *clk)
+ }
+ EXPORT_SYMBOL(clk_disable);
+ 
++unsigned long clk_get_rate(struct clk *clk)
++{
++	if (clk && clk->ops && clk->ops->get_rate)
++		return clk->ops->get_rate(clk);
++	else
++		return 0;
++}
++EXPORT_SYMBOL(clk_get_rate);
++
+ const struct clkops clk_gpio27_ops = {
+ 	.enable		= clk_gpio27_enable,
+ 	.disable	= clk_gpio27_disable,
+ };
+ 
++const struct clkops clk_cpu_ops = {
++	.enable		= clk_cpu_enable,
++	.disable	= clk_cpu_disable,
++	.get_rate	= clk_cpu_get_rate,
++};
++
+ static DEFINE_CLK(gpio27, &clk_gpio27_ops);
+ 
++static DEFINE_CLK(cpu, &clk_cpu_ops);
++
+ static struct clk_lookup sa11xx_clkregs[] = {
+ 	CLKDEV_INIT("sa1111.0", NULL, &clk_gpio27),
+ 	CLKDEV_INIT("sa1100-rtc", NULL, NULL),
++	CLKDEV_INIT("sa11x0-fb", NULL, &clk_cpu),
++	CLKDEV_INIT("sa11x0-pcmcia", NULL, &clk_cpu),
+ };
+ 
+ static int __init sa11xx_clk_init(void)
+-- 
+1.8.4.2
 

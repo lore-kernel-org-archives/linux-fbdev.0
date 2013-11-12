@@ -1,19 +1,18 @@
-From: Kyungmin Park <kmpark@infradead.org>
-Date: Tue, 12 Nov 2013 01:07:36 +0000
+From: Kay Sievers <kay@vrfy.org>
+Date: Tue, 12 Nov 2013 01:19:32 +0000
 Subject: Re: [PATCH] video: backlight: Remove backlight sysfs uevent
-Message-Id: <CAH9JG2Wa_QXo3CZPmEyfDrHkZAGLVwhANoFAz6GZEC7mX48UGQ@mail.gmail.com>
+Message-Id: <CAPXgP11oHZXbzCt72yutmeF-P=GudzPb9whTpWe5n9LDqOMM+g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20131111235700.GA29987@july>
-	<002901cedf3c$a7e77a00$f7b66e00$%han@samsung.com>
-	<20131112005628.GA2914@khazad-dum.debian.net>
+References: <20131111235700.GA29987@july> <002901cedf3c$a7e77a00$f7b66e00$%han@samsung.com>
+ <20131112005628.GA2914@khazad-dum.debian.net>
 In-Reply-To: <20131112005628.GA2914@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Jingoo Han <jg1.han@samsung.com>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kay@vrfy.org, Richard Purdie <rpurdie@rpsys.net>, ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org
+Cc: Jingoo Han <jg1.han@samsung.com>, Kyungmin Park <kmpark@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Richard Purdie <rpurdie@rpsys.net>, ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org
 
-On Tue, Nov 12, 2013 at 9:56 AM, Henrique de Moraes Holschuh
+On Tue, Nov 12, 2013 at 1:56 AM, Henrique de Moraes Holschuh
 <hmh@hmh.eng.br> wrote:
 > On Tue, 12 Nov 2013, Jingoo Han wrote:
 >> On Tuesday, November 12, 2013 8:57 AM, Kyungmin Park wrote:
@@ -45,27 +44,30 @@ On Tue, Nov 12, 2013 at 9:56 AM, Henrique de Moraes Holschuh
 > since day one, but rather added it later?  Nobody will use it for a *long*
 > time, if ever... unless you actually took pains to version the sysfs
 > interface, and people actually care.
->
+
+If that's an issue, we can add a new "event" file, just for that.
+
 >> 'thinkpad_acpi.c' uses the 'BACKLIGHT_UPDATE_SYSFS'.
 >> Henrique, can we remove it?
 >
 > Can't you fix this by rate-limiting, or otherwise adding an attribute that
 > backlight devices should set when they need to supress change events?
 
-other way is that just remove sysfs node store update then you can use
-current API, force_update as is.
+Yeah, great idea, fix a bad hack with another bad one on top. :)
+Passing measurement data through uevents is just an utterly broken
+idea which cannot be fixed.
 
-are there any other good ideas?
-
-Thank you,
-Kyungmin Park
->
 > Is there a proper on-screen-display support path for the backlight class
 > nowadays?  Otherwise, you'd be removing the only way userspace ever had to
 > do proper OSD of backlight changes...
->
-> --
->   "One disk to rule them all, One disk to find them. One disk to bring
->   them all and in the darkness grind them. In the Land of Redmond
->   where the shadows lie." -- The Silicon Valley Tarot
->   Henrique Holschuh
+
+OSD drawing and event sounds usually happen as a fedback for
+keypresses of brightness control, it would be weird to show up when
+something else, like a light-sensor, adjusts the brightness in the
+background.
+
+Anyway, there might be the need for coordination and a new interface,
+but uevents for measurement data need to die entirely; they make no
+sense, never made any; and the sooner they are gone the better.
+
+Kay

@@ -1,31 +1,32 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 11 Nov 2013 23:34:27 +0000
-Subject: Re: [PATCH 1/3] arm: omap2: Export devconf1 bypass and acbias.
-Message-Id: <20131111233426.GS15154@atomide.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 12 Nov 2013 03:32:11 +0000
+Subject: [PATCH 4/5] arm: sa1100: add a clock alias for sa1111 pcmcia device
+Message-Id: <1384227132-10501-4-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381784555-18344-1-git-send-email-marek@goldelico.com>
- <1381784555-18344-2-git-send-email-marek@goldelico.com>
- <20131111164917.GN15154@atomide.com>
- <CAAfyv34CyviSt_Jaygr-CYSQdZOBHz14awT3U8=2ZBT14s896g@mail.gmail.com>
-In-Reply-To: <CAAfyv34CyviSt_Jaygr-CYSQdZOBHz14awT3U8=2ZBT14s896g@mail.gmail.com>
+References: <1384227132-10501-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1384227132-10501-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-* Belisko Marek <marek.belisko@gmail.com> [131111 14:21]:
-> AFAIK it's not pinmux it's register where we update bits. Or am I
-> missing something?
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/arm/mach-sa1100/clock.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Most of the omap control module registers seem to affect either
-external pin configuration or internal signal muxes. So a big
-chunk of them can already be handled with pinctrl-single,bits
-for device tree.
+diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
+index abf1dc1..cd4762d 100644
+--- a/arch/arm/mach-sa1100/clock.c
++++ b/arch/arm/mach-sa1100/clock.c
+@@ -124,6 +124,7 @@ static struct clk_lookup sa11xx_clkregs[] = {
+ 	CLKDEV_INIT("sa1100-rtc", NULL, NULL),
+ 	CLKDEV_INIT("sa11x0-fb", NULL, &clk_cpu),
+ 	CLKDEV_INIT("sa11x0-pcmcia", NULL, &clk_cpu),
++	CLKDEV_INIT("1600", NULL, &clk_cpu), /* sa1111 pcmcia */
+ };
+ 
+ static int __init sa11xx_clk_init(void)
+-- 
+1.8.4.2
 
-But some of the control module registers also have regulator
-and clock like features, and those are better exposed as
-regulators and clocks to the consumer drivers.
-
-Regards,
-
-Tony

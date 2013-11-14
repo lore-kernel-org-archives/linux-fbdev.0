@@ -1,81 +1,39 @@
-From: Michal Nazarewicz <mpn@google.com>
-Date: Sun, 10 Nov 2013 18:38:38 +0000
-Subject: [PATCH] drivers: video: metronomefb: avoid out-of-bounds array access
-Message-Id: <1384108718-23637-1-git-send-email-mpn@google.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Thu, 14 Nov 2013 08:19:18 +0000
+Subject: [patch 1/2] video: mmp: delete a stray mutex_unlock()
+Message-Id: <20131114081918.GB8150@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <3c610da0d5b555453d5295aae720042f1c065cab.1382791126.git.mina86@mina86.com>
-In-Reply-To: <3c610da0d5b555453d5295aae720042f1c065cab.1382791126.git.mina86@mina86.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-From: Michal Nazarewicz <mina86@mina86.com>
+We aren't holding the disp_lock so we shouldn't release it.
 
-load_waveform function checks whether padding bytes in stuff2a
-and stuff2b are all zero, but does so by treating those arrays
-as a single longer array.  Since the structure is packed, and
-the size sum matches, it all works, but creates some confusion
-in the code.
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-This commit changes the stuff2a and stuff2b arrays into pad1 and
-pad2 fields such that they cover the same bytes as the arrays
-covered, and changes the check in the load_waveform function so
-that the fields are read instead of iterating over an arary.
-
-It also renames the other “stuff” fields to “ignore*” fields to
-give them more semantic meaning.
----
- drivers/video/metronomefb.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
-index 195cc2d..4f36a2b 100644
---- a/drivers/video/metronomefb.c
-+++ b/drivers/video/metronomefb.c
-@@ -126,7 +126,7 @@ static struct fb_var_screeninfo metronomefb_var = {
+diff --git a/drivers/video/mmp/core.c b/drivers/video/mmp/core.c
+index 84de263..c8d4265 100644
+--- a/drivers/video/mmp/core.c
++++ b/drivers/video/mmp/core.c
+@@ -173,7 +173,7 @@ struct mmp_path *mmp_register_path(struct mmp_path_info *info)
+ 		+ sizeof(struct mmp_overlay) * info->overlay_num;
+ 	path = kzalloc(size, GFP_KERNEL);
+ 	if (!path)
+-		goto failed;
++		return NULL;
  
- /* the waveform structure that is coming from userspace firmware */
- struct waveform_hdr {
--	u8 stuff[32];
-+	u8 ignore1[32];
+ 	/* path set */
+ 	mutex_init(&path->access_ok);
+@@ -219,11 +219,6 @@ struct mmp_path *mmp_register_path(struct mmp_path_info *info)
  
- 	u8 wmta[3];
- 	u8 fvsn;
-@@ -134,13 +134,14 @@ struct waveform_hdr {
- 	u8 luts;
- 	u8 mc;
- 	u8 trc;
--	u8 stuff3;
-+	u8 ignore2;
+ 	mutex_unlock(&disp_lock);
+ 	return path;
+-
+-failed:
+-	kfree(path);
+-	mutex_unlock(&disp_lock);
+-	return NULL;
+ }
+ EXPORT_SYMBOL_GPL(mmp_register_path);
  
- 	u8 endb;
- 	u8 swtb;
--	u8 stuff2a[2];
-+	u32 pad1; /* u16 halfof(pad1) */
- 
--	u8 stuff2b[3];
-+	/* u16 halfof(pad1) */
-+	u8 pad2;
- 	u8 wfm_cs;
- } __attribute__ ((packed));
- 
-@@ -210,11 +211,9 @@ static int load_waveform(u8 *mem, size_t size, int m, int t,
- 	}
- 	wfm_hdr->mc += 1;
- 	wfm_hdr->trc += 1;
--	for (i = 0; i < 5; i++) {
--		if (*(wfm_hdr->stuff2a + i) != 0) {
--			dev_err(dev, "Error: unexpected value in padding\n");
--			return -EINVAL;
--		}
-+	if (wfm_hdr->pad1 || wfm_hdr->pad2) {
-+		dev_err(dev, "Error: unexpected value in padding\n");
-+		return -EINVAL;
- 	}
- 
- 	/* calculating trn. trn is something used to index into
--- 
-1.8.3.2
-

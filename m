@@ -1,101 +1,30 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Tue, 12 Nov 2013 03:32:10 +0000
-Subject: [PATCH 3/5] pcmcia: sa1100: make use of device clock
-Message-Id: <1384227132-10501-3-git-send-email-dbaryshkov@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Thu, 14 Nov 2013 08:19:57 +0000
+Subject: [patch 2/2] video: mmp: Using plain integer as NULL pointer
+Message-Id: <20131114081957.GC8150@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384227132-10501-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1384227132-10501-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Use per-device clock (instead of calling cpufreq_get(0), which can
-return 0 if no cpu frequency driver is selected) to program timings.
+Sparse complains here:
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- drivers/pcmcia/sa1100_generic.c |  1 +
- drivers/pcmcia/sa11xx_base.c    | 14 ++++++++++++--
- 2 files changed, 13 insertions(+), 2 deletions(-)
+	drivers/video/mmp/core.c:33:16:
+		warning: Using plain integer as NULL pointer
 
-diff --git a/drivers/pcmcia/sa1100_generic.c b/drivers/pcmcia/sa1100_generic.c
-index ff8a027..d2ab060 100644
---- a/drivers/pcmcia/sa1100_generic.c
-+++ b/drivers/pcmcia/sa1100_generic.c
-@@ -93,6 +93,7 @@ static int sa11x0_drv_pcmcia_remove(struct platform_device *dev)
- 	for (i = 0; i < sinfo->nskt; i++)
- 		soc_pcmcia_remove_one(&sinfo->skt[i]);
- 
-+	clk_put(sinfo->clk);
- 	kfree(sinfo);
- 	return 0;
- }
-diff --git a/drivers/pcmcia/sa11xx_base.c b/drivers/pcmcia/sa11xx_base.c
-index 6eecd7c..aef0e69 100644
---- a/drivers/pcmcia/sa11xx_base.c
-+++ b/drivers/pcmcia/sa11xx_base.c
-@@ -38,6 +38,7 @@
- #include <linux/spinlock.h>
- #include <linux/io.h>
- #include <linux/slab.h>
-+#include <linux/clk.h>
- 
- #include <mach/hardware.h>
- #include <asm/irq.h>
-@@ -138,14 +139,15 @@ sa1100_pcmcia_frequency_change(struct soc_pcmcia_socket *skt,
- static int
- sa1100_pcmcia_set_timing(struct soc_pcmcia_socket *skt)
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+diff --git a/drivers/video/mmp/core.c b/drivers/video/mmp/core.c
+index c8d4265..b563b92 100644
+--- a/drivers/video/mmp/core.c
++++ b/drivers/video/mmp/core.c
+@@ -30,7 +30,7 @@ static struct mmp_overlay *path_get_overlay(struct mmp_path *path,
  {
--	return sa1100_pcmcia_set_mecr(skt, cpufreq_get(0));
-+	unsigned long clk = clk_get_rate(skt->clk);
-+	return sa1100_pcmcia_set_mecr(skt, clk / 1000);
+ 	if (path && overlay_id < path->overlay_num)
+ 		return &path->overlays[overlay_id];
+-	return 0;
++	return NULL;
  }
  
- static int
- sa1100_pcmcia_show_timing(struct soc_pcmcia_socket *skt, char *buf)
- {
- 	struct soc_pcmcia_timing timing;
--	unsigned int clock = cpufreq_get(0);
-+	unsigned int clock = clk_get_rate(skt->clk);
- 	unsigned long mecr = MECR;
- 	char *p = buf;
- 
-@@ -221,6 +223,11 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
- 	struct skt_dev_info *sinfo;
- 	struct soc_pcmcia_socket *skt;
- 	int i, ret = 0;
-+	struct clk *clk;
-+
-+	clk = clk_get(dev, NULL);
-+	if (IS_ERR(clk))
-+		return -ENODEV;
- 
- 	sa11xx_drv_pcmcia_ops(ops);
- 
-@@ -229,12 +236,14 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
- 		return -ENOMEM;
- 
- 	sinfo->nskt = nr;
-+	sinfo->clk = clk;
- 
- 	/* Initialize processor specific parameters */
- 	for (i = 0; i < nr; i++) {
- 		skt = &sinfo->skt[i];
- 
- 		skt->nr = first + i;
-+		skt->clk = clk;
- 		soc_pcmcia_init_one(skt, ops, dev);
- 
- 		ret = sa11xx_drv_pcmcia_add_one(skt);
-@@ -245,6 +254,7 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
- 	if (ret) {
- 		while (--i >= 0)
- 			soc_pcmcia_remove_one(&sinfo->skt[i]);
-+		clk_put(clk);
- 		kfree(sinfo);
- 	} else {
- 		dev_set_drvdata(dev, sinfo);
--- 
-1.8.4.2
-
+ static int path_check_status(struct mmp_path *path)

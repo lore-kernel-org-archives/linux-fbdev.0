@@ -1,67 +1,41 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Nov 2013 10:21:14 +0000
-Subject: Re: [PATCH 1/6] OMAPDSS: APPLY: set infos to dirty on enable
-Message-Id: <5294761A.7090904@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="dvmrP4TptnXPW4CHnPVatR1ltGGwxmVVU"
+From: Olof Johansson <olof@lixom.net>
+Date: Thu, 14 Nov 2013 21:09:24 +0000
+Subject: [PATCH] video: exynos_mipi_dsim: Remove unused variable
+Message-Id: <1384463364-28864-1-git-send-email-olof@lixom.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com> <1384779009-10512-2-git-send-email-tomi.valkeinen@ti.com> <5292A2AA.6090001@ti.com>
-In-Reply-To: <5292A2AA.6090001@ti.com>
-To: Archit Taneja <archit@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Kishon Vijay Abraham I <kishon@ti.com>, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 
---dvmrP4TptnXPW4CHnPVatR1ltGGwxmVVU
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+commit 7e0be9f9f7cba3356f75b86737dbe3a005da067e ('video: exynos_mipi_dsim:
+Use the generic PHY driver') resulted in a warning about an unused
+variable:
 
-On 2013-11-25 03:06, Archit Taneja wrote:
-> On Monday 18 November 2013 06:20 PM, Tomi Valkeinen wrote:
->> Currently when DISPC is suspended, the driver stores all DISPC registe=
-rs
->> to memory, so that they can be restored on resume. This is a bad way t=
-o
->> handle suspend/resume, as it's prone to failures and requires somewhat=
+drivers/video/exynos/exynos_mipi_dsi.c:144:26: warning: unused variable
+    'pdev' [-Wunused-variable]
 
->> large amount of extra space to store the registers.
->>
->> A better approach is to program the DISPC from scratch when resuming.
->> This can be easily accomplished in apply layer by setting the manager
->> and overlay infos to dirty when the manager is to be enabled.
->=20
-> I guess this won't work if we wanted to support DSI command mode
-> displays. I.e, only shut DSS off and keep the panel up. In that case, w=
-e
-> would need to mark the flags dirty in dss_mgr_start_update_compat().
+It is indeed unused; remove it.
 
-Hmm, true, I didn't try with DSI command mode panel. But I think it
-should work. The DSI driver should call mgr->enable before update, if
-the mgr has been off.
+Signed-off-by: Olof Johansson <olof@lixom.net>
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
+---
+ drivers/video/exynos/exynos_mipi_dsi.c |    1 -
+ 1 file changed, 1 deletion(-)
 
- Tomi
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index 00b3a52..cee9602 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -141,7 +141,6 @@ static int exynos_mipi_dsi_early_blank_mode(struct mipi_dsim_device *dsim,
+ 
+ static int exynos_mipi_dsi_blank_mode(struct mipi_dsim_device *dsim, int power)
+ {
+-	struct platform_device *pdev = to_platform_device(dsim->dev);
+ 	struct mipi_dsim_lcd_driver *client_drv = dsim->dsim_lcd_drv;
+ 	struct mipi_dsim_lcd_device *client_dev = dsim->dsim_lcd_dev;
+ 
+-- 
+1.7.10.4
 
-
-
---dvmrP4TptnXPW4CHnPVatR1ltGGwxmVVU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSlHYdAAoJEPo9qoy8lh7115AP/3VLzCI7JknAo3zMNEXdQKdX
-s4snC31S7sGXL84jkQ9F7mngtS5hxiioO0Zltlg9BmX4+b3VFoBwy9NbVNBeIuxT
-TjyyxrDC1fY+F+3WXOM4Zkjwm6N9Mw9cQ88v7WkU+WuB3W0Oc8Ytd9SD2e4UtJ0F
-8bJYpO+x7iixq5NZdOCh6hORZn7TRys+Q2hT2iq48B0FV4Fwk5MhiL6QKey5v05n
-GSaexKuwZQJ9iErMF8f9fkp90/qqloxN74vp5fywkJfiRvrPZfmA2tA82EH1QO3Y
-D4aV+SV62V+CamfNHooS7hE+Wt9vXSlWv/IEB2THoVi3FU141iHZSNt7EcmbMNsG
-lZ8bmLUAc9yXSJZAe1ud5nJyR4BUlTgGlPeLnLKe+Xw+Ysr9xYAF0ox71Q6+DX5U
-v1O3vAPHtxBSG+tgI/41jaxWMJOm8xcCTGu4KyvpduzFvw8X6qJUX41raiXRvXy/
-XID3zfCfvMx4TK302u4ds09AWYFvMX4e5ZiP00r44mk0ix+Pi4NL7jJdOlZ67xGL
-SXMZjR5v9eIC37MI17kFndCRXSGk/78Cf+9w35rAXscJMInb2w4NsEkC6NjjEF7a
-o2pA1JP10MO6bhclXnBmQuei2RBi7c4gYtUUPuVer/bRQUI3b6r/zXreO+888JsZ
-ckWFktxeqdZ8RpYPARlh
-=hciR
------END PGP SIGNATURE-----
-
---dvmrP4TptnXPW4CHnPVatR1ltGGwxmVVU--

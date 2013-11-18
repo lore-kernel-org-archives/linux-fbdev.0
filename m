@@ -1,96 +1,183 @@
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Wed, 27 Nov 2013 04:57:18 +0000
-Subject: Re: [PATCH] fbdev: sh_mipi_dsi/sh_mobile_hdmi: clk_round_rate() can return a zero upon error
-Message-Id: <87pppmjvbp.wl%kuninori.morimoto.gx@renesas.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 18 Nov 2013 12:50:09 +0000
+Subject: [PATCH 6/6] OMAPDSS: use runtime PM's autosuspend
+Message-Id: <1384779009-10512-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.02.1311261651300.11450@tamien>
-In-Reply-To: <alpine.DEB.2.02.1311261651300.11450@tamien>
+References: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+Use runtime PM's autosuspend support with delay of 100ms.
 
-Hi Paul
+This will prevent the driver from turning the DSS modules off and on
+multiple times e.g. when loading the module.
 
-> Treat both negative and zero return values from clk_round_rate() as
-> errors.  This is needed since subsequent patches will convert
-> clk_round_rate()'s return value to be an unsigned type, rather than a
-> signed type, since some clock sources can generate rates higher than
-> (2^31)-1 Hz.
-> 
-> Eventually, when calling clk_round_rate(), only a return value of zero
-> will be considered a error.  All other values will be considered valid
-> rates.  The comparison against values less than 0 is kept to preserve
-> the correct behavior in the meantime.
-> 
-> Signed-off-by: Paul Walmsley <pwalmsley@nvidia.com>
-> Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> ---
-
-Acked-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-
-> Applies on v3.13-rc1.  See also:
-> 
-> http://marc.info/?l=linux-arm-kernel&m8542591313620&w=2
-> 
->   drivers/video/sh_mipi_dsi.c    |    4 +++-
->   drivers/video/sh_mobile_hdmi.c |    6 +++---
->   2 files changed, 6 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-> index 8f6e8ff620d4..510cfb668a0c 100644
-> --- a/drivers/video/sh_mipi_dsi.c
-> +++ b/drivers/video/sh_mipi_dsi.c
-> @@ -494,8 +494,10 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
->   		ret = clk_set_rate(mipi->dsit_clk, rate);
->   	else
->   		ret = rate;
-> -	if (ret < 0)
-> +	if (ret <= 0) {
-> +		ret = -ERANGE;
->   		goto esettrate;
-> +	}
-> 
->   	dev_dbg(&pdev->dev, "DSI-T clk %lu -> %lu\n", f_current, rate);
-> 
-> diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-> index 9a33ee0413fb..1e757e54c784 100644
-> --- a/drivers/video/sh_mobile_hdmi.c
-> +++ b/drivers/video/sh_mobile_hdmi.c
-> @@ -818,7 +818,7 @@ static unsigned long sh_hdmi_rate_error(struct sh_hdmi *hdmi,
->   	struct sh_mobile_hdmi_info *pdata = dev_get_platdata(hdmi->dev);
-> 
->   	*hdmi_rate = clk_round_rate(hdmi->hdmi_clk, target);
-> -	if ((long)*hdmi_rate < 0)
-> +	if ((long)*hdmi_rate <= 0)
->   		*hdmi_rate = clk_get_rate(hdmi->hdmi_clk);
-> 
->   	rate_error = (long)*hdmi_rate > 0 ? abs(*hdmi_rate - target) : ULONG_MAX;
-> @@ -1321,8 +1321,8 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
->   	if (rate > 0)
->   		rate = sh_hdmi_clk_configure(hdmi, rate, 0);
-> 
-> -	if (rate < 0) {
-> -		ret = rate;
-> +	if (rate <= 0) {
-> +		ret = -EINVAL;
->   		goto erate;
->   	}
-> 
-> 
-> -----------------------------------------------------------------------------------
-> This email message is for the sole use of the intended recipient(s) and may contain
-> confidential information.  Any unauthorized review, use, disclosure or distribution
-> is prohibited.  If you are not the intended recipient, please contact the sender by
-> reply email and destroy all copies of the original message.
-> -----------------------------------------------------------------------------------
-
-
-Best regards
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-Kuninori Morimoto
+ drivers/video/omap2/dss/dispc.c | 5 ++++-
+ drivers/video/omap2/dss/dsi.c   | 5 ++++-
+ drivers/video/omap2/dss/dss.c   | 5 ++++-
+ drivers/video/omap2/dss/dss.h   | 2 ++
+ drivers/video/omap2/dss/hdmi4.c | 5 ++++-
+ drivers/video/omap2/dss/rfbi.c  | 5 ++++-
+ drivers/video/omap2/dss/venc.c  | 5 ++++-
+ 7 files changed, 26 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 58f3626..0643eb0 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -258,7 +258,8 @@ void dispc_runtime_put(void)
+ 
+ 	DSSDBG("dispc_runtime_put\n");
+ 
+-	r = pm_runtime_put_sync(&dispc.pdev->dev);
++	pm_runtime_mark_last_busy(&dispc.pdev->dev);
++	r = pm_runtime_put_autosuspend(&dispc.pdev->dev);
+ 	WARN_ON(r < 0 && r != -ENOSYS);
+ }
+ EXPORT_SYMBOL(dispc_runtime_put);
+@@ -3440,6 +3441,8 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	pm_runtime_enable(&pdev->dev);
++	pm_runtime_set_autosuspend_delay(&pdev->dev, DSS_AUTOSUSPEND_DELAY);
++	pm_runtime_use_autosuspend(&pdev->dev);
+ 
+ 	r = dispc_runtime_get();
+ 	if (r)
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 6b30a58..19e4cad 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1110,7 +1110,8 @@ void dsi_runtime_put(struct platform_device *dsidev)
+ 
+ 	DSSDBG("dsi_runtime_put\n");
+ 
+-	r = pm_runtime_put_sync(&dsi->pdev->dev);
++	pm_runtime_mark_last_busy(&dsi->pdev->dev);
++	r = pm_runtime_put_autosuspend(&dsi->pdev->dev);
+ 	WARN_ON(r < 0 && r != -ENOSYS);
+ }
+ 
+@@ -5416,6 +5417,8 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 		return r;
+ 
+ 	pm_runtime_enable(&dsidev->dev);
++	pm_runtime_set_autosuspend_delay(&dsidev->dev, DSS_AUTOSUSPEND_DELAY);
++	pm_runtime_use_autosuspend(&dsidev->dev);
+ 
+ 	r = dsi_runtime_get(dsidev);
+ 	if (r)
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index fa7bc00..d3b0122 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -689,7 +689,8 @@ static void dss_runtime_put(void)
+ 
+ 	DSSDBG("dss_runtime_put\n");
+ 
+-	r = pm_runtime_put_sync(&dss.pdev->dev);
++	pm_runtime_mark_last_busy(&dss.pdev->dev);
++	r = pm_runtime_put_autosuspend(&dss.pdev->dev);
+ 	WARN_ON(r < 0 && r != -ENOSYS && r != -EBUSY);
+ }
+ 
+@@ -821,6 +822,8 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
+ 		goto err_setup_clocks;
+ 
+ 	pm_runtime_enable(&pdev->dev);
++	pm_runtime_set_autosuspend_delay(&pdev->dev, DSS_AUTOSUSPEND_DELAY);
++	pm_runtime_use_autosuspend(&pdev->dev);
+ 
+ 	r = dss_runtime_get();
+ 	if (r)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index af83c4d..96505f0 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -73,6 +73,8 @@
+ #define FLD_MOD(orig, val, start, end) \
+ 	(((orig) & ~FLD_MASK(start, end)) | FLD_VAL(val, start, end))
+ 
++#define DSS_AUTOSUSPEND_DELAY 100	/* in ms */
++
+ enum dss_io_pad_mode {
+ 	DSS_IO_PAD_MODE_RESET,
+ 	DSS_IO_PAD_MODE_RFBI,
+diff --git a/drivers/video/omap2/dss/hdmi4.c b/drivers/video/omap2/dss/hdmi4.c
+index f1a45fe..f255641 100644
+--- a/drivers/video/omap2/dss/hdmi4.c
++++ b/drivers/video/omap2/dss/hdmi4.c
+@@ -77,7 +77,8 @@ static void hdmi_runtime_put(void)
+ 
+ 	DSSDBG("hdmi_runtime_put\n");
+ 
+-	r = pm_runtime_put_sync(&hdmi.pdev->dev);
++	pm_runtime_mark_last_busy(&hdmi.pdev->dev);
++	r = pm_runtime_put_autosuspend(&hdmi.pdev->dev);
+ 	WARN_ON(r < 0 && r != -ENOSYS);
+ }
+ 
+@@ -631,6 +632,8 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	pm_runtime_enable(&pdev->dev);
++	pm_runtime_set_autosuspend_delay(&pdev->dev, DSS_AUTOSUSPEND_DELAY);
++	pm_runtime_use_autosuspend(&pdev->dev);
+ 
+ 	hdmi_init_output(pdev);
+ 
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 74d3ed1..20dcbfb 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -147,7 +147,8 @@ static void rfbi_runtime_put(void)
+ 
+ 	DSSDBG("rfbi_runtime_put\n");
+ 
+-	r = pm_runtime_put_sync(&rfbi.pdev->dev);
++	pm_runtime_mark_last_busy(&rfbi.pdev->dev);
++	r = pm_runtime_put_autosuspend(&rfbi.pdev->dev);
+ 	WARN_ON(r < 0 && r != -ENOSYS);
+ }
+ 
+@@ -981,6 +982,8 @@ static int omap_rfbihw_probe(struct platform_device *pdev)
+ 	clk_put(clk);
+ 
+ 	pm_runtime_enable(&pdev->dev);
++	pm_runtime_set_autosuspend_delay(&pdev->dev, DSS_AUTOSUSPEND_DELAY);
++	pm_runtime_use_autosuspend(&pdev->dev);
+ 
+ 	r = rfbi_runtime_get();
+ 	if (r)
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index e173961..bbd35bb 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -410,7 +410,8 @@ static void venc_runtime_put(void)
+ 
+ 	DSSDBG("venc_runtime_put\n");
+ 
+-	r = pm_runtime_put_sync(&venc.pdev->dev);
++	pm_runtime_mark_last_busy(&venc.pdev->dev);
++	r = pm_runtime_put_autosuspend(&venc.pdev->dev);
+ 	WARN_ON(r < 0 && r != -ENOSYS);
+ }
+ 
+@@ -835,6 +836,8 @@ static int omap_venchw_probe(struct platform_device *pdev)
+ 		return r;
+ 
+ 	pm_runtime_enable(&pdev->dev);
++	pm_runtime_set_autosuspend_delay(&pdev->dev, DSS_AUTOSUSPEND_DELAY);
++	pm_runtime_use_autosuspend(&pdev->dev);
+ 
+ 	r = venc_runtime_get();
+ 	if (r)
+-- 
+1.8.3.2
+

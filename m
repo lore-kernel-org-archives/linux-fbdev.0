@@ -1,45 +1,70 @@
-From: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Date: Mon, 11 Nov 2013 10:08:44 +0000
-Subject: Re: [PATCH] video: add OpenCores VGA/LCD framebuffer driver
-Message-Id: <20131111100843.GA20337@chokladfabriken.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 18 Nov 2013 12:50:04 +0000
+Subject: [PATCH 1/6] OMAPDSS: APPLY: set infos to dirty on enable
+Message-Id: <1384779009-10512-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384088894-31920-1-git-send-email-stefan.kristiansson@saunalahti.fi>
- <52809FAA.6080107@monstr.eu>
-In-Reply-To: <52809FAA.6080107@monstr.eu>
+References: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michal Simek <monstr@monstr.eu>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Mon, Nov 11, 2013 at 10:13:14AM +0100, Michal Simek wrote:
-> On 11/10/2013 02:08 PM, Stefan Kristiansson wrote:
-> > +config FB_OPENCORES
-> > +	tristate "OpenCores VGA/LCD core 2.0 framebuffer support"
-> > +	depends on FB
-> > +	select FB_CFB_FILLRECT
-> > +	select FB_CFB_COPYAREA
-> > +	select FB_CFB_IMAGEBLIT
-> > +	default n
-> > +	help
-> > +	  This enables support for the OpenCores VGA/LCD core.
-> > +
-> > +	  The OpenCores VGA/LCD core is typically used together with
-> > +	  softcore CPUs (e.g. OpenRISC) or hard processor systems
-> 
-> I expect that here can be also Microblaze.
+Currently when DISPC is suspended, the driver stores all DISPC registers
+to memory, so that they can be restored on resume. This is a bad way to
+handle suspend/resume, as it's prone to failures and requires somewhat
+large amount of extra space to store the registers.
 
-Yes, as would LM32, NiosII etc.
-But, since none of those exists in the mainline kernel,
-I suppose Microblaze along with OpenRISC is a sensible subset of examples.
-I'll add that.
+A better approach is to program the DISPC from scratch when resuming.
+This can be easily accomplished in apply layer by setting the manager
+and overlay infos to dirty when the manager is to be enabled.
 
-> 
-> > +	  (e.g. Altera socfpga or Xilinx Zync) on FPGAs.
-> 
-> s/Zync/Zynq/
-> 
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-Right, sorry. I'll fix that.
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 60758db..6ab4cb6 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1072,6 +1072,7 @@ static void dss_setup_fifos(void)
+ static int dss_mgr_enable_compat(struct omap_overlay_manager *mgr)
+ {
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
++	struct omap_overlay *ovl;
+ 	unsigned long flags;
+ 	int r;
+ 
+@@ -1091,6 +1092,27 @@ static int dss_mgr_enable_compat(struct omap_overlay_manager *mgr)
+ 		goto err;
+ 	}
+ 
++	/*
++	 * Mark the info & extra_info dirty for the manager and its enabled
++	 * overlays to force register writes. This ensures that the relevant
++	 * registers are set after DSS has been off and the registers have been
++	 * reset.
++	 */
++
++	mp->info_dirty = true;
++	mp->extra_info_dirty = true;
++
++	list_for_each_entry(ovl, &mgr->overlays, list) {
++		struct ovl_priv_data *op = get_ovl_priv(ovl);
++
++		if (!op->enabled)
++			continue;
++
++		op->info_dirty = true;
++		op->extra_info_dirty = true;
++		dispc_ovl_set_channel_out(ovl->id, mgr->id);
++	}
++
+ 	dss_setup_fifos();
+ 
+ 	dss_write_regs();
+-- 
+1.8.3.2
 
-Stefan

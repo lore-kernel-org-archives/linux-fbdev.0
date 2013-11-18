@@ -1,103 +1,263 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Fri, 08 Nov 2013 13:01:32 +0000
-Subject: [PATCHv5][ 4/5] ARM: dts: i.MX35: Add display support.
-Message-Id: <1383915693-9422-4-git-send-email-denis@eukrea.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 18 Nov 2013 12:44:07 +0000
+Subject: [PATCH 2/4] OMAPDSS: fix debug prints
+Message-Id: <1384778649-9396-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383915693-9422-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1383915693-9422-1-git-send-email-denis-fO0SIAKYzcbQT0dZR+AlfA@public.gmane.org>
+References: <1384778649-9396-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1384778649-9396-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>
-Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Denis Carikli <denis-fO0SIAKYzcbQT0dZR+AlfA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, =?UTF-8?q?Eric=20B=C3=A9nard?= <eric-fO0SIAKYzcbQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-A pinctrl node for the IPU was also added.
+Fix debug prints all over omapdss:
+* add missing linefeeds
+* change pr_err/pr_debug to DSSERR/DSSDBG
+* add missing DSS_SUBSYS_NAMEs
 
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Grant Likely <grant.likely@linaro.org>
-Cc: devicetree@vger.kernel.org
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: Shawn Guo <shawn.guo@linaro.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-Signed-off-by: Denis Carikli <denis@eukrea.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-ChangeLog v4->v5:
-- Added Grant Likely and Shawn Guo in the Cc list.
-- Adapted to the new non-dma ipu bindings.
-- Adapted to the use of imx35-pingrp.h
-- The pinctrl ipu node addition was moved in this commit.
+ drivers/video/omap2/dss/apply.c       |  8 ++++----
+ drivers/video/omap2/dss/hdmi4_core.c  | 16 +++++++++-------
+ drivers/video/omap2/dss/hdmi_common.c |  2 ++
+ drivers/video/omap2/dss/hdmi_pll.c    | 16 +++++++++-------
+ drivers/video/omap2/dss/hdmi_wp.c     | 12 +++++++-----
+ 5 files changed, 31 insertions(+), 23 deletions(-)
 
-ChangeLog v3->v4:
-- Splitted the imx35.dtsi display support (new patch).
----
- arch/arm/boot/dts/imx35.dtsi |   13 +++++++++++++
- arch/arm/mach-imx/imx35-dt.c |    7 +++++++
- 2 files changed, 20 insertions(+)
-
-diff --git a/arch/arm/boot/dts/imx35.dtsi b/arch/arm/boot/dts/imx35.dtsi
-index 1cf520a..287bf6b 100644
---- a/arch/arm/boot/dts/imx35.dtsi
-+++ b/arch/arm/boot/dts/imx35.dtsi
-@@ -175,6 +175,12 @@
- 					};
- 				};
-=20
-+				ipu {
-+					pinctrl_ipu_disp0: ipudisp0grp {
-+						fsl,pins =3D <MX35_IPU_PINGRP1>;
-+					};
-+				};
-+
- 				uart1 {
- 					pinctrl_uart1_1: uart1grp-1 {
- 						fsl,pins =3D <MX35_UART1_PINGRP1>;
-@@ -266,6 +272,13 @@
- 				status =3D "disabled";
- 			};
-=20
-+			ipu: ipu@53fc0000 {
-+				compatible =3D "fsl,imx35-ipu";
-+				reg =3D <0x53fc0000 0x4000>;
-+				clocks =3D <&clks 55>;
-+				status =3D "disabled";
-+			};
-+
- 			audmux: audmux@53fc4000 {
- 				compatible =3D "fsl,imx35-audmux", "fsl,imx31-audmux";
- 				reg =3D <0x53fc4000 0x4000>;
-diff --git a/arch/arm/mach-imx/imx35-dt.c b/arch/arm/mach-imx/imx35-dt.c
-index e3def45..6438f292 100644
---- a/arch/arm/mach-imx/imx35-dt.c
-+++ b/arch/arm/mach-imx/imx35-dt.c
-@@ -16,14 +16,21 @@
- #include <asm/mach/time.h>
- #include <asm/hardware/cache-l2x0.h>
- #include "common.h"
-+#include "devices-imx35.h"
- #include "mx35.h"
-=20
- static void __init imx35_dt_init(void)
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 60758db..24cd7c2 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -629,7 +629,7 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+ 	struct mgr_priv_data *mp;
+ 	int r;
+ 
+-	DSSDBG("writing ovl %d regs", ovl->id);
++	DSSDBG("writing ovl %d regs\n", ovl->id);
+ 
+ 	if (!op->enabled || !op->info_dirty)
+ 		return;
+@@ -664,7 +664,7 @@ static void dss_ovl_write_regs_extra(struct omap_overlay *ovl)
+ 	struct ovl_priv_data *op = get_ovl_priv(ovl);
+ 	struct mgr_priv_data *mp;
+ 
+-	DSSDBG("writing ovl %d regs extra", ovl->id);
++	DSSDBG("writing ovl %d regs extra\n", ovl->id);
+ 
+ 	if (!op->extra_info_dirty)
+ 		return;
+@@ -687,7 +687,7 @@ static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 	struct omap_overlay *ovl;
+ 
+-	DSSDBG("writing mgr %d regs", mgr->id);
++	DSSDBG("writing mgr %d regs\n", mgr->id);
+ 
+ 	if (!mp->enabled)
+ 		return;
+@@ -713,7 +713,7 @@ static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
  {
-+	struct device_node *np;
- 	mxc_arch_reset_init_dt();
-=20
- 	of_platform_populate(NULL, of_default_bus_match_table,
- 			     NULL, NULL);
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 
+-	DSSDBG("writing mgr %d regs extra", mgr->id);
++	DSSDBG("writing mgr %d regs extra\n", mgr->id);
+ 
+ 	if (!mp->extra_info_dirty)
+ 		return;
+diff --git a/drivers/video/omap2/dss/hdmi4_core.c b/drivers/video/omap2/dss/hdmi4_core.c
+index 5dd5e54..2386a3d 100644
+--- a/drivers/video/omap2/dss/hdmi4_core.c
++++ b/drivers/video/omap2/dss/hdmi4_core.c
+@@ -19,6 +19,8 @@
+  * this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+ 
++#define DSS_SUBSYS_NAME "HDMICORE"
 +
-+	/* We don't want to export the IPU as DT bindings. */
-+	np =3D of_find_compatible_node(NULL, NULL, "fsl,imx35-ipu");
-+	if (of_device_is_available(np))
-+		imx35_add_ipu_core();
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/err.h>
+@@ -125,12 +127,12 @@ static int hdmi_core_ddc_edid(struct hdmi_core_data *core,
+ 
+ 	/* HDMI_CORE_DDC_STATUS_BUS_LOW */
+ 	if (REG_GET(base, HDMI_CORE_DDC_STATUS, 6, 6) = 1) {
+-		pr_err("I2C Bus Low?\n");
++		DSSERR("I2C Bus Low?\n");
+ 		return -EIO;
+ 	}
+ 	/* HDMI_CORE_DDC_STATUS_NO_ACK */
+ 	if (REG_GET(base, HDMI_CORE_DDC_STATUS, 5, 5) = 1) {
+-		pr_err("I2C No Ack\n");
++		DSSERR("I2C No Ack\n");
+ 		return -EIO;
+ 	}
+ 
+@@ -161,7 +163,7 @@ static int hdmi_core_ddc_edid(struct hdmi_core_data *core,
+ 		checksum += pedid[i];
+ 
+ 	if (checksum != 0) {
+-		pr_err("E-EDID checksum failed!!\n");
++		DSSERR("E-EDID checksum failed!!\n");
+ 		return -EIO;
+ 	}
+ 
+@@ -199,7 +201,7 @@ static void hdmi_core_init(struct hdmi_core_video_config *video_cfg,
+ 			struct hdmi_core_infoframe_avi *avi_cfg,
+ 			struct hdmi_core_packet_enable_repeat *repeat_cfg)
+ {
+-	pr_debug("Enter hdmi_core_init\n");
++	DSSDBG("Enter hdmi_core_init\n");
+ 
+ 	/* video core */
+ 	video_cfg->ip_bus_width = HDMI_INPUT_8BIT;
+@@ -241,19 +243,19 @@ static void hdmi_core_init(struct hdmi_core_video_config *video_cfg,
+ 
+ static void hdmi_core_powerdown_disable(struct hdmi_core_data *core)
+ {
+-	pr_debug("Enter hdmi_core_powerdown_disable\n");
++	DSSDBG("Enter hdmi_core_powerdown_disable\n");
+ 	REG_FLD_MOD(core->base, HDMI_CORE_SYS_SYS_CTRL1, 0x0, 0, 0);
  }
-=20
- static void __init imx35_timer_init(void)
---=20
-1.7.9.5
+ 
+ static void hdmi_core_swreset_release(struct hdmi_core_data *core)
+ {
+-	pr_debug("Enter hdmi_core_swreset_release\n");
++	DSSDBG("Enter hdmi_core_swreset_release\n");
+ 	REG_FLD_MOD(core->base, HDMI_CORE_SYS_SRST, 0x0, 0, 0);
+ }
+ 
+ static void hdmi_core_swreset_assert(struct hdmi_core_data *core)
+ {
+-	pr_debug("Enter hdmi_core_swreset_assert\n");
++	DSSDBG("Enter hdmi_core_swreset_assert\n");
+ 	REG_FLD_MOD(core->base, HDMI_CORE_SYS_SRST, 0x1, 0, 0);
+ }
+ 
+diff --git a/drivers/video/omap2/dss/hdmi_common.c b/drivers/video/omap2/dss/hdmi_common.c
+index 5586aaa..0614922 100644
+--- a/drivers/video/omap2/dss/hdmi_common.c
++++ b/drivers/video/omap2/dss/hdmi_common.c
+@@ -13,6 +13,8 @@
+  * map it to corresponding CEA or VESA index.
+  */
+ 
++#define DSS_SUBSYS_NAME "HDMI"
++
+ #include <linux/kernel.h>
+ #include <linux/err.h>
+ #include <video/omapdss.h>
+diff --git a/drivers/video/omap2/dss/hdmi_pll.c b/drivers/video/omap2/dss/hdmi_pll.c
+index d3e6e78..a06f4ee 100644
+--- a/drivers/video/omap2/dss/hdmi_pll.c
++++ b/drivers/video/omap2/dss/hdmi_pll.c
+@@ -8,6 +8,8 @@
+  * the Free Software Foundation.
+  */
+ 
++#define DSS_SUBSYS_NAME "HDMIPLL"
++
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/err.h>
+@@ -127,24 +129,24 @@ static int hdmi_pll_config(struct hdmi_pll_data *pll)
+ 	/* wait for bit change */
+ 	if (hdmi_wait_for_bit_change(pll->base, PLLCTRL_PLL_GO,
+ 			0, 0, 1) != 1) {
+-		pr_err("PLL GO bit not set\n");
++		DSSERR("PLL GO bit not set\n");
+ 		return -ETIMEDOUT;
+ 	}
+ 
+ 	/* Wait till the lock bit is set in PLL status */
+ 	if (hdmi_wait_for_bit_change(pll->base,
+ 			PLLCTRL_PLL_STATUS, 1, 1, 1) != 1) {
+-		pr_err("cannot lock PLL\n");
+-		pr_err("CFG1 0x%x\n",
++		DSSERR("cannot lock PLL\n");
++		DSSERR("CFG1 0x%x\n",
+ 			hdmi_read_reg(pll->base, PLLCTRL_CFG1));
+-		pr_err("CFG2 0x%x\n",
++		DSSERR("CFG2 0x%x\n",
+ 			hdmi_read_reg(pll->base, PLLCTRL_CFG2));
+-		pr_err("CFG4 0x%x\n",
++		DSSERR("CFG4 0x%x\n",
+ 			hdmi_read_reg(pll->base, PLLCTRL_CFG4));
+ 		return -ETIMEDOUT;
+ 	}
+ 
+-	pr_debug("PLL locked!\n");
++	DSSDBG("PLL locked!\n");
+ 
+ 	return 0;
+ }
+@@ -157,7 +159,7 @@ static int hdmi_pll_reset(struct hdmi_pll_data *pll)
+ 	/* READ 0x0 reset is in progress */
+ 	if (hdmi_wait_for_bit_change(pll->base, PLLCTRL_PLL_STATUS, 0, 0, 1)
+ 			!= 1) {
+-		pr_err("Failed to sysreset PLL\n");
++		DSSERR("Failed to sysreset PLL\n");
+ 		return -ETIMEDOUT;
+ 	}
+ 
+diff --git a/drivers/video/omap2/dss/hdmi_wp.c b/drivers/video/omap2/dss/hdmi_wp.c
+index 8151d89..fa8e094 100644
+--- a/drivers/video/omap2/dss/hdmi_wp.c
++++ b/drivers/video/omap2/dss/hdmi_wp.c
+@@ -8,6 +8,8 @@
+  * the Free Software Foundation.
+  */
+ 
++#define DSS_SUBSYS_NAME "HDMIWP"
++
+ #include <linux/kernel.h>
+ #include <linux/err.h>
+ #include <linux/io.h>
+@@ -76,7 +78,7 @@ int hdmi_wp_set_phy_pwr(struct hdmi_wp_data *wp, enum hdmi_phy_pwr val)
+ 	/* Status of the power control of HDMI PHY */
+ 	if (hdmi_wait_for_bit_change(wp->base, HDMI_WP_PWR_CTRL, 5, 4, val)
+ 			!= val) {
+-		pr_err("Failed to set PHY power mode to %d\n", val);
++		DSSERR("Failed to set PHY power mode to %d\n", val);
+ 		return -ETIMEDOUT;
+ 	}
+ 
+@@ -92,7 +94,7 @@ int hdmi_wp_set_pll_pwr(struct hdmi_wp_data *wp, enum hdmi_pll_pwr val)
+ 	/* wait till PHY_PWR_STATUS is set */
+ 	if (hdmi_wait_for_bit_change(wp->base, HDMI_WP_PWR_CTRL, 1, 0, val)
+ 			!= val) {
+-		pr_err("Failed to set PLL_PWR_STATUS\n");
++		DSSERR("Failed to set PLL_PWR_STATUS\n");
+ 		return -ETIMEDOUT;
+ 	}
+ 
+@@ -129,7 +131,7 @@ void hdmi_wp_video_config_interface(struct hdmi_wp_data *wp,
+ {
+ 	u32 r;
+ 	bool vsync_pol, hsync_pol;
+-	pr_debug("Enter hdmi_wp_video_config_interface\n");
++	DSSDBG("Enter hdmi_wp_video_config_interface\n");
+ 
+ 	vsync_pol = timings->vsync_level = OMAPDSS_SIG_ACTIVE_HIGH;
+ 	hsync_pol = timings->hsync_level = OMAPDSS_SIG_ACTIVE_HIGH;
+@@ -148,7 +150,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
+ 	u32 timing_h = 0;
+ 	u32 timing_v = 0;
+ 
+-	pr_debug("Enter hdmi_wp_video_config_timing\n");
++	DSSDBG("Enter hdmi_wp_video_config_timing\n");
+ 
+ 	timing_h |= FLD_VAL(timings->hbp, 31, 20);
+ 	timing_h |= FLD_VAL(timings->hfp, 19, 8);
+@@ -164,7 +166,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
+ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ 		struct omap_video_timings *timings, struct hdmi_config *param)
+ {
+-	pr_debug("Enter hdmi_wp_video_init_format\n");
++	DSSDBG("Enter hdmi_wp_video_init_format\n");
+ 
+ 	video_fmt->packing_mode = HDMI_PACK_10b_RGB_YUV444;
+ 	video_fmt->y_res = param->timings.y_res;
+-- 
+1.8.3.2
 

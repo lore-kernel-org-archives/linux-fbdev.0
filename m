@@ -1,57 +1,81 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Tue, 05 Nov 2013 10:38:34 +0000
-Subject: [PATCHv10][ 3/7] video: Kconfig: Allow more broad selection of the imxfb framebuffer driver.
-Message-Id: <1383647918-27315-3-git-send-email-denis@eukrea.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 18 Nov 2013 12:39:04 +0000
+Subject: [PATCH 7/7] OMAPDSS: add dedicated fck PLL support
+Message-Id: <1384778344-8226-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383647918-27315-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1383647918-27315-1-git-send-email-denis@eukrea.com>
+References: <1384778344-8226-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1384778344-8226-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Without that patch, a user can't select the imxfb driver when the i.MX25 an=
-d/or
-  the i.MX27 device tree board are selected and that no boards that selects
-  IMX_HAVE_PLATFORM_IMX_FB are compiled in.
+This patch adds support for SoCs that have a dedicated DSS PLL used for
+DSS function clock.
 
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: devicetree@vger.kernel.org
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
+If there is no dss parent clock defined, it is presumed that the
+functionl clock rate can be set (almost) freely. The code calculates the
+highest allowed fck rate, which when divided with some integer gives the
+required pck.
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Signed-off-by: Denis Carikli <denis@eukrea.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-ChangeLog v8->v9:
-- Added Jean-Christophe PLAGNIOL-VILLARD's ACK.
----
- drivers/video/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/omap2/dss/dss.c | 27 ++++++++++++++++++---------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 84b685f..f65e577 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -363,7 +363,7 @@ config FB_SA1100
-=20
- config FB_IMX
- 	tristate "Freescale i.MX1/21/25/27 LCD support"
--	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
-+	depends on FB && ARCH_MXC
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
---=20
-1.7.9.5
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 08c58eb..9a145da 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -446,12 +446,20 @@ bool dss_div_calc(unsigned long pck, unsigned long fck_min,
+ 	unsigned long prate;
+ 	unsigned m;
+ 
++	fck_hw_max = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
++
+ 	if (dss.parent_clk = NULL) {
+-		fck = clk_get_rate(dss.dss_clk);
++		unsigned pckd;
++
++		pckd = fck_hw_max / pck;
++
++		fck = pck * pckd;
++
++		fck = clk_round_rate(dss.dss_clk, fck);
++
+ 		return func(fck, data);
+ 	}
+ 
+-	fck_hw_max = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
+ 	fckd_hw_max = dss.feat->fck_div_max;
+ 
+ 	m = dss.feat->dss_fck_multiplier;
+@@ -503,16 +511,17 @@ static int dss_setup_default_clock(void)
+ 	unsigned fck_div;
+ 	int r;
+ 
+-	if (dss.parent_clk = NULL)
+-		return 0;
+-
+ 	max_dss_fck = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
+ 
+-	prate = clk_get_rate(dss.parent_clk);
++	if (dss.parent_clk = NULL) {
++		fck = clk_round_rate(dss.dss_clk, max_dss_fck);
++	} else {
++		prate = clk_get_rate(dss.parent_clk);
+ 
+-	fck_div = DIV_ROUND_UP(prate * dss.feat->dss_fck_multiplier,
+-			max_dss_fck);
+-	fck = prate / fck_div * dss.feat->dss_fck_multiplier;
++		fck_div = DIV_ROUND_UP(prate * dss.feat->dss_fck_multiplier,
++				max_dss_fck);
++		fck = prate / fck_div * dss.feat->dss_fck_multiplier;
++	}
+ 
+ 	r = dss_set_fck_rate(fck);
+ 	if (r)
+-- 
+1.8.3.2
 

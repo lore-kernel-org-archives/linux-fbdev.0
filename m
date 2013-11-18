@@ -1,76 +1,41 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 18 Nov 2013 12:44:08 +0000
-Subject: [PATCH 3/4] OMAPDSS: apply fixes
-Message-Id: <1384778649-9396-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 18 Nov 2013 12:38:57 +0000
+Subject: [PATCH 0/7] OMAPDSS: func clock handling improvements
+Message-Id: <1384778344-8226-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384778649-9396-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1384778649-9396-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-When omapfb does ovl->get_overlay_info, ovl->set_overlay_info, the set
-function may fail even if the info has not been changed. This is because
-omapdss doesn't initialize the info, but expect the caller to set valid
-values.
+Some of the new TI SoCs using DSS have a dedicated PLL for the DSS functional
+clock. This series adds support to omapdss for that kind of clocking scheme.
 
-Normally that is the case, but there is at least one corner case: if
-omapfb has not allocated memory for the overlay yet, and the user uses
-ioctl to disable the overlay to make sure it's disabled. In this case
-get_overlay_info returns invalid data, but the user is only interested
-in setting the overlay to disabled, not configuring it, and
-set_overlay_info fails.
+This series also needs the following commits, which are now in mainline, to
+work:
 
-The issue is made possible by the omapfb's setup_plane ioctl, which
-groups overlay configuration and overlay enable/disable bit into the
-same struct. Thus, when you are disabling an overlay, you are also
-configuring it.
+ARM: OMAP3: fix dpll4_m3_ck and dpll4_m4_ck dividers
+ARM: OMAP3: use CLK_SET_RATE_PARENT for dss clocks
+ARM: OMAP4: use CLK_SET_RATE_PARENT for dss_dss_clk
 
-This is a bit counter intuitive, so I think it's better to initialize
-the info to some valid values.
+ Tomi
 
-The fields requiring initialization are color_mode and rotation_type,
-and also we need to remove the check for (paddr = 0), as paddr is 0 for
-unallocated overlay (but it's still fine to disable the overlay).
+Tomi Valkeinen (7):
+  OMAPDSS: fix omap2 dss fck handling
+  OMAPDSS: remove struct dss_clock_info
+  OMAPDSS: simplify dss clk dump
+  OMAPDSS: rename parent clk variables
+  OMAPDSS: cleanup fck parent handling
+  OMAPDSS: pass pck to dss fck clock calc
+  OMAPDSS: add dedicated fck PLL support
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/apply.c   | 3 +++
- drivers/video/omap2/dss/overlay.c | 5 -----
- 2 files changed, 3 insertions(+), 5 deletions(-)
+ drivers/video/omap2/dss/dpi.c |  15 ++--
+ drivers/video/omap2/dss/dss.c | 163 ++++++++++++++----------------------------
+ drivers/video/omap2/dss/dss.h |  17 ++---
+ drivers/video/omap2/dss/sdi.c |  21 +++---
+ 4 files changed, 76 insertions(+), 140 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 24cd7c2..0a0b084 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -149,6 +149,9 @@ static void apply_init_priv(void)
- 
- 		op = &dss_data.ovl_priv_data_array[i];
- 
-+		op->info.color_mode = OMAP_DSS_COLOR_RGB16;
-+		op->info.rotation_type = OMAP_DSS_ROT_DMA;
-+
- 		op->info.global_alpha = 255;
- 
- 		switch (i) {
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index eccde32..2f7cee9 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -113,11 +113,6 @@ void dss_uninit_overlays(struct platform_device *pdev)
- int dss_ovl_simple_check(struct omap_overlay *ovl,
- 		const struct omap_overlay_info *info)
- {
--	if (info->paddr = 0) {
--		DSSERR("check_overlay: paddr cannot be 0\n");
--		return -EINVAL;
--	}
--
- 	if ((ovl->caps & OMAP_DSS_OVL_CAP_SCALE) = 0) {
- 		if (info->out_width != 0 && info->width != info->out_width) {
- 			DSSERR("check_overlay: overlay %d doesn't support "
 -- 
 1.8.3.2
 

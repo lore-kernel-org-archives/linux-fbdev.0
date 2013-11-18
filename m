@@ -1,34 +1,62 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 28 Nov 2013 03:32:15 +0000
-Subject: [PATCH 24/28] video: sstfb: use DEFINE_PCI_DEVICE_TABLE macro
-Message-Id: <004001ceebea$6f0f9590$4d2ec0b0$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 18 Nov 2013 12:39:00 +0000
+Subject: [PATCH 3/7] OMAPDSS: simplify dss clk dump
+Message-Id: <1384778344-8226-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1384778344-8226-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1384778344-8226-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This macro is used to create a struct pci_device_id array.
+Simplify dss_dump_clocks() so that it doesn't make any presumptions
+about the DSS fclks nature.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sstfb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/omap2/dss/dss.c | 20 +++-----------------
+ 1 file changed, 3 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/video/sstfb.c b/drivers/video/sstfb.c
-index f0cb279..f132691 100644
---- a/drivers/video/sstfb.c
-+++ b/drivers/video/sstfb.c
-@@ -1477,7 +1477,7 @@ static void sstfb_remove(struct pci_dev *pdev)
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index c37d934..3dea532 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -264,8 +264,6 @@ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src)
+ 
+ void dss_dump_clocks(struct seq_file *s)
+ {
+-	unsigned long dpll4_ck_rate;
+-	unsigned long dpll4_m4_ck_rate;
+ 	const char *fclk_name, *fclk_real_name;
+ 	unsigned long fclk_rate;
+ 
+@@ -278,21 +276,9 @@ void dss_dump_clocks(struct seq_file *s)
+ 	fclk_real_name = dss_feat_get_clk_source_name(OMAP_DSS_CLK_SRC_FCK);
+ 	fclk_rate = clk_get_rate(dss.dss_clk);
+ 
+-	if (dss.dpll4_m4_ck) {
+-		dpll4_ck_rate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
+-		dpll4_m4_ck_rate = clk_get_rate(dss.dpll4_m4_ck);
+-
+-		seq_printf(s, "dpll4_ck %lu\n", dpll4_ck_rate);
+-
+-		seq_printf(s, "%s (%s) = %lu / %lu * %d  = %lu\n",
+-				fclk_name, fclk_real_name, dpll4_ck_rate,
+-				dpll4_ck_rate / dpll4_m4_ck_rate,
+-				dss.feat->dss_fck_multiplier, fclk_rate);
+-	} else {
+-		seq_printf(s, "%s (%s) = %lu\n",
+-				fclk_name, fclk_real_name,
+-				fclk_rate);
+-	}
++	seq_printf(s, "%s (%s) = %lu\n",
++			fclk_name, fclk_real_name,
++			fclk_rate);
+ 
+ 	dss_runtime_put();
  }
- 
- 
--static const struct pci_device_id sstfb_id_tbl[] = {
-+static DEFINE_PCI_DEVICE_TABLE(sstfb_id_tbl) = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_3DFX, PCI_DEVICE_ID_3DFX_VOODOO ),
- 		.driver_data = ID_VOODOO1, },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_3DFX, PCI_DEVICE_ID_3DFX_VOODOO2),
 -- 
-1.7.10.4
-
+1.8.3.2
 

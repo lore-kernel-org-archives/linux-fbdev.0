@@ -1,68 +1,43 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Tue, 05 Nov 2013 14:39:09 +0000
-Subject: [PATCHv11][ 2/7] video: imxfb: Also add pwmr for the device tree.
-Message-Id: <1383662354-22417-2-git-send-email-denis@eukrea.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 18 Nov 2013 12:44:06 +0000
+Subject: [PATCH 1/4] OMAPDSS: fix missing EXPORT_SYMBOL()s
+Message-Id: <1384778649-9396-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383662354-22417-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1383662354-22417-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-pwmr has to be set to get the imxfb backlight work,
-though pwmr was only configurable trough the platform data.
+Functions dispc_ovl_set_fifo_threshold and
+dispc_ovl_compute_fifo_thresholds need to be exported. Add the
+EXPORT_SYMBOLs.
 
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: devicetree@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-Signed-off-by: Denis Carikli <denis@eukrea.com>
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Acked-by: Grant Likely <grant.likely@linaro.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
- drivers/video/imxfb.c                              |    2 ++
- 2 files changed, 5 insertions(+)
+ drivers/video/omap2/dss/dispc.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Docum=
-entation/devicetree/bindings/video/fsl,imx-fb.txt
-index 46da08d..ac457ae 100644
---- a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-+++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-@@ -17,6 +17,9 @@ Required nodes:
- Optional properties:
- - fsl,dmacr: DMA Control Register value. This is optional. By default, the
- 	register is not modified as recommended by the datasheet.
-+- fsl,pwmr:  LCDC PWM Contrast Control Register value. That property is
-+	optional, but defining it is necessary to get the backlight working. If t=
-hat
-+	property is ommited, the register is zeroed.
- - fsl,lscr1: LCDC Sharp Configuration Register value.
-=20
- Example:
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index a2fe8bd..d2447d2 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -835,6 +835,8 @@ static int imxfb_init_fbinfo(struct platform_device *pd=
-ev)
-=20
- 		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
-=20
-+		of_property_read_u32(np, "fsl,pwmr", &fbi->pwmr);
-+
- 		/* These two function pointers could be used by some specific
- 		 * platforms. */
- 		fbi->lcd_power =3D NULL;
---=20
-1.7.9.5
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 91c687f..aa95ba5 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1201,6 +1201,7 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
+ 			FLD_VAL(high, hi_start, hi_end) |
+ 			FLD_VAL(low, lo_start, lo_end));
+ }
++EXPORT_SYMBOL(dispc_ovl_set_fifo_threshold);
+ 
+ void dispc_enable_fifomerge(bool enable)
+ {
+@@ -1259,6 +1260,7 @@ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
+ 		*fifo_high = total_fifo_size - buf_unit;
+ 	}
+ }
++EXPORT_SYMBOL(dispc_ovl_compute_fifo_thresholds);
+ 
+ static void dispc_ovl_set_fir(enum omap_plane plane,
+ 				int hinc, int vinc,
+-- 
+1.8.3.2
 

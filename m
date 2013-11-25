@@ -1,28 +1,23 @@
-From: Eric =?ISO-8859-1?B?QuluYXJk?= <eric@eukrea.com>
-Date: Thu, 21 Nov 2013 08:03:15 +0000
+From: Denis Carikli <denis@eukrea.com>
+Date: Mon, 25 Nov 2013 08:39:05 +0000
 Subject: Re: [PATCHv9][ 1/3] Input: tsc2007: Add device tree support.
-Message-Id: <20131121090315.298a4a14@e6520eb>
+Message-Id: <52930CA9.4060606@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1383916659-9988-1-git-send-email-denis@eukrea.com>
- <20131121050544.GE18477@ns203013.ovh.net>
-In-Reply-To: <20131121050544.GE18477@ns203013.ovh.net>
+ <20131119211102.GA14888@core.coreip.homeip.net>
+In-Reply-To: <20131119211102.GA14888@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Jean Christophe,
+On 11/19/2013 10:11 PM, Dmitry Torokhov wrote:
+ > Input: tsc2007 misc fixes
+ >
+ > From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+ >
+ > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Le Thu, 21 Nov 2013 06:05:44 +0100,
-Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com> a =E9crit :
-> > +Optional properties:
-> > +- gpios: the interrupt gpio the chip is connected to (trough the penir=
-q pin).
-> nack use interrupt property this a non-sense that we do today to pass irq=
- via
-> gpio property the should NEVER known it's a gpio just an irq
+Tested-by: Denis Carikli <denis@eukrea.com>
 
-read previous email and you will see the GPIO is used to get the signal
-level on the pin and not the IRQ.
-
-Eric
+Denis.

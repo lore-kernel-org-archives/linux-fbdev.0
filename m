@@ -1,42 +1,54 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-Date: Mon, 25 Nov 2013 14:15:20 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 25 Nov 2013 14:57:13 +0000
 Subject: Re: [Intel-gfx] [Mesa-dev] [PATCH] dri3, i915, i965: Add __DRI_IMAGE_FOURCC_SARGB8888
-Message-Id: <20131125141520.GP10036@intel.com>
+Message-Id: <CAMuHMdW8-BqchN2MfErwEL8Re00fLGZE=zCRQYzVaHi0TFuJFA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1385093524-22276-1-git-send-email-keithp@keithp.com>
 	<20131122102632.GQ27344@phenom.ffwll.local>
 	<86d2lsem3m.fsf@miki.keithp.com>
 	<CAKMK7uEqHKOmMFXZLKno1q08X1B=U7XcJiExHaHbO9VdMeCihQ@mail.gmail.com>
 	<20131122221213.GA3234@tokamak.local>
-	<20131125085723.GW27344@phenom.ffwll.local>
-In-Reply-To: <20131125085723.GW27344@phenom.ffwll.local>
+	<20131122230504.GK10036@intel.com> <86pppsvw8e.fsf@miki.keithp.com>
+	<20131123011037.GO10036@intel.com>
+In-Reply-To: <20131123011037.GO10036@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, intel-gfx <intel-gfx@lists.freedesktop.org>, Kristian =?iso-8859-1?Q?H=F8gsberg?= <hoegsberg@gmail.com>, dri-devel <dri-devel@lists.freedesktop.org>, "linaro-mm-sig@lists.linaro.org" <linaro-mm-sig@lists.linaro.org>, Mesa Dev <mesa-dev@lists.freedesktop.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
+Cc: intel-gfx <intel-gfx@lists.freedesktop.org>, =?UTF-8?Q?Kristian_H=C3=B8gsberg?= <hoegsberg@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "linaro-mm-sig@lists.linaro.org" <linaro-mm-sig@lists.linaro.org>, Mesa Dev <mesa-dev@lists.freedesktop.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-On Mon, Nov 25, 2013 at 09:57:23AM +0100, Daniel Vetter wrote:
-> On Fri, Nov 22, 2013 at 02:12:13PM -0800, Kristian H=F8gsberg wrote:
-> > I don't know what else you'd propose?  Pass an X visual in the ioctl?
-> > An EGL config?  This is our name space, we can add stuff as we need
-> > (as Keith is doing here). include/uapi/drm/drm_fourcc.h is the
-> > canonical source for these values and we should add
-> > DRM_FORMAT_SARGB8888 there to make sure we don't clash.
->=20
-> Well that's kinda the problem. If you don't expect the kernel to clash
-> with whatever mesa is using internally then we should add it to the
-> kernel, first. That's kinda what Dave's recent rant has all been about.
->=20
-> The other issue was that originally the idea behind fourcc was to have one
-> formate namespace shared between drm, v4l and whomever else cares. If
-> people are happy to drop that idea on the floor I won't shed a single
-> tear.
-
-I broke that idea alredy when I cooked up the current drm fourccs.
-I didn't cross check them with any other fourcc source, so I'm 100%
-sure most of them don't match anything else.
-
---=20
-Ville Syrj=E4l=E4
-Intel OTC
+T24gU2F0LCBOb3YgMjMsIDIwMTMgYXQgMjoxMCBBTSwgVmlsbGUgU3lyasOkbMOkCjx2aWxsZS5z
+eXJqYWxhQGxpbnV4LmludGVsLmNvbT4gd3JvdGU6Cj4gT24gRnJpLCBOb3YgMjIsIDIwMTMgYXQg
+MDM6NDM6MTNQTSAtMDgwMCwgS2VpdGggUGFja2FyZCB3cm90ZToKPj4gVmlsbGUgU3lyasOkbMOk
+IDx2aWxsZS5zeXJqYWxhQGxpbnV4LmludGVsLmNvbT4gd3JpdGVzOgo+Pgo+PiA+IFdoYXQgaXMg
+dGhpcyBmb3JtYXQgYW55d2F5PyAtRU5PRE9DUwo+Pgo+PiBTYW1lIGFzIE1FU0FfRk9STUFUX1NB
+UkdCOCBhbmQgX19EUklfSU1BR0VfRk9STUFUX1NBUkdCOCA6LSkKPj4KPj4gPiBJZiBpdHMganVz
+dCBhbiBzcmdiIHZlcnNpb24gb2YgQVJHQjg4ODgsIHRoZW4gSSB3b3VsZG4ndCByZWFsbHkgd2Fu
+dCBpdAo+PiA+IGluIGRybV9mb3VyY2MuaC4gSSBleHBlY3QgY29sb3JzcGFjeSBzdHVmZiB3aWxs
+IGJlIGhhbmRsZWQgYnkgdmFyaW91cwo+PiA+IGNydGMvcGxhbmUgcHJvcGVydGllcyBpbiB0aGUg
+a2VybmVsIHNvIHdlIGRvbid0IG5lZWQgdG8gZW5jb2RlIHRoYXQKPj4gPiBzdHVmZiBpbnRvIHRo
+ZSBmYiBmb3JtYXQuCj4+Cj4+IEl0J3Mgbm90IGFueSBkaWZmZXJlbnQgZnJvbSBzcGxpdHRpbmcg
+WVVWIGNvZGVzIGZyb20gUkdCIGNvZGVzOwo+Cj4gTm90IHJlYWxseS4gU2F5aW5nIHNvbWV0aGlu
+ZyBpcyBZVVYgKG9yIHJhdGhlciBZJ0NiQ3IpIGRvZXNuJ3QKPiBhY3R1YWxseSB0ZWxsIHlvdSB0
+aGUgY29sb3Igc3BhY2UuIEl0IGp1c3QgdGVsbHMgeW91IHdoZXRoZXIgdGhlCj4gaW5mb3JtYXRp
+b24gaXMgZW5jb2RlZCBhcyBSK0crQiBvciBZK0NiK0NyLiBIb3cgeW91IGNvbnZlcnQgYmV0d2Vl
+bgo+IHRoZW0gaXMgYW5vdGhlciBtYXR0ZXIuIFlvdSBuZWVkIHRvIGtub3cgdGhlIGdhbW1hLCBj
+b2xvciBwcmltYXJpZXMsCj4gY2hyb21hIHNpdGluZyBmb3Igc3ViLXNhbXBsZWQgWUNiQ3IgZm9y
+bWF0cywgZXRjLgoKWWVwLiBGYmRldiBoYXMgYSBzZXBhcmF0aW9uIG9mIHR5cGUgKGhvdyBwaXhl
+bCB2YWx1ZXMgYXJlIGxhaWQgb3V0IGluIG1lbW9yeSksCmZiX2JpdGZpZWxkIHN0cnVjdHMgKGhv
+dyB0dXBsZXMgYXJlIGZvcm1lZCBpbnRvIHBpeGVscyksIGFuZCB2aXN1YWwgKGhvdyB0bwppbnRl
+cnByZXRlIHRoZSB0dXBsZXMpLgoKVGhlIGZiX2JpdGZpZWxkIHN0cnVjdHMgZG8gaGF2ZSBSR0It
+Y2VudHJpYyBuYW1lcywgYnV0IHlvdSBjb3VsZCB1c2UgdGhlbQpmb3IgZS5nLiBZLCBDYiwgQ3Is
+IGFuZCBhbHBoYSwgZ2l2aW5nIGEgcHJvcGVyIHZpc3VhbC4gVW5mb3J0dW5hdGVseSB0aGUKWUNi
+Q3IgdmlzdWFscyBoYXZlbid0IG1hZGUgaXQgaW50byBtYWlubGluZS4KCkZPVVJDQyB1bmlmaWVz
+IGFsbCBvZiB0aGF0IGluIChub3Qgc28pIHVuaXF1ZSAzMi1iaXQgSURzLgoKR3J7b2V0amUsZWV0
+aW5nfXMsCgogICAgICAgICAgICAgICAgICAgICAgICBHZWVydAoKLS0KR2VlcnQgVXl0dGVyaG9l
+dmVuIC0tIFRoZXJlJ3MgbG90cyBvZiBMaW51eCBiZXlvbmQgaWEzMiAtLSBnZWVydEBsaW51eC1t
+NjhrLm9yZwoKSW4gcGVyc29uYWwgY29udmVyc2F0aW9ucyB3aXRoIHRlY2huaWNhbCBwZW9wbGUs
+IEkgY2FsbCBteXNlbGYgYSBoYWNrZXIuIEJ1dAp3aGVuIEknbSB0YWxraW5nIHRvIGpvdXJuYWxp
+c3RzIEkganVzdCBzYXkgInByb2dyYW1tZXIiIG9yIHNvbWV0aGluZyBsaWtlIHRoYXQuCiAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgLS0gTGludXMgVG9ydmFsZHMKLS0KVG8gdW5zdWJz
+Y3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWZi
+ZGV2IiBpbgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9y
+ZwpNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9t
+by1pbmZvLmh0bWw=

@@ -1,30 +1,35 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Thu, 14 Nov 2013 08:19:57 +0000
-Subject: [patch 2/2] video: mmp: Using plain integer as NULL pointer
-Message-Id: <20131114081957.GC8150@elgon.mountain>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 25 Nov 2013 03:20:50 +0000
+Subject: [PATCH 4/4] video: vmlfb: remove unnecessary pci_set_drvdata()
+Message-Id: <002201cee98d$5777e9a0$0667bce0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Sparse complains here:
+The driver core clears the driver data to NULL after device_release
+or on probe failure. Thus, it is not needed to manually clear the
+device driver data to NULL.
 
-	drivers/video/mmp/core.c:33:16:
-		warning: Using plain integer as NULL pointer
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/vermilion/vermilion.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-
-diff --git a/drivers/video/mmp/core.c b/drivers/video/mmp/core.c
-index c8d4265..b563b92 100644
---- a/drivers/video/mmp/core.c
-+++ b/drivers/video/mmp/core.c
-@@ -30,7 +30,7 @@ static struct mmp_overlay *path_get_overlay(struct mmp_path *path,
+diff --git a/drivers/video/vermilion/vermilion.c b/drivers/video/vermilion/vermilion.c
+index 09a1366..048a666 100644
+--- a/drivers/video/vermilion/vermilion.c
++++ b/drivers/video/vermilion/vermilion.c
+@@ -383,7 +383,6 @@ static void vmlfb_disable_mmio(struct vml_par *par)
+ static void vmlfb_release_devices(struct vml_par *par)
  {
- 	if (path && overlay_id < path->overlay_num)
- 		return &path->overlays[overlay_id];
--	return 0;
-+	return NULL;
- }
- 
- static int path_check_status(struct mmp_path *path)
+ 	if (atomic_dec_and_test(&par->refcount)) {
+-		pci_set_drvdata(par->vdc, NULL);
+ 		pci_disable_device(par->gpu);
+ 		pci_disable_device(par->vdc);
+ 	}
+-- 
+1.7.10.4
+
+

@@ -1,78 +1,67 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 25 Nov 2013 01:18:50 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 26 Nov 2013 10:21:14 +0000
 Subject: Re: [PATCH 1/6] OMAPDSS: APPLY: set infos to dirty on enable
-Message-Id: <5292A2AA.6090001@ti.com>
+Message-Id: <5294761A.7090904@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="dvmrP4TptnXPW4CHnPVatR1ltGGwxmVVU"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com> <1384779009-10512-2-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1384779009-10512-2-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+References: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com> <1384779009-10512-2-git-send-email-tomi.valkeinen@ti.com> <5292A2AA.6090001@ti.com>
+In-Reply-To: <5292A2AA.6090001@ti.com>
+To: Archit Taneja <archit@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Monday 18 November 2013 06:20 PM, Tomi Valkeinen wrote:
-> Currently when DISPC is suspended, the driver stores all DISPC registers
-> to memory, so that they can be restored on resume. This is a bad way to
-> handle suspend/resume, as it's prone to failures and requires somewhat
-> large amount of extra space to store the registers.
->
-> A better approach is to program the DISPC from scratch when resuming.
-> This can be easily accomplished in apply layer by setting the manager
-> and overlay infos to dirty when the manager is to be enabled.
+--dvmrP4TptnXPW4CHnPVatR1ltGGwxmVVU
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I guess this won't work if we wanted to support DSI command mode 
-displays. I.e, only shut DSS off and keep the panel up. In that case, we 
-would need to mark the flags dirty in dss_mgr_start_update_compat().
+On 2013-11-25 03:06, Archit Taneja wrote:
+> On Monday 18 November 2013 06:20 PM, Tomi Valkeinen wrote:
+>> Currently when DISPC is suspended, the driver stores all DISPC registe=
+rs
+>> to memory, so that they can be restored on resume. This is a bad way t=
+o
+>> handle suspend/resume, as it's prone to failures and requires somewhat=
 
-We don't support the above use case anyway, but just pointing out :)
+>> large amount of extra space to store the registers.
+>>
+>> A better approach is to program the DISPC from scratch when resuming.
+>> This can be easily accomplished in apply layer by setting the manager
+>> and overlay infos to dirty when the manager is to be enabled.
+>=20
+> I guess this won't work if we wanted to support DSI command mode
+> displays. I.e, only shut DSS off and keep the panel up. In that case, w=
+e
+> would need to mark the flags dirty in dss_mgr_start_update_compat().
 
-Archit
+Hmm, true, I didn't try with DSI command mode panel. But I think it
+should work. The DSI driver should call mgr->enable before update, if
+the mgr has been off.
 
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/dss/apply.c | 22 ++++++++++++++++++++++
->   1 file changed, 22 insertions(+)
->
-> diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-> index 60758db..6ab4cb6 100644
-> --- a/drivers/video/omap2/dss/apply.c
-> +++ b/drivers/video/omap2/dss/apply.c
-> @@ -1072,6 +1072,7 @@ static void dss_setup_fifos(void)
->   static int dss_mgr_enable_compat(struct omap_overlay_manager *mgr)
->   {
->   	struct mgr_priv_data *mp = get_mgr_priv(mgr);
-> +	struct omap_overlay *ovl;
->   	unsigned long flags;
->   	int r;
->
-> @@ -1091,6 +1092,27 @@ static int dss_mgr_enable_compat(struct omap_overlay_manager *mgr)
->   		goto err;
->   	}
->
-> +	/*
-> +	 * Mark the info & extra_info dirty for the manager and its enabled
-> +	 * overlays to force register writes. This ensures that the relevant
-> +	 * registers are set after DSS has been off and the registers have been
-> +	 * reset.
-> +	 */
-> +
-> +	mp->info_dirty = true;
-> +	mp->extra_info_dirty = true;
-> +
-> +	list_for_each_entry(ovl, &mgr->overlays, list) {
-> +		struct ovl_priv_data *op = get_ovl_priv(ovl);
-> +
-> +		if (!op->enabled)
-> +			continue;
-> +
-> +		op->info_dirty = true;
-> +		op->extra_info_dirty = true;
-> +		dispc_ovl_set_channel_out(ovl->id, mgr->id);
-> +	}
-> +
->   	dss_setup_fifos();
->
->   	dss_write_regs();
->
+ Tomi
 
+
+
+--dvmrP4TptnXPW4CHnPVatR1ltGGwxmVVU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSlHYdAAoJEPo9qoy8lh7115AP/3VLzCI7JknAo3zMNEXdQKdX
+s4snC31S7sGXL84jkQ9F7mngtS5hxiioO0Zltlg9BmX4+b3VFoBwy9NbVNBeIuxT
+TjyyxrDC1fY+F+3WXOM4Zkjwm6N9Mw9cQ88v7WkU+WuB3W0Oc8Ytd9SD2e4UtJ0F
+8bJYpO+x7iixq5NZdOCh6hORZn7TRys+Q2hT2iq48B0FV4Fwk5MhiL6QKey5v05n
+GSaexKuwZQJ9iErMF8f9fkp90/qqloxN74vp5fywkJfiRvrPZfmA2tA82EH1QO3Y
+D4aV+SV62V+CamfNHooS7hE+Wt9vXSlWv/IEB2THoVi3FU141iHZSNt7EcmbMNsG
+lZ8bmLUAc9yXSJZAe1ud5nJyR4BUlTgGlPeLnLKe+Xw+Ysr9xYAF0ox71Q6+DX5U
+v1O3vAPHtxBSG+tgI/41jaxWMJOm8xcCTGu4KyvpduzFvw8X6qJUX41raiXRvXy/
+XID3zfCfvMx4TK302u4ds09AWYFvMX4e5ZiP00r44mk0ix+Pi4NL7jJdOlZ67xGL
+SXMZjR5v9eIC37MI17kFndCRXSGk/78Cf+9w35rAXscJMInb2w4NsEkC6NjjEF7a
+o2pA1JP10MO6bhclXnBmQuei2RBi7c4gYtUUPuVer/bRQUI3b6r/zXreO+888JsZ
+ckWFktxeqdZ8RpYPARlh
+=hciR
+-----END PGP SIGNATURE-----
+
+--dvmrP4TptnXPW4CHnPVatR1ltGGwxmVVU--

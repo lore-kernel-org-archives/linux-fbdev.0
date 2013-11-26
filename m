@@ -1,38 +1,57 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 26 Nov 2013 08:19:58 +0000
+From: Michal Simek <monstr@monstr.eu>
+Date: Tue, 26 Nov 2013 08:22:05 +0000
 Subject: Re: [PATCH v3] video: add OpenCores VGA/LCD framebuffer driver
-Message-Id: <CAMuHMdVx_jkUMB=gS0CtguBPB4f3fNRx0z4hB4zRz9OC09SvsQ@mail.gmail.com>
+Message-Id: <52945A2D.3060609@monstr.eu>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="90eg0j04mle2pLMcM9CcV4Vm1qT8wPlCQ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1385094870-6962-1-git-send-email-stefan.kristiansson@saunalahti.fi>
-	<52944976.4060003@monstr.eu>
-In-Reply-To: <52944976.4060003@monstr.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Michal Simek <monstr@monstr.eu>
+References: <1385094870-6962-1-git-send-email-stefan.kristiansson@saunalahti.fi> <52944976.4060003@monstr.eu> <CAMuHMdVx_jkUMB=gS0CtguBPB4f3fNRx0z4hB4zRz9OC09SvsQ@mail.gmail.com>
+In-Reply-To: <CAMuHMdVx_jkUMB=gS0CtguBPB4f3fNRx0z4hB4zRz9OC09SvsQ@mail.gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 
-On Tue, Nov 26, 2013 at 8:10 AM, Michal Simek <monstr@monstr.eu> wrote:
-> On 11/22/2013 05:34 AM, Stefan Kristiansson wrote:
-> This construction seems to me too complicated and can be simpler.
->
-> What about this?
->         res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--90eg0j04mle2pLMcM9CcV4Vm1qT8wPlCQ
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Don't forget to check for res being non-NULL here.
+On 11/26/2013 09:19 AM, Geert Uytterhoeven wrote:
+> On Tue, Nov 26, 2013 at 8:10 AM, Michal Simek <monstr@monstr.eu> wrote:=
 
->         res->flags &= ~IORESOURCE_CACHEABLE;
->         fbdev->regs = devm_ioremap_resource(&pdev->dev, res);
->         if (IS_ERR(fbdev->regs))
->                 return PTR_ERR(fbdev->regs);
+>> On 11/22/2013 05:34 AM, Stefan Kristiansson wrote:
+>> This construction seems to me too complicated and can be simpler.
+>>
+>> What about this?
+>>         res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>=20
+> Don't forget to check for res being non-NULL here.
 
-Gr{oetje,eeting}s,
+yes. you are right - you have to do it.
 
-                        Geert
+Thanks,
+Michal
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--=20
+Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
+Maintainer of Linux kernel - Xilinx Zynq ARM architecture
+Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+
+
+--90eg0j04mle2pLMcM9CcV4Vm1qT8wPlCQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iEYEARECAAYFAlKUWi0ACgkQykllyylKDCHtjgCeLRDFAkz6taISawsAzgFWRrp1
+a8QAmwaYWpLHZcf2iR0sC9kg0CO+k1eI
+=zqTk
+-----END PGP SIGNATURE-----
+
+--90eg0j04mle2pLMcM9CcV4Vm1qT8wPlCQ--

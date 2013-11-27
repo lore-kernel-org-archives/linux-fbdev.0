@@ -1,57 +1,85 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 26 Nov 2013 04:27:11 +0000
-Subject: Re: [PATCH v2] video: backlight: Remove backlight sysfs uevent
-Message-Id: <001001ceea5f$c6642e50$532c8af0$%han@samsung.com>
+From: Paul Walmsley <pwalmsley@nvidia.com>
+Date: Wed, 27 Nov 2013 00:53:26 +0000
+Subject: [PATCH] fbdev: sh_mipi_dsi/sh_mobile_hdmi: clk_round_rate() can return a zero upon error
+Message-Id: <alpine.DEB.2.02.1311261651300.11450@tamien>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20131112033906.GA30454@july>
-In-Reply-To: <20131112033906.GA30454@july>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Andrew Morton' <akpm@linux-foundation.org>
-Cc: 'Kyungmin Park' <kmpark@infradead.org>, 'Richard Purdie' <rpurdie@rpsys.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 'Kay Sievers' <kay@vrfy.org>, 'Jingoo Han' <jg1.han@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-On Tuesday, November 12, 2013 12:39 PM, Kyungmin Park wrote:
->
-> From: Kyungmin Park <kyungmin.park@samsung.com>
-> 
-> The most mobile phones have Ambient Light Sensors and it changes brightness according lux.
-> It means it changes backlight brightness frequently by just writing sysfs node, so it generates uevent.
-> 
-> Usually there's no user to use this backlight changes. But it forks udev worker threads and it takes
-> about 5ms. The main problem is that it hurts other process activities. so remove it.
-> 
-> Kay said
-> "Uevents are for the major, low-frequent, global device state-changes,
->  not for carrying-out any sort of measurement data. Subsystems which
->  need that should use other facilities like poll()-able sysfs file or
->  any other subscription-based, client-tracking interface which does not
->  cause overhead if it isn't used. Uevents are not the right thing to
->  use here, and upstream udev should not paper-over broken kernel
->  subsystems."
-> 
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+Treat both negative and zero return values from clk_round_rate() as
+errors.  This is needed since subsequent patches will convert
+clk_round_rate()'s return value to be an unsigned type, rather than a
+signed type, since some clock sources can generate rates higher than
+(2^31)-1 Hz.
 
-Best regards,
-Jingoo Han
+Eventually, when calling clk_round_rate(), only a return value of zero
+will be considered a error.  All other values will be considered valid
+rates.  The comparison against values less than 0 is kept to preserve
+the correct behavior in the meantime.
 
-> ---
-> v1: there's still user to use BACKLIGHT_UPDATE_SYSFS. so just remove store sysfs node uevent
-> 
-> ---
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-> index 94a403a..292cf99 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -172,8 +172,6 @@ static ssize_t brightness_store(struct device *dev,
->  	}
->  	mutex_unlock(&bd->ops_lock);
-> 
-> -	backlight_generate_event(bd, BACKLIGHT_UPDATE_SYSFS);
-> -
->  	return rc;
->  }
->  static DEVICE_ATTR_RW(brightness);
+Signed-off-by: Paul Walmsley <pwalmsley@nvidia.com>
+Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
 
+Applies on v3.13-rc1.  See also:
+
+http://marc.info/?l=linux-arm-kernel&m8542591313620&w=2
+
+  drivers/video/sh_mipi_dsi.c    |    4 +++-
+  drivers/video/sh_mobile_hdmi.c |    6 +++---
+  2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index 8f6e8ff620d4..510cfb668a0c 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -494,8 +494,10 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
+  		ret = clk_set_rate(mipi->dsit_clk, rate);
+  	else
+  		ret = rate;
+-	if (ret < 0)
++	if (ret <= 0) {
++		ret = -ERANGE;
+  		goto esettrate;
++	}
+
+  	dev_dbg(&pdev->dev, "DSI-T clk %lu -> %lu\n", f_current, rate);
+
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 9a33ee0413fb..1e757e54c784 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -818,7 +818,7 @@ static unsigned long sh_hdmi_rate_error(struct sh_hdmi *hdmi,
+  	struct sh_mobile_hdmi_info *pdata = dev_get_platdata(hdmi->dev);
+
+  	*hdmi_rate = clk_round_rate(hdmi->hdmi_clk, target);
+-	if ((long)*hdmi_rate < 0)
++	if ((long)*hdmi_rate <= 0)
+  		*hdmi_rate = clk_get_rate(hdmi->hdmi_clk);
+
+  	rate_error = (long)*hdmi_rate > 0 ? abs(*hdmi_rate - target) : ULONG_MAX;
+@@ -1321,8 +1321,8 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
+  	if (rate > 0)
+  		rate = sh_hdmi_clk_configure(hdmi, rate, 0);
+
+-	if (rate < 0) {
+-		ret = rate;
++	if (rate <= 0) {
++		ret = -EINVAL;
+  		goto erate;
+  	}
+
+
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------

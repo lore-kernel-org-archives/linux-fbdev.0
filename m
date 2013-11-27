@@ -1,34 +1,59 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 28 Nov 2013 03:34:09 +0000
-Subject: [PATCH 27/28] video: tridentfb: use DEFINE_PCI_DEVICE_TABLE macro
-Message-Id: <004301ceebea$b29f6bf0$17de43d0$%han@samsung.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Wed, 27 Nov 2013 01:18:35 +0000
+Subject: [PATCH 13/15] fbdev: sh-mobile-lcdcfb: Enable driver compilation with COMPILE_TEST
+Message-Id: <1385515117-23664-14-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-This macro is used to create a struct pci_device_id array.
+This helps increasing build testing coverage.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Acked-by: Simon Horman <horms@verge.net.au>
 ---
- drivers/video/tridentfb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/Kconfig | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/tridentfb.c b/drivers/video/tridentfb.c
-index 7ed9a22..ba7dc99 100644
---- a/drivers/video/tridentfb.c
-+++ b/drivers/video/tridentfb.c
-@@ -1559,7 +1559,7 @@ static void trident_pci_remove(struct pci_dev *dev)
- }
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 4f2e1b3..2aceb08 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -10,7 +10,8 @@ config HAVE_FB_ATMEL
  
- /* List of boards that we are trying to support */
--static struct pci_device_id trident_devices[] = {
-+static DEFINE_PCI_DEVICE_TABLE(trident_devices) = {
- 	{PCI_VENDOR_ID_TRIDENT,	BLADE3D, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{PCI_VENDOR_ID_TRIDENT,	CYBERBLADEi7, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{PCI_VENDOR_ID_TRIDENT,	CYBERBLADEi7D, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ config SH_MIPI_DSI
+ 	tristate
+-	depends on (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
++	depends on HAVE_CLK
++	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
+ 
+ config SH_LCD_MIPI_DSI
+ 	bool
+@@ -1997,7 +1998,8 @@ config FB_W100
+ 
+ config FB_SH_MOBILE_LCDC
+ 	tristate "SuperH Mobile LCDC framebuffer support"
+-	depends on FB && (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
++	depends on FB && HAVE_CLK
++	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_IMAGEBLIT
+@@ -2484,7 +2486,7 @@ endif
+ 
+ config FB_SH_MOBILE_MERAM
+ 	tristate "SuperH Mobile MERAM read ahead support"
+-	depends on (SUPERH || ARCH_SHMOBILE)
++	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
+ 	select GENERIC_ALLOCATOR
+ 	---help---
+ 	  Enable MERAM support for the SuperH controller.
 -- 
-1.7.10.4
-
+1.8.3.2
 

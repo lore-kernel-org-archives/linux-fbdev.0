@@ -1,148 +1,34 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 18 Nov 2013 12:50:06 +0000
-Subject: [PATCH 3/6] OMAPDSS: DSS remove ctx stuff
-Message-Id: <1384779009-10512-4-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 28 Nov 2013 03:23:05 +0000
+Subject: [PATCH 11/28] video: i810fb: use DEFINE_PCI_DEVICE_TABLE macro
+Message-Id: <003301ceebe9$27400f20$75c02d60$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1384779009-10512-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The DSS core driver's suspend/resume can be cleaned up by storing the
-required registers to a 'dss_context' struct, instead of having a 512
-byte block of memory where the registers are directly stored.
+This macro is used to create a struct pci_device_id array.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/dss.c | 77 ++++++++++++++++---------------------------
- 1 file changed, 28 insertions(+), 49 deletions(-)
+ drivers/video/i810/i810_main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index bd01608..a5f674f 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -39,8 +39,6 @@
- #include "dss.h"
- #include "dss_features.h"
- 
--#define DSS_SZ_REGS			SZ_512
--
- struct dss_reg {
- 	u16 idx;
- };
-@@ -71,6 +69,13 @@ struct dss_features {
- 	int (*dpi_select_source)(enum omap_channel channel);
+diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
+index 038192a..4d3e8a1 100644
+--- a/drivers/video/i810/i810_main.c
++++ b/drivers/video/i810/i810_main.c
+@@ -106,7 +106,7 @@ static const char * const i810_pci_list[] = {
+ 	"Intel(R) 815 (Internal Graphics with AGP) Framebuffer Device"
  };
  
-+struct dss_context {
-+	bool valid;
-+	u32 control;
-+	u32 sdi_control;
-+	u32 pll_control;
-+};
-+
- static struct {
- 	struct platform_device *pdev;
- 	void __iomem    *base;
-@@ -88,8 +93,7 @@ static struct {
- 	enum omap_dss_clk_source dispc_clk_source;
- 	enum omap_dss_clk_source lcd_clk_source[MAX_DSS_LCD_MANAGERS];
- 
--	bool		ctx_valid;
--	u32		ctx[DSS_SZ_REGS / sizeof(u32)];
-+	struct dss_context ctx;
- 
- 	const struct dss_features *feat;
- } dss;
-@@ -112,49 +116,6 @@ static inline u32 dss_read_reg(const struct dss_reg idx)
- 	return __raw_readl(dss.base + idx.idx);
- }
- 
--#define SR(reg) \
--	dss.ctx[(DSS_##reg).idx / sizeof(u32)] = dss_read_reg(DSS_##reg)
--#define RR(reg) \
--	dss_write_reg(DSS_##reg, dss.ctx[(DSS_##reg).idx / sizeof(u32)])
--
--static void dss_save_context(void)
--{
--	DSSDBG("dss_save_context\n");
--
--	SR(CONTROL);
--
--	if (dss_feat_get_supported_displays(OMAP_DSS_CHANNEL_LCD) &
--			OMAP_DISPLAY_TYPE_SDI) {
--		SR(SDI_CONTROL);
--		SR(PLL_CONTROL);
--	}
--
--	dss.ctx_valid = true;
--
--	DSSDBG("context saved\n");
--}
--
--static void dss_restore_context(void)
--{
--	DSSDBG("dss_restore_context\n");
--
--	if (!dss.ctx_valid)
--		return;
--
--	RR(CONTROL);
--
--	if (dss_feat_get_supported_displays(OMAP_DSS_CHANNEL_LCD) &
--			OMAP_DISPLAY_TYPE_SDI) {
--		RR(SDI_CONTROL);
--		RR(PLL_CONTROL);
--	}
--
--	DSSDBG("context restored\n");
--}
--
--#undef SR
--#undef RR
--
- int dss_get_ctx_loss_count(void)
- {
- 	struct platform_device *core_pdev = dss_get_core_pdev();
-@@ -927,7 +888,16 @@ static int __exit omap_dsshw_remove(struct platform_device *pdev)
- 
- static int dss_runtime_suspend(struct device *dev)
- {
--	dss_save_context();
-+	dss.ctx.control = dss_read_reg(DSS_CONTROL);
-+
-+	if (dss_feat_get_supported_displays(OMAP_DSS_CHANNEL_LCD) &
-+			OMAP_DISPLAY_TYPE_SDI) {
-+		dss.ctx.sdi_control = dss_read_reg(DSS_SDI_CONTROL);
-+		dss.ctx.pll_control = dss_read_reg(DSS_PLL_CONTROL);
-+	}
-+
-+	dss.ctx.valid = true;
-+
- 	dss_set_min_bus_tput(dev, 0);
- 	return 0;
- }
-@@ -946,7 +916,16 @@ static int dss_runtime_resume(struct device *dev)
- 	if (r)
- 		return r;
- 
--	dss_restore_context();
-+	if (dss.ctx.valid) {
-+		dss_write_reg(DSS_CONTROL, dss.ctx.control);
-+
-+		if (dss_feat_get_supported_displays(OMAP_DSS_CHANNEL_LCD) &
-+				OMAP_DISPLAY_TYPE_SDI) {
-+			dss_write_reg(DSS_SDI_CONTROL, dss.ctx.sdi_control);
-+			dss_write_reg(DSS_PLL_CONTROL, dss.ctx.pll_control);
-+		}
-+	}
-+
- 	return 0;
- }
- 
+-static struct pci_device_id i810fb_pci_tbl[] = {
++static DEFINE_PCI_DEVICE_TABLE(i810fb_pci_tbl) = {
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82810_IG1,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82810_IG3,
 -- 
-1.8.3.2
+1.7.10.4
+
 

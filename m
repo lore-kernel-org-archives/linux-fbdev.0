@@ -1,34 +1,33 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 25 Nov 2013 03:20:50 +0000
-Subject: [PATCH 4/4] video: vmlfb: remove unnecessary pci_set_drvdata()
-Message-Id: <002201cee98d$5777e9a0$0667bce0$%han@samsung.com>
+Date: Thu, 28 Nov 2013 03:26:40 +0000
+Subject: [PATCH 15/28] video: mb862xxfb: use DEFINE_PCI_DEVICE_TABLE macro
+Message-Id: <003701ceebe9$a77d5800$f6780800$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+This macro is used to create a struct pci_device_id array.
 
 Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/vermilion/vermilion.c |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/mb862xx/mb862xxfbdrv.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/vermilion/vermilion.c b/drivers/video/vermilion/vermilion.c
-index 09a1366..048a666 100644
---- a/drivers/video/vermilion/vermilion.c
-+++ b/drivers/video/vermilion/vermilion.c
-@@ -383,7 +383,6 @@ static void vmlfb_disable_mmio(struct vml_par *par)
- static void vmlfb_release_devices(struct vml_par *par)
- {
- 	if (atomic_dec_and_test(&par->refcount)) {
--		pci_set_drvdata(par->vdc, NULL);
- 		pci_disable_device(par->gpu);
- 		pci_disable_device(par->vdc);
- 	}
+diff --git a/drivers/video/mb862xx/mb862xxfbdrv.c b/drivers/video/mb862xx/mb862xxfbdrv.c
+index 0cd4c33..034abbb 100644
+--- a/drivers/video/mb862xx/mb862xxfbdrv.c
++++ b/drivers/video/mb862xx/mb862xxfbdrv.c
+@@ -982,7 +982,7 @@ static inline int mb862xx_pci_gdc_init(struct mb862xxfb_par *par)
+ #define CHIP_ID(id)	\
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_FUJITSU_LIMITED, id) }
+ 
+-static struct pci_device_id mb862xx_pci_tbl[] = {
++static DEFINE_PCI_DEVICE_TABLE(mb862xx_pci_tbl) = {
+ 	/* MB86295/MB86296 */
+ 	CHIP_ID(PCI_DEVICE_ID_FUJITSU_CORALP),
+ 	CHIP_ID(PCI_DEVICE_ID_FUJITSU_CORALPA),
 -- 
 1.7.10.4
 

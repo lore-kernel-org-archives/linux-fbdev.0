@@ -1,73 +1,34 @@
-From: Cedric Le Goater <clg@fr.ibm.com>
-Date: Fri, 15 Nov 2013 16:16:55 +0000
-Subject: Re: [PATCH 16/51] DMA-API: ppc: vio.c: replace dma_set_mask()+dma_set_coherent_mask() with new helpe
-Message-Id: <528648F7.20900@fr.ibm.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 28 Nov 2013 03:35:06 +0000
+Subject: [PATCH 28/28] video: vt8623fb: use DEFINE_PCI_DEVICE_TABLE macro
+Message-Id: <004401ceebea$d4ba8030$7e2f8090$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk> <E1VMly8-0007gy-Ru@rmk-PC.arm.linux.org.uk>
-In-Reply-To: <E1VMly8-0007gy-Ru@rmk-PC.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-Hi,=20
+This macro is used to create a struct pci_device_id array.
 
-On 09/19/2013 11:41 PM, Russell King wrote:
-> Replace the following sequence:
->=20
-> 	dma_set_mask(dev, mask);
-> 	dma_set_coherent_mask(dev, mask);
->=20
-> with a call to the new helper dma_set_mask_and_coherent().
->=20
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->  arch/powerpc/kernel/vio.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-> index 78a3506..96b6c97 100644
-> --- a/arch/powerpc/kernel/vio.c
-> +++ b/arch/powerpc/kernel/vio.c
-> @@ -1413,8 +1413,7 @@ struct vio_dev *vio_register_device_node(struct dev=
-ice_node *of_node)
->=20
->  		/* needed to ensure proper operation of coherent allocations
->  		 * later, in case driver doesn't set it explicitly */
-> -		dma_set_mask(&viodev->dev, DMA_BIT_MASK(64));
-> -		dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
-> +		dma_set_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
->  	}
->=20
->  	/* register with generic device framework */
->=20
-
-The new helper routine dma_set_mask_and_coherent() breaks the=20
-initialization of the pseries vio devices which do not have an=20
-initial dev->dma_mask. I think we need to use dma_coerce_mask_and_coherent()
-instead.
-
-Signed-off-by: C=E9dric Le Goater <clg@fr.ibm.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- arch/powerpc/kernel/vio.c |    2 +-
+ drivers/video/vt8623fb.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index e7d0c88f..76a6482 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -1419,7 +1419,7 @@ struct vio_dev *vio_register_device_node(struct devic=
-e_node *of_node)
-=20
- 		/* needed to ensure proper operation of coherent allocations
- 		 * later, in case driver doesn't set it explicitly */
--		dma_set_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
-+		dma_coerce_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
- 	}
-=20
- 	/* register with generic device framework */
---=20
+diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
+index 8bc6e09..f210d0f 100644
+--- a/drivers/video/vt8623fb.c
++++ b/drivers/video/vt8623fb.c
+@@ -907,7 +907,7 @@ fail:
+ 
+ /* List of boards that we are trying to support */
+ 
+-static struct pci_device_id vt8623_devices[] = {
++static DEFINE_PCI_DEVICE_TABLE(vt8623_devices) = {
+ 	{PCI_DEVICE(PCI_VENDOR_ID_VIA, 0x3122)},
+ 	{0, 0, 0, 0, 0, 0, 0}
+ };
+-- 
 1.7.10.4
 
 

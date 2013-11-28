@@ -1,43 +1,43 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 18 Nov 2013 12:44:06 +0000
-Subject: [PATCH 1/4] OMAPDSS: fix missing EXPORT_SYMBOL()s
-Message-Id: <1384778649-9396-1-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 28 Nov 2013 03:25:44 +0000
+Subject: [PATCH 14/28] video: matroxfb: use DEFINE_PCI_DEVICE_TABLE macro
+Message-Id: <003601ceebe9$85f4bfc0$91de3f40$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Functions dispc_ovl_set_fifo_threshold and
-dispc_ovl_compute_fifo_thresholds need to be exported. Add the
-EXPORT_SYMBOLs.
+This macro is used to create a struct pci_device_id array.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/dispc.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/matrox/matroxfb_base.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 91c687f..aa95ba5 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1201,6 +1201,7 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
- 			FLD_VAL(high, hi_start, hi_end) |
- 			FLD_VAL(low, lo_start, lo_end));
- }
-+EXPORT_SYMBOL(dispc_ovl_set_fifo_threshold);
+diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+index 87c64ff..ccd34c9 100644
+--- a/drivers/video/matrox/matroxfb_base.c
++++ b/drivers/video/matrox/matroxfb_base.c
+@@ -1594,7 +1594,7 @@ static int initMatrox2(struct matrox_fb_info *minfo, struct board *b)
+ 	unsigned int memsize;
+ 	int err;
  
- void dispc_enable_fifomerge(bool enable)
- {
-@@ -1259,6 +1260,7 @@ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
- 		*fifo_high = total_fifo_size - buf_unit;
- 	}
+-	static struct pci_device_id intel_82437[] = {
++	static DEFINE_PCI_DEVICE_TABLE(intel_82437) = {
+ 		{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82437) },
+ 		{ },
+ 	};
+@@ -2087,7 +2087,7 @@ static void pci_remove_matrox(struct pci_dev* pdev) {
+ 	matroxfb_remove(minfo, 1);
  }
-+EXPORT_SYMBOL(dispc_ovl_compute_fifo_thresholds);
  
- static void dispc_ovl_set_fir(enum omap_plane plane,
- 				int hinc, int vinc,
+-static struct pci_device_id matroxfb_devices[] = {
++static DEFINE_PCI_DEVICE_TABLE(matroxfb_devices) = {
+ #ifdef CONFIG_FB_MATROX_MILLENIUM
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_MIL,
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
 -- 
-1.8.3.2
+1.7.10.4
+
 

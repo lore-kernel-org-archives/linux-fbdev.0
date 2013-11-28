@@ -1,122 +1,34 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Tue, 12 Nov 2013 03:32:09 +0000
-Subject: [PATCH 2/5] fbdev: sa1100fb: make use of device clock
-Message-Id: <1384227132-10501-2-git-send-email-dbaryshkov@gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 28 Nov 2013 03:34:09 +0000
+Subject: [PATCH 27/28] video: tridentfb: use DEFINE_PCI_DEVICE_TABLE macro
+Message-Id: <004301ceebea$b29f6bf0$17de43d0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384227132-10501-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1384227132-10501-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Use per-device clock (instead of calling cpufreq_get(0), which can
-return 0 if no cpu frequency driver is selected) to program timings.
+This macro is used to create a struct pci_device_id array.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/sa1100fb.c | 24 +++++++++++++++++-------
- drivers/video/sa1100fb.h |  1 +
- 2 files changed, 18 insertions(+), 7 deletions(-)
+ drivers/video/tridentfb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
-index de76da0..05d1b37 100644
---- a/drivers/video/sa1100fb.c
-+++ b/drivers/video/sa1100fb.c
-@@ -178,6 +178,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/mutex.h>
- #include <linux/io.h>
-+#include <linux/clk.h>
+diff --git a/drivers/video/tridentfb.c b/drivers/video/tridentfb.c
+index 7ed9a22..ba7dc99 100644
+--- a/drivers/video/tridentfb.c
++++ b/drivers/video/tridentfb.c
+@@ -1559,7 +1559,7 @@ static void trident_pci_remove(struct pci_dev *dev)
+ }
  
- #include <video/sa1100fb.h>
- 
-@@ -413,9 +414,9 @@ sa1100fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 		var->transp.offset);
- 
- #ifdef CONFIG_CPU_FREQ
--	dev_dbg(fbi->dev, "dma period = %d ps, clock = %d kHz\n",
-+	dev_dbg(fbi->dev, "dma period = %d ps, clock = %ld kHz\n",
- 		sa1100fb_display_dma_period(var),
--		cpufreq_get(smp_processor_id()));
-+		clk_get_rate(fbi->clk) / 1000);
- #endif
- 
- 	return 0;
-@@ -586,9 +587,10 @@ static struct fb_ops sa1100fb_ops = {
-  * Calculate the PCD value from the clock rate (in picoseconds).
-  * We take account of the PPCR clock setting.
-  */
--static inline unsigned int get_pcd(unsigned int pixclock, unsigned int cpuclock)
-+static inline unsigned int get_pcd(struct sa1100fb_info *fbi,
-+		unsigned int pixclock)
- {
--	unsigned int pcd = cpuclock / 100;
-+	unsigned int pcd = clk_get_rate(fbi->clk) / 100 / 1000;
- 
- 	pcd *= pixclock;
- 	pcd /= 10000000;
-@@ -667,7 +669,7 @@ static int sa1100fb_activate_var(struct fb_var_screeninfo *var, struct sa1100fb_
- 		LCCR2_BegFrmDel(var->upper_margin) +
- 		LCCR2_EndFrmDel(var->lower_margin);
- 
--	pcd = get_pcd(var->pixclock, cpufreq_get(0));
-+	pcd = get_pcd(fbi, var->pixclock);
- 	new_regs.lccr3 = LCCR3_PixClkDiv(pcd) | fbi->inf->lccr3 |
- 		(var->sync & FB_SYNC_HOR_HIGH_ACT ? LCCR3_HorSnchH : LCCR3_HorSnchL) |
- 		(var->sync & FB_SYNC_VERT_HIGH_ACT ? LCCR3_VrtSnchH : LCCR3_VrtSnchL);
-@@ -1003,7 +1005,6 @@ sa1100fb_freq_transition(struct notifier_block *nb, unsigned long val,
- 			 void *data)
- {
- 	struct sa1100fb_info *fbi = TO_INF(nb, freq_transition);
--	struct cpufreq_freqs *f = data;
- 	u_int pcd;
- 
- 	switch (val) {
-@@ -1012,7 +1013,7 @@ sa1100fb_freq_transition(struct notifier_block *nb, unsigned long val,
- 		break;
- 
- 	case CPUFREQ_POSTCHANGE:
--		pcd = get_pcd(fbi->fb.var.pixclock, f->new);
-+		pcd = get_pcd(fbi, fbi->fb.var.pixclock);
- 		fbi->reg_lccr3 = (fbi->reg_lccr3 & ~0xff) | LCCR3_PixClkDiv(pcd);
- 		set_ctrlr_state(fbi, C_ENABLE_CLKCHANGE);
- 		break;
-@@ -1219,6 +1220,13 @@ static int sa1100fb_probe(struct platform_device *pdev)
- 	if (!fbi)
- 		goto failed;
- 
-+	fbi->clk = clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(fbi->clk)) {
-+		ret = PTR_ERR(fbi->clk);
-+		fbi->clk = NULL;
-+		goto failed;
-+	}
-+
- 	fbi->base = ioremap(res->start, resource_size(res));
- 	if (!fbi->base)
- 		goto failed;
-@@ -1271,6 +1279,8 @@ static int sa1100fb_probe(struct platform_device *pdev)
-  failed:
- 	if (fbi)
- 		iounmap(fbi->base);
-+	if (fbi->clk)
-+		clk_put(fbi->clk);
- 	kfree(fbi);
- 	release_mem_region(res->start, resource_size(res));
- 	return ret;
-diff --git a/drivers/video/sa1100fb.h b/drivers/video/sa1100fb.h
-index fc5d429..0139d13 100644
---- a/drivers/video/sa1100fb.h
-+++ b/drivers/video/sa1100fb.h
-@@ -68,6 +68,7 @@ struct sa1100fb_info {
- #endif
- 
- 	const struct sa1100fb_mach_info *inf;
-+	struct clk *clk;
- };
- 
- #define TO_INF(ptr,member)	container_of(ptr,struct sa1100fb_info,member)
+ /* List of boards that we are trying to support */
+-static struct pci_device_id trident_devices[] = {
++static DEFINE_PCI_DEVICE_TABLE(trident_devices) = {
+ 	{PCI_VENDOR_ID_TRIDENT,	BLADE3D, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ 	{PCI_VENDOR_ID_TRIDENT,	CYBERBLADEi7, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ 	{PCI_VENDOR_ID_TRIDENT,	CYBERBLADEi7D, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
 -- 
-1.8.4.2
+1.7.10.4
+
 

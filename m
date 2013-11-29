@@ -1,34 +1,81 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 28 Nov 2013 03:21:22 +0000
-Subject: [PATCH 08/28] video: lxfb: use DEFINE_PCI_DEVICE_TABLE macro
-Message-Id: <003001ceebe8$e9c19100$bd44b300$%han@samsung.com>
+From: Michal Nazarewicz <mpn@google.com>
+Date: Fri, 29 Nov 2013 16:51:43 +0000
+Subject: [PATCH RESEND] drivers: video: metronomefb: avoid out-of-bounds array access
+Message-Id: <1385743903-9079-1-git-send-email-mpn@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This macro is used to create a struct pci_device_id array.
+From: Michal Nazarewicz <mina86@mina86.com>
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+load_waveform function checks whether padding bytes in stuff2a
+and stuff2b are all zero, but does so by treating those arrays
+as a single longer array.  Since the structure is packed, and
+the size sum matches, it all works, but creates some confusion
+in the code.
+
+This commit changes the stuff2a and stuff2b arrays into pad1 and
+pad2 fields such that they cover the same bytes as the arrays
+covered, and changes the check in the load_waveform function so
+that the fields are read instead of iterating over an arary.
+
+It also renames the other “stuff” fields to “ignore*” fields to
+give them more semantic meaning.
+
+Signed-off-by: Michal Nazarewicz <mina86@mina86.com>
 ---
- drivers/video/geode/lxfb_core.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/metronomefb.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/geode/lxfb_core.c b/drivers/video/geode/lxfb_core.c
-index 9e1d19d..c6cec41 100644
---- a/drivers/video/geode/lxfb_core.c
-+++ b/drivers/video/geode/lxfb_core.c
-@@ -608,7 +608,7 @@ static void lxfb_remove(struct pci_dev *pdev)
- 	framebuffer_release(info);
- }
+diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
+index 195cc2d..4f36a2b 100644
+--- a/drivers/video/metronomefb.c
++++ b/drivers/video/metronomefb.c
+@@ -126,7 +126,7 @@ static struct fb_var_screeninfo metronomefb_var = {
  
--static struct pci_device_id lxfb_id_table[] = {
-+static DEFINE_PCI_DEVICE_TABLE(lxfb_id_table) = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_LX_VIDEO) },
- 	{ 0, }
- };
+ /* the waveform structure that is coming from userspace firmware */
+ struct waveform_hdr {
+-	u8 stuff[32];
++	u8 ignore1[32];
+ 
+ 	u8 wmta[3];
+ 	u8 fvsn;
+@@ -134,13 +134,14 @@ struct waveform_hdr {
+ 	u8 luts;
+ 	u8 mc;
+ 	u8 trc;
+-	u8 stuff3;
++	u8 ignore2;
+ 
+ 	u8 endb;
+ 	u8 swtb;
+-	u8 stuff2a[2];
++	u32 pad1; /* u16 halfof(pad1) */
+ 
+-	u8 stuff2b[3];
++	/* u16 halfof(pad1) */
++	u8 pad2;
+ 	u8 wfm_cs;
+ } __attribute__ ((packed));
+ 
+@@ -210,11 +211,9 @@ static int load_waveform(u8 *mem, size_t size, int m, int t,
+ 	}
+ 	wfm_hdr->mc += 1;
+ 	wfm_hdr->trc += 1;
+-	for (i = 0; i < 5; i++) {
+-		if (*(wfm_hdr->stuff2a + i) != 0) {
+-			dev_err(dev, "Error: unexpected value in padding\n");
+-			return -EINVAL;
+-		}
++	if (wfm_hdr->pad1 || wfm_hdr->pad2) {
++		dev_err(dev, "Error: unexpected value in padding\n");
++		return -EINVAL;
+ 	}
+ 
+ 	/* calculating trn. trn is something used to index into
 -- 
-1.7.10.4
-
+1.8.4.1
 

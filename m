@@ -1,53 +1,48 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sat, 21 Dec 2013 19:09:10 +0000
-Subject: Re: [RFC PATCH 1/5] gpu: ipu-v3: Move i.MX IPUv3 core driver out of staging
-Message-Id: <CAMuHMdXTVnq0tt6=TYMbVgRRqeEd8uhA_5iKEXjGHP2S5XjP_g@mail.gmail.com>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Date: Mon, 02 Dec 2013 18:25:57 +0000
+Subject: Re: [PATCH] atmel_lcdfb: fix module autoload
+Message-Id: <529CD0B5.600@atmel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387561966-31758-2-git-send-email-p.zabel@pengutronix.de>
-In-Reply-To: <1387561966-31758-2-git-send-email-p.zabel@pengutronix.de>
+References: <1382459817-26990-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1382459817-26990-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Johan Hovold <jhovold@gmail.com>, linux-fbdev@vger.kernel.org, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-kernel@vger.kernel.org
 
-On Fri, Dec 20, 2013 at 6:52 PM, Philipp Zabel <p.zabel@pengutronix.de> wrote:
-> The i.MX Image Processing Unit (IPU) contains a number of image processing
-> blocks that sit right in the middle between DRM and V4L2. Some of the modules,
-> such as Display Controller, Processor, and Interface (DC, DP, DI) or CMOS
-> Sensor Interface (CSI) and their FIFOs could be assigned to either framework,
-> but others, such as the dma controller (IDMAC) and image converter (IC) can
-> be used by both.
-> The IPUv3 core driver provides an internal API to access the modules, to be
-> used by both DRM and V4L2 IPUv3 drivers.
+On 22/10/2013 18:36, Johan Hovold :
+> Add missing module device table which is needed for module autoloading.
 >
-> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> Signed-off-by: Johan Hovold <jhovold@gmail.com>
+
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+
+Jean-Christophe, Tomi,
+
+Can you please take this patch?
+
+Best regards,
+
+
 > ---
->  drivers/gpu/Makefile                                          |  1 +
->  drivers/gpu/ipu-v3/Kconfig                                    |  7 +++++++
->  drivers/{staging/imx-drm => gpu}/ipu-v3/Makefile              |  2 +-
->  drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-common.c          |  3 ++-
->  drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dc.c              |  3 +--
->  drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-di.c              |  2 +-
->  drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dmfc.c            |  2 +-
->  drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dp.c              |  2 +-
->  drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-prv.h             |  2 +-
+>   drivers/video/atmel_lcdfb.c | 1 +
+>   1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+> index 088511a..67b339c 100644
+> --- a/drivers/video/atmel_lcdfb.c
+> +++ b/drivers/video/atmel_lcdfb.c
+> @@ -94,6 +94,7 @@ static const struct platform_device_id atmel_lcdfb_devtypes[] = {
+>   		/* terminator */
+>   	}
+>   };
+> +MODULE_DEVICE_TABLE(platform, atmel_lcdfb_devtypes);
+>
+>   static struct atmel_lcdfb_config *
+>   atmel_lcdfb_get_config(struct platform_device *pdev)
+>
 
-The posted diff only shows the changes made during the move.
 
-Has the actual code been reviewed here?
-If not, please post it here (e.g. diff against /dev/null).
-If yes, please ignore my comments.
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+Nicolas Ferre

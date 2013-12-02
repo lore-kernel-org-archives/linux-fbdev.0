@@ -1,59 +1,92 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 12 Dec 2013 19:19:08 +0000
-Subject: Re: [PATCH 1/3] arm: omap2: Export devconf1 bypass and acbias.
-Message-Id: <20131212191908.GA29072@muru.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 02 Dec 2013 08:11:18 +0000
+Subject: [patch] video: vt8500: fix error handling in probe()
+Message-Id: <20131202081118.GB3852@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381784555-18344-1-git-send-email-marek@goldelico.com>
- <1381784555-18344-2-git-send-email-marek@goldelico.com>
- <20131111164917.GN15154@atomide.com>
- <CAAfyv37LRb_Q=UZVgtKdOAz_r6_qThewAU90W7nrqHdB5fDA_g@mail.gmail.com>
- <20131111233152.GR15154@atomide.com>
- <CAAfyv36MaVqrmQxpqDu-ciO9GNJK3pJkFZohEvd1BOLOWWEOhw@mail.gmail.com>
- <20131210224659.GY13171@atomide.com>
- <CAAfyv35wKAK2PNjcXcNan9GC0x-MmH5k4xmzj_vKKhPeztHV-A@mail.gmail.com>
-In-Reply-To: <CAAfyv35wKAK2PNjcXcNan9GC0x-MmH5k4xmzj_vKKhPeztHV-A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Dec 12, 2013 at 09:31:02AM +0100, Belisko Marek wrote:
-> Hi Tony,
-> 
-> On Tue, Dec 10, 2013 at 11:46 PM, Tony Lindgren <tony@atomide.com> wrote:
-> > * Belisko Marek <marek.belisko@gmail.com> [131210 14:13]:
-> >> On Tue, Nov 12, 2013 at 12:31 AM, Tony Lindgren <tony@atomide.com> wrote:
-> >> >
-> >> > It would be best to set it up as omap-ctrl.c driver under drivers
-> >> > somewhere with few functions exported for DSS and MMC drivers.
-> >>
-> >> I create small dummy driver based on phy-omap-control which can be
-> >> used but before sending patch (with more updates) I would like to get
-> >> some feedback if my direction is correct.
-> >
-> > Cool thanks. Yeah what you have can easily be combined with the patches
-> > Balaji has posted to make HSMMC use drivers/mfd/syscon.c via regmap
-> > for the SCM register access. Maybe take a look at the work in progress
-> > patches in thread:
-> >
-> > [PATCH v4 0/7] mmc: omap_hsmmc: pbias dt and cleanup
-> >
-> > And also see my comments regarding using the SCM GENERAL register area
-> > as base for the syscon.c driver. That should work for your driver too,
-> > right? And then you can access the SYSCON1 register that way from your
-> > consumer driver ;)
->
-> If I understand correclty I can use syscon driver (it will have in
-> range also devconf1 register) ad get rid of my custom driver
-> and then get regmap from syscon and update bits that I need for venc, right?
+We shouldn't kfree(fbi) because that was allocated with devm_kzalloc().
+There were several error paths which returned directly instead of
+releasing resources.
 
-Yeah something like that. Or since the sysconf1 register is shared, it might
-be best to still provide specific functions to access it if we cannot map
-just specific bits of it separately for drivers using regmap.
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-But anyways this should for most part remove the need for a custom driver(s)
-unless the register is a regulator or a clock.
-
-Regards,
-
-Tony
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index b30e5a439d1f..a8f2b280f796 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -293,8 +293,7 @@ static int vt8500lcd_probe(struct platform_device *pdev)
+ 			+ sizeof(u32) * 16, GFP_KERNEL);
+ 	if (!fbi) {
+ 		dev_err(&pdev->dev, "Failed to initialize framebuffer device\n");
+-		ret = -ENOMEM;
+-		goto failed;
++		return -ENOMEM;
+ 	}
+ 
+ 	strcpy(fbi->fb.fix.id, "VT8500 LCD");
+@@ -327,15 +326,13 @@ static int vt8500lcd_probe(struct platform_device *pdev)
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (res = NULL) {
+ 		dev_err(&pdev->dev, "no I/O memory resource defined\n");
+-		ret = -ENODEV;
+-		goto failed_fbi;
++		return -ENODEV;
+ 	}
+ 
+ 	res = request_mem_region(res->start, resource_size(res), "vt8500lcd");
+ 	if (res = NULL) {
+ 		dev_err(&pdev->dev, "failed to request I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_fbi;
++		return -EBUSY;
+ 	}
+ 
+ 	fbi->regbase = ioremap(res->start, resource_size(res));
+@@ -346,17 +343,19 @@ static int vt8500lcd_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	disp_timing = of_get_display_timings(pdev->dev.of_node);
+-	if (!disp_timing)
+-		return -EINVAL;
++	if (!disp_timing) {
++		ret = -EINVAL;
++		goto failed_free_io;
++	}
+ 
+ 	ret = of_get_fb_videomode(pdev->dev.of_node, &of_mode,
+ 							OF_USE_NATIVE_MODE);
+ 	if (ret)
+-		return ret;
++		goto failed_free_io;
+ 
+ 	ret = of_property_read_u32(pdev->dev.of_node, "bits-per-pixel", &bpp);
+ 	if (ret)
+-		return ret;
++		goto failed_free_io;
+ 
+ 	/* try allocating the framebuffer */
+ 	fb_mem_len = of_mode.xres * of_mode.yres * 2 * (bpp / 8);
+@@ -364,7 +363,8 @@ static int vt8500lcd_probe(struct platform_device *pdev)
+ 				GFP_KERNEL);
+ 	if (!fb_mem_virt) {
+ 		pr_err("%s: Failed to allocate framebuffer\n", __func__);
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto failed_free_io;
+ 	}
+ 
+ 	fbi->fb.fix.smem_start	= fb_mem_phys;
+@@ -447,9 +447,6 @@ failed_free_io:
+ 	iounmap(fbi->regbase);
+ failed_free_res:
+ 	release_mem_region(res->start, resource_size(res));
+-failed_fbi:
+-	kfree(fbi);
+-failed:
+ 	return ret;
+ }
+ 

@@ -1,109 +1,52 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:29 +0000
-Subject: [PATCHv2 22/27] OMAPDSS: encoder-tfp410: Add DT support
-Message-Id: <1387205794-32246-23-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 02 Dec 2013 23:28:33 +0000
+Subject: [PATCH 32/39] video: remove DEFINE_PCI_DEVICE_TABLE macro
+Message-Id: <003501ceefb6$37ba5dd0$a72f1970$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+References: <001501ceefb1$69c96820$3d5c3860$%han@samsung.com>
+In-Reply-To: <001501ceefb1$69c96820$3d5c3860$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Don't use DEFINE_PCI_DEVICE_TABLE macro, because this macro
+is not preferred.
+
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/displays-new/encoder-tfp410.c | 43 ++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
+ drivers/video/hyperv_fb.c |    2 +-
+ drivers/video/i740fb.c    |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/displays-new/encoder-tfp410.c b/drivers/video/omap2/displays-new/encoder-tfp410.c
-index 4a291e756be9..2c664d476788 100644
---- a/drivers/video/omap2/displays-new/encoder-tfp410.c
-+++ b/drivers/video/omap2/displays-new/encoder-tfp410.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/slab.h>
-+#include <linux/of_gpio.h>
- 
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -82,7 +83,8 @@ static int tfp410_enable(struct omap_dss_device *dssdev)
- 		return 0;
- 
- 	in->ops.dpi->set_timings(in, &ddata->timings);
--	in->ops.dpi->set_data_lines(in, ddata->data_lines);
-+	if (ddata->data_lines)
-+		in->ops.dpi->set_data_lines(in, ddata->data_lines);
- 
- 	r = in->ops.dpi->enable(in);
- 	if (r)
-@@ -179,6 +181,33 @@ static int tfp410_probe_pdata(struct platform_device *pdev)
- 	return 0;
+diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
+index 130708f..8254ed7 100644
+--- a/drivers/video/hyperv_fb.c
++++ b/drivers/video/hyperv_fb.c
+@@ -800,7 +800,7 @@ static int hvfb_remove(struct hv_device *hdev)
  }
  
-+static int tfp410_probe_of(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+	int gpio;
-+
-+	gpio = of_get_gpio(node, 0);
-+
-+	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+		ddata->pd_gpio = gpio;
-+	} else {
-+		dev_err(&pdev->dev, "failed to parse PD gpio\n");
-+		return gpio;
-+	}
-+
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
-+
-+	ddata->in = in;
-+
-+	return 0;
-+}
-+
- static int tfp410_probe(struct platform_device *pdev)
- {
- 	struct panel_drv_data *ddata;
-@@ -195,6 +224,10 @@ static int tfp410_probe(struct platform_device *pdev)
- 		r = tfp410_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = tfp410_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -251,12 +284,20 @@ static int __exit tfp410_remove(struct platform_device *pdev)
- 	return 0;
- }
  
-+static const struct of_device_id tfp410_of_match[] = {
-+	{ .compatible = "ti,tfp410", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, tfp410_of_match);
-+
- static struct platform_driver tfp410_driver = {
- 	.probe	= tfp410_probe,
- 	.remove	= __exit_p(tfp410_remove),
- 	.driver	= {
- 		.name	= "tfp410",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = tfp410_of_match,
- 	},
- };
+-static DEFINE_PCI_DEVICE_TABLE(pci_stub_id_table) = {
++static const struct pci_device_id pci_stub_id_table[] = {
+ 	{
+ 		.vendor      = PCI_VENDOR_ID_MICROSOFT,
+ 		.device      = PCI_DEVICE_ID_HYPERV_VIDEO,
+diff --git a/drivers/video/i740fb.c b/drivers/video/i740fb.c
+index ca7c9df..a2b4204 100644
+--- a/drivers/video/i740fb.c
++++ b/drivers/video/i740fb.c
+@@ -1260,7 +1260,7 @@ fail:
+ #define I740_ID_PCI 0x00d1
+ #define I740_ID_AGP 0x7800
  
+-static DEFINE_PCI_DEVICE_TABLE(i740fb_id_table) = {
++static const struct pci_device_id i740fb_id_table[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, I740_ID_PCI) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, I740_ID_AGP) },
+ 	{ 0 }
 -- 
-1.8.3.2
+1.7.10.4
+
 

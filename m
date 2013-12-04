@@ -1,78 +1,224 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 16 Dec 2013 07:53:36 +0000
-Subject: Re: [ibm-acpi-devel] [PATCH] video: backlight: Remove backlight sysfs uevent
-Message-Id: <20131215235336.49d49a25.akpm@linux-foundation.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:37 +0000
+Subject: [PATCH 10/26] OMAPDSS: add of helpers
+Message-Id: <1386160133-24026-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20131111235700.GA29987@july>
-	<002901cedf3c$a7e77a00$f7b66e00$%han@samsung.com>
-	<20131112005628.GA2914@khazad-dum.debian.net>
-	<1384990859.20536.4.camel@x230>
-	<20131121114332.GA23710@khazad-dum.debian.net>
-	<20131121143326.GA19773@srcf.ucam.org>
-	<20131122113601.GB27196@khazad-dum.debian.net>
-	<20131122171556.GA15680@srcf.ucam.org>
-	<20131124004015.GA19499@khazad-dum.debian.net>
-	<20131124010257.GA6376@srcf.ucam.org>
-	<20131124035311.GC19499@khazad-dum.debian.net>
-In-Reply-To: <20131124035311.GC19499@khazad-dum.debian.net>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-fbdev@vger.kernel.org, 'Kyungmin Park' <kmpark@infradead.org>, kay@vrfy.org, Jingoo Han <jg1.han@samsung.com>, 'Henrique de Moraes Holschuh' <ibm-acpi@hmh.eng.br>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net, 'Richard Purdie' <rpurdie@rpsys.net>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Sun, 24 Nov 2013 01:53:11 -0200 Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+Add helpers to get ports and endpoints from DT data.
 
-> On Sun, 24 Nov 2013, Matthew Garrett wrote:
-> > On Sat, Nov 23, 2013 at 10:40:15PM -0200, Henrique de Moraes Holschuh wrote:
-> > > On Fri, 22 Nov 2013, Matthew Garrett wrote:
-> > > > We have userspace that relies on uevents of type 
-> > > > BACKLIGHT_UPDATE_HOTKEY. I don't know that we have userspace that relies 
-> > > > on uevents of type BACKLIGHT_UPDATE_SYSFS.
-> > > 
-> > > Any OSD application would have to rely on both uevent types, or it is broken
-> > > (and to test that, just write a level to sysfs and watch the OSD app fail to
-> > > tell you about the backlight level change...)
-> > 
-> > Right, OSDs are supposed to respond to keypresses, not arbitrary changes 
-> > of backlight. If the user's just echoed 8 into brightness, they know 
-> > they set the brightness to 8 - they don't need an OSD to tell them that. 
-> 
-> It is not just the user that sets the brightness.
-> 
-> Still, if you're sure that all userspace users react only to the hotkey type
-> of event, removing the sysfs one won't break anything any further.
-> 
-> But it will be *really* annoying the day we revisit this because someone
-> started abusing the hotkey uevent and we have to deploy a proper fix (rate
-> limiting or switching to a proper event report interface that doesn't use
-> uevents).
-> 
-> > BACKLIGHT_UPDATE_HOTKEY is when the firmware itself has changed the 
-> > brightness in response to a keypress, and so reporting the keypress 
-> > would result in additional backlight changes.
-> 
-> Yeah, I know that bug quite well, thinkpads were the first victims of
-> idiotic feedback event loops caused by braindead userspace.
+While all the functions in dss-of.c might be useful for panel drivers if
+they need to parse full port/endpoint data, at the moment we only need a
+few of them outside dss-of.c, so only those functions are exported.
 
-I'm not seeing a lot of consensus here and afaict the v2 patch:
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/Makefile |   2 +-
+ drivers/video/omap2/dss/dss-of.c | 160 +++++++++++++++++++++++++++++++++++++++
+ include/video/omapdss.h          |   6 ++
+ 3 files changed, 167 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/video/omap2/dss/dss-of.c
 
---- a/drivers/video/backlight/backlight.c~drivers-video-backlight-backlightc-remove-backlight-sysfs-uevent
-+++ a/drivers/video/backlight/backlight.c
-@@ -175,8 +175,6 @@ static ssize_t brightness_store(struct d
- 	}
- 	mutex_unlock(&bd->ops_lock);
- 
--	backlight_generate_event(bd, BACKLIGHT_UPDATE_SYSFS);
--
- 	return rc;
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index d3aa91bdd6a8..8aec8bda27cc 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -1,7 +1,7 @@
+ obj-$(CONFIG_OMAP2_DSS) += omapdss.o
+ # Core DSS files
+ omapdss-y := core.o dss.o dss_features.o dispc.o dispc_coefs.o display.o \
+-	output.o
++	output.o dss-of.o
+ # DSS compat layer files
+ omapdss-y += manager.o manager-sysfs.o overlay.o overlay-sysfs.o apply.o \
+ 	dispc-compat.o display-sysfs.o
+diff --git a/drivers/video/omap2/dss/dss-of.c b/drivers/video/omap2/dss/dss-of.c
+new file mode 100644
+index 000000000000..9aa61d4bdb3d
+--- /dev/null
++++ b/drivers/video/omap2/dss/dss-of.c
+@@ -0,0 +1,160 @@
++/*
++ * Copyright (C) 2013 Texas Instruments
++ * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/seq_file.h>
++
++#include <video/omapdss.h>
++
++#include "dss.h"
++#include "dss_features.h"
++
++static struct device_node *
++omapdss_of_get_next_port(const struct device_node *parent,
++			 struct device_node *prev)
++{
++	struct device_node *port = NULL;
++
++	if (!parent)
++		return NULL;
++
++	if (!prev) {
++		struct device_node *ports;
++		/*
++		 * It's the first call, we have to find a port subnode
++		 * within this node or within an optional 'ports' node.
++		 */
++		ports = of_get_child_by_name(parent, "ports");
++		if (ports)
++			parent = ports;
++
++		port = of_get_child_by_name(parent, "port");
++
++		/* release the 'ports' node */
++		of_node_put(ports);
++	} else {
++		struct device_node *ports;
++
++		ports = of_get_parent(prev);
++		if (!ports)
++			return NULL;
++
++		do {
++			port = of_get_next_child(ports, prev);
++			if (!port) {
++				of_node_put(ports);
++				return NULL;
++			}
++			prev = port;
++		} while (of_node_cmp(port->name, "port") != 0);
++	}
++
++	return port;
++}
++
++static struct device_node *
++omapdss_of_get_next_endpoint(const struct device_node *parent,
++			     struct device_node *prev)
++{
++	struct device_node *ep = NULL;
++
++	if (!parent)
++		return NULL;
++
++	do {
++		ep = of_get_next_child(parent, prev);
++		if (!ep)
++			return NULL;
++		prev = ep;
++	} while (of_node_cmp(ep->name, "endpoint") != 0);
++
++	return ep;
++}
++
++static struct device_node *
++omapdss_of_get_remote_device_node(const struct device_node *node)
++{
++	struct device_node *np;
++	int i;
++
++	np = of_parse_phandle(node, "remote-endpoint", 0);
++
++	if (!np)
++		return NULL;
++
++	np = of_get_next_parent(np);
++
++	for (i = 0; i < 3 && np; ++i) {
++		struct property *prop;
++
++		prop = of_find_property(np, "compatible", NULL);
++
++		if (prop)
++			return np;
++
++		np = of_get_next_parent(np);
++	}
++
++	return NULL;
++}
++
++struct device_node *
++omapdss_of_get_first_endpoint(const struct device_node *parent)
++{
++	struct device_node *port;
++	struct device_node *ep;
++
++	port = omapdss_of_get_next_port(parent, NULL);
++	if (port) {
++		ep = omapdss_of_get_next_endpoint(port, NULL);
++		of_node_put(port);
++	} else {
++		ep = omapdss_of_get_next_endpoint(parent, NULL);
++	}
++
++	return ep;
++}
++EXPORT_SYMBOL_GPL(omapdss_of_get_first_endpoint);
++
++struct omap_dss_device *
++omapdss_of_find_source_for_first_ep(struct device_node *node)
++{
++	struct device_node *ep;
++	struct device_node *src_node;
++	struct omap_dss_device *src;
++
++	ep = omapdss_of_get_first_endpoint(node);
++	if (!ep)
++		return ERR_PTR(-EINVAL);
++
++	src_node = omapdss_of_get_remote_device_node(ep);
++
++	of_node_put(ep);
++
++	if (!src_node)
++		return ERR_PTR(-EINVAL);
++
++	src = omap_dss_find_output_by_node(src_node);
++
++	of_node_put(src_node);
++
++	if (!src)
++		return ERR_PTR(-EPROBE_DEFER);
++
++	return src;
++}
++EXPORT_SYMBOL_GPL(omapdss_of_find_source_for_first_ep);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 3d7c51a6f9ff..c510591df1b8 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -1019,4 +1019,10 @@ static inline bool omapdss_device_is_enabled(struct omap_dss_device *dssdev)
+ 	return dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
  }
- static DEVICE_ATTR_RW(brightness);
+ 
++struct device_node *
++omapdss_of_get_first_endpoint(const struct device_node *parent);
++
++struct omap_dss_device *
++omapdss_of_find_source_for_first_ep(struct device_node *node);
++
+ #endif
+-- 
+1.8.3.2
 
-will still break userspace which relies on BACKLIGHT_UPDATE_SYSFS
-uevents.  I see no way we can guarantee that there is no such userspace
-so the patch is worrying.
-
-Should we instead be looking for a way of avoiding this risk?  Say, add
-a new knob which people can set if they don't want to generate this
-event?  Ugly, but that's the price we pay for mucking it up originally.

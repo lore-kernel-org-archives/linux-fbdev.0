@@ -1,32 +1,109 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Mon, 30 Dec 2013 06:34:13 +0000
-Subject: [PATCH 4/4] video: pxa168fb: Cleanup pxa168fb.h file
-Message-Id: <1388384533-20458-4-git-send-email-sachin.kamat@linaro.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:48 +0000
+Subject: [PATCH 21/26] OMAPDSS: encoder-tfp410: Add DT support
+Message-Id: <1386160133-24026-22-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Remove incorrect file reference in comments section.
-
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: Eric Miao <eric.y.miao@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- include/video/pxa168fb.h |    2 --
- 1 file changed, 2 deletions(-)
+ drivers/video/omap2/displays-new/encoder-tfp410.c | 43 ++++++++++++++++++++++-
+ 1 file changed, 42 insertions(+), 1 deletion(-)
 
-diff --git a/include/video/pxa168fb.h b/include/video/pxa168fb.h
-index 8c2f385a90ea..84cbb1f69ea6 100644
---- a/include/video/pxa168fb.h
-+++ b/include/video/pxa168fb.h
-@@ -1,6 +1,4 @@
- /*
-- * linux/arch/arm/mach-mmp/include/mach/pxa168fb.h
-- *
-  *  Copyright (C) 2009 Marvell International Ltd.
-  *
-  * This program is free software; you can redistribute it and/or modify
+diff --git a/drivers/video/omap2/displays-new/encoder-tfp410.c b/drivers/video/omap2/displays-new/encoder-tfp410.c
+index 4a291e756be9..427f6880885e 100644
+--- a/drivers/video/omap2/displays-new/encoder-tfp410.c
++++ b/drivers/video/omap2/displays-new/encoder-tfp410.c
+@@ -13,6 +13,7 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
++#include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -82,7 +83,8 @@ static int tfp410_enable(struct omap_dss_device *dssdev)
+ 		return 0;
+ 
+ 	in->ops.dpi->set_timings(in, &ddata->timings);
+-	in->ops.dpi->set_data_lines(in, ddata->data_lines);
++	if (ddata->data_lines)
++		in->ops.dpi->set_data_lines(in, ddata->data_lines);
+ 
+ 	r = in->ops.dpi->enable(in);
+ 	if (r)
+@@ -179,6 +181,33 @@ static int tfp410_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int tfp410_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	int gpio;
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	gpio = of_get_gpio(node, 0);
++
++	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++		ddata->pd_gpio = gpio;
++	} else {
++		dev_err(&pdev->dev, "failed to parse PD gpio\n");
++		return gpio;
++	}
++
++	return 0;
++}
++
+ static int tfp410_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -195,6 +224,10 @@ static int tfp410_probe(struct platform_device *pdev)
+ 		r = tfp410_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = tfp410_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -251,12 +284,20 @@ static int __exit tfp410_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id tfp410_of_match[] = {
++	{ .compatible = "ti,tfp410", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, tfp410_of_match);
++
+ static struct platform_driver tfp410_driver = {
+ 	.probe	= tfp410_probe,
+ 	.remove	= __exit_p(tfp410_remove),
+ 	.driver	= {
+ 		.name	= "tfp410",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = tfp410_of_match,
+ 	},
+ };
+ 
 -- 
-1.7.9.5
+1.8.3.2
 

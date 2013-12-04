@@ -1,65 +1,244 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:12 +0000
-Subject: [PATCHv2 05/27] OMAPDSS: get dssdev->alias from DT alias
-Message-Id: <1387205794-32246-6-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:39 +0000
+Subject: [PATCH 12/26] OMAPDSS: Add DT support to DSI
+Message-Id: <1386160133-24026-13-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We currently create a "displayX" style alias name for all displays,
-using a number that is incremented for each registered display. With the
-new DSS device model there is no clear order in which the displays are
-registered, and thus the numbering is somewhat random.
+Add the code to make the DSI driver work with device tree on OMAP3 and
+OMAP4.
 
-This patch improves the behavior for DT case so that if the displays
-have been assigned DT aliases, those aliases will be used as DSS
-aliases.
-
-This means that "display0" is always the one specified in the DT alias,
-and thus display0 can be used as default display in case the user didn't
-specify a default display.
+A minor hack is needed at the moment in the DSI driver: the DSS driver
+needs to know the ID number of a DSI device, as clocks are routed in
+different ways to the DSI devices. At the moment we don't have any
+proper way to manage this, so this patchs adds a simple lookup table
+that is used to deduce the ID from the DSI device's base address.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/display.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/dsi.c | 136 +++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 135 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 012ada38a29d..21080f9dae87 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -134,9 +134,24 @@ static int disp_num_counter;
- int omapdss_register_display(struct omap_dss_device *dssdev)
- {
- 	struct omap_dss_driver *drv = dssdev->driver;
-+	int id;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 18b5e84165bb..46edec82c502 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -38,6 +38,8 @@
+ #include <linux/slab.h>
+ #include <linux/debugfs.h>
+ #include <linux/pm_runtime.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
  
--	snprintf(dssdev->alias, sizeof(dssdev->alias),
--			"display%d", disp_num_counter++);
-+	/*
-+	 * Note: this presumes all the displays are either using DT or non-DT,
-+	 * which normally should be the case. This also presumes that all
-+	 * displays either have an DT alias, or none has.
-+	 */
+ #include <video/omapdss.h>
+ #include <video/mipi_display.h>
+@@ -374,6 +376,13 @@ struct dsi_packet_sent_handler_data {
+ 	struct completion *completion;
+ };
+ 
++struct dsi_module_id_data {
++	u32 address;
++	int id;
++};
 +
-+	if (dssdev->dev->of_node) {
-+		id = of_alias_get_id(dssdev->dev->of_node, "display");
++static const struct of_device_id dsi_of_match[];
 +
-+		if (id < 0)
-+			id = disp_num_counter++;
-+	} else {
-+		id = disp_num_counter++;
+ #ifdef DSI_PERF_MEASURE
+ static bool dsi_perf;
+ module_param(dsi_perf, bool, 0644);
+@@ -5336,6 +5345,62 @@ static void dsi_uninit_output(struct platform_device *dsidev)
+ 	omapdss_unregister_output(out);
+ }
+ 
++static int dsi_probe_of(struct platform_device *pdev)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct dsi_data *dsi = dsi_get_dsidrv_data(pdev);
++	struct property *prop;
++	u32 lane_arr[10];
++	int len, num_pins;
++	int r, i;
++	struct device_node *ep;
++	struct omap_dsi_pin_config pin_cfg;
++
++	ep = omapdss_of_get_first_endpoint(node);
++	if (!ep)
++		return 0;
++
++	prop = of_find_property(ep, "lanes", &len);
++	if (prop = NULL) {
++		dev_err(&pdev->dev, "failed to find lane data\n");
++		r = -EINVAL;
++		goto err;
 +	}
 +
-+	snprintf(dssdev->alias, sizeof(dssdev->alias), "display%d", id);
++	num_pins = len / sizeof(u32);
++
++	if (num_pins < 4 || num_pins % 2 != 0
++			|| num_pins > dsi->num_lanes_supported * 2) {
++		dev_err(&pdev->dev, "bad number of lanes\n");
++		r = -EINVAL;
++		goto err;
++	}
++
++	r = of_property_read_u32_array(ep, "lanes", lane_arr, num_pins);
++	if (r) {
++		dev_err(&pdev->dev, "failed to read lane data\n");
++		goto err;
++	}
++
++	pin_cfg.num_pins = num_pins;
++	for (i = 0; i < num_pins; ++i)
++		pin_cfg.pins[i] = (int)lane_arr[i];
++
++	r = dsi_configure_pins(&dsi->output, &pin_cfg);
++	if (r) {
++		dev_err(&pdev->dev, "failed to configure pins");
++		goto err;
++	}
++
++	of_node_put(ep);
++
++	return 0;
++
++err:
++	of_node_put(ep);
++	return r;
++}
++
+ /* DSI1 HW IP initialisation */
+ static int omap_dsihw_probe(struct platform_device *dsidev)
+ {
+@@ -5348,7 +5413,6 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 	if (!dsi)
+ 		return -ENOMEM;
  
- 	/* Use 'label' property for name, if it exists */
- 	if (dssdev->dev->of_node)
+-	dsi->module_id = dsidev->id;
+ 	dsi->pdev = dsidev;
+ 	dev_set_drvdata(&dsidev->dev, dsi);
+ 
+@@ -5398,6 +5462,31 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 		return r;
+ 	}
+ 
++	if (dsidev->dev.of_node) {
++		const struct of_device_id *match;
++		const struct dsi_module_id_data *d;
++
++		match = of_match_node(dsi_of_match, dsidev->dev.of_node);
++		if (!match) {
++			DSSERR("unsupported DSI module\n");
++			return -ENODEV;
++		}
++
++		d = match->data;
++
++		while (d->address != 0 && d->address != dsi_mem->start)
++			d++;
++
++		if (d->address = 0) {
++			DSSERR("unsupported DSI module\n");
++			return -ENODEV;
++		}
++
++		dsi->module_id = d->id;
++	} else {
++		dsi->module_id = dsidev->id;
++	}
++
+ 	/* DSI VCs initialization */
+ 	for (i = 0; i < ARRAY_SIZE(dsi->vc); i++) {
+ 		dsi->vc[i].source = DSI_VC_SOURCE_L4;
+@@ -5433,6 +5522,19 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 
+ 	dsi_init_output(dsidev);
+ 
++	if (dsidev->dev.of_node) {
++		r = dsi_probe_of(dsidev);
++		if (r) {
++			DSSERR("Invalid DSI DT data\n");
++			goto err_probe_of;
++		}
++
++		r = of_platform_populate(dsidev->dev.of_node, NULL, NULL,
++			&dsidev->dev);
++		if (r)
++			DSSERR("Failed to populate DSI child devices: %d\n", r);
++	}
++
+ 	dsi_runtime_put(dsidev);
+ 
+ 	if (dsi->module_id = 0)
+@@ -5446,17 +5548,31 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 	else if (dsi->module_id = 1)
+ 		dss_debugfs_create_file("dsi2_irqs", dsi2_dump_irqs);
+ #endif
++
+ 	return 0;
+ 
++err_probe_of:
++	dsi_uninit_output(dsidev);
++	dsi_runtime_put(dsidev);
++
+ err_runtime_get:
+ 	pm_runtime_disable(&dsidev->dev);
+ 	return r;
+ }
+ 
++static int dsi_unregister_child(struct device *dev, void *data)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	platform_device_unregister(pdev);
++	return 0;
++}
++
+ static int __exit omap_dsihw_remove(struct platform_device *dsidev)
+ {
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 
++	device_for_each_child(&dsidev->dev, NULL, dsi_unregister_child);
++
+ 	WARN_ON(dsi->scp_clk_refcount > 0);
+ 
+ 	dsi_uninit_output(dsidev);
+@@ -5494,6 +5610,23 @@ static const struct dev_pm_ops dsi_pm_ops = {
+ 	.runtime_resume = dsi_runtime_resume,
+ };
+ 
++static const struct dsi_module_id_data dsi_of_data_omap3[] = {
++	{ .address = 0x4804fc00, .id = 0, },
++	{ },
++};
++
++static const struct dsi_module_id_data dsi_of_data_omap4[] = {
++	{ .address = 0x58004000, .id = 0, },
++	{ .address = 0x58005000, .id = 1, },
++	{ },
++};
++
++static const struct of_device_id dsi_of_match[] = {
++	{ .compatible = "ti,omap3-dsi", .data = dsi_of_data_omap3, },
++	{ .compatible = "ti,omap4-dsi", .data = dsi_of_data_omap4, },
++	{},
++};
++
+ static struct platform_driver omap_dsihw_driver = {
+ 	.probe		= omap_dsihw_probe,
+ 	.remove         = __exit_p(omap_dsihw_remove),
+@@ -5501,6 +5634,7 @@ static struct platform_driver omap_dsihw_driver = {
+ 		.name   = "omapdss_dsi",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &dsi_pm_ops,
++		.of_match_table = dsi_of_match,
+ 	},
+ };
+ 
 -- 
 1.8.3.2
 

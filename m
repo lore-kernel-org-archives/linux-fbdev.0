@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:48 +0000
-Subject: [PATCH 21/26] OMAPDSS: encoder-tfp410: Add DT support
-Message-Id: <1386160133-24026-22-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:38 +0000
+Subject: [PATCH 11/26] OMAPDSS: Add DT support to DSS, DISPC, DPI, HDMI, VENC
+Message-Id: <1386160133-24026-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,96 +11,266 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
 Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+Add the code to make DSS, DISPC, DPI, HDMI and VENC drivers work with
+device tree on OMAP3 and OMAP4.
+
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/displays-new/encoder-tfp410.c | 43 ++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
+ drivers/video/omap2/dss/dispc.c |  7 ++++++
+ drivers/video/omap2/dss/dpi.c   | 50 +++++++++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.c   | 10 +++++++++
+ drivers/video/omap2/dss/hdmi4.c |  6 +++++
+ drivers/video/omap2/dss/venc.c  | 34 ++++++++++++++++++++++++++++
+ 5 files changed, 107 insertions(+)
 
-diff --git a/drivers/video/omap2/displays-new/encoder-tfp410.c b/drivers/video/omap2/displays-new/encoder-tfp410.c
-index 4a291e756be9..427f6880885e 100644
---- a/drivers/video/omap2/displays-new/encoder-tfp410.c
-+++ b/drivers/video/omap2/displays-new/encoder-tfp410.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 4ec59ca72e5d..b702369fc895 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3744,12 +3744,19 @@ static const struct dev_pm_ops dispc_pm_ops = {
+ 	.runtime_resume = dispc_runtime_resume,
+ };
+ 
++static const struct of_device_id dispc_of_match[] = {
++	{ .compatible = "ti,omap3-dispc", },
++	{ .compatible = "ti,omap4-dispc", },
++	{},
++};
++
+ static struct platform_driver omap_dispchw_driver = {
+ 	.remove         = __exit_p(omap_dispchw_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_dispc",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &dispc_pm_ops,
++		.of_match_table = dispc_of_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index bd48cde53561..247b1d524360 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -30,6 +30,7 @@
  #include <linux/platform_device.h>
- #include <linux/slab.h>
-+#include <linux/of_gpio.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/string.h>
++#include <linux/of.h>
  
  #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -82,7 +83,8 @@ static int tfp410_enable(struct omap_dss_device *dssdev)
- 		return 0;
  
- 	in->ops.dpi->set_timings(in, &ddata->timings);
--	in->ops.dpi->set_data_lines(in, ddata->data_lines);
-+	if (ddata->data_lines)
-+		in->ops.dpi->set_data_lines(in, ddata->data_lines);
+@@ -690,15 +691,57 @@ static void __exit dpi_uninit_output(struct platform_device *pdev)
+ 	omapdss_unregister_output(out);
+ }
  
- 	r = in->ops.dpi->enable(in);
- 	if (r)
-@@ -179,6 +181,33 @@ static int tfp410_probe_pdata(struct platform_device *pdev)
++static int dpi_probe_of(struct platform_device *pdev)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct device_node *ep;
++	u32 datalines;
++	int r;
++
++	ep = omapdss_of_get_first_endpoint(node);
++	if (!ep)
++		return 0;
++
++	r = of_property_read_u32(ep, "data-lines", &datalines);
++	if (r) {
++		DSSERR("failed to parse datalines\n");
++		goto err;
++	}
++
++	dpi.data_lines = datalines;
++
++	of_node_put(ep);
++
++	return 0;
++err:
++	of_node_put(ep);
++
++	return r;
++}
++
+ static int omap_dpi_probe(struct platform_device *pdev)
+ {
++	int r;
++
+ 	dpi.pdev = pdev;
+ 
+ 	mutex_init(&dpi.lock);
+ 
+ 	dpi_init_output(pdev);
+ 
++	if (pdev->dev.of_node) {
++		r = dpi_probe_of(pdev);
++		if (r) {
++			DSSERR("Invalid DT data\n");
++			goto err_probe_of;
++		}
++	}
++
+ 	return 0;
++
++err_probe_of:
++	dpi_uninit_output(pdev);
++	return r;
+ }
+ 
+ static int __exit omap_dpi_remove(struct platform_device *pdev)
+@@ -708,12 +751,19 @@ static int __exit omap_dpi_remove(struct platform_device *pdev)
  	return 0;
  }
  
-+static int tfp410_probe_of(struct platform_device *pdev)
++static const struct of_device_id dpi_of_match[] = {
++	{ .compatible = "ti,omap3-dpi", },
++	{ .compatible = "ti,omap4-dpi", },
++	{},
++};
++
+ static struct platform_driver omap_dpi_driver = {
+ 	.probe		= omap_dpi_probe,
+ 	.remove         = __exit_p(omap_dpi_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_dpi",
+ 		.owner  = THIS_MODULE,
++		.of_match_table = dpi_of_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index bd01608e67e2..d0d61b11c01e 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -23,6 +23,7 @@
+ #define DSS_SUBSYS_NAME "DSS"
+ 
+ #include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/io.h>
+ #include <linux/export.h>
+ #include <linux/err.h>
+@@ -955,12 +956,21 @@ static const struct dev_pm_ops dss_pm_ops = {
+ 	.runtime_resume = dss_runtime_resume,
+ };
+ 
++static const struct of_device_id dss_of_match[] = {
++	{ .compatible = "ti,omap3-dss", },
++	{ .compatible = "ti,omap4-dss", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, dss_of_match);
++
+ static struct platform_driver omap_dsshw_driver = {
+ 	.remove         = __exit_p(omap_dsshw_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_dss",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &dss_pm_ops,
++		.of_match_table = dss_of_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/omap2/dss/hdmi4.c b/drivers/video/omap2/dss/hdmi4.c
+index 16e598787522..97dd05f602f7 100644
+--- a/drivers/video/omap2/dss/hdmi4.c
++++ b/drivers/video/omap2/dss/hdmi4.c
+@@ -671,6 +671,11 @@ static const struct dev_pm_ops hdmi_pm_ops = {
+ 	.runtime_resume = hdmi_runtime_resume,
+ };
+ 
++static const struct of_device_id hdmi_of_match[] = {
++	{ .compatible = "ti,omap4-hdmi", },
++	{},
++};
++
+ static struct platform_driver omapdss_hdmihw_driver = {
+ 	.probe		= omapdss_hdmihw_probe,
+ 	.remove         = __exit_p(omapdss_hdmihw_remove),
+@@ -678,6 +683,7 @@ static struct platform_driver omapdss_hdmihw_driver = {
+ 		.name   = "omapdss_hdmi",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &hdmi_pm_ops,
++		.of_match_table = hdmi_of_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 5f88ac47b7fa..12185fb6da0e 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -34,6 +34,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/pm_runtime.h>
++#include <linux/of.h>
+ 
+ #include <video/omapdss.h>
+ 
+@@ -804,6 +805,22 @@ static void __exit venc_uninit_output(struct platform_device *pdev)
+ 	omapdss_unregister_output(out);
+ }
+ 
++static int venc_probe_of(struct platform_device *pdev)
 +{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
 +	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+	int gpio;
++	struct device_node *ep;
 +
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
++	ep = omapdss_of_get_first_endpoint(node);
++	if (!ep)
++		return 0;
 +
-+	ddata->in = in;
++	venc.invert_polarity = of_property_read_bool(ep, "invert-polarity");
 +
-+	gpio = of_get_gpio(node, 0);
-+
-+	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+		ddata->pd_gpio = gpio;
-+	} else {
-+		dev_err(&pdev->dev, "failed to parse PD gpio\n");
-+		return gpio;
-+	}
++	of_node_put(ep);
 +
 +	return 0;
 +}
 +
- static int tfp410_probe(struct platform_device *pdev)
+ /* VENC HW IP initialisation */
+ static int omap_venchw_probe(struct platform_device *pdev)
  {
- 	struct panel_drv_data *ddata;
-@@ -195,6 +224,10 @@ static int tfp410_probe(struct platform_device *pdev)
- 		r = tfp410_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = tfp410_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -251,12 +284,20 @@ static int __exit tfp410_remove(struct platform_device *pdev)
- 	return 0;
- }
+@@ -845,12 +862,21 @@ static int omap_venchw_probe(struct platform_device *pdev)
  
-+static const struct of_device_id tfp410_of_match[] = {
-+	{ .compatible = "ti,tfp410", },
+ 	venc_runtime_put();
+ 
++	if (pdev->dev.of_node) {
++		r = venc_probe_of(pdev);
++		if (r) {
++			DSSERR("Invalid DT data\n");
++			goto err_probe_of;
++		}
++	}
++
+ 	dss_debugfs_create_file("venc", venc_dump_regs);
+ 
+ 	venc_init_output(pdev);
+ 
+ 	return 0;
+ 
++err_probe_of:
+ err_runtime_get:
+ 	pm_runtime_disable(&pdev->dev);
+ 	return r;
+@@ -894,6 +920,13 @@ static const struct dev_pm_ops venc_pm_ops = {
+ 	.runtime_resume = venc_runtime_resume,
+ };
+ 
++
++static const struct of_device_id venc_of_match[] = {
++	{ .compatible = "ti,omap3-venc", },
++	{ .compatible = "ti,omap4-venc", },
 +	{},
 +};
 +
-+MODULE_DEVICE_TABLE(of, tfp410_of_match);
-+
- static struct platform_driver tfp410_driver = {
- 	.probe	= tfp410_probe,
- 	.remove	= __exit_p(tfp410_remove),
- 	.driver	= {
- 		.name	= "tfp410",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = tfp410_of_match,
+ static struct platform_driver omap_venchw_driver = {
+ 	.probe		= omap_venchw_probe,
+ 	.remove         = __exit_p(omap_venchw_remove),
+@@ -901,6 +934,7 @@ static struct platform_driver omap_venchw_driver = {
+ 		.name   = "omapdss_venc",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &venc_pm_ops,
++		.of_match_table = venc_of_match,
  	},
  };
  

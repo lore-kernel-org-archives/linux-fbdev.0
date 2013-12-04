@@ -1,162 +1,75 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 30 Dec 2013 13:19:09 +0000
-Subject: [PATCH 1/2] ARM: omapfb: add coherent dma memory support
-Message-Id: <1388409550-10720-2-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:44 +0000
+Subject: [PATCH 17/26] ARM: omap3-tobi.dts: add lcd (TEST)
+Message-Id: <1386160133-24026-18-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1388409550-10720-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1388409550-10720-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The omapfb driver uses dma_alloc to reserve memory for the framebuffers.
-However, on some use cases, even when CMA is in use, it's quite probable
-that omapfb fails to allocate the fb, either due to not enough free dma
-memory, fragmented dma memory, or CMA failing to make enough contiguous
-space.
+This is a test for Overo with Palo43 expansion, _not_ Tobi. Palo43
+doesn't have a dts, but seems to work ok with omap3-tobi.dts, so I used
+it as a test.
 
-This patch adds a kernel cmdline parameter 'omapfb_vram' which can be
-used to give the size of a memory area reserved exclusively for omapfb,
-and optionally a physical address where the memory area is reserved.
-
-The memory area is reserved with memblock, and assigned to omapfb with
-dma_declare_coherent_memory. The dma_alloc function will first try to
-allocate the fb from the coherent memory area, and if that fails, it'll
-use the normal method of allocation.
+Not to be merged.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Ivaylo Dimitrov <freemangordon@abv.bg>
 ---
- arch/arm/mach-omap2/common.c |  1 +
- arch/arm/mach-omap2/common.h |  2 ++
- arch/arm/mach-omap2/fb.c     | 77 +++++++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 79 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/omap3-tobi.dts | 40 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
-diff --git a/arch/arm/mach-omap2/common.c b/arch/arm/mach-omap2/common.c
-index 2dabb9ecb986..9beecded0380 100644
---- a/arch/arm/mach-omap2/common.c
-+++ b/arch/arm/mach-omap2/common.c
-@@ -33,4 +33,5 @@ void __init omap_reserve(void)
- 	omap_dsp_reserve_sdram_memblock();
- 	omap_secure_ram_reserve_memblock();
- 	omap_barrier_reserve_memblock();
-+	omap_fb_reserve_memblock();
- }
-diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
-index e30ef6797c63..21afdc0fe15e 100644
---- a/arch/arm/mach-omap2/common.h
-+++ b/arch/arm/mach-omap2/common.h
-@@ -304,6 +304,8 @@ extern void omap_reserve(void);
- struct omap_hwmod;
- extern int omap_dss_reset(struct omap_hwmod *);
- 
-+extern void omap_fb_reserve_memblock(void);
-+
- /* SoC specific clock initializer */
- extern int (*omap_clk_init)(void);
- 
-diff --git a/arch/arm/mach-omap2/fb.c b/arch/arm/mach-omap2/fb.c
-index 26e28e94f625..80630329e508 100644
---- a/arch/arm/mach-omap2/fb.c
-+++ b/arch/arm/mach-omap2/fb.c
-@@ -30,9 +30,11 @@
- #include <linux/dma-mapping.h>
- 
- #include <asm/mach/map.h>
-+#include <asm/memblock.h>
- 
- #include "soc.h"
- #include "display.h"
-+#include "common.h"
- 
- #ifdef CONFIG_OMAP2_VRFB
- 
-@@ -106,10 +108,83 @@ static struct platform_device omap_fb_device = {
- 	.num_resources = 0,
+diff --git a/arch/arm/boot/dts/omap3-tobi.dts b/arch/arm/boot/dts/omap3-tobi.dts
+index 7e4ad2aec37a..49c6f3f17804 100644
+--- a/arch/arm/boot/dts/omap3-tobi.dts
++++ b/arch/arm/boot/dts/omap3-tobi.dts
+@@ -81,3 +81,43 @@
+ &mmc3 {
+ 	status = "disabled";
  };
- 
-+static phys_addr_t omapfb_mem_base __initdata;
-+static phys_addr_t omapfb_mem_size __initdata;
 +
-+static int __init early_omapfb_vram(char *p)
-+{
-+	omapfb_mem_size = memparse(p, &p);
++&dpi {
++	vdds_dsi-supply = <&vpll2>;
 +
-+	if (!omapfb_mem_size) {
-+		pr_err("omapfb: bad size for 'omapfb_vram' param\n");
-+		return 0;
-+	}
++	dpi_out: endpoint {
++		remote-endpoint = <&lcd_in>;
++		data-lines = <24>;
++	};
++};
 +
-+	if (*p = '@') {
-+		omapfb_mem_base = memparse(p + 1, NULL);
++/ {
++	aliases {
++		display0 = &lcd0;
++	};
 +
-+		if (!omapfb_mem_base) {
-+			pr_err("omapfb: bad addr for 'omapfb_vram' param\n");
-+			omapfb_mem_size = 0;
-+			return 0;
-+		}
-+	}
++	lcd0: display@0 {
++		compatible = "samsung,lte430wq-f0c", "panel-dpi";
 +
-+	return 0;
-+}
-+early_param("omapfb_vram", early_omapfb_vram);
++		lcd_in: endpoint {
++			remote-endpoint = <&dpi_out>;
++		};
 +
-+void __init omap_fb_reserve_memblock(void)
-+{
-+	int r;
++		panel-timing {
++			clock-frequency = <9200000>;
++			hactive = <480>;
++			vactive = <272>;
++			hfront-porch = <8>;
++			hback-porch = <4>;
++			hsync-len = <41>;
++			vback-porch = <2>;
++			vfront-porch = <4>;
++			vsync-len = <10>;
 +
-+	if (!omapfb_mem_size)
-+		return;
-+
-+	if (omapfb_mem_base) {
-+		r = memblock_reserve(omapfb_mem_base, omapfb_mem_size);
-+
-+		if (r) {
-+			pr_err("omapfb: memblock_reserve failed: %d\n", r);
-+			return;
-+		}
-+	} else {
-+		omapfb_mem_base = memblock_alloc(omapfb_mem_size, SZ_1M);
-+
-+		if (!omapfb_mem_base) {
-+			pr_err("omapfb: memblock_alloc failed\n");
-+			return;
-+		}
-+	}
-+
-+	memblock_free(omapfb_mem_base, omapfb_mem_size);
-+	memblock_remove(omapfb_mem_base, omapfb_mem_size);
-+
-+	pr_info("omapfb: reserved %pa bytes at %pa\n",
-+			&omapfb_mem_size, &omapfb_mem_base);
-+}
-+
- int __init omap_init_fb(void)
- {
--	return platform_device_register(&omap_fb_device);
-+	int r;
-+
-+	r = platform_device_register(&omap_fb_device);
-+
-+	if (r)
-+		return r;
-+
-+	if (!omapfb_mem_base)
-+		return 0;
-+
-+	r = dma_declare_coherent_memory(&omap_fb_device.dev,
-+					  omapfb_mem_base, omapfb_mem_base,
-+					  omapfb_mem_size, DMA_MEMORY_MAP);
-+	if (!(r & DMA_MEMORY_MAP))
-+		pr_err("omapfb: dma_declare_coherent_memory failed\n");
-+
-+	return 0;
- }
-+
- #else
- int __init omap_init_fb(void) { return 0; }
- #endif
++			hsync-active = <0>;
++			vsync-active = <0>;
++			de-active = <1>;
++			pixelclk-active = <1>;
++		};
++	};
++};
 -- 
 1.8.3.2
 

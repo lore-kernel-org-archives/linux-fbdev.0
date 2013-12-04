@@ -1,47 +1,120 @@
-From: Levente Kurusa <levex@linux.com>
-Date: Mon, 16 Dec 2013 17:16:14 +0000
-Subject: Re: [PATCH 3/4] backlight: lcd: call put_device if device_register fails
-Message-Id: <52AF355E.3080105@linux.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:43 +0000
+Subject: [PATCH 16/26] ARM: omap4-sdp.dts: add display information
+Message-Id: <1386160133-24026-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386959996-7958-1-git-send-email-levex@linux.com> <1386959996-7958-4-git-send-email-levex@linux.com> <006f01cefa1a$97ea4710$c7bed530$%han@samsung.com>
-In-Reply-To: <006f01cefa1a$97ea4710$c7bed530$%han@samsung.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>, 'Andrew Morton' <akpm@linux-foundation.org>
-Cc: 'LKML' <linux-kernel@vger.kernel.org>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 12/16/2013 05:52 AM, Jingoo Han wrote:
-> On Saturday, December 14, 2013 3:40 AM, Levente Kurusa wrote:
->>
->> Currently we kfree the container of the device which failed to register.
->> This is wrong as the last reference is not given up with a put_device
->> call. Also, now that we have put_device() callen, we no longer need
->> the kfree as the new_ld->dev.release function will take care of kfreeing
->> the associated memory.
->>
->> Signed-off-by: Levente Kurusa <levex@linux.com>
-> 
-> (+cc Andrew Morton)
-> 
-> Acked-by: Jingoo Han <jg1.han@samsung.com>
-> 
-> It looks good.
-> According to the comment of device_register, put_device()
-> should be used, instead of directly freeing.
-Indeed, this is also mostly explained in [0/4]. Thanks for the Ack!
-> 
-[...]
-> 
-> Levente Kurusa,
-> By the way, don't send the same mails three times, without any
-> reason. It is the waste of traffic. :-(
-> 
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/boot/dts/omap4-sdp.dts | 91 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 91 insertions(+)
 
-Yea, sorry about that I messed up my git's smtp config and hence most of the
-messages bounced off. It didn't even reach LKML. Sorry once more.
-
-
+diff --git a/arch/arm/boot/dts/omap4-sdp.dts b/arch/arm/boot/dts/omap4-sdp.dts
+index 5fc3f43c5a81..e3048f849612 100644
+--- a/arch/arm/boot/dts/omap4-sdp.dts
++++ b/arch/arm/boot/dts/omap4-sdp.dts
+@@ -550,3 +550,94 @@
+ 	mode = <3>;
+ 	power = <50>;
+ };
++
++&dsi1 {
++	vdds_dsi-supply = <&vcxio>;
++
++	dsi1_out_ep: endpoint {
++		remote-endpoint = <&lcd0_in>;
++		lanes = <0 1 2 3 4 5>;
++	};
++
++	lcd0: display@0 {
++		compatible = "tpo,taal", "panel-dsi-cm";
++
++		gpios = <&gpio4 6 0>;	/* 102, reset */
++
++		lcd0_in: endpoint {
++			remote-endpoint = <&dsi1_out_ep>;
++		};
++	};
++};
++
++&dsi2 {
++	vdds_dsi-supply = <&vcxio>;
++
++	dsi2_out_ep: endpoint {
++		remote-endpoint = <&lcd1_in>;
++		lanes = <0 1 2 3 4 5>;
++	};
++
++	lcd1: display@1 {
++		compatible = "tpo,taal", "panel-dsi-cm";
++
++		gpios = <&gpio4 8 0>;	/* 104, reset */
++
++		lcd1_in: endpoint {
++			remote-endpoint = <&dsi2_out_ep>;
++		};
++	};
++};
++
++&hdmi {
++	vdda_hdmi_dac-supply = <&vdac>;
++
++	hdmi_out: endpoint {
++		remote-endpoint = <&tpd12s015_in>;
++	};
++};
++
++/ {
++	aliases {
++		display0 = &lcd0;
++		display1 = &lcd1;
++		display2 = &hdmi0;
++	};
++
++	tpd12s015: encoder@0 {
++		compatible = "ti,tpd12s015";
++
++		gpios = <&gpio2 28 0>,	/* 60, CT CP HPD */
++			<&gpio2 9 0>,	/* 41, LS OE */
++			<&gpio2 31 0>;	/* 63, HPD */
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				tpd12s015_in: endpoint@0 {
++					remote-endpoint = <&hdmi_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++
++				tpd12s015_out: endpoint@1 {
++					remote-endpoint = <&hdmi_connector_in>;
++				};
++			};
++		};
++	};
++
++	hdmi0: connector@0 {
++		compatible = "ti,hdmi-connector";
++
++		hdmi_connector_in: endpoint {
++			remote-endpoint = <&tpd12s015_out>;
++		};
++	};
++};
 -- 
-Regards,
-Levente Kurusa
+1.8.3.2
+

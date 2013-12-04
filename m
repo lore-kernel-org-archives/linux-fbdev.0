@@ -1,187 +1,114 @@
-From: Florian Vaussard <florian.vaussard@epfl.ch>
-Date: Tue, 17 Dec 2013 17:17:28 +0000
-Subject: Re: [PATCHv2 17/27] ARM: omap3-tobi.dts: add lcd (TEST)
-Message-Id: <52B08728.8050105@epfl.ch>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:27 +0000
+Subject: [PATCH 00/26] OMAPDSS: DT support (Christmas edition)
+Message-Id: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com> <1387205794-32246-18-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-18-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Stefan Roese <stefan.roese@gmail.com>, Sebastian Reichel <sre@debian.org>, Robert Nelson <robertcnelson@gmail.com>, "Dr . H . Nikolaus Schaller" <hns@goldelico.com>, Marek Belisko <marek@goldelico.com>
 
-Hello
+Hi,
 
-On 12/16/2013 03:56 PM, Tomi Valkeinen wrote:
-> This is a test for Overo with Palo43 expansion, _not_ Tobi. Palo43
-> doesn't have a dts, but seems to work ok with omap3-tobi.dts, so I used
-> it as a test.
-> 
-> Not to be merged.
-> 
+Here's a new version for DT support to OMAP Display Subsystem. See
+http://article.gmane.org/gmane.linux.ports.arm.omap/102689 for the intro of the
+previous version, which contains thoughts about the related problems.
 
-FYI, I got the DVI (HDMI connector) on the Overo/Tobi to work with the patch
-below (not to be merged, and probably corrupted by our mail server), until a
-framebuffer console. So for me:
+The major change in this version is the use of V4L2 and CDF style port/endpoint
+style in the DT data. However, note that even if the DT data contains proper
+port & endpoint data, the drivers only use the first endpoint. This is to
+simplify the patches, as adding full support for the ports and endpoints to the
+drivers will be a big task. This approach still works with more or less all the
+boards, as the only cases where the simpler model is an issue are the boards
+with multiple display devices connected to a single output.
 
-Tested-by: Florian Vaussard <florian.vaussard@epfl.ch>
+Laurent, I'd appreciate if you could have a look at the .dts changes, to see if
+there's anything that's clearly not CDF compatible.
 
-Regards,
-Florian
+The patches can also be found from:
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dt
 
-8< --------------------------------
-From 29237c38d35b833efe304b1a58463127555c4748 Mon Sep 17 00:00:00 2001
-From: Florian Vaussard <florian.vaussard@epfl.ch>
-Date: Tue, 17 Dec 2013 17:47:04 +0100
-Subject: [PATCH] ARM: omap3-tobi.dts: add dvi output
+A few notes:
 
-Add DVI output to Overo/Tobi board.
+- The DT data are added separately in the end of .dts files for clarity. In the
+  final version I will move them to appropriate places in the .dts files.
 
-Signed-off-by: Florian Vaussard <florian.vaussard@epfl.ch>
----
- arch/arm/boot/dts/omap3-overo.dtsi | 33 +++++++++++++++++++++++
- arch/arm/boot/dts/omap3-tobi.dts   | 54
-++++++++++++++++++++++++++++++++++++++
- 2 files changed, 87 insertions(+)
+- No binding documentation. I will add them for the next version, if there are
+  no major changes needed. Hopefully the bindings are quite self-explanatory
+  for people with understanding of the hardware in question.
 
-diff --git a/arch/arm/boot/dts/omap3-overo.dtsi
-b/arch/arm/boot/dts/omap3-overo.dtsi
-index a461d2f..90b08f6 100644
---- a/arch/arm/boot/dts/omap3-overo.dtsi
-+++ b/arch/arm/boot/dts/omap3-overo.dtsi
-@@ -89,6 +89,39 @@
-                        0x170 (PIN_OUTPUT | MUX_MODE0) /*
-uart3_tx_irtx.uart3_tx_irtx */
-                >;
-        };
-+
-+       dss_dpi_pins: pinmux_dss_dpi_pins {
-+               pinctrl-single,pins = <
-+                       0x0a4 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_pclk.dss_pclk */
-+                       0x0a6 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_hsync.dss_hsync */
-+                       0x0a8 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_vsync.dss_vsync */
-+                       0x0aa (PIN_OUTPUT | MUX_MODE0)   /*
-dss_acbias.dss_acbias */
-+                       0x0ac (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data0.dss_data0 */
-+                       0x0ae (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data1.dss_data1 */
-+                       0x0b0 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data2.dss_data2 */
-+                       0x0b2 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data3.dss_data3 */
-+                       0x0b4 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data4.dss_data4 */
-+                       0x0b6 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data5.dss_data5 */
-+                       0x0b8 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data6.dss_data6 */
-+                       0x0ba (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data7.dss_data7 */
-+                       0x0bc (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data8.dss_data8 */
-+                       0x0be (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data9.dss_data9 */
-+                       0x0c0 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data10.dss_data10 */
-+                       0x0c2 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data11.dss_data11 */
-+                       0x0c4 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data12.dss_data12 */
-+                       0x0c6 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data13.dss_data13 */
-+                       0x0c8 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data14.dss_data14 */
-+                       0x0ca (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data15.dss_data15 */
-+                       0x0cc (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data16.dss_data16 */
-+                       0x0ce (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data17.dss_data17 */
-+                       0x0d0 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data18.dss_data18 */
-+                       0x0d2 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data19.dss_data19 */
-+                       0x0d4 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data20.dss_data20 */
-+                       0x0d6 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data21.dss_data21 */
-+                       0x0d8 (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data22.dss_data22 */
-+                       0x0da (PIN_OUTPUT | MUX_MODE0)   /*
-dss_data23.dss_data23 */
-+               >;
-+       };
- };
+- The connectors' compatible strings are "ti,xxx". As there's nothing TI
+  specific there, I think I will rename them to be without "ti".
 
- &uart3 {
-diff --git a/arch/arm/boot/dts/omap3-tobi.dts
-b/arch/arm/boot/dts/omap3-tobi.dts
-index 7e4ad2a..bfb1a1d 100644
---- a/arch/arm/boot/dts/omap3-tobi.dts
-+++ b/arch/arm/boot/dts/omap3-tobi.dts
-@@ -81,3 +81,57 @@
- &mmc3 {
-        status = "disabled";
- };
-+
-+&dss {
-+       pinctrl-names = "default";
-+       pinctrl-0 = <&dss_dpi_pins>;
-+
-+       vdds_dsi-supply = <&vpll2>;
-+
-+       dpi_out: endpoint {
-+               remote-endpoint = <&tfp410_in>;
-+               data-lines = <24>;
-+       };
-+};
-+
-+/ {
-+       aliases {
-+               display0 = &dvi0;
-+       };
-+
-+       tfp410: encoder@0 {
-+               compatible = "ti,tfp410";
-+
-+               ports {
-+                       #address-cells = <1>;
-+                       #size-cells = <0>;
-+
-+                       port@0 {
-+                               reg = <0>;
-+
-+                               tfp410_in: endpoint@0 {
-+                                       remote-endpoint = <&dpi_out>;
-+                               };
-+                       };
-+
-+                       port@1 {
-+                               reg = <1>;
-+
-+                               tfp410_out: endpoint@0 {
-+                                       remote-endpoint <&dvi_connector_in>;
-+                               };
-+                       };
-+               };
-+       };
-+
-+       dvi0: connector@0 {
-+               compatible = "dvi-connector";
-+               label = "dvi";
-+
-+               i2c-bus = <&i2c3>;
-+
-+               dvi_connector_in: endpoint {
-+                       remote-endpoint = <&tfp410_out>;
-+               };
-+       };
-+};
+ Tomi
+
+Tomi Valkeinen (26):
+  OMAPDSS: rename display-sysfs 'name' entry
+  OMAPDSS: DSI: fix fifosize
+  ARM: OMAP: remove DSS DT hack
+  OMAPDSS: remove DT hacks for regulators
+  ARM: OMAP2+: add omapdss_init_of()
+  OMAPDSS: if dssdev->name=NULL, use alias
+  OMAPDSS: get dssdev->alias from DT alias
+  OMAPFB: clean up default display search
+  OMAPFB: search for default display with DT alias
+  OMAPDSS: add of helpers
+  OMAPDSS: Add DT support to DSS, DISPC, DPI, HDMI, VENC
+  OMAPDSS: Add DT support to DSI
+  ARM: omap3.dtsi: add omapdss information
+  ARM: omap4.dtsi: add omapdss information
+  ARM: omap4-panda.dts: add display information
+  ARM: omap4-sdp.dts: add display information
+  ARM: omap3-tobi.dts: add lcd (TEST)
+  ARM: omap3-beagle.dts: add display information
+  ARM: omap3-beagle-xm.dts: add display information
+  OMAPDSS: panel-dsi-cm: Add DT support
+  OMAPDSS: encoder-tfp410: Add DT support
+  OMAPDSS: connector-dvi: Add DT support
+  OMAPDSS: encoder-tpd12s015: Add DT support
+  OMAPDSS: hdmi-connector: Add DT support
+  OMAPDSS: panel-dpi: Add DT support
+  OMAPDSS: connector-analog-tv: Add DT support
+
+ arch/arm/boot/dts/omap3-beagle-xm.dts              |  67 ++++++
+ arch/arm/boot/dts/omap3-beagle.dts                 |  67 ++++++
+ arch/arm/boot/dts/omap3-tobi.dts                   |  40 ++++
+ arch/arm/boot/dts/omap3.dtsi                       |  43 ++++
+ arch/arm/boot/dts/omap4-panda-common.dtsi          | 102 ++++++++
+ arch/arm/boot/dts/omap4-sdp.dts                    |  91 ++++++++
+ arch/arm/boot/dts/omap4.dtsi                       |  58 +++++
+ arch/arm/mach-omap2/Makefile                       |   2 +-
+ arch/arm/mach-omap2/board-generic.c                |   2 +
+ arch/arm/mach-omap2/common.h                       |   2 +
+ arch/arm/mach-omap2/display.c                      |  62 +++++
+ arch/arm/mach-omap2/dss-common.c                   | 259 ---------------------
+ arch/arm/mach-omap2/dss-common.h                   |  13 --
+ arch/arm/mach-omap2/pdata-quirks.c                 |   4 -
+ .../video/omap2/displays-new/connector-analog-tv.c |  66 +++++-
+ drivers/video/omap2/displays-new/connector-dvi.c   |  43 ++++
+ drivers/video/omap2/displays-new/connector-hdmi.c  |  30 +++
+ drivers/video/omap2/displays-new/encoder-tfp410.c  |  43 +++-
+ .../video/omap2/displays-new/encoder-tpd12s015.c   |  56 +++++
+ drivers/video/omap2/displays-new/panel-dpi.c       |  64 ++++-
+ drivers/video/omap2/displays-new/panel-dsi-cm.c    |  65 +++++-
+ drivers/video/omap2/dss/Makefile                   |   2 +-
+ drivers/video/omap2/dss/dispc.c                    |   7 +
+ drivers/video/omap2/dss/display-sysfs.c            |   4 +-
+ drivers/video/omap2/dss/display.c                  |  23 +-
+ drivers/video/omap2/dss/dpi.c                      |  50 ++++
+ drivers/video/omap2/dss/dsi.c                      | 166 +++++++++++--
+ drivers/video/omap2/dss/dss-of.c                   | 160 +++++++++++++
+ drivers/video/omap2/dss/dss.c                      |  10 +
+ drivers/video/omap2/dss/hdmi4.c                    |  10 +-
+ drivers/video/omap2/dss/venc.c                     |  34 +++
+ drivers/video/omap2/omapfb/omapfb-main.c           |  67 ++++--
+ include/video/omapdss.h                            |   6 +
+ 33 files changed, 1390 insertions(+), 328 deletions(-)
+ delete mode 100644 arch/arm/mach-omap2/dss-common.c
+ delete mode 100644 arch/arm/mach-omap2/dss-common.h
+ create mode 100644 drivers/video/omap2/dss/dss-of.c
+
 -- 
-1.8.1.2
-
+1.8.3.2
 

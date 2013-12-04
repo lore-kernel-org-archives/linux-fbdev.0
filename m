@@ -1,48 +1,84 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Mon, 02 Dec 2013 18:25:57 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 08:49:34 +0000
 Subject: Re: [PATCH] atmel_lcdfb: fix module autoload
-Message-Id: <529CD0B5.600@atmel.com>
+Message-Id: <529EEC9E.8020302@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="8lf1qHBVARG1F16uq0je2hCQErvFHa21O"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382459817-26990-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1382459817-26990-1-git-send-email-jhovold@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Johan Hovold <jhovold@gmail.com>, linux-fbdev@vger.kernel.org, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1382459817-26990-1-git-send-email-jhovold@gmail.com> <529CD0B5.600@atmel.com>
+In-Reply-To: <529CD0B5.600@atmel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>, Johan Hovold <jhovold@gmail.com>, linux-fbdev@vger.kernel.org, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 Cc: linux-kernel@vger.kernel.org
 
-On 22/10/2013 18:36, Johan Hovold :
-> Add missing module device table which is needed for module autoloading.
->
-> Signed-off-by: Johan Hovold <jhovold@gmail.com>
+--8lf1qHBVARG1F16uq0je2hCQErvFHa21O
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+On 2013-12-02 20:25, Nicolas Ferre wrote:
+> On 22/10/2013 18:36, Johan Hovold :
+>> Add missing module device table which is needed for module autoloading=
+=2E
+>>
+>> Signed-off-by: Johan Hovold <jhovold@gmail.com>
+>=20
+> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+>=20
+> Jean-Christophe, Tomi,
+>=20
+> Can you please take this patch?
+>=20
+> Best regards,
+>=20
+>=20
+>> ---
+>>   drivers/video/atmel_lcdfb.c | 1 +
+>>   1 file changed, 1 insertion(+)
+>>
+>> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c=
 
-Jean-Christophe, Tomi,
-
-Can you please take this patch?
-
-Best regards,
-
-
-> ---
->   drivers/video/atmel_lcdfb.c | 1 +
->   1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index 088511a..67b339c 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -94,6 +94,7 @@ static const struct platform_device_id atmel_lcdfb_devtypes[] = {
->   		/* terminator */
->   	}
->   };
-> +MODULE_DEVICE_TABLE(platform, atmel_lcdfb_devtypes);
->
->   static struct atmel_lcdfb_config *
->   atmel_lcdfb_get_config(struct platform_device *pdev)
->
+>> index 088511a..67b339c 100644
+>> --- a/drivers/video/atmel_lcdfb.c
+>> +++ b/drivers/video/atmel_lcdfb.c
+>> @@ -94,6 +94,7 @@ static const struct platform_device_id
+>> atmel_lcdfb_devtypes[] =3D {
+>>           /* terminator */
+>>       }
+>>   };
+>> +MODULE_DEVICE_TABLE(platform, atmel_lcdfb_devtypes);
+>>
+>>   static struct atmel_lcdfb_config *
+>>   atmel_lcdfb_get_config(struct platform_device *pdev)
+>>
 
 
--- 
-Nicolas Ferre
+Thanks, queued for 3.13 fbdev fixes.
+
+ Tomi
+
+
+
+--8lf1qHBVARG1F16uq0je2hCQErvFHa21O
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSnuyeAAoJEPo9qoy8lh71WB4P/12WljcUTuIjBqzdrrMOchB1
+l/3qszvE7jVxsAUXX8FMb7KmVilQCGlffUz7angvUOEyLh2DWl+Ef37N6zzr5ufX
+XRa85EoLG9U9iSfWDtV74UQrfUphNCdPqBkN2VOVZJIr+ohGEhbkIuxLSdfWAT81
+/qoPPbR8+yJX3YwD4BC5AbQUmpifT724KbDN/qdNU4G2N74t8n1Q4/btPYx5Hzdh
+VKtnVStyCG10I0nYIAveQW/qES+isTApPIKWusggsnHk1075vkJ4XtWjpZMSAHyL
+VINL77L8JZz/J0HJAnAnjVghVXbTtHYKgLgEF0q0yR9n+4w7eFFldVQtz+x28G0V
+eIeXqiY80+BxYE7db6R4POCEOCdy6uq3b0L135VBBO2U9iFZ0gEWboWEAZ3kD3KM
+heOZ4//F2vZX/HTo5+1kF4GkBRgGaUddTCSKqLqtZAS7ii3yunQCVAMK2dVySnaC
+wxL+kErO0IwyZW5kvw9/JDcmbg7GD3rFQrriCmK5nsbPMMczAV6qfAP1ntfCi8sk
+m45qgLE+Ug5sLlkm1rSzAm2y+W0pRMO+uq2nuXqkR6UyTZyn8bHDfmWwz+hE1Nl3
+5t7GWcAjmBXEPg0Y+kFFVHOEz7MBdFOKfgolOZ3hFIVP/whIz+/BP6396y/igjap
+Lf5hmQbRqvdmqWoqDiT1
+=phRV
+-----END PGP SIGNATURE-----
+
+--8lf1qHBVARG1F16uq0je2hCQErvFHa21O--

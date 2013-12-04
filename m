@@ -1,55 +1,115 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Fri, 20 Dec 2013 17:52:44 +0000
-Subject: [RFC PATCH 3/5] gpu: ipu-v3: Add ipu_idmac_get_current_buffer function
-Message-Id: <1387561966-31758-4-git-send-email-p.zabel@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:50 +0000
+Subject: [PATCH 23/26] OMAPDSS: encoder-tpd12s015: Add DT support
+Message-Id: <1386160133-24026-24-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This function returns the currently active buffer (0 or 1)
-of a double buffered IDMAC channel. It is to be used by the
-CSI driver.
-
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/gpu/ipu-v3/ipu-common.c | 9 +++++++++
- include/video/imx-ipu-v3.h      | 1 +
- 2 files changed, 10 insertions(+)
+ .../video/omap2/displays-new/encoder-tpd12s015.c   | 56 ++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-common.c b/drivers/gpu/ipu-v3/ipu-common.c
-index 8f98719..29c89f2 100644
---- a/drivers/gpu/ipu-v3/ipu-common.c
-+++ b/drivers/gpu/ipu-v3/ipu-common.c
-@@ -663,6 +663,15 @@ int ipu_module_disable(struct ipu_soc *ipu, u32 mask)
+diff --git a/drivers/video/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
+index d5c936cb217f..6529a4ff50ca 100644
+--- a/drivers/video/omap2/displays-new/encoder-tpd12s015.c
++++ b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
+@@ -15,6 +15,7 @@
+ #include <linux/slab.h>
+ #include <linux/gpio.h>
+ #include <linux/platform_device.h>
++#include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -289,6 +290,49 @@ static int tpd_probe_pdata(struct platform_device *pdev)
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(ipu_module_disable);
  
-+int ipu_idmac_get_current_buffer(struct ipuv3_channel *channel)
++static int tpd_probe_of(struct platform_device *pdev)
 +{
-+	struct ipu_soc *ipu = channel->ipu;
-+	unsigned int chno = channel->num;
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	int gpio;
 +
-+	return (ipu_cm_read(ipu, IPU_CHA_CUR_BUF(chno)) & idma_mask(chno)) ? 1 : 0;
++	/* CT CP HPD GPIO */
++	gpio = of_get_gpio(node, 0);
++	if (!gpio_is_valid(gpio)) {
++		dev_err(&pdev->dev, "failed to parse CT CP HPD gpio\n");
++		return gpio;
++	}
++	ddata->ct_cp_hpd_gpio = gpio;
++
++	/* LS OE GPIO */
++	gpio = of_get_gpio(node, 1);
++	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++		ddata->ls_oe_gpio = gpio;
++	} else {
++		dev_err(&pdev->dev, "failed to parse LS OE gpio\n");
++		return gpio;
++	}
++
++	/* HPD GPIO */
++	gpio = of_get_gpio(node, 2);
++	if (!gpio_is_valid(gpio)) {
++		dev_err(&pdev->dev, "failed to parse HPD gpio\n");
++		return gpio;
++	}
++	ddata->hpd_gpio = gpio;
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(ipu_idmac_get_current_buffer);
 +
- void ipu_idmac_select_buffer(struct ipuv3_channel *channel, u32 buf_num)
+ static int tpd_probe(struct platform_device *pdev)
  {
- 	struct ipu_soc *ipu = channel->ipu;
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index 274da71..78ea31b 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -103,6 +103,7 @@ int ipu_idmac_wait_busy(struct ipuv3_channel *channel, int ms);
+ 	struct omap_dss_device *in, *dssdev;
+@@ -307,6 +351,10 @@ static int tpd_probe(struct platform_device *pdev)
+ 		r = tpd_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = tpd_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -379,12 +427,20 @@ static int __exit tpd_remove(struct platform_device *pdev)
+ 	return 0;
+ }
  
- void ipu_idmac_set_double_buffer(struct ipuv3_channel *channel,
- 		bool doublebuffer);
-+int ipu_idmac_get_current_buffer(struct ipuv3_channel *channel);
- void ipu_idmac_select_buffer(struct ipuv3_channel *channel, u32 buf_num);
++static const struct of_device_id tpd_of_match[] = {
++	{ .compatible = "ti,tpd12s015", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, tpd_of_match);
++
+ static struct platform_driver tpd_driver = {
+ 	.probe	= tpd_probe,
+ 	.remove	= __exit_p(tpd_remove),
+ 	.driver	= {
+ 		.name	= "tpd12s015",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = tpd_of_match,
+ 	},
+ };
  
- /*
 -- 
-1.8.5.1
+1.8.3.2
 

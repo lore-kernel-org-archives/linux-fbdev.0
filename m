@@ -1,133 +1,89 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:33 +0000
-Subject: [PATCHv2 26/27] OMAPDSS: panel-dpi: Add DT support
-Message-Id: <1387205794-32246-27-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:41 +0000
+Subject: [PATCH 14/26] ARM: omap4.dtsi: add omapdss information
+Message-Id: <1386160133-24026-15-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/displays-new/panel-dpi.c | 64 +++++++++++++++++++++++++++-
- 1 file changed, 63 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/omap4.dtsi | 58 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
-diff --git a/drivers/video/omap2/displays-new/panel-dpi.c b/drivers/video/omap2/displays-new/panel-dpi.c
-index 5f8f7e7c81ef..f1653042c21d 100644
---- a/drivers/video/omap2/displays-new/panel-dpi.c
-+++ b/drivers/video/omap2/displays-new/panel-dpi.c
-@@ -13,9 +13,12 @@
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
- 
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-+#include <video/of_display_timing.h>
- 
- struct panel_drv_data {
- 	struct omap_dss_device dssdev;
-@@ -70,7 +73,8 @@ static int panel_dpi_enable(struct omap_dss_device *dssdev)
- 	if (omapdss_device_is_enabled(dssdev))
- 		return 0;
- 
--	in->ops.dpi->set_data_lines(in, ddata->data_lines);
-+	if (ddata->data_lines)
-+		in->ops.dpi->set_data_lines(in, ddata->data_lines);
- 	in->ops.dpi->set_timings(in, &ddata->videomode);
- 
- 	r = in->ops.dpi->enable(in);
-@@ -182,6 +186,52 @@ static int panel_dpi_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int panel_dpi_probe_of(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+	int r;
-+	struct display_timing timing;
-+	struct videomode vm;
-+	int gpio;
+diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
+index a1e05853afcd..a9c0161d5368 100644
+--- a/arch/arm/boot/dts/omap4.dtsi
++++ b/arch/arm/boot/dts/omap4.dtsi
+@@ -705,5 +705,63 @@
+ 			dmas = <&sdma 117>, <&sdma 116>;
+ 			dma-names = "tx", "rx";
+ 		};
 +
-+	gpio = of_get_gpio(node, 0);
-+	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+		ddata->enable_gpio = gpio;
-+	} else {
-+		dev_err(&pdev->dev, "failed to parse enable gpio\n");
-+		return gpio;
-+	}
++		dss@58000000 {
++			compatible = "ti,omap4-dss", "simple-bus";
++			reg = <0x58000000 0x80>;
++			ti,hwmods = "dss_core";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges;
 +
-+	gpio = of_get_gpio(node, 1);
-+	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+		ddata->backlight_gpio = gpio;
-+	} else {
-+		dev_err(&pdev->dev, "failed to parse backlight gpio\n");
-+		return gpio;
-+	}
++			dispc@58001000 {
++				compatible = "ti,omap4-dispc";
++				reg = <0x58001000 0x1000>;
++				interrupts = <0 25 0x4>;
++				ti,hwmods = "dss_dispc";
++			};
 +
-+	r = of_get_display_timing(node, "panel-timing", &timing);
-+	if (r) {
-+		dev_err(&pdev->dev, "failed to get video timing\n");
-+		return r;
-+	}
++			dpi: encoder@0 {
++				compatible = "ti,omap4-dpi";
++			};
 +
-+	videomode_from_timing(&timing, &vm);
-+	videomode_to_omap_video_timings(&vm, &ddata->videomode);
++			rfbi: encoder@58002000  {
++				compatible = "ti,omap4-rfbi";
++				reg = <0x58002000 0x1000>;
++				ti,hwmods = "dss_rfbi";
++			};
 +
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
++			/*
++			 * Accessing venc registers cause a crash on omap4, so
++			 * this is disabled for now.
++			 */
++			venc: encoder@58003000 {
++				compatible = "ti,omap4-venc";
++				reg = <0x58003000 0x1000>;
++				ti,hwmods = "dss_venc";
++				status = "disabled";
++			};
 +
-+	ddata->in = in;
++			dsi1: encoder@58004000 {
++				compatible = "ti,omap4-dsi";
++				reg = <0x58004000 0x200>;
++				interrupts = <0 53 0x4>;
++				ti,hwmods = "dss_dsi1";
++			};
 +
-+	return 0;
-+}
++			dsi2: encoder@58005000 {
++				compatible = "ti,omap4-dsi";
++				reg = <0x58005000 0x200>;
++				interrupts = <0 84 0x4>;
++				ti,hwmods = "dss_dsi2";
++			};
 +
- static int panel_dpi_probe(struct platform_device *pdev)
- {
- 	struct panel_drv_data *ddata;
-@@ -198,6 +248,10 @@ static int panel_dpi_probe(struct platform_device *pdev)
- 		r = panel_dpi_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = panel_dpi_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -254,12 +308,20 @@ static int __exit panel_dpi_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id panel_dpi_of_match[] = {
-+	{ .compatible = "panel-dpi", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, panel_dpi_of_match);
-+
- static struct platform_driver panel_dpi_driver = {
- 	.probe = panel_dpi_probe,
- 	.remove = __exit_p(panel_dpi_remove),
- 	.driver = {
- 		.name = "panel-dpi",
- 		.owner = THIS_MODULE,
-+		.of_match_table = panel_dpi_of_match,
- 	},
++			hdmi: encoder@58006000 {
++				compatible = "ti,omap4-hdmi";
++				reg = <0x58006000 0x1000>;
++				interrupts = <0 101 0x4>;
++				ti,hwmods = "dss_hdmi";
++			};
++		};
+ 	};
  };
- 
 -- 
 1.8.3.2
 

@@ -1,88 +1,91 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:13 +0000
-Subject: [PATCHv2 06/27] OMAPFB: clean up default display search
-Message-Id: <1387205794-32246-7-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:29 +0000
+Subject: [PATCH 02/26] OMAPDSS: DSI: fix fifosize
+Message-Id: <1386160133-24026-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Separate the code for finding the default display into a function for
-clarity and to make it easier to extend it in the future.
+DSI has separate TX and RX fifos. However, the current code only has one
+field where the fifo size is stored, and the code for both TX and RX
+config write to the same field. This has not caused issues, as we've
+been using the same fifo sizes.
+
+Fix this bug by creating separate fields for TX and RX fifo sizes.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c | 46 ++++++++++++++++++++------------
- 1 file changed, 29 insertions(+), 17 deletions(-)
+ drivers/video/omap2/dss/dsi.c | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 27d6905683f3..8bfe973e55ec 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2407,6 +2407,34 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
- 	return 0;
- }
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 6056b27cf73c..1cd3e47fd43f 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -297,7 +297,8 @@ struct dsi_data {
+ 	struct {
+ 		enum dsi_vc_source source;
+ 		struct omap_dss_device *dssdev;
+-		enum fifo_size fifo_size;
++		enum fifo_size tx_fifo_size;
++		enum fifo_size rx_fifo_size;
+ 		int vc_id;
+ 	} vc[4];
  
-+static struct omap_dss_device *
-+omapfb_find_default_display(struct omapfb2_device *fbdev)
-+{
-+	const char *def_name;
-+	int i;
-+
-+	/* search with the display name from the user or the board file */
-+
-+	def_name = omapdss_get_default_display_name();
-+
-+	if (def_name) {
-+		for (i = 0; i < fbdev->num_displays; ++i) {
-+			struct omap_dss_device *dssdev;
-+
-+			dssdev = fbdev->displays[i].dssdev;
-+
-+			if (dssdev->name && strcmp(def_name, dssdev->name) = 0)
-+				return dssdev;
-+		}
-+
-+		/* def_name given but not found */
-+		return NULL;
-+	}
-+
-+	/* return the first display we have in the list */
-+	return fbdev->displays[0].dssdev;
-+}
-+
- static int omapfb_probe(struct platform_device *pdev)
- {
- 	struct omapfb2_device *fbdev = NULL;
-@@ -2484,23 +2512,7 @@ static int omapfb_probe(struct platform_device *pdev)
- 	for (i = 0; i < fbdev->num_managers; i++)
- 		fbdev->managers[i] = omap_dss_get_overlay_manager(i);
+@@ -2427,14 +2428,14 @@ static void dsi_config_tx_fifo(struct platform_device *dsidev,
+ 	int add = 0;
+ 	int i;
  
--	def_display = NULL;
--
--	for (i = 0; i < fbdev->num_displays; ++i) {
--		struct omap_dss_device *dssdev;
--		const char *def_name;
--
--		def_name = omapdss_get_default_display_name();
--
--		dssdev = fbdev->displays[i].dssdev;
--
--		if (def_name = NULL ||
--			(dssdev->name && strcmp(def_name, dssdev->name) = 0)) {
--			def_display = dssdev;
--			break;
--		}
--	}
--
-+	def_display = omapfb_find_default_display(fbdev);
- 	if (def_display = NULL) {
- 		dev_err(fbdev->dev, "failed to find default display\n");
- 		r = -EPROBE_DEFER;
+-	dsi->vc[0].fifo_size = size1;
+-	dsi->vc[1].fifo_size = size2;
+-	dsi->vc[2].fifo_size = size3;
+-	dsi->vc[3].fifo_size = size4;
++	dsi->vc[0].tx_fifo_size = size1;
++	dsi->vc[1].tx_fifo_size = size2;
++	dsi->vc[2].tx_fifo_size = size3;
++	dsi->vc[3].tx_fifo_size = size4;
+ 
+ 	for (i = 0; i < 4; i++) {
+ 		u8 v;
+-		int size = dsi->vc[i].fifo_size;
++		int size = dsi->vc[i].tx_fifo_size;
+ 
+ 		if (add + size > 4) {
+ 			DSSERR("Illegal FIFO configuration\n");
+@@ -2460,14 +2461,14 @@ static void dsi_config_rx_fifo(struct platform_device *dsidev,
+ 	int add = 0;
+ 	int i;
+ 
+-	dsi->vc[0].fifo_size = size1;
+-	dsi->vc[1].fifo_size = size2;
+-	dsi->vc[2].fifo_size = size3;
+-	dsi->vc[3].fifo_size = size4;
++	dsi->vc[0].rx_fifo_size = size1;
++	dsi->vc[1].rx_fifo_size = size2;
++	dsi->vc[2].rx_fifo_size = size3;
++	dsi->vc[3].rx_fifo_size = size4;
+ 
+ 	for (i = 0; i < 4; i++) {
+ 		u8 v;
+-		int size = dsi->vc[i].fifo_size;
++		int size = dsi->vc[i].rx_fifo_size;
+ 
+ 		if (add + size > 4) {
+ 			DSSERR("Illegal FIFO configuration\n");
+@@ -2920,7 +2921,7 @@ static int dsi_vc_send_long(struct platform_device *dsidev, int channel,
+ 		DSSDBG("dsi_vc_send_long, %d bytes\n", len);
+ 
+ 	/* len + header */
+-	if (dsi->vc[channel].fifo_size * 32 * 4 < len + 4) {
++	if (dsi->vc[channel].tx_fifo_size * 32 * 4 < len + 4) {
+ 		DSSERR("unable to send long packet: packet too long.\n");
+ 		return -EINVAL;
+ 	}
 -- 
 1.8.3.2
 

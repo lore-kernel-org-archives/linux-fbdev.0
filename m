@@ -1,11 +1,73 @@
-From: ''Hyde Finance Loan Company''  <officexchange0002@magicboard.onmicrosoft.com>
-Date: Tue, 10 Dec 2013 11:22:57 +0000
-Subject: Personal Loan
-Message-Id: <17e7ee40-33dd-409e-a845-f38a05a829a3@SINPR06MB123.apcprd06.prod.outlook.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:34 +0000
+Subject: [PATCH 07/26] OMAPDSS: get dssdev->alias from DT alias
+Message-Id: <1386160133-24026-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Recipients <officexchange0002@magicboard.onmicrosoft.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Loans available at 3%.Contact us for more info if interested.Serious minded only.Contact us Via Email: hydenance@gmail.com
+We currently create a "displayX" style alias name for all displays,
+using a number that is incremented for each registered display. With the
+new DSS device model there is no clear order in which the displays are
+registered, and thus the numbering is somewhat random.
+
+This patch improves the behavior for DT case so that if the displays
+have been assigned DT aliases, those aliases will be used as DSS
+aliases.
+
+This means that "display0" is always the one specified in the DT alias,
+and thus display0 can be used as default display in case the user didn't
+specify a default display.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/display.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index a946cf7ed00f..2f689a5fc45b 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -26,6 +26,7 @@
+ #include <linux/module.h>
+ #include <linux/jiffies.h>
+ #include <linux/platform_device.h>
++#include <linux/of.h>
+ 
+ #include <video/omapdss.h>
+ #include "dss.h"
+@@ -133,9 +134,24 @@ static int disp_num_counter;
+ int omapdss_register_display(struct omap_dss_device *dssdev)
+ {
+ 	struct omap_dss_driver *drv = dssdev->driver;
++	int id;
+ 
+-	snprintf(dssdev->alias, sizeof(dssdev->alias),
+-			"display%d", disp_num_counter++);
++	/*
++	 * Note: this presumes all the displays are either using DT or non-DT,
++	 * which normally should be the case. This also presumes that all
++	 * displays either have an DT alias, or none has.
++	 */
++
++	if (dssdev->dev->of_node) {
++		id = of_alias_get_id(dssdev->dev->of_node, "display");
++
++		if (id < 0)
++			id = disp_num_counter++;
++	} else {
++		id = disp_num_counter++;
++	}
++
++	snprintf(dssdev->alias, sizeof(dssdev->alias), "display%d", id);
+ 
+ 	if (dssdev->name = NULL)
+ 		dssdev->name = dssdev->alias;
+-- 
+1.8.3.2
+

@@ -1,85 +1,95 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:21 +0000
-Subject: [PATCHv2 14/27] ARM: omap4.dtsi: add omapdss information
-Message-Id: <1387205794-32246-15-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:49 +0000
+Subject: [PATCH 22/26] OMAPDSS: connector-dvi: Add DT support
+Message-Id: <1386160133-24026-23-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/boot/dts/omap4.dtsi | 54 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 54 insertions(+)
+ drivers/video/omap2/displays-new/connector-dvi.c | 43 ++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
-index a1e05853afcd..a515f524ef3a 100644
---- a/arch/arm/boot/dts/omap4.dtsi
-+++ b/arch/arm/boot/dts/omap4.dtsi
-@@ -705,5 +705,59 @@
- 			dmas = <&sdma 117>, <&sdma 116>;
- 			dma-names = "tx", "rx";
- 		};
+diff --git a/drivers/video/omap2/displays-new/connector-dvi.c b/drivers/video/omap2/displays-new/connector-dvi.c
+index b6c50904038e..8f7e576769cd 100644
+--- a/drivers/video/omap2/displays-new/connector-dvi.c
++++ b/drivers/video/omap2/displays-new/connector-dvi.c
+@@ -277,6 +277,37 @@ static int dvic_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int dvic_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	struct device_node *adapter_node;
++	struct i2c_adapter *adapter;
 +
-+		dss: dss@58000000 {
-+			compatible = "ti,omap4-dss", "simple-bus";
-+			reg = <0x58000000 0x80>;
-+			ti,hwmods = "dss_core";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges;
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
 +
-+			dispc@58001000 {
-+				compatible = "ti,omap4-dispc";
-+				reg = <0x58001000 0x1000>;
-+				interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
-+				ti,hwmods = "dss_dispc";
-+			};
++	ddata->in = in;
 +
-+			rfbi: encoder@58002000  {
-+				compatible = "ti,omap4-rfbi";
-+				reg = <0x58002000 0x1000>;
-+				ti,hwmods = "dss_rfbi";
-+			};
++	adapter_node = of_parse_phandle(node, "i2c-bus", 0);
++	if (adapter_node) {
++		adapter = of_find_i2c_adapter_by_node(adapter_node);
++		if (adapter = NULL) {
++			dev_err(&pdev->dev, "failed to parse i2c-bus\n");
++			omap_dss_put_device(ddata->in);
++			return -EINVAL;
++		}
 +
-+			/*
-+			 * Accessing venc registers cause a crash on omap4, so
-+			 * this is disabled for now.
-+			 */
-+			venc: encoder@58003000 {
-+				compatible = "ti,omap4-venc";
-+				reg = <0x58003000 0x1000>;
-+				ti,hwmods = "dss_venc";
-+				status = "disabled";
-+			};
++		ddata->i2c_adapter = adapter;
++	}
 +
-+			dsi1: encoder@58004000 {
-+				compatible = "ti,omap4-dsi";
-+				reg = <0x58004000 0x200>;
-+				interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
-+				ti,hwmods = "dss_dsi1";
-+			};
++	return 0;
++}
 +
-+			dsi2: encoder@58005000 {
-+				compatible = "ti,omap4-dsi";
-+				reg = <0x58005000 0x200>;
-+				interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
-+				ti,hwmods = "dss_dsi2";
-+			};
+ static int dvic_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -293,6 +324,10 @@ static int dvic_probe(struct platform_device *pdev)
+ 		r = dvic_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = dvic_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -342,12 +377,20 @@ static int __exit dvic_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id dvic_of_match[] = {
++	{ .compatible = "ti,dvi-connector", },
++	{},
++};
 +
-+			hdmi: encoder@58006000 {
-+				compatible = "ti,omap4-hdmi";
-+				reg = <0x58006000 0x1000>;
-+				interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
-+				ti,hwmods = "dss_hdmi";
-+			};
-+		};
- 	};
++MODULE_DEVICE_TABLE(of, dvic_of_match);
++
+ static struct platform_driver dvi_connector_driver = {
+ 	.probe	= dvic_probe,
+ 	.remove	= __exit_p(dvic_remove),
+ 	.driver	= {
+ 		.name	= "connector-dvi",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = dvic_of_match,
+ 	},
  };
+ 
 -- 
 1.8.3.2
 

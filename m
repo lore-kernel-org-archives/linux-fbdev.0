@@ -1,36 +1,72 @@
-From: Wang YanQing <udknight@gmail.com>
-Date: Fri, 27 Dec 2013 02:39:18 +0000
-Subject: [PATCH] fbcon: trivial optimization for fbcon_exit
-Message-Id: <20131227023917.GA3908@udknight>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:36 +0000
+Subject: [PATCH 09/26] OMAPFB: search for default display with DT alias
+Message-Id: <1386160133-24026-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: plagnioj@jcrosoft.com, airlied@redhat.com, gregkh@linuxfoundation.org, akpm@linux-foundation.org, kamal@whence.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Break out as soon as we find a mapped entry con2fb_map.
+Improve the search for the default display in two ways:
+* compare the given display name to the display's alias
+* if no display name is given, look for "display0" DT alias
 
-Signed-off-by: Wang YanQing <udknight@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/console/fbcon.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/video/omap2/omapfb/omapfb-main.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index cd8a802..f39931f 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3547,8 +3547,10 @@ static void fbcon_exit(void)
- 			"no"));
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 8bfe973e55ec..961c5c251f63 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2413,7 +2413,10 @@ omapfb_find_default_display(struct omapfb2_device *fbdev)
+ 	const char *def_name;
+ 	int i;
  
- 		for (j = first_fb_vc; j <= last_fb_vc; j++) {
--			if (con2fb_map[j] = i)
-+			if (con2fb_map[j] = i) {
- 				mapped = 1;
-+				break;
-+			}
+-	/* search with the display name from the user or the board file */
++	/*
++	 * Search with the display name from the user or the board file,
++	 * comparing to display names and aliases
++	 */
+ 
+ 	def_name = omapdss_get_default_display_name();
+ 
+@@ -2425,12 +2428,30 @@ omapfb_find_default_display(struct omapfb2_device *fbdev)
+ 
+ 			if (dssdev->name && strcmp(def_name, dssdev->name) = 0)
+ 				return dssdev;
++
++			if (strcmp(def_name, dssdev->alias) = 0)
++				return dssdev;
  		}
  
- 		if (mapped) {
+ 		/* def_name given but not found */
+ 		return NULL;
+ 	}
+ 
++	/* then look for DT alias display0 */
++	for (i = 0; i < fbdev->num_displays; ++i) {
++		struct omap_dss_device *dssdev;
++		int id;
++
++		dssdev = fbdev->displays[i].dssdev;
++
++		if (dssdev->dev->of_node = NULL)
++			continue;
++
++		id = of_alias_get_id(dssdev->dev->of_node, "display");
++		if (id = 0)
++			return dssdev;
++	}
++
+ 	/* return the first display we have in the list */
+ 	return fbdev->displays[0].dssdev;
+ }
 -- 
-1.8.3.4.8.g69490f3.dirty
+1.8.3.2
+

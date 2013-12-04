@@ -1,161 +1,133 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:26 +0000
-Subject: [PATCHv2 19/27] ARM: omap3-beagle-xm.dts: add display information
-Message-Id: <1387205794-32246-20-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 04 Dec 2013 12:28:47 +0000
+Subject: [PATCH 20/26] OMAPDSS: panel-dsi-cm: Add DT support
+Message-Id: <1386160133-24026-21-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+
+XXX ULPS and backlight missing.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/boot/dts/omap3-beagle-xm.dts | 118 ++++++++++++++++++++++++++++++++++
- 1 file changed, 118 insertions(+)
+ drivers/video/omap2/displays-new/panel-dsi-cm.c | 65 +++++++++++++++++++++++--
+ 1 file changed, 61 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/omap3-beagle-xm.dts b/arch/arm/boot/dts/omap3-beagle-xm.dts
-index df33a50bc070..60430e8229a9 100644
---- a/arch/arm/boot/dts/omap3-beagle-xm.dts
-+++ b/arch/arm/boot/dts/omap3-beagle-xm.dts
-@@ -94,6 +94,17 @@
- 			0x0e (PIN_INPUT | PIN_OFF_WAKEUPENABLE | MUX_MODE4) /* sys_boot2.gpio_4 */
- 		>;
+diff --git a/drivers/video/omap2/displays-new/panel-dsi-cm.c b/drivers/video/omap2/displays-new/panel-dsi-cm.c
+index b7baafe83aa3..fda7728bdfaa 100644
+--- a/drivers/video/omap2/displays-new/panel-dsi-cm.c
++++ b/drivers/video/omap2/displays-new/panel-dsi-cm.c
+@@ -22,6 +22,8 @@
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
++#include <linux/of_device.h>
++#include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -595,10 +597,13 @@ static int dsicm_power_on(struct panel_drv_data *ddata)
+ 		.lp_clk_max = 10000000,
  	};
+ 
+-	r = in->ops.dsi->configure_pins(in, &ddata->pin_config);
+-	if (r) {
+-		dev_err(&ddata->pdev->dev, "failed to configure DSI pins\n");
+-		goto err0;
++	if (ddata->pin_config.num_pins > 0) {
++		r = in->ops.dsi->configure_pins(in, &ddata->pin_config);
++		if (r) {
++			dev_err(&ddata->pdev->dev,
++				"failed to configure DSI pins\n");
++			goto err0;
++		}
+ 	}
+ 
+ 	r = in->ops.dsi->set_config(in, &dsi_config);
+@@ -1156,6 +1161,46 @@ static int dsicm_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int dsicm_probe_of(struct platform_device *pdev)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct omap_dss_device *in;
++	int gpio;
 +
-+	dss_dpi_pins2: pinmux_dss_dpi_pins {
-+		pinctrl-single,pins = <
-+			0x0a (PIN_OUTPUT | MUX_MODE3)   /* sys_boot0.dss_data18 */
-+			0x0c (PIN_OUTPUT | MUX_MODE3)   /* sys_boot1.dss_data19 */
-+			0x10 (PIN_OUTPUT | MUX_MODE3)   /* sys_boot3.dss_data20 */
-+			0x12 (PIN_OUTPUT | MUX_MODE3)   /* sys_boot4.dss_data21 */
-+			0x14 (PIN_OUTPUT | MUX_MODE3)   /* sys_boot5.dss_data22 */
-+			0x16 (PIN_OUTPUT | MUX_MODE3)   /* sys_boot6.dss_data23 */
-+		>;
-+	};
++	gpio = of_get_gpio(node, 0);
++	if (!gpio_is_valid(gpio)) {
++		dev_err(&pdev->dev, "failed to parse reset gpio\n");
++		return gpio;
++	}
++	ddata->reset_gpio = gpio;
++
++	if (of_gpio_count(node) > 1) {
++		gpio = of_get_gpio(node, 1);
++
++		if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++			ddata->ext_te_gpio = gpio;
++		} else {
++			dev_err(&pdev->dev, "failed to parse TE gpio\n");
++			return gpio;
++		}
++	} else {
++		ddata->ext_te_gpio = -1;
++	}
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	/* TODO: ulps, backlight */
++
++	return 0;
++}
++
+ static int dsicm_probe(struct platform_device *pdev)
+ {
+ 	struct backlight_properties props;
+@@ -1178,6 +1223,10 @@ static int dsicm_probe(struct platform_device *pdev)
+ 		r = dsicm_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = dsicm_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -1320,12 +1369,20 @@ static int __exit dsicm_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id dsicm_of_match[] = {
++	{ .compatible = "panel-dsi-cm", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, dsicm_of_match);
++
+ static struct platform_driver dsicm_driver = {
+ 	.probe = dsicm_probe,
+ 	.remove = __exit_p(dsicm_remove),
+ 	.driver = {
+ 		.name = "panel-dsi-cm",
+ 		.owner = THIS_MODULE,
++		.of_match_table = dsicm_of_match,
+ 	},
  };
  
- &omap3_pmx_core {
-@@ -125,6 +136,35 @@
- 			0x1ae (PIN_INPUT_PULLDOWN | MUX_MODE3)	/* mcspi2_cs1.hsusb2_data3 */
- 		>;
- 	};
-+
-+	dss_dpi_pins1: pinmux_dss_dpi_pins {
-+		pinctrl-single,pins = <
-+			0x0a4 (PIN_OUTPUT | MUX_MODE0)   /* dss_pclk.dss_pclk */
-+			0x0a6 (PIN_OUTPUT | MUX_MODE0)   /* dss_hsync.dss_hsync */
-+			0x0a8 (PIN_OUTPUT | MUX_MODE0)   /* dss_vsync.dss_vsync */
-+			0x0aa (PIN_OUTPUT | MUX_MODE0)   /* dss_acbias.dss_acbias */
-+
-+			0x0b8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data6.dss_data6 */
-+			0x0ba (PIN_OUTPUT | MUX_MODE0)   /* dss_data7.dss_data7 */
-+			0x0bc (PIN_OUTPUT | MUX_MODE0)   /* dss_data8.dss_data8 */
-+			0x0be (PIN_OUTPUT | MUX_MODE0)   /* dss_data9.dss_data9 */
-+			0x0c0 (PIN_OUTPUT | MUX_MODE0)   /* dss_data10.dss_data10 */
-+			0x0c2 (PIN_OUTPUT | MUX_MODE0)   /* dss_data11.dss_data11 */
-+			0x0c4 (PIN_OUTPUT | MUX_MODE0)   /* dss_data12.dss_data12 */
-+			0x0c6 (PIN_OUTPUT | MUX_MODE0)   /* dss_data13.dss_data13 */
-+			0x0c8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data14.dss_data14 */
-+			0x0ca (PIN_OUTPUT | MUX_MODE0)   /* dss_data15.dss_data15 */
-+			0x0cc (PIN_OUTPUT | MUX_MODE0)   /* dss_data16.dss_data16 */
-+			0x0ce (PIN_OUTPUT | MUX_MODE0)   /* dss_data17.dss_data17 */
-+
-+			0x0d0 (PIN_OUTPUT | MUX_MODE3)   /* dss_data18.dss_data0 */
-+			0x0d2 (PIN_OUTPUT | MUX_MODE3)   /* dss_data19.dss_data1 */
-+			0x0d4 (PIN_OUTPUT | MUX_MODE3)   /* dss_data20.dss_data2 */
-+			0x0d6 (PIN_OUTPUT | MUX_MODE3)   /* dss_data21.dss_data3 */
-+			0x0d8 (PIN_OUTPUT | MUX_MODE3)   /* dss_data22.dss_data4 */
-+			0x0da (PIN_OUTPUT | MUX_MODE3)   /* dss_data23.dss_data5 */
-+		>;
-+	};
- };
- 
- &i2c1 {
-@@ -222,3 +262,81 @@
- 	regulator-max-microvolt = <1800000>;
- 	regulator-always-on;
- };
-+
-+&dss {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <
-+		&dss_dpi_pins1
-+		&dss_dpi_pins2
-+	>;
-+
-+	vdds_dsi-supply = <&vpll2>;
-+
-+	dpi_out: endpoint {
-+		remote-endpoint = <&tfp410_in>;
-+		data-lines = <24>;
-+	};
-+};
-+
-+&venc {
-+	vdda_dac-supply = <&vdac>;
-+
-+	venc_out: endpoint {
-+		remote-endpoint = <&tv_connector_in>;
-+	};
-+};
-+
-+/ {
-+	aliases {
-+		display0 = &dvi0;
-+		display1 = &tv0;
-+	};
-+
-+	tfp410: encoder@0 {
-+		compatible = "ti,tfp410";
-+		gpios = <&twl_gpio 2 GPIO_ACTIVE_LOW>;
-+
-+		/* XXX pinctrl from twl */
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				tfp410_in: endpoint@0 {
-+					remote-endpoint = <&dpi_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				tfp410_out: endpoint@0 {
-+					remote-endpoint = <&dvi_connector_in>;
-+				};
-+			};
-+		};
-+	};
-+
-+	dvi0: connector@0 {
-+		compatible = "dvi-connector";
-+		label = "dvi";
-+
-+		i2c-bus = <&i2c3>;
-+
-+		dvi_connector_in: endpoint {
-+			remote-endpoint = <&tfp410_out>;
-+		};
-+	};
-+
-+	tv0: connector@1 {
-+		compatible = "svideo-connector";
-+		label = "tv";
-+
-+		tv_connector_in: endpoint {
-+			remote-endpoint = <&venc_out>;
-+		};
-+	};
-+};
 -- 
 1.8.3.2
 

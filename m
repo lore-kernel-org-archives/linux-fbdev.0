@@ -1,115 +1,225 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:50 +0000
-Subject: [PATCH 23/26] OMAPDSS: encoder-tpd12s015: Add DT support
-Message-Id: <1386160133-24026-24-git-send-email-tomi.valkeinen@ti.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Thu, 05 Dec 2013 15:43:39 +0000
+Subject: [PATCHv13][ 4/4] ARM: dts: imx25: mbimxsd25: Add displays support.
+Message-Id: <1386258219-26437-4-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386258219-26437-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1386258219-26437-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+The CMO-QVGA(With backlight), DVI-VGA and DVI-SVGA displays
+were added.
+
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Eric Bénard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
 ---
- .../video/omap2/displays-new/encoder-tpd12s015.c   | 56 ++++++++++++++++++++++
- 1 file changed, 56 insertions(+)
+ChangeLog v10->v13:
+- This patch is the display part splitted out from the patch adding
+  support for the cpuimx25(and its baseboard).
+- Shawn Guo was added to the Cc list.
+- The regulator part was updated to match the current style.
+- The new GPIO defines are now used in the dts(i).
+---
+ .../imx25-eukrea-mbimxsd25-baseboard-cmo-qvga.dts  |   72 ++++++++++++++++++++
+ .../imx25-eukrea-mbimxsd25-baseboard-dvi-svga.dts  |   45 ++++++++++++
+ .../imx25-eukrea-mbimxsd25-baseboard-dvi-vga.dts   |   45 ++++++++++++
+ 3 files changed, 162 insertions(+)
+ create mode 100644 arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-cmo-qvga.dts
+ create mode 100644 arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-dvi-svga.dts
+ create mode 100644 arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-dvi-vga.dts
 
-diff --git a/drivers/video/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-index d5c936cb217f..6529a4ff50ca 100644
---- a/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-+++ b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-@@ -15,6 +15,7 @@
- #include <linux/slab.h>
- #include <linux/gpio.h>
- #include <linux/platform_device.h>
-+#include <linux/of_gpio.h>
- 
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -289,6 +290,49 @@ static int tpd_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int tpd_probe_of(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+	int gpio;
+diff --git a/arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-cmo-qvga.dts b/arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-cmo-qvga.dts
+new file mode 100644
+index 0000000..0df7e9e
+--- /dev/null
++++ b/arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-cmo-qvga.dts
+@@ -0,0 +1,72 @@
++/*
++ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
-+	/* CT CP HPD GPIO */
-+	gpio = of_get_gpio(node, 0);
-+	if (!gpio_is_valid(gpio)) {
-+		dev_err(&pdev->dev, "failed to parse CT CP HPD gpio\n");
-+		return gpio;
-+	}
-+	ddata->ct_cp_hpd_gpio = gpio;
++#include "imx25-eukrea-mbimxsd25-baseboard.dts"
 +
-+	/* LS OE GPIO */
-+	gpio = of_get_gpio(node, 1);
-+	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+		ddata->ls_oe_gpio = gpio;
-+	} else {
-+		dev_err(&pdev->dev, "failed to parse LS OE gpio\n");
-+		return gpio;
-+	}
++/ {
++	model = "Eukrea MBIMXSD25 with the CMO-QVGA Display";
++	compatible = "eukrea,mbimxsd25-baseboard-cmo-qvga", "eukrea,mbimxsd25-baseboard", "eukrea,cpuimx25", "fsl,imx25";
 +
-+	/* HPD GPIO */
-+	gpio = of_get_gpio(node, 2);
-+	if (!gpio_is_valid(gpio)) {
-+		dev_err(&pdev->dev, "failed to parse HPD gpio\n");
-+		return gpio;
-+	}
-+	ddata->hpd_gpio = gpio;
++	cmo_qvga: display {
++		model = "CMO-QVGA";
++		bits-per-pixel = <16>;
++		fsl,pcr = <0xcad08b80>;
++		bus-width = <18>;
++		native-mode = <&qvga_timings>;
++		display-timings {
++			qvga_timings: 320x240 {
++				clock-frequency = <6500000>;
++				hactive = <320>;
++				vactive = <240>;
++				hback-porch = <30>;
++				hfront-porch = <38>;
++				vback-porch = <20>;
++				vfront-porch = <3>;
++				hsync-len = <15>;
++				vsync-len = <4>;
++			};
++		};
++	};
 +
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+	ddata->in = in;
-+
-+	return 0;
-+}
-+
- static int tpd_probe(struct platform_device *pdev)
- {
- 	struct omap_dss_device *in, *dssdev;
-@@ -307,6 +351,10 @@ static int tpd_probe(struct platform_device *pdev)
- 		r = tpd_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = tpd_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -379,12 +427,20 @@ static int __exit tpd_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id tpd_of_match[] = {
-+	{ .compatible = "ti,tpd12s015", },
-+	{},
++		reg_lcd_3v3: regulator@0 {
++			compatible = "regulator-fixed";
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_reg_lcd_3v3>;
++			regulator-name = "lcd-3v3";
++			regulator-min-microvolt = <3300000>;
++			regulator-max-microvolt = <3300000>;
++			gpio = <&gpio1 26 GPIO_ACTIVE_HIGH>;
++			enable-active-high;
++		};
++	};
 +};
 +
-+MODULE_DEVICE_TABLE(of, tpd_of_match);
++&iomuxc {
++	imx25-eukrea-mbimxsd25-baseboard-cmo-qvga {
++		pinctrl_reg_lcd_3v3: reg_lcd_3v3 {
++			fsl,pins = <MX25_PAD_PWM__GPIO_1_26 0x80000000>;
++		};
++	};
++};
 +
- static struct platform_driver tpd_driver = {
- 	.probe	= tpd_probe,
- 	.remove	= __exit_p(tpd_remove),
- 	.driver	= {
- 		.name	= "tpd12s015",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = tpd_of_match,
- 	},
- };
- 
++&lcdc {
++	display = <&cmo_qvga>;
++	fsl,pwmr = <0x00a903ff>;
++	lcd-supply = <&reg_lcd_3v3>;
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-dvi-svga.dts b/arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-dvi-svga.dts
+new file mode 100644
+index 0000000..8eee2f6
+--- /dev/null
++++ b/arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-dvi-svga.dts
+@@ -0,0 +1,45 @@
++/*
++ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "imx25-eukrea-mbimxsd25-baseboard.dts"
++
++/ {
++	model = "Eukrea MBIMXSD25 with the DVI-SVGA Display";
++	compatible = "eukrea,mbimxsd25-baseboard-dvi-svga", "eukrea,mbimxsd25-baseboard", "eukrea,cpuimx25", "fsl,imx25";
++
++	dvi_svga: display {
++		model = "DVI-SVGA";
++		bits-per-pixel = <16>;
++		fsl,pcr = <0xfa208b80>;
++		bus-width = <18>;
++		native-mode = <&dvi_svga_timings>;
++		display-timings {
++			dvi_svga_timings: 800x600 {
++				clock-frequency = <40000000>;
++				hactive = <800>;
++				vactive = <600>;
++				hback-porch = <75>;
++				hfront-porch = <75>;
++				vback-porch = <7>;
++				vfront-porch = <75>;
++				hsync-len = <7>;
++				vsync-len = <7>;
++			};
++		};
++	};
++};
++
++&lcdc {
++	display = <&dvi_svga>;
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-dvi-vga.dts b/arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-dvi-vga.dts
+new file mode 100644
+index 0000000..447da62
+--- /dev/null
++++ b/arch/arm/boot/dts/imx25-eukrea-mbimxsd25-baseboard-dvi-vga.dts
+@@ -0,0 +1,45 @@
++/*
++ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "imx25-eukrea-mbimxsd25-baseboard.dts"
++
++/ {
++	model = "Eukrea MBIMXSD25 with the DVI-VGA Display";
++	compatible = "eukrea,mbimxsd25-baseboard-dvi-vga", "eukrea,mbimxsd25-baseboard", "eukrea,cpuimx25", "fsl,imx25";
++
++	dvi_vga: display {
++		model = "DVI-VGA";
++		bits-per-pixel = <16>;
++		fsl,pcr = <0xfa208b80>;
++		bus-width = <18>;
++		native-mode = <&dvi_vga_timings>;
++		display-timings {
++			dvi_vga_timings: 640x480 {
++				clock-frequency = <31250000>;
++				hactive = <640>;
++				vactive = <480>;
++				hback-porch = <100>;
++				hfront-porch = <100>;
++				vback-porch = <7>;
++				vfront-porch = <100>;
++				hsync-len = <7>;
++				vsync-len = <7>;
++			};
++		};
++	};
++};
++
++&lcdc {
++	display = <&dvi_vga>;
++	status = "okay";
++};
 -- 
-1.8.3.2
+1.7.9.5
 

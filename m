@@ -1,47 +1,68 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Wed, 04 Dec 2013 17:08:37 +0000
-Subject: Re: [PATCH] xen/pvhvm: If xen_platform_pci=0 is set don't blow up.
-Message-Id: <20131204170837.GB8838@core.coreip.homeip.net>
+From: Denis Carikli <denis@eukrea.com>
+Date: Thu, 05 Dec 2013 15:43:37 +0000
+Subject: [PATCHv13][ 2/4] video: imxfb: Also add pwmr for the device tree.
+Message-Id: <1386258219-26437-2-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386105246-14337-1-git-send-email-konrad.wilk@oracle.com>
- <20131204164218.GA8838@core.coreip.homeip.net>
- <20131204164802.GG391@pegasus.dumpdata.com>
-In-Reply-To: <20131204164802.GG391@pegasus.dumpdata.com>
+References: <1386258219-26437-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1386258219-26437-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: stefano.stabellini@eu.citrix.com, ian.campbell@citrix.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, boris.ostrovsky@oracle.com, david.vrabel@citrix.com, leosilva@linux.vnet.ibm.com, ashley@ashleylai.com, peterhuewe@gmx.de, mail@srajiv.net, tpmdd@selhorst.net, tpmdd@sirrix.com, bhelgaas@google.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, tpmdd-devel@lists.sourceforge.net, linux-input@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Dec 04, 2013 at 11:48:03AM -0500, Konrad Rzeszutek Wilk wrote:
-> > > which is hardly nice. This patch fixes this by having each
-> > > PV driver check for:
-> > >  - if running in PV, then it is fine to execute (as that is their
-> > >    native environment).
-> > >  - if running in HVM, check if user wanted 'xen_emul_unplug=never',
-> > >    in which case bail out and don't load PV drivers.
-> > >  - if running in HVM, and if PCI device 5853:0001 (xen_platform_pci)
-> > >    does not exist, then bail out and not load PV drivers.
-> > > 
-> > > P.S.
-> > > Ian Campbell suggested getting rid of 'xen_platform_pci_unplug'
-> > > but unfortunatly the xen-blkfront driver is using it, so we
-> > > cannot do it.
-> > > 
-> > > Reported-by: Sander Eikelenboom <linux@eikelenboom.it
-> > > Reported-by: Anthony PERARD <anthony.perard@citrix.com>
-> > > Reported-by: Fabio Fantoni <fabio.fantoni@m2r.biz>
-> > 
-> > For input:
-> > 
-> > Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> 
-> Thank you. I need to do some extra changes to the other subsystems but
-> for the fb/kbd itshould be still throught the same function as this
-> patch has exposed. I will repost it and include your Ack if you are OK
-> with that?
+pwmr has to be set to get the imxfb backlight work,
+though pwmr was only configurable trough the platform data.
 
-Sure.
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Acked-by: Grant Likely <grant.likely@linaro.org>
+---
+ .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
+ drivers/video/imxfb.c                              |    2 ++
+ 2 files changed, 5 insertions(+)
 
--- 
-Dmitry
+diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Docum=
+entation/devicetree/bindings/video/fsl,imx-fb.txt
+index 46da08d..ac457ae 100644
+--- a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
++++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
+@@ -17,6 +17,9 @@ Required nodes:
+ Optional properties:
+ - fsl,dmacr: DMA Control Register value. This is optional. By default, the
+ 	register is not modified as recommended by the datasheet.
++- fsl,pwmr:  LCDC PWM Contrast Control Register value. That property is
++	optional, but defining it is necessary to get the backlight working. If t=
+hat
++	property is ommited, the register is zeroed.
+ - fsl,lscr1: LCDC Sharp Configuration Register value.
+=20
+ Example:
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 57d3b81..17a46a7 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -835,6 +835,8 @@ static int imxfb_init_fbinfo(struct platform_device *pd=
+ev)
+=20
+ 		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
+=20
++		of_property_read_u32(np, "fsl,pwmr", &fbi->pwmr);
++
+ 		/* These two function pointers could be used by some specific
+ 		 * platforms. */
+ 		fbi->lcd_power =3D NULL;
+--=20
+1.7.9.5
+

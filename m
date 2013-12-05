@@ -1,116 +1,176 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 18 Nov 2013 12:44:09 +0000
-Subject: [PATCH 4/4] OMAPDSS: DISPC: Add MFLAG defines
-Message-Id: <1384778649-9396-4-git-send-email-tomi.valkeinen@ti.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Thu, 05 Dec 2013 15:43:36 +0000
+Subject: [PATCHv13][ 1/4] video: imxfb: Introduce regulator support.
+Message-Id: <1386258219-26437-1-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1384778649-9396-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1384778649-9396-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-OMAP5 has MFLAG feature in DISPC. Add the register definition and dump
-it. The register is not used yet, though.
+This commit is based on the following commit by Fabio Estevam:
+  4344429 video: mxsfb: Introduce regulator support
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Fabio Estevam <fabio.estevam@freescale.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
 ---
- drivers/video/omap2/dss/dispc.c        |  4 ++++
- drivers/video/omap2/dss/dispc.h        | 20 ++++++++++++++++++++
- drivers/video/omap2/dss/dss_features.c |  1 +
- drivers/video/omap2/dss/dss_features.h |  1 +
- 4 files changed, 26 insertions(+)
+ChangeLog v9->v10:
+- Added a return 0; at the end of imxfb_disable_controller.
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index aa95ba5..d39a4e3 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3213,6 +3213,8 @@ static void dispc_dump_regs(struct seq_file *s)
- 		DUMPREG(DISPC_CONTROL3);
- 		DUMPREG(DISPC_CONFIG3);
- 	}
-+	if (dss_has_feature(FEAT_MFLAG))
-+		DUMPREG(DISPC_GLOBAL_MFLAG_ATTRIBUTE);
- 
- #undef DUMPREG
- 
-@@ -3287,6 +3289,8 @@ static void dispc_dump_regs(struct seq_file *s)
- 			DUMPREG(i, DISPC_OVL_ATTRIBUTES2);
- 		if (dss_has_feature(FEAT_PRELOAD))
- 			DUMPREG(i, DISPC_OVL_PRELOAD);
-+		if (dss_has_feature(FEAT_MFLAG))
-+			DUMPREG(i, DISPC_OVL_MFLAG_THRESHOLD);
- 	}
- 
- #undef DISPC_REG
-diff --git a/drivers/video/omap2/dss/dispc.h b/drivers/video/omap2/dss/dispc.h
-index de4863d..78edb44 100644
---- a/drivers/video/omap2/dss/dispc.h
-+++ b/drivers/video/omap2/dss/dispc.h
-@@ -40,6 +40,7 @@
- #define DISPC_CONTROL3                  0x0848
- #define DISPC_CONFIG3                   0x084C
- #define DISPC_MSTANDBY_CTRL		0x0858
-+#define DISPC_GLOBAL_MFLAG_ATTRIBUTE	0x085C
- 
- /* DISPC overlay registers */
- #define DISPC_OVL_BA0(n)		(DISPC_OVL_BASE(n) + \
-@@ -100,6 +101,8 @@
- 					DISPC_FIR_COEF_V2_OFFSET(n, i))
- #define DISPC_OVL_PRELOAD(n)		(DISPC_OVL_BASE(n) + \
- 					DISPC_PRELOAD_OFFSET(n))
-+#define DISPC_OVL_MFLAG_THRESHOLD(n)	(DISPC_OVL_BASE(n) + \
-+					DISPC_MFLAG_THRESHOLD_OFFSET(n))
- 
- /* DISPC up/downsampling FIR filter coefficient structure */
- struct dispc_coef {
-@@ -894,4 +897,21 @@ static inline u16 DISPC_PRELOAD_OFFSET(enum omap_plane plane)
- 		return 0;
- 	}
+ChangeLog v8->v9:
+- return an error if regulator_{enable,disable} fails in
+  imxfb_{enable,disable}_controller, and use it.
+---
+ drivers/video/imxfb.c |   55 ++++++++++++++++++++++++++++++++++++++-------=
+----
+ 1 file changed, 43 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 44ee678..57d3b81 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -28,6 +28,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/clk.h>
+ #include <linux/platform_device.h>
++#include <linux/regulator/consumer.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/io.h>
+ #include <linux/math64.h>
+@@ -145,6 +146,7 @@ struct imxfb_info {
+ 	struct clk		*clk_ipg;
+ 	struct clk		*clk_ahb;
+ 	struct clk		*clk_per;
++	struct regulator	*reg_lcd;
+ 	enum imxfb_type		devtype;
+ 	bool			enabled;
+=20
+@@ -561,14 +563,25 @@ static void imxfb_exit_backlight(struct imxfb_info *f=
+bi)
  }
-+
-+static inline u16 DISPC_MFLAG_THRESHOLD_OFFSET(enum omap_plane plane)
-+{
-+	switch (plane) {
-+	case OMAP_DSS_GFX:
-+		return 0x0860;
-+	case OMAP_DSS_VIDEO1:
-+		return 0x0864;
-+	case OMAP_DSS_VIDEO2:
-+		return 0x0868;
-+	case OMAP_DSS_VIDEO3:
-+		return 0x086c;
-+	default:
-+		BUG();
-+		return 0;
-+	}
-+}
  #endif
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index f8fd6db..7f89691 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -613,6 +613,7 @@ static const enum dss_feat_id omap5_dss_feat_list[] = {
- 	FEAT_DSI_PLL_SELFREQDCO,
- 	FEAT_DSI_PLL_REFSEL,
- 	FEAT_DSI_PHY_DCC,
-+	FEAT_MFLAG,
- };
- 
- /* OMAP2 DSS Features */
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 10b0556..e3ef3b7 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -64,6 +64,7 @@ enum dss_feat_id {
- 	FEAT_DSI_PLL_SELFREQDCO,
- 	FEAT_DSI_PLL_REFSEL,
- 	FEAT_DSI_PHY_DCC,
-+	FEAT_MFLAG,
- };
- 
- /* DSS register field id */
--- 
-1.8.3.2
+=20
+-static void imxfb_enable_controller(struct imxfb_info *fbi)
++static int imxfb_enable_controller(struct imxfb_info *fbi)
+ {
++	int ret;
+=20
+ 	if (fbi->enabled)
+-		return;
++		return 0;
+=20
+ 	pr_debug("Enabling LCD controller\n");
+=20
++	if (fbi->reg_lcd) {
++		ret =3D regulator_enable(fbi->reg_lcd);
++		if (ret) {
++			dev_err(&fbi->pdev->dev,
++				"lcd regulator enable failed with error: %d\n",
++				ret);
++			return ret;
++		}
++	}
++
+ 	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
+=20
+ 	/* panning offset 0 (0 pixel offset)        */
+@@ -593,12 +606,16 @@ static void imxfb_enable_controller(struct imxfb_info=
+ *fbi)
+ 		fbi->backlight_power(1);
+ 	if (fbi->lcd_power)
+ 		fbi->lcd_power(1);
++
++	return 0;
+ }
+=20
+-static void imxfb_disable_controller(struct imxfb_info *fbi)
++static int imxfb_disable_controller(struct imxfb_info *fbi)
+ {
++	int ret;
++
+ 	if (!fbi->enabled)
+-		return;
++		return 0;
+=20
+ 	pr_debug("Disabling LCD controller\n");
+=20
+@@ -613,6 +630,17 @@ static void imxfb_disable_controller(struct imxfb_info=
+ *fbi)
+ 	fbi->enabled =3D false;
+=20
+ 	writel(0, fbi->regs + LCDC_RMCR);
++
++	if (fbi->reg_lcd) {
++		ret =3D regulator_disable(fbi->reg_lcd);
++		if (ret)
++			dev_err(&fbi->pdev->dev,
++				"lcd regulator disable failed with error: %d\n",
++				ret);
++			return ret;
++	}
++
++	return 0;
+ }
+=20
+ static int imxfb_blank(int blank, struct fb_info *info)
+@@ -626,13 +654,12 @@ static int imxfb_blank(int blank, struct fb_info *inf=
+o)
+ 	case FB_BLANK_VSYNC_SUSPEND:
+ 	case FB_BLANK_HSYNC_SUSPEND:
+ 	case FB_BLANK_NORMAL:
+-		imxfb_disable_controller(fbi);
+-		break;
++		return imxfb_disable_controller(fbi);
+=20
+ 	case FB_BLANK_UNBLANK:
+-		imxfb_enable_controller(fbi);
+-		break;
++		return imxfb_enable_controller(fbi);
+ 	}
++
+ 	return 0;
+ }
+=20
+@@ -734,8 +761,7 @@ static int imxfb_suspend(struct platform_device *dev, p=
+m_message_t state)
+=20
+ 	pr_debug("%s\n", __func__);
+=20
+-	imxfb_disable_controller(fbi);
+-	return 0;
++	return imxfb_disable_controller(fbi);
+ }
+=20
+ static int imxfb_resume(struct platform_device *dev)
+@@ -745,8 +771,7 @@ static int imxfb_resume(struct platform_device *dev)
+=20
+ 	pr_debug("%s\n", __func__);
+=20
+-	imxfb_enable_controller(fbi);
+-	return 0;
++	return imxfb_enable_controller(fbi);
+ }
+ #else
+ #define imxfb_suspend	NULL
+@@ -1020,6 +1045,12 @@ static int imxfb_probe(struct platform_device *pdev)
+ 		goto failed_register;
+ 	}
+=20
++	fbi->reg_lcd =3D devm_regulator_get(&pdev->dev, "lcd");
++	if (IS_ERR(fbi->reg_lcd)) {
++		dev_info(&pdev->dev, "No lcd regulator used.\n");
++		fbi->reg_lcd =3D NULL;
++	}
++
+ 	imxfb_enable_controller(fbi);
+ 	fbi->pdev =3D pdev;
+ #ifdef PWMR_BACKLIGHT_AVAILABLE
+--=20
+1.7.9.5
 

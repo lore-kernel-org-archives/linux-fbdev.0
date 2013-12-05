@@ -1,68 +1,59 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 18 Dec 2013 17:33:15 +0000
-Subject: Re: [PATCHv2 01/27] ARM: OMAP: remove DSS DT hack
-Message-Id: <20131218173315.GE27438@atomide.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Thu, 05 Dec 2013 15:43:38 +0000
+Subject: [PATCHv13][ 3/4] video: Kconfig: Allow more broad selection of the imxfb framebuffer driver.
+Message-Id: <1386258219-26437-3-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
- <1387205794-32246-2-git-send-email-tomi.valkeinen@ti.com>
- <20131216184157.GA26293@atomide.com>
- <52AFF31C.6010100@ti.com>
- <20131217153001.GN12324@atomide.com>
- <52B14AEE.8090807@ti.com>
- <52B17729.3040807@ti.com>
-In-Reply-To: <52B17729.3040807@ti.com>
+References: <1386258219-26437-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1386258219-26437-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [131218 02:22]:
-> On 2013-12-18 09:12, Tomi Valkeinen wrote:
-> 
-> >> Well yeah let's keep those separate still as at least Russell needed
-> >> some more time with the legacy booting. The point we can drop the
-> >> legacy booting for omap3 may still need to wait a bit, maybe even
-> >> until v3.15 to keep things working.
-> > 
-> > They can't be separate. Once I add DT support for a board, I have to
-> > remove the legacy support for that board. This patch removes legacy
-> > support for the boards that are converted in the series.
-> > 
-> > If I don't remove the legacy support, both DT and legacy side will be
-> > ran, and both create the DSS devices...
-> > 
-> > But, it's true that this patch removes the whole file, as all the boards
-> > currently there are converted. But if new boards are added to the DSS
-> > quirks, then I can't remove the file. So I'll change this patch to only
-> > remove the parts for the converted boards, not the whole file.
-> > 
-> > But but... If I understand right, the plan is to remove all omap3 board
-> > files for the next merge window. I'm not totally familiar with the
-> > quirks system, but how should this be handled:
-> > 
-> > omap3.dtsi will contain the SoC's DSS nodes. This means that DSS devices
-> > are created via DT code. But if the display (i.e. panels) for a
-> > particular omap3 board has not been converted to DT, we should still use
-> > the legacy DSS initialization. But the DSS is already initialized via DT.
-> > 
-> > I guess I can set the status for all the DSS nodes to "disabled" in
-> > omap3.dtsi, and that should prevent DT code from creating the DSS
-> > devices. Then, each omap3-board.dts that has been converted to DSS DT,
-> > can override those to "enabled".
-> > 
-> > That way the DT code should not create DSS devices by default, and the
-> > quirks system would probably work fine.
-> 
-> I changed the DSS DT nodes to be disabled by default, and I think this
-> works nicely. It's actually better this way in any case, as we can leave
-> blocks like DSI out for boards that don't need it.
-> 
-> Also, I now remove the quirks only for the boards that are converted to
-> DT, not the whole dss-common.c file. So I think we can now add new
-> boards to dss-common.c, if and when there are ones that cannot be
-> converted to use DSS DT yet.
+Without that patch, a user can't select the imxfb driver when the i.MX25 an=
+d/or
+  the i.MX27 device tree board are selected and that no boards that selects
+  IMX_HAVE_PLATFORM_IMX_FB are compiled in.
 
-OK
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+---
+ChangeLog v10->v11:
+- moved my signed-off-by.
 
-Tony
+ChangeLog v8->v9:
+- Added Jean-Christophe PLAGNIOL-VILLARD's ACK.
+---
+ drivers/video/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 4f2e1b3..22adaee 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -363,7 +363,7 @@ config FB_SA1100
+=20
+ config FB_IMX
+ 	tristate "Freescale i.MX1/21/25/27 LCD support"
+-	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
++	depends on FB && ARCH_MXC
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+--=20
+1.7.9.5
+

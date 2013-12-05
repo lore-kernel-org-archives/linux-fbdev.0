@@ -1,52 +1,85 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:11 +0000
-Subject: [PATCHv2 04/27] OMAPDSS: add 'label' support for DT
-Message-Id: <1387205794-32246-5-git-send-email-tomi.valkeinen@ti.com>
+From: Yijing Wang <wangyijing@huawei.com>
+Date: Thu, 05 Dec 2013 11:25:18 +0000
+Subject: [PATCH] video: Replace local macro with PCI standard macro
+Message-Id: <1386242718-24372-1-git-send-email-wangyijing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Yijing Wang <wangyijing@huawei.com>, Hanjun Guo <guohanjun@huawei.com>
 
-Add support to get the label (i.e. a "nickname") for a display from the
-DT data. If there is no label defined, use the display's alias (e.g.
-'display0') as a name.
+Replace local macro TGA_BUS_PCI with PCI standard
+marco dev_is_pci().
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- drivers/video/omap2/dss/display.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/video/tgafb.c |   16 +++++-----------
+ 1 files changed, 5 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 669a81fdf58e..012ada38a29d 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -26,6 +26,7 @@
- #include <linux/module.h>
- #include <linux/jiffies.h>
- #include <linux/platform_device.h>
-+#include <linux/of.h>
+diff --git a/drivers/video/tgafb.c b/drivers/video/tgafb.c
+index f28674f..5e94c6e 100644
+--- a/drivers/video/tgafb.c
++++ b/drivers/video/tgafb.c
+@@ -32,12 +32,6 @@
  
- #include <video/omapdss.h>
- #include "dss.h"
-@@ -137,6 +138,14 @@ int omapdss_register_display(struct omap_dss_device *dssdev)
- 	snprintf(dssdev->alias, sizeof(dssdev->alias),
- 			"display%d", disp_num_counter++);
+ #include <video/tgafb.h>
  
-+	/* Use 'label' property for name, if it exists */
-+	if (dssdev->dev->of_node)
-+		of_property_read_string(dssdev->dev->of_node, "label",
-+			&dssdev->name);
-+
-+	if (dssdev->name = NULL)
-+		dssdev->name = dssdev->alias;
-+
- 	if (drv && drv->get_resolution = NULL)
- 		drv->get_resolution = omapdss_default_get_resolution;
- 	if (drv && drv->get_recommended_bpp = NULL)
+-#ifdef CONFIG_PCI
+-#define TGA_BUS_PCI(dev) (dev->bus = &pci_bus_type)
+-#else
+-#define TGA_BUS_PCI(dev) 0
+-#endif
+-
+ #ifdef CONFIG_TC
+ #define TGA_BUS_TC(dev) (dev->bus = &tc_bus_type)
+ #else
+@@ -236,7 +230,7 @@ tgafb_set_par(struct fb_info *info)
+ 	};
+ 
+ 	struct tga_par *par = (struct tga_par *) info->par;
+-	int tga_bus_pci = TGA_BUS_PCI(par->dev);
++	int tga_bus_pci = dev_is_pci(par->dev);
+ 	int tga_bus_tc = TGA_BUS_TC(par->dev);
+ 	u32 htimings, vtimings, pll_freq;
+ 	u8 tga_type;
+@@ -519,7 +513,7 @@ tgafb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue,
+ 		unsigned transp, struct fb_info *info)
+ {
+ 	struct tga_par *par = (struct tga_par *) info->par;
+-	int tga_bus_pci = TGA_BUS_PCI(par->dev);
++	int tga_bus_pci = dev_is_pci(par->dev);
+ 	int tga_bus_tc = TGA_BUS_TC(par->dev);
+ 
+ 	if (regno > 255)
+@@ -1472,7 +1466,7 @@ static void
+ tgafb_init_fix(struct fb_info *info)
+ {
+ 	struct tga_par *par = (struct tga_par *)info->par;
+-	int tga_bus_pci = TGA_BUS_PCI(par->dev);
++	int tga_bus_pci = dev_is_pci(par->dev);
+ 	int tga_bus_tc = TGA_BUS_TC(par->dev);
+ 	u8 tga_type = par->tga_type;
+ 	const char *tga_type_name = NULL;
+@@ -1560,7 +1554,7 @@ static int tgafb_register(struct device *dev)
+ 	const struct fb_videomode *modedb_tga = NULL;
+ 	resource_size_t bar0_start = 0, bar0_len = 0;
+ 	const char *mode_option_tga = NULL;
+-	int tga_bus_pci = TGA_BUS_PCI(dev);
++	int tga_bus_pci = dev_is_pci(dev);
+ 	int tga_bus_tc = TGA_BUS_TC(dev);
+ 	unsigned int modedbsize_tga = 0;
+ 	void __iomem *mem_base;
+@@ -1690,7 +1684,7 @@ static int tgafb_register(struct device *dev)
+ static void tgafb_unregister(struct device *dev)
+ {
+ 	resource_size_t bar0_start = 0, bar0_len = 0;
+-	int tga_bus_pci = TGA_BUS_PCI(dev);
++	int tga_bus_pci = dev_is_pci(dev);
+ 	int tga_bus_tc = TGA_BUS_TC(dev);
+ 	struct fb_info *info = NULL;
+ 	struct tga_par *par;
 -- 
-1.8.3.2
+1.7.1
+
 

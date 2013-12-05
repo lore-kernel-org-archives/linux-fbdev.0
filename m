@@ -1,89 +1,100 @@
-From: Sebastian Reichel <sre@debian.org>
-Date: Wed, 04 Dec 2013 16:01:20 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 05 Dec 2013 09:41:42 +0000
 Subject: Re: [PATCH 00/26] OMAPDSS: DT support (Christmas edition)
-Message-Id: <20131204160119.GA9433@earth.universe>
+Message-Id: <52A04A56.60403@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="XsQoSWH+UP9D9v3l"
+Content-Type: multipart/mixed; boundary="KOm2V4lC9DbrrglNhH0QlkDxdvPgKJ9NJ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Darren Etheridge <detheridge-l0cyMroinI0@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Stefan Roese <stefan.roese-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Nelson <robertcnelson-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Dr . H . Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, Marek Belisko <marek-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <20131204160119.GA9433@earth.universe>
+In-Reply-To: <20131204160119.GA9433@earth.universe>
+To: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@debian.org>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Stefan Roese <stefan.roese@gmail.com>, Robert Nelson <robertcnelson@gmail.com>, "Dr . H . Nikolaus Schaller" <hns@goldelico.com>, Marek Belisko <marek@goldelico.com>
 
-
---XsQoSWH+UP9D9v3l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--KOm2V4lC9DbrrglNhH0QlkDxdvPgKJ9NJ
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Wed, Dec 04, 2013 at 02:28:27PM +0200, Tomi Valkeinen wrote:
-> Here's a new version for DT support to OMAP Display Subsystem. See
-> http://article.gmane.org/gmane.linux.ports.arm.omap/102689 for the intro =
-of the
-> previous version, which contains thoughts about the related problems.
->
-> The major change in this version is the use of V4L2 and CDF style port/en=
-dpoint
-> style in the DT data. However, note that even if the DT data contains pro=
-per
-> port & endpoint data, the drivers only use the first endpoint. This is to
-> simplify the patches, as adding full support for the ports and endpoints =
-to the
-> drivers will be a big task. This approach still works with more or less a=
-ll the
-> boards, as the only cases where the simpler model is an issue are the boa=
-rds
-> with multiple display devices connected to a single output.
+On 2013-12-04 18:01, Sebastian Reichel wrote:
+> Hi,
 >=20
-> Laurent, I'd appreciate if you could have a look at the .dts changes, to =
-see if
-> there's anything that's clearly not CDF compatible.
+> On Wed, Dec 04, 2013 at 02:28:27PM +0200, Tomi Valkeinen wrote:
+>> Here's a new version for DT support to OMAP Display Subsystem. See
+>> http://article.gmane.org/gmane.linux.ports.arm.omap/102689 for the int=
+ro of the
+>> previous version, which contains thoughts about the related problems.
+>>
+>> The major change in this version is the use of V4L2 and CDF style port=
+/endpoint
+>> style in the DT data. However, note that even if the DT data contains =
+proper
+>> port & endpoint data, the drivers only use the first endpoint. This is=
+ to
+>> simplify the patches, as adding full support for the ports and endpoin=
+ts to the
+>> drivers will be a big task. This approach still works with more or les=
+s all the
+>> boards, as the only cases where the simpler model is an issue are the =
+boards
+>> with multiple display devices connected to a single output.
+>>
+>> Laurent, I'd appreciate if you could have a look at the .dts changes, =
+to see if
+>> there's anything that's clearly not CDF compatible.
+>>
+>> The patches can also be found from:
+>> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss=
+-dt
 >=20
-> The patches can also be found from:
-> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dt
+> Will this be ready for 3.14? Depending on that I would handle
 
-Will this be ready for 3.14? Depending on that I would handle
-omapdss support for the N900 differently. If this code gets merged
-into 3.14 I will update the N900 patches [0] accordingly. Otherwise
-I would suggest to take the N900 patches as is for 3.14 and I will
-take care of adding the omapdss DT support to the panel (and the
-N900.dts) separately.
+That is my hope. We have been missing DSS DT bindings for too long, and
+maintaining and adding new mixed DT/non-DT panels, as done for omap4
+now, is just a big headache.
 
-> [...]
-> - No binding documentation. I will add them for the next version, if ther=
-e are
->   no major changes needed. Hopefully the bindings are quite self-explanat=
-ory
->   for people with understanding of the hardware in question.
+The bindings in my series are probably not perfect, but I believe they
+should be fine enough. I didn't get any NACKs for the previous versions
+of this series, and the only reason I haven't been pushing these to
+mainline is that I haven't been satisfied with the bindings.
 
-It is :)
+Laurent promised to have a look at the bindings to see if he notices
+anything that would conflict with Common Display Framework bindings. If
+he's ok with the bindings, I think we can decide next week if these will
+be merged for 3.14.
 
-[0] http://marc.info/?l=3Dlinux-omap&m=3D138524030509240&w=3D2
+> omapdss support for the N900 differently. If this code gets merged
+> into 3.14 I will update the N900 patches [0] accordingly. Otherwise
+> I would suggest to take the N900 patches as is for 3.14 and I will
+> take care of adding the omapdss DT support to the panel (and the
+> N900.dts) separately.
 
--- Sebastian
+I really would not like to add any more hacks for DSS.
 
---XsQoSWH+UP9D9v3l
+ Tomi
+
+
+
+--KOm2V4lC9DbrrglNhH0QlkDxdvPgKJ9NJ
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.15 (GNU/Linux)
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJSn1HPAAoJENju1/PIO/qaxsoP/iw2h7eZ2o7IovmQo4dEK/tR
-IMyJ9YC39plLGbvVK33WJgzWffcQFsMdKgwYScve8rJE+o479Qe8KCwWGsGk5p4o
-HvpZYzmxL4RjmRV9gPKmBEbmcXR3FDkpvrKVyXED726YkMPG2QuUEhgDxgWFig8H
-vCMAqqWnpEDTtcFs1jmc6GeRxwLlMfKHa+OzvzcRTr6hDP3f3cZAP2vXSzYQ8BWh
-+7p3EEJxsQWv6O8fVtLLUYKiwKi3DEUH4bmA1jc4fH8Lad0tLif3He5DGYtgQIxg
-wTa7z6t1ApnVFQMQUQmRoVhk5eGm3sgilShPnlEN4HsIPVcBm+RdpD2RL3pNCWqX
-Nl1Nu1Me5CloPZYOtffdRifw2m+N6xClzVxDn9f2GyyhOwcu7lx0WWd47b531Slg
-/suhW5MqYwcuEKsLU5OEuGPHb6vTOK5lnyScRcypHfifmVG61mI4xhn19uEa+5M9
-0jqfoLZWCN+tF05ijHYhw84EDFYPCboohDokbWW/i9wh8p7TYf6jwgOFrVClsirM
-5oLIjako5fJzw/KocgkYWBkIVduGesR9nnzoUa0kNb4wClpkEjmlTJufCDYPnXx2
-C5oD3F/nkXt/R9KfoZjt3k7hYUwAR/n5/xlpHQq2mYL8DS3x7KnCSRgMWkxDgQ6E
-I38ngL4fvCK+u4h5rV8n
-=L5ls
+iQIcBAEBAgAGBQJSoEpaAAoJEPo9qoy8lh71aCwP/1ph95nrvAQw/DJYMTldtKAm
+ST0eOCSmRB4EV8CL53GZUQH6tv+HWmHArXtqYf0zr1xJSbURbXoJYLdPgEvDbJIX
+1nokSWo5aHdZtPgJOC347y8j8XW9if4/GMWXZbH/Dgtr9PJEQ5TkHgrjOSo5jMM9
+nAzvHWmbXYbbU/ISakm5yUZkSbda0fseSYGrwxQILSFkwIQ2SxLUtfQQCiIGncPc
+MsdRn5fh8z/xdj/JYT5gDQSN4nqiDWyaabC4qHSuY1eVgEIRk1KpW1rtsrE++/WX
+HqYXFMlMihsJdri5L2jSbJkU6ELEPCSmw6r2iEBYFYj+BE8aFeckl2WqgtMjnmit
+gTidqOzpHkRG2N1X+GZs13bDwIH8LrApn4RPLpHVQbMxzFSZtx/JiKsCTCmT7zJ4
+ex4haHzTUjqHG3NYHfYKtW52Vd7ECmHlz32F3Yz263mDy7F4XuF59cF/Riynl0Oz
+F3JX/I9ESHdcDI5Gh/F/ZnZR/NZIwyid/87FgFPHEemTIHszi8lOkvGlCx1BNfIp
+Ixzo8869GQgLv0Y4o5/Py5uecX4cIug2i7DZF98ZVFkj8IkkXOxaT93LPwZRjMWn
+wlEh+5eI0CWN42yfJhSbR6X6fCXXKhzSRoz/Fbd0wr+SkPlQOr8C7VZUYikG5R6m
+nKqRemSd2ajhHuIR3hK8
+=H8Dw
 -----END PGP SIGNATURE-----
 
---XsQoSWH+UP9D9v3l--
+--KOm2V4lC9DbrrglNhH0QlkDxdvPgKJ9NJ--

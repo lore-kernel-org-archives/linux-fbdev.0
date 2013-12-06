@@ -1,37 +1,58 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Fri, 06 Dec 2013 07:12:56 +0000
-Subject: Re: [PATCHv13][ 1/4] video: imxfb: Introduce regulator support.
-Message-Id: <20131206071256.GX24559@pengutronix.de>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Date: Fri, 06 Dec 2013 12:55:12 +0000
+Subject: [PATCH] ARM: OMAPFB: panel-sony-acx565akm: fix missing unlock in acx565akm_panel_power_on()
+Message-Id: <CAPgLHd_asZkqBEXyx611=NOMfcaR18jZ8Yxkt5yhg7Lbng93MA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386258219-26437-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1386258219-26437-1-git-send-email-denis@eukrea.com>
+References: <1383773070-15114-1-git-send-email-aaro.koskinen@iki.fi>
+In-Reply-To: <1383773070-15114-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, aaro.koskinen@iki.fi
+Cc: yongjun_wei@trendmicro.com.cn, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Thu, Dec 05, 2013 at 04:43:36PM +0100, Denis Carikli wrote:
-> This commit is based on the following commit by Fabio Estevam:
-> @@ -1020,6 +1045,12 @@ static int imxfb_probe(struct platform_device *pdev)
->  		goto failed_register;
->  	}
->  
-> +	fbi->reg_lcd = devm_regulator_get(&pdev->dev, "lcd");
-> +	if (IS_ERR(fbi->reg_lcd)) {
-> +		dev_info(&pdev->dev, "No lcd regulator used.\n");
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Please remove this log spam or at least reduce it to dev_dbg. That's the
-typical message to which our customers keep asking us whether that's
-something they have to care about.
+Add the missing unlock before return from function
+acx565akm_panel_power_on() in the error handling case.
 
-Also, you should check for -EPROBE_DEFER here and return it in this
-case.
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+---
+ drivers/video/omap2/displays-new/panel-sony-acx565akm.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-Sascha
+diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+index d94f35d..69aa4a1 100644
+--- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
++++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+@@ -536,7 +536,7 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
+ 	r = in->ops.sdi->enable(in);
+ 	if (r) {
+ 		pr_err("%s sdi enable failed\n", __func__);
+-		return r;
++		goto out;
+ 	}
+ 
+ 	/*FIXME tweak me */
+@@ -547,7 +547,8 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
+ 
+ 	if (ddata->enabled) {
+ 		dev_dbg(&ddata->spi->dev, "panel already enabled\n");
+-		return 0;
++		r = 0;
++		goto out;
+ 	}
+ 
+ 	/*
+@@ -571,6 +572,10 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
+ 	mutex_unlock(&ddata->mutex);
+ 
+ 	return acx565akm_bl_update_status(ddata->bl_dev);
++
++out:
++	mutex_unlock(&ddata->mutex);
++	return r;
+ }
+ 
+ static void acx565akm_panel_power_off(struct omap_dss_device *dssdev)
 
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

@@ -1,100 +1,185 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 05 Dec 2013 09:41:42 +0000
+From: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+Date: Sat, 07 Dec 2013 03:48:18 +0000
 Subject: Re: [PATCH 00/26] OMAPDSS: DT support (Christmas edition)
-Message-Id: <52A04A56.60403@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="KOm2V4lC9DbrrglNhH0QlkDxdvPgKJ9NJ"
+Message-Id: <52A29A82.106@collabora.co.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <20131204160119.GA9433@earth.universe>
-In-Reply-To: <20131204160119.GA9433@earth.universe>
-To: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@debian.org>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Stefan Roese <stefan.roese@gmail.com>, Robert Nelson <robertcnelson@gmail.com>, "Dr . H . Nikolaus Schaller" <hns@goldelico.com>, Marek Belisko <marek@goldelico.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-fbdev@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Stefan Roese <stefan.roese@gmail.com>, Sebastian Reichel <sre@debian.org>, Robert Nelson <robertcnelson@gmail.com>, "Dr . H . Nikolaus Schaller" <hns@goldelico.com>, Marek Belisko <marek@goldelico.com>
 
---KOm2V4lC9DbrrglNhH0QlkDxdvPgKJ9NJ
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Tomi,
 
-On 2013-12-04 18:01, Sebastian Reichel wrote:
+On Wed, Dec 4, 2013 at 1:28 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
 > Hi,
->=20
-> On Wed, Dec 04, 2013 at 02:28:27PM +0200, Tomi Valkeinen wrote:
->> Here's a new version for DT support to OMAP Display Subsystem. See
->> http://article.gmane.org/gmane.linux.ports.arm.omap/102689 for the int=
-ro of the
->> previous version, which contains thoughts about the related problems.
->>
->> The major change in this version is the use of V4L2 and CDF style port=
-/endpoint
->> style in the DT data. However, note that even if the DT data contains =
-proper
->> port & endpoint data, the drivers only use the first endpoint. This is=
- to
->> simplify the patches, as adding full support for the ports and endpoin=
-ts to the
->> drivers will be a big task. This approach still works with more or les=
-s all the
->> boards, as the only cases where the simpler model is an issue are the =
-boards
->> with multiple display devices connected to a single output.
->>
->> Laurent, I'd appreciate if you could have a look at the .dts changes, =
-to see if
->> there's anything that's clearly not CDF compatible.
->>
->> The patches can also be found from:
->> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss=
--dt
->=20
-> Will this be ready for 3.14? Depending on that I would handle
+>
+> Here's a new version for DT support to OMAP Display Subsystem. See
+> http://article.gmane.org/gmane.linux.ports.arm.omap/102689 for the intro of the
+> previous version, which contains thoughts about the related problems.
+>
+> The major change in this version is the use of V4L2 and CDF style port/endpoint
+> style in the DT data. However, note that even if the DT data contains proper
+> port & endpoint data, the drivers only use the first endpoint. This is to
+> simplify the patches, as adding full support for the ports and endpoints to the
+> drivers will be a big task. This approach still works with more or less all the
+> boards, as the only cases where the simpler model is an issue are the boards
+> with multiple display devices connected to a single output.
+>
+> Laurent, I'd appreciate if you could have a look at the .dts changes, to see if
+> there's anything that's clearly not CDF compatible.
+>
+> The patches can also be found from:
+> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dt
+>
 
-That is my hope. We have been missing DSS DT bindings for too long, and
-maintaining and adding new mixed DT/non-DT panels, as done for omap4
-now, is just a big headache.
+I tested your branch on my DM3730 IGEPv2 board by cherry-picking the following
+commits from latest Linus tree on top of your work/dss-dt branch:
 
-The bindings in my series are probably not perfect, but I believe they
-should be fine enough. I didn't get any NACKs for the previous versions
-of this series, and the only reason I haven't been pushing these to
-mainline is that I haven't been satisfied with the bindings.
+d526daeb ("ARM: dts: omap3-igep0020: Add pinmux setup for i2c devices")
+50592dc3 ("ARM: dts: omap3-igep0020: Add pinmuxing for DVI output")
 
-Laurent promised to have a look at the bindings to see if he notices
-anything that would conflict with Common Display Framework bindings. If
-he's ok with the bindings, I think we can decide next week if these will
-be merged for 3.14.
+And adding the display information using your DSS bindings to omap3-igep0020.dts
+[0].
 
-> omapdss support for the N900 differently. If this code gets merged
-> into 3.14 I will update the N900 patches [0] accordingly. Otherwise
-> I would suggest to take the N900 patches as is for 3.14 and I will
-> take care of adding the omapdss DT support to the panel (and the
-> N900.dts) separately.
+But it failed for me because of a probing order. The problem is that the probing
+order is:
 
-I really would not like to add any more hacks for DSS.
+omap_i2c
+pinctrl-single
+OMAP DSS
+connector-dvi
+omapfb
 
- Tomi
+Now DT good practices says that the pinmux setup needed for a device have to be
+initialized in a pin control state for the device using these pins (i.e: i2c3)
+instead of doing globally by being part of a pinctrl state of the pinmux device
+(i.e: omap3_pmx_core).
+
+But due this init order the omap_i2c probe is deferred due pinctrl-single not
+being initialized yet:
+
+[    0.565246] omap_i2c 48060000.i2c: could not find pctldev for node /ocp/pinmu
 
 
+x@48002030/pinmux_i2c3_pins, deferring probe
 
---KOm2V4lC9DbrrglNhH0QlkDxdvPgKJ9NJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+This is ok since eventually the pinctrl-single driver will be initialized and
+the next time the omap_i2c probe is called it will succeed. But before omap_i2c
+has a chance to be probed again the connector-dvi driver is probed and fails due
+the i2c bus not being initialized yet:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+[    1.064300] OMAP DSS rev 2.0
+[    1.073669] connector-dvi connector.12: failed to parse i2c-bus
+[    1.073730] connector-dvi: probe of connector.12 failed with error -22
+[    1.078216] omapfb omapfb: no displays
+[    1.080871] omapfb omapfb: failed to setup omapfb
+[    1.080932] platform omapfb: Driver omapfb requests probe deferral
+..
 
-iQIcBAEBAgAGBQJSoEpaAAoJEPo9qoy8lh71aCwP/1ph95nrvAQw/DJYMTldtKAm
-ST0eOCSmRB4EV8CL53GZUQH6tv+HWmHArXtqYf0zr1xJSbURbXoJYLdPgEvDbJIX
-1nokSWo5aHdZtPgJOC347y8j8XW9if4/GMWXZbH/Dgtr9PJEQ5TkHgrjOSo5jMM9
-nAzvHWmbXYbbU/ISakm5yUZkSbda0fseSYGrwxQILSFkwIQ2SxLUtfQQCiIGncPc
-MsdRn5fh8z/xdj/JYT5gDQSN4nqiDWyaabC4qHSuY1eVgEIRk1KpW1rtsrE++/WX
-HqYXFMlMihsJdri5L2jSbJkU6ELEPCSmw6r2iEBYFYj+BE8aFeckl2WqgtMjnmit
-gTidqOzpHkRG2N1X+GZs13bDwIH8LrApn4RPLpHVQbMxzFSZtx/JiKsCTCmT7zJ4
-ex4haHzTUjqHG3NYHfYKtW52Vd7ECmHlz32F3Yz263mDy7F4XuF59cF/Riynl0Oz
-F3JX/I9ESHdcDI5Gh/F/ZnZR/NZIwyid/87FgFPHEemTIHszi8lOkvGlCx1BNfIp
-Ixzo8869GQgLv0Y4o5/Py5uecX4cIug2i7DZF98ZVFkj8IkkXOxaT93LPwZRjMWn
-wlEh+5eI0CWN42yfJhSbR6X6fCXXKhzSRoz/Fbd0wr+SkPlQOr8C7VZUYikG5R6m
-nKqRemSd2ajhHuIR3hK8
-=H8Dw
------END PGP SIGNATURE-----
+Later the omap_i2c driver probe succees since the pinctrl-single driver was
+initialized but by then it is already too late:
 
---KOm2V4lC9DbrrglNhH0QlkDxdvPgKJ9NJ--
+[    3.293914] omap_i2c 48070000.i2c: bus 0 rev4.4 at 2600 kHz
+[    3.301940] omap_i2c 48072000.i2c: bus 1 rev4.4 at 400 kHz
+[    3.310882] omap_i2c 48060000.i2c: bus 2 rev4.4 at 100 kHz
+[    3.317565] omapfb omapfb: no displays
+[    3.321716] omapfb omapfb: failed to setup omapfb
+[    3.326751] platform omapfb: Driver omapfb requests probe deferral
+..
+[    3.694915] omapfb omapfb: no displays
+[    3.699127] omapfb omapfb: failed to setup omapfb
+[    3.704071] platform omapfb: Driver omapfb requests probe deferral
+..
+
+If I move the i2c3 pinmux definitions from the i2c3 device node to
+omap3_pmx_core then the display works correctly.
+
+So, I think that we should add deferred probing to drivers/video/omap2/*.c too
+to avoid the scenario I described above.
+
+Also, would you mind to include [0] on your patch-set so display continue
+working for IGEPv2 after you remove the pdata-quirks and dss-common.c hacks?
+
+Thanks a lot and best regards,
+Javier
+
+[0]:
+From a9af54a3b63bccade241e056d153d8bf04a6a5d5 Mon Sep 17 00:00:00 2001
+From: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+Date: Fri, 6 Dec 2013 02:53:38 +0100
+Subject: [PATCH 1/1] ARM: dts: omap3-igep0020: add display information
+
+The IGEPv2 has a TFP410 DPI-to-DVI encoder attached
+to OMAP's Display SubSystem (DSS). Add DeviceTree
+nodes for these devices.
+
+Signed-off-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+---
+ arch/arm/boot/dts/omap3-igep0020.dts | 51 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 51 insertions(+)
+
+diff --git a/arch/arm/boot/dts/omap3-igep0020.dts
+b/arch/arm/boot/dts/omap3-igep0020.dts
+index 76509de..2569d60 100644
+--- a/arch/arm/boot/dts/omap3-igep0020.dts
++++ b/arch/arm/boot/dts/omap3-igep0020.dts
+@@ -215,3 +215,54 @@
+ &usbhsehci {
+ 	phys = <&hsusb1_phy>;
+ };
++
++&dpi {
++	vdds_dsi-supply = <&vpll2>;
++
++	dpi_out: endpoint {
++		remote-endpoint = <&tfp410_in>;
++		data-lines = <24>;
++	};
++};
++
++
++/ {
++	aliases {
++		display0 = &dvi0;
++	};
++
++	tfp410: encoder@0 {
++		compatible = "ti,tfp410";
++		gpios = <&gpio6 10 GPIO_ACTIVE_HIGH>; /* 170, power-down */
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				tfp410_in: endpoint@0 {
++					remote-endpoint = <&dpi_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++
++				tfp410_out: endpoint@1 {
++					remote-endpoint = <&dvi_connector_in>;
++				};
++			};
++		};
++	};
++
++	dvi0: connector@0 {
++		compatible = "ti,dvi-connector";
++		i2c-bus = <&i2c3>;
++
++		dvi_connector_in: endpoint {
++			remote-endpoint = <&tfp410_out>;
++		};
++	};
++};
+-- 
+1.8.4.2

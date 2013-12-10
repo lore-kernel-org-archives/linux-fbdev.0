@@ -1,112 +1,193 @@
-From: Ingo Molnar <mingo@kernel.org>
-Date: Thu, 19 Dec 2013 15:58:46 +0000
-Subject: Re: [PATCH] x86: sysfb: fool-proof CONFIG_X86_SYSFB
-Message-Id: <20131219155846.GA27790@gmail.com>
+From: Belisko Marek <marek.belisko@gmail.com>
+Date: Tue, 10 Dec 2013 22:11:57 +0000
+Subject: Re: [PATCH 1/3] arm: omap2: Export devconf1 bypass and acbias.
+Message-Id: <CAAfyv36MaVqrmQxpqDu-ciO9GNJK3pJkFZohEvd1BOLOWWEOhw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387460330-13989-1-git-send-email-dh.herrmann@gmail.com>
- <20131219154020.GB20044@gmail.com>
- <CANq1E4TSh7-WWiRfBUAXZPK+_87=Ven_kK=NHeN8C+daNWdSFQ@mail.gmail.com>
-In-Reply-To: <CANq1E4TSh7-WWiRfBUAXZPK+_87=Ven_kK=NHeN8C+daNWdSFQ@mail.gmail.com>
+References: <1381784555-18344-1-git-send-email-marek@goldelico.com>
+ <1381784555-18344-2-git-send-email-marek@goldelico.com>
+ <20131111164917.GN15154@atomide.com>
+ <CAAfyv37LRb_Q=UZVgtKdOAz_r6_qThewAU90W7nrqHdB5fDA_g@mail.gmail.com>
+ <20131111233152.GR15154@atomide.com>
+In-Reply-To: <20131111233152.GR15154@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Herrmann <dh.herrmann@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>, the arch/x86 maintainers <x86@kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, stable <stable@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+To: linux-arm-kernel@lists.infradead.org
 
+Hi Tony,
 
-* David Herrmann <dh.herrmann@gmail.com> wrote:
+On Tue, Nov 12, 2013 at 12:31 AM, Tony Lindgren <tony@atomide.com> wrote:
+> * Belisko Marek <marek.belisko@gmail.com> [131111 14:01]:
+>> Hi Tony,
+>>
+>> On Mon, Nov 11, 2013 at 5:49 PM, Tony Lindgren <tony@atomide.com> wrote:
+>> > * Marek Belisko <marek@goldelico.com> [131014 14:11]:
+>> >> devconf1 reg access is localized only in mach-omap2 and we need to export
+>> >> updating of devconf1 from omapdss venc driver (bypass and acbias bits).
+>> >> Add simple api call which update only necessary bits.
+>> > ...
+>> >
+>> >> +void update_bypass_acbias(bool bypass, bool acbias)
+>> >> +{
+>> >> +#ifdef CONFIG_ARCH_OMAP3
+>> >> +     int val = omap_ctrl_readl(OMAP343X_CONTROL_DEVCONF1);
+>> >> +
+>> >> +     if (bypass)
+>> >> +             val |= OMAP2_TVOUTBYPASS;
+>> >> +     else
+>> >> +             val &= ~OMAP2_TVOUTBYPASS;
+>> >> +
+>> >> +     if (acbias)
+>> >> +             val |= OMAP2_TVACEN;
+>> >> +     else
+>> >> +             val &= ~OMAP2_TVACEN;
+>> >> +
+>> >> +     omap_ctrl_writel(val, OMAP343X_CONTROL_DEVCONF1);
+>> >> +#endif
+>> >
+>> > If this is truly a pinmux, you could already access this
+>> > using pinctrl-single,bits device tree driver.
+>> >
+>> > But I guess that won't work yet, so it's best to set this
+>> > up as a separate driver like we've done for the USB PHY
+>> > registers.
+>>
+>> Can you please point me to that driver directly? I cannot see benefit
+>> of new driver as as it will be only dummy driver
+>> with export_symbol_gpl of upper function. Can it sit then in dss
+>> directory or somewhere else? Thanks.
+>
+> You can take a look at drivers/usb/phy/phy-omap-control.c.
+>
+> Then there's a device tree using example for control_devconf0 in
+> Documentation/devicetree/bindings/pinctrl/pinctrl-single.txt.
+>
+> Looks like CONTROL_DEVCONF1 contains a bunch of misc registers,
+> and arch/arm/mach-omap2/hsmmc.c seems to be tinkering with it too.
+>
+> It would be best to set it up as omap-ctrl.c driver under drivers
+> somewhere with few functions exported for DSS and MMC drivers.
+I create small dummy driver based on phy-omap-control which can be
+used but before sending patch (with more updates) I would like to get
+some feedback if my direction is correct.
+diff --git a/drivers/misc/omap-ctrl.c b/drivers/misc/omap-ctrl.c
+new file mode 100644
+index 0000000..ca2e576
+--- /dev/null
++++ b/drivers/misc/omap-ctrl.c
+@@ -0,0 +1,84 @@
++/*
++ * omap-ctrl.c - The part of omap control module.
++ *
++ * Copyright (C) 2013 Goldelico GmbH
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * Author: Marek Belisko <marek@goldelico.com>
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/io.h>
++
++static u32 __iomem *devconf1;
++
++void omap_ctrl_tvoutbypass(int on)
++{
++    int val = readl(devconf1);
++
++    if (on)
++       val |= BIT(18);
++    else
++       val &= ~BIT(18);
++
++    writel(val, devconf1);
++}
++EXPORT_SYMBOL_GPL(omap_ctrl_tvoutbypass);
++
++
++void omap_ctrl_acen(int on)
++{
++    int val = readl(devconf1);
++
++    if (on)
++       val |= BIT(11);
++    else
++       val &= ~BIT(11);
++
++    writel(val, devconf1);
++}
++EXPORT_SYMBOL_GPL(omap_ctrl_acen);
++
++
++static int omap_ctrl_probe(struct platform_device *pdev)
++{
++    struct resource *res;
++
++    res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
++       "devconf1");
++    devconf1 = devm_ioremap_resource(
++       &pdev->dev, res);
++    if (IS_ERR(devconf1))
++       return PTR_ERR(devconf1);
++
++    return 0;
++}
++
++struct platform_driver omap_ctrl_driver = {
++    .probe = omap_ctrl_probe,
++    .driver = {
++    .name = "omap-ctrl",
++    .owner = THIS_MODULE,
++    },
++};
++
++static int __init omap_ctrl_init(void)
++{
++    return platform_driver_register(&omap_ctrl_driver);
++}
++subsys_initcall(omap_ctrl_init);
++
++static void __exit omap_ctrl_exit(void)
++{
++    platform_driver_unregister(&omap_ctrl_driver);
++}
 
-> Hi
-> 
-> On Thu, Dec 19, 2013 at 4:40 PM, Ingo Molnar <mingo@kernel.org> wrote:
-> >
-> > * David Herrmann <dh.herrmann@gmail.com> wrote:
-> >
-> >> Turns out, people do not read help-texts of new config-options and
-> >> enable them nonetheless. [...]
-> >
-> > Yeah, I too don't read them either, whenever an option name seems
-> > obvious to enable, so this is really something that happens frequently
-> > ;-)
-> >
-> >> [...] So several reports came in with X86_SYSFB=y and FB_SIMPLE=n,
-> >> which in almost all situations prevents firmware-fbs from being
-> >> probed.
-> >>
-> >> X86_SYSFB clearly states that it turns legacy vesa/efi framebuffers
-> >> into a format compatible to simplefb (and does nothing else..). So
-> >> to avoid further complaints about missing gfx-support during boot,
-> >> simply depend on FB_SIMPLE now.
-> >>
-> >> As FB_SIMPLE is disabled by default and usually only enabled on
-> >> selected ARM architectures, x86 users should thus never see the
-> >> X86_SYSFB config-option. And if they do, everything is fine as
-> >> simplefb will be available.
-> >>
-> >> Note that most of the sysfb code is enabled independently of
-> >> X86_SYSFB. The config option only selects a compatibility mode for
-> >> simplefb. It was introduced to ease the transition to SimpleDRM and
-> >> disabling fbdev. As this is still ongoing, there's no need for
-> >> non-developers to care for X86_SYSFB so just change the help-text
-> >> recommendation to "n".
-> >>
-> >> Cc: <stable@vger.kernel.org> # 3.11+
-> >> Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
-> >> ---
-> >>  arch/x86/Kconfig | 3 ++-
-> >>  1 file changed, 2 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> >> index e903c71..9317ede 100644
-> >> --- a/arch/x86/Kconfig
-> >> +++ b/arch/x86/Kconfig
-> >> @@ -2298,6 +2298,7 @@ source "drivers/rapidio/Kconfig"
-> >>
-> >>  config X86_SYSFB
-> >>       bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
-> >> +     depends on (FB_SIMPLE = y)
-> >
-> > Could that be written as:
-> >
-> >         depends on FB_SIMPLE
-> >
-> > Or is there some complication with modular builds?
-> 
-> simplefb is actually "bool" so yeah, I can remove the "= y".
-> 
-> Note that *if* it ever is built as module, it will not get loaded
-> during boot, thus not showing any boot-messages. But that's true for
-> vesafb/efifb, too, so we're fine.
-> 
-> >>       help
-> >>         Firmwares often provide initial graphics framebuffers so the BIOS,
-> >>         bootloader or kernel can show basic video-output during boot for
-> >> @@ -2320,7 +2321,7 @@ config X86_SYSFB
-> >>         and others enabled as fallback if a system framebuffer is
-> >>         incompatible with simplefb.
-> >>
-> >> -       If unsure, say Y.
-> >> +       If unsure, say N.
-> >
-> > We might in fact leave this bit alone and suggest 'Y' - with the
-> > robustification fixes it's not possible anymore to crash the boot or
-> > to create an unintentionally headless system, right?
-> 
-> Nope, we will not cause a headless system, but the handover to other
-> fbdev/DRM drivers (other than the common nouveau/radeon/i915) may
-> still fail without the other patch (x86: sysfb: remove sysfb when
-> probing real hw).
-> 
-> I will gladly keep the Y, if no-one disagrees. Given that the other 
-> patch is rather complex (and a no-op with X86_SYSFB=n) I wasn't 
-> quite sure. But as SYSFB is set to 'n' now if FB_SIMPLE wasn't 
-> explicitly selected, I think we're fine both ways.
+I use that driver with platform device in board file with proper
+resources and it works fine. It could be easily added also DT
+bindings.
+Also you mention somewhere in drivers (but I think misc isn't right
+place for that). Any opinion on that? Thanks for feedback.
 
-Well, as long as fixes keep coming when people report them, I see no 
-problem with keeping the 'Y'. Bugs happen.
+>
+> The reason why it should be a separate driver is that the system
+> control module can live a separate runtime PM life from the
+> drivers using the CONTROL_DEVCONF register bits.
+>
+> Regards,
+>
+> Tony
 
-And I think we want to apply the other fix regardless of the default.
+BR,
 
-Thanks,
+marek
 
-	Ingo
+-- 
+as simple and primitive as possible
+-------------------------------------------------
+Marek Belisko - OPEN-NANDRA
+Freelance Developer
+
+Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
+Tel: +421 915 052 184
+skype: marekwhite
+twitter: #opennandra
+web: http://open-nandra.com

@@ -1,58 +1,59 @@
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Date: Fri, 06 Dec 2013 12:55:12 +0000
-Subject: [PATCH] ARM: OMAPFB: panel-sony-acx565akm: fix missing unlock in acx565akm_panel_power_on()
-Message-Id: <CAPgLHd_asZkqBEXyx611=NOMfcaR18jZ8Yxkt5yhg7Lbng93MA@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 11 Dec 2013 14:29:57 +0000
+Subject: Re: [PATCH] ARM: OMAPFB: panel-sony-acx565akm: fix missing unlock in acx565akm_panel_power_on()
+Message-Id: <52A876E5.4040000@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="8bgXEdsHRc9nknWSsucea5neatCfi8K5s"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383773070-15114-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1383773070-15114-1-git-send-email-aaro.koskinen@iki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, aaro.koskinen@iki.fi
+References: <CAPgLHd_asZkqBEXyx611=NOMfcaR18jZ8Yxkt5yhg7Lbng93MA@mail.gmail.com>
+In-Reply-To: <CAPgLHd_asZkqBEXyx611=NOMfcaR18jZ8Yxkt5yhg7Lbng93MA@mail.gmail.com>
+To: Wei Yongjun <weiyj.lk@gmail.com>, plagnioj@jcrosoft.com, aaro.koskinen@iki.fi
 Cc: yongjun_wei@trendmicro.com.cn, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+--8bgXEdsHRc9nknWSsucea5neatCfi8K5s
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Add the missing unlock before return from function
-acx565akm_panel_power_on() in the error handling case.
+Hi,
 
-Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
----
- drivers/video/omap2/displays-new/panel-sony-acx565akm.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+On 2013-12-06 14:55, Wei Yongjun wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+>=20
+> Add the missing unlock before return from function
+> acx565akm_panel_power_on() in the error handling case.
+>=20
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-index d94f35d..69aa4a1 100644
---- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-+++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-@@ -536,7 +536,7 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
- 	r = in->ops.sdi->enable(in);
- 	if (r) {
- 		pr_err("%s sdi enable failed\n", __func__);
--		return r;
-+		goto out;
- 	}
- 
- 	/*FIXME tweak me */
-@@ -547,7 +547,8 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
- 
- 	if (ddata->enabled) {
- 		dev_dbg(&ddata->spi->dev, "panel already enabled\n");
--		return 0;
-+		r = 0;
-+		goto out;
- 	}
- 
- 	/*
-@@ -571,6 +572,10 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
- 	mutex_unlock(&ddata->mutex);
- 
- 	return acx565akm_bl_update_status(ddata->bl_dev);
-+
-+out:
-+	mutex_unlock(&ddata->mutex);
-+	return r;
- }
- 
- static void acx565akm_panel_power_off(struct omap_dss_device *dssdev)
+A fix for this has already been merged:
+c37dd677988ca50bc8bc60ab5ab053720583c168 (ARM: OMAPFB:
+panel-sony-acx565akm: fix bad unlock balance)
 
+ Tomi
+
+
+
+--8bgXEdsHRc9nknWSsucea5neatCfi8K5s
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSqHblAAoJEPo9qoy8lh7194AQAJAr1ScbIjsXKGM8YuwF3QW+
+V/TNCRw+XYZN4fxXeu8Q9QFJbmEvcZZ77onTRWX6JqiL9IqkxCJenyhff5OU2+Zr
+tPwrYsHhCQVob+mTHuEVQpaz7WhcT7ruVql2MlXsh/IvBH9Anwp6mdEOI/sgiATt
+7lALlsHkYT3q+u73idbQDzD+PjSOS9SSsx83eqXnGxZrTQNrycpj5hX/kbYFPUTC
+0qstqSMNTsDIMgJ7nXQ604Wt7X3mi2MyASeHQBbbN3CHIC6rj+96WW2xMECo1bLn
+ccyXUy/k2W120BWzULlTdNql3WSq+//AEW3nHZu3VgU/yperhXTPpdR/mmuhL9hG
+edr9XZjB/8p2zi8H0epf73CDDGo5oW7qkhJeONZNk71IBxRdc5d2gBPkocFWpl7V
+B5h6x0nOYEEfm2fj6xdfA1lJ7GtHvV0J5Qs3QnVc0H3/059TydPOlyqRrO7xSmbp
+K9n8wcaVtbMaPKATIHCDIpZyxT1WakmXnSb6oQH0tUVYSItKzEjCQDy46XYXPb4C
+XB5S8dmty+oj7LifL43/yZHPtRedHfo8zF6+9jc2mIfK54hbFovqjoNv1kEyb1mP
+BfS9HD7W8bWtrwB3/q8KammFIrVFV1rvPRdH2xaFvhLd2+1dirTYcjeGgM5zG+WA
+sU6SOS/ZZS897sGBljN5
+=mzSG
+-----END PGP SIGNATURE-----
+
+--8bgXEdsHRc9nknWSsucea5neatCfi8K5s--

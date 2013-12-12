@@ -1,7 +1,7 @@
-From: Belisko Marek <marek.belisko@gmail.com>
-Date: Thu, 12 Dec 2013 08:31:02 +0000
+From: Tony Lindgren <tony@atomide.com>
+Date: Thu, 12 Dec 2013 19:19:08 +0000
 Subject: Re: [PATCH 1/3] arm: omap2: Export devconf1 bypass and acbias.
-Message-Id: <CAAfyv35wKAK2PNjcXcNan9GC0x-MmH5k4xmzj_vKKhPeztHV-A@mail.gmail.com>
+Message-Id: <20131212191908.GA29072@muru.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1381784555-18344-1-git-send-email-marek@goldelico.com>
  <1381784555-18344-2-git-send-email-marek@goldelico.com>
@@ -10,56 +10,50 @@ References: <1381784555-18344-1-git-send-email-marek@goldelico.com>
  <20131111233152.GR15154@atomide.com>
  <CAAfyv36MaVqrmQxpqDu-ciO9GNJK3pJkFZohEvd1BOLOWWEOhw@mail.gmail.com>
  <20131210224659.GY13171@atomide.com>
-In-Reply-To: <20131210224659.GY13171@atomide.com>
+ <CAAfyv35wKAK2PNjcXcNan9GC0x-MmH5k4xmzj_vKKhPeztHV-A@mail.gmail.com>
+In-Reply-To: <CAAfyv35wKAK2PNjcXcNan9GC0x-MmH5k4xmzj_vKKhPeztHV-A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Tony,
-
-On Tue, Dec 10, 2013 at 11:46 PM, Tony Lindgren <tony@atomide.com> wrote:
-> * Belisko Marek <marek.belisko@gmail.com> [131210 14:13]:
->> On Tue, Nov 12, 2013 at 12:31 AM, Tony Lindgren <tony@atomide.com> wrote:
->> >
->> > It would be best to set it up as omap-ctrl.c driver under drivers
->> > somewhere with few functions exported for DSS and MMC drivers.
->>
->> I create small dummy driver based on phy-omap-control which can be
->> used but before sending patch (with more updates) I would like to get
->> some feedback if my direction is correct.
+On Thu, Dec 12, 2013 at 09:31:02AM +0100, Belisko Marek wrote:
+> Hi Tony,
+> 
+> On Tue, Dec 10, 2013 at 11:46 PM, Tony Lindgren <tony@atomide.com> wrote:
+> > * Belisko Marek <marek.belisko@gmail.com> [131210 14:13]:
+> >> On Tue, Nov 12, 2013 at 12:31 AM, Tony Lindgren <tony@atomide.com> wrote:
+> >> >
+> >> > It would be best to set it up as omap-ctrl.c driver under drivers
+> >> > somewhere with few functions exported for DSS and MMC drivers.
+> >>
+> >> I create small dummy driver based on phy-omap-control which can be
+> >> used but before sending patch (with more updates) I would like to get
+> >> some feedback if my direction is correct.
+> >
+> > Cool thanks. Yeah what you have can easily be combined with the patches
+> > Balaji has posted to make HSMMC use drivers/mfd/syscon.c via regmap
+> > for the SCM register access. Maybe take a look at the work in progress
+> > patches in thread:
+> >
+> > [PATCH v4 0/7] mmc: omap_hsmmc: pbias dt and cleanup
+> >
+> > And also see my comments regarding using the SCM GENERAL register area
+> > as base for the syscon.c driver. That should work for your driver too,
+> > right? And then you can access the SYSCON1 register that way from your
+> > consumer driver ;)
 >
-> Cool thanks. Yeah what you have can easily be combined with the patches
-> Balaji has posted to make HSMMC use drivers/mfd/syscon.c via regmap
-> for the SCM register access. Maybe take a look at the work in progress
-> patches in thread:
->
-> [PATCH v4 0/7] mmc: omap_hsmmc: pbias dt and cleanup
->
-> And also see my comments regarding using the SCM GENERAL register area
-> as base for the syscon.c driver. That should work for your driver too,
-> right? And then you can access the SYSCON1 register that way from your
-> consumer driver ;)
-If I understand correclty I can use syscon driver (it will have in
-range also devconf1 register) ad get rid of my custom driver
-and then get regmap from syscon and update bits that I need for venc, right?
->
-> Regards,
->
-> Tony
+> If I understand correclty I can use syscon driver (it will have in
+> range also devconf1 register) ad get rid of my custom driver
+> and then get regmap from syscon and update bits that I need for venc, right?
 
-BR,
+Yeah something like that. Or since the sysconf1 register is shared, it might
+be best to still provide specific functions to access it if we cannot map
+just specific bits of it separately for drivers using regmap.
 
-marek
+But anyways this should for most part remove the need for a custom driver(s)
+unless the register is a regulator or a clock.
 
--- 
-as simple and primitive as possible
--------------------------------------------------
-Marek Belisko - OPEN-NANDRA
-Freelance Developer
+Regards,
 
-Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
-Tel: +421 915 052 184
-skype: marekwhite
-twitter: #opennandra
-web: http://open-nandra.com
+Tony

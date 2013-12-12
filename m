@@ -1,62 +1,80 @@
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Date: Mon, 09 Dec 2013 12:23:31 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 12 Dec 2013 00:39:14 +0000
 Subject: Re: [PATCH 00/26] OMAPDSS: DT support (Christmas edition)
-Message-Id: <CABxcv=mTnAcYz3H4CzqJ8McwhxpP8aaSxOH3FFEADUiSaqd8=w@mail.gmail.com>
+Message-Id: <1824203.Ui6fpnZVmO@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <52A29A82.106@collabora.co.uk>
-	<52A2A3EF.1030306@collabora.co.uk>
-	<52A5B111.3010307@ti.com>
-In-Reply-To: <52A5B111.3010307@ti.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-fbdev@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Stefan Roese <stefan.roese@gmail.com>, Sebastian Reichel <sre@debian.org>, Robert Nelson <robertcnelson@gmail.com>, "Dr . H . Nikolaus Schaller" <hns@goldelico.com>, Marek Belisko <marek@goldelico.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Stefan Roese <stefan.roese@gmail.com>, Sebastian Reichel <sre@debian.org>, Robert Nelson <robertcnelson@gmail.com>, "Dr . H . Nikolaus Schaller" <hns@goldelico.com>, Marek Belisko <marek@goldelico.com>
 
-On Mon, Dec 9, 2013 at 1:01 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 2013-12-07 06:28, Javier Martinez Canillas wrote:
->
->> Actually, I looked at drivers/video/omap2/connector-dvi.c and it does the right
->> thing for legacy platform data probing but no for DT probing:
->>
->> static int dvic_probe_pdata(struct platform_device *pdev)
->> {
->> ..
->>               adapter = i2c_get_adapter(i2c_bus_num);
->>               if (!adapter) {
->>                       dev_err(&pdev->dev,
->>                                       "Failed to get I2C adapter, bus %d\n",
->>                                       i2c_bus_num);
->>                       return -EPROBE_DEFER;
->>               }
->> ..
->> }
->>
->> static int dvic_probe_of(struct platform_device *pdev)
->> {
->> ..
->>                adapter = of_find_i2c_adapter_by_node(adapter_node);
->>                 if (adapter = NULL) {
->>                         dev_err(&pdev->dev, "failed to parse i2c-bus\n");
->>                         omap_dss_put_device(ddata->in);
->>                         return -EINVAL;
->>                 }
->> ..
->> }
->>
->> The following patch solves the issue if you want to include in your patch-set:
->
-> Thanks, I'll add this and the omap3-igep0020 support to my DT branch.
->
+Hi Tomi,
 
-Great, thanks a lot for working on this!
+On Wednesday 04 December 2013 14:28:27 Tomi Valkeinen wrote:
+> Hi,
+> 
+> Here's a new version for DT support to OMAP Display Subsystem. See
+> http://article.gmane.org/gmane.linux.ports.arm.omap/102689 for the intro of
+> the previous version, which contains thoughts about the related problems.
+> 
+> The major change in this version is the use of V4L2 and CDF style
+> port/endpoint style in the DT data.
 
-I'm very happy that we will have proper display support for IGEPv2 on
-v3.14 without any DT hacks or pdata-quirks :-)
+That's great, and I fully support that. This also calls for refactoring the 
+V4L2 DT bindings and support code to share them with display devices. A 
+bikeshedding question is where to put the common code.
 
->  Tomi
+> However, note that even if the DT data contains proper port & endpoint data,
+> the drivers only use the first endpoint. This is to simplify the patches, as
+> adding full support for the ports and endpoints to the drivers will be a big
+> task.
 
-Best regards,
-Javier
->
->
+That's perfectly fine, there's no need to implement unused features just for 
+the sake of it, as long as the bindings are forward-compatible in that 
+respect.
+
+> This approach still works with more or less all the boards, as the only
+> cases where the simpler model is an issue are the boards with multiple
+> display devices connected to a single output.
+> 
+> Laurent, I'd appreciate if you could have a look at the .dts changes, to see
+> if there's anything that's clearly not CDF compatible.
+
+I've quickly reviewed the patch set, concentrating on the .dts changes. 
+Overall it looks good to me, but I suspect that we will need quite some time 
+to finalize standard bindings as there's lots of small details that need to be 
+taken care of.
+
+The major point that bothers we, as explained in my reply to one of the 
+patches, is that I feel like the multi-device model (virtual DSS core + DSS 
+modules) might not accurately represent the hardware. Departing from it 
+probably sounds scary but might not be such a large change.
+
+> The patches can also be found from:
+> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dt
+> 
+> A few notes:
+> 
+> - The DT data are added separately in the end of .dts files for clarity. In
+>   the final version I will move them to appropriate places in the .dts
+>   files.
+> 
+> - No binding documentation. I will add them for the next version, if there
+>   are no major changes needed. Hopefully the bindings are quite self-
+>   explanatory for people with understanding of the hardware in question.
+
+My plan is to split the connection information from the V4L2 bindings and make 
+that a separate document. If all goes well I should be able to spend Saturday 
+on this.
+
+> - The connectors' compatible strings are "ti,xxx". As there's nothing TI
+>   specific there, I think I will rename them to be without "ti".
+
+-- 
+Regards,
+
+Laurent Pinchart
+

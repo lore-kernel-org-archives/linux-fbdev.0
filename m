@@ -1,141 +1,74 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 11 Dec 2013 23:10:18 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 12 Dec 2013 07:30:11 +0000
 Subject: Re: [PATCH 05/26] ARM: OMAP2+: add omapdss_init_of()
-Message-Id: <2199639.FbGhznOLP9@avalon>
+Message-Id: <52A96603.5030709@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="tf4jdftRMQf6xiCtGVqaeWIgKXg8NW1RL"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <1386160133-24026-6-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-6-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <1386160133-24026-6-git-send-email-tomi.valkeinen@ti.com> <2199639.FbGhznOLP9@avalon>
+In-Reply-To: <2199639.FbGhznOLP9@avalon>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>
 
-Hi Tomi,
+--tf4jdftRMQf6xiCtGVqaeWIgKXg8NW1RL
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Wednesday 04 December 2013 14:28:32 Tomi Valkeinen wrote:
-> omapdss driver uses a omapdss platform device to pass platform specific
-> function pointers and DSS hardware version from the arch code to the
-> driver. This device is needed also when booting with DT.
-> 
-> This patch adds omapdss_init_of() function, called from board-generic at
-> init time, which creates the omapdss device.
+On 2013-12-12 01:10, Laurent Pinchart wrote:
+> Hi Tomi,
+>=20
+> On Wednesday 04 December 2013 14:28:32 Tomi Valkeinen wrote:
+>> omapdss driver uses a omapdss platform device to pass platform specifi=
+c
+>> function pointers and DSS hardware version from the arch code to the
+>> driver. This device is needed also when booting with DT.
+>>
+>> This patch adds omapdss_init_of() function, called from board-generic =
+at
+>> init time, which creates the omapdss device.
+>=20
+> Is this a temporary solution that you plan to later replace with DT-onl=
+y=20
+> device instantiation ?
 
-Is this a temporary solution that you plan to later replace with DT-only 
-device instantiation ?
+It's a long term task to remove the "virtual" omapdss device. Removing
+the platform data that we pass has been very difficult.
 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->  arch/arm/mach-omap2/board-generic.c |  2 ++
->  arch/arm/mach-omap2/common.h        |  2 ++
->  arch/arm/mach-omap2/display.c       | 62 ++++++++++++++++++++++++++++++++++
->  3 files changed, 66 insertions(+)
-> 
-> diff --git a/arch/arm/mach-omap2/board-generic.c
-> b/arch/arm/mach-omap2/board-generic.c index 19f1652e94cf..0e06771d7bee
-> 100644
-> --- a/arch/arm/mach-omap2/board-generic.c
-> +++ b/arch/arm/mach-omap2/board-generic.c
-> @@ -36,6 +36,8 @@ static struct of_device_id omap_dt_match_table[]
-> __initdata = { static void __init omap_generic_init(void)
->  {
->  	pdata_quirks_init(omap_dt_match_table);
-> +
-> +	omapdss_init_of();
->  }
-> 
->  #ifdef CONFIG_SOC_OMAP2420
-> diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
-> index f7644febee81..48e9cd34cae0 100644
-> --- a/arch/arm/mach-omap2/common.h
-> +++ b/arch/arm/mach-omap2/common.h
-> @@ -308,5 +308,7 @@ extern int omap_dss_reset(struct omap_hwmod *);
->  /* SoC specific clock initializer */
->  extern int (*omap_clk_init)(void);
-> 
-> +int __init omapdss_init_of(void);
-> +
->  #endif /* __ASSEMBLER__ */
->  #endif /* __ARCH_ARM_MACH_OMAP2PLUS_COMMON_H */
-> diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-> index a4e536b11ec9..3279afc5f0b5 100644
-> --- a/arch/arm/mach-omap2/display.c
-> +++ b/arch/arm/mach-omap2/display.c
-> @@ -23,6 +23,8 @@
->  #include <linux/clk.h>
->  #include <linux/err.h>
->  #include <linux/delay.h>
-> +#include <linux/of.h>
-> +#include <linux/of_platform.h>
-> 
->  #include <video/omapdss.h>
->  #include "omap_hwmod.h"
-> @@ -592,3 +594,63 @@ int omap_dss_reset(struct omap_hwmod *oh)
-> 
->  	return r;
->  }
-> +
-> +int __init omapdss_init_of(void)
-> +{
-> +	int r;
-> +	enum omapdss_version ver;
-> +
-> +	static struct omap_dss_board_info board_data = {
-> +		.dsi_enable_pads = omap_dsi_enable_pads,
-> +		.dsi_disable_pads = omap_dsi_disable_pads,
-> +		.get_context_loss_count = omap_pm_get_dev_context_loss_count,
-> +		.set_min_bus_tput = omap_dss_set_min_bus_tput,
-> +	};
-> +
-> +	ver = omap_display_get_version();
-> +
-> +	if (ver = OMAPDSS_VER_UNKNOWN) {
-> +		pr_err("DSS not supported on this SoC\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	board_data.version = ver;
-> +
-> +	omap_display_device.dev.platform_data = &board_data;
-> +
-> +	r = platform_device_register(&omap_display_device);
-> +	if (r < 0) {
-> +		pr_err("Unable to register omapdss device\n");
-> +		return r;
-> +	}
-> +
-> +	/* create DRM device */
-> +	r = omap_init_drm();
-> +	if (r < 0) {
-> +		pr_err("Unable to register omapdrm device\n");
-> +		return r;
-> +	}
-> +
-> +	/* create vrfb device */
-> +	r = omap_init_vrfb();
-> +	if (r < 0) {
-> +		pr_err("Unable to register omapvrfb device\n");
-> +		return r;
-> +	}
-> +
-> +	/* create FB device */
-> +	r = omap_init_fb();
-> +	if (r < 0) {
-> +		pr_err("Unable to register omapfb device\n");
-> +		return r;
-> +	}
-> +
-> +	/* create V4L2 display device */
-> +	r = omap_init_vout();
-> +	if (r < 0) {
-> +		pr_err("Unable to register omap_vout device\n");
-> +		return r;
-> +	}
-> +
-> +	return 0;
-> +}
--- 
-Regards,
+For example, we need to get the OMAP revision to know which OMAP DSS
+hardware we have. We can't get that information from the DSS hardware
+(thank you, HW designers! ;).
 
-Laurent Pinchart
+Another is DSI pin muxing. I think we need a new pinmuxing driver for
+that, or maybe change pinmux-single quite a bit. The DSI pinmuxing is
+very simple, but the register fields are varying lengths and at varying
+positions, so pinmux-single doesn't work for it.
 
+ Tomi
+
+
+
+--tf4jdftRMQf6xiCtGVqaeWIgKXg8NW1RL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSqWYDAAoJEPo9qoy8lh71SWIP/AqkGhWSp32KXMkbsWL/TOx6
+6+ER37WHhW0i9IUBsA1xuTKXMa/T2Cw2wz+0zlMD5FXB6AUlMFe2GwccPmrDwhG5
+H7FNWjNLU4XgtqwuoAz7jQtfakOHcnz1BnNyFih7OJ1UIdoxtDv7KhpW0Pn9u4W+
+iycTvgiLx8WTg319SVUhVX2W6y8MZKpADRqby51scteo+OJnuyPcnZrdt1Y7Xnux
+mbx2HSFnJ7pV86ERHhz2VClgqHk/fvMe07cBvPBE40dMxJVy4jT9YtAsVFe8LIAA
+2sE0Ve9EPzWJCd+AzN2aGaNu7tz6/03Hzu8k4sx+pARkfpR+D6wRS4vRA7uZtq4z
+SJckEjcmuRIIux3of0KLnrLyxUgYvX5dVNJzVCtSNM5dIlhfqDfYQ/9gS5dsMbQ4
+6eilfziWni2vPFoAy/zGUjdmS6mvByMEVvICGxGnJMSclc0eQ7kM0PYbwqPItMEC
+N4ayOQbjsWXUfrGxqei9jd/TgcgVTXek+k4Yj1nx7epYhlzy9GvPi4ETjugPTx+V
+oCT4/XJp/jv8TziLP9maYW6ihAB4A3PFU3VWObO4Tzbff79cUXclMSJSZS9SIfq7
+CbTWPCHAbggOALStHNFj21Qfa6aFoY+8G5fuJ4B5+UViaZxpynwjZGxQ6y5o7XvI
+F0y1QTzUfcaTMpEbbQ8v
+=ZjTZ
+-----END PGP SIGNATURE-----
+
+--tf4jdftRMQf6xiCtGVqaeWIgKXg8NW1RL--

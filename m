@@ -1,96 +1,70 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 12 Dec 2013 07:41:49 +0000
+From: Sebastian Reichel <sre@ring0.de>
+Date: Thu, 12 Dec 2013 10:05:28 +0000
 Subject: Re: [PATCH 06/26] OMAPDSS: if dssdev->name==NULL, use alias
-Message-Id: <52A968BD.20304@ti.com>
+Message-Id: <20131212100527.GA860@earth.universe>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="gEHOISIgkbGVOedRu7O4LsTjO1i6XkUlO"
+Content-Type: multipart/mixed; boundary="0OAP2g/MAC+5xKAE"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <1386160133-24026-7-git-send-email-tomi.valkeinen@ti.com> <37483030.ghHfzYFSnL@avalon> <10507960.9DXH4TSv2E@avalon>
-In-Reply-To: <10507960.9DXH4TSv2E@avalon>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+ <1386160133-24026-7-git-send-email-tomi.valkeinen@ti.com>
+ <37483030.ghHfzYFSnL@avalon>
+ <10507960.9DXH4TSv2E@avalon>
+ <52A968BD.20304@ti.com>
+In-Reply-To: <52A968BD.20304-l0cyMroinI0@public.gmane.org>
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Darren Etheridge <detheridge-l0cyMroinI0@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
 
---gEHOISIgkbGVOedRu7O4LsTjO1i6XkUlO
-Content-Type: text/plain; charset=ISO-8859-1
+
+--0OAP2g/MAC+5xKAE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 2013-12-12 01:56, Laurent Pinchart wrote:
-> Hi Tomi,
+On Thu, Dec 12, 2013 at 09:41:49AM +0200, Tomi Valkeinen wrote:
+> > A label property is still an option.
 >=20
-> On Thursday 12 December 2013 00:13:01 Laurent Pinchart wrote:
->> On Wednesday 04 December 2013 14:28:33 Tomi Valkeinen wrote:
->>> To avoid the need for a "nickname" property for each display, change
->>> the display registration so that the display's alias (i.e. "display0"=
-
->>> etc) will be used for the dssdev->name if the display driver didn't
->>> provide a name.
->>>
->>> This means that when booting with board files, we will have more
->>> descriptive names for displays, like "lcd1", "hdmi".
->>
->> Where are those names used ? Are they reported to userspace, or limite=
-d to
->> kernel internal use only ?
-
-They are visible via omapdss's sysfs, when using omapfb. They are used
-for debug prints and by the user for selecting the default display and
-display modes via kernel cmdline, and when he sets the video pipeline
-routing. So changing them could be considered breaking the API, but...
-
-With omapdrm the sysfs files do not exist, and I think omapdrm doesn't
-use them (except maybe for some debug prints).
-
->>> With DT we'll only have "display0", etc. But as there are no "nicknam=
-es"
->>> for things like serials ports either, I hope we will do fine with thi=
-s
->>
->> Just a random thought, maybe the aliases node could help here.
+> Hmm, what do you mean? Label as in:
 >=20
-> I should have read the next patches before replying, sorry :-)
+> foo : node {
+> };
 >=20
->> I'm not sure what rules govern its usage. Adding labels to display DT =
-nodes
->> could be an option too.
+> Isn't that 'foo' label only visible in DT itself, as a shortcut?
 
-Using of_alias_get_id() means that the alias is in the form "nameX"
-where X is a number.
-
-> A label property is still an option.
-
-Hmm, what do you mean? Label as in:
+Some driver use a "label" property like this:
 
 foo : node {
+    label =3D "lcd";
+
+    ...
 };
 
-Isn't that 'foo' label only visible in DT itself, as a shortcut?
+See for example
 
- Tomi
+Documentation/devicetree/bindings/leds/common.txt
+Documentation/devicetree/bindings/mtd/partition.txt
 
+-- Sebastian
 
-
---gEHOISIgkbGVOedRu7O4LsTjO1i6XkUlO
+--0OAP2g/MAC+5xKAE
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Version: GnuPG v1.4.15 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSqWi9AAoJEPo9qoy8lh71PTkQAJtoVilfqDUk/dZqMQRD70SH
-wnLlQr6nykppWo05kzGCvPDJiu7y5LU000cXClojehXrnq3Cu0ztUMo/naqRgt33
-7uyiynCxt22WIUS8QGD6NXvOtGRw2HrALsSV/MGVXGeyBZAegrkSiEtkrWuuupwI
-WJ/PmQ7EUTvvV8huy3GWKiu6+klSEPc/b0rt/ffCUKCETbgR/8gm24uoGQp2KdbF
-tbPXqAZFxKJakjhzwPUK/cUkvVrobxsFxXa5nVunH6j/2ZCDG3NYvqJ7Z3RckhBa
-fnXao/OQtnhKoHPc9wWwgkTkYj9MqSy/Pt7pbhY/mNzGbwlRGKhi+Ui+0KC5vESU
-D7USQduSQID/TtRt5U44bfk71pO2LAwYg2DiH73ZshIQdq/pB/0G5F91SbfieuoW
-AKIQ2uNB7mKZEsdJXKtoD3fe3MXt1GcVLoQTTFJzYduFiuqLKzDYW1JKAxa0MSzZ
-gG1D9myGrpyvtKuybrv8R4Rsy1yElPb3JA9MMU9o3VLFv6uG7ijuYN2mIRugvB1b
-fkSNDNK3vHElYQoKPHbuN+bQSq+2snhgb1uOhhRg5giT2Ri17MDmIuZR1sbsi5JL
-ouUNooKmuXd/iXW1I/QIaTLxhnW9T/OojnxzSi+MRnR6PZ2OkgaNI+rJTjhz5Mur
-rVwnSB91ItSBESqpKMXv
-=ayRZ
+iQIcBAEBCAAGBQJSqYpnAAoJENju1/PIO/qaqe8P/2OoKAQ6jjpZ2Nmj8vIEQzYI
+Hxc+sKN05/IH/Qr8nkBIM9syFWZZEXPYrlRUh8VvlHeAVEYPSgL1J/7h12losPkj
+6bO+StU7T46dpUUvE8XUjmVeYkbPmX/+XLydKXlsfB8umBOE7eQ2QLyMHmR0oLlw
+sbwIvkMkOEZTNJNvnI3GOFc6i8L1dsKdhmzwnKPsDX4rUU/n0B276VZ6RzoPsFnP
+mzwlouTMQTFHdutR5AfLpEDNIKNfZN7SxfsFepMKo5dzI5ED/6vBXkpJ7bRT5Lmw
+Hx8crPFf93BtgKlAVEpL9pHcvOjtslduijg451ZsRTJrt+8ugPW1zTMzhj8+CErQ
+sMYh5afSX57fY+2cGehpOHGSVYEt7Fm/5qJ0y21DZA7qimtWrV/WpLeEPZl52BTx
+TZy5up/OZm5OaikKcTTOVUGz5slYtsS6OO4rJddTv1xAynnh/S5HO1PmhnfG+ngR
+kn20slG0cIhvqAlGI4HbjeFEjRJWVaics58yr6QkfR4L/xDtXKNPQAXj5Ju6jhX9
+47Pibgy900mn1X/jdOBledZy7d/VvhhrS/lzTGx8pJ4o6juJz0Udby79S32XGBaa
+StFtKR8xibbauJi6y4E9QuRg9yxLFHmAOQCJiIYO/p/20x+oYrVsacc7kpHhAMRr
+z9hYoP+J8enmRhDkSI8W
+=kfza
 -----END PGP SIGNATURE-----
 
---gEHOISIgkbGVOedRu7O4LsTjO1i6XkUlO--
+--0OAP2g/MAC+5xKAE--

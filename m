@@ -1,52 +1,52 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 12 Dec 2013 17:48:49 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Thu, 12 Dec 2013 18:07:53 +0000
 Subject: Re: [PATCH] video: amba-clcd: Make CLCD driver available on more platforms
-Message-Id: <CAMuHMdWg83s3gW_szkVk8Ht6+fZ7dUkEaG0FYphe13GDbPD1Bw@mail.gmail.com>
+Message-Id: <20131212180753.GR11044@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="9uazBBczf8QSjDPd"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1386868390-12231-1-git-send-email-broonie@kernel.org>
 In-Reply-To: <1386868390-12231-1-git-send-email-broonie@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Thu, Dec 12, 2013 at 6:13 PM, Mark Brown <broonie@kernel.org> wrote:
-> The CLCD driver is used on ARM reference models for ARMv8 so add ARM64
-> to the list of dependencies. The driver also has no build time dependencies
-> on ARM (stubs are provided for ARM-specific DMA functions in the code) so
-> make it available with COMPILE_TEST in order to maximise build coverage.
->
-> Signed-off-by: Mark Brown <broonie@linaro.org>
-> ---
->  drivers/video/Kconfig | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 4f2e1b35eb38..e6c7fb1a389b 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -312,7 +312,8 @@ config FB_PM2_FIFO_DISCONNECT
->
->  config FB_ARMCLCD
->         tristate "ARM PrimeCell PL110 support"
-> -       depends on FB && ARM && ARM_AMBA
-> +       depends on ARM || ARM64 || COMPILE_TEST
-> +       depends on FB && ARM_AMBA
->         select FB_CFB_FILLRECT
->         select FB_CFB_COPYAREA
->         select FB_CFB_IMAGEBLIT
 
-Currently ARM_AMBA exists on arm/arm64 only.
-Is there a patch in the pipeline to change that? Without such a change,
-this patch doesn't make any difference.
+--9uazBBczf8QSjDPd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Gr{oetje,eeting}s,
+On Thu, Dec 12, 2013 at 06:48:49PM +0100, Geert Uytterhoeven wrote:
 
-                        Geert
+> Currently ARM_AMBA exists on arm/arm64 only.
+> Is there a patch in the pipeline to change that? Without such a change,
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I don't know but it's plausible given how common AMBA is.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> this patch doesn't make any difference.
+
+No, it does mean that ARM64 is included - previously the dependency was
+only on ARM so it wasn't available on ARM64.  COMPILE_TEST won't have an
+impact though.
+
+--9uazBBczf8QSjDPd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSqft2AAoJELSic+t+oim9TVMP/3tLfGTEQ3m5o2BSRoVvnSTn
+bPVdGJT3s3wJ0jaIvaj4vSVsMMfRfIfsrFb2HctqC5P28ZVHRYb3cg3YP1+TS/Gf
+Uu/KOYfEfDZyWgbR+1TP6i3+QFdZbr3QQwvwW6JjC91yvQGSKOR+ix+tQ+7TSOLY
+59k8iUNIv3eEX4bSg7E/RpYb62cQJ7X5Fvm5rZf1L0e5sJr/yxwVTfmf71y1E0uL
+RMhIxkczz6jTwHNPajTM5DW4qc2XhCGX5HLx5pRgIXoFT/30eMhKo+MhrgxtHk6N
+8xVGYScOGV18DVLo7J9JpxuglzxnNbZwYaPq9+lpeXUGJg4YNhswgKw7l6R0PGXO
++SNGZnnFL3dn3uKWcEsh4uRal3gkI30bxrBvS0oA/Au+qcxYfOCy/mz/WjibpZsm
+sXTFvZ4UAX/Muxv/sF2ATETtgXhreKNbQ6ewsFBOaI7cxnRviOPNi1IKRs/+ViJu
+1yQaKtcxh1NncjxNNWrwTG8jahWmUVkrV2xIloLxz7XNKHnRBbVeYmmAQSUsgV/w
+Jj/NhaMJfq17wI4U73iZLI3E+BRW8kRSk+ucIv6zID8q2Uwl8yOw9ZGPbiz6VyWg
+9mVCmtup6tTUBZDdivjbqr+StkDLd31E2faItt6rqXfqwiiJbsZjIzxo69eFis0O
+B7EgN8WueELKX25RAn9O
+=btVs
+-----END PGP SIGNATURE-----
+
+--9uazBBczf8QSjDPd--

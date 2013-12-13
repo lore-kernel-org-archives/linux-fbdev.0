@@ -1,108 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 13 Dec 2013 12:01:22 +0000
-Subject: Re: [PATCH 06/26] OMAPDSS: if dssdev->name==NULL, use alias
-Message-Id: <52AAF712.1030209@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="CFkjO4ePuWtN8J1mDv5nXEpmwWoN6BJtO"
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 13 Dec 2013 13:11:21 +0000
+Subject: Re: [patch 1/2] video: mmp: delete a stray mutex_unlock()
+Message-Id: <20131213125921.GW28413@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <1386160133-24026-7-git-send-email-tomi.valkeinen@ti.com> <37483030.ghHfzYFSnL@avalon> <10507960.9DXH4TSv2E@avalon> <52A968BD.20304@ti.com> <20131212100527.GA860@earth.universe> <52A9C470.2030102@ti.com>
-In-Reply-To: <52A9C470.2030102@ti.com>
-To: Sebastian Reichel <sre@ring0.de>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Florian Vaussard <florian.vaussard@epfl.ch>
+References: <20131114081918.GB8150@elgon.mountain>
+In-Reply-To: <20131114081918.GB8150@elgon.mountain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---CFkjO4ePuWtN8J1mDv5nXEpmwWoN6BJtO
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Ping.
 
-On 2013-12-12 16:13, Tomi Valkeinen wrote:
-> On 2013-12-12 12:05, Sebastian Reichel wrote:
->> On Thu, Dec 12, 2013 at 09:41:49AM +0200, Tomi Valkeinen wrote:
->>>> A label property is still an option.
->>>
->>> Hmm, what do you mean? Label as in:
->>>
->>> foo : node {
->>> };
->>>
->>> Isn't that 'foo' label only visible in DT itself, as a shortcut?
->>
->> Some driver use a "label" property like this:
->>
->> foo : node {
->>     label =3D "lcd";
->>
->>     ...
->> };
->>
->> See for example
->>
->> Documentation/devicetree/bindings/leds/common.txt
->> Documentation/devicetree/bindings/mtd/partition.txt
->=20
-> Ah, I see. That kind of label was actually the first thing I did when
-> starting to work on DSS DT. But I removed it, as it didn't describe the=
+regards,
+dan carpenter
 
-> hardware and I didn't see others using anything similar.
->=20
-> But I guess one could argue it does describe hardware, not in electrica=
-l
-> level but in conceptual level.
->=20
-> The question is, do we need labeling for displays? For backward
-> compatibility omapdss would need it, but in general? I'm quite content
-> with having just display0, display1 etc. Using the alias node, those ca=
-n
-> be fixed and display0 is always the same display.
-
-I came to the conclusion that it's better to add the label to keep
-backward compatibility, especially as it was very easy to add.
-
-So we'll have 'name' and 'alias' for each display (as we have already).
-
-In the current non-DT boot (which is going away):
-
-- 'alias' is created by omapdss dynamically (first display to be
-registered is display0, etc.)
-- 'name' comes from platform data
-
-In the DT boot:
-
-- 'alias' comes from the DT aliases node, or if there are no display
-aliases, it's created the same way as to non-DT. The code presumes that
-there either is a DT alias for all displays, or there are none.
-- 'name' comes from 'label' property
-
-In both non-DT and DT cases, if 'name' is NULL (i.e. not set in platform
-data or no 'label' property), the alias is used as a name.
-
-I think this works fine, and was a trivial change.
-
- Tomi
-
-
-
---CFkjO4ePuWtN8J1mDv5nXEpmwWoN6BJtO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSqvcSAAoJEPo9qoy8lh71upcQAIG+Xj8jlNkjZx9AdeRaASCQ
-Pg9N8vVRoAtyFEa5iJ5uL1RVwLNBKd/4RkS7iPNY8dXhNNetC3sL7VLEBCy4laPg
-i1vepR5cku+z651eue6mm4K/T4iEZMJY0HI1Vd34Jspek+5OZJVN2YKNLTy2Fg62
-X7GjZ42ZppFSMOqQ6oghy8DsmZNwa9QjATg8kOFbsA2QAFt1VD2QzDFS6p2mjLNh
-naVqntcPLi2v2ApUbvzxDsmtqgwCX68ZbfSJy4w+P1giNtjsnJMj/mWSHXMhonrM
-Pq984byBPbra76YdFibeQmKaMmz/F4Xu6C6En5/yUwzOwzPK/U3YqG1pfYT75yvG
-xpLHGZvOWk6gZwsbGLQt92D43MM4QtbDXiUKX5Yslhle0gnEjhRZAhTYV76P+Zna
-j8KEI42HKEz3A+DAQOEEEKsViIXHOJ6dGy1UC0VUvQ1DQYTLMGo5ElhoMPqcEDvG
-IY4xw5woYfoch03q9DIVuTdVR1QyHDs4lSYxxA628UIix+4+jzfXkbHEqjAXKm+A
-qFGhGpkXbcKGWgk3CP8lJo8iRSFY0wVBJHKsOx6ICfF7/9iz51/VFZVWMCcW6gPI
-mkGfhGF3bRMD4OHoIJ0OKVwd/pCoT14P4Coa686EiSG1IOnGDoxO9dCImvSoh4ST
-L0hEflg5NkRi5niI5gb7
-=DT6L
------END PGP SIGNATURE-----
-
---CFkjO4ePuWtN8J1mDv5nXEpmwWoN6BJtO--
+On Thu, Nov 14, 2013 at 11:19:18AM +0300, Dan Carpenter wrote:
+> We aren't holding the disp_lock so we shouldn't release it.
+> 
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> diff --git a/drivers/video/mmp/core.c b/drivers/video/mmp/core.c
+> index 84de263..c8d4265 100644
+> --- a/drivers/video/mmp/core.c
+> +++ b/drivers/video/mmp/core.c
+> @@ -173,7 +173,7 @@ struct mmp_path *mmp_register_path(struct mmp_path_info *info)
+>  		+ sizeof(struct mmp_overlay) * info->overlay_num;
+>  	path = kzalloc(size, GFP_KERNEL);
+>  	if (!path)
+> -		goto failed;
+> +		return NULL;
+>  
+>  	/* path set */
+>  	mutex_init(&path->access_ok);
+> @@ -219,11 +219,6 @@ struct mmp_path *mmp_register_path(struct mmp_path_info *info)
+>  
+>  	mutex_unlock(&disp_lock);
+>  	return path;
+> -
+> -failed:
+> -	kfree(path);
+> -	mutex_unlock(&disp_lock);
+> -	return NULL;
+>  }
+>  EXPORT_SYMBOL_GPL(mmp_register_path);
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

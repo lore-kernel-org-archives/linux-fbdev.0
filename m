@@ -1,50 +1,81 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:28 +0000
-Subject: [PATCH 01/26] OMAPDSS: rename display-sysfs 'name' entry
-Message-Id: <1386160133-24026-2-git-send-email-tomi.valkeinen@ti.com>
+From: Sebastian Reichel <sre@debian.org>
+Date: Fri, 13 Dec 2013 18:17:27 +0000
+Subject: [PATCH 1/4] OMAPDSS: Add DT support to SDI
+Message-Id: <1386958650-2404-2-git-send-email-sre@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386958650-2404-1-git-send-email-sre@debian.org>
+In-Reply-To: <1386958650-2404-1-git-send-email-sre@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Sebastian Reichel <sre@ring0.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>
+Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@debian.org>
 
-omapdss in compat mode creates some sysfs files into the device's sysfs
-directory, including a 'name' file. This works fine for
-platform_devices, but breaks with i2c or spi devices, as those already
-have a 'name' file.
+Add the code to make the SDI driver work with device tree on OMAP3.
 
-Fix this by renaming the omapdss's 'name' file to 'display_name'.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Sebastian Reichel <sre@debian.org>
 ---
- drivers/video/omap2/dss/display-sysfs.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/sdi.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/display-sysfs.c b/drivers/video/omap2/dss/display-sysfs.c
-index 21d7f77df702..f7b5f9561041 100644
---- a/drivers/video/omap2/dss/display-sysfs.c
-+++ b/drivers/video/omap2/dss/display-sysfs.c
-@@ -277,7 +277,7 @@ static ssize_t display_wss_store(struct device *dev,
- 	return size;
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index ccc569a..bdc6a68 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -26,6 +26,8 @@
+ #include <linux/export.h>
+ #include <linux/platform_device.h>
+ #include <linux/string.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
+ 
+ #include <video/omapdss.h>
+ #include "dss.h"
+@@ -333,6 +335,9 @@ static const struct omapdss_sdi_ops sdi_ops = {
+ 
+ static void sdi_init_output(struct platform_device *pdev)
+ {
++	struct device_node *node = pdev->dev.of_node;
++	struct device_node *ep;
++
+ 	struct omap_dss_device *out = &sdi.output;
+ 
+ 	out->dev = &pdev->dev;
+@@ -344,6 +349,15 @@ static void sdi_init_output(struct platform_device *pdev)
+ 	out->owner = THIS_MODULE;
+ 
+ 	omapdss_register_output(out);
++
++	if (!pdev->dev.of_node)
++		return;
++
++	ep = omapdss_of_get_first_endpoint(node);
++	if (!ep)
++		return;
++
++	of_property_read_u32(ep, "data-lines", &sdi.datapairs);
  }
  
--static DEVICE_ATTR(name, S_IRUGO, display_name_show, NULL);
-+static DEVICE_ATTR(display_name, S_IRUGO, display_name_show, NULL);
- static DEVICE_ATTR(enabled, S_IRUGO|S_IWUSR,
- 		display_enabled_show, display_enabled_store);
- static DEVICE_ATTR(tear_elim, S_IRUGO|S_IWUSR,
-@@ -292,7 +292,7 @@ static DEVICE_ATTR(wss, S_IRUGO|S_IWUSR,
- 		display_wss_show, display_wss_store);
+ static void __exit sdi_uninit_output(struct platform_device *pdev)
+@@ -369,12 +383,18 @@ static int __exit omap_sdi_remove(struct platform_device *pdev)
+ 	return 0;
+ }
  
- static const struct attribute *display_sysfs_attrs[] = {
--	&dev_attr_name.attr,
-+	&dev_attr_display_name.attr,
- 	&dev_attr_enabled.attr,
- 	&dev_attr_tear_elim.attr,
- 	&dev_attr_timings.attr,
++static const struct of_device_id sdi_of_match[] = {
++	{ .compatible = "ti,omap3-sdi" },
++	{},
++};
++
+ static struct platform_driver omap_sdi_driver = {
+ 	.probe		= omap_sdi_probe,
+ 	.remove         = __exit_p(omap_sdi_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_sdi",
+ 		.owner  = THIS_MODULE,
++		.of_match_table = sdi_of_match,
+ 	},
+ };
+ 
 -- 
-1.8.3.2
+1.8.5.1
 

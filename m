@@ -1,120 +1,61 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:43 +0000
-Subject: [PATCH 16/26] ARM: omap4-sdp.dts: add display information
-Message-Id: <1386160133-24026-17-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 13 Dec 2013 09:39:13 +0000
+Subject: Re: [PATCH 16/26] ARM: omap4-sdp.dts: add display information
+Message-Id: <52AAD2F1.2040208@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <1386160133-24026-17-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1386160133-24026-17-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/boot/dts/omap4-sdp.dts | 91 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 91 insertions(+)
+On Wednesday 04 December 2013 05:58 PM, Tomi Valkeinen wrote:
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> ---
+>   arch/arm/boot/dts/omap4-sdp.dts | 91 +++++++++++++++++++++++++++++++++++++++++
+>   1 file changed, 91 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/omap4-sdp.dts b/arch/arm/boot/dts/omap4-sdp.dts
+> index 5fc3f43c5a81..e3048f849612 100644
+> --- a/arch/arm/boot/dts/omap4-sdp.dts
+> +++ b/arch/arm/boot/dts/omap4-sdp.dts
+> @@ -550,3 +550,94 @@
+>   	mode = <3>;
+>   	power = <50>;
+>   };
+> +
+> +&dsi1 {
+> +	vdds_dsi-supply = <&vcxio>;
+> +
+> +	dsi1_out_ep: endpoint {
+> +		remote-endpoint = <&lcd0_in>;
+> +		lanes = <0 1 2 3 4 5>;
 
-diff --git a/arch/arm/boot/dts/omap4-sdp.dts b/arch/arm/boot/dts/omap4-sdp.dts
-index 5fc3f43c5a81..e3048f849612 100644
---- a/arch/arm/boot/dts/omap4-sdp.dts
-+++ b/arch/arm/boot/dts/omap4-sdp.dts
-@@ -550,3 +550,94 @@
- 	mode = <3>;
- 	power = <50>;
- };
-+
-+&dsi1 {
-+	vdds_dsi-supply = <&vcxio>;
-+
-+	dsi1_out_ep: endpoint {
-+		remote-endpoint = <&lcd0_in>;
-+		lanes = <0 1 2 3 4 5>;
-+	};
-+
-+	lcd0: display@0 {
-+		compatible = "tpo,taal", "panel-dsi-cm";
-+
-+		gpios = <&gpio4 6 0>;	/* 102, reset */
-+
-+		lcd0_in: endpoint {
-+			remote-endpoint = <&dsi1_out_ep>;
-+		};
-+	};
-+};
-+
-+&dsi2 {
-+	vdds_dsi-supply = <&vcxio>;
-+
-+	dsi2_out_ep: endpoint {
-+		remote-endpoint = <&lcd1_in>;
-+		lanes = <0 1 2 3 4 5>;
-+	};
-+
-+	lcd1: display@1 {
-+		compatible = "tpo,taal", "panel-dsi-cm";
-+
-+		gpios = <&gpio4 8 0>;	/* 104, reset */
-+
-+		lcd1_in: endpoint {
-+			remote-endpoint = <&dsi2_out_ep>;
-+		};
-+	};
-+};
-+
-+&hdmi {
-+	vdda_hdmi_dac-supply = <&vdac>;
-+
-+	hdmi_out: endpoint {
-+		remote-endpoint = <&tpd12s015_in>;
-+	};
-+};
-+
-+/ {
-+	aliases {
-+		display0 = &lcd0;
-+		display1 = &lcd1;
-+		display2 = &hdmi0;
-+	};
-+
-+	tpd12s015: encoder@0 {
-+		compatible = "ti,tpd12s015";
-+
-+		gpios = <&gpio2 28 0>,	/* 60, CT CP HPD */
-+			<&gpio2 9 0>,	/* 41, LS OE */
-+			<&gpio2 31 0>;	/* 63, HPD */
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				tpd12s015_in: endpoint@0 {
-+					remote-endpoint = <&hdmi_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				tpd12s015_out: endpoint@1 {
-+					remote-endpoint = <&hdmi_connector_in>;
-+				};
-+			};
-+		};
-+	};
-+
-+	hdmi0: connector@0 {
-+		compatible = "ti,hdmi-connector";
-+
-+		hdmi_connector_in: endpoint {
-+			remote-endpoint = <&tpd12s015_out>;
-+		};
-+	};
-+};
--- 
-1.8.3.2
+In the previous revision omapdss DT patchset, the lanes node was a 
+member of the panel DT node, and not the dsi DT node. Any reason to 
+change this? Does it make more sense this way?
+
+I suppose it's more suitable for dsi to hold the property if 2 panels 
+are connected on the same bus. Say, one with 4 data lanes, and other 
+with 2. It would be tricky for the dsi driver to get lane params from 2 
+different places and merge them somehow.
+
+> +	};
+> +
+> +	lcd0: display@0 {
+> +		compatible = "tpo,taal", "panel-dsi-cm";
+> +
+> +		gpios = <&gpio4 6 0>;	/* 102, reset */
+> +
+> +		lcd0_in: endpoint {
+> +			remote-endpoint = <&dsi1_out_ep>;
+> +		};
+> +	};
+
+Is there a reason why lcd0 and lcd1 are children nodes of dsi1 and dsi2 
+respectively? I don't see this for panels on other boards.
+
+Archit
 

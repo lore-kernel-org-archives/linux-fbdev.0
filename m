@@ -1,69 +1,108 @@
-From: Sebastian Reichel <sre@ring0.de>
-Date: Thu, 12 Dec 2013 17:31:33 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 13 Dec 2013 12:01:22 +0000
 Subject: Re: [PATCH 06/26] OMAPDSS: if dssdev->name==NULL, use alias
-Message-Id: <20131212173131.GA9607@earth.universe>
+Message-Id: <52AAF712.1030209@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ZPt4rx8FFjLCG7dd"
+Content-Type: multipart/mixed; boundary="CFkjO4ePuWtN8J1mDv5nXEpmwWoN6BJtO"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
- <20131212100527.GA860@earth.universe>
- <52A9C470.2030102@ti.com>
- <1793565.XC2oCqQxA8@avalon>
- <52A9C5D5.80801@ti.com>
-In-Reply-To: <52A9C5D5.80801@ti.com>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <1386160133-24026-7-git-send-email-tomi.valkeinen@ti.com> <37483030.ghHfzYFSnL@avalon> <10507960.9DXH4TSv2E@avalon> <52A968BD.20304@ti.com> <20131212100527.GA860@earth.universe> <52A9C470.2030102@ti.com>
+In-Reply-To: <52A9C470.2030102@ti.com>
+To: Sebastian Reichel <sre@ring0.de>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Florian Vaussard <florian.vaussard@epfl.ch>
 
-
---ZPt4rx8FFjLCG7dd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--CFkjO4ePuWtN8J1mDv5nXEpmwWoN6BJtO
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Dec 12, 2013 at 04:19:01PM +0200, Tomi Valkeinen wrote:
-> On 2013-12-12 16:15, Laurent Pinchart wrote:
+On 2013-12-12 16:13, Tomi Valkeinen wrote:
+> On 2013-12-12 12:05, Sebastian Reichel wrote:
+>> On Thu, Dec 12, 2013 at 09:41:49AM +0200, Tomi Valkeinen wrote:
+>>>> A label property is still an option.
+>>>
+>>> Hmm, what do you mean? Label as in:
+>>>
+>>> foo : node {
+>>> };
+>>>
+>>> Isn't that 'foo' label only visible in DT itself, as a shortcut?
+>>
+>> Some driver use a "label" property like this:
+>>
+>> foo : node {
+>>     label =3D "lcd";
+>>
+>>     ...
+>> };
+>>
+>> See for example
+>>
+>> Documentation/devicetree/bindings/leds/common.txt
+>> Documentation/devicetree/bindings/mtd/partition.txt
 >=20
-> > As you mentioned in your previous e-mail, if the labels are used by oma=
-pfb=20
-> > only, I won't strongly push to keep them. I wonder, however, when using=
-=20
-> > DRM/KMS, where do the connector labels that are displayed by xrandr for=
-=20
-> > instance come from ?
+> Ah, I see. That kind of label was actually the first thing I did when
+> starting to work on DSS DT. But I removed it, as it didn't describe the=
+
+> hardware and I didn't see others using anything similar.
 >=20
-> drivers/gpu/drm/drm_crtc.c has lists, with names like "DVI-D", "HDMI-A",
-> for connectors and encoders. Maybe from those.
+> But I guess one could argue it does describe hardware, not in electrica=
+l
+> level but in conceptual level.
+>=20
+> The question is, do we need labeling for displays? For backward
+> compatibility omapdss would need it, but in general? I'm quite content
+> with having just display0, display1 etc. Using the alias node, those ca=
+n
+> be fixed and display0 is always the same display.
 
-The xrandr names are generated from the list Tomi mentioned.
-=3D> drm_connector_enum_list
+I came to the conclusion that it's better to add the label to keep
+backward compatibility, especially as it was very easy to add.
 
-This requires a mapping from omapdss types to DRM types, which is
-done in drivers/gpu/drm/omapdrm/omap_drv.c:get_connector_type().
+So we'll have 'name' and 'alias' for each display (as we have already).
 
-Currently only HDMI and DVI are handled properly.
+In the current non-DT boot (which is going away):
 
--- Sebastian
+- 'alias' is created by omapdss dynamically (first display to be
+registered is display0, etc.)
+- 'name' comes from platform data
 
---ZPt4rx8FFjLCG7dd
+In the DT boot:
+
+- 'alias' comes from the DT aliases node, or if there are no display
+aliases, it's created the same way as to non-DT. The code presumes that
+there either is a DT alias for all displays, or there are none.
+- 'name' comes from 'label' property
+
+In both non-DT and DT cases, if 'name' is NULL (i.e. not set in platform
+data or no 'label' property), the alias is used as a name.
+
+I think this works fine, and was a trivial change.
+
+ Tomi
+
+
+
+--CFkjO4ePuWtN8J1mDv5nXEpmwWoN6BJtO
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.15 (GNU/Linux)
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJSqfLzAAoJENju1/PIO/qaaEIP/14Nd/ItIxLpvt/CP5CJCggD
-34JNSDVwUqXf8M+hxkTsgE70vo38OHCAmnCAJJZVx4lwCzFr8shr9pDBnW6LUiRB
-kuAqtfOczlqYvKdxy6bn58c2rU93v+V1agtBbub+R0K/+WKZFGJFRDhrsS4Xu43O
-+rhpxLf2wh71jTMfy99iEm7h/+RL+6qtQO8i4C9rq+ExwNjAi+fW8UCh5XASHmTB
-ej4brQeNsgfkMuOkrxRLNZfz/rPZ4E/9r5X+HMA9DRmKrhfXUVrxrtXql7r6DdlH
-i8R8glIzi4c/dD5ygzhRdN/BwaL/ToxaWldmZYOpd3Y9SHxf9j3PlVz3dRTas3un
-oIFSrnpUh76LnHSkN1QFR8pywVkADk1vH81lFYeeqYl1AsYfEWCbAIksBMBimnW5
-C0mQjhDWHeNJnaYXh3Q5cBZdjWXoZG6fW28YuvUGuk48Lak2XMK/qY611zwnOyQG
-WbBC29hCp1BrXznYJrrmrm3BMoZLQHLyJnxQaXvXl5WjLb/PiCUg6pem91IFWj3S
-XXzk+AUQb940Ju8IZjVsJ/hTr9L1RHO9cLTMmE7cCHfbNLjlqiKaK15bgpQBJfXL
-H9BMrnn9Jd08h40k/E76L36gSquImqOBZU25FTDQETkIeT3WA2cGJIEcBSSzY2fC
-LlyUpsF4rTiyzm3HGrN8
-=JW9A
+iQIcBAEBAgAGBQJSqvcSAAoJEPo9qoy8lh71upcQAIG+Xj8jlNkjZx9AdeRaASCQ
+Pg9N8vVRoAtyFEa5iJ5uL1RVwLNBKd/4RkS7iPNY8dXhNNetC3sL7VLEBCy4laPg
+i1vepR5cku+z651eue6mm4K/T4iEZMJY0HI1Vd34Jspek+5OZJVN2YKNLTy2Fg62
+X7GjZ42ZppFSMOqQ6oghy8DsmZNwa9QjATg8kOFbsA2QAFt1VD2QzDFS6p2mjLNh
+naVqntcPLi2v2ApUbvzxDsmtqgwCX68ZbfSJy4w+P1giNtjsnJMj/mWSHXMhonrM
+Pq984byBPbra76YdFibeQmKaMmz/F4Xu6C6En5/yUwzOwzPK/U3YqG1pfYT75yvG
+xpLHGZvOWk6gZwsbGLQt92D43MM4QtbDXiUKX5Yslhle0gnEjhRZAhTYV76P+Zna
+j8KEI42HKEz3A+DAQOEEEKsViIXHOJ6dGy1UC0VUvQ1DQYTLMGo5ElhoMPqcEDvG
+IY4xw5woYfoch03q9DIVuTdVR1QyHDs4lSYxxA628UIix+4+jzfXkbHEqjAXKm+A
+qFGhGpkXbcKGWgk3CP8lJo8iRSFY0wVBJHKsOx6ICfF7/9iz51/VFZVWMCcW6gPI
+mkGfhGF3bRMD4OHoIJ0OKVwd/pCoT14P4Coa686EiSG1IOnGDoxO9dCImvSoh4ST
+L0hEflg5NkRi5niI5gb7
+=DT6L
 -----END PGP SIGNATURE-----
 
---ZPt4rx8FFjLCG7dd--
+--CFkjO4ePuWtN8J1mDv5nXEpmwWoN6BJtO--

@@ -1,40 +1,44 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 18 Dec 2013 00:30:56 +0000
-Subject: Re: [PATCH 00/26] OMAPDSS: DT support (Christmas edition)
-Message-Id: <20131218003055.GC27438@atomide.com>
+From: Sebastian Reichel <sre@debian.org>
+Date: Fri, 13 Dec 2013 18:17:26 +0000
+Subject: [PATCH 0/4] OMAPDSS: DT support for N900 panel
+Message-Id: <1386958650-2404-1-git-send-email-sre@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
- <1703598.NbqXAMAFOI@avalon>
- <52AADBE0.3030203@ti.com>
- <3426377.keoaFgiZkl@avalon>
- <52AB2C25.6000507@ti.com>
- <20131213172234.GD28184@atomide.com>
- <52AC0A18.30405@ti.com>
- <20131214140913.GA12324@atomide.com>
- <52AEAAB7.7010308@ti.com>
-In-Reply-To: <52AEAAB7.7010308@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Stefan Roese <stefan.roese@gmail.com>, Sebastian Reichel <sre@debian.org>, Robert Nelson <robertcnelson@gmail.com>, "Dr . H . Nikolaus Schaller" <hns@goldelico.com>, Marek Belisko <marek@goldelico.com>
+To: Sebastian Reichel <sre@ring0.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>
+Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@debian.org>
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [131215 23:26]:
-> On 2013-12-14 16:09, Tony Lindgren wrote:
-> 
-> >> Why was e30b06f4d5f000c31a7747a7e7ada78a5fd419a1 merged into -rc2? It's
-> >> not a fix, just a cleanup.
-> > 
-> > Hmm OK sorry looks like I removed some non-legacy mux framework code
-> > by accident. The omap_mux_* parts clearly are dead code for omap4 as
-> > it's been DT only since v3.10, but the omap4_dsi_mux_pads() is not
-> > using omap_mux_* functions.
-> > 
-> > Yes, let's revert e30b06f4d5f0 except for the dead code parts, which
-> > seems to be omap4_tpd12s015_mux_pads(), right?
-> 
-> Yes. I tested the below patch on 4430SDP, both DSI and HDMI works.
+Hi,
 
-OK thanks applying for the -rc cycle.
+This patchset adds DT support for the N900 panel. The patchset is based on
+Tomi's work/dss-dt-2 branch [0]. I suggest to send the DT changes through
+Benoits queue, since I have more N900 DT changes for 3.14. Also the patch
+editing the rx51 boardcode can be dropped, since the file is removed in 3.14.
+I included those two with this patchset, since they are needed to test the
+other two patches.
 
-Tony
+I did not include a documentation for the DT API, since the omapdss
+documentation is still missing.
+
+I have successfully tested this on the N900.
+
+[0] https://git.kernel.org/cgit/linux/kernel/git/tomba/linux.git/log/?h=work/dss-dt-2
+
+-- Sebastian
+
+Sebastian Reichel (4):
+  OMAPDSS: Add DT support to SDI
+  OMAPDSS: ACX565AKM: Add DT support
+  ARM: OMAP: rx51: DT boot: disable legacy dss init
+  ARM: dts: omap3-n900: Add display support
+
+ arch/arm/boot/dts/omap3-n900.dts                   | 18 ++++++++++-
+ arch/arm/mach-omap2/board-rx51-video.c             |  2 +-
+ .../omap2/displays-new/panel-sony-acx565akm.c      | 35 +++++++++++++++++++++-
+ drivers/video/omap2/dss/sdi.c                      | 20 +++++++++++++
+ 4 files changed, 72 insertions(+), 3 deletions(-)
+
+-- 
+1.8.5.1
+

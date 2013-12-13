@@ -1,96 +1,57 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:46 +0000
-Subject: [PATCH 19/26] ARM: omap3-beagle-xm.dts: add display information
-Message-Id: <1386160133-24026-20-git-send-email-tomi.valkeinen@ti.com>
+From: Sebastian Reichel <sre@debian.org>
+Date: Fri, 13 Dec 2013 18:17:30 +0000
+Subject: [PATCH 4/4] ARM: dts: omap3-n900: Add display support
+Message-Id: <1386958650-2404-5-git-send-email-sre@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386958650-2404-1-git-send-email-sre@debian.org>
+In-Reply-To: <1386958650-2404-1-git-send-email-sre@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Sebastian Reichel <sre@ring0.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>
+Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@debian.org>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Add support for the Nokia N900's display.
+
+Signed-off-by: Sebastian Reichel <sre@debian.org>
 ---
- arch/arm/boot/dts/omap3-beagle-xm.dts | 67 +++++++++++++++++++++++++++++++++++
- 1 file changed, 67 insertions(+)
+ arch/arm/boot/dts/omap3-n900.dts | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/omap3-beagle-xm.dts b/arch/arm/boot/dts/omap3-beagle-xm.dts
-index 31a632f7effb..baec842f4fb5 100644
---- a/arch/arm/boot/dts/omap3-beagle-xm.dts
-+++ b/arch/arm/boot/dts/omap3-beagle-xm.dts
-@@ -215,3 +215,70 @@
- &usbhsehci {
- 	phys = <0 &hsusb2_phy>;
+diff --git a/arch/arm/boot/dts/omap3-n900.dts b/arch/arm/boot/dts/omap3-n900.dts
+index c2c306d..cf776f3 100644
+--- a/arch/arm/boot/dts/omap3-n900.dts
++++ b/arch/arm/boot/dts/omap3-n900.dts
+@@ -472,12 +472,28 @@
+ 		reg = <0>;
+ 	};
+ 	mipid@2 {
+-		compatible = "acx565akm";
++		compatible = "sony,acx565akm";
+ 		spi-max-frequency = <6000000>;
+ 		reg = <2>;
+ 
++		label = "lcd";
++		reset-gpio = <&gpio3 26 GPIO_ACTIVE_HIGH>; /* 90 */
++
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&display_pins>;
++
++		lcd_in: endpoint {
++			remote-endpoint = <&sdi_out>;
++		};
++	};
++};
++
++&sdi {
++	vdds_sdi-supply = <&vaux1>;
++
++	sdi_out: endpoint {
++		remote-endpoint = <&lcd_in>;
++		data-lines = <2>;
+ 	};
  };
-+
-+&dpi {
-+	vdds_dsi-supply = <&vpll2>;
-+
-+	dpi_out: endpoint {
-+		remote-endpoint = <&tfp410_in>;
-+		data-lines = <24>;
-+	};
-+};
-+
-+&venc {
-+	vdda_dac-supply = <&vdac>;
-+
-+	venc_out: endpoint {
-+		remote-endpoint = <&tv_connector_in>;
-+	};
-+};
-+
-+/ {
-+	aliases {
-+		display0 = &dvi0;
-+		display1 = &tv0;
-+	};
-+
-+	tfp410: encoder@0 {
-+		compatible = "ti,tfp410";
-+		gpios = <&twl_gpio 2 GPIO_ACTIVE_HIGH>;
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				tfp410_in: endpoint@0 {
-+					remote-endpoint = <&dpi_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				tfp410_out: endpoint@1 {
-+					remote-endpoint = <&dvi_connector_in>;
-+				};
-+			};
-+		};
-+	};
-+
-+	dvi0: connector@0 {
-+		compatible = "ti,dvi-connector";
-+		i2c-bus = <&i2c3>;
-+
-+		dvi_connector_in: endpoint {
-+			remote-endpoint = <&tfp410_out>;
-+		};
-+	};
-+
-+	tv0: connector@1 {
-+		compatible = "ti,svideo-connector";
-+
-+		tv_connector_in: endpoint {
-+			remote-endpoint = <&venc_out>;
-+		};
-+	};
-+};
+ 
 -- 
-1.8.3.2
+1.8.5.1
 

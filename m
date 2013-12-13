@@ -1,95 +1,91 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:49 +0000
-Subject: [PATCH 22/26] OMAPDSS: connector-dvi: Add DT support
-Message-Id: <1386160133-24026-23-git-send-email-tomi.valkeinen@ti.com>
+From: Sebastian Reichel <sre@debian.org>
+Date: Fri, 13 Dec 2013 18:17:28 +0000
+Subject: [PATCH 2/4] OMAPDSS: ACX565AKM: Add DT support
+Message-Id: <1386958650-2404-3-git-send-email-sre@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386958650-2404-1-git-send-email-sre@debian.org>
+In-Reply-To: <1386958650-2404-1-git-send-email-sre@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Sebastian Reichel <sre@ring0.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>
+Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@debian.org>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+This adds DT support to the ACX565AKM panel driver.
+
+Signed-off-by: Sebastian Reichel <sre@debian.org>
 ---
- drivers/video/omap2/displays-new/connector-dvi.c | 43 ++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ .../omap2/displays-new/panel-sony-acx565akm.c      | 35 +++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/displays-new/connector-dvi.c b/drivers/video/omap2/displays-new/connector-dvi.c
-index b6c50904038e..8f7e576769cd 100644
---- a/drivers/video/omap2/displays-new/connector-dvi.c
-+++ b/drivers/video/omap2/displays-new/connector-dvi.c
-@@ -277,6 +277,37 @@ static int dvic_probe_pdata(struct platform_device *pdev)
+diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+index d94f35d..942b8d4 100644
+--- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
++++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+@@ -30,6 +30,8 @@
+ #include <linux/backlight.h>
+ #include <linux/fb.h>
+ #include <linux/gpio.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -531,7 +533,9 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
+ 	dev_dbg(&ddata->spi->dev, "%s\n", __func__);
+ 
+ 	in->ops.sdi->set_timings(in, &ddata->videomode);
+-	in->ops.sdi->set_datapairs(in, ddata->datapairs);
++
++	if (ddata->datapairs >= 0)
++		in->ops.sdi->set_datapairs(in, ddata->datapairs);
+ 
+ 	r = in->ops.sdi->enable(in);
+ 	if (r) {
+@@ -710,6 +714,30 @@ static int acx565akm_probe_pdata(struct spi_device *spi)
  	return 0;
  }
  
-+static int dvic_probe_of(struct platform_device *pdev)
++static int acx565akm_probe_of(struct spi_device *spi)
 +{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+	struct device_node *adapter_node;
-+	struct i2c_adapter *adapter;
++	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
++	struct device_node *np = spi->dev.of_node;
++	struct omap_dss_device *dssdev;
++	int ret;
 +
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
++	ddata->reset_gpio = of_get_named_gpio(np, "reset-gpio", 0);
++
++	ddata->datapairs = -1;
++	ddata->in = omapdss_of_find_source_for_first_ep(np);
++	if (IS_ERR(ddata->in)) {
++		dev_err(&spi->dev, "failed to find video source\n");
++		return PTR_ERR(ddata->in);
 +	}
 +
-+	ddata->in = in;
-+
-+	adapter_node = of_parse_phandle(node, "i2c-bus", 0);
-+	if (adapter_node) {
-+		adapter = of_find_i2c_adapter_by_node(adapter_node);
-+		if (adapter = NULL) {
-+			dev_err(&pdev->dev, "failed to parse i2c-bus\n");
-+			omap_dss_put_device(ddata->in);
-+			return -EINVAL;
-+		}
-+
-+		ddata->i2c_adapter = adapter;
-+	}
++	dssdev = &ddata->dssdev;
++	ret = of_property_read_string(np, "label", &dssdev->name);
++	if (ret < 0)
++		return ret;
 +
 +	return 0;
 +}
 +
- static int dvic_probe(struct platform_device *pdev)
+ static int acx565akm_probe(struct spi_device *spi)
  {
  	struct panel_drv_data *ddata;
-@@ -293,6 +324,10 @@ static int dvic_probe(struct platform_device *pdev)
- 		r = dvic_probe_pdata(pdev);
+@@ -737,7 +765,12 @@ static int acx565akm_probe(struct spi_device *spi)
+ 		r = acx565akm_probe_pdata(spi);
  		if (r)
  			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = dvic_probe_of(pdev);
++	} else if (spi->dev.of_node) {
++		r = acx565akm_probe_of(spi);
 +		if (r)
 +			return r;
  	} else {
++		dev_err(&spi->dev, "platform data missing!\n");
  		return -ENODEV;
  	}
-@@ -342,12 +377,20 @@ static int __exit dvic_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id dvic_of_match[] = {
-+	{ .compatible = "ti,dvi-connector", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, dvic_of_match);
-+
- static struct platform_driver dvi_connector_driver = {
- 	.probe	= dvic_probe,
- 	.remove	= __exit_p(dvic_remove),
- 	.driver	= {
- 		.name	= "connector-dvi",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = dvic_of_match,
- 	},
- };
  
 -- 
-1.8.3.2
+1.8.5.1
 

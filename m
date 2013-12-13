@@ -1,54 +1,86 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 13 Dec 2013 03:27:12 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 13 Dec 2013 09:29:27 +0000
 Subject: Re: [PATCH 13/26] ARM: omap3.dtsi: add omapdss information
-Message-Id: <1933495.zHe4JMYZyB@avalon>
+Message-Id: <52AAD377.9060701@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="VjaThOAf0QrttoqA63GnM7lrhfFlQkLtr"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <52A9760A.3000801@ti.com> <20131212215913.GB29072@muru.com>
-In-Reply-To: <20131212215913.GB29072@muru.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <2364383.8GWpsWSoJu@avalon> <52A9760A.3000801@ti.com> <14299863.f0rzOyPfdL@avalon>
+In-Reply-To: <14299863.f0rzOyPfdL@avalon>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>
 
-Hi Tony,
+--VjaThOAf0QrttoqA63GnM7lrhfFlQkLtr
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Thursday 12 December 2013 21:59:13 Tony Lindgren wrote:
-> On Thu, Dec 12, 2013 at 10:38:34AM +0200, Tomi Valkeinen wrote:
-> > On 2013-12-12 01:44, Laurent Pinchart wrote:
-> > 
-> > So, are they independent? I don't know =). I think they lean on the
-> > independent side. dss_core is always needed for the submodules to work,
-> > but for example DSI could be used without DISPC, using system DMA to
-> > transfer data from memory to DSI. Not a very useful thing to do, but
-> > still, there are dedicated DMA channels for that.
-> 
-> If they have separate hwmod entries, they should be considered separate
-> independent devices for sure.
-> 
-> To summarize, here are few reasons why they need to be treated as
-> separate devices:
+On 2013-12-13 05:24, Laurent Pinchart wrote:
 
-Are you talking generally here, or about the DSS modules in particular ?
+> Right. The real question is whether the DSI or HDMI IPs can be used in =
+a=20
+> system without the DSS core. If not, it might make sense to just merge =
+the=20
+> drivers into a single module (of course with a clear interface between =
+the=20
+> different parts to avoid spaghetti code).
 
-> 1. The modules maybe clocked/powered/idled separately and can have their
->    own idle configuration so they can do the hardware based idling
->    separately.
+The drivers are already in single kernel module, omapdss.ko.
 
-I don't think this applies to the DSS modules.
+The HDMI IP is used on another SoC, without DSS. They have their own
+display architecture. DSI IP might need some small modifications to work
+without DSS, but not much. It doesn't have any strict DSS/DISPC
+dependencies.
 
-> 2. Doing a readback after a write to one module will not flush the write
->    to the other modules on the (bus depending on the SoC version AFAIK).
->    That can lead to nasty bugs caused by the ordering.
+> Given that the DSS core has a set of registers not dedicated to any of =
+the=20
+> submodules I believe it should be represented by a device. The omapdss =
+driver=20
+> thus doesn't look virtual to me, it supports a real piece of hardware.
 
-How does separate devices solve this ?
+As noted in another mail, dss_core and omapdss devices are different
+things. dss_core is not virtual, omapdss is.
 
-> 3. If the devices are described in a different way in the .dts files
->    from the hwmod data, we will not have 1-to-1 mapping and will never
->    be able to replace ti,hwmods with just the compatible string.
+>> But then, I feel that they are quite independent and probably should b=
+e
+>> separate devices.
+>=20
+> Even if they're separate devices they could be instantiated by DSS core=
+ based=20
+> on DT nodes. I'm not sure whether that's the best idea, but it might be=
+ worth=20
+> thinking about it.
 
--- 
-Regards,
+What would be the difference to the one in this series? In this series,
+the submodules are instantiated automatically by the driver framework.
+The only difference I see is that the submodule devices would
+appear/disappear dynamically, but... what would be the benefit?
 
-Laurent Pinchart
+ Tomi
 
+
+
+--VjaThOAf0QrttoqA63GnM7lrhfFlQkLtr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSqtN3AAoJEPo9qoy8lh713FMP/1AZlldTK7n2LPizDWPJ/6LI
+VNMDR10/5tDNfWt8HrW4NzSBu4mxN3+4spBJ5WrcaxaS3jNdILNeAd2lC5SsGDqo
+zMV/ppvZ1K8BReg0kasl0x3j5OeNopAz39P+lMQxm0Y1Wb0HEfNjfE/+Kf5bMEoO
+w0jb6h2MY1wE7LnLThK6Irq5DmjT7lhjOW6YMbKwqOotHaUqYSC/kjkR8NgJFLDa
+IIAfOqrvMVBPijdx+rxyB/H77V3j6s0P0KZy+4EvEhZDos3K9Ol8sP35+tel8tRL
+amctGx3e3apJw+wgUwFRVnj8U5TGrWLKptlGtVqAglr5zM2DoBthpwxytEMHRGIp
++wGXNwEotJpJLTC9FSomMGupVbxbMNI1jXNUS3QOGkeZ7SBgbZENhebm/k1xtaJf
+IqDyJRMDhdzZ4xhFlya1GKaseEwPxrc/f7G3wJnPaUbepg6J+6u1w0yHB8EYT7Mz
+UuMDb5FBFgP16KyJjjMudaj8U8PkqIb24JpLqdOaxNnI/q8f1yIB6T0XtCWeSyyI
+vtQs/sNjprjEcEWnWrjwUc1QxbGx2QuMbwoWd0Wp4VzjABjougd5Hl61jVkeTKDW
+0zm9Fl7p1p0zUxY8ICbVLC0z3iBUX/dg7fIvfA11e6P21rzfLo1gmkqNXflEgr2S
+FLkrL5pVA82s8HUzV4GB
+=afPU
+-----END PGP SIGNATURE-----
+
+--VjaThOAf0QrttoqA63GnM7lrhfFlQkLtr--

@@ -1,139 +1,37 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:34 +0000
-Subject: [PATCHv2 27/27] OMAPDSS: connector-analog-tv: Add DT support
-Message-Id: <1387205794-32246-28-git-send-email-tomi.valkeinen@ti.com>
+From: Sebastian Reichel <sre@debian.org>
+Date: Fri, 13 Dec 2013 18:17:29 +0000
+Subject: [PATCH 3/4] ARM: OMAP: rx51: DT boot: disable legacy dss init
+Message-Id: <1386958650-2404-4-git-send-email-sre@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1386958650-2404-1-git-send-email-sre@debian.org>
+In-Reply-To: <1386958650-2404-1-git-send-email-sre@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Sebastian Reichel <sre@ring0.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>
+Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@debian.org>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+This disables legacy initialization of the
+omapdss, if the N900 is booted via DT.
+
+Signed-off-by: Sebastian Reichel <sre@debian.org>
 ---
- .../video/omap2/displays-new/connector-analog-tv.c | 66 +++++++++++++++++++++-
- 1 file changed, 65 insertions(+), 1 deletion(-)
+ arch/arm/mach-omap2/board-rx51-video.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/displays-new/connector-analog-tv.c b/drivers/video/omap2/displays-new/connector-analog-tv.c
-index ccd9073f706f..ebed25a86487 100644
---- a/drivers/video/omap2/displays-new/connector-analog-tv.c
-+++ b/drivers/video/omap2/displays-new/connector-analog-tv.c
-@@ -12,6 +12,7 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/of.h>
+diff --git a/arch/arm/mach-omap2/board-rx51-video.c b/arch/arm/mach-omap2/board-rx51-video.c
+index 43a90c8..9cfebc5 100644
+--- a/arch/arm/mach-omap2/board-rx51-video.c
++++ b/arch/arm/mach-omap2/board-rx51-video.c
+@@ -48,7 +48,7 @@ static struct omap_dss_board_info rx51_dss_board_info = {
  
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -42,6 +43,12 @@ static const struct omap_video_timings tvc_pal_timings = {
- 	.interlace	= true,
- };
- 
-+static const struct of_device_id tvc_of_match[];
-+
-+struct tvc_of_data {
-+	enum omap_dss_venc_type connector_type;
-+};
-+
- #define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
- 
- static int tvc_connect(struct omap_dss_device *dssdev)
-@@ -92,7 +99,10 @@ static int tvc_enable(struct omap_dss_device *dssdev)
- 	in->ops.atv->set_timings(in, &ddata->timings);
- 
- 	in->ops.atv->set_type(in, ddata->connector_type);
--	in->ops.atv->invert_vid_out_polarity(in, ddata->invert_polarity);
-+
-+	if (!ddata->dev->of_node)
-+		in->ops.atv->invert_vid_out_polarity(in,
-+			ddata->invert_polarity);
- 
- 	r = in->ops.atv->enable(in);
- 	if (r)
-@@ -205,6 +215,35 @@ static int tvc_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int tvc_probe_of(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+	const struct of_device_id *match;
-+	const struct tvc_of_data *data;
-+
-+	match = of_match_node(tvc_of_match, pdev->dev.of_node);
-+	if (!match) {
-+		dev_err(&pdev->dev, "unsupported device\n");
-+		return -ENODEV;
-+	}
-+
-+	data = match->data;
-+
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
-+
-+	ddata->in = in;
-+
-+	ddata->connector_type = data->connector_type;
-+
-+	return 0;
-+}
-+
- static int tvc_probe(struct platform_device *pdev)
+ static int __init rx51_video_init(void)
  {
- 	struct panel_drv_data *ddata;
-@@ -222,6 +261,10 @@ static int tvc_probe(struct platform_device *pdev)
- 		r = tvc_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = tvc_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -263,12 +306,33 @@ static int __exit tvc_remove(struct platform_device *pdev)
- 	return 0;
- }
+-	if (!machine_is_nokia_rx51() && !of_machine_is_compatible("nokia,omap3-n900"))
++	if (!machine_is_nokia_rx51())
+ 		return 0;
  
-+static const struct tvc_of_data tv_svideo_data = {
-+	.connector_type = OMAP_DSS_VENC_TYPE_SVIDEO,
-+};
-+
-+static const struct tvc_of_data tv_composite_video_data = {
-+	.connector_type = OMAP_DSS_VENC_TYPE_COMPOSITE,
-+};
-+
-+static const struct of_device_id tvc_of_match[] = {
-+	{
-+		.compatible = "svideo-connector",
-+		.data = &tv_svideo_data,
-+	},
-+	{
-+		.compatible = "composite-video-connector",
-+		.data = &tv_composite_video_data,
-+	},
-+	{},
-+};
-+
- static struct platform_driver tvc_connector_driver = {
- 	.probe	= tvc_probe,
- 	.remove	= __exit_p(tvc_remove),
- 	.driver	= {
- 		.name	= "connector-analog-tv",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = tvc_of_match,
- 	},
- };
- 
+ 	if (omap_mux_init_gpio(RX51_LCD_RESET_GPIO, OMAP_PIN_OUTPUT)) {
 -- 
-1.8.3.2
+1.8.5.1
 

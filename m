@@ -1,61 +1,109 @@
-From: Masami Ichikawa <masami256@gmail.com>
-Date: Wed, 25 Dec 2013 14:47:37 +0000
-Subject: [PATCH] fbcon: Fix memory leak in fbcon_exit().
-Message-Id: <1387982857-14500-1-git-send-email-masami256@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:29 +0000
+Subject: [PATCHv2 22/27] OMAPDSS: encoder-tfp410: Add DT support
+Message-Id: <1387205794-32246-23-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org
-Cc: airlied@redhat.com, udknight@gmail.com, gregkh@linuxfoundation.org, akpm@linux-foundation.org, tiwai@suse.de, linux-kernel@vger.kernel.org, masami256@gmail.com
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-kmemleak reported a memory leak as below.
-
-unreferenced object 0xffff880036ca84c0 (size 16):
-  comm "swapper/0", pid 1, jiffies 4294877407 (age 4434.633s)
-  hex dump (first 16 bytes):
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff ff  ................
-  backtrace:
-    [<ffffffff814ed01e>] kmemleak_alloc+0x4e/0xb0
-    [<ffffffff8118913c>] __kmalloc+0x1fc/0x290
-    [<ffffffff81302c9e>] bit_cursor+0x24e/0x6c0
-    [<ffffffff812ff2f4>] fbcon_cursor+0x154/0x1d0
-    [<ffffffff813675d8>] hide_cursor+0x28/0xa0
-    [<ffffffff81368acf>] update_region+0x6f/0x90
-    [<ffffffff81300268>] fbcon_switch+0x518/0x550
-    [<ffffffff813695b9>] redraw_screen+0x189/0x240
-    [<ffffffff8136a0e0>] do_bind_con_driver+0x360/0x380
-    [<ffffffff8136a6e4>] do_take_over_console+0x114/0x1c0
-    [<ffffffff812fdc83>] do_fbcon_takeover+0x63/0xd0
-    [<ffffffff813023e5>] fbcon_event_notify+0x605/0x720
-    [<ffffffff81501dcc>] notifier_call_chain+0x4c/0x70
-    [<ffffffff81087f8d>] __blocking_notifier_call_chain+0x4d/0x70
-    [<ffffffff81087fc6>] blocking_notifier_call_chain+0x16/0x20
-    [<ffffffff812f201b>] fb_notifier_call_chain+0x1b/0x20
-
-In this case ops->cursor_state.mask is allocated in bit_cursor() but
-not freed in fbcon_exit(). So, fbcon_exit() needs to free buffer in its
-process.
-In the case, fbcon_exit() was called from fbcon_deinit() when driver
-called remove_conflicting_framebuffers().
-
-Signed-off-by: Masami Ichikawa <masami256@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/console/fbcon.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/omap2/displays-new/encoder-tfp410.c | 43 ++++++++++++++++++++++-
+ 1 file changed, 42 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index cd8a802..4f02375 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3561,6 +3561,7 @@ static void fbcon_exit(void)
+diff --git a/drivers/video/omap2/displays-new/encoder-tfp410.c b/drivers/video/omap2/displays-new/encoder-tfp410.c
+index 4a291e756be9..2c664d476788 100644
+--- a/drivers/video/omap2/displays-new/encoder-tfp410.c
++++ b/drivers/video/omap2/displays-new/encoder-tfp410.c
+@@ -13,6 +13,7 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
++#include <linux/of_gpio.h>
  
- 				fbcon_del_cursor_timer(info);
- 				kfree(ops->cursor_src);
-+				kfree(ops->cursor_state.mask);
- 				kfree(info->fbcon_par);
- 				info->fbcon_par = NULL;
- 			}
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -82,7 +83,8 @@ static int tfp410_enable(struct omap_dss_device *dssdev)
+ 		return 0;
+ 
+ 	in->ops.dpi->set_timings(in, &ddata->timings);
+-	in->ops.dpi->set_data_lines(in, ddata->data_lines);
++	if (ddata->data_lines)
++		in->ops.dpi->set_data_lines(in, ddata->data_lines);
+ 
+ 	r = in->ops.dpi->enable(in);
+ 	if (r)
+@@ -179,6 +181,33 @@ static int tfp410_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int tfp410_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	int gpio;
++
++	gpio = of_get_gpio(node, 0);
++
++	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++		ddata->pd_gpio = gpio;
++	} else {
++		dev_err(&pdev->dev, "failed to parse PD gpio\n");
++		return gpio;
++	}
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	return 0;
++}
++
+ static int tfp410_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -195,6 +224,10 @@ static int tfp410_probe(struct platform_device *pdev)
+ 		r = tfp410_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = tfp410_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -251,12 +284,20 @@ static int __exit tfp410_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id tfp410_of_match[] = {
++	{ .compatible = "ti,tfp410", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, tfp410_of_match);
++
+ static struct platform_driver tfp410_driver = {
+ 	.probe	= tfp410_probe,
+ 	.remove	= __exit_p(tfp410_remove),
+ 	.driver	= {
+ 		.name	= "tfp410",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = tfp410_of_match,
+ 	},
+ };
+ 
 -- 
-1.8.4.2
+1.8.3.2
 

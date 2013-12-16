@@ -1,132 +1,79 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:10 +0000
-Subject: [PATCHv2 03/27] ARM: OMAP2+: add omapdss_init_of()
-Message-Id: <1387205794-32246-4-git-send-email-tomi.valkeinen@ti.com>
+From: Tony Lindgren <tony@atomide.com>
+Date: Mon, 16 Dec 2013 18:46:23 +0000
+Subject: Re: [PATCHv2 03/27] ARM: OMAP2+: add omapdss_init_of()
+Message-Id: <20131216184623.GC26293@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+ <1387205794-32246-4-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-4-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
 
-omapdss driver uses a omapdss platform device to pass platform specific
-function pointers and DSS hardware version from the arch code to the
-driver. This device is needed also when booting with DT.
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [131216 07:02]:
+> omapdss driver uses a omapdss platform device to pass platform specific
+> function pointers and DSS hardware version from the arch code to the
+> driver. This device is needed also when booting with DT.
+> 
+> This patch adds omapdss_init_of() function, called from board-generic at
+> init time, which creates the omapdss device.
+...
 
-This patch adds omapdss_init_of() function, called from board-generic at
-init time, which creates the omapdss device.
+> --- a/arch/arm/mach-omap2/display.c
+> +++ b/arch/arm/mach-omap2/display.c
+> @@ -23,6 +23,8 @@
+>  #include <linux/clk.h>
+>  #include <linux/err.h>
+>  #include <linux/delay.h>
+> +#include <linux/of.h>
+> +#include <linux/of_platform.h>
+>  
+>  #include <video/omapdss.h>
+>  #include "omap_hwmod.h"
+> @@ -514,3 +516,63 @@ int omap_dss_reset(struct omap_hwmod *oh)
+>  
+>  	return r;
+>  }
+> +
+> +int __init omapdss_init_of(void)
+> +{
+> +	int r;
+> +	enum omapdss_version ver;
+> +
+> +	static struct omap_dss_board_info board_data = {
+> +		.dsi_enable_pads = omap_dsi_enable_pads,
+> +		.dsi_disable_pads = omap_dsi_disable_pads,
+> +		.get_context_loss_count = omap_pm_get_dev_context_loss_count,
+> +		.set_min_bus_tput = omap_dss_set_min_bus_tput,
+> +	};
+> +
+> +	ver = omap_display_get_version();
+> +
+> +	if (ver = OMAPDSS_VER_UNKNOWN) {
+> +		pr_err("DSS not supported on this SoC\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	board_data.version = ver;
+> +
+> +	omap_display_device.dev.platform_data = &board_data;
+> +
+> +	r = platform_device_register(&omap_display_device);
+> +	if (r < 0) {
+> +		pr_err("Unable to register omapdss device\n");
+> +		return r;
+> +	}
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/mach-omap2/board-generic.c |  2 ++
- arch/arm/mach-omap2/common.h        |  2 ++
- arch/arm/mach-omap2/display.c       | 62 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 66 insertions(+)
+You can populate the callback functions in the pdata using
+OF_DEV_AUXDATA entries in the pdata-quirks.c. That way you could
+instantiate the dev entry for omap_display_device using DT
+and deal with it in drivers/video/omap except for the pdata
+callbacks.
 
-diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/board-generic.c
-index 8d972ff18c56..842e4f21ab09 100644
---- a/arch/arm/mach-omap2/board-generic.c
-+++ b/arch/arm/mach-omap2/board-generic.c
-@@ -36,6 +36,8 @@ static struct of_device_id omap_dt_match_table[] __initdata = {
- static void __init omap_generic_init(void)
- {
- 	pdata_quirks_init(omap_dt_match_table);
-+
-+	omapdss_init_of();
- }
- 
- #ifdef CONFIG_SOC_OMAP2420
-diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
-index e30ef6797c63..04a4d360dd20 100644
---- a/arch/arm/mach-omap2/common.h
-+++ b/arch/arm/mach-omap2/common.h
-@@ -307,5 +307,7 @@ extern int omap_dss_reset(struct omap_hwmod *);
- /* SoC specific clock initializer */
- extern int (*omap_clk_init)(void);
- 
-+int __init omapdss_init_of(void);
-+
- #endif /* __ASSEMBLER__ */
- #endif /* __ARCH_ARM_MACH_OMAP2PLUS_COMMON_H */
-diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-index 58347bb874a0..197f431ae279 100644
---- a/arch/arm/mach-omap2/display.c
-+++ b/arch/arm/mach-omap2/display.c
-@@ -23,6 +23,8 @@
- #include <linux/clk.h>
- #include <linux/err.h>
- #include <linux/delay.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
- 
- #include <video/omapdss.h>
- #include "omap_hwmod.h"
-@@ -514,3 +516,63 @@ int omap_dss_reset(struct omap_hwmod *oh)
- 
- 	return r;
- }
-+
-+int __init omapdss_init_of(void)
-+{
-+	int r;
-+	enum omapdss_version ver;
-+
-+	static struct omap_dss_board_info board_data = {
-+		.dsi_enable_pads = omap_dsi_enable_pads,
-+		.dsi_disable_pads = omap_dsi_disable_pads,
-+		.get_context_loss_count = omap_pm_get_dev_context_loss_count,
-+		.set_min_bus_tput = omap_dss_set_min_bus_tput,
-+	};
-+
-+	ver = omap_display_get_version();
-+
-+	if (ver = OMAPDSS_VER_UNKNOWN) {
-+		pr_err("DSS not supported on this SoC\n");
-+		return -ENODEV;
-+	}
-+
-+	board_data.version = ver;
-+
-+	omap_display_device.dev.platform_data = &board_data;
-+
-+	r = platform_device_register(&omap_display_device);
-+	if (r < 0) {
-+		pr_err("Unable to register omapdss device\n");
-+		return r;
-+	}
-+
-+	/* create DRM device */
-+	r = omap_init_drm();
-+	if (r < 0) {
-+		pr_err("Unable to register omapdrm device\n");
-+		return r;
-+	}
-+
-+	/* create vrfb device */
-+	r = omap_init_vrfb();
-+	if (r < 0) {
-+		pr_err("Unable to register omapvrfb device\n");
-+		return r;
-+	}
-+
-+	/* create FB device */
-+	r = omap_init_fb();
-+	if (r < 0) {
-+		pr_err("Unable to register omapfb device\n");
-+		return r;
-+	}
-+
-+	/* create V4L2 display device */
-+	r = omap_init_vout();
-+	if (r < 0) {
-+		pr_err("Unable to register omap_vout device\n");
-+		return r;
-+	}
-+
-+	return 0;
-+}
--- 
-1.8.3.2
+Of course that can be done later too.
 
+Regards,
+
+Tony

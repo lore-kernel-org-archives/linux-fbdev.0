@@ -1,72 +1,47 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 16 Dec 2013 04:52:16 +0000
+From: Levente Kurusa <levex@linux.com>
+Date: Mon, 16 Dec 2013 17:16:14 +0000
 Subject: Re: [PATCH 3/4] backlight: lcd: call put_device if device_register fails
-Message-Id: <006f01cefa1a$97ea4710$c7bed530$%han@samsung.com>
+Message-Id: <52AF355E.3080105@linux.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386959996-7958-1-git-send-email-levex@linux.com>
- <1386959996-7958-4-git-send-email-levex@linux.com>
-In-Reply-To: <1386959996-7958-4-git-send-email-levex@linux.com>
+References: <1386959996-7958-1-git-send-email-levex@linux.com> <1386959996-7958-4-git-send-email-levex@linux.com> <006f01cefa1a$97ea4710$c7bed530$%han@samsung.com>
+In-Reply-To: <006f01cefa1a$97ea4710$c7bed530$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Levente Kurusa' <levex@linux.com>, 'Andrew Morton' <akpm@linux-foundation.org>
-Cc: 'LKML' <linux-kernel@vger.kernel.org>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
+To: Jingoo Han <jg1.han@samsung.com>, 'Andrew Morton' <akpm@linux-foundation.org>
+Cc: 'LKML' <linux-kernel@vger.kernel.org>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-On Saturday, December 14, 2013 3:40 AM, Levente Kurusa wrote:
+On 12/16/2013 05:52 AM, Jingoo Han wrote:
+> On Saturday, December 14, 2013 3:40 AM, Levente Kurusa wrote:
+>>
+>> Currently we kfree the container of the device which failed to register.
+>> This is wrong as the last reference is not given up with a put_device
+>> call. Also, now that we have put_device() callen, we no longer need
+>> the kfree as the new_ld->dev.release function will take care of kfreeing
+>> the associated memory.
+>>
+>> Signed-off-by: Levente Kurusa <levex@linux.com>
 > 
-> Currently we kfree the container of the device which failed to register.
-> This is wrong as the last reference is not given up with a put_device
-> call. Also, now that we have put_device() callen, we no longer need
-> the kfree as the new_ld->dev.release function will take care of kfreeing
-> the associated memory.
+> (+cc Andrew Morton)
 > 
-> Signed-off-by: Levente Kurusa <levex@linux.com>
-
-(+cc Andrew Morton)
-
-Acked-by: Jingoo Han <jg1.han@samsung.com>
-
-It looks good.
-According to the comment of device_register, put_device()
-should be used, instead of directly freeing.
-
-./drivers/base/core.c
-
- * NOTE: _Never_ directly free @dev after calling this function, even
- * if it returned an error! Always use put_device() to give up the
- * reference initialized in this function instead.
- */
-int device_register(struct device *dev)
-{
-        device_initialize(dev);
-        return device_add(dev);
-}
-EXPORT_SYMBOL_GPL(device_register);
-
-Levente Kurusa,
-By the way, don't send the same mails three times, without any
-reason. It is the waste of traffic. :-(
-
-Best regards,
-Jingoo Han
-
-> ---
->  drivers/video/backlight/lcd.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Acked-by: Jingoo Han <jg1.han@samsung.com>
 > 
-> diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-> index 93cf15e..7de847d 100644
-> --- a/drivers/video/backlight/lcd.c
-> +++ b/drivers/video/backlight/lcd.c
-> @@ -228,7 +228,7 @@ struct lcd_device *lcd_device_register(const char *name, struct device *parent,
+> It looks good.
+> According to the comment of device_register, put_device()
+> should be used, instead of directly freeing.
+Indeed, this is also mostly explained in [0/4]. Thanks for the Ack!
 > 
->  	rc = device_register(&new_ld->dev);
->  	if (rc) {
-> -		kfree(new_ld);
-> +		put_device(&new_ld->dev);
->  		return ERR_PTR(rc);
->  	}
+[...]
 > 
-> --
-> 1.8.3.1
+> Levente Kurusa,
+> By the way, don't send the same mails three times, without any
+> reason. It is the waste of traffic. :-(
+> 
 
+Yea, sorry about that I messed up my git's smtp config and hence most of the
+messages bounced off. It didn't even reach LKML. Sorry once more.
+
+
+-- 
+Regards,
+Levente Kurusa

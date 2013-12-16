@@ -1,57 +1,65 @@
-From: Sebastian Reichel <sre@debian.org>
-Date: Fri, 13 Dec 2013 18:17:30 +0000
-Subject: [PATCH 4/4] ARM: dts: omap3-n900: Add display support
-Message-Id: <1386958650-2404-5-git-send-email-sre@debian.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:12 +0000
+Subject: [PATCHv2 05/27] OMAPDSS: get dssdev->alias from DT alias
+Message-Id: <1387205794-32246-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386958650-2404-1-git-send-email-sre@debian.org>
-In-Reply-To: <1386958650-2404-1-git-send-email-sre@debian.org>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sre@ring0.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>
-Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@debian.org>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add support for the Nokia N900's display.
+We currently create a "displayX" style alias name for all displays,
+using a number that is incremented for each registered display. With the
+new DSS device model there is no clear order in which the displays are
+registered, and thus the numbering is somewhat random.
 
-Signed-off-by: Sebastian Reichel <sre@debian.org>
+This patch improves the behavior for DT case so that if the displays
+have been assigned DT aliases, those aliases will be used as DSS
+aliases.
+
+This means that "display0" is always the one specified in the DT alias,
+and thus display0 can be used as default display in case the user didn't
+specify a default display.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/boot/dts/omap3-n900.dts | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ drivers/video/omap2/dss/display.c | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/omap3-n900.dts b/arch/arm/boot/dts/omap3-n900.dts
-index c2c306d..cf776f3 100644
---- a/arch/arm/boot/dts/omap3-n900.dts
-+++ b/arch/arm/boot/dts/omap3-n900.dts
-@@ -472,12 +472,28 @@
- 		reg = <0>;
- 	};
- 	mipid@2 {
--		compatible = "acx565akm";
-+		compatible = "sony,acx565akm";
- 		spi-max-frequency = <6000000>;
- 		reg = <2>;
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 012ada38a29d..21080f9dae87 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -134,9 +134,24 @@ static int disp_num_counter;
+ int omapdss_register_display(struct omap_dss_device *dssdev)
+ {
+ 	struct omap_dss_driver *drv = dssdev->driver;
++	int id;
  
-+		label = "lcd";
-+		reset-gpio = <&gpio3 26 GPIO_ACTIVE_HIGH>; /* 90 */
+-	snprintf(dssdev->alias, sizeof(dssdev->alias),
+-			"display%d", disp_num_counter++);
++	/*
++	 * Note: this presumes all the displays are either using DT or non-DT,
++	 * which normally should be the case. This also presumes that all
++	 * displays either have an DT alias, or none has.
++	 */
 +
- 		pinctrl-names = "default";
- 		pinctrl-0 = <&display_pins>;
++	if (dssdev->dev->of_node) {
++		id = of_alias_get_id(dssdev->dev->of_node, "display");
 +
-+		lcd_in: endpoint {
-+			remote-endpoint = <&sdi_out>;
-+		};
-+	};
-+};
++		if (id < 0)
++			id = disp_num_counter++;
++	} else {
++		id = disp_num_counter++;
++	}
 +
-+&sdi {
-+	vdds_sdi-supply = <&vaux1>;
-+
-+	sdi_out: endpoint {
-+		remote-endpoint = <&lcd_in>;
-+		data-lines = <2>;
- 	};
- };
++	snprintf(dssdev->alias, sizeof(dssdev->alias), "display%d", id);
  
+ 	/* Use 'label' property for name, if it exists */
+ 	if (dssdev->dev->of_node)
 -- 
-1.8.5.1
+1.8.3.2
 

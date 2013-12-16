@@ -1,33 +1,115 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Mon, 30 Dec 2013 06:34:11 +0000
-Subject: [PATCH 2/4] video: msm: Cleanup video-msm_fb.h header
-Message-Id: <1388384533-20458-2-git-send-email-sachin.kamat@linaro.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:31 +0000
+Subject: [PATCHv2 24/27] OMAPDSS: encoder-tpd12s015: Add DT support
+Message-Id: <1387205794-32246-25-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Commit 1ef21f6343ff ("ARM: msm: move platform_data definitions")
-moved the file to the current location but forgot to remove the pointer
-to its previous location. Clean it up.
-
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- include/linux/platform_data/video-msm_fb.h |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ .../video/omap2/displays-new/encoder-tpd12s015.c   | 56 ++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
-diff --git a/include/linux/platform_data/video-msm_fb.h b/include/linux/platform_data/video-msm_fb.h
-index 1f4fc81b3d8f..31449be3eadb 100644
---- a/include/linux/platform_data/video-msm_fb.h
-+++ b/include/linux/platform_data/video-msm_fb.h
-@@ -1,5 +1,4 @@
--/* arch/arm/mach-msm/include/mach/msm_fb.h
-- *
-+/*
-  * Internal shared definitions for various MSM framebuffer parts.
-  *
-  * Copyright (C) 2007 Google Incorporated
+diff --git a/drivers/video/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
+index d5c936cb217f..6529a4ff50ca 100644
+--- a/drivers/video/omap2/displays-new/encoder-tpd12s015.c
++++ b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
+@@ -15,6 +15,7 @@
+ #include <linux/slab.h>
+ #include <linux/gpio.h>
+ #include <linux/platform_device.h>
++#include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -289,6 +290,49 @@ static int tpd_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int tpd_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	int gpio;
++
++	/* CT CP HPD GPIO */
++	gpio = of_get_gpio(node, 0);
++	if (!gpio_is_valid(gpio)) {
++		dev_err(&pdev->dev, "failed to parse CT CP HPD gpio\n");
++		return gpio;
++	}
++	ddata->ct_cp_hpd_gpio = gpio;
++
++	/* LS OE GPIO */
++	gpio = of_get_gpio(node, 1);
++	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++		ddata->ls_oe_gpio = gpio;
++	} else {
++		dev_err(&pdev->dev, "failed to parse LS OE gpio\n");
++		return gpio;
++	}
++
++	/* HPD GPIO */
++	gpio = of_get_gpio(node, 2);
++	if (!gpio_is_valid(gpio)) {
++		dev_err(&pdev->dev, "failed to parse HPD gpio\n");
++		return gpio;
++	}
++	ddata->hpd_gpio = gpio;
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	return 0;
++}
++
+ static int tpd_probe(struct platform_device *pdev)
+ {
+ 	struct omap_dss_device *in, *dssdev;
+@@ -307,6 +351,10 @@ static int tpd_probe(struct platform_device *pdev)
+ 		r = tpd_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = tpd_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -379,12 +427,20 @@ static int __exit tpd_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id tpd_of_match[] = {
++	{ .compatible = "ti,tpd12s015", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, tpd_of_match);
++
+ static struct platform_driver tpd_driver = {
+ 	.probe	= tpd_probe,
+ 	.remove	= __exit_p(tpd_remove),
+ 	.driver	= {
+ 		.name	= "tpd12s015",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = tpd_of_match,
+ 	},
+ };
+ 
 -- 
-1.7.9.5
+1.8.3.2
 

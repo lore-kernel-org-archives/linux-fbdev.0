@@ -1,60 +1,134 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Fri, 13 Dec 2013 17:10:25 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 10:49:03 +0000
 Subject: Re: [PATCH 13/26] ARM: omap3.dtsi: add omapdss information
-Message-Id: <20131213171025.GC28184@atomide.com>
+Message-Id: <52AEDA9F.2020609@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="x4f8H0SFmJbh3XrFVwTb5coGIuOSDQfaL"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
- <52A9760A.3000801@ti.com>
- <20131212215913.GB29072@muru.com>
- <1933495.zHe4JMYZyB@avalon>
- <52AADEF3.9040808@ti.com>
-In-Reply-To: <52AADEF3.9040808-l0cyMroinI0@public.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Darren Etheridge <detheridge-l0cyMroinI0@public.gmane.org>
+References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com> <2364383.8GWpsWSoJu@avalon> <52A9760A.3000801@ti.com> <14299863.f0rzOyPfdL@avalon>
+In-Reply-To: <14299863.f0rzOyPfdL@avalon>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [131213 02:19]:
-> On 2013-12-13 05:27, Laurent Pinchart wrote:
-> > Hi Tony,
-> > 
-> > On Thursday 12 December 2013 21:59:13 Tony Lindgren wrote:
-> >> On Thu, Dec 12, 2013 at 10:38:34AM +0200, Tomi Valkeinen wrote:
-> >>> On 2013-12-12 01:44, Laurent Pinchart wrote:
-> >>>
-> >>> So, are they independent? I don't know =). I think they lean on the
-> >>> independent side. dss_core is always needed for the submodules to work,
-> >>> but for example DSI could be used without DISPC, using system DMA to
-> >>> transfer data from memory to DSI. Not a very useful thing to do, but
-> >>> still, there are dedicated DMA channels for that.
-> >>
-> >> If they have separate hwmod entries, they should be considered separate
-> >> independent devices for sure.
-> >>
-> >> To summarize, here are few reasons why they need to be treated as
-> >> separate devices:
-> > 
-> > Are you talking generally here, or about the DSS modules in particular ?
-> > 
-> >> 1. The modules maybe clocked/powered/idled separately and can have their
-> >>    own idle configuration so they can do the hardware based idling
-> >>    separately.
-> > 
-> > I don't think this applies to the DSS modules.
-> 
-> The DSS submodules have their own SYSCONFIG register, and idle settings
-> can be set per module. So I think they idle separately, even if they are
-> in a common power domain.
+--x4f8H0SFmJbh3XrFVwTb5coGIuOSDQfaL
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yes. Please see the current omap_hwmod_*_data.c files, if they are separate
-entries there, that means we need to treat them as separate devices to
-avoid the issues I listed.
+On 2013-12-13 05:24, Laurent Pinchart wrote:
 
-We do have some entries still missing from omap_hwmod_*_data.c files, like
-the SSI entries as they are undocumented. But for the existing ones there
-please follow the same layout for the .dts entries.
+>> Then DPI, which I think is mostly just level shifters. It's really jus=
+t
+>> a port, as you say.
+>>
+>> SDI is a bit unclear to me. The registers for it are in the dss_core.
+>> There's only a few registers, but it does have a PHY and a PLL. But I
+>> guess it's also more of a port than a separate module.
+>=20
+> After a quick look at the documentation I would say so. I would be temp=
+ted to=20
+> consider RFBI as part of the DSS core, but that's less clear.
 
-Regards,
+I had a look at this, mainly the DPI side so far. There's one extra
+complication, which actually affects all other outputs also (and CDF):
+pinctrl.
 
-Tony
+In the current series, I just have pinctrl for each device, with
+"default" name, which ends up being used by default without any code on
+my part.
+
+However, if DPI is no longer a device, it can't have pinctrl entry. But
+this is a wider issue, as the pinctrl should really be per endpoint, not
+per device. When an endpoint is selected to be used, a particular
+pinmuxing should be taken into use.
+
+I'm not sure what would be the cleanest solution to this. I currently
+have this working:
+
+&dss {
+	pinctrl-names =3D "default-0-0";
+	pinctrl-0 =3D <&dss_dpi_pins>;
+
+	port@0 {
+		dpi_out: endpoint {
+			remote-endpoint =3D <&tfp410_in>;
+			data-lines =3D <24>;
+		};
+	};
+};
+
+So here I have 'port@0' for DSS, which is the DPI output, and it has a
+single endpoint. For DSS device, I have pinctrl data.
+
+When the DPI endpoint is initialized, the code looks for pinctrl with
+name "default-<portnum>-<endpointnum>". As the DPI is port 0, and just
+one endpoint, the code looks for "default-0-0".
+
+For omap3 board with both DPI and SDI as options (they can't be used at
+the same time, though), I imagine it'd be like:
+
+&dss {
+	vdds_dsi-supply =3D <&vpll2>;
+	vdds_sdi-supply =3D <&vpll2>;
+
+	pinctrl-names =3D "default-0-0", "default-1-0";
+	pinctrl-0 =3D <&dss_dpi_pins>;
+	pinctrl-1 =3D <&dss_sdi_pins>;
+
+	ports {
+		#address-cells =3D <1>;
+		#size-cells =3D <0>;
+
+		port@0 {
+			reg =3D <0>;
+			dpi_out: endpoint {
+			};
+		};
+
+		port@1 {
+			reg =3D <1>;
+			sdi_out: endpoint {
+			};
+		};
+	};
+};
+
+Any thoughts?
+
+Every time I work with ports/endpoints, I feel that this is needlessly
+complex. But I have never come up with any cleaner or simpler way to
+handle this.
+
+I also think this multiple-peripherals-per-single-port is not really
+display related, although, for some reason, it seems like display is the
+most abused hardware. Maybe ports/endpoints or similar should be in the
+common driver framework?
+
+ Tomi
+
+
+
+--x4f8H0SFmJbh3XrFVwTb5coGIuOSDQfaL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSrtqfAAoJEPo9qoy8lh71mCAP/1XA7pI5oHDUdHOrapA+pKgV
+FV7T2lcZ35wxO6w6euWD+95XDhenRWhsKIdVnrTmeB/vzXDlg94xIaaLRMn6APlD
+kGlZkKS2ox0IEXDhfkxA6mTNCdJeDMExaA5LLLZfFQNZQ5HwMWxYJb4J7tCkRbvF
+VGv7azDfMsE9K5h5K6PQoki89Dn8CTb0og4rDA4nJMGng9VwilM1xksdTJ2X9nB4
+cH2ad3eCIY+JrG6wMbRMTFF7j/ujFr6lov5Of56cUICWWwK8ALBk3gikrvPtGaiW
+Nauuyu8P9/v12VMob/BZmBAVKQZd9+aUCv198DsjLS+jb545kQseZrOrmYN6eXIg
+GCU7lMODF/DNzUHAmIPwcRYhGigmS82sR65sieu3LdVqyHX7u+dt4Uem7GU3h91l
+TCS7/SkJK71e6Yb8d38YvOf1dJvCtDiTKNleDolnHPfXBRhVk/AXz25t6XHMRt3f
+YS2Y1Me8eToHtoh3M/tTFJNebWOj5eTRo8oQydZxozHCWC00RTSZlBgK1j/kJLbN
+K9D4hQ3I6ln77YyyQ1oyGpIcc7yYVTyFNrZoagMygI/KEoSsTzZ+RUBHPyFcDogb
+66U3eqVmboq3gADELHi4CngEAaNf2Aq0ZM0HKgU+rgqSALuKS4NDEfMsLPgpSaLt
+nt23Fxou0uZLsJilXAUM
+=VaR+
+-----END PGP SIGNATURE-----
+
+--x4f8H0SFmJbh3XrFVwTb5coGIuOSDQfaL--

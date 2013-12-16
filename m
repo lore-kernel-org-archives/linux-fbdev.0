@@ -1,152 +1,108 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:23 +0000
-Subject: [PATCHv2 16/27] ARM: omap4-sdp.dts: add display information
-Message-Id: <1387205794-32246-17-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:07 +0000
+Subject: [PATCHv2 00/27] OMAPDSS: DT support v2
+Message-Id: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Stefan Roese <stefan.roese@gmail.com>, Sebastian Reichel <sre@debian.org>, Robert Nelson <robertcnelson@gmail.com>, "Dr . H . Nikolaus Schaller" <hns@goldelico.com>, Marek Belisko <marek@goldelico.com>, Sebastian Reichel <sre@ring0.de>, Javier Martinez Canillas <javier@dowhile0.org>, Enric Balletbo Serra <eballetbo@gmail.com>, Florian Vaussard <florian.vaussard@epfl.ch>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/boot/dts/omap4-sdp.dts | 116 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 116 insertions(+)
+Hi,
 
-diff --git a/arch/arm/boot/dts/omap4-sdp.dts b/arch/arm/boot/dts/omap4-sdp.dts
-index c13ada99e0bc..bdfab844533b 100644
---- a/arch/arm/boot/dts/omap4-sdp.dts
-+++ b/arch/arm/boot/dts/omap4-sdp.dts
-@@ -309,6 +309,22 @@
- 			0x112 (PIN_INPUT_PULLUP | MUX_MODE0)	/* sdmmc5_dat3.sdmmc5_dat3 */
- 		>;
- 	};
-+
-+	dss_hdmi_pins: pinmux_dss_hdmi_pins {
-+		pinctrl-single,pins = <
-+			0x5a (PIN_INPUT_PULLUP | MUX_MODE0)	/* hdmi_cec.hdmi_cec */
-+			0x5c (PIN_INPUT_PULLUP | MUX_MODE0)	/* hdmi_scl.hdmi_scl */
-+			0x5e (PIN_INPUT_PULLUP | MUX_MODE0)	/* hdmi_sda.hdmi_sda */
-+		>;
-+	};
-+
-+	tpd12s015_pins: pinmux_tpd12s015_pins {
-+		pinctrl-single,pins = <
-+			0x22 (PIN_OUTPUT | MUX_MODE3)		/* gpmc_a17.gpio_41 */
-+			0x48 (PIN_OUTPUT | MUX_MODE3)		/* gpmc_nbe1.gpio_60 */
-+			0x58 (PIN_INPUT_PULLDOWN | MUX_MODE3)	/* hdmi_hpd.gpio_63 */
-+		>;
-+	};
- };
- 
- &i2c1 {
-@@ -551,3 +567,103 @@
- 	mode = <3>;
- 	power = <50>;
- };
-+
-+&dsi1 {
-+	vdds_dsi-supply = <&vcxio>;
-+
-+	dsi1_out_ep: endpoint {
-+		remote-endpoint = <&lcd0_in>;
-+		lanes = <0 1 2 3 4 5>;
-+	};
-+
-+	lcd0: display {
-+		compatible = "tpo,taal", "panel-dsi-cm";
-+		label = "lcd0";
-+
-+		gpios = <&gpio4 6 GPIO_ACTIVE_HIGH>;	/* 102, reset */
-+
-+		lcd0_in: endpoint {
-+			remote-endpoint = <&dsi1_out_ep>;
-+		};
-+	};
-+};
-+
-+&dsi2 {
-+	vdds_dsi-supply = <&vcxio>;
-+
-+	dsi2_out_ep: endpoint {
-+		remote-endpoint = <&lcd1_in>;
-+		lanes = <0 1 2 3 4 5>;
-+	};
-+
-+	lcd1: display {
-+		compatible = "tpo,taal", "panel-dsi-cm";
-+		label = "lcd1";
-+
-+		gpios = <&gpio4 8 GPIO_ACTIVE_HIGH>;	/* 104, reset */
-+
-+		lcd1_in: endpoint {
-+			remote-endpoint = <&dsi2_out_ep>;
-+		};
-+	};
-+};
-+
-+&hdmi {
-+	vdda_hdmi_dac-supply = <&vdac>;
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&dss_hdmi_pins>;
-+
-+	hdmi_out: endpoint {
-+		remote-endpoint = <&tpd12s015_in>;
-+	};
-+};
-+
-+/ {
-+	aliases {
-+		display0 = &lcd0;
-+		display1 = &lcd1;
-+		display2 = &hdmi0;
-+	};
-+
-+	tpd12s015: encoder@0 {
-+		compatible = "ti,tpd12s015";
-+
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&tpd12s015_pins>;
-+
-+		gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>,	/* 60, CT CP HPD */
-+			<&gpio2 9 GPIO_ACTIVE_HIGH>,	/* 41, LS OE */
-+			<&gpio2 31 GPIO_ACTIVE_HIGH>;	/* 63, HPD */
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				tpd12s015_in: endpoint@0 {
-+					remote-endpoint = <&hdmi_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				tpd12s015_out: endpoint@0 {
-+					remote-endpoint = <&hdmi_connector_in>;
-+				};
-+			};
-+		};
-+	};
-+
-+	hdmi0: connector@0 {
-+		compatible = "hdmi-connector";
-+		label = "hdmi";
-+
-+		hdmi_connector_in: endpoint {
-+			remote-endpoint = <&tpd12s015_out>;
-+		};
-+	};
-+};
+Here's version 2 of the DSS DT series. Hopefully I have fixed all the issues
+that were found with v1
+(http://article.gmane.org/gmane.linux.ports.arm.omap/108249), except missing
+binding documentation and lacking patch descriptions.
+
+The main changes are:
+
+- DPI and SDI are no longer dummy devices, but ports on the DSS node. This
+  reflects better the actual hardware.
+- Pinmuxing
+- Labels for displays
+
+Additionally smaller changes, like using symbolic names in the .dts files,
+fixing endpoint numbering, etc.
+
+This series can also be found from:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dt-review-2
+
+ Tomi
+
+Javier Martinez Canillas (1):
+  ARM: omap3-igep0020.dts: add display information
+
+Tomi Valkeinen (26):
+  ARM: OMAP: remove DSS DT hack
+  OMAPDSS: remove DT hacks for regulators
+  ARM: OMAP2+: add omapdss_init_of()
+  OMAPDSS: add 'label' support for DT
+  OMAPDSS: get dssdev->alias from DT alias
+  OMAPFB: clean up default display search
+  OMAPFB: search for default display with DT alias
+  OMAPDSS: add of helpers
+  OMAPDSS: Add DT support to DSS, DISPC, DPI and SDI.
+  OMAPDSS: Add DT support to HDMI
+  OMAPDSS: Add DT support to VENC
+  OMAPDSS: Add DT support to DSI
+  ARM: omap3.dtsi: add omapdss information
+  ARM: omap4.dtsi: add omapdss information
+  ARM: omap4-panda.dts: add display information
+  ARM: omap4-sdp.dts: add display information
+  ARM: omap3-tobi.dts: add lcd (TEST)
+  ARM: omap3-beagle.dts: add display information
+  ARM: omap3-beagle-xm.dts: add display information
+  OMAPDSS: panel-dsi-cm: Add DT support
+  OMAPDSS: encoder-tfp410: Add DT support
+  OMAPDSS: connector-dvi: Add DT support
+  OMAPDSS: encoder-tpd12s015: Add DT support
+  OMAPDSS: hdmi-connector: Add DT support
+  OMAPDSS: panel-dpi: Add DT support
+  OMAPDSS: connector-analog-tv: Add DT support
+
+ arch/arm/boot/dts/omap3-beagle-xm.dts              | 118 ++++++++++
+ arch/arm/boot/dts/omap3-beagle.dts                 | 115 +++++++++
+ arch/arm/boot/dts/omap3-igep0020.dts               |  64 ++++-
+ arch/arm/boot/dts/omap3-tobi.dts                   |  47 ++++
+ arch/arm/boot/dts/omap3.dtsi                       |  35 +++
+ arch/arm/boot/dts/omap4-panda-common.dtsi          | 121 +++++++++-
+ arch/arm/boot/dts/omap4-sdp.dts                    | 116 +++++++++
+ arch/arm/boot/dts/omap4.dtsi                       |  54 +++++
+ arch/arm/mach-omap2/Makefile                       |   2 +-
+ arch/arm/mach-omap2/board-generic.c                |   2 +
+ arch/arm/mach-omap2/common.h                       |   2 +
+ arch/arm/mach-omap2/display.c                      |  62 +++++
+ arch/arm/mach-omap2/dss-common.c                   | 259 ---------------------
+ arch/arm/mach-omap2/dss-common.h                   |  13 --
+ arch/arm/mach-omap2/pdata-quirks.c                 |   4 -
+ .../video/omap2/displays-new/connector-analog-tv.c |  66 +++++-
+ drivers/video/omap2/displays-new/connector-dvi.c   |  43 ++++
+ drivers/video/omap2/displays-new/connector-hdmi.c  |  30 +++
+ drivers/video/omap2/displays-new/encoder-tfp410.c  |  43 +++-
+ .../video/omap2/displays-new/encoder-tpd12s015.c   |  56 +++++
+ drivers/video/omap2/displays-new/panel-dpi.c       |  64 ++++-
+ drivers/video/omap2/displays-new/panel-dsi-cm.c    |  65 +++++-
+ drivers/video/omap2/dss/Makefile                   |   2 +-
+ drivers/video/omap2/dss/dispc.c                    |   7 +
+ drivers/video/omap2/dss/display.c                  |  28 ++-
+ drivers/video/omap2/dss/dpi.c                      |  47 ++++
+ drivers/video/omap2/dss/dsi.c                      | 141 ++++++++++-
+ drivers/video/omap2/dss/dss-of.c                   | 162 +++++++++++++
+ drivers/video/omap2/dss/dss.c                      |  63 +++++
+ drivers/video/omap2/dss/dss.h                      |   6 +
+ drivers/video/omap2/dss/hdmi4.c                    |  10 +-
+ drivers/video/omap2/dss/sdi.c                      |  45 ++++
+ drivers/video/omap2/dss/venc.c                     |  34 +++
+ drivers/video/omap2/omapfb/omapfb-main.c           |  67 ++++--
+ include/video/omapdss.h                            |  14 ++
+ 35 files changed, 1685 insertions(+), 322 deletions(-)
+ delete mode 100644 arch/arm/mach-omap2/dss-common.c
+ delete mode 100644 arch/arm/mach-omap2/dss-common.h
+ create mode 100644 drivers/video/omap2/dss/dss-of.c
+
 -- 
 1.8.3.2
 

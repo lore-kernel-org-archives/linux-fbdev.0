@@ -1,62 +1,72 @@
-From: Cliff Brake <cliff.brake@gmail.com>
-Date: Mon, 02 Dec 2013 18:19:51 +0000
-Subject: Re: kernel mode splash screen
-Message-Id: <CAOd_LFx3Q9pV_XUXy2Pw-89B0utfXEcS9eSbUNr2JqFZoMOxqA@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:14 +0000
+Subject: [PATCHv2 07/27] OMAPFB: search for default display with DT alias
+Message-Id: <1387205794-32246-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
-On Tue, Aug 6, 2013 at 12:15 PM, Cliff Brake <cliff.brake@gmail.com> wrote:
-> Hello,
->
-> We are working on an embedded system where we need immediate feedback
-> on the screen in response to power button events, etc.  We also need
-> to be able to display the splash screen whenever kernel is running.
-> User space splash screens get killed too early on shutdown, etc.
->
-> Does anyone know of a kernel mode splash screen that will:
->
-> 1) display an image
-> 2) display status messages
-> 3) display progress bar (nice to have, but not required)
-> 4) can be accessed from kernel and user space
-> 5) when enabled, will disable writes from user space
-> 6) FB based
+Improve the search for the default display in two ways:
+* compare the given display name to the display's alias
+* if no display name is given, look for "display0" DT alias
 
-I'm currently porting
-http://git.yoctoproject.org/cgit/cgit.cgi/psplash/ to the linux
-kernel.  So far, its going fairly well.  Psplash is fairly clean and
-minimal.  Two questions:
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/omapfb/omapfb-main.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-1) is there kernel function to write pixels to the framebuffer?  I've
-been looking at fb_fillrect()
-
-2) what is the format of the color parameter in the following data
-structure (gets passed to fb_fillrect():
-
-struct fb_fillrect {
-__u32 dx; /* screen-relative */
-__u32 dy;
-__u32 width;
-__u32 height;
-__u32 color;
-__u32 rop;
-};
-
-3) We are using the omap2 frame buffer driver.  By default its
-configured to provide 3 frame-buffers.  I'm not sure what this means,
-but I thinking that perhaps we can use one for the splash screen, and
-one for the normal frame buffer used by userspace?  The issue is I
-want to disable user space from drawing to the framebuffer instantly,
-and switch to the splash screen when the user presses the power switch
-(instant feedback).  What is the purpose of multiple frame buffers,
-and is this a reasonable use of them?
-
-Thanks,
-Cliff
-
-
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 8bfe973e55ec..961c5c251f63 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2413,7 +2413,10 @@ omapfb_find_default_display(struct omapfb2_device *fbdev)
+ 	const char *def_name;
+ 	int i;
+ 
+-	/* search with the display name from the user or the board file */
++	/*
++	 * Search with the display name from the user or the board file,
++	 * comparing to display names and aliases
++	 */
+ 
+ 	def_name = omapdss_get_default_display_name();
+ 
+@@ -2425,12 +2428,30 @@ omapfb_find_default_display(struct omapfb2_device *fbdev)
+ 
+ 			if (dssdev->name && strcmp(def_name, dssdev->name) = 0)
+ 				return dssdev;
++
++			if (strcmp(def_name, dssdev->alias) = 0)
++				return dssdev;
+ 		}
+ 
+ 		/* def_name given but not found */
+ 		return NULL;
+ 	}
+ 
++	/* then look for DT alias display0 */
++	for (i = 0; i < fbdev->num_displays; ++i) {
++		struct omap_dss_device *dssdev;
++		int id;
++
++		dssdev = fbdev->displays[i].dssdev;
++
++		if (dssdev->dev->of_node = NULL)
++			continue;
++
++		id = of_alias_get_id(dssdev->dev->of_node, "display");
++		if (id = 0)
++			return dssdev;
++	}
++
+ 	/* return the first display we have in the list */
+ 	return fbdev->displays[0].dssdev;
+ }
 -- 
-========http://bec-systems.com
+1.8.3.2
+

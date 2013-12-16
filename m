@@ -1,40 +1,88 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Thu, 19 Dec 2013 08:23:08 +0000
-Subject: [PATCH] video: mx3fb: Allow blocking during framebuffer allocation
-Message-Id: <1387441388-10962-1-git-send-email-s.hauer@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:13 +0000
+Subject: [PATCHv2 06/27] OMAPFB: clean up default display search
+Message-Id: <1387205794-32246-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org
-
-No need to allocate the framebuffer from the atomic pool, we are not
-in interrupt context. Adding GFP_KERNEL to the framebuffer allocation
-allows to use the much bigger CMA pool to allocate the framebuffer.
-
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
- drivers/video/mx3fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index cfdb380..c882bec 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -1263,7 +1263,7 @@ static int mx3fb_map_video_memory(struct fb_info *fbi, unsigned int mem_len,
+Separate the code for finding the default display into a function for
+clarity and to make it easier to extend it in the future.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/omapfb/omapfb-main.c | 46 ++++++++++++++++++++------------
+ 1 file changed, 29 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 27d6905683f3..8bfe973e55ec 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2407,6 +2407,34 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
+ 	return 0;
+ }
  
- 	fbi->screen_base = dma_alloc_writecombine(fbi->device,
- 						  mem_len,
--						  &addr, GFP_DMA);
-+						  &addr, GFP_DMA | GFP_KERNEL);
++static struct omap_dss_device *
++omapfb_find_default_display(struct omapfb2_device *fbdev)
++{
++	const char *def_name;
++	int i;
++
++	/* search with the display name from the user or the board file */
++
++	def_name = omapdss_get_default_display_name();
++
++	if (def_name) {
++		for (i = 0; i < fbdev->num_displays; ++i) {
++			struct omap_dss_device *dssdev;
++
++			dssdev = fbdev->displays[i].dssdev;
++
++			if (dssdev->name && strcmp(def_name, dssdev->name) = 0)
++				return dssdev;
++		}
++
++		/* def_name given but not found */
++		return NULL;
++	}
++
++	/* return the first display we have in the list */
++	return fbdev->displays[0].dssdev;
++}
++
+ static int omapfb_probe(struct platform_device *pdev)
+ {
+ 	struct omapfb2_device *fbdev = NULL;
+@@ -2484,23 +2512,7 @@ static int omapfb_probe(struct platform_device *pdev)
+ 	for (i = 0; i < fbdev->num_managers; i++)
+ 		fbdev->managers[i] = omap_dss_get_overlay_manager(i);
  
- 	if (!fbi->screen_base) {
- 		dev_err(fbi->device, "Cannot allocate %u bytes framebuffer memory\n",
+-	def_display = NULL;
+-
+-	for (i = 0; i < fbdev->num_displays; ++i) {
+-		struct omap_dss_device *dssdev;
+-		const char *def_name;
+-
+-		def_name = omapdss_get_default_display_name();
+-
+-		dssdev = fbdev->displays[i].dssdev;
+-
+-		if (def_name = NULL ||
+-			(dssdev->name && strcmp(def_name, dssdev->name) = 0)) {
+-			def_display = dssdev;
+-			break;
+-		}
+-	}
+-
++	def_display = omapfb_find_default_display(fbdev);
+ 	if (def_display = NULL) {
+ 		dev_err(fbdev->dev, "failed to find default display\n");
+ 		r = -EPROBE_DEFER;
 -- 
-1.8.5.1
+1.8.3.2
 

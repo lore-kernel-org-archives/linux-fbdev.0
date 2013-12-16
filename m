@@ -1,91 +1,152 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:29 +0000
-Subject: [PATCH 02/26] OMAPDSS: DSI: fix fifosize
-Message-Id: <1386160133-24026-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:23 +0000
+Subject: [PATCHv2 16/27] ARM: omap4-sdp.dts: add display information
+Message-Id: <1387205794-32246-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-
-DSI has separate TX and RX fifos. However, the current code only has one
-field where the fifo size is stored, and the code for both TX and RX
-config write to the same field. This has not caused issues, as we've
-been using the same fifo sizes.
-
-Fix this bug by creating separate fields for TX and RX fifo sizes.
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c | 25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+ arch/arm/boot/dts/omap4-sdp.dts | 116 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 116 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 6056b27cf73c..1cd3e47fd43f 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -297,7 +297,8 @@ struct dsi_data {
- 	struct {
- 		enum dsi_vc_source source;
- 		struct omap_dss_device *dssdev;
--		enum fifo_size fifo_size;
-+		enum fifo_size tx_fifo_size;
-+		enum fifo_size rx_fifo_size;
- 		int vc_id;
- 	} vc[4];
+diff --git a/arch/arm/boot/dts/omap4-sdp.dts b/arch/arm/boot/dts/omap4-sdp.dts
+index c13ada99e0bc..bdfab844533b 100644
+--- a/arch/arm/boot/dts/omap4-sdp.dts
++++ b/arch/arm/boot/dts/omap4-sdp.dts
+@@ -309,6 +309,22 @@
+ 			0x112 (PIN_INPUT_PULLUP | MUX_MODE0)	/* sdmmc5_dat3.sdmmc5_dat3 */
+ 		>;
+ 	};
++
++	dss_hdmi_pins: pinmux_dss_hdmi_pins {
++		pinctrl-single,pins = <
++			0x5a (PIN_INPUT_PULLUP | MUX_MODE0)	/* hdmi_cec.hdmi_cec */
++			0x5c (PIN_INPUT_PULLUP | MUX_MODE0)	/* hdmi_scl.hdmi_scl */
++			0x5e (PIN_INPUT_PULLUP | MUX_MODE0)	/* hdmi_sda.hdmi_sda */
++		>;
++	};
++
++	tpd12s015_pins: pinmux_tpd12s015_pins {
++		pinctrl-single,pins = <
++			0x22 (PIN_OUTPUT | MUX_MODE3)		/* gpmc_a17.gpio_41 */
++			0x48 (PIN_OUTPUT | MUX_MODE3)		/* gpmc_nbe1.gpio_60 */
++			0x58 (PIN_INPUT_PULLDOWN | MUX_MODE3)	/* hdmi_hpd.gpio_63 */
++		>;
++	};
+ };
  
-@@ -2427,14 +2428,14 @@ static void dsi_config_tx_fifo(struct platform_device *dsidev,
- 	int add = 0;
- 	int i;
- 
--	dsi->vc[0].fifo_size = size1;
--	dsi->vc[1].fifo_size = size2;
--	dsi->vc[2].fifo_size = size3;
--	dsi->vc[3].fifo_size = size4;
-+	dsi->vc[0].tx_fifo_size = size1;
-+	dsi->vc[1].tx_fifo_size = size2;
-+	dsi->vc[2].tx_fifo_size = size3;
-+	dsi->vc[3].tx_fifo_size = size4;
- 
- 	for (i = 0; i < 4; i++) {
- 		u8 v;
--		int size = dsi->vc[i].fifo_size;
-+		int size = dsi->vc[i].tx_fifo_size;
- 
- 		if (add + size > 4) {
- 			DSSERR("Illegal FIFO configuration\n");
-@@ -2460,14 +2461,14 @@ static void dsi_config_rx_fifo(struct platform_device *dsidev,
- 	int add = 0;
- 	int i;
- 
--	dsi->vc[0].fifo_size = size1;
--	dsi->vc[1].fifo_size = size2;
--	dsi->vc[2].fifo_size = size3;
--	dsi->vc[3].fifo_size = size4;
-+	dsi->vc[0].rx_fifo_size = size1;
-+	dsi->vc[1].rx_fifo_size = size2;
-+	dsi->vc[2].rx_fifo_size = size3;
-+	dsi->vc[3].rx_fifo_size = size4;
- 
- 	for (i = 0; i < 4; i++) {
- 		u8 v;
--		int size = dsi->vc[i].fifo_size;
-+		int size = dsi->vc[i].rx_fifo_size;
- 
- 		if (add + size > 4) {
- 			DSSERR("Illegal FIFO configuration\n");
-@@ -2920,7 +2921,7 @@ static int dsi_vc_send_long(struct platform_device *dsidev, int channel,
- 		DSSDBG("dsi_vc_send_long, %d bytes\n", len);
- 
- 	/* len + header */
--	if (dsi->vc[channel].fifo_size * 32 * 4 < len + 4) {
-+	if (dsi->vc[channel].tx_fifo_size * 32 * 4 < len + 4) {
- 		DSSERR("unable to send long packet: packet too long.\n");
- 		return -EINVAL;
- 	}
+ &i2c1 {
+@@ -551,3 +567,103 @@
+ 	mode = <3>;
+ 	power = <50>;
+ };
++
++&dsi1 {
++	vdds_dsi-supply = <&vcxio>;
++
++	dsi1_out_ep: endpoint {
++		remote-endpoint = <&lcd0_in>;
++		lanes = <0 1 2 3 4 5>;
++	};
++
++	lcd0: display {
++		compatible = "tpo,taal", "panel-dsi-cm";
++		label = "lcd0";
++
++		gpios = <&gpio4 6 GPIO_ACTIVE_HIGH>;	/* 102, reset */
++
++		lcd0_in: endpoint {
++			remote-endpoint = <&dsi1_out_ep>;
++		};
++	};
++};
++
++&dsi2 {
++	vdds_dsi-supply = <&vcxio>;
++
++	dsi2_out_ep: endpoint {
++		remote-endpoint = <&lcd1_in>;
++		lanes = <0 1 2 3 4 5>;
++	};
++
++	lcd1: display {
++		compatible = "tpo,taal", "panel-dsi-cm";
++		label = "lcd1";
++
++		gpios = <&gpio4 8 GPIO_ACTIVE_HIGH>;	/* 104, reset */
++
++		lcd1_in: endpoint {
++			remote-endpoint = <&dsi2_out_ep>;
++		};
++	};
++};
++
++&hdmi {
++	vdda_hdmi_dac-supply = <&vdac>;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&dss_hdmi_pins>;
++
++	hdmi_out: endpoint {
++		remote-endpoint = <&tpd12s015_in>;
++	};
++};
++
++/ {
++	aliases {
++		display0 = &lcd0;
++		display1 = &lcd1;
++		display2 = &hdmi0;
++	};
++
++	tpd12s015: encoder@0 {
++		compatible = "ti,tpd12s015";
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&tpd12s015_pins>;
++
++		gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>,	/* 60, CT CP HPD */
++			<&gpio2 9 GPIO_ACTIVE_HIGH>,	/* 41, LS OE */
++			<&gpio2 31 GPIO_ACTIVE_HIGH>;	/* 63, HPD */
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				tpd12s015_in: endpoint@0 {
++					remote-endpoint = <&hdmi_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++
++				tpd12s015_out: endpoint@0 {
++					remote-endpoint = <&hdmi_connector_in>;
++				};
++			};
++		};
++	};
++
++	hdmi0: connector@0 {
++		compatible = "hdmi-connector";
++		label = "hdmi";
++
++		hdmi_connector_in: endpoint {
++			remote-endpoint = <&tpd12s015_out>;
++		};
++	};
++};
 -- 
 1.8.3.2
 

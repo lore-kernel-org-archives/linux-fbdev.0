@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:32 +0000
-Subject: [PATCHv2 25/27] OMAPDSS: hdmi-connector: Add DT support
-Message-Id: <1387205794-32246-26-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:20 +0000
+Subject: [PATCHv2 13/27] ARM: omap3.dtsi: add omapdss information
+Message-Id: <1387205794-32246-14-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
@@ -13,77 +13,54 @@ Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/displays-new/connector-hdmi.c | 30 +++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ arch/arm/boot/dts/omap3.dtsi | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-diff --git a/drivers/video/omap2/displays-new/connector-hdmi.c b/drivers/video/omap2/displays-new/connector-hdmi.c
-index 9abe2c039ae9..12246b5841c0 100644
---- a/drivers/video/omap2/displays-new/connector-hdmi.c
-+++ b/drivers/video/omap2/displays-new/connector-hdmi.c
-@@ -12,6 +12,7 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/of.h>
- 
- #include <drm/drm_edid.h>
- 
-@@ -301,6 +302,23 @@ static int hdmic_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int hdmic_probe_of(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
+diff --git a/arch/arm/boot/dts/omap3.dtsi b/arch/arm/boot/dts/omap3.dtsi
+index daabf99d402a..c646fa9ae5d3 100644
+--- a/arch/arm/boot/dts/omap3.dtsi
++++ b/arch/arm/boot/dts/omap3.dtsi
+@@ -630,5 +630,40 @@
+ 			num-eps = <16>;
+ 			ram-bits = <12>;
+ 		};
 +
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
++		dss: dss@48050000 {
++			compatible = "ti,omap3-dss", "simple-bus";
++			reg = <0x48050000 0x200>;
++			ti,hwmods = "dss_core";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges;
 +
-+	ddata->in = in;
++			dispc@48050400 {
++				compatible = "ti,omap3-dispc";
++				reg = <0x48050400 0x400>;
++				interrupts = <25>;
++				ti,hwmods = "dss_dispc";
++			};
 +
-+	return 0;
-+}
++			dsi: encoder@4804fc00 {
++				compatible = "ti,omap3-dsi";
++				reg = <0x4804fc00 0x400>;
++				interrupts = <25>;
++				ti,hwmods = "dss_dsi1";
++			};
 +
- static int hdmic_probe(struct platform_device *pdev)
- {
- 	struct panel_drv_data *ddata;
-@@ -318,6 +336,10 @@ static int hdmic_probe(struct platform_device *pdev)
- 		r = hdmic_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = hdmic_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -359,12 +381,20 @@ static int __exit hdmic_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id hdmic_of_match[] = {
-+	{ .compatible = "hdmi-connector", },
-+	{},
-+};
++			rfbi: encoder@48050800 {
++				compatible = "ti,omap3-rfbi";
++				reg = <0x48050800 0x100>;
++				ti,hwmods = "dss_rfbi";
++			};
 +
-+MODULE_DEVICE_TABLE(of, hdmic_of_match);
-+
- static struct platform_driver hdmi_connector_driver = {
- 	.probe	= hdmic_probe,
- 	.remove	= __exit_p(hdmic_remove),
- 	.driver	= {
- 		.name	= "connector-hdmi",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = hdmic_of_match,
- 	},
++			venc: encoder@48050c00 {
++				compatible = "ti,omap3-venc";
++				reg = <0x48050c00 0x100>;
++				ti,hwmods = "dss_venc";
++			};
++		};
+ 	};
  };
- 
 -- 
 1.8.3.2
 

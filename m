@@ -1,67 +1,57 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 11 Dec 2013 12:51:18 +0000
-Subject: Re: [PATCH 13/15] fbdev: sh-mobile-lcdcfb: Enable driver compilation with COMPILE_TEST
-Message-Id: <1542726.dq1lpTml5f@avalon>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Date: Mon, 16 Dec 2013 15:04:10 +0000
+Subject: [PATCH v3 2/2] xen/pvhvm: Remove the xen_platform_pci int.
+Message-Id: <1387206250-13963-3-git-send-email-konrad.wilk@oracle.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
- <1385515117-23664-14-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-In-Reply-To: <1385515117-23664-14-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+References: <1387206250-13963-1-git-send-email-konrad.wilk@oracle.com>
+In-Reply-To: <1387206250-13963-1-git-send-email-konrad.wilk@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: axboe@kernel.dk, stefano.stabellini@eu.citrix.com, ian.campbell@citrix.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, boris.ostrovsky@oracle.com, david.vrabel@citrix.com, leosilva@linux.vnet.ibm.com, ashley@ashleylai.com, peterhuewe@gmx.de, mail@srajiv.net, tpmdd@selhorst.net, dmitry.torokhov@gmail.com, bhelgaas@google.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, tpmdd-devel@lists.sourceforge.net, linux-input@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 
-Hi Jean-Christophe and Tomi,
+Since we have  xen_has_pv_devices,xen_has_pv_disk_devices,
+xen_has_pv_nic_devices, and xen_has_pv_and_legacy_disk_devices
+to figure out the different 'unplug' behaviors - lets
+use those instead of this single int.
 
-Could you please pick this patch up for v3.14 ?
+Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+---
+ arch/x86/xen/platform-pci-unplug.c | 5 ++---
+ include/xen/platform_pci.h         | 2 --
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-On Wednesday 27 November 2013 02:18:35 Laurent Pinchart wrote:
-> This helps increasing build testing coverage.
-> 
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-> Acked-by: Simon Horman <horms@verge.net.au>
-> ---
->  drivers/video/Kconfig | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 4f2e1b3..2aceb08 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -10,7 +10,8 @@ config HAVE_FB_ATMEL
-> 
->  config SH_MIPI_DSI
->  	tristate
-> -	depends on (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
-> +	depends on HAVE_CLK
-> +	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
-> 
->  config SH_LCD_MIPI_DSI
->  	bool
-> @@ -1997,7 +1998,8 @@ config FB_W100
-> 
->  config FB_SH_MOBILE_LCDC
->  	tristate "SuperH Mobile LCDC framebuffer support"
-> -	depends on FB && (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
-> +	depends on FB && HAVE_CLK
-> +	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
->  	select FB_SYS_FILLRECT
->  	select FB_SYS_COPYAREA
->  	select FB_SYS_IMAGEBLIT
-> @@ -2484,7 +2486,7 @@ endif
-> 
->  config FB_SH_MOBILE_MERAM
->  	tristate "SuperH Mobile MERAM read ahead support"
-> -	depends on (SUPERH || ARCH_SHMOBILE)
-> +	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
->  	select GENERIC_ALLOCATOR
->  	---help---
->  	  Enable MERAM support for the SuperH controller.
+diff --git a/arch/x86/xen/platform-pci-unplug.c b/arch/x86/xen/platform-pci-unplug.c
+index ab84ac1..a826171 100644
+--- a/arch/x86/xen/platform-pci-unplug.c
++++ b/arch/x86/xen/platform-pci-unplug.c
+@@ -30,10 +30,9 @@
+ #define XEN_PLATFORM_ERR_PROTOCOL -2
+ #define XEN_PLATFORM_ERR_BLACKLIST -3
+ 
+-/* store the value of xen_emul_unplug after the unplug is done */
+-int xen_platform_pci_unplug;
+-EXPORT_SYMBOL_GPL(xen_platform_pci_unplug);
+ #ifdef CONFIG_XEN_PVHVM
++/* store the value of xen_emul_unplug after the unplug is done */
++static int xen_platform_pci_unplug;
+ static int xen_emul_unplug;
+ 
+ static int check_platform_magic(void)
+diff --git a/include/xen/platform_pci.h b/include/xen/platform_pci.h
+index b49eeab..5c52b55 100644
+--- a/include/xen/platform_pci.h
++++ b/include/xen/platform_pci.h
+@@ -46,8 +46,6 @@ static inline int xen_must_unplug_disks(void) {
+ #endif
+ }
+ 
+-extern int xen_platform_pci_unplug;
+-
+ #if defined(CONFIG_XEN_PVHVM)
+ extern bool xen_has_pv_devices(void);
+ extern bool xen_has_pv_disk_devices(void);
 -- 
-Regards,
-
-Laurent Pinchart
+1.8.3.1
 

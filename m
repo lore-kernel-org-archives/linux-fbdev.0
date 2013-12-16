@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:27 +0000
-Subject: [PATCHv2 20/27] ARM: omap3-igep0020.dts: add display information
-Message-Id: <1387205794-32246-21-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:28 +0000
+Subject: [PATCHv2 21/27] OMAPDSS: panel-dsi-cm: Add DT support
+Message-Id: <1387205794-32246-22-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
@@ -9,111 +9,125 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+XXX ULPS and backlight missing.
 
-The IGEPv2 has a TFP410 DPI-to-DVI encoder attached
-to OMAP's Display SubSystem (DSS). Add DeviceTree
-nodes for these devices.
-
-Signed-off-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/boot/dts/omap3-igep0020.dts | 64 +++++++++++++++++++++++++++++++++---
- 1 file changed, 60 insertions(+), 4 deletions(-)
+ drivers/video/omap2/displays-new/panel-dsi-cm.c | 65 +++++++++++++++++++++++--
+ 1 file changed, 61 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/omap3-igep0020.dts b/arch/arm/boot/dts/omap3-igep0020.dts
-index b9a9e17acb58..6d34abf5b421 100644
---- a/arch/arm/boot/dts/omap3-igep0020.dts
-+++ b/arch/arm/boot/dts/omap3-igep0020.dts
-@@ -67,8 +67,6 @@
- 	pinctrl-names = "default";
- 	pinctrl-0 = <
- 		&hsusbb1_pins
--		&tfp410_pins
--		&dss_pins
- 	>;
+diff --git a/drivers/video/omap2/displays-new/panel-dsi-cm.c b/drivers/video/omap2/displays-new/panel-dsi-cm.c
+index b7baafe83aa3..fda7728bdfaa 100644
+--- a/drivers/video/omap2/displays-new/panel-dsi-cm.c
++++ b/drivers/video/omap2/displays-new/panel-dsi-cm.c
+@@ -22,6 +22,8 @@
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
++#include <linux/of_device.h>
++#include <linux/of_gpio.h>
  
- 	hsusbb1_pins: pinmux_hsusbb1_pins {
-@@ -88,13 +86,13 @@
- 		>;
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -595,10 +597,13 @@ static int dsicm_power_on(struct panel_drv_data *ddata)
+ 		.lp_clk_max = 10000000,
  	};
  
--	tfp410_pins: tfp410_dvi_pins {
-+	tfp410_pins: pinmux_tfp410_pins {
- 		pinctrl-single,pins = <
- 			0x196 (PIN_OUTPUT | MUX_MODE4)   /* hdq_sio.gpio_170 */
- 		>;
- 	};
+-	r = in->ops.dsi->configure_pins(in, &ddata->pin_config);
+-	if (r) {
+-		dev_err(&ddata->pdev->dev, "failed to configure DSI pins\n");
+-		goto err0;
++	if (ddata->pin_config.num_pins > 0) {
++		r = in->ops.dsi->configure_pins(in, &ddata->pin_config);
++		if (r) {
++			dev_err(&ddata->pdev->dev,
++				"failed to configure DSI pins\n");
++			goto err0;
++		}
+ 	}
  
--	dss_pins: pinmux_dss_dvi_pins {
-+	dss_dpi_pins: pinmux_dss_dpi_pins {
- 		pinctrl-single,pins = <
- 			0x0a4 (PIN_OUTPUT | MUX_MODE0)   /* dss_pclk.dss_pclk */
- 			0x0a6 (PIN_OUTPUT | MUX_MODE0)   /* dss_hsync.dss_hsync */
-@@ -215,3 +213,61 @@
- &usbhsehci {
- 	phys = <&hsusb1_phy>;
+ 	r = in->ops.dsi->set_config(in, &dsi_config);
+@@ -1156,6 +1161,46 @@ static int dsicm_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int dsicm_probe_of(struct platform_device *pdev)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct omap_dss_device *in;
++	int gpio;
++
++	gpio = of_get_gpio(node, 0);
++	if (!gpio_is_valid(gpio)) {
++		dev_err(&pdev->dev, "failed to parse reset gpio\n");
++		return gpio;
++	}
++	ddata->reset_gpio = gpio;
++
++	if (of_gpio_count(node) > 1) {
++		gpio = of_get_gpio(node, 1);
++
++		if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++			ddata->ext_te_gpio = gpio;
++		} else {
++			dev_err(&pdev->dev, "failed to parse TE gpio\n");
++			return gpio;
++		}
++	} else {
++		ddata->ext_te_gpio = -1;
++	}
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	/* TODO: ulps, backlight */
++
++	return 0;
++}
++
+ static int dsicm_probe(struct platform_device *pdev)
+ {
+ 	struct backlight_properties props;
+@@ -1178,6 +1223,10 @@ static int dsicm_probe(struct platform_device *pdev)
+ 		r = dsicm_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = dsicm_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -1320,12 +1369,20 @@ static int __exit dsicm_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id dsicm_of_match[] = {
++	{ .compatible = "panel-dsi-cm", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, dsicm_of_match);
++
+ static struct platform_driver dsicm_driver = {
+ 	.probe = dsicm_probe,
+ 	.remove = __exit_p(dsicm_remove),
+ 	.driver = {
+ 		.name = "panel-dsi-cm",
+ 		.owner = THIS_MODULE,
++		.of_match_table = dsicm_of_match,
+ 	},
  };
-+
-+&dss {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&dss_dpi_pins>;
-+
-+	vdds_dsi-supply = <&vpll2>;
-+
-+	dpi_out: endpoint {
-+		remote-endpoint = <&tfp410_in>;
-+		data-lines = <24>;
-+	};
-+};
-+
-+/ {
-+	aliases {
-+		display0 = &dvi0;
-+	};
-+
-+	tfp410: encoder@0 {
-+		compatible = "ti,tfp410";
-+		gpios = <&gpio6 10 GPIO_ACTIVE_LOW>; /* 170, power-down */
-+
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&tfp410_pins>;
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				tfp410_in: endpoint@0 {
-+					remote-endpoint = <&dpi_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				tfp410_out: endpoint@0 {
-+					remote-endpoint = <&dvi_connector_in>;
-+				};
-+			};
-+		};
-+	};
-+
-+	dvi0: connector@0 {
-+		compatible = "dvi-connector";
-+		label = "dvi";
-+
-+		i2c-bus = <&i2c3>;
-+
-+		dvi_connector_in: endpoint {
-+			remote-endpoint = <&tfp410_out>;
-+		};
-+	};
-+};
+ 
 -- 
 1.8.3.2
 

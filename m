@@ -1,238 +1,230 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 19 Dec 2013 18:34:29 +0000
-Subject: Re: [PATCH 0/4] OMAPDSS: DT support for N900 panel
-Message-Id: <20131219183428.GS27438@atomide.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:15 +0000
+Subject: [PATCHv2 08/27] OMAPDSS: add of helpers
+Message-Id: <1387205794-32246-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <52AFFF3F.7020807@ti.com>
- <20131217171412.GA10442@earth.universe>
- <52B089FE.8060704@ti.com>
- <20131218215536.GA23674@earth.universe>
- <20131219005151.GA27928@earth.universe>
- <52B2848A.80807@ti.com>
- <20131219100840.GA923@earth.universe>
- <20131219135608.GA11654@earth.universe>
- <20131219163557.GM27438@atomide.com>
- <20131219170028.GA24230@earth.universe>
-In-Reply-To: <20131219170028.GA24230@earth.universe>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-* Sebastian Reichel <sre@ring0.de> [131219 09:01]:
-> On Thu, Dec 19, 2013 at 08:42:31AM -0800, Tony Lindgren wrote:
-> > * Sebastian Reichel <sre@debian.org> [131219 05:57]:
-> > > On Thu, Dec 19, 2013 at 11:08:40AM +0100, Sebastian Reichel wrote:
-> > > > > Are you able to check if the bootloader muxes dat3 to SDI mode?
-> > > > 
-> > > > The bootloader's source code is not available as far as i know.
-> > > > 
-> > > > [...], but I get an external abort on non-linefetch.
-> > > > So I can't check it :(
-> > > 
-> > > Ok. This is fixed by applying [0] (Thanks for the hint, Tomi!).
-> > > This is the mux configuration from the bootloader:
-> > > 
-> > > [...]
-> > > 
-> > > [0] https://patchwork.kernel.org/patch/3283781/
-> > 
-> > Do we need to update Laurent's patch with this?
-> 
-> No, the patch is only needed to avoid the mentioned external abort
-> on non-linefetch when doing "cat /sys/kernel/debug/pinctrl/.../pins".
-> 
-> > Or can we use it as it is and maybe you can ack it?
-> 
-> Sure. I will add an Ack.
+Add helpers to get ports and endpoints from DT data.
 
-OK thanks.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/Makefile |   2 +-
+ drivers/video/omap2/dss/dss-of.c | 162 +++++++++++++++++++++++++++++++++++++++
+ include/video/omapdss.h          |  14 ++++
+ 3 files changed, 177 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/video/omap2/dss/dss-of.c
 
-Here's my current legacy mux dumping tool if you want to look at
-how the pins are muxed by the bootloader while booted to DT mode.
-
-This is against omap-for-v3.14/dt branch, the list in pdata-quirks.c
-may need updating depending on the board. And this does not account
-for splitting up the pinctrl core for omap3..
-
-Regards,
-
-Tony
-
-8< -----------------------------------
-From 2fb3765fd5739e8f5fb4318e2576081be6d535f2 Mon Sep 17 00:00:00 2001
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 19 Dec 2013 10:31:03 -0800
-Subject: [PATCH] Not for merging: Allows dumping out mux entries in .dts
- format using legacy mux
-
-For pinctrl-single.c we should eventually have a user space
-app to configure and display pin settings. Meanwhile, allow
-using the legacy mux interface to do that:
-
-# mount -t debugfs debugfs /sys/kernel/debug
-# cat /sys/kernel/debug/omap_mux/board/wkup | grep fref_clk0_out
-	0x14 0x2        /* fref_clk0_out.sys_drm_msecure gpio6 OUTPUT | MODE2 */
-
-diff --git a/arch/arm/mach-omap2/mux.c b/arch/arm/mach-omap2/mux.c
-index 48094b58..40658d9 100644
---- a/arch/arm/mach-omap2/mux.c
-+++ b/arch/arm/mach-omap2/mux.c
-@@ -35,11 +35,10 @@
- #include <linux/irq.h>
- #include <linux/interrupt.h>
- 
--
- #include "omap_hwmod.h"
--
- #include "soc.h"
- #include "control.h"
-+#include "id.h"
- #include "mux.h"
- #include "prm.h"
- #include "common.h"
-@@ -505,17 +504,17 @@ void omap_hwmod_mux(struct omap_hwmod_mux_info *hmux, u8 state)
- #define OMAP_MUX_TEST_FLAG(val, mask)				\
- 	if (((val) & (mask)) = (mask)) {			\
- 		i++;						\
--		flags[i] =  #mask;				\
-+		flags[i] =  #mask + sizeof("OMAP_") - 1;	\
- 	}
- 
- /* REVISIT: Add checking for non-optimal mux settings */
- static inline void omap_mux_decode(struct seq_file *s, u16 val)
- {
- 	char *flags[OMAP_MUX_MAX_NR_FLAGS];
--	char mode[sizeof("OMAP_MUX_MODE") + 1];
-+	char mode[sizeof("MUX_MODE") + 1];
- 	int i = -1;
- 
--	sprintf(mode, "OMAP_MUX_MODE%d", val & 0x7);
-+	sprintf(mode, "MUX_MODE%d", val & 0x7);
- 	i++;
- 	flags[i] = mode;
- 
-@@ -553,7 +552,7 @@ static inline void omap_mux_decode(struct seq_file *s, u16 val)
- 		}
- 	} else {
- 		i++;
--		flags[i] = "OMAP_PIN_OUTPUT";
-+		flags[i] = "PIN_OUTPUT";
- 	}
- 
- 	do {
-@@ -568,15 +567,26 @@ static inline void omap_mux_decode(struct seq_file *s, u16 val)
- static int omap_mux_dbg_board_show(struct seq_file *s, void *unused)
- {
- 	struct omap_mux_partition *partition = s->private;
-+	int pbase = (int)partition->base;
- 	struct omap_mux_entry *e;
--	u8 omap_gen = omap_rev() >> 28;
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index d3aa91bdd6a8..8aec8bda27cc 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -1,7 +1,7 @@
+ obj-$(CONFIG_OMAP2_DSS) += omapdss.o
+ # Core DSS files
+ omapdss-y := core.o dss.o dss_features.o dispc.o dispc_coefs.o display.o \
+-	output.o
++	output.o dss-of.o
+ # DSS compat layer files
+ omapdss-y += manager.o manager-sysfs.o overlay.o overlay-sysfs.o apply.o \
+ 	dispc-compat.o display-sysfs.o
+diff --git a/drivers/video/omap2/dss/dss-of.c b/drivers/video/omap2/dss/dss-of.c
+new file mode 100644
+index 000000000000..59213cf2ffa2
+--- /dev/null
++++ b/drivers/video/omap2/dss/dss-of.c
+@@ -0,0 +1,162 @@
++/*
++ * Copyright (C) 2013 Texas Instruments
++ * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
 +
-+	if (!(pbase & 0xfff))
-+		pbase = 0x40;
-+	else
-+		pbase = 0;
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/seq_file.h>
 +
-+	seq_printf(s, "\t\tpinctrl-single,pins = <\n");
- 
- 	list_for_each_entry(e, &partition->muxmodes, node) {
- 		struct omap_mux *m = &e->mux;
- 		char m0_def[OMAP_MUX_DEFNAME_LEN];
- 		char *m0_name = m->muxnames[0];
- 		u16 val;
--		int i, mode;
-+		int padconf_offset, i, mode;
++#include <video/omapdss.h>
 +
-+		padconf_offset = m->reg_offset - pbase;
-+		if (cpu_is_omap3630() && padconf_offset > 0x5ca)
-+			continue;
- 
- 		if (!m0_name)
- 			continue;
-@@ -591,18 +601,18 @@ static int omap_mux_dbg_board_show(struct seq_file *s, void *unused)
- 		}
- 		val = omap_mux_read(partition, m->reg_offset);
- 		mode = val & OMAP_MUX_MODE7;
--		if (mode != 0)
--			seq_printf(s, "/* %s */\n", m->muxnames[mode]);
--
--		/*
--		 * XXX: Might be revisited to support differences across
--		 * same OMAP generation.
--		 */
--		seq_printf(s, "OMAP%d_MUX(%s, ", omap_gen, m0_def);
-+		seq_printf(s, "\t\t\t0x%x (",
-+			   padconf_offset);
- 		omap_mux_decode(s, val);
--		seq_printf(s, "),\n");
-+		seq_printf(s, ")\t/* %s.%s */",
-+			   m->muxnames[0], m->muxnames[mode]);
-+		seq_printf(s, " //0x%x gpio%i",
-+			   val, m->gpio);
-+		seq_printf(s, "\n");
- 	}
- 
-+	seq_printf(s, "\t\t>;\n");
++#include "dss.h"
++#include "dss_features.h"
 +
- 	return 0;
- }
- 
-diff --git a/arch/arm/mach-omap2/pdata-quirks.c b/arch/arm/mach-omap2/pdata-quirks.c
-index 3d5b24d..a6d6e7e 100644
---- a/arch/arm/mach-omap2/pdata-quirks.c
-+++ b/arch/arm/mach-omap2/pdata-quirks.c
-@@ -22,6 +22,7 @@
- #include "common-board-devices.h"
- #include "dss-common.h"
- #include "control.h"
-+#include "mux.h"
- 
- struct pdata_init {
- 	const char *compatible;
-@@ -277,6 +278,39 @@ static struct pdata_init pdata_quirks[] __initdata = {
- 	{ /* sentinel */ },
- };
- 
-+struct board_package {
-+	const char *compatible;
-+	int (*fn)(struct omap_board_mux *board_mux, int flags);
-+	int flags;
-+};
-+
-+static struct board_package packages[] __initdata = {
-+	{ "nokia,n800", omap2420_mux_init, OMAP_PACKAGE_ZAC, },
-+	{ "nokia,n810", omap2420_mux_init, OMAP_PACKAGE_ZAC, },
-+	{ "ti,omap2430-sdp", omap2430_mux_init, OMAP_PACKAGE_ZAC, },
-+	{ "nokia,omap3-n900", omap3_mux_init, OMAP_PACKAGE_CBB, },
-+	{ "ti,omap3-evm-37xx", omap3_mux_init, OMAP_PACKAGE_CBB, },
-+	{ "ti,omap3-ldp", omap3_mux_init, OMAP_PACKAGE_CBB, },
-+	{ "ti,omap3-zoom3", omap3_mux_init, OMAP_PACKAGE_CBP, },
-+	{ "ti,omap4-sdp", omap4_mux_init, OMAP_PACKAGE_CBS, },
-+	{ "ti,omap4-panda", omap4_mux_init, OMAP_PACKAGE_CBS, },
-+	{ /* sentinel */ },
-+};
-+
-+static void legacy_mux_init(void)
++struct device_node *
++omapdss_of_get_next_port(const struct device_node *parent,
++			 struct device_node *prev)
 +{
-+	struct board_package *pkg = packages;
++	struct device_node *port = NULL;
 +
-+	while (pkg->compatible) {
-+		if (of_machine_is_compatible(pkg->compatible)) {
-+			if (pkg->fn)
-+				pkg->fn(NULL, pkg->flags);
-+			break;
-+		}
-+		pkg++;
++	if (!parent)
++		return NULL;
++
++	if (!prev) {
++		struct device_node *ports;
++		/*
++		 * It's the first call, we have to find a port subnode
++		 * within this node or within an optional 'ports' node.
++		 */
++		ports = of_get_child_by_name(parent, "ports");
++		if (ports)
++			parent = ports;
++
++		port = of_get_child_by_name(parent, "port");
++
++		/* release the 'ports' node */
++		of_node_put(ports);
++	} else {
++		struct device_node *ports;
++
++		ports = of_get_parent(prev);
++		if (!ports)
++			return NULL;
++
++		do {
++			port = of_get_next_child(ports, prev);
++			if (!port) {
++				of_node_put(ports);
++				return NULL;
++			}
++			prev = port;
++		} while (of_node_cmp(port->name, "port") != 0);
 +	}
++
++	return port;
++}
++EXPORT_SYMBOL_GPL(omapdss_of_get_next_port);
++
++struct device_node *
++omapdss_of_get_next_endpoint(const struct device_node *parent,
++			     struct device_node *prev)
++{
++	struct device_node *ep = NULL;
++
++	if (!parent)
++		return NULL;
++
++	do {
++		ep = of_get_next_child(parent, prev);
++		if (!ep)
++			return NULL;
++		prev = ep;
++	} while (of_node_cmp(ep->name, "endpoint") != 0);
++
++	return ep;
++}
++EXPORT_SYMBOL_GPL(omapdss_of_get_next_endpoint);
++
++static struct device_node *
++omapdss_of_get_remote_device_node(const struct device_node *node)
++{
++	struct device_node *np;
++	int i;
++
++	np = of_parse_phandle(node, "remote-endpoint", 0);
++
++	if (!np)
++		return NULL;
++
++	np = of_get_next_parent(np);
++
++	for (i = 0; i < 3 && np; ++i) {
++		struct property *prop;
++
++		prop = of_find_property(np, "compatible", NULL);
++
++		if (prop)
++			return np;
++
++		np = of_get_next_parent(np);
++	}
++
++	return NULL;
 +}
 +
- static void pdata_quirks_check(struct pdata_init *quirks)
- {
- 	while (quirks->compatible) {
-@@ -296,4 +330,5 @@ void __init pdata_quirks_init(struct of_device_id *omap_dt_match_table)
- 	of_platform_populate(NULL, omap_dt_match_table,
- 			     omap_auxdata_lookup, NULL);
- 	pdata_quirks_check(pdata_quirks);
-+	legacy_mux_init();
++struct device_node *
++omapdss_of_get_first_endpoint(const struct device_node *parent)
++{
++	struct device_node *port;
++	struct device_node *ep;
++
++	port = omapdss_of_get_next_port(parent, NULL);
++	if (port) {
++		ep = omapdss_of_get_next_endpoint(port, NULL);
++		of_node_put(port);
++	} else {
++		ep = omapdss_of_get_next_endpoint(parent, NULL);
++	}
++
++	return ep;
++}
++EXPORT_SYMBOL_GPL(omapdss_of_get_first_endpoint);
++
++struct omap_dss_device *
++omapdss_of_find_source_for_first_ep(struct device_node *node)
++{
++	struct device_node *ep;
++	struct device_node *src_node;
++	struct omap_dss_device *src;
++
++	ep = omapdss_of_get_first_endpoint(node);
++	if (!ep)
++		return ERR_PTR(-EINVAL);
++
++	src_node = omapdss_of_get_remote_device_node(ep);
++
++	of_node_put(ep);
++
++	if (!src_node)
++		return ERR_PTR(-EINVAL);
++
++	src = omap_dss_find_output_by_node(src_node);
++
++	of_node_put(src_node);
++
++	if (!src)
++		return ERR_PTR(-EPROBE_DEFER);
++
++	return src;
++}
++EXPORT_SYMBOL_GPL(omapdss_of_find_source_for_first_ep);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 3d7c51a6f9ff..e3cd2a921c2f 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -1019,4 +1019,18 @@ static inline bool omapdss_device_is_enabled(struct omap_dss_device *dssdev)
+ 	return dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
  }
+ 
++struct device_node *
++omapdss_of_get_next_port(const struct device_node *parent,
++			 struct device_node *prev);
++
++struct device_node *
++omapdss_of_get_next_endpoint(const struct device_node *parent,
++			     struct device_node *prev);
++
++struct device_node *
++omapdss_of_get_first_endpoint(const struct device_node *parent);
++
++struct omap_dss_device *
++omapdss_of_find_source_for_first_ep(struct device_node *node);
++
+ #endif
+-- 
+1.8.3.2
+

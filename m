@@ -1,108 +1,139 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:07 +0000
-Subject: [PATCHv2 00/27] OMAPDSS: DT support v2
-Message-Id: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:34 +0000
+Subject: [PATCHv2 27/27] OMAPDSS: connector-analog-tv: Add DT support
+Message-Id: <1387205794-32246-28-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Stefan Roese <stefan.roese@gmail.com>, Sebastian Reichel <sre@debian.org>, Robert Nelson <robertcnelson@gmail.com>, "Dr . H . Nikolaus Schaller" <hns@goldelico.com>, Marek Belisko <marek@goldelico.com>, Sebastian Reichel <sre@ring0.de>, Javier Martinez Canillas <javier@dowhile0.org>, Enric Balletbo Serra <eballetbo@gmail.com>, Florian Vaussard <florian.vaussard@epfl.ch>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi,
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ .../video/omap2/displays-new/connector-analog-tv.c | 66 +++++++++++++++++++++-
+ 1 file changed, 65 insertions(+), 1 deletion(-)
 
-Here's version 2 of the DSS DT series. Hopefully I have fixed all the issues
-that were found with v1
-(http://article.gmane.org/gmane.linux.ports.arm.omap/108249), except missing
-binding documentation and lacking patch descriptions.
-
-The main changes are:
-
-- DPI and SDI are no longer dummy devices, but ports on the DSS node. This
-  reflects better the actual hardware.
-- Pinmuxing
-- Labels for displays
-
-Additionally smaller changes, like using symbolic names in the .dts files,
-fixing endpoint numbering, etc.
-
-This series can also be found from:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dt-review-2
-
- Tomi
-
-Javier Martinez Canillas (1):
-  ARM: omap3-igep0020.dts: add display information
-
-Tomi Valkeinen (26):
-  ARM: OMAP: remove DSS DT hack
-  OMAPDSS: remove DT hacks for regulators
-  ARM: OMAP2+: add omapdss_init_of()
-  OMAPDSS: add 'label' support for DT
-  OMAPDSS: get dssdev->alias from DT alias
-  OMAPFB: clean up default display search
-  OMAPFB: search for default display with DT alias
-  OMAPDSS: add of helpers
-  OMAPDSS: Add DT support to DSS, DISPC, DPI and SDI.
-  OMAPDSS: Add DT support to HDMI
-  OMAPDSS: Add DT support to VENC
-  OMAPDSS: Add DT support to DSI
-  ARM: omap3.dtsi: add omapdss information
-  ARM: omap4.dtsi: add omapdss information
-  ARM: omap4-panda.dts: add display information
-  ARM: omap4-sdp.dts: add display information
-  ARM: omap3-tobi.dts: add lcd (TEST)
-  ARM: omap3-beagle.dts: add display information
-  ARM: omap3-beagle-xm.dts: add display information
-  OMAPDSS: panel-dsi-cm: Add DT support
-  OMAPDSS: encoder-tfp410: Add DT support
-  OMAPDSS: connector-dvi: Add DT support
-  OMAPDSS: encoder-tpd12s015: Add DT support
-  OMAPDSS: hdmi-connector: Add DT support
-  OMAPDSS: panel-dpi: Add DT support
-  OMAPDSS: connector-analog-tv: Add DT support
-
- arch/arm/boot/dts/omap3-beagle-xm.dts              | 118 ++++++++++
- arch/arm/boot/dts/omap3-beagle.dts                 | 115 +++++++++
- arch/arm/boot/dts/omap3-igep0020.dts               |  64 ++++-
- arch/arm/boot/dts/omap3-tobi.dts                   |  47 ++++
- arch/arm/boot/dts/omap3.dtsi                       |  35 +++
- arch/arm/boot/dts/omap4-panda-common.dtsi          | 121 +++++++++-
- arch/arm/boot/dts/omap4-sdp.dts                    | 116 +++++++++
- arch/arm/boot/dts/omap4.dtsi                       |  54 +++++
- arch/arm/mach-omap2/Makefile                       |   2 +-
- arch/arm/mach-omap2/board-generic.c                |   2 +
- arch/arm/mach-omap2/common.h                       |   2 +
- arch/arm/mach-omap2/display.c                      |  62 +++++
- arch/arm/mach-omap2/dss-common.c                   | 259 ---------------------
- arch/arm/mach-omap2/dss-common.h                   |  13 --
- arch/arm/mach-omap2/pdata-quirks.c                 |   4 -
- .../video/omap2/displays-new/connector-analog-tv.c |  66 +++++-
- drivers/video/omap2/displays-new/connector-dvi.c   |  43 ++++
- drivers/video/omap2/displays-new/connector-hdmi.c  |  30 +++
- drivers/video/omap2/displays-new/encoder-tfp410.c  |  43 +++-
- .../video/omap2/displays-new/encoder-tpd12s015.c   |  56 +++++
- drivers/video/omap2/displays-new/panel-dpi.c       |  64 ++++-
- drivers/video/omap2/displays-new/panel-dsi-cm.c    |  65 +++++-
- drivers/video/omap2/dss/Makefile                   |   2 +-
- drivers/video/omap2/dss/dispc.c                    |   7 +
- drivers/video/omap2/dss/display.c                  |  28 ++-
- drivers/video/omap2/dss/dpi.c                      |  47 ++++
- drivers/video/omap2/dss/dsi.c                      | 141 ++++++++++-
- drivers/video/omap2/dss/dss-of.c                   | 162 +++++++++++++
- drivers/video/omap2/dss/dss.c                      |  63 +++++
- drivers/video/omap2/dss/dss.h                      |   6 +
- drivers/video/omap2/dss/hdmi4.c                    |  10 +-
- drivers/video/omap2/dss/sdi.c                      |  45 ++++
- drivers/video/omap2/dss/venc.c                     |  34 +++
- drivers/video/omap2/omapfb/omapfb-main.c           |  67 ++++--
- include/video/omapdss.h                            |  14 ++
- 35 files changed, 1685 insertions(+), 322 deletions(-)
- delete mode 100644 arch/arm/mach-omap2/dss-common.c
- delete mode 100644 arch/arm/mach-omap2/dss-common.h
- create mode 100644 drivers/video/omap2/dss/dss-of.c
-
+diff --git a/drivers/video/omap2/displays-new/connector-analog-tv.c b/drivers/video/omap2/displays-new/connector-analog-tv.c
+index ccd9073f706f..ebed25a86487 100644
+--- a/drivers/video/omap2/displays-new/connector-analog-tv.c
++++ b/drivers/video/omap2/displays-new/connector-analog-tv.c
+@@ -12,6 +12,7 @@
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
++#include <linux/of.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -42,6 +43,12 @@ static const struct omap_video_timings tvc_pal_timings = {
+ 	.interlace	= true,
+ };
+ 
++static const struct of_device_id tvc_of_match[];
++
++struct tvc_of_data {
++	enum omap_dss_venc_type connector_type;
++};
++
+ #define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
+ 
+ static int tvc_connect(struct omap_dss_device *dssdev)
+@@ -92,7 +99,10 @@ static int tvc_enable(struct omap_dss_device *dssdev)
+ 	in->ops.atv->set_timings(in, &ddata->timings);
+ 
+ 	in->ops.atv->set_type(in, ddata->connector_type);
+-	in->ops.atv->invert_vid_out_polarity(in, ddata->invert_polarity);
++
++	if (!ddata->dev->of_node)
++		in->ops.atv->invert_vid_out_polarity(in,
++			ddata->invert_polarity);
+ 
+ 	r = in->ops.atv->enable(in);
+ 	if (r)
+@@ -205,6 +215,35 @@ static int tvc_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int tvc_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	const struct of_device_id *match;
++	const struct tvc_of_data *data;
++
++	match = of_match_node(tvc_of_match, pdev->dev.of_node);
++	if (!match) {
++		dev_err(&pdev->dev, "unsupported device\n");
++		return -ENODEV;
++	}
++
++	data = match->data;
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	ddata->connector_type = data->connector_type;
++
++	return 0;
++}
++
+ static int tvc_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -222,6 +261,10 @@ static int tvc_probe(struct platform_device *pdev)
+ 		r = tvc_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = tvc_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -263,12 +306,33 @@ static int __exit tvc_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct tvc_of_data tv_svideo_data = {
++	.connector_type = OMAP_DSS_VENC_TYPE_SVIDEO,
++};
++
++static const struct tvc_of_data tv_composite_video_data = {
++	.connector_type = OMAP_DSS_VENC_TYPE_COMPOSITE,
++};
++
++static const struct of_device_id tvc_of_match[] = {
++	{
++		.compatible = "svideo-connector",
++		.data = &tv_svideo_data,
++	},
++	{
++		.compatible = "composite-video-connector",
++		.data = &tv_composite_video_data,
++	},
++	{},
++};
++
+ static struct platform_driver tvc_connector_driver = {
+ 	.probe	= tvc_probe,
+ 	.remove	= __exit_p(tvc_remove),
+ 	.driver	= {
+ 		.name	= "connector-analog-tv",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = tvc_of_match,
+ 	},
+ };
+ 
 -- 
 1.8.3.2
 

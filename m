@@ -1,64 +1,38 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:53 +0000
-Subject: [PATCH 26/26] OMAPDSS: connector-analog-tv: Add DT support
-Message-Id: <1386160133-24026-27-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:32 +0000
+Subject: [PATCHv2 25/27] OMAPDSS: hdmi-connector: Add DT support
+Message-Id: <1387205794-32246-26-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- .../video/omap2/displays-new/connector-analog-tv.c | 66 +++++++++++++++++++++-
- 1 file changed, 65 insertions(+), 1 deletion(-)
+ drivers/video/omap2/displays-new/connector-hdmi.c | 30 +++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-diff --git a/drivers/video/omap2/displays-new/connector-analog-tv.c b/drivers/video/omap2/displays-new/connector-analog-tv.c
-index ccd9073f706f..30598c26e354 100644
---- a/drivers/video/omap2/displays-new/connector-analog-tv.c
-+++ b/drivers/video/omap2/displays-new/connector-analog-tv.c
+diff --git a/drivers/video/omap2/displays-new/connector-hdmi.c b/drivers/video/omap2/displays-new/connector-hdmi.c
+index 9abe2c039ae9..12246b5841c0 100644
+--- a/drivers/video/omap2/displays-new/connector-hdmi.c
++++ b/drivers/video/omap2/displays-new/connector-hdmi.c
 @@ -12,6 +12,7 @@
  #include <linux/slab.h>
  #include <linux/module.h>
  #include <linux/platform_device.h>
 +#include <linux/of.h>
  
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -42,6 +43,12 @@ static const struct omap_video_timings tvc_pal_timings = {
- 	.interlace	= true,
- };
+ #include <drm/drm_edid.h>
  
-+static const struct of_device_id tvc_of_match[];
-+
-+struct tvc_of_data {
-+	enum omap_dss_venc_type connector_type;
-+};
-+
- #define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
- 
- static int tvc_connect(struct omap_dss_device *dssdev)
-@@ -92,7 +99,10 @@ static int tvc_enable(struct omap_dss_device *dssdev)
- 	in->ops.atv->set_timings(in, &ddata->timings);
- 
- 	in->ops.atv->set_type(in, ddata->connector_type);
--	in->ops.atv->invert_vid_out_polarity(in, ddata->invert_polarity);
-+
-+	if (!ddata->dev->of_node)
-+		in->ops.atv->invert_vid_out_polarity(in,
-+			ddata->invert_polarity);
- 
- 	r = in->ops.atv->enable(in);
- 	if (r)
-@@ -205,6 +215,27 @@ static int tvc_probe_pdata(struct platform_device *pdev)
+@@ -301,6 +302,23 @@ static int hdmic_probe_pdata(struct platform_device *pdev)
  	return 0;
  }
  
-+static int tvc_probe_of(struct platform_device *pdev,
-+		const struct tvc_of_data *data)
++static int hdmic_probe_of(struct platform_device *pdev)
 +{
 +	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
 +	struct device_node *node = pdev->dev.of_node;
@@ -72,65 +46,41 @@ index ccd9073f706f..30598c26e354 100644
 +
 +	ddata->in = in;
 +
-+	ddata->connector_type = data->connector_type;
-+
 +	return 0;
 +}
 +
-+
- static int tvc_probe(struct platform_device *pdev)
+ static int hdmic_probe(struct platform_device *pdev)
  {
  	struct panel_drv_data *ddata;
-@@ -222,6 +253,18 @@ static int tvc_probe(struct platform_device *pdev)
- 		r = tvc_probe_pdata(pdev);
+@@ -318,6 +336,10 @@ static int hdmic_probe(struct platform_device *pdev)
+ 		r = hdmic_probe_pdata(pdev);
  		if (r)
  			return r;
 +	} else if (pdev->dev.of_node) {
-+		const struct of_device_id *match;
-+
-+		match = of_match_node(tvc_of_match, pdev->dev.of_node);
-+		if (!match) {
-+			dev_err(&pdev->dev, "unsupported device\n");
-+			return -ENODEV;
-+		}
-+
-+		r = tvc_probe_of(pdev, match->data);
++		r = hdmic_probe_of(pdev);
 +		if (r)
 +			return r;
  	} else {
  		return -ENODEV;
  	}
-@@ -263,12 +306,33 @@ static int __exit tvc_remove(struct platform_device *pdev)
+@@ -359,12 +381,20 @@ static int __exit hdmic_remove(struct platform_device *pdev)
  	return 0;
  }
  
-+static const struct tvc_of_data tv_svideo_data = {
-+	.connector_type = OMAP_DSS_VENC_TYPE_SVIDEO,
-+};
-+
-+static const struct tvc_of_data tv_composite_video_data = {
-+	.connector_type = OMAP_DSS_VENC_TYPE_COMPOSITE,
-+};
-+
-+static const struct of_device_id tvc_of_match[] = {
-+	{
-+		.compatible = "ti,svideo-connector",
-+		.data = &tv_svideo_data,
-+	},
-+	{
-+		.compatible = "ti,composite-video-connector",
-+		.data = &tv_composite_video_data,
-+	},
++static const struct of_device_id hdmic_of_match[] = {
++	{ .compatible = "hdmi-connector", },
 +	{},
 +};
 +
- static struct platform_driver tvc_connector_driver = {
- 	.probe	= tvc_probe,
- 	.remove	= __exit_p(tvc_remove),
++MODULE_DEVICE_TABLE(of, hdmic_of_match);
++
+ static struct platform_driver hdmi_connector_driver = {
+ 	.probe	= hdmic_probe,
+ 	.remove	= __exit_p(hdmic_remove),
  	.driver	= {
- 		.name	= "connector-analog-tv",
+ 		.name	= "connector-hdmi",
  		.owner	= THIS_MODULE,
-+		.of_match_table = tvc_of_match,
++		.of_match_table = hdmic_of_match,
  	},
  };
  

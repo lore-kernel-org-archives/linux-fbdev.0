@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:31 +0000
-Subject: [PATCHv2 24/27] OMAPDSS: encoder-tpd12s015: Add DT support
-Message-Id: <1387205794-32246-25-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:21 +0000
+Subject: [PATCHv2 14/27] ARM: omap4.dtsi: add omapdss information
+Message-Id: <1387205794-32246-15-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
@@ -13,103 +13,73 @@ Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- .../video/omap2/displays-new/encoder-tpd12s015.c   | 56 ++++++++++++++++++++++
- 1 file changed, 56 insertions(+)
+ arch/arm/boot/dts/omap4.dtsi | 54 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 54 insertions(+)
 
-diff --git a/drivers/video/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-index d5c936cb217f..6529a4ff50ca 100644
---- a/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-+++ b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-@@ -15,6 +15,7 @@
- #include <linux/slab.h>
- #include <linux/gpio.h>
- #include <linux/platform_device.h>
-+#include <linux/of_gpio.h>
- 
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -289,6 +290,49 @@ static int tpd_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int tpd_probe_of(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+	int gpio;
+diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
+index a1e05853afcd..a515f524ef3a 100644
+--- a/arch/arm/boot/dts/omap4.dtsi
++++ b/arch/arm/boot/dts/omap4.dtsi
+@@ -705,5 +705,59 @@
+ 			dmas = <&sdma 117>, <&sdma 116>;
+ 			dma-names = "tx", "rx";
+ 		};
 +
-+	/* CT CP HPD GPIO */
-+	gpio = of_get_gpio(node, 0);
-+	if (!gpio_is_valid(gpio)) {
-+		dev_err(&pdev->dev, "failed to parse CT CP HPD gpio\n");
-+		return gpio;
-+	}
-+	ddata->ct_cp_hpd_gpio = gpio;
++		dss: dss@58000000 {
++			compatible = "ti,omap4-dss", "simple-bus";
++			reg = <0x58000000 0x80>;
++			ti,hwmods = "dss_core";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges;
 +
-+	/* LS OE GPIO */
-+	gpio = of_get_gpio(node, 1);
-+	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+		ddata->ls_oe_gpio = gpio;
-+	} else {
-+		dev_err(&pdev->dev, "failed to parse LS OE gpio\n");
-+		return gpio;
-+	}
++			dispc@58001000 {
++				compatible = "ti,omap4-dispc";
++				reg = <0x58001000 0x1000>;
++				interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
++				ti,hwmods = "dss_dispc";
++			};
 +
-+	/* HPD GPIO */
-+	gpio = of_get_gpio(node, 2);
-+	if (!gpio_is_valid(gpio)) {
-+		dev_err(&pdev->dev, "failed to parse HPD gpio\n");
-+		return gpio;
-+	}
-+	ddata->hpd_gpio = gpio;
++			rfbi: encoder@58002000  {
++				compatible = "ti,omap4-rfbi";
++				reg = <0x58002000 0x1000>;
++				ti,hwmods = "dss_rfbi";
++			};
 +
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
++			/*
++			 * Accessing venc registers cause a crash on omap4, so
++			 * this is disabled for now.
++			 */
++			venc: encoder@58003000 {
++				compatible = "ti,omap4-venc";
++				reg = <0x58003000 0x1000>;
++				ti,hwmods = "dss_venc";
++				status = "disabled";
++			};
 +
-+	ddata->in = in;
++			dsi1: encoder@58004000 {
++				compatible = "ti,omap4-dsi";
++				reg = <0x58004000 0x200>;
++				interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
++				ti,hwmods = "dss_dsi1";
++			};
 +
-+	return 0;
-+}
++			dsi2: encoder@58005000 {
++				compatible = "ti,omap4-dsi";
++				reg = <0x58005000 0x200>;
++				interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
++				ti,hwmods = "dss_dsi2";
++			};
 +
- static int tpd_probe(struct platform_device *pdev)
- {
- 	struct omap_dss_device *in, *dssdev;
-@@ -307,6 +351,10 @@ static int tpd_probe(struct platform_device *pdev)
- 		r = tpd_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = tpd_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -379,12 +427,20 @@ static int __exit tpd_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id tpd_of_match[] = {
-+	{ .compatible = "ti,tpd12s015", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, tpd_of_match);
-+
- static struct platform_driver tpd_driver = {
- 	.probe	= tpd_probe,
- 	.remove	= __exit_p(tpd_remove),
- 	.driver	= {
- 		.name	= "tpd12s015",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = tpd_of_match,
- 	},
++			hdmi: encoder@58006000 {
++				compatible = "ti,omap4-hdmi";
++				reg = <0x58006000 0x1000>;
++				interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
++				ti,hwmods = "dss_hdmi";
++			};
++		};
+ 	};
  };
- 
 -- 
 1.8.3.2
 

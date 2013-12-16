@@ -1,51 +1,78 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Mon, 23 Dec 2013 08:15:22 +0000
-Subject: Re: [PATCH] ARM: i.MX: Remove IMX_HAVE_PLATFORM_IMX_FB symbol
-Message-Id: <20131223081520.GE26070@S2101-09.ap.freescale.net>
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 16 Dec 2013 07:53:36 +0000
+Subject: Re: [ibm-acpi-devel] [PATCH] video: backlight: Remove backlight sysfs uevent
+Message-Id: <20131215235336.49d49a25.akpm@linux-foundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387612703-18512-1-git-send-email-shc_work@mail.ru>
-In-Reply-To: <1387612703-18512-1-git-send-email-shc_work@mail.ru>
+References: <20131111235700.GA29987@july>
+	<002901cedf3c$a7e77a00$f7b66e00$%han@samsung.com>
+	<20131112005628.GA2914@khazad-dum.debian.net>
+	<1384990859.20536.4.camel@x230>
+	<20131121114332.GA23710@khazad-dum.debian.net>
+	<20131121143326.GA19773@srcf.ucam.org>
+	<20131122113601.GB27196@khazad-dum.debian.net>
+	<20131122171556.GA15680@srcf.ucam.org>
+	<20131124004015.GA19499@khazad-dum.debian.net>
+	<20131124010257.GA6376@srcf.ucam.org>
+	<20131124035311.GC19499@khazad-dum.debian.net>
+In-Reply-To: <20131124035311.GC19499@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-fbdev@vger.kernel.org, 'Kyungmin Park' <kmpark@infradead.org>, kay@vrfy.org, Jingoo Han <jg1.han@samsung.com>, 'Henrique de Moraes Holschuh' <ibm-acpi@hmh.eng.br>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net, 'Richard Purdie' <rpurdie@rpsys.net>
 
-On Sat, Dec 21, 2013 at 11:58:23AM +0400, Alexander Shiyan wrote:
-<snip>
-> @@ -9,8 +9,7 @@ obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX21_HCD) += platform-imx21-hcd.o
->  obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX27_CODA) += platform-imx27-coda.o
->  obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX2_WDT) += platform-imx2-wdt.o
->  obj-$(CONFIG_IMX_HAVE_PLATFORM_IMXDI_RTC) += platform-imxdi_rtc.o
-> -obj-y += platform-imx-dma.o
-> -obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX_FB) += platform-imx-fb.o
-> +obj-y += platform-imx-dma.o platform-imx-fb.o
->  obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX_I2C) += platform-imx-i2c.o
->  obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX_KEYPAD) += platform-imx-keypad.o
->  obj-$(CONFIG_IMX_HAVE_PLATFORM_PATA_IMX) += platform-pata_imx.o
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 4f2e1b3..e7d8d88 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -363,7 +363,7 @@ config FB_SA1100
->  
->  config FB_IMX
->  	tristate "Freescale i.MX1/21/25/27 LCD support"
-> -	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
-> +	depends on FB && (SOC_IMX1 || SOC_IMX21 || SOC_IMX25 || SOC_IMX27)
+On Sun, 24 Nov 2013 01:53:11 -0200 Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
 
-Denis had a patch below to address the same problem.
-
-http://thread.gmane.org/gmane.linux.drivers.devicetree/49472
-
-In this way, we can still have IMX_HAVE_PLATFORM_IMX_FB to control the
-build of platform-imx-fb.o.
-
-Shawn 
-
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> -- 
-> 1.8.3.2
+> On Sun, 24 Nov 2013, Matthew Garrett wrote:
+> > On Sat, Nov 23, 2013 at 10:40:15PM -0200, Henrique de Moraes Holschuh wrote:
+> > > On Fri, 22 Nov 2013, Matthew Garrett wrote:
+> > > > We have userspace that relies on uevents of type 
+> > > > BACKLIGHT_UPDATE_HOTKEY. I don't know that we have userspace that relies 
+> > > > on uevents of type BACKLIGHT_UPDATE_SYSFS.
+> > > 
+> > > Any OSD application would have to rely on both uevent types, or it is broken
+> > > (and to test that, just write a level to sysfs and watch the OSD app fail to
+> > > tell you about the backlight level change...)
+> > 
+> > Right, OSDs are supposed to respond to keypresses, not arbitrary changes 
+> > of backlight. If the user's just echoed 8 into brightness, they know 
+> > they set the brightness to 8 - they don't need an OSD to tell them that. 
 > 
+> It is not just the user that sets the brightness.
+> 
+> Still, if you're sure that all userspace users react only to the hotkey type
+> of event, removing the sysfs one won't break anything any further.
+> 
+> But it will be *really* annoying the day we revisit this because someone
+> started abusing the hotkey uevent and we have to deploy a proper fix (rate
+> limiting or switching to a proper event report interface that doesn't use
+> uevents).
+> 
+> > BACKLIGHT_UPDATE_HOTKEY is when the firmware itself has changed the 
+> > brightness in response to a keypress, and so reporting the keypress 
+> > would result in additional backlight changes.
+> 
+> Yeah, I know that bug quite well, thinkpads were the first victims of
+> idiotic feedback event loops caused by braindead userspace.
 
+I'm not seeing a lot of consensus here and afaict the v2 patch:
+
+--- a/drivers/video/backlight/backlight.c~drivers-video-backlight-backlightc-remove-backlight-sysfs-uevent
++++ a/drivers/video/backlight/backlight.c
+@@ -175,8 +175,6 @@ static ssize_t brightness_store(struct d
+ 	}
+ 	mutex_unlock(&bd->ops_lock);
+ 
+-	backlight_generate_event(bd, BACKLIGHT_UPDATE_SYSFS);
+-
+ 	return rc;
+ }
+ static DEVICE_ATTR_RW(brightness);
+
+will still break userspace which relies on BACKLIGHT_UPDATE_SYSFS
+uevents.  I see no way we can guarantee that there is no such userspace
+so the patch is worrying.
+
+Should we instead be looking for a way of avoiding this risk?  Say, add
+a new knob which people can set if they don't want to generate this
+event?  Ugly, but that's the price we pay for mucking it up originally.

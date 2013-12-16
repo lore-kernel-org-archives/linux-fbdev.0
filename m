@@ -1,52 +1,46 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Fri, 06 Dec 2013 09:40:36 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSHYxM11bIDIvNF0gdmlkZW86IGlteGZiOiBBbHNvIGFkZCBw?= =?UTF-8?B?d21yIGZvciB0aGUgZ
-Message-Id: <1386322836.19413258@f177.i.mail.ru>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Date: Mon, 16 Dec 2013 15:04:08 +0000
+Subject: [PATCH v3] if xen_platform_pci=0 is set don't blow up.
+Message-Id: <1387206250-13963-1-git-send-email-konrad.wilk@oracle.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386258219-26437-1-git-send-email-denis@eukrea.com>
- <1386318910.581671226@f322.i.mail.ru>
- <20131206093017.GB24559@pengutronix.de>
-In-Reply-To: <20131206093017.GB24559@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: axboe@kernel.dk, stefano.stabellini@eu.citrix.com, ian.campbell@citrix.com, xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, boris.ostrovsky@oracle.com, david.vrabel@citrix.com, leosilva@linux.vnet.ibm.com, ashley@ashleylai.com, peterhuewe@gmx.de, mail@srajiv.net, tpmdd@selhorst.net, dmitry.torokhov@gmail.com, bhelgaas@google.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, tpmdd-devel@lists.sourceforge.net, linux-input@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-PiA+ID4gT24gRnJpLCBEZWMgMDYsIDIwMTMgYXQgMTI6MDM6NTRQTSArMDQwMCwgQWxleGFuZGVy
-IFNoaXlhbiB3cm90ZToKPiA+IC4uLgo+ID4gPiA+ID4gPiAgLSBmc2wsZG1hY3I6IERNQSBDb250
-cm9sIFJlZ2lzdGVyIHZhbHVlLiBUaGlzIGlzIG9wdGlvbmFsLiBCeSBkZWZhdWx0LCB0aGUKPiA+
-ID4gPiA+ID4gIAlyZWdpc3RlciBpcyBub3QgbW9kaWZpZWQgYXMgcmVjb21tZW5kZWQgYnkgdGhl
-IGRhdGFzaGVldC4KPiA+ID4gPiA+ID4gKy0gZnNsLHB3bXI6ICBMQ0RDIFBXTSBDb250cmFzdCBD
-b250cm9sIFJlZ2lzdGVyIHZhbHVlLiBUaGF0IHByb3BlcnR5IGlzCj4gPiA+ID4gPiA+ICsJb3B0
-aW9uYWwsIGJ1dCBkZWZpbmluZyBpdCBpcyBuZWNlc3NhcnkgdG8gZ2V0IHRoZSBiYWNrbGlnaHQg
-d29ya2luZy4gSWYgdGhhdAo+ID4gPiA+ID4gPiArCXByb3BlcnR5IGlzIG9tbWl0ZWQsIHRoZSBy
-ZWdpc3RlciBpcyB6ZXJvZWQuCj4gPiA+ID4gPiAKPiA+ID4gPiA+IFdoeSBpc24ndCB0aGlzIGlt
-cGxlbWVudGVkIGFzIGEgYmFja2xpZ2h0IGRyaXZlcj8gU3RhdGljIGRldmljZXRyZWUKPiA+ID4g
-PiA+IHByb3ZpZGVkIHZhbHVlcyBpcyB2ZXJ5IGxpbWl0aW5nLgo+ID4gPiA+IAo+ID4gPiA+IExl
-dCdzIHVuZGVyc3RhbmQgdGhlIHRlcm1pbm9sb2d5Lgo+ID4gPiA+IFRoaXMgcmVnaXN0ZXIgc2hv
-dWxkIGJlIHJlbmFtZWQgYWNjb3JkaW5nIHRvIHRoZSBkYXRhc2hlZXQsIGkuZS4gTFBDQ1IuCj4g
-PiA+ID4gQXMgSSBwb2ludGVkIG91dCBlYXJsaWVyLCBpdCBpcyBOT1QgY29udHJvbCB0aGUgYmFj
-a2xpZ2h0LCB0aGlzIGlzIGEgY29udHJhc3QgY29udHJvbC4KPiA+ID4gPiBZZXMsIGl0IHdvcmtz
-IGFzIFBXTSwgYnV0IG5vdGhpbmcgZG8gd2l0aCB0aGUgYmFja2xpZ2h0IHN1YnN5c3RlbS4KPiA+
-ID4gPiBZZXMsIHdlIGNhbiBtYWtlIGEgZHJpdmVyIGZvciB0aGlzIFBXTSwgYnV0IGhvdyBhcmUg
-d2UgZ29pbmcgdG8gY29udHJvbCBpdD8KPiA+ID4gPiBJIG1pc3VuZGVyc3Rvb2Qgc29tZXRoaW5n
-Pwo+ID4gPiAKPiA+ID4gSSBzdHVtYmxlZCB1cG9uICdnZXQgdGhlIGJhY2tsaWdodCB3b3JraW5n
-JyB3aGljaCBpbXBsaWVkIGZvciBtZSB0aGF0IGl0Cj4gPiA+IHNob3VsZCBiZSBhIGJhY2tsaWdo
-dCBkcml2ZXIuIEJ1dCB5b3UncmUgcmlnaHQgYW5kIG5vdyBJIHJlbWVtYmVyIHdlCj4gPiA+IHRh
-bGtlZCBhYm91dCB0aGlzIGFscmVhZHkuCj4gPiAKPiA+IEhhbGxlbHVqYWguCj4gPiAKPiA+ID4g
-SSBzdGlsbCB0aGluayB0aGlzIHNob3VsZCBiZSBzb21ldGhpbmcgYWRqdXN0YWJsZSwgbm90IHN0
-YXRpYyBkYXRhLgo+ID4gPiBNYXliZSB3ZSBjb3VsZCBjaGFuZ2UgdGhlIHdvcmRpbmcgdG8gc29t
-ZXRoaW5nIGxpa2UgIlRoaXMgcHJvcGVydHkKPiA+ID4gcHJvdmlkZXMgdGhlIGRlZmF1bHQgdmFs
-dWUgZm9yIHRoZSBjb250cmFzdCBjb250cm9sIHJlZ2lzdGVyIiBzaW5jZSBldmVuCj4gPiA+IGlm
-IHdlIGFkZCBkcml2ZXIgc3VwcG9ydCBmb3IgY29udHJvbGxpbmcgdGhlIGNvbnRyYXN0IHdlIHN0
-aWxsIHdhbnQKPiA+ID4gdG8gaGF2ZSBhIHNhbmUgZGVmYXVsdC4KPiA+IAo+ID4gU291bmRzIGdv
-b2QuCj4gPiAKPiA+ID4gQlRXIHRoZSBjb250cmFzdCBjb3VsZCBiZSBjb250cm9sbGVkIHdpdGgg
-YSBsY2RfZGV2aWNlIChzZWUKPiA+ID4gbGNkX2RldmljZV9yZWdpc3Rlcikgd2hpY2ggc2VlbXMg
-dG8gYmUgdmVyeSBlYXN5IHRvIGltcGxlbWVudC4KPiA+IAo+ID4gQWRkcmVzcyBvZiByZWdpc3Rl
-ciBpcyBwbGFjZWQgd2l0aGluIExDRCBhcmVhLCBzbyB3ZSBjYW5ub3QgdXNlIHRoaXMKPiA+IG1l
-bW9yeSByZWdpb24sIEkgdGhpbmsgaXMgbm8gc28gZWFzeSBhcyB5b3Ugc2F5Li4uLgo+IAo+IFdl
-IGRvIG5vdCBuZWVkIGEgc2VwYXJhdGUgZHJpdmVyIGZvciB0aGlzLiBMb29rIGZvciBleGFtcGxl
-IGF0Cj4gZHJpdmVycy92aWRlby9iZjUzNy1scTAzNS5jLCBpdCBqdXN0IGNhbGxzIGxjZF9kZXZp
-Y2VfcmVnaXN0ZXIoKQo+IGluIGl0cyBwcm9iZSBmdW5jdGlvbi4KCk5pY2UuIFNlZW1zIHRoaXMg
-ZXhhbXBsZSBldmVuIGNhbiBoYW5kbGUgTENEIHBvd2VyCnJlZ3VsYXRvciBmcm9tICJbMS80XSB2
-aWRlbzogaW14ZmI6IEludHJvZHVjZSByZWd1bGF0b3Igc3VwcG9ydC4iCgotLS0K
+The first patch:
+ [PATCH v3 1/2] xen/pvhvm: If xen_platform_pci=0 is set don't blow up
+
+I would like to commit to stable as it is fixing an eggregious bug -
+where we blow up if the guest config has: "xen_platform_pci=0" setup.
+This bug has been in existence for years and it is time to stamp it out.
+
+The second patch is a cleanup - not a stable candidate.
+
+It touches all of the Xen frontend drivers and adds the logic of:
+"if user disabled us, don't init" - with variations. As you can
+specify exactly which ones you want to init and which ones
+not (Linux runtime parameter 'xen_emul_unplug'). But for the majority
+of drivers - it is just an on/off switch.
+
+Since it touches a lot of maintainers I figured I would send it
+to Linus on Wednesday or Thursday.
+
+Thank you!
+
+ arch/x86/xen/platform-pci-unplug.c         | 79 ++++++++++++++++++++++++++++--
+ drivers/block/xen-blkfront.c               |  4 +-
+ drivers/char/tpm/xen-tpmfront.c            |  4 ++
+ drivers/input/misc/xen-kbdfront.c          |  4 ++
+ drivers/net/xen-netfront.c                 |  2 +-
+ drivers/pci/xen-pcifront.c                 |  4 ++
+ drivers/video/xen-fbfront.c                |  4 ++
+ drivers/xen/xenbus/xenbus_probe_frontend.c |  2 +-
+ include/xen/platform_pci.h                 | 25 +++++++++-
+ 9 files changed, 119 insertions(+), 9 deletions(-)
+
+
+Konrad Rzeszutek Wilk (2):
+      xen/pvhvm: If xen_platform_pci=0 is set don't blow up (v3).
+      xen/pvhvm: Remove the xen_platform_pci int.
+

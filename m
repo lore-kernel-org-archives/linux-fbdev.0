@@ -1,52 +1,45 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 02 Dec 2013 23:28:33 +0000
-Subject: [PATCH 32/39] video: remove DEFINE_PCI_DEVICE_TABLE macro
-Message-Id: <003501ceefb6$37ba5dd0$a72f1970$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:17 +0000
+Subject: [PATCHv2 10/27] OMAPDSS: Add DT support to HDMI
+Message-Id: <1387205794-32246-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <001501ceefb1$69c96820$3d5c3860$%han@samsung.com>
-In-Reply-To: <001501ceefb1$69c96820$3d5c3860$%han@samsung.com>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Don't use DEFINE_PCI_DEVICE_TABLE macro, because this macro
-is not preferred.
-
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/hyperv_fb.c |    2 +-
- drivers/video/i740fb.c    |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/hdmi4.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
-index 130708f..8254ed7 100644
---- a/drivers/video/hyperv_fb.c
-+++ b/drivers/video/hyperv_fb.c
-@@ -800,7 +800,7 @@ static int hvfb_remove(struct hv_device *hdev)
- }
+diff --git a/drivers/video/omap2/dss/hdmi4.c b/drivers/video/omap2/dss/hdmi4.c
+index 16e598787522..97dd05f602f7 100644
+--- a/drivers/video/omap2/dss/hdmi4.c
++++ b/drivers/video/omap2/dss/hdmi4.c
+@@ -671,6 +671,11 @@ static const struct dev_pm_ops hdmi_pm_ops = {
+ 	.runtime_resume = hdmi_runtime_resume,
+ };
  
++static const struct of_device_id hdmi_of_match[] = {
++	{ .compatible = "ti,omap4-hdmi", },
++	{},
++};
++
+ static struct platform_driver omapdss_hdmihw_driver = {
+ 	.probe		= omapdss_hdmihw_probe,
+ 	.remove         = __exit_p(omapdss_hdmihw_remove),
+@@ -678,6 +683,7 @@ static struct platform_driver omapdss_hdmihw_driver = {
+ 		.name   = "omapdss_hdmi",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &hdmi_pm_ops,
++		.of_match_table = hdmi_of_match,
+ 	},
+ };
  
--static DEFINE_PCI_DEVICE_TABLE(pci_stub_id_table) = {
-+static const struct pci_device_id pci_stub_id_table[] = {
- 	{
- 		.vendor      = PCI_VENDOR_ID_MICROSOFT,
- 		.device      = PCI_DEVICE_ID_HYPERV_VIDEO,
-diff --git a/drivers/video/i740fb.c b/drivers/video/i740fb.c
-index ca7c9df..a2b4204 100644
---- a/drivers/video/i740fb.c
-+++ b/drivers/video/i740fb.c
-@@ -1260,7 +1260,7 @@ fail:
- #define I740_ID_PCI 0x00d1
- #define I740_ID_AGP 0x7800
- 
--static DEFINE_PCI_DEVICE_TABLE(i740fb_id_table) = {
-+static const struct pci_device_id i740fb_id_table[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, I740_ID_PCI) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, I740_ID_AGP) },
- 	{ 0 }
 -- 
-1.7.10.4
-
+1.8.3.2
 

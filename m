@@ -1,112 +1,100 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 17 Dec 2013 11:22:21 +0000
-Subject: [PATCH] omapdss: dispc: Preload more data in pipeline DMAs for OMAP4+ SoCs
-Message-Id: <1387278621-10966-1-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:18 +0000
+Subject: [PATCHv2 11/27] OMAPDSS: Add DT support to VENC
+Message-Id: <1387205794-32246-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-DISPC pipeline DMAs preload some bytes of pixel data in the vertical blanking
-region before the start of each frame. The preload ensures the pipeline doesn't
-underflow when the active region of the display starts.
-
-DISPC_GFX/VIDp_PRELOAD registers allow us to program how many bytes of data
-should be preloaded for each pipeline. Calculating a precise preload value
-would be a complex function of the pixel clock of the connected display, the
-vertical blanking duration and the interconnect traffic at that instance. If
-the register is left untouched, a default value is preloaded.
-
-We observe underflows for OMAP4+ SoCs for certain bandwidth intensive use cases
-with many other initiators active, and in situations where memory access isn't
-very efficient(like accessing Tiler mapped buffers and EMIF configured in
-non-interleaved more). The cause of the underflow is because the default preload
-value isn't sufficient for the DMA to reach a steady state. We configure the
-PRELOAD register such that the pipelines preload data up to the high threshold
-of the FIFO.
-
-Preloading lot of data for older SoCs can have a negative impact. Due to slower
-interconnects, it's possible that the DISPC DMA cannot preload up to the high
-threshold within the vertical blanking region of the panel. We leave the PRELOAD
-registers to their reset values since we haven't faced underflows with these
-SoCs because of low value of PRELOAD.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ drivers/video/omap2/dss/venc.c | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 6578540..ace179e 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -90,6 +90,8 @@ struct dispc_features {
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 5f88ac47b7fa..12185fb6da0e 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -34,6 +34,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/pm_runtime.h>
++#include <linux/of.h>
  
- 	/* revert to the OMAP4 mechanism of DISPC Smart Standby operation */
- 	bool mstandby_workaround:1;
-+
-+	bool set_max_preload:1;
- };
+ #include <video/omapdss.h>
  
- #define DISPC_MAX_NR_FIFOS 5
-@@ -1200,6 +1202,15 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
- 	dispc_write_reg(DISPC_OVL_FIFO_THRESHOLD(plane),
- 			FLD_VAL(high, hi_start, hi_end) |
- 			FLD_VAL(low, lo_start, lo_end));
-+
-+	/*
-+	 * configure the preload to the pipeline's high threhold, if HT it's too
-+	 * large for the preload field, set the threshold to the maximum value
-+	 * that can be held by the preload register
-+	 */
-+	if (dss_has_feature(FEAT_PRELOAD) && dispc.feat->set_max_preload &&
-+			plane != OMAP_DSS_WB)
-+		dispc_write_reg(DISPC_OVL_PRELOAD(plane), min(high, 0xfff));
+@@ -804,6 +805,22 @@ static void __exit venc_uninit_output(struct platform_device *pdev)
+ 	omapdss_unregister_output(out);
  }
- EXPORT_SYMBOL(dispc_ovl_set_fifo_threshold);
  
-@@ -3525,6 +3536,7 @@ static const struct dispc_features omap24xx_dispc_feats __initconst = {
- 	.calc_core_clk		=	calc_core_clk_24xx,
- 	.num_fifos		=	3,
- 	.no_framedone_tv	=	true,
-+	.set_max_preload	=	false,
++static int venc_probe_of(struct platform_device *pdev)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct device_node *ep;
++
++	ep = omapdss_of_get_first_endpoint(node);
++	if (!ep)
++		return 0;
++
++	venc.invert_polarity = of_property_read_bool(ep, "invert-polarity");
++
++	of_node_put(ep);
++
++	return 0;
++}
++
+ /* VENC HW IP initialisation */
+ static int omap_venchw_probe(struct platform_device *pdev)
+ {
+@@ -845,12 +862,21 @@ static int omap_venchw_probe(struct platform_device *pdev)
+ 
+ 	venc_runtime_put();
+ 
++	if (pdev->dev.of_node) {
++		r = venc_probe_of(pdev);
++		if (r) {
++			DSSERR("Invalid DT data\n");
++			goto err_probe_of;
++		}
++	}
++
+ 	dss_debugfs_create_file("venc", venc_dump_regs);
+ 
+ 	venc_init_output(pdev);
+ 
+ 	return 0;
+ 
++err_probe_of:
+ err_runtime_get:
+ 	pm_runtime_disable(&pdev->dev);
+ 	return r;
+@@ -894,6 +920,13 @@ static const struct dev_pm_ops venc_pm_ops = {
+ 	.runtime_resume = venc_runtime_resume,
  };
  
- static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
-@@ -3544,6 +3556,7 @@ static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
- 	.calc_core_clk		=	calc_core_clk_34xx,
- 	.num_fifos		=	3,
- 	.no_framedone_tv	=	true,
-+	.set_max_preload	=	false,
++
++static const struct of_device_id venc_of_match[] = {
++	{ .compatible = "ti,omap3-venc", },
++	{ .compatible = "ti,omap4-venc", },
++	{},
++};
++
+ static struct platform_driver omap_venchw_driver = {
+ 	.probe		= omap_venchw_probe,
+ 	.remove         = __exit_p(omap_venchw_remove),
+@@ -901,6 +934,7 @@ static struct platform_driver omap_venchw_driver = {
+ 		.name   = "omapdss_venc",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &venc_pm_ops,
++		.of_match_table = venc_of_match,
+ 	},
  };
  
- static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
-@@ -3563,6 +3576,7 @@ static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
- 	.calc_core_clk		=	calc_core_clk_34xx,
- 	.num_fifos		=	3,
- 	.no_framedone_tv	=	true,
-+	.set_max_preload	=	false,
- };
- 
- static const struct dispc_features omap44xx_dispc_feats __initconst = {
-@@ -3582,6 +3596,7 @@ static const struct dispc_features omap44xx_dispc_feats __initconst = {
- 	.calc_core_clk		=	calc_core_clk_44xx,
- 	.num_fifos		=	5,
- 	.gfx_fifo_workaround	=	true,
-+	.set_max_preload	=	true,
- };
- 
- static const struct dispc_features omap54xx_dispc_feats __initconst = {
-@@ -3602,6 +3617,7 @@ static const struct dispc_features omap54xx_dispc_feats __initconst = {
- 	.num_fifos		=	5,
- 	.gfx_fifo_workaround	=	true,
- 	.mstandby_workaround	=	true,
-+	.set_max_preload	=	true,
- };
- 
- static int __init dispc_init_features(struct platform_device *pdev)
 -- 
 1.8.3.2
 

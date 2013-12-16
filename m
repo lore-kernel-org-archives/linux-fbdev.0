@@ -1,77 +1,95 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 20 Dec 2013 16:20:31 +0000
-Subject: Re: [PATCH] video/logo: don't look for the logo after system boot
-Message-Id: <CAMuHMdUkHMoZ=g6N_WkP-qtPdqYCy9BYrN-tSwEHwgu5Eh1ndg@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Dec 2013 14:56:30 +0000
+Subject: [PATCHv2 23/27] OMAPDSS: connector-dvi: Add DT support
+Message-Id: <1387205794-32246-24-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387549460-18501-1-git-send-email-bigeasy@linutronix.de>
-In-Reply-To: <1387549460-18501-1-git-send-email-bigeasy@linutronix.de>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Fri, Dec 20, 2013 at 4:49 PM, Sebastian Andrzej Siewior
-<bigeasy@linutronix.de> wrote:
-> On 12/20/2013 04:31 PM, Sebastian Andrzej Siewior wrote:
->> On 12/20/2013 04:27 PM, Geert Uytterhoeven wrote:
->>> On Fri, Dec 20, 2013 at 3:24 PM, Sebastian Andrzej Siewior
->>> <bigeasy@linutronix.de> wrote:
->>>> If the primary GPU driver has been loaded _after_ system as a module
->>>> then this logo memory is no longer valid.
->>>> Managed to crash the system by booting a box without a GPU and then
->>>> hotpluggin => BOOM.
->>>
->>> drivers/video/fbmem.c:fb_prepare_logo() has protection against this:
->>>
->>>         if (info->flags & FBINFO_MISC_TILEBLITTING ||
->>>             info->flags & FBINFO_MODULE)
->>>                 return 0;
->>
->> but gpu driver is built-in. I just add PCI device at run-time. The same
->> thing should happen if you go to sysfs and remove the PCI device and
->> then do
->
-> No I see where you are going with this. My description of the problem
-> is wrong. The problem is nothing to do with the driver being a module.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/displays-new/connector-dvi.c | 43 ++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-Yes, I got confused by the "as a module".
+diff --git a/drivers/video/omap2/displays-new/connector-dvi.c b/drivers/video/omap2/displays-new/connector-dvi.c
+index b6c50904038e..d1204b1c5182 100644
+--- a/drivers/video/omap2/displays-new/connector-dvi.c
++++ b/drivers/video/omap2/displays-new/connector-dvi.c
+@@ -277,6 +277,37 @@ static int dvic_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int dvic_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	struct device_node *adapter_node;
++	struct i2c_adapter *adapter;
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	adapter_node = of_parse_phandle(node, "i2c-bus", 0);
++	if (adapter_node) {
++		adapter = of_find_i2c_adapter_by_node(adapter_node);
++		if (adapter = NULL) {
++			dev_err(&pdev->dev, "failed to parse i2c-bus\n");
++			omap_dss_put_device(ddata->in);
++			return -EPROBE_DEFER;
++		}
++
++		ddata->i2c_adapter = adapter;
++	}
++
++	return 0;
++}
++
+ static int dvic_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -293,6 +324,10 @@ static int dvic_probe(struct platform_device *pdev)
+ 		r = dvic_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = dvic_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -342,12 +377,20 @@ static int __exit dvic_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id dvic_of_match[] = {
++	{ .compatible = "dvi-connector", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, dvic_of_match);
++
+ static struct platform_driver dvi_connector_driver = {
+ 	.probe	= dvic_probe,
+ 	.remove	= __exit_p(dvic_remove),
+ 	.driver	= {
+ 		.name	= "connector-dvi",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = dvic_of_match,
+ 	},
+ };
+ 
+-- 
+1.8.3.2
 
-> If nobody objects this or suggests a different solution then I'm going
-> to provide a patch with a proper description.
-
-Is "system_state != SYSTEM_BOOTING" the right check?
-How long is is in the SYSTEM_BOOTING state?
-
-Ah, kernel_init() does:
-
-        free_initmem();
-        mark_rodata_ro();
-        system_state = SYSTEM_RUNNING;
-
-So this looks OK to me.
-
-We used to have an initmem_freed flag, but it was removed 15 years
-ago. 11 years ago, we got system_state, for the same purpose ;-)
-
-Looking at commit 70802c60379fb843c485dfd4cab9e8f527d8fe81
-Author: Antonino A. Daplas <adaplas@gmail.com>
-Date:   Tue May 8 00:38:14 2007 -0700
-
-    fbdev: don't show logo if driver or fbcon are modular
-
-it seems we were not aware of the existence of system_state....
-I guess you can remove FBINFO_MODULE after your fix?
-
-BTW, I'm wondering if modprobing newport_con.ko crashes, too, as
-it seems to call fb_find_logo() without any protection.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

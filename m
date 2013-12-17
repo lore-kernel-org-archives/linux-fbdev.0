@@ -1,90 +1,46 @@
-From: Sebastian Reichel <sre@debian.org>
-Date: Fri, 13 Dec 2013 18:17:28 +0000
-Subject: [PATCH 2/4] OMAPDSS: ACX565AKM: Add DT support
-Message-Id: <1386958650-2404-3-git-send-email-sre@debian.org>
+From: Mark Brown <broonie@kernel.org>
+Date: Tue, 17 Dec 2013 21:56:49 +0000
+Subject: [PATCH 05/11] fbcon: queue work on power efficient wq
+Message-Id: <1387317415-22252-5-git-send-email-broonie@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386958650-2404-1-git-send-email-sre@debian.org>
-In-Reply-To: <1386958650-2404-1-git-send-email-sre@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sre@ring0.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>
-Cc: Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@debian.org>
+To: linux-fbdev@vger.kernel.org
 
-This adds DT support to the ACX565AKM panel driver.
+From: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Sebastian Reichel <sre@debian.org>
+fbcon uses workqueues and it has no real dependency of scheduling these on the
+cpu which scheduled them.
+
+On a idle system, it is observed that and idle cpu wakes up many times just to
+service this work. It would be better if we can schedule it on a cpu which the
+scheduler believes to be the most appropriate one.
+
+This patch replaces system_wq with system_power_efficient_wq.
+
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+(cherry picked from commit a85f1a41f020bc2c97611060bcfae6f48a1db28d)
+Signed-off-by: Mark Brown <broonie@linaro.org>
 ---
- .../omap2/displays-new/panel-sony-acx565akm.c      | 35 +++++++++++++++++++++-
- 1 file changed, 34 insertions(+), 1 deletion(-)
+ drivers/video/console/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-index d94f35d..942b8d4 100644
---- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-+++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-@@ -30,6 +30,8 @@
- #include <linux/backlight.h>
- #include <linux/fb.h>
- #include <linux/gpio.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index a92783e480e6..0d8f98c79a6c 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -404,7 +404,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
+ 	struct fb_info *info = (struct fb_info *) dev_addr;
+ 	struct fbcon_ops *ops = info->fbcon_par;
  
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -531,7 +533,9 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
- 	dev_dbg(&ddata->spi->dev, "%s\n", __func__);
- 
- 	in->ops.sdi->set_timings(in, &ddata->videomode);
--	in->ops.sdi->set_datapairs(in, ddata->datapairs);
-+
-+	if (ddata->datapairs >= 0)
-+		in->ops.sdi->set_datapairs(in, ddata->datapairs);
- 
- 	r = in->ops.sdi->enable(in);
- 	if (r) {
-@@ -710,6 +714,30 @@ static int acx565akm_probe_pdata(struct spi_device *spi)
- 	return 0;
+-	schedule_work(&info->queue);
++	queue_work(system_power_efficient_wq, &info->queue);
+ 	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
  }
- 
-+static int acx565akm_probe_of(struct spi_device *spi)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
-+	struct device_node *np = spi->dev.of_node;
-+	struct omap_dss_device *dssdev;
-+	int ret;
-+
-+	ddata->reset_gpio = of_get_named_gpio(np, "reset-gpio", 0);
-+
-+	ddata->datapairs = -1;
-+	ddata->in = omapdss_of_find_source_for_first_ep(np);
-+	if (IS_ERR(ddata->in)) {
-+		dev_err(&spi->dev, "failed to find video source\n");
-+		return PTR_ERR(ddata->in);
-+	}
-+
-+	dssdev = &ddata->dssdev;
-+	ret = of_property_read_string(np, "label", &dssdev->name);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
- static int acx565akm_probe(struct spi_device *spi)
- {
- 	struct panel_drv_data *ddata;
-@@ -737,7 +765,12 @@ static int acx565akm_probe(struct spi_device *spi)
- 		r = acx565akm_probe_pdata(spi);
- 		if (r)
- 			return r;
-+	} else if (spi->dev.of_node) {
-+		r = acx565akm_probe_of(spi);
-+		if (r)
-+			return r;
- 	} else {
-+		dev_err(&spi->dev, "platform data missing!\n");
- 		return -ENODEV;
- 	}
  
 -- 
 1.8.5.1

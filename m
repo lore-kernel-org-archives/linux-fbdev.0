@@ -1,80 +1,93 @@
-From: Sebastian Reichel <sre@debian.org>
-Date: Tue, 17 Dec 2013 17:14:14 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 17 Dec 2013 17:29:34 +0000
 Subject: Re: [PATCH 0/4] OMAPDSS: DT support for N900 panel
-Message-Id: <20131217171412.GA10442@earth.universe>
+Message-Id: <52B089FE.8060704@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="IS0zKkzwUGydFO0o"
+Content-Type: multipart/mixed; boundary="Bh6pCofcFJJB0av4FPixioC8uiUNvw94A"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386958650-2404-1-git-send-email-sre@debian.org>
- <52AFFF3F.7020807@ti.com>
-In-Reply-To: <52AFFF3F.7020807@ti.com>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: =?iso-8859-1?Q?Beno=EEt?= Cousson <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+References: <1386958650-2404-1-git-send-email-sre@debian.org> <52AFFF3F.7020807@ti.com> <20131217171412.GA10442@earth.universe>
+In-Reply-To: <20131217171412.GA10442@earth.universe>
+To: Sebastian Reichel <sre@debian.org>
+Cc: =?ISO-8859-1?Q?Beno=EEt_Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
 
-
---IS0zKkzwUGydFO0o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--Bh6pCofcFJJB0av4FPixioC8uiUNvw94A
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Dec 17, 2013 at 09:37:35AM +0200, Tomi Valkeinen wrote:
-> Hi,
+On 2013-12-17 19:14, Sebastian Reichel wrote:
+> On Tue, Dec 17, 2013 at 09:37:35AM +0200, Tomi Valkeinen wrote:
+>> Hi,
+>>
+>> On 2013-12-13 20:17, Sebastian Reichel wrote:
+>>> Hi,
+>>>
+>>> This patchset adds DT support for the N900 panel. The patchset is bas=
+ed on
+>>> Tomi's work/dss-dt-2 branch [0]. I suggest to send the DT changes thr=
+ough
+>>> Benoits queue, since I have more N900 DT changes for 3.14. Also the p=
+atch
+>>> editing the rx51 boardcode can be dropped, since the file is removed =
+in 3.14.
+>>> I included those two with this patchset, since they are needed to tes=
+t the
+>>> other two patches.
+>>>
+>>> I did not include a documentation for the DT API, since the omapdss
+>>> documentation is still missing.
+>>>
+>>> I have successfully tested this on the N900.
+>>>
+>>> [0] https://git.kernel.org/cgit/linux/kernel/git/tomba/linux.git/log/=
+?h=3Dwork/dss-dt-2
+>>
+>> I added N900 display DT support on top of my v2 series, including
+>> pinmuxing. Can you check if it looks right and works?
+>>
+>> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss=
+-dt
 >=20
-> On 2013-12-13 20:17, Sebastian Reichel wrote:
-> > Hi,
-> >=20
-> > This patchset adds DT support for the N900 panel. The patchset is based=
- on
-> > Tomi's work/dss-dt-2 branch [0]. I suggest to send the DT changes throu=
-gh
-> > Benoits queue, since I have more N900 DT changes for 3.14. Also the pat=
-ch
-> > editing the rx51 boardcode can be dropped, since the file is removed in=
- 3.14.
-> > I included those two with this patchset, since they are needed to test =
-the
-> > other two patches.
-> >=20
-> > I did not include a documentation for the DT API, since the omapdss
-> > documentation is still missing.
-> >=20
-> > I have successfully tested this on the N900.
-> >=20
-> > [0] https://git.kernel.org/cgit/linux/kernel/git/tomba/linux.git/log/?h=
-=3Dwork/dss-dt-2
->=20
-> I added N900 display DT support on top of my v2 series, including
-> pinmuxing. Can you check if it looks right and works?
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dt
+> I just tried it and it does not work. On a first look the pinmuxing
+> looks fishy: 0x0d4 is muxed two times.
 
-I just tried it and it does not work. On a first look the pinmuxing
-looks fishy: 0x0d4 is muxed two times.
+Hmm, so it is.
 
-I will have a more detailed look into this later.
+I'm not really familiar with SDI, I just muxed all the SDI pins, except
+datapair3. I previously thought that there's only the data and clock
+pairs for SDI, but the TRM revealed more sdi pins, so I included them.
+It is well possible that these can be removed:
 
--- Sebastian
+0x0d0 (PIN_OUTPUT | MUX_MODE1)   /* dss_data18.sdi_vsync */
+0x0d2 (PIN_OUTPUT | MUX_MODE1)   /* dss_data19.sdi_hsync */
+0x0d4 (PIN_OUTPUT | MUX_MODE1)   /* dss_data20.sdi_den */
+0x0d6 (PIN_OUTPUT | MUX_MODE1)   /* dss_data21.sdi_stp */
 
---IS0zKkzwUGydFO0o
+ Tomi
+
+
+
+--Bh6pCofcFJJB0av4FPixioC8uiUNvw94A
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.15 (GNU/Linux)
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJSsIZkAAoJENju1/PIO/qa/LYP/iyrGFxaTaZwmkcavWq+J9U/
-TMBJwwXy1z5GYqE1egJ5/3f21tzfjlLuCKiEtZteNdv7U45urBGLdX+434iox0br
-LcNgiXo8GSfnmbYio/GDSgceOyoGefCHo2/HubNp/jfwM6MeUkFj6yVq60m+8Wwr
-GgYvX6zZIcxSiCI3/0oBMozHfHQhf+rmqgpQT0966pXpx/K/Q2kVgadpQm5S65h4
-UcYLG4R/s6hLDBRqGVbHRCiotuCxGlQ04hodgjpzf9zLeX05RKOdRLy7Mjzz5KA1
-cpRwBt7t0zLvtzrjY06PwZGVPbu66SpECmNw6C5s69S8taOOuW4Bdl5luqdMpL92
-itjJGuHRvtBMLa7fdgyY/ptL7oRey5ulzmwyxOZh00mYxEREKZWwnI3Kh3qnwm11
-FDLJBGq3/XBXTCYhBC5ikAJrtR/Ms6c/Z1/t6vqL5lJgo5rOTazX9KP6mCgFciGU
-tEXlghXJqg0TFdHXE4vf4IcNPtDVWsqgh8ly2Pw1UPfaXFk9oMX28tvfSwNjaSth
-SJvrHP4b3kyRb1r2e4ChJGHOVAuSJ+QgNdP0OrHaEoJ9ABreNsBAW3K8L5q0ikIj
-zVnGOA8NFSEc22IIIaNkMLDUlZEmsCLc4UHDKjYifMn8/cL0M9QilKMDPdsEwpFt
-fSuyYgCj0efJpT/v3MW2
-=jmf4
+iQIcBAEBAgAGBQJSsIn+AAoJEPo9qoy8lh71gRIP/ilZa3kvjMRwvZVCjnl31LTK
+5qvuRkanVmqiJAgg/n5a6xJTlxTsdHSzIkCnEVRT0ysA73H2WvIMEmnbKo0/FpxN
+pkeVQAZNI2R6Ux34PZYchdaO0Q0CoCvLoAMfpsWqCxNCmcsP9uOEeav9jSHW5iCN
+JzrosykFJkPTyvWF5fjwkKhCkvkxrrJ114TvznhgS3kzsxhDXPe4JMsqqXxSJ339
+IateGPkcbNsAYi0X6YQcPjYek7QofLICLuUP3Jbs76xHM5erFBNqJI5cRoZCEiaV
+v4stQk2o6reIMsR91g2BMwdk7LX+waV4TCAV2cGCacXaCzZ83XabGV6cYnZ/MFO0
+EmzdSx4kcAVeii5kynx9SCGpXWzjcjcOLmjrrNAmzTkVzT1yROMhmXm4ak/W9BV4
+/RMcfC/hw1Ym+ftPfbGPbeCXF6uXeZOxmHia1zYryYgQX6ASpx/5sxBzvq7PsXIA
+h1xRq3kPgUlXkajU7WNugMsM8fmlt0TXlAepHkVsX72rLHYOLYU+AUcsIvDzdfB+
+zo7e5Jztag9t6oJvTwCa4meXaI/hh2iTpLLmjY5rxvOUEqgA40AkGKw3j5es8vIJ
++30HNI5ens1oxcufFhyI+D9NzBg542x2UOFBmrtFLLUynryYjRVLRbyKEl78s8ZA
+pphs53nV3J5DEZLIt4Lk
+=FiLu
 -----END PGP SIGNATURE-----
 
---IS0zKkzwUGydFO0o--
+--Bh6pCofcFJJB0av4FPixioC8uiUNvw94A--

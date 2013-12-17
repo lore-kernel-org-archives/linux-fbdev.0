@@ -1,33 +1,41 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Fri, 13 Dec 2013 17:07:39 +0000
-Subject: Re: [PATCH 05/26] ARM: OMAP2+: add omapdss_init_of()
-Message-Id: <20131213170739.GB28184@atomide.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Tue, 17 Dec 2013 23:37:01 +0000
+Subject: [PATCH] video: vgacon: Don't build on arm64
+Message-Id: <1387323421-26126-1-git-send-email-broonie@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
- <1386160133-24026-6-git-send-email-tomi.valkeinen@ti.com>
- <2199639.FbGhznOLP9@avalon>
- <52A96603.5030709@ti.com>
- <52AAC615.504@ti.com>
-In-Reply-To: <52AAC615.504@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Darren Etheridge <detheridge@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-* Archit Taneja <archit@ti.com> [131213 00:33]:
-> 
-> I have seen other OMAP drivers passing control module register info
-> to their DT node. Instead of having a pinmux driver for a single
-> register, we might want to consider just passing the control module
-> register, and take care of the reg fields and masks in the OMAP DSI
-> driver itself.
+From: Mark Brown <broonie@linaro.org>
 
-See the PBIAS control module patches and their comments from Balaji.
+arm64 is unlikely to have a VGA console and does not export screen_info
+causing build failures if the driver is build, for example in all*config.
+Add a dependency on !ARM64 to prevent this.
 
-We can map the misc registers of SCM using drivers/mfd/syscon.c and
-that way drivers can access them via syscon.
+This list is getting quite long, it may be easier to depend on a symbol
+which architectures that do support the driver can select.
 
-Regards,
+Signed-off-by: Mark Brown <broonie@linaro.org>
+---
+ drivers/video/console/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Tony
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 846caab75a46..c39d6c42c3ef 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -8,7 +8,8 @@ config VGA_CONSOLE
+ 	bool "VGA text console" if EXPERT || !X86
+ 	depends on !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && \
+ 		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
+-		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER)
++		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) \
++		&& !ARM64
+ 	default y
+ 	help
+ 	  Saying Y here will allow you to use Linux in text mode through a
+-- 
+1.8.5.1
+

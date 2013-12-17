@@ -1,76 +1,80 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 17 Dec 2013 07:37:35 +0000
+From: Sebastian Reichel <sre@debian.org>
+Date: Tue, 17 Dec 2013 17:14:14 +0000
 Subject: Re: [PATCH 0/4] OMAPDSS: DT support for N900 panel
-Message-Id: <52AFFF3F.7020807@ti.com>
+Message-Id: <20131217171412.GA10442@earth.universe>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="cPvjumn88P4BSuaTdf5t7fRvvCQLTusJB"
+Content-Type: multipart/mixed; boundary="IS0zKkzwUGydFO0o"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1386958650-2404-1-git-send-email-sre@debian.org>
-In-Reply-To: <1386958650-2404-1-git-send-email-sre@debian.org>
-To: Sebastian Reichel <sre@debian.org>
-Cc: Sebastian Reichel <sre@ring0.de>, =?ISO-8859-1?Q?Beno=EEt_Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+ <52AFFF3F.7020807@ti.com>
+In-Reply-To: <52AFFF3F.7020807@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: =?iso-8859-1?Q?Beno=EEt?= Cousson <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
 
---cPvjumn88P4BSuaTdf5t7fRvvCQLTusJB
-Content-Type: text/plain; charset=ISO-8859-1
+
+--IS0zKkzwUGydFO0o
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On 2013-12-13 20:17, Sebastian Reichel wrote:
+On Tue, Dec 17, 2013 at 09:37:35AM +0200, Tomi Valkeinen wrote:
 > Hi,
 >=20
-> This patchset adds DT support for the N900 panel. The patchset is based=
+> On 2013-12-13 20:17, Sebastian Reichel wrote:
+> > Hi,
+> >=20
+> > This patchset adds DT support for the N900 panel. The patchset is based=
  on
-> Tomi's work/dss-dt-2 branch [0]. I suggest to send the DT changes throu=
+> > Tomi's work/dss-dt-2 branch [0]. I suggest to send the DT changes throu=
 gh
-> Benoits queue, since I have more N900 DT changes for 3.14. Also the pat=
+> > Benoits queue, since I have more N900 DT changes for 3.14. Also the pat=
 ch
-> editing the rx51 boardcode can be dropped, since the file is removed in=
+> > editing the rx51 boardcode can be dropped, since the file is removed in=
  3.14.
-> I included those two with this patchset, since they are needed to test =
+> > I included those two with this patchset, since they are needed to test =
 the
-> other two patches.
->=20
-> I did not include a documentation for the DT API, since the omapdss
-> documentation is still missing.
->=20
-> I have successfully tested this on the N900.
->=20
-> [0] https://git.kernel.org/cgit/linux/kernel/git/tomba/linux.git/log/?h=
+> > other two patches.
+> >=20
+> > I did not include a documentation for the DT API, since the omapdss
+> > documentation is still missing.
+> >=20
+> > I have successfully tested this on the N900.
+> >=20
+> > [0] https://git.kernel.org/cgit/linux/kernel/git/tomba/linux.git/log/?h=
 =3Dwork/dss-dt-2
+>=20
+> I added N900 display DT support on top of my v2 series, including
+> pinmuxing. Can you check if it looks right and works?
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dt
 
-I added N900 display DT support on top of my v2 series, including
-pinmuxing. Can you check if it looks right and works?
+I just tried it and it does not work. On a first look the pinmuxing
+looks fishy: 0x0d4 is muxed two times.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dt=
+I will have a more detailed look into this later.
 
+-- Sebastian
 
- Tomi
-
-
-
---cPvjumn88P4BSuaTdf5t7fRvvCQLTusJB
+--IS0zKkzwUGydFO0o
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Version: GnuPG v1.4.15 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSr/8/AAoJEPo9qoy8lh71kXgP/jN78DPvtXCN38e2AwGJjbRm
-8oDmodWlC8iGqb63om4UmugzQuPR6JzR2DIfSzTljbQn17zsIg21dztqP9xOmoF4
-dpndTSrL22yT7bRHjijWNiX79LyvDARKim8vRrzsKyxi2K2St9bLi8NPZF7gD9nZ
-hagtEDJAmpMRzbyKpibY62lfbJVALK9ZSIIXMgw+wjI4oJBAPBIorg7ak2UYNZDO
-QBHeRLuIXXXTbqvwFGNr1P3FQ305lmbcCKJpsPGCXwCXMPSD2kOLHqbhzdDqnQZt
-1+0nQx5sOcunXBYCzMXWt6SIiwJ/aAuTY4S8FSzZCzjVbgdLFCTx+5LSwwqUFcHi
-Oz9qSR4THgtSC1JRmSofqgF8Cpg5BT8qkXdCgKyjKC5tEzPxrSbe5cU4XZUC4ECY
-ild32Lqw0YPVGDy4HhNJCao7t4RlYjPBBPpxRvYBklODuxQz6XOcvVDoyj/3vnr+
-PwP3q474O+dbyyNPqFMb9QhYv589r4Do4TWgobepCMPBsPqDLgooi9u+w2/4yQCC
-vs1xd6MO0mOMON0bkx9kElvZxEStT+1Hq6VO6mPTV55niUxlRGSFlfmtaKGuKGLL
-APYkWpYWJOqMDywlNJQKiKh58zsOMaoaltFh3pCOjLxlRCI9nC2iB/GBCxVHFqoL
-1y/itl5K+/0FlbDmmPlR
-=hjfG
+iQIcBAEBCAAGBQJSsIZkAAoJENju1/PIO/qa/LYP/iyrGFxaTaZwmkcavWq+J9U/
+TMBJwwXy1z5GYqE1egJ5/3f21tzfjlLuCKiEtZteNdv7U45urBGLdX+434iox0br
+LcNgiXo8GSfnmbYio/GDSgceOyoGefCHo2/HubNp/jfwM6MeUkFj6yVq60m+8Wwr
+GgYvX6zZIcxSiCI3/0oBMozHfHQhf+rmqgpQT0966pXpx/K/Q2kVgadpQm5S65h4
+UcYLG4R/s6hLDBRqGVbHRCiotuCxGlQ04hodgjpzf9zLeX05RKOdRLy7Mjzz5KA1
+cpRwBt7t0zLvtzrjY06PwZGVPbu66SpECmNw6C5s69S8taOOuW4Bdl5luqdMpL92
+itjJGuHRvtBMLa7fdgyY/ptL7oRey5ulzmwyxOZh00mYxEREKZWwnI3Kh3qnwm11
+FDLJBGq3/XBXTCYhBC5ikAJrtR/Ms6c/Z1/t6vqL5lJgo5rOTazX9KP6mCgFciGU
+tEXlghXJqg0TFdHXE4vf4IcNPtDVWsqgh8ly2Pw1UPfaXFk9oMX28tvfSwNjaSth
+SJvrHP4b3kyRb1r2e4ChJGHOVAuSJ+QgNdP0OrHaEoJ9ABreNsBAW3K8L5q0ikIj
+zVnGOA8NFSEc22IIIaNkMLDUlZEmsCLc4UHDKjYifMn8/cL0M9QilKMDPdsEwpFt
+fSuyYgCj0efJpT/v3MW2
+=jmf4
 -----END PGP SIGNATURE-----
 
---cPvjumn88P4BSuaTdf5t7fRvvCQLTusJB--
+--IS0zKkzwUGydFO0o--

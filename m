@@ -1,95 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Dec 2013 14:56:30 +0000
-Subject: [PATCHv2 23/27] OMAPDSS: connector-dvi: Add DT support
-Message-Id: <1387205794-32246-24-git-send-email-tomi.valkeinen@ti.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Tue, 17 Dec 2013 07:05:52 +0000
+Subject: Re: [PATCHv2 23/27] OMAPDSS: connector-dvi: Add DT support
+Message-Id: <20131217070551.GR24559@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com>
+ <1387205794-32246-24-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-24-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/displays-new/connector-dvi.c | 43 ++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+Hi Tomi,
 
-diff --git a/drivers/video/omap2/displays-new/connector-dvi.c b/drivers/video/omap2/displays-new/connector-dvi.c
-index b6c50904038e..d1204b1c5182 100644
---- a/drivers/video/omap2/displays-new/connector-dvi.c
-+++ b/drivers/video/omap2/displays-new/connector-dvi.c
-@@ -277,6 +277,37 @@ static int dvic_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int dvic_probe_of(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+	struct device_node *adapter_node;
-+	struct i2c_adapter *adapter;
-+
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
-+
-+	ddata->in = in;
-+
-+	adapter_node = of_parse_phandle(node, "i2c-bus", 0);
-+	if (adapter_node) {
-+		adapter = of_find_i2c_adapter_by_node(adapter_node);
-+		if (adapter = NULL) {
-+			dev_err(&pdev->dev, "failed to parse i2c-bus\n");
-+			omap_dss_put_device(ddata->in);
-+			return -EPROBE_DEFER;
-+		}
-+
-+		ddata->i2c_adapter = adapter;
-+	}
-+
-+	return 0;
-+}
-+
- static int dvic_probe(struct platform_device *pdev)
- {
- 	struct panel_drv_data *ddata;
-@@ -293,6 +324,10 @@ static int dvic_probe(struct platform_device *pdev)
- 		r = dvic_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = dvic_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -342,12 +377,20 @@ static int __exit dvic_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id dvic_of_match[] = {
-+	{ .compatible = "dvi-connector", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, dvic_of_match);
-+
- static struct platform_driver dvi_connector_driver = {
- 	.probe	= dvic_probe,
- 	.remove	= __exit_p(dvic_remove),
- 	.driver	= {
- 		.name	= "connector-dvi",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = dvic_of_match,
- 	},
- };
- 
+On Mon, Dec 16, 2013 at 04:56:30PM +0200, Tomi Valkeinen wrote:
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> ---
+>  drivers/video/omap2/displays-new/connector-dvi.c | 43 ++++++++++++++++++++++++
+>  1 file changed, 43 insertions(+)
+> 
+> diff --git a/drivers/video/omap2/displays-new/connector-dvi.c b/drivers/video/omap2/displays-new/connector-dvi.c
+> index b6c50904038e..d1204b1c5182 100644
+>  
+> +static const struct of_device_id dvic_of_match[] = {
+> +	{ .compatible = "dvi-connector", },
+
+Either the driver is too specific or the binding is too generic, but
+having such a generic name for an omap specific driver seems wrong. Same
+for panel-dpi, svideo-connector, composite-video-connector and hdmi-connector,
+
+Sascha
+
 -- 
-1.8.3.2
-
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

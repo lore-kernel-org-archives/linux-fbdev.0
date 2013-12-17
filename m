@@ -1,7 +1,7 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 12 Dec 2013 18:51:53 +0000
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Tue, 17 Dec 2013 16:27:34 +0000
 Subject: Re: [PATCH] video: amba-clcd: Make CLCD driver available on more platforms
-Message-Id: <CAMuHMdXtyHKvpsgVMfoiJ3f0wJ5MXnji6iy7hU-jcp1kSbB4Gw@mail.gmail.com>
+Message-Id: <CAHkRjk6_+dQTqaOqu4bittwFB5PC9qR8GDKhNDmc=3i15xvTFg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1386868390-12231-1-git-send-email-broonie@kernel.org>
 In-Reply-To: <1386868390-12231-1-git-send-email-broonie@kernel.org>
@@ -10,32 +10,19 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Thu, Dec 12, 2013 at 7:07 PM, Mark Brown <broonie@kernel.org> wrote:
-> On Thu, Dec 12, 2013 at 06:48:49PM +0100, Geert Uytterhoeven wrote:
+On 12 December 2013 17:13, Mark Brown <broonie@kernel.org> wrote:
+> From: Mark Brown <broonie@linaro.org>
 >
->> Currently ARM_AMBA exists on arm/arm64 only.
->> Is there a patch in the pipeline to change that? Without such a change,
->
-> I don't know but it's plausible given how common AMBA is.
->
->> this patch doesn't make any difference.
->
-> No, it does mean that ARM64 is included - previously the dependency was
+> The CLCD driver is used on ARM reference models for ARMv8 so add ARM64
+> to the list of dependencies. The driver also has no build time dependencies
+> on ARM (stubs are provided for ARM-specific DMA functions in the code) so
+> make it available with COMPILE_TEST in order to maximise build coverage.
 
-Sure.
+I haven't followed other CLCD patches but for arm64 it requires
+support for DT. I have been carrying some patches (done by Linaro) for
+a long time and Pawel @ ARM has another set of patches. Do you know
+what the status for those is before enabling CLCD on arm64? That's
+unless you are only looking at compile-testing.
 
-> only on ARM so it wasn't available on ARM64.  COMPILE_TEST won't have an
-> impact though.
-
-Sorry, I meant it doesn't have any impact on COMPILE_TEST.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+Catalin

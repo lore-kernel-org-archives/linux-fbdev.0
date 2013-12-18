@@ -1,120 +1,87 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 18 Dec 2013 10:41:03 +0000
+Date: Wed, 18 Dec 2013 14:02:28 +0000
 Subject: Re: [PATCHv2 23/27] OMAPDSS: connector-dvi: Add DT support
-Message-Id: <52B17BBF.8090003@ti.com>
+Message-Id: <52B1AAF4.3020509@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="E1POrgl6eIEwBmCWDUfpnTvwVSU7CM6Jh"
+Content-Type: multipart/mixed; boundary="DjNsiUb5Mm2cRkPMn7ljkAwtB4p2p3Glh"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com> <20131217070551.GR24559@pengutronix.de> <52AFFA2E.5050702@ti.com> <1651476.iaILztiDEi@avalon>
-In-Reply-To: <1651476.iaILztiDEi@avalon>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com> <20131217070551.GR24559@pengutronix.de> <52AFFA2E.5050702@ti.com> <1651476.iaILztiDEi@avalon> <52B17BBF.8090003@ti.com>
+In-Reply-To: <52B17BBF.8090003-l0cyMroinI0@public.gmane.org>
+To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Cc: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
---E1POrgl6eIEwBmCWDUfpnTvwVSU7CM6Jh
+--DjNsiUb5Mm2cRkPMn7ljkAwtB4p2p3Glh
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 2013-12-17 17:15, Laurent Pinchart wrote:
+On 2013-12-18 12:41, Tomi Valkeinen wrote:
 
->>> Either the driver is too specific or the binding is too generic, but
->>> having such a generic name for an omap specific driver seems wrong. S=
-ame
->>> for panel-dpi, svideo-connector, composite-video-connector and
->>> hdmi-connector,
->>
->> Hmm. Good point. I was thinking that the driver is only used on OMAP, =
-but of
->> course that's not true, the driver is there for all platforms if the k=
-ernel
->> just happens to be compiled with the driver.
->>
->> And it's not just about those drivers you mention. The same issue is t=
-here
->> for, say, "ti,tpd12s015". I have an omapdss specific driver for that, =
-but if
->> some other platform uses the same chip, they'll have a driver for it a=
-lso...
->>
->> Sigh. I wonder how this should be handled... The only solution that co=
-mes to
->> my mind is to have all the compatible strings as "ti,...". But that's =
-not
->> correct, as they are not TI components, but some are generic ones and =
-some
->> from another vendor.
->>
->> And even "ti,..." is not good, as there are other TI SoCs with other d=
-isplay
->> drivers. So I'd need to prepend the compatible strings with "omapdss,.=
-=2E.",
->> making the hardware components driver specific.
->>
->> The long term plan is to make the drivers generic (or implement the sa=
-me
->> driver for common display framework). But for now I need to have futur=
-e
->> proof DT bindings with omapdss specific drivers...
->=20
-> I'll refrain from mentioning that the problem has been identified more =
-than a=20
-> year ago. Oh, wait, I've metioned it, sorry :-D
->=20
-> We really want to make drivers generic enough to be shared by multiple =
-display=20
-> controllers. I would vote for making the DT bindings generic now alread=
-y,=20
-> which would be enough to buy some time to fix the problem properly. If =
-we=20
-> start prepending driver-specific prefixes such as "omapdss," to compati=
-ble=20
-> string we'll just make the mess even larger and reduce the incentive to=
- fix=20
-> it. It would be the worst decision we could make.
+> 3. Have correct DT data, but at init time, in omap arch code, go throug=
+h
+> the DT data and change the compat strings for the display nodes to
+> include "omapdss,". This way the drivers would only work for omap
+> platforms. Like a combination of 1. and 2. I'm not sure if the DT-code
+> allows this at the moment, though.
 
-Well... I think there are no good options here. I see the following optio=
-ns:
+This wasn't actually too hard. It says "hack" all over it, but the code
+was quite compact. I call the omapdss_early_init_of() as the first thing
+in omap_generic_init(), before the devices are created:
 
-1. Add "omapdss," or similar to compat strings in DT, and the same for
-the drivers. This solves the issue, but then we'll have bad DT data,
-although I see similar method already being used in some places. When we
-have common drivers, we can remove the "omapdss," strings from DT, but
-we still need to keep them in the drivers to have backward compatibility.=
++static const char* const dss_compat_conv_list[] =3D {
++       "hdmi-connector",
++       "dvi-connector",
++       "ti,tpd12s015",
++       "panel-dsi-cm",
++};
++
++static void omapdss_omapify_node(struct device_node *node, const char
+*compat)
++{
++       char *new_compat;
++       struct property *prop;
++
++       new_compat =3D kasprintf(GFP_KERNEL, "omapdss,%s", compat);
++
++       prop =3D kzalloc(sizeof(*prop), GFP_KERNEL);
++       prop->name =3D "compatible";
++       prop->value =3D new_compat;
++       prop->length =3D strlen(new_compat) + 1;
++
++       of_update_property(node, prop);
++}
++
++void __init omapdss_early_init_of(void)
++{
++       int i;
++
++       for (i =3D 0; i < ARRAY_SIZE(dss_compat_conv_list); ++i) {
++               const char *compat =3D dss_compat_conv_list[i];
++               struct device_node *node =3D NULL;
++
++               while ((node =3D of_find_compatible_node(node, NULL,
+compat))) {
++                       if (!of_device_is_available(node))
++                               continue;
++
++                       omapdss_omapify_node(node, compat);
++               }
++       }
++}
 
+The list has just part of the devices, and I've so far only tested on
+OMAP 4430sdp board, but it seemed to work fine.
 
-2. Keep the compat strings generic in DT. This way we'll have correct DT
-data, but if anyone happens to create a new driver with the same compat
-string, things will break. omapdss can only be compiled for a kernel
-with OMAP and ARM support, so it narrows the problematic drivers a bit.
+So with this, I can have "hdmi-connector" in the .dts file, and
+"omapdss,hdmi-connector" as a compat string in the omap specific driver.
 
-3. Have correct DT data, but at init time, in omap arch code, go through
-the DT data and change the compat strings for the display nodes to
-include "omapdss,". This way the drivers would only work for omap
-platforms. Like a combination of 1. and 2. I'm not sure if the DT-code
-allows this at the moment, though.
-
-We could also now select option 2., and go for 3. later if someone else
-creates a driver with the same compat string.
-
-While I'm obviously not very impartial here, I do think that using
-generic bindings for omapdss is not the worst possible case, as:
-
-I'm very much dedicated to get CDF merged at some point, and I already
-have been working on it for each revision.
-
-I also think that even if the omap panel drivers are currently omap
-specific, they are not very much so. I have been changing them over the
-years to be more and more generic, and I have used them as a base for
-CDF panel drivers. If some platform specific driver may have a generic
-compat string, omap panel drivers are not the worst option.
-
-I will look at the option 3., hopefully that will be possible and
-everybody will be happy. Any other ideas appreciated.
+Does it make your eyes bleed, or is it maybe something that could be
+fine for the time being?
 
  Tomi
 
 
 
---E1POrgl6eIEwBmCWDUfpnTvwVSU7CM6Jh
+--DjNsiUb5Mm2cRkPMn7ljkAwtB4p2p3Glh
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -123,19 +90,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.14 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJSsXu/AAoJEPo9qoy8lh71pJ4QAInERha/H3nPcuf8/ClZ+jd3
-zLK9MSjTDG6Tr9LY3l8OiB2zh9ThdYjz7V4VWU6uxyE4gkof9WToECwWscbC2wSA
-DsS/aNBPU4Fa3immVdXSewe1Cy9OMirjpTt+HbHvCujm45U0887i11Fso3UVHcSs
-iCCHol72f1OHBtMrzQ8/PyTCgEG4isoyXyQlkGILftZNM/FZReCRDboO9dH9cp1m
-esAWI9uo3KYSES0bUvMQOaiialAD2F9mThgExk+USMhVaW9qT0vI88iqUROvxEYp
-koc4l5ri0iYiJPMP9Sxg36oXYfZpC6iRtbCLPFHddba5DeODgrRneFk9Bsa1N8/M
-sLqWLg+KshNUJs3hvHey2KM97GyDDKA+rij8TtTirg+pKrLlQMa+9f2k+2OEphSM
-0n12D53t8w29zYEAUrlKz7LxtdKPASrHjq0IhYNQNgLPbdcBgrjPJ0B0NAYcBhmN
-Yx16QXQTmcze3W6EsvYMRwQ7oJXNCJRmObz6qR5deGrNBm45fAD4bWAvxxundUL2
-fPzUYDCd8+6XEgjZKnA+C2nQ1nPe+5KuIYqnF2UvASdy/l1Ns2Ge54xVzogCg1fg
-0kkUDFJgPyMQAKjhmn86W9ac8zBXMPP5eXUUSJzZa682OIg+JVlIgHb4wsiiBy+h
-tDYZfrPCPr8Tu1GB5Dgg
-=YI1Q
+iQIcBAEBAgAGBQJSsar0AAoJEPo9qoy8lh71m8IP/jEk/2ZRxHpiBknUc6b1LW0p
+g0UwpT1orlzdUjqFD1JBvXaZ0F63gPlwZO4DSVeIhTSuXt1/9i/uYytevwMwa29A
+3I1hEiE6e1Ajt73hzyZgzPmzzhXriyZe7sj9mNfNZ09B5KVtLKOJQ88EMcBzSfbs
+spBYUXpFZ8EKWj8Q9MXyXyvPj23bPXN0Ph/R+BItN7LOD5t1/39H6KYu3Xz07N9A
+jK2DzHjr2dnlcKfxHInlyHBQDuOpQt0Esj3NOCEbZVGHUR3uXXb/lBduQdfna3GF
+uW3blTV/Yh05Ie7wUrY1n4iNHoSuMcLG6iVS7VxRm6PPRiOzY/Ea+5V4R5XEH/Qi
+n//mfAHxKHGpCtcwdzPOvjYxJjXQhbbo2wAk2HvuX9x4zKGUaRMtzN1aDExuFVqm
+507HMbq5BZSBwlkuQsoqRrkVrmYA6xYljcrK8VTlyxT5N3tJIZmWEHJHXOOVhRc2
+WAWAEWXdvE5BoRsPJCuFkj4rsNwjVYQUsGc1ZKMt+hF/TfY/aylN6vObGJiNqrYL
++YpPTq76Rn+s97YW38Lx99l+Fr2XBDP5ESsIpnCg3z5LQcViMsZXS4nEHuOo1eqv
+N2KKx6UFjacLkITc6B5zPqtlQQ2ziKeCji8HWJLvQIAOOkwLHWFSywyWd14ECIAm
+Zmruw2mQpTIndZm2OVZo
+=nv1o
 -----END PGP SIGNATURE-----
 
---E1POrgl6eIEwBmCWDUfpnTvwVSU7CM6Jh--
+--DjNsiUb5Mm2cRkPMn7ljkAwtB4p2p3Glh--

@@ -1,94 +1,281 @@
 From: David Herrmann <dh.herrmann@gmail.com>
-Date: Fri, 20 Dec 2013 14:46:20 +0000
-Subject: Re: [PATCH v4] x86: sysfb: remove sysfb when probing real hw
-Message-Id: <CANq1E4QsSje7ZD01EucKt_dGo5UuMyWNeB1Xnnx+p2bMRCNn-A@mail.gmail.com>
+Date: Wed, 18 Dec 2013 11:48:03 +0000
+Subject: [RFC] x86: sysfb: remove sysfb when probing real hw
+Message-Id: <1387367283-20078-1-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387448038-8260-1-git-send-email-dh.herrmann@gmail.com>
-	<1387473881-26179-1-git-send-email-dh.herrmann@gmail.com>
-	<20131219183310.GF32508@gmail.com>
-In-Reply-To: <20131219183310.GF32508@gmail.com>
+References: <s5hk3f2v15r.wl%tiwai@suse.de>
+In-Reply-To: <s5hk3f2v15r.wl%tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, the arch/x86 maintainers <x86@kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, stable <stable@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Takashi Iwai <tiwai@suse.de>, Stephen Warren <swarren@wwwdotorg.org>, the arch/x86 maintainers <x86@kernel.org>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Ingo Molnar <mingo@kernel.org>, David Herrmann <dh.herrmann@gmail.com>
 
+If we probe a real hw driver for graphics devices, we need to unload any
+generic fallback driver like efifb/vesafb/simplefb on the system
+framebuffer. This is currently done via remove_conflicting_framebuffers()
+in fbmem.c. However, this only removes the fbdev driver, not the fake
+platform devices underneath. This hasn't been a problem so far, as efifb
+and vesafb didn't store any resources there. However, with simplefb this
+changed.
+
+To correctly release the IORESOURCE_MEM resources of simple-framebuffer
+platform devices, we need to unregister the underlying platform device
+*before* probing any new hw driver. This patch adds sysfb_unregister() for
+that purpose. It can be called from any context (except from the
+platform-device ->remove callback path) and synchronously unloads any
+global sysfb and prevents new sysfbs from getting registered. Thus, you
+can call it even before any sysfb has been loaded.
+
+This also changes remove_conflicting_framebuffer() to call this helper
+*before* trying it's fbdev heuristic to remove conflicting drivers.
+
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+---
 Hi
 
-On Thu, Dec 19, 2013 at 7:33 PM, Ingo Molnar <mingo@kernel.org> wrote:
->
-> * David Herrmann <dh.herrmann@gmail.com> wrote:
->
->> +/*
->> + * Unregister the sysfb and prevent new sysfbs from getting registered. Can be
->> + * called from any context except recursively or from sysfb_register().
->> + * Used by remove_conflicting_framebuffers() and friends.
->> + */
->> +void sysfb_unregister(const struct apertures_struct *apert, bool primary)
->> +{
->> +     mutex_lock(&sysfb_lock);
->> +     if (!IS_ERR(sysfb_dev) && sysfb_dev) {
->> +             if (sysfb_match(apert, primary)) {
->> +                     platform_device_unregister(sysfb_dev);
->> +                     sysfb_dev = ERR_PTR(-EALREADY);
->> +             }
->> +     } else {
->> +             /* if !sysfb_dev, set err so no new sysfb is probed later */
->> +             sysfb_dev = ERR_PTR(-EALREADY);
->
-> Just a small detail: we can get into this 'else' branch not just with
-> NULL, but also with IS_ERR(sysfb_dev). In that case we override
-> whatever error code is contained in sysfb_dev and overwrite it with
-> ERR_PTR(-EALREADY).
->
-> (Probably not a big deal, because we don't actually ever seem to
-> extract the error code from the pointer, but wanted to mention it.)
+This is imho the clean version of Takashi's fix. However, it gets pretty huge. I
+wouldn't object to marking CONFIG_X86_SYSFB broken in the stable series and get
+this in for 3.14. Your call..
 
-Yepp, I know, but that's just fine.
+This patch basically simulates an unplug event for system-framebuffers when
+loading real hardware drivers. To trigger it, call sysfb_unregister(). You can
+optionally pass an aperture-struct and primary-flag similar to
+remove_conflicting_framebuffers(). If they're not passed, we remove it
+unconditionally.
 
->> +#ifdef CONFIG_X86_SYSFB
->> +#include <asm/sysfb.h>
->> +#endif
->
-> Pet peeve, this looks sexier:
->
-> #ifdef CONFIG_X86_SYSFB
-> # include <asm/sysfb.h>
-> #endif
->
->> @@ -1604,6 +1607,17 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
->>       }
->>  }
->>
->> +static void remove_conflicting_sysfb(const struct apertures_struct *apert,
->> +                                  bool primary)
->> +{
->> +     if (!apert)
->> +             return;
->> +
->> +#ifdef CONFIG_X86_SYSFB
->> +     sysfb_unregister(apert, primary);
->> +#endif
->> +}
->
-> So why not make sysfb_unregister() accept a !apert parameter (it would
-> simply return), at which point remove_conflicting_sysfb() could be
-> eliminated and just be replaced with a direct sysfb_unregister() call
-> - with no #ifdefs.
->
-> We only need #ifdefs for the sysfb_unregister() declaration in the .h
-> file.
-
-I can do that but we still need the #ifdef. sysfb is an x86-asm header
-so it's not available on other archs. Even with #ifdef in the header I
-still need it around the actual function call.
+Untested, but my kernel compiles are already running. If my tests succeed and
+nobody has objections, I can resend it as proper PATCH and marked for stable.
+And maybe split the fbmem and sysfb changes into two patches..
 
 Thanks
 David
 
-> At first sight this looks simpler and cleaner for the fix itself - no
-> need for extra cleanups for this detail.
->
-> Thanks,
->
->         Ingo
+ arch/x86/include/asm/sysfb.h     |  10 ++++
+ arch/x86/kernel/sysfb.c          | 103 +++++++++++++++++++++++++++++++++++++--
+ arch/x86/kernel/sysfb_simplefb.c |   5 +-
+ drivers/video/fbmem.c            |  16 ++++++
+ 4 files changed, 128 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/include/asm/sysfb.h b/arch/x86/include/asm/sysfb.h
+index 2aeb3e2..713bc17 100644
+--- a/arch/x86/include/asm/sysfb.h
++++ b/arch/x86/include/asm/sysfb.h
+@@ -11,6 +11,7 @@
+  * any later version.
+  */
+ 
++#include <linux/fb.h>
+ #include <linux/kernel.h>
+ #include <linux/platform_data/simplefb.h>
+ #include <linux/screen_info.h>
+@@ -59,6 +60,15 @@ struct efifb_dmi_info {
+ 	int flags;
+ };
+ 
++__init struct platform_device *sysfb_alloc(const char *name,
++					   int id,
++					   const struct resource *res,
++					   unsigned int res_num,
++					   const void *data,
++					   size_t data_size);
++__init int sysfb_register(struct platform_device *dev);
++void sysfb_unregister(const struct apertures_struct *apert, bool primary);
++
+ #ifdef CONFIG_EFI
+ 
+ extern struct efifb_dmi_info efifb_dmi_list[];
+diff --git a/arch/x86/kernel/sysfb.c b/arch/x86/kernel/sysfb.c
+index 193ec2c..3d4554e 100644
+--- a/arch/x86/kernel/sysfb.c
++++ b/arch/x86/kernel/sysfb.c
+@@ -33,11 +33,106 @@
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/mm.h>
++#include <linux/mutex.h>
+ #include <linux/platform_data/simplefb.h>
+ #include <linux/platform_device.h>
+ #include <linux/screen_info.h>
+ #include <asm/sysfb.h>
+ 
++static DEFINE_MUTEX(sysfb_lock);
++static struct platform_device *sysfb_dev;
++
++/* register @dev as sysfb; takes ownership over @dev */
++__init int sysfb_register(struct platform_device *dev)
++{
++	int r = 0;
++
++	mutex_lock(&sysfb_lock);
++	if (!sysfb_dev) {
++		r = platform_device_add(dev);
++		if (r < 0)
++			put_device(&dev->dev);
++		else
++			sysfb_dev = dev;
++	} else {
++		/* if there already is/was a sysfb, destroy @pd but return 0 */
++		platform_device_put(dev);
++	}
++	mutex_unlock(&sysfb_lock);
++
++	return r;
++}
++
++static bool sysfb_match(const struct apertures_struct *apert, bool primary)
++{
++	struct screen_info *si = &screen_info;
++	unsigned int i;
++	const struct aperture *a;
++
++	if (!apert || primary)
++		return true;
++
++	for (i = 0; i < apert->count; ++i) {
++		a = &apert->ranges[i];
++		if (a->base >= si->lfb_base &&
++		    a->base < si->lfb_base + ((u64)si->lfb_size << 16))
++			return true;
++		if (si->lfb_base >= a->base &&
++		    si->lfb_base < a->base + a->size)
++			return true;
++	}
++
++	return false;
++}
++
++/* unregister the sysfb and prevent new sysfbs from getting registered */
++void sysfb_unregister(const struct apertures_struct *apert, bool primary)
++{
++
++	mutex_lock(&sysfb_lock);
++	if (!IS_ERR(sysfb_dev)) {
++		if (sysfb_dev) {
++			if (sysfb_match(apert, primary)) {
++				platform_device_del(sysfb_dev);
++				platform_device_put(sysfb_dev);
++				sysfb_dev = ERR_PTR(-EALREADY);
++			}
++		} else {
++			sysfb_dev = ERR_PTR(-EALREADY);
++		}
++	}
++	mutex_unlock(&sysfb_lock);
++}
++
++__init struct platform_device *sysfb_alloc(const char *name,
++					   int id,
++					   const struct resource *res,
++					   unsigned int res_num,
++					   const void *data,
++					   size_t data_size)
++{
++	struct platform_device *pd;
++	int ret;
++
++	pd = platform_device_alloc(name, id);
++	if (!pd)
++		return ERR_PTR(-ENOMEM);
++
++	ret = platform_device_add_resources(pd, res, res_num);
++	if (ret)
++		goto err;
++
++	ret = platform_device_add_data(pd, data, data_size);
++	if (ret)
++		goto err;
++
++	return pd;
++
++err:
++	platform_device_put(pd);
++	return ERR_PTR(ret);
++}
++
+ static __init int sysfb_init(void)
+ {
+ 	struct screen_info *si = &screen_info;
+@@ -65,9 +160,11 @@ static __init int sysfb_init(void)
+ 	else
+ 		name = "platform-framebuffer";
+ 
+-	pd = platform_device_register_resndata(NULL, name, 0,
+-					       NULL, 0, si, sizeof(*si));
+-	return IS_ERR(pd) ? PTR_ERR(pd) : 0;
++	pd = sysfb_alloc(name, 0, NULL, 0, si, sizeof(*si));
++	if (IS_ERR(pd))
++		return PTR_ERR(pd);
++
++	return sysfb_register(pd);
+ }
+ 
+ /* must execute after PCI subsystem for EFI quirks */
+diff --git a/arch/x86/kernel/sysfb_simplefb.c b/arch/x86/kernel/sysfb_simplefb.c
+index 86179d4..8e7bd23 100644
+--- a/arch/x86/kernel/sysfb_simplefb.c
++++ b/arch/x86/kernel/sysfb_simplefb.c
+@@ -86,10 +86,9 @@ __init int create_simplefb(const struct screen_info *si,
+ 	if (res.end <= res.start)
+ 		return -EINVAL;
+ 
+-	pd = platform_device_register_resndata(NULL, "simple-framebuffer", 0,
+-					       &res, 1, mode, sizeof(*mode));
++	pd = sysfb_alloc("simple-framebuffer", 0, &res, 1, mode, sizeof(*mode));
+ 	if (IS_ERR(pd))
+ 		return PTR_ERR(pd);
+ 
+-	return 0;
++	return sysfb_register(pd);
+ }
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 010d191..53e3894 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -35,6 +35,9 @@
+ 
+ #include <asm/fb.h>
+ 
++#if IS_ENABLED(CONFIG_X86_SYSFB)
++#include <asm/sysfb.h>
++#endif
+ 
+     /*
+      *  Frame buffer device initialization and setup routines
+@@ -1604,6 +1607,14 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ 	}
+ }
+ 
++static void remove_conflicting_sysfb(const struct apertures_struct *apert,
++				     bool primary)
++{
++#if IS_ENABLED(CONFIG_X86_SYSFB)
++	sysfb_unregister(apert, primary);
++#endif
++}
++
+ static int do_register_framebuffer(struct fb_info *fb_info)
+ {
+ 	int i;
+@@ -1742,6 +1753,8 @@ EXPORT_SYMBOL(unlink_framebuffer);
+ void remove_conflicting_framebuffers(struct apertures_struct *a,
+ 				     const char *name, bool primary)
+ {
++	remove_conflicting_sysfb(a, primary);
++
+ 	mutex_lock(&registration_lock);
+ 	do_remove_conflicting_framebuffers(a, name, primary);
+ 	mutex_unlock(&registration_lock);
+@@ -1762,6 +1775,9 @@ register_framebuffer(struct fb_info *fb_info)
+ {
+ 	int ret;
+ 
++	remove_conflicting_sysfb(fb_info->apertures,
++				 fb_is_primary_device(fb_info));
++
+ 	mutex_lock(&registration_lock);
+ 	ret = do_register_framebuffer(fb_info);
+ 	mutex_unlock(&registration_lock);
+-- 
+1.8.5.1
+

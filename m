@@ -1,208 +1,356 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Wed, 18 Dec 2013 10:21:46 +0000
+From: Takashi Iwai <tiwai@suse.de>
+Date: Wed, 18 Dec 2013 11:39:12 +0000
 Subject: Re: cirrusdrmfb broken with simplefb
-Message-Id: <CANq1E4SEL6J50tvv-N9xSs6oA=Og96-7TQOECx=p-WGG3mU9=Q@mail.gmail.com>
+Message-Id: <s5hk3f2v15r.wl%tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <s5hlhzik3kk.wl%tiwai@suse.de>
 	<CANq1E4TFKDduy71jCXy+8CMS1_OFxWEpsHY3AA0RUJPW4VE8hg@mail.gmail.com>
 	<s5hfvpqk0p8.wl%tiwai@suse.de>
 	<s5hppouv4y4.wl%tiwai@suse.de>
-In-Reply-To: <s5hppouv4y4.wl%tiwai@suse.de>
+	<CANq1E4SEL6J50tvv-N9xSs6oA=Og96-7TQOECx=p-WGG3mU9=Q@mail.gmail.com>
+In-Reply-To: <CANq1E4SEL6J50tvv-N9xSs6oA=Og96-7TQOECx=p-WGG3mU9=Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: Takashi Iwai <tiwai@suse.de>
+To: David Herrmann <dh.herrmann@gmail.com>
 Cc: Stephen Warren <swarren@wwwdotorg.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-Hi
+At Wed, 18 Dec 2013 11:21:46 +0100,
+David Herrmann wrote:
+>=20
+> Hi
+>=20
+> On Wed, Dec 18, 2013 at 11:17 AM, Takashi Iwai <tiwai@suse.de> wrote:
+> > At Wed, 18 Dec 2013 09:44:35 +0100,
+> > Takashi Iwai wrote:
+> >>
+> >> At Wed, 18 Dec 2013 09:21:28 +0100,
+> >> David Herrmann wrote:
+> >> >
+> >> > Hi
+> >> >
+> >> > On Wed, Dec 18, 2013 at 8:42 AM, Takashi Iwai <tiwai@suse.de> wrote:
+> >> > > Hi,
+> >> > >
+> >> > > with the recent enablement of simplefb on x86, cirrusdrmfb on QEMU=
+/KVM
+> >> > > gets broken now, as reported at:
+> >> > >     https://bugzilla.novell.com/show_bug.cgi?id=855821
+> >> > >
+> >> > > The cirrus VGA resource is reserved at first as "BOOTFB" in
+> >> > > arch/x86/kernel/sysfb_simplefb.c, which is taken by simplefb platf=
+orm
+> >> > > device.  This resource is, however, never released until the platf=
+orm
+> >> > > device is destroyed, and the framebuffer switching doesn't trigger
+> >> > > it.  It calls fb's destroy callback, at most.  Then, cirrus driver
+> >> > > tries to assign the resource, fails and gives up, resulting in a
+> >> > > complete blank screen.
+> >> > >
+> >> > > The same problem should exist on other KMS drivers like mgag200 or
+> >> > > ast, not only cirrus.  Intel graphics doesn't hit this problem just
+> >> > > because the reserved iomem by BOOTFB isn't required by i915 driver.
+> >> > >
+> >> > > The patch below is a quick attempt to solve the issue.  It adds a =
+new
+> >> > > API function for releasing resources of platform_device, and call =
+it
+> >> > > in destroy op of simplefb.  But, forcibly releasing resources of a
+> >> > > parent device doesn't sound like a correct design.  We may take su=
+ch
+> >> > > as a band aid, but definitely need a more fundamental fix.
+> >> > >
+> >> > > Any thoughts?
+> >> >
+> >> > That bug always existed, simplefb is just the first driver to hit it
+> >> > (vesafb/efifb didn't use resources).
+> >>
+> >> Heh, the bug didn't "exist" because no other grabbed the resource
+> >> before.  The way the cirrus driver allocates the resource is no bug,
+> >> per se.  But the proper resource takeover is missing.
+> >>
+> >> > I'm aware of the issue but as a
+> >> > workaround you can simply disable CONFIG_X86_SYSFB. That restores the
+> >> > old behavior.
+> >>
+> >> Yes, but CONFIG_X86_SYSFB breaks things as of now.  Shouldn't it be
+> >> mentioned or give some kconfig hints instead of silently giving a
+> >> broken output, if any quick fix isn't possible?
+> >>
+> >> > As a proper fix, I'd propose something like:
+> >> >   dev =3D platform_find_device("platform-framebuffer");
+> >> >   platform_remove_device(dev);
+> >> >
+> >> > And we wrap this as:
+> >> >   sysfb_remove_framebuffers()
+> >> > in arch/x86/kernel/sysfb.c
+> >> >
+> >> > This should cause a ->remove() event for the platform-driver and
+> >> > correctly release the resources. Comments?
+> >>
+> >> Who will call this?  From destroy callback?
+> >> Or can we simply do put_device() the bound platform device instead?
+> >
+> > Just tested, put_device() doesn't work since the refcount isn't 1, so
+> > if any, we need to call platform_device_unregister() to release
+> > forcibly.
+> >
+> > The patch below seems working at a quick test.  But I still have
+> > some bad feeling for unregistering the parent device from the child's
+> > destroy callback...
+>=20
+> The idea is right, but call it from
+> "remove_conflicting_framebuffers()". The problem is, if we load a
+> driver on top of a dummy like vesafb/efifb/simplefb, we never removed
+> them properly. Instead, we only unregistered their fb driver. But with
+> the driver-model, that's just removing the driver, not the dummy
+> device.
+>=20
+> So we'd just call platform_device_unregister() in
+> remove_conflicting_framebuffers() instead of unregister_framebuffer()
+> on such devices. I'm now at home and will have a look.
 
-On Wed, Dec 18, 2013 at 11:17 AM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Wed, 18 Dec 2013 09:44:35 +0100,
-> Takashi Iwai wrote:
->>
->> At Wed, 18 Dec 2013 09:21:28 +0100,
->> David Herrmann wrote:
->> >
->> > Hi
->> >
->> > On Wed, Dec 18, 2013 at 8:42 AM, Takashi Iwai <tiwai@suse.de> wrote:
->> > > Hi,
->> > >
->> > > with the recent enablement of simplefb on x86, cirrusdrmfb on QEMU/K=
-VM
->> > > gets broken now, as reported at:
->> > >     https://bugzilla.novell.com/show_bug.cgi?id=855821
->> > >
->> > > The cirrus VGA resource is reserved at first as "BOOTFB" in
->> > > arch/x86/kernel/sysfb_simplefb.c, which is taken by simplefb platform
->> > > device.  This resource is, however, never released until the platform
->> > > device is destroyed, and the framebuffer switching doesn't trigger
->> > > it.  It calls fb's destroy callback, at most.  Then, cirrus driver
->> > > tries to assign the resource, fails and gives up, resulting in a
->> > > complete blank screen.
->> > >
->> > > The same problem should exist on other KMS drivers like mgag200 or
->> > > ast, not only cirrus.  Intel graphics doesn't hit this problem just
->> > > because the reserved iomem by BOOTFB isn't required by i915 driver.
->> > >
->> > > The patch below is a quick attempt to solve the issue.  It adds a new
->> > > API function for releasing resources of platform_device, and call it
->> > > in destroy op of simplefb.  But, forcibly releasing resources of a
->> > > parent device doesn't sound like a correct design.  We may take such
->> > > as a band aid, but definitely need a more fundamental fix.
->> > >
->> > > Any thoughts?
->> >
->> > That bug always existed, simplefb is just the first driver to hit it
->> > (vesafb/efifb didn't use resources).
->>
->> Heh, the bug didn't "exist" because no other grabbed the resource
->> before.  The way the cirrus driver allocates the resource is no bug,
->> per se.  But the proper resource takeover is missing.
->>
->> > I'm aware of the issue but as a
->> > workaround you can simply disable CONFIG_X86_SYSFB. That restores the
->> > old behavior.
->>
->> Yes, but CONFIG_X86_SYSFB breaks things as of now.  Shouldn't it be
->> mentioned or give some kconfig hints instead of silently giving a
->> broken output, if any quick fix isn't possible?
->>
->> > As a proper fix, I'd propose something like:
->> >   dev =3D platform_find_device("platform-framebuffer");
->> >   platform_remove_device(dev);
->> >
->> > And we wrap this as:
->> >   sysfb_remove_framebuffers()
->> > in arch/x86/kernel/sysfb.c
->> >
->> > This should cause a ->remove() event for the platform-driver and
->> > correctly release the resources. Comments?
->>
->> Who will call this?  From destroy callback?
->> Or can we simply do put_device() the bound platform device instead?
->
-> Just tested, put_device() doesn't work since the refcount isn't 1, so
-> if any, we need to call platform_device_unregister() to release
-> forcibly.
->
-> The patch below seems working at a quick test.  But I still have
-> some bad feeling for unregistering the parent device from the child's
-> destroy callback...
+So, make sysfb_remove_framebuffers() available on all archs and
+call it there?  Hmm...  I think we need a better binding between
+platform_device and framebuffer device.  Maybe better than killing
+a parent device, but IMO, the root cause is rather that we have two=20
+individual devices (platform and framebuffer) unnecessarily.  Can we
+sort this out?
 
-The idea is right, but call it from
-"remove_conflicting_framebuffers()". The problem is, if we load a
-driver on top of a dummy like vesafb/efifb/simplefb, we never removed
-them properly. Instead, we only unregistered their fb driver. But with
-the driver-model, that's just removing the driver, not the dummy
-device.
+In anyway, the patch below is a quick revisited fix.  It's calling
+sysfb_remove_framebuffers().  Instead of finding over a platform name
+string as you suggested, the patch just tries to remember the
+instance.
 
-So we'd just call platform_device_unregister() in
-remove_conflicting_framebuffers() instead of unregister_framebuffer()
-on such devices. I'm now at home and will have a look.
+The ifdef in fbmem.c looks ugly, but we can clean up such a thing
+later.  And, yes, the patch should be split.
 
-Thanks
-David
 
->
-> thanks,
->
-> Takashi
->
-> ---
-> diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
-> index 210f3a02121a..196360c54157 100644
-> --- a/drivers/video/simplefb.c
-> +++ b/drivers/video/simplefb.c
-> @@ -41,6 +41,11 @@ static struct fb_var_screeninfo simplefb_var =3D {
->         .vmode          =3D FB_VMODE_NONINTERLACED,
->  };
->
-> +struct simplefb_priv {
-> +       u32 pseudo_palette[16];
-> +       struct platform_device *pdev;
-> +};
-> +
->  static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int=
- blue,
->                               u_int transp, struct fb_info *info)
->  {
-> @@ -68,8 +73,19 @@ static int simplefb_setcolreg(u_int regno, u_int red, =
-u_int green, u_int blue,
->
->  static void simplefb_destroy(struct fb_info *info)
->  {
-> +       struct simplefb_priv *priv =3D info->par;
-> +       struct platform_device *pdev =3D priv->pdev;
-> +
->         if (info->screen_base)
->                 iounmap(info->screen_base);
-> +
-> +       /* release the bound platform device when called from
-> +        * remove_conflicting_framebuffers()
-> +        */
-> +       if (pdev) {
-> +               priv->pdev =3D NULL; /* to avoid double-free */
-> +               platform_device_unregister(pdev);
-> +       }
->  }
->
->  static struct fb_ops simplefb_ops =3D {
-> @@ -169,6 +185,7 @@ static int simplefb_probe(struct platform_device *pde=
-v)
->         struct simplefb_params params;
->         struct fb_info *info;
->         struct resource *mem;
-> +       struct simplefb_priv *priv;
->
->         if (fb_get_options("simplefb", NULL))
->                 return -ENODEV;
-> @@ -188,7 +205,7 @@ static int simplefb_probe(struct platform_device *pde=
-v)
->                 return -EINVAL;
->         }
->
-> -       info =3D framebuffer_alloc(sizeof(u32) * 16, &pdev->dev);
-> +       info =3D framebuffer_alloc(sizeof(struct simplefb_priv), &pdev->d=
-ev);
->         if (!info)
->                 return -ENOMEM;
->         platform_set_drvdata(pdev, info);
-> @@ -225,7 +242,9 @@ static int simplefb_probe(struct platform_device *pde=
-v)
->                 framebuffer_release(info);
->                 return -ENODEV;
->         }
-> -       info->pseudo_palette =3D (void *)(info + 1);
-> +
-> +       priv =3D info->par;
-> +       info->pseudo_palette =3D priv->pseudo_palette;
->
->         dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to=
- 0x%p\n",
->                              info->fix.smem_start, info->fix.smem_len,
-> @@ -243,6 +262,7 @@ static int simplefb_probe(struct platform_device *pde=
-v)
->                 return ret;
->         }
->
-> +       priv->pdev =3D pdev;
->         dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
->
->         return 0;
-> @@ -251,8 +271,13 @@ static int simplefb_probe(struct platform_device *pd=
-ev)
->  static int simplefb_remove(struct platform_device *pdev)
->  {
->         struct fb_info *info =3D platform_get_drvdata(pdev);
-> +       struct simplefb_priv *priv =3D info->par;
-> +
-> +       if (priv->pdev) {
-> +               priv->pdev =3D NULL; /* to avoid double-free */
-> +               unregister_framebuffer(info);
-> +       }
->
-> -       unregister_framebuffer(info);
->         framebuffer_release(info);
->
->         return 0;
+thanks,
+
+Takashi
+
+---
+diff --git a/arch/x86/include/asm/sysfb.h b/arch/x86/include/asm/sysfb.h
+index 2aeb3e2..94ba0e4 100644
+--- a/arch/x86/include/asm/sysfb.h
++++ b/arch/x86/include/asm/sysfb.h
+@@ -76,8 +76,9 @@ static inline void sysfb_apply_efi_quirks(void)
+=20
+ bool parse_mode(const struct screen_info *si,
+ 		struct simplefb_platform_data *mode);
+-int create_simplefb(const struct screen_info *si,
++struct platform_device *create_simplefb(const struct screen_info *si,
+ 		    const struct simplefb_platform_data *mode);
++void sysfb_remove_framebuffers(void);
+=20
+ #else /* CONFIG_X86_SYSFB */
+=20
+@@ -87,10 +88,10 @@ static inline bool parse_mode(const struct screen_info =
+*si,
+ 	return false;
+ }
+=20
+-static inline int create_simplefb(const struct screen_info *si,
++static inline struct platform_device *create_simplefb(const struct screen_=
+info *si,
+ 				  const struct simplefb_platform_data *mode)
+ {
+-	return -EINVAL;
++	return ERR_PTR(-EINVAL);
+ }
+=20
+ #endif /* CONFIG_X86_SYSFB */
+diff --git a/arch/x86/kernel/sysfb.c b/arch/x86/kernel/sysfb.c
+index 193ec2c..4faa5d0 100644
+--- a/arch/x86/kernel/sysfb.c
++++ b/arch/x86/kernel/sysfb.c
+@@ -38,23 +38,22 @@
+ #include <linux/screen_info.h>
+ #include <asm/sysfb.h>
+=20
++static struct platform_device *pd;
++
+ static __init int sysfb_init(void)
+ {
+ 	struct screen_info *si =3D &screen_info;
+ 	struct simplefb_platform_data mode;
+-	struct platform_device *pd;
+ 	const char *name;
+ 	bool compatible;
+-	int ret;
+=20
+ 	sysfb_apply_efi_quirks();
+=20
+ 	/* try to create a simple-framebuffer device */
+ 	compatible =3D parse_mode(si, &mode);
+ 	if (compatible) {
+-		ret =3D create_simplefb(si, &mode);
+-		if (!ret)
+-			return 0;
++		pd =3D create_simplefb(si, &mode);
++		return IS_ERR(pd) ? PTR_ERR(pd) : 0;
+ 	}
+=20
+ 	/* if the FB is incompatible, create a legacy framebuffer device */
+@@ -70,5 +69,14 @@ static __init int sysfb_init(void)
+ 	return IS_ERR(pd) ? PTR_ERR(pd) : 0;
+ }
+=20
++void sysfb_remove_framebuffers(void)
++{
++	if (!IS_ERR_OR_NULL(pd)) {
++		platform_device_unregister(pd);
++		pd =3D NULL;
++	}
++}
++EXPORT_SYMBOL_GPL(sysfb_remove_framebuffers);
++
+ /* must execute after PCI subsystem for EFI quirks */
+ device_initcall(sysfb_init);
+diff --git a/arch/x86/kernel/sysfb_simplefb.c b/arch/x86/kernel/sysfb_simpl=
+efb.c
+index 86179d4..d90042ac 100644
+--- a/arch/x86/kernel/sysfb_simplefb.c
++++ b/arch/x86/kernel/sysfb_simplefb.c
+@@ -61,10 +61,9 @@ __init bool parse_mode(const struct screen_info *si,
+ 	return false;
+ }
+=20
+-__init int create_simplefb(const struct screen_info *si,
++__init struct platform_device *create_simplefb(const struct screen_info *s=
+i,
+ 			   const struct simplefb_platform_data *mode)
+ {
+-	struct platform_device *pd;
+ 	struct resource res;
+ 	unsigned long len;
+=20
+@@ -74,7 +73,7 @@ __init int create_simplefb(const struct screen_info *si,
+ 	len =3D PAGE_ALIGN(len);
+ 	if (len > (u64)si->lfb_size << 16) {
+ 		printk(KERN_WARNING "sysfb: VRAM smaller than advertised\n");
+-		return -EINVAL;
++		return ERR_PTR(-EINVAL);
+ 	}
+=20
+ 	/* setup IORESOURCE_MEM as framebuffer memory */
+@@ -84,12 +83,8 @@ __init int create_simplefb(const struct screen_info *si,
+ 	res.start =3D si->lfb_base;
+ 	res.end =3D si->lfb_base + len - 1;
+ 	if (res.end <=3D res.start)
+-		return -EINVAL;
++		return ERR_PTR(-EINVAL);
+=20
+-	pd =3D platform_device_register_resndata(NULL, "simple-framebuffer", 0,
++	return platform_device_register_resndata(NULL, "simple-framebuffer", 0,
+ 					       &res, 1, mode, sizeof(*mode));
+-	if (IS_ERR(pd))
+-		return PTR_ERR(pd);
+-
+-	return 0;
+ }
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 010d191..49b0f89 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -34,6 +34,9 @@
+ #include <linux/fb.h>
+=20
+ #include <asm/fb.h>
++#ifdef CONFIG_X86
++#include <asm/sysfb.h>
++#endif
+=20
+=20
+     /*
+@@ -1600,6 +1603,9 @@ static void do_remove_conflicting_framebuffers(struct=
+ apertures_struct *a,
+ 			       "%s vs %s - removing generic driver\n",
+ 			       name, registered_fb[i]->fix.id);
+ 			do_unregister_framebuffer(registered_fb[i]);
++#ifdef CONFIG_X86
++			sysfb_remove_framebuffers();
++#endif
+ 		}
+ 	}
+ }
+diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
+index 210f3a0..c825b88 100644
+--- a/drivers/video/simplefb.c
++++ b/drivers/video/simplefb.c
+@@ -41,6 +41,11 @@ static struct fb_var_screeninfo simplefb_var =3D {
+ 	.vmode		=3D FB_VMODE_NONINTERLACED,
+ };
+=20
++struct simplefb_priv {
++	u32 pseudo_palette[16];
++	bool fb_registered;
++};
++
+ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int b=
+lue,
+ 			      u_int transp, struct fb_info *info)
+ {
+@@ -68,8 +73,11 @@ static int simplefb_setcolreg(u_int regno, u_int red, u_=
+int green, u_int blue,
+=20
+ static void simplefb_destroy(struct fb_info *info)
+ {
++	struct simplefb_priv *priv =3D info->par;
++
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
++	priv->fb_registered =3D false;
+ }
+=20
+ static struct fb_ops simplefb_ops =3D {
+@@ -169,6 +177,7 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	struct simplefb_params params;
+ 	struct fb_info *info;
+ 	struct resource *mem;
++	struct simplefb_priv *priv;
+=20
+ 	if (fb_get_options("simplefb", NULL))
+ 		return -ENODEV;
+@@ -188,7 +197,7 @@ static int simplefb_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+=20
+-	info =3D framebuffer_alloc(sizeof(u32) * 16, &pdev->dev);
++	info =3D framebuffer_alloc(sizeof(struct simplefb_priv), &pdev->dev);
+ 	if (!info)
+ 		return -ENOMEM;
+ 	platform_set_drvdata(pdev, info);
+@@ -225,7 +234,9 @@ static int simplefb_probe(struct platform_device *pdev)
+ 		framebuffer_release(info);
+ 		return -ENODEV;
+ 	}
+-	info->pseudo_palette =3D (void *)(info + 1);
++
++	priv =3D info->par;
++	info->pseudo_palette =3D priv->pseudo_palette;
+=20
+ 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
+ 			     info->fix.smem_start, info->fix.smem_len,
+@@ -243,6 +254,7 @@ static int simplefb_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+=20
++	priv->fb_registered =3D true;
+ 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
+=20
+ 	return 0;
+@@ -251,8 +263,11 @@ static int simplefb_probe(struct platform_device *pdev)
+ static int simplefb_remove(struct platform_device *pdev)
+ {
+ 	struct fb_info *info =3D platform_get_drvdata(pdev);
++	struct simplefb_priv *priv =3D info->par;
++
++	if (priv->fb_registered)
++		unregister_framebuffer(info);
+=20
+-	unregister_framebuffer(info);
+ 	framebuffer_release(info);
+=20
+ 	return 0;

@@ -1,65 +1,61 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Tue, 17 Dec 2013 18:26:12 +0000
-Subject: Re: [PATCH] video: amba-clcd: Make CLCD driver available on more platforms
-Message-Id: <20131217182612.GA28455@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="opJtzjQTFsWo+cga"
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Thu, 19 Dec 2013 13:38:50 +0000
+Subject: [PATCH] x86: sysfb: fool-proof CONFIG_X86_SYSFB
+Message-Id: <1387460330-13989-1-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386868390-12231-1-git-send-email-broonie@kernel.org>
-In-Reply-To: <1386868390-12231-1-git-send-email-broonie@kernel.org>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@kernel.org>, x86@kernel.org, linux-fbdev@vger.kernel.org, David Herrmann <dh.herrmann@gmail.com>, stable@vger.kernel.org
 
+Turns out, people do not read help-texts of new config-options and enable
+them nonetheless. So several reports came in with X86_SYSFB=y and
+FB_SIMPLE=n, which in almost all situations prevents firmware-fbs from
+being probed.
 
---opJtzjQTFsWo+cga
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+X86_SYSFB clearly states that it turns legacy vesa/efi framebuffers into a
+format compatible to simplefb (and does nothing else..). So to avoid
+further complaints about missing gfx-support during boot, simply depend on
+FB_SIMPLE now.
+As FB_SIMPLE is disabled by default and usually only enabled on selected
+ARM architectures, x86 users should thus never see the X86_SYSFB
+config-option. And if they do, everything is fine as simplefb will be
+available.
 
-On Tue, Dec 17, 2013 at 04:27:34PM +0000, Catalin Marinas wrote:
-> On 12 December 2013 17:13, Mark Brown <broonie@kernel.org> wrote:
+Note that most of the sysfb code is enabled independently of X86_SYSFB.
+The config option only selects a compatibility mode for simplefb. It was
+introduced to ease the transition to SimpleDRM and disabling fbdev. As
+this is still ongoing, there's no need for non-developers to care for
+X86_SYSFB so just change the help-text recommendation to "n".
 
-> > The CLCD driver is used on ARM reference models for ARMv8 so add ARM64
-> > to the list of dependencies. The driver also has no build time dependen=
-cies
-> > on ARM (stubs are provided for ARM-specific DMA functions in the code) =
-so
-> > make it available with COMPILE_TEST in order to maximise build coverage.
+Cc: <stable@vger.kernel.org> # 3.11+
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+---
+ arch/x86/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> I haven't followed other CLCD patches but for arm64 it requires
-> support for DT. I have been carrying some patches (done by Linaro) for
-> a long time and Pawel @ ARM has another set of patches. Do you know
-> what the status for those is before enabling CLCD on arm64? That's
-> unless you are only looking at compile-testing.
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index e903c71..9317ede 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -2298,6 +2298,7 @@ source "drivers/rapidio/Kconfig"
+ 
+ config X86_SYSFB
+ 	bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
++	depends on (FB_SIMPLE = y)
+ 	help
+ 	  Firmwares often provide initial graphics framebuffers so the BIOS,
+ 	  bootloader or kernel can show basic video-output during boot for
+@@ -2320,7 +2321,7 @@ config X86_SYSFB
+ 	  and others enabled as fallback if a system framebuffer is
+ 	  incompatible with simplefb.
+ 
+-	  If unsure, say Y.
++	  If unsure, say N.
+ 
+ endmenu
+ 
+-- 
+1.8.5.1
 
-Pawel's patches are going nowhere slowly as far as I can tell due to a
-slow feedback loop and extensive discussion of the DT bindings. =20
-
-I think this patch is an orthogonal thing, though - as you say it's
-useful for compile testing on its own and it means the driver will load
-as soon as the DT bindings are supported.  It's one less patch to carry
-out of tree and one less iteration when debugging why the framebuffer
-isn't supported when testing.
-
---opJtzjQTFsWo+cga
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSsJdBAAoJELSic+t+oim9aWgP/0zzBdNkEg0X+rynPtO3s11J
-bWojvTVolCzPkWnrrjxgnHEP0imAC/5iVX4qbhjevs2nQRqlScpz07fCOsdi9Rwn
-8QUfjkUQRUC60WT1lg8fo0H3sr6LIXMPb9ZQy/Z/IJFf78Q/gazXtmAnmbp/QSWO
-zjVJ0S3bVIejLFwa2gk24WxROQSNSk9wsxx9yvoWw3zVchx8NmxVA2XhupLutzu+
-aju2UWd8VXyWvBD6reL0sP6sABn3KPGSXaHR0k5Z0tu1h8hpDm+4sRvauqWp98Tp
-xWIqKoqjECVgaG+Ms4zq0ylcSsgkn/n0cERPzinrV6du8PO+5bMBUmwlrS3FlnJ3
-KuHqJZEly1bAdVj+9d4I9JMAiLv8nsdIMI+FaD1EqHMCPdhLIggkX5Q2aEcxELNQ
-VaalQk2czhW/JloMdilM9Gf+Fh7uDnbuJJUmFcjCNlH1oN2/eya1/EbaY39IvCxF
-CzwTvkGw3dvirhy4DssDZ9u8IDfwexKHkYKXmmjRD1PpeptqDw3VI2OtqvWiF3Fm
-rj0DY1N03U6RA+RRIXnJoNNr15imzsnhlyzFp0093SYHEZIQQXwVN0vSzB3guPl4
-f53G/4Xmd9zEH5CLCwJoBzBgukZ9AomkaVt+JMr6+Cy23yRMwwp9XEYyjtcT4xYp
-6IiKvBA86znFj/KfkBqj
-=S6Ax
------END PGP SIGNATURE-----
-
---opJtzjQTFsWo+cga--

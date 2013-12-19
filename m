@@ -1,9 +1,9 @@
 From: Sebastian Reichel <sre@debian.org>
-Date: Thu, 19 Dec 2013 10:08:40 +0000
+Date: Thu, 19 Dec 2013 13:56:09 +0000
 Subject: Re: [PATCH 0/4] OMAPDSS: DT support for N900 panel
-Message-Id: <20131219100840.GA923@earth.universe>
+Message-Id: <20131219135608.GA11654@earth.universe>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="x+6KMIRAuhnl3hBn"
+Content-Type: multipart/mixed; boundary="pWyiEgJYm5f9v55/"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1386958650-2404-1-git-send-email-sre@debian.org>
  <52AFFF3F.7020807@ti.com>
@@ -12,119 +12,81 @@ References: <1386958650-2404-1-git-send-email-sre@debian.org>
  <20131218215536.GA23674@earth.universe>
  <20131219005151.GA27928@earth.universe>
  <52B2848A.80807@ti.com>
-In-Reply-To: <52B2848A.80807@ti.com>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: =?iso-8859-1?Q?Beno=EEt?= Cousson <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+ <20131219100840.GA923@earth.universe>
+In-Reply-To: <20131219100840.GA923-SfvFxonMDyemK9LvCR3Hrw@public.gmane.org>
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, =?iso-8859-1?Q?Beno=EEt?= Cousson <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
 
---x+6KMIRAuhnl3hBn
+--pWyiEgJYm5f9v55/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Dec 19, 2013 at 07:30:50AM +0200, Tomi Valkeinen wrote:
-> On 2013-12-19 02:51, Sebastian Reichel wrote:
-> > On Wed, Dec 18, 2013 at 10:55:37PM +0100, Sebastian Reichel wrote:
-> >> On Tue, Dec 17, 2013 at 07:29:34PM +0200, Tomi Valkeinen wrote:
-> >>>>> I added N900 display DT support on top of my v2 series, including
-> >>>>> pinmuxing. Can you check if it looks right and works?
-> >>>>>
-> >>>>> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/=
-dss-dt
-> >>>>
-> >>>> I just tried it and it does not work. On a first look the pinmuxing
-> >>>> looks fishy: 0x0d4 is muxed two times.
-> >>>
-> >>> Hmm, so it is.
-> >>>
-> >>> I'm not really familiar with SDI, I just muxed all the SDI pins, exce=
-pt
-> >>> datapair3. I previously thought that there's only the data and clock
-> >>> pairs for SDI, but the TRM revealed more sdi pins, so I included them.
-> >>> It is well possible that these can be removed:
-> >>>
-> >>> 0x0d0 (PIN_OUTPUT | MUX_MODE1)   /* dss_data18.sdi_vsync */
-> >>> 0x0d2 (PIN_OUTPUT | MUX_MODE1)   /* dss_data19.sdi_hsync */
-> >>> 0x0d4 (PIN_OUTPUT | MUX_MODE1)   /* dss_data20.sdi_den */
-> >>> 0x0d6 (PIN_OUTPUT | MUX_MODE1)   /* dss_data21.sdi_stp */
-> >>
-> >> Just removing the dss_data20.sdi_den pin was enough to get a working d=
-isplay. I
-> >> don't know if the other pins are needed, because the display pins are =
-already
-> >> muxed correctly by the bootloader.
-> >=20
-> > I just had a look in the leaked n900 schematics. According to it the
-> > following pins are connected to the display:
-> >=20
-> > DSS_DATA20 (E28)     GPIO 90         LCD_RST
-> > DSS_DATA10 (AD28)    SDI_DAT1N       CDP 0
-> > DSS_DATA11 (AD27)    SDI_DAT1P       CDP 1
-> > DSS_DATA12 (AB28)    SDI_DAT2N       CDP 2
-> > DSS_DATA13 (AB27)    SDI_DAT2P       CDP 3
-> > DSS_DATA14 (AA28)    SDI_DAT3N       CDP 4
-> > DSS_DATA15 (AA27)    SDI_DAT3P       CDP 5
-> > DSS_DATA22 (AC27)    SDI_CLKP        CDP 6
-> > DSS_DATA23 (AC28)    SDI_CLKN        CDP 7
-> >=20
-> > I also noticed that dss_data19.sdi_hsync is used as gpio 89 for the
-> > N900's proximity sensor. Thus I suggest the following SDI pin muxing:
-> >=20
-> > 	dss_sdi_pins: pinmux_dss_sdi_pins {
-> > 		pinctrl-single,pins =3D <
-> > 			0x0c0 (PIN_OUTPUT | MUX_MODE1)   /* dss_data10.sdi_dat1n */
-> > 			0x0c2 (PIN_OUTPUT | MUX_MODE1)   /* dss_data11.sdi_dat1p */
-> > 			0x0c4 (PIN_OUTPUT | MUX_MODE1)   /* dss_data12.sdi_dat2n */
-> > 			0x0c6 (PIN_OUTPUT | MUX_MODE1)   /* dss_data13.sdi_dat2p */
-> > 			0x0c8 (PIN_OUTPUT | MUX_MODE1)   /* dss_data14.sdi_dat3n */
-> > 			0x0ca (PIN_OUTPUT | MUX_MODE1)   /* dss_data15.sdi_dat3p */
-> >=20
-> > 			0x0d8 (PIN_OUTPUT | MUX_MODE1)   /* dss_data22.sdi_clkp */
-> > 			0x0da (PIN_OUTPUT | MUX_MODE1)   /* dss_data23.sdi_clkn */
-> > 		>;
-> > 	};
+On Thu, Dec 19, 2013 at 11:08:40AM +0100, Sebastian Reichel wrote:
+> > Are you able to check if the bootloader muxes dat3 to SDI mode?
 >=20
-> Thanks, I'll do the modifications. The dat3 lines are not needed, but if
-> they're connected to the panel, I don't see any harm in muxing them.
+> The bootloader's source code is not available as far as i know.
 >=20
-> Although, makes me wonder. If the panel supports only 2 datalanes, why
-> does it have connectors for 3? And if it supports 3, why would N900 use
-> only 2?
+> [...], but I get an external abort on non-linefetch.
+> So I can't check it :(
 
-I wondered about the same and I also assumed, that the muxing should be
-safe.
+Ok. This is fixed by applying [0] (Thanks for the hint, Tomi!).
+This is the mux configuration from the bootloader:
 
-> Are you able to check if the bootloader muxes dat3 to SDI mode?
+=2E..
+pin 96 (480020f0.0) 00000001 pinctrl-single     // sdi dat1n
+pin 97 (480020f2.0) 00000001 pinctrl-single     // sdi dat1p
+pin 98 (480020f4.0) 00000001 pinctrl-single     // sdi dat2n
+pin 99 (480020f6.0) 00000001 pinctrl-single     // sdi dat2p
+pin 100 (480020f8.0) 00000007 pinctrl-single    // sdi dat3n
+pin 101 (480020fa.0) 00000007 pinctrl-single    // sdi dat3p
+pin 102 (480020fc.0) 00000004 pinctrl-single=20
+pin 103 (480020fe.0) 00000004 pinctrl-single=20
+pin 104 (48002100.0) 00000004 pinctrl-single    // sdi vsync
+pin 105 (48002102.0) 00004104 pinctrl-single    // sdi hsync
+pin 106 (48002104.0) 00000004 pinctrl-single    // sdi den
+pin 107 (48002106.0) 00000004 pinctrl-single    // sdi stp
+pin 108 (48002108.0) 00000001 pinctrl-single    // sdi clkp
+pin 109 (4800210a.0) 00000001 pinctrl-single    // sdi clkn
+=2E..
 
-The bootloader's source code is not available as far as i know.
+I guess the following entry should be added to the omap3-n900.dts file:
 
-I tried to cat /sys/kernel/debug/pinctrl/48002030.pinmux/pins, but I
-get an external abort on non-linefetch.
+	dss_sdi_pins: pinmux_dss_sdi_pins {
+		pinctrl-single,pins =3D <
+			0x0c0 (PIN_OUTPUT | MUX_MODE1)   /* dss_data10.sdi_dat1n */
+			0x0c2 (PIN_OUTPUT | MUX_MODE1)   /* dss_data11.sdi_dat1p */
+			0x0c4 (PIN_OUTPUT | MUX_MODE1)   /* dss_data12.sdi_dat2n */
+			0x0c6 (PIN_OUTPUT | MUX_MODE1)   /* dss_data13.sdi_dat2p */
+			0x0d8 (PIN_OUTPUT | MUX_MODE1)   /* dss_data22.sdi_clkp */
+			0x0da (PIN_OUTPUT | MUX_MODE1)   /* dss_data23.sdi_clkn */
+		>;
+	};
 
-So I can't check it :(
+[0] https://patchwork.kernel.org/patch/3283781/
 
 -- Sebastian
 
---x+6KMIRAuhnl3hBn
+--pWyiEgJYm5f9v55/
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.15 (GNU/Linux)
 
-iQIcBAEBCAAGBQJSssWoAAoJENju1/PIO/qaRlYP/1r8O2gF5dLCKccRxTHnnnOK
-q3324xmNpKkCF90BzVvsdc+xFyXKPVSSHkKgRZOLhHJm7woxU4PAfgwTimTiEg6L
-VbOAcmp/nt5paxzbvrgvhUCF+sJ1yRXTUG4+bpw9G/+F7h5DBQ4T6aSYSxk5hStN
-G3etXLTPPvtDTRMu1OKmlQLYJqlcriG1irYRkLYFDqT243YyCPWscxqfzvJdX9Mg
-AYq+GHz2eCJMFXhyczbrmqUejnxISxwI+mRp2wxgXPS6HjRk7p1F41BV5pp/C9cK
-enikgRxZ/zwaDqjwLY7jqD20nGuguEM0eH5yn5tJJP3YIsBX3MCALB49JXhPOCGj
-KTmNCSvRPW9x6tSDuT3xogibgR+BhWDG4+JZnOnK3qFgN1gKCffLL/Gcp9dA1by3
-+8plEAbSFyTlzwjkdKfmIktBFa9D9pzOAyMmS56+IslBUGEx9w4nxdI7mLCqImZ9
-FotUx6MoidjvJoFQIFBhk+6pYkGqFpL8bIiXxybgHyHMgNIdTyF34uBvZ1nfh1RG
-erX+b2XDQnNVaqbKWCApIb+ECjpHdvPKlpUiplUBkHsrVM+9bWLeNI7pnvs1vNwl
-su0CZursj6uqNiGPbejod6uxJ5yR2pBLTdfDjVl5nKQ0KDs1AMouyfkjJvVPEoho
-xx5EbiwDu5jBipCkdkck
-=DRO3
+iQIcBAEBCAAGBQJSsvr4AAoJENju1/PIO/qaEJwP/3IrY8rv8mYjj81OR9/S9j+T
+h0+LyESGrjM+UNwl9iG5xKbq3S1/4MYfj13CdMDaLPpYtvtXZR+P5mi5Jkfn9Z4p
+yaeXZqoo0PYStg+DYrcRNzpqJwFY9nQUcL+EnSX2pBhoNaSEbdPF/4gjF05I9H8d
+tixxFkk/dFneDtYpZaE08mX5jKy/NAoer1kSVniILvTps/8x+YUF9bxvDdB/MPZo
+Vp7qtpORyBBNYZ7DG56sgnqnt+BnfRK8jqHOq+AvayFT4nGcdzmKEXKtYo4J9CvA
+XLOkdCYHn3KKMVRgoQRC3pj2xwG6RJB3G+lDoRpQEg3Mt4mLhiV2axqWhzblHrgC
+O6+htgErNnBkoMfP96tg1y1rXfn7AlNd2UNMXuSPCz4bY5smN39UkB9889i1Q3iW
+ZCEWigCpKtOvsaAvhPG7Fp0FufjXviCf3/KbV0i5VROHki60CTvyCTg7Mz+HuRed
+3aboQGfZTah+HKgsw+YmGdvYRWpBM3vCOxvBoVq8gEXl6SdgWAE7G5l89DXc9M9f
+ylH7BLwUXdKu8wYDItfhqTS3CFvrOemHqzuN0XZjIPgaghm6Myb2u5mFJsfKOzZG
+svPVwhQx9BIpU7qarrjvDS0G2vrS4MWx4rHgpQBVpNY73GAw9ND2J3yjLXDBQ8wp
+4GNMnEBqOwmzLxi1ZkK7
+=JRaT
 -----END PGP SIGNATURE-----
 
---x+6KMIRAuhnl3hBn--
+--pWyiEgJYm5f9v55/--

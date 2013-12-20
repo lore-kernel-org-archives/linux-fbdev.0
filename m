@@ -1,93 +1,66 @@
 From: Keith Packard <keithp@keithp.com>
-Date: Fri, 20 Dec 2013 00:17:57 +0000
-Subject: [PATCH] fbcon: Clean up fbcon data in fb_info on FB_EVENT_FB_UNBIND with 0 fbs
-Message-Id: <1387498677-25653-1-git-send-email-keithp@keithp.com>
+Date: Fri, 20 Dec 2013 07:10:39 +0000
+Subject: Re: [PATCH] fbcon: Clean up fbcon data in fb_info on FB_EVENT_FB_UNBIND with 0 fbs
+Message-Id: <86pposdmkw.fsf@miki.keithp.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-=-="
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1387498677-25653-1-git-send-email-keithp@keithp.com>
+In-Reply-To: <1387498677-25653-1-git-send-email-keithp@keithp.com>
 To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Keith Packard <keithp@keithp.com>
 
-When FB_EVENT_FB_UNBIND is sent, fbcon has two paths, one path taken
-when there is another frame buffer to switch any affected vcs to and
-another path when there isn't.
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-In the case where there is another frame buffer to use,
-fbcon_fb_unbind calls set_con2fb_map to remap all of the affected vcs
-to the replacement frame buffer. set_con2fb_map will eventually call
-con2fb_release_oldinfo when the last vcs gets unmapped from the old
-frame buffer.
+Keith Packard <keithp@keithp.com> writes:
 
-con2fb_release_oldinfo frees the fbcon data that is hooked off of the
-fb_info structure, including the cursor timer.
+> When FB_EVENT_FB_UNBIND is sent, fbcon has two paths, one path taken
+> when there is another frame buffer to switch any affected vcs to and
+> another path when there isn't.
 
-In the case where there isn't another frame buffer to use,
-fbcon_fb_unbind simply calls fbcon_unbind, which doesn't clear the
-con2fb_map or free the fbcon data hooked from the fb_info
-structure. In particular, it doesn't stop the cursor blink timer. When
-the fb_info structure is then freed, we end up with a timer queue
-pointing into freed memory and "bad things" start happening.
+What I meant to attach to this bug report but clearly failed was that I thi=
+nk
+this case essentially *always* occurs if you have a generic frame buffer
+driver loaded before a 'real' driver is loaded. In my case, this is
+efifb. So, we have a reference to freed memory hanging out on a timer
+list.
 
-This patch first changes con2fb_release_oldinfo so that it can take a
-NULL pointer for the new frame buffer, but still does all of the
-deallocation and cursor timer cleanup.
+I'm really unsure why this hasn't caused more grief, but I can say that
+it was greatly aggravated by adding 'fbcon=3Dvc:2-6' to the kernel command
+line, which limits fbcon to supporting consoles only on vt 2-6.
 
-Finally, the patch tries to replicate some of what set_con2fb_map does
-by clearing the con2fb_map for the affected vcs and calling the
-modified con2fb_release_info function to clean up the fb_info structure.
+Definitely one of those 'how could this ever have worked, and why hasn't
+my machine been crashing every day' moments when I read through the
+code.
 
-Signed-off-by: Keith Packard <keithp@keithp.com>
----
- drivers/video/console/fbcon.c | 27 +++++++++++++++++++++++++--
- 1 file changed, 25 insertions(+), 2 deletions(-)
+As the patch indicates, I'm not sure this patch is actually what we
+want, but I'd love to know if I've isolated the root cause correctly and
+then figure out what patch we actually want.
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index a92783e..ba9e149 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -787,7 +787,7 @@ static int con2fb_release_oldinfo(struct vc_data *vc, struct fb_info *oldinfo,
- 		  newinfo in an undefined state. Thus, a call to
- 		  fb_set_par() may be needed for the newinfo.
- 		*/
--		if (newinfo->fbops->fb_set_par) {
-+		if (newinfo && newinfo->fbops->fb_set_par) {
- 			ret = newinfo->fbops->fb_set_par(newinfo);
- 
- 			if (ret)
-@@ -3056,8 +3056,31 @@ static int fbcon_fb_unbind(int idx)
- 			if (con2fb_map[i] = idx)
- 				set_con2fb_map(i, new_idx, 0);
- 		}
--	} else
-+	} else {
-+		struct fb_info *info = registered_fb[idx];
-+
-+		/* This is sort of like set_con2fb_map, except it maps
-+		 * the consoles to no device and then releases the
-+		 * oldinfo to free memory and cancel the cursor blink
-+		 * timer. I can imagine this just becoming part of
-+		 * set_con2fb_map where new_idx is -1
-+		 */
-+		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-+			if (con2fb_map[i] = idx) {
-+				con2fb_map[i] = -1;
-+				if (!search_fb_in_map(idx)) {
-+					ret = con2fb_release_oldinfo(vc_cons[i].d,
-+								     info, NULL, i,
-+								     idx, 0);
-+					if (ret) {
-+						con2fb_map[i] = idx;
-+						return ret;
-+					}
-+				}
-+			}
-+		}
- 		ret = fbcon_unbind();
-+	}
- 
- 	return ret;
- }
--- 
-1.8.5.1
+For my own part, I've got a happy customer with the patch, which is
+definitely a nice way to end the day.
 
+=2D-=20
+keith.packard@intel.com
+
+--=-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.15 (GNU/Linux)
+
+iQIVAwUBUrPtb9siGmkAAAARAQhQqRAAouoxEF1w4ZelQ8UWaVDOZwOF7chbOKHU
+16zulH5ehkxVxZeYhv4XKLiXYbhvs+pFkwgQljdrY7/5nx1jtfNyBe3MSIQTVK6N
+cTa+tFnI8k/dX58KWTLj9csexM9QsK3+mkS6WqNLYvjmzI/IhlDBBL8Dt9cfA7wW
+rbyq6FEhDcyibmGFbGDX5DE7TOtBvX2hdWhHIyFtYtIccWDDETSZdw5jt/Zv664f
+qlauxuQM6Dz/bY/v3CH9d7uTjnHFZ5n9LGmRe7SLxHr2PGKefmmjzGhrNopdEdLH
+MMxg3SIQWJ/hxmLuqF7pVnv28nTs9b1eChOqFSp8Zt+fgLfvho06q6ud7DyGyN3J
+aI/Myin/J6faE1cMAcnzLdqRIedJoEaGfSzc5nNg2tm4eavMLGBzBEjpNSlal2Du
++SDLr3WPzWrvsFPIT/ej0TgLiskHmBizOQ76WuhksaA9SR5uXLgnA169PPq8mB8g
+3aXueaYfeiJd/sPS6EwG0n9IIQIkiOfzKpoLeNt1stZz7vVNksnmc0ydGPyOVpbS
+yVlgTsCS18bbrbCuntPxJ9Q/b2ICmki79f6Ah2Nk61UKoaV9R52f9a7wlmxtDfUR
+2T2gtuj99cqEG85Z2gqQqmt9B2II/Tn3LqQCaCYroFIpQmmnBeAgpP0yyQxlcl1Q
+qAQVVxnCcIk=
+=pxpa
+-----END PGP SIGNATURE-----
+--=-=-=--

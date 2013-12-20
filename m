@@ -1,73 +1,66 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 17 Dec 2013 07:12:21 +0000
-Subject: Re: [PATCHv2 08/27] OMAPDSS: add of helpers
-Message-Id: <52AFF685.6010209@ti.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Fri, 20 Dec 2013 17:52:41 +0000
+Subject: [RFC PATCH 0/5] Move IPUv3 core out of staging, add CSI support
+Message-Id: <1387561966-31758-1-git-send-email-p.zabel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com> <1387205794-32246-9-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-9-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
 Hi,
 
-On Monday 16 December 2013 08:26 PM, Tomi Valkeinen wrote:
-> Add helpers to get ports and endpoints from DT data.
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/dss/Makefile |   2 +-
->   drivers/video/omap2/dss/dss-of.c | 162 +++++++++++++++++++++++++++++++++++++++
->   include/video/omapdss.h          |  14 ++++
->   3 files changed, 177 insertions(+), 1 deletion(-)
->   create mode 100644 drivers/video/omap2/dss/dss-of.c
->
-> diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-> index d3aa91bdd6a8..8aec8bda27cc 100644
-> --- a/drivers/video/omap2/dss/Makefile
-> +++ b/drivers/video/omap2/dss/Makefile
-> @@ -1,7 +1,7 @@
->   obj-$(CONFIG_OMAP2_DSS) += omapdss.o
->   # Core DSS files
->   omapdss-y := core.o dss.o dss_features.o dispc.o dispc_coefs.o display.o \
-> -	output.o
-> +	output.o dss-of.o
->   # DSS compat layer files
->   omapdss-y += manager.o manager-sysfs.o overlay.o overlay-sysfs.o apply.o \
->   	dispc-compat.o display-sysfs.o
-> diff --git a/drivers/video/omap2/dss/dss-of.c b/drivers/video/omap2/dss/dss-of.c
-> new file mode 100644
-> index 000000000000..59213cf2ffa2
-> --- /dev/null
-> +++ b/drivers/video/omap2/dss/dss-of.c
-> @@ -0,0 +1,162 @@
-> +/*
-> + * Copyright (C) 2013 Texas Instruments
-> + * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License version 2 as published by
-> + * the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + */
-> +
-> +#include <linux/device.h>
-> +#include <linux/err.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/seq_file.h>
-> +
-> +#include <video/omapdss.h>
-> +
-> +#include "dss.h"
-> +#include "dss_features.h"
+this is mostly about the first patch, which moves the IPUv3 core code
+(drivers/staging/imx-drm/ipu-v3) to drivers/gpu. host1x, which
+serves a similar purpose, already sits there.
+The other four patches add the necessary code for CSI and SMFC handling,
+which is used by the V4L2 CSI capture driver.
 
-Minor nitpick. The above 2 headers aren't needed.
+Currently this is based on Russell's patch
+    [PATCH 62/64] imx-drm: pass an IPU ID to crtc and core
 
-Archit
+I am aware that there are now quite a few other patches in the pipeline
+that touch drivers/staging/imx-drm/ipu-v3/*, so I am happy to rebase this
+(or them) as needed. I'd like to move the core code out of staging so that
+we can start submitting V4L2 code for video capture and scaling / colorspace
+conversion in parallel.
 
+Philipp Zabel (5):
+  gpu: ipu-v3: Move i.MX IPUv3 core driver out of staging
+  gpu: ipu-v3: Add SMFC code
+  gpu: ipu-v3: Add ipu_idmac_get_current_buffer function
+  gpu: ipu-v3: Add CSI and SMFC module enable wrappers
+  gpu: ipu-v3: Register the CSI modules
+
+ drivers/gpu/Makefile                               |  1 +
+ drivers/gpu/ipu-v3/Kconfig                         |  7 ++
+ drivers/{staging/imx-drm => gpu}/ipu-v3/Makefile   |  4 +-
+ .../{staging/imx-drm => gpu}/ipu-v3/ipu-common.c   | 81 ++++++++++++++++--
+ drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dc.c   |  3 +-
+ drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-di.c   |  2 +-
+ drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dmfc.c |  2 +-
+ drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dp.c   |  2 +-
+ drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-prv.h  |  8 +-
+ drivers/gpu/ipu-v3/ipu-smfc.c                      | 97 ++++++++++++++++++++++
+ drivers/staging/imx-drm/Kconfig                    | 11 +--
+ drivers/staging/imx-drm/Makefile                   |  1 -
+ drivers/staging/imx-drm/imx-drm.h                  |  4 -
+ drivers/staging/imx-drm/imx-tve.c                  |  1 +
+ drivers/staging/imx-drm/ipuv3-crtc.c               |  2 +-
+ drivers/staging/imx-drm/ipuv3-plane.c              |  2 +-
+ drivers/video/Kconfig                              |  1 +
+ .../imx-drm/ipu-v3 => include/video}/imx-ipu-v3.h  | 18 ++++
+ 18 files changed, 217 insertions(+), 30 deletions(-)
+ create mode 100644 drivers/gpu/ipu-v3/Kconfig
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/Makefile (51%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-common.c (94%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dc.c (99%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-di.c (99%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dmfc.c (99%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dp.c (99%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-prv.h (96%)
+ create mode 100644 drivers/gpu/ipu-v3/ipu-smfc.c
+ rename {drivers/staging/imx-drm/ipu-v3 => include/video}/imx-ipu-v3.h (94%)
+
+regards
+Philipp

@@ -1,85 +1,108 @@
-From: Yijing Wang <wangyijing@huawei.com>
-Date: Thu, 05 Dec 2013 11:25:18 +0000
-Subject: [PATCH] video: Replace local macro with PCI standard macro
-Message-Id: <1386242718-24372-1-git-send-email-wangyijing@huawei.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Fri, 20 Dec 2013 17:52:46 +0000
+Subject: [RFC PATCH 5/5] gpu: ipu-v3: Register the CSI modules
+Message-Id: <1387561966-31758-6-git-send-email-p.zabel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Yijing Wang <wangyijing@huawei.com>, Hanjun Guo <guohanjun@huawei.com>
+To: linux-fbdev@vger.kernel.org
 
-Replace local macro TGA_BUS_PCI with PCI standard
-marco dev_is_pci().
-
-Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
- drivers/video/tgafb.c |   16 +++++-----------
- 1 files changed, 5 insertions(+), 11 deletions(-)
+ drivers/gpu/ipu-v3/ipu-common.c | 35 +++++++++++++++++++++++++++++++----
+ include/video/imx-ipu-v3.h      |  1 +
+ 2 files changed, 32 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/tgafb.c b/drivers/video/tgafb.c
-index f28674f..5e94c6e 100644
---- a/drivers/video/tgafb.c
-+++ b/drivers/video/tgafb.c
-@@ -32,12 +32,6 @@
+diff --git a/drivers/gpu/ipu-v3/ipu-common.c b/drivers/gpu/ipu-v3/ipu-common.c
+index ad2639c..7535e7a 100644
+--- a/drivers/gpu/ipu-v3/ipu-common.c
++++ b/drivers/gpu/ipu-v3/ipu-common.c
+@@ -1016,6 +1016,7 @@ static void platform_device_unregister_children(struct platform_device *pdev)
+ struct ipu_platform_reg {
+ 	struct ipu_client_platformdata pdata;
+ 	const char *name;
++	int reg_offset;
+ };
  
- #include <video/tgafb.h>
+ static const struct ipu_platform_reg client_reg[] = {
+@@ -1037,13 +1038,29 @@ static const struct ipu_platform_reg client_reg[] = {
+ 			.dma[1] = -EINVAL,
+ 		},
+ 		.name = "imx-ipuv3-crtc",
++	}, {
++		.pdata = {
++			.csi = 0,
++			.dma[0] = IPUV3_CHANNEL_CSI0,
++			.dma[1] = -EINVAL,
++		},
++		.reg_offset = IPU_CM_CSI0_REG_OFS,
++		.name = "imx-ipuv3-camera",
++	}, {
++		.pdata = {
++			.csi = 1,
++			.dma[0] = IPUV3_CHANNEL_CSI1,
++			.dma[1] = -EINVAL,
++		},
++		.reg_offset = IPU_CM_CSI1_REG_OFS,
++		.name = "imx-ipuv3-camera",
+ 	},
+ };
  
--#ifdef CONFIG_PCI
--#define TGA_BUS_PCI(dev) (dev->bus = &pci_bus_type)
--#else
--#define TGA_BUS_PCI(dev) 0
--#endif
--
- #ifdef CONFIG_TC
- #define TGA_BUS_TC(dev) (dev->bus = &tc_bus_type)
- #else
-@@ -236,7 +230,7 @@ tgafb_set_par(struct fb_info *info)
- 	};
+ static DEFINE_MUTEX(ipu_client_id_mutex);
+ static int ipu_client_id;
  
- 	struct tga_par *par = (struct tga_par *) info->par;
--	int tga_bus_pci = TGA_BUS_PCI(par->dev);
-+	int tga_bus_pci = dev_is_pci(par->dev);
- 	int tga_bus_tc = TGA_BUS_TC(par->dev);
- 	u32 htimings, vtimings, pll_freq;
- 	u8 tga_type;
-@@ -519,7 +513,7 @@ tgafb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue,
- 		unsigned transp, struct fb_info *info)
+-static int ipu_add_client_devices(struct ipu_soc *ipu)
++static int ipu_add_client_devices(struct ipu_soc *ipu, unsigned long ipu_base)
  {
- 	struct tga_par *par = (struct tga_par *) info->par;
--	int tga_bus_pci = TGA_BUS_PCI(par->dev);
-+	int tga_bus_pci = dev_is_pci(par->dev);
- 	int tga_bus_tc = TGA_BUS_TC(par->dev);
+ 	struct device *dev = ipu->dev;
+ 	unsigned i;
+@@ -1062,11 +1079,21 @@ static int ipu_add_client_devices(struct ipu_soc *ipu)
+ 		const struct ipu_platform_reg *reg = &client_reg[i];
+ 		struct ipu_client_platformdata pdata = reg->pdata;
+ 		struct platform_device *pdev;
++		struct resource res;
  
- 	if (regno > 255)
-@@ -1472,7 +1466,7 @@ static void
- tgafb_init_fix(struct fb_info *info)
- {
- 	struct tga_par *par = (struct tga_par *)info->par;
--	int tga_bus_pci = TGA_BUS_PCI(par->dev);
-+	int tga_bus_pci = dev_is_pci(par->dev);
- 	int tga_bus_tc = TGA_BUS_TC(par->dev);
- 	u8 tga_type = par->tga_type;
- 	const char *tga_type_name = NULL;
-@@ -1560,7 +1554,7 @@ static int tgafb_register(struct device *dev)
- 	const struct fb_videomode *modedb_tga = NULL;
- 	resource_size_t bar0_start = 0, bar0_len = 0;
- 	const char *mode_option_tga = NULL;
--	int tga_bus_pci = TGA_BUS_PCI(dev);
-+	int tga_bus_pci = dev_is_pci(dev);
- 	int tga_bus_tc = TGA_BUS_TC(dev);
- 	unsigned int modedbsize_tga = 0;
- 	void __iomem *mem_base;
-@@ -1690,7 +1684,7 @@ static int tgafb_register(struct device *dev)
- static void tgafb_unregister(struct device *dev)
- {
- 	resource_size_t bar0_start = 0, bar0_len = 0;
--	int tga_bus_pci = TGA_BUS_PCI(dev);
-+	int tga_bus_pci = dev_is_pci(dev);
- 	int tga_bus_tc = TGA_BUS_TC(dev);
- 	struct fb_info *info = NULL;
- 	struct tga_par *par;
+ 		pdata.ipu = ipu_id;
+ 
+-		pdev = platform_device_register_data(dev, reg->name,
+-			id++, &pdata, sizeof(pdata));
++		if (reg->reg_offset) {
++			memset(&res, 0, sizeof(res));
++			res.flags = IORESOURCE_MEM;
++			res.start = ipu_base + ipu->devtype->cm_ofs + reg->reg_offset;
++			res.end = res.start + PAGE_SIZE - 1;
++			pdev = platform_device_register_resndata(dev, reg->name,
++				id++, &res, 1, &pdata, sizeof(pdata));
++		} else {
++			pdev = platform_device_register_data(dev, reg->name,
++					id++, &pdata, sizeof(pdata));
++		}
+ 
+ 		if (IS_ERR(pdev))
+ 			goto err_register;
+@@ -1262,7 +1289,7 @@ static int ipu_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto failed_submodules_init;
+ 
+-	ret = ipu_add_client_devices(ipu);
++	ret = ipu_add_client_devices(ipu, ipu_base);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "adding client devices failed with %d\n",
+ 				ret);
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index 767302d..f5448d4 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -331,6 +331,7 @@ static inline void ipu_cpmem_set_burstsize(struct ipu_ch_param __iomem *p,
+ };
+ 
+ struct ipu_client_platformdata {
++	int csi;
+ 	int di;
+ 	int dc;
+ 	int dp;
 -- 
-1.7.1
-
+1.8.5.1
 

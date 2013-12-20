@@ -1,86 +1,93 @@
-From: Marc Dietrich <marvin24@gmx.de>
-Date: Sat, 21 Dec 2013 20:38:12 +0000
-Subject: [PATCH 1/2] drm/panel: Add support for Samsung LTN101NT05 panel
-Message-Id: <f03a644deb858f10affb7b039f9982bac81b02c9.1387656959.git.marvin24@gmx.de>
+From: Keith Packard <keithp@keithp.com>
+Date: Fri, 20 Dec 2013 00:17:57 +0000
+Subject: [PATCH] fbcon: Clean up fbcon data in fb_info on FB_EVENT_FB_UNBIND with 0 fbs
+Message-Id: <1387498677-25653-1-git-send-email-keithp@keithp.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Marc Dietrich <marvin24-Mmb7MZpHnFY@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Keith Packard <keithp@keithp.com>
 
-The Samsung LNT101NT05 10.1" WXVGA panel can be supported by the simple panel
-driver.
+When FB_EVENT_FB_UNBIND is sent, fbcon has two paths, one path taken
+when there is another frame buffer to switch any affected vcs to and
+another path when there isn't.
 
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: David Airlie <airlied@linux.ie>
-Signed-off-by: Marc Dietrich <marvin24@gmx.de>
+In the case where there is another frame buffer to use,
+fbcon_fb_unbind calls set_con2fb_map to remap all of the affected vcs
+to the replacement frame buffer. set_con2fb_map will eventually call
+con2fb_release_oldinfo when the last vcs gets unmapped from the old
+frame buffer.
+
+con2fb_release_oldinfo frees the fbcon data that is hooked off of the
+fb_info structure, including the cursor timer.
+
+In the case where there isn't another frame buffer to use,
+fbcon_fb_unbind simply calls fbcon_unbind, which doesn't clear the
+con2fb_map or free the fbcon data hooked from the fb_info
+structure. In particular, it doesn't stop the cursor blink timer. When
+the fb_info structure is then freed, we end up with a timer queue
+pointing into freed memory and "bad things" start happening.
+
+This patch first changes con2fb_release_oldinfo so that it can take a
+NULL pointer for the new frame buffer, but still does all of the
+deallocation and cursor timer cleanup.
+
+Finally, the patch tries to replicate some of what set_con2fb_map does
+by clearing the con2fb_map for the affected vcs and calling the
+modified con2fb_release_info function to clean up the fb_info structure.
+
+Signed-off-by: Keith Packard <keithp@keithp.com>
 ---
-This isn't strickly required to get the panel up, but Thierry suggested on IRC to
-include it anyway, in case someone else has some use for it.
+ drivers/video/console/fbcon.c | 27 +++++++++++++++++++++++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
 
- .../bindings/panel/samsung,ltn101nt05.txt          |    7 +++++
- drivers/gpu/drm/panel/panel-simple.c               |   27 +++++++++++++++++++-
- 2 files changed, 33 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/panel/samsung,ltn101nt05.txt
-
-diff --git a/Documentation/devicetree/bindings/panel/samsung,ltn101nt05.txt b/Documentation/devicetree/bindings/panel/samsung,ltn101nt05.txt
-new file mode 100644
-index 0000000..ef522c6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/panel/samsung,ltn101nt05.txt
-@@ -0,0 +1,7 @@
-+Samsung Electronics 10.1" WSVGA TFT LCD panel
-+
-+Required properties:
-+- compatible: should be "samsung,ltn101nt05"
-+
-+This binding is compatible with the simple-panel binding, which is specified
-+in simple-panel.txt in this directory.
-diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index 3e611af..7f9ddb5 100644
---- a/drivers/gpu/drm/panel/panel-simple.c
-+++ b/drivers/gpu/drm/panel/panel-simple.c
-@@ -338,6 +338,28 @@ static const struct panel_desc chunghwa_claa101wb01 = {
- 	},
- };
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index a92783e..ba9e149 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -787,7 +787,7 @@ static int con2fb_release_oldinfo(struct vc_data *vc, struct fb_info *oldinfo,
+ 		  newinfo in an undefined state. Thus, a call to
+ 		  fb_set_par() may be needed for the newinfo.
+ 		*/
+-		if (newinfo->fbops->fb_set_par) {
++		if (newinfo && newinfo->fbops->fb_set_par) {
+ 			ret = newinfo->fbops->fb_set_par(newinfo);
  
-+static const struct drm_display_mode samsung_ltn101nt05_mode = {
-+	.clock = 54030,
-+	.hdisplay = 1024,
-+	.hsync_start = 1024 + 24,
-+	.hsync_end = 1024 + 24 + 136,
-+	.htotal = 1024 + 24 + 136 + 160,
-+	.vdisplay = 600,
-+	.vsync_start = 600 + 3,
-+	.vsync_end = 600 + 3 + 6,
-+	.vtotal = 600 + 3 + 6 + 61,
-+	.vrefresh = 60,
-+};
+ 			if (ret)
+@@ -3056,8 +3056,31 @@ static int fbcon_fb_unbind(int idx)
+ 			if (con2fb_map[i] = idx)
+ 				set_con2fb_map(i, new_idx, 0);
+ 		}
+-	} else
++	} else {
++		struct fb_info *info = registered_fb[idx];
 +
-+static const struct panel_desc samsung_ltn101nt05 = {
-+	.modes = &samsung_ltn101nt05_mode,
-+	.num_modes = 1,
-+	.size = {
-+		.width = 1024,
-+		.height = 600,
-+	},
-+};
-+
- static const struct of_device_id platform_of_match[] = {
- 	{
- 		.compatible = "auo,b101aw03",
-@@ -346,6 +368,9 @@ static const struct of_device_id platform_of_match[] = {
- 		.compatible = "chunghwa,claa101wb01",
- 		.data = &chunghwa_claa101wb01
- 	}, {
-+		.compatible = "samsung,ltn101nt05",
-+		.data = &samsung_ltn101nt05,
-+	}, {
- 		.compatible = "simple-panel",
- 	}, {
- 		/* sentinel */
++		/* This is sort of like set_con2fb_map, except it maps
++		 * the consoles to no device and then releases the
++		 * oldinfo to free memory and cancel the cursor blink
++		 * timer. I can imagine this just becoming part of
++		 * set_con2fb_map where new_idx is -1
++		 */
++		for (i = first_fb_vc; i <= last_fb_vc; i++) {
++			if (con2fb_map[i] = idx) {
++				con2fb_map[i] = -1;
++				if (!search_fb_in_map(idx)) {
++					ret = con2fb_release_oldinfo(vc_cons[i].d,
++								     info, NULL, i,
++								     idx, 0);
++					if (ret) {
++						con2fb_map[i] = idx;
++						return ret;
++					}
++				}
++			}
++		}
+ 		ret = fbcon_unbind();
++	}
+ 
+ 	return ret;
+ }
 -- 
-1.7.9.5
+1.8.5.1
 

@@ -1,80 +1,150 @@
-From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
-Date: Mon, 30 Dec 2013 16:17:52 +0000
-Subject: [PATCH] ARM: OMAPFB: panel-sony-acx565akm: fix missing mutex unlocks
-Message-Id: <1388420272-5132-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+From: Alexander Shiyan <shc_work@mail.ru>
+Date: Sat, 21 Dec 2013 07:58:23 +0000
+Subject: [PATCH] ARM: i.MX: Remove IMX_HAVE_PLATFORM_IMX_FB symbol
+Message-Id: <1387612703-18512-1-git-send-email-shc_work@mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383773070-15114-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1383773070-15114-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>
+To: linux-arm-kernel@lists.infradead.org
 
-From: Ivaylo Dimitrov <freemangordon@abv.bg>
+Symbol IMX_HAVE_PLATFORM_IMX_FB is selected by boards which
+use it, so there is no way to compile the FB driver only with
+DT configuration. This patch removes this dependency completely.
 
-Commit c37dd677988ca50bc8bc60ab5ab053720583c168 fixes the unbalanced
-unlock in acx565akm_enable but introduces another problem - if
-acx565akm_panel_power_on exits early, the mutex is not unlocked. Fix
-that by unlocking the mutex on early return. Also add mutex protection in
-acx565akm_panel_power_off and remove an unused variable
-
-Signed-off-by: Ivaylo Dimitrov <freemangordon@abv.bg>
+Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
 ---
- .../omap2/displays-new/panel-sony-acx565akm.c      |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+ arch/arm/mach-imx/Kconfig          | 10 ----------
+ arch/arm/mach-imx/devices/Kconfig  |  3 ---
+ arch/arm/mach-imx/devices/Makefile |  3 +--
+ drivers/video/Kconfig              |  2 +-
+ 4 files changed, 2 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-index d94f35d..a093d3a 100644
---- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-+++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-@@ -535,6 +535,7 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index d511e054..9498878 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -179,7 +179,6 @@ comment "MX21 platforms:"
  
- 	r = in->ops.sdi->enable(in);
- 	if (r) {
-+		mutex_unlock(&ddata->mutex);
- 		pr_err("%s sdi enable failed\n", __func__);
- 		return r;
- 	}
-@@ -546,6 +547,7 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
- 		gpio_set_value(ddata->reset_gpio, 1);
+ config MACH_MX21ADS
+ 	bool "MX21ADS platform"
+-	select IMX_HAVE_PLATFORM_IMX_FB
+ 	select IMX_HAVE_PLATFORM_IMX_UART
+ 	select IMX_HAVE_PLATFORM_MXC_MMC
+ 	select IMX_HAVE_PLATFORM_MXC_NAND
+@@ -196,7 +195,6 @@ config MACH_MX25_3DS
+ 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
+ 	select IMX_HAVE_PLATFORM_IMX2_WDT
+ 	select IMX_HAVE_PLATFORM_IMXDI_RTC
+-	select IMX_HAVE_PLATFORM_IMX_FB
+ 	select IMX_HAVE_PLATFORM_IMX_I2C
+ 	select IMX_HAVE_PLATFORM_IMX_KEYPAD
+ 	select IMX_HAVE_PLATFORM_IMX_UART
+@@ -211,7 +209,6 @@ config MACH_EUKREA_CPUIMX25SD
+ 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
+ 	select IMX_HAVE_PLATFORM_IMX2_WDT
+ 	select IMX_HAVE_PLATFORM_IMXDI_RTC
+-	select IMX_HAVE_PLATFORM_IMX_FB
+ 	select IMX_HAVE_PLATFORM_IMX_I2C
+ 	select IMX_HAVE_PLATFORM_IMX_UART
+ 	select IMX_HAVE_PLATFORM_MXC_EHCI
+@@ -248,7 +245,6 @@ comment "MX27 platforms:"
  
- 	if (ddata->enabled) {
-+		mutex_unlock(&ddata->mutex);
- 		dev_dbg(&ddata->spi->dev, "panel already enabled\n");
- 		return 0;
- 	}
-@@ -578,10 +580,14 @@ static void acx565akm_panel_power_off(struct omap_dss_device *dssdev)
- 	struct panel_drv_data *ddata = to_panel_data(dssdev);
- 	struct omap_dss_device *in = ddata->in;
+ config MACH_MX27ADS
+ 	bool "MX27ADS platform"
+-	select IMX_HAVE_PLATFORM_IMX_FB
+ 	select IMX_HAVE_PLATFORM_IMX_I2C
+ 	select IMX_HAVE_PLATFORM_IMX_UART
+ 	select IMX_HAVE_PLATFORM_MXC_MMC
+@@ -281,7 +277,6 @@ choice
  
-+	mutex_lock(&ddata->mutex);
-+
- 	dev_dbg(dssdev->dev, "%s\n", __func__);
+ config MACH_PCM970_BASEBOARD
+ 	bool "PHYTEC PCM970 development board"
+-	select IMX_HAVE_PLATFORM_IMX_FB
+ 	select IMX_HAVE_PLATFORM_MXC_MMC
+ 	help
+ 	  This adds board specific devices that can be found on Phytec's
+@@ -326,7 +321,6 @@ choice
  
--	if (!ddata->enabled)
-+	if (!ddata->enabled) {
-+		mutex_unlock(&ddata->mutex);
- 		return;
-+	}
+ config MACH_EUKREA_MBIMX27_BASEBOARD
+ 	bool "Eukrea MBIMX27 development board"
+-	select IMX_HAVE_PLATFORM_IMX_FB
+ 	select IMX_HAVE_PLATFORM_IMX_KEYPAD
+ 	select IMX_HAVE_PLATFORM_IMX_SSI
+ 	select IMX_HAVE_PLATFORM_IMX_UART
+@@ -343,7 +337,6 @@ config MACH_MX27_3DS
+ 	bool "MX27PDK platform"
+ 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
+ 	select IMX_HAVE_PLATFORM_IMX2_WDT
+-	select IMX_HAVE_PLATFORM_IMX_FB
+ 	select IMX_HAVE_PLATFORM_IMX_I2C
+ 	select IMX_HAVE_PLATFORM_IMX_KEYPAD
+ 	select IMX_HAVE_PLATFORM_IMX_SSI
+@@ -389,7 +382,6 @@ config MACH_PCA100
+ 	bool "Phytec phyCARD-s (pca100)"
+ 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
+ 	select IMX_HAVE_PLATFORM_IMX2_WDT
+-	select IMX_HAVE_PLATFORM_IMX_FB
+ 	select IMX_HAVE_PLATFORM_IMX_I2C
+ 	select IMX_HAVE_PLATFORM_IMX_SSI
+ 	select IMX_HAVE_PLATFORM_IMX_UART
+@@ -406,7 +398,6 @@ config MACH_PCA100
  
- 	set_display_state(ddata, 0);
- 	set_sleep_mode(ddata, 1);
-@@ -601,11 +607,13 @@ static void acx565akm_panel_power_off(struct omap_dss_device *dssdev)
- 	msleep(100);
+ config MACH_MXT_TD60
+ 	bool "Maxtrack i-MXT TD60"
+-	select IMX_HAVE_PLATFORM_IMX_FB
+ 	select IMX_HAVE_PLATFORM_IMX_I2C
+ 	select IMX_HAVE_PLATFORM_IMX_UART
+ 	select IMX_HAVE_PLATFORM_MXC_MMC
+@@ -633,7 +624,6 @@ config MACH_MX35_3DS
+ 	bool "Support MX35PDK platform"
+ 	select IMX_HAVE_PLATFORM_FSL_USB2_UDC
+ 	select IMX_HAVE_PLATFORM_IMX2_WDT
+-	select IMX_HAVE_PLATFORM_IMX_FB
+ 	select IMX_HAVE_PLATFORM_IMX_I2C
+ 	select IMX_HAVE_PLATFORM_IMX_UART
+ 	select IMX_HAVE_PLATFORM_IPU_CORE
+diff --git a/arch/arm/mach-imx/devices/Kconfig b/arch/arm/mach-imx/devices/Kconfig
+index 68c74fb..99951a6 100644
+--- a/arch/arm/mach-imx/devices/Kconfig
++++ b/arch/arm/mach-imx/devices/Kconfig
+@@ -25,9 +25,6 @@ config IMX_HAVE_PLATFORM_IMX2_WDT
+ config IMX_HAVE_PLATFORM_IMXDI_RTC
+ 	bool
  
- 	in->ops.sdi->disable(in);
-+
-+	mutex_unlock(&ddata->mutex);
-+
- }
+-config IMX_HAVE_PLATFORM_IMX_FB
+-	bool
+-
+ config IMX_HAVE_PLATFORM_IMX_I2C
+ 	bool
  
- static int acx565akm_enable(struct omap_dss_device *dssdev)
- {
--	struct panel_drv_data *ddata = to_panel_data(dssdev);
- 	int r;
+diff --git a/arch/arm/mach-imx/devices/Makefile b/arch/arm/mach-imx/devices/Makefile
+index 67416fb..ba2642d 100644
+--- a/arch/arm/mach-imx/devices/Makefile
++++ b/arch/arm/mach-imx/devices/Makefile
+@@ -9,8 +9,7 @@ obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX21_HCD) += platform-imx21-hcd.o
+ obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX27_CODA) += platform-imx27-coda.o
+ obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX2_WDT) += platform-imx2-wdt.o
+ obj-$(CONFIG_IMX_HAVE_PLATFORM_IMXDI_RTC) += platform-imxdi_rtc.o
+-obj-y += platform-imx-dma.o
+-obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX_FB) += platform-imx-fb.o
++obj-y += platform-imx-dma.o platform-imx-fb.o
+ obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX_I2C) += platform-imx-i2c.o
+ obj-$(CONFIG_IMX_HAVE_PLATFORM_IMX_KEYPAD) += platform-imx-keypad.o
+ obj-$(CONFIG_IMX_HAVE_PLATFORM_PATA_IMX) += platform-pata_imx.o
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 4f2e1b3..e7d8d88 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -363,7 +363,7 @@ config FB_SA1100
  
- 	dev_dbg(dssdev->dev, "%s\n", __func__);
+ config FB_IMX
+ 	tristate "Freescale i.MX1/21/25/27 LCD support"
+-	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
++	depends on FB && (SOC_IMX1 || SOC_IMX21 || SOC_IMX25 || SOC_IMX27)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 -- 
-1.5.6.1
+1.8.3.2
 

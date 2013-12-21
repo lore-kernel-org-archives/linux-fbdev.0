@@ -1,49 +1,86 @@
-From: Ingo Molnar <mingo@kernel.org>
-Date: Thu, 19 Dec 2013 19:19:50 +0000
-Subject: Re: [PATCH v3] x86: sysfb: remove sysfb when probing real hw
-Message-Id: <20131219191950.GA564@gmail.com>
+From: Marc Dietrich <marvin24@gmx.de>
+Date: Sat, 21 Dec 2013 20:38:12 +0000
+Subject: [PATCH 1/2] drm/panel: Add support for Samsung LTN101NT05 panel
+Message-Id: <f03a644deb858f10affb7b039f9982bac81b02c9.1387656959.git.marvin24@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387374611-12493-1-git-send-email-dh.herrmann@gmail.com>
- <1387448038-8260-1-git-send-email-dh.herrmann@gmail.com>
- <52B340CB.90807@wwwdotorg.org>
- <20131219185517.GA303@gmail.com>
- <52B34454.1040603@wwwdotorg.org>
-In-Reply-To: <52B34454.1040603@wwwdotorg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: David Herrmann <dh.herrmann@gmail.com>, linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, the arch/x86 maintainers <x86@kernel.org>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, stable@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Marc Dietrich <marvin24-Mmb7MZpHnFY@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>
 
+The Samsung LNT101NT05 10.1" WXVGA panel can be supported by the simple panel
+driver.
 
-* Stephen Warren <swarren@wwwdotorg.org> wrote:
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: David Airlie <airlied@linux.ie>
+Signed-off-by: Marc Dietrich <marvin24@gmx.de>
+---
+This isn't strickly required to get the panel up, but Thierry suggested on IRC to
+include it anyway, in case someone else has some use for it.
 
-> On 12/19/2013 11:55 AM, Ingo Molnar wrote:
-> > 
-> > * Stephen Warren <swarren@wwwdotorg.org> wrote:
-> > 
-> >> On 12/19/2013 03:13 AM, David Herrmann wrote:
-> >>> With CONFIG_X86_SYSFB=y, probing real hw-drivers may result in
-> >>> resource-conflicts and drivers will refuse to load. A call to
-> >>> request_mem_region() will fail, if the region overlaps with the mem-region
-> >>> used by simplefb. The common desktop DRM drivers (intel, nouveau, radeon)
-> >>> are not affected as they don't reserve their resources, but some others
-> >>> do, including (nvidiafb, cirrus, ..).
-> >>
-> >> I have validated that this doesn't cause any regressions on the/a
-> >> non-x86 platform using simplefb, although given the main point of this
-> >> patch is to fix issues on x86, I'm rather hesitant to give a tested-by
-> >> tag in case someone looking back interprets it incorrectly:-)
-> > 
-> > Tested-on-ARM-by: Stephen Warren <swarren@wwwdotorg.org>
-> 
-> I suppose with CC: stable there's some precedent for a comment after the
-> tag, so perhaps:
-> 
-> Tested-by: Stephen Warren <swarren@wwwdotorg.org> # on ARM only
+ .../bindings/panel/samsung,ltn101nt05.txt          |    7 +++++
+ drivers/gpu/drm/panel/panel-simple.c               |   27 +++++++++++++++++++-
+ 2 files changed, 33 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/panel/samsung,ltn101nt05.txt
 
-That works too.
+diff --git a/Documentation/devicetree/bindings/panel/samsung,ltn101nt05.txt b/Documentation/devicetree/bindings/panel/samsung,ltn101nt05.txt
+new file mode 100644
+index 0000000..ef522c6
+--- /dev/null
++++ b/Documentation/devicetree/bindings/panel/samsung,ltn101nt05.txt
+@@ -0,0 +1,7 @@
++Samsung Electronics 10.1" WSVGA TFT LCD panel
++
++Required properties:
++- compatible: should be "samsung,ltn101nt05"
++
++This binding is compatible with the simple-panel binding, which is specified
++in simple-panel.txt in this directory.
+diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
+index 3e611af..7f9ddb5 100644
+--- a/drivers/gpu/drm/panel/panel-simple.c
++++ b/drivers/gpu/drm/panel/panel-simple.c
+@@ -338,6 +338,28 @@ static const struct panel_desc chunghwa_claa101wb01 = {
+ 	},
+ };
+ 
++static const struct drm_display_mode samsung_ltn101nt05_mode = {
++	.clock = 54030,
++	.hdisplay = 1024,
++	.hsync_start = 1024 + 24,
++	.hsync_end = 1024 + 24 + 136,
++	.htotal = 1024 + 24 + 136 + 160,
++	.vdisplay = 600,
++	.vsync_start = 600 + 3,
++	.vsync_end = 600 + 3 + 6,
++	.vtotal = 600 + 3 + 6 + 61,
++	.vrefresh = 60,
++};
++
++static const struct panel_desc samsung_ltn101nt05 = {
++	.modes = &samsung_ltn101nt05_mode,
++	.num_modes = 1,
++	.size = {
++		.width = 1024,
++		.height = 600,
++	},
++};
++
+ static const struct of_device_id platform_of_match[] = {
+ 	{
+ 		.compatible = "auo,b101aw03",
+@@ -346,6 +368,9 @@ static const struct of_device_id platform_of_match[] = {
+ 		.compatible = "chunghwa,claa101wb01",
+ 		.data = &chunghwa_claa101wb01
+ 	}, {
++		.compatible = "samsung,ltn101nt05",
++		.data = &samsung_ltn101nt05,
++	}, {
+ 		.compatible = "simple-panel",
+ 	}, {
+ 		/* sentinel */
+-- 
+1.7.9.5
 
-Thanks,
-
-	Ingo

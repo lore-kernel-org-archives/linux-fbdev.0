@@ -1,88 +1,61 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:35 +0000
-Subject: [PATCH 08/26] OMAPFB: clean up default display search
-Message-Id: <1386160133-24026-9-git-send-email-tomi.valkeinen@ti.com>
+From: Masami Ichikawa <masami256@gmail.com>
+Date: Wed, 25 Dec 2013 14:47:37 +0000
+Subject: [PATCH] fbcon: Fix memory leak in fbcon_exit().
+Message-Id: <1387982857-14500-1-git-send-email-masami256@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org
+Cc: airlied@redhat.com, udknight@gmail.com, gregkh@linuxfoundation.org, akpm@linux-foundation.org, tiwai@suse.de, linux-kernel@vger.kernel.org, masami256@gmail.com
 
-Separate the code for finding the default display into a function for
-clarity and to make it easier to extend it in the future.
+kmemleak reported a memory leak as below.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+unreferenced object 0xffff880036ca84c0 (size 16):
+  comm "swapper/0", pid 1, jiffies 4294877407 (age 4434.633s)
+  hex dump (first 16 bytes):
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff ff  ................
+  backtrace:
+    [<ffffffff814ed01e>] kmemleak_alloc+0x4e/0xb0
+    [<ffffffff8118913c>] __kmalloc+0x1fc/0x290
+    [<ffffffff81302c9e>] bit_cursor+0x24e/0x6c0
+    [<ffffffff812ff2f4>] fbcon_cursor+0x154/0x1d0
+    [<ffffffff813675d8>] hide_cursor+0x28/0xa0
+    [<ffffffff81368acf>] update_region+0x6f/0x90
+    [<ffffffff81300268>] fbcon_switch+0x518/0x550
+    [<ffffffff813695b9>] redraw_screen+0x189/0x240
+    [<ffffffff8136a0e0>] do_bind_con_driver+0x360/0x380
+    [<ffffffff8136a6e4>] do_take_over_console+0x114/0x1c0
+    [<ffffffff812fdc83>] do_fbcon_takeover+0x63/0xd0
+    [<ffffffff813023e5>] fbcon_event_notify+0x605/0x720
+    [<ffffffff81501dcc>] notifier_call_chain+0x4c/0x70
+    [<ffffffff81087f8d>] __blocking_notifier_call_chain+0x4d/0x70
+    [<ffffffff81087fc6>] blocking_notifier_call_chain+0x16/0x20
+    [<ffffffff812f201b>] fb_notifier_call_chain+0x1b/0x20
+
+In this case ops->cursor_state.mask is allocated in bit_cursor() but
+not freed in fbcon_exit(). So, fbcon_exit() needs to free buffer in its
+process.
+In the case, fbcon_exit() was called from fbcon_deinit() when driver
+called remove_conflicting_framebuffers().
+
+Signed-off-by: Masami Ichikawa <masami256@gmail.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c | 46 ++++++++++++++++++++------------
- 1 file changed, 29 insertions(+), 17 deletions(-)
+ drivers/video/console/fbcon.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 27d6905683f3..8bfe973e55ec 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2407,6 +2407,34 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
- 	return 0;
- }
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index cd8a802..4f02375 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -3561,6 +3561,7 @@ static void fbcon_exit(void)
  
-+static struct omap_dss_device *
-+omapfb_find_default_display(struct omapfb2_device *fbdev)
-+{
-+	const char *def_name;
-+	int i;
-+
-+	/* search with the display name from the user or the board file */
-+
-+	def_name = omapdss_get_default_display_name();
-+
-+	if (def_name) {
-+		for (i = 0; i < fbdev->num_displays; ++i) {
-+			struct omap_dss_device *dssdev;
-+
-+			dssdev = fbdev->displays[i].dssdev;
-+
-+			if (dssdev->name && strcmp(def_name, dssdev->name) = 0)
-+				return dssdev;
-+		}
-+
-+		/* def_name given but not found */
-+		return NULL;
-+	}
-+
-+	/* return the first display we have in the list */
-+	return fbdev->displays[0].dssdev;
-+}
-+
- static int omapfb_probe(struct platform_device *pdev)
- {
- 	struct omapfb2_device *fbdev = NULL;
-@@ -2484,23 +2512,7 @@ static int omapfb_probe(struct platform_device *pdev)
- 	for (i = 0; i < fbdev->num_managers; i++)
- 		fbdev->managers[i] = omap_dss_get_overlay_manager(i);
- 
--	def_display = NULL;
--
--	for (i = 0; i < fbdev->num_displays; ++i) {
--		struct omap_dss_device *dssdev;
--		const char *def_name;
--
--		def_name = omapdss_get_default_display_name();
--
--		dssdev = fbdev->displays[i].dssdev;
--
--		if (def_name = NULL ||
--			(dssdev->name && strcmp(def_name, dssdev->name) = 0)) {
--			def_display = dssdev;
--			break;
--		}
--	}
--
-+	def_display = omapfb_find_default_display(fbdev);
- 	if (def_display = NULL) {
- 		dev_err(fbdev->dev, "failed to find default display\n");
- 		r = -EPROBE_DEFER;
+ 				fbcon_del_cursor_timer(info);
+ 				kfree(ops->cursor_src);
++				kfree(ops->cursor_state.mask);
+ 				kfree(info->fbcon_par);
+ 				info->fbcon_par = NULL;
+ 			}
 -- 
-1.8.3.2
+1.8.4.2
 

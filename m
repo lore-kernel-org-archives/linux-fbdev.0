@@ -1,72 +1,32 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:36 +0000
-Subject: [PATCH 09/26] OMAPFB: search for default display with DT alias
-Message-Id: <1386160133-24026-10-git-send-email-tomi.valkeinen@ti.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Mon, 30 Dec 2013 06:34:13 +0000
+Subject: [PATCH 4/4] video: pxa168fb: Cleanup pxa168fb.h file
+Message-Id: <1388384533-20458-4-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Improve the search for the default display in two ways:
-* compare the given display name to the display's alias
-* if no display name is given, look for "display0" DT alias
+Remove incorrect file reference in comments section.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Eric Miao <eric.y.miao@gmail.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+ include/video/pxa168fb.h |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 8bfe973e55ec..961c5c251f63 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2413,7 +2413,10 @@ omapfb_find_default_display(struct omapfb2_device *fbdev)
- 	const char *def_name;
- 	int i;
- 
--	/* search with the display name from the user or the board file */
-+	/*
-+	 * Search with the display name from the user or the board file,
-+	 * comparing to display names and aliases
-+	 */
- 
- 	def_name = omapdss_get_default_display_name();
- 
-@@ -2425,12 +2428,30 @@ omapfb_find_default_display(struct omapfb2_device *fbdev)
- 
- 			if (dssdev->name && strcmp(def_name, dssdev->name) = 0)
- 				return dssdev;
-+
-+			if (strcmp(def_name, dssdev->alias) = 0)
-+				return dssdev;
- 		}
- 
- 		/* def_name given but not found */
- 		return NULL;
- 	}
- 
-+	/* then look for DT alias display0 */
-+	for (i = 0; i < fbdev->num_displays; ++i) {
-+		struct omap_dss_device *dssdev;
-+		int id;
-+
-+		dssdev = fbdev->displays[i].dssdev;
-+
-+		if (dssdev->dev->of_node = NULL)
-+			continue;
-+
-+		id = of_alias_get_id(dssdev->dev->of_node, "display");
-+		if (id = 0)
-+			return dssdev;
-+	}
-+
- 	/* return the first display we have in the list */
- 	return fbdev->displays[0].dssdev;
- }
+diff --git a/include/video/pxa168fb.h b/include/video/pxa168fb.h
+index 8c2f385a90ea..84cbb1f69ea6 100644
+--- a/include/video/pxa168fb.h
++++ b/include/video/pxa168fb.h
+@@ -1,6 +1,4 @@
+ /*
+- * linux/arch/arm/mach-mmp/include/mach/pxa168fb.h
+- *
+  *  Copyright (C) 2009 Marvell International Ltd.
+  *
+  * This program is free software; you can redistribute it and/or modify
 -- 
-1.8.3.2
+1.7.9.5
 

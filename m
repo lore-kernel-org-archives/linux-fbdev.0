@@ -1,59 +1,80 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 11 Dec 2013 14:29:57 +0000
-Subject: Re: [PATCH] ARM: OMAPFB: panel-sony-acx565akm: fix missing unlock in acx565akm_panel_power_on()
-Message-Id: <52A876E5.4040000@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="8bgXEdsHRc9nknWSsucea5neatCfi8K5s"
+From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Date: Mon, 30 Dec 2013 16:17:52 +0000
+Subject: [PATCH] ARM: OMAPFB: panel-sony-acx565akm: fix missing mutex unlocks
+Message-Id: <1388420272-5132-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAPgLHd_asZkqBEXyx611=NOMfcaR18jZ8Yxkt5yhg7Lbng93MA@mail.gmail.com>
-In-Reply-To: <CAPgLHd_asZkqBEXyx611=NOMfcaR18jZ8Yxkt5yhg7Lbng93MA@mail.gmail.com>
-To: Wei Yongjun <weiyj.lk@gmail.com>, plagnioj@jcrosoft.com, aaro.koskinen@iki.fi
-Cc: yongjun_wei@trendmicro.com.cn, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <1383773070-15114-1-git-send-email-aaro.koskinen@iki.fi>
+In-Reply-To: <1383773070-15114-1-git-send-email-aaro.koskinen@iki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>
 
---8bgXEdsHRc9nknWSsucea5neatCfi8K5s
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Ivaylo Dimitrov <freemangordon@abv.bg>
 
-Hi,
+Commit c37dd677988ca50bc8bc60ab5ab053720583c168 fixes the unbalanced
+unlock in acx565akm_enable but introduces another problem - if
+acx565akm_panel_power_on exits early, the mutex is not unlocked. Fix
+that by unlocking the mutex on early return. Also add mutex protection in
+acx565akm_panel_power_off and remove an unused variable
 
-On 2013-12-06 14:55, Wei Yongjun wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->=20
-> Add the missing unlock before return from function
-> acx565akm_panel_power_on() in the error handling case.
->=20
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+Signed-off-by: Ivaylo Dimitrov <freemangordon@abv.bg>
+---
+ .../omap2/displays-new/panel-sony-acx565akm.c      |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
 
-A fix for this has already been merged:
-c37dd677988ca50bc8bc60ab5ab053720583c168 (ARM: OMAPFB:
-panel-sony-acx565akm: fix bad unlock balance)
+diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+index d94f35d..a093d3a 100644
+--- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
++++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+@@ -535,6 +535,7 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
+ 
+ 	r = in->ops.sdi->enable(in);
+ 	if (r) {
++		mutex_unlock(&ddata->mutex);
+ 		pr_err("%s sdi enable failed\n", __func__);
+ 		return r;
+ 	}
+@@ -546,6 +547,7 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
+ 		gpio_set_value(ddata->reset_gpio, 1);
+ 
+ 	if (ddata->enabled) {
++		mutex_unlock(&ddata->mutex);
+ 		dev_dbg(&ddata->spi->dev, "panel already enabled\n");
+ 		return 0;
+ 	}
+@@ -578,10 +580,14 @@ static void acx565akm_panel_power_off(struct omap_dss_device *dssdev)
+ 	struct panel_drv_data *ddata = to_panel_data(dssdev);
+ 	struct omap_dss_device *in = ddata->in;
+ 
++	mutex_lock(&ddata->mutex);
++
+ 	dev_dbg(dssdev->dev, "%s\n", __func__);
+ 
+-	if (!ddata->enabled)
++	if (!ddata->enabled) {
++		mutex_unlock(&ddata->mutex);
+ 		return;
++	}
+ 
+ 	set_display_state(ddata, 0);
+ 	set_sleep_mode(ddata, 1);
+@@ -601,11 +607,13 @@ static void acx565akm_panel_power_off(struct omap_dss_device *dssdev)
+ 	msleep(100);
+ 
+ 	in->ops.sdi->disable(in);
++
++	mutex_unlock(&ddata->mutex);
++
+ }
+ 
+ static int acx565akm_enable(struct omap_dss_device *dssdev)
+ {
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+ 	int r;
+ 
+ 	dev_dbg(dssdev->dev, "%s\n", __func__);
+-- 
+1.5.6.1
 
- Tomi
-
-
-
---8bgXEdsHRc9nknWSsucea5neatCfi8K5s
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSqHblAAoJEPo9qoy8lh7194AQAJAr1ScbIjsXKGM8YuwF3QW+
-V/TNCRw+XYZN4fxXeu8Q9QFJbmEvcZZ77onTRWX6JqiL9IqkxCJenyhff5OU2+Zr
-tPwrYsHhCQVob+mTHuEVQpaz7WhcT7ruVql2MlXsh/IvBH9Anwp6mdEOI/sgiATt
-7lALlsHkYT3q+u73idbQDzD+PjSOS9SSsx83eqXnGxZrTQNrycpj5hX/kbYFPUTC
-0qstqSMNTsDIMgJ7nXQ604Wt7X3mi2MyASeHQBbbN3CHIC6rj+96WW2xMECo1bLn
-ccyXUy/k2W120BWzULlTdNql3WSq+//AEW3nHZu3VgU/yperhXTPpdR/mmuhL9hG
-edr9XZjB/8p2zi8H0epf73CDDGo5oW7qkhJeONZNk71IBxRdc5d2gBPkocFWpl7V
-B5h6x0nOYEEfm2fj6xdfA1lJ7GtHvV0J5Qs3QnVc0H3/059TydPOlyqRrO7xSmbp
-K9n8wcaVtbMaPKATIHCDIpZyxT1WakmXnSb6oQH0tUVYSItKzEjCQDy46XYXPb4C
-XB5S8dmty+oj7LifL43/yZHPtRedHfo8zF6+9jc2mIfK54hbFovqjoNv1kEyb1mP
-BfS9HD7W8bWtrwB3/q8KammFIrVFV1rvPRdH2xaFvhLd2+1dirTYcjeGgM5zG+WA
-sU6SOS/ZZS897sGBljN5
-=mzSG
------END PGP SIGNATURE-----
-
---8bgXEdsHRc9nknWSsucea5neatCfi8K5s--

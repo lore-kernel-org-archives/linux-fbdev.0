@@ -1,133 +1,33 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Dec 2013 12:28:47 +0000
-Subject: [PATCH 20/26] OMAPDSS: panel-dsi-cm: Add DT support
-Message-Id: <1386160133-24026-21-git-send-email-tomi.valkeinen@ti.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Mon, 30 Dec 2013 06:34:11 +0000
+Subject: [PATCH 2/4] video: msm: Cleanup video-msm_fb.h header
+Message-Id: <1388384533-20458-2-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1386160133-24026-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Darren Etheridge <detheridge@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-XXX ULPS and backlight missing.
+Commit 1ef21f6343ff ("ARM: msm: move platform_data definitions")
+moved the file to the current location but forgot to remove the pointer
+to its previous location. Clean it up.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/video/omap2/displays-new/panel-dsi-cm.c | 65 +++++++++++++++++++++++--
- 1 file changed, 61 insertions(+), 4 deletions(-)
+ include/linux/platform_data/video-msm_fb.h |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/displays-new/panel-dsi-cm.c b/drivers/video/omap2/displays-new/panel-dsi-cm.c
-index b7baafe83aa3..fda7728bdfaa 100644
---- a/drivers/video/omap2/displays-new/panel-dsi-cm.c
-+++ b/drivers/video/omap2/displays-new/panel-dsi-cm.c
-@@ -22,6 +22,8 @@
- #include <linux/sched.h>
- #include <linux/slab.h>
- #include <linux/workqueue.h>
-+#include <linux/of_device.h>
-+#include <linux/of_gpio.h>
- 
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -595,10 +597,13 @@ static int dsicm_power_on(struct panel_drv_data *ddata)
- 		.lp_clk_max = 10000000,
- 	};
- 
--	r = in->ops.dsi->configure_pins(in, &ddata->pin_config);
--	if (r) {
--		dev_err(&ddata->pdev->dev, "failed to configure DSI pins\n");
--		goto err0;
-+	if (ddata->pin_config.num_pins > 0) {
-+		r = in->ops.dsi->configure_pins(in, &ddata->pin_config);
-+		if (r) {
-+			dev_err(&ddata->pdev->dev,
-+				"failed to configure DSI pins\n");
-+			goto err0;
-+		}
- 	}
- 
- 	r = in->ops.dsi->set_config(in, &dsi_config);
-@@ -1156,6 +1161,46 @@ static int dsicm_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int dsicm_probe_of(struct platform_device *pdev)
-+{
-+	struct device_node *node = pdev->dev.of_node;
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct omap_dss_device *in;
-+	int gpio;
-+
-+	gpio = of_get_gpio(node, 0);
-+	if (!gpio_is_valid(gpio)) {
-+		dev_err(&pdev->dev, "failed to parse reset gpio\n");
-+		return gpio;
-+	}
-+	ddata->reset_gpio = gpio;
-+
-+	if (of_gpio_count(node) > 1) {
-+		gpio = of_get_gpio(node, 1);
-+
-+		if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+			ddata->ext_te_gpio = gpio;
-+		} else {
-+			dev_err(&pdev->dev, "failed to parse TE gpio\n");
-+			return gpio;
-+		}
-+	} else {
-+		ddata->ext_te_gpio = -1;
-+	}
-+
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
-+
-+	ddata->in = in;
-+
-+	/* TODO: ulps, backlight */
-+
-+	return 0;
-+}
-+
- static int dsicm_probe(struct platform_device *pdev)
- {
- 	struct backlight_properties props;
-@@ -1178,6 +1223,10 @@ static int dsicm_probe(struct platform_device *pdev)
- 		r = dsicm_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = dsicm_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -1320,12 +1369,20 @@ static int __exit dsicm_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id dsicm_of_match[] = {
-+	{ .compatible = "panel-dsi-cm", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, dsicm_of_match);
-+
- static struct platform_driver dsicm_driver = {
- 	.probe = dsicm_probe,
- 	.remove = __exit_p(dsicm_remove),
- 	.driver = {
- 		.name = "panel-dsi-cm",
- 		.owner = THIS_MODULE,
-+		.of_match_table = dsicm_of_match,
- 	},
- };
- 
+diff --git a/include/linux/platform_data/video-msm_fb.h b/include/linux/platform_data/video-msm_fb.h
+index 1f4fc81b3d8f..31449be3eadb 100644
+--- a/include/linux/platform_data/video-msm_fb.h
++++ b/include/linux/platform_data/video-msm_fb.h
+@@ -1,5 +1,4 @@
+-/* arch/arm/mach-msm/include/mach/msm_fb.h
+- *
++/*
+  * Internal shared definitions for various MSM framebuffer parts.
+  *
+  * Copyright (C) 2007 Google Incorporated
 -- 
-1.8.3.2
+1.7.9.5
 

@@ -1,162 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Jan 2014 10:56:58 +0000
-Subject: [PATCHv3 26/41] ARM: omap4-sdp.dts: add display information
-Message-Id: <1390301833-24944-27-git-send-email-tomi.valkeinen@ti.com>
+From: David Howells <dhowells@redhat.com>
+Date: Fri, 03 Jan 2014 16:08:04 +0000
+Subject: [PATCH 6/7] Fix a warning pertaining to the aty128fb backlight variable
+Message-Id: <20140103160804.8153.94982.stgit@warthog.procyon.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: akpm@linux-foundation.org
+Cc: dhowells@redhat.com, linux-fbdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 
-Add DT data for OMAP4 SDP board. The board has the following displays:
+Fix the following warning in the aty128fb driver:
 
-lcd0: a command mode DSI panel connected to OMAP DSI1 encoder
-lcd1: a command mode DSI panel connected to OMAP DSI2 encoder
-hdmi: OMAP HDMI output with TPD12S015 ESD/level shifter
+	drivers/video/aty/aty128fb.c:363:12: warning: 'backlight' defined but not used [-Wunused-variable]
+	 static int backlight = 0;
+		    ^
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+as the variable's value is only read if CONFIG_FB_ATY128_BACKLIGHT=y.  The
+variable is also set if MODULE is unset[*].
+
+[*] I wonder if the conditional wrapper around aty128fb_setup() should be
+    using CONFIG_MODULE rather than MODULE.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+cc: Paul Mackerras <paulus@samba.org>
+cc: linux-fbdev@vger.kernel.org
 ---
- arch/arm/boot/dts/omap4-sdp.dts | 107 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 105 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/omap4-sdp.dts b/arch/arm/boot/dts/omap4-sdp.dts
-index dbc81fb6ef03..cf9f6cbbd349 100644
---- a/arch/arm/boot/dts/omap4-sdp.dts
-+++ b/arch/arm/boot/dts/omap4-sdp.dts
-@@ -19,6 +19,12 @@
- 		reg = <0x80000000 0x40000000>; /* 1 GB */
- 	};
+ drivers/video/aty/aty128fb.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+index 12ca031877d4..52108be69e77 100644
+--- a/drivers/video/aty/aty128fb.c
++++ b/drivers/video/aty/aty128fb.c
+@@ -357,11 +357,13 @@ static int default_lcd_on = 1;
+ static bool mtrr = true;
+ #endif
  
-+	aliases {
-+		display0 = &lcd0;
-+		display1 = &lcd1;
-+		display2 = &hdmi0;
-+	};
-+
- 	vdd_eth: fixedregulator-vdd-eth {
- 		compatible = "regulator-fixed";
- 		regulator-name = "VDD_ETH";
-@@ -153,6 +159,47 @@
- 		startup-delay-us = <70000>;
- 		enable-active-high;
- 	};
-+
-+	tpd12s015: encoder@0 {
-+		compatible = "ti,tpd12s015";
-+
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&tpd12s015_pins>;
-+
-+		gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>,	/* 60, CT CP HPD */
-+			<&gpio2 9 GPIO_ACTIVE_HIGH>,	/* 41, LS OE */
-+			<&gpio2 31 GPIO_ACTIVE_HIGH>;	/* 63, HPD */
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				tpd12s015_in: endpoint@0 {
-+					remote-endpoint = <&hdmi_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				tpd12s015_out: endpoint@0 {
-+					remote-endpoint = <&hdmi_connector_in>;
-+				};
-+			};
-+		};
-+	};
-+
-+	hdmi0: connector@0 {
-+		compatible = "hdmi-connector";
-+		label = "hdmi";
-+
-+		hdmi_connector_in: endpoint {
-+			remote-endpoint = <&tpd12s015_out>;
-+		};
-+	};
- };
++#ifdef CONFIG_FB_ATY128_BACKLIGHT
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ static int backlight = 1;
+ #else
+ static int backlight = 0;
+ #endif
++#endif
  
- &omap4_pmx_core {
-@@ -163,8 +210,6 @@
- 			&dmic_pins
- 			&mcbsp1_pins
- 			&mcbsp2_pins
--			&dss_hdmi_pins
--			&tpd12s015_pins
- 	>;
- 
- 	uart2_pins: pinmux_uart2_pins {
-@@ -550,3 +595,61 @@
- 	mode = <3>;
- 	power = <50>;
- };
-+
-+&dss {
-+	status = "ok";
-+};
-+
-+&dsi1 {
-+	status = "ok";
-+	vdd-supply = <&vcxio>;
-+
-+	dsi1_out_ep: endpoint {
-+		remote-endpoint = <&lcd0_in>;
-+		lanes = <0 1 2 3 4 5>;
-+	};
-+
-+	lcd0: display {
-+		compatible = "tpo,taal", "panel-dsi-cm";
-+		label = "lcd0";
-+
-+		gpios = <&gpio4 6 GPIO_ACTIVE_HIGH>;	/* 102, reset */
-+
-+		lcd0_in: endpoint {
-+			remote-endpoint = <&dsi1_out_ep>;
-+		};
-+	};
-+};
-+
-+&dsi2 {
-+	status = "ok";
-+	vdd-supply = <&vcxio>;
-+
-+	dsi2_out_ep: endpoint {
-+		remote-endpoint = <&lcd1_in>;
-+		lanes = <0 1 2 3 4 5>;
-+	};
-+
-+	lcd1: display {
-+		compatible = "tpo,taal", "panel-dsi-cm";
-+		label = "lcd1";
-+
-+		gpios = <&gpio4 8 GPIO_ACTIVE_HIGH>;	/* 104, reset */
-+
-+		lcd1_in: endpoint {
-+			remote-endpoint = <&dsi2_out_ep>;
-+		};
-+	};
-+};
-+
-+&hdmi {
-+	status = "ok";
-+	vdda-supply = <&vdac>;
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&dss_hdmi_pins>;
-+
-+	hdmi_out: endpoint {
-+		remote-endpoint = <&tpd12s015_in>;
-+	};
-+};
--- 
-1.8.3.2
+ /* PLL constants */
+ struct aty128_constants {
+@@ -1671,7 +1673,9 @@ static int aty128fb_setup(char *options)
+ 			default_crt_on = simple_strtoul(this_opt+4, NULL, 0);
+ 			continue;
+ 		} else if (!strncmp(this_opt, "backlight:", 10)) {
++#ifdef CONFIG_FB_ATY128_BACKLIGHT
+ 			backlight = simple_strtoul(this_opt+10, NULL, 0);
++#endif
+ 			continue;
+ 		}
+ #ifdef CONFIG_MTRR
 

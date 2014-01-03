@@ -1,41 +1,48 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 08 Jan 2014 15:05:08 +0000
-Subject: Re: [PATCH] video: vgacon: Don't build on arm64
-Message-Id: <CAMuHMdVjb9GQ_UE2Y1+vqgQK+SM8ExBgR5X3xVPSAaoevrbGmA@mail.gmail.com>
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Date: Fri, 03 Jan 2014 19:02:09 +0000
+Subject: [PATCH v2] allow xenfb initialization for hvm guests
+Message-Id: <1388775730-2984-1-git-send-email-stefano.stabellini@eu.citrix.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387323421-26126-1-git-send-email-broonie@kernel.org>
-In-Reply-To: <1387323421-26126-1-git-send-email-broonie@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: xen-devel@lists.xensource.com
+Cc: linux-kernel@vger.kernel.org, konrad.wilk@oracle.com, stefano.stabellini@eu.citrix.com, boris.ostrovsky@oracle.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org
 
-On Wed, Jan 8, 2014 at 3:48 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wednesday 08 January 2014, Geert Uytterhoeven wrote:
->> VGA is special, in that it uses "ISA memory space". This is not a subset of
->> "PCI memory space", but something different. Some PCI host bridges
->> (IIRC, e.g. on Mac) do not allow access to this space.
->> Most other "PC I/O" use ISA I/O space, which is a subset of PCI I/O space.
->
-> Right, but they often go together, and I think vgacon actually requires
-> both, doesn't it? I'm not aware of anything else requiring access to the
+There is no reasons why an HVM guest shouldn't be allowed to use xenfb.
+As a matter of fact ARM guests, HVM from Linux POV, can use xenfb.
+Given that no Xen toolstacks configure a xenfb backend for x86 HVM
+guests, they are not affected.
 
-Yes, VGA uses both.
+Please note that at this time QEMU needs few outstanding fixes to
+provide xenfb on ARM:
 
-> 0xa0000-0xfffff or the 0xf00000-0xffffff ISA memory windows except VGA,
-> but I could be missing some less common devices. These are often not
-> available on non-x86 systems, which prevents VGA from working even if
-> low I/O space addresses are routed to PCI.
+http://marc.info/?l=qemu-devel&m8739419700837&w=2
 
-And MDA, for mdacon.
+Signed-off-by: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Acked-by: David Vrabel <david.vrabel@citrix.com>
+CC: boris.ostrovsky@oracle.com
+CC: plagnioj@jcrosoft.com
+CC: tomi.valkeinen@ti.com
+CC: linux-fbdev@vger.kernel.org
+CC: konrad.wilk@oracle.com
+---
+ drivers/video/xen-fbfront.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+index cd005c2..02e1c01 100644
+--- a/drivers/video/xen-fbfront.c
++++ b/drivers/video/xen-fbfront.c
+@@ -692,7 +692,7 @@ static DEFINE_XENBUS_DRIVER(xenfb, ,
+ 
+ static int __init xenfb_init(void)
+ {
+-	if (!xen_pv_domain())
++	if (!xen_domain())
+ 		return -ENODEV;
+ 
+ 	/* Nothing to do if running in dom0. */
+-- 
+1.7.10.4
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

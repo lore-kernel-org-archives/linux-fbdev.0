@@ -1,122 +1,47 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 13 Jan 2014 10:58:03 +0000
-Subject: Re: [PATCH] OMAPDSS: DISPC: Fix 34xx overlay scaling calculation
-Message-Id: <52D3C3EB.6000104@ti.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Fri, 03 Jan 2014 16:59:49 +0000
+Subject: Re: [RFC PATCH 0/5] Move IPUv3 core out of staging, add CSI support
+Message-Id: <1388768389.19394.39.camel@pizza.hi.pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389444125-5000-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
-In-Reply-To: <1389444125-5000-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+References: <1387561966-31758-1-git-send-email-p.zabel@pengutronix.de>
+In-Reply-To: <1387561966-31758-1-git-send-email-p.zabel@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, tomi.valkeinen@ti.com
-Cc: plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>
+To: linux-fbdev@vger.kernel.org
 
-Hi,
+Am Freitag, den 20.12.2013, 11:12 -0800 schrieb Greg Kroah-Hartman:
+> On Fri, Dec 20, 2013 at 06:52:41PM +0100, Philipp Zabel wrote:
+> > Hi,
+> > 
+> > this is mostly about the first patch, which moves the IPUv3 core code
+> > (drivers/staging/imx-drm/ipu-v3) to drivers/gpu. host1x, which
+> > serves a similar purpose, already sits there.
+> > The other four patches add the necessary code for CSI and SMFC handling,
+> > which is used by the V4L2 CSI capture driver.
+> > 
+> > Currently this is based on Russell's patch
+> >     [PATCH 62/64] imx-drm: pass an IPU ID to crtc and core
+> > 
+> > I am aware that there are now quite a few other patches in the pipeline
+> > that touch drivers/staging/imx-drm/ipu-v3/*, so I am happy to rebase this
+> > (or them) as needed. I'd like to move the core code out of staging so that
+> > we can start submitting V4L2 code for video capture and scaling / colorspace
+> > conversion in parallel.
+> 
+> I'd recommend doing the move (if the gpu/drm maintainer agrees) after
+> 3.14-rc1 as then all of my pending patches would be applied and we would
+> be synced up with everything.
 
-On Saturday 11 January 2014 06:12 PM, Ivaylo Dimitrov wrote:
-> From: Ivaylo Dimitrov <freemangordon@abv.bg>
->
-> commit 7faa92339bbb1e6b9a80983b206642517327eb75 OMAPDSS: DISPC: Handle
-> synclost errors in OMAP3 introduces limits check to prevent SYNCLOST errors
-> on OMAP3. However, it misses the logic found in Nokia kernels that is
-> needed to correctly calculate whether 3 tap or 5 tap rescaler to be used as
-> well as the logic to fallback to 3 taps if 5 taps clock results in too
-> tight horizontal timings. Without that patch "horizontal timing too tight"
-> errors are seen when a video with resolution above 640x350 is tried to be
-> played. The patch is a forward-ported logic found in Nokia N900 and N9/50
-> kernels.
->
-> Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
-> ---
->   drivers/video/omap2/dss/dispc.c |   36 +++++++++++++++++++++++++-----------
->   1 files changed, 25 insertions(+), 11 deletions(-)
->
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-> index 67e413e..9d1aa25 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -1999,7 +1999,8 @@ static void calc_tiler_rotation_offset(u16 screen_width, u16 width,
->    */
->   static int check_horiz_timing_omap3(unsigned long pclk, unsigned long lclk,
->   		const struct omap_video_timings *t, u16 pos_x,
-> -		u16 width, u16 height, u16 out_width, u16 out_height)
-> +		u16 width, u16 height, u16 out_width, u16 out_height,
-> +		bool five_taps)
->   {
->   	const int ds = DIV_ROUND_UP(height, out_height);
->   	unsigned long nonactive;
-> @@ -2019,6 +2020,10 @@ static int check_horiz_timing_omap3(unsigned long pclk, unsigned long lclk,
->   	if (blank <= limits[i])
->   		return -EINVAL;
->
-> +	/* FIXME add checks for 3-tap filter once the limitations are known */
-> +	if (!five_taps)
-> +		return 0;
-> +
->   	/*
->   	 * Pixel data should be prepared before visible display point starts.
->   	 * So, atleast DS-2 lines must have already been fetched by DISPC
-> @@ -2191,24 +2196,33 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
->   	const int maxsinglelinewidth >   			dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
->
-> +	*five_taps = height > out_height;
-> +
+Ok.
 
-We should consider the decimated height when calculating the five taps. 
-I suggest the change below:
+> Once this "core" is moved, what is keeping the rest in staging and why
+> isn't it moving out as well?
 
->   	do {
->   		in_height = DIV_ROUND_UP(height, *decim_y);
->   		in_width = DIV_ROUND_UP(width, *decim_x);
-> -		*core_clk = calc_core_clk_five_taps(pclk, mgr_timings,
-> -			in_width, in_height, out_width, out_height, color_mode);
-> -
-> -		error = check_horiz_timing_omap3(pclk, lclk, mgr_timings,
-> -				pos_x, in_width, in_height, out_width,
-> -				out_height);
->
+Russell put a lot of work into fixing imx-drm issues, and I'd like to
+make the change to a common device tree binding before this leaves
+staging.
 
-set "*five_taps = in_height > out_height;" here. The rest of the code 
-remains the same.
-
->   		if (in_width > maxsinglelinewidth)
->   			if (in_height > out_height &&
->   						in_height < out_height * 2)
->   				*five_taps = false;
-> -		if (!*five_taps)
-> +again:
-> +		if (*five_taps)
-> +			*core_clk = calc_core_clk_five_taps(pclk, mgr_timings,
-> +						in_width, in_height, out_width,
-> +						out_height, color_mode);
-> +		else
->   			*core_clk = dispc.feat->calc_core_clk(pclk, in_width,
-> -					in_height, out_width, out_height,
-> -					mem_to_mem);
-> +				in_height, out_width, out_height,
-> +				mem_to_mem);
-> +
-> +		error = check_horiz_timing_omap3(pclk, lclk, mgr_timings,
-> +				pos_x, in_width, in_height, out_width,
-> +				out_height, *five_taps);
-> +		if (error && *five_taps) {
-> +			*five_taps = false;
-> +			goto again;
-> +		}
->
->   		error = (error || in_width > maxsinglelinewidth * 2 ||
->   			(in_width > maxsinglelinewidth && *five_taps) ||
-> @@ -2226,7 +2240,7 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
->   	} while (*decim_x <= *x_predecim && *decim_y <= *y_predecim && error);
->
->   	if (check_horiz_timing_omap3(pclk, lclk, mgr_timings, pos_x, width,
-> -				height, out_width, out_height)){
-> +				height, out_width, out_height, *five_taps)) {
->   			DSSERR("horizontal timing too tight\n");
->   			return -EINVAL;
->   	}
->
-
-Thanks,
-Archit
+regards
+Philipp
 

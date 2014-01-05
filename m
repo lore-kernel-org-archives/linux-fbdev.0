@@ -1,56 +1,97 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 14 Jan 2014 08:04:42 +0000
-Subject: Re: [PATCH v6] video: add OpenCores VGA/LCD framebuffer driver
-Message-Id: <52D4EF9A.5010105@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="obCTjJqutDqeLQwniLxnaadUfEh9f8rNp"
+From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Date: Sun, 05 Jan 2014 13:13:05 +0000
+Subject: [PATCH v2] ARM: OMAPFB: panel-sony-acx565akm: fix missing mutex unlocks
+Message-Id: <1388927585-5640-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389641890-2679-1-git-send-email-stefan.kristiansson@saunalahti.fi>
-In-Reply-To: <1389641890-2679-1-git-send-email-stefan.kristiansson@saunalahti.fi>
-To: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com
+References: <52C956E9.2030008@gmail.com>
+In-Reply-To: <52C956E9.2030008@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>
 
---obCTjJqutDqeLQwniLxnaadUfEh9f8rNp
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Ivaylo Dimitrov <freemangordon@abv.bg>
 
-On 2014-01-13 21:38, Stefan Kristiansson wrote:
-> This adds support for the VGA/LCD core available from OpenCores:
-> http://opencores.org/project,vga_lcd
->=20
-> The driver have been tested together with both OpenRISC and
-> ARM (socfpga) processors.
->=20
-> Signed-off-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Commit c37dd677988ca50bc8bc60ab5ab053720583c168 fixes the unbalanced
+unlock in acx565akm_enable but introduces another problem - if
+acx565akm_panel_power_on exits early, the mutex is not unlocked. Fix
+that by unlocking the mutex on early return. Also add mutex protection in
+acx565akm_panel_power_off and remove an unused variable
 
-I'll queue this for 3.14.
+Signed-off-by: Ivaylo Dimitrov <freemangordon@abv.bg>
+---
+ .../omap2/displays-new/panel-sony-acx565akm.c      |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
 
- Tomi
+diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+index d94f35d..9aef7fa 100644
+--- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
++++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+@@ -535,6 +535,7 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
+ 
+ 	r = in->ops.sdi->enable(in);
+ 	if (r) {
++		mutex_unlock(&ddata->mutex);
+ 		pr_err("%s sdi enable failed\n", __func__);
+ 		return r;
+ 	}
+@@ -546,6 +547,7 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
+ 		gpio_set_value(ddata->reset_gpio, 1);
+ 
+ 	if (ddata->enabled) {
++		mutex_unlock(&ddata->mutex);
+ 		dev_dbg(&ddata->spi->dev, "panel already enabled\n");
+ 		return 0;
+ 	}
+@@ -578,10 +580,14 @@ static void acx565akm_panel_power_off(struct omap_dss_device *dssdev)
+ 	struct panel_drv_data *ddata = to_panel_data(dssdev);
+ 	struct omap_dss_device *in = ddata->in;
+ 
++	mutex_lock(&ddata->mutex);
++
+ 	dev_dbg(dssdev->dev, "%s\n", __func__);
+ 
+-	if (!ddata->enabled)
++	if (!ddata->enabled) {
++		mutex_unlock(&ddata->mutex);
+ 		return;
++	}
+ 
+ 	set_display_state(ddata, 0);
+ 	set_sleep_mode(ddata, 1);
+@@ -601,11 +607,13 @@ static void acx565akm_panel_power_off(struct omap_dss_device *dssdev)
+ 	msleep(100);
+ 
+ 	in->ops.sdi->disable(in);
++
++	mutex_unlock(&ddata->mutex);
++
+ }
+ 
+ static int acx565akm_enable(struct omap_dss_device *dssdev)
+ {
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+ 	int r;
+ 
+ 	dev_dbg(dssdev->dev, "%s\n", __func__);
+@@ -627,16 +635,12 @@ static int acx565akm_enable(struct omap_dss_device *dssdev)
+ 
+ static void acx565akm_disable(struct omap_dss_device *dssdev)
+ {
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-
+ 	dev_dbg(dssdev->dev, "%s\n", __func__);
+ 
+ 	if (!omapdss_device_is_enabled(dssdev))
+ 		return;
+ 
+-	mutex_lock(&ddata->mutex);
+ 	acx565akm_panel_power_off(dssdev);
+-	mutex_unlock(&ddata->mutex);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+ }
+-- 
+1.5.6.1
 
-
-
---obCTjJqutDqeLQwniLxnaadUfEh9f8rNp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS1O+aAAoJEPo9qoy8lh71ZFYP/iB9TEgV2YC/dxuF26XAD98S
-cA4ewEIYt6uHiFPbkpebqCN7hu00q0HAlzHVsKk/uRUE6lefPlspNam+OSmK+laA
-yf2e/PjsG/yHQJIXcFdEzr8zj58F9qjO9RrLchgtlX7f9YSh3bL/A8bvT1NuR2UH
-a6t9qjrTu9I8EKd1bDFLKBcD5QBIk+xp9Zfsp2Zh2m0vDPJNH0ZD5UuqQgEvHVlR
-x9XF6NbEJksTw+LIC9Zx3VIhFIREPT9x2uWX5Em/OQIMBqE41wJM4UA3Lc2ie/ZF
-QE2klMa1uyhdkUfjHZaaIIFlZcG1MVSFZGIwZhqMQktHs7nLLSiFLNzBNjUC5cl5
-SZ+bJ4hJwJmcs/0LKqQ4a88rxXsJVwqtquTFZBnGpPH9+JzckpnpFp+ByKpLbqjh
-Ws9vsEIjkyQd9B/wW3jJhg9q4l2fUpYZlbFhrONrNq/OePXFI87hTzsIWfjRfxL/
-4EyyMhDkImSAG49rVknOVPdD73f+Yd6DRKd+FvKQswT0fuAxBCzvnvZfOrVy6AG0
-KqD1RL8MiWLU7/ueX6tXpaDhNVdTtLA8JJokxL5/4LVGWRj47Qz7tEi9QrhY/I4l
-8x5BXPd1cfXDvFVT5pK2wEC4HPn5cp5S4VaNfR7z4IN77sfaTTLu65zkWr4rLvs5
-mhryH3Xof6CiWUW2Gy0B
-=4T7Y
------END PGP SIGNATURE-----
-
---obCTjJqutDqeLQwniLxnaadUfEh9f8rNp--

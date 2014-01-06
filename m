@@ -1,64 +1,56 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 10 Jan 2014 12:08:27 +0000
-Subject: Re: [PATCH v4] video: add OpenCores VGA/LCD framebuffer driver
-Message-Id: <52CFE2BB.8090004@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="lnC0LCFNacpbQCeEtLxq3qLhp33CjaLtq"
+From: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
+Date: Mon, 06 Jan 2014 13:17:57 +0000
+Subject: [PATCH 1/2] video: mxsfb: convert pr_debug()/dev_dbg() to pr_err()/dev_err() for error messages
+Message-Id: <1389014278-4903-2-git-send-email-LW@KARO-electronics.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1385739911-6541-1-git-send-email-stefan.kristiansson@saunalahti.fi>
-In-Reply-To: <1385739911-6541-1-git-send-email-stefan.kristiansson@saunalahti.fi>
-To: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: plagnioj@jcrosoft.com
-
---lnC0LCFNacpbQCeEtLxq3qLhp33CjaLtq
-Content-Type: text/plain; charset=ISO-8859-1
+References: <1389014278-4903-1-git-send-email-LW@KARO-electronics.de>
+In-Reply-To: <1389014278-4903-1-git-send-email-LW@KARO-electronics.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+Make the messages that are printed in case of fatal errors actually
+visible to the user without having to recompile the driver with
+debugging enabled.
 
-On 2013-11-29 17:45, Stefan Kristiansson wrote:
-> This adds support for the VGA/LCD core available from OpenCores:
-> http://opencores.org/project,vga_lcd
->=20
-> The driver have been tested together with both OpenRISC and
-> ARM (socfpga) processors.
->=20
-> Signed-off-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Signed-off-by: Lothar Wa=C3=9Fmann <LW@KARO-electronics.de>
+---
+ drivers/video/mxsfb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-If I'm not mistaken, this driver has been designed so that there can
-only be one VGA/LCD core device on the system.
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 27197a8..d11c35c 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -297,7 +297,7 @@ static int mxsfb_check_var(struct fb_var_screeninfo *va=
+r,
+ 		}
+ 		break;
+ 	default:
+-		pr_debug("Unsupported colour depth: %u\n", var->bits_per_pixel);
++		pr_err("Unsupported colour depth: %u\n", var->bits_per_pixel);
+ 		return -EINVAL;
+ 	}
+=20
+@@ -426,7 +426,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+ 		ctrl |=3D CTRL_SET_WORD_LENGTH(3);
+ 		switch (host->ld_intf_width) {
+ 		case STMLCDIF_8BIT:
+-			dev_dbg(&host->pdev->dev,
++			dev_err(&host->pdev->dev,
+ 					"Unsupported LCD bus width mapping\n");
+ 			return -EINVAL;
+ 		case STMLCDIF_16BIT:
+@@ -439,7 +439,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+ 		writel(CTRL1_SET_BYTE_PACKAGING(0x7), host->base + LCDC_CTRL1);
+ 		break;
+ 	default:
+-		dev_dbg(&host->pdev->dev, "Unhandled color depth of %u\n",
++		dev_err(&host->pdev->dev, "Unhandled color depth of %u\n",
+ 				fb_info->var.bits_per_pixel);
+ 		return -EINVAL;
+ 	}
+--=20
+1.7.2.5
 
-It would be better to get rid of those static structs, and have the
-driver data per device as it should. That way the driver works even with
-multiple VGA/LCD cores (although the video mode module option is a bit
-odd in that case).
-
- Tomi
-
-
-
---lnC0LCFNacpbQCeEtLxq3qLhp33CjaLtq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSz+K7AAoJEPo9qoy8lh71S2gP/0Y3dGoTCXCdl9qd2Q2TWHZg
-qC6hEXHdoEtPKQ3/CbKLl81S17AScG0Vra+Z/eTFaC/Bn2iSTrn4WY6yScZkdikY
-qDHIGqhvmtbK8Pftc7xuGpGOAvvSF9ejKkF+I/ee5gXDLqlQzFgAWhi+Z68TA50t
-6AoCrWES+HoRruAbG4rBsryuz7vfaTSXOFpojEITSZUCeVxkGuM5q+F9iHJUQZiy
-efjWGDqbgBQ5yL79FcFhsSaF8CU48GPFQGSn3BYFNKTpv1dHSpFTGHq5sXrAk0eX
-I06YR7RLLrXvlMkaTcQtTySp0TwlNZ+D5IoI3RA3kMzgSP+v62OSo05Riz83M2v0
-frtqEo2fZ/mU8vrfxdTGBY1DLUQJ3++m2fI9gk8y2MYm6uXA8j6mAzdXny7nfhhu
-RPFbffyeBdnzR45UTOFeE9uIwgg/9MsmIKXpK0iHr9euArmoreoRVwlNOXmJGhfS
-odb64r17F/oMrmfy5Nv5BClX8tKmaPjTpuWfFvROUpDANAvw0U7N747RZNa4R1GR
-7C/UFI8kD+KhFVlV1pQ5kEsBp88xWYLHQwpgK0CKC8/LzHbvtg028jpf4Sixh+Hp
-DJ5pLIPjQmeOyJ0DLLWf3yesWnoj/mp3asfAXHgqIjWccAEBTGtetN9CyCJfKm9N
-CmNyK2iasCSpQlZjQ+ad
-=v/JJ
------END PGP SIGNATURE-----
-
---lnC0LCFNacpbQCeEtLxq3qLhp33CjaLtq--

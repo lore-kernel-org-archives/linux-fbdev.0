@@ -1,284 +1,297 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Thu, 23 Jan 2014 14:15:02 +0000
-Subject: [PATCH 10/11] drm: simpledrm: add fbdev fallback support
-Message-Id: <1390486503-1504-11-git-send-email-dh.herrmann@gmail.com>
+From: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
+Date: Mon, 06 Jan 2014 13:17:58 +0000
+Subject: [PATCH 2/2] video: mxsfb: fix broken videomode selection
+Message-Id: <1389014278-4903-3-git-send-email-LW@KARO-electronics.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+References: <1389014278-4903-1-git-send-email-LW@KARO-electronics.de>
+In-Reply-To: <1389014278-4903-1-git-send-email-LW@KARO-electronics.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Create a simple fbdev device during SimpleDRM setup so legacy user-space
-and fbcon can use it.
+Currently the driver re-implements the code found in of_get_videomode()
+except for the fact that the latter honors the 'native-mode' property
+to select a spcific video timing from the list of possible timings.
+The driver builds up a list of all video timings, but uses only the
+last mode from the list anyway. While building the list it incorrectly
+OR's the 'pixelclk-active' and 'de-active' flags of all modes into
+single flags, possibly leading to a wrong pixelclock or data-enable
+polarity setting.
 
-Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+Fix this by using the of_get_videomode() directly with the
+OF_USE_NATIVE_MODE flag.
+
+Since all current dts files only have one entry in their
+display-timings node, this bug was not apparent and the fix does not
+change the driver's behaviour for the current users.
+
+Signed-off-by: Lothar Wa=C3=9Fmann <LW@KARO-electronics.de>
 ---
- drivers/gpu/drm/simpledrm/Kconfig           |  11 +++
- drivers/gpu/drm/simpledrm/Makefile          |   1 +
- drivers/gpu/drm/simpledrm/simpledrm.c       |  13 ++-
- drivers/gpu/drm/simpledrm/simpledrm.h       |  22 +++++
- drivers/gpu/drm/simpledrm/simpledrm_fbdev.c | 148 ++++++++++++++++++++++++++++
- 5 files changed, 194 insertions(+), 1 deletion(-)
- create mode 100644 drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
+ drivers/video/mxsfb.c |  120 ++++++++++++++++++++-------------------------=
+---
+ 1 files changed, 50 insertions(+), 70 deletions(-)
 
-diff --git a/drivers/gpu/drm/simpledrm/Kconfig b/drivers/gpu/drm/simpledrm/Kconfig
-index 35bcce8..eef2a36 100644
---- a/drivers/gpu/drm/simpledrm/Kconfig
-+++ b/drivers/gpu/drm/simpledrm/Kconfig
-@@ -12,7 +12,18 @@ config DRM_SIMPLEDRM
- 	  SimpleDRM supports "simple-framebuffer" DeviceTree objects and
- 	  compatible platform framebuffers.
- 
-+	  If fbdev support is enabled, this driver will also provide an fbdev
-+	  compatibility layer.
-+
- 	  If unsure, say Y.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called simpledrm.
-+
-+config DRM_SIMPLEDRM_FBDEV
-+	bool
-+	depends on DRM_SIMPLEDRM && FB
-+	default y
-+	select FB_CFB_FILLRECT
-+	select FB_CFB_COPYAREA
-+	select FB_CFB_IMAGEBLIT
-diff --git a/drivers/gpu/drm/simpledrm/Makefile b/drivers/gpu/drm/simpledrm/Makefile
-index 35f73ea..363b17d 100644
---- a/drivers/gpu/drm/simpledrm/Makefile
-+++ b/drivers/gpu/drm/simpledrm/Makefile
-@@ -1,3 +1,4 @@
- sdrm-y := simpledrm.o simpledrm_kms.o simpledrm_gem.o simpledrm_damage.o
-+sdrm-$(CONFIG_DRM_SIMPLEDRM_FBDEV) += simpledrm_fbdev.o
- 
- obj-$(CONFIG_DRM_SIMPLEDRM) := sdrm.o
-diff --git a/drivers/gpu/drm/simpledrm/simpledrm.c b/drivers/gpu/drm/simpledrm/simpledrm.c
-index 98273f5..4346bcd 100644
---- a/drivers/gpu/drm/simpledrm/simpledrm.c
-+++ b/drivers/gpu/drm/simpledrm/simpledrm.c
-@@ -192,7 +192,17 @@ void sdrm_pdev_destroy(struct sdrm_device *sdrm)
- 
- static int sdrm_simplefb_probe(struct platform_device *pdev)
- {
--	return drm_platform_init(&sdrm_drm_driver, pdev);
-+	struct drm_device *ddev;
-+	int r;
-+
-+	r = drm_platform_init(&sdrm_drm_driver, pdev);
-+	if (r < 0)
-+		return r;
-+
-+	ddev = platform_get_drvdata(pdev);
-+	sdrm_fbdev_init(ddev->dev_private);
-+
-+	return 0;
- }
- 
- static int sdrm_simplefb_remove(struct platform_device *pdev)
-@@ -205,6 +215,7 @@ static int sdrm_simplefb_remove(struct platform_device *pdev)
- 	 * CPU is currently doing some GEM-bo access in parallel to us. But, eh,
- 	 * what can we do.. Fixes for that is being worked on. */
- 
-+	sdrm_fbdev_cleanup(sdrm);
- 	drm_connector_unplug_all(ddev);
- 
- 	/* protect fb_map removal against sdrm_blit() */
-diff --git a/drivers/gpu/drm/simpledrm/simpledrm.h b/drivers/gpu/drm/simpledrm/simpledrm.h
-index 4ece7f5..7050594 100644
---- a/drivers/gpu/drm/simpledrm/simpledrm.h
-+++ b/drivers/gpu/drm/simpledrm/simpledrm.h
-@@ -45,6 +45,9 @@ struct sdrm_device {
- 	struct drm_encoder enc;
- 	struct drm_connector conn;
- 	struct drm_display_mode *mode;
-+
-+	/* fbdev */
-+	struct fb_info *fbdev;
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index d11c35c..accf48a2 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -49,6 +49,7 @@
+ #include <linux/fb.h>
+ #include <linux/regulator/consumer.h>
+ #include <video/of_display_timing.h>
++#include <video/of_videomode.h>
+ #include <video/videomode.h>
+=20
+ #define REG_SET	4
+@@ -589,7 +590,8 @@ static struct fb_ops mxsfb_ops =3D {
+ 	.fb_imageblit =3D cfb_imageblit,
  };
- 
- int sdrm_drm_load(struct drm_device *ddev, unsigned long flags);
-@@ -97,4 +100,23 @@ struct sdrm_framebuffer {
- 
- #define to_sdrm_fb(x) container_of(x, struct sdrm_framebuffer, base)
- 
-+/* simpledrm fbdev helpers */
-+
-+#ifdef CONFIG_DRM_SIMPLEDRM_FBDEV
-+
-+void sdrm_fbdev_init(struct sdrm_device *sdrm);
-+void sdrm_fbdev_cleanup(struct sdrm_device *sdrm);
-+
-+#else /* CONFIG_DRM_SIMPLEDRM_FBDEV */
-+
-+static inline void sdrm_fbdev_init(struct sdrm_device *sdrm)
-+{
-+}
-+
-+static inline void sdrm_fbdev_cleanup(struct sdrm_device *sdrm)
-+{
-+}
-+
-+#endif /* CONFIG_DRM_SIMPLEDRM_FBDEV */
-+
- #endif /* SDRM_DRV_H */
-diff --git a/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c b/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
-new file mode 100644
-index 0000000..5df1482
---- /dev/null
-+++ b/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
-@@ -0,0 +1,148 @@
-+/*
-+ * SimpleDRM firmware framebuffer driver
-+ * Copyright (c) 2012-2014 David Herrmann <dh.herrmann@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ */
-+
-+/*
-+ * fbdev compatibility layer
-+ * We provide a basic fbdev device for the same framebuffer that is used for
-+ * the pseudo CRTC.
-+ */
-+
-+#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/fb.h>
-+#include "simpledrm.h"
-+
-+struct sdrm_fbdev {
-+	u32 palette[16];
-+};
-+
-+static int sdrm_fbdev_setcolreg(u_int regno, u_int red, u_int green,
-+				u_int blue, u_int transp, struct fb_info *info)
-+{
-+	u32 *pal = info->pseudo_palette;
-+	u32 cr = red >> (16 - info->var.red.length);
-+	u32 cg = green >> (16 - info->var.green.length);
-+	u32 cb = blue >> (16 - info->var.blue.length);
-+	u32 value;
-+
-+	if (regno >= 16)
-+		return -EINVAL;
-+
-+	value = (cr << info->var.red.offset) |
-+		(cg << info->var.green.offset) |
-+		(cb << info->var.blue.offset);
-+
-+	if (info->var.transp.length > 0) {
-+		u32 mask = (1 << info->var.transp.length) - 1;
-+		mask <<= info->var.transp.offset;
-+		value |= mask;
-+	}
-+
-+	pal[regno] = value;
-+
-+	return 0;
-+}
-+
-+static struct fb_ops sdrm_fbdev_ops = {
-+	.owner		= THIS_MODULE,
-+	.fb_setcolreg	= sdrm_fbdev_setcolreg,
-+	.fb_fillrect	= cfb_fillrect,
-+	.fb_copyarea	= cfb_copyarea,
-+	.fb_imageblit	= cfb_imageblit,
-+};
-+
-+void sdrm_fbdev_init(struct sdrm_device *sdrm)
-+{
-+	struct sdrm_fbdev *fb;
-+	struct fb_info *info;
+=20
+-static int mxsfb_restore_mode(struct mxsfb_info *host)
++static int mxsfb_restore_mode(struct mxsfb_info *host,
++			struct fb_videomode *vmode)
+ {
+ 	struct fb_info *fb_info =3D &host->fb_info;
+ 	unsigned line_count;
+@@ -597,7 +599,6 @@ static int mxsfb_restore_mode(struct mxsfb_info *host)
+ 	unsigned long pa, fbsize;
+ 	int bits_per_pixel, ofs;
+ 	u32 transfer_count, vdctrl0, vdctrl2, vdctrl3, vdctrl4, ctrl;
+-	struct fb_videomode vmode;
+=20
+ 	/* Only restore the mode when the controller is running */
+ 	ctrl =3D readl(host->base + LCDC_CTRL);
+@@ -611,8 +612,8 @@ static int mxsfb_restore_mode(struct mxsfb_info *host)
+=20
+ 	transfer_count =3D readl(host->base + host->devdata->transfer_count);
+=20
+-	vmode.xres =3D TRANSFER_COUNT_GET_HCOUNT(transfer_count);
+-	vmode.yres =3D TRANSFER_COUNT_GET_VCOUNT(transfer_count);
++	vmode->xres =3D TRANSFER_COUNT_GET_HCOUNT(transfer_count);
++	vmode->yres =3D TRANSFER_COUNT_GET_VCOUNT(transfer_count);
+=20
+ 	switch (CTRL_GET_WORD_LENGTH(ctrl)) {
+ 	case 0:
+@@ -628,40 +629,39 @@ static int mxsfb_restore_mode(struct mxsfb_info *host)
+=20
+ 	fb_info->var.bits_per_pixel =3D bits_per_pixel;
+=20
+-	vmode.pixclock =3D KHZ2PICOS(clk_get_rate(host->clk) / 1000U);
+-	vmode.hsync_len =3D get_hsync_pulse_width(host, vdctrl2);
+-	vmode.left_margin =3D GET_HOR_WAIT_CNT(vdctrl3) - vmode.hsync_len;
+-	vmode.right_margin =3D VDCTRL2_GET_HSYNC_PERIOD(vdctrl2) - vmode.hsync_le=
+n -
+-		vmode.left_margin - vmode.xres;
+-	vmode.vsync_len =3D VDCTRL0_GET_VSYNC_PULSE_WIDTH(vdctrl0);
++	vmode->pixclock =3D KHZ2PICOS(clk_get_rate(host->clk) / 1000U);
++	vmode->hsync_len =3D get_hsync_pulse_width(host, vdctrl2);
++	vmode->left_margin =3D GET_HOR_WAIT_CNT(vdctrl3) - vmode->hsync_len;
++	vmode->right_margin =3D VDCTRL2_GET_HSYNC_PERIOD(vdctrl2) -
++		vmode->hsync_len - vmode->left_margin - vmode->xres;
++	vmode->vsync_len =3D VDCTRL0_GET_VSYNC_PULSE_WIDTH(vdctrl0);
+ 	period =3D readl(host->base + LCDC_VDCTRL1);
+-	vmode.upper_margin =3D GET_VERT_WAIT_CNT(vdctrl3) - vmode.vsync_len;
+-	vmode.lower_margin =3D period - vmode.vsync_len - vmode.upper_margin - vm=
+ode.yres;
++	vmode->upper_margin =3D GET_VERT_WAIT_CNT(vdctrl3) - vmode->vsync_len;
++	vmode->lower_margin =3D period - vmode->vsync_len -
++		vmode->upper_margin - vmode->yres;
+=20
+-	vmode.vmode =3D FB_VMODE_NONINTERLACED;
++	vmode->vmode =3D FB_VMODE_NONINTERLACED;
+=20
+-	vmode.sync =3D 0;
++	vmode->sync =3D 0;
+ 	if (vdctrl0 & VDCTRL0_HSYNC_ACT_HIGH)
+-		vmode.sync |=3D FB_SYNC_HOR_HIGH_ACT;
++		vmode->sync |=3D FB_SYNC_HOR_HIGH_ACT;
+ 	if (vdctrl0 & VDCTRL0_VSYNC_ACT_HIGH)
+-		vmode.sync |=3D FB_SYNC_VERT_HIGH_ACT;
++		vmode->sync |=3D FB_SYNC_VERT_HIGH_ACT;
+=20
+ 	pr_debug("Reconstructed video mode:\n");
+ 	pr_debug("%dx%d, hsync: %u left: %u, right: %u, vsync: %u, upper: %u, low=
+er: %u\n",
+-			vmode.xres, vmode.yres,
+-			vmode.hsync_len, vmode.left_margin, vmode.right_margin,
+-			vmode.vsync_len, vmode.upper_margin, vmode.lower_margin);
+-	pr_debug("pixclk: %ldkHz\n", PICOS2KHZ(vmode.pixclock));
+-
+-	fb_add_videomode(&vmode, &fb_info->modelist);
++		vmode->xres, vmode->yres, vmode->hsync_len, vmode->left_margin,
++		vmode->right_margin, vmode->vsync_len, vmode->upper_margin,
++		vmode->lower_margin);
++	pr_debug("pixclk: %ldkHz\n", PICOS2KHZ(vmode->pixclock));
+=20
+ 	host->ld_intf_width =3D CTRL_GET_BUS_WIDTH(ctrl);
+ 	host->dotclk_delay =3D VDCTRL4_GET_DOTCLK_DLY(vdctrl4);
+=20
+-	fb_info->fix.line_length =3D vmode.xres * (bits_per_pixel >> 3);
++	fb_info->fix.line_length =3D vmode->xres * (bits_per_pixel >> 3);
+=20
+ 	pa =3D readl(host->base + host->devdata->cur_buf);
+-	fbsize =3D fb_info->fix.line_length * vmode.yres;
++	fbsize =3D fb_info->fix.line_length * vmode->yres;
+ 	if (pa < fb_info->fix.smem_start)
+ 		return -EINVAL;
+ 	if (pa + fbsize > fb_info->fix.smem_start + fb_info->fix.smem_len)
+@@ -681,18 +681,17 @@ static int mxsfb_restore_mode(struct mxsfb_info *host)
+ 	return 0;
+ }
+=20
+-static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host)
++static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host,
++				struct fb_videomode *vmode)
+ {
+ 	struct fb_info *fb_info =3D &host->fb_info;
+ 	struct fb_var_screeninfo *var =3D &fb_info->var;
+ 	struct device *dev =3D &host->pdev->dev;
+ 	struct device_node *np =3D host->pdev->dev.of_node;
+ 	struct device_node *display_np;
+-	struct device_node *timings_np;
+-	struct display_timings *timings;
++	struct videomode vm;
+ 	u32 width;
+-	int i;
+-	int ret =3D 0;
 +	int ret;
-+
-+	if (fb_get_options("simpledrmfb", NULL))
-+		return;
-+
-+	info = framebuffer_alloc(sizeof(struct sdrm_fbdev), sdrm->ddev->dev);
-+	if (!info)
-+		goto err_out;
-+
-+	fb = info->par;
-+	info->flags = FBINFO_DEFAULT | FBINFO_MISC_FIRMWARE;
-+	info->pseudo_palette = fb->palette;
-+	info->fbops = &sdrm_fbdev_ops;
-+	info->screen_base = sdrm->fb_map;
-+
-+	strncpy(info->fix.id, "simpledrmfb", 15);
-+	info->fix.type = FB_TYPE_PACKED_PIXELS;
-+	info->fix.visual = FB_VISUAL_TRUECOLOR;
-+	info->fix.accel = FB_ACCEL_NONE;
-+	info->fix.smem_start = (unsigned long)sdrm->fb_base;
-+	info->fix.smem_len = sdrm->fb_size;
-+	info->fix.line_length = sdrm->fb_stride;
-+
-+	info->var.activate = FB_ACTIVATE_NOW;
-+	info->var.vmode = FB_VMODE_NONINTERLACED;
-+	info->var.bits_per_pixel = sdrm->fb_bpp;
-+	info->var.height = -1;
-+	info->var.width = -1;
-+	info->var.xres = sdrm->fb_width;
-+	info->var.yres = sdrm->fb_height;
-+	info->var.xres_virtual = info->var.xres;
-+	info->var.yres_virtual = info->var.yres;
-+	info->var.red = sdrm->fb_sformat->red;
-+	info->var.green = sdrm->fb_sformat->green;
-+	info->var.blue = sdrm->fb_sformat->blue;
-+	info->var.transp = sdrm->fb_sformat->transp;
-+
-+	/* some dummy values for timing to make fbset happy */
-+	info->var.pixclock = 10000000 / info->var.xres * 1000 / info->var.yres;
-+	info->var.left_margin = (info->var.xres / 8) & 0xf8;
-+	info->var.right_margin = 32;
-+	info->var.upper_margin = 16;
-+	info->var.lower_margin = 4;
-+	info->var.hsync_len = (info->var.xres / 8) & 0xf8;
-+	info->var.vsync_len = 4;
-+
-+	sdrm->fbdev = info;
-+	ret = register_framebuffer(info);
+=20
+ 	display_np =3D of_parse_phandle(np, "display", 0);
+ 	if (!display_np) {
+@@ -732,54 +731,35 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *ho=
+st)
+ 		goto put_display_node;
+ 	}
+=20
+-	timings =3D of_get_display_timings(display_np);
+-	if (!timings) {
+-		dev_err(dev, "failed to get display timings\n");
+-		ret =3D -ENOENT;
++	ret =3D of_get_videomode(display_np, &vm, OF_USE_NATIVE_MODE);
++	if (ret) {
++		dev_err(dev, "failed to get videomode from DT\n");
+ 		goto put_display_node;
+ 	}
+=20
+-	timings_np =3D of_find_node_by_name(display_np,
+-					  "display-timings");
+-	if (!timings_np) {
+-		dev_err(dev, "failed to find display-timings node\n");
+-		ret =3D -ENOENT;
++	ret =3D fb_videomode_from_videomode(&vm, vmode);
 +	if (ret < 0)
-+		goto err_free;
+ 		goto put_display_node;
+-	}
+=20
+-	for (i =3D 0; i < of_get_child_count(timings_np); i++) {
+-		struct videomode vm;
+-		struct fb_videomode fb_vm;
+-
+-		ret =3D videomode_from_timings(timings, &vm, i);
+-		if (ret < 0)
+-			goto put_timings_node;
+-		ret =3D fb_videomode_from_videomode(&vm, &fb_vm);
+-		if (ret < 0)
+-			goto put_timings_node;
+-
+-		if (vm.flags & DISPLAY_FLAGS_DE_HIGH)
+-			host->sync |=3D MXSFB_SYNC_DATA_ENABLE_HIGH_ACT;
+-		if (vm.flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
+-			host->sync |=3D MXSFB_SYNC_DOTCLK_FALLING_ACT;
+-		fb_add_videomode(&fb_vm, &fb_info->modelist);
+-	}
++	if (vm.flags & DISPLAY_FLAGS_DE_HIGH)
++		host->sync |=3D MXSFB_SYNC_DATA_ENABLE_HIGH_ACT;
++	if (vm.flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
++		host->sync |=3D MXSFB_SYNC_DOTCLK_FALLING_ACT;
+=20
+-put_timings_node:
+-	of_node_put(timings_np);
+ put_display_node:
+ 	of_node_put(display_np);
+ 	return ret;
+ }
+=20
+-static int mxsfb_init_fbinfo(struct mxsfb_info *host)
++static int mxsfb_init_fbinfo(struct mxsfb_info *host,
++			struct fb_videomode *vmode)
+ {
++	int ret;
+ 	struct fb_info *fb_info =3D &host->fb_info;
+ 	struct fb_var_screeninfo *var =3D &fb_info->var;
+ 	dma_addr_t fb_phys;
+ 	void *fb_virt;
+ 	unsigned fb_size;
+-	int ret;
+=20
+ 	fb_info->fbops =3D &mxsfb_ops;
+ 	fb_info->flags =3D FBINFO_FLAG_DEFAULT | FBINFO_READS_FAST;
+@@ -789,7 +769,7 @@ static int mxsfb_init_fbinfo(struct mxsfb_info *host)
+ 	fb_info->fix.visual =3D FB_VISUAL_TRUECOLOR,
+ 	fb_info->fix.accel =3D FB_ACCEL_NONE;
+=20
+-	ret =3D mxsfb_init_fbinfo_dt(host);
++	ret =3D mxsfb_init_fbinfo_dt(host, vmode);
+ 	if (ret)
+ 		return ret;
+=20
+@@ -810,7 +790,7 @@ static int mxsfb_init_fbinfo(struct mxsfb_info *host)
+ 	fb_info->screen_base =3D fb_virt;
+ 	fb_info->screen_size =3D fb_info->fix.smem_len =3D fb_size;
+=20
+-	if (mxsfb_restore_mode(host))
++	if (mxsfb_restore_mode(host, vmode))
+ 		memset(fb_virt, 0, fb_size);
+=20
+ 	return 0;
+@@ -850,7 +830,7 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 	struct resource *res;
+ 	struct mxsfb_info *host;
+ 	struct fb_info *fb_info;
+-	struct fb_modelist *modelist;
++	struct fb_videomode *mode;
+ 	int ret;
+=20
+ 	if (of_id)
+@@ -862,6 +842,11 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
+=20
++	mode =3D devm_kzalloc(&pdev->dev, sizeof(struct fb_videomode),
++			GFP_KERNEL);
++	if (mode =3D NULL)
++		return -ENOMEM;
 +
-+	dev_info(sdrm->ddev->dev, "fbdev frontend %s as fb%d\n",
-+		 info->fix.id, info->node);
-+
-+	return;
-+
-+err_free:
-+	framebuffer_release(info);
-+	sdrm->fbdev = NULL;
-+err_out:
-+	dev_warn(sdrm->ddev->dev, "cannot create fbdev frontend\n");
-+}
-+
-+void sdrm_fbdev_cleanup(struct sdrm_device *sdrm)
-+{
-+	struct fb_info *info;
-+
-+	if (!sdrm->fbdev)
-+		return;
-+
-+	info = sdrm->fbdev;
-+	sdrm->fbdev = NULL;
-+
-+	dev_info(sdrm->ddev->dev, "remove fbdev frontend %s (fb%d)\n",
-+		 info->fix.id, info->node);
-+
-+	if (unregister_framebuffer(info))
-+		dev_err(sdrm->ddev->dev, "unregister_framebuffer() failed, leaking fw-fb\n");
-+	else
-+		framebuffer_release(info);
-+}
--- 
-1.8.5.3
+ 	host =3D to_imxfb_host(fb_info);
+=20
+ 	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+@@ -893,15 +878,11 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 		goto fb_release;
+ 	}
+=20
+-	INIT_LIST_HEAD(&fb_info->modelist);
+-
+-	ret =3D mxsfb_init_fbinfo(host);
++	ret =3D mxsfb_init_fbinfo(host, mode);
+ 	if (ret !=3D 0)
+ 		goto fb_release;
+=20
+-	modelist =3D list_first_entry(&fb_info->modelist,
+-			struct fb_modelist, list);
+-	fb_videomode_to_var(&fb_info->var, &modelist->mode);
++	fb_videomode_to_var(&fb_info->var, mode);
+=20
+ 	/* init the color fields */
+ 	mxsfb_check_var(&fb_info->var, fb_info);
+@@ -927,7 +908,6 @@ static int mxsfb_probe(struct platform_device *pdev)
+ fb_destroy:
+ 	if (host->enabled)
+ 		clk_disable_unprepare(host->clk);
+-	fb_destroy_modelist(&fb_info->modelist);
+ fb_release:
+ 	framebuffer_release(fb_info);
+=20
+--=20
+1.7.2.5
 

@@ -1,71 +1,73 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 08 Jan 2014 09:04:13 +0000
-Subject: Re: [PATCH 0/2] video: mxsfb: fix broken videomode selection
-Message-Id: <52CD148D.7060107@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="GMq3TqRcUMdQXMwxcJqh5L0lPUnf2JAHD"
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 07 Jan 2014 15:15:35 +0000
+Subject: Re: [PATCH 13/15] fbdev: sh-mobile-lcdcfb: Enable driver compilation with COMPILE_TEST
+Message-Id: <1917257.yB7aZMXWdP@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389014278-4903-1-git-send-email-LW@KARO-electronics.de>
-In-Reply-To: <1389014278-4903-1-git-send-email-LW@KARO-electronics.de>
+References: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+ <1385515117-23664-14-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+ <1542726.dq1lpTml5f@avalon>
+In-Reply-To: <1542726.dq1lpTml5f@avalon>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---GMq3TqRcUMdQXMwxcJqh5L0lPUnf2JAHD
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 11 December 2013 13:51:18 Laurent Pinchart wrote:
+> Hi Jean-Christophe and Tomi,
+> 
+> Could you please pick this patch up for v3.14 ?
 
-On 2014-01-06 15:17, Lothar Wa=C3=9Fmann wrote:
-> The first patch in this set converts some messages that are printed
-> in case of errors to be error messages rather than debug messages.
->=20
-> The second patch fixes a bug in the video selection code that
-> incorrectly OR's together the 'pixelclk-active' and 'de-active'
-> flags from all possible video modes specified in DT into one flag.
->=20
-> The current code does not allow selecting one specific mode from a
-> list of video modes, but always uses the last one of the video modes
-> listed in the DT.
->=20
->=20
-> Since all current dts files only have one entry in their
-> 'display-timings' node, this bug was not apparent and the fix does not
-> change the driver's behaviour for the current users.
->=20
->  b/drivers/video/mxsfb.c |    6 +--
->  drivers/video/mxsfb.c   |  120 +++++++++++++++++++++++++++++----------=
--------------------------------
->  2 files changed, 53 insertions(+), 73 deletions(-)
->=20
+Ping ?
 
-Thanks, queued for 3.14.
+> On Wednesday 27 November 2013 02:18:35 Laurent Pinchart wrote:
+> > This helps increasing build testing coverage.
+> > 
+> > Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> > Cc: linux-fbdev@vger.kernel.org
+> > Signed-off-by: Laurent Pinchart
+> > <laurent.pinchart+renesas@ideasonboard.com>
+> > Acked-by: Simon Horman <horms@verge.net.au>
+> > ---
+> > 
+> >  drivers/video/Kconfig | 8 +++++---
+> >  1 file changed, 5 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> > index 4f2e1b3..2aceb08 100644
+> > --- a/drivers/video/Kconfig
+> > +++ b/drivers/video/Kconfig
+> > @@ -10,7 +10,8 @@ config HAVE_FB_ATMEL
+> > 
+> >  config SH_MIPI_DSI
+> >  	tristate
+> > -	depends on (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
+> > +	depends on HAVE_CLK
+> > +	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
+> > 
+> >  config SH_LCD_MIPI_DSI
+> >  	bool
+> > @@ -1997,7 +1998,8 @@ config FB_W100
+> > 
+> >  config FB_SH_MOBILE_LCDC
+> >  	tristate "SuperH Mobile LCDC framebuffer support"
+> > -	depends on FB && (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
+> > +	depends on FB && HAVE_CLK
+> > +	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
+> >  	select FB_SYS_FILLRECT
+> >  	select FB_SYS_COPYAREA
+> >  	select FB_SYS_IMAGEBLIT
+> > @@ -2484,7 +2486,7 @@ endif
+> > 
+> >  config FB_SH_MOBILE_MERAM
+> >  	tristate "SuperH Mobile MERAM read ahead support"
+> > -	depends on (SUPERH || ARCH_SHMOBILE)
+> > +	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
+> >  	select GENERIC_ALLOCATOR
+> >  	---help---
+> >  	  Enable MERAM support for the SuperH controller.
+-- 
+Regards,
 
-Your diffstat above looks a bit funny. Where did that "b/" come from?
+Laurent Pinchart
 
- Tomi
-
-
-
---GMq3TqRcUMdQXMwxcJqh5L0lPUnf2JAHD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSzRSNAAoJEPo9qoy8lh71ti0P/Rrj7HkaiwvhlokkLcSL5k1S
-Xk5uwQHZNXWousKFOM8JQwlspYVCbaKXW6aBTOu60kBxcmqFvcCgCERSDqnOJoBT
-8oQf3tRinL9knd7D/2E3etnc1rCrJFu2MVVPyaKMX4a7/qYyG1q3ZmxDIbtn6whD
-lfV6qRaaHMkkUvHaf9GFS5sjdlV6JrPkpUkpsmbaNq6tnaglnrAZchBnX6vbDhor
-in9zUfzbBNLhqVEs1JP11W0XHUytuTItLlueMxlLxt7WzsN2shTyy3S1NfNpcJuD
-LTOHQcgiS0v4yl3Hzci1r6UMP9qt+4iK1jxmDug4mPbEWP3M0d667wbt0u5EKs8/
-oD1KLvogy6H37d/+gkcRnlyXN64R2XXF9I6ywjj4tsUxnOqaWhspN/YgTSgffD50
-Jj0+ewHm3wO+b1BLbf0HxML/xTRRs3RFeRtiWfLNBoGdoE172TN1XVx7jHMarHEh
-7BcCZV8rfBXX+JXptJ1kGgDN5qJ+yHWCfdj8Soaie+w/vxGLqnwLCZs/rgm9yH6h
-95dXWv0xneDjlLULF0zApE5XULOXTgXlaunscrMQ2YPtX1YQVuWh+3o5EmwI0VgV
-g1X6rSQq1syz6I8TWTzuDQSRRc0acOj0xkqxDx6Y/QqNpiKLgxagErh/BrxgHiLI
-3kBkWPsYA2Hdyq59PFD1
-=s1co
------END PGP SIGNATURE-----
-
---GMq3TqRcUMdQXMwxcJqh5L0lPUnf2JAHD--

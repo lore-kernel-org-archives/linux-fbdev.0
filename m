@@ -1,49 +1,58 @@
-From: Zhou Zhu <zzhu3@marvell.com>
-Date: Mon, 20 Jan 2014 01:58:57 +0000
-Subject: Re: [PATCH v2 0/4] video: mmp: add device tree suppport
-Message-Id: <52DC82E1.7060209@marvell.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 07 Jan 2014 01:42:11 +0000
+Subject: Re: [PATCH 3/4] backlight: lcd: call put_device if device_register fails
+Message-Id: <000001cf0b49$af5ab7f0$0e1027d0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389698184-28761-1-git-send-email-zzhu3@marvell.com>
-In-Reply-To: <1389698184-28761-1-git-send-email-zzhu3-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+References: <1386959996-7958-1-git-send-email-levex@linux.com>
+ <1386959996-7958-4-git-send-email-levex@linux.com>
+In-Reply-To: <1386959996-7958-4-git-send-email-levex@linux.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: Zhou Zhu <zzhu3-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Chao Xie <cxie4-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Guoqing Li <ligq-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+To: 'Levente Kurusa' <levex@linux.com>
+Cc: 'LKML' <linux-kernel@vger.kernel.org>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>, 'Andrew Morton' <akpm@linux-foundation.org>
 
-Hi, Tomi,
-Looks there's no more comment now.
-Would you please help to review this patch set and apply it also for 
-3.14 if possible?
-Thank you very much!
+On Saturday, December 14, 2013 3:40 AM, Levente Kurusa wrote:
+> 
+> Currently we kfree the container of the device which failed to register.
+> This is wrong as the last reference is not given up with a put_device
+> call. Also, now that we have put_device() callen, we no longer need
+> the kfree as the new_ld->dev.release function will take care of kfreeing
+> the associated memory.
+> 
+> Signed-off-by: Levente Kurusa <levex@linux.com>
+> ---
+>  drivers/video/backlight/lcd.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
+> index 93cf15e..7de847d 100644
+> --- a/drivers/video/backlight/lcd.c
+> +++ b/drivers/video/backlight/lcd.c
+> @@ -228,7 +228,7 @@ struct lcd_device *lcd_device_register(const char *name, struct device *parent,
+> 
+>  	rc = device_register(&new_ld->dev);
+>  	if (rc) {
+> -		kfree(new_ld);
+> +		put_device(&new_ld->dev);
+>  		return ERR_PTR(rc);
+>  	}
 
-On 01/14/2014 07:16 PM, Zhou Zhu wrote:
-> This patch set is to add device tree support for mmp_disp.
-> patch 1/2 are to remove clk_name configure in mach_info before.
-> patch 3/4 are to add device tree support.
->
-> change of v2:
-> add patch to remove config of clk_name in mach_info
-> use phandle to get path.
-> runtime decision of dt usage.
-> clean up to use node name directly.
->
-> Zhou Zhu (4):
->    arm: mmp: remove not used disp clk_name in ttc_dkb
->    video: mmp: no need to get clk_name from mach_info
->    video: mmp: add devm_mmp_get_path_by_phandle for DT
->    video: mmp: add device tree support
->
->   Documentation/devicetree/bindings/fb/mmp-disp.txt |   60 ++++++++
->   arch/arm/mach-mmp/ttc_dkb.c                       |    1 -
->   drivers/video/mmp/core.c                          |   35 +++++
->   drivers/video/mmp/fb/mmpfb.c                      |   73 ++++++----
->   drivers/video/mmp/hw/mmp_ctrl.c                   |  154 ++++++++++++++++-----
->   include/video/mmp_disp.h                          |    3 +-
->   6 files changed, 268 insertions(+), 58 deletions(-)
->   create mode 100644 Documentation/devicetree/bindings/fb/mmp-disp.txt
->
+(+cc Andrew Morton)
 
+Hi Levente Kurusa,
 
--- 
-Thanks, -Zhou
+Would you fix the same thing for 'backlight.c' file?
+
+./drivers/video/backlight/backlight.c
+struct backlight_device *backlight_device_register(const char *name,
+    .....
+    rc = device_register(&new_bd->dev);
+            if (rc) {
+                    kfree(new_bd);
+                    return ERR_PTR(rc);
+            }
+
+Best regards,
+Jingoo Han
+

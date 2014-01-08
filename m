@@ -1,67 +1,39 @@
-From: Ingo Molnar <mingo@kernel.org>
-Date: Fri, 24 Jan 2014 10:16:57 +0000
-Subject: Re: [PATCH 02/11] x86: sysfb: remove sysfb when probing real hw
-Message-Id: <20140124101657.GB5755@gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Wed, 08 Jan 2014 14:45:26 +0000
+Subject: Re: [PATCH] video: imxfb: Use regulator API with LCD class for powering
+Message-Id: <20140108144524.GE10725@S2101-09.ap.freescale.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
- <1390486503-1504-3-git-send-email-dh.herrmann@gmail.com>
- <20140123165115.GB23869@gmail.com>
- <CANq1E4QQE2qeEz1AaN1NO3p2TE006jHfz8uaJ_LLHptKdHecxQ@mail.gmail.com>
- <20140123171436.GA27345@gmail.com>
- <CANq1E4SyciabqonrFMRa8cMSDxkFuvfqexTBMxKPih+XreF_=A@mail.gmail.com>
-In-Reply-To: <CANq1E4SyciabqonrFMRa8cMSDxkFuvfqexTBMxKPih+XreF_=A@mail.gmail.com>
+References: <1387624080-15312-1-git-send-email-shc_work@mail.ru>
+ <20131223082107.GF26070@S2101-09.ap.freescale.net>
+ <1387787053.605757144@f413.i.mail.ru>
+ <20131223082842.GI26070@S2101-09.ap.freescale.net>
+ <52CD5361.50205@ti.com>
+In-Reply-To: <52CD5361.50205@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Herrmann <dh.herrmann@gmail.com>
-Cc: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Dave Airlie <airlied@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel <linux-kernel@vger.kernel.org>, Tom Gundersen <teg@jklm.no>
+To: linux-arm-kernel@lists.infradead.org
 
-
-* David Herrmann <dh.herrmann@gmail.com> wrote:
-
-> Hi
-> 
-> On Thu, Jan 23, 2014 at 6:14 PM, Ingo Molnar <mingo@kernel.org> wrote:
-> >
-> > * David Herrmann <dh.herrmann@gmail.com> wrote:
-> >
-> >> >> +#ifdef CONFIG_X86_SYSFB
-> >> >> +#  include <asm/sysfb.h>
-> >> >> +#endif
-> >> >
-> >> > I guess a single space is sufficient?
-> >> >
-> >> > Better yet, I'd include sysfb.h unconditionally:
+On Wed, Jan 08, 2014 at 03:32:17PM +0200, Tomi Valkeinen wrote:
+> On 2013-12-23 10:28, Shawn Guo wrote:
+> > On Mon, Dec 23, 2013 at 12:24:13PM +0400, Alexander Shiyan wrote:
+> >>> On Sat, Dec 21, 2013 at 03:08:00PM +0400, Alexander Shiyan wrote:
+> >>>> This patch replaces custom lcd_power() callback with
+> >>>> regulator API over LCD class.
+> >>>
+> >>> FYI.  Denis' effort on this already goes to v13.
+> >>>
+> >>> http://thread.gmane.org/gmane.linux.ports.arm.kernel/285326
 > >>
-> >> Unconditionally won't work as only x86 has this header. [...]
-> >
-> > Well, in non-x86 code an #ifdef x86 looks ugly as well - but I guess
-> > better than not building.
-> >
-> >> [...] If there's a way to place a dummy into asm-generic which is
-> >> picked if arch/xy/include/asm/ doesn't have the header, let me know.
-> >
-> > Not that I know of.
-> >
-> >> But if I include it unconditionally without any fallback, this will
-> >> fail on non-x86. And adding the header to all archs seems overkill.
-> >
-> > So why not drop the x86-ism and rename it to CONFIG_PLATFORM_SYSFB?
-> > Some platforms configure it, some don't. Then the prototypes could
-> > move into include/linux/sysfb.h or so and would be platform agnostic.
+> >> Hmm, OK, but having LCD class could resolve our problems with contrast control.
+> >> https://www.mail-archive.com/devicetree@vger.kernel.org/msg07660.html
+> > 
+> > I just want to make sure you two are aware of each other's work.
 > 
-> This is almost exactly what patch #6 does. [...]
+> So, should I ignore this patch, or...?
 
-Indeed - I never got so far down into the series.
+No, no, that's not what I meant.  Please go ahead to review the patch
+and merge it if it looks good to you.
 
-> [...] But it also adds ~400 lines of kernel-doc and ~400 lines of 
-> Documentation/. Given your remarks, I guess I will just split this 
-> patch into code and docs, so we can just pick it up for stable in 
-> case patch #1 does not fix all issues.
+Shawn
 
-I have no objections to this form if it's fixed in a later patch and 
-this one is easier to backport. I just missed that aspect.
-
-Thanks,
-
-	Ingo

@@ -1,16 +1,35 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Thu, 23 Jan 2014 19:37:38 +0000
-Subject: [PATCH 0/10] framebuffer patches
-Message-Id: <alpine.LRH.2.02.1401231436400.7971@file01.intranet.prod.int.rdu2.redhat.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 08 Jan 2014 00:44:31 +0000
+Subject: [PATCH RESEND 1/4] video: asiliantfb: remove unnecessary pci_set_drvdata()
+Message-Id: <001901cf0c0a$cb48b5e0$61da21a0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi
+The driver core clears the driver data to NULL after device_release
+or on probe failure. Thus, it is not needed to manually clear the
+device driver data to NULL.
 
-Here I'm sending some framebuffer patches for matrox, mach64, tga and a 
-fix for copying on vesafb.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/asiliantfb.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Mikulas
+diff --git a/drivers/video/asiliantfb.c b/drivers/video/asiliantfb.c
+index d611f1a..7e8ddf0 100644
+--- a/drivers/video/asiliantfb.c
++++ b/drivers/video/asiliantfb.c
+@@ -589,7 +589,6 @@ static void asiliantfb_remove(struct pci_dev *dp)
+ 	fb_dealloc_cmap(&p->cmap);
+ 	iounmap(p->screen_base);
+ 	release_mem_region(pci_resource_start(dp, 0), pci_resource_len(dp, 0));
+-	pci_set_drvdata(dp, NULL);
+ 	framebuffer_release(p);
+ }
+ 
+-- 
+1.7.10.4
+
+

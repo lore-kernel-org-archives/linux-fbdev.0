@@ -1,60 +1,65 @@
-From: David Howells <dhowells@redhat.com>
-Date: Fri, 03 Jan 2014 16:08:04 +0000
-Subject: [PATCH 6/7] Fix a warning pertaining to the aty128fb backlight variable
-Message-Id: <20140103160804.8153.94982.stgit@warthog.procyon.org.uk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 08 Jan 2014 13:32:17 +0000
+Subject: Re: [PATCH] video: imxfb: Use regulator API with LCD class for powering
+Message-Id: <52CD5361.50205@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="avaKhsAOa7LbTgoG1nKC998ucNaACBD4D"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: akpm@linux-foundation.org
-Cc: dhowells@redhat.com, linux-fbdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+References: <1387624080-15312-1-git-send-email-shc_work@mail.ru>
+ <20131223082107.GF26070@S2101-09.ap.freescale.net>
+ <1387787053.605757144@f413.i.mail.ru>
+ <20131223082842.GI26070@S2101-09.ap.freescale.net>
+In-Reply-To: <20131223082842.GI26070@S2101-09.ap.freescale.net>
+To: linux-arm-kernel@lists.infradead.org
 
-Fix the following warning in the aty128fb driver:
+--avaKhsAOa7LbTgoG1nKC998ucNaACBD4D
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-	drivers/video/aty/aty128fb.c:363:12: warning: 'backlight' defined but not used [-Wunused-variable]
-	 static int backlight = 0;
-		    ^
+On 2013-12-23 10:28, Shawn Guo wrote:
+> On Mon, Dec 23, 2013 at 12:24:13PM +0400, Alexander Shiyan wrote:
+>>> On Sat, Dec 21, 2013 at 03:08:00PM +0400, Alexander Shiyan wrote:
+>>>> This patch replaces custom lcd_power() callback with
+>>>> regulator API over LCD class.
+>>>
+>>> FYI.  Denis' effort on this already goes to v13.
+>>>
+>>> http://thread.gmane.org/gmane.linux.ports.arm.kernel/285326
+>>
+>> Hmm, OK, but having LCD class could resolve our problems with contrast=
+ control.
+>> https://www.mail-archive.com/devicetree@vger.kernel.org/msg07660.html
+>=20
+> I just want to make sure you two are aware of each other's work.
 
-as the variable's value is only read if CONFIG_FB_ATY128_BACKLIGHT=y.  The
-variable is also set if MODULE is unset[*].
+So, should I ignore this patch, or...?
 
-[*] I wonder if the conditional wrapper around aty128fb_setup() should be
-    using CONFIG_MODULE rather than MODULE.
+ Tomi
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-cc: Paul Mackerras <paulus@samba.org>
-cc: linux-fbdev@vger.kernel.org
----
 
- drivers/video/aty/aty128fb.c |    4 ++++
- 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
-index 12ca031877d4..52108be69e77 100644
---- a/drivers/video/aty/aty128fb.c
-+++ b/drivers/video/aty/aty128fb.c
-@@ -357,11 +357,13 @@ static int default_lcd_on = 1;
- static bool mtrr = true;
- #endif
- 
-+#ifdef CONFIG_FB_ATY128_BACKLIGHT
- #ifdef CONFIG_PMAC_BACKLIGHT
- static int backlight = 1;
- #else
- static int backlight = 0;
- #endif
-+#endif
- 
- /* PLL constants */
- struct aty128_constants {
-@@ -1671,7 +1673,9 @@ static int aty128fb_setup(char *options)
- 			default_crt_on = simple_strtoul(this_opt+4, NULL, 0);
- 			continue;
- 		} else if (!strncmp(this_opt, "backlight:", 10)) {
-+#ifdef CONFIG_FB_ATY128_BACKLIGHT
- 			backlight = simple_strtoul(this_opt+10, NULL, 0);
-+#endif
- 			continue;
- 		}
- #ifdef CONFIG_MTRR
+--avaKhsAOa7LbTgoG1nKC998ucNaACBD4D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSzVNhAAoJEPo9qoy8lh71O2oP/1m21JpkyGBMk6uYcbvCJ3OJ
+vfCu5+ooz61ta9z+/63Z96UDtU3TCVj07crVvgDHlQLTuaWBt6BhGRkQloM4KTsy
+qD1ABp9tPorfj2nFVZFqkzHZJeK412BpI+EWEY/tlAryAZ02BmjxB9qUeuaRQu/o
+W3OLZ8VLR3xs68zEGMPTdZ216080YxTlDWTeUbx3YRRRurXxif+0R0pUjYdav6fa
+7kinyUmJDcVdBRyDSlzLSVw8HwW+xiuXk/oO31ZAZLni5DllttWrc4JjOXrx1vaH
+9fHh659RWsbZ5R+Uoc1zWTfFEotI6pQptkpzo6IbY8sTJ3h2Tlpf53m72FN3o12Y
+RNq3oP6/+iOfUSDAzyb3QgPicndr6V7N05lyy89u02g7a4Zk7l9lr0USqH2FjWVY
+3h1Uyn2zC4Jvg5RRLLo2oZbiLqclF0bBbK2tvW2sKFTc1GQ9Hk+iAABAiqlPLvN3
+RW/mmdYRLdtXS/75DXZc34rXWzARZ74ccwhPcYwd7PKpws3LNymqINuuZJ6m+tI5
+R59W9nM043DxTW7nN6pseKugiJk42xU8ae816ftqrASzaegJnxROTyWlev+YAubv
+eCHI0gyfgeWta5pAszPdnxsITQFzdwERxWCZz5yiPXd0H3w/ZvKSyi4o5PjnEmg7
+l5/8pCEWXm/+Bw1N9J3i
+=JN8q
+-----END PGP SIGNATURE-----
+
+--avaKhsAOa7LbTgoG1nKC998ucNaACBD4D--

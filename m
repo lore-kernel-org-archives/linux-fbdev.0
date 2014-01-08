@@ -1,41 +1,35 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Mon, 13 Jan 2014 15:22:32 +0000
-Subject: [PATCH 0/4] delete useless variable
-Message-Id: <1389629847-5330-1-git-send-email-Julia.Lawall@lip6.fr>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 08 Jan 2014 00:46:24 +0000
+Subject: [PATCH RESEND 4/4] video: vmlfb: remove unnecessary pci_set_drvdata()
+Message-Id: <001c01cf0c0b$0ea4f920$2beeeb60$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: brcm80211-dev-list@broadcom.com
-Cc: kernel-janitors@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org
+To: linux-fbdev@vger.kernel.org
 
-These patches delete declarations and initializations of variables that are
-only assigned to constants but never used otherwise.
+The driver core clears the driver data to NULL after device_release
+or on probe failure. Thus, it is not needed to manually clear the
+device driver data to NULL.
 
-The complete semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/vermilion/vermilion.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-// <smpl>
-@r exists@
-type T;
-identifier i,i2;
-position p;
-@@
+diff --git a/drivers/video/vermilion/vermilion.c b/drivers/video/vermilion/vermilion.c
+index 09a1366..048a666 100644
+--- a/drivers/video/vermilion/vermilion.c
++++ b/drivers/video/vermilion/vermilion.c
+@@ -383,7 +383,6 @@ static void vmlfb_disable_mmio(struct vml_par *par)
+ static void vmlfb_release_devices(struct vml_par *par)
+ {
+ 	if (atomic_dec_and_test(&par->refcount)) {
+-		pci_set_drvdata(par->vdc, NULL);
+ 		pci_disable_device(par->gpu);
+ 		pci_disable_device(par->vdc);
+ 	}
+-- 
+1.7.10.4
 
-T i@p;
-... 
-i = i2
-
-@@
-type r.T;
-identifier r.i;
-constant c;
-position p != r.p;
-@@
-
--T i@p;
-<... when != i
--i = c;
-...>
-// </smpl>
 

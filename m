@@ -1,73 +1,56 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 07 Jan 2014 15:15:35 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 08 Jan 2014 08:30:51 +0000
 Subject: Re: [PATCH 13/15] fbdev: sh-mobile-lcdcfb: Enable driver compilation with COMPILE_TEST
-Message-Id: <1917257.yB7aZMXWdP@avalon>
+Message-Id: <52CD0CBB.3070801@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="omsl4wM7SAPM8eJi2dX5Fh23j0wToShIv"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
  <1385515117-23664-14-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
- <1542726.dq1lpTml5f@avalon>
-In-Reply-To: <1542726.dq1lpTml5f@avalon>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1542726.dq1lpTml5f@avalon> <1917257.yB7aZMXWdP@avalon>
+In-Reply-To: <1917257.yB7aZMXWdP@avalon>
 To: linux-arm-kernel@lists.infradead.org
 
-On Wednesday 11 December 2013 13:51:18 Laurent Pinchart wrote:
-> Hi Jean-Christophe and Tomi,
-> 
-> Could you please pick this patch up for v3.14 ?
+--omsl4wM7SAPM8eJi2dX5Fh23j0wToShIv
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Ping ?
+On 2014-01-07 17:15, Laurent Pinchart wrote:
+> On Wednesday 11 December 2013 13:51:18 Laurent Pinchart wrote:
+>> Hi Jean-Christophe and Tomi,
+>>
+>> Could you please pick this patch up for v3.14 ?
+>=20
+> Ping ?
 
-> On Wednesday 27 November 2013 02:18:35 Laurent Pinchart wrote:
-> > This helps increasing build testing coverage.
-> > 
-> > Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > Cc: linux-fbdev@vger.kernel.org
-> > Signed-off-by: Laurent Pinchart
-> > <laurent.pinchart+renesas@ideasonboard.com>
-> > Acked-by: Simon Horman <horms@verge.net.au>
-> > ---
-> > 
-> >  drivers/video/Kconfig | 8 +++++---
-> >  1 file changed, 5 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> > index 4f2e1b3..2aceb08 100644
-> > --- a/drivers/video/Kconfig
-> > +++ b/drivers/video/Kconfig
-> > @@ -10,7 +10,8 @@ config HAVE_FB_ATMEL
-> > 
-> >  config SH_MIPI_DSI
-> >  	tristate
-> > -	depends on (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
-> > +	depends on HAVE_CLK
-> > +	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
-> > 
-> >  config SH_LCD_MIPI_DSI
-> >  	bool
-> > @@ -1997,7 +1998,8 @@ config FB_W100
-> > 
-> >  config FB_SH_MOBILE_LCDC
-> >  	tristate "SuperH Mobile LCDC framebuffer support"
-> > -	depends on FB && (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
-> > +	depends on FB && HAVE_CLK
-> > +	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
-> >  	select FB_SYS_FILLRECT
-> >  	select FB_SYS_COPYAREA
-> >  	select FB_SYS_IMAGEBLIT
-> > @@ -2484,7 +2486,7 @@ endif
-> > 
-> >  config FB_SH_MOBILE_MERAM
-> >  	tristate "SuperH Mobile MERAM read ahead support"
-> > -	depends on (SUPERH || ARCH_SHMOBILE)
-> > +	depends on SUPERH || ARCH_SHMOBILE || COMPILE_TEST
-> >  	select GENERIC_ALLOCATOR
-> >  	---help---
-> >  	  Enable MERAM support for the SuperH controller.
--- 
-Regards,
+Queued for 3.14.
 
-Laurent Pinchart
+ Tomi
 
+
+
+--omsl4wM7SAPM8eJi2dX5Fh23j0wToShIv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSzQy/AAoJEPo9qoy8lh71XaQP/0W+uwNm/SPsn+4SWkAmMiOs
+U+SOUEbLlHG2CGNrlzYbnzpMhUY+y75mHQf9u5YvBoA3ND628cmEiwc8ukGLaPnn
+8ug9ACne23lhVeJvWHEwqtgpbeQahF4Sg6Qbg74WIyXLn5MkjZgfGwaN8Bvo2smg
+MKRiPaCswJg2+Tk2fAr9ojeklPKqVWQDCIUko6cDAaY94YgMxxYF9u9CWhos9wbY
+l0b5z6Ssk9hhQxPudJIqv4dzZUKeBatVby5xmc9cYacXGMuFN3110GLycHYWBfA1
+MODwLut6UTmS/MW8o6vhLMZcj0AS//mRJjLWrbgT/op3O4q30aoWYYFyLEHNz4V+
+9vEWTX076PL0hJnVEXMibVBFwy4Quxfdoj7SJ5arjusBSE5SolTS1p31KzD1bjvh
+VYOGBqqb2h1YO7uoPg9uN7X/HPjwLcFBe/47CEuri26RqV0zQ7thtxqQWEwd7YV3
+NK66mImOmrKJvaBW2JwShRI4i34nk0eSFoXL9XNh5U6724c6E0M/pvDhf7alGzor
+MM9qHcj3S3EPVBpmFLaW85qtgiO7aG9rgTiPsnwD9N++T2my3T8hKgwXiubobKb4
+6ORpg8ikul1dV6JiSGfoI2/3Hf4HW9PnfvNkBNh8cqeX0HXHtvdb4lT7sPTZU0F3
+vAsynjEf0O0I6shmw2cn
+=tgfO
+-----END PGP SIGNATURE-----
+
+--omsl4wM7SAPM8eJi2dX5Fh23j0wToShIv--

@@ -1,47 +1,74 @@
-From: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Date: Fri, 10 Jan 2014 16:16:10 +0000
-Subject: Re: [PATCH v4] video: add OpenCores VGA/LCD framebuffer driver
-Message-Id: <20140110161608.GA23774@chokladfabriken.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 08 Jan 2014 09:48:16 +0000
+Subject: Re: [PATCH] fbcon: trivial optimization for fbcon_exit
+Message-Id: <52CD1EE0.9000309@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="RI8SJQ5MHFLwVUdDcVK9XNsvsVfcmJHt0"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1385739911-6541-1-git-send-email-stefan.kristiansson@saunalahti.fi>
- <52CFE2BB.8090004@ti.com>
-In-Reply-To: <52CFE2BB.8090004@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com
+References: <20131227023917.GA3908@udknight>
+In-Reply-To: <20131227023917.GA3908@udknight>
+To: Wang YanQing <udknight@gmail.com>
+Cc: plagnioj@jcrosoft.com, airlied@redhat.com, gregkh@linuxfoundation.org, akpm@linux-foundation.org, kamal@whence.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Jan 10, 2014 at 02:08:27PM +0200, Tomi Valkeinen wrote:
-> Hi,
-> 
-> On 2013-11-29 17:45, Stefan Kristiansson wrote:
-> > This adds support for the VGA/LCD core available from OpenCores:
-> > http://opencores.org/project,vga_lcd
-> > 
-> > The driver have been tested together with both OpenRISC and
-> > ARM (socfpga) processors.
-> > 
-> > Signed-off-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-> 
-> If I'm not mistaken, this driver has been designed so that there can
-> only be one VGA/LCD core device on the system.
-> 
-> It would be better to get rid of those static structs, and have the
-> driver data per device as it should. That way the driver works even with
-> multiple VGA/LCD cores (although the video mode module option is a bit
-> odd in that case).
-> 
+--RI8SJQ5MHFLwVUdDcVK9XNsvsVfcmJHt0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-You're right, it's a completely realistic scenario with several
-VGA/LCD cores in the system, so the one device only restriction is bad.
-And looking closer at the static structs, I see that the ocfb_var and ocfb_fix
-doesn't surve any purpose at all, so they can just be removed.
-And the information in ocfb_par can easily be obtained directly from ocfb_dev
-instead, so by setting info.par to point at that, the ocfb_par struct can also
-be removed completely.
-Thanks, that suggestion makes the implementation cleaner as well.
+On 2013-12-27 04:39, Wang YanQing wrote:
+> Break out as soon as we find a mapped entry con2fb_map.
+>=20
+> Signed-off-by: Wang YanQing <udknight@gmail.com>
+> ---
+>  drivers/video/console/fbcon.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbco=
+n.c
+> index cd8a802..f39931f 100644
+> --- a/drivers/video/console/fbcon.c
+> +++ b/drivers/video/console/fbcon.c
+> @@ -3547,8 +3547,10 @@ static void fbcon_exit(void)
+>  			"no"));
+> =20
+>  		for (j =3D first_fb_vc; j <=3D last_fb_vc; j++) {
+> -			if (con2fb_map[j] =3D=3D i)
+> +			if (con2fb_map[j] =3D=3D i) {
+>  				mapped =3D 1;
+> +				break;
+> +			}
+>  		}
+> =20
+>  		if (mapped) {
+>=20
 
-I'll post an updated patch with the changes.
+Thanks, queued for 3.14.
 
-Stefan
+ Tomi
+
+
+
+--RI8SJQ5MHFLwVUdDcVK9XNsvsVfcmJHt0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSzR7gAAoJEPo9qoy8lh71lbAP/AsMdZIennrcPHhw5rV+puby
+SRxItG9kpWuU907q8AY5eFFMliqlztdgVQh6d0j7Jqy2rKHA158VxKXmQguQGgrM
+3zddGA8RBWvBdjqVTURrGDY7gbFy4252uVPWxN3xmBhXifLj29oRyEW9UkZr3m9o
+C7NEUZLC4FBOKJATYAxLXWkrxjMYO31YNo+fBXnGxitCjjAQQ69OUMsn2oA6Jsgf
+FIEQAD1hN26i4+AlnVxNSfiFL3xsCQUOsgWD4CqD/jTmkd4pdML7Tl7qK3MTNY3R
+9En2ZuiaHiFW6Axbyt8OXPubdfjPWBDwwsSgxd+CmmaJw+xXOA6yoY1XAEp8c5B9
++tUzp/fvG9KKevKrzrUpD2dG/ONMUi+oGNCVvGf/3uVHEbRZFYIP5yuQ2iPEtrQR
+7hrHyy9bBMsU6cmhSTYecn7olPu2wD/urmMvHuqgaNr16nEdhwokv1zJ6t9RkrVr
+KNefnmtHha5qfG26tW+f4Htxo/hi45eFZ0Ht8lkvGWinhDjHF+Eshg9N74//VbH6
+aezo3AA3DSJqJVt0SqF5B6pYyjbFlYqOjmcip/63lrAHuMkP7PazyHF4rd9trFrX
+2nAoLaiTUsSQiFkopbmQPTFOD0npbnMwLHsdEjFcjhcj6cXQei86KR4GqBgT9Ub0
+WqISp5Dc6M/7gSbw3pTh
+=8BzD
+-----END PGP SIGNATURE-----
+
+--RI8SJQ5MHFLwVUdDcVK9XNsvsVfcmJHt0--

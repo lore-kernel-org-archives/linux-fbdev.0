@@ -1,35 +1,78 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 08 Jan 2014 00:45:15 +0000
-Subject: [PATCH RESEND 2/4] video: nvidiafb: remove unnecessary pci_set_drvdata()
-Message-Id: <001a01cf0c0a$e5a7f630$b0f7e290$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 08 Jan 2014 13:37:39 +0000
+Subject: Re: [PATCH] video: mx3fb: Allow blocking during framebuffer allocation
+Message-Id: <52CD54A3.7040705@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="qQ7gbUbbDuniRh91WCIe7uWmHLHrDOjcn"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+References: <1387441388-10962-1-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1387441388-10962-1-git-send-email-s.hauer@pengutronix.de>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel@vger.kernel.org
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+--qQ7gbUbbDuniRh91WCIe7uWmHLHrDOjcn
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/nvidia/nvidia.c |    1 -
- 1 file changed, 1 deletion(-)
+On 2013-12-19 10:23, Sascha Hauer wrote:
+> No need to allocate the framebuffer from the atomic pool, we are not
+> in interrupt context. Adding GFP_KERNEL to the framebuffer allocation
+> allows to use the much bigger CMA pool to allocate the framebuffer.
+>=20
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  drivers/video/mx3fb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+> index cfdb380..c882bec 100644
+> --- a/drivers/video/mx3fb.c
+> +++ b/drivers/video/mx3fb.c
+> @@ -1263,7 +1263,7 @@ static int mx3fb_map_video_memory(struct fb_info =
+*fbi, unsigned int mem_len,
+> =20
+>  	fbi->screen_base =3D dma_alloc_writecombine(fbi->device,
+>  						  mem_len,
+> -						  &addr, GFP_DMA);
+> +						  &addr, GFP_DMA | GFP_KERNEL);
+> =20
+>  	if (!fbi->screen_base) {
+>  		dev_err(fbi->device, "Cannot allocate %u bytes framebuffer memory\n"=
+,
+>=20
 
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-index ff22871..def0412 100644
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -1461,7 +1461,6 @@ static void nvidiafb_remove(struct pci_dev *pd)
- 	pci_release_regions(pd);
- 	kfree(info->pixmap.addr);
- 	framebuffer_release(info);
--	pci_set_drvdata(pd, NULL);
- 	NVTRACE_LEAVE();
- }
- 
--- 
-1.7.10.4
+Thanks, queued for 3.14.
+
+ Tomi
 
 
+
+--qQ7gbUbbDuniRh91WCIe7uWmHLHrDOjcn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSzVSjAAoJEPo9qoy8lh7187IP/j19e9sgzQRVq7Y3EqdTEMN8
+8JIOu57BN/oMVw4QZNqHU1R0pcMb+qgGU8eUCD5n9USm4s0wFm92cJKiT5AwNiR2
+FPaTJq2T3sGqTz4/LrX+15B/LBWwsn9+vX3kqRX5pvKtxKBn+oUmn3T61mR7sX0N
+n9qsxMm9TFG+DTMNDmWpnqBNgR1TpDiewpWC4eZSQEZMn7iXThr7OCucMdES0wdq
+UMcWo61R8SWlfMOm4jBs89G+XAVlHGFdouZlpVpsHn9RmoQMXv2/Y01DUt1G2GY+
+eraMjAOPMUoUY4yS5I5ak/0vJ/FV3eQ6PyNAouAkYR68QNMucPdWIo/WHtqC0F2I
+3OS5aZFLOWeV9Em6oRueAZEfr42Fp8pJ/GPlIOFoHqyxc9zY5IypkkzKN+BBWf07
+Ut/U0jG6fIBDftmZHbhdY7dLnAYoAphBa7G7Z/K7taDBDBswxjg/B5b/DL31Jxs+
+C39pnzDafK4GUBRBnTpaCbd8ToNR8G9PDDLmveJgOzXQGFaDJ+4uFmYdu2qzCHWx
+4TQCMDPehqkW8l1oYk/4/x2XlUKYH4go9dvpgoCqSvqOfuleTVGSbMo8iVyRwVlu
++Voq1ovQeFJcdYx+YJ5wk/YS+iK5NEOnKWfkLlwCDBOYsVJLS1mbJw4YYMrqwJWf
+qw8e9xos3WuRJqPHmPvh
+=JhME
+-----END PGP SIGNATURE-----
+
+--qQ7gbUbbDuniRh91WCIe7uWmHLHrDOjcn--

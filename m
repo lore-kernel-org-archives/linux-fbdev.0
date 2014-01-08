@@ -1,91 +1,102 @@
-From: Zhou Zhu <zzhu3@marvell.com>
-Date: Tue, 14 Jan 2014 11:16:23 +0000
-Subject: [PATCH v2 3/4] video: mmp: add devm_mmp_get_path_by_phandle for DT
-Message-Id: <1389698184-28761-4-git-send-email-zzhu3@marvell.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 08 Jan 2014 13:55:20 +0000
+Subject: Re: [PATCH] fbmem: really support wildcard video=options for all fbdev drivers
+Message-Id: <52CD58C8.3040703@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="xqgT1XQiKMMw9kNSvqCIhcI2cOfE7c0hM"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389698184-28761-1-git-send-email-zzhu3@marvell.com>
-In-Reply-To: <1389698184-28761-1-git-send-email-zzhu3-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Chao Xie <chao.xie-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Guoqing Li <ligq-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Zhou Zhu <zzhu3-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+References: <1387140035-12234-1-git-send-email-olaf@aepfle.de>
+In-Reply-To: <1387140035-12234-1-git-send-email-olaf@aepfle.de>
+To: Olaf Hering <olaf@aepfle.de>
+Cc: plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-add devm_mmp_get_path_by_phandle to replace mmp_get_path
-for DT usage
+--xqgT1XQiKMMw9kNSvqCIhcI2cOfE7c0hM
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
----
- drivers/video/mmp/core.c |   35 +++++++++++++++++++++++++++++++++++
- include/video/mmp_disp.h |    2 ++
- 2 files changed, 37 insertions(+)
+On 2013-12-15 22:40, Olaf Hering wrote:
+> Documentation/fb/modedb.txt states that video=3Doption should be
+> considered a global option. But video_setup and fb_get_options are not
+> coded that way. Instead its required to boot with video=3Ddriver:option=
+ to
+> set a given option in drvier.  This is cumbersome because it requires t=
+o
+> know in advance which driver will be active for a given board/kernel.
+>=20
+> The following patch implements the documented catchall for the fbdev
+> drivers. It is now possible to boot with video=3DXxY without the need t=
+o
+> know the active driver in advance. The specific case it tries to fix is=
 
-diff --git a/drivers/video/mmp/core.c b/drivers/video/mmp/core.c
-index b563b92..0538458 100644
---- a/drivers/video/mmp/core.c
-+++ b/drivers/video/mmp/core.c
-@@ -23,6 +23,7 @@
- #include <linux/slab.h>
- #include <linux/dma-mapping.h>
- #include <linux/export.h>
-+#include <linux/of.h>
- #include <video/mmp_disp.h>
- 
- static struct mmp_overlay *path_get_overlay(struct mmp_path *path,
-@@ -156,6 +157,40 @@ struct mmp_path *mmp_get_path(const char *name)
- EXPORT_SYMBOL_GPL(mmp_get_path);
- 
- /*
-+ * devm_mmp_get_path_by_phandle - get path by phandle
-+ * @dev: device that want to get path
-+ * @phandle: name of phandle in device node that want to get path
-+ *
-+ * this function gets path according to node pointed by phandle
-+ * return NULL if no matching path
-+ */
-+struct mmp_path *devm_mmp_get_path_by_phandle(struct device *dev,
-+	const char *phandle)
-+{
-+	struct mmp_path *path;
-+	struct device_node *node;
-+
-+	if (!dev->of_node) {
-+		dev_err(dev, "device does not have a device node entry\n");
-+		return NULL;
-+	}
-+
-+	node = of_parse_phandle(dev->of_node, phandle, 0);
-+	if (!node) {
-+		dev_err(dev, "failed to get %s phandle in %s node\n", phandle,
-+			dev->of_node->name);
-+		return NULL;
-+	}
-+
-+	path = mmp_get_path(node->name);
-+
-+	of_node_put(node);
-+
-+	return path;
-+}
-+EXPORT_SYMBOL_GPL(devm_mmp_get_path_by_phandle);
-+
-+/*
-  * mmp_register_path - init and register path by path_info
-  * @p: path info provided by display controller
-  *
-diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
-index 05a3a60..63138b8 100644
---- a/include/video/mmp_disp.h
-+++ b/include/video/mmp_disp.h
-@@ -248,6 +248,8 @@ struct mmp_path {
- };
- 
- extern struct mmp_path *mmp_get_path(const char *name);
-+struct mmp_path *devm_mmp_get_path_by_phandle(struct device *dev,
-+		const char *phandle);
- static inline void mmp_path_set_mode(struct mmp_path *path,
- 		struct mmp_mode *mode)
- {
--- 
-1.7.9.5
+> syslinux in the SUSE installer which offers a menu to set a display
+> resolution. Right now this just appends the vga=3D option the kernel. B=
+ut
+> in addition to vga=3D it should be possible to pass a generic video=3DX=
+xY
+> for all framebuffer/drm drivers. With this change forcing a certain
+> window size of VM displays is now much easier.
+>=20
+> Today the video=3D option is stored in a global fb_mode_option. But
+> unfortunately only drm uses it.
+>=20
+> Note: this change introduces a small memleak if video=3Doption is actua=
+lly
+> used because fb_mode_option is const. Most drivers use strsep to get to=
 
+> individual options. This could be fixed in a followup patch which alway=
+s
+> releases the option string in every caller of fb_get_options.
+>=20
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> ---
+>  drivers/video/fbmem.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>=20
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> index 010d191..cde4619 100644
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -1930,6 +1930,9 @@ int fb_get_options(const char *name, char **optio=
+n)
+>  				options =3D opt + name_len + 1;
+>  		}
+>  	}
+> +	/* No match, pass global option */
+> +	if (!options && option && fb_mode_option)
+> +		options =3D kstrdup(fb_mode_option, GFP_KERNEL);
+>  	if (options && !strncmp(options, "off", 3))
+>  		retval =3D 1;
+> =20
+>=20
+
+Queued for 3.14.
+
+ Tomi
+
+
+
+--xqgT1XQiKMMw9kNSvqCIhcI2cOfE7c0hM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSzVjIAAoJEPo9qoy8lh71EVwQAKy7oDRwVb1Pc5KMdVW00pQX
+GvXDg0oeRRZzuF+wtyrugq5ytRVKvcouIvgyTKzJ7TTT31L+ETvvLwVLreamQxvI
+ToaUdlx8jMRNlxPc9G/izliv9RaXmPnTkBJ91VF8mVjyekf8JYQ9vIWNIf2KM8vr
+pS/LnAMsqIkiqdHY6BSZu54wsMxuaI9gJ4APa3LSZnWnKZXbgSo66wnKH6w3oY+V
+a1rGC2T4kViwoLOyvb8nILC7miW8jgO6NE+lpgsuJssLfVVsazAXX2Nag8y5K/HK
+0dB/cs9VKOos2BMpNvzBFEPEeLuX9ZepYefeHlYyTiYteAOOEH9WXtfKiUxziRUn
+vXs4zRm9IdMqvHwSUpiSKAPidIHqw/g23wchbYcLxfnsTXL6B0TF7xS1MO2dG34o
+MVuIxRzOfbwo2+9htQM+7oS7kd2SnRGqgpFbFN2GvfRQoFjwkHUe9iKCRSgXQCW1
+5TofJ/uR8H1zBsDliEizzZhJwZulYtZsm8NyoFXje0bglFDtvQom3jCNoL57ovQI
+YysUBv8ziWndECjvYdRKpfuATlFHm24YAFcqJmTgSfg9y57PfKBxL18Hq3vNiqeY
+juwnjA1W0uVF4AgslnwUcJUpV8trulTseWN1fKpeRyrJb6oVH7V7Az4V+AdUpMQ4
+dtb94I8j2FRklUVB/LWF
+=77Zb
+-----END PGP SIGNATURE-----
+
+--xqgT1XQiKMMw9kNSvqCIhcI2cOfE7c0hM--

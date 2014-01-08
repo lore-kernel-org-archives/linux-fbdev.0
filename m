@@ -1,53 +1,63 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Date: Tue, 07 Jan 2014 16:00:49 +0000
+Date: Wed, 08 Jan 2014 15:24:30 +0000
 Subject: Re: [PATCH 1/2] drm/panel: Add support for Samsung LTN101NT05 panel
-Message-Id: <20140107160048.GA30770@ulmo.nvidia.com>
+Message-Id: <20140108152429.GG21974@ulmo.nvidia.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ZPt4rx8FFjLCG7dd"
+Content-Type: multipart/mixed; boundary="ulDeV4rPMk/y39in"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <f03a644deb858f10affb7b039f9982bac81b02c9.1387656959.git.marvin24@gmx.de>
-	<52CB0281.7060203@wwwdotorg.org>
-In-Reply-To: <52CB0281.7060203@wwwdotorg.org>
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: linux-fbdev@vger.kernel.org, Thierry Reding <treding@nvidia.com>, dri-devel@lists.freedesktop.org, Marc Dietrich <marvin24@gmx.de>
+In-Reply-To: <f03a644deb858f10affb7b039f9982bac81b02c9.1387656959.git.marvin24@gmx.de>
+To: Marc Dietrich <marvin24@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-tegra@vger.kernel.org, Thierry Reding <treding@nvidia.com>, linux-arm-kernel@lists.infradead.org
 
 
---ZPt4rx8FFjLCG7dd
+--ulDeV4rPMk/y39in
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jan 06, 2014 at 12:22:41PM -0700, Stephen Warren wrote:
-> On 12/21/2013 01:40 PM, Marc Dietrich wrote:
-> > The Samsung LNT101NT05 10.1" WXVGA panel can be supported by the simple=
- panel
-> > driver.
+On Sat, Dec 21, 2013 at 09:38:12PM +0100, Marc Dietrich wrote:
+> The Samsung LNT101NT05 10.1" WXVGA panel can be supported by the simple p=
+anel
+> driver.
 >=20
-> Thierry, I assume you'll take patch 1/2 throught the appropriate DRM tree.
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: David Airlie <airlied@linux.ie>
+> Signed-off-by: Marc Dietrich <marvin24@gmx.de>
+> ---
+> This isn't strickly required to get the panel up, but Thierry suggested o=
+n IRC to
+> include it anyway, in case someone else has some use for it.
 
-Yes, will do.
+For the record: the reason this isn't strictly needed is because there's
+an EDID that can be probed to get the video timings. But the panel still
+can be supported using the timings from the datasheet. One example where
+this would be useful is when the EDID isn't connected or simply broken.
+
+That said: applied, thanks!
 
 Thierry
 
---ZPt4rx8FFjLCG7dd
+--ulDeV4rPMk/y39in
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSzCSwAAoJEN0jrNd/PrOhlVAP/jOAyjLYiX1bkexn8Ug0lJ6r
-jwOWr78jXtcLQSwHs+MLOid0K+/nXQfxzPVeTbyxOfnUsl6mhiNTkloN2/jigTM8
-A5rXmgLu6K8jt7fFIUehEp84pC1MQLejNdOiWbA8niIyKb4UtBdYN09V6WZxr/5y
-o+DyPDQ/ds/32aNzzl/xKopYpF6prf6cw9Ls9PZ1LCpYU1V7SV+9Bh36UK0NAISG
-qVT6oExCnc5HlKFQY+qX0aB68qlAkBziIGt4Sn1D4i21opEBXlCmVtSxlq95bFPf
-TFR1BbPLgUaziM+3IYSGiP0yYySQwBUzxOxvdivj2SszzKvhGOo7AD82IY3f268d
-L1xDUxmKis5gRQGREbEmshZrdu47/sIWT2e2IDZj9PL5WR+C80Nvw4lMn+M+gKEW
-356WJCL40eEzU+Wye3ih1TdNSfJGEhybseFFRr6OzyoNxaD2eMjZHJFtUVCnL5+X
-39HZ2+eeLVHtegqWwvvDBocAlvGtRgNOSd+acBFb7zPKD0Pjq+hTVb+zh5HSO0FW
-qASKPUknB6SVJMoTGGh36/f6v+H1uBWO/hlriOLnMpURnncwfKuL5hSwKLzDO1Hv
-sK4YSwXhNDUM0GfYsmkeonOzRSH3bES4OdqUCNDfr6aZYFQwkF2FKiLXKLLqD+u7
-IkliDZ0p2CHvTDuN+D0E
-=0R47
+iQIcBAEBAgAGBQJSzW2tAAoJEN0jrNd/PrOhXaMP/38NU0fvKjjQV0AFLuZakbMo
+b5oIduYQlcwJ2BdtCC5i9Q4sxV1TjS1n5EO5tSQTJfqs2139G/MK1BfkgfNeuOVU
+VCBdPgT6Ds+csRwmbs6rIJgCWzAiLSBJJkyR8hYF23l8Pk2tRtB6sayuUDXVefGW
+dNBIRcKSruM2qllW8RtB3ptyoJBhCXfym2Q7BALw0ELaPdKyVp18P4gv31BCGv7T
+FLvy7X54Y55K4/9l2HTas+Xi/n+R7qks49+YpdTcxWbMqWqpjPDqUGSgTXkwwJgb
+u0QnKnaONAQh41WfxMJhKaBTm3ii/RquC69A1FtxQ3DDoE/+/YP15TPOQiO7mczy
+zDGhDdE1Se87U/shH2oG7q4X3/RqfddmAQOyV1shScF8vfcYu46dACu/MgTrpxJC
+epwFn25r240aIj5I5ZCesHl8Ge+3cs9ei6FI9FzdDBa5uEZYGL8m+JE/uFgaHKG4
+9qcIoJbiLpkdhLPJ+ysoH5DkfT84fTNvfB1Df4yjMc3et2kBenLOCY5AuefKGREB
+l/QQ7f/z+rGR7JgrOzL2tVLtZT+LmXuitQ8s7j1sKUdlESJhY88EliNVFhcAi/Uj
+vc0T8nmvbZ3O7j9ELRgfVk/S+9X5zD8TDpGIYiwGA/XYudjVQoIraTCm4BaG1QXw
+gX4uU+DczBNEi+rsQGoC
+=ZPIr
 -----END PGP SIGNATURE-----
 
---ZPt4rx8FFjLCG7dd--
+--ulDeV4rPMk/y39in--

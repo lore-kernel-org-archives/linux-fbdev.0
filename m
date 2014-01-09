@@ -1,184 +1,109 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Thu, 23 Jan 2014 14:14:57 +0000
-Subject: [PATCH 05/11] x86: sysfb: store apertures in simplefb platform-data
-Message-Id: <1390486503-1504-6-git-send-email-dh.herrmann@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jan 2014 12:21:58 +0000
+Subject: Re: [PATCH RESEND] drivers: video: metronomefb: avoid out-of-bounds array access
+Message-Id: <52CE9466.3000207@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="QExNdmMHqTkhJLMsRmxnvH3LdfXcokIft"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ingo Molnar <mingo@kernel.org>
+References: <1385743903-9079-1-git-send-email-mpn@google.com>
+In-Reply-To: <1385743903-9079-1-git-send-email-mpn@google.com>
+To: Michal Nazarewicz <mpn@google.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-To get a generic remove_conflicting_framebuffers() for
-firmware-framebuffers, we need to store the apertures in the platform-data
-of each framebuffer. So make x86-sysfb do that for simple-framebuffer
-devices.
+--QExNdmMHqTkhJLMsRmxnvH3LdfXcokIft
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Unfortunately, "struct apertures_struct" contains a VLA so we cannot
-easily embed it. Thus, we have to use a "apert_buf" buffer with enough
-room for one "struct aperture".
-
-Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
----
- arch/x86/include/asm/sysfb.h           |  6 +--
- arch/x86/kernel/sysfb.c                |  2 +-
- arch/x86/kernel/sysfb_simplefb.c       | 68 ++++++++++++++++++++--------------
- include/linux/platform_data/simplefb.h |  1 +
- 4 files changed, 44 insertions(+), 33 deletions(-)
-
-diff --git a/arch/x86/include/asm/sysfb.h b/arch/x86/include/asm/sysfb.h
-index 6f95b8d..4f9fda2 100644
---- a/arch/x86/include/asm/sysfb.h
-+++ b/arch/x86/include/asm/sysfb.h
-@@ -81,8 +81,7 @@ static inline void sysfb_apply_efi_quirks(void)
- 
- bool parse_mode(const struct screen_info *si,
- 		struct simplefb_platform_data *mode);
--int create_simplefb(const struct screen_info *si,
--		    const struct simplefb_platform_data *mode);
-+int create_simplefb(const struct simplefb_platform_data *mode);
- 
- #else /* CONFIG_X86_SYSFB */
- 
-@@ -92,8 +91,7 @@ static inline bool parse_mode(const struct screen_info *si,
- 	return false;
- }
- 
--static inline int create_simplefb(const struct screen_info *si,
--				  const struct simplefb_platform_data *mode)
-+static inline int create_simplefb(const struct simplefb_platform_data *mode)
+On 2013-11-29 18:51, Michal Nazarewicz wrote:
+> From: Michal Nazarewicz <mina86@mina86.com>
+>=20
+> load_waveform function checks whether padding bytes in stuff2a
+> and stuff2b are all zero, but does so by treating those arrays
+> as a single longer array.  Since the structure is packed, and
+> the size sum matches, it all works, but creates some confusion
+> in the code.
+>=20
+> This commit changes the stuff2a and stuff2b arrays into pad1 and
+> pad2 fields such that they cover the same bytes as the arrays
+> covered, and changes the check in the load_waveform function so
+> that the fields are read instead of iterating over an arary.
+>=20
+> It also renames the other =E2=80=9Cstuff=E2=80=9D fields to =E2=80=9Cig=
+nore*=E2=80=9D fields to
+> give them more semantic meaning.
+>=20
+> Signed-off-by: Michal Nazarewicz <mina86@mina86.com>
+> ---
+>  drivers/video/metronomefb.c | 17 ++++++++---------
+>  1 file changed, 8 insertions(+), 9 deletions(-)
+>=20
+> diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
+> index 195cc2d..4f36a2b 100644
+> --- a/drivers/video/metronomefb.c
+> +++ b/drivers/video/metronomefb.c
+> @@ -126,7 +126,7 @@ static struct fb_var_screeninfo metronomefb_var =3D=
  {
- 	return -EINVAL;
- }
-diff --git a/arch/x86/kernel/sysfb.c b/arch/x86/kernel/sysfb.c
-index ba9ff26..fd07b09 100644
---- a/arch/x86/kernel/sysfb.c
-+++ b/arch/x86/kernel/sysfb.c
-@@ -117,7 +117,7 @@ static __init int sysfb_init(void)
- 	/* try to create a simple-framebuffer device */
- 	compatible = parse_mode(si, &mode);
- 	if (compatible) {
--		ret = create_simplefb(si, &mode);
-+		ret = create_simplefb(&mode);
- 		if (!ret)
- 			return 0;
- 	}
-diff --git a/arch/x86/kernel/sysfb_simplefb.c b/arch/x86/kernel/sysfb_simplefb.c
-index a760d47..9338427 100644
---- a/arch/x86/kernel/sysfb_simplefb.c
-+++ b/arch/x86/kernel/sysfb_simplefb.c
-@@ -31,9 +31,12 @@ static const struct simplefb_format formats[] = SIMPLEFB_FORMATS;
- __init bool parse_mode(const struct screen_info *si,
- 		       struct simplefb_platform_data *mode)
- {
-+	struct apertures_struct *apert = (void*)mode->apert_buf;
- 	const struct simplefb_format *f;
-+	unsigned long len;
- 	__u8 type;
- 	unsigned int i;
-+	u64 size;
- 
- 	type = si->orig_video_isVGA;
- 	if (type != VIDEO_TYPE_VLFB && type != VIDEO_TYPE_EFI)
-@@ -41,47 +44,56 @@ __init bool parse_mode(const struct screen_info *si,
- 
- 	for (i = 0; i < ARRAY_SIZE(formats); ++i) {
- 		f = &formats[i];
--		if (si->lfb_depth = f->bits_per_pixel &&
--		    si->red_size = f->red.length &&
--		    si->red_pos = f->red.offset &&
--		    si->green_size = f->green.length &&
--		    si->green_pos = f->green.offset &&
--		    si->blue_size = f->blue.length &&
--		    si->blue_pos = f->blue.offset &&
--		    si->rsvd_size = f->transp.length &&
--		    si->rsvd_pos = f->transp.offset) {
--			mode->format = f->name;
--			mode->width = si->lfb_width;
--			mode->height = si->lfb_height;
--			mode->stride = si->lfb_linelength;
--			return true;
-+		if (si->lfb_depth != f->bits_per_pixel ||
-+		    si->red_size != f->red.length ||
-+		    si->red_pos != f->red.offset ||
-+		    si->green_size != f->green.length ||
-+		    si->green_pos != f->green.offset ||
-+		    si->blue_size != f->blue.length ||
-+		    si->blue_pos != f->blue.offset ||
-+		    si->rsvd_size != f->transp.length ||
-+		    si->rsvd_pos != f->transp.offset)
-+			continue;
-+
-+		/* lfb_size is in bytes except for VLFB it's in 64kb blocks */
-+		size = si->lfb_size;
-+		if (type = VIDEO_TYPE_VLFB)
-+			size <<= 16;
-+
-+		/* don't use lfb_size as it may contain the whole VMEM instead
-+		 * of only the part that is occupied by the framebuffer */
-+		len = si->lfb_height * (unsigned long)si->lfb_linelength;
-+		if (len > size) {
-+			printk(KERN_WARNING "sysfb: VRAM smaller than advertised framebuffer (%llu > %llu)\n",
-+			       (unsigned long long)len,
-+			       (unsigned long long)size);
-+			return false;
- 		}
-+
-+		mode->format = f->name;
-+		mode->width = si->lfb_width;
-+		mode->height = si->lfb_height;
-+		mode->stride = si->lfb_linelength;
-+		apert->count = 1;
-+		apert->ranges[0].base = si->lfb_base;
-+		apert->ranges[0].size = len;
-+		return true;
- 	}
- 
- 	return false;
- }
- 
--__init int create_simplefb(const struct screen_info *si,
--			   const struct simplefb_platform_data *mode)
-+__init int create_simplefb(const struct simplefb_platform_data *mode)
- {
-+	const struct apertures_struct *apert = (void*)mode->apert_buf;
- 	struct resource res;
--	unsigned long len;
--
--	/* don't use lfb_size as it may contain the whole VMEM instead of only
--	 * the part that is occupied by the framebuffer */
--	len = mode->height * mode->stride;
--	len = PAGE_ALIGN(len);
--	if (len > (u64)si->lfb_size << 16) {
--		printk(KERN_WARNING "sysfb: VRAM smaller than advertised\n");
--		return -EINVAL;
--	}
- 
- 	/* setup IORESOURCE_MEM as framebuffer memory */
- 	memset(&res, 0, sizeof(res));
- 	res.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
- 	res.name = simplefb_resname;
--	res.start = si->lfb_base;
--	res.end = si->lfb_base + len - 1;
-+	res.start = apert->ranges[0].base;
-+	res.end = res.start + apert->ranges[0].size - 1;
- 	if (res.end <= res.start)
- 		return -EINVAL;
- 
-diff --git a/include/linux/platform_data/simplefb.h b/include/linux/platform_data/simplefb.h
-index 077303c..21983cc 100644
---- a/include/linux/platform_data/simplefb.h
-+++ b/include/linux/platform_data/simplefb.h
-@@ -59,6 +59,7 @@ struct simplefb_platform_data {
- 	u32 height;
- 	u32 stride;
- 	const char *format;
-+	u8 apert_buf[sizeof(struct apertures_struct) + sizeof(struct aperture)];
- };
- 
- #endif /* __PLATFORM_DATA_SIMPLEFB_H__ */
--- 
-1.8.5.3
+> =20
+>  /* the waveform structure that is coming from userspace firmware */
+>  struct waveform_hdr {
+> -	u8 stuff[32];
+> +	u8 ignore1[32];
+> =20
+>  	u8 wmta[3];
+>  	u8 fvsn;
+> @@ -134,13 +134,14 @@ struct waveform_hdr {
+>  	u8 luts;
+>  	u8 mc;
+>  	u8 trc;
+> -	u8 stuff3;
+> +	u8 ignore2;
+> =20
+>  	u8 endb;
+>  	u8 swtb;
+> -	u8 stuff2a[2];
+> +	u32 pad1; /* u16 halfof(pad1) */
+> =20
+> -	u8 stuff2b[3];
+> +	/* u16 halfof(pad1) */
+> +	u8 pad2;
 
+I don't quite follow what those comments mean...
+
+I know nothing of the hw in question, but I guess there's some reason
+the stuff2a and stuff2b has been separate, and there's even a blank line
+between. If they pad a particular block in the data structure, doesn't
+your change make it confusing?
+
+It wouldn't be too pad to have those 5 fields as separate ones. One u16
+for the stuff2a, and u16 + u8 for the stuff2b. It'd be simple to check
+that those are zero.
+
+ Tomi
+
+
+
+--QExNdmMHqTkhJLMsRmxnvH3LdfXcokIft
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSzpRmAAoJEPo9qoy8lh71QQ4QAIhnFfrJvBwDobmp1uVGW/y5
+vceNq+pMt5MQEWlLgjxNFUS4q6q4OyITYHZqz8qgwkEWQTbay9aHOCrFM7sspc51
+F+hkHEwyOdBOjGC4m8YgHgFxn19QW5mOEiS29XJyuBmgDdJQ/v1KnSqUg/82piQ0
+mUzCCv7nwtR6Q13Y3y7QfrCHAmXEJFuN9kXsCz+r7UlN00WrJ1IfJjqgjZB/K7/S
+LuvZmYFeGy9EuGnOE4aHJAHfaAZ1xg95qf1iPaUvE1kZQH9o/5+QMQjTohAMnTW5
+tKbromuf3TzTlMGKPl1+i0GPdIQT6y+kSqEfDNYHqBdpkw+M0EAdN2+z9cHD7vlL
+SMo/hD6c53qEjchROnecldrZmcMXNf6ZfUeAzkE2vfpvaH99nH9BAlQrN4a0srGa
+iXizVuK/fayVzPd9RIpP3F0lObe11rk15DFVLPti5TBQJPckMNMMNFpraNxvPxML
+wVF4scjqcMwFzH7/sNoyXzhniDU2FPfIk07EmmfeJG8Ow2ycy1DtQKbAu+bfnrPt
+a7Hzs+W4S3jJI8hbRi2ZDRaRUiHvJNaCzTdESEBq3YJ17nuVPVorj2eoeCr0JRRJ
+im3WtsUC8HBz04q0owrQKr6B9YMTb3sb72Wma8nnblAA3ounn3FNhClW16qIsTx5
+XMZKhqor1cxJP2YyzWg0
+=qesP
+-----END PGP SIGNATURE-----
+
+--QExNdmMHqTkhJLMsRmxnvH3LdfXcokIft--

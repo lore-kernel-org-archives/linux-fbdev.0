@@ -1,63 +1,73 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Wed, 08 Jan 2014 15:24:30 +0000
-Subject: Re: [PATCH 1/2] drm/panel: Add support for Samsung LTN101NT05 panel
-Message-Id: <20140108152429.GG21974@ulmo.nvidia.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jan 2014 13:03:33 +0000
+Subject: Re: [PATCH] fbdev: sh_mipi_dsi/sh_mobile_hdmi: clk_round_rate() can return a zero upon error
+Message-Id: <52CE9E25.9080201@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ulDeV4rPMk/y39in"
+Content-Type: multipart/mixed; boundary="saiFwjOveSrAGgmeCH7XScTkPWkBoOTxk"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <f03a644deb858f10affb7b039f9982bac81b02c9.1387656959.git.marvin24@gmx.de>
-In-Reply-To: <f03a644deb858f10affb7b039f9982bac81b02c9.1387656959.git.marvin24@gmx.de>
-To: Marc Dietrich <marvin24@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-tegra@vger.kernel.org, Thierry Reding <treding@nvidia.com>, linux-arm-kernel@lists.infradead.org
+References: <alpine.DEB.2.02.1311261651300.11450@tamien>
+In-Reply-To: <alpine.DEB.2.02.1311261651300.11450@tamien>
+To: linux-fbdev@vger.kernel.org
 
-
---ulDeV4rPMk/y39in
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--saiFwjOveSrAGgmeCH7XScTkPWkBoOTxk
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Dec 21, 2013 at 09:38:12PM +0100, Marc Dietrich wrote:
-> The Samsung LNT101NT05 10.1" WXVGA panel can be supported by the simple p=
-anel
-> driver.
+On 2013-11-27 02:53, Paul Walmsley wrote:
 >=20
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: David Airlie <airlied@linux.ie>
-> Signed-off-by: Marc Dietrich <marvin24@gmx.de>
+> Treat both negative and zero return values from clk_round_rate() as
+> errors.  This is needed since subsequent patches will convert
+> clk_round_rate()'s return value to be an unsigned type, rather than a
+> signed type, since some clock sources can generate rates higher than
+> (2^31)-1 Hz.
+>=20
+> Eventually, when calling clk_round_rate(), only a return value of zero
+> will be considered a error.  All other values will be considered valid
+> rates.  The comparison against values less than 0 is kept to preserve
+> the correct behavior in the meantime.
+>=20
+> Signed-off-by: Paul Walmsley <pwalmsley@nvidia.com>
+> Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+> Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 > ---
-> This isn't strickly required to get the panel up, but Thierry suggested o=
-n IRC to
-> include it anyway, in case someone else has some use for it.
+>=20
+> Applies on v3.13-rc1.  See also:
 
-For the record: the reason this isn't strictly needed is because there's
-an EDID that can be probed to get the video timings. But the panel still
-can be supported using the timings from the datasheet. One example where
-this would be useful is when the EDID isn't connected or simply broken.
+I'm not able to apply this, I'm just getting "patch doesn't apply". I
+tried both the patch saved from my email client, and the patch from
+patchworks...
 
-That said: applied, thanks!
+Can you rebase to, say, rc6, and resend?
 
-Thierry
+ Tomi
 
---ulDeV4rPMk/y39in
-Content-Type: application/pgp-signature
+
+
+--saiFwjOveSrAGgmeCH7XScTkPWkBoOTxk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJSzW2tAAoJEN0jrNd/PrOhXaMP/38NU0fvKjjQV0AFLuZakbMo
-b5oIduYQlcwJ2BdtCC5i9Q4sxV1TjS1n5EO5tSQTJfqs2139G/MK1BfkgfNeuOVU
-VCBdPgT6Ds+csRwmbs6rIJgCWzAiLSBJJkyR8hYF23l8Pk2tRtB6sayuUDXVefGW
-dNBIRcKSruM2qllW8RtB3ptyoJBhCXfym2Q7BALw0ELaPdKyVp18P4gv31BCGv7T
-FLvy7X54Y55K4/9l2HTas+Xi/n+R7qks49+YpdTcxWbMqWqpjPDqUGSgTXkwwJgb
-u0QnKnaONAQh41WfxMJhKaBTm3ii/RquC69A1FtxQ3DDoE/+/YP15TPOQiO7mczy
-zDGhDdE1Se87U/shH2oG7q4X3/RqfddmAQOyV1shScF8vfcYu46dACu/MgTrpxJC
-epwFn25r240aIj5I5ZCesHl8Ge+3cs9ei6FI9FzdDBa5uEZYGL8m+JE/uFgaHKG4
-9qcIoJbiLpkdhLPJ+ysoH5DkfT84fTNvfB1Df4yjMc3et2kBenLOCY5AuefKGREB
-l/QQ7f/z+rGR7JgrOzL2tVLtZT+LmXuitQ8s7j1sKUdlESJhY88EliNVFhcAi/Uj
-vc0T8nmvbZ3O7j9ELRgfVk/S+9X5zD8TDpGIYiwGA/XYudjVQoIraTCm4BaG1QXw
-gX4uU+DczBNEi+rsQGoC
-=ZPIr
+iQIcBAEBAgAGBQJSzp4lAAoJEPo9qoy8lh71xvEP/jgYUzXgYTxC0ldx+KhaVHeY
+HQCUUF7CDLNvqHd6EIiRD9OUMfAWUAuDTFwEZcW63g3RSuS/PU46GxFFK97CQBai
+CJL30scaQ/3EqYkjZL3HpCPcnMFLFqZjlVEvcJp4Wq3Wpin+iYtiot04UFEmA2Pn
+s3n6wNl5aoBJW/71UKADNbBu6AMLEY9kLz+JDDL0GfA5tFCm+2Jj/jbAyTMVkRT1
+aWXU4BRsZYKKuNgkaOhectlKSHDLPDcna+PJjk5wcg5t5C4gPQVJB9y9ptsbwHgm
+eGxHTBMnLc1JxQz/PPgjrcV3WMXekFRDfGCey6Jk6nkcbaqeGoHBxm5fRaX717Ct
+eLW31bsIbXaaU8bSQeDKQY/2wokOZOT3tx+LWiT++kRh/zE6OIgw7THKyvqsBZNR
+s7UGvyD2fcJlUhC8r6TitjrG7tTmNk5n3+eky2y7cNgWxIhP6bgeKJcdCywDQkd9
+GYBQnQEJCruJLpDdPj8xCjCjZIxPk7mt+AiFMW2RxAi4VMG3ToMRLJKl/Oqfpz9w
+mekEZitgAjHDxvqjpurFRSzokrfZ02v5OyAdAlFO25GGwk6xtGfNA44c48YPnKwJ
+ATwGp1nSToF+vlFK8a5or841r+6cX+Dr8DxruE4RExPqsizQUZi76tRxBDGlkprX
+qb4e2eRrPxSadHfjRh6D
+=TfJY
 -----END PGP SIGNATURE-----
 
---ulDeV4rPMk/y39in--
+--saiFwjOveSrAGgmeCH7XScTkPWkBoOTxk--

@@ -1,57 +1,60 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 10 Jan 2014 11:27:59 +0000
-Subject: Re: [PATCH] video: amba-clcd: Make CLCD driver available on more platforms
-Message-Id: <52CFD93F.7010502@ti.com>
+Date: Fri, 10 Jan 2014 12:37:40 +0000
+Subject: Re: [PATCHv5][ 1/5] fbdev: Add the lacking FB_SYNC_* for matching the DISPLAY_FLAGS_*
+Message-Id: <52CFE994.8070701@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="EB2dV6ulTV1hCh9xCrBB27lXDCnB10OCB"
+Content-Type: multipart/mixed; boundary="54oGju9Ce64a7esMqsIwnSFc4gAgWX6n7"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386868390-12231-1-git-send-email-broonie@kernel.org>
-In-Reply-To: <1386868390-12231-1-git-send-email-broonie@kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <1383915693-9422-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1383915693-9422-1-git-send-email-denis@eukrea.com>
+To: linux-arm-kernel@lists.infradead.org
 
---EB2dV6ulTV1hCh9xCrBB27lXDCnB10OCB
-Content-Type: text/plain; charset=ISO-8859-1
+--54oGju9Ce64a7esMqsIwnSFc4gAgWX6n7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 2013-12-12 19:13, Mark Brown wrote:
-> From: Mark Brown <broonie@linaro.org>
->=20
-> The CLCD driver is used on ARM reference models for ARMv8 so add ARM64
-> to the list of dependencies. The driver also has no build time dependen=
-cies
-> on ARM (stubs are provided for ARM-specific DMA functions in the code) =
-so
-> make it available with COMPILE_TEST in order to maximise build coverage=
-=2E
->=20
-> Signed-off-by: Mark Brown <broonie@linaro.org>
-> ---
->  drivers/video/Kconfig | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 4f2e1b35eb38..e6c7fb1a389b 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -312,7 +312,8 @@ config FB_PM2_FIFO_DISCONNECT
-> =20
->  config FB_ARMCLCD
->  	tristate "ARM PrimeCell PL110 support"
-> -	depends on FB && ARM && ARM_AMBA
-> +	depends on ARM || ARM64 || COMPILE_TEST
-> +	depends on FB && ARM_AMBA
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
->=20
+On 2013-11-08 15:01, Denis Carikli wrote:
+> Without that fix, drivers using the fb_videomode_from_videomode
+>   function will not be able to get certain information because
+>   some DISPLAY_FLAGS_* have no corresponding FB_SYNC_*.
 
-Queued for 3.14.
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index ffac70a..cf2ad5d 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -45,6 +45,9 @@ struct device_node;
+>  #define FB_SIGNAL_SYNC_ON_GREEN	8
+>  #define FB_SIGNAL_SERRATION_ON	16
+> =20
+> +#define FB_SYNC_DE_HIGH_ACT     64      /* data enable active high fla=
+g */
+> +#define FB_SYNC_PIXDAT_HIGH_ACT 128     /* drive data on positive edge=
+ */
+> +
+>  #define FB_MISC_PRIM_COLOR	1
+>  #define FB_MISC_1ST_DETAIL	2	/* First Detailed Timing is preferred */
+>  struct fb_chroma {
+
+I don't think this is better than the previous version where
+FB_SYNC_DE_HIGH_ACT and FB_SYNC_PIXDAT_HIGH_ACT were in
+include/uapi/linux/fb.h. Now those flag defines are not visible to the
+userspace, but the actual flags are still visible from the var->sync fiel=
+d.
+
+It's true what Russell replied to the previous version, that the
+userspace has no idea how to handle those new flags. But then again, for
+LCDs, the userspace has no idea how to handle, say, hsync polarity either=
+=2E
+
+In any case, splitting the FB_SYNC_ defines into uapi and
+kernel-internal header files, but still giving the kernel-internal
+values to userspace is surely wrong.
 
  Tomi
 
 
 
---EB2dV6ulTV1hCh9xCrBB27lXDCnB10OCB
+--54oGju9Ce64a7esMqsIwnSFc4gAgWX6n7
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -60,19 +63,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.14 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJSz9k/AAoJEPo9qoy8lh71GBEQAK1wbp4hw7Eh7f0/5Jqq/TZw
-WfWz2Ha6QVrn9VoIILOaG/yhWlTofHCfqL/wdbmVU9F7XT4dKyfHh2kbEkl+jq6s
-2VNbefDUN+1XF4tUtVWXYuzHzhtexcez4uZxMAp918H/KYH8jxoX2zPkPWkEWr8H
-QXNu/+yRjmXqFZuqGXM2EsGcN4nyQCBkUX6TIDurdWvtWVPX2c1uupw8tuUH4miS
-pMo62V3mhCT71m+eGMRERvgT8WSKI3S2yzpG/i2al6E//IjCx5XTbKnuYYYb1Vog
-0DxxEZPAktAL3W6WQbaNbiTu4XyCs+2YDnK1a+8+kmuO/6YEtqP7LMFWylrUdZGm
-BS/NVpHlzO0AzuTxvx3BcgBw4bmL4YAvXT3kBGKvrVhOG4XuK4UERTqS4VMUvFEj
-VJcpxUkHLWdyMJ3FntShJbGcguQUXA/f9e8uYbbgJPbEBuP8u6YI3Ke6HU+tHO88
-UQO5zn6xWxyyjg474CIAH8xQQIevefvV+jX63dcatUuPwbXnbaRsRQKNxlW/1vJb
-2WOilrUbyV6yptUzgVJp89KvG6wp7HX+O6BhUHaIET6KXDNDf8zHVsgzJo/npAey
-pPd32dCoJJDVsXa1xBOKn8tBo1Ig3WrQc+g38SluEgguaw6TVt2JBc+Bp+3mtJw1
-7iMWn4RNetzSscjBQOmP
-=7tJ2
+iQIcBAEBAgAGBQJSz+mUAAoJEPo9qoy8lh71M9AQAKpDgPFbRtA+/fDwoxJLE8hy
+n3oH+yhCoBb70py93+YWidj6hnMBiFO6+feB9/Cstyo9Lq5t9MJR4FlRlGACZ1ux
+0R5SSTivUJb4wbepc58LhyuJWSECEwsqnkA104ZTTRSnL4pkosd7q+hljid7qs7+
+b2KCej0MRzL7rbt6QDu39sT32T108QL2mcqkgmW7lrG+X1968B998p+lt4VZ04vC
+P2qzmXTot/5JTNDwUTDDHKzODym5+X8MgzdBl0pfdA+bN0O7O8rogWxwv27nyoNi
+T0Ac2eWmdegt2wHvmby8rQAn0F3M8YwcjHAKtRu7+IylsVqLIRFlno2njbYs5Pf0
+OSMWp8iU/3OBIT1gCvRu9lWILWT7vvV/PpIZS2okD+CxPDlIrxqc7XSQKqkCiDeS
+2gn1vTJybJwe3aQsh38nQExuM1dYATyoA4O2dlfMRkaJSMVLN0zefqWj5pFgk8sQ
+sPo2t5pfJolmFindON8aem3xRXQk+DGfkS4Ee9AVrDbGqI7KSNC6pxYNhNIzk2Oo
+nnnV8dMaEG8Y6No3xh/jY/FqSvl/24xvnWM7T7u9yXMXWjjX7caORDcrMoOTQAT7
+6yU1VberKhzrx9fkPxRCna9qyCJINI2abOc0iDJ7XqyaqnZFJ6upTnT+Oioe9OC1
+X0vWpqlwVHlv2VpQrXoQ
+=3Fm9
 -----END PGP SIGNATURE-----
 
---EB2dV6ulTV1hCh9xCrBB27lXDCnB10OCB--
+--54oGju9Ce64a7esMqsIwnSFc4gAgWX6n7--

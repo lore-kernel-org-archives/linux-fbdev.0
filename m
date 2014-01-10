@@ -1,50 +1,76 @@
-From: Sebastian Reichel <sre@debian.org>
-Date: Tue, 21 Jan 2014 15:28:31 +0000
-Subject: Re: [PATCHv3 39/41] Doc/DT: Add DT binding documentation for Sony acx565akm panel
-Message-Id: <20140121152830.GB5983@earth.universe>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 10 Jan 2014 11:56:06 +0000
+Subject: Re: [PATCH] video/logo: Remove MIPS-specific include section
+Message-Id: <52CFDFD6.8090006@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="SkvwRMAIpAhPCcCJ"
+Content-Type: multipart/mixed; boundary="8KjpcTeU1MJM80E72GwlgrCSqwr4a0pIO"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
- <1390301833-24944-40-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1390301833-24944-40-git-send-email-tomi.valkeinen@ti.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1383554550-20901-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1383554550-20901-1-git-send-email-geert@linux-m68k.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Ralf Baechle <ralf@linux-mips.org>, linux-fbdev@vger.kernel.org, linux-mips@linux-mips.org
 
-
---SkvwRMAIpAhPCcCJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--8KjpcTeU1MJM80E72GwlgrCSqwr4a0pIO
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jan 21, 2014 at 12:57:11PM +0200, Tomi Valkeinen wrote:
-> Add DT binding documentation for Sony acx565akm panel
+On 2013-11-04 10:42, Geert Uytterhoeven wrote:
+> Since commit 41702d9a4fffa9e25b2ad9d4af09b3013fa155e1 ("logo.c: get rid=
+ of
+> mips_machgroup") there's no longer a need to include <asm/bootinfo.h> o=
+n
+> MIPS.
 >=20
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+>  drivers/video/logo/logo.c |    4 ----
+>  1 file changed, 4 deletions(-)
+>=20
+> diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
+> index 080c35b34bbb..b670cbda38e3 100644
+> --- a/drivers/video/logo/logo.c
+> +++ b/drivers/video/logo/logo.c
+> @@ -17,10 +17,6 @@
+>  #include <asm/setup.h>
+>  #endif
+> =20
+> -#ifdef CONFIG_MIPS
+> -#include <asm/bootinfo.h>
+> -#endif
+> -
+>  static bool nologo;
+>  module_param(nologo, bool, 0);
+>  MODULE_PARM_DESC(nologo, "Disables startup logo");
+>=20
 
-Reviewed-by: Sebastian Reichel <sre@debian.org>
+Queued for 3.14.
 
--- Sebastian
+ Tomi
 
---SkvwRMAIpAhPCcCJ
+
+
+--8KjpcTeU1MJM80E72GwlgrCSqwr4a0pIO
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJS3pIeAAoJENju1/PIO/qaloYQAIiDHiTTO8e7Gjd4irx1GICP
-5dZ4uIBOEfmHrzQ+yiU4QI3Y3v6PrZr+m8jMiQBiNotxTwLnEU5ocX45fyREeDDx
-G9MbKZWyDWr1ils1/Qqn9FAil7WB14pgUhek+VYlAWq+i2i+yAiNSL+3tsjb9/A6
-s4hrlgqLMS+VJbHuBf6/vVr2UVaTyancAfOD3mbhYnMoamDn87v125bzVmsSnlZy
-zgvHGIDOs5GDSqXxcg2R/87wmNTf7oFRBxCJujDPNkqz1alYZqApchZRIVfWf7Ua
-lBb0Rz1B5sVLavdigBhzaNIXvLOiCCmMPhRiPFt9oP+t1gFwFtQCT4Jw8t8HSEAz
-Wd/xIhkgSsceqVLPThV9XPyXZbJGC7VAWGy87qzDMyq+emMvYpRAJ6HWr5RqUCal
-mQsphuEkuDso67eovfBDUoyIoB/1J5imdmMv5YoCLEHWDJffDiQQz4HhYKrY8NfJ
-dWwxmHw5JVFhCTh7Y1kw07uwc7fTkKyyKxa1xNfURf22jEYcOace3wsPzCEN5DW/
-2MWBDtx6DMSDszbwi+R6+PNhIZOe9d0ToAR8Muw41sNn56XMwBNSuMqzffIQge2P
-jCpIbjwiDtJVCCg27Ex9L+kJhweeM3aL5DnvIs38DM2HPPpborZTFymYUdYWNTOf
-G81ZAr83jnq/ZiiFy/H6
-=iIpc
+iQIcBAEBAgAGBQJSz9/WAAoJEPo9qoy8lh71c/0P/j0iSGTh1uodjhJ1MQG4oL0L
+pOeKJgfeyLqZRcPiKXzYuau//hqNbrDGlGkKws1yI2S5Q7JoFdJheAnGG8q/NApx
+WTi6eYly+CyyVEqLMXCSZE+rJ1basIIn/bh2aeLwSJ1xodErVT4IrsUOfSvyd9Im
+xP1RXr3hEH398bY2U8VmtKaV0dKbZgGkTiKgSozyQtS8xaArv603qpyB50s08wCz
+yLU4ZXtdMLlkTfm7f5VusbNRpqR9hvHhD13YJ5wdFshtfTkLWJteCW7TJayra1UG
+XLsrWNfQ20+VpeVcxOUdAOQPOgg7G1D+FIA1s+JD7q/1EsGB6Hnm4ZpwdCuPnYEi
+l9VYPROTjgIXfC+XTSXKaqEaGCk5KmTqTb+B32BJ3YZbYjbEkipIl3gCyak/frf7
+qz34hBCtqcMUa4C/rDpIMFXR/SDgyL7tLg3mJXu8PsZqhkRE3pfv4CxctLCv36+x
+/7hHAgbUkFl/YdeIm5viLHBe5gDLzRNSvXdsbiBlQQqzF9QrvVtjOKZQSWM7iYoc
+Dr9gdmFwggXO/ARIsKe0dIewPhNuVBdJdsXYlzBPnxD45jMKpGcJ21dScDLNHfA4
+O70LfWW51wya3PZ1ey5sVN+dRBV3HdEqHGx2UR6qripPrTku/jL5GVpErLPqSE2m
+jqERWGabD/x68GUOlN+C
+=zDEo
 -----END PGP SIGNATURE-----
 
---SkvwRMAIpAhPCcCJ--
+--8KjpcTeU1MJM80E72GwlgrCSqwr4a0pIO--

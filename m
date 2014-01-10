@@ -1,71 +1,64 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Thu, 23 Jan 2014 14:14:56 +0000
-Subject: [PATCH 04/11] fbdev: vesafb: add dev->remove() callback
-Message-Id: <1390486503-1504-5-git-send-email-dh.herrmann@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 10 Jan 2014 12:08:27 +0000
+Subject: Re: [PATCH v4] video: add OpenCores VGA/LCD framebuffer driver
+Message-Id: <52CFE2BB.8090004@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="lnC0LCFNacpbQCeEtLxq3qLhp33CjaLtq"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ingo Molnar <mingo@kernel.org>
+References: <1385739911-6541-1-git-send-email-stefan.kristiansson@saunalahti.fi>
+In-Reply-To: <1385739911-6541-1-git-send-email-stefan.kristiansson@saunalahti.fi>
+To: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: plagnioj@jcrosoft.com
 
-If x86-sysfb platform-devices are removed from a system, we should
-properly unload vesafb. Otherwise, we end up releasing the parent while
-our vesa framebuffer is still running. This currently works just fine, but
-will cause problems on handover to real hw. So add the ->remove() callback
-and unregister vesafb.
+--lnC0LCFNacpbQCeEtLxq3qLhp33CjaLtq
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
----
- drivers/video/vesafb.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+Hi,
 
-diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
-index 1c7da3b..6170e7f 100644
---- a/drivers/video/vesafb.c
-+++ b/drivers/video/vesafb.c
-@@ -179,7 +179,6 @@ static void vesafb_destroy(struct fb_info *info)
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
- 	release_mem_region(info->apertures->ranges[0].base, info->apertures->ranges[0].size);
--	framebuffer_release(info);
- }
- 
- static struct fb_ops vesafb_ops = {
-@@ -297,6 +296,7 @@ static int vesafb_probe(struct platform_device *dev)
- 		release_mem_region(vesafb_fix.smem_start, size_total);
- 		return -ENOMEM;
- 	}
-+	platform_set_drvdata(dev, info);
- 	info->pseudo_palette = info->par;
- 	info->par = NULL;
- 
-@@ -499,12 +499,23 @@ err:
- 	return err;
- }
- 
-+static int vesafb_remove(struct platform_device *pdev)
-+{
-+	struct fb_info *info = platform_get_drvdata(pdev);
-+
-+	unregister_framebuffer(info);
-+	framebuffer_release(info);
-+
-+	return 0;
-+}
-+
- static struct platform_driver vesafb_driver = {
- 	.driver = {
- 		.name = "vesa-framebuffer",
- 		.owner = THIS_MODULE,
- 	},
- 	.probe = vesafb_probe,
-+	.remove = vesafb_remove,
- };
- 
- module_platform_driver(vesafb_driver);
--- 
-1.8.5.3
+On 2013-11-29 17:45, Stefan Kristiansson wrote:
+> This adds support for the VGA/LCD core available from OpenCores:
+> http://opencores.org/project,vga_lcd
+>=20
+> The driver have been tested together with both OpenRISC and
+> ARM (socfpga) processors.
+>=20
+> Signed-off-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
 
+If I'm not mistaken, this driver has been designed so that there can
+only be one VGA/LCD core device on the system.
+
+It would be better to get rid of those static structs, and have the
+driver data per device as it should. That way the driver works even with
+multiple VGA/LCD cores (although the video mode module option is a bit
+odd in that case).
+
+ Tomi
+
+
+
+--lnC0LCFNacpbQCeEtLxq3qLhp33CjaLtq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSz+K7AAoJEPo9qoy8lh71S2gP/0Y3dGoTCXCdl9qd2Q2TWHZg
+qC6hEXHdoEtPKQ3/CbKLl81S17AScG0Vra+Z/eTFaC/Bn2iSTrn4WY6yScZkdikY
+qDHIGqhvmtbK8Pftc7xuGpGOAvvSF9ejKkF+I/ee5gXDLqlQzFgAWhi+Z68TA50t
+6AoCrWES+HoRruAbG4rBsryuz7vfaTSXOFpojEITSZUCeVxkGuM5q+F9iHJUQZiy
+efjWGDqbgBQ5yL79FcFhsSaF8CU48GPFQGSn3BYFNKTpv1dHSpFTGHq5sXrAk0eX
+I06YR7RLLrXvlMkaTcQtTySp0TwlNZ+D5IoI3RA3kMzgSP+v62OSo05Riz83M2v0
+frtqEo2fZ/mU8vrfxdTGBY1DLUQJ3++m2fI9gk8y2MYm6uXA8j6mAzdXny7nfhhu
+RPFbffyeBdnzR45UTOFeE9uIwgg/9MsmIKXpK0iHr9euArmoreoRVwlNOXmJGhfS
+odb64r17F/oMrmfy5Nv5BClX8tKmaPjTpuWfFvROUpDANAvw0U7N747RZNa4R1GR
+7C/UFI8kD+KhFVlV1pQ5kEsBp88xWYLHQwpgK0CKC8/LzHbvtg028jpf4Sixh+Hp
+DJ5pLIPjQmeOyJ0DLLWf3yesWnoj/mp3asfAXHgqIjWccAEBTGtetN9CyCJfKm9N
+CmNyK2iasCSpQlZjQ+ad
+=v/JJ
+-----END PGP SIGNATURE-----
+
+--lnC0LCFNacpbQCeEtLxq3qLhp33CjaLtq--

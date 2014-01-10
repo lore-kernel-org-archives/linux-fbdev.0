@@ -1,104 +1,78 @@
-From: 'Sascha Hauer' <s.hauer@pengutronix.de>
-Date: Fri, 10 Jan 2014 09:07:40 +0000
-Subject: Re: [PATCH] video: mmp: add device tree support
-Message-Id: <20140110090739.GZ6750@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 10 Jan 2014 11:27:59 +0000
+Subject: Re: [PATCH] video: amba-clcd: Make CLCD driver available on more platforms
+Message-Id: <52CFD93F.7010502@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="EB2dV6ulTV1hCh9xCrBB27lXDCnB10OCB"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389244394-10779-1-git-send-email-zzhu3@marvell.com>
- <20140109073158.GM6750@pengutronix.de>
- <000301cf0d0e$91f29090$b5d7b1b0$%han@samsung.com>
- <52CE9165.7050002@marvell.com>
-In-Reply-To: <52CE9165.7050002-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Zhou Zhu <zzhu3-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
-Cc: Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, 'Tomi Valkeinen' <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, 'Jean-Christophe Plagniol-Villard' <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, 'Haojian Zhuang' <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Chao Xie <cxie4-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Guoqing Li <ligq-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+References: <1386868390-12231-1-git-send-email-broonie@kernel.org>
+In-Reply-To: <1386868390-12231-1-git-send-email-broonie@kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-On Thu, Jan 09, 2014 at 08:09:09PM +0800, Zhou Zhu wrote:
-> Sascha/Jingoo,
-> Thank you for your review!
-> 
-> On 01/09/2014 03:43 PM, Jingoo Han wrote:
-> >On Thursday, January 09, 2014 4:32 PM, Sascha Hauer wrote:
-> >>On Thu, Jan 09, 2014 at 01:13:14PM +0800, Zhou Zhu wrote:
-> >>>add device tree support for mmp fb/controller
-> >>>the description at Documentation/devicetree/bindings/fb/mmp-disp.txt
-> >>>
-> >>>Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
-> >>>---
-> >>>  Documentation/devicetree/bindings/fb/mmp-disp.txt |   71 ++++++++++++
-> >>>  drivers/video/mmp/fb/mmpfb.c                      |   71 ++++++++----
-> >>>  drivers/video/mmp/hw/mmp_ctrl.c                   |  120 ++++++++++++++++-----
-> >>>  3 files changed, 217 insertions(+), 45 deletions(-)
-> >>>  create mode 100644 Documentation/devicetree/bindings/fb/mmp-disp.txt
-> >>>
-> 
-> [...]
-> 
-> >>+fb: fb {
-> >>+	compatible = "marvell,mmp-fb";
-> >
-> >This compatible should have the specific SoC name in it, not just
-> >'mmp'. Otherwise you can't properly distinguish between this version and
-> >future versions of the mmp core.
-> >
-> We are using a same display IP for all mmp serial SoCs, and there
-> would be inside register to get version. So I am planning put same
-> compatible here for all SoCs using this IP.
-> Would it be ok if I update compatible to "marvell,mmpdcx-fb"?
-> "mmpdcx" is the IP name.
+--EB2dV6ulTV1hCh9xCrBB27lXDCnB10OCB
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Using the SoC name is really good practice. This way you can add SoC
-specific data to the compatible entry in the driver. Most bindings I've
-seen which bind to some more generic string tend to add some additional
-properties to the binding like marvell,has-new-feature or
-marvell,needs-workaround-for-xy which you don't need at all if you bind
-to the specific SoC in the first place.
+On 2013-12-12 19:13, Mark Brown wrote:
+> From: Mark Brown <broonie@linaro.org>
+>=20
+> The CLCD driver is used on ARM reference models for ARMv8 so add ARM64
+> to the list of dependencies. The driver also has no build time dependen=
+cies
+> on ARM (stubs are provided for ARM-specific DMA functions in the code) =
+so
+> make it available with COMPILE_TEST in order to maximise build coverage=
+=2E
+>=20
+> Signed-off-by: Mark Brown <broonie@linaro.org>
+> ---
+>  drivers/video/Kconfig | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 4f2e1b35eb38..e6c7fb1a389b 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -312,7 +312,8 @@ config FB_PM2_FIFO_DISCONNECT
+> =20
+>  config FB_ARMCLCD
+>  	tristate "ARM PrimeCell PL110 support"
+> -	depends on FB && ARM && ARM_AMBA
+> +	depends on ARM || ARM64 || COMPILE_TEST
+> +	depends on FB && ARM_AMBA
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+>=20
 
-If you insist on a generic binding you can still do a
+Queued for 3.14.
 
-	compatible = "marvell,soc-xy-fb", "marvell,mmp-fb";
-
-This way you at least have the SoC information around (even in old
-devicetrees) should you need it in the future.
-
-BTW I've seen often enough that the version register is at a different
-location on newer generations which makes it pretty useless.
-
-> >> +	interrupts = <0 41 0x4>;
-> >> +	marvell,disp-name = "mmp_disp";
-> >> +	marvell,path-num = <1>;
-> >> +	marvell,clk-name = "LCDCIHCLK";
-> >
-> > Don't pass clk names like this. We have a documented clock binding, use
-> > it.
-> >
-> The patches to add dt support in common clk in our platforms are not
-> upstreamed yet. As there's only one clock in this device, could I
-> remove clock name related codes and direct use: devm_clk_get(dev,
-> NULL)?
-
-The clock name is defined by the device you are implementing, *not*
-the name of the clock in the SoC. So if you have:
-
-                                     ----------------------
-   ---------  LCDCIHCLK             |            MMP       |
-  | OSC/PLL |-----------------------|>pixclk               |
-  ----------                        |                      |
-                                     ----------------------
+ Tomi
 
 
-You have to do clk_get(dev, "pixclk") because you want to get the
-clock associated to the pixclk input. Doing clk_get(dev, "LCDCIHCLK")
-is wrong because that may change in future SoCs.
-If you do this correctly there is no need to put the clk name into the
-devicetree. You only have to put the information "which clk is connected
-to the pixclk input of the MMP" into the devicetree.
 
-Sascha
+--EB2dV6ulTV1hCh9xCrBB27lXDCnB10OCB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSz9k/AAoJEPo9qoy8lh71GBEQAK1wbp4hw7Eh7f0/5Jqq/TZw
+WfWz2Ha6QVrn9VoIILOaG/yhWlTofHCfqL/wdbmVU9F7XT4dKyfHh2kbEkl+jq6s
+2VNbefDUN+1XF4tUtVWXYuzHzhtexcez4uZxMAp918H/KYH8jxoX2zPkPWkEWr8H
+QXNu/+yRjmXqFZuqGXM2EsGcN4nyQCBkUX6TIDurdWvtWVPX2c1uupw8tuUH4miS
+pMo62V3mhCT71m+eGMRERvgT8WSKI3S2yzpG/i2al6E//IjCx5XTbKnuYYYb1Vog
+0DxxEZPAktAL3W6WQbaNbiTu4XyCs+2YDnK1a+8+kmuO/6YEtqP7LMFWylrUdZGm
+BS/NVpHlzO0AzuTxvx3BcgBw4bmL4YAvXT3kBGKvrVhOG4XuK4UERTqS4VMUvFEj
+VJcpxUkHLWdyMJ3FntShJbGcguQUXA/f9e8uYbbgJPbEBuP8u6YI3Ke6HU+tHO88
+UQO5zn6xWxyyjg474CIAH8xQQIevefvV+jX63dcatUuPwbXnbaRsRQKNxlW/1vJb
+2WOilrUbyV6yptUzgVJp89KvG6wp7HX+O6BhUHaIET6KXDNDf8zHVsgzJo/npAey
+pPd32dCoJJDVsXa1xBOKn8tBo1Ig3WrQc+g38SluEgguaw6TVt2JBc+Bp+3mtJw1
+7iMWn4RNetzSscjBQOmP
+=7tJ2
+-----END PGP SIGNATURE-----
+
+--EB2dV6ulTV1hCh9xCrBB27lXDCnB10OCB--

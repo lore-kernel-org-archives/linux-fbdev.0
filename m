@@ -1,103 +1,63 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Jan 2014 10:56:53 +0000
-Subject: [PATCHv3 21/41] OMAPDSS: acx565akm: Add DT support
-Message-Id: <1390301833-24944-22-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 10 Jan 2014 11:24:13 +0000
+Subject: Re: [PATCH] fbcon: Avoid corrupting active workqueue entries
+Message-Id: <52CFD85D.8020204@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="H2GGRhx48DCGMT74M90Hepwkd3rLcbc52"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+References: <1387290459-26440-1-git-send-email-chris@chris-wilson.co.uk>
+In-Reply-To: <1387290459-26440-1-git-send-email-chris@chris-wilson.co.uk>
+To: Chris Wilson <chris@chris-wilson.co.uk>, intel-gfx@lists.freedesktop.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, stable@vger.kernel.org
 
-From: Sebastian Reichel <sre@debian.org>
+--H2GGRhx48DCGMT74M90Hepwkd3rLcbc52
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Add DT support for panel-sony-acx565akm
+Hi,
 
-Signed-off-by: Sebastian Reichel <sre@debian.org>
-[tomi.valkeinen@ti.com: some modifications]
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- .../omap2/displays-new/panel-sony-acx565akm.c      | 33 +++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
+On 2013-12-17 16:27, Chris Wilson wrote:
+> We attempt to reschedule an active work which can itself corrupt the
+> workqueue lists, and we may then free the work item whilst the task is
+> still pending. Both of these may lead to a system deadlock and an
+> unresponsive machine without any outputs for a panic to even be shown.
 
-diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-index 8e97d06921ff..8d2745ce55e3 100644
---- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-+++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-@@ -30,6 +30,8 @@
- #include <linux/backlight.h>
- #include <linux/fb.h>
- #include <linux/gpio.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
- 
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -547,7 +549,9 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
- 	dev_dbg(&ddata->spi->dev, "%s\n", __func__);
- 
- 	in->ops.sdi->set_timings(in, &ddata->videomode);
--	in->ops.sdi->set_datapairs(in, ddata->datapairs);
-+
-+	if (ddata->datapairs > 0)
-+		in->ops.sdi->set_datapairs(in, ddata->datapairs);
- 
- 	r = in->ops.sdi->enable(in);
- 	if (r) {
-@@ -726,6 +730,22 @@ static int acx565akm_probe_pdata(struct spi_device *spi)
- 	return 0;
- }
- 
-+static int acx565akm_probe_of(struct spi_device *spi)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
-+	struct device_node *np = spi->dev.of_node;
-+
-+	ddata->reset_gpio = of_get_gpio(np, 0);
-+
-+	ddata->in = omapdss_of_find_source_for_first_ep(np);
-+	if (IS_ERR(ddata->in)) {
-+		dev_err(&spi->dev, "failed to find video source\n");
-+		return PTR_ERR(ddata->in);
-+	}
-+
-+	return 0;
-+}
-+
- static int acx565akm_probe(struct spi_device *spi)
- {
- 	struct panel_drv_data *ddata;
-@@ -753,7 +773,12 @@ static int acx565akm_probe(struct spi_device *spi)
- 		r = acx565akm_probe_pdata(spi);
- 		if (r)
- 			return r;
-+	} else if (spi->dev.of_node) {
-+		r = acx565akm_probe_of(spi);
-+		if (r)
-+			return r;
- 	} else {
-+		dev_err(&spi->dev, "platform data missing!\n");
- 		return -ENODEV;
- 	}
- 
-@@ -864,10 +889,16 @@ static int acx565akm_remove(struct spi_device *spi)
- 	return 0;
- }
- 
-+static const struct of_device_id acx565akm_of_match[] = {
-+	{ .compatible = "omapdss,sony,acx565akm", },
-+	{},
-+};
-+
- static struct spi_driver acx565akm_driver = {
- 	.driver = {
- 		.name	= "acx565akm",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = acx565akm_of_match,
- 	},
- 	.probe	= acx565akm_probe,
- 	.remove	= acx565akm_remove,
--- 
-1.8.3.2
+This gives the following warning:
 
+drivers/video/console/fbcon.c:407:20: warning: unused variable =91ops=92
+[-Wunused-variable]
+
+I can fix that. Or maybe it's better if you send a v2 with that fixed,
+so that this gets properly to stable-kernel.
+
+However, I wouldn't mind an acked-by or reviewed-by from someone.
+
+ Tomi
+
+
+
+--H2GGRhx48DCGMT74M90Hepwkd3rLcbc52
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSz9hdAAoJEPo9qoy8lh71B9EQAI3P+wujZKsNj3ADCtXy3Td6
+yi14rhWZr6FDc/T5tSqVl7TEH1z+tbFc1NxsKorVc04QitMqZOgm1VWLBUR5GbjU
+zKWY5eCrcFoKdwzvSHe8NfQVGSc7Rc4WwtM1kt33XZy8kcOWYBKvOzHaeRg9m9Sr
+Gehlpdp97Pmxadz86ECZRFTRPPNropnCq/Sv7dzhVxjrzLBn0o4eOYE5QItWtYfB
+NALjg/jXo7d1U3sxF26WIIS+0OP9+Tt55Tb0s1Jo2WiOTa5SHkdrxpWmikkkylwx
+W6aXkdv2CilM3i3+GpqB3yaLysiaapfvoP2jEkcptidmXOZAZqw0v5EeIZLXzNTG
+b/Qr/pyBHcIYkT5tImXJ1WChadummtRE+g/WDGXIWD2PHOC9nVMZjsOUw6UNG1yE
+XLuRiKeHOVtLZPmE/l51R1ds9YZe5ZFivMz4iI7suYynIr75K+ECq/PBU5EEjGiE
+26G2gFJWeY+KCO7mGn7Vr7iCGYDLP48NGlsdeeCjVScFeGMdCkDkIA1d7e6YXa2Q
+YhZwyUzHB26GowNLoA88nHKuAx2MINCk7B6m/dLJfRdP5UW29a3yCX+Ve58OML2N
+7UqvDIcgAWR/rsjt/k0+j0qZLRmy0w8fn/gX+mpNvxW7P9D9YcpnIsEfMqSkxdrX
+579zo55pFlyPK+T3hnpK
+=fz3g
+-----END PGP SIGNATURE-----
+
+--H2GGRhx48DCGMT74M90Hepwkd3rLcbc52--

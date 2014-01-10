@@ -1,90 +1,47 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Jan 2014 10:56:50 +0000
-Subject: [PATCHv3 18/41] OMAPDSS: hdmi-connector: Add DT support
-Message-Id: <1390301833-24944-19-git-send-email-tomi.valkeinen@ti.com>
+From: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Date: Fri, 10 Jan 2014 16:16:10 +0000
+Subject: Re: [PATCH v4] video: add OpenCores VGA/LCD framebuffer driver
+Message-Id: <20140110161608.GA23774@chokladfabriken.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1385739911-6541-1-git-send-email-stefan.kristiansson@saunalahti.fi>
+ <52CFE2BB.8090004@ti.com>
+In-Reply-To: <52CFE2BB.8090004@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com
 
-Add DT support for hdmi-connector.
+On Fri, Jan 10, 2014 at 02:08:27PM +0200, Tomi Valkeinen wrote:
+> Hi,
+> 
+> On 2013-11-29 17:45, Stefan Kristiansson wrote:
+> > This adds support for the VGA/LCD core available from OpenCores:
+> > http://opencores.org/project,vga_lcd
+> > 
+> > The driver have been tested together with both OpenRISC and
+> > ARM (socfpga) processors.
+> > 
+> > Signed-off-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+> 
+> If I'm not mistaken, this driver has been designed so that there can
+> only be one VGA/LCD core device on the system.
+> 
+> It would be better to get rid of those static structs, and have the
+> driver data per device as it should. That way the driver works even with
+> multiple VGA/LCD cores (although the video mode module option is a bit
+> odd in that case).
+> 
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/displays-new/connector-hdmi.c | 30 +++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+You're right, it's a completely realistic scenario with several
+VGA/LCD cores in the system, so the one device only restriction is bad.
+And looking closer at the static structs, I see that the ocfb_var and ocfb_fix
+doesn't surve any purpose at all, so they can just be removed.
+And the information in ocfb_par can easily be obtained directly from ocfb_dev
+instead, so by setting info.par to point at that, the ocfb_par struct can also
+be removed completely.
+Thanks, that suggestion makes the implementation cleaner as well.
 
-diff --git a/drivers/video/omap2/displays-new/connector-hdmi.c b/drivers/video/omap2/displays-new/connector-hdmi.c
-index 9abe2c039ae9..2e026eab2dd0 100644
---- a/drivers/video/omap2/displays-new/connector-hdmi.c
-+++ b/drivers/video/omap2/displays-new/connector-hdmi.c
-@@ -12,6 +12,7 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/of.h>
- 
- #include <drm/drm_edid.h>
- 
-@@ -301,6 +302,23 @@ static int hdmic_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int hdmic_probe_of(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
-+
-+	ddata->in = in;
-+
-+	return 0;
-+}
-+
- static int hdmic_probe(struct platform_device *pdev)
- {
- 	struct panel_drv_data *ddata;
-@@ -318,6 +336,10 @@ static int hdmic_probe(struct platform_device *pdev)
- 		r = hdmic_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = hdmic_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -359,12 +381,20 @@ static int __exit hdmic_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id hdmic_of_match[] = {
-+	{ .compatible = "omapdss,hdmi-connector", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, hdmic_of_match);
-+
- static struct platform_driver hdmi_connector_driver = {
- 	.probe	= hdmic_probe,
- 	.remove	= __exit_p(hdmic_remove),
- 	.driver	= {
- 		.name	= "connector-hdmi",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = hdmic_of_match,
- 	},
- };
- 
--- 
-1.8.3.2
+I'll post an updated patch with the changes.
 
+Stefan

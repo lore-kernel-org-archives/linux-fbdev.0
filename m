@@ -1,35 +1,107 @@
-From: Luc Verhaegen <libv@skynet.be>
-Date: Sat, 11 Jan 2014 15:09:04 +0000
-Subject: Re: FOSDEM14: Graphics DevRoom: Deadline approaching fast.
-Message-Id: <20140111150904.GC4047@skynet.be>
+From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Date: Sat, 11 Jan 2014 12:42:05 +0000
+Subject: [PATCH] OMAPDSS: DISPC: Fix 34xx overlay scaling calculation
+Message-Id: <1389444125-5000-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140107012200.GA3446@skynet.be>
-In-Reply-To: <20140107012200.GA3446@skynet.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: mesa-dev@lists.freedesktop.org, xorg-devel@lists.x.org, dri-devel@lists.freedesktop.org, xorg@lists.x.org, wayland-devel@lists.freedesktop.org, xorg-announce@lists.freedesktop.org, mir-devel@lists.ubuntu.com, directfb-dev@directfb.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
 
-On Tue, Jan 07, 2014 at 02:22:00AM +0100, Luc Verhaegen wrote:
-> Hi,
-> 
-> There are still 5 slots open for the FOSDEM graphics DevRoom, and the 
-> deadline is this friday, the 10th. Get a move on.
-> 
-> If you have requested an account reset with me before, but if you then 
-> haven't bothered filing a talk, you do NOT have a slot. Please file a 
-> talk ASAP to still secure a place.
-> 
-> For more information on how to file for a devroom, read the email sent 
-> back in october: 
-> http://lists.x.org/archives/xorg-devel/2013-October/038185.html
-> 
-> Luc Verhaegen.
+From: Ivaylo Dimitrov <freemangordon@abv.bg>
 
-There are still 3 slots open. This is your final chance to get a talk in 
-the FOSDEM 2014 graphics DevRoom.
+commit 7faa92339bbb1e6b9a80983b206642517327eb75 OMAPDSS: DISPC: Handle
+synclost errors in OMAP3 introduces limits check to prevent SYNCLOST errors
+on OMAP3. However, it misses the logic found in Nokia kernels that is
+needed to correctly calculate whether 3 tap or 5 tap rescaler to be used as
+well as the logic to fallback to 3 taps if 5 taps clock results in too
+tight horizontal timings. Without that patch "horizontal timing too tight"
+errors are seen when a video with resolution above 640x350 is tried to be
+played. The patch is a forward-ported logic found in Nokia N900 and N9/50
+kernels.
 
-Monday night (13th), the schedule will be locked down and no further 
-talks or events will be accepted.
+Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+---
+ drivers/video/omap2/dss/dispc.c |   36 +++++++++++++++++++++++++-----------
+ 1 files changed, 25 insertions(+), 11 deletions(-)
 
-Luc Verhaegen.
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 67e413e..9d1aa25 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1999,7 +1999,8 @@ static void calc_tiler_rotation_offset(u16 screen_width, u16 width,
+  */
+ static int check_horiz_timing_omap3(unsigned long pclk, unsigned long lclk,
+ 		const struct omap_video_timings *t, u16 pos_x,
+-		u16 width, u16 height, u16 out_width, u16 out_height)
++		u16 width, u16 height, u16 out_width, u16 out_height,
++		bool five_taps)
+ {
+ 	const int ds = DIV_ROUND_UP(height, out_height);
+ 	unsigned long nonactive;
+@@ -2019,6 +2020,10 @@ static int check_horiz_timing_omap3(unsigned long pclk, unsigned long lclk,
+ 	if (blank <= limits[i])
+ 		return -EINVAL;
+ 
++	/* FIXME add checks for 3-tap filter once the limitations are known */
++	if (!five_taps)
++		return 0;
++
+ 	/*
+ 	 * Pixel data should be prepared before visible display point starts.
+ 	 * So, atleast DS-2 lines must have already been fetched by DISPC
+@@ -2191,24 +2196,33 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
+ 	const int maxsinglelinewidth  			dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
+ 
++	*five_taps = height > out_height;
++
+ 	do {
+ 		in_height = DIV_ROUND_UP(height, *decim_y);
+ 		in_width = DIV_ROUND_UP(width, *decim_x);
+-		*core_clk = calc_core_clk_five_taps(pclk, mgr_timings,
+-			in_width, in_height, out_width, out_height, color_mode);
+-
+-		error = check_horiz_timing_omap3(pclk, lclk, mgr_timings,
+-				pos_x, in_width, in_height, out_width,
+-				out_height);
+ 
+ 		if (in_width > maxsinglelinewidth)
+ 			if (in_height > out_height &&
+ 						in_height < out_height * 2)
+ 				*five_taps = false;
+-		if (!*five_taps)
++again:
++		if (*five_taps)
++			*core_clk = calc_core_clk_five_taps(pclk, mgr_timings,
++						in_width, in_height, out_width,
++						out_height, color_mode);
++		else
+ 			*core_clk = dispc.feat->calc_core_clk(pclk, in_width,
+-					in_height, out_width, out_height,
+-					mem_to_mem);
++				in_height, out_width, out_height,
++				mem_to_mem);
++
++		error = check_horiz_timing_omap3(pclk, lclk, mgr_timings,
++				pos_x, in_width, in_height, out_width,
++				out_height, *five_taps);
++		if (error && *five_taps) {
++			*five_taps = false;
++			goto again;
++		}
+ 
+ 		error = (error || in_width > maxsinglelinewidth * 2 ||
+ 			(in_width > maxsinglelinewidth && *five_taps) ||
+@@ -2226,7 +2240,7 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
+ 	} while (*decim_x <= *x_predecim && *decim_y <= *y_predecim && error);
+ 
+ 	if (check_horiz_timing_omap3(pclk, lclk, mgr_timings, pos_x, width,
+-				height, out_width, out_height)){
++				height, out_width, out_height, *five_taps)) {
+ 			DSSERR("horizontal timing too tight\n");
+ 			return -EINVAL;
+ 	}
+-- 
+1.5.6.1
+

@@ -1,88 +1,77 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 13 Jan 2014 08:21:16 +0000
+From: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Date: Mon, 13 Jan 2014 10:20:07 +0000
 Subject: Re: [PATCH v5] video: add OpenCores VGA/LCD framebuffer driver
-Message-Id: <52D3A1FC.4090706@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="khsultjNQ0J5j9ecxHcDlF1bvVGcwj7sA"
+Message-Id: <20140113102006.GA30877@chokladfabriken.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1389384793-4710-1-git-send-email-stefan.kristiansson@saunalahti.fi>
-In-Reply-To: <1389384793-4710-1-git-send-email-stefan.kristiansson@saunalahti.fi>
-To: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+ <52D3A1FC.4090706@ti.com>
+In-Reply-To: <52D3A1FC.4090706@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com
 
---khsultjNQ0J5j9ecxHcDlF1bvVGcwj7sA
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jan 13, 2014 at 10:21:16AM +0200, Tomi Valkeinen wrote:
+> On 2014-01-10 22:13, Stefan Kristiansson wrote:
+> > This adds support for the VGA/LCD core available from OpenCores:
+> > http://opencores.org/project,vga_lcd
+> > 
+> > The driver have been tested together with both OpenRISC and
+> > ARM (socfpga) processors.
+> > 
+> > Signed-off-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+> 
+> > +/*
+> > + * Init and exit routines
+> > + */
+> > +static int __init ocfb_init(void)
+> > +{
+> > +#ifndef MODULE
+> > +	char *option = NULL;
+> > +
+> > +	if (fb_get_options("ocfb", &option))
+> > +		return -ENODEV;
+> > +	ocfb_setup(option);
+> > +#endif
+> > +	return platform_driver_register(&ocfb_driver);
+> > +}
+> 
+> I see this is how fb_get_options is used elsewhere also, but shouldn't
+> fb_get_options be called with a name that's somehow device specific? I
+> haven't used it in omapfb, so maybe I'm missing how it is supposed to
+> work, but if I'm not mistaken, if you have two ocfb devices on your
+> board, there's no way to specify individual modes for them. Even the
+> Documentation/fb/modedb.txt gives an example of a "VGA-1" which sounds
+> to me that it has been designed to be used with some kind of device id.
+> 
+> Although even if the above code handled the different devices, when
+> loading this as a module would still not work right as that code is not
+> called at all in the module case. Ah, well. I guess this is legacy
+> stuff, and it's just the way it works.
+> 
 
-On 2014-01-10 22:13, Stefan Kristiansson wrote:
-> This adds support for the VGA/LCD core available from OpenCores:
-> http://opencores.org/project,vga_lcd
->=20
-> The driver have been tested together with both OpenRISC and
-> ARM (socfpga) processors.
->=20
-> Signed-off-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Yes, I can't really figure out how that would be handled neither.
 
-> +/*
-> + * Init and exit routines
-> + */
-> +static int __init ocfb_init(void)
-> +{
-> +#ifndef MODULE
-> +	char *option =3D NULL;
-> +
-> +	if (fb_get_options("ocfb", &option))
-> +		return -ENODEV;
-> +	ocfb_setup(option);
-> +#endif
-> +	return platform_driver_register(&ocfb_driver);
-> +}
+> The subject says this is a VGA/LCD driver. Usually with LCD, the LCD
+> video timings are passed via device tree or platform data, as there's
+> just one possible set of timings for a board. Is that something that
+> you've thought about, or is the user always supposed to give the timings
+> explicitly via kernel cmdline?
+> 
 
-I see this is how fb_get_options is used elsewhere also, but shouldn't
-fb_get_options be called with a name that's somehow device specific? I
-haven't used it in omapfb, so maybe I'm missing how it is supposed to
-work, but if I'm not mistaken, if you have two ocfb devices on your
-board, there's no way to specify individual modes for them. Even the
-Documentation/fb/modedb.txt gives an example of a "VGA-1" which sounds
-to me that it has been designed to be used with some kind of device id.
+The VGA/LCD in the subject comes from the name of the core,
+the core itself presents a "vga-type" interface, but it can basically
+be hooked up to any type of display (with a bit of glue-logic in some cases).
 
-Although even if the above code handled the different devices, when
-loading this as a module would still not work right as that code is not
-called at all in the module case. Ah, well. I guess this is legacy
-stuff, and it's just the way it works.
+That said - the reason why I went for the mode_options solution in the
+first place, is that when I initially wrote this driver
+(>2 years ago, time flies...) the display-timing device-tree bindings weren't
+invented yet, so it seemed like the most viable option without coming up
+with custom device-tree bindings.
 
-The subject says this is a VGA/LCD driver. Usually with LCD, the LCD
-video timings are passed via device tree or platform data, as there's
-just one possible set of timings for a board. Is that something that
-you've thought about, or is the user always supposed to give the timings
-explicitly via kernel cmdline?
+It's completely possible that this design choice should be revised now,
+and I wouldn't mind converting this driver to make use of the display-timing
+dt properties if you think that's a good idea?
 
- Tomi
-
-
-
---khsultjNQ0J5j9ecxHcDlF1bvVGcwj7sA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS06H/AAoJEPo9qoy8lh71bbAP/A9eM99/TGuHRRCUJ+kIyLXl
-nfzswI/PyjQz1WGfY+q8cZbUagHg7g5JYYs/LyoljLZdkHEpWew/RL9MR+2XCnY1
-0zzZmM8DnaEcPW8xgmsCICv2wnETo59J/ZoY2zLuHrDepzj97GUJIGXBa6xmU0Jc
-am/ztVOdwU/Ivjo8aqmmnlvkenogqTHTQBSxHsIgCcadsaxlZWErjOggg1/j8cxs
-UTUo+7btzvM3LY8YVyPmyPP99qFFee5Ern/0ME0vaia7d29SVi3asnM/ujKWkHOw
-UNbidmgGO0c0p6e2EhEp6ZE3BhjtyJvHWdazXsx1hzF9FTKp8LECmcL6g+D4kUC5
-i7PXX5Qzj8EtbiKmvzL8T/frFi5mvwuKsuVkcdhB+Jy9L9DB/A1OJdGpUb05IFHA
-RwUsJK0F4qx0QD2dGk6KjhXuXyDVMRVQnoS/uqKifea7L/sdQL1O/xIS4AjbLbDG
-mp+siQ1AEQrUWGCSkud90/DS/i7t7GSViBbD4Lg2KFiCOL4wIMQbzHVGMj+JWMLr
-jLveuD5W9Lzv6vXOpRQmA5vCrSYn9d35iT4twwdPdpxsSqVO6j5zRN7GBM1M2/Hv
-Dj1wQx5yvgE8GsW6yb3BYFtBdUF+AY/29LcIMc5pXpOB2POssuGw7OsDGfTqYZdO
-f8hsF0+ClQ/fRCl8Gmh2
-=5/HB
------END PGP SIGNATURE-----
-
---khsultjNQ0J5j9ecxHcDlF1bvVGcwj7sA--
+Stefan

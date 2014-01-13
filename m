@@ -1,56 +1,105 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Thu, 23 Jan 2014 20:03:03 +0000
-Subject: Re: [PATCH 4/10] atyfb: set FBINFO_READS_FAST
-Message-Id: <alpine.LRH.2.02.1401231448100.7971@file01.intranet.prod.int.rdu2.redhat.com>
+From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Date: Mon, 13 Jan 2014 16:33:02 +0000
+Subject: [PATCH v2] OMAPDSS: DISPC: Fix 34xx overlay scaling calculation
+Message-Id: <1389630782-1764-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LRH.2.02.1401231259340.31739@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1401231302340.31739@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1401231303100.31739@file01.intranet.prod.int.rdu2.redhat.com>
- <alpine.LRH.2.02.1401231303460.31739@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1401231305390.31739@file01.intranet.prod.int.rdu2.redhat.com> <CA+55aFxPfHmpcMH-bmRcTPUQeq5=67cKVmra6+SvT26ybvQaug@mail.gmail.com>
- <alpine.LRH.2.02.1401231426470.7971@file01.intranet.prod.int.rdu2.redhat.com> <CA+55aFxrZE6oxu5CxFo3mRwGdVcq3jvnn_ChoSJDFgQz45Lq_A@mail.gmail.com>
-In-Reply-To: <CA+55aFxrZE6oxu5CxFo3mRwGdVcq3jvnn_ChoSJDFgQz45Lq_A@mail.gmail.com>
+References: <52D3C3EB.6000104@ti.com>
+In-Reply-To: <52D3C3EB.6000104@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: tomi.valkeinen@ti.com
+Cc: archit@ti.com, plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
 
+From: Ivaylo Dimitrov <freemangordon@abv.bg>
 
+commit 7faa92339bbb1e6b9a80983b206642517327eb75 OMAPDSS: DISPC: Handle
+synclost errors in OMAP3 introduces limits check to prevent SYNCLOST errors
+on OMAP3. However, it misses the logic found in Nokia kernels that is
+needed to correctly calculate whether 3 tap or 5 tap rescaler to be used as
+well as the logic to fallback to 3 taps if 5 taps clock results in too
+tight horizontal timings. Without that patch "horizontal timing too tight"
+errors are seen when a video with resolution above 640x350 is tried to be
+played. The patch is a forward-ported logic found in Nokia N900 and N9/50
+kernels.
 
-On Thu, 23 Jan 2014, Linus Torvalds wrote:
+Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+---
+ drivers/video/omap2/dss/dispc.c |   31 ++++++++++++++++++++++---------
+ 1 files changed, 22 insertions(+), 9 deletions(-)
 
-> On Thu, Jan 23, 2014 at 11:31 AM, Mikulas Patocka <mpatocka@redhat.com> wrote:
-> >
-> > Both mach64 and matrox have a hardware bitter that is faster than
-> > rewriting the console - that's why FBINFO_READS_FAST improves performance
-> > for them.
-> 
-> My point is that I'd expect *anything* that has a hardware blitter to
-> be faster than rewriting the screen.
->
-> FBINFO_READS_FAST is documented to be about "soft-copy" being faster
-> than re-rendering. Which I take to be about actually doing copying in
-> *software*.
-> 
-> In particular, updatescrollmode() seems to do this right. It sets
-> p->scrollmode based on whether there's an accelerated copyarea. But
-> then SCROLL_PAN/WRAP_MOVE ends up re-testing FBINFO_READS_FAST,
-> ignoring any hw-accelerated copy-area, and I don't quite see why..
-> 
->                 Linus
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 67e413e..66e0849 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1999,7 +1999,8 @@ static void calc_tiler_rotation_offset(u16 screen_width, u16 width,
+  */
+ static int check_horiz_timing_omap3(unsigned long pclk, unsigned long lclk,
+ 		const struct omap_video_timings *t, u16 pos_x,
+-		u16 width, u16 height, u16 out_width, u16 out_height)
++		u16 width, u16 height, u16 out_width, u16 out_height,
++		bool five_taps)
+ {
+ 	const int ds = DIV_ROUND_UP(height, out_height);
+ 	unsigned long nonactive;
+@@ -2019,6 +2020,10 @@ static int check_horiz_timing_omap3(unsigned long pclk, unsigned long lclk,
+ 	if (blank <= limits[i])
+ 		return -EINVAL;
+ 
++	/* FIXME add checks for 3-tap filter once the limitations are known */
++	if (!five_taps)
++		return 0;
++
+ 	/*
+ 	 * Pixel data should be prepared before visible display point starts.
+ 	 * So, atleast DS-2 lines must have already been fetched by DISPC
+@@ -2194,22 +2199,30 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
+ 	do {
+ 		in_height = DIV_ROUND_UP(height, *decim_y);
+ 		in_width = DIV_ROUND_UP(width, *decim_x);
+-		*core_clk = calc_core_clk_five_taps(pclk, mgr_timings,
+-			in_width, in_height, out_width, out_height, color_mode);
+-
+-		error = check_horiz_timing_omap3(pclk, lclk, mgr_timings,
+-				pos_x, in_width, in_height, out_width,
+-				out_height);
++		*five_taps = in_height > out_height;
+ 
+ 		if (in_width > maxsinglelinewidth)
+ 			if (in_height > out_height &&
+ 						in_height < out_height * 2)
+ 				*five_taps = false;
+-		if (!*five_taps)
++again:
++		if (*five_taps)
++			*core_clk = calc_core_clk_five_taps(pclk, mgr_timings,
++						in_width, in_height, out_width,
++						out_height, color_mode);
++		else
+ 			*core_clk = dispc.feat->calc_core_clk(pclk, in_width,
+ 					in_height, out_width, out_height,
+ 					mem_to_mem);
+ 
++		error = check_horiz_timing_omap3(pclk, lclk, mgr_timings,
++				pos_x, in_width, in_height, out_width,
++				out_height, *five_taps);
++		if (error && *five_taps) {
++			*five_taps = false;
++			goto again;
++		}
++
+ 		error = (error || in_width > maxsinglelinewidth * 2 ||
+ 			(in_width > maxsinglelinewidth && *five_taps) ||
+ 			!*core_clk || *core_clk > dispc_core_clk_rate());
+@@ -2226,7 +2239,7 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
+ 	} while (*decim_x <= *x_predecim && *decim_y <= *y_predecim && error);
+ 
+ 	if (check_horiz_timing_omap3(pclk, lclk, mgr_timings, pos_x, width,
+-				height, out_width, out_height)){
++				height, out_width, out_height, *five_taps)) {
+ 			DSSERR("horizontal timing too tight\n");
+ 			return -EINVAL;
+ 	}
+-- 
+1.5.6.1
 
-I think the argument why not to use the blitter was this:
-
-Some hardware have font expansion - you submit monochromatic bitwise image 
-of the character via writes to some register and the hardware expands it 
-to full color. Mach64 has this capability, matrox doesn't (maybe it does, 
-but the driver doesn't use it).
-
-If you use font expansion, you actually generate less load on the videoram 
-than using the blitter (the expander only writes to the videoram; the 
-blitter reads data from the videoram and stores them back).
-
-But the benchmarks that I performed show that the blitter is faster than 
-the font expander. Maybe on a different computer that has better 
-bufferring in the PCI chipset the font expander could be faster - who 
-knows?
-
-Mikulas

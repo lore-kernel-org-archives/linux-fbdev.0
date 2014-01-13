@@ -1,77 +1,74 @@
-From: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Date: Mon, 13 Jan 2014 10:20:07 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 13 Jan 2014 10:43:58 +0000
 Subject: Re: [PATCH v5] video: add OpenCores VGA/LCD framebuffer driver
-Message-Id: <20140113102006.GA30877@chokladfabriken.org>
+Message-Id: <52D3C36E.9020107@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Wsgi5nm9x1gNP24MS1CohjIkjMEIr3JWb"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389384793-4710-1-git-send-email-stefan.kristiansson@saunalahti.fi>
- <52D3A1FC.4090706@ti.com>
-In-Reply-To: <52D3A1FC.4090706@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1389384793-4710-1-git-send-email-stefan.kristiansson@saunalahti.fi> <52D3A1FC.4090706@ti.com> <20140113102006.GA30877@chokladfabriken.org>
+In-Reply-To: <20140113102006.GA30877@chokladfabriken.org>
+To: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
 Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com
 
-On Mon, Jan 13, 2014 at 10:21:16AM +0200, Tomi Valkeinen wrote:
-> On 2014-01-10 22:13, Stefan Kristiansson wrote:
-> > This adds support for the VGA/LCD core available from OpenCores:
-> > http://opencores.org/project,vga_lcd
-> > 
-> > The driver have been tested together with both OpenRISC and
-> > ARM (socfpga) processors.
-> > 
-> > Signed-off-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-> 
-> > +/*
-> > + * Init and exit routines
-> > + */
-> > +static int __init ocfb_init(void)
-> > +{
-> > +#ifndef MODULE
-> > +	char *option = NULL;
-> > +
-> > +	if (fb_get_options("ocfb", &option))
-> > +		return -ENODEV;
-> > +	ocfb_setup(option);
-> > +#endif
-> > +	return platform_driver_register(&ocfb_driver);
-> > +}
-> 
-> I see this is how fb_get_options is used elsewhere also, but shouldn't
-> fb_get_options be called with a name that's somehow device specific? I
-> haven't used it in omapfb, so maybe I'm missing how it is supposed to
-> work, but if I'm not mistaken, if you have two ocfb devices on your
-> board, there's no way to specify individual modes for them. Even the
-> Documentation/fb/modedb.txt gives an example of a "VGA-1" which sounds
-> to me that it has been designed to be used with some kind of device id.
-> 
-> Although even if the above code handled the different devices, when
-> loading this as a module would still not work right as that code is not
-> called at all in the module case. Ah, well. I guess this is legacy
-> stuff, and it's just the way it works.
-> 
+--Wsgi5nm9x1gNP24MS1CohjIkjMEIr3JWb
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yes, I can't really figure out how that would be handled neither.
+On 2014-01-13 12:20, Stefan Kristiansson wrote:
 
-> The subject says this is a VGA/LCD driver. Usually with LCD, the LCD
-> video timings are passed via device tree or platform data, as there's
-> just one possible set of timings for a board. Is that something that
-> you've thought about, or is the user always supposed to give the timings
-> explicitly via kernel cmdline?
-> 
+> The VGA/LCD in the subject comes from the name of the core,
+> the core itself presents a "vga-type" interface, but it can basically
+> be hooked up to any type of display (with a bit of glue-logic in some c=
+ases).
+>=20
+> That said - the reason why I went for the mode_options solution in the
+> first place, is that when I initially wrote this driver
+> (>2 years ago, time flies...) the display-timing device-tree bindings w=
+eren't
+> invented yet, so it seemed like the most viable option without coming u=
+p
+> with custom device-tree bindings.
+>=20
+> It's completely possible that this design choice should be revised now,=
 
-The VGA/LCD in the subject comes from the name of the core,
-the core itself presents a "vga-type" interface, but it can basically
-be hooked up to any type of display (with a bit of glue-logic in some cases).
+> and I wouldn't mind converting this driver to make use of the display-t=
+iming
+> dt properties if you think that's a good idea?
 
-That said - the reason why I went for the mode_options solution in the
-first place, is that when I initially wrote this driver
-(>2 years ago, time flies...) the display-timing device-tree bindings weren't
-invented yet, so it seemed like the most viable option without coming up
-with custom device-tree bindings.
+I don't have a strong opinion on this. It looks to me that even if the
+current driver is merged, it would be easy to add device tree
+display-timing later, and still keep full backward compatibility.
 
-It's completely possible that this design choice should be revised now,
-and I wouldn't mind converting this driver to make use of the display-timing
-dt properties if you think that's a good idea?
+Then again, you already have DT support in the driver, and if it's clear
+that the DT based videomode selection is better, then I'd just go
+straight to that one without intermediate steps.
 
-Stefan
+ Tomi
+
+
+
+--Wsgi5nm9x1gNP24MS1CohjIkjMEIr3JWb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJS08NuAAoJEPo9qoy8lh71EEoP/jlCe+90pKMnPjsid76D5zrA
+iwBOOxn3PpqOZymH66CHMQxBCL7Qfu2IsPGiAb03A29bvfLtJWJGmpvN1Dz6FdAh
+4y+cMpGgRI3pHNV3+okqAzgzhZw9zrCkmtSl9fH7oaYKDW4tqzmC641QgLZ8RQoQ
+B3O615hVZw8iAodEjmWJQYM2lVjN7lbl+OKLnZtC2HP/aLZ4i8LSiaLnygUUPYP/
+mRlKg7ljjXjkHzBlsbem3SEs/CJgw9RFX3xtwc9l8DEMhEuenWGbzTAIH57a8yyq
+626FLSkuxJK6kIIYSZXnWYOS15CSMwGlYzoOe5Td+fddUkStWIrh3/GXgGYSnbHm
+40hQIqLYFcFYF3VUIo9Mza+3B6Ip1baIo870thOOJkgQ9YJBSwKKXKtb02LOi5M2
+1oyqaJmbhk21ZmlvWNNTZ6Z4i9/UNPqRiInJ6y8OhbsrHjGTShBo6O2lLhsUFtZV
+vcDSmSeIxF5cNlTibJqnIw5+JEP7FkUB7c12/nODSQCgqjqL7igsRmXz3vq2wOsr
+ZvZaOVAZpKkeF+U3cpW3MEPwnsaTurV+CpxHIKdCMUam0t3i1tqpgtkqlbXtGmzh
+o+m9Xr/upQ0zq/jPtJh+7gOCA0YGIzlZjI/Hc8Do2MgE/8lDN9F8XTS7P4u1aaXS
+9apZPIFF19aC8GrSn7K2
+=XVjb
+-----END PGP SIGNATURE-----
+
+--Wsgi5nm9x1gNP24MS1CohjIkjMEIr3JWb--

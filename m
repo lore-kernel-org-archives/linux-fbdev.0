@@ -1,107 +1,72 @@
-From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
-Date: Sat, 11 Jan 2014 12:42:05 +0000
-Subject: [PATCH] OMAPDSS: DISPC: Fix 34xx overlay scaling calculation
-Message-Id: <1389444125-5000-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 13 Jan 2014 09:43:32 +0000
+Subject: Re: [PATCH] OMAPDSS: DISPC: Fix 34xx overlay scaling calculation
+Message-Id: <52D3B544.6070808@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="di3IfJUimkR1swHcb3b2PUMLoDw06ux9U"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+References: <1389444125-5000-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+In-Reply-To: <1389444125-5000-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+To: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Cc: plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>, Archit Taneja <archit@ti.com>
 
-From: Ivaylo Dimitrov <freemangordon@abv.bg>
+--di3IfJUimkR1swHcb3b2PUMLoDw06ux9U
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-commit 7faa92339bbb1e6b9a80983b206642517327eb75 OMAPDSS: DISPC: Handle
-synclost errors in OMAP3 introduces limits check to prevent SYNCLOST errors
-on OMAP3. However, it misses the logic found in Nokia kernels that is
-needed to correctly calculate whether 3 tap or 5 tap rescaler to be used as
-well as the logic to fallback to 3 taps if 5 taps clock results in too
-tight horizontal timings. Without that patch "horizontal timing too tight"
-errors are seen when a video with resolution above 640x350 is tried to be
-played. The patch is a forward-ported logic found in Nokia N900 and N9/50
-kernels.
+Hi,
 
-Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
----
- drivers/video/omap2/dss/dispc.c |   36 +++++++++++++++++++++++++-----------
- 1 files changed, 25 insertions(+), 11 deletions(-)
+On 2014-01-11 14:42, Ivaylo Dimitrov wrote:
+> From: Ivaylo Dimitrov <freemangordon@abv.bg>
+>=20
+> commit 7faa92339bbb1e6b9a80983b206642517327eb75 OMAPDSS: DISPC: Handle
+> synclost errors in OMAP3 introduces limits check to prevent SYNCLOST er=
+rors
+> on OMAP3. However, it misses the logic found in Nokia kernels that is
+> needed to correctly calculate whether 3 tap or 5 tap rescaler to be use=
+d as
+> well as the logic to fallback to 3 taps if 5 taps clock results in too
+> tight horizontal timings. Without that patch "horizontal timing too tig=
+ht"
+> errors are seen when a video with resolution above 640x350 is tried to =
+be
+> played. The patch is a forward-ported logic found in Nokia N900 and N9/=
+50
+> kernels.
+>=20
+> Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 67e413e..9d1aa25 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1999,7 +1999,8 @@ static void calc_tiler_rotation_offset(u16 screen_width, u16 width,
-  */
- static int check_horiz_timing_omap3(unsigned long pclk, unsigned long lclk,
- 		const struct omap_video_timings *t, u16 pos_x,
--		u16 width, u16 height, u16 out_width, u16 out_height)
-+		u16 width, u16 height, u16 out_width, u16 out_height,
-+		bool five_taps)
- {
- 	const int ds = DIV_ROUND_UP(height, out_height);
- 	unsigned long nonactive;
-@@ -2019,6 +2020,10 @@ static int check_horiz_timing_omap3(unsigned long pclk, unsigned long lclk,
- 	if (blank <= limits[i])
- 		return -EINVAL;
- 
-+	/* FIXME add checks for 3-tap filter once the limitations are known */
-+	if (!five_taps)
-+		return 0;
-+
- 	/*
- 	 * Pixel data should be prepared before visible display point starts.
- 	 * So, atleast DS-2 lines must have already been fetched by DISPC
-@@ -2191,24 +2196,33 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
- 	const int maxsinglelinewidth  			dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
- 
-+	*five_taps = height > out_height;
-+
- 	do {
- 		in_height = DIV_ROUND_UP(height, *decim_y);
- 		in_width = DIV_ROUND_UP(width, *decim_x);
--		*core_clk = calc_core_clk_five_taps(pclk, mgr_timings,
--			in_width, in_height, out_width, out_height, color_mode);
--
--		error = check_horiz_timing_omap3(pclk, lclk, mgr_timings,
--				pos_x, in_width, in_height, out_width,
--				out_height);
- 
- 		if (in_width > maxsinglelinewidth)
- 			if (in_height > out_height &&
- 						in_height < out_height * 2)
- 				*five_taps = false;
--		if (!*five_taps)
-+again:
-+		if (*five_taps)
-+			*core_clk = calc_core_clk_five_taps(pclk, mgr_timings,
-+						in_width, in_height, out_width,
-+						out_height, color_mode);
-+		else
- 			*core_clk = dispc.feat->calc_core_clk(pclk, in_width,
--					in_height, out_width, out_height,
--					mem_to_mem);
-+				in_height, out_width, out_height,
-+				mem_to_mem);
-+
-+		error = check_horiz_timing_omap3(pclk, lclk, mgr_timings,
-+				pos_x, in_width, in_height, out_width,
-+				out_height, *five_taps);
-+		if (error && *five_taps) {
-+			*five_taps = false;
-+			goto again;
-+		}
- 
- 		error = (error || in_width > maxsinglelinewidth * 2 ||
- 			(in_width > maxsinglelinewidth && *five_taps) ||
-@@ -2226,7 +2240,7 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
- 	} while (*decim_x <= *x_predecim && *decim_y <= *y_predecim && error);
- 
- 	if (check_horiz_timing_omap3(pclk, lclk, mgr_timings, pos_x, width,
--				height, out_width, out_height)){
-+				height, out_width, out_height, *five_taps)) {
- 			DSSERR("horizontal timing too tight\n");
- 			return -EINVAL;
- 	}
--- 
-1.5.6.1
+I had a quick test with this. Without the patch, on beagle-xm, my scaler
+test immediately gives "horizontal timing too tight". With the patch, no
+errors and the scaling seems to work. So looks good. I'll look at the
+patch a bit more, but I think this is 3.14 material.
 
+ Tomi
+
+
+
+--di3IfJUimkR1swHcb3b2PUMLoDw06ux9U
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJS07VEAAoJEPo9qoy8lh71CTMP/0fF8a8+EtwvrdmFNhAg/0OU
+e5iZSsohg0MWwGj2Ncve5UO3wdSbNhY1SLvEiEh0YRkBuoQE9uCf4cF4B01eoCot
+KG+7N78cdqgeuuC/9eDeklxwZPKZMeMGxjE/CB57GsI+JDdskjEFvwgKlC+En7D1
+PpY/UQvH9q4/wEFrK4iI+eHYkgE1gqR/UvEY0ulKOPjk2FunZycmA6A0G+qS/dKZ
+cPG88TgtLKV4SJ9z9upDjwAhA+a+8ycydLd6XmrfecvpOz16qmGfL6ANoRAZapgS
+jhQEGLErHFuk7TEqdjUE4XuzyIA6QD/VH9fE6Ag33l3SJ+F7253PsQwnsz3k9tj7
+KrSIwNpKnGNY6JG8e6DDleGQS2lDbqEqyiIBsLcNIP71sXPVRQXEwx5z7zq6KcEX
+TmOmYWSRoT2HOwD/KMV0woA9NKK9/Vv0005hv9d6yhuhrQxPCO0hgLioKUiZPXnD
+TTHwXM23djhMo8K0bM0Ej8F4zpwnYiX2sSB3mt1qAQvV8kEQNJW6Cd5sLcYEcD/L
+cqZ+s4N8PQPnAdARrWdkM0Z4Y++jTxJ2yrrujsERDCsSsyLK5T3arM+18MXy5dw9
+e2opDdeJwdtvdsHRQB0thxT45CvY+qVsoeXeVpl7Qw2lyKgql/Lo0PGWVVtKXo4l
+7K8uqdmt8wQbuLhur/Im
+=6nsW
+-----END PGP SIGNATURE-----
+
+--di3IfJUimkR1swHcb3b2PUMLoDw06ux9U--

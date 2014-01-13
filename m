@@ -1,58 +1,56 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 07 Jan 2014 01:42:11 +0000
-Subject: Re: [PATCH 3/4] backlight: lcd: call put_device if device_register fails
-Message-Id: <000001cf0b49$af5ab7f0$0e1027d0$%han@samsung.com>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Mon, 13 Jan 2014 15:22:34 +0000
+Subject: [PATCH 2/4] i810: delete useless variable
+Message-Id: <1389629847-5330-3-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386959996-7958-1-git-send-email-levex@linux.com>
- <1386959996-7958-4-git-send-email-levex@linux.com>
-In-Reply-To: <1386959996-7958-4-git-send-email-levex@linux.com>
+References: <1389629847-5330-1-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1389629847-5330-1-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Levente Kurusa' <levex@linux.com>
-Cc: 'LKML' <linux-kernel@vger.kernel.org>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>, 'Andrew Morton' <akpm@linux-foundation.org>
+To: Antonino Daplas <adaplas@gmail.com>
+Cc: kernel-janitors@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Saturday, December 14, 2013 3:40 AM, Levente Kurusa wrote:
-> 
-> Currently we kfree the container of the device which failed to register.
-> This is wrong as the last reference is not given up with a put_device
-> call. Also, now that we have put_device() callen, we no longer need
-> the kfree as the new_ld->dev.release function will take care of kfreeing
-> the associated memory.
-> 
-> Signed-off-by: Levente Kurusa <levex@linux.com>
-> ---
->  drivers/video/backlight/lcd.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-> index 93cf15e..7de847d 100644
-> --- a/drivers/video/backlight/lcd.c
-> +++ b/drivers/video/backlight/lcd.c
-> @@ -228,7 +228,7 @@ struct lcd_device *lcd_device_register(const char *name, struct device *parent,
-> 
->  	rc = device_register(&new_ld->dev);
->  	if (rc) {
-> -		kfree(new_ld);
-> +		put_device(&new_ld->dev);
->  		return ERR_PTR(rc);
->  	}
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-(+cc Andrew Morton)
+Delete a variable that is at most only assigned to a constant, but never
+used otherwise.
 
-Hi Levente Kurusa,
+A simplified version of the semantic patch that fixes this problem is as
+follows: (http://coccinelle.lip6.fr/)
 
-Would you fix the same thing for 'backlight.c' file?
+// <smpl>
+@@
+type T;
+identifier i;
+constant c;
+@@
 
-./drivers/video/backlight/backlight.c
-struct backlight_device *backlight_device_register(const char *name,
-    .....
-    rc = device_register(&new_bd->dev);
-            if (rc) {
-                    kfree(new_bd);
-                    return ERR_PTR(rc);
-            }
+-T i;
+<... when != i
+-i = c;
+...>
+// </smpl>
 
-Best regards,
-Jingoo Han
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
+---
+ drivers/video/i810/i810_main.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
+index 038192a..bb674e4 100644
+--- a/drivers/video/i810/i810_main.c
++++ b/drivers/video/i810/i810_main.c
+@@ -2011,9 +2011,7 @@ static int i810fb_init_pci(struct pci_dev *dev,
+ 	struct fb_info    *info;
+ 	struct i810fb_par *par = NULL;
+ 	struct fb_videomode mode;
+-	int i, err = -1, vfreq, hfreq, pixclock;
+-
+-	i = 0;
++	int err = -1, vfreq, hfreq, pixclock;
+ 
+ 	info = framebuffer_alloc(sizeof(struct i810fb_par), &dev->dev);
+ 	if (!info)
 

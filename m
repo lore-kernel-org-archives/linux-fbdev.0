@@ -1,105 +1,67 @@
-From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
-Date: Mon, 13 Jan 2014 16:33:02 +0000
-Subject: [PATCH v2] OMAPDSS: DISPC: Fix 34xx overlay scaling calculation
-Message-Id: <1389630782-1764-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 14 Jan 2014 08:11:41 +0000
+Subject: Re: [PATCH v2] OMAPDSS: DISPC: Fix 34xx overlay scaling calculation
+Message-Id: <52D4F13D.6080905@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="O6uWwefHnelruFMtc7dAKkitVAUjAWiXd"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <52D3C3EB.6000104@ti.com>
-In-Reply-To: <52D3C3EB.6000104@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: archit@ti.com, plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+References: <52D3C3EB.6000104@ti.com> <1389630782-1764-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+In-Reply-To: <1389630782-1764-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+To: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Cc: archit@ti.com, plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>
 
-From: Ivaylo Dimitrov <freemangordon@abv.bg>
+--O6uWwefHnelruFMtc7dAKkitVAUjAWiXd
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-commit 7faa92339bbb1e6b9a80983b206642517327eb75 OMAPDSS: DISPC: Handle
-synclost errors in OMAP3 introduces limits check to prevent SYNCLOST errors
-on OMAP3. However, it misses the logic found in Nokia kernels that is
-needed to correctly calculate whether 3 tap or 5 tap rescaler to be used as
-well as the logic to fallback to 3 taps if 5 taps clock results in too
-tight horizontal timings. Without that patch "horizontal timing too tight"
-errors are seen when a video with resolution above 640x350 is tried to be
-played. The patch is a forward-ported logic found in Nokia N900 and N9/50
-kernels.
+On 2014-01-13 18:33, Ivaylo Dimitrov wrote:
+> From: Ivaylo Dimitrov <freemangordon@abv.bg>
+>=20
+> commit 7faa92339bbb1e6b9a80983b206642517327eb75 OMAPDSS: DISPC: Handle
+> synclost errors in OMAP3 introduces limits check to prevent SYNCLOST er=
+rors
+> on OMAP3. However, it misses the logic found in Nokia kernels that is
+> needed to correctly calculate whether 3 tap or 5 tap rescaler to be use=
+d as
+> well as the logic to fallback to 3 taps if 5 taps clock results in too
+> tight horizontal timings. Without that patch "horizontal timing too tig=
+ht"
+> errors are seen when a video with resolution above 640x350 is tried to =
+be
+> played. The patch is a forward-ported logic found in Nokia N900 and N9/=
+50
+> kernels.
+>=20
+> Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
 
-Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
----
- drivers/video/omap2/dss/dispc.c |   31 ++++++++++++++++++++++---------
- 1 files changed, 22 insertions(+), 9 deletions(-)
+Queued for 3.14.
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 67e413e..66e0849 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1999,7 +1999,8 @@ static void calc_tiler_rotation_offset(u16 screen_width, u16 width,
-  */
- static int check_horiz_timing_omap3(unsigned long pclk, unsigned long lclk,
- 		const struct omap_video_timings *t, u16 pos_x,
--		u16 width, u16 height, u16 out_width, u16 out_height)
-+		u16 width, u16 height, u16 out_width, u16 out_height,
-+		bool five_taps)
- {
- 	const int ds = DIV_ROUND_UP(height, out_height);
- 	unsigned long nonactive;
-@@ -2019,6 +2020,10 @@ static int check_horiz_timing_omap3(unsigned long pclk, unsigned long lclk,
- 	if (blank <= limits[i])
- 		return -EINVAL;
- 
-+	/* FIXME add checks for 3-tap filter once the limitations are known */
-+	if (!five_taps)
-+		return 0;
-+
- 	/*
- 	 * Pixel data should be prepared before visible display point starts.
- 	 * So, atleast DS-2 lines must have already been fetched by DISPC
-@@ -2194,22 +2199,30 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
- 	do {
- 		in_height = DIV_ROUND_UP(height, *decim_y);
- 		in_width = DIV_ROUND_UP(width, *decim_x);
--		*core_clk = calc_core_clk_five_taps(pclk, mgr_timings,
--			in_width, in_height, out_width, out_height, color_mode);
--
--		error = check_horiz_timing_omap3(pclk, lclk, mgr_timings,
--				pos_x, in_width, in_height, out_width,
--				out_height);
-+		*five_taps = in_height > out_height;
- 
- 		if (in_width > maxsinglelinewidth)
- 			if (in_height > out_height &&
- 						in_height < out_height * 2)
- 				*five_taps = false;
--		if (!*five_taps)
-+again:
-+		if (*five_taps)
-+			*core_clk = calc_core_clk_five_taps(pclk, mgr_timings,
-+						in_width, in_height, out_width,
-+						out_height, color_mode);
-+		else
- 			*core_clk = dispc.feat->calc_core_clk(pclk, in_width,
- 					in_height, out_width, out_height,
- 					mem_to_mem);
- 
-+		error = check_horiz_timing_omap3(pclk, lclk, mgr_timings,
-+				pos_x, in_width, in_height, out_width,
-+				out_height, *five_taps);
-+		if (error && *five_taps) {
-+			*five_taps = false;
-+			goto again;
-+		}
-+
- 		error = (error || in_width > maxsinglelinewidth * 2 ||
- 			(in_width > maxsinglelinewidth && *five_taps) ||
- 			!*core_clk || *core_clk > dispc_core_clk_rate());
-@@ -2226,7 +2239,7 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
- 	} while (*decim_x <= *x_predecim && *decim_y <= *y_predecim && error);
- 
- 	if (check_horiz_timing_omap3(pclk, lclk, mgr_timings, pos_x, width,
--				height, out_width, out_height)){
-+				height, out_width, out_height, *five_taps)) {
- 			DSSERR("horizontal timing too tight\n");
- 			return -EINVAL;
- 	}
--- 
-1.5.6.1
+ Tomi
 
+
+
+--O6uWwefHnelruFMtc7dAKkitVAUjAWiXd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJS1PE9AAoJEPo9qoy8lh71e/sQAI5vRwNpZcOoKZA1zhFXRbT7
+NRruVYIiHrUQ9vOGq3UBidic/R5JXrmXXgFbcHoU/MHPVCGhXDWVonEGV8I5UARZ
+EHSFtoFgdUlaCDZVxNEi1I2VDR3X+t/4AEQpsQNuXZyFvfawDGCQIW5ApVdcGHpK
+qXvAJIZyIV+cYa4jqPZKA/JPezUVsTTzTaA4C1epu+z5VdNCRsj2Tldwb9h55Iwf
+Q0DET4oVYn9LqogC2Q/lCAMkkIyQd8au6VCdCzc8J60NJ49b0kHyN+JoFatxymbk
+xaHA5/U3T0MikHgnRXsPs41pdVQ3vT/tSHuYBKNWkS3ikG7ZQqmjg+U2wIJ8ZRXP
+C9czaIpGT+9pKBoZhyOQJ0K3NJI7N4ktBr4VbdsrI9l+ViFF1LSa6MdI5jhJU9Mb
+3CBgNmWmDavAuD/Q2IGLuqXn4l6qzbLrzqxt2x26wqcnsehaFF0koYIFh8JRNnuy
+J0K6QxrZJ57fbPUNMbOW4FqOthKw2yr4AaWhYS7gyjSLRbaEAWuXNULqvUNkA3tg
+PcFwaPgmuG0D2AhyQHOhMbQQusTwm0kOnJ8DS8xCvCg3gwC9ALYTMx7raE24WHFB
+2EOHLGYR24X5qnQP6INC+l4MZsPlXbdChCIprNL3kJ7BVXpBktkgPnWWEyq5pW97
+kv+eUiueUYuCbNjUy5tF
+=40g7
+-----END PGP SIGNATURE-----
+
+--O6uWwefHnelruFMtc7dAKkitVAUjAWiXd--

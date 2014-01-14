@@ -1,56 +1,53 @@
-From: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
-Date: Mon, 06 Jan 2014 13:17:57 +0000
-Subject: [PATCH 1/2] video: mxsfb: convert pr_debug()/dev_dbg() to pr_err()/dev_err() for error messages
-Message-Id: <1389014278-4903-2-git-send-email-LW@KARO-electronics.de>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Tue, 14 Jan 2014 11:16:22 +0000
+Subject: [PATCH v2 2/4] video: mmp: no need to get clk_name from mach_info
+Message-Id: <1389698184-28761-3-git-send-email-zzhu3@marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389014278-4903-1-git-send-email-LW@KARO-electronics.de>
-In-Reply-To: <1389014278-4903-1-git-send-email-LW@KARO-electronics.de>
+References: <1389698184-28761-1-git-send-email-zzhu3@marvell.com>
+In-Reply-To: <1389698184-28761-1-git-send-email-zzhu3-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Chao Xie <chao.xie-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Guoqing Li <ligq-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Zhou Zhu <zzhu3-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 
-Make the messages that are printed in case of fatal errors actually
-visible to the user without having to recompile the driver with
-debugging enabled.
+As the display controller has only one clock, no need to
+get clk_name from mach_info
 
-Signed-off-by: Lothar Wa=C3=9Fmann <LW@KARO-electronics.de>
+Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
 ---
- drivers/video/mxsfb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/mmp/hw/mmp_ctrl.c |    4 ++--
+ include/video/mmp_disp.h        |    1 -
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-index 27197a8..d11c35c 100644
---- a/drivers/video/mxsfb.c
-+++ b/drivers/video/mxsfb.c
-@@ -297,7 +297,7 @@ static int mxsfb_check_var(struct fb_var_screeninfo *va=
-r,
- 		}
- 		break;
- 	default:
--		pr_debug("Unsupported colour depth: %u\n", var->bits_per_pixel);
-+		pr_err("Unsupported colour depth: %u\n", var->bits_per_pixel);
- 		return -EINVAL;
+diff --git a/drivers/video/mmp/hw/mmp_ctrl.c b/drivers/video/mmp/hw/mmp_ctrl.c
+index 8621a9f..b65913e 100644
+--- a/drivers/video/mmp/hw/mmp_ctrl.c
++++ b/drivers/video/mmp/hw/mmp_ctrl.c
+@@ -521,9 +521,9 @@ static int mmphw_probe(struct platform_device *pdev)
  	}
-=20
-@@ -426,7 +426,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- 		ctrl |=3D CTRL_SET_WORD_LENGTH(3);
- 		switch (host->ld_intf_width) {
- 		case STMLCDIF_8BIT:
--			dev_dbg(&host->pdev->dev,
-+			dev_err(&host->pdev->dev,
- 					"Unsupported LCD bus width mapping\n");
- 			return -EINVAL;
- 		case STMLCDIF_16BIT:
-@@ -439,7 +439,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- 		writel(CTRL1_SET_BYTE_PACKAGING(0x7), host->base + LCDC_CTRL1);
- 		break;
- 	default:
--		dev_dbg(&host->pdev->dev, "Unhandled color depth of %u\n",
-+		dev_err(&host->pdev->dev, "Unhandled color depth of %u\n",
- 				fb_info->var.bits_per_pixel);
- 		return -EINVAL;
+ 
+ 	/* get clock */
+-	ctrl->clk = devm_clk_get(ctrl->dev, mi->clk_name);
++	ctrl->clk = devm_clk_get(ctrl->dev, NULL);
+ 	if (IS_ERR(ctrl->clk)) {
+-		dev_err(ctrl->dev, "unable to get clk %s\n", mi->clk_name);
++		dev_err(ctrl->dev, "unable to get clk for %s\n", ctrl->name);
+ 		ret = -ENOENT;
+ 		goto failed;
  	}
---=20
-1.7.2.5
+diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
+index 9fd9398..05a3a60 100644
+--- a/include/video/mmp_disp.h
++++ b/include/video/mmp_disp.h
+@@ -344,7 +344,6 @@ struct mmp_mach_path_config {
+ 
+ struct mmp_mach_plat_info {
+ 	const char *name;
+-	const char *clk_name;
+ 	int path_num;
+ 	struct mmp_mach_path_config *paths;
+ };
+-- 
+1.7.9.5
 

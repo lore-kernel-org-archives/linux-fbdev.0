@@ -1,66 +1,74 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Mon, 27 Jan 2014 22:18:51 +0000
-Subject: Re: [PATCH 00/11] SimpleDRM & Sysfb
-Message-Id: <CANq1E4S=+ixMQRMfX2-DXh3ZDO0jNAdWrUe6=z9aTdOSfR-SDA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Date: Sun, 19 Jan 2014 15:37:10 +0000
+Subject: Re: [PATCH v2] backlight: Convert from Legacy pm ops to dev_pm_ops
+Message-Id: <15798389.lgk83XnI1i@vostro.rjw.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+References: <2236505237-3336-1-git-send-email-shuah.kh@samsung.com>
+In-Reply-To: <2236505237-3336-1-git-send-email-shuah.kh@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ingo Molnar <mingo@kernel.org>
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: rpurdie@rpsys.net, FlorianSchandinat@gmx.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, rafael.j.wysocki@intel.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-Hi
+On Wednesday, November 14, 2040 04:27:17 AM Shuah Khan wrote:
+> Convert drivers/video/backlight/class to use dev_pm_ops for power
+> management and remove Legacy PM ops hooks. With this change, rtc class
+> registers suspend/resume callbacks via class->pm (dev_pm_ops) instead of
+> Legacy class->suspend/resume. When __device_suspend() runs call-backs,
+> it will find class->pm ops for the backlight class.
+> 
+> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+> Cc: Shuah Khan <shuahkhan@gmail.com>
 
-On Thu, Jan 23, 2014 at 3:14 PM, David Herrmann <dh.herrmann@gmail.com> wrote:
-> Hi
->
-> Another round of SimpleDRM patches. I somehow lost track of the last ones and as
-> this is a major rewrite, I'll just start at v1 again.
->
-> Some comments up-front:
->
->  - @Ingo: Patch #1 and #2 are unchanged from the previous ML discussions. I
->    included them in this series as the other patches depend on them. Could you
->    pick them up for the x86 tree? The other 9 patches won't make it in 3.14 so
->    no reason to put them through the DRM tree.
->    All mentioned issues should be addressed. If there's still sth missing,
->    please let me know.
->
->  - The DRM patches depend on my "DRM Anonymous Inode" patches. But it should be
->    trivial to apply them on drm-next (I think only one line needs to be changed:
->    i_mapping => dev_mapping).
->
->  - I tested the SimpleDRM fbdev fallback with linux-console+Xorg and it works
->    fine. The DRM backend is only tested with some DRM tests I have locally. I
->    have no idea how to make Xorg pick up a specific /dev/dri/card0 card. It
->    always tells me "no screens found" (as the underlying device is not marked as
->    boot_vga..). If someone knows how to tell Xorg to use card0, I'd gladly test
->    this. But I'm no longer used to writing xorg.confs..
+Can you please resend the patches that nobody took with CCs to
+linux-pm@vger.kernel.org?  If the original maintainers don't care, I'll be
+able to pick those patches up then (if they look good).
 
-For completeness, I tested this with Xorg+xf86-video-modesetting and
-it works just fine. The xorg.conf I used can be found below. If this
-driver gets upstreamed, I will try to make the X11 auto-loader detect
-it just like any other platform-device.
+Thanks!
 
-Thanks
-David
+> ---
+> 
+> v2: Updated changelog to correct device class.
+> 
+>  drivers/video/backlight/backlight.c |    8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+> index c74e7aa..0ffb251 100644
+> --- a/drivers/video/backlight/backlight.c
+> +++ b/drivers/video/backlight/backlight.c
+> @@ -208,7 +208,7 @@ static ssize_t backlight_show_actual_brightness(struct device *dev,
+>  
+>  static struct class *backlight_class;
+>  
+> -static int backlight_suspend(struct device *dev, pm_message_t state)
+> +static int backlight_suspend(struct device *dev)
+>  {
+>  	struct backlight_device *bd = to_backlight_device(dev);
+>  
+> @@ -236,6 +236,9 @@ static int backlight_resume(struct device *dev)
+>  	return 0;
+>  }
+>  
+> +static SIMPLE_DEV_PM_OPS(backlight_class_dev_pm_ops, backlight_suspend,
+> +			 backlight_resume);
+> +
+>  static void bl_device_release(struct device *dev)
+>  {
+>  	struct backlight_device *bd = to_backlight_device(dev);
+> @@ -414,8 +417,7 @@ static int __init backlight_class_init(void)
+>  	}
+>  
+>  	backlight_class->dev_attrs = bl_device_attributes;
+> -	backlight_class->suspend = backlight_suspend;
+> -	backlight_class->resume = backlight_resume;
+> +	backlight_class->pm = &backlight_class_dev_pm_ops;
+>  	return 0;
+>  }
+>  
+> 
 
-
-Section "ServerLayout"
-    Identifier     "MyLayout"
-    Screen         0 "MyScreen" 0 0
-EndSection
-
-Section "Device"
-    Identifier     "MyDevice"
-    Driver         "modesetting"
-    BusID          "platform:/sys/devices/platform/simple-framebuffer.0"
-    Screen         0
-EndSection
-
-Section "Screen"
-    Identifier     "MyScreen"
-    Device         "MyDevice"
-EndSection
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.

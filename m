@@ -1,95 +1,121 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 14 Jan 2014 08:06:18 +0000
-Subject: Re: [PATCH 2/4] i810: delete useless variable
-Message-Id: <52D4EFFA.8090205@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="sqxRxtgUBfQ1HqNuobL954PqphI6gFh38"
+From: Liu Ying <Ying.Liu@freescale.com>
+Date: Mon, 20 Jan 2014 05:47:26 +0000
+Subject: [PATCH v2] backlight: turn backlight on/off when necessary
+Message-Id: <1390196846-15304-1-git-send-email-Ying.Liu@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389629847-5330-1-git-send-email-Julia.Lawall@lip6.fr> <1389629847-5330-3-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1389629847-5330-3-git-send-email-Julia.Lawall@lip6.fr>
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Antonino Daplas <adaplas@gmail.com>, kernel-janitors@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: jg1.han@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
 
---sqxRxtgUBfQ1HqNuobL954PqphI6gFh38
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+We don't have to turn backlight on/off everytime a blanking
+or unblanking event comes because the backlight status may
+have already been what we want. Another thought is that one
+backlight device may be shared by multiple framebuffers. We
+don't hope blanking one of the framebuffers may turn the
+backlight off for all the other framebuffers, since they are
+likely being active to display something. This patch adds
+some logics to record each framebuffer's backlight usage to
+determine the backlight device use count and whether the
+backlight should be turned on or off. To be more specific,
+only one unblank operation on a certain blanked framebuffer
+may increase the backlight device's use count by one, while
+one blank operation on a certain unblanked framebuffer may
+decrease the use count by one, because the userspace is
+likely to unblank a unblanked framebuffer or blank a blanked
+framebuffer.
 
-On 2014-01-13 18:17, Julia Lawall wrote:
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
-> Delete a variable that is at most only assigned to a constant, but neve=
-r
-> used otherwise.
->=20
-> A simplified version of the semantic patch that fixes this problem is a=
-s
-> follows: (http://coccinelle.lip6.fr/)
->=20
-> // <smpl>
-> @@
-> type T;
-> identifier i;
-> constant c;
-> @@
->=20
-> -T i;
-> <... when !=3D i
-> -i =3D c;
-> ...>
-> // </smpl>
->=20
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
-> ---
->  drivers/video/i810/i810_main.c |    4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->=20
-> diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_m=
-ain.c
-> index 038192a..bb674e4 100644
-> --- a/drivers/video/i810/i810_main.c
-> +++ b/drivers/video/i810/i810_main.c
-> @@ -2011,9 +2011,7 @@ static int i810fb_init_pci(struct pci_dev *dev,
->  	struct fb_info    *info;
->  	struct i810fb_par *par =3D NULL;
->  	struct fb_videomode mode;
-> -	int i, err =3D -1, vfreq, hfreq, pixclock;
-> -
-> -	i =3D 0;
-> +	int err =3D -1, vfreq, hfreq, pixclock;
-> =20
->  	info =3D framebuffer_alloc(sizeof(struct i810fb_par), &dev->dev);
->  	if (!info)
->=20
+Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+---
+v1 can be found at https://lkml.org/lkml/2013/5/30/139
 
-Thanks, queued for 3.14.
+v1->v2:
+* Make the commit message be more specific about the condition
+  in which backlight device use count can be increased/decreased.
+* Correct the setting for bd->props.fb_blank.
 
- Tomi
+ drivers/video/backlight/backlight.c |   28 +++++++++++++++++++++-------
+ include/linux/backlight.h           |    6 ++++++
+ 2 files changed, 27 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 5d05555..42044be 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -34,13 +34,15 @@ static const char *const backlight_types[] = {
+ 			   defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE))
+ /* This callback gets called when something important happens inside a
+  * framebuffer driver. We're looking if that important event is blanking,
+- * and if it is, we're switching backlight power as well ...
++ * and if it is and necessary, we're switching backlight power as well ...
+  */
+ static int fb_notifier_callback(struct notifier_block *self,
+ 				unsigned long event, void *data)
+ {
+ 	struct backlight_device *bd;
+ 	struct fb_event *evdata = data;
++	int node = evdata->info->node;
++	int fb_blank = 0;
+ 
+ 	/* If we aren't interested in this event, skip it immediately ... */
+ 	if (event != FB_EVENT_BLANK && event != FB_EVENT_CONBLANK)
+@@ -51,12 +53,24 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 	if (bd->ops)
+ 		if (!bd->ops->check_fb ||
+ 		    bd->ops->check_fb(bd, evdata->info)) {
+-			bd->props.fb_blank = *(int *)evdata->data;
+-			if (bd->props.fb_blank = FB_BLANK_UNBLANK)
+-				bd->props.state &= ~BL_CORE_FBBLANK;
+-			else
+-				bd->props.state |= BL_CORE_FBBLANK;
+-			backlight_update_status(bd);
++			fb_blank = *(int *)evdata->data;
++			if (fb_blank = FB_BLANK_UNBLANK &&
++			    !bd->fb_bl_on[node]) {
++				bd->fb_bl_on[node] = true;
++				if (!bd->use_count++) {
++					bd->props.state &= ~BL_CORE_FBBLANK;
++					bd->props.fb_blank = FB_BLANK_UNBLANK;
++					backlight_update_status(bd);
++				}
++			} else if (fb_blank != FB_BLANK_UNBLANK &&
++				   bd->fb_bl_on[node]) {
++				bd->fb_bl_on[node] = false;
++				if (!(--bd->use_count)) {
++					bd->props.state |= BL_CORE_FBBLANK;
++					bd->props.fb_blank = FB_BLANK_POWERDOWN;
++					backlight_update_status(bd);
++				}
++			}
+ 		}
+ 	mutex_unlock(&bd->ops_lock);
+ 	return 0;
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index 5f9cd96..7264742 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -9,6 +9,7 @@
+ #define _LINUX_BACKLIGHT_H
+ 
+ #include <linux/device.h>
++#include <linux/fb.h>
+ #include <linux/mutex.h>
+ #include <linux/notifier.h>
+ 
+@@ -104,6 +105,11 @@ struct backlight_device {
+ 	struct list_head entry;
+ 
+ 	struct device dev;
++
++	/* Multiple framebuffers may share one backlight device */
++	bool fb_bl_on[FB_MAX];
++
++	int use_count;
+ };
+ 
+ static inline void backlight_update_status(struct backlight_device *bd)
+-- 
+1.7.9.5
 
 
-
---sqxRxtgUBfQ1HqNuobL954PqphI6gFh38
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS1O/6AAoJEPo9qoy8lh71XO0P/jEYBpToHRMyxiUxj4T//A/O
-bmtB4dk05lWjw9jyW8NqpHCB4z5EoWDh3P7lsfNFGlZMhBYBUrv1LTBxQKTjAzpT
-zuLIv0jBznVvL0jiVtpCnIL3Z/92TCYs19jE2ZcOuwPQj0K4A61QE9fiW7+Tialj
-SFwb8P9hTg+5Wc7BK6c3AhfqzGqXWZgfhMveVsyG/lGuKMljO/9m58RlpGmDKgDD
-5aJDTupaK6Mts59TQtrRJkbk8F41+Bbhg6iWaYlcjypCUbvLM5uKU2bNGsLYMBrY
-X6hLULDVDj3I+eM4BlyJI9WbPE532CFfAVhhdEc9nWl7PtytKUBiy1oSpq41gCLf
-ZvoelVJtb3I/CEIe+moLdrvExIOPkzoUweQsLeSxZXfvy7XdKG7yHF45OMLwq/gS
-2v9WdeJWtk1DmDo8/WEQ7eHhYnfw6psJS24sxJP/nhtnbwOXQ80Dds7UJ3GEf8uy
-mFItocfg7CrGQpnfsjTXkXY9Z8/fAhFX3urIg9pnc0z+uj21waDubpN3PGUvwXLD
-GFbERn5Ip4Ayoy0fGbQCystUhAHwOi0xCjloW6ztXYgaQxPrNdBcCdoB2zVNMv1E
-c/TlZMjtDrXRvbC+XIiKRMANX6GqkWYGAlZCkFh0heW1clGZPtiXq6417hFtrrfL
-WlfrX8yAgxLPxwRQiZlN
-=e4wL
------END PGP SIGNATURE-----
-
---sqxRxtgUBfQ1HqNuobL954PqphI6gFh38--

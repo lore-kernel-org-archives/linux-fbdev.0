@@ -1,67 +1,65 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 20 Jan 2014 11:21:47 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 20 Jan 2014 15:30:21 +0000
 Subject: Re: [PATCH 13/15] fbdev: sh-mobile-lcdcfb: Enable driver compilation with COMPILE_TEST
-Message-Id: <52DD06CB.8050606@ti.com>
+Message-Id: <5189278.VEETF0BgjA@avalon>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="StNpavP0Rwj5439tA1NDhpBbNj2xLeAUk"
+Content-Type: multipart/mixed; boundary="nextPart13766517.2z3GftTjSq"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1385515117-23664-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
- <52CD0CBB.3070801@ti.com> <52D8F14A.7030100@ti.com>
- <22423852.GiH1NBjiii@avalon>
-In-Reply-To: <22423852.GiH1NBjiii@avalon>
+ <22423852.GiH1NBjiii@avalon> <52DD06CB.8050606@ti.com>
+In-Reply-To: <52DD06CB.8050606@ti.com>
 To: linux-arm-kernel@lists.infradead.org
 
---StNpavP0Rwj5439tA1NDhpBbNj2xLeAUk
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-On 2014-01-19 23:01, Laurent Pinchart wrote:
-> Hi Tomi,
+--nextPart13766517.2z3GftTjSq
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-> The lcdc driver can be compiled without meram support. This is handled =
-by=20
-> conditional compilation in include/video/sh_mobile_meram.h that defines=
- the=20
-> meram functions as stubs when meram support isn't selected.
->=20
-> The problem comes from the combination of FB_SH_MOBILE_MERAM=3Dm and=20
-> FB_SH_MOBILE_LCDC=3Dy. The former makes the meram function non-stubs, w=
-hile the=20
-> later makes the LCDC driver fail to link, as meram support is then comp=
-iled as=20
-> a module.
->=20
-> How do you usually handle this ?
+Hi Tomi,
 
-I guess the easiest option is to make FB_SH_MOBILE_MERAM a bool, instead
-of tristate.
+On Monday 20 January 2014 13:21:47 Tomi Valkeinen wrote:
+> On 2014-01-19 23:01, Laurent Pinchart wrote:
+> > Hi Tomi,
+> > 
+> > The lcdc driver can be compiled without meram support. This is handled by
+> > conditional compilation in include/video/sh_mobile_meram.h that defines
+> > the
+> > meram functions as stubs when meram support isn't selected.
+> > 
+> > The problem comes from the combination of FB_SH_MOBILE_MERAM=m and
+> > FB_SH_MOBILE_LCDC=y. The former makes the meram function non-stubs, while
+> > the later makes the LCDC driver fail to link, as meram support is then
+> > compiled as a module.
+> > 
+> > How do you usually handle this ?
+> 
+> I guess the easiest option is to make FB_SH_MOBILE_MERAM a bool, instead
+> of tristate.
 
- Tomi
+That's easy, but it would prevent meram support from being compiled as a 
+module when lcdc support is compiled as a module as well.
 
+-- 
+Regards,
 
+Laurent Pinchart
 
---StNpavP0Rwj5439tA1NDhpBbNj2xLeAUk
+--nextPart13766517.2z3GftTjSq
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJS3QbLAAoJEPo9qoy8lh713VkP/RbIJ5AooeQ6lOZDRZO9sWub
-XfjH6K2auApkr3k1/d7LCND/hp6KR58r4S8+3O9zvs3j8TtuSQ+zp9Et1/Ey6TlY
-wemoS1rSHE+T+wu38rCUlFVPjR1lOqKF5d4oIvjCozVzyjrzzp+ph3pUo0yOJdv6
-VuQoPJLPBH/fUAtpoUBRr0kNVMI3l06mEU37Y8ZsjZ2i0UXa3IcMqWSGlWYwhJbB
-PPeW5mEarHoNL6TVz6JjoNQSGzE3cITCVNZ0q7e/0/K+3lbP08n1qxCRLy5ATSDn
-/MWsVK1ZVYLkleohohijSjstJK3VOfwmXRE3shN8LZnTCRKAqPqb+LpcExzB6/h4
-k/3bhJjBkJOuO3asgA3S6/aaHz3b7CrbMG3ytaJciCzDzdabW4G4vsZ5f9/nPY9T
-NNuMdxxgroWCIJ6uWLtSMO2nAr4ylpyURdAT64kPwYM7Zk47JbRtMlHHLYj0rREs
-/z0oeMmX+zN/NniS5L3xH7DtBozzj01hRY+NGHs4oOBV+Hmrx/aD1JhxPjRvJtOJ
-LVLLrHDqqXXM+c0Lic+gQde/23LcOnhe6EiQbWBoVCab8ddCBkFljBsGz0uDvdDH
-nGm1jUw1uEe+T7HjZSnmG0A8C8qxyZLbwBTKw1CgKBY1hX7uffA8z/hRRAi9bRfn
-Ff2DuHuwKaAoI0uxuzKU
-=Scoq
+iQEcBAABAgAGBQJS3UETAAoJEIkPb2GL7hl1N0cIAK3CuBV2Skvj6Gv52A6C+Xmn
+um31AZBSSbmGlp6FP1D6WcWjCtMRJfUQJWim81wxe8RnprmdHqvtkJsFCzhBmN2o
+/t0FKilzX+IUQUzipvA/2hwFIqL2TtCsAS+ENmOLWI5ysFlnWwNEw1HBlGSzAmQK
+FLhG4V+BkfZWLbXD/9d9oov+SNXvKFeP1ZkfyDvejVkHwIt5uxeFZdG9KEz4+BYg
+5/0RuptQXNbh6ZzSbcF16wan4migfshAtdnruR6GQjYlEU+tNcwz6EsvVIUWNxk2
+WlZuIGhKua2W/QBZFIY991czwhX9ZlF62jExY59K1LGtTnDMzW2Q2f8m/8tzmjY=
+=+ZPH
 -----END PGP SIGNATURE-----
 
---StNpavP0Rwj5439tA1NDhpBbNj2xLeAUk--
+--nextPart13766517.2z3GftTjSq--
+

@@ -1,50 +1,134 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Fri, 17 Jan 2014 11:13:19 +0000
-Subject: Re: [PATCH 2/2] video: exynos: Fix S6E8AX0 LCD driver build error
-Message-Id: <CAK9yfHwJUWj8ebVdsum3i3nvY51tEV-U33dSuYUnSq0nY3so8Q@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Jan 2014 10:56:51 +0000
+Subject: [PATCHv3 19/41] OMAPDSS: panel-dpi: Add DT support
+Message-Id: <1390301833-24944-20-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389933172-22991-2-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1389933172-22991-2-git-send-email-sachin.kamat@linaro.org>
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On 17 January 2014 15:52, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 2014-01-17 06:32, Sachin Kamat wrote:
->> Enable S6E8AX0 LCD driver only if LCD_CLASS_DEVICE is a built-in driver.
->> Else we get the following errors due to missing symbols:
->> drivers/built-in.o: In function `s6e8ax0_probe':
->> :(.text+0x51aec): undefined reference to `lcd_device_register'
->> :(.text+0x51c44): undefined reference to `lcd_device_unregister'
->>
->> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
->> ---
->>  drivers/video/exynos/Kconfig |    3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/video/exynos/Kconfig b/drivers/video/exynos/Kconfig
->> index 976594d578a9..7e19b467b8f7 100644
->> --- a/drivers/video/exynos/Kconfig
->> +++ b/drivers/video/exynos/Kconfig
->> @@ -22,7 +22,8 @@ config EXYNOS_MIPI_DSI
->>
->>  config EXYNOS_LCD_S6E8AX0
->>       bool "S6E8AX0 MIPI AMOLED LCD Driver"
->> -     depends on (EXYNOS_MIPI_DSI && BACKLIGHT_CLASS_DEVICE && LCD_CLASS_DEVICE)
->> +     depends on EXYNOS_MIPI_DSI && BACKLIGHT_CLASS_DEVICE
->> +     depends on (LCD_CLASS_DEVICE != m)
->
-> Hmm, doesn't that say that LCD_CLASS_DEVICE can be y or n (i.e. != m),
-> so it could be disabled also?
+Add DT support for panel-dpi.
 
-Yes you are right. Not sure how I got it right while testing. Thanks
-for catching.
-It should just be (LCD_CLASS_DEVICE = y).
-Will resend.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/displays-new/panel-dpi.c | 64 +++++++++++++++++++++++++++-
+ 1 file changed, 63 insertions(+), 1 deletion(-)
 
-
-
+diff --git a/drivers/video/omap2/displays-new/panel-dpi.c b/drivers/video/omap2/displays-new/panel-dpi.c
+index 5f8f7e7c81ef..b032daf0f407 100644
+--- a/drivers/video/omap2/displays-new/panel-dpi.c
++++ b/drivers/video/omap2/displays-new/panel-dpi.c
+@@ -13,9 +13,12 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
++#include <video/of_display_timing.h>
+ 
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+@@ -70,7 +73,8 @@ static int panel_dpi_enable(struct omap_dss_device *dssdev)
+ 	if (omapdss_device_is_enabled(dssdev))
+ 		return 0;
+ 
+-	in->ops.dpi->set_data_lines(in, ddata->data_lines);
++	if (ddata->data_lines)
++		in->ops.dpi->set_data_lines(in, ddata->data_lines);
+ 	in->ops.dpi->set_timings(in, &ddata->videomode);
+ 
+ 	r = in->ops.dpi->enable(in);
+@@ -182,6 +186,52 @@ static int panel_dpi_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int panel_dpi_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	int r;
++	struct display_timing timing;
++	struct videomode vm;
++	int gpio;
++
++	gpio = of_get_gpio(node, 0);
++	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++		ddata->enable_gpio = gpio;
++	} else {
++		dev_err(&pdev->dev, "failed to parse enable gpio\n");
++		return gpio;
++	}
++
++	gpio = of_get_gpio(node, 1);
++	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++		ddata->backlight_gpio = gpio;
++	} else {
++		dev_err(&pdev->dev, "failed to parse backlight gpio\n");
++		return gpio;
++	}
++
++	r = of_get_display_timing(node, "panel-timing", &timing);
++	if (r) {
++		dev_err(&pdev->dev, "failed to get video timing\n");
++		return r;
++	}
++
++	videomode_from_timing(&timing, &vm);
++	videomode_to_omap_video_timings(&vm, &ddata->videomode);
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	return 0;
++}
++
+ static int panel_dpi_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -198,6 +248,10 @@ static int panel_dpi_probe(struct platform_device *pdev)
+ 		r = panel_dpi_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = panel_dpi_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -254,12 +308,20 @@ static int __exit panel_dpi_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id panel_dpi_of_match[] = {
++	{ .compatible = "omapdss,panel-dpi", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, panel_dpi_of_match);
++
+ static struct platform_driver panel_dpi_driver = {
+ 	.probe = panel_dpi_probe,
+ 	.remove = __exit_p(panel_dpi_remove),
+ 	.driver = {
+ 		.name = "panel-dpi",
+ 		.owner = THIS_MODULE,
++		.of_match_table = panel_dpi_of_match,
+ 	},
+ };
+ 
 -- 
-With warm regards,
-Sachin
+1.8.3.2
+

@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Jan 2014 10:56:42 +0000
-Subject: [PATCHv3 10/41] OMAPDSS: Add DT support to DISPC
-Message-Id: <1390301833-24944-11-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 21 Jan 2014 10:56:53 +0000
+Subject: [PATCHv3 21/41] OMAPDSS: acx565akm: Add DT support
+Message-Id: <1390301833-24944-22-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
@@ -10,38 +10,94 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Add DT support to DISPC. Only thing needed here is the of_match_table.
+From: Sebastian Reichel <sre@debian.org>
 
+Add DT support for panel-sony-acx565akm
+
+Signed-off-by: Sebastian Reichel <sre@debian.org>
+[tomi.valkeinen@ti.com: some modifications]
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ .../omap2/displays-new/panel-sony-acx565akm.c      | 33 +++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index f51646f15cf2..3ac51e125846 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3781,12 +3781,20 @@ static const struct dev_pm_ops dispc_pm_ops = {
- 	.runtime_resume = dispc_runtime_resume,
- };
+diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+index 8e97d06921ff..8d2745ce55e3 100644
+--- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
++++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
+@@ -30,6 +30,8 @@
+ #include <linux/backlight.h>
+ #include <linux/fb.h>
+ #include <linux/gpio.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
  
-+static const struct of_device_id dispc_of_match[] = {
-+	{ .compatible = "ti,omap2-dispc", },
-+	{ .compatible = "ti,omap3-dispc", },
-+	{ .compatible = "ti,omap4-dispc", },
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -547,7 +549,9 @@ static int acx565akm_panel_power_on(struct omap_dss_device *dssdev)
+ 	dev_dbg(&ddata->spi->dev, "%s\n", __func__);
+ 
+ 	in->ops.sdi->set_timings(in, &ddata->videomode);
+-	in->ops.sdi->set_datapairs(in, ddata->datapairs);
++
++	if (ddata->datapairs > 0)
++		in->ops.sdi->set_datapairs(in, ddata->datapairs);
+ 
+ 	r = in->ops.sdi->enable(in);
+ 	if (r) {
+@@ -726,6 +730,22 @@ static int acx565akm_probe_pdata(struct spi_device *spi)
+ 	return 0;
+ }
+ 
++static int acx565akm_probe_of(struct spi_device *spi)
++{
++	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
++	struct device_node *np = spi->dev.of_node;
++
++	ddata->reset_gpio = of_get_gpio(np, 0);
++
++	ddata->in = omapdss_of_find_source_for_first_ep(np);
++	if (IS_ERR(ddata->in)) {
++		dev_err(&spi->dev, "failed to find video source\n");
++		return PTR_ERR(ddata->in);
++	}
++
++	return 0;
++}
++
+ static int acx565akm_probe(struct spi_device *spi)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -753,7 +773,12 @@ static int acx565akm_probe(struct spi_device *spi)
+ 		r = acx565akm_probe_pdata(spi);
+ 		if (r)
+ 			return r;
++	} else if (spi->dev.of_node) {
++		r = acx565akm_probe_of(spi);
++		if (r)
++			return r;
+ 	} else {
++		dev_err(&spi->dev, "platform data missing!\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -864,10 +889,16 @@ static int acx565akm_remove(struct spi_device *spi)
+ 	return 0;
+ }
+ 
++static const struct of_device_id acx565akm_of_match[] = {
++	{ .compatible = "omapdss,sony,acx565akm", },
 +	{},
 +};
 +
- static struct platform_driver omap_dispchw_driver = {
- 	.remove         = __exit_p(omap_dispchw_remove),
- 	.driver         = {
- 		.name   = "omapdss_dispc",
- 		.owner  = THIS_MODULE,
- 		.pm	= &dispc_pm_ops,
-+		.of_match_table = dispc_of_match,
+ static struct spi_driver acx565akm_driver = {
+ 	.driver = {
+ 		.name	= "acx565akm",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = acx565akm_of_match,
  	},
- };
- 
+ 	.probe	= acx565akm_probe,
+ 	.remove	= acx565akm_remove,
 -- 
 1.8.3.2
 

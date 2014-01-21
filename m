@@ -1,71 +1,132 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 08 Jan 2014 08:33:31 +0000
-Subject: Re: [PATCH RESEND 1/4] video: asiliantfb: remove unnecessary pci_set_drvdata()
-Message-Id: <52CD0D5B.9060102@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="G3NV3W0hhGJs6DsVCferB9vKjLNRv3aDM"
+Date: Tue, 21 Jan 2014 10:57:02 +0000
+Subject: [PATCHv3 30/41] ARM: omap3-n900.dts: add display information
+Message-Id: <1390301833-24944-31-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <001901cf0c0a$cb48b5e0$61da21a0$%han@samsung.com>
-In-Reply-To: <001901cf0c0a$cb48b5e0$61da21a0$%han@samsung.com>
-To: linux-fbdev@vger.kernel.org
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---G3NV3W0hhGJs6DsVCferB9vKjLNRv3aDM
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add DT data for OMAP3 N900 board. The board has the following displays:
 
-On 2014-01-08 02:44, Jingoo Han wrote:
-> The driver core clears the driver data to NULL after device_release
-> or on probe failure. Thus, it is not needed to manually clear the
-> device driver data to NULL.
->=20
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  drivers/video/asiliantfb.c |    1 -
->  1 file changed, 1 deletion(-)
->=20
-> diff --git a/drivers/video/asiliantfb.c b/drivers/video/asiliantfb.c
-> index d611f1a..7e8ddf0 100644
-> --- a/drivers/video/asiliantfb.c
-> +++ b/drivers/video/asiliantfb.c
-> @@ -589,7 +589,6 @@ static void asiliantfb_remove(struct pci_dev *dp)
->  	fb_dealloc_cmap(&p->cmap);
->  	iounmap(p->screen_base);
->  	release_mem_region(pci_resource_start(dp, 0), pci_resource_len(dp, 0)=
-);
-> -	pci_set_drvdata(dp, NULL);
->  	framebuffer_release(p);
->  }
-> =20
->=20
+lcd: LCD panel connected to OMAP's SDI output
+tv: analog svideo
 
-Series queued for 3.14.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/boot/dts/omap3-n900.dts | 70 +++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 66 insertions(+), 4 deletions(-)
 
- Tomi
+diff --git a/arch/arm/boot/dts/omap3-n900.dts b/arch/arm/boot/dts/omap3-n900.dts
+index 6fc85f963530..c1bb04d55d4b 100644
+--- a/arch/arm/boot/dts/omap3-n900.dts
++++ b/arch/arm/boot/dts/omap3-n900.dts
+@@ -74,6 +74,14 @@
+ 		};
+ 	};
+ 
++	tv: connector {
++		compatible = "composite-connector";
++		label = "tv";
++
++		tv_connector_in: endpoint {
++			remote-endpoint = <&venc_out>;
++		};
++	};
+ };
+ 
+ &omap3_pmx_core {
+@@ -140,11 +148,23 @@
+ 		>;
+ 	};
+ 
+-	display_pins: pinmux_display_pins {
++	acx565akm_pins: pinmux_acx565akm_pins {
+ 		pinctrl-single,pins = <
+ 			0x0d4 (PIN_OUTPUT | MUX_MODE4)		/* RX51_LCD_RESET_GPIO */
+ 		>;
+ 	};
++
++	dss_sdi_pins: pinmux_dss_sdi_pins {
++		pinctrl-single,pins = <
++			0x0c0 (PIN_OUTPUT | MUX_MODE1)   /* dss_data10.sdi_dat1n */
++			0x0c2 (PIN_OUTPUT | MUX_MODE1)   /* dss_data11.sdi_dat1p */
++			0x0c4 (PIN_OUTPUT | MUX_MODE1)   /* dss_data12.sdi_dat2n */
++			0x0c6 (PIN_OUTPUT | MUX_MODE1)   /* dss_data13.sdi_dat2p */
++
++			0x0d8 (PIN_OUTPUT | MUX_MODE1)   /* dss_data22.sdi_clkp */
++			0x0da (PIN_OUTPUT | MUX_MODE1)   /* dss_data23.sdi_clkn */
++		>;
++	};
+ };
+ 
+ &i2c1 {
+@@ -471,13 +491,21 @@
+ 		spi-max-frequency = <6000000>;
+ 		reg = <0>;
+ 	};
+-	mipid@2 {
+-		compatible = "acx565akm";
++
++	acx565akm@2 {
++		compatible = "sony,acx565akm";
+ 		spi-max-frequency = <6000000>;
+ 		reg = <2>;
+ 
+ 		pinctrl-names = "default";
+-		pinctrl-0 = <&display_pins>;
++		pinctrl-0 = <&acx565akm_pins>;
++
++		label = "lcd";
++		gpios = <&gpio3 26 GPIO_ACTIVE_HIGH>; /* 90 */
++
++		lcd_in: endpoint {
++			remote-endpoint = <&sdi_out>;
++		};
+ 	};
+ };
+ 
+@@ -503,3 +531,37 @@
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&uart3_pins>;
+ };
++
++&dss {
++	status = "ok";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&dss_sdi_pins>;
++
++	vdds_sdi-supply = <&vaux1>;
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@1 {
++			reg = <1>;
++
++			sdi_out: endpoint {
++				remote-endpoint = <&lcd_in>;
++				datapairs = <2>;
++			};
++		};
++	};
++};
++
++&venc {
++	status = "ok";
++
++	vdda-supply = <&vdac>;
++
++	venc_out: endpoint {
++		remote-endpoint = <&tv_connector_in>;
++		ti,channels = <1>;
++	};
++};
+-- 
+1.8.3.2
 
-
-
---G3NV3W0hhGJs6DsVCferB9vKjLNRv3aDM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSzQ1bAAoJEPo9qoy8lh71xTkQAKop/Gt6YqzqmbNmUtTnJXqZ
-GrTHSf7uXHTHCIsSFnKls/f8NO0Bwrxnpt+Czqzr44cOZoyoYd71TUR2a9iArThr
-O1Hq36UNYfS3XrcBC7fCyBsOFcLWTPVa7BAa9DyI9tZ0whe/6o27/2JM4u6tC8O2
-7DaKZlzhXxYJwCTw58z3DJqIOdjIJJWIw7pWGARH+bZzBFgd8fQmn1LQNDQMy5uA
-bltY6724EHKW+V3/bQOewz6FfFntynPF4UQCWOMAK6hh5rEej+ckmRlmezJUGfan
-UrzUhw2yxpqRbk+yq+PVVdy87e7goSQO3JlsT0Ac956CL/rg+sbyocAt623i9rZu
-zPo2P59cJuT42gP5+Olx71xahMKchEKSzS+gmXSTXn0PdkKGKMe7AQ0P2JXFdx01
-DOfct6wbGb687UwzQHnH105bGsOO0xCLRe60rgB/Bx9/uqFgd63ezJZYvFdJTsgU
-Z+4sUZ/jPnrWLz6k/jsvEiVkzDi1+34+NkZHiVcneLEGe0Yx2I6PqAopOUekEjxq
-fN8noRzo8u0EdtaoVciRuU9VqNorqEwQAPr9sIWP0T8kkhBl7s8LhvkgKoXvCoMR
-ZDrHHxKcjc+tqad3DME1CQx4w9KhSmGj+H/41h0dNHtZwnFCTXJft2IXoD4vQVG5
-AWfXqctrSwxDu/I/j9Dr
-=IlxB
------END PGP SIGNATURE-----
-
---G3NV3W0hhGJs6DsVCferB9vKjLNRv3aDM--

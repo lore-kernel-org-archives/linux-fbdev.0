@@ -1,53 +1,87 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Thu, 23 Jan 2014 14:14:53 +0000
-Subject: [PATCH 01/11] x86: sysfb: fool-proof CONFIG_X86_SYSFB
-Message-Id: <1390486503-1504-2-git-send-email-dh.herrmann@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Jan 2014 10:56:37 +0000
+Subject: [PATCHv3 05/41] OMAPFB: clean up default display search
+Message-Id: <1390301833-24944-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ingo Molnar <mingo@kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Turns out, people do not read help-texts of new config-options and enable
-them nonetheless. So several reports came in with X86_SYSFB=y and
-FB_SIMPLE=n, which in almost all situations prevents firmware-fbs from
-being probed.
+Separate the code for finding the default display into a function for
+clarity and to make it easier to extend it in the future.
 
-X86_SYSFB clearly states that it turns legacy vesa/efi framebuffers into a
-format compatible to simplefb (and does nothing else..). So to avoid
-further complaints about missing gfx-support during boot, simply depend on
-FB_SIMPLE now.
-As FB_SIMPLE is disabled by default and usually only enabled on selected
-ARM architectures, x86 users should thus never see the X86_SYSFB
-config-option. And if they do, everything is fine as simplefb will be
-available.
-
-Note that most of the sysfb code is enabled independently of X86_SYSFB.
-The config option only selects a compatibility mode for simplefb. It was
-introduced to ease the transition to SimpleDRM and disabling fbdev. As
-this is still ongoing, there's no need for non-developers to care for
-X86_SYSFB so we can safely hide it behind FB_SIMPLE.
-
-Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/x86/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/omap2/omapfb/omapfb-main.c | 46 ++++++++++++++++++++------------
+ 1 file changed, 29 insertions(+), 17 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 0952ecd..098228e 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -2299,6 +2299,7 @@ source "drivers/rapidio/Kconfig"
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index fcb9e932d00c..b7469636f15c 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2417,6 +2417,34 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
+ 	return 0;
+ }
  
- config X86_SYSFB
- 	bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
-+	depends on FB_SIMPLE
- 	help
- 	  Firmwares often provide initial graphics framebuffers so the BIOS,
- 	  bootloader or kernel can show basic video-output during boot for
++static struct omap_dss_device *
++omapfb_find_default_display(struct omapfb2_device *fbdev)
++{
++	const char *def_name;
++	int i;
++
++	/* search with the display name from the user or the board file */
++
++	def_name = omapdss_get_default_display_name();
++
++	if (def_name) {
++		for (i = 0; i < fbdev->num_displays; ++i) {
++			struct omap_dss_device *dssdev;
++
++			dssdev = fbdev->displays[i].dssdev;
++
++			if (dssdev->name && strcmp(def_name, dssdev->name) = 0)
++				return dssdev;
++		}
++
++		/* def_name given but not found */
++		return NULL;
++	}
++
++	/* return the first display we have in the list */
++	return fbdev->displays[0].dssdev;
++}
++
+ static int omapfb_probe(struct platform_device *pdev)
+ {
+ 	struct omapfb2_device *fbdev = NULL;
+@@ -2494,23 +2522,7 @@ static int omapfb_probe(struct platform_device *pdev)
+ 	for (i = 0; i < fbdev->num_managers; i++)
+ 		fbdev->managers[i] = omap_dss_get_overlay_manager(i);
+ 
+-	def_display = NULL;
+-
+-	for (i = 0; i < fbdev->num_displays; ++i) {
+-		struct omap_dss_device *dssdev;
+-		const char *def_name;
+-
+-		def_name = omapdss_get_default_display_name();
+-
+-		dssdev = fbdev->displays[i].dssdev;
+-
+-		if (def_name = NULL ||
+-			(dssdev->name && strcmp(def_name, dssdev->name) = 0)) {
+-			def_display = dssdev;
+-			break;
+-		}
+-	}
+-
++	def_display = omapfb_find_default_display(fbdev);
+ 	if (def_display = NULL) {
+ 		dev_err(fbdev->dev, "failed to find default display\n");
+ 		r = -EPROBE_DEFER;
 -- 
-1.8.5.3
+1.8.3.2
 

@@ -1,65 +1,116 @@
-From: Liu Ying <Ying.Liu@freescale.com>
-Date: Fri, 24 Jan 2014 06:04:36 +0000
-Subject: [PATCH v4 2/2] backlight: update backlight status when necessary
-Message-Id: <1390543476-13499-3-git-send-email-Ying.Liu@freescale.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Jan 2014 10:56:49 +0000
+Subject: [PATCHv3 17/41] OMAPDSS: encoder-tpd12s015: Add DT support
+Message-Id: <1390301833-24944-18-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390543476-13499-1-git-send-email-Ying.Liu@freescale.com>
-In-Reply-To: <1390543476-13499-1-git-send-email-Ying.Liu@freescale.com>
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jg1.han@samsung.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, dri-devel@lists.freedesktop.org, plagnioj@jcrosoft.com
+To: linux-arm-kernel@lists.infradead.org
 
-We don't have to update a backlight status every time a
-blanking or unblanking event comes because the backlight
-status may have already been what we want. Another thought
-is that one backlight device may be shared by multiple
-framebuffers. We don't hope blanking one of the framebuffers
-may turn the backlight off for all the other framebuffers,
-since they are likely being active to display something.
-This patch makes the backlight status be updated only when
-the relevant backlight device's use count changes from zero
-to one or from one to zero.
+Add DT support for encoder-tpd12s015.
 
-Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/backlight/backlight.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ .../video/omap2/displays-new/encoder-tpd12s015.c   | 56 ++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index efc9a2d..27d3cf2 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -34,7 +34,7 @@ static const char *const backlight_types[] = {
- 			   defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE))
- /* This callback gets called when something important happens inside a
-  * framebuffer driver. We're looking if that important event is blanking,
-- * and if it is, we're switching backlight power as well ...
-+ * and if it is and necessary, we're switching backlight power as well ...
-  */
- static int fb_notifier_callback(struct notifier_block *self,
- 				unsigned long event, void *data)
-@@ -60,6 +60,7 @@ static int fb_notifier_callback(struct notifier_block *self,
- 				if (!bd->use_count++) {
- 					bd->props.state &= ~BL_CORE_FBBLANK;
- 					bd->props.fb_blank = FB_BLANK_UNBLANK;
-+					backlight_update_status(bd);
- 				}
- 			} else if (fb_blank != FB_BLANK_UNBLANK &&
- 				   bd->fb_bl_on[node]) {
-@@ -67,9 +68,9 @@ static int fb_notifier_callback(struct notifier_block *self,
- 				if (!(--bd->use_count)) {
- 					bd->props.state |= BL_CORE_FBBLANK;
- 					bd->props.fb_blank = fb_blank;
-+					backlight_update_status(bd);
- 				}
- 			}
--			backlight_update_status(bd);
- 		}
- 	mutex_unlock(&bd->ops_lock);
+diff --git a/drivers/video/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
+index d5c936cb217f..7e33686171e3 100644
+--- a/drivers/video/omap2/displays-new/encoder-tpd12s015.c
++++ b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
+@@ -15,6 +15,7 @@
+ #include <linux/slab.h>
+ #include <linux/gpio.h>
+ #include <linux/platform_device.h>
++#include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -289,6 +290,49 @@ static int tpd_probe_pdata(struct platform_device *pdev)
  	return 0;
+ }
+ 
++static int tpd_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	int gpio;
++
++	/* CT CP HPD GPIO */
++	gpio = of_get_gpio(node, 0);
++	if (!gpio_is_valid(gpio)) {
++		dev_err(&pdev->dev, "failed to parse CT CP HPD gpio\n");
++		return gpio;
++	}
++	ddata->ct_cp_hpd_gpio = gpio;
++
++	/* LS OE GPIO */
++	gpio = of_get_gpio(node, 1);
++	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++		ddata->ls_oe_gpio = gpio;
++	} else {
++		dev_err(&pdev->dev, "failed to parse LS OE gpio\n");
++		return gpio;
++	}
++
++	/* HPD GPIO */
++	gpio = of_get_gpio(node, 2);
++	if (!gpio_is_valid(gpio)) {
++		dev_err(&pdev->dev, "failed to parse HPD gpio\n");
++		return gpio;
++	}
++	ddata->hpd_gpio = gpio;
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	return 0;
++}
++
+ static int tpd_probe(struct platform_device *pdev)
+ {
+ 	struct omap_dss_device *in, *dssdev;
+@@ -307,6 +351,10 @@ static int tpd_probe(struct platform_device *pdev)
+ 		r = tpd_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = tpd_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -379,12 +427,20 @@ static int __exit tpd_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id tpd_of_match[] = {
++	{ .compatible = "omapdss,ti,tpd12s015", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, tpd_of_match);
++
+ static struct platform_driver tpd_driver = {
+ 	.probe	= tpd_probe,
+ 	.remove	= __exit_p(tpd_remove),
+ 	.driver	= {
+ 		.name	= "tpd12s015",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = tpd_of_match,
+ 	},
+ };
+ 
 -- 
-1.7.9.5
-
+1.8.3.2
 

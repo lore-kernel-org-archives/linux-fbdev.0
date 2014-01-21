@@ -1,56 +1,170 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Wed, 22 Jan 2014 17:09:36 +0000
-Subject: [PATCHv14][ 3/4] video: Kconfig: Allow more broad selection of the imxfb framebuffer driver.
-Message-Id: <1390410577-22073-3-git-send-email-denis@eukrea.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Jan 2014 10:56:59 +0000
+Subject: [PATCHv3 27/41] ARM: omap3-beagle.dts: add display information
+Message-Id: <1390301833-24944-28-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390410577-22073-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1390410577-22073-1-git-send-email-denis@eukrea.com>
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Without that patch, a user can't select the imxfb driver when the i.MX25 an=
-d/or
-  the i.MX27 device tree board are selected and that no boards that selects
-  IMX_HAVE_PLATFORM_IMX_FB are compiled in.
+Add DT data for OMAP3 Beagle board. The board has the following displays:
 
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Denis Carikli <denis@eukrea.com>
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
+dvi: uses TFP410 encoder to convert DPI to DVI
+tv: analog svideo
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-ChangeLog v11->v14:
-- Remove people not concerned by this patch from the Cc list.
+ arch/arm/boot/dts/omap3-beagle.dts | 116 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 116 insertions(+)
 
-ChangeLog v10->v11:
-- moved my signed-off-by.
-
-ChangeLog v8->v9:
-- Added Jean-Christophe PLAGNIOL-VILLARD's ACK.
----
- drivers/video/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 22262a3..dade5b7 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -364,7 +364,7 @@ config FB_SA1100
-=20
- config FB_IMX
- 	tristate "Freescale i.MX1/21/25/27 LCD support"
--	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
-+	depends on FB && ARCH_MXC
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
---=20
-1.7.9.5
+diff --git a/arch/arm/boot/dts/omap3-beagle.dts b/arch/arm/boot/dts/omap3-beagle.dts
+index 3ba4a625ea5b..2b8efe355734 100644
+--- a/arch/arm/boot/dts/omap3-beagle.dts
++++ b/arch/arm/boot/dts/omap3-beagle.dts
+@@ -24,6 +24,11 @@
+ 		reg = <0x80000000 0x10000000>; /* 256 MB */
+ 	};
+ 
++	aliases {
++		display0 = &dvi0;
++		display1 = &tv0;
++	};
++
+ 	leds {
+ 		compatible = "gpio-leds";
+ 		pmu_stat {
+@@ -80,6 +85,55 @@
+ 		};
+ 
+ 	};
++
++	tfp410: encoder@0 {
++		compatible = "ti,tfp410";
++		gpios = <&gpio6 10 GPIO_ACTIVE_LOW>;	/* 170, power-down */
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&tfp410_pins>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				tfp410_in: endpoint@0 {
++					remote-endpoint = <&dpi_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++
++				tfp410_out: endpoint@0 {
++					remote-endpoint = <&dvi_connector_in>;
++				};
++			};
++		};
++	};
++
++	dvi0: connector@0 {
++		compatible = "dvi-connector";
++		label = "dvi";
++
++		i2c-bus = <&i2c3>;
++
++		dvi_connector_in: endpoint {
++			remote-endpoint = <&tfp410_out>;
++		};
++	};
++
++	tv0: connector@1 {
++		compatible = "svideo-connector";
++		label = "tv";
++
++		tv_connector_in: endpoint {
++			remote-endpoint = <&venc_out>;
++		};
++	};
+ };
+ 
+ &omap3_pmx_wkup {
+@@ -119,6 +173,45 @@
+ 			0x170 (PIN_OUTPUT | MUX_MODE0) /* uart3_tx_irtx.uart3_tx_irtx */
+ 		>;
+ 	};
++
++	tfp410_pins: pinmux_tfp410_pins {
++		pinctrl-single,pins = <
++			0x194 (PIN_OUTPUT | MUX_MODE4)	/* hdq_sio.gpio_170 */
++		>;
++	};
++
++	dss_dpi_pins: pinmux_dss_dpi_pins {
++		pinctrl-single,pins = <
++			0x0a4 (PIN_OUTPUT | MUX_MODE0)   /* dss_pclk.dss_pclk */
++			0x0a6 (PIN_OUTPUT | MUX_MODE0)   /* dss_hsync.dss_hsync */
++			0x0a8 (PIN_OUTPUT | MUX_MODE0)   /* dss_vsync.dss_vsync */
++			0x0aa (PIN_OUTPUT | MUX_MODE0)   /* dss_acbias.dss_acbias */
++			0x0ac (PIN_OUTPUT | MUX_MODE0)   /* dss_data0.dss_data0 */
++			0x0ae (PIN_OUTPUT | MUX_MODE0)   /* dss_data1.dss_data1 */
++			0x0b0 (PIN_OUTPUT | MUX_MODE0)   /* dss_data2.dss_data2 */
++			0x0b2 (PIN_OUTPUT | MUX_MODE0)   /* dss_data3.dss_data3 */
++			0x0b4 (PIN_OUTPUT | MUX_MODE0)   /* dss_data4.dss_data4 */
++			0x0b6 (PIN_OUTPUT | MUX_MODE0)   /* dss_data5.dss_data5 */
++			0x0b8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data6.dss_data6 */
++			0x0ba (PIN_OUTPUT | MUX_MODE0)   /* dss_data7.dss_data7 */
++			0x0bc (PIN_OUTPUT | MUX_MODE0)   /* dss_data8.dss_data8 */
++			0x0be (PIN_OUTPUT | MUX_MODE0)   /* dss_data9.dss_data9 */
++			0x0c0 (PIN_OUTPUT | MUX_MODE0)   /* dss_data10.dss_data10 */
++			0x0c2 (PIN_OUTPUT | MUX_MODE0)   /* dss_data11.dss_data11 */
++			0x0c4 (PIN_OUTPUT | MUX_MODE0)   /* dss_data12.dss_data12 */
++			0x0c6 (PIN_OUTPUT | MUX_MODE0)   /* dss_data13.dss_data13 */
++			0x0c8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data14.dss_data14 */
++			0x0ca (PIN_OUTPUT | MUX_MODE0)   /* dss_data15.dss_data15 */
++			0x0cc (PIN_OUTPUT | MUX_MODE0)   /* dss_data16.dss_data16 */
++			0x0ce (PIN_OUTPUT | MUX_MODE0)   /* dss_data17.dss_data17 */
++			0x0d0 (PIN_OUTPUT | MUX_MODE0)   /* dss_data18.dss_data18 */
++			0x0d2 (PIN_OUTPUT | MUX_MODE0)   /* dss_data19.dss_data19 */
++			0x0d4 (PIN_OUTPUT | MUX_MODE0)   /* dss_data20.dss_data20 */
++			0x0d6 (PIN_OUTPUT | MUX_MODE0)   /* dss_data21.dss_data21 */
++			0x0d8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data22.dss_data22 */
++			0x0da (PIN_OUTPUT | MUX_MODE0)   /* dss_data23.dss_data23 */
++		>;
++	};
+ };
+ 
+ &i2c1 {
+@@ -199,3 +292,26 @@
+ 	regulator-max-microvolt = <1800000>;
+ 	regulator-always-on;
+ };
++
++&dss {
++	status = "ok";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&dss_dpi_pins>;
++
++	dpi_out: endpoint {
++		remote-endpoint = <&tfp410_in>;
++		data-lines = <24>;
++	};
++};
++
++&venc {
++	status = "ok";
++
++	vdda-supply = <&vdac>;
++
++	venc_out: endpoint {
++		remote-endpoint = <&tv_connector_in>;
++		ti,channels = <2>;
++	};
++};
+-- 
+1.8.3.2
 

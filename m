@@ -1,46 +1,52 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Fri, 10 Jan 2014 12:46:53 +0000
-Subject: Re: [PATCHv5][ 1/5] fbdev: Add the lacking FB_SYNC_* for matching the DISPLAY_FLAGS_*
-Message-Id: <20140110124653.GA15937@n2100.arm.linux.org.uk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Jan 2014 10:57:08 +0000
+Subject: [PATCHv3 36/41] Doc/DT: Add DT binding documentation for HDMI Connector
+Message-Id: <1390301833-24944-37-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383915693-9422-1-git-send-email-denis@eukrea.com>
- <52CFE994.8070701@ti.com>
-In-Reply-To: <52CFE994.8070701@ti.com>
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Fri, Jan 10, 2014 at 02:37:40PM +0200, Tomi Valkeinen wrote:
-> I don't think this is better than the previous version where
-> FB_SYNC_DE_HIGH_ACT and FB_SYNC_PIXDAT_HIGH_ACT were in
-> include/uapi/linux/fb.h. Now those flag defines are not visible to the
-> userspace, but the actual flags are still visible from the var->sync field.
-> 
-> It's true what Russell replied to the previous version, that the
-> userspace has no idea how to handle those new flags. But then again, for
-> LCDs, the userspace has no idea how to handle, say, hsync polarity either.
-> 
-> In any case, splitting the FB_SYNC_ defines into uapi and
-> kernel-internal header files, but still giving the kernel-internal
-> values to userspace is surely wrong.
+Add DT binding documentation for HDMI Connector.
 
-The difference between the sync states and these other flags is that
-the sync states are part of the mode definition - as per the CEA-861
-documentation.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ .../devicetree/bindings/video/hdmi-connector.txt   | 23 ++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/hdmi-connector.txt
 
-However, that does not extend to LCD panels, which generally need to
-have one set of timings, with the various control signals at certain
-polarities - and those control signal polarities are a property of
-the panel itself, not of the displayed mode.  So, if you know that
-you have LCD panel X, and it needs control signals with a certain
-polarity, that is how you configure the hardware _irrespective_ of
-what userspace says that the sync states should be.
-
-The sync states specified by userspace should of course be used for
-the sync pulses being sent to a VGA display or HDMI sink.
-
+diff --git a/Documentation/devicetree/bindings/video/hdmi-connector.txt b/Documentation/devicetree/bindings/video/hdmi-connector.txt
+new file mode 100644
+index 000000000000..5d25f6a432bb
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/hdmi-connector.txt
+@@ -0,0 +1,23 @@
++HDMI Connector
++=======
++
++Required properties:
++- compatible: "hdmi-connector"
++
++Optional properties:
++- label: a symbolic name for the connector
++
++Required nodes:
++- Video port for HDMI input
++
++Example
++-------
++
++hdmi0: connector@1 {
++	compatible = "hdmi-connector";
++	label = "hdmi";
++
++	hdmi_connector_in: endpoint {
++		remote-endpoint = <&tpd12s015_out>;
++	};
++};
 -- 
-FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
-in database were 13.1 to 19Mbit for a good line, about 7.5+ for a bad.
-Estimate before purchase was "up to 13.2Mbit".
+1.8.3.2
+

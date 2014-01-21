@@ -1,133 +1,88 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 08 Jan 2014 13:52:38 +0000
-Subject: Re: [PATCH] omapdss: dispc: Preload more data in pipeline DMAs for OMAP4+ SoCs
-Message-Id: <52CD5826.9010501@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="89ex3LBEbHnBhX2GMB2kXEU9tv36SpcSG"
+Date: Tue, 21 Jan 2014 10:56:40 +0000
+Subject: [PATCHv3 08/41] OMAPDSS: Improve regulator names for DT
+Message-Id: <1390301833-24944-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387278621-10966-1-git-send-email-archit@ti.com>
-In-Reply-To: <1387278621-10966-1-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---89ex3LBEbHnBhX2GMB2kXEU9tv36SpcSG
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+The regulator names used for DSS components are somewhat ugly for DT
+use. As we're just adding DT support, it's simple to change the
+regulator names.
 
-On 2013-12-17 13:10, Archit Taneja wrote:
-> DISPC pipeline DMAs preload some bytes of pixel data in the vertical bl=
-anking
-> region before the start of each frame. The preload ensures the pipeline=
- doesn't
-> underflow when the active region of the display starts.
->=20
-> DISPC_GFX/VIDp_PRELOAD registers allow us to program how many bytes of =
-data
-> should be preloaded for each pipeline. Calculating a precise preload va=
-lue
-> would be a complex function of the pixel clock of the connected display=
-, the
-> vertical blanking duration and the interconnect traffic at that instanc=
-e. If
-> the register is left untouched, a default value is preloaded.
->=20
-> We observe underflows for OMAP4+ SoCs for certain bandwidth intensive u=
-se cases
-> with many other initiators active, and in situations where memory acces=
-s isn't
-> very efficient(like accessing Tiler mapped buffers and EMIF configured =
-in
-> non-interleaved more). The cause of the underflow is because the defaul=
-t preload
-> value isn't sufficient for the DMA to reach a steady state. We configur=
-e the
-> PRELOAD register such that the pipelines preload data up to the high th=
-reshold
-> of the FIFO.
->=20
-> Preloading lot of data for older SoCs can have a negative impact. Due t=
-o slower
-> interconnects, it's possible that the DISPC DMA cannot preload up to th=
-e high
-> threshold within the vertical blanking region of the panel. We leave th=
-e PRELOAD
-> registers to their reset values since we haven't faced underflows with =
-these
-> SoCs because of low value of PRELOAD.
->=20
-> Signed-off-by: Archit Taneja <archit@ti.com>
-> ---
->  drivers/video/omap2/dss/dispc.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
->=20
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/=
-dispc.c
-> index 6578540..ace179e 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -90,6 +90,8 @@ struct dispc_features {
-> =20
->  	/* revert to the OMAP4 mechanism of DISPC Smart Standby operation */
->  	bool mstandby_workaround:1;
-> +
-> +	bool set_max_preload:1;
->  };
-> =20
->  #define DISPC_MAX_NR_FIFOS 5
-> @@ -1200,6 +1202,15 @@ void dispc_ovl_set_fifo_threshold(enum omap_plan=
-e plane, u32 low, u32 high)
->  	dispc_write_reg(DISPC_OVL_FIFO_THRESHOLD(plane),
->  			FLD_VAL(high, hi_start, hi_end) |
->  			FLD_VAL(low, lo_start, lo_end));
-> +
-> +	/*
-> +	 * configure the preload to the pipeline's high threhold, if HT it's =
-too
-> +	 * large for the preload field, set the threshold to the maximum valu=
-e
-> +	 * that can be held by the preload register
-> +	 */
-> +	if (dss_has_feature(FEAT_PRELOAD) && dispc.feat->set_max_preload &&
-> +			plane !=3D OMAP_DSS_WB)
-> +		dispc_write_reg(DISPC_OVL_PRELOAD(plane), min(high, 0xfff));
+This patch makes the DSS driver get the regulators with somewhat cleaner
+names. For example, this allows us to define HDMI's VDDA regulator in
+the DT data as:
 
-This causes compile warning:
+vdda-supply = <...>;
 
-drivers/video/omap2/dss/dispc.c: In function =91dispc_ovl_set_fifo_thresh=
-old=92:
-drivers/video/omap2/dss/dispc.c:1213:152: warning: comparison of
-distinct pointer types lacks a cast
+instead of
 
-I fixed it by changing 0xfff to 0xfffu
+vdda_hdmi_dac-supply = <...>;
 
-Queued for 3.14.
+The code also still tries to get the regulators with the old names, if
+the regulator_get with the new names fail. This keep backward
+compatibility, and can be removed after we have moved to DT.
 
- Tomi
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dsi.c   | 5 ++++-
+ drivers/video/omap2/dss/hdmi4.c | 5 ++++-
+ drivers/video/omap2/dss/venc.c  | 5 ++++-
+ 3 files changed, 12 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index a820c37e323e..b7c92705fb54 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1151,7 +1151,10 @@ static int dsi_regulator_init(struct platform_device *dsidev)
+ 	if (dsi->vdds_dsi_reg != NULL)
+ 		return 0;
+ 
+-	vdds_dsi = devm_regulator_get(&dsi->pdev->dev, "vdds_dsi");
++	vdds_dsi = devm_regulator_get(&dsi->pdev->dev, "vdd");
++
++	if (IS_ERR(vdds_dsi))
++		vdds_dsi = devm_regulator_get(&dsi->pdev->dev, "vdds_dsi");
+ 
+ 	/* DT HACK: try VCXIO to make omapdss work for o4 sdp/panda */
+ 	if (IS_ERR(vdds_dsi))
+diff --git a/drivers/video/omap2/dss/hdmi4.c b/drivers/video/omap2/dss/hdmi4.c
+index 4a74538f9ea5..11e7500197c1 100644
+--- a/drivers/video/omap2/dss/hdmi4.c
++++ b/drivers/video/omap2/dss/hdmi4.c
+@@ -88,7 +88,10 @@ static int hdmi_init_regulator(void)
+ 	if (hdmi.vdda_hdmi_dac_reg != NULL)
+ 		return 0;
+ 
+-	reg = devm_regulator_get(&hdmi.pdev->dev, "vdda_hdmi_dac");
++	reg = devm_regulator_get(&hdmi.pdev->dev, "vdda");
++
++	if (IS_ERR(reg)
++		reg = devm_regulator_get(&hdmi.pdev->dev, "vdda_hdmi_dac");
+ 
+ 	/* DT HACK: try VDAC to make omapdss work for o4 sdp/panda */
+ 	if (IS_ERR(reg))
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 2cd7f7e42105..c0e4def29795 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -636,7 +636,10 @@ static int venc_init_regulator(void)
+ 	if (venc.vdda_dac_reg != NULL)
+ 		return 0;
+ 
+-	vdda_dac = devm_regulator_get(&venc.pdev->dev, "vdda_dac");
++	vdda_dac = devm_regulator_get(&venc.pdev->dev, "vdda");
++
++	if (IS_ERR(vdda_dac))
++		vdda_dac = devm_regulator_get(&venc.pdev->dev, "vdda_dac");
+ 
+ 	if (IS_ERR(vdda_dac)) {
+ 		if (PTR_ERR(vdda_dac) != -EPROBE_DEFER)
+-- 
+1.8.3.2
 
-
---89ex3LBEbHnBhX2GMB2kXEU9tv36SpcSG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSzVgmAAoJEPo9qoy8lh71+EgQAJIq7w/G0MianyqGAav0fhPW
-+2YIYpAaRoxZvnsBt6Fs0nX3982iFyq0C9dU94V+YONbi7CLetmWLJ+dorwipGoJ
-ORO4j7QEEBzwYxumQSD0VuNei4aD2LPQ8z/YsUK6cZC3/jXwhkXZ74dlDlQ/Gyxw
-NOrOQT0+HwuKOFbZ3C1Q9g0AFQfoeNv57xUGujaA0LLypuZlzsFEnvywA+NLp4RQ
-SblUOl05nzaer7XRqKBNQeWMGrB55CeJco0uQtO8d0QHAYvzBddRr4mta3PztWTV
-ubVh+/u5KOdKbxdz6o7YBZuHhalCkosU1QuHAdUVybvoVTcbU/A4B7A/4/yIZY+I
-lT/2oSal83WEXXwbM7mgZYFr/vpdUabDKJUqRhn39JZ6jzrJOxSATlFcpm38YWSv
-HSxoUhU9TE7FQ6/1ppAPBKThxaCo16/EkSHkD9Vyu5KQd/FJutxQGXVNJUR/SsPB
-Gc3m3eT2G2Bc4IVDi+W6Vgzqa7OhM7sF2L7gv5Oo8Kymcd7s6Xu9RqZ1WgTOy/Kp
-dyqrBNlwMF/D31C7X6IIi3r/2c40w616Frc6ii2hte26RtETS9uomgNhTCBd0Hue
-v+A/HRytcO2fM+LAo+wDmVFYJT9banwQO+xwYdqpHHxWPdhQ3saINCDOYYxzKAEW
-NfjwHCI0MbwF5e05qGzI
-=3CL+
------END PGP SIGNATURE-----
-
---89ex3LBEbHnBhX2GMB2kXEU9tv36SpcSG--

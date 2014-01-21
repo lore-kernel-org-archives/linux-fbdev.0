@@ -1,68 +1,162 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 10 Jan 2014 11:31:42 +0000
-Subject: Re: [patch 2/2] video: mmp: Using plain integer as NULL pointer
-Message-Id: <52CFDA1E.3060902@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="VntJiupCc59N6Jq4JLpFFAVrkxHjcaAKO"
+Date: Tue, 21 Jan 2014 10:56:58 +0000
+Subject: [PATCHv3 26/41] ARM: omap4-sdp.dts: add display information
+Message-Id: <1390301833-24944-27-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---VntJiupCc59N6Jq4JLpFFAVrkxHjcaAKO
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add DT data for OMAP4 SDP board. The board has the following displays:
 
-On 2013-11-14 10:19, Dan Carpenter wrote:
-> Sparse complains here:
->=20
-> 	drivers/video/mmp/core.c:33:16:
-> 		warning: Using plain integer as NULL pointer
->=20
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->=20
-> diff --git a/drivers/video/mmp/core.c b/drivers/video/mmp/core.c
-> index c8d4265..b563b92 100644
-> --- a/drivers/video/mmp/core.c
-> +++ b/drivers/video/mmp/core.c
-> @@ -30,7 +30,7 @@ static struct mmp_overlay *path_get_overlay(struct mm=
-p_path *path,
->  {
->  	if (path && overlay_id < path->overlay_num)
->  		return &path->overlays[overlay_id];
-> -	return 0;
-> +	return NULL;
->  }
-> =20
->  static int path_check_status(struct mmp_path *path)
->=20
+lcd0: a command mode DSI panel connected to OMAP DSI1 encoder
+lcd1: a command mode DSI panel connected to OMAP DSI2 encoder
+hdmi: OMAP HDMI output with TPD12S015 ESD/level shifter
 
-Queued for 3.14.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/boot/dts/omap4-sdp.dts | 107 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 105 insertions(+), 2 deletions(-)
 
- Tomi
+diff --git a/arch/arm/boot/dts/omap4-sdp.dts b/arch/arm/boot/dts/omap4-sdp.dts
+index dbc81fb6ef03..cf9f6cbbd349 100644
+--- a/arch/arm/boot/dts/omap4-sdp.dts
++++ b/arch/arm/boot/dts/omap4-sdp.dts
+@@ -19,6 +19,12 @@
+ 		reg = <0x80000000 0x40000000>; /* 1 GB */
+ 	};
+ 
++	aliases {
++		display0 = &lcd0;
++		display1 = &lcd1;
++		display2 = &hdmi0;
++	};
++
+ 	vdd_eth: fixedregulator-vdd-eth {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "VDD_ETH";
+@@ -153,6 +159,47 @@
+ 		startup-delay-us = <70000>;
+ 		enable-active-high;
+ 	};
++
++	tpd12s015: encoder@0 {
++		compatible = "ti,tpd12s015";
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&tpd12s015_pins>;
++
++		gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>,	/* 60, CT CP HPD */
++			<&gpio2 9 GPIO_ACTIVE_HIGH>,	/* 41, LS OE */
++			<&gpio2 31 GPIO_ACTIVE_HIGH>;	/* 63, HPD */
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				tpd12s015_in: endpoint@0 {
++					remote-endpoint = <&hdmi_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++
++				tpd12s015_out: endpoint@0 {
++					remote-endpoint = <&hdmi_connector_in>;
++				};
++			};
++		};
++	};
++
++	hdmi0: connector@0 {
++		compatible = "hdmi-connector";
++		label = "hdmi";
++
++		hdmi_connector_in: endpoint {
++			remote-endpoint = <&tpd12s015_out>;
++		};
++	};
+ };
+ 
+ &omap4_pmx_core {
+@@ -163,8 +210,6 @@
+ 			&dmic_pins
+ 			&mcbsp1_pins
+ 			&mcbsp2_pins
+-			&dss_hdmi_pins
+-			&tpd12s015_pins
+ 	>;
+ 
+ 	uart2_pins: pinmux_uart2_pins {
+@@ -550,3 +595,61 @@
+ 	mode = <3>;
+ 	power = <50>;
+ };
++
++&dss {
++	status = "ok";
++};
++
++&dsi1 {
++	status = "ok";
++	vdd-supply = <&vcxio>;
++
++	dsi1_out_ep: endpoint {
++		remote-endpoint = <&lcd0_in>;
++		lanes = <0 1 2 3 4 5>;
++	};
++
++	lcd0: display {
++		compatible = "tpo,taal", "panel-dsi-cm";
++		label = "lcd0";
++
++		gpios = <&gpio4 6 GPIO_ACTIVE_HIGH>;	/* 102, reset */
++
++		lcd0_in: endpoint {
++			remote-endpoint = <&dsi1_out_ep>;
++		};
++	};
++};
++
++&dsi2 {
++	status = "ok";
++	vdd-supply = <&vcxio>;
++
++	dsi2_out_ep: endpoint {
++		remote-endpoint = <&lcd1_in>;
++		lanes = <0 1 2 3 4 5>;
++	};
++
++	lcd1: display {
++		compatible = "tpo,taal", "panel-dsi-cm";
++		label = "lcd1";
++
++		gpios = <&gpio4 8 GPIO_ACTIVE_HIGH>;	/* 104, reset */
++
++		lcd1_in: endpoint {
++			remote-endpoint = <&dsi2_out_ep>;
++		};
++	};
++};
++
++&hdmi {
++	status = "ok";
++	vdda-supply = <&vdac>;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&dss_hdmi_pins>;
++
++	hdmi_out: endpoint {
++		remote-endpoint = <&tpd12s015_in>;
++	};
++};
+-- 
+1.8.3.2
 
-
-
---VntJiupCc59N6Jq4JLpFFAVrkxHjcaAKO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSz9oeAAoJEPo9qoy8lh71ISMP/j3BTOq9ahorG2SDXLxe0rre
-Qs9cBl5zqTzDkoVyUM4wRRn+I7QsII99bYKDpgeuKBtALnhgd3iTm+VtGXpJJPC2
-O2JaQIkX6BQPmNaV0l640aPT7yjrNpM0m75/AtiAMAsV88gJQsfJWUisvFZVs+G0
-FEzv+94UtZOUBq9orW4NHIJQp2BUo6Aj3Zd8UG3tqkjIdC2kHwxieBI+ytWjDL0X
-ZaVTbeXQ+fHaGMwuvwAWOs/7htVDUOuqvNL8ZnzcnnkKYXQft20L5T4zHZs5jGKi
-VAT0ChTNrI/O/26S0Iog4hHaT1R8mCFPahFH/JBZNkIgJCDyGOXE/nySJ9mC/Biz
-z+GwK2fSbQzEJ83zwCPCHroade1oI4qYRHvZgbO6aooqW1CU8AuMthQU2Qla9sXF
-uuQbiqb+FCkxkpJ2fKRwhgNHusD5XZCCcNYt/bPN70di/mlUmsM6X1EjyIRmSuU7
-XunpbABNcN8Z883A1xr5U3PbmOqyMaAIDMbZre9ENAkZvCuWiblHD2TSZDL+2NUD
-xMDvO+4ZXiS3Fs9n/mzZruP/zTH1j0Ye8yAEfS4dTvSGWf2f8Ge3ML7Pld8PlGq4
-YUFN0z1pWKANm1tsSlIeg8EWl03RLlmiCB1rye0SfdJ7M4NeHd90avlMwFgz7mPP
-DuesFko9b4ALrGYXBG6U
-=LX4U
------END PGP SIGNATURE-----
-
---VntJiupCc59N6Jq4JLpFFAVrkxHjcaAKO--

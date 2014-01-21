@@ -1,74 +1,96 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 08 Jan 2014 09:48:16 +0000
-Subject: Re: [PATCH] fbcon: trivial optimization for fbcon_exit
-Message-Id: <52CD1EE0.9000309@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="RI8SJQ5MHFLwVUdDcVK9XNsvsVfcmJHt0"
+Date: Tue, 21 Jan 2014 10:56:48 +0000
+Subject: [PATCHv3 16/41] OMAPDSS: connector-dvi: Add DT support
+Message-Id: <1390301833-24944-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20131227023917.GA3908@udknight>
-In-Reply-To: <20131227023917.GA3908@udknight>
-To: Wang YanQing <udknight@gmail.com>
-Cc: plagnioj@jcrosoft.com, airlied@redhat.com, gregkh@linuxfoundation.org, akpm@linux-foundation.org, kamal@whence.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---RI8SJQ5MHFLwVUdDcVK9XNsvsVfcmJHt0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add DT support for connector-dvi.
 
-On 2013-12-27 04:39, Wang YanQing wrote:
-> Break out as soon as we find a mapped entry con2fb_map.
->=20
-> Signed-off-by: Wang YanQing <udknight@gmail.com>
-> ---
->  drivers/video/console/fbcon.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbco=
-n.c
-> index cd8a802..f39931f 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -3547,8 +3547,10 @@ static void fbcon_exit(void)
->  			"no"));
-> =20
->  		for (j =3D first_fb_vc; j <=3D last_fb_vc; j++) {
-> -			if (con2fb_map[j] =3D=3D i)
-> +			if (con2fb_map[j] =3D=3D i) {
->  				mapped =3D 1;
-> +				break;
-> +			}
->  		}
-> =20
->  		if (mapped) {
->=20
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/displays-new/connector-dvi.c | 43 ++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-Thanks, queued for 3.14.
+diff --git a/drivers/video/omap2/displays-new/connector-dvi.c b/drivers/video/omap2/displays-new/connector-dvi.c
+index b6c50904038e..4ea26abdcb64 100644
+--- a/drivers/video/omap2/displays-new/connector-dvi.c
++++ b/drivers/video/omap2/displays-new/connector-dvi.c
+@@ -277,6 +277,37 @@ static int dvic_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int dvic_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	struct device_node *adapter_node;
++	struct i2c_adapter *adapter;
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	adapter_node = of_parse_phandle(node, "i2c-bus", 0);
++	if (adapter_node) {
++		adapter = of_find_i2c_adapter_by_node(adapter_node);
++		if (adapter = NULL) {
++			dev_err(&pdev->dev, "failed to parse i2c-bus\n");
++			omap_dss_put_device(ddata->in);
++			return -EPROBE_DEFER;
++		}
++
++		ddata->i2c_adapter = adapter;
++	}
++
++	return 0;
++}
++
+ static int dvic_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -293,6 +324,10 @@ static int dvic_probe(struct platform_device *pdev)
+ 		r = dvic_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = dvic_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -342,12 +377,20 @@ static int __exit dvic_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id dvic_of_match[] = {
++	{ .compatible = "omapdss,dvi-connector", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, dvic_of_match);
++
+ static struct platform_driver dvi_connector_driver = {
+ 	.probe	= dvic_probe,
+ 	.remove	= __exit_p(dvic_remove),
+ 	.driver	= {
+ 		.name	= "connector-dvi",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = dvic_of_match,
+ 	},
+ };
+ 
+-- 
+1.8.3.2
 
- Tomi
-
-
-
---RI8SJQ5MHFLwVUdDcVK9XNsvsVfcmJHt0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSzR7gAAoJEPo9qoy8lh71lbAP/AsMdZIennrcPHhw5rV+puby
-SRxItG9kpWuU907q8AY5eFFMliqlztdgVQh6d0j7Jqy2rKHA158VxKXmQguQGgrM
-3zddGA8RBWvBdjqVTURrGDY7gbFy4252uVPWxN3xmBhXifLj29oRyEW9UkZr3m9o
-C7NEUZLC4FBOKJATYAxLXWkrxjMYO31YNo+fBXnGxitCjjAQQ69OUMsn2oA6Jsgf
-FIEQAD1hN26i4+AlnVxNSfiFL3xsCQUOsgWD4CqD/jTmkd4pdML7Tl7qK3MTNY3R
-9En2ZuiaHiFW6Axbyt8OXPubdfjPWBDwwsSgxd+CmmaJw+xXOA6yoY1XAEp8c5B9
-+tUzp/fvG9KKevKrzrUpD2dG/ONMUi+oGNCVvGf/3uVHEbRZFYIP5yuQ2iPEtrQR
-7hrHyy9bBMsU6cmhSTYecn7olPu2wD/urmMvHuqgaNr16nEdhwokv1zJ6t9RkrVr
-KNefnmtHha5qfG26tW+f4Htxo/hi45eFZ0Ht8lkvGWinhDjHF+Eshg9N74//VbH6
-aezo3AA3DSJqJVt0SqF5B6pYyjbFlYqOjmcip/63lrAHuMkP7PazyHF4rd9trFrX
-2nAoLaiTUsSQiFkopbmQPTFOD0npbnMwLHsdEjFcjhcj6cXQei86KR4GqBgT9Ub0
-WqISp5Dc6M/7gSbw3pTh
-=8BzD
------END PGP SIGNATURE-----
-
---RI8SJQ5MHFLwVUdDcVK9XNsvsVfcmJHt0--

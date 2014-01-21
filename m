@@ -1,144 +1,283 @@
-From: David Vrabel <david.vrabel@citrix.com>
-Date: Thu, 02 Jan 2014 15:09:44 +0000
-Subject: Re: [Xen-devel] [PATCH v3 1/2] xen/pvhvm: If xen_platform_pci=0 is set don't blow up (v3).
-Message-Id: <52C58138.1030301@citrix.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Jan 2014 10:57:04 +0000
+Subject: [PATCHv3 32/41] ARM: OMAP2+: remove pdata quirks for displays
+Message-Id: <1390301833-24944-33-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387206250-13963-1-git-send-email-konrad.wilk@oracle.com>	<1387206250-13963-2-git-send-email-konrad.wilk@oracle.com>	<52B01F67.1030108@m2r.biz>	<20131217145150.GC4683@phenom.dumpdata.com>	<20131217212333.GA31966@phenom.dumpdata.com> <20131231143258.GA3018@phenom.dumpdata.com>
-In-Reply-To: <20131231143258.GA3018@phenom.dumpdata.com>
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: Fabio Fantoni <fabio.fantoni@m2r.biz>, axboe@kernel.dk, leosilva@linux.vnet.ibm.com, linux-fbdev@vger.kernel.org, dmitry.torokhov@gmail.com, ian.campbell@citrix.com, stefano.stabellini@eu.citrix.com, linux-pci@vger.kernel.org, netdev@vger.kernel.org, ashley@ashleylai.com, tpmdd@selhorst.net, linux-kernel@vger.kernel.org, mail@srajiv.net, tpmdd-devel@lists.sourceforge.net, tomi.valkeinen@ti.com, david.vrabel@citrix.com, linux-input@vger.kernel.org, bhelgaas@google.com, xen-devel@lists.xenproject.org, boris.ostrovsky@oracle.com, plagnioj@jcrosoft.com, peterhuewe@gmx.de
+To: linux-arm-kernel@lists.infradead.org
 
-On 31/12/13 14:32, Konrad Rzeszutek Wilk wrote:
->> That is because 'disks' is incorrect. It should have been 'ide-disks'
->>
->> [    0.000000] unrecognised option 'disks' in parameter 'xen_emul_unplug'
->>
->> With the 'ide-disks' it should work. I will update the description to
->> mention 'ide-disks' instead of 'disks'. Thank you for finding this!
->>
-> 
-> I've v4 with said update and will push it to Linus shortly.
-> 
-> Thanks!
-> 
-> P.S.
-> Here is v4:
-> 
->>From 275a81e7496d3532e5b4752703c50a7c8355a6c7 Mon Sep 17 00:00:00 2001
-> From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-> Date: Tue, 26 Nov 2013 15:05:40 -0500
-> Subject: [PATCH] xen/pvhvm: If xen_platform_pci=0 is set don't blow up (v4).
-> 
-> The user has the option of disabling the platform driver:
-> 00:02.0 Unassigned class [ff80]: XenSource, Inc. Xen Platform Device (rev 01)
-> 
-> which is used to unplug the emulated drivers (IDE, Realtek 8169, etc)
-> and allow the PV drivers to take over. If the user wishes
-> to disable that they can set:
-> 
->   xen_platform_pci=0
->   (in the guest config file)
-> 
-> or
->   xen_emul_unplug=never
->   (on the Linux command line)
-> 
-> except it does not work properly. The PV drivers still try to
-> load and since the Xen platform driver is not run - and it
-> has not initialized the grant tables, most of the PV drivers
-> stumble upon:
-> 
-> input: Xen Virtual Keyboard as /devices/virtual/input/input5
-> input: Xen Virtual Pointer as /devices/virtual/input/input6M
-> ------------[ cut here ]------------
-> kernel BUG at /home/konrad/ssd/konrad/linux/drivers/xen/grant-table.c:1206!
-> invalid opcode: 0000 [#1] SMP
-> Modules linked in: xen_kbdfront(+) xenfs xen_privcmd
-> CPU: 6 PID: 1389 Comm: modprobe Not tainted 3.13.0-rc1upstream-00021-ga6c892b-dirty #1
-> Hardware name: Xen HVM domU, BIOS 4.4-unstable 11/26/2013
-> RIP: 0010:[<ffffffff813ddc40>]  [<ffffffff813ddc40>] get_free_entries+0x2e0/0x300
-> Call Trace:
->  [<ffffffff8150d9a3>] ? evdev_connect+0x1e3/0x240
->  [<ffffffff813ddd0e>] gnttab_grant_foreign_access+0x2e/0x70
->  [<ffffffffa0010081>] xenkbd_connect_backend+0x41/0x290 [xen_kbdfront]
->  [<ffffffffa0010a12>] xenkbd_probe+0x2f2/0x324 [xen_kbdfront]
->  [<ffffffff813e5757>] xenbus_dev_probe+0x77/0x130
->  [<ffffffff813e7217>] xenbus_frontend_dev_probe+0x47/0x50
->  [<ffffffff8145e9a9>] driver_probe_device+0x89/0x230
->  [<ffffffff8145ebeb>] __driver_attach+0x9b/0xa0
->  [<ffffffff8145eb50>] ? driver_probe_device+0x230/0x230
->  [<ffffffff8145eb50>] ? driver_probe_device+0x230/0x230
->  [<ffffffff8145cf1c>] bus_for_each_dev+0x8c/0xb0
->  [<ffffffff8145e7d9>] driver_attach+0x19/0x20
->  [<ffffffff8145e260>] bus_add_driver+0x1a0/0x220
->  [<ffffffff8145f1ff>] driver_register+0x5f/0xf0
->  [<ffffffff813e55c5>] xenbus_register_driver_common+0x15/0x20
->  [<ffffffff813e76b3>] xenbus_register_frontend+0x23/0x40
->  [<ffffffffa0015000>] ? 0xffffffffa0014fff
->  [<ffffffffa001502b>] xenkbd_init+0x2b/0x1000 [xen_kbdfront]
->  [<ffffffff81002049>] do_one_initcall+0x49/0x170
-> 
-> .. snip..
-> 
-> which is hardly nice. This patch fixes this by having each
-> PV driver check for:
->  - if running in PV, then it is fine to execute (as that is their
->    native environment).
->  - if running in HVM, check if user wanted 'xen_emul_unplug=never',
->    in which case bail out and don't load any PV drivers.
->  - if running in HVM, and if PCI device 5853:0001 (xen_platform_pci)
->    does not exist, then bail out and not load PV drivers.
->  - (v2) if running in HVM, and if the user wanted 'xen_emul_unplug=ide-disks',
->    then bail out for all PV devices _except_ the block one.
->    Ditto for the network one ('nics').
->  - (v2) if running in HVM, and if the user wanted 'xen_emul_unplug=unnecessary'
->    then load block PV driver, and also setup the legacy IDE paths.
->    In (v3) make it actually load PV drivers.
-[...]
-> --- a/arch/x86/xen/platform-pci-unplug.c
-> +++ b/arch/x86/xen/platform-pci-unplug.c
-> @@ -69,6 +69,80 @@ static int check_platform_magic(void)
->  	return 0;
->  }
->  
-> +bool xen_has_pv_devices()
-> +{
-> +	if (!xen_domain())
-> +		return false;
-> +
-> +	/* PV domains always have them. */
-> +	if (xen_pv_domain())
-> +		return true;
-> +
-> +	/* And user has xen_platform_pci=0 set in guest config as
-> +	 * driver did not modify the value. */
-> +	if (xen_platform_pci_unplug = 0)
-> +		return false;
-> +
-> +	if (xen_platform_pci_unplug & XEN_UNPLUG_NEVER)
-> +		return false;
-> +
-> +	if (xen_platform_pci_unplug & XEN_UNPLUG_ALL)
-> +		return true;
-> +
-> +	/* This is an odd one - we are going to run legacy
-> +	 * and PV drivers at the same time. */
-> +	if (xen_platform_pci_unplug & XEN_UNPLUG_UNNECESSARY)
-> +		return true;
-> +
-> +	/* And the caller has to follow with xen_pv_{disk,nic}_devices
-> +	 * to be certain which driver can load. */
-> +	return false;
+Remove pdata quirks for the displays on boards that are now supported
+properly with DT.
 
-This may result in:
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/dss-common.c   | 224 -------------------------------------
+ arch/arm/mach-omap2/pdata-quirks.c |   3 -
+ 2 files changed, 227 deletions(-)
 
-xen_has_pv_devices() = false
-xen_has_pv_disk_devices() = true
+diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
+index dadccc91488c..010bb72d2b75 100644
+--- a/arch/arm/mach-omap2/dss-common.c
++++ b/arch/arm/mach-omap2/dss-common.c
+@@ -33,227 +33,3 @@
+ #include "soc.h"
+ #include "dss-common.h"
+ #include "mux.h"
+-
+-#define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
+-#define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
+-#define HDMI_GPIO_HPD  63 /* Hotplug detect */
+-
+-#define PANDA_DVI_TFP410_POWER_DOWN_GPIO	0
+-
+-/* DVI Connector */
+-static struct connector_dvi_platform_data omap4_panda_dvi_connector_pdata = {
+-	.name                   = "dvi",
+-	.source                 = "tfp410.0",
+-	.i2c_bus_num            = 2,
+-};
+-
+-static struct platform_device omap4_panda_dvi_connector_device = {
+-	.name                   = "connector-dvi",
+-	.id                     = 0,
+-	.dev.platform_data      = &omap4_panda_dvi_connector_pdata,
+-};
+-
+-/* TFP410 DPI-to-DVI chip */
+-static struct encoder_tfp410_platform_data omap4_panda_tfp410_pdata = {
+-	.name                   = "tfp410.0",
+-	.source                 = "dpi.0",
+-	.data_lines             = 24,
+-	.power_down_gpio        = PANDA_DVI_TFP410_POWER_DOWN_GPIO,
+-};
+-
+-static struct platform_device omap4_panda_tfp410_device = {
+-	.name                   = "tfp410",
+-	.id                     = 0,
+-	.dev.platform_data      = &omap4_panda_tfp410_pdata,
+-};
+-
+-/* HDMI Connector */
+-static struct connector_hdmi_platform_data omap4_panda_hdmi_connector_pdata = {
+-	.name                   = "hdmi",
+-	.source                 = "tpd12s015.0",
+-};
+-
+-static struct platform_device omap4_panda_hdmi_connector_device = {
+-	.name                   = "connector-hdmi",
+-	.id                     = 0,
+-	.dev.platform_data      = &omap4_panda_hdmi_connector_pdata,
+-};
+-
+-/* TPD12S015 HDMI ESD protection & level shifter chip */
+-static struct encoder_tpd12s015_platform_data omap4_panda_tpd_pdata = {
+-	.name                   = "tpd12s015.0",
+-	.source                 = "hdmi.0",
+-
+-	.ct_cp_hpd_gpio = HDMI_GPIO_CT_CP_HPD,
+-	.ls_oe_gpio = HDMI_GPIO_LS_OE,
+-	.hpd_gpio = HDMI_GPIO_HPD,
+-};
+-
+-static struct platform_device omap4_panda_tpd_device = {
+-	.name                   = "tpd12s015",
+-	.id                     = 0,
+-	.dev.platform_data      = &omap4_panda_tpd_pdata,
+-};
+-
+-static struct omap_dss_board_info omap4_panda_dss_data = {
+-	.default_display_name = "dvi",
+-};
+-
+-void __init omap4_panda_display_init_of(void)
+-{
+-	omap_display_init(&omap4_panda_dss_data);
+-
+-	platform_device_register(&omap4_panda_tfp410_device);
+-	platform_device_register(&omap4_panda_dvi_connector_device);
+-
+-	platform_device_register(&omap4_panda_tpd_device);
+-	platform_device_register(&omap4_panda_hdmi_connector_device);
+-}
+-
+-
+-/* OMAP4 Blaze display data */
+-
+-#define DISPLAY_SEL_GPIO	59	/* LCD2/PicoDLP switch */
+-#define DLP_POWER_ON_GPIO	40
+-
+-static struct panel_dsicm_platform_data dsi1_panel = {
+-	.name		= "lcd",
+-	.source		= "dsi.0",
+-	.reset_gpio	= 102,
+-	.use_ext_te	= false,
+-	.ext_te_gpio	= 101,
+-	.pin_config = {
+-		.num_pins	= 6,
+-		.pins		= { 0, 1, 2, 3, 4, 5 },
+-	},
+-};
+-
+-static struct platform_device sdp4430_lcd_device = {
+-	.name                   = "panel-dsi-cm",
+-	.id                     = 0,
+-	.dev.platform_data	= &dsi1_panel,
+-};
+-
+-static struct panel_dsicm_platform_data dsi2_panel = {
+-	.name		= "lcd2",
+-	.source		= "dsi.1",
+-	.reset_gpio	= 104,
+-	.use_ext_te	= false,
+-	.ext_te_gpio	= 103,
+-	.pin_config = {
+-		.num_pins	= 6,
+-		.pins		= { 0, 1, 2, 3, 4, 5 },
+-	},
+-};
+-
+-static struct platform_device sdp4430_lcd2_device = {
+-	.name                   = "panel-dsi-cm",
+-	.id                     = 1,
+-	.dev.platform_data	= &dsi2_panel,
+-};
+-
+-/* HDMI Connector */
+-static struct connector_hdmi_platform_data sdp4430_hdmi_connector_pdata = {
+-	.name                   = "hdmi",
+-	.source                 = "tpd12s015.0",
+-};
+-
+-static struct platform_device sdp4430_hdmi_connector_device = {
+-	.name                   = "connector-hdmi",
+-	.id                     = 0,
+-	.dev.platform_data      = &sdp4430_hdmi_connector_pdata,
+-};
+-
+-/* TPD12S015 HDMI ESD protection & level shifter chip */
+-static struct encoder_tpd12s015_platform_data sdp4430_tpd_pdata = {
+-	.name                   = "tpd12s015.0",
+-	.source                 = "hdmi.0",
+-
+-	.ct_cp_hpd_gpio = HDMI_GPIO_CT_CP_HPD,
+-	.ls_oe_gpio = HDMI_GPIO_LS_OE,
+-	.hpd_gpio = HDMI_GPIO_HPD,
+-};
+-
+-static struct platform_device sdp4430_tpd_device = {
+-	.name                   = "tpd12s015",
+-	.id                     = 0,
+-	.dev.platform_data      = &sdp4430_tpd_pdata,
+-};
+-
+-
+-static struct omap_dss_board_info sdp4430_dss_data = {
+-	.default_display_name = "lcd",
+-};
+-
+-/*
+- * we select LCD2 by default (instead of Pico DLP) by setting DISPLAY_SEL_GPIO.
+- * Setting DLP_POWER_ON gpio enables the VDLP_2V5 VDLP_1V8 and VDLP_1V0 rails
+- * used by picodlp on the 4430sdp platform. Keep this gpio disabled as LCD2 is
+- * selected by default
+- */
+-void __init omap_4430sdp_display_init_of(void)
+-{
+-	int r;
+-
+-	r = gpio_request_one(DISPLAY_SEL_GPIO, GPIOF_OUT_INIT_HIGH,
+-			"display_sel");
+-	if (r)
+-		pr_err("%s: Could not get display_sel GPIO\n", __func__);
+-
+-	r = gpio_request_one(DLP_POWER_ON_GPIO, GPIOF_OUT_INIT_LOW,
+-		"DLP POWER ON");
+-	if (r)
+-		pr_err("%s: Could not get DLP POWER ON GPIO\n", __func__);
+-
+-	omap_display_init(&sdp4430_dss_data);
+-
+-	platform_device_register(&sdp4430_lcd_device);
+-	platform_device_register(&sdp4430_lcd2_device);
+-
+-	platform_device_register(&sdp4430_tpd_device);
+-	platform_device_register(&sdp4430_hdmi_connector_device);
+-}
+-
+-
+-/* OMAP3 IGEPv2 data */
+-
+-#define IGEP2_DVI_TFP410_POWER_DOWN_GPIO	170
+-
+-/* DVI Connector */
+-static struct connector_dvi_platform_data omap3_igep2_dvi_connector_pdata = {
+-	.name                   = "dvi",
+-	.source                 = "tfp410.0",
+-	.i2c_bus_num            = 2,
+-};
+-
+-static struct platform_device omap3_igep2_dvi_connector_device = {
+-	.name                   = "connector-dvi",
+-	.id                     = 0,
+-	.dev.platform_data      = &omap3_igep2_dvi_connector_pdata,
+-};
+-
+-/* TFP410 DPI-to-DVI chip */
+-static struct encoder_tfp410_platform_data omap3_igep2_tfp410_pdata = {
+-	.name                   = "tfp410.0",
+-	.source                 = "dpi.0",
+-	.data_lines             = 24,
+-	.power_down_gpio        = IGEP2_DVI_TFP410_POWER_DOWN_GPIO,
+-};
+-
+-static struct platform_device omap3_igep2_tfp410_device = {
+-	.name                   = "tfp410",
+-	.id                     = 0,
+-	.dev.platform_data      = &omap3_igep2_tfp410_pdata,
+-};
+-
+-static struct omap_dss_board_info igep2_dss_data = {
+-	.default_display_name = "dvi",
+-};
+-
+-void __init omap3_igep2_display_init_of(void)
+-{
+-	omap_display_init(&igep2_dss_data);
+-
+-	platform_device_register(&omap3_igep2_tfp410_device);
+-	platform_device_register(&omap3_igep2_dvi_connector_device);
+-}
+diff --git a/arch/arm/mach-omap2/pdata-quirks.c b/arch/arm/mach-omap2/pdata-quirks.c
+index 39f020c982e8..68e3bca42e60 100644
+--- a/arch/arm/mach-omap2/pdata-quirks.c
++++ b/arch/arm/mach-omap2/pdata-quirks.c
+@@ -80,7 +80,6 @@ static void __init hsmmc2_internal_input_clk(void)
+ 
+ static void __init omap3_igep0020_legacy_init(void)
+ {
+-	omap3_igep2_display_init_of();
+ }
+ 
+ static void __init omap3_evm_legacy_init(void)
+@@ -97,14 +96,12 @@ static void __init omap3_zoom_legacy_init(void)
+ #ifdef CONFIG_ARCH_OMAP4
+ static void __init omap4_sdp_legacy_init(void)
+ {
+-	omap_4430sdp_display_init_of();
+ 	legacy_init_wl12xx(WL12XX_REFCLOCK_26,
+ 			   WL12XX_TCXOCLOCK_26, 53);
+ }
+ 
+ static void __init omap4_panda_legacy_init(void)
+ {
+-	omap4_panda_display_init_of();
+ 	legacy_init_ehci_clk("auxclk3_ck");
+ 	legacy_init_wl12xx(WL12XX_REFCLOCK_38, 0, 53);
+ }
+-- 
+1.8.3.2
 
-which looks odd to me.  Surely xen_has_pv_*_devices() is a subset of
-xen_has_pv_devices()?
-
-David

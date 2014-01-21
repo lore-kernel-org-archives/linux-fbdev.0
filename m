@@ -1,52 +1,64 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 07 Jan 2014 12:53:56 +0000
-Subject: fbdev patches for 3.14
-Message-Id: <52CBF8E4.7000300@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="usCIDOGLLNWLr4fWWi7gq4vNnKQKWWc7v"
+Date: Tue, 21 Jan 2014 10:56:36 +0000
+Subject: [PATCHv3 04/41] OMAPDSS: get dssdev->alias from DT alias
+Message-Id: <1390301833-24944-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---usCIDOGLLNWLr4fWWi7gq4vNnKQKWWc7v
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+We currently create a "displayX" style alias name for all displays,
+using a number that is incremented for each registered display. With the
+new DSS device model there is no clear order in which the displays are
+registered, and thus the numbering is somewhat random.
 
-Hi,
+This patch improves the behavior for DT case so that if the displays
+have been assigned DT aliases, those aliases will be used as DSS
+aliases.
 
-Jean-Christophe was supposed to be handling this merge window, but that
-doesn't seem to happen. So I'll start collecting fbdev patches for 3.14.
-We're obviously very late, so I'm trying to apply only relatively safe
-patches, nothing controversial.
+This means that "display0" is always the one specified in the DT alias,
+and thus display0 can be used as default display in case the user didn't
+specify a default display.
 
-I'll start going through the patches, but if there's something urgent, I
-don't mind if you re-post it already. Or, if it's not urgent, check
-linux-next at the end of the week, and re-post if it's not there yet.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/display.c | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
 
- Tomi
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 012ada38a29d..21080f9dae87 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -134,9 +134,24 @@ static int disp_num_counter;
+ int omapdss_register_display(struct omap_dss_device *dssdev)
+ {
+ 	struct omap_dss_driver *drv = dssdev->driver;
++	int id;
+ 
+-	snprintf(dssdev->alias, sizeof(dssdev->alias),
+-			"display%d", disp_num_counter++);
++	/*
++	 * Note: this presumes all the displays are either using DT or non-DT,
++	 * which normally should be the case. This also presumes that all
++	 * displays either have an DT alias, or none has.
++	 */
++
++	if (dssdev->dev->of_node) {
++		id = of_alias_get_id(dssdev->dev->of_node, "display");
++
++		if (id < 0)
++			id = disp_num_counter++;
++	} else {
++		id = disp_num_counter++;
++	}
++
++	snprintf(dssdev->alias, sizeof(dssdev->alias), "display%d", id);
+ 
+ 	/* Use 'label' property for name, if it exists */
+ 	if (dssdev->dev->of_node)
+-- 
+1.8.3.2
 
-
---usCIDOGLLNWLr4fWWi7gq4vNnKQKWWc7v
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSy/jkAAoJEPo9qoy8lh71tZAP/Re5Cpt3yK4jAJ0Q8MGv5q4b
-sWTwBb5XVcOkl+S4LbDllBUH9JJiwDfH5OCLyGs3rn1j5kbCwkfK/XAYLWB2/zkG
-7MifxWA+MOAoUYw2gWS6MjUVI3prlwZnA6RuNaVAVAIbYfYVj3HP+L4NzBnD/4f7
-Iiq9Cpr6fAqh3FJN/q+I6JhJZZzNMA3mk33WjvmfylQ+uImzWvbu13atEuLxy5uI
-FjEZI8yGnMg86KEq2hqhrWMoHG829Je0QYx8z+kuGPZNJtcBuL4ymP/SS3NhFjJU
-jYtXu46PNEpSjPVxbJ1Z1QwC2Onu7G0VQpsft1q2Q1D7KIc7rDPBSRh3x37C2I5n
-+2oL6nfIiFOQnTqNe6+UE8rMH45l6+2hmguHQOpnhd/RTrlETsQQ9Yaz5+BFtWL+
-BD7INKfngYPu7HdusGKWLBr6p4OhA9M6ae3cFTQB8aWaAh05UMFl/w5U+JAWhDbm
-PA+evl4ZFhbiHW2szA+R+qbFN2Lrl4I8wLKo492sBmPCoc7JpvB+bWO2eooPeMkE
-ScQOImHr/h8+rZNW0JPA4m5HlrnsV5xwkA++BEXbdAch8eU8S3cCetcVAj8UY581
-lcMXacy01r7HTEp64nX5hi0UrVH+OiAmIpUFxUm21THN3ezs423SI2nvIp7cSuSw
-306I5BeVXmwJ4rF45iV0
-=0lVu
------END PGP SIGNATURE-----
-
---usCIDOGLLNWLr4fWWi7gq4vNnKQKWWc7v--

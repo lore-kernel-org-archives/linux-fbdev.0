@@ -1,74 +1,145 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 10 Jan 2014 11:33:39 +0000
-Subject: Re: [patch v2] tgafb: potential NULL dereference in init
-Message-Id: <52CFDA93.7080000@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="tTBQerjnMag3Je2cPGPppp79KrXIxGCGx"
+Date: Tue, 21 Jan 2014 10:56:33 +0000
+Subject: [PATCHv3 01/41] ARM: OMAP2+: add omapdss_init_of()
+Message-Id: <1390301833-24944-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---tTBQerjnMag3Je2cPGPppp79KrXIxGCGx
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+omapdss driver uses a omapdss platform device to pass platform specific
+function pointers and DSS hardware version from the arch code to the
+driver. This device is needed also when booting with DT.
 
-On 2013-12-16 11:49, Dan Carpenter wrote:
-> Static checkers complain that there are paths where "tga_type_name" can=
+This patch adds omapdss_init_of() function, called from board-generic at
+init time, which creates the omapdss device.
 
-> be NULL.  I've re-arranged the code slightly so that's impossible.
->=20
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
-> v1: had introduced a "dereferencing uninitialized variable" bug.  Thank=
-s
-> to Geert Uytterhoeven for catching that.
->=20
-> diff --git a/drivers/video/tgafb.c b/drivers/video/tgafb.c
-> index f28674fea909..afd8887fd656 100644
-> --- a/drivers/video/tgafb.c
-> +++ b/drivers/video/tgafb.c
-> @@ -1496,10 +1496,9 @@ tgafb_init_fix(struct fb_info *info)
->  		if (tga_bus_tc)
->  			tga_type_name =3D "Digital ZLX-E3";
->  		break;
-> -	default:
-> -		tga_type_name =3D "Unknown";
-> -		break;
->  	}
-> +	if (!tga_type_name)
-> +		tga_type_name =3D "Unknown";
-> =20
->  	strlcpy(info->fix.id, tga_type_name, sizeof(info->fix.id));
-> =20
->=20
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/board-generic.c |  2 +
+ arch/arm/mach-omap2/common.h        |  2 +
+ arch/arm/mach-omap2/display.c       | 76 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 80 insertions(+)
 
-Queued for 3.14.
+diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/board-generic.c
+index 8d972ff18c56..842e4f21ab09 100644
+--- a/arch/arm/mach-omap2/board-generic.c
++++ b/arch/arm/mach-omap2/board-generic.c
+@@ -36,6 +36,8 @@ static struct of_device_id omap_dt_match_table[] __initdata = {
+ static void __init omap_generic_init(void)
+ {
+ 	pdata_quirks_init(omap_dt_match_table);
++
++	omapdss_init_of();
+ }
+ 
+ #ifdef CONFIG_SOC_OMAP2420
+diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
+index e30ef6797c63..04a4d360dd20 100644
+--- a/arch/arm/mach-omap2/common.h
++++ b/arch/arm/mach-omap2/common.h
+@@ -307,5 +307,7 @@ extern int omap_dss_reset(struct omap_hwmod *);
+ /* SoC specific clock initializer */
+ extern int (*omap_clk_init)(void);
+ 
++int __init omapdss_init_of(void);
++
+ #endif /* __ASSEMBLER__ */
+ #endif /* __ARCH_ARM_MACH_OMAP2PLUS_COMMON_H */
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 4cf165502b35..77cd927e5acb 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -23,6 +23,8 @@
+ #include <linux/clk.h>
+ #include <linux/err.h>
+ #include <linux/delay.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
+ 
+ #include <video/omapdss.h>
+ #include "omap_hwmod.h"
+@@ -552,3 +554,77 @@ int omap_dss_reset(struct omap_hwmod *oh)
+ 
+ 	return r;
+ }
++
++int __init omapdss_init_of(void)
++{
++	int r;
++	enum omapdss_version ver;
++	struct device_node *node;
++
++	static struct omap_dss_board_info board_data = {
++		.dsi_enable_pads = omap_dsi_enable_pads,
++		.dsi_disable_pads = omap_dsi_disable_pads,
++		.get_context_loss_count = omap_pm_get_dev_context_loss_count,
++		.set_min_bus_tput = omap_dss_set_min_bus_tput,
++	};
++
++	/* only create dss helper devices if dss is enabled in the .dts */
++
++	node = of_find_compatible_node(NULL, NULL, "ti,omap2-dss");
++	if (!node)
++		node = of_find_compatible_node(NULL, NULL, "ti,omap3-dss");
++	if (!node)
++		node = of_find_compatible_node(NULL, NULL, "ti,omap4-dss");
++	if (!node)
++		return 0;
++
++	if (!of_device_is_available(node))
++		return 0;
++
++	ver = omap_display_get_version();
++
++	if (ver = OMAPDSS_VER_UNKNOWN) {
++		pr_err("DSS not supported on this SoC\n");
++		return -ENODEV;
++	}
++
++	board_data.version = ver;
++
++	omap_display_device.dev.platform_data = &board_data;
++
++	r = platform_device_register(&omap_display_device);
++	if (r < 0) {
++		pr_err("Unable to register omapdss device\n");
++		return r;
++	}
++
++	/* create DRM device */
++	r = omap_init_drm();
++	if (r < 0) {
++		pr_err("Unable to register omapdrm device\n");
++		return r;
++	}
++
++	/* create vrfb device */
++	r = omap_init_vrfb();
++	if (r < 0) {
++		pr_err("Unable to register omapvrfb device\n");
++		return r;
++	}
++
++	/* create FB device */
++	r = omap_init_fb();
++	if (r < 0) {
++		pr_err("Unable to register omapfb device\n");
++		return r;
++	}
++
++	/* create V4L2 display device */
++	r = omap_init_vout();
++	if (r < 0) {
++		pr_err("Unable to register omap_vout device\n");
++		return r;
++	}
++
++	return 0;
++}
+-- 
+1.8.3.2
 
- Tomi
-
-
-
---tTBQerjnMag3Je2cPGPppp79KrXIxGCGx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSz9qTAAoJEPo9qoy8lh71t6gP/A6ff91uTgMTXeGfrU6d2tcs
-J08VRCZVJCavdFaNcBvX1+mAwv9c4TF2/f7WQ19p1R6cFZKdUOfu3Qg/AfPC88IL
-sGet8Xq0V8VUcJWypBrapX5f1CpXh/mxG7kpt21hOLRweVmLHcXfFcAtzGsyAZ5E
-aERIM40PM5RuExu9QhA+BeZ58nBXch+PDJJwesCKt5RwlRNrxZLCHjrSmVKAh2r2
-aTalEQnPppNawleZQFEjE7J4WXgcXjKIjeueagKUH6vxXyUefV5Ckh4I8d9wBBpk
-nH4nRhikQ4AGRgP9hkc5Zg+rG31KEtm4g1hSDqVrLdhaFmCUODZkXDgJh0T9CQba
-FburP0UCcDvhp22HrXtMjK0wuY9KBn+XnxiRaPjYz2g2soWlb62BUpZB2O8nxpWq
-m2xkxEGF1NEf4ru4v5tU19inR0A4kJ1xIm84EvbNrZFo2CDSby4LDVj2YMVfBf3p
-XHEss6tXwN/YYzcyL7tV9vB1LM6iusWXAN7bXSGJnhWrksSN2uWostBtdQqtr10V
-l6aGceKm6gpx61OSiGeMiWms/gO19+pt1vni5oASGbyZlJ06Ms4FSVg0/sylYM8K
-DSYibLj309AXs+PLmOG2NPTZi6DBn+R988fg74wZw55+IYcABOvFCbWRKZinsFYR
-QjGa4NwDEYNwtKKDXeyv
-=wfzy
------END PGP SIGNATURE-----
-
---tTBQerjnMag3Je2cPGPppp79KrXIxGCGx--

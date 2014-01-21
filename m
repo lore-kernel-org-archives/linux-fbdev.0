@@ -1,132 +1,56 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Jan 2014 10:57:02 +0000
-Subject: [PATCHv3 30/41] ARM: omap3-n900.dts: add display information
-Message-Id: <1390301833-24944-31-git-send-email-tomi.valkeinen@ti.com>
+From: Sebastian Reichel <sre@debian.org>
+Date: Tue, 21 Jan 2014 15:26:05 +0000
+Subject: Re: [PATCHv3 30/41] ARM: omap3-n900.dts: add display information
+Message-Id: <20140121152605.GA5983@earth.universe>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="9jxsPFA5p3P2qPhR"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1390301833-24944-31-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-31-git-send-email-tomi.valkeinen@ti.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Add DT data for OMAP3 N900 board. The board has the following displays:
 
-lcd: LCD panel connected to OMAP's SDI output
-tv: analog svideo
+--9jxsPFA5p3P2qPhR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/boot/dts/omap3-n900.dts | 70 +++++++++++++++++++++++++++++++++++++---
- 1 file changed, 66 insertions(+), 4 deletions(-)
+On Tue, Jan 21, 2014 at 12:57:02PM +0200, Tomi Valkeinen wrote:
+> Add DT data for OMAP3 N900 board. The board has the following
+> displays:
+>=20
+> lcd: LCD panel connected to OMAP's SDI output
+> tv: analog svideo
+>=20
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-diff --git a/arch/arm/boot/dts/omap3-n900.dts b/arch/arm/boot/dts/omap3-n900.dts
-index 6fc85f963530..c1bb04d55d4b 100644
---- a/arch/arm/boot/dts/omap3-n900.dts
-+++ b/arch/arm/boot/dts/omap3-n900.dts
-@@ -74,6 +74,14 @@
- 		};
- 	};
- 
-+	tv: connector {
-+		compatible = "composite-connector";
-+		label = "tv";
-+
-+		tv_connector_in: endpoint {
-+			remote-endpoint = <&venc_out>;
-+		};
-+	};
- };
- 
- &omap3_pmx_core {
-@@ -140,11 +148,23 @@
- 		>;
- 	};
- 
--	display_pins: pinmux_display_pins {
-+	acx565akm_pins: pinmux_acx565akm_pins {
- 		pinctrl-single,pins = <
- 			0x0d4 (PIN_OUTPUT | MUX_MODE4)		/* RX51_LCD_RESET_GPIO */
- 		>;
- 	};
-+
-+	dss_sdi_pins: pinmux_dss_sdi_pins {
-+		pinctrl-single,pins = <
-+			0x0c0 (PIN_OUTPUT | MUX_MODE1)   /* dss_data10.sdi_dat1n */
-+			0x0c2 (PIN_OUTPUT | MUX_MODE1)   /* dss_data11.sdi_dat1p */
-+			0x0c4 (PIN_OUTPUT | MUX_MODE1)   /* dss_data12.sdi_dat2n */
-+			0x0c6 (PIN_OUTPUT | MUX_MODE1)   /* dss_data13.sdi_dat2p */
-+
-+			0x0d8 (PIN_OUTPUT | MUX_MODE1)   /* dss_data22.sdi_clkp */
-+			0x0da (PIN_OUTPUT | MUX_MODE1)   /* dss_data23.sdi_clkn */
-+		>;
-+	};
- };
- 
- &i2c1 {
-@@ -471,13 +491,21 @@
- 		spi-max-frequency = <6000000>;
- 		reg = <0>;
- 	};
--	mipid@2 {
--		compatible = "acx565akm";
-+
-+	acx565akm@2 {
-+		compatible = "sony,acx565akm";
- 		spi-max-frequency = <6000000>;
- 		reg = <2>;
- 
- 		pinctrl-names = "default";
--		pinctrl-0 = <&display_pins>;
-+		pinctrl-0 = <&acx565akm_pins>;
-+
-+		label = "lcd";
-+		gpios = <&gpio3 26 GPIO_ACTIVE_HIGH>; /* 90 */
-+
-+		lcd_in: endpoint {
-+			remote-endpoint = <&sdi_out>;
-+		};
- 	};
- };
- 
-@@ -503,3 +531,37 @@
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&uart3_pins>;
- };
-+
-+&dss {
-+	status = "ok";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&dss_sdi_pins>;
-+
-+	vdds_sdi-supply = <&vaux1>;
-+
-+	ports {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		port@1 {
-+			reg = <1>;
-+
-+			sdi_out: endpoint {
-+				remote-endpoint = <&lcd_in>;
-+				datapairs = <2>;
-+			};
-+		};
-+	};
-+};
-+
-+&venc {
-+	status = "ok";
-+
-+	vdda-supply = <&vdac>;
-+
-+	venc_out: endpoint {
-+		remote-endpoint = <&tv_connector_in>;
-+		ti,channels = <1>;
-+	};
-+};
--- 
-1.8.3.2
+Your dss-dt-review-3 branch boots on my N900 with working display.
 
+Tested-by: Sebastian Reichel <sre@debian.org>
+
+-- Sebastian
+
+--9jxsPFA5p3P2qPhR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCAAGBQJS3pGNAAoJENju1/PIO/qaJBYQAIZazWfkbZRnlRcxPTrilj6l
+RyeqBYVX7psnzjsisBimGxeTc0K0s8EyzrQxzaAh2d4KlkrXHwJSAn8MxZF/4FLW
+7ZPmz4T3tbZbbw5/n9BtcfIbtPtpzw+OHJMKyL4b1i0yIDVPIy6kuOHg+6bvHLV+
+yYwcD4jr63IRASZ+ItFn6lp9AwOo7b2Z8hi6mP9HfGA7kcb7VY6hN+adDAJyOzWX
+1T+4yCNJhWXaaBXgKytuYIdavLNFYsW/EfbUl8K4GbyEMwpLJU60IpSbMJqxtKXP
+5SO/Qzc+8DVMVFNCHvMy3x6UCRqCXeKkWQ9/WeoskdlvJGQL7ShUgusx5cUt07a9
+sUVfwkO7Y2QUxsTEMp6NLPOsYmFr6/p0/XMOThw6sCktJUGJ15MDM7Xglkl+sA0N
+sx5+8BS1q+EKz7dMM5Bu7ky7ZUtj1YpUAFFv6SM9zMEC+HOadjLo4dkm05+caD6s
+Y0i/SNd29iXB4zuC3+ko++8NVlX9g/QI+RRd1eq5miUWSrPtzU2fv+1QnI0YVEym
+3A4wYFUHis5ibh2rkDQMdedShI0VkCgoASNYUUQp5pYhfzqI5JFKzHJdv6Mb9C/n
+VRh7uaXaV7E/yxlUfJXJ8LNFFlltpzbcMmc+jdHaSO6SS7aT9RLAPHDBPez9VYG8
+IJ7tP/46g3By4kbLnfDu
+=n51O
+-----END PGP SIGNATURE-----
+
+--9jxsPFA5p3P2qPhR--

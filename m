@@ -1,99 +1,132 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 08 Jan 2014 09:53:06 +0000
-Subject: Re: [PATCH] fbcon: Fix memory leak in fbcon_exit().
-Message-Id: <52CD2002.30208@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="HU8lGjTU08sgF4fotpiPFdbvaDGHqlkwU"
+Date: Tue, 21 Jan 2014 10:56:46 +0000
+Subject: [PATCHv3 14/41] OMAPDSS: panel-dsi-cm: Add DT support
+Message-Id: <1390301833-24944-15-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387982857-14500-1-git-send-email-masami256@gmail.com>
-In-Reply-To: <1387982857-14500-1-git-send-email-masami256@gmail.com>
-To: Masami Ichikawa <masami256@gmail.com>
-Cc: plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, airlied@redhat.com, udknight@gmail.com, gregkh@linuxfoundation.org, akpm@linux-foundation.org, tiwai@suse.de, linux-kernel@vger.kernel.org
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---HU8lGjTU08sgF4fotpiPFdbvaDGHqlkwU
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add DT support for panel-dsi-cm.
 
-On 2013-12-25 16:47, Masami Ichikawa wrote:
-> kmemleak reported a memory leak as below.
->=20
-> unreferenced object 0xffff880036ca84c0 (size 16):
->   comm "swapper/0", pid 1, jiffies 4294877407 (age 4434.633s)
->   hex dump (first 16 bytes):
->     00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff ff  ................
->   backtrace:
->     [<ffffffff814ed01e>] kmemleak_alloc+0x4e/0xb0
->     [<ffffffff8118913c>] __kmalloc+0x1fc/0x290
->     [<ffffffff81302c9e>] bit_cursor+0x24e/0x6c0
->     [<ffffffff812ff2f4>] fbcon_cursor+0x154/0x1d0
->     [<ffffffff813675d8>] hide_cursor+0x28/0xa0
->     [<ffffffff81368acf>] update_region+0x6f/0x90
->     [<ffffffff81300268>] fbcon_switch+0x518/0x550
->     [<ffffffff813695b9>] redraw_screen+0x189/0x240
->     [<ffffffff8136a0e0>] do_bind_con_driver+0x360/0x380
->     [<ffffffff8136a6e4>] do_take_over_console+0x114/0x1c0
->     [<ffffffff812fdc83>] do_fbcon_takeover+0x63/0xd0
->     [<ffffffff813023e5>] fbcon_event_notify+0x605/0x720
->     [<ffffffff81501dcc>] notifier_call_chain+0x4c/0x70
->     [<ffffffff81087f8d>] __blocking_notifier_call_chain+0x4d/0x70
->     [<ffffffff81087fc6>] blocking_notifier_call_chain+0x16/0x20
->     [<ffffffff812f201b>] fb_notifier_call_chain+0x1b/0x20
->=20
-> In this case ops->cursor_state.mask is allocated in bit_cursor() but
-> not freed in fbcon_exit(). So, fbcon_exit() needs to free buffer in its=
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/displays-new/panel-dsi-cm.c | 65 +++++++++++++++++++++++--
+ 1 file changed, 61 insertions(+), 4 deletions(-)
 
-> process.
-> In the case, fbcon_exit() was called from fbcon_deinit() when driver
-> called remove_conflicting_framebuffers().
->=20
-> Signed-off-by: Masami Ichikawa <masami256@gmail.com>
-> ---
->  drivers/video/console/fbcon.c | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbco=
-n.c
-> index cd8a802..4f02375 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -3561,6 +3561,7 @@ static void fbcon_exit(void)
-> =20
->  				fbcon_del_cursor_timer(info);
->  				kfree(ops->cursor_src);
-> +				kfree(ops->cursor_state.mask);
->  				kfree(info->fbcon_par);
->  				info->fbcon_par =3D NULL;
->  			}
->=20
+diff --git a/drivers/video/omap2/displays-new/panel-dsi-cm.c b/drivers/video/omap2/displays-new/panel-dsi-cm.c
+index b7baafe83aa3..d302c4428ab7 100644
+--- a/drivers/video/omap2/displays-new/panel-dsi-cm.c
++++ b/drivers/video/omap2/displays-new/panel-dsi-cm.c
+@@ -22,6 +22,8 @@
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
++#include <linux/of_device.h>
++#include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -595,10 +597,13 @@ static int dsicm_power_on(struct panel_drv_data *ddata)
+ 		.lp_clk_max = 10000000,
+ 	};
+ 
+-	r = in->ops.dsi->configure_pins(in, &ddata->pin_config);
+-	if (r) {
+-		dev_err(&ddata->pdev->dev, "failed to configure DSI pins\n");
+-		goto err0;
++	if (ddata->pin_config.num_pins > 0) {
++		r = in->ops.dsi->configure_pins(in, &ddata->pin_config);
++		if (r) {
++			dev_err(&ddata->pdev->dev,
++				"failed to configure DSI pins\n");
++			goto err0;
++		}
+ 	}
+ 
+ 	r = in->ops.dsi->set_config(in, &dsi_config);
+@@ -1156,6 +1161,46 @@ static int dsicm_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int dsicm_probe_of(struct platform_device *pdev)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct omap_dss_device *in;
++	int gpio;
++
++	gpio = of_get_gpio(node, 0);
++	if (!gpio_is_valid(gpio)) {
++		dev_err(&pdev->dev, "failed to parse reset gpio\n");
++		return gpio;
++	}
++	ddata->reset_gpio = gpio;
++
++	if (of_gpio_count(node) > 1) {
++		gpio = of_get_gpio(node, 1);
++
++		if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++			ddata->ext_te_gpio = gpio;
++		} else {
++			dev_err(&pdev->dev, "failed to parse TE gpio\n");
++			return gpio;
++		}
++	} else {
++		ddata->ext_te_gpio = -1;
++	}
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	/* TODO: ulps, backlight */
++
++	return 0;
++}
++
+ static int dsicm_probe(struct platform_device *pdev)
+ {
+ 	struct backlight_properties props;
+@@ -1178,6 +1223,10 @@ static int dsicm_probe(struct platform_device *pdev)
+ 		r = dsicm_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = dsicm_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -1320,12 +1369,20 @@ static int __exit dsicm_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id dsicm_of_match[] = {
++	{ .compatible = "omapdss,panel-dsi-cm", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, dsicm_of_match);
++
+ static struct platform_driver dsicm_driver = {
+ 	.probe = dsicm_probe,
+ 	.remove = __exit_p(dsicm_remove),
+ 	.driver = {
+ 		.name = "panel-dsi-cm",
+ 		.owner = THIS_MODULE,
++		.of_match_table = dsicm_of_match,
+ 	},
+ };
+ 
+-- 
+1.8.3.2
 
-Thanks, queued for 3.14.
-
- Tomi
-
-
-
---HU8lGjTU08sgF4fotpiPFdbvaDGHqlkwU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSzSACAAoJEPo9qoy8lh71PRwQALA5pqu/fR5Mb2VE9RQG0CDa
-Z2YlZJuHjBsjjj/PVG5mZAsBuLHfctPhh9UqrK8UNdE0lEBR7jE7hAKX5OrizZ2z
-Pe+qqBFcexQbHz0EpafSHyF+31fTaE5BwruBMbTqN16m7odyM1r1QjAUEcixVHUl
-/QMgk5KHIWirkLZh4X42uKBDpCh1jmORLRoYWddhquLhngnuisdZY4unyanU4bEb
-Ly3HLl4XGFDW6IjgSXNTaKJMPxowPqX9wAAaeq41X103btV1JGvLa1gwm3AEPI2M
-kvGSrRgKrPdQJIvh0Yv+c7MxUn90N2XlEvj4VaMqtnzuUtiEMyIa7NOc9F1YMX66
-RKg18riAKvRyjErkCuSDEQTRgky2OMtd17Mpn9ui3QitlX7mD0nxau/bdq7vGudA
-grJoTwLMAAAnm3QZy/lb7DVVilldbAQkTmS+tsuCNppIa1QlvXCVYYehrCJf7qgU
-JQv2UCfEkSiWrnXPfKs2kxUdJLi9yfCJ8Jh4d+7WjvoMkANeHi/A+6TQ46NkDSF1
-/oWL07D8Xyccpr3RDdbwishINZDO8VAqaWJEsJ59bk3oyO8BOmjdLKFZkQe45WGl
-SDC4cTqkOjEEa2dMuVTHlmdbUtoW3cHcDpXrOqBZHBemdKmKmsY/kCOG2A+lzHQx
-bTVMQCNL7xnuQu1FK7bb
-=QniR
------END PGP SIGNATURE-----
-
---HU8lGjTU08sgF4fotpiPFdbvaDGHqlkwU--

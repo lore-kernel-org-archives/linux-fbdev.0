@@ -1,53 +1,47 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Thu, 23 Jan 2014 14:14:59 +0000
-Subject: [PATCH 07/11] drm: mgag200: remove redundant fbdev removal
-Message-Id: <1390486503-1504-8-git-send-email-dh.herrmann@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Jan 2014 10:56:43 +0000
+Subject: [PATCHv3 11/41] OMAPDSS: Add DT support to HDMI
+Message-Id: <1390301833-24944-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: Ingo Molnar <mingo@kernel.org>, linux-fbdev@vger.kernel.org, Dave Airlie <airlied@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org, Tom Gundersen <teg@jklm.no>, David Herrmann <dh.herrmann@gmail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-We already call remove_conflicting_framebuffers() on PCI BAR0 during
-pci-probe, no need to do that again during device loading.
+Add DT support to HDMI driver. The only thing needed for DT support here
+is the of_match_table.
 
-This avoids calling into remove_conflicting_framebuffers() from within DRM
-->load() callback, which might deadlock, once we make this call remove
-DRM-backed sysfb-devices, too.
-
-Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/gpu/drm/mgag200/mgag200_main.c | 9 ---------
- 1 file changed, 9 deletions(-)
+ drivers/video/omap2/dss/hdmi4.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/gpu/drm/mgag200/mgag200_main.c b/drivers/gpu/drm/mgag200/mgag200_main.c
-index 26868e5..0ee093c 100644
---- a/drivers/gpu/drm/mgag200/mgag200_main.c
-+++ b/drivers/gpu/drm/mgag200/mgag200_main.c
-@@ -117,20 +117,11 @@ static int mga_probe_vram(struct mga_device *mdev, void __iomem *mem)
- static int mga_vram_init(struct mga_device *mdev)
- {
- 	void __iomem *mem;
--	struct apertures_struct *aper = alloc_apertures(1);
--	if (!aper)
--		return -ENOMEM;
+diff --git a/drivers/video/omap2/dss/hdmi4.c b/drivers/video/omap2/dss/hdmi4.c
+index 11e7500197c1..064bec4e08d4 100644
+--- a/drivers/video/omap2/dss/hdmi4.c
++++ b/drivers/video/omap2/dss/hdmi4.c
+@@ -682,6 +682,11 @@ static const struct dev_pm_ops hdmi_pm_ops = {
+ 	.runtime_resume = hdmi_runtime_resume,
+ };
  
- 	/* BAR 0 is VRAM */
- 	mdev->mc.vram_base = pci_resource_start(mdev->dev->pdev, 0);
- 	mdev->mc.vram_window = pci_resource_len(mdev->dev->pdev, 0);
++static const struct of_device_id hdmi_of_match[] = {
++	{ .compatible = "ti,omap4-hdmi", },
++	{},
++};
++
+ static struct platform_driver omapdss_hdmihw_driver = {
+ 	.probe		= omapdss_hdmihw_probe,
+ 	.remove         = __exit_p(omapdss_hdmihw_remove),
+@@ -689,6 +694,7 @@ static struct platform_driver omapdss_hdmihw_driver = {
+ 		.name   = "omapdss_hdmi",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &hdmi_pm_ops,
++		.of_match_table = hdmi_of_match,
+ 	},
+ };
  
--	aper->ranges[0].base = mdev->mc.vram_base;
--	aper->ranges[0].size = mdev->mc.vram_window;
--
--	remove_conflicting_framebuffers(aper, "mgafb", true);
--	kfree(aper);
--
- 	if (!devm_request_mem_region(mdev->dev->dev, mdev->mc.vram_base, mdev->mc.vram_window,
- 				"mgadrmfb_vram")) {
- 		DRM_ERROR("can't reserve VRAM\n");
 -- 
-1.8.5.3
+1.8.3.2
 

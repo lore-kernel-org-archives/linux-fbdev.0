@@ -1,162 +1,90 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Wed, 22 Jan 2014 17:09:34 +0000
-Subject: [PATCHv14][ 1/4] video: imxfb: Introduce regulator support.
-Message-Id: <1390410577-22073-1-git-send-email-denis@eukrea.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Jan 2014 10:56:50 +0000
+Subject: [PATCHv3 18/41] OMAPDSS: hdmi-connector: Add DT support
+Message-Id: <1390301833-24944-19-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This commit is based on the following commit by Fabio Estevam:
-  4344429 video: mxsfb: Introduce regulator support
+Add DT support for hdmi-connector.
 
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Denis Carikli <denis@eukrea.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-ChangeLog v13->v14:
-- Remove people not concerned by this patch from the Cc list.
-- Simplified the regulator handling: The regulator-core now supplies
-  a dummy regulator if one hasn't been hooked up explicitely.
-  So we don't need to handle that case in the driver.
-  The code has been updated to do that, and the error messages
-  were updated accordingly.
+ drivers/video/omap2/displays-new/connector-hdmi.c | 30 +++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-ChangeLog v9->v10:
-- Added a return 0; at the end of imxfb_disable_controller.
-
-ChangeLog v8->v9:
-- return an error if regulator_{enable,disable} fails in
-  imxfb_{enable,disable}_controller, and use it.
----
- drivers/video/imxfb.c |   38 +++++++++++++++++++++++++-------------
- 1 file changed, 25 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 44ee678..dd8a35d 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -28,6 +28,7 @@
- #include <linux/cpufreq.h>
- #include <linux/clk.h>
+diff --git a/drivers/video/omap2/displays-new/connector-hdmi.c b/drivers/video/omap2/displays-new/connector-hdmi.c
+index 9abe2c039ae9..2e026eab2dd0 100644
+--- a/drivers/video/omap2/displays-new/connector-hdmi.c
++++ b/drivers/video/omap2/displays-new/connector-hdmi.c
+@@ -12,6 +12,7 @@
+ #include <linux/slab.h>
+ #include <linux/module.h>
  #include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
- #include <linux/dma-mapping.h>
- #include <linux/io.h>
- #include <linux/math64.h>
-@@ -145,6 +146,7 @@ struct imxfb_info {
- 	struct clk		*clk_ipg;
- 	struct clk		*clk_ahb;
- 	struct clk		*clk_per;
-+	struct regulator	*reg_lcd;
- 	enum imxfb_type		devtype;
- 	bool			enabled;
-=20
-@@ -561,14 +563,16 @@ static void imxfb_exit_backlight(struct imxfb_info *f=
-bi)
- }
- #endif
-=20
--static void imxfb_enable_controller(struct imxfb_info *fbi)
-+static int imxfb_enable_controller(struct imxfb_info *fbi)
- {
--
- 	if (fbi->enabled)
--		return;
-+		return 0;
-=20
- 	pr_debug("Enabling LCD controller\n");
-=20
-+	if (regulator_enable(fbi->reg_lcd))
-+		dev_err(&fbi->pdev->dev, "Failed to enable regulator.\n");
-+
- 	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
-=20
- 	/* panning offset 0 (0 pixel offset)        */
-@@ -593,12 +597,14 @@ static void imxfb_enable_controller(struct imxfb_info=
- *fbi)
- 		fbi->backlight_power(1);
- 	if (fbi->lcd_power)
- 		fbi->lcd_power(1);
-+
-+	return 0;
- }
-=20
--static void imxfb_disable_controller(struct imxfb_info *fbi)
-+static int imxfb_disable_controller(struct imxfb_info *fbi)
- {
- 	if (!fbi->enabled)
--		return;
-+		return 0;
-=20
- 	pr_debug("Disabling LCD controller\n");
-=20
-@@ -613,6 +619,11 @@ static void imxfb_disable_controller(struct imxfb_info=
- *fbi)
- 	fbi->enabled =3D false;
-=20
- 	writel(0, fbi->regs + LCDC_RMCR);
-+
-+	if(regulator_disable(fbi->reg_lcd))
-+		dev_err(&fbi->pdev->dev, "Failed to disable regulator.\n");
-+
-+	return 0;
- }
-=20
- static int imxfb_blank(int blank, struct fb_info *info)
-@@ -626,13 +637,12 @@ static int imxfb_blank(int blank, struct fb_info *inf=
-o)
- 	case FB_BLANK_VSYNC_SUSPEND:
- 	case FB_BLANK_HSYNC_SUSPEND:
- 	case FB_BLANK_NORMAL:
--		imxfb_disable_controller(fbi);
--		break;
-+		return imxfb_disable_controller(fbi);
-=20
- 	case FB_BLANK_UNBLANK:
--		imxfb_enable_controller(fbi);
--		break;
-+		return imxfb_enable_controller(fbi);
- 	}
-+
++#include <linux/of.h>
+ 
+ #include <drm/drm_edid.h>
+ 
+@@ -301,6 +302,23 @@ static int hdmic_probe_pdata(struct platform_device *pdev)
  	return 0;
  }
-=20
-@@ -734,8 +744,7 @@ static int imxfb_suspend(struct platform_device *dev, p=
-m_message_t state)
-=20
- 	pr_debug("%s\n", __func__);
-=20
--	imxfb_disable_controller(fbi);
--	return 0;
-+	return imxfb_disable_controller(fbi);
- }
-=20
- static int imxfb_resume(struct platform_device *dev)
-@@ -745,8 +754,7 @@ static int imxfb_resume(struct platform_device *dev)
-=20
- 	pr_debug("%s\n", __func__);
-=20
--	imxfb_enable_controller(fbi);
--	return 0;
-+	return imxfb_enable_controller(fbi);
- }
- #else
- #define imxfb_suspend	NULL
-@@ -1020,6 +1028,10 @@ static int imxfb_probe(struct platform_device *pdev)
- 		goto failed_register;
- 	}
-=20
-+	fbi->reg_lcd =3D devm_regulator_get(&pdev->dev, "lcd");
-+	if (IS_ERR(fbi->reg_lcd))
-+		return PTR_ERR(fbi->reg_lcd);
+ 
++static int hdmic_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
 +
- 	imxfb_enable_controller(fbi);
- 	fbi->pdev =3D pdev;
- #ifdef PWMR_BACKLIGHT_AVAILABLE
---=20
-1.7.9.5
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	return 0;
++}
++
+ static int hdmic_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -318,6 +336,10 @@ static int hdmic_probe(struct platform_device *pdev)
+ 		r = hdmic_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = hdmic_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -359,12 +381,20 @@ static int __exit hdmic_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id hdmic_of_match[] = {
++	{ .compatible = "omapdss,hdmi-connector", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, hdmic_of_match);
++
+ static struct platform_driver hdmi_connector_driver = {
+ 	.probe	= hdmic_probe,
+ 	.remove	= __exit_p(hdmic_remove),
+ 	.driver	= {
+ 		.name	= "connector-hdmi",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = hdmic_of_match,
+ 	},
+ };
+ 
+-- 
+1.8.3.2
 

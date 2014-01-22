@@ -1,60 +1,162 @@
 From: Denis Carikli <denis@eukrea.com>
-Date: Wed, 22 Jan 2014 17:09:35 +0000
-Subject: [PATCHv14][ 2/4] video: imxfb: Add DT default contrast control register property.
-Message-Id: <1390410577-22073-2-git-send-email-denis@eukrea.com>
+Date: Wed, 22 Jan 2014 17:09:34 +0000
+Subject: [PATCHv14][ 1/4] video: imxfb: Introduce regulator support.
+Message-Id: <1390410577-22073-1-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Cc: Alexander Shiyan <shc_work@mail.ru>
+This commit is based on the following commit by Fabio Estevam:
+  4344429 video: mxsfb: Introduce regulator support
+
 Cc: Eric B=C3=A9nard <eric@eukrea.com>
 Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org
 Cc: linux-fbdev@vger.kernel.org
 Signed-off-by: Denis Carikli <denis@eukrea.com>
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Acked-by: Grant Likely <grant.likely@linaro.org>
 ---
-ChangeLog v5->v14:
+ChangeLog v13->v14:
 - Remove people not concerned by this patch from the Cc list.
-- Changed the property name to match the register name and function.
-- Updated the documentation, code and commit message accordingly.
----
- .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
- drivers/video/imxfb.c                              |    2 ++
- 2 files changed, 5 insertions(+)
+- Simplified the regulator handling: The regulator-core now supplies
+  a dummy regulator if one hasn't been hooked up explicitely.
+  So we don't need to handle that case in the driver.
+  The code has been updated to do that, and the error messages
+  were updated accordingly.
 
-diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Docum=
-entation/devicetree/bindings/video/fsl,imx-fb.txt
-index 46da08d..a2a19cb 100644
---- a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-+++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-@@ -17,6 +17,9 @@ Required nodes:
- Optional properties:
- - fsl,dmacr: DMA Control Register value. This is optional. By default, the
- 	register is not modified as recommended by the datasheet.
-+- fsl,lpccr: Contrast Control Register value. This property provides the
-+	default value for the contrast control register.
-+	If that property is ommited, the register is zeroed.
- - fsl,lscr1: LCDC Sharp Configuration Register value.
-=20
- Example:
+ChangeLog v9->v10:
+- Added a return 0; at the end of imxfb_disable_controller.
+
+ChangeLog v8->v9:
+- return an error if regulator_{enable,disable} fails in
+  imxfb_{enable,disable}_controller, and use it.
+---
+ drivers/video/imxfb.c |   38 +++++++++++++++++++++++++-------------
+ 1 file changed, 25 insertions(+), 13 deletions(-)
+
 diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index dd8a35d..c55991a 100644
+index 44ee678..dd8a35d 100644
 --- a/drivers/video/imxfb.c
 +++ b/drivers/video/imxfb.c
-@@ -818,6 +818,8 @@ static int imxfb_init_fbinfo(struct platform_device *pd=
-ev)
+@@ -28,6 +28,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/clk.h>
+ #include <linux/platform_device.h>
++#include <linux/regulator/consumer.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/io.h>
+ #include <linux/math64.h>
+@@ -145,6 +146,7 @@ struct imxfb_info {
+ 	struct clk		*clk_ipg;
+ 	struct clk		*clk_ahb;
+ 	struct clk		*clk_per;
++	struct regulator	*reg_lcd;
+ 	enum imxfb_type		devtype;
+ 	bool			enabled;
 =20
- 		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
+@@ -561,14 +563,16 @@ static void imxfb_exit_backlight(struct imxfb_info *f=
+bi)
+ }
+ #endif
 =20
-+		of_property_read_u32(np, "fsl,lpccr", &fbi->pwmr);
+-static void imxfb_enable_controller(struct imxfb_info *fbi)
++static int imxfb_enable_controller(struct imxfb_info *fbi)
+ {
+-
+ 	if (fbi->enabled)
+-		return;
++		return 0;
+=20
+ 	pr_debug("Enabling LCD controller\n");
+=20
++	if (regulator_enable(fbi->reg_lcd))
++		dev_err(&fbi->pdev->dev, "Failed to enable regulator.\n");
 +
- 		/* These two function pointers could be used by some specific
- 		 * platforms. */
- 		fbi->lcd_power =3D NULL;
+ 	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
+=20
+ 	/* panning offset 0 (0 pixel offset)        */
+@@ -593,12 +597,14 @@ static void imxfb_enable_controller(struct imxfb_info=
+ *fbi)
+ 		fbi->backlight_power(1);
+ 	if (fbi->lcd_power)
+ 		fbi->lcd_power(1);
++
++	return 0;
+ }
+=20
+-static void imxfb_disable_controller(struct imxfb_info *fbi)
++static int imxfb_disable_controller(struct imxfb_info *fbi)
+ {
+ 	if (!fbi->enabled)
+-		return;
++		return 0;
+=20
+ 	pr_debug("Disabling LCD controller\n");
+=20
+@@ -613,6 +619,11 @@ static void imxfb_disable_controller(struct imxfb_info=
+ *fbi)
+ 	fbi->enabled =3D false;
+=20
+ 	writel(0, fbi->regs + LCDC_RMCR);
++
++	if(regulator_disable(fbi->reg_lcd))
++		dev_err(&fbi->pdev->dev, "Failed to disable regulator.\n");
++
++	return 0;
+ }
+=20
+ static int imxfb_blank(int blank, struct fb_info *info)
+@@ -626,13 +637,12 @@ static int imxfb_blank(int blank, struct fb_info *inf=
+o)
+ 	case FB_BLANK_VSYNC_SUSPEND:
+ 	case FB_BLANK_HSYNC_SUSPEND:
+ 	case FB_BLANK_NORMAL:
+-		imxfb_disable_controller(fbi);
+-		break;
++		return imxfb_disable_controller(fbi);
+=20
+ 	case FB_BLANK_UNBLANK:
+-		imxfb_enable_controller(fbi);
+-		break;
++		return imxfb_enable_controller(fbi);
+ 	}
++
+ 	return 0;
+ }
+=20
+@@ -734,8 +744,7 @@ static int imxfb_suspend(struct platform_device *dev, p=
+m_message_t state)
+=20
+ 	pr_debug("%s\n", __func__);
+=20
+-	imxfb_disable_controller(fbi);
+-	return 0;
++	return imxfb_disable_controller(fbi);
+ }
+=20
+ static int imxfb_resume(struct platform_device *dev)
+@@ -745,8 +754,7 @@ static int imxfb_resume(struct platform_device *dev)
+=20
+ 	pr_debug("%s\n", __func__);
+=20
+-	imxfb_enable_controller(fbi);
+-	return 0;
++	return imxfb_enable_controller(fbi);
+ }
+ #else
+ #define imxfb_suspend	NULL
+@@ -1020,6 +1028,10 @@ static int imxfb_probe(struct platform_device *pdev)
+ 		goto failed_register;
+ 	}
+=20
++	fbi->reg_lcd =3D devm_regulator_get(&pdev->dev, "lcd");
++	if (IS_ERR(fbi->reg_lcd))
++		return PTR_ERR(fbi->reg_lcd);
++
+ 	imxfb_enable_controller(fbi);
+ 	fbi->pdev =3D pdev;
+ #ifdef PWMR_BACKLIGHT_AVAILABLE
 --=20
 1.7.9.5
 

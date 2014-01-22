@@ -1,402 +1,126 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Thu, 23 Jan 2014 19:39:29 +0000
-Subject: [PATCH 3/10] framebuffer: fix cfb_copyarea
-Message-Id: <alpine.LRH.2.02.1401231439060.7971@file01.intranet.prod.int.rdu2.redhat.com>
+From: Liu Ying <Ying.Liu@freescale.com>
+Date: Wed, 22 Jan 2014 11:24:18 +0000
+Subject: [PATCH v3] backlight: turn backlight on/off when necessary
+Message-Id: <1390389858-4457-1-git-send-email-Ying.Liu@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: jg1.han@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, dri-devel@lists.freedesktop.org, plagnioj@jcrosoft.com
 
-The function cfb_copyarea is buggy when the copy operation is not aligned on
-long boundary (4 bytes on 32-bit machines, 8 bytes on 64-bit machines).
+We don't have to turn backlight on/off every time a blanking
+or unblanking event comes because the backlight status may
+have already been what we want. Another thought is that one
+backlight device may be shared by multiple framebuffers. We
+don't hope blanking one of the framebuffers may turn the
+backlight off for all the other framebuffers, since they are
+likely being active to display something. This patch adds
+some logics to record each framebuffer's backlight usage to
+determine the backlight device use count and whether the
+backlight should be turned on or off. To be more specific,
+only one unblank operation on a certain blanked framebuffer
+may increase the backlight device's use count by one, while
+one blank operation on a certain unblanked framebuffer may
+decrease the use count by one, because the userspace is
+likely to unblank an unblanked framebuffer or blank a blanked
+framebuffer.
 
-How to reproduce:
-- use x86-64 machine
-- use a framebuffer driver without acceleration (for example uvesafb)
-- set the framebuffer to 8-bit depth
-	(for example fbset -a 1024x768-60 -depth 8)
-- load a font with character width that is not a multiple of 8 pixels
-	note: the console-tools package cannot load a font that has
-	width different from 8 pixels. You need to install the packages
-	"kbd" and "console-terminus" and use the program "setfont" to
-	set font width (for example: setfont Uni2-Terminus20x10)
-- move some text left and right on the bash command line and you get a
-	screen corruption
-
-To expose more bugs, put this line to the end of uvesafb_init_info:
-info->flags |= FBINFO_HWACCEL_COPYAREA | FBINFO_READS_FAST;
-- Now framebuffer console will use cfb_copyarea for console scrolling.
-You get a screen corruption when console is scrolled.
-
-This patch is a rewrite of cfb_copyarea. It fixes the bugs, with this
-patch, console scrolling in 8-bit depth with a font width that is not a
-multiple of 8 pixels works fine.
-
-The cfb_copyarea code was very buggy and it looks like it was written
-and never tried with non-8-pixel font.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: stable@vger.kernel.org
-
+Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
 ---
- drivers/video/cfbcopyarea.c |  153 ++++++++++++++++++++++----------------------
- 1 file changed, 78 insertions(+), 75 deletions(-)
+v1 can be found at https://lkml.org/lkml/2013/5/30/139
 
-Index: linux-3.4.3-fast/drivers/video/cfbcopyarea.c
-=================================--- linux-3.4.3-fast.orig/drivers/video/cfbcopyarea.c	2012-07-02 02:02:08.000000000 +0200
-+++ linux-3.4.3-fast/drivers/video/cfbcopyarea.c	2012-07-02 02:03:33.000000000 +0200
-@@ -43,13 +43,22 @@
-      */
- 
- static void
--bitcpy(struct fb_info *p, unsigned long __iomem *dst, int dst_idx,
--		const unsigned long __iomem *src, int src_idx, int bits,
-+bitcpy(struct fb_info *p, unsigned long __iomem *dst, unsigned dst_idx,
-+		const unsigned long __iomem *src, unsigned src_idx, int bits,
- 		unsigned n, u32 bswapmask)
+v2->v3:
+* Set fb_blank(*(int *)evdata->data) to bd->props.fb_blank
+  when we turn off a blacklight.
+* Correct some trivial typos in the commit message.
+
+v1->v2:
+* Make the commit message be more specific about the condition
+  in which backlight device use count can be increased/decreased.
+* Correct the setting for bd->props.fb_blank.
+
+ drivers/video/backlight/backlight.c |   28 +++++++++++++++++++++-------
+ include/linux/backlight.h           |    6 ++++++
+ 2 files changed, 27 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 5d05555..27d3cf2 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -34,13 +34,15 @@ static const char *const backlight_types[] = {
+ 			   defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE))
+ /* This callback gets called when something important happens inside a
+  * framebuffer driver. We're looking if that important event is blanking,
+- * and if it is, we're switching backlight power as well ...
++ * and if it is and necessary, we're switching backlight power as well ...
+  */
+ static int fb_notifier_callback(struct notifier_block *self,
+ 				unsigned long event, void *data)
  {
- 	unsigned long first, last;
- 	int const shift = dst_idx-src_idx;
--	int left, right;
-+
-+#if 0
-+	/*
-+	 * If you suspect bug in this function, compare it with this simple
-+	 * memmove implementation.
-+	 */
-+	fb_memmove((char *)dst + ((dst_idx & (bits - 1))) / 8,
-+		   (char *)src + ((src_idx & (bits - 1))) / 8, n / 8);
-+	return;
-+#endif
+ 	struct backlight_device *bd;
+ 	struct fb_event *evdata = data;
++	int node = evdata->info->node;
++	int fb_blank = 0;
  
- 	first = fb_shifted_pixels_mask_long(p, dst_idx, bswapmask);
- 	last = ~fb_shifted_pixels_mask_long(p, (dst_idx+n) % bits, bswapmask);
-@@ -98,9 +107,8 @@ bitcpy(struct fb_info *p, unsigned long
- 		unsigned long d0, d1;
- 		int m;
- 
--		right = shift & (bits - 1);
--		left = -shift & (bits - 1);
--		bswapmask &= shift;
-+		int const left = shift & (bits - 1);
-+		int const right = -shift & (bits - 1);
- 
- 		if (dst_idx+n <= bits) {
- 			// Single destination word
-@@ -110,15 +118,15 @@ bitcpy(struct fb_info *p, unsigned long
- 			d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 			if (shift > 0) {
- 				// Single source word
--				d0 >>= right;
-+				d0 <<= left;
- 			} else if (src_idx+n <= bits) {
- 				// Single source word
--				d0 <<= left;
-+				d0 >>= right;
- 			} else {
- 				// 2 source words
- 				d1 = FB_READL(src + 1);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
--				d0 = d0<<left | d1>>right;
-+				d0 = d0 >> right | d1 << left;
- 			}
- 			d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 			FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
-@@ -135,60 +143,59 @@ bitcpy(struct fb_info *p, unsigned long
- 			if (shift > 0) {
- 				// Single source word
- 				d1 = d0;
--				d0 >>= right;
--				dst++;
-+				d0 <<= left;
- 				n -= bits - dst_idx;
- 			} else {
- 				// 2 source words
- 				d1 = FB_READL(src++);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
- 
--				d0 = d0<<left | d1>>right;
--				dst++;
-+				d0 = d0 >> right | d1 << left;
- 				n -= bits - dst_idx;
- 			}
- 			d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 			FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
- 			d0 = d1;
-+			dst++;
- 
- 			// Main chunk
- 			m = n % bits;
- 			n /= bits;
- 			while ((n >= 4) && !bswapmask) {
- 				d1 = FB_READL(src++);
--				FB_WRITEL(d0 << left | d1 >> right, dst++);
-+				FB_WRITEL(d0 >> right | d1 << left, dst++);
- 				d0 = d1;
- 				d1 = FB_READL(src++);
--				FB_WRITEL(d0 << left | d1 >> right, dst++);
-+				FB_WRITEL(d0 >> right | d1 << left, dst++);
- 				d0 = d1;
- 				d1 = FB_READL(src++);
--				FB_WRITEL(d0 << left | d1 >> right, dst++);
-+				FB_WRITEL(d0 >> right | d1 << left, dst++);
- 				d0 = d1;
- 				d1 = FB_READL(src++);
--				FB_WRITEL(d0 << left | d1 >> right, dst++);
-+				FB_WRITEL(d0 >> right | d1 << left, dst++);
- 				d0 = d1;
- 				n -= 4;
- 			}
- 			while (n--) {
- 				d1 = FB_READL(src++);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
--				d0 = d0 << left | d1 >> right;
-+				d0 = d0 >> right | d1 << left;
- 				d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 				FB_WRITEL(d0, dst++);
- 				d0 = d1;
- 			}
- 
- 			// Trailing bits
--			if (last) {
--				if (m <= right) {
-+			if (m) {
-+				if (m <= bits - right) {
- 					// Single source word
--					d0 <<= left;
-+					d0 >>= right;
- 				} else {
- 					// 2 source words
- 					d1 = FB_READL(src);
- 					d1 = fb_rev_pixels_in_long(d1,
- 								bswapmask);
--					d0 = d0<<left | d1>>right;
-+					d0 = d0 >> right | d1 << left;
- 				}
- 				d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 				FB_WRITEL(comp(d0, FB_READL(dst), last), dst);
-@@ -202,43 +209,46 @@ bitcpy(struct fb_info *p, unsigned long
-      */
- 
- static void
--bitcpy_rev(struct fb_info *p, unsigned long __iomem *dst, int dst_idx,
--		const unsigned long __iomem *src, int src_idx, int bits,
-+bitcpy_rev(struct fb_info *p, unsigned long __iomem *dst, unsigned dst_idx,
-+		const unsigned long __iomem *src, unsigned src_idx, int bits,
- 		unsigned n, u32 bswapmask)
- {
- 	unsigned long first, last;
- 	int shift;
- 
--	dst += (n-1)/bits;
--	src += (n-1)/bits;
--	if ((n-1) % bits) {
--		dst_idx += (n-1) % bits;
--		dst += dst_idx >> (ffs(bits) - 1);
--		dst_idx &= bits - 1;
--		src_idx += (n-1) % bits;
--		src += src_idx >> (ffs(bits) - 1);
--		src_idx &= bits - 1;
--	}
-+#if 0
-+	/*
-+	 * If you suspect bug in this function, compare it with this simple
-+	 * memmove implementation.
-+	 */
-+	fb_memmove((char *)dst + ((dst_idx & (bits - 1))) / 8,
-+		   (char *)src + ((src_idx & (bits - 1))) / 8, n / 8);
-+	return;
-+#endif
-+
-+	dst += (dst_idx + n - 1) / bits;
-+	src += (src_idx + n - 1) / bits;
-+	dst_idx = (dst_idx + n - 1) % bits;
-+	src_idx = (src_idx + n - 1) % bits;
- 
- 	shift = dst_idx-src_idx;
- 
--	first = fb_shifted_pixels_mask_long(p, bits - 1 - dst_idx, bswapmask);
--	last = ~fb_shifted_pixels_mask_long(p, bits - 1 - ((dst_idx-n) % bits),
--					    bswapmask);
-+	first = ~fb_shifted_pixels_mask_long(p, (dst_idx + 1) % bits, bswapmask);
-+	last = fb_shifted_pixels_mask_long(p, (bits + dst_idx + 1 - n) % bits, bswapmask);
- 
- 	if (!shift) {
- 		// Same alignment for source and dest
- 
- 		if ((unsigned long)dst_idx+1 >= n) {
- 			// Single word
--			if (last)
--				first &= last;
--			FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
-+			if (first)
-+				last &= first;
-+			FB_WRITEL( comp( FB_READL(src), FB_READL(dst), last), dst);
- 		} else {
- 			// Multiple destination words
- 
- 			// Leading bits
--			if (first != ~0UL) {
-+			if (first) {
- 				FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
- 				dst--;
- 				src--;
-@@ -262,7 +272,7 @@ bitcpy_rev(struct fb_info *p, unsigned l
- 				FB_WRITEL(FB_READL(src--), dst--);
- 
- 			// Trailing bits
--			if (last)
-+			if (last != -1UL)
- 				FB_WRITEL( comp( FB_READL(src), FB_READL(dst), last), dst);
+ 	/* If we aren't interested in this event, skip it immediately ... */
+ 	if (event != FB_EVENT_BLANK && event != FB_EVENT_CONBLANK)
+@@ -51,12 +53,24 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 	if (bd->ops)
+ 		if (!bd->ops->check_fb ||
+ 		    bd->ops->check_fb(bd, evdata->info)) {
+-			bd->props.fb_blank = *(int *)evdata->data;
+-			if (bd->props.fb_blank = FB_BLANK_UNBLANK)
+-				bd->props.state &= ~BL_CORE_FBBLANK;
+-			else
+-				bd->props.state |= BL_CORE_FBBLANK;
+-			backlight_update_status(bd);
++			fb_blank = *(int *)evdata->data;
++			if (fb_blank = FB_BLANK_UNBLANK &&
++			    !bd->fb_bl_on[node]) {
++				bd->fb_bl_on[node] = true;
++				if (!bd->use_count++) {
++					bd->props.state &= ~BL_CORE_FBBLANK;
++					bd->props.fb_blank = FB_BLANK_UNBLANK;
++					backlight_update_status(bd);
++				}
++			} else if (fb_blank != FB_BLANK_UNBLANK &&
++				   bd->fb_bl_on[node]) {
++				bd->fb_bl_on[node] = false;
++				if (!(--bd->use_count)) {
++					bd->props.state |= BL_CORE_FBBLANK;
++					bd->props.fb_blank = fb_blank;
++					backlight_update_status(bd);
++				}
++			}
  		}
- 	} else {
-@@ -270,29 +280,28 @@ bitcpy_rev(struct fb_info *p, unsigned l
- 		unsigned long d0, d1;
- 		int m;
+ 	mutex_unlock(&bd->ops_lock);
+ 	return 0;
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index 5f9cd96..7264742 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -9,6 +9,7 @@
+ #define _LINUX_BACKLIGHT_H
  
--		int const left = -shift & (bits-1);
--		int const right = shift & (bits-1);
--		bswapmask &= shift;
-+		int const left = shift & (bits-1);
-+		int const right = -shift & (bits-1);
+ #include <linux/device.h>
++#include <linux/fb.h>
+ #include <linux/mutex.h>
+ #include <linux/notifier.h>
  
- 		if ((unsigned long)dst_idx+1 >= n) {
- 			// Single destination word
--			if (last)
--				first &= last;
-+			if (first)
-+				last &= first;
- 			d0 = FB_READL(src);
- 			if (shift < 0) {
- 				// Single source word
--				d0 <<= left;
-+				d0 >>= right;
- 			} else if (1+(unsigned long)src_idx >= n) {
- 				// Single source word
--				d0 >>= right;
-+				d0 <<= left;
- 			} else {
- 				// 2 source words
- 				d1 = FB_READL(src - 1);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
--				d0 = d0>>right | d1<<left;
-+				d0 = d0 << left | d1 >> right;
- 			}
- 			d0 = fb_rev_pixels_in_long(d0, bswapmask);
--			FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
-+			FB_WRITEL(comp(d0, FB_READL(dst), last), dst);
- 		} else {
- 			// Multiple destination words
- 			/** We must always remember the last value read, because in case
-@@ -307,12 +316,12 @@ bitcpy_rev(struct fb_info *p, unsigned l
- 			if (shift < 0) {
- 				// Single source word
- 				d1 = d0;
--				d0 <<= left;
-+				d0 >>= right;
- 			} else {
- 				// 2 source words
- 				d1 = FB_READL(src--);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
--				d0 = d0>>right | d1<<left;
-+				d0 = d0 << left | d1 >> right;
- 			}
- 			d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 			FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
-@@ -325,39 +334,39 @@ bitcpy_rev(struct fb_info *p, unsigned l
- 			n /= bits;
- 			while ((n >= 4) && !bswapmask) {
- 				d1 = FB_READL(src--);
--				FB_WRITEL(d0 >> right | d1 << left, dst--);
-+				FB_WRITEL(d0 << left | d1 >> right, dst--);
- 				d0 = d1;
- 				d1 = FB_READL(src--);
--				FB_WRITEL(d0 >> right | d1 << left, dst--);
-+				FB_WRITEL(d0 << left | d1 >> right, dst--);
- 				d0 = d1;
- 				d1 = FB_READL(src--);
--				FB_WRITEL(d0 >> right | d1 << left, dst--);
-+				FB_WRITEL(d0 << left | d1 >> right, dst--);
- 				d0 = d1;
- 				d1 = FB_READL(src--);
--				FB_WRITEL(d0 >> right | d1 << left, dst--);
-+				FB_WRITEL(d0 << left | d1 >> right, dst--);
- 				d0 = d1;
- 				n -= 4;
- 			}
- 			while (n--) {
- 				d1 = FB_READL(src--);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
--				d0 = d0 >> right | d1 << left;
-+				d0 = d0 << left | d1 >> right;
- 				d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 				FB_WRITEL(d0, dst--);
- 				d0 = d1;
- 			}
+@@ -104,6 +105,11 @@ struct backlight_device {
+ 	struct list_head entry;
  
- 			// Trailing bits
--			if (last) {
--				if (m <= left) {
-+			if (m) {
-+				if (m <= bits - left) {
- 					// Single source word
--					d0 >>= right;
-+					d0 <<= left;
- 				} else {
- 					// 2 source words
- 					d1 = FB_READL(src);
- 					d1 = fb_rev_pixels_in_long(d1,
- 								bswapmask);
--					d0 = d0>>right | d1<<left;
-+					d0 = d0 << left | d1 >> right;
- 				}
- 				d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 				FB_WRITEL(comp(d0, FB_READL(dst), last), dst);
-@@ -371,9 +380,9 @@ void cfb_copyarea(struct fb_info *p, con
- 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
- 	u32 height = area->height, width = area->width;
- 	unsigned long const bits_per_line = p->fix.line_length*8u;
--	unsigned long __iomem *dst = NULL, *src = NULL;
-+	unsigned long __iomem *base = NULL;
- 	int bits = BITS_PER_LONG, bytes = bits >> 3;
--	int dst_idx = 0, src_idx = 0, rev_copy = 0;
-+	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
- 	u32 bswapmask = fb_compute_bswapmask(p);
+ 	struct device dev;
++
++	/* Multiple framebuffers may share one backlight device */
++	bool fb_bl_on[FB_MAX];
++
++	int use_count;
+ };
  
- 	if (p->state != FBINFO_STATE_RUNNING)
-@@ -389,7 +398,7 @@ void cfb_copyarea(struct fb_info *p, con
- 
- 	// split the base of the framebuffer into a long-aligned address and the
- 	// index of the first bit
--	dst = src = (unsigned long __iomem *)((unsigned long)p->screen_base & ~(bytes-1));
-+	base = (unsigned long __iomem *)((unsigned long)p->screen_base & ~(bytes-1));
- 	dst_idx = src_idx = 8*((unsigned long)p->screen_base & (bytes-1));
- 	// add offset of source and target area
- 	dst_idx += dy*bits_per_line + dx*p->var.bits_per_pixel;
-@@ -402,20 +411,14 @@ void cfb_copyarea(struct fb_info *p, con
- 		while (height--) {
- 			dst_idx -= bits_per_line;
- 			src_idx -= bits_per_line;
--			dst += dst_idx >> (ffs(bits) - 1);
--			dst_idx &= (bytes - 1);
--			src += src_idx >> (ffs(bits) - 1);
--			src_idx &= (bytes - 1);
--			bitcpy_rev(p, dst, dst_idx, src, src_idx, bits,
-+			bitcpy_rev(p, base + (dst_idx / bits), dst_idx % bits,
-+				base + (src_idx / bits), src_idx % bits, bits,
- 				width*p->var.bits_per_pixel, bswapmask);
- 		}
- 	} else {
- 		while (height--) {
--			dst += dst_idx >> (ffs(bits) - 1);
--			dst_idx &= (bytes - 1);
--			src += src_idx >> (ffs(bits) - 1);
--			src_idx &= (bytes - 1);
--			bitcpy(p, dst, dst_idx, src, src_idx, bits,
-+			bitcpy(p, base + (dst_idx / bits), dst_idx % bits,
-+				base + (src_idx / bits), src_idx % bits, bits,
- 				width*p->var.bits_per_pixel, bswapmask);
- 			dst_idx += bits_per_line;
- 			src_idx += bits_per_line;
+ static inline void backlight_update_status(struct backlight_device *bd)
+-- 
+1.7.9.5
+
 

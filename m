@@ -1,117 +1,53 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Jan 2014 10:56:52 +0000
-Subject: [PATCHv3 20/41] OMAPDSS: connector-analog-tv: Add DT support
-Message-Id: <1390301833-24944-21-git-send-email-tomi.valkeinen@ti.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Thu, 23 Jan 2014 14:14:59 +0000
+Subject: [PATCH 07/11] drm: mgag200: remove redundant fbdev removal
+Message-Id: <1390486503-1504-8-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: dri-devel@lists.freedesktop.org
+Cc: Ingo Molnar <mingo@kernel.org>, linux-fbdev@vger.kernel.org, Dave Airlie <airlied@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org, Tom Gundersen <teg@jklm.no>, David Herrmann <dh.herrmann@gmail.com>
 
-Add DT support for connector-analog-tv.
+We already call remove_conflicting_framebuffers() on PCI BAR0 during
+pci-probe, no need to do that again during device loading.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+This avoids calling into remove_conflicting_framebuffers() from within DRM
+->load() callback, which might deadlock, once we make this call remove
+DRM-backed sysfb-devices, too.
+
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
 ---
- .../video/omap2/displays-new/connector-analog-tv.c | 43 +++++++++++++++++++++-
- 1 file changed, 41 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/mgag200/mgag200_main.c | 9 ---------
+ 1 file changed, 9 deletions(-)
 
-diff --git a/drivers/video/omap2/displays-new/connector-analog-tv.c b/drivers/video/omap2/displays-new/connector-analog-tv.c
-index ccd9073f706f..5c840325def4 100644
---- a/drivers/video/omap2/displays-new/connector-analog-tv.c
-+++ b/drivers/video/omap2/displays-new/connector-analog-tv.c
-@@ -12,6 +12,7 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/of.h>
- 
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -42,6 +43,12 @@ static const struct omap_video_timings tvc_pal_timings = {
- 	.interlace	= true,
- };
- 
-+static const struct of_device_id tvc_of_match[];
-+
-+struct tvc_of_data {
-+	enum omap_dss_venc_type connector_type;
-+};
-+
- #define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
- 
- static int tvc_connect(struct omap_dss_device *dssdev)
-@@ -91,8 +98,12 @@ static int tvc_enable(struct omap_dss_device *dssdev)
- 
- 	in->ops.atv->set_timings(in, &ddata->timings);
- 
--	in->ops.atv->set_type(in, ddata->connector_type);
--	in->ops.atv->invert_vid_out_polarity(in, ddata->invert_polarity);
-+	if (!ddata->dev->of_node) {
-+		in->ops.atv->set_type(in, ddata->connector_type);
-+
-+		in->ops.atv->invert_vid_out_polarity(in,
-+			ddata->invert_polarity);
-+	}
- 
- 	r = in->ops.atv->enable(in);
- 	if (r)
-@@ -205,6 +216,23 @@ static int tvc_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int tvc_probe_of(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
-+
-+	ddata->in = in;
-+
-+	return 0;
-+}
-+
- static int tvc_probe(struct platform_device *pdev)
+diff --git a/drivers/gpu/drm/mgag200/mgag200_main.c b/drivers/gpu/drm/mgag200/mgag200_main.c
+index 26868e5..0ee093c 100644
+--- a/drivers/gpu/drm/mgag200/mgag200_main.c
++++ b/drivers/gpu/drm/mgag200/mgag200_main.c
+@@ -117,20 +117,11 @@ static int mga_probe_vram(struct mga_device *mdev, void __iomem *mem)
+ static int mga_vram_init(struct mga_device *mdev)
  {
- 	struct panel_drv_data *ddata;
-@@ -222,6 +250,10 @@ static int tvc_probe(struct platform_device *pdev)
- 		r = tvc_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = tvc_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -263,12 +295,19 @@ static int __exit tvc_remove(struct platform_device *pdev)
- 	return 0;
- }
+ 	void __iomem *mem;
+-	struct apertures_struct *aper = alloc_apertures(1);
+-	if (!aper)
+-		return -ENOMEM;
  
-+static const struct of_device_id tvc_of_match[] = {
-+	{ .compatible = "omapdss,svideo-connector", },
-+	{ .compatible = "omapdss,composite-video-connector", },
-+	{},
-+};
-+
- static struct platform_driver tvc_connector_driver = {
- 	.probe	= tvc_probe,
- 	.remove	= __exit_p(tvc_remove),
- 	.driver	= {
- 		.name	= "connector-analog-tv",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = tvc_of_match,
- 	},
- };
+ 	/* BAR 0 is VRAM */
+ 	mdev->mc.vram_base = pci_resource_start(mdev->dev->pdev, 0);
+ 	mdev->mc.vram_window = pci_resource_len(mdev->dev->pdev, 0);
  
+-	aper->ranges[0].base = mdev->mc.vram_base;
+-	aper->ranges[0].size = mdev->mc.vram_window;
+-
+-	remove_conflicting_framebuffers(aper, "mgafb", true);
+-	kfree(aper);
+-
+ 	if (!devm_request_mem_region(mdev->dev->dev, mdev->mc.vram_base, mdev->mc.vram_window,
+ 				"mgadrmfb_vram")) {
+ 		DRM_ERROR("can't reserve VRAM\n");
 -- 
-1.8.3.2
+1.8.5.3
 

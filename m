@@ -1,503 +1,90 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Jan 2014 10:57:05 +0000
-Subject: [PATCHv3 33/41] Doc/DT: Add OMAP DSS DT Bindings
-Message-Id: <1390301833-24944-34-git-send-email-tomi.valkeinen@ti.com>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Thu, 23 Jan 2014 19:41:59 +0000
+Subject: [PATCH 7/10] mach64: fix cursor when character width is not a multiple of 8 pixels
+Message-Id: <alpine.LRH.2.02.1401231441110.7971@file01.intranet.prod.int.rdu2.redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Add device tree bindings for OMAP Display Subsystem for the following
-SoCs: OMAP2, OMAP3, OMAP4.
+This patch fixes the hardware cursor on mach64 when font width is not a
+multiple of 8 pixels.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+If you load such a font, the cursor is expanded to the next 8-byte
+boundary and a part of the next character after the cursor is not
+visible.
+For example, when you load a font with 12-pixel width, the cursor width
+is 16 pixels and when the cursor is displayed, 4 pixels of the next
+character are not visible.
+
+The reason is this: atyfb_cursor is called with proper parameters to
+load an image that is 12-pixel wide. However, the number is aligned on
+the next 8-pixel boundary on the line
+"unsigned int width = (cursor->image.width + 7) >> 3;" and the whole
+function acts as it is was loading a 16-pixel image.
+
+This patch fixes it so that the value written to the framebuffer is
+padded with 0xaaaa (the transparent pattern) when the image size it not
+a multiple of 8 pixels. The transparent pattern causes that the cursor
+will not interfere with the next character.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: stable@vger.kernel.org
+
 ---
- .../devicetree/bindings/video/ti,omap-dss.txt      | 197 +++++++++++++++++++++
- .../devicetree/bindings/video/ti,omap2-dss.txt     |  54 ++++++
- .../devicetree/bindings/video/ti,omap3-dss.txt     |  73 ++++++++
- .../devicetree/bindings/video/ti,omap4-dss.txt     |  99 +++++++++++
- .../devicetree/bindings/video/video-ports.txt      |  22 +++
- 5 files changed, 445 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/ti,omap-dss.txt
- create mode 100644 Documentation/devicetree/bindings/video/ti,omap2-dss.txt
- create mode 100644 Documentation/devicetree/bindings/video/ti,omap3-dss.txt
- create mode 100644 Documentation/devicetree/bindings/video/ti,omap4-dss.txt
- create mode 100644 Documentation/devicetree/bindings/video/video-ports.txt
+ drivers/video/aty/mach64_cursor.c |   22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/ti,omap-dss.txt b/Documentation/devicetree/bindings/video/ti,omap-dss.txt
-new file mode 100644
-index 000000000000..3b3a7c09106c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/ti,omap-dss.txt
-@@ -0,0 +1,197 @@
-+Texas Instruments OMAP Display Subsystem
-+====================
-+
-+Generic Description
-+-------------------
-+
-+This document is a generic description of the OMAP Display Subsystem bindings.
-+Binding details for each OMAP SoC version are described in respective binding
-+documentation.
-+
-+The OMAP Display Subsystem (DSS) hardware consists of DSS Core, DISPC module and
-+a number of encoder modules. All DSS versions contain DSS Core and DISPC, but
-+the encoder modules vary.
-+
-+The DSS Core is the parent of the other DSS modules, and manages clock routing,
-+integration to the SoC, etc.
-+
-+DISPC is the display controller, which reads pixels from the memory and outputs
-+a RGB pixel stream to encoders.
-+
-+The encoder modules encode the received RGB pixel stream to a video output like
-+HDMI, MIPI DPI, etc.
-+
-+Video Ports
-+-----------
-+
-+The DSS Core and the encoders have video port outputs. The structure of the
-+video ports is described in Documentation/devicetree/bindings/video/video-
-+ports.txt, and the properties for the ports and endpoints for each encoder are
-+described in the SoC's DSS binding documentation.
-+
-+The video ports are used to describe the connections to external hardware, like
-+panels or external encoders.
-+
-+Aliases
-+-------
-+
-+The board dts file may define aliases for displays to assign "displayX" style
-+name for each display. If no aliases are defined, a semi-random number is used
-+for the display.
-+
-+Example
-+-------
-+
-+A shortened example of the DSS description for OMAP4, with non-relevant parts
-+removed, defined in omap4.dtsi:
-+
-+dss: dss@58000000 {
-+	compatible = "ti,omap4-dss", "simple-bus";
-+	reg = <0x58000000 0x80>;
-+	status = "disabled";
-+	ti,hwmods = "dss_core";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	ranges;
-+
-+	dispc@58001000 {
-+		compatible = "ti,omap4-dispc";
-+		reg = <0x58001000 0x1000>;
-+		interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
-+		ti,hwmods = "dss_dispc";
-+	};
-+
-+	hdmi: encoder@58006000 {
-+		compatible = "ti,omap4-hdmi";
-+		reg = <0x58006000 0x200>,
-+		      <0x58006200 0x100>,
-+		      <0x58006300 0x100>,
-+		      <0x58006400 0x1000>;
-+		reg-names = "wp", "pll", "phy", "core";
-+		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
-+		status = "disabled";
-+		ti,hwmods = "dss_hdmi";
-+	};
-+};
-+
-+A shortened example of the board description for OMAP4 Panda board, defined in
-+omap4-panda.dts.
-+
-+The Panda board has a DVI and a HDMI connector, and the board contains a TFP410
-+chip (MIPI DPI to DVI encoder) and a TPD12S015 chip (HDMI ESD protection & level
-+shifter). The video pipelines for the connectors are formed as follows:
-+
-+DSS Core --(MIPI DPI)--> TFP410 --(DVI)--> DVI Connector
-+OMAP HDMI --(HDMI)--> TPD12S015 --(HDMI)--> HDMI COnnector
-+
-+/ {
-+	aliases {
-+		display0 = &dvi0;
-+		display1 = &hdmi0;
-+	};
-+
-+	tfp410: encoder@0 {
-+		compatible = "ti,tfp410";
-+		gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;	/* 0, power-down */
-+
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&tfp410_pins>;
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				tfp410_in: endpoint@0 {
-+					remote-endpoint = <&dpi_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				tfp410_out: endpoint@0 {
-+					remote-endpoint = <&dvi_connector_in>;
-+				};
-+			};
-+		};
-+	};
-+
-+	dvi0: connector@0 {
-+		compatible = "dvi-connector";
-+		label = "dvi";
-+
-+		i2c-bus = <&i2c3>;
-+
-+		dvi_connector_in: endpoint {
-+			remote-endpoint = <&tfp410_out>;
-+		};
-+	};
-+
-+	tpd12s015: encoder@1 {
-+		compatible = "ti,tpd12s015";
-+
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&tpd12s015_pins>;
-+
-+		gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>,	/* 60, CT CP HPD */
-+			<&gpio2 9 GPIO_ACTIVE_HIGH>,	/* 41, LS OE */
-+			<&gpio2 31 GPIO_ACTIVE_HIGH>;	/* 63, HPD */
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				tpd12s015_in: endpoint@0 {
-+					remote-endpoint = <&hdmi_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				tpd12s015_out: endpoint@0 {
-+					remote-endpoint = <&hdmi_connector_in>;
-+				};
-+			};
-+		};
-+	};
-+
-+	hdmi0: connector@1 {
-+		compatible = "hdmi-connector";
-+		label = "hdmi";
-+
-+		hdmi_connector_in: endpoint {
-+			remote-endpoint = <&tpd12s015_out>;
-+		};
-+	};
-+};
-+
-+&dss {
-+	status = "ok";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&dss_dpi_pins>;
-+
-+	dpi_out: endpoint {
-+		remote-endpoint = <&tfp410_in>;
-+		data-lines = <24>;
-+	};
-+};
-+
-+&hdmi {
-+	status = "ok";
-+	vdda-supply = <&vdac>;
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&dss_hdmi_pins>;
-+
-+	hdmi_out: endpoint {
-+		remote-endpoint = <&tpd12s015_in>;
-+	};
-+};
-diff --git a/Documentation/devicetree/bindings/video/ti,omap2-dss.txt b/Documentation/devicetree/bindings/video/ti,omap2-dss.txt
-new file mode 100644
-index 000000000000..fa8bb2ed1170
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/ti,omap2-dss.txt
-@@ -0,0 +1,54 @@
-+Texas Instruments OMAP2 Display Subsystem
-+====================+
-+See Documentation/devicetree/bindings/video/ti,omap-dss.txt for generic
-+description about OMAP Display Subsystem bindings.
-+
-+DSS Core
-+--------
-+
-+Required properties:
-+- compatible: "ti,omap2-dss"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_core"
-+
-+Optional nodes:
-+- Video port for DPI output
-+
-+DPI Endpoint required properties:
-+- data-lines: number of lines used
-+
-+
-+DISPC
-+-----
-+
-+Required properties:
-+- compatible: "ti,omap2-dispc"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_dispc"
-+- interrupts: the DISPC interrupt
-+
-+
-+RFBI
-+----
-+
-+Required properties:
-+- compatible: "ti,omap2-rfbi"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_rfbi"
-+
-+
-+VENC
-+----
-+
-+Required properties:
-+- compatible: "ti,omap2-venc"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_venc"
-+- vdda-supply: power supply for DAC
-+
-+VENC Endpoint required properties:
-+
-+Required properties:
-+- ti,invert-polarity: invert the polarity of the video signal
-+- ti,channels: 1 for composite, 2 for s-video
-diff --git a/Documentation/devicetree/bindings/video/ti,omap3-dss.txt b/Documentation/devicetree/bindings/video/ti,omap3-dss.txt
-new file mode 100644
-index 000000000000..2b62c78c9596
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/ti,omap3-dss.txt
-@@ -0,0 +1,73 @@
-+Texas Instruments OMAP3 Display Subsystem
-+====================+
-+See Documentation/devicetree/bindings/video/ti,omap-dss.txt for generic
-+description about OMAP Display Subsystem bindings.
-+
-+DSS Core
-+--------
-+
-+Required properties:
-+- compatible: "ti,omap3-dss"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_core"
-+
-+Optional nodes:
-+- Video ports:
-+	- Port 0: DPI output
-+	- Port 1: SDI output
-+
-+DPI Endpoint required properties:
-+- data-lines: number of lines used
-+
-+SDI Endpoint required properties:
-+- datapairs: number of datapairs used
-+
-+
-+DISPC
-+-----
-+
-+Required properties:
-+- compatible: "ti,omap3-dispc"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_dispc"
-+- interrupts: the DISPC interrupt
-+
-+
-+RFBI
-+----
-+
-+Required properties:
-+- compatible: "ti,omap3-rfbi"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_rfbi"
-+
-+
-+VENC
-+----
-+
-+Required properties:
-+- compatible: "ti,omap3-venc"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_venc"
-+- vdda-supply: power supply for DAC
-+
-+VENC Endpoint required properties:
-+- ti,invert-polarity: invert the polarity of the video signal
-+- ti,channels: 1 for composite, 2 for s-video
-+
-+
-+DSI
-+---
-+
-+Required properties:
-+- compatible: "ti,omap3-dsi"
-+- reg: addresses and lengths of the register spaces for 'proto', 'phy' and 'pll'
-+- reg-names: "proto", "phy", "pll"
-+- interrupts: the DSI interrupt line
-+- ti,hwmods: "dss_dsi1"
-+- vdd-supply: power supply for DSI
-+
-+DSI Endpoint required properties:
-+- lanes: list of pin numbers for the DSI lanes: CLK+, CLK-, DATA0+, DATA0-,
-+  DATA1+, DATA1-, ...
-diff --git a/Documentation/devicetree/bindings/video/ti,omap4-dss.txt b/Documentation/devicetree/bindings/video/ti,omap4-dss.txt
-new file mode 100644
-index 000000000000..37aa9e6a173e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/ti,omap4-dss.txt
-@@ -0,0 +1,99 @@
-+Texas Instruments OMAP4 Display Subsystem
-+====================+
-+See Documentation/devicetree/bindings/video/ti,omap-dss.txt for generic
-+description about OMAP Display Subsystem bindings.
-+
-+DSS Core
-+--------
-+
-+Required properties:
-+- compatible: "ti,omap4-dss"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_core"
-+
-+Required nodes:
-+- DISPC
-+
-+Optional nodes:
-+- DSS Submodules: RFBI, VENC, DSI, HDMI
-+- Video port for DPI output
-+
-+DPI Endpoint required properties:
-+- data-lines: number of lines used
-+
-+
-+DISPC
-+-----
-+
-+Required properties:
-+- compatible: "ti,omap4-dispc"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_dispc"
-+- interrupts: the DISPC interrupt
-+
-+
-+RFBI
-+----
-+
-+Required properties:
-+- compatible: "ti,omap4-rfbi"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_rfbi"
-+
-+Optional nodes:
-+- Video port for RFBI output
-+- RFBI controlled peripherals
-+
-+
-+VENC
-+----
-+
-+Required properties:
-+- compatible: "ti,omap4-venc"
-+- reg: address and length of the register space
-+- ti,hwmods: "dss_venc"
-+- vdda-supply: power supply for DAC
-+
-+Optional nodes:
-+- Video port for VENC output
-+
-+VENC Endpoint required properties:
-+- ti,invert-polarity: invert the polarity of the video signal
-+- ti,channels: 1 for composite, 2 for s-video
-+
-+
-+DSI
-+---
-+
-+Required properties:
-+- compatible: "ti,omap4-dsi"
-+- reg: addresses and lengths of the register spaces for 'proto', 'phy' and 'pll'
-+- reg-names: "proto", "phy", "pll"
-+- interrupts: the DSI interrupt line
-+- ti,hwmods: "dss_dsi1" or "dss_dsi2"
-+- vdd-supply: power supply for DSI
-+
-+Optional nodes:
-+- Video port for DSI output
-+- DSI controlled peripherals
-+
-+DSI Endpoint required properties:
-+- lanes: list of pin numbers for the DSI lanes: CLK+, CLK-, DATA0+, DATA0-,
-+  DATA1+, DATA1-, ...
-+
-+
-+HDMI
-+----
-+
-+Required properties:
-+- compatible: "ti,omap4-hdmi"
-+- reg: addresses and lengths of the register spaces for 'wp', 'pll', 'phy',
-+       'core'
-+- reg-names: "wp", "pll", "phy", "core"
-+- interrupts: the HDMI interrupt line
-+- ti,hwmods: "dss_hdmi"
-+- vdda-supply: vdda power supply
-+
-+Optional nodes:
-+- Video port for HDMI output
-diff --git a/Documentation/devicetree/bindings/video/video-ports.txt b/Documentation/devicetree/bindings/video/video-ports.txt
-new file mode 100644
-index 000000000000..dad4c436caae
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/video-ports.txt
-@@ -0,0 +1,22 @@
-+Video Ports
-+=====+
-+The video port bindings used for display devices is a superset of the v4l2 video
-+ports described here:
-+
-+Documentation/devicetree/bindings/media/video-interfaces.txt
-+
-+The only difference is a more compact way to describe devices with only one
-+endpoint. In cases like that, the 'ports' and 'port' nodes are not needed. For
-+example, a DPI panel with a single input endpoint:
-+
-+lcd0: display@0 {
-+	compatible = "samsung,lte430wq-f0c", "panel-dpi";
-+
-+	lcd_in: endpoint {
-+		remote-endpoint = <&dpi_out>;
-+	};
-+};
-+
-+The rest of the bindings are the same as in v4l2 video port bindings and not
-+described here.
--- 
-1.8.3.2
+Index: linux-3.4.3-fast/drivers/video/aty/mach64_cursor.c
+=================================--- linux-3.4.3-fast.orig/drivers/video/aty/mach64_cursor.c	2012-07-02 01:15:38.000000000 +0200
++++ linux-3.4.3-fast/drivers/video/aty/mach64_cursor.c	2012-07-02 01:54:10.000000000 +0200
+@@ -5,6 +5,7 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/string.h>
++#include "../fb_draw.h"
+ 
+ #include <asm/io.h>
+ 
+@@ -157,24 +158,33 @@ static int atyfb_cursor(struct fb_info *
+ 
+ 	    for (i = 0; i < height; i++) {
+ 		for (j = 0; j < width; j++) {
++			u16 l = 0xaaaa;
+ 			b = *src++;
+ 			m = *msk++;
+ 			switch (cursor->rop) {
+ 			case ROP_XOR:
+ 			    // Upper 4 bits of mask data
+-			    fb_writeb(cursor_bits_lookup[(b ^ m) >> 4], dst++);
++			    l = cursor_bits_lookup[(b ^ m) >> 4] |
+ 			    // Lower 4 bits of mask
+-			    fb_writeb(cursor_bits_lookup[(b ^ m) & 0x0f],
+-				      dst++);
++			    	(cursor_bits_lookup[(b ^ m) & 0x0f] << 8);
+ 			    break;
+ 			case ROP_COPY:
+ 			    // Upper 4 bits of mask data
+-			    fb_writeb(cursor_bits_lookup[(b & m) >> 4], dst++);
++			    l = cursor_bits_lookup[(b & m) >> 4] |
+ 			    // Lower 4 bits of mask
+-			    fb_writeb(cursor_bits_lookup[(b & m) & 0x0f],
+-				      dst++);
++			    	(cursor_bits_lookup[(b & m) & 0x0f] << 8);
+ 			    break;
+ 			}
++			/*
++			 * If cursor size is not a multiple of 8 characters
++			 * we must pad it with transparent pattern (0xaaaa).
++			 */
++			if ((j + 1) * 8 > cursor->image.width) {
++				l = comp(l, 0xaaaa,
++				    (1 << ((cursor->image.width & 7) * 2)) - 1);
++			}
++			fb_writeb(l & 0xff, dst++);
++			fb_writeb(l >> 8, dst++);
+ 		}
+ 		dst += offset;
+ 	    }
 

@@ -1,48 +1,42 @@
 From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Thu, 23 Jan 2014 19:31:01 +0000
-Subject: Re: [PATCH 4/10] atyfb: set FBINFO_READS_FAST
-Message-Id: <alpine.LRH.2.02.1401231426470.7971@file01.intranet.prod.int.rdu2.redhat.com>
+Date: Thu, 23 Jan 2014 19:40:02 +0000
+Subject: [PATCH 4/10] atyfb: set FBINFO_READS_FAST
+Message-Id: <alpine.LRH.2.02.1401231439310.7971@file01.intranet.prod.int.rdu2.redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LRH.2.02.1401231259340.31739@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1401231302340.31739@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1401231303100.31739@file01.intranet.prod.int.rdu2.redhat.com>
- <alpine.LRH.2.02.1401231303460.31739@file01.intranet.prod.int.rdu2.redhat.com> <alpine.LRH.2.02.1401231305390.31739@file01.intranet.prod.int.rdu2.redhat.com> <CA+55aFxPfHmpcMH-bmRcTPUQeq5=67cKVmra6+SvT26ybvQaug@mail.gmail.com>
+References: <CA+55aFxPfHmpcMH-bmRcTPUQeq5=67cKVmra6+SvT26ybvQaug@mail.gmail.com>
 In-Reply-To: <CA+55aFxPfHmpcMH-bmRcTPUQeq5=67cKVmra6+SvT26ybvQaug@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
+Set FBINFO_READS_FAST so that the console code uses scrolling instead of
+rewriting. This improves scrolling speed.
 
+A time to do ls -la /usr/bin:
+	original patched
+32bpp	4.9	3.6
+24bpp	4.9	2.9
+16bpp	4.9	2.1
+8bpp	4.9	1.7
 
-On Thu, 23 Jan 2014, Linus Torvalds wrote:
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 
-> Hmm. You're doing this for Matrix and now the aty driver.
-> 
-> Maybe the problem is at the fbcon level? Depending on
-> FBINFO_READS_FAST to decide whether you should scroll or rewrite
-> sounds a bit silly: even if a device doesn't have fast reads, maybe it
-> has a fast accelerated BLIT operation and scrolls quickly. Should the
-> fbcon test perhaps be for FBINFO_READS_FAST _or_ the
-> FBINFO_HWACCEL_COPYAREA bits?
+---
+ drivers/video/aty/atyfb_base.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Both mach64 and matrox have a hardware bitter that is faster than 
-rewriting the console - that's why FBINFO_READS_FAST improves performance 
-for them.
+Index: linux-3.13-rc1/drivers/video/aty/atyfb_base.c
+=================================--- linux-3.13-rc1.orig/drivers/video/aty/atyfb_base.c	2013-11-27 00:25:42.000000000 +0100
++++ linux-3.13-rc1/drivers/video/aty/atyfb_base.c	2013-11-27 00:25:55.000000000 +0100
+@@ -2653,7 +2653,8 @@ static int aty_init(struct fb_info *info
+ 		      FBINFO_HWACCEL_IMAGEBLIT |
+ 		      FBINFO_HWACCEL_FILLRECT  |
+ 		      FBINFO_HWACCEL_COPYAREA  |
+-		      FBINFO_HWACCEL_YPAN;
++		      FBINFO_HWACCEL_YPAN      |
++		      FBINFO_READS_FAST;
+ 
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ 	if (M64_HAS(G3_PB_1_1) && of_machine_is_compatible("PowerBook1,1")) {
 
-One could improve generic framebuffer core to benchmark the performance of 
-scrolling using blitter and rewrite and select FBINFO_READS_FAST 
-automatically...
-
-Mikulas
-
-> I dunno. I didn't actually check the ->bcopy implementations, maybe
-> they don't use copyarea. So I'm just going by a general "this feels
-> wrong" feeling..
-> 
->                 Linus
-
-
-> On Thu, Jan 23, 2014 at 10:18 AM, Mikulas Patocka <mpatocka@redhat.com> wrote:
-> > Set FBINFO_READS_FAST so that the console code uses scrolling instead of
-> > rewriting. This improves scrolling speed.
-> 

@@ -1,56 +1,184 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jan 2014 12:05:54 +0000
-Subject: Re: [PATCH] video: Replace local macro with PCI standard macro
-Message-Id: <52CE90A2.1030705@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="9buUbBoCl8M4oaE3IVr35akXABkuAaqDh"
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Thu, 23 Jan 2014 14:14:57 +0000
+Subject: [PATCH 05/11] x86: sysfb: store apertures in simplefb platform-data
+Message-Id: <1390486503-1504-6-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1386242718-24372-1-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1386242718-24372-1-git-send-email-wangyijing@huawei.com>
-To: Yijing Wang <wangyijing@huawei.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>
+References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ingo Molnar <mingo@kernel.org>
 
---9buUbBoCl8M4oaE3IVr35akXABkuAaqDh
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+To get a generic remove_conflicting_framebuffers() for
+firmware-framebuffers, we need to store the apertures in the platform-data
+of each framebuffer. So make x86-sysfb do that for simple-framebuffer
+devices.
 
-On 2013-12-05 13:25, Yijing Wang wrote:
-> Replace local macro TGA_BUS_PCI with PCI standard
-> marco dev_is_pci().
->=20
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-> ---
->  drivers/video/tgafb.c |   16 +++++-----------
->  1 files changed, 5 insertions(+), 11 deletions(-)
+Unfortunately, "struct apertures_struct" contains a VLA so we cannot
+easily embed it. Thus, we have to use a "apert_buf" buffer with enough
+room for one "struct aperture".
 
-Thanks, queued for 3.14.
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+---
+ arch/x86/include/asm/sysfb.h           |  6 +--
+ arch/x86/kernel/sysfb.c                |  2 +-
+ arch/x86/kernel/sysfb_simplefb.c       | 68 ++++++++++++++++++++--------------
+ include/linux/platform_data/simplefb.h |  1 +
+ 4 files changed, 44 insertions(+), 33 deletions(-)
 
- Tomi
+diff --git a/arch/x86/include/asm/sysfb.h b/arch/x86/include/asm/sysfb.h
+index 6f95b8d..4f9fda2 100644
+--- a/arch/x86/include/asm/sysfb.h
++++ b/arch/x86/include/asm/sysfb.h
+@@ -81,8 +81,7 @@ static inline void sysfb_apply_efi_quirks(void)
+ 
+ bool parse_mode(const struct screen_info *si,
+ 		struct simplefb_platform_data *mode);
+-int create_simplefb(const struct screen_info *si,
+-		    const struct simplefb_platform_data *mode);
++int create_simplefb(const struct simplefb_platform_data *mode);
+ 
+ #else /* CONFIG_X86_SYSFB */
+ 
+@@ -92,8 +91,7 @@ static inline bool parse_mode(const struct screen_info *si,
+ 	return false;
+ }
+ 
+-static inline int create_simplefb(const struct screen_info *si,
+-				  const struct simplefb_platform_data *mode)
++static inline int create_simplefb(const struct simplefb_platform_data *mode)
+ {
+ 	return -EINVAL;
+ }
+diff --git a/arch/x86/kernel/sysfb.c b/arch/x86/kernel/sysfb.c
+index ba9ff26..fd07b09 100644
+--- a/arch/x86/kernel/sysfb.c
++++ b/arch/x86/kernel/sysfb.c
+@@ -117,7 +117,7 @@ static __init int sysfb_init(void)
+ 	/* try to create a simple-framebuffer device */
+ 	compatible = parse_mode(si, &mode);
+ 	if (compatible) {
+-		ret = create_simplefb(si, &mode);
++		ret = create_simplefb(&mode);
+ 		if (!ret)
+ 			return 0;
+ 	}
+diff --git a/arch/x86/kernel/sysfb_simplefb.c b/arch/x86/kernel/sysfb_simplefb.c
+index a760d47..9338427 100644
+--- a/arch/x86/kernel/sysfb_simplefb.c
++++ b/arch/x86/kernel/sysfb_simplefb.c
+@@ -31,9 +31,12 @@ static const struct simplefb_format formats[] = SIMPLEFB_FORMATS;
+ __init bool parse_mode(const struct screen_info *si,
+ 		       struct simplefb_platform_data *mode)
+ {
++	struct apertures_struct *apert = (void*)mode->apert_buf;
+ 	const struct simplefb_format *f;
++	unsigned long len;
+ 	__u8 type;
+ 	unsigned int i;
++	u64 size;
+ 
+ 	type = si->orig_video_isVGA;
+ 	if (type != VIDEO_TYPE_VLFB && type != VIDEO_TYPE_EFI)
+@@ -41,47 +44,56 @@ __init bool parse_mode(const struct screen_info *si,
+ 
+ 	for (i = 0; i < ARRAY_SIZE(formats); ++i) {
+ 		f = &formats[i];
+-		if (si->lfb_depth = f->bits_per_pixel &&
+-		    si->red_size = f->red.length &&
+-		    si->red_pos = f->red.offset &&
+-		    si->green_size = f->green.length &&
+-		    si->green_pos = f->green.offset &&
+-		    si->blue_size = f->blue.length &&
+-		    si->blue_pos = f->blue.offset &&
+-		    si->rsvd_size = f->transp.length &&
+-		    si->rsvd_pos = f->transp.offset) {
+-			mode->format = f->name;
+-			mode->width = si->lfb_width;
+-			mode->height = si->lfb_height;
+-			mode->stride = si->lfb_linelength;
+-			return true;
++		if (si->lfb_depth != f->bits_per_pixel ||
++		    si->red_size != f->red.length ||
++		    si->red_pos != f->red.offset ||
++		    si->green_size != f->green.length ||
++		    si->green_pos != f->green.offset ||
++		    si->blue_size != f->blue.length ||
++		    si->blue_pos != f->blue.offset ||
++		    si->rsvd_size != f->transp.length ||
++		    si->rsvd_pos != f->transp.offset)
++			continue;
++
++		/* lfb_size is in bytes except for VLFB it's in 64kb blocks */
++		size = si->lfb_size;
++		if (type = VIDEO_TYPE_VLFB)
++			size <<= 16;
++
++		/* don't use lfb_size as it may contain the whole VMEM instead
++		 * of only the part that is occupied by the framebuffer */
++		len = si->lfb_height * (unsigned long)si->lfb_linelength;
++		if (len > size) {
++			printk(KERN_WARNING "sysfb: VRAM smaller than advertised framebuffer (%llu > %llu)\n",
++			       (unsigned long long)len,
++			       (unsigned long long)size);
++			return false;
+ 		}
++
++		mode->format = f->name;
++		mode->width = si->lfb_width;
++		mode->height = si->lfb_height;
++		mode->stride = si->lfb_linelength;
++		apert->count = 1;
++		apert->ranges[0].base = si->lfb_base;
++		apert->ranges[0].size = len;
++		return true;
+ 	}
+ 
+ 	return false;
+ }
+ 
+-__init int create_simplefb(const struct screen_info *si,
+-			   const struct simplefb_platform_data *mode)
++__init int create_simplefb(const struct simplefb_platform_data *mode)
+ {
++	const struct apertures_struct *apert = (void*)mode->apert_buf;
+ 	struct resource res;
+-	unsigned long len;
+-
+-	/* don't use lfb_size as it may contain the whole VMEM instead of only
+-	 * the part that is occupied by the framebuffer */
+-	len = mode->height * mode->stride;
+-	len = PAGE_ALIGN(len);
+-	if (len > (u64)si->lfb_size << 16) {
+-		printk(KERN_WARNING "sysfb: VRAM smaller than advertised\n");
+-		return -EINVAL;
+-	}
+ 
+ 	/* setup IORESOURCE_MEM as framebuffer memory */
+ 	memset(&res, 0, sizeof(res));
+ 	res.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+ 	res.name = simplefb_resname;
+-	res.start = si->lfb_base;
+-	res.end = si->lfb_base + len - 1;
++	res.start = apert->ranges[0].base;
++	res.end = res.start + apert->ranges[0].size - 1;
+ 	if (res.end <= res.start)
+ 		return -EINVAL;
+ 
+diff --git a/include/linux/platform_data/simplefb.h b/include/linux/platform_data/simplefb.h
+index 077303c..21983cc 100644
+--- a/include/linux/platform_data/simplefb.h
++++ b/include/linux/platform_data/simplefb.h
+@@ -59,6 +59,7 @@ struct simplefb_platform_data {
+ 	u32 height;
+ 	u32 stride;
+ 	const char *format;
++	u8 apert_buf[sizeof(struct apertures_struct) + sizeof(struct aperture)];
+ };
+ 
+ #endif /* __PLATFORM_DATA_SIMPLEFB_H__ */
+-- 
+1.8.5.3
 
-
-
---9buUbBoCl8M4oaE3IVr35akXABkuAaqDh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSzpCiAAoJEPo9qoy8lh71wQEQAJY4WqEr46216E8rKRCUDnsM
-tIUPWPDbno6AjGfY4J2H1VeVc8BhcJ/i/dJkLgoG1LTzyB0b9+Db9+RXC13u4SWb
-heXyfJd32BDIpbZGwezmvZckr6BnU3WFwTz+gXp9QQy+PvjijSqI8OrHThTqoPkH
-IiEekIi+9WwlxHdeNmlHicxaIU1UUIVlpAdRx/q66bfCiomCY796NWJUM1i5wlzH
-klR/rHGk/0cJ4l+prfLukMaX2B9wq3BzD+lEcD1uQs9CunOckA7kQpFTXfCbGG0A
-/s+/ULiLQjX2payAIxJGCkv78MW8YBW6VHpUl7Yyy9HI1MsfzUWhhws1dF/o8gE9
-u/E9VmcQwa5fRhz5b5gTlI+eDEvWJkRfRWFLzx7gJVpXQhrnmmiTveEv+oAdtmYn
-od/CgxynpNZAc39LKjdd5f/Ly5lqqHIx+zMh7nKLe08vX/hlRzlSAU0ZTxq0RlyY
-PVju8mXM9jOaiPvejAmM5t9VkiOdBu9p2zGPP4tg7CjKjGG5eZTzrT4vYSk0kQ4L
-9LWjnUBbOxtv0/3ob79Bgtbg5eTrR7hv2FlhltDRLKbe7apCGkF19vWOPCg+Yb4t
-p0F1pLFNUGL8Cu35E1YkX3R7lzgdhPyhsTuyF3t6O/pX+iZTKMbCvBCnslpTJiA/
-/Y0/ln0zl28ARrtD9eby
-=b5fc
------END PGP SIGNATURE-----
-
---9buUbBoCl8M4oaE3IVr35akXABkuAaqDh--

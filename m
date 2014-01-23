@@ -1,105 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Jan 2014 10:56:56 +0000
-Subject: [PATCHv3 24/41] ARM: omap4.dtsi: add omapdss information
-Message-Id: <1390301833-24944-25-git-send-email-tomi.valkeinen@ti.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Thu, 23 Jan 2014 14:15:00 +0000
+Subject: [PATCH 08/11] drm/i915: remove sysfbs early
+Message-Id: <1390486503-1504-9-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: dri-devel@lists.freedesktop.org
+Cc: Ingo Molnar <mingo@kernel.org>, linux-fbdev@vger.kernel.org, Dave Airlie <airlied@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org, Tom Gundersen <teg@jklm.no>, David Herrmann <dh.herrmann@gmail.com>
 
-Add DT data for OMAP4 display subsystem, which contains the following
-blocks:
+Once we allow DRM drivers for system-framebuffers, we need to evict such
+devices *before* probing the real driver. A simple call to sysfb_claim()
+does this and remove_conflicting_framebuffers() implicitly calls this.
+However, it causes the sysfb device to be unloaded and thus locks
+drm_global_mutex. remove_conflicting_framebuffers() must be called from
+outside any ->load() callback to avoid a dead-lock.
 
-dss - the wrapper/glue for the display modules
-dispc - display controller
-dsi - MIPI DSI encoder (two independent modules)
-rfbi - MIPI DBI encoder
-venc - analog TV encoder
-hdmi - HDMI encoder
+All other DRM drivers call this right before probing the pci-device, which
+is fine. For i915 we need to figure out the apertures before we can evict
+fw-framebuffers, though. This turns out to be not as easy as you might
+think, so lets just evict all sysfbs for now before loading i915.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+A proper fix would be to make DRM code allow parallel device probing.
+That's not going to happen soon, so be safe and make i915 evict all
+sysfbs.
+
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
 ---
- arch/arm/boot/dts/omap4.dtsi | 65 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 65 insertions(+)
+ drivers/gpu/drm/i915/i915_drv.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
-index a1e05853afcd..19498b2fa316 100644
---- a/arch/arm/boot/dts/omap4.dtsi
-+++ b/arch/arm/boot/dts/omap4.dtsi
-@@ -705,5 +705,70 @@
- 			dmas = <&sdma 117>, <&sdma 116>;
- 			dma-names = "tx", "rx";
- 		};
+diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
+index 43245b3..ceb875a 100644
+--- a/drivers/gpu/drm/i915/i915_drv.c
++++ b/drivers/gpu/drm/i915/i915_drv.c
+@@ -838,6 +838,12 @@ static int i915_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	driver.driver_features &= ~(DRIVER_USE_AGP);
+ 
++	/* We cannot call remove_conflicting_framebuffers() here as we cannot
++	 * easily figure out the apertures here. So lets just remove all
++	 * system-framebuffers early so we don't deadlock later when calling it
++	 * with drm_global_mutex held. */
++	sysfb_claim(NULL, SYSFB_CLAIM_ALL);
 +
-+		dss: dss@58000000 {
-+			compatible = "ti,omap4-dss", "simple-bus";
-+			reg = <0x58000000 0x80>;
-+			status = "disabled";
-+			ti,hwmods = "dss_core";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges;
-+
-+			dispc@58001000 {
-+				compatible = "ti,omap4-dispc";
-+				reg = <0x58001000 0x1000>;
-+				interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
-+				ti,hwmods = "dss_dispc";
-+			};
-+
-+			rfbi: encoder@58002000  {
-+				compatible = "ti,omap4-rfbi";
-+				reg = <0x58002000 0x1000>;
-+				status = "disabled";
-+				ti,hwmods = "dss_rfbi";
-+			};
-+
-+			venc: encoder@58003000 {
-+				compatible = "ti,omap4-venc";
-+				reg = <0x58003000 0x1000>;
-+				status = "disabled";
-+				ti,hwmods = "dss_venc";
-+			};
-+
-+			dsi1: encoder@58004000 {
-+				compatible = "ti,omap4-dsi";
-+				reg = <0x58004000 0x200>,
-+				      <0x58004200 0x40>,
-+				      <0x58004300 0x20>;
-+				reg-names = "proto", "phy", "pll";
-+				interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+				ti,hwmods = "dss_dsi1";
-+			};
-+
-+			dsi2: encoder@58005000 {
-+				compatible = "ti,omap4-dsi";
-+				reg = <0x58005000 0x200>,
-+				      <0x58005200 0x40>,
-+				      <0x58005300 0x20>;
-+				reg-names = "proto", "phy", "pll";
-+				interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+				ti,hwmods = "dss_dsi2";
-+			};
-+
-+			hdmi: encoder@58006000 {
-+				compatible = "ti,omap4-hdmi";
-+				reg = <0x58006000 0x200>,
-+				      <0x58006200 0x100>,
-+				      <0x58006300 0x100>,
-+				      <0x58006400 0x1000>;
-+				reg-names = "wp", "pll", "phy", "core";
-+				interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+				ti,hwmods = "dss_hdmi";
-+			};
-+		};
- 	};
- };
+ 	return drm_get_pci_dev(pdev, ent, &driver);
+ }
+ 
 -- 
-1.8.3.2
+1.8.5.3
 

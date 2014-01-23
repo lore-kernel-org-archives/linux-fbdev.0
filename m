@@ -1,42 +1,38 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Thu, 23 Jan 2014 19:40:02 +0000
-Subject: [PATCH 4/10] atyfb: set FBINFO_READS_FAST
-Message-Id: <alpine.LRH.2.02.1401231439310.7971@file01.intranet.prod.int.rdu2.redhat.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 23 Jan 2014 19:45:26 +0000
+Subject: Re: [PATCH 4/10] atyfb: set FBINFO_READS_FAST
+Message-Id: <CA+55aFxrZE6oxu5CxFo3mRwGdVcq3jvnn_ChoSJDFgQz45Lq_A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CA+55aFxPfHmpcMH-bmRcTPUQeq5=67cKVmra6+SvT26ybvQaug@mail.gmail.com>
-In-Reply-To: <CA+55aFxPfHmpcMH-bmRcTPUQeq5=67cKVmra6+SvT26ybvQaug@mail.gmail.com>
+References: <alpine.LRH.2.02.1401231259340.31739@file01.intranet.prod.int.rdu2.redhat.com>
+	<alpine.LRH.2.02.1401231302340.31739@file01.intranet.prod.int.rdu2.redhat.com>
+	<alpine.LRH.2.02.1401231303100.31739@file01.intranet.prod.int.rdu2.redhat.com>
+	<alpine.LRH.2.02.1401231303460.31739@file01.intranet.prod.int.rdu2.redhat.com>
+	<alpine.LRH.2.02.1401231305390.31739@file01.intranet.prod.int.rdu2.redhat.com>
+	<CA+55aFxPfHmpcMH-bmRcTPUQeq5=67cKVmra6+SvT26ybvQaug@mail.gmail.com>
+	<alpine.LRH.2.02.1401231426470.7971@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.1401231426470.7971@file01.intranet.prod.int.rdu2.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Set FBINFO_READS_FAST so that the console code uses scrolling instead of
-rewriting. This improves scrolling speed.
+On Thu, Jan 23, 2014 at 11:31 AM, Mikulas Patocka <mpatocka@redhat.com> wrote:
+>
+> Both mach64 and matrox have a hardware bitter that is faster than
+> rewriting the console - that's why FBINFO_READS_FAST improves performance
+> for them.
 
-A time to do ls -la /usr/bin:
-	original patched
-32bpp	4.9	3.6
-24bpp	4.9	2.9
-16bpp	4.9	2.1
-8bpp	4.9	1.7
+My point is that I'd expect *anything* that has a hardware blitter to
+be faster than rewriting the screen.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+FBINFO_READS_FAST is documented to be about "soft-copy" being faster
+than re-rendering. Which I take to be about actually doing copying in
+*software*.
 
----
- drivers/video/aty/atyfb_base.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+In particular, updatescrollmode() seems to do this right. It sets
+p->scrollmode based on whether there's an accelerated copyarea. But
+then SCROLL_PAN/WRAP_MOVE ends up re-testing FBINFO_READS_FAST,
+ignoring any hw-accelerated copy-area, and I don't quite see why..
 
-Index: linux-3.13-rc1/drivers/video/aty/atyfb_base.c
-=================================--- linux-3.13-rc1.orig/drivers/video/aty/atyfb_base.c	2013-11-27 00:25:42.000000000 +0100
-+++ linux-3.13-rc1/drivers/video/aty/atyfb_base.c	2013-11-27 00:25:55.000000000 +0100
-@@ -2653,7 +2653,8 @@ static int aty_init(struct fb_info *info
- 		      FBINFO_HWACCEL_IMAGEBLIT |
- 		      FBINFO_HWACCEL_FILLRECT  |
- 		      FBINFO_HWACCEL_COPYAREA  |
--		      FBINFO_HWACCEL_YPAN;
-+		      FBINFO_HWACCEL_YPAN      |
-+		      FBINFO_READS_FAST;
- 
- #ifdef CONFIG_PMAC_BACKLIGHT
- 	if (M64_HAS(G3_PB_1_1) && of_machine_is_compatible("PowerBook1,1")) {
-
+                Linus

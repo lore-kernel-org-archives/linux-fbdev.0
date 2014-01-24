@@ -1,56 +1,62 @@
-From: Sebastian Reichel <sre@debian.org>
-Date: Tue, 21 Jan 2014 15:26:05 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 24 Jan 2014 11:46:15 +0000
 Subject: Re: [PATCHv3 30/41] ARM: omap3-n900.dts: add display information
-Message-Id: <20140121152605.GA5983@earth.universe>
+Message-Id: <52E25287.9070201@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="9jxsPFA5p3P2qPhR"
+Content-Type: multipart/mixed; boundary="gAJL65kDhGdddwPDSCcpIcWBCR5AvWcUr"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
  <1390301833-24944-31-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1390301833-24944-31-git-send-email-tomi.valkeinen@ti.com>
+ <20140121152605.GA5983@earth.universe>
+In-Reply-To: <20140121152605.GA5983@earth.universe>
 To: linux-arm-kernel@lists.infradead.org
 
-
---9jxsPFA5p3P2qPhR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--gAJL65kDhGdddwPDSCcpIcWBCR5AvWcUr
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jan 21, 2014 at 12:57:02PM +0200, Tomi Valkeinen wrote:
-> Add DT data for OMAP3 N900 board. The board has the following
-> displays:
+On 2014-01-21 17:26, Sebastian Reichel wrote:
+> On Tue, Jan 21, 2014 at 12:57:02PM +0200, Tomi Valkeinen wrote:
+>> Add DT data for OMAP3 N900 board. The board has the following
+>> displays:
+>>
+>> lcd: LCD panel connected to OMAP's SDI output
+>> tv: analog svideo
+>>
+>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 >=20
-> lcd: LCD panel connected to OMAP's SDI output
-> tv: analog svideo
+> Your dss-dt-review-3 branch boots on my N900 with working display.
 >=20
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Tested-by: Sebastian Reichel <sre@debian.org>
 
-Your dss-dt-review-3 branch boots on my N900 with working display.
+Ok, thanks!
 
-Tested-by: Sebastian Reichel <sre@debian.org>
+ Tomi
 
--- Sebastian
 
---9jxsPFA5p3P2qPhR
+
+--gAJL65kDhGdddwPDSCcpIcWBCR5AvWcUr
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJS3pGNAAoJENju1/PIO/qaJBYQAIZazWfkbZRnlRcxPTrilj6l
-RyeqBYVX7psnzjsisBimGxeTc0K0s8EyzrQxzaAh2d4KlkrXHwJSAn8MxZF/4FLW
-7ZPmz4T3tbZbbw5/n9BtcfIbtPtpzw+OHJMKyL4b1i0yIDVPIy6kuOHg+6bvHLV+
-yYwcD4jr63IRASZ+ItFn6lp9AwOo7b2Z8hi6mP9HfGA7kcb7VY6hN+adDAJyOzWX
-1T+4yCNJhWXaaBXgKytuYIdavLNFYsW/EfbUl8K4GbyEMwpLJU60IpSbMJqxtKXP
-5SO/Qzc+8DVMVFNCHvMy3x6UCRqCXeKkWQ9/WeoskdlvJGQL7ShUgusx5cUt07a9
-sUVfwkO7Y2QUxsTEMp6NLPOsYmFr6/p0/XMOThw6sCktJUGJ15MDM7Xglkl+sA0N
-sx5+8BS1q+EKz7dMM5Bu7ky7ZUtj1YpUAFFv6SM9zMEC+HOadjLo4dkm05+caD6s
-Y0i/SNd29iXB4zuC3+ko++8NVlX9g/QI+RRd1eq5miUWSrPtzU2fv+1QnI0YVEym
-3A4wYFUHis5ibh2rkDQMdedShI0VkCgoASNYUUQp5pYhfzqI5JFKzHJdv6Mb9C/n
-VRh7uaXaV7E/yxlUfJXJ8LNFFlltpzbcMmc+jdHaSO6SS7aT9RLAPHDBPez9VYG8
-IJ7tP/46g3By4kbLnfDu
-=n51O
+iQIcBAEBAgAGBQJS4lKHAAoJEPo9qoy8lh71S98P/jFlnLDfwch1bSGpEroUk98Q
+3LD3accp0ziNan4VW4O6C0nSq0at48Cr/XGCXJhYRzQHPFgZGUp2QiBhZC+4lsX2
+j73NGdVoclaS+GaZM+SSM3pjDFa0XJKzDIsS4YajxHaX1RRdn7QwyUJ4rrHupirH
+T/URJCjuBSF8wwSdBlDdpiQ/7qg04KIJmL6LgoxrFXoyQ1zRT/jbfDW9WQGp98XX
+CjOHbYde7WyVqHvF+SumIXCIpUqW3t4/4Bpb/hPG7qBKvR99piJ0cO9sqOHS+XVI
+vuuC4AX4EunxfpqeGEqNW8HdlL+O6WRMWYGjwuDDfDPM/5w7DV7fixOJ69SNWoR5
+ULx6Ues3UPLhNYUYBTDH4rGrZFxRxMhHHCcrAz+dUfis11x0IZwJbBomYQPu0+Kd
+oTsuDtmwEZ1IY1X7yn0WfuUboEN2HQnURhteodocuL9Rg5G2ObwKbdphnOOkHTMq
+BLNwbn4xdlld4c/jQBKvx+Lv/vsi66hFU9GZQXQoIWudKjPVKT/yRphFnKiEub11
+OzFVFCqWxrW9PKJZdE34zdqgGsxhrSyV/I9zPtgrNCYBO4voTJ2QIjPlgNAHUoem
+clYtW+Mv1CJqGZ4ksDwTWA8QI/fyAtc7FUEw2IgnquCuLXXNU7R2GW4iRH5THAJQ
+g+kl4mTUmyMbd8CpjrKs
+=fJZZ
 -----END PGP SIGNATURE-----
 
---9jxsPFA5p3P2qPhR--
+--gAJL65kDhGdddwPDSCcpIcWBCR5AvWcUr--

@@ -1,67 +1,35 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Tue, 25 Feb 2014 11:43:41 +0000
-Subject: [PATCH 1/3] imx-drm: Move IPU_PIX_FMT_GBR24 definition into imx-ipu-v3.h
-Message-Id: <1393328624-28013-2-git-send-email-p.zabel@pengutronix.de>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Mon, 03 Feb 2014 08:45:01 +0000
+Subject: [PATCH Resend 1/2] video: exynos: Remove OF dependency for Exynos DP
+Message-Id: <1391416382-25285-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The IPU display controller supports a non-standard green-red-blue ordered
-format that is used on the connection between IPU display interface 1 and
-the TV encoder on i.MX53.
-In preparation for the move of IPU core code out of staging, place the
-IPU_PIX_FMT_GBR24 definition in imx-ipu-v3.h, so that both the IPU
-display interface driver and the TVE encoder driver can access it.
+Exynos is now a DT only platform. Hence there is no need
+for an explicit OF dependency. Remove it.
 
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Acked-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/staging/imx-drm/imx-drm.h           | 4 ----
- drivers/staging/imx-drm/imx-tve.c           | 1 +
- drivers/staging/imx-drm/ipu-v3/imx-ipu-v3.h | 2 ++
- 3 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/video/exynos/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/imx-drm/imx-drm.h b/drivers/staging/imx-drm/imx-drm.h
-index aa21028..035ab62 100644
---- a/drivers/staging/imx-drm/imx-drm.h
-+++ b/drivers/staging/imx-drm/imx-drm.h
-@@ -1,10 +1,6 @@
- #ifndef _IMX_DRM_H_
- #define _IMX_DRM_H_
+diff --git a/drivers/video/exynos/Kconfig b/drivers/video/exynos/Kconfig
+index 1129d0e9e640..976594d578a9 100644
+--- a/drivers/video/exynos/Kconfig
++++ b/drivers/video/exynos/Kconfig
+@@ -30,7 +30,7 @@ config EXYNOS_LCD_S6E8AX0
  
--#include <linux/videodev2.h>
--
--#define IPU_PIX_FMT_GBR24	v4l2_fourcc('G', 'B', 'R', '3')
--
- struct device_node;
- struct drm_crtc;
- struct drm_connector;
-diff --git a/drivers/staging/imx-drm/imx-tve.c b/drivers/staging/imx-drm/imx-tve.c
-index 702c0c3..50b25f1 100644
---- a/drivers/staging/imx-drm/imx-tve.c
-+++ b/drivers/staging/imx-drm/imx-tve.c
-@@ -31,6 +31,7 @@
- #include <drm/drm_fb_helper.h>
- #include <drm/drm_crtc_helper.h>
- 
-+#include "ipu-v3/imx-ipu-v3.h"
- #include "imx-drm.h"
- 
- #define TVE_COM_CONF_REG	0x00
-diff --git a/drivers/staging/imx-drm/ipu-v3/imx-ipu-v3.h b/drivers/staging/imx-drm/ipu-v3/imx-ipu-v3.h
-index 4826b5c..c4d14ea 100644
---- a/drivers/staging/imx-drm/ipu-v3/imx-ipu-v3.h
-+++ b/drivers/staging/imx-drm/ipu-v3/imx-ipu-v3.h
-@@ -25,6 +25,8 @@ enum ipuv3_type {
- 	IPUV3H,
- };
- 
-+#define IPU_PIX_FMT_GBR24	v4l2_fourcc('G', 'B', 'R', '3')
-+
- /*
-  * Bitfield of Display Interface signal polarities.
-  */
+ config EXYNOS_DP
+ 	bool "EXYNOS DP driver support"
+-	depends on OF && ARCH_EXYNOS
++	depends on ARCH_EXYNOS
+ 	default n
+ 	help
+ 	  This enables support for DP device.
 -- 
-1.8.5.3
+1.7.9.5
 

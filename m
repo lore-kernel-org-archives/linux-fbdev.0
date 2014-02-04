@@ -1,95 +1,40 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Fri, 21 Feb 2014 09:56:07 +0000
-Subject: Re: [PATCH 00/11] SimpleDRM & Sysfb
-Message-Id: <20140221095604.GI22574@ulmo.nvidia.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="WR+jf/RUebEcofwt"
+From: Shuah Khan <shuah.kh@samsung.com>
+Date: Tue, 04 Feb 2014 17:55:27 +0000
+Subject: Re: [PATCH v2] backlight: Convert from Legacy pm ops to dev_pm_ops
+Message-Id: <52F1298F.1040903@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
-	<CANq1E4S=+ixMQRMfX2-DXh3ZDO0jNAdWrUe6=z9aTdOSfR-SDA@mail.gmail.com>
-In-Reply-To: <CANq1E4S=+ixMQRMfX2-DXh3ZDO0jNAdWrUe6=z9aTdOSfR-SDA@mail.gmail.com>
-To: David Herrmann <dh.herrmann@gmail.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ingo Molnar <mingo@kernel.org>
+References: <2236505237-3336-1-git-send-email-shuah.kh@samsung.com>
+ <15798389.lgk83XnI1i@vostro.rjw.lan>
+ <001f01cf157f$ca2e8530$5e8b8f90$%han@samsung.com>
+ <52DD4045.4050902@samsung.com>
+In-Reply-To: <52DD4045.4050902@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jg1.han@samsung.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Richard Purdie' <rpurdie@rpsys.net>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 'Shuah Khan' <shuahkhan@gmail.com>, Shuah Khan <shuah.kh@samsung.com>
 
+On 01/20/2014 08:27 AM, Shuah Khan wrote:
+> On 01/19/2014 06:34 PM, Jingoo Han wrote:
+>> On Monday, January 20, 2014 12:37 AM, Rafael J. Wysocki wrote:
 
---WR+jf/RUebEcofwt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Rafael/Jingoo Han,
+>
+> I did send the v3 patch with the typo fixed. Here is the link:
+>
+> http://lkml.indiana.edu/hypermail/linux/kernel/1306.0/00219.html
+>
+> This is a while back. I will rebase and res-test and send it.
+>
 
-On Mon, Jan 27, 2014 at 11:18:51PM +0100, David Herrmann wrote:
-> Hi
->=20
-> On Thu, Jan 23, 2014 at 3:14 PM, David Herrmann <dh.herrmann@gmail.com> w=
-rote:
-> > Hi
-> >
-> > Another round of SimpleDRM patches. I somehow lost track of the last on=
-es and as
-> > this is a major rewrite, I'll just start at v1 again.
-> >
-> > Some comments up-front:
-> >
-> >  - @Ingo: Patch #1 and #2 are unchanged from the previous ML discussion=
-s. I
-> >    included them in this series as the other patches depend on them. Co=
-uld you
-> >    pick them up for the x86 tree? The other 9 patches won't make it in =
-3.14 so
-> >    no reason to put them through the DRM tree.
-> >    All mentioned issues should be addressed. If there's still sth missi=
-ng,
-> >    please let me know.
-> >
-> >  - The DRM patches depend on my "DRM Anonymous Inode" patches. But it s=
-hould be
-> >    trivial to apply them on drm-next (I think only one line needs to be=
- changed:
-> >    i_mapping =3D> dev_mapping).
-> >
-> >  - I tested the SimpleDRM fbdev fallback with linux-console+Xorg and it=
- works
-> >    fine. The DRM backend is only tested with some DRM tests I have loca=
-lly. I
-> >    have no idea how to make Xorg pick up a specific /dev/dri/card0 card=
-=2E It
-> >    always tells me "no screens found" (as the underlying device is not =
-marked as
-> >    boot_vga..). If someone knows how to tell Xorg to use card0, I'd gla=
-dly test
-> >    this. But I'm no longer used to writing xorg.confs..
->=20
-> For completeness, I tested this with Xorg+xf86-video-modesetting and
-> it works just fine. The xorg.conf I used can be found below. If this
-> driver gets upstreamed, I will try to make the X11 auto-loader detect
-> it just like any other platform-device.
+Checked 3.14-rc1 and patch v3 is in there.
 
-I recently posted patches[0] to the xorg-devel mailing list that I think
-should solve that issue.
+commit 3601792e7b68150420ea8dc129e26e167c0484d8
 
-Thierry
+-- Shuah
 
-[0]: http://lists.x.org/archives/xorg-devel/2014-February/040568.html
-
---WR+jf/RUebEcofwt
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTByK0AAoJEN0jrNd/PrOhgesP/iVDOlFV9SkAv8OK1GY4dmfs
-cqOKH9TaKTBenMRgEb276Rm7nbdbRzmkM+GVjjhLQiYa5JTs9CGxcaulhWMFCrcf
-BeUkDBFnh8QRcMBBS6l+d1hZT9yNvSv85VqIfkdkEtwzIBznRo48gnhOdlq3AMyl
-l2f/hkUkDzImIRdZZpawk5NIZqqb5FWNjUL7p9Hn8q1jN89J3RvL8Gaagaa0XTJK
-ccCfHQR36AbLC8PlO1B4Ovc909clsWRelzWm+615lNBBMm+GCGhzGDCGHzsJ+r7G
-HWMsy73ORiemlDm2/dYvKAqcYy+UULm3foeIBqiBQDF9Fd7eJFtOcTDeTaI4HN+O
-XQsvRnlxNbLC8r6f1odpqnl373dEnEnqNSCe8nkEkC8UgERTy7+ZOzUKR4F9BgkQ
-U0LJRM4fS7BpkrhjxJR9JhrI7gCKimRhwItQXNYxr34BKdJxxQr8t53hxKJscFNj
-5WxGW1S/r4TvOdFbShdu+nSE72TuzLzI7ew3kCB9gC45JbNgcZ4ahfNiX1OJPJso
-tNZSiVL76pWVNnplfIeOny8j6gk2cwZnk/yZrUDot/RQiMom8fHFOSpt4fW9zgHB
-5Pu73hj8EkUAUSrX6AtbS2NgRqFY7X5PGEsTb0otxHESFeA0r5rsls79KBQxkqe/
-UNkQwLbcE+Tuv/+WVmfj
-=gS6g
------END PGP SIGNATURE-----
-
---WR+jf/RUebEcofwt--
+-- 
+Shuah Khan
+Senior Linux Kernel Developer - Open Source Group
+Samsung Research America(Silicon Valley)
+shuah.kh@samsung.com | (970) 672-0658

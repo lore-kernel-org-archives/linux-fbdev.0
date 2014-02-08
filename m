@@ -1,70 +1,141 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 28 Feb 2014 10:36:23 +0000
-Subject: Re: [PATCH 0/9] OMAP DSS DT bindings documentation
-Message-Id: <531066A7.8060804@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="afud3TvQlmMwHqD2XWOWU9df3bQIuJGNB"
+From: Haiyang Zhang <haiyangz@microsoft.com>
+Date: Sat, 08 Feb 2014 16:35:15 +0000
+Subject: [PATCH] hyperv_fb: Add support for Gen2 VM
+Message-Id: <1391880342-10081-1-git-send-email-haiyangz@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1392294752-18762-1-git-send-email-tomi.valkeinen@ti.com> <53034D6F.9080405@ti.com>
-In-Reply-To: <53034D6F.9080405-l0cyMroinI0@public.gmane.org>
-To: Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: FlorianSchandinat@gmx.de, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org
+Cc: olaf@aepfle.de, gregkh@linuxfoundation.org, jasowang@redhat.com, driverdev-devel@linuxdriverproject.org, linux-kernel@vger.kernel.org, haiyangz@microsoft.com
 
---afud3TvQlmMwHqD2XWOWU9df3bQIuJGNB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch enables Hyper-V FB driver to run on Gen2 VM.
 
-On 18/02/14 14:09, Archit Taneja wrote:
-> Hi,
->=20
-> On Thursday 13 February 2014 06:02 PM, Tomi Valkeinen wrote:
->> Hi,
->>
->> Here is DT binding documentation for OMAP Display Subsystem. I've sent=
+The Gen2 VM provides MMIO area for synthetic video from ACPI module,
+which is exported by vmbus. The generic video is provided by UEFI. PCI
+video in Gen1 is no longer available.
 
->> these
->> earlier as part of the whole DSS DT series, but I'm now sending them
->> separately
->> to get comments for them.
->>
->> These patches are essentially the same as what I already sent earlier.=
+To support synthetic video on Hyper-V Gen2 VM, this patch updated
+code related to the changes above.
 
->> The only
->> difference is that I added clock information for omap3 and omap4
->> platforms.
->=20
-> Reviewed-by: Archit Taneja <archit@ti.com>
->=20
-> Archit
->=20
+Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
+Reviewed-by: K. Y. Srinivasan <kys@microsoft.com>
+---
+ drivers/video/hyperv_fb.c |   60 ++++++++++++++++++++++++++++++--------------
+ 1 files changed, 41 insertions(+), 19 deletions(-)
 
-Thanks!
+diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
+index bbcc8c0..5db1f20 100644
+--- a/drivers/video/hyperv_fb.c
++++ b/drivers/video/hyperv_fb.c
+@@ -42,6 +42,7 @@
+ #include <linux/completion.h>
+ #include <linux/fb.h>
+ #include <linux/pci.h>
++#include <linux/efi.h>
+ 
+ #include <linux/hyperv.h>
+ 
+@@ -461,13 +462,13 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 		goto error;
+ 	}
+ 
+-	if (par->synthvid_version = SYNTHVID_VERSION_WIN7) {
++	if (par->synthvid_version = SYNTHVID_VERSION_WIN7)
+ 		screen_depth = SYNTHVID_DEPTH_WIN7;
+-		screen_fb_size = SYNTHVID_FB_SIZE_WIN7;
+-	} else {
++	else
+ 		screen_depth = SYNTHVID_DEPTH_WIN8;
+-		screen_fb_size = SYNTHVID_FB_SIZE_WIN8;
+-	}
++
++	screen_fb_size = hdev->channel->offermsg.offer.
++				mmio_megabytes * 1024 * 1024;
+ 
+ 	return 0;
+ 
+@@ -635,22 +636,33 @@ static void hvfb_get_option(struct fb_info *info)
+ /* Get framebuffer memory from Hyper-V video pci space */
+ static int hvfb_getmem(struct fb_info *info)
+ {
+-	struct pci_dev *pdev;
++	struct pci_dev *pdev  = NULL;
+ 	ulong fb_phys;
+ 	void __iomem *fb_virt;
++	bool gen2vm = efi_enabled(EFI_BOOT);
+ 
+-	pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
++	if (gen2vm) {
++		if (!hyperv_mmio_start || hyperv_mmio_size < screen_fb_size) {
++			pr_err("Unable to find ACPI MMIO area\n");
++			return -ENODEV;
++		}
++
++		fb_phys = hyperv_mmio_start;
++	} else {
++		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+ 			      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
+-	if (!pdev) {
+-		pr_err("Unable to find PCI Hyper-V video\n");
+-		return -ENODEV;
+-	}
++		if (!pdev) {
++			pr_err("Unable to find PCI Hyper-V video\n");
++			return -ENODEV;
++		}
+ 
+-	if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+-	    pci_resource_len(pdev, 0) < screen_fb_size)
+-		goto err1;
++		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
++		    pci_resource_len(pdev, 0) < screen_fb_size)
++			goto err1;
++
++		fb_phys = pci_resource_end(pdev, 0) - screen_fb_size + 1;
++	}
+ 
+-	fb_phys = pci_resource_end(pdev, 0) - screen_fb_size + 1;
+ 	if (!request_mem_region(fb_phys, screen_fb_size, KBUILD_MODNAME))
+ 		goto err1;
+ 
+@@ -662,14 +674,22 @@ static int hvfb_getmem(struct fb_info *info)
+ 	if (!info->apertures)
+ 		goto err3;
+ 
+-	info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
+-	info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
++	if (gen2vm) {
++		info->apertures->ranges[0].base = screen_info.lfb_base;
++		info->apertures->ranges[0].size = screen_info.lfb_size;
++	} else {
++		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
++		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
++	}
++
+ 	info->fix.smem_start = fb_phys;
+ 	info->fix.smem_len = screen_fb_size;
+ 	info->screen_base = fb_virt;
+ 	info->screen_size = screen_fb_size;
+ 
+-	pci_dev_put(pdev);
++	if (!gen2vm)
++		pci_dev_put(pdev);
++
+ 	return 0;
+ 
+ err3:
+@@ -677,7 +697,9 @@ err3:
+ err2:
+ 	release_mem_region(fb_phys, screen_fb_size);
+ err1:
+-	pci_dev_put(pdev);
++	if (!gen2vm)
++		pci_dev_put(pdev);
++
+ 	return -ENOMEM;
+ }
+ 
+-- 
+1.7.4.1
 
- Tomi
-
-
-
---afud3TvQlmMwHqD2XWOWU9df3bQIuJGNB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTEGanAAoJEPo9qoy8lh71KFoQAKCvwAtyt+tbzge0R/+IWq3v
-hvzFaLkkbYxwNSM8QogqrOnIO5oMwKlcNjIko6gSGI+FYTrWrkk/fzSE0lNeJzUC
-2n336trYO0RS8UvAUqbSPnXRZwDIaWauobVrEP78FMucS2EAOeTc+gwRUg1uBXJm
-lwh5pB5H+OoieBPOlXDqcgS9IVop3y/Wybq4ojsWRNMIlze74JZixjUuSoib3E9t
-NQ/rq4tcR3ewABGK5xa5cjO0M052qmVun9U3w+yNd0oVMLDLzxkPtA+PeVnle4Nj
-fXET/Dkrof6HHpaaKDzIX6xfOxT/ubyOsox0MuPI3JrD4j1G+twOm2xBiUdEYQ4H
-4Y4+YS90aUcGb4fvtF7L6bdiWypdbh+EBX1KioL6zkA7/3IL0xTzSnS9xFxV4Wkq
-8EQ/E7hQf5hBwdLZ+MpKWzGd1JedCxtLIl4l1Vn+CSg20UBsZkUquorJqFXyt5JR
-UOavWoLECJ+xffF3MsVAhD2i+8N7HkzgPFKWCXZ3QMIHA/JNyT1VmlOtTq1DrVQA
-3V6hYBgrDOaelLKrbG0mP1ck+eztOBoCxEZBfmrv3Of+EO6le2h1/Xz+9eX2sEtw
-Rhe51YkwGHogJC9Fs7uaz/5gCTc8hSufaUWXkTUc4GlXyqaarYKcWdeTtERgJDoc
-48KCUDF66w0rYDBwwBAl
-=DM8L
------END PGP SIGNATURE-----
-
---afud3TvQlmMwHqD2XWOWU9df3bQIuJGNB--

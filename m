@@ -1,71 +1,50 @@
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Mon, 03 Feb 2014 17:14:44 +0000
-Subject: [PATCH v2] RFC: framebuffer: provide generic get_fb_unmapped_area
-Message-Id: <1391447684-22556-1-git-send-email-u.kleine-koenig@pengutronix.de>
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Date: Mon, 10 Feb 2014 12:16:27 +0000
+Subject: =?UTF-8?B?UmU6IFtQQVRDSF0gdmlkZW86IGlteGZiOiBVc2UgcmVndWxhdG9yIEFQSSB3?= =?UTF-8?B?aXRoIExDRCBjbGFzc
+Message-Id: <1392034587.333931582@f419.i.mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1387624080-15312-1-git-send-email-shc_work@mail.ru>
+ <52F8C091.50704@ti.com>
+In-Reply-To: <52F8C091.50704@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-This patch makes mmapping the simple-framebuffer device work on a no-MMU
-ARM target. The code is mostly taken from
-arch/blackfin/kernel/sys_bfin.c.
-
-Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
----
-Hello,
-
-note this is only tested on this no-MMU machine and I don't know enough
-about framebuffers and mm to decide if this patch is sane. Also I'm
-a bit unsure about the size check, I just believed Geert that
-PAGE_ALIGN(info->fix.smem_len) is the right value to check against.
-
-Best regards
-Uwe
-
- drivers/video/fbmem.c | 20 +++++++++++++++++---
- 1 file changed, 17 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 7309ac704e26..d0ccedafec8c 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1491,6 +1491,22 @@ __releases(&info->lock)
- 	return 0;
- }
-=20
-+#ifdef HAVE_ARCH_FB_UNMAPPED_AREA
-+#define fb_get_unmapped_area get_fb_unmapped_area
-+#else
-+unsigned long fb_get_unmapped_area(struct file *filp, unsigned long orig_a=
-ddr,
-+		unsigned long len, unsigned long pgoff, unsigned long flags)
-+{
-+	struct fb_info * const info =3D filp->private_data;
-+	unsigned long fb_size =3D PAGE_ALIGN(info->fix.smem_len);
-+
-+	if (pgoff > fb_size || len > fb_size - pgoff)
-+		return -EINVAL;
-+
-+	return (unsigned long)info->screen_base + pgoff;
-+}
-+#endif
-+
- static const struct file_operations fb_fops =3D {
- 	.owner =3D	THIS_MODULE,
- 	.read =3D		fb_read,
-@@ -1502,9 +1518,7 @@ static const struct file_operations fb_fops =3D {
- 	.mmap =3D		fb_mmap,
- 	.open =3D		fb_open,
- 	.release =3D	fb_release,
--#ifdef HAVE_ARCH_FB_UNMAPPED_AREA
--	.get_unmapped_area =3D get_fb_unmapped_area,
--#endif
-+	.get_unmapped_area =3D fb_get_unmapped_area,
- #ifdef CONFIG_FB_DEFERRED_IO
- 	.fsync =3D	fb_deferred_io_fsync,
- #endif
---=20
-1.8.5.2
-
+0J/QvtC90LXQtNC10LvRjNC90LjQuiwgMTAg0YTQtdCy0YDQsNC70Y8gMjAxNCwgMTQ6MDUgKzAy
+OjAwINC+0YIgVG9taSBWYWxrZWluZW4gPHRvbWkudmFsa2VpbmVuQHRpLmNvbT46Cj4gT24gMjEv
+MTIvMTMgMTM6MDgsIEFsZXhhbmRlciBTaGl5YW4gd3JvdGU6Cj4gPiBUaGlzIHBhdGNoIHJlcGxh
+Y2VzIGN1c3RvbSBsY2RfcG93ZXIoKSBjYWxsYmFjayB3aXRoCj4gPiByZWd1bGF0b3IgQVBJIG92
+ZXIgTENEIGNsYXNzLgo+ID4gCj4gPiBTaWduZWQtb2ZmLWJ5OiBBbGV4YW5kZXIgU2hpeWFuIDxz
+aGNfd29ya0BtYWlsLnJ1Pgo+ID4gLS0tCj4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3Mvdmlk
+ZW8vZnNsLGlteC1mYi50eHQgICAgICAgfCAgMSArCj4gPiAgYXJjaC9hcm0vbWFjaC1pbXgvbWFj
+aC1teDI3YWRzLmMgICAgICAgICAgICAgICAgICAgfCA1NSArKysrKysrKysrKysrKystLQo+ID4g
+IGRyaXZlcnMvdmlkZW8vaW14ZmIuYyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgNzEK
+PiArKysrKysrKysrKysrKysrKysrLS0tCj4gPiAgaW5jbHVkZS9saW51eC9wbGF0Zm9ybV9kYXRh
+L3ZpZGVvLWlteGZiLmggICAgICAgICAgfCAgMSAtCj4gPiAgNCBmaWxlcyBjaGFuZ2VkLCAxMTQg
+aW5zZXJ0aW9ucygrKSwgMTQgZGVsZXRpb25zKC0pCj4gPiAKPiA+IGRpZmYgLS1naXQgYS9Eb2N1
+bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdmlkZW8vZnNsLGlteC1mYi50eHQKPiBiL0Rv
+Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy92aWRlby9mc2wsaW14LWZiLnR4dAo+ID4g
+aW5kZXggNDZkYTA4ZC4uZTZiMWVlOSAxMDA2NDQKPiA+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2
+aWNldHJlZS9iaW5kaW5ncy92aWRlby9mc2wsaW14LWZiLnR4dAo+ID4gKysrIGIvRG9jdW1lbnRh
+dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3ZpZGVvL2ZzbCxpbXgtZmIudHh0Cj4gPiBAQCAtMTUs
+NiArMTUsNyBAQCBSZXF1aXJlZCBub2RlczoKPiA+ICAJLSBmc2wscGNyOiBMQ0RDIFBDUiB2YWx1
+ZQo+ID4gIAo+ID4gIE9wdGlvbmFsIHByb3BlcnRpZXM6Cj4gPiArLSBsY2Qtc3VwcGx5OiBSZWd1
+bGF0b3IgZm9yIExDRCBzdXBwbHkgdm9sdGFnZS4KPiA+ICAtIGZzbCxkbWFjcjogRE1BIENvbnRy
+b2wgUmVnaXN0ZXIgdmFsdWUuIFRoaXMgaXMgb3B0aW9uYWwuIEJ5IGRlZmF1bHQsIHRoZQo+ID4g
+IAlyZWdpc3RlciBpcyBub3QgbW9kaWZpZWQgYXMgcmVjb21tZW5kZWQgYnkgdGhlIGRhdGFzaGVl
+dC4KPiA+ICAtIGZzbCxsc2NyMTogTENEQyBTaGFycCBDb25maWd1cmF0aW9uIFJlZ2lzdGVyIHZh
+bHVlLgo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtaW14L21hY2gtbXgyN2Fkcy5jCi4u
+Lgo+ID4gK3N0YXRpYyB2b2lkIF9faW5pdCBteDI3YWRzX3JlZ3VsYXRvcl9pbml0KHZvaWQpCj4g
+PiArewo+ID4gKwlzdHJ1Y3QgZ3Bpb19jaGlwICp2Y2hpcDsKPiA+ICsKPiA+ICsJdmNoaXAgPSBr
+emFsbG9jKHNpemVvZigqdmNoaXApLCBHRlBfS0VSTkVMKTsKPiA+ICsJdmNoaXAtPm93bmVyCQk9
+IFRISVNfTU9EVUxFOwo+ID4gKwl2Y2hpcC0+bGFiZWwJCT0gIkxDRCI7Cj4gPiArCXZjaGlwLT5i
+YXNlCQk9IE1YMjdBRFNfTENEX0dQSU87Cj4gPiArCXZjaGlwLT5uZ3BpbwkJPSAxOwo+ID4gKwl2
+Y2hpcC0+ZGlyZWN0aW9uX291dHB1dAk9IHZncGlvX2Rpcl9vdXQ7Cj4gPiArCXZjaGlwLT5zZXQJ
+CT0gdmdwaW9fc2V0Owo+ID4gKwlncGlvY2hpcF9hZGQodmNoaXApOwo+ID4gKwo+ID4gKwlwbGF0
+Zm9ybV9kZXZpY2VfcmVnaXN0ZXJfZGF0YSgmcGxhdGZvcm1fYnVzLCAicmVnLWZpeGVkLXZvbHRh
+Z2UiLAo+ID4gKwkJCQkgICAgICBQTEFURk9STV9ERVZJRF9BVVRPLAo+ID4gKwkJCQkgICAgICAm
+bXgyN2Fkc19sY2RfcmVndWxhdG9yX3BkYXRhLAo+ID4gKwkJCQkgICAgICBzaXplb2YobXgyN2Fk
+c19sY2RfcmVndWxhdG9yX3BkYXRhKSk7Cj4gPiArfQo+ID4gKwo+IAo+IEhtbSwgaXNuJ3QgYWxs
+IHRoaXMgc29tZXRoaW5nIHRoYXQgc2hvdWxkIGJlIGluIHRoZSBib2FyZCdzIC5kdHM/CgpUaGVy
+ZSBhcmUgbm8gRFQgc3VwcG9ydCBmb3IgdGhpcyBib2FyZCB5ZXQuCgotLS0K

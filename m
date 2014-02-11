@@ -1,40 +1,84 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 05 Feb 2014 00:17:16 +0000
-Subject: Re: [PATCH v2] backlight: Convert from Legacy pm ops to dev_pm_ops
-Message-Id: <000401cf2207$a06765c0$e1363140$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 11 Feb 2014 12:18:57 +0000
+Subject: Re: [PATCH] fbcon: Clean up fbcon data in fb_info on FB_EVENT_FB_UNBIND with 0 fbs
+Message-Id: <52FA1531.2080109@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="qAtSr1hUsLXVD7h6UnOVUIOsS0tXFOEfn"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2236505237-3336-1-git-send-email-shuah.kh@samsung.com>
- <15798389.lgk83XnI1i@vostro.rjw.lan>
- <001f01cf157f$ca2e8530$5e8b8f90$%han@samsung.com>
- <52DD4045.4050902@samsung.com> <52F1298F.1040903@samsung.com>
-In-Reply-To: <52F1298F.1040903@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: 'Shuah Khan' <shuah.kh@samsung.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Richard Purdie' <rpurdie@rpsys.net>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 'Shuah Khan' <shuahkhan@gmail.com>, 'Jingoo Han' <jg1.han@samsung.com>
+References: <1390253470-23594-1-git-send-email-keithp@keithp.com>
+In-Reply-To: <1390253470-23594-1-git-send-email-keithp@keithp.com>
+To: Keith Packard <keithp@keithp.com>
+Cc: linux-kernel@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
 
-On Wednesday, February 05, 2014 2:55 AM, Shuah Khan wrote:
-> On 01/20/2014 08:27 AM, Shuah Khan wrote:
-> > On 01/19/2014 06:34 PM, Jingoo Han wrote:
-> >> On Monday, January 20, 2014 12:37 AM, Rafael J. Wysocki wrote:
-> 
-> > Rafael/Jingoo Han,
-> >
-> > I did send the v3 patch with the typo fixed. Here is the link:
-> >
-> > http://lkml.indiana.edu/hypermail/linux/kernel/1306.0/00219.html
-> >
-> > This is a while back. I will rebase and res-test and send it.
-> >
-> 
-> Checked 3.14-rc1 and patch v3 is in there.
-> 
-> commit 3601792e7b68150420ea8dc129e26e167c0484d8
+--qAtSr1hUsLXVD7h6UnOVUIOsS0tXFOEfn
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-OK, I see. I checked that it was already merged to
-mainline kernel. Thank you.
+Hi,
 
-Best regards,
-Jingoo Han
+On 20/01/14 23:31, Keith Packard wrote:
+> When FB_EVENT_FB_UNBIND is sent, fbcon has two paths, one path taken
+> when there is another frame buffer to switch any affected vcs to and
+> another path when there isn't.
+>=20
+> In the case where there is another frame buffer to use,
+> fbcon_fb_unbind calls set_con2fb_map to remap all of the affected vcs
+> to the replacement frame buffer. set_con2fb_map will eventually call
+> con2fb_release_oldinfo when the last vcs gets unmapped from the old
+> frame buffer.
+>=20
+> con2fb_release_oldinfo frees the fbcon data that is hooked off of the
+> fb_info structure, including the cursor timer.
+>=20
+> In the case where there isn't another frame buffer to use,
+> fbcon_fb_unbind simply calls fbcon_unbind, which doesn't clear the
+> con2fb_map or free the fbcon data hooked from the fb_info
+> structure. In particular, it doesn't stop the cursor blink timer. When
+> the fb_info structure is then freed, we end up with a timer queue
+> pointing into freed memory and "bad things" start happening.
+>=20
+> This patch first changes con2fb_release_oldinfo so that it can take a
+> NULL pointer for the new frame buffer, but still does all of the
+> deallocation and cursor timer cleanup.
+>=20
+> Finally, the patch tries to replicate some of what set_con2fb_map does
+> by clearing the con2fb_map for the affected vcs and calling the
+> modified con2fb_release_info function to clean up the fb_info structure=
+=2E
+>=20
+> Signed-off-by: Keith Packard <keithp@keithp.com>
+> ---
+>  drivers/video/console/fbcon.c | 27 +++++++++++++++++++++++++--
+>  1 file changed, 25 insertions(+), 2 deletions(-)
 
+Thanks, queued for 3.15.
+
+ Tomi
+
+
+
+--qAtSr1hUsLXVD7h6UnOVUIOsS0tXFOEfn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJS+hUxAAoJEPo9qoy8lh71M5cP/2CVjhWMZArVxAml/DO5kMF6
+9avEEBc7pIk50NhQ/YmMRIfW2uNoiv0LNsLtZHXjpbSgE7E2kFFn47uBu8FyiAGc
+rwzKeHbV450o47VyWO5bRk8a/ymwX9kSUyZ9juJW8OQSdYiWlxmgIYrL47scImxz
+DPkiEIKvDon2ClAYcdAoAi3nBJ6vZLbt4psW7Mqvsq7PCUEoh50RuTvYlxyeAlu9
+7NFaIxOb/qPqfdJZE63UivtIU6ARTQDQq4a7K6tiL46fmx8pjj5AjjoNSjNk0Q0N
+TjBAQrD8XhnLDcAS5T4Z80nQGT9xqdT8hNf0jwTOlwi8n+VwOhop8vRQvOsLtRgq
+rwRNq8on9h5yaWyRq5ODPC3XWm3r/Puw6xLHQ4JyXbdAQn2/SKRfU9pIZG6pSvP0
+Y5TZX+YazgYx9edY0+1CDJByuxKSHPTcU6I7UKVjl+fxT3KDuYkBYsrMPUaG+GyA
+sfkDsHicf0+4y7dKTsWIYn54/1oJnBujCdvdtvSqSAU0XAQHvVTA8f2zXo5OYLuu
+7YKH94Gzl27CFU2xiVjlpsi8EPGSqZ2A6PBPVEiviPqKYwAtwIzfwxNnqn94AUUs
+4ZhmIOYHWJ2NGO3RV166/Ul4fxThJx64phz1ou/PQyGEgXV6x0ZlJv0Fw08HCyP+
+7OHUOmXwD9LVw1IrJkSC
+=fRHj
+-----END PGP SIGNATURE-----
+
+--qAtSr1hUsLXVD7h6UnOVUIOsS0tXFOEfn--

@@ -1,49 +1,119 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Wed, 26 Feb 2014 09:49:31 +0000
-Subject: Re: [PATCH v4 2/2] hyperv-fb: kick off efifb early
-Message-Id: <1393408171.4744.32.camel@nilsson.home.kraxel.org>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Tue, 11 Feb 2014 06:48:32 +0000
+Subject: [PATCH] video: xilinxfb: Move xilinxfb_platform_data directly to the driver
+Message-Id: <af8de8bd8803b319c0f6a02ca5109768e5ef8457.1392101292.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-3939-1392101312-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393331320-18147-1-git-send-email-kraxel@redhat.com>
-	 <1393331320-18147-3-git-send-email-kraxel@redhat.com>
-	 <5414def7813d4bccbcf1b128b6a5ee46@DFM-DB3MBX15-06.exchange.corp.microsoft.com>
-In-Reply-To: <5414def7813d4bccbcf1b128b6a5ee46@DFM-DB3MBX15-06.exchange.corp.microsoft.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: linux-arm-kernel@lists.infradead.org
+
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
+
+--=_mimegpg-monstr-desktop-3939-1392101312-0001
+
+No reason to have separate file in header in include/linux folder
+if this is purely driver specific structure.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+
+I have this patch in my devel tree for a while and would like
+to hear your opinion. I can't see any reason to have
+xilinxfb_platform_data in header if this is purely OF driver
+used on OF archs.
+---
+ drivers/video/xilinxfb.c | 15 ++++++++++++++-
+ include/linux/xilinxfb.h | 30 ------------------------------
+ 2 files changed, 14 insertions(+), 31 deletions(-)
+ delete mode 100644 include/linux/xilinxfb.h
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 6ff1a91..553cff2 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -33,7 +33,6 @@
+ #include <linux/of_platform.h>
+ #include <linux/of_address.h>
+ #include <linux/io.h>
+-#include <linux/xilinxfb.h>
+ #include <linux/slab.h>
+
+ #ifdef CONFIG_PPC_DCR
+@@ -84,6 +83,20 @@
+
+ #define PALETTE_ENTRIES_NO	16	/* passed to fb_alloc_cmap() */
+
++/* ML300/403 reference design framebuffer driver platform data struct */
++struct xilinxfb_platform_data {
++	u32 rotate_screen;      /* Flag to rotate display 180 degrees */
++	u32 screen_height_mm;   /* Physical dimensions of screen in mm */
++	u32 screen_width_mm;
++	u32 xres, yres;         /* resolution of screen in pixels */
++	u32 xvirt, yvirt;       /* resolution of memory buffer */
++
++	/* Physical address of framebuffer memory; If non-zero, driver
++	* will use provided memory address instead of allocating one from
++	* the consistent pool. */
++	u32 fb_phys;
++};
++
+ /*
+  * Default xilinxfb configuration
+  */
+diff --git a/include/linux/xilinxfb.h b/include/linux/xilinxfb.h
+deleted file mode 100644
+index 5a155a9..0000000
+--- a/include/linux/xilinxfb.h
++++ /dev/null
+@@ -1,30 +0,0 @@
+-/*
+- * Platform device data for Xilinx Framebuffer device
+- *
+- * Copyright 2007 Secret Lab Technologies Ltd.
+- *
+- * This file is licensed under the terms of the GNU General Public License
+- * version 2.  This program is licensed "as is" without any warranty of any
+- * kind, whether express or implied.
+- */
+-
+-#ifndef __XILINXFB_H__
+-#define __XILINXFB_H__
+-
+-#include <linux/types.h>
+-
+-/* ML300/403 reference design framebuffer driver platform data struct */
+-struct xilinxfb_platform_data {
+-	u32 rotate_screen;	/* Flag to rotate display 180 degrees */
+-	u32 screen_height_mm;	/* Physical dimensions of screen in mm */
+-	u32 screen_width_mm;
+-	u32 xres, yres;		/* resolution of screen in pixels */
+-	u32 xvirt, yvirt;	/* resolution of memory buffer */
+-
+-	/* Physical address of framebuffer memory; If non-zero, driver
+-	 * will use provided memory address instead of allocating one from
+-	 * the consistent pool. */
+-	u32 fb_phys;
+-};
+-
+-#endif  /* __XILINXFB_H__ */
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-3939-1392101312-0001
+Content-Type: application/pgp-signature
 Content-Transfer-Encoding: 7bit
-To: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, KY Srinivasan <kys@microsoft.com>, "Abhishek Gupta (LIS)" <abgupta@microsoft.com>, "jasowang@redhat.com" <jasowang@redhat.com>, "tomi.valkeinen@ti.com" <tomi.valkeinen@ti.com>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-  Hi,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> > diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c index
-> > b7b3dd0..1b11886 100644
-> > --- a/drivers/video/hyperv_fb.c
-> > +++ b/drivers/video/hyperv_fb.c
-> > @@ -683,6 +683,7 @@ static int hvfb_getmem(struct fb_info *info)
-> >  		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
-> >  		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
-> >  	}
-> > +	remove_conflicting_framebuffers(info->apertures,
-> > KBUILD_MODNAME,
-> > +false);
-> 
-> Thanks for the updates. I'm concerned about, after removing efifb, 
-> if synthvid_send_config(hdev) fails, then there will be no video driver
-> available.
+iEYEABECAAYFAlL5x8AACgkQykllyylKDCGWZACghJ/ImTbQeAes03Djj19Zb0Li
+aowAnjBUvANjmDKCufQCUPzSejn7aTn3
+=O9xJ
+-----END PGP SIGNATURE-----
 
-That may happen, yes.
-
-> Is there a way to bring the generic driver back if 
-> synthvid_send_config(hdev) fails?
-
-Not that I know of.
-
-> If no way to recover the generic driver, please limit the early
-> remove_conflicting_framebuffers() to Gen2 VM only.
-
-I'll send updated patches once they are tested.
-
-cheers,
-  Gerd
-
-
+--=_mimegpg-monstr-desktop-3939-1392101312-0001--

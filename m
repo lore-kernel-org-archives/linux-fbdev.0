@@ -1,42 +1,56 @@
-From: Haiyang Zhang <haiyangz@microsoft.com>
-Date: Wed, 26 Feb 2014 15:46:13 +0000
-Subject: RE: [PATCH v5 1/2] hyperv-fb: add support for generation 2 virtual machines.
-Message-Id: <bea2fdf0ef1a40949bd5c6c5065547ce@DFM-DB3MBX15-06.exchange.corp.microsoft.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 11 Feb 2014 12:58:50 +0000
+Subject: Re: [PATCH 0/10] framebuffer patches
+Message-Id: <52FA1E8A.8080107@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="GsJec4UrOmk0plwkEo0E6Pilt2MoNSKjG"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393411885-14895-1-git-send-email-kraxel@redhat.com>
- <1393411885-14895-2-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1393411885-14895-2-git-send-email-kraxel@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Gerd Hoffmann <kraxel@redhat.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, KY Srinivasan <kys@microsoft.com>, "Abhishek Gupta (LIS)" <abgupta@microsoft.com>, "jasowang@redhat.com" <jasowang@redhat.com>, "tomi.valkeinen@ti.com" <tomi.valkeinen@ti.com>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+References: <alpine.LRH.2.02.1401231436400.7971@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.1401231436400.7971@file01.intranet.prod.int.rdu2.redhat.com>
+To: linux-fbdev@vger.kernel.org
+
+--GsJec4UrOmk0plwkEo0E6Pilt2MoNSKjG
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 23/01/14 21:37, Mikulas Patocka wrote:
+> Hi
+>=20
+> Here I'm sending some framebuffer patches for matrox, mach64, tga and a=
+=20
+> fix for copying on vesafb.
+>=20
+> Mikulas
+>=20
+
+Looks fine to me. Queuing for 3.15.
+
+ Tomi
 
 
 
-> -----Original Message-----
-> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-
-> owner@vger.kernel.org] On Behalf Of Gerd Hoffmann
-> Sent: Wednesday, February 26, 2014 5:51 AM
-> To: linux-fbdev@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org; gregkh@linuxfoundation.org; KY Srinivasan;
-> Abhishek Gupta (LIS); Haiyang Zhang; jasowang@redhat.com;
-> tomi.valkeinen@ti.com; devel@linuxdriverproject.org; Gerd Hoffmann; Jean-
-> Christophe Plagniol-Villard
-> Subject: [PATCH v5 1/2] hyperv-fb: add support for generation 2 virtual
-> machines.
-> 
-> UEFI-based generation 2 virtual machines support vmbus devices only.
-> There is no pci bus.  Thus they use a different mechanism for the
-> graphics framebuffer:  Instead of using the vga pci bar a chunk of
-> memory muct be allocated from the hyperv mmio region declared using
-> APCI.  This patch implements support for it.
-> 
-> Based on a patch by Haiyang Zhang <haiyangz@microsoft.com>
-> 
-> Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+--GsJec4UrOmk0plwkEo0E6Pilt2MoNSKjG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Thank you!
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
+iQIcBAEBAgAGBQJS+h6KAAoJEPo9qoy8lh71XugP/1CCdw8pUOrRFfjnouCiMe+s
+bUT633wGZTpJsNCmVPKX5k/EJjHitzGrzFMoKvIJFgJ4DyOFinEHqvBm08MzKMhn
+jqoSS1GzBq8oatD1ngCpjGUQWs8TTRrqiEAWCgFIFmd239oJsKZd68EzDSaAqSzL
+kPS96UBRpIEbMVLS8ujWiHmTmELxJMDdgCgyIuCPHroOrB8DrdRWNqjAF0k8SxFl
+isRsMIxDCD80oGR/FoiIZGA5o0cHyIKM3mr4G4qbuKHp86rvZ+MOWEYWHRp/2Hqy
+Tm7m9X4od06f8oK+i8VtYHzvwZHdwGCcLsZtcGtT1f3AGfQuEn6CbFDXYmi8mh8U
+4FgC0g2X+WOhQ92qjL0z20CJItjfgTaexHdDq2T8mvUjIg9L9OA+ivZeWdNnWIEx
+n0lAtAcEBKjqCgo78kuYgSFMzMJy9m1LtYwve+keaBkKLyDtRawqmRgsOZIayTuf
+Ot3cSgo63pEgc1jP3nDGnzn5hZUBt26Yy1z8FFF2wBe8YfpW5WiZl4G2dqC7lGK2
+fqK6iokq42Znuf6IEWVHWUVpnAarjnYFOWuPuiUCx3EEUaMbSc1vE/G7blf1ouNj
+CtPfRgtnhBIwgSHE5v17egYM/fA0XbhpZpi24NFgQATdc+W8z3lEzMKEods14ifw
+3/2uWbu95RIW4ieI4EOJ
+=lXWx
+-----END PGP SIGNATURE-----
 
+--GsJec4UrOmk0plwkEo0E6Pilt2MoNSKjG--

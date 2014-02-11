@@ -1,35 +1,40 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 11 Feb 2014 12:58:50 +0000
+Date: Tue, 11 Feb 2014 13:00:51 +0000
 Subject: Re: [PATCH 0/10] framebuffer patches
-Message-Id: <52FA1E8A.8080107@ti.com>
+Message-Id: <52FA1F03.3050505@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="GsJec4UrOmk0plwkEo0E6Pilt2MoNSKjG"
+Content-Type: multipart/mixed; boundary="aRTsvRjjVciemQ4K8Cr1djktMgcKa6ueA"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <alpine.LRH.2.02.1401231436400.7971@file01.intranet.prod.int.rdu2.redhat.com>
 In-Reply-To: <alpine.LRH.2.02.1401231436400.7971@file01.intranet.prod.int.rdu2.redhat.com>
 To: linux-fbdev@vger.kernel.org
 
---GsJec4UrOmk0plwkEo0E6Pilt2MoNSKjG
+--aRTsvRjjVciemQ4K8Cr1djktMgcKa6ueA
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 23/01/14 21:37, Mikulas Patocka wrote:
-> Hi
+On 11/02/14 14:58, Tomi Valkeinen wrote:
+> On 23/01/14 21:37, Mikulas Patocka wrote:
+>> Hi
+>>
+>> Here I'm sending some framebuffer patches for matrox, mach64, tga and =
+a=20
+>> fix for copying on vesafb.
+>>
+>> Mikulas
+>>
 >=20
-> Here I'm sending some framebuffer patches for matrox, mach64, tga and a=
-=20
-> fix for copying on vesafb.
->=20
-> Mikulas
->=20
+> Looks fine to me. Queuing for 3.15.
 
-Looks fine to me. Queuing for 3.15.
+Oh, I did some conflict resolution on "tgafb: fix mode setting with
+fbset". It was trivial, so I think I got it right. But please check
+anyway in a few days when these get into linux-next.
 
  Tomi
 
 
 
---GsJec4UrOmk0plwkEo0E6Pilt2MoNSKjG
+--aRTsvRjjVciemQ4K8Cr1djktMgcKa6ueA
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -38,19 +43,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.14 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJS+h6KAAoJEPo9qoy8lh71XugP/1CCdw8pUOrRFfjnouCiMe+s
-bUT633wGZTpJsNCmVPKX5k/EJjHitzGrzFMoKvIJFgJ4DyOFinEHqvBm08MzKMhn
-jqoSS1GzBq8oatD1ngCpjGUQWs8TTRrqiEAWCgFIFmd239oJsKZd68EzDSaAqSzL
-kPS96UBRpIEbMVLS8ujWiHmTmELxJMDdgCgyIuCPHroOrB8DrdRWNqjAF0k8SxFl
-isRsMIxDCD80oGR/FoiIZGA5o0cHyIKM3mr4G4qbuKHp86rvZ+MOWEYWHRp/2Hqy
-Tm7m9X4od06f8oK+i8VtYHzvwZHdwGCcLsZtcGtT1f3AGfQuEn6CbFDXYmi8mh8U
-4FgC0g2X+WOhQ92qjL0z20CJItjfgTaexHdDq2T8mvUjIg9L9OA+ivZeWdNnWIEx
-n0lAtAcEBKjqCgo78kuYgSFMzMJy9m1LtYwve+keaBkKLyDtRawqmRgsOZIayTuf
-Ot3cSgo63pEgc1jP3nDGnzn5hZUBt26Yy1z8FFF2wBe8YfpW5WiZl4G2dqC7lGK2
-fqK6iokq42Znuf6IEWVHWUVpnAarjnYFOWuPuiUCx3EEUaMbSc1vE/G7blf1ouNj
-CtPfRgtnhBIwgSHE5v17egYM/fA0XbhpZpi24NFgQATdc+W8z3lEzMKEods14ifw
-3/2uWbu95RIW4ieI4EOJ
-=lXWx
+iQIcBAEBAgAGBQJS+h8DAAoJEPo9qoy8lh71yGAP/0uRhmDNOVjwYxcM0zzB+ikS
+BG3I2qd0qNTHe6Osi22v/ibCFCdqIDfC73WM9mvxoIERVBz8T30g7otLvEyJvtHQ
+rtWRBjUw78NWMmjX8bGgJaiK1cdx0VJAISmY4QVhjdvB1xz1ib3Ji1m0rc1Aq5nT
++iBJUKRdXyzvmF+/0u8fLcwC1hF/T77/n4AaAk+f7cNZ7zFajD1sHWDM5FXNWYsV
+K/P1onk1htp3v8B9RYdjnMFVAheS8Ydt57si0Vo0EjNJn2W4scd1exqW3sDyHT+T
+Vh4jjcVjDjJlVuMdDuYp31yRZOECOHcQuynf7EO440xyykfHAKgm2mYD4UNODW92
+DTl5qfNRjJv+u8XodjHjwEi7X5CM9enpu9NcKIJ9HI304k7buvFHCGgsl7AlQQV5
+iEO4VRgTGQeH+SK1273++0ac1YmMq7dueVO5WPKjhLGv0UyQ7g5lPLqyV5VUe2f5
+el2lDsfzvMXC2actq7cNMSvhmI+F1YzmFKkKLjK+OKcLhMW2tP8DInQYDhbSxTNG
+RFu6hQZPftxgZ558hqkTS1IxzY9tGE/PB6uadD3rsUJof9XLbNnVYVXkCWU2Xg9h
+PxH1/F3ZHjnBxgcNyw1xMpv0fxtEsdmcurU35ueB3qpjhXuYBaGKHH9gpA3AdpZS
+btVdWtjbK0pweiwyutFi
+=HVUa
 -----END PGP SIGNATURE-----
 
---GsJec4UrOmk0plwkEo0E6Pilt2MoNSKjG--
+--aRTsvRjjVciemQ4K8Cr1djktMgcKa6ueA--

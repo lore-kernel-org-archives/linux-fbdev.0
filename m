@@ -1,39 +1,37 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Mon, 17 Feb 2014 17:15:21 +0000
-Subject: Re: [PATCH 0/10] framebuffer patches
-Message-Id: <alpine.LRH.2.02.1402171214460.8698@file01.intranet.prod.int.rdu2.redhat.com>
+From: Adam Jackson <ajax@redhat.com>
+Date: Wed, 12 Feb 2014 21:02:02 +0000
+Subject: [PATCH] fbdev: Make the switch from generic to native driver less alarming
+Message-Id: <1392238922-28255-1-git-send-email-ajax@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LRH.2.02.1401231436400.7971@file01.intranet.prod.int.rdu2.redhat.com>
-In-Reply-To: <alpine.LRH.2.02.1401231436400.7971@file01.intranet.prod.int.rdu2.redhat.com>
+References: <1345223444-15852-1-git-send-email-ajax@redhat.com>
+In-Reply-To: <1345223444-15852-1-git-send-email-ajax@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+Calling this "conflicting" just makes people think there's a problem
+when there's not.
 
+Signed-off-by: Adam Jackson <ajax@redhat.com>
+---
+ drivers/video/fbmem.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-On Tue, 11 Feb 2014, Tomi Valkeinen wrote:
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 7309ac7..b6d5008 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1596,8 +1596,7 @@ static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ 			(primary && gen_aper && gen_aper->count &&
+ 			 gen_aper->ranges[0].base = VGA_FB_PHYS)) {
+ 
+-			printk(KERN_INFO "fb: conflicting fb hw usage "
+-			       "%s vs %s - removing generic driver\n",
++			printk(KERN_INFO "fb: switching to %s from %s\n",
+ 			       name, registered_fb[i]->fix.id);
+ 			ret = do_unregister_framebuffer(registered_fb[i]);
+ 			if (ret)
+-- 
+1.8.5.3
 
-> On 11/02/14 14:58, Tomi Valkeinen wrote:
-> > On 23/01/14 21:37, Mikulas Patocka wrote:
-> >> Hi
-> >>
-> >> Here I'm sending some framebuffer patches for matrox, mach64, tga and a 
-> >> fix for copying on vesafb.
-> >>
-> >> Mikulas
-> >>
-> > 
-> > Looks fine to me. Queuing for 3.15.
-> 
-> Oh, I did some conflict resolution on "tgafb: fix mode setting with
-> fbset". It was trivial, so I think I got it right. But please check
-> anyway in a few days when these get into linux-next.
-> 
->  Tomi
-
-Hi
-
-Your change it OK, I tested it.
-
-Mikulas

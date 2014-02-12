@@ -1,47 +1,59 @@
-From: Haiyang Zhang <haiyangz@microsoft.com>
-Date: Fri, 14 Feb 2014 22:00:43 +0000
-Subject: RE: [PATCH] hyperv_fb: Add support for Gen2 VM
-Message-Id: <f7618c3978634ca08d6cdbd5de450d56@DFM-DB3MBX15-06.exchange.corp.microsoft.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Wed, 12 Feb 2014 09:58:17 +0000
+Subject: [PATCH 1/1] video: s6e8ax0: Use devm_* APIs
+Message-Id: <1392198779-5203-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1391880342-10081-1-git-send-email-haiyangz@microsoft.com>
-In-Reply-To: <1391880342-10081-1-git-send-email-haiyangz@microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: "olaf@aepfle.de" <olaf@aepfle.de>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "jasowang@redhat.com" <jasowang@redhat.com>, "driverdev-devel@linuxdriverproject.org" <driverdev-devel@linuxdriverproject.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
+devm_* APIs make the cleanup paths simpler.
 
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/video/exynos/s6e8ax0.c |   13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-> -----Original Message-----
-> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-
-> owner@vger.kernel.org] On Behalf Of Haiyang Zhang
-> Sent: Saturday, February 8, 2014 12:26 PM
-> To: FlorianSchandinat@gmx.de; akpm@linux-foundation.org; linux-
-> fbdev@vger.kernel.org
-> Cc: Haiyang Zhang; KY Srinivasan; olaf@aepfle.de; jasowang@redhat.com;
-> gregkh@linuxfoundation.org; linux-kernel@vger.kernel.org; driverdev-
-> devel@linuxdriverproject.org
-> Subject: [PATCH] hyperv_fb: Add support for Gen2 VM
-> 
-> This patch enables Hyper-V FB driver to run on Gen2 VM.
-> 
-> The Gen2 VM provides MMIO area for synthetic video from ACPI module,
-> which is exported by vmbus. The generic video is provided by UEFI. PCI video
-> in Gen1 is no longer available.
-> 
-> To support synthetic video on Hyper-V Gen2 VM, this patch updated code
-> related to the changes above.
-> 
-> Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
-> Reviewed-by: K. Y. Srinivasan <kys@microsoft.com>
-> ---
-
-Hi Tomi and Andrew,
-
-This patch has been submitted for a while. Do I need to re-submit it, or 
-make any changes?
-
-Thanks,
-- Haiyang
+diff --git a/drivers/video/exynos/s6e8ax0.c b/drivers/video/exynos/s6e8ax0.c
+index ca2602413aa4..29e70ed3f154 100644
+--- a/drivers/video/exynos/s6e8ax0.c
++++ b/drivers/video/exynos/s6e8ax0.c
+@@ -794,19 +794,18 @@ static int s6e8ax0_probe(struct mipi_dsim_lcd_device *dsim_dev)
+ 		return ret;
+ 	}
+ 
+-	lcd->ld = lcd_device_register("s6e8ax0", lcd->dev, lcd,
++	lcd->ld = devm_lcd_device_register(lcd->dev, "s6e8ax0", lcd->dev, lcd,
+ 			&s6e8ax0_lcd_ops);
+ 	if (IS_ERR(lcd->ld)) {
+ 		dev_err(lcd->dev, "failed to register lcd ops.\n");
+ 		return PTR_ERR(lcd->ld);
+ 	}
+ 
+-	lcd->bd = backlight_device_register("s6e8ax0-bl", lcd->dev, lcd,
+-			&s6e8ax0_backlight_ops, NULL);
++	lcd->bd = devm_backlight_device_register(lcd->dev, "s6e8ax0-bl",
++				lcd->dev, lcd, &s6e8ax0_backlight_ops, NULL);
+ 	if (IS_ERR(lcd->bd)) {
+ 		dev_err(lcd->dev, "failed to register backlight ops.\n");
+-		ret = PTR_ERR(lcd->bd);
+-		goto err_backlight_register;
++		return PTR_ERR(lcd->bd);
+ 	}
+ 
+ 	lcd->bd->props.max_brightness = MAX_BRIGHTNESS;
+@@ -834,10 +833,6 @@ static int s6e8ax0_probe(struct mipi_dsim_lcd_device *dsim_dev)
+ 	dev_dbg(lcd->dev, "probed s6e8ax0 panel driver.\n");
+ 
+ 	return 0;
+-
+-err_backlight_register:
+-	lcd_device_unregister(lcd->ld);
+-	return ret;
+ }
+ 
+ #ifdef CONFIG_PM
+-- 
+1.7.9.5
 

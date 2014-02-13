@@ -1,57 +1,55 @@
-From: Haiyang Zhang <haiyangz@microsoft.com>
-Date: Mon, 24 Feb 2014 22:06:36 +0000
-Subject: RE: [PATCH v3 4/4] hyperv-fb: kick off efifb early
-Message-Id: <771a0b10157b48bab970b5360ec54956@DFM-DB3MBX15-08.exchange.corp.microsoft.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 13 Feb 2014 12:32:29 +0000
+Subject: [PATCH 6/9] Doc/DT: Add DT binding documentation for MIPI DSI CM Panel
+Message-Id: <1392294752-18762-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393247831-5271-1-git-send-email-kraxel@redhat.com>
- <1393247831-5271-5-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1393247831-5271-5-git-send-email-kraxel@redhat.com>
+References: <1392294752-18762-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1392294752-18762-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Gerd Hoffmann <kraxel@redhat.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, KY Srinivasan <kys@microsoft.com>, "Abhishek Gupta (LIS)" <abgupta@microsoft.com>, "jasowang@redhat.com" <jasowang@redhat.com>, "tomi.valkeinen@ti.com" <tomi.valkeinen@ti.com>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
+Add DT binding documentation for MIPI DSI Command Mode Panel.
 
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ .../devicetree/bindings/video/panel-dsi-cm.txt     | 26 ++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/panel-dsi-cm.txt
 
-> -----Original Message-----
-> From: Gerd Hoffmann [mailto:kraxel@redhat.com]
-> Sent: Monday, February 24, 2014 8:17 AM
-> To: linux-fbdev@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org; gregkh@linuxfoundation.org; KY Srinivasan;
-> Abhishek Gupta (LIS); Haiyang Zhang; jasowang@redhat.com;
-> tomi.valkeinen@ti.com; devel@linuxdriverproject.org; Gerd Hoffmann; Jean-
-> Christophe Plagniol-Villard
-> Subject: [PATCH v3 4/4] hyperv-fb: kick off efifb early
-> 
-> Remove firmware framebuffer before initializing hyperv-fb.  Needed
-> on gen2 virtual machines.   Letting register_framebuffer handle the
-> switchover results in efifb still being active while hyperv graphics are
-> initialized, which in turn can make the linux kernel hang.
-> 
-> Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
-> ---
->  drivers/video/hyperv_fb.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c index
-> 135d8cd..a570836 100644
-> --- a/drivers/video/hyperv_fb.c
-> +++ b/drivers/video/hyperv_fb.c
-> @@ -683,6 +683,7 @@ static int hvfb_getmem(struct fb_info *info)
->  		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
->  		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
->  	}
-> +	remove_conflicting_framebuffers(info->apertures, "hyperv-fb", false);
-
-Please use KBUILD_MODNAME, so that the naming is consistent.
-
-Thanks,
-- Haiyang
-
-> 
->  	info->fix.smem_start = par->mem.start;
->  	info->fix.smem_len = screen_fb_size;
-> --
-> 1.8.3.1
+diff --git a/Documentation/devicetree/bindings/video/panel-dsi-cm.txt b/Documentation/devicetree/bindings/video/panel-dsi-cm.txt
+new file mode 100644
+index 000000000000..73f422556d4f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/panel-dsi-cm.txt
+@@ -0,0 +1,26 @@
++Generic MIPI DSI Command Mode Panel
++=================+
++Required properties:
++- compatible: "panel-dsi-cm"
++
++Optional properties:
++- label: a symbolic name for the panel
++- gpios: panel reset gpio and TE gpio
++
++Required nodes:
++- Video port for DSI input
++
++Example
++-------
++
++lcd0: display {
++	compatible = "tpo,taal", "panel-dsi-cm";
++	label = "lcd0";
++
++	gpios = <&gpio4 6 GPIO_ACTIVE_HIGH>;	/* 102, reset */
++
++	lcd0_in: endpoint {
++		remote-endpoint = <&dsi1_out_ep>;
++	};
++};
+-- 
+1.8.3.2
 

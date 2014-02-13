@@ -1,59 +1,52 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Fri, 28 Feb 2014 19:31:46 +0000
-Subject: Re: [PATCH 2/3] imx-drm: ipu-dc: Use usleep_range instead of msleep
-Message-Id: <20140228193146.GY21483@n2100.arm.linux.org.uk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 13 Feb 2014 12:32:25 +0000
+Subject: [PATCH 2/9] Doc/DT: Add DT binding documentation for Analog TV Connector
+Message-Id: <1392294752-18762-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393328624-28013-3-git-send-email-p.zabel@pengutronix.de>
-In-Reply-To: <1393328624-28013-3-git-send-email-p.zabel@pengutronix.de>
+References: <1392294752-18762-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1392294752-18762-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
-On Tue, Feb 25, 2014 at 12:43:42PM +0100, Philipp Zabel wrote:
-> Since msleep(2) can sleep up to 20ms anyway, make this explicit by using
-> usleep_range(2000, 20000).
-> 
-> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> ---
->  drivers/staging/imx-drm/ipu-v3/ipu-dc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/staging/imx-drm/ipu-v3/ipu-dc.c b/drivers/staging/imx-drm/ipu-v3/ipu-dc.c
-> index d0e3bc3..d5de8bb 100644
-> --- a/drivers/staging/imx-drm/ipu-v3/ipu-dc.c
-> +++ b/drivers/staging/imx-drm/ipu-v3/ipu-dc.c
-> @@ -262,7 +262,7 @@ void ipu_dc_disable_channel(struct ipu_dc *dc)
->  
->  	/* Wait for DC triple buffer to empty */
->  	while ((readl(priv->dc_reg + DC_STAT) & val) != val) {
-> -		msleep(2);
-> +		usleep_range(2000, 20000);
->  		timeout -= 2;
->  		if (timeout <= 0)
->  			break;
+Add DT binding documentation for Analog TV Connector.
 
-Umm, something which Greg may have missed.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ .../bindings/video/analog-tv-connector.txt         | 23 ++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/analog-tv-connector.txt
 
-timeout is 50.  It gets decremented by two each time around this loop,
-so we could end up waiting between 100ms and 1s here, yes?  The exact
-delay here would depend on the kernel HZ value (which is configurable,
-up to 1kHz.)
-
-So... we're using a sleeping function here (msleep or usleep_range),
-and so interrupts can't be disabled here, nor can spinlocks be held,
-so I'm left wondering why the code doesn't do:
-
-	timeout = jiffies + msecs_to_jiffies(100);
-	do {
-		if (readl(priv->dc_reg + DC_STAT) & val) = val)
-			break;
-		usleep_range(2000, 20000);
-	} while (time_is_after_jiffies(timeout));
-
-here.  (Note that whether we succeed or timeout appears to have no
-effect on the following code.)
-
+diff --git a/Documentation/devicetree/bindings/video/analog-tv-connector.txt b/Documentation/devicetree/bindings/video/analog-tv-connector.txt
+new file mode 100644
+index 000000000000..d6be373d8705
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/analog-tv-connector.txt
+@@ -0,0 +1,23 @@
++Analog TV Connector
++=========+
++Required properties:
++- compatible: "composite-connector" or "svideo-connector"
++
++Optional properties:
++- label: a symbolic name for the connector
++
++Required nodes:
++- Video port for TV input
++
++Example
++-------
++
++tv: connector {
++	compatible = "composite-connector";
++	label = "tv";
++
++	tv_connector_in: endpoint {
++		remote-endpoint = <&venc_out>;
++	};
++};
 -- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+1.8.3.2
+

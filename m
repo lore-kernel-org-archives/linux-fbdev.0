@@ -1,37 +1,74 @@
-From: Adam Jackson <ajax@redhat.com>
-Date: Wed, 12 Feb 2014 21:02:02 +0000
-Subject: [PATCH] fbdev: Make the switch from generic to native driver less alarming
-Message-Id: <1392238922-28255-1-git-send-email-ajax@redhat.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 13 Feb 2014 12:32:32 +0000
+Subject: [PATCH 9/9] Doc/DT: Add DT binding documentation for tpd12s015 encoder
+Message-Id: <1392294752-18762-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345223444-15852-1-git-send-email-ajax@redhat.com>
-In-Reply-To: <1345223444-15852-1-git-send-email-ajax@redhat.com>
+References: <1392294752-18762-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1392294752-18762-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
-Calling this "conflicting" just makes people think there's a problem
-when there's not.
+Add DT binding documentation for tpd12s015 encoder
 
-Signed-off-by: Adam Jackson <ajax@redhat.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbmem.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ .../devicetree/bindings/video/ti,tpd12s015.txt     | 44 ++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/ti,tpd12s015.txt
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 7309ac7..b6d5008 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1596,8 +1596,7 @@ static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
- 			(primary && gen_aper && gen_aper->count &&
- 			 gen_aper->ranges[0].base = VGA_FB_PHYS)) {
- 
--			printk(KERN_INFO "fb: conflicting fb hw usage "
--			       "%s vs %s - removing generic driver\n",
-+			printk(KERN_INFO "fb: switching to %s from %s\n",
- 			       name, registered_fb[i]->fix.id);
- 			ret = do_unregister_framebuffer(registered_fb[i]);
- 			if (ret)
+diff --git a/Documentation/devicetree/bindings/video/ti,tpd12s015.txt b/Documentation/devicetree/bindings/video/ti,tpd12s015.txt
+new file mode 100644
+index 000000000000..26e6d32e3f20
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/ti,tpd12s015.txt
+@@ -0,0 +1,44 @@
++TPD12S015 HDMI level shifter and ESD protection chip
++==========================
++
++Required properties:
++- compatible: "ti,tpd12s015"
++
++Optional properties:
++- gpios: CT CP HPD, LS OE and HPD gpios
++
++Required nodes:
++- Video port 0 for HDMI input
++- Video port 1 for HDMI output
++
++Example
++-------
++
++tpd12s015: encoder@1 {
++	compatible = "ti,tpd12s015";
++
++	gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>,	/* 60, CT CP HPD */
++		<&gpio2 9 GPIO_ACTIVE_HIGH>,	/* 41, LS OE */
++		<&gpio2 31 GPIO_ACTIVE_HIGH>;	/* 63, HPD */
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@0 {
++			reg = <0>;
++
++			tpd12s015_in: endpoint@0 {
++				remote-endpoint = <&hdmi_out>;
++			};
++		};
++
++		port@1 {
++			reg = <1>;
++
++			tpd12s015_out: endpoint@0 {
++				remote-endpoint = <&hdmi_connector_in>;
++			};
++		};
++	};
++};
 -- 
-1.8.5.3
+1.8.3.2
 

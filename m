@@ -1,179 +1,211 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Tue, 25 Feb 2014 12:28:39 +0000
-Subject: [PATCH v4 1/2] hyperv-fb: add support for generation 2 virtual machines.
-Message-Id: <1393331320-18147-2-git-send-email-kraxel@redhat.com>
+From: Alexander Shiyan <shc_work@mail.ru>
+Date: Sat, 15 Feb 2014 05:56:25 +0000
+Subject: [PATCH 4/5] video: imxfb: Resolve mismatch between backlight/contrast
+Message-Id: <1392443786-30527-4-git-send-email-shc_work@mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393331320-18147-1-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1393331320-18147-1-git-send-email-kraxel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, devel@linuxdriverproject.org, Gerd Hoffmann <kraxel@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-UEFI-based generation 2 virtual machines support vmbus devices only.
-There is no pci bus.  Thus they use a different mechanism for the
-graphics framebuffer:  Instead of using the vga pci bar a chunk of
-memory muct be allocated from the hyperv mmio region declared using
-APCI.  This patch implements support for it.
+Currently, driver uses backlight class to control contrast value.
+This is not correct. This patch resolves this issue by removing
+backlight class from the driver and replace handling of LCDC PWM
+Contrast Control Register by contrast control through LCD class.
 
-Based on a patch by Haiyang Zhang <haiyangz@microsoft.com>
-
-Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
 ---
- drivers/video/hyperv_fb.c | 86 +++++++++++++++++++++++++++++++++--------------
- 1 file changed, 60 insertions(+), 26 deletions(-)
+ drivers/video/imxfb.c | 124 ++++++++++++--------------------------------------
+ 1 file changed, 30 insertions(+), 94 deletions(-)
 
-diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
-index 130708f..b7b3dd0 100644
---- a/drivers/video/hyperv_fb.c
-+++ b/drivers/video/hyperv_fb.c
-@@ -42,6 +42,7 @@
- #include <linux/completion.h>
- #include <linux/fb.h>
- #include <linux/pci.h>
-+#include <linux/efi.h>
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 3137a69..398a8ca 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -48,12 +48,6 @@
+  */
+ #define DEBUG_VAR 1
  
- #include <linux/hyperv.h>
+-#if defined(CONFIG_BACKLIGHT_CLASS_DEVICE) || \
+-	(defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE) && \
+-		defined(CONFIG_FB_IMX_MODULE))
+-#define PWMR_BACKLIGHT_AVAILABLE
+-#endif
+-
+ #define DRIVER_NAME "imx-fb"
  
-@@ -212,6 +213,7 @@ struct synthvid_msg {
+ #define LCDC_SSA	0x00
+@@ -172,9 +166,6 @@ struct imxfb_info {
  
- struct hvfb_par {
- 	struct fb_info *info;
-+	struct resource mem;
- 	bool fb_ready; /* fb device is ready */
- 	struct completion wait;
- 	u32 synthvid_version;
-@@ -460,13 +462,13 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
- 		goto error;
+ 	struct imx_fb_videomode *mode;
+ 	int			num_modes;
+-#ifdef PWMR_BACKLIGHT_AVAILABLE
+-	struct backlight_device *bl;
+-#endif
+ 
+ 	struct regulator	*lcd_pwr;
+ };
+@@ -482,83 +473,6 @@ static int imxfb_set_par(struct fb_info *info)
+ 	return 0;
+ }
+ 
+-#ifdef PWMR_BACKLIGHT_AVAILABLE
+-static int imxfb_bl_get_brightness(struct backlight_device *bl)
+-{
+-	struct imxfb_info *fbi = bl_get_data(bl);
+-
+-	return readl(fbi->regs + LCDC_PWMR) & 0xFF;
+-}
+-
+-static int imxfb_bl_update_status(struct backlight_device *bl)
+-{
+-	struct imxfb_info *fbi = bl_get_data(bl);
+-	int brightness = bl->props.brightness;
+-
+-	if (!fbi->pwmr)
+-		return 0;
+-
+-	if (bl->props.power != FB_BLANK_UNBLANK)
+-		brightness = 0;
+-	if (bl->props.fb_blank != FB_BLANK_UNBLANK)
+-		brightness = 0;
+-
+-	fbi->pwmr = (fbi->pwmr & ~0xFF) | brightness;
+-
+-	if (bl->props.fb_blank != FB_BLANK_UNBLANK) {
+-		clk_prepare_enable(fbi->clk_ipg);
+-		clk_prepare_enable(fbi->clk_ahb);
+-		clk_prepare_enable(fbi->clk_per);
+-	}
+-	writel(fbi->pwmr, fbi->regs + LCDC_PWMR);
+-	if (bl->props.fb_blank != FB_BLANK_UNBLANK) {
+-		clk_disable_unprepare(fbi->clk_per);
+-		clk_disable_unprepare(fbi->clk_ahb);
+-		clk_disable_unprepare(fbi->clk_ipg);
+-	}
+-
+-	return 0;
+-}
+-
+-static const struct backlight_ops imxfb_lcdc_bl_ops = {
+-	.update_status = imxfb_bl_update_status,
+-	.get_brightness = imxfb_bl_get_brightness,
+-};
+-
+-static void imxfb_init_backlight(struct imxfb_info *fbi)
+-{
+-	struct backlight_properties props;
+-	struct backlight_device	*bl;
+-
+-	if (fbi->bl)
+-		return;
+-
+-	memset(&props, 0, sizeof(struct backlight_properties));
+-	props.max_brightness = 0xff;
+-	props.type = BACKLIGHT_RAW;
+-	writel(fbi->pwmr, fbi->regs + LCDC_PWMR);
+-
+-	bl = backlight_device_register("imxfb-bl", &fbi->pdev->dev, fbi,
+-				       &imxfb_lcdc_bl_ops, &props);
+-	if (IS_ERR(bl)) {
+-		dev_err(&fbi->pdev->dev, "error %ld on backlight register\n",
+-				PTR_ERR(bl));
+-		return;
+-	}
+-
+-	fbi->bl = bl;
+-	bl->props.power = FB_BLANK_UNBLANK;
+-	bl->props.fb_blank = FB_BLANK_UNBLANK;
+-	bl->props.brightness = imxfb_bl_get_brightness(bl);
+-}
+-
+-static void imxfb_exit_backlight(struct imxfb_info *fbi)
+-{
+-	if (fbi->bl)
+-		backlight_device_unregister(fbi->bl);
+-}
+-#endif
+-
+ static void imxfb_enable_controller(struct imxfb_info *fbi)
+ {
+ 
+@@ -697,10 +611,8 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+ 			fbi->regs + LCDC_SIZE);
+ 
+ 	writel(fbi->pcr, fbi->regs + LCDC_PCR);
+-#ifndef PWMR_BACKLIGHT_AVAILABLE
+ 	if (fbi->pwmr)
+ 		writel(fbi->pwmr, fbi->regs + LCDC_PWMR);
+-#endif
+ 	writel(fbi->lscr1, fbi->regs + LCDC_LSCR1);
+ 
+ 	/* dmacr = 0 is no valid value, as we need DMA control marks. */
+@@ -844,6 +756,32 @@ static int imxfb_lcd_check_fb(struct lcd_device *lcddev, struct fb_info *fi)
+ 	return 0;
+ }
+ 
++static int imxfb_lcd_get_contrast(struct lcd_device *lcddev)
++{
++	struct imxfb_info *fbi = dev_get_drvdata(&lcddev->dev);
++
++	return fbi->pwmr & 0xff;
++}
++
++static int imxfb_lcd_set_contrast(struct lcd_device *lcddev, int contrast)
++{
++	struct imxfb_info *fbi = dev_get_drvdata(&lcddev->dev);
++
++	if (fbi->pwmr && fbi->enabled) {
++		if (contrast > 255)
++			contrast = 255;
++		else if (contrast < 0)
++			contrast = 0;
++
++		fbi->pwmr &= ~0xff;
++		fbi->pwmr |= contrast;
++
++		writel(fbi->pwmr, fbi->regs + LCDC_PWMR);
++	}
++
++	return 0;
++}
++
+ static int imxfb_lcd_get_power(struct lcd_device *lcddev)
+ {
+ 	struct imxfb_info *fbi = dev_get_drvdata(&lcddev->dev);
+@@ -870,6 +808,8 @@ static int imxfb_lcd_set_power(struct lcd_device *lcddev, int power)
+ 
+ static struct lcd_ops imxfb_lcd_ops = {
+ 	.check_fb	= imxfb_lcd_check_fb,
++	.get_contrast	= imxfb_lcd_get_contrast,
++	.set_contrast	= imxfb_lcd_set_contrast,
+ 	.get_power	= imxfb_lcd_get_power,
+ 	.set_power	= imxfb_lcd_set_power,
+ };
+@@ -1062,11 +1002,10 @@ static int imxfb_probe(struct platform_device *pdev)
+ 		goto failed_lcd;
  	}
  
--	if (par->synthvid_version = SYNTHVID_VERSION_WIN7) {
-+	if (par->synthvid_version = SYNTHVID_VERSION_WIN7)
- 		screen_depth = SYNTHVID_DEPTH_WIN7;
--		screen_fb_size = SYNTHVID_FB_SIZE_WIN7;
--	} else {
-+	else
- 		screen_depth = SYNTHVID_DEPTH_WIN8;
--		screen_fb_size = SYNTHVID_FB_SIZE_WIN8;
--	}
++	lcd->props.max_contrast = 0xff;
 +
-+	screen_fb_size = hdev->channel->offermsg.offer.
-+				mmio_megabytes * 1024 * 1024;
+ 	imxfb_enable_controller(fbi);
+ 	fbi->pdev = pdev;
+-#ifdef PWMR_BACKLIGHT_AVAILABLE
+-	imxfb_init_backlight(fbi);
+-#endif
  
  	return 0;
  
-@@ -627,26 +629,46 @@ static void hvfb_get_option(struct fb_info *info)
- /* Get framebuffer memory from Hyper-V video pci space */
- static int hvfb_getmem(struct fb_info *info)
- {
--	struct pci_dev *pdev;
--	ulong fb_phys;
-+	struct hvfb_par *par = info->par;
-+	struct pci_dev *pdev  = NULL;
- 	void __iomem *fb_virt;
-+	int gen2vm = efi_enabled(EFI_BOOT);
-+	int ret;
+@@ -1105,9 +1044,6 @@ static int imxfb_remove(struct platform_device *pdev)
  
--	pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
-+	par->mem.name = KBUILD_MODNAME;
-+	par->mem.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-+	if (gen2vm) {
-+		ret = allocate_resource(&hyperv_mmio, &par->mem,
-+					screen_fb_size,
-+					0, -1,
-+					screen_fb_size,
-+					NULL, NULL);
-+		if (ret != 0) {
-+			pr_err("Unable to allocate framebuffer memory\n");
-+			return -ENODEV;
-+		}
-+	} else {
-+		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
- 			      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
--	if (!pdev) {
--		pr_err("Unable to find PCI Hyper-V video\n");
--		return -ENODEV;
--	}
-+		if (!pdev) {
-+			pr_err("Unable to find PCI Hyper-V video\n");
-+			return -ENODEV;
-+		}
+ 	imxfb_disable_controller(fbi);
  
--	if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
--	    pci_resource_len(pdev, 0) < screen_fb_size)
--		goto err1;
-+		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
-+		    pci_resource_len(pdev, 0) < screen_fb_size)
-+			goto err1;
+-#ifdef PWMR_BACKLIGHT_AVAILABLE
+-	imxfb_exit_backlight(fbi);
+-#endif
+ 	unregister_framebuffer(info);
  
--	fb_phys = pci_resource_end(pdev, 0) - screen_fb_size + 1;
--	if (!request_mem_region(fb_phys, screen_fb_size, KBUILD_MODNAME))
--		goto err1;
-+		par->mem.end = pci_resource_end(pdev, 0);
-+		par->mem.start = par->mem.end - screen_fb_size + 1;
-+		ret = request_resource(&pdev->resource[0], &par->mem);
-+		if (ret != 0) {
-+			pr_err("Unable to request framebuffer memory\n");
-+			goto err1;
-+		}
-+	}
- 
--	fb_virt = ioremap(fb_phys, screen_fb_size);
-+	fb_virt = ioremap(par->mem.start, screen_fb_size);
- 	if (!fb_virt)
- 		goto err2;
- 
-@@ -654,30 +676,42 @@ static int hvfb_getmem(struct fb_info *info)
- 	if (!info->apertures)
- 		goto err3;
- 
--	info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
--	info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
--	info->fix.smem_start = fb_phys;
-+	if (gen2vm) {
-+		info->apertures->ranges[0].base = screen_info.lfb_base;
-+		info->apertures->ranges[0].size = screen_info.lfb_size;
-+	} else {
-+		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
-+		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
-+	}
-+
-+	info->fix.smem_start = par->mem.start;
- 	info->fix.smem_len = screen_fb_size;
- 	info->screen_base = fb_virt;
- 	info->screen_size = screen_fb_size;
- 
--	pci_dev_put(pdev);
-+	if (!gen2vm)
-+		pci_dev_put(pdev);
-+
- 	return 0;
- 
- err3:
- 	iounmap(fb_virt);
- err2:
--	release_mem_region(fb_phys, screen_fb_size);
-+	release_resource(&par->mem);
- err1:
--	pci_dev_put(pdev);
-+	if (!gen2vm)
-+		pci_dev_put(pdev);
-+
- 	return -ENOMEM;
- }
- 
- /* Release the framebuffer */
- static void hvfb_putmem(struct fb_info *info)
- {
-+	struct hvfb_par *par = info->par;
-+
- 	iounmap(info->screen_base);
--	release_mem_region(info->fix.smem_start, screen_fb_size);
-+	release_resource(&par->mem);
- }
- 
- 
+ 	pdata = dev_get_platdata(&pdev->dev);
 -- 
-1.8.3.1
+1.8.3.2
 

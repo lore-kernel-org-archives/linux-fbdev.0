@@ -1,86 +1,80 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 14 Feb 2014 12:31:24 +0000
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 17 Feb 2014 01:51:28 +0000
 Subject: Re: [PATCH RFC 2/3] fbdev: move fbdev core files to separate directory
-Message-Id: <52FE0C9C.6090905@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="H0fDMKj3Um9qoHsuRgn0hO7GjHmd1oDLF"
+Message-Id: <000d01cf2b82$c5f2cbc0$51d86340$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1392376711-11290-1-git-send-email-tomi.valkeinen@ti.com>	<1392376711-11290-2-git-send-email-tomi.valkeinen@ti.com> <CAMuHMdWWOUVe-16VBZ098-OfB21X9Wz1wO8gmSUy4PsFvQoX1A@mail.gmail.com>
-In-Reply-To: <CAMuHMdWWOUVe-16VBZ098-OfB21X9Wz1wO8gmSUy4PsFvQoX1A@mail.gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, David Airlie <airlied@linux.ie>
+References: <1392376711-11290-1-git-send-email-tomi.valkeinen@ti.com>
+ <1392376711-11290-2-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1392376711-11290-2-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: 'Laurent Pinchart' <laurent.pinchart@ideasonboard.com>, 'Geert Uytterhoeven' <geert@linux-m68k.org>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'David Airlie' <airlied@linux.ie>'Geert Uytterhoeven' <geert@linux-m68k.org>, 'Jingoo Han' <jg1.han@samsung.com>
 
---H0fDMKj3Um9qoHsuRgn0hO7GjHmd1oDLF
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Friday, February 14, 2014 8:19 PM, Tomi Valkeinen wrote:
+> 
+> Instead of having fbdev framework core files at the root fbdev
+> directory, mixed with random fbdev device drivers, move the fbdev core
+> files to a separate core directory. This makes it much clearer which of
+> the files are actually part of the fbdev framework, and which are part
+> of device drivers.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 14/02/14 14:27, Geert Uytterhoeven wrote:
-> Hi Tomi,
->=20
-> Thanks for doing this!
->=20
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
->=20
-> On Fri, Feb 14, 2014 at 12:18 PM, Tomi Valkeinen <tomi.valkeinen@ti.com=
-> wrote:
->> --- a/drivers/video/fbdev/fbmon.c
->> +++ b/drivers/video/fbdev/core/fbmon.c
->> @@ -37,7 +37,7 @@
->>  #include <asm/prom.h>
->>  #include <asm/>
->>  /*
->>   * EDID parserpci-bridge.h>
->>  #endif
->> -#include "edid.h"
->> +#include "../edid.h"
->=20
-> This looks a bit asymmetrical ...
->=20
->> --- a/drivers/video/fbdev/wmt_ge_rops.c
->> +++ b/drivers/video/fbdev/wmt_ge_rops.c
->> @@ -18,7 +18,7 @@
->>  #include <linux/module.h>
->>  #include <linux/fb.h>
->>  #include <linux/platform_device.h>
->> -#include "fb_draw.h"
->> +#include "core/fb_draw.h"
->=20
-> ... to this.
->=20
-> Perhaps (the content of) edid.h belongs in include/video/edid.h?
+Hi Tomi,
 
-Yes, I thought the same, but I didn't want to start messing around too
-much in this series. I also noticed some odd Kconfig options (for
-example, HAVE_FB_ATMEL, SH_MIPI_DSI, SH_LCD_MIPI_DSI at the beginning of
-drivers/video/Kconfig), which I almost started cleaning up, but decided
-to just concentrate on the main reorganization.
+This is what I wanted for a long time!
+Thank you for your effort!
 
- Tomi
+Last year, I noticed that the current FB directory and files
+are not clear. It looks good!
 
+Acked-by: Jingoo Han <jg1.han@samsung.com>
 
+Best regards,
+Jingoo Han
 
---H0fDMKj3Um9qoHsuRgn0hO7GjHmd1oDLF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> ---
+>  drivers/video/fbdev/Makefile                 | 16 +---------------
+>  drivers/video/fbdev/core/Makefile            | 16 ++++++++++++++++
+>  drivers/video/fbdev/{ => core}/cfbcopyarea.c |  0
+>  drivers/video/fbdev/{ => core}/cfbfillrect.c |  0
+>  drivers/video/fbdev/{ => core}/cfbimgblt.c   |  0
+>  drivers/video/fbdev/{ => core}/fb_ddc.c      |  2 +-
+>  drivers/video/fbdev/{ => core}/fb_defio.c    |  0
+>  drivers/video/fbdev/{ => core}/fb_draw.h     |  0
+>  drivers/video/fbdev/{ => core}/fb_notify.c   |  0
+>  drivers/video/fbdev/{ => core}/fb_sys_fops.c |  0
+>  drivers/video/fbdev/{ => core}/fbcmap.c      |  0
+>  drivers/video/fbdev/{ => core}/fbcvt.c       |  0
+>  drivers/video/fbdev/{ => core}/fbmem.c       |  0
+>  drivers/video/fbdev/{ => core}/fbmon.c       |  2 +-
+>  drivers/video/fbdev/{ => core}/fbsysfs.c     |  0
+>  drivers/video/fbdev/{ => core}/modedb.c      |  0
+>  drivers/video/fbdev/{ => core}/svgalib.c     |  0
+>  drivers/video/fbdev/{ => core}/syscopyarea.c |  0
+>  drivers/video/fbdev/{ => core}/sysfillrect.c |  0
+>  drivers/video/fbdev/{ => core}/sysimgblt.c   |  0
+>  drivers/video/fbdev/wmt_ge_rops.c            |  2 +-
+>  21 files changed, 20 insertions(+), 18 deletions(-)
+>  create mode 100644 drivers/video/fbdev/core/Makefile
+>  rename drivers/video/fbdev/{ => core}/cfbcopyarea.c (100%)
+>  rename drivers/video/fbdev/{ => core}/cfbfillrect.c (100%)
+>  rename drivers/video/fbdev/{ => core}/cfbimgblt.c (100%)
+>  rename drivers/video/fbdev/{ => core}/fb_ddc.c (99%)
+>  rename drivers/video/fbdev/{ => core}/fb_defio.c (100%)
+>  rename drivers/video/fbdev/{ => core}/fb_draw.h (100%)
+>  rename drivers/video/fbdev/{ => core}/fb_notify.c (100%)
+>  rename drivers/video/fbdev/{ => core}/fb_sys_fops.c (100%)
+>  rename drivers/video/fbdev/{ => core}/fbcmap.c (100%)
+>  rename drivers/video/fbdev/{ => core}/fbcvt.c (100%)
+>  rename drivers/video/fbdev/{ => core}/fbmem.c (100%)
+>  rename drivers/video/fbdev/{ => core}/fbmon.c (99%)
+>  rename drivers/video/fbdev/{ => core}/fbsysfs.c (100%)
+>  rename drivers/video/fbdev/{ => core}/modedb.c (100%)
+>  rename drivers/video/fbdev/{ => core}/svgalib.c (100%)
+>  rename drivers/video/fbdev/{ => core}/syscopyarea.c (100%)
+>  rename drivers/video/fbdev/{ => core}/sysfillrect.c (100%)
+>  rename drivers/video/fbdev/{ => core}/sysimgblt.c (100%)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS/gyjAAoJEPo9qoy8lh715ugQAIUwVqQC15qPyjBynI7AsFEi
-JerkdL7p+vQvPquO/p0T/aBqjalZszWBxDw+VdC5ilo4ekqA8TIiGrmSYmKpSQuB
-IG0dnOo3wg3bZpZrTUPp8gKqN60olta3HmT89nUGuCdHJxtlC8BOcN+7NV0/Lix8
-9Pw/OCug4pufvGxeCnJoGGL4fle+pKyxa5YsEdHdz0qic86SKs/tGy5+s/0xzsyA
-jr0U74LmNQMEuJzEd4/krCacRDFmoUj+29uWOaYhxIAshlqkIo0Ou2JY7U7V8ozP
-A06HE6nBLHAd3hLsjZYEG68mOuYmkBKEvJipaSzm9Q8+YU6dgjxyAaZtjl8KLdPc
-I4dBtsYKsURe8D7AJ0irK9M2VU2rCgc1UzMF0StwuNQDou79jTsPn7gg3m/BCQN3
-Ig7xUXcoCYxe3rSBJEYWyzzVqe8rXuhMEJ8Bx7xCJabWSaYPPhgRP4jAgVe8TcvS
-rFI9Fz1LQO5cJA8A/eR4PG5wXZz9T6jEiukqkSglBe3EL8OkU7DqJvgCw+sh7dm5
-ta8aMWQ9EohM0sgIXCSQxCwVdM1vri5mAyiDZ/sE0qVP31Zphrq8pgWAa5kkpxP9
-Pc4zsq5BjrsdKn7as2c3JPK75u0lL8ZFrBhsuF3PQtvhiv13268EdHEI/aLOw2FN
-j1UUt44XjK5jvvB0CcEP
-=ja7q
------END PGP SIGNATURE-----
-
---H0fDMKj3Um9qoHsuRgn0hO7GjHmd1oDLF--

@@ -1,56 +1,69 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 14 Feb 2014 11:18:31 +0000
-Subject: [PATCH RFC 3/3] video: Kconfig: move drm and fb into separate menus
-Message-Id: <1392376711-11290-3-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 17 Feb 2014 01:55:19 +0000
+Subject: Re: [PATCH RFC 3/3] video: Kconfig: move drm and fb into separate menus
+Message-Id: <000e01cf2b83$4f7a29b0$ee6e7d10$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1392376711-11290-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1392376711-11290-1-git-send-email-tomi.valkeinen@ti.com>
+ <1392376711-11290-3-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1392376711-11290-3-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, David Airlie <airlied@linux.ie>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: 'Laurent Pinchart' <laurent.pinchart@ideasonboard.com>, 'Geert Uytterhoeven' <geert@linux-m68k.org>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'David Airlie' <airlied@linux.ie>, 'Jingoo Han' <jg1.han@samsung.com>
 
-At the moment the "Device Drivers / Graphics support" kernel config page
-looks rather messy, with DRM and fbdev driver selections on the same
-page, some on the top level Graphics support page, some under their
-respective subsystems.
+On Friday, February 14, 2014 8:19 PM, Tomi Valkeinen wrote:
+> 
+> At the moment the "Device Drivers / Graphics support" kernel config page
+> looks rather messy, with DRM and fbdev driver selections on the same
+> page, some on the top level Graphics support page, some under their
+> respective subsystems.
+> 
+> If I'm not mistaken, this is caused by the drivers depending on other
+> things than DRM or FB, which causes Kconfig to arrange the options in
+> not-so-neat manner.
+> 
+> Both DRM and FB have a main menuconfig option for the whole DRM or FB
+> subsystem. Optimally, this would be enough to arrange all DRM and FB
+> options under the respective subsystem, but for whatever reason this
+> doesn't work reliably.
+> 
+> This patch adds an explicit submenu for DRM and FB, making it much
+> clearer which options are related to FB, and which to DRM.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-If I'm not mistaken, this is caused by the drivers depending on other
-things than DRM or FB, which causes Kconfig to arrange the options in
-not-so-neat manner.
+Reviewed-by: Jingoo Han <jg1.han@samsung.com>
 
-Both DRM and FB have a main menuconfig option for the whole DRM or FB
-subsystem. Optimally, this would be enough to arrange all DRM and FB
-options under the respective subsystem, but for whatever reason this
-doesn't work reliably.
+I tested this patch. Menu becomes clearer!
+Thanks.
 
-This patch adds an explicit submenu for DRM and FB, making it much
-clearer which options are related to FB, and which to DRM.
+Best regards,
+Jingoo Han
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/Kconfig | 4 ++++
- 1 file changed, 4 insertions(+)
+> ---
+>  drivers/video/Kconfig | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index f0f26a0b746e..70d174090a54 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -21,9 +21,13 @@ source "drivers/gpu/vga/Kconfig"
+> 
+>  source "drivers/gpu/host1x/Kconfig"
+> 
+> +menu "Direct Rendering Manager"
+>  source "drivers/gpu/drm/Kconfig"
+> +endmenu
+> 
+> +menu "Framebuffer Devices"
+>  source "drivers/video/fbdev/Kconfig"
+> +endmenu
+> 
+>  source "drivers/video/backlight/Kconfig"
+> 
+> --
+> 1.8.3.2
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index f0f26a0b746e..70d174090a54 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -21,9 +21,13 @@ source "drivers/gpu/vga/Kconfig"
- 
- source "drivers/gpu/host1x/Kconfig"
- 
-+menu "Direct Rendering Manager"
- source "drivers/gpu/drm/Kconfig"
-+endmenu
- 
-+menu "Framebuffer Devices"
- source "drivers/video/fbdev/Kconfig"
-+endmenu
- 
- source "drivers/video/backlight/Kconfig"
- 
--- 
-1.8.3.2
 

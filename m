@@ -1,46 +1,60 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Fri, 21 Feb 2014 08:56:40 +0000
-Subject: [PATCH 0/4] hyperv-fb: add support for generation 2 virtual machines
-Message-Id: <1392973004-28215-1-git-send-email-kraxel@redhat.com>
+From: Haiyang Zhang <haiyangz@microsoft.com>
+Date: Tue, 18 Feb 2014 20:20:44 +0000
+Subject: [PATCH 1/2] hyperv_fb: Add screen refresh after pause/resume operation
+Message-Id: <1392757891-28680-2-git-send-email-haiyangz@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1392757891-28680-1-git-send-email-haiyangz@microsoft.com>
+In-Reply-To: <1392757891-28680-1-git-send-email-haiyangz@microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, Gerd Hoffmann <kraxel@redhat.com>
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org
+Cc: olaf@aepfle.de, jasowang@redhat.com, driverdev-devel@linuxdriverproject.org, linux-kernel@vger.kernel.org, haiyangz@microsoft.com
 
-  Hi,
+This is necessary because after VM is pause/resumed, some portion of
+the screen may need refresh.
 
-This patch series adds support for uefi-based gen2 virtual machines to
-the hyperv-fb driver.
+Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
+Reviewed-by: K. Y. Srinivasan <kys@microsoft.com>
+---
+ drivers/video/hyperv_fb.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
 
-First patch is included just for completeness.  Greg picked it up
-already and it is in -next, but it isn't in master yet.
-
-Second patch is a bugfix for the first patch.
-
-Third patch changes vmbus to properly hook the hyperv mmio area into
-the linux resource management.
-
-Final patch actually implements gen2 vm support for hyperv-fb, building
-on the hyperv mmio support added by the other patches.
-
-Known issue: There is a long delay when loading the hyperv-fb driver on
-gen2 virtual machines which isn't present on gen1 virtual machines.
-
-Gerd Hoffmann (3):
-  vmbus: add missing breaks
-  vmbus: use resource for hyperv mmio region
-  hyperv-fb: add support for generation 2 virtual machines.
-
-K. Y. Srinivasan (1):
-  Drivers: hv: vmbus: Extract the mmio information from DSDT
-
- drivers/hv/vmbus_drv.c    | 51 +++++++++++++++++++++-------
- drivers/video/hyperv_fb.c | 86 +++++++++++++++++++++++++++++++++--------------
- include/linux/hyperv.h    |  2 ++
- 3 files changed, 100 insertions(+), 39 deletions(-)
-
+diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
+index 130708f..bbcc8c0 100644
+--- a/drivers/video/hyperv_fb.c
++++ b/drivers/video/hyperv_fb.c
+@@ -218,6 +218,7 @@ struct hvfb_par {
+ 
+ 	struct delayed_work dwork;
+ 	bool update;
++	bool xrefresh;
+ 
+ 	u32 pseudo_palette[16];
+ 	u8 init_buf[MAX_VMBUS_PKT_SIZE];
+@@ -369,7 +370,7 @@ static void synthvid_recv_sub(struct hv_device *hdev)
+ 			synthvid_send_situ(hdev);
+ 		}
+ 
+-		par->update = msg->feature_chg.is_dirt_needed;
++		par->xrefresh = par->update = msg->feature_chg.is_dirt_needed;
+ 		if (par->update)
+ 			schedule_delayed_work(&par->dwork, HVFB_UPDATE_DELAY);
+ 	}
+@@ -522,6 +523,13 @@ static void hvfb_update_work(struct work_struct *w)
+ {
+ 	struct hvfb_par *par = container_of(w, struct hvfb_par, dwork.work);
+ 	struct fb_info *info = par->info;
++	char *argv[] = {"/usr/bin/xrefresh", "-display", ":0.0", NULL};
++	char *envp[] = {"HOME=/", "PATH=/sbin:/usr/sbin:/bin:/usr/bin", NULL };
++
++	if (par->xrefresh) {
++		par->xrefresh = false;
++		call_usermodehelper(argv[0], argv, envp, UMH_NO_WAIT);
++	}
+ 
+ 	if (par->fb_ready)
+ 		synthvid_update(info);
 -- 
-1.8.3.1
+1.7.4.1
 

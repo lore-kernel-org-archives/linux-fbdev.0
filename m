@@ -1,39 +1,94 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Mon, 24 Feb 2014 11:07:57 +0000
-Subject: Re: [PATCH v2 2/5] vmbus: add missing breaks
-Message-Id: <20140224110757.GH26722@mwanda>
+From: Manish Badarkhe <badarkhe.manish@gmail.com>
+Date: Tue, 18 Feb 2014 03:37:36 +0000
+Subject: [PATCH] video: da8xx-fb: Use "SIMPLE_DEV_PM_OPS" macro
+Message-Id: <1392693936-23862-1-git-send-email-badarkhe.manish@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
- <1393237516-28545-3-git-send-email-kraxel@redhat.com>
- <20140224104207.GG26722@mwanda>
- <1393239343.28750.3.camel@nilsson.home.kraxel.org>
-In-Reply-To: <1393239343.28750.3.camel@nilsson.home.kraxel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, jasowang@redhat.com, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, haiyangz@microsoft.com
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, davinci-linux-open-source@linux.davincidsp.com
+Cc: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, nsekhar@ti.com, badarkhe.manish@gmail.com
 
-On Mon, Feb 24, 2014 at 11:55:43AM +0100, Gerd Hoffmann wrote:
-> On Mo, 2014-02-24 at 13:42 +0300, Dan Carpenter wrote:
-> > I'm sorry, I know it sucks to not get credit for fixes, but please just
-> > fold this into [patch 1/5].  We really should have a tag for this kind
-> > of thing.
-> 
-> It's not because of the credits, but because Greg picked up #1 into one
-> of his branches already (cover letter explains this).  I'll happily
-> submit a v3 with 1+2 squashed together if that doesn't ruin the patch
-> workflow.  Greg?
-> 
+Update driver to use SIMPLE_DEV_PM_OPS macro for power
+management suspend and resume operations.
 
-Ah.  My bad.  My tree is out of date.  No we don't modify staging
-history.  Once a patch has been applied it is forever.
+Signed-off-by: Manish Badarkhe <badarkhe.manish@gmail.com>
+---
+:100644 100644 a1d74dd... 0c0ba92... M	drivers/video/da8xx-fb.c
+ drivers/video/da8xx-fb.c |   22 ++++++++++------------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
 
-Why are you resending #1 if it's already been applied.
-
-I haven't recieved the cover letter...  Probably it explains that.
-Never mind.
-
-regards,
-dan carpenter
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index a1d74dd..0c0ba92 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1546,7 +1546,7 @@ err_pm_runtime_disable:
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_PM
++#ifdef CONFIG_PM_SLEEP
+ static struct lcdc_context {
+ 	u32 clk_enable;
+ 	u32 ctrl;
+@@ -1610,9 +1610,9 @@ static void lcd_context_restore(void)
+ 	return;
+ }
+ 
+-static int fb_suspend(struct platform_device *dev, pm_message_t state)
++static int fb_suspend(struct device *dev)
+ {
+-	struct fb_info *info = platform_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct da8xx_fb_par *par = info->par;
+ 
+ 	console_lock();
+@@ -1622,18 +1622,18 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
+ 	fb_set_suspend(info, 1);
+ 	lcd_disable_raster(DA8XX_FRAME_WAIT);
+ 	lcd_context_save();
+-	pm_runtime_put_sync(&dev->dev);
++	pm_runtime_put_sync(dev);
+ 	console_unlock();
+ 
+ 	return 0;
+ }
+-static int fb_resume(struct platform_device *dev)
++static int fb_resume(struct device *dev)
+ {
+-	struct fb_info *info = platform_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct da8xx_fb_par *par = info->par;
+ 
+ 	console_lock();
+-	pm_runtime_get_sync(&dev->dev);
++	pm_runtime_get_sync(dev);
+ 	lcd_context_restore();
+ 	if (par->blank = FB_BLANK_UNBLANK) {
+ 		lcd_enable_raster();
+@@ -1647,19 +1647,17 @@ static int fb_resume(struct platform_device *dev)
+ 
+ 	return 0;
+ }
+-#else
+-#define fb_suspend NULL
+-#define fb_resume NULL
+ #endif
+ 
++static SIMPLE_DEV_PM_OPS(fb_pm_ops, fb_suspend, fb_resume);
++
+ static struct platform_driver da8xx_fb_driver = {
+ 	.probe = fb_probe,
+ 	.remove = fb_remove,
+-	.suspend = fb_suspend,
+-	.resume = fb_resume,
+ 	.driver = {
+ 		   .name = DRIVER_NAME,
+ 		   .owner = THIS_MODULE,
++		   .pm	= &fb_pm_ops,
+ 		   },
+ };
+ module_platform_driver(da8xx_fb_driver);
+-- 
+1.7.10.4
 

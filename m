@@ -1,37 +1,38 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Wed, 26 Feb 2014 10:20:30 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSHY2XVsgMy81XSB2aWRlbzogbXgzZmI6IEludHJvZHVjZSBy?= =?UTF-8?B?ZWd1bGF0b3Igc3Vwc
-Message-Id: <1393410030.488354633@f216.i.mail.ru>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Fri, 21 Feb 2014 08:56:42 +0000
+Subject: [PATCH 2/4] vmbus: add missing breaks
+Message-Id: <1392973004-28215-3-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393408800-8946-1-git-send-email-denis@eukrea.com>
- <1393408800-8946-3-git-send-email-denis@eukrea.com>
-In-Reply-To: <1393408800-8946-3-git-send-email-denis@eukrea.com>
+References: <1392973004-28215-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1392973004-28215-1-git-send-email-kraxel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, Gerd Hoffmann <kraxel@redhat.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>
 
-0KHRgNC10LTQsCwgMjYg0YTQtdCy0YDQsNC70Y8gMjAxNCwgMTA6NTkgKzAxOjAwINC+0YIgRGVu
-aXMgQ2FyaWtsaSA8ZGVuaXNAZXVrcmVhLmNvbT46Cj4gVGhpcyBjb21taXQgaXMgYmFzZWQgb24g
-dGhlIGZvbGxvd2luZyBjb21taXQgYnkgRmFiaW8gRXN0ZXZhbToKPiAgIDQzNDQ0MjkgdmlkZW86
-IG14c2ZiOiBJbnRyb2R1Y2UgcmVndWxhdG9yIHN1cHBvcnQKLi4uCj4gKysrIGIvZHJpdmVycy92
-aWRlby9teDNmYi5jCi4uLgo+IEBAIC0xNDA5LDYgKzE0MzUsOSBAQCBzdGF0aWMgaW50IGluaXRf
-ZmJfY2hhbihzdHJ1Y3QgbXgzZmJfZGF0YSAqbXgzZmIsIHN0cnVjdCBpZG1hY19jaGFubmVsICpp
-Y2hhbikKPiAgCQkJcmV0dXJuIC1FSU5WQUw7Cj4gIAkJfQo+ICAKPiArCQlvZl9wcm9wZXJ0eV9y
-ZWFkX3N0cmluZyhkaXNwbGF5X25wLCAicmVndWxhdG9yLW5hbWUiLAo+ICsJCQkJCSZyZWd1bGF0
-b3JfbmFtZSk7Cj4gKwo+ICAJCW9mX3Byb3BlcnR5X3JlYWRfc3RyaW5nKGRpc3BsYXlfbnAsICJp
-bnRlcmZhY2UtcGl4LWZtdCIsCj4gIAkJCQkJJmlwdV9kaXNwX2Zvcm1hdCk7Cj4gIAkJaWYgKCFp
-cHVfZGlzcF9mb3JtYXQpIHsKPiBAQCAtMTUyNiw2ICsxNTU1LDIxIEBAIHN0YXRpYyBpbnQgaW5p
-dF9mYl9jaGFuKHN0cnVjdCBteDNmYl9kYXRhICpteDNmYiwgc3RydWN0IGlkbWFjX2NoYW5uZWwg
-KmljaGFuKQo+ICAJaWYgKHJldCA8IDApCj4gIAkJZ290byBlc2V0cGFyOwo+ICAKPiArCS8qIElu
-IGR0IG1vZGUsCj4gKwkgKiB1c2luZyBkZXZtX3JlZ3VsYXRvcl9nZXQgd291bGQgcmVxdWlyZSB0
-aGF0IHRoZSBwcm9wcmV0eSByZWZlcmVuY2luZwo+ICsJICogdGhlIHJlZ3VsYXRvciBwaGFuZGxl
-IGhhcyB0byBiZSBpbnNpZGUgdGhlIG14M2ZiIG5vZGUuCgpXaGF0Pz8/Cgo+ICsJICovCj4gKwlp
-ZiAobnApIHsKPiArCQlpZiAocmVndWxhdG9yX25hbWUpCj4gKwkJCW14M2ZiaS0+cmVnX2xjZCA9
-IHJlZ3VsYXRvcl9nZXQoTlVMTCwgcmVndWxhdG9yX25hbWUpOwo+ICsKPiArCQlpZiAoSVNfRVJS
-KG14M2ZiaS0+cmVnX2xjZCkpCj4gKwkJCXJldHVybiBQVFJfRVJSKG14M2ZiaS0+cmVnX2xjZCk7
-Cj4gKwl9IGVsc2Ugewo+ICsJCS8qIFBlcm1pdCB0aGF0IGRyaXZlciB3aXRob3V0IGEgcmVndWxh
-dG9yIGluIG5vbi1kdCBtb2RlICovCj4gKwkJbXgzZmJpLT5yZWdfbGNkID0gcmVndWxhdG9yX2dl
-dChkZXYsICJsY2QiKTsKPiArCX0KCldoeSB5b3Ugd2FudCB0byB1c2UgYW4gZXhjZXNzICJyZWd1
-bGF0b3ItbmFtZSIgcHJvcGVydHk/Ckp1c3QgdXNlIGRldm1fcmVndWxhdG9yX2dldChkZXYsICJs
-Y2QiKSBmb3IgYm90aCBkdC9ub24tZHQgY2FzZS4K
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/hv/vmbus_drv.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index b37c91b..2352ae48 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -899,10 +899,12 @@ static acpi_status vmbus_walk_resources(struct acpi_resource *res, void *ctx)
+ 	switch (res->type) {
+ 	case ACPI_RESOURCE_TYPE_IRQ:
+ 		irq = res->data.irq.interrupts[0];
++		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_ADDRESS64:
+ 		hyperv_mmio_start = res->data.address64.minimum;
+ 		hyperv_mmio_size = res->data.address64.address_length;
++		break;
+ 	}
+ 
+ 	return AE_OK;
+-- 
+1.8.3.1
+

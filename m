@@ -1,205 +1,81 @@
-From: Alexander Shiyan <shc_work@mail.ru>
-Date: Sat, 15 Feb 2014 05:56:23 +0000
-Subject: [PATCH 2/5] video: imxfb: Remove unused fields from platform data structure
-Message-Id: <1392443786-30527-2-git-send-email-shc_work@mail.ru>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Fri, 21 Feb 2014 08:56:43 +0000
+Subject: [PATCH 3/4] vmbus: use resource for hyperv mmio region
+Message-Id: <1392973004-28215-4-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1392973004-28215-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1392973004-28215-1-git-send-email-kraxel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, Gerd Hoffmann <kraxel@redhat.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>
 
-Some fields in platform data structure is never used by boards.
-This patch removes these fields and as a result optimizes private
-driver structure a bit. Additionally patch removes backligh_power()
-callback, so if it will be needed in the future, this feature should
-be added as pwm{gpio,etc.}-regulator to the board code or in the DTS.
+Use a resource for the hyperv mmio region instead of start/size
+variables.  Register the region properly so it shows up in
+/proc/iomem.
 
-Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
 ---
- drivers/video/imxfb.c                     | 64 ++++++++-----------------------
- include/linux/platform_data/video-imxfb.h | 10 -----
- 2 files changed, 17 insertions(+), 57 deletions(-)
+ drivers/hv/vmbus_drv.c | 16 ++++++++++------
+ include/linux/hyperv.h |  3 +--
+ 2 files changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index e50b67f..5b07053 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -156,11 +156,8 @@ struct imxfb_info {
- 	 * the framebuffer memory region to.
- 	 */
- 	dma_addr_t		map_dma;
--	u_char			*map_cpu;
- 	u_int			map_size;
- 
--	u_char			*screen_cpu;
--	dma_addr_t		screen_dma;
- 	u_int			palette_size;
- 
- 	dma_addr_t		dbar1;
-@@ -170,9 +167,8 @@ struct imxfb_info {
- 	u_int			pwmr;
- 	u_int			lscr1;
- 	u_int			dmacr;
--	u_int			cmap_inverse:1,
--				cmap_static:1,
--				unused:30;
-+	bool			cmap_inverse;
-+	bool			cmap_static;
- 
- 	struct imx_fb_videomode *mode;
- 	int			num_modes;
-@@ -180,8 +176,6 @@ struct imxfb_info {
- 	struct backlight_device *bl;
- #endif
- 
--	void (*backlight_power)(int);
--
- 	struct regulator	*lcd_pwr;
- };
- 
-@@ -573,7 +567,7 @@ static void imxfb_enable_controller(struct imxfb_info *fbi)
- 
- 	pr_debug("Enabling LCD controller\n");
- 
--	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
-+	writel(fbi->map_dma, fbi->regs + LCDC_SSA);
- 
- 	/* panning offset 0 (0 pixel offset)        */
- 	writel(0x00000000, fbi->regs + LCDC_POS);
-@@ -592,9 +586,6 @@ static void imxfb_enable_controller(struct imxfb_info *fbi)
- 	clk_prepare_enable(fbi->clk_ahb);
- 	clk_prepare_enable(fbi->clk_per);
- 	fbi->enabled = true;
--
--	if (fbi->backlight_power)
--		fbi->backlight_power(1);
- }
- 
- static void imxfb_disable_controller(struct imxfb_info *fbi)
-@@ -604,9 +595,6 @@ static void imxfb_disable_controller(struct imxfb_info *fbi)
- 
- 	pr_debug("Disabling LCD controller\n");
- 
--	if (fbi->backlight_power)
--		fbi->backlight_power(0);
--
- 	clk_disable_unprepare(fbi->clk_per);
- 	clk_disable_unprepare(fbi->clk_ipg);
- 	clk_disable_unprepare(fbi->clk_ahb);
-@@ -790,13 +778,9 @@ static int imxfb_init_fbinfo(struct platform_device *pdev)
- 	info->flags			= FBINFO_FLAG_DEFAULT |
- 					  FBINFO_READS_FAST;
- 	if (pdata) {
--		info->var.grayscale		= pdata->cmap_greyscale;
--		fbi->cmap_inverse		= pdata->cmap_inverse;
--		fbi->cmap_static		= pdata->cmap_static;
- 		fbi->lscr1			= pdata->lscr1;
- 		fbi->dmacr			= pdata->dmacr;
- 		fbi->pwmr			= pdata->pwmr;
--		fbi->backlight_power		= pdata->backlight_power;
- 	} else {
- 		np = pdev->dev.of_node;
- 		info->var.grayscale = of_property_read_bool(np,
-@@ -808,8 +792,6 @@ static int imxfb_init_fbinfo(struct platform_device *pdev)
- 		of_property_read_u32(np, "fsl,lscr1", &fbi->lscr1);
- 
- 		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
--
--		fbi->backlight_power = NULL;
- 	}
- 
- 	return 0;
-@@ -1003,32 +985,18 @@ static int imxfb_probe(struct platform_device *pdev)
- 		goto failed_ioremap;
- 	}
- 
--	/* Seems not being used by anyone, so no support for oftree */
--	if (!pdata || !pdata->fixed_screen_cpu) {
--		fbi->map_size = PAGE_ALIGN(info->fix.smem_len);
--		fbi->map_cpu = dma_alloc_writecombine(&pdev->dev,
--				fbi->map_size, &fbi->map_dma, GFP_KERNEL);
-+	fbi->map_size = PAGE_ALIGN(info->fix.smem_len);
-+	info->screen_base = dma_alloc_writecombine(&pdev->dev, fbi->map_size,
-+						   &fbi->map_dma, GFP_KERNEL);
- 
--		if (!fbi->map_cpu) {
--			dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
--			ret = -ENOMEM;
--			goto failed_map;
--		}
--
--		info->screen_base = fbi->map_cpu;
--		fbi->screen_cpu = fbi->map_cpu;
--		fbi->screen_dma = fbi->map_dma;
--		info->fix.smem_start = fbi->screen_dma;
--	} else {
--		/* Fixed framebuffer mapping enables location of the screen in eSRAM */
--		fbi->map_cpu = pdata->fixed_screen_cpu;
--		fbi->map_dma = pdata->fixed_screen_dma;
--		info->screen_base = fbi->map_cpu;
--		fbi->screen_cpu = fbi->map_cpu;
--		fbi->screen_dma = fbi->map_dma;
--		info->fix.smem_start = fbi->screen_dma;
-+	if (!info->screen_base) {
-+		dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
-+		ret = -ENOMEM;
-+		goto failed_map;
- 	}
- 
-+	info->fix.smem_start = fbi->map_dma;
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index 2352ae48..a14f603 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -43,10 +43,12 @@ static struct acpi_device  *hv_acpi_dev;
+ static struct tasklet_struct msg_dpc;
+ static struct completion probe_event;
+ static int irq;
+-u64 hyperv_mmio_start;
+-EXPORT_SYMBOL_GPL(hyperv_mmio_start);
+-u64 hyperv_mmio_size;
+-EXPORT_SYMBOL_GPL(hyperv_mmio_size);
 +
- 	if (pdata && pdata->init) {
- 		ret = pdata->init(fbi->pdev);
- 		if (ret)
-@@ -1087,9 +1055,8 @@ failed_cmap:
- 	if (pdata && pdata->exit)
- 		pdata->exit(fbi->pdev);
- failed_platform_init:
--	if (pdata && !pdata->fixed_screen_cpu)
--		dma_free_writecombine(&pdev->dev,fbi->map_size,fbi->map_cpu,
--			fbi->map_dma);
-+	dma_free_writecombine(&pdev->dev, fbi->map_size, info->screen_base,
-+			      fbi->map_dma);
- failed_map:
- 	iounmap(fbi->regs);
- failed_ioremap:
-@@ -1127,6 +1094,9 @@ static int imxfb_remove(struct platform_device *pdev)
- 	kfree(info->pseudo_palette);
- 	framebuffer_release(info);
++struct resource hyperv_mmio = {
++	.name  = "hyperv mmio",
++	.flags = IORESOURCE_MEM,
++};
++EXPORT_SYMBOL_GPL(hyperv_mmio);
  
-+	dma_free_writecombine(&pdev->dev, fbi->map_size, info->screen_base,
-+			      fbi->map_dma);
-+
- 	iounmap(fbi->regs);
- 	release_mem_region(res->start, resource_size(res));
+ static int vmbus_exists(void)
+ {
+@@ -902,8 +904,8 @@ static acpi_status vmbus_walk_resources(struct acpi_resource *res, void *ctx)
+ 		break;
  
-diff --git a/include/linux/platform_data/video-imxfb.h b/include/linux/platform_data/video-imxfb.h
-index dd1bed9..18e9083 100644
---- a/include/linux/platform_data/video-imxfb.h
-+++ b/include/linux/platform_data/video-imxfb.h
-@@ -61,22 +61,12 @@ struct imx_fb_platform_data {
- 	struct imx_fb_videomode *mode;
- 	int		num_modes;
+ 	case ACPI_RESOURCE_TYPE_ADDRESS64:
+-		hyperv_mmio_start = res->data.address64.minimum;
+-		hyperv_mmio_size = res->data.address64.address_length;
++		hyperv_mmio.start = res->data.address64.minimum;
++		hyperv_mmio.end = res->data.address64.maximum;
+ 		break;
+ 	}
  
--	u_int		cmap_greyscale:1,
--			cmap_inverse:1,
--			cmap_static:1,
--			unused:29;
--
- 	u_int		pwmr;
- 	u_int		lscr1;
- 	u_int		dmacr;
+@@ -933,6 +935,8 @@ static int vmbus_acpi_add(struct acpi_device *device)
  
--	u_char * fixed_screen_cpu;
--	dma_addr_t fixed_screen_dma;
--
- 	int (*init)(struct platform_device *);
- 	void (*exit)(struct platform_device *);
--
--	void (*backlight_power)(int);
- };
+ 		if (ACPI_FAILURE(result))
+ 			goto acpi_walk_err;
++		if (hyperv_mmio.start && hyperv_mmio.end)
++			request_resource(&iomem_resource, &hyperv_mmio);
+ 	}
+ 	ret_val = 0;
  
- #endif /* ifndef __MACH_IMXFB_H__ */
+diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
+index be3028f..c93e342 100644
+--- a/include/linux/hyperv.h
++++ b/include/linux/hyperv.h
+@@ -1459,8 +1459,7 @@ int hv_vss_init(struct hv_util_service *);
+ void hv_vss_deinit(void);
+ void hv_vss_onchannelcallback(void *);
+ 
+-extern u64 hyperv_mmio_start;
+-extern u64 hyperv_mmio_size;
++extern struct resource hyperv_mmio;
+ 
+ /*
+  * Negotiated version with the Host.
 -- 
-1.8.3.2
+1.8.3.1
 

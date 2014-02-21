@@ -1,54 +1,179 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 14 Feb 2014 11:40:36 +0000
-Subject: Re: [PATCH 1/1] video: s6e8ax0: Use devm_* APIs
-Message-Id: <52FE00B4.8010003@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="h6or0l5e61W72VviTQiWG6EKHpUO9II41"
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Fri, 21 Feb 2014 08:56:44 +0000
+Subject: [PATCH 4/4] hyperv-fb: add support for generation 2 virtual machines.
+Message-Id: <1392973004-28215-5-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1392198779-5203-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1392198779-5203-1-git-send-email-sachin.kamat@linaro.org>
+References: <1392973004-28215-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1392973004-28215-1-git-send-email-kraxel@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, Gerd Hoffmann <kraxel@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>
 
---h6or0l5e61W72VviTQiWG6EKHpUO9II41
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+UEFI-based generation 2 virtual machines support vmbus devices only.
+There is no pci bus.  Thus they use a different mechanism for the
+graphics framebuffer:  Instead of using the vga pci bar a chunk of
+memory muct be allocated from the hyperv mmio region declared using
+APCI.  This patch implements support for it.
 
-On 12/02/14 11:52, Sachin Kamat wrote:
-> devm_* APIs make the cleanup paths simpler.
->=20
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
->  drivers/video/exynos/s6e8ax0.c |   13 ++++---------
->  1 file changed, 4 insertions(+), 9 deletions(-)
+Based on a patch by Haiyang Zhang <haiyangz@microsoft.com>
 
-Thanks, queued for 3.15.
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/video/hyperv_fb.c | 86 +++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 60 insertions(+), 26 deletions(-)
 
- Tomi
+diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
+index 130708f..f956cd9 100644
+--- a/drivers/video/hyperv_fb.c
++++ b/drivers/video/hyperv_fb.c
+@@ -42,6 +42,7 @@
+ #include <linux/completion.h>
+ #include <linux/fb.h>
+ #include <linux/pci.h>
++#include <linux/efi.h>
+ 
+ #include <linux/hyperv.h>
+ 
+@@ -212,6 +213,7 @@ struct synthvid_msg {
+ 
+ struct hvfb_par {
+ 	struct fb_info *info;
++	struct resource mem;
+ 	bool fb_ready; /* fb device is ready */
+ 	struct completion wait;
+ 	u32 synthvid_version;
+@@ -460,13 +462,13 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 		goto error;
+ 	}
+ 
+-	if (par->synthvid_version = SYNTHVID_VERSION_WIN7) {
++	if (par->synthvid_version = SYNTHVID_VERSION_WIN7)
+ 		screen_depth = SYNTHVID_DEPTH_WIN7;
+-		screen_fb_size = SYNTHVID_FB_SIZE_WIN7;
+-	} else {
++	else
+ 		screen_depth = SYNTHVID_DEPTH_WIN8;
+-		screen_fb_size = SYNTHVID_FB_SIZE_WIN8;
+-	}
++
++	screen_fb_size = hdev->channel->offermsg.offer.
++				mmio_megabytes * 1024 * 1024;
+ 
+ 	return 0;
+ 
+@@ -627,26 +629,46 @@ static void hvfb_get_option(struct fb_info *info)
+ /* Get framebuffer memory from Hyper-V video pci space */
+ static int hvfb_getmem(struct fb_info *info)
+ {
+-	struct pci_dev *pdev;
+-	ulong fb_phys;
++	struct hvfb_par *par = info->par;
++	struct pci_dev *pdev  = NULL;
+ 	void __iomem *fb_virt;
++	bool gen2vm = efi_enabled(EFI_BOOT);
++	int ret;
+ 
+-	pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
++	par->mem.name = "hyperv_fb";
++	par->mem.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
++	if (gen2vm) {
++		ret = allocate_resource(&hyperv_mmio, &par->mem,
++					screen_fb_size,
++					0, -1,
++					screen_fb_size,
++					NULL, NULL);
++		if (ret != 0) {
++			pr_err("Unable to allocate framebuffer memory\n");
++			return -ENODEV;
++		}
++	} else {
++		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+ 			      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
+-	if (!pdev) {
+-		pr_err("Unable to find PCI Hyper-V video\n");
+-		return -ENODEV;
+-	}
++		if (!pdev) {
++			pr_err("Unable to find PCI Hyper-V video\n");
++			return -ENODEV;
++		}
+ 
+-	if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+-	    pci_resource_len(pdev, 0) < screen_fb_size)
+-		goto err1;
++		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
++		    pci_resource_len(pdev, 0) < screen_fb_size)
++			goto err1;
+ 
+-	fb_phys = pci_resource_end(pdev, 0) - screen_fb_size + 1;
+-	if (!request_mem_region(fb_phys, screen_fb_size, KBUILD_MODNAME))
+-		goto err1;
++		par->mem.end = pci_resource_end(pdev, 0);
++		par->mem.start = par->mem.end - screen_fb_size + 1;
++		ret = request_resource(&pdev->resource[0], &par->mem);
++		if (ret != 0) {
++			pr_err("Unable to request framebuffer memory\n");
++			return -ENODEV;
++		}
++	}
+ 
+-	fb_virt = ioremap(fb_phys, screen_fb_size);
++	fb_virt = ioremap(par->mem.start, screen_fb_size);
+ 	if (!fb_virt)
+ 		goto err2;
+ 
+@@ -654,30 +676,42 @@ static int hvfb_getmem(struct fb_info *info)
+ 	if (!info->apertures)
+ 		goto err3;
+ 
+-	info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
+-	info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
+-	info->fix.smem_start = fb_phys;
++	if (gen2vm) {
++		info->apertures->ranges[0].base = screen_info.lfb_base;
++		info->apertures->ranges[0].size = screen_info.lfb_size;
++	} else {
++		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
++		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
++	}
++
++	info->fix.smem_start = par->mem.start;
+ 	info->fix.smem_len = screen_fb_size;
+ 	info->screen_base = fb_virt;
+ 	info->screen_size = screen_fb_size;
+ 
+-	pci_dev_put(pdev);
++	if (!gen2vm)
++		pci_dev_put(pdev);
++
+ 	return 0;
+ 
+ err3:
+ 	iounmap(fb_virt);
+ err2:
+-	release_mem_region(fb_phys, screen_fb_size);
++	release_resource(&par->mem);
+ err1:
+-	pci_dev_put(pdev);
++	if (!gen2vm)
++		pci_dev_put(pdev);
++
+ 	return -ENOMEM;
+ }
+ 
+ /* Release the framebuffer */
+ static void hvfb_putmem(struct fb_info *info)
+ {
++	struct hvfb_par *par = info->par;
++
+ 	iounmap(info->screen_base);
+-	release_mem_region(info->fix.smem_start, screen_fb_size);
++	release_resource(&par->mem);
+ }
+ 
+ 
+-- 
+1.8.3.1
 
-
-
---h6or0l5e61W72VviTQiWG6EKHpUO9II41
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS/gC3AAoJEPo9qoy8lh71e9AP/2MpueWmZKBiOglPvc/bw64z
-+aXa32VN7sIkTQLHyq3+SHXHV1dwJ8VotnA/j/yRVpx3e7jI2L3wFMgWXmU+VyAi
-sAUJ2r4WdVMXghBA+1WoOTFO+/I+DvsSfKKeldVXx82kNHExyr1FIqFPAxmB7a2N
-p4RO/pzrSGzTpB4kNcy0n6jDwnIOiiGXA0ift0s+OSrLZYlEaM1k6lnCIr6w1WWI
-GJChzhw2QS5cQaRRP7LyHUShCddj7dDdptt/kF0jwCBv78xjNNFvn7iViGyg412p
-XCbw8PavPXayZgsTUF4oHsIHtUN797tD9g53WSkp5Xp4EMXlW/CU11RWgDWtoRQ0
-PFhiAFXaz0Fa8kDsKngai6TwNN1+pZ8ufo2y8tJxsDYXO4+0WNE3N8tVrFa4BGpf
-EC3cx14tw+rc3oe1cnH2uJ6k4iFUPItOVI1UchGd5qtfoqxmC+dTHzgC7ahJdSjz
-NxnIN6LZa6Z65eEfvcaWjzMVJ3aHCXNAvILhF6hlZPvl9N/CWJLQVl5i5OKrU4AN
-JBDXyZF75V67PnJot7D6NMNV2ssucvPWII3uDO8tNqnKcnCASml0yITOsCLjMKNZ
-8vkkz3S2RbAncU9l9mpa4TAOChlifbzGBluOCQ7AreK1qAbZsan3BnGCA3wB8BSd
-mJB7JSVtZw1v9uge+MeV
-=GCPD
------END PGP SIGNATURE-----
-
---h6or0l5e61W72VviTQiWG6EKHpUO9II41--

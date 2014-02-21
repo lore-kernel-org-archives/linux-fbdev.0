@@ -1,53 +1,95 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 28 Feb 2014 10:18:10 +0000
-Subject: Re: [PATCH] video: da8xx-fb: Use "SIMPLE_DEV_PM_OPS" macro
-Message-Id: <53106262.1090202@ti.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Fri, 21 Feb 2014 09:56:07 +0000
+Subject: Re: [PATCH 00/11] SimpleDRM & Sysfb
+Message-Id: <20140221095604.GI22574@ulmo.nvidia.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="FPL5MQL2wkCff31mNPEMtjt90mWCTsncJ"
+Content-Type: multipart/mixed; boundary="WR+jf/RUebEcofwt"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1392693936-23862-1-git-send-email-badarkhe.manish@gmail.com>
-In-Reply-To: <1392693936-23862-1-git-send-email-badarkhe.manish@gmail.com>
-To: Manish Badarkhe <badarkhe.manish@gmail.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, davinci-linux-open-source@linux.davincidsp.com
-Cc: plagnioj@jcrosoft.com, nsekhar@ti.com
+References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+	<CANq1E4S=+ixMQRMfX2-DXh3ZDO0jNAdWrUe6=z9aTdOSfR-SDA@mail.gmail.com>
+In-Reply-To: <CANq1E4S=+ixMQRMfX2-DXh3ZDO0jNAdWrUe6=z9aTdOSfR-SDA@mail.gmail.com>
+To: David Herrmann <dh.herrmann@gmail.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ingo Molnar <mingo@kernel.org>
 
---FPL5MQL2wkCff31mNPEMtjt90mWCTsncJ
-Content-Type: text/plain; charset=ISO-8859-1
+
+--WR+jf/RUebEcofwt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 18/02/14 05:25, Manish Badarkhe wrote:
-> Update driver to use SIMPLE_DEV_PM_OPS macro for power
-> management suspend and resume operations.
+On Mon, Jan 27, 2014 at 11:18:51PM +0100, David Herrmann wrote:
+> Hi
 >=20
-> Signed-off-by: Manish Badarkhe <badarkhe.manish@gmail.com>
+> On Thu, Jan 23, 2014 at 3:14 PM, David Herrmann <dh.herrmann@gmail.com> w=
+rote:
+> > Hi
+> >
+> > Another round of SimpleDRM patches. I somehow lost track of the last on=
+es and as
+> > this is a major rewrite, I'll just start at v1 again.
+> >
+> > Some comments up-front:
+> >
+> >  - @Ingo: Patch #1 and #2 are unchanged from the previous ML discussion=
+s. I
+> >    included them in this series as the other patches depend on them. Co=
+uld you
+> >    pick them up for the x86 tree? The other 9 patches won't make it in =
+3.14 so
+> >    no reason to put them through the DRM tree.
+> >    All mentioned issues should be addressed. If there's still sth missi=
+ng,
+> >    please let me know.
+> >
+> >  - The DRM patches depend on my "DRM Anonymous Inode" patches. But it s=
+hould be
+> >    trivial to apply them on drm-next (I think only one line needs to be=
+ changed:
+> >    i_mapping =3D> dev_mapping).
+> >
+> >  - I tested the SimpleDRM fbdev fallback with linux-console+Xorg and it=
+ works
+> >    fine. The DRM backend is only tested with some DRM tests I have loca=
+lly. I
+> >    have no idea how to make Xorg pick up a specific /dev/dri/card0 card=
+=2E It
+> >    always tells me "no screens found" (as the underlying device is not =
+marked as
+> >    boot_vga..). If someone knows how to tell Xorg to use card0, I'd gla=
+dly test
+> >    this. But I'm no longer used to writing xorg.confs..
+>=20
+> For completeness, I tested this with Xorg+xf86-video-modesetting and
+> it works just fine. The xorg.conf I used can be found below. If this
+> driver gets upstreamed, I will try to make the X11 auto-loader detect
+> it just like any other platform-device.
 
-Thanks, queued for 3.15.
+I recently posted patches[0] to the xorg-devel mailing list that I think
+should solve that issue.
 
- Tomi
+Thierry
 
+[0]: http://lists.x.org/archives/xorg-devel/2014-February/040568.html
 
-
---FPL5MQL2wkCff31mNPEMtjt90mWCTsncJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--WR+jf/RUebEcofwt
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJTEGJiAAoJEPo9qoy8lh71jH4P/jMO4gN7hvnElFaPyCwYXLQS
-KYrUnAMU0KV/GP1ZRVu2R5JbHj84IF0kUC55Qv03z+qCN2zR9jbjBJ9uEAFGjO6F
-O5FtyV7WQX0c1PAybOorRVFpBgm+nPbCdOdA0Od+ZMfQw77vOXYRc5RS+QcsNO5t
-v9YVyTfVqNZFnWCxSSIvKw6atKBFYynNEhDvk1Q5saVdOhcioyvef1BwzvMxT5Xo
-iYq3csPir0Re3aqGNiNfYfahuDu+C8agu4afhBNTqNZrdme6DWheoCy45af/dUth
-tuly2fV9ADz+dZoojclFd9KvTmfVtAb+J8lCM5ndYUfVNvYLBz3yqFLUWyb5z8/m
-10aJcxJXBg2oxGzFDh8+hduCw3XqW1I4ZKHGHQi0xM9WIw8bU9Q+aZ5Q2f/UhvJx
-d2efNdbTURsqhCS2pb9Z8TMGqGFneOrtqVnr1PUHVjgC2AxYBO2Esw1k+Fpqhy1B
-DwnL6nkZDcDdg13EaxE/q0xO2OH78C3+b7nP5Zo/WcslqhLmQtd9fzb9Rbop63cT
-pD0L8ESz1KDCeLUOA/0OH8IVYvrUqqdGi0oopTJzHLhPzfPNULhQjyXSKuNqhqER
-TzcqDloeWQvh9rScAzLRRkXoS5bbUsPUiZwORNMssQbjeZJVKcMAdS4t64Q+hYiC
-UPq0DztU5Fmlxi6IpnMS
-=Lr5Q
+iQIcBAEBAgAGBQJTByK0AAoJEN0jrNd/PrOhgesP/iVDOlFV9SkAv8OK1GY4dmfs
+cqOKH9TaKTBenMRgEb276Rm7nbdbRzmkM+GVjjhLQiYa5JTs9CGxcaulhWMFCrcf
+BeUkDBFnh8QRcMBBS6l+d1hZT9yNvSv85VqIfkdkEtwzIBznRo48gnhOdlq3AMyl
+l2f/hkUkDzImIRdZZpawk5NIZqqb5FWNjUL7p9Hn8q1jN89J3RvL8Gaagaa0XTJK
+ccCfHQR36AbLC8PlO1B4Ovc909clsWRelzWm+615lNBBMm+GCGhzGDCGHzsJ+r7G
+HWMsy73ORiemlDm2/dYvKAqcYy+UULm3foeIBqiBQDF9Fd7eJFtOcTDeTaI4HN+O
+XQsvRnlxNbLC8r6f1odpqnl373dEnEnqNSCe8nkEkC8UgERTy7+ZOzUKR4F9BgkQ
+U0LJRM4fS7BpkrhjxJR9JhrI7gCKimRhwItQXNYxr34BKdJxxQr8t53hxKJscFNj
+5WxGW1S/r4TvOdFbShdu+nSE72TuzLzI7ew3kCB9gC45JbNgcZ4ahfNiX1OJPJso
+tNZSiVL76pWVNnplfIeOny8j6gk2cwZnk/yZrUDot/RQiMom8fHFOSpt4fW9zgHB
+5Pu73hj8EkUAUSrX6AtbS2NgRqFY7X5PGEsTb0otxHESFeA0r5rsls79KBQxkqe/
+UNkQwLbcE+Tuv/+WVmfj
+=gS6g
 -----END PGP SIGNATURE-----
 
---FPL5MQL2wkCff31mNPEMtjt90mWCTsncJ--
+--WR+jf/RUebEcofwt--

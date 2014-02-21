@@ -1,63 +1,77 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 11 Feb 2014 13:12:47 +0000
-Subject: Re: [PATCH] video: xilinxfb: Move xilinxfb_platform_data directly to the driver
-Message-Id: <52FA21CF.1040809@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ISMwuIjBEdGC4fnl2bQHI8toMbmHQspSP"
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Fri, 21 Feb 2014 13:54:54 +0000
+Subject: Re: [PATCH v5] video: add OpenCores VGA/LCD framebuffer driver
+Message-Id: <20140221135454.GA12555@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <af8de8bd8803b319c0f6a02ca5109768e5ef8457.1392101292.git.michal.simek@xilinx.com>
-In-Reply-To: <af8de8bd8803b319c0f6a02ca5109768e5ef8457.1392101292.git.michal.simek@xilinx.com>
-To: linux-arm-kernel@lists.infradead.org
-
---ISMwuIjBEdGC4fnl2bQHI8toMbmHQspSP
-Content-Type: text/plain; charset=ISO-8859-1
+References: <1389384793-4710-1-git-send-email-stefan.kristiansson@saunalahti.fi>
+In-Reply-To: <1389384793-4710-1-git-send-email-stefan.kristiansson@saunalahti.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com
 
-On 11/02/14 08:48, Michal Simek wrote:
-> No reason to have separate file in header in include/linux folder
-> if this is purely driver specific structure.
+Hello,
+
+On Fri, Jan 10, 2014 at 10:13:13PM +0200, Stefan Kristiansson wrote:
+> This adds support for the VGA/LCD core available from OpenCores:
+> http://opencores.org/project,vga_lcd
 >=20
-> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-> ---
+> The driver have been tested together with both OpenRISC and
+> ARM (socfpga) processors.
 >=20
-> I have this patch in my devel tree for a while and would like
-> to hear your opinion. I can't see any reason to have
-> xilinxfb_platform_data in header if this is purely OF driver
-> used on OF archs.
+> Signed-off-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
 > ---
->  drivers/video/xilinxfb.c | 15 ++++++++++++++-
->  include/linux/xilinxfb.h | 30 ------------------------------
->  2 files changed, 14 insertions(+), 31 deletions(-)
->  delete mode 100644 include/linux/xilinxfb.h
+> Changes in v2:
+> - Add Microblaze as an example user and fix a typo in Xilinx Zynq
+>=20
+> Changes in v3:
+> - Use devm_kzalloc instead of kzalloc
+> - Remove superflous MODULE #ifdef
+>=20
+> Changes in v4:
+> - Remove 'default n' in Kconfig
+> - Simplify ioremap/request_mem_region by using devm_ioremap_resource
+> - Remove release_mem_region
+>=20
+> Changes in v5:
+> - Remove static structs to support multiple devices
+> ---
+>  drivers/video/Kconfig  |  16 ++
+>  drivers/video/Makefile |   1 +
+>  drivers/video/ocfb.c   | 440 +++++++++++++++++++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 457 insertions(+)
+>  create mode 100644 drivers/video/ocfb.c
+>=20
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 84b685f..8e41a1e 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -979,6 +979,22 @@ config FB_PVR2
+>  	  (<file:drivers/video/pvr2fb.c>). Please see the file
+>  	  <file:Documentation/fb/pvr2fb.txt>.
+> =20
+> +config FB_OPENCORES
+> +	tristate "OpenCores VGA/LCD core 2.0 framebuffer support"
+> +	depends on FB
 
-Thanks. Queued for 3.15.
+Maybe add something like:
 
- Tomi
+	depends on ARCH_SOCFPGA || ARCH_ZYNQ || MICROBLAZE || OPENRISC || COMPILE_=
+TEST
 
+(Sorry for being late with that suggestion, this attracted my attention
+only during make oldconfig on v3.14-rc, so if you agree this is a good
+idea you need a seperate patch :-)
 
+Best regards
+Uwe
 
---ISMwuIjBEdGC4fnl2bQHI8toMbmHQspSP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> +	select FB_CFB_FILLRECT
+> +	select FB_CFB_COPYAREA
+> +	select FB_CFB_IMAGEBLIT
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS+iHPAAoJEPo9qoy8lh71Kz0QAIKXcLqRcJsDM77rYnfaZ9h9
-2gDAPo2bxtkm9ZZ4L28Bhuxs0kmNlq1XzEbTcbtZiOxIRl0yvR735JDymV3zloGz
-7z1N6/U0d/m1ikwQ84HOSo4TC8T0yIiVJEEumMskiAuKTW0SNR2fPEa1vu3OBCf2
-Nmv2AtWzU4zGLeUGpJ6z+VVgVnqIeFYMUhUeWywjOTGzMWlXlRHUNQiuhoIWbThV
-IRr2Qu0raADfM5knNB1vB4iwf99Qwp/Bo5MM6ayzRD78l74OotOVbpB2NZ7wSD5i
-nrTSMtSbl2Jdi0xdSuUiIDZNzwWs/7Q7LS/Wspg9gttG01G8QPFl6s7q5oFBwWE6
-TMNFwRJHZ8+lFYNwVxqJJH5B6cFPEtYZ08e2Nq+37/uGQ/FPvWzzKeP6DU0YZwkc
-HY0CV7KM6oLcZO5BPlZYZ5ufnF63a7yEZy36Z7PXWKe132Ducmg0hNO/rliESL1G
-iMumHvpoGoz82GnAtGxbYaCy0zbrf6CT7I8f55AJL+oPVoijnXNmx+rnx0Rk04eG
-usSqW18M4jKzzgYzSjDkN3CTSzv/sD61J5h36btsqeTY5pdeecSSx/g9GotN2sov
-vRHHtgfHnkZuXG/W63+sIEq4Qn3uoO3WlLlzaNvM5lApDiH4uEfSoGZtBMfwVrii
-AUq0+Cf3HMl9pkE6R3KD
-=4zlY
------END PGP SIGNATURE-----
-
---ISMwuIjBEdGC4fnl2bQHI8toMbmHQspSP--
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |

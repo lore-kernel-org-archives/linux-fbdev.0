@@ -1,63 +1,26 @@
-From: sebastian.capella@linaro.org
-Date: Tue, 18 Feb 2014 22:20:42 +0000
-Subject: Re: [v2] backlight: Convert from Legacy pm ops to dev_pm_ops
-Message-Id: <5303dcb6.2587440a.3f18.fffff1ba@mx.google.com>
+From: Haiyang Zhang <haiyangz@microsoft.com>
+Date: Fri, 21 Feb 2014 04:58:51 +0000
+Subject: [PATCH v2,0/2] Re-sending two patches for hyperv_fb
+Message-Id: <1392961811-11960-1-git-send-email-haiyangz@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2236505237-3336-1-git-send-email-shuah.kh@samsung.com>
-In-Reply-To: <2236505237-3336-1-git-send-email-shuah.kh@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, shuah.kh@samsung.com, rpurdie@rpsys.net, rafael.j.wysocki@intel.com, plagnioj@jcrosoft.com, FlorianSchandinat@gmx.de
-Cc: shuahkhan@gmail.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org
+Cc: olaf@aepfle.de, jasowang@redhat.com, driverdev-devel@linuxdriverproject.org, linux-kernel@vger.kernel.org, haiyangz@microsoft.com
 
-Shuah Khan <shuah.kh@samsung.com> wrote:
+They were sent out during tree closing, I'm re-sending them now.
+---
+v2: 
+  Updated the variable type gen2vm to int, because efi_enabled() returns int.
 
-> Convert drivers/video/backlight/class to use dev_pm_ops for power
-> management and remove Legacy PM ops hooks. With this change, rtc class
-> registers suspend/resume callbacks via class->pm (dev_pm_ops) instead of
-> Legacy class->suspend/resume. When __device_suspend() runs call-backs,
-> it will find class->pm ops for the backlight class.
->
-> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-> Cc: Shuah Khan <shuahkhan@gmail.com>
->
-> ---
-> v2: Updated changelog to correct device class.
->
->  drivers/video/backlight/backlight.c |    8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-> index c74e7aa..0ffb251 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -208,7 +208,7 @@ static ssize_t backlight_show_actual_brightness(struct device *dev,
->  
->  static struct class *backlight_class;
->  
-> -static int backlight_suspend(struct device *dev, pm_message_t state)
-> +static int backlight_suspend(struct device *dev)
->  {
->  	struct backlight_device *bd = to_backlight_device(dev);
->  
-> @@ -236,6 +236,9 @@ static int backlight_resume(struct device *dev)
->  	return 0;
->  }
->  
-> +static SIMPLE_DEV_PM_OPS(backlight_class_dev_pm_ops, backlight_suspend,
-> +			 backlight_resume);
-> +
->  static void bl_device_release(struct device *dev)
->  {
->  	struct backlight_device *bd = to_backlight_device(dev);
-> @@ -414,8 +417,7 @@ static int __init backlight_class_init(void)
->  	}
->  
->  	backlight_class->dev_attrs = bl_device_attributes;
-> -	backlight_class->suspend = backlight_suspend;
-> -	backlight_class->resume = backlight_resume;
-> +	backlight_class->pm = &backlight_class_dev_pm_ops;
->  	return 0;
->  }
->  
+Haiyang Zhang (2):
+  hyperv_fb: Add screen refresh after pause/resume operation
+  hyperv_fb: Add support for Gen2 VM
+
+ drivers/video/hyperv_fb.c |   70 ++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 50 insertions(+), 20 deletions(-)
+
+-- 
+1.7.4.1
+

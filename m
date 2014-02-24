@@ -1,76 +1,38 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Fri, 28 Feb 2014 13:37:28 +0000
-Subject: Re: [PATCH 8/9] Doc/DT: Add DT binding documentation for TFP410 encoder
-Message-Id: <1393594648.3802.30.camel@paszta.hi.pengutronix.de>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Mon, 24 Feb 2014 13:17:08 +0000
+Subject: [PATCH v3 1/4] vmbus: add missing breaks
+Message-Id: <1393247831-5271-2-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>
-	<1393590016-9361-9-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1393590016-9361-9-git-send-email-tomi.valkeinen@ti.com>
+References: <1393247831-5271-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1393247831-5271-1-git-send-email-kraxel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, dri-devel@lists.freedesktop.org, Andrzej Hajda <a.hajda@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, devel@linuxdriverproject.org, Gerd Hoffmann <kraxel@redhat.com>
 
-Am Freitag, den 28.02.2014, 14:20 +0200 schrieb Tomi Valkeinen:
-> Add DT binding documentation for TFP410 encoder
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Reviewed-by: Archit Taneja <archit@ti.com>
-> ---
->  .../devicetree/bindings/video/ti,tfp410.txt        | 41 ++++++++++++++++++++++
->  1 file changed, 41 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/ti,tfp410.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/video/ti,tfp410.txt b/Documentation/devicetree/bindings/video/ti,tfp410.txt
-> new file mode 100644
-> index 000000000000..6a5a04627584
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/ti,tfp410.txt
-> @@ -0,0 +1,41 @@
-> +TFP410 DPI to DVI encoder
-> +============> +
-> +Required properties:
-> +- compatible: "ti,tfp410"
-> +
-> +Optional properties:
-> +- gpios: power-down gpio
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/hv/vmbus_drv.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Maybe call this powerdown-gpios?
-
-> +Required nodes:
-> +- Video port 0 for DPI input
-> +- Video port 1 for DVI output
-> +
-> +Example
-> +-------
-> +
-> +tfp410: encoder@0 {
-> +	compatible = "ti,tfp410";
-> +	gpios = <&twl_gpio 2 GPIO_ACTIVE_LOW>;
-> +
-> +	ports {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		port@0 {
-> +			reg = <0>;
-> +
-> +			tfp410_in: endpoint@0 {
-> +				remote-endpoint = <&dpi_out>;
-> +			};
-> +		};
-> +
-> +		port@1 {
-> +			reg = <1>;
-> +
-> +			tfp410_out: endpoint@0 {
-> +				remote-endpoint = <&dvi_connector_in>;
-> +			};
-> +		};
-> +	};
-> +};
-
-regards
-Philipp
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index b37c91b..2352ae48 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -899,10 +899,12 @@ static acpi_status vmbus_walk_resources(struct acpi_resource *res, void *ctx)
+ 	switch (res->type) {
+ 	case ACPI_RESOURCE_TYPE_IRQ:
+ 		irq = res->data.irq.interrupts[0];
++		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_ADDRESS64:
+ 		hyperv_mmio_start = res->data.address64.minimum;
+ 		hyperv_mmio_size = res->data.address64.address_length;
++		break;
+ 	}
+ 
+ 	return AE_OK;
+-- 
+1.8.3.1
 

@@ -1,83 +1,81 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 14 Feb 2014 09:10:18 +0000
-Subject: [GIT PULL] fbdev fixes for 3.14
-Message-Id: <52FDDD7A.7070806@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="8qAPbhfSagkkd19kIVnpwotTGP0H8odVT"
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Mon, 24 Feb 2014 10:25:14 +0000
+Subject: [PATCH v2 3/5] vmbus: use resource for hyperv mmio region
+Message-Id: <1393237516-28545-4-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+References: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, Gerd Hoffmann <kraxel@redhat.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>
 
---8qAPbhfSagkkd19kIVnpwotTGP0H8odVT
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Use a resource for the hyperv mmio region instead of start/size
+variables.  Register the region properly so it shows up in
+/proc/iomem.
 
-Hi Linus,
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/hv/vmbus_drv.c | 16 ++++++++++------
+ include/linux/hyperv.h |  3 +--
+ 2 files changed, 11 insertions(+), 8 deletions(-)
 
-Please pull a few minor fbdev fixes for 3.14.
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index 2352ae48..a14f603 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -43,10 +43,12 @@ static struct acpi_device  *hv_acpi_dev;
+ static struct tasklet_struct msg_dpc;
+ static struct completion probe_event;
+ static int irq;
+-u64 hyperv_mmio_start;
+-EXPORT_SYMBOL_GPL(hyperv_mmio_start);
+-u64 hyperv_mmio_size;
+-EXPORT_SYMBOL_GPL(hyperv_mmio_size);
++
++struct resource hyperv_mmio = {
++	.name  = "hyperv mmio",
++	.flags = IORESOURCE_MEM,
++};
++EXPORT_SYMBOL_GPL(hyperv_mmio);
+ 
+ static int vmbus_exists(void)
+ {
+@@ -902,8 +904,8 @@ static acpi_status vmbus_walk_resources(struct acpi_resource *res, void *ctx)
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_ADDRESS64:
+-		hyperv_mmio_start = res->data.address64.minimum;
+-		hyperv_mmio_size = res->data.address64.address_length;
++		hyperv_mmio.start = res->data.address64.minimum;
++		hyperv_mmio.end = res->data.address64.maximum;
+ 		break;
+ 	}
+ 
+@@ -933,6 +935,8 @@ static int vmbus_acpi_add(struct acpi_device *device)
+ 
+ 		if (ACPI_FAILURE(result))
+ 			goto acpi_walk_err;
++		if (hyperv_mmio.start && hyperv_mmio.end)
++			request_resource(&iomem_resource, &hyperv_mmio);
+ 	}
+ 	ret_val = 0;
+ 
+diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
+index be3028f..c93e342 100644
+--- a/include/linux/hyperv.h
++++ b/include/linux/hyperv.h
+@@ -1459,8 +1459,7 @@ int hv_vss_init(struct hv_util_service *);
+ void hv_vss_deinit(void);
+ void hv_vss_onchannelcallback(void *);
+ 
+-extern u64 hyperv_mmio_start;
+-extern u64 hyperv_mmio_size;
++extern struct resource hyperv_mmio;
+ 
+ /*
+  * Negotiated version with the Host.
+-- 
+1.8.3.1
 
- Tomi
-
-The following changes since commit b28a960c42fcd9cfc987441fa6d1c1a471f0f9=
-ed:
-
-  Linux 3.14-rc2 (2014-02-09 18:15:47 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-3.14
-
-for you to fetch changes up to b359bb0d9c5132abb6fec1ef555c48daf267de59:
-
-  video: Kconfig: Allow more broad selection of the imxfb framebuffer dri=
-ver. (2014-02-14 10:44:52 +0200)
-
-----------------------------------------------------------------
-Minor fbdev fixes for 3.14.
-
-----------------------------------------------------------------
-Denis Carikli (1):
-      video: Kconfig: Allow more broad selection of the imxfb framebuffer=
- driver.
-
-Sachin Kamat (1):
-      video: exynos: Fix S6E8AX0 LCD driver build error
-
-Tomi Valkeinen (2):
-      OMAPDSS: DISPC: decimation rounding fix
-      OMAPDSS: fix fck field types
-
- drivers/video/Kconfig           |  2 +-
- drivers/video/exynos/Kconfig    |  3 ++-
- drivers/video/omap2/dss/dispc.c | 16 ++++++++--------
- drivers/video/omap2/dss/dpi.c   |  2 +-
- drivers/video/omap2/dss/sdi.c   |  2 +-
- 5 files changed, 13 insertions(+), 12 deletions(-)
-
-
---8qAPbhfSagkkd19kIVnpwotTGP0H8odVT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS/d16AAoJEPo9qoy8lh71ko4P/iA53mAne0Tn1SCTTi2i4rvF
-PETOH9sGNaZxIwVD/4thL+kOigDzaqNneJ0gOeF0HRK0TH4Xi4UsffgTRYhGP7MM
-N4Y7mU6mY8kshe/wavqj5M6/8J89rx4iynEY0GPhdT87YA3g25a+n6p4v/5GpirF
-JaLSqDtNtpsyaGQsSYpotgWA1LGXsm7oAF6QgOMlpP84ET5CZs2/Tbs4OX7aLh9T
-1VTctWdevRsX5DzN2zmiWrDzNdrjzkn/lUPf653BTMZNqFPoDDleRSgC+eV6Yhx/
-ix+AKyXJpgqLS91aITZ+4qBbQ+WNW42Eef9tMEqRJFtF8s4ESNz1uudxLBvPgWgj
-T1K4JBjPYqzzMSOEgkRJb0ZyQQDB/+N7uZOzmOKnh2YhR4I1moDuhGpKg2bmPe3p
-o4rmsEeXceBMGIdu6uh8xadB4qjXNTN7BdQpuTJ87FfN9UdxRfhceiMD5BAlUQJ7
-eGoxHXSNKvMjkBF1AHYEj+ZKjHnMRUhoWnVbKjmOSKihQlmhK45ht3QFwwtV/uSf
-FCszXUoXhn8IQAguKP6Mo0NXcuGd31OIT4G5Ovom4hFDxYEfgIsG60V7Lb9Dsr2B
-Cc9cPa0FtXqqOIFAH8dQlifxc/F3fOeV0Cyiyae4cXdc492A4gWPxceaLWIPRgvJ
-VRJbSAJ3i8ktPuoAXkKv
-=HED0
------END PGP SIGNATURE-----
-
---8qAPbhfSagkkd19kIVnpwotTGP0H8odVT--

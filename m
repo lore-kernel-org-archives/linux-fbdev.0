@@ -1,77 +1,38 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Fri, 21 Feb 2014 13:54:54 +0000
-Subject: Re: [PATCH v5] video: add OpenCores VGA/LCD framebuffer driver
-Message-Id: <20140221135454.GA12555@pengutronix.de>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Mon, 24 Feb 2014 10:25:13 +0000
+Subject: [PATCH v2 2/5] vmbus: add missing breaks
+Message-Id: <1393237516-28545-3-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389384793-4710-1-git-send-email-stefan.kristiansson@saunalahti.fi>
-In-Reply-To: <1389384793-4710-1-git-send-email-stefan.kristiansson@saunalahti.fi>
+References: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, Gerd Hoffmann <kraxel@redhat.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>
 
-Hello,
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/hv/vmbus_drv.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-On Fri, Jan 10, 2014 at 10:13:13PM +0200, Stefan Kristiansson wrote:
-> This adds support for the VGA/LCD core available from OpenCores:
-> http://opencores.org/project,vga_lcd
->=20
-> The driver have been tested together with both OpenRISC and
-> ARM (socfpga) processors.
->=20
-> Signed-off-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-> ---
-> Changes in v2:
-> - Add Microblaze as an example user and fix a typo in Xilinx Zynq
->=20
-> Changes in v3:
-> - Use devm_kzalloc instead of kzalloc
-> - Remove superflous MODULE #ifdef
->=20
-> Changes in v4:
-> - Remove 'default n' in Kconfig
-> - Simplify ioremap/request_mem_region by using devm_ioremap_resource
-> - Remove release_mem_region
->=20
-> Changes in v5:
-> - Remove static structs to support multiple devices
-> ---
->  drivers/video/Kconfig  |  16 ++
->  drivers/video/Makefile |   1 +
->  drivers/video/ocfb.c   | 440 +++++++++++++++++++++++++++++++++++++++++++=
-++++++
->  3 files changed, 457 insertions(+)
->  create mode 100644 drivers/video/ocfb.c
->=20
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 84b685f..8e41a1e 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -979,6 +979,22 @@ config FB_PVR2
->  	  (<file:drivers/video/pvr2fb.c>). Please see the file
->  	  <file:Documentation/fb/pvr2fb.txt>.
-> =20
-> +config FB_OPENCORES
-> +	tristate "OpenCores VGA/LCD core 2.0 framebuffer support"
-> +	depends on FB
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index b37c91b..2352ae48 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -899,10 +899,12 @@ static acpi_status vmbus_walk_resources(struct acpi_resource *res, void *ctx)
+ 	switch (res->type) {
+ 	case ACPI_RESOURCE_TYPE_IRQ:
+ 		irq = res->data.irq.interrupts[0];
++		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_ADDRESS64:
+ 		hyperv_mmio_start = res->data.address64.minimum;
+ 		hyperv_mmio_size = res->data.address64.address_length;
++		break;
+ 	}
+ 
+ 	return AE_OK;
+-- 
+1.8.3.1
 
-Maybe add something like:
-
-	depends on ARCH_SOCFPGA || ARCH_ZYNQ || MICROBLAZE || OPENRISC || COMPILE_=
-TEST
-
-(Sorry for being late with that suggestion, this attracted my attention
-only during make oldconfig on v3.14-rc, so if you agree this is a good
-idea you need a seperate patch :-)
-
-Best regards
-Uwe
-
-> +	select FB_CFB_FILLRECT
-> +	select FB_CFB_COPYAREA
-> +	select FB_CFB_IMAGEBLIT
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |

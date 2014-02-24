@@ -1,71 +1,81 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Feb 2014 08:17:01 +0000
-Subject: Re: [RFC PATCH] video: Use fb_sys_write rather than open-coding in drivers
-Message-Id: <52FB2DFD.8080408@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="q4Fa2E4g585lCTfIN04iWTOsGhNm8JgPN"
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Mon, 24 Feb 2014 13:17:09 +0000
+Subject: [PATCH v3 2/4] vmbus: use resource for hyperv mmio region
+Message-Id: <1393247831-5271-3-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <523BF40B.1090002@gmail.com> <52FA2E57.3010300@ti.com> <52FA7509.1060704@gmail.com> <52FB1AB0.6090601@ti.com> <52FB005E.1000207@gmail.com>
-In-Reply-To: <52FB005E.1000207@gmail.com>
-To: Ryan Mallon <rmallon@gmail.com>
-Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1393247831-5271-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1393247831-5271-1-git-send-email-kraxel@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, devel@linuxdriverproject.org, Gerd Hoffmann <kraxel@redhat.com>
 
---q4Fa2E4g585lCTfIN04iWTOsGhNm8JgPN
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Use a resource for the hyperv mmio region instead of start/size
+variables.  Register the region properly so it shows up in
+/proc/iomem.
 
-On 12/02/14 07:02, Ryan Mallon wrote:
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/hv/vmbus_drv.c | 16 ++++++++++------
+ include/linux/hyperv.h |  3 +--
+ 2 files changed, 11 insertions(+), 8 deletions(-)
 
-> Well, the alternative is to supply an fb_write() implementation for eac=
-h
-> driver that calls fb_sys_write(), and then updates the display. The
-> fb_sync() additions can be removed. That would cut down the boiler-plat=
-e
-> code, and should keep the behaviour the same.
->=20
-> If you don't think it is worth the effort, then the patch can just be
-> dropped.
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index 2352ae48..a14f603 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -43,10 +43,12 @@ static struct acpi_device  *hv_acpi_dev;
+ static struct tasklet_struct msg_dpc;
+ static struct completion probe_event;
+ static int irq;
+-u64 hyperv_mmio_start;
+-EXPORT_SYMBOL_GPL(hyperv_mmio_start);
+-u64 hyperv_mmio_size;
+-EXPORT_SYMBOL_GPL(hyperv_mmio_size);
++
++struct resource hyperv_mmio = {
++	.name  = "hyperv mmio",
++	.flags = IORESOURCE_MEM,
++};
++EXPORT_SYMBOL_GPL(hyperv_mmio);
+ 
+ static int vmbus_exists(void)
+ {
+@@ -902,8 +904,8 @@ static acpi_status vmbus_walk_resources(struct acpi_resource *res, void *ctx)
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_ADDRESS64:
+-		hyperv_mmio_start = res->data.address64.minimum;
+-		hyperv_mmio_size = res->data.address64.address_length;
++		hyperv_mmio.start = res->data.address64.minimum;
++		hyperv_mmio.end = res->data.address64.maximum;
+ 		break;
+ 	}
+ 
+@@ -933,6 +935,8 @@ static int vmbus_acpi_add(struct acpi_device *device)
+ 
+ 		if (ACPI_FAILURE(result))
+ 			goto acpi_walk_err;
++		if (hyperv_mmio.start && hyperv_mmio.end)
++			request_resource(&iomem_resource, &hyperv_mmio);
+ 	}
+ 	ret_val = 0;
+ 
+diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
+index be3028f..c93e342 100644
+--- a/include/linux/hyperv.h
++++ b/include/linux/hyperv.h
+@@ -1459,8 +1459,7 @@ int hv_vss_init(struct hv_util_service *);
+ void hv_vss_deinit(void);
+ void hv_vss_onchannelcallback(void *);
+ 
+-extern u64 hyperv_mmio_start;
+-extern u64 hyperv_mmio_size;
++extern struct resource hyperv_mmio;
+ 
+ /*
+  * Negotiated version with the Host.
+-- 
+1.8.3.1
 
-I'd be very cautious about doing cleanups on drivers that you cannot
-test. Small innocent looking changes can break them.
-
-For example, your patch sets info->screen_size, which is not set
-currently. Does the fbdev framework use screen_size somewhere
-differently than smem_len? I don't know, but that could lead to small
-difference in operation. However, in this case, fb_sys_write() actually
-uses smem_len if screen_size is 0, so that change is not even needed.
-
-ssd1307fb_write() looks a bit different than fb_sys_write. I don't know
-if the differences could cause issues. The other ones look copy-pasted
-from fb_sys_write (but I didn't look at them carefully), so perhaps
-those could be cleaned up safely.
-
- Tomi
-
-
-
---q4Fa2E4g585lCTfIN04iWTOsGhNm8JgPN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS+y39AAoJEPo9qoy8lh71S2UP/2q6zyoIPmV8rd8YARCBZeDC
-gH+bxsMC7jjgKZbaQMSR08gJU2ZKPj/N9Y/fUJ+2Q4ghZdjjyrmPzdro63MU+pb1
-IMc0mVm+nJu92diq+zxl+WCuQa7qJW2Fzp5p2MOfxEv0iq/sn+RxRrbHUSr6O3m2
-Appo5Yzb2bE5E0+lTCHiaTlk4K4SnUfRZE7pRxBVJd7ze4VZEm//EcGQBchOO0qj
-Up1Z4vg0TeJSoNZO07V/0uK32CzdiDpuaya3e6M68/z6rybUo2Tx4xUBjnYHngHh
-5EA+LNYm8HOXnWN60LEkY/qycud3VEaP+kDWKJI7KRpcrXffPw/nQmGbNaU17uUu
-zyo0TsvRGaWW/lmJuQ7I2+snfEbsPDfY3xG42fGyBvoCcLDBrCSFRqrkHYIEciS4
-AwGuANRrlC/ouIEtKzQT1mdSttCCImsodbUvG5o0zza+iFX8s+12aOv6D4JlVMvU
-zrqgReWW1qd3/Vh0ecSFMd1Fw0wRDa0NeDDXFRDZybh8kJTWBRrDbhcYnwkXhR8R
-yQXOAbnfeNdWjhye8UgyF20bJTVrf143lnlu+KNiDe9atRERjvydEReSsN9Jhr2a
-vXxI7s/sl46tfcg419M2eb4Tt7/SoY9u18T/GaC4AbpSfxAQmV/+Ga/aZdPczj2L
-Dxb/CWCk57ETEU9XKlzY
-=t2N5
------END PGP SIGNATURE-----
-
---q4Fa2E4g585lCTfIN04iWTOsGhNm8JgPN--

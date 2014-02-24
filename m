@@ -1,76 +1,179 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Wed, 12 Feb 2014 08:41:06 +0000
-Subject: Re: [PATCH 1/2] video: exynos: Remove OF dependency for Exynos DP
-Message-Id: <CAK9yfHwxj0iz8iqXh3RZJ_C0ZGzffjmDFYLQbgaV=EkF1mgzhg@mail.gmail.com>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Mon, 24 Feb 2014 13:17:10 +0000
+Subject: [PATCH v3 3/4] hyperv-fb: add support for generation 2 virtual machines.
+Message-Id: <1393247831-5271-4-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1389933172-22991-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1389933172-22991-1-git-send-email-sachin.kamat@linaro.org>
+References: <1393247831-5271-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1393247831-5271-1-git-send-email-kraxel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, devel@linuxdriverproject.org, Gerd Hoffmann <kraxel@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-On 12 February 2014 12:55, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 12/02/14 09:08, Sachin Kamat wrote:
->> On 11 February 2014 19:57, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->>> On 11/02/14 14:01, Sachin Kamat wrote:
->>>> On 10 February 2014 17:48, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->>>>> On 17/01/14 06:32, Sachin Kamat wrote:
->>>>>> Exynos is now a DT only platform. Hence there is no need
->>>>>> for an explicit OF dependency. Remove it.
->>>>>
->>>>> But the driver still depends on OF, doesn't it? I don't think it's very
->>>>> good for the driver Kconfig to make presumptions about what ARCH_*
->>>>> depend on.
->>>>
->>>> Depending upon nested dependencies is redundant IMHO.
->>>
->>> Well, a driver should be independent of the underlying arch. In
->>> practice, we have ARCH dependencies, as many of the devices only exist
->>> on that arch. But I think the drivers should still be designed to be
->>> arch-independent, as far as possible (omapdss compiles fine on x86).
->>>
->>> If the driver depends on OF, it should depend on OF in the Kconfig, no
->>> matter if the arch also depends on OF.
->>>
->>> I don't really care if the EXYNOS_LCD_S6E8AX0 has OF dependency or not,
->>> but to me this just looks unneeded cleanup, cluttering git logs, and in
->>> my opinion it's even going to the wrong direction.
->>
->> Your argument makes sense. Upon further experimentation I found that even the
->> Exynos video drivers are ARCH independent (i.e., they build on x86 too) and do
->> not need to depend on OF for compilation. So I believe, we can remove both these
->> dependencies. What is your opinion?
->
-> Indeed, the driver doesn't even seem to call any of_* funcs. Looking at
-> the commit f9b1e013f1c6723798b8f7f5b83297e2837aaef7 (video: exynos_dp:
-> remove non-DT support for Exynos Display Port), it kind of sounds to me
-> that the OF dependency was put there just to prevent non-DT use.
->
-> I'm fine with removing OF dependency, if the commit description is
-> updated to say that it can be removed as the driver doesn't actually
-> depend on OF at all.
->
-> As for the ARCH dependency, I think we should keep it. I once removed
-> ARCH_OMAP dependency from omapdss, but Linus wasn't impressed when his
-> kernel compilation started to ask him if he wants to enable OMAPDSS
-> this, OMAPDSS that =). So I think it's fine to keep ARCH dependencies in
-> cases where the driver is clearly used only on some architecture.
+UEFI-based generation 2 virtual machines support vmbus devices only.
+There is no pci bus.  Thus they use a different mechanism for the
+graphics framebuffer:  Instead of using the vga pci bar a chunk of
+memory muct be allocated from the hyperv mmio region declared using
+APCI.  This patch implements support for it.
 
-Yes, I remember that :)
+Based on a patch by Haiyang Zhang <haiyangz@microsoft.com>
 
->
-> However, you can use COMPILE_TEST kconfig option if you want to compile
-> test on other archs. I.e.:
->
-> depends on ARCH_EXYNOS || COMPILE_TEST
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/video/hyperv_fb.c | 86 +++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 60 insertions(+), 26 deletions(-)
 
-For now I will update the commit description and re-send the patch.
-Thanks for your
-comments Tomi.
-
-
-
+diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
+index 130708f..135d8cd 100644
+--- a/drivers/video/hyperv_fb.c
++++ b/drivers/video/hyperv_fb.c
+@@ -42,6 +42,7 @@
+ #include <linux/completion.h>
+ #include <linux/fb.h>
+ #include <linux/pci.h>
++#include <linux/efi.h>
+ 
+ #include <linux/hyperv.h>
+ 
+@@ -212,6 +213,7 @@ struct synthvid_msg {
+ 
+ struct hvfb_par {
+ 	struct fb_info *info;
++	struct resource mem;
+ 	bool fb_ready; /* fb device is ready */
+ 	struct completion wait;
+ 	u32 synthvid_version;
+@@ -460,13 +462,13 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 		goto error;
+ 	}
+ 
+-	if (par->synthvid_version = SYNTHVID_VERSION_WIN7) {
++	if (par->synthvid_version = SYNTHVID_VERSION_WIN7)
+ 		screen_depth = SYNTHVID_DEPTH_WIN7;
+-		screen_fb_size = SYNTHVID_FB_SIZE_WIN7;
+-	} else {
++	else
+ 		screen_depth = SYNTHVID_DEPTH_WIN8;
+-		screen_fb_size = SYNTHVID_FB_SIZE_WIN8;
+-	}
++
++	screen_fb_size = hdev->channel->offermsg.offer.
++				mmio_megabytes * 1024 * 1024;
+ 
+ 	return 0;
+ 
+@@ -627,26 +629,46 @@ static void hvfb_get_option(struct fb_info *info)
+ /* Get framebuffer memory from Hyper-V video pci space */
+ static int hvfb_getmem(struct fb_info *info)
+ {
+-	struct pci_dev *pdev;
+-	ulong fb_phys;
++	struct hvfb_par *par = info->par;
++	struct pci_dev *pdev  = NULL;
+ 	void __iomem *fb_virt;
++	int gen2vm = efi_enabled(EFI_BOOT);
++	int ret;
+ 
+-	pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
++	par->mem.name = "hyperv_fb";
++	par->mem.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
++	if (gen2vm) {
++		ret = allocate_resource(&hyperv_mmio, &par->mem,
++					screen_fb_size,
++					0, -1,
++					screen_fb_size,
++					NULL, NULL);
++		if (ret != 0) {
++			pr_err("Unable to allocate framebuffer memory\n");
++			return -ENODEV;
++		}
++	} else {
++		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+ 			      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
+-	if (!pdev) {
+-		pr_err("Unable to find PCI Hyper-V video\n");
+-		return -ENODEV;
+-	}
++		if (!pdev) {
++			pr_err("Unable to find PCI Hyper-V video\n");
++			return -ENODEV;
++		}
+ 
+-	if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+-	    pci_resource_len(pdev, 0) < screen_fb_size)
+-		goto err1;
++		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
++		    pci_resource_len(pdev, 0) < screen_fb_size)
++			goto err1;
+ 
+-	fb_phys = pci_resource_end(pdev, 0) - screen_fb_size + 1;
+-	if (!request_mem_region(fb_phys, screen_fb_size, KBUILD_MODNAME))
+-		goto err1;
++		par->mem.end = pci_resource_end(pdev, 0);
++		par->mem.start = par->mem.end - screen_fb_size + 1;
++		ret = request_resource(&pdev->resource[0], &par->mem);
++		if (ret != 0) {
++			pr_err("Unable to request framebuffer memory\n");
++			goto err1;
++		}
++	}
+ 
+-	fb_virt = ioremap(fb_phys, screen_fb_size);
++	fb_virt = ioremap(par->mem.start, screen_fb_size);
+ 	if (!fb_virt)
+ 		goto err2;
+ 
+@@ -654,30 +676,42 @@ static int hvfb_getmem(struct fb_info *info)
+ 	if (!info->apertures)
+ 		goto err3;
+ 
+-	info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
+-	info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
+-	info->fix.smem_start = fb_phys;
++	if (gen2vm) {
++		info->apertures->ranges[0].base = screen_info.lfb_base;
++		info->apertures->ranges[0].size = screen_info.lfb_size;
++	} else {
++		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
++		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
++	}
++
++	info->fix.smem_start = par->mem.start;
+ 	info->fix.smem_len = screen_fb_size;
+ 	info->screen_base = fb_virt;
+ 	info->screen_size = screen_fb_size;
+ 
+-	pci_dev_put(pdev);
++	if (!gen2vm)
++		pci_dev_put(pdev);
++
+ 	return 0;
+ 
+ err3:
+ 	iounmap(fb_virt);
+ err2:
+-	release_mem_region(fb_phys, screen_fb_size);
++	release_resource(&par->mem);
+ err1:
+-	pci_dev_put(pdev);
++	if (!gen2vm)
++		pci_dev_put(pdev);
++
+ 	return -ENOMEM;
+ }
+ 
+ /* Release the framebuffer */
+ static void hvfb_putmem(struct fb_info *info)
+ {
++	struct hvfb_par *par = info->par;
++
+ 	iounmap(info->screen_base);
+-	release_mem_region(info->fix.smem_start, screen_fb_size);
++	release_resource(&par->mem);
+ }
+ 
+ 
 -- 
-With warm regards,
-Sachin
+1.8.3.1
+

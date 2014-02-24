@@ -1,38 +1,25 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Mon, 24 Feb 2014 10:25:13 +0000
-Subject: [PATCH v2 2/5] vmbus: add missing breaks
-Message-Id: <1393237516-28545-3-git-send-email-kraxel@redhat.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 24 Feb 2014 10:42:07 +0000
+Subject: Re: [PATCH v2 2/5] vmbus: add missing breaks
+Message-Id: <20140224104207.GG26722@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
+ <1393237516-28545-3-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1393237516-28545-3-git-send-email-kraxel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, Gerd Hoffmann <kraxel@redhat.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, jasowang@redhat.com, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, haiyangz@microsoft.com
 
-Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
----
- drivers/hv/vmbus_drv.c | 2 ++
- 1 file changed, 2 insertions(+)
+I'm sorry, I know it sucks to not get credit for fixes, but please just
+fold this into [patch 1/5].  We really should have a tag for this kind
+of thing.
 
-diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
-index b37c91b..2352ae48 100644
---- a/drivers/hv/vmbus_drv.c
-+++ b/drivers/hv/vmbus_drv.c
-@@ -899,10 +899,12 @@ static acpi_status vmbus_walk_resources(struct acpi_resource *res, void *ctx)
- 	switch (res->type) {
- 	case ACPI_RESOURCE_TYPE_IRQ:
- 		irq = res->data.irq.interrupts[0];
-+		break;
- 
- 	case ACPI_RESOURCE_TYPE_ADDRESS64:
- 		hyperv_mmio_start = res->data.address64.minimum;
- 		hyperv_mmio_size = res->data.address64.address_length;
-+		break;
- 	}
- 
- 	return AE_OK;
--- 
-1.8.3.1
+Would something like this work?
+Additional-Fixes: Gerd Hoffmann <kraxel@redhat.com>
+
+regards,
+dan carpenter
+
 

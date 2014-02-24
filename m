@@ -1,38 +1,70 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Mon, 03 Feb 2014 08:45:02 +0000
-Subject: [PATCH Resend 2/2] video: exynos: Fix S6E8AX0 LCD driver build error
-Message-Id: <1391416382-25285-2-git-send-email-sachin.kamat@linaro.org>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Mon, 24 Feb 2014 13:17:07 +0000
+Subject: [PATCH v3 0/4] hyperv-fb: add support for generation 2 virtual machines.
+Message-Id: <1393247831-5271-1-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, devel@linuxdriverproject.org, Gerd Hoffmann <kraxel@redhat.com>
 
-Enable S6E8AX0 LCD driver only if LCD_CLASS_DEVICE is a built-in driver.
-Else we get the following errors due to missing symbols:
-drivers/built-in.o: In function `s6e8ax0_probe':
-:(.text+0x51aec): undefined reference to `lcd_device_register'
-:(.text+0x51c44): undefined reference to `lcd_device_unregister'
+  Hi,
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
----
- drivers/video/exynos/Kconfig |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+This patch series adds support for uefi-based gen2 virtual machines to
+the hyperv-fb driver.  It depends on -next commit
+90f3453585479d5beb75058da46eb573ced0e6ac
 
-diff --git a/drivers/video/exynos/Kconfig b/drivers/video/exynos/Kconfig
-index 976594d578a9..eb6f2b059821 100644
---- a/drivers/video/exynos/Kconfig
-+++ b/drivers/video/exynos/Kconfig
-@@ -22,7 +22,8 @@ config EXYNOS_MIPI_DSI
- 
- config EXYNOS_LCD_S6E8AX0
- 	bool "S6E8AX0 MIPI AMOLED LCD Driver"
--	depends on (EXYNOS_MIPI_DSI && BACKLIGHT_CLASS_DEVICE && LCD_CLASS_DEVICE)
-+	depends on EXYNOS_MIPI_DSI && BACKLIGHT_CLASS_DEVICE
-+	depends on (LCD_CLASS_DEVICE = y)
- 	default n
- 	help
- 	  If you have an S6E8AX0 MIPI AMOLED LCD Panel, say Y to enable its
+Patch #1 is a bugfix for 90f3453585479d5beb75058da46eb573ced0e6ac.
+
+Patch #2 changes vmbus to properly hook the hyperv mmio area into
+the linux resource management.
+
+Patch #3 actually implements gen2 vm support for hyperv-fb, building
+on the hyperv mmio support added by the other patches.
+
+Patch #4 unregisters efifb early to make sure the framebuffer isn't used
+any more while hyperv-fb initialization is in progress.  This patch is
+new in v2 and it fixes the hang listed as "known issue" in v1 of this
+patch series.
+
+v3 changes:
+ - fix a error handling bug in patch #3.
+ - don't include 90f3453585479d5beb75058da46eb573ced0e6ac
+   to avoid confusion
+
+please apply,
+  Gerd
+
+Gerd Hoffmann (4):
+  vmbus: add missing breaks
+  vmbus: use resource for hyperv mmio region
+  hyperv-fb: add support for generation 2 virtual machines.
+  hyperv-fb: kick off efifb early
+
+K. Y. Srinivasan (1):
+  Drivers: hv: vmbus: Extract the mmio information from DSDT
+
+ drivers/hv/vmbus_drv.c    | 51 ++++++++++++++++++++-------
+ drivers/video/hyperv_fb.c | 87 +++++++++++++++++++++++++++++++++--------------
+ include/linux/hyperv.h    |  2 ++
+ 3 files changed, 101 insertions(+), 39 deletions(-)
+
 -- 
-1.7.9.5
+1.8.3.1
+
+
+Gerd Hoffmann (4):
+  vmbus: add missing breaks
+  vmbus: use resource for hyperv mmio region
+  hyperv-fb: add support for generation 2 virtual machines.
+  hyperv-fb: kick off efifb early
+
+ drivers/hv/vmbus_drv.c    | 18 ++++++----
+ drivers/video/hyperv_fb.c | 87 +++++++++++++++++++++++++++++++++--------------
+ include/linux/hyperv.h    |  3 +-
+ 3 files changed, 74 insertions(+), 34 deletions(-)
+
+-- 
+1.8.3.1
 

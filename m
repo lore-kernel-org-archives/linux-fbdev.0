@@ -1,81 +1,38 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 12 Feb 2014 07:52:31 +0000
-Subject: Re: [PATCH 01/28] Remove CPU_MMP3
-Message-Id: <CAMuHMdWYaaufCRgRT81ubPYWerf0huBcGO1G57Oqa_DxvfMr3g@mail.gmail.com>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Tue, 25 Feb 2014 12:28:40 +0000
+Subject: [PATCH v4 2/2] hyperv-fb: kick off efifb early
+Message-Id: <1393331320-18147-3-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1391971686-9517-1-git-send-email-richard@nod.at>
-	<1391971686-9517-2-git-send-email-richard@nod.at>
-	<20140211213054.GA2555@kroah.com>
-	<1392156072.14317.26.camel@x220>
-In-Reply-To: <1392156072.14317.26.camel@x220>
+References: <1393331320-18147-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1393331320-18147-1-git-send-email-kraxel@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Richard Weinberger <richard@nod.at>, Felipe Balbi <balbi@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "open list:USB PHY LAYER" <linux-usb@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, devel@linuxdriverproject.org, Gerd Hoffmann <kraxel@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-Cc Yu Xu <yuxu@marvell.com>
+Remove firmware framebuffer before initializing hyperv-fb.  Needed
+on gen2 virtual machines.   Letting register_framebuffer handle the
+switchover results in efifb still being active while hyperv graphics
+are initialized, which in turn can make the linux kernel hang.
 
-On Tue, Feb 11, 2014 at 11:01 PM, Paul Bolle <pebolle@tiscali.nl> wrote:
-> On Tue, 2014-02-11 at 13:30 -0800, Greg Kroah-Hartman wrote:
->> On Sun, Feb 09, 2014 at 07:47:39PM +0100, Richard Weinberger wrote:
->> > The symbol is an orphan, get rid of it.
->> >
->> > Signed-off-by: Richard Weinberger <richard@nod.at>
->> > Acked-by: Paul Bolle <pebolle@tiscali.nl>
->> >
->> > ---
->> >  drivers/usb/phy/Kconfig      | 1 -
->> >  drivers/video/mmp/Kconfig    | 2 +-
->> >  drivers/video/mmp/hw/Kconfig | 2 +-
->> >  3 files changed, 2 insertions(+), 3 deletions(-)
->> >
->> > diff --git a/drivers/usb/phy/Kconfig b/drivers/usb/phy/Kconfig
->> > index 7d1451d..b9b1c52 100644
->> > --- a/drivers/usb/phy/Kconfig
->> > +++ b/drivers/usb/phy/Kconfig
->> > @@ -61,7 +61,6 @@ config KEYSTONE_USB_PHY
->> >
->> >  config MV_U3D_PHY
->> >     bool "Marvell USB 3.0 PHY controller Driver"
->> > -   depends on CPU_MMP3
->> >     select USB_PHY
->> >     help
->> >       Enable this to support Marvell USB 3.0 phy controller for Marvell
->>
->> Do this and the driver breaks the build so it needs to depend on
->> something:
->>
->> drivers/usb/phy/phy-mv-u3d-usb.c: In function ‘mv_u3d_phy_read’:
->> drivers/usb/phy/phy-mv-u3d-usb.c:42:2: error: implicit declaration of function ‘writel_relaxed’ [-Werror=implicit-function-declaration]
->
-> This sort of proves that a driver that depends on an unknown Kconfig
-> symbol gets no build coverage (and will bit rot).
->
->> Sorry, I can't take this as-is.
->
-> My mistake, I should have spotted this when looking a Richard's patch.
->
-> Some background (which I quickly dug up): config MV_U3D_PHY got added in
-> v3.7 through commit a67e76ac904c ("usb: phy: mv_u3d: Add usb phy driver
-> for mv_u3d"). It then depended on USB_MV_U3D. And that symbol depended
-> on CPU_MMP3 at that time. Ie, MV_U3D_PHY was unbuildable when it was
-> added.
->
-> In commit 60630c2eabd4 ("usb: gadget: mv_u3d: drop ARCH dependency")
-> MV_U3D_PHY was made depended directly on  CPU_MMP3. That kept it
-> unbuildable, of course.
->
-> Richard, assuming you agree with the above short history of MV_U3D_PHY,
-> would you mind sending a v2 that removes this unbuildable driver?
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/video/hyperv_fb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
+index b7b3dd0..1b11886 100644
+--- a/drivers/video/hyperv_fb.c
++++ b/drivers/video/hyperv_fb.c
+@@ -683,6 +683,7 @@ static int hvfb_getmem(struct fb_info *info)
+ 		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
+ 		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
+ 	}
++	remove_conflicting_framebuffers(info->apertures, KBUILD_MODNAME, false);
+ 
+ 	info->fix.smem_start = par->mem.start;
+ 	info->fix.smem_len = screen_fb_size;
+-- 
+1.8.3.1
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

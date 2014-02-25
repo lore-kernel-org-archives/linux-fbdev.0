@@ -1,63 +1,84 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Wed, 12 Feb 2014 11:56:57 +0000
-Subject: Re: [PATCH 1/1] video: exynos: Fix S6E8AX0 LCD driver build error
-Message-Id: <CAK9yfHwnPZe8LeCeK=74SQWjJQG1k9JZvndvUdeS4GThBc=3Xg@mail.gmail.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Tue, 25 Feb 2014 11:43:40 +0000
+Subject: [PATCH 0/3] Move IPUv3 core out of staging
+Message-Id: <1393328624-28013-1-git-send-email-p.zabel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1392198583-1828-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1392198583-1828-1-git-send-email-sachin.kamat@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 12 February 2014 17:12, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 12/02/14 13:41, Sachin Kamat wrote:
->> On 12 February 2014 16:56, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->>> On 12/02/14 11:55, Sachin Kamat wrote:
->>>> On 12 February 2014 15:19, Sachin Kamat <sachin.kamat@linaro.org> wrote:
->>>>> Enable S6E8AX0 LCD driver only if LCD_CLASS_DEVICE is a built-in driver.
->>>>> Else we get the following errors due to missing symbols:
->>>>> drivers/built-in.o: In function `s6e8ax0_probe':
->>>>> :(.text+0x51aec): undefined reference to `lcd_device_register'
->>>>> :(.text+0x51c44): undefined reference to `lcd_device_unregister'
->>>>>
->>>>> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
->>>>> ---
->>>>>  drivers/video/exynos/Kconfig |    3 ++-
->>>>>  1 file changed, 2 insertions(+), 1 deletion(-)
->>>>>
->>>>> diff --git a/drivers/video/exynos/Kconfig b/drivers/video/exynos/Kconfig
->>>>> index 976594d578a9..eb6f2b059821 100644
->>>>> --- a/drivers/video/exynos/Kconfig
->>>>> +++ b/drivers/video/exynos/Kconfig
->>>>> @@ -22,7 +22,8 @@ config EXYNOS_MIPI_DSI
->>>>>
->>>>>  config EXYNOS_LCD_S6E8AX0
->>>>>         bool "S6E8AX0 MIPI AMOLED LCD Driver"
->>>>> -       depends on (EXYNOS_MIPI_DSI && BACKLIGHT_CLASS_DEVICE && LCD_CLASS_DEVICE)
->>>>> +       depends on EXYNOS_MIPI_DSI && BACKLIGHT_CLASS_DEVICE
->>>>> +       depends on (LCD_CLASS_DEVICE = y)
->>>>>         default n
->>>>>         help
->>>>>           If you have an S6E8AX0 MIPI AMOLED LCD Panel, say Y to enable its
->>>>> --
->>>>> 1.7.9.5
->>>>>
->>>>
->>>> Sorry, please ignore this.
->>>>
->>>
->>> Hmm? Why is the fix not needed?
->>
->> You said you have already applied this for 3.14-fixes. I accidentally
->> sent it again.
->
-> Ah ok. I thought the patch itself can be ignored (removed from my branch).
+Hi,
 
-Sorry for causing the confusion and noise.
-Btw, is this [1] your current tree as it doesn't look updated since some time?
+this series has two small cleanups for the IPUv3 core driver and then moves
+it from drivers/staging/imx-drm/ipu-v3 to drivers/gpu. In this directory there
+is already the host1x driver, which serves a similar purpose.
 
-[1] git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git
+I have dropped the CSI (capture interface) patches from the RFC series. This
+series applies on top of Russell's imx-drm-staging branch, which just was merged
+into staging-next.
+
+I'd like to move the core code out of staging so that we can start submitting
+V4L2 code for video capture and scaling / colorspace conversion in parallel.
+
+I'll post the third patch in both versions with and without --find-renames.
+
+To move the remaining DRM part out of staging, I'd like to get the device tree
+bindings sorted out. This is currently pending on the move of OF graph parsing
+helpers and review of the imx-drm dt bindings patch series.
+
+regards
+Philipp
+
+Philipp Zabel (3):
+  imx-drm: Move IPU_PIX_FMT_GBR24 definition into imx-ipu-v3.h
+  imx-drm: ipu-dc: Use usleep_range instead of msleep
+  gpu: ipu-v3: Move i.MX IPUv3 core driver out of staging
+
+ drivers/gpu/Makefile                        |    1 +
+ drivers/gpu/ipu-v3/Kconfig                  |    7 +
+ drivers/gpu/ipu-v3/Makefile                 |    3 +
+ drivers/gpu/ipu-v3/ipu-common.c             | 1261 +++++++++++++++++++++++++++
+ drivers/gpu/ipu-v3/ipu-dc.c                 |  411 +++++++++
+ drivers/gpu/ipu-v3/ipu-di.c                 |  730 ++++++++++++++++
+ drivers/gpu/ipu-v3/ipu-dmfc.c               |  418 +++++++++
+ drivers/gpu/ipu-v3/ipu-dp.c                 |  338 +++++++
+ drivers/gpu/ipu-v3/ipu-prv.h                |  206 +++++
+ drivers/staging/imx-drm/Kconfig             |   11 +-
+ drivers/staging/imx-drm/Makefile            |    1 -
+ drivers/staging/imx-drm/imx-drm.h           |    4 -
+ drivers/staging/imx-drm/imx-tve.c           |    1 +
+ drivers/staging/imx-drm/ipu-v3/Makefile     |    3 -
+ drivers/staging/imx-drm/ipu-v3/imx-ipu-v3.h |  324 -------
+ drivers/staging/imx-drm/ipu-v3/ipu-common.c | 1261 ---------------------------
+ drivers/staging/imx-drm/ipu-v3/ipu-dc.c     |  412 ---------
+ drivers/staging/imx-drm/ipu-v3/ipu-di.c     |  730 ----------------
+ drivers/staging/imx-drm/ipu-v3/ipu-dmfc.c   |  418 ---------
+ drivers/staging/imx-drm/ipu-v3/ipu-dp.c     |  338 -------
+ drivers/staging/imx-drm/ipu-v3/ipu-prv.h    |  206 -----
+ drivers/staging/imx-drm/ipuv3-crtc.c        |    2 +-
+ drivers/staging/imx-drm/ipuv3-plane.c       |    2 +-
+ drivers/video/Kconfig                       |    1 +
+ include/video/imx-ipu-v3.h                  |  326 +++++++
+ 25 files changed, 3706 insertions(+), 3709 deletions(-)
+ create mode 100644 drivers/gpu/ipu-v3/Kconfig
+ create mode 100644 drivers/gpu/ipu-v3/Makefile
+ create mode 100644 drivers/gpu/ipu-v3/ipu-common.c
+ create mode 100644 drivers/gpu/ipu-v3/ipu-dc.c
+ create mode 100644 drivers/gpu/ipu-v3/ipu-di.c
+ create mode 100644 drivers/gpu/ipu-v3/ipu-dmfc.c
+ create mode 100644 drivers/gpu/ipu-v3/ipu-dp.c
+ create mode 100644 drivers/gpu/ipu-v3/ipu-prv.h
+ delete mode 100644 drivers/staging/imx-drm/ipu-v3/Makefile
+ delete mode 100644 drivers/staging/imx-drm/ipu-v3/imx-ipu-v3.h
+ delete mode 100644 drivers/staging/imx-drm/ipu-v3/ipu-common.c
+ delete mode 100644 drivers/staging/imx-drm/ipu-v3/ipu-dc.c
+ delete mode 100644 drivers/staging/imx-drm/ipu-v3/ipu-di.c
+ delete mode 100644 drivers/staging/imx-drm/ipu-v3/ipu-dmfc.c
+ delete mode 100644 drivers/staging/imx-drm/ipu-v3/ipu-dp.c
+ delete mode 100644 drivers/staging/imx-drm/ipu-v3/ipu-prv.h
+ create mode 100644 include/video/imx-ipu-v3.h
+
 -- 
-With warm regards,
-Sachin
+1.8.5.3
+

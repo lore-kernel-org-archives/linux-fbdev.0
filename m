@@ -1,81 +1,270 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Mon, 24 Feb 2014 10:25:14 +0000
-Subject: [PATCH v2 3/5] vmbus: use resource for hyperv mmio region
-Message-Id: <1393237516-28545-4-git-send-email-kraxel@redhat.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Wed, 26 Feb 2014 09:59:59 +0000
+Subject: [PATCHv6][ 5/5] ARM: dts: mbimxsd35 Add video and displays support.
+Message-Id: <1393408800-8946-5-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
+References: <1393408800-8946-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1393408800-8946-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, Gerd Hoffmann <kraxel@redhat.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-arm-kernel@lists.infradead.org
 
-Use a resource for the hyperv mmio region instead of start/size
-variables.  Register the region properly so it shows up in
-/proc/iomem.
+Cc: Eric Bénard <eric@eukrea.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
 ---
- drivers/hv/vmbus_drv.c | 16 ++++++++++------
- include/linux/hyperv.h |  3 +--
- 2 files changed, 11 insertions(+), 8 deletions(-)
+ChangeLog v5->v6:
+- Shrinked the Cc list.
+- Added the targets in the Makefile
+- rebased not to use the now gone pingrp headers.
 
-diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
-index 2352ae48..a14f603 100644
---- a/drivers/hv/vmbus_drv.c
-+++ b/drivers/hv/vmbus_drv.c
-@@ -43,10 +43,12 @@ static struct acpi_device  *hv_acpi_dev;
- static struct tasklet_struct msg_dpc;
- static struct completion probe_event;
- static int irq;
--u64 hyperv_mmio_start;
--EXPORT_SYMBOL_GPL(hyperv_mmio_start);
--u64 hyperv_mmio_size;
--EXPORT_SYMBOL_GPL(hyperv_mmio_size);
+ChangeLog v4->v5:
+- Added Grant Likely and Shawn Guo in the Cc list.
+- Adapted to the new non-dma ipu bindings.
+
+ChangeLog v3->v4:
+- Shortened the licenses.
+- adapted the dts(i) to the new bindings.
+ChangeLog v2->v3:
+- The dts were adapted to the new DT bindings which looks more like the IPUv3
+  ones.
+---
+ arch/arm/boot/dts/Makefile                         |    3 +
+ arch/arm/boot/dts/imx35-eukrea-cpuimx35.dtsi       |   28 ++++++++++
+ .../imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts  |   58 ++++++++++++++++++++
+ .../imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts  |   47 ++++++++++++++++
+ .../imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts   |   47 ++++++++++++++++
+ 5 files changed, 183 insertions(+)
+ create mode 100644 arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts
+ create mode 100644 arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts
+ create mode 100644 arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts
+
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index c98f343..ad0915e 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -167,6 +167,9 @@ dtb-$(CONFIG_ARCH_MXC) += \
+ 	imx27-phytec-phycard-s-rdk.dtb \
+ 	imx31-bug.dtb \
+ 	imx35-eukrea-mbimxsd35-baseboard.dtb \
++	imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dtb \
++	imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dtb \
++	imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dtb \
+ 	imx50-evk.dtb \
+ 	imx51-apf51.dtb \
+ 	imx51-apf51dev.dtb \
+diff --git a/arch/arm/boot/dts/imx35-eukrea-cpuimx35.dtsi b/arch/arm/boot/dts/imx35-eukrea-cpuimx35.dtsi
+index 906ae93..6596009 100644
+--- a/arch/arm/boot/dts/imx35-eukrea-cpuimx35.dtsi
++++ b/arch/arm/boot/dts/imx35-eukrea-cpuimx35.dtsi
+@@ -70,6 +70,34 @@
+ 				MX35_PAD_I2C1_DAT__I2C1_SDA		0x80000000
+ 			>;
+ 		};
 +
-+struct resource hyperv_mmio = {
-+	.name  = "hyperv mmio",
-+	.flags = IORESOURCE_MEM,
++		pinctrl_ipu_disp0: ipudisp0grp {
++			fsl,pins = <
++				MX35_PAD_LD0__IPU_DISPB_DAT_0         0x80000000
++				MX35_PAD_LD1__IPU_DISPB_DAT_1         0x80000000
++				MX35_PAD_LD2__IPU_DISPB_DAT_2         0x80000000
++				MX35_PAD_LD3__IPU_DISPB_DAT_3         0x80000000
++				MX35_PAD_LD4__IPU_DISPB_DAT_4         0x80000000
++				MX35_PAD_LD5__IPU_DISPB_DAT_5         0x80000000
++				MX35_PAD_LD6__IPU_DISPB_DAT_6         0x80000000
++				MX35_PAD_LD7__IPU_DISPB_DAT_7         0x80000000
++				MX35_PAD_LD8__IPU_DISPB_DAT_8         0x80000000
++				MX35_PAD_LD9__IPU_DISPB_DAT_9         0x80000000
++				MX35_PAD_LD10__IPU_DISPB_DAT_10       0x80000000
++				MX35_PAD_LD11__IPU_DISPB_DAT_11       0x80000000
++				MX35_PAD_LD12__IPU_DISPB_DAT_12       0x80000000
++				MX35_PAD_LD13__IPU_DISPB_DAT_13       0x80000000
++				MX35_PAD_LD14__IPU_DISPB_DAT_14       0x80000000
++				MX35_PAD_LD15__IPU_DISPB_DAT_15       0x80000000
++				MX35_PAD_LD16__IPU_DISPB_DAT_16       0x80000000
++				MX35_PAD_LD17__IPU_DISPB_DAT_17       0x80000000
++				MX35_PAD_D3_HSYNC__IPU_DISPB_D3_HSYNC 0x80000000
++				MX35_PAD_D3_FPSHIFT__IPU_DISPB_D3_CLK 0x80000000
++				MX35_PAD_D3_DRDY__IPU_DISPB_D3_DRDY   0x80000000
++				MX35_PAD_D3_VSYNC__IPU_DISPB_D3_VSYNC 0x80000000
++				MX35_PAD_CONTRAST__IPU_DISPB_CONTR    0x80000000
++			>;
++		};
+ 	};
+ };
+ 
+diff --git a/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts
+new file mode 100644
+index 0000000..345f560
+--- /dev/null
++++ b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts
+@@ -0,0 +1,58 @@
++/*
++ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "imx35-eukrea-mbimxsd35-baseboard.dts"
++
++/ {
++	model = "Eukrea MBIMXSD35 with the CMO-QVGA Display";
++	compatible = "eukrea,mbimxsd35-baseboard-cmo-qvga", "eukrea,mbimxsd35-baseboard", "eukrea,cpuimx35", "fsl,imx35";
++
++	cmo_qvga: display@di0 {
++		compatible = "fsl,mx3-parallel-display";
++		regulator-name = "lcd";
++		interface-pix-fmt = "rgb666";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_ipu_disp0>;
++		lcd-supply = <&reg_lcd_3v3>;
++		model = "CMO-QVGA";
++		display-timings {
++			qvga_timings: 320x240 {
++				clock-frequency = <6500000>;
++				hactive = <320>;
++				vactive = <240>;
++				hback-porch = <68>;
++				hfront-porch = <20>;
++				vback-porch = <15>;
++				vfront-porch = <4>;
++				hsync-len = <30>;
++				vsync-len = <3>;
++			};
++		};
++	};
++
++	reg_lcd_3v3: lcd-en {
++		compatible = "regulator-fixed";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_reg_lcd_3v3>;
++		regulator-name = "lcd";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio1 4 0>;
++		enable-active-high;
++	};
 +};
-+EXPORT_SYMBOL_GPL(hyperv_mmio);
- 
- static int vmbus_exists(void)
- {
-@@ -902,8 +904,8 @@ static acpi_status vmbus_walk_resources(struct acpi_resource *res, void *ctx)
- 		break;
- 
- 	case ACPI_RESOURCE_TYPE_ADDRESS64:
--		hyperv_mmio_start = res->data.address64.minimum;
--		hyperv_mmio_size = res->data.address64.address_length;
-+		hyperv_mmio.start = res->data.address64.minimum;
-+		hyperv_mmio.end = res->data.address64.maximum;
- 		break;
- 	}
- 
-@@ -933,6 +935,8 @@ static int vmbus_acpi_add(struct acpi_device *device)
- 
- 		if (ACPI_FAILURE(result))
- 			goto acpi_walk_err;
-+		if (hyperv_mmio.start && hyperv_mmio.end)
-+			request_resource(&iomem_resource, &hyperv_mmio);
- 	}
- 	ret_val = 0;
- 
-diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
-index be3028f..c93e342 100644
---- a/include/linux/hyperv.h
-+++ b/include/linux/hyperv.h
-@@ -1459,8 +1459,7 @@ int hv_vss_init(struct hv_util_service *);
- void hv_vss_deinit(void);
- void hv_vss_onchannelcallback(void *);
- 
--extern u64 hyperv_mmio_start;
--extern u64 hyperv_mmio_size;
-+extern struct resource hyperv_mmio;
- 
- /*
-  * Negotiated version with the Host.
++
++&ipu {
++	display = <&cmo_qvga>;
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts
+new file mode 100644
+index 0000000..1a249d0
+--- /dev/null
++++ b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts
+@@ -0,0 +1,47 @@
++/*
++ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "imx35-eukrea-mbimxsd35-baseboard.dts"
++
++/ {
++	model = "Eukrea MBIMXSD35 with the DVI-SVGA Display";
++	compatible = "eukrea,mbimxsd35-baseboard-dvi-svga", "eukrea,mbimxsd35-baseboard", "eukrea,cpuimx35", "fsl,imx35";
++	dvi_svga: display@di0 {
++		interface-pix-fmt = "rgb666";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_ipu_disp0>;
++		model = "DVI-SVGA";
++		display-timings {
++			svga_timings: 800x600 {
++				clock-frequency = <40000000>;
++				hactive = <800>;
++				vactive = <600>;
++				hback-porch = <75>;
++				hfront-porch = <75>;
++				vback-porch = <7>;
++				vfront-porch = <75>;
++				hsync-len = <7>;
++				vsync-len = <7>;
++				hsync-active = <1>;
++				vsync-active = <1>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++		};
++	};
++};
++
++&ipu {
++	display = <&dvi_svga>;
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts
+new file mode 100644
+index 0000000..44a7616
+--- /dev/null
++++ b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts
+@@ -0,0 +1,47 @@
++/*
++ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "imx35-eukrea-mbimxsd35-baseboard.dts"
++
++/ {
++	model = "Eukrea MBIMXSD35 with the DVI-VGA Display";
++	compatible = "eukrea,mbimxsd35-baseboard-dvi-vga", "eukrea,mbimxsd35-baseboard", "eukrea,cpuimx35", "fsl,imx35";
++	dvi_vga: display@di0 {
++		interface-pix-fmt = "rgb666";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_ipu_disp0>;
++		model = "DVI-VGA";
++		display-timings {
++			vga_timings: 640x480 {
++				clock-frequency = <31250000>;
++				hactive = <640>;
++				vactive = <480>;
++				hback-porch = <100>;
++				hfront-porch = <100>;
++				vback-porch = <7>;
++				vfront-porch = <100>;
++				hsync-len = <7>;
++				vsync-len = <7>;
++				hsync-active = <1>;
++				vsync-active = <1>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++		};
++	};
++};
++
++&ipu {
++	display = <&dvi_vga>;
++	status = "okay";
++};
 -- 
-1.8.3.1
+1.7.9.5
 

@@ -1,38 +1,37 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Mon, 24 Feb 2014 10:25:16 +0000
-Subject: [PATCH v2 5/5] hyperv-fb: kick off efifb early
-Message-Id: <1393237516-28545-6-git-send-email-kraxel@redhat.com>
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Date: Wed, 26 Feb 2014 10:20:30 +0000
+Subject: =?UTF-8?B?UmU6IFtQQVRDSHY2XVsgMy81XSB2aWRlbzogbXgzZmI6IEludHJvZHVjZSBy?= =?UTF-8?B?ZWd1bGF0b3Igc3Vwc
+Message-Id: <1393410030.488354633@f216.i.mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
+References: <1393408800-8946-1-git-send-email-denis@eukrea.com>
+ <1393408800-8946-3-git-send-email-denis@eukrea.com>
+In-Reply-To: <1393408800-8946-3-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, Gerd Hoffmann <kraxel@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Remove firmware framebuffer before initializing hyperv-fb.  Needed
-on gen2 virtual machines.   Letting register_framebuffer handle the
-switchover results in efifb still being active while hyperv graphics
-are initialized, which in turn can make the linux kernel hang.
-
-Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
----
- drivers/video/hyperv_fb.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
-index ec4b22c..b425951 100644
---- a/drivers/video/hyperv_fb.c
-+++ b/drivers/video/hyperv_fb.c
-@@ -683,6 +683,7 @@ static int hvfb_getmem(struct fb_info *info)
- 		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
- 		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
- 	}
-+	remove_conflicting_framebuffers(info->apertures, "hyperv-fb", false);
- 
- 	info->fix.smem_start = par->mem.start;
- 	info->fix.smem_len = screen_fb_size;
--- 
-1.8.3.1
-
+0KHRgNC10LTQsCwgMjYg0YTQtdCy0YDQsNC70Y8gMjAxNCwgMTA6NTkgKzAxOjAwINC+0YIgRGVu
+aXMgQ2FyaWtsaSA8ZGVuaXNAZXVrcmVhLmNvbT46Cj4gVGhpcyBjb21taXQgaXMgYmFzZWQgb24g
+dGhlIGZvbGxvd2luZyBjb21taXQgYnkgRmFiaW8gRXN0ZXZhbToKPiAgIDQzNDQ0MjkgdmlkZW86
+IG14c2ZiOiBJbnRyb2R1Y2UgcmVndWxhdG9yIHN1cHBvcnQKLi4uCj4gKysrIGIvZHJpdmVycy92
+aWRlby9teDNmYi5jCi4uLgo+IEBAIC0xNDA5LDYgKzE0MzUsOSBAQCBzdGF0aWMgaW50IGluaXRf
+ZmJfY2hhbihzdHJ1Y3QgbXgzZmJfZGF0YSAqbXgzZmIsIHN0cnVjdCBpZG1hY19jaGFubmVsICpp
+Y2hhbikKPiAgCQkJcmV0dXJuIC1FSU5WQUw7Cj4gIAkJfQo+ICAKPiArCQlvZl9wcm9wZXJ0eV9y
+ZWFkX3N0cmluZyhkaXNwbGF5X25wLCAicmVndWxhdG9yLW5hbWUiLAo+ICsJCQkJCSZyZWd1bGF0
+b3JfbmFtZSk7Cj4gKwo+ICAJCW9mX3Byb3BlcnR5X3JlYWRfc3RyaW5nKGRpc3BsYXlfbnAsICJp
+bnRlcmZhY2UtcGl4LWZtdCIsCj4gIAkJCQkJJmlwdV9kaXNwX2Zvcm1hdCk7Cj4gIAkJaWYgKCFp
+cHVfZGlzcF9mb3JtYXQpIHsKPiBAQCAtMTUyNiw2ICsxNTU1LDIxIEBAIHN0YXRpYyBpbnQgaW5p
+dF9mYl9jaGFuKHN0cnVjdCBteDNmYl9kYXRhICpteDNmYiwgc3RydWN0IGlkbWFjX2NoYW5uZWwg
+KmljaGFuKQo+ICAJaWYgKHJldCA8IDApCj4gIAkJZ290byBlc2V0cGFyOwo+ICAKPiArCS8qIElu
+IGR0IG1vZGUsCj4gKwkgKiB1c2luZyBkZXZtX3JlZ3VsYXRvcl9nZXQgd291bGQgcmVxdWlyZSB0
+aGF0IHRoZSBwcm9wcmV0eSByZWZlcmVuY2luZwo+ICsJICogdGhlIHJlZ3VsYXRvciBwaGFuZGxl
+IGhhcyB0byBiZSBpbnNpZGUgdGhlIG14M2ZiIG5vZGUuCgpXaGF0Pz8/Cgo+ICsJICovCj4gKwlp
+ZiAobnApIHsKPiArCQlpZiAocmVndWxhdG9yX25hbWUpCj4gKwkJCW14M2ZiaS0+cmVnX2xjZCA9
+IHJlZ3VsYXRvcl9nZXQoTlVMTCwgcmVndWxhdG9yX25hbWUpOwo+ICsKPiArCQlpZiAoSVNfRVJS
+KG14M2ZiaS0+cmVnX2xjZCkpCj4gKwkJCXJldHVybiBQVFJfRVJSKG14M2ZiaS0+cmVnX2xjZCk7
+Cj4gKwl9IGVsc2Ugewo+ICsJCS8qIFBlcm1pdCB0aGF0IGRyaXZlciB3aXRob3V0IGEgcmVndWxh
+dG9yIGluIG5vbi1kdCBtb2RlICovCj4gKwkJbXgzZmJpLT5yZWdfbGNkID0gcmVndWxhdG9yX2dl
+dChkZXYsICJsY2QiKTsKPiArCX0KCldoeSB5b3Ugd2FudCB0byB1c2UgYW4gZXhjZXNzICJyZWd1
+bGF0b3ItbmFtZSIgcHJvcGVydHk/Ckp1c3QgdXNlIGRldm1fcmVndWxhdG9yX2dldChkZXYsICJs
+Y2QiKSBmb3IgYm90aCBkdC9ub24tZHQgY2FzZS4K

@@ -1,60 +1,56 @@
-From: Haiyang Zhang <haiyangz@microsoft.com>
-Date: Tue, 18 Feb 2014 20:20:44 +0000
-Subject: [PATCH 1/2] hyperv_fb: Add screen refresh after pause/resume operation
-Message-Id: <1392757891-28680-2-git-send-email-haiyangz@microsoft.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Wed, 26 Feb 2014 09:59:55 +0000
+Subject: [PATCHv6][ 1/5] video: mx3fb: Use devm_kzalloc
+Message-Id: <1393408800-8946-1-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1392757891-28680-1-git-send-email-haiyangz@microsoft.com>
-In-Reply-To: <1392757891-28680-1-git-send-email-haiyangz@microsoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org
-Cc: olaf@aepfle.de, jasowang@redhat.com, driverdev-devel@linuxdriverproject.org, linux-kernel@vger.kernel.org, haiyangz@microsoft.com
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-This is necessary because after VM is pause/resumed, some portion of
-the screen may need refresh.
+Replace kzalloc by devm_kzalloc and remove the kfree() calls.
 
-Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
-Reviewed-by: K. Y. Srinivasan <kys@microsoft.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Denis Carikli <denis@eukrea.com>
 ---
- drivers/video/hyperv_fb.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
+ChangeLog v5->v6:
+ - New patch needed by "video: mx3fb: Add device tree suport."
+---
+ drivers/video/mx3fb.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
-index 130708f..bbcc8c0 100644
---- a/drivers/video/hyperv_fb.c
-+++ b/drivers/video/hyperv_fb.c
-@@ -218,6 +218,7 @@ struct hvfb_par {
- 
- 	struct delayed_work dwork;
- 	bool update;
-+	bool xrefresh;
- 
- 	u32 pseudo_palette[16];
- 	u8 init_buf[MAX_VMBUS_PKT_SIZE];
-@@ -369,7 +370,7 @@ static void synthvid_recv_sub(struct hv_device *hdev)
- 			synthvid_send_situ(hdev);
- 		}
- 
--		par->update = msg->feature_chg.is_dirt_needed;
-+		par->xrefresh = par->update = msg->feature_chg.is_dirt_needed;
- 		if (par->update)
- 			schedule_delayed_work(&par->dwork, HVFB_UPDATE_DELAY);
- 	}
-@@ -522,6 +523,13 @@ static void hvfb_update_work(struct work_struct *w)
- {
- 	struct hvfb_par *par = container_of(w, struct hvfb_par, dwork.work);
- 	struct fb_info *info = par->info;
-+	char *argv[] = {"/usr/bin/xrefresh", "-display", ":0.0", NULL};
-+	char *envp[] = {"HOME=/", "PATH=/sbin:/usr/sbin:/bin:/usr/bin", NULL };
-+
-+	if (par->xrefresh) {
-+		par->xrefresh = false;
-+		call_usermodehelper(argv[0], argv, envp, UMH_NO_WAIT);
-+	}
- 
- 	if (par->fb_ready)
- 		synthvid_update(info);
--- 
-1.7.4.1
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index 142e860..ee95de8 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -1496,7 +1496,7 @@ static int mx3fb_probe(struct platform_device *pdev)
+ 	if (!sdc_reg)
+ 		return -EINVAL;
+=20
+-	mx3fb =3D kzalloc(sizeof(*mx3fb), GFP_KERNEL);
++	mx3fb =3D devm_kzalloc(&pdev->dev, sizeof(*mx3fb), GFP_KERNEL);
+ 	if (!mx3fb)
+ 		return -ENOMEM;
+=20
+@@ -1542,7 +1542,6 @@ ersdc0:
+ 	dmaengine_put();
+ 	iounmap(mx3fb->reg_base);
+ eremap:
+-	kfree(mx3fb);
+ 	dev_err(dev, "mx3fb: failed to register fb\n");
+ 	return ret;
+ }
+@@ -1561,7 +1560,6 @@ static int mx3fb_remove(struct platform_device *dev)
+ 	dmaengine_put();
+=20
+ 	iounmap(mx3fb->reg_base);
+-	kfree(mx3fb);
+ 	return 0;
+ }
+=20
+--=20
+1.7.9.5
 

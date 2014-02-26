@@ -1,70 +1,66 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 14 Feb 2014 08:43:21 +0000
-Subject: Re: [PATCHv14][ 3/4] video: Kconfig: Allow more broad selection of the imxfb framebuffer driver.
-Message-Id: <52FDD729.60405@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="AKKMrvRWbfdi6T02NbS00J3CQBrlEEWEM"
+From: Liu Ying <Ying.Liu@freescale.com>
+Date: Wed, 26 Feb 2014 11:39:12 +0000
+Subject: [PATCH] video: pwm backlight: power off when necessary
+Message-Id: <1393414752-8861-1-git-send-email-Ying.Liu@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390410577-22073-1-git-send-email-denis@eukrea.com>
- <1390410577-22073-3-git-send-email-denis@eukrea.com>
-In-Reply-To: <1390410577-22073-3-git-send-email-denis@eukrea.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: thierry.reding@gmail.com, jg1.han@samsung.com
+Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---AKKMrvRWbfdi6T02NbS00J3CQBrlEEWEM
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+The pwm backlight should be powered off only in two cases:
+1) pwm polarity is normal and brightness is zero.
+2) pwm polarity is inversed and brightness is maximal,
+   that is, 100% duty.
 
-Hi,
+This patch implements this logic in the pwm backlight driver
+and actually fixes the issue that backlight is on when we
+intend to set the brightness to be zero for an inversed pwm
+signal.  The root cause of the issue is that power is off
+in that case.
 
-On 22/01/14 19:09, Denis Carikli wrote:
-> Without that patch, a user can't select the imxfb driver when the i.MX2=
-5 and/or
->   the i.MX27 device tree board are selected and that no boards that sel=
-ects
->   IMX_HAVE_PLATFORM_IMX_FB are compiled in.
->=20
-> Cc: Eric B=C3=A9nard <eric@eukrea.com>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Sascha Hauer <kernel@pengutronix.de>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Denis Carikli <denis@eukrea.com>
-> Acked-by: Shawn Guo <shawn.guo@linaro.org>
-> Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-> Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+---
+ drivers/video/backlight/pwm_bl.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-Applied for 3.14 fbdev fixes.
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index b75201f..e61e66a 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -100,6 +100,8 @@ static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
+ static int pwm_backlight_update_status(struct backlight_device *bl)
+ {
+ 	struct pwm_bl_data *pb = bl_get_data(bl);
++	enum pwm_polarity polarity = pb->pwm->polarity;
++	int max = bl->props.max_brightness;
+ 	int brightness = bl->props.brightness;
+ 	int duty_cycle;
+ 
+@@ -111,12 +113,14 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 	if (pb->notify)
+ 		brightness = pb->notify(pb->dev, brightness);
+ 
+-	if (brightness > 0) {
++	if ((polarity = PWM_POLARITY_NORMAL && brightness = 0) ||
++	    (polarity = PWM_POLARITY_INVERSED && brightness = max)) {
++		pwm_backlight_power_off(pb);
++	} else {
+ 		duty_cycle = compute_duty_cycle(pb, brightness);
+ 		pwm_config(pb->pwm, duty_cycle, pb->period);
+ 		pwm_backlight_power_on(pb, brightness);
+-	} else
+-		pwm_backlight_power_off(pb);
++	}
+ 
+ 	if (pb->notify_after)
+ 		pb->notify_after(pb->dev, brightness);
+-- 
+1.7.9.5
 
-As a generic comment, I'd appreciate if you'd use normal formatting in
-the patch descriptions (no double spaces in the beginning of the lines).
 
- Tomi
-
-
-
---AKKMrvRWbfdi6T02NbS00J3CQBrlEEWEM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS/dcpAAoJEPo9qoy8lh716q8P/R0qmcBsGS8xpqrltM5XHAq3
-Hme/lbWQuqiqo8C1zmWNvHKVxdRfi07PWuoM/aLmPWZDz/IOw3UtpdAYJ1tKbX7K
-iWq8ewcV7qszmY99szbkeAbpOx6/PRBjHfip+z2AptwWnmcxwZTGJnCZRQYtAnGq
-NwvGHOcnz9yRjZGEEaqC8g7mQoIcpIFVyL1mWdzuHehaUs02XzR0Cs//JCH1zxmr
-vb9w5aR0o9aqDfABAMA79VF5YTcSX+zysBIcQL87x++k0jTS9RGDznYL88wCZCdd
-oimyyMs2deD7giwHVKuFCyZzp74oPZTJEJKzirxqc8DQ5FQkaASkQdMG4lv6z4pp
-ZQjz8HfQ9vqLF7DAC3+NUC/4qZs+j/76e9zrbLzSgaKcQhOxXpUehrq+CblBZ/Ai
-0664iy7ZN3nP4a1yRD6HI2Kri7cT3GZJ3skxVvAXuU2PLNoH2bAVBVPtS4nZdQCX
-bKDv+AfgnQaqH0E0as5phe9Pf0JpRjuwgywatpuVn5VcnkNLeF8Z0AzBnpSWNa0s
-LGZDvzMSM4ga1zX0yY/h3qNDbtY1ur9XIPb/Vy8mEiN66TUlA2o5W5dMpw3Yj06c
-6g/esOQ9LtiC9/oSC0sA1sblNG/vtu9buw2W4PeZrFrn2tl1K7HT9uWj80W8CSUs
-Y+Rj10T/3H0mAYLoiJqK
-=7hr4
------END PGP SIGNATURE-----
-
---AKKMrvRWbfdi6T02NbS00J3CQBrlEEWEM--

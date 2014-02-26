@@ -1,83 +1,179 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 28 Feb 2014 13:47:07 +0000
-Subject: Re: [PATCH 7/9] Doc/DT: Add DT binding documentation for Sony acx565akm panel
-Message-Id: <5310935B.1070605@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="bKxAoMHM3OKHtFSMMrQ8ITRfjihNpKnXe"
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Wed, 26 Feb 2014 10:51:24 +0000
+Subject: [PATCH v5 1/2] hyperv-fb: add support for generation 2 virtual machines.
+Message-Id: <1393411885-14895-2-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>	 <1393590016-9361-8-git-send-email-tomi.valkeinen@ti.com> <1393594707.3802.31.camel@paszta.hi.pengutronix.de>
-In-Reply-To: <1393594707.3802.31.camel-+qGW7pzALmz7o/J7KWpOmN53zsg1cpMQ@public.gmane.org>
-To: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+References: <1393411885-14895-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1393411885-14895-1-git-send-email-kraxel@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, devel@linuxdriverproject.org, Gerd Hoffmann <kraxel@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
---bKxAoMHM3OKHtFSMMrQ8ITRfjihNpKnXe
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+UEFI-based generation 2 virtual machines support vmbus devices only.
+There is no pci bus.  Thus they use a different mechanism for the
+graphics framebuffer:  Instead of using the vga pci bar a chunk of
+memory muct be allocated from the hyperv mmio region declared using
+APCI.  This patch implements support for it.
 
-On 28/02/14 15:38, Philipp Zabel wrote:
-> Hi Tomi,
->=20
-> Am Freitag, den 28.02.2014, 14:20 +0200 schrieb Tomi Valkeinen:
->> Add DT binding documentation for Sony acx565akm panel
->>
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> Reviewed-by: Sebastian Reichel <sre@debian.org>
->> Reviewed-by: Archit Taneja <archit@ti.com>
->> ---
->>  .../devicetree/bindings/video/sony,acx565akm.txt   | 28 +++++++++++++=
-+++++++++
->>  1 file changed, 28 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/video/sony,acx56=
-5akm.txt
->>
->> diff --git a/Documentation/devicetree/bindings/video/sony,acx565akm.tx=
-t b/Documentation/devicetree/bindings/video/sony,acx565akm.txt
->> new file mode 100644
->> index 000000000000..cd9cfdf7e3fe
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/video/sony,acx565akm.txt
->> @@ -0,0 +1,28 @@
->> +Sony ACX565AKM SDI Panel
->> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D
->> +
->> +Required properties:
->> +- compatible: "sony,acx565akm"
->> +
->> +Optional properties:
->> +- label: a symbolic name for the panel
->> +- gpios: panel reset gpio
->=20
-> please let's call this reset-gpios.
+Based on a patch by Haiyang Zhang <haiyangz@microsoft.com>
 
-Yes, I'll change this and the tfp410 one.
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/video/hyperv_fb.c | 86 +++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 60 insertions(+), 26 deletions(-)
 
- Tomi
+diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
+index 130708f..b7b3dd0 100644
+--- a/drivers/video/hyperv_fb.c
++++ b/drivers/video/hyperv_fb.c
+@@ -42,6 +42,7 @@
+ #include <linux/completion.h>
+ #include <linux/fb.h>
+ #include <linux/pci.h>
++#include <linux/efi.h>
+ 
+ #include <linux/hyperv.h>
+ 
+@@ -212,6 +213,7 @@ struct synthvid_msg {
+ 
+ struct hvfb_par {
+ 	struct fb_info *info;
++	struct resource mem;
+ 	bool fb_ready; /* fb device is ready */
+ 	struct completion wait;
+ 	u32 synthvid_version;
+@@ -460,13 +462,13 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 		goto error;
+ 	}
+ 
+-	if (par->synthvid_version = SYNTHVID_VERSION_WIN7) {
++	if (par->synthvid_version = SYNTHVID_VERSION_WIN7)
+ 		screen_depth = SYNTHVID_DEPTH_WIN7;
+-		screen_fb_size = SYNTHVID_FB_SIZE_WIN7;
+-	} else {
++	else
+ 		screen_depth = SYNTHVID_DEPTH_WIN8;
+-		screen_fb_size = SYNTHVID_FB_SIZE_WIN8;
+-	}
++
++	screen_fb_size = hdev->channel->offermsg.offer.
++				mmio_megabytes * 1024 * 1024;
+ 
+ 	return 0;
+ 
+@@ -627,26 +629,46 @@ static void hvfb_get_option(struct fb_info *info)
+ /* Get framebuffer memory from Hyper-V video pci space */
+ static int hvfb_getmem(struct fb_info *info)
+ {
+-	struct pci_dev *pdev;
+-	ulong fb_phys;
++	struct hvfb_par *par = info->par;
++	struct pci_dev *pdev  = NULL;
+ 	void __iomem *fb_virt;
++	int gen2vm = efi_enabled(EFI_BOOT);
++	int ret;
+ 
+-	pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
++	par->mem.name = KBUILD_MODNAME;
++	par->mem.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
++	if (gen2vm) {
++		ret = allocate_resource(&hyperv_mmio, &par->mem,
++					screen_fb_size,
++					0, -1,
++					screen_fb_size,
++					NULL, NULL);
++		if (ret != 0) {
++			pr_err("Unable to allocate framebuffer memory\n");
++			return -ENODEV;
++		}
++	} else {
++		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+ 			      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
+-	if (!pdev) {
+-		pr_err("Unable to find PCI Hyper-V video\n");
+-		return -ENODEV;
+-	}
++		if (!pdev) {
++			pr_err("Unable to find PCI Hyper-V video\n");
++			return -ENODEV;
++		}
+ 
+-	if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+-	    pci_resource_len(pdev, 0) < screen_fb_size)
+-		goto err1;
++		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
++		    pci_resource_len(pdev, 0) < screen_fb_size)
++			goto err1;
+ 
+-	fb_phys = pci_resource_end(pdev, 0) - screen_fb_size + 1;
+-	if (!request_mem_region(fb_phys, screen_fb_size, KBUILD_MODNAME))
+-		goto err1;
++		par->mem.end = pci_resource_end(pdev, 0);
++		par->mem.start = par->mem.end - screen_fb_size + 1;
++		ret = request_resource(&pdev->resource[0], &par->mem);
++		if (ret != 0) {
++			pr_err("Unable to request framebuffer memory\n");
++			goto err1;
++		}
++	}
+ 
+-	fb_virt = ioremap(fb_phys, screen_fb_size);
++	fb_virt = ioremap(par->mem.start, screen_fb_size);
+ 	if (!fb_virt)
+ 		goto err2;
+ 
+@@ -654,30 +676,42 @@ static int hvfb_getmem(struct fb_info *info)
+ 	if (!info->apertures)
+ 		goto err3;
+ 
+-	info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
+-	info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
+-	info->fix.smem_start = fb_phys;
++	if (gen2vm) {
++		info->apertures->ranges[0].base = screen_info.lfb_base;
++		info->apertures->ranges[0].size = screen_info.lfb_size;
++	} else {
++		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
++		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
++	}
++
++	info->fix.smem_start = par->mem.start;
+ 	info->fix.smem_len = screen_fb_size;
+ 	info->screen_base = fb_virt;
+ 	info->screen_size = screen_fb_size;
+ 
+-	pci_dev_put(pdev);
++	if (!gen2vm)
++		pci_dev_put(pdev);
++
+ 	return 0;
+ 
+ err3:
+ 	iounmap(fb_virt);
+ err2:
+-	release_mem_region(fb_phys, screen_fb_size);
++	release_resource(&par->mem);
+ err1:
+-	pci_dev_put(pdev);
++	if (!gen2vm)
++		pci_dev_put(pdev);
++
+ 	return -ENOMEM;
+ }
+ 
+ /* Release the framebuffer */
+ static void hvfb_putmem(struct fb_info *info)
+ {
++	struct hvfb_par *par = info->par;
++
+ 	iounmap(info->screen_base);
+-	release_mem_region(info->fix.smem_start, screen_fb_size);
++	release_resource(&par->mem);
+ }
+ 
+ 
+-- 
+1.8.3.1
 
-
-
---bKxAoMHM3OKHtFSMMrQ8ITRfjihNpKnXe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTEJNbAAoJEPo9qoy8lh71n0AP/i90S2vnKeZp2NmP5vUtqk+6
-Y64Bjpl1t/En1Xa7LzuGsx4/jz+KYs/z7jRcD2BeiQ8kjVNOvXTVP5YYRYEEktqP
-BJM0yWKfU6vqrv+Mx6uQKIJ8j0J66vBpmY9Yi2NNYeW9D0I/BF4XFeP+GqyOWEhf
-BrWn38+WkkhOr0tHj0kwGurFMZInMxwCtx2h4Zrb+Cva9d91o9aU54Y6YTicBjJx
-1g8CmFcAtodv5tZWE3LB8oUJa1gUCGq6vNZlf4j5BZp6apI1Cu55C3CjZFMYGl6M
-RpgUezPH3cmsyWHVa+Wmxgwis9L1DEV6e0jPKOaI10usis3BCMnadDJsDho6C611
-yAhebyGGhZvSCcuygWq/pQLmXDOj8lF0NWXxY1Wfe/Ur+BboTn2KsLA1eCYvleYp
-qUdcNKpYvV/Y9hyXhcpZuiCIGnPWgxM5yS1VcV1c8hadg+Shm1Rgmm3afYWjJx3e
-mMO4XgbjUjAqadSETjruP5Z4WMogz0BDjGka/RCQVaEuDAZPuUGvJ6ho0h7uflTZ
-RlKOEIQgtTWp+bAsz+D9fa6xGpMIR9A6pdVedoA+EOTag4jG2Q9GgljvXbgXkYTe
-hIJ02EZrEiqOkNOj6fdf4xtx/KnBl51aqK756zzP5sImtSgmRsgQRCTmvghfOrMC
-g2uInWitLxCNAOZ4d86C
-=EjGF
------END PGP SIGNATURE-----
-
---bKxAoMHM3OKHtFSMMrQ8ITRfjihNpKnXe--

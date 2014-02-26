@@ -1,60 +1,82 @@
-From: Haiyang Zhang <haiyangz@microsoft.com>
-Date: Fri, 21 Feb 2014 04:59:00 +0000
-Subject: [PATCH v2,1/2] hyperv_fb: Add screen refresh after pause/resume operation
-Message-Id: <1392961811-11960-2-git-send-email-haiyangz@microsoft.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Wed, 26 Feb 2014 09:59:58 +0000
+Subject: [PATCHv6][ 4/5] ARM: dts: i.MX35: Add display support.
+Message-Id: <1393408800-8946-4-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1392961811-11960-1-git-send-email-haiyangz@microsoft.com>
-In-Reply-To: <1392961811-11960-1-git-send-email-haiyangz@microsoft.com>
+References: <1393408800-8946-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1393408800-8946-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org
-Cc: olaf@aepfle.de, jasowang@redhat.com, driverdev-devel@linuxdriverproject.org, linux-kernel@vger.kernel.org, haiyangz@microsoft.com
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-This is necessary because after VM is pause/resumed, some portion of
-the screen may need refresh.
+A pinctrl node for the IPU was also added.
 
-Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
-Reviewed-by: K. Y. Srinivasan <kys@microsoft.com>
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org
+Signed-off-by: Denis Carikli <denis@eukrea.com>
 ---
- drivers/video/hyperv_fb.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
+ChangeLog v5->v6:
+- Shrinked the Cc list.
 
-diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
-index 130708f..bbcc8c0 100644
---- a/drivers/video/hyperv_fb.c
-+++ b/drivers/video/hyperv_fb.c
-@@ -218,6 +218,7 @@ struct hvfb_par {
- 
- 	struct delayed_work dwork;
- 	bool update;
-+	bool xrefresh;
- 
- 	u32 pseudo_palette[16];
- 	u8 init_buf[MAX_VMBUS_PKT_SIZE];
-@@ -369,7 +370,7 @@ static void synthvid_recv_sub(struct hv_device *hdev)
- 			synthvid_send_situ(hdev);
- 		}
- 
--		par->update = msg->feature_chg.is_dirt_needed;
-+		par->xrefresh = par->update = msg->feature_chg.is_dirt_needed;
- 		if (par->update)
- 			schedule_delayed_work(&par->dwork, HVFB_UPDATE_DELAY);
- 	}
-@@ -522,6 +523,13 @@ static void hvfb_update_work(struct work_struct *w)
- {
- 	struct hvfb_par *par = container_of(w, struct hvfb_par, dwork.work);
- 	struct fb_info *info = par->info;
-+	char *argv[] = {"/usr/bin/xrefresh", "-display", ":0.0", NULL};
-+	char *envp[] = {"HOME=/", "PATH=/sbin:/usr/sbin:/bin:/usr/bin", NULL };
+ChangeLog v4->v5:
+- Added Grant Likely and Shawn Guo in the Cc list.
+- Adapted to the new non-dma ipu bindings.
+- Adapted to the use of imx35-pingrp.h
+- The pinctrl ipu node addition was moved in this commit.
+
+ChangeLog v3->v4:
+- Splitted the imx35.dtsi display support (new patch).
+---
+ arch/arm/boot/dts/imx35.dtsi |    7 +++++++
+ arch/arm/mach-imx/imx35-dt.c |    7 +++++++
+ 2 files changed, 14 insertions(+)
+
+diff --git a/arch/arm/boot/dts/imx35.dtsi b/arch/arm/boot/dts/imx35.dtsi
+index 88b218f..e6ad2a4 100644
+--- a/arch/arm/boot/dts/imx35.dtsi
++++ b/arch/arm/boot/dts/imx35.dtsi
+@@ -229,6 +229,13 @@
+ 				status =3D "disabled";
+ 			};
+=20
++			ipu: ipu@53fc0000 {
++				compatible =3D "fsl,imx35-ipu";
++				reg =3D <0x53fc0000 0x4000>;
++				clocks =3D <&clks 55>;
++				status =3D "disabled";
++			};
 +
-+	if (par->xrefresh) {
-+		par->xrefresh = false;
-+		call_usermodehelper(argv[0], argv, envp, UMH_NO_WAIT);
-+	}
- 
- 	if (par->fb_ready)
- 		synthvid_update(info);
--- 
-1.7.4.1
+ 			audmux: audmux@53fc4000 {
+ 				compatible =3D "fsl,imx35-audmux", "fsl,imx31-audmux";
+ 				reg =3D <0x53fc4000 0x4000>;
+diff --git a/arch/arm/mach-imx/imx35-dt.c b/arch/arm/mach-imx/imx35-dt.c
+index 9d48e00..c2919a8 100644
+--- a/arch/arm/mach-imx/imx35-dt.c
++++ b/arch/arm/mach-imx/imx35-dt.c
+@@ -18,14 +18,21 @@
+ #include <asm/mach/time.h>
+ #include <asm/hardware/cache-l2x0.h>
+ #include "common.h"
++#include "devices-imx35.h"
+ #include "mx35.h"
+=20
+ static void __init imx35_dt_init(void)
+ {
++	struct device_node *np;
+ 	mxc_arch_reset_init_dt();
+=20
+ 	of_platform_populate(NULL, of_default_bus_match_table,
+ 			     NULL, NULL);
++
++	/* We don't want to export the IPU as DT bindings. */
++	np =3D of_find_compatible_node(NULL, NULL, "fsl,imx35-ipu");
++	if (of_device_is_available(np))
++		imx35_add_ipu_core();
+ }
+=20
+ static void __init imx35_irq_init(void)
+--=20
+1.7.9.5
 

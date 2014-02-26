@@ -1,69 +1,39 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 17 Feb 2014 01:55:19 +0000
-Subject: Re: [PATCH RFC 3/3] video: Kconfig: move drm and fb into separate menus
-Message-Id: <000e01cf2b83$4f7a29b0$ee6e7d10$%han@samsung.com>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Wed, 26 Feb 2014 10:51:25 +0000
+Subject: [PATCH v5 2/2] hyperv-fb: kick off efifb early
+Message-Id: <1393411885-14895-3-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1392376711-11290-1-git-send-email-tomi.valkeinen@ti.com>
- <1392376711-11290-3-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1392376711-11290-3-git-send-email-tomi.valkeinen@ti.com>
+References: <1393411885-14895-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1393411885-14895-1-git-send-email-kraxel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: 'Laurent Pinchart' <laurent.pinchart@ideasonboard.com>, 'Geert Uytterhoeven' <geert@linux-m68k.org>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'David Airlie' <airlied@linux.ie>, 'Jingoo Han' <jg1.han@samsung.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, devel@linuxdriverproject.org, Gerd Hoffmann <kraxel@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-On Friday, February 14, 2014 8:19 PM, Tomi Valkeinen wrote:
-> 
-> At the moment the "Device Drivers / Graphics support" kernel config page
-> looks rather messy, with DRM and fbdev driver selections on the same
-> page, some on the top level Graphics support page, some under their
-> respective subsystems.
-> 
-> If I'm not mistaken, this is caused by the drivers depending on other
-> things than DRM or FB, which causes Kconfig to arrange the options in
-> not-so-neat manner.
-> 
-> Both DRM and FB have a main menuconfig option for the whole DRM or FB
-> subsystem. Optimally, this would be enough to arrange all DRM and FB
-> options under the respective subsystem, but for whatever reason this
-> doesn't work reliably.
-> 
-> This patch adds an explicit submenu for DRM and FB, making it much
-> clearer which options are related to FB, and which to DRM.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Remove firmware framebuffer before initializing hyperv-fb.  Needed
+on gen2 virtual machines.   Letting register_framebuffer handle the
+switchover results in efifb still being active while hyperv graphics
+are initialized, which in turn can make the linux kernel hang.
 
-Reviewed-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/video/hyperv_fb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-I tested this patch. Menu becomes clearer!
-Thanks.
-
-Best regards,
-Jingoo Han
-
-> ---
->  drivers/video/Kconfig | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index f0f26a0b746e..70d174090a54 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -21,9 +21,13 @@ source "drivers/gpu/vga/Kconfig"
-> 
->  source "drivers/gpu/host1x/Kconfig"
-> 
-> +menu "Direct Rendering Manager"
->  source "drivers/gpu/drm/Kconfig"
-> +endmenu
-> 
-> +menu "Framebuffer Devices"
->  source "drivers/video/fbdev/Kconfig"
-> +endmenu
-> 
->  source "drivers/video/backlight/Kconfig"
-> 
-> --
-> 1.8.3.2
-
+diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
+index b7b3dd0..e23392e 100644
+--- a/drivers/video/hyperv_fb.c
++++ b/drivers/video/hyperv_fb.c
+@@ -679,6 +679,8 @@ static int hvfb_getmem(struct fb_info *info)
+ 	if (gen2vm) {
+ 		info->apertures->ranges[0].base = screen_info.lfb_base;
+ 		info->apertures->ranges[0].size = screen_info.lfb_size;
++		remove_conflicting_framebuffers(info->apertures,
++						KBUILD_MODNAME, false);
+ 	} else {
+ 		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
+ 		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
+-- 
+1.8.3.1
 

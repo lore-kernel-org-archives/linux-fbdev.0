@@ -1,66 +1,60 @@
-From: Liu Ying <Ying.Liu@freescale.com>
-Date: Wed, 26 Feb 2014 11:39:12 +0000
-Subject: [PATCH] video: pwm backlight: power off when necessary
-Message-Id: <1393414752-8861-1-git-send-email-Ying.Liu@freescale.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 27 Feb 2014 11:54:46 +0000
+Subject: [PATCH 3/3] video: Kconfig: move drm and fb into separate menus
+Message-Id: <1393502086-9433-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1393502086-9433-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1393502086-9433-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: thierry.reding@gmail.com, jg1.han@samsung.com
-Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The pwm backlight should be powered off only in two cases:
-1) pwm polarity is normal and brightness is zero.
-2) pwm polarity is inversed and brightness is maximal,
-   that is, 100% duty.
+At the moment the "Device Drivers / Graphics support" kernel config page
+looks rather messy, with DRM and fbdev driver selections on the same
+page, some on the top level Graphics support page, some under their
+respective subsystems.
 
-This patch implements this logic in the pwm backlight driver
-and actually fixes the issue that backlight is on when we
-intend to set the brightness to be zero for an inversed pwm
-signal.  The root cause of the issue is that power is off
-in that case.
+If I'm not mistaken, this is caused by the drivers depending on other
+things than DRM or FB, which causes Kconfig to arrange the options in
+not-so-neat manner.
 
-Cc: Thierry Reding <thierry.reding@gmail.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+Both DRM and FB have a main menuconfig option for the whole DRM or FB
+subsystem. Optimally, this would be enough to arrange all DRM and FB
+options under the respective subsystem, but for whatever reason this
+doesn't work reliably.
+
+This patch adds an explicit submenu for DRM and FB, making it much
+clearer which options are related to FB, and which to DRM.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Acked-by: Rob Clark <robdclark@gmail.com>
+Reviewed-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/backlight/pwm_bl.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/video/Kconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index b75201f..e61e66a 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -100,6 +100,8 @@ static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
- static int pwm_backlight_update_status(struct backlight_device *bl)
- {
- 	struct pwm_bl_data *pb = bl_get_data(bl);
-+	enum pwm_polarity polarity = pb->pwm->polarity;
-+	int max = bl->props.max_brightness;
- 	int brightness = bl->props.brightness;
- 	int duty_cycle;
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index f0f26a0b746e..70d174090a54 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -21,9 +21,13 @@ source "drivers/gpu/vga/Kconfig"
  
-@@ -111,12 +113,14 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
- 	if (pb->notify)
- 		brightness = pb->notify(pb->dev, brightness);
+ source "drivers/gpu/host1x/Kconfig"
  
--	if (brightness > 0) {
-+	if ((polarity = PWM_POLARITY_NORMAL && brightness = 0) ||
-+	    (polarity = PWM_POLARITY_INVERSED && brightness = max)) {
-+		pwm_backlight_power_off(pb);
-+	} else {
- 		duty_cycle = compute_duty_cycle(pb, brightness);
- 		pwm_config(pb->pwm, duty_cycle, pb->period);
- 		pwm_backlight_power_on(pb, brightness);
--	} else
--		pwm_backlight_power_off(pb);
-+	}
++menu "Direct Rendering Manager"
+ source "drivers/gpu/drm/Kconfig"
++endmenu
  
- 	if (pb->notify_after)
- 		pb->notify_after(pb->dev, brightness);
++menu "Framebuffer Devices"
+ source "drivers/video/fbdev/Kconfig"
++endmenu
+ 
+ source "drivers/video/backlight/Kconfig"
+ 
 -- 
-1.7.9.5
-
+1.8.3.2
 

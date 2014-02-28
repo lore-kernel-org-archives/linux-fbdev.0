@@ -1,55 +1,93 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Fri, 28 Feb 2014 16:48:04 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 28 Feb 2014 16:48:35 +0000
 Subject: Re: [PATCH 0/9] Doc/DT: DT bindings for various display components
-Message-Id: <20140228164804.GW21483@n2100.arm.linux.org.uk>
+Message-Id: <5310BDE3.60603@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="roAwPuOUc7NHFDP6snGqEM0QWwjUfuwwn"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>
-	<531087C0.1090501@gmail.com> <53108B9C.5000006@ti.com>
-	<5310945A.9040106@gmail.com>
-In-Reply-To: <5310945A.9040106@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Andrzej Hajda <a.hajda@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-arm-kernel@lists.infradead.org
+References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com> <20140228162752.GU21483@n2100.arm.linux.org.uk>
+In-Reply-To: <20140228162752.GU21483-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
+To: Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-On Fri, Feb 28, 2014 at 02:51:22PM +0100, Sebastian Hesselbarth wrote:
-> Is it really the logical place to handle HPD? I'd have put it into the
-> HDMI encoder because it's the unit most interested in the state of HPD.
+--roAwPuOUc7NHFDP6snGqEM0QWwjUfuwwn
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I think this is where differences in hardware become a problem.
+On 28/02/14 18:27, Russell King - ARM Linux wrote:
+> On Fri, Feb 28, 2014 at 02:20:07PM +0200, Tomi Valkeinen wrote:
+>> Shortly about the display components in the series, in the order of pr=
+obable
+>> public interest:
+>>
+>> * Analog TV, DVI and HDMI Connectors represent a respective connector =
+on the
+>>   board. They don't do much, but they do mark the end of the video pip=
+eline (from
+>>   the board's pov), and they should also in the future offer ways to h=
+andle
+>>   things like the +5V pin on DVI and HDMI connector and HPD pin.
+>=20
+> The big thing which concerns me is that we're using very generic
+> compatible strings here - has anyone done any searches to see whether
+> there are any existing standards for this kind of stuff already?
 
-Yes, it makes sense to handle the HPD at the encoder level, because
-your HDMI encoder may require a HPD signal from the connector, and it
-may handle this internally.
+I did look for any display related DT bindings when I started the work
+on OMAP DSS DT bindings. I didn't really find any. If I recall right,
+the only thing I found was an example of basically:
 
-However, it's also true that the HPD signal from the HDMI connector may
-be routed directly to a GPIO on the SoC.
-
-Both are equally valid - and actually something which DRM as a subsystem
-understands:
-
-struct drm_connector_funcs {
-        enum drm_connector_status (*detect)(struct drm_connector *connector,
-                                            bool force);
+fb@1234567 {
+	compatible=3D"asd";
+	reg=3D<1234567>;
 };
 
-struct drm_encoder_helper_funcs {
-        enum drm_connector_status (*detect)(struct drm_encoder *encoder,
-                                            struct drm_connector *connector);
-};
+So just a node for "framebuffer", with the register addresses. And maybe
+video timings in some form.
 
-although the original intention for the encoder detection method was for
-DAC-style detection, such as found on Intel adapters (which regularly
-pulse the R,G,B signals and measure any attached load.)  We also use
-the encoder detection method for TDA998x on Dove (currently via the
-slave encoder stuff.)
+Maybe I didn't know where to look.
 
-So, I'd say that there's scope for a HDMI connector having a hotplug
-GPIO attached to it - and if it isn't there (and there's no other form
-of connector-based detection), the connector should refer to it's
-attached encoder for connect status.
+> Even if none can be found, if we're going to create something like
+> this, it should probably become a public standard not just for Linux.
 
--- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+This is totally unclear to me. How does it become a public standard?
+What's the forum for this?
+
+> If we're not willing to do that, I'd suggest prefixing the compatible
+> strings with "linux," as a "company" identifier so that there's no
+> chance that we may hit some major problem caused by a conflicting
+> implementation in the future.
+
+I don't have an issue with "linux," either. We could always later remove
+the prefix (but keep drivers compatible with it). So it sounds quite a
+safe approach to me, if we're not quite clear if these bindings are
+acceptable, or how to get "public approval" for them.
+
+ Tomi
+
+
+
+--roAwPuOUc7NHFDP6snGqEM0QWwjUfuwwn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJTEL3jAAoJEPo9qoy8lh71SbgP/RJoHYeVutprOHcRm69CgPC7
+H9j6p5WiqsN6lUuEBc9ZVkByRSnsaMTcfduM1pAo9GPBAFTQJ1IOE+QiepAREBeF
+U1e3DocLmVXqXK/TsjUetTVsHKag/wveW7Ni/TR2S89jRACRoHd4L7LkbQosyRAC
+Oai0wHLvpMtlfq/q8uP5AAaPdxHIheCRjMz4uQYfRx7/udQ/9z2NVTJTXzCv+b5M
+abI00jFBaTQ8VqiilVq6i0y9uEpNXpcJwq+9EayQ5xpF6YxsDxdqUX6Xz7hathss
+MWC8paLkYPWyLyrgHI7kveJKkohrqQahC8beafDNsb/8HvxevPPc8KuWWShZ1cED
+ajDJK7/qr2tKerUUIIEfj8AJHKcoP3UNPp6sg7OYBIiDOwAP1c3o4fNk9akO/HvX
+d/bExfGsAd2d6Qix/iW7XDwShLpCecdCHfQV3X2ZX9HVrymGFPg95Xqah8vhvAqC
+mvdqVfssD4Y4SkIRLWh57Kl5hU0shrn/lcni1qq2vzP+sD3rxBheCq+/o6gyTrwq
+A7fnhak6BQ7E12Q9wDMQYCrwyhKq7NoevOFSIvxnTa9OA/if5gPAGHwgCo89t978
+J2nwE9aAVZb4twXNYZpPy9c7GDwrHFs3B+F8JY7epfpevpjviAbHRJTNHxA+Pqjl
+CkpOKPYPY8Ks/IdBMuvK
+=dFZQ
+-----END PGP SIGNATURE-----
+
+--roAwPuOUc7NHFDP6snGqEM0QWwjUfuwwn--

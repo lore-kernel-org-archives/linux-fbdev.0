@@ -1,54 +1,66 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 28 Feb 2014 12:20:11 +0000
-Subject: [PATCH 4/9] Doc/DT: Add DT binding documentation for HDMI Connector
-Message-Id: <1393590016-9361-5-git-send-email-tomi.valkeinen@ti.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Fri, 28 Feb 2014 16:06:12 +0000
+Subject: Re: [PATCH 4/9] Doc/DT: Add DT binding documentation for HDMI Connector
+Message-Id: <20140228160612.GR21483@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1393590016-9361-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+	<1393590016-9361-5-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1393590016-9361-5-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Andrzej Hajda <a.hajda@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-Add DT binding documentation for HDMI Connector.
+On Fri, Feb 28, 2014 at 02:20:11PM +0200, Tomi Valkeinen wrote:
+> Add DT binding documentation for HDMI Connector.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Reviewed-by: Archit Taneja <archit@ti.com>
+> ---
+>  .../devicetree/bindings/video/hdmi-connector.txt   | 23 ++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/video/hdmi-connector.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/video/hdmi-connector.txt b/Documentation/devicetree/bindings/video/hdmi-connector.txt
+> new file mode 100644
+> index 000000000000..5d25f6a432bb
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/video/hdmi-connector.txt
+> @@ -0,0 +1,23 @@
+> +HDMI Connector
+> +=======
+> +
+> +Required properties:
+> +- compatible: "hdmi-connector"
+> +
+> +Optional properties:
+> +- label: a symbolic name for the connector
+> +
+> +Required nodes:
+> +- Video port for HDMI input
+> +
+> +Example
+> +-------
+> +
+> +hdmi0: connector@1 {
+> +	compatible = "hdmi-connector";
+> +	label = "hdmi";
+> +
+> +	hdmi_connector_in: endpoint {
+> +		remote-endpoint = <&tpd12s015_out>;
+> +	};
+> +};
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Reviewed-by: Archit Taneja <archit@ti.com>
----
- .../devicetree/bindings/video/hdmi-connector.txt   | 23 ++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/hdmi-connector.txt
+It seems rather weird to have DVI connectors having an optional I2C
+property, but HDMI (which augments DVI) not having that as at least an
+optional property.
 
-diff --git a/Documentation/devicetree/bindings/video/hdmi-connector.txt b/Documentation/devicetree/bindings/video/hdmi-connector.txt
-new file mode 100644
-index 000000000000..5d25f6a432bb
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/hdmi-connector.txt
-@@ -0,0 +1,23 @@
-+HDMI Connector
-+=======
-+
-+Required properties:
-+- compatible: "hdmi-connector"
-+
-+Optional properties:
-+- label: a symbolic name for the connector
-+
-+Required nodes:
-+- Video port for HDMI input
-+
-+Example
-+-------
-+
-+hdmi0: connector@1 {
-+	compatible = "hdmi-connector";
-+	label = "hdmi";
-+
-+	hdmi_connector_in: endpoint {
-+		remote-endpoint = <&tpd12s015_out>;
-+	};
-+};
+I can quite well see the iMX HDMI support needing an i2c bus here.
+
+Also, HDMI has two connector standards - type A and type B, much like
+the single vs dual link of DVI.  Again, DRM exposes this to userspace.
+
 -- 
-1.8.3.2
-
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.

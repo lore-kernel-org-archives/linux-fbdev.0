@@ -1,43 +1,55 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Wed, 26 Feb 2014 10:51:23 +0000
-Subject: [PATCH v5 0/2] hyperv-fb: add support for generation 2 virtual machines
-Message-Id: <1393411885-14895-1-git-send-email-kraxel@redhat.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 28 Feb 2014 09:01:43 +0000
+Subject: Re: [PATCH v5 0/2] hyperv-fb: add support for generation 2 virtual machines
+Message-Id: <53105077.4090102@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="l0iuHr5xEEFNCHLwwRgO7LS7PRItn893X"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, devel@linuxdriverproject.org, Gerd Hoffmann <kraxel@redhat.com>
+References: <1393411885-14895-1-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1393411885-14895-1-git-send-email-kraxel@redhat.com>
+To: Gerd Hoffmann <kraxel@redhat.com>, linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, devel@linuxdriverproject.org
 
-  Hi,
+--l0iuHr5xEEFNCHLwwRgO7LS7PRItn893X
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This patch series adds support for uefi-based gen2 virtual machines
-to the hyperv-fb driver.  It depends on a few vmbus changes which are
-staged in Greg's char-misc tree (and linux-next).
+On 26/02/14 12:51, Gerd Hoffmann wrote:
+>   Hi,
+>=20
+> This patch series adds support for uefi-based gen2 virtual machines
+> to the hyperv-fb driver.  It depends on a few vmbus changes which are
+> staged in Greg's char-misc tree (and linux-next).
 
-Patch #1 implements gen2 vm support for hyperv-fb.
+Depends how? Patches that depend on other patches should be merged via
+the same tree to avoid compile or functional breaks.
 
-Patch #2 unregisters efifb early to make sure the framebuffer isn't used
-any more while hyperv-fb initialization is in progress.
+ Tomi
 
-v5 changes:
- - call remove_conflicting_framebuffers() only on gen2
-   virtual machines.
 
-v4 changes:
- - use KBUILD_MODNAME everywhere for consistent naming.
- - drop the two patches which Greg has staged in char-misc.
 
-please apply,
-  Gerd
+--l0iuHr5xEEFNCHLwwRgO7LS7PRItn893X
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Gerd Hoffmann (2):
-  hyperv-fb: add support for generation 2 virtual machines.
-  hyperv-fb: kick off efifb early
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
- drivers/video/hyperv_fb.c | 88 +++++++++++++++++++++++++++++++++--------------
- 1 file changed, 62 insertions(+), 26 deletions(-)
+iQIcBAEBAgAGBQJTEFB3AAoJEPo9qoy8lh71TJsP/RW4drjOoS5twwNVoH9GL6y/
+BEb5TwEuvfa10d8LSJ0Lqg64bwE/6UZi0yQTtOFRmdn1li0uKpK3/5Wck98fbCqf
+Ogla7RmUNx0nbvxf++5snW5+w/ZyMzGTl2BNt4plzjBvXhOxuoPNNTvuFKF2qJTw
+wq4E4W4MJ8cnV2L0dB99Ue62OWpaQn+h62M/BTxL1l6BeFifW6Koi3ji5oo7QIte
+BAyz/P0BYr/hRzJXyygn72yAIkuLcmPZBL6TxP52/u1KJ/r4bIRBmZ+hye7JTmy8
+XYyIjiH0xBvbEfJcwPv6B24Uf3tAOPndXtv2bq2On7Il0eO8HVQ6URqxZw9BC/95
+2cWc7VN//sTTgXqpVYF4P1VdiCKdW/FRyYBcwN7jpuFdXWyzKWDJaBScfn275dhY
+lp0Ng+I4B9r5mUopalqJWuB79lQeBZykxhqJHoLqYkZYI4umZi7j5DlR+QEojcZC
+4LtR+5gRwzvQfTi0UCysGYJZMyLQl0HyZT7PYnq/jkOTlEUgHhS4rTFlDo5m/jPP
+W6Clz5lKASO7Se29qS4FXyvb9Oy7XVMXbG3N6YxYyOg2VXkULLUHyJqeyUkbudKt
+jyC1zMzRsXAzrPp+kUM4CQlEgsKSma9fBpW+K4iAHLlzxWLh5Be+zYTcWRlAQiqr
+tuvkZ15mX2FHdCDwqoxE
+=/FiR
+-----END PGP SIGNATURE-----
 
--- 
-1.8.3.1
-
+--l0iuHr5xEEFNCHLwwRgO7LS7PRItn893X--

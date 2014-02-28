@@ -1,81 +1,90 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 28 Feb 2014 16:12:23 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Fri, 28 Feb 2014 16:23:27 +0000
 Subject: Re: [PATCH 3/9] Doc/DT: Add DT binding documentation for DVI Connector
-Message-Id: <5310B567.7040605@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="orJMs4cg3oEKUxhgVOG12N4bokLulnr6I"
+Message-Id: <20140228162327.GT21483@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>
- <1393590016-9361-4-git-send-email-tomi.valkeinen@ti.com>
- <20140228155937.GQ21483@n2100.arm.linux.org.uk>
-In-Reply-To: <20140228155937.GQ21483@n2100.arm.linux.org.uk>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, Tomasz Figa <tomasz.figa@gmail.com>, dri-devel@lists.freedesktop.org, Inki Dae <inki.dae@samsung.com>, Andrzej Hajda <a.hajda@samsung.com>, Rob Clark <robdclark@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com> <1393590016-9361-4-git-send-email-tomi.valkeinen@ti.com> <20140228155937.GQ21483@n2100.arm.linux.org.uk> <5310B567.7040605@ti.com>
+In-Reply-To: <5310B567.7040605-l0cyMroinI0@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
---orJMs4cg3oEKUxhgVOG12N4bokLulnr6I
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, Feb 28, 2014 at 06:12:23PM +0200, Tomi Valkeinen wrote:
+> On 28/02/14 17:59, Russell King - ARM Linux wrote:
+> 
+> >> +dvi0: connector@0 {
+> >> +	compatible = "dvi-connector";
+> >> +	label = "dvi";
+> >> +
+> >> +	i2c-bus = <&i2c3>;
+> >> +
+> >> +	dvi_connector_in: endpoint {
+> >> +		remote-endpoint = <&tfp410_out>;
+> >> +	};
+> >> +};
+> > 
+> > This looks far too simplistic.  There are different classes of DVI
+> > connector - there is:
+> > 
+> > DVI A - analogue only
+> > DVI D - digital only (single and dual link)
+> > DVI I - both (single and dual digital link)
+> > 
+> > DRM at least makes a distinction between these three classes, and this
+> > disctinction is part of the user API.  How would a display system know
+> > which kind of DVI connector is wired up on the board from this DT
+> > description?
+> 
+> Yes, I think that's a valid change. But do we also need to specify
+> single/dual link, in addition to the three types?
 
-On 28/02/14 17:59, Russell King - ARM Linux wrote:
+I would argue that as it's a difference in physical hardware, then it
+should be described in DT, even if we don't use it.  The reasoning is
+that although we may not use it today, we may need to use it in the
+future, and as we're describing what the hardware actually is - and
+even in this case what pins may be present or missing on the connector,
+it's unlikely to be problematical (the only problem is when someone
+omits it...)
 
->> +dvi0: connector@0 {
->> +	compatible =3D "dvi-connector";
->> +	label =3D "dvi";
->> +
->> +	i2c-bus =3D <&i2c3>;
->> +
->> +	dvi_connector_in: endpoint {
->> +		remote-endpoint =3D <&tfp410_out>;
->> +	};
->> +};
->=20
-> This looks far too simplistic.  There are different classes of DVI
-> connector - there is:
->=20
-> DVI A - analogue only
-> DVI D - digital only (single and dual link)
-> DVI I - both (single and dual digital link)
->=20
-> DRM at least makes a distinction between these three classes, and this
-> disctinction is part of the user API.  How would a display system know
-> which kind of DVI connector is wired up on the board from this DT
-> description?
+> I guess the compatible string is the easiest way for differentation, at
+> least for the three main types, i.e. "dvi-d-connector" etc.
+> 
+> "dvi-d-1l-connector" and "dvi-d-2l-connector" for the single/dual link?
+> That looks a bit funny.
 
-Yes, I think that's a valid change. But do we also need to specify
-single/dual link, in addition to the three types?
+I think that starts getting a tad messy:
 
-I guess the compatible string is the easiest way for differentation, at
-least for the three main types, i.e. "dvi-d-connector" etc.
+	dvi-a-connector
+	dvi-d-1l-connector
+	dvi-d-2l-connector
+	dvi-i-1l-connector
+	dvi-i-2l-connector
 
-"dvi-d-1l-connector" and "dvi-d-2l-connector" for the single/dual link?
-That looks a bit funny.
+That's rather a lot of compatible strings.  Another possibility is:
 
- Tomi
+	compatible = "dvi-connector";
+	analog;
+	digital;
+	single-link;
+	dual-link;
 
+I'm debating whether "-signalling" should be on the 2nd and 3rd (or...
+-signaling depending on how you prefer to spell that word.)  At least
+one of "analog" and/or "digital" must be specified, and if "digital"
+is specified, then exactly one of "single-link" or "dual-link" should
+be specified.
 
+So, this would mean we end up with:
 
---orJMs4cg3oEKUxhgVOG12N4bokLulnr6I
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+	compatible = "dvi-connector";
+	analog;
+	digital;
+	dual-link;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+for a DVI-I dual-link connector.
 
-iQIcBAEBAgAGBQJTELVnAAoJEPo9qoy8lh71zAAQAI7D6sTc6fpNcul0qrzf5/Ts
-vXMXkzs42KeshpY0967RerXCz5DK2TMLSlPhlvBsfaeq4v85RyBzQ01DywIsXbsq
-RCeO1x4kJfMygPGZgtnxkpojUlgkHAxkLL3REYxrowx41OOD+dBKvbeBu1+ZmoJT
-E9uXVRVMtousyLKUEYKL97tvtGVF8UZ2I+U8pmAbw2Abo3CkVHR+2m2bQUP65wKU
-dCqNgLH4knxAn2f8xjVp3z0PF1rB37HNV1EbnE0zpXB9jokhV+uklBA2DdY2n5dH
-XieuZVX2aIS7OLqDDin6t7ciq3lGpAQMOvTJ8xVm6UR5AFXjKkRhzppIN+Cwatt4
-fitsjX+XhY75KvMu/WAclm84ZFQkmjZJy5tj+6Uqp52+h2XGOSTBMCyGf5Mli7zb
-zOz/bHJrO93iCcWZV88gHZhjUGRghHbjPA2ybUEO6hFWR5LJBKXwmIMCOGId6KIZ
-byx8ZfuyzvMBkYBIBo3rJSZU8ox8EGjDCDQrTFZnB09ZbgHZY9ZJOLfuAu/5aKV6
-3NuCujsiYTsNfswpVVv4uIf++zfkmcj4PTpAdb38Q9ESF6ioAgpgF13Qco5xi01a
-1p9jPLQWiZ/+sDRG7XVDf/qrQ/v2CTpJkxuYfal61eTC+GwtOISVpQr8eRqtlZi2
-qqaNhVIRtahsF4zhFRn0
-=ch7q
------END PGP SIGNATURE-----
-
---orJMs4cg3oEKUxhgVOG12N4bokLulnr6I--
+-- 
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.

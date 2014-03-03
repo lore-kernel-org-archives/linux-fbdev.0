@@ -1,60 +1,44 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Thu, 13 Mar 2014 09:26:33 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSF0gbGNkOiBQcm92aWRlIGR1bW15IGZ1bmN0aW9ucyBpZiBD?= =?UTF-8?B?T05GSUdfTENEX0NMQ
-Message-Id: <1394702793.247334182@f349.i.mail.ru>
+From: Jon Ringle <jringle@gridpoint.com>
+Date: Mon, 03 Mar 2014 08:43:03 +0000
+Subject: [PATCH] video: da8xx-fb: Fix casting of info->pseudo_palette
+Message-Id: <1393836183-26555-1-git-send-email-jringle@gridpoint.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1394700536.448009775@f174.i.mail.ru>
-In-Reply-To: <1394700536.448009775@f174.i.mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-0KfQtdGC0LLQtdGA0LMsIDEzINC80LDRgNGC0LAgMjAxNCwgMTE6MDQgKzAyOjAwINC+0YIgVG9t
-aSBWYWxrZWluZW4gPHRvbWkudmFsa2VpbmVuQHRpLmNvbT46Cj4gT24gMTMvMDMvMTQgMTA6NDgs
-IEFsZXhhbmRlciBTaGl5YW4gd3JvdGU6Cj4gPiDQp9C10YLQstC10YDQsywgMTMg0LzQsNGA0YLQ
-sCAyMDE0LCAxMDoyMyArMDI6MDAg0L7RgiBUb21pIFZhbGtlaW5lbiA8dG9taS52YWxrZWluZW5A
-dGkuY29tPjoKPiA+PiBPbiAxMy8wMy8xNCAwOTozMSwgQWxleGFuZGVyIFNoaXlhbiB3cm90ZToK
-PiA+Pj4gUHJvdmlkZSBkdW1teSBmdW5jdGlvbnMgZm9yIExDRCByZWdpc3RlcigpL3VucmVnaXN0
-ZXIoKSBpZgo+ID4+PiBDT05GSUdfTENEX0NMQVNTX0RFVklDRSBpcyBub3Qgc2V0Lgo+ID4+Cj4g
-Pj4gSG1tLCB3aHkgZG8geW91IHdhbnQgdG8gZG8gdGhhdD8gSWYgYSBkcml2ZXIgbmVlZHMgdGhl
-IExDRCBjbGFzcywgaXQKPiA+PiBzaG91bGQgZGVwZW5kIG9uIG9yIHNlbGVjdCBpdC4KPiA+IAo+
-ID4gSSBpbnNwZWN0IG15IHJlY2VudCBjaGFuZ2VzIGZvciB0aGUgaW14ZmIgZHJpdmVyLgo+ID4g
-SSB1c2UgdGhlIExDRCBjbGFzcyBmb3IgcG93ZXIgbWFuYWdlbWVudCBhbmQgY29udHJhc3QsIG5l
-dmVydGhlbGVzcywKPiA+IGlmIGl0IGxhY2sgaW4gdGhlIGtlcm5lbCB0aGlzIGxlYWRzIHRvIGFu
-IGVycm9yLgo+IAo+IFNvIGlzIHRoZSBDT05GSUdfTENEX0NMQVNTX0RFVklDRSBvcHRpb25hbCBm
-b3IgaW14ZmI/IEl0IHdvcmtzIGZpbmUgd2l0aAo+IG9yIHdpdGhvdXQgdGhlIExDRCBjbGFzcyBz
-dXBwb3J0PyBJcyB0aGVyZSBzb21lIHJlYXNvbiB0byBydW4gaXQgd2l0aG91dAo+IExDRCBjbGFz
-cyBzdXBwb3J0PwoKU29tZSB1c2VycyBvZiBpbXhmYiByZXF1aXJlIGNvbnRyYXN0IGNvbnRyb2wg
-KGl0IGlzIG1hbmRhdG9yeSBmb3IgU0hBUlAgZGlzcGxheXMsCmZvciBleGFtcGxlKSwgc29tZSB1
-c2VycyByZXF1aXJlIHBvd2VyIGNvbnRyb2wsIHNvbWUgcmVxdWlyZSBib3RoIGNvbnRyb2xzLApz
-b21lIHJlcXVpcmUgbm90aGluZyBvZiBkZXNjcmliZWQgYWJvdmUuClNvLCB0aGlzIHNlZW1zIGFz
-IGFuIG9wdGlvbmFsIGNvbnRyb2wsIHdoaWNoIChpbiB0aGVvcnkpIG1heSBiZSBpbmNsdWRlZCBp
-biB0aGUKY29uZmlndXJhdGlvbiBvciBub3QsIHNhbWUgYXMgcmVndWxhdG9yIGNsYXNzLgoKPiA+
-IFllcywgd2UgY2FuIGNob29zZSB0aGUgTENEX0NMQVNTX0RFVklDRSBzeW1ib2wgZm9yIHRoZSBp
-bXhmYiBkcml2ZXIsCj4gPiBidXQgYXQgdGhlIHNhbWUgdGltZSB3ZSBtdXN0IGNob29zZSBCQUNL
-TElHSFRfTENEX1NVUFBPUlQuCj4gPiBJIGRvIG5vdCB0aGluayBpdCdzIGEgZ29vZCB3YXkuCj4g
-Cj4gV2h5IG5vdD8KPiAKPiA+IEluIGFueSBjYXNlLCBJIHdvdWxkIGxpa2UgdG8gcmV2aXNlIHRo
-ZSBwYXRjaCB0byB1c2UgTlVMTCBhcyBhIHJlc3VsdAo+ID4gaWYgdGhlcmUgaXMgbm8gc3VwcG9y
-dCBMQ0RfQ0xBU1NfREVWSUNFIGluIHRoZSBrZXJuZWwuCj4gCj4gV2h5IGRvIHlvdSB3YW50IHRv
-IHJ1biBpbXhmYiB3aXRob3V0IExDRF9DTEFTU19ERVZJQ0U/IElzbid0IGl0IHNpbXBsZXIKPiB0
-byBqdXN0IGRlcGVuZCBvbiBpdD8KCkp1c3QgYW4gZXhjZWVkIGRlcGVuZGVuY3kuCk1ha2luZyB0
-aGlzIG9wdGlvbiBhcyBvcHRpb25hbCBhbGxvdyB1cyB0byBpbmNyZWFzZSBjb21waWxlIGNvdmVy
-YWdlIGFuZAptYWtlcyBjb25maWd1cmF0aW9uIG1vcmUgZmxleGlibGUuCgo+IAo+ID4gQWRkaXRp
-b25hbGx5LCBJIGhhdmUgYSBwbGFuIHRvIGNvbnZlcnQgIm1lbnVjb25maWciIGVudHJ5IGZvcgo+
-ID4gQkFDS0xJR0hUX0xDRF9TVVBQT1JUIHRvIHRoZSAibWVudSIuCj4gCj4gSG1tLiBUaGF0IGRv
-ZXMgbWFrZSBzZW5zZSwgYXMgSSBkb24ndCBzZWUgQkFDS0xJR0hUX0xDRF9TVVBQT1JUCj4gYWZm
-ZWN0aW5nIGFueXRoaW5nLCBleGNlcHQgZW5hYmxpbmcgdGhlIEJMICYgTENEIEtjb25maWcgbWVu
-dS4KPiAKPiBIb3dldmVyLCBtYW55IG9mIHRoZSBpdGVtcyBpbiBCTCAmIExDRCBtZW51IGhhdmUs
-IGZvciBzb21lIHJlYXNvbiwKPiAiZGVmYXVsdCB5IiBvciAiZGVmYXVsdCBtIi4gU28gaWYgeW91
-IG1ha2UgQkFDS0xJR0hUX0xDRF9TVVBQT1JUIGEgbWVudSwKPiBpdCBtZWFucyBhbGwgdGhvc2Ug
-c3ViaXRlbXMgYXJlIGFsd2F5cyBlbmFibGVkLiBTbyB0aGVyZSBkZWZpbml0ZWx5IHdpbGwKPiBi
-ZSBhIHNpZGUgZWZmZWN0IHRvIHRoYXQgY2hhbmdlLgo+IAo+IEkgZ3Vlc3MgdGhlcmUncyBsZWdh
-Y3kgcmVhc29ucyB3aHkgbWFueSBvZiB0aGUgaXRlbXMgYXJlIGVuYWJsZWQgYnkKPiBkZWZhdWx0
-LiBJdCB3b3VsZCBtYWtlIHNlbnNlIHRvIG1lIHRvIGhhdmUgQkFDS0xJR0hUX0xDRF9TVVBQT1JU
-IGFzIGEKPiBtZW51LCBhcyB5b3Ugc3VnZ2VzdCwgYW5kIGhhdmluZyBhbGwgdGhlIHN1Yml0ZW1z
-IGRpc2FibGVkIGJ5IGRlZmF1bHQuCj4gQnV0IGFnYWluLCB0aGF0IHdvdWxkIGNoYW5nZSB0aGUg
-Y3VycmVudCBiZWhhdmlvciwgd2hpY2ggbWF5IG9yIG1heSBub3QKPiBjYXVzZSBpc3N1ZXMuCgpJ
-IHRoaW5rIGl0IHNob3VsZCBub3QgY2F1c2UgYW55IGluc3RhYmlsaXR5IGFuZCBwb3NzaWJsZSBk
-aXNjcmVwYW5jaWVzIHdpbGwKcmVzb2x2ZWQgZHVyaW5nIHRoZSBsaWZlIG9mIHRoZXNlIGNoYW5n
-ZXMgaW4gdGhlIGxpbnV4LW5leHQuCgotLS0K
+The casting to (u16 *) on info->pseudo_palette is wrong and causes the
+display to show a blue (garbage) vertical line on every other pixel column
+
+Signed-off-by: Jon Ringle <jringle@gridpoint.com>
+---
+ drivers/video/da8xx-fb.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index d042624..83c43b2 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -678,15 +678,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+                        (green << info->var.green.offset) |
+                        (blue << info->var.blue.offset);
+
+-               switch (info->var.bits_per_pixel) {
+-               case 16:
+-                       ((u16 *) (info->pseudo_palette))[regno] = v;
+-                       break;
+-               case 24:
+-               case 32:
+-                       ((u32 *) (info->pseudo_palette))[regno] = v;
+-                       break;
+-               }
++               ((u32 *) (info->pseudo_palette))[regno] = v;
+                if (palette[0] != 0x4000) {
+                        update_hw = 1;
+                        palette[0] = 0x4000;
+--
+1.8.5.4
+
+
+The information contained in this transmission may contain confidential information.  If the reader of this message is not the intended recipient, you are hereby notified that any review, dissemination, distribution or duplication of this communication is strictly prohibited.  If you are not the intended recipient, please contact the sender by reply email and destroy all copies of the original message.

@@ -1,169 +1,131 @@
-From: Jason Jin <Jason.Jin@freescale.com>
-Date: Thu, 27 Mar 2014 11:38:07 +0000
-Subject: [PATCH 2/2] Make the diu driver work without board level initilization
-Message-Id: <1395920287-5204-1-git-send-email-Jason.Jin@freescale.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 03 Mar 2014 10:12:33 +0000
+Subject: Re: [PATCH 00/11] SimpleDRM & Sysfb
+Message-Id: <53145591.4070004@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="RC68gLni9ceQvHrJ9vPhe5OjFqhaqk9gW"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: b07421@freescale.com, timur@tabi.org
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, r58472@freescale.com, jason.jin@freescale.com
+References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
+To: David Herrmann <dh.herrmann@gmail.com>, dri-devel@lists.freedesktop.org
+Cc: Ingo Molnar <mingo@kernel.org>, linux-fbdev@vger.kernel.org, Dave Airlie <airlied@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, Tom Gundersen <teg@jklm.no>
 
-So far the DIU driver does not have a mechanism to do the
-board specific initialization. So on some platforms,
-such as P1022, 8610 and 5121, The board specific initialization
-is implmented in the platform file such p10222_ds.
+--RC68gLni9ceQvHrJ9vPhe5OjFqhaqk9gW
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Actually, the DIU is already intialized in the u-boot, the pin sharing
-and the signal routing are also set in u-boot. So we can leverage that
-in kernel driver to avoid board sepecific initialization, especially
-for the corenet platform, which is the abstraction for serveral
-platfroms.
+Hi,
 
-The potential problem is that when the system wakeup from the deep
-sleep, some platform settings may need to be re-initialized. The CPLD
-and FPGA settings will be kept, but the pixel clock register which
-usually locate at the global utility space need to be reinitialized.
+On 23/01/14 16:14, David Herrmann wrote:
+> Hi
+>=20
+> Another round of SimpleDRM patches. I somehow lost track of the last on=
+es and as
+> this is a major rewrite, I'll just start at v1 again.
+>=20
+> Some comments up-front:
+>=20
+>  - @Ingo: Patch #1 and #2 are unchanged from the previous ML discussion=
+s. I
+>    included them in this series as the other patches depend on them. Co=
+uld you
+>    pick them up for the x86 tree? The other 9 patches won't make it in =
+3.14 so
+>    no reason to put them through the DRM tree.
+>    All mentioned issues should be addressed. If there's still sth missi=
+ng,
+>    please let me know.
+>=20
+>  - The DRM patches depend on my "DRM Anonymous Inode" patches. But it s=
+hould be
+>    trivial to apply them on drm-next (I think only one line needs to be=
+ changed:
+>    i_mapping =3D> dev_mapping).
+>=20
+>  - I tested the SimpleDRM fbdev fallback with linux-console+Xorg and it=
+ works
+>    fine. The DRM backend is only tested with some DRM tests I have loca=
+lly. I
+>    have no idea how to make Xorg pick up a specific /dev/dri/card0 card=
+=2E It
+>    always tells me "no screens found" (as the underlying device is not =
+marked as
+>    boot_vga..). If someone knows how to tell Xorg to use card0, I'd gla=
+dly test
+>    this. But I'm no longer used to writing xorg.confs..
+>=20
+>=20
+> This series introduces two new concepts: sysfb and SimpleDRM
+> Sysfb is just a generalization of the x86-sysfb concept. It allows to r=
+egister
+> firmware-framebuffers with the system as platform-devices. This way, dr=
+ivers can
+> properly bind to these devices and we prevent multiple drivers from acc=
+essing
+> the same firmware-framebuffer.
+> Sysfb also provides hooks to get a safe handover to real hw-drivers (li=
+ke i915).
+> Please see the "video: sysfb: add generic firmware-fb interface" patch =
+for a
+> thorough description of the API. This patch also adds a rather verbose
+> documentation of all known firmware-fb facilities.
+>=20
+> As second part, this series introduces SimpleDRM. It's a very basic DRM=
+ driver
+> that can replace efifb, vesafb, simplefb and friends. It's 100% compati=
+ble to
+> the "udl" DRM driver, so user-space like xf86-video-modesetting can pic=
+k them up
+> just fine. User-space that cannot deal with drmModeDirtyFB() (like west=
+on and
+> friends) currently cannot use SimpleDRM. However, that's also true for =
+all other
+> DRM drivers which provide shadow framebuffers. We could provide somethi=
+ng like
+> FB-DEFIO, but that's just useless overhead to paper of lazy user-space.=
 
-Generally, the pixel clock setting was implemented in the platform
-file, But the pixel clock register itself should be part of the DIU
-module, And for P1022,8610 and T1040, the pixel clock register have the
-same structure, So we can consider to move the pixel clock setting
-from the platform to the diu driver. This patch provide the options
-set the pixel clock in the diu driver. But the original platform pixel
-clock setting stil can be used for P1022,8610 and 512x without any
-update. To implement the pixel clock setting in the diu driver. the
-following update in the diu dts node was needed.
-display:display@180000 {
-	compatible = "fsl,t1040-diu", "fsl,diu";
--	reg = <0x180000 1000>;
-+	reg = <0x180000 1000 0xfc028 4>;
-+	pixclk = <0 255 0>;
- 	interrupts = <74 2 0 0>;
-}
-The 0xfc028 is the offset for pixel clock register. the 3 segment of
-the pixclk stand for the PXCKDLYDIR, the max of PXCK and the PXCKDLY
-which will be used by the pixel clock register setting.
+>=20
+> I have tested this with all hardware that I have at home, with a lot ha=
+nd-over
+> combinations (with/without SYSFB, with efifb/vesafb/simplefb, with Simp=
+leDRM,
+> ...) and all worked great so far.
 
-This was tested on T1040 platform. For other platform, the original
-node together with the platform settings still can work.
+What's the status with this one? Headed for 3.15?
 
-Signed-off-by: Jason Jin <Jason.Jin@freescale.com>
----
-V2: Remove the pixel clock register saving for suspend.
-add the pixel clock setting in driver.
+Are the SimpleDRM and sysfb linked somehow? (I.e. do they need to be in
+the same series?)
 
- drivers/video/fsl-diu-fb.c | 61 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 59 insertions(+), 2 deletions(-)
+And jfyi, the drivers/video/ changes will conflict with the
+drivers/video/ directory reorganization series, which may be merged for
+3.15.
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 4bc4730..792038f 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -50,6 +50,7 @@
- #define INT_PARERR	0x08	/* Display parameters error interrupt */
- #define INT_LS_BF_VS	0x10	/* Lines before vsync. interrupt */
- 
-+#define PIXCLKCR_PXCKEN 0x80000000
- /*
-  * List of supported video modes
-  *
-@@ -372,6 +373,8 @@ struct fsl_diu_data {
- 	unsigned int irq;
- 	enum fsl_diu_monitor_port monitor_port;
- 	struct diu __iomem *diu_reg;
-+	void __iomem *pixelclk_reg;
-+	u32 pixclkcr[3];
- 	spinlock_t reg_lock;
- 	u8 dummy_aoi[4 * 4 * 4];
- 	struct diu_ad dummy_ad __aligned(8);
-@@ -479,7 +482,10 @@ static enum fsl_diu_monitor_port fsl_diu_name_to_port(const char *s)
- 			port = FSL_DIU_PORT_DLVDS;
- 	}
- 
--	return diu_ops.valid_monitor_port(port);
-+	if (diu_ops.valid_monitor_port)
-+		return diu_ops.valid_monitor_port(port);
-+	else
-+		return port;
- }
- 
- /*
-@@ -798,6 +804,35 @@ static void set_fix(struct fb_info *info)
- 	fix->ypanstep = 1;
- }
- 
-+static void set_pixel_clock(struct fsl_diu_data *data, unsigned int pixclock)
-+{
-+	unsigned long freq;
-+	u64 temp;
-+	u32 pxclk;
-+	u32 pxclkdl_dir, pxckmax, pxclk_delay;
-+
-+	/* Convert pixclock from a wavelength to a frequency */
-+	temp = 1000000000000ULL;
-+	do_div(temp, pixclock);
-+	freq = temp;
-+
-+	pxclkdl_dir = data->pixclkcr[0] << 30;
-+	pxckmax =  data->pixclkcr[1];
-+	pxclk_delay = data->pixclkcr[2] << 8;
-+
-+	/*
-+	 * 'pxclk' is the ratio of the platform clock to the pixel clock.
-+	 * This number is programmed into the PIXCLKCR register, and the valid
-+	 * range of values is 2- pxckmax.
-+	 */
-+	pxclk = DIV_ROUND_CLOSEST(fsl_get_sys_freq(), freq);
-+	pxclk = clamp_t(u32, pxclk, 2, pxckmax);
-+
-+	out_be32(data->pixelclk_reg, 0);
-+	out_be32(data->pixelclk_reg, PIXCLKCR_PXCKEN
-+			| pxclkdl_dir | (pxclk << 16) | pxclk_delay);
-+}
-+
- static void update_lcdc(struct fb_info *info)
- {
- 	struct fb_var_screeninfo *var = &info->var;
-@@ -846,7 +881,13 @@ static void update_lcdc(struct fb_info *info)
- 
- 	out_be32(&hw->vsyn_para, temp);
- 
--	diu_ops.set_pixel_clock(var->pixclock);
-+	/* If the pixel clock setting function can not be used on the platform,
-+	 * then use the platform one.
-+	 */
-+	if (diu_ops.set_pixel_clock)
-+		diu_ops.set_pixel_clock(var->pixclock);
-+	else
-+		set_pixel_clock(data, var->pixclock);
- 
- #ifndef CONFIG_PPC_MPC512x
- 	/*
-@@ -1752,6 +1793,22 @@ static int fsl_diu_probe(struct platform_device *pdev)
- 		goto error;
- 	}
- 
-+	if (!diu_ops.set_pixel_clock) {
-+		data->pixelclk_reg = of_iomap(np, 1);
-+		if (!data->pixelclk_reg) {
-+			dev_err(&pdev->dev, "Cannot map pixelclk registers, please \
-+				provide the diu_ops for pixclk setting instead.\n");
-+			ret = -EFAULT;
-+			goto error;
-+		}
-+		/*Get the pixclkcr settings: PXCKDLYDIR; MAXPXCK, PXCKDLY*/
-+		ret = of_property_read_u32_array(np, "pixclk", data->pixclkcr, 3);
-+		if (ret) {
-+			dev_err(&pdev->dev, "Cannot get pixelclk registers information.\n");
-+			goto error;
-+		}
-+	}
-+
- 	/* Get the IRQ of the DIU */
- 	data->irq = irq_of_parse_and_map(np, 0);
- 
--- 
-1.8.0
+ Tomi
 
 
+
+--RC68gLni9ceQvHrJ9vPhe5OjFqhaqk9gW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJTFFWRAAoJEPo9qoy8lh715kQP/jz8q3O1kWOClkx1DCEr/K1V
+UoVTzeU2OcjZtl/N5rrtXvalJxqMI02nNQpvCzZPZgjSlezAJhF30iyQmJXtmq+x
+ZhiFjTK1l+zKpRL/imvp97fnP8kMosv3JKFxSv3ZfvQjQx6gpAw4UjUWfYwLSUK9
+TNj6tgXTTiGkZAel4zL4hTeTQzlZ1p/PIPtF6h0SNsQiehHKJTnLsnqPAszCg4Ty
+OElNYX/C53J5lCcv2CZiulwwkWbRDgdIEc+fXeWc8kVw3T0vtd8ILFhPOlMU37oX
+HNkCbHmAJ81LGpe6kOAEA2CsehmJFi3CvyH6MPN4O+/aXOmAtUfwLRnRrHhs9bDj
+ARVCfP4XOPi1TB5XjtkgrKfvjZ6cxfpFoLi5QL7D7I3HZ6qczE/ay7bCtWFN2/IM
++aDmeAd9zWGNDgdA3FpEqv/ozywOwnoHkmx2KaIvvS6dcvrCIvnpEm0BUygznCi5
+RQ0YAA4Rdu+D+8lzY0xBBVmkuhc5GtnLHmuBfZJguWJZJ4mSD6Y6jSAgRj7ALZwE
+EHGWcXUQGPJmkwT3TzhECsjxrydtceXi/RRCNJgch4mom5ckAk10d/Bl98+cWSob
+qNBZbwbKGxrjANhRVQY5ttGBIjto5Rb5xJZHMgjzGimdAgmpQ6AS2JwASWBCVucM
+wRRKRLb7cSAMI+CXW0fC
+=fd/2
+-----END PGP SIGNATURE-----
+
+--RC68gLni9ceQvHrJ9vPhe5OjFqhaqk9gW--

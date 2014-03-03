@@ -1,38 +1,80 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Wed, 19 Mar 2014 09:36:28 +0000
-Subject: Re: [PATCHv2 4/8] Doc/DT: Add DT binding documentation for HDMI Connector
-Message-Id: <1395221788.4300.18.camel@paszta.hi.pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 03 Mar 2014 08:45:31 +0000
+Subject: Re: [PATCH 0/3] Reorder drivers/video directory
+Message-Id: <5314412B.6060502@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="1aFiO4jTbmCkgm22nURIn6eAU01ROLBcX"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395130547-18633-1-git-send-email-tomi.valkeinen@ti.com>
- <1395130547-18633-5-git-send-email-tomi.valkeinen@ti.com>
- <1395132234.4134.1.camel@paszta.hi.pengutronix.de>
- <1664822.t9aWz7hh4g@avalon>
- <1395216233.4300.6.camel@paszta.hi.pengutronix.de>
- <53295132.6000003@ti.com>
- <1395217360.4300.9.camel@paszta.hi.pengutronix.de>
- <53295E84.2020106@ti.com>
-In-Reply-To: <53295E84.2020106@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, dri-devel@lists.freedesktop.org, Andrzej Hajda <a.hajda@samsung.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Herring <robherring2@gmail.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+References: <1393502086-9433-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1393502086-9433-1-git-send-email-tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>
 
-Hi Tomi,
+--1aFiO4jTbmCkgm22nURIn6eAU01ROLBcX
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Am Mittwoch, den 19.03.2014, 11:08 +0200 schrieb Tomi Valkeinen:
-> On 19/03/14 10:22, Philipp Zabel wrote:
-> 
-> > I don't disagree, either. I have no objection against the bindings
-> > themselves.
-> > 
-> > Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
-> 
-> Thanks. Is the ack for this particular binding, or for the whole series?
+On 27/02/14 13:54, Tomi Valkeinen wrote:
+> Hi,
+>=20
+> This is a re-send of the series, with RFC removed from the subject, and=
+ a bunch
+> of acks added.
+>=20
+> I'm cc'ing more people, to make sure this doesn't come as a surprise, a=
+nd to
+> make sure this is not a bad idea, doomed to fail horribly.
+>=20
+> So this series creates a new directory, drivers/video/fbdev/, to which =
+all
+> fbdev related files are moved. Also, a new directory, drivers/video/fbd=
+ev/core/
+> is created, to which the core fbdev framework files are moved. This mak=
+es the
+> drivers/video hierarchy much more clear.
+>=20
+> Presuming no one has objections to this as such, I wonder what's the le=
+ast
+> painful way to merge this? Normally, like any other fbdev change? As a =
+separate
+> pull request, maybe at -rc2 time frame, based on -rc1? Something else?
+>=20
+>  Tomi
+>=20
+> Tomi Valkeinen (3):
+>   video: move fbdev to drivers/video/fbdev
+>   fbdev: move fbdev core files to separate directory
+>   video: Kconfig: move drm and fb into separate menus
 
-Thanks for asking, I haven't really looked at the TPD12S015 binding.
-The rest of the series, yes.
+I have pushed this to my for-next branch. Let's see what happens... At
+least I'm able to merge the current linux-next without any conflicts.
 
-regards
-Philipp
+ Tomi
 
+
+
+--1aFiO4jTbmCkgm22nURIn6eAU01ROLBcX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJTFEErAAoJEPo9qoy8lh711sUQAKbKxrgYYGjMvBkiHVpn6//g
+9A+lWHWRsvSrzyLlayvR96xEsUwxszoIB6xwZH+UiR/IAwpnXJvwXoKEhSicSku+
+22SUJVYtRqorhexgZ/eAF9g0XGBtNHPaMhWaUm1qW6d4aqN+in28ncgCIdmcafl2
+mTLs2YJYxy3Kq33CVK01fedQtE55Jrio7t9aYNY+x6I3iFIoTG3eDJ6oM2iKpJb9
+LNx2WhpO3Vam1qqbpmzVCKuMU78gcHyzKtm9w5YtlfkDn9GlZPzwf2MKRKdUL4Qj
+H8L75QPo6Dnt514MDX2ELiuvbFzct4qeYviEiaTAEQOqvmF4y4/lvh4Ml3hOD3cp
+9X48Bg1TQ6vz5OrcXc5OD0uHGvPtm4xlR1WvWazWZrwiVGbnUUutd4bcPaOjAQ6I
+LDO4BNCDiNe9mhBNX8iebBo0reXRM2fCW6BmAwmWTvoA10ChuFSy7ukl6Wr/vG35
+XNg0+W3g5F6P+t/+Hghx3NCHvLLTE/ZCDkgL0hUVfXBt+diFWq+5jmDMEBM7LzLT
+esbAXqmXtABfU3je7RM3r8WDT+WZDZS8ZnmAmYaiT21ISpE07hjsnBQdu7YOq8QR
+ARHfNsTPP/rYcxTlPeTN8dOnE6eiuc1D4RPftWAxm9Wj0PCIz1x8dv7xmtZDHykf
+hZAiUdK31Ewfj0yYJp6g
+=CqFR
+-----END PGP SIGNATURE-----
+
+--1aFiO4jTbmCkgm22nURIn6eAU01ROLBcX--

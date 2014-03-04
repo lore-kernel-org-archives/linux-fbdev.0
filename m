@@ -1,86 +1,79 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 03 Mar 2014 07:23:05 +0000
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 04 Mar 2014 12:59:48 +0000
 Subject: Re: [PATCH 4/9] Doc/DT: Add DT binding documentation for HDMI Connector
-Message-Id: <53142DD9.4020709@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="tX7KBMdIlXs3671UlqlmJWi4Fg0xrbfsd"
+Message-Id: <20140304125948.GA17001@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>	<1393590016-9361-5-git-send-email-tomi.valkeinen@ti.com>	<20140228160612.GR21483@n2100.arm.linux.org.uk>	<5310B609.1010105@ti.com>	<20140228163431.GV21483@n2100.arm.linux.org.uk>
- <CAMuHMdVpT2Y-KQO46o=zbRSgqgx2mbBsPjGgoTDDwwfCOxUCmw@mail.gmail.com>
-In-Reply-To: <CAMuHMdVpT2Y-KQO46o=zbRSgqgx2mbBsPjGgoTDDwwfCOxUCmw@mail.gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Tomasz Figa <tomasz.figa@gmail.com>, DRI Development <dri-devel@lists.freedesktop.org>, Inki Dae <inki.dae@samsung.com>, Andrzej Hajda <a.hajda@samsung.com>, Rob Clark <robdclark@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>
+	<1393590016-9361-5-git-send-email-tomi.valkeinen@ti.com>
+	<20140228160612.GR21483@n2100.arm.linux.org.uk>
+In-Reply-To: <20140228160612.GR21483@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Andrzej Hajda <a.hajda@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
---tX7KBMdIlXs3671UlqlmJWi4Fg0xrbfsd
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Fri, Feb 28, 2014 at 04:06:12PM +0000, Russell King - ARM Linux wrote:
+> On Fri, Feb 28, 2014 at 02:20:11PM +0200, Tomi Valkeinen wrote:
+> > Add DT binding documentation for HDMI Connector.
+> > 
+> > Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> > Reviewed-by: Archit Taneja <archit@ti.com>
+> > ---
+> >  .../devicetree/bindings/video/hdmi-connector.txt   | 23 ++++++++++++++++++++++
+> >  1 file changed, 23 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/video/hdmi-connector.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/video/hdmi-connector.txt b/Documentation/devicetree/bindings/video/hdmi-connector.txt
+> > new file mode 100644
+> > index 000000000000..5d25f6a432bb
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/video/hdmi-connector.txt
+> > @@ -0,0 +1,23 @@
+> > +HDMI Connector
+> > +=======
+> > +
+> > +Required properties:
+> > +- compatible: "hdmi-connector"
+> > +
+> > +Optional properties:
+> > +- label: a symbolic name for the connector
+> > +
+> > +Required nodes:
+> > +- Video port for HDMI input
+> > +
+> > +Example
+> > +-------
+> > +
+> > +hdmi0: connector@1 {
+> > +	compatible = "hdmi-connector";
+> > +	label = "hdmi";
+> > +
+> > +	hdmi_connector_in: endpoint {
+> > +		remote-endpoint = <&tpd12s015_out>;
+> > +	};
+> > +};
+> 
+> It seems rather weird to have DVI connectors having an optional I2C
+> property, but HDMI (which augments DVI) not having that as at least an
+> optional property.
+> 
+> I can quite well see the iMX HDMI support needing an i2c bus here.
+> 
+> Also, HDMI has two connector standards - type A and type B, much like
+> the single vs dual link of DVI.  Again, DRM exposes this to userspace.
 
-On 01/03/14 20:58, Geert Uytterhoeven wrote:
-> On Fri, Feb 28, 2014 at 5:34 PM, Russell King - ARM Linux
-> <linux@arm.linux.org.uk> wrote:
->> There's actually three HDMI connectors:
->>
->>   All three connectors carry all required HDMI signals, including a TM=
-DS
->>   link. The Type B connector is slightly larger and carries a second T=
-MDS
->>   link, which is necessary to support very high resolution displays us=
-ing
->>   dual link. The Type C connector carries the same signals as the Type=
- A
->>   but is more compact and intended for mobile applications.
->>
->> So, Type C and Type A are electrically the same.
->=20
-> There's also D (e.g. on BeagleBone Black) and E:
->=20
-> http://en.wikipedia.org/wiki/HDMI#Connectors
->=20
-> Electrically they seem to be the same as A/C.
+Yeah, there's a dual-link hdmi standard somewhere. I've never seen it in
+the wild anywhere though, and newer hdmi all just increase the max link
+clock to push higher res modes over the wire. Imo can't hurt to just
+enumerate all type of physical connectors standardized.
 
-Right. And then there are the HDMI versions, and things like HDMI
-Ethernet Channel. After looking at these a bit, I don't think the HDMI
-connector needs any of those (hdmi version, eth) defined.
-
-So...
-
-	compatible =3D "hdmi-connector";
-	type =3D "a";
-
-Or
-
-	compatible =3D "hdmi-connector";
-	type-a;
-
-I don't right away see any big pro with either one compared to the other.=
-
-
- Tomi
-
-
-
---tX7KBMdIlXs3671UlqlmJWi4Fg0xrbfsd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTFC3ZAAoJEPo9qoy8lh71Gi8QAJNA6Hu8ubL7yiO5jzr6kxSc
-Yx/d8O/HngrIW4IGCfECdwBIMk3HOW7DGuSu9CkZk5N3LB4DT8INOTc31U5aDzvK
-bT7LGhJTWTJODRvvGwIURoe5tnhOW+z+RFxA9AtueNiC3SXQj8JdPBeLL7BTVvnQ
-nOsJU2qTQ3qaGjYWqZxdCn+kpaglV57eC/NMhsmewdl0R4nfdHEPYlCrGtA2+XwW
-C4lJQOrCkcJDjxcD3HGcaMcTrq9+IflnLYrE1KL7jgQcQlYE1NFfhC+UxD4d/LKB
-cnBnlwAHmB03u16wW8z4fzYqpjVDrlop/gXr7cpueh1+FcyUsOBW0x0sGF06mjvI
-43TjkP2AQHy+Pognl2Km4djq+FdQgTAy/y5UyqlqhKoT9gZl4eH+PlXVa4JmAua6
-HfEYB8/+mVNm/tlE/E3aLRMKVjG+U8OHloCf7tDtdmu+tNdFTlCKrRTkzG5dghEJ
-goCDfcgr8GZ69x1Ymv7KCNaxcVOWGe2sEfvCYMti1OlEFTdkNTlPPiKXxTVEg4Zc
-h7NR6ZHVGF95IOjBxEjyYNuxFIBT8RZ6NUBsWwybmQGOdnOvL7zquOGaNrqkApSc
-Rq22DXn49fWEsJKbrSYdPZgtg0TXfm8DERzGcGZmOLmXgVEEu1jl9k2567fosKEn
-FDaIId0er/ojIFE4z1h8
-=+D5X
------END PGP SIGNATURE-----
-
---tX7KBMdIlXs3671UlqlmJWi4Fg0xrbfsd--
+HDMI revisions themselves are only relevant for the sink (as advertised
+capabilities in the EDID) and for your hdmi encoder chip (where pretty
+much just the max dotclock is interesting really). So I don't think we
+need a hdmi revision in dt for the physical connector.
+-Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

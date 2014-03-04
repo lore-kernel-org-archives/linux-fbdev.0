@@ -1,102 +1,67 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 03 Mar 2014 06:42:35 +0000
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 04 Mar 2014 12:54:54 +0000
 Subject: Re: [PATCH 3/9] Doc/DT: Add DT binding documentation for DVI Connector
-Message-Id: <5314245B.803@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="LiE0K17Efemajrmpfcx1JEowqX9AjGLVP"
+Message-Id: <20140304125454.GZ17001@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>
- <1393590016-9361-4-git-send-email-tomi.valkeinen@ti.com>
- <20140228155937.GQ21483@n2100.arm.linux.org.uk> <5310B567.7040605@ti.com>
- <20140228162327.GT21483@n2100.arm.linux.org.uk>
+	<1393590016-9361-4-git-send-email-tomi.valkeinen@ti.com>
+	<20140228155937.GQ21483@n2100.arm.linux.org.uk>
+	<5310B567.7040605@ti.com>
+	<20140228162327.GT21483@n2100.arm.linux.org.uk>
 In-Reply-To: <20140228162327.GT21483@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, Tomasz Figa <tomasz.figa@gmail.com>, dri-devel@lists.freedesktop.org, Inki Dae <inki.dae@samsung.com>, Andrzej Hajda <a.hajda@samsung.com>, Rob Clark <robdclark@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Andrzej Hajda <a.hajda@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
---LiE0K17Efemajrmpfcx1JEowqX9AjGLVP
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, Feb 28, 2014 at 04:23:27PM +0000, Russell King - ARM Linux wrote:
+> On Fri, Feb 28, 2014 at 06:12:23PM +0200, Tomi Valkeinen wrote:
+> > On 28/02/14 17:59, Russell King - ARM Linux wrote:
+> > 
+> > >> +dvi0: connector@0 {
+> > >> +	compatible = "dvi-connector";
+> > >> +	label = "dvi";
+> > >> +
+> > >> +	i2c-bus = <&i2c3>;
+> > >> +
+> > >> +	dvi_connector_in: endpoint {
+> > >> +		remote-endpoint = <&tfp410_out>;
+> > >> +	};
+> > >> +};
+> > > 
+> > > This looks far too simplistic.  There are different classes of DVI
+> > > connector - there is:
+> > > 
+> > > DVI A - analogue only
+> > > DVI D - digital only (single and dual link)
+> > > DVI I - both (single and dual digital link)
+> > > 
+> > > DRM at least makes a distinction between these three classes, and this
+> > > disctinction is part of the user API.  How would a display system know
+> > > which kind of DVI connector is wired up on the board from this DT
+> > > description?
+> > 
+> > Yes, I think that's a valid change. But do we also need to specify
+> > single/dual link, in addition to the three types?
+> 
+> I would argue that as it's a difference in physical hardware, then it
+> should be described in DT, even if we don't use it.  The reasoning is
+> that although we may not use it today, we may need to use it in the
+> future, and as we're describing what the hardware actually is - and
+> even in this case what pins may be present or missing on the connector,
+> it's unlikely to be problematical (the only problem is when someone
+> omits it...)
 
-On 28/02/14 18:23, Russell King - ARM Linux wrote:
+If you plug a dual-link dvi screen into a soc which can do dual-link but
+the actual connector is cheap and doesn't have this wired up
+(differentiate wtf) then the kernel needs to know. Otherwise it can't
+correctly filter out the modes with dotclocks high enough to require dual
+link and the user will look at a black screen.
 
->> I guess the compatible string is the easiest way for differentation, a=
-t
->> least for the three main types, i.e. "dvi-d-connector" etc.
->>
->> "dvi-d-1l-connector" and "dvi-d-2l-connector" for the single/dual link=
-?
->> That looks a bit funny.
->=20
-> I think that starts getting a tad messy:
->=20
-> 	dvi-a-connector
-> 	dvi-d-1l-connector
-> 	dvi-d-2l-connector
-> 	dvi-i-1l-connector
-> 	dvi-i-2l-connector
-
-Yes, it's messy. Pondering this over the weekend, I think it makes sense
-to have just one compatible string, as all those connectors are still
-the same DVI connector, just different variations of the same.
-
-> That's rather a lot of compatible strings.  Another possibility is:
->=20
-> 	compatible =3D "dvi-connector";
-> 	analog;
-> 	digital;
-> 	single-link;
-> 	dual-link;
->=20
-> I'm debating whether "-signalling" should be on the 2nd and 3rd (or...
-> -signaling depending on how you prefer to spell that word.)  At least
-> one of "analog" and/or "digital" must be specified, and if "digital"
-> is specified, then exactly one of "single-link" or "dual-link" should
-> be specified.
->=20
-> So, this would mean we end up with:
->=20
-> 	compatible =3D "dvi-connector";
-> 	analog;
-> 	digital;
-> 	dual-link;
->=20
-> for a DVI-I dual-link connector.
-
-Another option would be:
-
-num-links =3D 2;
-
-But I like your suggestion more. We could also optimize it, "digital" is
-extra as both "single-link" and "dual-link" mean also digital. But... I
-don't see much point in optimizing that way. So I agree with your
-suggestion as is.
-
- Tomi
-
-
-
---LiE0K17Efemajrmpfcx1JEowqX9AjGLVP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTFCRbAAoJEPo9qoy8lh71DnUP/1tWOVUVwjeQyjNGbRim9v3W
-ARDV1sg+OV4xIrdeTkynILBK5DA3XopiwQKB/D6ODY28ZdNy9qu44b1EdKLj53D/
-J6o2TD5BZdGcZ1XHGWHzWZHwPGAsJ9NYvTNsbJbJEG+WPRIW+yiQWySZ3y/3QQ+o
-U14NdkRoGDQdSVfBKXBOYvATAivOKUd7w1qhKhtvr+GU0/IwbCSJDhmScGOW4MM2
-IBRkD+xVHoBwjDMyn/GwwYKxxFrBWkhsblUIGWs3ufBw2AxrssbsMuM9iK5RyPvz
-TcHyonDAVZKJd1OVp+bY8KGPhLl1Ri9enpvzqJFhQZKeVlL1G0opmtmL6YSIko1K
-XufgiyuhaBfdb1n4zL/bbchb1dpWP23FJ4hH3pO7x21Cf78l+/Bi8/meTAIVKIab
-AlohZyMGgl8I9VwA+P0MXa+lN+5SSem/6wVq16Cb5vgveFc9w70jrnGS/PhEawT6
-Ojn7MlLEHaCEtt+JS5g1AIrBNpJRpXyu55qEknT26H0cZDWKpvQpUXEp7ZiFcoic
-B5IePoklCUpJI1wkS21793DtDk75zpvQjfq033PTdgWEFRyFfN8jJ5oP31SesgD8
-WEU4+ZwzE1cdkHiCZZBYgsYbYxjPVuaN0zOidZ3GvxrYfUVYITy+mIoxVxAUOf61
-3kbiVCNRxQygV0nxdsSF
-=DJAr
------END PGP SIGNATURE-----
-
---LiE0K17Efemajrmpfcx1JEowqX9AjGLVP--
+3.14 has a regression in drm/i915 where we've screwed this up ;-)
+-Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

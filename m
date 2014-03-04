@@ -1,59 +1,73 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Fri, 14 Mar 2014 12:38:35 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSCB2N11bIDMvNV0gdmlkZW86IG14M2ZiOiBJbnRyb2R1Y2Ug?= =?UTF-8?B?cmVndWxhdG9yIHN1c
-Message-Id: <1394800715.9118331@f120.i.mail.ru>
+From: Zhou Zhu <zzhu84@gmail.com>
+Date: Tue, 04 Mar 2014 11:28:57 +0000
+Subject: Re: [PATCH v2 4/4] video: mmp: add device tree support
+Message-Id: <CAJATT-5sQc7vsUhoFKdDnstqjj2R_yQ+Wk1NRf20UTM4-ndMSA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1394788369-5096-1-git-send-email-denis@eukrea.com>
- <1394789035.649593084@f301.i.mail.ru> <5322E6AA.1010400@eukrea.com>
-In-Reply-To: <5322E6AA.1010400@eukrea.com>
+References: <1389698184-28761-1-git-send-email-zzhu3@marvell.com>
+	<1389698184-28761-5-git-send-email-zzhu3@marvell.com>
+	<20140217143736.GC19308@e106331-lin.cambridge.arm.com>
+In-Reply-To: <20140217143736.GC19308-NuALmloUBlrZROr8t4l/smS4ubULX0JqMm0uRHvK7Nw@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: Zhou Zhu <zzhu3-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Chao Xie <chao.xie-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Guoqing Li <ligq-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Lisa Du <cldu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, huangyh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org
 
-0J/Rj9GC0L3QuNGG0LAsIDE0INC80LDRgNGC0LAgMjAxNCwgMTI6MjMgKzAxOjAwINC+0YIgRGVu
-aXMgQ2FyaWtsaSA8ZGVuaXNAZXVrcmVhLmNvbT46CgpTYXNjaGEsIFNoYXduLCBjYW4geW91IGNv
-bW1lbnQgb24gdGhhdD8KCj4gT24gMDMvMTQvMjAxNCAxMDoyMyBBTSwgQWxleGFuZGVyIFNoaXlh
-biB3cm90ZToKPiA+IFdoeSB0aGlzIGNhbm5vdCBiZSBkZXZtX3JlZ3VsYXRvcl9nZXQoZGV2LCAi
-bGNkIikgaW4gYm90aCBEVCBhbmQgbm9uLURUIGNhc2U/Cj4gCj4gSSBuZWVkIHRvIGFkZCBkZXZp
-Y2UgdHJlZSBzdXBwb3J0IHRvIHRoZSBteDNmYiBkcml2ZXIuCj4gTXkgZmlyc3QgYXBwcm9hY2gg
-Z2F2ZSBhIGJpbmRpbmcgdGhhdCBsb29rZWQgbGlrZSB0aGF0Ogo+IAo+IGNtb19xdmdhOiBkaXNw
-bGF5IHsKPiAgICBtb2RlbCA9ICJDTU8tUVZHQSI7Cj4gICAgWy4uLl0KPiAgICBkaXNwbGF5LXRp
-bWluZ3Mgewo+ICAgICAgcXZnYV90aW1pbmdzOiAzMjB4MjQwIHsKPiAgICAgICAgaGFjdGl2ZSA9
-IDwzMjA+Owo+ICAgICAgICB2YWN0aXZlID0gPDI0MD47Cj4gICAgICAgIFsuLi5dCj4gICAgIH07
-Cj4gfTsKPiAKPiBpcHU6IGlwdUA1M2ZjMDAwMCB7Cj4gICAgY29tcGF0aWJsZSA9ICJmc2wsaW14
-MzEtaXB1IjsKPiAgICByZWcgPSA8IDB4NTNmYzAwMDAgMHg1Zgo+ICAgIDB4NTNmYzAwODggMHgy
-YiA+Owo+ICAgIGludGVycnVwdHMgPSA8NDIgNDE+Owo+ICAgIGRtYS1jaGFubmVscyA9IDwzMj47
-Cj4gICAgI2RtYS1jZWxscyA9IDwxPjsKPiAgICBjbG9ja3MgPSA8JmNsa3MgNTU+Owo+ICAgIGNs
-b2NrLW5hbWVzID0gIiI7Cj4gfTsKPiAKPiBsY2RjOiBteDNmYkA1M2ZjMDBiNCB7Cj4gICAgY29t
-cGF0aWJsZSA9ICJmc2wsbXgzLWZiIjsKPiAgICByZWcgPSA8MHg1M2ZjMDBiNCAweDBiPjsKPiAg
-ICBjbG9ja3MgPSA8JmNsa3MgNTU+Owo+ICAgIGRtYXMgPSA8JmlwdSAxND47Cj4gICAgZG1hLW5h
-bWVzID0gInR4IjsKPiAgICBkaXNwbGF5ID0gPCZjbW9fcXZnYT47Cj4gfTsKPiAKPiBUaGUgaXNz
-dWUgd2FzIHRoYXQgZXhwb3J0aW5nIHRoZSAiZG1hIGlwdSBkcml2ZXIiIHdhcyBub3QgYSBnb29k
-IGlkZWEuCj4gSSB3YXMgdG9sZCB0byBpbnN0ZWFkIG1ha2UgYmluZGluZ3MgdGhhdCBsb29rcyB2
-ZXJ5IHNpbWlsYXIgdG8gdGhlIGlwdXYzIAo+IGRyaXZlclsxXQo+IFNvIGF0IHRoZSBlbmQgdGhh
-dCBnYXZlIHNvbWV0aGluZyBsaWtlIHRoYXQ6Cj4gCj4gY21vX3F2Z2E6IGRpc3BsYXlAZGkwIHsK
-PiAgICBjb21wYXRpYmxlID0gImZzbCxteDMtcGFyYWxsZWwtZGlzcGxheSI7Cj4gICAgcmVndWxh
-dG9yLW5hbWUgPSAibGNkIjsKPiAgICBsY2Qtc3VwcGx5ID0gPCZyZWdfbGNkXzN2Mz47Cj4gICAg
-bW9kZWwgPSAiQ01PLVFWR0EiOwo+ICAgIGRpc3BsYXktdGltaW5ncyB7Cj4gICAgICBxdmdhX3Rp
-bWluZ3M6IDMyMHgyNDAgewo+ICAgICAgICBoYWN0aXZlID0gPDMyMD47Cj4gICAgICAgIHZhY3Rp
-dmUgPSA8MjQwPjsKPiAgICAgICAgWy4uLl0KPiAgICAgfTsKPiB9Owo+IAo+IGlwdTogaXB1QDUz
-ZmMwMDAwIHsKPiAgICBjb21wYXRpYmxlID0gImZzbCxpbXgzNS1pcHUiOwo+ICAgIHJlZyA9IDww
-eDUzZmMwMDAwIDB4NDAwMD47Cj4gICAgY2xvY2tzID0gPCZjbGtzIDU1PjsKPiAgICBkaXNwbGF5
-ID0gPCZjbW9fcXZnYT47Cj4gfTsKPiAKPiBTbyBoZXJlIGZzbCxpbXgzNS1pcHUgaXMgYmluZGVk
-IHRvIHRoZSBteDNmYiBkcml2ZXIuCj4gQnV0IHRoZSBteDNmYiBkcml2ZXIgc3RpbGwgbmVlZCB0
-byB1c2UgdGhlIGRtYS1pcHUgZHJpdmVyIHNvbWVob3cuCj4gVGhhdCdzIHdoeSB0aGUgZG1hLWlw
-dSBkcml2ZXIgaXMgaGFuZGxlZCBiZWhpbmQgdGhlIHNjZW5lcywgdGhhdCB3YXkKPiBpdCdzIG5v
-dCBleHBvcnRlZCB0byB0aGUgZGV2aWNlIHRyZWUgYmluZGluZ3MuCj4gCj4gTm93LCBzaW5jZSB0
-aGUgbXgzZmIgZHJpdmVyIGlzIGJpbmRlZCB0byB0aGUgImZzbCxpbXgzNS1pcHUiIGNvbXBhdGli
-bGUsCj4gaWYgSSB3b3VsZCBkbyBhICJteDNmYmktPnJlZ19sY2QgPSBkZXZtX3JlZ3VsYXRvcl9n
-ZXQoZGV2LCAibGNkIik7IiwKPiB0aGF0IHdvdWxkIHRoZW4gbG9va3VwIGZvciB0aGUgcmVndWxh
-dG9yIGluIHRoZSBteDNmYiBub2RlCj4gKFRoZSBsYXN0ICJpcHVANTNmYzAwMDAiIGhlcmUpLgo+
-IAo+IEluc3RlYWQgdGhlIHJlZ3VsYXRvciBjYW4gYmUgZm91bmQgaW4gdGhlIGRpc3BsYXkgbm9k
-ZSwKPiB3aGljaCBoYXMgbm8gZHJpdmVyIGFzc29jaWF0ZWQgd2l0aCBpdC4KPiAKPiBJbiB0aGUg
-Y2FzZSBvZiB0aGUgaXB1djMsIHRoZSBwYXJhbGxlbCBkaXNwbGF5IGRyaXZlciBpcyBhc3NvY2lh
-dGVkCj4gd2l0aCB0aGUgZGlzcGxheUBkaTAgbm9kZSwgc28gdGhlIGRldmljZSBtYXRjaGVzIHdp
-dGggdGhlIGRldmljZSB0cmVlCj4gbm9kZSBkaXJlY3RseS4KPiAKPiBSZWZlcmVuY2VzOgo+IC0t
-LS0tLS0tLS0tCj4gWzFdIFRoZSBpcHV2MyBkcml2ZXIgaXMgaW4gZHJpdmVycy9zdGFnaW5nL2lt
-eC1kcm0vCj4gWzJdIHRoZSBkbWEgaXB1IGRyaXZlciBpcyBpbiBkcml2ZXJzL2RtYS9pcHUvCj4g
-CgotLS0K
+Hi, Tomi and Mark,
+
+On Mon, Feb 17, 2014 at 10:37 PM, Mark Rutland <mark.rutland@arm.com> wrote:
+>
+> On Tue, Jan 14, 2014 at 11:16:24AM +0000, Zhou Zhu wrote:
+> > add device tree support for mmp fb/controller
+> > the description of DT config is at
+> > Documentation/devicetree/bindings/fb/mmp-disp.txt
+> >
+> > Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+> > ---
+> >  Documentation/devicetree/bindings/fb/mmp-disp.txt |   60 ++++++++
+> >  drivers/video/mmp/fb/mmpfb.c                      |   73 ++++++----
+> >  drivers/video/mmp/hw/mmp_ctrl.c                   |  160 ++++++++++++++++-----
+> >  3 files changed, 235 insertions(+), 58 deletions(-)
+> >  create mode 100644 Documentation/devicetree/bindings/fb/mmp-disp.txt
+
+
+Thank you very much for your review! I am trying to update the code
+according to your comments.
+
+We have reviewed the dts and removed many software settings and
+not-used settings - for example, we unpacked path-config/link-config
+and removed some configures that we will never change.
+Also we removed fb settings which is considered as software.
+
+Would you please give us some feedbacks if we adjust our dts into follow style?
+As there might be big changes on the code structures, I would update
+the code after this dts layout is considered as "right".
+
+mmp-disp@d420b000 {
+    compatible = "marvell,mmp-disp";
+    reg = <0xd420b000 0x1fc>;
+    interrupts = <0 41 0x4>;
+
+    internal-connections {
+        pipe1: pn-path {
+        input = "panel-graphic"; //panel-graphic is the overlay name in spec.
+        output = &parallel;
+        }
+    }
+    ports{
+        parallel: parallel {
+            marvell,rbswap;
+            marvell,spi;
+        }
+    }
+    status = "okay";
+}
+
+panel-xxx {
+    properties;
+    connection = &parallel;
+}
+
+-- 
+Thanks,
+-Zhou

@@ -1,49 +1,58 @@
-From: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Date: Wed, 05 Mar 2014 10:01:51 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 05 Mar 2014 12:44:06 +0000
 Subject: Re: [PATCH] fbdev: FB_OPENCORES should depend on HAS_DMA
-Message-Id: <20140305100150.GA17085@chokladfabriken.org>
+Message-Id: <53171C16.20505@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="qX4r0E5FKqhRUBSi70TVJGJdwKKDcR6FB"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1393012569-22560-1-git-send-email-geert@linux-m68k.org>
 In-Reply-To: <1393012569-22560-1-git-send-email-geert@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Feb 21, 2014 at 08:56:09PM +0100, Geert Uytterhoeven wrote:
-> If NO_DMA=y:
-> 
+--qX4r0E5FKqhRUBSi70TVJGJdwKKDcR6FB
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 21/02/14 21:56, Geert Uytterhoeven wrote:
+> If NO_DMA=3Dy:
+>=20
 >     drivers/built-in.o: In function `ocfb_remove':
 >     ocfb.c:(.text+0x27fee): undefined reference to `dma_free_coherent'
 >     drivers/built-in.o: In function `ocfb_probe':
->     ocfb.c:(.text+0x28418): undefined reference to `dma_alloc_coherent'
+>     ocfb.c:(.text+0x28418): undefined reference to `dma_alloc_coherent'=
+
 >     ocfb.c:(.text+0x284d2): undefined reference to `dma_free_coherent'
-> 
+>=20
 
-I obviously had neglected compiling against that configuration,
-thanks for the catch.
+Thanks, applied to fbdev branch.
 
-Acked-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+ Tomi
 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  drivers/video/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 0192900dd183..fb8d31e717bc 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -982,7 +982,7 @@ config FB_PVR2
->  
->  config FB_OPENCORES
->  	tristate "OpenCores VGA/LCD core 2.0 framebuffer support"
-> -	depends on FB
-> +	depends on FB && HAS_DMA
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> -- 
-> 1.7.9.5
-> 
+
+
+--qX4r0E5FKqhRUBSi70TVJGJdwKKDcR6FB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJTFxwWAAoJEPo9qoy8lh71XxwP+gKLDjnzZw7TH1CM5fTMBM4O
+rG+y/Y1S07m8hqqiqTnhtBu7uqkpEB13Mr7ZKVQegmv+Z3vmyQzm0PrwhIXsQFpz
+nz38fT0PmPu2aP09BgC4b789LVMDqFCyvKlKAzw0/HGKABH3yZqqU94MoiyviDVm
+PcDTQ1FowhyC88MG9OO+6eMhf5JHWz7qf86pb130fn++vFkumlXXEwyMBgwjPdvv
+gcMXi+exQf7x0se30heEjX3PUZAJn+OFI+g5eDVPFamCl8kM5PWk0S7a0webnv/z
+rrAIvTTooJMNk+MWOjF8bfaJmxDkfO9LK5X76WJcUx3z0CaMcSLlonqoCo1sbqRy
+WPyn9GxAKnqQ3qZjpd+uhZmq6yefnW91TfFFAxcl4qyYrD6WHagv3Zdk2U0hBIpB
+2mXVVzkUwenAEld+0K7dNW+PydkQi8ivXR8EOArAEwBHzbp2iqURk8CqCliPZ6YI
+6AUddmF57bwnyMPST9hETmGKQaLmbybdQyWNSIUMXaCC8jTCZ4AK58w/OYuQX56J
+Ht9/4ZyrRfqfqEiq6LtpvOcsJ56knubFCnd8PGgC8UevshrgXb3c6gbgvMoCg009
+SHyNuy7hGsrHfh/tHJZu0tZJ6UA+DlzN3I8ISuN5ST2GI7JyARurBeR5siyLiFx/
+oYqKRhM7fhKAytUpLiiq
+=LBRN
+-----END PGP SIGNATURE-----
+
+--qX4r0E5FKqhRUBSi70TVJGJdwKKDcR6FB--

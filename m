@@ -1,68 +1,100 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Tue, 04 Mar 2014 19:21:58 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 05 Mar 2014 06:32:40 +0000
 Subject: Re: [PATCH 0/3] Reorder drivers/video directory
-Message-Id: <531627D6.6060007@infradead.org>
+Message-Id: <5316C508.2000402@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="HxSXmBe5hEpmEaFNg6ksOkRBjcVNlQc7K"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393502086-9433-1-git-send-email-tomi.valkeinen@ti.com> <5314412B.6060502@ti.com>
-In-Reply-To: <5314412B.6060502@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <1393502086-9433-1-git-send-email-tomi.valkeinen@ti.com> <5314412B.6060502@ti.com> <531627D6.6060007@infradead.org>
+In-Reply-To: <531627D6.6060007@infradead.org>
+To: Randy Dunlap <rdunlap@infradead.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 03/03/2014 12:45 AM, Tomi Valkeinen wrote:
-> On 27/02/14 13:54, Tomi Valkeinen wrote:
->> Hi,
->>
->> This is a re-send of the series, with RFC removed from the subject, and a bunch
->> of acks added.
->>
->> I'm cc'ing more people, to make sure this doesn't come as a surprise, and to
->> make sure this is not a bad idea, doomed to fail horribly.
->>
->> So this series creates a new directory, drivers/video/fbdev/, to which all
->> fbdev related files are moved. Also, a new directory, drivers/video/fbdev/core/
->> is created, to which the core fbdev framework files are moved. This makes the
->> drivers/video hierarchy much more clear.
->>
->> Presuming no one has objections to this as such, I wonder what's the least
->> painful way to merge this? Normally, like any other fbdev change? As a separate
->> pull request, maybe at -rc2 time frame, based on -rc1? Something else?
->>
->>  Tomi
->>
->> Tomi Valkeinen (3):
->>   video: move fbdev to drivers/video/fbdev
->>   fbdev: move fbdev core files to separate directory
->>   video: Kconfig: move drm and fb into separate menus
-> 
-> I have pushed this to my for-next branch. Let's see what happens... At
-> least I'm able to merge the current linux-next without any conflicts.
+--HxSXmBe5hEpmEaFNg6ksOkRBjcVNlQc7K
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Thanks, I'm looking at this change in linux-next now.
+On 04/03/14 21:21, Randy Dunlap wrote:
 
-EXYNOS_VIDEO seems to be a little bit odd.  Can you clarify that for me?
-(This is not a change that you introduced.)
+>> I have pushed this to my for-next branch. Let's see what happens... At=
+
+>> least I'm able to merge the current linux-next without any conflicts.
+>=20
+> Thanks, I'm looking at this change in linux-next now.
+>=20
+> EXYNOS_VIDEO seems to be a little bit odd.  Can you clarify that for me=
+?
+> (This is not a change that you introduced.)
+>=20
+>=20
+> In particular, under Graphics support, select Framebuffer Devices.
+> This lists:
+>   Support for frame buffer devices -->
+>   Exynos Video driver support
+>=20
+> It appears to me that Exynos either is a Framebuffer Device and should =
+depend
+> on FB like the other drivers here do OR (actually XOR) it is not a fram=
+e buffer
+> device and it should not be listed here.
+>=20
+> Then once that is cleared up :), we don't need 2 levels of menu to get =
+to the
+> list of FB drivers -- i.e., one of those levels can be removed.
+
+There are others. For my config, I have:
+
+{*} Support for frame buffer devices  --->
+<M> OMAP2+ Display Subsystem support  --->
+[ ] Exynos Video driver support  ----
+< > Solomon SSD1307 framebuffer support
+
+I didn't want to start fixing those at the moment, as I have no idea
+about exynos or solomon, and I wanted to just try to do the reorder,
+without any other changes.
+
+I agree that there's something wrong with the items. For the OMAP DSS,
+there are non-fbdev related items under that menu, used also by omapdrm.
+So it should probably be split into different components.
+
+> Oh, and if you keep the new menu item "Framebuffer Devices", please spe=
+ll it
+> like the other entry (Frame Buffer).
+
+Ok, fixed.
+
+> Other than those nits, I like this change very much.  Thanks.
+
+Thanks. After pushing this to for-next, I'm getting compile error
+reports from Fengguang and Stephen. Let's see if I manage to avoid
+those... This is not the easiest change to manage.
+
+ Tomi
 
 
-In particular, under Graphics support, select Framebuffer Devices.
-This lists:
-  Support for frame buffer devices -->
-  Exynos Video driver support
 
-It appears to me that Exynos either is a Framebuffer Device and should depend
-on FB like the other drivers here do OR (actually XOR) it is not a frame buffer
-device and it should not be listed here.
+--HxSXmBe5hEpmEaFNg6ksOkRBjcVNlQc7K
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Then once that is cleared up :), we don't need 2 levels of menu to get to the
-list of FB drivers -- i.e., one of those levels can be removed.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-Oh, and if you keep the new menu item "Framebuffer Devices", please spell it
-like the other entry (Frame Buffer).
+iQIcBAEBAgAGBQJTFsULAAoJEPo9qoy8lh71rJcP/0BW6/QHly9c7AVDsU5UA/b4
+EA24lrGl9dS7z7oPQHeEh0tjPOfvGGo2raZ4fnm5gGkewWSZAYHyhVjDf3HqgZEA
+2wfcR7n9/Y4PC3L1ZrL1Utof4PjN3JWLUA6IiBK54xlB1rABKWjPguQP7E1EboHC
+xhDKwz8f/adRHH3QVJVzkEUH2d7d/X58WuC/x02/sFlYvxl2RU15A9AdXJ/no5Qp
+POw6CmUcpsfiWD5oKFWy8CprZWr2Hto45FOQEhDFHb/YmRmva8EFJFcTo3Wu72fi
+T81kTNA22qEA31vIttqMxtq+9sQlAfNKN3GhzuuatIP9M63x2/y3mbVybNrRw0i1
+c14Lv1JwTI5bqwpij4xJ69qWasc+1Ln9rIwBZYLdz+8Bo4ddkZOoz24oXMRaR3uZ
+hy9v+lVTYNYeRpk/HhHlXeTIpqOKXhN4OKKH142fo3WEfD4l1pvdxHupr4LqgByG
+5xKskmVfyUwomBHDN1eLXs3wWYe1ZPzilwlU4HzDkoPnqx8tqpRwINmG0a5/Ses/
+huu6TNxzBHXG2yJtJa8sBKZ7qvsw/LG3TQ+DDt+KGNW53CS8BMoGcEW7i3YEBVr/
+fTODC7PiZ5x5xa17bRntakqh6AAPwPfM9NGPEqvdzghqhB6BDJ4f+Z5K5h4D7gAk
+4wzdU0SOf11FDC9N2BXf
+=17dJ
+-----END PGP SIGNATURE-----
 
-
-Other than those nits, I like this change very much.  Thanks.
-
--- 
-~Randy
+--HxSXmBe5hEpmEaFNg6ksOkRBjcVNlQc7K--

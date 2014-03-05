@@ -1,75 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 18 Mar 2014 08:15:47 +0000
-Subject: [PATCHv2 8/8] Doc/DT: Add DT binding documentation for tpd12s015 encoder
-Message-Id: <1395130547-18633-9-git-send-email-tomi.valkeinen@ti.com>
+From: Daniel Mack <zonque@gmail.com>
+Date: Wed, 05 Mar 2014 16:12:48 +0000
+Subject: [PATCH 3/4] video: pxa3xx-gcu: provide an empty .open call
+Message-Id: <1394035969-32420-4-git-send-email-zonque@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395130547-18633-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1395130547-18633-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Vetter <daniel-/w4YWyX8dFk@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-Add DT binding documentation for tpd12s015 encoder
+This is necessary in order to make the core set file->private_data to
+miscdev in use. We need that information later to dereference the
+container of the device, so we can get access to our private struct from
+other callbacks.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Reviewed-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Daniel Mack <zonque@gmail.com>
 ---
- .../devicetree/bindings/video/ti,tpd12s015.txt     | 44 ++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/ti,tpd12s015.txt
+ drivers/video/pxa3xx-gcu.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/video/ti,tpd12s015.txt b/Documentation/devicetree/bindings/video/ti,tpd12s015.txt
-new file mode 100644
-index 000000000000..26e6d32e3f20
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/ti,tpd12s015.txt
-@@ -0,0 +1,44 @@
-+TPD12S015 HDMI level shifter and ESD protection chip
-+==========================
+diff --git a/drivers/video/pxa3xx-gcu.c b/drivers/video/pxa3xx-gcu.c
+index f9961ba..73c29ec 100644
+--- a/drivers/video/pxa3xx-gcu.c
++++ b/drivers/video/pxa3xx-gcu.c
+@@ -373,6 +373,15 @@ static inline struct pxa3xx_gcu_priv *to_pxa3xx_gcu_priv(struct file *file)
+ 	return container_of(dev, struct pxa3xx_gcu_priv, misc_dev);
+ }
+ 
++/*
++ * provide an empty .open callback, so the core sets file->private_data
++ * for us.
++ */
++static int pxa3xx_gcu_open(struct inode *inode, struct file *file)
++{
++	return 0;
++}
 +
-+Required properties:
-+- compatible: "ti,tpd12s015"
-+
-+Optional properties:
-+- gpios: CT CP HPD, LS OE and HPD gpios
-+
-+Required nodes:
-+- Video port 0 for HDMI input
-+- Video port 1 for HDMI output
-+
-+Example
-+-------
-+
-+tpd12s015: encoder@1 {
-+	compatible = "ti,tpd12s015";
-+
-+	gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>,	/* 60, CT CP HPD */
-+		<&gpio2 9 GPIO_ACTIVE_HIGH>,	/* 41, LS OE */
-+		<&gpio2 31 GPIO_ACTIVE_HIGH>;	/* 63, HPD */
-+
-+	ports {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		port@0 {
-+			reg = <0>;
-+
-+			tpd12s015_in: endpoint@0 {
-+				remote-endpoint = <&hdmi_out>;
-+			};
-+		};
-+
-+		port@1 {
-+			reg = <1>;
-+
-+			tpd12s015_out: endpoint@0 {
-+				remote-endpoint = <&hdmi_connector_in>;
-+			};
-+		};
-+	};
-+};
+ static ssize_t
+ pxa3xx_gcu_write(struct file *file, const char *buff,
+ 		 size_t count, loff_t *offp)
+@@ -571,6 +580,7 @@ pxa3xx_gcu_free_buffers(struct device *dev,
+ 
+ static const struct file_operations pxa3xx_gcu_miscdev_fops = {
+ 	.owner =		THIS_MODULE,
++	.open =			pxa3xx_gcu_open,
+ 	.write =		pxa3xx_gcu_write,
+ 	.unlocked_ioctl =	pxa3xx_gcu_ioctl,
+ 	.mmap =			pxa3xx_gcu_mmap,
 -- 
-1.8.3.2
+1.8.5.3
 

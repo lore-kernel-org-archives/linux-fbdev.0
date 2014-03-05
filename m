@@ -1,96 +1,191 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Fri, 14 Mar 2014 09:12:48 +0000
-Subject: [PATCH v7][ 4/5] ARM: dts: i.MX35: Add display support.
-Message-Id: <1394788369-5096-4-git-send-email-denis@eukrea.com>
+From: Daniel Mack <zonque@gmail.com>
+Date: Wed, 05 Mar 2014 16:12:46 +0000
+Subject: [PATCH 1/4] video: pxa3xx-gcu: rename some symbols
+Message-Id: <1394035969-32420-2-git-send-email-zonque@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1394788369-5096-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1394788369-5096-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-There is already a "dma ipu driver" for the mx3*
-that is currently at drivers/dma/ipu/ipu_idmac.c
+Prefix some functions with more specific names. While at it, kill some
+stray newlines and other coding style related minor things.
 
-The mx3fb framebuffer driver uses this "dma ipu driver".
-
-The goal is not to expose the "dma ipu driver" in the device
-tree bindings, to make the mx3fb bindings look similar
-to the ipuv3 ones.
-
-In the device tree bindings, the "dma ipu driver" is absent,
-and the mx3fb compatible is "fsl,imx<soc>-ipu".
-
-An node for the mx3fb was also added in the imx35 dtsi.
-
-Signed-off-by: Denis Carikli <denis@eukrea.com>
+Signed-off-by: Daniel Mack <zonque@gmail.com>
 ---
-ChangeLog v6->v7:
-- Removed the Cc from the patch, they went into 
-  git send-email instead.
-- Removed the comment, and instead a commit messaage was 
-  added to explain the non-straingtforward part of the change.
+ drivers/video/pxa3xx-gcu.c | 48 ++++++++++++++++++++--------------------------
+ 1 file changed, 21 insertions(+), 27 deletions(-)
 
-ChangeLog v5->v6:
-- Shrinked the Cc list.
-
-ChangeLog v4->v5:
-- Added Grant Likely and Shawn Guo in the Cc list.
-- Adapted to the new non-dma ipu bindings.
-- Adapted to the use of imx35-pingrp.h
-- The pinctrl ipu node addition was moved in this commit.
-
-ChangeLog v3->v4:
-- Splitted the imx35.dtsi display support (new patch).
----
- arch/arm/boot/dts/imx35.dtsi |    7 +++++++
- arch/arm/mach-imx/imx35-dt.c |    6 ++++++
- 2 files changed, 13 insertions(+)
-
-diff --git a/arch/arm/boot/dts/imx35.dtsi b/arch/arm/boot/dts/imx35.dtsi
-index e59ccb4..b9bf6a0 100644
---- a/arch/arm/boot/dts/imx35.dtsi
-+++ b/arch/arm/boot/dts/imx35.dtsi
-@@ -230,6 +230,13 @@
- 				status = "disabled";
- 			};
+diff --git a/drivers/video/pxa3xx-gcu.c b/drivers/video/pxa3xx-gcu.c
+index ad382b3..9cd48ab 100644
+--- a/drivers/video/pxa3xx-gcu.c
++++ b/drivers/video/pxa3xx-gcu.c
+@@ -107,7 +107,6 @@ struct pxa3xx_gcu_priv {
+ 	struct timeval 		  base_time;
  
-+			ipu: ipu@53fc0000 {
-+				compatible = "fsl,imx35-ipu";
-+				reg = <0x53fc0000 0x4000>;
-+				clocks = <&clks 55>;
-+				status = "disabled";
-+			};
-+
- 			audmux: audmux@53fc4000 {
- 				compatible = "fsl,imx35-audmux", "fsl,imx31-audmux";
- 				reg = <0x53fc4000 0x4000>;
-diff --git a/arch/arm/mach-imx/imx35-dt.c b/arch/arm/mach-imx/imx35-dt.c
-index 9d48e00..657cc5d 100644
---- a/arch/arm/mach-imx/imx35-dt.c
-+++ b/arch/arm/mach-imx/imx35-dt.c
-@@ -18,14 +18,20 @@
- #include <asm/mach/time.h>
- #include <asm/hardware/cache-l2x0.h>
- #include "common.h"
-+#include "devices-imx35.h"
- #include "mx35.h"
+ 	struct pxa3xx_gcu_batch *free;
+-
+ 	struct pxa3xx_gcu_batch *ready;
+ 	struct pxa3xx_gcu_batch *ready_last;
+ 	struct pxa3xx_gcu_batch *running;
+@@ -368,27 +367,26 @@ pxa3xx_gcu_wait_free(struct pxa3xx_gcu_priv *priv)
  
- static void __init imx35_dt_init(void)
+ /* Misc device layer */
+ 
+-static inline struct pxa3xx_gcu_priv *file_dev(struct file *file)
++static inline struct pxa3xx_gcu_priv *to_pxa3xx_gcu_priv(struct file *file)
  {
-+	struct device_node *np;
- 	mxc_arch_reset_init_dt();
- 
- 	of_platform_populate(NULL, of_default_bus_match_table,
- 			     NULL, NULL);
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,imx35-ipu");
-+	if (of_device_is_available(np))
-+		imx35_add_ipu_core();
+ 	struct miscdevice *dev = file->private_data;
+ 	return container_of(dev, struct pxa3xx_gcu_priv, misc_dev);
  }
  
- static void __init imx35_irq_init(void)
+ static ssize_t
+-pxa3xx_gcu_misc_write(struct file *file, const char *buff,
+-		      size_t count, loff_t *offp)
++pxa3xx_gcu_write(struct file *file, const char *buff,
++		 size_t count, loff_t *offp)
+ {
+ 	int ret;
+ 	unsigned long flags;
+ 	struct pxa3xx_gcu_batch	*buffer;
+-	struct pxa3xx_gcu_priv *priv = file_dev(file);
++	struct pxa3xx_gcu_priv *priv = to_pxa3xx_gcu_priv(file);
+ 
+ 	int words = count / 4;
+ 
+ 	/* Does not need to be atomic. There's a lock in user space,
+ 	 * but anyhow, this is just for statistics. */
+ 	priv->shared->num_writes++;
+-
+ 	priv->shared->num_words += words;
+ 
+ 	/* Last word reserved for batch buffer end command */
+@@ -406,10 +404,8 @@ pxa3xx_gcu_misc_write(struct file *file, const char *buff,
+ 	 * Get buffer from free list
+ 	 */
+ 	spin_lock_irqsave(&priv->spinlock, flags);
+-
+ 	buffer = priv->free;
+ 	priv->free = buffer->next;
+-
+ 	spin_unlock_irqrestore(&priv->spinlock, flags);
+ 
+ 
+@@ -454,10 +450,10 @@ pxa3xx_gcu_misc_write(struct file *file, const char *buff,
+ 
+ 
+ static long
+-pxa3xx_gcu_misc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++pxa3xx_gcu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	unsigned long flags;
+-	struct pxa3xx_gcu_priv *priv = file_dev(file);
++	struct pxa3xx_gcu_priv *priv = to_pxa3xx_gcu_priv(file);
+ 
+ 	switch (cmd) {
+ 	case PXA3XX_GCU_IOCTL_RESET:
+@@ -474,10 +470,10 @@ pxa3xx_gcu_misc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ }
+ 
+ static int
+-pxa3xx_gcu_misc_mmap(struct file *file, struct vm_area_struct *vma)
++pxa3xx_gcu_mmap(struct file *file, struct vm_area_struct *vma)
+ {
+ 	unsigned int size = vma->vm_end - vma->vm_start;
+-	struct pxa3xx_gcu_priv *priv = file_dev(file);
++	struct pxa3xx_gcu_priv *priv = to_pxa3xx_gcu_priv(file);
+ 
+ 	switch (vma->vm_pgoff) {
+ 	case 0:
+@@ -532,8 +528,8 @@ static inline void pxa3xx_gcu_init_debug_timer(void) {}
+ #endif
+ 
+ static int
+-add_buffer(struct platform_device *dev,
+-	   struct pxa3xx_gcu_priv *priv)
++pxa3xx_gcu_add_buffer(struct platform_device *dev,
++		      struct pxa3xx_gcu_priv *priv)
+ {
+ 	struct pxa3xx_gcu_batch *buffer;
+ 
+@@ -549,15 +545,14 @@ add_buffer(struct platform_device *dev,
+ 	}
+ 
+ 	buffer->next = priv->free;
+-
+ 	priv->free = buffer;
+ 
+ 	return 0;
+ }
+ 
+ static void
+-free_buffers(struct platform_device *dev,
+-	     struct pxa3xx_gcu_priv *priv)
++pxa3xx_gcu_free_buffers(struct platform_device *dev,
++			struct pxa3xx_gcu_priv *priv)
+ {
+ 	struct pxa3xx_gcu_batch *next, *buffer = priv->free;
+ 
+@@ -568,18 +563,17 @@ free_buffers(struct platform_device *dev,
+ 				  buffer->ptr, buffer->phys);
+ 
+ 		kfree(buffer);
+-
+ 		buffer = next;
+ 	}
+ 
+ 	priv->free = NULL;
+ }
+ 
+-static const struct file_operations misc_fops = {
+-	.owner	= THIS_MODULE,
+-	.write	= pxa3xx_gcu_misc_write,
+-	.unlocked_ioctl = pxa3xx_gcu_misc_ioctl,
+-	.mmap	= pxa3xx_gcu_misc_mmap
++static const struct file_operations pxa3xx_gcu_miscdev_fops = {
++	.owner =		THIS_MODULE,
++	.write =		pxa3xx_gcu_write,
++	.unlocked_ioctl =	pxa3xx_gcu_ioctl,
++	.mmap =			pxa3xx_gcu_mmap,
+ };
+ 
+ static int pxa3xx_gcu_probe(struct platform_device *dev)
+@@ -593,7 +587,7 @@ static int pxa3xx_gcu_probe(struct platform_device *dev)
+ 		return -ENOMEM;
+ 
+ 	for (i = 0; i < 8; i++) {
+-		ret = add_buffer(dev, priv);
++		ret = pxa3xx_gcu_add_buffer(dev, priv);
+ 		if (ret) {
+ 			dev_err(&dev->dev, "failed to allocate DMA memory\n");
+ 			goto err_free_priv;
+@@ -611,7 +605,7 @@ static int pxa3xx_gcu_probe(struct platform_device *dev)
+ 
+ 	priv->misc_dev.minor	= MISCDEV_MINOR,
+ 	priv->misc_dev.name	= DRV_NAME,
+-	priv->misc_dev.fops	= &misc_fops,
++	priv->misc_dev.fops	= &pxa3xx_gcu_miscdev_fops;
+ 
+ 	/* register misc device */
+ 	ret = misc_register(&priv->misc_dev);
+@@ -710,7 +704,7 @@ err_misc_deregister:
+ 	misc_deregister(&priv->misc_dev);
+ 
+ err_free_priv:
+-	free_buffers(dev, priv);
++	pxa3xx_gcu_free_buffers(dev, priv);
+ 	kfree(priv);
+ 	return ret;
+ }
+@@ -728,7 +722,7 @@ static int pxa3xx_gcu_remove(struct platform_device *dev)
+ 	iounmap(priv->mmio_base);
+ 	release_mem_region(r->start, resource_size(r));
+ 	clk_disable(priv->clk);
+-	free_buffers(dev, priv);
++	pxa3xx_gcu_free_buffers(dev, priv);
+ 	kfree(priv);
+ 
+ 	return 0;
 -- 
-1.7.9.5
+1.8.5.3
 

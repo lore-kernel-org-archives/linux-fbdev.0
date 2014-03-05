@@ -1,36 +1,44 @@
-From: Alexander Shiyan <shc_work@mail.ru>
-Date: Thu, 20 Mar 2014 06:58:31 +0000
-Subject: [PATCH] video: imxfb: Select LCD_CLASS_DEVICE unconditionally
-Message-Id: <1395298711-14619-1-git-send-email-shc_work@mail.ru>
+From: Wang YanQing <udknight@gmail.com>
+Date: Wed, 05 Mar 2014 15:56:19 +0000
+Subject: [PATCH] video: fbdev: uvesafb: Remove impossible code path in uvesafb_init_info
+Message-Id: <20140305155619.GA32166@udknight>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: plagnioj@jcrosoft.com, fengguang.wu@intel.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-FB driver uses lowlevel controls for LCD powering and contrast changing.
-Since LCD class cannot be used as an optional feature and should be
-compiled for using in the driver, this patch selects LCD_CLASS_DEVICE
-symbol for the driver.
+Because uvesafb_vbe_init will fail when get zero avaiable modes,
+and we have checked the return value of uvesafb_vbe_init_mode,
+so it is impossible to pass NULL as mode into uvesafb_init_info.
 
-Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+[ This patch fix warning report by fengguang.wu@intel.com
+  "drivers/video/fbdev/uvesafb.c:1509 uvesafb_init_info()
+   error: we previously assumed 'mode' could be null" ]
+
+Signed-off-by: Wang YanQing <udknight@gmail.com>
 ---
- drivers/video/fbdev/Kconfig | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/uvesafb.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 67409e0..b7cb0af 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -328,6 +328,8 @@ config FB_SA1100
- config FB_IMX
- 	tristate "Freescale i.MX1/21/25/27 LCD support"
- 	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
-+	select BACKLIGHT_LCD_SUPPORT
-+	select LCD_CLASS_DEVICE
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index 18352b2..509d452 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -1474,12 +1474,7 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
+ 	 *                 used video mode, i.e. the minimum amount of
+ 	 *                 memory we need.
+ 	 */
+-	if (mode != NULL) {
+-		size_vmode = info->var.yres * mode->bytes_per_scan_line;
+-	} else {
+-		size_vmode = info->var.yres * info->var.xres *
+-			     ((info->var.bits_per_pixel + 7) >> 3);
+-	}
++	size_vmode = info->var.yres * mode->bytes_per_scan_line;
+ 
+ 	/*
+ 	 *   size_total -- all video memory we have. Used for mtrr
 -- 
-1.8.3.2
-
+1.8.3.4.8.g69490f3.dirty

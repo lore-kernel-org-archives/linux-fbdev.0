@@ -1,79 +1,141 @@
-From: =?UTF-8?q?Ga=C3=ABtan=20Carlier?= <gcembed@gmail.com>
-Date: Thu, 27 Mar 2014 15:20:36 +0000
-Subject: [PATCH 1/1] video: imxfb: Driver depends on status of LCD class device
-Message-Id: <1395933636-15704-1-git-send-email-gcembed@gmail.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Wed, 05 Mar 2014 16:23:26 +0000
+Subject: [PATCH v5 2/2] ARM: vexpress: Add CLCD Device Tree properties
+Message-Id: <1394036606-17784-2-git-send-email-pawel.moll@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1394036606-17784-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1394036606-17784-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-If LCD_CLASS_DEVICE is disabled, symbol devm_lcd_device_register is
-undefined
+... for V2M-P1 motherboard CLCD (limited to 640x480 16bpp and using
+dedicated video RAM bank) and for V2P-CA9 (up to 1024x768 16bpp).
 
-Signed-off-by: Ga=C3=ABtan Carlier <gcembed@gmail.com>
+Signed-off-by: Pawel Moll <pawel.moll@arm.com>
 ---
- drivers/video/fbdev/imxfb.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ arch/arm/boot/dts/vexpress-v2m-rs1.dtsi | 21 ++++++++++++++++++++-
+ arch/arm/boot/dts/vexpress-v2m.dtsi     | 21 ++++++++++++++++++++-
+ arch/arm/boot/dts/vexpress-v2p-ca9.dts  | 18 ++++++++++++++++++
+ 3 files changed, 58 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-index f6e6216..b979b61 100644
---- a/drivers/video/fbdev/imxfb.c
-+++ b/drivers/video/fbdev/imxfb.c
-@@ -30,7 +30,9 @@
- #include <linux/platform_device.h>
- #include <linux/dma-mapping.h>
- #include <linux/io.h>
-+#ifdef CONFIG_LCD_CLASS_DEVICE
- #include <linux/lcd.h>
-+#endif
- #include <linux/math64.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
-@@ -718,6 +720,7 @@ static int imxfb_of_read_mode(struct device *dev, struc=
-t device_node *np,
- 	return 0;
- }
-=20
-+#ifdef CONFIG_LCD_CLASS_DEVICE
- static int imxfb_lcd_check_fb(struct lcd_device *lcddev, struct fb_info *f=
-i)
- {
- 	struct imxfb_info *fbi =3D dev_get_drvdata(&lcddev->dev);
-@@ -785,6 +788,7 @@ static struct lcd_ops imxfb_lcd_ops =3D {
- 	.get_power	=3D imxfb_lcd_get_power,
- 	.set_power	=3D imxfb_lcd_set_power,
- };
-+#endif
-=20
- static int imxfb_setup(void)
- {
-@@ -809,7 +813,9 @@ static int imxfb_setup(void)
- static int imxfb_probe(struct platform_device *pdev)
- {
- 	struct imxfb_info *fbi;
-+#ifdef CONFIG_LCD_CLASS_DEVICE
- 	struct lcd_device *lcd;
-+#endif
- 	struct fb_info *info;
- 	struct imx_fb_platform_data *pdata;
- 	struct resource *res;
-@@ -967,6 +973,7 @@ static int imxfb_probe(struct platform_device *pdev)
- 		goto failed_lcd;
- 	}
-=20
-+#ifdef CONFIG_LCD_CLASS_DEVICE
- 	lcd =3D devm_lcd_device_register(&pdev->dev, "imxfb-lcd", &pdev->dev, fbi,
- 				       &imxfb_lcd_ops);
- 	if (IS_ERR(lcd)) {
-@@ -975,6 +982,7 @@ static int imxfb_probe(struct platform_device *pdev)
- 	}
-=20
- 	lcd->props.max_contrast =3D 0xff;
-+#endif
-=20
- 	imxfb_enable_controller(fbi);
- 	fbi->pdev =3D pdev;
---=20
-1.7.7.4
+diff --git a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
+index ac870fb..c95a4cb 100644
+--- a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
++++ b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
+@@ -230,9 +230,28 @@
+ 			clcd@1f0000 {
+ 				compatible = "arm,pl111", "arm,primecell";
+ 				reg = <0x1f0000 0x1000>;
++				interrupt-names = "combined";
+ 				interrupts = <14>;
+ 				clocks = <&v2m_oscclk1>, <&smbclk>;
+ 				clock-names = "clcdclk", "apb_pclk";
++
++				arm,pl11x,framebuffer-base = <0x18000000 0x00800000>;
++				arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
++				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
++				display-timings {
++					native-mode = <&v2m_clcd_timing0>;
++					v2m_clcd_timing0: vga {
++						clock-frequency = <25175000>;
++						hactive = <640>;
++						hback-porch = <40>;
++						hfront-porch = <24>;
++						hsync-len = <96>;
++						vactive = <480>;
++						vback-porch = <32>;
++						vfront-porch = <11>;
++						vsync-len = <2>;
++					};
++				};
+ 			};
+ 		};
+ 
+@@ -282,7 +301,7 @@
+ 				/* CLCD clock */
+ 				compatible = "arm,vexpress-osc";
+ 				arm,vexpress-sysreg,func = <1 1>;
+-				freq-range = <23750000 63500000>;
++				freq-range = <23750000 65000000>;
+ 				#clock-cells = <0>;
+ 				clock-output-names = "v2m:oscclk1";
+ 			};
+diff --git a/arch/arm/boot/dts/vexpress-v2m.dtsi b/arch/arm/boot/dts/vexpress-v2m.dtsi
+index f142036..9224834 100644
+--- a/arch/arm/boot/dts/vexpress-v2m.dtsi
++++ b/arch/arm/boot/dts/vexpress-v2m.dtsi
+@@ -229,9 +229,28 @@
+ 			clcd@1f000 {
+ 				compatible = "arm,pl111", "arm,primecell";
+ 				reg = <0x1f000 0x1000>;
++				interrupt-names = "combined";
+ 				interrupts = <14>;
+ 				clocks = <&v2m_oscclk1>, <&smbclk>;
+ 				clock-names = "clcdclk", "apb_pclk";
++
++				arm,pl11x,framebuffer-base = <0x4c000000 0x00800000>;
++				arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
++				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
++				display-timings {
++					native-mode = <&v2m_clcd_timing0>;
++					v2m_clcd_timing0: vga {
++						clock-frequency = <25175000>;
++						hactive = <640>;
++						hback-porch = <40>;
++						hfront-porch = <24>;
++						hsync-len = <96>;
++						vactive = <480>;
++						vback-porch = <32>;
++						vfront-porch = <11>;
++						vsync-len = <2>;
++					};
++				};
+ 			};
+ 		};
+ 
+@@ -281,7 +300,7 @@
+ 				/* CLCD clock */
+ 				compatible = "arm,vexpress-osc";
+ 				arm,vexpress-sysreg,func = <1 1>;
+-				freq-range = <23750000 63500000>;
++				freq-range = <23750000 65000000>;
+ 				#clock-cells = <0>;
+ 				clock-output-names = "v2m:oscclk1";
+ 			};
+diff --git a/arch/arm/boot/dts/vexpress-v2p-ca9.dts b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
+index 62d9b22..ed4f223 100644
+--- a/arch/arm/boot/dts/vexpress-v2p-ca9.dts
++++ b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
+@@ -70,9 +70,27 @@
+ 	clcd@10020000 {
+ 		compatible = "arm,pl111", "arm,primecell";
+ 		reg = <0x10020000 0x1000>;
++		interrupt-names = "combined";
+ 		interrupts = <0 44 4>;
+ 		clocks = <&oscclk1>, <&oscclk2>;
+ 		clock-names = "clcdclk", "apb_pclk";
++
++		arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
++		max-memory-bandwidth = <94371840>; /* Bps, 1024x768@60 16bpp */
++		display-timings {
++			native-mode = <&clcd_timing0>;
++			clcd_timing0: xga {
++				clock-frequency = <63500127>;
++				hactive = <1024>;
++				hback-porch = <152>;
++				hfront-porch = <48>;
++				hsync-len = <104>;
++				vactive = <768>;
++				vback-porch = <23>;
++				vfront-porch = <3>;
++				vsync-len = <4>;
++			};
++		};
+ 	};
+ 
+ 	memory-controller@100e0000 {
+-- 
+1.8.3.2
 

@@ -1,72 +1,102 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 21 Mar 2014 13:42:42 +0000
-Subject: Re: [PATCH] fbdev: Make the switch from generic to native driver less alarming
-Message-Id: <532C41D2.7030509@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Hja1gfHAlXBs43clittwAlXw2ijBSj6cc"
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Fri, 07 Mar 2014 10:14:31 +0000
+Subject: [PATCH] lib: remove FBCON dependency for fonts
+Message-Id: <1394187271-5857-1-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345223444-15852-1-git-send-email-ajax@redhat.com>
-In-Reply-To: <1345223444-15852-1-git-send-email-ajax@redhat.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@gmail.com>
 
---Hja1gfHAlXBs43clittwAlXw2ijBSj6cc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Fonts don't depend on CONFIG_FRAMEBUFFER_CONSOLE at all. Remove that.
+Besides, CONFIG_FONT_SUPPORT is 'select'ed anyway, so the dependencies
+aren't checked by most higher-level options.
 
-On 12/02/14 23:02, Adam Jackson wrote:
-> Calling this "conflicting" just makes people think there's a problem
-> when there's not.
->=20
-> Signed-off-by: Adam Jackson <ajax@redhat.com>
-> ---
->  drivers/video/fbmem.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index 7309ac7..b6d5008 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -1596,8 +1596,7 @@ static int do_remove_conflicting_framebuffers(str=
-uct apertures_struct *a,
->  			(primary && gen_aper && gen_aper->count &&
->  			 gen_aper->ranges[0].base =3D=3D VGA_FB_PHYS)) {
-> =20
-> -			printk(KERN_INFO "fb: conflicting fb hw usage "
-> -			       "%s vs %s - removing generic driver\n",
-> +			printk(KERN_INFO "fb: switching to %s from %s\n",
->  			       name, registered_fb[i]->fix.id);
->  			ret =3D do_unregister_framebuffer(registered_fb[i]);
->  			if (ret)
->=20
+It's a relict of the times when fonts where exclusive to the VT layer and
+fbcon.
 
-Thanks, queued for 3.15.
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+---
+ lib/fonts/Kconfig | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
- Tomi
+diff --git a/lib/fonts/Kconfig b/lib/fonts/Kconfig
+index 4dc1b99..0ca66a3 100644
+--- a/lib/fonts/Kconfig
++++ b/lib/fonts/Kconfig
+@@ -9,7 +9,6 @@ if FONT_SUPPORT
+ 
+ config FONTS
+ 	bool "Select compiled-in fonts"
+-	depends on FRAMEBUFFER_CONSOLE
+ 	help
+ 	  Say Y here if you would like to use fonts other than the default
+ 	  your frame buffer console usually use.
+@@ -22,7 +21,6 @@ config FONTS
+ 
+ config FONT_8x8
+ 	bool "VGA 8x8 font" if FONTS
+-	depends on FRAMEBUFFER_CONSOLE
+ 	default y if !SPARC && !FONTS
+ 	help
+ 	  This is the "high resolution" font for the VGA frame buffer (the one
+@@ -45,7 +43,6 @@ config FONT_8x16
+ 
+ config FONT_6x11
+ 	bool "Mac console 6x11 font (not supported by all drivers)" if FONTS
+-	depends on FRAMEBUFFER_CONSOLE
+ 	default y if !SPARC && !FONTS && MAC
+ 	help
+ 	  Small console font with Macintosh-style high-half glyphs.  Some Mac
+@@ -53,7 +50,6 @@ config FONT_6x11
+ 
+ config FONT_7x14
+ 	bool "console 7x14 font (not supported by all drivers)" if FONTS
+-	depends on FRAMEBUFFER_CONSOLE
+ 	help
+ 	  Console font with characters just a bit smaller than the default.
+ 	  If the standard 8x16 font is a little too big for you, say Y.
+@@ -61,7 +57,6 @@ config FONT_7x14
+ 
+ config FONT_PEARL_8x8
+ 	bool "Pearl (old m68k) console 8x8 font" if FONTS
+-	depends on FRAMEBUFFER_CONSOLE
+ 	default y if !SPARC && !FONTS && AMIGA
+ 	help
+ 	  Small console font with PC-style control-character and high-half
+@@ -69,7 +64,6 @@ config FONT_PEARL_8x8
+ 
+ config FONT_ACORN_8x8
+ 	bool "Acorn console 8x8 font" if FONTS
+-	depends on FRAMEBUFFER_CONSOLE
+ 	default y if !SPARC && !FONTS && ARM && ARCH_ACORN
+ 	help
+ 	  Small console font with PC-style control characters and high-half
+@@ -81,13 +75,13 @@ config FONT_MINI_4x6
+ 
+ config FONT_SUN8x16
+ 	bool "Sparc console 8x16 font"
+-	depends on FRAMEBUFFER_CONSOLE && (!SPARC && FONTS || SPARC)
++	depends on !SPARC && FONTS || SPARC
+ 	help
+ 	  This is the high resolution console font for Sun machines. Say Y.
+ 
+ config FONT_SUN12x22
+ 	bool "Sparc console 12x22 font (not supported by all drivers)"
+-	depends on FRAMEBUFFER_CONSOLE && (!SPARC && FONTS || SPARC)
++	depends on !SPARC && FONTS || SPARC
+ 	help
+ 	  This is the high resolution console font for Sun machines with very
+ 	  big letters (like the letters used in the SPARC PROM). If the
+@@ -95,7 +89,6 @@ config FONT_SUN12x22
+ 
+ config FONT_10x18
+ 	bool "console 10x18 font (not supported by all drivers)" if FONTS
+-	depends on FRAMEBUFFER_CONSOLE
+ 	help
+ 	  This is a high resolution console font for machines with very
+ 	  big letters. It fits between the sun 12x22 and the normal 8x16 font.
+-- 
+1.9.0
 
-
-
---Hja1gfHAlXBs43clittwAlXw2ijBSj6cc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTLEHSAAoJEPo9qoy8lh71xtkQAIYGV0yCa+C21VkZ5o/lAwum
-zX3tHb0mnZDB9Dx/Xl9KlD1w34kHtjrEia3JBSJt0h5t9mmnOR1ykFHsAz5ZGnCi
-H5j3MoKhD2QfEa7uEi+eCYNfSQRmExiaryVNMi3bPt4cWPInzIlxQDgg07cS58Qo
-6gVX6yQnf8NG2hObrNY9UfjkVv49aLu0gODSXgmtGxai8KsI98o1JzgPi8Jw1NRS
-gwdyHdg8MYN32IoSgREWjGalwuoOmMOMRStxjS1F5n7UxkiWX9fGvvUkI4GTUKdh
-8vvU+bVKs2Cgecjttv7H0t88JAWRtB8PU0a71mlcFUjF2UUQr/fCEjjPY5zolsBY
-Jh3te308i2R15mXdxloaVYErw0qw5F4ReqZiPm1VXeF/Tt+THvu2bX4tYXgEH429
-C2FOzMa/Gp8yTmqDn5PmfrxQW09Lc+Hb1+CVVdrNYeJN/00TGEPZA0hvs1w1E9U0
-7CrWkq0mMPxjjzT8vUk+Ie8q6aQD+8big4YBjXbl4QsUkzasGUsESxt3eAwOJf/4
-Ar5qMaA7o+h2BQfwD/11AlYZiViOTcEb+sfSzM5NxibNZo8o9kjgJ8jdshUvcGBL
-DlEPvryEJVaH4BudOwkmRirNssrWMGu/PgLX43E+DOwZ0ATUgOt06JL35na5llee
-S1ZHEFprtYGFd2y4R8gt
-=GCQw
------END PGP SIGNATURE-----
-
---Hja1gfHAlXBs43clittwAlXw2ijBSj6cc--

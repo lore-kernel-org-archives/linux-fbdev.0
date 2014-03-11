@@ -1,72 +1,46 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Wed, 19 Mar 2014 13:03:14 +0000
-Subject: [PATCH 01/16] ARM: at91: at91sam9g45: switch to generic PWM framework
-Message-Id: <1395234209-15546-2-git-send-email-alexandre.belloni@free-electrons.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 11 Mar 2014 16:05:15 +0000
+Subject: Fwd: Addition to https://www.kernel.org/doc/Documentation/fb/deferred_io.txt
+Message-Id: <CAMuHMdU6-pCU9ENsVG2u9imYfdpXO8Y1heJo1+i8BT3SXA=VsQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
+--------- Forwarded message ----------
+From: Conor O <falling174fps@gmail.com>
+Date: Tue, Mar 11, 2014 at 4:36 PM
+Subject: Addition to https://www.kernel.org/doc/Documentation/fb/deferred_io.txt
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
- arch/arm/mach-at91/at91sam9g45.c         |  1 +
- arch/arm/mach-at91/at91sam9g45_devices.c | 11 ++---------
- 2 files changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/mach-at91/at91sam9g45.c b/arch/arm/mach-at91/at91sam9g45.c
-index 3c519a7a938f..2d3c6e1ac158 100644
---- a/arch/arm/mach-at91/at91sam9g45.c
-+++ b/arch/arm/mach-at91/at91sam9g45.c
-@@ -250,6 +250,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
- 	CLKDEV_CON_DEV_ID(NULL, "atmel_sha", &aestdessha_clk),
- 	CLKDEV_CON_DEV_ID(NULL, "atmel_tdes", &aestdessha_clk),
- 	CLKDEV_CON_DEV_ID(NULL, "atmel_aes", &aestdessha_clk),
-+	CLKDEV_CON_DEV_ID(NULL, "at91sam9rl-pwm", &pwm_clk),
- 	/* more usart lookup table for DT entries */
- 	CLKDEV_CON_DEV_ID("usart", "ffffee00.serial", &mck),
- 	CLKDEV_CON_DEV_ID("usart", "fff8c000.serial", &usart0_clk),
-diff --git a/arch/arm/mach-at91/at91sam9g45_devices.c b/arch/arm/mach-at91/at91sam9g45_devices.c
-index 87135a61357d..25ba920cbe84 100644
---- a/arch/arm/mach-at91/at91sam9g45_devices.c
-+++ b/arch/arm/mach-at91/at91sam9g45_devices.c
-@@ -1332,9 +1332,7 @@ static void __init at91_add_device_watchdog(void) {}
-  *  PWM
-  * --------------------------------------------------------------------*/
- 
--#if defined(CONFIG_ATMEL_PWM) || defined(CONFIG_ATMEL_PWM_MODULE)
--static u32 pwm_mask;
--
-+#if IS_ENABLED(CONFIG_PWM_ATMEL)
- static struct resource pwm_resources[] = {
- 	[0] = {
- 		.start	= AT91SAM9G45_BASE_PWMC,
-@@ -1349,11 +1347,8 @@ static struct resource pwm_resources[] = {
- };
- 
- static struct platform_device at91sam9g45_pwm0_device = {
--	.name	= "atmel_pwm",
-+	.name	= "at91sam9rl-pwm",
- 	.id	= -1,
--	.dev	= {
--		.platform_data		= &pwm_mask,
--	},
- 	.resource	= pwm_resources,
- 	.num_resources	= ARRAY_SIZE(pwm_resources),
- };
-@@ -1372,8 +1367,6 @@ void __init at91_add_device_pwm(u32 mask)
- 	if (mask & (1 << AT91_PWM3))
- 		at91_set_B_periph(AT91_PIN_PD0, 1);	/* enable PWM3 */
- 
--	pwm_mask = mask;
--
- 	platform_device_register(&at91sam9g45_pwm0_device);
- }
- #else
--- 
-1.8.3.2
+Dear Geert,
 
+Having run into this problem myself
+(http://stackoverflow.com/questions/22285151/kernel-panic-using-deferred-io-on-kmalloced-buffer)
+I'd like to suggest an addendum to the deferred_io.txt document to
+note the difference in treatment between a framebuffer allocated with
+vmalloc and one allocated with, say, kmalloc. I've pasted in the diff
+below.
+
+Thanks,
+
+Conor O'Rourke.
+
+$ diff deferred_io.txt deferred_io_changes.txt
+75a76,89
+>
+> 5. Bear in mind the following:
+>
+>   - deferred_io changes info->fp_ops->fb_mmap to its own function that
+>     sets up fault handlers etc. In the fault handler it checks bounds
+>     against info->fix.smem_len
+>
+>   - when it gets the page written, it checks the address in info->screen_base
+>     to see if that address is one from vmalloc. If so it uses that address
+>     as the one to get the page number. If not, the assumption is that the
+>     address of interest is the physical framebuffer address stored in
+>     info->fix.smem_start. You can get an physical address from, say, a
+>     kmalloced pointer by using virt_to_phys().
+>

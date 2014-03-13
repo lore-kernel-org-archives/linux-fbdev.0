@@ -1,52 +1,61 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Thu, 13 Mar 2014 11:43:22 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Thu, 13 Mar 2014 12:01:37 +0000
 Subject: Re: [PATCH v5 1/2] video: ARM CLCD: Add DT support
-Message-Id: <1394711002.32336.5.camel@hornet>
+Message-Id: <20140313120136.GN21483@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1394036606-17784-1-git-send-email-pawel.moll@arm.com>
- <53184C2E.3000807@ti.com>
- <CACRpkdYBuxYko5JD5ZCfoQq+PeXtkKP9eprk9HM=ghW2YMoMuA@mail.gmail.com>
-In-Reply-To: <CACRpkdYBuxYko5JD5ZCfoQq+PeXtkKP9eprk9HM=ghW2YMoMuA@mail.gmail.com>
+ <53184C2E.3000807@ti.com> <1394119431.4160.84.camel@hornet>
+ <5319AF00.5030602@ti.com> <1394453382.3853.6.camel@hornet>
+ <531DAEB9.3020502@ti.com>
+In-Reply-To: <531DAEB9.3020502@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, 2014-03-13 at 09:30 +0000, Linus Walleij wrote:
-> On Thu, Mar 6, 2014 at 11:21 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> > On 05/03/14 18:23, Pawel Moll wrote:
-> >> This patch adds basic DT bindings for the PL11x CLCD cells
-> >> and make their fbdev driver use them.
-> >
-> > Is this an old HW, and presumably there won't be new users for it?
+On Mon, Mar 10, 2014 at 02:23:21PM +0200, Tomi Valkeinen wrote:
+> On 10/03/14 14:09, Pawel Moll wrote:
 > 
-> AFAICT ARM really like to re-synthesize this piece of HW in every
-> new reference design they make. 
-
-Not for long now, hopefully...
-
-> > If
-> > yes, this is probably fine. If not, you might want to look at the video
-> > ports and endpoints, which is used by at least three not-yet-merged series:
-> >
-> > [PATCHv3 00/41] OMAPDSS: DT support v3
-> > [PATCH v5 00/11] imx-drm dt bindings
-> > [RFC PATCH v2 00/21] Add DSI display support for Exynos based boards
-> >
-> > Using bindings like that would be more future proof, even if the current
-> > driver doesn't use them.
+> >> Note that the same DT bindings you add here should also work for the DRM
+> >> driver in the future. So, in fact, the question is extended to: will the
+> >> fbdev 
+> > 
+> > No, I don't think so. It's a end of line for it, I believe. From my
+> > personal point of view the main goal is to fill the last gap between DT
+> > and non-DT support on one of the Versatile Express boards - CLCD works
+> > fine when booted with ATAGs, doesn't work when booted with DT. It looks
+> > bad.
 > 
-> I take it that it shouldn't matter if the driver is for framebuffer or
-> DRM (as was implied by some answer here) the hardware
-> description should be the same no matter what, so the more
-> furture-proof the better.
+> The DT describes the hardware, and there should be only one description
+> of it, no matter what the used SW is. I see compatible = "arm,pl111" in
+> the dts. PL111 is the LCD controller, right? What will the DRM driver
+> use, then, if the "arm,pl111" DT data is designed to work only for the
+> fbdev?
 
-Again, no argument here - the clcd-specific properties will be of use
-whatever happens in the future (the "immediate" display timing subnode
-is optional and is cloned from other existing bindings, so no new
-problem is introduced here). I'm just shying away from the discussions
-on generic display (or CDF or video or whatever) bindings. Call me
-coward if you wish (maybe just tired to death with this subject ;-)
+If we could move forward with things like DT bindings for DRM (which
+seems impossible) then we might be able to move forward with a proper
+DT implementation for componentised video systems which would solve
+this as you'd have the pl111 as just a CRTC component in a larger
+subsystem representation which included things like encoders and
+connectors - even for something as simple as the Versatile Express
+boards.
 
-Pawel
+These boards have a DVI connector which offers analogue (and probably
+digital) output.  Previous boards like Versatile and Integrator have
+offered VGA output and a connector for various LCD panels (sometimes
+the connected LCD panel is identified via a set of GPIOs.)
 
+So, going ahead with some bindings which include stuff like timing
+information in a pl111 node seems wrong and boxes us in if we're going
+to start representing connectors as well - as the timing should be part
+of the panel node or similar.
+
+So basically all movement on display subsystem DT representations is
+now blocked because no one can agree how they should be represented in
+a decent way.
+
+Maybe board files were much better than this frigging DT crap.
+
+-- 
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.

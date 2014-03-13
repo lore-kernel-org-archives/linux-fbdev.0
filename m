@@ -1,846 +1,649 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 03 Mar 2014 12:08:24 +0000
-Subject: [PATCH] OMAPDSS: convert pixel clock to common videomode style
-Message-Id: <1393848504-30340-1-git-send-email-tomi.valkeinen@ti.com>
+From: Daniel Jeong <gshark.jeong@gmail.com>
+Date: Thu, 13 Mar 2014 05:03:25 +0000
+Subject: [PATCH v2] backlight: add new LP8860 backlight driver
+Message-Id: <1394687005-4127-1-git-send-email-gshark.jeong@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: Daniel Jeong <gshark.jeong@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>
 
-omapdss has its own video-timings struct, but we want to move the common
-videomode.
+ This patch adds LP8860 backlight device driver.
+LP8860 is a low EMI and High performance 4 channel LED Driver of TI.
+This device driver provides the way to control brightness and current
+of each channel and provides the way to change values in the eeprom.
 
-The first step is to change the omapdss's pixelclock unit from kHz to
-Hz. Also, omapdss uses "pixel_clock" field name, whereas the common
-videomode uses "pixelclock" field name. This patch changes the field
-name also, as that makes it easy to spot any non-converted pixel_clock
-uses.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
 ---
- drivers/gpu/drm/omapdrm/omap_connector.c           |  6 +-
- .../video/omap2/displays-new/connector-analog-tv.c |  2 +-
- drivers/video/omap2/displays-new/connector-dvi.c   |  2 +-
- drivers/video/omap2/displays-new/connector-hdmi.c  |  2 +-
- drivers/video/omap2/displays-new/panel-dsi-cm.c    |  2 +-
- .../omap2/displays-new/panel-lgphilips-lb035q02.c  |  2 +-
- .../omap2/displays-new/panel-nec-nl8048hl11.c      |  4 +-
- .../omap2/displays-new/panel-sharp-ls037v7dw01.c   |  2 +-
- .../omap2/displays-new/panel-sony-acx565akm.c      |  2 +-
- .../omap2/displays-new/panel-tpo-td028ttec1.c      |  2 +-
- .../omap2/displays-new/panel-tpo-td043mtea1.c      |  2 +-
- drivers/video/omap2/dss/dispc.c                    |  8 +--
- drivers/video/omap2/dss/display-sysfs.c            |  4 +-
- drivers/video/omap2/dss/display.c                  |  4 +-
- drivers/video/omap2/dss/dpi.c                      | 25 ++++----
- drivers/video/omap2/dss/dsi.c                      | 16 ++---
- drivers/video/omap2/dss/hdmi4.c                    |  9 +--
- drivers/video/omap2/dss/hdmi_common.c              | 74 +++++++++++-----------
- drivers/video/omap2/dss/sdi.c                      | 15 ++---
- drivers/video/omap2/dss/venc.c                     |  4 +-
- drivers/video/omap2/dss/venc_panel.c               |  2 +-
- drivers/video/omap2/omapfb/omapfb-main.c           |  8 +--
- include/video/omapdss.h                            |  4 +-
- 23 files changed, 100 insertions(+), 101 deletions(-)
+ drivers/video/backlight/Kconfig         |    7 +
+ drivers/video/backlight/Makefile        |    1 +
+ drivers/video/backlight/lp8860_bl.c     |  525 +++++++++++++++++++++++++++++++
+ include/linux/platform_data/lp8860_bl.h |   54 ++++
+ 4 files changed, 587 insertions(+)
+ create mode 100644 drivers/video/backlight/lp8860_bl.c
+ create mode 100644 include/linux/platform_data/lp8860_bl.h
 
-diff --git a/drivers/gpu/drm/omapdrm/omap_connector.c b/drivers/gpu/drm/omapdrm/omap_connector.c
-index 912759daf562..86f4ead0441d 100644
---- a/drivers/gpu/drm/omapdrm/omap_connector.c
-+++ b/drivers/gpu/drm/omapdrm/omap_connector.c
-@@ -37,7 +37,7 @@ struct omap_connector {
- void copy_timings_omap_to_drm(struct drm_display_mode *mode,
- 		struct omap_video_timings *timings)
- {
--	mode->clock = timings->pixel_clock;
-+	mode->clock = timings->pixelclock / 1000;
- 
- 	mode->hdisplay = timings->x_res;
- 	mode->hsync_start = mode->hdisplay + timings->hfp;
-@@ -68,7 +68,7 @@ void copy_timings_omap_to_drm(struct drm_display_mode *mode,
- void copy_timings_drm_to_omap(struct omap_video_timings *timings,
- 		struct drm_display_mode *mode)
- {
--	timings->pixel_clock = mode->clock;
-+	timings->pixelclock = mode->clock * 1000;
- 
- 	timings->x_res = mode->hdisplay;
- 	timings->hfp = mode->hsync_start - mode->hdisplay;
-@@ -220,7 +220,7 @@ static int omap_connector_mode_valid(struct drm_connector *connector,
- 	if (!r) {
- 		/* check if vrefresh is still valid */
- 		new_mode = drm_mode_duplicate(dev, mode);
--		new_mode->clock = timings.pixel_clock;
-+		new_mode->clock = timings.pixelclock / 1000;
- 		new_mode->vrefresh = 0;
- 		if (mode->vrefresh = drm_mode_vrefresh(new_mode))
- 			ret = MODE_OK;
-diff --git a/drivers/video/omap2/displays-new/connector-analog-tv.c b/drivers/video/omap2/displays-new/connector-analog-tv.c
-index ccd9073f706f..27f33ef8fca1 100644
---- a/drivers/video/omap2/displays-new/connector-analog-tv.c
-+++ b/drivers/video/omap2/displays-new/connector-analog-tv.c
-@@ -31,7 +31,7 @@ struct panel_drv_data {
- static const struct omap_video_timings tvc_pal_timings = {
- 	.x_res		= 720,
- 	.y_res		= 574,
--	.pixel_clock	= 13500,
-+	.pixelclock	= 13500000,
- 	.hsw		= 64,
- 	.hfp		= 12,
- 	.hbp		= 68,
-diff --git a/drivers/video/omap2/displays-new/connector-dvi.c b/drivers/video/omap2/displays-new/connector-dvi.c
-index b6c50904038e..d18e4b8c0731 100644
---- a/drivers/video/omap2/displays-new/connector-dvi.c
-+++ b/drivers/video/omap2/displays-new/connector-dvi.c
-@@ -23,7 +23,7 @@ static const struct omap_video_timings dvic_default_timings = {
- 	.x_res		= 640,
- 	.y_res		= 480,
- 
--	.pixel_clock	= 23500,
-+	.pixelclock	= 23500000,
- 
- 	.hfp		= 48,
- 	.hsw		= 32,
-diff --git a/drivers/video/omap2/displays-new/connector-hdmi.c b/drivers/video/omap2/displays-new/connector-hdmi.c
-index 9abe2c039ae9..9393e2d6473d 100644
---- a/drivers/video/omap2/displays-new/connector-hdmi.c
-+++ b/drivers/video/omap2/displays-new/connector-hdmi.c
-@@ -21,7 +21,7 @@
- static const struct omap_video_timings hdmic_default_timings = {
- 	.x_res		= 640,
- 	.y_res		= 480,
--	.pixel_clock	= 25175,
-+	.pixelclock	= 25175000,
- 	.hsw		= 96,
- 	.hfp		= 16,
- 	.hbp		= 48,
-diff --git a/drivers/video/omap2/displays-new/panel-dsi-cm.c b/drivers/video/omap2/displays-new/panel-dsi-cm.c
-index b7baafe83aa3..f317c878a259 100644
---- a/drivers/video/omap2/displays-new/panel-dsi-cm.c
-+++ b/drivers/video/omap2/displays-new/panel-dsi-cm.c
-@@ -1184,7 +1184,7 @@ static int dsicm_probe(struct platform_device *pdev)
- 
- 	ddata->timings.x_res = 864;
- 	ddata->timings.y_res = 480;
--	ddata->timings.pixel_clock = DIV_ROUND_UP(864 * 480 * 60, 1000);
-+	ddata->timings.pixelclock = 864 * 480 * 60;
- 
- 	dssdev = &ddata->dssdev;
- 	dssdev->dev = dev;
-diff --git a/drivers/video/omap2/displays-new/panel-lgphilips-lb035q02.c b/drivers/video/omap2/displays-new/panel-lgphilips-lb035q02.c
-index 6e8977b18950..2e6b513222d9 100644
---- a/drivers/video/omap2/displays-new/panel-lgphilips-lb035q02.c
-+++ b/drivers/video/omap2/displays-new/panel-lgphilips-lb035q02.c
-@@ -23,7 +23,7 @@ static struct omap_video_timings lb035q02_timings = {
- 	.x_res = 320,
- 	.y_res = 240,
- 
--	.pixel_clock	= 6500,
-+	.pixelclock	= 6500000,
- 
- 	.hsw		= 2,
- 	.hfp		= 20,
-diff --git a/drivers/video/omap2/displays-new/panel-nec-nl8048hl11.c b/drivers/video/omap2/displays-new/panel-nec-nl8048hl11.c
-index bb217da65c5f..996fa004b48c 100644
---- a/drivers/video/omap2/displays-new/panel-nec-nl8048hl11.c
-+++ b/drivers/video/omap2/displays-new/panel-nec-nl8048hl11.c
-@@ -40,7 +40,7 @@ struct panel_drv_data {
-  * NEC PIX Clock Ratings
-  * MIN:21.8MHz TYP:23.8MHz MAX:25.7MHz
-  */
--#define LCD_PIXEL_CLOCK		23800
-+#define LCD_PIXEL_CLOCK		23800000
- 
- static const struct {
- 	unsigned char addr;
-@@ -69,7 +69,7 @@ static const struct {
- static const struct omap_video_timings nec_8048_panel_timings = {
- 	.x_res		= LCD_XRES,
- 	.y_res		= LCD_YRES,
--	.pixel_clock	= LCD_PIXEL_CLOCK,
-+	.pixelclock	= LCD_PIXEL_CLOCK,
- 	.hfp		= 6,
- 	.hsw		= 1,
- 	.hbp		= 4,
-diff --git a/drivers/video/omap2/displays-new/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays-new/panel-sharp-ls037v7dw01.c
-index 72a4fb5aa6b1..b2f710be565d 100644
---- a/drivers/video/omap2/displays-new/panel-sharp-ls037v7dw01.c
-+++ b/drivers/video/omap2/displays-new/panel-sharp-ls037v7dw01.c
-@@ -37,7 +37,7 @@ static const struct omap_video_timings sharp_ls_timings = {
- 	.x_res = 480,
- 	.y_res = 640,
- 
--	.pixel_clock	= 19200,
-+	.pixelclock	= 19200000,
- 
- 	.hsw		= 2,
- 	.hfp		= 1,
-diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-index 8e97d06921ff..27f60ad6b2ab 100644
---- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-+++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-@@ -93,7 +93,7 @@ struct panel_drv_data {
- static const struct omap_video_timings acx565akm_panel_timings = {
- 	.x_res		= 800,
- 	.y_res		= 480,
--	.pixel_clock	= 24000,
-+	.pixelclock	= 24000000,
- 	.hfp		= 28,
- 	.hsw		= 4,
- 	.hbp		= 24,
-diff --git a/drivers/video/omap2/displays-new/panel-tpo-td028ttec1.c b/drivers/video/omap2/displays-new/panel-tpo-td028ttec1.c
-index 9a08908fe998..fae6adc005a7 100644
---- a/drivers/video/omap2/displays-new/panel-tpo-td028ttec1.c
-+++ b/drivers/video/omap2/displays-new/panel-tpo-td028ttec1.c
-@@ -45,7 +45,7 @@ struct panel_drv_data {
- static struct omap_video_timings td028ttec1_panel_timings = {
- 	.x_res		= 480,
- 	.y_res		= 640,
--	.pixel_clock	= 22153,
-+	.pixelclock	= 22153000,
- 	.hfp		= 24,
- 	.hsw		= 8,
- 	.hbp		= 8,
-diff --git a/drivers/video/omap2/displays-new/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays-new/panel-tpo-td043mtea1.c
-index eadc6529fa3d..875b40263b33 100644
---- a/drivers/video/omap2/displays-new/panel-tpo-td043mtea1.c
-+++ b/drivers/video/omap2/displays-new/panel-tpo-td043mtea1.c
-@@ -76,7 +76,7 @@ static const struct omap_video_timings tpo_td043_timings = {
- 	.x_res		= 800,
- 	.y_res		= 480,
- 
--	.pixel_clock	= 36000,
-+	.pixelclock	= 36000000,
- 
- 	.hsw		= 1,
- 	.hfp		= 68,
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 77d6221618f4..5922fb7b26fb 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2884,7 +2884,7 @@ bool dispc_mgr_timings_ok(enum omap_channel channel,
- 
- 	timings_ok = _dispc_mgr_size_ok(timings->x_res, timings->y_res);
- 
--	timings_ok &= _dispc_mgr_pclk_ok(channel, timings->pixel_clock * 1000);
-+	timings_ok &= _dispc_mgr_pclk_ok(channel, timings->pixelclock);
- 
- 	if (dss_mgr_is_lcd(channel)) {
- 		timings_ok &= _dispc_lcd_timings_ok(timings->hsw, timings->hfp,
-@@ -2979,10 +2979,10 @@ void dispc_mgr_set_timings(enum omap_channel channel,
- 		xtot = t.x_res + t.hfp + t.hsw + t.hbp;
- 		ytot = t.y_res + t.vfp + t.vsw + t.vbp;
- 
--		ht = (timings->pixel_clock * 1000) / xtot;
--		vt = (timings->pixel_clock * 1000) / xtot / ytot;
-+		ht = timings->pixelclock / xtot;
-+		vt = timings->pixelclock / xtot / ytot;
- 
--		DSSDBG("pck %u\n", timings->pixel_clock);
-+		DSSDBG("pck %u\n", timings->pixelclock);
- 		DSSDBG("hsw %d hfp %d hbp %d vsw %d vfp %d vbp %d\n",
- 			t.hsw, t.hfp, t.hbp, t.vsw, t.vfp, t.vbp);
- 		DSSDBG("vsync_level %d hsync_level %d data_pclk_edge %d de_level %d sync_pclk_edge %d\n",
-diff --git a/drivers/video/omap2/dss/display-sysfs.c b/drivers/video/omap2/dss/display-sysfs.c
-index f7b5f9561041..5a2095a98ed8 100644
---- a/drivers/video/omap2/dss/display-sysfs.c
-+++ b/drivers/video/omap2/dss/display-sysfs.c
-@@ -132,7 +132,7 @@ static ssize_t display_timings_show(struct device *dev,
- 	dssdev->driver->get_timings(dssdev, &t);
- 
- 	return snprintf(buf, PAGE_SIZE, "%u,%u/%u/%u/%u,%u/%u/%u/%u\n",
--			t.pixel_clock,
-+			t.pixelclock,
- 			t.x_res, t.hfp, t.hbp, t.hsw,
- 			t.y_res, t.vfp, t.vbp, t.vsw);
- }
-@@ -158,7 +158,7 @@ static ssize_t display_timings_store(struct device *dev,
- 	}
- #endif
- 	if (!found && sscanf(buf, "%u,%hu/%hu/%hu/%hu,%hu/%hu/%hu/%hu",
--				&t.pixel_clock,
-+				&t.pixelclock,
- 				&t.x_res, &t.hfp, &t.hbp, &t.hsw,
- 				&t.y_res, &t.vfp, &t.vbp, &t.vsw) != 9)
- 		return -EINVAL;
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 669a81fdf58e..9f19ae22944c 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -248,7 +248,7 @@ void videomode_to_omap_video_timings(const struct videomode *vm,
- {
- 	memset(ovt, 0, sizeof(*ovt));
- 
--	ovt->pixel_clock = vm->pixelclock / 1000;
-+	ovt->pixelclock = vm->pixelclock;
- 	ovt->x_res = vm->hactive;
- 	ovt->hbp = vm->hback_porch;
- 	ovt->hfp = vm->hfront_porch;
-@@ -280,7 +280,7 @@ void omap_video_timings_to_videomode(const struct omap_video_timings *ovt,
- {
- 	memset(vm, 0, sizeof(*vm));
- 
--	vm->pixelclock = ovt->pixel_clock * 1000;
-+	vm->pixelclock = ovt->pixelclock;
- 
- 	vm->hactive = ovt->x_res;
- 	vm->hback_porch = ovt->hbp;
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 23ef21ffc2c4..6c0bb099b7bf 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -307,22 +307,21 @@ static int dpi_set_mode(struct omap_overlay_manager *mgr)
- 	int r = 0;
- 
- 	if (dpi.dsidev)
--		r = dpi_set_dsi_clk(mgr->id, t->pixel_clock * 1000, &fck,
-+		r = dpi_set_dsi_clk(mgr->id, t->pixelclock, &fck,
- 				&lck_div, &pck_div);
- 	else
--		r = dpi_set_dispc_clk(t->pixel_clock * 1000, &fck,
-+		r = dpi_set_dispc_clk(t->pixelclock, &fck,
- 				&lck_div, &pck_div);
- 	if (r)
- 		return r;
- 
--	pck = fck / lck_div / pck_div / 1000;
-+	pck = fck / lck_div / pck_div;
- 
--	if (pck != t->pixel_clock) {
--		DSSWARN("Could not find exact pixel clock. "
--				"Requested %d kHz, got %lu kHz\n",
--				t->pixel_clock, pck);
-+	if (pck != t->pixelclock) {
-+		DSSWARN("Could not find exact pixel clock. Requested %d Hz, got %lu Hz\n",
-+			t->pixelclock, pck);
- 
--		t->pixel_clock = pck;
-+		t->pixelclock = pck;
- 	}
- 
- 	dss_mgr_set_timings(mgr, t);
-@@ -480,17 +479,17 @@ static int dpi_check_timings(struct omap_dss_device *dssdev,
- 	if (mgr && !dispc_mgr_timings_ok(mgr->id, timings))
- 		return -EINVAL;
- 
--	if (timings->pixel_clock = 0)
-+	if (timings->pixelclock = 0)
- 		return -EINVAL;
- 
- 	if (dpi.dsidev) {
--		ok = dpi_dsi_clk_calc(timings->pixel_clock * 1000, &ctx);
-+		ok = dpi_dsi_clk_calc(timings->pixelclock, &ctx);
- 		if (!ok)
- 			return -EINVAL;
- 
- 		fck = ctx.dsi_cinfo.dsi_pll_hsdiv_dispc_clk;
- 	} else {
--		ok = dpi_dss_clk_calc(timings->pixel_clock * 1000, &ctx);
-+		ok = dpi_dss_clk_calc(timings->pixelclock, &ctx);
- 		if (!ok)
- 			return -EINVAL;
- 
-@@ -500,9 +499,9 @@ static int dpi_check_timings(struct omap_dss_device *dssdev,
- 	lck_div = ctx.dispc_cinfo.lck_div;
- 	pck_div = ctx.dispc_cinfo.pck_div;
- 
--	pck = fck / lck_div / pck_div / 1000;
-+	pck = fck / lck_div / pck_div;
- 
--	timings->pixel_clock = pck;
-+	timings->pixelclock = pck;
- 
- 	return 0;
- }
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index a820c37e323e..0d82f731d2f0 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4616,7 +4616,7 @@ static void print_dsi_vm(const char *str,
- 
- static void print_dispc_vm(const char *str, const struct omap_video_timings *t)
- {
--	unsigned long pck = t->pixel_clock * 1000;
-+	unsigned long pck = t->pixelclock;
- 	int hact, bl, tot;
- 
- 	hact = t->x_res;
-@@ -4656,7 +4656,7 @@ static void print_dsi_dispc_vm(const char *str,
- 	dsi_hact = DIV_ROUND_UP(DIV_ROUND_UP(t->hact * t->bitspp, 8) + 6, t->ndl);
- 	dsi_htot = t->hss + t->hsa + t->hse + t->hbp + dsi_hact + t->hfp;
- 
--	vm.pixel_clock = pck / 1000;
-+	vm.pixelclock = pck;
- 	vm.hsw = div64_u64((u64)(t->hsa + t->hse) * pck, byteclk);
- 	vm.hbp = div64_u64((u64)t->hbp * pck, byteclk);
- 	vm.hfp = div64_u64((u64)t->hfp * pck, byteclk);
-@@ -4678,7 +4678,7 @@ static bool dsi_cm_calc_dispc_cb(int lckd, int pckd, unsigned long lck,
- 	ctx->dispc_cinfo.pck = pck;
- 
- 	*t = *ctx->config->timings;
--	t->pixel_clock = pck / 1000;
-+	t->pixelclock = pck;
- 	t->x_res = ctx->config->timings->x_res;
- 	t->y_res = ctx->config->timings->y_res;
- 	t->hsw = t->hfp = t->hbp = t->vsw = 1;
-@@ -4732,7 +4732,7 @@ static bool dsi_cm_calc(struct dsi_data *dsi,
- 	 * especially as we go to LP between each pixel packet due to HW
- 	 * "feature". So let's just estimate very roughly and multiply by 1.5.
- 	 */
--	pck = cfg->timings->pixel_clock * 1000;
-+	pck = cfg->timings->pixelclock;
- 	pck = pck * 3 / 2;
- 	txbyteclk = pck * bitspp / 8 / ndl;
- 
-@@ -4909,7 +4909,7 @@ static bool dsi_vm_calc_blanking(struct dsi_clk_calc_ctx *ctx)
- 
- 	dispc_vm = &ctx->dispc_vm;
- 	*dispc_vm = *req_vm;
--	dispc_vm->pixel_clock = dispc_pck / 1000;
-+	dispc_vm->pixelclock = dispc_pck;
- 
- 	if (cfg->trans_mode = OMAP_DSS_DSI_PULSE_MODE) {
- 		hsa = div64_u64((u64)req_vm->hsw * dispc_pck,
-@@ -5031,9 +5031,9 @@ static bool dsi_vm_calc(struct dsi_data *dsi,
- 	ctx->dsi_cinfo.clkin = clkin;
- 
- 	/* these limits should come from the panel driver */
--	ctx->req_pck_min = t->pixel_clock * 1000 - 1000;
--	ctx->req_pck_nom = t->pixel_clock * 1000;
--	ctx->req_pck_max = t->pixel_clock * 1000 + 1000;
-+	ctx->req_pck_min = t->pixelclock - 1000;
-+	ctx->req_pck_nom = t->pixelclock;
-+	ctx->req_pck_max = t->pixelclock + 1000;
- 
- 	byteclk_min = div64_u64((u64)ctx->req_pck_min * bitspp, ndl * 8);
- 	pll_min = max(cfg->hs_clk_min * 4, byteclk_min * 4 * 4);
-diff --git a/drivers/video/omap2/dss/hdmi4.c b/drivers/video/omap2/dss/hdmi4.c
-index 4a74538f9ea5..895c252ae0a8 100644
---- a/drivers/video/omap2/dss/hdmi4.c
-+++ b/drivers/video/omap2/dss/hdmi4.c
-@@ -153,7 +153,8 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
- 
- 	DSSDBG("hdmi_power_on x_res= %d y_res = %d\n", p->x_res, p->y_res);
- 
--	phy = p->pixel_clock;
-+	/* the functions below use kHz pixel clock. TODO: change to Hz */
-+	phy = p->pixelclock / 1000;
- 
- 	hdmi_pll_compute(&hdmi.pll, clk_get_rate(hdmi.sys_clk), phy);
- 
-@@ -238,13 +239,13 @@ static void hdmi_display_set_timing(struct omap_dss_device *dssdev,
- 	if (t != NULL) {
- 		hdmi.cfg = *t;
- 
--		dispc_set_tv_pclk(t->timings.pixel_clock * 1000);
-+		dispc_set_tv_pclk(t->timings.pixelclock);
- 	} else {
- 		hdmi.cfg.timings = *timings;
- 		hdmi.cfg.cm.code = 0;
- 		hdmi.cfg.cm.mode = HDMI_DVI;
- 
--		dispc_set_tv_pclk(timings->pixel_clock * 1000);
-+		dispc_set_tv_pclk(timings->pixelclock);
- 	}
- 
- 	DSSDBG("using mode: %s, code %d\n", hdmi.cfg.cm.mode = HDMI_DVI ?
-@@ -509,7 +510,7 @@ static int hdmi_audio_config(struct omap_dss_device *dssdev,
- 		struct omap_dss_audio *audio)
- {
- 	int r;
--	u32 pclk = hdmi.cfg.timings.pixel_clock;
-+	u32 pclk = hdmi.cfg.timings.pixelclock;
- 
- 	mutex_lock(&hdmi.lock);
- 
-diff --git a/drivers/video/omap2/dss/hdmi_common.c b/drivers/video/omap2/dss/hdmi_common.c
-index 0614922902dd..b11afac8e068 100644
---- a/drivers/video/omap2/dss/hdmi_common.c
-+++ b/drivers/video/omap2/dss/hdmi_common.c
-@@ -23,91 +23,91 @@
- 
- static const struct hdmi_config cea_timings[] = {
- 	{
--		{ 640, 480, 25200, 96, 16, 48, 2, 10, 33,
-+		{ 640, 480, 25200000, 96, 16, 48, 2, 10, 33,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 1, HDMI_HDMI },
- 	},
- 	{
--		{ 720, 480, 27027, 62, 16, 60, 6, 9, 30,
-+		{ 720, 480, 27027000, 62, 16, 60, 6, 9, 30,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 2, HDMI_HDMI },
- 	},
- 	{
--		{ 1280, 720, 74250, 40, 110, 220, 5, 5, 20,
-+		{ 1280, 720, 74250000, 40, 110, 220, 5, 5, 20,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 4, HDMI_HDMI },
- 	},
- 	{
--		{ 1920, 540, 74250, 44, 88, 148, 5, 2, 15,
-+		{ 1920, 540, 74250000, 44, 88, 148, 5, 2, 15,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			true, },
- 		{ 5, HDMI_HDMI },
- 	},
- 	{
--		{ 1440, 240, 27027, 124, 38, 114, 3, 4, 15,
-+		{ 1440, 240, 27027000, 124, 38, 114, 3, 4, 15,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
- 			true, },
- 		{ 6, HDMI_HDMI },
- 	},
- 	{
--		{ 1920, 1080, 148500, 44, 88, 148, 5, 4, 36,
-+		{ 1920, 1080, 148500000, 44, 88, 148, 5, 4, 36,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 16, HDMI_HDMI },
- 	},
- 	{
--		{ 720, 576, 27000, 64, 12, 68, 5, 5, 39,
-+		{ 720, 576, 27000000, 64, 12, 68, 5, 5, 39,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 17, HDMI_HDMI },
- 	},
- 	{
--		{ 1280, 720, 74250, 40, 440, 220, 5, 5, 20,
-+		{ 1280, 720, 74250000, 40, 440, 220, 5, 5, 20,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 19, HDMI_HDMI },
- 	},
- 	{
--		{ 1920, 540, 74250, 44, 528, 148, 5, 2, 15,
-+		{ 1920, 540, 74250000, 44, 528, 148, 5, 2, 15,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			true, },
- 		{ 20, HDMI_HDMI },
- 	},
- 	{
--		{ 1440, 288, 27000, 126, 24, 138, 3, 2, 19,
-+		{ 1440, 288, 27000000, 126, 24, 138, 3, 2, 19,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
- 			true, },
- 		{ 21, HDMI_HDMI },
- 	},
- 	{
--		{ 1440, 576, 54000, 128, 24, 136, 5, 5, 39,
-+		{ 1440, 576, 54000000, 128, 24, 136, 5, 5, 39,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 29, HDMI_HDMI },
- 	},
- 	{
--		{ 1920, 1080, 148500, 44, 528, 148, 5, 4, 36,
-+		{ 1920, 1080, 148500000, 44, 528, 148, 5, 4, 36,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 31, HDMI_HDMI },
- 	},
- 	{
--		{ 1920, 1080, 74250, 44, 638, 148, 5, 4, 36,
-+		{ 1920, 1080, 74250000, 44, 638, 148, 5, 4, 36,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 32, HDMI_HDMI },
- 	},
- 	{
--		{ 2880, 480, 108108, 248, 64, 240, 6, 9, 30,
-+		{ 2880, 480, 108108000, 248, 64, 240, 6, 9, 30,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 35, HDMI_HDMI },
- 	},
- 	{
--		{ 2880, 576, 108000, 256, 48, 272, 5, 5, 39,
-+		{ 2880, 576, 108000000, 256, 48, 272, 5, 5, 39,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 37, HDMI_HDMI },
-@@ -117,121 +117,121 @@ static const struct hdmi_config cea_timings[] = {
- static const struct hdmi_config vesa_timings[] = {
- /* VESA From Here */
- 	{
--		{ 640, 480, 25175, 96, 16, 48, 2, 11, 31,
-+		{ 640, 480, 25175000, 96, 16, 48, 2, 11, 31,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 4, HDMI_DVI },
- 	},
- 	{
--		{ 800, 600, 40000, 128, 40, 88, 4, 1, 23,
-+		{ 800, 600, 40000000, 128, 40, 88, 4, 1, 23,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 9, HDMI_DVI },
- 	},
- 	{
--		{ 848, 480, 33750, 112, 16, 112, 8, 6, 23,
-+		{ 848, 480, 33750000, 112, 16, 112, 8, 6, 23,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0xE, HDMI_DVI },
- 	},
- 	{
--		{ 1280, 768, 79500, 128, 64, 192, 7, 3, 20,
-+		{ 1280, 768, 79500000, 128, 64, 192, 7, 3, 20,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 0x17, HDMI_DVI },
- 	},
- 	{
--		{ 1280, 800, 83500, 128, 72, 200, 6, 3, 22,
-+		{ 1280, 800, 83500000, 128, 72, 200, 6, 3, 22,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 0x1C, HDMI_DVI },
- 	},
- 	{
--		{ 1360, 768, 85500, 112, 64, 256, 6, 3, 18,
-+		{ 1360, 768, 85500000, 112, 64, 256, 6, 3, 18,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x27, HDMI_DVI },
- 	},
- 	{
--		{ 1280, 960, 108000, 112, 96, 312, 3, 1, 36,
-+		{ 1280, 960, 108000000, 112, 96, 312, 3, 1, 36,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x20, HDMI_DVI },
- 	},
- 	{
--		{ 1280, 1024, 108000, 112, 48, 248, 3, 1, 38,
-+		{ 1280, 1024, 108000000, 112, 48, 248, 3, 1, 38,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x23, HDMI_DVI },
- 	},
- 	{
--		{ 1024, 768, 65000, 136, 24, 160, 6, 3, 29,
-+		{ 1024, 768, 65000000, 136, 24, 160, 6, 3, 29,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 0x10, HDMI_DVI },
- 	},
- 	{
--		{ 1400, 1050, 121750, 144, 88, 232, 4, 3, 32,
-+		{ 1400, 1050, 121750000, 144, 88, 232, 4, 3, 32,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 0x2A, HDMI_DVI },
- 	},
- 	{
--		{ 1440, 900, 106500, 152, 80, 232, 6, 3, 25,
-+		{ 1440, 900, 106500000, 152, 80, 232, 6, 3, 25,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 0x2F, HDMI_DVI },
- 	},
- 	{
--		{ 1680, 1050, 146250, 176 , 104, 280, 6, 3, 30,
-+		{ 1680, 1050, 146250000, 176 , 104, 280, 6, 3, 30,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_LOW,
- 			false, },
- 		{ 0x3A, HDMI_DVI },
- 	},
- 	{
--		{ 1366, 768, 85500, 143, 70, 213, 3, 3, 24,
-+		{ 1366, 768, 85500000, 143, 70, 213, 3, 3, 24,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x51, HDMI_DVI },
- 	},
- 	{
--		{ 1920, 1080, 148500, 44, 148, 80, 5, 4, 36,
-+		{ 1920, 1080, 148500000, 44, 148, 80, 5, 4, 36,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x52, HDMI_DVI },
- 	},
- 	{
--		{ 1280, 768, 68250, 32, 48, 80, 7, 3, 12,
-+		{ 1280, 768, 68250000, 32, 48, 80, 7, 3, 12,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x16, HDMI_DVI },
- 	},
- 	{
--		{ 1400, 1050, 101000, 32, 48, 80, 4, 3, 23,
-+		{ 1400, 1050, 101000000, 32, 48, 80, 4, 3, 23,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x29, HDMI_DVI },
- 	},
- 	{
--		{ 1680, 1050, 119000, 32, 48, 80, 6, 3, 21,
-+		{ 1680, 1050, 119000000, 32, 48, 80, 6, 3, 21,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x39, HDMI_DVI },
- 	},
- 	{
--		{ 1280, 800, 79500, 32, 48, 80, 6, 3, 14,
-+		{ 1280, 800, 79500000, 32, 48, 80, 6, 3, 14,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x1B, HDMI_DVI },
- 	},
- 	{
--		{ 1280, 720, 74250, 40, 110, 220, 5, 5, 20,
-+		{ 1280, 720, 74250000, 40, 110, 220, 5, 5, 20,
- 			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x55, HDMI_DVI },
- 	},
- 	{
--		{ 1920, 1200, 154000, 32, 48, 80, 6, 3, 26,
-+		{ 1920, 1200, 154000000, 32, 48, 80, 6, 3, 26,
- 			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_HIGH,
- 			false, },
- 		{ 0x44, HDMI_DVI },
-@@ -277,8 +277,8 @@ static bool hdmi_timings_compare(struct omap_video_timings *timing1,
- {
- 	int timing1_vsync, timing1_hsync, timing2_vsync, timing2_hsync;
- 
--	if ((DIV_ROUND_CLOSEST(timing2->pixel_clock, 1000) =
--			DIV_ROUND_CLOSEST(timing1->pixel_clock, 1000)) &&
-+	if ((DIV_ROUND_CLOSEST(timing2->pixelclock, 1000000) =
-+			DIV_ROUND_CLOSEST(timing1->pixelclock, 1000000)) &&
- 		(timing2->x_res = timing1->x_res) &&
- 		(timing2->y_res = timing1->y_res)) {
- 
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index ba806c9e7f54..b679e33adf2d 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -149,20 +149,19 @@ static int sdi_display_enable(struct omap_dss_device *dssdev)
- 	t->data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
- 	t->sync_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
- 
--	r = sdi_calc_clock_div(t->pixel_clock * 1000, &fck, &dispc_cinfo);
-+	r = sdi_calc_clock_div(t->pixelclock, &fck, &dispc_cinfo);
- 	if (r)
- 		goto err_calc_clock_div;
- 
- 	sdi.mgr_config.clock_info = dispc_cinfo;
- 
--	pck = fck / dispc_cinfo.lck_div / dispc_cinfo.pck_div / 1000;
-+	pck = fck / dispc_cinfo.lck_div / dispc_cinfo.pck_div;
- 
--	if (pck != t->pixel_clock) {
--		DSSWARN("Could not find exact pixel clock. Requested %d kHz, "
--				"got %lu kHz\n",
--				t->pixel_clock, pck);
-+	if (pck != t->pixelclock) {
-+		DSSWARN("Could not find exact pixel clock. Requested %d Hz, got %lu Hz\n",
-+			t->pixelclock, pck);
- 
--		t->pixel_clock = pck;
-+		t->pixelclock = pck;
- 	}
- 
- 
-@@ -244,7 +243,7 @@ static int sdi_check_timings(struct omap_dss_device *dssdev,
- 	if (mgr && !dispc_mgr_timings_ok(mgr->id, timings))
- 		return -EINVAL;
- 
--	if (timings->pixel_clock = 0)
-+	if (timings->pixelclock = 0)
- 		return -EINVAL;
- 
- 	return 0;
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 2cd7f7e42105..59ade34bd536 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -264,7 +264,7 @@ static const struct venc_config venc_config_pal_bdghi = {
- const struct omap_video_timings omap_dss_pal_timings = {
- 	.x_res		= 720,
- 	.y_res		= 574,
--	.pixel_clock	= 13500,
-+	.pixelclock	= 13500000,
- 	.hsw		= 64,
- 	.hfp		= 12,
- 	.hbp		= 68,
-@@ -279,7 +279,7 @@ EXPORT_SYMBOL(omap_dss_pal_timings);
- const struct omap_video_timings omap_dss_ntsc_timings = {
- 	.x_res		= 720,
- 	.y_res		= 482,
--	.pixel_clock	= 13500,
-+	.pixelclock	= 13500000,
- 	.hsw		= 64,
- 	.hfp		= 16,
- 	.hbp		= 58,
-diff --git a/drivers/video/omap2/dss/venc_panel.c b/drivers/video/omap2/dss/venc_panel.c
-index f7d92c57bd73..af68cd444d7e 100644
---- a/drivers/video/omap2/dss/venc_panel.c
-+++ b/drivers/video/omap2/dss/venc_panel.c
-@@ -89,7 +89,7 @@ static int venc_panel_probe(struct omap_dss_device *dssdev)
- 	const struct omap_video_timings default_timings = {
- 		.x_res		= 720,
- 		.y_res		= 574,
--		.pixel_clock	= 13500,
-+		.pixelclock	= 13500000,
- 		.hsw		= 64,
- 		.hfp		= 12,
- 		.hbp		= 68,
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index fcb9e932d00c..8d02f164c8c6 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -723,8 +723,8 @@ int check_fb_var(struct fb_info *fbi, struct fb_var_screeninfo *var)
- 		display->driver->get_timings(display, &timings);
- 
- 		/* pixclock in ps, the rest in pixclock */
--		var->pixclock = timings.pixel_clock != 0 ?
--			KHZ2PICOS(timings.pixel_clock) :
-+		var->pixclock = timings.pixelclock != 0 ?
-+			KHZ2PICOS(timings.pixelclock / 1000) :
- 			0;
- 		var->left_margin = timings.hbp;
- 		var->right_margin = timings.hfp;
-@@ -2077,7 +2077,7 @@ static int omapfb_mode_to_timings(const char *mode_str,
- 		timings->sync_pclk_edge = OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES;
- 	}
- 
--	timings->pixel_clock = PICOS2KHZ(var->pixclock);
-+	timings->pixelclock = PICOS2KHZ(var->pixclock) * 1000;
- 	timings->hbp = var->left_margin;
- 	timings->hfp = var->right_margin;
- 	timings->vbp = var->upper_margin;
-@@ -2229,7 +2229,7 @@ static void fb_videomode_to_omap_timings(struct fb_videomode *m,
- 
- 	t->x_res = m->xres;
- 	t->y_res = m->yres;
--	t->pixel_clock = PICOS2KHZ(m->pixclock);
-+	t->pixelclock = PICOS2KHZ(m->pixclock) * 1000;
- 	t->hsw = m->hsync_len;
- 	t->hfp = m->right_margin;
- 	t->hbp = m->left_margin;
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 3d7c51a6f9ff..e8479345dc96 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -344,8 +344,8 @@ struct omap_video_timings {
- 	u16 x_res;
- 	/* Unit: pixels */
- 	u16 y_res;
--	/* Unit: KHz */
--	u32 pixel_clock;
-+	/* Unit: Hz */
-+	u32 pixelclock;
- 	/* Unit: pixel clocks */
- 	u16 hsw;	/* Horizontal synchronization pulse width */
- 	/* Unit: pixel clocks */
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 5a3eb2e..908048f 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -397,6 +397,13 @@ config BACKLIGHT_LP8788
+ 	help
+ 	  This supports TI LP8788 backlight driver.
+ 
++config BACKLIGHT_LP8860
++	tristate "Backlight Driver for LP8860"
++	depends on BACKLIGHT_CLASS_DEVICE && I2C
++	select REGMAP_I2C
++	help
++	  This supports TI LP8860 Backlight Driver
++
+ config BACKLIGHT_OT200
+ 	tristate "Backlight driver for ot200 visualisation device"
+ 	depends on BACKLIGHT_CLASS_DEVICE && CS5535_MFGPT && GPIO_CS5535
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index bb82002..cbc5ac3 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -42,6 +42,7 @@ obj-$(CONFIG_BACKLIGHT_LM3639)		+= lm3639_bl.o
+ obj-$(CONFIG_BACKLIGHT_LOCOMO)		+= locomolcd.o
+ obj-$(CONFIG_BACKLIGHT_LP855X)		+= lp855x_bl.o
+ obj-$(CONFIG_BACKLIGHT_LP8788)		+= lp8788_bl.o
++obj-$(CONFIG_BACKLIGHT_LP8860)		+= lp8860_bl.o
+ obj-$(CONFIG_BACKLIGHT_LV5207LP)	+= lv5207lp.o
+ obj-$(CONFIG_BACKLIGHT_MAX8925)		+= max8925_bl.o
+ obj-$(CONFIG_BACKLIGHT_OMAP1)		+= omap1_bl.o
+diff --git a/drivers/video/backlight/lp8860_bl.c b/drivers/video/backlight/lp8860_bl.c
+new file mode 100644
+index 0000000..d2be950
+--- /dev/null
++++ b/drivers/video/backlight/lp8860_bl.c
+@@ -0,0 +1,525 @@
++/*
++* Simple driver for Texas Instruments lp8860 Backlight driver chip
++*
++* Copyright (C) 2014 Texas Instruments
++* Author: Daniel Jeong  <gshark.jeong@gmail.com>
++*		  Ldd Mlp <ldd-mlp@list.ti.com>
++*
++* This program is free software; you can redistribute it and/or modify
++* it under the terms of the GNU General Public License version 2 as
++* published by the Free Software Foundation.
++*
++*/
++#include <linux/backlight.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/i2c.h>
++#include <linux/module.h>
++#include <linux/platform_data/lp8860_bl.h>
++#include <linux/regmap.h>
++#include <linux/slab.h>
++#include <linux/uaccess.h>
++
++#define REG_CL0_BRT_H	0x00
++#define REG_CL0_BRT_L	0x01
++#define REG_CL0_I_H		0x02
++#define REG_CL0_I_L		0x03
++
++#define REG_CL1_BRT_H	0x04
++#define REG_CL1_BRT_L	0x05
++#define REG_CL1_I		0x06
++
++#define REG_CL2_BRT_H	0x07
++#define REG_CL2_BRT_L	0x08
++#define REG_CL2_I		0x09
++
++#define REG_CL3_BRT_H	0x0a
++#define REG_CL3_BRT_L	0x0b
++#define REG_CL3_I		0x0c
++
++#define REG_CONF	0x0d
++#define REG_STATUS	0x0e
++#define REG_ID		0x12
++
++#define REG_ROM_CTRL	0x19
++#define REG_ROM_UNLOCK	0x1a
++#define REG_ROM_START	0x60
++#define REG_ROM_END		0x78
++
++#define REG_EEPROM_START	0x60
++#define REG_EEPROM_END		0x78
++#define REG_MAX	0xFF
++
++struct lp8860_chip {
++	struct device *dev;
++	struct lp8860_platform_data *pdata;
++	struct backlight_device *bled[LP8860_LED_MAX];
++	struct regmap *regmap;
++};
++
++/* brightness control */
++static int lp8860_bled_update_status(struct backlight_device *bl,
++				     enum lp8860_leds nsr)
++{
++	int ret = -EINVAL;
++	struct lp8860_chip *pchip = bl_get_data(bl);
++
++	if (pchip->pdata->mode)
++		return 0;
++
++	if (bl->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
++		bl->props.brightness = 0;
++
++	switch (nsr) {
++	case LP8860_LED0:
++		ret = regmap_write(pchip->regmap,
++				   REG_CL0_BRT_H, bl->props.brightness >> 8);
++		ret |= regmap_write(pchip->regmap,
++				    REG_CL0_BRT_L, bl->props.brightness & 0xff);
++		break;
++	case LP8860_LED1:
++		ret = regmap_write(pchip->regmap,
++				   REG_CL1_BRT_H,
++				   (bl->props.brightness >> 8) & 0x1f);
++		ret |= regmap_write(pchip->regmap,
++				    REG_CL1_BRT_L, bl->props.brightness & 0xff);
++		break;
++	case LP8860_LED2:
++		ret = regmap_write(pchip->regmap,
++				   REG_CL2_BRT_H,
++				   (bl->props.brightness >> 8) & 0x1f);
++		ret |= regmap_write(pchip->regmap,
++				    REG_CL2_BRT_L, bl->props.brightness & 0xff);
++		break;
++	case LP8860_LED3:
++		ret = regmap_write(pchip->regmap,
++				   REG_CL3_BRT_H,
++				   (bl->props.brightness >> 8) & 0x1f);
++		ret |= regmap_write(pchip->regmap,
++				    REG_CL3_BRT_L, bl->props.brightness & 0xff);
++		break;
++	default:
++		BUG();
++	}
++	if (ret < 0)
++		dev_err(pchip->dev, "fail : i2c access to register.\n");
++	else
++		ret = bl->props.brightness;
++
++	return ret;
++}
++
++static int lp8860_bled_get_brightness(struct backlight_device *bl,
++				      enum lp8860_leds nsr)
++{
++	struct lp8860_chip *pchip = bl_get_data(bl);
++	unsigned int rval_h, rval_l;
++	int ret = -EINVAL;
++
++	switch (nsr) {
++	case LP8860_LED0:
++		ret = regmap_read(pchip->regmap, REG_CL0_BRT_H, &rval_h);
++		ret |= regmap_read(pchip->regmap, REG_CL0_BRT_L, &rval_l);
++		break;
++	case LP8860_LED1:
++		ret = regmap_read(pchip->regmap, REG_CL1_BRT_H, &rval_h);
++		ret |= regmap_read(pchip->regmap, REG_CL1_BRT_L, &rval_l);
++		break;
++	case LP8860_LED2:
++		ret = regmap_read(pchip->regmap, REG_CL2_BRT_H, &rval_h);
++		ret |= regmap_read(pchip->regmap, REG_CL2_BRT_L, &rval_l);
++		break;
++	case LP8860_LED3:
++		ret = regmap_read(pchip->regmap, REG_CL3_BRT_H, &rval_h);
++		ret |= regmap_read(pchip->regmap, REG_CL3_BRT_L, &rval_l);
++		break;
++	default:
++		BUG();
++	}
++	if (ret < 0) {
++		dev_err(pchip->dev, "fail : i2c access to register.\n");
++		return ret;
++	}
++	bl->props.brightness = (rval_h << 8) | rval_l;
++	return bl->props.brightness;
++}
++
++static int lp8860_update_status_bled0(struct backlight_device *bl)
++{
++	return lp8860_bled_update_status(bl, LP8860_LED0);
++}
++
++static int lp8860_get_brightness_bled0(struct backlight_device *bl)
++{
++	return lp8860_bled_get_brightness(bl, LP8860_LED0);
++}
++
++static int lp8860_update_status_bled1(struct backlight_device *bl)
++{
++	return lp8860_bled_update_status(bl, LP8860_LED1);
++}
++
++static int lp8860_get_brightness_bled1(struct backlight_device *bl)
++{
++	return lp8860_bled_get_brightness(bl, LP8860_LED1);
++}
++
++static int lp8860_update_status_bled2(struct backlight_device *bl)
++{
++	return lp8860_bled_update_status(bl, LP8860_LED2);
++}
++
++static int lp8860_get_brightness_bled2(struct backlight_device *bl)
++{
++	return lp8860_bled_get_brightness(bl, LP8860_LED2);
++}
++
++static int lp8860_update_status_bled3(struct backlight_device *bl)
++{
++	return lp8860_bled_update_status(bl, LP8860_LED3);
++}
++
++static int lp8860_get_brightness_bled3(struct backlight_device *bl)
++{
++	return lp8860_bled_get_brightness(bl, LP8860_LED3);
++}
++
++#define lp8860_bled_ops(_id)\
++{\
++	.options = BL_CORE_SUSPENDRESUME,\
++	.update_status = lp8860_update_status_bled##_id,\
++	.get_brightness = lp8860_get_brightness_bled##_id,\
++}
++
++static const struct backlight_ops lp8860_bled_ops[LP8860_LED_MAX] = {
++	[LP8860_LED0] = lp8860_bled_ops(0),
++	[LP8860_LED1] = lp8860_bled_ops(1),
++	[LP8860_LED2] = lp8860_bled_ops(2),
++	[LP8860_LED3] = lp8860_bled_ops(3),
++};
++
++/* current control */
++static int lp8860_set_current(struct device *dev,
++			      const char *buf, enum lp8860_leds nsr)
++{
++	struct lp8860_chip *pchip = dev_get_drvdata(dev);
++	unsigned int ival;
++	ssize_t ret;
++
++	ret = kstrtouint(buf, 10, &ival);
++	if (ret)
++		return ret;
++
++	switch (nsr) {
++	case LP8860_LED0:
++		ival = min_t(unsigned int, ival, LP8860_LED0_BR_MAX);
++		ret = regmap_write(pchip->regmap, REG_CL0_I_H, ival >> 8);
++		ret |= regmap_write(pchip->regmap, REG_CL0_I_L, ival & 0xff);
++		break;
++	case LP8860_LED1:
++		ival = min_t(unsigned int, ival, LP8860_LED1_BR_MAX);
++		ret = regmap_write(pchip->regmap, REG_CL1_I, ival & 0xff);
++		break;
++	case LP8860_LED2:
++		ival = min_t(unsigned int, ival, LP8860_LED2_BR_MAX);
++		ret = regmap_write(pchip->regmap, REG_CL2_I, ival & 0xff);
++		break;
++	case LP8860_LED3:
++		ival = min_t(unsigned int, ival, LP8860_LED3_BR_MAX);
++		ret = regmap_write(pchip->regmap, REG_CL3_I, ival & 0xff);
++		break;
++	default:
++		BUG();
++	}
++	if (ret < 0)
++		dev_err(pchip->dev, "fail : i2c access error.\n");
++
++	return ret;
++}
++
++static ssize_t lp8860_current_store_bled0(struct device *dev,
++					  struct device_attribute *devAttr,
++					  const char *buf, size_t size)
++{
++	int ret;
++
++	ret = lp8860_set_current(dev, buf, LP8860_LED0);
++	if (ret < 0)
++		return ret;
++	return size;
++}
++
++static ssize_t lp8860_current_store_bled1(struct device *dev,
++					  struct device_attribute *devAttr,
++					  const char *buf, size_t size)
++{
++	int ret;
++
++	ret = lp8860_set_current(dev, buf, LP8860_LED1);
++	if (ret < 0)
++		return ret;
++	return size;
++}
++
++static ssize_t lp8860_current_store_bled2(struct device *dev,
++					  struct device_attribute *devAttr,
++					  const char *buf, size_t size)
++{
++	int ret;
++
++	ret = lp8860_set_current(dev, buf, LP8860_LED2);
++	if (ret < 0)
++		return ret;
++	return size;
++}
++
++static ssize_t lp8860_current_store_bled3(struct device *dev,
++					  struct device_attribute *devAttr,
++					  const char *buf, size_t size)
++{
++	int ret;
++
++	ret = lp8860_set_current(dev, buf, LP8860_LED3);
++	if (ret < 0)
++		return ret;
++	return size;
++}
++
++#define lp8860_attr(_name, _show, _store)\
++{\
++	.attr = {\
++		.name = _name,\
++		.mode = S_IWUSR,\
++	},\
++	.show = _show,\
++	.store = _store,\
++}
++
++static struct device_attribute lp8860_dev_attr[LP8860_LED_MAX] = {
++	[LP8860_LED0] = lp8860_attr("current", NULL,
++				    lp8860_current_store_bled0),
++	[LP8860_LED1] = lp8860_attr("current", NULL,
++				    lp8860_current_store_bled1),
++	[LP8860_LED2] = lp8860_attr("current", NULL,
++				    lp8860_current_store_bled2),
++	[LP8860_LED3] = lp8860_attr("current", NULL,
++				    lp8860_current_store_bled3),
++};
++
++/*
++ * eeprom write and readback to check.
++ * eeprom register range is from 60h to 78h
++ * buffer value to write data [reg] [data]
++ * e.g) to change the register 0x60 value to 0xff
++ *      buffer value should be 60 ff
++ */
++static ssize_t lp8860_eeprom_store(struct device *dev,
++				   struct device_attribute *devAttr,
++				   const char *buf, size_t size)
++{
++	struct lp8860_chip *pchip = dev_get_drvdata(dev);
++	unsigned int reg, data, rval;
++	char *tok;
++	int ret;
++
++	/* register no. */
++	tok = strsep((char **)&buf, " ,\n");
++	if (tok = NULL)
++		goto err_input;
++	ret = kstrtouint(tok, 16, &reg);
++	if (ret)
++		goto err_input;
++
++	/* register value */
++	tok = strsep((char **)&buf, " ,\n");
++	if (tok = NULL)
++		goto err_input;
++	ret = kstrtouint(tok, 16, &data);
++	if (ret)
++		goto err_input;
++	/*
++	 * EEPROM Programming sequence
++	 *    (program data permanently from registers to NVM)
++	 * 1. Unlock EEPROM by writing
++	 *    the unlock codes to register 1Ah(08, BA, EF)
++	 * 2. Write data to EEPROM registers (address 60h...78h)
++	 * 3. Write EE_PROG to 1 in address 19h. (02h to address 19h)
++	 * 4. Wait 100ms for chip interanl dealy to access the eeprom
++	 * 5. Write EE_PROG to 0 in address 19h. (00h to address 19h)
++	 */
++	if (reg < REG_EEPROM_START || reg > REG_EEPROM_END || data > 0xff)
++		goto err_input;
++	ret = regmap_write(pchip->regmap, REG_ROM_UNLOCK, 0x08);
++	ret |= regmap_write(pchip->regmap, REG_ROM_UNLOCK, 0xba);
++	ret |= regmap_write(pchip->regmap, REG_ROM_UNLOCK, 0xef);
++	ret |= regmap_write(pchip->regmap, reg, data);
++	ret |= regmap_write(pchip->regmap, REG_ROM_CTRL, 0x02);
++	msleep(100);
++	ret |= regmap_write(pchip->regmap, REG_ROM_CTRL, 0x00);
++	if (ret < 0)
++		goto err_i2c;
++
++	/* read back */
++	ret = regmap_write(pchip->regmap, REG_ROM_UNLOCK, 0x08);
++	ret |= regmap_write(pchip->regmap, REG_ROM_UNLOCK, 0xba);
++	ret |= regmap_write(pchip->regmap, REG_ROM_UNLOCK, 0xef);
++	ret |= regmap_write(pchip->regmap, REG_ROM_CTRL, 0x01);
++	msleep(100);
++	ret |= regmap_write(pchip->regmap, REG_ROM_CTRL, 0x00);
++	ret |= regmap_read(pchip->regmap, reg, &rval);
++	if (ret < 0)
++		goto err_i2c;
++	if (rval != data)
++		dev_err(pchip->dev, "fail : eeprom did not change.\n");
++
++	return size;
++
++err_i2c:
++	dev_err(pchip->dev, "fail : i2c access error.\n");
++	return ret;
++
++err_input:
++	dev_err(pchip->dev, "fail : input fail.\n");
++	return -EINVAL;
++}
++
++static DEVICE_ATTR(eeprom, S_IWUSR, NULL, lp8860_eeprom_store);
++
++/* backlight register and remove */
++static char *lp8860_bled_name[LP8860_LED_MAX] = {
++	[LP8860_LED0] = "bled0",
++	[LP8860_LED1] = "bled1",
++	[LP8860_LED2] = "bled2",
++	[LP8860_LED3] = "bled3",
++};
++
++static int lp8860_backlight_remove(struct lp8860_chip *pchip)
++{
++	int icnt;
++
++	device_remove_file(&(pchip->bled[0]->dev), &dev_attr_eeprom);
++	for (icnt = LP8860_LED0; icnt < LP8860_LED_MAX; icnt++) {
++		if (pchip->bled[icnt])
++			device_remove_file(&(pchip->bled[icnt]->dev),
++					   &lp8860_dev_attr[icnt]);
++	}
++	return 0;
++}
++
++static int lp8860_backlight_registers(struct lp8860_chip *pchip)
++{
++	struct backlight_properties props;
++	struct lp8860_platform_data *pdata = pchip->pdata;
++	int icnt, ret;
++
++	props.type = BACKLIGHT_RAW;
++	for (icnt = LP8860_LED0; icnt < LP8860_LED_MAX; icnt++) {
++		props.max_brightness = pdata->max_brt[icnt];
++		pchip->bled[icnt] +		    devm_backlight_device_register(pchip->dev,
++						   lp8860_bled_name[icnt],
++						   pchip->dev, pchip,
++						   &lp8860_bled_ops[icnt],
++						   &props);
++		if (IS_ERR(pchip->bled[icnt])) {
++			dev_err(pchip->dev, "fail : backlight register.\n");
++			ret = PTR_ERR(pchip->bled[icnt]);
++			goto err_out;
++		}
++		/* to control current */
++		ret = device_create_file(&(pchip->bled[icnt]->dev),
++					 &lp8860_dev_attr[icnt]);
++		if (ret < 0) {
++			dev_err(pchip->dev, "fail : to add sysfs entries.\n");
++			goto err_out;
++		}
++	}
++	/* to access eeprom */
++	ret = device_create_file(&(pchip->bled[LP8860_LED0]->dev),
++				 &dev_attr_eeprom);
++	if (ret < 0) {
++		dev_err(pchip->dev, "fail : to add sysfs entries.\n");
++		goto err_out;
++	}
++	return 0;
++
++err_out:
++	lp8860_backlight_remove(pchip);
++	return ret;
++}
++
++static const struct regmap_config lp8860_regmap = {
++	.reg_bits = 8,
++	.val_bits = 8,
++	.max_register = REG_MAX,
++};
++
++static int lp8860_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
++{
++	struct lp8860_chip *pchip;
++	struct lp8860_platform_data *pdata = dev_get_platdata(&client->dev);
++	int ret, icnt;
++
++	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
++		dev_err(&client->dev, "fail : i2c functionality check.\n");
++		return -EOPNOTSUPP;
++	}
++
++	pchip = devm_kzalloc(&client->dev,
++			     sizeof(struct lp8860_chip), GFP_KERNEL);
++	if (!pchip)
++		return -ENOMEM;
++	pchip->dev = &client->dev;
++
++	pchip->regmap = devm_regmap_init_i2c(client, &lp8860_regmap);
++	if (IS_ERR(pchip->regmap)) {
++		ret = PTR_ERR(pchip->regmap);
++		dev_err(pchip->dev, "fail : allocate i2c register map.\n");
++		return ret;
++	}
++
++	if (pdata = NULL) {
++		pdata = devm_kzalloc(pchip->dev,
++				     sizeof(struct lp8860_platform_data),
++				     GFP_KERNEL);
++		if (pdata = NULL)
++			return -ENOMEM;
++		pdata->max_brt[LP8860_LED0] = 65535;
++		for (icnt = LP8860_LED1; icnt < LP8860_LED_MAX; icnt++)
++			pdata->max_brt[icnt] = 8191;
++		pchip->pdata = pdata;
++	} else {
++		pchip->pdata = pdata;
++	}
++	i2c_set_clientdata(client, pchip);
++	ret = lp8860_backlight_registers(pchip);
++	return ret;
++}
++
++static int lp8860_remove(struct i2c_client *client)
++{
++	return lp8860_backlight_remove(i2c_get_clientdata(client));
++}
++
++static const struct i2c_device_id lp8860_id[] = {
++	{LP8860_NAME, 0},
++	{}
++};
++
++MODULE_DEVICE_TABLE(i2c, lp8860_id);
++static struct i2c_driver lp8860_i2c_driver = {
++	.driver = {
++		.name = LP8860_NAME,
++	},
++	.probe = lp8860_probe,
++	.remove = lp8860_remove,
++	.id_table = lp8860_id,
++};
++
++module_i2c_driver(lp8860_i2c_driver);
++
++MODULE_DESCRIPTION("Texas Instruments LP8860 Backlight Driver");
++MODULE_AUTHOR("Daniel Jeong <gshark.jeong@gmail.com>");
++MODULE_AUTHOR("Ldd Mlp <ldd-mlp@list.ti.com>");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/platform_data/lp8860_bl.h b/include/linux/platform_data/lp8860_bl.h
+new file mode 100644
+index 0000000..9edd7cf
+--- /dev/null
++++ b/include/linux/platform_data/lp8860_bl.h
+@@ -0,0 +1,54 @@
++/*
++ * Simple driver for Texas Instruments LP8860 Backlight driver chip
++ * Copyright (C) 2014 Texas Instruments
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#ifndef __LP8860_H
++#define __LP8860_H
++
++#define LP8860_NAME "lp8860"
++#define LP8860_ADDR 0x2d
++
++#define LP8860_LED0_BR_MAX 65535
++#define LP8860_LED1_BR_MAX 8191
++#define LP8860_LED2_BR_MAX 8191
++#define LP8860_LED3_BR_MAX 8191
++
++#define LP8860_LED0_I_MAX 4095
++#define LP8860_LED1_I_MAX 255
++#define LP8860_LED2_I_MAX 255
++#define LP8860_LED3_I_MAX 255
++
++enum lp8860_leds {
++	LP8860_LED0 = 0,
++	LP8860_LED1,
++	LP8860_LED2,
++	LP8860_LED3,
++	LP8860_LED_MAX
++};
++
++enum lp8860_ctrl_mode {
++	LP8860_CTRL_I2C = 0,
++	LP8860_CTRL_I2C_PWM,
++};
++
++/* struct lp8860 platform data
++ * @mode : control mode
++ * @max_brt : maximum brightness.
++ *		LED0 0 ~ 65535
++ *		LED1 0 ~ 8191
++ *		LED2 0 ~ 8191
++ *		LED3 0 ~ 8191
++ */
++struct lp8860_platform_data {
++
++	enum lp8860_ctrl_mode mode;
++	int max_brt[LP8860_LED_MAX];
++};
++
++#endif /* __LP8860_H */
 -- 
-1.8.3.2
+1.7.9.5
 

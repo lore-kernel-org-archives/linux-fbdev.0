@@ -1,76 +1,26 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 19 Mar 2014 11:04:42 +0000
-Subject: Re: [PATCH] Video: atmel: avoid the id of fix screen info is overwritten
-Message-Id: <532979CA.6040007@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="pPliJecwtw7NirkT5cbmE2jxd5oomswQ6"
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Date: Thu, 13 Mar 2014 08:48:56 +0000
+Subject: =?UTF-8?B?UmU6IFtQQVRDSF0gbGNkOiBQcm92aWRlIGR1bW15IGZ1bmN0aW9ucyBpZiBD?= =?UTF-8?B?T05GSUdfTENEX0NMQ
+Message-Id: <1394700536.448009775@f174.i.mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395215275-14345-1-git-send-email-voice.shen@atmel.com>
-In-Reply-To: <1395215275-14345-1-git-send-email-voice.shen@atmel.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---pPliJecwtw7NirkT5cbmE2jxd5oomswQ6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 19/03/14 09:47, Bo Shen wrote:
-> Correct passing parameter sequence, which will avoid the id of
-> fix screen info is overwritten.
->=20
-> Signed-off-by: Bo Shen <voice.shen@atmel.com>
-> ---
->  drivers/video/atmel_lcdfb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index cd96162..695f28a 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -1190,12 +1190,12 @@ static int __init atmel_lcdfb_probe(struct plat=
-form_device *pdev)
->  	if (!sinfo->config)
->  		goto free_info;
-> =20
-> -	strcpy(info->fix.id, sinfo->pdev->name);
->  	info->flags =3D ATMEL_LCDFB_FBINFO_DEFAULT;
->  	info->pseudo_palette =3D sinfo->pseudo_palette;
->  	info->fbops =3D &atmel_lcdfb_ops;
-> =20
->  	info->fix =3D atmel_lcdfb_fix;
-> +	strcpy(info->fix.id, sinfo->pdev->name);
-> =20
->  	/* Enable LCDC Clocks */
->  	sinfo->bus_clk =3D clk_get(dev, "hclk");
->=20
-
-Thanks, queued for 3.15.
-
- Tomi
-
-
-
---pPliJecwtw7NirkT5cbmE2jxd5oomswQ6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTKXnKAAoJEPo9qoy8lh71uBUQAKWeO0gKPyjl8Df+6mdJy/ZP
-/IXDblxlhb1zTEVsLWiLZ5xrIHcPOHzup3ykTPCMTOJmwFkpV5iZ2eIZ1k1HdM8t
-YCOfGUbsnELqcZfhsVnZty1d4Xl7IlhdLNgHMuho96XicPlBvXpmOgRXwEGvyqH8
-4fasnEeQ2qDyTnUqkvfKDegCAT43Wo0UghB4PVapTar/a8XNEuqBycj4ViKVEjG+
-8OO2eRlyUNmcr+YvxxC9ZH604nPqy5zlNWxniP0iLHH0fkF3Ay5nWsOMldb7dVed
-iSNbNcpWQPQ2BM9Xg7v+nFZep6jzbG3o0q0d0T0iQt7Qb6TV8y3pnj5GiEOko9YE
-PixGG975sn5luw76fEOtqZ+EM5tzeQyxWDAMBBNHWmNzonE9o5RTKAqrXMYu+P6+
-F5n2nWuFYiThCZshhWubZmDpPRZyB3FUZOyAomcCY/gbzd/1EALQqy8wWLJ1s+01
-XAMyQS8eG5Nu+M0j8eCBiSdYQ1eVNRSYrTtf3NUcltvcKw+rSGDPFDD3byGhXcot
-rHxTLTI9+5Bo165AIDqkcvm7B5n5Iw31xRmekmzOeQ5dnGzpyXAG+u4pigqg6e8t
-rz5hEQoAqFB6tMkq3/Z6kFPxWP2GTp3kq9yoiRLw4cj3UGyGFkTV6NX9IwsxOM/t
-GyMFQWa34EZU89LGWItD
-=oOGN
------END PGP SIGNATURE-----
-
---pPliJecwtw7NirkT5cbmE2jxd5oomswQ6--
+0KfQtdGC0LLQtdGA0LMsIDEzINC80LDRgNGC0LAgMjAxNCwgMTA6MjMgKzAyOjAwINC+0YIgVG9t
+aSBWYWxrZWluZW4gPHRvbWkudmFsa2VpbmVuQHRpLmNvbT46Cj4gT24gMTMvMDMvMTQgMDk6MzEs
+IEFsZXhhbmRlciBTaGl5YW4gd3JvdGU6Cj4gPiBQcm92aWRlIGR1bW15IGZ1bmN0aW9ucyBmb3Ig
+TENEIHJlZ2lzdGVyKCkvdW5yZWdpc3RlcigpIGlmCj4gPiBDT05GSUdfTENEX0NMQVNTX0RFVklD
+RSBpcyBub3Qgc2V0Lgo+IAo+IEhtbSwgd2h5IGRvIHlvdSB3YW50IHRvIGRvIHRoYXQ/IElmIGEg
+ZHJpdmVyIG5lZWRzIHRoZSBMQ0QgY2xhc3MsIGl0Cj4gc2hvdWxkIGRlcGVuZCBvbiBvciBzZWxl
+Y3QgaXQuCgpJIGluc3BlY3QgbXkgcmVjZW50IGNoYW5nZXMgZm9yIHRoZSBpbXhmYiBkcml2ZXIu
+CkkgdXNlIHRoZSBMQ0QgY2xhc3MgZm9yIHBvd2VyIG1hbmFnZW1lbnQgYW5kIGNvbnRyYXN0LCBu
+ZXZlcnRoZWxlc3MsCmlmIGl0IGxhY2sgaW4gdGhlIGtlcm5lbCB0aGlzIGxlYWRzIHRvIGFuIGVy
+cm9yLgpZZXMsIHdlIGNhbiBjaG9vc2UgdGhlIExDRF9DTEFTU19ERVZJQ0Ugc3ltYm9sIGZvciB0
+aGUgaW14ZmIgZHJpdmVyLApidXQgYXQgdGhlIHNhbWUgdGltZSB3ZSBtdXN0IGNob29zZSBCQUNL
+TElHSFRfTENEX1NVUFBPUlQuCkkgZG8gbm90IHRoaW5rIGl0J3MgYSBnb29kIHdheS4KSW4gYW55
+IGNhc2UsIEkgd291bGQgbGlrZSB0byByZXZpc2UgdGhlIHBhdGNoIHRvIHVzZSBOVUxMIGFzIGEg
+cmVzdWx0CmlmIHRoZXJlIGlzIG5vIHN1cHBvcnQgTENEX0NMQVNTX0RFVklDRSBpbiB0aGUga2Vy
+bmVsLgpBZGRpdGlvbmFsbHksIEkgaGF2ZSBhIHBsYW4gdG8gY29udmVydCAibWVudWNvbmZpZyIg
+ZW50cnkgZm9yCkJBQ0tMSUdIVF9MQ0RfU1VQUE9SVCB0byB0aGUgIm1lbnUiLgpPSz8KCi0tLQo

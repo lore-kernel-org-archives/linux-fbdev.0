@@ -1,69 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 10 Mar 2014 12:23:21 +0000
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 13 Mar 2014 09:30:50 +0000
 Subject: Re: [PATCH v5 1/2] video: ARM CLCD: Add DT support
-Message-Id: <531DAEB9.3020502@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="aa37lV0Gl3uBSegaRCa4iE0mmFJ7XIJ9U"
+Message-Id: <CACRpkdYBuxYko5JD5ZCfoQq+PeXtkKP9eprk9HM=ghW2YMoMuA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1394036606-17784-1-git-send-email-pawel.moll@arm.com>	
- <53184C2E.3000807@ti.com> <1394119431.4160.84.camel@hornet>	
- <5319AF00.5030602@ti.com> <1394453382.3853.6.camel@hornet>
-In-Reply-To: <1394453382.3853.6.camel@hornet>
+References: <1394036606-17784-1-git-send-email-pawel.moll@arm.com>
+ <53184C2E.3000807@ti.com>
+In-Reply-To: <53184C2E.3000807@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---aa37lV0Gl3uBSegaRCa4iE0mmFJ7XIJ9U
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, Mar 6, 2014 at 11:21 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> Hi Pawel,
+>
+> On 05/03/14 18:23, Pawel Moll wrote:
+>> This patch adds basic DT bindings for the PL11x CLCD cells
+>> and make their fbdev driver use them.
+>
+> Is this an old HW, and presumably there won't be new users for it?
 
-On 10/03/14 14:09, Pawel Moll wrote:
+AFAICT ARM really like to re-synthesize this piece of HW in every
+new reference design they make. Plus a number of manufacturers
+have used it in elder systems.
 
->> Note that the same DT bindings you add here should also work for the D=
-RM
->> driver in the future. So, in fact, the question is extended to: will t=
-he
->> fbdev=20
->=20
-> No, I don't think so. It's a end of line for it, I believe. From my
-> personal point of view the main goal is to fill the last gap between DT=
+> If
+> yes, this is probably fine. If not, you might want to look at the video
+> ports and endpoints, which is used by at least three not-yet-merged series:
+>
+> [PATCHv3 00/41] OMAPDSS: DT support v3
+> [PATCH v5 00/11] imx-drm dt bindings
+> [RFC PATCH v2 00/21] Add DSI display support for Exynos based boards
+>
+> Using bindings like that would be more future proof, even if the current
+> driver doesn't use them.
 
-> and non-DT support on one of the Versatile Express boards - CLCD works
-> fine when booted with ATAGs, doesn't work when booted with DT. It looks=
+I take it that it shouldn't matter if the driver is for framebuffer or
+DRM (as was implied by some answer here) the hardware
+description should be the same no matter what, so the more
+furture-proof the better.
 
-> bad.
-
-The DT describes the hardware, and there should be only one description
-of it, no matter what the used SW is. I see compatible =3D "arm,pl111" in=
-
-the dts. PL111 is the LCD controller, right? What will the DRM driver
-use, then, if the "arm,pl111" DT data is designed to work only for the
-fbdev?
-
- Tomi
-
-
-
---aa37lV0Gl3uBSegaRCa4iE0mmFJ7XIJ9U
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTHa65AAoJEPo9qoy8lh71rFoP/1oOoTi8QqCu54d4HJLCg6i+
-mJlEqeUBwpjyMPojQGU7oUs99qOHiqy1LlpLP6TQ35RO26LkkWHJnw3wtZBHubr0
-nsXQnE4rPr4K8qd/3y0uPaw5oS2pqUiV3580LZ7ZkEStdaj0WhQxgjgHxLjGgvPU
-LFHehIuHl2lLl9hVbnVvyymkpxgpd1t44npPGX3rIFP9j+SPV5nfr5W9oaluJH6Q
-6HWoCletZ11A7fYW6r3yqLI5sjxaslidhAdBGiQpGE1zy0eXBHknyWE+1o1zbzBQ
-cbcS6+JkT6JnWAsFcyg59PdpjIwQt8lXn8LBl22dbWI60tf8XDOpNu7tYqgxfOVG
-zMCuRXRFd47IY4VmkJJrXJKL/vGADwKMKMzDjDUDLlhKALElZEYa2mV40JKPOxJ8
-omniOYd9b/c8aPsHimOZKpvWZKMlE2RFTDRohmVwzKCquJdaJ2XR7ZnEsBoYAiU4
-TpM0t7600JTnR7v/JJsTyyVXrbuwn3T41Tm/kfiz11EOP+9JlUtBi+atDTK8O5J7
-kG+sZQ9ogL6jGM1VYf4/7X2GUibsG60hmLd7cGeh4/K2DxhwS2tXAMw1Ha+2gLrz
-qXsMw8gafIqhOFM9ASrihA+FzLGhjZYS+WHxESCgjkm7U/j5cutUCNGi0i/FW4ZF
-dGgOpaVw9Zalztvc62oH
-=9fd9
------END PGP SIGNATURE-----
-
---aa37lV0Gl3uBSegaRCa4iE0mmFJ7XIJ9U--
+Yours,
+Linus Walleij

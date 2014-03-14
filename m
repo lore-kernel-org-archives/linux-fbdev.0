@@ -1,52 +1,75 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Mon, 24 Feb 2014 10:25:11 +0000
-Subject: [PATCH v2 0/5] hyperv-fb: add support for generation 2 virtual machines.
-Message-Id: <1393237516-28545-1-git-send-email-kraxel@redhat.com>
+From: Daniel Jeong <gshark.jeong@gmail.com>
+Date: Fri, 14 Mar 2014 02:14:00 +0000
+Subject: [PATCH] backlight: lm3639: use devm_backlight_device_register()
+Message-Id: <1394763240-10176-1-git-send-email-gshark.jeong@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, kys@microsoft.com, abgupta@microsoft.com, haiyangz@microsoft.com, jasowang@redhat.com, tomi.valkeinen@ti.com, Gerd Hoffmann <kraxel@redhat.com>
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: Daniel Jeong <gshark.jeong@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>
 
-  Hi,
+ change to use devm_backlight_device_register() for simple cleanup.
 
-This patch series adds support for uefi-based gen2 virtual machines to
-the hyperv-fb driver.
+Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
+---
+ drivers/video/backlight/lm3639_bl.c |   17 +++++++----------
+ 1 file changed, 7 insertions(+), 10 deletions(-)
 
-Patch #1 is included just for completeness.  Greg picked it up
-already and it is in -next, but it isn't in master yet.
-
-Patch #2 is a bugfix for the first patch.
-
-Patch #3 changes vmbus to properly hook the hyperv mmio area into
-the linux resource management.
-
-Patch #4 actually implements gen2 vm support for hyperv-fb, building
-on the hyperv mmio support added by the other patches.
-
-Patch #5 unregisters efifb early to make sure the framebuffer isn't used
-any more while hyperv-fb initialization is in progress.  This patch is
-new in v2 and it fixes the hang listed as "known issue" in v1 of this
-patch series.
-
-please apply,
-  Gerd
-
-Gerd Hoffmann (4):
-  vmbus: add missing breaks
-  vmbus: use resource for hyperv mmio region
-  hyperv-fb: add support for generation 2 virtual machines.
-  hyperv-fb: kick off efifb early
-
-K. Y. Srinivasan (1):
-  Drivers: hv: vmbus: Extract the mmio information from DSDT
-
- drivers/hv/vmbus_drv.c    | 51 ++++++++++++++++++++-------
- drivers/video/hyperv_fb.c | 87 +++++++++++++++++++++++++++++++++--------------
- include/linux/hyperv.h    |  2 ++
- 3 files changed, 101 insertions(+), 39 deletions(-)
-
+diff --git a/drivers/video/backlight/lm3639_bl.c b/drivers/video/backlight/lm3639_bl.c
+index 6fd60ad..5f36808 100644
+--- a/drivers/video/backlight/lm3639_bl.c
++++ b/drivers/video/backlight/lm3639_bl.c
+@@ -349,8 +349,9 @@ static int lm3639_probe(struct i2c_client *client,
+ 	props.brightness = pdata->init_brt_led;
+ 	props.max_brightness = pdata->max_brt_led;
+ 	pchip->bled -	    backlight_device_register("lm3639_bled", pchip->dev, pchip,
+-				      &lm3639_bled_ops, &props);
++	    devm_backlight_device_register(pchip->dev, "lm3639_bled",
++					   pchip->dev, pchip, &lm3639_bled_ops,
++					   &props);
+ 	if (IS_ERR(pchip->bled)) {
+ 		dev_err(&client->dev, "fail : backlight register\n");
+ 		ret = PTR_ERR(pchip->bled);
+@@ -360,7 +361,7 @@ static int lm3639_probe(struct i2c_client *client,
+ 	ret = device_create_file(&(pchip->bled->dev), &dev_attr_bled_mode);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "failed : add sysfs entries\n");
+-		goto err_bled_mode;
++		goto err_out;
+ 	}
+ 
+ 	/* flash */
+@@ -391,8 +392,6 @@ err_torch:
+ 	led_classdev_unregister(&pchip->cdev_flash);
+ err_flash:
+ 	device_remove_file(&(pchip->bled->dev), &dev_attr_bled_mode);
+-err_bled_mode:
+-	backlight_device_unregister(pchip->bled);
+ err_out:
+ 	return ret;
+ }
+@@ -407,10 +406,8 @@ static int lm3639_remove(struct i2c_client *client)
+ 		led_classdev_unregister(&pchip->cdev_torch);
+ 	if (&pchip->cdev_flash)
+ 		led_classdev_unregister(&pchip->cdev_flash);
+-	if (pchip->bled) {
++	if (pchip->bled)
+ 		device_remove_file(&(pchip->bled->dev), &dev_attr_bled_mode);
+-		backlight_device_unregister(pchip->bled);
+-	}
+ 	return 0;
+ }
+ 
+@@ -432,6 +429,6 @@ static struct i2c_driver lm3639_i2c_driver = {
+ module_i2c_driver(lm3639_i2c_driver);
+ 
+ MODULE_DESCRIPTION("Texas Instruments Backlight+Flash LED driver for LM3639");
+-MODULE_AUTHOR("Daniel Jeong <daniel.jeong@ti.com>");
+-MODULE_AUTHOR("G.Shark Jeong <gshark.jeong@gmail.com>");
++MODULE_AUTHOR("Daniel Jeong <gshark.jeong@gmail.com>");
++MODULE_AUTHOR("Ldd Mlp <ldd-mlp@list.ti.com>");
+ MODULE_LICENSE("GPL v2");
 -- 
-1.8.3.1
+1.7.9.5
 

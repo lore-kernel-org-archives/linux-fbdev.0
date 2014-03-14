@@ -1,59 +1,96 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 18 Mar 2014 08:15:44 +0000
-Subject: [PATCHv2 5/8] Doc/DT: Add DT binding documentation for MIPI DSI CM Panel
-Message-Id: <1395130547-18633-6-git-send-email-tomi.valkeinen@ti.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Fri, 14 Mar 2014 09:12:48 +0000
+Subject: [PATCH v7][ 4/5] ARM: dts: i.MX35: Add display support.
+Message-Id: <1394788369-5096-4-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395130547-18633-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1395130547-18633-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+References: <1394788369-5096-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1394788369-5096-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Vetter <daniel-/w4YWyX8dFk@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Add DT binding documentation for MIPI DSI Command Mode Panel.
+There is already a "dma ipu driver" for the mx3*
+that is currently at drivers/dma/ipu/ipu_idmac.c
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Reviewed-by: Archit Taneja <archit@ti.com>
+The mx3fb framebuffer driver uses this "dma ipu driver".
+
+The goal is not to expose the "dma ipu driver" in the device
+tree bindings, to make the mx3fb bindings look similar
+to the ipuv3 ones.
+
+In the device tree bindings, the "dma ipu driver" is absent,
+and the mx3fb compatible is "fsl,imx<soc>-ipu".
+
+An node for the mx3fb was also added in the imx35 dtsi.
+
+Signed-off-by: Denis Carikli <denis@eukrea.com>
 ---
- .../devicetree/bindings/video/panel-dsi-cm.txt     | 29 ++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/panel-dsi-cm.txt
+ChangeLog v6->v7:
+- Removed the Cc from the patch, they went into 
+  git send-email instead.
+- Removed the comment, and instead a commit messaage was 
+  added to explain the non-straingtforward part of the change.
 
-diff --git a/Documentation/devicetree/bindings/video/panel-dsi-cm.txt b/Documentation/devicetree/bindings/video/panel-dsi-cm.txt
-new file mode 100644
-index 000000000000..dce48eb9db57
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/panel-dsi-cm.txt
-@@ -0,0 +1,29 @@
-+Generic MIPI DSI Command Mode Panel
-+=================+
-+Required properties:
-+- compatible: "panel-dsi-cm"
+ChangeLog v5->v6:
+- Shrinked the Cc list.
+
+ChangeLog v4->v5:
+- Added Grant Likely and Shawn Guo in the Cc list.
+- Adapted to the new non-dma ipu bindings.
+- Adapted to the use of imx35-pingrp.h
+- The pinctrl ipu node addition was moved in this commit.
+
+ChangeLog v3->v4:
+- Splitted the imx35.dtsi display support (new patch).
+---
+ arch/arm/boot/dts/imx35.dtsi |    7 +++++++
+ arch/arm/mach-imx/imx35-dt.c |    6 ++++++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/arch/arm/boot/dts/imx35.dtsi b/arch/arm/boot/dts/imx35.dtsi
+index e59ccb4..b9bf6a0 100644
+--- a/arch/arm/boot/dts/imx35.dtsi
++++ b/arch/arm/boot/dts/imx35.dtsi
+@@ -230,6 +230,13 @@
+ 				status = "disabled";
+ 			};
+ 
++			ipu: ipu@53fc0000 {
++				compatible = "fsl,imx35-ipu";
++				reg = <0x53fc0000 0x4000>;
++				clocks = <&clks 55>;
++				status = "disabled";
++			};
 +
-+Optional properties:
-+- label: a symbolic name for the panel
-+- reset-gpios: panel reset gpio
-+- te-gpios: panel TE gpio
+ 			audmux: audmux@53fc4000 {
+ 				compatible = "fsl,imx35-audmux", "fsl,imx31-audmux";
+ 				reg = <0x53fc4000 0x4000>;
+diff --git a/arch/arm/mach-imx/imx35-dt.c b/arch/arm/mach-imx/imx35-dt.c
+index 9d48e00..657cc5d 100644
+--- a/arch/arm/mach-imx/imx35-dt.c
++++ b/arch/arm/mach-imx/imx35-dt.c
+@@ -18,14 +18,20 @@
+ #include <asm/mach/time.h>
+ #include <asm/hardware/cache-l2x0.h>
+ #include "common.h"
++#include "devices-imx35.h"
+ #include "mx35.h"
+ 
+ static void __init imx35_dt_init(void)
+ {
++	struct device_node *np;
+ 	mxc_arch_reset_init_dt();
+ 
+ 	of_platform_populate(NULL, of_default_bus_match_table,
+ 			     NULL, NULL);
 +
-+Required nodes:
-+- Video port for DSI input
-+
-+Example
-+-------
-+
-+lcd0: display {
-+	compatible = "tpo,taal", "panel-dsi-cm";
-+	label = "lcd0";
-+
-+	reset-gpios = <&gpio4 6 GPIO_ACTIVE_HIGH>;
-+
-+	port {
-+		lcd0_in: endpoint {
-+			remote-endpoint = <&dsi1_out_ep>;
-+		};
-+	};
-+};
++	np = of_find_compatible_node(NULL, NULL, "fsl,imx35-ipu");
++	if (of_device_is_available(np))
++		imx35_add_ipu_core();
+ }
+ 
+ static void __init imx35_irq_init(void)
 -- 
-1.8.3.2
+1.7.9.5
 

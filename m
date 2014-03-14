@@ -1,80 +1,80 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Fri, 21 Mar 2014 23:11:03 +0000
-Subject: Re: [PATCH] drivers/video: fix mb862xx_i2c depends issue build failure
-Message-Id: <532CC707.9010405@infradead.org>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Fri, 14 Mar 2014 21:06:13 +0000
+Subject: Re: [PATCH v2] RFC: framebuffer: provide generic get_fb_unmapped_area
+Message-Id: <20140314210613.GL15674@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395328560-48497-1-git-send-email-paul.gortmaker@windriver.com> <532C3F64.2020601@ti.com> <532C4476.2030706@windriver.com>
-In-Reply-To: <532C4476.2030706@windriver.com>
+References: <1391447684-22556-1-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1391447684-22556-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Paul Gortmaker <paul.gortmaker@windriver.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jim Davis <jim.epost@gmail.com>, Fengguang Wu <fengguang.wu@intel.com>
+To: linux-fbdev@vger.kernel.org
 
-On 03/21/2014 06:53 AM, Paul Gortmaker wrote:
-> On 14-03-21 09:32 AM, Tomi Valkeinen wrote:
->> Hi,
->>
->> On 20/03/14 17:16, Paul Gortmaker wrote:
->>> Any randconfig that sets I2C=3Dm and FB_MB862XX_I2C=3Dy will
->>> encounter a final link failure that looks like this:
->>
->> It compiles fine with I2C=3Dm, FB_MB862XX=3Dm and FB_MB862XX_I2C=3Dy.
->>
->>> drivers/built-in.o: In function `mb862xx_i2c_init':
->>> drivers/video/mb862xx/mb862xx-i2c.c:165: undefined reference to `i2c_ad=
-d_adapter'
->>> drivers/built-in.o: In function `mb862xx_i2c_exit':
->>> drivers/video/mb862xx/mb862xx-i2c.c:176: undefined reference to `i2c_de=
-l_adapter'
->>>
->>> Since FB_MB862XX_I2C is a bool and not tristate, simply
->>> don't offer it at all if core I2C support is not built in.
->>
->> FB_MB862XX_I2C is not a driver, it just adds the i2c support to
->> FB_MB862XX. The relevant thing is whether FB_MB862XX is m or y, so
->> compiling with:
->>
->> I2C=3Dm, FB_MB862XX=3Dy and FB_MB862XX_I2C=3Dy
->>
->> will fail.
+On Mon, Feb 03, 2014 at 06:14:44PM +0100, Uwe Kleine-K=F6nig wrote:
+> This patch makes mmapping the simple-framebuffer device work on a no-MMU
+> ARM target. The code is mostly taken from
+> arch/blackfin/kernel/sys_bfin.c.
 >=20
-> How would you suggest we fix it then?  Perhaps we could simplify the
-> Kconfig space and just get rid of FB_MB862XX_I2C entirely?  Is there
-> ever a reason why someone would want it turned off when I2C is present?
+> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+> ---
+> Hello,
 >=20
-> Paul.
-> --
+> note this is only tested on this no-MMU machine and I don't know enough
+> about framebuffers and mm to decide if this patch is sane. Also I'm
+> a bit unsure about the size check, I just believed Geert that
+> PAGE_ALIGN(info->fix.smem_len) is the right value to check against.
+Do you still have this patch on your radar?
+
+Best regards
+Uwe
+
+>  drivers/video/fbmem.c | 20 +++++++++++++++++---
+>  1 file changed, 17 insertions(+), 3 deletions(-)
 >=20
->>
->>> Reported-by: Jim Davis <jim.epost@gmail.com>
->>> Reported-by: Fengguang Wu <fengguang.wu@intel.com>
->>> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
->>>
->>> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
->>> index dade5b7699bc..aefd1b9a3cbd 100644
->>> --- a/drivers/video/Kconfig
->>> +++ b/drivers/video/Kconfig
->>> @@ -2338,7 +2338,7 @@ endchoice
->>> =20
->>>  config FB_MB862XX_I2C
->>>  	bool "Support I2C bus on MB862XX GDC"
->>> -	depends on FB_MB862XX && I2C
->>> +	depends on FB_MB862XX && I2C=3Dy
->>>  	default y
->>>  	help
->>>  	  Selecting this option adds Coral-P(A)/Lime GDC I2C bus adapter
->>
->> This fix is not correct, as it prevents the following, valid, config:
->>
->> I2C=3Dm, FB_MB862XX=3Dm and FB_MB862XX_I2C=3Dy
-
-If I am following this correctly, this kconfig situation is often handled
-by something like
-
-	depends on I2C=3Dy || I2C=FB_MB862XX
-
-
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> index 7309ac704e26..d0ccedafec8c 100644
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -1491,6 +1491,22 @@ __releases(&info->lock)
+>  	return 0;
+>  }
+> =20
+> +#ifdef HAVE_ARCH_FB_UNMAPPED_AREA
+> +#define fb_get_unmapped_area get_fb_unmapped_area
+> +#else
+> +unsigned long fb_get_unmapped_area(struct file *filp, unsigned long orig=
+_addr,
+> +		unsigned long len, unsigned long pgoff, unsigned long flags)
+> +{
+> +	struct fb_info * const info =3D filp->private_data;
+> +	unsigned long fb_size =3D PAGE_ALIGN(info->fix.smem_len);
+> +
+> +	if (pgoff > fb_size || len > fb_size - pgoff)
+> +		return -EINVAL;
+> +
+> +	return (unsigned long)info->screen_base + pgoff;
+> +}
+> +#endif
+> +
+>  static const struct file_operations fb_fops =3D {
+>  	.owner =3D	THIS_MODULE,
+>  	.read =3D		fb_read,
+> @@ -1502,9 +1518,7 @@ static const struct file_operations fb_fops =3D {
+>  	.mmap =3D		fb_mmap,
+>  	.open =3D		fb_open,
+>  	.release =3D	fb_release,
+> -#ifdef HAVE_ARCH_FB_UNMAPPED_AREA
+> -	.get_unmapped_area =3D get_fb_unmapped_area,
+> -#endif
+> +	.get_unmapped_area =3D fb_get_unmapped_area,
+>  #ifdef CONFIG_FB_DEFERRED_IO
+>  	.fsync =3D	fb_deferred_io_fsync,
+>  #endif
+> --=20
+> 1.8.5.2
+>=20
+>=20
 
 --=20
-~Randy
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |

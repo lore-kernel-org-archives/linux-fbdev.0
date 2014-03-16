@@ -1,56 +1,54 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Mon, 17 Mar 2014 06:20:26 +0000
-Subject: Re: [PATCH v7][ 3/5] video: mx3fb: Introduce regulator support.
-Message-Id: <20140317062026.GZ17250@pengutronix.de>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Sun, 16 Mar 2014 16:40:03 +0000
+Subject: Re: [PATCH] fbdev: Make the switch from generic to native driver less alarming
+Message-Id: <CANq1E4Scdb201UdetY-5V3EeCEk55PUatQta1JG6mztF9o-EyA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1394788369-5096-1-git-send-email-denis@eukrea.com>
- <1394788369-5096-3-git-send-email-denis@eukrea.com>
-In-Reply-To: <1394788369-5096-3-git-send-email-denis@eukrea.com>
+References: <1345223444-15852-1-git-send-email-ajax@redhat.com>
+In-Reply-To: <1345223444-15852-1-git-send-email-ajax@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-[Added Mark to Cc]
+Hi
 
-On Fri, Mar 14, 2014 at 10:12:47AM +0100, Denis Carikli wrote:
->  
-> +		of_property_read_string(display_np, "regulator-name",
-> +					&regulator_name);
-> +
+CC'ing Tomi.
 
-[...]
+On Wed, Feb 12, 2014 at 10:02 PM, Adam Jackson <ajax@redhat.com> wrote:
+> Calling this "conflicting" just makes people think there's a problem
+> when there's not.
+>
+> Signed-off-by: Adam Jackson <ajax@redhat.com>
+> ---
+>  drivers/video/fbmem.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> index 7309ac7..b6d5008 100644
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -1596,8 +1596,7 @@ static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
+>                         (primary && gen_aper && gen_aper->count &&
+>                          gen_aper->ranges[0].base = VGA_FB_PHYS)) {
+>
+> -                       printk(KERN_INFO "fb: conflicting fb hw usage "
+> -                              "%s vs %s - removing generic driver\n",
+> +                       printk(KERN_INFO "fb: switching to %s from %s\n",
+>                                name, registered_fb[i]->fix.id);
 
-> +	/* In dt mode,
-> +	 * using devm_regulator_get would require that the proprety referencing
-> +	 * the regulator phandle has to be inside the mx3fb node.
-> +	 */
-> +	if (np) {
-> +		if (regulator_name)
-> +			mx3fbi->reg_lcd = regulator_get(NULL, regulator_name);
-> +
-> +		if (IS_ERR(mx3fbi->reg_lcd))
-> +			return PTR_ERR(mx3fbi->reg_lcd);
-> +	} else {
-> +		/* Permit that driver without a regulator in non-dt mode */
-> +		mx3fbi->reg_lcd = regulator_get(dev, "lcd");
-> +	}
+I like that.
 
-This patch adds regulator support for the display of a i.MX3 IPU. The
-problem Denis has to solve here is that he needs to get the regulator,
-but the display devicenode doesn't have a struct device associated with
-it, so he cannot provide one to regulator_get(). One way out here could
-be a of_regulator_get(struct device_node *). Mark, would this be ok with
-you?
+Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
 
-(Of course a proper driver for the display would be nicer, but this
-would immediately bring us to some Common display framework, something
-which is being worked on quite a while now without success)
+Thanks
+David
 
-Sascha
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+>                         ret = do_unregister_framebuffer(registered_fb[i]);
+>                         if (ret)
+> --
+> 1.8.5.3
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

@@ -1,7 +1,7 @@
-From: Conor O <falling174fps@gmail.com>
-Date: Sat, 15 Mar 2014 11:53:52 +0000
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Sun, 16 Mar 2014 16:25:11 +0000
 Subject: Re: Possible bug in deferred io with mmaped memory?
-Message-Id: <CAAtz+1bKz-X7CQSn_xzs3P_MwsGP9-ooiNoeMqXXXSgiM=Wk4Q@mail.gmail.com>
+Message-Id: <CANq1E4Q_0jMqhgGSUOSXZtN1p5sOv301Kh_40mRankNzdqVhRw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CAAtz+1YfwnSQZMjpA3aKCKG7u1+kXLx+zbQAF6NV3oMsxVd6KQ@mail.gmail.com>
 In-Reply-To: <CAAtz+1YfwnSQZMjpA3aKCKG7u1+kXLx+zbQAF6NV3oMsxVd6KQ@mail.gmail.com>
@@ -10,20 +10,9 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Confirmed. This does not happen with vmalloc. The pointers are in
-quite different places in case that's relevant:
+Hi
 
-kptr = ed460000
-vptr = f23d1000
-
-Aside: the reason I'm using kmalloc (or __get_free_pages()) is to have
-a physically contiguous buffer for DMA. I currently copy the
-framebuffer into a DMA buffer which is less efficient but works (thank
-goodness!). I will trace the bug myself when I get time.
-
-Conor.
-
-On Sat, Mar 15, 2014 at 11:29 AM, Conor O <falling174fps@gmail.com> wrote:
+On Sat, Mar 15, 2014 at 12:29 PM, Conor O <falling174fps@gmail.com> wrote:
 > Hello all, I hope this is a reasonable place to post a bug. If I fix
 > it I can post a fix too.
 >
@@ -37,37 +26,12 @@ On Sat, Mar 15, 2014 at 11:29 AM, Conor O <falling174fps@gmail.com> wrote:
 > perfectly correctly. As soon as I call munmap() I get a repeated
 > kernel messages. This happens on ARM but not under an Ubuntu
 > Virtualbox VM (x86):
->
-> BUG: Bad page state in process fbtest1  pfn:ad11d
-> page:c0dc03a0 count:0 mapcount:0 mapping:edbf7144 index:0x1d
-> page flags: 0x94(referenced|dirty|slab)
-> Modules linked in: hhlcd28a(O) sysimgblt sysfillrect syscopyarea
-> fb_sys_fops bnep ipv6 mwifiex_sdio mwifiex btmrvl_sdio firmware_class
-> btmrvl cfg80211 bluetooth rfkill
-> [<c0014bc8>] (unwind_backtrace+0x0/0x11c) from [<c00c44d4>] (bad_page+0xd0/0xfc)
-> [<c00c44d4>] (bad_page+0xd0/0xfc) from [<c00c45c0>]
-> (free_pages_prepare+0xc0/0x150)
-> [<c00c45c0>] (free_pages_prepare+0xc0/0x150) from [<c00c5a34>]
-> (free_hot_cold_page+0x20/0x188)
-> [<c00c5a34>] (free_hot_cold_page+0x20/0x188) from [<c00c5dc4>]
-> (free_hot_cold_page_list+0x7c/0x9c)
-> [<c00c5dc4>] (free_hot_cold_page_list+0x7c/0x9c) from [<c00c90c0>]
-> (release_pages+0x1b4/0x1c8)
-> [<c00c90c0>] (release_pages+0x1b4/0x1c8) from [<c00ea854>]
-> (free_pages_and_swap_cache+0x8c/0x9c)
-> [<c00ea854>] (free_pages_and_swap_cache+0x8c/0x9c) from [<c00dfff4>]
-> (unmap_region+0x100/0x154)
-> [<c00dfff4>] (unmap_region+0x100/0x154) from [<c00e116c>]
-> (do_munmap+0x218/0x2a4)
-> [<c00e116c>] (do_munmap+0x218/0x2a4) from [<c00e1234>] (vm_munmap+0x3c/0x50)
-> [<c00e1234>] (vm_munmap+0x3c/0x50) from [<c000dc20>] (ret_fast_syscall+0x0/0x30)
->
-> [repeated for N pages]
->
-> root@duovero:~/testdrv#
->
-> I will now convert to using vmalloc and check to see if this happens too.
->
-> Thanks,
->
-> Conor.
+
+You map kmalloc()ed memory to user-space? How do you guarantee that
+it's page-aligned? How do you protect kernel-internal state? This
+sounds really odd.
+Anyhow, you really need to post a link to the code in question if you
+want people to help you.
+
+Thanks
+David

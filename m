@@ -1,88 +1,90 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 03 Mar 2014 06:05:26 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 17 Mar 2014 14:19:32 +0000
 Subject: Re: [PATCH 5/9] Doc/DT: Add DT binding documentation for MIPI DPI Panel
-Message-Id: <53141BA6.4040702@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="9numtJOld7uFmmaqJIdc6GxIIkABnUkbL"
+Message-Id: <3721050.m43feCICLQ@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>	
+References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>
  <1393590016-9361-6-git-send-email-tomi.valkeinen@ti.com>
- <1393594836.3802.32.camel@paszta.hi.pengutronix.de>
-In-Reply-To: <1393594836.3802.32.camel@paszta.hi.pengutronix.de>
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sascha Hauer <s.hauer@pengutronix.de>, Tomasz Figa <tomasz.figa@gmail.com>, dri-devel@lists.freedesktop.org, Inki Dae <inki.dae@samsung.com>, Andrzej Hajda <a.hajda@samsung.com>, Rob Clark <robdclark@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+In-Reply-To: <1393590016-9361-6-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, dri-devel@lists.freedesktop.org, Andrzej Hajda <a.hajda@samsung.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
---9numtJOld7uFmmaqJIdc6GxIIkABnUkbL
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi Tomi,
 
-On 28/02/14 15:40, Philipp Zabel wrote:
-> Am Freitag, den 28.02.2014, 14:20 +0200 schrieb Tomi Valkeinen:
->> Add DT binding documentation for MIPI DPI Panel.
->>
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> Reviewed-by: Archit Taneja <archit@ti.com>
->> ---
->>  .../devicetree/bindings/video/panel-dpi.txt        | 43 +++++++++++++=
-+++++++++
->>  1 file changed, 43 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/video/panel-dpi.=
-txt
->>
->> diff --git a/Documentation/devicetree/bindings/video/panel-dpi.txt b/D=
-ocumentation/devicetree/bindings/video/panel-dpi.txt
->> new file mode 100644
->> index 000000000000..72636c6f1c67
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/video/panel-dpi.txt
->> @@ -0,0 +1,43 @@
->> +Generic MIPI DPI Panel
->> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> +
->> +Required properties:
->> +- compatible: "panel-dpi"
->> +
->> +Optional properties:
->> +- label: a symbolic name for the panel
->> +- gpios: panel enable gpio and backlight enable gpio
->> +
->> +Required nodes:
->> +- "panel-timing" containing video timings
->> +  (Documentation/devicetree/bindings/video/display-timing.txt)
->> +- Video port for DPI input
->=20
-> I don't see anything MIPI specific here. Couldn't this be added to the
-> existing simple-panel binding?
+Thank you for the patch.
 
-Hmm, well, the simple-panel bindings doesn't define video ports, and not
-even a common compatible property.
+On Friday 28 February 2014 14:20:12 Tomi Valkeinen wrote:
+> Add DT binding documentation for MIPI DPI Panel.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Reviewed-by: Archit Taneja <archit@ti.com>
+> ---
+>  .../devicetree/bindings/video/panel-dpi.txt        | 43 +++++++++++++++++++
+>  1 file changed, 43 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/video/panel-dpi.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/video/panel-dpi.txt
+> b/Documentation/devicetree/bindings/video/panel-dpi.txt new file mode
+> 100644
+> index 000000000000..72636c6f1c67
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/video/panel-dpi.txt
+> @@ -0,0 +1,43 @@
+> +Generic MIPI DPI Panel
+> +===========
+> +
+> +Required properties:
+> +- compatible: "panel-dpi"
+> +
+> +Optional properties:
+> +- label: a symbolic name for the panel
+> +- gpios: panel enable gpio and backlight enable gpio
 
- Tomi
+While integrated in the panel module, the backlight is a separate piece of 
+hardware, which could be controlled through other means (I2C for instance). 
+Wouldn't it be better to add an explicit DT node for the backlight device and 
+reference that node from the panel node ?
 
+> +
+> +Required nodes:
+> +- "panel-timing" containing video timings
+> +  (Documentation/devicetree/bindings/video/display-timing.txt)
+> +- Video port for DPI input
+> +
+> +Example
+> +-------
+> +
+> +lcd0: display@0 {
+> +        compatible = "samsung,lte430wq-f0c", "panel-dpi";
+> +        label = "lcd";
+> +
+> +        lcd_in: endpoint {
+> +                remote-endpoint = <&dpi_out>;
+> +        };
+> +
+> +        panel-timing {
+> +                clock-frequency = <9200000>;
+> +                hactive = <480>;
+> +                vactive = <272>;
+> +                hfront-porch = <8>;
+> +                hback-porch = <4>;
+> +                hsync-len = <41>;
+> +                vback-porch = <2>;
+> +                vfront-porch = <4>;
+> +                vsync-len = <10>;
+> +
+> +                hsync-active = <0>;
+> +                vsync-active = <0>;
+> +                de-active = <1>;
+> +                pixelclk-active = <1>;
+> +        };
+> +};
 
+-- 
+Regards,
 
---9numtJOld7uFmmaqJIdc6GxIIkABnUkbL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Laurent Pinchart
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTFBupAAoJEPo9qoy8lh71+vYP/3WVF6gzXQo+DMWInjGZ45sx
-dLJxl96xVQ+YjsOkqOYk6PwBGV69dRQtue5L2zTgLs5ttaQ4OZ5ycbRyLEavDtXo
-lz8e1PFJGVVwP7f5NpDXhyHFT0bJmcondA3MOC5fA5Vw+jVgZ71LhBYI3ItG2PaC
-74/E1tnZOQgoKAJin0/xGhPcZ4i0EDdfg6ELmMyCf0ZImlrcBI1hKb/90WpTqSgM
-2VuRweiOdEEu2aS5OiLYtKMogXapSZnc75+GTwZ5aFKzgtKhFIHyoT41gMTFQQgm
-CYdYSrCHm+8xoOE3nfms/kxEcKg/r2Mbjn08TcZm5UdQsTIq1fGi7nnk9yDTrkRR
-du91gtXUI/5j6wdBEtMPKI6qdkSno62L3KfZySlT4FcSGoEKu6dCS0oH/S0kSqst
-DW/xr9ulnLAttDy1/zI86DGUz6JbDfIOL9wnVbT8Ea8kJ9o/9yBGytMv/4RKNpDk
-fm0JBCxI06RZh7rrVQBIlHX5JxA5/4dcgMKEjT6+nCpz8BWD96OfJEsBgcH/kwiA
-Sq3tRg6Xd+nemHPInGCJNN1vzGI7cjQ4T9pQNKti4SioCQScim88098vXKIvrdAz
-QeK8do7bimGrRPQBGScJAdWtSzxSenng18KiFGjISNZE1E9mhj8PJjnLNWMLnfDL
-kICuEZ0HBSEC8pVsbzM6
-=9Nwa
------END PGP SIGNATURE-----
-
---9numtJOld7uFmmaqJIdc6GxIIkABnUkbL--

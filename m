@@ -1,71 +1,94 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 17 Mar 2014 11:23:39 +0000
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Mon, 17 Mar 2014 12:15:04 +0000
 Subject: Re: [PATCH v2] RFC: framebuffer: provide generic get_fb_unmapped_area
-Message-Id: <5326DB3B.1080409@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="OPMSqnEKGWtWFuXEuuqTBPeHukltGlo15"
+Message-Id: <CANq1E4Q-9j58j05m5YE-Os2-NH6B_SMsjFMD0AUp3j=6EXt+TA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1391447684-22556-1-git-send-email-u.kleine-koenig@pengutronix.de>
 In-Reply-To: <1391447684-22556-1-git-send-email-u.kleine-koenig@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
---OPMSqnEKGWtWFuXEuuqTBPeHukltGlo15
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi
 
-Hi,
-
-On 03/02/14 19:14, Uwe Kleine-K=C3=B6nig wrote:
-> This patch makes mmapping the simple-framebuffer device work on a no-MM=
-U
+On Mon, Feb 3, 2014 at 6:14 PM, Uwe Kleine-K=F6nig
+<u.kleine-koenig@pengutronix.de> wrote:
+> This patch makes mmapping the simple-framebuffer device work on a no-MMU
 > ARM target. The code is mostly taken from
 > arch/blackfin/kernel/sys_bfin.c.
->=20
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+>
+> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
 > ---
 > Hello,
->=20
-> note this is only tested on this no-MMU machine and I don't know enough=
-
+>
+> note this is only tested on this no-MMU machine and I don't know enough
 > about framebuffers and mm to decide if this patch is sane. Also I'm
 > a bit unsure about the size check, I just believed Geert that
 > PAGE_ALIGN(info->fix.smem_len) is the right value to check against.
+>
+> Best regards
+> Uwe
+>
+>  drivers/video/fbmem.c | 20 +++++++++++++++++---
+>  1 file changed, 17 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> index 7309ac704e26..d0ccedafec8c 100644
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -1491,6 +1491,22 @@ __releases(&info->lock)
+>         return 0;
+>  }
+>
+> +#ifdef HAVE_ARCH_FB_UNMAPPED_AREA
+> +#define fb_get_unmapped_area get_fb_unmapped_area
+> +#else
+> +unsigned long fb_get_unmapped_area(struct file *filp, unsigned long orig=
+_addr,
+> +               unsigned long len, unsigned long pgoff, unsigned long fla=
+gs)
+> +{
+> +       struct fb_info * const info =3D filp->private_data;
+> +       unsigned long fb_size =3D PAGE_ALIGN(info->fix.smem_len);
+> +
+> +       if (pgoff > fb_size || len > fb_size - pgoff)
+> +               return -EINVAL;
+> +
+> +       return (unsigned long)info->screen_base + pgoff;
+> +}
+> +#endif
+> +
 
-I don't know enough about mm to say much here, and the text above make
-me feel a bit uneasy. I'd be happy if this would get a few
-acks/reviewed-bys/tested-bys...
+Doesn't this break mmu systems? x86 for instance has no
+get_fb_unmapped_area(), therefore f_ops->get_unmapped_area() is NULL
+and thus falls back to the generic handler of the task (see
+mm/mmap.c). If you replace this with your handler, _every_ mmap() call
+with be treated as MAP_FIXED with "info->screen_base + pgoff" as
+address. This might work in test-cases on the first mmap() call, but
+any further call will fail.
 
-So what does this patch actually do? If I read things correctly,
-currently .get_unmapped_area is null, except for sparc and blackfin. But
-userspace's mmap() calls that, right? Is there a default implementation
-somewhere? Why is that different for no-MMU case?
+Thanks
+David
 
- Tomi
-
-
-
---OPMSqnEKGWtWFuXEuuqTBPeHukltGlo15
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTJts7AAoJEPo9qoy8lh71LWEP/RNFlRNTaQdBXqvZG/xPTez/
-QHph4Wquc0kY4VSuCUF8ldLfhGuDPsR+fVeceH/a2Gk4V3dppnp//yYWuqhNff/u
-MbViuq1D3W1RDtHksfQTZPJ9mfBoNWqB0QiXxlunCbOVUEBbo8b559bhStiqxa1z
-Bc1ReZVM+t68KQR1Mfs1zDoj0/+taxu2g6OhcSDwSJs3vIT+rWM4nROKN8+eYjrF
-XcvLfVT8Gi+fn2gI5zbUhnx2ccFapaGbArZPyavZUqLo8nOjV6I7UPNePrH6CKxK
-Ta+K4P/5x4iU7c2i/rITgcuaGXzP/Ng5TtFjL3OSw5xZ6jEpbYh/IhTABIJWQPP9
-qX6oDPw2Fxej11XFzjya+rrtPYeeqH1wJPu2SaVlDN8xMeJvdW/WX19gakBFMhAF
-bqjqbyF5bEwuFrM64Q/XqAz/EknLqKUIIl0wVowvoCwZrm5ygIcfKvH3c5nN3uva
-SO72bxtXuDkDk7Ecth7n2p2FxH3vE7/V4Z8a9Oir0RDQ/4V8rY/57IzqwzdUbO1P
-3PZ6FDxc91q8DutpyHg6XFVhLfyu3YQZAjR+L0sqVDaehw1Zk1OIdEAV/3G4lGPP
-z4zoA2lVMvYErTpYXCQ9GrnV99pIwpJbWCrbqdfdaZqMl5ZYgIPTeruDPJT+0bLe
-qnF1Xca8NLVYqDtAYXqY
-=mbJ4
------END PGP SIGNATURE-----
-
---OPMSqnEKGWtWFuXEuuqTBPeHukltGlo15--
+>  static const struct file_operations fb_fops =3D {
+>         .owner =3D        THIS_MODULE,
+>         .read =3D         fb_read,
+> @@ -1502,9 +1518,7 @@ static const struct file_operations fb_fops =3D {
+>         .mmap =3D         fb_mmap,
+>         .open =3D         fb_open,
+>         .release =3D      fb_release,
+> -#ifdef HAVE_ARCH_FB_UNMAPPED_AREA
+> -       .get_unmapped_area =3D get_fb_unmapped_area,
+> -#endif
+> +       .get_unmapped_area =3D fb_get_unmapped_area,
+>  #ifdef CONFIG_FB_DEFERRED_IO
+>         .fsync =3D        fb_deferred_io_fsync,
+>  #endif
+> --
+> 1.8.5.2
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

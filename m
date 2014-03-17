@@ -1,60 +1,66 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Fri, 14 Mar 2014 10:55:52 +0000
-Subject: [PATCH v15][ 2/3] video: imxfb: Add DT default contrast control register property.
-Message-Id: <1394794553-14719-2-git-send-email-denis@eukrea.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 17 Mar 2014 10:30:02 +0000
+Subject: Re: [PATCH v15][ 2/3] video: imxfb: Add DT default contrast control register property.
+Message-Id: <5326CEAA.9090209@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="lXpaJrd8hxW0Ld5DdsWC22T3xhg7gOn4t"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1394794553-14719-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1394794553-14719-1-git-send-email-denis@eukrea.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1394794553-14719-2-git-send-email-denis@eukrea.com>
+In-Reply-To: <1394794553-14719-2-git-send-email-denis@eukrea.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Denis Carikli <denis@eukrea.com>
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Acked-by: Grant Likely <grant.likely@linaro.org>
----
-ChangeLog v14->v15:
-- Moved the Cc into git send-email.
-- Rebased.
+--lXpaJrd8hxW0Ld5DdsWC22T3xhg7gOn4t
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-ChangeLog v5->v14:
-- Remove people not concerned by this patch from the Cc list.
-- Changed the property name to match the register name and function.
-- Updated the documentation, code and commit message accordingly.
----
- .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
- drivers/video/fbdev/imxfb.c                        |    3 +++
- 2 files changed, 6 insertions(+)
+On 14/03/14 12:55, Denis Carikli wrote:
+> Signed-off-by: Denis Carikli <denis@eukrea.com>
+> Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+> Acked-by: Grant Likely <grant.likely@linaro.org>
+> ---
+> ChangeLog v14->v15:
+> - Moved the Cc into git send-email.
+> - Rebased.
+>=20
+> ChangeLog v5->v14:
+> - Remove people not concerned by this patch from the Cc list.
+> - Changed the property name to match the register name and function.
+> - Updated the documentation, code and commit message accordingly.
+> ---
+>  .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
+>  drivers/video/fbdev/imxfb.c                        |    3 +++
+>  2 files changed, 6 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-index e6b1ee9..0329f60 100644
---- a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-+++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-@@ -18,6 +18,9 @@ Optional properties:
- - lcd-supply: Regulator for LCD supply voltage.
- - fsl,dmacr: DMA Control Register value. This is optional. By default, the
- 	register is not modified as recommended by the datasheet.
-+- fsl,lpccr: Contrast Control Register value. This property provides the
-+	default value for the contrast control register.
-+	If that property is ommited, the register is zeroed.
- - fsl,lscr1: LCDC Sharp Configuration Register value.
- 
- Example:
-diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-index 086e024..f6e6216 100644
---- a/drivers/video/fbdev/imxfb.c
-+++ b/drivers/video/fbdev/imxfb.c
-@@ -670,6 +670,9 @@ static int imxfb_init_fbinfo(struct platform_device *pdev)
- 		fbi->cmap_static = of_property_read_bool(np, "cmap-static");
- 
- 		fbi->lscr1 = IMXFB_LSCR1_DEFAULT;
-+
-+		of_property_read_u32(np, "fsl,lpccr", &fbi->pwmr);
-+
- 		of_property_read_u32(np, "fsl,lscr1", &fbi->lscr1);
- 
- 		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
--- 
-1.7.9.5
+Queued for 3.15.
 
+ Tomi
+
+
+
+
+--lXpaJrd8hxW0Ld5DdsWC22T3xhg7gOn4t
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJTJs6qAAoJEPo9qoy8lh71+tYQAK5drYGbIBjacLFkWIASZRWZ
+U9QpMzuzpYDgaWYldUONy4sjKGWdK2/aYfo+cEDycqXz4w5A5HDX3MabObqJ+5dy
+fcRf9cMkIJX5gdAybbwW/DbrdkJKgrqTNbGsT2s/sRMbpw6jzR9HrIFiXgRvStjK
+kpq3eayD22dYmfyVbOTJ9zaMnX1mPFd2l5cTjP2tGTN8yrdGLy6+2VmiYd6s2Stl
+p2aUML1zJlIUHSyCYrUNDvaUpF9NMzFr01emqKJ5gX5g3im+SnWzjJHuDp+AYyzM
+MwxumQutS+KOy0SNqc/0m2ro98vfllNB7DmgBQ5mSxf+gJolNOWkC78LJFPY6VVy
+UDR3pl1OUCLjdcSw/AQe+h1ICXBqo1WFzf4xtEheXod/hogMfvhnY4EPMutRWlPO
+2AusUUJIQPsoszL7gScncrSqjjydY8uqER/FWPe5ZH+wYgHNILNlkvCrWdYHkALC
+gIVCpv7Te3ewbyW3VuhRECNCq/4napIQskVH/eNeNf7iVNV6dXWPt2BaPJhimbTN
+N+1z0WJIREiyPCo0DR0NnK/kt5Pl8WwP8w/r4lgxGqZpZGFOK7P3VOehHObpCHwu
+2YZtCn2DYf3PhxjQHadx517hOSzIs55eUnUaBNpj6kyjyQhRK+sQ26sH7oFW9G+9
+76oWgNY4gLCTtR8ZYz+Y
+=mLPR
+-----END PGP SIGNATURE-----
+
+--lXpaJrd8hxW0Ld5DdsWC22T3xhg7gOn4t--

@@ -1,62 +1,75 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 31 Mar 2014 07:43:40 +0000
-Subject: Re: [PATCH 2/2] backlight: platform_lcd: Remove #ifdef CONFIG_PM_SLEEP
-Message-Id: <20140331074340.GL17779@lee--X1>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 17 Mar 2014 14:22:10 +0000
+Subject: Re: [PATCH 6/9] Doc/DT: Add DT binding documentation for MIPI DSI CM Panel
+Message-Id: <4670830.fkS1noPxcd@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1396087220-1564-2-git-send-email-shc_work@mail.ru>
-In-Reply-To: <1396087220-1564-2-git-send-email-shc_work@mail.ru>
+References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>
+ <1393590016-9361-7-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1393590016-9361-7-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, dri-devel@lists.freedesktop.org, Andrzej Hajda <a.hajda@samsung.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-> This patch removes #ifdef CONFIG_PM_SLEEP to improve compile coverage.
+Hi Tomi,
 
-Compile coverage would improve if we removed all in-file CONFIG
-stipulations, but that's not helpful. What's the reason for removing
-them in this case?
+Thank you for the patch.
 
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+On Friday 28 February 2014 14:20:13 Tomi Valkeinen wrote:
+> Add DT binding documentation for MIPI DSI Command Mode Panel.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Reviewed-by: Archit Taneja <archit@ti.com>
 > ---
->  drivers/video/backlight/platform_lcd.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/video/backlight/platform_lcd.c b/drivers/video/backl=
-ight/platform_lcd.c
-> index 4afc21f..986f46a 100644
-> --- a/drivers/video/backlight/platform_lcd.c
-> +++ b/drivers/video/backlight/platform_lcd.c
-> @@ -110,8 +110,7 @@ static int platform_lcd_probe(struct platform_device =
-*pdev)
->  	return 0;
->  }
-> =20
-> -#ifdef CONFIG_PM_SLEEP
-> -static int platform_lcd_suspend(struct device *dev)
-> +static int __maybe_unused platform_lcd_suspend(struct device *dev)
->  {
->  	struct platform_lcd *plcd =3D dev_get_drvdata(dev);
-> =20
-> @@ -121,7 +120,7 @@ static int platform_lcd_suspend(struct device *dev)
->  	return 0;
->  }
-> =20
-> -static int platform_lcd_resume(struct device *dev)
-> +static int __maybe_unused platform_lcd_resume(struct device *dev)
->  {
->  	struct platform_lcd *plcd =3D dev_get_drvdata(dev);
-> =20
-> @@ -130,7 +129,6 @@ static int platform_lcd_resume(struct device *dev)
-> =20
->  	return 0;
->  }
-> -#endif
-> =20
->  static SIMPLE_DEV_PM_OPS(platform_lcd_pm_ops, platform_lcd_suspend,
->  			platform_lcd_resume);
+>  .../devicetree/bindings/video/panel-dsi-cm.txt     | 26 +++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/video/panel-dsi-cm.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/video/panel-dsi-cm.txt
+> b/Documentation/devicetree/bindings/video/panel-dsi-cm.txt new file mode
+> 100644
+> index 000000000000..73f422556d4f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/video/panel-dsi-cm.txt
+> @@ -0,0 +1,26 @@
+> +Generic MIPI DSI Command Mode Panel
+> +=================> +
+> +Required properties:
+> +- compatible: "panel-dsi-cm"
+> +
+> +Optional properties:
+> +- label: a symbolic name for the panel
+> +- gpios: panel reset gpio and TE gpio
+> +
+> +Required nodes:
+> +- Video port for DSI input
+> +
+> +Example
+> +-------
+> +
+> +lcd0: display {
+> +	compatible = "tpo,taal", "panel-dsi-cm";
+> +	label = "lcd0";
+> +
+> +	gpios = <&gpio4 6 GPIO_ACTIVE_HIGH>;	/* 102, reset */
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+If the panel uses a TE GPIO but no reset GPIO, do you plan to express this 
+with a "hole" for the reset GPIO ? e.g. something like
+
+	gpios = <0>, <&gpio4 6 GPIO_ACTIVE_HIGH>;
+
+Wouldn't it be better to split the gpios property into "reset-gpios" and "te-
+gpios" ?
+
+> +
+> +	lcd0_in: endpoint {
+> +		remote-endpoint = <&dsi1_out_ep>;
+> +	};
+> +};
+
+-- 
+Regards,
+
+Laurent Pinchart
+

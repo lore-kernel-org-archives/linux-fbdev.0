@@ -1,40 +1,59 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Mon, 31 Mar 2014 10:36:52 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSF0gYmFja2xpZ2h0OiBwd21fYmw6IFVzZSBTSU1QTEVfREVW?= =?UTF-8?B?X1BNX09QUygp?=
-Message-Id: <1396262212.223310081@f381.i.mail.ru>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 18 Mar 2014 08:15:43 +0000
+Subject: [PATCHv2 4/8] Doc/DT: Add DT binding documentation for HDMI Connector
+Message-Id: <1395130547-18633-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1396251711.522321843@f325.i.mail.ru>
-In-Reply-To: <1396251711.522321843@f325.i.mail.ru>
+References: <1395130547-18633-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1395130547-18633-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Vetter <daniel-/w4YWyX8dFk@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
-TW9uLCAzMSBNYXIgMjAxNCAwOTo1MDo0NyArMDEwMCDQvtGCIExlZSBKb25lcyA8bGVlLmpvbmVz
-QGxpbmFyby5vcmc+Ogo+ID4gPiA+ID4gPiBVc2UgdGhlIFNJTVBMRV9ERVZfUE1fT1BTKCkgbWFj
-cm8gdG8gZGVjbGFyZSB0aGUgZHJpdmVyJ3MgcG1fb3BzLgo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+
-ID4gU2lnbmVkLW9mZi1ieTogQWxleGFuZGVyIFNoaXlhbiA8c2hjX3dvcmtAbWFpbC5ydT4KPiA+
-ID4gPiA+ID4gLS0tCj4gPiA+ID4gPiA+ICBkcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9wd21fYmwu
-YyB8IDE3ICsrKystLS0tLS0tLS0tLS0tCj4gPiA+ID4gPiA+ICAxIGZpbGUgY2hhbmdlZCwgNCBp
-bnNlcnRpb25zKCspLCAxMyBkZWxldGlvbnMoLSkKPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IGRp
-ZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9wd21fYmwuYyBiL2RyaXZlcnMvdmlk
-ZW8vYmFja2xpZ2h0L3B3bV9ibC5jCj4gPiA+ID4gPiA+IGluZGV4IGI3NTIwMWYuLmQ1ZTFmNWIg
-MTAwNjQ0Cj4gPiA+ID4gPiA+IC0tLSBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L3B3bV9ibC5j
-Cj4gPiA+ID4gPiA+ICsrKyBiL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L3B3bV9ibC5jCj4gPiA+
-ID4gPiAKPiA+ID4gPiA+IFsuLi5dCj4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gLXN0YXRpYyBpbnQg
-cHdtX2JhY2tsaWdodF9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQo+ID4gPiA+ID4gPiArc3Rh
-dGljIGludCBfX21heWJlX3VudXNlZCBwd21fYmxfcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikK
-PiA+ID4gPiA+IAo+ID4gPiA+ID4gV2hhdCdzIHRoZSBfX21heWJlX3VudXNlZCBhdHRyaWJ1dGUg
-Zm9yPwo+ID4gPiA+ID4gCj4gPiA+ID4gPiBJbiBpbmNsdWRlL2xpbnV4L2NvbXBpbGVyLWdjYy5o
-IGl0IHJlZGVmaW5lcyB0aGUgYXR0cmlidXRlIGFzICd1bnVzZWQnOiAKPiA+ID4gPiA+IAo+ID4g
-PiA+ID4gICAjZGVmaW5lIF9fbWF5YmVfdW51c2VkICAgICAgICAgICAgICAgICAgX19hdHRyaWJ1
-dGVfXygodW51c2VkKSkKPiA+ID4gPiA+IAo+ID4gPiA+ID4gLi4uIGFyZSB5b3Ugc3VyZSB0aGlz
-IGlzIHdoYXQgeW91IHdhbnQ/Cj4gPiA+ID4gCj4gPiA+ID4gWWVzLiBUaGlzIGF2b2lkcyBjb21w
-aWxlciB3YXJuaW5ncyBpZiBDT05GSUdfUE0gaXMgdW5zZXQuCj4gPiA+IAo+ID4gPiBXaGF0IGFy
-ZSB0aGUgYWR2YW50YWdlcyBvZiB0aGlzIG92ZXIgdGhlIGNvbmZpZyBvcHRpb24/IEJlc2lkZXMg
-Mgo+ID4gPiBsaW5lcyBvZiBjb2RlPwo+ID4gCj4gPiBKdXN0IGFuIGluY3JlYXNlIGNvbXBpbGUg
-Y292ZXJhZ2UuCj4gCj4gV2hhdCBkb2VzIHRoaXMgbWVhbj8gSSByZXBsaWVkIHRvIGFub3RoZXIg
-b25lIG9mIHlvdXIgcGF0Y2hlcyB3aXRoIHRoZQo+IHNhbWUgcXVlc3Rpb24uCgpDb2RlIHBhcnRz
-IGZvciBzdXNwZW5kKCkgYW5kIHJlc3VtZSgpIHdpbGwgYmUgY29tcGlsZWQgcmVnYXJkbGVzcyBv
-ZgpDT05GSUdfUE0gb3B0aW9uIGFuZCB3aWxsIGJlIGRpc2NhcmRlZCBieSBsaW5rZXIgaWYgQ09O
-RklHX1BNIGlzIG5vdCBzZXQuCgotLS0KCg=
+Add DT binding documentation for HDMI Connector.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reviewed-by: Archit Taneja <archit@ti.com>
+---
+ .../devicetree/bindings/video/hdmi-connector.txt   | 28 ++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/hdmi-connector.txt
+
+diff --git a/Documentation/devicetree/bindings/video/hdmi-connector.txt b/Documentation/devicetree/bindings/video/hdmi-connector.txt
+new file mode 100644
+index 000000000000..ccccc19e2573
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/hdmi-connector.txt
+@@ -0,0 +1,28 @@
++HDMI Connector
++=======
++
++Required properties:
++- compatible: "hdmi-connector"
++- type: the HDMI connector type: "a", "b", "c", "d" or "e"
++
++Optional properties:
++- label: a symbolic name for the connector
++
++Required nodes:
++- Video port for HDMI input
++
++Example
++-------
++
++hdmi0: connector@1 {
++	compatible = "hdmi-connector";
++	label = "hdmi";
++
++	type = "a";
++
++	port {
++		hdmi_connector_in: endpoint {
++			remote-endpoint = <&tpd12s015_out>;
++		};
++	};
++};
+-- 
+1.8.3.2
+

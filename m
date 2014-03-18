@@ -1,106 +1,66 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Wed, 19 Mar 2014 13:03:15 +0000
-Subject: [PATCH 02/16] ARM: at91: sam9m10g45ek: use generic leds_pwm driver
-Message-Id: <1395234209-15546-3-git-send-email-alexandre.belloni@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 18 Mar 2014 08:15:42 +0000
+Subject: [PATCHv2 3/8] Doc/DT: Add DT binding documentation for DVI Connector
+Message-Id: <1395130547-18633-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1395130547-18633-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1395130547-18633-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Vetter <daniel-/w4YWyX8dFk@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
-Switch to the generic leds_pwm driver instead of leds-atmel-pwm.
+Add DT binding documentation for DVI Connector.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reviewed-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/mach-at91/board-sam9m10g45ek.c | 43 ++++++++++++++++++++++++++-------
- 1 file changed, 34 insertions(+), 9 deletions(-)
+ .../devicetree/bindings/video/dvi-connector.txt    | 35 ++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/dvi-connector.txt
 
-diff --git a/arch/arm/mach-at91/board-sam9m10g45ek.c b/arch/arm/mach-at91/board-sam9m10g45ek.c
-index f2f7ce9643ce..a98e92525fdb 100644
---- a/arch/arm/mach-at91/board-sam9m10g45ek.c
-+++ b/arch/arm/mach-at91/board-sam9m10g45ek.c
-@@ -26,6 +26,8 @@
- #include <linux/leds.h>
- #include <linux/atmel-mci.h>
- #include <linux/delay.h>
-+#include <linux/pwm.h>
-+#include <linux/leds_pwm.h>
- 
- #include <linux/platform_data/at91_adc.h>
- 
-@@ -415,7 +417,7 @@ static struct gpio_led ek_leds[] = {
- 		.active_low		= 1,
- 		.default_trigger	= "nand-disk",
- 	},
--#if !(defined(CONFIG_LEDS_ATMEL_PWM) || defined(CONFIG_LEDS_ATMEL_PWM_MODULE))
-+#if !IS_ENABLED(CONFIG_LEDS_PWM)
- 	{	/* "right" led, green, userled1, pwm1 */
- 		.name			= "d7",
- 		.gpio			= AT91_PIN_PD31,
-@@ -429,22 +431,42 @@ static struct gpio_led ek_leds[] = {
- /*
-  * PWM Leds
-  */
--static struct gpio_led ek_pwm_led[] = {
--#if defined(CONFIG_LEDS_ATMEL_PWM) || defined(CONFIG_LEDS_ATMEL_PWM_MODULE)
-+static struct pwm_lookup pwm_lookup[] = {
-+	PWM_LOOKUP("at91sam9rl-pwm", 1, "leds_pwm", "d7"),
-+};
+diff --git a/Documentation/devicetree/bindings/video/dvi-connector.txt b/Documentation/devicetree/bindings/video/dvi-connector.txt
+new file mode 100644
+index 000000000000..fc53f7c60bc6
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/dvi-connector.txt
+@@ -0,0 +1,35 @@
++DVI Connector
++=======
 +
-+#if IS_ENABLED(CONFIG_LEDS_PWM)
-+static struct led_pwm pwm_leds[] = {
- 	{	/* "right" led, green, userled1, pwm1 */
--		.name			= "d7",
--		.gpio			= 1,	/* is PWM channel number */
--		.active_low		= 1,
--		.default_trigger	= "none",
-+		.name = "d7",
-+		.max_brightness	= 255,
-+		.pwm_period_ns	= 5000,
-+		.active_low = 1,
- 	},
--#endif
- };
- 
-+static struct led_pwm_platform_data pwm_data = {
-+	.num_leds	= ARRAY_SIZE(pwm_leds),
-+	.leds		= pwm_leds,
-+};
++Required properties:
++- compatible: "dvi-connector"
 +
-+static struct platform_device leds_pwm = {
-+	.name	= "leds_pwm",
-+	.id	= -1,
-+	.dev	= {
-+		.platform_data = &pwm_data,
-+	},
-+};
-+#endif
++Optional properties:
++- label: a symbolic name for the connector
++- ddc-i2c-bus: phandle to the i2c bus that is connected to DVI DDC
++- analog: the connector has DVI analog pins
++- digital: the connector has DVI digital pins
++- dual-link: the connector has pins for DVI dual-link
 +
- static struct platform_device *devices[] __initdata = {
- #if defined(CONFIG_SOC_CAMERA_OV2640) || \
- 	defined(CONFIG_SOC_CAMERA_OV2640_MODULE)
- 	&isi_ov2640,
- #endif
-+#if IS_ENABLED(CONFIG_LEDS_PWM)
-+	&leds_pwm,
-+#endif
- };
- 
- static void __init ek_board_init(void)
-@@ -485,7 +507,10 @@ static void __init ek_board_init(void)
- 	at91_add_device_ac97(&ek_ac97_data);
- 	/* LEDs */
- 	at91_gpio_leds(ek_leds, ARRAY_SIZE(ek_leds));
--	at91_pwm_leds(ek_pwm_led, ARRAY_SIZE(ek_pwm_led));
-+	pwm_add_table(pwm_lookup, ARRAY_SIZE(pwm_lookup));
-+#if IS_ENABLED(CONFIG_LEDS_PWM)
-+	at91_add_device_pwm(1 << AT91_PWM1);
-+#endif
- 	/* Other platform devices */
- 	platform_add_devices(devices, ARRAY_SIZE(devices));
- }
++Required nodes:
++- Video port for DVI input
++
++Note: One (or both) of 'analog' or 'digital' must be set.
++
++Example
++-------
++
++dvi0: connector@0 {
++	compatible = "dvi-connector";
++	label = "dvi";
++
++	digital;
++
++	ddc-i2c-bus = <&i2c3>;
++
++	port {
++		dvi_connector_in: endpoint {
++			remote-endpoint = <&tfp410_out>;
++		};
++	};
++};
 -- 
 1.8.3.2
 

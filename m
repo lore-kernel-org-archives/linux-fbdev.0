@@ -1,66 +1,55 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 17 Mar 2014 10:30:02 +0000
-Subject: Re: [PATCH v15][ 2/3] video: imxfb: Add DT default contrast control register property.
-Message-Id: <5326CEAA.9090209@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="lXpaJrd8hxW0Ld5DdsWC22T3xhg7gOn4t"
+Date: Tue, 18 Mar 2014 08:15:41 +0000
+Subject: [PATCHv2 2/8] Doc/DT: Add DT binding documentation for Analog TV Connector
+Message-Id: <1395130547-18633-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1394794553-14719-1-git-send-email-denis@eukrea.com>
- <1394794553-14719-2-git-send-email-denis@eukrea.com>
-In-Reply-To: <1394794553-14719-2-git-send-email-denis@eukrea.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1395130547-18633-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1395130547-18633-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Vetter <daniel-/w4YWyX8dFk@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
---lXpaJrd8hxW0Ld5DdsWC22T3xhg7gOn4t
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add DT binding documentation for Analog TV Connector.
 
-On 14/03/14 12:55, Denis Carikli wrote:
-> Signed-off-by: Denis Carikli <denis@eukrea.com>
-> Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-> Acked-by: Grant Likely <grant.likely@linaro.org>
-> ---
-> ChangeLog v14->v15:
-> - Moved the Cc into git send-email.
-> - Rebased.
->=20
-> ChangeLog v5->v14:
-> - Remove people not concerned by this patch from the Cc list.
-> - Changed the property name to match the register name and function.
-> - Updated the documentation, code and commit message accordingly.
-> ---
->  .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
->  drivers/video/fbdev/imxfb.c                        |    3 +++
->  2 files changed, 6 insertions(+)
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reviewed-by: Archit Taneja <archit@ti.com>
+---
+ .../bindings/video/analog-tv-connector.txt         | 25 ++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/analog-tv-connector.txt
 
-Queued for 3.15.
+diff --git a/Documentation/devicetree/bindings/video/analog-tv-connector.txt b/Documentation/devicetree/bindings/video/analog-tv-connector.txt
+new file mode 100644
+index 000000000000..0218fcdc1299
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/analog-tv-connector.txt
+@@ -0,0 +1,25 @@
++Analog TV Connector
++=========+
++Required properties:
++- compatible: "composite-connector" or "svideo-connector"
++
++Optional properties:
++- label: a symbolic name for the connector
++
++Required nodes:
++- Video port for TV input
++
++Example
++-------
++
++tv: connector {
++	compatible = "composite-connector";
++	label = "tv";
++
++	port {
++		tv_connector_in: endpoint {
++			remote-endpoint = <&venc_out>;
++		};
++	};
++};
+-- 
+1.8.3.2
 
- Tomi
-
-
-
-
---lXpaJrd8hxW0Ld5DdsWC22T3xhg7gOn4t
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTJs6qAAoJEPo9qoy8lh71+tYQAK5drYGbIBjacLFkWIASZRWZ
-U9QpMzuzpYDgaWYldUONy4sjKGWdK2/aYfo+cEDycqXz4w5A5HDX3MabObqJ+5dy
-fcRf9cMkIJX5gdAybbwW/DbrdkJKgrqTNbGsT2s/sRMbpw6jzR9HrIFiXgRvStjK
-kpq3eayD22dYmfyVbOTJ9zaMnX1mPFd2l5cTjP2tGTN8yrdGLy6+2VmiYd6s2Stl
-p2aUML1zJlIUHSyCYrUNDvaUpF9NMzFr01emqKJ5gX5g3im+SnWzjJHuDp+AYyzM
-MwxumQutS+KOy0SNqc/0m2ro98vfllNB7DmgBQ5mSxf+gJolNOWkC78LJFPY6VVy
-UDR3pl1OUCLjdcSw/AQe+h1ICXBqo1WFzf4xtEheXod/hogMfvhnY4EPMutRWlPO
-2AusUUJIQPsoszL7gScncrSqjjydY8uqER/FWPe5ZH+wYgHNILNlkvCrWdYHkALC
-gIVCpv7Te3ewbyW3VuhRECNCq/4napIQskVH/eNeNf7iVNV6dXWPt2BaPJhimbTN
-N+1z0WJIREiyPCo0DR0NnK/kt5Pl8WwP8w/r4lgxGqZpZGFOK7P3VOehHObpCHwu
-2YZtCn2DYf3PhxjQHadx517hOSzIs55eUnUaBNpj6kyjyQhRK+sQ26sH7oFW9G+9
-76oWgNY4gLCTtR8ZYz+Y
-=mLPR
------END PGP SIGNATURE-----
-
---lXpaJrd8hxW0Ld5DdsWC22T3xhg7gOn4t--

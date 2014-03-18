@@ -1,75 +1,78 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 17 Mar 2014 14:22:10 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 18 Mar 2014 06:33:55 +0000
 Subject: Re: [PATCH 6/9] Doc/DT: Add DT binding documentation for MIPI DSI CM Panel
-Message-Id: <4670830.fkS1noPxcd@avalon>
+Message-Id: <5327E8D3.5010907@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="aTlV2D2po9mTkpS714eEiAlWlbPXu4XuO"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>
  <1393590016-9361-7-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1393590016-9361-7-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, dri-devel@lists.freedesktop.org, Andrzej Hajda <a.hajda@samsung.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ <4670830.fkS1noPxcd@avalon>
+In-Reply-To: <4670830.fkS1noPxcd@avalon>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sascha Hauer <s.hauer@pengutronix.de>, Tomasz Figa <tomasz.figa@gmail.com>, dri-devel@lists.freedesktop.org, Inki Dae <inki.dae@samsung.com>, Andrzej Hajda <a.hajda@samsung.com>, Rob Clark <robdclark@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-Hi Tomi,
+--aTlV2D2po9mTkpS714eEiAlWlbPXu4XuO
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Thank you for the patch.
+On 17/03/14 16:22, Laurent Pinchart wrote:
 
-On Friday 28 February 2014 14:20:13 Tomi Valkeinen wrote:
-> Add DT binding documentation for MIPI DSI Command Mode Panel.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Reviewed-by: Archit Taneja <archit@ti.com>
-> ---
->  .../devicetree/bindings/video/panel-dsi-cm.txt     | 26 +++++++++++++++++++
->  1 file changed, 26 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/panel-dsi-cm.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/video/panel-dsi-cm.txt
-> b/Documentation/devicetree/bindings/video/panel-dsi-cm.txt new file mode
-> 100644
-> index 000000000000..73f422556d4f
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/panel-dsi-cm.txt
-> @@ -0,0 +1,26 @@
-> +Generic MIPI DSI Command Mode Panel
-> +=================> +
-> +Required properties:
-> +- compatible: "panel-dsi-cm"
-> +
-> +Optional properties:
-> +- label: a symbolic name for the panel
-> +- gpios: panel reset gpio and TE gpio
-> +
-> +Required nodes:
-> +- Video port for DSI input
-> +
-> +Example
-> +-------
-> +
-> +lcd0: display {
-> +	compatible = "tpo,taal", "panel-dsi-cm";
-> +	label = "lcd0";
-> +
-> +	gpios = <&gpio4 6 GPIO_ACTIVE_HIGH>;	/* 102, reset */
+>> +Example
+>> +-------
+>> +
+>> +lcd0: display {
+>> +	compatible =3D "tpo,taal", "panel-dsi-cm";
+>> +	label =3D "lcd0";
+>> +
+>> +	gpios =3D <&gpio4 6 GPIO_ACTIVE_HIGH>;	/* 102, reset */
+>=20
+> If the panel uses a TE GPIO but no reset GPIO, do you plan to express t=
+his=20
+> with a "hole" for the reset GPIO ? e.g. something like
+>=20
+> 	gpios =3D <0>, <&gpio4 6 GPIO_ACTIVE_HIGH>;
 
-If the panel uses a TE GPIO but no reset GPIO, do you plan to express this 
-with a "hole" for the reset GPIO ? e.g. something like
+Yes.
 
-	gpios = <0>, <&gpio4 6 GPIO_ACTIVE_HIGH>;
+> Wouldn't it be better to split the gpios property into "reset-gpios" an=
+d "te-
+> gpios" ?
 
-Wouldn't it be better to split the gpios property into "reset-gpios" and "te-
-gpios" ?
+Yes, I can change it. I don't have a strong preference.
 
-> +
-> +	lcd0_in: endpoint {
-> +		remote-endpoint = <&dsi1_out_ep>;
-> +	};
-> +};
+I've gotten similar comments for other bindings also, so I guess the
+preferred way is to use named "-gpios" properties for everything except
+the case where you really have multiple gpios with the same purpose?
 
--- 
-Regards,
+The gpio binding documentation doesn't give much guidance on this.
 
-Laurent Pinchart
+ Tomi
 
+
+
+--aTlV2D2po9mTkpS714eEiAlWlbPXu4XuO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJTJ+jTAAoJEPo9qoy8lh714mkP/Rz4sZKoJ56Wxt2bFMR/arkt
+snypct4nSm444/zeo08sRQd4ftbWHBOwyuiTcmTY9bf4zWUvHsSVHw3K+TsiL0rT
+zHvO07skSZUCTHsuvPU0ngRJVKKSAZNv00Ii6vualS1afba+wn/fDsJofMo5WOxS
+SkDiL9rfWkRFse3pFLjKNU8K36bjpcan5HEQkLxArDPgJ66LsUcQRebF76SSVuMH
+kwZ7NInbTZiCNflpO5eh9+Pz55dk3KxWT4BrheIg1YgRIt4+npjP2hDcwewjTcRX
+jT6dXoXjxckQgQSSfo/eJ0gtOcEkU9vmcDIvQtylK8AhjGvV9GxynV4kLK40KFHS
+z5wVaQQUZ/woVLSLpZ/uPaaKs83yqPM4GkE+IwmarM7KVKnO/Cx8fyGtJFACZZXC
+bKqJuzT6KveIyTxg203oGVgo3sVen6jy2An7n/CF2J3pcjlr/9mRaLXbWp1hjoTr
+JTB8EWiJsJLVhYXXDiqVbsQmMa45junt3sxGvNqwZd7ghwVdvPh6WS0lFPuZMzz4
+E9iHOKpZd5dFlxliRUsFQyM7j3g5RFEevsAAC1olUrTEBFrqFKRqzvPf/yvbgNlU
+6WhwxUvub2nG4uDcmQqpCV99FeLoGnK/0c46LTQyK743ohfQvFmf1RggQK8JXbTg
+H7CB+3R0Vi+TToASGw27
+=/McC
+-----END PGP SIGNATURE-----
+
+--aTlV2D2po9mTkpS714eEiAlWlbPXu4XuO--

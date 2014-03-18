@@ -1,90 +1,72 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 17 Mar 2014 14:19:32 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 18 Mar 2014 06:41:55 +0000
 Subject: Re: [PATCH 5/9] Doc/DT: Add DT binding documentation for MIPI DPI Panel
-Message-Id: <3721050.m43feCICLQ@avalon>
+Message-Id: <5327EAB3.8080405@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="IiEVc4tMT8q1jBQnUrSuMGVbheetlKngH"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com>
  <1393590016-9361-6-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1393590016-9361-6-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, dri-devel@lists.freedesktop.org, Andrzej Hajda <a.hajda@samsung.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ <3721050.m43feCICLQ@avalon>
+In-Reply-To: <3721050.m43feCICLQ@avalon>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sascha Hauer <s.hauer@pengutronix.de>, Tomasz Figa <tomasz.figa@gmail.com>, dri-devel@lists.freedesktop.org, Inki Dae <inki.dae@samsung.com>, Andrzej Hajda <a.hajda@samsung.com>, Rob Clark <robdclark@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-Hi Tomi,
+--IiEVc4tMT8q1jBQnUrSuMGVbheetlKngH
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Thank you for the patch.
+On 17/03/14 16:19, Laurent Pinchart wrote:
 
-On Friday 28 February 2014 14:20:12 Tomi Valkeinen wrote:
-> Add DT binding documentation for MIPI DPI Panel.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Reviewed-by: Archit Taneja <archit@ti.com>
-> ---
->  .../devicetree/bindings/video/panel-dpi.txt        | 43 +++++++++++++++++++
->  1 file changed, 43 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/panel-dpi.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/video/panel-dpi.txt
-> b/Documentation/devicetree/bindings/video/panel-dpi.txt new file mode
-> 100644
-> index 000000000000..72636c6f1c67
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/panel-dpi.txt
-> @@ -0,0 +1,43 @@
-> +Generic MIPI DPI Panel
-> +===========
-> +
-> +Required properties:
-> +- compatible: "panel-dpi"
-> +
-> +Optional properties:
-> +- label: a symbolic name for the panel
-> +- gpios: panel enable gpio and backlight enable gpio
+>> +Generic MIPI DPI Panel
+>> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>> +
+>> +Required properties:
+>> +- compatible: "panel-dpi"
+>> +
+>> +Optional properties:
+>> +- label: a symbolic name for the panel
+>> +- gpios: panel enable gpio and backlight enable gpio
+>=20
+> While integrated in the panel module, the backlight is a separate piece=
+ of=20
+> hardware, which could be controlled through other means (I2C for instan=
+ce).=20
+> Wouldn't it be better to add an explicit DT node for the backlight devi=
+ce and=20
+> reference that node from the panel node ?
 
-While integrated in the panel module, the backlight is a separate piece of 
-hardware, which could be controlled through other means (I2C for instance). 
-Wouldn't it be better to add an explicit DT node for the backlight device and 
-reference that node from the panel node ?
+Yes, I agree, but do we have the infrastructure or bindings for that?
 
-> +
-> +Required nodes:
-> +- "panel-timing" containing video timings
-> +  (Documentation/devicetree/bindings/video/display-timing.txt)
-> +- Video port for DPI input
-> +
-> +Example
-> +-------
-> +
-> +lcd0: display@0 {
-> +        compatible = "samsung,lte430wq-f0c", "panel-dpi";
-> +        label = "lcd";
-> +
-> +        lcd_in: endpoint {
-> +                remote-endpoint = <&dpi_out>;
-> +        };
-> +
-> +        panel-timing {
-> +                clock-frequency = <9200000>;
-> +                hactive = <480>;
-> +                vactive = <272>;
-> +                hfront-porch = <8>;
-> +                hback-porch = <4>;
-> +                hsync-len = <41>;
-> +                vback-porch = <2>;
-> +                vfront-porch = <4>;
-> +                vsync-len = <10>;
-> +
-> +                hsync-active = <0>;
-> +                vsync-active = <0>;
-> +                de-active = <1>;
-> +                pixelclk-active = <1>;
-> +        };
-> +};
+Ah, I see we now do have a gpio-backlight driver, but it doesn't have DT
+bindings.
 
--- 
-Regards,
+ Tomi
 
-Laurent Pinchart
 
+
+--IiEVc4tMT8q1jBQnUrSuMGVbheetlKngH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJTJ+qzAAoJEPo9qoy8lh71R/0P/3N5qpEut3bGbyfPGd4xtjj9
+E13b+bc89sbDTXUevxWaR2rgrqwi+Lt/isCczm5R3af5wHsAFSKC2sTKEz+AtlAu
+TeilEjRmYmhiVewwU8tM/tWToUu6Qkcke3c6Z6DpDjphqQVPJX5/KoA8TLkUGNoY
+TeDbktiG/sWHnTAvhp4x7nuEPuAv2xO3Zu9QlYIui7dAo/v2sDElfdtf0IChR3oX
+r1oXFxYpMom9Oc74yh8LHGzCxEYfc+SRo9nwqIOgXVN673xRensFUbkIh4b0w0wA
+irSuI2LbwsMvtMVt38TX2+WV/oJKeU/Av5Ge9i02rjC9GOx/ClpujznUSGhJFbaU
+mLeknL9BJrY55wUCmFv/aG2zud4W4ICvwgcU/jELNx2s4wOfO30IzAnX14dK1Tuc
+K+ER5A7gfVaSrSNRgVZuQ4kax3sNJtSi+j9VHgFWHq8m2+vk3rD9J8QeMTC0lGkp
+OMmaexE5MrjYaD1R5Xk13XdG1YSs9hN8Xda42OQyMo5dVcTFyqbaJym7HAAUbegi
+vqpbc0S63BEK4TGTrhU9fH7VtT2XR51QNIK3gfTjVLtqgzs1QeVWZmQ6hGjh6hN3
+TuLZ8Pu152UwbJ8nRYBDIwxWI2jYrpD0W9VJMKPB6+84x5I+zAyxHpsvQduhiYtu
+FSEFWEeeUAUJvrot/J/g
+=ACUE
+-----END PGP SIGNATURE-----
+
+--IiEVc4tMT8q1jBQnUrSuMGVbheetlKngH--

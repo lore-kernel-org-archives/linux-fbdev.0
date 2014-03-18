@@ -1,72 +1,71 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Wed, 19 Mar 2014 13:03:16 +0000
-Subject: [PATCH 03/16] ARM: at91: at91sam9263: switch to generic PWM framework
-Message-Id: <1395234209-15546-4-git-send-email-alexandre.belloni@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 18 Mar 2014 08:15:46 +0000
+Subject: [PATCHv2 7/8] Doc/DT: Add DT binding documentation for TFP410 encoder
+Message-Id: <1395130547-18633-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1395130547-18633-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1395130547-18633-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Vetter <daniel-/w4YWyX8dFk@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
-Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
+Add DT binding documentation for TFP410 encoder
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reviewed-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/mach-at91/at91sam9263.c         |  1 +
- arch/arm/mach-at91/at91sam9263_devices.c | 11 ++---------
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ .../devicetree/bindings/video/ti,tfp410.txt        | 41 ++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/ti,tfp410.txt
 
-diff --git a/arch/arm/mach-at91/at91sam9263.c b/arch/arm/mach-at91/at91sam9263.c
-index 37b90f4b990c..d0c2d4955cd7 100644
---- a/arch/arm/mach-at91/at91sam9263.c
-+++ b/arch/arm/mach-at91/at91sam9263.c
-@@ -198,6 +198,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
- 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi.1", &spi1_clk),
- 	CLKDEV_CON_DEV_ID("t0_clk", "atmel_tcb.0", &tcb_clk),
- 	CLKDEV_CON_DEV_ID(NULL, "i2c-at91sam9260.0", &twi_clk),
-+	CLKDEV_CON_DEV_ID(NULL, "at91sam9rl-pwm", &pwm_clk),
- 	/* fake hclk clock */
- 	CLKDEV_CON_DEV_ID("hclk", "at91_ohci", &ohci_clk),
- 	CLKDEV_CON_ID("pioA", &pioA_clk),
-diff --git a/arch/arm/mach-at91/at91sam9263_devices.c b/arch/arm/mach-at91/at91sam9263_devices.c
-index 4aeadddbc181..160acd96cdda 100644
---- a/arch/arm/mach-at91/at91sam9263_devices.c
-+++ b/arch/arm/mach-at91/at91sam9263_devices.c
-@@ -1129,9 +1129,7 @@ static void __init at91_add_device_watchdog(void) {}
-  *  PWM
-  * --------------------------------------------------------------------*/
- 
--#if defined(CONFIG_ATMEL_PWM)
--static u32 pwm_mask;
--
-+#if IS_ENABLED(CONFIG_PWM_ATMEL)
- static struct resource pwm_resources[] = {
- 	[0] = {
- 		.start	= AT91SAM9263_BASE_PWMC,
-@@ -1146,11 +1144,8 @@ static struct resource pwm_resources[] = {
- };
- 
- static struct platform_device at91sam9263_pwm0_device = {
--	.name	= "atmel_pwm",
-+	.name	= "at91sam9rl-pwm",
- 	.id	= -1,
--	.dev	= {
--		.platform_data		= &pwm_mask,
--	},
- 	.resource	= pwm_resources,
- 	.num_resources	= ARRAY_SIZE(pwm_resources),
- };
-@@ -1169,8 +1164,6 @@ void __init at91_add_device_pwm(u32 mask)
- 	if (mask & (1 << AT91_PWM3))
- 		at91_set_B_periph(AT91_PIN_PB29, 1);	/* enable PWM3 */
- 
--	pwm_mask = mask;
--
- 	platform_device_register(&at91sam9263_pwm0_device);
- }
- #else
+diff --git a/Documentation/devicetree/bindings/video/ti,tfp410.txt b/Documentation/devicetree/bindings/video/ti,tfp410.txt
+new file mode 100644
+index 000000000000..2cbe32a3d0bb
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/ti,tfp410.txt
+@@ -0,0 +1,41 @@
++TFP410 DPI to DVI encoder
++============+
++Required properties:
++- compatible: "ti,tfp410"
++
++Optional properties:
++- powerdown-gpios: power-down gpio
++
++Required nodes:
++- Video port 0 for DPI input
++- Video port 1 for DVI output
++
++Example
++-------
++
++tfp410: encoder@0 {
++	compatible = "ti,tfp410";
++	powerdown-gpios = <&twl_gpio 2 GPIO_ACTIVE_LOW>;
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@0 {
++			reg = <0>;
++
++			tfp410_in: endpoint@0 {
++				remote-endpoint = <&dpi_out>;
++			};
++		};
++
++		port@1 {
++			reg = <1>;
++
++			tfp410_out: endpoint@0 {
++				remote-endpoint = <&dvi_connector_in>;
++			};
++		};
++	};
++};
 -- 
 1.8.3.2
 

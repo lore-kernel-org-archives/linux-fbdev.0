@@ -1,41 +1,89 @@
-From: "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
-Date: Thu, 27 Mar 2014 03:57:05 +0000
-Subject: RE: [PATCH 2/2] video/fsl: Fix the sleep function for FSL DIU module
-Message-Id: <489377bf2ab5439bb40271e09df54083@BLUPR03MB373.namprd03.prod.outlook.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 19 Mar 2014 13:03:24 +0000
+Subject: [PATCH 11/16] avr32: merisc: use generic leds_pwm driver
+Message-Id: <1395234209-15546-12-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395855704-19908-1-git-send-email-Jason.Jin@freescale.com>
- <1395855704-19908-2-git-send-email-Jason.Jin@freescale.com>
- <53332168.5050805@tabi.org>
- <e3e45edb388c482eb53474e18575f227@BLUPR03MB373.namprd03.prod.outlook.com>
- <53339F03.7010004@tabi.org>
-In-Reply-To: <53339F03.7010004@tabi.org>
+References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Timur Tabi <timur@tabi.org>
-Cc: Scott Wood <scottwood@freescale.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: linux-arm-kernel@lists.infradead.org
 
-> Jason.Jin@freescale.com wrote:
-> > [Jason Jin-R64188] It's not hackish, we can provide the pixel clock
-> register in the DIU node, I did not provide the dts update as this is
-> only tested on T1040 platform. For other platforms such as p1022 and 8610,
-> we still can use the pixel clock setting function in the platform.
-> >
-> > The dts node update for T1040 is:
-> > display:display@180000 {
-> >          compatible = "fsl,t1040-diu", "fsl,diu";
-> > -       reg = <0x180000 1000>;
-> > +       reg = <0x180000 1000 0xfc028 4>;
-> >          interrupts = <74 2 0 0>;
-> > };
-> 
-> This is hackish because you're specifying a single register that you want
-> to preserve in the DTS file, instead of a platform function which is
-> where it's supposed to be.
-> 
-[Jason Jin-R64188] The pixel clock register is actually part of the DIU registers although it is not implemented in the diu module. Actually we can use it to set pixel clock in the driver not just saving it in suspend. We can provide the patch for discussion. 
+Switch to the generic leds_pwm driver instead of leds-atmel-pwm.
 
-> I will think about this some more.  I think you are trying too hard to
-> avoid a platform file, which is why some of this code is hackish to me.
-[Jason Jin-R64188] Thanks. Could you please share you thinking for how to setup the platform file then?
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ arch/avr32/boards/merisc/setup.c | 34 +++++++++++++++++++++-------------
+ 1 file changed, 21 insertions(+), 13 deletions(-)
+
+diff --git a/arch/avr32/boards/merisc/setup.c b/arch/avr32/boards/merisc/setup.c
+index ed137e335796..b0980c1946a7 100644
+--- a/arch/avr32/boards/merisc/setup.c
++++ b/arch/avr32/boards/merisc/setup.c
+@@ -22,6 +22,8 @@
+ #include <linux/irq.h>
+ #include <linux/fb.h>
+ #include <linux/atmel-mci.h>
++#include <linux/pwm.h>
++#include <linux/leds_pwm.h>
+ 
+ #include <asm/io.h>
+ #include <asm/setup.h>
+@@ -167,24 +169,29 @@ static struct i2c_board_info __initdata i2c_info[] = {
+ 	},
+ };
+ 
+-#ifdef CONFIG_LEDS_ATMEL_PWM
+-static struct gpio_led stk_pwm_led[] = {
++#if IS_ENABLED(CONFIG_LEDS_PWM)
++static struct pwm_lookup pwm_lookup[] = {
++	PWM_LOOKUP("at91sam9rl-pwm", 0, "leds_pwm", "backlight"),
++};
++
++static struct led_pwm pwm_leds[] = {
+ 	{
+ 		.name	= "backlight",
+-		.gpio	= 0,		/* PWM channel 0 (LCD backlight) */
++		.max_brightness = 255,
++		.pwm_period_ns  = 5000,
+ 	},
+ };
+ 
+-static struct gpio_led_platform_data stk_pwm_led_data = {
+-	.num_leds	= ARRAY_SIZE(stk_pwm_led),
+-	.leds		= stk_pwm_led,
++static struct led_pwm_platform_data pwm_data = {
++	.num_leds       = ARRAY_SIZE(pwm_leds),
++	.leds           = pwm_leds,
+ };
+ 
+-static struct platform_device stk_pwm_led_dev = {
+-	.name	= "leds-atmel-pwm",
+-	.id	= -1,
+-	.dev	= {
+-		.platform_data	= &stk_pwm_led_data,
++static struct platform_device leds_pwm = {
++	.name   = "leds_pwm",
++	.id     = -1,
++	.dev    = {
++		.platform_data = &pwm_data,
+ 	},
+ };
+ #endif
+@@ -278,9 +285,10 @@ static int __init merisc_init(void)
+ 
+ 	at32_add_device_mci(0, &mci0_data);
+ 
+-#ifdef CONFIG_LEDS_ATMEL_PWM
++#if IS_ENABLED(CONFIG_LEDS_PWM)
++	pwm_add_table(pwm_lookup, ARRAY_SIZE(pwm_lookup));
+ 	at32_add_device_pwm((1 << 0) | (1 << 2));
+-	platform_device_register(&stk_pwm_led_dev);
++	platform_device_register(&leds_pwm);
+ #else
+ 	at32_add_device_pwm((1 << 2));
+ #endif
+-- 
+1.8.3.2
 

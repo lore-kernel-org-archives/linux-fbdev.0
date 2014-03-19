@@ -1,25 +1,86 @@
-From: Grant Likely <grant.likely@linaro.org>
-Date: Fri, 21 Mar 2014 15:37:27 +0000
-Subject: Re: [PATCH 0/9] Doc/DT: DT bindings for various display components
-Message-Id: <20140321153727.CCD87C405B0@trevor.secretlab.ca>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 19 Mar 2014 13:03:23 +0000
+Subject: [PATCH 10/16] avr32: MRMT: use generic leds_pwm driver
+Message-Id: <1395234209-15546-11-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393590016-9361-1-git-send-email-tomi.valkeinen@ti.com> < 532017B3.708@ti.com> <5326FECF.9070104@ti.com>
-In-Reply-To: <5326FECF.9070104-l0cyMroinI0@public.gmane.org>
+References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-On Mon, 17 Mar 2014 15:55:27 +0200, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> Hi Grant,
-> 
-> Ping.
-> 
-> Are you fine with me proceeding with the current V4L2 port/endpoint
-> bindings?
+Switch to the generic leds_pwm driver instead of leds-atmel-pwm.
 
-Sorry, this thread didn't make it past my email filters. Yes, go ahead.
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ arch/avr32/boards/atngw100/mrmt.c | 35 +++++++++++++++++++++++------------
+ 1 file changed, 23 insertions(+), 12 deletions(-)
 
-g.
+diff --git a/arch/avr32/boards/atngw100/mrmt.c b/arch/avr32/boards/atngw100/mrmt.c
+index 1ba09e4c02b1..134e94c3d504 100644
+--- a/arch/avr32/boards/atngw100/mrmt.c
++++ b/arch/avr32/boards/atngw100/mrmt.c
+@@ -17,6 +17,8 @@
+ #include <linux/types.h>
+ #include <linux/fb.h>
+ #include <linux/leds.h>
++#include <linux/pwm.h>
++#include <linux/leds_pwm.h>
+ #include <linux/input.h>
+ #include <linux/gpio_keys.h>
+ #include <linux/atmel_serial.h>
+@@ -155,21 +157,29 @@ static struct platform_device rmt_ts_device = {
+ 
+ #ifdef CONFIG_BOARD_MRMT_BL_PWM
+ /* PWM LEDs: LCD Backlight, etc */
+-static struct gpio_led rmt_pwm_led[] = {
+-	/* here the "gpio" is actually a PWM channel */
+-	{ .name = "backlight",	.gpio = PWM_CH_BL, },
++static struct pwm_lookup pwm_lookup[] = {
++	PWM_LOOKUP("at91sam9rl-pwm", PWM_CH_BL, "leds_pwm", "ds1"),
+ };
+ 
+-static struct gpio_led_platform_data rmt_pwm_led_data = {
+-	.num_leds	= ARRAY_SIZE(rmt_pwm_led),
+-	.leds		= rmt_pwm_led,
++static struct led_pwm pwm_leds[] = {
++	{
++		.name = "backlight",
++		.max_brightness = 255,
++		.pwm_period_ns  = 5000,
++		.active_low = 1,
++	},
++};
++
++static struct led_pwm_platform_data pwm_data = {
++	.num_leds       = ARRAY_SIZE(pwm_leds),
++	.leds           = pwm_leds,
+ };
+ 
+-static struct platform_device rmt_pwm_led_dev = {
+-	.name		= "leds-atmel-pwm",
+-	.id		= -1,
+-	.dev		= {
+-		.platform_data	= &rmt_pwm_led_data,
++static struct platform_device leds_pwm = {
++	.name   = "leds_pwm",
++	.id     = -1,
++	.dev    = {
++		.platform_data = &pwm_data,
+ 	},
+ };
+ #endif
+@@ -325,7 +335,8 @@ static int __init mrmt1_init(void)
+ #ifdef CONFIG_BOARD_MRMT_BL_PWM
+ 	/* Use PWM for Backlight controls */
+ 	at32_add_device_pwm(1 << PWM_CH_BL);
+-	platform_device_register(&rmt_pwm_led_dev);
++	pwm_add_table(pwm_lookup, ARRAY_SIZE(pwm_lookup));
++	platform_device_register(&leds_pwm);
+ #else
+ 	/* Backlight always on */
+ 	udelay( 1 );
+-- 
+1.8.3.2
 

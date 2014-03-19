@@ -1,62 +1,72 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 06 Mar 2014 07:29:09 +0000
-Subject: Re: [PATCHv3 00/41] OMAPDSS: DT support v3
-Message-Id: <531823C5.1020008@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Dbxd6EbcvnM0MOn461EejDT1ft227VROA"
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 19 Mar 2014 13:03:14 +0000
+Subject: [PATCH 01/16] ARM: at91: at91sam9g45: switch to generic PWM framework
+Message-Id: <1395234209-15546-2-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---Dbxd6EbcvnM0MOn461EejDT1ft227VROA
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
 
-Hi Tony,
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ arch/arm/mach-at91/at91sam9g45.c         |  1 +
+ arch/arm/mach-at91/at91sam9g45_devices.c | 11 ++---------
+ 2 files changed, 3 insertions(+), 9 deletions(-)
 
-On 21/01/14 12:56, Tomi Valkeinen wrote:
-> Hi,
->=20
-> Here's version 3 of the DSS DT series.
+diff --git a/arch/arm/mach-at91/at91sam9g45.c b/arch/arm/mach-at91/at91sam9g45.c
+index 3c519a7a938f..2d3c6e1ac158 100644
+--- a/arch/arm/mach-at91/at91sam9g45.c
++++ b/arch/arm/mach-at91/at91sam9g45.c
+@@ -250,6 +250,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
+ 	CLKDEV_CON_DEV_ID(NULL, "atmel_sha", &aestdessha_clk),
+ 	CLKDEV_CON_DEV_ID(NULL, "atmel_tdes", &aestdessha_clk),
+ 	CLKDEV_CON_DEV_ID(NULL, "atmel_aes", &aestdessha_clk),
++	CLKDEV_CON_DEV_ID(NULL, "at91sam9rl-pwm", &pwm_clk),
+ 	/* more usart lookup table for DT entries */
+ 	CLKDEV_CON_DEV_ID("usart", "ffffee00.serial", &mck),
+ 	CLKDEV_CON_DEV_ID("usart", "fff8c000.serial", &usart0_clk),
+diff --git a/arch/arm/mach-at91/at91sam9g45_devices.c b/arch/arm/mach-at91/at91sam9g45_devices.c
+index 87135a61357d..25ba920cbe84 100644
+--- a/arch/arm/mach-at91/at91sam9g45_devices.c
++++ b/arch/arm/mach-at91/at91sam9g45_devices.c
+@@ -1332,9 +1332,7 @@ static void __init at91_add_device_watchdog(void) {}
+  *  PWM
+  * --------------------------------------------------------------------*/
+ 
+-#if defined(CONFIG_ATMEL_PWM) || defined(CONFIG_ATMEL_PWM_MODULE)
+-static u32 pwm_mask;
+-
++#if IS_ENABLED(CONFIG_PWM_ATMEL)
+ static struct resource pwm_resources[] = {
+ 	[0] = {
+ 		.start	= AT91SAM9G45_BASE_PWMC,
+@@ -1349,11 +1347,8 @@ static struct resource pwm_resources[] = {
+ };
+ 
+ static struct platform_device at91sam9g45_pwm0_device = {
+-	.name	= "atmel_pwm",
++	.name	= "at91sam9rl-pwm",
+ 	.id	= -1,
+-	.dev	= {
+-		.platform_data		= &pwm_mask,
+-	},
+ 	.resource	= pwm_resources,
+ 	.num_resources	= ARRAY_SIZE(pwm_resources),
+ };
+@@ -1372,8 +1367,6 @@ void __init at91_add_device_pwm(u32 mask)
+ 	if (mask & (1 << AT91_PWM3))
+ 		at91_set_B_periph(AT91_PIN_PD0, 1);	/* enable PWM3 */
+ 
+-	pwm_mask = mask;
+-
+ 	platform_device_register(&at91sam9g45_pwm0_device);
+ }
+ #else
+-- 
+1.8.3.2
 
-Can you have a look at the arch/arm/ parts in the series and ack if
-they're ok, i.e, patches 1, 2, 32.
-
-Then there are the .dts patches, 22-30, for which I haven't been able to
-get any acks. I'm not sure who I should get acks from for those, but I
-don't mind adding yours if you want to give it.
-
-The .dts patches have had minor changes compared to the ones posted
-here, according to the DT bindings review comments, but nothing much has
-changed.
-
- Tomi
-
-
-
---Dbxd6EbcvnM0MOn461EejDT1ft227VROA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTGCPFAAoJEPo9qoy8lh71z3sQAIR7V5THHSoohdaYCR67M6nq
-pw4NXseCLvkBYF946pXkgEjvbDjOGPtZlKsW2gkYn4QGwoQIx2rzqQqyXLljE/rE
-dsQ8M5lSer1am9r3lqQe59spQ3Wh6l8T2JZ7zRc2QhyUiQUBt2f5hvU9CaNvcE+/
-T1MHb5UjXctc5ERz62RbKtVGLuaPoqpU2kURsj2ur1Akq16jVzp3sDrVrRPZIqyf
-mskkAo9/3eQUxH+0aWdMbA8fI8uHEGI5/R3I4m4XadW0W61YZjJdFkU73Jp+XsXW
-ogqsxRXhVvGYJjiIu4Li+ctm8JR1DaZRdaCZ9BbQOZslTX5CWyQ5V/sITseVw8cK
-X9lc9e4E+NPijyWtLY+2Thr9mrKp8Rqe+FG6k4PDgrUhdCzI+Rbxd722QwqaXGoK
-zi5rXr1Lm/32dk+lcy21YG52iM0DAUWsjx4uLRxoouqv7GwZeP46oXPahonv2K6+
-i/PupoGh5vCt2mvo9HfwcTKhgFSzKiby6sjLbrhYOI3aHJk9/dxGCx+Shn16wZUj
-BAyS5TWmLLze9V0EqAzH1lossOxKnmaVWtymsX4t4ziNfg2Ytt5K/tMHll41j+2W
-uMS1ZpjLFDEAYV70asDOLJpb+cFu14LAdKf+I7o/xi2poq4wDp7bP3RU5s6R5GIo
-C9m+x8F1oMXvEkIdenJZ
-=Emwg
------END PGP SIGNATURE-----
-
---Dbxd6EbcvnM0MOn461EejDT1ft227VROA--

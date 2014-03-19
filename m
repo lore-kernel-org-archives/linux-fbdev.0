@@ -1,221 +1,149 @@
-From: Bryan Wu <cooloney@gmail.com>
-Date: Thu, 27 Mar 2014 17:27:43 +0000
-Subject: Re: [PATCH 15/16] leds: atmel-pwm: remove obsolete driver
-Message-Id: <CAK5ve-JibixcUPvDM9AGquUXmBKWYG2E8PzwBbb_XBS9sRjDyw@mail.gmail.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 19 Mar 2014 13:03:25 +0000
+Subject: [PATCH 12/16] avr32: favr-32: use generic pwm_bl driver
+Message-Id: <1395234209-15546-13-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1395234209-15546-16-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1395234209-15546-16-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Mar 19, 2014 at 6:03 AM, Alexandre Belloni
-<alexandre.belloni@free-electrons.com> wrote:
-> The leds-atmel-pwmdriver is now obsolete. It is not used by any mainlined boards
-> and is replaced by the generic leds_pwm with the pawm-atmel driver using the
-> generic PWM framework.
->
+Switch to the generic pwm_bl driver instead of atmel-pwm-bl.
 
-Good to remove.
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ arch/avr32/boards/favr-32/setup.c    | 49 +++++++++++++++++++++++-------------
+ arch/avr32/configs/favr-32_defconfig |  6 ++---
+ 2 files changed, 34 insertions(+), 21 deletions(-)
 
-Acked-by: Bryan Wu <cooloney@gmail.com>
+diff --git a/arch/avr32/boards/favr-32/setup.c b/arch/avr32/boards/favr-32/setup.c
+index 1f121497b517..391f026705a5 100644
+--- a/arch/avr32/boards/favr-32/setup.c
++++ b/arch/avr32/boards/favr-32/setup.c
+@@ -18,7 +18,10 @@
+ #include <linux/gpio.h>
+ #include <linux/leds.h>
+ #include <linux/atmel-mci.h>
+-#include <linux/atmel-pwm-bl.h>
++#include <linux/pwm.h>
++#include <linux/pwm_backlight.h>
++#include <linux/regulator/fixed.h>
++#include <linux/regulator/machine.h>
+ #include <linux/spi/spi.h>
+ #include <linux/spi/ads7846.h>
+ 
+@@ -33,6 +36,8 @@
+ #include <mach/board.h>
+ #include <mach/portmux.h>
+ 
++#define PWM_BL_CH 2
++
+ /* Oscillator frequencies. These are board-specific */
+ unsigned long at32_board_osc_rates[3] = {
+ 	[0] = 32768,	/* 32.768 kHz on RTC osc */
+@@ -227,29 +232,37 @@ void __init favr32_setup_leds(void)
+ 	platform_device_register(&favr32_led_dev);
+ }
+ 
+-static struct atmel_pwm_bl_platform_data atmel_pwm_bl_pdata = {
+-	.pwm_channel		= 2,
+-	.pwm_frequency		= 200000,
+-	.pwm_compare_max	= 345,
+-	.pwm_duty_max		= 345,
+-	.pwm_duty_min		= 90,
+-	.pwm_active_low		= 1,
+-	.gpio_on		= GPIO_PIN_PA(28),
+-	.on_active_low		= 0,
++static struct pwm_lookup pwm_lookup[] = {
++	PWM_LOOKUP("at91sam9rl-pwm", PWM_BL_CH, "pwm-backlight.0", NULL),
+ };
+ 
+-static struct platform_device atmel_pwm_bl_dev = {
+-	.name		= "atmel-pwm-bl",
+-	.id		= 0,
+-	.dev		= {
+-		.platform_data = &atmel_pwm_bl_pdata,
++static struct regulator_consumer_supply fixed_power_consumers[] = {
++	REGULATOR_SUPPLY("power", "pwm-backlight.0"),
++};
++
++static struct platform_pwm_backlight_data pwm_bl_data = {
++	.enable_gpio		= GPIO_PIN_PA(28),
++	.pwm_period_ns		= 5000,
++	.max_brightness		= 255,
++	.dft_brightness		= 255,
++	.lth_brightness		= 50,
++	.pwm_active_low		= true,
++};
++
++static struct platform_device pwm_bl_device = {
++	.name = "pwm-backlight",
++	.dev = {
++		.platform_data = &pwm_bl_data,
+ 	},
+ };
+ 
+ static void __init favr32_setup_atmel_pwm_bl(void)
+ {
+-	platform_device_register(&atmel_pwm_bl_dev);
+-	at32_select_gpio(atmel_pwm_bl_pdata.gpio_on, 0);
++	pwm_add_table(pwm_lookup, ARRAY_SIZE(pwm_lookup));
++	regulator_register_always_on(0, "fixed", fixed_power_consumers,
++				    ARRAY_SIZE(fixed_power_consumers), 3300000);
++	platform_device_register(&pwm_bl_device);
++	at32_select_gpio(pwm_bl_data.enable_gpio, 0);
+ }
+ 
+ void __init setup_board(void)
+@@ -339,7 +352,7 @@ static int __init favr32_init(void)
+ 
+ 	set_abdac_rate(at32_add_device_abdac(0, &abdac0_data));
+ 
+-	at32_add_device_pwm(1 << atmel_pwm_bl_pdata.pwm_channel);
++	at32_add_device_pwm(1 << PWM_BL_CH);
+ 	at32_add_device_spi(1, spi1_board_info, ARRAY_SIZE(spi1_board_info));
+ 	at32_add_device_mci(0, &mci0_data);
+ 	at32_add_device_usba(0, NULL);
+diff --git a/arch/avr32/configs/favr-32_defconfig b/arch/avr32/configs/favr-32_defconfig
+index 07bed3f7eb5e..b3eb67dc05ac 100644
+--- a/arch/avr32/configs/favr-32_defconfig
++++ b/arch/avr32/configs/favr-32_defconfig
+@@ -67,7 +67,6 @@ CONFIG_MTD_PHYSMAP=y
+ CONFIG_BLK_DEV_LOOP=m
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=m
+-CONFIG_ATMEL_PWM=m
+ CONFIG_ATMEL_TCLIB=y
+ CONFIG_ATMEL_SSC=m
+ CONFIG_NETDEVICES=y
+@@ -108,7 +107,7 @@ CONFIG_FB=y
+ CONFIG_FB_ATMEL=y
+ CONFIG_BACKLIGHT_LCD_SUPPORT=y
+ # CONFIG_LCD_CLASS_DEVICE is not set
+-CONFIG_BACKLIGHT_ATMEL_PWM=m
++CONFIG_BACKLIGHT_PWM=m
+ CONFIG_SOUND=m
+ CONFIG_SOUND_PRIME=m
+ # CONFIG_HID_SUPPORT is not set
+@@ -123,7 +122,6 @@ CONFIG_MMC=y
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=m
+ CONFIG_LEDS_GPIO=y
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=y
+@@ -132,6 +130,8 @@ CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_AT32AP700X=y
+ CONFIG_DMADEVICES=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=y
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_FS_XATTR is not set
+-- 
+1.8.3.2
 
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> ---
->  drivers/leds/Kconfig          |   8 ---
->  drivers/leds/Makefile         |   1 -
->  drivers/leds/leds-atmel-pwm.c | 149 ------------------------------------------
->  3 files changed, 158 deletions(-)
->  delete mode 100644 drivers/leds/leds-atmel-pwm.c
->
-> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-> index 72156c123033..e7aca5f1e396 100644
-> --- a/drivers/leds/Kconfig
-> +++ b/drivers/leds/Kconfig
-> @@ -32,14 +32,6 @@ config LEDS_88PM860X
->           This option enables support for on-chip LED drivers found on Marvell
->           Semiconductor 88PM8606 PMIC.
->
-> -config LEDS_ATMEL_PWM
-> -       tristate "LED Support using Atmel PWM outputs"
-> -       depends on LEDS_CLASS
-> -       depends on ATMEL_PWM
-> -       help
-> -         This option enables support for LEDs driven using outputs
-> -         of the dedicated PWM controller found on newer Atmel SOCs.
-> -
->  config LEDS_LM3530
->         tristate "LCD Backlight driver for LM3530"
->         depends on LEDS_CLASS
-> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-> index 3cd76dbd9be2..6ee06559db45 100644
-> --- a/drivers/leds/Makefile
-> +++ b/drivers/leds/Makefile
-> @@ -6,7 +6,6 @@ obj-$(CONFIG_LEDS_TRIGGERS)             += led-triggers.o
->
->  # LED Platform Drivers
->  obj-$(CONFIG_LEDS_88PM860X)            += leds-88pm860x.o
-> -obj-$(CONFIG_LEDS_ATMEL_PWM)           += leds-atmel-pwm.o
->  obj-$(CONFIG_LEDS_BD2802)              += leds-bd2802.o
->  obj-$(CONFIG_LEDS_LOCOMO)              += leds-locomo.o
->  obj-$(CONFIG_LEDS_LM3530)              += leds-lm3530.o
-> diff --git a/drivers/leds/leds-atmel-pwm.c b/drivers/leds/leds-atmel-pwm.c
-> deleted file mode 100644
-> index 56cec8d6a2ac..000000000000
-> --- a/drivers/leds/leds-atmel-pwm.c
-> +++ /dev/null
-> @@ -1,149 +0,0 @@
-> -#include <linux/kernel.h>
-> -#include <linux/platform_device.h>
-> -#include <linux/leds.h>
-> -#include <linux/io.h>
-> -#include <linux/atmel_pwm.h>
-> -#include <linux/slab.h>
-> -#include <linux/module.h>
-> -
-> -
-> -struct pwmled {
-> -       struct led_classdev     cdev;
-> -       struct pwm_channel      pwmc;
-> -       struct gpio_led         *desc;
-> -       u32                     mult;
-> -       u8                      active_low;
-> -};
-> -
-> -
-> -/*
-> - * For simplicity, we use "brightness" as if it were a linear function
-> - * of PWM duty cycle.  However, a logarithmic function of duty cycle is
-> - * probably a better match for perceived brightness: two is half as bright
-> - * as four, four is half as bright as eight, etc
-> - */
-> -static void pwmled_brightness(struct led_classdev *cdev, enum led_brightness b)
-> -{
-> -       struct pwmled            *led;
-> -
-> -       /* update the duty cycle for the *next* period */
-> -       led = container_of(cdev, struct pwmled, cdev);
-> -       pwm_channel_writel(&led->pwmc, PWM_CUPD, led->mult * (unsigned) b);
-> -}
-> -
-> -/*
-> - * NOTE:  we reuse the platform_data structure of GPIO leds,
-> - * but repurpose its "gpio" number as a PWM channel number.
-> - */
-> -static int pwmled_probe(struct platform_device *pdev)
-> -{
-> -       const struct gpio_led_platform_data     *pdata;
-> -       struct pwmled                           *leds;
-> -       int                                     i;
-> -       int                                     status;
-> -
-> -       pdata = dev_get_platdata(&pdev->dev);
-> -       if (!pdata || pdata->num_leds < 1)
-> -               return -ENODEV;
-> -
-> -       leds = devm_kzalloc(&pdev->dev, pdata->num_leds * sizeof(*leds),
-> -                       GFP_KERNEL);
-> -       if (!leds)
-> -               return -ENOMEM;
-> -
-> -       for (i = 0; i < pdata->num_leds; i++) {
-> -               struct pwmled           *led = leds + i;
-> -               const struct gpio_led   *dat = pdata->leds + i;
-> -               u32                     tmp;
-> -
-> -               led->cdev.name = dat->name;
-> -               led->cdev.brightness = LED_OFF;
-> -               led->cdev.brightness_set = pwmled_brightness;
-> -               led->cdev.default_trigger = dat->default_trigger;
-> -
-> -               led->active_low = dat->active_low;
-> -
-> -               status = pwm_channel_alloc(dat->gpio, &led->pwmc);
-> -               if (status < 0)
-> -                       goto err;
-> -
-> -               /*
-> -                * Prescale clock by 2^x, so PWM counts in low MHz.
-> -                * Start each cycle with the LED active, so increasing
-> -                * the duty cycle gives us more time on (= brighter).
-> -                */
-> -               tmp = 5;
-> -               if (!led->active_low)
-> -                       tmp |= PWM_CPR_CPOL;
-> -               pwm_channel_writel(&led->pwmc, PWM_CMR, tmp);
-> -
-> -               /*
-> -                * Pick a period so PWM cycles at 100+ Hz; and a multiplier
-> -                * for scaling duty cycle:  brightness * mult.
-> -                */
-> -               tmp = (led->pwmc.mck / (1 << 5)) / 100;
-> -               tmp /= 255;
-> -               led->mult = tmp;
-> -               pwm_channel_writel(&led->pwmc, PWM_CDTY,
-> -                               led->cdev.brightness * 255);
-> -               pwm_channel_writel(&led->pwmc, PWM_CPRD,
-> -                               LED_FULL * tmp);
-> -
-> -               pwm_channel_enable(&led->pwmc);
-> -
-> -               /* Hand it over to the LED framework */
-> -               status = led_classdev_register(&pdev->dev, &led->cdev);
-> -               if (status < 0) {
-> -                       pwm_channel_free(&led->pwmc);
-> -                       goto err;
-> -               }
-> -       }
-> -
-> -       platform_set_drvdata(pdev, leds);
-> -       return 0;
-> -
-> -err:
-> -       if (i > 0) {
-> -               for (i = i - 1; i >= 0; i--) {
-> -                       led_classdev_unregister(&leds[i].cdev);
-> -                       pwm_channel_free(&leds[i].pwmc);
-> -               }
-> -       }
-> -
-> -       return status;
-> -}
-> -
-> -static int pwmled_remove(struct platform_device *pdev)
-> -{
-> -       const struct gpio_led_platform_data     *pdata;
-> -       struct pwmled                           *leds;
-> -       unsigned                                i;
-> -
-> -       pdata = dev_get_platdata(&pdev->dev);
-> -       leds = platform_get_drvdata(pdev);
-> -
-> -       for (i = 0; i < pdata->num_leds; i++) {
-> -               struct pwmled           *led = leds + i;
-> -
-> -               led_classdev_unregister(&led->cdev);
-> -               pwm_channel_free(&led->pwmc);
-> -       }
-> -
-> -       return 0;
-> -}
-> -
-> -static struct platform_driver pwmled_driver = {
-> -       .driver = {
-> -               .name =         "leds-atmel-pwm",
-> -               .owner =        THIS_MODULE,
-> -       },
-> -       /* REVISIT add suspend() and resume() methods */
-> -       .probe =        pwmled_probe,
-> -       .remove =       pwmled_remove,
-> -};
-> -
-> -module_platform_driver(pwmled_driver);
-> -
-> -MODULE_DESCRIPTION("Driver for LEDs with PWM-controlled brightness");
-> -MODULE_LICENSE("GPL");
-> -MODULE_ALIAS("platform:leds-atmel-pwm");
-> --
-> 1.8.3.2
->

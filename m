@@ -1,94 +1,207 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Mon, 17 Mar 2014 12:15:04 +0000
-Subject: Re: [PATCH v2] RFC: framebuffer: provide generic get_fb_unmapped_area
-Message-Id: <CANq1E4Q-9j58j05m5YE-Os2-NH6B_SMsjFMD0AUp3j=6EXt+TA@mail.gmail.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 19 Mar 2014 13:03:26 +0000
+Subject: [PATCH 13/16] avr32: update defconfig to use the generic PWM framework
+Message-Id: <1395234209-15546-14-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1391447684-22556-1-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1391447684-22556-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Hi
+Now that all boards have switch to the generic PWM framework, update the
+defconfigs to use it.
 
-On Mon, Feb 3, 2014 at 6:14 PM, Uwe Kleine-K=F6nig
-<u.kleine-koenig@pengutronix.de> wrote:
-> This patch makes mmapping the simple-framebuffer device work on a no-MMU
-> ARM target. The code is mostly taken from
-> arch/blackfin/kernel/sys_bfin.c.
->
-> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-> ---
-> Hello,
->
-> note this is only tested on this no-MMU machine and I don't know enough
-> about framebuffers and mm to decide if this patch is sane. Also I'm
-> a bit unsure about the size check, I just believed Geert that
-> PAGE_ALIGN(info->fix.smem_len) is the right value to check against.
->
-> Best regards
-> Uwe
->
->  drivers/video/fbmem.c | 20 +++++++++++++++++---
->  1 file changed, 17 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index 7309ac704e26..d0ccedafec8c 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -1491,6 +1491,22 @@ __releases(&info->lock)
->         return 0;
->  }
->
-> +#ifdef HAVE_ARCH_FB_UNMAPPED_AREA
-> +#define fb_get_unmapped_area get_fb_unmapped_area
-> +#else
-> +unsigned long fb_get_unmapped_area(struct file *filp, unsigned long orig=
-_addr,
-> +               unsigned long len, unsigned long pgoff, unsigned long fla=
-gs)
-> +{
-> +       struct fb_info * const info =3D filp->private_data;
-> +       unsigned long fb_size =3D PAGE_ALIGN(info->fix.smem_len);
-> +
-> +       if (pgoff > fb_size || len > fb_size - pgoff)
-> +               return -EINVAL;
-> +
-> +       return (unsigned long)info->screen_base + pgoff;
-> +}
-> +#endif
-> +
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ arch/avr32/configs/atngw100_mrmt_defconfig | 5 +++--
+ arch/avr32/configs/atstk1002_defconfig     | 5 +++--
+ arch/avr32/configs/atstk1003_defconfig     | 5 +++--
+ arch/avr32/configs/atstk1004_defconfig     | 5 +++--
+ arch/avr32/configs/atstk1006_defconfig     | 5 +++--
+ arch/avr32/configs/merisc_defconfig        | 5 +++--
+ 6 files changed, 18 insertions(+), 12 deletions(-)
 
-Doesn't this break mmu systems? x86 for instance has no
-get_fb_unmapped_area(), therefore f_ops->get_unmapped_area() is NULL
-and thus falls back to the generic handler of the task (see
-mm/mmap.c). If you replace this with your handler, _every_ mmap() call
-with be treated as MAP_FIXED with "info->screen_base + pgoff" as
-address. This might work in test-cases on the first mmap() call, but
-any further call will fail.
+diff --git a/arch/avr32/configs/atngw100_mrmt_defconfig b/arch/avr32/configs/atngw100_mrmt_defconfig
+index 9a57da44eb6f..6838781e966f 100644
+--- a/arch/avr32/configs/atngw100_mrmt_defconfig
++++ b/arch/avr32/configs/atngw100_mrmt_defconfig
+@@ -56,7 +56,6 @@ CONFIG_MTD_CFI_AMDSTD=y
+ CONFIG_MTD_PHYSMAP=y
+ CONFIG_MTD_DATAFLASH=y
+ CONFIG_BLK_DEV_LOOP=y
+-CONFIG_ATMEL_PWM=y
+ CONFIG_NETDEVICES=y
+ CONFIG_NET_ETHERNET=y
+ CONFIG_MACB=y
+@@ -104,8 +103,8 @@ CONFIG_MMC=y
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=y
+ CONFIG_LEDS_GPIO=y
++CONFIG_LEDS_PWM=y
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=y
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+@@ -114,6 +113,8 @@ CONFIG_RTC_DRV_S35390A=m
+ CONFIG_RTC_DRV_AT32AP700X=m
+ CONFIG_DMADEVICES=y
+ CONFIG_UIO=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=y
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT2_FS_XATTR=y
+ CONFIG_EXT3_FS=y
+diff --git a/arch/avr32/configs/atstk1002_defconfig b/arch/avr32/configs/atstk1002_defconfig
+index 2813dd2b9138..b056820eef33 100644
+--- a/arch/avr32/configs/atstk1002_defconfig
++++ b/arch/avr32/configs/atstk1002_defconfig
+@@ -64,7 +64,6 @@ CONFIG_BLK_DEV_LOOP=m
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=m
+ CONFIG_MISC_DEVICES=y
+-CONFIG_ATMEL_PWM=m
+ CONFIG_ATMEL_TCLIB=y
+ CONFIG_ATMEL_SSC=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -133,14 +132,16 @@ CONFIG_MMC_TEST=m
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=m
+ CONFIG_LEDS_GPIO=m
++CONFIG_LEDS_PWM=m
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_AT32AP700X=y
+ CONFIG_DMADEVICES=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=m
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+diff --git a/arch/avr32/configs/atstk1003_defconfig b/arch/avr32/configs/atstk1003_defconfig
+index f8ff3a3baad4..0cd23a303da1 100644
+--- a/arch/avr32/configs/atstk1003_defconfig
++++ b/arch/avr32/configs/atstk1003_defconfig
+@@ -53,7 +53,6 @@ CONFIG_BLK_DEV_LOOP=m
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=m
+ CONFIG_MISC_DEVICES=y
+-CONFIG_ATMEL_PWM=m
+ CONFIG_ATMEL_TCLIB=y
+ CONFIG_ATMEL_SSC=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -112,14 +111,16 @@ CONFIG_MMC_TEST=m
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=m
+ CONFIG_LEDS_GPIO=m
++CONFIG_LEDS_PWM=m
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_AT32AP700X=y
+ CONFIG_DMADEVICES=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=m
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+diff --git a/arch/avr32/configs/atstk1004_defconfig b/arch/avr32/configs/atstk1004_defconfig
+index 992228e54e38..ac1041f5f85a 100644
+--- a/arch/avr32/configs/atstk1004_defconfig
++++ b/arch/avr32/configs/atstk1004_defconfig
+@@ -53,7 +53,6 @@ CONFIG_BLK_DEV_LOOP=m
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=m
+ CONFIG_MISC_DEVICES=y
+-CONFIG_ATMEL_PWM=m
+ CONFIG_ATMEL_TCLIB=y
+ CONFIG_ATMEL_SSC=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -111,14 +110,16 @@ CONFIG_MMC_TEST=m
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=m
+ CONFIG_LEDS_GPIO=m
++CONFIG_LEDS_PWM=m
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_AT32AP700X=y
+ CONFIG_DMADEVICES=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=m
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+diff --git a/arch/avr32/configs/atstk1006_defconfig b/arch/avr32/configs/atstk1006_defconfig
+index b8e698b0d1fa..ea4f670cb995 100644
+--- a/arch/avr32/configs/atstk1006_defconfig
++++ b/arch/avr32/configs/atstk1006_defconfig
+@@ -67,7 +67,6 @@ CONFIG_BLK_DEV_LOOP=m
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=m
+ CONFIG_MISC_DEVICES=y
+-CONFIG_ATMEL_PWM=m
+ CONFIG_ATMEL_TCLIB=y
+ CONFIG_ATMEL_SSC=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -136,14 +135,16 @@ CONFIG_MMC_TEST=m
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=m
+ CONFIG_LEDS_GPIO=m
++CONFIG_LEDS_PWM=m
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_AT32AP700X=y
+ CONFIG_DMADEVICES=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=m
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+diff --git a/arch/avr32/configs/merisc_defconfig b/arch/avr32/configs/merisc_defconfig
+index 91df6b2986be..b9ef4cc85d08 100644
+--- a/arch/avr32/configs/merisc_defconfig
++++ b/arch/avr32/configs/merisc_defconfig
+@@ -55,7 +55,6 @@ CONFIG_MTD_ABSENT=y
+ CONFIG_MTD_PHYSMAP=y
+ CONFIG_MTD_BLOCK2MTD=y
+ CONFIG_BLK_DEV_LOOP=y
+-CONFIG_ATMEL_PWM=y
+ CONFIG_ATMEL_SSC=y
+ CONFIG_SCSI=y
+ CONFIG_BLK_DEV_SD=y
+@@ -103,12 +102,14 @@ CONFIG_MMC=y
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=y
++CONFIG_LEDS_PWM=y
+ CONFIG_RTC_CLASS=y
+ # CONFIG_RTC_HCTOSYS is not set
+ CONFIG_RTC_DRV_PCF8563=y
+ CONFIG_DMADEVICES=y
+ CONFIG_UIO=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=m
+ CONFIG_EXT2_FS=y
+ # CONFIG_DNOTIFY is not set
+ CONFIG_FUSE_FS=y
+-- 
+1.8.3.2
 
-Thanks
-David
-
->  static const struct file_operations fb_fops =3D {
->         .owner =3D        THIS_MODULE,
->         .read =3D         fb_read,
-> @@ -1502,9 +1518,7 @@ static const struct file_operations fb_fops =3D {
->         .mmap =3D         fb_mmap,
->         .open =3D         fb_open,
->         .release =3D      fb_release,
-> -#ifdef HAVE_ARCH_FB_UNMAPPED_AREA
-> -       .get_unmapped_area =3D get_fb_unmapped_area,
-> -#endif
-> +       .get_unmapped_area =3D fb_get_unmapped_area,
->  #ifdef CONFIG_FB_DEFERRED_IO
->         .fsync =3D        fb_deferred_io_fsync,
->  #endif
-> --
-> 1.8.5.2
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html

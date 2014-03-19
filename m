@@ -1,47 +1,72 @@
-From: Jason Jin <Jason.Jin@freescale.com>
-Date: Thu, 27 Mar 2014 11:37:22 +0000
-Subject: [PATCH 1/2] video/fsl: Fix the sleep function for FSL DIU module
-Message-Id: <1395920242-1004-1-git-send-email-Jason.Jin@freescale.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 19 Mar 2014 13:03:16 +0000
+Subject: [PATCH 03/16] ARM: at91: at91sam9263: switch to generic PWM framework
+Message-Id: <1395234209-15546-4-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b07421@freescale.com, timur@tabi.org
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, r58472@freescale.com, jason.jin@freescale.com, Wang Dongsheng <dongsheng.wang@freescale.com>
+To: linux-arm-kernel@lists.infradead.org
 
-For deep sleep, the diu module will power off, when wake up from the deep
-sleep, more registers need to be reinitialized.
+Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
 
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-Signed-off-by: Jason Jin <Jason.Jin@freescale.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
-V2: Coding style clean up based on Timur's comments.
+ arch/arm/mach-at91/at91sam9263.c         |  1 +
+ arch/arm/mach-at91/at91sam9263_devices.c | 11 ++---------
+ 2 files changed, 3 insertions(+), 9 deletions(-)
 
- drivers/video/fsl-diu-fb.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index e8758b9..4bc4730 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -1628,9 +1628,15 @@ static int fsl_diu_suspend(struct platform_device *ofdev, pm_message_t state)
- static int fsl_diu_resume(struct platform_device *ofdev)
- {
- 	struct fsl_diu_data *data;
-+	unsigned int i;
+diff --git a/arch/arm/mach-at91/at91sam9263.c b/arch/arm/mach-at91/at91sam9263.c
+index 37b90f4b990c..d0c2d4955cd7 100644
+--- a/arch/arm/mach-at91/at91sam9263.c
++++ b/arch/arm/mach-at91/at91sam9263.c
+@@ -198,6 +198,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
+ 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi.1", &spi1_clk),
+ 	CLKDEV_CON_DEV_ID("t0_clk", "atmel_tcb.0", &tcb_clk),
+ 	CLKDEV_CON_DEV_ID(NULL, "i2c-at91sam9260.0", &twi_clk),
++	CLKDEV_CON_DEV_ID(NULL, "at91sam9rl-pwm", &pwm_clk),
+ 	/* fake hclk clock */
+ 	CLKDEV_CON_DEV_ID("hclk", "at91_ohci", &ohci_clk),
+ 	CLKDEV_CON_ID("pioA", &pioA_clk),
+diff --git a/arch/arm/mach-at91/at91sam9263_devices.c b/arch/arm/mach-at91/at91sam9263_devices.c
+index 4aeadddbc181..160acd96cdda 100644
+--- a/arch/arm/mach-at91/at91sam9263_devices.c
++++ b/arch/arm/mach-at91/at91sam9263_devices.c
+@@ -1129,9 +1129,7 @@ static void __init at91_add_device_watchdog(void) {}
+  *  PWM
+  * --------------------------------------------------------------------*/
  
- 	data = dev_get_drvdata(&ofdev->dev);
--	enable_lcdc(data->fsl_diu_info);
-+	fsl_diu_enable_interrupts(data);
-+	update_lcdc(data->fsl_diu_info);
-+	for (i = 0; i < NUM_AOIS; i++) {
-+		if (data->mfb[i].count)
-+			fsl_diu_enable_panel(&data->fsl_diu_info[i]);
-+	}
+-#if defined(CONFIG_ATMEL_PWM)
+-static u32 pwm_mask;
+-
++#if IS_ENABLED(CONFIG_PWM_ATMEL)
+ static struct resource pwm_resources[] = {
+ 	[0] = {
+ 		.start	= AT91SAM9263_BASE_PWMC,
+@@ -1146,11 +1144,8 @@ static struct resource pwm_resources[] = {
+ };
  
- 	return 0;
+ static struct platform_device at91sam9263_pwm0_device = {
+-	.name	= "atmel_pwm",
++	.name	= "at91sam9rl-pwm",
+ 	.id	= -1,
+-	.dev	= {
+-		.platform_data		= &pwm_mask,
+-	},
+ 	.resource	= pwm_resources,
+ 	.num_resources	= ARRAY_SIZE(pwm_resources),
+ };
+@@ -1169,8 +1164,6 @@ void __init at91_add_device_pwm(u32 mask)
+ 	if (mask & (1 << AT91_PWM3))
+ 		at91_set_B_periph(AT91_PIN_PB29, 1);	/* enable PWM3 */
+ 
+-	pwm_mask = mask;
+-
+ 	platform_device_register(&at91sam9263_pwm0_device);
  }
+ #else
 -- 
-1.8.0
-
+1.8.3.2
 

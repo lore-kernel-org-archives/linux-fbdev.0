@@ -1,58 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 05 Mar 2014 12:44:06 +0000
-Subject: Re: [PATCH] fbdev: FB_OPENCORES should depend on HAS_DMA
-Message-Id: <53171C16.20505@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="qX4r0E5FKqhRUBSi70TVJGJdwKKDcR6FB"
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 19 Mar 2014 13:03:22 +0000
+Subject: [PATCH 09/16] avr32/at32ap: switch to the generic PWM framework
+Message-Id: <1395234209-15546-10-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1393012569-22560-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1393012569-22560-1-git-send-email-geert@linux-m68k.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---qX4r0E5FKqhRUBSi70TVJGJdwKKDcR6FB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
 
-On 21/02/14 21:56, Geert Uytterhoeven wrote:
-> If NO_DMA=3Dy:
->=20
->     drivers/built-in.o: In function `ocfb_remove':
->     ocfb.c:(.text+0x27fee): undefined reference to `dma_free_coherent'
->     drivers/built-in.o: In function `ocfb_probe':
->     ocfb.c:(.text+0x28418): undefined reference to `dma_alloc_coherent'=
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ arch/avr32/mach-at32ap/at32ap700x.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
->     ocfb.c:(.text+0x284d2): undefined reference to `dma_free_coherent'
->=20
+diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
+index a1f4d1e91b52..db85b5ec3351 100644
+--- a/arch/avr32/mach-at32ap/at32ap700x.c
++++ b/arch/avr32/mach-at32ap/at32ap700x.c
+@@ -1553,7 +1553,7 @@ static struct resource atmel_pwm0_resource[] __initdata = {
+ 	IRQ(24),
+ };
+ static struct clk atmel_pwm0_mck = {
+-	.name		= "pwm_clk",
++	.name		= "at91sam9rl-pwm",
+ 	.parent		= &pbb_clk,
+ 	.mode		= pbb_clk_mode,
+ 	.get_rate	= pbb_clk_get_rate,
+@@ -1568,7 +1568,7 @@ struct platform_device *__init at32_add_device_pwm(u32 mask)
+ 	if (!mask)
+ 		return NULL;
+ 
+-	pdev = platform_device_alloc("atmel_pwm", 0);
++	pdev = platform_device_alloc("at91sam9rl-pwm", 0);
+ 	if (!pdev)
+ 		return NULL;
+ 
+@@ -1576,9 +1576,6 @@ struct platform_device *__init at32_add_device_pwm(u32 mask)
+ 				ARRAY_SIZE(atmel_pwm0_resource)))
+ 		goto out_free_pdev;
+ 
+-	if (platform_device_add_data(pdev, &mask, sizeof(mask)))
+-		goto out_free_pdev;
+-
+ 	pin_mask = 0;
+ 	if (mask & (1 << 0))
+ 		pin_mask |= (1 << 28);
+-- 
+1.8.3.2
 
-Thanks, applied to fbdev branch.
-
- Tomi
-
-
-
---qX4r0E5FKqhRUBSi70TVJGJdwKKDcR6FB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJTFxwWAAoJEPo9qoy8lh71XxwP+gKLDjnzZw7TH1CM5fTMBM4O
-rG+y/Y1S07m8hqqiqTnhtBu7uqkpEB13Mr7ZKVQegmv+Z3vmyQzm0PrwhIXsQFpz
-nz38fT0PmPu2aP09BgC4b789LVMDqFCyvKlKAzw0/HGKABH3yZqqU94MoiyviDVm
-PcDTQ1FowhyC88MG9OO+6eMhf5JHWz7qf86pb130fn++vFkumlXXEwyMBgwjPdvv
-gcMXi+exQf7x0se30heEjX3PUZAJn+OFI+g5eDVPFamCl8kM5PWk0S7a0webnv/z
-rrAIvTTooJMNk+MWOjF8bfaJmxDkfO9LK5X76WJcUx3z0CaMcSLlonqoCo1sbqRy
-WPyn9GxAKnqQ3qZjpd+uhZmq6yefnW91TfFFAxcl4qyYrD6WHagv3Zdk2U0hBIpB
-2mXVVzkUwenAEld+0K7dNW+PydkQi8ivXR8EOArAEwBHzbp2iqURk8CqCliPZ6YI
-6AUddmF57bwnyMPST9hETmGKQaLmbybdQyWNSIUMXaCC8jTCZ4AK58w/OYuQX56J
-Ht9/4ZyrRfqfqEiq6LtpvOcsJ56knubFCnd8PGgC8UevshrgXb3c6gbgvMoCg009
-SHyNuy7hGsrHfh/tHJZu0tZJ6UA+DlzN3I8ISuN5ST2GI7JyARurBeR5siyLiFx/
-oYqKRhM7fhKAytUpLiiq
-=LBRN
------END PGP SIGNATURE-----
-
---qX4r0E5FKqhRUBSi70TVJGJdwKKDcR6FB--

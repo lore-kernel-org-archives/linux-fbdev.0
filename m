@@ -1,66 +1,72 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 18 Mar 2014 08:15:42 +0000
-Subject: [PATCHv2 3/8] Doc/DT: Add DT binding documentation for DVI Connector
-Message-Id: <1395130547-18633-4-git-send-email-tomi.valkeinen@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 19 Mar 2014 13:03:18 +0000
+Subject: [PATCH 05/16] ARM: at91: at91sam9rl: switch to generic PWM framework
+Message-Id: <1395234209-15546-6-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395130547-18633-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1395130547-18633-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Vetter <daniel-/w4YWyX8dFk@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Add DT binding documentation for DVI Connector.
+Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Reviewed-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- .../devicetree/bindings/video/dvi-connector.txt    | 35 ++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/dvi-connector.txt
+ arch/arm/mach-at91/at91sam9rl.c         |  1 +
+ arch/arm/mach-at91/at91sam9rl_devices.c | 11 ++---------
+ 2 files changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/dvi-connector.txt b/Documentation/devicetree/bindings/video/dvi-connector.txt
-new file mode 100644
-index 000000000000..fc53f7c60bc6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/dvi-connector.txt
-@@ -0,0 +1,35 @@
-+DVI Connector
-+=======
-+
-+Required properties:
-+- compatible: "dvi-connector"
-+
-+Optional properties:
-+- label: a symbolic name for the connector
-+- ddc-i2c-bus: phandle to the i2c bus that is connected to DVI DDC
-+- analog: the connector has DVI analog pins
-+- digital: the connector has DVI digital pins
-+- dual-link: the connector has pins for DVI dual-link
-+
-+Required nodes:
-+- Video port for DVI input
-+
-+Note: One (or both) of 'analog' or 'digital' must be set.
-+
-+Example
-+-------
-+
-+dvi0: connector@0 {
-+	compatible = "dvi-connector";
-+	label = "dvi";
-+
-+	digital;
-+
-+	ddc-i2c-bus = <&i2c3>;
-+
-+	port {
-+		dvi_connector_in: endpoint {
-+			remote-endpoint = <&tfp410_out>;
-+		};
-+	};
-+};
+diff --git a/arch/arm/mach-at91/at91sam9rl.c b/arch/arm/mach-at91/at91sam9rl.c
+index 4d2006351d1d..bc035a9ff53c 100644
+--- a/arch/arm/mach-at91/at91sam9rl.c
++++ b/arch/arm/mach-at91/at91sam9rl.c
+@@ -199,6 +199,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
+ 	CLKDEV_CON_DEV_ID("pclk", "fffc4000.ssc", &ssc1_clk),
+ 	CLKDEV_CON_DEV_ID(NULL, "i2c-at91sam9g20.0", &twi0_clk),
+ 	CLKDEV_CON_DEV_ID(NULL, "i2c-at91sam9g20.1", &twi1_clk),
++	CLKDEV_CON_DEV_ID(NULL, "at91sam9rl-pwm", &pwm_clk),
+ 	CLKDEV_CON_ID("pioA", &pioA_clk),
+ 	CLKDEV_CON_ID("pioB", &pioB_clk),
+ 	CLKDEV_CON_ID("pioC", &pioC_clk),
+diff --git a/arch/arm/mach-at91/at91sam9rl_devices.c b/arch/arm/mach-at91/at91sam9rl_devices.c
+index 9ccae034119c..a396d6d56ffe 100644
+--- a/arch/arm/mach-at91/at91sam9rl_devices.c
++++ b/arch/arm/mach-at91/at91sam9rl_devices.c
+@@ -797,9 +797,7 @@ static void __init at91_add_device_watchdog(void) {}
+  *  PWM
+  * --------------------------------------------------------------------*/
+ 
+-#if defined(CONFIG_ATMEL_PWM)
+-static u32 pwm_mask;
+-
++#if IS_ENABLED(CONFIG_PWM_ATMEL)
+ static struct resource pwm_resources[] = {
+ 	[0] = {
+ 		.start	= AT91SAM9RL_BASE_PWMC,
+@@ -814,11 +812,8 @@ static struct resource pwm_resources[] = {
+ };
+ 
+ static struct platform_device at91sam9rl_pwm0_device = {
+-	.name	= "atmel_pwm",
++	.name	= "at91sam9rl-pwm",
+ 	.id	= -1,
+-	.dev	= {
+-		.platform_data		= &pwm_mask,
+-	},
+ 	.resource	= pwm_resources,
+ 	.num_resources	= ARRAY_SIZE(pwm_resources),
+ };
+@@ -837,8 +832,6 @@ void __init at91_add_device_pwm(u32 mask)
+ 	if (mask & (1 << AT91_PWM3))
+ 		at91_set_B_periph(AT91_PIN_PD8, 1);	/* enable PWM3 */
+ 
+-	pwm_mask = mask;
+-
+ 	platform_device_register(&at91sam9rl_pwm0_device);
+ }
+ #else
 -- 
 1.8.3.2
 

@@ -1,39 +1,42 @@
-From: Tormod Volden <lists.tormod@gmail.com>
-Date: Sat, 22 Mar 2014 10:39:53 +0000
-Subject: Re: How to make framebuffer look like a real monitor?
-Message-Id: <CAArsGaZJd6kvZ6BjFRCnBUVYPkBALDhFQ_ax9N5bMJXV+P+2Dw@mail.gmail.com>
+From: Alexander Shiyan <shc_work@mail.ru>
+Date: Thu, 20 Mar 2014 16:24:33 +0000
+Subject: [PATCH 0/3] video: clps711x: New CLPS711X FB driver
+Message-Id: <1395332675-23135-1-git-send-email-shc_work@mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CADAXeK1HznKm6AuWa1431i0u+GSKkXq0u3FWMFvbHU95FJQbzg@mail.gmail.com>
-In-Reply-To: <CADAXeK1HznKm6AuWa1431i0u+GSKkXq0u3FWMFvbHU95FJQbzg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
->> On Fri, Mar 21, 2014 at 3:30 PM, Ivan Drobyshevskyi wrote:
->>> Is there a way to make X treat Linux framebuffer device (e.g. /dev/fb0
->>> backed by virtual framebuffer) as a real display? Ideally it should
->>> appear in system display settings as a configurable monitor. Does it
->>> require writing some kernel code or it's possible to somehow get away
->>> with for example X configuration?
->>
->> If I understand your question correctly, you are asking for the xorg
->> fbdev driver:
->> http://www.x.org/releases/current/doc/man/man4/fbdev.4.xhtml
->
-> Thank you, that could work. As I understand, using fbdev doesn't
-> support hotplug and the only way to setup it is via xorg.conf editing?
->
-> (in short, I need to create a virtual GPU that is treated as a real
-> one by desktop environment but instead of actual rendering only
-> writing to framebuffer in RAM is required).
+This series adds a new framebuffer driver for Cirrus Logic CLPS711X
+CPUs. Since all code rewritten from scratch, patch is designed as a
+replacement of the old (not updated for a long time) for a new one.
+The second part of the patch affects changes for the ARM CLPS711X
+core subsystem, so ACK from the ARM maintainers would be useful.
+Patch originally designed for apply to the video subsystem, but I
+have no prejudice it and if it will be applied to the arm-soc branch,
+this will also be good.
 
-Does it have to be a linux-fbdev driver? There are virtual xorg
-drivers (xf86-video-dummy?) or servers (Xfvb) that you can use like
-this, all in user-space. Or you create a DRM driver (=E0 la the
-experimental SimpleDRM driver from dri-devel@lists.freedesktop.org)
-and use the xorg xf86-modesetting driver on top of it. However I don't
-know if these examples support the kind of hotplug you want in their
-current status.
+Alexander Shiyan (3):
+  video: clps711x: Add new Cirrus Logic CLPS711X framebuffer driver
+  video: clps711x: Switch CLPS711X boards to use new FB driver
+  video: clps711x: Add bindings documentation for CLPS711X framebuffer
 
-Tormod
+ .../bindings/video/cirrus,clps711x-fb.txt          |  48 +++
+ arch/arm/mach-clps711x/board-autcpu12.c            |   2 +-
+ arch/arm/mach-clps711x/board-edb7211.c             |   2 +-
+ arch/arm/mach-clps711x/board-p720t.c               |   2 +-
+ arch/arm/mach-clps711x/devices.c                   |  17 +
+ arch/arm/mach-clps711x/devices.h                   |   1 +
+ drivers/video/fbdev/Kconfig                        |  18 +-
+ drivers/video/fbdev/Makefile                       |   2 +-
+ drivers/video/fbdev/clps711x-fb.c                  | 456 +++++++++++++++++++++
+ drivers/video/fbdev/clps711xfb.c                   | 315 --------------
+ 10 files changed, 537 insertions(+), 326 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
+ create mode 100644 drivers/video/fbdev/clps711x-fb.c
+ delete mode 100644 drivers/video/fbdev/clps711xfb.c
+
+-- 
+1.8.3.2
+

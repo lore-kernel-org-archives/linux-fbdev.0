@@ -1,40 +1,57 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 24 Mar 2014 15:54:12 +0000
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 25 Mar 2014 00:15:39 +0000
 Subject: Re: [PATCH 14/16] backlight: atmel-pwm-bl: remove obsolete driver
-Message-Id: <20140324155412.GA9083@piout.net>
+Message-Id: <001501cf47bf$5a88e3c0$0f9aab40$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
  <1395234209-15546-15-git-send-email-alexandre.belloni@free-electrons.com>
  <20140319142231.GF20872@samfundet.no>
  <000101cf449f$aa609960$ff21cc20$%han@samsung.com>
-In-Reply-To: <000101cf449f$aa609960$ff21cc20$%han@samsung.com>
+ <20140324155412.GA9083@piout.net>
+In-Reply-To: <20140324155412.GA9083@piout.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
-
-On 21/03/2014 at 09:51:16 +0900, Jingoo Han wrote :
-> On Wednesday, March 19, 2014 11:23 PM, Hans-Christian Egtvedt wrote:
-> > Around Wed 19 Mar 2014 14:03:27 +0100 or thereabout, Alexandre Belloni wrote:
-> > > The atmel-pwm-bl driver is now obsolete. It is not used by any mainlined boards
-> > > and is replaced by the generic pwm_bl with the pawm-atmel driver using the
-> > > generic PWM framework.
+On Tuesday, March 25, 2014 12:54 AM, Alexandre Belloni wrote:
+> On 21/03/2014 at 09:51:16 +0900, Jingoo Han wrote :
+> > On Wednesday, March 19, 2014 11:23 PM, Hans-Christian Egtvedt wrote:
+> > > Around Wed 19 Mar 2014 14:03:27 +0100 or thereabout, Alexandre Belloni wrote:
+> > > > The atmel-pwm-bl driver is now obsolete. It is not used by any mainlined boards
+> > > > and is replaced by the generic pwm_bl with the pawm-atmel driver using the
+> > > > generic PWM framework.
+> > > >
+> > > > Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 > > >
-> > > Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> > 
-> > Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+> > > Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+> >
+> > Acked-by: Jingoo Han <jg1.han@samsung.com>
+> >
 > 
-> Acked-by: Jingoo Han <jg1.han@samsung.com>
+> You didn't comment on patch 08/16, are you fine with it ? I guess this
+> is the only one holding back the full series.
+
+'drivers/video/backlight/pwm_bl.c' is Thierry Reding's domain,
+as follows.
+
+  PWM SUBSYSTEM
+  M:      Thierry Reding <thierry.reding@gmail.com>
+  L:      linux-pwm@vger.kernel.org
+  S:      Maintained
+  .....
+  F:      drivers/video/backlight/pwm_bl.c
+
+So, it is required to get Ack from Thierry Reding.
+
+Best regards,
+Jingoo Han
+
 > 
+> Regards,
+> 
+> --
+> Alexandre Belloni, Free Electrons
+> Embedded Linux, Kernel and Android engineering
+> http://free-electrons.com
 
-You didn't comment on patch 08/16, are you fine with it ? I guess this
-is the only one holding back the full series.
-
-Regards,
-
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com

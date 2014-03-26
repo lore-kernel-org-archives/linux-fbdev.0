@@ -1,51 +1,70 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Fri, 07 Mar 2014 14:06:40 +0000
-Subject: Re: [PATCH 00/11] SimpleDRM & Sysfb
-Message-Id: <CANq1E4RO5d1AFEdp3Ya5TFNSht87vARtk8nag7qCnKVU54ZYSg@mail.gmail.com>
+From: <cfreeman@nvidia.com>
+Date: Wed, 26 Mar 2014 22:35:37 +0000
+Subject: [PATCH] video: Check EDID for HDMI connection
+Message-Id: <1395873337-41305-1-git-send-email-cfreeman@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1390486503-1504-1-git-send-email-dh.herrmann@gmail.com>
-	<53145591.4070004@ti.com>
-	<CANq1E4QJqB0CSNeSh2jsp90ZtcLwFwfSG=qjodSLdV_aGbL3BQ@mail.gmail.com>
-	<53145D42.9080806@ti.com>
-	<CANq1E4QYuMsj3W80jiyOfeYr+Xm=J096idyvgCUpFhADWR1ZvA@mail.gmail.com>
-	<531465FF.1000201@ti.com>
-	<CANq1E4TmACNwyANaUsWufJL1ne4pk4Gv+g4y7b6xeO=Po-SN9g@mail.gmail.com>
-	<5319BF40.70305@ti.com>
-	<CANq1E4QXWYQE5DWOA7F39oHFd2ZnV5Ny4ykOw1=aJT+B_umy3Q@mail.gmail.com>
-	<5319CF23.6090103@ti.com>
-In-Reply-To: <5319CF23.6090103@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+To: linux-fbdev@vger.kernel.org
 
-Hi Tomi
+From: David Ung <davidu@nvidia.com>
 
-On Fri, Mar 7, 2014 at 2:52 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 07/03/14 15:05, David Herrmann wrote:
->
->> If you can take these two patches, that's fine. They're not strictly
->> needed by the series and I'd be happy to see them upstream. The other
->> sysfb patches should be merged together, so I don't think there's much
->> gain in applying them through fbdev.
->
-> Ok, I've applied them to fbdev tree.
+Check EDID Vendor Specific Data Block bytes to see if the connection
+is HDMI and set FB_MISC_HDMI.
 
-Thanks!
+Signed-off-by: David Ung <davidu@nvidia.com>
+Signed-off-by: Christopher Freeman<cfreeman@nvidia.com>
+---
+ drivers/video/fbmon.c | 9 ++++++++-
+ include/linux/fb.h    | 1 +
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
->> The DRM tree is usually merged late, anyway, so I'll see whether we
->> will merge simpledrm through drm-next or not. If not, it'll be 3.16
->> then. If you can get the fbdev merge in early, that should be enough
->> for us to figure it out and provide a conflict-resolution. Btw., do
->> you want the generic sysfb-helper in drivers/video/ or
->> driver/video/fbdev? It's not limited to fbdev, so I'd put it in
->> drivers/video/.
->
-> With a quick glance, it doesn't seem to depend on fbdev in any way,
-> right? That makes me think drivers/video/.
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 6103fa6..3ac6367 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1012,13 +1012,20 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ 	while (pos < edid[2]) {
+ 		u8 len = edid[pos] & 0x1f, type = (edid[pos] >> 5) & 7;
+ 		pr_debug("Data block %u of %u bytes\n", type, len);
+-		if (type = 2)
++		if (type = 2) {
+ 			for (i = pos; i < pos + len; i++) {
+ 				u8 idx = edid[pos + i] & 0x7f;
+ 				svd[svd_n++] = idx;
+ 				pr_debug("N%sative mode #%d\n",
+ 					 edid[pos + i] & 0x80 ? "" : "on-n", idx);
+ 			}
++		} else if (type = 3 && len >= 3) {
++			/* Check Vendor Specific Data Block.  For HDMI,
++			   it is always 00-0C-03 for HDMI Licensing, LLC. */
++			if (edid[pos + 1] = 3 && edid[pos + 2] = 0xc &&
++			    edid[pos + 3] = 0)
++				specs->misc |= FB_MISC_HDMI;
++		}
+ 		pos += len + 1;
+ 	}
+ 
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index d49c60f..427d49d 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -47,6 +47,7 @@ struct device_node;
+ 
+ #define FB_MISC_PRIM_COLOR	1
+ #define FB_MISC_1ST_DETAIL	2	/* First Detailed Timing is preferred */
++#define FB_MISC_HDMI		4
+ struct fb_chroma {
+ 	__u32 redx;	/* in fraction of 1024 */
+ 	__u32 greenx;
+-- 
+1.8.3.2
 
-Right! I will keep them in drivers/video/ then.
 
-Thanks
-David
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------

@@ -1,71 +1,36 @@
-From: Jason Jin <Jason.Jin@freescale.com>
-Date: Wed, 26 Mar 2014 17:41:43 +0000
-Subject: [PATCH 1/2] video/fsl: make the diu driver work without platform hooks
-Message-Id: <1395855704-19908-1-git-send-email-Jason.Jin@freescale.com>
+From: Timur Tabi <timur@tabi.org>
+Date: Wed, 26 Mar 2014 18:46:56 +0000
+Subject: Re: [PATCH 1/2] video/fsl: make the diu driver work without platform hooks
+Message-Id: <533320A0.8010507@tabi.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1395855704-19908-1-git-send-email-Jason.Jin@freescale.com>
+In-Reply-To: <1395855704-19908-1-git-send-email-Jason.Jin@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b07421@freescale.com, timur@tabi.org
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, r58472@freescale.com
+To: Jason Jin <Jason.Jin@freescale.com>
+Cc: b07421@freescale.com, linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, r58472@freescale.com
 
-make the diu driver work without platform hooks.
+On 03/26/2014 12:41 PM, Jason Jin wrote:
+> This board sepecific initialization mechanism is not feasible i
+> for corenet platform as the corenet platform file is a
+> abstraction of serveral platforms.
 
-So far the DIU driver does not have a mechanism to do the
-board specific initialization. So on some platforms,
-such as P1022, 8610 and 5121, The board specific initialization
-is implmented in the platform file such p10222_ds.
+You can't make it 100% abstract.  The DIU driver requires some sort of 
+board support.  I think you can make a generic platform file for the DIU.
 
-This board sepecific initialization mechanism is not feasible i
-for corenet platform as the corenet platform file is a
-abstraction of serveral platforms.
+> However, the DIU is already initialized in u-boot and we can
+> rely on the settings in u-boot for corenet platform,
 
-However, the DIU is already initialized in u-boot and we can
-rely on the settings in u-boot for corenet platform, the only
-issue is that when DIU wake up from the deepsleep, some of the
-board specific initialization will lost, such as the pixel clock
-setting.
+I don't like that at all.
 
-This patch try to make the diu work on the platform without board
-specific initialization such as corenet(T1040 so far), and rely on
-the board initialization in u-boot. The following patch will try to
-fix the pixel clock saving issue for deepsleep.
+> the only
+> issue is that when DIU wake up from the deepsleep, some of the
+> board specific initialization will lost, such as the pixel clock
+> setting.
 
-Signed-off-by: Jason Jin <Jason.Jin@freescale.com>
----
- drivers/video/fsl-diu-fb.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+That is a BIG issue.  This is why we have a platform file -- to handle 
+the platform issues.
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index e8758b9..4640846 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -479,7 +479,10 @@ static enum fsl_diu_monitor_port fsl_diu_name_to_port(const char *s)
- 			port = FSL_DIU_PORT_DLVDS;
- 	}
- 
--	return diu_ops.valid_monitor_port(port);
-+	if (diu_ops.valid_monitor_port)
-+		return diu_ops.valid_monitor_port(port);
-+	else
-+		return port;
- }
- 
- /*
-@@ -846,7 +849,11 @@ static void update_lcdc(struct fb_info *info)
- 
- 	out_be32(&hw->vsyn_para, temp);
- 
--	diu_ops.set_pixel_clock(var->pixclock);
-+	/*if there is platform function for pixel clock setting, use it.
-+	 * otherwise we rely on the settings in u-boot.
-+	 */
-+	if (diu_ops.set_pixel_clock)
-+		diu_ops.set_pixel_clock(var->pixclock);
- 
- #ifndef CONFIG_PPC_MPC512x
- 	/*
--- 
-1.8.0
 
 

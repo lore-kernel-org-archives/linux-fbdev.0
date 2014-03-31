@@ -1,56 +1,28 @@
-From: Jon Ringle <jon@ringle.org>
-Date: Wed, 26 Mar 2014 16:56:33 +0000
-Subject: Re: [PATCH] video: da8xx-fb: Fix casting of info->pseudo_palette
-Message-Id: <CAMwGMjyobE5HXLyM0Eb7=5sLvS3H0FcEUPOMfwKEdd+adW4gcA@mail.gmail.com>
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Date: Mon, 31 Mar 2014 07:41:51 +0000
+Subject: =?UTF-8?B?UmU6IFtQQVRDSF0gYmFja2xpZ2h0OiBwd21fYmw6IFVzZSBTSU1QTEVfREVW?= =?UTF-8?B?X1BNX09QUygp?=
+Message-Id: <1396251711.522321843@f325.i.mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1394007599-31429-1-git-send-email-jon@ringle.org>
-In-Reply-To: <1394007599-31429-1-git-send-email-jon@ringle.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Jon Ringle <jringle@gridpoint.com>
+To: linux-fbdev@vger.kernel.org
 
-I've not heard anything regarding this patch. I just want to make sure
-it's not lost :)
-
-Jon
-
-
-On Wed, Mar 5, 2014 at 3:19 AM,  <jon@ringle.org> wrote:
-> From: Jon Ringle <jringle@gridpoint.com>
->
-> (Resending without corporate disclaimer in email footer)
->
-> The casting to (u16 *) on info->pseudo_palette is wrong and causes the
-> display to show a blue (garbage) vertical line on every other pixel column
->
-> Signed-off-by: Jon Ringle <jringle@gridpoint.com>
-> ---
->  drivers/video/da8xx-fb.c | 10 +---------
->  1 file changed, 1 insertion(+), 9 deletions(-)
->
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index d042624..83c43b2 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -678,15 +678,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
->                         (green << info->var.green.offset) |
->                         (blue << info->var.blue.offset);
->
-> -               switch (info->var.bits_per_pixel) {
-> -               case 16:
-> -                       ((u16 *) (info->pseudo_palette))[regno] = v;
-> -                       break;
-> -               case 24:
-> -               case 32:
-> -                       ((u32 *) (info->pseudo_palette))[regno] = v;
-> -                       break;
-> -               }
-> +               ((u32 *) (info->pseudo_palette))[regno] = v;
->                 if (palette[0] != 0x4000) {
->                         update_hw = 1;
->                         palette[0] = 0x4000;
-> --
-> 1.8.5.4
->
+TW9uLCAzMSBNYXIgMjAxNCAwODozODo0OCArMDEwMCDQvtGCIExlZSBKb25lcyA8bGVlLmpvbmVz
+QGxpbmFyby5vcmc+Ogo+ID4gVXNlIHRoZSBTSU1QTEVfREVWX1BNX09QUygpIG1hY3JvIHRvIGRl
+Y2xhcmUgdGhlIGRyaXZlcidzIHBtX29wcy4KPiA+IAo+ID4gU2lnbmVkLW9mZi1ieTogQWxleGFu
+ZGVyIFNoaXlhbiA8c2hjX3dvcmtAbWFpbC5ydT4KPiA+IC0tLQo+ID4gIGRyaXZlcnMvdmlkZW8v
+YmFja2xpZ2h0L3B3bV9ibC5jIHwgMTcgKysrKy0tLS0tLS0tLS0tLS0KPiA+ICAxIGZpbGUgY2hh
+bmdlZCwgNCBpbnNlcnRpb25zKCspLCAxMyBkZWxldGlvbnMoLSkKPiA+IAo+ID4gZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L3B3bV9ibC5jIGIvZHJpdmVycy92aWRlby9iYWNr
+bGlnaHQvcHdtX2JsLmMKPiA+IGluZGV4IGI3NTIwMWYuLmQ1ZTFmNWIgMTAwNjQ0Cj4gPiAtLS0g
+YS9kcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9wd21fYmwuYwo+ID4gKysrIGIvZHJpdmVycy92aWRl
+by9iYWNrbGlnaHQvcHdtX2JsLmMKPiAKPiBbLi4uXQo+IAo+ID4gLXN0YXRpYyBpbnQgcHdtX2Jh
+Y2tsaWdodF9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQo+ID4gK3N0YXRpYyBpbnQgX19tYXli
+ZV91bnVzZWQgcHdtX2JsX3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gCj4gV2hhdCdzIHRo
+ZSBfX21heWJlX3VudXNlZCBhdHRyaWJ1dGUgZm9yPwo+IAo+IEluIGluY2x1ZGUvbGludXgvY29t
+cGlsZXItZ2NjLmggaXQgcmVkZWZpbmVzIHRoZSBhdHRyaWJ1dGUgYXMgJ3VudXNlZCc6IAo+IAo+
+ICAgI2RlZmluZSBfX21heWJlX3VudXNlZCAgICAgICAgICAgICAgICAgIF9fYXR0cmlidXRlX18o
+KHVudXNlZCkpCj4gCj4gLi4uIGFyZSB5b3Ugc3VyZSB0aGlzIGlzIHdoYXQgeW91IHdhbnQ/CgpZ
+ZXMuIFRoaXMgYXZvaWRzIGNvbXBpbGVyIHdhcm5pbmdzIGlmIENPTkZJR19QTSBpcyB1bnNldC4K
+Ci0tLQoK

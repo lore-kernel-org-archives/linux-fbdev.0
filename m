@@ -1,60 +1,47 @@
-From: Masami Ichikawa <masami256@gmail.com>
-Date: Wed, 23 Apr 2014 14:35:22 +0000
-Subject: [PATCH] fbcon: Fix memory leak in con2fb_release_oldinfo()
-Message-Id: <1398263722-10436-1-git-send-email-masami256@gmail.com>
+From: jon@ringle.org
+Date: Tue, 01 Apr 2014 12:33:05 +0000
+Subject: [PATCH v2 2/2] video: da8xx-fb: Fix casting of info->pseudo_palette
+Message-Id: <1396355585-458-2-git-send-email-jon@ringle.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1396355585-458-1-git-send-email-jon@ringle.org>
+In-Reply-To: <1396355585-458-1-git-send-email-jon@ringle.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: masami256@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, udknight@gmail.com, gregkh@linuxfoundation.org, keithp@keithp.com, mika.kuoppala@linux.intel.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, Jon Ringle <jringle@gridpoint.com>
 
-kmemleak reported a memory leak as below.
+From: Jon Ringle <jringle@gridpoint.com>
 
-unreferenced object 0xffff8800dab6d8d8 (size 96):
-  comm "swapper/0", pid 1, jiffies 4294877598 (age 38.483s)
-  hex dump (first 32 bytes):
-    00 00 00 00 00 01 00 00 08 00 00 00 10 00 00 00  ................
-    07 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00  ................
-  backtrace:
-    [<ffffffff814e8f2e>] kmemleak_alloc+0x4e/0xb0
-    [<ffffffff811a0600>] __kmalloc+0x280/0x320
-    [<ffffffff81309b61>] soft_cursor+0x231/0x290
-    [<ffffffff81309393>] bit_cursor+0x613/0x650
-    [<ffffffff8130556b>] fbcon_cursor+0x13b/0x1c0
-    [<ffffffff813755f8>] hide_cursor+0x28/0xa0
-    [<ffffffff81376e98>] redraw_screen+0x168/0x240
-    [<ffffffff81303891>] fbcon_prepare_logo+0x381/0x420
-    [<ffffffff81303c7e>] fbcon_init+0x34e/0x590
-    [<ffffffff81375828>] visual_init+0xb8/0x120
-    [<ffffffff81377c93>] do_bind_con_driver+0x163/0x380
-    [<ffffffff81378494>] do_take_over_console+0x114/0x1c0
-    [<ffffffff81303f23>] do_fbcon_takeover+0x63/0xd0
-    [<ffffffff813086dd>] fbcon_event_notify+0x68d/0x7e0
-    [<ffffffff814ff7ac>] notifier_call_chain+0x4c/0x70
-    [<ffffffff8108c85d>] __blocking_notifier_call_chain+0x4d/0x70
+The casting to (u16 *) on info->pseudo_palette is wrong and causes the
+display to show a blue (garbage) vertical line on every other pixel column
 
-This memory leak cause is, fbcon_ops's cursor_src is allocated in
-soft_cursor() but not released in con2fb_release_oldinfo().
-so, cursor_src is needed to be released when oldinfo is going to be
-released.
-
-Signed-off-by: Masami Ichikawa <masami256@gmail.com>
+Signed-off-by: Jon Ringle <jringle@gridpoint.com>
 ---
- drivers/video/console/fbcon.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/da8xx-fb.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index f447734..57b1d44 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -748,6 +748,7 @@ static int con2fb_release_oldinfo(struct vc_data *vc, struct fb_info *oldinfo,
- 		fbcon_del_cursor_timer(oldinfo);
- 		kfree(ops->cursor_state.mask);
- 		kfree(ops->cursor_data);
-+		kfree(ops->cursor_src);
- 		kfree(ops->fontbuffer);
- 		kfree(oldinfo->fbcon_par);
- 		oldinfo->fbcon_par = NULL;
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index d042624..83c43b2 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -678,15 +678,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 			(green << info->var.green.offset) |
+ 			(blue << info->var.blue.offset);
+ 
+-		switch (info->var.bits_per_pixel) {
+-		case 16:
+-			((u16 *) (info->pseudo_palette))[regno] = v;
+-			break;
+-		case 24:
+-		case 32:
+-			((u32 *) (info->pseudo_palette))[regno] = v;
+-			break;
+-		}
++		((u32 *) (info->pseudo_palette))[regno] = v;
+ 		if (palette[0] != 0x4000) {
+ 			update_hw = 1;
+ 			palette[0] = 0x4000;
 -- 
-1.9.1
+1.8.5.4
 

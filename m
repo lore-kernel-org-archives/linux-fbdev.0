@@ -1,40 +1,46 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 28 Apr 2014 10:16:20 +0000
-Subject: Re: [PATCH 12/13] video/backlight: LP855X needs PWM
-Message-Id: <20140428101620.GC21279@lee--X1>
+From: jon@ringle.org
+Date: Tue, 01 Apr 2014 12:33:04 +0000
+Subject: [PATCH v2 1/2] video: da8xx-fb: Add support for Densitron 84-0023-001T
+Message-Id: <1396355585-458-1-git-send-email-jon@ringle.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
- <1398342509-10243-13-git-send-email-peter.griffin@linaro.org>
-In-Reply-To: <1398342509-10243-13-git-send-email-peter.griffin@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Peter Griffin <peter.griffin@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>, Jingoo Han <jg1.han@samsung.com>, Milo Kim <milo.kim@ti.com>, Bryan Wu <cooloney@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, Jon Ringle <jringle@gridpoint.com>
 
-> From: Arnd Bergmann <arnd@arndb.de>
->=20
-> The LP855X driver cannot be successfully built if we don't
-> enable the PWM subsystem. This patch makes that dependency
-> explicit in Kconfig and prevents broken randconfig builds.
->=20
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Peter Griffin <peter.griffin@linaro.org>
-> Cc: Jingoo Han <jg1.han@samsung.com>
-> Cc: Milo Kim <milo.kim@ti.com>
-> Cc: Bryan Wu <cooloney@gmail.com>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> ---
->  drivers/video/backlight/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+From: Jon Ringle <jringle@gridpoint.com>
 
-Applied, thanks.
+Signed-off-by: Jon Ringle <jringle@gridpoint.com>
+---
+ drivers/video/da8xx-fb.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index e030e17..d042624 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -243,6 +243,20 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.sync           = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+ 		.flag           = 0,
+ 	},
++	[3] = {
++		/* Densitron 84-0023-001T */
++		.name           = "Densitron_LCD",
++		.xres           = 320,
++		.yres           = 240,
++		.pixclock       = KHZ2PICOS(6400),
++		.left_margin    = 0,
++		.right_margin   = 0,
++		.upper_margin   = 0,
++		.lower_margin   = 0,
++		.hsync_len      = 30,
++		.vsync_len      = 3,
++		.sync           = 0,
++	},
+ };
+ 
+ static bool da8xx_fb_is_raster_enabled(void)
+-- 
+1.8.5.4
+

@@ -1,82 +1,104 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 08 Apr 2014 10:10:55 +0000
-Subject: Re: [PATCH] video: imxfb: Select LCD_CLASS_DEVICE unconditionally
-Message-Id: <5343CB2F.9060706@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="mcdTmAgB2xa1As2EQBnogKKWdb2dti4Pu"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 01 Apr 2014 00:08:33 +0000
+Subject: Re: [PATCH] backlight: pwm_bl: Use SIMPLE_DEV_PM_OPS()
+Message-Id: <000701cf4d3e$856f2ac0$904d8040$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395298711-14619-1-git-send-email-shc_work@mail.ru>
-In-Reply-To: <1395298711-14619-1-git-send-email-shc_work@mail.ru>
+References: <1396087871-9091-1-git-send-email-shc_work@mail.ru>
+In-Reply-To: <1396087871-9091-1-git-send-email-shc_work@mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-fbdev@vger.kernel.org
 
---mcdTmAgB2xa1As2EQBnogKKWdb2dti4Pu
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Monday, March 31, 2014 7:37 PM, Lee Jones wrote:
+> Mon, 31 Mar 2014 09:50:47 +0100 от Lee Jones <lee.jones@linaro.org>:
+> > > > > > > Use the SIMPLE_DEV_PM_OPS() macro to declare the driver's pm_ops.
+> > > > > > >
+> > > > > > > Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+> > > > > > > ---
+> > > > > > >  drivers/video/backlight/pwm_bl.c | 17 ++++-------------
+> > > > > > >  1 file changed, 4 insertions(+), 13 deletions(-)
+> > > > > > >
+> > > > > > > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+> > > > > > > index b75201f..d5e1f5b 100644
+> > > > > > > --- a/drivers/video/backlight/pwm_bl.c
+> > > > > > > +++ b/drivers/video/backlight/pwm_bl.c
+> > > > > >
+> > > > > > [...]
+> > > > > >
+> > > > > > > -static int pwm_backlight_resume(struct device *dev)
+> > > > > > > +static int __maybe_unused pwm_bl_resume(struct device *dev)
+> > > > > >
+> > > > > > What's the __maybe_unused attribute for?
+> > > > > >
+> > > > > > In include/linux/compiler-gcc.h it redefines the attribute as 'unused':
+> > > > > >
+> > > > > >   #define __maybe_unused                  __attribute__((unused))
+> > > > > >
+> > > > > > ... are you sure this is what you want?
+> > > > >
+> > > > > Yes. This avoids compiler warnings if CONFIG_PM is unset.
+> > > >
+> > > > What are the advantages of this over the config option? Besides 2
+> > > > lines of code?
+> > >
+> > > Just an increase compile coverage.
+> >
+> > What does this mean? I replied to another one of your patches with the
+> > same question.
+> 
+> Code parts for suspend() and resume() will be compiled regardless of
+> CONFIG_PM option and will be discarded by linker if CONFIG_PM is not set.
 
-On 08/04/14 13:08, Alexander Shiyan wrote:
-> Tue, 8 Apr 2014 12:58:32 +0300 =D0=BE=D1=82 Tomi Valkeinen <tomi.valkei=
-nen@ti.com>:
->> Hi,
->>
->> On 20/03/14 08:58, Alexander Shiyan wrote:
->>> FB driver uses lowlevel controls for LCD powering and contrast changi=
-ng.
->>> Since LCD class cannot be used as an optional feature and should be
->>> compiled for using in the driver, this patch selects LCD_CLASS_DEVICE=
+(+cc Joe Perches, Dan Carpenter)
 
->>> symbol for the driver.
->>>
->>> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
->>> ---
->>>  drivers/video/fbdev/Kconfig | 2 ++
->>>  1 file changed, 2 insertions(+)
->>>
->>> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfi=
-g
->>> index 67409e0..b7cb0af 100644
->>> --- a/drivers/video/fbdev/Kconfig
->>> +++ b/drivers/video/fbdev/Kconfig
->>> @@ -328,6 +328,8 @@ config FB_SA1100
->>>  config FB_IMX
->>>  	tristate "Freescale i.MX1/21/25/27 LCD support"
->>>  	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
->>> +	select BACKLIGHT_LCD_SUPPORT
->>> +	select LCD_CLASS_DEVICE
->>>  	select FB_CFB_FILLRECT
->>>  	select FB_CFB_COPYAREA
->>>  	select FB_CFB_IMAGEBLIT
->>
->> I presume this should go in for 3.15?
->=20
-> Yes. Otherwise we may have problems with the compiling.
+Original patch is 
+http://www.spinics.net/lists/linux-fbdev/msg14177.html
 
-Ok, queuing this for 3.15 fixes.
+I don't think that __maybe_unused is good.
+Currently, SIMPLE_DEV_PM_OPS is using "#ifdef CONFIG_PM_SLEEP" as below.
+So, suspend_fn, resume_fn should be protected by "#ifdef CONFIG_PM_SLEEP".
+Maybe, it is necessary to fix SET_SYSTEM_SLEEP_PM_OPS define,
+in order to increase compile coverage.
 
- Tomi
+./include/linux/pm.h
+#define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+const struct dev_pm_ops name = { \
+        SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+}
+
+#ifdef CONFIG_PM_SLEEP
+#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+        .suspend = suspend_fn, \
+        .resume = resume_fn, \
+        .freeze = suspend_fn, \
+        .thaw = resume_fn, \
+        .poweroff = suspend_fn, \
+        .restore = resume_fn,
+#else
+#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+#endif
 
 
+Please, don’t remove "#ifdef CONFIG_PM_SLEEP".
+Your patch can be modified as below:
 
---mcdTmAgB2xa1As2EQBnogKKWdb2dti4Pu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -386,14 +386,7 @@ static int pwm_backlight_resume(struct device *dev)
+ }
+ #endif
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
+-static const struct dev_pm_ops pwm_backlight_pm_ops = {
+-#ifdef CONFIG_PM_SLEEP
+-       .suspend = pwm_backlight_suspend,
+-       .resume = pwm_backlight_resume,
+-       .poweroff = pwm_backlight_suspend,
+-       .restore = pwm_backlight_resume,
+-#endif
+-};
++static SIMPLE_DEV_PM_OPS(pwm_bl_pm_ops, pwm_bl_suspend, pwm_bl_resume);
 
-iQIcBAEBAgAGBQJTQ8svAAoJEPo9qoy8lh71sS8P/RZvu8zMq+2CiKN22ZDIAk31
-gczR5kFLQp2nha05xzi8oGSqbcXGw8jfLOdqnmVz9v/pTkDYUQCzQOnrSTwKawP0
-fCDClJFO0ydmfiTV5hpnV7NqDsVJ3eySDPpm8AaYZkNPB34DuAtQpg1Ws33d+rf9
-l0x7cg67yhzbCGwn4dl/vP7R/yGG/8XCUIEytzCaoFQSureDKCDiSDhB6fP7vBOX
-C9TMTK5OuvWqPIHHE1pPLkbOl8iYVzrAke7djsLFJGATt3uB3Ju2lyUZq/CSyiaV
-uk4BM79c2dTkO0tVfKsZkCde8dzDJoOoD/XOnSe2FONclpf5YBaOjR6KRohms5Vk
-c+fWdo5S2vI34MzDkEYsNjgewRddp3Gh3gnVIhZSAa/aWZYaXArn5UEszAvuKSM/
-juh0ymKqpJmif99AH/Dn4DXYsIQwko6T1/BQvSuXqR5JEnYP3I3ggbtDHnyzPU6t
-PMRTSuVyx7aBymp16NJdPZYlpXoLd2CjwSzoHfxvlIMYOK5L5Wq7naL9ZUc3vJ9a
-m/ohr1wIGSW6u0xUq7IwbogTt6X2wjoJ6KuZKbQumuUmdNOqUdEhkerXT8bth0dE
-seuxnGrt19dx6nCIDG8Ylrhhzh6SPCZReh1l7R1HVsh8CD4aAT1ou2nJaExRbf1V
-HBdyixM1nHwaj7SIPbV/
-=/R7m
------END PGP SIGNATURE-----
+Best regards,
+Jingoo Han
 
---mcdTmAgB2xa1As2EQBnogKKWdb2dti4Pu--

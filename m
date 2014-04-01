@@ -1,34 +1,46 @@
-From: Marek Belisko <marek@goldelico.com>
-Date: Wed, 23 Apr 2014 20:15:17 +0000
-Subject: [PATCH v2 0/3] Add display support for gta04 device
-Message-Id: <1398284120-4986-1-git-send-email-marek@goldelico.com>
+From: jon@ringle.org
+Date: Tue, 01 Apr 2014 12:39:33 +0000
+Subject: [PATCH v3 1/2] video: da8xx-fb: Add support for Densitron 84-0023-001T
+Message-Id: <1396355974-2257-1-git-send-email-jon@ringle.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, Jon Ringle <jringle@gridpoint.com>
 
-This 3 patches adding display support for openmoko gta04 device.
-First patch add DT bindings for topolly td028 panel. Second add description for
-dss + panel and third fix panel probing when panel is compiled as module.
+From: Jon Ringle <jringle@gridpoint.com>
 
-Changes from v1:
-- extend panel compatible string by 'omapdss'
-- add tpo-td028 panel to dss_compat_conv_list
-- add MODULE_ALIAS macro to properly probe panel when is compiled as module
+Signed-off-by: Jon Ringle <jringle@gridpoint.com>
+---
+ drivers/video/da8xx-fb.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-Marek Belisko (3):
-  omapdss: panel-tpo-td028ec1: Add DT support.
-  ARM: dts: oma3-gta04: Add display support
-  omapdss: panel-tpo-td028ec1: Add module alias
-
- .../bindings/video/toppoly,td028ttec1.txt          | 30 ++++++++
- arch/arm/boot/dts/omap3-gta04.dts                  | 86 ++++++++++++++++++++++
- arch/arm/mach-omap2/display.c                      |  1 +
- .../omap2/displays-new/panel-tpo-td028ttec1.c      | 33 ++++++++-
- 4 files changed, 149 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
-
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index e030e17..233f65f 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -243,6 +243,20 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.sync           = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+ 		.flag           = 0,
+ 	},
++	[3] = {
++		/* Densitron 84-0023-001T */
++		.name           = "Densitron_84-0023-001T",
++		.xres           = 320,
++		.yres           = 240,
++		.pixclock       = KHZ2PICOS(6400),
++		.left_margin    = 0,
++		.right_margin   = 0,
++		.upper_margin   = 0,
++		.lower_margin   = 0,
++		.hsync_len      = 30,
++		.vsync_len      = 3,
++		.sync           = 0,
++	},
+ };
+ 
+ static bool da8xx_fb_is_raster_enabled(void)
 -- 
-1.8.3.2
+1.8.5.4
 

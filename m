@@ -1,43 +1,29 @@
-From: Scott Wood <scottwood@freescale.com>
-Date: Tue, 01 Apr 2014 21:38:37 +0000
-Subject: Re: [PATCH 2/2] Make the diu driver work without board level initilization
-Message-Id: <1396388317.32034.14.camel@snotra.buserror.net>
+From: "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
+Date: Wed, 02 Apr 2014 00:22:58 +0000
+Subject: RE: [PATCH 2/2] Make the diu driver work without board level initilization
+Message-Id: <7c1942cca80d410280e693e7890d74e6@BLUPR03MB373.namprd03.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1395920287-5204-1-git-send-email-Jason.Jin@freescale.com>
  <1305603ae9b846d9bc4c78f21a8c0494@BY2PR03MB505.namprd03.prod.outlook.com>
  <57b9d96d00f64eff90ae6c109c9dec90@BLUPR03MB373.namprd03.prod.outlook.com>
-In-Reply-To: <57b9d96d00f64eff90ae6c109c9dec90@BLUPR03MB373.namprd03.prod.outlook.com>
+ <1396388317.32034.14.camel@snotra.buserror.net>
+In-Reply-To: <1396388317.32034.14.camel@snotra.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jin Zhengxiong-R64188 <Jason.Jin@freescale.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Xiubo Li-B47053 <Li.Xiubo@freescale.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "timur@tabi.org" <timur@tabi.org>
+To: Scott Wood <scottwood@freescale.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "timur@tabi.org" <timur@tabi.org>
 
-On Tue, 2014-04-01 at 02:28 -0500, Jin Zhengxiong-R64188 wrote:
-> > > +	if (!diu_ops.set_pixel_clock) {
-> > > +		data->pixelclk_reg = of_iomap(np, 1);
-> > > +		if (!data->pixelclk_reg) {
-> > > +			dev_err(&pdev->dev, "Cannot map pixelclk registers,
-> > please \
-> > > +				provide the diu_ops for pixclk setting
-> > instead.\n");
-> > 
-> > The error message should be in one line if possible, or it will hard to
-> > grep.
-> > If cannot, should split it into two or more lines, like:
-> >  +			dev_err(&pdev->dev, "Cannot map pixelclk registers,\n"
-> >  +				"please provide the diu_ops for pixclk setting
-> > instead.\n");
-> Thanks, This has been fixed in the update version, please help to review it at:
-> http://patchwork.ozlabs.org/patch/335225/
-> I forgot to add the V2 information in the subject in the update patch so this may confuse the reviewer, sorry for that.
-
-It is not fixed in that patch (or did you link the wrong version?).  You
-should never use \ to continue a line in C, other than in macros.
-
-Further, it is not permitted to wrap kernel output strings.  This is an
-exception to the 80-column rule.  Checkpatch should have told you this.
-
--Scott
-
-
+DQo+ID4gVGhhbmtzLCBUaGlzIGhhcyBiZWVuIGZpeGVkIGluIHRoZSB1cGRhdGUgdmVyc2lvbiwg
+cGxlYXNlIGhlbHAgdG8NCj4gcmV2aWV3IGl0IGF0Og0KPiA+IGh0dHA6Ly9wYXRjaHdvcmsub3ps
+YWJzLm9yZy9wYXRjaC8zMzUyMjUvDQo+ID4gSSBmb3Jnb3QgdG8gYWRkIHRoZSBWMiBpbmZvcm1h
+dGlvbiBpbiB0aGUgc3ViamVjdCBpbiB0aGUgdXBkYXRlIHBhdGNoDQo+IHNvIHRoaXMgbWF5IGNv
+bmZ1c2UgdGhlIHJldmlld2VyLCBzb3JyeSBmb3IgdGhhdC4NCj4gDQo+IEl0IGlzIG5vdCBmaXhl
+ZCBpbiB0aGF0IHBhdGNoIChvciBkaWQgeW91IGxpbmsgdGhlIHdyb25nIHZlcnNpb24/KS4gIFlv
+dQ0KPiBzaG91bGQgbmV2ZXIgdXNlIFwgdG8gY29udGludWUgYSBsaW5lIGluIEMsIG90aGVyIHRo
+YW4gaW4gbWFjcm9zLg0KPiANCj4gRnVydGhlciwgaXQgaXMgbm90IHBlcm1pdHRlZCB0byB3cmFw
+IGtlcm5lbCBvdXRwdXQgc3RyaW5ncy4gIFRoaXMgaXMgYW4NCj4gZXhjZXB0aW9uIHRvIHRoZSA4
+MC1jb2x1bW4gcnVsZS4gIENoZWNrcGF0Y2ggc2hvdWxkIGhhdmUgdG9sZCB5b3UgdGhpcy4NCltK
+YXNvbiBKaW4tUjY0MTg4XSBUaGFua3MgZm9yIHBvaW50aW5nIG91dCB0aGlzLCBJIGNvbmZ1c2Vk
+IHRoZSBpbnRlcm5hbCB2ZXJzaW9uIGFuZCBleHRlcm5hbCB2ZXJzaW9uLiBJJ2xsIGZpeCBpdCBp
+biBuZXh0IHZlcnNpb24uIFRoYW5rcy4NCg=

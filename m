@@ -1,41 +1,90 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 28 Apr 2014 10:16:47 +0000
-Subject: Re: [PATCH 09/13] video/backlight: LP8788 needs PWM
-Message-Id: <20140428101647.GD21279@lee--X1>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 07 Apr 2014 11:28:23 +0000
+Subject: Re: [PATCH 09/16] avr32/at32ap: switch to the generic PWM framework
+Message-Id: <20140407112821.GC26985@ulmo>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="c3bfwLpm8qysLVxt"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
- <1398342509-10243-10-git-send-email-peter.griffin@linaro.org>
-In-Reply-To: <1398342509-10243-10-git-send-email-peter.griffin@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+ <1395234209-15546-10-git-send-email-alexandre.belloni@free-electrons.com>
+ <20140319141820.GA20872@samfundet.no>
+In-Reply-To: <20140319141820.GA20872@samfundet.no>
+To: linux-arm-kernel@lists.infradead.org
+
+
+--c3bfwLpm8qysLVxt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-To: Peter Griffin <peter.griffin@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>, Milo Kim <milo.kim@ti.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-> The LP8788 driver cannot be successfully built if we don't
-> enable the PWM subsystem. This patch makes that dependency
-> explicit in Kconfig and prevents broken randconfig builds.
+On Wed, Mar 19, 2014 at 03:18:20PM +0100, Hans-Christian Egtvedt wrote:
+> Around Wed 19 Mar 2014 14:03:22 +0100 or thereabout, Alexandre Belloni wr=
+ote:
+> > Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
+> >=20
+> > Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 >=20
-> Based on Arnd Bergmann patch but split out into seperate
-> commits per driver based on feedback.
+> Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 >=20
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Peter Griffin <peter.griffin@linaro.org>
-> Cc: Milo Kim <milo.kim@ti.com>
-> Cc: Jingoo Han <jg1.han@samsung.com>
-> Cc: Bryan Wu <cooloney@gmail.com>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> ---
->  drivers/video/backlight/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> > ---
+> >  arch/avr32/mach-at32ap/at32ap700x.c | 7 ++-----
+> >  1 file changed, 2 insertions(+), 5 deletions(-)
+> >=20
+> > diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32=
+ap/at32ap700x.c
+> > index a1f4d1e91b52..db85b5ec3351 100644
+> > --- a/arch/avr32/mach-at32ap/at32ap700x.c
+> > +++ b/arch/avr32/mach-at32ap/at32ap700x.c
+> > @@ -1553,7 +1553,7 @@ static struct resource atmel_pwm0_resource[] __in=
+itdata =3D {
+> >  	IRQ(24),
+> >  };
+> >  static struct clk atmel_pwm0_mck =3D {
+> > -	.name		=3D "pwm_clk",
+> > +	.name		=3D "at91sam9rl-pwm",
+>=20
+> I found this a tiny bit weird, but found the matching instance in
+> drivers/pwm/pwm-atmel.c
+>=20
+> IMHO it would initially have been better to call it atpwm_v1 or something
+> similar, more generic. But I guess that is too late to change at this poi=
+nt.
 
-Applied, thanks.
+Generally when you call clk_get(dev, NULL), you'll pass in the consumer
+device as "dev". Now the avr32 clock implementation compares that to the
+device associated with the clock, which for the case of the PWM pwm0_mck
+is the PWM controller (at32_add_device_pwm() for reference). So it seems
+to be set up properly (the PWM controller is the consumer).
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Also since the consumer ID isn't specified to the clk_get() call, the
+name of the clock (what's being changed in the above hunk) shouldn't
+matter because it won't match anyway.
+
+Now that I look at it more closely, I wonder how clk_get(dev, NULL) can
+even work on avr32, since there's no check for id =3D=3D NULL and therefore
+NULL will be blindly passed into strcmp() and then crash.
+
+Thierry
+
+--c3bfwLpm8qysLVxt
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTQovVAAoJEN0jrNd/PrOhucMP/AoHAzsOLJ8icc3WxuDeKNY6
+/iZXiKYAOTW9/P7d1aerqWy2hc3wA7+hyOIQl7JtCWZ/cCO+/5b1Xp67LWn9OKQO
+6TwrNphjftw8OGEzgi0ENgM46WYWwdtZF7PZPv6F5+HdwegQjUJBDnja8o8gQBle
+o0U1KyZ+ycjOYGIc9+tNF6Omi6MbA9Q5HVKsLO621EmcSCxuGZqfO6Kv7gMn79Ib
++U0C99mPadGEhxgXGu6WIvR0mDZEl1jS0Typ9Jcc5WEtClrlD58/GZJjiu2xUKG7
+OCITv3A1JmFRZ0+2d9OreXSUlzbUBKFZX0tvbmIdfDwuIFyYvMDGwofFX+N3htDm
+GjjFZsHz2QjGnzIFtmkuBroi/kSvgvauXhc8RTwc4bz1E6FL89of1YJFpZewRY93
+PpNvv0wKXd3OOcT7NZg+Z0sDBRlorOurGRQzPqW1zsF605Du54EoiQiZdNo1IVfV
+rJjeQQ4oGSIowepcFuuzLcRL3uLlfS/zVJMe3G4OlSC/knCORLUN07DzpceQrJcN
+mb083m4AV5tbKnjMc2nXu78Th6LmlWG+ZFgOI0mF0rcIK1SedkBj2wXUEVWL+KyV
+PMoDhJyO1Joguxw1fksl+zIvYEDIB8NCEiqi/Oj5O/bQ1mw5Hxx9qQ87Jfexi7aW
+R+IlGh54dZmwsMUEum54
+=b9uY
+-----END PGP SIGNATURE-----
+
+--c3bfwLpm8qysLVxt--

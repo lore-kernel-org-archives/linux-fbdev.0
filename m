@@ -1,123 +1,78 @@
-From: Peter Griffin <peter.griffin@linaro.org>
-Date: Thu, 24 Apr 2014 12:28:20 +0000
-Subject: [PATCH 04/13] video/omap: fix modular build
-Message-Id: <1398342509-10243-5-git-send-email-peter.griffin@linaro.org>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 07 Apr 2014 11:16:40 +0000
+Subject: Re: [PATCH 08/16] backlight: pwm_bl: set pwm polarity when using platform data
+Message-Id: <20140407111639.GB26985@ulmo>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="E39vaYmALEf/7YXx"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
-In-Reply-To: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>, Peter Griffin <peter.griffin@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+ <1395234209-15546-9-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1395234209-15546-9-git-send-email-alexandre.belloni@free-electrons.com>
+To: linux-arm-kernel@lists.infradead.org
 
-From: Arnd Bergmann <arnd@arndb.de>
 
-The framebuffer layer can be a loadable module, which forces
-omapfb to be a module as well. However, this breaks the lcd
-drivers, which are linked into the omapfb driver but each
-have their own module_init() function. To solve this,
-we split out the lcd drivers into separate modules and
-export omapfb_register_panel, which is the only interface
-required between the main omapfb driver and the lcd panel
-drivers.
+--E39vaYmALEf/7YXx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-We also have to introduce a new Kconfig symbol for H3, since
-that lcd driver has a dependency on TPS65010, which we can
-express better in Kconfig than Makefile syntax.
+On Wed, Mar 19, 2014 at 02:03:21PM +0100, Alexandre Belloni wrote:
+> Set inversed polarity when .pwm_active_low is set in the platform_data. W=
+ith
+> device tree, this is taken care of by of_pwm_xlate_with_flags(), called f=
+rom
+> of_pwm_get().
+>=20
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> ---
+>  drivers/video/backlight/pwm_bl.c | 8 ++++++++
+>  include/linux/pwm_backlight.h    | 1 +
+>  2 files changed, 9 insertions(+)
+>=20
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
+wm_bl.c
+> index b75201ff46f6..ffdd3b2b2742 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -309,6 +309,14 @@ static int pwm_backlight_probe(struct platform_devic=
+e *pdev)
+>  	if (data->pwm_period_ns > 0)
+>  		pwm_set_period(pb->pwm, data->pwm_period_ns);
+> =20
+> +	/*
+> +	 * The DT case is taking care of polarity in of_pwm_get(). For the
+> +	 * non-DT case, set the polarity from platform data.
+> +	 */
+> +	if (data->pwm_active_low)
+> +		if (pwm_set_polarity(pb->pwm, PWM_POLARITY_INVERSED))
+> +			dev_err(&pdev->dev, "impossible to invert polarity\n");
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Peter Griffin <peter.griffin@linaro.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-omap@vger.kernel.org
----
- drivers/video/fbdev/omap/Kconfig       |    9 +++++++++
- drivers/video/fbdev/omap/Makefile      |   23 ++++++++++++-----------
- drivers/video/fbdev/omap/omapfb_main.c |    1 +
- include/linux/omap-dma.h               |    2 +-
- 4 files changed, 23 insertions(+), 12 deletions(-)
+Could this perhaps be solved by adding a field to the PWM lookup table
+that's used for non-DT cases? The idea being that we can use the same
+interfaces for DT and non-DT cases, so we should try to move both
+towards the same representation.
 
-diff --git a/drivers/video/fbdev/omap/Kconfig b/drivers/video/fbdev/omap/Kconfig
-index 0bc3a93..18c4cb0 100644
---- a/drivers/video/fbdev/omap/Kconfig
-+++ b/drivers/video/fbdev/omap/Kconfig
-@@ -39,6 +39,15 @@ config FB_OMAP_LCD_MIPID
- 	  the Mobile Industry Processor Interface DBI-C/DCS
- 	  specification. (Supported LCDs: Philips LPH8923, Sharp LS041Y3)
- 
-+config FB_OMAP_LCD_H3
-+	bool "TPS65010 LCD controller on OMAP-H3"
-+	depends on MACH_OMAP_H3
-+	depends on TPS65010
-+	default y
-+	help
-+	  Say Y here if you want to have support for the LCD on the
-+	  H3 board.
-+
- config FB_OMAP_DMA_TUNE
-         bool "Set DMA SDRAM access priority high"
-         depends on FB_OMAP
-diff --git a/drivers/video/fbdev/omap/Makefile b/drivers/video/fbdev/omap/Makefile
-index 1927faf..732e071 100644
---- a/drivers/video/fbdev/omap/Makefile
-+++ b/drivers/video/fbdev/omap/Makefile
-@@ -10,17 +10,18 @@ objs-y$(CONFIG_FB_OMAP_LCDC_EXTERNAL) += sossi.o
- 
- objs-y$(CONFIG_FB_OMAP_LCDC_HWA742) += hwa742.o
- 
--objs-y$(CONFIG_MACH_AMS_DELTA) += lcd_ams_delta.o
--objs-y$(CONFIG_MACH_OMAP_H3) += lcd_h3.o
--objs-y$(CONFIG_MACH_OMAP_PALMTE) += lcd_palmte.o
--objs-y$(CONFIG_MACH_OMAP_PALMTT) += lcd_palmtt.o
--objs-y$(CONFIG_MACH_OMAP_PALMZ71) += lcd_palmz71.o
--objs-$(CONFIG_ARCH_OMAP16XX)$(CONFIG_MACH_OMAP_INNOVATOR) += lcd_inn1610.o
--objs-$(CONFIG_ARCH_OMAP15XX)$(CONFIG_MACH_OMAP_INNOVATOR) += lcd_inn1510.o
--objs-y$(CONFIG_MACH_OMAP_OSK) += lcd_osk.o
--
--objs-y$(CONFIG_FB_OMAP_LCD_MIPID) += lcd_mipid.o
--objs-y$(CONFIG_MACH_HERALD) += lcd_htcherald.o
-+lcds-y$(CONFIG_MACH_AMS_DELTA) += lcd_ams_delta.o
-+lcds-y$(CONFIG_FB_OMAP_LCD_H3) += lcd_h3.o
-+lcds-y$(CONFIG_MACH_OMAP_PALMTE) += lcd_palmte.o
-+lcds-y$(CONFIG_MACH_OMAP_PALMTT) += lcd_palmtt.o
-+lcds-y$(CONFIG_MACH_OMAP_PALMZ71) += lcd_palmz71.o
-+lcds-$(CONFIG_ARCH_OMAP16XX)$(CONFIG_MACH_OMAP_INNOVATOR) += lcd_inn1610.o
-+lcds-$(CONFIG_ARCH_OMAP15XX)$(CONFIG_MACH_OMAP_INNOVATOR) += lcd_inn1510.o
-+lcds-y$(CONFIG_MACH_OMAP_OSK) += lcd_osk.o
-+
-+lcds-y$(CONFIG_FB_OMAP_LCD_MIPID) += lcd_mipid.o
-+lcds-y$(CONFIG_MACH_HERALD) += lcd_htcherald.o
- 
- omapfb-objs := $(objs-yy)
- 
-+obj-$(CONFIG_FB_OMAP) += $(lcds-yy)
-diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-index e4fc6d9..d8d028d 100644
---- a/drivers/video/fbdev/omap/omapfb_main.c
-+++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -1823,6 +1823,7 @@ void omapfb_register_panel(struct lcd_panel *panel)
- 	if (fbdev_pdev != NULL)
- 		omapfb_do_probe(fbdev_pdev, fbdev_panel);
- }
-+EXPORT_SYMBOL_GPL(omapfb_register_panel);
- 
- /* Called when the device is being detached from the driver */
- static int omapfb_remove(struct platform_device *pdev)
-diff --git a/include/linux/omap-dma.h b/include/linux/omap-dma.h
-index 41a13e7..0a1a2e2 100644
---- a/include/linux/omap-dma.h
-+++ b/include/linux/omap-dma.h
-@@ -393,7 +393,7 @@ extern int omap_modify_dma_chain_params(int chain_id,
- extern int omap_dma_chain_status(int chain_id);
- #endif
- 
--#if defined(CONFIG_ARCH_OMAP1) && defined(CONFIG_FB_OMAP)
-+#if defined(CONFIG_ARCH_OMAP1) && IS_ENABLED(CONFIG_FB_OMAP)
- #include <mach/lcd_dma.h>
- #else
- static inline int omap_lcd_dma_running(void)
--- 
-1.7.9.5
+Thierry
 
+--E39vaYmALEf/7YXx
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTQokXAAoJEN0jrNd/PrOhYwQP/3iS086fybBevF1BDVESvgLK
+Z+iw30tfhnbHyAoxyc7044d3+BNgtdRFR/EF3TPUrnwSbK3FaU6zfg+iacxvdor4
+Ti/yH/FlV/Y1/Z0Ku5LdEXX+3wYu76NDmrastygh/gSqAOJWNgnijEEBGxboBWKg
+XFZNCoPLCWFQaZ0Mm2Szhr/XIA6ENU9Lul+c5TFHYI85HhkRwEI3NrVeR+LkqQEY
+J/a9FpGAExNvm3Ks4U3tKVvj7wEQkWiGUraGZsV/ecITsTN0dJ1M92ATtnvkMffl
+DVKNqkmoY3p/2bzThEhAVFq/N+QU6yIQwzt4iHrsadnqeIrajzHhfWs4hYUt7Wz9
+AR2RNcTUxXRoLNR7lJtXrx1gFAcYXqYzub09ghtMM25tpUAdX6nfQ2orIsFSBYi9
+IT0bERQySx97gKsr6TTW8epwZ8wFt7AKjOSUIi4a/SqliwIOAlMOC5WUaQwZ/e1P
+PAwEA70B+9jqlAPqWXSssno2DTGuZ8Pa6WZmYrq+WizOpicE+Bvx0HdC3+66ojt6
+K0CjQoPFC+2vF0og1M/N+UGg4CC+jBJNO/mHBx9TLWOfhEI5lRrjZtzUkj64KUmY
+bnyNtH/0Zclic/JRMOQA1oUK8wo35dpFDGm5IvkLX7YE/I1cCffV+9WdHo8O4KPx
+dmy11yA2Tc1yW99vUWpk
+=cgnq
+-----END PGP SIGNATURE-----
+
+--E39vaYmALEf/7YXx--

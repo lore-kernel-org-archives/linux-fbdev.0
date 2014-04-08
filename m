@@ -1,44 +1,23 @@
-From: Jean Delvare <jdelvare@suse.de>
-Date: Thu, 24 Apr 2014 08:27:18 +0000
-Subject: Re: [PATCH] fbdev: Fix tmiofb driver dependencies
-Message-Id: <20140424102718.1ce11183@endymion.delvare>
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Date: Tue, 08 Apr 2014 10:15:45 +0000
+Subject: =?UTF-8?B?UmU6IFtQQVRDSCAwLzNdIHZpZGVvOiBjbHBzNzExeDogTmV3IENMUFM3MTFY?= =?UTF-8?B?IEZCIGRyaXZlcg==?
+Message-Id: <1396952145.538405759@f356.i.mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140423135104.2974008f@endymion.delvare>
-In-Reply-To: <20140423135104.2974008f@endymion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Geert,
-
-On Wed, 23 Apr 2014 21:45:45 +0200, Geert Uytterhoeven wrote:
-> On Wed, Apr 23, 2014 at 1:51 PM, Jean Delvare <jdelvare@suse.de> wrote:
-> > The tmiofb driver should not depend on MFD_CORE but on MFD_TMIO.
-> > Without the tmio_core driver, tmiofb has no platform device to bind
-> > to and is thus useless.
-> 
-> What about COMPILE_TEST?
-
-I could add that, yes, good point.
-
-> > Signed-off-by: Jean Delvare <jdelvare@suse.de>
-> > Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > ---
-> > I suspect that MFD_TMIO was originally intended and MFD_CORE was a
-> > typo.
-> 
-> Does it compile with MFD_CORE=n?
-
-I tried and yes, it does.
-
-> If no: depends on FB && MDF_CORE && (MFD_TMIO || COMPILE_TEST)
-> If yes: depends on FB && (MFD_TMIO || COMPILE_TEST)
-
-I'll send an updated patch doing the latter.
-
-Thanks for the review,
--- 
-Jean Delvare
-SUSE L3 Support
+VHVlLCA4IEFwciAyMDE0IDEyOjU2OjI0ICswMzAwINC+0YIgVG9taSBWYWxrZWluZW4gPHRvbWku
+dmFsa2VpbmVuQHRpLmNvbT46Cj4gSGksCj4gCj4gT24gMjAvMDMvMTQgMTg6MjQsIEFsZXhhbmRl
+ciBTaGl5YW4gd3JvdGU6Cj4gPiBUaGlzIHNlcmllcyBhZGRzIGEgbmV3IGZyYW1lYnVmZmVyIGRy
+aXZlciBmb3IgQ2lycnVzIExvZ2ljIENMUFM3MTFYCj4gPiBDUFVzLiBTaW5jZSBhbGwgY29kZSBy
+ZXdyaXR0ZW4gZnJvbSBzY3JhdGNoLCBwYXRjaCBpcyBkZXNpZ25lZCBhcyBhCj4gPiByZXBsYWNl
+bWVudCBvZiB0aGUgb2xkIChub3QgdXBkYXRlZCBmb3IgYSBsb25nIHRpbWUpIGZvciBhIG5ldyBv
+bmUuCj4gCj4gV2h5IHdhcyBpdCByZXdyaXR0ZW4gZnJvbSBzY3JhdGNoPyBJdCdzIGFsbW9zdCBh
+bHdheXMgYmV0dGVyIHRvIGltcHJvdmUKPiB0aGUgb2xkIG9uZSwgdGhhbiB3cml0ZSBhIG5ldywg
+cmVwbGFjaW5nIG9uZS4KSGVsbG8uCgpNb3N0IG9mIHRoZSBjb2RlIGhhcyBiZWVuIHJld3JpdHRl
+bi4gSXQgd2lsbCBiZSB2ZXJ5IGRpZmZpY3VsdCB0byBzZWUgdGhlIGNoYW5nZXMsCmlmIGl0IGlz
+IHByZXNlbnRlZCBhcyBhIHBhdGNoIGZvciB0aGUgb2xkIGRyaXZlci4KSW4gYW55IGNhc2UsIHRo
+ZXJlIHdlcmUgY29tbWVudHMgb24gdGhlIHBhcnQgb2YgdGhlIERUIGJpbmRpbmdzLApzbyBJIHdp
+bGwgc3VibWl0IGEgc2Vjb25kIHZlcnNpb24gbGF0ZXIuCgpUaGFua3MuCi0tLQoK

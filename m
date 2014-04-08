@@ -1,49 +1,59 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 03 Apr 2014 00:04:04 +0000
-Subject: Re: video: pxa3xx-gcu: switch to devres functions
-Message-Id: <001501cf4ed0$3cf902f0$b6eb08d0$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 08 Apr 2014 09:19:15 +0000
+Subject: Re: [PATCH] video: Check EDID for HDMI connection
+Message-Id: <5343BF13.3050206@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="C4FhDePECVxjiLjJO56JExjoCl2tfPHX6"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140402111519.GC23000@mwanda>
-In-Reply-To: <20140402111519.GC23000@mwanda>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1395873337-41305-1-git-send-email-cfreeman@nvidia.com>
+In-Reply-To: <1395873337-41305-1-git-send-email-cfreeman@nvidia.com>
 To: linux-fbdev@vger.kernel.org
 
-On Wednesday, April 02, 2014 8:15 PM, Dan Carpenter wrote:
-> 
-> Hello Daniel Mack,
-> 
-> The patch a9b47c7f2390: "video: pxa3xx-gcu: switch to devres
-> functions" from Mar 5, 2014, leads to the following static checker
-> warning:
-> 
-> 	drivers/video/fbdev/pxa3xx-gcu.c:616 pxa3xx_gcu_probe()
-> 	warn: 'priv->mmio_base' isn't an ERR_PTR
-> 
-> drivers/video/fbdev/pxa3xx-gcu.c
->    612
->    613          /* handle IO resources */
->    614          r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->    615          priv->mmio_base = devm_request_and_ioremap(dev, r);
->    616          if (IS_ERR(priv->mmio_base)) {
-> 
-> devm_request_and_ioremap() returns NULL on error.
+--C4FhDePECVxjiLjJO56JExjoCl2tfPHX6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yes, you're right.
-It should be replaced with devm_ioremap_resource().
-I will send the patch, soon.
+Hi,
 
-Best regards,
-Jingoo Han
+On 27/03/14 00:35, cfreeman@nvidia.com wrote:
+> From: David Ung <davidu@nvidia.com>
+>=20
+> Check EDID Vendor Specific Data Block bytes to see if the connection
+> is HDMI and set FB_MISC_HDMI.
+>=20
+> Signed-off-by: David Ung <davidu@nvidia.com>
+> Signed-off-by: Christopher Freeman<cfreeman@nvidia.com>
+> ---
 
-> 
->    617                  dev_err(dev, "failed to map I/O memory\n");
->    618                  return PTR_ERR(priv->mmio_base);
->    619          }
->    620
-> 
-> regards,
-> dan carpenter
-> --
+Patch looks fine, but how do you use the flag? Shouldn't things like
+detecting if the monitor supports audio be done with some more detailed
+bits in the EDID data (not that I remember much from the HDMI spec).
 
+ Tomi
+
+
+
+--C4FhDePECVxjiLjJO56JExjoCl2tfPHX6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTQ78TAAoJEPo9qoy8lh71lzoQAKYYlogimCWvut/bGJa/c+//
+Cn3qTUrkoF80jmyla4uucc+pHXebEaM0sNz54PtaHUZLq1MNscG3CVnqlUBSx+ST
+Jp0dYxkBMHUVEhbLam06FaAryCs4PK09BwnG0ok1Df7yRT3dfYzmjZ/inE0m7ZsE
+UeZcAq/nwnU+qavA+ZntvYMeK4w6uTqIGMCN0fbXvnC/xPWqRKqmzrfBMXJCWipa
+UYA0+8UU4WDbX8zTsnfKEpMJITW3DxVEOEl+vfw4ycdc45XY7uvftJIRpDYvKhA4
+rDk7ZAYx/+R3UQLWJFd44FMKzM4KzbC2InCRmcsPHY9SVpHbYYglNsWkXMLOpT0A
+RGwLykmiaFzwvf5rq7FcDRgm5wXc52oC2kEqjAkQF4F3lyjMKbnKchew+Xhe3Qp+
+oxhSeelC7+PQAdLH9pktLCX4mEVhNO5jokI6fsf5AA7VinPMeYX/F99gQsZCjeoH
+OxwpevytVD0OsTDA2eoX/BO8XyNfCYP1PpbyE1ay1oSv5Z2+FXKZZ+3tGhlca3GO
+YMb9PFmbWdURBwRXXR0VdhcAl+dEQTiuMYTkUSXR4Jmj9bEDHqRR2g9StZJTH/cZ
+8C89f7e2AxPBgME2UvnVEMNAPBlBPBfjkPoZjRjFbx+2lvQidsSSjW2LOeOH/se3
+52G7qpqbp6C+S/bnufdT
+=1R6K
+-----END PGP SIGNATURE-----
+
+--C4FhDePECVxjiLjJO56JExjoCl2tfPHX6--

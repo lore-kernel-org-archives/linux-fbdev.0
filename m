@@ -1,39 +1,30 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 10:17:03 +0000
-Subject: [PATCH 07/23] ARM: OMAP: add detection of omap5-dss
-Message-Id: <1398334639-14172-8-git-send-email-tomi.valkeinen@ti.com>
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Date: Tue, 08 Apr 2014 10:08:36 +0000
+Subject: =?UTF-8?B?UmU6IFtQQVRDSF0gdmlkZW86IGlteGZiOiBTZWxlY3QgTENEX0NMQVNTX0RF?= =?UTF-8?B?VklDRSB1bmNvbmRpd
+Message-Id: <1396951716.53056245@f356.i.mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Add detection of omap5-dss nodes so that the related devices get
-initialized.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
----
- arch/arm/mach-omap2/display.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-index 974461441fc3..74869326dadc 100644
---- a/arch/arm/mach-omap2/display.c
-+++ b/arch/arm/mach-omap2/display.c
-@@ -665,6 +665,10 @@ struct device_node * __init omapdss_find_dss_of_node(void)
- 	if (node)
- 		return node;
- 
-+	node = of_find_compatible_node(NULL, NULL, "ti,omap5-dss");
-+	if (node)
-+		return node;
-+
- 	return NULL;
- }
- 
--- 
-1.9.1
-
+VHVlLCA4IEFwciAyMDE0IDEyOjU4OjMyICswMzAwINC+0YIgVG9taSBWYWxrZWluZW4gPHRvbWku
+dmFsa2VpbmVuQHRpLmNvbT46Cj4gSGksCj4gCj4gT24gMjAvMDMvMTQgMDg6NTgsIEFsZXhhbmRl
+ciBTaGl5YW4gd3JvdGU6Cj4gPiBGQiBkcml2ZXIgdXNlcyBsb3dsZXZlbCBjb250cm9scyBmb3Ig
+TENEIHBvd2VyaW5nIGFuZCBjb250cmFzdCBjaGFuZ2luZy4KPiA+IFNpbmNlIExDRCBjbGFzcyBj
+YW5ub3QgYmUgdXNlZCBhcyBhbiBvcHRpb25hbCBmZWF0dXJlIGFuZCBzaG91bGQgYmUKPiA+IGNv
+bXBpbGVkIGZvciB1c2luZyBpbiB0aGUgZHJpdmVyLCB0aGlzIHBhdGNoIHNlbGVjdHMgTENEX0NM
+QVNTX0RFVklDRQo+ID4gc3ltYm9sIGZvciB0aGUgZHJpdmVyLgo+ID4gCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBBbGV4YW5kZXIgU2hpeWFuIDxzaGNfd29ya0BtYWlsLnJ1Pgo+ID4gLS0tCj4gPiAgZHJp
+dmVycy92aWRlby9mYmRldi9LY29uZmlnIHwgMiArKwo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAyIGlu
+c2VydGlvbnMoKykKPiA+IAo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvS2Nv
+bmZpZyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvS2NvbmZpZwo+ID4gaW5kZXggNjc0MDllMC4uYjdj
+YjBhZiAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvS2NvbmZpZwo+ID4gKysr
+IGIvZHJpdmVycy92aWRlby9mYmRldi9LY29uZmlnCj4gPiBAQCAtMzI4LDYgKzMyOCw4IEBAIGNv
+bmZpZyBGQl9TQTExMDAKPiA+ICBjb25maWcgRkJfSU1YCj4gPiAgCXRyaXN0YXRlICJGcmVlc2Nh
+bGUgaS5NWDEvMjEvMjUvMjcgTENEIHN1cHBvcnQiCj4gPiAgCWRlcGVuZHMgb24gRkIgJiYgSU1Y
+X0hBVkVfUExBVEZPUk1fSU1YX0ZCCj4gPiArCXNlbGVjdCBCQUNLTElHSFRfTENEX1NVUFBPUlQK
+PiA+ICsJc2VsZWN0IExDRF9DTEFTU19ERVZJQ0UKPiA+ICAJc2VsZWN0IEZCX0NGQl9GSUxMUkVD
+VAo+ID4gIAlzZWxlY3QgRkJfQ0ZCX0NPUFlBUkVBCj4gPiAgCXNlbGVjdCBGQl9DRkJfSU1BR0VC
+TElUCj4gCj4gSSBwcmVzdW1lIHRoaXMgc2hvdWxkIGdvIGluIGZvciAzLjE1PwoKWWVzLiBPdGhl
+cndpc2Ugd2UgbWF5IGhhdmUgcHJvYmxlbXMgd2l0aCB0aGUgY29tcGlsaW5nLgoKLS0tCgo

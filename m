@@ -1,43 +1,160 @@
 From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 29 Apr 2014 23:52:38 +0000
-Subject: [PATCH 0/4] OMAPDSS: Add support for panel ls037v7dw01
-Message-Id: <1398815562-24113-1-git-send-email-tony@atomide.com>
+Date: Tue, 08 Apr 2014 00:13:39 +0000
+Subject: Re: [PATCHv3 19/41] OMAPDSS: panel-dpi: Add DT support
+Message-Id: <20140408001339.GA15842@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1390301833-24944-1-git-send-email-tomi.valkeinen@ti.com>
+ <1390301833-24944-20-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1390301833-24944-20-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi all,
+Tomi,
 
-Here are few patches to add devicetree support for panel ls037v7dw01
-that's found on many omap3 boards. They seem to be often mis-configured
-as various panel dpi entries, but really should be move to use panel
-ls037v7dw01 instead. This panel is found at least on the omap3 sdp,
-ldp, omap3 evm and few other development boards.
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [140121 03:01]:
+> Add DT support for panel-dpi.
 
+Looks like this patch did not get merged or am I missing
+something?
+
+As you probably are aware, we have at least these boards
+needing it before we can remove the omap3 legacy support:
+
+board-am3517evm.c
+board-cm-t35.c
+board-devkit8000.c
+board-ldp.c
+board-overo.c
+
+We could probably set the display timings based on the
+compatible flag in the driver if that's an issue?
+
+And then board-omap3pandora.c also needs support for
+panel_tpo_td043mtea1_platform_data.
+ 
 Regards,
 
 Tony
 
-Tony Lindgren (4):
-  OMAPDSS: Fix DSS clock multiplier issue on 3703 and probably 3630
-  OMAPDSS: panel-sharp-ls037v7dw01: update to use gpiod
-  OMAPDSS: panel-sharp-ls037v7dw01: add device tree support
-  ARM: dts: Add LCD panel sharp ls037v7dw01 support for omap3-evm and
-    ldp
-
- .../bindings/panel/sharp,ls037v7dw01.txt           |  53 +++++++
- .../arm/boot/dts/omap-panel-sharp-ls037v7dw01.dtsi |  82 ++++++++++
- arch/arm/boot/dts/omap3-evm-37xx.dts               |  50 ++++++
- arch/arm/boot/dts/omap3-evm-common.dtsi            |  47 ++++++
- arch/arm/boot/dts/omap3-ldp.dts                    |  31 +++-
- .../omap2/displays-new/panel-sharp-ls037v7dw01.c   | 176 ++++++++++++++-------
- drivers/video/fbdev/omap2/dss/dss.c                |   5 +-
- 7 files changed, 379 insertions(+), 65 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/panel/sharp,ls037v7dw01.txt
- create mode 100644 arch/arm/boot/dts/omap-panel-sharp-ls037v7dw01.dtsi
-
--- 
-1.8.1.1
-
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> ---
+>  drivers/video/omap2/displays-new/panel-dpi.c | 64 +++++++++++++++++++++++++++-
+>  1 file changed, 63 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/omap2/displays-new/panel-dpi.c b/drivers/video/omap2/displays-new/panel-dpi.c
+> index 5f8f7e7c81ef..b032daf0f407 100644
+> --- a/drivers/video/omap2/displays-new/panel-dpi.c
+> +++ b/drivers/video/omap2/displays-new/panel-dpi.c
+> @@ -13,9 +13,12 @@
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/slab.h>
+> +#include <linux/of.h>
+> +#include <linux/of_gpio.h>
+>  
+>  #include <video/omapdss.h>
+>  #include <video/omap-panel-data.h>
+> +#include <video/of_display_timing.h>
+>  
+>  struct panel_drv_data {
+>  	struct omap_dss_device dssdev;
+> @@ -70,7 +73,8 @@ static int panel_dpi_enable(struct omap_dss_device *dssdev)
+>  	if (omapdss_device_is_enabled(dssdev))
+>  		return 0;
+>  
+> -	in->ops.dpi->set_data_lines(in, ddata->data_lines);
+> +	if (ddata->data_lines)
+> +		in->ops.dpi->set_data_lines(in, ddata->data_lines);
+>  	in->ops.dpi->set_timings(in, &ddata->videomode);
+>  
+>  	r = in->ops.dpi->enable(in);
+> @@ -182,6 +186,52 @@ static int panel_dpi_probe_pdata(struct platform_device *pdev)
+>  	return 0;
+>  }
+>  
+> +static int panel_dpi_probe_of(struct platform_device *pdev)
+> +{
+> +	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+> +	struct device_node *node = pdev->dev.of_node;
+> +	struct omap_dss_device *in;
+> +	int r;
+> +	struct display_timing timing;
+> +	struct videomode vm;
+> +	int gpio;
+> +
+> +	gpio = of_get_gpio(node, 0);
+> +	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
+> +		ddata->enable_gpio = gpio;
+> +	} else {
+> +		dev_err(&pdev->dev, "failed to parse enable gpio\n");
+> +		return gpio;
+> +	}
+> +
+> +	gpio = of_get_gpio(node, 1);
+> +	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
+> +		ddata->backlight_gpio = gpio;
+> +	} else {
+> +		dev_err(&pdev->dev, "failed to parse backlight gpio\n");
+> +		return gpio;
+> +	}
+> +
+> +	r = of_get_display_timing(node, "panel-timing", &timing);
+> +	if (r) {
+> +		dev_err(&pdev->dev, "failed to get video timing\n");
+> +		return r;
+> +	}
+> +
+> +	videomode_from_timing(&timing, &vm);
+> +	videomode_to_omap_video_timings(&vm, &ddata->videomode);
+> +
+> +	in = omapdss_of_find_source_for_first_ep(node);
+> +	if (IS_ERR(in)) {
+> +		dev_err(&pdev->dev, "failed to find video source\n");
+> +		return PTR_ERR(in);
+> +	}
+> +
+> +	ddata->in = in;
+> +
+> +	return 0;
+> +}
+> +
+>  static int panel_dpi_probe(struct platform_device *pdev)
+>  {
+>  	struct panel_drv_data *ddata;
+> @@ -198,6 +248,10 @@ static int panel_dpi_probe(struct platform_device *pdev)
+>  		r = panel_dpi_probe_pdata(pdev);
+>  		if (r)
+>  			return r;
+> +	} else if (pdev->dev.of_node) {
+> +		r = panel_dpi_probe_of(pdev);
+> +		if (r)
+> +			return r;
+>  	} else {
+>  		return -ENODEV;
+>  	}
+> @@ -254,12 +308,20 @@ static int __exit panel_dpi_remove(struct platform_device *pdev)
+>  	return 0;
+>  }
+>  
+> +static const struct of_device_id panel_dpi_of_match[] = {
+> +	{ .compatible = "omapdss,panel-dpi", },
+> +	{},
+> +};
+> +
+> +MODULE_DEVICE_TABLE(of, panel_dpi_of_match);
+> +
+>  static struct platform_driver panel_dpi_driver = {
+>  	.probe = panel_dpi_probe,
+>  	.remove = __exit_p(panel_dpi_remove),
+>  	.driver = {
+>  		.name = "panel-dpi",
+>  		.owner = THIS_MODULE,
+> +		.of_match_table = panel_dpi_of_match,
+>  	},
+>  };
+>  
+> -- 
+> 1.8.3.2
+> 

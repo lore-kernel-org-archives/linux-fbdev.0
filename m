@@ -1,111 +1,56 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 09 Apr 2014 23:04:53 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 10 Apr 2014 05:50:38 +0000
 Subject: Re: [GIT PULL] fbdev reorder for 3.15
-Message-Id: <20140410090453.ef611201b91c4b3dbb2a9af4@canb.auug.org.au>
+Message-Id: <5346312E.30305@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Signature=_Thu__10_Apr_2014_09_04_53_+1000_4o=ITFChVmPzLQKX"
+Content-Type: multipart/mixed; boundary="BKwiaivupBcWHT0wksX953OdGSthO4sTF"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5345258C.1070308@ti.com>
-	<CA+55aFytXaTBE6Uf2H=C-XX01Pk1-QArF6u7+yhditk-cJLVQw@mail.gmail.com>
+References: <5345258C.1070308@ti.com> <CA+55aFytXaTBE6Uf2H=C-XX01Pk1-QArF6u7+yhditk-cJLVQw@mail.gmail.com>
 In-Reply-To: <CA+55aFytXaTBE6Uf2H=C-XX01Pk1-QArF6u7+yhditk-cJLVQw@mail.gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 
---Signature=_Thu__10_Apr_2014_09_04_53_+1000_4o=ITFChVmPzLQKX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+--BKwiaivupBcWHT0wksX953OdGSthO4sTF
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-Hi Linus,
+On 09/04/14 22:23, Linus Torvalds wrote:
 
-On Wed, 9 Apr 2014 12:23:47 -0700 Linus Torvalds <torvalds@linux-foundation=
-.org> wrote:
->
 > Are there other things pending in this area? Because if there are, I
 > think I'll take you up on your "or we can rebase on top of -rc1" offer
 > instead.
 
-I have only 2 other commits that touch drivers/video in linux-next and
-they are both from Tomi and both only touch a couple of files in
-drivers/video/omap2/dss (and drivers/video/fbdev/omap2/dss/ since one of
-them is based after the move).
+Nothing from me, and as Stephen said, linux-next doesn't contain
+anything either. So I think we're pretty safe here, but maybe you can
+wait until you're ready to tag the -rc1, and merge this only then. If
+something conflicting has popped up, I can then do a rebase on top of
+-rc1 instead.
 
-I also have the following merge fix patch in linux-next (maybe you
-already have this in the test merge branches):
+ Tomi
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 4 Mar 2014 16:11:12 +1100
-Subject: [PATCH] video: fbdev: fix up for removal of SGI Visual Workstation
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/video/fbdev/Kconfig  | 11 +----------
- drivers/video/fbdev/Makefile |  1 -
- 2 files changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 31c3f3ddfd38..6b1984c7f4e7 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -765,18 +765,9 @@ config FB_HGA
- 	  As this card technology is at least 25 years old,
- 	  most people will answer N here.
-=20
--config FB_SGIVW
--	tristate "SGI Visual Workstation framebuffer support"
--	depends on FB && X86_VISWS
--	select FB_CFB_FILLRECT
--	select FB_CFB_COPYAREA
--	select FB_CFB_IMAGEBLIT
--	help
--	  SGI Visual Workstation support for framebuffer graphics.
--
- config FB_GBE
- 	bool "SGI Graphics Backend frame buffer support"
--	depends on (FB =3D y) && (SGI_IP32 || X86_VISWS)
-+	depends on (FB =3D y) && SGI_IP32
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
-index 6ef2c66110e3..0284f2a12538 100644
---- a/drivers/video/fbdev/Makefile
-+++ b/drivers/video/fbdev/Makefile
-@@ -55,7 +55,6 @@ obj-$(CONFIG_FB_CG14)             +=3D cg14.o sbuslib.o
- obj-$(CONFIG_FB_P9100)            +=3D p9100.o sbuslib.o
- obj-$(CONFIG_FB_TCX)              +=3D tcx.o sbuslib.o
- obj-$(CONFIG_FB_LEO)              +=3D leo.o sbuslib.o
--obj-$(CONFIG_FB_SGIVW)            +=3D sgivwfb.o
- obj-$(CONFIG_FB_ACORN)            +=3D acornfb.o
- obj-$(CONFIG_FB_ATARI)            +=3D atafb.o c2p_iplan2.o atafb_mfb.o \
-                                      atafb_iplan2p2.o atafb_iplan2p4.o ata=
-fb_iplan2p8.o
---=20
-1.9.0
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Thu__10_Apr_2014_09_04_53_+1000_4o=ITFChVmPzLQKX
-Content-Type: application/pgp-signature
+--BKwiaivupBcWHT0wksX953OdGSthO4sTF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Version: GnuPG v1.4.14 (GNU/Linux)
 
-iQIcBAEBCAAGBQJTRdIZAAoJEMDTa8Ir7ZwVn1gP/2yutmGOsUE+PQkBp/AQrmJ0
-MQYEHYD9OWV+4ENMWfETVcKUE6I+yIDJELZUkj71cli5HXMEApvNhB1wwWN3eoCj
-U6f+QcbhaSkYBw3y8931koRcuoIZ2xS2mmVLGzgbzjznKPgTpDVhRxKSR9xJeY0H
-IwxKcovfpTOoAOpq2xNXv/vWzdNoA9YE8GlQ2EK1Ajd/3KrVwIN3QSqPS4lPxsRc
-TsQmD6usMIUlRmALX+b8SU2nhZGkxWIVwU7QSsjPIY6sZyQ1t8MV2JhROjx0/9UY
-NZ+pP3mr8Rcdqkq57UsAbOGjK9rYNAIZqC5mQuFBMhF2Ot4kauuaKP9YJjUSdHWb
-HCBXp313S+fXeBtqo6KEzi5JM1wduMzgUP7aCgjoq9je21n31NsEYqsUH+EgjLAh
-gzEhsn4o9vkhpwfGDJO2WnD0Wudc8bF9d+O9wZ/d+I0cwe3FSXgAmD8C7lpI+232
-g1qtFGLADx6Erz7mkXxkb2VeE3WotQFqRkHkPa/FyMOwfn2P8C/aM36ZmCEqqdQV
-/Z9E46/syLT4UZs+V8PzAgDylWB5hnIvMFi17QHE0f+jfkOfnV5Ws1gc5raFgPW5
-qcZUQQkcsO9aKWP5WNsMyfYggRD7Pa+Np+WJiXhK0kX2fwRRsbCdxhBEGs/92Jq4
-nBsnc6oBjqENy03vYO/c
-=K7zK
+iQIcBAEBAgAGBQJTRjExAAoJEPo9qoy8lh71B4AP/i8wl35Ph82u5EATWZa7aXsF
+L5NYkL9tCxNspLXELSOPh5h7xzas1VQ1LYGEa43ih+s5rQ1f/zNA1BkIvrU65Hww
+yIrR6XvQKfOQpN9D7Oy/42Bkkd5olA+8Bg3ZzdBAlfS2iGd++ebOgBEA+J6dHD3l
+ucMLfnsxuO4gexzPvTVZjtI1JwWce94rd7utvqOatYzDp0hyvKFRiGhVJwkyXZ6P
+M0msz1QuyI4kMs5rH3ZYy1vI8HAIdjXs0htSKKP3k8kSpr7WKNvHnVXwSSdGA/zR
+0dE/N58LBgHA86eXYq9w9jrWHx7PbPQgIaKHkbo97fkiUPSUcK/791VfRsMuGXaw
+AzF1KLKZiJhxNslW418HiV+3Rwym7nfShN9qfy3Uqe7bHaND1p8hWTcSzghrCIGE
+BgzdlcDBHBn7PLD8AxLvOjhD3gt6wqIiQCDOOP9sKry9SqvjJElWow2DGCWyCCgO
+5avCcSFs8ePCXOqzJCR0TZMPWTrzVqBItqZ6/Fmx2u/BqJF2NlFlsowvOUXub0FK
+ddVdfvrgaTYQb778QQ7g9TW1QqejVPM6wuKLQ8lePhbb/SSa8E9dbl0pLTeEh7rK
+x5wfhMiRkoFy4kzRsiAc9DPuoPv/yKqqfv8ySZUKOwHyGE5e9h9CB1myyoNiUpFv
++DYGvFeW3fcg5SAOenRC
+=houD
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__10_Apr_2014_09_04_53_+1000_4o=ITFChVmPzLQKX--
+--BKwiaivupBcWHT0wksX953OdGSthO4sTF--

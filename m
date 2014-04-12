@@ -1,200 +1,75 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 04 Apr 2014 09:59:49 +0000
-Subject: [GIT PULL] main fbdev changes for 3.15
-Message-Id: <533E8295.3080203@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="XfHaaQavnnaexNwB26kmtn5w5sDvHfVlK"
+From: Alexander Shiyan <shc_work@mail.ru>
+Date: Sat, 12 Apr 2014 06:55:34 +0000
+Subject: [PATCH v2 3/3] video: clps711x: Add bindings documentation for CLPS711X framebuffer
+Message-Id: <1397285734-15243-1-git-send-email-shc_work@mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, linux-fbdev <linux-fbdev@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexander Shiyan <shc_work-JGs/UdohzUI@public.gmane.org>
 
---XfHaaQavnnaexNwB26kmtn5w5sDvHfVlK
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add OF document for Cirrus Logic CLPS711X framebuffer driver.
 
-Hi Linus,
+Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+---
+ .../bindings/video/cirrus,clps711x-fb.txt          | 47 ++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
 
-Please pull the main fbdev changes for 3.15.
+diff --git a/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt b/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
+new file mode 100644
+index 0000000..6fc3c6a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
+@@ -0,0 +1,47 @@
++* Currus Logic CLPS711X Framebuffer
++
++Required properties:
++- compatible: Shall contain "cirrus,clps711x-fb".
++- reg       : Physical base address and length of the controller's registers +
++              location and size of the framebuffer memory.
++- clocks    : phandle + clock specifier pair of the FB reference clock.
++- display   : phandle to a display node as described in
++              Documentation/devicetree/bindings/video/display-timing.txt.
++              Additionally, the display node has to define properties:
++  - bits-per-pixel: Bits per pixel.
++  - ac-prescale   : LCD AC bias frequency. This frequency is the required
++                    AC bias frequency for a given manufacturer's LCD plate.
++  - cmap-invert   : Invert the color levels (Optional).
++
++Optional properties:
++- lcd-supply: Regulator for LCD supply voltage.
++
++Example:
++	fb: fb@800002c0 {
++		compatible = "cirrus,ep7312-fb", "cirrus,clps711x-fb";
++		reg = <0x800002c0 0xd44>, <0x60000000 0xc000>;
++		clocks = <&clks 2>;
++		lcd-supply = <&reg5v0>;
++		display = <&display>;
++	};
++
++	display: display {
++		model = "320x240x4";
++		native-mode = <&timing0>;
++		bits-per-pixel = <4>;
++		ac-prescale = <17>;
++
++		display-timings {
++			timing0: 320x240 {
++				hactive = <320>;
++				hback-porch = <0>;
++				hfront-porch = <0>;
++				hsync-len = <0>;
++				vactive = <240>;
++				vback-porch = <0>;
++				vfront-porch = <0>;
++				vsync-len = <0>;
++				clock-frequency = <6500000>;
++			};
++		};
++	};
+-- 
+1.8.3.2
 
- Tomi
-
-The following changes since commit b28a960c42fcd9cfc987441fa6d1c1a471f0f9=
-ed:
-
-  Linux 3.14-rc2 (2014-02-09 18:15:47 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-main-3.15
-
-for you to fetch changes up to 13ba0ad4490c3dd08b15c430a7a01c6fb45d5bce:
-
-  fbdev: Make the switch from generic to native driver less alarming (201=
-4-04-03 12:47:16 +0300)
-
-----------------------------------------------------------------
-fbdev changes for 3.15 (main part)
-
-Various fbdev fixes and improvements, but nothing big.
-
-----------------------------------------------------------------
-Adam Jackson (1):
-      fbdev: Make the switch from generic to native driver less alarming
-
-Alexander Shiyan (6):
-      video: imxfb: Use regulator API with LCD class for powering
-      video: imxfb: Remove dead declaration of set_imx_fb_info()
-      video: imxfb: Remove unused fields from platform data structure
-      video: imxfb: Use module_platform_driver()
-      video: imxfb: Resolve mismatch between backlight/contrast
-      video: imxfb: Convert to SIMPLE_DEV_PM_OPS
-
-Antoine T=E9nart (1):
-      video: atmel_lcdfb: ensure the hardware is initialized with the cor=
-rect mode
-
-Bo Shen (1):
-      Video: atmel: avoid the id of fix screen info is overwritten
-
-Dan Carpenter (1):
-      sisfb: fix 1280x720 resolution support
-
-Daniel Mack (4):
-      video: pxa3xx-gcu: rename some symbols
-      video: pxa3xx-gcu: pass around struct device *
-      video: pxa3xx-gcu: provide an empty .open call
-      video: pxa3xx-gcu: switch to devres functions
-
-David Herrmann (2):
-      fbdev: efifb: add dev->remove() callback
-      fbdev: vesafb: add dev->remove() callback
-
-Denis Carikli (1):
-      video: imxfb: Add DT default contrast control register property.
-
-Geert Uytterhoeven (1):
-      fbdev: FB_OPENCORES should depend on HAS_DMA
-
-Keith Packard (1):
-      fbcon: Clean up fbcon data in fb_info on FB_EVENT_FB_UNBIND with 0 =
-fbs
-
-Manish Badarkhe (1):
-      video: da8xx-fb: Use "SIMPLE_DEV_PM_OPS" macro
-
-Michal Simek (1):
-      video: xilinxfb: Move xilinxfb_platform_data directly to the driver=
-
-
-Mikulas Patocka (10):
-      matroxfb: set FBINFO_READS_FAST
-      matroxfb: restore the registers M_ACCESS and M_PITCH
-      framebuffer: fix cfb_copyarea
-      atyfb: remove resolution limit 1600
-      mach64: use unaligned access
-      atyfb: set FBINFO_READS_FAST
-      mach64: fix cursor when character width is not a multiple of 8 pixe=
-ls
-      tgafb: fix mode setting with fbset
-      tgafb: fix data copying
-      tgafb: avoid restriction on modes with line length not a multiple o=
-f 64
-
-Sachin Kamat (2):
-      video: exynos: Remove OF dependency for Exynos DP
-      video: s6e8ax0: Use devm_* APIs
-
-Tomi Valkeinen (3):
-      OMAPDSS: use DISPC register to detect context loss
-      OMAPDSS: Remove unused get_context_loss_count support
-      OMAPDSS: convert pixel clock to common videomode style
-
-Wang YanQing (2):
-      video: fbdev: uvesafb: Remove redundant NULL check in uvesafb_remov=
-e
-      video: fbdev: uvesafb: Remove impossible code path in uvesafb_init_=
-info
-
- .../devicetree/bindings/video/fsl,imx-fb.txt       |   4 +
- arch/arm/mach-imx/mach-mx27ads.c                   |  55 ++-
- arch/arm/mach-omap2/display.c                      |   1 -
- drivers/gpu/drm/omapdrm/omap_connector.c           |   6 +-
- drivers/video/Kconfig                              |   2 +-
- drivers/video/atmel_lcdfb.c                        |   8 +-
- drivers/video/aty/atyfb_base.c                     |   7 +-
- drivers/video/aty/mach64_accel.c                   |   3 +-
- drivers/video/aty/mach64_cursor.c                  |  22 +-
- drivers/video/cfbcopyarea.c                        | 153 +++++----
- drivers/video/console/fbcon.c                      |  27 +-
- drivers/video/da8xx-fb.c                           |  22 +-
- drivers/video/efifb.c                              |  13 +-
- drivers/video/exynos/Kconfig                       |   2 +-
- drivers/video/exynos/s6e8ax0.c                     |  13 +-
- drivers/video/fbmem.c                              |   3 +-
- drivers/video/imxfb.c                              | 380 +++++++++------=
-------
- drivers/video/matrox/matroxfb_accel.c              |  38 ++-
- drivers/video/matrox/matroxfb_base.c               |   3 +-
- drivers/video/matrox/matroxfb_base.h               |   2 +
- .../video/omap2/displays-new/connector-analog-tv.c |   2 +-
- drivers/video/omap2/displays-new/connector-dvi.c   |   2 +-
- drivers/video/omap2/displays-new/connector-hdmi.c  |   2 +-
- drivers/video/omap2/displays-new/panel-dsi-cm.c    |   2 +-
- .../omap2/displays-new/panel-lgphilips-lb035q02.c  |   2 +-
- .../omap2/displays-new/panel-nec-nl8048hl11.c      |   4 +-
- .../omap2/displays-new/panel-sharp-ls037v7dw01.c   |   2 +-
- .../omap2/displays-new/panel-sony-acx565akm.c      |   2 +-
- .../omap2/displays-new/panel-tpo-td028ttec1.c      |   2 +-
- .../omap2/displays-new/panel-tpo-td043mtea1.c      |   2 +-
- drivers/video/omap2/dss/dispc.c                    |  32 +-
- drivers/video/omap2/dss/display-sysfs.c            |   4 +-
- drivers/video/omap2/dss/display.c                  |   4 +-
- drivers/video/omap2/dss/dpi.c                      |  25 +-
- drivers/video/omap2/dss/dsi.c                      |  16 +-
- drivers/video/omap2/dss/dss.c                      |  16 -
- drivers/video/omap2/dss/dss.h                      |   2 -
- drivers/video/omap2/dss/hdmi4.c                    |   9 +-
- drivers/video/omap2/dss/hdmi_common.c              |  74 ++--
- drivers/video/omap2/dss/sdi.c                      |  15 +-
- drivers/video/omap2/dss/venc.c                     |   4 +-
- drivers/video/omap2/dss/venc_panel.c               |   2 +-
- drivers/video/omap2/omapfb/omapfb-main.c           |   8 +-
- drivers/video/pxa3xx-gcu.c                         | 191 +++++------
- drivers/video/sis/init.c                           |   1 +
- drivers/video/tgafb.c                              | 288 ++++-----------=
--
- drivers/video/uvesafb.c                            |  15 +-
- drivers/video/vesafb.c                             |  13 +-
- drivers/video/xilinxfb.c                           |  15 +-
- include/linux/platform_data/video-imxfb.h          |  12 -
- include/linux/xilinxfb.h                           |  30 --
- include/video/omapdss.h                            |   5 +-
- 52 files changed, 695 insertions(+), 872 deletions(-)
- delete mode 100644 include/linux/xilinxfb.h
-
-
---XfHaaQavnnaexNwB26kmtn5w5sDvHfVlK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTPoKVAAoJEPo9qoy8lh71Os0P/36hV8fnqqW6mKXjevxYu7xY
-pZlwof/9V+CDaenJdMPB+medNjBeny9ctt01wpR5ERUoJfCPS6YPYhIT4LKMsFKa
-T0nUFbrAIGy93zvyUvjiUR3AgAFcWuEIwB/hWjspjXYD9vnR9HA05OUMM4wq7pAo
-QgPwYM3WIPTpfjaPR/aZI6tTHXy4ibit3bXZy2PzktQ5ACTVoD9pgN0atrWx7XBL
-QG4W5gJVpjl81r327w69Q9jbhSEEECRCiEcmMvahWx3+f3rv6nuSVMDuEHBJYsQo
-p82AP1Oj+DXWoTvbapvMcSNo4aS6SCIuIOmW7sZzPisczbzA0cnSMtp/nYjIymAa
-eIaaZO0F8ehEv0Kbq9fVD1VnGZwa+s55mygcXBCC2OceJ9N1yqPnec0AwydyTT+H
-aNZXiOPZl4gREUvBHALNqWKrOcdzu2v8rNCgTX7sBPwEEb67emLJpYO59juJlffw
-icnvHtB2DBDczwt6y4IwplaWjtc3IIYsKJCzo1XNUoEdy45BtjzNtTFaYzlY2ARv
-Mp9UGcbQEq/bgmYiYb5vp3hl9LZWGlieJmu0wJgNZ5OMrTAbVpOK7NwOmMCf/yff
-2r7ThduEpSDqb/X9ZVuVcS3uVZwId5umuFk2ZOSVS+Q9frOPmYvH3fq+EiJmX3sA
-kJdu5pBR9Bm1whNc2oHT
-=pBaF
------END PGP SIGNATURE-----
-
---XfHaaQavnnaexNwB26kmtn5w5sDvHfVlK--

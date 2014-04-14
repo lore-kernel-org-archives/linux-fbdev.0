@@ -1,70 +1,41 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 25 Apr 2014 21:16:50 +0000
-Subject: [PATCH RFC 12/17] ARM: omap4-panda-common.dtsi: Add HDMI audio nodes
-Message-Id: <ab87bed1e3101f9839dd42ad0ae6cbe61ef85d60.1398453425.git.jsarha@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 14 Apr 2014 21:59:50 +0000
+Subject: [PATCHv2 08/11] ARM: shmobile: Armadillo 800 EVA: use PWM_LOOKUP to initialize struct pwm_lookup
+Message-Id: <1397512793-10325-9-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1398453425.git.jsarha@ti.com>
-In-Reply-To: <cover.1398453425.git.jsarha-l0cyMroinI0@public.gmane.org>
+References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, peter.ujfalusi-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Adds a simple-card sound node for HDMI audio, the associated
-hdmi-codec node, and sound-dai-cells propeties to the DAI nodes.
-
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- arch/arm/boot/dts/omap4-panda-common.dtsi |   21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+ arch/arm/mach-shmobile/board-armadillo800eva.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/boot/dts/omap4-panda-common.dtsi b/arch/arm/boot/dts/omap4-panda-common.dtsi
-index d2c45bf..c04f453 100644
---- a/arch/arm/boot/dts/omap4-panda-common.dtsi
-+++ b/arch/arm/boot/dts/omap4-panda-common.dtsi
-@@ -41,7 +41,7 @@
- 		};
- 	};
- 
--	sound: sound {
-+	sound: sound@0 {
- 		compatible = "ti,abe-twl6040";
- 		ti,model = "PandaBoard";
- 
-@@ -65,6 +65,24 @@
- 			"AFMR", "Line In";
- 	};
- 
-+	sound@1 {
-+		compatible = "simple-audio-card";
-+
-+		simple-audio-card,cpu {
-+			sound-dai = <&hdmi>;
-+		};
-+
-+		simple-audio-card,codec {
-+			sound-dai = <&hdmi_audio>;
-+		};
-+	};
-+
-+	hdmi_audio: hdmi_audio@0 {
-+		#sound-dai-cells = <0>;
-+		compatible = "linux,hdmi-audio";
-+		status = "okay";
-+	};
-+
- 	/* HS USB Port 1 Power */
- 	hsusb1_power: hsusb1_power_reg {
- 		compatible = "regulator-fixed";
-@@ -512,6 +530,7 @@
+diff --git a/arch/arm/mach-shmobile/board-armadillo800eva.c b/arch/arm/mach-shmobile/board-armadillo800eva.c
+index 1bf61dad9a35..ca82b1e2ebab 100644
+--- a/arch/arm/mach-shmobile/board-armadillo800eva.c
++++ b/arch/arm/mach-shmobile/board-armadillo800eva.c
+@@ -407,14 +407,8 @@ static struct platform_device pwm_device = {
  };
  
- &hdmi {
-+	#sound-dai-cells = <0>;
- 	status = "ok";
- 	vdda-supply = <&vdac>;
+ static struct pwm_lookup pwm_lookup[] = {
+-	{
+-		.provider = "renesas-tpu-pwm",
+-		.index = 2,
+-		.dev_id = "pwm-backlight.0",
+-		.con_id = NULL,
+-		.period = 33333,
+-		.polarity = PWM_POLARITY_INVERSED,
+-	},
++	PWM_LOOKUP("renesas-tpu-pwm", 2, "pwm-backlight.0", NULL,
++		   33333, PWM_POLARITY_INVERSED),
+ };
  
+ /* LCDC and backlight */
 -- 
-1.7.9.5
+1.8.3.2
 

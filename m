@@ -1,54 +1,43 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 10:17:00 +0000
-Subject: [PATCH 04/23] OMAPDSS: DSI: set regulator voltage to 1.8V
-Message-Id: <1398334639-14172-5-git-send-email-tomi.valkeinen@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 14 Apr 2014 21:59:47 +0000
+Subject: [PATCHv2 05/11] ARM: pxa: hx4700: initialize all the struct pwm_lookup members
+Message-Id: <1397512793-10325-6-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Set the DSI vdd regulator voltage to the required 1.8V.
+This will allow to get rid of the .pwm_period_ns member of struct
+platform_pwm_backlight_data as the period will be set by the PWM core.
 
-This is required for the case when the regulator in the DT data defines
-a range of allowed voltages. In this case it's required to set the
-voltage, as otherwise enabling the voltage fails.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- drivers/video/fbdev/omap2/dss/dsi.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/arm/mach-pxa/hx4700.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
-index 8be9b04d8849..57f120896b43 100644
---- a/drivers/video/fbdev/omap2/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/dss/dsi.c
-@@ -1161,6 +1161,7 @@ static int dsi_regulator_init(struct platform_device *dsidev)
- {
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	struct regulator *vdds_dsi;
-+	int r;
+diff --git a/arch/arm/mach-pxa/hx4700.c b/arch/arm/mach-pxa/hx4700.c
+index a7c30eb0c8db..0788a1f171fe 100644
+--- a/arch/arm/mach-pxa/hx4700.c
++++ b/arch/arm/mach-pxa/hx4700.c
+@@ -574,7 +574,14 @@ static struct platform_device backlight = {
+ };
  
- 	if (dsi->vdds_dsi_reg != NULL)
- 		return 0;
-@@ -1173,6 +1174,15 @@ static int dsi_regulator_init(struct platform_device *dsidev)
- 		return PTR_ERR(vdds_dsi);
- 	}
+ static struct pwm_lookup hx4700_pwm_lookup[] = {
+-	PWM_LOOKUP("pxa27x-pwm.1", 0, "pwm-backlight", NULL),
++	{
++		.provider = "pxa27x-pwm.1",
++		.index = 0,
++		.dev_id = "pwm-backlight",
++		.con_id = NULL,
++		.period = 30923,
++		.polarity = PWM_POLARITY_NORMAL,
++	},
+ };
  
-+	if (regulator_can_change_voltage(vdds_dsi)) {
-+		r = regulator_set_voltage(vdds_dsi, 1800000, 1800000);
-+		if (r) {
-+			devm_regulator_put(vdds_dsi);
-+			DSSERR("can't set the DSI regulator voltage\n");
-+			return r;
-+		}
-+	}
-+
- 	dsi->vdds_dsi_reg = vdds_dsi;
- 
- 	return 0;
+ /*
 -- 
-1.9.1
+1.8.3.2
 

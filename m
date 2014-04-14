@@ -1,47 +1,111 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 10:17:15 +0000
-Subject: [PATCH 19/23] OMAPDSS: HDMI: support larger register offsets for OMAP5 HDMI core
-Message-Id: <1398334639-14172-20-git-send-email-tomi.valkeinen@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 14 Apr 2014 21:59:45 +0000
+Subject: [PATCHv2 03/11] pwm: renesas-tpu: remove useless struct tpu_pwm_platform_data
+Message-Id: <1397512793-10325-4-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Archit Taneja <archit@ti.com>
+The struct tpu_pwm_platform_data is not used anymore and the polarity
+initialization will be taken care of by the PWM core.
 
-The HDMI core IP on OMAP5 has a wider address range for registers. The offsets
-for the later registers can't fit into the u16 type currently used for hdmi
-register read and write functions. Use u32 for offsets instead.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/pwm/pwm-renesas-tpu.c                 | 19 +++----------------
+ include/linux/platform_data/pwm-renesas-tpu.h | 16 ----------------
+ 2 files changed, 3 insertions(+), 32 deletions(-)
+ delete mode 100644 include/linux/platform_data/pwm-renesas-tpu.h
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index d784b2cced9d..0e5979ef933c 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -361,13 +361,13 @@ struct hdmi_core_data {
- 	struct hdmi_core_infoframe_avi avi_cfg;
- };
+diff --git a/drivers/pwm/pwm-renesas-tpu.c b/drivers/pwm/pwm-renesas-tpu.c
+index aff6ba9b49e7..9dbcf82b3e6c 100644
+--- a/drivers/pwm/pwm-renesas-tpu.c
++++ b/drivers/pwm/pwm-renesas-tpu.c
+@@ -21,13 +21,14 @@
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/of.h>
+-#include <linux/platform_data/pwm-renesas-tpu.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/pwm.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
  
--static inline void hdmi_write_reg(void __iomem *base_addr, const u16 idx,
-+static inline void hdmi_write_reg(void __iomem *base_addr, const u32 idx,
- 		u32 val)
- {
- 	__raw_writel(val, base_addr + idx);
- }
++#define TPU_CHANNEL_MAX		4
++
+ #define TPU_TSTR		0x00	/* Timer start register (shared) */
  
--static inline u32 hdmi_read_reg(void __iomem *base_addr, const u16 idx)
-+static inline u32 hdmi_read_reg(void __iomem *base_addr, const u32 idx)
+ #define TPU_TCRn		0x00	/* Timer control register */
+@@ -87,7 +88,6 @@ struct tpu_pwm_device {
+ 
+ struct tpu_device {
+ 	struct platform_device *pdev;
+-	enum pwm_polarity polarities[TPU_CHANNEL_MAX];
+ 	struct pwm_chip chip;
+ 	spinlock_t lock;
+ 
+@@ -229,7 +229,7 @@ static int tpu_pwm_request(struct pwm_chip *chip, struct pwm_device *_pwm)
+ 
+ 	pwm->tpu = tpu;
+ 	pwm->channel = _pwm->hwpwm;
+-	pwm->polarity = tpu->polarities[pwm->channel];
++	pwm->polarity = PWM_POLARITY_NORMAL;
+ 	pwm->prescaler = 0;
+ 	pwm->period = 0;
+ 	pwm->duty = 0;
+@@ -388,16 +388,6 @@ static const struct pwm_ops tpu_pwm_ops = {
+  * Probe and remove
+  */
+ 
+-static void tpu_parse_pdata(struct tpu_device *tpu)
+-{
+-	struct tpu_pwm_platform_data *pdata = tpu->pdev->dev.platform_data;
+-	unsigned int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(tpu->polarities); ++i)
+-		tpu->polarities[i] = pdata ? pdata->channels[i].polarity
+-				   : PWM_POLARITY_NORMAL;
+-}
+-
+ static int tpu_probe(struct platform_device *pdev)
  {
- 	return __raw_readl(base_addr + idx);
- }
+ 	struct tpu_device *tpu;
+@@ -413,9 +403,6 @@ static int tpu_probe(struct platform_device *pdev)
+ 	spin_lock_init(&tpu->lock);
+ 	tpu->pdev = pdev;
+ 
+-	/* Initialize device configuration from platform data. */
+-	tpu_parse_pdata(tpu);
+-
+ 	/* Map memory, get clock and pin control. */
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	tpu->base = devm_ioremap_resource(&pdev->dev, res);
+diff --git a/include/linux/platform_data/pwm-renesas-tpu.h b/include/linux/platform_data/pwm-renesas-tpu.h
+deleted file mode 100644
+index a7220b10ddab..000000000000
+--- a/include/linux/platform_data/pwm-renesas-tpu.h
++++ /dev/null
+@@ -1,16 +0,0 @@
+-#ifndef __PWM_RENESAS_TPU_H__
+-#define __PWM_RENESAS_TPU_H__
+-
+-#include <linux/pwm.h>
+-
+-#define TPU_CHANNEL_MAX		4
+-
+-struct tpu_pwm_channel_data {
+-	enum pwm_polarity polarity;
+-};
+-
+-struct tpu_pwm_platform_data {
+-	struct tpu_pwm_channel_data channels[TPU_CHANNEL_MAX];
+-};
+-
+-#endif /* __PWM_RENESAS_TPU_H__ */
 -- 
-1.9.1
+1.8.3.2
 

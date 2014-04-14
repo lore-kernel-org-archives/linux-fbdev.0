@@ -1,39 +1,54 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 28 Apr 2014 10:15:35 +0000
-Subject: Re: [PATCH 10/13] video/pxa: LCD_CORGI needs BACKLIGHT_CLASS_DEVICE
-Message-Id: <20140428101535.GB21279@lee--X1>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 14 Apr 2014 08:09:29 +0000
+Subject: [patch] video: mmpfb: cleanup some static checker warnings in probe()
+Message-Id: <20140414080929.GB13372@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
- <1398342509-10243-11-git-send-email-peter.griffin@linaro.org>
-In-Reply-To: <1398342509-10243-11-git-send-email-peter.griffin@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Peter Griffin <peter.griffin@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-> From: Arnd Bergmann <arnd@arndb.de>
->=20
-> This fixes a randconfig build error when BACKLIGHT_CLASS_DEVICE
-> is disabled, by describing the dependency in Kconfig,
-> as we do for the other drivers in this directory.
->=20
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Peter Griffin <peter.griffin@linaro.org>
-> Cc: Jingoo Han <jg1.han@samsung.com>
-> Cc: Bryan Wu <cooloney@gmail.com>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> ---
->  drivers/video/backlight/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Sparse complains about using zero instead of NULL for pointers.
+Probably, if we enabled the warning, then GCC would complain about the
+unused initializers.  I've just removed them.
 
-Applied, thanks.
+Smatch complains that we first check if "fbi" is NULL and then
+dereference it in the error handling.  It turns out that "fbi" can't be
+NULL so I've removed the check.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+diff --git a/drivers/video/fbdev/mmp/fb/mmpfb.c b/drivers/video/fbdev/mmp/fb/mmpfb.c
+index 7ab31eb..910fcc6 100644
+--- a/drivers/video/fbdev/mmp/fb/mmpfb.c
++++ b/drivers/video/fbdev/mmp/fb/mmpfb.c
+@@ -554,8 +554,8 @@ static void fb_info_clear(struct fb_info *info)
+ static int mmpfb_probe(struct platform_device *pdev)
+ {
+ 	struct mmp_buffer_driver_mach_info *mi;
+-	struct fb_info *info = 0;
+-	struct mmpfb_info *fbi = 0;
++	struct fb_info *info;
++	struct mmpfb_info *fbi;
+ 	int ret, modes_num;
+ 
+ 	mi = pdev->dev.platform_data;
+@@ -569,10 +569,6 @@ static int mmpfb_probe(struct platform_device *pdev)
+ 	if (info = NULL)
+ 		return -ENOMEM;
+ 	fbi = info->par;
+-	if (!fbi) {
+-		ret = -EINVAL;
+-		goto failed;
+-	}
+ 
+ 	/* init fb */
+ 	fbi->fb_info = info;
+@@ -667,7 +663,6 @@ failed_free_buff:
+ 		fbi->fb_start_dma);
+ failed_destroy_mutex:
+ 	mutex_destroy(&fbi->access_ok);
+-failed:
+ 	dev_err(fbi->dev, "mmp-fb: frame buffer device init failed\n");
+ 
+ 	framebuffer_release(info);

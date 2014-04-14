@@ -1,44 +1,198 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 10:17:10 +0000
-Subject: [PATCH 14/23] OMAPDSS: features: fix OMAP5 features
-Message-Id: <1398334639-14172-15-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 14 Apr 2014 11:48:42 +0000
+Subject: [PATCH] OMAPDSS: fix shared irq handlers
+Message-Id: <1397476122-17868-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-OMAP5 has LCD3 overlay manager, and total 4 overlay managers. These are
-not correctly defined in the dss features. Fix them.
+DSS uses shared irq handlers for DISPC and DSI, because on OMAP3, the
+DISPC and DSI share the same irq line.
+
+However, the irq handlers presume that the hardware is enabled, which,
+in theory, may not be the case with shared irq handlers. So if an
+interrupt happens while the DISPC/DSI is off, the kernel will halt as
+the irq handler tries to access the DISPC/DSI registers.
+
+In practice that should never happen, as both DSI and DISPC are in the
+same power domain. So if there's an IRQ for one of them, the other is
+also enabled. However, if CONFIG_DEBUG_SHIRQ is enabled, the kernel will
+generate a spurious IRQ, which then causes the problem.
+
+This patch adds an is_enabled field for both DISPC and DSI, which is
+used to track if the HW is enabled. For DISPC the code is slightly more
+complex, as the users of DISPC can register the interrupt handler, and
+we want to hide the is_enabled handling from the users of DISPC.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dss_features.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/omap2/dss/dispc.c | 55 +++++++++++++++++++++++++++++++++++------
+ drivers/video/omap2/dss/dsi.c   | 20 +++++++++++++++
+ 2 files changed, 68 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dss_features.c b/drivers/video/fbdev/omap2/dss/dss_features.c
-index 7f8969191dc6..ec1527de218d 100644
---- a/drivers/video/fbdev/omap2/dss/dss_features.c
-+++ b/drivers/video/fbdev/omap2/dss/dss_features.c
-@@ -595,6 +595,7 @@ static const enum dss_feat_id omap4_dss_feat_list[] = {
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 2bbdb7ff7daf..b37e3fbf60cc 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -101,6 +101,8 @@ static struct {
+ 	void __iomem    *base;
  
- static const enum dss_feat_id omap5_dss_feat_list[] = {
- 	FEAT_MGR_LCD2,
-+	FEAT_MGR_LCD3,
- 	FEAT_CORE_CLK_DIV,
- 	FEAT_LCD_CLK_SRC,
- 	FEAT_DSI_DCS_CMD_CONFIG_VC,
-@@ -777,7 +778,7 @@ static const struct omap_dss_features omap5_dss_features = {
- 	.features = omap5_dss_feat_list,
- 	.num_features = ARRAY_SIZE(omap5_dss_feat_list),
+ 	int irq;
++	irq_handler_t user_handler;
++	void *user_data;
  
--	.num_mgrs = 3,
-+	.num_mgrs = 4,
- 	.num_ovls = 4,
- 	.supported_displays = omap5_dss_supported_displays,
- 	.supported_outputs = omap5_dss_supported_outputs,
+ 	unsigned long core_clk_rate;
+ 	unsigned long tv_pclk_rate;
+@@ -113,6 +115,8 @@ static struct {
+ 	u32		ctx[DISPC_SZ_REGS / sizeof(u32)];
+ 
+ 	const struct dispc_features *feat;
++
++	bool is_enabled;
+ } dispc;
+ 
+ enum omap_color_component {
+@@ -3669,16 +3673,44 @@ static int __init dispc_init_features(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static irqreturn_t dispc_irq_handler(int irq, void *arg)
++{
++	if (!dispc.is_enabled)
++		return IRQ_NONE;
++
++	return dispc.user_handler(irq, dispc.user_data);
++}
++
+ int dispc_request_irq(irq_handler_t handler, void *dev_id)
+ {
+-	return devm_request_irq(&dispc.pdev->dev, dispc.irq, handler,
+-			     IRQF_SHARED, "OMAP DISPC", dev_id);
++	int r;
++
++	if (dispc.user_handler != NULL)
++		return -EBUSY;
++
++	dispc.user_handler = handler;
++	dispc.user_data = dev_id;
++
++	/* ensure the dispc_irq_handler sees the values above */
++	smp_wmb();
++
++	r = devm_request_irq(&dispc.pdev->dev, dispc.irq, dispc_irq_handler,
++			     IRQF_SHARED, "OMAP DISPC", &dispc);
++	if (r) {
++		dispc.user_handler = NULL;
++		dispc.user_data = NULL;
++	}
++
++	return r;
+ }
+ EXPORT_SYMBOL(dispc_request_irq);
+ 
+ void dispc_free_irq(void *dev_id)
+ {
+-	devm_free_irq(&dispc.pdev->dev, dispc.irq, dev_id);
++	devm_free_irq(&dispc.pdev->dev, dispc.irq, &dispc);
++
++	dispc.user_handler = NULL;
++	dispc.user_data = NULL;
+ }
+ EXPORT_SYMBOL(dispc_free_irq);
+ 
+@@ -3750,6 +3782,12 @@ static int __exit omap_dispchw_remove(struct platform_device *pdev)
+ 
+ static int dispc_runtime_suspend(struct device *dev)
+ {
++	dispc.is_enabled = false;
++	/* ensure the dispc_irq_handler sees the is_enabled value */
++	smp_wmb();
++	/* wait for current handler to finish before turning the DISPC off */
++	synchronize_irq(dispc.irq);
++
+ 	dispc_save_context();
+ 
+ 	return 0;
+@@ -3763,12 +3801,15 @@ static int dispc_runtime_resume(struct device *dev)
+ 	 * _omap_dispc_initial_config(). We can thus use it to detect if
+ 	 * we have lost register context.
+ 	 */
+-	if (REG_GET(DISPC_CONFIG, 2, 1) = OMAP_DSS_LOAD_FRAME_ONLY)
+-		return 0;
++	if (REG_GET(DISPC_CONFIG, 2, 1) != OMAP_DSS_LOAD_FRAME_ONLY) {
++		_omap_dispc_initial_config();
+ 
+-	_omap_dispc_initial_config();
++		dispc_restore_context();
++	}
+ 
+-	dispc_restore_context();
++	dispc.is_enabled = true;
++	/* ensure the dispc_irq_handler sees the is_enabled value */
++	smp_wmb();
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 121d1049d0bc..8be9b04d8849 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -297,6 +297,8 @@ struct dsi_data {
+ 
+ 	int irq;
+ 
++	bool is_enabled;
++
+ 	struct clk *dss_clk;
+ 	struct clk *sys_clk;
+ 
+@@ -795,6 +797,9 @@ static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
+ 	dsidev = (struct platform_device *) arg;
+ 	dsi = dsi_get_dsidrv_data(dsidev);
+ 
++	if (!dsi->is_enabled)
++		return IRQ_NONE;
++
+ 	spin_lock(&dsi->irq_lock);
+ 
+ 	irqstatus = dsi_read_reg(dsidev, DSI_IRQSTATUS);
+@@ -5671,6 +5676,15 @@ static int __exit omap_dsihw_remove(struct platform_device *dsidev)
+ 
+ static int dsi_runtime_suspend(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
++	struct dsi_data *dsi = dsi_get_dsidrv_data(pdev);
++
++	dsi->is_enabled = false;
++	/* ensure the irq handler sees the is_enabled value */
++	smp_wmb();
++	/* wait for current handler to finish before turning the DSI off */
++	synchronize_irq(dsi->irq);
++
+ 	dispc_runtime_put();
+ 
+ 	return 0;
+@@ -5678,12 +5692,18 @@ static int dsi_runtime_suspend(struct device *dev)
+ 
+ static int dsi_runtime_resume(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
++	struct dsi_data *dsi = dsi_get_dsidrv_data(pdev);
+ 	int r;
+ 
+ 	r = dispc_runtime_get();
+ 	if (r)
+ 		return r;
+ 
++	dsi->is_enabled = true;
++	/* ensure the irq handler sees the is_enabled value */
++	smp_wmb();
++
+ 	return 0;
+ }
+ 
 -- 
-1.9.1
+1.8.3.2
 

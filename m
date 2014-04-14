@@ -1,52 +1,58 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 10:17:04 +0000
-Subject: [PATCH 08/23] ARM: dts: omap5-clocks.dtsi: add dss iclk
-Message-Id: <1398334639-14172-9-git-send-email-tomi.valkeinen@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 14 Apr 2014 21:59:48 +0000
+Subject: [PATCHv2 06/11] pwm: modify PWM_LOOKUP to initialize all struct pwm_lookup members
+Message-Id: <1397512793-10325-7-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Add missing DSS interface clock node.
+Now that PWM_LOOKUP is not used anymore, modify it to initialize all the
+members of struct pwm_lookup.
 
-Note: The TRM says DSS's interface clock is DSS_L3_GICLK, but it is not
-clear to me from reading the TRM and looking at the
-arch/arm/boot/dts/omap54xx-clocks.dtsi whether using 'l3_iclk_div' as
-the parent for 'dss_l3_iclk' is the correct clock.
-
-The clock is explicitly used only by the RFBI, and we don't have any
-boards using the RFBI, so I have no means to test it.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Tero Kristo <t-kristo@ti.com>
-Cc: Paul Walmsley <paul@pwsan.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- arch/arm/boot/dts/omap54xx-clocks.dtsi | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ Documentation/pwm.txt | 3 ++-
+ include/linux/pwm.h   | 4 +++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/omap54xx-clocks.dtsi b/arch/arm/boot/dts/omap54xx-clocks.dtsi
-index d487fdab3921..26c02f9e92c4 100644
---- a/arch/arm/boot/dts/omap54xx-clocks.dtsi
-+++ b/arch/arm/boot/dts/omap54xx-clocks.dtsi
-@@ -418,6 +418,14 @@
- 		clock-div = <1>;
+diff --git a/Documentation/pwm.txt b/Documentation/pwm.txt
+index 93cb97974986..f38f99cda64f 100644
+--- a/Documentation/pwm.txt
++++ b/Documentation/pwm.txt
+@@ -19,7 +19,8 @@ should instead register a static mapping that can be used to match PWM
+ consumers to providers, as given in the following example:
+ 
+ 	static struct pwm_lookup board_pwm_lookup[] = {
+-		PWM_LOOKUP("tegra-pwm", 0, "pwm-backlight", NULL),
++		PWM_LOOKUP("tegra-pwm", 0, "pwm-backlight", NULL,
++			   50000, PWM_POLARITY_NORMAL),
  	};
  
-+	dss_l3_iclk: dss_l3_iclk {
-+		#clock-cells = <0>;
-+		compatible = "fixed-factor-clock";
-+		clocks = <&l3_iclk_div>;
-+		clock-mult = <1>;
-+		clock-div = <1>;
-+	};
-+
- 	slimbus1_slimbus_clk: slimbus1_slimbus_clk {
- 		#clock-cells = <0>;
- 		compatible = "ti,gate-clock";
+ 	static void __init board_init(void)
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index 2f45e2fe5b93..e90628cac8fa 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -278,12 +278,14 @@ struct pwm_lookup {
+ 	enum pwm_polarity polarity;
+ };
+ 
+-#define PWM_LOOKUP(_provider, _index, _dev_id, _con_id)	\
++#define PWM_LOOKUP(_provider, _index, _dev_id, _con_id, _period, _polarity) \
+ 	{						\
+ 		.provider = _provider,			\
+ 		.index = _index,			\
+ 		.dev_id = _dev_id,			\
+ 		.con_id = _con_id,			\
++		.period = _period,			\
++		.polarity = _polarity			\
+ 	}
+ 
+ #if IS_ENABLED(CONFIG_PWM)
 -- 
-1.9.1
+1.8.3.2
 

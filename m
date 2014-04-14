@@ -1,37 +1,74 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 03 Apr 2014 00:09:48 +0000
-Subject: [PATCH] video: pxa3xx-gcu: use devm_ioremap_resource()
-Message-Id: <001c01cf4ed1$07117630$15346290$%han@samsung.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 14 Apr 2014 21:59:42 +0000
+Subject: [PATCHv2 00/11] improve PWM lookup support without device tree
+Message-Id: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Use devm_ioremap_resource() because devm_request_and_ioremap() is
-obsoleted by devm_ioremap_resource().
+Hi,
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-Cc: Daniel Mack <zonque@gmail.com>
-Cc: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/video/fbdev/pxa3xx-gcu.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+A patch set as suggested by Thierry to make lookup with the lookup table
+instead of device tree behave more like when using device tree.
 
-diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
-index 417f9a2..dd8bc18 100644
---- a/drivers/video/fbdev/pxa3xx-gcu.c
-+++ b/drivers/video/fbdev/pxa3xx-gcu.c
-@@ -612,7 +612,7 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
- 
- 	/* handle IO resources */
- 	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	priv->mmio_base = devm_request_and_ioremap(dev, r);
-+	priv->mmio_base = devm_ioremap_resource(dev, r);
- 	if (IS_ERR(priv->mmio_base)) {
- 		dev_err(dev, "failed to map I/O memory\n");
- 		return PTR_ERR(priv->mmio_base);
+The first patch adds a period and a polarity member to the lookup table and use
+those to set period and polarity.
+
+Patch 2, 4 and 5 are making use of those new members from the board files.
+Patch 3 removes useless code since setting the polarity is now handled by the
+PWM core.
+
+I couldn't decide on a good name for the extended PWM_LOOKUP macro and I believe
+we won't have to add members to that structure soon so:
+Patch 6 modifies the PWM_LOOKUP macro to also initialize period and polarity
+and
+Patch 7-9 are making use of the new PWM_LOOKUP macro in the board files
+
+Patch 10 and 11 are making the leds-pwm and pwm_bl drivers get the period from
+the PWM before using pwm_period_ns if it is not already set.
+
+Patch 10 will obviously conflict with the series of Russell reworking the
+leds-pwm probing. I can rebase if necessary
+
+The final goal would be to get rid of .pwm_period_ns in leds-pwm and pwm_bl
+after moving all the remaining users (still around 25) to pwm_lookup.
+
+Changes in v2:
+ - correctly unlock the pwm_lookup_lock mutex before returning.
+ - don't change PWM_LOOKUP atomically
+ - remove tpu_pwm_platform_data and the associated header file
+ - make the leds-pwm and pwm_bl drivers get the period from the PWM
+
+Alexandre Belloni (11):
+  pwm: add period and polarity to struct pwm_lookup
+  ARM: shmobile: Armadillo 800 EVA: initialize all struct pwm_lookup
+    members
+  pwm: renesas-tpu: remove useless struct tpu_pwm_platform_data
+  ARM: OMAP3: Beagle: initialize all the struct pwm_lookup members
+  ARM: pxa: hx4700: initialize all the struct pwm_lookup members
+  pwm: modify PWM_LOOKUP to initialize all struct pwm_lookup members
+  ARM: OMAP3: Beagle: use PWM_LOOKUP to initialize struct pwm_lookup
+  ARM: shmobile: Armadillo 800 EVA: use PWM_LOOKUP to initialize struct
+    pwm_lookup
+  ARM: pxa: hx4700: use PWM_LOOKUP to initialize struct pwm_lookup
+  leds: leds-pwm: retrieve configured pwm period
+  backlight: pwm_bl: retrieve configured pwm period
+
+ Documentation/pwm.txt                          |  3 ++-
+ arch/arm/mach-omap2/board-omap3beagle.c        |  3 ++-
+ arch/arm/mach-pxa/hx4700.c                     |  3 ++-
+ arch/arm/mach-shmobile/board-armadillo800eva.c | 14 +++-----------
+ drivers/leds/leds-pwm.c                        |  5 ++++-
+ drivers/pwm/core.c                             |  8 +++++++-
+ drivers/pwm/pwm-renesas-tpu.c                  | 19 +++----------------
+ drivers/video/backlight/pwm_bl.c               |  8 +++++---
+ include/linux/platform_data/pwm-renesas-tpu.h  | 16 ----------------
+ include/linux/pwm.h                            |  6 +++++-
+ 10 files changed, 33 insertions(+), 52 deletions(-)
+ delete mode 100644 include/linux/platform_data/pwm-renesas-tpu.h
+
 -- 
-1.7.10.4
-
+1.8.3.2
 

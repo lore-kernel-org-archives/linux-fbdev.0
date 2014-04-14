@@ -1,34 +1,70 @@
-From: Steven Miao <realmz6@gmail.com>
-Date: Wed, 16 Apr 2014 02:48:42 +0000
-Subject: Re: [PATCH RESEND] video: bf54x-lq043fb: fix build error
-Message-Id: <CAMk6uBn9U2BHCW96pQCrUskUFWq5eVGACJNVM7tO84PzLakLyg@mail.gmail.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 14 Apr 2014 21:59:44 +0000
+Subject: [PATCHv2 02/11] ARM: shmobile: Armadillo 800 EVA: initialize all struct pwm_lookup members
+Message-Id: <1397512793-10325-3-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1397546239-6650-1-git-send-email-realmz6@kernel.org>
-	<534CFFF5.70801@ti.com>
-In-Reply-To: <534CFFF5.70801@ti.com>
+References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Steven Miao <realmz6@kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, bfin <adi-buildroot-devel@lists.sourceforge.net>, "open list:CAN NETWORK DRIVERS <linux-can@vger.kernel.org>, open
-	list:NETWORKING DRIVERS <netdev@vger.kernel.org>, open list" <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Tomi,
+Initializing all the struct pwm_lookup members allows to get rid of the struct
+tpu_pwm_platform_data as the polarity initialization will be taken care of by
+the PWM core.
 
-On Tue, Apr 15, 2014 at 5:46 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 15/04/14 10:17, Steven Miao wrote:
->> From: Steven Miao <realmz6@gmail.com>
->>
->> include <linux/gpio.h>, drop <asm/gpio.h>
->>
->
-> Thanks, queued for 3.15 fixes.
->
-> Btw, usually it's good to say in the description what kind of build
-> error happens (i.e. copy paste the error).
-Thanks. I'll add more description next time.
->
->  Tomi
->
->
--steven
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ arch/arm/mach-shmobile/board-armadillo800eva.c | 20 +++++++++-----------
+ 1 file changed, 9 insertions(+), 11 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/board-armadillo800eva.c b/arch/arm/mach-shmobile/board-armadillo800eva.c
+index 2858f380beae..1bf61dad9a35 100644
+--- a/arch/arm/mach-shmobile/board-armadillo800eva.c
++++ b/arch/arm/mach-shmobile/board-armadillo800eva.c
+@@ -31,7 +31,7 @@
+ #include <linux/gpio_keys.h>
+ #include <linux/regulator/driver.h>
+ #include <linux/pinctrl/machine.h>
+-#include <linux/platform_data/pwm-renesas-tpu.h>
++#include <linux/pwm.h>
+ #include <linux/pwm_backlight.h>
+ #include <linux/regulator/fixed.h>
+ #include <linux/regulator/gpio-regulator.h>
+@@ -399,24 +399,22 @@ static struct resource pwm_resources[] = {
+ 	},
+ };
+ 
+-static struct tpu_pwm_platform_data pwm_device_data = {
+-	.channels[2] = {
+-		.polarity = PWM_POLARITY_INVERSED,
+-	}
+-};
+-
+ static struct platform_device pwm_device = {
+ 	.name = "renesas-tpu-pwm",
+ 	.id = -1,
+-	.dev = {
+-		.platform_data = &pwm_device_data,
+-	},
+ 	.num_resources = ARRAY_SIZE(pwm_resources),
+ 	.resource = pwm_resources,
+ };
+ 
+ static struct pwm_lookup pwm_lookup[] = {
+-	PWM_LOOKUP("renesas-tpu-pwm", 2, "pwm-backlight.0", NULL),
++	{
++		.provider = "renesas-tpu-pwm",
++		.index = 2,
++		.dev_id = "pwm-backlight.0",
++		.con_id = NULL,
++		.period = 33333,
++		.polarity = PWM_POLARITY_INVERSED,
++	},
+ };
+ 
+ /* LCDC and backlight */
+-- 
+1.8.3.2
+

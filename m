@@ -1,69 +1,142 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 30 Apr 2014 08:26:25 +0000
-Subject: Re: [PATCH 1/2] video: fbdev: Fix format string mismatch in wm8505fb.c
-Message-Id: <5360B3B1.1080906@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="d1OCbi8kpG626AL5g43DthdkKL1meMVHN"
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Tue, 15 Apr 2014 11:24:38 +0000
+Subject: [PATCH 2/2] video: mmp: Remove references to CPU_PXA988
+Message-Id: <1397561078.1985.48.camel@x220>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398774115-15353-1-git-send-email-standby24x7@gmail.com>
-In-Reply-To: <1398774115-15353-1-git-send-email-standby24x7@gmail.com>
-To: Masanari Iida <standby24x7@gmail.com>, plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Richard Weinberger <richard@nod.at>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---d1OCbi8kpG626AL5g43DthdkKL1meMVHN
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Richard Weinberger <richard@nod.at>
 
-On 29/04/14 15:21, Masanari Iida wrote:
-> Fix format string mismatch in contrast_show().
->=20
-> Signed-off-by: Masanari Iida <standby24x7@gmail.com>
-> ---
->  drivers/video/fbdev/wm8505fb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/wm8505fb.c b/drivers/video/fbdev/wm850=
-5fb.c
-> index 537d199..d2fafbb 100644
-> --- a/drivers/video/fbdev/wm8505fb.c
-> +++ b/drivers/video/fbdev/wm8505fb.c
-> @@ -162,7 +162,7 @@ static ssize_t contrast_show(struct device *dev,
->  	struct fb_info *info =3D dev_get_drvdata(dev);
->  	struct wm8505fb_info *fbi =3D to_wm8505fb_info(info);
-> =20
-> -	return sprintf(buf, "%d\n", fbi->contrast);
-> +	return sprintf(buf, "%u\n", fbi->contrast);
->  }
-> =20
->  static ssize_t contrast_store(struct device *dev,
->=20
+References to the Kconfig symbol CPU_PXA988 were added to the tree in
+v3.9. But that Kconfig symbol has never been part of the tree. So get
+rid of these references.
 
-Thanks, queued this and the 2/2 patch for 3.16.
+Signed-off-by: Richard Weinberger <richard@nod.at>
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+0) Tested with git grep.
 
- Tomi
+1) Originally sent as "[PATCH 07/28] Remove CPU_PXA988" two months ago.
+Added a proper commit explanation to aid reviewers.
 
+ drivers/video/mmp/Kconfig       |  2 +-
+ drivers/video/mmp/hw/Kconfig    |  6 +++---
+ drivers/video/mmp/hw/mmp_ctrl.h | 32 --------------------------------
+ 3 files changed, 4 insertions(+), 36 deletions(-)
 
+diff --git a/drivers/video/mmp/Kconfig b/drivers/video/mmp/Kconfig
+index 969925d694c9..f37bd6c47779 100644
+--- a/drivers/video/mmp/Kconfig
++++ b/drivers/video/mmp/Kconfig
+@@ -1,6 +1,6 @@
+ menuconfig MMP_DISP
+         tristate "Marvell MMP Display Subsystem support"
+-        depends on CPU_PXA910 || CPU_MMP2 || CPU_PXA988
++        depends on CPU_PXA910 || CPU_MMP2
+         help
+ 	  Marvell Display Subsystem support.
+ 
+diff --git a/drivers/video/mmp/hw/Kconfig b/drivers/video/mmp/hw/Kconfig
+index 99f0506afc99..c735d133895c 100644
+--- a/drivers/video/mmp/hw/Kconfig
++++ b/drivers/video/mmp/hw/Kconfig
+@@ -2,12 +2,12 @@ if MMP_DISP
+ 
+ config MMP_DISP_CONTROLLER
+ 	bool "mmp display controller hw support"
+-	depends on CPU_PXA910 || CPU_MMP2 || CPU_PXA988
++	depends on CPU_PXA910 || CPU_MMP2
+ 	default n
+ 	help
+ 		Marvell MMP display hw controller support
+-		this controller is used on Marvell PXA910,
+-		MMP2, PXA988 chips
++		this controller is used on Marvell PXA910 and
++		MMP2 chips
+ 
+ config MMP_DISP_SPI
+ 	bool "mmp display controller spi port"
+diff --git a/drivers/video/mmp/hw/mmp_ctrl.h b/drivers/video/mmp/hw/mmp_ctrl.h
+index 53301cfdb1ae..56fdeab34355 100644
+--- a/drivers/video/mmp/hw/mmp_ctrl.h
++++ b/drivers/video/mmp/hw/mmp_ctrl.h
+@@ -167,11 +167,7 @@ struct lcd_regs {
+ 				PN2_IOPAD_CONTROL) : LCD_TOP_CTRL)
+ 
+ /* dither configure */
+-#ifdef CONFIG_CPU_PXA988
+-#define LCD_DITHER_CTRL				(0x01EC)
+-#else
+ #define LCD_DITHER_CTRL				(0x00A0)
+-#endif
+ 
+ #define DITHER_TBL_INDEX_SEL(s)		((s) << 16)
+ #define DITHER_MODE2(m)				((m) << 12)
+@@ -186,15 +182,6 @@ struct lcd_regs {
+ #define DITHER_EN1					(1)
+ 
+ /* dither table data was fixed by video bpp of input and output*/
+-#ifdef CONFIG_CPU_PXA988
+-#define DITHER_TB_4X4_INDEX0		(0x6e4ca280)
+-#define DITHER_TB_4X4_INDEX1		(0x5d7f91b3)
+-#define DITHER_TB_4X8_INDEX0		(0xb391a280)
+-#define DITHER_TB_4X8_INDEX1		(0x7f5d6e4c)
+-#define DITHER_TB_4X8_INDEX2		(0x80a291b3)
+-#define DITHER_TB_4X8_INDEX3		(0x4c6e5d7f)
+-#define LCD_DITHER_TBL_DATA		(0x01F0)
+-#else
+ #define DITHER_TB_4X4_INDEX0		(0x3b19f7d5)
+ #define DITHER_TB_4X4_INDEX1		(0x082ac4e6)
+ #define DITHER_TB_4X8_INDEX0		(0xf7d508e6)
+@@ -202,7 +189,6 @@ struct lcd_regs {
+ #define DITHER_TB_4X8_INDEX2		(0xc4e6d5f7)
+ #define DITHER_TB_4X8_INDEX3		(0x082a193b)
+ #define LCD_DITHER_TBL_DATA		(0x00A4)
+-#endif
+ 
+ /* Video Frame 0&1 start address registers */
+ #define	LCD_SPU_DMA_START_ADDR_Y0	0x00C0
+@@ -933,16 +919,9 @@ struct lcd_regs {
+ #define LCD_PN2_SQULN2_CTRL			(0x02F0)
+ #define ALL_LAYER_ALPHA_SEL			(0x02F4)
+ 
+-/* pxa988 has different MASTER_CTRL from MMP3/MMP2 */
+-#ifdef CONFIG_CPU_PXA988
+-#define TIMING_MASTER_CONTROL			(0x01F4)
+-#define MASTER_ENH(id)				(1 << ((id) + 5))
+-#define MASTER_ENV(id)				(1 << ((id) + 6))
+-#else
+ #define TIMING_MASTER_CONTROL			(0x02F8)
+ #define MASTER_ENH(id)				(1 << (id))
+ #define MASTER_ENV(id)				(1 << ((id) + 4))
+-#endif
+ 
+ #define DSI_START_SEL_SHIFT(id)		(((id) << 1) + 8)
+ #define timing_master_config(path, dsi_id, lcd_id) \
+@@ -1312,19 +1291,8 @@ struct dsi_regs {
+ #define	DSI_PHY_TIME_3_CFG_CSR_TIME_REQRDY_MASK		(0xff)
+ #define	DSI_PHY_TIME_3_CFG_CSR_TIME_REQRDY_SHIFT	0
+ 
+-/*
+- * DSI timings
+- * PXA988 has diffrent ESC CLK with MMP2/MMP3
+- * it will be used in dsi_set_dphy() in pxa688_phy.c
+- * as low power mode clock.
+- */
+-#ifdef CONFIG_CPU_PXA988
+-#define DSI_ESC_CLK				52  /* Unit: Mhz */
+-#define DSI_ESC_CLK_T				19  /* Unit: ns */
+-#else
+ #define DSI_ESC_CLK				66  /* Unit: Mhz */
+ #define DSI_ESC_CLK_T				15  /* Unit: ns */
+-#endif
+ 
+ /* LVDS */
+ /* LVDS_PHY_CTRL */
+-- 
+1.9.0
 
---d1OCbi8kpG626AL5g43DthdkKL1meMVHN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTYLOxAAoJEPo9qoy8lh71Kz0P/0h9DKP4Y/AwEtN1VIKgIl6/
-TPK/J8PD9w4/QEIF5FXnLGRUrDUD3fxJCXF/fpybmMf09Pfcgvo7xZtrIBtvlLT3
-4fxv5y5yQQtk8ejKEKEt2R5qiqKdx++qj+U0xyCvSdhnslyo9au7Hk0dunxtl0Nh
-QpE0eUlGT7x90PpT8b6dkyX8UQ24tzm3oW4JXfQYZw+tNY2DBRaA+zE5oRPBEnlr
-nzzU/CNEctrqY5wHTm7G/TUV1OhWI6Ufk8c4RtsfXOvNVwtFj1ByPsr/V+zTidNh
-4bk2JkP4MDpfNac5AhM6ZtamyYS43GbwvnHXCbCkt0q5zXg7f7ZjZWLswJ4Ioi0L
-6dMZsgQlW/TF9ROe+LMwx5fe4OPpVjF6tQlAmSzfnbtqnB0Jbl71j7/+dq/C9GVz
-eqwp9xVfU5hulemmgSVNpGnfliPrSS2grJWFxMSLG2307ur7dhrKEAIwJcNVLaL4
-ln1z9i63+yBYH6bPW40jYVo119IKCo7n/OdFrpeLeCNg/HTKdvl+19xhEK2A8LPd
-fhysbBdiwu7oaFJKn8ZNSbBIEVIYYBIJAeVQ6+3qAA2tcB6UTB1McYTetDEF9jpX
-deILeK7IwXHFokVDRPMg9b4YoCo/0snVEyD8lKnUBxH9aegwFMV8QfgANsiY7zP8
-aFmAlL5DerJtPLPzupd5
-=+lpk
------END PGP SIGNATURE-----
-
---d1OCbi8kpG626AL5g43DthdkKL1meMVHN--

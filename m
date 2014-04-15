@@ -1,58 +1,66 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Wed, 30 Apr 2014 12:36:29 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSCB2MiAxLzNdIHZpZGVvOiBjbHBzNzExeDogQWRkIG5ldyBD?= =?UTF-8?B?aXJydXMgTG9naWMgQ
-Message-Id: <1398861389.395341645@f133.i.mail.ru>
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Tue, 15 Apr 2014 11:24:04 +0000
+Subject: [PATCH 1/2] video: mmp: Remove references to CPU_MMP3
+Message-Id: <1397561044.1985.47.camel@x220>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398327006.501536964@f133.i.mail.ru>
-In-Reply-To: <1398327006.501536964@f133.i.mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Richard Weinberger <richard@nod.at>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-V2VkLCAzMCBBcHIgMjAxNCAxNDoxNDozNiArMDMwMCDQvtGCIFRvbWkgVmFsa2VpbmVuIDx0b21p
-LnZhbGtlaW5lbkB0aS5jb20+Ogo+IE9uIDI0LzA0LzE0IDE5OjM1LCBBbGV4YW5kZXIgU2hpeWFu
-IHdyb3RlOgoKSGVsbG8uCgpJJ20gYSByZW9yZGVyIHF1b3RlcyBhIGJpdCBmb3IgY29udmVuaWVu
-Y2UuCgo+ID4+IFRoZSByaWdodCB3YXkgdG8gZG8gaXQgaXMsIGFzIEkgd3JvdGUgYWJvdmUsIGJ5
-IGdyYWR1YWxseSBjaGFuZ2luZyB0aGUKPiA+PiBvbGQgZHJpdmVyIHdpdGggYSBwYXRjaCBzZXJp
-ZXMuIEFuZCBteSBxdWVzdGlvbiBpcywgd2h5IG5vdCBkbyBpdCB0aGF0Cj4gPj4gd2F5PyBUaGVu
-IGl0IHdvdWxkIGJlIHBvc3NpYmxlIHRvIHJldmlldyB0aGUgcGF0Y2hlcyBvbmUgYnkgb25lLCBz
-ZWVpbmcKPiA+PiB3aGF0IGhhcyBjaGFuZ2VkLgo+ID4gCj4gPiAiZ3JhZHVhbGx5IGNoYW5naW5n
-Ii4uLgo+ID4gSSByZXBlYXQgdGhhdCB0aGlzIGlzIG5vdCBhbiBvbGQgbW9kaWZpZWQgZHJpdmVy
-LCBidXQgd3JpdHRlbiBuZXcuCj4gCj4gWWVzLCBJIHVuZGVyc3RhbmQgdGhhdC4gQWdhaW4sIG15
-IHF1ZXN0aW9uIGlzLCB3aHkgZGlkbid0IHlvdSBtb2RpZnkgdGhlCj4gb2xkIGRyaXZlcj8gVGhh
-dCdzIGhvdyB0aGluZ3Mgc2hvdWxkIG5vcm1hbGx5IGJlIGRvbmUuIEluc3RlYWQsIHlvdSBtYWRl
-Cj4gYSB0b3RhbGx5IG5ldyBvbmUsIG1ha2luZyBwcm9wZXIgcmV2aWV3IGFnYWluc3QgdGhlIG9s
-ZCBkcml2ZXIgaW1wb3NzaWJsZS4KLi4uCj4gSG1tIHdoYXQ/IFNvIGlzIHRoZSBvbGQgZHJpdmVy
-IHRvdGFsbHkgYnJva2VuLCBhbmQgY2Fubm90IGJlIHVzZWQgYXQgdGhlCj4gbW9tZW50PyBPciB3
-aHkgeW91IGNhbid0IHRlc3Qgb24gcmVhbCBoYXJkd2FyZT8KCkZpcnN0bHksIHRoZSBkcml2ZXIg
-dXNlcyBhIGZpeGVkIHZhbHVlcyBmb3IgeHJlcywgeXJlcywgcGl4Y2xvY2sgYW5kIHNwZWNpZmlj
-CnZhcmlhYmxlIGFjX3ByZWNhbGUuClNlY29uZGx5LCB0aGUgZHJpdmVyIHVzZXMgYSBmaXhlZCB2
-YWx1ZSBmb3IgdGhlIHBoeXNpY2FsIGFkZHJlc3Mgb2YgdGhlIGJ1ZmZlci4KVG90YWxseSwgaXQg
-ZG9lcyBub3QgZ2l2ZSBtZSB0aGUgYWJpbGl0eSB0byB1c2UgdGhlIGRyaXZlciBpbiB0aGUgY3Vy
-cmVudCBzdGF0ZS4KVW5saWtlbHkgdGhhdCB0aGlzIHdpbGwgbG9vayBnb29kIGlmIEkgbWFrZSB0
-aGVzZSB0d28gc2lnbmlmaWNhbnQgY2hhbmdlcyBpbgphIHNpbmdsZSBwYXRjaC4uLgoKQXQgdGhp
-cyB0aW1lIHRoZSBkcml2ZXIgaGFzIHRocmVlIHVzZXIuCk9ubHkgb25lIG9mIHRoZW0gc2hvdWxk
-IHRoZW9yZXRpY2FsbHkgd29yay4KY2xwczcxMXgtYXV0Y3B1MTIgc2hvdWxkIG5vdCB3b3JrIGlu
-IHRoZSBhYnNlbmNlIG9mIG1lbWJsb2NrX3Jlc2VydmUoKS4KY2xwczcxMXgtcDcyMHQgc2hvdWxk
-IG5vdCB3b3JrIGR1ZSB0byBwaHlzaWNhbCBhZGRyZXNzIGxpbWl0YXRpb24gYXMgaQpub3RpY2Vk
-IGJlZm9yZS4gQm9hcmQgbWVhbnMgdG8gdXNlIFNSQU0gaW5zdGVhZCBvZiBTRFJBTS4KT25seSBj
-bHBzNzExeC1lZGI3MjExIHNob3VsZCB3b3JrIGZpbmUgKGluIHRoZW9yeSkuCklzIHRoaXMgYSBn
-b29kIHJlYXNvbiB0byByZXBsYWNlIHRoZSBkcml2ZXI/IEkgdGhpbmsgeWVzLgoKPiBOb3RlIHRo
-YXQgSSBkb24ndCBrbm93IGFueXRoaW5nIGFib3V0IHRoZSBmYiBoYXJkd2FyZSBpbiBxdWVzdGlv
-biwgbm9yCj4gdGhlIGRyaXZlci4gTWF5YmUgdGhlcmUncyBhIHZhbGlkIHJlYXNvbiB0byB3cml0
-ZSBhIG5ldyBkcml2ZXIgZnJvbQo+IHNjcmF0Y2guIEJ1dCB0aGVyZSB2ZXJ5IHJhcmVseSBpcy4K
-PiAKPiBBbmQgImJlY2F1c2UgSSBhbHJlYWR5IHdyb3RlIGEgbmV3IGRyaXZlciwgYW5kIGl0J3Mg
-YSB3YXN0ZSBvZiB0aW1lIGZvcgo+IG1lIHRvIHRocm93IGF3YXkgbXkgd29yayBhbmQgcGF0Y2gg
-dGhlIG9sZCBvbmUiLCBpcyBub3QgYSB2ZXJ5IGdvb2QgcmVhc29uLgoKPiA+IGlmIHlvdSBpbWFn
-aW5lIGEgbmV3IGZpbGUgYXMgYSBkaWZmIHRvIHRoZSBvbGQsIHRoaXMgY2FuIGJlIGNsZWFybHkg
-c2Vlbi4KPiA+IAo+ID4gVGhlcmUgaXMgbm8gcmVhc29uIHRvIHdhc3RlIHRpbWUgb24gYSBzZXJp
-ZXMgb2YgY2hhbmdlcyBzaW5jZSBJCj4gPiBjYW4gbm90IGV2ZW4gY2hlY2sgdGhlc2UgY2hhbmdl
-cyBvbiByZWFsIGhhcmR3YXJlLCBidXQgb25seSBpbiB0aGUKPiA+IGxhc3Qgc3RhZ2Ugd2hlbiB0
-aGUgZHJpdmVyIHdpbGwgYmUgdGhlIGN1cnJlbnQgdmVyc2lvbi4KClN1bW1pbmcgdXAsIEkgd2Fu
-dCB0byBhc2sgd2h5IHRoZSBkcml2ZXIgY2FuIG5vdCBiZSByZXZpZXdlZCBhcyBhCm5ldyBhbmQg
-bm90IGNvbXBhcmVkIHRvIHRoZSBvbGQ/CkFuZCB5ZXMsIHRoZSB0aW1lIGNhbiBiZSBzcGVudCBv
-biBtb3JlIHByb2R1Y3RpdmUgdGhpbmdzIHRvIGRvIHRoYW4KdG8gY3JlYXRlIGEgc2VyaWVzLCBs
-ZWFkaW5nIGV2ZW50dWFsbHkgdG8gdGhlIHNhbWUgcmVzdWx0LgpBcyBmYXIgYXMgSSBrbm93LCBn
-dWlkZSB0byBjcmVhdGluZyBrZXJuZWwgcGF0Y2hlcyBhbGxvd3Mgc3VjaCBjYXNlcy4KClRoYW5r
-cy4KCi0tLQoK
+From: Richard Weinberger <richard@nod.at>
+
+References to the Kconfig symbol CPU_MMP3 were added to the tree since
+v3.6. But that Kconfig symbol has never been part of the tree. So get
+rid of these references.
+
+Signed-off-by: Richard Weinberger <richard@nod.at>
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+0) Tested with git grep.
+
+1) Originally sent as "[PATCH 01/28] Remove CPU_MMP3" two months ago.
+Added a proper commit explanation to aid reviewers.
+
+2) One reference to CPU_MMP3 remains. I'll remove that in a more
+elaborate patch.
+
+ drivers/video/mmp/Kconfig    | 2 +-
+ drivers/video/mmp/hw/Kconfig | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/mmp/Kconfig b/drivers/video/mmp/Kconfig
+index e9ea39e13722..969925d694c9 100644
+--- a/drivers/video/mmp/Kconfig
++++ b/drivers/video/mmp/Kconfig
+@@ -1,6 +1,6 @@
+ menuconfig MMP_DISP
+         tristate "Marvell MMP Display Subsystem support"
+-        depends on CPU_PXA910 || CPU_MMP2 || CPU_MMP3 || CPU_PXA988
++        depends on CPU_PXA910 || CPU_MMP2 || CPU_PXA988
+         help
+ 	  Marvell Display Subsystem support.
+ 
+diff --git a/drivers/video/mmp/hw/Kconfig b/drivers/video/mmp/hw/Kconfig
+index 02f109a20cd0..99f0506afc99 100644
+--- a/drivers/video/mmp/hw/Kconfig
++++ b/drivers/video/mmp/hw/Kconfig
+@@ -2,12 +2,12 @@ if MMP_DISP
+ 
+ config MMP_DISP_CONTROLLER
+ 	bool "mmp display controller hw support"
+-	depends on CPU_PXA910 || CPU_MMP2 || CPU_MMP3 || CPU_PXA988
++	depends on CPU_PXA910 || CPU_MMP2 || CPU_PXA988
+ 	default n
+ 	help
+ 		Marvell MMP display hw controller support
+ 		this controller is used on Marvell PXA910,
+-		MMP2, MMP3, PXA988 chips
++		MMP2, PXA988 chips
+ 
+ config MMP_DISP_SPI
+ 	bool "mmp display controller spi port"
+-- 
+1.9.0
+

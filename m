@@ -1,28 +1,37 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 28 Apr 2014 10:27:38 +0000
-Subject: Re: [PATCH] video/backlight: Fix string type mismatch in s6e63m0.c
-Message-Id: <20140428102738.GG21279@lee--X1>
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Tue, 15 Apr 2014 07:47:34 +0000
+Subject: Re: [PATCH 07/28] Remove CPU_PXA988
+Message-Id: <1397548054.1985.3.camel@x220>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398354436-25467-1-git-send-email-standby24x7@gmail.com>
-In-Reply-To: <1398354436-25467-1-git-send-email-standby24x7@gmail.com>
+References: <1391971686-9517-1-git-send-email-richard@nod.at>
+		 <1391971686-9517-8-git-send-email-richard@nod.at>
+	 <1391984646.25855.79.camel@x220> <52F800B2.6010702@nod.at>
+In-Reply-To: <52F800B2.6010702@nod.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Masanari Iida <standby24x7@gmail.com>
-Cc: jg1.han@samsung.com, cooloney@gmail.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Weinberger <richard@nod.at>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, FRAMEBUFFER LAYER <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-> Fix string type mismatch in s6e63m0_sysfs_show_gamma_table().
-> gamma_table_count is defined as unsigned int.
->=20
-> Signed-off-by: Masanari Iida <standby24x7@gmail.com>
-> ---
->  drivers/video/backlight/s6e63m0.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Richard,
 
-Applied, thanks.
+On Sun, 2014-02-09 at 23:26 +0100, Richard Weinberger wrote:
+> Am 09.02.2014 23:24, schrieb Paul Bolle:
+> > On Sun, 2014-02-09 at 19:47 +0100, Richard Weinberger wrote:
+> >> The symbol is an orphan, get rid of it.
+> >>
+> >> Signed-off-by: Richard Weinberger <richard@nod.at>
+> > 
+> > This one first entered the tree in v3.9, with commit 59393bb94c10
+> > ("video: mmp display subsystem"). The Kconfig symbol has not yet been
+> > added.
+> 
+> Thanks a lot for digging out the background info!
+> I'll add them to the commit message.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Did you ever find the time to update the commit message? If not, should
+I submit an updated version of this patch?
+
+
+Paul Bolle
+

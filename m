@@ -1,26 +1,42 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Tue, 29 Apr 2014 15:59:17 +0000
-Subject: Re: [PATCH 1/3] drm/dsi: Support device shutdown
-Message-Id: <535FCC55.7000407@wwwdotorg.org>
+From: Steven Miao <realmz6@kernel.org>
+Date: Tue, 15 Apr 2014 07:17:19 +0000
+Subject: [PATCH RESEND] video: bf54x-lq043fb: fix build error
+Message-Id: <1397546239-6650-1-git-send-email-realmz6@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398785339-8107-1-git-send-email-thierry.reding@gmail.com>
-In-Reply-To: <1398785339-8107-1-git-send-email-thierry.reding@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: adi-buildroot-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steven Miao <realmz6@gmail.com>
 
-On 04/29/2014 09:28 AM, Thierry Reding wrote:
-> From: Thierry Reding <treding@nvidia.com>
-> 
-> Hook up the MIPI DSI bus's .shutdown() function to allow drivers to
-> implement code that should be run when a device is shut down.
+From: Steven Miao <realmz6@gmail.com>
 
-The series,
-Tested-by: Stephen Warren <swarren@nvidia.com>
+include <linux/gpio.h>, drop <asm/gpio.h>
 
-(On an NVIDIA Tegra Dalmore board. Now, the backlight actually turns off
-when the system is shut down. Note that the backlight power on this
-system is directly sourced from the AC adapter for some strange reason,
-rather than passing through the main system PMIC, and hence backlight
-power isn't shut off even when the rest of the system really is powered off)
+Signed-off-by: Steven Miao <realmz6@gmail.com>
+---
+ drivers/video/bf54x-lq043fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
+index 42b8f9d..e2c42ad 100644
+--- a/drivers/video/bf54x-lq043fb.c
++++ b/drivers/video/bf54x-lq043fb.c
+@@ -49,13 +49,13 @@
+ #include <linux/spinlock.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/platform_device.h>
++#include <linux/gpio.h>
+ 
+ #include <asm/blackfin.h>
+ #include <asm/irq.h>
+ #include <asm/dpmc.h>
+ #include <asm/dma-mapping.h>
+ #include <asm/dma.h>
+-#include <asm/gpio.h>
+ #include <asm/portmux.h>
+ 
+ #include <mach/bf54x-lq043.h>
+-- 
+1.7.9.5
+

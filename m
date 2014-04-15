@@ -1,61 +1,49 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 25 Apr 2014 21:16:52 +0000
-Subject: [PATCH RFC 14/17] ARM: omap5-uevm.dts: Add hdmi audio related nodes
-Message-Id: <18a1ee24519e560020919bbee64e85aa2d951aa7.1398453425.git.jsarha@ti.com>
+From: isabelle <contact_claude@isabelle.de>
+Date: Tue, 15 Apr 2014 19:47:38 +0000
+Subject: spende /Donation
+Message-Id: <yx4Sef42JyeoopbQKx5pAipXLBt1prSNuXPiRcWu1Nis@isabelle.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1398453425.git.jsarha@ti.com>
-In-Reply-To: <cover.1398453425.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, peter.ujfalusi-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-Adds a simple-card sound node for HDMI audio, the associated
-hdmi-codec node, and sound-dai-cells propeties to the DAI nodes.
-
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- arch/arm/boot/dts/omap5-uevm.dts |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
-
-diff --git a/arch/arm/boot/dts/omap5-uevm.dts b/arch/arm/boot/dts/omap5-uevm.dts
-index f625a87..42d625b 100644
---- a/arch/arm/boot/dts/omap5-uevm.dts
-+++ b/arch/arm/boot/dts/omap5-uevm.dts
-@@ -561,6 +561,24 @@
- 			};
- 		};
- 	};
-+
-+	sound@0 {
-+		compatible = "simple-audio-card";
-+
-+		simple-audio-card,cpu {
-+			sound-dai = <&hdmi>;
-+		};
-+
-+		simple-audio-card,codec {
-+			sound-dai = <&hdmi_audio>;
-+		};
-+	};
-+
-+	hdmi_audio: hdmi_audio@0 {
-+		#sound-dai-cells = <0>;
-+		compatible = "linux,hdmi-audio";
-+		status = "okay";
-+	};
- };
- 
- &dss {
-@@ -568,6 +586,7 @@
- };
- 
- &hdmi {
-+	#sound-dai-cells = <0>;
- 	status = "ok";
- 	vdda-supply = <&ldo4_reg>;
- 
--- 
-1.7.9.5
+Hallo
+Wenn ich diese Nachricht zu senden wollte, ist dies nicht einfach Zufall. D=
+ies ist, weil Ihre e-Mail vom elektronischen Roboter gesichert meine WX.7AR=
+ BW ausgew=E4hlt wurde.
+Zun=E4chst m=F6chte ich mich f=FCr dieses Eindringen in Ihr Leben zu entsch=
+uldigen, obwohl ich zugeben, dass es mir sehr wichtig. Ich bin Isabelle Vas=
+udev. Ich leide an Krebs im Hals seit nun mehr als 3 Jahre und eine halbe u=
+nd es leider, mein Arzt hat gerade informiert mich, dass ich bin voller unh=
+eilbar und, dass meine Tage, wegen meinen etwas gez=E4hlt sind abgebaut Zus=
+tand. Ich bin eine Witwe und ich habe keine Kind, das ich beginne zu bedaue=
+rn.
+In der Tat ist der Grund, warum ich Sie kontaktieren bin, m=F6chte ich eine=
+n Teil von meinem Grundst=FCck zu spenden, weil ich niemand, wer die Erben =
+konnte. Ich habe fast mein ganzes Zeug, darunter ein Unternehmen der Export=
+ von Holz, Gummi und Stahl-Industrie in Afrika, wo ich wohne nun mehr 10 Ja=
+hren, verkauft. Ein gro=DFer Teil der Gelder gesammelt wurde mit unterschie=
+dlichen Verb=E4nden humanit=E4ren Charakter =FCberall in der Welt, aber bes=
+onders hier in Afrika bezahlt.
+Im Hinblick auf den Rest der Summe genau in H=F6he von 750.000, 00euros (si=
+eben hundert und f=FCnfzig tausend Euro) auf eine gesperrte Mitarbeiter-Acc=
+ount, meine letzte w=FCnschen w=FCrde Sie es spenden, so dass Sie in Ihrer =
+Branche und vor allem den humanit=E4ren investieren k=F6nnen. Ich bin ganz =
+bewusst was ich zu tun beabsichtigen, und ich denke, trotz der Tatsache, di=
+e wir nicht wissen, werdet ihr diese Summe gut nutzen. Ich bitte Sie, bitte=
+ dieses Erbe zu akzeptieren, ohne jedoch Fragen Sie alles, was in zur=FCckg=
+eben wenn es nicht immer denken, gutes zu tun, um dich herum, was ich nicht=
+ getan habe, in meiner Existenz.
+Das hei=DFt, wird auf einer verantwortlichen Person und besonders gutem Gla=
+uben fallen zu lassen beruhigt, ich m=F6chte bitten, dass Sie bitte mich be=
+i den meisten schnell kontaktieren, um weitere Erkl=E4rung =FCber die Gr=FC=
+nde f=FCr meine Geste und den Verlauf der Dinge zu geben. Bitte kontaktiere=
+n Sie mich so bald wie m=F6glich, wenn Sie mein Angebot akzeptieren.
+Gott m=F6ge mit dir sein!
+Ich fordere Sie auf, mich =FCber meine pers=F6nliche e-Mail-Adresse zu kont=
+aktieren:
+Isabelle.claude654@laposte.net
+Der Frieden und Barmherzigkeit Gottes m=F6ge mit dir sein.
+Mrs Isabelle
 

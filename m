@@ -1,102 +1,23 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 16 Apr 2014 09:03:49 +0000
-Subject: [GIT PULL] fbdev fixes for 3.15
-Message-Id: <534E4775.8010009@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="iniACn6ADpBHQPdGm7D3FdbwW9oJGGPEu"
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 16 Apr 2014 23:04:39 +0000
+Subject: Re: [GIT PULL] fbdev fixes for 3.15
+Message-Id: <CA+55aFz7Hgjc9wmiriqGT8VXNF-7b0aUKf96r=TCP+1NOTSVeQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+References: <534E4775.8010009@ti.com>
+In-Reply-To: <534E4775.8010009@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>
 
---iniACn6ADpBHQPdGm7D3FdbwW9oJGGPEu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, Apr 16, 2014 at 2:03 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+>
+> The drivers/video/Kconfig change in this pull request will conflict with the
+> fbdev reorder series, which is not yet in your tree. If that's an issue, I can
+> resend this without the Kconfig change.
 
-Hi Linus,
+I was actually hoping/expecting you to just resend the renaming
+rebased on top of 3.15-rc1. Or maybe you could do it on top of this.
 
-Please pull fbdev fixes for 3.15.
-
-The drivers/video/Kconfig change in this pull request will conflict with =
-the
-fbdev reorder series, which is not yet in your tree. If that's an issue, =
-I can
-resend this without the Kconfig change.
-
- Tomi
-
-The following changes since commit c9eaa447e77efe77b7fa4c953bd62de8297fd6=
-c5:
-
-  Linux 3.15-rc1 (2014-04-13 14:18:35 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-3.15
-
-for you to fetch changes up to c26ef3eb3c11274bad1b64498d0a134f85755250:
-
-  video: bf54x-lq043fb: fix build error (2014-04-15 12:44:16 +0300)
-
-----------------------------------------------------------------
-fbdev fixes for 3.15:
-
-- fix build errors for bf54x-lq043fb and imxfb
-- fbcon fix for da8xx-fb
-- omapdss fixes for hdmi audio, irq handling and fclk calculation
-
-----------------------------------------------------------------
-Alexander Shiyan (1):
-      video: imxfb: Select LCD_CLASS_DEVICE unconditionally
-
-Jon Ringle (1):
-      video: da8xx-fb: Fix casting of info->pseudo_palette
-
-Jyri Sarha (2):
-      OMAPDSS: Take pixelclock unit change into account in hdmi_compute_a=
-cr()
-      OMAPDSS: Change struct reg_field to dispc_reg_field
-
-Steven Miao (1):
-      video: bf54x-lq043fb: fix build error
-
-Tomi Valkeinen (2):
-      OMAPDSS: fix rounding when calculating fclk rate
-      OMAPDSS: fix shared irq handlers
-
- drivers/video/Kconfig                 |  2 ++
- drivers/video/bf54x-lq043fb.c         |  2 +-
- drivers/video/da8xx-fb.c              | 10 +-----
- drivers/video/omap2/dss/dispc.c       | 67 +++++++++++++++++++++++++++++=
-------
- drivers/video/omap2/dss/dsi.c         | 20 +++++++++++
- drivers/video/omap2/dss/dss.c         |  4 +--
- drivers/video/omap2/dss/dss.h         |  6 ----
- drivers/video/omap2/dss/hdmi_common.c |  8 ++---
- 8 files changed, 87 insertions(+), 32 deletions(-)
-
-
---iniACn6ADpBHQPdGm7D3FdbwW9oJGGPEu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTTkd1AAoJEPo9qoy8lh71tt0P/17jSYCuTlJbi2EMAskUKGAR
-rbJjNGSH1/d40wC9vIAIy4xb2BbUSAIL0HDdcSy8K+G27gGUWszMAII5yItt074o
-dUEtCdD7AuZxCYA83W65N7d2Yl+vq/7xFHhY47tauAbvzpZQMSy4UI6AGebWiK5G
-StZDd6wSNEGrt4IDawTctr3ZI/4eCLk8j9FgTstkIYCNinkAB33oGOLs1Rya5mx7
-d+0MIOkhdjrFTFSt4XHRRyhDoeDNpX97qDz2dpzSgduHzTRromJA4o2O4SnNwcbh
-0Adxz+Fkpj9Gty/BNghd/XNimqWc3nU70apvJoexriIESaJuk3wqHhxLqYzov2xn
-yzhjoSogB8sP/ymnVZndnI5gLPSw+KSwUlppgG3ap6Hg7foBNqKAObLrNCz+4AHe
-qMR2WU2+wKhFsyQTUz5JrT0DDfyx8yC4oYZAgVoAfRY9FEUYl9am/kaenzcwOmvS
-JwZPHbEPbS7otqZf53E/LRq90EExtPl387Bs7oT8WpX6yp9G/nbmY4m8MZnhE3Qo
-NTeMchiM+t1KdLKvXd4fda8M6M20mQepIWCXz60FVvs0bh89LQP7Jc2vAOJ/NSIo
-H9rQ2+YTIV4QzjAPnfIBG1sq7H1vtxbvwl2hB3bn1hoa7EGOaHmO6bg1jwmjxdM2
-wlviSCX9cW6ryGVH/9dD
-=69In
------END PGP SIGNATURE-----
-
---iniACn6ADpBHQPdGm7D3FdbwW9oJGGPEu--
+            Linus

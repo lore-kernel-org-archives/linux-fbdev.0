@@ -1,91 +1,102 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 30 Apr 2014 17:56:51 +0000
-Subject: Re: [PATCH 06/23] ARM: OMAP: add OMAP5 DSI muxing
-Message-Id: <20140430175651.GB12362@atomide.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 16 Apr 2014 09:03:49 +0000
+Subject: [GIT PULL] fbdev fixes for 3.15
+Message-Id: <534E4775.8010009@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="iniACn6ADpBHQPdGm7D3FdbwW9oJGGPEu"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <535A6C40.10609@ti.com> <20140425153150.GA20807@atomide.com>
- <535DFAAE.1010606@ti.com> <20140428164528.GM20807@atomide.com>
- <535F37E9.8090609@ti.com> <20140429150529.GA27571@atomide.com>
- <535FD10B.4020108@ti.com> <535FD43B.3030102@ti.com>
- <20140429173838.GB27571@atomide.com> <5360948A.5020607@ti.com>
-In-Reply-To: <5360948A.5020607@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [140429 23:14]:
-> On 29/04/14 20:38, Tony Lindgren wrote:
-> > * Tomi Valkeinen <tomi.valkeinen@ti.com> [140429 09:33]:
-> >> On 29/04/14 19:19, Tomi Valkeinen wrote:
-> >>> On 29/04/14 18:05, Tony Lindgren wrote:
-> >>>
-> >>>>> omap4_padconf_global is a syscon node, not pinctrl. As syscon just gives
-> >>>>> a raw regmap to its memory area, the driver needs to know about the OMAP
-> >>>>> control registers to use it.
-> >>>>
-> >>>> That would be probably best set up the same way we have already set up
-> >>>> for example omap4_padconf_global: tisyscon@4a1005a0. Then drivers can
-> >>>> access it using regmap, see how drivers/regulator/pbias-regulator.c
-> >>>> sets up the pbias regulator with regmap for MMC.
-> >>>
-> >>> Right, but it means that the driver will contain platform specific code
-> >>> for all the omap revisions it supports. Isn't that wrong?
-> >>>
-> >>> I already have a patch for DSI that uses the syscon-method, and it works
-> >>> fine. But it's quite ugly, imo, to fiddle with the OMAP control
-> >>> registers in a driver.
-> > 
-> > Anything using the system control module registers should be a separate
-> > driver. And it should ideally be implemeting some Linux generic framework
-> > that the consumer driver can then use. That leaves out the need to export
-> > custom functions.
-> 
-> Ok.
-> 
-> > I guess we don't have a PHY framework for displays though, so how about
-> > just a separate minimal driver under drivers/video/omap2 that uses the
-> > syscon?
-> 
-> Well, this one is not really about DSI PHY. The CONTROL_DSIPHY register
-> is not in the DSI PHY block, but in the control module, and it is used
-> to enable/disable the pins (for omap4/5) and to set pull up/down for the
-> pins (only for omap4). Oddly, for omap5, there's also a normal padconfig
-> register for the DSI pins, but not so for omap4.
-> 
-> To me it looks like a pad config register. I don't know why there's a
-> separate odd register for it and it's not using the normal padconfig system.
-> 
-> I'd like to use the pinctrl framework for it, but the pinctrl-single
-> cannot handle such a funny register. So, if "Anything using the system
-> control module registers should be a separate driver", then I guess I
-> need to write a pinctrl driver for this single register?
+--iniACn6ADpBHQPdGm7D3FdbwW9oJGGPEu
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Have you checked out pinctrl-single,bits binding? That should allow
-you to map random bits in a single register to a pinctrl driver
-instance.
- 
-> >> Oh, also, if I do that, I need to know both the SoC version and the DSS
-> >> version in the driver.
-> > 
-> > Don't you get all you need in the compatible string? Something like
-> > compatible ti,dss-phy-omap5?
-> 
-> We do use different compatible strings for different major versions of
-> the DSS blocks, like ti,omap5-dsi. But that exactly same DSS block could
-> be used on some other SoC, with different control stuff.
-> 
-> We could use separate compatible string for each SoC that uses DSS, but
-> then we're really encoding the SoC version into the compatible string,
-> not DSS version.
-> 
-> Of course, if there will be a separate driver managing the
-> CONTROL_DSIPHY register, then that one should use compatible string
-> specific to the SoC, as it's not a DSS driver at all.
+Hi Linus,
 
-Yeah probably using pinctrl-single,bits, or a separate driver with syscon
-makes most sense here.
+Please pull fbdev fixes for 3.15.
 
-Regards,
+The drivers/video/Kconfig change in this pull request will conflict with =
+the
+fbdev reorder series, which is not yet in your tree. If that's an issue, =
+I can
+resend this without the Kconfig change.
 
-Tony
+ Tomi
+
+The following changes since commit c9eaa447e77efe77b7fa4c953bd62de8297fd6=
+c5:
+
+  Linux 3.15-rc1 (2014-04-13 14:18:35 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-fixes-3.15
+
+for you to fetch changes up to c26ef3eb3c11274bad1b64498d0a134f85755250:
+
+  video: bf54x-lq043fb: fix build error (2014-04-15 12:44:16 +0300)
+
+----------------------------------------------------------------
+fbdev fixes for 3.15:
+
+- fix build errors for bf54x-lq043fb and imxfb
+- fbcon fix for da8xx-fb
+- omapdss fixes for hdmi audio, irq handling and fclk calculation
+
+----------------------------------------------------------------
+Alexander Shiyan (1):
+      video: imxfb: Select LCD_CLASS_DEVICE unconditionally
+
+Jon Ringle (1):
+      video: da8xx-fb: Fix casting of info->pseudo_palette
+
+Jyri Sarha (2):
+      OMAPDSS: Take pixelclock unit change into account in hdmi_compute_a=
+cr()
+      OMAPDSS: Change struct reg_field to dispc_reg_field
+
+Steven Miao (1):
+      video: bf54x-lq043fb: fix build error
+
+Tomi Valkeinen (2):
+      OMAPDSS: fix rounding when calculating fclk rate
+      OMAPDSS: fix shared irq handlers
+
+ drivers/video/Kconfig                 |  2 ++
+ drivers/video/bf54x-lq043fb.c         |  2 +-
+ drivers/video/da8xx-fb.c              | 10 +-----
+ drivers/video/omap2/dss/dispc.c       | 67 +++++++++++++++++++++++++++++=
+------
+ drivers/video/omap2/dss/dsi.c         | 20 +++++++++++
+ drivers/video/omap2/dss/dss.c         |  4 +--
+ drivers/video/omap2/dss/dss.h         |  6 ----
+ drivers/video/omap2/dss/hdmi_common.c |  8 ++---
+ 8 files changed, 87 insertions(+), 32 deletions(-)
+
+
+--iniACn6ADpBHQPdGm7D3FdbwW9oJGGPEu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTTkd1AAoJEPo9qoy8lh71tt0P/17jSYCuTlJbi2EMAskUKGAR
+rbJjNGSH1/d40wC9vIAIy4xb2BbUSAIL0HDdcSy8K+G27gGUWszMAII5yItt074o
+dUEtCdD7AuZxCYA83W65N7d2Yl+vq/7xFHhY47tauAbvzpZQMSy4UI6AGebWiK5G
+StZDd6wSNEGrt4IDawTctr3ZI/4eCLk8j9FgTstkIYCNinkAB33oGOLs1Rya5mx7
+d+0MIOkhdjrFTFSt4XHRRyhDoeDNpX97qDz2dpzSgduHzTRromJA4o2O4SnNwcbh
+0Adxz+Fkpj9Gty/BNghd/XNimqWc3nU70apvJoexriIESaJuk3wqHhxLqYzov2xn
+yzhjoSogB8sP/ymnVZndnI5gLPSw+KSwUlppgG3ap6Hg7foBNqKAObLrNCz+4AHe
+qMR2WU2+wKhFsyQTUz5JrT0DDfyx8yC4oYZAgVoAfRY9FEUYl9am/kaenzcwOmvS
+JwZPHbEPbS7otqZf53E/LRq90EExtPl387Bs7oT8WpX6yp9G/nbmY4m8MZnhE3Qo
+NTeMchiM+t1KdLKvXd4fda8M6M20mQepIWCXz60FVvs0bh89LQP7Jc2vAOJ/NSIo
+H9rQ2+YTIV4QzjAPnfIBG1sq7H1vtxbvwl2hB3bn1hoa7EGOaHmO6bg1jwmjxdM2
+wlviSCX9cW6ryGVH/9dD
+=69In
+-----END PGP SIGNATURE-----
+
+--iniACn6ADpBHQPdGm7D3FdbwW9oJGGPEu--

@@ -1,80 +1,126 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 10:16:56 +0000
-Subject: [PATCH 00/23] OMAPDSS: OMAP5 display support
-Message-Id: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Fri, 18 Apr 2014 09:21:53 +0000
+Subject: [PATCH 3.12 20/72] video/fb: Propagate error code from failing to unregister conflicting fb
+Message-Id: <9419c62ccf280244e27f3007752cfb9818e46479.1397812482.git.jslaby@suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <3389f243c528afc7c7300c83b8f296290cd3656d.1397812482.git.jslaby@suse.cz>
+In-Reply-To: <3389f243c528afc7c7300c83b8f296290cd3656d.1397812482.git.jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Airlie <airlied@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-Hi,
+From: Chris Wilson <chris@chris-wilson.co.uk>
 
-This series implements OMAP5 display support. The series is based on -rc2.
+3.12-stable review patch.  If anyone has any objections, please let me know.
 
-Tested on OMAP5 uEVM with HDMI output, and OMAP5 uEVM with a custom DSI panel
-(patches for the panel are not included here).
+=======
+commit 46eeb2c144956e88197439b5ee5cf221a91b0a81 upstream.
 
-Tomi
+If we fail to remove a conflicting fb driver, we need to abort the
+loading of the second driver to avoid likely kernel panics.
 
-Archit Taneja (4):
-  ARM: OMAP: hwmod: OMAP5 DSS hwmod data
-  OMAPDSS: HDMI: support larger register offsets for OMAP5 HDMI core
-  OMAPDSS: HDMI: PHY changes for OMAP5
-  OMAPDSS: HDMI: PLL changes for OMAP5
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Reviewed-by: Jani Nikula <jani.nikula@intel.com>
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+---
+ drivers/video/fbmem.c | 31 +++++++++++++++++++++----------
+ include/linux/fb.h    |  4 ++--
+ 2 files changed, 23 insertions(+), 12 deletions(-)
 
-Tomi Valkeinen (19):
-  OMAPDSS: HDMI: lane config support
-  Doc/DT: ti,omap4-dss: hdmi lanes
-  OMAPDSS: HDMI4: set regulator voltage to 1.8V
-  OMAPDSS: DSI: set regulator voltage to 1.8V
-  ARM: OMAP: add OMAP5 DSI muxing
-  ARM: OMAP: add detection of omap5-dss
-  ARM: dts: omap5-clocks.dtsi: add dss iclk
-  ARM: dts: omap5-clocks.dtsi: add ti,set-rate-parent to dss_dss_clk
-  ARM: dts: omap5.dtsi: add DSS nodes
-  ARM: dts: omap5-uevm.dts: add tca6424a
-  ARM: dts: omap5-uevm.dts: add display nodes
-  OMAPDSS: DSS & DISPC DT support for OMAP5
-  OMAPDSS: features: fix OMAP5 features
-  OMAPDSS: DPI: fix LCD3 DSI source
-  OMAPDSS: DSI: Add OMAP5 DSI module IDs
-  OMAPDSS: HDMI: improve Makefile
-  OMAPDSS: HDMI: move irq & phy pwr handling
-  OMAPDSS: HDMI: Add OMAP5 HDMI support
-  Doc/DT: Add OMAP5 DSS DT bindings
-
- .../devicetree/bindings/video/ti,omap4-dss.txt     |   4 +
- .../devicetree/bindings/video/ti,omap5-dss.txt     |  96 +++
- arch/arm/boot/dts/omap5-uevm.dts                   |  89 ++
- arch/arm/boot/dts/omap5.dtsi                       |  70 ++
- arch/arm/boot/dts/omap54xx-clocks.dtsi             |   9 +
- arch/arm/mach-omap2/display.c                      |  39 +-
- arch/arm/mach-omap2/omap_hwmod_54xx_data.c         | 283 +++++++
- drivers/video/fbdev/omap2/dss/Kconfig              |  22 +-
- drivers/video/fbdev/omap2/dss/Makefile             |   6 +-
- drivers/video/fbdev/omap2/dss/core.c               |   6 +
- drivers/video/fbdev/omap2/dss/dispc.c              |   1 +
- drivers/video/fbdev/omap2/dss/dpi.c                |   2 +
- drivers/video/fbdev/omap2/dss/dsi.c                |  17 +
- drivers/video/fbdev/omap2/dss/dss.c                |   1 +
- drivers/video/fbdev/omap2/dss/dss.h                |   3 +
- drivers/video/fbdev/omap2/dss/dss_features.c       |   3 +-
- drivers/video/fbdev/omap2/dss/hdmi.h               |  17 +-
- drivers/video/fbdev/omap2/dss/hdmi4.c              | 113 ++-
- drivers/video/fbdev/omap2/dss/hdmi5.c              | 829 ++++++++++++++++++
- drivers/video/fbdev/omap2/dss/hdmi5_core.c         | 922 +++++++++++++++++++++
- drivers/video/fbdev/omap2/dss/hdmi5_core.h         | 306 +++++++
- drivers/video/fbdev/omap2/dss/hdmi_common.c        |  41 +
- drivers/video/fbdev/omap2/dss/hdmi_phy.c           | 231 ++++--
- drivers/video/fbdev/omap2/dss/hdmi_pll.c           |  81 +-
- drivers/video/fbdev/omap2/dss/hdmi_wp.c            |   2 +-
- 25 files changed, 3111 insertions(+), 82 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/ti,omap5-dss.txt
- create mode 100644 drivers/video/fbdev/omap2/dss/hdmi5.c
- create mode 100644 drivers/video/fbdev/omap2/dss/hdmi5_core.c
- create mode 100644 drivers/video/fbdev/omap2/dss/hdmi5_core.h
-
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index cde461932760..7309ac704e26 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1577,10 +1577,10 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
+ static int do_unregister_framebuffer(struct fb_info *fb_info);
+ 
+ #define VGA_FB_PHYS 0xA0000
+-static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
+-				     const char *name, bool primary)
++static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
++					      const char *name, bool primary)
+ {
+-	int i;
++	int i, ret;
+ 
+ 	/* check all firmware fbs and kick off if the base addr overlaps */
+ 	for (i = 0 ; i < FB_MAX; i++) {
+@@ -1599,22 +1599,29 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ 			printk(KERN_INFO "fb: conflicting fb hw usage "
+ 			       "%s vs %s - removing generic driver\n",
+ 			       name, registered_fb[i]->fix.id);
+-			do_unregister_framebuffer(registered_fb[i]);
++			ret = do_unregister_framebuffer(registered_fb[i]);
++			if (ret)
++				return ret;
+ 		}
+ 	}
++
++	return 0;
+ }
+ 
+ static int do_register_framebuffer(struct fb_info *fb_info)
+ {
+-	int i;
++	int i, ret;
+ 	struct fb_event event;
+ 	struct fb_videomode mode;
+ 
+ 	if (fb_check_foreignness(fb_info))
+ 		return -ENOSYS;
+ 
+-	do_remove_conflicting_framebuffers(fb_info->apertures, fb_info->fix.id,
+-					 fb_is_primary_device(fb_info));
++	ret = do_remove_conflicting_framebuffers(fb_info->apertures,
++						 fb_info->fix.id,
++						 fb_is_primary_device(fb_info));
++	if (ret)
++		return ret;
+ 
+ 	if (num_registered_fb = FB_MAX)
+ 		return -ENXIO;
+@@ -1739,12 +1746,16 @@ int unlink_framebuffer(struct fb_info *fb_info)
+ }
+ EXPORT_SYMBOL(unlink_framebuffer);
+ 
+-void remove_conflicting_framebuffers(struct apertures_struct *a,
+-				     const char *name, bool primary)
++int remove_conflicting_framebuffers(struct apertures_struct *a,
++				    const char *name, bool primary)
+ {
++	int ret;
++
+ 	mutex_lock(&registration_lock);
+-	do_remove_conflicting_framebuffers(a, name, primary);
++	ret = do_remove_conflicting_framebuffers(a, name, primary);
+ 	mutex_unlock(&registration_lock);
++
++	return ret;
+ }
+ EXPORT_SYMBOL(remove_conflicting_framebuffers);
+ 
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index ffac70aab3e9..8439a1600c1a 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -613,8 +613,8 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+ extern int register_framebuffer(struct fb_info *fb_info);
+ extern int unregister_framebuffer(struct fb_info *fb_info);
+ extern int unlink_framebuffer(struct fb_info *fb_info);
+-extern void remove_conflicting_framebuffers(struct apertures_struct *a,
+-				const char *name, bool primary);
++extern int remove_conflicting_framebuffers(struct apertures_struct *a,
++					   const char *name, bool primary);
+ extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
+ extern int fb_show_logo(struct fb_info *fb_info, int rotate);
+ extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
 -- 
-1.9.1
+1.9.2
 

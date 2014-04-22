@@ -1,43 +1,27 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 14 Apr 2014 21:59:47 +0000
-Subject: [PATCHv2 05/11] ARM: pxa: hx4700: initialize all the struct pwm_lookup members
-Message-Id: <1397512793-10325-6-git-send-email-alexandre.belloni@free-electrons.com>
+From: Marek Belisko <marek@goldelico.com>
+Date: Tue, 22 Apr 2014 21:12:46 +0000
+Subject: [PATCH 0/2] Add display support for gta04 device
+Message-Id: <1398201168-25275-1-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This will allow to get rid of the .pwm_period_ns member of struct
-platform_pwm_backlight_data as the period will be set by the PWM core.
+This 2 patches adding display support for openmoko gta04 device.
+First patch add DT bindings for topolly td028 panel and second add description for
+dss + panel.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
- arch/arm/mach-pxa/hx4700.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+Marek Belisko (2):
+  omapdss: panel-tpo-td028ec1: Add DT support.
+  ARM: dts: oma3-gta04: Add display support
 
-diff --git a/arch/arm/mach-pxa/hx4700.c b/arch/arm/mach-pxa/hx4700.c
-index a7c30eb0c8db..0788a1f171fe 100644
---- a/arch/arm/mach-pxa/hx4700.c
-+++ b/arch/arm/mach-pxa/hx4700.c
-@@ -574,7 +574,14 @@ static struct platform_device backlight = {
- };
- 
- static struct pwm_lookup hx4700_pwm_lookup[] = {
--	PWM_LOOKUP("pxa27x-pwm.1", 0, "pwm-backlight", NULL),
-+	{
-+		.provider = "pxa27x-pwm.1",
-+		.index = 0,
-+		.dev_id = "pwm-backlight",
-+		.con_id = NULL,
-+		.period = 30923,
-+		.polarity = PWM_POLARITY_NORMAL,
-+	},
- };
- 
- /*
+ .../bindings/video/toppoly,td028ttec1.txt          | 30 ++++++++
+ arch/arm/boot/dts/omap3-gta04.dts                  | 86 ++++++++++++++++++++++
+ .../omap2/displays-new/panel-tpo-td028ttec1.c      | 32 +++++++-
+ 3 files changed, 147 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
+
 -- 
 1.8.3.2
 

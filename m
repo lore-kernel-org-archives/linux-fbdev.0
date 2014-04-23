@@ -1,56 +1,131 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Wed, 19 Mar 2014 13:03:21 +0000
-Subject: [PATCH 08/16] backlight: pwm_bl: set pwm polarity when using platform data
-Message-Id: <1395234209-15546-9-git-send-email-alexandre.belloni@free-electrons.com>
+From: Marek Belisko <marek@goldelico.com>
+Date: Wed, 23 Apr 2014 20:15:19 +0000
+Subject: [PATCH v2 2/3] ARM: dts: oma3-gta04: Add display support
+Message-Id: <1398284120-4986-3-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1398284120-4986-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1398284120-4986-1-git-send-email-marek@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Set inversed polarity when .pwm_active_low is set in the platform_data. With
-device tree, this is taken care of by of_pwm_xlate_with_flags(), called from
-of_pwm_get().
+This patch add support for lcd display on gta04 board. Display control
+is connected on spi (used spi bitbang driver).
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Signed-off-by: Marek Belisko <marek@goldelico.com>
 ---
- drivers/video/backlight/pwm_bl.c | 8 ++++++++
- include/linux/pwm_backlight.h    | 1 +
- 2 files changed, 9 insertions(+)
+ arch/arm/boot/dts/omap3-gta04.dts | 86 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 86 insertions(+)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index b75201ff46f6..ffdd3b2b2742 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -309,6 +309,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	if (data->pwm_period_ns > 0)
- 		pwm_set_period(pb->pwm, data->pwm_period_ns);
- 
-+	/*
-+	 * The DT case is taking care of polarity in of_pwm_get(). For the
-+	 * non-DT case, set the polarity from platform data.
-+	 */
-+	if (data->pwm_active_low)
-+		if (pwm_set_polarity(pb->pwm, PWM_POLARITY_INVERSED))
-+			dev_err(&pdev->dev, "impossible to invert polarity\n");
+diff --git a/arch/arm/boot/dts/omap3-gta04.dts b/arch/arm/boot/dts/omap3-gta04.dts
+index f8ad125..db56e67 100644
+--- a/arch/arm/boot/dts/omap3-gta04.dts
++++ b/arch/arm/boot/dts/omap3-gta04.dts
+@@ -44,6 +44,36 @@
+ 		ti,mcbsp = <&mcbsp2>;
+ 		ti,codec = <&twl_audio>;
+ 	};
 +
- 	pb->period = pwm_get_period(pb->pwm);
- 	pb->lth_brightness = data->lth_brightness * (pb->period / pb->scale);
++	spi_lcd {
++		compatible = "spi-gpio";
++		#address-cells = <0x1>;
++		#size-cells = <0x0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&spi_gpio_pins>;
++
++		gpio-sck = <&gpio1 12 0>;
++		gpio-miso = <&gpio1 18 0>;
++		gpio-mosi = <&gpio1 20 0>;
++		cs-gpios = <&gpio1 19 0>;
++		num-chipselects = <1>;
++
++		/* lcd panel */
++		lcd: td028ttec1@0 {
++			compatible = "toppoly,td028ttec1";
++			reg = <0>;
++			spi-max-frequency = <100000>;
++			spi-cpol;
++			spi-cpha;
++
++			label = "lcd";
++			port {
++				lcd_in: endpoint {
++					remote-endpoint = <&dpi_out>;
++				};
++			};
++		};
++	};
+ };
  
-diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
-index 2de2e275b2cb..b924fce5c97a 100644
---- a/include/linux/pwm_backlight.h
-+++ b/include/linux/pwm_backlight.h
-@@ -15,6 +15,7 @@ struct platform_pwm_backlight_data {
- 	unsigned int dft_brightness;
- 	unsigned int lth_brightness;
- 	unsigned int pwm_period_ns;
-+	bool pwm_active_low;
- 	unsigned int *levels;
- 	int enable_gpio;
- 	unsigned long enable_gpio_flags;
+ &omap3_pmx_core {
+@@ -78,6 +108,47 @@
+ 			0x11e (PIN_INPUT_PULLUP | MUX_MODE0)	/* sdmmc1_dat3.sdmmc1_dat3 */
+ 		>;
+ 	};
++
++	dss_dpi_pins: pinmux_dss_dpi_pins {
++               pinctrl-single,pins = <
++                       0x0a4 (PIN_OUTPUT | MUX_MODE0)   /* dss_pclk.dss_pclk */
++                       0x0a6 (PIN_OUTPUT | MUX_MODE0)   /* dss_hsync.dss_hsync */
++                       0x0a8 (PIN_OUTPUT | MUX_MODE0)   /* dss_vsync.dss_vsync */
++                       0x0aa (PIN_OUTPUT | MUX_MODE0)   /* dss_acbias.dss_acbias */
++                       0x0ac (PIN_OUTPUT | MUX_MODE0)   /* dss_data0.dss_data0 */
++                       0x0ae (PIN_OUTPUT | MUX_MODE0)   /* dss_data1.dss_data1 */
++                       0x0b0 (PIN_OUTPUT | MUX_MODE0)   /* dss_data2.dss_data2 */
++                       0x0b2 (PIN_OUTPUT | MUX_MODE0)   /* dss_data3.dss_data3 */
++                       0x0b4 (PIN_OUTPUT | MUX_MODE0)   /* dss_data4.dss_data4 */
++                       0x0b6 (PIN_OUTPUT | MUX_MODE0)   /* dss_data5.dss_data5 */
++                       0x0b8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data6.dss_data6 */
++                       0x0ba (PIN_OUTPUT | MUX_MODE0)   /* dss_data7.dss_data7 */
++                       0x0bc (PIN_OUTPUT | MUX_MODE0)   /* dss_data8.dss_data8 */
++                       0x0be (PIN_OUTPUT | MUX_MODE0)   /* dss_data9.dss_data9 */
++                       0x0c0 (PIN_OUTPUT | MUX_MODE0)   /* dss_data10.dss_data10 */
++                       0x0c2 (PIN_OUTPUT | MUX_MODE0)   /* dss_data11.dss_data11 */
++                       0x0c4 (PIN_OUTPUT | MUX_MODE0)   /* dss_data12.dss_data12 */
++                       0x0c6 (PIN_OUTPUT | MUX_MODE0)   /* dss_data13.dss_data13 */
++                       0x0c8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data14.dss_data14 */
++                       0x0ca (PIN_OUTPUT | MUX_MODE0)   /* dss_data15.dss_data15 */
++                       0x0cc (PIN_OUTPUT | MUX_MODE0)   /* dss_data16.dss_data16 */
++                       0x0ce (PIN_OUTPUT | MUX_MODE0)   /* dss_data17.dss_data17 */
++                       0x0d0 (PIN_OUTPUT | MUX_MODE0)   /* dss_data18.dss_data18 */
++                       0x0d2 (PIN_OUTPUT | MUX_MODE0)   /* dss_data19.dss_data19 */
++                       0x0d4 (PIN_OUTPUT | MUX_MODE0)   /* dss_data20.dss_data20 */
++                       0x0d6 (PIN_OUTPUT | MUX_MODE0)   /* dss_data21.dss_data21 */
++                       0x0d8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data22.dss_data22 */
++                       0x0da (PIN_OUTPUT | MUX_MODE0)   /* dss_data23.dss_data23 */
++               >;
++       };
++
++	spi_gpio_pins: spi_gpio_pinmux {
++		pinctrl-single,pins = <0x5a8 (PIN_OUTPUT | MUX_MODE4) /* clk */
++			0x5b6 (PIN_OUTPUT | MUX_MODE4) /* cs */
++			0x5b8 (PIN_OUTPUT | MUX_MODE4) /* tx */
++			0x5b4 (PIN_INPUT | MUX_MODE4) /* rx */
++		>;
++	};
+ };
+ 
+ &i2c1 {
+@@ -219,3 +290,18 @@
+ 	regulator-min-microvolt = <2800000>;
+ 	regulator-max-microvolt = <3150000>;
+ };
++
++&dss {
++	pinctrl-names = "default";
++	pinctrl-0 = < &dss_dpi_pins >;
++
++	status = "okay";
++
++	vdds_dsi-supply = <&vpll2>;
++
++	dpi_out: endpoint {
++               remote-endpoint = <&lcd_in>;
++               data-lines = <24>;
++       };
++
++};
 -- 
 1.8.3.2
 

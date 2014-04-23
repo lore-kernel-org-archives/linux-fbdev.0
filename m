@@ -1,47 +1,34 @@
-From: jon@ringle.org
-Date: Tue, 01 Apr 2014 12:33:05 +0000
-Subject: [PATCH v2 2/2] video: da8xx-fb: Fix casting of info->pseudo_palette
-Message-Id: <1396355585-458-2-git-send-email-jon@ringle.org>
+From: Marek Belisko <marek@goldelico.com>
+Date: Wed, 23 Apr 2014 20:15:17 +0000
+Subject: [PATCH v2 0/3] Add display support for gta04 device
+Message-Id: <1398284120-4986-1-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1396355585-458-1-git-send-email-jon@ringle.org>
-In-Reply-To: <1396355585-458-1-git-send-email-jon@ringle.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, Jon Ringle <jringle@gridpoint.com>
+To: linux-arm-kernel@lists.infradead.org
 
-From: Jon Ringle <jringle@gridpoint.com>
+This 3 patches adding display support for openmoko gta04 device.
+First patch add DT bindings for topolly td028 panel. Second add description for
+dss + panel and third fix panel probing when panel is compiled as module.
 
-The casting to (u16 *) on info->pseudo_palette is wrong and causes the
-display to show a blue (garbage) vertical line on every other pixel column
+Changes from v1:
+- extend panel compatible string by 'omapdss'
+- add tpo-td028 panel to dss_compat_conv_list
+- add MODULE_ALIAS macro to properly probe panel when is compiled as module
 
-Signed-off-by: Jon Ringle <jringle@gridpoint.com>
----
- drivers/video/da8xx-fb.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+Marek Belisko (3):
+  omapdss: panel-tpo-td028ec1: Add DT support.
+  ARM: dts: oma3-gta04: Add display support
+  omapdss: panel-tpo-td028ec1: Add module alias
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index d042624..83c43b2 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -678,15 +678,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 			(green << info->var.green.offset) |
- 			(blue << info->var.blue.offset);
- 
--		switch (info->var.bits_per_pixel) {
--		case 16:
--			((u16 *) (info->pseudo_palette))[regno] = v;
--			break;
--		case 24:
--		case 32:
--			((u32 *) (info->pseudo_palette))[regno] = v;
--			break;
--		}
-+		((u32 *) (info->pseudo_palette))[regno] = v;
- 		if (palette[0] != 0x4000) {
- 			update_hw = 1;
- 			palette[0] = 0x4000;
+ .../bindings/video/toppoly,td028ttec1.txt          | 30 ++++++++
+ arch/arm/boot/dts/omap3-gta04.dts                  | 86 ++++++++++++++++++++++
+ arch/arm/mach-omap2/display.c                      |  1 +
+ .../omap2/displays-new/panel-tpo-td028ttec1.c      | 33 ++++++++-
+ 4 files changed, 149 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
+
 -- 
-1.8.5.4
+1.8.3.2
 

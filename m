@@ -1,78 +1,60 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Mon, 07 Apr 2014 11:16:40 +0000
-Subject: Re: [PATCH 08/16] backlight: pwm_bl: set pwm polarity when using platform data
-Message-Id: <20140407111639.GB26985@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="E39vaYmALEf/7YXx"
+From: Masami Ichikawa <masami256@gmail.com>
+Date: Wed, 23 Apr 2014 14:35:22 +0000
+Subject: [PATCH] fbcon: Fix memory leak in con2fb_release_oldinfo()
+Message-Id: <1398263722-10436-1-git-send-email-masami256@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1395234209-15546-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1395234209-15546-9-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1395234209-15546-9-git-send-email-alexandre.belloni@free-electrons.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: masami256@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, udknight@gmail.com, gregkh@linuxfoundation.org, keithp@keithp.com, mika.kuoppala@linux.intel.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
+kmemleak reported a memory leak as below.
 
---E39vaYmALEf/7YXx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+unreferenced object 0xffff8800dab6d8d8 (size 96):
+  comm "swapper/0", pid 1, jiffies 4294877598 (age 38.483s)
+  hex dump (first 32 bytes):
+    00 00 00 00 00 01 00 00 08 00 00 00 10 00 00 00  ................
+    07 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<ffffffff814e8f2e>] kmemleak_alloc+0x4e/0xb0
+    [<ffffffff811a0600>] __kmalloc+0x280/0x320
+    [<ffffffff81309b61>] soft_cursor+0x231/0x290
+    [<ffffffff81309393>] bit_cursor+0x613/0x650
+    [<ffffffff8130556b>] fbcon_cursor+0x13b/0x1c0
+    [<ffffffff813755f8>] hide_cursor+0x28/0xa0
+    [<ffffffff81376e98>] redraw_screen+0x168/0x240
+    [<ffffffff81303891>] fbcon_prepare_logo+0x381/0x420
+    [<ffffffff81303c7e>] fbcon_init+0x34e/0x590
+    [<ffffffff81375828>] visual_init+0xb8/0x120
+    [<ffffffff81377c93>] do_bind_con_driver+0x163/0x380
+    [<ffffffff81378494>] do_take_over_console+0x114/0x1c0
+    [<ffffffff81303f23>] do_fbcon_takeover+0x63/0xd0
+    [<ffffffff813086dd>] fbcon_event_notify+0x68d/0x7e0
+    [<ffffffff814ff7ac>] notifier_call_chain+0x4c/0x70
+    [<ffffffff8108c85d>] __blocking_notifier_call_chain+0x4d/0x70
 
-On Wed, Mar 19, 2014 at 02:03:21PM +0100, Alexandre Belloni wrote:
-> Set inversed polarity when .pwm_active_low is set in the platform_data. W=
-ith
-> device tree, this is taken care of by of_pwm_xlate_with_flags(), called f=
-rom
-> of_pwm_get().
->=20
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> ---
->  drivers/video/backlight/pwm_bl.c | 8 ++++++++
->  include/linux/pwm_backlight.h    | 1 +
->  2 files changed, 9 insertions(+)
->=20
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
-wm_bl.c
-> index b75201ff46f6..ffdd3b2b2742 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -309,6 +309,14 @@ static int pwm_backlight_probe(struct platform_devic=
-e *pdev)
->  	if (data->pwm_period_ns > 0)
->  		pwm_set_period(pb->pwm, data->pwm_period_ns);
-> =20
-> +	/*
-> +	 * The DT case is taking care of polarity in of_pwm_get(). For the
-> +	 * non-DT case, set the polarity from platform data.
-> +	 */
-> +	if (data->pwm_active_low)
-> +		if (pwm_set_polarity(pb->pwm, PWM_POLARITY_INVERSED))
-> +			dev_err(&pdev->dev, "impossible to invert polarity\n");
+This memory leak cause is, fbcon_ops's cursor_src is allocated in
+soft_cursor() but not released in con2fb_release_oldinfo().
+so, cursor_src is needed to be released when oldinfo is going to be
+released.
 
-Could this perhaps be solved by adding a field to the PWM lookup table
-that's used for non-DT cases? The idea being that we can use the same
-interfaces for DT and non-DT cases, so we should try to move both
-towards the same representation.
+Signed-off-by: Masami Ichikawa <masami256@gmail.com>
+---
+ drivers/video/console/fbcon.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thierry
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index f447734..57b1d44 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -748,6 +748,7 @@ static int con2fb_release_oldinfo(struct vc_data *vc, struct fb_info *oldinfo,
+ 		fbcon_del_cursor_timer(oldinfo);
+ 		kfree(ops->cursor_state.mask);
+ 		kfree(ops->cursor_data);
++		kfree(ops->cursor_src);
+ 		kfree(ops->fontbuffer);
+ 		kfree(oldinfo->fbcon_par);
+ 		oldinfo->fbcon_par = NULL;
+-- 
+1.9.1
 
---E39vaYmALEf/7YXx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTQokXAAoJEN0jrNd/PrOhYwQP/3iS086fybBevF1BDVESvgLK
-Z+iw30tfhnbHyAoxyc7044d3+BNgtdRFR/EF3TPUrnwSbK3FaU6zfg+iacxvdor4
-Ti/yH/FlV/Y1/Z0Ku5LdEXX+3wYu76NDmrastygh/gSqAOJWNgnijEEBGxboBWKg
-XFZNCoPLCWFQaZ0Mm2Szhr/XIA6ENU9Lul+c5TFHYI85HhkRwEI3NrVeR+LkqQEY
-J/a9FpGAExNvm3Ks4U3tKVvj7wEQkWiGUraGZsV/ecITsTN0dJ1M92ATtnvkMffl
-DVKNqkmoY3p/2bzThEhAVFq/N+QU6yIQwzt4iHrsadnqeIrajzHhfWs4hYUt7Wz9
-AR2RNcTUxXRoLNR7lJtXrx1gFAcYXqYzub09ghtMM25tpUAdX6nfQ2orIsFSBYi9
-IT0bERQySx97gKsr6TTW8epwZ8wFt7AKjOSUIi4a/SqliwIOAlMOC5WUaQwZ/e1P
-PAwEA70B+9jqlAPqWXSssno2DTGuZ8Pa6WZmYrq+WizOpicE+Bvx0HdC3+66ojt6
-K0CjQoPFC+2vF0og1M/N+UGg4CC+jBJNO/mHBx9TLWOfhEI5lRrjZtzUkj64KUmY
-bnyNtH/0Zclic/JRMOQA1oUK8wo35dpFDGm5IvkLX7YE/I1cCffV+9WdHo8O4KPx
-dmy11yA2Tc1yW99vUWpk
-=cgnq
------END PGP SIGNATURE-----
-
---E39vaYmALEf/7YXx--

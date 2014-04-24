@@ -1,142 +1,43 @@
-From: Marek Belisko <marek@goldelico.com>
-Date: Wed, 23 Apr 2014 20:15:18 +0000
-Subject: [PATCH v2 1/3] omapdss: panel-tpo-td028ec1: Add DT support.
-Message-Id: <1398284120-4986-2-git-send-email-marek@goldelico.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Apr 2014 10:17:12 +0000
+Subject: [PATCH 16/23] OMAPDSS: DSI: Add OMAP5 DSI module IDs
+Message-Id: <1398334639-14172-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398284120-4986-1-git-send-email-marek@goldelico.com>
-In-Reply-To: <1398284120-4986-1-git-send-email-marek@goldelico.com>
+References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Marek Belisko <marek@goldelico.com>
----
- .../bindings/video/toppoly,td028ttec1.txt          | 30 ++++++++++++++++++++
- arch/arm/mach-omap2/display.c                      |  1 +
- .../omap2/displays-new/panel-tpo-td028ttec1.c      | 32 +++++++++++++++++++++-
- 3 files changed, 62 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
+Add OMAP5 DSI module ID support to the OMAP DSI driver.
 
-diff --git a/Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt b/Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
-new file mode 100644
-index 0000000..7175dc3
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
-@@ -0,0 +1,30 @@
-+Toppoly TD028TTEC1 Panel
-+============
-+
-+Required properties:
-+- compatible: "toppoly,td028ttec1"
-+
-+Optional properties:
-+- label: a symbolic name for the panel
-+
-+Required nodes:
-+- Video port for DPI input
-+
-+Example
-+-------
-+
-+lcd-panel: td028ttec1@0 {
-+	compatible = "toppoly,td028ttec1";
-+	reg = <0>;
-+	spi-max-frequency = <100000>;
-+	spi-cpol;
-+	spi-cpha;
-+
-+	label = "lcd";
-+	port {
-+		lcd_in: endpoint {
-+			remote-endpoint = <&dpi_out>;
-+		};
-+	};
-+};
-+
-diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-index 16d33d8..66a2ee0 100644
---- a/arch/arm/mach-omap2/display.c
-+++ b/arch/arm/mach-omap2/display.c
-@@ -566,6 +566,7 @@ static const char * const dss_compat_conv_list[] __initconst = {
- 	"svideo-connector",
- 	"ti,tfp410",
- 	"ti,tpd12s015",
-+	"toppoly,td028ttec1",
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dsi.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
+index 57f120896b43..a888d28fd055 100644
+--- a/drivers/video/fbdev/omap2/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/dss/dsi.c
+@@ -5733,9 +5733,16 @@ static const struct dsi_module_id_data dsi_of_data_omap4[] = {
+ 	{ },
  };
  
- /* prepend compatible string with "omapdss," */
-diff --git a/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c b/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c
-index fae6adc..5b3466e 100644
---- a/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c
-+++ b/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c
-@@ -206,7 +206,8 @@ static int td028ttec1_panel_enable(struct omap_dss_device *dssdev)
- 	if (omapdss_device_is_enabled(dssdev))
- 		return 0;
- 
--	in->ops.dpi->set_data_lines(in, ddata->data_lines);
-+	if (ddata->data_lines)
-+		in->ops.dpi->set_data_lines(in, ddata->data_lines);
- 	in->ops.dpi->set_timings(in, &ddata->videomode);
- 
- 	r = in->ops.dpi->enable(in);
-@@ -389,6 +390,23 @@ static int td028ttec1_panel_probe_pdata(struct spi_device *spi)
- 	return 0;
- }
- 
-+static int td028ttec1_probe_of(struct spi_device *spi)
-+{
-+	struct device_node *node = spi->dev.of_node;
-+	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
-+	struct omap_dss_device *in;
-+
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&spi->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
-+
-+	ddata->in = in;
-+
-+	return 0;
-+}
-+
- static int td028ttec1_panel_probe(struct spi_device *spi)
- {
- 	struct panel_drv_data *ddata;
-@@ -418,6 +436,10 @@ static int td028ttec1_panel_probe(struct spi_device *spi)
- 		r = td028ttec1_panel_probe_pdata(spi);
- 		if (r)
- 			return r;
-+	} else if (spi->dev.of_node) {
-+		r = td028ttec1_probe_of(spi);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -463,6 +485,13 @@ static int td028ttec1_panel_remove(struct spi_device *spi)
- 	return 0;
- }
- 
-+static const struct of_device_id td028ttec1_of_match[] = {
-+	{ .compatible = "omapdss,toppoly,td028ttec1", },
-+	{},
++static const struct dsi_module_id_data dsi_of_data_omap5[] = {
++	{ .address = 0x58004000, .id = 0, },
++	{ .address = 0x58009000, .id = 1, },
++	{ },
 +};
 +
-+MODULE_DEVICE_TABLE(of, td028ttec1_of_match);
-+
- static struct spi_driver td028ttec1_spi_driver = {
- 	.probe		= td028ttec1_panel_probe,
- 	.remove		= td028ttec1_panel_remove,
-@@ -470,6 +499,7 @@ static struct spi_driver td028ttec1_spi_driver = {
- 	.driver         = {
- 		.name   = "panel-tpo-td028ttec1",
- 		.owner  = THIS_MODULE,
-+		.of_match_table = td028ttec1_of_match,
- 	},
+ static const struct of_device_id dsi_of_match[] = {
+ 	{ .compatible = "ti,omap3-dsi", .data = dsi_of_data_omap3, },
+ 	{ .compatible = "ti,omap4-dsi", .data = dsi_of_data_omap4, },
++	{ .compatible = "ti,omap5-dsi", .data = dsi_of_data_omap5, },
+ 	{},
  };
  
 -- 
-1.8.3.2
+1.9.1
 

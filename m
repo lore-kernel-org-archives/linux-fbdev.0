@@ -1,41 +1,80 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 14 Apr 2014 21:59:50 +0000
-Subject: [PATCHv2 08/11] ARM: shmobile: Armadillo 800 EVA: use PWM_LOOKUP to initialize struct pwm_lookup
-Message-Id: <1397512793-10325-9-git-send-email-alexandre.belloni@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Apr 2014 10:16:56 +0000
+Subject: [PATCH 00/23] OMAPDSS: OMAP5 display support
+Message-Id: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
- arch/arm/mach-shmobile/board-armadillo800eva.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+Hi,
 
-diff --git a/arch/arm/mach-shmobile/board-armadillo800eva.c b/arch/arm/mach-shmobile/board-armadillo800eva.c
-index 1bf61dad9a35..ca82b1e2ebab 100644
---- a/arch/arm/mach-shmobile/board-armadillo800eva.c
-+++ b/arch/arm/mach-shmobile/board-armadillo800eva.c
-@@ -407,14 +407,8 @@ static struct platform_device pwm_device = {
- };
- 
- static struct pwm_lookup pwm_lookup[] = {
--	{
--		.provider = "renesas-tpu-pwm",
--		.index = 2,
--		.dev_id = "pwm-backlight.0",
--		.con_id = NULL,
--		.period = 33333,
--		.polarity = PWM_POLARITY_INVERSED,
--	},
-+	PWM_LOOKUP("renesas-tpu-pwm", 2, "pwm-backlight.0", NULL,
-+		   33333, PWM_POLARITY_INVERSED),
- };
- 
- /* LCDC and backlight */
+This series implements OMAP5 display support. The series is based on -rc2.
+
+Tested on OMAP5 uEVM with HDMI output, and OMAP5 uEVM with a custom DSI panel
+(patches for the panel are not included here).
+
+Tomi
+
+Archit Taneja (4):
+  ARM: OMAP: hwmod: OMAP5 DSS hwmod data
+  OMAPDSS: HDMI: support larger register offsets for OMAP5 HDMI core
+  OMAPDSS: HDMI: PHY changes for OMAP5
+  OMAPDSS: HDMI: PLL changes for OMAP5
+
+Tomi Valkeinen (19):
+  OMAPDSS: HDMI: lane config support
+  Doc/DT: ti,omap4-dss: hdmi lanes
+  OMAPDSS: HDMI4: set regulator voltage to 1.8V
+  OMAPDSS: DSI: set regulator voltage to 1.8V
+  ARM: OMAP: add OMAP5 DSI muxing
+  ARM: OMAP: add detection of omap5-dss
+  ARM: dts: omap5-clocks.dtsi: add dss iclk
+  ARM: dts: omap5-clocks.dtsi: add ti,set-rate-parent to dss_dss_clk
+  ARM: dts: omap5.dtsi: add DSS nodes
+  ARM: dts: omap5-uevm.dts: add tca6424a
+  ARM: dts: omap5-uevm.dts: add display nodes
+  OMAPDSS: DSS & DISPC DT support for OMAP5
+  OMAPDSS: features: fix OMAP5 features
+  OMAPDSS: DPI: fix LCD3 DSI source
+  OMAPDSS: DSI: Add OMAP5 DSI module IDs
+  OMAPDSS: HDMI: improve Makefile
+  OMAPDSS: HDMI: move irq & phy pwr handling
+  OMAPDSS: HDMI: Add OMAP5 HDMI support
+  Doc/DT: Add OMAP5 DSS DT bindings
+
+ .../devicetree/bindings/video/ti,omap4-dss.txt     |   4 +
+ .../devicetree/bindings/video/ti,omap5-dss.txt     |  96 +++
+ arch/arm/boot/dts/omap5-uevm.dts                   |  89 ++
+ arch/arm/boot/dts/omap5.dtsi                       |  70 ++
+ arch/arm/boot/dts/omap54xx-clocks.dtsi             |   9 +
+ arch/arm/mach-omap2/display.c                      |  39 +-
+ arch/arm/mach-omap2/omap_hwmod_54xx_data.c         | 283 +++++++
+ drivers/video/fbdev/omap2/dss/Kconfig              |  22 +-
+ drivers/video/fbdev/omap2/dss/Makefile             |   6 +-
+ drivers/video/fbdev/omap2/dss/core.c               |   6 +
+ drivers/video/fbdev/omap2/dss/dispc.c              |   1 +
+ drivers/video/fbdev/omap2/dss/dpi.c                |   2 +
+ drivers/video/fbdev/omap2/dss/dsi.c                |  17 +
+ drivers/video/fbdev/omap2/dss/dss.c                |   1 +
+ drivers/video/fbdev/omap2/dss/dss.h                |   3 +
+ drivers/video/fbdev/omap2/dss/dss_features.c       |   3 +-
+ drivers/video/fbdev/omap2/dss/hdmi.h               |  17 +-
+ drivers/video/fbdev/omap2/dss/hdmi4.c              | 113 ++-
+ drivers/video/fbdev/omap2/dss/hdmi5.c              | 829 ++++++++++++++++++
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c         | 922 +++++++++++++++++++++
+ drivers/video/fbdev/omap2/dss/hdmi5_core.h         | 306 +++++++
+ drivers/video/fbdev/omap2/dss/hdmi_common.c        |  41 +
+ drivers/video/fbdev/omap2/dss/hdmi_phy.c           | 231 ++++--
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c           |  81 +-
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c            |   2 +-
+ 25 files changed, 3111 insertions(+), 82 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/ti,omap5-dss.txt
+ create mode 100644 drivers/video/fbdev/omap2/dss/hdmi5.c
+ create mode 100644 drivers/video/fbdev/omap2/dss/hdmi5_core.c
+ create mode 100644 drivers/video/fbdev/omap2/dss/hdmi5_core.h
+
 -- 
-1.8.3.2
+1.9.1
 

@@ -1,46 +1,43 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 14 Apr 2014 21:59:52 +0000
-Subject: [PATCHv2 10/11] leds: leds-pwm: retrieve configured pwm period
-Message-Id: <1397512793-10325-11-git-send-email-alexandre.belloni@free-electrons.com>
+From: Peter Griffin <peter.griffin@linaro.org>
+Date: Thu, 24 Apr 2014 12:28:23 +0000
+Subject: [PATCH 07/13] video: atmel needs FB_BACKLIGHT
+Message-Id: <1398342509-10243-8-git-send-email-peter.griffin@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
+In-Reply-To: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>, Peter Griffin <peter.griffin@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-The PWM core is now able to initialize the PWM period. Use it and if it is not
-configured, use the supplied pwm_period_ns.
+From: Arnd Bergmann <arnd@arndb.de>
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+The atmel frame buffer driver doesn't build if FB_BACKLIGHT
+is disabled, so select it here as we do for lots of other
+drivers.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Peter Griffin <peter.griffin@linaro.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/leds/leds-pwm.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
-index 7d0aaed1e23a..aa770ec1e892 100644
---- a/drivers/leds/leds-pwm.c
-+++ b/drivers/leds/leds-pwm.c
-@@ -181,7 +181,6 @@ static int led_pwm_probe(struct platform_device *pdev)
- 			led_dat->cdev.name = cur_led->name;
- 			led_dat->cdev.default_trigger = cur_led->default_trigger;
- 			led_dat->active_low = cur_led->active_low;
--			led_dat->period = cur_led->pwm_period_ns;
- 			led_dat->cdev.brightness_set = led_pwm_set;
- 			led_dat->cdev.brightness = LED_OFF;
- 			led_dat->cdev.max_brightness = cur_led->max_brightness;
-@@ -191,6 +190,10 @@ static int led_pwm_probe(struct platform_device *pdev)
- 			if (led_dat->can_sleep)
- 				INIT_WORK(&led_dat->work, led_pwm_work);
- 
-+			led_dat->period = pwm_get_period(led_dat->pwm);
-+			if (!led_dat->period && (cur_led->pwm_period_ns > 0))
-+				led_dat->period = cur_led->pwm_period_ns;
-+
- 			ret = led_classdev_register(&pdev->dev, &led_dat->cdev);
- 			if (ret < 0)
- 				goto err;
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 5577a94..e593365 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -967,6 +967,7 @@ config FB_S1D13XXX
+ config FB_ATMEL
+ 	tristate "AT91/AT32 LCD Controller support"
+ 	depends on FB && HAVE_FB_ATMEL
++	select FB_BACKLIGHT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 -- 
-1.8.3.2
+1.7.9.5
 

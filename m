@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 10:17:17 +0000
-Subject: [PATCH 21/23] OMAPDSS: HDMI: PLL changes for OMAP5
-Message-Id: <1398334639-14172-22-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 24 Apr 2014 10:17:15 +0000
+Subject: [PATCH 19/23] OMAPDSS: HDMI: support larger register offsets for OMAP5 HDMI core
+Message-Id: <1398334639-14172-20-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
@@ -12,138 +12,36 @@ To: linux-arm-kernel@lists.infradead.org
 
 From: Archit Taneja <archit@ti.com>
 
-Add a features struct to differentiate between the HDMI PLLs on OMAP4
-and OMAP5. The OMAP5 PLL is more sensitive when it comes to locking.  We
-need to ensure that the DCO freq isn't too low for lower pixel clocks.
-
-Modify the PLL computation slightly to ensure the HDMI PLL locks for lower
-frequencies. This will be later replaced by a more complex computation
-which makes sure all the PLL constraints are met.
+The HDMI core IP on OMAP5 has a wider address range for registers. The offsets
+for the later registers can't fit into the u16 type currently used for hdmi
+register read and write functions. Use u32 for offsets instead.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi_pll.c | 81 +++++++++++++++++++++++++++++++-
- 1 file changed, 79 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-index 5fc71215c303..2b910cb9eee4 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-@@ -23,6 +23,18 @@
- #define HDMI_DEFAULT_REGN 16
- #define HDMI_DEFAULT_REGM2 1
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index d784b2cced9d..0e5979ef933c 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -361,13 +361,13 @@ struct hdmi_core_data {
+ 	struct hdmi_core_infoframe_avi avi_cfg;
+ };
  
-+struct hdmi_pll_features {
-+	bool sys_reset;
-+	/* this is a hack, need to replace it with a better computation of M2 */
-+	bool bound_dcofreq;
-+	unsigned long fint_min, fint_max;
-+	u16 regm_max;
-+	unsigned long dcofreq_low_min, dcofreq_low_max;
-+	unsigned long dcofreq_high_min, dcofreq_high_max;
-+};
-+
-+static const struct hdmi_pll_features *pll_feat;
-+
- void hdmi_pll_dump(struct hdmi_pll_data *pll, struct seq_file *s)
+-static inline void hdmi_write_reg(void __iomem *base_addr, const u16 idx,
++static inline void hdmi_write_reg(void __iomem *base_addr, const u32 idx,
+ 		u32 val)
  {
- #define DUMPPLL(r) seq_printf(s, "%-35s %08x\n", #r,\
-@@ -57,7 +69,11 @@ void hdmi_pll_compute(struct hdmi_pll_data *pll, unsigned long clkin, int phy)
+ 	__raw_writel(val, base_addr + idx);
+ }
  
- 	refclk = clkin / pi->regn;
- 
--	pi->regm2 = HDMI_DEFAULT_REGM2;
-+	/* temorary hack to make sure DCO freq isn't calculated too low */
-+	if (pll_feat->bound_dcofreq && phy <= 65000)
-+		pi->regm2 = 3;
-+	else
-+		pi->regm2 = HDMI_DEFAULT_REGM2;
- 
- 	/*
- 	 * multiplier is pixel_clk/ref_clk
-@@ -154,7 +170,7 @@ static int hdmi_pll_config(struct hdmi_pll_data *pll)
- static int hdmi_pll_reset(struct hdmi_pll_data *pll)
+-static inline u32 hdmi_read_reg(void __iomem *base_addr, const u16 idx)
++static inline u32 hdmi_read_reg(void __iomem *base_addr, const u32 idx)
  {
- 	/* SYSRESET  controlled by power FSM */
--	REG_FLD_MOD(pll->base, PLLCTRL_PLL_CONTROL, 0x0, 3, 3);
-+	REG_FLD_MOD(pll->base, PLLCTRL_PLL_CONTROL, pll_feat->sys_reset, 3, 3);
- 
- 	/* READ 0x0 reset is in progress */
- 	if (hdmi_wait_for_bit_change(pll->base, PLLCTRL_PLL_STATUS, 0, 0, 1)
-@@ -197,11 +213,72 @@ void hdmi_pll_disable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp)
- #define PLL_OFFSET	0x200
- #define PLL_SIZE	0x100
- 
-+static const struct hdmi_pll_features omap44xx_pll_feats = {
-+	.sys_reset		=	false,
-+	.bound_dcofreq		=	false,
-+	.fint_min		=	500000,
-+	.fint_max		=	2500000,
-+	.regm_max		=	4095,
-+	.dcofreq_low_min	=	500000000,
-+	.dcofreq_low_max	=	1000000000,
-+	.dcofreq_high_min	=	1000000000,
-+	.dcofreq_high_max	=	2000000000,
-+};
-+
-+static const struct hdmi_pll_features omap54xx_pll_feats = {
-+	.sys_reset		=	true,
-+	.bound_dcofreq		=	true,
-+	.fint_min		=	620000,
-+	.fint_max		=	2500000,
-+	.regm_max		=	2046,
-+	.dcofreq_low_min	=	750000000,
-+	.dcofreq_low_max	=	1500000000,
-+	.dcofreq_high_min	=	1250000000,
-+	.dcofreq_high_max	=	2500000000UL,
-+};
-+
-+static int hdmi_pll_init_features(struct platform_device *pdev)
-+{
-+	struct hdmi_pll_features *dst;
-+	const struct hdmi_pll_features *src;
-+
-+	dst = devm_kzalloc(&pdev->dev, sizeof(*dst), GFP_KERNEL);
-+	if (!dst) {
-+		dev_err(&pdev->dev, "Failed to allocate HDMI PHY Features\n");
-+		return -ENOMEM;
-+	}
-+
-+	switch (omapdss_get_version()) {
-+	case OMAPDSS_VER_OMAP4430_ES1:
-+	case OMAPDSS_VER_OMAP4430_ES2:
-+	case OMAPDSS_VER_OMAP4:
-+		src = &omap44xx_pll_feats;
-+		break;
-+
-+	case OMAPDSS_VER_OMAP5:
-+		src = &omap54xx_pll_feats;
-+		break;
-+
-+	default:
-+		return -ENODEV;
-+	}
-+
-+	memcpy(dst, src, sizeof(*dst));
-+	pll_feat = dst;
-+
-+	return 0;
-+}
-+
- int hdmi_pll_init(struct platform_device *pdev, struct hdmi_pll_data *pll)
- {
-+	int r;
- 	struct resource *res;
- 	struct resource temp_res;
- 
-+	r = hdmi_pll_init_features(pdev);
-+	if (r)
-+		return r;
-+
- 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pll");
- 	if (!res) {
- 		DSSDBG("can't get PLL mem resource by name\n");
+ 	return __raw_readl(base_addr + idx);
+ }
 -- 
 1.9.1
 

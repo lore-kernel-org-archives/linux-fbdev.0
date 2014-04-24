@@ -1,50 +1,80 @@
-From: Steven Miao <realmz6@gmail.com>
-Date: Tue, 15 Apr 2014 06:35:06 +0000
-Subject: Re: [PATCH] video: bf54x-lq043fb: fix build error
-Message-Id: <CAMk6uBmxzJrbaQoiGcW2N5DtAqC16YErdd3tV5B4RP+nyNFdmA@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Apr 2014 10:17:02 +0000
+Subject: [PATCH 06/23] ARM: OMAP: add OMAP5 DSI muxing
+Message-Id: <1398334639-14172-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1397266245-3144-1-git-send-email-realmz6@kernel.org>
-	<534BD810.3010705@ti.com>
-In-Reply-To: <534BD810.3010705@ti.com>
+References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Steven Miao <realmz6@kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, bfin <adi-buildroot-devel@lists.sourceforge.net>, "open list:CAN NETWORK DRIVERS <linux-can@vger.kernel.org>, open
-	list:NETWORKING DRIVERS <netdev@vger.kernel.org>, open list" <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Tomi,
+Add support to set OMAP5 DSI pin muxing.
 
-On Mon, Apr 14, 2014 at 8:44 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 12/04/14 04:30, Steven Miao wrote:
->> From: Steven Miao <realmz6@gmail.com>
->>
->> should include linux/gpio.h
->>
->> Signed-off-by: Steven Miao <realmz6@gmail.com>
->> ---
->>  drivers/video/bf54x-lq043fb.c |    1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
->> index 42b8f9d..d2b54f1 100644
->> --- a/drivers/video/bf54x-lq043fb.c
->> +++ b/drivers/video/bf54x-lq043fb.c
->> @@ -49,6 +49,7 @@
->>  #include <linux/spinlock.h>
->>  #include <linux/dma-mapping.h>
->>  #include <linux/platform_device.h>
->> +#include <linux/gpio.h>
->
-> The driver includes <asm/gpio.h>. I think that should be removed, and
-> <linux/gpio.h> should be used.
-Yes, it should be removed.
->
-> Can you also remove the asm/gpio.h in your patch, and see if it compiles
-> fine?
-I have tested it, it's fine. I'll resend the patch.
->
->  Tomi
->
->
--steven
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/display.c | 35 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 16d33d831287..974461441fc3 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -137,11 +137,42 @@ static int omap4_dsi_mux_pads(int dsi_id, unsigned lanes)
+ 	return 0;
+ }
+ 
++#define CONTROL_PAD_BASE	0x4A002800
++#define CONTROL_DSIPHY		0x614
++
++static int omap5_dsi_mux_pads(int dsi_id, unsigned lanes)
++{
++	u32 enable_mask, enable_shift, reg;
++	void __iomem *ctrl_pad_base = NULL;
++
++	ctrl_pad_base = ioremap(CONTROL_PAD_BASE, SZ_4K);
++	if (!ctrl_pad_base)
++		return -ENXIO;
++
++	if (dsi_id = 0) {
++		enable_mask = OMAP4_DSI1_LANEENABLE_MASK;
++		enable_shift = OMAP4_DSI1_LANEENABLE_SHIFT;
++	} else if (dsi_id = 1) {
++		enable_mask = OMAP4_DSI2_LANEENABLE_MASK;
++		enable_shift = OMAP4_DSI2_LANEENABLE_SHIFT;
++	} else {
++		return -ENODEV;
++	}
++
++	reg = __raw_readl(ctrl_pad_base + CONTROL_DSIPHY);
++	reg &= ~enable_mask;
++	reg |= (lanes << enable_shift) & enable_mask;
++	__raw_writel(reg, ctrl_pad_base + CONTROL_DSIPHY);
++
++	return 0;
++}
++
+ static int omap_dsi_enable_pads(int dsi_id, unsigned lane_mask)
+ {
+ 	if (cpu_is_omap44xx())
+ 		return omap4_dsi_mux_pads(dsi_id, lane_mask);
+-
++	else if (soc_is_omap54xx())
++		return omap5_dsi_mux_pads(dsi_id, lane_mask);
+ 	return 0;
+ }
+ 
+@@ -149,6 +180,8 @@ static void omap_dsi_disable_pads(int dsi_id, unsigned lane_mask)
+ {
+ 	if (cpu_is_omap44xx())
+ 		omap4_dsi_mux_pads(dsi_id, 0);
++	else if (soc_is_omap54xx())
++		omap5_dsi_mux_pads(dsi_id, 0);
+ }
+ 
+ static int omap_dss_set_min_bus_tput(struct device *dev, unsigned long tput)
+-- 
+1.9.1
+

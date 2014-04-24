@@ -1,83 +1,61 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 14:33:03 +0000
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Date: Thu, 24 Apr 2014 16:53:29 +0000
 Subject: Re: [PATCH 11/23] ARM: dts: omap5-uevm.dts: add tca6424a
-Message-Id: <5359209F.7000308@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="OaNegstrUp0IMkpXkdUnbMjfdWxxosrXN"
+Message-Id: <53594189.1090508@cogentembedded.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
  <1398334639-14172-12-git-send-email-tomi.valkeinen@ti.com>
- <53591669.7060502@cogentembedded.com>
-In-Reply-To: <53591669.7060502@cogentembedded.com>
+ <53591669.7060502@cogentembedded.com> <5359209F.7000308@ti.com>
+In-Reply-To: <5359209F.7000308@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---OaNegstrUp0IMkpXkdUnbMjfdWxxosrXN
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hello.
 
-On 24/04/14 16:49, Sergei Shtylyov wrote:
-> Hello.
->=20
-> On 24-04-2014 14:17, Tomi Valkeinen wrote:
->=20
->> omap5-uevm has a tca6424a I/O expander. Add it to the .dts file.
->=20
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> Cc: Tony Lindgren <tony@atomide.com>
->> ---
->>   arch/arm/boot/dts/omap5-uevm.dts | 7 +++++++
->>   1 file changed, 7 insertions(+)
->=20
->> diff --git a/arch/arm/boot/dts/omap5-uevm.dts
->> b/arch/arm/boot/dts/omap5-uevm.dts
->> index 3b99ec25b748..9e7581eaeb23 100644
->> --- a/arch/arm/boot/dts/omap5-uevm.dts
->> +++ b/arch/arm/boot/dts/omap5-uevm.dts
->> @@ -434,6 +434,13 @@
->>       pinctrl-0 =3D <&i2c5_pins>;
->>
->>       clock-frequency =3D <400000>;
->> +
->> +    tca6424a: tca6424a@22 {
->=20
->    The ePAPR standard [1] says: "The name of a node should be somewhat
-> generic,
-> reflecting the function of the device and not its precise programming
-> model.
-> If appropriate, the name should be one of the following choices:
-> [...]
->    - gpio;"
+On 04/24/2014 06:33 PM, Tomi Valkeinen wrote:
 
-Right. I wonder what the name should be... "gpio" is out, as the name
-should be more specific. We already have gpio1-8, which are the gpio
-banks from the SoC. It could be 'gpio9', but that makes it sound it's
-just one more SoC gpio bank. 'gpio-expander1'?
+>>> omap5-uevm has a tca6424a I/O expander. Add it to the .dts file.
 
- Tomi
+>>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+>>> Cc: Tony Lindgren <tony@atomide.com>
+>>> ---
+>>>    arch/arm/boot/dts/omap5-uevm.dts | 7 +++++++
+>>>    1 file changed, 7 insertions(+)
 
+>>> diff --git a/arch/arm/boot/dts/omap5-uevm.dts
+>>> b/arch/arm/boot/dts/omap5-uevm.dts
+>>> index 3b99ec25b748..9e7581eaeb23 100644
+>>> --- a/arch/arm/boot/dts/omap5-uevm.dts
+>>> +++ b/arch/arm/boot/dts/omap5-uevm.dts
+>>> @@ -434,6 +434,13 @@
+>>>        pinctrl-0 = <&i2c5_pins>;
+>>>
+>>>        clock-frequency = <400000>;
+>>> +
+>>> +    tca6424a: tca6424a@22 {
 
+>>     The ePAPR standard [1] says: "The name of a node should be somewhat
+>> generic,
+>> reflecting the function of the device and not its precise programming
+>> model.
+>> If appropriate, the name should be one of the following choices:
+>> [...]
+>>     - gpio;"
 
---OaNegstrUp0IMkpXkdUnbMjfdWxxosrXN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> Right. I wonder what the name should be... "gpio" is out, as the name
+> should be more specific.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+    No, it's not out. The name should be "gpio@22", I think it would be unique.
 
-iQIcBAEBAgAGBQJTWSCfAAoJEPo9qoy8lh715sAP/j2FkKE1tWbsDl47WvBt/OR7
-J0iCFHWGmrnMvlE0I9/nG5RGUcKyOa5QoJ54vA7dEC/7yAB0I0ESifDQJH/Ahgb0
-AoP/zqVVaWJzb5uIqKTnhzKZJMJ/Rd7BRaPe48hQicPZr+ywvSKdtH6HyLMBCidp
-nt+o7sgED/PUMk5WfmGzNJPGv590uNis89dM0Jpzk8VNpqWSZIgZf/yQAYApFrsv
-bYLPrgwKy3oGWxWiwWLjSUxI9tMkLgytrvTDrsGJvpoFp4L6XB8BaAFmGpD6D+92
-Mkb2iNE0Z8/hahxPb7hSwF4D7ri+XClycQtzyDB6YEHTbVFTqGLqSBpvJn7jjMKJ
-9isSJ20OZSnHsPKW29Uwz9Xwb88kB1dJv5NvZ8nzej3+Pgssj4pnhMFoUwAdvXQF
-ChIIBlFZNcVpDqoGByNH57cXazMSOiduS7Dov66h7wrkOW87Z3K5m+L9E8sVRgfP
-jbuf5EANDLeuZ/eiWzq5GqDaeJoMsyZxJdH+9j+/fZWU3SBl1+3428omoaXRf9eu
-02yAyJjnbBeD2F2Obj4LblryfdzfXGe3t+0IMlzti54vqsVXSb+0YzBYgIj38hrj
-XTNVKMZXKsiwjOjT0iXCdw/lnmF1QwGXKUDFub42n0/IBKwOM09cv4/sCzqbbeEb
-cBD5qPHMCzdhzkpnXtYP
-=Yfux
------END PGP SIGNATURE-----
+> We already have gpio1-8, which are the gpio
+> banks from the SoC.
 
---OaNegstrUp0IMkpXkdUnbMjfdWxxosrXN--
+    I don't understand why you are indexing the names while you probably have 
+the address part after @ that makes them unique already.
+
+>   Tomi
+
+WBR, Sergei
+

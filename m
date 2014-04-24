@@ -1,49 +1,54 @@
-From: isabelle <contact_claude@isabelle.de>
-Date: Tue, 15 Apr 2014 19:47:38 +0000
-Subject: spende /Donation
-Message-Id: <yx4Sef42JyeoopbQKx5pAipXLBt1prSNuXPiRcWu1Nis@isabelle.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Apr 2014 10:16:59 +0000
+Subject: [PATCH 03/23] OMAPDSS: HDMI4: set regulator voltage to 1.8V
+Message-Id: <1398334639-14172-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Hallo
-Wenn ich diese Nachricht zu senden wollte, ist dies nicht einfach Zufall. D=
-ies ist, weil Ihre e-Mail vom elektronischen Roboter gesichert meine WX.7AR=
- BW ausgew=E4hlt wurde.
-Zun=E4chst m=F6chte ich mich f=FCr dieses Eindringen in Ihr Leben zu entsch=
-uldigen, obwohl ich zugeben, dass es mir sehr wichtig. Ich bin Isabelle Vas=
-udev. Ich leide an Krebs im Hals seit nun mehr als 3 Jahre und eine halbe u=
-nd es leider, mein Arzt hat gerade informiert mich, dass ich bin voller unh=
-eilbar und, dass meine Tage, wegen meinen etwas gez=E4hlt sind abgebaut Zus=
-tand. Ich bin eine Witwe und ich habe keine Kind, das ich beginne zu bedaue=
-rn.
-In der Tat ist der Grund, warum ich Sie kontaktieren bin, m=F6chte ich eine=
-n Teil von meinem Grundst=FCck zu spenden, weil ich niemand, wer die Erben =
-konnte. Ich habe fast mein ganzes Zeug, darunter ein Unternehmen der Export=
- von Holz, Gummi und Stahl-Industrie in Afrika, wo ich wohne nun mehr 10 Ja=
-hren, verkauft. Ein gro=DFer Teil der Gelder gesammelt wurde mit unterschie=
-dlichen Verb=E4nden humanit=E4ren Charakter =FCberall in der Welt, aber bes=
-onders hier in Afrika bezahlt.
-Im Hinblick auf den Rest der Summe genau in H=F6he von 750.000, 00euros (si=
-eben hundert und f=FCnfzig tausend Euro) auf eine gesperrte Mitarbeiter-Acc=
-ount, meine letzte w=FCnschen w=FCrde Sie es spenden, so dass Sie in Ihrer =
-Branche und vor allem den humanit=E4ren investieren k=F6nnen. Ich bin ganz =
-bewusst was ich zu tun beabsichtigen, und ich denke, trotz der Tatsache, di=
-e wir nicht wissen, werdet ihr diese Summe gut nutzen. Ich bitte Sie, bitte=
- dieses Erbe zu akzeptieren, ohne jedoch Fragen Sie alles, was in zur=FCckg=
-eben wenn es nicht immer denken, gutes zu tun, um dich herum, was ich nicht=
- getan habe, in meiner Existenz.
-Das hei=DFt, wird auf einer verantwortlichen Person und besonders gutem Gla=
-uben fallen zu lassen beruhigt, ich m=F6chte bitten, dass Sie bitte mich be=
-i den meisten schnell kontaktieren, um weitere Erkl=E4rung =FCber die Gr=FC=
-nde f=FCr meine Geste und den Verlauf der Dinge zu geben. Bitte kontaktiere=
-n Sie mich so bald wie m=F6glich, wenn Sie mein Angebot akzeptieren.
-Gott m=F6ge mit dir sein!
-Ich fordere Sie auf, mich =FCber meine pers=F6nliche e-Mail-Adresse zu kont=
-aktieren:
-Isabelle.claude654@laposte.net
-Der Frieden und Barmherzigkeit Gottes m=F6ge mit dir sein.
-Mrs Isabelle
+Set the HDMI vdda regulator voltage to the required 1.8V.
+
+This is required for the case when the regulator in the DT data defines
+a range of allowed voltages. In this case it's required to set the
+voltage, as otherwise enabling the voltage fails.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi4.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index e15b89d49c28..5c7dd5c06593 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -83,6 +83,7 @@ static void hdmi_runtime_put(void)
+ 
+ static int hdmi_init_regulator(void)
+ {
++	int r;
+ 	struct regulator *reg;
+ 
+ 	if (hdmi.vdda_hdmi_dac_reg != NULL)
+@@ -96,6 +97,15 @@ static int hdmi_init_regulator(void)
+ 		return PTR_ERR(reg);
+ 	}
+ 
++	if (regulator_can_change_voltage(reg)) {
++		r = regulator_set_voltage(reg, 1800000, 1800000);
++		if (r) {
++			devm_regulator_put(reg);
++			DSSWARN("can't set the regulator voltage\n");
++			return r;
++		}
++	}
++
+ 	hdmi.vdda_hdmi_dac_reg = reg;
+ 
+ 	return 0;
+-- 
+1.9.1
 

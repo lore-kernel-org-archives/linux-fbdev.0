@@ -1,75 +1,194 @@
-From: Alexander Shiyan <shc_work@mail.ru>
-Date: Sat, 12 Apr 2014 06:55:34 +0000
-Subject: [PATCH v2 3/3] video: clps711x: Add bindings documentation for CLPS711X framebuffer
-Message-Id: <1397285734-15243-1-git-send-email-shc_work@mail.ru>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Apr 2014 10:17:16 +0000
+Subject: [PATCH 20/23] OMAPDSS: HDMI: PHY changes for OMAP5
+Message-Id: <1398334639-14172-21-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexander Shiyan <shc_work-JGs/UdohzUI@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Add OF document for Cirrus Logic CLPS711X framebuffer driver.
+From: Archit Taneja <archit@ti.com>
 
-Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+OMAP5 HDMI PHY has some differences compared to OMAP4 HDMI PHY. This
+patch creates a features struct which help the driver configure the PHY
+based on what SoC it is.
+
+Some of the features aren't currenlty used, but will come in use later.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- .../bindings/video/cirrus,clps711x-fb.txt          | 47 ++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
+ drivers/video/fbdev/omap2/dss/hdmi.h     |  1 +
+ drivers/video/fbdev/omap2/dss/hdmi_phy.c | 95 +++++++++++++++++++++++++++++++-
+ 2 files changed, 94 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt b/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
-new file mode 100644
-index 0000000..6fc3c6a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
-@@ -0,0 +1,47 @@
-+* Currus Logic CLPS711X Framebuffer
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 0e5979ef933c..1819f93cd49e 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -80,6 +80,7 @@
+ #define HDMI_TXPHY_DIGITAL_CTRL			0x4
+ #define HDMI_TXPHY_POWER_CTRL			0x8
+ #define HDMI_TXPHY_PAD_CFG_CTRL			0xC
++#define HDMI_TXPHY_BIST_CONTROL			0x1C
+ 
+ enum hdmi_pll_pwr {
+ 	HDMI_PLLPWRCMD_ALLOFF = 0,
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_phy.c b/drivers/video/fbdev/omap2/dss/hdmi_phy.c
+index 8d13e422de5e..2614cf9dafb0 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_phy.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_phy.c
+@@ -12,11 +12,22 @@
+ #include <linux/err.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
++#include <linux/slab.h>
+ #include <video/omapdss.h>
+ 
+ #include "dss.h"
+ #include "hdmi.h"
+ 
++struct hdmi_phy_features {
++	bool bist_ctrl;
++	bool calc_freqout;
++	bool ldo_voltage;
++	unsigned long dcofreq_min;
++	unsigned long max_phy;
++};
 +
-+Required properties:
-+- compatible: Shall contain "cirrus,clps711x-fb".
-+- reg       : Physical base address and length of the controller's registers +
-+              location and size of the framebuffer memory.
-+- clocks    : phandle + clock specifier pair of the FB reference clock.
-+- display   : phandle to a display node as described in
-+              Documentation/devicetree/bindings/video/display-timing.txt.
-+              Additionally, the display node has to define properties:
-+  - bits-per-pixel: Bits per pixel.
-+  - ac-prescale   : LCD AC bias frequency. This frequency is the required
-+                    AC bias frequency for a given manufacturer's LCD plate.
-+  - cmap-invert   : Invert the color levels (Optional).
++static const struct hdmi_phy_features *phy_feat;
 +
-+Optional properties:
-+- lcd-supply: Regulator for LCD supply voltage.
+ void hdmi_phy_dump(struct hdmi_phy_data *phy, struct seq_file *s)
+ {
+ #define DUMPPHY(r) seq_printf(s, "%-35s %08x\n", #r,\
+@@ -26,6 +37,8 @@ void hdmi_phy_dump(struct hdmi_phy_data *phy, struct seq_file *s)
+ 	DUMPPHY(HDMI_TXPHY_DIGITAL_CTRL);
+ 	DUMPPHY(HDMI_TXPHY_POWER_CTRL);
+ 	DUMPPHY(HDMI_TXPHY_PAD_CFG_CTRL);
++	if (phy_feat->bist_ctrl)
++		DUMPPHY(HDMI_TXPHY_BIST_CONTROL);
+ }
+ 
+ int hdmi_phy_parse_lanes(struct hdmi_phy_data *phy, const u32 *lanes)
+@@ -121,6 +134,8 @@ static void hdmi_phy_configure_lanes(struct hdmi_phy_data *phy)
+ 
+ int hdmi_phy_configure(struct hdmi_phy_data *phy, struct hdmi_config *cfg)
+ {
++	u8 freqout;
 +
-+Example:
-+	fb: fb@800002c0 {
-+		compatible = "cirrus,ep7312-fb", "cirrus,clps711x-fb";
-+		reg = <0x800002c0 0xd44>, <0x60000000 0xc000>;
-+		clocks = <&clks 2>;
-+		lcd-supply = <&reg5v0>;
-+		display = <&display>;
-+	};
+ 	/*
+ 	 * Read address 0 in order to get the SCP reset done completed
+ 	 * Dummy access performed to make sure reset is done
+@@ -128,16 +143,39 @@ int hdmi_phy_configure(struct hdmi_phy_data *phy, struct hdmi_config *cfg)
+ 	hdmi_read_reg(phy->base, HDMI_TXPHY_TX_CTRL);
+ 
+ 	/*
++	 * In OMAP5+, the HFBITCLK must be divided by 2 before issuing the
++	 * HDMI_PHYPWRCMD_LDOON command.
++	*/
++	if (phy_feat->bist_ctrl)
++		REG_FLD_MOD(phy->base, HDMI_TXPHY_BIST_CONTROL, 1, 11, 11);
 +
-+	display: display {
-+		model = "320x240x4";
-+		native-mode = <&timing0>;
-+		bits-per-pixel = <4>;
-+		ac-prescale = <17>;
++	if (phy_feat->calc_freqout) {
++		/* DCOCLK/10 is pixel clock, compare pclk with DCOCLK_MIN/10 */
++		u32 dco_min = phy_feat->dcofreq_min / 10;
++		u32 pclk = cfg->timings.pixelclock;
 +
-+		display-timings {
-+			timing0: 320x240 {
-+				hactive = <320>;
-+				hback-porch = <0>;
-+				hfront-porch = <0>;
-+				hsync-len = <0>;
-+				vactive = <240>;
-+				vback-porch = <0>;
-+				vfront-porch = <0>;
-+				vsync-len = <0>;
-+				clock-frequency = <6500000>;
-+			};
-+		};
-+	};
++		if (pclk < dco_min)
++			freqout = 0;
++		else if ((pclk >= dco_min) && (pclk < phy_feat->max_phy))
++			freqout = 1;
++		else
++			freqout = 2;
++	} else {
++		freqout = 1;
++	}
++
++	/*
+ 	 * Write to phy address 0 to configure the clock
+ 	 * use HFBITCLK write HDMI_TXPHY_TX_CONTROL_FREQOUT field
+ 	 */
+-	REG_FLD_MOD(phy->base, HDMI_TXPHY_TX_CTRL, 0x1, 31, 30);
++	REG_FLD_MOD(phy->base, HDMI_TXPHY_TX_CTRL, freqout, 31, 30);
+ 
+ 	/* Write to phy address 1 to start HDMI line (TXVALID and TMDSCLKEN) */
+ 	hdmi_write_reg(phy->base, HDMI_TXPHY_DIGITAL_CTRL, 0xF0000000);
+ 
+ 	/* Setup max LDO voltage */
+-	REG_FLD_MOD(phy->base, HDMI_TXPHY_POWER_CTRL, 0xB, 3, 0);
++	if (phy_feat->ldo_voltage)
++		REG_FLD_MOD(phy->base, HDMI_TXPHY_POWER_CTRL, 0xB, 3, 0);
+ 
+ 	hdmi_phy_configure_lanes(phy);
+ 
+@@ -147,11 +185,64 @@ int hdmi_phy_configure(struct hdmi_phy_data *phy, struct hdmi_config *cfg)
+ #define PHY_OFFSET	0x300
+ #define PHY_SIZE	0x100
+ 
++static const struct hdmi_phy_features omap44xx_phy_feats = {
++	.bist_ctrl	=	false,
++	.calc_freqout	=	false,
++	.ldo_voltage	=	true,
++	.dcofreq_min	=	500000000,
++	.max_phy	=	185675000,
++};
++
++static const struct hdmi_phy_features omap54xx_phy_feats = {
++	.bist_ctrl	=	true,
++	.calc_freqout	=	true,
++	.ldo_voltage	=	false,
++	.dcofreq_min	=	750000000,
++	.max_phy	=	186000000,
++};
++
++static int hdmi_phy_init_features(struct platform_device *pdev)
++{
++	struct hdmi_phy_features *dst;
++	const struct hdmi_phy_features *src;
++
++	dst = devm_kzalloc(&pdev->dev, sizeof(*dst), GFP_KERNEL);
++	if (!dst) {
++		dev_err(&pdev->dev, "Failed to allocate HDMI PHY Features\n");
++		return -ENOMEM;
++	}
++
++	switch (omapdss_get_version()) {
++	case OMAPDSS_VER_OMAP4430_ES1:
++	case OMAPDSS_VER_OMAP4430_ES2:
++	case OMAPDSS_VER_OMAP4:
++		src = &omap44xx_phy_feats;
++		break;
++
++	case OMAPDSS_VER_OMAP5:
++		src = &omap54xx_phy_feats;
++		break;
++
++	default:
++		return -ENODEV;
++	}
++
++	memcpy(dst, src, sizeof(*dst));
++	phy_feat = dst;
++
++	return 0;
++}
++
+ int hdmi_phy_init(struct platform_device *pdev, struct hdmi_phy_data *phy)
+ {
++	int r;
+ 	struct resource *res;
+ 	struct resource temp_res;
+ 
++	r = hdmi_phy_init_features(pdev);
++	if (r)
++		return r;
++
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "phy");
+ 	if (!res) {
+ 		DSSDBG("can't get PHY mem resource by name\n");
 -- 
-1.8.3.2
+1.9.1
 

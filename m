@@ -1,7 +1,7 @@
 From: Peter Griffin <peter.griffin@linaro.org>
-Date: Thu, 24 Apr 2014 12:28:22 +0000
-Subject: [PATCH 06/13] video: export fb_prepare_logo
-Message-Id: <1398342509-10243-7-git-send-email-peter.griffin@linaro.org>
+Date: Thu, 24 Apr 2014 12:28:21 +0000
+Subject: [PATCH 05/13] video/mbx: fix building debugfs support
+Message-Id: <1398342509-10243-6-git-send-email-peter.griffin@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
 In-Reply-To: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
@@ -9,35 +9,68 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>, Peter Griffin <peter.griffin@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>, Peter Griffin <peter.griffin@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Raphael Assenat <raph@8d.com>, Mike Rapoport <mike@compulab.co.il>
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Some drivers that may be loadable modules use the fb_prepare_logo
-function, so we have to export it. Found during randconfig
-builds with mmpfb.
+The mbx framebuffer debugfs support apparently hasn't been able
+to build for a long time, at least since 2006 when the u.generic_ip
+field in the inode was removed. This fixes the obvious bug, and
+also makes it possible to build the driver as a module when
+debugfs support is enabled, by simply including the C file.
+It's ugly, but it won't make the driver any worse than it
+already is, and doesn't require a more invasive change that
+might break it further.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Peter Griffin <peter.griffin@linaro.org>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-fbdev@vger.kernel.org
+Cc: Raphael Assenat <raph@8d.com>
+Cc: Mike Rapoport <mike@compulab.co.il>
 ---
- drivers/video/fbdev/core/fbmem.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/mbx/Makefile     |    3 +--
+ drivers/video/fbdev/mbx/mbxdebugfs.c |    2 +-
+ drivers/video/fbdev/mbx/mbxfb.c      |    2 ++
+ 3 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index b6d5008..479fe2a 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -674,6 +674,7 @@ int fb_show_logo(struct fb_info *info, int rotate)
- int fb_prepare_logo(struct fb_info *info, int rotate) { return 0; }
- int fb_show_logo(struct fb_info *info, int rotate) { return 0; }
- #endif /* CONFIG_LOGO */
-+EXPORT_SYMBOL(fb_prepare_logo);
- EXPORT_SYMBOL(fb_show_logo);
+diff --git a/drivers/video/fbdev/mbx/Makefile b/drivers/video/fbdev/mbx/Makefile
+index 16c1165..d7ae5a9 100644
+--- a/drivers/video/fbdev/mbx/Makefile
++++ b/drivers/video/fbdev/mbx/Makefile
+@@ -1,4 +1,3 @@
+ # Makefile for the 2700G controller driver.
  
- static void *fb_seq_start(struct seq_file *m, loff_t *pos)
+-obj-$(CONFIG_FB_MBX)	   += mbxfb.o
+-obj-$(CONFIG_FB_MBX_DEBUG) += mbxfbdebugfs.o
++obj-y 			+= mbxfb.o
+diff --git a/drivers/video/fbdev/mbx/mbxdebugfs.c b/drivers/video/fbdev/mbx/mbxdebugfs.c
+index 4449f24..e3bc00a 100644
+--- a/drivers/video/fbdev/mbx/mbxdebugfs.c
++++ b/drivers/video/fbdev/mbx/mbxdebugfs.c
+@@ -17,7 +17,7 @@ struct mbxfb_debugfs_data {
+ 
+ static int open_file_generic(struct inode *inode, struct file *file)
+ {
+-	file->private_data = inode->u.generic_ip;
++	file->private_data = inode->i_private;
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/fbdev/mbx/mbxfb.c b/drivers/video/fbdev/mbx/mbxfb.c
+index f0a5392..2bd52ed 100644
+--- a/drivers/video/fbdev/mbx/mbxfb.c
++++ b/drivers/video/fbdev/mbx/mbxfb.c
+@@ -877,6 +877,8 @@ static int mbxfb_resume(struct platform_device *dev)
+ #ifndef CONFIG_FB_MBX_DEBUG
+ #define mbxfb_debugfs_init(x)	do {} while(0)
+ #define mbxfb_debugfs_remove(x)	do {} while(0)
++#else
++#include "mbxdebugfs.c"
+ #endif
+ 
+ #define res_size(_r) (((_r)->end - (_r)->start) + 1)
 -- 
 1.7.9.5
 

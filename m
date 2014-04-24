@@ -1,39 +1,35 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Tue, 08 Apr 2014 10:41:40 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSCAwLzNdIHZpZGVvOiBjbHBzNzExeDogTmV3IENMUFM3MTFY?= =?UTF-8?B?IEZCIGRyaXZlcg==?
-Message-Id: <1396953700.289221668@f312.i.mail.ru>
+From: Masanari Iida <standby24x7@gmail.com>
+Date: Thu, 24 Apr 2014 15:47:16 +0000
+Subject: [PATCH] video/backlight: Fix string type mismatch in s6e63m0.c
+Message-Id: <1398354436-25467-1-git-send-email-standby24x7@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1396952145.538405759@f356.i.mail.ru>
-In-Reply-To: <1396952145.538405759@f356.i.mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: jg1.han@samsung.com, cooloney@gmail.com, lee.jones@linaro.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Masanari Iida <standby24x7@gmail.com>
 
-VHVlLCA4IEFwciAyMDE0IDEzOjI0OjA5ICswMzAwINC+0YIgVG9taSBWYWxrZWluZW4gPHRvbWku
-dmFsa2VpbmVuQHRpLmNvbT46Cj4gT24gMDgvMDQvMTQgMTM6MTUsIEFsZXhhbmRlciBTaGl5YW4g
-d3JvdGU6Cj4gPiBUdWUsIDggQXByIDIwMTQgMTI6NTY6MjQgKzAzMDAg0L7RgiBUb21pIFZhbGtl
-aW5lbiA8dG9taS52YWxrZWluZW5AdGkuY29tPjoKPiA+PiBIaSwKPiA+Pgo+ID4+IE9uIDIwLzAz
-LzE0IDE4OjI0LCBBbGV4YW5kZXIgU2hpeWFuIHdyb3RlOgo+ID4+PiBUaGlzIHNlcmllcyBhZGRz
-IGEgbmV3IGZyYW1lYnVmZmVyIGRyaXZlciBmb3IgQ2lycnVzIExvZ2ljIENMUFM3MTFYCj4gPj4+
-IENQVXMuIFNpbmNlIGFsbCBjb2RlIHJld3JpdHRlbiBmcm9tIHNjcmF0Y2gsIHBhdGNoIGlzIGRl
-c2lnbmVkIGFzIGEKPiA+Pj4gcmVwbGFjZW1lbnQgb2YgdGhlIG9sZCAobm90IHVwZGF0ZWQgZm9y
-IGEgbG9uZyB0aW1lKSBmb3IgYSBuZXcgb25lLgo+ID4+Cj4gPj4gV2h5IHdhcyBpdCByZXdyaXR0
-ZW4gZnJvbSBzY3JhdGNoPyBJdCdzIGFsbW9zdCBhbHdheXMgYmV0dGVyIHRvIGltcHJvdmUKPiA+
-PiB0aGUgb2xkIG9uZSwgdGhhbiB3cml0ZSBhIG5ldywgcmVwbGFjaW5nIG9uZS4KPiA+IEhlbGxv
-Lgo+ID4gCj4gPiBNb3N0IG9mIHRoZSBjb2RlIGhhcyBiZWVuIHJld3JpdHRlbi4gSXQgd2lsbCBi
-ZSB2ZXJ5IGRpZmZpY3VsdCB0byBzZWUgdGhlIGNoYW5nZXMsCj4gPiBpZiBpdCBpcyBwcmVzZW50
-ZWQgYXMgYSBwYXRjaCBmb3IgdGhlIG9sZCBkcml2ZXIuCj4gCj4gV2VsbCwgbm93IGl0J3MgaW1w
-b3NzaWJsZSB0byBzZWUgdGhlIGNoYW5nZXMsIGV4Y2VwdCBvcGVuaW5nIGJvdGggZmlsZXMKPiBh
-bmQgZ29pbmcgdGhyb3VnaCBsaW5lIGJ5IGxpbmUuIFlvdSBkb24ndCBldmVuIGxpc3QgYW55IG5l
-dyBmZWF0dXJlcyBpbgo+IHRoZSBkZXNjcmlwdGlvbiwgb3IgZ2l2ZSBhbnkgcmVhc29uIHdoeSBh
-IG5ldyBkcml2ZXIgaXMgcmVxdWlyZWQuCj4gCj4gQW5kIG9mIGNvdXJzZSBvbmUgaHVnZSBwYXRj
-aCBjaGFuZ2luZyB0aGUgb2xkIGRyaXZlciB0byB0aGUgbmV3IGZvcm0gaXMKPiBiYWQgYWxzby4K
-PiAKPiBUaGUgcHJvcGVyIHdheSB3b3VsZCBiZSB0byBncmFkdWFsbHkgY2hhbmdlIHRoZSBvbGQg
-ZHJpdmVyIHdpdGggYSBwYXRjaAo+IHNlcmllcy4gVGhlbiBpdCdzIHBvc3NpYmxlIHRvIHJldmll
-dyB0aGUgcGF0Y2hlcyBhbmQgc2VlIHdoYXQgaXMKPiBhY3R1YWxseSBjaGFuZ2VkLgoKWWVzLCBi
-dXQgaW4gdGhpcyBjYXNlLCBJIHRoaW5rIGl0J3MgdXNlbGVzcyB3b3JrLiBDdXJyZW50IGRyaXZl
-ciBpcyBpbnRlbmRlZApvbmx5IGZvciBvbmUgb3IgdHdvIGJvYXJkcy4gTmV3IHZlcnNpb24gc3Vw
-cG9ydHMgRFQgYW5kIHJlbW92ZXMgdGhlIGxhc3QKdXNhZ2Ugb2YgPG1hY2gvaGFyZHdhcmUuaD4g
-Zm9yIHRoaXMgcGxhdGZvcm0uIEkgd2lsbCBzaG93IGFsbCB0aGUgbmV3CmJlbmVmaXRzIGluIHYy
-LgoKLS0tCgo
+Fix string type mismatch in s6e63m0_sysfs_show_gamma_table().
+gamma_table_count is defined as unsigned int.
+
+Signed-off-by: Masanari Iida <standby24x7@gmail.com>
+---
+ drivers/video/backlight/s6e63m0.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/s6e63m0.c b/drivers/video/backlight/s6e63m0.c
+index 510a1bc..2d6d481 100644
+--- a/drivers/video/backlight/s6e63m0.c
++++ b/drivers/video/backlight/s6e63m0.c
+@@ -703,7 +703,7 @@ static ssize_t s6e63m0_sysfs_show_gamma_table(struct device *dev,
+ 	struct s6e63m0 *lcd = dev_get_drvdata(dev);
+ 	char temp[3];
+ 
+-	sprintf(temp, "%d\n", lcd->gamma_table_count);
++	sprintf(temp, "%u\n", lcd->gamma_table_count);
+ 	strcpy(buf, temp);
+ 
+ 	return strlen(buf);
+-- 
+2.0.0.rc0.26.g779792a
+

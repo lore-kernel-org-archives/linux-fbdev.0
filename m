@@ -1,79 +1,48 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 23 Apr 2014 10:44:47 +0000
-Subject: Re: [PATCH 1/2] omapdss: panel-tpo-td028ec1: Add DT support.
-Message-Id: <5357999F.6010200@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="DwPKl9r4Shf3fKlmmjVbo0Jtpl6kGSx4L"
+From: Peter Griffin <peter.griffin@linaro.org>
+Date: Thu, 24 Apr 2014 12:28:28 +0000
+Subject: [PATCH 12/13] video/backlight: LP855X needs PWM
+Message-Id: <1398342509-10243-13-git-send-email-peter.griffin@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398201168-25275-1-git-send-email-marek@goldelico.com>
- <1398201168-25275-2-git-send-email-marek@goldelico.com>
-In-Reply-To: <1398201168-25275-2-git-send-email-marek@goldelico.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
+In-Reply-To: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>, Peter Griffin <peter.griffin@linaro.org>, Jingoo Han <jg1.han@samsung.com>, Milo Kim <milo.kim@ti.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
---DwPKl9r4Shf3fKlmmjVbo0Jtpl6kGSx4L
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Arnd Bergmann <arnd@arndb.de>
 
-On 23/04/14 00:12, Marek Belisko wrote:
+The LP855X driver cannot be successfully built if we don't
+enable the PWM subsystem. This patch makes that dependency
+explicit in Kconfig and prevents broken randconfig builds.
 
->  static int td028ttec1_panel_probe(struct spi_device *spi)
->  {
->  	struct panel_drv_data *ddata;
-> @@ -418,6 +436,10 @@ static int td028ttec1_panel_probe(struct spi_devic=
-e *spi)
->  		r =3D td028ttec1_panel_probe_pdata(spi);
->  		if (r)
->  			return r;
-> +	} else if (spi->dev.of_node) {
-> +		r =3D td028ttec1_probe_of(spi);
-> +		if (r)
-> +			return r;
->  	} else {
->  		return -ENODEV;
->  	}
-> @@ -463,6 +485,13 @@ static int td028ttec1_panel_remove(struct spi_devi=
-ce *spi)
->  	return 0;
->  }
-> =20
-> +static const struct of_device_id td028ttec1_of_match[] =3D {
-> +	{ .compatible =3D "toppoly,td028ttec1", },
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Peter Griffin <peter.griffin@linaro.org>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Milo Kim <milo.kim@ti.com>
+Cc: Bryan Wu <cooloney@gmail.com>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/backlight/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-We need to hack a bit here for the time being. You need to have
-"omapdss," prefix for the compatible string in the driver, and add the
-panel's compatible string to arch/arm/mach-omap2/display.c:
-dss_compat_conv_list.
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 5675511..5d44905 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -386,7 +386,7 @@ config BACKLIGHT_LM3639
+ 
+ config BACKLIGHT_LP855X
+ 	tristate "Backlight driver for TI LP855X"
+-	depends on BACKLIGHT_CLASS_DEVICE && I2C
++	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM
+ 	help
+ 	  This supports TI LP8550, LP8551, LP8552, LP8553, LP8555, LP8556 and
+ 	  LP8557 backlight driver.
+-- 
+1.7.9.5
 
-The reason for this is that the drivers are omap specific, but the DT
-data is not.
-
-Otherwise looks good to me.
-
- Tomi
-
-
-
---DwPKl9r4Shf3fKlmmjVbo0Jtpl6kGSx4L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTV5mfAAoJEPo9qoy8lh7128IQAJrx+jxEdlDpr09EJExenS4g
-8AXWsMcK/2LWL+QMqkUTnLL797LXNxU7FwfkORfVzREbat/EmI1jXU5fJ90MwQzH
-94E16d+RCOMARWepY13H8WG70st4KZ3ApT1C5+k7kK3WsXkxxm6tovfRy75jMtFR
-7oWJRKzR/bSCveJ3deBmnWazY8Reat9zWGXZB7tTxQ8MWrn+KLJl3AnKhhCUL9mD
-fHe6rIlSrpQVAEuIh82rDBRR1m5EPIjiDHQWBz+/hhrldsd4b/A5GnykCf6USjAQ
-SFvYdtZpYdI15a4VZUkaKy88ImApsNGKQcUP45dQ+3wxfU57/OMfeUPL+yzS2CP0
-A6gTfs33qotHWIoGDpIW72w2lATfILI7LHfRavFh0GCZlwNywYhq32URJW5ZHwSk
-kt7/VT3IW9tv48p59knr0MG1czKFg8c2s4+hmCa53kuRCSMuinWt9+Sv4GpuOOkC
-j8KRK9PVl4WMAyswMRdxRQW3zota1kd7TJtjJgpSaqTaUlqR81b4qlZKnXXqDCOX
-OTB0PdGcVxNIL0NWKBtkZdvfWOKec9qkJFRWsuSheoyA1jXlNNlT/TT8mfZb+uSS
-uqP2rrbC3ZmGtTmxmsR3K9LvBZMAYFOir0nh5uzQukXrqIxdVg21pYtPzRmjFW4L
-nkGa+0zGXgkLcD/XjU2Y
-=qULE
------END PGP SIGNATURE-----
-
---DwPKl9r4Shf3fKlmmjVbo0Jtpl6kGSx4L--

@@ -1,48 +1,38 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 25 Apr 2014 21:16:53 +0000
-Subject: [PATCH RFC 15/17] ARM: omap2plus_defconfig: Build DSS HDMI support for OMAP4 in kernel
-Message-Id: <b89da4a7028685dfb7834e27fc063292cf0b87aa.1398453425.git.jsarha@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Apr 2014 10:17:05 +0000
+Subject: [PATCH 09/23] ARM: dts: omap5-clocks.dtsi: add ti,set-rate-parent to dss_dss_clk
+Message-Id: <1398334639-14172-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1398453425.git.jsarha@ti.com>
-In-Reply-To: <cover.1398453425.git.jsarha-l0cyMroinI0@public.gmane.org>
+References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, peter.ujfalusi-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-This patch is here only as an example on how to enable HDMI video for
-Panda board. In addition to this patch omapdss.def_disp=hdmi parameter
-should be added to kernel command line in order to enable HDMI video.
+Add ti,set-rate-parent to dss_dss_clk so that the DSS driver can
+set the rate.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Tero Kristo <t-kristo@ti.com>
+Cc: Paul Walmsley <paul@pwsan.com>
 ---
- arch/arm/configs/omap2plus_defconfig |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/arm/boot/dts/omap54xx-clocks.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
-index a966795..35c42aa 100644
---- a/arch/arm/configs/omap2plus_defconfig
-+++ b/arch/arm/configs/omap2plus_defconfig
-@@ -187,14 +187,14 @@ CONFIG_FB=y
- CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_MODE_HELPERS=y
- CONFIG_FB_TILEBLITTING=y
--CONFIG_OMAP2_DSS=m
-+CONFIG_OMAP2_DSS=y
- CONFIG_OMAP2_DSS_SDI=y
- CONFIG_OMAP2_DSS_DSI=y
--CONFIG_FB_OMAP2=m
-+CONFIG_FB_OMAP2=y
- CONFIG_DISPLAY_ENCODER_TFP410=m
- CONFIG_DISPLAY_ENCODER_TPD12S015=m
--CONFIG_DISPLAY_CONNECTOR_DVI=m
--CONFIG_DISPLAY_CONNECTOR_HDMI=m
-+CONFIG_DISPLAY_CONNECTOR_DVI=y
-+CONFIG_DISPLAY_CONNECTOR_HDMI=y
- CONFIG_DISPLAY_PANEL_DPI=m
- CONFIG_BACKLIGHT_LCD_SUPPORT=y
- CONFIG_LCD_CLASS_DEVICE=y
+diff --git a/arch/arm/boot/dts/omap54xx-clocks.dtsi b/arch/arm/boot/dts/omap54xx-clocks.dtsi
+index 26c02f9e92c4..b53ca885c021 100644
+--- a/arch/arm/boot/dts/omap54xx-clocks.dtsi
++++ b/arch/arm/boot/dts/omap54xx-clocks.dtsi
+@@ -859,6 +859,7 @@
+ 		clocks = <&dpll_per_h12x2_ck>;
+ 		ti,bit-shift = <8>;
+ 		reg = <0x1420>;
++		ti,set-rate-parent;
+ 	};
+ 
+ 	dss_sys_clk: dss_sys_clk {
 -- 
-1.7.9.5
+1.9.1
 

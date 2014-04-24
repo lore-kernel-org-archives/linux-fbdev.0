@@ -1,57 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 30 Apr 2014 10:58:28 +0000
-Subject: Re: [patch] video: mmpfb: cleanup some static checker warnings in probe()
-Message-Id: <5360D754.6080101@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="XqwCbOSbQWEhSwABKnp63112DOsNQ7QTV"
+From: Peter Griffin <peter.griffin@linaro.org>
+Date: Thu, 24 Apr 2014 12:28:25 +0000
+Subject: [PATCH 09/13] video/backlight: LP8788 needs PWM
+Message-Id: <1398342509-10243-10-git-send-email-peter.griffin@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140414080929.GB13372@mwanda>
-In-Reply-To: <20140414080929.GB13372@mwanda>
-To: linux-fbdev@vger.kernel.org
+References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
+In-Reply-To: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, Peter Griffin <peter.griffin@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Milo Kim <milo.kim@ti.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
---XqwCbOSbQWEhSwABKnp63112DOsNQ7QTV
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+The LP8788 driver cannot be successfully built if we don't
+enable the PWM subsystem. This patch makes that dependency
+explicit in Kconfig and prevents broken randconfig builds.
 
-On 14/04/14 11:09, Dan Carpenter wrote:
-> Sparse complains about using zero instead of NULL for pointers.
-> Probably, if we enabled the warning, then GCC would complain about the
-> unused initializers.  I've just removed them.
->=20
-> Smatch complains that we first check if "fbi" is NULL and then
-> dereference it in the error handling.  It turns out that "fbi" can't be=
+Based on Arnd Bergmann patch but split out into seperate
+commits per driver based on feedback.
 
-> NULL so I've removed the check.
->=20
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Peter Griffin <peter.griffin@linaro.org>
+Cc: Milo Kim <milo.kim@ti.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Bryan Wu <cooloney@gmail.com>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/backlight/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks, queued for 3.16.
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 4791af7..ac6bc28 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -393,7 +393,7 @@ config BACKLIGHT_LP855X
+ 
+ config BACKLIGHT_LP8788
+ 	tristate "Backlight driver for TI LP8788 MFD"
+-	depends on BACKLIGHT_CLASS_DEVICE && MFD_LP8788
++	depends on BACKLIGHT_CLASS_DEVICE && MFD_LP8788 && PWM
+ 	help
+ 	  This supports TI LP8788 backlight driver.
+ 
+-- 
+1.7.9.5
 
- Tomi
-
-
-
---XqwCbOSbQWEhSwABKnp63112DOsNQ7QTV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTYNdUAAoJEPo9qoy8lh71CdAP/3dai80/5iJzVx+q53tgwff+
-60OTxGVdEPXuxCKxn0QK8eA2h7oB/kO4RfQcA2suGJ/KBZzcKS5my/5DewN0Z6Tl
-Zk1R+ZgZCY0hP9WNzRSHAWp3S9tO8xfjJ2r7hFj1GLf7jqsBP1HZcHqgHwEM+8LL
-QwEEteKJ+j+atEAVoca8TEvpRfbyyJjo4hX0PrURMFvWZ5kDUIxIBvDWII2G+m5i
-SzY62RWQWJ1vw5xDN2xDOVmSJSmy3PMAMoVk8yqvv5gBEgvUH9jrRCQYePEW5awC
-q7UU/YarNTAr1A74lKoELW1EkzoRUh+fLNSHflcD+G3Cz4IVgAe2ebhmFK0oRF03
-TZ8j/se+GEBdR0sWWEra/4h7AAJnMkaRNQWwAl0+XfH6tPhg4kWoPC4mgttJpuVI
-7J+2l2X/U5WE75TXNjtzSTg7VvO8bhvnjnIlgSThmBU8D8odhmpJ1igN9VKnD2Oj
-P/yW+T9DpPVwQgoG36Ir3BCbrJ5hTP5uUl3zAk40+GdgSa+9pIxgg5GO6P23Qy2Z
-pTEEZs5eNACRhaIke+pdRzyORrNxqKshwRH2m+yk0jxz5viQjESQLnK+M8ayVeEg
-/44f+CQjWw/r2UYt7+k9d6oPHlGmG9DieItUxZfcwaP9aopfq0dS+j6pC7TYfQsn
-1YdeiFetz/27bDWts+4Q
-=QAki
------END PGP SIGNATURE-----
-
---XqwCbOSbQWEhSwABKnp63112DOsNQ7QTV--

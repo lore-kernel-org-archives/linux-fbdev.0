@@ -1,27 +1,39 @@
-From: Marek Belisko <marek@goldelico.com>
-Date: Tue, 22 Apr 2014 21:12:46 +0000
-Subject: [PATCH 0/2] Add display support for gta04 device
-Message-Id: <1398201168-25275-1-git-send-email-marek@goldelico.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Apr 2014 10:17:03 +0000
+Subject: [PATCH 07/23] ARM: OMAP: add detection of omap5-dss
+Message-Id: <1398334639-14172-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This 2 patches adding display support for openmoko gta04 device.
-First patch add DT bindings for topolly td028 panel and second add description for
-dss + panel.
+Add detection of omap5-dss nodes so that the related devices get
+initialized.
 
-Marek Belisko (2):
-  omapdss: panel-tpo-td028ec1: Add DT support.
-  ARM: dts: oma3-gta04: Add display support
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/display.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
- .../bindings/video/toppoly,td028ttec1.txt          | 30 ++++++++
- arch/arm/boot/dts/omap3-gta04.dts                  | 86 ++++++++++++++++++++++
- .../omap2/displays-new/panel-tpo-td028ttec1.c      | 32 +++++++-
- 3 files changed, 147 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
-
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 974461441fc3..74869326dadc 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -665,6 +665,10 @@ struct device_node * __init omapdss_find_dss_of_node(void)
+ 	if (node)
+ 		return node;
+ 
++	node = of_find_compatible_node(NULL, NULL, "ti,omap5-dss");
++	if (node)
++		return node;
++
+ 	return NULL;
+ }
+ 
 -- 
-1.8.3.2
+1.9.1
 

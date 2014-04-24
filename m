@@ -1,58 +1,149 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 14 Apr 2014 21:59:48 +0000
-Subject: [PATCHv2 06/11] pwm: modify PWM_LOOKUP to initialize all struct pwm_lookup members
-Message-Id: <1397512793-10325-7-git-send-email-alexandre.belloni@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Apr 2014 10:17:17 +0000
+Subject: [PATCH 21/23] OMAPDSS: HDMI: PLL changes for OMAP5
+Message-Id: <1398334639-14172-22-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Now that PWM_LOOKUP is not used anymore, modify it to initialize all the
-members of struct pwm_lookup.
+From: Archit Taneja <archit@ti.com>
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Add a features struct to differentiate between the HDMI PLLs on OMAP4
+and OMAP5. The OMAP5 PLL is more sensitive when it comes to locking.  We
+need to ensure that the DCO freq isn't too low for lower pixel clocks.
+
+Modify the PLL computation slightly to ensure the HDMI PLL locks for lower
+frequencies. This will be later replaced by a more complex computation
+which makes sure all the PLL constraints are met.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- Documentation/pwm.txt | 3 ++-
- include/linux/pwm.h   | 4 +++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c | 81 +++++++++++++++++++++++++++++++-
+ 1 file changed, 79 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/pwm.txt b/Documentation/pwm.txt
-index 93cb97974986..f38f99cda64f 100644
---- a/Documentation/pwm.txt
-+++ b/Documentation/pwm.txt
-@@ -19,7 +19,8 @@ should instead register a static mapping that can be used to match PWM
- consumers to providers, as given in the following example:
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
+index 5fc71215c303..2b910cb9eee4 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
+@@ -23,6 +23,18 @@
+ #define HDMI_DEFAULT_REGN 16
+ #define HDMI_DEFAULT_REGM2 1
  
- 	static struct pwm_lookup board_pwm_lookup[] = {
--		PWM_LOOKUP("tegra-pwm", 0, "pwm-backlight", NULL),
-+		PWM_LOOKUP("tegra-pwm", 0, "pwm-backlight", NULL,
-+			   50000, PWM_POLARITY_NORMAL),
- 	};
++struct hdmi_pll_features {
++	bool sys_reset;
++	/* this is a hack, need to replace it with a better computation of M2 */
++	bool bound_dcofreq;
++	unsigned long fint_min, fint_max;
++	u16 regm_max;
++	unsigned long dcofreq_low_min, dcofreq_low_max;
++	unsigned long dcofreq_high_min, dcofreq_high_max;
++};
++
++static const struct hdmi_pll_features *pll_feat;
++
+ void hdmi_pll_dump(struct hdmi_pll_data *pll, struct seq_file *s)
+ {
+ #define DUMPPLL(r) seq_printf(s, "%-35s %08x\n", #r,\
+@@ -57,7 +69,11 @@ void hdmi_pll_compute(struct hdmi_pll_data *pll, unsigned long clkin, int phy)
  
- 	static void __init board_init(void)
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 2f45e2fe5b93..e90628cac8fa 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -278,12 +278,14 @@ struct pwm_lookup {
- 	enum pwm_polarity polarity;
- };
+ 	refclk = clkin / pi->regn;
  
--#define PWM_LOOKUP(_provider, _index, _dev_id, _con_id)	\
-+#define PWM_LOOKUP(_provider, _index, _dev_id, _con_id, _period, _polarity) \
- 	{						\
- 		.provider = _provider,			\
- 		.index = _index,			\
- 		.dev_id = _dev_id,			\
- 		.con_id = _con_id,			\
-+		.period = _period,			\
-+		.polarity = _polarity			\
- 	}
+-	pi->regm2 = HDMI_DEFAULT_REGM2;
++	/* temorary hack to make sure DCO freq isn't calculated too low */
++	if (pll_feat->bound_dcofreq && phy <= 65000)
++		pi->regm2 = 3;
++	else
++		pi->regm2 = HDMI_DEFAULT_REGM2;
  
- #if IS_ENABLED(CONFIG_PWM)
+ 	/*
+ 	 * multiplier is pixel_clk/ref_clk
+@@ -154,7 +170,7 @@ static int hdmi_pll_config(struct hdmi_pll_data *pll)
+ static int hdmi_pll_reset(struct hdmi_pll_data *pll)
+ {
+ 	/* SYSRESET  controlled by power FSM */
+-	REG_FLD_MOD(pll->base, PLLCTRL_PLL_CONTROL, 0x0, 3, 3);
++	REG_FLD_MOD(pll->base, PLLCTRL_PLL_CONTROL, pll_feat->sys_reset, 3, 3);
+ 
+ 	/* READ 0x0 reset is in progress */
+ 	if (hdmi_wait_for_bit_change(pll->base, PLLCTRL_PLL_STATUS, 0, 0, 1)
+@@ -197,11 +213,72 @@ void hdmi_pll_disable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp)
+ #define PLL_OFFSET	0x200
+ #define PLL_SIZE	0x100
+ 
++static const struct hdmi_pll_features omap44xx_pll_feats = {
++	.sys_reset		=	false,
++	.bound_dcofreq		=	false,
++	.fint_min		=	500000,
++	.fint_max		=	2500000,
++	.regm_max		=	4095,
++	.dcofreq_low_min	=	500000000,
++	.dcofreq_low_max	=	1000000000,
++	.dcofreq_high_min	=	1000000000,
++	.dcofreq_high_max	=	2000000000,
++};
++
++static const struct hdmi_pll_features omap54xx_pll_feats = {
++	.sys_reset		=	true,
++	.bound_dcofreq		=	true,
++	.fint_min		=	620000,
++	.fint_max		=	2500000,
++	.regm_max		=	2046,
++	.dcofreq_low_min	=	750000000,
++	.dcofreq_low_max	=	1500000000,
++	.dcofreq_high_min	=	1250000000,
++	.dcofreq_high_max	=	2500000000UL,
++};
++
++static int hdmi_pll_init_features(struct platform_device *pdev)
++{
++	struct hdmi_pll_features *dst;
++	const struct hdmi_pll_features *src;
++
++	dst = devm_kzalloc(&pdev->dev, sizeof(*dst), GFP_KERNEL);
++	if (!dst) {
++		dev_err(&pdev->dev, "Failed to allocate HDMI PHY Features\n");
++		return -ENOMEM;
++	}
++
++	switch (omapdss_get_version()) {
++	case OMAPDSS_VER_OMAP4430_ES1:
++	case OMAPDSS_VER_OMAP4430_ES2:
++	case OMAPDSS_VER_OMAP4:
++		src = &omap44xx_pll_feats;
++		break;
++
++	case OMAPDSS_VER_OMAP5:
++		src = &omap54xx_pll_feats;
++		break;
++
++	default:
++		return -ENODEV;
++	}
++
++	memcpy(dst, src, sizeof(*dst));
++	pll_feat = dst;
++
++	return 0;
++}
++
+ int hdmi_pll_init(struct platform_device *pdev, struct hdmi_pll_data *pll)
+ {
++	int r;
+ 	struct resource *res;
+ 	struct resource temp_res;
+ 
++	r = hdmi_pll_init_features(pdev);
++	if (r)
++		return r;
++
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pll");
+ 	if (!res) {
+ 		DSSDBG("can't get PLL mem resource by name\n");
 -- 
-1.8.3.2
+1.9.1
 

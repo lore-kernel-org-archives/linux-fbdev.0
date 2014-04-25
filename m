@@ -1,46 +1,39 @@
-From: jon@ringle.org
-Date: Tue, 01 Apr 2014 12:39:33 +0000
-Subject: [PATCH v3 1/2] video: da8xx-fb: Add support for Densitron 84-0023-001T
-Message-Id: <1396355974-2257-1-git-send-email-jon@ringle.org>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 25 Apr 2014 21:16:43 +0000
+Subject: [PATCH RFC 05/17] OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
+Message-Id: <18565378302f0dc3262d9c7469821b7a64c56cb8.1398453425.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1398453425.git.jsarha@ti.com>
+In-Reply-To: <cover.1398453425.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, Jon Ringle <jringle@gridpoint.com>
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, peter.ujfalusi-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-From: Jon Ringle <jringle@gridpoint.com>
+The OMAP5 HDMI audio implementation needs HDMI_AUDIO_LAYOUT_6CH in
+hdmi_core_audio_layout enum. I found the correct value from ti-linux
+3.8 tree.
 
-Signed-off-by: Jon Ringle <jringle@gridpoint.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/da8xx-fb.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/video/fbdev/omap2/dss/hdmi.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index e030e17..233f65f 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -243,6 +243,20 @@ static struct fb_videomode known_lcd_panels[] = {
- 		.sync           = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
- 		.flag           = 0,
- 	},
-+	[3] = {
-+		/* Densitron 84-0023-001T */
-+		.name           = "Densitron_84-0023-001T",
-+		.xres           = 320,
-+		.yres           = 240,
-+		.pixclock       = KHZ2PICOS(6400),
-+		.left_margin    = 0,
-+		.right_margin   = 0,
-+		.upper_margin   = 0,
-+		.lower_margin   = 0,
-+		.hsync_len      = 30,
-+		.vsync_len      = 3,
-+		.sync           = 0,
-+	},
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 65bf072..ea4a168 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -159,7 +159,8 @@ enum hdmi_audio_blk_strt_end_sig {
+ 
+ enum hdmi_core_audio_layout {
+ 	HDMI_AUDIO_LAYOUT_2CH = 0,
+-	HDMI_AUDIO_LAYOUT_8CH = 1
++	HDMI_AUDIO_LAYOUT_8CH = 1,
++	HDMI_AUDIO_LAYOUT_6CH = 2
  };
  
- static bool da8xx_fb_is_raster_enabled(void)
+ enum hdmi_core_cts_mode {
 -- 
-1.8.5.4
+1.7.9.5
 

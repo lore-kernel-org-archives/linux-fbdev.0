@@ -1,84 +1,70 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Tue, 29 Apr 2014 15:28:58 +0000
-Subject: [PATCH 2/3] drm/panel: simple - Disable panel on shutdown
-Message-Id: <1398785339-8107-2-git-send-email-thierry.reding@gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 25 Apr 2014 21:16:50 +0000
+Subject: [PATCH RFC 12/17] ARM: omap4-panda-common.dtsi: Add HDMI audio nodes
+Message-Id: <ab87bed1e3101f9839dd42ad0ae6cbe61ef85d60.1398453425.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398785339-8107-1-git-send-email-thierry.reding@gmail.com>
-In-Reply-To: <1398785339-8107-1-git-send-email-thierry.reding@gmail.com>
+References: <cover.1398453425.git.jsarha@ti.com>
+In-Reply-To: <cover.1398453425.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, peter.ujfalusi-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-From: Thierry Reding <treding@nvidia.com>
+Adds a simple-card sound node for HDMI audio, the associated
+hdmi-codec node, and sound-dai-cells propeties to the DAI nodes.
 
-When a device is shut down, disable the panel to make sure the display
-backlight doesn't stay lit.
-
-Signed-off-by: Thierry Reding <treding@nvidia.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/gpu/drm/panel/panel-simple.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/arm/boot/dts/omap4-panda-common.dtsi |   21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index 309f29e9234a..a790f4c337cf 100644
---- a/drivers/gpu/drm/panel/panel-simple.c
-+++ b/drivers/gpu/drm/panel/panel-simple.c
-@@ -262,6 +262,13 @@ static int panel_simple_remove(struct device *dev)
- 	return 0;
- }
+diff --git a/arch/arm/boot/dts/omap4-panda-common.dtsi b/arch/arm/boot/dts/omap4-panda-common.dtsi
+index d2c45bf..c04f453 100644
+--- a/arch/arm/boot/dts/omap4-panda-common.dtsi
++++ b/arch/arm/boot/dts/omap4-panda-common.dtsi
+@@ -41,7 +41,7 @@
+ 		};
+ 	};
  
-+static void panel_simple_shutdown(struct device *dev)
-+{
-+	struct panel_simple *panel = dev_get_drvdata(dev);
-+
-+	panel_simple_disable(&panel->base);
-+}
-+
- static const struct drm_display_mode auo_b101aw03_mode = {
- 	.clock = 51450,
- 	.hdisplay = 1024,
-@@ -412,6 +419,11 @@ static int panel_simple_platform_remove(struct platform_device *pdev)
- 	return panel_simple_remove(&pdev->dev);
- }
+-	sound: sound {
++	sound: sound@0 {
+ 		compatible = "ti,abe-twl6040";
+ 		ti,model = "PandaBoard";
  
-+static void panel_simple_platform_shutdown(struct platform_device *pdev)
-+{
-+	panel_simple_shutdown(&pdev->dev);
-+}
+@@ -65,6 +65,24 @@
+ 			"AFMR", "Line In";
+ 	};
+ 
++	sound@1 {
++		compatible = "simple-audio-card";
 +
- static struct platform_driver panel_simple_platform_driver = {
- 	.driver = {
- 		.name = "panel-simple",
-@@ -420,6 +432,7 @@ static struct platform_driver panel_simple_platform_driver = {
- 	},
- 	.probe = panel_simple_platform_probe,
- 	.remove = panel_simple_platform_remove,
-+	.shutdown = panel_simple_platform_shutdown,
++		simple-audio-card,cpu {
++			sound-dai = <&hdmi>;
++		};
++
++		simple-audio-card,codec {
++			sound-dai = <&hdmi_audio>;
++		};
++	};
++
++	hdmi_audio: hdmi_audio@0 {
++		#sound-dai-cells = <0>;
++		compatible = "linux,hdmi-audio";
++		status = "okay";
++	};
++
+ 	/* HS USB Port 1 Power */
+ 	hsusb1_power: hsusb1_power_reg {
+ 		compatible = "regulator-fixed";
+@@ -512,6 +530,7 @@
  };
  
- struct panel_desc_dsi {
-@@ -561,6 +574,11 @@ static int panel_simple_dsi_remove(struct mipi_dsi_device *dsi)
- 	return panel_simple_remove(&dsi->dev);
- }
+ &hdmi {
++	#sound-dai-cells = <0>;
+ 	status = "ok";
+ 	vdda-supply = <&vdac>;
  
-+static void panel_simple_dsi_shutdown(struct mipi_dsi_device *dsi)
-+{
-+	panel_simple_shutdown(&dsi->dev);
-+}
-+
- static struct mipi_dsi_driver panel_simple_dsi_driver = {
- 	.driver = {
- 		.name = "panel-simple-dsi",
-@@ -569,6 +587,7 @@ static struct mipi_dsi_driver panel_simple_dsi_driver = {
- 	},
- 	.probe = panel_simple_dsi_probe,
- 	.remove = panel_simple_dsi_remove,
-+	.shutdown = panel_simple_dsi_shutdown,
- };
- 
- static int __init panel_simple_init(void)
 -- 
-1.9.2
+1.7.9.5
 

@@ -1,61 +1,73 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Date: Thu, 24 Apr 2014 16:53:29 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 25 Apr 2014 14:20:19 +0000
 Subject: Re: [PATCH 11/23] ARM: dts: omap5-uevm.dts: add tca6424a
-Message-Id: <53594189.1090508@cogentembedded.com>
+Message-Id: <535A6F23.1070409@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="hrwwtud2Ndf5ILrJNiwcN57L8rw2UWqOk"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
  <1398334639-14172-12-git-send-email-tomi.valkeinen@ti.com>
  <53591669.7060502@cogentembedded.com> <5359209F.7000308@ti.com>
-In-Reply-To: <5359209F.7000308@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <53594189.1090508@cogentembedded.com>
+In-Reply-To: <53594189.1090508@cogentembedded.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Hello.
+--hrwwtud2Ndf5ILrJNiwcN57L8rw2UWqOk
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On 04/24/2014 06:33 PM, Tomi Valkeinen wrote:
+On 24/04/14 19:53, Sergei Shtylyov wrote:
 
->>> omap5-uevm has a tca6424a I/O expander. Add it to the .dts file.
+>> Right. I wonder what the name should be... "gpio" is out, as the name
+>> should be more specific.
+>=20
+>    No, it's not out. The name should be "gpio@22", I think it would be
+> unique.
+>=20
+>> We already have gpio1-8, which are the gpio
+>> banks from the SoC.
+>=20
+>    I don't understand why you are indexing the names while you probably=
 
->>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->>> Cc: Tony Lindgren <tony@atomide.com>
->>> ---
->>>    arch/arm/boot/dts/omap5-uevm.dts | 7 +++++++
->>>    1 file changed, 7 insertions(+)
+> have the address part after @ that makes them unique already.
 
->>> diff --git a/arch/arm/boot/dts/omap5-uevm.dts
->>> b/arch/arm/boot/dts/omap5-uevm.dts
->>> index 3b99ec25b748..9e7581eaeb23 100644
->>> --- a/arch/arm/boot/dts/omap5-uevm.dts
->>> +++ b/arch/arm/boot/dts/omap5-uevm.dts
->>> @@ -434,6 +434,13 @@
->>>        pinctrl-0 = <&i2c5_pins>;
->>>
->>>        clock-frequency = <400000>;
->>> +
->>> +    tca6424a: tca6424a@22 {
+Ah sorry for the confusion, I misunderstood. I was talking about the
+label, not the name, of the node.
 
->>     The ePAPR standard [1] says: "The name of a node should be somewhat
->> generic,
->> reflecting the function of the device and not its precise programming
->> model.
->> If appropriate, the name should be one of the following choices:
->> [...]
->>     - gpio;"
+So the labels for the gpio banks are 'gpio2' etc. The names are
+'gpio@123456' etc. And yes, here the name should be 'gpio@22' as you said=
+=2E
 
-> Right. I wonder what the name should be... "gpio" is out, as the name
-> should be more specific.
+I didn't see any rules about the labels in the ePARP doc, so I guess
+'tca6424a' would be a valid one. Maybe not a good one, though,
+especially if there are multiple tca6424a chips on the board (I need to
+check).
 
-    No, it's not out. The name should be "gpio@22", I think it would be unique.
+ Tomi
 
-> We already have gpio1-8, which are the gpio
-> banks from the SoC.
 
-    I don't understand why you are indexing the names while you probably have 
-the address part after @ that makes them unique already.
 
->   Tomi
+--hrwwtud2Ndf5ILrJNiwcN57L8rw2UWqOk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-WBR, Sergei
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
+iQIcBAEBAgAGBQJTWm8jAAoJEPo9qoy8lh71jjoP/1tnluzxcmK+M9SWyyMDc+n4
+B43399t/y9faEQ48Iz4hiGeHJsFDxG/t5FHCckD9/5z0RcnxXcoyZPthRXFk4xps
+DV16+Kn/biB3axQm0/9wkDnxA/mu+xA43O5QSGNkKa+rJZqcz4FpJMk69xhzzPvh
+eFP3780F337/UEPLvn0RjrT1btYEEmJDmIm6/mKf6hTXIbLNxgEgqAwtgaTzxYzk
+28EC2PtfW/SgTQITbLaSg1a2HeXVM++UQ7IaeGnl+VVXpLSWBzX9uVJEWjZt+Ajs
+oG/0nDZHfK+HOKpiAGC8bBrfxub/2q1Gwwk5A08fUxgRACXK9CXm7yUyGL48YcK5
+kYUVsaEUz+2emuVEhNTy1IWPvp/R9aRZ9jot9XcTiQGzybiLQOXRtCJKKYyumdZj
+bvrkyLhXsrxxa5vu+uWWawr6OuWlJHoprGtejCPRbJDBePpJ6citHNnVEQ/eKsy+
+Met2NhA3h2Rhrz2WWDJp28QTEvGRRmdxH5Xkju46KDCBuuOAYE4nb/tBGi858PwD
+iWCAFlsnalh9ArceuYtX77JNAR8gczxeo53GabUdgNPneFj9y0FbP+vFy9UXzb+Z
+l4LjF2rcE5m0yX3YxPlUSy5CGfMiUBgLehFnumNh+kEzyBoX52tRtg7j7OlpeBVo
+cyTWYJW8AjPggHrVcrSn
+=2YV/
+-----END PGP SIGNATURE-----
+
+--hrwwtud2Ndf5ILrJNiwcN57L8rw2UWqOk--

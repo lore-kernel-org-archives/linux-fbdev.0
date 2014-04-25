@@ -1,126 +1,93 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Fri, 18 Apr 2014 09:21:53 +0000
-Subject: [PATCH 3.12 20/72] video/fb: Propagate error code from failing to unregister conflicting fb
-Message-Id: <9419c62ccf280244e27f3007752cfb9818e46479.1397812482.git.jslaby@suse.cz>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 25 Apr 2014 21:16:38 +0000
+Subject: [PATCH RFC 00/17] Rework OMAP4+ HDMI audio support
+Message-Id: <cover.1398453425.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <3389f243c528afc7c7300c83b8f296290cd3656d.1397812482.git.jslaby@suse.cz>
-In-Reply-To: <3389f243c528afc7c7300c83b8f296290cd3656d.1397812482.git.jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stable@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Airlie <airlied@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, peter.ujfalusi-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-From: Chris Wilson <chris@chris-wilson.co.uk>
+This set of patches fixes OMAP4+ HDMI audio. The structure of the
+implementatin looks a bit different than before. Instead of creating a
+driver specific API for a separate ASoC component driver to connect
+to, this implementation integrates an the component driver into the
+HDMI driver.
 
-3.12-stable review patch.  If anyone has any objections, please let me know.
+The idea is to use an existing ASoC component driver API instead of
+creating a new custom API for each HDMI IP and to avoid splitting the
+driver to half for separate video and audio parts connected with the
+API.
 
-=======
-commit 46eeb2c144956e88197439b5ee5cf221a91b0a81 upstream.
+The new implementation also uses simple-audio-card for a machine
+driver instead of having its own HW specific machine driver.
 
-If we fail to remove a conflicting fb driver, we need to abort the
-loading of the second driver to avoid likely kernel panics.
+The patches are based on 3.15-rc2 merged with
+git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+and
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dt-omap5
 
-Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Reviewed-by: Jani Nikula <jani.nikula@intel.com>
-Signed-off-by: Dave Airlie <airlied@redhat.com>
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
----
- drivers/video/fbmem.c | 31 +++++++++++++++++++++----------
- include/linux/fb.h    |  4 ++--
- 2 files changed, 23 insertions(+), 12 deletions(-)
+Everything is pushed here here:
+git://git.ti.com/~jyrisarha/ti-linux-kernel/jyrisarhas-audio-video-linux-feature-tree.git omap-hdmi-audio
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index cde461932760..7309ac704e26 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1577,10 +1577,10 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
- static int do_unregister_framebuffer(struct fb_info *fb_info);
- 
- #define VGA_FB_PHYS 0xA0000
--static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
--				     const char *name, bool primary)
-+static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
-+					      const char *name, bool primary)
- {
--	int i;
-+	int i, ret;
- 
- 	/* check all firmware fbs and kick off if the base addr overlaps */
- 	for (i = 0 ; i < FB_MAX; i++) {
-@@ -1599,22 +1599,29 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
- 			printk(KERN_INFO "fb: conflicting fb hw usage "
- 			       "%s vs %s - removing generic driver\n",
- 			       name, registered_fb[i]->fix.id);
--			do_unregister_framebuffer(registered_fb[i]);
-+			ret = do_unregister_framebuffer(registered_fb[i]);
-+			if (ret)
-+				return ret;
- 		}
- 	}
-+
-+	return 0;
- }
- 
- static int do_register_framebuffer(struct fb_info *fb_info)
- {
--	int i;
-+	int i, ret;
- 	struct fb_event event;
- 	struct fb_videomode mode;
- 
- 	if (fb_check_foreignness(fb_info))
- 		return -ENOSYS;
- 
--	do_remove_conflicting_framebuffers(fb_info->apertures, fb_info->fix.id,
--					 fb_is_primary_device(fb_info));
-+	ret = do_remove_conflicting_framebuffers(fb_info->apertures,
-+						 fb_info->fix.id,
-+						 fb_is_primary_device(fb_info));
-+	if (ret)
-+		return ret;
- 
- 	if (num_registered_fb = FB_MAX)
- 		return -ENXIO;
-@@ -1739,12 +1746,16 @@ int unlink_framebuffer(struct fb_info *fb_info)
- }
- EXPORT_SYMBOL(unlink_framebuffer);
- 
--void remove_conflicting_framebuffers(struct apertures_struct *a,
--				     const char *name, bool primary)
-+int remove_conflicting_framebuffers(struct apertures_struct *a,
-+				    const char *name, bool primary)
- {
-+	int ret;
-+
- 	mutex_lock(&registration_lock);
--	do_remove_conflicting_framebuffers(a, name, primary);
-+	ret = do_remove_conflicting_framebuffers(a, name, primary);
- 	mutex_unlock(&registration_lock);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(remove_conflicting_framebuffers);
- 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index ffac70aab3e9..8439a1600c1a 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -613,8 +613,8 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- extern int register_framebuffer(struct fb_info *fb_info);
- extern int unregister_framebuffer(struct fb_info *fb_info);
- extern int unlink_framebuffer(struct fb_info *fb_info);
--extern void remove_conflicting_framebuffers(struct apertures_struct *a,
--				const char *name, bool primary);
-+extern int remove_conflicting_framebuffers(struct apertures_struct *a,
-+					   const char *name, bool primary);
- extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
- extern int fb_show_logo(struct fb_info *fb_info, int rotate);
- extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
+Best regards,
+Jyri
+
+Jyri Sarha (17):
+  ASoC: omap-pcm: Move omap-pcm under include/sound
+  OMAPDSS: hdmi-common: Add hdmi_dss_audio_from_hw_params()
+  OMAPDSS: hdmi4: Integrated ASoC DAI component driver implementation
+  OMAPDSS: Kconfig: Add depencies and help section to
+    OMAP4_DSS_HDMI_AUDIO
+  OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
+  OMAPDSS: hdmi5_core: Fix compilation with OMAP5_DSS_HDMI_AUDIO
+  OMAPDSS: hdmi5: Integrated ASoC DAI component driver implementation
+  OMAPDSS: Kconfig: Add depencies and help section to
+    OMAP5_DSS_HDMI_AUDIO
+  ASoC: omap: Remove obsolete HDMI audio code and Kconfig options
+  OMAPDSS: Remove obsolete audio code
+  ARM: omap4.dtsi: Add audio related parametes to hdmi node
+  ARM: omap4-panda-common.dtsi: Add HDMI audio nodes
+  ARM: omap5.dtsi: Add audio related parameters to hdmi node
+  ARM: omap5-uevm.dts: Add hdmi audio related nodes
+  ARM: omap2plus_defconfig: Build DSS HDMI support for OMAP4 in kernel
+  ARM: omap2plus_defconfig: Enable OMAP5 HDMI support
+  ARM: omap2plus_defconfig: Enable OMAP4+ HDMI audio support
+
+ .../devicetree/bindings/video/ti,omap4-dss.txt     |    4 +
+ arch/arm/boot/dts/omap4-panda-common.dtsi          |   21 +-
+ arch/arm/boot/dts/omap4.dtsi                       |    2 +
+ arch/arm/boot/dts/omap5-uevm.dts                   |   19 +
+ arch/arm/boot/dts/omap5.dtsi                       |    2 +
+ arch/arm/configs/omap2plus_defconfig               |   20 +-
+ .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 ------
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 ---
+ drivers/video/fbdev/omap2/dss/Kconfig              |   19 +-
+ drivers/video/fbdev/omap2/dss/hdmi.h               |    8 +-
+ drivers/video/fbdev/omap2/dss/hdmi4.c              |  216 ++++++++----
+ drivers/video/fbdev/omap2/dss/hdmi5.c              |  216 ++++++++----
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c         |    2 +-
+ drivers/video/fbdev/omap2/dss/hdmi_common.c        |  117 ++++++-
+ include/sound/omap-pcm.h                           |   30 ++
+ include/video/omapdss.h                            |   31 --
+ sound/soc/davinci/davinci-mcasp.c                  |    2 +-
+ sound/soc/omap/Kconfig                             |   13 -
+ sound/soc/omap/Makefile                            |    4 -
+ sound/soc/omap/omap-dmic.c                         |    2 +-
+ sound/soc/omap/omap-hdmi-card.c                    |   87 -----
+ sound/soc/omap/omap-hdmi.c                         |  364 --------------------
+ sound/soc/omap/omap-hdmi.h                         |   38 --
+ sound/soc/omap/omap-mcbsp.c                        |    2 +-
+ sound/soc/omap/omap-mcpdm.c                        |    2 +-
+ sound/soc/omap/omap-pcm.h                          |   30 --
+ 26 files changed, 536 insertions(+), 870 deletions(-)
+ create mode 100644 include/sound/omap-pcm.h
+ delete mode 100644 sound/soc/omap/omap-hdmi-card.c
+ delete mode 100644 sound/soc/omap/omap-hdmi.c
+ delete mode 100644 sound/soc/omap/omap-hdmi.h
+ delete mode 100644 sound/soc/omap/omap-pcm.h
+
 -- 
-1.9.2
+1.7.9.5
 

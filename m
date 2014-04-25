@@ -1,41 +1,48 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 14 Apr 2014 21:59:51 +0000
-Subject: [PATCHv2 09/11] ARM: pxa: hx4700: use PWM_LOOKUP to initialize struct pwm_lookup
-Message-Id: <1397512793-10325-10-git-send-email-alexandre.belloni@free-electrons.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 25 Apr 2014 21:16:53 +0000
+Subject: [PATCH RFC 15/17] ARM: omap2plus_defconfig: Build DSS HDMI support for OMAP4 in kernel
+Message-Id: <b89da4a7028685dfb7834e27fc063292cf0b87aa.1398453425.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <cover.1398453425.git.jsarha@ti.com>
+In-Reply-To: <cover.1398453425.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, peter.ujfalusi-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+This patch is here only as an example on how to enable HDMI video for
+Panda board. In addition to this patch omapdss.def_disp=hdmi parameter
+should be added to kernel command line in order to enable HDMI video.
+
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/mach-pxa/hx4700.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ arch/arm/configs/omap2plus_defconfig |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/hx4700.c b/arch/arm/mach-pxa/hx4700.c
-index 0788a1f171fe..c66ad4edc5e3 100644
---- a/arch/arm/mach-pxa/hx4700.c
-+++ b/arch/arm/mach-pxa/hx4700.c
-@@ -574,14 +574,8 @@ static struct platform_device backlight = {
- };
- 
- static struct pwm_lookup hx4700_pwm_lookup[] = {
--	{
--		.provider = "pxa27x-pwm.1",
--		.index = 0,
--		.dev_id = "pwm-backlight",
--		.con_id = NULL,
--		.period = 30923,
--		.polarity = PWM_POLARITY_NORMAL,
--	},
-+	PWM_LOOKUP("pxa27x-pwm.1", 0, "pwm-backlight", NULL,
-+		   30923, PWM_POLARITY_NORMAL),
- };
- 
- /*
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index a966795..35c42aa 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -187,14 +187,14 @@ CONFIG_FB=y
+ CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_MODE_HELPERS=y
+ CONFIG_FB_TILEBLITTING=y
+-CONFIG_OMAP2_DSS=m
++CONFIG_OMAP2_DSS=y
+ CONFIG_OMAP2_DSS_SDI=y
+ CONFIG_OMAP2_DSS_DSI=y
+-CONFIG_FB_OMAP2=m
++CONFIG_FB_OMAP2=y
+ CONFIG_DISPLAY_ENCODER_TFP410=m
+ CONFIG_DISPLAY_ENCODER_TPD12S015=m
+-CONFIG_DISPLAY_CONNECTOR_DVI=m
+-CONFIG_DISPLAY_CONNECTOR_HDMI=m
++CONFIG_DISPLAY_CONNECTOR_DVI=y
++CONFIG_DISPLAY_CONNECTOR_HDMI=y
+ CONFIG_DISPLAY_PANEL_DPI=m
+ CONFIG_BACKLIGHT_LCD_SUPPORT=y
+ CONFIG_LCD_CLASS_DEVICE=y
 -- 
-1.8.3.2
+1.7.9.5
 

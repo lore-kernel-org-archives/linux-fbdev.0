@@ -1,104 +1,181 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 10:17:06 +0000
-Subject: [PATCH 10/23] ARM: dts: omap5.dtsi: add DSS nodes
-Message-Id: <1398334639-14172-11-git-send-email-tomi.valkeinen@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 25 Apr 2014 21:16:39 +0000
+Subject: [PATCH RFC 01/17] ASoC: omap-pcm: Move omap-pcm under include/sound
+Message-Id: <6b5197d4e9bc94bf617bc5e5add990fa6287089e.1398453425.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1398453425.git.jsarha@ti.com>
+In-Reply-To: <cover.1398453425.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, peter.ujfalusi-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-Add OMAP5 DSS nodes to omap5.dtsi.
+Make including the omap-pcm.h outside sound/soc/omap more convenient.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/boot/dts/omap5.dtsi | 70 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 70 insertions(+)
+ include/sound/omap-pcm.h          |   30 ++++++++++++++++++++++++++++++
+ sound/soc/davinci/davinci-mcasp.c |    2 +-
+ sound/soc/omap/omap-dmic.c        |    2 +-
+ sound/soc/omap/omap-hdmi.c        |    2 +-
+ sound/soc/omap/omap-mcbsp.c       |    2 +-
+ sound/soc/omap/omap-mcpdm.c       |    2 +-
+ sound/soc/omap/omap-pcm.h         |   30 ------------------------------
+ 7 files changed, 35 insertions(+), 35 deletions(-)
+ create mode 100644 include/sound/omap-pcm.h
+ delete mode 100644 sound/soc/omap/omap-pcm.h
 
-diff --git a/arch/arm/boot/dts/omap5.dtsi b/arch/arm/boot/dts/omap5.dtsi
-index 6f3de22fb266..b2a28e6575df 100644
---- a/arch/arm/boot/dts/omap5.dtsi
-+++ b/arch/arm/boot/dts/omap5.dtsi
-@@ -863,6 +863,76 @@
+diff --git a/include/sound/omap-pcm.h b/include/sound/omap-pcm.h
+new file mode 100644
+index 0000000..c1d2f31
+--- /dev/null
++++ b/include/sound/omap-pcm.h
+@@ -0,0 +1,30 @@
++/*
++ * omap-pcm.h - OMAP PCM driver
++ *
++ * Copyright (C) 2014 Texas Instruments, Inc.
++ *
++ * Author: Peter Ujfalusi <peter.ujfalusi@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ */
++
++#ifndef __OMAP_PCM_H__
++#define __OMAP_PCM_H__
++
++#if IS_ENABLED(CONFIG_SND_OMAP_SOC)
++int omap_pcm_platform_register(struct device *dev);
++#else
++static inline int omap_pcm_platform_register(struct device *dev)
++{
++	return 0;
++}
++#endif /* CONFIG_SND_OMAP_SOC */
++
++#endif /* __OMAP_PCM_H__ */
+diff --git a/sound/soc/davinci/davinci-mcasp.c b/sound/soc/davinci/davinci-mcasp.c
+index 14058dc..9afb146 100644
+--- a/sound/soc/davinci/davinci-mcasp.c
++++ b/sound/soc/davinci/davinci-mcasp.c
+@@ -33,10 +33,10 @@
+ #include <sound/initval.h>
+ #include <sound/soc.h>
+ #include <sound/dmaengine_pcm.h>
++#include <sound/omap-pcm.h>
  
- 			#thermal-sensor-cells = <1>;
- 		};
-+
-+		dss: dss@58000000 {
-+			compatible = "ti,omap5-dss";
-+			reg = <0x58000000 0x80>;
-+			status = "disabled";
-+			ti,hwmods = "dss_core";
-+			clocks = <&dss_dss_clk>;
-+			clock-names = "fck";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges;
-+
-+			dispc@58001000 {
-+				compatible = "ti,omap5-dispc";
-+				reg = <0x58001000 0x1000>;
-+				interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
-+				ti,hwmods = "dss_dispc";
-+				clocks = <&dss_dss_clk>;
-+				clock-names = "fck";
-+			};
-+
-+			rfbi: encoder@58002000  {
-+				compatible = "ti,omap5-rfbi";
-+				reg = <0x58002000 0x100>;
-+				status = "disabled";
-+				ti,hwmods = "dss_rfbi";
-+				clocks = <&dss_dss_clk>, <&dss_l3_iclk>;
-+				clock-names = "fck", "ick";
-+			};
-+
-+			dsi1: encoder@58004000 {
-+				compatible = "ti,omap5-dsi";
-+				reg = <0x58004000 0x200>,
-+				      <0x58004200 0x40>,
-+				      <0x58004300 0x40>;
-+				reg-names = "proto", "phy", "pll";
-+				interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+				ti,hwmods = "dss_dsi1";
-+				clocks = <&dss_dss_clk>, <&dss_sys_clk>;
-+				clock-names = "fck", "sys_clk";
-+			};
-+
-+			dsi2: encoder@58005000 {
-+				compatible = "ti,omap5-dsi";
-+				reg = <0x58009000 0x200>,
-+				      <0x58009200 0x40>,
-+				      <0x58009300 0x40>;
-+				reg-names = "proto", "phy", "pll";
-+				interrupts = <GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+				ti,hwmods = "dss_dsi2";
-+				clocks = <&dss_dss_clk>, <&dss_sys_clk>;
-+				clock-names = "fck", "sys_clk";
-+			};
-+
-+			hdmi: encoder@58060000 {
-+				compatible = "ti,omap5-hdmi";
-+				reg = <0x58040000 0x400>,
-+				      <0x58040200 0x80>,
-+				      <0x58040300 0x80>,
-+				      <0x58060000 0x19000>;
-+				reg-names = "wp", "pll", "phy", "core";
-+				interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
-+				status = "disabled";
-+				ti,hwmods = "dss_hdmi";
-+				clocks = <&dss_48mhz_clk>, <&dss_sys_clk>;
-+				clock-names = "fck", "sys_clk";
-+			};
-+		};
- 	};
- };
+ #include "davinci-pcm.h"
+ #include "davinci-mcasp.h"
+-#include "../omap/omap-pcm.h"
  
+ #define MCASP_MAX_AFIFO_DEPTH	64
+ 
+diff --git a/sound/soc/omap/omap-dmic.c b/sound/soc/omap/omap-dmic.c
+index 53da041..6925d71 100644
+--- a/sound/soc/omap/omap-dmic.c
++++ b/sound/soc/omap/omap-dmic.c
+@@ -40,9 +40,9 @@
+ #include <sound/initval.h>
+ #include <sound/soc.h>
+ #include <sound/dmaengine_pcm.h>
++#include <sound/omap-pcm.h>
+ 
+ #include "omap-dmic.h"
+-#include "omap-pcm.h"
+ 
+ struct omap_dmic {
+ 	struct device *dev;
+diff --git a/sound/soc/omap/omap-hdmi.c b/sound/soc/omap/omap-hdmi.c
+index 537a1ec..eb9c392 100644
+--- a/sound/soc/omap/omap-hdmi.c
++++ b/sound/soc/omap/omap-hdmi.c
+@@ -34,9 +34,9 @@
+ #include <sound/asoundef.h>
+ #include <sound/dmaengine_pcm.h>
+ #include <video/omapdss.h>
++#include <sound/omap-pcm.h>
+ 
+ #include "omap-hdmi.h"
+-#include "omap-pcm.h"
+ 
+ #define DRV_NAME "omap-hdmi-audio-dai"
+ 
+diff --git a/sound/soc/omap/omap-mcbsp.c b/sound/soc/omap/omap-mcbsp.c
+index af2764a..10d6cec 100644
+--- a/sound/soc/omap/omap-mcbsp.c
++++ b/sound/soc/omap/omap-mcbsp.c
+@@ -34,11 +34,11 @@
+ #include <sound/initval.h>
+ #include <sound/soc.h>
+ #include <sound/dmaengine_pcm.h>
++#include <sound/omap-pcm.h>
+ 
+ #include <linux/platform_data/asoc-ti-mcbsp.h>
+ #include "mcbsp.h"
+ #include "omap-mcbsp.h"
+-#include "omap-pcm.h"
+ 
+ #define OMAP_MCBSP_RATES	(SNDRV_PCM_RATE_8000_96000)
+ 
+diff --git a/sound/soc/omap/omap-mcpdm.c b/sound/soc/omap/omap-mcpdm.c
+index d8ebb52..f0e2ebe 100644
+--- a/sound/soc/omap/omap-mcpdm.c
++++ b/sound/soc/omap/omap-mcpdm.c
+@@ -40,9 +40,9 @@
+ #include <sound/pcm_params.h>
+ #include <sound/soc.h>
+ #include <sound/dmaengine_pcm.h>
++#include <sound/omap-pcm.h>
+ 
+ #include "omap-mcpdm.h"
+-#include "omap-pcm.h"
+ 
+ struct mcpdm_link_config {
+ 	u32 link_mask; /* channel mask for the direction */
+diff --git a/sound/soc/omap/omap-pcm.h b/sound/soc/omap/omap-pcm.h
+deleted file mode 100644
+index c1d2f31..0000000
+--- a/sound/soc/omap/omap-pcm.h
++++ /dev/null
+@@ -1,30 +0,0 @@
+-/*
+- * omap-pcm.h - OMAP PCM driver
+- *
+- * Copyright (C) 2014 Texas Instruments, Inc.
+- *
+- * Author: Peter Ujfalusi <peter.ujfalusi@ti.com>
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * version 2 as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- */
+-
+-#ifndef __OMAP_PCM_H__
+-#define __OMAP_PCM_H__
+-
+-#if IS_ENABLED(CONFIG_SND_OMAP_SOC)
+-int omap_pcm_platform_register(struct device *dev);
+-#else
+-static inline int omap_pcm_platform_register(struct device *dev)
+-{
+-	return 0;
+-}
+-#endif /* CONFIG_SND_OMAP_SOC */
+-
+-#endif /* __OMAP_PCM_H__ */
 -- 
-1.9.1
+1.7.9.5
 

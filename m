@@ -1,80 +1,82 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 10:17:02 +0000
-Subject: [PATCH 06/23] ARM: OMAP: add OMAP5 DSI muxing
-Message-Id: <1398334639-14172-7-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 25 Apr 2014 11:18:08 +0000
+Subject: Re: [PATCH 06/23] ARM: OMAP: add OMAP5 DSI muxing
+Message-Id: <535A4470.2000509@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="mwJQAOWw6ArPKskQQ04RJsxi79mqL7GAX"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1398334639-14172-7-git-send-email-tomi.valkeinen@ti.com>
+ <535A42D6.5090107@ti.com>
+In-Reply-To: <535A42D6.5090107@ti.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Add support to set OMAP5 DSI pin muxing.
+--mwJQAOWw6ArPKskQQ04RJsxi79mqL7GAX
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
----
- arch/arm/mach-omap2/display.c | 35 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 34 insertions(+), 1 deletion(-)
+On 25/04/14 14:11, Archit Taneja wrote:
+> Hi,
+>=20
+> On Thursday 24 April 2014 03:47 PM, Tomi Valkeinen wrote:
+>> Add support to set OMAP5 DSI pin muxing.
+>>
+>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+>> Cc: Tony Lindgren <tony@atomide.com>
+>> ---
+>>   arch/arm/mach-omap2/display.c | 35 +++++++++++++++++++++++++++++++++=
++-
+>>   1 file changed, 34 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm/mach-omap2/display.c
+>> b/arch/arm/mach-omap2/display.c
+>> index 16d33d831287..974461441fc3 100644
+>> --- a/arch/arm/mach-omap2/display.c
+>> +++ b/arch/arm/mach-omap2/display.c
+>> @@ -137,11 +137,42 @@ static int omap4_dsi_mux_pads(int dsi_id,
+>> unsigned lanes)
+>>       return 0;
+>>   }
+>>
+>> +#define CONTROL_PAD_BASE    0x4A002800
+>> +#define CONTROL_DSIPHY        0x614
+>> +
+>=20
+> I guess this is something we can move to our driver, and use sysconf to=
 
-diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-index 16d33d831287..974461441fc3 100644
---- a/arch/arm/mach-omap2/display.c
-+++ b/arch/arm/mach-omap2/display.c
-@@ -137,11 +137,42 @@ static int omap4_dsi_mux_pads(int dsi_id, unsigned lanes)
- 	return 0;
- }
- 
-+#define CONTROL_PAD_BASE	0x4A002800
-+#define CONTROL_DSIPHY		0x614
-+
-+static int omap5_dsi_mux_pads(int dsi_id, unsigned lanes)
-+{
-+	u32 enable_mask, enable_shift, reg;
-+	void __iomem *ctrl_pad_base = NULL;
-+
-+	ctrl_pad_base = ioremap(CONTROL_PAD_BASE, SZ_4K);
-+	if (!ctrl_pad_base)
-+		return -ENXIO;
-+
-+	if (dsi_id = 0) {
-+		enable_mask = OMAP4_DSI1_LANEENABLE_MASK;
-+		enable_shift = OMAP4_DSI1_LANEENABLE_SHIFT;
-+	} else if (dsi_id = 1) {
-+		enable_mask = OMAP4_DSI2_LANEENABLE_MASK;
-+		enable_shift = OMAP4_DSI2_LANEENABLE_SHIFT;
-+	} else {
-+		return -ENODEV;
-+	}
-+
-+	reg = __raw_readl(ctrl_pad_base + CONTROL_DSIPHY);
-+	reg &= ~enable_mask;
-+	reg |= (lanes << enable_shift) & enable_mask;
-+	__raw_writel(reg, ctrl_pad_base + CONTROL_DSIPHY);
-+
-+	return 0;
-+}
-+
- static int omap_dsi_enable_pads(int dsi_id, unsigned lane_mask)
- {
- 	if (cpu_is_omap44xx())
- 		return omap4_dsi_mux_pads(dsi_id, lane_mask);
--
-+	else if (soc_is_omap54xx())
-+		return omap5_dsi_mux_pads(dsi_id, lane_mask);
- 	return 0;
- }
- 
-@@ -149,6 +180,8 @@ static void omap_dsi_disable_pads(int dsi_id, unsigned lane_mask)
- {
- 	if (cpu_is_omap44xx())
- 		omap4_dsi_mux_pads(dsi_id, 0);
-+	else if (soc_is_omap54xx())
-+		omap5_dsi_mux_pads(dsi_id, 0);
- }
- 
- static int omap_dss_set_min_bus_tput(struct device *dev, unsigned long tput)
--- 
-1.9.1
+> get the register from DT.
 
+I just copied the same method as used for OMAP4.
+
+I guess sysconf is an option. But I really dislike the idea of moving
+omap control module code to a display driver... I'm not sure what other
+options we have, though. Maybe an OMAP DSI specific pinctrl driver?
+
+ Tomi
+
+
+
+--mwJQAOWw6ArPKskQQ04RJsxi79mqL7GAX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTWkRwAAoJEPo9qoy8lh71lC8P/0kKNxN8e8esOYhh9HcPMOkD
+zE5mb7Izio1K1sDUUKj/M7av++6ahV7VqPxG72V7s0BBeu//70rPz+bdLFl49kMP
+LEonr57mXCb/Nr+KCJwdAsUnZrTP9+r3texRNfaXc2zIScIzJ9rWuEIg6AFKidIp
+RQW/PPWqmkzbIDtFxRQJGp/VKEcHclQviAEK0w0bJzKNj65RZNtEa2X2QoXa0+C4
+avP63heGvT7hnQb/yy2MHWa3k0BIRNTM9WA397izhfh+UivevWBQUz8VJByDXhJl
+8pUlR2Xc1NHMMwyyic4iYeumZF1149uKHf4g6rvfdMcDELS/Om2GSyKseIch7U/M
+21l6+4gH6QTqgAI2EaRGE8W0CZ+QXCTdWMD/xbKvp8GeplTYUuNAwRge87KLT1AW
+N41iIE4jtNX9uhdhpYf2L/KoXRvrjJxZoDCRBtMnJOxXYr2pnsTC/lo85wWXzyKI
+Q8RStrx7OX+tCPLut+IcLhH5gGVRpb545edFAIdajahLYYU6dkNASUF4frDaIk1m
+fuq6YZRtnWK/9z6c/3FZnZyNgwIBAmnjFUebWBaQkiZa1wWwmbuiaT+r2yonDuRM
+p1EgsnL4tdsD2Vk3Xq0HCtUByN2WcMolwBh43GxORCfw3qPV9Z4413Gf4rQOdZFu
+Sk9eRtT44RkoYdRws6/H
+=Ue7D
+-----END PGP SIGNATURE-----
+
+--mwJQAOWw6ArPKskQQ04RJsxi79mqL7GAX--

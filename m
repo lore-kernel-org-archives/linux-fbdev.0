@@ -1,103 +1,57 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Fri, 25 Apr 2014 15:31:50 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 28 Apr 2014 06:52:30 +0000
 Subject: Re: [PATCH 06/23] ARM: OMAP: add OMAP5 DSI muxing
-Message-Id: <20140425153150.GA20807@atomide.com>
+Message-Id: <535DFAAE.1010606@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="R0fkEM4aFfVHFtXemTfENm1CcBGTSsUCI"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
  <1398334639-14172-7-git-send-email-tomi.valkeinen@ti.com>
- <535A42D6.5090107@ti.com> <535A4470.2000509@ti.com>
- <535A5C0A.7040808@ti.com> <535A6C40.10609@ti.com>
-In-Reply-To: <535A6C40.10609@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <535A42D6.5090107@ti.com> <535A4470.2000509@ti.com> <535A5C0A.7040808@ti.com>
+ <535A6C40.10609@ti.com> <20140425153150.GA20807@atomide.com>
+In-Reply-To: <20140425153150.GA20807@atomide.com>
 To: linux-arm-kernel@lists.infradead.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [140425 07:08]:
-> On 25/04/14 15:58, Archit Taneja wrote:
-> > On Friday 25 April 2014 04:48 PM, Tomi Valkeinen wrote:
-> >> On 25/04/14 14:11, Archit Taneja wrote:
-> >>> Hi,
-> >>>
-> >>> On Thursday 24 April 2014 03:47 PM, Tomi Valkeinen wrote:
-> >>>> Add support to set OMAP5 DSI pin muxing.
-> >>>>
-> >>>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> >>>> Cc: Tony Lindgren <tony@atomide.com>
-> >>>> ---
-> >>>>    arch/arm/mach-omap2/display.c | 35
-> >>>> ++++++++++++++++++++++++++++++++++-
-> >>>>    1 file changed, 34 insertions(+), 1 deletion(-)
-> >>>>
-> >>>> diff --git a/arch/arm/mach-omap2/display.c
-> >>>> b/arch/arm/mach-omap2/display.c
-> >>>> index 16d33d831287..974461441fc3 100644
-> >>>> --- a/arch/arm/mach-omap2/display.c
-> >>>> +++ b/arch/arm/mach-omap2/display.c
-> >>>> @@ -137,11 +137,42 @@ static int omap4_dsi_mux_pads(int dsi_id,
-> >>>> unsigned lanes)
-> >>>>        return 0;
-> >>>>    }
-> >>>>
-> >>>> +#define CONTROL_PAD_BASE    0x4A002800
-> >>>> +#define CONTROL_DSIPHY        0x614
-> >>>> +
-> >>>
-> >>> I guess this is something we can move to our driver, and use sysconf to
-> >>> get the register from DT.
-> >>
-> >> I just copied the same method as used for OMAP4.
-> >>
-> >> I guess sysconf is an option. But I really dislike the idea of moving
-> >> omap control module code to a display driver... I'm not sure what other
-> >> options we have, though. Maybe an OMAP DSI specific pinctrl driver?
-> > 
-> > OMAP4 has CONTROL_DSIPHY for configuring both lane enable/disbale, and
-> > pull up/down, but OMAP5 has normal PAD_CONF registers for DSI lines(2
-> > pins per register) for configuring pull up/down, and CONTROL_DSIPHY for
-> > lane enable/disable.
-> > 
-> > We would have a very messed up pinctrl driver, but it would probably be
-> > better than doing all this stuff in the driver.
-> 
-> Actually, this patch is not good. I should've looked at the code more
-> carefully =).
-> 
-> This one does ioremap every time the function is called, which could be
-> done multiple times.
-> 
-> And I think omap4_ctrl_pad_readl() can be used to access the registers.
-> Like this (not tested):
-> 
-> #define OMAP5_CONTROL_DSIPHY		0x614
-> 
-> static int omap5_dsi_mux_pads(int dsi_id, unsigned lanes)
-> {
-> 	u32 enable_mask, enable_shift, reg;
-> 
-> 	if (dsi_id = 0) {
-> 		enable_mask = OMAP4_DSI1_LANEENABLE_MASK;
-> 		enable_shift = OMAP4_DSI1_LANEENABLE_SHIFT;
-> 	} else if (dsi_id = 1) {
-> 		enable_mask = OMAP4_DSI2_LANEENABLE_MASK;
-> 		enable_shift = OMAP4_DSI2_LANEENABLE_SHIFT;
-> 	} else {
-> 		return -ENODEV;
-> 	}
-> 
-> 	reg = omap4_ctrl_pad_readl(OMAP5_CONTROL_DSIPHY);
-> 	reg &= ~enable_mask;
-> 	reg |= (lanes << enable_shift) & enable_mask;
-> 	omap4_ctrl_pad_writel(reg, OMAP5_CONTROL_DSIPHY);
-> 
-> 	return 0;
-> }
+--R0fkEM4aFfVHFtXemTfENm1CcBGTSsUCI
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Chances are any mux register in the syscon area already works with
-pinctrl-single,pins or pinctrl-single,bits option. The ones in the
-padconf area should be already mapped so the driver just has to
-request them.
+On 25/04/14 18:31, Tony Lindgren wrote:
 
-Regards,
+> Chances are any mux register in the syscon area already works with
+> pinctrl-single,pins or pinctrl-single,bits option. The ones in the
+> padconf area should be already mapped so the driver just has to
+> request them.
 
-Tony
+If using the padconf (say omap4_padconf_global for omap4), doesn't that
+mean we need to have platform specific bits in the driver? Isn't that
+something we've been trying to remove all the time?
+
+ Tomi
+
+
+
+--R0fkEM4aFfVHFtXemTfENm1CcBGTSsUCI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTXfqxAAoJEPo9qoy8lh71YHYP/0YgWF+CwRkET8PHisPYQ+nA
+LLb95F6hBl2yjVTh4yzbNg4GtTANzP6REx/UOmMgiU7B7lQtArgu0zrOdgBYceb9
+orWwqcmNqiBCOZCOFUXRLulk0ZfwaV9nbKXK7FAi3WFv5K/AM6sANlVTLQyUKYTZ
+LS5oRa3TvYkwentu/2r7cc/jKHtC3G9evLSMHv6bZwb22UL9zTN7MEUhIi9C6Wj6
+7CFpJB35Dr3K9661jDPwohKODLQBffVMNBOIXw9H1aK2M2aTzaxcPwCiXUMpheix
+KtlzJe6z3xfZObS9+xUXr7i0u9jBY4bImfZMrey46sldYZzr85SqnG42Rlbq4zyV
+q3JyhPhDMuQ4lDMxslp/O6u5a7tVZDw/TE1KfpIb+1IjUQxTFXQqRqRGR4TTzjBs
+ZOEW+CG1KAHhF/1jjULbp8ooSnCY2GEcPUt8YrA7KBJK4QPcz+F+vKhD6gySSeQ0
+n0LwRDTP+PLIjAM121Eq61XxVY4pr1VEExWd4a1u6zP7gzpiiidAxsFQOPeTQJHe
+BwFcoyW8e5E8MMjYz6jJKV2EKCkFrsX9DeZmOCCheR9ltMsyTM+ThfFjKM3tz5ph
+apO39+3cgVBksN+wsNYPkVdTu1Uu4rhDEzORrIHRkE9YxBS0jk3wpSeUM3HKmOny
+FNgrQOyiQqjCmV59tdSW
+=7I4W
+-----END PGP SIGNATURE-----
+
+--R0fkEM4aFfVHFtXemTfENm1CcBGTSsUCI--

@@ -1,37 +1,43 @@
-From: Jon Ringle <jon@ringle.org>
-Date: Tue, 01 Apr 2014 12:36:03 +0000
-Subject: Re: [PATCH v2 1/2] video: da8xx-fb: Add support for Densitron 84-0023-001T
-Message-Id: <CAMwGMjwmkeET-K7w1tEESS8Ram278aELs0_x+Gt6+Y3j4kLV0Q@mail.gmail.com>
+From: Masanari Iida <standby24x7@gmail.com>
+Date: Mon, 28 Apr 2014 10:54:15 +0000
+Subject: [PATCH] fbdev: omap2: Fix format string mismatch in display-sysfs.c
+Message-Id: <1398682455-21043-1-git-send-email-standby24x7@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1396355585-458-1-git-send-email-jon@ringle.org>
-In-Reply-To: <1396355585-458-1-git-send-email-jon@ringle.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org
-Cc: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, Jon Ringle <jringle@gridpoint.com>
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Masanari Iida <standby24x7@gmail.com>
 
-On Tue, Apr 1, 2014 at 8:33 AM,  <jon@ringle.org> wrote:
-> From: Jon Ringle <jringle@gridpoint.com>
->
-> Signed-off-by: Jon Ringle <jringle@gridpoint.com>
-> ---
->  drivers/video/da8xx-fb.c | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
->
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index e030e17..d042624 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -243,6 +243,20 @@ static struct fb_videomode known_lcd_panels[] = {
->                 .sync           = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
->                 .flag           = 0,
->         },
-> +       [3] = {
-> +               /* Densitron 84-0023-001T */
-> +               .name           = "Densitron_LCD",
+Fix two format string mismatch in display-sysfs.c
 
-Crap. I'm sorry. I will resend again. with the correct patch with the
-name Tomi suggested
+Signed-off-by: Masanari Iida <standby24x7@gmail.com>
+---
+ drivers/video/fbdev/omap2/dss/display-sysfs.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Jon
+diff --git a/drivers/video/fbdev/omap2/dss/display-sysfs.c b/drivers/video/fbdev/omap2/dss/display-sysfs.c
+index 5a2095a..5928bc9 100644
+--- a/drivers/video/fbdev/omap2/dss/display-sysfs.c
++++ b/drivers/video/fbdev/omap2/dss/display-sysfs.c
+@@ -184,7 +184,7 @@ static ssize_t display_rotate_show(struct device *dev,
+ 	if (!dssdev->driver->get_rotate)
+ 		return -ENOENT;
+ 	rotate = dssdev->driver->get_rotate(dssdev);
+-	return snprintf(buf, PAGE_SIZE, "%u\n", rotate);
++	return snprintf(buf, PAGE_SIZE, "%d\n", rotate);
+ }
+ 
+ static ssize_t display_rotate_store(struct device *dev,
+@@ -215,7 +215,7 @@ static ssize_t display_mirror_show(struct device *dev,
+ 	if (!dssdev->driver->get_mirror)
+ 		return -ENOENT;
+ 	mirror = dssdev->driver->get_mirror(dssdev);
+-	return snprintf(buf, PAGE_SIZE, "%u\n", mirror);
++	return snprintf(buf, PAGE_SIZE, "%d\n", mirror);
+ }
+ 
+ static ssize_t display_mirror_store(struct device *dev,
+-- 
+2.0.0.rc1
+

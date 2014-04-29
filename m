@@ -1,54 +1,55 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 10:16:59 +0000
-Subject: [PATCH 03/23] OMAPDSS: HDMI4: set regulator voltage to 1.8V
-Message-Id: <1398334639-14172-4-git-send-email-tomi.valkeinen@ti.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Tue, 29 Apr 2014 15:28:59 +0000
+Subject: [PATCH 3/3] pwm-backlight: Disable backlight on shutdown
+Message-Id: <1398785339-8107-3-git-send-email-thierry.reding@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1398334639-14172-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1398785339-8107-1-git-send-email-thierry.reding@gmail.com>
+In-Reply-To: <1398785339-8107-1-git-send-email-thierry.reding@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Stephen Warren <swarren@wwwdotorg.org>
 
-Set the HDMI vdda regulator voltage to the required 1.8V.
+From: Thierry Reding <treding@nvidia.com>
 
-This is required for the case when the regulator in the DT data defines
-a range of allowed voltages. In this case it's required to set the
-voltage, as otherwise enabling the voltage fails.
+When a device is shut down, make sure to disable the backlight. If it
+stays lit, it gives the impression that the device hasn't turned off.
+Furthermore keeping the backlight on may consume power, which is not
+what users expect when they shut down a device.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi4.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/video/backlight/pwm_bl.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index e15b89d49c28..5c7dd5c06593 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -83,6 +83,7 @@ static void hdmi_runtime_put(void)
- 
- static int hdmi_init_regulator(void)
- {
-+	int r;
- 	struct regulator *reg;
- 
- 	if (hdmi.vdda_hdmi_dac_reg != NULL)
-@@ -96,6 +97,15 @@ static int hdmi_init_regulator(void)
- 		return PTR_ERR(reg);
- 	}
- 
-+	if (regulator_can_change_voltage(reg)) {
-+		r = regulator_set_voltage(reg, 1800000, 1800000);
-+		if (r) {
-+			devm_regulator_put(reg);
-+			DSSWARN("can't set the regulator voltage\n");
-+			return r;
-+		}
-+	}
-+
- 	hdmi.vdda_hdmi_dac_reg = reg;
- 
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 994f424eb289..b85479b14971 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -368,6 +368,14 @@ static int pwm_backlight_remove(struct platform_device *pdev)
  	return 0;
+ }
+ 
++static void pwm_backlight_shutdown(struct platform_device *pdev)
++{
++	struct backlight_device *bl = platform_get_drvdata(pdev);
++	struct pwm_bl_data *pb = bl_get_data(bl);
++
++	pwm_backlight_power_off(pb);
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ static int pwm_backlight_suspend(struct device *dev)
+ {
+@@ -413,6 +421,7 @@ static struct platform_driver pwm_backlight_driver = {
+ 	},
+ 	.probe		= pwm_backlight_probe,
+ 	.remove		= pwm_backlight_remove,
++	.shutdown	= pwm_backlight_shutdown,
+ };
+ 
+ module_platform_driver(pwm_backlight_driver);
 -- 
-1.9.1
+1.9.2
 

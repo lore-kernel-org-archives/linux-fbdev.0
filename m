@@ -1,38 +1,175 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 24 Apr 2014 12:48:26 +0000
-Subject: Re: [PATCH 03/13] video: clarify I2C dependencies
-Message-Id: <12886728.o7TzRXlxjF@wuerfel>
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 29 Apr 2014 23:52:40 +0000
+Subject: [PATCH 2/4] OMAPDSS: panel-sharp-ls037v7dw01: update to use gpiod
+Message-Id: <1398815562-24113-3-git-send-email-tony@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org> <1398342509-10243-4-git-send-email-peter.griffin@linaro.org> <20140424123235.GS26756@n2100.arm.linux.org.uk>
-In-Reply-To: <20140424123235.GS26756@n2100.arm.linux.org.uk>
+References: <1398815562-24113-1-git-send-email-tony@atomide.com>
+In-Reply-To: <1398815562-24113-1-git-send-email-tony@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Peter Griffin <peter.griffin@linaro.org>, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Anatolij Gustschin <agust@denx.de>
+To: linux-arm-kernel@lists.infradead.org
 
-On Thursday 24 April 2014 13:32:35 Russell King - ARM Linux wrote:
-> On Thu, Apr 24, 2014 at 01:28:19PM +0100, Peter Griffin wrote:
-> > From: Arnd Bergmann <arnd@arndb.de>
-> > 
-> > We can only use I2C support in frame buffer drivers if
-> > Either I2C is built-in, or both I2C and the driver itself
-> > are loadable modules.
-> 
-> Why?
+Using gpiod will make it easier to add device tree support
+for this panel in the following patches.
 
+Note that all the GPIOs for this panel are optional, any
+of the the GPIOs could be configured with external pulls
+instead of GPIOs, so let's not error out if GPIOs are not
+found to make the panel more generic.
 
-If I2C is a loadable module, and the I2C support of the framebuffer
-driver is built-in, you get a link error when building vmlinux:
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ .../omap2/displays-new/panel-sharp-ls037v7dw01.c   | 92 +++++++++-------------
+ 1 file changed, 38 insertions(+), 54 deletions(-)
 
-drivers/built-in.o: In function `cyberpro_pci_remove':
-:(.text+0x1ea5c): undefined reference to `i2c_del_adapter'
-drivers/built-in.o: In function `cyberpro_pci_probe':
-:(.text+0x20224): undefined reference to `i2c_bit_add_bus'
-:(.text+0x20240): undefined reference to `i2c_del_adapter'
-make[2]: *** [vmlinux] Error 1
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
+index b2f710b..de8473a 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
+@@ -26,11 +26,11 @@ struct panel_drv_data {
+ 
+ 	struct omap_video_timings videomode;
+ 
+-	int resb_gpio;
+-	int ini_gpio;
+-	int mo_gpio;
+-	int lr_gpio;
+-	int ud_gpio;
++	struct gpio_desc *resb_gpio;	/* low = reset active min 20 us */
++	struct gpio_desc *ini_gpio;	/* high = power on */
++	struct gpio_desc *mo_gpio;	/* low = 480x640, high = 240x320 */
++	struct gpio_desc *lr_gpio;	/* high = conventional horizontal scanning */
++	struct gpio_desc *ud_gpio;	/* high = conventional vertical scanning */
+ };
+ 
+ static const struct omap_video_timings sharp_ls_timings = {
+@@ -105,11 +105,11 @@ static int sharp_ls_enable(struct omap_dss_device *dssdev)
+ 	/* wait couple of vsyncs until enabling the LCD */
+ 	msleep(50);
+ 
+-	if (gpio_is_valid(ddata->resb_gpio))
+-		gpio_set_value_cansleep(ddata->resb_gpio, 1);
++	if (!IS_ERR(ddata->resb_gpio))
++		gpiod_set_value_cansleep(ddata->resb_gpio, 1);
+ 
+-	if (gpio_is_valid(ddata->ini_gpio))
+-		gpio_set_value_cansleep(ddata->ini_gpio, 1);
++	if (!IS_ERR(ddata->ini_gpio))
++		gpiod_set_value_cansleep(ddata->ini_gpio, 1);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+ 
+@@ -124,11 +124,11 @@ static void sharp_ls_disable(struct omap_dss_device *dssdev)
+ 	if (!omapdss_device_is_enabled(dssdev))
+ 		return;
+ 
+-	if (gpio_is_valid(ddata->ini_gpio))
+-		gpio_set_value_cansleep(ddata->ini_gpio, 0);
++	if (!IS_ERR(ddata->ini_gpio))
++		gpiod_set_value_cansleep(ddata->ini_gpio, 0);
+ 
+-	if (gpio_is_valid(ddata->resb_gpio))
+-		gpio_set_value_cansleep(ddata->resb_gpio, 0);
++	if (!IS_ERR(ddata->resb_gpio))
++		gpiod_set_value_cansleep(ddata->resb_gpio, 0);
+ 
+ 	/* wait at least 5 vsyncs after disabling the LCD */
+ 
+@@ -182,6 +182,21 @@ static struct omap_dss_driver sharp_ls_ops = {
+ 	.get_resolution	= omapdss_default_get_resolution,
+ };
+ 
++static struct gpio_desc *
++sharp_ls_get_gpio(struct device *dev, int gpio, unsigned long flags,
++		  char *desc)
++{
++	int r;
++
++	r = devm_gpio_request_one(dev, gpio, flags, desc);
++	if (r) {
++		dev_err(dev, "no %s gpio\n", desc);
++		return ERR_PTR(r);
++	}
++
++	return gpio_to_desc(gpio);
++}
++
+ static int sharp_ls_probe_pdata(struct platform_device *pdev)
+ {
+ 	const struct panel_sharp_ls037v7dw01_platform_data *pdata;
+@@ -204,11 +219,16 @@ static int sharp_ls_probe_pdata(struct platform_device *pdev)
+ 	dssdev = &ddata->dssdev;
+ 	dssdev->name = pdata->name;
+ 
+-	ddata->resb_gpio = pdata->resb_gpio;
+-	ddata->ini_gpio = pdata->ini_gpio;
+-	ddata->mo_gpio = pdata->mo_gpio;
+-	ddata->lr_gpio = pdata->lr_gpio;
+-	ddata->ud_gpio = pdata->ud_gpio;
++	ddata->mo_gpio = sharp_ls_get_gpio(&pdev->dev, pdata->mo_gpio,
++					   GPIOF_OUT_INIT_LOW, "lcd MO");
++	ddata->lr_gpio = sharp_ls_get_gpio(&pdev->dev, pdata->lr_gpio,
++					   GPIOF_OUT_INIT_HIGH, "lcd LR");
++	ddata->ud_gpio = sharp_ls_get_gpio(&pdev->dev, pdata->ud_gpio,
++					   GPIOF_OUT_INIT_HIGH, "lcd UD");
++	ddata->resb_gpio = sharp_ls_get_gpio(&pdev->dev, pdata->resb_gpio,
++					     GPIOF_OUT_INIT_LOW, "lcd RESB");
++	ddata->ini_gpio = sharp_ls_get_gpio(&pdev->dev, pdata->ini_gpio,
++					    GPIOF_OUT_INIT_LOW, "lcd INI");
+ 
+ 	return 0;
+ }
+@@ -233,41 +253,6 @@ static int sharp_ls_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	if (gpio_is_valid(ddata->mo_gpio)) {
+-		r = devm_gpio_request_one(&pdev->dev, ddata->mo_gpio,
+-				GPIOF_OUT_INIT_LOW, "lcd MO");
+-		if (r)
+-			goto err_gpio;
+-	}
+-
+-	if (gpio_is_valid(ddata->lr_gpio)) {
+-		r = devm_gpio_request_one(&pdev->dev, ddata->lr_gpio,
+-				GPIOF_OUT_INIT_HIGH, "lcd LR");
+-		if (r)
+-			goto err_gpio;
+-	}
+-
+-	if (gpio_is_valid(ddata->ud_gpio)) {
+-		r = devm_gpio_request_one(&pdev->dev, ddata->ud_gpio,
+-				GPIOF_OUT_INIT_HIGH, "lcd UD");
+-		if (r)
+-			goto err_gpio;
+-	}
+-
+-	if (gpio_is_valid(ddata->resb_gpio)) {
+-		r = devm_gpio_request_one(&pdev->dev, ddata->resb_gpio,
+-				GPIOF_OUT_INIT_LOW, "lcd RESB");
+-		if (r)
+-			goto err_gpio;
+-	}
+-
+-	if (gpio_is_valid(ddata->ini_gpio)) {
+-		r = devm_gpio_request_one(&pdev->dev, ddata->ini_gpio,
+-				GPIOF_OUT_INIT_LOW, "lcd INI");
+-		if (r)
+-			goto err_gpio;
+-	}
+-
+ 	ddata->videomode = sharp_ls_timings;
+ 
+ 	dssdev = &ddata->dssdev;
+@@ -287,7 +272,6 @@ static int sharp_ls_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ err_reg:
+-err_gpio:
+ 	omap_dss_put_device(ddata->in);
+ 	return r;
+ }
+-- 
+1.8.1.1
 
-It's probably a good idea to mention that in the changeset
-text.
-
-	Arnd

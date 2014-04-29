@@ -1,86 +1,71 @@
-From: Peter Griffin <peter.griffin@linaro.org>
-Date: Thu, 24 Apr 2014 12:28:29 +0000
-Subject: [PATCH 13/13] video: omap: allow building on !MMU
-Message-Id: <1398342509-10243-14-git-send-email-peter.griffin@linaro.org>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Tue, 29 Apr 2014 15:28:57 +0000
+Subject: [PATCH 1/3] drm/dsi: Support device shutdown
+Message-Id: <1398785339-8107-1-git-send-email-thierry.reding@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
-In-Reply-To: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>, Peter Griffin <peter.griffin@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Stephen Warren <swarren@wwwdotorg.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+From: Thierry Reding <treding@nvidia.com>
 
-The omap lcdc driver has an elaborate mmap_kern function
-to map the frame buffer into kernel address space as
-write-combined. This uses functions that are only available
-on MMU-enabled builds.
+Hook up the MIPI DSI bus's .shutdown() function to allow drivers to
+implement code that should be run when a device is shut down.
 
-It does seem equivalent to ioremap_wc though, so we should
-be able to just use that instead.
-
-This patch is build-tested only, it needs to be run on real
-hardware before applying.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Peter Griffin <peter.griffin@linaro.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-omap@vger.kernel.org
+Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
- drivers/video/fbdev/omap/lcdc.c |   28 +++++-----------------------
- 1 file changed, 5 insertions(+), 23 deletions(-)
+ drivers/gpu/drm/drm_mipi_dsi.c | 10 ++++++++++
+ include/drm/drm_mipi_dsi.h     |  2 ++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap/lcdc.c b/drivers/video/fbdev/omap/lcdc.c
-index b52f625..40e8200 100644
---- a/drivers/video/fbdev/omap/lcdc.c
-+++ b/drivers/video/fbdev/omap/lcdc.c
-@@ -613,29 +613,11 @@ static void lcdc_dma_handler(u16 status, void *data)
- 
- static int mmap_kern(void)
- {
--	struct vm_struct	*kvma;
--	struct vm_area_struct	vma;
--	pgprot_t		pgprot;
--	unsigned long		vaddr;
--
--	kvma = get_vm_area(lcdc.vram_size, VM_IOREMAP);
--	if (kvma = NULL) {
--		dev_err(lcdc.fbdev->dev, "can't get kernel vm area\n");
-+	void __iomem *vaddr;
-+
-+	vaddr = ioremap_wc(lcdc.vram_phys, lcdc.vram_size);
-+	if (!vaddr)
- 		return -ENOMEM;
--	}
--	vma.vm_mm = &init_mm;
--
--	vaddr = (unsigned long)kvma->addr;
--	vma.vm_start = vaddr;
--	vma.vm_end = vaddr + lcdc.vram_size;
--
--	pgprot = pgprot_writecombine(pgprot_kernel);
--	if (io_remap_pfn_range(&vma, vaddr,
--			   lcdc.vram_phys >> PAGE_SHIFT,
--			   lcdc.vram_size, pgprot) < 0) {
--		dev_err(lcdc.fbdev->dev, "kernel mmap for FB memory failed\n");
--		return -EAGAIN;
--	}
- 
- 	lcdc.vram_virt = (void *)vaddr;
- 
-@@ -644,7 +626,7 @@ static int mmap_kern(void)
- 
- static void unmap_kern(void)
- {
--	vunmap(lcdc.vram_virt);
-+	iounmap(lcdc.vram_virt);
+diff --git a/drivers/gpu/drm/drm_mipi_dsi.c b/drivers/gpu/drm/drm_mipi_dsi.c
+index 09821f46d768..e633df2f68d8 100644
+--- a/drivers/gpu/drm/drm_mipi_dsi.c
++++ b/drivers/gpu/drm/drm_mipi_dsi.c
+@@ -282,6 +282,14 @@ static int mipi_dsi_drv_remove(struct device *dev)
+ 	return drv->remove(dsi);
  }
  
- static int alloc_palette_ram(void)
++static void mipi_dsi_drv_shutdown(struct device *dev)
++{
++	struct mipi_dsi_driver *drv = to_mipi_dsi_driver(dev->driver);
++	struct mipi_dsi_device *dsi = to_mipi_dsi_device(dev);
++
++	drv->shutdown(dsi);
++}
++
+ /**
+  * mipi_dsi_driver_register - register a driver for DSI devices
+  * @drv: DSI driver structure
+@@ -293,6 +301,8 @@ int mipi_dsi_driver_register(struct mipi_dsi_driver *drv)
+ 		drv->driver.probe = mipi_dsi_drv_probe;
+ 	if (drv->remove)
+ 		drv->driver.remove = mipi_dsi_drv_remove;
++	if (drv->shutdown)
++		drv->driver.shutdown = mipi_dsi_drv_shutdown;
+ 
+ 	return driver_register(&drv->driver);
+ }
+diff --git a/include/drm/drm_mipi_dsi.h b/include/drm/drm_mipi_dsi.h
+index 7209df15a3cd..944f33f8ba38 100644
+--- a/include/drm/drm_mipi_dsi.h
++++ b/include/drm/drm_mipi_dsi.h
+@@ -135,11 +135,13 @@ ssize_t mipi_dsi_dcs_read(struct mipi_dsi_device *dsi, unsigned int channel,
+  * @driver: device driver model driver
+  * @probe: callback for device binding
+  * @remove: callback for device unbinding
++ * @shutdown: called at shutdown time to quiesce the device
+  */
+ struct mipi_dsi_driver {
+ 	struct device_driver driver;
+ 	int(*probe)(struct mipi_dsi_device *dsi);
+ 	int(*remove)(struct mipi_dsi_device *dsi);
++	void (*shutdown)(struct mipi_dsi_device *dsi);
+ };
+ 
+ #define to_mipi_dsi_driver(d) container_of(d, struct mipi_dsi_driver, driver)
 -- 
-1.7.9.5
+1.9.2
 

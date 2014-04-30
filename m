@@ -1,78 +1,57 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 14 Apr 2014 08:49:15 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 30 Apr 2014 10:58:28 +0000
 Subject: Re: [patch] video: mmpfb: cleanup some static checker warnings in probe()
-Message-Id: <000b01cf57be$6a22ebf0$3e68c3d0$%han@samsung.com>
+Message-Id: <5360D754.6080101@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="XqwCbOSbQWEhSwABKnp63112DOsNQ7QTV"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20140414080929.GB13372@mwanda>
 In-Reply-To: <20140414080929.GB13372@mwanda>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Monday, April 14, 2014 5:09 PM, Dan Carpenter wrote:
-> 
+--XqwCbOSbQWEhSwABKnp63112DOsNQ7QTV
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 14/04/14 11:09, Dan Carpenter wrote:
 > Sparse complains about using zero instead of NULL for pointers.
 > Probably, if we enabled the warning, then GCC would complain about the
 > unused initializers.  I've just removed them.
-> 
+>=20
 > Smatch complains that we first check if "fbi" is NULL and then
-> dereference it in the error handling.  It turns out that "fbi" can't be
+> dereference it in the error handling.  It turns out that "fbi" can't be=
+
 > NULL so I've removed the check.
-
-Yes, right.
-'fbi' cannot be NULL, because 'info->par' is set as below.
-
-./drivers/video/fbsysfs.c
-struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
-{
-.....
-        info = (struct fb_info *) p;
-
-        if (size)
-                info->par = p + fb_info_size;
-
-> 
+>=20
 > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-Reviewed-by: Jingoo Han <jg1.han@samsung.com>
+Thanks, queued for 3.16.
 
-Best regards,
-Jingoo Han
+ Tomi
 
-> 
-> diff --git a/drivers/video/fbdev/mmp/fb/mmpfb.c b/drivers/video/fbdev/mmp/fb/mmpfb.c
-> index 7ab31eb..910fcc6 100644
-> --- a/drivers/video/fbdev/mmp/fb/mmpfb.c
-> +++ b/drivers/video/fbdev/mmp/fb/mmpfb.c
-> @@ -554,8 +554,8 @@ static void fb_info_clear(struct fb_info *info)
->  static int mmpfb_probe(struct platform_device *pdev)
->  {
->  	struct mmp_buffer_driver_mach_info *mi;
-> -	struct fb_info *info = 0;
-> -	struct mmpfb_info *fbi = 0;
-> +	struct fb_info *info;
-> +	struct mmpfb_info *fbi;
->  	int ret, modes_num;
-> 
->  	mi = pdev->dev.platform_data;
-> @@ -569,10 +569,6 @@ static int mmpfb_probe(struct platform_device *pdev)
->  	if (info = NULL)
->  		return -ENOMEM;
->  	fbi = info->par;
-> -	if (!fbi) {
-> -		ret = -EINVAL;
-> -		goto failed;
-> -	}
-> 
->  	/* init fb */
->  	fbi->fb_info = info;
-> @@ -667,7 +663,6 @@ failed_free_buff:
->  		fbi->fb_start_dma);
->  failed_destroy_mutex:
->  	mutex_destroy(&fbi->access_ok);
-> -failed:
->  	dev_err(fbi->dev, "mmp-fb: frame buffer device init failed\n");
-> 
->  	framebuffer_release(info);
 
+
+--XqwCbOSbQWEhSwABKnp63112DOsNQ7QTV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTYNdUAAoJEPo9qoy8lh71CdAP/3dai80/5iJzVx+q53tgwff+
+60OTxGVdEPXuxCKxn0QK8eA2h7oB/kO4RfQcA2suGJ/KBZzcKS5my/5DewN0Z6Tl
+Zk1R+ZgZCY0hP9WNzRSHAWp3S9tO8xfjJ2r7hFj1GLf7jqsBP1HZcHqgHwEM+8LL
+QwEEteKJ+j+atEAVoca8TEvpRfbyyJjo4hX0PrURMFvWZ5kDUIxIBvDWII2G+m5i
+SzY62RWQWJ1vw5xDN2xDOVmSJSmy3PMAMoVk8yqvv5gBEgvUH9jrRCQYePEW5awC
+q7UU/YarNTAr1A74lKoELW1EkzoRUh+fLNSHflcD+G3Cz4IVgAe2ebhmFK0oRF03
+TZ8j/se+GEBdR0sWWEra/4h7AAJnMkaRNQWwAl0+XfH6tPhg4kWoPC4mgttJpuVI
+7J+2l2X/U5WE75TXNjtzSTg7VvO8bhvnjnIlgSThmBU8D8odhmpJ1igN9VKnD2Oj
+P/yW+T9DpPVwQgoG36Ir3BCbrJ5hTP5uUl3zAk40+GdgSa+9pIxgg5GO6P23Qy2Z
+pTEEZs5eNACRhaIke+pdRzyORrNxqKshwRH2m+yk0jxz5viQjESQLnK+M8ayVeEg
+/44f+CQjWw/r2UYt7+k9d6oPHlGmG9DieItUxZfcwaP9aopfq0dS+j6pC7TYfQsn
+1YdeiFetz/27bDWts+4Q
+=QAki
+-----END PGP SIGNATURE-----
+
+--XqwCbOSbQWEhSwABKnp63112DOsNQ7QTV--

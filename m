@@ -1,76 +1,56 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 15 Apr 2014 12:08:43 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 30 Apr 2014 08:37:26 +0000
 Subject: Re: [PATCH 1/2] video: mmp: Remove references to CPU_MMP3
-Message-Id: <000001cf58a3$720382e0$560a88a0$%han@samsung.com>
+Message-Id: <5360B646.6070208@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="bs5kbLTL7pWQpU80hAa7Ocmi3mpE9XRxD"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1397561044.1985.47.camel@x220>
 In-Reply-To: <1397561044.1985.47.camel@x220>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: 'Paul Bolle' <pebolle@tiscali.nl>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>
-Cc: 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Richard Weinberger' <richard@nod.at>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
+To: Paul Bolle <pebolle@tiscali.nl>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Richard Weinberger <richard@nod.at>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday, April 15, 2014 8:24 PM, Paul Bolle wrote:
-> 
+--bs5kbLTL7pWQpU80hAa7Ocmi3mpE9XRxD
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+On 15/04/14 14:24, Paul Bolle wrote:
 > From: Richard Weinberger <richard@nod.at>
-> 
+>=20
 > References to the Kconfig symbol CPU_MMP3 were added to the tree since
 > v3.6. But that Kconfig symbol has never been part of the tree. So get
 > rid of these references.
-> 
+>=20
 > Signed-off-by: Richard Weinberger <richard@nod.at>
 > Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 
-Reviewed-by: Jingoo Han <jg1.han@samsung.com>
+Thanks, queued this and the 2/2 patch for 3.16.
 
-Best regards,
-Jingoo Han
+ Tomi
 
-> ---
-> 0) Tested with git grep.
-> 
-> 1) Originally sent as "[PATCH 01/28] Remove CPU_MMP3" two months ago.
-> Added a proper commit explanation to aid reviewers.
-> 
-> 2) One reference to CPU_MMP3 remains. I'll remove that in a more
-> elaborate patch.
-> 
->  drivers/video/mmp/Kconfig    | 2 +-
->  drivers/video/mmp/hw/Kconfig | 4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/mmp/Kconfig b/drivers/video/mmp/Kconfig
-> index e9ea39e13722..969925d694c9 100644
-> --- a/drivers/video/mmp/Kconfig
-> +++ b/drivers/video/mmp/Kconfig
-> @@ -1,6 +1,6 @@
->  menuconfig MMP_DISP
->          tristate "Marvell MMP Display Subsystem support"
-> -        depends on CPU_PXA910 || CPU_MMP2 || CPU_MMP3 || CPU_PXA988
-> +        depends on CPU_PXA910 || CPU_MMP2 || CPU_PXA988
->          help
->  	  Marvell Display Subsystem support.
-> 
-> diff --git a/drivers/video/mmp/hw/Kconfig b/drivers/video/mmp/hw/Kconfig
-> index 02f109a20cd0..99f0506afc99 100644
-> --- a/drivers/video/mmp/hw/Kconfig
-> +++ b/drivers/video/mmp/hw/Kconfig
-> @@ -2,12 +2,12 @@ if MMP_DISP
-> 
->  config MMP_DISP_CONTROLLER
->  	bool "mmp display controller hw support"
-> -	depends on CPU_PXA910 || CPU_MMP2 || CPU_MMP3 || CPU_PXA988
-> +	depends on CPU_PXA910 || CPU_MMP2 || CPU_PXA988
->  	default n
->  	help
->  		Marvell MMP display hw controller support
->  		this controller is used on Marvell PXA910,
-> -		MMP2, MMP3, PXA988 chips
-> +		MMP2, PXA988 chips
-> 
->  config MMP_DISP_SPI
->  	bool "mmp display controller spi port"
-> --
-> 1.9.0
 
+
+--bs5kbLTL7pWQpU80hAa7Ocmi3mpE9XRxD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTYLZGAAoJEPo9qoy8lh71xb8QAIiFgaj7AZacQLg9sF/lJyGZ
+uDT0Wkchg4hsDF9NahSmXOd8E337E9wYQfsqeyNE9B4ZCLPJUqZx4PXKF6A76dCk
+m2ho0Xau2HdqJtXuuY7kp05o6q5WMG0TktRrnS7V6lCMgl81M0V3e0Rd3RaQt9El
+P/UuLmtyY63hbqjzgRl71XG28kZqhtvwHAZin9+R7kPe1w1TO/h2J4LUmPkrUzgT
+OP+/aFTiClqddiFJowOmM4dTJxpWe43LCiYmERwnyQ71IxJ4OgJqRiTv2s5tjnkG
+68yj/FzgXBXgoLQ1uAHHphlJ8cHA5g5oVBQ101kxWVSExBqeKkMnxFlrKbxAjXFN
+sg5BMTwZxwqo0bDvxODchZQzIqNZAhZ8hLPbHxGN69Y0/Clw7quT6fh+oUi0U/WM
+xHw4t9Tp/DoGKJl1QoxIe8mY60FKsINPFwZhuL90iHwBkPs6fN7UbgYCPKVBpBl8
+tdUc50jOFZG6IC7SEU6Xy01NPU/cHnBqVnHCfC15FiYKbp/oeNuIvdvMSiCV7mEw
+M5k2hbhje3cg0iHTzwgbn/tEnZNMNdrUWr1EfLD8opTdcw1RJ33IBA9gu6wEnCQR
+34XqqloteijddR0zxnaZxE4yOaEWnkWgomNRAZUgWY8Y/RZLQBpPH2gRIqJ+poFR
+4maBJeisc55GvD9Myh1g
+=+IGp
+-----END PGP SIGNATURE-----
+
+--bs5kbLTL7pWQpU80hAa7Ocmi3mpE9XRxD--

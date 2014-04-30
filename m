@@ -1,67 +1,59 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Apr 2014 08:39:21 +0000
+Date: Wed, 30 Apr 2014 11:14:36 +0000
 Subject: Re: [PATCH v2 1/3] video: clps711x: Add new Cirrus Logic CLPS711X framebuffer driver
-Message-Id: <5358CDB9.1010500@ti.com>
+Message-Id: <5360DB1C.3020400@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="IMM9AFx7S6rn2TghxewEL4pvUgM6c91qX"
+Content-Type: multipart/mixed; boundary="B8Crb3aL7uBrVe90bvQ2FTCkp1vhgPfWR"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1397285583-15187-1-git-send-email-shc_work@mail.ru>
 In-Reply-To: <1397285583-15187-1-git-send-email-shc_work@mail.ru>
 To: linux-fbdev@vger.kernel.org
 
---IMM9AFx7S6rn2TghxewEL4pvUgM6c91qX
+--B8Crb3aL7uBrVe90bvQ2FTCkp1vhgPfWR
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 24/04/14 11:10, Alexander Shiyan wrote:
-> Hello.
+On 24/04/14 19:35, Alexander Shiyan wrote:
+
+>> The right way to do it is, as I wrote above, by gradually changing the=
+
+>> old driver with a patch series. And my question is, why not do it that=
+
+>> way? Then it would be possible to review the patches one by one, seein=
+g
+>> what has changed.
 >=20
-> Thu, 24 Apr 2014 10:57:59 +0300 =D0=BE=D1=82 Tomi Valkeinen <tomi.valke=
-inen@ti.com>:
->> Hi,
->>
->> On 12/04/14 09:53, Alexander Shiyan wrote:
->>> This adds support for the framebuffer available in the Cirrus
->>> Logic CLPS711X CPUs.
->>> FB features:
->>> - 1-2-4 bits per pixel.
->>> - Programmable panel size to a maximum of 1024x256 at 4 bps.
->>> - Relocatible Frame Buffer (SRAM or SDRAM).
->>> - Programmable refresh rates.
->>> - 16 gray scale values.
->>> This new driver supports usage with devicetree and as a general
->>> change it removes last user of <mach/hardware.h> for CLPS711X targets=
-,
->>> so this subarch will fully prepared to switch to multiplatform.
->>> The driver have been tested with custom board equipped Cirrus Logic
->>> EP7312 in DT and non-DT mode.
->>
->> My original comment about this is still unanswered: why a totally new
->> driver? The proper way would be to gradually change the old driver wit=
-h
->> a patch series. Then it's possible to review the patches and see what =
-is
->> actually changed.
+> "gradually changing"...
+> I repeat that this is not an old modified driver, but written new.
+
+Yes, I understand that. Again, my question is, why didn't you modify the
+old driver? That's how things should normally be done. Instead, you made
+a totally new one, making proper review against the old driver impossible=
+=2E
+
+> if you imagine a new file as a diff to the old, this can be clearly see=
+n.
 >=20
-> I have tried to answer here:
-> http://www.spinics.net/lists/linux-fbdev/msg14218.html
+> There is no reason to waste time on a series of changes since I
+> can not even check these changes on real hardware, but only in the
+> last stage when the driver will be the current version.
 
-If your answer means "it will be very difficult to see the changes if
-all the changes are in one patch, which change the old driver in one
-go", then yes, very true.
+Hmm what? So is the old driver totally broken, and cannot be used at the
+moment? Or why you can't test on real hardware?
 
-But that's wrong way to do it.
+Note that I don't know anything about the fb hardware in question, nor
+the driver. Maybe there's a valid reason to write a new driver from
+scratch. But there very rarely is.
 
-The right way to do it is, as I wrote above, by gradually changing the
-old driver with a patch series. And my question is, why not do it that
-way? Then it would be possible to review the patches one by one, seeing
-what has changed.
+And "because I already wrote a new driver, and it's a waste of time for
+me to throw away my work and patch the old one", is not a very good reaso=
+n.
 
  Tomi
 
 
 
---IMM9AFx7S6rn2TghxewEL4pvUgM6c91qX
+--B8Crb3aL7uBrVe90bvQ2FTCkp1vhgPfWR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -69,19 +61,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJTWM25AAoJEPo9qoy8lh710o8P/09ZbpDdnStSEtPFAwJLfwAP
-GfuFkom20E6wKwRluMqGBrGQwxlEt5YaxYXWhuR/U9Eh9TBZWr9Kcd6+n6dnaTRz
-tbTqtGQF6DSkWPJrcqAOdl8bk/XSh+zdyWaGzuCMN3fT9RZ4nCVoJos+G432NLcX
-wASKC7y7by4Fc7W7smtKTQ8I17BD+PLxZp+xW3Yb87Br6/AhIBh3N9f3uYzBI3N2
-Vcf/HBuUC1mXO99d0Z3K40pBPgjeXLvaXg+H6mSsLYaxs5EU1k6xgObcl/KK092i
-6cMOIwH9xGkJ2T/Sdz9ozodbs5+CmSacZkscpebv+1/cH7Ofm7NRjz80fpjwzhTR
-UG3DxAOrz6NrB4WINoBFT/cHgPl45jthcO54gQRumGvSBjfkthx1IsB/UF/0YNMU
-zJvXXmwud29OLaCekCxZL++JvpaOe7fqhdlrtF0Yky8AOMExxN8zwotIBdXP9FOP
-OXBISXkaY8E55uSww0qT9wBRaOLZmq+ryFHEq5t4wNLTR8pcEx51pvNqUL1fTC1G
-0R70gVOjtj6sr9OtuLH7ubWXvPzCLu2Phcnmgui8nizcPkBPgD0jc8BA6o5Wzx/n
-gKStj9eBjH5hSu2nA9ve+lcz+tYAiU0JDplyPGrV2WcVaAvq02cLvxgbz723bT2i
-nMrIRj4LcFDAu4/quMQC
-=5tes
+iQIcBAEBAgAGBQJTYNscAAoJEPo9qoy8lh71CLsP/1kG2EgxGN+2XdNbY3gE1j7w
+Ei1dMlMkvEokhbrBvo280/W4PXatT8rIlBgAc4rcWmdstWQD8fzFTjJD0Av1Yc2g
++rjq15+lT9JaFj0aPaj5cs+G7jhUwvwG8bBietia9TQHUPseYjlGV0c5fTGC05J4
+9ZIo6j0ZB2O1oB/DCwXAxmMkpEnnCS+jMEQ4hGch/64GK7TGI+DzAvaYdLaKVv2B
+9A+jFvesaAVweBtcefzCWOvcsqd94yfLQTGY2puHg6YgpdthrJBo5auwBp5Jm1PM
+HmdZ31sOsyZBTLYITqLZruuAnly+ryQhg2fX6zbki03jAch86lFPZb23xsRIfjRq
+Z0K62Mr9LFP4sOlLMidX8+HSABB3bulCfTtNYxe2qSteQm7Uu+jYX9HBRy38xg0H
+OvJ0mkzNyemZ7LyjQt4QicA2CWXA4Z5nUlbdWTJWUWMp8bHSPKD4JOkjTLc15reK
+BspZrI9lj54yDf453n5J03/nvf/82DpD3Puvk51k1flYugRpuOQSmx98tXQVUQQJ
+Ld4thczMgDJXH7SMO5HHQpd7g4OeXWjRMtbnBFLniqufCG9MvK7gTQUobwrLG5OU
+vFnMpgBa44TjPTK+TF8A1WWN+yACH9yBfziLOl6szdNMlDJJBEJuyv8ATCFmoarf
+PSWUZH0ozukIwgRQSMyY
+=QqJG
 -----END PGP SIGNATURE-----
 
---IMM9AFx7S6rn2TghxewEL4pvUgM6c91qX--
+--B8Crb3aL7uBrVe90bvQ2FTCkp1vhgPfWR--

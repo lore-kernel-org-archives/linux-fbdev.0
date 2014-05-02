@@ -1,55 +1,91 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 16 May 2014 11:56:48 +0000
-Subject: Re: [PATCH 05/19] OMAPDSS: Kconfig: Add depencies and help section to OMAP4_DSS_HDMI_AUDIO
-Message-Id: <5375FD00.20004@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 02 May 2014 13:06:00 +0000
+Subject: Re: [PATCH 06/23] ARM: OMAP: add OMAP5 DSI muxing
+Message-Id: <53639838.3070907@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="CqfLSggtOOsBbUNAg5oLxsKKUAwqLRRKU"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com> <198496d6220a13b0e8910361d969b8f978ee1398.1399884780.git.jsarha@ti.com> <5375EE07.4090802@ti.com>
-In-Reply-To: <5375EE07.4090802@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, detheridge@ti.com
+References: <535A6C40.10609@ti.com> <20140425153150.GA20807@atomide.com>
+ <535DFAAE.1010606@ti.com> <20140428164528.GM20807@atomide.com>
+ <535F37E9.8090609@ti.com> <20140429150529.GA27571@atomide.com>
+ <535FD10B.4020108@ti.com> <535FD43B.3030102@ti.com>
+ <20140429173838.GB27571@atomide.com> <5360948A.5020607@ti.com>
+ <20140430175651.GB12362@atomide.com>
+In-Reply-To: <20140430175651.GB12362@atomide.com>
+To: linux-arm-kernel@lists.infradead.org
 
-On 05/16/2014 01:52 PM, Tomi Valkeinen wrote:
-> Hi,
->
-> On 12/05/14 12:12, Jyri Sarha wrote:
->> Signed-off-by: Jyri Sarha <jsarha@ti.com>
->> ---
->>   drivers/video/fbdev/omap2/dss/Kconfig |   10 +++++++++-
->>   1 file changed, 9 insertions(+), 1 deletion(-)
+--CqfLSggtOOsBbUNAg5oLxsKKUAwqLRRKU
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 30/04/14 20:56, Tony Lindgren wrote:
+
+> Have you checked out pinctrl-single,bits binding? That should allow
+> you to map random bits in a single register to a pinctrl driver
+> instance.
+
+If I recall right, the problem there was that we have one register,
+which has bits for two separate devices, and the bits are mixed up. i.e.
+not 16 upper bits for one, 16 lower for the other, but 5 bits for one
+device, the next 5 bits for the other, then again few bits for the
+first, etc.
+
+pinctrl-single,bits didn't like it that.
+
+>>>> Oh, also, if I do that, I need to know both the SoC version and the =
+DSS
+>>>> version in the driver.
+>>>
+>>> Don't you get all you need in the compatible string? Something like
+>>> compatible ti,dss-phy-omap5?
 >>
->> diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
->> index 8921a7a..ecc2f50 100644
->> --- a/drivers/video/fbdev/omap2/dss/Kconfig
->> +++ b/drivers/video/fbdev/omap2/dss/Kconfig
->> @@ -70,7 +70,15 @@ config OMAP4_DSS_HDMI
->>   	  HDMI support for OMAP4 based SoCs.
+>> We do use different compatible strings for different major versions of=
+
+>> the DSS blocks, like ti,omap5-dsi. But that exactly same DSS block cou=
+ld
+>> be used on some other SoC, with different control stuff.
 >>
->>   config OMAP4_DSS_HDMI_AUDIO
->> -	bool
->> +	bool "HDMI audio support for OMAP4"
->> +	depends on OMAP4_DSS_HDMI
->> +	depends on SND_OMAP_SOC=y || OMAP2_DSS = SND_OMAP_SOC
->> +	default y
->> +	help
->> +	  HDMI audio support for OMAP4 based SoCs. Adds integrated
->> +	  ASoC Digital Audio Interface component driver into OMAPDSS
->> +	  module. Select SND_SOC_HDMI_CODEC and SND_SIMPLE_CARD with
->> +	  devicetree description for full HDMI audio support.
->
-> What does "for full HDMI audio support" mean? What's the partial support? =)
->
+>> We could use separate compatible string for each SoC that uses DSS, bu=
+t
+>> then we're really encoding the SoC version into the compatible string,=
 
-The hdmi driver provides a digital audio interface (DAI) which can be 
-used to transmit audio over the HDMI cable. The ASoC DAI component 
-driver provides just that functionality. A machine, platform, and (in 
-this case a dummy) codec component driver is also needed for a complete 
-ALSA device functionality.
+>> not DSS version.
+>>
+>> Of course, if there will be a separate driver managing the
+>> CONTROL_DSIPHY register, then that one should use compatible string
+>> specific to the SoC, as it's not a DSS driver at all.
+>=20
+> Yeah probably using pinctrl-single,bits, or a separate driver with sysc=
+on
+> makes most sense here.
 
-Anyway, I look into Mark's suggestion of instantiating all the necessary 
-component drivers from the HDMI driver.
+Yep, I'll have to come up with something.
 
-Best regards,
-Jyri
+ Tomi
+
+
+
+--CqfLSggtOOsBbUNAg5oLxsKKUAwqLRRKU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTY5g4AAoJEPo9qoy8lh71V5AP/2xbnvn9SHJJPVxLsGxtkoPy
+KQHtQM83AerJylujPw58BCTmGmW4TXoSxH7lLMxpMlizrYSa6xu3aN9XHKqEueF1
+WHCX9rDcHUmjkgjGerE6tTxA6/Bh1amzyJEQyMkyrC9Y4btNDXPvoNNSrajKfo8j
+mUUThl8h72MAqoVlaFnXsQ4DokLeXlghVwl39I8bH4Md7z3OjOeSQzLaQJ8drIrW
+J+5KVDpXIdT6DuJxzwHIckwQna6+xRPgO1TZvFYrMYirzeOSyzPIduc3cSDM+b3v
+pBuOjvn2eJtL7i2fX3ekbZYobjoY4pQNbIBeVdQx7k6jT68WE7hnyOPgQuoK3Fxj
+6TtJCo9mr3hR5kghETGATWXHztRVXukcGZzDvNk9KyHtbfpatAHK7d29eJsmyHoG
+MQTX3sBOuPQN+4vIurLXkpZ3LWjJVjSicbH0ZWNZ5/D36ptyBXL0pOO6XSxZ9dTB
+KehfY2Md1v+kqve699LSxqWXol99pslshuV2vZQW7iWFwo6y7MJwgH92O429dsBo
+K/V9HXCqOuBPboQN3d5Q6lyblA5bfYEsvISEe83lAqFVDr5VDzfYUzNP+rBzqnjc
+yb44eR8o9RtRImQBtqz+x6eI7GnRw6VCUF00sEnp+XeFcP8tTXKbN+VME/kHlYCW
+Jdm43b2jrwjQDsBGSn5i
+=oEgz
+-----END PGP SIGNATURE-----
+
+--CqfLSggtOOsBbUNAg5oLxsKKUAwqLRRKU--

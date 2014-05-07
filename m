@@ -1,93 +1,77 @@
-From: Sebastian Reichel <sre@kernel.org>
-Date: Wed, 21 May 2014 14:24:59 +0000
-Subject: Re: [PATCH 3/4] OMAPDSS: panel-sharp-ls037v7dw01: add device tree support
-Message-Id: <20140521142459.GB27779@earth.universe>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 May 2014 08:15:12 +0000
+Subject: Re: [PATCH 2/4] OMAPDSS: panel-sharp-ls037v7dw01: update to use gpiod
+Message-Id: <5369EB90.8060007@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="JP+T4n/bALQSJXh8"
+Content-Type: multipart/mixed; boundary="01KEpad7JTjQsvFkc0WExh7SPSGvkDhDE"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5375A8A8.7080306@ti.com> <20140516160717.GD22031@atomide.com>
- <20140516174158.GA11733@earth.universe>
- <20140516180154.GG22031@atomide.com>
- <20140516213907.GL12881@atomide.com> <5379D35F.8040207@ti.com>
- <20140519155732.GA4849@atomide.com> <537A540E.8070302@ti.com>
- <20140519195100.GB11945@atomide.com> <537CA4B4.2040001@ti.com>
-In-Reply-To: <537CA4B4.2040001@ti.com>
+References: <1398815562-24113-1-git-send-email-tony@atomide.com>
+ <1398815562-24113-3-git-send-email-tony@atomide.com>
+In-Reply-To: <1398815562-24113-3-git-send-email-tony@atomide.com>
 To: linux-arm-kernel@lists.infradead.org
 
-
---JP+T4n/bALQSJXh8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--01KEpad7JTjQsvFkc0WExh7SPSGvkDhDE
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Wed, May 21, 2014 at 04:05:56PM +0300, Tomi Valkeinen wrote:
-> I'll try and see how the other options work, which are:
+On 30/04/14 02:52, Tony Lindgren wrote:
+> Using gpiod will make it easier to add device tree support
+> for this panel in the following patches.
 >=20
-> - Bailing out from module_init in each display driver. The reason I
-> don't like this (although I haven't tried it) is that all the display
-> drivers need the modification, and because I need to catch the
-> module_init, I cannot use the helpers like module_platform_driver(), so
-> it adds multiple lines to every driver.
+> Note that all the GPIOs for this panel are optional, any
+> of the the GPIOs could be configured with external pulls
+> instead of GPIOs, so let's not error out if GPIOs are not
+> found to make the panel more generic.
+>=20
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+>  .../omap2/displays-new/panel-sharp-ls037v7dw01.c   | 92 +++++++++-----=
+--------
+>  1 file changed, 38 insertions(+), 54 deletions(-)
 
-You could create your own omapdss_driver() define for that.
-This can be replaced more simply once no longer needed and
-creates less bloat.
+<snip>
 
-I see one more disadvantage for this approach:
+> +static struct gpio_desc *
+> +sharp_ls_get_gpio(struct device *dev, int gpio, unsigned long flags,
+> +		  char *desc)
+> +{
+> +	int r;
+> +
+> +	r =3D devm_gpio_request_one(dev, gpio, flags, desc);
+> +	if (r) {
+> +		dev_err(dev, "no %s gpio\n", desc);
 
-assumed situation (some future 3.16+x kernel):
- * The kernel has an common display framework (CDF)
- * The kernel has an panel driver using CDF
- * There also exists omapdss driver for the same panel
- * omapdss does not (yet) adopt CDF
- * CDF and omapdss are enabled in .config
- * Kernel is booted from an OMAP system
+As it's fine to not have a gpio, I guess this error print should be remov=
+ed.
 
-This would result in both drivers being loaded using the same
-DT compatible string. The same scenario works using the rewriting
-method, since the common display framework would only see the
-rewritten compatible string.
+Also, if the error is EPROBE_DEFER, the driver should fail and return
+that. The same goes for the DT version in the next patch.
 
-Of course this scenario only happens when omapdss is not adopted
-to the common display framework from the start on.
+ Tomi
 
-> - Traveling the video graph, starting from omapdss. This one is possibly
-> better performance-wise than my original version, as we only need to
-> search for the omapdss node and can then follow the links. But the code
-> will be more complex.
 
-I think the main advantage is the missing lookup table/whitelist,
-which adds redundancy. Not having it has some advantages:
 
-* new drivers don't need to touch any existing files (making
-  rebasing etc. easier)
-* table can get out of sync (though that shouldn't happen anyway,
-  since the binding is supposed to be stable)
-
--- Sebastian
-
---JP+T4n/bALQSJXh8
+--01KEpad7JTjQsvFkc0WExh7SPSGvkDhDE
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJTfLc7AAoJENju1/PIO/qaVmsQAJP3lRtzFdHGO9oufke5LxIT
-oCnpe7v1evjMQi/PdbhHTmrx/FIaxNKmkCl5VPGMYJqf+pF/sa6G7yrS0ZUq8jGI
-XFJEyB6M2/IjcuAVrj8qHdCMabnqa2q5C4xMtURRfsraipDsFv7LX/2STH8CcrlX
-oP60OdAvQmv5w7PVMdRnuQ94/wsXTZWP6tqy78+e67w0hYlvNUxhsntoPWdHtbLu
-l8MLEC58/5mFIwAX7sRQQgr7q8CZAvhUE7dkYLvIGcxKXgGfzeuzggR5/Bsj4vfR
-gPDV6vEe2S2PrjcCMLslITCeSGQhKz99p1DiY/xfYBHO+aF/UIXtCBpNdDz8hk1M
-gh62Q3avLzFF24ckyero/YX7AMPxPK4jtypIrgvNYQ2LwRKt36XsdcoU15Ya4viu
-QuFpH2ivq3A4Y7vMyhRzGDlTIUrrCFtKlETQsDc+s7exiK0Yg97pp40koVjR+4aX
-8Saw5+0tsmaTsJ8AlTyX0uIw3D/3jErab1n2Hl06iAuiFNWXO+o6uvVazSIKPu52
-a/Bv7xPPihrMN1daE40EtRX8y+HEvzPGBYAlbTiM0UviDToZSbIZykGC/bZ2WKPb
-9YsusjSpMJrFCtGX19lPLzE9Ej4JiIXD2cvGzYRuXismzMCy51ti6/30XOHLe/7e
-Iu4hpr0bgYDB8W3BwYg6
-=AsiA
+iQIcBAEBAgAGBQJTaeuQAAoJEPo9qoy8lh711swP/0Z8usacElSZgblnBscYXQV+
+abLMe+nOUiSyUJ9JRe5uVW7oRWIlulOJsAUAXMg85UGya12RhW8jmmfyqLoWAuN3
+ym8794Hqy/CMLcgwhhybP3RZjxykk/WHQCTo5bOZ7/R+TpIZWyobd48aGYS7r0bU
+dXpl4URUSy6MPkWAT9dG+GG7sZTnHjdJ6AeUxFTbey25rtobWIQ8WohFA2mOwt8W
+WREGSRP5SS0P+r5vKneYyarETpYgtMbHV++RPnbQaOceOeo379q386wQ/u/C+Tc1
+Sx/ED6QrYYduKf44f8fEq3GqsLi4HZ2pueNscXadKIrFBMnXcMP3TMW6KO4wbv9v
+0+NgtXaiT17VhpySvIG+AroThzzQoY0yhf4OOlVMKPfgTklKFUC4AVgTpuEx1FjZ
+vABIkYgI5JFPIrbXBG6hYenTtrk/LmgltKN9p/0vVoyfEr1bB6ks8ZxmF2EpRJwd
+WMeXdjhId3epmTNATIWjaOyFx+8kEfQucOmmp0JDyKw/1zv/zrgUzc/AfxIckmEy
+MioBAskQwk1ZxGwFxpL7u7FidNunjzHPW9/MIck9N3MoyF04XQMZ5j8x1ulqbNs/
+yXRwkhartj6Zw08YXOD6XqnmBc2/uk0iQFgRlbI1MvTJ9bWa8ehmGDaPz3bxVVWX
+5z3HSiylVq2XORKECNln
+=Ns5W
 -----END PGP SIGNATURE-----
 
---JP+T4n/bALQSJXh8--
+--01KEpad7JTjQsvFkc0WExh7SPSGvkDhDE--

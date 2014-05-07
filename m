@@ -1,38 +1,63 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Fri, 09 May 2014 15:55:43 +0000
-Subject: Re: [PATCH 0/4] OMAPDSS: Add support for panel ls037v7dw01
-Message-Id: <20140509155542.GF17814@atomide.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 May 2014 09:14:27 +0000
+Subject: Re: [PATCH 13/13] video: omap: allow building on !MMU
+Message-Id: <5369F973.10803@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="dEWaKqBDIhpEP6uWPfrVghDeIlpxe7XL0"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398815562-24113-1-git-send-email-tony@atomide.com>
- <20140505184138.GB15463@atomide.com> <536CA10B.9040702@ti.com>
-In-Reply-To: <536CA10B.9040702@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+References: <1398342509-10243-1-git-send-email-peter.griffin@linaro.org> <1398342509-10243-14-git-send-email-peter.griffin@linaro.org>
+In-Reply-To: <1398342509-10243-14-git-send-email-peter.griffin@linaro.org>
+To: Peter Griffin <peter.griffin@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Tony Lindgren <tony@atomide.com>
+Cc: linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [140509 02:34]:
-> On 05/05/14 21:41, Tony Lindgren wrote:
-> > * Tony Lindgren <tony@atomide.com> [140429 16:53]:
-> >> Hi all,
-> >>
-> >> Here are few patches to add devicetree support for panel ls037v7dw01
-> >> that's found on many omap3 boards. They seem to be often mis-configured
-> >> as various panel dpi entries, but really should be move to use panel
-> >> ls037v7dw01 instead. This panel is found at least on the omap3 sdp,
-> >> ldp, omap3 evm and few other development boards.
-> > 
-> > Tomi, assuming no more comments, do you want to pick up the first
-> > three patches of this series? I can queue the .dts changes or you
-> > can also set up a separate .dts changes branch for DSS that I can
-> > merge in too.
-> 
-> If it's all the same to you, I'd like to collect all display related
-> arch/arm/ patches into my tree, and I'll send you a merge request when
-> it's stable.
-> 
-> I already have OMAP5 and AM43xx stuff there.
+--dEWaKqBDIhpEP6uWPfrVghDeIlpxe7XL0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yes that works well for me.
+On 24/04/14 15:28, Peter Griffin wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>=20
+> The omap lcdc driver has an elaborate mmap_kern function
+> to map the frame buffer into kernel address space as
+> write-combined. This uses functions that are only available
+> on MMU-enabled builds.
+>=20
+> It does seem equivalent to ioremap_wc though, so we should
+> be able to just use that instead.
+>=20
+> This patch is build-tested only, it needs to be run on real
+> hardware before applying.
 
-Tony
+I don't have omap1 boards, and I don't know anyone that has. I don't
+even know if the omap1 fb is working or not...
+
+Tony, any idea of omap1's fb? Are you able to test this?
+
+ Tomi
+
+
+
+--dEWaKqBDIhpEP6uWPfrVghDeIlpxe7XL0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTaflzAAoJEPo9qoy8lh71mwEP/ixwXorGiw6rNjAy3+rQ/Ht3
+d1rWch/w3Xtu+eSjKLKRDBcIKdo0FjU839RrPvFXd48ooo256tJn1hR/DKiysX2T
+52uCv/FBJRHHdVvc7ujtwcKSzxL8y/xa9YYL7N3jFlGxbLUqWOJqKiji5fAR408H
+PV55iIV8sANH2RoWY5u8JL+UebSkj8GMsapRnf4+Pl30/H+oGRExD+xHEcT5e07/
+6F3P6b/FTkG/esI2XQIFx3df7vqpLf/myW3RtjOPd4yQZW3lW5LNZz4XZOuqunzG
+MeIX6e+6zFH/JiG/WR/xmeES/gEhTSx9gcOYykbWUDVZZGOp8R6TpsMZFSeLHama
+6qNHtS7sYJfupZlyNUHQFvJiQiSe2rIOLIa3MQITuWCvh5vxoNQvGlElpumVIN7+
+817hmLIf5bQsQfOWTM6RwEuqnSA++2DKwOhkA0E+9sWT+ChZJ8AyVQhW0Jq5NrnW
+34w17sJZFgXHdYkaDmwQb0TWlITJ3D0CKOpiCWEjo24Z5gAyP/pn/QTNAQQ8iVGD
+O35y4qDzQnPX6KSaalQMa/HystgqjuKITPmVmfzerxgCFpmjGgwQeIjKKqkrfv4h
+7ZeZ8r8TsBLz8+aOPeJro6/cDrf3Z04f/a9s4czesat6F0kfQqi+PDGaH1r+4+XI
+5kgARnLt/C5OSbEE+1sw
+=N6bJ
+-----END PGP SIGNATURE-----
+
+--dEWaKqBDIhpEP6uWPfrVghDeIlpxe7XL0--

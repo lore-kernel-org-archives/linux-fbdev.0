@@ -1,51 +1,55 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 May 2014 10:18:56 +0000
-Subject: Re: some divide by zero bugs in >fb_check_var() functions
-Message-Id: <536CAB90.5010900@ti.com>
+Date: Wed, 07 May 2014 07:03:34 +0000
+Subject: Re: [PATCH v2 2/3] ARM: dts: oma3-gta04: Add display support
+Message-Id: <5369DAC6.6050608@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="9cALjThbF6DH3rRtvDtP1bjgcwxaRP9OE"
+Content-Type: multipart/mixed; boundary="TA9jFC3xdJ9vTBgTJIH9luDgDtdnihQ8l"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140124223503.GA4251@elgon.mountain>
-In-Reply-To: <20140124223503.GA4251@elgon.mountain>
-To: linux-fbdev@vger.kernel.org
+References: <1398284120-4986-1-git-send-email-marek@goldelico.com>
+ <1398284120-4986-3-git-send-email-marek@goldelico.com>
+In-Reply-To: <1398284120-4986-3-git-send-email-marek@goldelico.com>
+To: linux-arm-kernel@lists.infradead.org
 
---9cALjThbF6DH3rRtvDtP1bjgcwxaRP9OE
-Content-Type: text/plain; charset=UTF-8
+--TA9jFC3xdJ9vTBgTJIH9luDgDtdnihQ8l
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 02/05/14 18:48, Geert Uytterhoeven wrote:
-> On Tue, Jan 28, 2014 at 10:28 PM, Kees Cook <keescook@chromium.org> wro=
-te:
->> Is it ever valid to have pixclock, xres_virtual, or bits_per_pixel be
->> zero? Seems like it'd be trivial to check for those in fb_set_var()?
+On 23/04/14 23:15, Marek Belisko wrote:
+> This patch add support for lcd display on gta04 board. Display control
+> is connected on spi (used spi bitbang driver).
 >=20
-> pixclock could be zero for some special fixed type of display that does=
-n't
-> have timings. Hmm, you could use 1 for that. Are there any in-tree user=
-s?
+> Signed-off-by: Marek Belisko <marek@goldelico.com>
+> ---
+>  arch/arm/boot/dts/omap3-gta04.dts | 86 +++++++++++++++++++++++++++++++=
+++++++++
+>  1 file changed, 86 insertions(+)
 
-I have no idea if we have such drivers. But in that case I would rather
-use pixel clock of 0 than 1. It's usually much easier to notice uses of
-non-valid value if it's 0 than 1.
+<snip>
 
-But maybe that'd warrant a new flag somewhere, to mark the fb as having
-no timings.
+> +&dss {
+> +	pinctrl-names =3D "default";
+> +	pinctrl-0 =3D < &dss_dpi_pins >;
+> +
+> +	status =3D "okay";
+> +
+> +	vdds_dsi-supply =3D <&vpll2>;
+> +
+> +	dpi_out: endpoint {
+> +               remote-endpoint =3D <&lcd_in>;
+> +               data-lines =3D <24>;
+> +       };
+> +
+> +};
+>=20
 
-> Anyway, the checker reported issues with specific drivers, not with the=
- core,
-> right?
-
-Yes, but the issue seemed to be so common that it'd be nice if the core
-would check it.
-
-But looking at the longer list sent by Dan, it looks to me that there
-are also lots of cases where it must be the driver doing the checks.
+Did you try this on 3.15-rc? The above is not right, and I don't think
+it works. You need 'port' node for the dpi_out endpoint.
 
  Tomi
 
 
 
---9cALjThbF6DH3rRtvDtP1bjgcwxaRP9OE
+--TA9jFC3xdJ9vTBgTJIH9luDgDtdnihQ8l
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -53,19 +57,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJTbKuQAAoJEPo9qoy8lh71q0MQAJvWooKjQnZp4Q3ONmS5YXeZ
-ylh9FOHYg+XnngCbU+LdJ9+YLp7rewomlnczwQHKLSuOxXdONJ6bq3n3Yc9kkJRk
-Fsf+0eERfmHRjUam+8N7EMI1h4IFysorHriVnLM6fzfd6qG++vtgR+F624ix18Js
-j+vRlp4W2kGVuYeu/X/Uxbva+2aPLxoCud8yms/WwqEWmPAQxT8L2zKHGOZKm+7g
-jV3U5TsQDx2XnORUgQlpR6QUqK/DdJqts3a020ZZeAmaw7gzdoDISqiw64negw6P
-Rb5+5tSUa0/CgyjFe2dNhM47Yb2oYiR3eNyv8X/OGmlhQkwrUEe7veaZCS0VRJM1
-xiPx9rKYlO7BiBrGKAKfx63nQD8dcsWSwG/KQ0bb+ygahw4EE4KlNjxR/PSvAMY9
-VA6rZPO7BtlCLAeu4fozAm/yXILguMpXacjLIJEgkUpKuBQEKLlHs0fGz9I+rMh1
-YeVkIiHlLGGd5EmWS3n4fQueyDaHu40tci1+A5Ewid7edaiJPQk1V4+NnROKg67t
-tttgHzB0MzydT3iVcC4yzwcxFtWtYRiKaco4ZXu1NV+/ANgZYUZaqZk58RHEGsHc
-/o2gv46QsAyH0rKI0b+i4jLJ8efsR93KEebihH4rPp2OKsG0R4/kIiq8cpCboMjF
-QS3maEwzq4nOVcAAvwn7
-=DFdY
+iQIcBAEBAgAGBQJTadrGAAoJEPo9qoy8lh71v68QAI+/7OX3iR/NW7MTleTezIFX
+6XTvjUJR3c0afx1CrqpdEBM59E75PwSCtwvwU78kCQswVSwEBRGfTd8g8l9GoUlD
++kLOnVskRen+o1ghoKLF0ICLReSSzGY3bplfLBGTF5zidvDiwHrCeJuCsvzE4vMQ
+2Zg1kESfJWoQEAOTS6CmgqFJv6e5d22pyyDrzC9NrJRJITgWRlYDS2Q2K0VI+oV2
+GbjhllR1+VQR+3e3YswsHw9kRk2pYvDeyC+ZMWAyfyfJntY8McFXZPP1IUi5oCVU
+K4IkP+M7hvKeSSfecyxh9S4GHk8GBztrKWHnvGj94rXpulLwxSzIdSBnXDFYitAJ
+F3i05Nq4AohD6oqZ6LJyA8kyzGG+YcjTdNvwHkh5kxttlNGEb2lbYpGTm7OnjBkp
+5OVcTOCJUnqNDhV3RsyXSz2QhkeZZP2H7f6Qvc3w3RFwcOUFbWlQIYGcx4mKkRzh
+BHbBxa8iywIPVK1rOu03XwMHanqWcaT4XpBt0cAgrbyfAbO6hMxo1+8bPLoCo6bP
+uT8WOTWif1i7BMIk8XIbA8lWJZJuw8h9GBmrTHeW56NSTHdkLFGdqzqgiWRyG/UM
+jIIBkPmnUDZbgEkjFhvzh4aNTitIrbWudD4Dd5AnXqdN556MlMZQMh4hFPB/bsTM
+77e36kPMiAm8dIk7FJ/K
+=OElA
 -----END PGP SIGNATURE-----
 
---9cALjThbF6DH3rRtvDtP1bjgcwxaRP9OE--
+--TA9jFC3xdJ9vTBgTJIH9luDgDtdnihQ8l--

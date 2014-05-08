@@ -1,46 +1,35 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 19 May 2014 20:42:41 +0000
-Subject: [PATCHv2 resend 10/11] leds: leds-pwm: retrieve configured pwm period
-Message-Id: <1400532162-29483-11-git-send-email-alexandre.belloni@free-electrons.com>
+From: Marek Belisko <marek@goldelico.com>
+Date: Thu, 08 May 2014 20:16:52 +0000
+Subject: [PATCH v3 3/3] omapdss: panel-tpo-td028ec1: Add module alias
+Message-Id: <1399580212-5183-4-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1399580212-5183-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1399580212-5183-1-git-send-email-marek@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-The PWM core is now able to initialize the PWM period. Use it and if it is not
-configured, use the supplied pwm_period_ns.
+Add module alias string to make it working when panel is compiled as module.
+Without this change panel module is not probed thus display is not working.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Signed-off-by: Marek Belisko <marek@goldelico.com>
 ---
- drivers/leds/leds-pwm.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
-index 7d0aaed1e23a..aa770ec1e892 100644
---- a/drivers/leds/leds-pwm.c
-+++ b/drivers/leds/leds-pwm.c
-@@ -181,7 +181,6 @@ static int led_pwm_probe(struct platform_device *pdev)
- 			led_dat->cdev.name = cur_led->name;
- 			led_dat->cdev.default_trigger = cur_led->default_trigger;
- 			led_dat->active_low = cur_led->active_low;
--			led_dat->period = cur_led->pwm_period_ns;
- 			led_dat->cdev.brightness_set = led_pwm_set;
- 			led_dat->cdev.brightness = LED_OFF;
- 			led_dat->cdev.max_brightness = cur_led->max_brightness;
-@@ -191,6 +190,10 @@ static int led_pwm_probe(struct platform_device *pdev)
- 			if (led_dat->can_sleep)
- 				INIT_WORK(&led_dat->work, led_pwm_work);
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c b/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c
+index 5b3466e..728808b 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c
+@@ -505,6 +505,7 @@ static struct spi_driver td028ttec1_spi_driver = {
  
-+			led_dat->period = pwm_get_period(led_dat->pwm);
-+			if (!led_dat->period && (cur_led->pwm_period_ns > 0))
-+				led_dat->period = cur_led->pwm_period_ns;
-+
- 			ret = led_classdev_register(&pdev->dev, &led_dat->cdev);
- 			if (ret < 0)
- 				goto err;
+ module_spi_driver(td028ttec1_spi_driver);
+ 
++MODULE_ALIAS("spi:toppoly,td028ttec1");
+ MODULE_AUTHOR("H. Nikolaus Schaller <hns@goldelico.com>");
+ MODULE_DESCRIPTION("Toppoly TD028TTEC1 panel driver");
+ MODULE_LICENSE("GPL");
 -- 
 1.9.1
 

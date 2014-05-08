@@ -1,82 +1,45 @@
 From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 05 May 2014 18:39:20 +0000
+Date: Thu, 08 May 2014 23:36:28 +0000
 Subject: Re: [PATCH 4/4] ARM: dts: Add LCD panel sharp ls037v7dw01 support for omap3-evm and ldp
-Message-Id: <20140505183919.GA15463@atomide.com>
+Message-Id: <20140508233628.GJ2198@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398815562-24113-1-git-send-email-tony@atomide.com>
  <1398815562-24113-5-git-send-email-tony@atomide.com>
  <CAGhQ9Vwa8xXQEo5dNEKAvmaS9DoBjVSthtd8=owk+atVdFuiiA@mail.gmail.com>
  <20140430174751.GA12362@atomide.com>
-In-Reply-To: <20140430174751.GA12362@atomide.com>
+ <20140505183919.GA15463@atomide.com>
+In-Reply-To: <20140505183919.GA15463@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-* Tony Lindgren <tony@atomide.com> [140430 10:48]:
-> * Joachim Eastwood <manabian@gmail.com> [140429 18:08]:
-> > On 30 April 2014 01:52, Tony Lindgren <tony@atomide.com> wrote:
-> > > Looks like quite a few omaps have sharp ls037v7dw01 that's configured
-> > > as various panel dpi entries for whatever legacy reasons. For device
-> > > tree based support, let's just configure these properly for panel
-> > > ls037v7dw01 instead of panel dpi.
-> > >
-> > > This patch creates a common file for panel ls037v7dw01, and makes
-> > > boards ldp and omap3-evm to use it. The panel for ldp is configured
-> > > in the qvga mode and omap3-evm panel in vga mode.
-> > >
-> > > The ls037v7dw01 also seems to be coupled with an ad7846 touchscreen
-> > > controller for the omaps, so let's add a basic configuration for
-> > > the touchscreen also using the default values.
-> > >
-> > > Note that we can now remove the regulator-name = "vdds_dsi"
-> > > entry for ldp, that's no longer needed as we have the entry
-> > > for vdds_dsi-supply = <&vpll2>.
-> > >
-> > > Signed-off-by: Tony Lindgren <tony@atomide.com>
-> > > ---
-> > >  .../arm/boot/dts/omap-panel-sharp-ls037v7dw01.dtsi | 82 ++++++++++++++++++++++
-> > >  arch/arm/boot/dts/omap3-evm-37xx.dts               | 50 +++++++++++++
-> > >  arch/arm/boot/dts/omap3-evm-common.dtsi            | 47 +++++++++++++
-> > >  arch/arm/boot/dts/omap3-ldp.dts                    | 31 ++++++--
-> > >  4 files changed, 205 insertions(+), 5 deletions(-)
-> > >  create mode 100644 arch/arm/boot/dts/omap-panel-sharp-ls037v7dw01.dtsi
+* Tony Lindgren <tony@atomide.com> [140505 11:40]:
+> * Tony Lindgren <tony@atomide.com> [140430 10:48]:
+> > * Joachim Eastwood <manabian@gmail.com> [140429 18:08]:
+> > > On 30 April 2014 01:52, Tony Lindgren <tony@atomide.com> wrote:
+> > > > +       reset-gpios = <&gpio2 23 GPIO_ACTIVE_HIGH>;     /* gpio55, lcd RESB */
+> > > > +       gpios = <&gpio2 24 GPIO_ACTIVE_LOW      /* gpio56, lcd MO */
+> > > 
+> > > enable-gpios ?
 > > 
-> > > diff --git a/arch/arm/boot/dts/omap3-ldp.dts b/arch/arm/boot/dts/omap3-ldp.dts
-> > > index 0abe986..50fdac9 100644
-> > > --- a/arch/arm/boot/dts/omap3-ldp.dts
-> > > +++ b/arch/arm/boot/dts/omap3-ldp.dts
-> > > @@ -164,6 +164,7 @@
-> > >
-> > >  #include "twl4030.dtsi"
-> > >  #include "twl4030_omap3.dtsi"
-> > > +#include "omap-panel-sharp-ls037v7dw01.dtsi"
-> > >
-> > >  &i2c2 {
-> > >         clock-frequency = <400000>;
-> > > @@ -173,6 +174,31 @@
-> > >         clock-frequency = <400000>;
-> > >  };
-> > >
-> > > +&lcd_3v3 {
-> > > +       gpio = <&twl_gpio 7 GPIO_ACTIVE_HIGH>;
-> > > +       enable-active-high;
-> > > +};
-> > > +
-> > > +&lcd0 {
-> > > +       reset-gpios = <&gpio2 23 GPIO_ACTIVE_HIGH>;     /* gpio55, lcd RESB */
-> > > +       gpios = <&gpio2 24 GPIO_ACTIVE_LOW      /* gpio56, lcd MO */
-> > 
-> > enable-gpios ?
+> > Oops yes, changed from gpios to enable-gpios while reading the panel
+> > binding doc, probably forgot to commit the change, will update.
 > 
-> Oops yes, changed from gpios to enable-gpios while reading the panel
-> binding doc, probably forgot to commit the change, will update.
+> Here's an updated version of this one.
 
-Here's an updated version of this one.
+One more update for the use of enable-gpios, reset-gpios and
+mode-gpios to follow the binding described in simple-panel.txt.
+
+Tomi feel free to pick this one up too, I'd assume you prefer
+to do an immutable branch for the .dts changes that we both
+can merge in as needed.
+
+Regards,
 
 Tony
 
-
+8<-------------------
 From: Tony Lindgren <tony@atomide.com>
 Date: Mon, 28 Apr 2014 20:22:21 -0700
 Subject: [PATCH] ARM: dts: Add LCD panel sharp ls037v7dw01 support for omap3-evm and ldp
@@ -100,9 +63,6 @@ for vdds_dsi-supply = <&vpll2>.
 
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 
-diff --git a/arch/arm/boot/dts/omap-panel-sharp-ls037v7dw01.dtsi b/arch/arm/boot/dts/omap-panel-sharp-ls037v7dw01.dtsi
-new file mode 100644
-index 0000000..f5252da
 --- /dev/null
 +++ b/arch/arm/boot/dts/omap-panel-sharp-ls037v7dw01.dtsi
 @@ -0,0 +1,82 @@
@@ -188,8 +148,6 @@ index 0000000..f5252da
 +		linux,wakeup;
 +	};
 +};
-diff --git a/arch/arm/boot/dts/omap3-evm-37xx.dts b/arch/arm/boot/dts/omap3-evm-37xx.dts
-index 4df68ad..a181e30 100644
 --- a/arch/arm/boot/dts/omap3-evm-37xx.dts
 +++ b/arch/arm/boot/dts/omap3-evm-37xx.dts
 @@ -26,7 +26,44 @@
@@ -257,8 +215,6 @@ index 4df68ad..a181e30 100644
  &mmc1 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&mmc1_pins>;
-diff --git a/arch/arm/boot/dts/omap3-evm-common.dtsi b/arch/arm/boot/dts/omap3-evm-common.dtsi
-index 3007e79..0ab9650 100644
 --- a/arch/arm/boot/dts/omap3-evm-common.dtsi
 +++ b/arch/arm/boot/dts/omap3-evm-common.dtsi
 @@ -44,6 +44,11 @@
@@ -283,16 +239,16 @@ index 3007e79..0ab9650 100644
 +};
 +
 +&lcd0 {
++	enable-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;	/* gpio152, lcd INI */
 +	reset-gpios = <&gpio5 27 GPIO_ACTIVE_HIGH>;	/* gpio155, lcd RESB */
 +	/*
 +	 * The LCD is sideways, so we want the VGA mode instead of
 +	 * QVGA mode. Probably also want to have omapfb.rotate=3
 +	 * in the kernel cmdline until there's a binding for that.
 +	 */
-+	enable-gpios = <&gpio5 26 GPIO_ACTIVE_HIGH	/* gpio154, lcd MO */
-+			&gpio1 2 GPIO_ACTIVE_HIGH	/* gpio2, lcd LR */
-+			&gpio1 3 GPIO_ACTIVE_HIGH	/* gpio3, lcd UD */
-+			&gpio5 24 GPIO_ACTIVE_HIGH>;	/* gpio152, lcd INI */
++	mode-gpios = <&gpio5 26 GPIO_ACTIVE_HIGH	/* gpio154, lcd MO */
++		      &gpio1 2 GPIO_ACTIVE_HIGH		/* gpio2, lcd LR */
++		      &gpio1 3 GPIO_ACTIVE_HIGH>;	/* gpio3, lcd UD */
 +
 +	panel-timing {
 +		clock-frequency = <19200000>;
@@ -322,8 +278,6 @@ index 3007e79..0ab9650 100644
  &mmc1 {
  	vmmc-supply = <&vmmc1>;
  	vmmc_aux-supply = <&vsim>;
-diff --git a/arch/arm/boot/dts/omap3-ldp.dts b/arch/arm/boot/dts/omap3-ldp.dts
-index 0abe986..01b0808 100644
 --- a/arch/arm/boot/dts/omap3-ldp.dts
 +++ b/arch/arm/boot/dts/omap3-ldp.dts
 @@ -164,6 +164,11 @@
@@ -338,7 +292,7 @@ index 0abe986..01b0808 100644
  
  &i2c2 {
  	clock-frequency = <400000>;
-@@ -173,6 +178,27 @@
+@@ -173,6 +178,24 @@
  	clock-frequency = <400000>;
  };
  
@@ -349,10 +303,7 @@ index 0abe986..01b0808 100644
 +
 +&lcd0 {
 +	reset-gpios = <&gpio2 23 GPIO_ACTIVE_HIGH>;	/* gpio55, lcd RESB */
-+	enable-gpios = <&gpio2 24 GPIO_ACTIVE_LOW	/* gpio56, lcd MO */
-+			0				/* lcd LR */
-+			0				/* lcd UD */
-+			0>;				/* lcd INI */
++	mode-gpios = <&gpio2 24 GPIO_ACTIVE_LOW>;	/* gpio56, lcd MO */
 +};
 +
 +&mcspi1 {
@@ -366,7 +317,7 @@ index 0abe986..01b0808 100644
  &mmc1 {
  	/* See 35xx errata 2.1.1.128 in SPRZ278F */
  	compatible = "ti,omap3-pre-es3-hsmmc";
-@@ -247,8 +273,3 @@
+@@ -247,8 +270,3 @@
  	/* Needed for ads7846 */
          regulator-name = "vcc";
  };

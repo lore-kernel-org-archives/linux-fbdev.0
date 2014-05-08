@@ -1,172 +1,56 @@
-From: Alexander Stein <alexander.stein@systec-electronic.com>
-Date: Mon, 05 May 2014 06:56:50 +0000
-Subject: [PATCH v2] video: mx3fb: Add backlight support
-Message-Id: <1399273010-24706-1-git-send-email-alexander.stein@systec-electronic.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 08 May 2014 10:47:19 +0000
+Subject: Re: [PATCH v2] video: mx3fb: Add backlight support
+Message-Id: <536B60B7.10304@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="8OidD1nqRpVuJku413rV0aUTs0CngQ3Sc"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1399273010-24706-1-git-send-email-alexander.stein@systec-electronic.com>
+In-Reply-To: <1399273010-24706-1-git-send-email-alexander.stein@systec-electronic.com>
 To: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Alexander Stein <alexander.stein@systec-electronic.com>
----
-Changes in v2:
-* rebased to v3.15-rc4
+--8OidD1nqRpVuJku413rV0aUTs0CngQ3Sc
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
- drivers/video/fbdev/mx3fb.c | 98 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 98 insertions(+)
+Hi,
 
-diff --git a/drivers/video/fbdev/mx3fb.c b/drivers/video/fbdev/mx3fb.c
-index 142e860..10a7244 100644
---- a/drivers/video/fbdev/mx3fb.c
-+++ b/drivers/video/fbdev/mx3fb.c
-@@ -27,6 +27,7 @@
- #include <linux/clk.h>
- #include <linux/mutex.h>
- #include <linux/dma/ipu-dma.h>
-+#include <linux/backlight.h>
- 
- #include <linux/platform_data/dma-imx.h>
- #include <linux/platform_data/video-mx3fb.h>
-@@ -34,6 +35,12 @@
- #include <asm/io.h>
- #include <asm/uaccess.h>
- 
-+#if defined(CONFIG_BACKLIGHT_CLASS_DEVICE) || \
-+	(defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE) && \
-+		defined(CONFIG_MX3FB_MODULE))
-+#define PWM_BACKLIGHT_AVAILABLE
-+#endif
-+
- #define MX3FB_NAME		"mx3_sdc_fb"
- 
- #define MX3FB_REG_OFFSET	0xB4
-@@ -242,6 +249,10 @@ struct mx3fb_data {
- 	spinlock_t		lock;
- 	struct device		*dev;
- 
-+#ifdef PWM_BACKLIGHT_AVAILABLE
-+	struct backlight_device	*bl;
-+#endif
-+
- 	uint32_t		h_start_width;
- 	uint32_t		v_start_width;
- 	enum disp_data_mapping	disp_data_fmt;
-@@ -271,6 +282,74 @@ struct mx3fb_info {
- 	struct fb_var_screeninfo	cur_var; /* current var info */
- };
- 
-+static void sdc_set_brightness(struct mx3fb_data *mx3fb, uint8_t value);
-+
-+#ifdef PWM_BACKLIGHT_AVAILABLE
-+static u32 sdc_get_brightness(struct mx3fb_data *mx3fb);
-+
-+static int mx3fb_bl_get_brightness(struct backlight_device *bl)
-+{
-+	struct mx3fb_data *fbd = bl_get_data(bl);
-+
-+	return sdc_get_brightness(fbd);
-+}
-+
-+static int mx3fb_bl_update_status(struct backlight_device *bl)
-+{
-+	struct mx3fb_data *fbd = bl_get_data(bl);
-+	int brightness = bl->props.brightness;
-+
-+	if (bl->props.power != FB_BLANK_UNBLANK)
-+		brightness = 0;
-+	if (bl->props.fb_blank != FB_BLANK_UNBLANK)
-+		brightness = 0;
-+
-+	fbd->backlight_level = (fbd->backlight_level & ~0xFF) | brightness;
-+
-+	sdc_set_brightness(fbd, fbd->backlight_level);
-+
-+	return 0;
-+}
-+
-+static const struct backlight_ops mx3fb_lcdc_bl_ops = {
-+	.update_status = mx3fb_bl_update_status,
-+	.get_brightness = mx3fb_bl_get_brightness,
-+};
-+
-+static void mx3fb_init_backlight(struct mx3fb_data *fbd)
-+{
-+	struct backlight_properties props;
-+	struct backlight_device	*bl;
-+
-+	if (fbd->bl)
-+		return;
-+
-+	memset(&props, 0, sizeof(struct backlight_properties));
-+	props.max_brightness = 0xff;
-+	props.type = BACKLIGHT_RAW;
-+	sdc_set_brightness(fbd, fbd->backlight_level);
-+
-+	bl = backlight_device_register("mx3fb-bl", fbd->dev, fbd,
-+				       &mx3fb_lcdc_bl_ops, &props);
-+	if (IS_ERR(bl)) {
-+		dev_err(fbd->dev, "error %ld on backlight register\n",
-+				PTR_ERR(bl));
-+		return;
-+	}
-+
-+	fbd->bl = bl;
-+	bl->props.power = FB_BLANK_UNBLANK;
-+	bl->props.fb_blank = FB_BLANK_UNBLANK;
-+	bl->props.brightness = mx3fb_bl_get_brightness(bl);
-+}
-+
-+static void mx3fb_exit_backlight(struct mx3fb_data *fbd)
-+{
-+	if (fbd->bl)
-+		backlight_device_unregister(fbd->bl);
-+}
-+#endif
-+
- static void mx3fb_dma_done(void *);
- 
- /* Used fb-mode and bpp. Can be set on kernel command line, therefore file-static. */
-@@ -628,6 +707,18 @@ static int sdc_set_global_alpha(struct mx3fb_data *mx3fb, bool enable, uint8_t a
- 	return 0;
- }
- 
-+#ifdef PWM_BACKLIGHT_AVAILABLE
-+static u32 sdc_get_brightness(struct mx3fb_data *mx3fb)
-+{
-+	u32 brightness;
-+
-+	brightness = mx3fb_read_reg(mx3fb, SDC_PWM_CTRL);
-+	brightness = (brightness >> 16) & 0xFF;
-+
-+	return brightness;
-+}
-+#endif
-+
- static void sdc_set_brightness(struct mx3fb_data *mx3fb, uint8_t value)
- {
- 	dev_dbg(mx3fb->dev, "%s: value = %d\n", __func__, value);
-@@ -1534,6 +1625,9 @@ static int mx3fb_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		goto eisdc0;
- 
-+#ifdef PWM_BACKLIGHT_AVAILABLE
-+	mx3fb_init_backlight(mx3fb);
-+#endif
- 	return 0;
- 
- eisdc0:
-@@ -1557,6 +1651,10 @@ static int mx3fb_remove(struct platform_device *dev)
- 	chan = &mx3_fbi->idmac_channel->dma_chan;
- 	release_fbi(fbi);
- 
-+#ifdef PWM_BACKLIGHT_AVAILABLE
-+	mx3fb_exit_backlight(mx3fb);
-+#endif
-+
- 	dma_release_channel(chan);
- 	dmaengine_put();
- 
--- 
-1.8.5.5
+On 05/05/14 09:56, Alexander Stein wrote:
+> Signed-off-by: Alexander Stein <alexander.stein@systec-electronic.com>
+> ---
 
+Please always have a commit description, even if it's more or less the
+same as the subject.
+
+Is the backlight PWM hardware part of the display hardware on mx3fb? If
+so, I guess it's ok to have the backlight in the fb driver, as you're
+doing here.
+
+ Tomi
+
+
+
+--8OidD1nqRpVuJku413rV0aUTs0CngQ3Sc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTa2C3AAoJEPo9qoy8lh71/XYP/0z3PmK+X4SeOc9p27cDgvyn
+mDDZSefqssw4pgq/iHJZJudEspvFOe5h18bAfMFXfgl1vQLzn2BRxuKRo6IL8Vid
+38JIVaj8+ZyGfAZZaY772CcEBN0p1Aw5NOzVICvUh4ugQoh7hBRPDkdTAxBGPrdD
+hRQZhoD1imotjVRAO37yltn3AFuFA09VAHrmM40tmbMSZqjD11CLyfjLDwefQI3F
+MAkGdb3w/LTsN0wzDzTaW5AN8xZvfPbdclu1vuRB90GjSBXltij/wlpeAmfCCMl0
+yaRh9r4B2G8gw5WYDD6wt8OoDigPpq4SQWJg7yWXpEQ5IJsHC+1BzLT/fBZ5YdaM
+CKV5m1iWqG/42DxfiHkSRA/P69uD42zkcUEpCLwHzOzuJUzCK4s9Fuz2u5EScdn1
+bPg4q3NQFzxflyeTuSgt8GFO5nyzo1YxI6CF+H+6Lf12UcsEgfqQ2IjbufbxmJjH
+05hbaLpN2tZrY+rnSLa/uT9xuNP9BC34rt8xiLkgq2hE6aVetvzDr4vwY20XREih
+I9F587u+Kai0Q6Vymywk1qO/NPFIX/tkrpkct4tS/9mRrLYFRmAug8957teboFNV
+ymKRfnE7yBCSeoVActTGRI/dXQ7tMi8RbUr1yQveBuGpntkJZ8Nio5HJHja/93PP
+zigXEAOJAOOlYery0Auq
+=tBoA
+-----END PGP SIGNATURE-----
+
+--8OidD1nqRpVuJku413rV0aUTs0CngQ3Sc--

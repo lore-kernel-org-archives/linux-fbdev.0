@@ -1,83 +1,184 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 15 May 2014 18:34:23 +0000
-Subject: [PATCH 1/4] nouveau: Don't check acpi_video_backlight_support() before registering backlight
-Message-Id: <1400178866-3659-2-git-send-email-hdegoede@redhat.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 08 May 2014 09:27:14 +0000
+Subject: [RFC 3/6] omapdss: DT: Get source endpoint by matching reg-id
+Message-Id: <1399540517-17883-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
+References: <1399540517-17883-1-git-send-email-archit@ti.com>
+In-Reply-To: <1399540517-17883-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
-Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-acpi_video_backlight_support() is supposed to be called by other (vendor
-specific) firmware backlight controls, not by native / raw backlight controls
-like nv_backlight.
+In omapdss_of_find_source_for_first_ep, we retrieve a source endpoint's DT node,
+and then see what omapdss output has the matching device_node pointer in
+omap_dss_find_output_by_node.
 
-Userspace will normally prefer firmware interfaces over raw interfaces, so
-if acpi_video backlight support is present it will use that even if
-nv_backlight is registered as well.
+For all DPI and SDI outputs, the device_node pointer is set as the parent's DSS
+device_node pointer. If the source is one of these outputs, the above method
+won't work.
 
-Except when video.use_native_backlight is present on the kernel cmdline
-(or enabled through a dmi based quirk). As the name indicates the goal here
-is to make only the raw interface available to userspace so that it will use
-that (it only does this when it sees a win8 compliant bios).
+To get the correct output for ports within DSS with the existing omapdss DT
+framework, we check in omapdss_of_find_source_for_first_ep, whether the source
+node is of the DSS parent device. If so, we take an extra step of extracting
+the 'reg' property from the port corresponding to the endpoint source, and get
+the omap_dss_device output by matching both device_node and reg-id.
 
-This is done by:
-1) Not registering any acpi_video# backlight devices; and
-2) Making acpi_video_backlight_support() return true so that other firmware
-drivers, ie acer_wmi, thinkpad_acpi, dell_laptop, etc. Don't register their
-own vender specific interfaces.
+We would want to get rid of this eventually, and support multiple ports in
+general. That would involve making some more changes the omapdss DT
+framework.
 
-Currently nouveau breaks this setup, as when acpi_video_backlight_support()
-returns true, it does not register itself, resulting in no backlight control
-at all.
-
-This is esp. going to be a problem with 3.16 which will default to
-video.use_native_backlight=1, and thus nouveau based laptops with a win8 bios
-will get no backlight control at all.
-
-This also likely explains why the previous attempt to make
-video.use_native_backlight=1 the default was not a success, as without this
-patch having a default of video.use_native_backlight=1 will cause regressions.
-
-Note this effectively reverts commit 5bead799
-
-Also see: https://bugzilla.redhat.com/show_bug.cgi?id93171
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/gpu/drm/nouveau/nouveau_backlight.c | 9 ---------
- 1 file changed, 9 deletions(-)
+ drivers/video/fbdev/omap2/dss/dss-of.c | 41 ++++++++++++++++++++++++++++++----
+ drivers/video/fbdev/omap2/dss/dss.c    |  6 +++++
+ drivers/video/fbdev/omap2/dss/dss.h    |  2 ++
+ drivers/video/fbdev/omap2/dss/output.c | 15 +++++++++++++
+ include/video/omapdss.h                |  6 +++++
+ 5 files changed, 66 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/drm/nouveau/nouveau_backlight.c b/drivers/gpu/drm/nouveau/nouveau_backlight.c
-index 630f6e8..2c1e4aa 100644
---- a/drivers/gpu/drm/nouveau/nouveau_backlight.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_backlight.c
-@@ -31,7 +31,6 @@
-  */
+diff --git a/drivers/video/fbdev/omap2/dss/dss-of.c b/drivers/video/fbdev/omap2/dss/dss-of.c
+index a4b20aa..4261c14 100644
+--- a/drivers/video/fbdev/omap2/dss/dss-of.c
++++ b/drivers/video/fbdev/omap2/dss/dss-of.c
+@@ -19,6 +19,7 @@
+ #include <linux/seq_file.h>
  
- #include <linux/backlight.h>
--#include <linux/acpi.h>
+ #include <video/omapdss.h>
++#include "dss.h"
  
- #include "nouveau_drm.h"
- #include "nouveau_reg.h"
-@@ -222,14 +221,6 @@ nouveau_backlight_init(struct drm_device *dev)
- 	struct nouveau_device *device = nv_device(drm->device);
- 	struct drm_connector *connector;
+ struct device_node *
+ omapdss_of_get_next_port(const struct device_node *parent,
+@@ -142,12 +143,44 @@ omapdss_of_find_source_for_first_ep(struct device_node *node)
  
--#ifdef CONFIG_ACPI
--	if (acpi_video_backlight_support()) {
--		NV_INFO(drm, "ACPI backlight interface available, "
--			     "not registering our own\n");
--		return 0;
--	}
--#endif
+ 	src_node = omapdss_of_get_remote_device_node(ep);
+ 
+-	of_node_put(ep);
 -
- 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
- 		if (connector->connector_type != DRM_MODE_CONNECTOR_LVDS &&
- 		    connector->connector_type != DRM_MODE_CONNECTOR_eDP)
+-	if (!src_node)
++	if (!src_node) {
++		of_node_put(ep);
+ 		return ERR_PTR(-EINVAL);
++	}
+ 
+-	src = omap_dss_find_output_by_node(src_node);
++	/*
++	 * TODO: Find a better solution for this.
++	 *
++	 * DPI and SDI outputs share the same DSS device node. In order to find
++	 * the correct omap_dss_device output, we need to match the reg-id
++	 * property of the DPI/SDI port.
++	 *
++	 * For the special case of device_node being the parent DSS device, make
++	 * sure we check for both device_node and reg-id to get the correct
++	 * source
++	 */
++	if (src_node = dss_device_node()) {
++		struct device_node *src_port;
++		u32 reg;
++		int r;
++
++		src_port = of_parse_phandle(ep, "remote-endpoint", 0);
++
++		/* the parent of the endpoint is always the port node */
++		src_port = of_get_next_parent(src_port);
++
++		r = of_property_read_u32(src_port, "reg", &reg);
++		if (r)
++			reg = 0;
++
++		of_node_put(src_port);
++
++		src = omap_dss_find_output_by_node_and_reg(src_node, reg);
++	} else {
++		src = omap_dss_find_output_by_node(src_node);
++	}
++
++	of_node_put(ep);
+ 
+ 	of_node_put(src_node);
+ 
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index c415029..4087f3b 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -790,6 +790,12 @@ static int __init dss_init_features(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++/* of_node pointer for the DSS parent node */
++struct device_node *dss_device_node(void)
++{
++	return dss.pdev->dev.of_node;
++}
++
+ static int __init dss_init_ports_omap34xx(struct platform_device *pdev)
+ {
+ 	struct device_node *parent = pdev->dev.of_node;
+diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
+index 9f4ee49..6f68f72 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.h
++++ b/drivers/video/fbdev/omap2/dss/dss.h
+@@ -240,6 +240,8 @@ typedef bool (*dss_div_calc_func)(unsigned long fck, void *data);
+ bool dss_div_calc(unsigned long pck, unsigned long fck_min,
+ 		dss_div_calc_func func, void *data);
+ 
++struct device_node *dss_device_node(void);
++
+ /* SDI */
+ int sdi_init_platform_driver(void) __init;
+ void sdi_uninit_platform_driver(void) __exit;
+diff --git a/drivers/video/fbdev/omap2/dss/output.c b/drivers/video/fbdev/omap2/dss/output.c
+index 2ab3afa..2b556f1 100644
+--- a/drivers/video/fbdev/omap2/dss/output.c
++++ b/drivers/video/fbdev/omap2/dss/output.c
+@@ -144,6 +144,21 @@ struct omap_dss_device *omap_dss_find_output_by_node(struct device_node *node)
+ }
+ EXPORT_SYMBOL(omap_dss_find_output_by_node);
+ 
++struct omap_dss_device
++		*omap_dss_find_output_by_node_and_reg(struct device_node *node,
++		u32 reg)
++{
++	struct omap_dss_device *out;
++
++	list_for_each_entry(out, &output_list, list) {
++		if (out->dev->of_node = node && out->reg = reg)
++			return omap_dss_get_device(out);
++	}
++
++	return NULL;
++}
++EXPORT_SYMBOL(omap_dss_find_output_by_node_and_reg);
++
+ struct omap_dss_device *omapdss_find_output_from_display(struct omap_dss_device *dssdev)
+ {
+ 	while (dssdev->src)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 6adb445..7ce2d83 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -789,6 +789,9 @@ struct omap_dss_device {
+ 	/* output instance */
+ 	enum omap_dss_output_id id;
+ 
++	/* the <reg> value in the DT node */
++	int reg;
++
+ 	/* dynamic fields */
+ 	struct omap_overlay_manager *manager;
+ 
+@@ -909,6 +912,9 @@ void omapdss_unregister_output(struct omap_dss_device *output);
+ struct omap_dss_device *omap_dss_get_output(enum omap_dss_output_id id);
+ struct omap_dss_device *omap_dss_find_output(const char *name);
+ struct omap_dss_device *omap_dss_find_output_by_node(struct device_node *node);
++struct omap_dss_device
++		*omap_dss_find_output_by_node_and_reg(struct device_node *node,
++		u32 reg);
+ int omapdss_output_set_device(struct omap_dss_device *out,
+ 		struct omap_dss_device *dssdev);
+ int omapdss_output_unset_device(struct omap_dss_device *out);
 -- 
-1.9.0
+1.8.3.2
 

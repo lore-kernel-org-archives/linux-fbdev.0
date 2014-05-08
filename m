@@ -1,61 +1,105 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 19 May 2014 20:42:32 +0000
-Subject: [PATCHv2 resend 01/11] pwm: add period and polarity to struct pwm_lookup
-Message-Id: <1400532162-29483-2-git-send-email-alexandre.belloni@free-electrons.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 08 May 2014 09:27:17 +0000
+Subject: [RFC 6/6] omapdss: DSS: add reg-id param to dpi_select_source
+Message-Id: <1399540517-17883-6-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1399540517-17883-1-git-send-email-archit@ti.com>
+In-Reply-To: <1399540517-17883-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Adds a period and a polarity member to struct pwm_lookup so that when performing
-a lookup using the lookup table instead of device tree, we are able to set the
-period and the polarity accordingly like what is done in
-of_pwm_xlate_with_flags.
+Add an argument which describes which DPI instance we are referring to when
+selecting it's overlay manager. This will come into use when a DSS version
+supports multiple DPI instances.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/pwm/core.c  | 8 +++++++-
- include/linux/pwm.h | 2 ++
- 2 files changed, 9 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/dpi.c |  2 +-
+ drivers/video/fbdev/omap2/dss/dss.c | 12 ++++++------
+ drivers/video/fbdev/omap2/dss/dss.h |  2 +-
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index a80471399c20..4b66bf09ee55 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -661,10 +661,16 @@ struct pwm_device *pwm_get(struct device *dev, const char *con_id)
- 		}
- 	}
+diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
+index faf266e..def8e68 100644
+--- a/drivers/video/fbdev/omap2/dss/dpi.c
++++ b/drivers/video/fbdev/omap2/dss/dpi.c
+@@ -420,7 +420,7 @@ static int dpi_display_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err_get_dispc;
  
-+	mutex_unlock(&pwm_lookup_lock);
-+
- 	if (chip)
- 		pwm = pwm_request_from_chip(chip, index, con_id ?: dev_id);
-+	if (IS_ERR(pwm))
-+		return pwm;
-+
-+	pwm_set_period(pwm, p->period);
-+	pwm_set_polarity(pwm, p->polarity);
+-	r = dss_dpi_select_source(out->manager->id);
++	r = dss_dpi_select_source(out->reg, out->manager->id);
+ 	if (r)
+ 		goto err_src_sel;
  
--	mutex_unlock(&pwm_lookup_lock);
- 
- 	return pwm;
- }
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 4717f54051cb..2f45e2fe5b93 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -274,6 +274,8 @@ struct pwm_lookup {
- 	unsigned int index;
- 	const char *dev_id;
- 	const char *con_id;
-+	unsigned int period;
-+	enum pwm_polarity polarity;
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 4087f3b..ffa6d84 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -74,7 +74,7 @@ struct dss_features {
+ 	u8 fck_div_max;
+ 	u8 dss_fck_multiplier;
+ 	const char *parent_clk_name;
+-	int (*dpi_select_source)(enum omap_channel channel);
++	int (*dpi_select_source)(int id, enum omap_channel channel);
+ 	int (*init_ports)(struct platform_device *pdev);
+ 	void (*uninit_ports)(struct platform_device *pdev);
  };
+@@ -570,7 +570,7 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void)
+ 	return REG_GET(DSS_CONTROL, 15, 15);
+ }
  
- #define PWM_LOOKUP(_provider, _index, _dev_id, _con_id)	\
+-static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
++static int dss_dpi_select_source_omap2_omap3(int id, enum omap_channel channel)
+ {
+ 	if (channel != OMAP_DSS_CHANNEL_LCD)
+ 		return -EINVAL;
+@@ -578,7 +578,7 @@ static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
+ 	return 0;
+ }
+ 
+-static int dss_dpi_select_source_omap4(enum omap_channel channel)
++static int dss_dpi_select_source_omap4(int id, enum omap_channel channel)
+ {
+ 	int val;
+ 
+@@ -598,7 +598,7 @@ static int dss_dpi_select_source_omap4(enum omap_channel channel)
+ 	return 0;
+ }
+ 
+-static int dss_dpi_select_source_omap5(enum omap_channel channel)
++static int dss_dpi_select_source_omap5(int id, enum omap_channel channel)
+ {
+ 	int val;
+ 
+@@ -624,9 +624,9 @@ static int dss_dpi_select_source_omap5(enum omap_channel channel)
+ 	return 0;
+ }
+ 
+-int dss_dpi_select_source(enum omap_channel channel)
++int dss_dpi_select_source(int id, enum omap_channel channel)
+ {
+-	return dss.feat->dpi_select_source(channel);
++	return dss.feat->dpi_select_source(id, channel);
+ }
+ 
+ static int dss_get_clocks(void)
+diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
+index 6f68f72..f3ddcc9 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.h
++++ b/drivers/video/fbdev/omap2/dss/dss.h
+@@ -209,7 +209,7 @@ int dss_init_platform_driver(void) __init;
+ void dss_uninit_platform_driver(void);
+ 
+ unsigned long dss_get_dispc_clk_rate(void);
+-int dss_dpi_select_source(enum omap_channel channel);
++int dss_dpi_select_source(int id, enum omap_channel channel);
+ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
+ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
+ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
 -- 
-1.9.1
+1.8.3.2
 

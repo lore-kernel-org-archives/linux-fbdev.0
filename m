@@ -1,55 +1,179 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 08 May 2014 09:39:12 +0000
-Subject: Re: [PATCH v2 2/3] ARM: dts: oma3-gta04: Add display support
-Message-Id: <536B50C0.7030002@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="0X6NiaduQ530BqCsLEa230vGmNPsx4d1r"
+From: Alexander Stein <alexander.stein@systec-electronic.com>
+Date: Thu, 08 May 2014 14:38:36 +0000
+Subject: [PATCH v3] video: mx3fb: Add backlight control support
+Message-Id: <1399559916-15183-1-git-send-email-alexander.stein@systec-electronic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398284120-4986-1-git-send-email-marek@goldelico.com>	<1398284120-4986-3-git-send-email-marek@goldelico.com>	<5369DAC6.6050608@ti.com>
- <CAAfyv36L_vh+iwrqsePsF8oOxOJ=JXUAk2nJ6F120w+0ivAn8w@mail.gmail.com>
-In-Reply-To: <CAAfyv36L_vh+iwrqsePsF8oOxOJ=JXUAk2nJ6F120w+0ivAn8w@mail.gmail.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---0X6NiaduQ530BqCsLEa230vGmNPsx4d1r
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+This patch add backlight control support to allow dimming the backlight
+using the internal PWM. Currently the brightness is set fixed to a
+maximum of 255.
 
-On 07/05/14 10:21, Belisko Marek wrote:
+Signed-off-by: Alexander Stein <alexander.stein@systec-electronic.com>
+---
+Changes in v3:
+* Add a more descriptive commit message
 
->> Did you try this on 3.15-rc? The above is not right, and I don't think=
+Changes in v2:
+* rebased to v3.15-rc4
 
->> it works. You need 'port' node for the dpi_out endpoint.
-> This patches was tested against 3.15 series and it works. I'l recheck.
+ drivers/video/fbdev/mx3fb.c | 98 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 98 insertions(+)
 
-Ah, we still have some code that makes that work. But it's against the
-bindings documentations, and that code will be removed. So better add
-the port node.
+diff --git a/drivers/video/fbdev/mx3fb.c b/drivers/video/fbdev/mx3fb.c
+index 142e860..10a7244 100644
+--- a/drivers/video/fbdev/mx3fb.c
++++ b/drivers/video/fbdev/mx3fb.c
+@@ -27,6 +27,7 @@
+ #include <linux/clk.h>
+ #include <linux/mutex.h>
+ #include <linux/dma/ipu-dma.h>
++#include <linux/backlight.h>
+ 
+ #include <linux/platform_data/dma-imx.h>
+ #include <linux/platform_data/video-mx3fb.h>
+@@ -34,6 +35,12 @@
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
+ 
++#if defined(CONFIG_BACKLIGHT_CLASS_DEVICE) || \
++	(defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE) && \
++		defined(CONFIG_MX3FB_MODULE))
++#define PWM_BACKLIGHT_AVAILABLE
++#endif
++
+ #define MX3FB_NAME		"mx3_sdc_fb"
+ 
+ #define MX3FB_REG_OFFSET	0xB4
+@@ -242,6 +249,10 @@ struct mx3fb_data {
+ 	spinlock_t		lock;
+ 	struct device		*dev;
+ 
++#ifdef PWM_BACKLIGHT_AVAILABLE
++	struct backlight_device	*bl;
++#endif
++
+ 	uint32_t		h_start_width;
+ 	uint32_t		v_start_width;
+ 	enum disp_data_mapping	disp_data_fmt;
+@@ -271,6 +282,74 @@ struct mx3fb_info {
+ 	struct fb_var_screeninfo	cur_var; /* current var info */
+ };
+ 
++static void sdc_set_brightness(struct mx3fb_data *mx3fb, uint8_t value);
++
++#ifdef PWM_BACKLIGHT_AVAILABLE
++static u32 sdc_get_brightness(struct mx3fb_data *mx3fb);
++
++static int mx3fb_bl_get_brightness(struct backlight_device *bl)
++{
++	struct mx3fb_data *fbd = bl_get_data(bl);
++
++	return sdc_get_brightness(fbd);
++}
++
++static int mx3fb_bl_update_status(struct backlight_device *bl)
++{
++	struct mx3fb_data *fbd = bl_get_data(bl);
++	int brightness = bl->props.brightness;
++
++	if (bl->props.power != FB_BLANK_UNBLANK)
++		brightness = 0;
++	if (bl->props.fb_blank != FB_BLANK_UNBLANK)
++		brightness = 0;
++
++	fbd->backlight_level = (fbd->backlight_level & ~0xFF) | brightness;
++
++	sdc_set_brightness(fbd, fbd->backlight_level);
++
++	return 0;
++}
++
++static const struct backlight_ops mx3fb_lcdc_bl_ops = {
++	.update_status = mx3fb_bl_update_status,
++	.get_brightness = mx3fb_bl_get_brightness,
++};
++
++static void mx3fb_init_backlight(struct mx3fb_data *fbd)
++{
++	struct backlight_properties props;
++	struct backlight_device	*bl;
++
++	if (fbd->bl)
++		return;
++
++	memset(&props, 0, sizeof(struct backlight_properties));
++	props.max_brightness = 0xff;
++	props.type = BACKLIGHT_RAW;
++	sdc_set_brightness(fbd, fbd->backlight_level);
++
++	bl = backlight_device_register("mx3fb-bl", fbd->dev, fbd,
++				       &mx3fb_lcdc_bl_ops, &props);
++	if (IS_ERR(bl)) {
++		dev_err(fbd->dev, "error %ld on backlight register\n",
++				PTR_ERR(bl));
++		return;
++	}
++
++	fbd->bl = bl;
++	bl->props.power = FB_BLANK_UNBLANK;
++	bl->props.fb_blank = FB_BLANK_UNBLANK;
++	bl->props.brightness = mx3fb_bl_get_brightness(bl);
++}
++
++static void mx3fb_exit_backlight(struct mx3fb_data *fbd)
++{
++	if (fbd->bl)
++		backlight_device_unregister(fbd->bl);
++}
++#endif
++
+ static void mx3fb_dma_done(void *);
+ 
+ /* Used fb-mode and bpp. Can be set on kernel command line, therefore file-static. */
+@@ -628,6 +707,18 @@ static int sdc_set_global_alpha(struct mx3fb_data *mx3fb, bool enable, uint8_t a
+ 	return 0;
+ }
+ 
++#ifdef PWM_BACKLIGHT_AVAILABLE
++static u32 sdc_get_brightness(struct mx3fb_data *mx3fb)
++{
++	u32 brightness;
++
++	brightness = mx3fb_read_reg(mx3fb, SDC_PWM_CTRL);
++	brightness = (brightness >> 16) & 0xFF;
++
++	return brightness;
++}
++#endif
++
+ static void sdc_set_brightness(struct mx3fb_data *mx3fb, uint8_t value)
+ {
+ 	dev_dbg(mx3fb->dev, "%s: value = %d\n", __func__, value);
+@@ -1534,6 +1625,9 @@ static int mx3fb_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		goto eisdc0;
+ 
++#ifdef PWM_BACKLIGHT_AVAILABLE
++	mx3fb_init_backlight(mx3fb);
++#endif
+ 	return 0;
+ 
+ eisdc0:
+@@ -1557,6 +1651,10 @@ static int mx3fb_remove(struct platform_device *dev)
+ 	chan = &mx3_fbi->idmac_channel->dma_chan;
+ 	release_fbi(fbi);
+ 
++#ifdef PWM_BACKLIGHT_AVAILABLE
++	mx3fb_exit_backlight(mx3fb);
++#endif
++
+ 	dma_release_channel(chan);
+ 	dmaengine_put();
+ 
+-- 
+1.8.5.5
 
- Tomi
-
-
-
---0X6NiaduQ530BqCsLEa230vGmNPsx4d1r
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTa1DAAAoJEPo9qoy8lh717lUQAJlZNBw7np66+7mlexo9qudI
-Rkf4xodGxwpdsx9yc6UxayUZ2cllCyM8eMsDsDwzQvtOwMluIY7qa5PrpABTSDcO
-NADo80/NLLDkJCelL2G9Dq61Vb4wLyKTZwqvgYVHJUBan7e0XqrKBNEnB/dHvAGM
-3QeinB+swFc5FQJczNVF2wIAbvUBmQwz2r8oFxheAgewwDO+mf8Jett2wqteU0Rd
-2dajhWOcH4rrIsrv8QfkR9pQKmUlAQMev7gJqAuDpZ0EhakPHvKmgGP6zy/e3f74
-yow8S8r8yPc23Hoj6ZYoPAwFKTrxFH4zUMUiNxP0syheSARg3mhMWaD9l43PQyPy
-PfqlFz4dgnNB94WZjdg8dU+gtR946wWphv1nUsdwCPtUU0C+z/BPolkR+HBIq4+D
-F4HSxTZRLhOCe86uftk1L/0v4PNO6SCcyBcL+7fY0n6s1NU2al7134kEgQJcYs+8
-ruFk1IsH/yKfKM4560VEpRXTmK65wgZ0surfk/+lalfkJKJ1KWWFjJvyVZPKnK6N
-5Ma3Ws2YFJ6V+EgoHf5hthFTBi+gn6YFAAahsq/tnuGRgeV6v1cyN8A+kj4JLnlc
-F2HbjmJX2n+V6G13GmdN8/j7B8XAB4U82izO/JUUIOq7zOv7Zfm0Ki1VJ0L6lnXW
-Jr+ailpb96Z0dfaDAwOk
-=GPMt
------END PGP SIGNATURE-----
-
---0X6NiaduQ530BqCsLEa230vGmNPsx4d1r--

@@ -1,159 +1,141 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 23 May 2014 19:07:57 +0000
-Subject: [PATCH 08/13] ASoC: omap-hdmi: Changes for registeing the driver from OMAPDSS
-Message-Id: <d90dd9819cb2d68b50585dede986f5458f3a85f2.1400871999.git.jsarha@ti.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Thu, 08 May 2014 11:00:30 +0000
+Subject: [PATCH v6 2/2] ARM: vexpress: Add CLCD Device Tree properties
+Message-Id: <1399546830-2931-2-git-send-email-pawel.moll@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1400871999.git.jsarha@ti.com>
-In-Reply-To: <cover.1400871999.git.jsarha@ti.com>
+References: <1399546830-2931-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1399546830-2931-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The old OMAP HDMI audio registering from arch/arm/mach-omap2/devices.c
-was broken. The new approach is to register it from OMAPDSS HDMI
-driver. The commit does the necessary changes for this approach to
-omap-hdmi-dai driver.
+... for V2M-P1 motherboard CLCD (limited to 640x480 16bpp and using
+dedicated video RAM bank) and for V2P-CA9 (up to 1024x768 16bpp).
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Pawel Moll <pawel.moll@arm.com>
 ---
- sound/soc/omap/omap-hdmi.c |   65 ++++++++++++--------------------------------
- 1 file changed, 17 insertions(+), 48 deletions(-)
+ arch/arm/boot/dts/vexpress-v2m-rs1.dtsi | 21 ++++++++++++++++++++-
+ arch/arm/boot/dts/vexpress-v2m.dtsi     | 21 ++++++++++++++++++++-
+ arch/arm/boot/dts/vexpress-v2p-ca9.dts  | 18 ++++++++++++++++++
+ 3 files changed, 58 insertions(+), 2 deletions(-)
 
-diff --git a/sound/soc/omap/omap-hdmi.c b/sound/soc/omap/omap-hdmi.c
-index 537a1ec..ed0a37c 100644
---- a/sound/soc/omap/omap-hdmi.c
-+++ b/sound/soc/omap/omap-hdmi.c
-@@ -35,6 +35,7 @@
- #include <sound/dmaengine_pcm.h>
- #include <video/omapdss.h>
- 
-+#include <sound/omap-hdmi-dai-pdata.h>
- #include "omap-hdmi.h"
- #include "omap-pcm.h"
- 
-@@ -65,7 +66,7 @@ static int omap_hdmi_dai_startup(struct snd_pcm_substream *substream,
- 		return err;
- 	}
- 
--	if (!priv->dssdev->driver->audio_supported(priv->dssdev)) {
-+	if (!priv->dssdev->ops.hdmi->audio_supported(priv->dssdev)) {
- 		dev_err(dai->dev, "audio not supported\n");
- 		return -ENODEV;
- 	}
-@@ -80,7 +81,7 @@ static int omap_hdmi_dai_prepare(struct snd_pcm_substream *substream,
- {
- 	struct hdmi_priv *priv = snd_soc_dai_get_drvdata(dai);
- 
--	return priv->dssdev->driver->audio_enable(priv->dssdev);
-+	return priv->dssdev->ops.hdmi->audio_enable(priv->dssdev);
- }
- 
- static int omap_hdmi_dai_hw_params(struct snd_pcm_substream *substream,
-@@ -206,7 +207,7 @@ static int omap_hdmi_dai_hw_params(struct snd_pcm_substream *substream,
- 	priv->dss_audio.iec = iec;
- 	priv->dss_audio.cea = cea;
- 
--	err = priv->dssdev->driver->audio_config(priv->dssdev,
-+	err = priv->dssdev->ops.hdmi->audio_config(priv->dssdev,
- 						 &priv->dss_audio);
- 
- 	return err;
-@@ -222,12 +223,12 @@ static int omap_hdmi_dai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	case SNDRV_PCM_TRIGGER_START:
- 	case SNDRV_PCM_TRIGGER_RESUME:
- 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
--		err = priv->dssdev->driver->audio_start(priv->dssdev);
-+		err = priv->dssdev->ops.hdmi->audio_start(priv->dssdev);
- 		break;
- 	case SNDRV_PCM_TRIGGER_STOP:
- 	case SNDRV_PCM_TRIGGER_SUSPEND:
- 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
--		priv->dssdev->driver->audio_stop(priv->dssdev);
-+		priv->dssdev->ops.hdmi->audio_stop(priv->dssdev);
- 		break;
- 	default:
- 		err = -EINVAL;
-@@ -240,7 +241,7 @@ static void omap_hdmi_dai_shutdown(struct snd_pcm_substream *substream,
- {
- 	struct hdmi_priv *priv = snd_soc_dai_get_drvdata(dai);
- 
--	priv->dssdev->driver->audio_disable(priv->dssdev);
-+	priv->dssdev->ops.hdmi->audio_disable(priv->dssdev);
- }
- 
- static const struct snd_soc_dai_ops omap_hdmi_dai_ops = {
-@@ -267,10 +268,14 @@ static const struct snd_soc_component_driver omap_hdmi_component = {
- 
- static int omap_hdmi_probe(struct platform_device *pdev)
- {
--	int ret;
--	struct resource *hdmi_rsrc;
-+	struct asoc_omap_hdmi_dai_pdata *pdata = pdev->dev.platform_data;
- 	struct hdmi_priv *hdmi_data;
--	bool hdmi_dev_found = false;
-+	int ret;
+diff --git a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
+index ac870fb..c95a4cb 100644
+--- a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
++++ b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
+@@ -230,9 +230,28 @@
+ 			clcd@1f0000 {
+ 				compatible = "arm,pl111", "arm,primecell";
+ 				reg = <0x1f0000 0x1000>;
++				interrupt-names = "combined";
+ 				interrupts = <14>;
+ 				clocks = <&v2m_oscclk1>, <&smbclk>;
+ 				clock-names = "clcdclk", "apb_pclk";
 +
-+	if (!pdata) {
-+		dev_err(&pdev->dev, "No platform data, bailing out\n");
-+		return -ENODEV;
-+	}
++				arm,pl11x,framebuffer-base = <0x18000000 0x00800000>;
++				arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
++				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
++				display-timings {
++					native-mode = <&v2m_clcd_timing0>;
++					v2m_clcd_timing0: vga {
++						clock-frequency = <25175000>;
++						hactive = <640>;
++						hback-porch = <40>;
++						hfront-porch = <24>;
++						hsync-len = <96>;
++						vactive = <480>;
++						vback-porch = <32>;
++						vfront-porch = <11>;
++						vsync-len = <2>;
++					};
++				};
+ 			};
+ 		};
  
- 	hdmi_data = devm_kzalloc(&pdev->dev, sizeof(*hdmi_data), GFP_KERNEL);
- 	if (hdmi_data = NULL) {
-@@ -278,48 +283,12 @@ static int omap_hdmi_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
+@@ -282,7 +301,7 @@
+ 				/* CLCD clock */
+ 				compatible = "arm,vexpress-osc";
+ 				arm,vexpress-sysreg,func = <1 1>;
+-				freq-range = <23750000 63500000>;
++				freq-range = <23750000 65000000>;
+ 				#clock-cells = <0>;
+ 				clock-output-names = "v2m:oscclk1";
+ 			};
+diff --git a/arch/arm/boot/dts/vexpress-v2m.dtsi b/arch/arm/boot/dts/vexpress-v2m.dtsi
+index f142036..9224834 100644
+--- a/arch/arm/boot/dts/vexpress-v2m.dtsi
++++ b/arch/arm/boot/dts/vexpress-v2m.dtsi
+@@ -229,9 +229,28 @@
+ 			clcd@1f000 {
+ 				compatible = "arm,pl111", "arm,primecell";
+ 				reg = <0x1f000 0x1000>;
++				interrupt-names = "combined";
+ 				interrupts = <14>;
+ 				clocks = <&v2m_oscclk1>, <&smbclk>;
+ 				clock-names = "clcdclk", "apb_pclk";
++
++				arm,pl11x,framebuffer-base = <0x4c000000 0x00800000>;
++				arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
++				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
++				display-timings {
++					native-mode = <&v2m_clcd_timing0>;
++					v2m_clcd_timing0: vga {
++						clock-frequency = <25175000>;
++						hactive = <640>;
++						hback-porch = <40>;
++						hfront-porch = <24>;
++						hsync-len = <96>;
++						vactive = <480>;
++						vback-porch = <32>;
++						vfront-porch = <11>;
++						vsync-len = <2>;
++					};
++				};
+ 			};
+ 		};
  
--	hdmi_rsrc = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!hdmi_rsrc) {
--		dev_err(&pdev->dev, "Cannot obtain IORESOURCE_MEM HDMI\n");
--		return -ENODEV;
--	}
--
--	hdmi_data->dma_data.addr = hdmi_rsrc->start + OMAP_HDMI_AUDIO_DMA_PORT;
--
--	hdmi_rsrc = platform_get_resource(pdev, IORESOURCE_DMA, 0);
--	if (!hdmi_rsrc) {
--		dev_err(&pdev->dev, "Cannot obtain IORESOURCE_DMA HDMI\n");
--		return -ENODEV;
--	}
--
--	hdmi_data->dma_req = hdmi_rsrc->start;
-+	hdmi_data->dma_data.addr = pdata->dma_addr;
-+	hdmi_data->dma_req = pdata->dma_req;
- 	hdmi_data->dma_data.filter_data = &hdmi_data->dma_req;
- 	hdmi_data->dma_data.addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
+@@ -281,7 +300,7 @@
+ 				/* CLCD clock */
+ 				compatible = "arm,vexpress-osc";
+ 				arm,vexpress-sysreg,func = <1 1>;
+-				freq-range = <23750000 63500000>;
++				freq-range = <23750000 65000000>;
+ 				#clock-cells = <0>;
+ 				clock-output-names = "v2m:oscclk1";
+ 			};
+diff --git a/arch/arm/boot/dts/vexpress-v2p-ca9.dts b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
+index 62d9b22..ed4f223 100644
+--- a/arch/arm/boot/dts/vexpress-v2p-ca9.dts
++++ b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
+@@ -70,9 +70,27 @@
+ 	clcd@10020000 {
+ 		compatible = "arm,pl111", "arm,primecell";
+ 		reg = <0x10020000 0x1000>;
++		interrupt-names = "combined";
+ 		interrupts = <0 44 4>;
+ 		clocks = <&oscclk1>, <&oscclk2>;
+ 		clock-names = "clcdclk", "apb_pclk";
++
++		arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
++		max-memory-bandwidth = <94371840>; /* Bps, 1024x768@60 16bpp */
++		display-timings {
++			native-mode = <&clcd_timing0>;
++			clcd_timing0: xga {
++				clock-frequency = <63500127>;
++				hactive = <1024>;
++				hback-porch = <152>;
++				hfront-porch = <48>;
++				hsync-len = <104>;
++				vactive = <768>;
++				vback-porch = <23>;
++				vfront-porch = <3>;
++				vsync-len = <4>;
++			};
++		};
+ 	};
  
--	/*
--	 * TODO: We assume that there is only one DSS HDMI device. Future
--	 * OMAP implementations may support more than one HDMI devices and
--	 * we should provided separate audio support for all of them.
--	 */
--	/* Find an HDMI device. */
--	for_each_dss_dev(hdmi_data->dssdev) {
--		omap_dss_get_device(hdmi_data->dssdev);
--
--		if (!hdmi_data->dssdev->driver) {
--			omap_dss_put_device(hdmi_data->dssdev);
--			continue;
--		}
--
--		if (hdmi_data->dssdev->type = OMAP_DISPLAY_TYPE_HDMI) {
--			hdmi_dev_found = true;
--			break;
--		}
--	}
--
--	if (!hdmi_dev_found) {
--		dev_err(&pdev->dev, "no driver for HDMI display found\n");
--		return -ENODEV;
--	}
-+	hdmi_data->dssdev = pdata->dssdev;
- 
- 	dev_set_drvdata(&pdev->dev, hdmi_data);
- 	ret = snd_soc_register_component(&pdev->dev, &omap_hdmi_component,
+ 	memory-controller@100e0000 {
 -- 
-1.7.9.5
+1.9.1
 

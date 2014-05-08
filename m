@@ -1,84 +1,59 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 08 May 2014 10:41:45 +0000
-Subject: Re: [PATCH] video: exynos: Add a dependency to the menu
-Message-Id: <536B5F69.9000707@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="awshFA4KpAKSGuwpgXg39APmAVsLsuoqf"
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 08 May 2014 09:27:16 +0000
+Subject: [RFC 5/6] omapdss: DPI: make dpi_get_channel take DPI reg-id
+Message-Id: <1399540517-17883-5-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140408120056.57556a00@endymion.delvare>
-In-Reply-To: <20140408120056.57556a00@endymion.delvare>
-To: linux-arm-kernel@lists.infradead.org
+References: <1399540517-17883-1-git-send-email-archit@ti.com>
+In-Reply-To: <1399540517-17883-1-git-send-email-archit@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
---awshFA4KpAKSGuwpgXg39APmAVsLsuoqf
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+To support multiple DPI instances, dpi_get_channel needs to take the DPI
+instance's reg-id to get the corresponding channel. Make it take this
+argument.
 
-On 08/04/14 13:00, Jean Delvare wrote:
-> All drivers under menu EXYNOS_VIDEO depend on either ARCH_S5PV210 or
-> ARCH_EXYNOS, so add these as dependencies to the menu itself. This
-> avoids presenting an empty and useless menu on other architectures.
->=20
-> Then drivers under the menu only need a dependency if they depend on
-> one of the supported architectures specifically.
->=20
-> Signed-off-by: Jean Delvare <jdelvare@suse.de>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> ---
->  drivers/video/exynos/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> --- linux-3.15-rc0.orig/drivers/video/exynos/Kconfig	2014-04-07 10:23:0=
-7.316226676 +0200
-> +++ linux-3.15-rc0/drivers/video/exynos/Kconfig	2014-04-08 11:50:17.406=
-723187 +0200
-> @@ -4,6 +4,7 @@
-> =20
->  menuconfig EXYNOS_VIDEO
->  	bool "Exynos Video driver support"
-> +	depends on ARCH_S5PV210 || ARCH_EXYNOS
->  	help
->  	  This enables support for EXYNOS Video device.
-> =20
-> @@ -15,7 +16,6 @@ if EXYNOS_VIDEO
-> =20
->  config EXYNOS_MIPI_DSI
->  	bool "EXYNOS MIPI DSI driver support."
-> -	depends on ARCH_S5PV210 || ARCH_EXYNOS
->  	select GENERIC_PHY
->  	help
->  	  This enables support for MIPI-DSI device.
->=20
->=20
+We just pass 0 in the non-DT path, since we don't support multiple instances
+in the non-DT case.
 
-I've applied this for 3.16.
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dpi.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
- Tomi
+diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
+index b891e17..faf266e 100644
+--- a/drivers/video/fbdev/omap2/dss/dpi.c
++++ b/drivers/video/fbdev/omap2/dss/dpi.c
+@@ -640,7 +640,7 @@ static void dpi_init_pll(struct dpi_data *dpi)
+  * the channel in some more dynamic manner, or get the channel as a user
+  * parameter.
+  */
+-static enum omap_channel dpi_get_channel(void)
++static enum omap_channel dpi_get_channel(int reg)
+ {
+ 	switch (omapdss_get_version()) {
+ 	case OMAPDSS_VER_OMAP24xx:
+@@ -733,7 +733,7 @@ static void dpi_init_output(struct platform_device *pdev)
+ 	out->id = OMAP_DSS_OUTPUT_DPI;
+ 	out->output_type = OMAP_DISPLAY_TYPE_DPI;
+ 	out->name = "dpi.0";
+-	out->dispc_channel = dpi_get_channel();
++	out->dispc_channel = dpi_get_channel(0);
+ 	out->ops.dpi = &dpi_ops;
+ 	out->owner = THIS_MODULE;
+ 
+@@ -768,7 +768,7 @@ static void dpi_init_output_port(struct platform_device *pdev,
+ 	out->dev = &pdev->dev;
+ 	out->id = OMAP_DSS_OUTPUT_DPI;
+ 	out->output_type = OMAP_DISPLAY_TYPE_DPI;
+-	out->dispc_channel = dpi_get_channel();
++	out->dispc_channel = dpi_get_channel(reg);
+ 	out->ops.dpi = &dpi_ops;
+ 	out->reg = reg;
+ 	out->owner = THIS_MODULE;
+-- 
+1.8.3.2
 
-
-
---awshFA4KpAKSGuwpgXg39APmAVsLsuoqf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTa19pAAoJEPo9qoy8lh713hUP/j6Hk+KNCrL+kHgi8TbCBTIG
-WXAR02qNOltZZsBZmQfyATxcot8OaVqMuS16Kkf3zSDk/u2KA67JX9HPtg/mSe7l
-iLDuT9/uRB5L4HWBHKjsTb8Kkja+Cl8+Gkg0F5sgSStkovEeMiZaJh7hl3xFXgHz
-qWvML01FgAHwwsczhlIT3g8E/HQhqCg90mo1zAp9zam8noqpYDIzLzUnAMWOqmyA
-yzWNmAUaNkYEpP4x8XgSPN0wTOcSAE+eDSOol2YcvwE5S1fpcoeiKpDzlT9uS/k2
-geq7/+hxeCYnsTWSqDYTG36bC4vEoKsooL1u4vnnYVlEajfoK6RZVblKyj6rmMZH
-hPm603K3xA79p68ZD1xdGwCNKYJREaicIwVEVCvXOqPi2WbTOEBdRcKQsk25S0/v
-9BKyeMH24Tpp/MT6jz5gSlHOkxrKGH5VL4ct6ea8IY40nTJJjxcMQQB3RXCdDD4h
-UXM3AwpKqZtFiS3WcrsurgrXyL1wGw43JZS+p36bEBe/akCi6NdnwiFYfn5jCWF9
-DK3UxC5GFDYpTmns0dSfHIYvPT5OojiLSx4a8DLH+lcOQ4FJ//C/5r0MvWRg9uk0
-RK02BC/JojKI+6MC1Ib/8bgF63b/rnyD9FkA02kk/qGV0YlyAGTx9uM0r0aPY770
-IHgLx63RSEEBGGuJCvlS
-=vC2s
------END PGP SIGNATURE-----
-
---awshFA4KpAKSGuwpgXg39APmAVsLsuoqf--

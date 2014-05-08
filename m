@@ -1,476 +1,142 @@
-From: Alexander Shiyan <shc_work@mail.ru>
-Date: Sat, 24 May 2014 05:41:09 +0000
-Subject: [PATCH 1/2] video: clps711x: Add new Cirrus Logic CLPS711X framebuffer driver
-Message-Id: <1400910069-15146-1-git-send-email-shc_work@mail.ru>
+From: Marek Belisko <marek@goldelico.com>
+Date: Thu, 08 May 2014 20:16:50 +0000
+Subject: [PATCH v3 1/3] omapdss: panel-tpo-td028ec1: Add DT support.
+Message-Id: <1399580212-5183-2-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1399580212-5183-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1399580212-5183-1-git-send-email-marek@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-This adds support for the framebuffer available in the Cirrus
-Logic CLPS711X CPUs.
-FB features:
-- 1-2-4 bits per pixel.
-- Programmable panel size to a maximum of 1024x256 at 4 bps.
-- Relocatible Frame Buffer (SRAM or SDRAM).
-- Programmable refresh rates.
-- 16 gray scale values.
-This new driver is designed to usage with devicetree only.
-The driver have been tested with custom board equipped
-Cirrus Logic EP7312.
-
-Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+Signed-off-by: Marek Belisko <marek@goldelico.com>
 ---
- drivers/video/fbdev/Kconfig       |  15 ++
- drivers/video/fbdev/Makefile      |   1 +
- drivers/video/fbdev/clps711x-fb.c | 393 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 409 insertions(+)
- create mode 100644 drivers/video/fbdev/clps711x-fb.c
+ .../bindings/video/toppoly,td028ttec1.txt          | 30 ++++++++++++++++++++
+ arch/arm/mach-omap2/display.c                      |  1 +
+ .../omap2/displays-new/panel-tpo-td028ttec1.c      | 32 +++++++++++++++++++++-
+ 3 files changed, 62 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 59c98bf..c97b059 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -304,6 +304,7 @@ config FB_ACORN
- config FB_CLPS711X
- 	bool "CLPS711X LCD support"
- 	depends on (FB = y) && ARM && ARCH_CLPS711X
-+	depends on !ARCH_MULTIPLATFORM
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -311,6 +312,20 @@ config FB_CLPS711X
- 	  Say Y to enable the Framebuffer driver for the CLPS7111 and
- 	  EP7212 processors.
- 
-+config FB_CLPS711XDT
-+	tristate "CLPS711X LCD support"
-+	depends on FB && (ARCH_CLPS711X || COMPILE_TEST)
-+	select BACKLIGHT_LCD_SUPPORT
-+	select FB_MODE_HELPERS
-+	select FB_SYS_FILLRECT
-+	select FB_SYS_COPYAREA
-+	select FB_SYS_IMAGEBLIT
-+	select LCD_CLASS_DEVICE
-+	select VIDEOMODE_HELPERS
-+	help
-+	  Say Y to enable the Framebuffer driver for the Cirrus Logic
-+	  CLPS711X CPUs.
-+
- config FB_SA1100
- 	bool "SA-1100 LCD support"
- 	depends on (FB = y) && ARM && ARCH_SA1100
-diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
-index 0284f2a..102bded 100644
---- a/drivers/video/fbdev/Makefile
-+++ b/drivers/video/fbdev/Makefile
-@@ -15,6 +15,7 @@ obj-$(CONFIG_FB_WMT_GE_ROPS)   += wmt_ge_rops.o
- obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p_planar.o
- obj-$(CONFIG_FB_ARC)              += arcfb.o
- obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o
-+obj-$(CONFIG_FB_CLPS711XDT)	  += clps711x-fb.o
- obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o
- obj-$(CONFIG_FB_GRVGA)            += grvga.o
- obj-$(CONFIG_FB_PM2)              += pm2fb.o
-diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
+diff --git a/Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt b/Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
 new file mode 100644
-index 0000000..8513c06
+index 0000000..7175dc3
 --- /dev/null
-+++ b/drivers/video/fbdev/clps711x-fb.c
-@@ -0,0 +1,393 @@
-+/*
-+ * Cirrus Logic CLPS711X FB driver
-+ *
-+ * Copyright (C) 2014 Alexander Shiyan <shc_work@mail.ru>
-+ * Based on driver by Russell King <rmk@arm.linux.org.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
++++ b/Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
+@@ -0,0 +1,30 @@
++Toppoly TD028TTEC1 Panel
++============
 +
-+#include <linux/clk.h>
-+#include <linux/fb.h>
-+#include <linux/io.h>
-+#include <linux/lcd.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/mfd/syscon/clps711x.h>
-+#include <linux/regulator/consumer.h>
-+#include <video/of_display_timing.h>
++Required properties:
++- compatible: "toppoly,td028ttec1"
 +
-+#define CLPS711X_FB_NAME	"clps711x-fb"
-+#define CLPS711X_FB_BPP_MAX	(4)
++Optional properties:
++- label: a symbolic name for the panel
 +
-+/* Registers relative to LCDCON */
-+#define CLPS711X_LCDCON		(0x0000)
-+# define LCDCON_GSEN		BIT(30)
-+# define LCDCON_GSMD		BIT(31)
-+#define CLPS711X_PALLSW		(0x0280)
-+#define CLPS711X_PALMSW		(0x02c0)
-+#define CLPS711X_FBADDR		(0x0d40)
++Required nodes:
++- Video port for DPI input
 +
-+struct clps711x_fb_info {
-+	struct clk		*clk;
-+	void __iomem		*base;
-+	struct regmap		*syscon;
-+	resource_size_t		buffsize;
-+	struct fb_videomode	mode;
-+	struct regulator	*lcd_pwr;
-+	u32			ac_prescale;
-+	bool			cmap_invert;
++Example
++-------
++
++lcd-panel: td028ttec1@0 {
++	compatible = "toppoly,td028ttec1";
++	reg = <0>;
++	spi-max-frequency = <100000>;
++	spi-cpol;
++	spi-cpha;
++
++	label = "lcd";
++	port {
++		lcd_in: endpoint {
++			remote-endpoint = <&dpi_out>;
++		};
++	};
 +};
 +
-+static int clps711x_fb_setcolreg(u_int regno, u_int red, u_int green,
-+				 u_int blue, u_int transp, struct fb_info *info)
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 16d33d8..66a2ee0 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -566,6 +566,7 @@ static const char * const dss_compat_conv_list[] __initconst = {
+ 	"svideo-connector",
+ 	"ti,tfp410",
+ 	"ti,tpd12s015",
++	"toppoly,td028ttec1",
+ };
+ 
+ /* prepend compatible string with "omapdss," */
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c b/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c
+index fae6adc..5b3466e 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-tpo-td028ttec1.c
+@@ -206,7 +206,8 @@ static int td028ttec1_panel_enable(struct omap_dss_device *dssdev)
+ 	if (omapdss_device_is_enabled(dssdev))
+ 		return 0;
+ 
+-	in->ops.dpi->set_data_lines(in, ddata->data_lines);
++	if (ddata->data_lines)
++		in->ops.dpi->set_data_lines(in, ddata->data_lines);
+ 	in->ops.dpi->set_timings(in, &ddata->videomode);
+ 
+ 	r = in->ops.dpi->enable(in);
+@@ -389,6 +390,23 @@ static int td028ttec1_panel_probe_pdata(struct spi_device *spi)
+ 	return 0;
+ }
+ 
++static int td028ttec1_probe_of(struct spi_device *spi)
 +{
-+	struct clps711x_fb_info *cfb = info->par;
-+	u32 level, mask, shift;
++	struct device_node *node = spi->dev.of_node;
++	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
++	struct omap_dss_device *in;
 +
-+	if (regno >= BIT(info->var.bits_per_pixel))
-+		return -EINVAL;
-+
-+	shift = 4 * (regno & 7);
-+	mask  = 0xf << shift;
-+	/* gray = 0.30*R + 0.58*G + 0.11*B */
-+	level = (((red * 77 + green * 151 + blue * 28) >> 20) << shift) & mask;
-+	if (cfb->cmap_invert)
-+		level = 0xf - level;
-+
-+	regno = (regno < 8) ? CLPS711X_PALLSW : CLPS711X_PALMSW;
-+
-+	writel((readl(cfb->base + regno) & ~mask) | level, cfb->base + regno);
-+
-+	return 0;
-+}
-+
-+static int clps711x_fb_check_var(struct fb_var_screeninfo *var,
-+				 struct fb_info *info)
-+{
-+	u32 val;
-+
-+	if (var->bits_per_pixel < 1 ||
-+	    var->bits_per_pixel > CLPS711X_FB_BPP_MAX)
-+		return -EINVAL;
-+
-+	if (!var->pixclock)
-+		return -EINVAL;
-+
-+	val = DIV_ROUND_UP(var->xres, 16) - 1;
-+	if (val < 0x01 || val > 0x3f)
-+		return -EINVAL;
-+
-+	val = DIV_ROUND_UP(var->yres * var->xres * var->bits_per_pixel, 128);
-+	val--;
-+	if (val < 0x001 || val > 0x1fff)
-+		return -EINVAL;
-+
-+	var->transp.msb_right	= 0;
-+	var->transp.offset	= 0;
-+	var->transp.length	= 0;
-+	var->red.msb_right	= 0;
-+	var->red.offset		= 0;
-+	var->red.length		= var->bits_per_pixel;
-+	var->green		= var->red;
-+	var->blue		= var->red;
-+	var->grayscale		= var->bits_per_pixel > 1;
-+
-+	return 0;
-+}
-+
-+static int clps711x_fb_set_par(struct fb_info *info)
-+{
-+	struct clps711x_fb_info *cfb = info->par;
-+	resource_size_t size;
-+	u32 lcdcon, pps;
-+
-+	size = (info->var.xres * info->var.yres * info->var.bits_per_pixel) / 8;
-+	if (size > cfb->buffsize)
-+		return -EINVAL;
-+
-+	switch (info->var.bits_per_pixel) {
-+	case 1:
-+		info->fix.visual = FB_VISUAL_MONO01;
-+		break;
-+	case 2:
-+	case 4:
-+		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
-+		break;
-+	default:
-+		return -EINVAL;
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&spi->dev, "failed to find video source\n");
++		return PTR_ERR(in);
 +	}
 +
-+	info->fix.line_length = info->var.xres * info->var.bits_per_pixel / 8;
-+	info->fix.smem_len = size;
-+
-+	lcdcon = (info->var.xres * info->var.yres *
-+		  info->var.bits_per_pixel) / 128 - 1;
-+	lcdcon |= ((info->var.xres / 16) - 1) << 13;
-+	lcdcon |= (cfb->ac_prescale & 0x1f) << 25;
-+
-+	pps = clk_get_rate(cfb->clk) / (PICOS2KHZ(info->var.pixclock) * 1000);
-+	if (pps)
-+		pps--;
-+	lcdcon |= (pps & 0x3f) << 19;
-+
-+	if (info->var.bits_per_pixel = 4)
-+		lcdcon |= LCDCON_GSMD;
-+	if (info->var.bits_per_pixel >= 2)
-+		lcdcon |= LCDCON_GSEN;
-+
-+	/* LCDCON must only be changed while the LCD is disabled */
-+	regmap_update_bits(cfb->syscon, SYSCON_OFFSET, SYSCON1_LCDEN, 0);
-+	writel(lcdcon, cfb->base + CLPS711X_LCDCON);
-+	regmap_update_bits(cfb->syscon, SYSCON_OFFSET,
-+			   SYSCON1_LCDEN, SYSCON1_LCDEN);
++	ddata->in = in;
 +
 +	return 0;
 +}
 +
-+static int clps711x_fb_blank(int blank, struct fb_info *info)
-+{
-+	/* Return happy */
-+	return 0;
-+}
-+
-+static struct fb_ops clps711x_fb_ops = {
-+	.owner		= THIS_MODULE,
-+	.fb_setcolreg	= clps711x_fb_setcolreg,
-+	.fb_check_var	= clps711x_fb_check_var,
-+	.fb_set_par	= clps711x_fb_set_par,
-+	.fb_blank	= clps711x_fb_blank,
-+	.fb_fillrect	= sys_fillrect,
-+	.fb_copyarea	= sys_copyarea,
-+	.fb_imageblit	= sys_imageblit,
+ static int td028ttec1_panel_probe(struct spi_device *spi)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -418,6 +436,10 @@ static int td028ttec1_panel_probe(struct spi_device *spi)
+ 		r = td028ttec1_panel_probe_pdata(spi);
+ 		if (r)
+ 			return r;
++	} else if (spi->dev.of_node) {
++		r = td028ttec1_probe_of(spi);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -463,6 +485,13 @@ static int td028ttec1_panel_remove(struct spi_device *spi)
+ 	return 0;
+ }
+ 
++static const struct of_device_id td028ttec1_of_match[] = {
++	{ .compatible = "omapdss,toppoly,td028ttec1", },
++	{},
 +};
 +
-+static int clps711x_lcd_check_fb(struct lcd_device *lcddev, struct fb_info *fi)
-+{
-+	struct clps711x_fb_info *cfb = dev_get_drvdata(&lcddev->dev);
++MODULE_DEVICE_TABLE(of, td028ttec1_of_match);
 +
-+	return (!fi || fi->par = cfb) ? 1 : 0;
-+}
-+
-+static int clps711x_lcd_get_power(struct lcd_device *lcddev)
-+{
-+	struct clps711x_fb_info *cfb = dev_get_drvdata(&lcddev->dev);
-+
-+	if (!IS_ERR_OR_NULL(cfb->lcd_pwr))
-+		return regulator_is_enabled(cfb->lcd_pwr);
-+
-+	return 1;
-+}
-+
-+static int clps711x_lcd_set_power(struct lcd_device *lcddev, int power)
-+{
-+	struct clps711x_fb_info *cfb = dev_get_drvdata(&lcddev->dev);
-+
-+	if (!IS_ERR_OR_NULL(cfb->lcd_pwr)) {
-+		if (power)
-+			return regulator_enable(cfb->lcd_pwr);
-+		else
-+			return regulator_disable(cfb->lcd_pwr);
-+	}
-+
-+	return 0;
-+}
-+
-+static struct lcd_ops clps711x_lcd_ops = {
-+	.check_fb	= clps711x_lcd_check_fb,
-+	.get_power	= clps711x_lcd_get_power,
-+	.set_power	= clps711x_lcd_set_power,
-+};
-+
-+static int clps711x_fb_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct device_node *disp, *np = dev->of_node;
-+	struct clps711x_fb_info *cfb;
-+	struct lcd_device *lcd;
-+	struct fb_info *info;
-+	struct resource *res;
-+	int ret = -ENOENT;
-+	u32 val;
-+
-+	if (fb_get_options(CLPS711X_FB_NAME, NULL))
-+		return -ENODEV;
-+
-+	info = framebuffer_alloc(sizeof(*cfb), dev);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	cfb = info->par;
-+	platform_set_drvdata(pdev, info);
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res)
-+		goto out_fb_release;
-+	cfb->base = devm_ioremap(dev, res->start, resource_size(res));
-+	if (!cfb->base) {
-+		ret = -ENOMEM;
-+		goto out_fb_release;
-+	}
-+
-+	info->fix.mmio_start = res->start;
-+	info->fix.mmio_len = resource_size(res);
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+	info->screen_base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(info->screen_base)) {
-+		ret = PTR_ERR(info->screen_base);
-+		goto out_fb_release;
-+	}
-+
-+	/* Physical address should be aligned to 256 MiB */
-+	if (res->start & 0x0fffffff) {
-+		ret = -EINVAL;
-+		goto out_fb_release;
-+	}
-+
-+	info->apertures = alloc_apertures(1);
-+	if (!info->apertures) {
-+		ret = -ENOMEM;
-+		goto out_fb_release;
-+	}
-+
-+	cfb->buffsize = resource_size(res);
-+	info->fix.smem_start = res->start;
-+	info->apertures->ranges[0].base = info->fix.smem_start;
-+	info->apertures->ranges[0].size = cfb->buffsize;
-+
-+	cfb->clk = devm_clk_get(dev, NULL);
-+	if (IS_ERR(cfb->clk)) {
-+		ret = PTR_ERR(cfb->clk);
-+		goto out_fb_release;
-+	}
-+
-+	cfb->syscon +		syscon_regmap_lookup_by_compatible("cirrus,clps711x-syscon1");
-+	if (IS_ERR(cfb->syscon)) {
-+		ret = PTR_ERR(cfb->syscon);
-+		goto out_fb_release;
-+	}
-+
-+	disp = of_parse_phandle(np, "display", 0);
-+	if (!disp) {
-+		dev_err(&pdev->dev, "No display defined\n");
-+		ret = -ENODATA;
-+		goto out_fb_release;
-+	}
-+
-+	ret = of_get_fb_videomode(disp, &cfb->mode, OF_USE_NATIVE_MODE);
-+	if (ret)
-+		goto out_fb_release;
-+
-+	of_property_read_u32(disp, "ac-prescale", &cfb->ac_prescale);
-+	cfb->cmap_invert = of_property_read_bool(disp, "cmap-invert");
-+
-+	ret = of_property_read_u32(disp, "bits-per-pixel",
-+				   &info->var.bits_per_pixel);
-+	if (ret)
-+		goto out_fb_release;
-+
-+	/* Force disable LCD on any mismatch */
-+	if (info->fix.smem_start != (readb(cfb->base + CLPS711X_FBADDR) << 28))
-+		regmap_update_bits(cfb->syscon, SYSCON_OFFSET,
-+				   SYSCON1_LCDEN, 0);
-+
-+	ret = regmap_read(cfb->syscon, SYSCON_OFFSET, &val);
-+	if (ret)
-+		goto out_fb_release;
-+
-+	if (!(val & SYSCON1_LCDEN)) {
-+		/* Setup start FB address */
-+		writeb(info->fix.smem_start >> 28, cfb->base + CLPS711X_FBADDR);
-+		/* Clean FB memory */
-+		memset(info->screen_base, 0, cfb->buffsize);
-+	}
-+
-+	cfb->lcd_pwr = devm_regulator_get(dev, "lcd");
-+	if (PTR_ERR(cfb->lcd_pwr) = -EPROBE_DEFER) {
-+		ret = -EPROBE_DEFER;
-+		goto out_fb_release;
-+	}
-+
-+	info->fbops = &clps711x_fb_ops;
-+	info->flags = FBINFO_DEFAULT;
-+	info->var.activate = FB_ACTIVATE_FORCE | FB_ACTIVATE_NOW;
-+	info->var.height = -1;
-+	info->var.width = -1;
-+	info->var.vmode = FB_VMODE_NONINTERLACED;
-+	info->fix.type = FB_TYPE_PACKED_PIXELS;
-+	info->fix.accel = FB_ACCEL_NONE;
-+	strlcpy(info->fix.id, CLPS711X_FB_NAME, sizeof(info->fix.id));
-+	fb_videomode_to_var(&info->var, &cfb->mode);
-+
-+	ret = fb_alloc_cmap(&info->cmap, BIT(CLPS711X_FB_BPP_MAX), 0);
-+	if (ret)
-+		goto out_fb_release;
-+
-+	ret = fb_set_var(info, &info->var);
-+	if (ret)
-+		goto out_fb_dealloc_cmap;
-+
-+	ret = register_framebuffer(info);
-+	if (ret)
-+		goto out_fb_dealloc_cmap;
-+
-+	lcd = devm_lcd_device_register(dev, "clps711x-lcd", dev, cfb,
-+				       &clps711x_lcd_ops);
-+	if (!IS_ERR(lcd))
-+		return 0;
-+	
-+	ret = PTR_ERR(lcd);
-+	unregister_framebuffer(info);
-+
-+out_fb_dealloc_cmap:
-+	regmap_update_bits(cfb->syscon, SYSCON_OFFSET, SYSCON1_LCDEN, 0);
-+	fb_dealloc_cmap(&info->cmap);
-+
-+out_fb_release:
-+	framebuffer_release(info);
-+
-+	return ret;
-+}
-+
-+static int clps711x_fb_remove(struct platform_device *pdev)
-+{
-+	struct fb_info *info = platform_get_drvdata(pdev);
-+	struct clps711x_fb_info *cfb = info->par;
-+
-+	regmap_update_bits(cfb->syscon, SYSCON_OFFSET, SYSCON1_LCDEN, 0);
-+
-+	unregister_framebuffer(info);
-+	fb_dealloc_cmap(&info->cmap);
-+	framebuffer_release(info);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id clps711x_fb_dt_ids[] = {
-+	{ .compatible = "cirrus,clps711x-fb", },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, clps711x_fb_dt_ids);
-+
-+static struct platform_driver clps711x_fb_driver = {
-+	.driver	= {
-+		.name		= CLPS711X_FB_NAME,
-+		.owner		= THIS_MODULE,
-+		.of_match_table	= clps711x_fb_dt_ids,
-+	},
-+	.probe	= clps711x_fb_probe,
-+	.remove	= clps711x_fb_remove,
-+};
-+module_platform_driver(clps711x_fb_driver);
-+
-+MODULE_AUTHOR("Alexander Shiyan <shc_work@mail.ru>");
-+MODULE_DESCRIPTION("Cirrus Logic CLPS711X FB driver");
-+MODULE_LICENSE("GPL");
+ static struct spi_driver td028ttec1_spi_driver = {
+ 	.probe		= td028ttec1_panel_probe,
+ 	.remove		= td028ttec1_panel_remove,
+@@ -470,6 +499,7 @@ static struct spi_driver td028ttec1_spi_driver = {
+ 	.driver         = {
+ 		.name   = "panel-tpo-td028ttec1",
+ 		.owner  = THIS_MODULE,
++		.of_match_table = td028ttec1_of_match,
+ 	},
+ };
+ 
 -- 
-1.8.5.5
+1.9.1
 

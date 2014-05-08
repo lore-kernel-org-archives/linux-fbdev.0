@@ -1,55 +1,50 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Fri, 23 May 2014 14:46:17 +0000
-Subject: Re: [PATCH 00/19] Rework OMAP4+ HDMI audio support
-Message-Id: <20140523144617.GD2321@atomide.com>
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Date: Thu, 08 May 2014 08:27:08 +0000
+Subject: =?UTF-8?B?UmU6IFtQQVRDSCB2MiAxLzNdIHZpZGVvOiBjbHBzNzExeDogQWRkIG5ldyBD?= =?UTF-8?B?aXJydXMgTG9naWMgQ
+Message-Id: <1399537628.931417387@f405.i.mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>
- <20140512150616.GF31772@atomide.com>
- <537F2ACD.6030603@ti.com>
-In-Reply-To: <537F2ACD.6030603@ti.com>
+References: <1398327006.501536964@f133.i.mail.ru>
+In-Reply-To: <1398327006.501536964@f133.i.mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, detheridge@ti.com
+To: linux-fbdev@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [140523 04:03]:
-> On 12/05/14 18:06, Tony Lindgren wrote:
-> > * Jyri Sarha <jsarha@ti.com> [140512 02:13]:
-> >> Since RFC version of the patch set: 
-> >> - Split callbacks removal patch away from "Integrated ASoC DAI
-> >>   component driver implementation" patches for easier reading
-> >>
-> >> This set of patches fixes OMAP4+ HDMI audio. The structure of the
-> >> implementatin looks a bit different than before. Instead of creating a
-> >> driver specific API for a separate ASoC component driver to connect
-> >> to, this implementation integrates an the component driver into the
-> >> HDMI driver.
-> >>
-> >> The idea is to use an existing ASoC component driver API instead of
-> >> creating a new custom API for each HDMI IP and to avoid splitting the
-> >> driver to half for separate video and audio parts connected with the
-> >> API.
-> >>
-> >> The new implementation also uses simple-audio-card for a machine
-> >> driver instead of having its own HW specific machine driver.
-> > 
-> > Can you guys please post this split into the following separate
-> > parts for the maintainers to merge:
-> > 
-> > - ASoC changes
-> > - DSS changes
-> > - DTS changes
-> > 
-> > And once those are all in, please post the defconfig changes.
-> 
-> Tony, this series will get delayed until 3.17, but I'd like to merge the
-> HDMI DMA channel changes to omap4/omap5.dtsi already to 3.16. They are
-> patches 13 and 15.
-> 
-> Those are very trivial, but I'd rather have acks from you for all the
-> .dts changes I'll be sending.
-
-OK fine with me:
-
-Acked-by: Tony Lindgren <tony@atomide.com>
+V2VkLCA3IE1heSAyMDE0IDEyOjQwOjQ5ICswMzAwINC+0YIgVG9taSBWYWxrZWluZW4gPHRvbWku
+dmFsa2VpbmVuQHRpLmNvbT46Cj4gT24gMzAvMDQvMTQgMTU6MzYsIEFsZXhhbmRlciBTaGl5YW4g
+d3JvdGU6Cj4gCj4gPj4gSG1tIHdoYXQ/IFNvIGlzIHRoZSBvbGQgZHJpdmVyIHRvdGFsbHkgYnJv
+a2VuLCBhbmQgY2Fubm90IGJlIHVzZWQgYXQgdGhlCj4gPj4gbW9tZW50PyBPciB3aHkgeW91IGNh
+bid0IHRlc3Qgb24gcmVhbCBoYXJkd2FyZT8KPiA+IAo+ID4gRmlyc3RseSwgdGhlIGRyaXZlciB1
+c2VzIGEgZml4ZWQgdmFsdWVzIGZvciB4cmVzLCB5cmVzLCBwaXhjbG9jayBhbmQgc3BlY2lmaWMK
+PiA+IHZhcmlhYmxlIGFjX3ByZWNhbGUuCj4gPiBTZWNvbmRseSwgdGhlIGRyaXZlciB1c2VzIGEg
+Zml4ZWQgdmFsdWUgZm9yIHRoZSBwaHlzaWNhbCBhZGRyZXNzIG9mIHRoZSBidWZmZXIuCj4gPiBU
+b3RhbGx5LCBpdCBkb2VzIG5vdCBnaXZlIG1lIHRoZSBhYmlsaXR5IHRvIHVzZSB0aGUgZHJpdmVy
+IGluIHRoZSBjdXJyZW50IHN0YXRlLgo+ID4gVW5saWtlbHkgdGhhdCB0aGlzIHdpbGwgbG9vayBn
+b29kIGlmIEkgbWFrZSB0aGVzZSB0d28gc2lnbmlmaWNhbnQgY2hhbmdlcyBpbgo+ID4gYSBzaW5n
+bGUgcGF0Y2guLi4KPiA+IAo+ID4gQXQgdGhpcyB0aW1lIHRoZSBkcml2ZXIgaGFzIHRocmVlIHVz
+ZXIuCj4gPiBPbmx5IG9uZSBvZiB0aGVtIHNob3VsZCB0aGVvcmV0aWNhbGx5IHdvcmsuCj4gPiBj
+bHBzNzExeC1hdXRjcHUxMiBzaG91bGQgbm90IHdvcmsgaW4gdGhlIGFic2VuY2Ugb2YgbWVtYmxv
+Y2tfcmVzZXJ2ZSgpLgo+ID4gY2xwczcxMXgtcDcyMHQgc2hvdWxkIG5vdCB3b3JrIGR1ZSB0byBw
+aHlzaWNhbCBhZGRyZXNzIGxpbWl0YXRpb24gYXMgaQo+ID4gbm90aWNlZCBiZWZvcmUuIEJvYXJk
+IG1lYW5zIHRvIHVzZSBTUkFNIGluc3RlYWQgb2YgU0RSQU0uCj4gPiBPbmx5IGNscHM3MTF4LWVk
+YjcyMTEgc2hvdWxkIHdvcmsgZmluZSAoaW4gdGhlb3J5KS4KPiA+IElzIHRoaXMgYSBnb29kIHJl
+YXNvbiB0byByZXBsYWNlIHRoZSBkcml2ZXI/IEkgdGhpbmsgeWVzLgo+IAo+IE9rLCBpZiB0aGUg
+c2l0dWF0aW9uIGlzIHRoYXQgYmFkLCBtYXliZSB3ZSBjYW4ganVzdCBzd2l0Y2ggdG8gdGhlIG5l
+dwo+IGRyaXZlci4gSGF2ZSB5b3UgdmVyaWZpZWQgdGhhdCB0aG9zZSBib2FyZHMgZG8gbm90IHdv
+cmsgZnJvbSBhbnlvbmU/IE9yCj4gYXNrZWQgc29tZW9uZSB0byB0ZXN0IHRoZSBuZXcgZHJpdmVy
+IHdpdGggdGhvc2UgYm9hcmRzPwoKSSdtIG5vdCBmYW1pbGlhciB3aXRoIG90aGVyIHVzZXJzIG9m
+IHRoaXMgcGxhdGZvcm0gLgpJIGFtIGRvIG5vdCBoYXZlIHRoZXNlIGJvYXJkcywgYWxsIHRoYXQg
+SSBoYXZlIHdyaXR0ZW4gYmVmb3JlIHRoYXQgaXQncyBqdXN0IGEgdGhlb3J5LgpGaXJtIGluIHdo
+aWNoIEkgd29yaywgdXNlcyBpdHMgb3duIGJvYXJkIHdpdGggQ0xQUzcxMVggQ1BVICwgdGhpcyBi
+b2FyZCBpcyB0aGUKb25seSB3YXkgdG8gY2hlY2sgZm9yIGNoYW5nZXMgb24gcmVhbCBoYXJkd2Fy
+ZSAuCgo+IEknbSBzdGlsbCBub3QgcmVhbGx5IGhhcHB5IGFib3V0IGl0LCBhbmQgSSdkIG11Y2gg
+cmF0aGVyIHNlZSB0aGUgY3VycmVudAo+IGRyaXZlciBmaXhlZC4gQnV0IGlmIG5vIG9uZSBoYXZp
+bmcgdGhvc2UgYm9hcmRzIGlzIHVwIHRvIHRoZSB0YXNrCj4gKHByb2JhYmx5IG5vdCBpZiB0aGV5
+IGhhdmUgbm90IGJlZW4gd29ya2luZyBhdCBhbGwpLCBtYXliZSBqdXN0IGRpdGNoaW5nCj4gdGhl
+IG9sZCBkcml2ZXIgYW5kIGFkZGluZyBhIG5ldyBpcyB0aGUgb25seSB3YXkgZm9yd2FyZC4KPiAK
+PiBPbmUgY2hhbmdlIHRoYXQgSSB0aGluayB3b3VsZCBiZSBnb29kIGlzIHRvIGNoYW5nZSB0aGUg
+c2VyaWVzIHRvIGZpcnN0Cj4gcmVtb3ZlIHRoZSBvbGQgZHJpdmVyLCBhbmQgdGhlbiBhZGQgdGhl
+IG5ldyBvbmUsIHdpdGggdGhlIHNhbWUgZmlsZSBuYW1lCj4gYXMgdGhlIG9sZCBvbmUuIFRoYXQg
+d2F5IGdpdCBsb2cgd2lsbCBzaG93IHRoZSBoaXN0b3J5IGZvciBib3RoIHRoZSBuZXcKPiBhbmQg
+dGhlIG9sZCBkcml2ZXIuCgpJbiB0aGlzIGNhc2UgZ2l0LWJpc2VjdCB3aWxsIGJlIGJyb2tlbi4g
+SXMgdGhpcyBPSz8KCi0tLQoK

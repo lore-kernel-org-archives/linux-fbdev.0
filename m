@@ -1,155 +1,84 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Mon, 12 May 2014 09:12:14 +0000
-Subject: [PATCH 03/19] OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
-Message-Id: <c467e814144cd16e4e9f6180064a0f27b9adaf19.1399884780.git.jsarha@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 08 May 2014 10:41:45 +0000
+Subject: Re: [PATCH] video: exynos: Add a dependency to the menu
+Message-Id: <536B5F69.9000707@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="awshFA4KpAKSGuwpgXg39APmAVsLsuoqf"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>
-In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+References: <20140408120056.57556a00@endymion.delvare>
+In-Reply-To: <20140408120056.57556a00@endymion.delvare>
+To: linux-arm-kernel@lists.infradead.org
 
-Removes the OMAP4 HDMI audio callbacks for an external audio driver and
-the old external DAI driver does not work anymore after this patch.
+--awshFA4KpAKSGuwpgXg39APmAVsLsuoqf
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- drivers/video/fbdev/omap2/dss/hdmi4.c |  113 ---------------------------------
- 1 file changed, 113 deletions(-)
+On 08/04/14 13:00, Jean Delvare wrote:
+> All drivers under menu EXYNOS_VIDEO depend on either ARCH_S5PV210 or
+> ARCH_EXYNOS, so add these as dependencies to the menu itself. This
+> avoids presenting an empty and useless menu on other architectures.
+>=20
+> Then drivers under the menu only need a dependency if they depend on
+> one of the supported architectures specifically.
+>=20
+> Signed-off-by: Jean Delvare <jdelvare@suse.de>
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> ---
+>  drivers/video/exynos/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> --- linux-3.15-rc0.orig/drivers/video/exynos/Kconfig	2014-04-07 10:23:0=
+7.316226676 +0200
+> +++ linux-3.15-rc0/drivers/video/exynos/Kconfig	2014-04-08 11:50:17.406=
+723187 +0200
+> @@ -4,6 +4,7 @@
+> =20
+>  menuconfig EXYNOS_VIDEO
+>  	bool "Exynos Video driver support"
+> +	depends on ARCH_S5PV210 || ARCH_EXYNOS
+>  	help
+>  	  This enables support for EXYNOS Video device.
+> =20
+> @@ -15,7 +16,6 @@ if EXYNOS_VIDEO
+> =20
+>  config EXYNOS_MIPI_DSI
+>  	bool "EXYNOS MIPI DSI driver support."
+> -	depends on ARCH_S5PV210 || ARCH_EXYNOS
+>  	select GENERIC_PHY
+>  	help
+>  	  This enables support for MIPI-DSI device.
+>=20
+>=20
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index 626aad2..71f9175 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -509,112 +509,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
- 	return r;
- }
- 
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	int r;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi_wp_audio_enable(&hdmi.wp, true);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--	hdmi_wp_audio_enable(&hdmi.wp, false);
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return hdmi4_audio_start(&hdmi.core, &hdmi.wp);
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--	hdmi4_audio_stop(&hdmi.core, &hdmi.wp);
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	bool r;
--
--	mutex_lock(&hdmi.lock);
--
--	r = hdmi_mode_has_audio(hdmi.cfg.cm.mode);
--
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	int r;
--	u32 pclk = hdmi.cfg.timings.pixelclock;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi4_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--#else
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	return false;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	return -EPERM;
--}
--#endif
--
- static const struct omapdss_hdmi_ops hdmi_ops = {
- 	.connect		= hdmi_connect,
- 	.disconnect		= hdmi_disconnect,
-@@ -627,13 +521,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
- 	.get_timings		= hdmi_display_get_timings,
- 
- 	.read_edid		= hdmi_read_edid,
--
--	.audio_enable		= hdmi_audio_enable,
--	.audio_disable		= hdmi_audio_disable,
--	.audio_start		= hdmi_audio_start,
--	.audio_stop		= hdmi_audio_stop,
--	.audio_supported	= hdmi_audio_supported,
--	.audio_config		= hdmi_audio_config,
- };
- 
- static void hdmi_init_output(struct platform_device *pdev)
--- 
-1.7.9.5
+I've applied this for 3.16.
 
+ Tomi
+
+
+
+--awshFA4KpAKSGuwpgXg39APmAVsLsuoqf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTa19pAAoJEPo9qoy8lh713hUP/j6Hk+KNCrL+kHgi8TbCBTIG
+WXAR02qNOltZZsBZmQfyATxcot8OaVqMuS16Kkf3zSDk/u2KA67JX9HPtg/mSe7l
+iLDuT9/uRB5L4HWBHKjsTb8Kkja+Cl8+Gkg0F5sgSStkovEeMiZaJh7hl3xFXgHz
+qWvML01FgAHwwsczhlIT3g8E/HQhqCg90mo1zAp9zam8noqpYDIzLzUnAMWOqmyA
+yzWNmAUaNkYEpP4x8XgSPN0wTOcSAE+eDSOol2YcvwE5S1fpcoeiKpDzlT9uS/k2
+geq7/+hxeCYnsTWSqDYTG36bC4vEoKsooL1u4vnnYVlEajfoK6RZVblKyj6rmMZH
+hPm603K3xA79p68ZD1xdGwCNKYJREaicIwVEVCvXOqPi2WbTOEBdRcKQsk25S0/v
+9BKyeMH24Tpp/MT6jz5gSlHOkxrKGH5VL4ct6ea8IY40nTJJjxcMQQB3RXCdDD4h
+UXM3AwpKqZtFiS3WcrsurgrXyL1wGw43JZS+p36bEBe/akCi6NdnwiFYfn5jCWF9
+DK3UxC5GFDYpTmns0dSfHIYvPT5OojiLSx4a8DLH+lcOQ4FJ//C/5r0MvWRg9uk0
+RK02BC/JojKI+6MC1Ib/8bgF63b/rnyD9FkA02kk/qGV0YlyAGTx9uM0r0aPY770
+IHgLx63RSEEBGGuJCvlS
+=vC2s
+-----END PGP SIGNATURE-----
+
+--awshFA4KpAKSGuwpgXg39APmAVsLsuoqf--

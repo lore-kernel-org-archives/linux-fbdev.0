@@ -1,73 +1,132 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 23 May 2014 10:31:55 +0000
-Subject: Re: [PATCH] video: of: display_timing: fix default native-mode setting
-Message-Id: <537F239B.9010504@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="d4UQeRwg49oKxoqsXg4gdUoXgSrU0m7Lm"
+From: Marek Belisko <marek@goldelico.com>
+Date: Thu, 08 May 2014 20:16:51 +0000
+Subject: [PATCH v3 2/3] ARM: dts: oma3-gta04: Add display support
+Message-Id: <1399580212-5183-3-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399643592-17125-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1399643592-17125-1-git-send-email-boris.brezillon@free-electrons.com>
-To: Boris BREZILLON <boris.brezillon@free-electrons.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1399580212-5183-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1399580212-5183-1-git-send-email-marek@goldelico.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---d4UQeRwg49oKxoqsXg4gdUoXgSrU0m7Lm
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch add support for lcd display on gta04 board. Display control
+is connected to spi (used spi bitbang driver).
 
-On 09/05/14 16:53, Boris BREZILLON wrote:
-> Set native mode to the first child node of the display-timings node and=
- not
-> the first child node of the display-timings parent node.
->=20
-> Signed-off-by: Boris BREZILLON <boris.brezillon@free-electrons.com>
-> ---
->  drivers/video/of_display_timing.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_displ=
-ay_timing.c
-> index ba5b40f..19dd752 100644
-> --- a/drivers/video/of_display_timing.c
-> +++ b/drivers/video/of_display_timing.c
-> @@ -164,7 +164,7 @@ struct display_timings *of_get_display_timings(stru=
-ct device_node *np)
->  	entry =3D of_parse_phandle(timings_np, "native-mode", 0);
->  	/* assume first child as native mode if none provided */
->  	if (!entry)
-> -		entry =3D of_get_next_child(np, NULL);
-> +		entry =3D of_get_next_child(timings_np, NULL);
->  	/* if there is no child, it is useless to go on */
->  	if (!entry) {
->  		pr_err("%s: no timing specifications given\n",
->=20
+Signed-off-by: Marek Belisko <marek@goldelico.com>
+---
+ arch/arm/boot/dts/omap3-gta04.dts | 87 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 87 insertions(+)
 
-Queued for 3.16.
+diff --git a/arch/arm/boot/dts/omap3-gta04.dts b/arch/arm/boot/dts/omap3-gta04.dts
+index f8ad125..eb9ab1a 100644
+--- a/arch/arm/boot/dts/omap3-gta04.dts
++++ b/arch/arm/boot/dts/omap3-gta04.dts
+@@ -44,6 +44,36 @@
+ 		ti,mcbsp = <&mcbsp2>;
+ 		ti,codec = <&twl_audio>;
+ 	};
++
++	spi_lcd {
++		compatible = "spi-gpio";
++		#address-cells = <0x1>;
++		#size-cells = <0x0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&spi_gpio_pins>;
++
++		gpio-sck = <&gpio1 12 0>;
++		gpio-miso = <&gpio1 18 0>;
++		gpio-mosi = <&gpio1 20 0>;
++		cs-gpios = <&gpio1 19 0>;
++		num-chipselects = <1>;
++
++		/* lcd panel */
++		lcd: td028ttec1@0 {
++			compatible = "toppoly,td028ttec1";
++			reg = <0>;
++			spi-max-frequency = <100000>;
++			spi-cpol;
++			spi-cpha;
++
++			label = "lcd";
++			port {
++				lcd_in: endpoint {
++					remote-endpoint = <&dpi_out>;
++				};
++			};
++		};
++	};
+ };
+ 
+ &omap3_pmx_core {
+@@ -78,6 +108,47 @@
+ 			0x11e (PIN_INPUT_PULLUP | MUX_MODE0)	/* sdmmc1_dat3.sdmmc1_dat3 */
+ 		>;
+ 	};
++
++	dss_dpi_pins: pinmux_dss_dpi_pins {
++               pinctrl-single,pins = <
++                       0x0a4 (PIN_OUTPUT | MUX_MODE0)   /* dss_pclk.dss_pclk */
++                       0x0a6 (PIN_OUTPUT | MUX_MODE0)   /* dss_hsync.dss_hsync */
++                       0x0a8 (PIN_OUTPUT | MUX_MODE0)   /* dss_vsync.dss_vsync */
++                       0x0aa (PIN_OUTPUT | MUX_MODE0)   /* dss_acbias.dss_acbias */
++                       0x0ac (PIN_OUTPUT | MUX_MODE0)   /* dss_data0.dss_data0 */
++                       0x0ae (PIN_OUTPUT | MUX_MODE0)   /* dss_data1.dss_data1 */
++                       0x0b0 (PIN_OUTPUT | MUX_MODE0)   /* dss_data2.dss_data2 */
++                       0x0b2 (PIN_OUTPUT | MUX_MODE0)   /* dss_data3.dss_data3 */
++                       0x0b4 (PIN_OUTPUT | MUX_MODE0)   /* dss_data4.dss_data4 */
++                       0x0b6 (PIN_OUTPUT | MUX_MODE0)   /* dss_data5.dss_data5 */
++                       0x0b8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data6.dss_data6 */
++                       0x0ba (PIN_OUTPUT | MUX_MODE0)   /* dss_data7.dss_data7 */
++                       0x0bc (PIN_OUTPUT | MUX_MODE0)   /* dss_data8.dss_data8 */
++                       0x0be (PIN_OUTPUT | MUX_MODE0)   /* dss_data9.dss_data9 */
++                       0x0c0 (PIN_OUTPUT | MUX_MODE0)   /* dss_data10.dss_data10 */
++                       0x0c2 (PIN_OUTPUT | MUX_MODE0)   /* dss_data11.dss_data11 */
++                       0x0c4 (PIN_OUTPUT | MUX_MODE0)   /* dss_data12.dss_data12 */
++                       0x0c6 (PIN_OUTPUT | MUX_MODE0)   /* dss_data13.dss_data13 */
++                       0x0c8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data14.dss_data14 */
++                       0x0ca (PIN_OUTPUT | MUX_MODE0)   /* dss_data15.dss_data15 */
++                       0x0cc (PIN_OUTPUT | MUX_MODE0)   /* dss_data16.dss_data16 */
++                       0x0ce (PIN_OUTPUT | MUX_MODE0)   /* dss_data17.dss_data17 */
++                       0x0d0 (PIN_OUTPUT | MUX_MODE0)   /* dss_data18.dss_data18 */
++                       0x0d2 (PIN_OUTPUT | MUX_MODE0)   /* dss_data19.dss_data19 */
++                       0x0d4 (PIN_OUTPUT | MUX_MODE0)   /* dss_data20.dss_data20 */
++                       0x0d6 (PIN_OUTPUT | MUX_MODE0)   /* dss_data21.dss_data21 */
++                       0x0d8 (PIN_OUTPUT | MUX_MODE0)   /* dss_data22.dss_data22 */
++                       0x0da (PIN_OUTPUT | MUX_MODE0)   /* dss_data23.dss_data23 */
++               >;
++       };
++
++	spi_gpio_pins: spi_gpio_pinmux {
++		pinctrl-single,pins = <0x5a8 (PIN_OUTPUT | MUX_MODE4) /* clk */
++			0x5b6 (PIN_OUTPUT | MUX_MODE4) /* cs */
++			0x5b8 (PIN_OUTPUT | MUX_MODE4) /* tx */
++			0x5b4 (PIN_INPUT | MUX_MODE4) /* rx */
++		>;
++	};
+ };
+ 
+ &i2c1 {
+@@ -219,3 +290,19 @@
+ 	regulator-min-microvolt = <2800000>;
+ 	regulator-max-microvolt = <3150000>;
+ };
++
++&dss {
++	pinctrl-names = "default";
++	pinctrl-0 = < &dss_dpi_pins >;
++
++	status = "okay";
++
++	vdds_dsi-supply = <&vpll2>;
++
++	port {
++		dpi_out: endpoint {
++			remote-endpoint = <&lcd_in>;
++			data-lines = <24>;
++		};
++	};
++};
+-- 
+1.9.1
 
- Tomi
-
-
-
---d4UQeRwg49oKxoqsXg4gdUoXgSrU0m7Lm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTfyOhAAoJEPo9qoy8lh71uMcQAKB0BbU+4iPV+Sp99XZGMapt
-HVWxnoYwQkyZsbJVltI3O7WTRRJMXEuHpOizraUKBz5yQgHd9BPcqRInswyzoSsM
-/9U8TNDoYlU9g6uglbUC08gupOeC4PIqLt6whECle9w1WstatbYNSKBAOGKnI6Rm
-OhNkKCQY0aRVb63j4EXwaoDo8+LclslsYQMqqqiFiWvSN8swT5eOWD2wiDOFLY2V
-btsQKbn4B7c7TZNUQWSGzV4UjZ82bnj6vn3GeMgRG+wKUaBujte/qJdDNP1hnrkK
-sqmDEgYzmtLcNCHPLsam20PiY3BRpZxZ59wvspy8mlPHD7iDqUAETNbjumU97a/Q
-meGjOtxPe0GlmZ7wcmwiCfI3tWTDdRmighv+N+TFTukjDsCqzxUFfGjJuZV+rIYq
-BgiJsgboAB2ZPDgE0QHzbsL89gVFh1C1IwS+yS9ocv6DvGwPJeiOZFliaNWnAz2e
-9DWJcsjnHkuQ+OKmfJ/3pBwFIWF0bvSu72/olVXDag6WpLqgL1HZB4ntW2dLSQdu
-WqFsa01dzbhbVI2zcptT1mnGV4jGwleWRc8X760b9+Mo+dQn0sOL7aSC5w2Dz519
-gM39rSOtbyuV/wvuTAm5dJP9j0m63wj4er2ahyGLQoEp0orpWscyCHIUfT1+uRRU
-RBocjUMWfGBbYDy9s7sh
-=pyiQ
------END PGP SIGNATURE-----
-
---d4UQeRwg49oKxoqsXg4gdUoXgSrU0m7Lm--

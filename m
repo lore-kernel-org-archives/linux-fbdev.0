@@ -1,156 +1,269 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 14 May 2014 06:41:26 +0000
-Subject: Re: [PATCH 1/4] OMAPDSS: Fix DSS clock multiplier issue on 3703 and probably 3630
-Message-Id: <53731016.8020103@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="o4rrmRDoDogx8XTQ1MwgADa2j0BLfKlan"
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 08 May 2014 09:27:13 +0000
+Subject: [RFC 2/6] omapdss: add init port functions for different omap revs
+Message-Id: <1399540517-17883-2-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398815562-24113-1-git-send-email-tony@atomide.com>
- <1398815562-24113-2-git-send-email-tony@atomide.com>
- <536C860E.1000501@ti.com> <20140509143703.GA17814@atomide.com>
- <5370B222.7050702@ti.com> <20140512143934.GC31772@atomide.com>
- <5370DE42.2060607@ti.com> <20140513152626.GB16837@atomide.com>
-In-Reply-To: <20140513152626.GB16837@atomide.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1399540517-17883-1-git-send-email-archit@ti.com>
+In-Reply-To: <1399540517-17883-1-git-send-email-archit@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
---o4rrmRDoDogx8XTQ1MwgADa2j0BLfKlan
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+The init/uninit port functions are used to set up the DPI and SDI outputs under
+the dss platform device. A 'reg' property is used to determine whether the node
+is DPI or SDI for OMAP34xx DSS revision. For other DSS revisions, only DPI
+output exists.
 
-On 13/05/14 18:26, Tony Lindgren wrote:
-> * Tomi Valkeinen <tomi.valkeinen@ti.com> [140512 07:45]:
->> On 12/05/14 17:39, Tony Lindgren wrote:
->>> * Tomi Valkeinen <tomi.valkeinen@ti.com> [140512 04:36]:
->>>> On 09/05/14 17:37, Tony Lindgren wrote:
->>>>>
->>>>> This is just the 3730-evm with the Sharp VGA panel mentioned in
->>>>> this series.
->>>>
->>>> Hmm, well, those both look fine. The fck is well below the maximum,
->>>> which is somewhere around 170MHz-180MHz. The lck/pck ratio is higher=
+For multiple DPI output instances(introduced in DRA7xx DSS), we would use the
+'reg' property to specify the DPI output number.
 
->>>> with this patch, but that should affect the GFX overlay.
->>>>
->>>> So you're just booting, and there are no applications that use the
->>>> framebuffer? And there is no rotation or such configured?
->>>
->>> Right. The rotation is set to 3 though.
->>
->> Hmm, that's probably the issue then. VRFB rotation is very heavy on th=
-e
->> memory bandwidth, and is generally a very easy way to get sync lost er=
-rors.
->=20
-> I found another case without rotation where the error always triggers.
-> By forcing 3730-evm LCD panel to QVGA mode it always seems to happen
-> even without rotation.
->=20
-> Without this patch with errors and no image:
->=20
-> # cat /sys/kernel/debug/omapdss/clk=20
-> [   55.185729] DSS: dss_runtime_get
-> [   55.189422] DSS: dss_runtime_put
-> [   55.192810] DISPC: dispc_runtime_get
-> [   55.196685] DISPC: dispc_runtime_put
-> - DSS -
-> DSS_FCK (DSS1_ALWON_FCLK) =3D 27000000
-> - DISPC -
-> dispc fclk source =3D DSS_FCK (DSS1_ALWON_FCLK)
-> fck             27000000       =20
-> - LCD -
-> LCD clk source =3D DSS_FCK (DSS1_ALWON_FCLK)
-> lck             27000000        lck div 1
-> pck             5400000         pck div 5
->=20
-> With this patch without errors and penguin showing:
->=20
-> # cat /sys/kernel/debug/omapdss/clk
-> [   19.905792] DSS: dss_runtime_get
-> [   19.909545] DSS: dss_runtime_put
-> [   19.912933] DISPC: dispc_runtime_get
-> [   19.916778] DISPC: dispc_runtime_put
-> - DSS -
-> DSS_FCK (DSS1_ALWON_FCLK) =3D 108000000
-> - DISPC -
-> dispc fclk source =3D DSS_FCK (DSS1_ALWON_FCLK)
-> fck             108000000      =20
-> - LCD -
-> LCD clk source =3D DSS_FCK (DSS1_ALWON_FCLK)
-> lck             108000000       lck div 1
-> pck             5400000         pck div 20
->=20
-> In this case the errors are different too:
->=20
-> DISPC: channel 0 xres 240 yres 320
-> DISPC: pck 5400000
-> DISPC: hsw 3 hfp 3 hbp 39 vsw 1 vfp 2 vbp 7
-> DISPC: vsync_level 1 hsync_level 1 data_pclk_edge 1 de_level 0 sync_pcl=
-k_edge 0
-> DISPC: hsync 18947Hz, vsync 57Hz
-> DISPC: lck =3D 27000000 (1)
-> DISPC: pck =3D 5400000 (5)
-> APPLY: DISPC IRQ: 0x60: GFX_FIFO_UNDERFLOW=20
-> APPLY: DISPC IRQ: 0x4062: GFX_FIFO_UNDERFLOW SYNC_LOST=20
-> DISPC: dispc_runtime_get
-> omapdss APPLY error: FIFO UNDERFLOW on gfx, disabling the overlay
+The current functions work fine if there is only one DPI output instance in
+DSS. For multiple DPI instances, it would get complicated to figure out whether
+'reg' is used to specify whether the output is SDI, or a later DPI instance.
 
-I'm quite out of ideas... The pixel clock is so low that underflow
-shouldn't really happen. I was trying to find 3730 documentation that
-would describe the PRCM's multipliers and dividers for DSS (i.e. the
-ones you change in this patch), but I didn't find anything.
+Create DSS revision specific init/uninit_port functions such that we have a
+separate functions for OMAP34xx, this helps us deal with the SDI case
+separately.
 
-Maybe the DSS clock's fixed multiplier has been changed for 3730. But in
-that case our .dts files related to the clocks are wrong too. The clock
-nodes related to this are dpll4_m4x2_mul_ck, which is corresponds to the
-"dss_fck_multiplier" value in omapdss, and dpll4_m4_ck, which
-corresponds to the "fck_div_max" value.
+Also, make the uninit_port functions iterative since we will have multiple DPI
+ports in the future.
 
-One thing to try out is, without this patch, change
-CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK to force the dss func clock higher.
-With QVGA mode, you could try, say, value of 19, which should make sure
-the fck is at least 19 times higher than pck.
+dpi_uninit_port/sdi_uninit_port functions have to be removed from the exit
+section as dss_features(which is initconst data) uses it, this prevents the
+section mismatch.
 
-> Regarding rotation, it does look like that with VGA mode enabling
-> rotation makes the error trigger quite often on 3730.
-> =20
->> will handle it fine with the clock rates and bandwidth usage you have
->> for your use cases.
->=20
-> I don't think it's all because of rotation. And rotating my head
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dpi.c |  2 +-
+ drivers/video/fbdev/omap2/dss/dss.c | 88 ++++++++++++++++++++++++++++++++++---
+ drivers/video/fbdev/omap2/dss/dss.h |  4 +-
+ drivers/video/fbdev/omap2/dss/sdi.c |  2 +-
+ 4 files changed, 86 insertions(+), 10 deletions(-)
 
-No, probably not. The pixel clocks are so low that the rotation should
-work fine. Except if there's something wrong the the VRFB or the memory
-bus, which make the VRFB rotation not work even with low pixel clocks.
+diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
+index 157921d..6593c8b 100644
+--- a/drivers/video/fbdev/omap2/dss/dpi.c
++++ b/drivers/video/fbdev/omap2/dss/dpi.c
+@@ -765,7 +765,7 @@ err_datalines:
+ 	return r;
+ }
+ 
+-void __exit dpi_uninit_port(void)
++void dpi_uninit_port(struct platform_device *pdev, struct device_node *port)
+ {
+ 	if (!dpi.port_initialized)
+ 		return;
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 31ef262..c415029 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -65,12 +65,18 @@ struct dss_reg {
+ 
+ static int dss_runtime_get(void);
+ static void dss_runtime_put(void);
++static int __init dss_init_ports(struct platform_device *pdev);
++static int __init dss_init_ports_omap34xx(struct platform_device *pdev);
++static void dss_uninit_ports(struct platform_device *pdev);
++static void dss_uninit_ports_omap34xx(struct platform_device *pdev);
+ 
+ struct dss_features {
+ 	u8 fck_div_max;
+ 	u8 dss_fck_multiplier;
+ 	const char *parent_clk_name;
+ 	int (*dpi_select_source)(enum omap_channel channel);
++	int (*init_ports)(struct platform_device *pdev);
++	void (*uninit_ports)(struct platform_device *pdev);
+ };
+ 
+ static struct {
+@@ -698,6 +704,8 @@ static const struct dss_features omap24xx_dss_feats __initconst = {
+ 	.dss_fck_multiplier	=	2,
+ 	.parent_clk_name	=	"core_ck",
+ 	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
++	.init_ports		=	&dss_init_ports,
++	.uninit_ports		=	&dss_uninit_ports,
+ };
+ 
+ static const struct dss_features omap34xx_dss_feats __initconst = {
+@@ -705,6 +713,8 @@ static const struct dss_features omap34xx_dss_feats __initconst = {
+ 	.dss_fck_multiplier	=	2,
+ 	.parent_clk_name	=	"dpll4_ck",
+ 	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
++	.init_ports		=	&dss_init_ports_omap34xx,
++	.uninit_ports		=	&dss_uninit_ports_omap34xx,
+ };
+ 
+ static const struct dss_features omap3630_dss_feats __initconst = {
+@@ -712,6 +722,8 @@ static const struct dss_features omap3630_dss_feats __initconst = {
+ 	.dss_fck_multiplier	=	1,
+ 	.parent_clk_name	=	"dpll4_ck",
+ 	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
++	.init_ports		=	&dss_init_ports,
++	.uninit_ports		=	&dss_uninit_ports,
+ };
+ 
+ static const struct dss_features omap44xx_dss_feats __initconst = {
+@@ -719,6 +731,8 @@ static const struct dss_features omap44xx_dss_feats __initconst = {
+ 	.dss_fck_multiplier	=	1,
+ 	.parent_clk_name	=	"dpll_per_x2_ck",
+ 	.dpi_select_source	=	&dss_dpi_select_source_omap4,
++	.init_ports		=	&dss_init_ports,
++	.uninit_ports		=	&dss_uninit_ports,
+ };
+ 
+ static const struct dss_features omap54xx_dss_feats __initconst = {
+@@ -726,6 +740,8 @@ static const struct dss_features omap54xx_dss_feats __initconst = {
+ 	.dss_fck_multiplier	=	1,
+ 	.parent_clk_name	=	"dpll_per_x2_ck",
+ 	.dpi_select_source	=	&dss_dpi_select_source_omap5,
++	.init_ports		=	&dss_init_ports,
++	.uninit_ports		=	&dss_uninit_ports,
+ };
+ 
+ static int __init dss_init_features(struct platform_device *pdev)
+@@ -774,7 +790,7 @@ static int __init dss_init_features(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int __init dss_init_ports(struct platform_device *pdev)
++static int __init dss_init_ports_omap34xx(struct platform_device *pdev)
+ {
+ 	struct device_node *parent = pdev->dev.of_node;
+ 	struct device_node *port;
+@@ -809,15 +825,75 @@ static int __init dss_init_ports(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static void dss_uninit_ports(void)
++static int __init dss_init_ports(struct platform_device *pdev)
+ {
++	struct device_node *parent = pdev->dev.of_node;
++	struct device_node *port;
++
++	if (parent = NULL)
++		return 0;
++
++	port = omapdss_of_get_next_port(parent, NULL);
++	if (!port)
++		return 0;
++
++	do {
+ #ifdef CONFIG_OMAP2_DSS_DPI
+-	dpi_uninit_port();
++			dpi_init_port(pdev, port);
++#endif
++	} while ((port = omapdss_of_get_next_port(parent, port)) != NULL);
++
++	return 0;
++}
++
++static void dss_uninit_ports_omap34xx(struct platform_device *pdev)
++{
++	struct device_node *parent = pdev->dev.of_node;
++	struct device_node *port;
++	int r;
++
++	if (parent = NULL)
++		return;
++
++	port = omapdss_of_get_next_port(parent, NULL);
++	if (!port)
++		return;
++
++	do {
++		u32 reg;
++
++		r = of_property_read_u32(port, "reg", &reg);
++		if (r)
++			reg = 0;
++
++#ifdef CONFIG_OMAP2_DSS_DPI
++		if (reg = 0)
++			dpi_uninit_port(pdev, port);
+ #endif
+ 
+ #ifdef CONFIG_OMAP2_DSS_SDI
+-	sdi_uninit_port();
++		if (reg = 1)
++			sdi_uninit_port();
+ #endif
++	} while ((port = omapdss_of_get_next_port(parent, port)) != NULL);
++}
++
++static void dss_uninit_ports(struct platform_device *pdev)
++{
++	struct device_node *parent = pdev->dev.of_node;
++	struct device_node *port;
++
++	if (parent = NULL)
++		return;
++
++	port = omapdss_of_get_next_port(parent, NULL);
++	if (!port)
++		return;
++	do {
++#ifdef CONFIG_OMAP2_DSS_DPI
++			dpi_uninit_port(pdev, port);
++#endif
++	} while ((port = omapdss_of_get_next_port(parent, port)) != NULL);
+ }
+ 
+ /* DSS HW IP initialisation */
+@@ -878,7 +954,7 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
+ 	dss.lcd_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
+ 	dss.lcd_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
+ 
+-	dss_init_ports(pdev);
++	dss.feat->init_ports(pdev);
+ 
+ 	rev = dss_read_reg(DSS_REVISION);
+ 	printk(KERN_INFO "OMAP DSS rev %d.%d\n",
+@@ -899,7 +975,7 @@ err_setup_clocks:
+ 
+ static int __exit omap_dsshw_remove(struct platform_device *pdev)
+ {
+-	dss_uninit_ports();
++	dss.feat->uninit_ports(pdev);
+ 
+ 	pm_runtime_disable(&pdev->dev);
+ 
+diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
+index 560078f..9f4ee49 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.h
++++ b/drivers/video/fbdev/omap2/dss/dss.h
+@@ -245,7 +245,7 @@ int sdi_init_platform_driver(void) __init;
+ void sdi_uninit_platform_driver(void) __exit;
+ 
+ int sdi_init_port(struct platform_device *pdev, struct device_node *port) __init;
+-void sdi_uninit_port(void) __exit;
++void sdi_uninit_port(void);
+ 
+ /* DSI */
+ 
+@@ -359,7 +359,7 @@ int dpi_init_platform_driver(void) __init;
+ void dpi_uninit_platform_driver(void) __exit;
+ 
+ int dpi_init_port(struct platform_device *pdev, struct device_node *port) __init;
+-void dpi_uninit_port(void) __exit;
++void dpi_uninit_port(struct platform_device *pdev, struct device_node *port);
+ 
+ /* DISPC */
+ int dispc_init_platform_driver(void) __init;
+diff --git a/drivers/video/fbdev/omap2/dss/sdi.c b/drivers/video/fbdev/omap2/dss/sdi.c
+index 911dcc9..71a3083 100644
+--- a/drivers/video/fbdev/omap2/dss/sdi.c
++++ b/drivers/video/fbdev/omap2/dss/sdi.c
+@@ -424,7 +424,7 @@ err_datapairs:
+ 	return r;
+ }
+ 
+-void __exit sdi_uninit_port(void)
++void sdi_uninit_port(void)
+ {
+ 	if (!sdi.port_initialized)
+ 		return;
+-- 
+1.8.3.2
 
-> makes my neck hurt!
-
-You need to learn to hold the device a bit differently!
-
- Tomi
-
-
-
---o4rrmRDoDogx8XTQ1MwgADa2j0BLfKlan
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTcxAWAAoJEPo9qoy8lh71wikQAKeAseU9vrnBHAXNn3aNLT0R
-nT/+PSiXWFTjLooYDEESTm0bRUi+Aj168d8Cz/J028a6NEhsxNFsR1XG7PpIs9c8
-DXWGjy9GTTRGrjCi/DEjuqOWQVmEdWvzZCeUkB97azDMb0PVze7fAztUwNiaF2Lk
-RFxQahwEs7dMSwBryDCOKHrflWac8myuwlY8QeV0Wlu5FIg1KvqF0+cHPdUzdX4e
-4ZKeqY9opLsbC9I15fMbS2v2/gCvYqYsfd7SbvWqsDGuWxfe3iqs3RGMHOHQgsJw
-KHBFih4cW/fdCbOMM2avDzFQoFdn5cvDrmTdEfE6gI9a+01Zw7UswCzi8JQ5ubKy
-g+iZ/pJxnup+iTn3kO2X9lkVowxXcidP/72+yDNatP2/3V2VYG3b76YZ/Ge0Ct23
-Yfn44a7B+DqZrztAKTnr+sq877HamlUr6pjdblHiNkasC7tQyRMUqh9ibTV/sioZ
-ag/V8pFlSRxQeYRX/PTIcvCIf0McFImKPs7r3XjDx+6PCFlXETb/mEeYQFIWRYOR
-+0CiG+NntNGxyHTma+yU/VQP6tRBGI2oGdCG3moaXrE94JFi22ryYNidgmgED0ub
-cn7MLdbBzKMgmM4pRu+Y2DreXfA3KzWIVCa/gSz7tRTX74f7XcaQred1GoJ+VkVQ
-Msm1+4jvU5m8H19M1oJQ
-=hMuw
------END PGP SIGNATURE-----
-
---o4rrmRDoDogx8XTQ1MwgADa2j0BLfKlan--

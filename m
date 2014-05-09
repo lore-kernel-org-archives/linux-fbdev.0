@@ -1,105 +1,96 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 08 May 2014 09:27:17 +0000
-Subject: [RFC 6/6] omapdss: DSS: add reg-id param to dpi_select_source
-Message-Id: <1399540517-17883-6-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 09 May 2014 12:32:06 +0000
+Subject: [PATCH 4/5] OMAPDSS: connector-hdmi: hpd support
+Message-Id: <1399638727-23254-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399540517-17883-1-git-send-email-archit@ti.com>
-In-Reply-To: <1399540517-17883-1-git-send-email-archit@ti.com>
+References: <1399638727-23254-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1399638727-23254-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add an argument which describes which DPI instance we are referring to when
-selecting it's overlay manager. This will come into use when a DSS version
-supports multiple DPI instances.
+Add support to handle HPD GPIO in the HDMI connector driver. For the
+time being, the driver only uses HPD GPIO to report is the cable is
+connected via detect() calll.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dpi.c |  2 +-
- drivers/video/fbdev/omap2/dss/dss.c | 12 ++++++------
- drivers/video/fbdev/omap2/dss/dss.h |  2 +-
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ .../fbdev/omap2/displays-new/connector-hdmi.c      | 25 +++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
-index faf266e..def8e68 100644
---- a/drivers/video/fbdev/omap2/dss/dpi.c
-+++ b/drivers/video/fbdev/omap2/dss/dpi.c
-@@ -420,7 +420,7 @@ static int dpi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_get_dispc;
+diff --git a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
+index 29ed21b9dce5..4420ccb69aa9 100644
+--- a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
++++ b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
+@@ -13,6 +13,7 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/of.h>
++#include <linux/of_gpio.h>
  
--	r = dss_dpi_select_source(out->manager->id);
-+	r = dss_dpi_select_source(out->reg, out->manager->id);
- 	if (r)
- 		goto err_src_sel;
+ #include <drm/drm_edid.h>
  
-diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-index 4087f3b..ffa6d84 100644
---- a/drivers/video/fbdev/omap2/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/dss/dss.c
-@@ -74,7 +74,7 @@ struct dss_features {
- 	u8 fck_div_max;
- 	u8 dss_fck_multiplier;
- 	const char *parent_clk_name;
--	int (*dpi_select_source)(enum omap_channel channel);
-+	int (*dpi_select_source)(int id, enum omap_channel channel);
- 	int (*init_ports)(struct platform_device *pdev);
- 	void (*uninit_ports)(struct platform_device *pdev);
+@@ -43,6 +44,8 @@ struct panel_drv_data {
+ 	struct device *dev;
+ 
+ 	struct omap_video_timings timings;
++
++	int hpd_gpio;
  };
-@@ -570,7 +570,7 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void)
- 	return REG_GET(DSS_CONTROL, 15, 15);
+ 
+ #define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
+@@ -161,7 +164,10 @@ static bool hdmic_detect(struct omap_dss_device *dssdev)
+ 	struct panel_drv_data *ddata = to_panel_data(dssdev);
+ 	struct omap_dss_device *in = ddata->in;
+ 
+-	return in->ops.hdmi->detect(in);
++	if (gpio_is_valid(ddata->hpd_gpio))
++		return gpio_get_value_cansleep(ddata->hpd_gpio);
++	else
++		return in->ops.hdmi->detect(in);
  }
  
--static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
-+static int dss_dpi_select_source_omap2_omap3(int id, enum omap_channel channel)
- {
- 	if (channel != OMAP_DSS_CHANNEL_LCD)
- 		return -EINVAL;
-@@ -578,7 +578,7 @@ static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
- 	return 0;
- }
+ static int hdmic_audio_enable(struct omap_dss_device *dssdev)
+@@ -288,6 +294,8 @@ static int hdmic_probe_pdata(struct platform_device *pdev)
  
--static int dss_dpi_select_source_omap4(enum omap_channel channel)
-+static int dss_dpi_select_source_omap4(int id, enum omap_channel channel)
- {
- 	int val;
+ 	pdata = dev_get_platdata(&pdev->dev);
  
-@@ -598,7 +598,7 @@ static int dss_dpi_select_source_omap4(enum omap_channel channel)
- 	return 0;
- }
++	ddata->hpd_gpio = -ENODEV;
++
+ 	in = omap_dss_find_output(pdata->source);
+ 	if (in = NULL) {
+ 		dev_err(&pdev->dev, "Failed to find video source\n");
+@@ -307,6 +315,14 @@ static int hdmic_probe_of(struct platform_device *pdev)
+ 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+ 	struct device_node *node = pdev->dev.of_node;
+ 	struct omap_dss_device *in;
++	int gpio;
++
++	/* HPD GPIO */
++	gpio = of_get_named_gpio(node, "hpd-gpios", 0);
++	if (gpio_is_valid(gpio))
++		ddata->hpd_gpio = gpio;
++	else
++		ddata->hpd_gpio = -ENODEV;
  
--static int dss_dpi_select_source_omap5(enum omap_channel channel)
-+static int dss_dpi_select_source_omap5(int id, enum omap_channel channel)
- {
- 	int val;
+ 	in = omapdss_of_find_source_for_first_ep(node);
+ 	if (IS_ERR(in)) {
+@@ -344,6 +360,13 @@ static int hdmic_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
  
-@@ -624,9 +624,9 @@ static int dss_dpi_select_source_omap5(enum omap_channel channel)
- 	return 0;
- }
++	if (gpio_is_valid(ddata->hpd_gpio)) {
++		r = devm_gpio_request_one(&pdev->dev, ddata->hpd_gpio,
++				GPIOF_DIR_IN, "hdmi_hpd");
++		if (r)
++			goto err_reg;
++	}
++
+ 	ddata->timings = hdmic_default_timings;
  
--int dss_dpi_select_source(enum omap_channel channel)
-+int dss_dpi_select_source(int id, enum omap_channel channel)
- {
--	return dss.feat->dpi_select_source(channel);
-+	return dss.feat->dpi_select_source(id, channel);
- }
- 
- static int dss_get_clocks(void)
-diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
-index 6f68f72..f3ddcc9 100644
---- a/drivers/video/fbdev/omap2/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/dss/dss.h
-@@ -209,7 +209,7 @@ int dss_init_platform_driver(void) __init;
- void dss_uninit_platform_driver(void);
- 
- unsigned long dss_get_dispc_clk_rate(void);
--int dss_dpi_select_source(enum omap_channel channel);
-+int dss_dpi_select_source(int id, enum omap_channel channel);
- void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
- enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
- const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
+ 	dssdev = &ddata->dssdev;
 -- 
-1.8.3.2
+1.9.1
 

@@ -1,81 +1,133 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 May 2014 09:59:53 +0000
-Subject: Re: [RFC 1/6] omapdss: remove check for simpler port/endpoint binding
-Message-Id: <536CA719.1080707@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="68AKOKdso9DUxdsPM0RS1pDkpldSMaERp"
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Fri, 09 May 2014 22:52:44 +0000
+Subject: [PATCH] video: omap: delete support for early fbmem allocation
+Message-Id: <1399675964-22917-1-git-send-email-aaro.koskinen@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399540517-17883-1-git-send-email-archit@ti.com>
-In-Reply-To: <1399540517-17883-1-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Peter Griffin <peter.griffin@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, Tony Lindgren <tony@atomide.com>, Aaro Koskinen <aaro.koskinen@iki.fi>
 
---68AKOKdso9DUxdsPM0RS1pDkpldSMaERp
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Commit 1e434f9318efc3dddc0c0b8d2071712668154c2b (OMAPFB: remove early mem
+alloc from old omapfb) deleted the support for early fbmem allocation
+from the platform code, but some code still remains in the driver side.
+Delete this code now, as it repotedly causes build issues on !MMU.
 
-On 08/05/14 12:15, Archit Taneja wrote:
-> The support for simpler port/endpoint binding was removed in the merged=
- version
-> of omapdss DT. But dss_init_ports still tries to get to an endpoint eve=
-n if no
-> port exists. Remove this as this doesn't work.
->=20
-> Signed-off-by: Archit Taneja <archit@ti.com>
-> ---
->  drivers/video/fbdev/omap2/dss/dss.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/=
-omap2/dss/dss.c
-> index d55266c..31ef262 100644
-> --- a/drivers/video/fbdev/omap2/dss/dss.c
-> +++ b/drivers/video/fbdev/omap2/dss/dss.c
-> @@ -784,12 +784,8 @@ static int __init dss_init_ports(struct platform_d=
-evice *pdev)
->  		return 0;
-> =20
->  	port =3D omapdss_of_get_next_port(parent, NULL);
-> -	if (!port) {
-> -#ifdef CONFIG_OMAP2_DSS_DPI
-> -		dpi_init_port(pdev, parent);
-> -#endif
-> +	if (!port)
->  		return 0;
-> -	}
-> =20
->  	do {
->  		u32 reg;
->=20
+The patch was tested on Amstrad E3 and Nokia 770 and framebuffer
+functionality is not affected.
 
-I'll try to find time to review the rest, but I'll queue this one
-already for 3.16.
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+---
+ drivers/video/fbdev/omap/lcdc.c | 67 ++---------------------------------------
+ 1 file changed, 2 insertions(+), 65 deletions(-)
 
- Tomi
+diff --git a/drivers/video/fbdev/omap/lcdc.c b/drivers/video/fbdev/omap/lcdc.c
+index b52f625..6efa259 100644
+--- a/drivers/video/fbdev/omap/lcdc.c
++++ b/drivers/video/fbdev/omap/lcdc.c
+@@ -74,7 +74,6 @@ static struct omap_lcd_controller {
+ 	void			(*dma_callback)(void *data);
+ 	void			*dma_callback_data;
+ 
+-	int			fbmem_allocated;
+ 	dma_addr_t		vram_phys;
+ 	void			*vram_virt;
+ 	unsigned long		vram_size;
+@@ -611,42 +610,6 @@ static void lcdc_dma_handler(u16 status, void *data)
+ 		lcdc.dma_callback(lcdc.dma_callback_data);
+ }
+ 
+-static int mmap_kern(void)
+-{
+-	struct vm_struct	*kvma;
+-	struct vm_area_struct	vma;
+-	pgprot_t		pgprot;
+-	unsigned long		vaddr;
+-
+-	kvma = get_vm_area(lcdc.vram_size, VM_IOREMAP);
+-	if (kvma = NULL) {
+-		dev_err(lcdc.fbdev->dev, "can't get kernel vm area\n");
+-		return -ENOMEM;
+-	}
+-	vma.vm_mm = &init_mm;
+-
+-	vaddr = (unsigned long)kvma->addr;
+-	vma.vm_start = vaddr;
+-	vma.vm_end = vaddr + lcdc.vram_size;
+-
+-	pgprot = pgprot_writecombine(pgprot_kernel);
+-	if (io_remap_pfn_range(&vma, vaddr,
+-			   lcdc.vram_phys >> PAGE_SHIFT,
+-			   lcdc.vram_size, pgprot) < 0) {
+-		dev_err(lcdc.fbdev->dev, "kernel mmap for FB memory failed\n");
+-		return -EAGAIN;
+-	}
+-
+-	lcdc.vram_virt = (void *)vaddr;
+-
+-	return 0;
+-}
+-
+-static void unmap_kern(void)
+-{
+-	vunmap(lcdc.vram_virt);
+-}
+-
+ static int alloc_palette_ram(void)
+ {
+ 	lcdc.palette_virt = dma_alloc_writecombine(lcdc.fbdev->dev,
+@@ -703,8 +666,6 @@ static void free_fbmem(void)
+ 
+ static int setup_fbmem(struct omapfb_mem_desc *req_md)
+ {
+-	int r;
+-
+ 	if (!req_md->region_cnt) {
+ 		dev_err(lcdc.fbdev->dev, "no memory regions defined\n");
+ 		return -EINVAL;
+@@ -715,31 +676,7 @@ static int setup_fbmem(struct omapfb_mem_desc *req_md)
+ 		req_md->region_cnt = 1;
+ 	}
+ 
+-	if (req_md->region[0].paddr = 0) {
+-		lcdc.fbmem_allocated = 1;
+-		if ((r = alloc_fbmem(&req_md->region[0])) < 0)
+-			return r;
+-		return 0;
+-	}
+-
+-	lcdc.vram_phys = req_md->region[0].paddr;
+-	lcdc.vram_size = req_md->region[0].size;
+-
+-	if ((r = mmap_kern()) < 0)
+-		return r;
+-
+-	dev_dbg(lcdc.fbdev->dev, "vram at %08x size %08lx mapped to 0x%p\n",
+-		 lcdc.vram_phys, lcdc.vram_size, lcdc.vram_virt);
+-
+-	return 0;
+-}
+-
+-static void cleanup_fbmem(void)
+-{
+-	if (lcdc.fbmem_allocated)
+-		free_fbmem();
+-	else
+-		unmap_kern();
++	return alloc_fbmem(&req_md->region[0]);
+ }
+ 
+ static int omap_lcdc_init(struct omapfb_device *fbdev, int ext_mode,
+@@ -833,7 +770,7 @@ static void omap_lcdc_cleanup(void)
+ {
+ 	if (!lcdc.ext_mode)
+ 		free_palette_ram();
+-	cleanup_fbmem();
++	free_fbmem();
+ 	omap_free_lcd_dma();
+ 	free_irq(OMAP_LCDC_IRQ, lcdc.fbdev);
+ 	clk_disable(lcdc.lcd_ck);
+-- 
+1.9.0
 
-
-
---68AKOKdso9DUxdsPM0RS1pDkpldSMaERp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTbKcZAAoJEPo9qoy8lh71xioP/RH56IT2oH6sqCqR95iPMq0e
-Ko7eaLSMxgLXSFtV1rHCc0hNIaelnTOtZvJX54jWNsKgjWOTgDhot8Nefx/hs4wN
-Wp79jBqC252+bvm8uk3bTunBII0aPMuIhEPH1psTVlVb5Ins8fb258YQKaOj0+nl
-HwgPuNYzlBXXfPNy9q7glFxsNAGUak2OIgqKit2gjnQJ5N55/Khfu2QMQxSv2+wQ
-VXxE6cyGGCuisUqDmBHcl2yMD3ps3PABxQVGv7X4Kn/qjYfYFgU7TPX2LHo07SE2
-DWEKKrXj9vQ1iCTKu5RhLTZ/bUEpcpH1/iUPPQnadAF0zvg053eTWzA8DM0gjALd
-0cavAgGRK059AKhOoLoiZBbE/16l9Oj8YBmCiDeXJkHFAv5jfKkAHEUFX7y5dD2P
-IzdzwD09RvKSJeKBVYgKsGKo5fd9vJ64FXEIV7gop9jHF+/e3fq431qvTVL+YdHS
-uB5e3S7YzvqkFPUkrqdVHJyuAEyl6zP8/D0QBufMIKRU6rCFE8EBoEBzFGYKXSPi
-GSxvuEuMxG5jpSOc6mRCdGtH/gmZ7RedTuOp/acI0J0TZdB138X7H5SfLfHu106d
-OH0X8+BxYmgyqsrjGst+LVU1EEN6PuiDSIpG8/uo6Vr25ehXBdTTPogMXniuz2zr
-2ml+xoxH6qr888LKk78D
-=KBVO
------END PGP SIGNATURE-----
-
---68AKOKdso9DUxdsPM0RS1pDkpldSMaERp--

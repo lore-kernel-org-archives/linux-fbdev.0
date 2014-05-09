@@ -1,50 +1,81 @@
 From: Tony Lindgren <tony@atomide.com>
-Date: Fri, 09 May 2014 15:30:09 +0000
+Date: Fri, 09 May 2014 15:55:04 +0000
 Subject: Re: [PATCH 3/4] OMAPDSS: panel-sharp-ls037v7dw01: add device tree support
-Message-Id: <20140509153008.GC17814@atomide.com>
+Message-Id: <20140509155504.GE17814@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398815562-24113-1-git-send-email-tony@atomide.com>
  <1398815562-24113-4-git-send-email-tony@atomide.com>
  <5369EAE7.3030705@ti.com> <20140507150343.GA9502@atomide.com>
  <536A5920.1020908@ti.com> <20140507175919.GH9502@atomide.com>
- <20140508233300.GI2198@atomide.com> <536C924E.5000307@ti.com>
-In-Reply-To: <536C924E.5000307@ti.com>
+ <20140508233300.GI2198@atomide.com> <536C8293.4070506@ti.com>
+In-Reply-To: <536C8293.4070506@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [140509 01:31]:
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [140509 00:24]:
 > On 09/05/14 02:33, Tony Lindgren wrote:
-> > * Tony Lindgren <tony@atomide.com> [140507 11:00]:
-> >> * Tomi Valkeinen <tomi.valkeinen@ti.com> [140507 09:03]:
-> >>> On 07/05/14 18:03, Tony Lindgren wrote:
-> >>>>
-> >>>> BTW, I'm also personally fine with all five gpios showing in a single
-> >>>> gpios property, I'm not too exited about naming anything in DT..
-> >>>
-> >>> I don't have a strong opinion here. I don't have much experience with
-> >>> DT, especially with making bindings compatible with other ones.
-> >>>
-> >>> I'd just forget the simple-panel, and have single gpio array.
-> >>
-> >> Well if it's a don't care flag for both of us, let's try to use
-> >> the existing standard for simple-panel.txt and add mode-gpios
-> >> property. I'll post a patch for that.
-> > 
-> > Here's an updated version using enable-gpios, reset-gpios and
-> > mode-gpios. So it follows simple-panel.txt and adds mode-gpios
-> > that's currently specific to this panel only.
-> > 
-> > Also updated for -EPROBE_DEFER handling, tested that by changing
-> > one of the GPIOs to be a twl4030 GPIO.
+> > +Example when connected to a omap2+ based device:
+> > +
+> > +	lcd0: display {
+> > +		compatible = "sharp,ls037v7dw01";
+> > +		power-supply = <&lcd_3v3>;
+> > +		enable-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;	/* gpio152, lcd INI */
+> > +		reset-gpios = <&gpio5 27 GPIO_ACTIVE_HIGH>;	/* gpio155, lcd RESB */
+> > +		mode-gpios = <&gpio5 26 GPIO_ACTIVE_HIGH	/* gpio154, lcd MO */
+> > +			      &gpio1 2 GPIO_ACTIVE_HIGH		/* gpio2, lcd LR */
+> > +			      &gpio1 3 GPIO_ACTIVE_HIGH>;	/* gpio3, lcd UD */
+> > +
+> > +		panel-timing {
+> > +			clock-frequency = <19200000>;
+> > +			hback-porch = <28>;
+> > +			hactive = <480>;
+> > +			hfront-porch = <1>;
+> > +			hsync-len = <2>;
+> > +			vback-porch = <1>;
+> > +			vactive = <640>;
+> > +			vfront-porch = <1>;
+> > +			vsync-len = <1>;
+> > +			hsync-active = <0>;
+> > +			vsync-active = <0>;
+> > +			de-active = <1>;
+> > +			pixelclk-active = <1>;
+> > +		};
 > 
-> To speed things up a bit, I made the changes I suggested. Compile tested
-> only.
+> I don't think we should define panel-timing here. We know it's
+> sharp,ls037v7dw01, so the driver knows the video timings. Also, if we
+> would extend the driver to support both resolution modes, it needs to
+> support two different timings, so the above doesn't work in that case
+> either.
 
-OK thanks did not get the penguin with it so need to look at it a bit
-more.
+OK. It seems we can have at least two different timings for this panel,
+the VGA timing above and the QVGA timings that LDP uses that are listed
+in the .dts changes.
+ 
+> Although if the MO gpio is not controlled by the driver, we should tell
+> the driver whether that gpio is high or low.
+
+What do you have in mind for telling that? We should also tell the
+orientation of the panel:
+
+EVM	VGA	omapfb.rotate=3
+LDP	QVGA	omapfb.rotate=0
+
+Do you have something in mind for that?
+ 
+> At the moment our display drivers are OMAP specific, and for that reason
+> we should prefix the compatible strings with "omapdss,". For example,
+> drivers/video/fbdev/omap2/displays-new/panel-dsi-cm.c:
+> 
+> 	{ .compatible = "omapdss,panel-dsi-cm", },
+> 
+> But we should still have the right compatible string in the .dts, so we
+> convert the compatible name in arch/arm/mach-omap2/display.c, with
+> 'dss_compat_conv_list' array, to which this panel's name should be added.
+
+Oh so what do you want to have in the .dts file then?
 
 Regards,
 
-Tony
+Tony 

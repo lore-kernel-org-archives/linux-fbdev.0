@@ -1,70 +1,52 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 23 May 2014 19:07:49 +0000
-Subject: [PATCH 00/13] Fix OMAP4+ HDMI audio
-Message-Id: <cover.1400871999.git.jsarha@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 09 May 2014 12:32:03 +0000
+Subject: [PATCH 1/5] OMAPDSS: Fix writes to DISPC_POL_FREQ
+Message-Id: <1399638727-23254-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch set fixes the resource sharing problems between
-omap-hdmi-dai driver and OMAPDSS HDMI driver. It does it by
-registering the OMAP HDMI audio related ASoC drivers from OMAPDSS HDMI
-driver. Platform data structs have been added for omap-hdmi-dai and
-omap-hdmi-card drivers to pass the information and resources from
-OMAPDSS HDMI driver.
+When omapdss writes to DISPC_POL_FREQ register, it always ORs the bits
+with the current contents of the register, never clearing the old ones,
+causing wrong signal polarity settings.
 
-The idea of this patch set is to fix HDMI audio for the next release
-after it got broken by OMAPDSS DT changes. It does not mean that I
-have abandoned the patch set that integrates the omap-hdmi-dai driver
-into OMAPDSS HDMI driver. The OMAPDSS side of those patches just had
-some dependencies to the recent ASoC side patches that would have
-caused problems in the next merge. I'll mail a revised and rebased
-version of those patches soon.
+As we write all the bits in DISPC_POL_FREQ, we don't need to care about
+the current contents of the register. So fix the issue by constructing
+new register value from scratch.
 
-Best regards,
-Jyri
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dispc.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-Jyri Sarha (13):
-  ARM: omap4.dtsi: Add audio related parametes to hdmi node
-  ARM: omap5.dtsi: Add audio related parameters to hdmi node
-  ARM: OMAP2+: Remove non working OMAP HDMI audio initialization
-  OMAPDSS: hdmi_wp: Add function for getting hdmi_wp physical base
-    address
-  OMAPDSS: hdmi_audio: Add hdmi_audio.c for registering HDMI audio
-    support
-  ASoC: omap-hdmi-dai: Add platform data struct for omap-hdmi-dai
-    driver
-  ASoC: omap-hdmi-card: Add platform data stuct for omap-hdmi-card
-    driver
-  ASoC: omap-hdmi: Changes for registeing the driver from OMAPDSS
-  ASoC: omap-hdmi-card: Changes for registeing the driver from OMAPDSS
-  OMAPDSS: hdmi4: Register HDMI audio ASoC drivers from HDMI driver
-  OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
-  OMAPDSS: hdmi5: Register HDMI audio ASoC drivers from HDMI driver
-  ASoC: omap: Add Kconfig option for OMAP5 HDMI audio
-
- arch/arm/boot/dts/omap4.dtsi               |    2 +
- arch/arm/boot/dts/omap5.dtsi               |    2 +
- arch/arm/mach-omap2/devices.c              |   28 ---------
- drivers/video/fbdev/omap2/dss/Makefile     |    2 +-
- drivers/video/fbdev/omap2/dss/hdmi.h       |   17 ++++-
- drivers/video/fbdev/omap2/dss/hdmi4.c      |   15 +++++
- drivers/video/fbdev/omap2/dss/hdmi5.c      |   15 +++++
- drivers/video/fbdev/omap2/dss/hdmi_audio.c |   92 ++++++++++++++++++++++++++++
- drivers/video/fbdev/omap2/dss/hdmi_wp.c    |    6 ++
- include/sound/omap-hdmi-card-pdata.h       |   28 +++++++++
- include/sound/omap-hdmi-dai-pdata.h        |   31 ++++++++++
- sound/soc/omap/Kconfig                     |   13 +++-
- sound/soc/omap/omap-hdmi-card.c            |   20 ++++--
- sound/soc/omap/omap-hdmi.c                 |   65 +++++---------------
- 14 files changed, 253 insertions(+), 83 deletions(-)
- create mode 100644 drivers/video/fbdev/omap2/dss/hdmi_audio.c
- create mode 100644 include/sound/omap-hdmi-card-pdata.h
- create mode 100644 include/sound/omap-hdmi-dai-pdata.h
-
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index f18397c33e8f..a22c64e26172 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -2945,13 +2945,13 @@ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
+ 		BUG();
+ 	}
+ 
+-	l = dispc_read_reg(DISPC_POL_FREQ(channel));
+-	l |= FLD_VAL(onoff, 17, 17);
+-	l |= FLD_VAL(rf, 16, 16);
+-	l |= FLD_VAL(de_level, 15, 15);
+-	l |= FLD_VAL(ipc, 14, 14);
+-	l |= FLD_VAL(hsync_level, 13, 13);
+-	l |= FLD_VAL(vsync_level, 12, 12);
++	l = FLD_VAL(onoff, 17, 17) |
++		FLD_VAL(rf, 16, 16) |
++		FLD_VAL(de_level, 15, 15) |
++		FLD_VAL(ipc, 14, 14) |
++		FLD_VAL(hsync_level, 13, 13) |
++		FLD_VAL(vsync_level, 12, 12);
++
+ 	dispc_write_reg(DISPC_POL_FREQ(channel), l);
+ }
+ 
 -- 
-1.7.9.5
+1.9.1
 

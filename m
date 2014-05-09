@@ -1,58 +1,54 @@
 From: Tony Lindgren <tony@atomide.com>
-Date: Fri, 16 May 2014 16:12:25 +0000
-Subject: Re: [PATCH 0/4] OMAPDSS: sharp-ls037v7dw01 DT support
-Message-Id: <20140516161224.GE22031@atomide.com>
+Date: Fri, 09 May 2014 01:24:55 +0000
+Subject: [PATCH] backlight: gpio-backlight: Fix warning when the GPIO is on a I2C chip
+Message-Id: <20140509012454.GL2198@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Bryan Wu <cooloney@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [140516 00:31]:
-> Hi,
-> 
-> These are slightly reworked versions of the patches Tony sent:
-> 
-> * Split the DT doc into separate patch
-> * Handle errors from gpio functions
-> * Remove QVGA support
-> * Removed the change to arch/arm/mach-omap2/display.c. I'll add that to my
->   patch which moves the conversion code to omapdss. Note that if you test this
->   version, you need to add the panel name to the conversion list for now.
-> * Set MO gpio GPIO_ACTIVE_HIGH in omap3-evm-common.dtsi
-> * Set the GPIO default values the same way for DT and non-DT versions.
-> 
-> Tony, I removed the QVGA support as it was a new feature, not supported by the
-> non-DT version. Also, I don't think it should be done as you had implemented
-> it, but rather either have a flag in the DT data in case the pin is hardwired
-> in the hardware, or let the user select the mode at runtime.
+If the GPIO for the backlight is on an I2C chip, we currently
+get nasty warnings like this during the boot:
 
-OK. Probably should have both options eventually.
+WARNING: CPU: 0 PID: 6 at drivers/gpio/gpiolib.c:2364 gpiod_set_raw_value+0x40/0x4c()
+Modules linked in:
+CPU: 0 PID: 6 Comm: kworker/u2:0 Not tainted 3.15.0-rc4-12393-gcde9f4e #400
+Workqueue: deferwq deferred_probe_work_func
+[<c0014cbc>] (unwind_backtrace) from [<c001191c>] (show_stack+0x10/0x14)
+[<c001191c>] (show_stack) from [<c0566ae0>] (dump_stack+0x80/0x9c)
+[<c0566ae0>] (dump_stack) from [<c003f61c>] (warn_slowpath_common+0x68/0x8c)
+[<c003f61c>] (warn_slowpath_common) from [<c003f65c>] (warn_slowpath_null+0x1c/0x24)
+[<c003f65c>] (warn_slowpath_null) from [<c02f7e10>] (gpiod_set_raw_value+0x40/0x4c)
+[<c02f7e10>] (gpiod_set_raw_value) from [<c0308fbc>] (gpio_backlight_update_status+0x4c/0x74)
+[<c0308fbc>] (gpio_backlight_update_status) from [<c030914c>] (gpio_backlight_probe+0x168/0x254)
+[<c030914c>] (gpio_backlight_probe) from [<c0378fa8>] (platform_drv_probe+0x18/0x48)
+[<c0378fa8>] (platform_drv_probe) from [<c0377c40>] (driver_probe_device+0x10c/0x238)
+[<c0377c40>] (driver_probe_device) from [<c0376330>] (bus_for_each_drv+0x44/0x8c)
+[<c0376330>] (bus_for_each_drv) from [<c0377afc>] (device_attach+0x74/0x8c)
+[<c0377afc>] (device_attach) from [<c03771c4>] (bus_probe_device+0x88/0xb0)
+[<c03771c4>] (bus_probe_device) from [<c03775c8>] (deferred_probe_work_func+0x64/0x94)
+[<c03775c8>] (deferred_probe_work_func) from [<c00572e8>] (process_one_work+0x1b4/0x4bc)
+[<c00572e8>] (process_one_work) from [<c00579d0>] (worker_thread+0x11c/0x398)
+[<c00579d0>] (worker_thread) from [<c005dfd8>] (kthread+0xc8/0xe4)
+[<c005dfd8>] (kthread) from [<c000e768>] (ret_from_fork+0x14/0x2c)
+
+Fix this by using gpio_set_value_cansleep() as suggested in
+drivers/gpio/gpiolib.c:2364. This is what the other backlight drivers
+are also doing.
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -38,7 +38,8 @@ static int gpio_backlight_update_status(struct backlight_device *bl)
+ 	    bl->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
+ 		brightness = 0;
  
-> Also, I didn't quite understand the implementation. You had set initial values
-> in the driver for MO and RESB differently than on the non-DT version. Was that
-> on purpose?
-
-I just configured things to what we had earlier for the legacy booting,
-QVGA for ldp and VGA for omap3-evm.
+-	gpio_set_value(gbl->gpio, brightness ? gbl->active : !gbl->active);
++	gpio_set_value_cansleep(gbl->gpio,
++				brightness ? gbl->active : !gbl->active);
  
-> You said in a comment: "The LCD is sideways, so we want the VGA mode instead of
-> QVGA mode.". Why is that? How does the resolution affect the orientation?
-
-Yeah that's pretty confusing and probably written before I got the
-image working properly. I probably initially thought the VGA mode also
-switches the panel to 640x480, while it really sets it to 480x640.
- 
-> With my version, the panel (should) always be in VGA mode, like the non-DT
-> version does.
-> 
-> Only compile tested, I don't have boards with the panel.
-
-Works for me on omap3-evm and ldp after patching in the mode to your
-panel compatible translation database system.
-
-Regards,
-
-Tony
+ 	return 0;
+ }

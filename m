@@ -1,41 +1,81 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 08 May 2014 09:27:12 +0000
-Subject: [RFC 1/6] omapdss: remove check for simpler port/endpoint binding
-Message-Id: <1399540517-17883-1-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 09 May 2014 09:59:53 +0000
+Subject: Re: [RFC 1/6] omapdss: remove check for simpler port/endpoint binding
+Message-Id: <536CA719.1080707@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="68AKOKdso9DUxdsPM0RS1pDkpldSMaERp"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+References: <1399540517-17883-1-git-send-email-archit@ti.com>
+In-Reply-To: <1399540517-17883-1-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-The support for simpler port/endpoint binding was removed in the merged version
-of omapdss DT. But dss_init_ports still tries to get to an endpoint even if no
-port exists. Remove this as this doesn't work.
+--68AKOKdso9DUxdsPM0RS1pDkpldSMaERp
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/fbdev/omap2/dss/dss.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+On 08/05/14 12:15, Archit Taneja wrote:
+> The support for simpler port/endpoint binding was removed in the merged=
+ version
+> of omapdss DT. But dss_init_ports still tries to get to an endpoint eve=
+n if no
+> port exists. Remove this as this doesn't work.
+>=20
+> Signed-off-by: Archit Taneja <archit@ti.com>
+> ---
+>  drivers/video/fbdev/omap2/dss/dss.c | 6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/=
+omap2/dss/dss.c
+> index d55266c..31ef262 100644
+> --- a/drivers/video/fbdev/omap2/dss/dss.c
+> +++ b/drivers/video/fbdev/omap2/dss/dss.c
+> @@ -784,12 +784,8 @@ static int __init dss_init_ports(struct platform_d=
+evice *pdev)
+>  		return 0;
+> =20
+>  	port =3D omapdss_of_get_next_port(parent, NULL);
+> -	if (!port) {
+> -#ifdef CONFIG_OMAP2_DSS_DPI
+> -		dpi_init_port(pdev, parent);
+> -#endif
+> +	if (!port)
+>  		return 0;
+> -	}
+> =20
+>  	do {
+>  		u32 reg;
+>=20
 
-diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-index d55266c..31ef262 100644
---- a/drivers/video/fbdev/omap2/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/dss/dss.c
-@@ -784,12 +784,8 @@ static int __init dss_init_ports(struct platform_device *pdev)
- 		return 0;
- 
- 	port = omapdss_of_get_next_port(parent, NULL);
--	if (!port) {
--#ifdef CONFIG_OMAP2_DSS_DPI
--		dpi_init_port(pdev, parent);
--#endif
-+	if (!port)
- 		return 0;
--	}
- 
- 	do {
- 		u32 reg;
--- 
-1.8.3.2
+I'll try to find time to review the rest, but I'll queue this one
+already for 3.16.
 
+ Tomi
+
+
+
+--68AKOKdso9DUxdsPM0RS1pDkpldSMaERp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTbKcZAAoJEPo9qoy8lh71xioP/RH56IT2oH6sqCqR95iPMq0e
+Ko7eaLSMxgLXSFtV1rHCc0hNIaelnTOtZvJX54jWNsKgjWOTgDhot8Nefx/hs4wN
+Wp79jBqC252+bvm8uk3bTunBII0aPMuIhEPH1psTVlVb5Ins8fb258YQKaOj0+nl
+HwgPuNYzlBXXfPNy9q7glFxsNAGUak2OIgqKit2gjnQJ5N55/Khfu2QMQxSv2+wQ
+VXxE6cyGGCuisUqDmBHcl2yMD3ps3PABxQVGv7X4Kn/qjYfYFgU7TPX2LHo07SE2
+DWEKKrXj9vQ1iCTKu5RhLTZ/bUEpcpH1/iUPPQnadAF0zvg053eTWzA8DM0gjALd
+0cavAgGRK059AKhOoLoiZBbE/16l9Oj8YBmCiDeXJkHFAv5jfKkAHEUFX7y5dD2P
+IzdzwD09RvKSJeKBVYgKsGKo5fd9vJ64FXEIV7gop9jHF+/e3fq431qvTVL+YdHS
+uB5e3S7YzvqkFPUkrqdVHJyuAEyl6zP8/D0QBufMIKRU6rCFE8EBoEBzFGYKXSPi
+GSxvuEuMxG5jpSOc6mRCdGtH/gmZ7RedTuOp/acI0J0TZdB138X7H5SfLfHu106d
+OH0X8+BxYmgyqsrjGst+LVU1EEN6PuiDSIpG8/uo6Vr25ehXBdTTPogMXniuz2zr
+2ml+xoxH6qr888LKk78D
+=KBVO
+-----END PGP SIGNATURE-----
+
+--68AKOKdso9DUxdsPM0RS1pDkpldSMaERp--

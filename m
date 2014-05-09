@@ -1,59 +1,35 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 16 May 2014 08:56:46 +0000
-Subject: Re: [PATCH] video: omap: delete support for early fbmem allocation
-Message-Id: <5375D2CE.5050801@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="KaMSlFi1wJVMETsvD2u2U0qkFGoSeRd5t"
+From: Boris BREZILLON <boris.brezillon@free-electrons.com>
+Date: Fri, 09 May 2014 13:53:12 +0000
+Subject: [PATCH] video: of: display_timing: fix default native-mode setting
+Message-Id: <1399643592-17125-1-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399675964-22917-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1399675964-22917-1-git-send-email-aaro.koskinen@iki.fi>
-To: Aaro Koskinen <aaro.koskinen@iki.fi>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Peter Griffin <peter.griffin@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, Tony Lindgren <tony@atomide.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Boris BREZILLON <boris.brezillon@free-electrons.com>
 
---KaMSlFi1wJVMETsvD2u2U0qkFGoSeRd5t
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Set native mode to the first child node of the display-timings node and not
+the first child node of the display-timings parent node.
 
-On 10/05/14 01:52, Aaro Koskinen wrote:
-> Commit 1e434f9318efc3dddc0c0b8d2071712668154c2b (OMAPFB: remove early m=
-em
-> alloc from old omapfb) deleted the support for early fbmem allocation
-> from the platform code, but some code still remains in the driver side.=
+Signed-off-by: Boris BREZILLON <boris.brezillon@free-electrons.com>
+---
+ drivers/video/of_display_timing.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> Delete this code now, as it repotedly causes build issues on !MMU.
->=20
-> The patch was tested on Amstrad E3 and Nokia 770 and framebuffer
-> functionality is not affected.
->=20
-> Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+index ba5b40f..19dd752 100644
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@ -164,7 +164,7 @@ struct display_timings *of_get_display_timings(struct device_node *np)
+ 	entry = of_parse_phandle(timings_np, "native-mode", 0);
+ 	/* assume first child as native mode if none provided */
+ 	if (!entry)
+-		entry = of_get_next_child(np, NULL);
++		entry = of_get_next_child(timings_np, NULL);
+ 	/* if there is no child, it is useless to go on */
+ 	if (!entry) {
+ 		pr_err("%s: no timing specifications given\n",
+-- 
+1.8.3.2
 
-Thanks, queued for 3.16.
-
- Tomi
-
-
-
---KaMSlFi1wJVMETsvD2u2U0qkFGoSeRd5t
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTddLOAAoJEPo9qoy8lh71JycP/jh4fkLxmePYwOo202X7RepU
-FezY93PiyngWt6uP3c2GzcwbW5tX6Y3ujMtAXTVJ32swRqCPoeDF/TV4qq1yesIr
-Kog+w109gwV9pFVTR6vupriNjYRUGUIneK2IMdlxd4K/y5mxAGQyN0V0yIepZKv0
-e5eLJSdH31MVlFBM3w4bKQTJaXXR62t9kmsbxXDEYpHDyGQmpfqbKUVn2KXOAgC0
-dUKwzC9SJfN8Sobr3M1gf6LAECfHd8L7mham5FDfwh29Q/8IMFGtBopsN1hfSN/v
-q09Mu6bFxvMaeTVsHhRuvaGgIBJjQ/thM1gxF278Onn+S5M8iG//nangjVGA3wnA
-caB6ztM8NJiRfBQINbqgcbPPxGV0wxvjYHwZ25PB4YclTQX+czXuk5C1Ac3J8gjo
-oFTsPqMw+muK7dAfAxyZNI/iXgppXBRnTluRA2jhSQBI0uUYPprmjpFDRZ4911Fo
-z6PfV1M1ooz8QXgKkSpWGvl3zufwVCibWVA+Aw6SCQygT8CJKl8ZXi5D65cDQq4b
-3919zNtOCcvbL15kMYMVOJvrTPNjuaXy5fUubYLQDX7B+kPGKkN8jJ9wQRa9dqH1
-LDaAdzn9dGBuxZN5oFTAnf9KvS6w+IQkM0NRjv85USYJ5rJsQm2US8zWDrhZgKbl
-G1boRxGLu7MoRl34NHRN
-=01QK
------END PGP SIGNATURE-----
-
---KaMSlFi1wJVMETsvD2u2U0qkFGoSeRd5t--

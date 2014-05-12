@@ -1,136 +1,91 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 15 May 2014 18:34:24 +0000
-Subject: [PATCH 2/4] backlight: Add backlight device (un)registration notification
-Message-Id: <1400178866-3659-3-git-send-email-hdegoede@redhat.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 12 May 2014 15:04:51 +0000
+Subject: Re: [PATCHv2 00/11] improve PWM lookup support without device tree
+Message-Id: <20140512150451.GD29318@piout.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
+References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
-Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Some firmware drivers, ie acpi-video want to get themselves out of the
-way (in some cases) when their also is a raw backlight device available.
 
-Due to module loading ordering being unknown, acpi-video cannot be certain
-that the backlight_device_registered(BACKLIGHT_RAW) it does for this is
-the final verdict wrt there being a BACKLIGHT_RAW device.
+Hello Thierry,
 
-By adding notification acpi-video can listen for backlight devices showing
-up after it has loaded, and unregister its backlight device if desired.
+Do you know when you will have some time to review that patch series ?
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/video/backlight/backlight.c | 40 +++++++++++++++++++++++++++++++++++++
- include/linux/backlight.h           |  7 +++++++
- 2 files changed, 47 insertions(+)
+On 14/04/2014 at 23:59:42 +0200, Alexandre Belloni wrote :
+> Hi,
+> 
+> A patch set as suggested by Thierry to make lookup with the lookup table
+> instead of device tree behave more like when using device tree.
+> 
+> The first patch adds a period and a polarity member to the lookup table and use
+> those to set period and polarity.
+> 
+> Patch 2, 4 and 5 are making use of those new members from the board files.
+> Patch 3 removes useless code since setting the polarity is now handled by the
+> PWM core.
+> 
+> I couldn't decide on a good name for the extended PWM_LOOKUP macro and I believe
+> we won't have to add members to that structure soon so:
+> Patch 6 modifies the PWM_LOOKUP macro to also initialize period and polarity
+> and
+> Patch 7-9 are making use of the new PWM_LOOKUP macro in the board files
+> 
+> Patch 10 and 11 are making the leds-pwm and pwm_bl drivers get the period from
+> the PWM before using pwm_period_ns if it is not already set.
+> 
+> Patch 10 will obviously conflict with the series of Russell reworking the
+> leds-pwm probing. I can rebase if necessary
+> 
+> The final goal would be to get rid of .pwm_period_ns in leds-pwm and pwm_bl
+> after moving all the remaining users (still around 25) to pwm_lookup.
+> 
+> Changes in v2:
+>  - correctly unlock the pwm_lookup_lock mutex before returning.
+>  - don't change PWM_LOOKUP atomically
+>  - remove tpu_pwm_platform_data and the associated header file
+>  - make the leds-pwm and pwm_bl drivers get the period from the PWM
+> 
+> Alexandre Belloni (11):
+>   pwm: add period and polarity to struct pwm_lookup
+>   ARM: shmobile: Armadillo 800 EVA: initialize all struct pwm_lookup
+>     members
+>   pwm: renesas-tpu: remove useless struct tpu_pwm_platform_data
+>   ARM: OMAP3: Beagle: initialize all the struct pwm_lookup members
+>   ARM: pxa: hx4700: initialize all the struct pwm_lookup members
+>   pwm: modify PWM_LOOKUP to initialize all struct pwm_lookup members
+>   ARM: OMAP3: Beagle: use PWM_LOOKUP to initialize struct pwm_lookup
+>   ARM: shmobile: Armadillo 800 EVA: use PWM_LOOKUP to initialize struct
+>     pwm_lookup
+>   ARM: pxa: hx4700: use PWM_LOOKUP to initialize struct pwm_lookup
+>   leds: leds-pwm: retrieve configured pwm period
+>   backlight: pwm_bl: retrieve configured pwm period
+> 
+>  Documentation/pwm.txt                          |  3 ++-
+>  arch/arm/mach-omap2/board-omap3beagle.c        |  3 ++-
+>  arch/arm/mach-pxa/hx4700.c                     |  3 ++-
+>  arch/arm/mach-shmobile/board-armadillo800eva.c | 14 +++-----------
+>  drivers/leds/leds-pwm.c                        |  5 ++++-
+>  drivers/pwm/core.c                             |  8 +++++++-
+>  drivers/pwm/pwm-renesas-tpu.c                  | 19 +++----------------
+>  drivers/video/backlight/pwm_bl.c               |  8 +++++---
+>  include/linux/platform_data/pwm-renesas-tpu.h  | 16 ----------------
+>  include/linux/pwm.h                            |  6 +++++-
+>  10 files changed, 33 insertions(+), 52 deletions(-)
+>  delete mode 100644 include/linux/platform_data/pwm-renesas-tpu.h
+> 
+> -- 
+> 1.8.3.2
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-leds" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index bd2172c..4280890 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -23,6 +23,7 @@
- 
- static struct list_head backlight_dev_list;
- static struct mutex backlight_dev_list_mutex;
-+static struct blocking_notifier_head backlight_notifier;
- 
- static const char *const backlight_types[] = {
- 	[BACKLIGHT_RAW] = "raw",
-@@ -370,6 +371,9 @@ struct backlight_device *backlight_device_register(const char *name,
- 	list_add(&new_bd->entry, &backlight_dev_list);
- 	mutex_unlock(&backlight_dev_list_mutex);
- 
-+	blocking_notifier_call_chain(&backlight_notifier,
-+				     BACKLIGHT_REGISTERED, new_bd);
-+
- 	return new_bd;
- }
- EXPORT_SYMBOL(backlight_device_register);
-@@ -413,6 +417,10 @@ void backlight_device_unregister(struct backlight_device *bd)
- 		pmac_backlight = NULL;
- 	mutex_unlock(&pmac_backlight_mutex);
- #endif
-+
-+	blocking_notifier_call_chain(&backlight_notifier,
-+				     BACKLIGHT_UNREGISTERED, bd);
-+
- 	mutex_lock(&bd->ops_lock);
- 	bd->ops = NULL;
- 	mutex_unlock(&bd->ops_lock);
-@@ -438,6 +446,36 @@ static int devm_backlight_device_match(struct device *dev, void *res,
- }
- 
- /**
-+ * backlight_register_notifier - get notified of backlight (un)registration
-+ * @nb: notifier block with the notifier to call on backlight (un)registration
-+ *
-+ * @return 0 on success, otherwise a negative error code
-+ *
-+ * Register a notifier to get notified when backlight devices get registered
-+ * or unregistered.
-+ */
-+int backlight_register_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_register(&backlight_notifier, nb);
-+}
-+EXPORT_SYMBOL(backlight_register_notifier);
-+
-+/**
-+ * backlight_unregister_notifier - unregister a backlight notifier
-+ * @nb: notifier block to unregister
-+ *
-+ * @return 0 on success, otherwise a negative error code
-+ *
-+ * Register a notifier to get notified when backlight devices get registered
-+ * or unregistered.
-+ */
-+int backlight_unregister_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_unregister(&backlight_notifier, nb);
-+}
-+EXPORT_SYMBOL(backlight_unregister_notifier);
-+
-+/**
-  * devm_backlight_device_register - resource managed backlight_device_register()
-  * @dev: the device to register
-  * @name: the name of the device
-@@ -544,6 +582,8 @@ static int __init backlight_class_init(void)
- 	backlight_class->pm = &backlight_class_dev_pm_ops;
- 	INIT_LIST_HEAD(&backlight_dev_list);
- 	mutex_init(&backlight_dev_list_mutex);
-+	BLOCKING_INIT_NOTIFIER_HEAD(&backlight_notifier);
-+
- 	return 0;
- }
- 
-diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-index 7264742..adb14a8 100644
---- a/include/linux/backlight.h
-+++ b/include/linux/backlight.h
-@@ -40,6 +40,11 @@ enum backlight_type {
- 	BACKLIGHT_TYPE_MAX,
- };
- 
-+enum backlight_notification {
-+	BACKLIGHT_REGISTERED,
-+	BACKLIGHT_UNREGISTERED,
-+};
-+
- struct backlight_device;
- struct fb_info;
- 
-@@ -133,6 +138,8 @@ extern void devm_backlight_device_unregister(struct device *dev,
- extern void backlight_force_update(struct backlight_device *bd,
- 				   enum backlight_update_reason reason);
- extern bool backlight_device_registered(enum backlight_type type);
-+extern int backlight_register_notifier(struct notifier_block *nb);
-+extern int backlight_unregister_notifier(struct notifier_block *nb);
- 
- #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
- 
 -- 
-1.9.0
-
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com

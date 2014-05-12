@@ -1,38 +1,72 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 12 May 2014 05:48:08 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 May 2014 06:30:12 +0000
 Subject: Re: [PATCH 5/5] Doc/DT: hdmi-connector: add HPD GPIO documentation
-Message-Id: <53705DC8.1050903@ti.com>
+Message-Id: <53706A74.7050601@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Hx7225UnrR0xk0xpK9HGkaa1geXTsKwOU"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399638727-23254-1-git-send-email-tomi.valkeinen@ti.com> <1399638727-23254-5-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1399638727-23254-5-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+References: <1399638727-23254-1-git-send-email-tomi.valkeinen@ti.com> <1399638727-23254-5-git-send-email-tomi.valkeinen@ti.com> <53705DC8.1050903@ti.com>
+In-Reply-To: <53705DC8.1050903@ti.com>
+To: Archit Taneja <archit@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: devicetree@vger.kernel.org
 
-Hi,
+--Hx7225UnrR0xk0xpK9HGkaa1geXTsKwOU
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Friday 09 May 2014 06:02 PM, Tomi Valkeinen wrote:
-> Add binding documentation for HDMI connector's HPD GPIO.
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: devicetree@vger.kernel.org
-> ---
->   Documentation/devicetree/bindings/video/hdmi-connector.txt | 1 +
->   1 file changed, 1 insertion(+)
->
-> diff --git a/Documentation/devicetree/bindings/video/hdmi-connector.txt b/Documentation/devicetree/bindings/video/hdmi-connector.txt
-> index ccccc19e2573..acd5668b1ce1 100644
-> --- a/Documentation/devicetree/bindings/video/hdmi-connector.txt
-> +++ b/Documentation/devicetree/bindings/video/hdmi-connector.txt
-> @@ -7,6 +7,7 @@ Required properties:
->
->   Optional properties:
->   - label: a symbolic name for the connector
-> +- hpd-gpios: HPD GPIO number
+On 12/05/14 08:36, Archit Taneja wrote:
+> Hi,
+>=20
+> On Friday 09 May 2014 06:02 PM, Tomi Valkeinen wrote:
+>> Add binding documentation for HDMI connector's HPD GPIO.
+>>
+>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+>> Cc: devicetree@vger.kernel.org
+>> ---
+>>   Documentation/devicetree/bindings/video/hdmi-connector.txt | 1 +
+>>   1 file changed, 1 insertion(+)
+>>
+>> diff --git
+>> a/Documentation/devicetree/bindings/video/hdmi-connector.txt
+>> b/Documentation/devicetree/bindings/video/hdmi-connector.txt
+>> index ccccc19e2573..acd5668b1ce1 100644
+>> --- a/Documentation/devicetree/bindings/video/hdmi-connector.txt
+>> +++ b/Documentation/devicetree/bindings/video/hdmi-connector.txt
+>> @@ -7,6 +7,7 @@ Required properties:
+>>
+>>   Optional properties:
+>>   - label: a symbolic name for the connector
+>> +- hpd-gpios: HPD GPIO number
+>=20
+> Would there ever be more than one HPD gpio?
 
-Would there ever be more than one HPD gpio?
+No. HDMI spec specifies that there is one HPD pin in the connector.
 
-Archit
+ Tomi
 
+
+
+--Hx7225UnrR0xk0xpK9HGkaa1geXTsKwOU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTcGp7AAoJEPo9qoy8lh71B6cP/0pyCgw5U1ZHi6rAragZU5C0
+VSfrDQwyuo02DE/RqreTuYBlbRxVk5yLL+u8z+AQPRp7UnS6MTIgPCrMmPda2Eey
+6NK4p1jzDXxcyai+r9FP8UCcW9O2qGf0i6SZ14/z/Rv1i+e3hSI1HCLw+fqgTy8N
+tnS8m8kkQJaJgghVrpdJJCpd7W0BjBCAGD4KuP9QNmM9HcOYKO7tjopPN2YvpMyo
+/sDJ9UnEsIwaQGzqwtNbov4XtNc5NICGc6RF54LobeYxQFI8PGlpeLAb841QVKlh
+v464Fytp2LG/1Cq/kWtVNNrGlEHHdpcIA5ZL0iPEl+JXQ8XRZaTUoOzClHnhpOxp
+dJzO/v9JLbfJ0/iIbX8BiRbXlyS7r4BmwgEMcSi16HtC/ckaaGx6WXH17Wq/IjWl
+5H0w8D03wskq7ovPxEc0sF8a56OIzdyxwI+GnFGuVQToLSCQcP59EwMSax/bI1ng
++x5zzhBkrwfqpAKsmImCrfJgdjU2GKpFVmHwVCYdXdDAki/nQu6F0YugPlAxiwwm
+GOSSM6iM4sQXtPkc/cif1Bpq75FtrGTzKlXQKh6o2tUcT61SJsWwgf1BOnEqbZ2w
+kizZFySWgwCRUZZ6+iFkz7jCsqdXuP53+7HimxymIlPqvpEYbyCVtnMuZHiibOi8
+odNm6GbHcnTT+LfbyfDZ
+=gbe2
+-----END PGP SIGNATURE-----
+
+--Hx7225UnrR0xk0xpK9HGkaa1geXTsKwOU--

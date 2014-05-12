@@ -1,50 +1,155 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Date: Tue, 27 May 2014 18:09:07 +0000
-Subject: [PATCH] 68328fb: remove check for CONFIG_FB_68328_INVERT
-Message-Id: <1401214147.28714.12.camel@x220>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Mon, 12 May 2014 09:12:19 +0000
+Subject: [PATCH 08/19] OMAPDSS: hdmi5: Remove callbacks for an external ASoC DAI driver
+Message-Id: <464a3686550a6cf898e1765a965fda693378e3cc.1399884780.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1399884780.git.jsarha@ti.com>
+In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Since v2.6.7 the 68328 frame buffer driver contains a check for
-CONFIG_FB_68328_INVERT. But the Kconfig symbol FB_68328_INVERT was never
-added to the tree. Remove this check and do some related cleaning up.
+Removes the OMAP5 HDMI audio callbacks for an external audio driver and
+the old external DAI driver does not work anymore after this patch.
 
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
-Untested.
+ drivers/video/fbdev/omap2/dss/hdmi5.c |  113 ---------------------------------
+ 1 file changed, 113 deletions(-)
 
- drivers/video/fbdev/68328fb.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
-
-diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
-index 552258c8f99d..17f21cedff9b 100644
---- a/drivers/video/fbdev/68328fb.c
-+++ b/drivers/video/fbdev/68328fb.c
-@@ -49,12 +49,6 @@
- #error wrong architecture for the MC68x328 frame buffer device
- #endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index c468b9e..49a85c9 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -534,112 +534,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
+ 	return r;
+ }
  
--#if defined(CONFIG_FB_68328_INVERT)
--#define MC68X328FB_MONO_VISUAL FB_VISUAL_MONO01
+-#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	int r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi_wp_audio_enable(&hdmi.wp, true);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_enable(&hdmi.wp, false);
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return hdmi_wp_audio_core_req_enable(&hdmi.wp, true);
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_core_req_enable(&hdmi.wp, false);
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	bool r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	r = hdmi_mode_has_audio(hdmi.cfg.cm.mode);
+-
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	int r;
+-	u32 pclk = hdmi.cfg.timings.pixelclock;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi5_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
 -#else
--#define MC68X328FB_MONO_VISUAL FB_VISUAL_MONO10
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	return false;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	return -EPERM;
+-}
 -#endif
 -
- static u_long videomemory;
- static u_long videomemorysize;
+ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.connect		= hdmi_connect,
+ 	.disconnect		= hdmi_disconnect,
+@@ -652,13 +546,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.get_timings		= hdmi_display_get_timings,
  
-@@ -462,7 +456,7 @@ int __init mc68x328fb_init(void)
- 	fb_info.fix.line_length  		get_line_length(mc68x328fb_default.xres_virtual, mc68x328fb_default.bits_per_pixel);
- 	fb_info.fix.visual = (mc68x328fb_default.bits_per_pixel) = 1 ?
--		MC68X328FB_MONO_VISUAL : FB_VISUAL_PSEUDOCOLOR;
-+		FB_VISUAL_MONO10 : FB_VISUAL_PSEUDOCOLOR;
- 	if (fb_info.var.bits_per_pixel = 1) {
- 		fb_info.var.red.length = fb_info.var.green.length = fb_info.var.blue.length = 1;
- 		fb_info.var.red.offset = fb_info.var.green.offset = fb_info.var.blue.offset = 0;
+ 	.read_edid		= hdmi_read_edid,
+-
+-	.audio_enable		= hdmi_audio_enable,
+-	.audio_disable		= hdmi_audio_disable,
+-	.audio_start		= hdmi_audio_start,
+-	.audio_stop		= hdmi_audio_stop,
+-	.audio_supported	= hdmi_audio_supported,
+-	.audio_config		= hdmi_audio_config,
+ };
+ 
+ static void hdmi_init_output(struct platform_device *pdev)
 -- 
-1.9.3
+1.7.9.5
 

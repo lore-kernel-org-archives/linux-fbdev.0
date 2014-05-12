@@ -1,48 +1,44 @@
-From: Daeseok Youn <daeseok.youn@gmail.com>
-Date: Thu, 15 May 2014 07:55:05 +0000
-Subject: [PATCH] video : remove redundant error check
-Message-Id: <20140515075505.GA28119@devel.8.8.4.4>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Mon, 12 May 2014 09:12:29 +0000
+Subject: [PATCH 18/19] ARM: omap2plus_defconfig: Enable OMAP5 HDMI support
+Message-Id: <0bfc3fad1abdf93cfd2b063554564dc540838646.1399884780.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1399884780.git.jsarha@ti.com>
+In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com
-Cc: tomi.valkeinen@ti.com, jg1.han@samsung.com, daeseok.youn@gmail.com, daniel.vetter@ffwll.ch, Julia.Lawall@lip6.fr, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-From 060757f81f85babf393cc76714d49af25af7791d Mon Sep 17 00:00:00 2001
-From: Daeseok Youn <daeseok.youn@gmail.com>
-Date: Thu, 15 May 2014 16:51:35 +0900
-Subject: [PATCH] video : remove redundant error check
+This patch is here only as an example on how to enable HDMI video for
+OMAP5 uEVM. Adds CONFIG_GPIO_PCA953X=y and CONFIG_OMAP5_DSS_HDMI=y.
 
-It doesn't need to check "err" for printing info.
-And also use pr_info instead of printk.
-
-Signed-off-by: Daeseok Youn <daeseok.youn@gmail.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/i810/i810_main.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ arch/arm/configs/omap2plus_defconfig |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
-index bb674e4..15cb397 100644
---- a/drivers/video/fbdev/i810/i810_main.c
-+++ b/drivers/video/fbdev/i810/i810_main.c
-@@ -1910,13 +1910,12 @@ static void i810fb_find_init_mode(struct fb_info *info)
- 
- 	for (i = 0; i < par->ddc_num + 1; i++) {
- 		err = i810_probe_i2c_connector(info, &par->edid, i);
--		if (!err)
-+		if (!err) {
-+			pr_info("i810fb_init_pci: DDC probe successful\n");
- 			break;
-+		}
- 	}
- 
--	if (!err)
--		printk("i810fb_init_pci: DDC probe successful\n");
--
- 	fb_edid_to_monspecs(par->edid, specs);
- 
- 	if (specs->modedb = NULL)
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index 35c42aa..363733e 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -157,6 +157,7 @@ CONFIG_PINCTRL_SINGLE=y
+ CONFIG_DEBUG_GPIO=y
+ CONFIG_GPIO_SYSFS=y
+ CONFIG_GPIO_TWL4030=y
++CONFIG_GPIO_PCA953X=y
+ CONFIG_W1=y
+ CONFIG_POWER_SUPPLY=y
+ CONFIG_SENSORS_LM75=m
+@@ -190,6 +191,7 @@ CONFIG_FB_TILEBLITTING=y
+ CONFIG_OMAP2_DSS=y
+ CONFIG_OMAP2_DSS_SDI=y
+ CONFIG_OMAP2_DSS_DSI=y
++CONFIG_OMAP5_DSS_HDMI=y
+ CONFIG_FB_OMAP2=y
+ CONFIG_DISPLAY_ENCODER_TFP410=m
+ CONFIG_DISPLAY_ENCODER_TPD12S015=m
 -- 
-1.7.1
+1.7.9.5
 

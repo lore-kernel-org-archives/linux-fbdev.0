@@ -1,49 +1,48 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 15 May 2014 18:34:26 +0000
-Subject: [PATCH 4/4] acpi-video: Add use native backlight quirk for the ThinkPad W530
-Message-Id: <1400178866-3659-5-git-send-email-hdegoede@redhat.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Mon, 12 May 2014 09:12:28 +0000
+Subject: [PATCH 17/19] ARM: omap2plus_defconfig: Build DSS HDMI support for OMAP4 in kernel
+Message-Id: <f00063aa61ac2f7570dbd7e4cb922d742adfe942.1399884780.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
+References: <cover.1399884780.git.jsarha@ti.com>
+In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
-Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>, stable@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Like all of the other *30 ThinkPad models, the W530 has a broken acpi-video
-backlight control. Note in order for this to actually fix things on the
-ThinkPad W530 the commit titled:
-"nouveau: Don't check acpi_video_backlight_support() before registering backlight"
-is also needed.
+This patch is here only as an example on how to enable HDMI video for
+Panda board. In addition to this patch omapdss.def_disp=hdmi parameter
+should be added to kernel command line in order to enable HDMI video.
 
-https://bugzilla.redhat.com/show_bug.cgi?id93171
-
-Cc: stable@vger.kernel.org
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/acpi/video.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/arm/configs/omap2plus_defconfig |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index 123f919..0fec70d 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -523,6 +523,14 @@ static struct dmi_system_id video_dmi_table[] __initdata = {
- 		},
- 	},
- 	{
-+	 .callback = video_set_use_native_backlight,
-+	 .ident = "ThinkPad W530",
-+	 .matches = {
-+		DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
-+		DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad W530"),
-+		},
-+	},
-+	{
- 	.callback = video_set_use_native_backlight,
- 	.ident = "ThinkPad X1 Carbon",
- 	.matches = {
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index a966795..35c42aa 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -187,14 +187,14 @@ CONFIG_FB=y
+ CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_MODE_HELPERS=y
+ CONFIG_FB_TILEBLITTING=y
+-CONFIG_OMAP2_DSS=m
++CONFIG_OMAP2_DSS=y
+ CONFIG_OMAP2_DSS_SDI=y
+ CONFIG_OMAP2_DSS_DSI=y
+-CONFIG_FB_OMAP2=m
++CONFIG_FB_OMAP2=y
+ CONFIG_DISPLAY_ENCODER_TFP410=m
+ CONFIG_DISPLAY_ENCODER_TPD12S015=m
+-CONFIG_DISPLAY_CONNECTOR_DVI=m
+-CONFIG_DISPLAY_CONNECTOR_HDMI=m
++CONFIG_DISPLAY_CONNECTOR_DVI=y
++CONFIG_DISPLAY_CONNECTOR_HDMI=y
+ CONFIG_DISPLAY_PANEL_DPI=m
+ CONFIG_BACKLIGHT_LCD_SUPPORT=y
+ CONFIG_LCD_CLASS_DEVICE=y
 -- 
-1.9.0
+1.7.9.5
 

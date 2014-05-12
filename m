@@ -1,73 +1,155 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Wed, 28 May 2014 23:20:04 +0000
-Subject: [PATCHv2 01/15] ARM: at91: at91sam9g45: switch to generic PWM framework
-Message-Id: <1401319218-16772-2-git-send-email-alexandre.belloni@free-electrons.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Mon, 12 May 2014 09:12:14 +0000
+Subject: [PATCH 03/19] OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
+Message-Id: <c467e814144cd16e4e9f6180064a0f27b9adaf19.1399884780.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <cover.1399884780.git.jsarha@ti.com>
+In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
+Removes the OMAP4 HDMI audio callbacks for an external audio driver and
+the old external DAI driver does not work anymore after this patch.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/mach-at91/at91sam9g45.c         |  1 +
- arch/arm/mach-at91/at91sam9g45_devices.c | 11 ++---------
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi4.c |  113 ---------------------------------
+ 1 file changed, 113 deletions(-)
 
-diff --git a/arch/arm/mach-at91/at91sam9g45.c b/arch/arm/mach-at91/at91sam9g45.c
-index 9d3d544ac19c..7300523da6ea 100644
---- a/arch/arm/mach-at91/at91sam9g45.c
-+++ b/arch/arm/mach-at91/at91sam9g45.c
-@@ -251,6 +251,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
- 	CLKDEV_CON_DEV_ID(NULL, "atmel_sha", &aestdessha_clk),
- 	CLKDEV_CON_DEV_ID(NULL, "atmel_tdes", &aestdessha_clk),
- 	CLKDEV_CON_DEV_ID(NULL, "atmel_aes", &aestdessha_clk),
-+	CLKDEV_CON_DEV_ID(NULL, "at91sam9rl-pwm", &pwm_clk),
- 	/* more usart lookup table for DT entries */
- 	CLKDEV_CON_DEV_ID("usart", "ffffee00.serial", &mck),
- 	CLKDEV_CON_DEV_ID("usart", "fff8c000.serial", &usart0_clk),
-diff --git a/arch/arm/mach-at91/at91sam9g45_devices.c b/arch/arm/mach-at91/at91sam9g45_devices.c
-index d943363c1845..c2cebaa60d7e 100644
---- a/arch/arm/mach-at91/at91sam9g45_devices.c
-+++ b/arch/arm/mach-at91/at91sam9g45_devices.c
-@@ -1334,9 +1334,7 @@ static void __init at91_add_device_watchdog(void) {}
-  *  PWM
-  * --------------------------------------------------------------------*/
- 
--#if defined(CONFIG_ATMEL_PWM) || defined(CONFIG_ATMEL_PWM_MODULE)
--static u32 pwm_mask;
--
-+#if IS_ENABLED(CONFIG_PWM_ATMEL)
- static struct resource pwm_resources[] = {
- 	[0] = {
- 		.start	= AT91SAM9G45_BASE_PWMC,
-@@ -1351,11 +1349,8 @@ static struct resource pwm_resources[] = {
- };
- 
- static struct platform_device at91sam9g45_pwm0_device = {
--	.name	= "atmel_pwm",
-+	.name	= "at91sam9rl-pwm",
- 	.id	= -1,
--	.dev	= {
--		.platform_data		= &pwm_mask,
--	},
- 	.resource	= pwm_resources,
- 	.num_resources	= ARRAY_SIZE(pwm_resources),
- };
-@@ -1374,8 +1369,6 @@ void __init at91_add_device_pwm(u32 mask)
- 	if (mask & (1 << AT91_PWM3))
- 		at91_set_B_periph(AT91_PIN_PD0, 1);	/* enable PWM3 */
- 
--	pwm_mask = mask;
--
- 	platform_device_register(&at91sam9g45_pwm0_device);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 626aad2..71f9175 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -509,112 +509,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
+ 	return r;
  }
- #else
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	int r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi_wp_audio_enable(&hdmi.wp, true);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_enable(&hdmi.wp, false);
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return hdmi4_audio_start(&hdmi.core, &hdmi.wp);
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	hdmi4_audio_stop(&hdmi.core, &hdmi.wp);
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	bool r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	r = hdmi_mode_has_audio(hdmi.cfg.cm.mode);
+-
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	int r;
+-	u32 pclk = hdmi.cfg.timings.pixelclock;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi4_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-#else
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	return false;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	return -EPERM;
+-}
+-#endif
+-
+ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.connect		= hdmi_connect,
+ 	.disconnect		= hdmi_disconnect,
+@@ -627,13 +521,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.get_timings		= hdmi_display_get_timings,
+ 
+ 	.read_edid		= hdmi_read_edid,
+-
+-	.audio_enable		= hdmi_audio_enable,
+-	.audio_disable		= hdmi_audio_disable,
+-	.audio_start		= hdmi_audio_start,
+-	.audio_stop		= hdmi_audio_stop,
+-	.audio_supported	= hdmi_audio_supported,
+-	.audio_config		= hdmi_audio_config,
+ };
+ 
+ static void hdmi_init_output(struct platform_device *pdev)
 -- 
-1.9.1
+1.7.9.5
 

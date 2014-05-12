@@ -1,69 +1,36 @@
-From: Takashi Iwai <tiwai@suse.de>
-Date: Tue, 13 May 2014 10:09:29 +0000
-Subject: [PATCH 3/3] console: Remove superfluous readonly check
-Message-Id: <1399975769-30526-4-git-send-email-tiwai@suse.de>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Mon, 12 May 2014 09:12:26 +0000
+Subject: [PATCH 15/19] ARM: omap5.dtsi: Add audio related parameters to hdmi node
+Message-Id: <3e3b77eae539bfb78db12edc1e942d3ceea01a40.1399884780.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399975769-30526-1-git-send-email-tiwai@suse.de>
-In-Reply-To: <1399975769-30526-1-git-send-email-tiwai@suse.de>
+References: <cover.1399884780.git.jsarha@ti.com>
+In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-uni_pagedir.readonly is never set.  Let's get rid of superfluous check
-codes.
+Adds HDMI audio sDMA properties.
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/tty/vt/consolemap.c | 16 +++-------------
- 1 file changed, 3 insertions(+), 13 deletions(-)
+ arch/arm/boot/dts/omap5.dtsi |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/tty/vt/consolemap.c b/drivers/tty/vt/consolemap.c
-index 3fdc786b6b2f..610b720d3b91 100644
---- a/drivers/tty/vt/consolemap.c
-+++ b/drivers/tty/vt/consolemap.c
-@@ -179,7 +179,6 @@ struct uni_pagedir {
- 	unsigned long	sum;
- 	unsigned char	*inverse_translations[4];
- 	u16		*inverse_trans_unicode;
--	int		readonly;
- };
- 
- static struct uni_pagedir *dflt;
-@@ -501,9 +500,6 @@ static int con_do_clear_unimap(struct vc_data *vc, struct unimapinit *ui)
- 	struct uni_pagedir *p, *q;
- 
- 	p = *vc->vc_uni_pagedir_loc;
--	if (p && p->readonly)
--		return -EIO;
--
- 	if (!p || --p->refcount) {
- 		q = kzalloc(sizeof(*p), GFP_KERNEL);
- 		if (!q) {
-@@ -536,19 +532,13 @@ int con_set_unimap(struct vc_data *vc, ushort ct, struct unipair __user *list)
- 	int err = 0, err1, i;
- 	struct uni_pagedir *p, *q;
- 
-+	if (!ct)
-+		return 0;
-+
- 	console_lock();
- 
- 	/* Save original vc_unipagdir_loc in case we allocate a new one */
- 	p = *vc->vc_uni_pagedir_loc;
--	if (p->readonly) {
--		console_unlock();
--		return -EIO;
--	}
--	
--	if (!ct) {
--		console_unlock();
--		return 0;
--	}
- 	
- 	if (p->refcount > 1) {
- 		int j, k;
+diff --git a/arch/arm/boot/dts/omap5.dtsi b/arch/arm/boot/dts/omap5.dtsi
+index b2a28e6..bac7d8e 100644
+--- a/arch/arm/boot/dts/omap5.dtsi
++++ b/arch/arm/boot/dts/omap5.dtsi
+@@ -931,6 +931,8 @@
+ 				ti,hwmods = "dss_hdmi";
+ 				clocks = <&dss_48mhz_clk>, <&dss_sys_clk>;
+ 				clock-names = "fck", "sys_clk";
++				dmas = <&sdma 76>;
++				dma-names = "audio_tx";
+ 			};
+ 		};
+ 	};
 -- 
-1.9.2
+1.7.9.5
 

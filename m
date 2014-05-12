@@ -1,184 +1,36 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 08 May 2014 09:27:14 +0000
-Subject: [RFC 3/6] omapdss: DT: Get source endpoint by matching reg-id
-Message-Id: <1399540517-17883-3-git-send-email-archit@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Mon, 12 May 2014 09:12:24 +0000
+Subject: [PATCH 13/19] ARM: omap4.dtsi: Add audio related parametes to hdmi node
+Message-Id: <1bc3c1cddbbc4d4b210ffc2be82fc36d53d311ee.1399884780.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399540517-17883-1-git-send-email-archit@ti.com>
-In-Reply-To: <1399540517-17883-1-git-send-email-archit@ti.com>
+References: <cover.1399884780.git.jsarha@ti.com>
+In-Reply-To: <cover.1399884780.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: peter.ujfalusi-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-In omapdss_of_find_source_for_first_ep, we retrieve a source endpoint's DT node,
-and then see what omapdss output has the matching device_node pointer in
-omap_dss_find_output_by_node.
+Adds HDMI audio sDMA properties.
 
-For all DPI and SDI outputs, the device_node pointer is set as the parent's DSS
-device_node pointer. If the source is one of these outputs, the above method
-won't work.
-
-To get the correct output for ports within DSS with the existing omapdss DT
-framework, we check in omapdss_of_find_source_for_first_ep, whether the source
-node is of the DSS parent device. If so, we take an extra step of extracting
-the 'reg' property from the port corresponding to the endpoint source, and get
-the omap_dss_device output by matching both device_node and reg-id.
-
-We would want to get rid of this eventually, and support multiple ports in
-general. That would involve making some more changes the omapdss DT
-framework.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dss-of.c | 41 ++++++++++++++++++++++++++++++----
- drivers/video/fbdev/omap2/dss/dss.c    |  6 +++++
- drivers/video/fbdev/omap2/dss/dss.h    |  2 ++
- drivers/video/fbdev/omap2/dss/output.c | 15 +++++++++++++
- include/video/omapdss.h                |  6 +++++
- 5 files changed, 66 insertions(+), 4 deletions(-)
+ arch/arm/boot/dts/omap4.dtsi |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dss-of.c b/drivers/video/fbdev/omap2/dss/dss-of.c
-index a4b20aa..4261c14 100644
---- a/drivers/video/fbdev/omap2/dss/dss-of.c
-+++ b/drivers/video/fbdev/omap2/dss/dss-of.c
-@@ -19,6 +19,7 @@
- #include <linux/seq_file.h>
- 
- #include <video/omapdss.h>
-+#include "dss.h"
- 
- struct device_node *
- omapdss_of_get_next_port(const struct device_node *parent,
-@@ -142,12 +143,44 @@ omapdss_of_find_source_for_first_ep(struct device_node *node)
- 
- 	src_node = omapdss_of_get_remote_device_node(ep);
- 
--	of_node_put(ep);
--
--	if (!src_node)
-+	if (!src_node) {
-+		of_node_put(ep);
- 		return ERR_PTR(-EINVAL);
-+	}
- 
--	src = omap_dss_find_output_by_node(src_node);
-+	/*
-+	 * TODO: Find a better solution for this.
-+	 *
-+	 * DPI and SDI outputs share the same DSS device node. In order to find
-+	 * the correct omap_dss_device output, we need to match the reg-id
-+	 * property of the DPI/SDI port.
-+	 *
-+	 * For the special case of device_node being the parent DSS device, make
-+	 * sure we check for both device_node and reg-id to get the correct
-+	 * source
-+	 */
-+	if (src_node = dss_device_node()) {
-+		struct device_node *src_port;
-+		u32 reg;
-+		int r;
-+
-+		src_port = of_parse_phandle(ep, "remote-endpoint", 0);
-+
-+		/* the parent of the endpoint is always the port node */
-+		src_port = of_get_next_parent(src_port);
-+
-+		r = of_property_read_u32(src_port, "reg", &reg);
-+		if (r)
-+			reg = 0;
-+
-+		of_node_put(src_port);
-+
-+		src = omap_dss_find_output_by_node_and_reg(src_node, reg);
-+	} else {
-+		src = omap_dss_find_output_by_node(src_node);
-+	}
-+
-+	of_node_put(ep);
- 
- 	of_node_put(src_node);
- 
-diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-index c415029..4087f3b 100644
---- a/drivers/video/fbdev/omap2/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/dss/dss.c
-@@ -790,6 +790,12 @@ static int __init dss_init_features(struct platform_device *pdev)
- 	return 0;
- }
- 
-+/* of_node pointer for the DSS parent node */
-+struct device_node *dss_device_node(void)
-+{
-+	return dss.pdev->dev.of_node;
-+}
-+
- static int __init dss_init_ports_omap34xx(struct platform_device *pdev)
- {
- 	struct device_node *parent = pdev->dev.of_node;
-diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
-index 9f4ee49..6f68f72 100644
---- a/drivers/video/fbdev/omap2/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/dss/dss.h
-@@ -240,6 +240,8 @@ typedef bool (*dss_div_calc_func)(unsigned long fck, void *data);
- bool dss_div_calc(unsigned long pck, unsigned long fck_min,
- 		dss_div_calc_func func, void *data);
- 
-+struct device_node *dss_device_node(void);
-+
- /* SDI */
- int sdi_init_platform_driver(void) __init;
- void sdi_uninit_platform_driver(void) __exit;
-diff --git a/drivers/video/fbdev/omap2/dss/output.c b/drivers/video/fbdev/omap2/dss/output.c
-index 2ab3afa..2b556f1 100644
---- a/drivers/video/fbdev/omap2/dss/output.c
-+++ b/drivers/video/fbdev/omap2/dss/output.c
-@@ -144,6 +144,21 @@ struct omap_dss_device *omap_dss_find_output_by_node(struct device_node *node)
- }
- EXPORT_SYMBOL(omap_dss_find_output_by_node);
- 
-+struct omap_dss_device
-+		*omap_dss_find_output_by_node_and_reg(struct device_node *node,
-+		u32 reg)
-+{
-+	struct omap_dss_device *out;
-+
-+	list_for_each_entry(out, &output_list, list) {
-+		if (out->dev->of_node = node && out->reg = reg)
-+			return omap_dss_get_device(out);
-+	}
-+
-+	return NULL;
-+}
-+EXPORT_SYMBOL(omap_dss_find_output_by_node_and_reg);
-+
- struct omap_dss_device *omapdss_find_output_from_display(struct omap_dss_device *dssdev)
- {
- 	while (dssdev->src)
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 6adb445..7ce2d83 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -789,6 +789,9 @@ struct omap_dss_device {
- 	/* output instance */
- 	enum omap_dss_output_id id;
- 
-+	/* the <reg> value in the DT node */
-+	int reg;
-+
- 	/* dynamic fields */
- 	struct omap_overlay_manager *manager;
- 
-@@ -909,6 +912,9 @@ void omapdss_unregister_output(struct omap_dss_device *output);
- struct omap_dss_device *omap_dss_get_output(enum omap_dss_output_id id);
- struct omap_dss_device *omap_dss_find_output(const char *name);
- struct omap_dss_device *omap_dss_find_output_by_node(struct device_node *node);
-+struct omap_dss_device
-+		*omap_dss_find_output_by_node_and_reg(struct device_node *node,
-+		u32 reg);
- int omapdss_output_set_device(struct omap_dss_device *out,
- 		struct omap_dss_device *dssdev);
- int omapdss_output_unset_device(struct omap_dss_device *out);
+diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
+index 27fcac8..c7f0913 100644
+--- a/arch/arm/boot/dts/omap4.dtsi
++++ b/arch/arm/boot/dts/omap4.dtsi
+@@ -919,6 +919,8 @@
+ 				ti,hwmods = "dss_hdmi";
+ 				clocks = <&dss_48mhz_clk>, <&dss_sys_clk>;
+ 				clock-names = "fck", "sys_clk";
++				dmas = <&sdma 76>;
++				dma-names = "audio_tx";
+ 			};
+ 		};
+ 	};
 -- 
-1.8.3.2
+1.7.9.5
 

@@ -1,59 +1,113 @@
-From: =?UTF-8?Q?Andreas_M=C3=BCller?= <schnitzeltony@googlemail.com>
-Date: Mon, 12 May 2014 08:20:12 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 May 2014 11:36:02 +0000
 Subject: Re: [PATCH 1/4] OMAPDSS: Fix DSS clock multiplier issue on 3703 and probably 3630
-Message-Id: <CALbNGRQpieZ+b-PvC+K2Zxb3hOd6KOCrPVOnveds-fXENn8GJg@mail.gmail.com>
+Message-Id: <5370B222.7050702@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="7mhkTaHVSGkqaKBvUtLsjwxEJqh7QfE0i"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398815562-24113-1-git-send-email-tony@atomide.com>
  <1398815562-24113-2-git-send-email-tony@atomide.com>
- <536C860E.1000501@ti.com>
- <CALbNGRR3U1veFgXmOWpfG3yNVESdxi2t79WDrJwOZ1oShuG1yA@mail.gmail.com>
- <20140511144209.GA28266@atomide.com>
-In-Reply-To: <20140511144209.GA28266@atomide.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+ <536C860E.1000501@ti.com> <20140509143703.GA17814@atomide.com>
+In-Reply-To: <20140509143703.GA17814@atomide.com>
 To: linux-arm-kernel@lists.infradead.org
 
-On Sun, May 11, 2014 at 4:42 PM, Tony Lindgren <tony@atomide.com> wrote:
-> * Andreas M=C3=BCller <schnitzeltony@googlemail.com> [140509 14:07]:
->> On Fri, May 9, 2014 at 9:38 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> w=
-rote:
->> > On 30/04/14 02:52, Tony Lindgren wrote:
->> >> Otherwise we can get often errors like the following and the
->> >> display won't come on:
->> >>
->> >> omapdss APPLY error: FIFO UNDERFLOW on gfx, disabling the overlay
->> >> omapdss APPLY error: SYNC_LOST on channel lcd, restarting
->> >> the output with video overlays disabled
->> >>
->> >> There are some earlier references to this issue:
->> >>
->> >> http://www.spinics.net/lists/linux-omap/msg59511.html
->> >> http://www.spinics.net/lists/linux-omap/msg59724.html
->> >
->> resend - my client had HTML enabled...
+--7mhkTaHVSGkqaKBvUtLsjwxEJqh7QfE0i
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 09/05/14 17:37, Tony Lindgren wrote:
+> * Tomi Valkeinen <tomi.valkeinen@ti.com> [140509 00:39]:
+>> On 30/04/14 02:52, Tony Lindgren wrote:
+>>> Otherwise we can get often errors like the following and the
+>>> display won't come on:
+>>>
+>>> omapdss APPLY error: FIFO UNDERFLOW on gfx, disabling the overlay
+>>> omapdss APPLY error: SYNC_LOST on channel lcd, restarting
+>>> the output with video overlays disabled
+>>>
+>>> There are some earlier references to this issue:
+>>>
+>>> http://www.spinics.net/lists/linux-omap/msg59511.html
+>>> http://www.spinics.net/lists/linux-omap/msg59724.html
 >>
->> FWIW: I have had issues long time ago [1]. With mainline 3.14.3 I had
->> still the reboot problem on old 600MHz OMAP 3530. Applying this patch
->> solved the issues. For other versions I had no chance to reproduce the
->> original wakup issue mentioned in old thread
->
-> Sorry I'm a bit confused now. Is the reboot issue a separate issue
-> related to the twl4030 generic scripts for 3530?
->
-> And then this patch fixes dm3730 wake-up (from suspend?) issues?
->
-> Or do we have some other bug where we wrongly hit omap3630_dss_feats
-> on 3530 somehow?
-(What I think) I have done: Have 3.14.3 still booting with legacy
-board init (please don't kill me for that). Without applying your
-patch old OMAP3530 crashed at every reboot with SYNCH_LOST.
+>> Those don't sound like the same issue, but it's hard to say. What kind=
 
-After applying your patch reboot works fine.
+>> of clock rates do you get? Cat you paste debugfs/omapdss/clk, with and=
 
-Looking into id-code makes me wonder what changes on 36xx-features do
-to 35xx devices (treated as 34xx - right?). The only way that this
-happens is for unknown hawkeye fallthough. I suggest you simply forget
-my note and I will find out what really 'fixed' dss reboot problem.
+>> without this patch?
+>=20
+> Without this patch:
+> # cat /sys/kernel/debug/omapdss/clk=20
+> [   24.833831] DSS: dss_runtime_get
+> [   24.837554] DSS: dss_runtime_put
+> [   24.840972] DISPC: dispc_runtime_get
+> [   24.844757] DISPC: dispc_runtime_put
+> - DSS -
+> DSS_FCK (DSS1_ALWON_FCLK) =3D 57600000
+> - DISPC -
+> dispc fclk source =3D DSS_FCK (DSS1_ALWON_FCLK)
+> fck             57600000       =20
+> - LCD -
+> LCD clk source =3D DSS_FCK (DSS1_ALWON_FCLK)
+> lck             57600000        lck div 1
+> pck             19200000        pck div 3
+>=20
+>=20
+> With this patch:
+> # cat /sys/kernel/debug/omapdss/clk=20
+> [   34.580688] DSS: dss_runtime_get
+> [   34.584197] DSS: dss_runtime_put
+> [   34.587768] DISPC: dispc_runtime_get
+> [   34.591552] DISPC: dispc_runtime_put
+> - DSS -
+> DSS_FCK (DSS1_ALWON_FCLK) =3D 108000000
+> - DISPC -
+> dispc fclk source =3D DSS_FCK (DSS1_ALWON_FCLK)
+> fck             108000000      =20
+> - LCD -
+> LCD clk source =3D DSS_FCK (DSS1_ALWON_FCLK)
+> lck             108000000       lck div 1
+> pck             18000000        pck div 6
+> =20
+>> What resolution do you have? If it's a very high resolution (say, DVI
+>> output to a monitor), it could just be an issue of
+>> not-enough-memory-bandwidth.
+>=20
+> This is just the 3730-evm with the Sharp VGA panel mentioned in
+> this series.
 
-Andreas
+Hmm, well, those both look fine. The fck is well below the maximum,
+which is somewhere around 170MHz-180MHz. The lck/pck ratio is higher
+with this patch, but that should affect the GFX overlay.
+
+So you're just booting, and there are no applications that use the
+framebuffer? And there is no rotation or such configured?
+
+ Tomi
+
+
+
+--7mhkTaHVSGkqaKBvUtLsjwxEJqh7QfE0i
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTcLIiAAoJEPo9qoy8lh71al0QAK6MSeVv6KaLxKJDjAOyAQK+
+0kCLluWyrNpnaCOP1mru/OcojSlYeVsdsx8dRXcplIuhfJuS1vdF/F0CRIbP6FhD
+wnbGy2XuZthH3RkYF28dzcSid4Ov5Gra4wfA3Vkm8R+moYqiKfxvKivbm557JHIp
+Vi04/aFC6h2pXz05kbt+UDYwP+B+J5WvvEAh0LDZc2SiN1j9Ab5GG+62kVW+dsOO
+COjKM6q5uTKrnF9zMC3j45clf4UIpvc4+6F9m3jbljvSu+x/d2SqNsdiUFcxrE/2
+lXRMkjDcyL/rr65Xum9sN8hUG5CbDf287d2t3uzxGU/GVOXSU+avegPLxDhqLWyf
+wjL9022Ilef6EIs1zaGP7KyvdPnTcvwkNwqgyB6VVkin+LElimwb1Y1KH4qlxXRH
+/SdY1oxbM/HfzYo0q+HRDHGN3x5umf2eKNWW/c9HmrTCtDq94PiyeIJvU1cvqZ17
++2wP3yOkzpIax9wRJCLgowsbW6E4mbxe9ZA965CYIi2UVBm5UTZY+Ni62wDNR++y
+ULuLCwYpZzVEFc3onY5R1XQXrGoxUNxQIcsrysZAsyMKvKmnfWusSnmm6rO7Ruth
+FjedykbIPd+EcUXRNCdzuNoJBV/HWdN/iU55YE8w6/pVr3RlOq+bLcNO9gPgEigq
+BD7T45pX4u2vZAz7CVTZ
+=UBWI
+-----END PGP SIGNATURE-----
+
+--7mhkTaHVSGkqaKBvUtLsjwxEJqh7QfE0i--

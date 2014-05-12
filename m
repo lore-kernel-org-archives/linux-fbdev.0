@@ -1,49 +1,70 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Mon, 12 May 2014 17:22:43 +0000
-Subject: Re: [PATCH 11/19] ASoC: omap: Remove obsolete HDMI audio code and Kconfig options
-Message-Id: <20140512172243.GD12304@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ix8ND813NDRFdDE4"
+From: Jyri Sarha <jsarha@ti.com>
+Date: Mon, 12 May 2014 09:12:25 +0000
+Subject: [PATCH 14/19] ARM: omap4-panda-common.dtsi: Add HDMI audio nodes
+Message-Id: <fdeddff24bc38efb7a155b2569a5f2056278cb9d.1399884780.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1399884780.git.jsarha@ti.com>
- <df664d05d8208f5789623604a4e0f5342bc6e405.1399884780.git.jsarha@ti.com>
-In-Reply-To: <df664d05d8208f5789623604a4e0f5342bc6e405.1399884780.git.jsarha@ti.com>
-To: Jyri Sarha <jsarha@ti.com>
-Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com
+In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
+Adds a simple-card sound node for HDMI audio, the associated
+hdmi-codec node, and sound-dai-cells propeties to the DAI nodes.
 
---ix8ND813NDRFdDE4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ arch/arm/boot/dts/omap4-panda-common.dtsi |   21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
 
-On Mon, May 12, 2014 at 12:12:22PM +0300, Jyri Sarha wrote:
-> Removes omap-hdmi DAI driver, omap-hdmi-card driver, the related
-> Kconfig options, and Makefile entries. The HDMI DAI drivers has been
-> integrated directly to OMAP4+ HDMI drivers and simple-card driver is
-> used instead of omap-hdmi-card driver.
+diff --git a/arch/arm/boot/dts/omap4-panda-common.dtsi b/arch/arm/boot/dts/omap4-panda-common.dtsi
+index d2c45bf..c04f453 100644
+--- a/arch/arm/boot/dts/omap4-panda-common.dtsi
++++ b/arch/arm/boot/dts/omap4-panda-common.dtsi
+@@ -41,7 +41,7 @@
+ 		};
+ 	};
+ 
+-	sound: sound {
++	sound: sound@0 {
+ 		compatible = "ti,abe-twl6040";
+ 		ti,model = "PandaBoard";
+ 
+@@ -65,6 +65,24 @@
+ 			"AFMR", "Line In";
+ 	};
+ 
++	sound@1 {
++		compatible = "simple-audio-card";
++
++		simple-audio-card,cpu {
++			sound-dai = <&hdmi>;
++		};
++
++		simple-audio-card,codec {
++			sound-dai = <&hdmi_audio>;
++		};
++	};
++
++	hdmi_audio: hdmi_audio@0 {
++		#sound-dai-cells = <0>;
++		compatible = "linux,hdmi-audio";
++		status = "okay";
++	};
++
+ 	/* HS USB Port 1 Power */
+ 	hsusb1_power: hsusb1_power_reg {
+ 		compatible = "regulator-fixed";
+@@ -512,6 +530,7 @@
+ };
+ 
+ &hdmi {
++	#sound-dai-cells = <0>;
+ 	status = "ok";
+ 	vdda-supply = <&vdac>;
+ 
+-- 
+1.7.9.5
 
-Acked-by: Mark Brown <broonie@linaro.org>
-
---ix8ND813NDRFdDE4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTcQNgAAoJELSic+t+oim9VcEP+wQ9RRAyPFn6WlQjf1TuL7qR
-SGEl0Vvf76ngM7Bau/He6sXS6SJNANoZXrHUwLbpH3TLl+wj/MkKYz734rXzXb2A
-+d9BBqU8YnJAOx4dMVMFZ9mtLvtrBlv9IaIc0q6tSQotplCXVBUgUsRyC0cVGZ7/
-FbriH1X+3vp5t+WonazQQUbrzNAvRBfSoGnGvkhN50tybjOai66WQ3Q8Mrb7a7VO
-k/h9vX1R4E/6bafyXRQWM84jRzu3oBFkx/vBfril8FVMjciixWJroGkogT43gdwC
-oWGOp2oKHL/E7O8XHjURReQQKEJL4OGLJwM/1q+veu91b9Ffp+xHsj0ufxQoYXsF
-DNNEIa8JDjvJG6ooYOLczRsBAshAKFTOJn0TZg4VqfFJmoBkUsqTe2b82byYClrB
-zxG3tN7f1/eN9tyvq331MOm6c/Eh6OdGFX2BYK2XOsSNf5EaITKZwmCsxaAxpIvH
-LfIJSe9SvVyequOcUZYo31mWBNOyt6AWxwJ72HYexVNf30+xYIao9o0pwGdR/EIZ
-hzI3Avhnpi1psc7QpKJny3QhfhQmeExrsXBsAGBySWNHQ5AGVIaLNKOS4IiCeVpM
-o142T9VYI2dCmLiPpsFAykMFfmCxV/5ZjjRTvYH9wS6FlLHLzq0UzIff2oWqokjG
-v1pLQ7yJdGA46BzjE4Pg
-=apVs
------END PGP SIGNATURE-----
-
---ix8ND813NDRFdDE4--

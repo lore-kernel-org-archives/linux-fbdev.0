@@ -1,73 +1,57 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Wed, 28 May 2014 23:20:06 +0000
-Subject: [PATCHv2 03/15] ARM: at91: at91sam9263: switch to generic PWM framework
-Message-Id: <1401319218-16772-4-git-send-email-alexandre.belloni@free-electrons.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Mon, 12 May 2014 09:12:30 +0000
+Subject: [PATCH 19/19] ARM: omap2plus_defconfig: Enable OMAP4+ HDMI audio support
+Message-Id: <f6446d5ea83e0b90f7b2ac4af2fdc3fa2b0ec381.1399884780.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <cover.1399884780.git.jsarha@ti.com>
+In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
+This patch is here only as an example on how to enable HDMI audio for
+OMAP4+ HW. Adds CONFIG_SND_SIMPLE_CARD=m and CONFIG_SND_SOC_HDMI_CODEC=m.
+Also builds SND_OMAP_SOC in kernel to support in kernel built OMAPDSS
+with integrated HDMI DAI driver.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/mach-at91/at91sam9263.c         |  1 +
- arch/arm/mach-at91/at91sam9263_devices.c | 11 ++---------
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ arch/arm/configs/omap2plus_defconfig |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/mach-at91/at91sam9263.c b/arch/arm/mach-at91/at91sam9263.c
-index f30290572293..f6663d6c01ec 100644
---- a/arch/arm/mach-at91/at91sam9263.c
-+++ b/arch/arm/mach-at91/at91sam9263.c
-@@ -199,6 +199,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
- 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi.1", &spi1_clk),
- 	CLKDEV_CON_DEV_ID("t0_clk", "atmel_tcb.0", &tcb_clk),
- 	CLKDEV_CON_DEV_ID(NULL, "i2c-at91sam9260.0", &twi_clk),
-+	CLKDEV_CON_DEV_ID(NULL, "at91sam9rl-pwm", &pwm_clk),
- 	/* fake hclk clock */
- 	CLKDEV_CON_DEV_ID("hclk", "at91_ohci", &ohci_clk),
- 	CLKDEV_CON_ID("pioA", &pioA_clk),
-diff --git a/arch/arm/mach-at91/at91sam9263_devices.c b/arch/arm/mach-at91/at91sam9263_devices.c
-index 953616e5dbcb..4ab8be942f86 100644
---- a/arch/arm/mach-at91/at91sam9263_devices.c
-+++ b/arch/arm/mach-at91/at91sam9263_devices.c
-@@ -1131,9 +1131,7 @@ static void __init at91_add_device_watchdog(void) {}
-  *  PWM
-  * --------------------------------------------------------------------*/
- 
--#if defined(CONFIG_ATMEL_PWM)
--static u32 pwm_mask;
--
-+#if IS_ENABLED(CONFIG_PWM_ATMEL)
- static struct resource pwm_resources[] = {
- 	[0] = {
- 		.start	= AT91SAM9263_BASE_PWMC,
-@@ -1148,11 +1146,8 @@ static struct resource pwm_resources[] = {
- };
- 
- static struct platform_device at91sam9263_pwm0_device = {
--	.name	= "atmel_pwm",
-+	.name	= "at91sam9rl-pwm",
- 	.id	= -1,
--	.dev	= {
--		.platform_data		= &pwm_mask,
--	},
- 	.resource	= pwm_resources,
- 	.num_resources	= ARRAY_SIZE(pwm_resources),
- };
-@@ -1171,8 +1166,6 @@ void __init at91_add_device_pwm(u32 mask)
- 	if (mask & (1 << AT91_PWM3))
- 		at91_set_B_periph(AT91_PIN_PB29, 1);	/* enable PWM3 */
- 
--	pwm_mask = mask;
--
- 	platform_device_register(&at91sam9263_pwm0_device);
- }
- #else
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index 363733e..8b512c7 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -204,20 +204,22 @@ CONFIG_LCD_PLATFORM=y
+ CONFIG_FRAMEBUFFER_CONSOLE=y
+ CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y
+ CONFIG_LOGO=y
+-CONFIG_SOUND=m
+-CONFIG_SND=m
++CONFIG_SOUND=y
++CONFIG_SND=y
+ CONFIG_SND_MIXER_OSS=m
+ CONFIG_SND_PCM_OSS=m
+ CONFIG_SND_VERBOSE_PRINTK=y
+ CONFIG_SND_DEBUG=y
+ CONFIG_SND_USB_AUDIO=m
+-CONFIG_SND_SOC=m
+-CONFIG_SND_OMAP_SOC=m
++CONFIG_SND_SOC=y
++CONFIG_SND_OMAP_SOC=y
+ CONFIG_SND_AM33XX_SOC_EVM=m
+ CONFIG_SND_DAVINCI_SOC=m
+ CONFIG_SND_OMAP_SOC_OMAP_TWL4030=m
+ CONFIG_SND_OMAP_SOC_OMAP_ABE_TWL6040=m
+ CONFIG_SND_OMAP_SOC_OMAP3_PANDORA=m
++CONFIG_SND_SIMPLE_CARD=m
++CONFIG_SND_SOC_HDMI_CODEC=m
+ CONFIG_USB=y
+ CONFIG_USB_DEBUG=y
+ CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
 -- 
-1.9.1
+1.7.9.5
 

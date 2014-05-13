@@ -1,171 +1,335 @@
 From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 13 May 2014 15:25:18 +0000
+Date: Tue, 13 May 2014 21:26:39 +0000
 Subject: Re: [PATCH 3/4] OMAPDSS: panel-sharp-ls037v7dw01: add device tree support
-Message-Id: <20140513152518.GA16837@atomide.com>
+Message-Id: <20140513212639.GA18001@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140509155504.GE17814@atomide.com> <53707A64.2060203@ti.com>
- <CABxcv=kwhodeFTHoVpn1nHeh9+kV5fwMN9s3Kbk6h7_xJp4UYA@mail.gmail.com>
- <53709706.10501@ti.com>
- <CABxcv=mY0a+yJgmCTPN=BhSQD57Pw022zOd5_KxEgvvF_-=O7Q@mail.gmail.com>
- <20140512142646.GA31772@atomide.com> <5370E0C9.8050201@ti.com>
- <20140512155132.GH31772@atomide.com> <5371F923.80000@ti.com>
- <CABxcv==_LCw1kPYm17g=h8VfSN2V_qsgXjTnsy-JOetawSv4pA@mail.gmail.com>
-In-Reply-To: <CABxcv==_LCw1kPYm17g=h8VfSN2V_qsgXjTnsy-JOetawSv4pA@mail.gmail.com>
+References: <1398815562-24113-1-git-send-email-tony@atomide.com>
+ <1398815562-24113-4-git-send-email-tony@atomide.com>
+ <5369EAE7.3030705@ti.com> <20140507150343.GA9502@atomide.com>
+ <536A5920.1020908@ti.com> <20140507175919.GH9502@atomide.com>
+ <20140508233300.GI2198@atomide.com> <536C924E.5000307@ti.com>
+ <20140509153008.GC17814@atomide.com>
+In-Reply-To: <20140509153008.GC17814@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-* Javier Martinez Canillas <javier@dowhile0.org> [140513 04:40]:
-> On Tue, May 13, 2014 at 12:51 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> > On 12/05/14 18:51, Tony Lindgren wrote:
-> >
-> >>> It's already in v3.15.
-> >>
-> >> Oh great.. And you dumped it into arch/arm/mach-omap2 too and I somehow
-> >> even acked it :( Looks like there's also the custom mux hacks. And
-> >> custom hwmod hacks. And ongoing soc_is_xxx tinkering. Now let's not add
-> >
-> > The omap2_dss_hwmod_data, create_dss_pdev and create_simple_dss_pdev,
-> > omap_display_init stuff can be removed when the DT conversion has been done.
-
-Yes great that helps :)
-
-> > For the omap4_dsi_mux_pads (or the omap5 dsi muxing that was recently
-> > discussed) I still have no solution, but I haven't spent time on it. I
-> > have dropped the omap5 dsi muxing from the latest series for that reason.
-
-OK
-
-> > dispc_disable_outputs and omap_dss_reset are needed because omap_device
-> > doesn't handle resetting DSS properly, as special steps need to be done
-> > for that. omap_dss_reset is called from the hwmod/omap_device code, so I
-> > don't think this code can be anywhere else.
-
-OK that we should be able to do with drivers/reset eventually. The reset
-and idle of drivers is also needed for unused devices too, so we can't
-have drivers do it in those cases.
-
-> > For the omap_display_get_version() I have no good solution. Making
-> > separate .dts versions for all the needed OMAP ES versions seems like a
-> > huge hassle to me, but that is one solution.
-> >
-> > I think that would mean having separate .dtsi files for omapdss for
-> > omap3_es1, omap3_es3plus, omap4_es1, omap4_es2, omap4_es3plus, and then
-> > having separate omapxxxx.dtsi files for all of those, and then separate
-> > board .dts files for the ES versions used on each board.
-> >
-> > Or is there some sane way to define such things in dts?
-> >
+* Tony Lindgren <tony@atomide.com> [140509 08:31]:
+> * Tomi Valkeinen <tomi.valkeinen@ti.com> [140509 01:31]:
+> > On 09/05/14 02:33, Tony Lindgren wrote:
+> > > * Tony Lindgren <tony@atomide.com> [140507 11:00]:
+> > >> * Tomi Valkeinen <tomi.valkeinen@ti.com> [140507 09:03]:
+> > >>> On 07/05/14 18:03, Tony Lindgren wrote:
+> > >>>>
+> > >>>> BTW, I'm also personally fine with all five gpios showing in a single
+> > >>>> gpios property, I'm not too exited about naming anything in DT..
+> > >>>
+> > >>> I don't have a strong opinion here. I don't have much experience with
+> > >>> DT, especially with making bindings compatible with other ones.
+> > >>>
+> > >>> I'd just forget the simple-panel, and have single gpio array.
+> > >>
+> > >> Well if it's a don't care flag for both of us, let's try to use
+> > >> the existing standard for simple-panel.txt and add mode-gpios
+> > >> property. I'll post a patch for that.
+> > > 
+> > > Here's an updated version using enable-gpios, reset-gpios and
+> > > mode-gpios. So it follows simple-panel.txt and adds mode-gpios
+> > > that's currently specific to this panel only.
+> > > 
+> > > Also updated for -EPROBE_DEFER handling, tested that by changing
+> > > one of the GPIOs to be a twl4030 GPIO.
+> > 
+> > To speed things up a bit, I made the changes I suggested. Compile tested
+> > only.
 > 
-> Unfortunately there isn't.
-> 
-> I have a similar problem with the IGEP boards since there are just too
-> many variations of them (e.g: DM3730 SoC vs OMAP3530 SoC, NAND vs
-> OneNAND, 256MB vs 512MB flash memory sizes, with and without wifi
-> chip, etc).
-> 
-> Since dts are supposed to describe the hardware, each revision with a
-> slighter variation forces to have a different dts. My solution was to
-> not try to have a dts for every single variation in mainline but only
-> one for the most common revision and that could be used as a reference
-> to modify and ship on each device. Unfortunately that is not possible
-> to you since each DSS IP block is used by many boards.
+> OK thanks did not get the penguin with it so need to look at it a bit
+> more.
 
-Well ideally the revision info for a device would come from device
-revision registers rather using the SoC revision. In the DSS case when
-the SoC revision is needed by a device it maybe it can be deciphered
-from a combination of compatible flag and the clock rate for example?
-
-But yeah I agree we still need revision detection in the kernel
-rather than try to create separate .dtsi files for sub-revisions.
- 
-> >> _any_ new crap into arch/arm/mach-omap2/display.c.
-> >>
-> >> So please consider this a huge eternal NAK to add any more crap to
-> >> arch/arm/mach-omap2/display.c from me. No more new soc_is beyond
-> >> the soc_is_am43xx() you have in linux next. No more adding
-> >> of_find_compatible_node() beyond ti,omap5-dss you have in linux next.
-> >>
-> >> And no more new panel remapping in this file as soon as you have found
-> >> a better solution. Preferrably by v3.17 merge window. This file just
-> >> needs to disappear. Yuk.
-> >
-> > Do you object to the compatible string remapping as such, or just that
-> > it's in arch/arm/mach-omap2?
-
-It's something I'd rather not have under mach-omap2 as that means that
-I may need to deal with it too to some extent. And I don't think we
-need to do such remapping, we should be able to use the panel compatible
-strings as they are just fine. It should be possible to figure out from
-the device tree properties what controller the panel belongs to. Or
-for now, use the panel registration to figure out what display controller
-it belongs to.
-
-> > I guess nothing prevents me from moving it to drivers/, and having some
-> > early-ish initcall doing the job.
-
-/me likes this idea if you need it at all. Stuff like this tends to stay
-and spread, so I'd rather not do the remapping of compatible strings at
-all.
-
-> > If the remapping as such is horrible, I'm all ears for better ideas. I
-> > spent quite a lot of time on it, and that's the best I could come up with.
-> >
-> > It's rather simple prefixing of the compatible strings for selected
-> > devices. The purpose of that is to have proper data in the .dts files
-> > (which I think is very important) with the cost of having some rather
-> > simple internal hacks in the kernel, which can be removed immediately
-> > when we have a common display driver framework.
-> >
-> 
-> Even though the compatible trick that I said before could be an
-> alternative, it has the problem that does not describes the hardware
-> as you said. The restriction of the DT being a stable API and get it
-> right from the beginning forces us to make these kind of technical
-> decisions.
-> 
-> So, since we can change the kernel later but not the DTS, I agree with
-> you that the remapping is the least bad of our options.
-
-Yes the binding for the panel should just describe the panel so it can be
-used with whatever display controller. But we do have quite a few buses
-probing devices. How about set up the panel probing the same way?
-
-For the panels on display controller, just do the usual
-for_each_child_of_node(pdev->dev.of_node, child) and probe them?
-
-It seems the remapping of compatible strings is not needed in this
-as we're only picking up panels that are children of the display
-controller.
- 
-> >>> I'm not sure what it would give us to try to be compatible with
-> >>> simple-panel.txt. The simple-panel bindings won't probably be compatible
-> >>> with the future common display drivers in any case, as the simple-panel
-> >>> binding is just too limited and doesn't describe the hardware fully.
-> >>
-> >> Hmm what else does a panel need where the existing binding cannot be
-> >> extended?
-> >
-> > The existing simple-panel binding doesn't describe the connections of
-> > the panel, i.e. its video input. I guess it can be extended, but I don't
-> > see what the benefit is of trying to create new panel bindings
-> > compatible with the simple-panel bindings. As I see, the simple-panel
-> > bindings work only with very limited use cases, where the drivers make
-> > assumptions. Simple panel bindings cannot be used with omapdss, nor can
-> > it be used with the future common display framework.
-
-Well it seems at least the reset and enable pin standard from that
-binding can be kept.
-
-> > But I'm not really familiar with using extending current bindings, and
-> > making new bindings compatible with old ones. Can you explain why it'd
-> > be good to have the sharp panel bindings compatible with simple-panel?
-> > In what kind of scenario would it be used?
-
-Ideally the panel binding just describes the panel and it should not
-matter which display controller it is a child of.
+Here's this patch updated again for QVGA and VGA support and to use
+your panel remapping. I've also made sure the blanking works properly
+on evm-37xx and ldp.
 
 Regards,
 
 Tony
+
+8< --------------------
+From: Tony Lindgren <tony@atomide.com>
+Date: Mon, 28 Apr 2014 20:22:21 -0700
+Subject: [PATCH] OMAPDSS: panel-sharp-ls037v7dw01: add device tree support
+
+Add device tree support for sharp-ls037v7dw01 panel.
+
+Note that this patch is using the remapping of the compatible
+flag as implemented by Tomi (that I do not like), but seems
+like that's currently needed to avoid redoing the panel
+bindings later on. And for the record, that has been agreed
+to be a temporary measure until the generic display bindings
+can be used by DSS.
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/sharp,ls037v7dw01.txt
+@@ -0,0 +1,44 @@
++SHARP LS037V7DW01 TFT-LCD panel
++=================+
++Required properties:
++- compatible: "sharp,ls037v7dw01"
++
++Optional properties:
++- label: a symbolic name for the panel
++- enable-gpios: a GPIO spec for the optional enable pin
++  this pin is the INI pin as specified in the LS037V7DW01.pdf file.
++- reset-gpios: a GPIO spec for the optional reset pin
++  this pin is the RESB pin as specified in the LS037V7DW01.pdf file.
++- mode-gpios: a GPIO
++  ordered MO, LR, and UD as specified in the LS037V7DW01.pdf file.
++
++Required nodes:
++- Video port for DPI input
++
++This panel can have zero to five GPIOs to configure
++to change configuration between QVGA and VGA mode
++and the scan direction. As these pins can be also
++configured with external pulls, all the GPIOs are
++considered optional with holes in the array.
++
++Example
++-------
++
++Example when connected to a omap2+ based device:
++
++lcd0: display {
++	compatible = "sharp,ls037v7dw01";
++	power-supply = <&lcd_3v3>;
++	enable-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;	/* gpio152, lcd INI */
++	reset-gpios = <&gpio5 27 GPIO_ACTIVE_HIGH>;	/* gpio155, lcd RESB */
++	mode-gpios = <&gpio5 26 GPIO_ACTIVE_HIGH	/* gpio154, lcd MO */
++		      &gpio1 2 GPIO_ACTIVE_HIGH		/* gpio2, lcd LR */
++		      &gpio1 3 GPIO_ACTIVE_HIGH>;	/* gpio3, lcd UD */
++
++	port {
++		lcd_in: endpoint {
++			remote-endpoint = <&dpi_out>;
++		};
++	};
++};
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -562,6 +562,7 @@ static const char * const dss_compat_conv_list[] __initconst = {
+ 	"hdmi-connector",
+ 	"panel-dpi",
+ 	"panel-dsi-cm",
++	"sharp,ls037v7dw01",
+ 	"sony,acx565akm",
+ 	"svideo-connector",
+ 	"ti,tfp410",
+--- a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
+@@ -12,15 +12,18 @@
+ #include <linux/delay.h>
+ #include <linux/gpio.h>
+ #include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+-
++#include <linux/regulator/consumer.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ 
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+ 	struct omap_dss_device *in;
++	struct regulator *vcc;
+ 
+ 	int data_lines;
+ 
+@@ -31,9 +34,33 @@ struct panel_drv_data {
+ 	struct gpio_desc *mo_gpio;	/* low = 480x640, high = 240x320 */
+ 	struct gpio_desc *lr_gpio;	/* high = conventional horizontal scanning */
+ 	struct gpio_desc *ud_gpio;	/* high = conventional vertical scanning */
++
++#define SHARP_LS_QVGA	(1 << 0)
++	u32 flags;
++};
++
++static const struct omap_video_timings sharp_ls_qvga_timings = {
++	.x_res = 240,
++	.y_res = 320,
++
++	.pixelclock	= 5400000,
++
++	.hsw		= 3,
++	.hfp		= 3,
++	.hbp		= 39,
++
++	.vsw		= 1,
++	.vfp		= 2,
++	.vbp		= 7,
++
++	.vsync_level	= OMAPDSS_SIG_ACTIVE_LOW,
++	.hsync_level	= OMAPDSS_SIG_ACTIVE_LOW,
++	.data_pclk_edge	= OMAPDSS_DRIVE_SIG_RISING_EDGE,
++	.de_level	= OMAPDSS_SIG_ACTIVE_HIGH,
++	.sync_pclk_edge	= OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES,
+ };
+ 
+-static const struct omap_video_timings sharp_ls_timings = {
++static const struct omap_video_timings sharp_ls_vga_timings = {
+ 	.x_res = 480,
+ 	.y_res = 640,
+ 
+@@ -95,12 +122,21 @@ static int sharp_ls_enable(struct omap_dss_device *dssdev)
+ 	if (omapdss_device_is_enabled(dssdev))
+ 		return 0;
+ 
+-	in->ops.dpi->set_data_lines(in, ddata->data_lines);
++	if (ddata->data_lines)
++		in->ops.dpi->set_data_lines(in, ddata->data_lines);
+ 	in->ops.dpi->set_timings(in, &ddata->videomode);
+ 
++	if (ddata->vcc) {
++		r = regulator_enable(ddata->vcc);
++		if (r != 0)
++			return r;
++	}
++
+ 	r = in->ops.dpi->enable(in);
+-	if (r)
++	if (r) {
++		regulator_disable(ddata->vcc);
+ 		return r;
++	}
+ 
+ 	/* wait couple of vsyncs until enabling the LCD */
+ 	msleep(50);
+@@ -136,6 +172,9 @@ static void sharp_ls_disable(struct omap_dss_device *dssdev)
+ 
+ 	in->ops.dpi->disable(in);
+ 
++	if (ddata->vcc)
++		regulator_disable(ddata->vcc);
++
+ 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+ }
+ 
+@@ -243,6 +282,72 @@ static int sharp_ls_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static struct gpio_desc *
++sharp_ls_get_gpio_of(struct device *dev, int index, int val, char *desc)
++{
++	struct gpio_desc *gpio;
++
++	gpio = devm_gpiod_get_index(dev, desc, index);
++	if (IS_ERR(gpio))
++		return gpio;
++
++	gpiod_direction_output(gpio, val);
++
++	return gpio;
++}
++
++static int sharp_ls_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++
++	ddata->vcc = devm_regulator_get(&pdev->dev, "envdd");
++	if (IS_ERR(ddata->vcc)) {
++		dev_err(&pdev->dev, "failed to get regulator\n");
++		return PTR_ERR(ddata->vcc);
++	}
++
++	/* lcd INI */
++	ddata->ini_gpio = sharp_ls_get_gpio_of(&pdev->dev, 0, 0, "enable");
++	if (PTR_ERR(ddata->ini_gpio) = -EPROBE_DEFER)
++		return -EPROBE_DEFER;
++
++	/* lcd RESB */
++	ddata->resb_gpio = sharp_ls_get_gpio_of(&pdev->dev, 0, 1, "reset");
++	if (PTR_ERR(ddata->resb_gpio) = -EPROBE_DEFER)
++		return -EPROBE_DEFER;
++
++	/* lcd MO */
++	ddata->mo_gpio = sharp_ls_get_gpio_of(&pdev->dev, 0, 1, "mode");
++	if (PTR_ERR(ddata->mo_gpio) = -EPROBE_DEFER)
++		return -EPROBE_DEFER;
++
++	if (!IS_ERR(ddata->mo_gpio))
++		if (gpiod_get_raw_value_cansleep(ddata->mo_gpio))
++			ddata->flags |= SHARP_LS_QVGA;
++
++	/* lcd LR */
++	ddata->lr_gpio = sharp_ls_get_gpio_of(&pdev->dev, 1, 1, "mode");
++	if (PTR_ERR(ddata->lr_gpio) = -EPROBE_DEFER)
++		return -EPROBE_DEFER;
++
++	/* lcd UD */
++	ddata->ud_gpio = sharp_ls_get_gpio_of(&pdev->dev, 2, 1, "mode");
++	if (PTR_ERR(ddata->ud_gpio) = -EPROBE_DEFER)
++		return -EPROBE_DEFER;
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	return 0;
++}
++
+ static int sharp_ls_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -259,11 +364,18 @@ static int sharp_ls_probe(struct platform_device *pdev)
+ 		r = sharp_ls_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = sharp_ls_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+ 
+-	ddata->videomode = sharp_ls_timings;
++	if (ddata->flags & SHARP_LS_QVGA)
++		ddata->videomode = sharp_ls_qvga_timings;
++	else
++		ddata->videomode = sharp_ls_vga_timings;
+ 
+ 	dssdev = &ddata->dssdev;
+ 	dssdev->dev = &pdev->dev;
+@@ -302,12 +414,20 @@ static int __exit sharp_ls_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id sharp_ls_of_match[] = {
++	{ .compatible = "omapdss,sharp,ls037v7dw01", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, sharp_ls_of_match);
++
+ static struct platform_driver sharp_ls_driver = {
+ 	.probe = sharp_ls_probe,
+ 	.remove = __exit_p(sharp_ls_remove),
+ 	.driver = {
+ 		.name = "panel-sharp-ls037v7dw01",
+ 		.owner = THIS_MODULE,
++		.of_match_table = sharp_ls_of_match,
+ 	},
+ };
+ 

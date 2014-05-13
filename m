@@ -1,73 +1,69 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 23 May 2014 19:07:58 +0000
-Subject: [PATCH 09/13] ASoC: omap-hdmi-card: Changes for registeing the driver from OMAPDSS
-Message-Id: <64844e293dd9dc918d1b26f5505fc52466f40203.1400871999.git.jsarha@ti.com>
+From: Takashi Iwai <tiwai@suse.de>
+Date: Tue, 13 May 2014 10:09:29 +0000
+Subject: [PATCH 3/3] console: Remove superfluous readonly check
+Message-Id: <1399975769-30526-4-git-send-email-tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1400871999.git.jsarha@ti.com>
-In-Reply-To: <cover.1400871999.git.jsarha@ti.com>
+References: <1399975769-30526-1-git-send-email-tiwai@suse.de>
+In-Reply-To: <1399975769-30526-1-git-send-email-tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.cz>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The old OMAP HDMI audio registering from arch/arm/mach-omap2/devices.c
-was broken. The new approach is to register the drivers from OMAPDSS HDMI
-driver. The commit does the necessary changes for this approach.
+uni_pagedir.readonly is never set.  Let's get rid of superfluous check
+codes.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- sound/soc/omap/omap-hdmi-card.c |   20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+ drivers/tty/vt/consolemap.c | 16 +++-------------
+ 1 file changed, 3 insertions(+), 13 deletions(-)
 
-diff --git a/sound/soc/omap/omap-hdmi-card.c b/sound/soc/omap/omap-hdmi-card.c
-index f649fe8..56c0055 100644
---- a/sound/soc/omap/omap-hdmi-card.c
-+++ b/sound/soc/omap/omap-hdmi-card.c
-@@ -26,15 +26,13 @@
- #include <sound/soc.h>
- #include <asm/mach-types.h>
- #include <video/omapdss.h>
-+#include <sound/omap-hdmi-card-pdata.h>
- 
- #define DRV_NAME "omap-hdmi-audio"
- 
- static struct snd_soc_dai_link omap_hdmi_dai = {
- 	.name = "HDMI",
- 	.stream_name = "HDMI",
--	.cpu_dai_name = "omap-hdmi-audio-dai",
--	.platform_name = "omap-hdmi-audio-dai",
--	.codec_name = "hdmi-audio-codec",
- 	.codec_dai_name = "hdmi-hifi",
+diff --git a/drivers/tty/vt/consolemap.c b/drivers/tty/vt/consolemap.c
+index 3fdc786b6b2f..610b720d3b91 100644
+--- a/drivers/tty/vt/consolemap.c
++++ b/drivers/tty/vt/consolemap.c
+@@ -179,7 +179,6 @@ struct uni_pagedir {
+ 	unsigned long	sum;
+ 	unsigned char	*inverse_translations[4];
+ 	u16		*inverse_trans_unicode;
+-	int		readonly;
  };
  
-@@ -47,14 +45,28 @@ static struct snd_soc_card snd_soc_omap_hdmi = {
+ static struct uni_pagedir *dflt;
+@@ -501,9 +500,6 @@ static int con_do_clear_unimap(struct vc_data *vc, struct unimapinit *ui)
+ 	struct uni_pagedir *p, *q;
  
- static int omap_hdmi_probe(struct platform_device *pdev)
- {
-+	struct device *dev = &pdev->dev;
-+	struct asoc_omap_hdmi_card_pdata *pdata = dev->platform_data;
- 	struct snd_soc_card *card = &snd_soc_omap_hdmi;
- 	int ret;
+ 	p = *vc->vc_uni_pagedir_loc;
+-	if (p && p->readonly)
+-		return -EIO;
+-
+ 	if (!p || --p->refcount) {
+ 		q = kzalloc(sizeof(*p), GFP_KERNEL);
+ 		if (!q) {
+@@ -536,19 +532,13 @@ int con_set_unimap(struct vc_data *vc, ushort ct, struct unipair __user *list)
+ 	int err = 0, err1, i;
+ 	struct uni_pagedir *p, *q;
  
-+	if (!pdata) {
-+		dev_err(dev, "No platform data, bailing out\n");
-+		return -ENODEV;
-+	}
++	if (!ct)
++		return 0;
 +
- 	card->dev = &pdev->dev;
+ 	console_lock();
  
-+	omap_hdmi_dai.cpu_dai_name +		devm_kstrdup(dev, pdata->cpudai_name, GFP_KERNEL);
-+	omap_hdmi_dai.platform_name +		devm_kstrdup(dev, pdata->cpudai_name, GFP_KERNEL);
-+	omap_hdmi_dai.codec_name +		devm_kstrdup(dev, pdata->codec_name, GFP_KERNEL);
-+
- 	ret = snd_soc_register_card(card);
- 	if (ret) {
--		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
-+		dev_err(dev, "snd_soc_register_card failed (%d)\n", ret);
- 		card->dev = NULL;
- 		return ret;
- 	}
+ 	/* Save original vc_unipagdir_loc in case we allocate a new one */
+ 	p = *vc->vc_uni_pagedir_loc;
+-	if (p->readonly) {
+-		console_unlock();
+-		return -EIO;
+-	}
+-	
+-	if (!ct) {
+-		console_unlock();
+-		return 0;
+-	}
+ 	
+ 	if (p->refcount > 1) {
+ 		int j, k;
 -- 
-1.7.9.5
+1.9.2
 

@@ -1,70 +1,100 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 May 2014 14:44:18 +0000
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 13 May 2014 15:26:26 +0000
 Subject: Re: [PATCH 1/4] OMAPDSS: Fix DSS clock multiplier issue on 3703 and probably 3630
-Message-Id: <5370DE42.2060607@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="LG98hNjs1SEnGocbuK3cUKDibn0rE4CLK"
+Message-Id: <20140513152626.GB16837@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398815562-24113-1-git-send-email-tony@atomide.com>
  <1398815562-24113-2-git-send-email-tony@atomide.com>
  <536C860E.1000501@ti.com> <20140509143703.GA17814@atomide.com>
  <5370B222.7050702@ti.com> <20140512143934.GC31772@atomide.com>
-In-Reply-To: <20140512143934.GC31772@atomide.com>
+ <5370DE42.2060607@ti.com>
+In-Reply-To: <5370DE42.2060607@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---LG98hNjs1SEnGocbuK3cUKDibn0rE4CLK
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [140512 07:45]:
+> On 12/05/14 17:39, Tony Lindgren wrote:
+> > * Tomi Valkeinen <tomi.valkeinen@ti.com> [140512 04:36]:
+> >> On 09/05/14 17:37, Tony Lindgren wrote:
+> >>>
+> >>> This is just the 3730-evm with the Sharp VGA panel mentioned in
+> >>> this series.
+> >>
+> >> Hmm, well, those both look fine. The fck is well below the maximum,
+> >> which is somewhere around 170MHz-180MHz. The lck/pck ratio is higher
+> >> with this patch, but that should affect the GFX overlay.
+> >>
+> >> So you're just booting, and there are no applications that use the
+> >> framebuffer? And there is no rotation or such configured?
+> > 
+> > Right. The rotation is set to 3 though.
+> 
+> Hmm, that's probably the issue then. VRFB rotation is very heavy on the
+> memory bandwidth, and is generally a very easy way to get sync lost errors.
 
-On 12/05/14 17:39, Tony Lindgren wrote:
-> * Tomi Valkeinen <tomi.valkeinen@ti.com> [140512 04:36]:
->> On 09/05/14 17:37, Tony Lindgren wrote:
->>>
->>> This is just the 3730-evm with the Sharp VGA panel mentioned in
->>> this series.
->>
->> Hmm, well, those both look fine. The fck is well below the maximum,
->> which is somewhere around 170MHz-180MHz. The lck/pck ratio is higher
->> with this patch, but that should affect the GFX overlay.
->>
->> So you're just booting, and there are no applications that use the
->> framebuffer? And there is no rotation or such configured?
->=20
-> Right. The rotation is set to 3 though.
+I found another case without rotation where the error always triggers.
+By forcing 3730-evm LCD panel to QVGA mode it always seems to happen
+even without rotation.
 
-Hmm, that's probably the issue then. VRFB rotation is very heavy on the
-memory bandwidth, and is generally a very easy way to get sync lost error=
-s.
+Without this patch with errors and no image:
 
-My opinion is that VRFB should only be used when you know your system
-will handle it fine with the clock rates and bandwidth usage you have
-for your use cases.
+# cat /sys/kernel/debug/omapdss/clk 
+[   55.185729] DSS: dss_runtime_get
+[   55.189422] DSS: dss_runtime_put
+[   55.192810] DISPC: dispc_runtime_get
+[   55.196685] DISPC: dispc_runtime_put
+- DSS -
+DSS_FCK (DSS1_ALWON_FCLK) = 27000000
+- DISPC -
+dispc fclk source = DSS_FCK (DSS1_ALWON_FCLK)
+fck             27000000        
+- LCD -
+LCD clk source = DSS_FCK (DSS1_ALWON_FCLK)
+lck             27000000        lck div 1
+pck             5400000         pck div 5
 
- Tomi
+With this patch without errors and penguin showing:
 
+# cat /sys/kernel/debug/omapdss/clk
+[   19.905792] DSS: dss_runtime_get
+[   19.909545] DSS: dss_runtime_put
+[   19.912933] DISPC: dispc_runtime_get
+[   19.916778] DISPC: dispc_runtime_put
+- DSS -
+DSS_FCK (DSS1_ALWON_FCLK) = 108000000
+- DISPC -
+dispc fclk source = DSS_FCK (DSS1_ALWON_FCLK)
+fck             108000000       
+- LCD -
+LCD clk source = DSS_FCK (DSS1_ALWON_FCLK)
+lck             108000000       lck div 1
+pck             5400000         pck div 20
 
+In this case the errors are different too:
 
---LG98hNjs1SEnGocbuK3cUKDibn0rE4CLK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+DISPC: channel 0 xres 240 yres 320
+DISPC: pck 5400000
+DISPC: hsw 3 hfp 3 hbp 39 vsw 1 vfp 2 vbp 7
+DISPC: vsync_level 1 hsync_level 1 data_pclk_edge 1 de_level 0 sync_pclk_edge 0
+DISPC: hsync 18947Hz, vsync 57Hz
+DISPC: lck = 27000000 (1)
+DISPC: pck = 5400000 (5)
+APPLY: DISPC IRQ: 0x60: GFX_FIFO_UNDERFLOW 
+APPLY: DISPC IRQ: 0x4062: GFX_FIFO_UNDERFLOW SYNC_LOST 
+DISPC: dispc_runtime_get
+omapdss APPLY error: FIFO UNDERFLOW on gfx, disabling the overlay
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Regarding rotation, it does look like that with VGA mode enabling
+rotation makes the error trigger quite often on 3730.
+ 
+> will handle it fine with the clock rates and bandwidth usage you have
+> for your use cases.
 
-iQIcBAEBAgAGBQJTcN5CAAoJEPo9qoy8lh71XTkP+wfHBrxfhI07sJywYY4aGKgB
-OesNF4SflF3EXoiVlP3IUmu14c4+5UsiR/xFsV5FsYnPb2x5zt/dgrnEss5PENJs
-JI6dMAnIsTWFZd/3krnnBN7CX5NcWJrQN4j7BI6D6a4DC81TCTIcgBTR2X8Bx8y6
-ml5JoYb4reu/SUgBzBncbbcetzjnTsE67C7eNtO2RBDj4Ci0f0Kr6+wS5Vhg+XgX
-9EtoVojMIv8AnLUAJW2jZxmFmbtURY6lJNOk5fFZ0ADCNw6niPCnkK3HT7boztz+
-8mv3lR2VAvfaPaBt8inSc6/JpKqDrUJLT3/c2DQSUsLZIoKfrUw+SAl4dcfBnJMf
-EbFvh4AP/OsJ6R9mRzMpo4w8ys9X7A0pegewjYEjNhKkfWuSpexTZ7vioPS3CSZF
-Wpss0thdlSrey3Y0aYz7o+yJEgwAaL6Tk5IGCmbMA7pOYNkJagsEF9SvvxLSmYHF
-RZnKBhBCfdSRik2ZSXQwozCUHndOthl5cbQTV2iP82NnGuTICp7oLdkRFKQU2Wv+
-1kAVQfKBLwtYOf+0uyg/OfUewqot4g1agdTqcVVvPYXox6BMvHOEjC0ieK2QWWNn
-FYRU6X7L8VHxY6fTBK4anVZKCW0ny3vnji2rdvBDNHbAOVddEnkIgj/kk6VRsKVU
-8ovQ40cYiqB/FPO85/zf
-=t2VM
------END PGP SIGNATURE-----
+I don't think it's all because of rotation. And rotating my head
+makes my neck hurt!
 
---LG98hNjs1SEnGocbuK3cUKDibn0rE4CLK--
+Regards,
+
+Tony

@@ -1,55 +1,73 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Wed, 28 May 2014 23:20:11 +0000
-Subject: [PATCHv2 08/15] avr32/at32ap: switch to the generic PWM framework
-Message-Id: <1401319218-16772-9-git-send-email-alexandre.belloni@free-electrons.com>
+From: Takashi Iwai <tiwai@suse.de>
+Date: Tue, 13 May 2014 10:09:27 +0000
+Subject: [PATCH 1/3] vgacon: Fix & cleanup refcounting
+Message-Id: <1399975769-30526-2-git-send-email-tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1399975769-30526-1-git-send-email-tiwai@suse.de>
+In-Reply-To: <1399975769-30526-1-git-send-email-tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.cz>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
+The vgacon driver prepares a two element array of uni_pagedir_loc and
+uses the second item as its own reference counter for sharing the
+uni_pagedir.  And the code assumes blindly that the second item is
+available if the assigned vc_uni_pagedir isn't the standard one, which
+might be wrong (although currently it's so).
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+This patch fixes that wrong assumption, and gives a slight cleanup
+along with it: namely, instead of array, just give the uni_pagedir_loc
+and a separate refcount variable.  It makes the code a bit more
+understandable at first glance.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- arch/avr32/mach-at32ap/at32ap700x.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/video/console/vgacon.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
-index a1f4d1e91b52..db85b5ec3351 100644
---- a/arch/avr32/mach-at32ap/at32ap700x.c
-+++ b/arch/avr32/mach-at32ap/at32ap700x.c
-@@ -1553,7 +1553,7 @@ static struct resource atmel_pwm0_resource[] __initdata = {
- 	IRQ(24),
- };
- static struct clk atmel_pwm0_mck = {
--	.name		= "pwm_clk",
-+	.name		= "at91sam9rl-pwm",
- 	.parent		= &pbb_clk,
- 	.mode		= pbb_clk_mode,
- 	.get_rate	= pbb_clk_get_rate,
-@@ -1568,7 +1568,7 @@ struct platform_device *__init at32_add_device_pwm(u32 mask)
- 	if (!mask)
- 		return NULL;
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 9d8feac67637..9e18770aaba6 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -87,7 +87,8 @@ static void vgacon_save_screen(struct vc_data *c);
+ static int vgacon_scroll(struct vc_data *c, int t, int b, int dir,
+ 			 int lines);
+ static void vgacon_invert_region(struct vc_data *c, u16 * p, int count);
+-static unsigned long vgacon_uni_pagedir[2];
++static unsigned long vgacon_uni_pagedir;
++static int vgacon_refcount;
  
--	pdev = platform_device_alloc("atmel_pwm", 0);
-+	pdev = platform_device_alloc("at91sam9rl-pwm", 0);
- 	if (!pdev)
- 		return NULL;
+ /* Description of the hardware situation */
+ static int		vga_init_done		__read_mostly;
+@@ -575,12 +576,12 @@ static void vgacon_init(struct vc_data *c, int init)
+ 	if (vga_512_chars)
+ 		c->vc_hi_font_mask = 0x0800;
+ 	p = *c->vc_uni_pagedir_loc;
+-	if (c->vc_uni_pagedir_loc = &c->vc_uni_pagedir ||
+-	    !--c->vc_uni_pagedir_loc[1])
++	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir) {
+ 		con_free_unimap(c);
+-	c->vc_uni_pagedir_loc = vgacon_uni_pagedir;
+-	vgacon_uni_pagedir[1]++;
+-	if (!vgacon_uni_pagedir[0] && p)
++		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
++		vgacon_refcount++;
++	}
++	if (!vgacon_uni_pagedir && p)
+ 		con_set_default_unimap(c);
  
-@@ -1576,9 +1576,6 @@ struct platform_device *__init at32_add_device_pwm(u32 mask)
- 				ARRAY_SIZE(atmel_pwm0_resource)))
- 		goto out_free_pdev;
+ 	/* Only set the default if the user didn't deliberately override it */
+@@ -597,7 +598,7 @@ static void vgacon_deinit(struct vc_data *c)
+ 		vga_set_mem_top(c);
+ 	}
  
--	if (platform_device_add_data(pdev, &mask, sizeof(mask)))
--		goto out_free_pdev;
--
- 	pin_mask = 0;
- 	if (mask & (1 << 0))
- 		pin_mask |= (1 << 28);
+-	if (!--vgacon_uni_pagedir[1])
++	if (!--vgacon_refcount)
+ 		con_free_unimap(c);
+ 	c->vc_uni_pagedir_loc = &c->vc_uni_pagedir;
+ 	con_set_default_unimap(c);
 -- 
-1.9.1
+1.9.2
 

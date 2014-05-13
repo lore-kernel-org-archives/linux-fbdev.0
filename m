@@ -1,49 +1,51 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 19 May 2014 20:49:54 +0000
-Subject: Re: [PATCHv2 resend 04/11] ARM: OMAP3: Beagle: initialize all the struct pwm_lookup members
-Message-Id: <20140519204954.GD11945@atomide.com>
+From: Lucas Stach <l.stach@pengutronix.de>
+Date: Tue, 13 May 2014 12:58:21 +0000
+Subject: [PATCH] video: of: display_timing: remove two unsafe error messages
+Message-Id: <1399985901-30756-1-git-send-email-l.stach@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1400532162-29483-5-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1400532162-29483-5-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-* Alexandre Belloni <alexandre.belloni@free-electrons.com> [140519 13:44]:
-> This will allow to get rid of the .pwm_period_ns member of struct led_pwm as the
-> period will be set by the PWM core.
+The error message would try to dereference the pointer that
+just has been tested to be NULL. As those messages don't
+really add any value without the info that the np could
+provide, just remove them.
 
-This should not conflict with anything I have:
+Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+---
+ drivers/video/of_display_timing.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+index ba5b40f581f6..3dc93cfacd47 100644
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@ -115,10 +115,8 @@ int of_get_display_timing(struct device_node *np, const char *name,
+ {
+ 	struct device_node *timing_np;
  
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> ---
->  arch/arm/mach-omap2/board-omap3beagle.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-> index d6ed819ff15c..f27e1ec90b5e 100644
-> --- a/arch/arm/mach-omap2/board-omap3beagle.c
-> +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-> @@ -61,7 +61,14 @@
->  
->  static struct pwm_lookup pwm_lookup[] = {
->  	/* LEDB -> PMU_STAT */
-> -	PWM_LOOKUP("twl-pwmled", 1, "leds_pwm", "beagleboard::pmu_stat"),
-> +	{
-> +		.provider = "twl-pwmled",
-> +		.index = 1,
-> +		.dev_id = "leds_pwm",
-> +		.con_id = "beagleboard::pmu_stat",
-> +		.period = 7812500,
-> +		.polarity = PWM_POLARITY_NORMAL,
-> +	},
->  };
->  
->  static struct led_pwm pwm_leds[] = {
-> -- 
-> 1.9.1
-> 
+-	if (!np) {
+-		pr_err("%s: no devicenode given\n", of_node_full_name(np));
++	if (!np)
+ 		return -EINVAL;
+-	}
+ 
+ 	timing_np = of_get_child_by_name(np, name);
+ 	if (!timing_np) {
+@@ -142,10 +140,8 @@ struct display_timings *of_get_display_timings(struct device_node *np)
+ 	struct device_node *native_mode;
+ 	struct display_timings *disp;
+ 
+-	if (!np) {
+-		pr_err("%s: no device node given\n", of_node_full_name(np));
++	if (!np)
+ 		return NULL;
+-	}
+ 
+ 	timings_np = of_get_child_by_name(np, "display-timings");
+ 	if (!timings_np) {
+-- 
+2.0.0.rc0
+

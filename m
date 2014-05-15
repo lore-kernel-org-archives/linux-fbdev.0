@@ -1,45 +1,134 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 19 May 2014 20:42:42 +0000
-Subject: [PATCHv2 resend 11/11] backlight: pwm_bl: retrieve configured pwm period
-Message-Id: <1400532162-29483-12-git-send-email-alexandre.belloni@free-electrons.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 15 May 2014 18:34:25 +0000
+Subject: [PATCH 3/4] acpi-video: Unregister the backlight device if a raw one shows up later
+Message-Id: <1400178866-3659-4-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
+Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>
 
-The PWM core is now able to initialize the PWM period from platform_data. Use it
-and if it is not configured, use the supplied pwm_period_ns.
+When video.use_native_backlight=1 and non intel gfx are in use, the raw
+backlight device of the gfx driver will show up after acpi-video has done its
+acpi_video_verify_backlight_support() check.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+This causes video.use_native_backlight=1 to not have the desired result.
+
+This patch fixes this by adding a backlight notifier and when a raw
+backlight is registered or unregistered re-doing the
+acpi_video_verify_backlight_support() check.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/backlight/pwm_bl.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/acpi/video.c | 57 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index b75201ff46f6..1bb8a69062c5 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -304,12 +304,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	/*
- 	 * The DT case will set the pwm_period_ns field to 0 and store the
- 	 * period, parsed from the DT, in the PWM device. For the non-DT case,
--	 * set the period from platform data.
-+	 * set the period from platform data if it is not already set.
- 	 */
--	if (data->pwm_period_ns > 0)
-+	pb->period = pwm_get_period(pb->pwm);
-+	if (!pb->period && (data->pwm_period_ns > 0)) {
-+		pb->period = data->pwm_period_ns;
- 		pwm_set_period(pb->pwm, data->pwm_period_ns);
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index aee85c4..123f919 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -151,6 +151,7 @@ struct acpi_video_enumerated_device {
+ struct acpi_video_bus {
+ 	struct acpi_device *device;
+ 	bool backlight_registered;
++	bool backlight_notifier_registered;
+ 	u8 dos_setting;
+ 	struct acpi_video_enumerated_device *attached_array;
+ 	u8 attached_count;
+@@ -162,6 +163,7 @@ struct acpi_video_bus {
+ 	struct input_dev *input;
+ 	char phys[32];	/* for input device */
+ 	struct notifier_block pm_nb;
++	struct notifier_block backlight_nb;
+ };
+ 
+ struct acpi_video_device_flags {
+@@ -1836,6 +1838,9 @@ static int acpi_video_bus_register_backlight(struct acpi_video_bus *video)
+ {
+ 	struct acpi_video_device *dev;
+ 
++	if (video->backlight_registered)
++		return 0;
++
+ 	if (!acpi_video_verify_backlight_support())
+ 		return 0;
+ 
+@@ -1980,6 +1985,56 @@ static void acpi_video_bus_remove_notify_handler(struct acpi_video_bus *video)
+ 	video->input = NULL;
+ }
+ 
++static int acpi_video_backlight_notify(struct notifier_block *nb,
++					unsigned long val, void *bd)
++{
++	struct backlight_device *backlight = bd;
++	struct acpi_video_bus *video;
++
++	/* acpi_video_verify_backlight_support only cares about raw devices */
++	if (backlight->props.type != BACKLIGHT_RAW)
++		return NOTIFY_DONE;
++
++	video = container_of(nb, struct acpi_video_bus, backlight_nb);
++
++	switch (val) {
++	case BACKLIGHT_REGISTERED:
++		if (!acpi_video_verify_backlight_support())
++			acpi_video_bus_unregister_backlight(video);
++		break;
++	case BACKLIGHT_UNREGISTERED:
++		acpi_video_bus_register_backlight(video);
++		break;
 +	}
++
++	return NOTIFY_OK;
++}
++
++static int acpi_video_bus_add_backlight_notify_handler(
++						struct acpi_video_bus *video)
++{
++	int error;
++
++	video->backlight_nb.notifier_call = acpi_video_backlight_notify;
++	video->backlight_nb.priority = 0;
++	error = backlight_register_notifier(&video->backlight_nb);
++	if (error = 0)
++		video->backlight_notifier_registered = true;
++
++	return error;
++}
++
++static int acpi_video_bus_remove_backlight_notify_handler(
++						struct acpi_video_bus *video)
++{
++	if (!video->backlight_notifier_registered)
++		return 0;
++
++	video->backlight_notifier_registered = false;
++
++	return backlight_unregister_notifier(&video->backlight_nb);
++}
++
+ static int acpi_video_bus_put_devices(struct acpi_video_bus *video)
+ {
+ 	struct acpi_video_device *dev, *next;
+@@ -2061,6 +2116,7 @@ static int acpi_video_bus_add(struct acpi_device *device)
  
--	pb->period = pwm_get_period(pb->pwm);
- 	pb->lth_brightness = data->lth_brightness * (pb->period / pb->scale);
+ 	acpi_video_bus_register_backlight(video);
+ 	acpi_video_bus_add_notify_handler(video);
++	acpi_video_bus_add_backlight_notify_handler(video);
  
- 	memset(&props, 0, sizeof(struct backlight_properties));
+ 	return 0;
+ 
+@@ -2084,6 +2140,7 @@ static int acpi_video_bus_remove(struct acpi_device *device)
+ 
+ 	video = acpi_driver_data(device);
+ 
++	acpi_video_bus_remove_backlight_notify_handler(video);
+ 	acpi_video_bus_remove_notify_handler(video);
+ 	acpi_video_bus_unregister_backlight(video);
+ 	acpi_video_bus_put_devices(video);
 -- 
-1.9.1
+1.9.0
 

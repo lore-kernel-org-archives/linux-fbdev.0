@@ -1,25 +1,83 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 15 May 2014 18:34:22 +0000
-Subject: [PATCH 0/4] Add backlight registration notification and use it in acpi-video
-Message-Id: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
+Date: Thu, 15 May 2014 18:34:23 +0000
+Subject: [PATCH 1/4] nouveau: Don't check acpi_video_backlight_support() before registering backlight
+Message-Id: <1400178866-3659-2-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
-Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>
 
-Hi all,
+acpi_video_backlight_support() is supposed to be called by other (vendor
+specific) firmware backlight controls, not by native / raw backlight controls
+like nv_backlight.
 
-Here is a patch series to make video.use_native_backlight work on laptops
-with nv gfx, at least on those were nv gfx have a raw backlight interface.
+Userspace will normally prefer firmware interfaces over raw interfaces, so
+if acpi_video backlight support is present it will use that even if
+nv_backlight is registered as well.
 
-I've tried this on my own somewhat old nv equipped laptop, but that does
-not have a raw backlight interface.
+Except when video.use_native_backlight is present on the kernel cmdline
+(or enabled through a dmi based quirk). As the name indicates the goal here
+is to make only the raw interface available to userspace so that it will use
+that (it only does this when it sees a win8 compliant bios).
 
-I'm currently doing a scratch build of the Fedora-20 kernel with this patches
-for the user with an affected system to test.
+This is done by:
+1) Not registering any acpi_video# backlight devices; and
+2) Making acpi_video_backlight_support() return true so that other firmware
+drivers, ie acer_wmi, thinkpad_acpi, dell_laptop, etc. Don't register their
+own vender specific interfaces.
 
-Regards,
+Currently nouveau breaks this setup, as when acpi_video_backlight_support()
+returns true, it does not register itself, resulting in no backlight control
+at all.
 
-Hans
+This is esp. going to be a problem with 3.16 which will default to
+video.use_native_backlight=1, and thus nouveau based laptops with a win8 bios
+will get no backlight control at all.
+
+This also likely explains why the previous attempt to make
+video.use_native_backlight=1 the default was not a success, as without this
+patch having a default of video.use_native_backlight=1 will cause regressions.
+
+Note this effectively reverts commit 5bead799
+
+Also see: https://bugzilla.redhat.com/show_bug.cgi?id93171
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/gpu/drm/nouveau/nouveau_backlight.c | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/drivers/gpu/drm/nouveau/nouveau_backlight.c b/drivers/gpu/drm/nouveau/nouveau_backlight.c
+index 630f6e8..2c1e4aa 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_backlight.c
++++ b/drivers/gpu/drm/nouveau/nouveau_backlight.c
+@@ -31,7 +31,6 @@
+  */
+ 
+ #include <linux/backlight.h>
+-#include <linux/acpi.h>
+ 
+ #include "nouveau_drm.h"
+ #include "nouveau_reg.h"
+@@ -222,14 +221,6 @@ nouveau_backlight_init(struct drm_device *dev)
+ 	struct nouveau_device *device = nv_device(drm->device);
+ 	struct drm_connector *connector;
+ 
+-#ifdef CONFIG_ACPI
+-	if (acpi_video_backlight_support()) {
+-		NV_INFO(drm, "ACPI backlight interface available, "
+-			     "not registering our own\n");
+-		return 0;
+-	}
+-#endif
+-
+ 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+ 		if (connector->connector_type != DRM_MODE_CONNECTOR_LVDS &&
+ 		    connector->connector_type != DRM_MODE_CONNECTOR_eDP)
+-- 
+1.9.0
+

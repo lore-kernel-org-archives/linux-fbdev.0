@@ -1,50 +1,32 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 19 May 2014 20:50:33 +0000
-Subject: Re: [PATCHv2 resend 07/11] ARM: OMAP3: Beagle: use PWM_LOOKUP to initialize struct pwm_lookup
-Message-Id: <20140519205033.GE11945@atomide.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 May 2014 10:10:34 +0000
+Subject: [PATCH 0/3] OMAPDSS: DT support for panel-lgphilips-lb035q02
+Message-Id: <1400148637-17726-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1400532162-29483-8-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1400532162-29483-8-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Florian Vaussard <florian.vaussard@epfl.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-* Alexandre Belloni <alexandre.belloni@free-electrons.com> [140519 13:44]:
+Hi,
 
-Missing description?
+This adds DT support to panel-lgphilips-lb035q02. Compile tested only.
 
-Presumably you'll fix that so:
+This panel is used on some Overo boards (alto35, if I'm not mistaken).
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+ Tomi
 
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> ---
->  arch/arm/mach-omap2/board-omap3beagle.c | 10 ++--------
->  1 file changed, 2 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-> index f27e1ec90b5e..54c135a5b4f7 100644
-> --- a/arch/arm/mach-omap2/board-omap3beagle.c
-> +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-> @@ -61,14 +61,8 @@
->  
->  static struct pwm_lookup pwm_lookup[] = {
->  	/* LEDB -> PMU_STAT */
-> -	{
-> -		.provider = "twl-pwmled",
-> -		.index = 1,
-> -		.dev_id = "leds_pwm",
-> -		.con_id = "beagleboard::pmu_stat",
-> -		.period = 7812500,
-> -		.polarity = PWM_POLARITY_NORMAL,
-> -	},
-> +	PWM_LOOKUP("twl-pwmled", 1, "leds_pwm", "beagleboard::pmu_stat",
-> +		   7812500, PWM_POLARITY_NORMAL),
->  };
->  
->  static struct led_pwm pwm_leds[] = {
-> -- 
-> 1.9.1
-> 
+Tomi Valkeinen (3):
+  OMAPDSS: panel-lgphilips-lb035q02: use gpiod for enable gpio
+  OMAPDSS: panel-lgphilips-lb035q02: Add DT support
+  Doc/DT: Add binding doc for lgphilips,lb035q02.txt
+
+ .../bindings/video/lgphilips,lb035q02.txt          | 33 ++++++++++
+ .../omap2/displays-new/panel-lgphilips-lb035q02.c  | 76 +++++++++++++++++-----
+ 2 files changed, 94 insertions(+), 15 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/lgphilips,lb035q02.txt
+
+-- 
+1.9.1
+

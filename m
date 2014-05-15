@@ -1,71 +1,49 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 23 May 2014 19:07:52 +0000
-Subject: [PATCH 03/13] ARM: OMAP2+: Remove non working OMAP HDMI audio initialization
-Message-Id: <fd2186b6813e6b2daef1d54dca8ec1d59692ced8.1400871999.git.jsarha@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 15 May 2014 18:34:26 +0000
+Subject: [PATCH 4/4] acpi-video: Add use native backlight quirk for the ThinkPad W530
+Message-Id: <1400178866-3659-5-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1400871999.git.jsarha@ti.com>
-In-Reply-To: <cover.1400871999.git.jsarha-l0cyMroinI0@public.gmane.org>
+References: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: peter.ujfalusi-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
+Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>, stable@vger.kernel.org
 
-This code is not working currently and it can be removed. There is a
-conflict in sharing resources with the actual HDMI driver and with
-the ASoC HDMI audio DAI driver.
+Like all of the other *30 ThinkPad models, the W530 has a broken acpi-video
+backlight control. Note in order for this to actually fix things on the
+ThinkPad W530 the commit titled:
+"nouveau: Don't check acpi_video_backlight_support() before registering backlight"
+is also needed.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+https://bugzilla.redhat.com/show_bug.cgi?id93171
+
+Cc: stable@vger.kernel.org
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- arch/arm/mach-omap2/devices.c |   28 ----------------------------
- 1 file changed, 28 deletions(-)
+ drivers/acpi/video.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
-index e58609b..4bab682 100644
---- a/arch/arm/mach-omap2/devices.c
-+++ b/arch/arm/mach-omap2/devices.c
-@@ -330,33 +330,6 @@ static void omap_init_audio(void)
- static inline void omap_init_audio(void) {}
- #endif
- 
--#if defined(CONFIG_SND_OMAP_SOC_OMAP_HDMI) || \
--		defined(CONFIG_SND_OMAP_SOC_OMAP_HDMI_MODULE)
--
--static struct platform_device omap_hdmi_audio = {
--	.name	= "omap-hdmi-audio",
--	.id	= -1,
--};
--
--static void __init omap_init_hdmi_audio(void)
--{
--	struct omap_hwmod *oh;
--	struct platform_device *pdev;
--
--	oh = omap_hwmod_lookup("dss_hdmi");
--	if (!oh)
--		return;
--
--	pdev = omap_device_build("omap-hdmi-audio-dai", -1, oh, NULL, 0);
--	WARN(IS_ERR(pdev),
--	     "Can't build omap_device for omap-hdmi-audio-dai.\n");
--
--	platform_device_register(&omap_hdmi_audio);
--}
--#else
--static inline void omap_init_hdmi_audio(void) {}
--#endif
--
- #if defined(CONFIG_SPI_OMAP24XX) || defined(CONFIG_SPI_OMAP24XX_MODULE)
- 
- #include <linux/platform_data/spi-omap2-mcspi.h>
-@@ -492,7 +465,6 @@ static int __init omap2_init_devices(void)
- 	 */
- 	omap_init_audio();
- 	omap_init_camera();
--	omap_init_hdmi_audio();
- 	omap_init_mbox();
- 	/* If dtb is there, the devices will be created dynamically */
- 	if (!of_have_populated_dt()) {
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index 123f919..0fec70d 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -523,6 +523,14 @@ static struct dmi_system_id video_dmi_table[] __initdata = {
+ 		},
+ 	},
+ 	{
++	 .callback = video_set_use_native_backlight,
++	 .ident = "ThinkPad W530",
++	 .matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
++		DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad W530"),
++		},
++	},
++	{
+ 	.callback = video_set_use_native_backlight,
+ 	.ident = "ThinkPad X1 Carbon",
+ 	.matches = {
 -- 
-1.7.9.5
+1.9.0
 

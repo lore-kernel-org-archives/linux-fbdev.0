@@ -1,155 +1,136 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Mon, 12 May 2014 09:12:19 +0000
-Subject: [PATCH 08/19] OMAPDSS: hdmi5: Remove callbacks for an external ASoC DAI driver
-Message-Id: <464a3686550a6cf898e1765a965fda693378e3cc.1399884780.git.jsarha@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 15 May 2014 18:34:24 +0000
+Subject: [PATCH 2/4] backlight: Add backlight device (un)registration notification
+Message-Id: <1400178866-3659-3-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>
-In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
+References: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
+Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>
 
-Removes the OMAP5 HDMI audio callbacks for an external audio driver and
-the old external DAI driver does not work anymore after this patch.
+Some firmware drivers, ie acpi-video want to get themselves out of the
+way (in some cases) when their also is a raw backlight device available.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Due to module loading ordering being unknown, acpi-video cannot be certain
+that the backlight_device_registered(BACKLIGHT_RAW) it does for this is
+the final verdict wrt there being a BACKLIGHT_RAW device.
+
+By adding notification acpi-video can listen for backlight devices showing
+up after it has loaded, and unregister its backlight device if desired.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi5.c |  113 ---------------------------------
- 1 file changed, 113 deletions(-)
+ drivers/video/backlight/backlight.c | 40 +++++++++++++++++++++++++++++++++++++
+ include/linux/backlight.h           |  7 +++++++
+ 2 files changed, 47 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index c468b9e..49a85c9 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -534,112 +534,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
- 	return r;
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index bd2172c..4280890 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -23,6 +23,7 @@
+ 
+ static struct list_head backlight_dev_list;
+ static struct mutex backlight_dev_list_mutex;
++static struct blocking_notifier_head backlight_notifier;
+ 
+ static const char *const backlight_types[] = {
+ 	[BACKLIGHT_RAW] = "raw",
+@@ -370,6 +371,9 @@ struct backlight_device *backlight_device_register(const char *name,
+ 	list_add(&new_bd->entry, &backlight_dev_list);
+ 	mutex_unlock(&backlight_dev_list_mutex);
+ 
++	blocking_notifier_call_chain(&backlight_notifier,
++				     BACKLIGHT_REGISTERED, new_bd);
++
+ 	return new_bd;
+ }
+ EXPORT_SYMBOL(backlight_device_register);
+@@ -413,6 +417,10 @@ void backlight_device_unregister(struct backlight_device *bd)
+ 		pmac_backlight = NULL;
+ 	mutex_unlock(&pmac_backlight_mutex);
+ #endif
++
++	blocking_notifier_call_chain(&backlight_notifier,
++				     BACKLIGHT_UNREGISTERED, bd);
++
+ 	mutex_lock(&bd->ops_lock);
+ 	bd->ops = NULL;
+ 	mutex_unlock(&bd->ops_lock);
+@@ -438,6 +446,36 @@ static int devm_backlight_device_match(struct device *dev, void *res,
  }
  
--#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	int r;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi_wp_audio_enable(&hdmi.wp, true);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--	hdmi_wp_audio_enable(&hdmi.wp, false);
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return hdmi_wp_audio_core_req_enable(&hdmi.wp, true);
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--	hdmi_wp_audio_core_req_enable(&hdmi.wp, false);
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	bool r;
--
--	mutex_lock(&hdmi.lock);
--
--	r = hdmi_mode_has_audio(hdmi.cfg.cm.mode);
--
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	int r;
--	u32 pclk = hdmi.cfg.timings.pixelclock;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi5_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--#else
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	return false;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	return -EPERM;
--}
--#endif
--
- static const struct omapdss_hdmi_ops hdmi_ops = {
- 	.connect		= hdmi_connect,
- 	.disconnect		= hdmi_disconnect,
-@@ -652,13 +546,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
- 	.get_timings		= hdmi_display_get_timings,
+ /**
++ * backlight_register_notifier - get notified of backlight (un)registration
++ * @nb: notifier block with the notifier to call on backlight (un)registration
++ *
++ * @return 0 on success, otherwise a negative error code
++ *
++ * Register a notifier to get notified when backlight devices get registered
++ * or unregistered.
++ */
++int backlight_register_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&backlight_notifier, nb);
++}
++EXPORT_SYMBOL(backlight_register_notifier);
++
++/**
++ * backlight_unregister_notifier - unregister a backlight notifier
++ * @nb: notifier block to unregister
++ *
++ * @return 0 on success, otherwise a negative error code
++ *
++ * Register a notifier to get notified when backlight devices get registered
++ * or unregistered.
++ */
++int backlight_unregister_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_unregister(&backlight_notifier, nb);
++}
++EXPORT_SYMBOL(backlight_unregister_notifier);
++
++/**
+  * devm_backlight_device_register - resource managed backlight_device_register()
+  * @dev: the device to register
+  * @name: the name of the device
+@@ -544,6 +582,8 @@ static int __init backlight_class_init(void)
+ 	backlight_class->pm = &backlight_class_dev_pm_ops;
+ 	INIT_LIST_HEAD(&backlight_dev_list);
+ 	mutex_init(&backlight_dev_list_mutex);
++	BLOCKING_INIT_NOTIFIER_HEAD(&backlight_notifier);
++
+ 	return 0;
+ }
  
- 	.read_edid		= hdmi_read_edid,
--
--	.audio_enable		= hdmi_audio_enable,
--	.audio_disable		= hdmi_audio_disable,
--	.audio_start		= hdmi_audio_start,
--	.audio_stop		= hdmi_audio_stop,
--	.audio_supported	= hdmi_audio_supported,
--	.audio_config		= hdmi_audio_config,
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index 7264742..adb14a8 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -40,6 +40,11 @@ enum backlight_type {
+ 	BACKLIGHT_TYPE_MAX,
  };
  
- static void hdmi_init_output(struct platform_device *pdev)
++enum backlight_notification {
++	BACKLIGHT_REGISTERED,
++	BACKLIGHT_UNREGISTERED,
++};
++
+ struct backlight_device;
+ struct fb_info;
+ 
+@@ -133,6 +138,8 @@ extern void devm_backlight_device_unregister(struct device *dev,
+ extern void backlight_force_update(struct backlight_device *bd,
+ 				   enum backlight_update_reason reason);
+ extern bool backlight_device_registered(enum backlight_type type);
++extern int backlight_register_notifier(struct notifier_block *nb);
++extern int backlight_unregister_notifier(struct notifier_block *nb);
+ 
+ #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
+ 
 -- 
-1.7.9.5
+1.9.0
 

@@ -1,45 +1,63 @@
-From: Daeseok Youn <daeseok.youn@gmail.com>
-Date: Fri, 16 May 2014 09:31:23 +0000
-Subject: [PATCH V2] video : remove redundant error check
-Message-Id: <20140516093123.GA17245@devel.8.8.4.4>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 May 2014 10:10:37 +0000
+Subject: [PATCH 3/3] Doc/DT: Add binding doc for lgphilips,lb035q02.txt
+Message-Id: <1400148637-17726-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1400148637-17726-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1400148637-17726-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com
-Cc: tomi.valkeinen@ti.com, jg1.han@samsung.com, laurent.pinchart@ideasonboard.com, robdclark@gmail.com, daniel.vetter@ffwll.ch, Julia.Lawall@lip6.fr, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Florian Vaussard <florian.vaussard@epfl.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>, devicetree@vger.kernel.org
 
-It doesn't need to check "err" for printing info.
-And also use pr_info instead of printk.
+Add DT bindings documentation for LG.Philips LB035Q02 LCD panel.
 
-Signed-off-by: Daeseok Youn <daeseok.youn@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: devicetree@vger.kernel.org
 ---
-V2: removes unneeded lines for sending a patch
+ .../bindings/video/lgphilips,lb035q02.txt          | 33 ++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/lgphilips,lb035q02.txt
 
- drivers/video/fbdev/i810/i810_main.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
-index bb674e4..15cb397 100644
---- a/drivers/video/fbdev/i810/i810_main.c
-+++ b/drivers/video/fbdev/i810/i810_main.c
-@@ -1910,13 +1910,12 @@ static void i810fb_find_init_mode(struct fb_info *info)
- 
- 	for (i = 0; i < par->ddc_num + 1; i++) {
- 		err = i810_probe_i2c_connector(info, &par->edid, i);
--		if (!err)
-+		if (!err) {
-+			pr_info("i810fb_init_pci: DDC probe successful\n");
- 			break;
-+		}
- 	}
- 
--	if (!err)
--		printk("i810fb_init_pci: DDC probe successful\n");
--
- 	fb_edid_to_monspecs(par->edid, specs);
- 
- 	if (specs->modedb = NULL)
+diff --git a/Documentation/devicetree/bindings/video/lgphilips,lb035q02.txt b/Documentation/devicetree/bindings/video/lgphilips,lb035q02.txt
+new file mode 100644
+index 000000000000..1a1e653e5407
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/lgphilips,lb035q02.txt
+@@ -0,0 +1,33 @@
++LG.Philips LB035Q02 Panel
++============+
++Required properties:
++- compatible: "lgphilips,lb035q02"
++- enable-gpios: panel enable gpio
++
++Optional properties:
++- label: a symbolic name for the panel
++
++Required nodes:
++- Video port for DPI input
++
++Example
++-------
++
++lcd-panel: panel@0 {
++	compatible = "lgphilips,lb035q02";
++	reg = <0>;
++	spi-max-frequency = <100000>;
++	spi-cpol;
++	spi-cpha;
++
++	label = "lcd";
++
++	enable-gpios = <&gpio7 7 0>;
++
++	port {
++		lcd_in: endpoint {
++			remote-endpoint = <&dpi_out>;
++		};
++	};
++};
 -- 
-1.7.1
+1.9.1
 

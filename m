@@ -1,173 +1,81 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 14 May 2014 16:02:17 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 May 2014 08:41:57 +0000
 Subject: Re: [PATCH 3/4] OMAPDSS: panel-sharp-ls037v7dw01: add device tree support
-Message-Id: <20140514160216.GD18463@atomide.com>
+Message-Id: <53747DD5.2030406@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="SsUm9rS4DJ36L9sMqlrDuekCF3WUNRM6P"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CABxcv=kwhodeFTHoVpn1nHeh9+kV5fwMN9s3Kbk6h7_xJp4UYA@mail.gmail.com>
- <53709706.10501@ti.com>
- <CABxcv=mY0a+yJgmCTPN=BhSQD57Pw022zOd5_KxEgvvF_-=O7Q@mail.gmail.com>
- <20140512142646.GA31772@atomide.com> <5370E0C9.8050201@ti.com>
- <20140512155132.GH31772@atomide.com> <5371F923.80000@ti.com>
- <CABxcv==_LCw1kPYm17g=h8VfSN2V_qsgXjTnsy-JOetawSv4pA@mail.gmail.com>
- <20140513152518.GA16837@atomide.com> <53730AFB.2090800@ti.com>
-In-Reply-To: <53730AFB.2090800@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1398815562-24113-1-git-send-email-tony@atomide.com>
+ <1398815562-24113-4-git-send-email-tony@atomide.com>
+ <5369EAE7.3030705@ti.com> <20140507150343.GA9502@atomide.com>
+ <536A5920.1020908@ti.com> <20140507175919.GH9502@atomide.com>
+ <20140508233300.GI2198@atomide.com> <536C924E.5000307@ti.com>
+ <20140509153008.GC17814@atomide.com> <20140513212639.GA18001@atomide.com>
+In-Reply-To: <20140513212639.GA18001@atomide.com>
 To: linux-arm-kernel@lists.infradead.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [140513 23:20]:
-> On 13/05/14 18:25, Tony Lindgren wrote:
-> 
-> > Well ideally the revision info for a device would come from device
-> > revision registers rather using the SoC revision. In the DSS case when
-> > the SoC revision is needed by a device it maybe it can be deciphered
-> > from a combination of compatible flag and the clock rate for example?
-> 
-> I've been trying that. The HW guys didn't bother to update the DSS
-> revision registers, so they are useless. And, for example, the OMAP3 ES
-> difference is only about bitfield widths in two registers.
-> 
-> I tried writing "too long" value to the register on the earlier ES
-> version, hoping that the extra bits would be kept at zero, but that
-> wasn't the case. So I just don't see a way to detect this from the DSS's
-> point of view.
-> 
-> >>> Do you object to the compatible string remapping as such, or just that
-> >>> it's in arch/arm/mach-omap2?
-> > 
-> > It's something I'd rather not have under mach-omap2 as that means that
-> > I may need to deal with it too to some extent. And I don't think we
-> > need to do such remapping, we should be able to use the panel compatible
-> > strings as they are just fine. It should be possible to figure out from
-> > the device tree properties what controller the panel belongs to. Or
-> > for now, use the panel registration to figure out what display controller
-> > it belongs to.
-> > 
-> >>> I guess nothing prevents me from moving it to drivers/, and having some
-> >>> early-ish initcall doing the job.
-> > 
-> > /me likes this idea if you need it at all. Stuff like this tends to stay
-> > and spread, so I'd rather not do the remapping of compatible strings at
-> > all.
-> 
-> Yep. I'll look to this. Thinking about it now, it kind of makes more
-> sense to have it in the omapdss's directory.
+--SsUm9rS4DJ36L9sMqlrDuekCF3WUNRM6P
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-OK thanks.
- 
-> >> So, since we can change the kernel later but not the DTS, I agree with
-> >> you that the remapping is the least bad of our options.
-> > 
-> > Yes the binding for the panel should just describe the panel so it can be
-> > used with whatever display controller. But we do have quite a few buses
-> > probing devices. How about set up the panel probing the same way?
-> 
-> > For the panels on display controller, just do the usual
-> > for_each_child_of_node(pdev->dev.of_node, child) and probe them?
-> >
-> > It seems the remapping of compatible strings is not needed in this
-> > as we're only picking up panels that are children of the display
-> > controller.
-> 
-> The panels (or display encoders) are not (usually) children of the
-> display controller. They are children of their respective control bus.
-> Say, an i2c panel is a child of i2c bus. If there's no control bus, like
-> is the case with the sharp panel, it's a platform device.
+On 14/05/14 00:26, Tony Lindgren wrote:
 
-OK
- 
-> The video paths of the panels and encoders are connected using the v4l2
-> style ports/endpoints. We can use those to see what display controller a
-> panel is connected to, but only after the panel driver has already
-> probed. We don't have control for the actual probing, as that happens
-> with whatever the control bus is for the display component.
+> +	/* lcd MO */
+> +	ddata->mo_gpio =3D sharp_ls_get_gpio_of(&pdev->dev, 0, 1, "mode");
+> +	if (PTR_ERR(ddata->mo_gpio) =3D=3D -EPROBE_DEFER)
+> +		return -EPROBE_DEFER;
+> +
+> +	if (!IS_ERR(ddata->mo_gpio))
+> +		if (gpiod_get_raw_value_cansleep(ddata->mo_gpio))
+> +			ddata->flags |=3D SHARP_LS_QVGA;
 
-OK. So with generic panels, you can just let the panels probe with
-the right compatible flag then and let the ports/endpoints registration
-to figure out if the panel is usable for the display controller in
-question.
+Shouldn't there be an explicit flag in the DT data for this? If the
+panel's MO pin is hardwired to, say, pull up, then the mode-gpios won't
+have MO gpio, right? So something like:
 
-> >>>>> I'm not sure what it would give us to try to be compatible with
-> >>>>> simple-panel.txt. The simple-panel bindings won't probably be compatible
-> >>>>> with the future common display drivers in any case, as the simple-panel
-> >>>>> binding is just too limited and doesn't describe the hardware fully.
-> >>>>
-> >>>> Hmm what else does a panel need where the existing binding cannot be
-> >>>> extended?
-> >>>
-> >>> The existing simple-panel binding doesn't describe the connections of
-> >>> the panel, i.e. its video input. I guess it can be extended, but I don't
-> >>> see what the benefit is of trying to create new panel bindings
-> >>> compatible with the simple-panel bindings. As I see, the simple-panel
-> >>> bindings work only with very limited use cases, where the drivers make
-> >>> assumptions. Simple panel bindings cannot be used with omapdss, nor can
-> >>> it be used with the future common display framework.
-> > 
-> > Well it seems at least the reset and enable pin standard from that
-> > binding can be kept.
-> 
-> Only enable gpio there. But even that's vague. Do you turn on the power
-> before or after setting the enable gpio? How long delay should be
-> between the power and the gpio? Different panels have different rules
-> for the power-up.
 
-Sure, it's a complex problem. But for the enable gpio..
+mode-gpios =3D <0					/* high, lcd MO */
+	      &gpio1 2 GPIO_ACTIVE_HIGH		/* gpio2, lcd LR */
+	      &gpio1 3 GPIO_ACTIVE_HIGH>;	/* gpio3, lcd UD */
 
-Maybe the enable GPIO should be treated as a regulator? That would allow
-specifying first the source regulator startup delay, and then the
-panel has it's own startup delay.
- 
-> >>> But I'm not really familiar with using extending current bindings, and
-> >>> making new bindings compatible with old ones. Can you explain why it'd
-> >>> be good to have the sharp panel bindings compatible with simple-panel?
-> >>> In what kind of scenario would it be used?
-> > 
-> > Ideally the panel binding just describes the panel and it should not
-> > matter which display controller it is a child of.
-> 
-> Yes, but that means the panel bindings need to have enough information
-> so that all display controllers can use it. Simple-panel bindings do not
-> have enough information. The simple-panel bindings do not have
-> information about the video bus input, and it doesn't even have
-> information about the resolution or bitdepth of the panel.
+vga-mode;	/* MO hardwired high */
 
-Some of that you can hide into the panel driver based on the compatible
-flag. So why not already do something like this in the .dts files
-instead of the remapping:
 
-compatible = "sharp,ls037v7dw01-omap-dss", "sharp,ls037v7dw01"; 
 
-And drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
-would only claim to be compatible with "sharp,ls037v7dw01-omap-dss".
+Btw, the gpio.txt has each gpio inside <>:
 
-Then when the common panel framework is available, you can stop
-parsing sharp,ls037v7dw01-omap-dss but the .dts files don't need
-to be changed and it's fine to keep "sharp,ls037v7dw01-omap-dss"
-in the .dts files.
- 
-> So I'm still asking, if we create sharp bindings that use the same
-> properties as the simple-panel bindings, and define that sharp panel is
-> compatible with simple-panel, what kind of scenario in practice would it
-> be used in?
+chipsel-gpios =3D <&gpio1 12 0>,
+		 <&gpio1 13 0>,
+		 <0>, /* holes are permitted, means no GPIO 2 */
+		 <&gpio2 2>;
 
-Well with the above example, just by dss with "sharp,ls037v7dw01-omap-dss"
-until some other SoC notices it can use the GPIO parts of the panel
-code at least :)
- 
-> Would the scenario be some other OS, that doesn't have a driver for the
-> sharp panel, but has a driver for the simple-panel? That would only work
-> if the sharp panel hardware is setup so that only the enable gpio is
-> needed, so that quite a narrow definition of "compatible".
+Is that equivalent to having all gpios inside <>?
 
-That's where we can use the compatible flags and just avoid parsing
-the generic compatible flag unless some common framework is available.
- 
-> Or is there some other scenario in which it could be used?
+ Tomi
 
-I guess other OS or other SoC with a different display controller
-but the same panel.
 
-Regards,
 
-Tony
+--SsUm9rS4DJ36L9sMqlrDuekCF3WUNRM6P
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTdH3cAAoJEPo9qoy8lh711CoP/1tEqKBs9xgEFxLAR6pcLyQ/
+0flFxJYLzxsnbncbxkjNEWdrXveVRDdENbx/cOOY615uwewE1z0ulH50ba8/PyMp
+hZuKB5LkymnMwWFy+yJW8vib73ohDHMki2eE5qbvbGJGqkaSLr6m4fuclhriQG6O
+23/3+fgghwmyohhZiWG2Pk3ZGBD2qmYrgjBmEY/UkfJcSphargCSio926L9oESdU
+X4fXTGNj/cmhTdU3yyfV4lkv3zs6+4yaq4uzfOcIYN+fgH+J7awSP9yDG1I/MlRC
+InFxQvAs9Qv3VytB69mTg6mcrQlAOe4EpQJrpFz32J2Ik/kdCAXrywdWZGsImbZi
+EfLt3C5QNQ4GEK6gXXyAu/OgJBGHEdHBsqEocznoufLEB80zOSeydTfkbK7gAa1i
+vyU6Res4iej9Jbm6E80bli4PMU+jIBs7OCIRrtD5AzYFAgEy9lxZre0b/MY045jT
+uBL+T1I8LCGcjlwIKUDwuFjLASjiKSga4s/DxtaScQKqmdOTdtQIyCxW8AWDclq+
+VvJpZt1WPltr88FrEHJ+/HrbFzJBmyG2V0D6IA/xkaDUniWwpcEAoT9jDHK0LmkC
+TFI870Go75yexUjaZZYGLhEwvug8M//88Z2fsP6EfOb+Up25b28zn9Bhymvy3s1A
+MiG/o0w5k8iOkuTRSAXw
+=BWjN
+-----END PGP SIGNATURE-----
+
+--SsUm9rS4DJ36L9sMqlrDuekCF3WUNRM6P--

@@ -1,58 +1,109 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 08 May 2014 10:48:34 +0000
-Subject: Re: [PATCH v2] video: mx3fb: Add backlight support
-Message-Id: <536B6102.8080704@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="r4J56oFcWUP8CxGkRTUAGTxeHqPRCLTQ1"
+Date: Thu, 15 May 2014 10:10:36 +0000
+Subject: [PATCH 2/3] OMAPDSS: panel-lgphilips-lb035q02: Add DT support
+Message-Id: <1400148637-17726-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399273010-24706-1-git-send-email-alexander.stein@systec-electronic.com>
-In-Reply-To: <1399273010-24706-1-git-send-email-alexander.stein@systec-electronic.com>
-To: linux-fbdev@vger.kernel.org
+References: <1400148637-17726-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1400148637-17726-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Florian Vaussard <florian.vaussard@epfl.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---r4J56oFcWUP8CxGkRTUAGTxeHqPRCLTQ1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add DT support for panel-lgphilips-lb035q02.
 
-On 08/05/14 13:47, Tomi Valkeinen wrote:
-> Hi,
->=20
-> On 05/05/14 09:56, Alexander Stein wrote:
->> Signed-off-by: Alexander Stein <alexander.stein@systec-electronic.com>=
+We disable the use of the backlight_gpio as it should be handled via
+backlight framework with DT boots.
 
->> ---
->=20
-> Please always have a commit description, even if it's more or less the
-> same as the subject.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ .../omap2/displays-new/panel-lgphilips-lb035q02.c  | 44 +++++++++++++++++++++-
+ 1 file changed, 43 insertions(+), 1 deletion(-)
 
-Oh, and I'd rather have a bit more explanation than "add backlight
-support". The current driver seems to have some backlight code. So what
-are you actually adding with this patch? Etc.
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c b/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c
+index 6e6acd696a70..76c4fdc51c31 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c
+@@ -159,7 +159,8 @@ static int lb035q02_enable(struct omap_dss_device *dssdev)
+ 	if (omapdss_device_is_enabled(dssdev))
+ 		return 0;
+ 
+-	in->ops.dpi->set_data_lines(in, ddata->data_lines);
++	if (ddata->data_lines)
++		in->ops.dpi->set_data_lines(in, ddata->data_lines);
+ 	in->ops.dpi->set_timings(in, &ddata->videomode);
+ 
+ 	r = in->ops.dpi->enable(in);
+@@ -277,6 +278,35 @@ err_gpio:
+ 	return r;
+ }
+ 
++static int lb035q02_probe_of(struct spi_device *spi)
++{
++	struct device_node *node = spi->dev.of_node;
++	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
++	struct omap_dss_device *in;
++	struct gpio_desc *gpio;
++
++	gpio = devm_gpiod_get(&spi->dev, "enable");
++	if (IS_ERR(gpio)) {
++		dev_err(&spi->dev, "failed to parse enable gpio\n");
++		return PTR_ERR(gpio);
++	} else {
++		gpiod_direction_output(gpio, 0);
++		ddata->enable_gpio = gpio;
++	}
++
++	ddata->backlight_gpio = -ENOENT;
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&spi->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	return 0;
++}
++
+ static int lb035q02_panel_spi_probe(struct spi_device *spi)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -295,6 +325,10 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
+ 		r = lb035q02_probe_pdata(spi);
+ 		if (r)
+ 			return r;
++	} else if (spi->dev.of_node) {
++		r = lb035q02_probe_of(spi);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -346,6 +380,13 @@ static int lb035q02_panel_spi_remove(struct spi_device *spi)
+ 	return 0;
+ }
+ 
++static const struct of_device_id lb035q02_of_match[] = {
++	{ .compatible = "omapdss,lgphilips,lb035q02", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, lb035q02_of_match);
++
+ static struct spi_driver lb035q02_spi_driver = {
+ 	.probe		= lb035q02_panel_spi_probe,
+ 	.remove		= lb035q02_panel_spi_remove,
+@@ -357,6 +398,7 @@ static struct spi_driver lb035q02_spi_driver = {
+ 
+ module_spi_driver(lb035q02_spi_driver);
+ 
++MODULE_ALIAS("spi:lgphilips,lb035q02");
+ MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
+ MODULE_DESCRIPTION("LG.Philips LB035Q02 LCD Panel driver");
+ MODULE_LICENSE("GPL");
+-- 
+1.9.1
 
- Tomi
-
-
-
---r4J56oFcWUP8CxGkRTUAGTxeHqPRCLTQ1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTa2ECAAoJEPo9qoy8lh71Yy0P/3yKYmoV9ObXK1A6ZyUoFkt1
-DP6YotX2ul29KWHigoXd6Wi4bA+Ag3Aj7x+GDRM8RDuVywsZjdLNEtNf94W6wR4K
-WmASdvPKG3BH56LqFFOhdrgg+z/Gs74KF7LeIxg1Xywim9fEUyFzyNs25iNh6N/4
-f6TqD5ahwVDCg7iv124IGhsBKj6MKNglalsUVg05s3BqSB1/4XBzvi7lelnX7VhH
-zCwkukWTNfBZ22N+XnEDCLe/zOEeZMw5oVzFxlnwy1eiLuw+LN7rrL6ughVnTwXL
-/i/96QOI89RU0sv52iXDsoo+LV4H5tqOru1VDMGQCHcEyaxOYxtrnA3W7bSy2JiT
-GhSqHUupYA7DA/p+JPulDguVHhGdBeYPS8PUOq/uRPGHD0rq6B4HklaZLyZds/e1
-N3KNO5VpeeRC2fN46S810oIUk5Lk9+tw0wJJ1i0QhbloS6YGGN1t3kxh/PBpfp43
-s2NnXAZuIuiK+9xdugo+3hNzwLv18D9W5Y6qRUqIJgm+YiD+unXgXN3QRRLw0i7c
-I3zoP10jwqW8Cjtpg9zJ5QP7/IGMUOqKcMldR6bmmFmsYhxJe+C8WfsCVvWRkcGB
-WuReoXVyUc51C38F+ubGywKpkwufLvWxwrIvvVA6FCSBfK18NYZRgSTKAWrUFFq6
-6QNiQOoPaF76y9BCW+oG
-=Uofc
------END PGP SIGNATURE-----
-
---r4J56oFcWUP8CxGkRTUAGTxeHqPRCLTQ1--

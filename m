@@ -1,57 +1,65 @@
-From: Belisko Marek <marek.belisko@gmail.com>
-Date: Wed, 07 May 2014 05:35:26 +0000
-Subject: Re: [PATCH v2 0/3] Add display support for gta04 device
-Message-Id: <CAAfyv34a3FfKUzwz7UDt-77V692eLdJL+h4c0pve2V+g351Weg@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 16 May 2014 09:55:11 +0000
+Subject: [PATCH 2/3] Doc/DT: Add DT binding documentation for TPO td043mtea1 panel
+Message-Id: <1400234112-29306-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398284120-4986-1-git-send-email-marek@goldelico.com>
-In-Reply-To: <1398284120-4986-1-git-send-email-marek@goldelico.com>
+References: <1400234112-29306-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1400234112-29306-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, devicetree@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>
 
-Tomi,
+Add DT binding documentation for TPO td043mtea1 panel
 
-any objections to this patch set? If not can you please take it? Thanks.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: devicetree@vger.kernel.org
+Cc: Grazvydas Ignotas <notasas@gmail.com>
+---
+ .../devicetree/bindings/video/tpo,td043mtea1.txt   | 33 ++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/tpo,td043mtea1.txt
 
-On Wed, Apr 23, 2014 at 10:15 PM, Marek Belisko <marek@goldelico.com> wrote:
-> This 3 patches adding display support for openmoko gta04 device.
-> First patch add DT bindings for topolly td028 panel. Second add description for
-> dss + panel and third fix panel probing when panel is compiled as module.
->
-> Changes from v1:
-> - extend panel compatible string by 'omapdss'
-> - add tpo-td028 panel to dss_compat_conv_list
-> - add MODULE_ALIAS macro to properly probe panel when is compiled as module
->
-> Marek Belisko (3):
->   omapdss: panel-tpo-td028ec1: Add DT support.
->   ARM: dts: oma3-gta04: Add display support
->   omapdss: panel-tpo-td028ec1: Add module alias
->
->  .../bindings/video/toppoly,td028ttec1.txt          | 30 ++++++++
->  arch/arm/boot/dts/omap3-gta04.dts                  | 86 ++++++++++++++++++++++
->  arch/arm/mach-omap2/display.c                      |  1 +
->  .../omap2/displays-new/panel-tpo-td028ttec1.c      | 33 ++++++++-
->  4 files changed, 149 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/devicetree/bindings/video/toppoly,td028ttec1.txt
->
-> --
-> 1.8.3.2
->
-
-BR,
-
-marek
-
+diff --git a/Documentation/devicetree/bindings/video/tpo,td043mtea1.txt b/Documentation/devicetree/bindings/video/tpo,td043mtea1.txt
+new file mode 100644
+index 000000000000..ec6d62975162
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/tpo,td043mtea1.txt
+@@ -0,0 +1,33 @@
++TPO TD043MTEA1 Panel
++==========
++
++Required properties:
++- compatible: "tpo,td043mtea1"
++- reset-gpios: panel reset gpio
++
++Optional properties:
++- label: a symbolic name for the panel
++
++Required nodes:
++- Video port for DPI input
++
++Example
++-------
++
++lcd-panel: panel@0 {
++	compatible = "tpo,td043mtea1";
++	reg = <0>;
++	spi-max-frequency = <100000>;
++	spi-cpol;
++	spi-cpha;
++
++	label = "lcd";
++
++	reset-gpios = <&gpio7 7 0>;
++
++	port {
++		lcd_in: endpoint {
++			remote-endpoint = <&dpi_out>;
++		};
++	};
++};
 -- 
-as simple and primitive as possible
--------------------------------------------------
-Marek Belisko - OPEN-NANDRA
-Freelance Developer
+1.9.1
 
-Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
-Tel: +421 915 052 184
-skype: marekwhite
-twitter: #opennandra
-web: http://open-nandra.com

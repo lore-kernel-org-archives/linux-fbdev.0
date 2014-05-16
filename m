@@ -1,81 +1,96 @@
 From: Tony Lindgren <tony@atomide.com>
-Date: Fri, 16 May 2014 18:01:54 +0000
+Date: Fri, 16 May 2014 21:39:07 +0000
 Subject: Re: [PATCH 3/4] OMAPDSS: panel-sharp-ls037v7dw01: add device tree support
-Message-Id: <20140516180154.GG22031@atomide.com>
+Message-Id: <20140516213907.GL12881@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5371F923.80000@ti.com>
- <CABxcv==_LCw1kPYm17g=h8VfSN2V_qsgXjTnsy-JOetawSv4pA@mail.gmail.com>
+References: <CABxcv==_LCw1kPYm17g=h8VfSN2V_qsgXjTnsy-JOetawSv4pA@mail.gmail.com>
  <20140513152518.GA16837@atomide.com> <53730AFB.2090800@ti.com>
  <20140514160216.GD18463@atomide.com> <537487AE.3060906@ti.com>
  <20140515182133.GC23659@atomide.com> <5375A8A8.7080306@ti.com>
  <20140516160717.GD22031@atomide.com>
  <20140516174158.GA11733@earth.universe>
-In-Reply-To: <20140516174158.GA11733@earth.universe>
+ <20140516180154.GG22031@atomide.com>
+In-Reply-To: <20140516180154.GG22031@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-* Sebastian Reichel <sre@ring0.de> [140516 10:42]:
-> On Fri, May 16, 2014 at 09:07:17AM -0700, Tony Lindgren wrote:
-> > * Tomi Valkeinen <tomi.valkeinen@ti.com> [140515 22:57]:
-> > > On 15/05/14 21:21, Tony Lindgren wrote:
-> > > >> But you're right, having "sharp,ls037v7dw01-omap-dss" in the .dts is an
-> > > >> alternative for the compatible-string conversion we do now. I guess it's
-> > > >> a matter of taste, but I rather hide it inside the kernel, in an
-> > > >> internal omapdss file, than pollute the .dts files with those compatible
-> > > >> strings.
+* Tony Lindgren <tony@atomide.com> [140516 11:02]:
+> * Sebastian Reichel <sre@ring0.de> [140516 10:42]:
+> > On Fri, May 16, 2014 at 09:07:17AM -0700, Tony Lindgren wrote:
+> > > * Tomi Valkeinen <tomi.valkeinen@ti.com> [140515 22:57]:
+> > > > On 15/05/14 21:21, Tony Lindgren wrote:
+> > > > >> But you're right, having "sharp,ls037v7dw01-omap-dss" in the .dts is an
+> > > > >> alternative for the compatible-string conversion we do now. I guess it's
+> > > > >> a matter of taste, but I rather hide it inside the kernel, in an
+> > > > >> internal omapdss file, than pollute the .dts files with those compatible
+> > > > >> strings.
+> > > > > 
+> > > > > Well it avoid you parsing through all the nodes during booting
+> > > > > and leaves out the function to do remapping. And removes the need
+> > > > > for maintaining a custom display mapping table. I'd say that's a
+> > > > > pretty good list of advantages right there :)
 > > > > 
-> > > > Well it avoid you parsing through all the nodes during booting
-> > > > and leaves out the function to do remapping. And removes the need
-> > > > for maintaining a custom display mapping table. I'd say that's a
-> > > > pretty good list of advantages right there :)
+> > > > Yep... I don't know. Maybe I'm being too careful about doing wrong
+> > > > things with .dts. I just like it more if any hacks are in kernel code,
+> > > > which I can remove without anyone noticing.
+> > > > 
+> > > > Anyway, we already have board.dts files using the non-omapified
+> > > > compatible strings in the mainline, so if I would now add the omapified
+> > > > compatible strings to .dts files, those old board.dts files would break.
+> > > > 
+> > > > So I guess the choice has already been made.
 > > > 
-> > > Yep... I don't know. Maybe I'm being too careful about doing wrong
-> > > things with .dts. I just like it more if any hacks are in kernel code,
-> > > which I can remove without anyone noticing.
-> > > 
-> > > Anyway, we already have board.dts files using the non-omapified
-> > > compatible strings in the mainline, so if I would now add the omapified
-> > > compatible strings to .dts files, those old board.dts files would break.
-> > > 
-> > > So I guess the choice has already been made.
+> > > I really think you should remove this misuse of device tree code ASAP.
+> > > It's better to fix it up now than carry the hack for next two years
+> > > and keep on adding to it.
 > > 
-> > I really think you should remove this misuse of device tree code ASAP.
-> > It's better to fix it up now than carry the hack for next two years
-> > and keep on adding to it.
+> > IMHO appending -omap-dss to a random device is an even bigger hack,
+> > since its adding lots of bloat to the API. Let's assume there is
+> > another OS using DT for ARM, but has no proper API for SPI
+> > controllers and it introduces your hack to SPI devices. That would
+> > mean each SPI device has -omap-spi appended (or -exynos-spi,
+> > -foo-spi, ...). At least I would blame them for creating a huge
+> > unmaintainable mess.
 > 
-> IMHO appending -omap-dss to a random device is an even bigger hack,
-> since its adding lots of bloat to the API. Let's assume there is
-> another OS using DT for ARM, but has no proper API for SPI
-> controllers and it introduces your hack to SPI devices. That would
-> mean each SPI device has -omap-spi appended (or -exynos-spi,
-> -foo-spi, ...). At least I would blame them for creating a huge
-> unmaintainable mess.
+> I think you're misunderstanding. I do not want the naming to
+> be Linux specific. The naming should naturally be as hardware
+> specific as possible. In this case something like:
+> 
+> compatible = "sharp,ls037v7dw01-dss", "sharp,ls037v7dw01";
+> 
+> Or we should probably use:
+> 
+> compatible = "sharp,ls037v7dw01-dpi", "sharp,ls037v7dw01";
+> 
+> As dpi here reflects the hardware it's connected to. The dss
+> is probably a Linux name.
+> 
+> Not use what you're after with the SPI example though, but sounds
+> like that's something different.
+> 
+> > I think Tomi's workaround is a much better hack, since it keeps the
+> > API clean. If the code simply prefixes "omapdss," to all
+> > "child"-devices of omapdss it can be left mostly untouched, too.
+> 
+> AFAIK that remapping not needed at all. All that is already
+> available with the compatible flags.
 
-I think you're misunderstanding. I do not want the naming to
-be Linux specific. The naming should naturally be as hardware
-specific as possible. In this case something like:
+And alternatively we can also just use the sharp,ls037v7dw01
+in the panel driver(s). We can have the panels bail out in driver
+probe based on of_machine_is_compatible if nothing else is available.
 
-compatible = "sharp,ls037v7dw01-dss", "sharp,ls037v7dw01";
+Also, currently the remapping code also probably keeps prepending
+more and more omapdss,omapdss,omapdss,... on each kexec reboot? And
+it would be quite silly for each display controller to have to do
+their own remapping for shared panels?
 
-Or we should probably use:
+If we still still despite all these reasons decide to go with
+the remapping of the compatible strings, it should really be a
+Linux generic (or drivers/video generic function), not implemented
+for each display controller.
 
-compatible = "sharp,ls037v7dw01-dpi", "sharp,ls037v7dw01";
-
-As dpi here reflects the hardware it's connected to. The dss
-is probably a Linux name.
-
-Not use what you're after with the SPI example though, but sounds
-like that's something different.
-
-> I think Tomi's workaround is a much better hack, since it keeps the
-> API clean. If the code simply prefixes "omapdss," to all
-> "child"-devices of omapdss it can be left mostly untouched, too.
-
-AFAIK that remapping not needed at all. All that is already
-available with the compatible flags.
-
-Regards,
+Cheers,
 
 Tony

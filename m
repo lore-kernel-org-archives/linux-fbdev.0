@@ -1,139 +1,59 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Sun, 11 May 2014 15:02:21 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 16 May 2014 08:56:46 +0000
 Subject: Re: [PATCH] video: omap: delete support for early fbmem allocation
-Message-Id: <20140511150221.GC28266@atomide.com>
+Message-Id: <5375D2CE.5050801@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="KaMSlFi1wJVMETsvD2u2U0qkFGoSeRd5t"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1399675964-22917-1-git-send-email-aaro.koskinen@iki.fi>
 In-Reply-To: <1399675964-22917-1-git-send-email-aaro.koskinen@iki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Griffin <peter.griffin@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Janusz Krzysztofik <jmkrzyszt@gmail.com>
+To: Aaro Koskinen <aaro.koskinen@iki.fi>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Peter Griffin <peter.griffin@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, Tony Lindgren <tony@atomide.com>
 
-* Aaro Koskinen <aaro.koskinen@iki.fi> [140509 15:47]:
-> Commit 1e434f9318efc3dddc0c0b8d2071712668154c2b (OMAPFB: remove early mem
+--KaMSlFi1wJVMETsvD2u2U0qkFGoSeRd5t
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 10/05/14 01:52, Aaro Koskinen wrote:
+> Commit 1e434f9318efc3dddc0c0b8d2071712668154c2b (OMAPFB: remove early m=
+em
 > alloc from old omapfb) deleted the support for early fbmem allocation
-> from the platform code, but some code still remains in the driver side.
+> from the platform code, but some code still remains in the driver side.=
+
 > Delete this code now, as it repotedly causes build issues on !MMU.
-> 
+>=20
 > The patch was tested on Amstrad E3 and Nokia 770 and framebuffer
 > functionality is not affected.
-> 
+>=20
 > Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+Thanks, queued for 3.16.
 
-> ---
->  drivers/video/fbdev/omap/lcdc.c | 67 ++---------------------------------------
->  1 file changed, 2 insertions(+), 65 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/omap/lcdc.c b/drivers/video/fbdev/omap/lcdc.c
-> index b52f625..6efa259 100644
-> --- a/drivers/video/fbdev/omap/lcdc.c
-> +++ b/drivers/video/fbdev/omap/lcdc.c
-> @@ -74,7 +74,6 @@ static struct omap_lcd_controller {
->  	void			(*dma_callback)(void *data);
->  	void			*dma_callback_data;
->  
-> -	int			fbmem_allocated;
->  	dma_addr_t		vram_phys;
->  	void			*vram_virt;
->  	unsigned long		vram_size;
-> @@ -611,42 +610,6 @@ static void lcdc_dma_handler(u16 status, void *data)
->  		lcdc.dma_callback(lcdc.dma_callback_data);
->  }
->  
-> -static int mmap_kern(void)
-> -{
-> -	struct vm_struct	*kvma;
-> -	struct vm_area_struct	vma;
-> -	pgprot_t		pgprot;
-> -	unsigned long		vaddr;
-> -
-> -	kvma = get_vm_area(lcdc.vram_size, VM_IOREMAP);
-> -	if (kvma = NULL) {
-> -		dev_err(lcdc.fbdev->dev, "can't get kernel vm area\n");
-> -		return -ENOMEM;
-> -	}
-> -	vma.vm_mm = &init_mm;
-> -
-> -	vaddr = (unsigned long)kvma->addr;
-> -	vma.vm_start = vaddr;
-> -	vma.vm_end = vaddr + lcdc.vram_size;
-> -
-> -	pgprot = pgprot_writecombine(pgprot_kernel);
-> -	if (io_remap_pfn_range(&vma, vaddr,
-> -			   lcdc.vram_phys >> PAGE_SHIFT,
-> -			   lcdc.vram_size, pgprot) < 0) {
-> -		dev_err(lcdc.fbdev->dev, "kernel mmap for FB memory failed\n");
-> -		return -EAGAIN;
-> -	}
-> -
-> -	lcdc.vram_virt = (void *)vaddr;
-> -
-> -	return 0;
-> -}
-> -
-> -static void unmap_kern(void)
-> -{
-> -	vunmap(lcdc.vram_virt);
-> -}
-> -
->  static int alloc_palette_ram(void)
->  {
->  	lcdc.palette_virt = dma_alloc_writecombine(lcdc.fbdev->dev,
-> @@ -703,8 +666,6 @@ static void free_fbmem(void)
->  
->  static int setup_fbmem(struct omapfb_mem_desc *req_md)
->  {
-> -	int r;
-> -
->  	if (!req_md->region_cnt) {
->  		dev_err(lcdc.fbdev->dev, "no memory regions defined\n");
->  		return -EINVAL;
-> @@ -715,31 +676,7 @@ static int setup_fbmem(struct omapfb_mem_desc *req_md)
->  		req_md->region_cnt = 1;
->  	}
->  
-> -	if (req_md->region[0].paddr = 0) {
-> -		lcdc.fbmem_allocated = 1;
-> -		if ((r = alloc_fbmem(&req_md->region[0])) < 0)
-> -			return r;
-> -		return 0;
-> -	}
-> -
-> -	lcdc.vram_phys = req_md->region[0].paddr;
-> -	lcdc.vram_size = req_md->region[0].size;
-> -
-> -	if ((r = mmap_kern()) < 0)
-> -		return r;
-> -
-> -	dev_dbg(lcdc.fbdev->dev, "vram at %08x size %08lx mapped to 0x%p\n",
-> -		 lcdc.vram_phys, lcdc.vram_size, lcdc.vram_virt);
-> -
-> -	return 0;
-> -}
-> -
-> -static void cleanup_fbmem(void)
-> -{
-> -	if (lcdc.fbmem_allocated)
-> -		free_fbmem();
-> -	else
-> -		unmap_kern();
-> +	return alloc_fbmem(&req_md->region[0]);
->  }
->  
->  static int omap_lcdc_init(struct omapfb_device *fbdev, int ext_mode,
-> @@ -833,7 +770,7 @@ static void omap_lcdc_cleanup(void)
->  {
->  	if (!lcdc.ext_mode)
->  		free_palette_ram();
-> -	cleanup_fbmem();
-> +	free_fbmem();
->  	omap_free_lcd_dma();
->  	free_irq(OMAP_LCDC_IRQ, lcdc.fbdev);
->  	clk_disable(lcdc.lcd_ck);
-> -- 
-> 1.9.0
-> 
+ Tomi
+
+
+
+--KaMSlFi1wJVMETsvD2u2U0qkFGoSeRd5t
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTddLOAAoJEPo9qoy8lh71JycP/jh4fkLxmePYwOo202X7RepU
+FezY93PiyngWt6uP3c2GzcwbW5tX6Y3ujMtAXTVJ32swRqCPoeDF/TV4qq1yesIr
+Kog+w109gwV9pFVTR6vupriNjYRUGUIneK2IMdlxd4K/y5mxAGQyN0V0yIepZKv0
+e5eLJSdH31MVlFBM3w4bKQTJaXXR62t9kmsbxXDEYpHDyGQmpfqbKUVn2KXOAgC0
+dUKwzC9SJfN8Sobr3M1gf6LAECfHd8L7mham5FDfwh29Q/8IMFGtBopsN1hfSN/v
+q09Mu6bFxvMaeTVsHhRuvaGgIBJjQ/thM1gxF278Onn+S5M8iG//nangjVGA3wnA
+caB6ztM8NJiRfBQINbqgcbPPxGV0wxvjYHwZ25PB4YclTQX+czXuk5C1Ac3J8gjo
+oFTsPqMw+muK7dAfAxyZNI/iXgppXBRnTluRA2jhSQBI0uUYPprmjpFDRZ4911Fo
+z6PfV1M1ooz8QXgKkSpWGvl3zufwVCibWVA+Aw6SCQygT8CJKl8ZXi5D65cDQq4b
+3919zNtOCcvbL15kMYMVOJvrTPNjuaXy5fUubYLQDX7B+kPGKkN8jJ9wQRa9dqH1
+LDaAdzn9dGBuxZN5oFTAnf9KvS6w+IQkM0NRjv85USYJ5rJsQm2US8zWDrhZgKbl
+G1boRxGLu7MoRl34NHRN
+=01QK
+-----END PGP SIGNATURE-----
+
+--KaMSlFi1wJVMETsvD2u2U0qkFGoSeRd5t--

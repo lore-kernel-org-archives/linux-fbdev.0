@@ -1,70 +1,111 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Mon, 12 May 2014 09:12:25 +0000
-Subject: [PATCH 14/19] ARM: omap4-panda-common.dtsi: Add HDMI audio nodes
-Message-Id: <fdeddff24bc38efb7a155b2569a5f2056278cb9d.1399884780.git.jsarha@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 16 May 2014 11:04:44 +0000
+Subject: Re: [PATCH 14/19] ARM: omap4-panda-common.dtsi: Add HDMI audio nodes
+Message-Id: <5375F0CC.8090507@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="vH7OmrmH9sb6mSlninSFhRFnhvxxcqleP"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>
-In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+References: <cover.1399884780.git.jsarha@ti.com> <fdeddff24bc38efb7a155b2569a5f2056278cb9d.1399884780.git.jsarha@ti.com>
+In-Reply-To: <fdeddff24bc38efb7a155b2569a5f2056278cb9d.1399884780.git.jsarha@ti.com>
+To: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, detheridge@ti.com
 
-Adds a simple-card sound node for HDMI audio, the associated
-hdmi-codec node, and sound-dai-cells propeties to the DAI nodes.
+--vH7OmrmH9sb6mSlninSFhRFnhvxxcqleP
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- arch/arm/boot/dts/omap4-panda-common.dtsi |   21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+On 12/05/14 12:12, Jyri Sarha wrote:
+> Adds a simple-card sound node for HDMI audio, the associated
+> hdmi-codec node, and sound-dai-cells propeties to the DAI nodes.
+>=20
+> Signed-off-by: Jyri Sarha <jsarha@ti.com>
+> ---
+>  arch/arm/boot/dts/omap4-panda-common.dtsi |   21 ++++++++++++++++++++-=
 
-diff --git a/arch/arm/boot/dts/omap4-panda-common.dtsi b/arch/arm/boot/dts/omap4-panda-common.dtsi
-index d2c45bf..c04f453 100644
---- a/arch/arm/boot/dts/omap4-panda-common.dtsi
-+++ b/arch/arm/boot/dts/omap4-panda-common.dtsi
-@@ -41,7 +41,7 @@
- 		};
- 	};
- 
--	sound: sound {
-+	sound: sound@0 {
- 		compatible = "ti,abe-twl6040";
- 		ti,model = "PandaBoard";
- 
-@@ -65,6 +65,24 @@
- 			"AFMR", "Line In";
- 	};
- 
-+	sound@1 {
-+		compatible = "simple-audio-card";
-+
-+		simple-audio-card,cpu {
-+			sound-dai = <&hdmi>;
-+		};
-+
-+		simple-audio-card,codec {
-+			sound-dai = <&hdmi_audio>;
-+		};
-+	};
-+
-+	hdmi_audio: hdmi_audio@0 {
-+		#sound-dai-cells = <0>;
-+		compatible = "linux,hdmi-audio";
-+		status = "okay";
-+	};
-+
- 	/* HS USB Port 1 Power */
- 	hsusb1_power: hsusb1_power_reg {
- 		compatible = "regulator-fixed";
-@@ -512,6 +530,7 @@
- };
- 
- &hdmi {
-+	#sound-dai-cells = <0>;
- 	status = "ok";
- 	vdda-supply = <&vdac>;
- 
--- 
-1.7.9.5
+>  1 file changed, 20 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/arch/arm/boot/dts/omap4-panda-common.dtsi b/arch/arm/boot/=
+dts/omap4-panda-common.dtsi
+> index d2c45bf..c04f453 100644
+> --- a/arch/arm/boot/dts/omap4-panda-common.dtsi
+> +++ b/arch/arm/boot/dts/omap4-panda-common.dtsi
+> @@ -41,7 +41,7 @@
+>  		};
+>  	};
+> =20
+> -	sound: sound {
+> +	sound: sound@0 {
+>  		compatible =3D "ti,abe-twl6040";
+>  		ti,model =3D "PandaBoard";
+> =20
+> @@ -65,6 +65,24 @@
+>  			"AFMR", "Line In";
+>  	};
+> =20
+> +	sound@1 {
+> +		compatible =3D "simple-audio-card";
+> +
+> +		simple-audio-card,cpu {
+> +			sound-dai =3D <&hdmi>;
+> +		};
+> +
+> +		simple-audio-card,codec {
+> +			sound-dai =3D <&hdmi_audio>;
+> +		};
+> +	};
+> +
+> +	hdmi_audio: hdmi_audio@0 {
+> +		#sound-dai-cells =3D <0>;
+> +		compatible =3D "linux,hdmi-audio";
+> +		status =3D "okay";
+> +	};
+> +
+>  	/* HS USB Port 1 Power */
+>  	hsusb1_power: hsusb1_power_reg {
+>  		compatible =3D "regulator-fixed";
+> @@ -512,6 +530,7 @@
+>  };
+> =20
+>  &hdmi {
+> +	#sound-dai-cells =3D <0>;
+>  	status =3D "ok";
+>  	vdda-supply =3D <&vdac>;
 
+Maybe this is how this has to be done, but I'll still ask:
+
+Considering that the HDMI audio is basically inseparable part of the
+OMAP HDMI video, and if a board has HDMI video connector connected to
+the SoC's HDMI, then it has HDMI audio.
+
+So all of the above .dts changes are already implied when we have HDMI
+video on the board. Is there no way to prevent every board needing to
+add those exact same nodes to get HDMI audio?
+
+ Tomi
+
+
+
+--vH7OmrmH9sb6mSlninSFhRFnhvxxcqleP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTdfDMAAoJEPo9qoy8lh71OaEQAJNPn7bip3/xcJ22p5KeRPFp
+dbvGg5IUkHxMqTSVxushi7A+J64aL3U5xp63GPZdgrJEGi4KWLHotFyL6r+KhAMi
+y7yH+iQrdNIyfRXVAt7UCiZN+F0th5t8tekBcdG3D0S7y4qihUWbfVe9aIfKqAG4
+sEeV3fOHRaQkvKbIdRhruEGzYvlGRRGkwbWp0JE+CSVl706jxuawZ/iUutQbU99z
+BPIZTcA0QREvw+GCsnwQ1q11CpUBsw9HGFVjDSmErcmbyYjn3WPI1p4lldmWkXVB
+yyQ9XAU55XEJIHJ/UfhKkc2SuG6u6IUU1lcJyO4BUd3DwrraHXtxu/z2hdHSRFeV
+F4yVCKhTcLtmJ1WFupHxfR3qHQDp/f2KFXuEmtZ4h5AEMAIx2nCJPf9y/HJUFeBm
+XU+UpOpXeTOgzh9SV+Li0HVBG03htAhMLy+EiIvDkyF5Gu1lZ4tZQeK3WBSimoCq
+1kVuhFI6cJW9kXb43vBXo/hz2w9DUYGhHklL7MGyIHNF7OMzQZQ2o6MiHdHB0yaP
+TZYYGliCAn6zqJVTGTorJpRbTo0o5f4YJA0BrTXxabhQ4DnzZG0l5hPwtcCQv7I+
+YJQvM58RAE2/xzI5yD6AYb9fFalrF+qTCDBTImhJHoH4UAT98ivI1OU8cZcd7GZW
+x81GhrDPHjJs2lGvRLi8
+=TaTc
+-----END PGP SIGNATURE-----
+
+--vH7OmrmH9sb6mSlninSFhRFnhvxxcqleP--

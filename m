@@ -1,62 +1,58 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 16 May 2014 07:29:58 +0000
-Subject: [PATCH 0/4] OMAPDSS: sharp-ls037v7dw01 DT support
-Message-Id: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
+From: Tony Lindgren <tony@atomide.com>
+Date: Fri, 16 May 2014 16:12:25 +0000
+Subject: Re: [PATCH 0/4] OMAPDSS: sharp-ls037v7dw01 DT support
+Message-Id: <20140516161224.GE22031@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [140516 00:31]:
+> Hi,
+> 
+> These are slightly reworked versions of the patches Tony sent:
+> 
+> * Split the DT doc into separate patch
+> * Handle errors from gpio functions
+> * Remove QVGA support
+> * Removed the change to arch/arm/mach-omap2/display.c. I'll add that to my
+>   patch which moves the conversion code to omapdss. Note that if you test this
+>   version, you need to add the panel name to the conversion list for now.
+> * Set MO gpio GPIO_ACTIVE_HIGH in omap3-evm-common.dtsi
+> * Set the GPIO default values the same way for DT and non-DT versions.
+> 
+> Tony, I removed the QVGA support as it was a new feature, not supported by the
+> non-DT version. Also, I don't think it should be done as you had implemented
+> it, but rather either have a flag in the DT data in case the pin is hardwired
+> in the hardware, or let the user select the mode at runtime.
 
-These are slightly reworked versions of the patches Tony sent:
+OK. Probably should have both options eventually.
+ 
+> Also, I didn't quite understand the implementation. You had set initial values
+> in the driver for MO and RESB differently than on the non-DT version. Was that
+> on purpose?
 
-* Split the DT doc into separate patch
-* Handle errors from gpio functions
-* Remove QVGA support
-* Removed the change to arch/arm/mach-omap2/display.c. I'll add that to my
-  patch which moves the conversion code to omapdss. Note that if you test this
-  version, you need to add the panel name to the conversion list for now.
-* Set MO gpio GPIO_ACTIVE_HIGH in omap3-evm-common.dtsi
-* Set the GPIO default values the same way for DT and non-DT versions.
+I just configured things to what we had earlier for the legacy booting,
+QVGA for ldp and VGA for omap3-evm.
+ 
+> You said in a comment: "The LCD is sideways, so we want the VGA mode instead of
+> QVGA mode.". Why is that? How does the resolution affect the orientation?
 
-Tony, I removed the QVGA support as it was a new feature, not supported by the
-non-DT version. Also, I don't think it should be done as you had implemented
-it, but rather either have a flag in the DT data in case the pin is hardwired
-in the hardware, or let the user select the mode at runtime.
+Yeah that's pretty confusing and probably written before I got the
+image working properly. I probably initially thought the VGA mode also
+switches the panel to 640x480, while it really sets it to 480x640.
+ 
+> With my version, the panel (should) always be in VGA mode, like the non-DT
+> version does.
+> 
+> Only compile tested, I don't have boards with the panel.
 
-Also, I didn't quite understand the implementation. You had set initial values
-in the driver for MO and RESB differently than on the non-DT version. Was that
-on purpose?
+Works for me on omap3-evm and ldp after patching in the mode to your
+panel compatible translation database system.
 
-You said in a comment: "The LCD is sideways, so we want the VGA mode instead of
-QVGA mode.". Why is that? How does the resolution affect the orientation?
+Regards,
 
-With my version, the panel (should) always be in VGA mode, like the non-DT
-version does.
-
-Only compile tested, I don't have boards with the panel.
-
- Tomi
-
-Tony Lindgren (4):
-  OMAPDSS: panel-sharp-ls037v7dw01: update to use gpiod
-  OMAPDSS: panel sharp-ls037v7dw01 DT support
-  Doc/DT: Add DT binding documentation for SHARP LS037V7DW01
-  ARM: dts: Add LCD panel sharp ls037v7dw01 support for omap3-evm and
-    ldp
-
- .../bindings/video/sharp,ls037v7dw01.txt           |  43 +++++
- arch/arm/boot/dts/omap3-evm-37xx.dts               |  50 +++++
- arch/arm/boot/dts/omap3-evm-common.dtsi            |  26 +++
- arch/arm/boot/dts/omap3-ldp.dts                    |  29 ++-
- .../boot/dts/omap3-panel-sharp-ls037v7dw01.dtsi    |  67 +++++++
- .../omap2/displays-new/panel-sharp-ls037v7dw01.c   | 210 +++++++++++++++------
- 6 files changed, 363 insertions(+), 62 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/sharp,ls037v7dw01.txt
- create mode 100644 arch/arm/boot/dts/omap3-panel-sharp-ls037v7dw01.dtsi
-
--- 
-1.9.1
-
+Tony

@@ -1,73 +1,75 @@
-From: Takashi Iwai <tiwai@suse.de>
-Date: Tue, 13 May 2014 10:09:27 +0000
-Subject: [PATCH 1/3] vgacon: Fix & cleanup refcounting
-Message-Id: <1399975769-30526-2-git-send-email-tiwai@suse.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 16 May 2014 07:30:01 +0000
+Subject: [PATCH 3/4] Doc/DT: Add DT binding documentation for SHARP LS037V7DW01
+Message-Id: <1400225402-18274-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399975769-30526-1-git-send-email-tiwai@suse.de>
-In-Reply-To: <1399975769-30526-1-git-send-email-tiwai@suse.de>
+References: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-The vgacon driver prepares a two element array of uni_pagedir_loc and
-uses the second item as its own reference counter for sharing the
-uni_pagedir.  And the code assumes blindly that the second item is
-available if the assigned vc_uni_pagedir isn't the standard one, which
-might be wrong (although currently it's so).
+From: Tony Lindgren <tony@atomide.com>
 
-This patch fixes that wrong assumption, and gives a slight cleanup
-along with it: namely, instead of array, just give the uni_pagedir_loc
-and a separate refcount variable.  It makes the code a bit more
-understandable at first glance.
+Add DT binding documentation for SHARP LS037V7DW01 panel.
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: devicetree@vger.kernel.org
 ---
- drivers/video/console/vgacon.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ .../bindings/video/sharp,ls037v7dw01.txt           | 43 ++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/sharp,ls037v7dw01.txt
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 9d8feac67637..9e18770aaba6 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -87,7 +87,8 @@ static void vgacon_save_screen(struct vc_data *c);
- static int vgacon_scroll(struct vc_data *c, int t, int b, int dir,
- 			 int lines);
- static void vgacon_invert_region(struct vc_data *c, u16 * p, int count);
--static unsigned long vgacon_uni_pagedir[2];
-+static unsigned long vgacon_uni_pagedir;
-+static int vgacon_refcount;
- 
- /* Description of the hardware situation */
- static int		vga_init_done		__read_mostly;
-@@ -575,12 +576,12 @@ static void vgacon_init(struct vc_data *c, int init)
- 	if (vga_512_chars)
- 		c->vc_hi_font_mask = 0x0800;
- 	p = *c->vc_uni_pagedir_loc;
--	if (c->vc_uni_pagedir_loc = &c->vc_uni_pagedir ||
--	    !--c->vc_uni_pagedir_loc[1])
-+	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir) {
- 		con_free_unimap(c);
--	c->vc_uni_pagedir_loc = vgacon_uni_pagedir;
--	vgacon_uni_pagedir[1]++;
--	if (!vgacon_uni_pagedir[0] && p)
-+		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
-+		vgacon_refcount++;
-+	}
-+	if (!vgacon_uni_pagedir && p)
- 		con_set_default_unimap(c);
- 
- 	/* Only set the default if the user didn't deliberately override it */
-@@ -597,7 +598,7 @@ static void vgacon_deinit(struct vc_data *c)
- 		vga_set_mem_top(c);
- 	}
- 
--	if (!--vgacon_uni_pagedir[1])
-+	if (!--vgacon_refcount)
- 		con_free_unimap(c);
- 	c->vc_uni_pagedir_loc = &c->vc_uni_pagedir;
- 	con_set_default_unimap(c);
+diff --git a/Documentation/devicetree/bindings/video/sharp,ls037v7dw01.txt b/Documentation/devicetree/bindings/video/sharp,ls037v7dw01.txt
+new file mode 100644
+index 000000000000..0cc8981e9d49
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/sharp,ls037v7dw01.txt
+@@ -0,0 +1,43 @@
++SHARP LS037V7DW01 TFT-LCD panel
++=================+
++Required properties:
++- compatible: "sharp,ls037v7dw01"
++
++Optional properties:
++- label: a symbolic name for the panel
++- enable-gpios: a GPIO spec for the optional enable pin.
++  This pin is the INI pin as specified in the LS037V7DW01.pdf file.
++- reset-gpios: a GPIO spec for the optional reset pin.
++  This pin is the RESB pin as specified in the LS037V7DW01.pdf file.
++- mode-gpios: a GPIO
++  ordered MO, LR, and UD as specified in the LS037V7DW01.pdf file.
++
++Required nodes:
++- Video port for DPI input
++
++This panel can have zero to five GPIOs to configure to change configuration
++between QVGA and VGA mode and the scan direction. As these pins can be also
++configured with external pulls, all the GPIOs are considered optional with holes
++in the array.
++
++Example
++-------
++
++Example when connected to a omap2+ based device:
++
++lcd0: display {
++	compatible = "sharp,ls037v7dw01";
++	power-supply = <&lcd_3v3>;
++	enable-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;	/* gpio152, lcd INI */
++	reset-gpios = <&gpio5 27 GPIO_ACTIVE_HIGH>;	/* gpio155, lcd RESB */
++	mode-gpios = <&gpio5 26 GPIO_ACTIVE_HIGH	/* gpio154, lcd MO */
++		      &gpio1 2 GPIO_ACTIVE_HIGH		/* gpio2, lcd LR */
++		      &gpio1 3 GPIO_ACTIVE_HIGH>;	/* gpio3, lcd UD */
++
++	port {
++		lcd_in: endpoint {
++			remote-endpoint = <&dpi_out>;
++		};
++	};
++};
 -- 
-1.9.2
+1.9.1
 

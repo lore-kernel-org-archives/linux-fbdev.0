@@ -1,181 +1,199 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Mon, 12 May 2014 09:12:13 +0000
-Subject: [PATCH 02/19] OMAPDSS: hdmi-common: Add hdmi_dss_audio_from_hw_params()
-Message-Id: <6dbb6dbbf299609fa3f527bcd5e41d5648b764d3.1399884780.git.jsarha@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 16 May 2014 07:29:59 +0000
+Subject: [PATCH 1/4] OMAPDSS: panel-sharp-ls037v7dw01: update to use gpiod
+Message-Id: <1400225402-18274-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>
-In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
+References: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Add common function for struct omap_dss_audio initialization from
-struct snd_pcm_hw_params.
+From: Tony Lindgren <tony@atomide.com>
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Using gpiod will make it easier to add device tree support
+for this panel in the following patches.
+
+Note that all the GPIOs for this panel are optional, any
+of the the GPIOs could be configured with external pulls
+instead of GPIOs, so let's not error out if GPIOs are not
+found to make the panel more generic.
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h        |    5 ++
- drivers/video/fbdev/omap2/dss/hdmi_common.c |  117 ++++++++++++++++++++++++++-
- 2 files changed, 121 insertions(+), 1 deletion(-)
+ .../omap2/displays-new/panel-sharp-ls037v7dw01.c   | 108 ++++++++++-----------
+ 1 file changed, 54 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index fbee078..65bf072 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -433,6 +433,11 @@ int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
+index b2f710be565d..015d49300f2f 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
+@@ -26,11 +26,11 @@ struct panel_drv_data {
  
- #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
- int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts);
-+struct snd_pcm_hw_params;
-+struct snd_soc_dai;
-+int hdmi_dss_audio_from_hw_params(struct snd_pcm_hw_params *params,
-+				  struct omap_dss_audio *dss_audio,
-+				  struct snd_soc_dai *dai);
- int hdmi_wp_audio_enable(struct hdmi_wp_data *wp, bool enable);
- int hdmi_wp_audio_core_req_enable(struct hdmi_wp_data *wp, bool enable);
- void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_common.c b/drivers/video/fbdev/omap2/dss/hdmi_common.c
-index 9a2c39c..85a2407 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_common.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_common.c
-@@ -19,6 +19,12 @@
- #include <linux/err.h>
- #include <linux/of.h>
- #include <video/omapdss.h>
-+#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
-+#include <sound/asound.h>
-+#include <sound/asoundef.h>
-+#include <sound/pcm_params.h>
-+#include <sound/soc.h>
-+#endif
+ 	struct omap_video_timings videomode;
  
- #include "hdmi.h"
+-	int resb_gpio;
+-	int ini_gpio;
+-	int mo_gpio;
+-	int lr_gpio;
+-	int ud_gpio;
++	struct gpio_desc *resb_gpio;	/* low = reset active min 20 us */
++	struct gpio_desc *ini_gpio;	/* high = power on */
++	struct gpio_desc *mo_gpio;	/* low = 480x640, high = 240x320 */
++	struct gpio_desc *lr_gpio;	/* high = conventional horizontal scanning */
++	struct gpio_desc *ud_gpio;	/* high = conventional vertical scanning */
+ };
  
-@@ -364,7 +370,7 @@ int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
- 	return 0;
- }
+ static const struct omap_video_timings sharp_ls_timings = {
+@@ -105,11 +105,11 @@ static int sharp_ls_enable(struct omap_dss_device *dssdev)
+ 	/* wait couple of vsyncs until enabling the LCD */
+ 	msleep(50);
  
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
-+#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
- int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts)
- {
- 	u32 deep_color;
-@@ -463,4 +469,113 @@ int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts)
+-	if (gpio_is_valid(ddata->resb_gpio))
+-		gpio_set_value_cansleep(ddata->resb_gpio, 1);
++	if (ddata->resb_gpio)
++		gpiod_set_value_cansleep(ddata->resb_gpio, 1);
  
- 	return 0;
- }
-+
-+int hdmi_dss_audio_from_hw_params(struct snd_pcm_hw_params *params,
-+				  struct omap_dss_audio *dss_audio,
-+				  struct snd_soc_dai *dai)
+-	if (gpio_is_valid(ddata->ini_gpio))
+-		gpio_set_value_cansleep(ddata->ini_gpio, 1);
++	if (ddata->ini_gpio)
++		gpiod_set_value_cansleep(ddata->ini_gpio, 1);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+ 
+@@ -124,11 +124,11 @@ static void sharp_ls_disable(struct omap_dss_device *dssdev)
+ 	if (!omapdss_device_is_enabled(dssdev))
+ 		return;
+ 
+-	if (gpio_is_valid(ddata->ini_gpio))
+-		gpio_set_value_cansleep(ddata->ini_gpio, 0);
++	if (ddata->ini_gpio)
++		gpiod_set_value_cansleep(ddata->ini_gpio, 0);
+ 
+-	if (gpio_is_valid(ddata->resb_gpio))
+-		gpio_set_value_cansleep(ddata->resb_gpio, 0);
++	if (ddata->resb_gpio)
++		gpiod_set_value_cansleep(ddata->resb_gpio, 0);
+ 
+ 	/* wait at least 5 vsyncs after disabling the LCD */
+ 
+@@ -182,11 +182,32 @@ static struct omap_dss_driver sharp_ls_ops = {
+ 	.get_resolution	= omapdss_default_get_resolution,
+ };
+ 
++static int sharp_ls_get_gpio(struct device *dev, int gpio, unsigned long flags,
++		  char *desc, struct gpio_desc **gpiod)
 +{
-+	struct snd_aes_iec958 *iec = dss_audio->iec;
-+	struct snd_cea_861_aud_if *cea = dss_audio->cea;
++	struct gpio_desc *gd;
++	int r;
 +
-+	/*
-+	 * fill the IEC-60958 channel status word
-+	 */
-+	/* initialize the word bytes */
-+	memset(iec->status, 0, sizeof(iec->status));
++	*gpiod = NULL;
 +
-+	/* specify IEC-60958-3 (commercial use) */
-+	iec->status[0] &= ~IEC958_AES0_PROFESSIONAL;
++	r = devm_gpio_request_one(dev, gpio, flags, desc);
++	if (r)
++		return r = -ENOENT ? 0 : r;
 +
-+	/* specify that the audio is LPCM*/
-+	iec->status[0] &= ~IEC958_AES0_NONAUDIO;
++	gd = gpio_to_desc(gpio);
++	if (IS_ERR(gd))
++		return PTR_ERR(gd) = -ENOENT ? 0 : PTR_ERR(gd);
 +
-+	iec->status[0] |= IEC958_AES0_CON_NOT_COPYRIGHT;
-+
-+	iec->status[0] |= IEC958_AES0_CON_EMPHASIS_NONE;
-+
-+	iec->status[0] |= IEC958_AES1_PRO_MODE_NOTID;
-+
-+	iec->status[1] = IEC958_AES1_CON_GENERAL;
-+
-+	iec->status[2] |= IEC958_AES2_CON_SOURCE_UNSPEC;
-+
-+	iec->status[2] |= IEC958_AES2_CON_CHANNEL_UNSPEC;
-+
-+	switch (params_rate(params)) {
-+	case 32000:
-+		iec->status[3] |= IEC958_AES3_CON_FS_32000;
-+		break;
-+	case 44100:
-+		iec->status[3] |= IEC958_AES3_CON_FS_44100;
-+		break;
-+	case 48000:
-+		iec->status[3] |= IEC958_AES3_CON_FS_48000;
-+		break;
-+	case 88200:
-+		iec->status[3] |= IEC958_AES3_CON_FS_88200;
-+		break;
-+	case 96000:
-+		iec->status[3] |= IEC958_AES3_CON_FS_96000;
-+		break;
-+	case 176400:
-+		iec->status[3] |= IEC958_AES3_CON_FS_176400;
-+		break;
-+	case 192000:
-+		iec->status[3] |= IEC958_AES3_CON_FS_192000;
-+		break;
-+	default:
-+		dev_err(dai->dev, "rate not supported!\n");
-+		return -EINVAL;
-+	}
-+
-+	/* specify the clock accuracy */
-+	iec->status[3] |= IEC958_AES3_CON_CLOCK_1000PPM;
-+
-+	/*
-+	 * specify the word length. The same word length value can mean
-+	 * two different lengths. Hence, we need to specify the maximum
-+	 * word length as well.
-+	 */
-+	switch (params_format(params)) {
-+	case SNDRV_PCM_FORMAT_S16_LE:
-+		iec->status[4] |= IEC958_AES4_CON_WORDLEN_20_16;
-+		iec->status[4] &= ~IEC958_AES4_CON_MAX_WORDLEN_24;
-+		break;
-+	case SNDRV_PCM_FORMAT_S24_LE:
-+		iec->status[4] |= IEC958_AES4_CON_WORDLEN_24_20;
-+		iec->status[4] |= IEC958_AES4_CON_MAX_WORDLEN_24;
-+		break;
-+	default:
-+		dev_err(dai->dev, "format not supported!\n");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Fill the CEA-861 audio infoframe (see spec for details)
-+	 */
-+
-+	cea->db1_ct_cc = (params_channels(params) - 1)
-+		& CEA861_AUDIO_INFOFRAME_DB1CC;
-+	cea->db1_ct_cc |= CEA861_AUDIO_INFOFRAME_DB1CT_FROM_STREAM;
-+
-+	cea->db2_sf_ss = CEA861_AUDIO_INFOFRAME_DB2SF_FROM_STREAM;
-+	cea->db2_sf_ss |= CEA861_AUDIO_INFOFRAME_DB2SS_FROM_STREAM;
-+
-+	cea->db3 = 0; /* not used, all zeros */
-+
-+	/*
-+	 * The OMAP HDMI IP requires to use the 8-channel channel code when
-+	 * transmitting more than two channels.
-+	 */
-+	if (params_channels(params) = 2)
-+		cea->db4_ca = 0x0;
-+	else
-+		cea->db4_ca = 0x13;
-+
-+	cea->db5_dminh_lsv = CEA861_AUDIO_INFOFRAME_DB5_DM_INH_PROHIBITED;
-+	/* the expression is trivial but makes clear what we are doing */
-+	cea->db5_dminh_lsv |= (0 & CEA861_AUDIO_INFOFRAME_DB5_LSV);
-+
++	*gpiod = gd;
 +	return 0;
 +}
- #endif
++
+ static int sharp_ls_probe_pdata(struct platform_device *pdev)
+ {
+ 	const struct panel_sharp_ls037v7dw01_platform_data *pdata;
+ 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+ 	struct omap_dss_device *dssdev, *in;
++	int r;
+ 
+ 	pdata = dev_get_platdata(&pdev->dev);
+ 
+@@ -204,11 +225,26 @@ static int sharp_ls_probe_pdata(struct platform_device *pdev)
+ 	dssdev = &ddata->dssdev;
+ 	dssdev->name = pdata->name;
+ 
+-	ddata->resb_gpio = pdata->resb_gpio;
+-	ddata->ini_gpio = pdata->ini_gpio;
+-	ddata->mo_gpio = pdata->mo_gpio;
+-	ddata->lr_gpio = pdata->lr_gpio;
+-	ddata->ud_gpio = pdata->ud_gpio;
++	r = sharp_ls_get_gpio(&pdev->dev, pdata->mo_gpio, GPIOF_OUT_INIT_LOW,
++		"lcd MO", &ddata->mo_gpio);
++	if (r)
++		return r;
++	r = sharp_ls_get_gpio(&pdev->dev, pdata->lr_gpio, GPIOF_OUT_INIT_HIGH,
++		"lcd LR", &ddata->lr_gpio);
++	if (r)
++		return r;
++	r = sharp_ls_get_gpio(&pdev->dev, pdata->ud_gpio, GPIOF_OUT_INIT_HIGH,
++		"lcd UD", &ddata->ud_gpio);
++	if (r)
++		return r;
++	r = sharp_ls_get_gpio(&pdev->dev, pdata->resb_gpio, GPIOF_OUT_INIT_LOW,
++		"lcd RESB", &ddata->resb_gpio);
++	if (r)
++		return r;
++	r = sharp_ls_get_gpio(&pdev->dev, pdata->ini_gpio, GPIOF_OUT_INIT_LOW,
++		"lcd INI", &ddata->ini_gpio);
++	if (r)
++		return r;
+ 
+ 	return 0;
+ }
+@@ -233,41 +269,6 @@ static int sharp_ls_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	if (gpio_is_valid(ddata->mo_gpio)) {
+-		r = devm_gpio_request_one(&pdev->dev, ddata->mo_gpio,
+-				GPIOF_OUT_INIT_LOW, "lcd MO");
+-		if (r)
+-			goto err_gpio;
+-	}
+-
+-	if (gpio_is_valid(ddata->lr_gpio)) {
+-		r = devm_gpio_request_one(&pdev->dev, ddata->lr_gpio,
+-				GPIOF_OUT_INIT_HIGH, "lcd LR");
+-		if (r)
+-			goto err_gpio;
+-	}
+-
+-	if (gpio_is_valid(ddata->ud_gpio)) {
+-		r = devm_gpio_request_one(&pdev->dev, ddata->ud_gpio,
+-				GPIOF_OUT_INIT_HIGH, "lcd UD");
+-		if (r)
+-			goto err_gpio;
+-	}
+-
+-	if (gpio_is_valid(ddata->resb_gpio)) {
+-		r = devm_gpio_request_one(&pdev->dev, ddata->resb_gpio,
+-				GPIOF_OUT_INIT_LOW, "lcd RESB");
+-		if (r)
+-			goto err_gpio;
+-	}
+-
+-	if (gpio_is_valid(ddata->ini_gpio)) {
+-		r = devm_gpio_request_one(&pdev->dev, ddata->ini_gpio,
+-				GPIOF_OUT_INIT_LOW, "lcd INI");
+-		if (r)
+-			goto err_gpio;
+-	}
+-
+ 	ddata->videomode = sharp_ls_timings;
+ 
+ 	dssdev = &ddata->dssdev;
+@@ -287,7 +288,6 @@ static int sharp_ls_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ err_reg:
+-err_gpio:
+ 	omap_dss_put_device(ddata->in);
+ 	return r;
+ }
 -- 
-1.7.9.5
+1.9.1
 

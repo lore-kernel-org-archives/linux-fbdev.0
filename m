@@ -1,60 +1,191 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 08 May 2014 10:31:59 +0000
-Subject: Re: [PATCH v7][ 1/5] video: mx3fb: Use devm_kzalloc
-Message-Id: <536B5D1F.1090507@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="RrxeLiUe28dnNkodg4D4TML8EXQOTJqD0"
+Date: Fri, 16 May 2014 07:30:00 +0000
+Subject: [PATCH 2/4] OMAPDSS: panel sharp-ls037v7dw01 DT support
+Message-Id: <1400225402-18274-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1394788369-5096-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1394788369-5096-1-git-send-email-denis@eukrea.com>
+References: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---RrxeLiUe28dnNkodg4D4TML8EXQOTJqD0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Tony Lindgren <tony@atomide.com>
 
-On 14/03/14 11:12, Denis Carikli wrote:
-> Replace kzalloc by devm_kzalloc and remove the kfree() calls.
->=20
-> Signed-off-by: Denis Carikli <denis@eukrea.com>
-> ---
-> ChangeLog v6->v7:
-> - Removed the Cc from the patch, they went into=20
->   git send-email instead.
-> ChangeLog v5->v6:
->  - New patch need
-> ---
->  drivers/video/fbdev/mx3fb.c |    4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+Add DT support for sharp-ls037v7dw01.
 
-I've picked this patch for 3.16. I didn't pick the DT related patches in
-this series as there seemed to be unanswered questions about them.
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ .../omap2/displays-new/panel-sharp-ls037v7dw01.c   | 102 ++++++++++++++++++++-
+ 1 file changed, 99 insertions(+), 3 deletions(-)
 
- Tomi
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
+index 015d49300f2f..f1f72ce50a17 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
+@@ -12,15 +12,18 @@
+ #include <linux/delay.h>
+ #include <linux/gpio.h>
+ #include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+-
++#include <linux/regulator/consumer.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ 
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+ 	struct omap_dss_device *in;
++	struct regulator *vcc;
+ 
+ 	int data_lines;
+ 
+@@ -95,12 +98,21 @@ static int sharp_ls_enable(struct omap_dss_device *dssdev)
+ 	if (omapdss_device_is_enabled(dssdev))
+ 		return 0;
+ 
+-	in->ops.dpi->set_data_lines(in, ddata->data_lines);
++	if (ddata->data_lines)
++		in->ops.dpi->set_data_lines(in, ddata->data_lines);
+ 	in->ops.dpi->set_timings(in, &ddata->videomode);
+ 
++	if (ddata->vcc) {
++		r = regulator_enable(ddata->vcc);
++		if (r != 0)
++			return r;
++	}
++
+ 	r = in->ops.dpi->enable(in);
+-	if (r)
++	if (r) {
++		regulator_disable(ddata->vcc);
+ 		return r;
++	}
+ 
+ 	/* wait couple of vsyncs until enabling the LCD */
+ 	msleep(50);
+@@ -136,6 +148,9 @@ static void sharp_ls_disable(struct omap_dss_device *dssdev)
+ 
+ 	in->ops.dpi->disable(in);
+ 
++	if (ddata->vcc)
++		regulator_disable(ddata->vcc);
++
+ 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+ }
+ 
+@@ -249,6 +264,75 @@ static int sharp_ls_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static  int sharp_ls_get_gpio_of(struct device *dev, int index, int val,
++	const char *desc, struct gpio_desc **gpiod)
++{
++	struct gpio_desc *gd;
++	int r;
++
++	*gpiod = NULL;
++
++	gd = devm_gpiod_get_index(dev, desc, index);
++	if (IS_ERR(gd))
++		return PTR_ERR(gd) = -ENOENT ? 0 : PTR_ERR(gd);
++
++	r = gpiod_direction_output(gd, val);
++	if (r)
++		return r;
++
++	*gpiod = gd;
++	return 0;
++}
++
++static int sharp_ls_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	int r;
++
++	ddata->vcc = devm_regulator_get(&pdev->dev, "envdd");
++	if (IS_ERR(ddata->vcc)) {
++		dev_err(&pdev->dev, "failed to get regulator\n");
++		return PTR_ERR(ddata->vcc);
++	}
++
++	/* lcd INI */
++	r = sharp_ls_get_gpio_of(&pdev->dev, 0, 0, "enable", &ddata->ini_gpio);
++	if (r)
++		return r;
++
++	/* lcd RESB */
++	r = sharp_ls_get_gpio_of(&pdev->dev, 0, 0, "reset", &ddata->resb_gpio);
++	if (r)
++		return r;
++
++	/* lcd MO */
++	r = sharp_ls_get_gpio_of(&pdev->dev, 0, 0, "mode", &ddata->mo_gpio);
++	if (r)
++		return r;
++
++	/* lcd LR */
++	r = sharp_ls_get_gpio_of(&pdev->dev, 1, 1, "mode", &ddata->lr_gpio);
++	if (r)
++		return r;
++
++	/* lcd UD */
++	r = sharp_ls_get_gpio_of(&pdev->dev, 2, 1, "mode", &ddata->ud_gpio);
++	if (r)
++		return r;
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	return 0;
++}
++
+ static int sharp_ls_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -265,6 +349,10 @@ static int sharp_ls_probe(struct platform_device *pdev)
+ 		r = sharp_ls_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = sharp_ls_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -308,12 +396,20 @@ static int __exit sharp_ls_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id sharp_ls_of_match[] = {
++	{ .compatible = "omapdss,sharp,ls037v7dw01", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, sharp_ls_of_match);
++
+ static struct platform_driver sharp_ls_driver = {
+ 	.probe = sharp_ls_probe,
+ 	.remove = __exit_p(sharp_ls_remove),
+ 	.driver = {
+ 		.name = "panel-sharp-ls037v7dw01",
+ 		.owner = THIS_MODULE,
++		.of_match_table = sharp_ls_of_match,
+ 	},
+ };
+ 
+-- 
+1.9.1
 
-
-
---RrxeLiUe28dnNkodg4D4TML8EXQOTJqD0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTa10fAAoJEPo9qoy8lh71vHIP/3eZQDhS2lY9pxG3/8VOZj3f
-k1HPyMdrrhDjA0zIIIaUT9dNuT/mTB7iN2op/hZLhvqal4HB6Irv+Cow4N9BjiKZ
-6I9Txy5Q+mmAA2UNyNeXqKJUew2UjYAUWTjKvSy+FB9aigNEjrVX+J6dnz/sqbjl
-5ppEXE55zc4FdsnJBY+p8CQV9jBvBDAEnsu9Twzo7AUaPJJt7ZnL5gmrIAc78M2c
-TFF8TemQlVl6Zzp2tXyU+qTwZpZvVJEWmAfkNfE4buhYsFqyvGjliBOAH7g2jA9D
-CTjs3a9O7gvw5vHqDIByfYm2gNHWwAvJ5Vz+RkOOgDkRcH+ZpiLvBfw1BpXtPlP4
-n+YWO/20EpLDtvHEqU9kj3YlZEYalK9XPpCXie6lfVfqytTINOvxdRj31OYZvMZN
-BqLQtKfmKAJcsvrGT1/l5Lz2W1adyFgv925KigONgROHfxuJ9gOaxdZlDX3Ttss+
-C44dqfhOzqnFJlnFlyZJBNw7C38jC3ov0y1CxY2QBWoDyo5E6a1SfDazCKR9b5C7
-nApDkehmSs+Ux9nYaI6y3PykpfywdkapY85//0AaWQM12Cu3y+oL9UPjIGg4iiYM
-eiMn1CFCWFGgwB8Og1KzMm/olR6aGt6NVGk2H/I05d15Jg5c1nT7b9xo9qYUtMEN
-u3qfnqrEzyQjqy/cTolk
-=OwG/
------END PGP SIGNATURE-----
-
---RrxeLiUe28dnNkodg4D4TML8EXQOTJqD0--

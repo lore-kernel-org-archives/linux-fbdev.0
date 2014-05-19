@@ -1,81 +1,45 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Wed, 28 May 2014 23:20:09 +0000
-Subject: [PATCHv2 06/15] ARM: at91: remove useless at91_pwm_leds()
-Message-Id: <1401319218-16772-7-git-send-email-alexandre.belloni@free-electrons.com>
+Date: Mon, 19 May 2014 20:42:42 +0000
+Subject: [PATCHv2 resend 11/11] backlight: pwm_bl: retrieve configured pwm period
+Message-Id: <1400532162-29483-12-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Now that all at91 boards using leds-atmel-pwm switched to leds-pwm, the
-at91_pwm_leds() function is not used anymore.
+The PWM core is now able to initialize the PWM period from platform_data. Use it
+and if it is not configured, use the supplied pwm_period_ns.
 
 Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
- arch/arm/mach-at91/board.h |  1 -
- arch/arm/mach-at91/leds.c  | 37 -------------------------------------
- 2 files changed, 38 deletions(-)
+ drivers/video/backlight/pwm_bl.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-at91/board.h b/arch/arm/mach-at91/board.h
-index 4e773b55bc2d..836e9a537e0c 100644
---- a/arch/arm/mach-at91/board.h
-+++ b/arch/arm/mach-at91/board.h
-@@ -123,6 +123,5 @@ extern void __init at91_add_device_can(struct at91_can_data *data);
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index b75201ff46f6..1bb8a69062c5 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -304,12 +304,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	/*
+ 	 * The DT case will set the pwm_period_ns field to 0 and store the
+ 	 * period, parsed from the DT, in the PWM device. For the non-DT case,
+-	 * set the period from platform data.
++	 * set the period from platform data if it is not already set.
+ 	 */
+-	if (data->pwm_period_ns > 0)
++	pb->period = pwm_get_period(pb->pwm);
++	if (!pb->period && (data->pwm_period_ns > 0)) {
++		pb->period = data->pwm_period_ns;
+ 		pwm_set_period(pb->pwm, data->pwm_period_ns);
++	}
  
-  /* LEDs */
- extern void __init at91_gpio_leds(struct gpio_led *leds, int nr);
--extern void __init at91_pwm_leds(struct gpio_led *leds, int nr);
+-	pb->period = pwm_get_period(pb->pwm);
+ 	pb->lth_brightness = data->lth_brightness * (pb->period / pb->scale);
  
- #endif
-diff --git a/arch/arm/mach-at91/leds.c b/arch/arm/mach-at91/leds.c
-index 77c4d8fd03fd..eb22e3357e87 100644
---- a/arch/arm/mach-at91/leds.c
-+++ b/arch/arm/mach-at91/leds.c
-@@ -54,40 +54,3 @@ void __init at91_gpio_leds(struct gpio_led *leds, int nr)
- void __init at91_gpio_leds(struct gpio_led *leds, int nr) {}
- #endif
- 
--
--/* ------------------------------------------------------------------------- */
--
--#if defined (CONFIG_LEDS_ATMEL_PWM)
--
--/*
-- * PWM Leds
-- */
--
--static struct gpio_led_platform_data pwm_led_data;
--
--static struct platform_device at91_pwm_leds_device = {
--	.name			= "leds-atmel-pwm",
--	.id			= -1,
--	.dev.platform_data	= &pwm_led_data,
--};
--
--void __init at91_pwm_leds(struct gpio_led *leds, int nr)
--{
--	int i;
--	u32 pwm_mask = 0;
--
--	if (!nr)
--		return;
--
--	for (i = 0; i < nr; i++)
--		pwm_mask |= (1 << leds[i].gpio);
--
--	pwm_led_data.leds = leds;
--	pwm_led_data.num_leds = nr;
--
--	at91_add_device_pwm(pwm_mask);
--	platform_device_register(&at91_pwm_leds_device);
--}
--#else
--void __init at91_pwm_leds(struct gpio_led *leds, int nr){}
--#endif
+ 	memset(&props, 0, sizeof(struct backlight_properties));
 -- 
 1.9.1
 

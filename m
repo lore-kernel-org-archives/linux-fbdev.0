@@ -1,175 +1,43 @@
-From: Andi Kleen <andi@firstfloor.org>
-Date: Fri, 16 May 2014 21:43:09 +0000
-Subject: [PATCH 2/8] radeonfb: Out of line errata workarounds
-Message-Id: <1400276595-6965-3-git-send-email-andi@firstfloor.org>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 19 May 2014 20:42:36 +0000
+Subject: [PATCHv2 resend 05/11] ARM: pxa: hx4700: initialize all the struct pwm_lookup members
+Message-Id: <1400532162-29483-6-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400276595-6965-1-git-send-email-andi@firstfloor.org>
-In-Reply-To: <1400276595-6965-1-git-send-email-andi@firstfloor.org>
+References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Andi Kleen <ak@linux.intel.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Andi Kleen <ak@linux.intel.com>
+This will allow to get rid of the .pwm_period_ns member of struct
+platform_pwm_backlight_data as the period will be set by the PWM core.
 
-Out of lining _radeon_msleep and radeon_pll_errata_* saves about 40k text.
-
-14193673	2003976	1507328	17704977	10e2811	vmlinux-before-radeon
-14152713	2003976	1507328	17664017	10d8811	vmlinux-radeon
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- drivers/video/fbdev/aty/radeon_base.c | 57 ++++++++++++++++++++++++++++++++++
- drivers/video/fbdev/aty/radeonfb.h    | 58 ++---------------------------------
- 2 files changed, 60 insertions(+), 55 deletions(-)
+ arch/arm/mach-pxa/hx4700.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index 26d80a4..abd89a9 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -282,6 +282,63 @@ static int backlight = 1;
- static int backlight = 0;
- #endif
+diff --git a/arch/arm/mach-pxa/hx4700.c b/arch/arm/mach-pxa/hx4700.c
+index a7c30eb0c8db..0788a1f171fe 100644
+--- a/arch/arm/mach-pxa/hx4700.c
++++ b/arch/arm/mach-pxa/hx4700.c
+@@ -574,7 +574,14 @@ static struct platform_device backlight = {
+ };
  
-+/* Note about this function: we have some rare cases where we must not schedule,
-+ * this typically happen with our special "wake up early" hook which allows us to
-+ * wake up the graphic chip (and thus get the console back) before everything else
-+ * on some machines that support that mechanism. At this point, interrupts are off
-+ * and scheduling is not permitted
-+ */
-+void _radeon_msleep(struct radeonfb_info *rinfo, unsigned long ms)
-+{
-+	if (rinfo->no_schedule || oops_in_progress)
-+		mdelay(ms);
-+	else
-+		msleep(ms);
-+}
-+
-+/*
-+ * Note about PLL register accesses:
-+ *
-+ * I have removed the spinlock on them on purpose. The driver now
-+ * expects that it will only manipulate the PLL registers in normal
-+ * task environment, where radeon_msleep() will be called, protected
-+ * by a semaphore (currently the console semaphore) so that no conflict
-+ * will happen on the PLL register index.
-+ *
-+ * With the latest changes to the VT layer, this is guaranteed for all
-+ * calls except the actual drawing/blits which aren't supposed to use
-+ * the PLL registers anyway
-+ *
-+ * This is very important for the workarounds to work properly. The only
-+ * possible exception to this rule is the call to unblank(), which may
-+ * be done at irq time if an oops is in progress.
-+ */
-+void radeon_pll_errata_after_index(struct radeonfb_info *rinfo)
-+{
-+	if (!(rinfo->errata & CHIP_ERRATA_PLL_DUMMYREADS))
-+		return;
-+
-+	(void)INREG(CLOCK_CNTL_DATA);
-+	(void)INREG(CRTC_GEN_CNTL);
-+}
-+
-+void radeon_pll_errata_after_data(struct radeonfb_info *rinfo)
-+{
-+	if (rinfo->errata & CHIP_ERRATA_PLL_DELAY) {
-+		/* we can't deal with posted writes here ... */
-+		_radeon_msleep(rinfo, 5);
-+	}
-+	if (rinfo->errata & CHIP_ERRATA_R300_CG) {
-+		u32 save, tmp;
-+		save = INREG(CLOCK_CNTL_INDEX);
-+		tmp = save & ~(0x3f | PLL_WR_EN);
-+		OUTREG(CLOCK_CNTL_INDEX, tmp);
-+		tmp = INREG(CLOCK_CNTL_DATA);
-+		OUTREG(CLOCK_CNTL_INDEX, save);
-+	}
-+}
-+
-+
+ static struct pwm_lookup hx4700_pwm_lookup[] = {
+-	PWM_LOOKUP("pxa27x-pwm.1", 0, "pwm-backlight", NULL),
++	{
++		.provider = "pxa27x-pwm.1",
++		.index = 0,
++		.dev_id = "pwm-backlight",
++		.con_id = NULL,
++		.period = 30923,
++		.polarity = PWM_POLARITY_NORMAL,
++	},
+ };
+ 
  /*
-  * prototypes
-  */
-diff --git a/drivers/video/fbdev/aty/radeonfb.h b/drivers/video/fbdev/aty/radeonfb.h
-index cb84604..bb73446 100644
---- a/drivers/video/fbdev/aty/radeonfb.h
-+++ b/drivers/video/fbdev/aty/radeonfb.h
-@@ -370,20 +370,7 @@ struct radeonfb_info {
-  * IO macros
-  */
- 
--/* Note about this function: we have some rare cases where we must not schedule,
-- * this typically happen with our special "wake up early" hook which allows us to
-- * wake up the graphic chip (and thus get the console back) before everything else
-- * on some machines that support that mechanism. At this point, interrupts are off
-- * and scheduling is not permitted
-- */
--static inline void _radeon_msleep(struct radeonfb_info *rinfo, unsigned long ms)
--{
--	if (rinfo->no_schedule || oops_in_progress)
--		mdelay(ms);
--	else
--		msleep(ms);
--}
--
-+void _radeon_msleep(struct radeonfb_info *rinfo, unsigned long ms);
- 
- #define INREG8(addr)		readb((rinfo->mmio_base)+addr)
- #define OUTREG8(addr,val)	writeb(val, (rinfo->mmio_base)+addr)
-@@ -408,47 +395,8 @@ static inline void _OUTREGP(struct radeonfb_info *rinfo, u32 addr,
- 
- #define OUTREGP(addr,val,mask)	_OUTREGP(rinfo, addr, val,mask)
- 
--/*
-- * Note about PLL register accesses:
-- *
-- * I have removed the spinlock on them on purpose. The driver now
-- * expects that it will only manipulate the PLL registers in normal
-- * task environment, where radeon_msleep() will be called, protected
-- * by a semaphore (currently the console semaphore) so that no conflict
-- * will happen on the PLL register index.
-- *
-- * With the latest changes to the VT layer, this is guaranteed for all
-- * calls except the actual drawing/blits which aren't supposed to use
-- * the PLL registers anyway
-- *
-- * This is very important for the workarounds to work properly. The only
-- * possible exception to this rule is the call to unblank(), which may
-- * be done at irq time if an oops is in progress.
-- */
--static inline void radeon_pll_errata_after_index(struct radeonfb_info *rinfo)
--{
--	if (!(rinfo->errata & CHIP_ERRATA_PLL_DUMMYREADS))
--		return;
--
--	(void)INREG(CLOCK_CNTL_DATA);
--	(void)INREG(CRTC_GEN_CNTL);
--}
--
--static inline void radeon_pll_errata_after_data(struct radeonfb_info *rinfo)
--{
--	if (rinfo->errata & CHIP_ERRATA_PLL_DELAY) {
--		/* we can't deal with posted writes here ... */
--		_radeon_msleep(rinfo, 5);
--	}
--	if (rinfo->errata & CHIP_ERRATA_R300_CG) {
--		u32 save, tmp;
--		save = INREG(CLOCK_CNTL_INDEX);
--		tmp = save & ~(0x3f | PLL_WR_EN);
--		OUTREG(CLOCK_CNTL_INDEX, tmp);
--		tmp = INREG(CLOCK_CNTL_DATA);
--		OUTREG(CLOCK_CNTL_INDEX, save);
--	}
--}
-+void radeon_pll_errata_after_index(struct radeonfb_info *rinfo);
-+void radeon_pll_errata_after_data(struct radeonfb_info *rinfo);
- 
- static inline u32 __INPLL(struct radeonfb_info *rinfo, u32 addr)
- {
 -- 
-1.9.0
+1.9.1
 

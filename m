@@ -1,91 +1,61 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 12 May 2014 15:04:51 +0000
-Subject: Re: [PATCHv2 00/11] improve PWM lookup support without device tree
-Message-Id: <20140512150451.GD29318@piout.net>
+Date: Mon, 19 May 2014 20:42:32 +0000
+Subject: [PATCHv2 resend 01/11] pwm: add period and polarity to struct pwm_lookup
+Message-Id: <1400532162-29483-2-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1397512793-10325-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
+Adds a period and a polarity member to struct pwm_lookup so that when performing
+a lookup using the lookup table instead of device tree, we are able to set the
+period and the polarity accordingly like what is done in
+of_pwm_xlate_with_flags.
 
-Hello Thierry,
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ drivers/pwm/core.c  | 8 +++++++-
+ include/linux/pwm.h | 2 ++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-Do you know when you will have some time to review that patch series ?
-
-On 14/04/2014 at 23:59:42 +0200, Alexandre Belloni wrote :
-> Hi,
-> 
-> A patch set as suggested by Thierry to make lookup with the lookup table
-> instead of device tree behave more like when using device tree.
-> 
-> The first patch adds a period and a polarity member to the lookup table and use
-> those to set period and polarity.
-> 
-> Patch 2, 4 and 5 are making use of those new members from the board files.
-> Patch 3 removes useless code since setting the polarity is now handled by the
-> PWM core.
-> 
-> I couldn't decide on a good name for the extended PWM_LOOKUP macro and I believe
-> we won't have to add members to that structure soon so:
-> Patch 6 modifies the PWM_LOOKUP macro to also initialize period and polarity
-> and
-> Patch 7-9 are making use of the new PWM_LOOKUP macro in the board files
-> 
-> Patch 10 and 11 are making the leds-pwm and pwm_bl drivers get the period from
-> the PWM before using pwm_period_ns if it is not already set.
-> 
-> Patch 10 will obviously conflict with the series of Russell reworking the
-> leds-pwm probing. I can rebase if necessary
-> 
-> The final goal would be to get rid of .pwm_period_ns in leds-pwm and pwm_bl
-> after moving all the remaining users (still around 25) to pwm_lookup.
-> 
-> Changes in v2:
->  - correctly unlock the pwm_lookup_lock mutex before returning.
->  - don't change PWM_LOOKUP atomically
->  - remove tpu_pwm_platform_data and the associated header file
->  - make the leds-pwm and pwm_bl drivers get the period from the PWM
-> 
-> Alexandre Belloni (11):
->   pwm: add period and polarity to struct pwm_lookup
->   ARM: shmobile: Armadillo 800 EVA: initialize all struct pwm_lookup
->     members
->   pwm: renesas-tpu: remove useless struct tpu_pwm_platform_data
->   ARM: OMAP3: Beagle: initialize all the struct pwm_lookup members
->   ARM: pxa: hx4700: initialize all the struct pwm_lookup members
->   pwm: modify PWM_LOOKUP to initialize all struct pwm_lookup members
->   ARM: OMAP3: Beagle: use PWM_LOOKUP to initialize struct pwm_lookup
->   ARM: shmobile: Armadillo 800 EVA: use PWM_LOOKUP to initialize struct
->     pwm_lookup
->   ARM: pxa: hx4700: use PWM_LOOKUP to initialize struct pwm_lookup
->   leds: leds-pwm: retrieve configured pwm period
->   backlight: pwm_bl: retrieve configured pwm period
-> 
->  Documentation/pwm.txt                          |  3 ++-
->  arch/arm/mach-omap2/board-omap3beagle.c        |  3 ++-
->  arch/arm/mach-pxa/hx4700.c                     |  3 ++-
->  arch/arm/mach-shmobile/board-armadillo800eva.c | 14 +++-----------
->  drivers/leds/leds-pwm.c                        |  5 ++++-
->  drivers/pwm/core.c                             |  8 +++++++-
->  drivers/pwm/pwm-renesas-tpu.c                  | 19 +++----------------
->  drivers/video/backlight/pwm_bl.c               |  8 +++++---
->  include/linux/platform_data/pwm-renesas-tpu.h  | 16 ----------------
->  include/linux/pwm.h                            |  6 +++++-
->  10 files changed, 33 insertions(+), 52 deletions(-)
->  delete mode 100644 include/linux/platform_data/pwm-renesas-tpu.h
-> 
-> -- 
-> 1.8.3.2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-leds" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index a80471399c20..4b66bf09ee55 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -661,10 +661,16 @@ struct pwm_device *pwm_get(struct device *dev, const char *con_id)
+ 		}
+ 	}
+ 
++	mutex_unlock(&pwm_lookup_lock);
++
+ 	if (chip)
+ 		pwm = pwm_request_from_chip(chip, index, con_id ?: dev_id);
++	if (IS_ERR(pwm))
++		return pwm;
++
++	pwm_set_period(pwm, p->period);
++	pwm_set_polarity(pwm, p->polarity);
+ 
+-	mutex_unlock(&pwm_lookup_lock);
+ 
+ 	return pwm;
+ }
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index 4717f54051cb..2f45e2fe5b93 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -274,6 +274,8 @@ struct pwm_lookup {
+ 	unsigned int index;
+ 	const char *dev_id;
+ 	const char *con_id;
++	unsigned int period;
++	enum pwm_polarity polarity;
+ };
+ 
+ #define PWM_LOOKUP(_provider, _index, _dev_id, _con_id)	\
 -- 
-Alexandre Belloni, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+1.9.1
+

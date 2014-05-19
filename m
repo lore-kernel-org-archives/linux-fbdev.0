@@ -1,7 +1,7 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 19 May 2014 20:42:40 +0000
-Subject: [PATCHv2 resend 09/11] ARM: pxa: hx4700: use PWM_LOOKUP to initialize struct pwm_lookup
-Message-Id: <1400532162-29483-10-git-send-email-alexandre.belloni@free-electrons.com>
+Date: Mon, 19 May 2014 20:42:34 +0000
+Subject: [PATCHv2 resend 03/11] pwm: renesas-tpu: remove useless struct tpu_pwm_platform_data
+Message-Id: <1400532162-29483-4-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
 In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
@@ -10,32 +10,102 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
+The struct is not used anymore and the polarity initialization will be taken
+care of by the PWM core.
+
 Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- arch/arm/mach-pxa/hx4700.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ drivers/pwm/pwm-renesas-tpu.c                 | 19 +++----------------
+ include/linux/platform_data/pwm-renesas-tpu.h | 16 ----------------
+ 2 files changed, 3 insertions(+), 32 deletions(-)
+ delete mode 100644 include/linux/platform_data/pwm-renesas-tpu.h
 
-diff --git a/arch/arm/mach-pxa/hx4700.c b/arch/arm/mach-pxa/hx4700.c
-index 0788a1f171fe..c66ad4edc5e3 100644
---- a/arch/arm/mach-pxa/hx4700.c
-+++ b/arch/arm/mach-pxa/hx4700.c
-@@ -574,14 +574,8 @@ static struct platform_device backlight = {
- };
+diff --git a/drivers/pwm/pwm-renesas-tpu.c b/drivers/pwm/pwm-renesas-tpu.c
+index aff6ba9b49e7..9dbcf82b3e6c 100644
+--- a/drivers/pwm/pwm-renesas-tpu.c
++++ b/drivers/pwm/pwm-renesas-tpu.c
+@@ -21,13 +21,14 @@
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/of.h>
+-#include <linux/platform_data/pwm-renesas-tpu.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/pwm.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
  
- static struct pwm_lookup hx4700_pwm_lookup[] = {
--	{
--		.provider = "pxa27x-pwm.1",
--		.index = 0,
--		.dev_id = "pwm-backlight",
--		.con_id = NULL,
--		.period = 30923,
--		.polarity = PWM_POLARITY_NORMAL,
--	},
-+	PWM_LOOKUP("pxa27x-pwm.1", 0, "pwm-backlight", NULL,
-+		   30923, PWM_POLARITY_NORMAL),
- };
++#define TPU_CHANNEL_MAX		4
++
+ #define TPU_TSTR		0x00	/* Timer start register (shared) */
  
- /*
+ #define TPU_TCRn		0x00	/* Timer control register */
+@@ -87,7 +88,6 @@ struct tpu_pwm_device {
+ 
+ struct tpu_device {
+ 	struct platform_device *pdev;
+-	enum pwm_polarity polarities[TPU_CHANNEL_MAX];
+ 	struct pwm_chip chip;
+ 	spinlock_t lock;
+ 
+@@ -229,7 +229,7 @@ static int tpu_pwm_request(struct pwm_chip *chip, struct pwm_device *_pwm)
+ 
+ 	pwm->tpu = tpu;
+ 	pwm->channel = _pwm->hwpwm;
+-	pwm->polarity = tpu->polarities[pwm->channel];
++	pwm->polarity = PWM_POLARITY_NORMAL;
+ 	pwm->prescaler = 0;
+ 	pwm->period = 0;
+ 	pwm->duty = 0;
+@@ -388,16 +388,6 @@ static const struct pwm_ops tpu_pwm_ops = {
+  * Probe and remove
+  */
+ 
+-static void tpu_parse_pdata(struct tpu_device *tpu)
+-{
+-	struct tpu_pwm_platform_data *pdata = tpu->pdev->dev.platform_data;
+-	unsigned int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(tpu->polarities); ++i)
+-		tpu->polarities[i] = pdata ? pdata->channels[i].polarity
+-				   : PWM_POLARITY_NORMAL;
+-}
+-
+ static int tpu_probe(struct platform_device *pdev)
+ {
+ 	struct tpu_device *tpu;
+@@ -413,9 +403,6 @@ static int tpu_probe(struct platform_device *pdev)
+ 	spin_lock_init(&tpu->lock);
+ 	tpu->pdev = pdev;
+ 
+-	/* Initialize device configuration from platform data. */
+-	tpu_parse_pdata(tpu);
+-
+ 	/* Map memory, get clock and pin control. */
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	tpu->base = devm_ioremap_resource(&pdev->dev, res);
+diff --git a/include/linux/platform_data/pwm-renesas-tpu.h b/include/linux/platform_data/pwm-renesas-tpu.h
+deleted file mode 100644
+index a7220b10ddab..000000000000
+--- a/include/linux/platform_data/pwm-renesas-tpu.h
++++ /dev/null
+@@ -1,16 +0,0 @@
+-#ifndef __PWM_RENESAS_TPU_H__
+-#define __PWM_RENESAS_TPU_H__
+-
+-#include <linux/pwm.h>
+-
+-#define TPU_CHANNEL_MAX		4
+-
+-struct tpu_pwm_channel_data {
+-	enum pwm_polarity polarity;
+-};
+-
+-struct tpu_pwm_platform_data {
+-	struct tpu_pwm_channel_data channels[TPU_CHANNEL_MAX];
+-};
+-
+-#endif /* __PWM_RENESAS_TPU_H__ */
 -- 
 1.9.1
 

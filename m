@@ -1,107 +1,46 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 May 2014 10:10:35 +0000
-Subject: [PATCH 1/3] OMAPDSS: panel-lgphilips-lb035q02: use gpiod for enable gpio
-Message-Id: <1400148637-17726-2-git-send-email-tomi.valkeinen@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 19 May 2014 20:42:41 +0000
+Subject: [PATCHv2 resend 10/11] leds: leds-pwm: retrieve configured pwm period
+Message-Id: <1400532162-29483-11-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400148637-17726-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1400148637-17726-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Florian Vaussard <florian.vaussard@epfl.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The new gpiod API supports automatic handling of active-high/active-low
-with DT. To make it possible to use that when booting with DT, change
-the driver's handling of the enable GPIO to use gpiod.
+The PWM core is now able to initialize the PWM period. Use it and if it is not
+configured, use the supplied pwm_period_ns.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- .../omap2/displays-new/panel-lgphilips-lb035q02.c  | 32 ++++++++++++----------
- 1 file changed, 18 insertions(+), 14 deletions(-)
+ drivers/leds/leds-pwm.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c b/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c
-index 2e6b513222d9..6e6acd696a70 100644
---- a/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c
-+++ b/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c
-@@ -50,9 +50,10 @@ struct panel_drv_data {
+diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
+index 7d0aaed1e23a..aa770ec1e892 100644
+--- a/drivers/leds/leds-pwm.c
++++ b/drivers/leds/leds-pwm.c
+@@ -181,7 +181,6 @@ static int led_pwm_probe(struct platform_device *pdev)
+ 			led_dat->cdev.name = cur_led->name;
+ 			led_dat->cdev.default_trigger = cur_led->default_trigger;
+ 			led_dat->active_low = cur_led->active_low;
+-			led_dat->period = cur_led->pwm_period_ns;
+ 			led_dat->cdev.brightness_set = led_pwm_set;
+ 			led_dat->cdev.brightness = LED_OFF;
+ 			led_dat->cdev.max_brightness = cur_led->max_brightness;
+@@ -191,6 +190,10 @@ static int led_pwm_probe(struct platform_device *pdev)
+ 			if (led_dat->can_sleep)
+ 				INIT_WORK(&led_dat->work, led_pwm_work);
  
- 	struct omap_video_timings videomode;
- 
--	int reset_gpio;
-+	/* used for non-DT boot, to be removed */
- 	int backlight_gpio;
--	int enable_gpio;
++			led_dat->period = pwm_get_period(led_dat->pwm);
++			if (!led_dat->period && (cur_led->pwm_period_ns > 0))
++				led_dat->period = cur_led->pwm_period_ns;
 +
-+	struct gpio_desc *enable_gpio;
- };
- 
- #define to_panel_data(p) container_of(p, struct panel_drv_data, dssdev)
-@@ -165,8 +166,8 @@ static int lb035q02_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		return r;
- 
--	if (gpio_is_valid(ddata->enable_gpio))
--		gpio_set_value_cansleep(ddata->enable_gpio, 1);
-+	if (ddata->enable_gpio)
-+		gpiod_set_value_cansleep(ddata->enable_gpio, 1);
- 
- 	if (gpio_is_valid(ddata->backlight_gpio))
- 		gpio_set_value_cansleep(ddata->backlight_gpio, 1);
-@@ -184,8 +185,8 @@ static void lb035q02_disable(struct omap_dss_device *dssdev)
- 	if (!omapdss_device_is_enabled(dssdev))
- 		return;
- 
--	if (gpio_is_valid(ddata->enable_gpio))
--		gpio_set_value_cansleep(ddata->enable_gpio, 0);
-+	if (ddata->enable_gpio)
-+		gpiod_set_value_cansleep(ddata->enable_gpio, 0);
- 
- 	if (gpio_is_valid(ddata->backlight_gpio))
- 		gpio_set_value_cansleep(ddata->backlight_gpio, 0);
-@@ -243,6 +244,7 @@ static int lb035q02_probe_pdata(struct spi_device *spi)
- 	const struct panel_lb035q02_platform_data *pdata;
- 	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
- 	struct omap_dss_device *dssdev, *in;
-+	int r;
- 
- 	pdata = dev_get_platdata(&spi->dev);
- 
-@@ -260,10 +262,19 @@ static int lb035q02_probe_pdata(struct spi_device *spi)
- 	dssdev = &ddata->dssdev;
- 	dssdev->name = pdata->name;
- 
--	ddata->enable_gpio = pdata->enable_gpio;
-+	r = devm_gpio_request_one(&spi->dev, pdata->enable_gpio,
-+					GPIOF_OUT_INIT_LOW, "panel enable");
-+	if (r)
-+		goto err_gpio;
-+
-+	ddata->enable_gpio = gpio_to_desc(pdata->enable_gpio);
-+
- 	ddata->backlight_gpio = pdata->backlight_gpio;
- 
- 	return 0;
-+err_gpio:
-+	omap_dss_put_device(ddata->in);
-+	return r;
- }
- 
- static int lb035q02_panel_spi_probe(struct spi_device *spi)
-@@ -288,13 +299,6 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
- 		return -ENODEV;
- 	}
- 
--	if (gpio_is_valid(ddata->enable_gpio)) {
--		r = devm_gpio_request_one(&spi->dev, ddata->enable_gpio,
--				GPIOF_OUT_INIT_LOW, "panel enable");
--		if (r)
--			goto err_gpio;
--	}
--
- 	if (gpio_is_valid(ddata->backlight_gpio)) {
- 		r = devm_gpio_request_one(&spi->dev, ddata->backlight_gpio,
- 				GPIOF_OUT_INIT_LOW, "panel backlight");
+ 			ret = led_classdev_register(&pdev->dev, &led_dat->cdev);
+ 			if (ret < 0)
+ 				goto err;
 -- 
 1.9.1
 

@@ -1,96 +1,89 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Fri, 16 May 2014 21:39:07 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 19 May 2014 09:21:40 +0000
 Subject: Re: [PATCH 3/4] OMAPDSS: panel-sharp-ls037v7dw01: add device tree support
-Message-Id: <20140516213907.GL12881@atomide.com>
+Message-Id: <5379CD24.6040508@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="1oWDmGTTTDDx2lOErM2D2gbCPtt0rVX9q"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CABxcv==_LCw1kPYm17g=h8VfSN2V_qsgXjTnsy-JOetawSv4pA@mail.gmail.com>
+References: <5371F923.80000@ti.com>
+ <CABxcv==_LCw1kPYm17g=h8VfSN2V_qsgXjTnsy-JOetawSv4pA@mail.gmail.com>
  <20140513152518.GA16837@atomide.com> <53730AFB.2090800@ti.com>
  <20140514160216.GD18463@atomide.com> <537487AE.3060906@ti.com>
  <20140515182133.GC23659@atomide.com> <5375A8A8.7080306@ti.com>
- <20140516160717.GD22031@atomide.com>
- <20140516174158.GA11733@earth.universe>
+ <20140516160717.GD22031@atomide.com> <20140516174158.GA11733@earth.universe>
  <20140516180154.GG22031@atomide.com>
 In-Reply-To: <20140516180154.GG22031@atomide.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-* Tony Lindgren <tony@atomide.com> [140516 11:02]:
-> * Sebastian Reichel <sre@ring0.de> [140516 10:42]:
-> > On Fri, May 16, 2014 at 09:07:17AM -0700, Tony Lindgren wrote:
-> > > * Tomi Valkeinen <tomi.valkeinen@ti.com> [140515 22:57]:
-> > > > On 15/05/14 21:21, Tony Lindgren wrote:
-> > > > >> But you're right, having "sharp,ls037v7dw01-omap-dss" in the .dts is an
-> > > > >> alternative for the compatible-string conversion we do now. I guess it's
-> > > > >> a matter of taste, but I rather hide it inside the kernel, in an
-> > > > >> internal omapdss file, than pollute the .dts files with those compatible
-> > > > >> strings.
-> > > > > 
-> > > > > Well it avoid you parsing through all the nodes during booting
-> > > > > and leaves out the function to do remapping. And removes the need
-> > > > > for maintaining a custom display mapping table. I'd say that's a
-> > > > > pretty good list of advantages right there :)
-> > > > 
-> > > > Yep... I don't know. Maybe I'm being too careful about doing wrong
-> > > > things with .dts. I just like it more if any hacks are in kernel code,
-> > > > which I can remove without anyone noticing.
-> > > > 
-> > > > Anyway, we already have board.dts files using the non-omapified
-> > > > compatible strings in the mainline, so if I would now add the omapified
-> > > > compatible strings to .dts files, those old board.dts files would break.
-> > > > 
-> > > > So I guess the choice has already been made.
-> > > 
-> > > I really think you should remove this misuse of device tree code ASAP.
-> > > It's better to fix it up now than carry the hack for next two years
-> > > and keep on adding to it.
-> > 
-> > IMHO appending -omap-dss to a random device is an even bigger hack,
-> > since its adding lots of bloat to the API. Let's assume there is
-> > another OS using DT for ARM, but has no proper API for SPI
-> > controllers and it introduces your hack to SPI devices. That would
-> > mean each SPI device has -omap-spi appended (or -exynos-spi,
-> > -foo-spi, ...). At least I would blame them for creating a huge
-> > unmaintainable mess.
-> 
+--1oWDmGTTTDDx2lOErM2D2gbCPtt0rVX9q
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 16/05/14 21:01, Tony Lindgren wrote:
+
+>> IMHO appending -omap-dss to a random device is an even bigger hack,
+>> since its adding lots of bloat to the API. Let's assume there is
+>> another OS using DT for ARM, but has no proper API for SPI
+>> controllers and it introduces your hack to SPI devices. That would
+>> mean each SPI device has -omap-spi appended (or -exynos-spi,
+>> -foo-spi, ...). At least I would blame them for creating a huge
+>> unmaintainable mess.
+>=20
 > I think you're misunderstanding. I do not want the naming to
 > be Linux specific. The naming should naturally be as hardware
 > specific as possible. In this case something like:
-> 
-> compatible = "sharp,ls037v7dw01-dss", "sharp,ls037v7dw01";
-> 
+>=20
+> compatible =3D "sharp,ls037v7dw01-dss", "sharp,ls037v7dw01";
+>=20
 > Or we should probably use:
-> 
-> compatible = "sharp,ls037v7dw01-dpi", "sharp,ls037v7dw01";
-> 
+>=20
+> compatible =3D "sharp,ls037v7dw01-dpi", "sharp,ls037v7dw01";
+>=20
 > As dpi here reflects the hardware it's connected to. The dss
 > is probably a Linux name.
-> 
+
+Well, "dss" or "omapdss" is as much a hardware term as "dpi". And "dpi"
+wouldn't really be a good extension, as what we want is an omapdss
+driver specific compatible string. So I think "-omapdss" is the best
+extension if that method is used.
+
+But I don't think that's really the point. The point is that the panel's
+compatible string should be "sharp,ls037v7dw01", nothing else.
+
+All the variations of "sharp,ls037v7dw01-dss" are not correct, and are
+only made for Linux SW reasons. So I would say they are Linux specific
+SW names, even if the words themselves are also HW terms.
+
 > Not use what you're after with the SPI example though, but sounds
 > like that's something different.
-> 
-> > I think Tomi's workaround is a much better hack, since it keeps the
-> > API clean. If the code simply prefixes "omapdss," to all
-> > "child"-devices of omapdss it can be left mostly untouched, too.
-> 
-> AFAIK that remapping not needed at all. All that is already
-> available with the compatible flags.
 
-And alternatively we can also just use the sharp,ls037v7dw01
-in the panel driver(s). We can have the panels bail out in driver
-probe based on of_machine_is_compatible if nothing else is available.
+I think Sebastien's example is just like the issue here.
 
-Also, currently the remapping code also probably keeps prepending
-more and more omapdss,omapdss,omapdss,... on each kexec reboot? And
-it would be quite silly for each display controller to have to do
-their own remapping for shared panels?
+ Tomi
 
-If we still still despite all these reasons decide to go with
-the remapping of the compatible strings, it should really be a
-Linux generic (or drivers/video generic function), not implemented
-for each display controller.
 
-Cheers,
 
-Tony
+--1oWDmGTTTDDx2lOErM2D2gbCPtt0rVX9q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTec0tAAoJEPo9qoy8lh71xKIP/jlXpwFkbMY5/eHkquYV2ZU+
+RXBQwl4E6BfQ1857/QT9ASF5NKbnKeh1CaZ4Q/9NjluX+dYmqA2aWjMu3LalSMod
+v4OB5h4ULsd6aUis7SQPwiZ1D7IVqyzwbhWGNPkkhrCnAAGk+TySSLNyAftKMdKZ
+fuHuU8IzVx9TEK0doA4PS3I7KsyGr1h1aDY3NaLiYNA2gA4o84Q0yhcP4ItIifKR
+35pVBUbGr9y0L5+EuhoqsQIjrS5bQOQH3ymv9xw1lqPkAwJivKvhHvfJELUaeXYS
+Dd0JSfWKxOemJpFGzOit2+ZIsdaUwdXBDB9mfYnjSiZIiDCWaVDDuPfIErUouci4
+wvjPa0Xap+CZ1BMaMAkg+8B036RgWwa/LO0KrYJsUeg7bp6h4JxSjolcWD7+tFRB
+3UY4gSaa0HaNsS644UJaJML+Gzuw2unjRhL2CZEnP26RXeyIur8wMhePoDtR0z/D
+E7BNx1f6+RHINWD+TvhahmFSf0L90iSSviQ37rqKib/87ZiqjN5Z+2m7c8MGRHj4
+8iugY8gI9Ivc2rr9HwlhP0sHuY0eExcm/qvnNQwiX/6NUi6uDlyClFchI6jvQBeq
+4/s6b8pQoIi6QLeLHWiLBrut6sWrPBqdI3CZAJiLOe/OHefimL278AKivihI07mu
+BtRmL3uLq7frVG/i9pET
+=KvbB
+-----END PGP SIGNATURE-----
+
+--1oWDmGTTTDDx2lOErM2D2gbCPtt0rVX9q--

@@ -1,75 +1,58 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 16 May 2014 07:30:01 +0000
-Subject: [PATCH 3/4] Doc/DT: Add DT binding documentation for SHARP LS037V7DW01
-Message-Id: <1400225402-18274-4-git-send-email-tomi.valkeinen@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 19 May 2014 20:42:37 +0000
+Subject: [PATCHv2 resend 06/11] pwm: modify PWM_LOOKUP to initialize all struct pwm_lookup members
+Message-Id: <1400532162-29483-7-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Tony Lindgren <tony@atomide.com>
+Now that PWM_LOOKUP is not used anymore, modify it to initialize all the
+members of struct pwm_lookup.
 
-Add DT binding documentation for SHARP LS037V7DW01 panel.
-
-Signed-off-by: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- .../bindings/video/sharp,ls037v7dw01.txt           | 43 ++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/sharp,ls037v7dw01.txt
+ Documentation/pwm.txt | 3 ++-
+ include/linux/pwm.h   | 4 +++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/sharp,ls037v7dw01.txt b/Documentation/devicetree/bindings/video/sharp,ls037v7dw01.txt
-new file mode 100644
-index 000000000000..0cc8981e9d49
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/sharp,ls037v7dw01.txt
-@@ -0,0 +1,43 @@
-+SHARP LS037V7DW01 TFT-LCD panel
-+=================+
-+Required properties:
-+- compatible: "sharp,ls037v7dw01"
-+
-+Optional properties:
-+- label: a symbolic name for the panel
-+- enable-gpios: a GPIO spec for the optional enable pin.
-+  This pin is the INI pin as specified in the LS037V7DW01.pdf file.
-+- reset-gpios: a GPIO spec for the optional reset pin.
-+  This pin is the RESB pin as specified in the LS037V7DW01.pdf file.
-+- mode-gpios: a GPIO
-+  ordered MO, LR, and UD as specified in the LS037V7DW01.pdf file.
-+
-+Required nodes:
-+- Video port for DPI input
-+
-+This panel can have zero to five GPIOs to configure to change configuration
-+between QVGA and VGA mode and the scan direction. As these pins can be also
-+configured with external pulls, all the GPIOs are considered optional with holes
-+in the array.
-+
-+Example
-+-------
-+
-+Example when connected to a omap2+ based device:
-+
-+lcd0: display {
-+	compatible = "sharp,ls037v7dw01";
-+	power-supply = <&lcd_3v3>;
-+	enable-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;	/* gpio152, lcd INI */
-+	reset-gpios = <&gpio5 27 GPIO_ACTIVE_HIGH>;	/* gpio155, lcd RESB */
-+	mode-gpios = <&gpio5 26 GPIO_ACTIVE_HIGH	/* gpio154, lcd MO */
-+		      &gpio1 2 GPIO_ACTIVE_HIGH		/* gpio2, lcd LR */
-+		      &gpio1 3 GPIO_ACTIVE_HIGH>;	/* gpio3, lcd UD */
-+
-+	port {
-+		lcd_in: endpoint {
-+			remote-endpoint = <&dpi_out>;
-+		};
-+	};
-+};
+diff --git a/Documentation/pwm.txt b/Documentation/pwm.txt
+index 93cb97974986..f38f99cda64f 100644
+--- a/Documentation/pwm.txt
++++ b/Documentation/pwm.txt
+@@ -19,7 +19,8 @@ should instead register a static mapping that can be used to match PWM
+ consumers to providers, as given in the following example:
+ 
+ 	static struct pwm_lookup board_pwm_lookup[] = {
+-		PWM_LOOKUP("tegra-pwm", 0, "pwm-backlight", NULL),
++		PWM_LOOKUP("tegra-pwm", 0, "pwm-backlight", NULL,
++			   50000, PWM_POLARITY_NORMAL),
+ 	};
+ 
+ 	static void __init board_init(void)
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index 2f45e2fe5b93..e90628cac8fa 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -278,12 +278,14 @@ struct pwm_lookup {
+ 	enum pwm_polarity polarity;
+ };
+ 
+-#define PWM_LOOKUP(_provider, _index, _dev_id, _con_id)	\
++#define PWM_LOOKUP(_provider, _index, _dev_id, _con_id, _period, _polarity) \
+ 	{						\
+ 		.provider = _provider,			\
+ 		.index = _index,			\
+ 		.dev_id = _dev_id,			\
+ 		.con_id = _con_id,			\
++		.period = _period,			\
++		.polarity = _polarity			\
+ 	}
+ 
+ #if IS_ENABLED(CONFIG_PWM)
 -- 
 1.9.1
 

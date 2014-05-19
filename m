@@ -1,116 +1,68 @@
-From: Joachim Eastwood <manabian@gmail.com>
-Date: Sat, 17 May 2014 09:16:15 +0000
+From: Jyri Sarha <jsarha@ti.com>
+Date: Mon, 19 May 2014 14:44:09 +0000
 Subject: Re: [alsa-devel] [PATCH 00/19] Rework OMAP4+ HDMI audio support
-Message-Id: <CAGhQ9VyxKWZ9KSWoYkhf8KeUJnMKJO=b0kG=upC7uojNLHVObw@mail.gmail.com>
+Message-Id: <537A18B9.3040504@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>
-	<CAGhQ9VzjndCBp+ZHS3XPPvS4ors6u9BfHf4NY_HNYN5ynyQOYQ@mail.gmail.com>
-	<53733F2E.4030803@ti.com>
-	<CAGhQ9VzkGDPiQF7TiqiMgZY_oc9dyrW66yGsZR6ei2ejX-EXcw@mail.gmail.com>
-	<CAGhQ9VwY_qeOLsa_oAUuL3XT2tmn-mLg0WBtOdL8JL6u+0PQcw@mail.gmail.com>
-In-Reply-To: <CAGhQ9VwY_qeOLsa_oAUuL3XT2tmn-mLg0WBtOdL8JL6u+0PQcw@mail.gmail.com>
+References: <cover.1399884780.git.jsarha@ti.com>	<CAGhQ9VzjndCBp+ZHS3XPPvS4ors6u9BfHf4NY_HNYN5ynyQOYQ@mail.gmail.com>	<53733F2E.4030803@ti.com>	<CAGhQ9VzkGDPiQF7TiqiMgZY_oc9dyrW66yGsZR6ei2ejX-EXcw@mail.gmail.com>	<CAGhQ9VwY_qeOLsa_oAUuL3XT2tmn-mLg0WBtOdL8JL6u+0PQcw@mail.gmail.com> <CAGhQ9VyxKWZ9KSWoYkhf8KeUJnMKJO=b0kG=upC7uojNLHVObw@mail.gmail.com>
+In-Reply-To: <CAGhQ9VyxKWZ9KSWoYkhf8KeUJnMKJO=b0kG=upC7uojNLHVObw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jyri Sarha <jsarha@ti.com>
+To: Joachim Eastwood <manabian@gmail.com>
 Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, liam.r.girdwood@linux.intel.com, detheridge@ti.com, broonie@kernel.org, peter.ujfalusi@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Benoit Cousson <bcousson@baylibre.com>
 
-On 17 May 2014 10:51, Joachim  Eastwood <manabian@gmail.com> wrote:
-> On 14 May 2014 18:25, Joachim  Eastwood <manabian@gmail.com> wrote:
->> On 14 May 2014 12:02, Jyri Sarha <jsarha@ti.com> wrote:
->>> On 05/13/2014 12:13 AM, Joachim Eastwood wrote:
->>>>
->>>> On 12 May 2014 11:12, Jyri Sarha <jsarha@ti.com> wrote:
->>>
->>> ...
->>>
->>>>
->>>> hey, this worked straight away :)
->>>>
->>>> But there seems to be something wrong with the channel mapping.
->>>>
->>>> For stereo (speaker-test -c 2) the mapping is correct.
->>>>
->>>> But for -c 4 and -c 8 it gets weird:
->>>> speaker-test -c 4 -s X # where X is 1-4
->>>> 1: Front Left is Rear Left
->>>> 2: Front Right is Rear Right
->>>> 3: Rear Right is Front Right
->>>> 4: Rear Left is Front Left
->>>>
->>>> speaker-test -c 8 -s X # where X is 1-8
->>>> 1: Front Left is Rear Left
->>>> 2: Center is Rear Left
->>>> 3: Front Right is Rear Right
->>>> 4: Side Right is Front Right
->>>> 5: Rear Right is silent
->>>> 6: Rear Left is Center
->>>> 7: Side Left is Front Left
->>>> 8: LFE - Rear Right
->>>>
->>>> I think you need to check what channel order ALSA expects. I believe
->>>> speaker-test does the right thing on my HTPC normally connected to my
->>>> receiver.
->>>>
->>>
->>> I checked the implementation and there was indeed something weird there, but
->>> the implementation can not explain the FL and FR channels jumping around. FL
->>> and FL should always be the first two channels in all configurations and the
->>> implementation does not touch them.
->>>
->>> The implementation uses 8ch HDMI setup for anything above 2ch with "Audio
->>> InfoFrame Data Byte 4" set to 0x13. According to CEA-861 specs this means
->>> following channel order: FL, FR, LFE, FC, RL, RR, RLC, RRC
->>>
->>> This is a closest match to ALSA 8ch mapping (according to
->>> sound/core/pcm_lib.c) which is: FL, FR, FC, LFE, RL, RR, SL, SR
+On 05/17/2014 12:16 PM, Joachim Eastwood wrote:
+> On 17 May 2014 10:51, Joachim  Eastwood <manabian@gmail.com> wrote:
+>> On 14 May 2014 18:25, Joachim  Eastwood <manabian@gmail.com> wrote:
+...
 >>
->> hm, okey. I haven't look at the code but it do seem strange. But with
->> speaker-test -c 4 the front and back are surely swapped here.
+>> I did some more testing over here.
 >>
->> I'll do some more testing and also check with my HTPC. btw, I only
->> have a 5.1 setup over here so I can't test all the discrete channels.
+>> My HTPC (nVidia ION2 based) works good with speaker-test and all
+>> channels are where they are suppose to be.
 >>
->>> Current implementation has FLE and FC channels correctly swapped, but it
->>> shifts them to last two channels and RL, RR, SL, SR are shifted down to fill
->>> the place. This is all wrong and I'll try to come up with a fix for that.
->>> Unfortunately I can not test anything beyond 2 ch myself so I would need
->>> someone to volunteer to test my patch.
+>> On the OMAP4 board I tried doing: "while true; do speaker-test -c 4 -s
+>> 1; done" and this had an interesting effect.
+>> Most of the time FL (Front Left) is swapped with BL (Back Left) but
+>> about every 10th time the sound comes out in the FL speaker... So
+>> there something weird going on here. Same story for the right channel.
 >>
->> I have the dev kit setup up over here so I can test your patches.
->
-> I did some more testing over here.
->
-> My HTPC (nVidia ION2 based) works good with speaker-test and all
-> channels are where they are suppose to be.
->
-> On the OMAP4 board I tried doing: "while true; do speaker-test -c 4 -s
-> 1; done" and this had an interesting effect.
-> Most of the time FL (Front Left) is swapped with BL (Back Left) but
-> about every 10th time the sound comes out in the FL speaker... So
-> there something weird going on here. Same story for the right channel.
->
-> I also noticed that HDMI doesn't always work on boot up, it sometimes fail with:
-> [ 193.985565] omapdss_hdmi 58006000.encoder: audio not supported
-> [ 193.985565] omapdss_hdmi 58006000.encoder: ASoC: can't open
-> interface 58006000.encoder: -19
->
-> But after replugging the HDMI connector a couple of times it starts to work.
->
-> I'll see if I can try with an old TI OMAP4 kernel (3.4) and see how that works.
+>> I also noticed that HDMI doesn't always work on boot up, it sometimes fail with:
+>> [ 193.985565] omapdss_hdmi 58006000.encoder: audio not supported
+>> [ 193.985565] omapdss_hdmi 58006000.encoder: ASoC: can't open
+>> interface 58006000.encoder: -19
+>>
+>> But after replugging the HDMI connector a couple of times it starts to work.
+>>
 
-On the 3.4 Variscite kernel:
-Linux version 3.4.0-1489-omap4 (uri@pluto) (gcc version 4.6.3
-(Ubuntu/Linaro 4.6.3-1ubuntu5) ) #27 SMP PREEMPT Sun Apr 7 13:27:10
-IDT 2013
-git://dev.omapzoom.org/pub/scm/integration/kernel-ubuntu.git +
-Variscite vendor patches
+That is weird I can not reproduce this problem. I rebooted my panda 
+several times and the audio device was always there. Could it be that 
+the connector is in DVI mode or something?
 
-Both speaker-test -c 4 and -c 8 works. All channels are where they are
-suppose to be.
+>> I'll see if I can try with an old TI OMAP4 kernel (3.4) and see how that works.
+>
+> On the 3.4 Variscite kernel:
+> Linux version 3.4.0-1489-omap4 (uri@pluto) (gcc version 4.6.3
+> (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #27 SMP PREEMPT Sun Apr 7 13:27:10
+> IDT 2013
+> git://dev.omapzoom.org/pub/scm/integration/kernel-ubuntu.git +
+> Variscite vendor patches
+>
+> Both speaker-test -c 4 and -c 8 works. All channels are where they are
+> suppose to be.
+>
+> Hot plugging is broken, though. So the HDMI must be connected on boot,
+> but that might be the Variscite board setup.
+>
 
-Hot plugging is broken, though. So the HDMI must be connected on boot,
-but that might be the Variscite board setup.
+I checked the ubuntu branch implementation and found that it is quite 
+different in many places, but the one place that affects the i2s channel 
+mapping to HDMI looks exactly the same. So there must be a bug some 
+where else and there is no point trying to fix it by changing the 
+mapping (it would be impossible anyway). I'll compare the 
+implementations further when I have time.
 
-regards
-Joachim Eastwood
+Thanks for your testing. Now I at least now where the bug is not.
+
+Best regards,
+Jyri

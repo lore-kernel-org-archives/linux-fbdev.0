@@ -1,36 +1,39 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Mon, 12 May 2014 09:12:24 +0000
-Subject: [PATCH 13/19] ARM: omap4.dtsi: Add audio related parametes to hdmi node
-Message-Id: <1bc3c1cddbbc4d4b210ffc2be82fc36d53d311ee.1399884780.git.jsarha@ti.com>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Tue, 20 May 2014 21:37:32 +0000
+Subject: [PATCH] video: fbdev: s3fb.c:  Fix for possible null pointer dereference
+Message-Id: <1400621852-7886-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>
-In-Reply-To: <cover.1399884780.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: peter.ujfalusi-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Bjorn Helgaas <bhelgaas@google.com>, Joe Perches <joe@perches.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Adds HDMI audio sDMA properties.
+There is otherwise a risk of a possible null pointer dereference.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Was largely found by using a static code analysis program called cppcheck.
+
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- arch/arm/boot/dts/omap4.dtsi |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/s3fb.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
-index 27fcac8..c7f0913 100644
---- a/arch/arm/boot/dts/omap4.dtsi
-+++ b/arch/arm/boot/dts/omap4.dtsi
-@@ -919,6 +919,8 @@
- 				ti,hwmods = "dss_hdmi";
- 				clocks = <&dss_48mhz_clk>, <&dss_sys_clk>;
- 				clock-names = "fck", "sys_clk";
-+				dmas = <&sdma 76>;
-+				dma-names = "audio_tx";
- 			};
- 		};
- 	};
+diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
+index 9a3f8f1..c43b969 100644
+--- a/drivers/video/fbdev/s3fb.c
++++ b/drivers/video/fbdev/s3fb.c
+@@ -1401,9 +1401,10 @@ err_enable_device:
+ static void s3_pci_remove(struct pci_dev *dev)
+ {
+ 	struct fb_info *info = pci_get_drvdata(dev);
+-	struct s3fb_info __maybe_unused *par = info->par;
++	struct s3fb_info __maybe_unused *par;
+ 
+ 	if (info) {
++		par = info->par;
+ 
+ #ifdef CONFIG_MTRR
+ 		if (par->mtrr_reg >= 0) {
 -- 
-1.7.9.5
+1.7.10.4
 

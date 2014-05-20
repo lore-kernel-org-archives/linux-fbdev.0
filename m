@@ -1,119 +1,39 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Wed, 21 May 2014 09:16:27 +0000
-Subject: Re: [PATCHv2 resend 00/11] improve PWM lookup support without device tree
-Message-Id: <20140521091626.GA21211@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="huq684BweRXVnRxX"
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Tue, 20 May 2014 21:35:59 +0000
+Subject: [PATCH] video: fbdev: grvga.c:  Fix for possible null pointer dereference
+Message-Id: <1400621759-7814-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: Rickard Strandqvist <rickard_strandqvist-IW2WV5XWFqGZkjO+N0TKoMugMpMbD5Xr@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sachin Kamat <sachin.kamat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Daniel Vetter <daniel.vetter-/w4YWyX8dFk@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
+There is otherwise a risk of a possible null pointer dereference.
 
---huq684BweRXVnRxX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Was largely found by using a static code analysis program called cppcheck.
 
-On Mon, May 19, 2014 at 10:42:31PM +0200, Alexandre Belloni wrote:
-> Hi,
->=20
-> Originally sent on Apr 14th, note that this series is blocking another 16
-> patches series, I would like it to be taken in 3.16 if we can agree on th=
-is
-> implementation.
->=20
-> A patch set as suggested by Thierry to make lookup with the lookup table
-> instead of device tree behave more like when using device tree.
->=20
-> The first patch adds a period and a polarity member to the lookup table a=
-nd use
-> those to set period and polarity.
->=20
-> Patch 2, 4 and 5 are making use of those new members from the board files.
-> Patch 3 removes useless code since setting the polarity is now handled by=
- the
-> PWM core.
->=20
-> I couldn't decide on a good name for the extended PWM_LOOKUP macro and I =
-believe
-> we won't have to add members to that structure soon so:
-> Patch 6 modifies the PWM_LOOKUP macro to also initialize period and polar=
-ity
-> and
-> Patch 7-9 are making use of the new PWM_LOOKUP macro in the board files
->=20
-> Patch 10 and 11 are making the leds-pwm and pwm_bl drivers get the period=
- from
-> the PWM before using pwm_period_ns if it is not already set.
->=20
-> Patch 10 will obviously conflict with the series of Russell reworking the
-> leds-pwm probing. I can rebase if necessary
->=20
-> The final goal would be to get rid of .pwm_period_ns in leds-pwm and pwm_=
-bl
-> after moving all the remaining users (still around 25) to pwm_lookup.
->=20
-> Changes in v2:
->  - correctly unlock the pwm_lookup_lock mutex before returning.
->  - don't change PWM_LOOKUP atomically
->  - remove tpu_pwm_platform_data and the associated header file
->  - make the leds-pwm and pwm_bl drivers get the period from the PWM
->=20
-> Alexandre Belloni (11):
->   pwm: add period and polarity to struct pwm_lookup
->   ARM: shmobile: Armadillo 800 EVA: initialize all struct pwm_lookup
->     members
->   pwm: renesas-tpu: remove useless struct tpu_pwm_platform_data
->   ARM: OMAP3: Beagle: initialize all the struct pwm_lookup members
->   ARM: pxa: hx4700: initialize all the struct pwm_lookup members
->   pwm: modify PWM_LOOKUP to initialize all struct pwm_lookup members
->   ARM: OMAP3: Beagle: use PWM_LOOKUP to initialize struct pwm_lookup
->   ARM: shmobile: Armadillo 800 EVA: use PWM_LOOKUP to initialize struct
->     pwm_lookup
->   ARM: pxa: hx4700: use PWM_LOOKUP to initialize struct pwm_lookup
->   leds: leds-pwm: retrieve configured pwm period
->   backlight: pwm_bl: retrieve configured pwm period
->=20
->  Documentation/pwm.txt                          |  3 ++-
->  arch/arm/mach-omap2/board-omap3beagle.c        |  3 ++-
->  arch/arm/mach-pxa/hx4700.c                     |  3 ++-
->  arch/arm/mach-shmobile/board-armadillo800eva.c | 14 +++-----------
->  drivers/leds/leds-pwm.c                        |  5 ++++-
->  drivers/pwm/core.c                             |  8 +++++++-
->  drivers/pwm/pwm-renesas-tpu.c                  | 19 +++----------------
->  drivers/video/backlight/pwm_bl.c               |  8 +++++---
->  include/linux/platform_data/pwm-renesas-tpu.h  | 16 ----------------
->  include/linux/pwm.h                            |  6 +++++-
->  10 files changed, 33 insertions(+), 52 deletions(-)
->  delete mode 100644 include/linux/platform_data/pwm-renesas-tpu.h
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/grvga.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-I've applied this whole series with some minor fixups (mostly adding
-detail to commit messages). Test builds show no breakage, so I've pushed
-this to the for-next branch.
+diff --git a/drivers/video/fbdev/grvga.c b/drivers/video/fbdev/grvga.c
+index c078701..2db5bb1 100644
+--- a/drivers/video/fbdev/grvga.c
++++ b/drivers/video/fbdev/grvga.c
+@@ -514,9 +514,10 @@ free_fb:
+ static int grvga_remove(struct platform_device *device)
+ {
+ 	struct fb_info *info = dev_get_drvdata(&device->dev);
+-	struct grvga_par *par = info->par;
++	struct grvga_par *par;
+ 
+ 	if (info) {
++		par = info->par;
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
+ 
+-- 
+1.7.10.4
 
-Thanks,
-Thierry
-
---huq684BweRXVnRxX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTfG7qAAoJEN0jrNd/PrOhoZcQAJLVaadi0dPMOAVmywvNkR/0
-J8CN/DyyzLwzp8P8N28UAAoSDlc7aTDiqToG9oPYiDlV0884SmPTeendS5ptqJ/r
-cgKTXH4Z+j827e9FrfCTpboD7+X7Mx6/qiP+fiKqNdwvxl9a15WxqhmNCvLRkPkK
-V5gQ698E2UiOlZBUfIK9DNo5zNSyAzzQAGFpFwNxNdtbv7Cdsp1IU9HX2vMJwhbI
-mr+HQ684nPiT0JV4oobY4AG2WC9L3PLNihkIn9pZaL7STlwQDHu1t9xAhQ7lARB5
-+SuWsBO7BW4EjVtqAYpCu2kWxy6ymuvfMkk/sp0EkxX0ygSSh4Y/fiRx2a4l1per
-D7ecXOTb1XGVSY0GkdVy93X6YB58VEx2de6shfVHgA+F4XpCp3hY/46QAam9CQtR
-mebbhgKvcPxqjid6iPzSjQkR7o4aQPD5xguXoF4nKwJjucQjmIgy9vK+FXAic21d
-9BmBnZPJnhOpcx2dMUaGTSOFYJaMp66eSasGk+M6N50B35Go8N+xoxACG6vJGJe6
-6UlhgJfp39R2FxvnWJ9iPxQm3xZNHx4DhwcPoylcDIlo/cS1xYhcJQB7CYzpBvaW
-Ld699GEiQj2JuHUiCmnLMMRxaCdulVdKh/3OHKf8bafI0ZsYdd0J/owLmv7SLXvc
-z/pPSF4gKqz2EWzMNovu
-=Wmh/
------END PGP SIGNATURE-----
-
---huq684BweRXVnRxX--

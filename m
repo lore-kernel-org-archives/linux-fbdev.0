@@ -1,34 +1,83 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Fri, 23 May 2014 14:42:03 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSCB2MiAxLzNdIHZpZGVvOiBjbHBzNzExeDogQWRkIG5ldyBD?= =?UTF-8?B?aXJydXMgTG9naWMgQ
-Message-Id: <1400856123.673951290@f335.i.mail.ru>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 21 May 2014 13:39:53 +0000
+Subject: [PATCH resend 1/4] nouveau: Don't check acpi_video_backlight_support() before registering backlight
+Message-Id: <1400679596-19663-2-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398327006.501536964@f133.i.mail.ru>
-In-Reply-To: <1398327006.501536964@f133.i.mail.ru>
+References: <1400679596-19663-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1400679596-19663-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
+Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>
 
-RnJpLCAyMyBNYXkgMjAxNCAxNzozMjowOCArMDMwMCDQvtGCIFRvbWkgVmFsa2VpbmVuIDx0b21p
-LnZhbGtlaW5lbkB0aS5jb20+Ogo+IE9uIDIzLzA1LzE0IDE3OjI3LCBBbGV4YW5kZXIgU2hpeWFu
-IHdyb3RlOgo+IAo+ID4+IEJ1dCBJIGRvbid0IHdhbnQgdG8gbWFrZSB0aGlzIG1vcmUgZGlmZmlj
-dWx0IGZvciB5b3UgdGhhbiBpdCBuZWVkcyB0by4KPiA+PiBBcyBJIHNhaWQsIEknbSBmaW5lIHdp
-dGggdGhlIGN1cnJlbnQgcGF0Y2hlcywgaWYgd2Ugc2tpcCAzLjE2IGFuZCBnZXQKPiA+PiB0aGVt
-IHRvIGxpbnV4LW5leHQgcmlnaHQgYWZ0ZXIgdGhlIG1lcmdlIHdpbmRvdy4gSWYgbm9ib2R5IHdv
-dWxkIHVzZSB0aGUKPiA+PiBuZXcgZHJpdmVyIGluIDMuMTYgYW55d2F5IChpbiB5b3VyIHByb3Bv
-c2FsIGFib3ZlKSwgd291bGQgdGhpcyBiZSB0aGUKPiA+PiBlYXNpZXN0IHdheT8KPiA+IAo+ID4g
-VGhpcyBpcyB0aGUgb25seSB3YXkgdG8gYW5ub3VuY2UgaW5pdGlhbCBtdWx0aXBsYXRmb3JtIHN1
-cHBvcnQgKGluIGNhc2Ugd2Ugd2lsbAo+ID4gdXNlIHR3byBkaWZmZXJyZW50IGRyaXZlcnMpLgo+
-ID4gQW5vdGhlciAoZWFzaWVzdCkgd2F5IGlzIHRvIHVzZSB0aGUgY3VycmVudCBwYXRjaHNldC4u
-Lgo+IAo+IElmIHRoZSBvbGQgZHJpdmVyIGRvZXNuJ3QgZXZlbiBwbGF5IHdlbGwgd2l0aCBtdWx0
-aXBsYXRmb3JtLCBhbmQgaXMgdGh1cwo+IGJsb2NraW5nIG1vdmluZyB0aGUgU29DIHRvIG11bHRp
-cGxhdGZvcm0sIEknZCBqdXN0IGdldCBkb25lIHdpdGggaXQgaW4KPiBvbmUgZ28uCj4gCj4gU28g
-SSB3b3VsZCByZWNvbW1lbmQgcHVzaGluZyB0aGUgbmV3IGRyaXZlciBhbmQgdGhlIHJlbW92YWwg
-b2YgdGhlIG9sZAo+IG9uZSBmb3IgMy4xNywgYW5kIGhhdmluZyB0aG9zZSBjaGFuZ2VzIGluIGxp
-bnV4LW5leHQgcmlnaHQgYWZ0ZXIgdGhlCj4gMy4xNiBtZXJnZSB3aW5kb3cuCj4gCj4gSXMgdGhh
-dCBvaz8KCkZvciBtZSBpdCBpcyBPSywgb2YgY291cnNlLiBEbyBJIHVuZGVyc3RhbmQgY29ycmVj
-dGx5IHRoYXQgaW4gdGhpcyBjYXNlIEkgbmVlZAp0byB1cGRhdGUgcGF0Y2hzZXQgd2hpY2ggb25s
-eSBhZGRzIG5ldyBkcml2ZXIgYW5kIG5ldyBLY29uZmlnIHN5bWJvbD8KClByb2JhYmx5IEkgYW0g
-YWRkICJkZXBlbmQgb24gQlJPS0VOIGlmICFBUkNIX01VTFRJUExBVEZPUk0iIHRvCnRoZSBvbGQg
-ZHJpdmVyLi4uCgotLS0KCg=
+acpi_video_backlight_support() is supposed to be called by other (vendor
+specific) firmware backlight controls, not by native / raw backlight controls
+like nv_backlight.
+
+Userspace will normally prefer firmware interfaces over raw interfaces, so
+if acpi_video backlight support is present it will use that even if
+nv_backlight is registered as well.
+
+Except when video.use_native_backlight is present on the kernel cmdline
+(or enabled through a dmi based quirk). As the name indicates the goal here
+is to make only the raw interface available to userspace so that it will use
+that (it only does this when it sees a win8 compliant bios).
+
+This is done by:
+1) Not registering any acpi_video# backlight devices; and
+2) Making acpi_video_backlight_support() return true so that other firmware
+drivers, ie acer_wmi, thinkpad_acpi, dell_laptop, etc. Don't register their
+own vender specific interfaces.
+
+Currently nouveau breaks this setup, as when acpi_video_backlight_support()
+returns true, it does not register itself, resulting in no backlight control
+at all.
+
+This is esp. going to be a problem with 3.16 which will default to
+video.use_native_backlight=1, and thus nouveau based laptops with a win8 bios
+will get no backlight control at all.
+
+This also likely explains why the previous attempt to make
+video.use_native_backlight=1 the default was not a success, as without this
+patch having a default of video.use_native_backlight=1 will cause regressions.
+
+Note this effectively reverts commit 5bead799
+
+Also see: https://bugzilla.redhat.com/show_bug.cgi?id93171
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/gpu/drm/nouveau/nouveau_backlight.c | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/drivers/gpu/drm/nouveau/nouveau_backlight.c b/drivers/gpu/drm/nouveau/nouveau_backlight.c
+index 630f6e8..2c1e4aa 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_backlight.c
++++ b/drivers/gpu/drm/nouveau/nouveau_backlight.c
+@@ -31,7 +31,6 @@
+  */
+ 
+ #include <linux/backlight.h>
+-#include <linux/acpi.h>
+ 
+ #include "nouveau_drm.h"
+ #include "nouveau_reg.h"
+@@ -222,14 +221,6 @@ nouveau_backlight_init(struct drm_device *dev)
+ 	struct nouveau_device *device = nv_device(drm->device);
+ 	struct drm_connector *connector;
+ 
+-#ifdef CONFIG_ACPI
+-	if (acpi_video_backlight_support()) {
+-		NV_INFO(drm, "ACPI backlight interface available, "
+-			     "not registering our own\n");
+-		return 0;
+-	}
+-#endif
+-
+ 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+ 		if (connector->connector_type != DRM_MODE_CONNECTOR_LVDS &&
+ 		    connector->connector_type != DRM_MODE_CONNECTOR_eDP)
+-- 
+1.9.0
+

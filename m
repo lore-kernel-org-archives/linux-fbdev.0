@@ -1,67 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 28 May 2014 06:34:33 +0000
-Subject: Re: [PATCH 4/4] ARM: dts: Add LCD panel sharp ls037v7dw01 support for omap3-evm and ldp
-Message-Id: <53858379.4050401@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="GqAk0cWqsK2d11Sq7VxJ7N8nlXimBRmWI"
+From: sunzc522@gmail.com
+Date: Wed, 21 May 2014 06:13:30 +0000
+Subject: [PATCH] drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap
+Message-Id: <1400652811-5206-1-git-send-email-sunzc522@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398815562-24113-5-git-send-email-tony@atomide.com>
- <CAGhQ9Vwa8xXQEo5dNEKAvmaS9DoBjVSthtd8=owk+atVdFuiiA@mail.gmail.com>
- <20140430174751.GA12362@atomide.com> <20140505183919.GA15463@atomide.com>
- <20140508233628.GJ2198@atomide.com> <536C7EA7.5000306@ti.com>
- <20140509153723.GD17814@atomide.com> <20140513213205.GB18001@atomide.com>
- <537C9FC6.8020104@ti.com> <20140521145053.GG17417@atomide.com>
- <20140527205910.GE32336@atomide.com>
-In-Reply-To: <20140527205910.GE32336@atomide.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: gxt@mprc.pku.edu.cn, gang.chen.5i5j@gmail.com, Zhichuang SUN <sunzc522@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org
 
---GqAk0cWqsK2d11Sq7VxJ7N8nlXimBRmWI
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Zhichuang SUN <sunzc522@gmail.com>
 
-On 27/05/14 23:59, Tony Lindgren wrote:
+Function unifb_mmap calls functions which are defined in linux/mm.h
+and asm/pgtable.h
 
-> In case you did not yet do it, here's this patch updated for you. I'm
-> assuming you'll apply this to your panel dts branch. Let me know when t=
-he
-> dependencies are in linux next and I'll test it one more time. The omap=
+The related error (for unicore32 with unicore32_defconfig):
+	CC      drivers/video/fbdev/fb-puv3.o
+	drivers/video/fbdev/fb-puv3.c: In function 'unifb_mmap':
+	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+				      function 'vm_iomap_memory'
+	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+				      function 'pgprot_noncached'
 
-> changes finally hit linux next as of today, so I'm only doing fixes
-> and minimal changes for now.
+Signed-off-by: Zhichuang Sun <sunzc522@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Joe Perches <joe@perches.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/fbdev/fb-puv3.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-I haven't pushed the dts changes to linux-next as the base branch was
-missing. Now that it's there, I have pushed the DSS dts changes also.
+diff --git a/drivers/video/fbdev/fb-puv3.c b/drivers/video/fbdev/fb-puv3.c
+index 6db9ebd..88fa2e7 100644
+--- a/drivers/video/fbdev/fb-puv3.c
++++ b/drivers/video/fbdev/fb-puv3.c
+@@ -18,8 +18,10 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/console.h>
++#include <linux/mm.h>
+ 
+ #include <asm/sizes.h>
++#include <asm/pgtable.h>
+ #include <mach/hardware.h>
+ 
+ /* Platform_data reserved for unifb registers. */
+-- 
+1.7.0.4
 
-You can do a manual merge if you want to try before linux-next is updated=
-:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
-
- Tomi
-
-
-
---GqAk0cWqsK2d11Sq7VxJ7N8nlXimBRmWI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJThYN5AAoJEPo9qoy8lh71TjcP/1Bc+EQ+fwDSDr2dkyUyk6Am
-Fn867ZdIQVuhtemQz2cl59+B4e665AwdRQD+HK9n7RuH3pD6ddtmvt4jM8aioq9R
-iRFjRmVoeznky/c22zdyUj/VrJ8lmAflZe4oJK6xIzXSPD+UzaQVqrQCtVHNXsQW
-VbZLacY/CecnxdZWjZD5y1+r3zFUSN2VHfXemxfP2phsPu2YN4IWQTvL3B+BHyh/
-Dtfx1xhSaoUC8dL6KTw2pNoPJJ6+QYvMUP94iqP2bKcPt//T5nRmCPtMVAD3QHLL
-IMH4onaE+wRYbbGVjYM5J63inM03eoVvVNunjWa6QU4ZQIwO8QMsLkTOc4rt+I2f
-/fsz16lhRDVxdiBsFZXJ33dbL7n7HEgAxQ9SGkvuCa6+P50yB939E+wLiAq3569o
-4ZPpm0W0TpIU5WPFV7Ov2imI7UJ3lzh96ra12iAGt6A00SzRZeol3HRnlj8yx+jl
-P0ikZIAfCIHXE+n3voSqAwUqrUHVcp4CI8GqeWCqSGGHHq6AZd6OENHmBItgM9r9
-Z6uRHjE+KSdKOM02R+iSxxcZxgscPs25zS0OmAvbiWW7ZC8NGjo8nyk6E6xdLVsH
-/tYwSA9wI9QbKJagAxCS7no7oSIjoBu8hRo8g2l8stRrb36l/WK7Y84X1K5IjL56
-PGbkI1a5aJnZGJksoe6a
-=unUc
------END PGP SIGNATURE-----
-
---GqAk0cWqsK2d11Sq7VxJ7N8nlXimBRmWI--

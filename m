@@ -1,58 +1,34 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 19 May 2014 20:42:37 +0000
-Subject: [PATCHv2 resend 06/11] pwm: modify PWM_LOOKUP to initialize all struct pwm_lookup members
-Message-Id: <1400532162-29483-7-git-send-email-alexandre.belloni@free-electrons.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 21 May 2014 13:39:52 +0000
+Subject: [PATCH resend 0/4] Make video.use_native_backlight=1 work properly with nouveau
+Message-Id: <1400679596-19663-1-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
+Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Now that PWM_LOOKUP is not used anymore, modify it to initialize all the
-members of struct pwm_lookup.
+Hi All,
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
- Documentation/pwm.txt | 3 ++-
- include/linux/pwm.h   | 4 +++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+I know it has not been that long since the last send of this series, but
+it has been very quiet, and I would like to see some discussion on it
+(or it being applied at once, that is fine too :)
 
-diff --git a/Documentation/pwm.txt b/Documentation/pwm.txt
-index 93cb97974986..f38f99cda64f 100644
---- a/Documentation/pwm.txt
-+++ b/Documentation/pwm.txt
-@@ -19,7 +19,8 @@ should instead register a static mapping that can be used to match PWM
- consumers to providers, as given in the following example:
- 
- 	static struct pwm_lookup board_pwm_lookup[] = {
--		PWM_LOOKUP("tegra-pwm", 0, "pwm-backlight", NULL),
-+		PWM_LOOKUP("tegra-pwm", 0, "pwm-backlight", NULL,
-+			   50000, PWM_POLARITY_NORMAL),
- 	};
- 
- 	static void __init board_init(void)
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 2f45e2fe5b93..e90628cac8fa 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -278,12 +278,14 @@ struct pwm_lookup {
- 	enum pwm_polarity polarity;
- };
- 
--#define PWM_LOOKUP(_provider, _index, _dev_id, _con_id)	\
-+#define PWM_LOOKUP(_provider, _index, _dev_id, _con_id, _period, _polarity) \
- 	{						\
- 		.provider = _provider,			\
- 		.index = _index,			\
- 		.dev_id = _dev_id,			\
- 		.con_id = _con_id,			\
-+		.period = _period,			\
-+		.polarity = _polarity			\
- 	}
- 
- #if IS_ENABLED(CONFIG_PWM)
--- 
-1.9.1
+This patch-set adds backlight device (un)registration notification and
+makes acpi-video listen to it, so that video.use_native_backlight=1 still
+works if a raw interface gets loaded *after* acpi-video has been initialized.
 
+It also changes nouveau to always register its raw interface, as all the other
+kms drivers do, acpi_video_backlight_support() is only intended to avoid the
+loading of multiple (possibly conflicting) firmware drivers, not to avoid
+loading raw drivers.
+
+In the mean time I've gotten feedback from a user with a laptop which needs
+video.use_native_backlight=1 and uses nouveau, and he has confirmed that this
+patch-set works as advertised, see:
+https://bugzilla.redhat.com/show_bug.cgi?id93171
+
+Regards,
+
+Hans

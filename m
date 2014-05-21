@@ -1,117 +1,107 @@
-From: Sebastian Reichel <sre@kernel.org>
-Date: Tue, 20 May 2014 21:10:47 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 21 May 2014 13:05:56 +0000
 Subject: Re: [PATCH 3/4] OMAPDSS: panel-sharp-ls037v7dw01: add device tree support
-Message-Id: <20140520211046.GA3476@earth.universe>
+Message-Id: <537CA4B4.2040001@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="XsQoSWH+UP9D9v3l"
+Content-Type: multipart/mixed; boundary="aOtLHrXQ9os9RImAuAfSBTTcQOUqg52wn"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140515182133.GC23659@atomide.com> <5375A8A8.7080306@ti.com>
- <20140516160717.GD22031@atomide.com>
- <20140516174158.GA11733@earth.universe>
- <20140516180154.GG22031@atomide.com> <5379CD24.6040508@ti.com>
- <20140519160447.GB4849@atomide.com> <537A55EB.1080507@ti.com>
- <20140520051203.GB28812@earth.universe>
- <20140520054852.GA12384@atomide.com>
-In-Reply-To: <20140520054852.GA12384@atomide.com>
+References: <537487AE.3060906@ti.com> <20140515182133.GC23659@atomide.com>
+ <5375A8A8.7080306@ti.com> <20140516160717.GD22031@atomide.com>
+ <20140516174158.GA11733@earth.universe> <20140516180154.GG22031@atomide.com>
+ <20140516213907.GL12881@atomide.com> <5379D35F.8040207@ti.com>
+ <20140519155732.GA4849@atomide.com> <537A540E.8070302@ti.com>
+ <20140519195100.GB11945@atomide.com>
+In-Reply-To: <20140519195100.GB11945@atomide.com>
 To: linux-arm-kernel@lists.infradead.org
 
-
---XsQoSWH+UP9D9v3l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--aOtLHrXQ9os9RImAuAfSBTTcQOUqg52wn
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, May 19, 2014 at 10:48:52PM -0700, Tony Lindgren wrote:
-> * Sebastian Reichel <sre@kernel.org> [140519 22:13]:
-> > On Mon, May 19, 2014 at 10:05:15PM +0300, Tomi Valkeinen wrote:
-> > > On 19/05/14 19:04, Tony Lindgren wrote:
-> > >=20
-> > > > In many cases however we do have multiple compatible strings that
-> > > > describe how the device is wired. See drivers/tty/serial/of_serial.c
-> > > > for example. It has "ns16550" but then it also has additional
-> > > > "nvidia,tegra20-uart", "nxp,lpc3220-uart" and "ibm,qpace-nwp-serial=
-".
-> > >=20
-> > > All those sound like SoC components. In that case it sounds fine to h=
-ave
-> > > the device compatible contain the SoC name. We're talking here about
-> > > external, detachable devices.
+On 19/05/14 22:51, Tony Lindgren wrote:
+
+>>> 4. Having this hack limited to device tree based booting while we are=
+
+>>>    trying to unify the functions for drivers to use to get their
+>>>    resources.
+>>
+>> I don't understand this one. With non-DT boot we don't have the issue =
+at
+>> all, there's no need for hacks.
 >=20
-> Yes I agree it's also hackish. But playing with the compatible flags
-> avoids adding other custom workarounds.
+> Hmm can't we still have multiarch booting happening with the same
+> panel name being used by two different display drivers?
+
+Yes, but in that case the driver names are internal to kernel. You can
+append "omapdss" or such to the driver name, and have that name used in
+the board file and in the driver. It's not visible outside the kernel,
+and when there's a common display framework, it can be changed without
+anyone knowing.
+
+With DT we have the old, stable .dts files that need to be supported...
+
+>>> 5. Seeing the possibility of this spreading to other drivers.
+>>
+>> Well, until we have a common display framework, one of the hacky optio=
+ns
+>> we've discussed will spread to other drivers if they need to have thei=
+r
+>> own drivers for the same hardware devices.
+>>
+>> Which is not nice, but not something we can escape. And using the
+>> of_machine_is_compatible or having the compatible strings in .dts
+>> appended with "dss" or such doesn't change that, it just changes which=
+
+>> hack may spread.
 >=20
-> > > >>> Not use what you're after with the SPI example though, but sounds
-> > > >>> like that's something different.
-> > > >>
-> > > >> I think Sebastien's example is just like the issue here.
-> > > >=20
-> > > > Hmm is there some existing example in the kernel like that?
-> > >=20
-> > > No, Sebastien's example was just a hypothetical case. Here, using your
-> > > way of having SoC specific data in the .dts, we would have
-> > > "sharp,ls037v7dw01-omap-dss", and in Sebastien's example with a touch
-> > > sensor we'd have, say, "synaptics,xyz123-omap-spi".
-> >=20
-> > Yes, that's what I wanted to say :)
->=20
-> Hmm I think we need to add few things to the hypothetical SPI case
-> to get it even close to the panel example. Like assume that no SPI bus
-> exists, [...]
+> Yes I agree they are all hacks, but your version seems to carry some
+> extra early init baggage with it as I noted above :)
 
-The important thing is not, that there is an SPI bus (hardware), but
-that there is a common SPI client framework (software). That's one
-of the problem's I see with the modified compatible value.
+True, but it doesn't feel very big baggage to me. We can bail out
+immediately if the machine is not omap, so for non-omap's the effect
+should be negligible.
 
-Basically I see the following problem with the appended -omapdss in
-the compatible string:
+For omap there is some extra stuff being done. I don't really know heavy
+it is, performance wise, but the operation itself is quite small.
 
- * You can read the -omapdss as "to be used with omapdss driver". In
-   this case the compatible string is just needed for driver loading,
-   which is frowned upon DT binding maintainers AFAIK.
- * Alternatively one can read it as "connected to omapdss". In this
-   case we add unneeded redundancy to the DT. This does not belong
-   into a compatible string, since its encoded in the DT hierarchy.
+I'll try and see how the other options work, which are:
 
-And btw. Tomi's rewrite hack basically works exactly like this, just
-without adding the redundancy explicitly into the DT. Instead of
-prefixing the comaptible string he could also add a -omapdss sufix.
-That's basically a proof, that the suffix adds useless redudancy.
+- Bailing out from module_init in each display driver. The reason I
+don't like this (although I haven't tried it) is that all the display
+drivers need the modification, and because I need to catch the
+module_init, I cannot use the helpers like module_platform_driver(), so
+it adds multiple lines to every driver.
 
-> [...] and that potentially multiple different Synaptics drivers are
-> trying to share the same compatible flag for a non-existing generic
-> binding.
+- Traveling the video graph, starting from omapdss. This one is possibly
+better performance-wise than my original version, as we only need to
+search for the omapdss node and can then follow the links. But the code
+will be more complex.
 
-If there was no common SPI client framework you would need two
-different SPI client drivers for two different SPI host controllers.
+ Tomi
 
-Obviously its a bad idea to have no SPI framework, but that's not
-important for the example (except that there should obviously be a
-common panel framework) :)
 
-> I think then it's getting close to the panel example :)
 
--- Sebastian
-
---XsQoSWH+UP9D9v3l
+--aOtLHrXQ9os9RImAuAfSBTTcQOUqg52wn
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJTe8TWAAoJENju1/PIO/qaYxgP/joS7fClYFQXSFXi+oe1Xfe0
-n3Hl3futAbZ1cgauu54pWTbnwzv6JdfedmV6GXAfrKkwBZCVKR6P/dN2TFOYHUdV
-lPJN/k3VSieJUx2sUTTthegaIGymiZwEtrJGSCv7b9Oz6vjTZAYKR24MEUA9DTXR
-mfOM1DX7sCP7DugPyeP7vcAQ1dr8E9IhRYIEEbyzafi5dkgO1ojUbYCugKDk9NL3
-jrEdw1Cbmw+1EUV6ATjbLVF/GiTmU1QunYGh29oGamLrnI6DrfU/I/FqYwC9Dxnp
-mjoYxyQ3Qk+FzGvYmD1BdwzHe/3oOuL0aOps6ytq5C+ktU3uPQxEATzlVEgZRBzD
-pMEh9JkQKqPyWyc/T83TFrBzuKvw3gVvy2un7Hirur9FE7TVaiS0yuZyR0o9IWI/
-WFlufQckSzQFcKA9nCB7k5foy01c77FQ6KKsEbNgx+MLOyDcAA/kYTeuGlQzl3Fu
-RkFmwmlx4HvI3dO1CUQY+YQn+4FUKsvd3CDnYvvkdklrQw5aZV9xiIBLBGGfRzEk
-zoJgo+6jFfeimP+fDzIuMVWocLfxZbXKN+PJ7Mt2AHIrxNdYDYZPgEQTv6ANKLtM
-evt8Zc6ootQzFCvZCp4jVMcylFjP8nWPnM5ZJ0g296UAanSXtDWqP0hMd92NgYl6
-2eWfaMhblzgbBhL9ICaI
-=oeEM
+iQIcBAEBAgAGBQJTfKS0AAoJEPo9qoy8lh71lh4P/R7/9MKWN5BuS4FIxpYKghDE
+ZKXo6wSiq+qH6hNGsp0a1dYnmnDjbnItC4QyaCx1BQKtMN1+tY4Brbu830KAy7OK
+y675syUzV6iWxoZnNd7/rmEsBQ15Qnila8ZB52OJeJZ2KPQrL1p5rObN00zG/kTm
+gwtZiSVjT95SMGoSwnN6PJh70xhtSFAKnk9S6uE1vlpfad8XtfkfF6m6lrQgdSED
+pr7v3lLO9YIbYFoM9viCzcOB2IGSXx4gIQkZgAXVGbz+uJ5XcYsfjJ/N4WspcVDK
+qVe91grx7a2HrsDoE0vKNZO96EXRCqR4ostqzPLAE8W2KzwL0YNBHSqWdFNB1cdX
+QJx+g4jJXoaeiTDpIJwy1jSCxBRPR2Tr1YLqa2AASqg+H5CV5nOlUVyqPiBa6xgZ
+8C8rFMbrgtWeO9Hx0CkzhbU755wrHGFW5jkLy2e+nUiFACp8pgBSn/XkNBQ7Ldjn
+qu88bkUjum3IqOkxJZ4FcxYKwtIncCK4P7h5vAIV8k6tTMSBMvH8fpfsoZCGyi8R
+Ez+KFSowayEK8Gw0Lf1BSp+mcK7/M1nNADttT8uArEvA0d9fsPyDCw/kWG8wF3o1
+OIxZ2xSuTKwGLWDRH2z5vXRHWt+w85kXtY0LFQnPGjmpeIiaLmRjwwCDnxqVTamT
+wIFb67r6pR1lLYSOO0RR
+=o+A5
 -----END PGP SIGNATURE-----
 
---XsQoSWH+UP9D9v3l--
+--aOtLHrXQ9os9RImAuAfSBTTcQOUqg52wn--

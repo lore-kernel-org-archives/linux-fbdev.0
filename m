@@ -1,73 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 21 May 2014 12:44:54 +0000
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 21 May 2014 14:50:54 +0000
 Subject: Re: [PATCH 4/4] ARM: dts: Add LCD panel sharp ls037v7dw01 support for omap3-evm and ldp
-Message-Id: <537C9FC6.8020104@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="xpK7v2KfhktUI3jTN0Oj8XrBLrXP9G2hB"
+Message-Id: <20140521145053.GG17417@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1398815562-24113-1-git-send-email-tony@atomide.com>
  <1398815562-24113-5-git-send-email-tony@atomide.com>
  <CAGhQ9Vwa8xXQEo5dNEKAvmaS9DoBjVSthtd8=owk+atVdFuiiA@mail.gmail.com>
- <20140430174751.GA12362@atomide.com> <20140505183919.GA15463@atomide.com>
+ <20140430174751.GA12362@atomide.com>
+ <20140505183919.GA15463@atomide.com>
  <20140508233628.GJ2198@atomide.com> <536C7EA7.5000306@ti.com>
- <20140509153723.GD17814@atomide.com> <20140513213205.GB18001@atomide.com>
-In-Reply-To: <20140513213205.GB18001@atomide.com>
+ <20140509153723.GD17814@atomide.com>
+ <20140513213205.GB18001@atomide.com> <537C9FC6.8020104@ti.com>
+In-Reply-To: <537C9FC6.8020104@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---xpK7v2KfhktUI3jTN0Oj8XrBLrXP9G2hB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [140521 05:45]:
+> On 14/05/14 00:32, Tony Lindgren wrote:
+> 
+> > +&dss {
+> > +	status = "ok";
+> > +	vdds_dsi-supply = <&vpll2>;
+> > +	port {
+> > +		dpi_out: endpoint {
+> > +			remote-endpoint = <&lcd_in>;
+> > +			data-lines = <18>;
+> > +		};
+> > +	};
+> > +};
+> 
+> I just noticed the vdds_dsi-supply there. While the driver currently
+> uses that if available, I think it should be removed, and done the same
+> way Florian did with his overo patches:
+> 
+> /* Needed to power the DPI pins */
+> &vpll2 {
+> 	regulator-always-on;
+> };
+> 
+> That supply is not DSS's supply, but it's used to power up the pins. If
+> the pins were used as GPIOs, that power should be enabled.
 
-On 14/05/14 00:32, Tony Lindgren wrote:
+OK thanks for catching it.
 
-> +&dss {
-> +	status =3D "ok";
-> +	vdds_dsi-supply =3D <&vpll2>;
-> +	port {
-> +		dpi_out: endpoint {
-> +			remote-endpoint =3D <&lcd_in>;
-> +			data-lines =3D <18>;
-> +		};
-> +	};
-> +};
+Regards,
 
-I just noticed the vdds_dsi-supply there. While the driver currently
-uses that if available, I think it should be removed, and done the same
-way Florian did with his overo patches:
-
-/* Needed to power the DPI pins */
-&vpll2 {
-	regulator-always-on;
-};
-
-That supply is not DSS's supply, but it's used to power up the pins. If
-the pins were used as GPIOs, that power should be enabled.
-
- Tomi
-
-
-
---xpK7v2KfhktUI3jTN0Oj8XrBLrXP9G2hB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTfJ/GAAoJEPo9qoy8lh716JsP/1ZfdXg29Y4pgxRAe29m9sex
-wNKAIbnYzl8MMQviJ9BMHKSIqryYT8375JOL69P1JzDtZ6ZZCXinYxpS44RU5FDi
-+klfT5IOMeC75au+uHKdeGOOky+zoNpzaVhs4HvJw77gFpRMvzvkZIjP2GqwapZe
-/o7//zcnpzhsyBzAY8od9NYR0FWMYDca2b6oYqohJmnN1SJpTanivxmBYQ8swYEr
-X+S9B7DuGDJaJajFeZR1uo5RBig5gVEmMF5O/y7zgfeLMSyUkWtOGW51GJWPifbi
-RNxci+lia0ZHelIRxxMBfYDft3diiO8ZKA25HcTqerxQBn0SMI5KwRgdkFfGjGVY
-Ht7vmZO4J8U6iVYAAPh3jwE8qss9dR4qLrH9sQzVkMHZuACKhniHf2tf8+eG9/u/
-9/O6OCf+RIbjR6+ITkmdknroBM4onUboNT41bU5Fcpn6UxglJ0a9/9xkYZGxpPOX
-u49/YYOY3dGekYsY5Pa0ba9eZ+eI52AbPwOFc0d9ei3uupZt9SXg2vSI2oaG8eHR
-iouihZ4ZyXY6Le91DirttrwU3+pmnu0OW4oPRylyWFXQYXGNso8+1w83oaevThk+
-MPoauEjatreqhpq5GdqnEJWz8VQuSmaLjhjIwM7JWzZprqRO5jG8LsJCv2auxoeH
-28Wjn78xXc44wOrvY2Dj
-=GcNQ
------END PGP SIGNATURE-----
-
---xpK7v2KfhktUI3jTN0Oj8XrBLrXP9G2hB--
+Tony

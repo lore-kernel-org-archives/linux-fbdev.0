@@ -1,107 +1,93 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 21 May 2014 13:05:56 +0000
+From: Sebastian Reichel <sre@kernel.org>
+Date: Wed, 21 May 2014 14:24:59 +0000
 Subject: Re: [PATCH 3/4] OMAPDSS: panel-sharp-ls037v7dw01: add device tree support
-Message-Id: <537CA4B4.2040001@ti.com>
+Message-Id: <20140521142459.GB27779@earth.universe>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="aOtLHrXQ9os9RImAuAfSBTTcQOUqg52wn"
+Content-Type: multipart/mixed; boundary="JP+T4n/bALQSJXh8"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <537487AE.3060906@ti.com> <20140515182133.GC23659@atomide.com>
- <5375A8A8.7080306@ti.com> <20140516160717.GD22031@atomide.com>
- <20140516174158.GA11733@earth.universe> <20140516180154.GG22031@atomide.com>
+References: <5375A8A8.7080306@ti.com> <20140516160717.GD22031@atomide.com>
+ <20140516174158.GA11733@earth.universe>
+ <20140516180154.GG22031@atomide.com>
  <20140516213907.GL12881@atomide.com> <5379D35F.8040207@ti.com>
  <20140519155732.GA4849@atomide.com> <537A540E.8070302@ti.com>
- <20140519195100.GB11945@atomide.com>
-In-Reply-To: <20140519195100.GB11945@atomide.com>
+ <20140519195100.GB11945@atomide.com> <537CA4B4.2040001@ti.com>
+In-Reply-To: <537CA4B4.2040001@ti.com>
 To: linux-arm-kernel@lists.infradead.org
 
---aOtLHrXQ9os9RImAuAfSBTTcQOUqg52wn
-Content-Type: text/plain; charset=ISO-8859-1
+
+--JP+T4n/bALQSJXh8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 19/05/14 22:51, Tony Lindgren wrote:
+Hi,
 
->>> 4. Having this hack limited to device tree based booting while we are=
-
->>>    trying to unify the functions for drivers to use to get their
->>>    resources.
->>
->> I don't understand this one. With non-DT boot we don't have the issue =
-at
->> all, there's no need for hacks.
+On Wed, May 21, 2014 at 04:05:56PM +0300, Tomi Valkeinen wrote:
+> I'll try and see how the other options work, which are:
 >=20
-> Hmm can't we still have multiarch booting happening with the same
-> panel name being used by two different display drivers?
+> - Bailing out from module_init in each display driver. The reason I
+> don't like this (although I haven't tried it) is that all the display
+> drivers need the modification, and because I need to catch the
+> module_init, I cannot use the helpers like module_platform_driver(), so
+> it adds multiple lines to every driver.
 
-Yes, but in that case the driver names are internal to kernel. You can
-append "omapdss" or such to the driver name, and have that name used in
-the board file and in the driver. It's not visible outside the kernel,
-and when there's a common display framework, it can be changed without
-anyone knowing.
+You could create your own omapdss_driver() define for that.
+This can be replaced more simply once no longer needed and
+creates less bloat.
 
-With DT we have the old, stable .dts files that need to be supported...
+I see one more disadvantage for this approach:
 
->>> 5. Seeing the possibility of this spreading to other drivers.
->>
->> Well, until we have a common display framework, one of the hacky optio=
-ns
->> we've discussed will spread to other drivers if they need to have thei=
-r
->> own drivers for the same hardware devices.
->>
->> Which is not nice, but not something we can escape. And using the
->> of_machine_is_compatible or having the compatible strings in .dts
->> appended with "dss" or such doesn't change that, it just changes which=
+assumed situation (some future 3.16+x kernel):
+ * The kernel has an common display framework (CDF)
+ * The kernel has an panel driver using CDF
+ * There also exists omapdss driver for the same panel
+ * omapdss does not (yet) adopt CDF
+ * CDF and omapdss are enabled in .config
+ * Kernel is booted from an OMAP system
 
->> hack may spread.
->=20
-> Yes I agree they are all hacks, but your version seems to carry some
-> extra early init baggage with it as I noted above :)
+This would result in both drivers being loaded using the same
+DT compatible string. The same scenario works using the rewriting
+method, since the common display framework would only see the
+rewritten compatible string.
 
-True, but it doesn't feel very big baggage to me. We can bail out
-immediately if the machine is not omap, so for non-omap's the effect
-should be negligible.
+Of course this scenario only happens when omapdss is not adopted
+to the common display framework from the start on.
 
-For omap there is some extra stuff being done. I don't really know heavy
-it is, performance wise, but the operation itself is quite small.
+> - Traveling the video graph, starting from omapdss. This one is possibly
+> better performance-wise than my original version, as we only need to
+> search for the omapdss node and can then follow the links. But the code
+> will be more complex.
 
-I'll try and see how the other options work, which are:
+I think the main advantage is the missing lookup table/whitelist,
+which adds redundancy. Not having it has some advantages:
 
-- Bailing out from module_init in each display driver. The reason I
-don't like this (although I haven't tried it) is that all the display
-drivers need the modification, and because I need to catch the
-module_init, I cannot use the helpers like module_platform_driver(), so
-it adds multiple lines to every driver.
+* new drivers don't need to touch any existing files (making
+  rebasing etc. easier)
+* table can get out of sync (though that shouldn't happen anyway,
+  since the binding is supposed to be stable)
 
-- Traveling the video graph, starting from omapdss. This one is possibly
-better performance-wise than my original version, as we only need to
-search for the omapdss node and can then follow the links. But the code
-will be more complex.
+-- Sebastian
 
- Tomi
-
-
-
---aOtLHrXQ9os9RImAuAfSBTTcQOUqg52wn
+--JP+T4n/bALQSJXh8
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJTfKS0AAoJEPo9qoy8lh71lh4P/R7/9MKWN5BuS4FIxpYKghDE
-ZKXo6wSiq+qH6hNGsp0a1dYnmnDjbnItC4QyaCx1BQKtMN1+tY4Brbu830KAy7OK
-y675syUzV6iWxoZnNd7/rmEsBQ15Qnila8ZB52OJeJZ2KPQrL1p5rObN00zG/kTm
-gwtZiSVjT95SMGoSwnN6PJh70xhtSFAKnk9S6uE1vlpfad8XtfkfF6m6lrQgdSED
-pr7v3lLO9YIbYFoM9viCzcOB2IGSXx4gIQkZgAXVGbz+uJ5XcYsfjJ/N4WspcVDK
-qVe91grx7a2HrsDoE0vKNZO96EXRCqR4ostqzPLAE8W2KzwL0YNBHSqWdFNB1cdX
-QJx+g4jJXoaeiTDpIJwy1jSCxBRPR2Tr1YLqa2AASqg+H5CV5nOlUVyqPiBa6xgZ
-8C8rFMbrgtWeO9Hx0CkzhbU755wrHGFW5jkLy2e+nUiFACp8pgBSn/XkNBQ7Ldjn
-qu88bkUjum3IqOkxJZ4FcxYKwtIncCK4P7h5vAIV8k6tTMSBMvH8fpfsoZCGyi8R
-Ez+KFSowayEK8Gw0Lf1BSp+mcK7/M1nNADttT8uArEvA0d9fsPyDCw/kWG8wF3o1
-OIxZ2xSuTKwGLWDRH2z5vXRHWt+w85kXtY0LFQnPGjmpeIiaLmRjwwCDnxqVTamT
-wIFb67r6pR1lLYSOO0RR
-=o+A5
+iQIcBAEBCgAGBQJTfLc7AAoJENju1/PIO/qaVmsQAJP3lRtzFdHGO9oufke5LxIT
+oCnpe7v1evjMQi/PdbhHTmrx/FIaxNKmkCl5VPGMYJqf+pF/sa6G7yrS0ZUq8jGI
+XFJEyB6M2/IjcuAVrj8qHdCMabnqa2q5C4xMtURRfsraipDsFv7LX/2STH8CcrlX
+oP60OdAvQmv5w7PVMdRnuQ94/wsXTZWP6tqy78+e67w0hYlvNUxhsntoPWdHtbLu
+l8MLEC58/5mFIwAX7sRQQgr7q8CZAvhUE7dkYLvIGcxKXgGfzeuzggR5/Bsj4vfR
+gPDV6vEe2S2PrjcCMLslITCeSGQhKz99p1DiY/xfYBHO+aF/UIXtCBpNdDz8hk1M
+gh62Q3avLzFF24ckyero/YX7AMPxPK4jtypIrgvNYQ2LwRKt36XsdcoU15Ya4viu
+QuFpH2ivq3A4Y7vMyhRzGDlTIUrrCFtKlETQsDc+s7exiK0Yg97pp40koVjR+4aX
+8Saw5+0tsmaTsJ8AlTyX0uIw3D/3jErab1n2Hl06iAuiFNWXO+o6uvVazSIKPu52
+a/Bv7xPPihrMN1daE40EtRX8y+HEvzPGBYAlbTiM0UviDToZSbIZykGC/bZ2WKPb
+9YsusjSpMJrFCtGX19lPLzE9Ej4JiIXD2cvGzYRuXismzMCy51ti6/30XOHLe/7e
+Iu4hpr0bgYDB8W3BwYg6
+=AsiA
 -----END PGP SIGNATURE-----
 
---aOtLHrXQ9os9RImAuAfSBTTcQOUqg52wn--
+--JP+T4n/bALQSJXh8--

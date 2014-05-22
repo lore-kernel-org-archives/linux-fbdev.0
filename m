@@ -1,260 +1,374 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 15 May 2014 18:13:54 +0000
-Subject: Re: [PATCH] OMAPDSS: move 'compatible' converter to omapdss driver
-Message-Id: <20140515181354.GB23659@atomide.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 22 May 2014 12:10:46 +0000
+Subject: [PATCH] OMAPDSS: move 'compatible' converter to omapdss driver
+Message-Id: <1400760646-10191-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1400141136-25358-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1400141136-25358-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>
+Cc: Javier Martinez Canillas <javier@dowhile0.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [140515 01:06]:
-> Move the panel/encoder driver compatible-string converter from
-> arch/arm/mach-omap2/display.c to omapdss driver. That is a more logical
-> place for it, as it's really an omapdss internal hack.
+Move the panel/encoder driver compatible-string converter from
+arch/arm/mach-omap2/display.c to omapdss driver. That is a more logical
+place for it, as it's really an omapdss internal hack.
 
-Thanks, maybe also consider just using the compatible flags
-instead as discussed in the other thread. Anyways for moving
-this out of mach-omap2:
+The code is rewritten to follow the video node graph, starting from
+omapdss. This removes the need to have the device compatible-string
+database.
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/display.c                     |  56 ------
+ drivers/video/fbdev/omap2/Makefile                |   2 +-
+ drivers/video/fbdev/omap2/dss/Kconfig             |   4 +
+ drivers/video/fbdev/omap2/dss/Makefile            |   1 +
+ drivers/video/fbdev/omap2/dss/omapdss-boot-init.c | 229 ++++++++++++++++++++++
+ 5 files changed, 235 insertions(+), 57 deletions(-)
+ create mode 100644 drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
+
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 16d33d831287..519a20fc0432 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -555,65 +555,9 @@ int omap_dss_reset(struct omap_hwmod *oh)
+ 	return r;
+ }
  
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->  arch/arm/mach-omap2/display.c                     |  56 -----------
->  drivers/video/fbdev/omap2/Makefile                |   2 +-
->  drivers/video/fbdev/omap2/dss/Kconfig             |   4 +
->  drivers/video/fbdev/omap2/dss/Makefile            |   1 +
->  drivers/video/fbdev/omap2/dss/omapdss-boot-init.c | 112 ++++++++++++++++++++++
->  5 files changed, 118 insertions(+), 57 deletions(-)
->  create mode 100644 drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
-> 
-> diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-> index 16d33d831287..519a20fc0432 100644
-> --- a/arch/arm/mach-omap2/display.c
-> +++ b/arch/arm/mach-omap2/display.c
-> @@ -555,65 +555,9 @@ int omap_dss_reset(struct omap_hwmod *oh)
->  	return r;
->  }
->  
-> -/* list of 'compatible' nodes to convert to omapdss specific */
-> -static const char * const dss_compat_conv_list[] __initconst = {
-> -	"composite-connector",
-> -	"dvi-connector",
-> -	"hdmi-connector",
-> -	"panel-dpi",
-> -	"panel-dsi-cm",
-> -	"sony,acx565akm",
-> -	"svideo-connector",
-> -	"ti,tfp410",
-> -	"ti,tpd12s015",
-> -};
-> -
-> -/* prepend compatible string with "omapdss," */
-> -static __init void omapdss_omapify_node(struct device_node *node,
-> -	const char *compat)
-> -{
-> -	char *new_compat;
-> -	struct property *prop;
-> -
-> -	new_compat = kasprintf(GFP_KERNEL, "omapdss,%s", compat);
-> -
-> -	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-> -
-> -	if (!prop) {
-> -		pr_err("omapdss_omapify_node: kzalloc failed\n");
-> -		return;
-> -	}
-> -
-> -	prop->name = "compatible";
-> -	prop->value = new_compat;
-> -	prop->length = strlen(new_compat) + 1;
-> -
-> -	of_update_property(node, prop);
-> -}
-> -
-> -/*
-> - * As omapdss panel drivers are omapdss specific, but we want to define the
-> - * DT-data in generic manner, we convert the compatible strings of the panel
-> - * nodes from "panel-foo" to "omapdss,panel-foo". This way we can have both
-> - * correct DT data and omapdss specific drivers.
-> - *
-> - * When we get generic panel drivers to the kernel, this will be removed.
-> - */
->  void __init omapdss_early_init_of(void)
->  {
-> -	int i;
-> -
-> -	for (i = 0; i < ARRAY_SIZE(dss_compat_conv_list); ++i) {
-> -		const char *compat = dss_compat_conv_list[i];
-> -		struct device_node *node = NULL;
-> -
-> -		while ((node = of_find_compatible_node(node, NULL, compat))) {
-> -			if (!of_device_is_available(node))
-> -				continue;
->  
-> -			omapdss_omapify_node(node, compat);
-> -		}
-> -	}
->  }
->  
->  struct device_node * __init omapdss_find_dss_of_node(void)
-> diff --git a/drivers/video/fbdev/omap2/Makefile b/drivers/video/fbdev/omap2/Makefile
-> index bf8127df8c71..f8745ec369cc 100644
-> --- a/drivers/video/fbdev/omap2/Makefile
-> +++ b/drivers/video/fbdev/omap2/Makefile
-> @@ -1,5 +1,5 @@
->  obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
->  
-> -obj-$(CONFIG_OMAP2_DSS) += dss/
-> +obj-y += dss/
->  obj-y += displays-new/
->  obj-$(CONFIG_FB_OMAP2) += omapfb/
-> diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
-> index dde4281663b1..a28f3a39ab1b 100644
-> --- a/drivers/video/fbdev/omap2/dss/Kconfig
-> +++ b/drivers/video/fbdev/omap2/dss/Kconfig
-> @@ -1,6 +1,10 @@
-> +config OMAP2_DSS_INIT
-> +	bool
-> +
->  menuconfig OMAP2_DSS
->          tristate "OMAP2+ Display Subsystem support"
->  	select VIDEOMODE_HELPERS
-> +	select OMAP2_DSS_INIT
->          help
->  	  OMAP2+ Display Subsystem support.
->  
-> diff --git a/drivers/video/fbdev/omap2/dss/Makefile b/drivers/video/fbdev/omap2/dss/Makefile
-> index 8aec8bda27cc..3b79ad74f2e1 100644
-> --- a/drivers/video/fbdev/omap2/dss/Makefile
-> +++ b/drivers/video/fbdev/omap2/dss/Makefile
-> @@ -1,3 +1,4 @@
-> +obj-$(CONFIG_OMAP2_DSS_INIT) += omapdss-boot-init.o
->  obj-$(CONFIG_OMAP2_DSS) += omapdss.o
->  # Core DSS files
->  omapdss-y := core.o dss.o dss_features.o dispc.o dispc_coefs.o display.o \
-> diff --git a/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
-> new file mode 100644
-> index 000000000000..468f6eff370c
-> --- /dev/null
-> +++ b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
-> @@ -0,0 +1,112 @@
-> +/*
-> + * Copyright (C) 2014 Texas Instruments
-> + * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License version 2 as published by
-> + * the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along with
-> + * this program.  If not, see <http://www.gnu.org/licenses/>.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/of.h>
-> +#include <linux/slab.h>
-> +
-> +/* list of 'compatible' nodes to convert to omapdss specific */
-> +static const char * const dss_compat_conv_list[] __initconst = {
-> +	"composite-connector",
-> +	"dvi-connector",
-> +	"hdmi-connector",
-> +	"panel-dpi",
-> +	"panel-dsi-cm",
-> +	"sony,acx565akm",
-> +	"svideo-connector",
-> +	"ti,tfp410",
-> +	"ti,tpd12s015",
-> +};
-> +
-> +/* prepend compatible string with "omapdss," */
-> +static __init void omapdss_omapify_node(struct device_node *node,
-> +	const char *compat)
-> +{
-> +	char *new_compat;
-> +	struct property *prop;
-> +
-> +	new_compat = kasprintf(GFP_KERNEL, "omapdss,%s", compat);
-> +
-> +	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-> +
-> +	if (!prop) {
-> +		pr_err("omapdss_omapify_node: kzalloc failed\n");
-> +		return;
-> +	}
-> +
-> +	prop->name = "compatible";
-> +	prop->value = new_compat;
-> +	prop->length = strlen(new_compat) + 1;
-> +
-> +	of_update_property(node, prop);
-> +}
-> +
-> +static struct device_node * __init omapdss_find_dss_of_node(void)
-> +{
-> +	struct device_node *node;
-> +
-> +	node = of_find_compatible_node(NULL, NULL, "ti,omap2-dss");
-> +	if (node)
-> +		return node;
-> +
-> +	node = of_find_compatible_node(NULL, NULL, "ti,omap3-dss");
-> +	if (node)
-> +		return node;
-> +
-> +	node = of_find_compatible_node(NULL, NULL, "ti,omap4-dss");
-> +	if (node)
-> +		return node;
-> +
-> +	node = of_find_compatible_node(NULL, NULL, "ti,omap5-dss");
-> +	if (node)
-> +		return node;
-> +
-> +	return NULL;
-> +}
-> +
-> +/*
-> + * As omapdss panel drivers are omapdss specific, but we want to define the
-> + * DT-data in generic manner, we convert the compatible strings of the panel
-> + * nodes from "panel-foo" to "omapdss,panel-foo". This way we can have both
-> + * correct DT data and omapdss specific drivers.
-> + *
-> + * When we get generic panel drivers to the kernel, this will be removed.
-> + */
-> +static int __init omap_dss_boot_init(void)
-> +{
-> +	int i;
-> +
-> +	/* do we have omapdss device? */
-> +	if (omapdss_find_dss_of_node() = NULL)
-> +		return 0;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(dss_compat_conv_list); ++i) {
-> +		const char *compat = dss_compat_conv_list[i];
-> +		struct device_node *node = NULL;
-> +
-> +		while ((node = of_find_compatible_node(node, NULL, compat))) {
-> +			if (!of_device_is_available(node))
-> +				continue;
-> +
-> +			omapdss_omapify_node(node, compat);
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +subsys_initcall(omap_dss_boot_init);
-> -- 
-> 1.9.1
-> 
+-/* list of 'compatible' nodes to convert to omapdss specific */
+-static const char * const dss_compat_conv_list[] __initconst = {
+-	"composite-connector",
+-	"dvi-connector",
+-	"hdmi-connector",
+-	"panel-dpi",
+-	"panel-dsi-cm",
+-	"sony,acx565akm",
+-	"svideo-connector",
+-	"ti,tfp410",
+-	"ti,tpd12s015",
+-};
+-
+-/* prepend compatible string with "omapdss," */
+-static __init void omapdss_omapify_node(struct device_node *node,
+-	const char *compat)
+-{
+-	char *new_compat;
+-	struct property *prop;
+-
+-	new_compat = kasprintf(GFP_KERNEL, "omapdss,%s", compat);
+-
+-	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
+-
+-	if (!prop) {
+-		pr_err("omapdss_omapify_node: kzalloc failed\n");
+-		return;
+-	}
+-
+-	prop->name = "compatible";
+-	prop->value = new_compat;
+-	prop->length = strlen(new_compat) + 1;
+-
+-	of_update_property(node, prop);
+-}
+-
+-/*
+- * As omapdss panel drivers are omapdss specific, but we want to define the
+- * DT-data in generic manner, we convert the compatible strings of the panel
+- * nodes from "panel-foo" to "omapdss,panel-foo". This way we can have both
+- * correct DT data and omapdss specific drivers.
+- *
+- * When we get generic panel drivers to the kernel, this will be removed.
+- */
+ void __init omapdss_early_init_of(void)
+ {
+-	int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(dss_compat_conv_list); ++i) {
+-		const char *compat = dss_compat_conv_list[i];
+-		struct device_node *node = NULL;
+-
+-		while ((node = of_find_compatible_node(node, NULL, compat))) {
+-			if (!of_device_is_available(node))
+-				continue;
+ 
+-			omapdss_omapify_node(node, compat);
+-		}
+-	}
+ }
+ 
+ struct device_node * __init omapdss_find_dss_of_node(void)
+diff --git a/drivers/video/fbdev/omap2/Makefile b/drivers/video/fbdev/omap2/Makefile
+index bf8127df8c71..f8745ec369cc 100644
+--- a/drivers/video/fbdev/omap2/Makefile
++++ b/drivers/video/fbdev/omap2/Makefile
+@@ -1,5 +1,5 @@
+ obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
+ 
+-obj-$(CONFIG_OMAP2_DSS) += dss/
++obj-y += dss/
+ obj-y += displays-new/
+ obj-$(CONFIG_FB_OMAP2) += omapfb/
+diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
+index dde4281663b1..a28f3a39ab1b 100644
+--- a/drivers/video/fbdev/omap2/dss/Kconfig
++++ b/drivers/video/fbdev/omap2/dss/Kconfig
+@@ -1,6 +1,10 @@
++config OMAP2_DSS_INIT
++	bool
++
+ menuconfig OMAP2_DSS
+         tristate "OMAP2+ Display Subsystem support"
+ 	select VIDEOMODE_HELPERS
++	select OMAP2_DSS_INIT
+         help
+ 	  OMAP2+ Display Subsystem support.
+ 
+diff --git a/drivers/video/fbdev/omap2/dss/Makefile b/drivers/video/fbdev/omap2/dss/Makefile
+index 8aec8bda27cc..3b79ad74f2e1 100644
+--- a/drivers/video/fbdev/omap2/dss/Makefile
++++ b/drivers/video/fbdev/omap2/dss/Makefile
+@@ -1,3 +1,4 @@
++obj-$(CONFIG_OMAP2_DSS_INIT) += omapdss-boot-init.o
+ obj-$(CONFIG_OMAP2_DSS) += omapdss.o
+ # Core DSS files
+ omapdss-y := core.o dss.o dss_features.o dispc.o dispc_coefs.o display.o \
+diff --git a/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
+new file mode 100644
+index 000000000000..99af9e88b2d8
+--- /dev/null
++++ b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
+@@ -0,0 +1,229 @@
++/*
++ * Copyright (C) 2014 Texas Instruments
++ * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++/*
++ * As omapdss panel drivers are omapdss specific, but we want to define the
++ * DT-data in generic manner, we convert the compatible strings of the panel and
++ * encoder nodes from "panel-foo" to "omapdss,panel-foo". This way we can have
++ * both correct DT data and omapdss specific drivers.
++ *
++ * When we get generic panel drivers to the kernel, this file will be removed.
++ */
++
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/of_graph.h>
++#include <linux/slab.h>
++#include <linux/list.h>
++
++static struct list_head dss_conv_list __initdata;
++
++static const char prefix[] __initconst = "omapdss,";
++
++struct dss_conv_node {
++	struct list_head list;
++	struct device_node *node;
++	bool root;
++};
++
++static int __init omapdss_count_strings(const struct property *prop)
++{
++	const char *p = prop->value;
++	int l = 0, total = 0;
++	int i;
++
++	for (i = 0; total < prop->length; total += l, p += l, i++)
++		l = strlen(p) + 1;
++
++	return i;
++}
++
++static void __init omapdss_update_prop(struct device_node *node, char *compat,
++	int len)
++{
++	struct property *prop;
++
++	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
++	if (!prop)
++		return;
++
++	prop->name = "compatible";
++	prop->value = compat;
++	prop->length = len;
++
++	of_update_property(node, prop);
++}
++
++static void __init omapdss_prefix_strcpy(char *dst, int dst_len,
++	const char *src, int src_len)
++{
++	size_t total = 0;
++
++	while (total < src_len) {
++		size_t l = strlen(src) + 1;
++
++		strcpy(dst, prefix);
++		dst += strlen(prefix);
++
++		strcpy(dst, src);
++		dst += l;
++
++		src += l;
++		total += l;
++	}
++}
++
++/* prepend compatible property strings with "omapdss," */
++static void __init omapdss_omapify_node(struct device_node *node)
++{
++	struct property *prop;
++	char *new_compat;
++	int num_strs;
++	int new_len;
++
++	prop = of_find_property(node, "compatible", NULL);
++
++	if (!prop || !prop->value)
++		return;
++
++	if (strnlen(prop->value, prop->length) >= prop->length)
++		return;
++
++	/* is it already prefixed? */
++	if (strncmp(prefix, prop->value, strlen(prefix)) = 0)
++		return;
++
++	num_strs = omapdss_count_strings(prop);
++
++	new_len = prop->length + strlen(prefix) * num_strs;
++	new_compat = kmalloc(new_len, GFP_KERNEL);
++
++	omapdss_prefix_strcpy(new_compat, new_len, prop->value, prop->length);
++
++	omapdss_update_prop(node, new_compat, new_len);
++}
++
++static void __init omapdss_add_to_list(struct device_node *node, bool root)
++{
++	struct dss_conv_node *n = kmalloc(sizeof(struct dss_conv_node),
++		GFP_KERNEL);
++	n->node = node;
++	n->root = root;
++	list_add(&n->list, &dss_conv_list);
++}
++
++static bool __init omapdss_list_contains(const struct device_node *node)
++{
++	struct dss_conv_node *n;
++
++	list_for_each_entry(n, &dss_conv_list, list) {
++		if (n->node = node)
++			return true;
++	}
++
++	return false;
++}
++
++static void __init omapdss_walk_device(struct device_node *node, bool root)
++{
++	struct device_node *n;
++
++	omapdss_add_to_list(node, root);
++
++	/*
++	 * of_graph_get_remote_port_parent() prints an error if there is no
++	 * port/ports node. To avoid that, check first that there's the node.
++	 */
++	n = of_get_child_by_name(node, "ports");
++	if (!n)
++		n = of_get_child_by_name(node, "port");
++	if (!n)
++		return;
++
++	of_node_put(n);
++
++	n = NULL;
++	while ((n = of_graph_get_next_endpoint(node, n)) != NULL) {
++		struct device_node *pn;
++
++		pn = of_graph_get_remote_port_parent(n);
++
++		if (!pn) {
++			of_node_put(n);
++			continue;
++		}
++
++		if (!of_device_is_available(pn) || omapdss_list_contains(pn)) {
++			of_node_put(pn);
++			of_node_put(n);
++			continue;
++		}
++
++		omapdss_walk_device(pn, false);
++
++		of_node_put(n);
++	}
++}
++
++static const struct of_device_id omapdss_of_match[] __initconst = {
++	{ .compatible = "ti,omap2-dss", },
++	{ .compatible = "ti,omap3-dss", },
++	{ .compatible = "ti,omap4-dss", },
++	{ .compatible = "ti,omap5-dss", },
++	{},
++};
++
++static int __init omapdss_boot_init(void)
++{
++	struct device_node *dss, *child;
++
++	INIT_LIST_HEAD(&dss_conv_list);
++
++	dss = of_find_matching_node(NULL, omapdss_of_match);
++
++	if (dss = NULL || !of_device_is_available(dss))
++		return 0;
++
++	omapdss_walk_device(dss, true);
++
++	for_each_available_child_of_node(dss, child) {
++		if (!of_find_property(child, "compatible", NULL)) {
++			of_node_put(child);
++			continue;
++		}
++
++		omapdss_walk_device(child, true);
++	}
++
++	while (!list_empty(&dss_conv_list)) {
++		struct dss_conv_node *n;
++
++		n = list_first_entry(&dss_conv_list, struct dss_conv_node,
++			list);
++
++		if (!n->root)
++			omapdss_omapify_node(n->node);
++
++		list_del(&n->list);
++		of_node_put(n->node);
++		kfree(n);
++	}
++
++	return 0;
++}
++
++subsys_initcall(omapdss_boot_init);
+-- 
+1.9.1
+

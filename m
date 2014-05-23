@@ -1,120 +1,64 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 16 May 2014 09:55:12 +0000
-Subject: [PATCH 3/3] OMAPDSS: panel NEC-NL8048HL11 DT support
-Message-Id: <1400234112-29306-3-git-send-email-tomi.valkeinen@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 23 May 2014 19:07:59 +0000
+Subject: [PATCH 10/13] OMAPDSS: hdmi4: Register HDMI audio ASoC drivers from HDMI driver
+Message-Id: <28bddf9165a24122af11fd2c5270deb4e7917877.1400871999.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400234112-29306-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1400234112-29306-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1400871999.git.jsarha@ti.com>
+In-Reply-To: <cover.1400871999.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Erik Gilling <konkers@android.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-We don't have any working boards using this panel right now, and the
-panel driver looks odd compared to the panel specs. For example, the
-panel spec does not mention any QVGA pin.
+The registering is best done here to share the resources owned by OMAPDSS
+HDMI driver with ASoC DAI and platform drivers.
 
-So, while this patch adds DT support to the driver, it's not really
-supported and there are not bindings documentation for the panel until
-someone can verify how the panel actually works.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Erik Gilling <konkers@android.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- .../omap2/displays-new/panel-nec-nl8048hl11.c      | 44 +++++++++++++++++++++-
- 1 file changed, 43 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/hdmi4.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/displays-new/panel-nec-nl8048hl11.c b/drivers/video/fbdev/omap2/displays-new/panel-nec-nl8048hl11.c
-index 996fa004b48c..553e5643e4ba 100644
---- a/drivers/video/fbdev/omap2/displays-new/panel-nec-nl8048hl11.c
-+++ b/drivers/video/fbdev/omap2/displays-new/panel-nec-nl8048hl11.c
-@@ -16,6 +16,7 @@
- #include <linux/spi/spi.h>
- #include <linux/fb.h>
- #include <linux/gpio.h>
-+#include <linux/of_gpio.h>
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 626aad2..62ad1d9 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -52,6 +52,9 @@ static struct {
+ 	struct clk *sys_clk;
+ 	struct regulator *vdda_hdmi_dac_reg;
  
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -156,7 +157,8 @@ static int nec_8048_enable(struct omap_dss_device *dssdev)
- 	if (omapdss_device_is_enabled(dssdev))
- 		return 0;
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
++	struct hdmi_audio_data audio;
++#endif
+ 	bool core_enabled;
  
--	in->ops.dpi->set_data_lines(in, ddata->data_lines);
-+	if (ddata->data_lines)
-+		in->ops.dpi->set_data_lines(in, ddata->data_lines);
- 	in->ops.dpi->set_timings(in, &ddata->videomode);
+ 	struct omap_dss_device output;
+@@ -736,6 +739,15 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
  
- 	r = in->ops.dpi->enable(in);
-@@ -258,6 +260,34 @@ static int nec_8048_probe_pdata(struct spi_device *spi)
+ 	hdmi_init_output(pdev);
+ 
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
++	r = hdmi_audio_register(pdev, &hdmi.audio, &hdmi.output, &hdmi.wp);
++	if (r) {
++		DSSERR("Registering HDMI audio failed\n");
++		hdmi_uninit_output(pdev);
++		pm_runtime_disable(&pdev->dev);
++		return r;
++	}
++#endif
+ 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
+ 
  	return 0;
- }
+@@ -743,6 +755,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
  
-+static int nec_8048_probe_of(struct spi_device *spi)
-+{
-+	struct device_node *node = spi->dev.of_node;
-+	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
-+	struct omap_dss_device *in;
-+	int gpio;
-+
-+	gpio = of_get_named_gpio(node, "reset-gpios", 0);
-+	if (!gpio_is_valid(gpio)) {
-+		dev_err(&spi->dev, "failed to parse enable gpio\n");
-+		return gpio;
-+	}
-+	ddata->res_gpio = gpio;
-+
-+	/* XXX the panel spec doesn't mention any QVGA pin?? */
-+	ddata->qvga_gpio = -ENOENT;
-+
-+	in = omapdss_of_find_source_for_first_ep(node);
-+	if (IS_ERR(in)) {
-+		dev_err(&spi->dev, "failed to find video source\n");
-+		return PTR_ERR(in);
-+	}
-+
-+	ddata->in = in;
-+
-+	return 0;
-+}
-+
- static int nec_8048_probe(struct spi_device *spi)
+ static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
  {
- 	struct panel_drv_data *ddata;
-@@ -289,6 +319,10 @@ static int nec_8048_probe(struct spi_device *spi)
- 		r = nec_8048_probe_pdata(spi);
- 		if (r)
- 			return r;
-+	} else if (spi->dev.of_node) {
-+		r = nec_8048_probe_of(spi);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -377,6 +411,13 @@ static SIMPLE_DEV_PM_OPS(nec_8048_pm_ops, nec_8048_suspend,
- #define NEC_8048_PM_OPS NULL
- #endif
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
++	hdmi_audio_unregister(&hdmi.audio);
++#endif
+ 	hdmi_uninit_output(pdev);
  
-+static const struct of_device_id lb035q02_of_match[] = {
-+	{ .compatible = "omapdss,nec,nl8048hl11", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, lb035q02_of_match);
-+
- static struct spi_driver nec_8048_driver = {
- 	.driver = {
- 		.name	= "panel-nec-nl8048hl11",
-@@ -389,6 +430,7 @@ static struct spi_driver nec_8048_driver = {
- 
- module_spi_driver(nec_8048_driver);
- 
-+MODULE_ALIAS("spi:nec,nl8048hl11");
- MODULE_AUTHOR("Erik Gilling <konkers@android.com>");
- MODULE_DESCRIPTION("NEC-NL8048HL11 Driver");
- MODULE_LICENSE("GPL");
+ 	pm_runtime_disable(&pdev->dev);
 -- 
-1.9.1
+1.7.9.5
 

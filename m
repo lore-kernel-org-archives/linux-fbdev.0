@@ -1,7 +1,7 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 23 May 2014 19:07:51 +0000
-Subject: [PATCH 02/13] ARM: omap5.dtsi: Add audio related parameters to hdmi node
-Message-Id: <4f3d2792c307c1fd4bcdf03090957aef57e101ad.1400871999.git.jsarha@ti.com>
+Date: Fri, 23 May 2014 19:07:53 +0000
+Subject: [PATCH 04/13] OMAPDSS: hdmi_wp: Add function for getting hdmi_wp physical base address
+Message-Id: <0b45f07e37fc622e18fb441897ac8749fb954c07.1400871999.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1400871999.git.jsarha@ti.com>
 In-Reply-To: <cover.1400871999.git.jsarha@ti.com>
@@ -11,26 +11,55 @@ Content-Transfer-Encoding: 7bit
 To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Adds HDMI audio sDMA properties.
+The hdmi_wp physical base address is needed for hdmi audio dma.
 
 Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/boot/dts/omap5.dtsi |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/omap2/dss/hdmi.h    |    2 ++
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c |    6 ++++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/arch/arm/boot/dts/omap5.dtsi b/arch/arm/boot/dts/omap5.dtsi
-index 32c02ce..279a9c7 100644
---- a/arch/arm/boot/dts/omap5.dtsi
-+++ b/arch/arm/boot/dts/omap5.dtsi
-@@ -937,6 +937,8 @@
- 				ti,hwmods = "dss_hdmi";
- 				clocks = <&dss_48mhz_clk>, <&dss_sys_clk>;
- 				clock-names = "fck", "sys_clk";
-+				dmas = <&sdma 76>;
-+				dma-names = "audio_tx";
- 			};
- 		};
- 	};
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index fbee078..f644bc8 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -341,6 +341,7 @@ struct hdmi_core_infoframe_avi {
+ 
+ struct hdmi_wp_data {
+ 	void __iomem *base;
++	phys_addr_t phys_base;
+ };
+ 
+ struct hdmi_pll_data {
+@@ -410,6 +411,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
+ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ 		struct omap_video_timings *timings, struct hdmi_config *param);
+ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
++phys_addr_t hdmi_wp_get_phys_addr(struct hdmi_wp_data *wp);
+ 
+ /* HDMI PLL funcs */
+ int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index a16a190..bee6df3 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -264,6 +264,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 		temp_res.end = temp_res.start + WP_SIZE - 1;
+ 		res = &temp_res;
+ 	}
++	wp->phys_base = res->start;
+ 
+ 	wp->base = devm_ioremap(&pdev->dev, res->start, resource_size(res));
+ 	if (!wp->base) {
+@@ -273,3 +274,8 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 
+ 	return 0;
+ }
++
++phys_addr_t hdmi_wp_get_phys_addr(struct hdmi_wp_data *wp)
++{
++	return wp->phys_base;
++}
 -- 
 1.7.9.5
 

@@ -1,55 +1,48 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 23 May 2014 14:26:01 +0000
+Date: Fri, 23 May 2014 14:32:08 +0000
 Subject: Re: [PATCH v2 1/3] video: clps711x: Add new Cirrus Logic CLPS711X framebuffer driver
-Message-Id: <537F5A79.2080801@ti.com>
+Message-Id: <537F5BE8.5020102@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="XL1mCHiimlT1kATX4m3IJnFnjol51s5gh"
+Content-Type: multipart/mixed; boundary="cT8togX6g5VN9gpxk52VWrsvdtCDVSdWh"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1397285583-15187-1-git-send-email-shc_work@mail.ru>
 In-Reply-To: <1397285583-15187-1-git-send-email-shc_work@mail.ru>
 To: linux-fbdev@vger.kernel.org
 
---XL1mCHiimlT1kATX4m3IJnFnjol51s5gh
-Content-Type: text/plain; charset=ISO-8859-1
+--cT8togX6g5VN9gpxk52VWrsvdtCDVSdWh
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 23/05/14 17:14, Arnd Bergmann wrote:
-> On Friday 23 May 2014 17:10:35 Tomi Valkeinen wrote:
->> On 23/05/14 16:13, Alexander Shiyan wrote:
->>
->>>> Would it be possible to add the new driver along the old driver, and=
- use
->>>> the new driver only for the boards you have, and for boards for whic=
-h
->>>> it's clear the the old driver is not working? This could be merged f=
-or 3.16.
->>>
->>> At this time yes, we can. But since I plan to add multiplatform suppo=
-rt
->>> for this SOC, this seems not possible.
->>> I can try to make multiplatform support optional, then it could be do=
-ne...
->>
->> Hmm, why is that not possible with multiplatform support? What do you
->> mean with multiplatform support here?
+On 23/05/14 17:27, Alexander Shiyan wrote:
+
+>> But I don't want to make this more difficult for you than it needs to.=
+
+>> As I said, I'm fine with the current patches, if we skip 3.16 and get
+>> them to linux-next right after the merge window. If nobody would use t=
+he
+>> new driver in 3.16 anyway (in your proposal above), would this be the
+>> easiest way?
 >=20
-> We are migrating all ARM platforms to allow building them into a single=
+> This is the only way to announce initial multiplatform support (in case=
+ we will
+> use two differrent drivers).
+> Another (easiest) way is to use the current patchset...
 
-> kernel. However, that means that device drivers cannot access platform
-> specific header files any more and have to get hardware information fro=
-m
-> DT or through platform data. The existing driver however uses mach/hard=
-ware.h.
+If the old driver doesn't even play well with multiplatform, and is thus
+blocking moving the SoC to multiplatform, I'd just get done with it in
+one go.
 
-Ah, I see. So the problem is not with two different drivers for the same
-hardware device as such, but that in this case the older driver just
-doesn't play well with multiplatform.
+So I would recommend pushing the new driver and the removal of the old
+one for 3.17, and having those changes in linux-next right after the
+3.16 merge window.
+
+Is that ok?
 
  Tomi
 
 
 
---XL1mCHiimlT1kATX4m3IJnFnjol51s5gh
+--cT8togX6g5VN9gpxk52VWrsvdtCDVSdWh
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -57,19 +50,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJTf1p5AAoJEPo9qoy8lh711PYP/R7SvEuf+HZQJzpfNhPpOBpn
-qOG/XibTQkhmrBwHMvt5pV5p37E/pxYDWtKEiLmL8Gdsj1c74QSAhO1nAfihS4W0
-fGnkW+5BVyX9NZnzv+vm56ZUmfTkpNe7aLz1+f5Q37b6Cgy5bMlaDDHs0RdGTZSn
-MuG4NByBb3IV0sxZLn9DAEijc9nfrifyrRVFHRHURRSsbycI12lzwnPB0Y04oxL7
-cFBkAjDYYxV/FZRA8QxG1L+nXU4DMOqwkK7D/XdhZYQtPIcD1Ng+xuBwymCULENh
-gUgFLdKJHaTNWK13jzuIhTtcWLDpPaiRNW8UPNWXcgCrn5TGrQ2NfhHP89sXYbcX
-J/ncH5picP3c3R2NCWFTSSA4ktPRiasJFTqhC2CyjrjuQxpA0M3QbFH+NiIAEMAn
-/xhHpTptwIP2rt6uGa5ubV/1oceCHy8we8/ZNnhBce5Rbcg/9eXy8oKRtfOhm2Mb
-bl/VRnkUaVZjxNHrLgm54+H+J6qwJvetG9vZV0ShDawoWGEBbF5rNuhwMpRerL23
-L+pa4JQRiR5BfENoZPkLsLx5yNSXzMAqTq8BSPfbf7tdMgOyp5TDsdQAfoSzMkuS
-SG1SRY/qdFBExhOBVYDL6QPMww1H8HIXg9NBGsCXberAMtfdTyRIP7uWOPTQLMq/
-Uh7+NX7s5zHDOULUlz9T
-=mDNW
+iQIcBAEBAgAGBQJTf1voAAoJEPo9qoy8lh713IMP+wT+DTGx/RgQxmJA+ocHNzwa
+Ihkmi4m0mN1kQ8tO/OFIqFY3WMM91YW11+wd04FJgwU0bFgJX9pgmeZNKvUiL6E5
+POX5CmA18WA8Z/o6SMqG9xv3koSFKObBifOsBLEplPjLGUhbJ/WSbagTx4EbJQFU
+BU5F3XMjzwaoX7rAcLD+82ATYsQWXkxhrYiyT1/IAvOPQvSMBaB4ViC7JY0/jGxS
+Wnmt/+LX8k+inQ1HqU8g+XpHFJ+q/uzeFZgGzfhWCDPGAjCc/GbC7HF0cdaBpT2d
+B7As1DUpglWQWFfplsC7giBiOw5b1B9ptg8GacgqDIhEdqFJ/L1GDBgn8uOUAIRz
+BL4dFgD+1Qc/nqrQ96PUay+KR0N89dTpxiifmTsf/MGVoyHeT0PubSUKtEVnVQUr
+m9T1iTTYwC5bhKOhyMvo3/+hGEz2gOw4+hKBDlnwbWC8WINs58mg38pHFRrz6BDF
+qirRAsuLkW+EeNz+7s0FOnoCH03fN3byUy6+XOTt4K2b/brrQQex3AlKF/8afnbR
+17PwVZw0lpV9hvNdlpl2ZXu+G4ZOdf7tHisSMUXu729jp2X35Eu4r2w/dtXHFAu0
+i4tZDxZzQs/SAXaPzHVbPdrTYp7v/37owgF1+h1xZbgqxkIyavE3w9/CYOWfaAdI
+qACbKBfXJ694gFAj/0Ai
+=8sZk
 -----END PGP SIGNATURE-----
 
---XL1mCHiimlT1kATX4m3IJnFnjol51s5gh--
+--cT8togX6g5VN9gpxk52VWrsvdtCDVSdWh--

@@ -1,54 +1,61 @@
-From: sunzc522@gmail.com
-Date: Wed, 21 May 2014 06:13:30 +0000
-Subject: [PATCH] drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap
-Message-Id: <1400652811-5206-1-git-send-email-sunzc522@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 23 May 2014 10:51:52 +0000
+Subject: Re: [PATCH] drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap
+Message-Id: <537F2848.5070500@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="eNjH7Fded4gXScbLmsorx48tESEKLvMgU"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: gxt@mprc.pku.edu.cn, gang.chen.5i5j@gmail.com, Zhichuang SUN <sunzc522@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org
+References: <1400652811-5206-1-git-send-email-sunzc522@gmail.com>
+In-Reply-To: <1400652811-5206-1-git-send-email-sunzc522@gmail.com>
+To: sunzc522@gmail.com
+Cc: linux-kernel@vger.kernel.org, gxt@mprc.pku.edu.cn, gang.chen.5i5j@gmail.com, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org
 
-From: Zhichuang SUN <sunzc522@gmail.com>
+--eNjH7Fded4gXScbLmsorx48tESEKLvMgU
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Function unifb_mmap calls functions which are defined in linux/mm.h
-and asm/pgtable.h
+On 21/05/14 09:13, sunzc522@gmail.com wrote:
+> From: Zhichuang SUN <sunzc522@gmail.com>
+>=20
+> Function unifb_mmap calls functions which are defined in linux/mm.h
+> and asm/pgtable.h
+>=20
+> The related error (for unicore32 with unicore32_defconfig):
+> 	CC      drivers/video/fbdev/fb-puv3.o
+> 	drivers/video/fbdev/fb-puv3.c: In function 'unifb_mmap':
+> 	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+> 				      function 'vm_iomap_memory'
+> 	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+> 				      function 'pgprot_noncached'
+>=20
 
-The related error (for unicore32 with unicore32_defconfig):
-	CC      drivers/video/fbdev/fb-puv3.o
-	drivers/video/fbdev/fb-puv3.c: In function 'unifb_mmap':
-	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
-				      function 'vm_iomap_memory'
-	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
-				      function 'pgprot_noncached'
+Thanks, queued for 3.16.
 
-Signed-off-by: Zhichuang Sun <sunzc522@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Joe Perches <joe@perches.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org
----
- drivers/video/fbdev/fb-puv3.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ Tomi
 
-diff --git a/drivers/video/fbdev/fb-puv3.c b/drivers/video/fbdev/fb-puv3.c
-index 6db9ebd..88fa2e7 100644
---- a/drivers/video/fbdev/fb-puv3.c
-+++ b/drivers/video/fbdev/fb-puv3.c
-@@ -18,8 +18,10 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/console.h>
-+#include <linux/mm.h>
- 
- #include <asm/sizes.h>
-+#include <asm/pgtable.h>
- #include <mach/hardware.h>
- 
- /* Platform_data reserved for unifb registers. */
--- 
-1.7.0.4
 
+
+--eNjH7Fded4gXScbLmsorx48tESEKLvMgU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTfyhIAAoJEPo9qoy8lh71lS0P/2g8xXwaWEJzTNSdEW5DV3SJ
+XXWC5dQRd2wbAQYM8RQFCoWjQlaaFPX3aZ1rS0zkis8cIKfDpg2aCDCkXPCwM9Fp
+ForhE6pD4EsqJKherZgm3kNC/L+I6u7E3mOmkczgfsrHBKJ5AyfCZL3tolfJATrL
+JZOeInbh9TEN9mZiUPyOLGu+mdDywzgw4JXzQY9ZlPcVsiiX9k6UjOdo9W+k4qLn
+3WPPZDJAkjUtngrHnd/fPYfd0dBS99R7+qXEQ6ZFyI4F6mf5okv+B5wQdMg7uIOD
+Iq+G7Nhdm83CrCJdoxnyEkBmp12GVnxXv0MBmQaIvqq+GYG6BB051DPfbPHFkMnE
+U1wgBax2BRCBgTq5A35bfknaYBn+jA+fZscqOKxyunyrgA7otUX1JgSjfvnL+Ayx
++Ks2gpxMUUUkQU7dHQTJPnlzgn5LRhDkKoTndOKVOhQqWam341PGuAN8uGiFsYfV
+eymWrprrpiqLzYHroGBGJNSpXeD57JkZ6g8qBNLUPr/g9vXgqt5XP/x8//UjCB67
+ketJy8yq4BA3aDNwJRITe1Wzmhp3AEDJk9qAQz/RGPwk+d29iqsg/NR1mhAbg3GC
+B3/5TdLCaYvLZ/5T8x/GKewKd5CqB4sfK92qBhygvE3niCXxQQfiCzumi8y6ylZ0
+Os93iWTtbT5+7nyQtTO+
+=FN47
+-----END PGP SIGNATURE-----
+
+--eNjH7Fded4gXScbLmsorx48tESEKLvMgU--

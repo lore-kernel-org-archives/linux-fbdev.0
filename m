@@ -1,68 +1,81 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Mon, 19 May 2014 14:44:09 +0000
-Subject: Re: [alsa-devel] [PATCH 00/19] Rework OMAP4+ HDMI audio support
-Message-Id: <537A18B9.3040504@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 23 May 2014 11:02:37 +0000
+Subject: Re: [PATCH 00/19] Rework OMAP4+ HDMI audio support
+Message-Id: <537F2ACD.6030603@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="oiPfMWKmiB6kXRrMgOXOCOqKeJjHKB8cb"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>	<CAGhQ9VzjndCBp+ZHS3XPPvS4ors6u9BfHf4NY_HNYN5ynyQOYQ@mail.gmail.com>	<53733F2E.4030803@ti.com>	<CAGhQ9VzkGDPiQF7TiqiMgZY_oc9dyrW66yGsZR6ei2ejX-EXcw@mail.gmail.com>	<CAGhQ9VwY_qeOLsa_oAUuL3XT2tmn-mLg0WBtOdL8JL6u+0PQcw@mail.gmail.com> <CAGhQ9VyxKWZ9KSWoYkhf8KeUJnMKJO=b0kG=upC7uojNLHVObw@mail.gmail.com>
-In-Reply-To: <CAGhQ9VyxKWZ9KSWoYkhf8KeUJnMKJO=b0kG=upC7uojNLHVObw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Joachim Eastwood <manabian@gmail.com>
-Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, liam.r.girdwood@linux.intel.com, detheridge@ti.com, broonie@kernel.org, peter.ujfalusi@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Benoit Cousson <bcousson@baylibre.com>
+References: <cover.1399884780.git.jsarha@ti.com> <20140512150616.GF31772@atomide.com>
+In-Reply-To: <20140512150616.GF31772@atomide.com>
+To: Tony Lindgren <tony@atomide.com>, Jyri Sarha <jsarha@ti.com>
+Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, detheridge@ti.com
 
-On 05/17/2014 12:16 PM, Joachim Eastwood wrote:
-> On 17 May 2014 10:51, Joachim  Eastwood <manabian@gmail.com> wrote:
->> On 14 May 2014 18:25, Joachim  Eastwood <manabian@gmail.com> wrote:
-...
->>
->> I did some more testing over here.
->>
->> My HTPC (nVidia ION2 based) works good with speaker-test and all
->> channels are where they are suppose to be.
->>
->> On the OMAP4 board I tried doing: "while true; do speaker-test -c 4 -s
->> 1; done" and this had an interesting effect.
->> Most of the time FL (Front Left) is swapped with BL (Back Left) but
->> about every 10th time the sound comes out in the FL speaker... So
->> there something weird going on here. Same story for the right channel.
->>
->> I also noticed that HDMI doesn't always work on boot up, it sometimes fail with:
->> [ 193.985565] omapdss_hdmi 58006000.encoder: audio not supported
->> [ 193.985565] omapdss_hdmi 58006000.encoder: ASoC: can't open
->> interface 58006000.encoder: -19
->>
->> But after replugging the HDMI connector a couple of times it starts to work.
->>
+--oiPfMWKmiB6kXRrMgOXOCOqKeJjHKB8cb
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-That is weird I can not reproduce this problem. I rebooted my panda 
-several times and the audio device was always there. Could it be that 
-the connector is in DVI mode or something?
+On 12/05/14 18:06, Tony Lindgren wrote:
+> * Jyri Sarha <jsarha@ti.com> [140512 02:13]:
+>> Since RFC version of the patch set:=20
+>> - Split callbacks removal patch away from "Integrated ASoC DAI
+>>   component driver implementation" patches for easier reading
+>>
+>> This set of patches fixes OMAP4+ HDMI audio. The structure of the
+>> implementatin looks a bit different than before. Instead of creating a=
 
->> I'll see if I can try with an old TI OMAP4 kernel (3.4) and see how that works.
->
-> On the 3.4 Variscite kernel:
-> Linux version 3.4.0-1489-omap4 (uri@pluto) (gcc version 4.6.3
-> (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #27 SMP PREEMPT Sun Apr 7 13:27:10
-> IDT 2013
-> git://dev.omapzoom.org/pub/scm/integration/kernel-ubuntu.git +
-> Variscite vendor patches
->
-> Both speaker-test -c 4 and -c 8 works. All channels are where they are
-> suppose to be.
->
-> Hot plugging is broken, though. So the HDMI must be connected on boot,
-> but that might be the Variscite board setup.
->
+>> driver specific API for a separate ASoC component driver to connect
+>> to, this implementation integrates an the component driver into the
+>> HDMI driver.
+>>
+>> The idea is to use an existing ASoC component driver API instead of
+>> creating a new custom API for each HDMI IP and to avoid splitting the
+>> driver to half for separate video and audio parts connected with the
+>> API.
+>>
+>> The new implementation also uses simple-audio-card for a machine
+>> driver instead of having its own HW specific machine driver.
+>=20
+> Can you guys please post this split into the following separate
+> parts for the maintainers to merge:
+>=20
+> - ASoC changes
+> - DSS changes
+> - DTS changes
+>=20
+> And once those are all in, please post the defconfig changes.
 
-I checked the ubuntu branch implementation and found that it is quite 
-different in many places, but the one place that affects the i2s channel 
-mapping to HDMI looks exactly the same. So there must be a bug some 
-where else and there is no point trying to fix it by changing the 
-mapping (it would be impossible anyway). I'll compare the 
-implementations further when I have time.
+Tony, this series will get delayed until 3.17, but I'd like to merge the
+HDMI DMA channel changes to omap4/omap5.dtsi already to 3.16. They are
+patches 13 and 15.
 
-Thanks for your testing. Now I at least now where the bug is not.
+Those are very trivial, but I'd rather have acks from you for all the
+=2Edts changes I'll be sending.
 
-Best regards,
-Jyri
+ Tomi
+
+
+
+--oiPfMWKmiB6kXRrMgOXOCOqKeJjHKB8cb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTfyrTAAoJEPo9qoy8lh71ROgP/iOog0kAlegSyAHuak6SOcYl
+N7ZXQMzlnU6Yc1GjDyOJmIdSx3fYXtWdolYQTGR4QRN9hXm4xBiQIGTL+LIBAngD
+YgPhwQQzJCTdsweoyMH5RRPHV6rAJ4uwDA/8PEnjbilctM/tLt+QGQhXucWepd1+
+jbA1+2IeduTmoqaAKkXWNJrkduVJGSw7+KTEao/fT342NI/UHmVu7dT/YMz6FyVn
+iwA+PMbKAnNnZddLAC6H8QWMr3oY5rDQFu6tT3/AeVCT2J0nGZWwy+6bXhbRCCJI
+59am90u+hAaqmdTXRkLKrceZO15pE8Iaf6EvfNyITM0e2+t9oGUnWpyMO0pLF9pZ
+u9I7VmTvsSH3alMwH1yORj+mU4VmEtRpwbHkN3WRI11XJzZz1UovEN0lnogC7opD
+KXiLYWbx344ILxJhxSItBUujX7FzEiTTyrSWUh30vjVgw9I+6TDsb2JckR8Xzz4B
+48hJFC1AdNNV+ktYe4fAe1RbGASzitOFf3o8xiVE8TajpeVWV9rpwWOyi65bLo9s
+ysshfrAModJSHdevgZ9K9AL0LMkG1cbHxQlucDAStL5G0Cv4hhdYrFkTRP3z5d2h
+UEwy+MqRZSv75yDnDaNXlUoY1+r0/h8+Snbv9al1W8oTsY0TSxsBEOwkTAxgofy3
+zvZxejbOW+8/8peLICSh
+=Md8W
+-----END PGP SIGNATURE-----
+
+--oiPfMWKmiB6kXRrMgOXOCOqKeJjHKB8cb--

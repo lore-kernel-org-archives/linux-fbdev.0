@@ -1,63 +1,90 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 23 May 2014 12:31:44 +0000
+Date: Fri, 23 May 2014 12:43:40 +0000
 Subject: Re: [PATCH v2 1/3] video: clps711x: Add new Cirrus Logic CLPS711X framebuffer driver
-Message-Id: <537F3FB0.6010909@ti.com>
+Message-Id: <537F427C.20505@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="30kVSUWwgeESieVw5XNsG1tM9VHSerCW0"
+Content-Type: multipart/mixed; boundary="4F9gksPOoqDQBrv8oAncfTIPccsEss7fj"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1397285583-15187-1-git-send-email-shc_work@mail.ru>
 In-Reply-To: <1397285583-15187-1-git-send-email-shc_work@mail.ru>
 To: linux-fbdev@vger.kernel.org
 
---30kVSUWwgeESieVw5XNsG1tM9VHSerCW0
-Content-Type: text/plain; charset=ISO-8859-1
+--4F9gksPOoqDQBrv8oAncfTIPccsEss7fj
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 12/04/14 09:53, Alexander Shiyan wrote:
-> This adds support for the framebuffer available in the Cirrus
-> Logic CLPS711X CPUs.
-> FB features:
-> - 1-2-4 bits per pixel.
-> - Programmable panel size to a maximum of 1024x256 at 4 bps.
-> - Relocatible Frame Buffer (SRAM or SDRAM).
-> - Programmable refresh rates.
-> - 16 gray scale values.
-> This new driver supports usage with devicetree and as a general
-> change it removes last user of <mach/hardware.h> for CLPS711X targets,
-> so this subarch will fully prepared to switch to multiplatform.
-> The driver have been tested with custom board equipped Cirrus Logic
-> EP7312 in DT and non-DT mode.
+On 18/05/14 15:01, Alexander Shiyan wrote:
+> Fri, 16 May 2014 15:56:26 -0700 =D0=BE=D1=82 Olof Johansson <olof@lixom=
+=2Enet>:
+>> On Thu, May 08, 2014 at 01:14:40PM +0300, Tomi Valkeinen wrote:
+>>> On 08/05/14 11:27, Alexander Shiyan wrote:
+>>>
+>>>>>> At this time the driver has three user.
+>>>>>> Only one of them should theoretically work.
+>>>>>> clps711x-autcpu12 should not work in the absence of memblock_reser=
+ve().
+>>>>>> clps711x-p720t should not work due to physical address limitation =
+as i
+>>>>>> noticed before. Board means to use SRAM instead of SDRAM.
+>>>>>> Only clps711x-edb7211 should work fine (in theory).
+>>>>>> Is this a good reason to replace the driver? I think yes.
+>>>>>
+>>>>> Ok, if the situation is that bad, maybe we can just switch to the n=
+ew
+>>>>> driver. Have you verified that those boards do not work from anyone=
+? Or
+>>>>> asked someone to test the new driver with those boards?
+>>>>
+>>>> I'm not familiar with other users of this platform .
+>>>> I am do not have these boards, all that I have written before that i=
+t's just a theory.
+>>>> Firm in which I work, uses its own board with CLPS711X CPU , this bo=
+ard is the
+>>>> only way to check for changes on real hardware .
+>>>
+>>> Ok. That makes me a bit nervous... You're removing a driver, which ma=
+y
+>>> (or may not) have been working for other users. And adding a new one,=
+
+>>> which may not (or may) work for the other users.
+>>
+>> Keep the old one around under another Kconfig name, mark it BROKEN,
+>> and if nobody speaks up in a couple of releases, remove it?
 >=20
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
-> ---
->  drivers/video/fbdev/clps711x-fb.c | 456 ++++++++++++++++++++++++++++++=
-++++++++
->  1 file changed, 456 insertions(+)
->  create mode 100644 drivers/video/fbdev/clps711x-fb.c
+> I like this variant, Tomi are you agree with this?
 
-<snip>
+I don't know. All options sound somewhat bad to me, except if it's clear
+nobody uses the old driver.
 
-> +
-> +static int clps711x_fb_get_mode_dt(struct platform_device *pdev)
-> +{
-> +	struct device_node *disp, *np =3D pdev->dev.of_node;
-> +	struct fb_info *info =3D platform_get_drvdata(pdev);
-> +	struct clps711x_fb_info *cfb =3D info->par;
-> +	int ret;
-> +
-> +	cfb->syscon =3D
-> +		syscon_regmap_lookup_by_compatible("cirrus,clps711x-syscon1");
-> +	if (IS_ERR(cfb->syscon))
-> +		return PTR_ERR(cfb->syscon);
+Anyway, it's rather late for 3.16. I'd like the removal of the old
+driver to sit in the linux-next for a while.
 
-Hmm, what's the syscon stuff about? Looks like it's required, but the DT
-documentation patch doesn't mention it at all.
+Would it be possible to add the new driver along the old driver, and use
+the new driver only for the boards you have, and for boards for which
+it's clear the the old driver is not working? This could be merged for 3.=
+16.
+
+It's not so nice to have two drivers for the same hardware, but in this
+case maybe that's not an issue. The old driver doesn't support DT, so no
+conflicts there, and for non-DT the driver names seem to be different.
+
+For 3.17, we could remove the old driver, and push that change to
+linux-next right after the 3.16 merge window has closed.
+
+Or, if you're fine with it, we can also delay adding the new driver to
+3.17, and do both right after the 3.16 merge window has closed. I
+personally like this most, so that we have both removal of the old and
+adding the new sitting in the linux-next longer, but you might possibly
+want the new driver in sooner.
+
+Maybe I'm being overly cautious here, but as I don't have any idea about
+the driver and its users, I rather be too cautious than not.
 
  Tomi
 
 
 
---30kVSUWwgeESieVw5XNsG1tM9VHSerCW0
+--4F9gksPOoqDQBrv8oAncfTIPccsEss7fj
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -65,19 +92,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJTfz+wAAoJEPo9qoy8lh71GiYP/AzV+99mo/twMghVngcSayi4
-bvHxFjwmQo1IOVJjGjbWq2cQ8KMTxj98mPVbmQD4Ns7tSHtfFvg6rw6VhadCF6lb
-l7Axb2p05xLEk6cNc0mKN37kwCGVSu9s66K1RLoO7BBTy0qfTKMnrqn8Jo4h6a0l
-oAOPOoHI5K1Zs5pYIGNqSmhPzmmPfonQ0w7H2VkpD8/q8AmY/70Zua2plwQhCtlZ
-gRdWKcDdAMdbKxR+P2BLqYy0psdR+84xNKEroxfd9uMIbuocL8/gQRC7D/uEEY7S
-DSWMJHmznO9lPno3/Nr1dc+h2wVVPfmGx3NQMLY3S2OotYaKvtjQk4CRG5lc9cVN
-YWvcKin/nny9UGu19cFvOwbYj8t3Qbw6hjxvEK80jBGNk4S6Gz/STLBeD2lQEntN
-iX8PQ51M+ZHvE7VPXtOIiMzg0NULi+YFW1cOJKhH0JohGbB0ihzCs61G7Qqmr3du
-n4XTclzB/TXTp6vdDJK15JnjgxN6y18bIE9JfhngZ4Np/0iD0MtSUgCuKcqRzW4V
-WvABDQsVEqs1Eb1roTrMIoRdKVIoJHA0stU0XkTQK4siht3wjAgoKauYafzoT7Sl
-2cwDomznw4y8ken5rIk2zaTnd/5TGpdOpe03/dYFTRLRKCvaZB3NYgIrB5ewOCff
-zgCgUfelTFn/RM+dUOgx
-=t+rA
+iQIcBAEBAgAGBQJTf0J8AAoJEPo9qoy8lh71ZnIP/iQ1jbfo2FNFod2CQaAzSgdw
+PHo4Sz9JxDmuIu6gSFZ1H77OOplmTpnSCxG0FQdTv5FM8OhX1+SoJxJ5IymqWRAd
+mNnJpmy2U9eoPEQIzVd3CA2q3opCOGbfhwCTFoz5Vz3wABf6RmLah+cqa5DjqfFR
+oNtD7TB9bCXk9evXNDw0U8YJnUd32bDsSb6kTtv7oBR2xHHG2iKdditFXBslqLyp
+IDNr8vnMcpCSWimeKo7m66zw/UKNkcEHYFnWpiUGyAe/qlu9O+nqRD/NwtpBwA+9
+GsTEzX8UTiTSbbs9ksrrXqbKHsRx/rhD+AUWhBQuOiwAbiwlQpX46d0wDbfGeCOP
+4B/8bRpYn2tL2IdJ17JnJ5/3odEUZYhYbsd5xSpNKmamiMjrARCBkCIxtAnJt/GB
+97gNV9/cS1upLH19EASp++CeiyC9HsRAHESJELFcpPPI3T0OsYi7jbazytp8F+3n
+ovtQrdg+ZfDXf1DAzInuWX5T5NsXOqvwVVvr6TrGsFkxkbxwkxALzX5htWKeGIBE
+KEQMKCk+THvPu3tjAq0sYOXABlMr/l4NpCfkXfRJkb+mzYThdCvLZtdFjbTMbtDZ
+w8B2W2BuZkH/xT06Q9FMc3zvdk2BvQC/hztGEk7UnrJYqPQpbDQSr932q5nDysB1
+n6M9WAgpVNnZ6MOSz+kg
+=L4aM
 -----END PGP SIGNATURE-----
 
---30kVSUWwgeESieVw5XNsG1tM9VHSerCW0--
+--4F9gksPOoqDQBrv8oAncfTIPccsEss7fj--

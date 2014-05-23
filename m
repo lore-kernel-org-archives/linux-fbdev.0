@@ -1,42 +1,59 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 19 May 2014 20:42:39 +0000
-Subject: [PATCHv2 resend 08/11] ARM: shmobile: Armadillo 800 EVA: use PWM_LOOKUP to initialize struct pwm_loo
-Message-Id: <1400532162-29483-9-git-send-email-alexandre.belloni@free-electrons.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 23 May 2014 19:07:56 +0000
+Subject: [PATCH 07/13] ASoC: omap-hdmi-card: Add platform data stuct for omap-hdmi-card driver
+Message-Id: <49e1e8f9d6841b63f6ba096743f48c94842fe956.1400871999.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1400532162-29483-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <cover.1400871999.git.jsarha@ti.com>
+In-Reply-To: <cover.1400871999.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Acked-by: Simon Horman <horms@verge.net.au>
+The names of the needed ASoC component drivers need to be passed to
+the omap-hdmi-card driver for it to find them.
+
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/mach-shmobile/board-armadillo800eva.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ include/sound/omap-hdmi-card-pdata.h |   28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+ create mode 100644 include/sound/omap-hdmi-card-pdata.h
 
-diff --git a/arch/arm/mach-shmobile/board-armadillo800eva.c b/arch/arm/mach-shmobile/board-armadillo800eva.c
-index 1bf61dad9a35..ca82b1e2ebab 100644
---- a/arch/arm/mach-shmobile/board-armadillo800eva.c
-+++ b/arch/arm/mach-shmobile/board-armadillo800eva.c
-@@ -407,14 +407,8 @@ static struct platform_device pwm_device = {
- };
- 
- static struct pwm_lookup pwm_lookup[] = {
--	{
--		.provider = "renesas-tpu-pwm",
--		.index = 2,
--		.dev_id = "pwm-backlight.0",
--		.con_id = NULL,
--		.period = 33333,
--		.polarity = PWM_POLARITY_INVERSED,
--	},
-+	PWM_LOOKUP("renesas-tpu-pwm", 2, "pwm-backlight.0", NULL,
-+		   33333, PWM_POLARITY_INVERSED),
- };
- 
- /* LCDC and backlight */
+diff --git a/include/sound/omap-hdmi-card-pdata.h b/include/sound/omap-hdmi-card-pdata.h
+new file mode 100644
+index 0000000..f70495b
+--- /dev/null
++++ b/include/sound/omap-hdmi-card-pdata.h
+@@ -0,0 +1,28 @@
++/*
++ * omap-hdmi-card-pdata.h
++ *
++ * Platform data for OMAP ALSA SoC card driver for HDMI audio on OMAP4+
++ * processors.
++ * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/
++ * Authors: Jyri Sarha <jsarha@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ */
++
++#ifndef __OMAP_HDMI_CARD_PDATA_H__
++#define __OMAP_HDMI_CARD_PDATA_H__
++
++struct asoc_omap_hdmi_card_pdata {
++	const char *cpudai_name;
++	const char *codec_name;
++};
++
++#endif
 -- 
-1.9.1
+1.7.9.5
 

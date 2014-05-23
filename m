@@ -1,39 +1,77 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Tue, 20 May 2014 21:35:59 +0000
-Subject: [PATCH] video: fbdev: grvga.c:  Fix for possible null pointer dereference
-Message-Id: <1400621759-7814-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 23 May 2014 10:49:54 +0000
+Subject: Re: [PATCH] video: fbdev: grvga.c:  Fix for possible null pointer dereference
+Message-Id: <537F27D2.40301@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="KDO98ILTmGgpurB4dIgi2BWd350aPX4PK"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: Rickard Strandqvist <rickard_strandqvist-IW2WV5XWFqGZkjO+N0TKoMugMpMbD5Xr@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sachin Kamat <sachin.kamat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Daniel Vetter <daniel.vetter-/w4YWyX8dFk@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+References: <1400621759-7814-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1400621759-7814-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Sachin Kamat <sachin.kamat@linaro.org>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-There is otherwise a risk of a possible null pointer dereference.
+--KDO98ILTmGgpurB4dIgi2BWd350aPX4PK
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Was largely found by using a static code analysis program called cppcheck.
+On 21/05/14 00:35, Rickard Strandqvist wrote:
+> There is otherwise a risk of a possible null pointer dereference.
+>=20
+> Was largely found by using a static code analysis program called cppche=
+ck.
+>=20
+> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital=
+=2Ese>
+> ---
+>  drivers/video/fbdev/grvga.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/fbdev/grvga.c b/drivers/video/fbdev/grvga.c
+> index c078701..2db5bb1 100644
+> --- a/drivers/video/fbdev/grvga.c
+> +++ b/drivers/video/fbdev/grvga.c
+> @@ -514,9 +514,10 @@ free_fb:
+>  static int grvga_remove(struct platform_device *device)
+>  {
+>  	struct fb_info *info =3D dev_get_drvdata(&device->dev);
+> -	struct grvga_par *par =3D info->par;
+> +	struct grvga_par *par;
+> =20
+>  	if (info) {
+> +		par =3D info->par;
+>  		unregister_framebuffer(info);
+>  		fb_dealloc_cmap(&info->cmap);
+> =20
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/video/fbdev/grvga.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Thanks, queued this and the next one (video: fbdev: s3fb.c:  Fix for
+possible null pointer dereference) for 3.16.
 
-diff --git a/drivers/video/fbdev/grvga.c b/drivers/video/fbdev/grvga.c
-index c078701..2db5bb1 100644
---- a/drivers/video/fbdev/grvga.c
-+++ b/drivers/video/fbdev/grvga.c
-@@ -514,9 +514,10 @@ free_fb:
- static int grvga_remove(struct platform_device *device)
- {
- 	struct fb_info *info = dev_get_drvdata(&device->dev);
--	struct grvga_par *par = info->par;
-+	struct grvga_par *par;
- 
- 	if (info) {
-+		par = info->par;
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
- 
--- 
-1.7.10.4
+ Tomi
 
+
+
+
+--KDO98ILTmGgpurB4dIgi2BWd350aPX4PK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTfyfSAAoJEPo9qoy8lh71MbMP+wZ+61e+QEhGJyWC/YMnIfIj
+xUvIxB7QtDLaMMebfj1PY0v9A1rEc+WTOKodxBL/2lulsFMlje50lwHnDHAem7mY
+frmkEt3CK+r2F6Sf1ZG6q6cHhEEXMjMl1rmvp8U1FkgYmvqr7oM6OfZeSmHxSAz5
+W1ykKoYMJZFhyJZ7QBlenzZIpJT09iiSTWM0PU2a+ywzUpapb3aUXgPoX04MCHPQ
+bXIpm8BTaXdRXbhgbbZUmouhf90k/YHs4iQ/yFIBR68dYyJXNekmEHAE+3Dg50bC
+KjhnNJIT1Pf0kXn0NM/fawjJcFHKc2KWLYNJG/jDKJM+Lww7PuYBaFRQuc9iB5xN
+Bp8lQo7sHlJNgnNqw9jwhjTfAKSINEMzGdDTRUuU+UmwZf8NCH+kGuxXyZH7yqoa
+12/vHJK4TpkcQ86v9lJBcmaSLUXJiApbnLO3l0r2laDyl+jjuRbf/R39vjqBBuc8
++Ry17Oa9bZxm4ZwTBxpI7JtG8GMMJlQGKIdZntOtfJ01YIBAvjXtyWtG17MZWl9E
+rAnqeR7nsrcHbtTcdr8yDA1aLqQ8sFtN+UzwSbxI2uC7INKwR5Z8N/LDU/qYJ3Xh
+uJ+EJ+ouM1KFgDU7MO/hbDZsqD8sUqkDkBk/zgjv4ngNl0J/CFdd8PgvxYPa0KPv
+IDLLbOPLlcJnzKXhPsma
+=Vz5T
+-----END PGP SIGNATURE-----
+
+--KDO98ILTmGgpurB4dIgi2BWd350aPX4PK--

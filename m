@@ -1,73 +1,54 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Wed, 28 May 2014 23:20:08 +0000
-Subject: [PATCHv2 05/15] ARM: at91: at91sam9rl: switch to generic PWM framework
-Message-Id: <1401319218-16772-6-git-send-email-alexandre.belloni@free-electrons.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 23 May 2014 19:08:02 +0000
+Subject: [PATCH 13/13] ASoC: omap: Add Kconfig option for OMAP5 HDMI audio
+Message-Id: <cabfe3a2a2b3475bbd0ee8d121fb10c42c66b6fe.1400871999.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+References: <cover.1400871999.git.jsarha@ti.com>
+In-Reply-To: <cover.1400871999.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
+Adds SND_OMAP_SOC_OMAP5_HDMI config option for OMAP5 HDMI audio support.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/mach-at91/at91sam9rl.c         |  1 +
- arch/arm/mach-at91/at91sam9rl_devices.c | 11 ++---------
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ sound/soc/omap/Kconfig |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-at91/at91sam9rl.c b/arch/arm/mach-at91/at91sam9rl.c
-index a79960f57e6a..878d5015daab 100644
---- a/arch/arm/mach-at91/at91sam9rl.c
-+++ b/arch/arm/mach-at91/at91sam9rl.c
-@@ -200,6 +200,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
- 	CLKDEV_CON_DEV_ID("pclk", "fffc4000.ssc", &ssc1_clk),
- 	CLKDEV_CON_DEV_ID(NULL, "i2c-at91sam9g20.0", &twi0_clk),
- 	CLKDEV_CON_DEV_ID(NULL, "i2c-at91sam9g20.1", &twi1_clk),
-+	CLKDEV_CON_DEV_ID(NULL, "at91sam9rl-pwm", &pwm_clk),
- 	CLKDEV_CON_ID("pioA", &pioA_clk),
- 	CLKDEV_CON_ID("pioB", &pioB_clk),
- 	CLKDEV_CON_ID("pioC", &pioC_clk),
-diff --git a/arch/arm/mach-at91/at91sam9rl_devices.c b/arch/arm/mach-at91/at91sam9rl_devices.c
-index 044ad8bc6963..76b3dbd13921 100644
---- a/arch/arm/mach-at91/at91sam9rl_devices.c
-+++ b/arch/arm/mach-at91/at91sam9rl_devices.c
-@@ -799,9 +799,7 @@ static void __init at91_add_device_watchdog(void) {}
-  *  PWM
-  * --------------------------------------------------------------------*/
+diff --git a/sound/soc/omap/Kconfig b/sound/soc/omap/Kconfig
+index d44463a..697e1b8 100644
+--- a/sound/soc/omap/Kconfig
++++ b/sound/soc/omap/Kconfig
+@@ -101,7 +101,7 @@ config SND_OMAP_SOC_OMAP_ABE_TWL6040
+ 	  - PandaBoardES (4460)
  
--#if defined(CONFIG_ATMEL_PWM)
--static u32 pwm_mask;
--
-+#if IS_ENABLED(CONFIG_PWM_ATMEL)
- static struct resource pwm_resources[] = {
- 	[0] = {
- 		.start	= AT91SAM9RL_BASE_PWMC,
-@@ -816,11 +814,8 @@ static struct resource pwm_resources[] = {
- };
+ config SND_OMAP_SOC_OMAP_HDMI
+-	tristate "SoC Audio support for Texas Instruments OMAP HDMI"
++	tristate "SoC Audio support for Texas Instruments OMAP4 HDMI"
+ 	depends on SND_OMAP_SOC && OMAP4_DSS_HDMI && OMAP2_DSS
+ 	select SND_OMAP_SOC_HDMI
+ 	select SND_SOC_HDMI_CODEC
+@@ -110,6 +110,17 @@ config SND_OMAP_SOC_OMAP_HDMI
+ 	  Say Y if you want to add support for SoC HDMI audio on Texas Instruments
+ 	  OMAP4 chips
  
- static struct platform_device at91sam9rl_pwm0_device = {
--	.name	= "atmel_pwm",
-+	.name	= "at91sam9rl-pwm",
- 	.id	= -1,
--	.dev	= {
--		.platform_data		= &pwm_mask,
--	},
- 	.resource	= pwm_resources,
- 	.num_resources	= ARRAY_SIZE(pwm_resources),
- };
-@@ -839,8 +834,6 @@ void __init at91_add_device_pwm(u32 mask)
- 	if (mask & (1 << AT91_PWM3))
- 		at91_set_B_periph(AT91_PIN_PD8, 1);	/* enable PWM3 */
- 
--	pwm_mask = mask;
--
- 	platform_device_register(&at91sam9rl_pwm0_device);
- }
- #else
++
++config SND_OMAP_SOC_OMAP5_HDMI
++	tristate "SoC Audio support for Texas Instruments OMAP5 HDMI"
++	depends on SND_OMAP_SOC && OMAP5_DSS_HDMI && OMAP2_DSS
++	select SND_OMAP_SOC_HDMI
++	select SND_SOC_HDMI_CODEC
++	select OMAP5_DSS_HDMI_AUDIO
++	help
++	  Say Y if you want to add support for SoC HDMI audio on Texas Instruments
++	  OMAP5 chips
++
+ config SND_OMAP_SOC_OMAP3_PANDORA
+ 	tristate "SoC Audio support for OMAP3 Pandora"
+ 	depends on TWL4030_CORE && SND_OMAP_SOC && MACH_OMAP3_PANDORA
 -- 
-1.9.1
+1.7.9.5
 

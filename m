@@ -1,82 +1,73 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Mon, 26 May 2014 14:19:42 +0000
-Subject: [PATCH v2 4/5] gpu: ipu-v3: Add CSI and SMFC module enable wrappers
-Message-Id: <1401113983-23132-5-git-send-email-p.zabel@pengutronix.de>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 23 May 2014 19:07:58 +0000
+Subject: [PATCH 09/13] ASoC: omap-hdmi-card: Changes for registeing the driver from OMAPDSS
+Message-Id: <64844e293dd9dc918d1b26f5505fc52466f40203.1400871999.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401113983-23132-1-git-send-email-p.zabel@pengutronix.de>
-In-Reply-To: <1401113983-23132-1-git-send-email-p.zabel@pengutronix.de>
+References: <cover.1400871999.git.jsarha@ti.com>
+In-Reply-To: <cover.1400871999.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Dave Airlie <airlied@redhat.com>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, drm-devel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, kernel@pengutronix.de
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-IPU_CONF_..._EN bits are implementation details, not to be made public.
-Add wrappers around ipu_module_enable/disable, so the CSI V4L2 driver
-can enable/disable the CSI and SMFC modules.
+The old OMAP HDMI audio registering from arch/arm/mach-omap2/devices.c
+was broken. The new approach is to register the drivers from OMAPDSS HDMI
+driver. The commit does the necessary changes for this approach.
 
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/gpu/ipu-v3/ipu-common.c | 24 ++++++++++++++++++++++++
- include/video/imx-ipu-v3.h      |  8 ++++++++
- 2 files changed, 32 insertions(+)
+ sound/soc/omap/omap-hdmi-card.c |   20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-common.c b/drivers/gpu/ipu-v3/ipu-common.c
-index 706a6f2..03f48b7 100644
---- a/drivers/gpu/ipu-v3/ipu-common.c
-+++ b/drivers/gpu/ipu-v3/ipu-common.c
-@@ -661,6 +661,30 @@ int ipu_module_disable(struct ipu_soc *ipu, u32 mask)
- }
- EXPORT_SYMBOL_GPL(ipu_module_disable);
+diff --git a/sound/soc/omap/omap-hdmi-card.c b/sound/soc/omap/omap-hdmi-card.c
+index f649fe8..56c0055 100644
+--- a/sound/soc/omap/omap-hdmi-card.c
++++ b/sound/soc/omap/omap-hdmi-card.c
+@@ -26,15 +26,13 @@
+ #include <sound/soc.h>
+ #include <asm/mach-types.h>
+ #include <video/omapdss.h>
++#include <sound/omap-hdmi-card-pdata.h>
  
-+int ipu_csi_enable(struct ipu_soc *ipu, int csi)
-+{
-+	return ipu_module_enable(ipu, csi ? IPU_CONF_CSI1_EN : IPU_CONF_CSI0_EN);
-+}
-+EXPORT_SYMBOL_GPL(ipu_csi_enable);
-+
-+int ipu_csi_disable(struct ipu_soc *ipu, int csi)
-+{
-+	return ipu_module_disable(ipu, csi ? IPU_CONF_CSI1_EN : IPU_CONF_CSI0_EN);
-+}
-+EXPORT_SYMBOL_GPL(ipu_csi_disable);
-+
-+int ipu_smfc_enable(struct ipu_soc *ipu)
-+{
-+	return ipu_module_enable(ipu, IPU_CONF_SMFC_EN);
-+}
-+EXPORT_SYMBOL_GPL(ipu_smfc_enable);
-+
-+int ipu_smfc_disable(struct ipu_soc *ipu)
-+{
-+	return ipu_module_disable(ipu, IPU_CONF_SMFC_EN);
-+}
-+EXPORT_SYMBOL_GPL(ipu_smfc_disable);
-+
- int ipu_idmac_get_current_buffer(struct ipuv3_channel *channel)
+ #define DRV_NAME "omap-hdmi-audio"
+ 
+ static struct snd_soc_dai_link omap_hdmi_dai = {
+ 	.name = "HDMI",
+ 	.stream_name = "HDMI",
+-	.cpu_dai_name = "omap-hdmi-audio-dai",
+-	.platform_name = "omap-hdmi-audio-dai",
+-	.codec_name = "hdmi-audio-codec",
+ 	.codec_dai_name = "hdmi-hifi",
+ };
+ 
+@@ -47,14 +45,28 @@ static struct snd_soc_card snd_soc_omap_hdmi = {
+ 
+ static int omap_hdmi_probe(struct platform_device *pdev)
  {
- 	struct ipu_soc *ipu = channel->ipu;
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index a7edf6a..ac7fbfa 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -167,8 +167,16 @@ int ipu_dp_set_global_alpha(struct ipu_dp *dp, bool enable, u8 alpha,
- 		bool bg_chan);
++	struct device *dev = &pdev->dev;
++	struct asoc_omap_hdmi_card_pdata *pdata = dev->platform_data;
+ 	struct snd_soc_card *card = &snd_soc_omap_hdmi;
+ 	int ret;
  
- /*
-+ * IPU CMOS Sensor Interface (csi) functions
-+ */
-+int ipu_csi_enable(struct ipu_soc *ipu, int csi);
-+int ipu_csi_disable(struct ipu_soc *ipu, int csi);
++	if (!pdata) {
++		dev_err(dev, "No platform data, bailing out\n");
++		return -ENODEV;
++	}
 +
-+/*
-  * IPU Sensor Multiple FIFO Controller (SMFC) functions
-  */
-+int ipu_smfc_enable(struct ipu_soc *ipu);
-+int ipu_smfc_disable(struct ipu_soc *ipu);
- int ipu_smfc_map_channel(struct ipu_soc *ipu, int channel, int csi_id, int mipi_id);
- int ipu_smfc_set_burstsize(struct ipu_soc *ipu, int channel, int burstsize);
+ 	card->dev = &pdev->dev;
  
++	omap_hdmi_dai.cpu_dai_name +		devm_kstrdup(dev, pdata->cpudai_name, GFP_KERNEL);
++	omap_hdmi_dai.platform_name +		devm_kstrdup(dev, pdata->cpudai_name, GFP_KERNEL);
++	omap_hdmi_dai.codec_name +		devm_kstrdup(dev, pdata->codec_name, GFP_KERNEL);
++
+ 	ret = snd_soc_register_card(card);
+ 	if (ret) {
+-		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
++		dev_err(dev, "snd_soc_register_card failed (%d)\n", ret);
+ 		card->dev = NULL;
+ 		return ret;
+ 	}
 -- 
-2.0.0.rc2
+1.7.9.5
 

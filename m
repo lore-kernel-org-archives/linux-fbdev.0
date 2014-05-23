@@ -1,134 +1,70 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 15 May 2014 18:34:25 +0000
-Subject: [PATCH 3/4] acpi-video: Unregister the backlight device if a raw one shows up later
-Message-Id: <1400178866-3659-4-git-send-email-hdegoede@redhat.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 23 May 2014 19:07:49 +0000
+Subject: [PATCH 00/13] Fix OMAP4+ HDMI audio
+Message-Id: <cover.1400871999.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1400178866-3659-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
-Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-When video.use_native_backlight=1 and non intel gfx are in use, the raw
-backlight device of the gfx driver will show up after acpi-video has done its
-acpi_video_verify_backlight_support() check.
+This patch set fixes the resource sharing problems between
+omap-hdmi-dai driver and OMAPDSS HDMI driver. It does it by
+registering the OMAP HDMI audio related ASoC drivers from OMAPDSS HDMI
+driver. Platform data structs have been added for omap-hdmi-dai and
+omap-hdmi-card drivers to pass the information and resources from
+OMAPDSS HDMI driver.
 
-This causes video.use_native_backlight=1 to not have the desired result.
+The idea of this patch set is to fix HDMI audio for the next release
+after it got broken by OMAPDSS DT changes. It does not mean that I
+have abandoned the patch set that integrates the omap-hdmi-dai driver
+into OMAPDSS HDMI driver. The OMAPDSS side of those patches just had
+some dependencies to the recent ASoC side patches that would have
+caused problems in the next merge. I'll mail a revised and rebased
+version of those patches soon.
 
-This patch fixes this by adding a backlight notifier and when a raw
-backlight is registered or unregistered re-doing the
-acpi_video_verify_backlight_support() check.
+Best regards,
+Jyri
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/acpi/video.c | 57 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+Jyri Sarha (13):
+  ARM: omap4.dtsi: Add audio related parametes to hdmi node
+  ARM: omap5.dtsi: Add audio related parameters to hdmi node
+  ARM: OMAP2+: Remove non working OMAP HDMI audio initialization
+  OMAPDSS: hdmi_wp: Add function for getting hdmi_wp physical base
+    address
+  OMAPDSS: hdmi_audio: Add hdmi_audio.c for registering HDMI audio
+    support
+  ASoC: omap-hdmi-dai: Add platform data struct for omap-hdmi-dai
+    driver
+  ASoC: omap-hdmi-card: Add platform data stuct for omap-hdmi-card
+    driver
+  ASoC: omap-hdmi: Changes for registeing the driver from OMAPDSS
+  ASoC: omap-hdmi-card: Changes for registeing the driver from OMAPDSS
+  OMAPDSS: hdmi4: Register HDMI audio ASoC drivers from HDMI driver
+  OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
+  OMAPDSS: hdmi5: Register HDMI audio ASoC drivers from HDMI driver
+  ASoC: omap: Add Kconfig option for OMAP5 HDMI audio
 
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index aee85c4..123f919 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -151,6 +151,7 @@ struct acpi_video_enumerated_device {
- struct acpi_video_bus {
- 	struct acpi_device *device;
- 	bool backlight_registered;
-+	bool backlight_notifier_registered;
- 	u8 dos_setting;
- 	struct acpi_video_enumerated_device *attached_array;
- 	u8 attached_count;
-@@ -162,6 +163,7 @@ struct acpi_video_bus {
- 	struct input_dev *input;
- 	char phys[32];	/* for input device */
- 	struct notifier_block pm_nb;
-+	struct notifier_block backlight_nb;
- };
- 
- struct acpi_video_device_flags {
-@@ -1836,6 +1838,9 @@ static int acpi_video_bus_register_backlight(struct acpi_video_bus *video)
- {
- 	struct acpi_video_device *dev;
- 
-+	if (video->backlight_registered)
-+		return 0;
-+
- 	if (!acpi_video_verify_backlight_support())
- 		return 0;
- 
-@@ -1980,6 +1985,56 @@ static void acpi_video_bus_remove_notify_handler(struct acpi_video_bus *video)
- 	video->input = NULL;
- }
- 
-+static int acpi_video_backlight_notify(struct notifier_block *nb,
-+					unsigned long val, void *bd)
-+{
-+	struct backlight_device *backlight = bd;
-+	struct acpi_video_bus *video;
-+
-+	/* acpi_video_verify_backlight_support only cares about raw devices */
-+	if (backlight->props.type != BACKLIGHT_RAW)
-+		return NOTIFY_DONE;
-+
-+	video = container_of(nb, struct acpi_video_bus, backlight_nb);
-+
-+	switch (val) {
-+	case BACKLIGHT_REGISTERED:
-+		if (!acpi_video_verify_backlight_support())
-+			acpi_video_bus_unregister_backlight(video);
-+		break;
-+	case BACKLIGHT_UNREGISTERED:
-+		acpi_video_bus_register_backlight(video);
-+		break;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static int acpi_video_bus_add_backlight_notify_handler(
-+						struct acpi_video_bus *video)
-+{
-+	int error;
-+
-+	video->backlight_nb.notifier_call = acpi_video_backlight_notify;
-+	video->backlight_nb.priority = 0;
-+	error = backlight_register_notifier(&video->backlight_nb);
-+	if (error = 0)
-+		video->backlight_notifier_registered = true;
-+
-+	return error;
-+}
-+
-+static int acpi_video_bus_remove_backlight_notify_handler(
-+						struct acpi_video_bus *video)
-+{
-+	if (!video->backlight_notifier_registered)
-+		return 0;
-+
-+	video->backlight_notifier_registered = false;
-+
-+	return backlight_unregister_notifier(&video->backlight_nb);
-+}
-+
- static int acpi_video_bus_put_devices(struct acpi_video_bus *video)
- {
- 	struct acpi_video_device *dev, *next;
-@@ -2061,6 +2116,7 @@ static int acpi_video_bus_add(struct acpi_device *device)
- 
- 	acpi_video_bus_register_backlight(video);
- 	acpi_video_bus_add_notify_handler(video);
-+	acpi_video_bus_add_backlight_notify_handler(video);
- 
- 	return 0;
- 
-@@ -2084,6 +2140,7 @@ static int acpi_video_bus_remove(struct acpi_device *device)
- 
- 	video = acpi_driver_data(device);
- 
-+	acpi_video_bus_remove_backlight_notify_handler(video);
- 	acpi_video_bus_remove_notify_handler(video);
- 	acpi_video_bus_unregister_backlight(video);
- 	acpi_video_bus_put_devices(video);
+ arch/arm/boot/dts/omap4.dtsi               |    2 +
+ arch/arm/boot/dts/omap5.dtsi               |    2 +
+ arch/arm/mach-omap2/devices.c              |   28 ---------
+ drivers/video/fbdev/omap2/dss/Makefile     |    2 +-
+ drivers/video/fbdev/omap2/dss/hdmi.h       |   17 ++++-
+ drivers/video/fbdev/omap2/dss/hdmi4.c      |   15 +++++
+ drivers/video/fbdev/omap2/dss/hdmi5.c      |   15 +++++
+ drivers/video/fbdev/omap2/dss/hdmi_audio.c |   92 ++++++++++++++++++++++++++++
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c    |    6 ++
+ include/sound/omap-hdmi-card-pdata.h       |   28 +++++++++
+ include/sound/omap-hdmi-dai-pdata.h        |   31 ++++++++++
+ sound/soc/omap/Kconfig                     |   13 +++-
+ sound/soc/omap/omap-hdmi-card.c            |   20 ++++--
+ sound/soc/omap/omap-hdmi.c                 |   65 +++++---------------
+ 14 files changed, 253 insertions(+), 83 deletions(-)
+ create mode 100644 drivers/video/fbdev/omap2/dss/hdmi_audio.c
+ create mode 100644 include/sound/omap-hdmi-card-pdata.h
+ create mode 100644 include/sound/omap-hdmi-dai-pdata.h
+
 -- 
-1.9.0
+1.7.9.5
 

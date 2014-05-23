@@ -1,59 +1,71 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 23 May 2014 19:07:56 +0000
-Subject: [PATCH 07/13] ASoC: omap-hdmi-card: Add platform data stuct for omap-hdmi-card driver
-Message-Id: <49e1e8f9d6841b63f6ba096743f48c94842fe956.1400871999.git.jsarha@ti.com>
+Date: Fri, 23 May 2014 19:07:52 +0000
+Subject: [PATCH 03/13] ARM: OMAP2+: Remove non working OMAP HDMI audio initialization
+Message-Id: <fd2186b6813e6b2daef1d54dca8ec1d59692ced8.1400871999.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1400871999.git.jsarha@ti.com>
-In-Reply-To: <cover.1400871999.git.jsarha@ti.com>
+In-Reply-To: <cover.1400871999.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: peter.ujfalusi-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, liam.r.girdwood-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, detheridge-l0cyMroinI0@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-The names of the needed ASoC component drivers need to be passed to
-the omap-hdmi-card driver for it to find them.
+This code is not working currently and it can be removed. There is a
+conflict in sharing resources with the actual HDMI driver and with
+the ASoC HDMI audio DAI driver.
 
 Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- include/sound/omap-hdmi-card-pdata.h |   28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
- create mode 100644 include/sound/omap-hdmi-card-pdata.h
+ arch/arm/mach-omap2/devices.c |   28 ----------------------------
+ 1 file changed, 28 deletions(-)
 
-diff --git a/include/sound/omap-hdmi-card-pdata.h b/include/sound/omap-hdmi-card-pdata.h
-new file mode 100644
-index 0000000..f70495b
---- /dev/null
-+++ b/include/sound/omap-hdmi-card-pdata.h
-@@ -0,0 +1,28 @@
-+/*
-+ * omap-hdmi-card-pdata.h
-+ *
-+ * Platform data for OMAP ALSA SoC card driver for HDMI audio on OMAP4+
-+ * processors.
-+ * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/
-+ * Authors: Jyri Sarha <jsarha@ti.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ */
-+
-+#ifndef __OMAP_HDMI_CARD_PDATA_H__
-+#define __OMAP_HDMI_CARD_PDATA_H__
-+
-+struct asoc_omap_hdmi_card_pdata {
-+	const char *cpudai_name;
-+	const char *codec_name;
-+};
-+
-+#endif
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index e58609b..4bab682 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -330,33 +330,6 @@ static void omap_init_audio(void)
+ static inline void omap_init_audio(void) {}
+ #endif
+ 
+-#if defined(CONFIG_SND_OMAP_SOC_OMAP_HDMI) || \
+-		defined(CONFIG_SND_OMAP_SOC_OMAP_HDMI_MODULE)
+-
+-static struct platform_device omap_hdmi_audio = {
+-	.name	= "omap-hdmi-audio",
+-	.id	= -1,
+-};
+-
+-static void __init omap_init_hdmi_audio(void)
+-{
+-	struct omap_hwmod *oh;
+-	struct platform_device *pdev;
+-
+-	oh = omap_hwmod_lookup("dss_hdmi");
+-	if (!oh)
+-		return;
+-
+-	pdev = omap_device_build("omap-hdmi-audio-dai", -1, oh, NULL, 0);
+-	WARN(IS_ERR(pdev),
+-	     "Can't build omap_device for omap-hdmi-audio-dai.\n");
+-
+-	platform_device_register(&omap_hdmi_audio);
+-}
+-#else
+-static inline void omap_init_hdmi_audio(void) {}
+-#endif
+-
+ #if defined(CONFIG_SPI_OMAP24XX) || defined(CONFIG_SPI_OMAP24XX_MODULE)
+ 
+ #include <linux/platform_data/spi-omap2-mcspi.h>
+@@ -492,7 +465,6 @@ static int __init omap2_init_devices(void)
+ 	 */
+ 	omap_init_audio();
+ 	omap_init_camera();
+-	omap_init_hdmi_audio();
+ 	omap_init_mbox();
+ 	/* If dtb is there, the devices will be created dynamically */
+ 	if (!of_have_populated_dt()) {
 -- 
 1.7.9.5
 

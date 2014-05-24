@@ -1,161 +1,75 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 23 May 2014 19:07:54 +0000
-Subject: [PATCH 05/13] OMAPDSS: hdmi_audio: Add hdmi_audio.c for registering HDMI audio support
-Message-Id: <5a91475f9881468504927548d8273d757c2c6682.1400871999.git.jsarha@ti.com>
+From: Alexander Shiyan <shc_work@mail.ru>
+Date: Sat, 24 May 2014 05:41:29 +0000
+Subject: [PATCH 2/2] video: clps711x: Add bindings documentation for CLPS711X framebuffer
+Message-Id: <1400910089-15185-1-git-send-email-shc_work@mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1400871999.git.jsarha@ti.com>
-In-Reply-To: <cover.1400871999.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexander Shiyan <shc_work-JGs/UdohzUI@public.gmane.org>
 
-HDMI audio is implemented using ASoC component drivers. The drivers
-were earlier registered from under mach-omap2 but that code had
-problems with sharing the HDMI resources. This commit adds functions
-for registering the ASoC drivers needed for HDMI audio from HDMI
-driver itself.
+Add OF document for Cirrus Logic CLPS711X framebuffer driver.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
 ---
- drivers/video/fbdev/omap2/dss/Makefile     |    2 +-
- drivers/video/fbdev/omap2/dss/hdmi.h       |   12 ++++
- drivers/video/fbdev/omap2/dss/hdmi_audio.c |   92 ++++++++++++++++++++++++++++
- 3 files changed, 105 insertions(+), 1 deletion(-)
- create mode 100644 drivers/video/fbdev/omap2/dss/hdmi_audio.c
+ .../bindings/video/cirrus,clps711x-fb.txt          | 47 ++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
 
-diff --git a/drivers/video/fbdev/omap2/dss/Makefile b/drivers/video/fbdev/omap2/dss/Makefile
-index 390ab74..7ea2d7c 100644
---- a/drivers/video/fbdev/omap2/dss/Makefile
-+++ b/drivers/video/fbdev/omap2/dss/Makefile
-@@ -11,7 +11,7 @@ omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o
- omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
- omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
- omapdss-$(CONFIG_OMAP2_DSS_HDMI_COMMON) += hdmi_common.o hdmi_wp.o hdmi_pll.o \
--	hdmi_phy.o
-+	hdmi_phy.o hdmi_audio.o
- omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi4.o hdmi4_core.o
- omapdss-$(CONFIG_OMAP5_DSS_HDMI) += hdmi5.o hdmi5_core.o
- ccflags-$(CONFIG_OMAP2_DSS_DEBUG) += -DDEBUG
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index f644bc8..3ddb5f8 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -434,6 +434,18 @@ int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
- 	struct hdmi_phy_data *phy);
- 
- #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
-+struct hdmi_audio_data {
-+	struct platform_device *cpudai_pdev;
-+	struct platform_device *codec_pdev;
-+	struct platform_device *card_pdev;
-+};
-+
-+int hdmi_audio_register(struct platform_device *pdev,
-+			struct hdmi_audio_data *data,
-+			struct omap_dss_device *hdmi,
-+			struct hdmi_wp_data *wp);
-+void hdmi_audio_unregister(struct hdmi_audio_data *data);
-+
- int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts);
- int hdmi_wp_audio_enable(struct hdmi_wp_data *wp, bool enable);
- int hdmi_wp_audio_core_req_enable(struct hdmi_wp_data *wp, bool enable);
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_audio.c b/drivers/video/fbdev/omap2/dss/hdmi_audio.c
+diff --git a/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt b/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
 new file mode 100644
-index 0000000..2a485f7
+index 0000000..6fc3c6a
 --- /dev/null
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_audio.c
-@@ -0,0 +1,92 @@
-+/*
-+ * OMAP4+ HDMI audio
-+ *
-+ * Copyright (C) 2014 Texas Instruments Incorporated
-+ *
-+ * Authors: Jyri Sarha <jsarha@ti.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ */
++++ b/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
+@@ -0,0 +1,47 @@
++* Currus Logic CLPS711X Framebuffer
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/err.h>
-+#include <linux/string.h>
-+#include <linux/platform_device.h>
-+#include <linux/of_dma.h>
-+#include <linux/dmaengine.h>
-+#include <sound/omap-hdmi-dai-pdata.h>
-+#include <sound/omap-hdmi-card-pdata.h>
++Required properties:
++- compatible: Shall contain "cirrus,clps711x-fb".
++- reg       : Physical base address and length of the controller's registers +
++              location and size of the framebuffer memory.
++- clocks    : phandle + clock specifier pair of the FB reference clock.
++- display   : phandle to a display node as described in
++              Documentation/devicetree/bindings/video/display-timing.txt.
++              Additionally, the display node has to define properties:
++  - bits-per-pixel: Bits per pixel.
++  - ac-prescale   : LCD AC bias frequency. This frequency is the required
++                    AC bias frequency for a given manufacturer's LCD plate.
++  - cmap-invert   : Invert the color levels (Optional).
 +
-+#include "hdmi.h"
++Optional properties:
++- lcd-supply: Regulator for LCD supply voltage.
 +
-+static struct asoc_omap_hdmi_dai_pdata dai_pdata;
-+struct asoc_omap_hdmi_card_pdata card_pdata;
++Example:
++	fb: fb@800002c0 {
++		compatible = "cirrus,ep7312-fb", "cirrus,clps711x-fb";
++		reg = <0x800002c0 0xd44>, <0x60000000 0xc000>;
++		clocks = <&clks 2>;
++		lcd-supply = <&reg5v0>;
++		display = <&display>;
++	};
 +
-+int hdmi_audio_register(struct platform_device *pdev,
-+			struct hdmi_audio_data *data,
-+			struct omap_dss_device *hdmi,
-+			struct hdmi_wp_data *wp)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct device *dev = &pdev->dev;
-+	struct dma_chan *dma_ch;
-+	struct resource *res;
++	display: display {
++		model = "320x240x4";
++		native-mode = <&timing0>;
++		bits-per-pixel = <4>;
++		ac-prescale = <17>;
 +
-+	dai_pdata.dssdev = hdmi;
-+	dai_pdata.dma_addr = hdmi_wp_get_phys_addr(wp) + HDMI_WP_AUDIO_DATA;
-+
-+	dma_ch = of_dma_request_slave_channel(np, "audio_tx");
-+	if (IS_ERR(dma_ch)) {
-+		dev_info(dev, "Could not get dma request channel from dts.\n");
-+		/* Revert to hard coding. The DMA req channel is the
-+		   same on all supported hw. */
-+		dai_pdata.dma_req = 76;
-+	} else {
-+		dai_pdata.dma_req = dma_ch->chan_id;
-+		/* We only peeked the chan_id for pdata and let dai
-+		   driver take the DMA channel. */
-+		dma_release_channel(dma_ch);
-+	}
-+
-+	data->cpudai_pdev +		platform_device_register_data(dev, "omap-hdmi-audio-dai", 0,
-+					      &dai_pdata, sizeof(dai_pdata));
-+	if (IS_ERR(data->cpudai_pdev))
-+		return PTR_ERR(data->cpudai_pdev);
-+
-+	data->codec_pdev +		platform_device_register_data(dev, "hdmi-audio-codec",
-+					      0, NULL, 0);
-+	if (IS_ERR(data->codec_pdev)) {
-+		platform_device_unregister(data->cpudai_pdev);
-+		return PTR_ERR(data->codec_pdev);
-+	}
-+
-+	card_pdata.cpudai_name = dev_name(&data->cpudai_pdev->dev);
-+	card_pdata.codec_name = dev_name(&data->codec_pdev->dev);
-+	data->card_pdev +		platform_device_register_data(dev, "omap-hdmi-audio", 0,
-+					      &card_pdata, sizeof(card_pdata));
-+	if (IS_ERR(data->card_pdev)) {
-+		platform_device_unregister(data->cpudai_pdev);
-+		platform_device_unregister(data->codec_pdev);
-+		return PTR_ERR(data->card_pdev);
-+	}
-+	return 0;
-+}
-+
-+void hdmi_audio_unregister(struct hdmi_audio_data *data)
-+{
-+	platform_device_unregister(data->cpudai_pdev);
-+	platform_device_unregister(data->codec_pdev);
-+	platform_device_unregister(data->card_pdev);
-+}
++		display-timings {
++			timing0: 320x240 {
++				hactive = <320>;
++				hback-porch = <0>;
++				hfront-porch = <0>;
++				hsync-len = <0>;
++				vactive = <240>;
++				vback-porch = <0>;
++				vfront-porch = <0>;
++				vsync-len = <0>;
++				clock-frequency = <6500000>;
++			};
++		};
++	};
 -- 
-1.7.9.5
+1.8.5.5
 

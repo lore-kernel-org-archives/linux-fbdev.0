@@ -1,265 +1,107 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 May 2014 12:32:04 +0000
-Subject: [PATCH 2/5] OMAPDSS: remove venc_panel.c
-Message-Id: <1399638727-23254-2-git-send-email-tomi.valkeinen@ti.com>
+From: Himangi Saraogi <himangi774@gmail.com>
+Date: Sun, 25 May 2014 10:52:35 +0000
+Subject: [PATCH] video: Introduce the use of the managed version of kzalloc
+Message-Id: <20140525104035.GA3187@himangi-Dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399638727-23254-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1399638727-23254-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: julia.lawall@lip6.fr
 
-The use of venc_panel.c was removed in
-09d2e7cdebd53b7572380a215008b334ff6321a5 (OMAPDSS: VENC: remove code
-related to old panel model), but the file itself was left behind. Remove
-the unused file.
+This patch moves data allocated using kzalloc to managed data allocated
+using devm_kzalloc and cleans now unnecessary kfrees in probe and remove
+functions. Also, linux/device.h is added to make sure the devm_*()
+routine declarations are unambiguously available. The function
+mddi_dummy_remove is removed as it is no longer required after
+removing the kfree. The variable ret is also done away with.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+The following Coccinelle semantic patch was used for making a part of
+the change:
+
+@platform@
+identifier p, probefn, removefn;
+@@
+struct platform_driver p = {
+  .probe = probefn,
+  .remove = removefn,
+};
+
+@prb@
+identifier platform.probefn, pdev;
+expression e, e1, e2;
+@@
+probefn(struct platform_device *pdev, ...) {
+  <+...
+- e = kzalloc(e1, e2)
++ e = devm_kzalloc(&pdev->dev, e1, e2)
+  ...
+?-kfree(e);
+  ...+>
+}
+
+@rem depends on prb@
+identifier platform.removefn;
+expression e;
+@@
+removefn(...) {
+  <...
+- kfree(e);
+  ...>
+}
+
+Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
 ---
- drivers/video/fbdev/omap2/dss/venc_panel.c | 232 -----------------------------
- 1 file changed, 232 deletions(-)
- delete mode 100644 drivers/video/fbdev/omap2/dss/venc_panel.c
+ drivers/video/fbdev/msm/mddi_client_dummy.c | 19 +++----------------
+ 1 file changed, 3 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/venc_panel.c b/drivers/video/fbdev/omap2/dss/venc_panel.c
-deleted file mode 100644
-index af68cd444d7e..000000000000
---- a/drivers/video/fbdev/omap2/dss/venc_panel.c
-+++ /dev/null
-@@ -1,232 +0,0 @@
--/*
-- * Copyright (C) 2009 Nokia Corporation
-- * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-- *
-- * VENC panel driver
-- *
-- * This program is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU General Public License version 2 as published by
-- * the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but WITHOUT
-- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-- * more details.
-- *
-- * You should have received a copy of the GNU General Public License along with
-- * this program.  If not, see <http://www.gnu.org/licenses/>.
-- */
--
--#include <linux/kernel.h>
--#include <linux/err.h>
--#include <linux/io.h>
--#include <linux/mutex.h>
--#include <linux/module.h>
--
--#include <video/omapdss.h>
--
--#include "dss.h"
--
--static struct {
--	struct mutex lock;
--} venc_panel;
--
--static ssize_t display_output_type_show(struct device *dev,
--		struct device_attribute *attr, char *buf)
--{
--	struct omap_dss_device *dssdev = to_dss_device(dev);
--	const char *ret;
--
--	switch (dssdev->phy.venc.type) {
--	case OMAP_DSS_VENC_TYPE_COMPOSITE:
--		ret = "composite";
--		break;
--	case OMAP_DSS_VENC_TYPE_SVIDEO:
--		ret = "svideo";
--		break;
--	default:
--		return -EINVAL;
+diff --git a/drivers/video/fbdev/msm/mddi_client_dummy.c b/drivers/video/fbdev/msm/mddi_client_dummy.c
+index f1b0dfc..cdb8f69 100644
+--- a/drivers/video/fbdev/msm/mddi_client_dummy.c
++++ b/drivers/video/fbdev/msm/mddi_client_dummy.c
+@@ -15,6 +15,7 @@
+  * GNU General Public License for more details.
+  */
+ 
++#include <linux/device.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+@@ -51,8 +52,7 @@ static int mddi_dummy_probe(struct platform_device *pdev)
+ {
+ 	struct msm_mddi_client_data *client_data = pdev->dev.platform_data;
+ 	struct panel_info *panel -		kzalloc(sizeof(struct panel_info), GFP_KERNEL);
+-	int ret;
++		devm_kzalloc(&pdev->dev, sizeof(struct panel_info), GFP_KERNEL);
+ 	if (!panel)
+ 		return -ENOMEM;
+ 	platform_set_drvdata(pdev, panel);
+@@ -67,24 +67,11 @@ static int mddi_dummy_probe(struct platform_device *pdev)
+ 				      client_data->fb_resource, 1);
+ 	panel->panel_data.fb_data = client_data->private_client_data;
+ 	panel->pdev.dev.platform_data = &panel->panel_data;
+-	ret = platform_device_register(&panel->pdev);
+-	if (ret) {
+-		kfree(panel);
+-		return ret;
 -	}
--
--	return snprintf(buf, PAGE_SIZE, "%s\n", ret);
--}
--
--static ssize_t display_output_type_store(struct device *dev,
--		struct device_attribute *attr, const char *buf, size_t size)
--{
--	struct omap_dss_device *dssdev = to_dss_device(dev);
--	enum omap_dss_venc_type new_type;
--
--	if (sysfs_streq("composite", buf))
--		new_type = OMAP_DSS_VENC_TYPE_COMPOSITE;
--	else if (sysfs_streq("svideo", buf))
--		new_type = OMAP_DSS_VENC_TYPE_SVIDEO;
--	else
--		return -EINVAL;
--
--	mutex_lock(&venc_panel.lock);
--
--	if (dssdev->phy.venc.type != new_type) {
--		dssdev->phy.venc.type = new_type;
--		omapdss_venc_set_type(dssdev, new_type);
--		if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
--			omapdss_venc_display_disable(dssdev);
--			omapdss_venc_display_enable(dssdev);
--		}
--	}
--
--	mutex_unlock(&venc_panel.lock);
--
--	return size;
--}
--
--static DEVICE_ATTR(output_type, S_IRUGO | S_IWUSR,
--		display_output_type_show, display_output_type_store);
--
--static int venc_panel_probe(struct omap_dss_device *dssdev)
--{
--	/* set default timings to PAL */
--	const struct omap_video_timings default_timings = {
--		.x_res		= 720,
--		.y_res		= 574,
--		.pixelclock	= 13500000,
--		.hsw		= 64,
--		.hfp		= 12,
--		.hbp		= 68,
--		.vsw		= 5,
--		.vfp		= 5,
--		.vbp		= 41,
--
--		.vsync_level	= OMAPDSS_SIG_ACTIVE_HIGH,
--		.hsync_level	= OMAPDSS_SIG_ACTIVE_HIGH,
--
--		.interlace	= true,
--	};
--
--	mutex_init(&venc_panel.lock);
--
--	dssdev->panel.timings = default_timings;
--
--	return device_create_file(dssdev->dev, &dev_attr_output_type);
--}
--
--static void venc_panel_remove(struct omap_dss_device *dssdev)
--{
--	device_remove_file(dssdev->dev, &dev_attr_output_type);
--}
--
--static int venc_panel_enable(struct omap_dss_device *dssdev)
--{
--	int r;
--
--	dev_dbg(dssdev->dev, "venc_panel_enable\n");
--
--	mutex_lock(&venc_panel.lock);
--
--	if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED) {
--		r = -EINVAL;
--		goto err;
--	}
--
--	omapdss_venc_set_timings(dssdev, &dssdev->panel.timings);
--	omapdss_venc_set_type(dssdev, dssdev->phy.venc.type);
--	omapdss_venc_invert_vid_out_polarity(dssdev,
--		dssdev->phy.venc.invert_polarity);
--
--	r = omapdss_venc_display_enable(dssdev);
--	if (r)
--		goto err;
--
--	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
--
--	mutex_unlock(&venc_panel.lock);
--
 -	return 0;
--err:
--	mutex_unlock(&venc_panel.lock);
--
--	return r;
 -}
 -
--static void venc_panel_disable(struct omap_dss_device *dssdev)
+-static int mddi_dummy_remove(struct platform_device *pdev)
 -{
--	dev_dbg(dssdev->dev, "venc_panel_disable\n");
--
--	mutex_lock(&venc_panel.lock);
--
--	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED)
--		goto end;
--
--	omapdss_venc_display_disable(dssdev);
--
--	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
--end:
--	mutex_unlock(&venc_panel.lock);
--}
--
--static void venc_panel_set_timings(struct omap_dss_device *dssdev,
--		struct omap_video_timings *timings)
--{
--	dev_dbg(dssdev->dev, "venc_panel_set_timings\n");
--
--	mutex_lock(&venc_panel.lock);
--
--	omapdss_venc_set_timings(dssdev, timings);
--	dssdev->panel.timings = *timings;
--
--	mutex_unlock(&venc_panel.lock);
--}
--
--static int venc_panel_check_timings(struct omap_dss_device *dssdev,
--		struct omap_video_timings *timings)
--{
--	dev_dbg(dssdev->dev, "venc_panel_check_timings\n");
--
--	return omapdss_venc_check_timings(dssdev, timings);
--}
--
--static u32 venc_panel_get_wss(struct omap_dss_device *dssdev)
--{
--	dev_dbg(dssdev->dev, "venc_panel_get_wss\n");
--
--	return omapdss_venc_get_wss(dssdev);
--}
--
--static int venc_panel_set_wss(struct omap_dss_device *dssdev, u32 wss)
--{
--	dev_dbg(dssdev->dev, "venc_panel_set_wss\n");
--
--	return omapdss_venc_set_wss(dssdev, wss);
--}
--
--static struct omap_dss_driver venc_driver = {
--	.probe		= venc_panel_probe,
--	.remove		= venc_panel_remove,
--
--	.enable		= venc_panel_enable,
--	.disable	= venc_panel_disable,
--
--	.get_resolution	= omapdss_default_get_resolution,
--	.get_recommended_bpp = omapdss_default_get_recommended_bpp,
--
--	.set_timings	= venc_panel_set_timings,
--	.check_timings	= venc_panel_check_timings,
--
--	.get_wss	= venc_panel_get_wss,
--	.set_wss	= venc_panel_set_wss,
--
--	.driver         = {
--		.name   = "venc",
--		.owner  = THIS_MODULE,
--	},
--};
--
--int venc_panel_init(void)
--{
--	return omap_dss_register_driver(&venc_driver);
--}
--
--void venc_panel_exit(void)
--{
--	omap_dss_unregister_driver(&venc_driver);
--}
+-	struct panel_info *panel = platform_get_drvdata(pdev);
+-	kfree(panel);
+-	return 0;
++	return platform_device_register(&panel->pdev);
+ }
+ 
+ static struct platform_driver mddi_client_dummy = {
+ 	.probe = mddi_dummy_probe,
+-	.remove = mddi_dummy_remove,
+ 	.driver = { .name = "mddi_c_dummy" },
+ };
+ 
 -- 
 1.9.1
 

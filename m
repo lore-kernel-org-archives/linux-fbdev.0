@@ -1,27 +1,77 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Thu, 08 May 2014 11:09:06 +0000
-Subject: Re: [PATCH v6 1/2] video: ARM CLCD: Add DT support
-Message-Id: <1399547346.31865.12.camel@hornet>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Mon, 26 May 2014 14:19:38 +0000
+Subject: [PATCH v2 0/5] Move IPUv3 core out of staging, add CSI support
+Message-Id: <1401113983-23132-1-git-send-email-p.zabel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399546830-2931-1-git-send-email-pawel.moll@arm.com>
-In-Reply-To: <1399546830-2931-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Dave Airlie <airlied@redhat.com>
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, drm-devel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, kernel@pengutronix.de
 
-On Thu, 2014-05-08 at 12:00 +0100, Pawel Moll wrote:
-> This patch adds basic DT bindings for the PL11x CLCD cells
-> and make their fbdev driver use them.
-> 
-> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+Hi,
 
-Russell,
+This is a rebased version of the earlier RFC series. It is
+mostly about the first patch, which moves the IPUv3 core code
+(drivers/staging/imx-drm/ipu-v3) to drivers/gpu.
+host1x, which serves a similar purpose, already sits there.
 
-I've added it to your patch system as 8005/2. If you were so kind to
-have a look, I would appreciate either ack or nak.
+I'd like to move the IPUv3 core code out of staging so that we can
+start submitting V4L2 code for video capture and scaling / colorspace
+conversion.
+The other four patches add necessary preparations for CSI and SMFC
+handling. These are used by the V4L2 CSI & capture drivers.
 
-Thanks!
+This series is based on the current staging-next tree, it is otherwise
+nearly unchanged. I hope we can get this move in before the approaching
+merge window so that we have a base for submitting the CSI V4L2 patches
+in the following round.
 
-Pawel
+regards
+Philipp
+
+---
+Changes since RFC:
+ - Rebased onto current staging-next
+ - Streamlined destaging patch a bit
+---
+Philipp Zabel (5):
+  gpu: ipu-v3: Move i.MX IPUv3 core driver out of staging
+  gpu: ipu-v3: Add SMFC code
+  gpu: ipu-v3: Add ipu_idmac_get_current_buffer function
+  gpu: ipu-v3: Add CSI and SMFC module enable wrappers
+  gpu: ipu-v3: Register the CSI modules
+
+ drivers/gpu/Makefile                               |  1 +
+ drivers/gpu/ipu-v3/Kconfig                         |  7 ++
+ drivers/{staging/imx-drm => gpu}/ipu-v3/Makefile   |  4 +-
+ .../{staging/imx-drm => gpu}/ipu-v3/ipu-common.c   | 82 ++++++++++++++++--
+ drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dc.c   |  3 +-
+ drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-di.c   |  2 +-
+ drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dmfc.c |  2 +-
+ drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dp.c   |  2 +-
+ drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-prv.h  |  8 +-
+ drivers/gpu/ipu-v3/ipu-smfc.c                      | 97 ++++++++++++++++++++++
+ drivers/staging/imx-drm/Kconfig                    | 11 +--
+ drivers/staging/imx-drm/Makefile                   |  1 -
+ drivers/staging/imx-drm/imx-hdmi.c                 |  2 +-
+ drivers/staging/imx-drm/imx-tve.c                  |  2 +-
+ drivers/staging/imx-drm/ipuv3-crtc.c               |  2 +-
+ drivers/staging/imx-drm/ipuv3-plane.c              |  2 +-
+ drivers/video/Kconfig                              |  1 +
+ .../imx-drm/ipu-v3 => include/video}/imx-ipu-v3.h  | 16 ++++
+ 18 files changed, 216 insertions(+), 29 deletions(-)
+ create mode 100644 drivers/gpu/ipu-v3/Kconfig
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/Makefile (51%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-common.c (94%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dc.c (99%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-di.c (99%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dmfc.c (99%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-dp.c (99%)
+ rename drivers/{staging/imx-drm => gpu}/ipu-v3/ipu-prv.h (96%)
+ create mode 100644 drivers/gpu/ipu-v3/ipu-smfc.c
+ rename {drivers/staging/imx-drm/ipu-v3 => include/video}/imx-ipu-v3.h (95%)
+
+-- 
+2.0.0.rc2
 

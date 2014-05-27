@@ -1,39 +1,50 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Mon, 12 May 2014 09:12:17 +0000
-Subject: [PATCH 06/19] OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
-Message-Id: <ce80f336399e8d28b62569e5fa5fe9f696266bfa.1399884780.git.jsarha@ti.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Tue, 27 May 2014 18:09:07 +0000
+Subject: [PATCH] 68328fb: remove check for CONFIG_FB_68328_INVERT
+Message-Id: <1401214147.28714.12.camel@x220>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>
-In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The OMAP5 HDMI audio implementation needs HDMI_AUDIO_LAYOUT_6CH in
-hdmi_core_audio_layout enum. I found the correct value from ti-linux
-3.8 tree.
+Since v2.6.7 the 68328 frame buffer driver contains a check for
+CONFIG_FB_68328_INVERT. But the Kconfig symbol FB_68328_INVERT was never
+added to the tree. Remove this check and do some related cleaning up.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Untested.
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 65bf072..ea4a168 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -159,7 +159,8 @@ enum hdmi_audio_blk_strt_end_sig {
+ drivers/video/fbdev/68328fb.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
+index 552258c8f99d..17f21cedff9b 100644
+--- a/drivers/video/fbdev/68328fb.c
++++ b/drivers/video/fbdev/68328fb.c
+@@ -49,12 +49,6 @@
+ #error wrong architecture for the MC68x328 frame buffer device
+ #endif
  
- enum hdmi_core_audio_layout {
- 	HDMI_AUDIO_LAYOUT_2CH = 0,
--	HDMI_AUDIO_LAYOUT_8CH = 1
-+	HDMI_AUDIO_LAYOUT_8CH = 1,
-+	HDMI_AUDIO_LAYOUT_6CH = 2
- };
+-#if defined(CONFIG_FB_68328_INVERT)
+-#define MC68X328FB_MONO_VISUAL FB_VISUAL_MONO01
+-#else
+-#define MC68X328FB_MONO_VISUAL FB_VISUAL_MONO10
+-#endif
+-
+ static u_long videomemory;
+ static u_long videomemorysize;
  
- enum hdmi_core_cts_mode {
+@@ -462,7 +456,7 @@ int __init mc68x328fb_init(void)
+ 	fb_info.fix.line_length  		get_line_length(mc68x328fb_default.xres_virtual, mc68x328fb_default.bits_per_pixel);
+ 	fb_info.fix.visual = (mc68x328fb_default.bits_per_pixel) = 1 ?
+-		MC68X328FB_MONO_VISUAL : FB_VISUAL_PSEUDOCOLOR;
++		FB_VISUAL_MONO10 : FB_VISUAL_PSEUDOCOLOR;
+ 	if (fb_info.var.bits_per_pixel = 1) {
+ 		fb_info.var.red.length = fb_info.var.green.length = fb_info.var.blue.length = 1;
+ 		fb_info.var.red.offset = fb_info.var.green.offset = fb_info.var.blue.offset = 0;
 -- 
-1.7.9.5
+1.9.3
 

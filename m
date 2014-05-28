@@ -1,134 +1,120 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 21 May 2014 13:39:55 +0000
-Subject: [PATCH resend 3/4] acpi-video: Unregister the backlight device if a raw one shows up later
-Message-Id: <1400679596-19663-4-git-send-email-hdegoede@redhat.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 28 May 2014 23:20:07 +0000
+Subject: [PATCHv2 04/15] ARM: at91: sam9263ek: use generic leds_pwm driver
+Message-Id: <1401319218-16772-5-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400679596-19663-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1400679596-19663-1-git-send-email-hdegoede@redhat.com>
+References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
-Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>
+To: linux-arm-kernel@lists.infradead.org
 
-When video.use_native_backlight=1 and non intel gfx are in use, the raw
-backlight device of the gfx driver will show up after acpi-video has done its
-acpi_video_verify_backlight_support() check.
+Switch to the generic leds_pwm driver instead of leds-atmel-pwm.
 
-This causes video.use_native_backlight=1 to not have the desired result.
-
-This patch fixes this by adding a backlight notifier and when a raw
-backlight is registered or unregistered re-doing the
-acpi_video_verify_backlight_support() check.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
- drivers/acpi/video.c | 57 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+ arch/arm/mach-at91/board-sam9263ek.c | 55 ++++++++++++++++++++++++++++++------
+ 1 file changed, 47 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index ba6e4d7..47b7e21 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -151,6 +151,7 @@ struct acpi_video_enumerated_device {
- struct acpi_video_bus {
- 	struct acpi_device *device;
- 	bool backlight_registered;
-+	bool backlight_notifier_registered;
- 	u8 dos_setting;
- 	struct acpi_video_enumerated_device *attached_array;
- 	u8 attached_count;
-@@ -162,6 +163,7 @@ struct acpi_video_bus {
- 	struct input_dev *input;
- 	char phys[32];	/* for input device */
- 	struct notifier_block pm_nb;
-+	struct notifier_block backlight_nb;
+diff --git a/arch/arm/mach-at91/board-sam9263ek.c b/arch/arm/mach-at91/board-sam9263ek.c
+index cd2726ee5add..fc446097f410 100644
+--- a/arch/arm/mach-at91/board-sam9263ek.c
++++ b/arch/arm/mach-at91/board-sam9263ek.c
+@@ -32,6 +32,8 @@
+ #include <linux/gpio_keys.h>
+ #include <linux/input.h>
+ #include <linux/leds.h>
++#include <linux/pwm.h>
++#include <linux/leds_pwm.h>
+ 
+ #include <video/atmel_lcdc.h>
+ 
+@@ -369,21 +371,47 @@ static struct gpio_led ek_leds[] = {
+ 		.name			= "ds3",
+ 		.gpio			= AT91_PIN_PB7,
+ 		.default_trigger	= "heartbeat",
++	},
++#if !IS_ENABLED(CONFIG_LEDS_PWM)
++	{
++		.name			= "ds1",
++		.gpio			= AT91_PIN_PB8,
++		.active_low		= 1,
++		.default_trigger	= "none",
+ 	}
++#endif
  };
  
- struct acpi_video_device_flags {
-@@ -1828,6 +1830,9 @@ static int acpi_video_bus_register_backlight(struct acpi_video_bus *video)
- {
- 	struct acpi_video_device *dev;
- 
-+	if (video->backlight_registered)
-+		return 0;
+ /*
+  * PWM Leds
+  */
+-static struct gpio_led ek_pwm_led[] = {
+-	/* For now only DS1 is PWM-driven (by pwm1) */
++static struct pwm_lookup pwm_lookup[] = {
++	PWM_LOOKUP("at91sam9rl-pwm", 1, "leds_pwm", "ds1",
++		   5000, PWM_POLARITY_INVERSED),
++};
 +
- 	if (!acpi_video_verify_backlight_support())
- 		return 0;
++#if IS_ENABLED(CONFIG_LEDS_PWM)
++static struct led_pwm pwm_leds[] = {
+ 	{
+-		.name			= "ds1",
+-		.gpio			= 1,	/* is PWM channel number */
+-		.active_low		= 1,
+-		.default_trigger	= "none",
+-	}
++		.name = "ds1",
++		.max_brightness = 255,
++	},
++};
++
++static struct led_pwm_platform_data pwm_data = {
++	.num_leds       = ARRAY_SIZE(pwm_leds),
++	.leds           = pwm_leds,
++};
++
++static struct platform_device leds_pwm = {
++	.name   = "leds_pwm",
++	.id     = -1,
++	.dev    = {
++		.platform_data = &pwm_data,
++	},
+ };
++#endif
++
  
-@@ -1972,6 +1977,56 @@ static void acpi_video_bus_remove_notify_handler(struct acpi_video_bus *video)
- 	video->input = NULL;
+ /*
+  * CAN
+@@ -403,6 +431,12 @@ static struct at91_can_data ek_can_data = {
+ 	.transceiver_switch = sam9263ek_transceiver_switch,
+ };
+ 
++static struct platform_device *devices[] __initdata = {
++#if IS_ENABLED(CONFIG_LEDS_PWM)
++	&leds_pwm,
++#endif
++};
++
+ static void __init ek_board_init(void)
+ {
+ 	/* Serial */
+@@ -437,9 +471,14 @@ static void __init ek_board_init(void)
+ 	at91_add_device_ac97(&ek_ac97_data);
+ 	/* LEDs */
+ 	at91_gpio_leds(ek_leds, ARRAY_SIZE(ek_leds));
+-	at91_pwm_leds(ek_pwm_led, ARRAY_SIZE(ek_pwm_led));
++	pwm_add_table(pwm_lookup, ARRAY_SIZE(pwm_lookup));
++#if IS_ENABLED(CONFIG_LEDS_PWM)
++	at91_add_device_pwm(1 << AT91_PWM1);
++#endif
+ 	/* CAN */
+ 	at91_add_device_can(&ek_can_data);
++	/* Other platform devices */
++	platform_add_devices(devices, ARRAY_SIZE(devices));
  }
  
-+static int acpi_video_backlight_notify(struct notifier_block *nb,
-+					unsigned long val, void *bd)
-+{
-+	struct backlight_device *backlight = bd;
-+	struct acpi_video_bus *video;
-+
-+	/* acpi_video_verify_backlight_support only cares about raw devices */
-+	if (backlight->props.type != BACKLIGHT_RAW)
-+		return NOTIFY_DONE;
-+
-+	video = container_of(nb, struct acpi_video_bus, backlight_nb);
-+
-+	switch (val) {
-+	case BACKLIGHT_REGISTERED:
-+		if (!acpi_video_verify_backlight_support())
-+			acpi_video_bus_unregister_backlight(video);
-+		break;
-+	case BACKLIGHT_UNREGISTERED:
-+		acpi_video_bus_register_backlight(video);
-+		break;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static int acpi_video_bus_add_backlight_notify_handler(
-+						struct acpi_video_bus *video)
-+{
-+	int error;
-+
-+	video->backlight_nb.notifier_call = acpi_video_backlight_notify;
-+	video->backlight_nb.priority = 0;
-+	error = backlight_register_notifier(&video->backlight_nb);
-+	if (error = 0)
-+		video->backlight_notifier_registered = true;
-+
-+	return error;
-+}
-+
-+static int acpi_video_bus_remove_backlight_notify_handler(
-+						struct acpi_video_bus *video)
-+{
-+	if (!video->backlight_notifier_registered)
-+		return 0;
-+
-+	video->backlight_notifier_registered = false;
-+
-+	return backlight_unregister_notifier(&video->backlight_nb);
-+}
-+
- static int acpi_video_bus_put_devices(struct acpi_video_bus *video)
- {
- 	struct acpi_video_device *dev, *next;
-@@ -2053,6 +2108,7 @@ static int acpi_video_bus_add(struct acpi_device *device)
- 
- 	acpi_video_bus_register_backlight(video);
- 	acpi_video_bus_add_notify_handler(video);
-+	acpi_video_bus_add_backlight_notify_handler(video);
- 
- 	return 0;
- 
-@@ -2076,6 +2132,7 @@ static int acpi_video_bus_remove(struct acpi_device *device)
- 
- 	video = acpi_driver_data(device);
- 
-+	acpi_video_bus_remove_backlight_notify_handler(video);
- 	acpi_video_bus_remove_notify_handler(video);
- 	acpi_video_bus_unregister_backlight(video);
- 	acpi_video_bus_put_devices(video);
+ MACHINE_START(AT91SAM9263EK, "Atmel AT91SAM9263-EK")
 -- 
-1.9.0
+1.9.1
 

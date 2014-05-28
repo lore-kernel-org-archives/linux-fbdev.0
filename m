@@ -1,62 +1,90 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 23 May 2014 19:07:55 +0000
-Subject: [PATCH 06/13] ASoC: omap-hdmi-dai: Add platform data struct for omap-hdmi-dai driver
-Message-Id: <1b85e5331518bc519021a49a1fb28d6cce303d90.1400871999.git.jsarha@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 28 May 2014 23:20:13 +0000
+Subject: [PATCHv2 10/15] avr32: merisc: use generic leds_pwm driver
+Message-Id: <1401319218-16772-11-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1400871999.git.jsarha@ti.com>
-In-Reply-To: <cover.1400871999.git.jsarha@ti.com>
+References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Provide the means to pass OMAPDSS HDMI resources over to omap-hdmi-dai
-driver when the OMAPDSS driver registers the DAI driver.
+Switch to the generic leds_pwm driver instead of leds-atmel-pwm.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 ---
- include/sound/omap-hdmi-dai-pdata.h |   31 +++++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
- create mode 100644 include/sound/omap-hdmi-dai-pdata.h
+ arch/avr32/boards/merisc/setup.c | 34 +++++++++++++++++++++-------------
+ 1 file changed, 21 insertions(+), 13 deletions(-)
 
-diff --git a/include/sound/omap-hdmi-dai-pdata.h b/include/sound/omap-hdmi-dai-pdata.h
-new file mode 100644
-index 0000000..337c859
---- /dev/null
-+++ b/include/sound/omap-hdmi-dai-pdata.h
-@@ -0,0 +1,31 @@
-+/*
-+ * omap-hdmi-dai-pdata.h
-+ *
-+ * Platform data for OMAP ALSA SoC DAI driver for HDMI audio on OMAP4+
-+ * processors.
-+ * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/
-+ * Authors: Jyri Sarha <jsarha@ti.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ */
-+
-+#ifndef __OMAP_HDMI_DAI_PDATA_H__
-+#define __OMAP_HDMI_DAI_PDATA_H__
-+
-+struct omap_dss_device;
-+
-+struct asoc_omap_hdmi_dai_pdata {
-+	struct omap_dss_device *dssdev;
-+	dma_addr_t dma_addr;
-+	unsigned int dma_req;
+diff --git a/arch/avr32/boards/merisc/setup.c b/arch/avr32/boards/merisc/setup.c
+index ed137e335796..83d896cc2aed 100644
+--- a/arch/avr32/boards/merisc/setup.c
++++ b/arch/avr32/boards/merisc/setup.c
+@@ -22,6 +22,8 @@
+ #include <linux/irq.h>
+ #include <linux/fb.h>
+ #include <linux/atmel-mci.h>
++#include <linux/pwm.h>
++#include <linux/leds_pwm.h>
+ 
+ #include <asm/io.h>
+ #include <asm/setup.h>
+@@ -167,24 +169,29 @@ static struct i2c_board_info __initdata i2c_info[] = {
+ 	},
+ };
+ 
+-#ifdef CONFIG_LEDS_ATMEL_PWM
+-static struct gpio_led stk_pwm_led[] = {
++#if IS_ENABLED(CONFIG_LEDS_PWM)
++static struct pwm_lookup pwm_lookup[] = {
++	PWM_LOOKUP("at91sam9rl-pwm", 0, "leds_pwm", "backlight",
++		   5000, PWM_POLARITY_NORMAL),
 +};
 +
-+#endif
++static struct led_pwm pwm_leds[] = {
+ 	{
+ 		.name	= "backlight",
+-		.gpio	= 0,		/* PWM channel 0 (LCD backlight) */
++		.max_brightness = 255,
+ 	},
+ };
+ 
+-static struct gpio_led_platform_data stk_pwm_led_data = {
+-	.num_leds	= ARRAY_SIZE(stk_pwm_led),
+-	.leds		= stk_pwm_led,
++static struct led_pwm_platform_data pwm_data = {
++	.num_leds       = ARRAY_SIZE(pwm_leds),
++	.leds           = pwm_leds,
+ };
+ 
+-static struct platform_device stk_pwm_led_dev = {
+-	.name	= "leds-atmel-pwm",
+-	.id	= -1,
+-	.dev	= {
+-		.platform_data	= &stk_pwm_led_data,
++static struct platform_device leds_pwm = {
++	.name   = "leds_pwm",
++	.id     = -1,
++	.dev    = {
++		.platform_data = &pwm_data,
+ 	},
+ };
+ #endif
+@@ -278,9 +285,10 @@ static int __init merisc_init(void)
+ 
+ 	at32_add_device_mci(0, &mci0_data);
+ 
+-#ifdef CONFIG_LEDS_ATMEL_PWM
++#if IS_ENABLED(CONFIG_LEDS_PWM)
++	pwm_add_table(pwm_lookup, ARRAY_SIZE(pwm_lookup));
+ 	at32_add_device_pwm((1 << 0) | (1 << 2));
+-	platform_device_register(&stk_pwm_led_dev);
++	platform_device_register(&leds_pwm);
+ #else
+ 	at32_add_device_pwm((1 << 2));
+ #endif
 -- 
-1.7.9.5
+1.9.1
 

@@ -1,199 +1,149 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 16 May 2014 07:29:59 +0000
-Subject: [PATCH 1/4] OMAPDSS: panel-sharp-ls037v7dw01: update to use gpiod
-Message-Id: <1400225402-18274-2-git-send-email-tomi.valkeinen@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 28 May 2014 23:20:14 +0000
+Subject: [PATCHv2 11/15] avr32: favr-32: use generic pwm_bl driver
+Message-Id: <1401319218-16772-12-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1400225402-18274-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Tony Lindgren <tony@atomide.com>
+Switch to the generic pwm_bl driver instead of atmel-pwm-bl.
 
-Using gpiod will make it easier to add device tree support
-for this panel in the following patches.
-
-Note that all the GPIOs for this panel are optional, any
-of the the GPIOs could be configured with external pulls
-instead of GPIOs, so let's not error out if GPIOs are not
-found to make the panel more generic.
-
-Signed-off-by: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 ---
- .../omap2/displays-new/panel-sharp-ls037v7dw01.c   | 108 ++++++++++-----------
- 1 file changed, 54 insertions(+), 54 deletions(-)
+ arch/avr32/boards/favr-32/setup.c    | 48 ++++++++++++++++++++++--------------
+ arch/avr32/configs/favr-32_defconfig |  6 ++---
+ 2 files changed, 33 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
-index b2f710be565d..015d49300f2f 100644
---- a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
-+++ b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
-@@ -26,11 +26,11 @@ struct panel_drv_data {
+diff --git a/arch/avr32/boards/favr-32/setup.c b/arch/avr32/boards/favr-32/setup.c
+index 1f121497b517..234cb071c601 100644
+--- a/arch/avr32/boards/favr-32/setup.c
++++ b/arch/avr32/boards/favr-32/setup.c
+@@ -18,7 +18,10 @@
+ #include <linux/gpio.h>
+ #include <linux/leds.h>
+ #include <linux/atmel-mci.h>
+-#include <linux/atmel-pwm-bl.h>
++#include <linux/pwm.h>
++#include <linux/pwm_backlight.h>
++#include <linux/regulator/fixed.h>
++#include <linux/regulator/machine.h>
+ #include <linux/spi/spi.h>
+ #include <linux/spi/ads7846.h>
  
- 	struct omap_video_timings videomode;
+@@ -33,6 +36,8 @@
+ #include <mach/board.h>
+ #include <mach/portmux.h>
  
--	int resb_gpio;
--	int ini_gpio;
--	int mo_gpio;
--	int lr_gpio;
--	int ud_gpio;
-+	struct gpio_desc *resb_gpio;	/* low = reset active min 20 us */
-+	struct gpio_desc *ini_gpio;	/* high = power on */
-+	struct gpio_desc *mo_gpio;	/* low = 480x640, high = 240x320 */
-+	struct gpio_desc *lr_gpio;	/* high = conventional horizontal scanning */
-+	struct gpio_desc *ud_gpio;	/* high = conventional vertical scanning */
++#define PWM_BL_CH 2
++
+ /* Oscillator frequencies. These are board-specific */
+ unsigned long at32_board_osc_rates[3] = {
+ 	[0] = 32768,	/* 32.768 kHz on RTC osc */
+@@ -227,29 +232,36 @@ void __init favr32_setup_leds(void)
+ 	platform_device_register(&favr32_led_dev);
+ }
+ 
+-static struct atmel_pwm_bl_platform_data atmel_pwm_bl_pdata = {
+-	.pwm_channel		= 2,
+-	.pwm_frequency		= 200000,
+-	.pwm_compare_max	= 345,
+-	.pwm_duty_max		= 345,
+-	.pwm_duty_min		= 90,
+-	.pwm_active_low		= 1,
+-	.gpio_on		= GPIO_PIN_PA(28),
+-	.on_active_low		= 0,
++static struct pwm_lookup pwm_lookup[] = {
++	PWM_LOOKUP("at91sam9rl-pwm", PWM_BL_CH, "pwm-backlight.0", NULL,
++		   5000, PWM_POLARITY_INVERSED),
  };
  
- static const struct omap_video_timings sharp_ls_timings = {
-@@ -105,11 +105,11 @@ static int sharp_ls_enable(struct omap_dss_device *dssdev)
- 	/* wait couple of vsyncs until enabling the LCD */
- 	msleep(50);
- 
--	if (gpio_is_valid(ddata->resb_gpio))
--		gpio_set_value_cansleep(ddata->resb_gpio, 1);
-+	if (ddata->resb_gpio)
-+		gpiod_set_value_cansleep(ddata->resb_gpio, 1);
- 
--	if (gpio_is_valid(ddata->ini_gpio))
--		gpio_set_value_cansleep(ddata->ini_gpio, 1);
-+	if (ddata->ini_gpio)
-+		gpiod_set_value_cansleep(ddata->ini_gpio, 1);
- 
- 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
- 
-@@ -124,11 +124,11 @@ static void sharp_ls_disable(struct omap_dss_device *dssdev)
- 	if (!omapdss_device_is_enabled(dssdev))
- 		return;
- 
--	if (gpio_is_valid(ddata->ini_gpio))
--		gpio_set_value_cansleep(ddata->ini_gpio, 0);
-+	if (ddata->ini_gpio)
-+		gpiod_set_value_cansleep(ddata->ini_gpio, 0);
- 
--	if (gpio_is_valid(ddata->resb_gpio))
--		gpio_set_value_cansleep(ddata->resb_gpio, 0);
-+	if (ddata->resb_gpio)
-+		gpiod_set_value_cansleep(ddata->resb_gpio, 0);
- 
- 	/* wait at least 5 vsyncs after disabling the LCD */
- 
-@@ -182,11 +182,32 @@ static struct omap_dss_driver sharp_ls_ops = {
- 	.get_resolution	= omapdss_default_get_resolution,
+-static struct platform_device atmel_pwm_bl_dev = {
+-	.name		= "atmel-pwm-bl",
+-	.id		= 0,
+-	.dev		= {
+-		.platform_data = &atmel_pwm_bl_pdata,
++static struct regulator_consumer_supply fixed_power_consumers[] = {
++	REGULATOR_SUPPLY("power", "pwm-backlight.0"),
++};
++
++static struct platform_pwm_backlight_data pwm_bl_data = {
++	.enable_gpio		= GPIO_PIN_PA(28),
++	.max_brightness		= 255,
++	.dft_brightness		= 255,
++	.lth_brightness		= 50,
++};
++
++static struct platform_device pwm_bl_device = {
++	.name = "pwm-backlight",
++	.dev = {
++		.platform_data = &pwm_bl_data,
+ 	},
  };
  
-+static int sharp_ls_get_gpio(struct device *dev, int gpio, unsigned long flags,
-+		  char *desc, struct gpio_desc **gpiod)
-+{
-+	struct gpio_desc *gd;
-+	int r;
-+
-+	*gpiod = NULL;
-+
-+	r = devm_gpio_request_one(dev, gpio, flags, desc);
-+	if (r)
-+		return r = -ENOENT ? 0 : r;
-+
-+	gd = gpio_to_desc(gpio);
-+	if (IS_ERR(gd))
-+		return PTR_ERR(gd) = -ENOENT ? 0 : PTR_ERR(gd);
-+
-+	*gpiod = gd;
-+	return 0;
-+}
-+
- static int sharp_ls_probe_pdata(struct platform_device *pdev)
+ static void __init favr32_setup_atmel_pwm_bl(void)
  {
- 	const struct panel_sharp_ls037v7dw01_platform_data *pdata;
- 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
- 	struct omap_dss_device *dssdev, *in;
-+	int r;
- 
- 	pdata = dev_get_platdata(&pdev->dev);
- 
-@@ -204,11 +225,26 @@ static int sharp_ls_probe_pdata(struct platform_device *pdev)
- 	dssdev = &ddata->dssdev;
- 	dssdev->name = pdata->name;
- 
--	ddata->resb_gpio = pdata->resb_gpio;
--	ddata->ini_gpio = pdata->ini_gpio;
--	ddata->mo_gpio = pdata->mo_gpio;
--	ddata->lr_gpio = pdata->lr_gpio;
--	ddata->ud_gpio = pdata->ud_gpio;
-+	r = sharp_ls_get_gpio(&pdev->dev, pdata->mo_gpio, GPIOF_OUT_INIT_LOW,
-+		"lcd MO", &ddata->mo_gpio);
-+	if (r)
-+		return r;
-+	r = sharp_ls_get_gpio(&pdev->dev, pdata->lr_gpio, GPIOF_OUT_INIT_HIGH,
-+		"lcd LR", &ddata->lr_gpio);
-+	if (r)
-+		return r;
-+	r = sharp_ls_get_gpio(&pdev->dev, pdata->ud_gpio, GPIOF_OUT_INIT_HIGH,
-+		"lcd UD", &ddata->ud_gpio);
-+	if (r)
-+		return r;
-+	r = sharp_ls_get_gpio(&pdev->dev, pdata->resb_gpio, GPIOF_OUT_INIT_LOW,
-+		"lcd RESB", &ddata->resb_gpio);
-+	if (r)
-+		return r;
-+	r = sharp_ls_get_gpio(&pdev->dev, pdata->ini_gpio, GPIOF_OUT_INIT_LOW,
-+		"lcd INI", &ddata->ini_gpio);
-+	if (r)
-+		return r;
- 
- 	return 0;
+-	platform_device_register(&atmel_pwm_bl_dev);
+-	at32_select_gpio(atmel_pwm_bl_pdata.gpio_on, 0);
++	pwm_add_table(pwm_lookup, ARRAY_SIZE(pwm_lookup));
++	regulator_register_always_on(0, "fixed", fixed_power_consumers,
++				    ARRAY_SIZE(fixed_power_consumers), 3300000);
++	platform_device_register(&pwm_bl_device);
++	at32_select_gpio(pwm_bl_data.enable_gpio, 0);
  }
-@@ -233,41 +269,6 @@ static int sharp_ls_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
  
--	if (gpio_is_valid(ddata->mo_gpio)) {
--		r = devm_gpio_request_one(&pdev->dev, ddata->mo_gpio,
--				GPIOF_OUT_INIT_LOW, "lcd MO");
--		if (r)
--			goto err_gpio;
--	}
--
--	if (gpio_is_valid(ddata->lr_gpio)) {
--		r = devm_gpio_request_one(&pdev->dev, ddata->lr_gpio,
--				GPIOF_OUT_INIT_HIGH, "lcd LR");
--		if (r)
--			goto err_gpio;
--	}
--
--	if (gpio_is_valid(ddata->ud_gpio)) {
--		r = devm_gpio_request_one(&pdev->dev, ddata->ud_gpio,
--				GPIOF_OUT_INIT_HIGH, "lcd UD");
--		if (r)
--			goto err_gpio;
--	}
--
--	if (gpio_is_valid(ddata->resb_gpio)) {
--		r = devm_gpio_request_one(&pdev->dev, ddata->resb_gpio,
--				GPIOF_OUT_INIT_LOW, "lcd RESB");
--		if (r)
--			goto err_gpio;
--	}
--
--	if (gpio_is_valid(ddata->ini_gpio)) {
--		r = devm_gpio_request_one(&pdev->dev, ddata->ini_gpio,
--				GPIOF_OUT_INIT_LOW, "lcd INI");
--		if (r)
--			goto err_gpio;
--	}
--
- 	ddata->videomode = sharp_ls_timings;
+ void __init setup_board(void)
+@@ -339,7 +351,7 @@ static int __init favr32_init(void)
  
- 	dssdev = &ddata->dssdev;
-@@ -287,7 +288,6 @@ static int sharp_ls_probe(struct platform_device *pdev)
- 	return 0;
+ 	set_abdac_rate(at32_add_device_abdac(0, &abdac0_data));
  
- err_reg:
--err_gpio:
- 	omap_dss_put_device(ddata->in);
- 	return r;
- }
+-	at32_add_device_pwm(1 << atmel_pwm_bl_pdata.pwm_channel);
++	at32_add_device_pwm(1 << PWM_BL_CH);
+ 	at32_add_device_spi(1, spi1_board_info, ARRAY_SIZE(spi1_board_info));
+ 	at32_add_device_mci(0, &mci0_data);
+ 	at32_add_device_usba(0, NULL);
+diff --git a/arch/avr32/configs/favr-32_defconfig b/arch/avr32/configs/favr-32_defconfig
+index 07bed3f7eb5e..b3eb67dc05ac 100644
+--- a/arch/avr32/configs/favr-32_defconfig
++++ b/arch/avr32/configs/favr-32_defconfig
+@@ -67,7 +67,6 @@ CONFIG_MTD_PHYSMAP=y
+ CONFIG_BLK_DEV_LOOP=m
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=m
+-CONFIG_ATMEL_PWM=m
+ CONFIG_ATMEL_TCLIB=y
+ CONFIG_ATMEL_SSC=m
+ CONFIG_NETDEVICES=y
+@@ -108,7 +107,7 @@ CONFIG_FB=y
+ CONFIG_FB_ATMEL=y
+ CONFIG_BACKLIGHT_LCD_SUPPORT=y
+ # CONFIG_LCD_CLASS_DEVICE is not set
+-CONFIG_BACKLIGHT_ATMEL_PWM=m
++CONFIG_BACKLIGHT_PWM=m
+ CONFIG_SOUND=m
+ CONFIG_SOUND_PRIME=m
+ # CONFIG_HID_SUPPORT is not set
+@@ -123,7 +122,6 @@ CONFIG_MMC=y
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=m
+ CONFIG_LEDS_GPIO=y
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=y
+@@ -132,6 +130,8 @@ CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_AT32AP700X=y
+ CONFIG_DMADEVICES=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=y
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_FS_XATTR is not set
 -- 
 1.9.1
 

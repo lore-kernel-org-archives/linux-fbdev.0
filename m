@@ -1,57 +1,86 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Mon, 12 May 2014 09:12:30 +0000
-Subject: [PATCH 19/19] ARM: omap2plus_defconfig: Enable OMAP4+ HDMI audio support
-Message-Id: <f6446d5ea83e0b90f7b2ac4af2fdc3fa2b0ec381.1399884780.git.jsarha@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 28 May 2014 23:20:12 +0000
+Subject: [PATCHv2 09/15] avr32: MRMT: use generic leds_pwm driver
+Message-Id: <1401319218-16772-10-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>
-In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
+References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-This patch is here only as an example on how to enable HDMI audio for
-OMAP4+ HW. Adds CONFIG_SND_SIMPLE_CARD=m and CONFIG_SND_SOC_HDMI_CODEC=m.
-Also builds SND_OMAP_SOC in kernel to support in kernel built OMAPDSS
-with integrated HDMI DAI driver.
+Switch to the generic leds_pwm driver instead of leds-atmel-pwm.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 ---
- arch/arm/configs/omap2plus_defconfig |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ arch/avr32/boards/atngw100/mrmt.c | 34 ++++++++++++++++++++++------------
+ 1 file changed, 22 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
-index 363733e..8b512c7 100644
---- a/arch/arm/configs/omap2plus_defconfig
-+++ b/arch/arm/configs/omap2plus_defconfig
-@@ -204,20 +204,22 @@ CONFIG_LCD_PLATFORM=y
- CONFIG_FRAMEBUFFER_CONSOLE=y
- CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y
- CONFIG_LOGO=y
--CONFIG_SOUND=m
--CONFIG_SND=m
-+CONFIG_SOUND=y
-+CONFIG_SND=y
- CONFIG_SND_MIXER_OSS=m
- CONFIG_SND_PCM_OSS=m
- CONFIG_SND_VERBOSE_PRINTK=y
- CONFIG_SND_DEBUG=y
- CONFIG_SND_USB_AUDIO=m
--CONFIG_SND_SOC=m
--CONFIG_SND_OMAP_SOC=m
-+CONFIG_SND_SOC=y
-+CONFIG_SND_OMAP_SOC=y
- CONFIG_SND_AM33XX_SOC_EVM=m
- CONFIG_SND_DAVINCI_SOC=m
- CONFIG_SND_OMAP_SOC_OMAP_TWL4030=m
- CONFIG_SND_OMAP_SOC_OMAP_ABE_TWL6040=m
- CONFIG_SND_OMAP_SOC_OMAP3_PANDORA=m
-+CONFIG_SND_SIMPLE_CARD=m
-+CONFIG_SND_SOC_HDMI_CODEC=m
- CONFIG_USB=y
- CONFIG_USB_DEBUG=y
- CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
+diff --git a/arch/avr32/boards/atngw100/mrmt.c b/arch/avr32/boards/atngw100/mrmt.c
+index 1ba09e4c02b1..91146b416cdb 100644
+--- a/arch/avr32/boards/atngw100/mrmt.c
++++ b/arch/avr32/boards/atngw100/mrmt.c
+@@ -17,6 +17,8 @@
+ #include <linux/types.h>
+ #include <linux/fb.h>
+ #include <linux/leds.h>
++#include <linux/pwm.h>
++#include <linux/leds_pwm.h>
+ #include <linux/input.h>
+ #include <linux/gpio_keys.h>
+ #include <linux/atmel_serial.h>
+@@ -155,21 +157,28 @@ static struct platform_device rmt_ts_device = {
+ 
+ #ifdef CONFIG_BOARD_MRMT_BL_PWM
+ /* PWM LEDs: LCD Backlight, etc */
+-static struct gpio_led rmt_pwm_led[] = {
+-	/* here the "gpio" is actually a PWM channel */
+-	{ .name = "backlight",	.gpio = PWM_CH_BL, },
++static struct pwm_lookup pwm_lookup[] = {
++	PWM_LOOKUP("at91sam9rl-pwm", PWM_CH_BL, "leds_pwm", "ds1",
++		   5000, PWM_POLARITY_INVERSED),
+ };
+ 
+-static struct gpio_led_platform_data rmt_pwm_led_data = {
+-	.num_leds	= ARRAY_SIZE(rmt_pwm_led),
+-	.leds		= rmt_pwm_led,
++static struct led_pwm pwm_leds[] = {
++	{
++		.name = "backlight",
++		.max_brightness = 255,
++	},
++};
++
++static struct led_pwm_platform_data pwm_data = {
++	.num_leds       = ARRAY_SIZE(pwm_leds),
++	.leds           = pwm_leds,
+ };
+ 
+-static struct platform_device rmt_pwm_led_dev = {
+-	.name		= "leds-atmel-pwm",
+-	.id		= -1,
+-	.dev		= {
+-		.platform_data	= &rmt_pwm_led_data,
++static struct platform_device leds_pwm = {
++	.name   = "leds_pwm",
++	.id     = -1,
++	.dev    = {
++		.platform_data = &pwm_data,
+ 	},
+ };
+ #endif
+@@ -325,7 +334,8 @@ static int __init mrmt1_init(void)
+ #ifdef CONFIG_BOARD_MRMT_BL_PWM
+ 	/* Use PWM for Backlight controls */
+ 	at32_add_device_pwm(1 << PWM_CH_BL);
+-	platform_device_register(&rmt_pwm_led_dev);
++	pwm_add_table(pwm_lookup, ARRAY_SIZE(pwm_lookup));
++	platform_device_register(&leds_pwm);
+ #else
+ 	/* Backlight always on */
+ 	udelay( 1 );
 -- 
-1.7.9.5
+1.9.1
 

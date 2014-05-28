@@ -1,97 +1,208 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 08 May 2014 10:55:29 +0000
-Subject: Re: [PATCH] fbcon: Fix memory leak in con2fb_release_oldinfo()
-Message-Id: <536B62A1.1040203@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="m4QCAEJRktne0EnddwceUaI0BafKTh8Ca"
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 28 May 2014 23:20:15 +0000
+Subject: [PATCHv2 12/15] avr32: update defconfig to use the generic PWM framework
+Message-Id: <1401319218-16772-13-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1398263722-10436-1-git-send-email-masami256@gmail.com>
-In-Reply-To: <1398263722-10436-1-git-send-email-masami256@gmail.com>
-To: Masami Ichikawa <masami256@gmail.com>, plagnioj@jcrosoft.com, udknight@gmail.com, gregkh@linuxfoundation.org, keithp@keithp.com, mika.kuoppala@linux.intel.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---m4QCAEJRktne0EnddwceUaI0BafKTh8Ca
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Now that all boards have switched to the generic PWM framework, update the
+defconfigs to use it.
 
-On 23/04/14 17:35, Masami Ichikawa wrote:
-> kmemleak reported a memory leak as below.
->=20
-> unreferenced object 0xffff8800dab6d8d8 (size 96):
->   comm "swapper/0", pid 1, jiffies 4294877598 (age 38.483s)
->   hex dump (first 32 bytes):
->     00 00 00 00 00 01 00 00 08 00 00 00 10 00 00 00  ................
->     07 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00  ................
->   backtrace:
->     [<ffffffff814e8f2e>] kmemleak_alloc+0x4e/0xb0
->     [<ffffffff811a0600>] __kmalloc+0x280/0x320
->     [<ffffffff81309b61>] soft_cursor+0x231/0x290
->     [<ffffffff81309393>] bit_cursor+0x613/0x650
->     [<ffffffff8130556b>] fbcon_cursor+0x13b/0x1c0
->     [<ffffffff813755f8>] hide_cursor+0x28/0xa0
->     [<ffffffff81376e98>] redraw_screen+0x168/0x240
->     [<ffffffff81303891>] fbcon_prepare_logo+0x381/0x420
->     [<ffffffff81303c7e>] fbcon_init+0x34e/0x590
->     [<ffffffff81375828>] visual_init+0xb8/0x120
->     [<ffffffff81377c93>] do_bind_con_driver+0x163/0x380
->     [<ffffffff81378494>] do_take_over_console+0x114/0x1c0
->     [<ffffffff81303f23>] do_fbcon_takeover+0x63/0xd0
->     [<ffffffff813086dd>] fbcon_event_notify+0x68d/0x7e0
->     [<ffffffff814ff7ac>] notifier_call_chain+0x4c/0x70
->     [<ffffffff8108c85d>] __blocking_notifier_call_chain+0x4d/0x70
->=20
-> This memory leak cause is, fbcon_ops's cursor_src is allocated in
-> soft_cursor() but not released in con2fb_release_oldinfo().
-> so, cursor_src is needed to be released when oldinfo is going to be
-> released.
->=20
-> Signed-off-by: Masami Ichikawa <masami256@gmail.com>
-> ---
->  drivers/video/console/fbcon.c | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbco=
-n.c
-> index f447734..57b1d44 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -748,6 +748,7 @@ static int con2fb_release_oldinfo(struct vc_data *v=
-c, struct fb_info *oldinfo,
->  		fbcon_del_cursor_timer(oldinfo);
->  		kfree(ops->cursor_state.mask);
->  		kfree(ops->cursor_data);
-> +		kfree(ops->cursor_src);
->  		kfree(ops->fontbuffer);
->  		kfree(oldinfo->fbcon_par);
->  		oldinfo->fbcon_par =3D NULL;
->=20
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+---
+ arch/avr32/configs/atngw100_mrmt_defconfig | 5 +++--
+ arch/avr32/configs/atstk1002_defconfig     | 5 +++--
+ arch/avr32/configs/atstk1003_defconfig     | 5 +++--
+ arch/avr32/configs/atstk1004_defconfig     | 5 +++--
+ arch/avr32/configs/atstk1006_defconfig     | 5 +++--
+ arch/avr32/configs/merisc_defconfig        | 5 +++--
+ 6 files changed, 18 insertions(+), 12 deletions(-)
 
-Thanks, queued for 3.16.
+diff --git a/arch/avr32/configs/atngw100_mrmt_defconfig b/arch/avr32/configs/atngw100_mrmt_defconfig
+index 9a57da44eb6f..6838781e966f 100644
+--- a/arch/avr32/configs/atngw100_mrmt_defconfig
++++ b/arch/avr32/configs/atngw100_mrmt_defconfig
+@@ -56,7 +56,6 @@ CONFIG_MTD_CFI_AMDSTD=y
+ CONFIG_MTD_PHYSMAP=y
+ CONFIG_MTD_DATAFLASH=y
+ CONFIG_BLK_DEV_LOOP=y
+-CONFIG_ATMEL_PWM=y
+ CONFIG_NETDEVICES=y
+ CONFIG_NET_ETHERNET=y
+ CONFIG_MACB=y
+@@ -104,8 +103,8 @@ CONFIG_MMC=y
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=y
+ CONFIG_LEDS_GPIO=y
++CONFIG_LEDS_PWM=y
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=y
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+@@ -114,6 +113,8 @@ CONFIG_RTC_DRV_S35390A=m
+ CONFIG_RTC_DRV_AT32AP700X=m
+ CONFIG_DMADEVICES=y
+ CONFIG_UIO=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=y
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT2_FS_XATTR=y
+ CONFIG_EXT3_FS=y
+diff --git a/arch/avr32/configs/atstk1002_defconfig b/arch/avr32/configs/atstk1002_defconfig
+index 2813dd2b9138..b056820eef33 100644
+--- a/arch/avr32/configs/atstk1002_defconfig
++++ b/arch/avr32/configs/atstk1002_defconfig
+@@ -64,7 +64,6 @@ CONFIG_BLK_DEV_LOOP=m
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=m
+ CONFIG_MISC_DEVICES=y
+-CONFIG_ATMEL_PWM=m
+ CONFIG_ATMEL_TCLIB=y
+ CONFIG_ATMEL_SSC=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -133,14 +132,16 @@ CONFIG_MMC_TEST=m
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=m
+ CONFIG_LEDS_GPIO=m
++CONFIG_LEDS_PWM=m
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_AT32AP700X=y
+ CONFIG_DMADEVICES=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=m
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+diff --git a/arch/avr32/configs/atstk1003_defconfig b/arch/avr32/configs/atstk1003_defconfig
+index f8ff3a3baad4..0cd23a303da1 100644
+--- a/arch/avr32/configs/atstk1003_defconfig
++++ b/arch/avr32/configs/atstk1003_defconfig
+@@ -53,7 +53,6 @@ CONFIG_BLK_DEV_LOOP=m
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=m
+ CONFIG_MISC_DEVICES=y
+-CONFIG_ATMEL_PWM=m
+ CONFIG_ATMEL_TCLIB=y
+ CONFIG_ATMEL_SSC=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -112,14 +111,16 @@ CONFIG_MMC_TEST=m
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=m
+ CONFIG_LEDS_GPIO=m
++CONFIG_LEDS_PWM=m
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_AT32AP700X=y
+ CONFIG_DMADEVICES=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=m
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+diff --git a/arch/avr32/configs/atstk1004_defconfig b/arch/avr32/configs/atstk1004_defconfig
+index 992228e54e38..ac1041f5f85a 100644
+--- a/arch/avr32/configs/atstk1004_defconfig
++++ b/arch/avr32/configs/atstk1004_defconfig
+@@ -53,7 +53,6 @@ CONFIG_BLK_DEV_LOOP=m
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=m
+ CONFIG_MISC_DEVICES=y
+-CONFIG_ATMEL_PWM=m
+ CONFIG_ATMEL_TCLIB=y
+ CONFIG_ATMEL_SSC=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -111,14 +110,16 @@ CONFIG_MMC_TEST=m
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=m
+ CONFIG_LEDS_GPIO=m
++CONFIG_LEDS_PWM=m
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_AT32AP700X=y
+ CONFIG_DMADEVICES=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=m
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+diff --git a/arch/avr32/configs/atstk1006_defconfig b/arch/avr32/configs/atstk1006_defconfig
+index b8e698b0d1fa..ea4f670cb995 100644
+--- a/arch/avr32/configs/atstk1006_defconfig
++++ b/arch/avr32/configs/atstk1006_defconfig
+@@ -67,7 +67,6 @@ CONFIG_BLK_DEV_LOOP=m
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=m
+ CONFIG_MISC_DEVICES=y
+-CONFIG_ATMEL_PWM=m
+ CONFIG_ATMEL_TCLIB=y
+ CONFIG_ATMEL_SSC=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -136,14 +135,16 @@ CONFIG_MMC_TEST=m
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=m
+ CONFIG_LEDS_GPIO=m
++CONFIG_LEDS_PWM=m
+ CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_AT32AP700X=y
+ CONFIG_DMADEVICES=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=m
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+diff --git a/arch/avr32/configs/merisc_defconfig b/arch/avr32/configs/merisc_defconfig
+index 91df6b2986be..b9ef4cc85d08 100644
+--- a/arch/avr32/configs/merisc_defconfig
++++ b/arch/avr32/configs/merisc_defconfig
+@@ -55,7 +55,6 @@ CONFIG_MTD_ABSENT=y
+ CONFIG_MTD_PHYSMAP=y
+ CONFIG_MTD_BLOCK2MTD=y
+ CONFIG_BLK_DEV_LOOP=y
+-CONFIG_ATMEL_PWM=y
+ CONFIG_ATMEL_SSC=y
+ CONFIG_SCSI=y
+ CONFIG_BLK_DEV_SD=y
+@@ -103,12 +102,14 @@ CONFIG_MMC=y
+ CONFIG_MMC_ATMELMCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+-CONFIG_LEDS_ATMEL_PWM=y
++CONFIG_LEDS_PWM=y
+ CONFIG_RTC_CLASS=y
+ # CONFIG_RTC_HCTOSYS is not set
+ CONFIG_RTC_DRV_PCF8563=y
+ CONFIG_DMADEVICES=y
+ CONFIG_UIO=y
++CONFIG_PWM=y
++CONFIG_PWM_ATMEL=m
+ CONFIG_EXT2_FS=y
+ # CONFIG_DNOTIFY is not set
+ CONFIG_FUSE_FS=y
+-- 
+1.9.1
 
- Tomi
-
-
-
---m4QCAEJRktne0EnddwceUaI0BafKTh8Ca
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTa2KhAAoJEPo9qoy8lh71gLEP/091s9IhDhX/PH7goJGCCSKq
-sbI34hWOBWO2tltxX1jAeuH0p4+9t20HKUbaiaKfiOp1HUCI2Xy0Z9rMZmCv0vKB
-xSAgrDBfZrkoZhA9xO1MkRu3/MXJA3OH/RWHS0tgpkbGpH1QEvzi2PzF/omYYXh1
-wWmllHAQVxiviO8ztCQ1ej6izEETxAYf7ltukcSVapeIKC5trctkWczL2gnCsMLd
-kw33/TgM3YvPqHyV0IQaERnYRH1OfRg6ormqIlZcObAiFoNXocm6cP40v4vpd/3v
-nN2R1p+KESM/PIFJEzqHfz0btkKHXK0VOrEASXny3/XJcG6whJeV2B38f3BkpdGj
-TLS+J7oI6jwvB/2pBKpcvU665jgrXomHrFPUNqV3ohS5cwHHKUHDPO4hxLvdTdnP
-sWVv6CWvWAj2fEezy0iZjNH1rPKjeFNkqoCzTSBn5K8STpJtLfwbvSS5epWH10iN
-kho3ZP7Q3DHZCdgCl1Brof1YECGdWhWAdHypoLt9Y9EOw2D9iUreXKvCjkUHGt5K
-QQ77giqXIm+wngHLG8ijAixjwXUXp7czEtTVaz8C3hnp9FFoismUErfqFEWhad+l
-6cfpqeMXQ7yZC8ghZ2nCKOpz4Loa8gEN8tDTVT62nz9srOIk0j7l4ylsdOfJjG8Y
-dZllATq7DUJ5XP+ZeySi
-=/b6Z
------END PGP SIGNATURE-----
-
---m4QCAEJRktne0EnddwceUaI0BafKTh8Ca--

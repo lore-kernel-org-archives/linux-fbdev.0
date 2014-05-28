@@ -1,44 +1,73 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Mon, 12 May 2014 09:12:29 +0000
-Subject: [PATCH 18/19] ARM: omap2plus_defconfig: Enable OMAP5 HDMI support
-Message-Id: <0bfc3fad1abdf93cfd2b063554564dc540838646.1399884780.git.jsarha@ti.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Wed, 28 May 2014 23:20:06 +0000
+Subject: [PATCHv2 03/15] ARM: at91: at91sam9263: switch to generic PWM framework
+Message-Id: <1401319218-16772-4-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com>
-In-Reply-To: <cover.1399884780.git.jsarha@ti.com>
+References: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1401319218-16772-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-This patch is here only as an example on how to enable HDMI video for
-OMAP5 uEVM. Adds CONFIG_GPIO_PCA953X=y and CONFIG_OMAP5_DSS_HDMI=y.
+Switch to the pwm/pwm-atmel driver instead of misc/atmel_pwm
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
- arch/arm/configs/omap2plus_defconfig |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm/mach-at91/at91sam9263.c         |  1 +
+ arch/arm/mach-at91/at91sam9263_devices.c | 11 ++---------
+ 2 files changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
-index 35c42aa..363733e 100644
---- a/arch/arm/configs/omap2plus_defconfig
-+++ b/arch/arm/configs/omap2plus_defconfig
-@@ -157,6 +157,7 @@ CONFIG_PINCTRL_SINGLE=y
- CONFIG_DEBUG_GPIO=y
- CONFIG_GPIO_SYSFS=y
- CONFIG_GPIO_TWL4030=y
-+CONFIG_GPIO_PCA953X=y
- CONFIG_W1=y
- CONFIG_POWER_SUPPLY=y
- CONFIG_SENSORS_LM75=m
-@@ -190,6 +191,7 @@ CONFIG_FB_TILEBLITTING=y
- CONFIG_OMAP2_DSS=y
- CONFIG_OMAP2_DSS_SDI=y
- CONFIG_OMAP2_DSS_DSI=y
-+CONFIG_OMAP5_DSS_HDMI=y
- CONFIG_FB_OMAP2=y
- CONFIG_DISPLAY_ENCODER_TFP410=m
- CONFIG_DISPLAY_ENCODER_TPD12S015=m
+diff --git a/arch/arm/mach-at91/at91sam9263.c b/arch/arm/mach-at91/at91sam9263.c
+index f30290572293..f6663d6c01ec 100644
+--- a/arch/arm/mach-at91/at91sam9263.c
++++ b/arch/arm/mach-at91/at91sam9263.c
+@@ -199,6 +199,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
+ 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi.1", &spi1_clk),
+ 	CLKDEV_CON_DEV_ID("t0_clk", "atmel_tcb.0", &tcb_clk),
+ 	CLKDEV_CON_DEV_ID(NULL, "i2c-at91sam9260.0", &twi_clk),
++	CLKDEV_CON_DEV_ID(NULL, "at91sam9rl-pwm", &pwm_clk),
+ 	/* fake hclk clock */
+ 	CLKDEV_CON_DEV_ID("hclk", "at91_ohci", &ohci_clk),
+ 	CLKDEV_CON_ID("pioA", &pioA_clk),
+diff --git a/arch/arm/mach-at91/at91sam9263_devices.c b/arch/arm/mach-at91/at91sam9263_devices.c
+index 953616e5dbcb..4ab8be942f86 100644
+--- a/arch/arm/mach-at91/at91sam9263_devices.c
++++ b/arch/arm/mach-at91/at91sam9263_devices.c
+@@ -1131,9 +1131,7 @@ static void __init at91_add_device_watchdog(void) {}
+  *  PWM
+  * --------------------------------------------------------------------*/
+ 
+-#if defined(CONFIG_ATMEL_PWM)
+-static u32 pwm_mask;
+-
++#if IS_ENABLED(CONFIG_PWM_ATMEL)
+ static struct resource pwm_resources[] = {
+ 	[0] = {
+ 		.start	= AT91SAM9263_BASE_PWMC,
+@@ -1148,11 +1146,8 @@ static struct resource pwm_resources[] = {
+ };
+ 
+ static struct platform_device at91sam9263_pwm0_device = {
+-	.name	= "atmel_pwm",
++	.name	= "at91sam9rl-pwm",
+ 	.id	= -1,
+-	.dev	= {
+-		.platform_data		= &pwm_mask,
+-	},
+ 	.resource	= pwm_resources,
+ 	.num_resources	= ARRAY_SIZE(pwm_resources),
+ };
+@@ -1171,8 +1166,6 @@ void __init at91_add_device_pwm(u32 mask)
+ 	if (mask & (1 << AT91_PWM3))
+ 		at91_set_B_periph(AT91_PIN_PB29, 1);	/* enable PWM3 */
+ 
+-	pwm_mask = mask;
+-
+ 	platform_device_register(&at91sam9263_pwm0_device);
+ }
+ #else
 -- 
-1.7.9.5
+1.9.1
 

@@ -1,75 +1,279 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 16 May 2014 10:31:01 +0000
-Subject: Re: [PATCH 07/19] OMAPDSS: hdmi5_core: Fix compilation with OMAP5_DSS_HDMI_AUDIO
-Message-Id: <5375E8E5.5020007@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="W2A8t0RkUIJJd9L4o9hKCMVLNFd5Rn1BO"
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Fri, 30 May 2014 13:27:05 +0000
+Subject: [PATCH] console: Add persistent scrollback buffers for all VGA consoles
+Message-Id: <1401456425-15931-1-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1399884780.git.jsarha@ti.com> <6e02441be6a699e4376e547ae99515d14079850d.1399884780.git.jsarha@ti.com>
-In-Reply-To: <6e02441be6a699e4376e547ae99515d14079850d.1399884780.git.jsarha@ti.com>
-To: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, bcousson@baylibre.com, detheridge@ti.com
-
---W2A8t0RkUIJJd9L4o9hKCMVLNFd5Rn1BO
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com
+Cc: tomi.valkeinen@ti.com, geert@linux-m68k.org, broonie@linaro.org, rdunlap@infradead.org, dh.herrmann@gmail.com, airlied@redhat.com, mtosatti@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
 
-Hi,
+Add a scrollback buffers for each VGA console. The benefit is that
+the scrollback history is not flushed when switching between consoles
+but is persistent.
+The buffers are allocated on demand when a new console is opened.
 
-On 12/05/14 12:12, Jyri Sarha wrote:
-> Use correct variable name for base address.
->=20
-> Signed-off-by: Jyri Sarha <jsarha@ti.com>
-> ---
->  drivers/video/fbdev/omap2/dss/hdmi5_core.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video=
-/fbdev/omap2/dss/hdmi5_core.c
-> index 270ebdd..af88e3c 100644
-> --- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-> +++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-> @@ -786,7 +786,7 @@ static void hdmi5_core_audio_config(struct hdmi_cor=
-e_data *core,
->  	REG_FLD_MOD(base, HDMI_CORE_AUD_GP_POL, 1, 0, 0);
-> =20
->  	/* unmute audio */
-> -	REG_FLD_MOD(core_sys_base, HDMI_CORE_FC_AUDSCONF, 0, 7, 4);
-> +	REG_FLD_MOD(base, HDMI_CORE_FC_AUDSCONF, 0, 7, 4);
->  }
-> =20
->  static void hdmi5_core_audio_infoframe_cfg(struct hdmi_core_data *core=
-,
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+---
+ drivers/video/console/Kconfig  |    6 +-
+ drivers/video/console/vgacon.c |  124 ++++++++++++++++++++++++------------=
+----
+ 2 files changed, 79 insertions(+), 51 deletions(-)
 
-This fix is independent of the rest of the series, so I'll already pick
-this one to my 3.16 omapdss branch.
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index fe1cd01..d7ec96c 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -38,14 +38,14 @@ config VGACON_SOFT_SCROLLBACK
+ 	 RAM to allocate for this buffer.  If unsure, say 'N'.
+=20
+ config VGACON_SOFT_SCROLLBACK_SIZE
+-       int "Scrollback Buffer Size (in KB)"
++       int "Scrollback Buffer Size per console (in KB)"
+        depends on VGACON_SOFT_SCROLLBACK
+        range 1 1024
+        default "64"
+        help
+          Enter the amount of System RAM to allocate for the scrollback
+-	 buffer.  Each 64KB will give you approximately 16 80x25
+-	 screenfuls of scrollback buffer
++	 buffer for each VGA console. Each 64KB will give you approximately
++	 16 80x25 screenfuls of scrollback buffer.
+=20
+ config MDA_CONSOLE
+ 	depends on !M68K && !PARISC && ISA
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 9d8feac..215eafb 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -181,75 +181,101 @@ static inline void vga_set_mem_top(struct vc_data *c)
+=20
+ #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
+ /* software scrollback */
+-static void *vgacon_scrollback;
+-static int vgacon_scrollback_tail;
+-static int vgacon_scrollback_size;
+-static int vgacon_scrollback_rows;
+-static int vgacon_scrollback_cnt;
+-static int vgacon_scrollback_cur;
+-static int vgacon_scrollback_save;
+-static int vgacon_scrollback_restore;
+-
+-static void vgacon_scrollback_init(int pitch)
++struct vgacon_scrollback_info {
++	void *data;
++	int tail;
++	int size;
++	int rows;
++	int cnt;
++	int cur;
++	int save;
++	int restore;
++} vgacon_scrollbacks[MAX_NR_CONSOLES];
++
++static void vgacon_scrollback_init(int vc_num)
+ {
++	int pitch =3D vga_video_num_columns * 2;
+ 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
++	void *data;
+=20
+-	if (vgacon_scrollback) {
+-		vgacon_scrollback_cnt  =3D 0;
+-		vgacon_scrollback_tail =3D 0;
+-		vgacon_scrollback_cur  =3D 0;
+-		vgacon_scrollback_rows =3D rows - 1;
+-		vgacon_scrollback_size =3D rows * pitch;
++	data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, GFP_NOWAIT);
++	if (!data) {
++		pr_warn("VGAcon: failed to allocate memory for scrollback.\n");
++		vgacon_scrollbacks[vc_num].data =3D NULL;
++		return;
+ 	}
++
++	vgacon_scrollbacks[vc_num].data =3D data;
++	vgacon_scrollbacks[vc_num].cnt  =3D 0;
++	vgacon_scrollbacks[vc_num].tail =3D 0;
++	vgacon_scrollbacks[vc_num].cur  =3D 0;
++	vgacon_scrollbacks[vc_num].rows =3D rows - 1;
++	vgacon_scrollbacks[vc_num].size =3D rows * pitch;
++}
++
++static void vgacon_switch_scrollback(int vc_num)
++{
++	if (!vgacon_scrollbacks[vc_num].data)
++		vgacon_scrollback_init(vc_num);
+ }
+=20
+ static void vgacon_scrollback_startup(void)
+ {
+-	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
+FP_NOWAIT);
+-	vgacon_scrollback_init(vga_video_num_columns * 2);
++	int i;
++
++	for (i =3D 0; i < MAX_NR_CONSOLES; ++i)
++		vgacon_scrollbacks[i].data =3D NULL;
++
++	vgacon_scrollback_init(0);
+ }
+=20
+ static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
+ {
++	struct vgacon_scrollback_info *scrollback;
+ 	void *p;
+=20
+-	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
++	scrollback =3D &vgacon_scrollbacks[c->vc_num];
++	if (!scrollback->data || !scrollback->size)
+ 		return;
+=20
+ 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
+=20
+ 	while (count--) {
+-		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
++		scr_memcpyw(scrollback->data + scrollback->tail,
+ 			    p, c->vc_size_row);
+-		vgacon_scrollback_cnt++;
++		scrollback->cnt++;
+ 		p +=3D c->vc_size_row;
+-		vgacon_scrollback_tail +=3D c->vc_size_row;
++		scrollback->tail +=3D c->vc_size_row;
+=20
+-		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
+-			vgacon_scrollback_tail =3D 0;
++		if (scrollback->tail >=3D scrollback->size)
++			scrollback->tail =3D 0;
+=20
+-		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
+-			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
++		if (scrollback->cnt > scrollback->rows)
++			scrollback->cnt =3D scrollback->rows;
+=20
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		scrollback->cur =3D scrollback->cnt;
+ 	}
+ }
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+-	vgacon_scrollback_save =3D 0;
++	struct vgacon_scrollback_info *scrollback;
++
++	scrollback =3D &vgacon_scrollbacks[c->vc_num];
++	scrollback->save =3D 0;
+=20
+-	if (!vga_is_gfx && !vgacon_scrollback_restore) {
++	if (!vga_is_gfx && !scrollback->restore) {
+ 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
+ 			    c->vc_screenbuf_size > vga_vram_size ?
+ 			    vga_vram_size : c->vc_screenbuf_size);
+-		vgacon_scrollback_restore =3D 1;
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		scrollback->restore =3D 1;
++		scrollback->cur =3D scrollback->cnt;
+ 	}
+ }
+=20
+ static int vgacon_scrolldelta(struct vc_data *c, int lines)
+ {
++	struct vgacon_scrollback_info *scrollback;
+ 	int start, end, count, soff;
+=20
+ 	if (!lines) {
+@@ -258,41 +284,42 @@ static int vgacon_scrolldelta(struct vc_data *c, int =
+lines)
+ 		return 1;
+ 	}
+=20
+-	if (!vgacon_scrollback)
++	scrollback =3D &vgacon_scrollbacks[c->vc_num];
++	if (!scrollback->data)
+ 		return 1;
+=20
+-	if (!vgacon_scrollback_save) {
++	if (!scrollback->save) {
+ 		vgacon_cursor(c, CM_ERASE);
+ 		vgacon_save_screen(c);
+-		vgacon_scrollback_save =3D 1;
++		scrollback->save =3D 1;
+ 	}
+=20
+-	vgacon_scrollback_restore =3D 0;
+-	start =3D vgacon_scrollback_cur + lines;
++	scrollback->restore =3D 0;
++	start =3D scrollback->cur + lines;
+ 	end =3D start + abs(lines);
+=20
+ 	if (start < 0)
+ 		start =3D 0;
+=20
+-	if (start > vgacon_scrollback_cnt)
+-		start =3D vgacon_scrollback_cnt;
++	if (start > scrollback->cnt)
++		start =3D scrollback->cnt;
+=20
+ 	if (end < 0)
+ 		end =3D 0;
+=20
+-	if (end > vgacon_scrollback_cnt)
+-		end =3D vgacon_scrollback_cnt;
++	if (end > scrollback->cnt)
++		end =3D scrollback->cnt;
+=20
+-	vgacon_scrollback_cur =3D start;
++	scrollback->cur =3D start;
+ 	count =3D end - start;
+-	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
++	soff =3D scrollback->tail - ((scrollback->cnt - end) *
+ 					 c->vc_size_row);
+ 	soff -=3D count * c->vc_size_row;
+=20
+ 	if (soff < 0)
+-		soff +=3D vgacon_scrollback_size;
++		soff +=3D scrollback->size;
+=20
+-	count =3D vgacon_scrollback_cnt - start;
++	count =3D scrollback->cnt - start;
+=20
+ 	if (count > c->vc_rows)
+ 		count =3D c->vc_rows;
+@@ -306,13 +333,13 @@ static int vgacon_scrolldelta(struct vc_data *c, int =
+lines)
+=20
+ 		count *=3D c->vc_size_row;
+ 		/* how much memory to end of buffer left? */
+-		copysize =3D min(count, vgacon_scrollback_size - soff);
+-		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
++		copysize =3D min(count, scrollback->size - soff);
++		scr_memcpyw(d, scrollback->data + soff, copysize);
+ 		d +=3D copysize;
+ 		count -=3D copysize;
+=20
+ 		if (count) {
+-			scr_memcpyw(d, vgacon_scrollback, count);
++			scr_memcpyw(d, scrollback->data, count);
+ 			d +=3D count;
+ 		}
+=20
+@@ -327,6 +354,7 @@ static int vgacon_scrolldelta(struct vc_data *c, int li=
+nes)
+ #define vgacon_scrollback_startup(...) do { } while (0)
+ #define vgacon_scrollback_init(...)    do { } while (0)
+ #define vgacon_scrollback_update(...)  do { } while (0)
++#define vgacon_switch_scrollback(...)  do { } while (0)
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+@@ -842,7 +870,7 @@ static int vgacon_switch(struct vc_data *c)
+ 			vgacon_doresize(c, c->vc_cols, c->vc_rows);
+ 	}
+=20
+-	vgacon_scrollback_init(c->vc_size_row);
++	vgacon_switch_scrollback(c->vc_num);
+ 	return 0;		/* Redrawing not needed */
+ }
+=20
+--=20
+1.7.10.4
 
- Tomi
-
-
-
-
---W2A8t0RkUIJJd9L4o9hKCMVLNFd5Rn1BO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTdejlAAoJEPo9qoy8lh71QSoP/jSYhAEh5ad2o5B8+Y74bcc8
-cOLG5naHlZG3V9TPXg2wxJOgVYOWR5RK9LZb4xMufjo1OKItJpke6lI0lqtuZBG7
-JgcRkQSqT1OkrB5NY4amcYzO/yCJuATHer1as5srxB03VmC0fuSqJoDIIUCemzTL
-35csLVxi5yWBeDEe2VeEoqfpprU9VgNUDGiJKmEpiLuGv6ypwRNhMNrARxX+cf4q
-suePVcs288Cwfs7jvP8qgNYO3Y3PKECxviDDEhZYxsnpxAgd2If+EA2VdT2BT/vn
-uy+tcxyz3YFYtkmnn+r54WL2SuDTwRd2TYOpL2C5ct585n6YoGAAaciuTSzwoItn
-X4aeNvVN+YVs9YhfBxv+dLE1EwgFUoIKDlxJoie190nWhDXaHzQfNcDcXJweTZJM
-Nft/fAowx5K+7fpmawgJEzhKv2t0gImQXCqkrXeW6o/9G797pk81/foeZNFGpJIM
-7fzKQJ6MLigtOhdiAwoD7ih8it+0a2l+u9ykYz1aeLnc55O4LMiV4tBeou7DGvO1
-ekD6a3krgC7BCgmubmwALwnfyxGnhb2UvDw6EU71ZpfJ21drUjmSOrR69B5gFcOt
-edD70NMXSGBYSrOJFcxZYPVPhCrgA4op2LvK2nsi+VUtObuYKDZdZ+NqtHkgehcD
-ANswUsgdVsG/5pZ0NtGM
-=Lc2L
------END PGP SIGNATURE-----
-
---W2A8t0RkUIJJd9L4o9hKCMVLNFd5Rn1BO--

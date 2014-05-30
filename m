@@ -1,48 +1,28 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Fri, 30 May 2014 17:06:21 +0000
+From: Jakub Wilk <jwilk@debian.org>
+Date: Fri, 30 May 2014 22:26:22 +0000
 Subject: Re: [PATCH] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <5388BA8D.3010707@infradead.org>
+Message-Id: <20140530222622.GA1385@jwilk.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1401456425-15931-1-git-send-email-manuel.schoelling@gmx.de>
 In-Reply-To: <1401456425-15931-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: =?UTF-8?B?TWFudWVsIFNjaMO2bGxpbmc=?= <manuel.schoelling@gmx.de>, plagnioj@jcrosoft.com
-Cc: tomi.valkeinen@ti.com, geert@linux-m68k.org, broonie@linaro.org, dh.herrmann@gmail.com, airlied@redhat.com, mtosatti@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Manuel =?iso-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>
+Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, geert@linux-m68k.org, broonie@linaro.org, rdunlap@infradead.org, dh.herrmann@gmail.com, airlied@redhat.com, mtosatti@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05/30/2014 06:27 AM, Manuel Sch=C3=B6lling wrote:
-> ---
->  drivers/video/console/Kconfig  |    6 +-
->  drivers/video/console/vgacon.c |  124 ++++++++++++++++++++++++----------=
-------
->  2 files changed, 79 insertions(+), 51 deletions(-)
->=20
-> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-> index fe1cd01..d7ec96c 100644
-> --- a/drivers/video/console/Kconfig
-> +++ b/drivers/video/console/Kconfig
-> @@ -38,14 +38,14 @@ config VGACON_SOFT_SCROLLBACK
->  	 RAM to allocate for this buffer.  If unsure, say 'N'.
-> =20
->  config VGACON_SOFT_SCROLLBACK_SIZE
-> -       int "Scrollback Buffer Size (in KB)"
-> +       int "Scrollback Buffer Size per console (in KB)"
->         depends on VGACON_SOFT_SCROLLBACK
->         range 1 1024
->         default "64"
->         help
->           Enter the amount of System RAM to allocate for the scrollback
-> -	 buffer.  Each 64KB will give you approximately 16 80x25
-> -	 screenfuls of scrollback buffer
-> +	 buffer for each VGA console. Each 64KB will give you approximately
-> +	 16 80x25 screenfuls of scrollback buffer.
+* Manuel Sch=F6lling <manuel.schoelling@gmx.de>, 2014-05-30, 15:27:
+>Add a scrollback buffers for each VGA console. The benefit is that the=20
+>scrollback history is not flushed when switching between consoles but=20
+>is persistent.
 
-Nitpick: CodingStyle says to indent help text 1 tab + 2 spaces.
+Some people rely on this scrollback flushing as a security feature. Is=20
+there even another way to clear the scrollback, than to switch to=20
+another vt and then back again?
 
-> =20
->  config MDA_CONSOLE
->  	depends on !M68K && !PARISC && ISA
+Debian ships this:
+http://manpages.debian.org/cgi-bin/man.cgi?query=3Dclear_console
+https://sources.debian.net/src/bash/4.2%2Bdfsg-0.1/debian/clear_console.c
 
 --=20
-~Randy
+Jakub Wilk

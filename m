@@ -1,79 +1,40 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 02 May 2014 12:59:37 +0000
-Subject: Re: [PATCH] fbdev/fb.h: silence warning with -Wsign-compare
-Message-Id: <536396B9.60801@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="iCkP6iR3XqbDPQjF373mAa8WJdGvfXSsu"
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Fri, 30 May 2014 10:38:34 +0000
+Subject: [PATCH 1/1] video: omapdss: Fix potential null pointer dereference
+Message-Id: <1401445595-22884-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140501193235.GB6495@oc3347516403.ibm.com>
-In-Reply-To: <20140501193235.GB6495@oc3347516403.ibm.com>
-To: Brian W Hart <hartb@linux.vnet.ibm.com>, plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, trivial@kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---iCkP6iR3XqbDPQjF373mAa8WJdGvfXSsu
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+kmalloc can return null. Add a check to avoid potential null
+pointer dereference error when the pointer is accessed later.
 
-On 01/05/14 22:32, Brian W Hart wrote:
-> Silence the warning when building with -Wsign-compare when fb.h is
-> included:
->=20
-> include/linux/fb.h: In function =E2=80=98__fb_pad_aligned_buffer=E2=80=99=
-:
-> include/linux/fb.h:650:17: warning: comparison between signed and unsig=
-ned integer expressions [-Wsign-compare]
->    for (j =3D 0; j < s_pitch; j++)
->                  ^
->=20
-> Signed-off-by: Brian W Hart <hartb@linux.vnet.ibm.com>
-> ---
-> Compile tested only.
->=20
->  include/linux/fb.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index fe6ac95..0da7634 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -641,7 +641,7 @@ static inline void unlock_fb_info(struct fb_info *i=
-nfo)
->  static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
->  					   u8 *src, u32 s_pitch, u32 height)
->  {
-> -	int i, j;
-> +	u32 i, j;
-> =20
->  	d_pitch -=3D s_pitch;
-> =20
->=20
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/video/fbdev/omap2/dss/omapdss-boot-init.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Thanks, queued for 3.16.
+diff --git a/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
+index 99af9e88b2d8..2f0822ee3ff9 100644
+--- a/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
++++ b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
+@@ -121,9 +121,11 @@ static void __init omapdss_add_to_list(struct device_node *node, bool root)
+ {
+ 	struct dss_conv_node *n = kmalloc(sizeof(struct dss_conv_node),
+ 		GFP_KERNEL);
+-	n->node = node;
+-	n->root = root;
+-	list_add(&n->list, &dss_conv_list);
++	if (n) {
++		n->node = node;
++		n->root = root;
++		list_add(&n->list, &dss_conv_list);
++	}
+ }
+ 
+ static bool __init omapdss_list_contains(const struct device_node *node)
+-- 
+1.7.9.5
 
- Tomi
-
-
-
---iCkP6iR3XqbDPQjF373mAa8WJdGvfXSsu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTY5a5AAoJEPo9qoy8lh71ul4P/1fx2UNNV9voof7oVfG1CBeY
-ZZn2XRKpUN9ZrIuPb8vRF+g6irqs+T0KA5oAX+31AUaU4BdXhFu0N0HGqXbj4KLE
-XEGqsLe88yqEHwKgSgItHbX8V9FabesXrdMJQN5lvnlTfYPx9uUzSUIhYIm9D5fs
-EvCFQLk/xQ8KT9ww65xweUiWll7PHLT/C04w9E+UQPsBcq8cyhzKGx4To4dGuVpa
-6oWrfmx74CnktnehBckKB9tNgJLO+DO9yjtWlyPWSChxfbnQOg6YFPldxuOy4E+d
-58T950R5LrZJ/PbmjqY3kwRVMpuqd7NJMoSbRfDlpEiRWa3AyQiI70e91Wv5yeJD
-srfNVlym62Sg1n3DtZkGIh4D0jtqqBO9j9tNy1SWZTeefZ+O3Cmi3fJpkrxuWLCr
-LKhgURZ8lnNlVrNUw6ms7cck5/3qX22x/8V88MH14qO76lYELTRPPs/teEC4KKxk
-bPByqBo8mJEHkQ/cPRY+DFUbezCgd4j19u8Fmr9yqp4iOiq/ZccDinUeS34cvMxp
-lFt6HlaMHEHNE1tPyebGjtQvGE2711kJ3WioffwDL/uXftNQBnyCm8vDbMGEdKdc
-ZCqg9kdIeDAnONfy9VdNTFWJDoc7Krm6+BaB5YB4/iIg+lu7CzVrBMXwPvcHVY0n
-YR8v2VOpU4/zznbif3rM
-=/x/S
------END PGP SIGNATURE-----
-
---iCkP6iR3XqbDPQjF373mAa8WJdGvfXSsu--

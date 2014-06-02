@@ -1,83 +1,43 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 23 Jun 2014 11:46:32 +0000
-Subject: Re: [PATCH] drivers:video:fbdev atmel_lcdfb.c power GPIO registration bug
-Message-Id: <53A81398.4030100@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="RS7U0BI5efxIff3b6nTWXHKLa4RlH6tpj"
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Mon, 02 Jun 2014 16:36:22 +0000
+Subject: Re: [PATCH v2 1/5] gpu: ipu-v3: Move i.MX IPUv3 core driver out of staging
+Message-Id: <1401726982.4173.58.camel@paszta.hi.pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403142732-31706-1-git-send-email-mwelling@ieee.org>
-In-Reply-To: <1403142732-31706-1-git-send-email-mwelling@ieee.org>
-To: Michael Welling <mwelling@ieee.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1401113983-23132-1-git-send-email-p.zabel@pengutronix.de>
+ <1401113983-23132-2-git-send-email-p.zabel@pengutronix.de>
+ <20140528211342.GA18203@kroah.com>
+In-Reply-To: <20140528211342.GA18203@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dave Airlie <airlied@redhat.com>
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, drm-devel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, kernel@pengutronix.de, Russell King <rmk+kernel@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Lucas Stach <l.stach@pengutronix.de>
 
---RS7U0BI5efxIff3b6nTWXHKLa4RlH6tpj
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Am Mittwoch, den 28.05.2014, 14:13 -0700 schrieb Greg Kroah-Hartman:
+> On Mon, May 26, 2014 at 04:19:39PM +0200, Philipp Zabel wrote:
+> > The i.MX Image Processing Unit (IPU) contains a number of image processing
+> > blocks that sit right in the middle between DRM and V4L2. Some of the modules,
+> > such as Display Controller, Processor, and Interface (DC, DP, DI) or CMOS
+> > Sensor Interface (CSI) and their FIFOs could be assigned to either framework,
+> > but others, such as the dma controller (IDMAC) and image converter (IC) can
+> > be used by both.
+> > The IPUv3 core driver provides an internal API to access the modules, to be
+> > used by both DRM and V4L2 IPUv3 drivers.
+> > 
+> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> > Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> > ---
+> > Changes since RFC:
+> >  - Rebased onto current staging-next
+> >  - Removed an unrelated change to ipu_pixelformat_to_colorspace
+> >  - Avoided moving around the IPU_PIX_FMT_GBR24 #define
+> 
+> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 19/06/14 04:52, Michael Welling wrote:
-> A list that was intended for storing power control GPIOs was never
-> initialized correctly or filled. Without these lines of added code
-> the kernel hangs when trying to access an uninitialized list when a
-> power control GPIO is registered with the device tree.
->=20
-> Signed-off-by: Michael Welling <mwelling@ieee.org>
-> ---
->  drivers/video/fbdev/atmel_lcdfb.c |    2 ++
->  1 file changed, 2 insertions(+)
->=20
-> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/at=
-mel_lcdfb.c
-> index e683b6e..d36e830 100644
-> --- a/drivers/video/fbdev/atmel_lcdfb.c
-> +++ b/drivers/video/fbdev/atmel_lcdfb.c
-> @@ -1057,6 +1057,7 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb=
-_info *sinfo)
->  		goto put_display_node;
->  	}
-> =20
-> +	INIT_LIST_HEAD(&pdata->pwr_gpios);
->  	ret =3D -ENOMEM;
->  	for (i =3D 0; i < of_gpio_named_count(display_np, "atmel,power-contro=
-l-gpio"); i++) {
->  		gpio =3D of_get_named_gpio_flags(display_np, "atmel,power-control-gp=
-io",
-> @@ -1082,6 +1083,7 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb=
-_info *sinfo)
->  			dev_err(dev, "set direction output gpio %d failed\n", gpio);
->  			goto put_display_node;
->  		}
-> +		list_add(&og->list, &pdata->pwr_gpios);
->  	}
-> =20
->  	if (is_gpio_power)
->=20
+Thank you. My favourite next step would be to send a pull request and
+have this merged into drm-next. Dave, Greg would you be ok with this?
 
-Thanks, queued for 3.16-fixes.
-
- Tomi
+regards
+Philipp
 
 
-
---RS7U0BI5efxIff3b6nTWXHKLa4RlH6tpj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTqBOYAAoJEPo9qoy8lh7124EQAJsRBgnSJUDnOd0zFXeAlQZF
-OeJt4Cw5vCvxLBDvPWjLUA8AdA6FjDt/zmSPjQeAadybXbvdE6JBM/xgHb4OB6FF
-bVH1VE/S2u94m5bBRQ2nbcROQBXegPBzLew/kiPLAbij3T8PTnT1zPNQNNHIpksB
-dFF520sJnJ8UZxS6MBidV2C1HcGM5eZWmnW3BOHJ/1jSoOdP02pHJoSJ+PCZs2ap
-KVIC21NPHbuWSApFACu/zU86+x8fMrztap365sKCveFRoiZ7RkmgRjmb8qrOUaPL
-Ndug7KlFQrm9HAvyCLUXXfINN6/jyBZv8bVD97wSEfZ6mUodm87xtpcL9b9mHZ6I
-YlCdiEAofuhCcUfjoLNSO9CNDkaVLntZDie705wbwwjK4TEFLrQ1ovWUiAejNTf3
-EixfqRRZzq/6TbYZkY3UEKLXDtyVGWUUc3c/k4MQXis5QS7ZMbKvEGF5FFkPfHaD
-gwUM5mj1BrsMJapbr8vBQY3GVMGplvX8i4USMFzefGJrEAi+O4Y2cSvy6DCfaL3C
-sdQlsQzkFblBuWsPBVupmpZxuP9WWp+KPwPWTPWiTc4ZUOyER9RRaZsbqC1kp9nh
-gDkwDJyb+xmFrMy1/AMIM7mPWZ2uHmcWJ3qx62y7ufU5+64bW+iriMe7z9Qc41bB
-lUAURsEeQZGn88yBubh0
-=XN21
------END PGP SIGNATURE-----
-
---RS7U0BI5efxIff3b6nTWXHKLa4RlH6tpj--

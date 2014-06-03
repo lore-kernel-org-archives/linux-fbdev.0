@@ -1,48 +1,122 @@
-From: Dave Airlie <airlied@gmail.com>
-Date: Wed, 04 Jun 2014 03:07:56 +0000
-Subject: Re: [PATCH v2 1/5] gpu: ipu-v3: Move i.MX IPUv3 core driver out of staging
-Message-Id: <CAPM=9tzMXBSFUicLVpfi1QqJq5U53pt-zpWXu8nbFyggma+mbg@mail.gmail.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Tue, 03 Jun 2014 22:57:29 +0000
+Subject: [PATCH] drm/i915: Kick out vga console
+Message-Id: <1401836249-4922-1-git-send-email-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401113983-23132-1-git-send-email-p.zabel@pengutronix.de>
- <1401113983-23132-2-git-send-email-p.zabel@pengutronix.de>
- <20140528211342.GA18203@kroah.com>
- <1401726982.4173.58.camel@paszta.hi.pengutronix.de>
- <20140602170650.GA31142@kroah.com>
-In-Reply-To: <20140602170650.GA31142@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, kernel@pengutronix.de, dri-devel <dri-devel@lists.freedesktop.org>, drm-devel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Airlie <airlied@redhat.com>, Russell King <rmk+kernel@arm.linux.org.uk>
+To: Intel Graphics Development <intel-gfx@lists.freedesktop.org>
+Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-On 3 June 2014 03:06, Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
-> On Mon, Jun 02, 2014 at 06:36:22PM +0200, Philipp Zabel wrote:
->> Am Mittwoch, den 28.05.2014, 14:13 -0700 schrieb Greg Kroah-Hartman:
->> > On Mon, May 26, 2014 at 04:19:39PM +0200, Philipp Zabel wrote:
->> > > The i.MX Image Processing Unit (IPU) contains a number of image processing
->> > > blocks that sit right in the middle between DRM and V4L2. Some of the modules,
->> > > such as Display Controller, Processor, and Interface (DC, DP, DI) or CMOS
->> > > Sensor Interface (CSI) and their FIFOs could be assigned to either framework,
->> > > but others, such as the dma controller (IDMAC) and image converter (IC) can
->> > > be used by both.
->> > > The IPUv3 core driver provides an internal API to access the modules, to be
->> > > used by both DRM and V4L2 IPUv3 drivers.
->> > >
->> > > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
->> > > Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
->> > > ---
->> > > Changes since RFC:
->> > >  - Rebased onto current staging-next
->> > >  - Removed an unrelated change to ipu_pixelformat_to_colorspace
->> > >  - Avoided moving around the IPU_PIX_FMT_GBR24 #define
->> >
->> > Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>
->> Thank you. My favourite next step would be to send a pull request and
->> have this merged into drm-next. Dave, Greg would you be ok with this?
->
-> No objection from me, it's up to Dave what he wants for this.
+From: Chris Wilson <chris@chris-wilson.co.uk>
 
-Yes please send me a pull req for this.
+Touching the VGA resources on an IVB EFI machine causes hard hangs when
+we then kick out the efifb. Ouch.
 
-Dave.
+Apparently this also prevents unclaimed register errors on hsw and
+hard machine hangs on my i855gm when trying to unbind fbcon.
+
+Also, we want this to make I915_FBDEV=n safe.
+
+v2: Rebase and pimp commit message.
+
+v3: We also need to unregister the vga console, otherwise the unbind
+of the fb console before module unload might resurrect it again.
+
+Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?idg813
+Cc: David Herrmann <dh.herrmann@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk> (v1)
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
+ drivers/gpu/drm/i915/i915_dma.c  | 34 +++++++++++++++++++++++++++++++++-
+ drivers/video/console/dummycon.c |  1 +
+ drivers/video/console/vgacon.c   |  1 +
+ 3 files changed, 35 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
+index b9159ade5e85..a4df80740b37 100644
+--- a/drivers/gpu/drm/i915/i915_dma.c
++++ b/drivers/gpu/drm/i915/i915_dma.c
+@@ -36,6 +36,8 @@
+ #include "i915_drv.h"
+ #include "i915_trace.h"
+ #include <linux/pci.h>
++#include <linux/console.h>
++#include <linux/vt.h>
+ #include <linux/vgaarb.h>
+ #include <linux/acpi.h>
+ #include <linux/pnp.h>
+@@ -1450,6 +1452,29 @@ static void i915_kick_out_firmware_fb(struct drm_i915_private *dev_priv)
+ }
+ #endif
+ 
++static int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
++{
++#if !defined(CONFIG_VGA_CONSOLE)
++	return 0;
++#else
++	int ret;
++
++#if !defined(CONFIG_DUMMY_CONSOLE)
++	return -ENODEV;
++#endif
++
++	DRM_INFO("Replacing VGA console driver\n");
++
++	console_lock();
++	ret = do_take_over_console(&dummy_con, 0, MAX_NR_CONSOLES - 1, 1);
++	if (ret = 0)
++		ret = do_unregister_con_driver(&vga_con);
++	console_unlock();
++
++	return ret;
++#endif
++}
++
+ static void i915_dump_device_info(struct drm_i915_private *dev_priv)
+ {
+ 	const struct intel_device_info *info = &dev_priv->info;
+@@ -1623,8 +1648,15 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
+ 	if (ret)
+ 		goto out_regs;
+ 
+-	if (drm_core_check_feature(dev, DRIVER_MODESET))
++	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
++		ret = i915_kick_out_vgacon(dev_priv);
++		if (ret) {
++			DRM_ERROR("failed to remove conflicting VGA console\n");
++			goto out_gtt;
++		}
++
+ 		i915_kick_out_firmware_fb(dev_priv);
++	}
+ 
+ 	pci_set_master(dev->pdev);
+ 
+diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
+index b63860f7beab..40bec8d64b0a 100644
+--- a/drivers/video/console/dummycon.c
++++ b/drivers/video/console/dummycon.c
+@@ -77,3 +77,4 @@ const struct consw dummy_con = {
+     .con_set_palette =	DUMMY,
+     .con_scrolldelta =	DUMMY,
+ };
++EXPORT_SYMBOL_GPL(dummy_con);
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 9d8feac67637..84acd6223dc5 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -1440,5 +1440,6 @@ const struct consw vga_con = {
+ 	.con_build_attr = vgacon_build_attr,
+ 	.con_invert_region = vgacon_invert_region,
+ };
++EXPORT_SYMBOL(vga_con);
+ 
+ MODULE_LICENSE("GPL");
+-- 
+1.8.1.4
+

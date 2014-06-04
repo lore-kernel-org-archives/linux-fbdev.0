@@ -1,22 +1,15 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 30 Jun 2014 07:24:14 +0000
-Subject: Re: [PATCH v2 01/13] ARM: OMAP2+: Remove non working OMAP HDMI audio initialization
-Message-Id: <20140630072414.GL28884@atomide.com>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Wed, 04 Jun 2014 09:07:50 +0000
+Subject: [PATCH 0/10] use safer test on the result of find_first_zero_bit
+Message-Id: <1401872880-23685-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1403894190.git.jsarha@ti.com>
- <41571cc2e5a93ff95eda9263a4b5808bba7e6e36.1403894190.git.jsarha@ti.com>
-In-Reply-To: <41571cc2e5a93ff95eda9263a4b5808bba7e6e36.1403894190.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jyri Sarha <jsarha@ti.com>
-Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi
+To: linux-rdma@vger.kernel.org
+Cc: devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-scsi@vger.kernel.org, iss_storagedev@hp.com, linux-sh@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, ath10k@lists.infradead.org, adi-buildroot-devel@lists.sourceforge.net, netdev@vger.kernel.org
 
-* Jyri Sarha <jsarha@ti.com> [140627 11:41]:
-> This code is not working currently and it can be removed. There is a
-> conflict in sharing resources with the actual HDMI driver and with
-> the ASoC HDMI audio DAI driver.
-> 
-> Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Find_first_zero_bit considers BITS_PER_LONG bits at a time, and thus may
+return a larger number than the maximum position argument if that position
+is not a multiple of BITS_PER_LONG.
 
-Acked-by: Tony Lindgren <tony@atomide.com>

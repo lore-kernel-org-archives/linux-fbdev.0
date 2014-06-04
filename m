@@ -1,48 +1,85 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 27 Jun 2014 15:33:13 +0000
-Subject: Re: [PATCH 04/12] OMAPDSS: hdmi_audio: Integrated ASoC DAI component driver implementation
-Message-Id: <53AD8EB9.1070207@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 04 Jun 2014 06:53:02 +0000
+Subject: [PATCH v3 6/7] OMAPDSS: DPI: Add support for multiple instances
+Message-Id: <1401864063-19196-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1403807781.git.jsarha@ti.com> <69f5b1481bd8b8a005b5d9142626f3529a0d71c7.1403807781.git.jsarha@ti.com> <53AD5F65.2010107@ti.com> <53AD62FB.10402@ti.com> <53AD6C5E.10805@ti.com>
-In-Reply-To: <53AD6C5E.10805@ti.com>
+References: <1401096492-1405-1-git-send-email-archit@ti.com>
+ <1401864063-19196-1-git-send-email-archit@ti.com>
+In-Reply-To: <1401864063-19196-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, detheridge@ti.com, jyri.sarha@iki.fi
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On 06/27/2014 04:06 PM, Tomi Valkeinen wrote:
-> On 27/06/14 15:26, Jyri Sarha wrote:
->> On 06/27/2014 03:11 PM, Tomi Valkeinen wrote:
->>> On 26/06/14 22:20, Jyri Sarha wrote:
->> ...
->>>> +static struct asoc_simple_card_info card_info = {
->>>> +    .name = "HDMI",
->>>> +    .card = "OMAPHDMI",
->>>> +    .codec_dai.name = "hdmi-hifi",
->>>> +};
->>>
->>> The above is not const. That, and the contents of the struct make me
->>> wonder, what happens if we have two HDMI instances?
->>>
->>> I know the core driver doesn't work with multiple instances yet, but as
->>> I mentioned, it has to be done sooner or later. And on the core driver
->>> side it should be quite straightforward.
->>>
->>> I'd rather not introduce new restrictions for that goal.
->>>
->>
->> Ok, I'll alloc that with devm_kzalloc().
->
-> Do the strings in the struct need to be unique? If so, you probably need
-> to append something to them based on the hdmi device instance.
->
+Register DPI outputs, and assign the port_num to them as specified by the
+'reg' property in the DPI ports in DT.
 
-I dont think they need to be unique, but it anyway makes sense to embed 
-the HDMI device name into the audio device name, so I'll add it.
+To support multiple DPI instances, dpi_get_channel needs to take the DPI
+instance's reg-id to get the corresponding channel. Make it take this
+argument.We just pass 0 in the non-DT path, since we don't support multiple
+instances in the non-DT case.
 
-BTW, platform_device_register_data() memdups the platform data, so a 
-stack variable should be Ok for asoc_simple_card_info.
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dpi.c | 26 +++++++++++++++++++++++---
+ 1 file changed, 23 insertions(+), 3 deletions(-)
 
-Cheers,
-Jyri
+diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
+index b579022..3e204a8 100644
+--- a/drivers/video/fbdev/omap2/dss/dpi.c
++++ b/drivers/video/fbdev/omap2/dss/dpi.c
+@@ -616,7 +616,7 @@ static void dpi_init_pll(struct dpi_data *dpi)
+  * the channel in some more dynamic manner, or get the channel as a user
+  * parameter.
+  */
+-static enum omap_channel dpi_get_channel(void)
++static enum omap_channel dpi_get_channel(int reg)
+ {
+ 	switch (omapdss_get_version()) {
+ 	case OMAPDSS_VER_OMAP24xx:
+@@ -710,7 +710,7 @@ static void dpi_init_output(struct platform_device *pdev)
+ 	out->id = OMAP_DSS_OUTPUT_DPI;
+ 	out->output_type = OMAP_DISPLAY_TYPE_DPI;
+ 	out->name = "dpi.0";
+-	out->dispc_channel = dpi_get_channel();
++	out->dispc_channel = dpi_get_channel(0);
+ 	out->ops.dpi = &dpi_ops;
+ 	out->owner = THIS_MODULE;
+ 
+@@ -730,11 +730,31 @@ static void dpi_init_output_port(struct platform_device *pdev,
+ {
+ 	struct dpi_data *dpi = port->data;
+ 	struct omap_dss_device *out = &dpi->output;
++	int r;
++	u32 reg;
++
++	r = of_property_read_u32(port, "reg", &reg);
++	if (r)
++		reg = 0;
++
++	switch (reg) {
++	case 2:
++		out->name = "dpi.2";
++		break;
++	case 1:
++		out->name = "dpi.1";
++		break;
++	case 0:
++	default:
++		out->name = "dpi.0";
++		break;
++	}
+ 
+ 	out->dev = &pdev->dev;
+ 	out->id = OMAP_DSS_OUTPUT_DPI;
+ 	out->output_type = OMAP_DISPLAY_TYPE_DPI;
+-	out->dispc_channel = dpi_get_channel();
++	out->dispc_channel = dpi_get_channel(reg);
++	out->port_num = reg;
+ 	out->ops.dpi = &dpi_ops;
+ 	out->owner = THIS_MODULE;
+ 
+-- 
+1.8.3.2
+

@@ -1,76 +1,51 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Date: Wed, 04 Jun 2014 11:00:07 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 04 Jun 2014 11:07:34 +0000
 Subject: Re: [PATCH 0/10] use safer test on the result of find_first_zero_bit
-Message-Id: <alpine.DEB.2.10.1406041258200.2441@hadrien>
+Message-Id: <CAMuHMdV2wP43Lxf-UtCum37HyMPSboRb6RLNTHzm_ZNOBeJR0g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1401872880-23685-1-git-send-email-Julia.Lawall@lip6.fr>
- <CAMuHMdXsoFUXj4jLMWN6NY7Um19KwWO9Rhx=9=gqWu_K5Ev2kQ@mail.gmail.com>
- <alpine.DEB.2.10.1406041137270.2441@hadrien>
- <063D6719AE5E284EB5DD2968C1650D6D1725705F@AcuExch.aculab.com>
- <alpine.DEB.2.10.1406041148590.2441@hadrien>
- <CAMuHMdXPBQTYA0c=1hkC7943-_J59TVSFaEKsfY1F2ogV=Ld+A@mail.gmail.com>
-In-Reply-To: <CAMuHMdXPBQTYA0c=1hkC7943-_J59TVSFaEKsfY1F2ogV=Ld+A@mail.gmail.com>
+	<CAMuHMdXsoFUXj4jLMWN6NY7Um19KwWO9Rhx=9=gqWu_K5Ev2kQ@mail.gmail.com>
+	<alpine.DEB.2.10.1406041137270.2441@hadrien>
+	<063D6719AE5E284EB5DD2968C1650D6D1725705F@AcuExch.aculab.com>
+	<alpine.DEB.2.10.1406041148590.2441@hadrien>
+	<CAMuHMdXPBQTYA0c=1hkC7943-_J59TVSFaEKsfY1F2ogV=Ld+A@mail.gmail.com>
+	<alpine.DEB.2.10.1406041258200.2441@hadrien>
+In-Reply-To: <alpine.DEB.2.10.1406041258200.2441@hadrien>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: driverdevel <devel@driverdev.osuosl.org>, linux-s390 <linux-s390@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>, "iss_storagedev@hp.com" <iss_storagedev@hp.com>, Linux-sh list <linux-sh@vger.kernel.org>, linux-rdma <linux-rdma@vger.kernel.org>, linux-wireless <linux-wireless@vger.kernel.org>, "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "ath10k@lists.infradead.org" <ath10k@lists.infradead.org>, "adi-buildroot-devel@lists.sourceforge.net" <adi-buildroot-devel@lists.sourceforge.net>, Julia Lawall <julia.lawall@lip6.fr>, David Laight <David.Laight@aculab.com>, Arnd Bergmann <arnd@arndb.de>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+To: Julia Lawall <julia.lawall-L2FTfq7BK8M@public.gmane.org>
+Cc: David Laight <David.Laight-JxhZ9S5GRejQT0dZR+AlfA@public.gmane.org>, linux-rdma <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "kernel-janitors-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <kernel-janitors-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux-sh list <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "ath10k-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <ath10k-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-wireless <linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, driverdevel <devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org>, "iss_storagedev-VXdhtT5mjnY@public.gmane.org" <iss_storagedev-VXdhtT5mjnY@public.gmane.org>, scsi <linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-s390 <linux-s390-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "adi-buildroot-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org" <adi-buildroot-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
 
+Hi Julia,
 
-
-On Wed, 4 Jun 2014, Geert Uytterhoeven wrote:
-
-> Hi Julia,
+On Wed, Jun 4, 2014 at 1:00 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
+> OK, thanks.  I was only looking at the C code.
 >
-> On Wed, Jun 4, 2014 at 11:52 AM, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> >> Maybe the documented return code should be changed to allow for the
-> >> existing behaviour.
-> >
-> > Sorry, I'm not sure to understand what you suggest here.
+> But the C code contains a loop that is followed by:
 >
-> include/asm-generic/bitops/find.h:
+>         if (!size)
+>                 return result;
+>         tmp = *p;
 >
-> | /**
-> |  * find_first_zero_bit - find the first cleared bit in a memory region
-> |  * @addr: The address to start the search at
-> |  * @size: The maximum number of bits to search
-> |  *
-> |  * Returns the bit number of the first cleared bit.
-> |  * If no bits are zero, returns @size.
+> found_first:
+>         tmp |= ~0UL << size;
+>         if (tmp = ~0UL)        /* Are any bits zero? */
+>                 return result + size;   /* Nope. */
 >
-> "If no bits are zero, returns @size or a number larger than @size."
+> In the first return, it would seem that result = size.  Could the second
+> one be changed to just return size?  It should not hurt performance.
 
-OK, thanks.  I was only looking at the C code.
+"size" may have been changed between function entry and this line.
+So you have to store it in a temporary.
 
-But the C code contains a loop that is followed by:
+Gr{oetje,eeting}s,
 
-        if (!size)
-                return result;
-        tmp = *p;
+                        Geert
 
-found_first:
-        tmp |= ~0UL << size;
-        if (tmp = ~0UL)        /* Are any bits zero? */
-                return result + size;   /* Nope. */
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In the first return, it would seem that result = size.  Could the second
-one be changed to just return size?  It should not hurt performance.
-
-julia
-
->
-> |  */
-> | extern unsigned long find_first_zero_bit(const unsigned long *addr,
-> |                                          unsigned long size);
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
->
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

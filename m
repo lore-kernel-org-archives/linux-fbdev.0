@@ -1,91 +1,156 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 27 Jun 2014 18:38:49 +0000
-Subject: [PATCH v2 07/13] OMAPDSS: hdmi4: Register HDMI audio ASoC drivers from HDMI driver
-Message-Id: <d17af10b870cd5911322e35a3ba9a37f6635793d.1403894190.git.jsarha@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 04 Jun 2014 06:52:59 +0000
+Subject: [PATCH v3 3/7] OMAPDSS: DPI: Store dpi_data pointer in the DT port's data
+Message-Id: <1401864063-19196-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1403894190.git.jsarha@ti.com>
-In-Reply-To: <cover.1403894190.git.jsarha@ti.com>
+References: <1401096492-1405-1-git-send-email-archit@ti.com>
+ <1401864063-19196-1-git-send-email-archit@ti.com>
+In-Reply-To: <1401864063-19196-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Call register and unregister functions form hdmi_audio.c. Register
-function registers the integrated cpu dai, dummy HDMI codec, and
-simple-card machine driver for complete HDMI audio support.
+DPI and SDI ports are backed by only one parent DSS device. We don't have a
+corresponding platform_device for ports under DSS. In order to support multiple
+instances of DPI, we need to pass the driver data pointer through the DPI port's
+private data ('data' member in device_node struct).
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+dpi_init_output/dpi_uninit_output are untouched and only used for non-DT case,
+these are called when the DPI platform device probed/removed. These funcs will
+be removed when non-DT mode is removed.
+
+dpi_init_output_port/dpi_uninit_output_port are created and used for the DT
+path, called when DSS inits/uninits it's ports. These new functions retrieve
+the dpi_data pointer from 'port->data', and not from the platform device's
+data(pdev->dev) like in the non-DT path.
+
+We add some code in dss_uninit_ports() to pass a pointer to the DPI port in
+dpi_uninit_port().
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi4.c |   34 +++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ drivers/video/fbdev/omap2/dss/dpi.c | 36 ++++++++++++++++++++++++++++++------
+ drivers/video/fbdev/omap2/dss/dss.c | 13 ++++++++++++-
+ drivers/video/fbdev/omap2/dss/dss.h |  2 +-
+ 3 files changed, 43 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index 58f1295..3840f3f 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -34,6 +34,9 @@
- #include <linux/regulator/consumer.h>
- #include <video/omapdss.h>
+diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
+index 9087619..b579022 100644
+--- a/drivers/video/fbdev/omap2/dss/dpi.c
++++ b/drivers/video/fbdev/omap2/dss/dpi.c
+@@ -59,6 +59,7 @@ static struct dpi_data *dpi_get_data_from_dssdev(struct omap_dss_device *dssdev)
+ 	return container_of(dssdev, struct dpi_data, output);
+ }
  
-+#include <sound/soc.h>
-+#include <sound/soc-dai.h>
++/* only used in non-DT mode */
+ static struct dpi_data *dpi_get_data_from_pdev(struct platform_device *pdev)
+ {
+ 	return dev_get_drvdata(&pdev->dev);
+@@ -724,6 +725,30 @@ static void __exit dpi_uninit_output(struct platform_device *pdev)
+ 	omapdss_unregister_output(out);
+ }
+ 
++static void dpi_init_output_port(struct platform_device *pdev,
++	struct device_node *port)
++{
++	struct dpi_data *dpi = port->data;
++	struct omap_dss_device *out = &dpi->output;
 +
- #include "hdmi4_core.h"
- #include "dss.h"
- #include "dss_features.h"
-@@ -656,6 +659,21 @@ err:
++	out->dev = &pdev->dev;
++	out->id = OMAP_DSS_OUTPUT_DPI;
++	out->output_type = OMAP_DISPLAY_TYPE_DPI;
++	out->dispc_channel = dpi_get_channel();
++	out->ops.dpi = &dpi_ops;
++	out->owner = THIS_MODULE;
++
++	omapdss_register_output(out);
++}
++
++static void __exit dpi_uninit_output_port(struct device_node *port)
++{
++	struct dpi_data *dpi = port->data;
++	struct omap_dss_device *out = &dpi->output;
++
++	omapdss_unregister_output(out);
++}
++
+ static int omap_dpi_probe(struct platform_device *pdev)
+ {
+ 	struct dpi_data *dpi;
+@@ -795,15 +820,14 @@ int __init dpi_init_port(struct platform_device *pdev, struct device_node *port)
+ 	of_node_put(ep);
+ 
+ 	dpi->pdev = pdev;
++	port->data = dpi;
+ 
+ 	mutex_init(&dpi->lock);
+ 
+-	dpi_init_output(pdev);
++	dpi_init_output_port(pdev, port);
+ 
+ 	dpi->port_initialized = true;
+ 
+-	dev_set_drvdata(&pdev->dev, dpi);
+-
+ 	return 0;
+ 
+ err_datalines:
+@@ -812,12 +836,12 @@ err_datalines:
  	return r;
  }
  
-+#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
-+static struct snd_soc_dai_driver omap_hdmi_dai = {
-+	.name = "omap4-hdmi-dai",
-+	.playback = {
-+		.channels_min = 2,
-+		.channels_max = 8,
-+		.rates = (SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |
-+			  SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 |
-+			  SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 |
-+			  SNDRV_PCM_RATE_192000),
-+		.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE,
-+	},
-+};
-+#endif
+-void __exit dpi_uninit_port(struct platform_device *pdev)
++void __exit dpi_uninit_port(struct device_node *port)
+ {
+-	struct dpi_data *dpi = dpi_get_data_from_pdev(pdev);
++	struct dpi_data *dpi = port->data;
+ 
+ 	if (!dpi->port_initialized)
+ 		return;
+ 
+-	dpi_uninit_output(dpi->pdev);
++	dpi_uninit_output_port(port);
+ }
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 225b13f..bebb824 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -822,8 +822,19 @@ static int __init dss_init_ports(struct platform_device *pdev)
+ 
+ static void __exit dss_uninit_ports(struct platform_device *pdev)
+ {
++	struct device_node *parent = pdev->dev.of_node;
++	struct device_node *port;
++	int r;
 +
- /* HDMI HW IP initialisation */
- static int omapdss_hdmihw_probe(struct platform_device *pdev)
- {
-@@ -714,6 +732,19 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
++	if (parent = NULL)
++		return;
++
++	port = omapdss_of_get_next_port(parent, NULL);
++	if (!port)
++		return;
++
+ #ifdef CONFIG_OMAP2_DSS_DPI
+-	dpi_uninit_port(pdev);
++	dpi_uninit_port(port);
+ #endif
  
- 	hdmi_init_output(pdev);
+ #ifdef CONFIG_OMAP2_DSS_SDI
+diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
+index da7f5f9..5b9db95 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.h
++++ b/drivers/video/fbdev/omap2/dss/dss.h
+@@ -359,7 +359,7 @@ int dpi_init_platform_driver(void) __init;
+ void dpi_uninit_platform_driver(void) __exit;
  
-+#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
-+	hdmi.audio.hdmi_dai_drv = &omap_hdmi_dai;
-+	hdmi.audio.audio_start = hdmi4_audio_start;
-+	hdmi.audio.audio_stop = hdmi4_audio_stop;
-+	hdmi.audio.audio_config = hdmi4_audio_config;
-+	r = hdmi_audio_register(pdev);
-+	if (r) {
-+		DSSERR("Registering HDMI audio failed\n");
-+		hdmi_uninit_output(pdev);
-+		pm_runtime_disable(&pdev->dev);
-+		return r;
-+	}
-+#endif
- 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
+ int dpi_init_port(struct platform_device *pdev, struct device_node *port) __init;
+-void dpi_uninit_port(struct platform_device *pdev) __exit;
++void dpi_uninit_port(struct device_node *port) __exit;
  
- 	return 0;
-@@ -721,6 +752,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
- {
-+#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
-+	hdmi_audio_unregister(pdev);
-+#endif
- 	hdmi_uninit_output(pdev);
- 
- 	pm_runtime_disable(&pdev->dev);
+ /* DISPC */
+ int dispc_init_platform_driver(void) __init;
 -- 
-1.7.9.5
+1.8.3.2
 

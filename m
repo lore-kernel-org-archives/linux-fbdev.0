@@ -1,91 +1,105 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 27 Jun 2014 18:38:42 +0000
-Subject: [PATCH v2 00/13] Rework OMAP4+ HDMI audio support
-Message-Id: <cover.1403894190.git.jsarha@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 04 Jun 2014 06:53:03 +0000
+Subject: [PATCH v3 7/7] omapdss: DSS: add reg-id param to dpi_select_source
+Message-Id: <1401864063-19196-8-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1401096492-1405-1-git-send-email-archit@ti.com>
+ <1401864063-19196-1-git-send-email-archit@ti.com>
+In-Reply-To: <1401864063-19196-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: liam.r.girdwood@linux.intel.com, detheridge@ti.com, broonie@kernel.org, Jyri Sarha <jsarha@ti.com>, peter.ujfalusi@ti.com, tomi.valkeinen@ti.com, jyri.sarha@iki.fi
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Chanhes since fist version:
-- Make hdmi struct public
-  - http://mailman.alsa-project.org/pipermail/alsa-devel/2014-June/078220.html
-- Change hdmi_wp_get_phys_addr() to hdmi_wp_get_audio_dma_addr()
-  - http://mailman.alsa-project.org/pipermail/alsa-devel/2014-June/078213.html
-- Remove unnecessary ifdefs
-  - http://mailman.alsa-project.org/pipermail/alsa-devel/2014-June/078218.html
-  - http://mailman.alsa-project.org/pipermail/alsa-devel/2014-June/078220.html
-- Make audio support multiple instance safe
-  - http://mailman.alsa-project.org/pipermail/alsa-devel/2014-June/078225.html
-- Add hdmi_audio.o only once to linking line
-  - http://mailman.alsa-project.org/pipermail/alsa-devel/2014-June/078223.html
-- Unique name for audio card
-  - http://mailman.alsa-project.org/pipermail/alsa-devel/2014-June/078230.html
+Add an argument which describes which DPI instance we are referring to when
+selecting it's overlay manager.
 
-The patches are based on linux 3.16-rc2 and OMAPDSS HDMI infoframe
-patches[1] from Tomi Valkeinen. The base, the patches, and couple of
-additional not-to-be-merged omap2plus_defconfig patches can be found
-here:
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dpi.c |  2 +-
+ drivers/video/fbdev/omap2/dss/dss.c | 12 ++++++------
+ drivers/video/fbdev/omap2/dss/dss.h |  2 +-
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-git://git.ti.com/~jyrisarha/ti-linux-kernel/jyrisarhas-audio-video-linux-feature-tree.git omap-hdmi-audio
-
-The patch set fixes OMAP4+ HDMI audio. The structure of the
-implementation looks a bit different than before. Instead of creating
-a driver specific API for a separate ASoC component driver to connect
-to, this implementation integrates an the ASoC cpu-dai component
-driver into the HDMI driver. Also the other ASoC component drivers
-needed for operational audio are automatically registered by the HDMI
-driver. There is no need to add anything to the device tree as long as
-the nodes needed for HDMI video are there.
-
-Big part of the HDMI audio code is still unchanged and there is a need
-for a cleanup there. Also there is still probably something wrong with
-speaker mapping of multi-channel streams. I will get back to cleaning
-up these issues later.
-
-Best regards,
-Jyri
-
-Jyri Sarha (13):
-  ARM: OMAP2+: Remove non working OMAP HDMI audio initialization
-  OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
-  OMAPDSS: hdmi_wp: Add function for getting audio dma address
-  OMAPDSS: hdmi: Make hdmi structure public
-  OMAPDSS: hdmi_audio: Integrated ASoC DAI component driver
-    implementation
-  OMAPDSS: Kconfig: Update OMAP4_DSS_HDMI_AUDIO option
-  OMAPDSS: hdmi4: Register HDMI audio ASoC drivers from HDMI driver
-  OMAPDSS: Kconfig: Update OMAP5_DSS_HDMI_AUDIO option
-  OMAPDSS: hdmi5: Register HDMI audio ASoC drivers from HDMI driver
-  ASoC: omap: Remove obsolete HDMI audio code and Kconfig options
-  OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
-  OMAPDSS: hdmi5: Remove callbacks for an external ASoC DAI driver
-  OMAPDSS: Remove all references to obsolete HDMI audio callbacks
-
- arch/arm/mach-omap2/devices.c                      |   28 --
- .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 ------
- .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 ---
- drivers/video/fbdev/omap2/dss/Kconfig              |   29 +-
- drivers/video/fbdev/omap2/dss/Makefile             |    1 +
- drivers/video/fbdev/omap2/dss/hdmi.h               |   62 +++-
- drivers/video/fbdev/omap2/dss/hdmi4.c              |  188 +++-------
- drivers/video/fbdev/omap2/dss/hdmi5.c              |  189 +++-------
- drivers/video/fbdev/omap2/dss/hdmi_audio.c         |  323 +++++++++++++++++
- drivers/video/fbdev/omap2/dss/hdmi_wp.c            |    6 +
- include/video/omapdss.h                            |   31 --
- sound/soc/omap/Kconfig                             |   13 -
- sound/soc/omap/Makefile                            |    4 -
- sound/soc/omap/omap-hdmi-card.c                    |   87 -----
- sound/soc/omap/omap-hdmi.c                         |  364 --------------------
- sound/soc/omap/omap-hdmi.h                         |   38 --
- 16 files changed, 517 insertions(+), 1001 deletions(-)
- create mode 100644 drivers/video/fbdev/omap2/dss/hdmi_audio.c
- delete mode 100644 sound/soc/omap/omap-hdmi-card.c
- delete mode 100644 sound/soc/omap/omap-hdmi.c
- delete mode 100644 sound/soc/omap/omap-hdmi.h
-
+diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
+index 3e204a8..776c409 100644
+--- a/drivers/video/fbdev/omap2/dss/dpi.c
++++ b/drivers/video/fbdev/omap2/dss/dpi.c
+@@ -396,7 +396,7 @@ static int dpi_display_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err_get_dispc;
+ 
+-	r = dss_dpi_select_source(out->manager->id);
++	r = dss_dpi_select_source(out->port_num, out->manager->id);
+ 	if (r)
+ 		goto err_src_sel;
+ 
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 3b41953..8fd141f 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -72,7 +72,7 @@ struct dss_features {
+ 	const char *parent_clk_name;
+ 	enum omap_display_type *ports;
+ 	int num_ports;
+-	int (*dpi_select_source)(enum omap_channel channel);
++	int (*dpi_select_source)(int id, enum omap_channel channel);
+ };
+ 
+ static struct {
+@@ -566,7 +566,7 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void)
+ 	return REG_GET(DSS_CONTROL, 15, 15);
+ }
+ 
+-static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
++static int dss_dpi_select_source_omap2_omap3(int id, enum omap_channel channel)
+ {
+ 	if (channel != OMAP_DSS_CHANNEL_LCD)
+ 		return -EINVAL;
+@@ -574,7 +574,7 @@ static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
+ 	return 0;
+ }
+ 
+-static int dss_dpi_select_source_omap4(enum omap_channel channel)
++static int dss_dpi_select_source_omap4(int id, enum omap_channel channel)
+ {
+ 	int val;
+ 
+@@ -594,7 +594,7 @@ static int dss_dpi_select_source_omap4(enum omap_channel channel)
+ 	return 0;
+ }
+ 
+-static int dss_dpi_select_source_omap5(enum omap_channel channel)
++static int dss_dpi_select_source_omap5(int id, enum omap_channel channel)
+ {
+ 	int val;
+ 
+@@ -620,9 +620,9 @@ static int dss_dpi_select_source_omap5(enum omap_channel channel)
+ 	return 0;
+ }
+ 
+-int dss_dpi_select_source(enum omap_channel channel)
++int dss_dpi_select_source(int id, enum omap_channel channel)
+ {
+-	return dss.feat->dpi_select_source(channel);
++	return dss.feat->dpi_select_source(id, channel);
+ }
+ 
+ static int dss_get_clocks(void)
+diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
+index 849ede1..a7a0d8a 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.h
++++ b/drivers/video/fbdev/omap2/dss/dss.h
+@@ -209,7 +209,7 @@ int dss_init_platform_driver(void) __init;
+ void dss_uninit_platform_driver(void);
+ 
+ unsigned long dss_get_dispc_clk_rate(void);
+-int dss_dpi_select_source(enum omap_channel channel);
++int dss_dpi_select_source(int id, enum omap_channel channel);
+ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
+ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
+ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
 -- 
-1.7.9.5
+1.8.3.2
 

@@ -1,155 +1,44 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Thu, 26 Jun 2014 19:21:02 +0000
-Subject: [PATCH 11/12] OMAPDSS: hdmi5: Remove callbacks for an external ASoC DAI driver
-Message-Id: <bf68595731dfc3acbd700690a9b3e3a48db61855.1403807781.git.jsarha@ti.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 10 Jun 2014 09:04:19 +0000
+Subject: re: OMAPDSS: panel sharp-ls037v7dw01 DT support
+Message-Id: <20140610090419.GA6154@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1403807781.git.jsarha@ti.com>
-In-Reply-To: <cover.1403807781.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Removes the OMAP5 HDMI audio callbacks for an external audio driver and
-the old external DAI driver does not work anymore after this patch.
+Hello Tony Lindgren,
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- drivers/video/fbdev/omap2/dss/hdmi5.c |  113 ---------------------------------
- 1 file changed, 113 deletions(-)
+This is a semi-automatic email about new static checker warnings.
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index b49b33b..ab801cf 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -517,112 +517,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
- 	return r;
- }
- 
--#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	int r;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi_wp_audio_enable(&hdmi.wp, true);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--	hdmi_wp_audio_enable(&hdmi.wp, false);
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return hdmi_wp_audio_core_req_enable(&hdmi.wp, true);
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--	hdmi_wp_audio_core_req_enable(&hdmi.wp, false);
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	bool r;
--
--	mutex_lock(&hdmi.lock);
--
--	r = hdmi_mode_has_audio(hdmi.cfg.cm.mode);
--
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	int r;
--	u32 pclk = hdmi.cfg.timings.pixelclock;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi5_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--#else
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	return false;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	return -EPERM;
--}
--#endif
--
- static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
- 		const struct hdmi_avi_infoframe *avi)
- {
-@@ -651,13 +545,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
- 	.read_edid		= hdmi_read_edid,
- 	.set_infoframe		= hdmi_set_infoframe,
- 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
--
--	.audio_enable		= hdmi_audio_enable,
--	.audio_disable		= hdmi_audio_disable,
--	.audio_start		= hdmi_audio_start,
--	.audio_stop		= hdmi_audio_stop,
--	.audio_supported	= hdmi_audio_supported,
--	.audio_config		= hdmi_audio_config,
- };
- 
- static void hdmi_init_output(struct platform_device *pdev)
--- 
-1.7.9.5
+The patch be88c16a22ed: "OMAPDSS: panel sharp-ls037v7dw01 DT support"
+from May 16, 2014, leads to the following Smatch complaint:
 
+drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c:113 sharp_ls_enable()
+	 error: we previously assumed 'ddata->vcc' could be null (see line 105)
+
+drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
+   104	
+   105		if (ddata->vcc) {
+                    ^^^^^^^^^^
+Patch introduces a check.
+
+   106			r = regulator_enable(ddata->vcc);
+   107			if (r != 0)
+   108				return r;
+   109		}
+   110	
+   111		r = in->ops.dpi->enable(in);
+   112		if (r) {
+   113			regulator_disable(ddata->vcc);
+                                          ^^^^^^^^^^
+Patch introduces a new dereference and I was too lazy to find out if
+an error in ->enable() implies a non-null "ddata->vcc" because I am a
+bad person.
+
+   114			return r;
+   115		}
+
+regards,
+dan carpenter

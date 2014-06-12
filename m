@@ -1,105 +1,65 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 04 Jun 2014 06:53:03 +0000
-Subject: [PATCH v3 7/7] omapdss: DSS: add reg-id param to dpi_select_source
-Message-Id: <1401864063-19196-8-git-send-email-archit@ti.com>
+From: Colin King <colin.king@canonical.com>
+Date: Thu, 12 Jun 2014 10:18:08 +0000
+Subject: [PATCH] video: fbdev: broadsheetfb.c: fix memory leak on sector_buffer
+Message-Id: <1402568288-10397-1-git-send-email-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401096492-1405-1-git-send-email-archit@ti.com>
- <1401864063-19196-1-git-send-email-archit@ti.com>
-In-Reply-To: <1401864063-19196-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add an argument which describes which DPI instance we are referring to when
-selecting it's overlay manager.
+From: Colin Ian King <colin.king@canonical.com>
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+static code analysis from cppcheck reports:
+
+[drivers/video/fbdev/broadsheetfb.c:673]:
+  (error) Memory leak: sector_buffer
+
+sector_buffer is not being kfree'd on each call to
+broadsheet_spiflash_rewrite_sector(), so free it.
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/video/fbdev/omap2/dss/dpi.c |  2 +-
- drivers/video/fbdev/omap2/dss/dss.c | 12 ++++++------
- drivers/video/fbdev/omap2/dss/dss.h |  2 +-
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/broadsheetfb.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
-index 3e204a8..776c409 100644
---- a/drivers/video/fbdev/omap2/dss/dpi.c
-+++ b/drivers/video/fbdev/omap2/dss/dpi.c
-@@ -396,7 +396,7 @@ static int dpi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_get_dispc;
+diff --git a/drivers/video/fbdev/broadsheetfb.c b/drivers/video/fbdev/broadsheetfb.c
+index 8556264..235542f 100644
+--- a/drivers/video/fbdev/broadsheetfb.c
++++ b/drivers/video/fbdev/broadsheetfb.c
+@@ -636,7 +636,7 @@ static int broadsheet_spiflash_rewrite_sector(struct broadsheetfb_par *par,
+ 		err = broadsheet_spiflash_read_range(par, start_sector_addr,
+ 						data_start_addr, sector_buffer);
+ 		if (err)
+-			return err;
++			goto out;
+ 	}
  
--	r = dss_dpi_select_source(out->manager->id);
-+	r = dss_dpi_select_source(out->port_num, out->manager->id);
- 	if (r)
- 		goto err_src_sel;
+ 	/* now we copy our data into the right place in the sector buffer */
+@@ -657,7 +657,7 @@ static int broadsheet_spiflash_rewrite_sector(struct broadsheetfb_par *par,
+ 		err = broadsheet_spiflash_read_range(par, tail_start_addr,
+ 			tail_len, sector_buffer + tail_start_addr);
+ 		if (err)
+-			return err;
++			goto out;
+ 	}
  
-diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-index 3b41953..8fd141f 100644
---- a/drivers/video/fbdev/omap2/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/dss/dss.c
-@@ -72,7 +72,7 @@ struct dss_features {
- 	const char *parent_clk_name;
- 	enum omap_display_type *ports;
- 	int num_ports;
--	int (*dpi_select_source)(enum omap_channel channel);
-+	int (*dpi_select_source)(int id, enum omap_channel channel);
- };
+ 	/* if we got here we have the full sector that we want to rewrite. */
+@@ -665,11 +665,13 @@ static int broadsheet_spiflash_rewrite_sector(struct broadsheetfb_par *par,
+ 	/* first erase the sector */
+ 	err = broadsheet_spiflash_erase_sector(par, start_sector_addr);
+ 	if (err)
+-		return err;
++		goto out;
  
- static struct {
-@@ -566,7 +566,7 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void)
- 	return REG_GET(DSS_CONTROL, 15, 15);
+ 	/* now write it */
+ 	err = broadsheet_spiflash_write_sector(par, start_sector_addr,
+ 					sector_buffer, sector_size);
++out:
++	kfree(sector_buffer);
+ 	return err;
  }
  
--static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
-+static int dss_dpi_select_source_omap2_omap3(int id, enum omap_channel channel)
- {
- 	if (channel != OMAP_DSS_CHANNEL_LCD)
- 		return -EINVAL;
-@@ -574,7 +574,7 @@ static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
- 	return 0;
- }
- 
--static int dss_dpi_select_source_omap4(enum omap_channel channel)
-+static int dss_dpi_select_source_omap4(int id, enum omap_channel channel)
- {
- 	int val;
- 
-@@ -594,7 +594,7 @@ static int dss_dpi_select_source_omap4(enum omap_channel channel)
- 	return 0;
- }
- 
--static int dss_dpi_select_source_omap5(enum omap_channel channel)
-+static int dss_dpi_select_source_omap5(int id, enum omap_channel channel)
- {
- 	int val;
- 
-@@ -620,9 +620,9 @@ static int dss_dpi_select_source_omap5(enum omap_channel channel)
- 	return 0;
- }
- 
--int dss_dpi_select_source(enum omap_channel channel)
-+int dss_dpi_select_source(int id, enum omap_channel channel)
- {
--	return dss.feat->dpi_select_source(channel);
-+	return dss.feat->dpi_select_source(id, channel);
- }
- 
- static int dss_get_clocks(void)
-diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
-index 849ede1..a7a0d8a 100644
---- a/drivers/video/fbdev/omap2/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/dss/dss.h
-@@ -209,7 +209,7 @@ int dss_init_platform_driver(void) __init;
- void dss_uninit_platform_driver(void);
- 
- unsigned long dss_get_dispc_clk_rate(void);
--int dss_dpi_select_source(enum omap_channel channel);
-+int dss_dpi_select_source(int id, enum omap_channel channel);
- void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
- enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
- const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
 -- 
-1.8.3.2
+2.0.0
 

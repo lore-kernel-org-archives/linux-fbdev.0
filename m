@@ -1,323 +1,211 @@
-From: Manuel Schoelling <manuel.schoelling@gmx.de>
-Date: Sat, 14 Jun 2014 23:24:35 +0000
-Subject: Re: [PATCH RESEND v2] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1402788275.4561.6.camel@schoellingm.dzne.de>
+From: Stefan Biereigel <stefan@biereigel.de>
+Date: Sat, 14 Jun 2014 09:55:43 +0000
+Subject: console / fbdev: fbcon support for bits_per_pixel = 1?
+Message-Id: <539C1C1F.5060904@biereigel.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401533856-4067-1-git-send-email-manuel.schoelling@gmx.de>
-	 <1402787715-26007-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1402787715-26007-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: plagnioj@jcrosoft.com
-Cc: tomi.valkeinen@ti.com, geert@linux-m68k.org, broonie@linaro.org, rdunlap@infradead.org, hans.verkuil@cisco.com, dh.herrmann@gmail.com, tiwai@suse.de, gregkh@linuxfoundation.org, airlied@redhat.com, mtosatti@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "linux-kernel@vger.kernel org" <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, linux-console@vger.kernel.org, brian <brian.fonfara@gmx.de>
 
-This version reuses an "old" scrollback buffer of the previous console
-if memory allocation fails.
+CC: linux-console, linux-fbdev
 
-However, the issue of clearing the console using the 'clear_console'
-commnad [1,2] is still unsolved. I'd prefer implementing it using a
-ioctl() call but it's open for discussion ;)
+Hello Kernel Developers,
+for a university assignment we are developing a frame buffer driver for a monochrome
+display. We succeeded so far in making a simple "RAM frame buffer" module, which is needed
+as the basis (we don't have read access to the RAM in the LCD).
+We are using the system-default fb_ops (fb_sys_{read,write},
+sys_{fillrect,copyarea,imageblit), and all is well when we use bits_per_pixel = 8. When we
+map a console to the RAM frame buffer (con2fbmap 1 1), do strg-alt-F1, type some
+characters there, we can then 'cat /dev/fb1' and plot the ram contents in Matlab
+(reshaping the data to be our display geometry first), where our typed characters and the
+console appear.
 
-[1] https://sources.debian.net/src/bash/4.2%
-2Bdfsg-0.1/debian/clear_console.c
-[2] http://manpages.debian.org/cgi-bin/man.cgi?query=clear_console
+If we however change bits_per_pixel to 1, and divide line_length by 8 (as it should
+represent the line length in bytes), this suddenly stops working: echo and cat to fb1 work
+as intended: We change our Matlab-Script to interpret every byte as 8 pixels, bytes
+written into /dev/fb1 can be read out correctly. If we however map the console to fb1, no
+console output can be seen in RAM - it is (seemingly) filled with garbage.
 
-On So, 2014-06-15 at 01:15 +0200, Manuel Schölling wrote:
-> Add a scrollback buffers for each VGA console. The benefit is that
-> the scrollback history is not flushed when switching between consoles
-> but is persistent.
-> The buffers are allocated on demand when a new console is opened.
-> 
-> Signed-off-by: Manuel Schölling <manuel.schoelling@gmx.de>
-> ---
->  drivers/video/console/Kconfig  |   19 ++++-
->  drivers/video/console/vgacon.c |  159 +++++++++++++++++++++++++++-------------
->  2 files changed, 124 insertions(+), 54 deletions(-)
-> 
-> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-> index fe1cd01..05fdc2c 100644
-> --- a/drivers/video/console/Kconfig
-> +++ b/drivers/video/console/Kconfig
-> @@ -43,9 +43,22 @@ config VGACON_SOFT_SCROLLBACK_SIZE
->         range 1 1024
->         default "64"
->         help
-> -         Enter the amount of System RAM to allocate for the scrollback
-> -	 buffer.  Each 64KB will give you approximately 16 80x25
-> -	 screenfuls of scrollback buffer
-> +	  Enter the amount of System RAM to allocate for scrollback
-> +	  buffers of VGA consoles. Each 64KB will give you approximately
-> +	  16 80x25 screenfuls of scrollback buffer.
-> +
-> +config VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE
-> +	bool "Persistent Scrollback History for each console"
-> +	depends on VGACON_SOFT_SCROLLBACK
-> +	default y
-> +	help
-> +	  Say Y here if for each VGA console a scrollback buffer should
-> +	  be allocated. The scrollback history will persist when switching
-> +	  between consoles. If you say N here, scrollback is only supported
-> +	  for the active VGA console and scrollback history will be flushed
-> +	  when switching between consoles.
-> +
-> +	  If you use a RAM-constrained system, say N here.
->  
->  config MDA_CONSOLE
->  	depends on !M68K && !PARISC && ISA
-> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-> index 9d8feac..652131d 100644
-> --- a/drivers/video/console/vgacon.c
-> +++ b/drivers/video/console/vgacon.c
-> @@ -181,70 +181,126 @@ static inline void vga_set_mem_top(struct vc_data *c)
->  
->  #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
->  /* software scrollback */
-> -static void *vgacon_scrollback;
-> -static int vgacon_scrollback_tail;
-> -static int vgacon_scrollback_size;
-> -static int vgacon_scrollback_rows;
-> -static int vgacon_scrollback_cnt;
-> -static int vgacon_scrollback_cur;
-> -static int vgacon_scrollback_save;
-> -static int vgacon_scrollback_restore;
-> -
-> -static void vgacon_scrollback_init(int pitch)
-> +struct vgacon_scrollback_info {
-> +	void *data;
-> +	int tail;
-> +	int size;
-> +	int rows;
-> +	int cnt;
-> +	int cur;
-> +	int save;
-> +	int restore;
-> +};
-> +static struct vgacon_scrollback_info *vgacon_scrollback_cur;
-> +#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE
-> +static struct vgacon_scrollback_info vgacon_scrollbacks[MAX_NR_CONSOLES];
-> +#else
-> +static struct vgacon_scrollback_info vgacon_scrollbacks[1];
-> +#endif
-> +
-> +static void vgacon_scrollback_reset(size_t reset_size)
->  {
-> -	int rows = CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
-> -
-> -	if (vgacon_scrollback) {
-> -		vgacon_scrollback_cnt  = 0;
-> -		vgacon_scrollback_tail = 0;
-> -		vgacon_scrollback_cur  = 0;
-> -		vgacon_scrollback_rows = rows - 1;
-> -		vgacon_scrollback_size = rows * pitch;
-> +	if (vgacon_scrollback_cur->data && reset_size > 0)
-> +		memset(vgacon_scrollback_cur->data, 0, reset_size);
-> +
-> +	vgacon_scrollback_cur->cnt  = 0;
-> +	vgacon_scrollback_cur->tail = 0;
-> +	vgacon_scrollback_cur->cur  = 0;
-> +}
-> +
-> +static void vgacon_scrollback_init(int vc_num)
-> +{
-> +	int pitch = vga_video_num_columns * 2;
-> +	size_t size = CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-> +	int rows = size/pitch;
-> +	void *data;
-> +
-> +	data = kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, GFP_NOWAIT);
-> +	if (data) {
-> +		vgacon_scrollbacks[vc_num].data = data;
-> +		vgacon_scrollback_cur = &vgacon_scrollbacks[vc_num];
-> +
-> +		vgacon_scrollback_cur->rows = rows - 1;
-> +		vgacon_scrollback_cur->size = rows * pitch;
-> +
-> +		vgacon_scrollback_reset(0);
-> +	} else {
-> +		pr_warn("VGAcon: failed to allocate memory for scrollback. Trying to reuse previous buffer.\n");
-> +		/* leave vgacon_scrollback_cur untouched
-> +		   but reset its content */
-> +		vgacon_scrollback_reset(size);
->  	}
->  }
->  
-> +static void vgacon_switch_scrollback(int vc_num)
-> +{
-> +#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE
-> +	if (!vgacon_scrollbacks[vc_num].data)
-> +		vgacon_scrollback_init(vc_num);
-> +	else
-> +		vgacon_scrollback_cur = &vgacon_scrollbacks[vc_num];
-> +#else
-> +	vc_num = 0;
-> +
-> +	if (!vgacon_scrollbacks[vc_num].data)
-> +		vgacon_scrollback_init(vc_num);
-> +	else {
-> +		size_t size = CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-> +
-> +		vgacon_scrollback_reset(size);
-> +	}
-> +#endif
-> +}
-> +
->  static void vgacon_scrollback_startup(void)
->  {
-> -	vgacon_scrollback = kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, GFP_NOWAIT);
-> -	vgacon_scrollback_init(vga_video_num_columns * 2);
-> +	int i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(vgacon_scrollbacks); ++i)
-> +		vgacon_scrollbacks[i].data = NULL;
-> +
-> +	vgacon_scrollback_cur = &vgacon_scrollbacks[0];
-> +	vgacon_scrollback_init(0);
->  }
->  
->  static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
->  {
->  	void *p;
->  
-> -	if (!vgacon_scrollback_size || c->vc_num != fg_console)
-> +	if (!vgacon_scrollback_cur->data || !vgacon_scrollback_cur->size)
->  		return;
->  
->  	p = (void *) (c->vc_origin + t * c->vc_size_row);
->  
->  	while (count--) {
-> -		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
-> +		scr_memcpyw(vgacon_scrollback_cur->data +
-> +			    vgacon_scrollback_cur->tail,
->  			    p, c->vc_size_row);
-> -		vgacon_scrollback_cnt++;
-> +
-> +		vgacon_scrollback_cur->cnt++;
->  		p += c->vc_size_row;
-> -		vgacon_scrollback_tail += c->vc_size_row;
-> +		vgacon_scrollback_cur->tail += c->vc_size_row;
->  
-> -		if (vgacon_scrollback_tail >= vgacon_scrollback_size)
-> -			vgacon_scrollback_tail = 0;
-> +		if (vgacon_scrollback_cur->tail >= vgacon_scrollback_cur->size)
-> +			vgacon_scrollback_cur->tail = 0;
->  
-> -		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
-> -			vgacon_scrollback_cnt = vgacon_scrollback_rows;
-> +		if (vgacon_scrollback_cur->cnt > vgacon_scrollback_cur->rows)
-> +			vgacon_scrollback_cur->cnt = vgacon_scrollback_cur->rows;
->  
-> -		vgacon_scrollback_cur = vgacon_scrollback_cnt;
-> +		vgacon_scrollback_cur->cur = vgacon_scrollback_cur->cnt;
->  	}
->  }
->  
->  static void vgacon_restore_screen(struct vc_data *c)
->  {
-> -	vgacon_scrollback_save = 0;
-> +	vgacon_scrollback_cur->save = 0;
->  
-> -	if (!vga_is_gfx && !vgacon_scrollback_restore) {
-> +	if (!vga_is_gfx && !vgacon_scrollback_cur->restore) {
->  		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
->  			    c->vc_screenbuf_size > vga_vram_size ?
->  			    vga_vram_size : c->vc_screenbuf_size);
-> -		vgacon_scrollback_restore = 1;
-> -		vgacon_scrollback_cur = vgacon_scrollback_cnt;
-> +		vgacon_scrollback_cur->restore = 1;
-> +		vgacon_scrollback_cur->cur = vgacon_scrollback_cur->cnt;
->  	}
->  }
->  
-> @@ -258,41 +314,41 @@ static int vgacon_scrolldelta(struct vc_data *c, int lines)
->  		return 1;
->  	}
->  
-> -	if (!vgacon_scrollback)
-> +	if (!vgacon_scrollback_cur->data)
->  		return 1;
->  
-> -	if (!vgacon_scrollback_save) {
-> +	if (!vgacon_scrollback_cur->save) {
->  		vgacon_cursor(c, CM_ERASE);
->  		vgacon_save_screen(c);
-> -		vgacon_scrollback_save = 1;
-> +		vgacon_scrollback_cur->save = 1;
->  	}
->  
-> -	vgacon_scrollback_restore = 0;
-> -	start = vgacon_scrollback_cur + lines;
-> +	vgacon_scrollback_cur->restore = 0;
-> +	start = vgacon_scrollback_cur->cur + lines;
->  	end = start + abs(lines);
->  
->  	if (start < 0)
->  		start = 0;
->  
-> -	if (start > vgacon_scrollback_cnt)
-> -		start = vgacon_scrollback_cnt;
-> +	if (start > vgacon_scrollback_cur->cnt)
-> +		start = vgacon_scrollback_cur->cnt;
->  
->  	if (end < 0)
->  		end = 0;
->  
-> -	if (end > vgacon_scrollback_cnt)
-> -		end = vgacon_scrollback_cnt;
-> +	if (end > vgacon_scrollback_cur->cnt)
-> +		end = vgacon_scrollback_cur->cnt;
->  
-> -	vgacon_scrollback_cur = start;
-> +	vgacon_scrollback_cur->cur = start;
->  	count = end - start;
-> -	soff = vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
-> -					 c->vc_size_row);
-> +	soff = vgacon_scrollback_cur->tail -
-> +		((vgacon_scrollback_cur->cnt - end) * c->vc_size_row);
->  	soff -= count * c->vc_size_row;
->  
->  	if (soff < 0)
-> -		soff += vgacon_scrollback_size;
-> +		soff += vgacon_scrollback_cur->size;
->  
-> -	count = vgacon_scrollback_cnt - start;
-> +	count = vgacon_scrollback_cur->cnt - start;
->  
->  	if (count > c->vc_rows)
->  		count = c->vc_rows;
-> @@ -306,13 +362,13 @@ static int vgacon_scrolldelta(struct vc_data *c, int lines)
->  
->  		count *= c->vc_size_row;
->  		/* how much memory to end of buffer left? */
-> -		copysize = min(count, vgacon_scrollback_size - soff);
-> -		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
-> +		copysize = min(count, vgacon_scrollback_cur->size - soff);
-> +		scr_memcpyw(d, vgacon_scrollback_cur->data + soff, copysize);
->  		d += copysize;
->  		count -= copysize;
->  
->  		if (count) {
-> -			scr_memcpyw(d, vgacon_scrollback, count);
-> +			scr_memcpyw(d, vgacon_scrollback_cur->data, count);
->  			d += count;
->  		}
->  
-> @@ -327,6 +383,7 @@ static int vgacon_scrolldelta(struct vc_data *c, int lines)
->  #define vgacon_scrollback_startup(...) do { } while (0)
->  #define vgacon_scrollback_init(...)    do { } while (0)
->  #define vgacon_scrollback_update(...)  do { } while (0)
-> +#define vgacon_switch_scrollback(...)  do { } while (0)
->  
->  static void vgacon_restore_screen(struct vc_data *c)
->  {
-> @@ -842,7 +899,7 @@ static int vgacon_switch(struct vc_data *c)
->  			vgacon_doresize(c, c->vc_cols, c->vc_rows);
->  	}
->  
-> -	vgacon_scrollback_init(c->vc_size_row);
-> +	vgacon_switch_scrollback(c->vc_num);
->  	return 0;		/* Redrawing not needed */
->  }
->  
+We're using fbcon as the console driver, and the first frame buffer for me is intelfb. I
+see, that the bitblitting-calls for every typed character are depth 1 and have correct
+geometry, but the whole bitblitting-builtin seems not to work for bits_per_pixel = 1, i
+tried it with a simple test image after the initialisation...
 
+Is this behavior intended or are we triggering a bug here (that no one noticed, because
+who in the world uses monochrome framebuffers these days..). I can't see any comments that
+monochrome consoles should not work with 1 bit per pixel. See the code below if you spot
+some errors (ignore some missing error handling and mediocre style for now, please).
 
+Thank you for any help and input.
+Best regards,
+Stefan Biereigel
+
+8<--- testfb.c
+
+#include <linux/init.h>
+#include <linux/module.h>
+
+#include <linux/fb.h>
+#include <linux/slab.h>
+#include <linux/wait.h>
+#include <linux/errno.h>
+#include <linux/platform_device.h>
+
+#define DISPLAY_WIDTH	240
+#define DISPLAY_HEIGHT	64
+#define FB_MEM_SIZE 	(DISPLAY_WIDTH * DISPLAY_HEIGHT)/8
+
+static struct platform_device *testfb_device;
+
+static struct fb_ops fbops = {
+	.owner		= THIS_MODULE,
+	.fb_fillrect	= sys_fillrect,
+	.fb_copyarea	= sys_copyarea,
+	.fb_imageblit	= sys_imageblit,
+	.fb_read	= fb_sys_read,
+	.fb_write	= fb_sys_write,
+	.fb_sync	= NULL,
+};
+
+static int __init testfb_probe (struct platform_device *pdev) {
+	void *fb_mem = NULL;
+	struct fb_info *fbinfo = NULL;
+
+	fb_mem = kzalloc(FB_MEM_SIZE, GFP_KERNEL);
+
+	if (!fb_mem) {
+		pr_err("testfb: memory allocation for framebuffer failed\n");
+		return(-ENOMEM);
+	}
+	else
+		pr_debug("testfb: allocated framebuffer memory successfully\n");
+
+	fbinfo = framebuffer_alloc(0, &pdev->dev);
+
+	if (!fbinfo) {
+		pr_err("testfb: framebuffer_alloc() failed\n");
+		kfree(fb_mem);
+		return(-1);
+	}
+	else
+		pr_debug("testfb: framebuffer_alloc was successful\n");
+
+	fbinfo->fix.smem_start = (unsigned long) fb_mem;
+	fbinfo->screen_base = (char __iomem *) fb_mem;
+	fbinfo->fix.smem_len = FB_MEM_SIZE;
+	fbinfo->fbops = &fbops;
+
+	fbinfo->node			= 0;				/* ?int */
+	fbinfo->device			= &pdev->dev;
+	fbinfo->flags			= FBINFO_DEFAULT;		/*  */
+	fbinfo->var.xres		= DISPLAY_WIDTH;		/* visible resolution */
+	fbinfo->var.yres		= DISPLAY_HEIGHT;		/* visible resolution */
+	fbinfo->var.xres_virtual	= DISPLAY_WIDTH;		/* virtual resolution */
+	fbinfo->var.yres_virtual	= DISPLAY_HEIGHT;		/* virtual resolution */
+	fbinfo->var.bits_per_pixel	= 1;				/* bits per pixel */
+	fbinfo->var.activate		= FB_ACTIVATE_NOW;		/* set values immediately (or vbl) */
+	fbinfo->var.sync		= 0;				/* ?see FB_SYNC_* */
+	fbinfo->var.vmode		= FB_VMODE_NONINTERLACED;	/* non interlaced, see FB_VMODE_* */
+	fbinfo->var.left_margin 	= 0;
+	fbinfo->var.right_margin 	= 0;
+	fbinfo->var.upper_margin 	= 0;
+	fbinfo->var.lower_margin 	= 0;
+	fbinfo->var.red.offset 		= 0;
+	fbinfo->var.red.length 		= fbinfo->var.bits_per_pixel;
+	fbinfo->var.green 		= fbinfo->var.red;
+	fbinfo->var.blue  		= fbinfo->var.red;
+	fbinfo->var.grayscale		= 1;
+	strcpy(fbinfo->fix.id, "testfb");				/* identifier, 16 byte */
+	fbinfo->fix.type		= FB_TYPE_PACKED_PIXELS;	/* pack pixels to avoid overhead */
+	fbinfo->fix.visual		= FB_VISUAL_MONO10;		/* Monochr. 1=Black 0=White */
+	fbinfo->fix.line_length		= DISPLAY_WIDTH/8;		/* length of a line in bytes */
+	fbinfo->fix.accel		= FB_ACCEL_NONE;		/* no hardware accelerator */
+	fbinfo->fix.xpanstep 		= 0;
+	fbinfo->fix.ypanstep		= 0;
+	fbinfo->fix.ywrapstep 		= 0;
+
+	if (register_framebuffer(fbinfo) < 0) {
+		pr_err("testfb: registering framebuffer failed\n");
+		kfree((void *) fbinfo->fix.smem_start);
+		framebuffer_release(fbinfo);
+		return(-1);
+	}
+	else
+		pr_debug("testfb: registered framebuffer\n");
+
+	platform_set_drvdata(pdev, fbinfo);
+
+	return 0;
+}
+
+static int testfb_remove(struct platform_device *pdev) {
+	struct fb_info *fbinfo = NULL;
+
+	fbinfo = platform_get_drvdata(pdev);
+
+	if (!fbinfo) {
+		pr_err("testfb: unable to get fbinfo from pdev\n");
+		return(-1);
+	}
+
+	if (unregister_framebuffer(fbinfo) < 0)
+		pr_err("testfb: unregistering framebuffer failed\n");
+	else
+		pr_debug("testfb: unregistered framebuffer\n");
+
+	kfree((void *) fbinfo->fix.smem_start);
+
+	framebuffer_release(fbinfo);
+
+	return 0;
+}
+
+static struct platform_driver testfb_driver = {
+	.probe = testfb_probe,
+	.remove = testfb_remove,
+	.driver = {
+		.name = "testfb",
+	},
+};
+
+static int __init testfb_init(void)
+{
+	int ret;
+
+	ret = platform_driver_register(&testfb_driver);
+	if (!ret) {
+		testfb_device = platform_device_register_simple("testfb", 0,
+								NULL, 0);
+
+		if (IS_ERR(testfb_device)) {
+			platform_driver_unregister(&testfb_driver);
+			ret = PTR_ERR(testfb_device);
+		} else {
+			pr_info("testfb: platform_device registered\n");
+		}
+
+	}
+
+	pr_info("testfb: module loaded\n");
+	
+	return 0;
+}
+
+static void __exit testfb_exit(void)
+{
+	platform_device_unregister(testfb_device);
+	platform_driver_unregister(&testfb_driver);
+
+	pr_info("testfb: module unloaded\n");
+}
+
+module_init(testfb_init);
+module_exit(testfb_exit);
+
+MODULE_LICENSE("GPL v2");
+MODULE_ALIAS("testfb");
+MODULE_AUTHOR("Brian Fonfara");
+MODULE_DESCRIPTION("Ein Modul zum Test der Linux Framebuffer-Programmierung");
+MODULE_DESCRIPTION("version 0.1");

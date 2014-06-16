@@ -1,48 +1,46 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jun 2014 10:03:49 +0000
-Subject: [PATCH 04/15] OMAPDSS: HDMI: fix name conflict
-Message-Id: <1403604240-16738-5-git-send-email-tomi.valkeinen@ti.com>
+From: Daniel Jeong <gshark.jeong@gmail.com>
+Date: Mon, 16 Jun 2014 02:17:23 +0000
+Subject: [RFC 2/2] backlight: device tree: add new tps611xx backlight driver
+Message-Id: <1402885043-3626-3-git-send-email-gshark.jeong@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1402885043-3626-1-git-send-email-gshark.jeong@gmail.com>
+In-Reply-To: <1402885043-3626-1-git-send-email-gshark.jeong@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
+Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>
 
-OMAP HDMI driver has an 'enum hdmi_audio_sample_size', which conflicts
-with the common include/linux/hdmi.h.
+This commit is about tps611xx device tree documentation.
 
-Change the name of the OMAP specific enum with '_omap" postfix.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ .../video/backlight/tps611xx-backlight.txt         |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index fbee07816337..1a62dc3fe54e 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -142,7 +142,7 @@ enum hdmi_audio_samples_perword {
- 	HDMI_AUDIO_ONEWORD_TWOSAMPLES = 1
- };
- 
--enum hdmi_audio_sample_size {
-+enum hdmi_audio_sample_size_omap {
- 	HDMI_AUDIO_SAMPLE_16BITS = 0,
- 	HDMI_AUDIO_SAMPLE_24BITS = 1
- };
-@@ -260,7 +260,7 @@ struct hdmi_audio_format {
- 	enum hdmi_audio_justify			justification;
- 	enum hdmi_audio_sample_order		sample_order;
- 	enum hdmi_audio_samples_perword		samples_per_word;
--	enum hdmi_audio_sample_size		sample_size;
-+	enum hdmi_audio_sample_size_omap	sample_size;
- 	enum hdmi_audio_blk_strt_end_sig	en_sig_blk_strt_end;
- };
- 
+diff --git a/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
+new file mode 100644
+index 0000000..8a0935d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
+@@ -0,0 +1,16 @@
++TPS611xx family of backlight driver based on EasyScale.
++
++It supports tps61158, tps61161, tps61163 and tps61165.
++
++Required properties:
++- compatible: "ti,tps61158_bl", "ti,tps61161_bl", "ti,tps61163_bl", "ti,tps61165_bl"
++- rfa_en: enable request for acknowledge.
++- en_gpio_num: gpio number for en pin.
++
++Example:
++
++	backlight {
++		compatible = "ti,tps61163_bl";
++		rfa_en = <1>;
++		en_gpio_num = <45>;
++	};
 -- 
-1.9.1
+1.7.9.5
 

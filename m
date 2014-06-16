@@ -1,7 +1,7 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 16 Jun 2014 07:23:08 +0000
+Date: Mon, 16 Jun 2014 07:32:17 +0000
 Subject: Re: [PATCH] offb: Fix little-endian support
-Message-Id: <1402903388.7661.32.camel@pasglop>
+Message-Id: <1402903937.7661.33.camel@pasglop>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1400073709-15012-1-git-send-email-tiwai@suse.de>
 	 <5373772D.9060807@fr.ibm.com> <s5hha4sh20d.wl%tiwai@suse.de>

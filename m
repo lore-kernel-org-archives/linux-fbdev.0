@@ -1,43 +1,34 @@
-From: Dexuan Cui <decui@microsoft.com>
-Date: Thu, 26 Jun 2014 20:32:42 +0000
-Subject: RE: [PATCH] video: hyperv: hyperv_fb: refresh the VM screen by force on VM panic
-Message-Id: <EE124450C0AAF944A40DD71E61F878C98402B1@SINEX14MBXC418.southpacific.corp.microsoft.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 16 Jun 2014 07:23:08 +0000
+Subject: Re: [PATCH] offb: Fix little-endian support
+Message-Id: <1402903388.7661.32.camel@pasglop>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403569757-2622-1-git-send-email-decui@microsoft.com>
- <20140624135101.GB10115@kroah.com>
- <EE124450C0AAF944A40DD71E61F878C98353C6@SINEX14MBXC418.southpacific.corp.microsoft.com>
- <20140626033608.GA32654@kroah.com>
-In-Reply-To: <20140626033608.GA32654@kroah.com>
+References: <1400073709-15012-1-git-send-email-tiwai@suse.de>
+	 <5373772D.9060807@fr.ibm.com> <s5hha4sh20d.wl%tiwai@suse.de>
+	 <5373A200.6080301@fr.ibm.com> <s5h8uq4qm3h.wl%tiwai@suse.de>
+In-Reply-To: <s5h8uq4qm3h.wl%tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "jasowang@redhat.com" <jasowang@redhat.com>, "driverdev-devel@linuxdriverproject.org" <driverdev-devel@linuxdriverproject.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tomi.valkeinen@ti.com" <tomi.valkeinen@ti.com>, "olaf@aepfle.de" <olaf@aepfle.de>, "apw@canonical.com" <apw@canonical.com>, "plagnioj@jcrosoft.com" <plagnioj@jcrosoft.com>, Haiyang Zhang <haiyangz@microsoft.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Cedric Le Goater <clg@fr.ibm.com>, Dinar Valeev <dvaleev@suse.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-> > >> MS-TFS: 157532
-> >
-> > > What is this line for?
-> >
-> > Hi Greg,
-> > This line is for our internal bug repository.
-> > We have an automated system to correlate bugs with fixes so that our test
-> > team knows when a bug fix has been accepted upstream and they need to
-> > write a new test case for it.
-> >
-> > The MS-TFS line has appeared in the commit description for a while if you
-> > search for it in 'git log'  of linux-next.
-> >
-> > Please let us know if you have further comments.
+
+On Wed, 2014-05-14 at 19:57 +0200, Takashi Iwai wrote:
 > 
-> Please don't add marker lines like this that provide no relevancy to
-> anyone else.  I don't allow gerrit ids for the same reason.  If you want
-> to refer to a public bug tracker, that's great, otherwise, don't
-> include it.
+> Hm, so it actually regressed on BE?
 > 
-> greg k-h
+> It's strange because fb_math_be() should be true and the patch won't
+> change the values in that case...
 
-Ok, I'll remove the line and re-submit a v2 patch(the patch itself will be
-the same).
+Shouldn't the patch be based on foreign endian being set rather than
+just "be" anyway ?
 
-Thanks,
--- Dexuan
+IE. If the fb is LE and the host is LE we *also* don't want to change
+the ordering, which will be the case when we fix qemu...
+
+Cheers,
+Ben.
+
+
+

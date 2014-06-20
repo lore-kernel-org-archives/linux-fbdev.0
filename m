@@ -1,50 +1,37 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sun, 15 Jun 2014 08:57:48 +0000
-Subject: Re: console / fbdev: fbcon support for bits_per_pixel = 1?
-Message-Id: <CAMuHMdXMWFXG99iiuk1j=0DaQbWbmcpGxaTfDNX8o+Dz7MH7aw@mail.gmail.com>
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Fri, 20 Jun 2014 19:59:57 +0000
+Subject: [PATCH] drivers/video/fbdev/sis: Add missing else
+Message-Id: <1403294397-18262-1-git-send-email-linux@rasmusvillemoes.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <539C1C1F.5060904@biereigel.de>
-	<20140614143550.59367463@neptune.home>
-In-Reply-To: <20140614143550.59367463@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>
-Cc: Stefan Biereigel <stefan@biereigel.de>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-console@vger.kernel.org, brian <brian.fonfara@gmx.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
-On Sat, Jun 14, 2014 at 2:35 PM, Bruno Pr=C3=A9mont
-<bonbons@linux-vserver.org> wrote:
->> Is this behavior intended or are we triggering a bug here (that no one n=
-oticed, because
->> who in the world uses monochrome framebuffers these days..). I can't see=
- any comments that
->> monochrome consoles should not work with 1 bit per pixel. See the code b=
-elow if you spot
->> some errors (ignore some missing error handling and mediocre style for n=
-ow, please).
->
-> fbcon on 1bpp frambuffer worked for me with picoLCD (though I have found =
-no userspace
+The surrounding code and the fact that the previous two if's are
+rendered useless without this "else" (since SIS_340=55 and XGI_20=75
+are greater than SIS_661=15) suggests that the "else" is indeed
+missing.
 
-I'm not aware of 1 bpp frame buffer consoles being broken.
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+ drivers/video/fbdev/sis/init.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> framebuffer application willing to operate at 1bpp).
+diff --git a/drivers/video/fbdev/sis/init.c b/drivers/video/fbdev/sis/init.c
+index bd40f5e..dfe3eb7 100644
+--- a/drivers/video/fbdev/sis/init.c
++++ b/drivers/video/fbdev/sis/init.c
+@@ -1511,7 +1511,7 @@ SiS_Get310DRAMType(struct SiS_Private *SiS_Pr)
+       } else if(SiS_Pr->ChipType >= SIS_340) {
+ 	 /* TODO */
+ 	 data = 0;
+-      } if(SiS_Pr->ChipType >= SIS_661) {
++      } else if(SiS_Pr->ChipType >= SIS_661) {
+ 	 if(SiS_Pr->SiS_ROMNew) {
+ 	    data = ((SiS_GetReg(SiS_Pr->SiS_P3d4,0x78) & 0xc0) >> 6);
+ 	 } else {
+-- 
+1.9.2
 
-Xfbdev does. I revived support for monochrome (and Atari/Amiga-style
-bitplanes) last year.
-
-And of course
-https://git.kernel.org/cgit/linux/kernel/git/geert/fbtest.git/
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds

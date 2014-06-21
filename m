@@ -1,76 +1,50 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Date: Wed, 25 Jun 2014 09:32:59 +0000
-Subject: Re: [RFC v3 2/2] backlight: device tree: add new tps611xx backlight driver
-Message-Id: <20140625093259.GC29789@leverpostej>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sat, 21 Jun 2014 20:48:37 +0000
+Subject: Re: [PATCH] video: fbdev: skeletonfb.c: Adding code to managing allocation error
+Message-Id: <CAMuHMdVJ=sA7ixyA+4BSffD1fzWOMwGivEQGZ+UN437VTw_xpw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403594330-15387-1-git-send-email-gshark.jeong@gmail.com>
- <1403594330-15387-3-git-send-email-gshark.jeong@gmail.com>
-In-Reply-To: <1403594330-15387-3-git-send-email-gshark.jeong@gmail.com>
+References: <1403356646-29443-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+	<1403359116.4076.44.camel@joe-AO725>
+In-Reply-To: <1403359116.4076.44.camel@joe-AO725>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Jeong <gshark.jeong@gmail.com>
-Cc: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Daniel Jeong <daniel.jeong@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+To: Joe Perches <joe@perches.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hello,
+On Sat, Jun 21, 2014 at 3:58 PM, Joe Perches <joe@perches.com> wrote:
+> (Adding Geert, who probably wrote most of this
+>  and likely might have forgotten all of it)
+>
+> On Sat, 2014-06-21 at 15:17 +0200, Rickard Strandqvist wrote:
+>> Adding missing code for managing a memory allocation error that may occur.
+>>
+>> This was partly found using a static code analysis program called cppcheck.
+>
+> skeletonfb.c is not meant to be compiled.
+> It's a sample driver template.
 
-Please fix the subject: this is a _binding_, not a driver.
+Yep.
 
-On Tue, Jun 24, 2014 at 08:18:50AM +0100, Daniel Jeong wrote:
-> This commit is about tps611xx device tree documentation.
-> 
-> Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
-> ---
->  .../video/backlight/tps611xx-backlight.txt         |   16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
-> new file mode 100644
-> index 0000000..01f110d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
-> @@ -0,0 +1,16 @@
-> +TPS611xx family of backlight driver based on EasyScale.
-> +
-> +It supports tps61158, tps61161, tps61163 and tps61165.
+> Those /* goto error path */ lines are for
+> driver writers that use this to figure out
+> what to do.
 
-What supports these? The driver?
+Still, it's nice if a sample driver has correct error handling.
+Just comments are not good enough as guidance for some people ;-)
 
-The binding should describe the _hardware_, not the driver.
+> The second return is not correct as it would
+> not free the first alloc'd block.
 
-> +Required properties:
-> +- compatible: "ti,tps61158_bl", "ti,tps61161_bl", "ti,tps61163_bl", "ti,tps61165_bl"
+Indeed. Better do it right.
 
-Use '-' rather than '_' in compatible strings and properties.
+Gr{oetje,eeting}s,
 
-Is there any reason for the "bl" suffix? Does that actually form part of
-the name of the unit, or is that just to point out it's a backlight? If
-it's the latter, drop it.
+                        Geert
 
-Are these all very similar? Can I use a particular string as a fallback?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-To allow for future expansion, the addition of notes, and to make this
-easier to read, I would recommend formatting this something like:
-
-- compatible: should contain at least one of:
-  * "ti,tps61158"
-  * "ti,tps61161"
-  * "ti,tps61163"
-  * "ti,tps61165"
-
-> +- rfa_en: enable request for acknowledge. ( 0 : disable , 1 : enable )
-
-Use empty properties for describing booleans.
-
-That said, why does this need to be in the DT? When would I want this
-and when wouldn't I? Why can't the driver choose?
-
-> +- en_gpio_num: gpio number for en pin.
-
-Use the GPIO bindings. The numbering Linux uses internally is completely
-arbitrary, so this is completely broken.
-
-Are there other pins we might need to describe? Regulators? Clocks?
-
-Mark.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

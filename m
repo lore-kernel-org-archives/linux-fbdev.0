@@ -1,218 +1,78 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Wed, 04 Jun 2014 13:18:28 +0000
-Subject: Re: [PATCH] drm/i915: Kick out vga console
-Message-Id: <CANq1E4SAzBdGW-4m7FQyx55dsXGWWdz130L-qutHQK11NsdjzQ@mail.gmail.com>
+From: Himangi Saraogi <himangi774@gmail.com>
+Date: Sat, 21 Jun 2014 15:58:11 +0000
+Subject: [PATCH] drivers/video/fbdev : dereference without an error test
+Message-Id: <20140621155758.GA4741@himangi-Dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401836249-4922-1-git-send-email-daniel.vetter@ffwll.ch>
- <CANq1E4Qxpu7UecPHxdu_VzU=kADR_hijFXxd48ag_rbx7jo8mg@mail.gmail.com>
- <87sinkeuiu.fsf@intel.com>
-In-Reply-To: <87sinkeuiu.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jani Nikula <jani.nikula@linux.intel.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: julia.lawall@lip6.fr
 
-Hi
+After a variable is assigned the result of backlight_device_register, an
+error test should be performed before a dereference.
 
-On Wed, Jun 4, 2014 at 2:20 PM, Jani Nikula <jani.nikula@linux.intel.com> wrote:
-> On Wed, 04 Jun 2014, David Herrmann <dh.herrmann@gmail.com> wrote:
->> You rely on compiler-optimizations here. "dummy_con" is not available
->> if !CONFIG_DUMMY_CONSOLE, but you use it. This causes linker-failure
->> if dead-code elimination is not done (-O0).
->
-> Nested #ifs too. How about
->
-> #if !defined(CONFIG_VGA_CONSOLE)
-> static inline int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
-> {
->         return 0;
-> }
-> #elif !defined(CONFIG_DUMMY_CONSOLE)
-> static inline int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
-> {
->         return -ENODEV;
-> }
-> #else
-> static int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
-> {
->         /* ... */
-> }
-> #endif
->
-> in proper kernel style?
+A simplified version of the semantic match that finds this problem is
+as follows:
 
-Or even shorter:
+// <smpl>
+@def0@
+expression x;
+position p0;
+@@
 
-#if defined(CONFIG_VGA_CONSOLE) && defined(CONFIG_DUMMY_CONSOLE)
-static inline int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
-{
-        ...
-}
-#else
-static inline int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
-{
-        return IS_ENABLED(CONFIG_VGA_CONSOLE) ? -ENODEV : 0;
-}
-#endif
+x@p0 = backlight_device_register(...)
 
-Thanks
-David
+@protected@
+expression def0.x,E;
+position def0.p0;
+position p;
+statement S;
+@@
+x@p0
+... when != x = E
+if (!IS_ERR(x) && ...) {<... x@p ...>} else S
 
-On Wed, Jun 4, 2014 at 2:20 PM, Jani Nikula <jani.nikula@linux.intel.com> wrote:
-> On Wed, 04 Jun 2014, David Herrmann <dh.herrmann@gmail.com> wrote:
->> Hi
->>
->> On Wed, Jun 4, 2014 at 12:57 AM, Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
->>> From: Chris Wilson <chris@chris-wilson.co.uk>
->>>
->>> Touching the VGA resources on an IVB EFI machine causes hard hangs when
->>> we then kick out the efifb. Ouch.
->>>
->>> Apparently this also prevents unclaimed register errors on hsw and
->>> hard machine hangs on my i855gm when trying to unbind fbcon.
->>>
->>> Also, we want this to make I915_FBDEV=n safe.
->>>
->>> v2: Rebase and pimp commit message.
->>>
->>> v3: We also need to unregister the vga console, otherwise the unbind
->>> of the fb console before module unload might resurrect it again.
->>>
->>> Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?idg813
->>> Cc: David Herrmann <dh.herrmann@gmail.com>
->>> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
->>> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
->>> Cc: linux-fbdev@vger.kernel.org
->>> Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk> (v1)
->>> Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->>> ---
->>>  drivers/gpu/drm/i915/i915_dma.c  | 34 +++++++++++++++++++++++++++++++++-
->>>  drivers/video/console/dummycon.c |  1 +
->>>  drivers/video/console/vgacon.c   |  1 +
->>>  3 files changed, 35 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
->>> index b9159ade5e85..a4df80740b37 100644
->>> --- a/drivers/gpu/drm/i915/i915_dma.c
->>> +++ b/drivers/gpu/drm/i915/i915_dma.c
->>> @@ -36,6 +36,8 @@
->>>  #include "i915_drv.h"
->>>  #include "i915_trace.h"
->>>  #include <linux/pci.h>
->>> +#include <linux/console.h>
->>> +#include <linux/vt.h>
->>>  #include <linux/vgaarb.h>
->>>  #include <linux/acpi.h>
->>>  #include <linux/pnp.h>
->>> @@ -1450,6 +1452,29 @@ static void i915_kick_out_firmware_fb(struct drm_i915_private *dev_priv)
->>>  }
->>>  #endif
->>>
->>> +static int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
->>> +{
->>> +#if !defined(CONFIG_VGA_CONSOLE)
->>> +       return 0;
->>> +#else
->>> +       int ret;
->>> +
->>> +#if !defined(CONFIG_DUMMY_CONSOLE)
->>> +       return -ENODEV;
->>> +#endif
->>> +
->>> +       DRM_INFO("Replacing VGA console driver\n");
->>> +
->>> +       console_lock();
->>> +       ret = do_take_over_console(&dummy_con, 0, MAX_NR_CONSOLES - 1, 1);
->>
->> You rely on compiler-optimizations here. "dummy_con" is not available
->> if !CONFIG_DUMMY_CONSOLE, but you use it. This causes linker-failure
->> if dead-code elimination is not done (-O0).
->
-> Nested #ifs too. How about
->
-> #if !defined(CONFIG_VGA_CONSOLE)
-> static inline int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
-> {
->         return 0;
-> }
-> #elif !defined(CONFIG_DUMMY_CONSOLE)
-> static inline int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
-> {
->         return -ENODEV;
-> }
-> #else
-> static int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
-> {
->         /* ... */
-> }
-> #endif
->
-> in proper kernel style?
->
-> BR,
-> Jani.
->
->
->>
->> Thanks
->> David
->>
->>> +       if (ret = 0)
->>> +               ret = do_unregister_con_driver(&vga_con);
->>> +       console_unlock();
->>> +
->>> +       return ret;
->>> +#endif
->>> +}
->>> +
->>>  static void i915_dump_device_info(struct drm_i915_private *dev_priv)
->>>  {
->>>         const struct intel_device_info *info = &dev_priv->info;
->>> @@ -1623,8 +1648,15 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
->>>         if (ret)
->>>                 goto out_regs;
->>>
->>> -       if (drm_core_check_feature(dev, DRIVER_MODESET))
->>> +       if (drm_core_check_feature(dev, DRIVER_MODESET)) {
->>> +               ret = i915_kick_out_vgacon(dev_priv);
->>> +               if (ret) {
->>> +                       DRM_ERROR("failed to remove conflicting VGA console\n");
->>> +                       goto out_gtt;
->>> +               }
->>> +
->>>                 i915_kick_out_firmware_fb(dev_priv);
->>> +       }
->>>
->>>         pci_set_master(dev->pdev);
->>>
->>> diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
->>> index b63860f7beab..40bec8d64b0a 100644
->>> --- a/drivers/video/console/dummycon.c
->>> +++ b/drivers/video/console/dummycon.c
->>> @@ -77,3 +77,4 @@ const struct consw dummy_con = {
->>>      .con_set_palette = DUMMY,
->>>      .con_scrolldelta = DUMMY,
->>>  };
->>> +EXPORT_SYMBOL_GPL(dummy_con);
->>> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
->>> index 9d8feac67637..84acd6223dc5 100644
->>> --- a/drivers/video/console/vgacon.c
->>> +++ b/drivers/video/console/vgacon.c
->>> @@ -1440,5 +1440,6 @@ const struct consw vga_con = {
->>>         .con_build_attr = vgacon_build_attr,
->>>         .con_invert_region = vgacon_invert_region,
->>>  };
->>> +EXPORT_SYMBOL(vga_con);
->>>
->>>  MODULE_LICENSE("GPL");
->>> --
->>> 1.8.1.4
->>>
->> _______________________________________________
->> dri-devel mailing list
->> dri-devel@lists.freedesktop.org
->> http://lists.freedesktop.org/mailman/listinfo/dri-devel
->
-> --
-> Jani Nikula, Intel Open Source Technology Center
+@unprotected@
+expression def0.x,E;
+identifier fld;
+position def0.p0;
+position p != protected.p;
+@@
+x@p0
+... when != x = E
+* x@p->fld
+// </smpl>
+
+Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
+Acked-by: Julia Lawall <julia.lawall@lip6.fr>
+---
+ drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
+index c7ba4d8..acd9ff1 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
+@@ -817,6 +817,10 @@ static int acx565akm_probe(struct spi_device *spi)
+ 
+ 	bldev = backlight_device_register("acx565akm", &ddata->spi->dev,
+ 			ddata, &acx565akm_bl_ops, &props);
++	if (IS_ERR(bldev)) {
++		r = PTR_ERR(bldev);
++		goto err_reg;
++	}
+ 	ddata->bl_dev = bldev;
+ 	if (ddata->has_cabc) {
+ 		r = sysfs_create_group(&bldev->dev.kobj, &bldev_attr_group);
+@@ -862,6 +866,7 @@ err_reg:
+ 	sysfs_remove_group(&bldev->dev.kobj, &bldev_attr_group);
+ err_sysfs:
+ 	backlight_device_unregister(bldev);
++err_reg:
+ err_detect:
+ err_gpio:
+ 	omap_dss_put_device(ddata->in);
+-- 
+1.9.1
+

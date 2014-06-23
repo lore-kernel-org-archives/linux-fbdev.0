@@ -1,155 +1,57 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 27 Jun 2014 18:38:53 +0000
-Subject: [PATCH v2 11/13] OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
-Message-Id: <ff82608a5935a50e519c2726fc225e23d373c640.1403894190.git.jsarha@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 23 Jun 2014 11:15:23 +0000
+Subject: Re: [PATCH] 68328fb: remove check for CONFIG_FB_68328_INVERT
+Message-Id: <53A80C4B.1060807@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="gv6Ve43MFfn44l7lLK2R5PjIOVE0ujMgv"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1403894190.git.jsarha@ti.com>
-In-Reply-To: <cover.1403894190.git.jsarha@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
+References: <1401214147.28714.12.camel@x220>
+In-Reply-To: <1401214147.28714.12.camel@x220>
+To: Paul Bolle <pebolle@tiscali.nl>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Removes the OMAP4 HDMI audio callbacks for an external audio driver and
-the old external DAI driver does not work anymore after this patch.
+--gv6Ve43MFfn44l7lLK2R5PjIOVE0ujMgv
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- drivers/video/fbdev/omap2/dss/hdmi4.c |  113 ---------------------------------
- 1 file changed, 113 deletions(-)
+On 27/05/14 21:09, Paul Bolle wrote:
+> Since v2.6.7 the 68328 frame buffer driver contains a check for
+> CONFIG_FB_68328_INVERT. But the Kconfig symbol FB_68328_INVERT was neve=
+r
+> added to the tree. Remove this check and do some related cleaning up.
+>=20
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index 3840f3f..e3937fa 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -472,112 +472,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
- 	return r;
- }
- 
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	int r;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi_wp_audio_enable(&hdmi.wp, true);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--	hdmi_wp_audio_enable(&hdmi.wp, false);
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return hdmi4_audio_start(&hdmi.core, &hdmi.wp);
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--	hdmi4_audio_stop(&hdmi.core, &hdmi.wp);
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	bool r;
--
--	mutex_lock(&hdmi.lock);
--
--	r = hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode);
--
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	int r;
--	u32 pclk = hdmi.cfg.timings.pixelclock;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi4_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--#else
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	return false;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	return -EPERM;
--}
--#endif
--
- static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
- 		const struct hdmi_avi_infoframe *avi)
- {
-@@ -606,13 +500,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
- 	.read_edid		= hdmi_read_edid,
- 	.set_infoframe		= hdmi_set_infoframe,
- 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
--
--	.audio_enable		= hdmi_audio_enable,
--	.audio_disable		= hdmi_audio_disable,
--	.audio_start		= hdmi_audio_start,
--	.audio_stop		= hdmi_audio_stop,
--	.audio_supported	= hdmi_audio_supported,
--	.audio_config		= hdmi_audio_config,
- };
- 
- static void hdmi_init_output(struct platform_device *pdev)
--- 
-1.7.9.5
+That sounds like something which should be configured per board/panel in
+any case, not something configured via kernel config.
 
+Queued for 3.17.
+
+ Tomi
+
+
+
+--gv6Ve43MFfn44l7lLK2R5PjIOVE0ujMgv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTqAxLAAoJEPo9qoy8lh719WUP/2xkhecfCqa4ytQZDihvXPOd
+3MGbLEUQLv9fEuebdX7WAOcZ0T5YRKSzQomzt0fvOli2RoigAUrqeGIi9hLr0Brs
+mqcbqN5yFw51fWHvXajRbDJ8FqEkT2tXPJIRbU/s0m6x6bFTOw/i1LWeYh3Dc7w7
+HuTGnSnuUfUDyC+8HAn2NsIGg+GazwFlVlSLBR7JL/tgTc0YZwnUBZhxt3V79YAR
+ROrNQvuHcK10q4y2g9gdEMBRv+JoH9xP7cAiBOdWwa7alCOejA3eXhiCgfyom8mc
+WIOEVXx4LMNQtWsl27uBGk0sHeDC7BWOL1MFhpGxulLF9FGyHjR0830ha58/4DHh
+gfSz29u5rAOP5+Fm35BNQJPCVzYWnlwduix4cY0m6vVC5gBgKkmftr1fSqh0ixnL
+XBaL7ZPMse96//7xcboGH2ovuDP8CuUugF0b6S9SiGmCBFs1UCFKlcFy0vDritnH
+S3pd6rYXInYkktnDO43VraCMI3cHH0GKgdmwBAEAWDAaRJLFDnR2UFC92oVIpgEp
+5QqMIsYJT5TxQqjo3ghv2+xiHXD5g5R/bOMYpZLpZf0qq715g5JagJxYvEj0i+RK
+IhaHlnhoyC5ZKn56D8Evw9bE6SKFQ3qIr3dPCnzwBRwdjei8CPl/KCz/XDZt9Q8v
+cLFMA6aLaDZXlccNlEkh
+=GEcn
+-----END PGP SIGNATURE-----
+
+--gv6Ve43MFfn44l7lLK2R5PjIOVE0ujMgv--

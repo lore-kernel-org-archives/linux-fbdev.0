@@ -1,55 +1,102 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Mon, 23 Jun 2014 14:10:23 +0000
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Mon, 23 Jun 2014 14:13:57 +0000
 Subject: Re: [PATCH v7 1/2] video: ARM CLCD: Add DT support
-Message-Id: <20140623141022.GJ32514@n2100.arm.linux.org.uk>
+Message-Id: <1403532837.3804.29.camel@hornet>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1403018494-10264-1-git-send-email-pawel.moll@arm.com>
- <CAFEAcA-NZiRDDeUc7n+6hxgjG1V3qYXPAwyfSdtyz=ZCcD8kiw@mail.gmail.com>
- <1403531535.3804.11.camel@hornet>
-In-Reply-To: <1403531535.3804.11.camel@hornet>
+ <20140620170901.GA12059@leverpostej>
+In-Reply-To: <20140620170901.GA12059@leverpostej>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Jun 23, 2014 at 02:52:15PM +0100, Pawel Moll wrote:
-> On Fri, 2014-06-20 at 23:27 +0100, Peter Maydell wrote:
-> > How does this work for boards like the versatilepb which have a
-> > mux between a PL110 and the TFT, allowing it to efffectively
-> > rewire the pads at runtime under control of the SYS_CLCD
-> > sysreg (to give a wider range of colour modes than the
-> > PL110 supports natively)?
+On Fri, 2014-06-20 at 18:09 +0100, Mark Rutland wrote:
+> > +- clocks-names: should contain "clcdclk" and "apb_pclk"
 > 
-> The particular case you're referring has been already discussed several
-> times, and the bottom line here is that it's not PL111 compatible (there
-> are more changes than just the mux) and will need separate "compatible"
-> value and some tweaks in the driver (in the places currently doing
-> CONFIG_ARCH_VERSATILE).
+> s/clocks-names/clock-names/
+
+Haha - it took quite a few patch revisions to spot this one, thanks!
+
+> > +
+> > +- clocks: contains phandle and clock specifier pairs for the entries
+> > +	in the clock-names property. See
+> > +	Documentation/devicetree/binding/clock/clock-bindings.txt
+> > +
+> > +Optional properties:
+> > +
+> > +- arm,pl11x,framebuffer-base: a pair of two 32-bit values, address and size,
+> > +	defining the framebuffer that must be used; if not present, the
+> > +	framebuffer may be located anywhere in the memory
 > 
-> Now, if it was PL111 with an external, independent muxer, the pads
-> description would still hold its value (PL111's R would still be wired
-> up at a particular pad etc.) and the display pipeline drivers would have
-> to handle the case.
+> The name is confusing: this is a base _and_ size.
 
-Err.  Somehow, I don't think you understand the hardware you're messing
-with there.  Remember, I wrote support all the support code for the
-PL11x and supporting this.
+True. Can split it into two -base and -size or rename it into
+framebuffer or video-memory.
 
-Yes, the Versatile PL110 has one difference: it has the IENB and CNTL
-registers swapped compared to the conventional PL110 devices.  This can
-be handled via an appropriate compatible property.  The hardware cursor
-registers are also omitted, but that's irrelevant as we don't use that.
+> When should this be used, and what is valid to point it at?
 
-Other than that, it's a standard PL110.  Connected to its outputs is a
-PLD.  Inside the PLD is a mux controlled via the SYS_CLCD register.
+When the hardware design determines the address the memory transactions
+must be issued at. This is aimed at a situation (allegedly not
+impossible) when the memory map from the CLCD's point of view is
+different from the CPU's one (eg. the video memory is mapped at xxx for
+the CPU and yyy for the CLCD).
 
-As far as the CLD outputs are concerned, they are standard.  The PLD on
-their outputs routes the CLD bits to the 8-bit red, green and blue
-channels according to the configuration of SYS_CLCD to achieve the
-various colour formats which the CLCD does not natively provide for.
+> How does this play with memory carveouts (CMA, reserved-memory)?
 
-So, it /is/ a PL110 with an independent external muxer.
+It doesn't, and wasn't intended to (the original version of the binding
+was trying to do something like reserved-memory before it was defined),
+but someone managed to convince me not to do this, if it's a "low level"
+feature.
 
--- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+I guess I can be re-convinced (again).
+
+> > +- max-memory-bandwidth: maximum bandwidth in bytes per second that the
+> > +	cell's memory interface can handle
+> 
+> When should I set this, given it is optional?
+
+When there is a (significant) limitation of the bandwidth available for
+the cell's memory interface. One will either be told by the soc guys or
+will figure it out in the hard way, as we did :-(
+
+> > +
+> > +Required sub-nodes:
+> > +
+> > +- port: describes LCD panel signals, following the common binding
+> > +	for video transmitter interfaces; see
+> > +	Documentation/devicetree/bindings/media/video-interfaces.txt;
+> > +	when it is a TFT panel, the port's endpoint must define the
+> > +	following property:
+> > +
+> > +	- arm,pl11x,tft-r0g0b0-pads: an array of three 32-bit values,
+> > +		defining the way CLD pads are wired up; this implicitly
+> > +		defines available color modes, for example:
+> > +		- PL111 TFT 4:4:4 panel:
+> > +			arm,pl11x,tft-r0g0b0-pads = <4 15 20>;
+> > +		- PL110 TFT (1:)5:5:5 panel:
+> > +			arm,pl11x,tft-r0g0b0-pads = <1 7 13>;
+> > +		- PL111 TFT (1:)5:5:5 panel:
+> > +			arm,pl11x,tft-r0g0b0-pads = <3 11 19>;
+> > +		- PL111 TFT 5:6:5 panel:
+> > +			arm,pl11x,tft-r0g0b0-pads = <3 10 19>;
+> > +		- PL110 and PL111 TFT 8:8:8 panel:
+> > +			arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
+> > +		- PL110 and PL111 TFT 8:8:8 panel, R & B components swapped:
+> > +			arm,pl11x,tft-r0g0b0-pads = <16 8 0>;
+> 
+> I'm somewhat lost trying to figure out this mapping. Am I not looking at
+> this in the right way, or is there any documentation which makes this
+> clearer?
+
+Yeah, looking at this now, it definitely needs some more explanation.
+Something like this?
+
+	First value contains index of the "CLD" external pin (pad)
+	used as R0 (first bit of the red component), second value
+	index of the pad used as G0, third value index of the pad
+	used as B0, see also "LCD panel signal multiplexing details"
+	paragraph in the PL11x Technical Reference Manuals.
+
+Pawel
+

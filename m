@@ -1,231 +1,139 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 04 Jun 2014 06:52:58 +0000
-Subject: [PATCH v3 2/7] OMAPDSS: DPI: Allocate driver data
-Message-Id: <1401864063-19196-3-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 24 Jun 2014 10:03:53 +0000
+Subject: [PATCH 08/15] OMAPDSS: HDMI: remove custom avi infoframe
+Message-Id: <1403604240-16738-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401096492-1405-1-git-send-email-archit@ti.com>
- <1401864063-19196-1-git-send-email-archit@ti.com>
-In-Reply-To: <1401864063-19196-1-git-send-email-archit@ti.com>
+References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Allocate driver data(dpi_data) for each DPI instance. It's allocated in
-omap_dpi_probe() when DT isn't used, and in dpi_init_port() when DT is used.
-The dpi_data struct instance is no longer global. In the case of DPI ops, it's
-retrieved from dpi_get_data_from_dssdev(). 'dssdev' passed by the connected
-encoder/panel driver is a pointer to the 'output' member in dpi_data, and thus
-can be used to get the DPI instance's driver data. In the case of probe/ini_port
-functions, it's set as DPI/DSS device's private data embedded in the
-platform_device struct.
+We now use the common AVI infoframe support, so the OMAP specific AVI
+infoframe code can be removed.
 
-Having dpi_data as private data of the platform device will not work for
-multiple DPI instances in the DT case. This is because there is no corresponding
-platform_device for DPI or SDI, they exist only as ports under the parent DSS
-platform_device in the DT case. The DPI port's private data('data' member in
-device_node struct) will later be used to store dpi_data.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dpi.c | 46 ++++++++++++++++++++++++++-----------
- drivers/video/fbdev/omap2/dss/dss.c |  6 ++---
- drivers/video/fbdev/omap2/dss/dss.h |  2 +-
- 3 files changed, 36 insertions(+), 18 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi.h | 90 ------------------------------------
+ 1 file changed, 90 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
-index 945d988..9087619 100644
---- a/drivers/video/fbdev/omap2/dss/dpi.c
-+++ b/drivers/video/fbdev/omap2/dss/dpi.c
-@@ -54,7 +54,15 @@ struct dpi_data {
- 	bool port_initialized;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 6cd4a755b0ac..e20fe5f70479 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -179,54 +179,6 @@ enum hdmi_audio_mclk_mode {
+ 	HDMI_AUDIO_MCLK_192FS = 7
  };
  
--static struct dpi_data dpi;
-+static struct dpi_data *dpi_get_data_from_dssdev(struct omap_dss_device *dssdev)
-+{
-+	return container_of(dssdev, struct dpi_data, output);
-+}
-+
-+static struct dpi_data *dpi_get_data_from_pdev(struct platform_device *pdev)
-+{
-+	return dev_get_drvdata(&pdev->dev);
-+}
+-/* INFOFRAME_AVI_ and INFOFRAME_AUDIO_ definitions */
+-enum hdmi_core_infoframe {
+-	HDMI_INFOFRAME_AVI_DB1Y_RGB = 0,
+-	HDMI_INFOFRAME_AVI_DB1Y_YUV422 = 1,
+-	HDMI_INFOFRAME_AVI_DB1Y_YUV444 = 2,
+-	HDMI_INFOFRAME_AVI_DB1A_ACTIVE_FORMAT_OFF = 0,
+-	HDMI_INFOFRAME_AVI_DB1A_ACTIVE_FORMAT_ON =  1,
+-	HDMI_INFOFRAME_AVI_DB1B_NO = 0,
+-	HDMI_INFOFRAME_AVI_DB1B_VERT = 1,
+-	HDMI_INFOFRAME_AVI_DB1B_HORI = 2,
+-	HDMI_INFOFRAME_AVI_DB1B_VERTHORI = 3,
+-	HDMI_INFOFRAME_AVI_DB1S_0 = 0,
+-	HDMI_INFOFRAME_AVI_DB1S_1 = 1,
+-	HDMI_INFOFRAME_AVI_DB1S_2 = 2,
+-	HDMI_INFOFRAME_AVI_DB2C_NO = 0,
+-	HDMI_INFOFRAME_AVI_DB2C_ITU601 = 1,
+-	HDMI_INFOFRAME_AVI_DB2C_ITU709 = 2,
+-	HDMI_INFOFRAME_AVI_DB2C_EC_EXTENDED = 3,
+-	HDMI_INFOFRAME_AVI_DB2M_NO = 0,
+-	HDMI_INFOFRAME_AVI_DB2M_43 = 1,
+-	HDMI_INFOFRAME_AVI_DB2M_169 = 2,
+-	HDMI_INFOFRAME_AVI_DB2R_SAME = 8,
+-	HDMI_INFOFRAME_AVI_DB2R_43 = 9,
+-	HDMI_INFOFRAME_AVI_DB2R_169 = 10,
+-	HDMI_INFOFRAME_AVI_DB2R_149 = 11,
+-	HDMI_INFOFRAME_AVI_DB3ITC_NO = 0,
+-	HDMI_INFOFRAME_AVI_DB3ITC_YES = 1,
+-	HDMI_INFOFRAME_AVI_DB3EC_XVYUV601 = 0,
+-	HDMI_INFOFRAME_AVI_DB3EC_XVYUV709 = 1,
+-	HDMI_INFOFRAME_AVI_DB3Q_DEFAULT = 0,
+-	HDMI_INFOFRAME_AVI_DB3Q_LR = 1,
+-	HDMI_INFOFRAME_AVI_DB3Q_FR = 2,
+-	HDMI_INFOFRAME_AVI_DB3SC_NO = 0,
+-	HDMI_INFOFRAME_AVI_DB3SC_HORI = 1,
+-	HDMI_INFOFRAME_AVI_DB3SC_VERT = 2,
+-	HDMI_INFOFRAME_AVI_DB3SC_HORIVERT = 3,
+-	HDMI_INFOFRAME_AVI_DB5PR_NO = 0,
+-	HDMI_INFOFRAME_AVI_DB5PR_2 = 1,
+-	HDMI_INFOFRAME_AVI_DB5PR_3 = 2,
+-	HDMI_INFOFRAME_AVI_DB5PR_4 = 3,
+-	HDMI_INFOFRAME_AVI_DB5PR_5 = 4,
+-	HDMI_INFOFRAME_AVI_DB5PR_6 = 5,
+-	HDMI_INFOFRAME_AVI_DB5PR_7 = 6,
+-	HDMI_INFOFRAME_AVI_DB5PR_8 = 7,
+-	HDMI_INFOFRAME_AVI_DB5PR_9 = 8,
+-	HDMI_INFOFRAME_AVI_DB5PR_10 = 9,
+-};
+-
+ struct hdmi_cm {
+ 	int	code;
+ 	int	mode;
+@@ -299,47 +251,6 @@ struct hdmi_core_audio_config {
+ 	bool					en_spdif;
+ };
  
- static struct platform_device *dpi_get_dsidev(enum omap_channel channel)
- {
-@@ -359,7 +367,7 @@ static void dpi_config_lcd_manager(struct dpi_data *dpi)
+-/*
+- * Refer to section 8.2 in HDMI 1.3 specification for
+- * details about infoframe databytes
+- */
+-struct hdmi_core_infoframe_avi {
+-	/* Y0, Y1 rgb,yCbCr */
+-	u8	db1_format;
+-	/* A0  Active information Present */
+-	u8	db1_active_info;
+-	/* B0, B1 Bar info data valid */
+-	u8	db1_bar_info_dv;
+-	/* S0, S1 scan information */
+-	u8	db1_scan_info;
+-	/* C0, C1 colorimetry */
+-	u8	db2_colorimetry;
+-	/* M0, M1 Aspect ratio (4:3, 16:9) */
+-	u8	db2_aspect_ratio;
+-	/* R0...R3 Active format aspect ratio */
+-	u8	db2_active_fmt_ar;
+-	/* ITC IT content. */
+-	u8	db3_itc;
+-	/* EC0, EC1, EC2 Extended colorimetry */
+-	u8	db3_ec;
+-	/* Q1, Q0 Quantization range */
+-	u8	db3_q_range;
+-	/* SC1, SC0 Non-uniform picture scaling */
+-	u8	db3_nup_scaling;
+-	/* VIC0..6 Video format identification */
+-	u8	db4_videocode;
+-	/* PR0..PR3 Pixel repetition factor */
+-	u8	db5_pixel_repeat;
+-	/* Line number end of top bar */
+-	u16	db6_7_line_eoftop;
+-	/* Line number start of bottom bar */
+-	u16	db8_9_line_sofbottom;
+-	/* Pixel number end of left bar */
+-	u16	db10_11_pixel_eofleft;
+-	/* Pixel number start of right bar */
+-	u16	db12_13_pixel_sofright;
+-};
+-
+ struct hdmi_wp_data {
+ 	void __iomem *base;
+ };
+@@ -360,7 +271,6 @@ struct hdmi_phy_data {
+ struct hdmi_core_data {
+ 	void __iomem *base;
  
- static int dpi_display_enable(struct omap_dss_device *dssdev)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi = dpi_get_data_from_dssdev(dssdev);
- 	struct omap_dss_device *out = &dpi->output;
- 	int r;
+-	struct hdmi_core_infoframe_avi avi_cfg;
+ 	struct hdmi_avi_infoframe avi_infoframe;
+ };
  
-@@ -439,7 +447,7 @@ err_no_reg:
- 
- static void dpi_display_disable(struct omap_dss_device *dssdev)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi = dpi_get_data_from_dssdev(dssdev);
- 	struct omap_overlay_manager *mgr = dpi->output.manager;
- 
- 	mutex_lock(&dpi->lock);
-@@ -463,7 +471,7 @@ static void dpi_display_disable(struct omap_dss_device *dssdev)
- static void dpi_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi = dpi_get_data_from_dssdev(dssdev);
- 
- 	DSSDBG("dpi_set_timings\n");
- 
-@@ -477,7 +485,7 @@ static void dpi_set_timings(struct omap_dss_device *dssdev,
- static void dpi_get_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi = dpi_get_data_from_dssdev(dssdev);
- 
- 	mutex_lock(&dpi->lock);
- 
-@@ -489,7 +497,7 @@ static void dpi_get_timings(struct omap_dss_device *dssdev,
- static int dpi_check_timings(struct omap_dss_device *dssdev,
- 			struct omap_video_timings *timings)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi = dpi_get_data_from_dssdev(dssdev);
- 	struct omap_overlay_manager *mgr = dpi->output.manager;
- 	int lck_div, pck_div;
- 	unsigned long fck;
-@@ -529,7 +537,7 @@ static int dpi_check_timings(struct omap_dss_device *dssdev,
- 
- static void dpi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi = dpi_get_data_from_dssdev(dssdev);
- 
- 	mutex_lock(&dpi->lock);
- 
-@@ -635,7 +643,7 @@ static enum omap_channel dpi_get_channel(void)
- static int dpi_connect(struct omap_dss_device *dssdev,
- 		struct omap_dss_device *dst)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi = dpi_get_data_from_dssdev(dssdev);
- 	struct omap_overlay_manager *mgr;
- 	int r;
- 
-@@ -694,7 +702,7 @@ static const struct omapdss_dpi_ops dpi_ops = {
- 
- static void dpi_init_output(struct platform_device *pdev)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi = dpi_get_data_from_pdev(pdev);
- 	struct omap_dss_device *out = &dpi->output;
- 
- 	out->dev = &pdev->dev;
-@@ -710,7 +718,7 @@ static void dpi_init_output(struct platform_device *pdev)
- 
- static void __exit dpi_uninit_output(struct platform_device *pdev)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi = dpi_get_data_from_pdev(pdev);
- 	struct omap_dss_device *out = &dpi->output;
- 
- 	omapdss_unregister_output(out);
-@@ -718,7 +726,11 @@ static void __exit dpi_uninit_output(struct platform_device *pdev)
- 
- static int omap_dpi_probe(struct platform_device *pdev)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi;
-+
-+	dpi = devm_kzalloc(&pdev->dev, sizeof(*dpi), GFP_KERNEL);
-+	if (!dpi)
-+		return -ENOMEM;
- 
- 	dpi->pdev = pdev;
- 
-@@ -759,11 +771,15 @@ void __exit dpi_uninit_platform_driver(void)
- 
- int __init dpi_init_port(struct platform_device *pdev, struct device_node *port)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi;
- 	struct device_node *ep;
- 	u32 datalines;
- 	int r;
- 
-+	dpi = devm_kzalloc(&pdev->dev, sizeof(*dpi), GFP_KERNEL);
-+	if (!dpi)
-+		return -ENOMEM;
-+
- 	ep = omapdss_of_get_next_endpoint(port, NULL);
- 	if (!ep)
- 		return 0;
-@@ -786,6 +802,8 @@ int __init dpi_init_port(struct platform_device *pdev, struct device_node *port)
- 
- 	dpi->port_initialized = true;
- 
-+	dev_set_drvdata(&pdev->dev, dpi);
-+
- 	return 0;
- 
- err_datalines:
-@@ -794,9 +812,9 @@ err_datalines:
- 	return r;
- }
- 
--void __exit dpi_uninit_port(void)
-+void __exit dpi_uninit_port(struct platform_device *pdev)
- {
--	struct dpi_data *dpi = &dpi;
-+	struct dpi_data *dpi = dpi_get_data_from_pdev(pdev);
- 
- 	if (!dpi->port_initialized)
- 		return;
-diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-index 6daeb7e..225b13f 100644
---- a/drivers/video/fbdev/omap2/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/dss/dss.c
-@@ -820,10 +820,10 @@ static int __init dss_init_ports(struct platform_device *pdev)
- 	return 0;
- }
- 
--static void __exit dss_uninit_ports(void)
-+static void __exit dss_uninit_ports(struct platform_device *pdev)
- {
- #ifdef CONFIG_OMAP2_DSS_DPI
--	dpi_uninit_port();
-+	dpi_uninit_port(pdev);
- #endif
- 
- #ifdef CONFIG_OMAP2_DSS_SDI
-@@ -910,7 +910,7 @@ err_setup_clocks:
- 
- static int __exit omap_dsshw_remove(struct platform_device *pdev)
- {
--	dss_uninit_ports();
-+	dss_uninit_ports(pdev);
- 
- 	pm_runtime_disable(&pdev->dev);
- 
-diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
-index 8ff22c1..da7f5f9 100644
---- a/drivers/video/fbdev/omap2/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/dss/dss.h
-@@ -359,7 +359,7 @@ int dpi_init_platform_driver(void) __init;
- void dpi_uninit_platform_driver(void) __exit;
- 
- int dpi_init_port(struct platform_device *pdev, struct device_node *port) __init;
--void dpi_uninit_port(void) __exit;
-+void dpi_uninit_port(struct platform_device *pdev) __exit;
- 
- /* DISPC */
- int dispc_init_platform_driver(void) __init;
 -- 
-1.8.3.2
+1.9.1
 

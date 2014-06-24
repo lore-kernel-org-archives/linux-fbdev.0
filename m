@@ -1,64 +1,100 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Mon, 30 Jun 2014 11:51:07 +0000
-Subject: [PATCH 3.12 046/181] drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap
-Message-Id: <e4b1dada19b4fc97ca2aafd952c7edebf3276a1f.1404128998.git.jslaby@suse.cz>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 24 Jun 2014 10:03:55 +0000
+Subject: [PATCH 10/15] OMAPDSS: add hdmi ops to hdmi-connector and tpd12s015
+Message-Id: <1403604240-16738-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <61844d8e25eb8899b0836afa9796fa239db80f1f.1404128997.git.jslaby@suse.cz>
-In-Reply-To: <61844d8e25eb8899b0836afa9796fa239db80f1f.1404128997.git.jslaby@suse.cz>
+References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stable@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Zhichuang SUN <sunzc522@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Zhichuang SUN <sunzc522@gmail.com>
+Add pass-through functions for set_infoframe and set_hdmi_mode to
+hdmi-connector and tpd12s015 drivers.
 
-3.12-stable review patch.  If anyone has any objections, please let me know.
-
-=======
-commit fbc6c4a13bbfb420eedfdb26a0a859f9c07e8a7b upstream.
-
-Function unifb_mmap calls functions which are defined in linux/mm.h
-and asm/pgtable.h
-
-The related error (for unicore32 with unicore32_defconfig):
-	CC      drivers/video/fbdev/fb-puv3.o
-	drivers/video/fbdev/fb-puv3.c: In function 'unifb_mmap':
-	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
-				      function 'vm_iomap_memory'
-	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
-				      function 'pgprot_noncached'
-
-Signed-off-by: Zhichuang Sun <sunzc522@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Joe Perches <joe@perches.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org
-Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 ---
- drivers/video/fb-puv3.c | 2 ++
- 1 file changed, 2 insertions(+)
+ .../video/fbdev/omap2/displays-new/connector-hdmi.c  | 19 +++++++++++++++++++
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c     | 20 ++++++++++++++++++++
+ 2 files changed, 39 insertions(+)
 
-diff --git a/drivers/video/fb-puv3.c b/drivers/video/fb-puv3.c
-index 27fc956166fa..520112531eb0 100644
---- a/drivers/video/fb-puv3.c
-+++ b/drivers/video/fb-puv3.c
-@@ -18,8 +18,10 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/console.h>
-+#include <linux/mm.h>
+diff --git a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
+index 4420ccb69aa9..131c6e260898 100644
+--- a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
++++ b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
+@@ -262,6 +262,23 @@ static int hdmic_audio_config(struct omap_dss_device *dssdev,
+ 	return 0;
+ }
  
- #include <asm/sizes.h>
-+#include <asm/pgtable.h>
- #include <mach/hardware.h>
++static int hdmic_set_hdmi_mode(struct omap_dss_device *dssdev, bool hdmi_mode)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	return in->ops.hdmi->set_hdmi_mode(in, hdmi_mode);
++}
++
++static int hdmic_set_infoframe(struct omap_dss_device *dssdev,
++		const struct hdmi_avi_infoframe *avi)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	return in->ops.hdmi->set_infoframe(in, avi);
++}
++
+ static struct omap_dss_driver hdmic_driver = {
+ 	.connect		= hdmic_connect,
+ 	.disconnect		= hdmic_disconnect,
+@@ -277,6 +294,8 @@ static struct omap_dss_driver hdmic_driver = {
  
- /* Platform_data reserved for unifb registers. */
+ 	.read_edid		= hdmic_read_edid,
+ 	.detect			= hdmic_detect,
++	.set_hdmi_mode		= hdmic_set_hdmi_mode,
++	.set_hdmi_infoframe	= hdmic_set_infoframe,
+ 
+ 	.audio_enable		= hdmic_audio_enable,
+ 	.audio_disable		= hdmic_audio_disable,
+diff --git a/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
+index 7e33686171e3..c891d8f84cb2 100644
+--- a/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
++++ b/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
+@@ -242,6 +242,24 @@ static int tpd_audio_config(struct omap_dss_device *dssdev,
+ 	return in->ops.hdmi->audio_config(in, audio);
+ }
+ 
++static int tpd_set_infoframe(struct omap_dss_device *dssdev,
++		const struct hdmi_avi_infoframe *avi)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	return in->ops.hdmi->set_infoframe(in, avi);
++}
++
++static int tpd_set_hdmi_mode(struct omap_dss_device *dssdev,
++		bool hdmi_mode)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	return in->ops.hdmi->set_hdmi_mode(in, hdmi_mode);
++}
++
+ static const struct omapdss_hdmi_ops tpd_hdmi_ops = {
+ 	.connect		= tpd_connect,
+ 	.disconnect		= tpd_disconnect,
+@@ -255,6 +273,8 @@ static const struct omapdss_hdmi_ops tpd_hdmi_ops = {
+ 
+ 	.read_edid		= tpd_read_edid,
+ 	.detect			= tpd_detect,
++	.set_infoframe		= tpd_set_infoframe,
++	.set_hdmi_mode		= tpd_set_hdmi_mode,
+ 
+ 	.audio_enable		= tpd_audio_enable,
+ 	.audio_disable		= tpd_audio_disable,
 -- 
-2.0.0
+1.9.1
 

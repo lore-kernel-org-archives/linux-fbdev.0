@@ -1,70 +1,64 @@
-From: Vasily Khoruzhick <anarsoul@gmail.com>
-Date: Mon, 30 Jun 2014 19:14:32 +0000
-Subject: [PATCH] video: fbdev: s3c2410fb: Move to clk_prepare_enable/clk_disable_unprepare
-Message-Id: <1404155672-3158-1-git-send-email-anarsoul@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 24 Jun 2014 10:03:48 +0000
+Subject: [PATCH 03/15] OMAPDSS: DISPC: clean up dispc_mgr_timings_ok
+Message-Id: <1403604240-16738-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use clk_prepare_enable/clk_disable_unprepare to make the driver
-work properly with common clock framework.
+dispc_mgr_timings_ok() is a bit confusing how it handles the return
+value.
 
-Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
+Change the function to just return immediately when a timing is deemed
+not valid, making the code much easier to follow.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/s3c2410fb.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/omap2/dss/dispc.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/s3c2410fb.c b/drivers/video/fbdev/s3c2410fb.c
-index 81af5a6..d68595d 100644
---- a/drivers/video/fbdev/s3c2410fb.c
-+++ b/drivers/video/fbdev/s3c2410fb.c
-@@ -932,7 +932,7 @@ static int s3c24xxfb_probe(struct platform_device *pdev,
- 		goto release_irq;
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index 37373b61784e..be053aa80880 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -2879,22 +2879,24 @@ static bool _dispc_mgr_pclk_ok(enum omap_channel channel,
+ bool dispc_mgr_timings_ok(enum omap_channel channel,
+ 		const struct omap_video_timings *timings)
+ {
+-	bool timings_ok;
+-
+-	timings_ok = _dispc_mgr_size_ok(timings->x_res, timings->y_res);
++	if (!_dispc_mgr_size_ok(timings->x_res, timings->y_res))
++		return false;
+ 
+-	timings_ok &= _dispc_mgr_pclk_ok(channel, timings->pixelclock);
++	if (!_dispc_mgr_pclk_ok(channel, timings->pixelclock))
++		return false;
+ 
+ 	if (dss_mgr_is_lcd(channel)) {
+ 		/* TODO: OMAP4+ supports interlace for LCD outputs */
+-		timings_ok &= timings->interlace = false;
++		if (timings->interlace)
++			return false;
+ 
+-		timings_ok &= _dispc_lcd_timings_ok(timings->hsw, timings->hfp,
++		if (!_dispc_lcd_timings_ok(timings->hsw, timings->hfp,
+ 				timings->hbp, timings->vsw, timings->vfp,
+-				timings->vbp);
++				timings->vbp))
++			return false;
  	}
  
--	clk_enable(info->clk);
-+	clk_prepare_enable(info->clk);
- 	dprintk("got and enabled clock\n");
- 
- 	usleep_range(1000, 1100);
-@@ -996,7 +996,7 @@ static int s3c24xxfb_probe(struct platform_device *pdev,
- free_video_memory:
- 	s3c2410fb_unmap_video_memory(fbinfo);
- release_clock:
--	clk_disable(info->clk);
-+	clk_disable_unprepare(info->clk);
- 	clk_put(info->clk);
- release_irq:
- 	free_irq(irq, info);
-@@ -1038,7 +1038,7 @@ static int s3c2410fb_remove(struct platform_device *pdev)
- 	s3c2410fb_unmap_video_memory(fbinfo);
- 
- 	if (info->clk) {
--		clk_disable(info->clk);
-+		clk_disable_unprepare(info->clk);
- 		clk_put(info->clk);
- 		info->clk = NULL;
- 	}
-@@ -1070,7 +1070,7 @@ static int s3c2410fb_suspend(struct platform_device *dev, pm_message_t state)
- 	 * before the clock goes off again (bjd) */
- 
- 	usleep_range(1000, 1100);
--	clk_disable(info->clk);
-+	clk_disable_unprepare(info->clk);
- 
- 	return 0;
+-	return timings_ok;
++	return true;
  }
-@@ -1080,7 +1080,7 @@ static int s3c2410fb_resume(struct platform_device *dev)
- 	struct fb_info	   *fbinfo = platform_get_drvdata(dev);
- 	struct s3c2410fb_info *info = fbinfo->par;
  
--	clk_enable(info->clk);
-+	clk_prepare_enable(info->clk);
- 	usleep_range(1000, 1100);
- 
- 	s3c2410fb_init_registers(fbinfo);
+ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
 -- 
-2.0.0
+1.9.1
 

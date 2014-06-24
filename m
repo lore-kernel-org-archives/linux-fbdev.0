@@ -1,76 +1,90 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 27 Jun 2014 10:20:53 +0000
-Subject: Re: [PATCH 14/15] OMAPDSS: HDMI: remove the unused code
-Message-Id: <53AD4585.1060405@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@iki.fi>
+Date: Tue, 24 Jun 2014 11:02:54 +0000
+Subject: Re: [PATCH v1] fbdev: add cea modes and properties
+Message-Id: <53A95ADE.1000201@iki.fi>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ROH8flNlfkfKJR00idHRall4vwMJI3hlr"
+Content-Type: multipart/mixed; boundary="OhXDngAMvt0BS3g73FEHhrVR6WkPkr6XC"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com> <1403604240-16738-15-git-send-email-tomi.valkeinen@ti.com> <53AC6EDD.6040300@ti.com> <53AD4485.3070506@ti.com>
-In-Reply-To: <53AD4485.3070506@ti.com>
-To: Jyri Sarha <jsarha@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+References: <1401153457-27027-1-git-send-email-cfreeman@nvidia.com>
+In-Reply-To: <1401153457-27027-1-git-send-email-cfreeman@nvidia.com>
+To: linux-fbdev@vger.kernel.org
 
---ROH8flNlfkfKJR00idHRall4vwMJI3hlr
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--OhXDngAMvt0BS3g73FEHhrVR6WkPkr6XC
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 27/06/14 13:16, Tomi Valkeinen wrote:
-> On 26/06/14 22:05, Jyri Sarha wrote:
->> On 06/24/2014 01:03 PM, Tomi Valkeinen wrote:
->>> We no longer need the horrible driver internal videmode tables, which=
+Hi,
 
->>> were used to decide if a given videomode is a HDMI or DVI mode. So
->>> remove all related code.
->>>
->>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->>> ---
->>>   drivers/video/fbdev/omap2/dss/hdmi.h        |  11 -
->>>   drivers/video/fbdev/omap2/dss/hdmi_common.c | 316
->>> ----------------------------
->>>   2 files changed, 327 deletions(-)
->>>
->>> diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h
->>> b/drivers/video/fbdev/omap2/dss/hdmi.h
->>> index e3956defc1c3..262771b9b76b 100644
->>> --- a/drivers/video/fbdev/omap2/dss/hdmi.h
->>> +++ b/drivers/video/fbdev/omap2/dss/hdmi.h
->> ...
->>> @@ -192,7 +187,6 @@ struct hdmi_video_format {
->>>
->>>   struct hdmi_config {
->>>       struct omap_video_timings timings;
->>> -    struct hdmi_cm cm;
->>>       struct hdmi_avi_infoframe infoframe;
->>>       enum hdmi_core_hdmi_dvi hdmi_dvi_mode;
->>>   };
->>
->> The HDMI audio finctionality is broken already now, but removing
->> hdmi_config.cm will cause compilation failure if HDMI audio is enabled=
-=2E
+On 27/05/14 04:17, cfreeman@nvidia.com wrote:
+> From: Christopher Freeman <cfreeman@nvidia.com>
 >=20
-> Ah, true.
->=20
->> I'll mail a patch set to fix OMAP4+ HDMI audio shortly. The set should=
+> This is a port of two patches from Android source to fill in all
+> 64 cea modes as well as specify the aspect ratios for those modes.
 
->> be applied on top of these patches and it fixes (obviously) the
->> compilation issue too.
->=20
-> I'll rather fix my series. It's not good to introduce compilation error=
-s.
->=20
-> So I'll just add the following in my patches:
->=20
-> diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c
+I was testing this a bit with omapfb and my monitor. I don't see the
+aspect ratio flags set properly for all modes for some reason.
 
-Oh, and the same for hdmi5.c. Although that code is not compiled anyway,
-but I think it's still better to fix it.
+This is a debug print of the modes from my monitor, from the modedb
+after adding two EDID blocks to it.
 
-That could introduce a conflict with your series, but it's trivial.
+0: 1920x1200 pck 154012000, sync 2, vmode 0, flags 11: detailed first
+1: 720x400 pck 26171000, sync 0, vmode 0, flags 8: calc
+2: 640x480 pck 25200000, sync 0, vmode 0, flags 4: vesa
+3: 640x480 pck 31500000, sync 0, vmode 0, flags 4: vesa
+4: 800x600 pck 40000000, sync 3, vmode 0, flags 4: vesa
+5: 800x600 pck 49500000, sync 3, vmode 0, flags 4: vesa
+6: 832x624 pck 53433000, sync 0, vmode 0, flags 8: calc
+7: 1024x768 pck 65002000, sync 0, vmode 0, flags 4: vesa
+8: 1024x768 pck 78802000, sync 3, vmode 0, flags 4: vesa
+9: 1280x1024 pck 135007000, sync 3, vmode 0, flags 4: vesa
+10: 1152x864 pck 108003000, sync 3, vmode 0, flags 4: vesa
+11: 1280x960 pck 108003000, sync 3, vmode 0, flags 6: standard vesa
+12: 1600x1000 pck 132802000, sync 0, vmode 0, flags 0:
+13: 1600x1200 pck 162022000, sync 3, vmode 0, flags 6: standard vesa
+14: 1680x1050 pck 146864000, sync 0, vmode 0, flags 0:
+15: 1920x1200 pck 193236000, sync 0, vmode 0, flags 0:
+16: 1920x1080 pck 74250000, sync 3, vmode 1, flags 11: detailed first
+17: 1920x1080 pck 74250000, sync 3, vmode 1, flags 1: detailed
+18: 1280x720 pck 74250000, sync 3, vmode 0, flags 1: detailed
+19: 1280x720 pck 74250000, sync 3, vmode 0, flags 1: detailed
+20: 1920x1080 pck 74250000, sync 3, vmode 1, flags 80: 16:9
+21: 1440x480 pck 27000000, sync 0, vmode 1, flags 140: 4:3 repeat
+22: 1920x1080 pck 148500000, sync 3, vmode 0, flags 80: 16:9
+23: 720x576 pck 27000000, sync 0, vmode 0, flags 40: 4:3
+24: 1280x720 pck 74250000, sync 3, vmode 0, flags 80: 16:9
+25: 1920x1080 pck 74250000, sync 3, vmode 1, flags 80: 16:9
+26: 1440x576 pck 27000000, sync 0, vmode 1, flags 140: 4:3 repeat
+27: 1920x1080 pck 148500000, sync 3, vmode 0, flags 80: 16:9
+28: 2880x480 pck 108003000, sync 0, vmode 0, flags 140: 4:3 repeat
+29: 1440x240 pck 27000000, sync 0, vmode 0, flags 180: 16:9 repeat
+30: 1440x480 pck 27000000, sync 0, vmode 1, flags 180: 16:9 repeat
+
+For some reason some of the 16:9 modes do not have the flag, like mode
+16. Any ideas?
+
+> diff --git a/include/uapi/linux/fb.h b/include/uapi/linux/fb.h
+> index fb795c3..a65a787 100644
+> --- a/include/uapi/linux/fb.h
+> +++ b/include/uapi/linux/fb.h
+> @@ -226,6 +226,10 @@ struct fb_bitfield {
+>  #define FB_VMODE_SMOOTH_XPAN	512	/* smooth xpan possible (internally u=
+sed) */
+>  #define FB_VMODE_CONUPDATE	512	/* don't update x/yoffset	*/
+> =20
+> +#define FB_FLAG_RATIO_4_3	64
+> +#define FB_FLAG_RATIO_16_9	128
+> +#define FB_FLAG_PIXEL_REPEAT	256
+> +
+
+The rest of the bits are defined in include/linux/fb.h. Why did you add
+these three bits here?
 
  Tomi
 
 
 
---ROH8flNlfkfKJR00idHRall4vwMJI3hlr
+--OhXDngAMvt0BS3g73FEHhrVR6WkPkr6XC
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -78,19 +92,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJTrUWFAAoJEPo9qoy8lh71vRUQAJ1Ylaz1Q9H654qVeQkziiuy
-NzxJ/f/2XKWEiW6AFOWunDvUMraVXEFHBUcHjK8nb5vcoBXcfodi1xMuyBkX0TLT
-I+j8Oiu2wiaI4Dj8aCPbLAdolHmg3crVN0O82jMJD24N6sR1z2t/oV07Kd6vnWRP
-5QCDxW10cUMXz9kxXKnl0a6K/Zq18e0jacBifz5YhanaG+7N3EpJNuUiT7BSuD/A
-rCD7R7x9qAsm3NN2NEVOPFaYPo1g054qRn4Nl8joEbElLFfKqwFt1YjtjYuepWCH
-beMA1nb82gVufEXZE2JFu3IffkkZQfRtXopxxSr8LABFMgNjpTiiXdmjQXKkVxmP
-aFCxwoDTTEddf9q4tooM6ZevMEKTURfbmxqo+o6mA2NkWBwfSI1oN2HQpW6oPJal
-kqUas0Y0Rz2INLvrPFaF2aaUxx+Lp+jF4/Coz7Lmm41HMzTyUfqegVrhIZzcCLix
-XysjyHTdC2wzn/CCHOldHJ8WxPFDtOMFP2m+1OLAxcEHkM9TmxNV1wce+IKzZ/Mi
-UTKNQ/YsjAVLO8qdft4QoL6iYlhj7R0dyyLKG38N3wW3D9n7lSXw0FwnqkduQocf
-Chz4ZDP24QjPSqPSgkJId6Zje6GtbBZDXTIXUFm3adjr1zrXn5bfqpeWSSgDU9RQ
-mJLAWA/EobLRlipkK2Yo
-=mKOE
+iQIcBAEBAgAGBQJTqVreAAoJEPo9qoy8lh71iZ4QAI3tPEIwIcoqpyFNtO+5dkpE
+W31igK3mcuAoGBlYrb7EZfSvhY2KjnCtj3g8AtpQ2/ynrjEpkO0flWRPntvq3s9B
+/XNC0MIXVWoXkGwFHo+fYbAq/g5EPP/724492Y0MIVQWellQpeP6rU9r8sfMAyBu
+FJ7jDqoyfAEMwkbnyn19wzUJF1McdBaHcOCSPrAp0SqdrTT/TBFMqTesRTymuMll
+As/twAEIp9js9SSh4ZLmYwWGPlgDTRT7DxzEp4AjoA3RaYMlbSKHlWPm34p0gcmD
+9Z/zE4Kxb1+s18KisKFnTNAM0qhSpCESHHvsYFwd3TmEACMk62fO8upPcwhawIWH
+lc4GNKWp/WwQhbop65evvcqmNktmXOFjSWkwy2X51BntrVKriCD0Ioaxv3GMa54l
+IjWKWyFu3RPRE1yUqanNnw9iHd/EsQUOndCRgnZWln6B6mFrAzwYrc0p6yl7k60Q
+foxaM/oi0Liq+WemVpxw+K5O0Z2A4MMeOrDfzccwmytLBiN/sbT78t83upHpNqs/
+SC7YB5e+3BH6Wvf94oh2pctjyq4/KQs3vr9s17pexD9MihRY5D2JmSNLtx1MSXrn
+CRxo5Cq+dJ/Zkw2SNtXnP2xLhmGksKlYu8TOrVzruuaJy5yspEJz/uWi7jmKYbMS
+BMQ/a7s6mGoFWkRjITfu
+=AjH0
 -----END PGP SIGNATURE-----
 
---ROH8flNlfkfKJR00idHRall4vwMJI3hlr--
+--OhXDngAMvt0BS3g73FEHhrVR6WkPkr6XC--

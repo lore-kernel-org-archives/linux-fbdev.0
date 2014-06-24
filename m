@@ -1,139 +1,33 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jun 2014 10:03:53 +0000
-Subject: [PATCH 08/15] OMAPDSS: HDMI: remove custom avi infoframe
-Message-Id: <1403604240-16738-9-git-send-email-tomi.valkeinen@ti.com>
+From: Daniel Jeong <gshark.jeong@gmail.com>
+Date: Tue, 24 Jun 2014 07:18:48 +0000
+Subject: [RFC v3 0/2]  backlight: add new tps611xx backlight driver
+Message-Id: <1403594330-15387-1-git-send-email-gshark.jeong@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Randy Dunlap <rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Cc: Daniel Jeong <daniel.jeong-l0cyMroinI0@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Daniel Jeong <gshark.jeong-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-We now use the common AVI infoframe support, so the OMAP specific AVI
-infoframe code can be removed.
+This driver a general version for tps611xx backlgiht chips of TI.
+It supports tps61158, tps61161, tps61163 and tps61165 backlight driver
+based on EasyScale protocol.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/hdmi.h | 90 ------------------------------------
- 1 file changed, 90 deletions(-)
+Daniel Jeong (2):
+  backlight
+  backlight: add new tps611xx backlight device tree support      This
+    commit is tps611xx device tree documentation.
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 6cd4a755b0ac..e20fe5f70479 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -179,54 +179,6 @@ enum hdmi_audio_mclk_mode {
- 	HDMI_AUDIO_MCLK_192FS = 7
- };
- 
--/* INFOFRAME_AVI_ and INFOFRAME_AUDIO_ definitions */
--enum hdmi_core_infoframe {
--	HDMI_INFOFRAME_AVI_DB1Y_RGB = 0,
--	HDMI_INFOFRAME_AVI_DB1Y_YUV422 = 1,
--	HDMI_INFOFRAME_AVI_DB1Y_YUV444 = 2,
--	HDMI_INFOFRAME_AVI_DB1A_ACTIVE_FORMAT_OFF = 0,
--	HDMI_INFOFRAME_AVI_DB1A_ACTIVE_FORMAT_ON =  1,
--	HDMI_INFOFRAME_AVI_DB1B_NO = 0,
--	HDMI_INFOFRAME_AVI_DB1B_VERT = 1,
--	HDMI_INFOFRAME_AVI_DB1B_HORI = 2,
--	HDMI_INFOFRAME_AVI_DB1B_VERTHORI = 3,
--	HDMI_INFOFRAME_AVI_DB1S_0 = 0,
--	HDMI_INFOFRAME_AVI_DB1S_1 = 1,
--	HDMI_INFOFRAME_AVI_DB1S_2 = 2,
--	HDMI_INFOFRAME_AVI_DB2C_NO = 0,
--	HDMI_INFOFRAME_AVI_DB2C_ITU601 = 1,
--	HDMI_INFOFRAME_AVI_DB2C_ITU709 = 2,
--	HDMI_INFOFRAME_AVI_DB2C_EC_EXTENDED = 3,
--	HDMI_INFOFRAME_AVI_DB2M_NO = 0,
--	HDMI_INFOFRAME_AVI_DB2M_43 = 1,
--	HDMI_INFOFRAME_AVI_DB2M_169 = 2,
--	HDMI_INFOFRAME_AVI_DB2R_SAME = 8,
--	HDMI_INFOFRAME_AVI_DB2R_43 = 9,
--	HDMI_INFOFRAME_AVI_DB2R_169 = 10,
--	HDMI_INFOFRAME_AVI_DB2R_149 = 11,
--	HDMI_INFOFRAME_AVI_DB3ITC_NO = 0,
--	HDMI_INFOFRAME_AVI_DB3ITC_YES = 1,
--	HDMI_INFOFRAME_AVI_DB3EC_XVYUV601 = 0,
--	HDMI_INFOFRAME_AVI_DB3EC_XVYUV709 = 1,
--	HDMI_INFOFRAME_AVI_DB3Q_DEFAULT = 0,
--	HDMI_INFOFRAME_AVI_DB3Q_LR = 1,
--	HDMI_INFOFRAME_AVI_DB3Q_FR = 2,
--	HDMI_INFOFRAME_AVI_DB3SC_NO = 0,
--	HDMI_INFOFRAME_AVI_DB3SC_HORI = 1,
--	HDMI_INFOFRAME_AVI_DB3SC_VERT = 2,
--	HDMI_INFOFRAME_AVI_DB3SC_HORIVERT = 3,
--	HDMI_INFOFRAME_AVI_DB5PR_NO = 0,
--	HDMI_INFOFRAME_AVI_DB5PR_2 = 1,
--	HDMI_INFOFRAME_AVI_DB5PR_3 = 2,
--	HDMI_INFOFRAME_AVI_DB5PR_4 = 3,
--	HDMI_INFOFRAME_AVI_DB5PR_5 = 4,
--	HDMI_INFOFRAME_AVI_DB5PR_6 = 5,
--	HDMI_INFOFRAME_AVI_DB5PR_7 = 6,
--	HDMI_INFOFRAME_AVI_DB5PR_8 = 7,
--	HDMI_INFOFRAME_AVI_DB5PR_9 = 8,
--	HDMI_INFOFRAME_AVI_DB5PR_10 = 9,
--};
--
- struct hdmi_cm {
- 	int	code;
- 	int	mode;
-@@ -299,47 +251,6 @@ struct hdmi_core_audio_config {
- 	bool					en_spdif;
- };
- 
--/*
-- * Refer to section 8.2 in HDMI 1.3 specification for
-- * details about infoframe databytes
-- */
--struct hdmi_core_infoframe_avi {
--	/* Y0, Y1 rgb,yCbCr */
--	u8	db1_format;
--	/* A0  Active information Present */
--	u8	db1_active_info;
--	/* B0, B1 Bar info data valid */
--	u8	db1_bar_info_dv;
--	/* S0, S1 scan information */
--	u8	db1_scan_info;
--	/* C0, C1 colorimetry */
--	u8	db2_colorimetry;
--	/* M0, M1 Aspect ratio (4:3, 16:9) */
--	u8	db2_aspect_ratio;
--	/* R0...R3 Active format aspect ratio */
--	u8	db2_active_fmt_ar;
--	/* ITC IT content. */
--	u8	db3_itc;
--	/* EC0, EC1, EC2 Extended colorimetry */
--	u8	db3_ec;
--	/* Q1, Q0 Quantization range */
--	u8	db3_q_range;
--	/* SC1, SC0 Non-uniform picture scaling */
--	u8	db3_nup_scaling;
--	/* VIC0..6 Video format identification */
--	u8	db4_videocode;
--	/* PR0..PR3 Pixel repetition factor */
--	u8	db5_pixel_repeat;
--	/* Line number end of top bar */
--	u16	db6_7_line_eoftop;
--	/* Line number start of bottom bar */
--	u16	db8_9_line_sofbottom;
--	/* Pixel number end of left bar */
--	u16	db10_11_pixel_eofleft;
--	/* Pixel number start of right bar */
--	u16	db12_13_pixel_sofright;
--};
--
- struct hdmi_wp_data {
- 	void __iomem *base;
- };
-@@ -360,7 +271,6 @@ struct hdmi_phy_data {
- struct hdmi_core_data {
- 	void __iomem *base;
- 
--	struct hdmi_core_infoframe_avi avi_cfg;
- 	struct hdmi_avi_infoframe avi_infoframe;
- };
- 
+ .../video/backlight/tps611xx-backlight.txt         |   16 +
+ drivers/video/backlight/Kconfig                    |    7 +
+ drivers/video/backlight/Makefile                   |    1 +
+ drivers/video/backlight/tps611xx_bl.c              |  494 ++++++++++++++++++++
+ include/linux/platform_data/tps611xx_bl.h          |   31 ++
+ 5 files changed, 549 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
+ create mode 100644 drivers/video/backlight/tps611xx_bl.c
+ create mode 100644 include/linux/platform_data/tps611xx_bl.h
+
 -- 
-1.9.1
+1.7.9.5
 

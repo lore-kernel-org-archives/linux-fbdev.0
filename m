@@ -1,30 +1,33 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 27 Jun 2014 11:35:58 +0000
-Subject: Re: [PATCH 03/12] OMAPDSS: hdmi_wp: Add function for getting hdmi_wp physical base address
-Message-Id: <53AD571E.2070508@ti.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Tue, 24 Jun 2014 13:51:01 +0000
+Subject: Re: [PATCH] video: hyperv: hyperv_fb: refresh the VM screen by force on VM panic
+Message-Id: <20140624135101.GB10115@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1403807781.git.jsarha@ti.com> <71e703f319eacd5a7196d8b34601b52e32b946d3.1403807781.git.jsarha@ti.com> <53AD4A72.5050905@ti.com>
-In-Reply-To: <53AD4A72.5050905@ti.com>
+References: <1403569757-2622-1-git-send-email-decui@microsoft.com>
+In-Reply-To: <1403569757-2622-1-git-send-email-decui@microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, detheridge@ti.com, jyri.sarha@iki.fi
+To: Dexuan Cui <decui@microsoft.com>
+Cc: linux-fbdev@vger.kernel.org, jasowang@redhat.com, driverdev-devel@linuxdriverproject.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, olaf@aepfle.de, apw@canonical.com, plagnioj@jcrosoft.com, haiyangz@microsoft.com
 
-On 06/27/2014 01:41 PM, Tomi Valkeinen wrote:
-> On 26/06/14 22:20, Jyri Sarha wrote:
->> The hdmi_wp physical base address is needed for hdmi audio dma.
-...
->
-> Maybe it would be better to have a function which returns the phys
-> address for audio DMA? Only that one register is needed, right?
->
-> That makes the purpose of the function more obvious, and also if you
-> return the phys_base, the caller needs to know the offset to the DMA
-> register, and that offset should be a WP internal value.
->
+On Tue, Jun 24, 2014 at 08:29:17AM +0800, Dexuan Cui wrote:
+> Currently the VSC has no chance to notify the VSP of the dirty rectangle on VM
+> panic because the notification work is done in a workqueue, and in panic() the
+> kernel typically ends up in an infinite loop, and a typical kernel config has
+> CONFIG_PREEMPT_VOLUNTARY=y and CONFIG_PREEMPT is not set, so a context switch
+> can't happen in panic() and the workqueue won't have a chance to run. As a
+> result, the VM Connection window can't refresh until it's closed and we
+> re-connect to the VM.
+> 
+> We can register a handler on panic_notifier_list: the handler can notify
+> the VSC and switch the framebuffer driver to a "synchronous mode", meaning
+> the VSC flushes any future framebuffer change to the VSP immediately.
+> 
+> MS-TFS: 157532
 
-Sounds good, I'll do that.
+What is this line for?
 
-Cheers,
-Jyri
+thanks,
+
+greg k-h

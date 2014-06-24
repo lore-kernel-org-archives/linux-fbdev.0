@@ -1,121 +1,624 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Jun 2014 12:15:20 +0000
-Subject: Re: [PATCH v3 6/7] OMAPDSS: DPI: Add support for multiple instances
-Message-Id: <53AC0ED8.7060303@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="a56VLF9ivHeBUQp8GJvUxaa2vk4TfSsq4"
+From: Daniel Jeong <gshark.jeong@gmail.com>
+Date: Tue, 24 Jun 2014 07:18:49 +0000
+Subject: [RFC v3 1/2] backlight: add new tps611xx backlight driver
+Message-Id: <1403594330-15387-2-git-send-email-gshark.jeong@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401096492-1405-1-git-send-email-archit@ti.com> <1401864063-19196-1-git-send-email-archit@ti.com> <1401864063-19196-7-git-send-email-archit@ti.com>
-In-Reply-To: <1401864063-19196-7-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+References: <1403594330-15387-1-git-send-email-gshark.jeong@gmail.com>
+In-Reply-To: <1403594330-15387-1-git-send-email-gshark.jeong@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
+Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>
 
---a56VLF9ivHeBUQp8GJvUxaa2vk4TfSsq4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This driver a general version for tps611xx backlgiht chips of TI.
+It supports tps61158, tps61161, tps61163 and tps61165 backlight driver
+based on EasyScale protocol(1-Wire Control Interface).
 
-On 04/06/14 09:41, Archit Taneja wrote:
-> Register DPI outputs, and assign the port_num to them as specified by t=
-he
-> 'reg' property in the DPI ports in DT.
->=20
-> To support multiple DPI instances, dpi_get_channel needs to take the DP=
-I
-> instance's reg-id to get the corresponding channel. Make it take this
-> argument.We just pass 0 in the non-DT path, since we don't support mult=
-iple
-> instances in the non-DT case.
->=20
-> Signed-off-by: Archit Taneja <archit@ti.com>
-> ---
->  drivers/video/fbdev/omap2/dss/dpi.c | 26 +++++++++++++++++++++++---
->  1 file changed, 23 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/=
-omap2/dss/dpi.c
-> index b579022..3e204a8 100644
-> --- a/drivers/video/fbdev/omap2/dss/dpi.c
-> +++ b/drivers/video/fbdev/omap2/dss/dpi.c
-> @@ -616,7 +616,7 @@ static void dpi_init_pll(struct dpi_data *dpi)
->   * the channel in some more dynamic manner, or get the channel as a us=
-er
->   * parameter.
->   */
-> -static enum omap_channel dpi_get_channel(void)
-> +static enum omap_channel dpi_get_channel(int reg)
->  {
->  	switch (omapdss_get_version()) {
->  	case OMAPDSS_VER_OMAP24xx:
-> @@ -710,7 +710,7 @@ static void dpi_init_output(struct platform_device =
-*pdev)
->  	out->id =3D OMAP_DSS_OUTPUT_DPI;
->  	out->output_type =3D OMAP_DISPLAY_TYPE_DPI;
->  	out->name =3D "dpi.0";
-> -	out->dispc_channel =3D dpi_get_channel();
-> +	out->dispc_channel =3D dpi_get_channel(0);
->  	out->ops.dpi =3D &dpi_ops;
->  	out->owner =3D THIS_MODULE;
-> =20
-> @@ -730,11 +730,31 @@ static void dpi_init_output_port(struct platform_=
-device *pdev,
->  {
->  	struct dpi_data *dpi =3D port->data;
->  	struct omap_dss_device *out =3D &dpi->output;
-> +	int r;
-> +	u32 reg;
-> +
-> +	r =3D of_property_read_u32(port, "reg", &reg);
-> +	if (r)
-> +		reg =3D 0;
-> +
-> +	switch (reg) {
-> +	case 2:
-> +		out->name =3D "dpi.2";
-> +		break;
-> +	case 1:
-> +		out->name =3D "dpi.1";
-> +		break;
-> +	case 0:
-> +	default:
-> +		out->name =3D "dpi.0";
-> +		break;
-> +	}
+EasyScale
+EasyScale is a simple but flexible one pin interface to configure the current.
+The interface is based on a master-slave structure, where the master is 
+typically a microcontroller or application processor and the IC is the slave.
+The advantage of EasyScale compared with other one pin interfaces is that 
+its bit detection is in a large extent independent from the bit transmission rate. 
+It can automatically detect bit rates between 1.7kBit/sec and up to 160kBit/sec.
 
-I don't think it makes sense to use "reg" word anywhere else than when
-getting the property from the DT data. What we need here is port number.
-That port number is just stored in "reg" property in the DT data. So
-rather do:
+EasyScale on TPS61163
+A command consists of 24 bits, including an 8-bit device address byte and a 16-bit data byte.
+All of the 24 bits should be transmitted together each time, and the LSB bit should be 
+transmitted first. The device address byte A7(MSB)~A0(LSB) is fixed to 0x8F. 
+The data byte includes 9 bits D8(MSB)~D0(LSB) for brightness information and an RFA bit.
+The RFA bit set to "1" indicates the Request for Acknowledge condition. The Acknowledge
+condition is only applied when the protocol is received correctly.
+Bit sream : D0-D8 | 0 | RFA | 00000 | A0-A7
+Please refer http://www.ti.com/lit/ds/symlink/tps61163.pdf for more details.
 
-of_property_read_u32(port, "reg", &port_num);
+EasyScale on TPS61158/61/65
+A command consists of 16 bits, including an 8-bit device address byte and a 8-bit data byte.
+All of the 16 bits should be transmitted together each time, and the MSB bit should be 
+transmitted first. The device address byte A7(MSB)~A0(LSB) is fixed (tps61158 0x58
+tps61161 and tps61165 0x72). The data byte includes an RFA bit.
+The RFA bit set to "1" indicates the Request for Acknowledge condition. The Acknowledge
+condition is only applied when the protocol is received correctly.
+Bit sream : A7-A0 | RFA | 00 | D4-D0
+Please refer the links below  for more details.
+tps61158 : http://www.ti.com/lit/ds/symlink/tps61158.pdf
+tps61161 : http://www.ti.com.cn/cn/lit/ds/symlink/tps61161-q1.pdf
+tps61165 : http://www.ti.com/lit/ds/symlink/tps61165.pdf
 
-and use the port_num (or such) everywhere, including the subject of the
-next patch.
+Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
+---
+ drivers/video/backlight/Kconfig           |    7 +
+ drivers/video/backlight/Makefile          |    1 +
+ drivers/video/backlight/tps611xx_bl.c     |  494 +++++++++++++++++++++++++++++
+ include/linux/platform_data/tps611xx_bl.h |   31 ++
+ 4 files changed, 533 insertions(+)
+ create mode 100644 drivers/video/backlight/tps611xx_bl.c
+ create mode 100644 include/linux/platform_data/tps611xx_bl.h
 
- Tomi
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 5a3eb2e..c779a85 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -418,6 +418,13 @@ config BACKLIGHT_TPS65217
+ 	  If you have a Texas Instruments TPS65217 say Y to enable the
+ 	  backlight driver.
+ 
++config BACKLIGHT_TPS611xx
++	tristate "TPS611xx Backlight"
++	depends on BACKLIGHT_CLASS_DEVICE && GPIOLIB
++	help
++	  This supports TI TPS61158,TPS61161, TPS61163 and TPS61165
++	  backlight driver based on EasyScale Protocol.
++
+ config BACKLIGHT_AS3711
+ 	tristate "AS3711 Backlight"
+ 	depends on BACKLIGHT_CLASS_DEVICE && MFD_AS3711
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index bb82002..44f1641 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -52,4 +52,5 @@ obj-$(CONFIG_BACKLIGHT_PWM)		+= pwm_bl.o
+ obj-$(CONFIG_BACKLIGHT_SAHARA)		+= kb3886_bl.o
+ obj-$(CONFIG_BACKLIGHT_TOSA)		+= tosa_bl.o
+ obj-$(CONFIG_BACKLIGHT_TPS65217)	+= tps65217_bl.o
++obj-$(CONFIG_BACKLIGHT_TPS611xx)	+= tps611xx_bl.o
+ obj-$(CONFIG_BACKLIGHT_WM831X)		+= wm831x_bl.o
+diff --git a/drivers/video/backlight/tps611xx_bl.c b/drivers/video/backlight/tps611xx_bl.c
+new file mode 100644
+index 0000000..8dcc88a
+--- /dev/null
++++ b/drivers/video/backlight/tps611xx_bl.c
+@@ -0,0 +1,494 @@
++/*
++ * Simple driver for Texas Instruments TPS611XX Backlight driver chip
++ *        using EasyScale Interface. It supports TPS61158, TPS61161,
++ *        TPS61163 and TPS61165.
++ *
++ * Copyright (C) 2014 Texas Instruments
++ * Author: Daniel Jeong  <gshark.jeong@gmail.com>
++ *	       Ldd Mlp <ldd-mlp@list.ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/backlight.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/fb.h>
++#include <linux/gpio.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/platform_data/tps611xx_bl.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++
++#define CMD_FORWARD 0
++#define CMD_BACKWARD 1
++
++enum tps611xx_id {
++	TPS61158_ID = 0,
++	TPS61161_ID,
++	TPS61163_ID,
++	TPS61165_ID,
++};
++
++/*
++ * easyscale time spec
++ * @es_delay : es delay time(ns)
++ * @es_det   : es detection time(ns)
++ * @start    : start time of data stream(ns)
++ * @eos      : end time of data stream(ns)
++ * @reset    : ic shutdown time(ms)
++ * @logic_1_low : low time high bit(ns)
++ * @logic_0_low : low time low bit(ns)
++ * @ackn        : duation of ack condistion(ns)
++ * @ack_poll    : ack polling duration(ns)
++ */
++struct tps611xx_time {
++	unsigned int es_delay;
++	unsigned int es_det;
++	unsigned int start;
++	unsigned int eos;
++	unsigned int reset;
++	unsigned int logic_1_low;
++	unsigned int logic_0_low;
++	unsigned int ackn;
++	unsigned int ack_poll;
++};
++
++/*
++ * @seq : sequence of data transfer
++ * @size: size of data
++ * @brt_max : max brightness
++ * @brt_bmask : bit mask of dimming bits
++ * @rfa_bmask : bit mask of RFA(Request for Acknowledge condition)
++ */
++struct tps611xx_command {
++	int seq;
++	int size;
++	int brt_max;
++	int brt_bmask;
++	int rfa_bmask;
++};
++
++/*
++ * @id : product id
++ * @name : product name
++ * @addr : device address
++ * @cmd  : es command info
++ * @time : es time info
++ */
++struct tps611xx_esdata {
++	enum tps611xx_id id;
++	char *name;
++	int addr;
++	struct tps611xx_command cmd;
++	struct tps611xx_time time;
++};
++
++struct tps611xx_bl_data {
++	struct device *dev;
++	struct backlight_device *bled;
++	struct tps611xx_platform_data *pdata;
++
++	/*
++	 * @rfa_en : RFA enable (Request for Acknowledge condition)
++	 * @en_gpio: enable pin gpio no.
++	 * @esdata : easyscale data
++	 */
++	int rfa_en;
++	unsigned int en_gpio;
++	const struct tps611xx_esdata *esdata;
++};
++
++static struct tps611xx_esdata tps611xx_info[] = {
++	[TPS61158_ID] = {
++			 .id = TPS61158_ID,
++			 .name = "tps61158",
++			 .addr = 0x5800,
++			 .cmd = {
++				 .seq = CMD_FORWARD,
++				 .size = 16,
++				 .brt_max = 31,
++				 .brt_bmask = 0x1f,
++				 .rfa_bmask = 0x80
++				},
++			 .time = {
++				  .es_delay = 100000,
++				  .es_det = 450000,
++				  .start = 3500,
++				  .eos = 3500,
++				  .reset = 4,
++				  .logic_1_low = 5000,
++				  .logic_0_low = 15000,
++				  .ackn = 900000,
++				  .ack_poll = 2000
++				},
++			 },
++
++	[TPS61161_ID] = {
++			 .id = TPS61161_ID,
++			 .name = "tps61161",
++			 .addr = 0x7200,
++			 .cmd = {
++				 .seq = CMD_FORWARD,
++				 .size = 16,
++				 .brt_max = 31,
++				 .brt_bmask = 0x1f,
++				 .rfa_bmask = 0x80
++				},
++			 .time = {
++				  .es_delay = 120000,
++				  .es_det = 280000,
++				  .start = 2000,
++				  .eos = 2000,
++				  .reset = 3,
++				  .logic_1_low = 3000,
++				  .logic_0_low = 7000,
++				  .ackn = 512000,
++				  .ack_poll = 2000
++				},
++			 },
++
++	[TPS61163_ID] = {
++			 .id = TPS61163_ID,
++			 .name = "tps61163",
++			 .addr = 0x8F0000,
++			 .cmd = {
++				 .seq = CMD_BACKWARD,
++				 .size = 24,
++				 .brt_max = 511,
++				 .brt_bmask = 0x1ff,
++				 .rfa_bmask = 0x400
++				},
++			 .time = {
++				  .es_delay = 100000,
++				  .es_det = 260000,
++				  .start = 2000,
++				  .eos = 2000,
++				  .reset = 3,
++				  .logic_1_low = 3000,
++				  .logic_0_low = 7000,
++				  .ackn = 512000,
++				  .ack_poll = 2000
++				},
++			 },
++
++	[TPS61165_ID] = {
++			 .id = TPS61165_ID,
++			 .name = "tps61165",
++			 .addr = 0x7200,
++			 .cmd = {
++				 .seq = CMD_FORWARD,
++				 .size = 16,
++				 .brt_max = 31,
++				 .brt_bmask = 0x1f,
++				 .rfa_bmask = 0x80
++				},
++			 .time = {
++				  .es_delay = 120000,
++				  .es_det = 280000,
++				  .start = 4000,
++				  .eos = 4000,
++				  .reset = 3,
++				  .logic_1_low = 3000,
++				  .logic_0_low = 7000,
++				  .ackn = 512000,
++				  .ack_poll = 2000
++				},
++			 },
++};
++
++static int tps611xx_bl_update_status(struct backlight_device *bl)
++{
++	struct tps611xx_bl_data *pchip = bl_get_data(bl);
++	const struct tps611xx_esdata *esdata = pchip->esdata;
++	int data_in, t_low, t_logic, max_bmask;
++	unsigned long flags;
++
++	data_in = esdata->addr | (bl->props.brightness & esdata->cmd.brt_bmask);
++	if (pchip->rfa_en)
++		data_in |= esdata->cmd.rfa_bmask;
++
++	max_bmask = 0x1 << esdata->cmd.size;
++	t_logic = esdata->time.logic_1_low + esdata->time.logic_0_low;
++
++	local_irq_save(flags);
++	/* t_start : 2us high before data byte */
++	gpio_direction_output(pchip->en_gpio, 1);
++	ndelay(esdata->time.start);
++
++	/* forward command transfer */
++	if (esdata->cmd.seq = CMD_FORWARD) {
++		int addr_bmask = max_bmask >> 8;
++
++		for (max_bmask >>= 1; max_bmask > 0x0; max_bmask >>= 1) {
++			if (data_in & max_bmask)
++				t_low = esdata->time.logic_1_low;
++			else
++				t_low = esdata->time.logic_0_low;
++
++			gpio_direction_output(pchip->en_gpio, 0);
++			ndelay(t_low);
++			gpio_direction_output(pchip->en_gpio, 1);
++			ndelay(t_logic - t_low);
++
++			if (max_bmask = addr_bmask) {
++				gpio_direction_output(pchip->en_gpio, 0);
++				/* t_eos : low after address byte */
++				ndelay(esdata->time.eos);
++				gpio_direction_output(pchip->en_gpio, 1);
++				/* t_start : high before data byte */
++				ndelay(esdata->time.start);
++			}
++		}
++	} else {
++		/* backward command tansfer */
++		int bmask;
++
++		for (bmask = 0x01; bmask < max_bmask; bmask <<= 1) {
++			if (data_in & bmask)
++				t_low = esdata->time.logic_1_low;
++			else
++				t_low = esdata->time.logic_0_low;
++
++			gpio_direction_output(pchip->en_gpio, 0);
++			ndelay(t_low);
++			gpio_direction_output(pchip->en_gpio, 1);
++			ndelay(t_logic - t_low);
++		}
++	}
++
++	/*
++	 * t_eos : low after address byte
++	 * t_ackVal is also t_eos
++	 */
++	gpio_direction_output(pchip->en_gpio, 0);
++	ndelay(esdata->time.eos);
++
++	/* RFA management  */
++	if (pchip->rfa_en) {
++		int max_ack_time = esdata->time.ackn;
++		/* set input */
++		gpio_direction_input(pchip->en_gpio);
++		/* read acknowledge from chip */
++		while (max_ack_time > 0) {
++			if (gpio_get_value(pchip->en_gpio) = 0)
++				break;
++			max_ack_time -= esdata->time.ack_poll;
++		}
++		if (max_ack_time <= 0)
++			dev_err(pchip->dev,
++				"easyscale : no ack from %s\n", esdata->name);
++		else
++			ndelay(max_ack_time);
++	}
++	gpio_direction_output(pchip->en_gpio, 1);
++	local_irq_restore(flags);
++
++	return bl->props.brightness;
++}
++
++static int tps611xx_bl_get_brightness(struct backlight_device *bl)
++{
++	return bl->props.brightness;
++}
++
++static const struct backlight_ops tps611xx_bl_ops = {
++	.update_status = tps611xx_bl_update_status,
++	.get_brightness = tps611xx_bl_get_brightness,
++};
++
++static ssize_t tps611xx_enable_store(struct device *dev,
++				     struct device_attribute *devAttr,
++				     const char *buf, size_t size)
++{
++	struct tps611xx_bl_data *pchip = dev_get_drvdata(dev);
++	const struct tps611xx_esdata *esdata = pchip->esdata;
++	unsigned long flags;
++	unsigned int input;
++	int ret;
++
++	ret = kstrtouint(buf, 10, &input);
++	if (ret)
++		return -EINVAL;
++
++	local_irq_save(flags);
++	if (input = 0) {
++		/* chip disable */
++		gpio_direction_output(pchip->en_gpio, 0);
++		/* low more than reset ms to reset */
++		mdelay(esdata->time.reset);
++	} else {
++		/* easyscale detection window */
++		gpio_direction_output(pchip->en_gpio, 1);
++		ndelay(esdata->time.es_delay);
++		gpio_direction_output(pchip->en_gpio, 0);
++		ndelay(esdata->time.es_det);
++		gpio_direction_output(pchip->en_gpio, 1);
++	}
++	local_irq_restore(flags);
++
++	return size;
++}
++
++static DEVICE_ATTR(enable, S_IWUSR, NULL, tps611xx_enable_store);
++
++#ifdef CONFIG_OF
++static const struct of_device_id tps611xx_backlight_of_match[] = {
++	{.compatible = "ti,tps61158_bl", .data = &tps611xx_info[TPS61158_ID]},
++	{.compatible = "ti,tps61161_bl", .data = &tps611xx_info[TPS61161_ID]},
++	{.compatible = "ti,tps61163_bl", .data = &tps611xx_info[TPS61163_ID]},
++	{.compatible = "ti,tps61165_bl", .data = &tps611xx_info[TPS61165_ID]},
++	{}
++};
++
++MODULE_DEVICE_TABLE(of, tps611xx_backlight_of_match);
++
++static int tps611xx_backlight_parse_dt(struct tps611xx_bl_data *pchip)
++{
++	struct device *dev = pchip->dev;
++	struct device_node *node = dev->of_node;
++	const struct of_device_id *of_id +	    of_match_device(tps611xx_backlight_of_match, dev);
++	u32 value;
++	int ret;
++
++	if (!node)
++		return -ENODEV;
++
++	if (!of_id || !of_id->data) {
++		dev_err(dev, "Failed to find tps611xx chip id\n");
++		return -EFAULT;
++	}
++	pchip->esdata = of_id->data;
++
++	ret = of_property_read_u32(node, "en_gpio_num", &value);
++	if (ret < 0)
++		return ret;
++	pchip->en_gpio = value;
++	ret = of_property_read_u32(node, "rfa_en", &value);
++	if (ret < 0)
++		return ret;
++	pchip->rfa_en = value;
++
++	return 0;
++}
++#else
++static int tps611xx_backlight_parse_dt(struct tps611xx_bl_data *pchip)
++{
++	return -ENODEV;
++}
++#endif
++
++static int tps611xx_backlight_probe(struct platform_device *pdev)
++{
++	struct tps611xx_bl_data *pchip;
++	struct backlight_properties props;
++	const struct tps611xx_esdata *esdata;
++	struct tps611xx_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	unsigned long flags;
++	int ret;
++
++	pchip = devm_kzalloc(&pdev->dev,
++			     sizeof(struct tps611xx_bl_data), GFP_KERNEL);
++	if (pchip = NULL)
++		return -ENOMEM;
++	pchip->dev = &pdev->dev;
++
++	if (pdata = NULL) {
++		ret = tps611xx_backlight_parse_dt(pchip);
++		if (ret < 0)
++			return ret;
++	} else {
++		pchip->rfa_en = pdata->rfa_en;
++		pchip->en_gpio = pdata->en_gpio_num;
++		pchip->esdata = (const struct tps611xx_esdata *)
++		    platform_get_device_id(pdev)->driver_data;
++	}
++	esdata = pchip->esdata;
++
++	memset(&props, 0, sizeof(struct backlight_properties));
++	props.brightness = esdata->cmd.brt_max;
++	props.max_brightness = esdata->cmd.brt_max;
++	props.type = BACKLIGHT_RAW;
++	pchip->bled +	    devm_backlight_device_register(pchip->dev, TPS611XX_NAME,
++					   pchip->dev, pchip,
++					   &tps611xx_bl_ops, &props);
++	if (IS_ERR(pchip->bled))
++		return PTR_ERR(pchip->bled);
++
++	/* for enable/disable */
++	ret = device_create_file(&(pchip->bled->dev), &dev_attr_enable);
++	if (ret < 0) {
++		dev_err(pchip->dev, "failed : add sysfs entries\n");
++		return ret;
++	}
++	platform_set_drvdata(pdev, pchip);
++
++	/* EasyScale init */
++	ret = gpio_request_one(pchip->en_gpio, GPIOF_OUT_INIT_HIGH, "tps611xx");
++	if (ret) {
++		device_remove_file(&(pchip->bled->dev), &dev_attr_enable);
++		dev_err(pchip->dev, "failed : get gpio %d\n", pchip->en_gpio);
++		return ret;
++	}
++
++	/*
++	 * ES Detection Window
++	 *   - ES detect delay
++	 *   - ES detect time
++	 */
++	local_irq_save(flags);
++	gpio_direction_output(pchip->en_gpio, 1);
++	ndelay(esdata->time.es_delay);
++	gpio_direction_output(pchip->en_gpio, 0);
++	ndelay(esdata->time.es_det);
++	gpio_direction_output(pchip->en_gpio, 1);
++	local_irq_restore(flags);
++	dev_info(pchip->dev,
++		 "%s EasyScale is initialized\n", pchip->esdata->name);
++	return 0;
++}
++
++static int tps611xx_backlight_remove(struct platform_device *pdev)
++{
++	struct tps611xx_bl_data *pchip = platform_get_drvdata(pdev);
++	const struct tps611xx_esdata *esdata = pchip->esdata;
++
++	device_remove_file(&(pchip->bled->dev), &dev_attr_enable);
++	gpio_direction_output(pchip->en_gpio, 0);
++	mdelay(esdata->time.reset);
++	return 0;
++}
++
++static const struct platform_device_id tps611xx_id_table[] = {
++	{TPS61158_NAME, (unsigned long)&tps611xx_info[TPS61158_ID]},
++	{TPS61161_NAME, (unsigned long)&tps611xx_info[TPS61161_ID]},
++	{TPS61163_NAME, (unsigned long)&tps611xx_info[TPS61163_ID]},
++	{TPS61165_NAME, (unsigned long)&tps611xx_info[TPS61165_ID]},
++	{}
++};
++
++static struct platform_driver tps611xx_backlight_driver = {
++	.driver = {
++		   .name = TPS611XX_NAME,
++		   .owner = THIS_MODULE,
++		   .of_match_table = of_match_ptr(tps611xx_backlight_of_match),
++		   },
++	.probe = tps611xx_backlight_probe,
++	.remove = tps611xx_backlight_remove,
++	.id_table = tps611xx_id_table,
++};
++
++module_platform_driver(tps611xx_backlight_driver);
++
++MODULE_DESCRIPTION("EasyScale based tps611xx Backlight Driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:tps611xx_bl");
+diff --git a/include/linux/platform_data/tps611xx_bl.h b/include/linux/platform_data/tps611xx_bl.h
+new file mode 100644
+index 0000000..73d1f08
+--- /dev/null
++++ b/include/linux/platform_data/tps611xx_bl.h
+@@ -0,0 +1,31 @@
++/*
++ * Simple driver for Texas Instruments TPS61163a Backlight driver chip
++ * Copyright (C) 2014 Texas Instruments
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#ifndef __TPS611XX_H
++#define __TPS611XX_H
++
++#define TPS611XX_NAME "tps611xx_bl"
++#define TPS61158_NAME "tps61158_bl"
++#define TPS61161_NAME "tps61161_bl"
++#define TPS61163_NAME "tps61163_bl"
++#define TPS61165_NAME "tps61165_bl"
++
++/*
++ * struct tps61163a platform data
++ * @rfa_en : request for acknowledge
++ * @en_gpio_num : gpio number for en_pin
++ */
++struct tps611xx_platform_data {
++
++	int rfa_en;
++	unsigned int en_gpio_num;
++};
++
++#endif /* __TPS611XX_H */
+-- 
+1.7.9.5
 
-
-
---a56VLF9ivHeBUQp8GJvUxaa2vk4TfSsq4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTrA7YAAoJEPo9qoy8lh71WKkP/3kZAYyH1b3Xj1ffI7eyOJgS
-vWYDhvlAT4H3YhRZ+1ncdV8kqOY1uKWPnkxiAJ2O0bzhfDymqZOzHRdymPpI9o3T
-4l7zdZ4oAx8UO5z+WStWD9N3H7IyQ7thHgudbb7o2t3k77qXmn2DJnBu8fzji9aV
-q1TOe/5R1StYRQAmSgQnwDTcZjLlYgkqokhnf7GPi1GCfcUk3D+4MapW9nYAQLPO
-cu351bR0dI4AvTiJkB85Byzcth5/pBCdl4iPWWTDnYA5gIp/wrDSikdaMICzOwta
-Cp/coIrGYXuGD2nVsUqxwmGiM0OIAJVJO3dKRm2ii4mZeGop8YHO0bwVy9cjZQJ3
-Ig//alNFFYDxRiyOttq3vANUEe64EmuPHzmhIDjosVRSNzVL+dAPvMzBM6eChSxO
-GLyzFLHZdgOipPJiJou6F3OIq8h+xC6F4QJxJd05pSvzfmji6GJKIldedZmgwUQQ
-nxtYajex0LYhV+n6tvOa++i7W1DU/uFCKNTl9/pViYqtNZwYZJwTqdRXsMiDWAHv
-+B3wfCJ2k+qIgfIgv1wy9OWQVSV2CR0gZF6gCOD+0cdH//VZPihwF3VbMghJgEay
-j2AevWNaLD2GiO2HNJ2UmPKKaWdk1lMVKTu1PjuGlYPEWgTZRTtdVe0cYzbG8nSa
-K+E7dkSQ9KiUAf+XiETx
-=2rcA
------END PGP SIGNATURE-----
-
---a56VLF9ivHeBUQp8GJvUxaa2vk4TfSsq4--

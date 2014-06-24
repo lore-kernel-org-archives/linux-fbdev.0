@@ -1,76 +1,46 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 15 Jun 2014 21:52:10 +0000
-Subject: [PATCH] video: fbdev: sis: init301.c:  Cleaning up useless if statement
-Message-Id: <1402869130-4962-2-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Daniel Jeong <gshark.jeong@gmail.com>
+Date: Tue, 24 Jun 2014 07:18:50 +0000
+Subject: [RFC v3 2/2] backlight: device tree: add new tps611xx backlight driver
+Message-Id: <1403594330-15387-3-git-send-email-gshark.jeong@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1402869130-4962-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1402869130-4962-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+References: <1403594330-15387-1-git-send-email-gshark.jeong@gmail.com>
+In-Reply-To: <1403594330-15387-1-git-send-email-gshark.jeong-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Randy Dunlap <rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Cc: Daniel Jeong <daniel.jeong-l0cyMroinI0@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Daniel Jeong <gshark.jeong-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-Same code is run regardless of the outcome of the if statement.
-And sets a variable that is missed, a probable cut and paste mistake.
+This commit is about tps611xx device tree documentation.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
 ---
- drivers/video/fbdev/sis/init301.c |   19 +++++--------------
- 1 file changed, 5 insertions(+), 14 deletions(-)
+ .../video/backlight/tps611xx-backlight.txt         |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
 
-diff --git a/drivers/video/fbdev/sis/init301.c b/drivers/video/fbdev/sis/init301.c
-index a89e3ca..008ab4a 100644
---- a/drivers/video/fbdev/sis/init301.c
-+++ b/drivers/video/fbdev/sis/init301.c
-@@ -1714,7 +1714,7 @@ SiS_GetLCDResInfo(struct SiS_Private *SiS_Pr, unsigned short ModeNo, unsigned sh
- 			       SiS_Pr->PanelVCLKIdx315 = VCLK81_315; /* ? */
- 			    } else {
- 			       SiS_Pr->PanelHT   = 1688; SiS_Pr->PanelVT   =  802;
--			       SiS_Pr->PanelHRS  =   48; SiS_Pr->PanelHRS  =  112;
-+			       SiS_Pr->PanelHRS  =   48; SiS_Pr->PanelHRE  =  112;
- 			       SiS_Pr->PanelVRS  =    3; SiS_Pr->PanelVRE  =    6;
- 			       SiS_Pr->PanelVCLKIdx300 = VCLK81_300;
- 			       SiS_Pr->PanelVCLKIdx315 = VCLK81_315;
-@@ -6850,11 +6850,9 @@ SiS_SetGroup2(struct SiS_Private *SiS_Pr, unsigned short ModeNo, unsigned short
- 	   if(SiS_Pr->SiS_VGAHDE >= 1280) {
-               tempch = 20;
-               tempbx &= ~0x20;
--           } else if(SiS_Pr->SiS_VGAHDE >= 1024) {
--              tempch = 25;
-            } else {
--	      tempch = 25; /* OK */
--	   }
-+              tempch = 25; /* OK */
-+          }
-         }
-      }
-   }
-@@ -7971,13 +7969,8 @@ SiS_SetCHTVReg(struct SiS_Private *SiS_Pr, unsigned short ModeNo, unsigned short
-          }
-       } else {						/* ---- PAL ---- */
-          /* We don't play around with FSCI in PAL mode */
--         if(resindex = 0x04) {
--            SiS_SetCH70xxANDOR(SiS_Pr,0x20,0x00,0xEF);	/* loop filter off */
--            SiS_SetCH70xxANDOR(SiS_Pr,0x21,0x01,0xFE);	/* ACIV on */
--         } else {
--            SiS_SetCH70xxANDOR(SiS_Pr,0x20,0x00,0xEF);	/* loop filter off */
--            SiS_SetCH70xxANDOR(SiS_Pr,0x21,0x01,0xFE);	/* ACIV on */
--         }
-+         SiS_SetCH70xxANDOR(SiS_Pr, 0x20, 0x00, 0xEF);	/* loop filter off */
-+         SiS_SetCH70xxANDOR(SiS_Pr, 0x21, 0x01, 0xFE);	/* ACIV on */
-       }
- 
- #endif  /* 300 */
-@@ -9663,8 +9656,6 @@ SetDelayComp(struct SiS_Private *SiS_Pr, unsigned short ModeNo)
- 	      delay = 0x0a;
- 	   } else if(IS_SIS740) {
- 	      delay = 0x00;
--	   } else if(SiS_Pr->ChipType < SIS_330) {
--	      delay = 0x0c;
- 	   } else {
- 	      delay = 0x0c;
- 	   }
+diff --git a/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
+new file mode 100644
+index 0000000..01f110d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
+@@ -0,0 +1,16 @@
++TPS611xx family of backlight driver based on EasyScale.
++
++It supports tps61158, tps61161, tps61163 and tps61165.
++
++Required properties:
++- compatible: "ti,tps61158_bl", "ti,tps61161_bl", "ti,tps61163_bl", "ti,tps61165_bl"
++- rfa_en: enable request for acknowledge. ( 0 : disable , 1 : enable )
++- en_gpio_num: gpio number for en pin.
++
++Example:
++
++	backlight {
++		compatible = "ti,tps61163_bl";
++		rfa_en = <1>;
++		en_gpio_num = <45>;
++	};
 -- 
-1.7.10.4
+1.7.9.5
 

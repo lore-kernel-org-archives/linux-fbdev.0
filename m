@@ -1,482 +1,624 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Mon, 23 Jun 2014 14:55:17 +0000
-Subject: [PATCH v8 1/2] video: ARM CLCD: Add DT support
-Message-Id: <1403535318-19333-1-git-send-email-pawel.moll@arm.com>
+From: Daniel Jeong <gshark.jeong@gmail.com>
+Date: Tue, 24 Jun 2014 06:17:53 +0000
+Subject: [RFC v2 1/2] backlight: add new tps611xx backlight driver
+Message-Id: <1403590674-14361-2-git-send-email-gshark.jeong@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403532837.3804.29.camel@hornet>
-In-Reply-To: <1403532837.3804.29.camel@hornet>
+References: <1403590674-14361-1-git-send-email-gshark.jeong@gmail.com>
+In-Reply-To: <1403590674-14361-1-git-send-email-gshark.jeong@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
+Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>
 
-This patch adds basic DT bindings for the PL11x CLCD cells
-and make their fbdev driver use them.
+This driver a general version for tps611xx backlgiht chips of TI.
+It supports tps61158, tps61161, tps61163 and tps61165 backlight driver
+based on EasyScale protocol(1-Wire Control Interface).
 
-Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+EasyScale
+EasyScale is a simple but flexible one pin interface to configure the current.
+The interface is based on a master-slave structure, where the master is 
+typically a microcontroller or application processor and the IC is the slave.
+The advantage of EasyScale compared with other one pin interfaces is that 
+its bit detection is in a large extent independent from the bit transmission rate. 
+It can automatically detect bit rates between 1.7kBit/sec and up to 160kBit/sec.
+
+EasyScale on TPS61163
+A command consists of 24 bits, including an 8-bit device address byte and a 16-bit data byte.
+All of the 24 bits should be transmitted together each time, and the LSB bit should be 
+transmitted first. The device address byte A7(MSB)~A0(LSB) is fixed to 0x8F. 
+The data byte includes 9 bits D8(MSB)~D0(LSB) for brightness information and an RFA bit.
+The RFA bit set to "1" indicates the Request for Acknowledge condition. The Acknowledge
+condition is only applied when the protocol is received correctly.
+Bit sream : D0-D8 | 0 | RFA | 00000 | A0-A7
+Please refer http://www.ti.com/lit/ds/symlink/tps61163.pdf for more details.
+
+EasyScale on TPS61158/61/65
+A command consists of 16 bits, including an 8-bit device address byte and a 8-bit data byte.
+All of the 16 bits should be transmitted together each time, and the MSB bit should be 
+transmitted first. The device address byte A7(MSB)~A0(LSB) is fixed (tps61158 0x58
+tps61161 and tps61165 0x72). The data byte includes an RFA bit.
+The RFA bit set to "1" indicates the Request for Acknowledge condition. The Acknowledge
+condition is only applied when the protocol is received correctly.
+Bit sream : A7-A0 | RFA | 00 | D4-D0
+Please refer the links below  for more details.
+tps61158 : http://www.ti.com/lit/ds/symlink/tps61158.pdf
+tps61161 : http://www.ti.com.cn/cn/lit/ds/symlink/tps61161-q1.pdf
+tps61165 : http://www.ti.com/lit/ds/symlink/tps61165.pdf
+
+Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
 ---
-Changes since v7:
-- fixed typo in "clock-names" documentation
-- renamed "arm,pl11x,framebuffer-base" into "arm,pl11x,framebuffer"
-  as it is describing both base and size
-- added some more explanation for "max-memory-bandwidth" property
-- added more explanation for "arm,pl11x,tft-r0g0b0" property
+ drivers/video/backlight/Kconfig           |    7 +
+ drivers/video/backlight/Makefile          |    1 +
+ drivers/video/backlight/tps611xx_bl.c     |  494 +++++++++++++++++++++++++++++
+ include/linux/platform_data/tps611xx_bl.h |   31 ++
+ 4 files changed, 533 insertions(+)
+ create mode 100644 drivers/video/backlight/tps611xx_bl.c
+ create mode 100644 include/linux/platform_data/tps611xx_bl.h
 
-Changes since v6:
-- replaced in-node device-timing subnode with the standard
-  video interface bindings (as in: ports & endpoints); only
-  "panel-dpi" compatible panels are supported in the driver
-
-Changes since v5:
-- realised that dma_alloc_writecombine() is a arm-specific function;
-  replaced with generic dma_alloc_coherent()/dma_mmap_writecombine()
-
-Changes since v4:
-- simplified the pads description property and made it optional
-
-Changes since v3:
-- changed wording and order of interrupt-names and interrupts
-  properties documentation
-- changed wording of arm,pl11x,framebuffer-base property
-  documentation
-- cleaned up binding documentation indentation
-
-Changes since v2:
-- replaced video-ram phandle with arm,pl11x,framebuffer-base
-- replaced panel-* properties with arm,pl11x,panel-data-pads
-- replaced max-framebuffer-size with max-memory-bandwidth
-- modified clcdfb_of_init_tft_panel() to use the pads
-  data and take differences between PL110 and PL110 into
-  account
-
-Changes since v1:
-- minor code cleanups as suggested by Sylwester Nawrocki
-
- .../devicetree/bindings/video/arm,pl11x.txt        | 109 +++++++++
- drivers/video/fbdev/Kconfig                        |   1 +
- drivers/video/fbdev/amba-clcd.c                    | 267 +++++++++++++++++++++
- 3 files changed, 377 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/arm,pl11x.txt
-
-diff --git a/Documentation/devicetree/bindings/video/arm,pl11x.txt b/Documentation/devicetree/bindings/video/arm,pl11x.txt
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 5a3eb2e..c779a85 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -418,6 +418,13 @@ config BACKLIGHT_TPS65217
+ 	  If you have a Texas Instruments TPS65217 say Y to enable the
+ 	  backlight driver.
+ 
++config BACKLIGHT_TPS611xx
++	tristate "TPS611xx Backlight"
++	depends on BACKLIGHT_CLASS_DEVICE && GPIOLIB
++	help
++	  This supports TI TPS61158,TPS61161, TPS61163 and TPS61165
++	  backlight driver based on EasyScale Protocol.
++
+ config BACKLIGHT_AS3711
+ 	tristate "AS3711 Backlight"
+ 	depends on BACKLIGHT_CLASS_DEVICE && MFD_AS3711
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index bb82002..44f1641 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -52,4 +52,5 @@ obj-$(CONFIG_BACKLIGHT_PWM)		+= pwm_bl.o
+ obj-$(CONFIG_BACKLIGHT_SAHARA)		+= kb3886_bl.o
+ obj-$(CONFIG_BACKLIGHT_TOSA)		+= tosa_bl.o
+ obj-$(CONFIG_BACKLIGHT_TPS65217)	+= tps65217_bl.o
++obj-$(CONFIG_BACKLIGHT_TPS611xx)	+= tps611xx_bl.o
+ obj-$(CONFIG_BACKLIGHT_WM831X)		+= wm831x_bl.o
+diff --git a/drivers/video/backlight/tps611xx_bl.c b/drivers/video/backlight/tps611xx_bl.c
 new file mode 100644
-index 0000000..32f3acf
+index 0000000..f7e08a3
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/video/arm,pl11x.txt
-@@ -0,0 +1,109 @@
-+* ARM PrimeCell Color LCD Controller PL110/PL111
++++ b/drivers/video/backlight/tps611xx_bl.c
+@@ -0,0 +1,494 @@
++/*
++ * Simple driver for Texas Instruments TPS611XX Backlight driver chip
++ *        using EasyScale Interface. It supports TPS61158, TPS61161,
++ *        TPS61163 and TPS61165.
++ *
++ * Copyright (C) 2014 Texas Instruments
++ * Author: Daniel Jeong  <gshark.jeong@gmail.com>
++ *	       Ldd Mlp <ldd-mlp@list.ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
 +
-+See also Documentation/devicetree/bindings/arm/primecell.txt
-+
-+Required properties:
-+
-+- compatible: must be one of:
-+	"arm,pl110", "arm,primecell"
-+	"arm,pl111", "arm,primecell"
-+
-+- reg: base address and size of the control registers block
-+
-+- interrupt-names: either the single entry "combined" representing a
-+	combined interrupt output (CLCDINTR), or the four entries
-+	"mbe", "vcomp", "lnbu", "fuf" representing the individual
-+	CLCDMBEINTR, CLCDVCOMPINTR, CLCDLNBUINTR, CLCDFUFINTR interrupts
-+
-+- interrupts: contains an interrupt specifier for each entry in
-+	interrupt-names
-+
-+- clock-names: should contain "clcdclk" and "apb_pclk"
-+
-+- clocks: contains phandle and clock specifier pairs for the entries
-+	in the clock-names property. See
-+	Documentation/devicetree/binding/clock/clock-bindings.txt
-+
-+Optional properties:
-+
-+- arm,pl11x,framebuffer: a pair of two 32-bit values, address and size,
-+	defining the framebuffer that must be used; if not present, the
-+	framebuffer may be located anywhere in the memory
-+
-+- max-memory-bandwidth: maximum bandwidth in bytes per second that the
-+	cell's memory interface can handle; if not present, the memory
-+	interface is fast enough to handle all possible video modes
-+
-+Required sub-nodes:
-+
-+- port: describes LCD panel signals, following the common binding
-+	for video transmitter interfaces; see
-+	Documentation/devicetree/bindings/media/video-interfaces.txt;
-+	when it is a TFT panel, the port's endpoint must define the
-+	following property:
-+
-+	- arm,pl11x,tft-r0g0b0-pads: an array of three 32-bit values,
-+		defining the way CLD pads are wired up; first value
-+		contains index of the "CLD" external pin (pad) used
-+		as R0 (first bit of the red component), second value
-+	        index of the pad used as G0, third value index of the
-+		pad used as B0, see also "LCD panel signal multiplexing
-+		details" paragraphs in the PL110/PL111 Technical
-+		Reference Manuals; this implicitly defines available
-+		color modes, for example:
-+		- PL111 TFT 4:4:4 panel:
-+			arm,pl11x,tft-r0g0b0-pads = <4 15 20>;
-+		- PL110 TFT (1:)5:5:5 panel:
-+			arm,pl11x,tft-r0g0b0-pads = <1 7 13>;
-+		- PL111 TFT (1:)5:5:5 panel:
-+			arm,pl11x,tft-r0g0b0-pads = <3 11 19>;
-+		- PL111 TFT 5:6:5 panel:
-+			arm,pl11x,tft-r0g0b0-pads = <3 10 19>;
-+		- PL110 and PL111 TFT 8:8:8 panel:
-+			arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
-+		- PL110 and PL111 TFT 8:8:8 panel, R & B components swapped:
-+			arm,pl11x,tft-r0g0b0-pads = <16 8 0>;
-+
-+
-+Example:
-+
-+	clcd@1f0000 {
-+		compatible = "arm,pl111", "arm,primecell";
-+		reg = <0x1f0000 0x1000>;
-+		interrupt-names = "combined";
-+		interrupts = <14>;
-+		clock-names = "clcdclk", "apb_pclk";
-+		clocks = <&v2m_oscclk1>, <&smbclk>;
-+		arm,pl11x,framebuffer-base = <0x18000000 0x00800000>;
-+		max-memory-bandwidth = <36864000>; /* bps, 640x480@60 16bpp */
-+
-+		port {
-+			v2m_clcd_pads: endpoint {
-+				remote-endpoint = <&v2m_clcd_panel>;
-+				arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
-+			};
-+		};
-+
-+	};
-+
-+	panel {
-+		compatible = "panel-dpi";
-+
-+		port {
-+			v2m_clcd_panel: endpoint {
-+				remote-endpoint = <&v2m_clcd_pads>;
-+			};
-+		};
-+
-+		panel-timing {
-+			clock-frequency = <25175000>;
-+			hactive = <640>;
-+			hback-porch = <40>;
-+			hfront-porch = <24>;
-+			hsync-len = <96>;
-+			vactive = <480>;
-+			vback-porch = <32>;
-+			vfront-porch = <11>;
-+			vsync-len = <2>;
-+		};
-+	};
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 59c98bfd..a518fe5 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -280,6 +280,7 @@ config FB_ARMCLCD
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select VIDEOMODE_HELPERS if OF
- 	help
- 	  This framebuffer device driver is for the ARM PrimeCell PL110
- 	  Colour LCD controller.  ARM PrimeCells provide the building
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index 14d6b37..71492e9 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -26,6 +26,13 @@
- #include <linux/amba/clcd.h>
- #include <linux/clk.h>
- #include <linux/hardirq.h>
-+#include <linux/dma-mapping.h>
++#include <linux/backlight.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/fb.h>
++#include <linux/gpio.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
 +#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/of_graph.h>
-+#include <video/display_timing.h>
-+#include <video/of_display_timing.h>
-+#include <video/videomode.h>
- 
- #include <asm/sizes.h>
- 
-@@ -543,6 +550,263 @@ static int clcdfb_register(struct clcd_fb *fb)
- 	return ret;
- }
- 
-+#ifdef CONFIG_OF
-+static int clcdfb_of_get_dpi_panel_mode(struct device_node *node,
-+		struct fb_videomode *mode)
-+{
-+	int err;
-+	struct display_timing timing;
-+	struct videomode video;
++#include <linux/of_device.h>
++#include <linux/platform_data/tps611xx_bl.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
 +
-+	err = of_get_display_timing(node, "panel-timing", &timing);
-+	if (err)
-+		return err;
++#define CMD_FORWARD 0
++#define CMD_BACKWARD 1
 +
-+	videomode_from_timing(&timing, &video);
++enum tps611xx_id {
++	TPS61158_ID = 0,
++	TPS61161_ID,
++	TPS61163_ID,
++	TPS61165_ID,
++};
 +
-+	err = fb_videomode_from_videomode(&video, mode);
-+	if (err)
-+		return err;
++/*
++ * easyscale time spec
++ * @es_delay : es delay time(ns)
++ * @es_det   : es detection time(ns)
++ * @start    : start time of data stream(ns)
++ * @eos      : end time of data stream(ns)
++ * @reset    : ic shutdown time(ms)
++ * @logic_1_low : low time high bit(ns)
++ * @logic_0_low : low time low bit(ns)
++ * @ackn        : duation of ack condistion(ns)
++ * @ack_poll    : ack polling duration(ns)
++ */
++struct tps611xx_time {
++	unsigned int es_delay;
++	unsigned int es_det;
++	unsigned int start;
++	unsigned int eos;
++	unsigned int reset;
++	unsigned int logic_1_low;
++	unsigned int logic_0_low;
++	unsigned int ackn;
++	unsigned int ack_poll;
++};
 +
-+	return 0;
-+}
++/*
++ * @seq : sequence of data transfer
++ * @size: size of data
++ * @brt_max : max brightness
++ * @brt_bmask : bit mask of dimming bits
++ * @rfa_bmask : bit mask of RFA(Request for Acknowledge condition)
++ */
++struct tps611xx_command {
++	int seq;
++	int size;
++	int brt_max;
++	int brt_bmask;
++	int rfa_bmask;
++};
 +
-+static int clcdfb_snprintf_mode(char *buf, int size, struct fb_videomode *mode)
-+{
-+	return snprintf(buf, size, "%ux%u@%u", mode->xres, mode->yres,
-+			mode->refresh);
-+}
-+
-+static int clcdfb_of_get_mode(struct device *dev, struct device_node *endpoint,
-+		struct fb_videomode *mode)
-+{
-+	int err;
-+	struct device_node *panel;
++/*
++ * @id : product id
++ * @name : product name
++ * @addr : device address
++ * @cmd  : es command info
++ * @time : es time info
++ */
++struct tps611xx_esdata {
++	enum tps611xx_id id;
 +	char *name;
-+	int len;
++	int addr;
++	struct tps611xx_command cmd;
++	struct tps611xx_time time;
++};
 +
-+	panel = of_graph_get_remote_port_parent(endpoint);
-+	if (!panel)
-+		return -ENODEV;
++struct tps611xx_bl_data {
++	struct device *dev;
++	struct backlight_device *bled;
++	struct tps611xx_platform_data *pdata;
 +
-+	/* Only directly connected DPI panels supported for now */
-+	if (of_device_is_compatible(panel, "panel-dpi"))
-+		err = clcdfb_of_get_dpi_panel_mode(panel, mode);
-+	else
-+		err = -ENOENT;
-+	if (err)
-+		return err;
++	/*
++	 * @rfa_en : RFA enable (Request for Acknowledge condition)
++	 * @en_gpio: enable pin gpio no.
++	 * @esdata : easyscale data
++	 */
++	int rfa_en;
++	unsigned int en_gpio;
++	const struct tps611xx_esdata *esdata;
++};
 +
-+	len = clcdfb_snprintf_mode(NULL, 0, mode);
-+	name = devm_kzalloc(dev, len + 1, GFP_KERNEL);
-+	clcdfb_snprintf_mode(name, len + 1, mode);
-+	mode->name = name;
++static struct tps611xx_esdata tps611xx_info[] = {
++	[TPS61158_ID] = {
++			 .id = TPS61158_ID,
++			 .name = "tps61158",
++			 .addr = 0x5800,
++			 .cmd = {
++				 .seq = CMD_FORWARD,
++				 .size = 16,
++				 .brt_max = 31,
++				 .brt_bmask = 0x1f,
++				 .rfa_bmask = 0x80
++				},
++			 .time = {
++				  .es_delay = 100000,
++				  .es_det = 450000,
++				  .start = 3500,
++				  .eos = 3500,
++				  .reset = 4,
++				  .logic_1_low = 5000,
++				  .logic_0_low = 15000,
++				  .ackn = 900000,
++				  .ack_poll = 2000
++				},
++			 },
 +
-+	return 0;
-+}
++	[TPS61161_ID] = {
++			 .id = TPS61161_ID,
++			 .name = "tps61161",
++			 .addr = 0x7200,
++			 .cmd = {
++				 .seq = CMD_FORWARD,
++				 .size = 16,
++				 .brt_max = 31,
++				 .brt_bmask = 0x1f,
++				 .rfa_bmask = 0x80
++				},
++			 .time = {
++				  .es_delay = 120000,
++				  .es_det = 280000,
++				  .start = 2000,
++				  .eos = 2000,
++				  .reset = 3,
++				  .logic_1_low = 3000,
++				  .logic_0_low = 7000,
++				  .ackn = 512000,
++				  .ack_poll = 2000
++				},
++			 },
 +
-+static int clcdfb_of_init_tft_panel(struct clcd_fb *fb, u32 r0, u32 g0, u32 b0)
++	[TPS61163_ID] = {
++			 .id = TPS61163_ID,
++			 .name = "tps61163",
++			 .addr = 0x8F0000,
++			 .cmd = {
++				 .seq = CMD_BACKWARD,
++				 .size = 24,
++				 .brt_max = 511,
++				 .brt_bmask = 0x1ff,
++				 .rfa_bmask = 0x400
++				},
++			 .time = {
++				  .es_delay = 100000,
++				  .es_det = 260000,
++				  .start = 2000,
++				  .eos = 2000,
++				  .reset = 3,
++				  .logic_1_low = 3000,
++				  .logic_0_low = 7000,
++				  .ackn = 512000,
++				  .ack_poll = 2000
++				},
++			 },
++
++	[TPS61165_ID] = {
++			 .id = TPS61165_ID,
++			 .name = "tps61165",
++			 .addr = 0x7200,
++			 .cmd = {
++				 .seq = CMD_FORWARD,
++				 .size = 16,
++				 .brt_max = 31,
++				 .brt_bmask = 0x1f,
++				 .rfa_bmask = 0x80
++				},
++			 .time = {
++				  .es_delay = 120000,
++				  .es_det = 280000,
++				  .start = 4000,
++				  .eos = 4000,
++				  .reset = 3,
++				  .logic_1_low = 3000,
++				  .logic_0_low = 7000,
++				  .ackn = 512000,
++				  .ack_poll = 2000
++				},
++			 },
++};
++
++static int tps611xx_bl_update_status(struct backlight_device *bl)
 +{
-+	static struct {
-+		unsigned int part;
-+		u32 r0, g0, b0;
-+		u32 caps;
-+	} panels[] = {
-+		{ 0x110, 1,  7, 13, CLCD_CAP_5551 },
-+		{ 0x110, 0,  8, 16, CLCD_CAP_888 },
-+		{ 0x111, 4, 14, 20, CLCD_CAP_444 },
-+		{ 0x111, 3, 11, 19, CLCD_CAP_444 | CLCD_CAP_5551 },
-+		{ 0x111, 3, 10, 19, CLCD_CAP_444 | CLCD_CAP_5551 |
-+				    CLCD_CAP_565 },
-+		{ 0x111, 0,  8, 16, CLCD_CAP_444 | CLCD_CAP_5551 |
-+				    CLCD_CAP_565 | CLCD_CAP_888 },
-+	};
-+	int i;
++	struct tps611xx_bl_data *pchip = bl_get_data(bl);
++	const struct tps611xx_esdata *esdata = pchip->esdata;
++	int data_in, t_low, t_logic, max_bmask;
++	unsigned long flags;
 +
-+	/* Bypass pixel clock divider, data output on the falling edge */
-+	fb->panel->tim2 = TIM2_BCD | TIM2_IPC;
++	data_in = esdata->addr | (bl->props.brightness & esdata->cmd.brt_bmask);
++	if (pchip->rfa_en)
++		data_in |= esdata->cmd.rfa_bmask;
 +
-+	/* TFT display, vert. comp. interrupt at the start of the back porch */
-+	fb->panel->cntl |= CNTL_LCDTFT | CNTL_LCDVCOMP(1);
++	max_bmask = 0x1 << esdata->cmd.size;
++	t_logic = esdata->time.logic_1_low + esdata->time.logic_0_low;
 +
-+	fb->panel->caps = 0;
++	local_irq_save(flags);
++	/* t_start : 2us high before data byte */
++	gpio_direction_output(pchip->en_gpio, 1);
++	ndelay(esdata->time.start);
 +
-+	/* Match the setup with known variants */
-+	for (i = 0; i < ARRAY_SIZE(panels) && !fb->panel->caps; i++) {
-+		if (amba_part(fb->dev) != panels[i].part)
-+			continue;
-+		if (g0 != panels[i].g0)
-+			continue;
-+		if (r0 = panels[i].r0 && b0 = panels[i].b0)
-+			fb->panel->caps = panels[i].caps & CLCD_CAP_RGB;
-+		if (r0 = panels[i].b0 && b0 = panels[i].r0)
-+			fb->panel->caps = panels[i].caps & CLCD_CAP_BGR;
-+	}
++	/* forward command transfer */
++	if (esdata->cmd.seq = CMD_FORWARD) {
++		int addr_bmask = max_bmask >> 8;
 +
-+	return fb->panel->caps ? 0 : -EINVAL;
-+}
++		for (max_bmask >>= 1; max_bmask > 0x0; max_bmask >>= 1) {
++			if (data_in & max_bmask)
++				t_low = esdata->time.logic_1_low;
++			else
++				t_low = esdata->time.logic_0_low;
 +
-+static int clcdfb_of_init_display(struct clcd_fb *fb)
-+{
-+	struct device_node *endpoint;
-+	int err;
-+	u32 max_bandwidth;
-+	u32 tft_r0b0g0[3];
++			gpio_direction_output(pchip->en_gpio, 0);
++			ndelay(t_low);
++			gpio_direction_output(pchip->en_gpio, 1);
++			ndelay(t_logic - t_low);
 +
-+	fb->panel = devm_kzalloc(&fb->dev->dev, sizeof(*fb->panel), GFP_KERNEL);
-+	if (!fb->panel)
-+		return -ENOMEM;
-+
-+	endpoint = of_graph_get_next_endpoint(fb->dev->dev.of_node, NULL);
-+	if (!endpoint)
-+		return -ENODEV;
-+
-+	err = clcdfb_of_get_mode(&fb->dev->dev, endpoint, &fb->panel->mode);
-+	if (err)
-+		return err;
-+
-+	err = of_property_read_u32(fb->dev->dev.of_node, "max-memory-bandwidth",
-+			&max_bandwidth);
-+	if (!err)
-+		fb->panel->bpp = 8 * max_bandwidth / (fb->panel->mode.xres *
-+				fb->panel->mode.yres * fb->panel->mode.refresh);
-+	else
-+		fb->panel->bpp = 32;
-+
-+#ifdef CONFIG_CPU_BIG_ENDIAN
-+	fb->panel->cntl |= CNTL_BEBO;
-+#endif
-+	fb->panel->width = -1;
-+	fb->panel->height = -1;
-+
-+	if (of_property_read_u32_array(endpoint,
-+			"arm,pl11x,tft-r0g0b0-pads",
-+			tft_r0b0g0, ARRAY_SIZE(tft_r0b0g0)) = 0)
-+		return clcdfb_of_init_tft_panel(fb, tft_r0b0g0[0],
-+				 tft_r0b0g0[1],  tft_r0b0g0[2]);
-+
-+	return -ENOENT;
-+}
-+
-+static int clcdfb_of_vram_setup(struct clcd_fb *fb)
-+{
-+	int err;
-+	u32 values[2];
-+	phys_addr_t phys_base;
-+	size_t size;
-+
-+	err = clcdfb_of_init_display(fb);
-+	if (err)
-+		return err;
-+
-+	err = of_property_read_u32_array(fb->dev->dev.of_node,
-+			"arm,pl11x,framebuffer", values, ARRAY_SIZE(values));
-+	if (err)
-+		return err;
-+
-+	phys_base = values[0];
-+	size = values[1];
-+
-+	fb->fb.screen_base = ioremap(phys_base, size);
-+	if (!fb->fb.screen_base)
-+		return -ENOMEM;
-+
-+	fb->fb.fix.smem_start = phys_base;
-+	fb->fb.fix.smem_len = size;
-+
-+	return 0;
-+}
-+
-+static int clcdfb_of_vram_mmap(struct clcd_fb *fb, struct vm_area_struct *vma)
-+{
-+	unsigned long off, user_size, kernel_size;
-+
-+
-+	off = vma->vm_pgoff << PAGE_SHIFT;
-+	user_size = vma->vm_end - vma->vm_start;
-+	kernel_size = fb->fb.fix.smem_len;
-+
-+	if (off >= kernel_size || user_size > (kernel_size - off))
-+		return -ENXIO;
-+
-+	return remap_pfn_range(vma, vma->vm_start,
-+			__phys_to_pfn(fb->fb.fix.smem_start) + vma->vm_pgoff,
-+			user_size,
-+			pgprot_writecombine(vma->vm_page_prot));
-+}
-+
-+static void clcdfb_of_vram_remove(struct clcd_fb *fb)
-+{
-+	iounmap(fb->fb.screen_base);
-+}
-+
-+static int clcdfb_of_dma_setup(struct clcd_fb *fb)
-+{
-+	unsigned long framesize;
-+	dma_addr_t dma;
-+	int err;
-+
-+	err = clcdfb_of_init_display(fb);
-+	if (err)
-+		return err;
-+
-+	framesize = fb->panel->mode.xres * fb->panel->mode.yres *
-+			fb->panel->bpp / 8;
-+	fb->fb.screen_base = dma_alloc_coherent(&fb->dev->dev, framesize,
-+			&dma, GFP_KERNEL);
-+	if (!fb->fb.screen_base)
-+		return -ENOMEM;
-+
-+	fb->fb.fix.smem_start = dma;
-+	fb->fb.fix.smem_len = framesize;
-+
-+	return 0;
-+}
-+
-+static int clcdfb_of_dma_mmap(struct clcd_fb *fb, struct vm_area_struct *vma)
-+{
-+	return dma_mmap_writecombine(&fb->dev->dev, vma, fb->fb.screen_base,
-+			fb->fb.fix.smem_start, fb->fb.fix.smem_len);
-+}
-+
-+static void clcdfb_of_dma_remove(struct clcd_fb *fb)
-+{
-+	dma_free_coherent(&fb->dev->dev, fb->fb.fix.smem_len,
-+			fb->fb.screen_base, fb->fb.fix.smem_start);
-+}
-+
-+static struct clcd_board *clcdfb_of_get_board(struct amba_device *dev)
-+{
-+	struct clcd_board *board = devm_kzalloc(&dev->dev, sizeof(*board),
-+			GFP_KERNEL);
-+	struct device_node *node = dev->dev.of_node;
-+
-+	if (!board)
-+		return NULL;
-+
-+	board->name = of_node_full_name(node);
-+	board->caps = CLCD_CAP_ALL;
-+	board->check = clcdfb_check;
-+	board->decode = clcdfb_decode;
-+	if (of_find_property(node, "arm,pl11x,framebuffer-base", NULL)) {
-+		board->setup = clcdfb_of_vram_setup;
-+		board->mmap = clcdfb_of_vram_mmap;
-+		board->remove = clcdfb_of_vram_remove;
++			if (max_bmask = addr_bmask) {
++				gpio_direction_output(pchip->en_gpio, 0);
++				/* t_eos : low after address byte */
++				ndelay(esdata->time.eos);
++				gpio_direction_output(pchip->en_gpio, 1);
++				/* t_start : high before data byte */
++				ndelay(esdata->time.start);
++			}
++		}
 +	} else {
-+		board->setup = clcdfb_of_dma_setup;
-+		board->mmap = clcdfb_of_dma_mmap;
-+		board->remove = clcdfb_of_dma_remove;
++		/* backward command tansfer */
++		int bmask;
++
++		for (bmask = 0x01; bmask < max_bmask; bmask <<= 1) {
++			if (data_in & bmask)
++				t_low = esdata->time.logic_1_low;
++			else
++				t_low = esdata->time.logic_0_low;
++
++			gpio_direction_output(pchip->en_gpio, 0);
++			ndelay(t_low);
++			gpio_direction_output(pchip->en_gpio, 1);
++			ndelay(t_logic - t_low);
++		}
 +	}
 +
-+	return board;
++	/*
++	 * t_eos : low after address byte
++	 * t_ackVal is also t_eos
++	 */
++	gpio_direction_output(pchip->en_gpio, 0);
++	ndelay(esdata->time.eos);
++
++	/* RFA management  */
++	if (pchip->rfa_en) {
++		int max_ack_time = esdata->time.ackn;
++		/* set input */
++		gpio_direction_input(pchip->en_gpio);
++		/* read acknowledge from chip */
++		while (max_ack_time > 0) {
++			if (gpio_get_value(pchip->en_gpio) = 0)
++				break;
++			max_ack_time -= esdata->time.ack_poll;
++		}
++		if (max_ack_time <= 0)
++			dev_err(pchip->dev,
++				"easyscale : no ack from %s\n", esdata->name);
++		else
++			ndelay(max_ack_time);
++	}
++	gpio_direction_output(pchip->en_gpio, 1);
++	local_irq_restore(flags);
++
++	return bl->props.brightness;
++}
++
++static int tps611xx_bl_get_brightness(struct backlight_device *bl)
++{
++	return bl->props.brightness;
++}
++
++static const struct backlight_ops tps611xx_bl_ops = {
++	.update_status = tps611xx_bl_update_status,
++	.get_brightness = tps611xx_bl_get_brightness,
++};
++
++static ssize_t tps611xx_enable_store(struct device *dev,
++				     struct device_attribute *devAttr,
++				     const char *buf, size_t size)
++{
++	struct tps611xx_bl_data *pchip = dev_get_drvdata(dev);
++	const struct tps611xx_esdata *esdata = pchip->esdata;
++	unsigned long flags;
++	unsigned int input;
++	int ret;
++
++	ret = kstrtouint(buf, 10, &input);
++	if (ret)
++		return -EINVAL;
++
++	local_irq_save(flags);
++	if (input = 0) {
++		/* chip disable */
++		gpio_direction_output(pchip->en_gpio, 0);
++		/* low more than reset ms to reset */
++		mdelay(esdata->time.reset);
++	} else {
++		/* easyscale detection window */
++		gpio_direction_output(pchip->en_gpio, 1);
++		ndelay(esdata->time.es_delay);
++		gpio_direction_output(pchip->en_gpio, 0);
++		ndelay(esdata->time.es_det);
++		gpio_direction_output(pchip->en_gpio, 1);
++	}
++	local_irq_restore(flags);
++
++	return size;
++}
++
++static DEVICE_ATTR(enable, S_IWUSR, NULL, tps611xx_enable_store);
++
++#ifdef CONFIG_OF
++static const struct of_device_id tps611xx_backlight_of_match[] = {
++	{.compatible = "ti,tps61158_bl",.data = &tps611xx_info[TPS61158_ID]},
++	{.compatible = "ti,tps61161_bl",.data = &tps611xx_info[TPS61161_ID]},
++	{.compatible = "ti,tps61163_bl",.data = &tps611xx_info[TPS61163_ID]},
++	{.compatible = "ti,tps61165_bl",.data = &tps611xx_info[TPS61165_ID]},
++	{}
++};
++
++MODULE_DEVICE_TABLE(of, tps611xx_backlight_of_match);
++
++static int tps611xx_backlight_parse_dt(struct tps611xx_bl_data *pchip)
++{
++	struct device *dev = pchip->dev;
++	struct device_node *node = dev->of_node;
++	const struct of_device_id *of_id +	    of_match_device(tps611xx_backlight_of_match, dev);
++	u32 value;
++	int ret;
++
++	if (!node)
++		return -ENODEV;
++
++	if (!of_id || !of_id->data) {
++		dev_err(dev, "Failed to find tps611xx chip id\n");
++		return -EFAULT;
++	}
++	pchip->esdata = of_id->data;
++
++	ret = of_property_read_u32(node, "en_gpio_num", &value);
++	if (ret < 0)
++		return ret;
++	pchip->en_gpio = value;
++	ret = of_property_read_u32(node, "rfa_en", &value);
++	if (ret < 0)
++		return ret;
++	pchip->rfa_en = value;
++
++	return 0;
 +}
 +#else
-+static struct clcd_board *clcdfb_of_get_board(struct amba_dev *dev)
++static int tps611xx_backlight_parse_dt(struct tps611xx_bl_data *pchip)
 +{
-+	return NULL;
++	return -ENODEV;
 +}
 +#endif
 +
- static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
- {
- 	struct clcd_board *board = dev_get_platdata(&dev->dev);
-@@ -550,6 +814,9 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
- 	int ret;
- 
- 	if (!board)
-+		board = clcdfb_of_get_board(dev);
++static int tps611xx_backlight_probe(struct platform_device *pdev)
++{
++	struct tps611xx_bl_data *pchip;
++	struct backlight_properties props;
++	const struct tps611xx_esdata *esdata;
++	struct tps611xx_platform_data *pdata = dev_get_platdata(&pdev->dev);
++	unsigned long flags;
++	int ret;
 +
-+	if (!board)
- 		return -EINVAL;
- 
- 	ret = dma_set_mask_and_coherent(&dev->dev, DMA_BIT_MASK(32));
++	pchip = devm_kzalloc(&pdev->dev,
++			     sizeof(struct tps611xx_bl_data), GFP_KERNEL);
++	if (pchip = NULL)
++		return -ENOMEM;
++	pchip->dev = &pdev->dev;
++
++	if (pdata = NULL) {
++		ret = tps611xx_backlight_parse_dt(pchip);
++		if (ret < 0)
++			return ret;
++	} else {
++		pchip->rfa_en = pdata->rfa_en;
++		pchip->en_gpio = pdata->en_gpio_num;
++		pchip->esdata = (const struct tps611xx_esdata *)
++		    platform_get_device_id(pdev)->driver_data;
++	}
++	esdata = pchip->esdata;
++
++	memset(&props, 0, sizeof(struct backlight_properties));
++	props.brightness = esdata->cmd.brt_max;
++	props.max_brightness = esdata->cmd.brt_max;
++	props.type = BACKLIGHT_RAW;
++	pchip->bled +	    devm_backlight_device_register(pchip->dev, TPS611XX_NAME,
++					   pchip->dev, pchip,
++					   &tps611xx_bl_ops, &props);
++	if (IS_ERR(pchip->bled))
++		return PTR_ERR(pchip->bled);
++
++	/* for enable/disable */
++	ret = device_create_file(&(pchip->bled->dev), &dev_attr_enable);
++	if (ret < 0) {
++		dev_err(pchip->dev, "failed : add sysfs entries\n");
++		return ret;
++	}
++	platform_set_drvdata(pdev, pchip);
++
++	/* EasyScale init */
++	ret = gpio_request_one(pchip->en_gpio, GPIOF_OUT_INIT_HIGH, "tps611xx");
++	if (ret) {
++		device_remove_file(&(pchip->bled->dev), &dev_attr_enable);
++		dev_err(pchip->dev, "failed : get gpio %d\n", pchip->en_gpio);
++		return ret;
++	}
++
++	/*
++	 * ES Detection Window
++	 *   - ES detect delay
++	 *   - ES detect time
++	 */
++	local_irq_save(flags);
++	gpio_direction_output(pchip->en_gpio, 1);
++	ndelay(esdata->time.es_delay);
++	gpio_direction_output(pchip->en_gpio, 0);
++	ndelay(esdata->time.es_det);
++	gpio_direction_output(pchip->en_gpio, 1);
++	local_irq_restore(flags);
++	dev_info(pchip->dev,
++		 "%s EasyScale is initialized\n", pchip->esdata->name);
++	return 0;
++}
++
++static int tps611xx_backlight_remove(struct platform_device *pdev)
++{
++	struct tps611xx_bl_data *pchip = platform_get_drvdata(pdev);
++	const struct tps611xx_esdata *esdata = pchip->esdata;
++
++	device_remove_file(&(pchip->bled->dev), &dev_attr_enable);
++	gpio_direction_output(pchip->en_gpio, 0);
++	mdelay(esdata->time.reset);
++	return 0;
++}
++
++static const struct platform_device_id tps611xx_id_table[] = {
++	{TPS61158_NAME, (unsigned long)&tps611xx_info[TPS61158_ID]},
++	{TPS61161_NAME, (unsigned long)&tps611xx_info[TPS61161_ID]},
++	{TPS61163_NAME, (unsigned long)&tps611xx_info[TPS61163_ID]},
++	{TPS61165_NAME, (unsigned long)&tps611xx_info[TPS61165_ID]},
++	{}
++};
++
++static struct platform_driver tps611xx_backlight_driver = {
++	.driver = {
++		   .name = TPS611XX_NAME,
++		   .owner = THIS_MODULE,
++		   .of_match_table = of_match_ptr(tps611xx_backlight_of_match),
++		   },
++	.probe = tps611xx_backlight_probe,
++	.remove = tps611xx_backlight_remove,
++	.id_table = tps611xx_id_table,
++};
++
++module_platform_driver(tps611xx_backlight_driver);
++
++MODULE_DESCRIPTION("EasyScale based tps611xx Backlight Driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:tps611xx_bl");
+diff --git a/include/linux/platform_data/tps611xx_bl.h b/include/linux/platform_data/tps611xx_bl.h
+new file mode 100644
+index 0000000..73d1f08
+--- /dev/null
++++ b/include/linux/platform_data/tps611xx_bl.h
+@@ -0,0 +1,31 @@
++/*
++ * Simple driver for Texas Instruments TPS61163a Backlight driver chip
++ * Copyright (C) 2014 Texas Instruments
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#ifndef __TPS611XX_H
++#define __TPS611XX_H
++
++#define TPS611XX_NAME "tps611xx_bl"
++#define TPS61158_NAME "tps61158_bl"
++#define TPS61161_NAME "tps61161_bl"
++#define TPS61163_NAME "tps61163_bl"
++#define TPS61165_NAME "tps61165_bl"
++
++/*
++ * struct tps61163a platform data
++ * @rfa_en : request for acknowledge
++ * @en_gpio_num : gpio number for en_pin
++ */
++struct tps611xx_platform_data {
++
++	int rfa_en;
++	unsigned int en_gpio_num;
++};
++
++#endif /* __TPS611XX_H */
 -- 
-1.9.1
+1.7.9.5
 

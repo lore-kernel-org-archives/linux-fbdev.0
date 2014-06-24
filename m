@@ -1,76 +1,123 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Fri, 27 Jun 2014 06:13:50 +0000
-Subject: Re: [PATCH] pwm-backlight: use devm_gpiod_get_optional()
-Message-Id: <20140627061349.GE9258@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="+SfteS7bOf3dGlBC"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 24 Jun 2014 10:04:00 +0000
+Subject: [PATCH 15/15] drm/omap: Add infoframe & dvi/hdmi mode support
+Message-Id: <1403604240-16738-16-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403687898-26881-1-git-send-email-acourbot@nvidia.com>
- <20140625095447.GT13803@lee--X1>
- <20140625111346.GB21208@ulmo>
- <20140625120331.GE13518@lee--X1>
-In-Reply-To: <20140625120331.GE13518@lee--X1>
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Alexandre Courbot <acourbot@nvidia.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, gnurou@gmail.com
+References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Rob Clark <robdclark@gmail.com>
 
+Make the omapdrm driver use the new HDMI ops when possible.
 
---+SfteS7bOf3dGlBC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+omapdrm will call set_hdmi_mode (when available) to tell the encoder
+driver whether the monitor is a DVI or HDMI monitor, and if it's an HDMI
+monitor, omapdrm will call set_hdmi_infoframe to to set the AVI
+infoframe.
 
-On Wed, Jun 25, 2014 at 01:03:31PM +0100, Lee Jones wrote:
-> On Wed, 25 Jun 2014, Thierry Reding wrote:
-> > On Wed, Jun 25, 2014 at 10:54:47AM +0100, Lee Jones wrote:
-> > > > Make use of the new devm_gpiod_get_optional() to simplify the probe
-> > > > code.
-> > > >=20
-> > > > Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
-> > > > ---
-> > > >  drivers/video/backlight/pwm_bl.c | 7 ++-----
-> > > >  1 file changed, 2 insertions(+), 5 deletions(-)
-> > >=20
-> > > Looks good.  Applied, thanks.
-> >=20
-> > Technically pwm_bl.c is my turf. However I only adopted it way back when
-> > the backlight subsystem was orphaned, but it seems Jingoo, Bryan and you
-> > are taking good care of it these days, so perhaps it would be a good
-> > idea to move it back to your custody?
->=20
-> Yeah, the whole 'driver maintainer' sketch could get pretty complex.
-> It's pretty clean-cut in the PWM subsystem as only one exists, but
-> Backlight and MFD have a whole bunch, and I don't usually wait for
-> them to Ack/Nack before applying or providing review comments.
->=20
-> I'm happy to play it however you like really.  I'm sure the boys and I
-> can handle it if you so wish.  Even better if you would say in the
-> MAINTAINERS file and provide review comments when patches are
-> submitted.  I do think all 'drivers/video/backlight' changes should go
-> in via the Backlight tree though.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rob Clark <robdclark@gmail.com>
+---
+ drivers/gpu/drm/omapdrm/omap_connector.c | 12 ++++++++++++
+ drivers/gpu/drm/omapdrm/omap_drv.h       |  1 +
+ drivers/gpu/drm/omapdrm/omap_encoder.c   | 27 +++++++++++++++++++++++++++
+ 3 files changed, 40 insertions(+)
 
-Okay, that works for me.
+diff --git a/drivers/gpu/drm/omapdrm/omap_connector.c b/drivers/gpu/drm/omapdrm/omap_connector.c
+index 86f4ead0441d..19492cd31f10 100644
+--- a/drivers/gpu/drm/omapdrm/omap_connector.c
++++ b/drivers/gpu/drm/omapdrm/omap_connector.c
+@@ -32,8 +32,16 @@ struct omap_connector {
+ 	struct drm_connector base;
+ 	struct omap_dss_device *dssdev;
+ 	struct drm_encoder *encoder;
++	bool hdmi_mode;
+ };
+ 
++bool omap_connector_get_hdmi_mode(struct drm_connector *connector)
++{
++	struct omap_connector *omap_connector = to_omap_connector(connector);
++
++	return omap_connector->hdmi_mode;
++}
++
+ void copy_timings_omap_to_drm(struct drm_display_mode *mode,
+ 		struct omap_video_timings *timings)
+ {
+@@ -162,10 +170,14 @@ static int omap_connector_get_modes(struct drm_connector *connector)
+ 			drm_mode_connector_update_edid_property(
+ 					connector, edid);
+ 			n = drm_add_edid_modes(connector, edid);
++
++			omap_connector->hdmi_mode +				drm_detect_hdmi_monitor(edid);
+ 		} else {
+ 			drm_mode_connector_update_edid_property(
+ 					connector, NULL);
+ 		}
++
+ 		kfree(edid);
+ 	} else {
+ 		struct drm_display_mode *mode = drm_mode_create(dev);
+diff --git a/drivers/gpu/drm/omapdrm/omap_drv.h b/drivers/gpu/drm/omapdrm/omap_drv.h
+index 284b80fc3c54..c204c1e7ce87 100644
+--- a/drivers/gpu/drm/omapdrm/omap_drv.h
++++ b/drivers/gpu/drm/omapdrm/omap_drv.h
+@@ -194,6 +194,7 @@ struct drm_encoder *omap_connector_attached_encoder(
+ 		struct drm_connector *connector);
+ void omap_connector_flush(struct drm_connector *connector,
+ 		int x, int y, int w, int h);
++bool omap_connector_get_hdmi_mode(struct drm_connector *connector);
+ 
+ void copy_timings_omap_to_drm(struct drm_display_mode *mode,
+ 		struct omap_video_timings *timings);
+diff --git a/drivers/gpu/drm/omapdrm/omap_encoder.c b/drivers/gpu/drm/omapdrm/omap_encoder.c
+index 5290a88c681d..7445fb1491ae 100644
+--- a/drivers/gpu/drm/omapdrm/omap_encoder.c
++++ b/drivers/gpu/drm/omapdrm/omap_encoder.c
+@@ -17,6 +17,8 @@
+  * this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+ 
++#include <drm/drm_edid.h>
++
+ #include "omap_drv.h"
+ 
+ #include "drm_crtc.h"
+@@ -89,6 +91,31 @@ static void omap_encoder_mode_set(struct drm_encoder *encoder,
+ 				struct drm_display_mode *mode,
+ 				struct drm_display_mode *adjusted_mode)
+ {
++	struct drm_device *dev = encoder->dev;
++	struct omap_encoder *omap_encoder = to_omap_encoder(encoder);
++	struct omap_dss_device *dssdev = omap_encoder->dssdev;
++	struct drm_connector *connector;
++	bool hdmi_mode;
++	int r;
++
++	hdmi_mode = false;
++	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
++		if (connector->encoder = encoder) {
++			hdmi_mode = omap_connector_get_hdmi_mode(connector);
++			break;
++		}
++	}
++
++	if (dssdev->driver->set_hdmi_mode)
++		dssdev->driver->set_hdmi_mode(dssdev, hdmi_mode);
++
++	if (hdmi_mode && dssdev->driver->set_hdmi_infoframe) {
++		struct hdmi_avi_infoframe avi;
++
++		r = drm_hdmi_avi_infoframe_from_display_mode(&avi, adjusted_mode);
++		if (r = 0)
++			dssdev->driver->set_hdmi_infoframe(dssdev, &avi);
++	}
+ }
+ 
+ static void omap_encoder_prepare(struct drm_encoder *encoder)
+-- 
+1.9.1
 
-Thierry
-
---+SfteS7bOf3dGlBC
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJTrQudAAoJEN0jrNd/PrOh3qcP/0HAB0YfMos6D/uMlSOU4Dto
-ft79uF12FwctgIfEGNaXNbbb7mqiXhuP5FoP3A/HGqMqjkaspKe/u9zJBKAhkSzV
-Z0LKsar4BBbHBa3Z/LjYw2qQ2YEiSmToV3d0NesoSL90R3TyVYh8krsM7qraRVRB
-uMogoWF4LC5CQcf13IzUnIYct0DBi+G32T1oGWpqUxLOoo4vL7HLv4zWnQmTCF+J
-iyB7T14pmDCZSR63jqFDdyn5VAsS1/yf54dwKbCsHf7izxqgxlgyHvr/IrhPFwuK
-kxwUSnK/iVPwjxYTwRdeBcKFzwawqtFbIuNVY8iKBUFibKAfXeZTHPKF1shDEXFL
-uuzAXTqGPgYfqTV6ID2RMAnLW3tQAZMz4KDX8599xPVAWMlmZnWSKUCbHI1Tbmm/
-WDFZKpj9UC8T0/shFOhFRI4nNSAZHOr1CRoTfzH8URI1unBP905KoAZyIfsGoucB
-2WCUCXiAgNOdMtNmJ7TYquEQmStBj1AxV0R4JFWlXW9ciHfAWvFlJkDDptqa0jUU
-r0E8+n2/8dmp+fgvNUGjvmSKXz4gKzAgXYFcJHChjc+lzrPWnGaIM/uUujxSdMPt
-MptiL/dEWCk1xS/2fvhphAU6vfSwyRsXFdCxNtp7QXCAD1+6YaGJnGTBMqIrwVf1
-wrzTYarbLlEauQwamC+x
-=N5OM
------END PGP SIGNATURE-----
-
---+SfteS7bOf3dGlBC--

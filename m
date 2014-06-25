@@ -1,67 +1,95 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 25 Jun 2014 11:15:49 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 25 Jun 2014 11:29:21 +0000
 Subject: Re: [PATCH 15/15] drm/omap: Add infoframe & dvi/hdmi mode support
-Message-Id: <53AAAC95.3070409@ti.com>
+Message-Id: <53AAB291.4000007@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="jjSFIbvlMxRTGckRabHgJ7hFrHBeFgAeM"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com> <1403604240-16738-16-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1403604240-16738-16-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com> <1403604240-16738-16-git-send-email-tomi.valkeinen@ti.com> <53AAAC95.3070409@ti.com>
+In-Reply-To: <53AAAC95.3070409@ti.com>
+To: Archit Taneja <archit@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: Jyri Sarha <jsarha@ti.com>, Rob Clark <robdclark@gmail.com>
 
-Hi,
+--jjSFIbvlMxRTGckRabHgJ7hFrHBeFgAeM
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Tuesday 24 June 2014 03:34 PM, Tomi Valkeinen wrote:
-> Make the omapdrm driver use the new HDMI ops when possible.
->
-> omapdrm will call set_hdmi_mode (when available) to tell the encoder
-> driver whether the monitor is a DVI or HDMI monitor, and if it's an HDMI
-> monitor, omapdrm will call set_hdmi_infoframe to to set the AVI
-> infoframe.
+On 25/06/14 14:03, Archit Taneja wrote:
+> Hi,
+>=20
+> On Tuesday 24 June 2014 03:34 PM, Tomi Valkeinen wrote:
+>> Make the omapdrm driver use the new HDMI ops when possible.
+>>
+>> omapdrm will call set_hdmi_mode (when available) to tell the encoder
+>> driver whether the monitor is a DVI or HDMI monitor, and if it's an HD=
+MI
+>> monitor, omapdrm will call set_hdmi_infoframe to to set the AVI
+>> infoframe.
+>=20
+> <snip>
+>=20
+>=20
+>> @@ -89,6 +91,31 @@ static void omap_encoder_mode_set(struct
+>> drm_encoder *encoder,
+>>                   struct drm_display_mode *mode,
+>>                   struct drm_display_mode *adjusted_mode)
+>>   {
+>> +    struct drm_device *dev =3D encoder->dev;
+>> +    struct omap_encoder *omap_encoder =3D to_omap_encoder(encoder);
+>> +    struct omap_dss_device *dssdev =3D omap_encoder->dssdev;
+>> +    struct drm_connector *connector;
+>> +    bool hdmi_mode;
+>> +    int r;
+>> +
+>> +    hdmi_mode =3D false;
+>> +    list_for_each_entry(connector, &dev->mode_config.connector_list,
+>> head) {
+>> +        if (connector->encoder =3D=3D encoder) {
+>> +            hdmi_mode =3D omap_connector_get_hdmi_mode(connector);
+>> +            break;
+>> +        }
+>> +    }
+>> +
+>> +    if (dssdev->driver->set_hdmi_mode)
+>> +        dssdev->driver->set_hdmi_mode(dssdev, hdmi_mode);
+>=20
+> When a HDMI monitor is replaced with a DVI one, we call the
+> set_hdmi_mode() driver op to set the mode to DVI. But we don't call
+> set_hdmi_infoframe() when the mode is set back to DVI. Do we need to se=
+t
+> avi infoframe registers back to a default value, or are those registers=
 
-<snip>
+> just ignored in DVI mode?
+
+If I'm not mistaken, infoframes are a HDMI thing. When in DVI mode, the
+device driver should clear/disable/something the infoframe registers,
+depending on the HW in question.
+
+ Tomi
 
 
-> @@ -89,6 +91,31 @@ static void omap_encoder_mode_set(struct drm_encoder *encoder,
->   				struct drm_display_mode *mode,
->   				struct drm_display_mode *adjusted_mode)
->   {
-> +	struct drm_device *dev = encoder->dev;
-> +	struct omap_encoder *omap_encoder = to_omap_encoder(encoder);
-> +	struct omap_dss_device *dssdev = omap_encoder->dssdev;
-> +	struct drm_connector *connector;
-> +	bool hdmi_mode;
-> +	int r;
-> +
-> +	hdmi_mode = false;
-> +	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-> +		if (connector->encoder = encoder) {
-> +			hdmi_mode = omap_connector_get_hdmi_mode(connector);
-> +			break;
-> +		}
-> +	}
-> +
-> +	if (dssdev->driver->set_hdmi_mode)
-> +		dssdev->driver->set_hdmi_mode(dssdev, hdmi_mode);
 
-When a HDMI monitor is replaced with a DVI one, we call the 
-set_hdmi_mode() driver op to set the mode to DVI. But we don't call 
-set_hdmi_infoframe() when the mode is set back to DVI. Do we need to set 
-avi infoframe registers back to a default value, or are those registers 
-just ignored in DVI mode?
+--jjSFIbvlMxRTGckRabHgJ7hFrHBeFgAeM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-> +
-> +	if (hdmi_mode && dssdev->driver->set_hdmi_infoframe) {
-> +		struct hdmi_avi_infoframe avi;
-> +
-> +		r = drm_hdmi_avi_infoframe_from_display_mode(&avi, adjusted_mode);
-> +		if (r = 0)
-> +			dssdev->driver->set_hdmi_infoframe(dssdev, &avi);
-> +	}
->   }
->
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Archit
+iQIcBAEBAgAGBQJTqrKRAAoJEPo9qoy8lh719UMP/jE+lZUgdEBzUWZtYeQrrmww
+ZCN0n6OOznvDmhz/fUL6hgjZQKLGZ6X/tpnIAjLwxyAz+Va44Wi1IGT1tvaPBCO4
+Vn5XDBX4z0XQobVP6vEyiF/iVmOuHv7Tctz24juArZ/83OlkbZhPc2Cq2Y0svmS0
+dClirgbyTCzpsYbe/2JlEAteqckY5Hle60tfpUwuSEm9RIzpx4iTdMopH9RH/hnb
+AKNPVEJ3rE98kwqfSLMC3fEPavbnzXAhtYp3fFEttXtYR80r1dQE03PSyyGF/PaA
+ZT6W+aF8htuMeX5AqcJB5heP+muiJTtWW+XS+cLMhkzD1gKFQoBxN4/6nKfcB8z9
++6EUM7mpYIy87+MNGPuwBRNHTkWdTWzvHIiTcZD/Hy9A2CjqoJFbg5YhE89kCkhS
+Ya6iRrAINGTRZqBHgXW4yChaZb7hV5LYTmG6e2V4SsyLjbbhtob6cebK2aTRjHaW
+NJavIpnBOD1HpAF/9eVGFaQmeRBRoMoOKdgUFybUwM8uN+5zWKAq4LZsKl6+lRMK
+4Bq22Moa50mfLoklDNecv2u6iMYsHJMSlJmu7zvy4DpBr9rdkZbo+VFUY/L3jw79
+/5dVFjJoQtHYe6T8UZ00pLjqC8sYOgC/HL8jsMTWjVFYnDwQ4KDcykO/75uXgTDB
+3AJNG0iMGjGErConEses
+=97td
+-----END PGP SIGNATURE-----
 
+--jjSFIbvlMxRTGckRabHgJ7hFrHBeFgAeM--

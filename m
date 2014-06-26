@@ -1,64 +1,155 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jun 2014 10:03:48 +0000
-Subject: [PATCH 03/15] OMAPDSS: DISPC: clean up dispc_mgr_timings_ok
-Message-Id: <1403604240-16738-4-git-send-email-tomi.valkeinen@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Thu, 26 Jun 2014 19:21:01 +0000
+Subject: [PATCH 10/12] OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
+Message-Id: <c53000d58fc41c5952574886b2571766f866a8d4.1403807781.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1403807781.git.jsarha@ti.com>
+In-Reply-To: <cover.1403807781.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
 
-dispc_mgr_timings_ok() is a bit confusing how it handles the return
-value.
+Removes the OMAP4 HDMI audio callbacks for an external audio driver and
+the old external DAI driver does not work anymore after this patch.
 
-Change the function to just return immediately when a timing is deemed
-not valid, making the code much easier to follow.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dispc.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi4.c |  113 ---------------------------------
+ 1 file changed, 113 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index 37373b61784e..be053aa80880 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -2879,22 +2879,24 @@ static bool _dispc_mgr_pclk_ok(enum omap_channel channel,
- bool dispc_mgr_timings_ok(enum omap_channel channel,
- 		const struct omap_video_timings *timings)
- {
--	bool timings_ok;
--
--	timings_ok = _dispc_mgr_size_ok(timings->x_res, timings->y_res);
-+	if (!_dispc_mgr_size_ok(timings->x_res, timings->y_res))
-+		return false;
- 
--	timings_ok &= _dispc_mgr_pclk_ok(channel, timings->pixelclock);
-+	if (!_dispc_mgr_pclk_ok(channel, timings->pixelclock))
-+		return false;
- 
- 	if (dss_mgr_is_lcd(channel)) {
- 		/* TODO: OMAP4+ supports interlace for LCD outputs */
--		timings_ok &= timings->interlace = false;
-+		if (timings->interlace)
-+			return false;
- 
--		timings_ok &= _dispc_lcd_timings_ok(timings->hsw, timings->hfp,
-+		if (!_dispc_lcd_timings_ok(timings->hsw, timings->hfp,
- 				timings->hbp, timings->vsw, timings->vfp,
--				timings->vbp);
-+				timings->vbp))
-+			return false;
- 	}
- 
--	return timings_ok;
-+	return true;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 48f11f8..c56c8bc 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -492,112 +492,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
+ 	return r;
  }
  
- static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	int r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi_wp_audio_enable(&hdmi.wp, true);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_enable(&hdmi.wp, false);
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return hdmi4_audio_start(&hdmi.core, &hdmi.wp);
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	hdmi4_audio_stop(&hdmi.core, &hdmi.wp);
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	bool r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	r = hdmi_mode_has_audio(hdmi.cfg.cm.mode);
+-
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	int r;
+-	u32 pclk = hdmi.cfg.timings.pixelclock;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.cm.mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi4_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-#else
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	return false;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	return -EPERM;
+-}
+-#endif
+-
+ static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi)
+ {
+@@ -626,13 +520,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.read_edid		= hdmi_read_edid,
+ 	.set_infoframe		= hdmi_set_infoframe,
+ 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
+-
+-	.audio_enable		= hdmi_audio_enable,
+-	.audio_disable		= hdmi_audio_disable,
+-	.audio_start		= hdmi_audio_start,
+-	.audio_stop		= hdmi_audio_stop,
+-	.audio_supported	= hdmi_audio_supported,
+-	.audio_config		= hdmi_audio_config,
+ };
+ 
+ static void hdmi_init_output(struct platform_device *pdev)
 -- 
-1.9.1
+1.7.9.5
 

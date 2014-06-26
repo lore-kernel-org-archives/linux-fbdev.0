@@ -1,10 +1,10 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Thu, 26 Jun 2014 19:21:03 +0000
-Subject: [PATCH 12/12] OMAPDSS: Remove all references obsolete HDMI audio callbacks
-Message-Id: <8e2fa441e7ffab7c5eaa68f72eb19691a9d26692.1403807726.git.jsarha@ti.com>
+Date: Thu, 26 Jun 2014 19:21:04 +0000
+Subject: [PATCH 12/12] OMAPDSS: Remove all references to obsolete HDMI audio callbacks
+Message-Id: <467ba7a89002a6553c0d4e2caa9c9877fef37cf5.1403807781.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1403807726.git.jsarha@ti.com>
-In-Reply-To: <cover.1403807726.git.jsarha@ti.com>
+References: <cover.1403807781.git.jsarha@ti.com>
+In-Reply-To: <cover.1403807781.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

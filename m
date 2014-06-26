@@ -1,63 +1,141 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jun 2014 07:56:05 +0000
-Subject: Re: [PATCH 3/10] video: use safer test on the result of find_first_zero_bit
-Message-Id: <53A92F15.9010702@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="vE5cpRCgTAnt0HDL7MwbsMIcwxd01BGIK"
+From: Dexuan Cui <decui@microsoft.com>
+Date: Thu, 26 Jun 2014 20:37:32 +0000
+Subject: [PATCH v2] video: hyperv: hyperv_fb: refresh the VM screen by force on VM panic
+Message-Id: <1403818501-15547-1-git-send-email-decui@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401872880-23685-1-git-send-email-Julia.Lawall@lip6.fr> <1401872880-23685-4-git-send-email-Julia.Lawall@lip6.fr> <53A81470.5030606@ti.com> <alpine.DEB.2.10.1406231612030.3905@hadrien>
-In-Reply-To: <alpine.DEB.2.10.1406231612030.3905@hadrien>
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, driverdev-devel@linuxdriverproject.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, olaf@aepfle.de, apw@canonical.com, jasowang@redhat.com
+Cc: haiyangz@microsoft.com
 
---vE5cpRCgTAnt0HDL7MwbsMIcwxd01BGIK
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Currently the VSC has no chance to notify the VSP of the dirty rectangle on VM
+panic because the notification work is done in a workqueue, and in panic() the
+kernel typically ends up in an infinite loop, and a typical kernel config has
+CONFIG_PREEMPT_VOLUNTARY=y and CONFIG_PREEMPT is not set, so a context switch
+can't happen in panic() and the workqueue won't have a chance to run. As a
+result, the VM Connection window can't refresh until it's closed and we
+re-connect to the VM.
 
-On 23/06/14 17:12, Julia Lawall wrote:
-> On Mon, 23 Jun 2014, Tomi Valkeinen wrote:
->=20
->> On 04/06/14 12:07, Julia Lawall wrote:
->>> From: Julia Lawall <Julia.Lawall@lip6.fr>
->>>
->>> Find_first_zero_bit considers BITS_PER_LONG bits at a time, and thus =
-may
->>> return a larger number than the maximum position argument if that pos=
-ition
->>> is not a multiple of BITS_PER_LONG.
->>
->> Thanks, queued for 3.17.
->=20
-> No, sorry you can drop it.  It doesn't hurt anything, but it is not
-> necessary either.  Returning a larger number is actually not possible.
+We can register a handler on panic_notifier_list: the handler can notify
+the VSC and switch the framebuffer driver to a "synchronous mode", meaning
+the VSC flushes any future framebuffer change to the VSP immediately.
 
-Ok, dropped.
+v2: removed the MS-TFS line in the commit message
 
- Tomi
+Signed-off-by: Dexuan Cui <decui@microsoft.com>
+Reviewed-by: Haiyang Zhang <haiyangz@microsoft.com>
+---
+ drivers/video/fbdev/hyperv_fb.c | 58 ++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 55 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index e23392e..291d171 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -226,11 +226,16 @@ struct hvfb_par {
+ 	u8 recv_buf[MAX_VMBUS_PKT_SIZE];
+ };
+ 
++static struct fb_info *hvfb_info;
++
+ static uint screen_width = HVFB_WIDTH;
+ static uint screen_height = HVFB_HEIGHT;
+ static uint screen_depth;
+ static uint screen_fb_size;
+ 
++/* If true, the VSC notifies the VSP on every framebuffer change */
++static bool synchronous_fb;
++
+ /* Send message to Hyper-V host */
+ static inline int synthvid_send(struct hv_device *hdev,
+ 				struct synthvid_msg *msg)
+@@ -532,6 +537,20 @@ static void hvfb_update_work(struct work_struct *w)
+ 		schedule_delayed_work(&par->dwork, HVFB_UPDATE_DELAY);
+ }
+ 
++static int hvfb_on_panic(struct notifier_block *nb,
++			unsigned long e, void *p)
++{
++	if (hvfb_info)
++		synthvid_update(hvfb_info);
++
++	synchronous_fb = true;
++
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block hvfb_panic_nb = {
++	.notifier_call = hvfb_on_panic,
++};
+ 
+ /* Framebuffer operation handlers */
+ 
+@@ -582,14 +601,41 @@ static int hvfb_blank(int blank, struct fb_info *info)
+ 	return 1;	/* get fb_blank to set the colormap to all black */
+ }
+ 
++static void hvfb_cfb_fillrect(struct fb_info *p,
++				const struct fb_fillrect *rect)
++{
++	cfb_fillrect(p, rect);
++
++	if (unlikely(synchronous_fb))
++		synthvid_update(p);
++}
++
++static void hvfb_cfb_copyarea(struct fb_info *p,
++				const struct fb_copyarea *area)
++{
++	cfb_copyarea(p, area);
++
++	if (unlikely(synchronous_fb))
++		synthvid_update(p);
++}
++
++static void hvfb_cfb_imageblit(struct fb_info *p,
++				const struct fb_image *image)
++{
++	cfb_imageblit(p, image);
++
++	if (unlikely(synchronous_fb))
++		synthvid_update(p);
++}
++
+ static struct fb_ops hvfb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_check_var = hvfb_check_var,
+ 	.fb_set_par = hvfb_set_par,
+ 	.fb_setcolreg = hvfb_setcolreg,
+-	.fb_fillrect = cfb_fillrect,
+-	.fb_copyarea = cfb_copyarea,
+-	.fb_imageblit = cfb_imageblit,
++	.fb_fillrect = hvfb_cfb_fillrect,
++	.fb_copyarea = hvfb_cfb_copyarea,
++	.fb_imageblit = hvfb_cfb_imageblit,
+ 	.fb_blank = hvfb_blank,
+ };
+ 
+@@ -801,6 +847,9 @@ static int hvfb_probe(struct hv_device *hdev,
+ 
+ 	par->fb_ready = true;
+ 
++	hvfb_info = info;
++	atomic_notifier_chain_register(&panic_notifier_list, &hvfb_panic_nb);
++
+ 	return 0;
+ 
+ error:
+@@ -820,6 +869,9 @@ static int hvfb_remove(struct hv_device *hdev)
+ 	struct fb_info *info = hv_get_drvdata(hdev);
+ 	struct hvfb_par *par = info->par;
+ 
++	atomic_notifier_chain_unregister(&panic_notifier_list, &hvfb_panic_nb);
++	hvfb_info = NULL;
++
+ 	par->update = false;
+ 	par->fb_ready = false;
+ 
+-- 
+1.9.1
 
-
---vE5cpRCgTAnt0HDL7MwbsMIcwxd01BGIK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTqS8ZAAoJEPo9qoy8lh71xiYP/iW1vUnUaBnyfUXEIrQ7roNl
-J92NObRssndacXVHQA/m4EDVzc7qP8V+6uzbpgBQ7jYotnMJWgvzSCEde1eK8sFb
-mEC0zQK1ogQ8s5EurCVcw7Rd8d/VR0VSeqPHwU7kwU+sUZO/5qSjAAARosBGLvUS
-+m9xnpfejW5e80FjlL9Z6EWr7Yg1l0Dk8YKzfew8qT4aI3SDE13BexOWnDyZE6Qp
-YymKE15+2S48UJAHB5+ha1JpLs0WnXShtWb8OF9kmujr7HUbAAowWF9tNtQ+xbWq
-N3O/8gU2482HlsYKKGugXpPeOeNSSbK+LQ/r5FYOs2naPb5phRrrpohMpnNLi1q+
-BSHvavNkb41C+YNcuS+Cf+ehi9e5b0ZhMJNFAfCBxuGQPf+3jQ1f4ZUsxWOVYJNi
-USX3Cf95xCLAOzSjFTWyaMlwf5IOPFbRq2wOpXQMsIljJrBR1EXEn86h0tdAub1x
-KbDmz7uBgnTGNXm29I5eGRAymn5zEU+SsBNf4i/Jm0ZC6dr8uv3WgUwYJ7olqQPI
-zH/scqJ8VKJM3ATgeGNvncp56a7phCz6/wcHbQY17PdPr06A/TibwnaN/+5o56hQ
-M/qOz435n2bYx0CdvDGqL3gGXQ2jaXczygsHiSEDv28THd4EqxbN7+Md402aTtl3
-OTXbZaGpLuX8csAofx12
-=gyZt
------END PGP SIGNATURE-----
-
---vE5cpRCgTAnt0HDL7MwbsMIcwxd01BGIK--

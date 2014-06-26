@@ -1,36 +1,65 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 25 Jun 2014 12:26:10 +0000
-Subject: Re: [PATCH v2 1/2] video: clps711x: Add new Cirrus Logic CLPS711X framebuffer driver
-Message-Id: <201406251426.11130.arnd@arndb.de>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Thu, 26 Jun 2014 19:20:54 +0000
+Subject: [PATCH 03/12] OMAPDSS: hdmi_wp: Add function for getting hdmi_wp physical base address
+Message-Id: <71e703f319eacd5a7196d8b34601b52e32b946d3.1403807781.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403194843-32574-1-git-send-email-shc_work@mail.ru>
-In-Reply-To: <1403194843-32574-1-git-send-email-shc_work@mail.ru>
+References: <cover.1403807781.git.jsarha@ti.com>
+In-Reply-To: <cover.1403807781.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
 
-On Thursday 19 June 2014, Alexander Shiyan wrote:
-> -config FB_CLPS711X
-> -       bool "CLPS711X LCD support"
-> -       depends on (FB = y) && ARM && ARCH_CLPS711X
-> +config FB_CLPS711X_OLD
-> +       bool
->         select FB_CFB_FILLRECT
->         select FB_CFB_COPYAREA
->         select FB_CFB_IMAGEBLIT
-> +
-> +config FB_CLPS711X
-> +       tristate "CLPS711X LCD support"
-> +       depends on FB && (ARCH_CLPS711X || COMPILE_TEST)
-> +       select FB_CLPS711X_OLD if ARCH_CLPS711X && !ARCH_MULTIPLATFORM
-> +       select BACKLIGHT_LCD_SUPPORT
-> +       select FB_MODE_HELPERS
+The hdmi_wp physical base address is needed for hdmi audio dma.
 
-I found that with this change, you can now end up in a situation of CONFIG_FB=m
-and FB_CLPS711X=y, which doesn't link properly.
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi.h    |    2 ++
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c |    6 ++++++
+ 2 files changed, 8 insertions(+)
 
-We need to either turn FB_CLPS711X_OLD into 'tristate' or add
-'depends on ARCH_MULTIPLATFORM || FB=y' to FB_CLPS711X.
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 1f01068..927cb4d 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -250,6 +250,7 @@ struct hdmi_core_audio_config {
+ 
+ struct hdmi_wp_data {
+ 	void __iomem *base;
++	phys_addr_t phys_base;
+ };
+ 
+ struct hdmi_pll_data {
+@@ -317,6 +318,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
+ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ 		struct omap_video_timings *timings, struct hdmi_config *param);
+ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
++phys_addr_t hdmi_wp_get_phys_addr(struct hdmi_wp_data *wp);
+ 
+ /* HDMI PLL funcs */
+ int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index 496327e..eadd4ed 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -247,6 +247,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 		DSSERR("can't get WP mem resource\n");
+ 		return -EINVAL;
+ 	}
++	wp->phys_base = res->start;
+ 
+ 	wp->base = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(wp->base)) {
+@@ -256,3 +257,8 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 
+ 	return 0;
+ }
++
++phys_addr_t hdmi_wp_get_phys_addr(struct hdmi_wp_data *wp)
++{
++	return wp->phys_base;
++}
+-- 
+1.7.9.5
 
-	Arnd

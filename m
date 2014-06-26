@@ -1,46 +1,53 @@
-From: Daniel Jeong <gshark.jeong@gmail.com>
-Date: Tue, 24 Jun 2014 06:17:54 +0000
-Subject: [RFC v2 2/2] backlight: device tree: add new tps611xx backlight driver
-Message-Id: <1403590674-14361-3-git-send-email-gshark.jeong@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 26 Jun 2014 11:29:59 +0000
+Subject: [PATCH] fbdev: arm has __raw I/O accessors, use them in fb.h
+Message-Id: <1403782199-7998-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403590674-14361-1-git-send-email-gshark.jeong@gmail.com>
-In-Reply-To: <1403590674-14361-1-git-send-email-gshark.jeong@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
-Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-This commit is about tps611xx device tree documentation.
+From: Archit Taneja <archit@ti.com>
 
-Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
+This removes the sparse warnings on arm platforms:
+
+warning: cast removes address space of expression
+
+Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Alexander Shiyan <shc_work@mail.ru>
+Cc: Russell King <linux@arm.linux.org.uk>
 ---
- .../video/backlight/tps611xx-backlight.txt         |   16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
 
-diff --git a/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
-new file mode 100644
-index 0000000..01f110d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
-@@ -0,0 +1,16 @@
-+TPS611xx family of backlight driver based on EasyScale.
-+
-+It supports tps61158, tps61161, tps61163 and tps61165.
-+
-+Required properties:
-+- compatible: "ti,tps61158_bl", "ti,tps61161_bl", "ti,tps61163_bl", "ti,tps61165_bl"
-+- rfa_en: enable request for acknowledge. ( 0 : disable , 1 : enable )
-+- en_gpio_num: gpio number for en pin.
-+
-+Example:
-+
-+	backlight {
-+		compatible = "ti,tps61163_bl";
-+		rfa_en = <1>;
-+		en_gpio_num = <45>;
-+	};
+This patch was sent a few years ago, but was not applied:
+
+http://lists.infradead.org/pipermail/linux-arm-kernel/2012-November/132387.html
+
+Russell asked if it has any effect on BE ARM platforms. I don't have any BE
+systems but I did some study:
+
+http://lists.infradead.org/pipermail/linux-arm-kernel/2012-November/132900.html
+
+Anyone with a BE platform could test this?
+
+ include/linux/fb.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index b6bfda99add3..09bb7a18d287 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -553,7 +553,7 @@ static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
+ #define fb_memcpy_fromfb sbus_memcpy_fromio
+ #define fb_memcpy_tofb sbus_memcpy_toio
+ 
+-#elif defined(__i386__) || defined(__alpha__) || defined(__x86_64__) || defined(__hppa__) || defined(__sh__) || defined(__powerpc__) || defined(__avr32__) || defined(__bfin__)
++#elif defined(__i386__) || defined(__alpha__) || defined(__x86_64__) || defined(__hppa__) || defined(__sh__) || defined(__powerpc__) || defined(__avr32__) || defined(__bfin__) || defined(__arm__)
+ 
+ #define fb_readb __raw_readb
+ #define fb_readw __raw_readw
 -- 
-1.7.9.5
+1.9.1
 

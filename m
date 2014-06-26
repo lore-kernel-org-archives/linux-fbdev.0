@@ -1,103 +1,132 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 27 Jun 2014 18:38:51 +0000
-Subject: [PATCH v2 09/13] OMAPDSS: hdmi5: Register HDMI audio ASoC drivers from HDMI driver
-Message-Id: <f895feed34be1c9e6e77608e61ff8d08aea1f5df.1403894190.git.jsarha@ti.com>
+From: "Victor Miasnikov" <vvm@tut.by>
+Date: Thu, 26 Jun 2014 07:45:01 +0000
+Subject: search by phrase a-la "MS-TFS: 157532" -- "has relevance for Hyper-V sysadmins" Re: [PATCH] video: h
+Message-Id: <311A91BAC7AE49F6B036272FB4A686C4@local.st.by>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1403894190.git.jsarha@ti.com>
-In-Reply-To: <cover.1403894190.git.jsarha@ti.com>
+References: <1403569757-2622-1-git-send-email-decui@microsoft.com> <20140624135101.GB10115@kroah.com> <EE124450C0AAF944A40DD71E61F878C98353C6@SINEX14MBXC418.southpacific.corp.microsoft.com> <20140626033608.GA32654@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
+To: Greg KH <gregkh@linuxfoundation.org>, Dexuan Cui <decui@microsoft.com>
+Cc: linux-fbdev@vger.kernel.org, jasowang@redhat.com, driverdev-devel@linuxdriverproject.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, olaf@aepfle.de, "\"Andy Whitcroft\"" <apw@canonical.com>, plagnioj@jcrosoft.com, Haiyang Zhang <haiyangz@microsoft.com>
 
-Call register and unregister functions form hdmi_audio.c. Register
-function registers the integrated cpu dai, dummy HDMI codec, and
-simple-card machine driver for complete HDMI audio support.
+Hi!
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- drivers/video/fbdev/omap2/dss/hdmi5.c |   46 +++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
+ Short:
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index 83925a9..a2b2589 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -39,6 +39,9 @@
- #include <linux/regulator/consumer.h>
- #include <video/omapdss.h>
+ 1)
+greg k-h> don't add marker lines like this that provide no relevancy to anyone else.
+
+ "no relevancy to anyone else" -- strange: it "has relevance for Hyper-V sysadmins"
+For search by keywords in web archives of this mail list
+
+ 1b)
+
+greg k-h> If you want to refer to a public bug tracker,
+greg k-h> that's great
  
-+#include <sound/soc.h>
-+#include <sound/soc-dai.h>
-+
- #include "hdmi5_core.h"
- #include "dss.h"
- #include "dss_features.h"
-@@ -680,6 +683,33 @@ err:
- 	return r;
- }
+ Yes: public bug tracker are welcom
+
+
+ Full:
+
+D.C>>>>
+D.C>>>> MS-TFS: 157532
+D.C>>>>
+
+Greg K-h>>>
+Greg K-h>>> What is this line for?
+Greg K-h>>>
+
+D.C.>> This line is for our internal bug repository.
+D.C.>>
+D.C.>> The MS-TFS line has appeared in the commit description for a while if you
+D.C.>> search for it in 'git log'  of linux-next.
+D.C.>>
+
+greg k-h>
+greg k-h> Please
+greg k-h> don't add marker lines like this that provide no relevancy to anyone else.
+
+ "no relevancy to anyone else" -- strange: it "has relevance for Hyper-V sysadmins"
+
+For search by keywords in web archives of this mail list
+
+ See example:
+Results of search sesssion by phrase "MS-TFS: 157532" :
+=
+LKML: Dexuan Cui: RE: [PATCH] video: hyperv: hyperv_fb ...
+lkml.org/lkml/2014/6/24/844
+1 day ago - MS-TFS: 157532 > What is this line for? Hi Greg, This line is for our internal bug repository. We have an 
+automated system to correlate bugs ...
+=
+ +
+=
+[PATCH] video: hyperv: hyperv_fb: refresh the VM screen by force ...
+www.gossamer-threads.com/lists/linux/kernel/1952989
+5 hours ago - the VSC flushes any future framebuffer change to the VSP immediately. 
+MS-TFS: 157532. Signed-off-by: Dexuan Cui
+=
+
+
+greg k-h> I don't allow gerrit ids for the same reason.
+greg k-h> If you want to refer to a public bug tracker,
+greg k-h> that's great
+
  
-+#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
-+static int audio_start(struct hdmi_core_data *core, struct hdmi_wp_data *wp)
-+{
-+	hdmi_wp_audio_core_req_enable(wp, true);
-+
-+	return 0;
-+}
-+
-+static void audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp)
-+{
-+	hdmi_wp_audio_core_req_enable(wp, false);
-+}
-+
-+static struct snd_soc_dai_driver omap_hdmi_dai = {
-+	.name = "omap5-hdmi-dai",
-+	.playback = {
-+		.channels_min = 2,
-+		.channels_max = 8,
-+		.rates = (SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |
-+			  SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 |
-+			  SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 |
-+			  SNDRV_PCM_RATE_192000),
-+		.formats = SNDRV_PCM_FMTBIT_S16_LE,
-+	},
-+};
-+#endif
-+
- /* HDMI HW IP initialisation */
- static int omapdss_hdmihw_probe(struct platform_device *pdev)
- {
-@@ -738,6 +768,19 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- 	hdmi_init_output(pdev);
- 
-+#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
-+	hdmi.audio.hdmi_dai_drv = &omap_hdmi_dai;
-+	hdmi.audio.audio_start = audio_start;
-+	hdmi.audio.audio_stop = audio_stop;
-+	hdmi.audio.audio_config = hdmi5_audio_config;
-+	r = hdmi_audio_register(pdev);
-+	if (r) {
-+		DSSERR("Registering HDMI audio failed\n");
-+		hdmi_uninit_output(pdev);
-+		pm_runtime_disable(&pdev->dev);
-+		return r;
-+	}
-+#endif
- 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
- 
- 	return 0;
-@@ -745,6 +788,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
- {
-+#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
-+	hdmi_audio_unregister(pdev);
-+#endif
- 	hdmi_uninit_output(pdev);
- 
- 	pm_runtime_disable(&pdev->dev);
--- 
-1.7.9.5
+ Yes: public bug tracker are welcom
+
+
+greg k-h>, otherwise, don't include it.
+
+
+
+
+Best regards, Victor Miasnikov
+Blog:  http://vvm.blog.tut.by/
+
+
+----- Original Message ----- 
+From: "Greg KH"
+To: "Dexuan Cui"
+Cc: . . .
+Sent: Thursday, June 26, 2014 6:36 AM
+Subject: Re: [PATCH] video: hyperv: hyperv_fb: refresh the VM screen by force on VM panic
+
+On Tue, Jun 24, 2014 at 09:44:14PM +0000, Dexuan Cui wrote:
+> >On Tue, Jun 24, 2014 at 08:29:17AM +0800, Dexuan Cui wrote:
+> >> Currently the VSC has no chance to notify the VSP of the dirty rectangle on VM
+> >> panic because the notification work is done in a workqueue, and in panic() the
+> >> kernel typically ends up in an infinite loop, and a typical kernel config has
+> >> CONFIG_PREEMPT_VOLUNTARY=y and CONFIG_PREEMPT is not set, so a context switch
+> >> can't happen in panic() and the workqueue won't have a chance to run. As a
+> >> result, the VM Connection window can't refresh until it's closed and we
+> >> re-connect to the VM.
+> >>
+> >> We can register a handler on panic_notifier_list: the handler can notify
+> >> the VSC and switch the framebuffer driver to a "synchronous mode", meaning
+> >> the VSC flushes any future framebuffer change to the VSP immediately.
+> >>
+> >> MS-TFS: 157532
+>
+> > What is this line for?
+>
+> Hi Greg,
+> This line is for our internal bug repository.
+> We have an automated system to correlate bugs with fixes so that our test
+> team knows when a bug fix has been accepted upstream and they need to
+> write a new test case for it.
+>
+> The MS-TFS line has appeared in the commit description for a while if you
+> search for it in 'git log'  of linux-next.
+>
+> Please let us know if you have further comments.
+
+Please don't add marker lines like this that provide no relevancy to
+anyone else.  I don't allow gerrit ids for the same reason.  If you want
+to refer to a public bug tracker, that's great, otherwise, don't
+include it.
+
+greg k-h
+--
 

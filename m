@@ -1,84 +1,110 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 23 Jun 2014 11:53:45 +0000
-Subject: Re: [PATCH -next 25/26] fbdev: Use dma_zalloc_coherent
-Message-Id: <53A81549.40206@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="mcm19T86hjbK20gI4evSEE5B6A8I3XHKV"
+From: Jyri Sarha <jsarha@ti.com>
+Date: Thu, 26 Jun 2014 19:20:57 +0000
+Subject: [PATCH 06/12] OMAPDSS: hdmi4: Register HDMI audio ASoC drivers from HDMI driver
+Message-Id: <f61b31d0b08c8a0b6ee295d5b0da62ead23983c9.1403807781.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1402863904.git.joe@perches.com> <881b8f8d85c96b6e9d8735aa10bbf18468688b9d.1402863905.git.joe@perches.com>
-In-Reply-To: <881b8f8d85c96b6e9d8735aa10bbf18468688b9d.1402863905.git.joe@perches.com>
-To: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
+References: <cover.1403807781.git.jsarha@ti.com>
+In-Reply-To: <cover.1403807781.git.jsarha@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
 
---mcm19T86hjbK20gI4evSEE5B6A8I3XHKV
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add audio datamember to hdmi struct and call register and unregister
+functions form hdmi_audio.c. Register function registers the
+integrated cpu dai, dummy HDMI codec, and simple-card machine driver
+for complete HDMI audio support.
 
-On 15/06/14 23:37, Joe Perches wrote:
-> Use the zeroing function instead of dma_alloc_coherent & memset(,0,)
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/video/fbdev/da8xx-fb.c | 9 +++------
->  1 file changed, 3 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx=
--fb.c
-> index a8484f7..788f6b3 100644
-> --- a/drivers/video/fbdev/da8xx-fb.c
-> +++ b/drivers/video/fbdev/da8xx-fb.c
-> @@ -1447,18 +1447,15 @@ static int fb_probe(struct platform_device *dev=
-ice)
->  		da8xx_fb_fix.line_length - 1;
-> =20
->  	/* allocate palette buffer */
-> -	par->v_palette_base =3D dma_alloc_coherent(NULL,
-> -					       PALETTE_SIZE,
-> -					       (resource_size_t *)
-> -					       &par->p_palette_base,
-> -					       GFP_KERNEL | GFP_DMA);
-> +	par->v_palette_base =3D dma_zalloc_coherent(NULL, PALETTE_SIZE,
-> +						  (resource_size_t *)&par->p_palette_base,
-> +						  GFP_KERNEL | GFP_DMA);
->  	if (!par->v_palette_base) {
->  		dev_err(&device->dev,
->  			"GLCD: kmalloc for palette buffer failed\n");
->  		ret =3D -EINVAL;
->  		goto err_release_fb_mem;
->  	}
-> -	memset(par->v_palette_base, 0, PALETTE_SIZE);
-> =20
->  	par->irq =3D platform_get_irq(device, 0);
->  	if (par->irq < 0) {
->=20
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi4.c |   45 +++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
 
-Thanks, queued for 3.17.
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 342ddb4..48f11f8 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -34,6 +34,11 @@
+ #include <linux/regulator/consumer.h>
+ #include <video/omapdss.h>
+ 
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
++#include <sound/soc.h>
++#include <sound/soc-dai.h>
++#endif
++
+ #include "hdmi4_core.h"
+ #include "dss.h"
+ #include "dss_features.h"
+@@ -52,6 +57,9 @@ static struct {
+ 	struct clk *sys_clk;
+ 	struct regulator *vdda_hdmi_dac_reg;
+ 
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
++	struct hdmi_audio_data audio;
++#endif
+ 	bool core_enabled;
+ 
+ 	struct omap_dss_device output;
+@@ -671,6 +679,21 @@ err:
+ 	return r;
+ }
+ 
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
++static struct snd_soc_dai_driver omap_hdmi_dai = {
++	.name = "omap4-hdmi-dai",
++	.playback = {
++		.channels_min = 2,
++		.channels_max = 8,
++		.rates = (SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |
++			  SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 |
++			  SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 |
++			  SNDRV_PCM_RATE_192000),
++		.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE,
++	},
++};
++#endif
++
+ /* HDMI HW IP initialisation */
+ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ {
+@@ -727,6 +750,25 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 
+ 	hdmi_init_output(pdev);
+ 
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
++	/* drvdata is only used by HDMI audio */
++	hdmi.audio.hdmi_lock = &hdmi.lock;
++	hdmi.audio.wp = &hdmi.wp;
++	hdmi.audio.core = &hdmi.core;
++	hdmi.audio.cfg = &hdmi.cfg;
++	hdmi.audio.hdmi_dai_drv = &omap_hdmi_dai;
++	hdmi.audio.audio_start = hdmi4_audio_start;
++	hdmi.audio.audio_stop = hdmi4_audio_stop;
++	hdmi.audio.audio_config = hdmi4_audio_config;
++	dev_set_drvdata(&pdev->dev, &hdmi.audio);
++	r = hdmi_audio_register(pdev);
++	if (r) {
++		DSSERR("Registering HDMI audio failed\n");
++		hdmi_uninit_output(pdev);
++		pm_runtime_disable(&pdev->dev);
++		return r;
++	}
++#endif
+ 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
+ 
+ 	return 0;
+@@ -734,6 +776,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 
+ static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
+ {
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
++	hdmi_audio_unregister(pdev);
++#endif
+ 	hdmi_uninit_output(pdev);
+ 
+ 	pm_runtime_disable(&pdev->dev);
+-- 
+1.7.9.5
 
- Tomi
-
-
-
---mcm19T86hjbK20gI4evSEE5B6A8I3XHKV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTqBVJAAoJEPo9qoy8lh71QtEQAK4m/4TbjC+UMhGljhMYnpfO
-JuFi0ASPziQLDFrrhs4L/h3fqUA8mTPr29NwAbzm9rS4SA16LW0QeohMs/ArHnaG
-SpoR1SA29YMV4OOqBQxWTOo1VJwS2J+w8lBdPpP4clg4hbyIhqKJuTR2b7Wtd/z1
-hdABfKAa1EtCC2Crc2Io6K1zQcTUuczkrO1iS1IJBaY0ekAZGD+o+ABDf7sMOo3Y
-yk3v4Kvxnyu0WBRBveK4jWIk2wuNiCzQ3hCGl5PI7W7U8s5HYPgWTEdvwcTTOnPO
-VL/27kHWpscqF1ABTtIE7pqlYRHxrkZF7VOFm4RAewumD9KEp/VClpiqZXpnwPoC
-sAoJCw9k7N9tluvC1oNNG789Eji7QNXdrImCzfbYG5TLfKxV7a2YMivxJ1K5ebYl
-rZPOq0vnQSorUZP+BzlJkjDFZ98/FmrtYls+1GwRytCl/zG+Bbz1ws33FH0z0SZG
-B7ZW/byd7CIPfyalI7kxSL0qwm5l1xioiOEyZPHthN9OsykJTVNwxchLyRXXlFmg
-4WTgBdwsOETUd96Xvg+LrcjsJN9sj9y1K0lPaiN/2G11fhKhPiinDHt1YM114A+H
-u3Uc1bfHvll1ckRSn5f9eOfKVG3Gvhf9kXA4bAsLmGH9NKrXOW8/yWEPNfovtB0S
-SITDmrBmKJvTCDRKJ/Gx
-=KTxf
------END PGP SIGNATURE-----
-
---mcm19T86hjbK20gI4evSEE5B6A8I3XHKV--

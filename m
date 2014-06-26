@@ -1,95 +1,267 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 25 Jun 2014 11:29:21 +0000
-Subject: Re: [PATCH 15/15] drm/omap: Add infoframe & dvi/hdmi mode support
-Message-Id: <53AAB291.4000007@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="jjSFIbvlMxRTGckRabHgJ7hFrHBeFgAeM"
+From: Jyri Sarha <jsarha@ti.com>
+Date: Thu, 26 Jun 2014 19:21:03 +0000
+Subject: [PATCH 12/12] OMAPDSS: Remove all references obsolete HDMI audio callbacks
+Message-Id: <8e2fa441e7ffab7c5eaa68f72eb19691a9d26692.1403807726.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com> <1403604240-16738-16-git-send-email-tomi.valkeinen@ti.com> <53AAAC95.3070409@ti.com>
-In-Reply-To: <53AAAC95.3070409@ti.com>
-To: Archit Taneja <archit@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Jyri Sarha <jsarha@ti.com>, Rob Clark <robdclark@gmail.com>
+References: <cover.1403807726.git.jsarha@ti.com>
+In-Reply-To: <cover.1403807726.git.jsarha@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
 
---jjSFIbvlMxRTGckRabHgJ7hFrHBeFgAeM
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+In new model these callbacks are obsolete since the ASoC component
+drivers are integrated into the HDMI drivers and no callbacks are
+needed anymore.
 
-On 25/06/14 14:03, Archit Taneja wrote:
-> Hi,
->=20
-> On Tuesday 24 June 2014 03:34 PM, Tomi Valkeinen wrote:
->> Make the omapdrm driver use the new HDMI ops when possible.
->>
->> omapdrm will call set_hdmi_mode (when available) to tell the encoder
->> driver whether the monitor is a DVI or HDMI monitor, and if it's an HD=
-MI
->> monitor, omapdrm will call set_hdmi_infoframe to to set the AVI
->> infoframe.
->=20
-> <snip>
->=20
->=20
->> @@ -89,6 +91,31 @@ static void omap_encoder_mode_set(struct
->> drm_encoder *encoder,
->>                   struct drm_display_mode *mode,
->>                   struct drm_display_mode *adjusted_mode)
->>   {
->> +    struct drm_device *dev =3D encoder->dev;
->> +    struct omap_encoder *omap_encoder =3D to_omap_encoder(encoder);
->> +    struct omap_dss_device *dssdev =3D omap_encoder->dssdev;
->> +    struct drm_connector *connector;
->> +    bool hdmi_mode;
->> +    int r;
->> +
->> +    hdmi_mode =3D false;
->> +    list_for_each_entry(connector, &dev->mode_config.connector_list,
->> head) {
->> +        if (connector->encoder =3D=3D encoder) {
->> +            hdmi_mode =3D omap_connector_get_hdmi_mode(connector);
->> +            break;
->> +        }
->> +    }
->> +
->> +    if (dssdev->driver->set_hdmi_mode)
->> +        dssdev->driver->set_hdmi_mode(dssdev, hdmi_mode);
->=20
-> When a HDMI monitor is replaced with a DVI one, we call the
-> set_hdmi_mode() driver op to set the mode to DVI. But we don't call
-> set_hdmi_infoframe() when the mode is set back to DVI. Do we need to se=
-t
-> avi infoframe registers back to a default value, or are those registers=
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 --------------------
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 -----------
+ include/video/omapdss.h                            |   31 ------
+ 3 files changed, 186 deletions(-)
 
-> just ignored in DVI mode?
+diff --git a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
+index 131c6e2..dd36d71 100644
+--- a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
++++ b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
+@@ -170,98 +170,6 @@ static bool hdmic_detect(struct omap_dss_device *dssdev)
+ 		return in->ops.hdmi->detect(in);
+ }
+ 
+-static int hdmic_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-	int r;
+-
+-	/* enable audio only if the display is active */
+-	if (!omapdss_device_is_enabled(dssdev))
+-		return -EPERM;
+-
+-	r = in->ops.hdmi->audio_enable(in);
+-	if (r)
+-		return r;
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_ENABLED;
+-
+-	return 0;
+-}
+-
+-static void hdmic_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_disable(in);
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_DISABLED;
+-}
+-
+-static int hdmic_audio_start(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-	int r;
+-
+-	/*
+-	 * No need to check the panel state. It was checked when trasitioning
+-	 * to AUDIO_ENABLED.
+-	 */
+-	if (dssdev->audio_state != OMAP_DSS_AUDIO_ENABLED)
+-		return -EPERM;
+-
+-	r = in->ops.hdmi->audio_start(in);
+-	if (r)
+-		return r;
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_PLAYING;
+-
+-	return 0;
+-}
+-
+-static void hdmic_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_stop(in);
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_ENABLED;
+-}
+-
+-static bool hdmic_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	if (!omapdss_device_is_enabled(dssdev))
+-		return false;
+-
+-	return in->ops.hdmi->audio_supported(in);
+-}
+-
+-static int hdmic_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-	int r;
+-
+-	/* config audio only if the display is active */
+-	if (!omapdss_device_is_enabled(dssdev))
+-		return -EPERM;
+-
+-	r = in->ops.hdmi->audio_config(in, audio);
+-	if (r)
+-		return r;
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_CONFIGURED;
+-
+-	return 0;
+-}
+-
+ static int hdmic_set_hdmi_mode(struct omap_dss_device *dssdev, bool hdmi_mode)
+ {
+ 	struct panel_drv_data *ddata = to_panel_data(dssdev);
+@@ -296,13 +204,6 @@ static struct omap_dss_driver hdmic_driver = {
+ 	.detect			= hdmic_detect,
+ 	.set_hdmi_mode		= hdmic_set_hdmi_mode,
+ 	.set_hdmi_infoframe	= hdmic_set_infoframe,
+-
+-	.audio_enable		= hdmic_audio_enable,
+-	.audio_disable		= hdmic_audio_disable,
+-	.audio_start		= hdmic_audio_start,
+-	.audio_stop		= hdmic_audio_stop,
+-	.audio_supported	= hdmic_audio_supported,
+-	.audio_config		= hdmic_audio_config,
+ };
+ 
+ static int hdmic_probe_pdata(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
+index c891d8f..235e3d5 100644
+--- a/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
++++ b/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
+@@ -193,55 +193,6 @@ static bool tpd_detect(struct omap_dss_device *dssdev)
+ 	return gpio_get_value_cansleep(ddata->hpd_gpio);
+ }
+ 
+-static int tpd_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_enable(in);
+-}
+-
+-static void tpd_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_disable(in);
+-}
+-
+-static int tpd_audio_start(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_start(in);
+-}
+-
+-static void tpd_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_stop(in);
+-}
+-
+-static bool tpd_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_supported(in);
+-}
+-
+-static int tpd_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_config(in, audio);
+-}
+-
+ static int tpd_set_infoframe(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi)
+ {
+@@ -275,13 +226,6 @@ static const struct omapdss_hdmi_ops tpd_hdmi_ops = {
+ 	.detect			= tpd_detect,
+ 	.set_infoframe		= tpd_set_infoframe,
+ 	.set_hdmi_mode		= tpd_set_hdmi_mode,
+-
+-	.audio_enable		= tpd_audio_enable,
+-	.audio_disable		= tpd_audio_disable,
+-	.audio_start		= tpd_audio_start,
+-	.audio_stop		= tpd_audio_stop,
+-	.audio_supported	= tpd_audio_supported,
+-	.audio_config		= tpd_audio_config,
+ };
+ 
+ static int tpd_probe_pdata(struct platform_device *pdev)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 069dfca..9035325 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -635,19 +635,6 @@ struct omapdss_hdmi_ops {
+ 	int (*set_hdmi_mode)(struct omap_dss_device *dssdev, bool hdmi_mode);
+ 	int (*set_infoframe)(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi);
+-
+-	/*
+-	 * Note: These functions might sleep. Do not call while
+-	 * holding a spinlock/readlock.
+-	 */
+-	int (*audio_enable)(struct omap_dss_device *dssdev);
+-	void (*audio_disable)(struct omap_dss_device *dssdev);
+-	bool (*audio_supported)(struct omap_dss_device *dssdev);
+-	int (*audio_config)(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio);
+-	/* Note: These functions may not sleep */
+-	int (*audio_start)(struct omap_dss_device *dssdev);
+-	void (*audio_stop)(struct omap_dss_device *dssdev);
+ };
+ 
+ struct omapdss_dsi_ops {
+@@ -858,24 +845,6 @@ struct omap_dss_driver {
+ 	int (*set_hdmi_mode)(struct omap_dss_device *dssdev, bool hdmi_mode);
+ 	int (*set_hdmi_infoframe)(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi);
+-
+-	/*
+-	 * For display drivers that support audio. This encompasses
+-	 * HDMI and DisplayPort at the moment.
+-	 */
+-	/*
+-	 * Note: These functions might sleep. Do not call while
+-	 * holding a spinlock/readlock.
+-	 */
+-	int (*audio_enable)(struct omap_dss_device *dssdev);
+-	void (*audio_disable)(struct omap_dss_device *dssdev);
+-	bool (*audio_supported)(struct omap_dss_device *dssdev);
+-	int (*audio_config)(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio);
+-	/* Note: These functions may not sleep */
+-	int (*audio_start)(struct omap_dss_device *dssdev);
+-	void (*audio_stop)(struct omap_dss_device *dssdev);
+-
+ };
+ 
+ enum omapdss_version omapdss_get_version(void);
+-- 
+1.7.9.5
 
-If I'm not mistaken, infoframes are a HDMI thing. When in DVI mode, the
-device driver should clear/disable/something the infoframe registers,
-depending on the HW in question.
-
- Tomi
-
-
-
---jjSFIbvlMxRTGckRabHgJ7hFrHBeFgAeM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTqrKRAAoJEPo9qoy8lh719UMP/jE+lZUgdEBzUWZtYeQrrmww
-ZCN0n6OOznvDmhz/fUL6hgjZQKLGZ6X/tpnIAjLwxyAz+Va44Wi1IGT1tvaPBCO4
-Vn5XDBX4z0XQobVP6vEyiF/iVmOuHv7Tctz24juArZ/83OlkbZhPc2Cq2Y0svmS0
-dClirgbyTCzpsYbe/2JlEAteqckY5Hle60tfpUwuSEm9RIzpx4iTdMopH9RH/hnb
-AKNPVEJ3rE98kwqfSLMC3fEPavbnzXAhtYp3fFEttXtYR80r1dQE03PSyyGF/PaA
-ZT6W+aF8htuMeX5AqcJB5heP+muiJTtWW+XS+cLMhkzD1gKFQoBxN4/6nKfcB8z9
-+6EUM7mpYIy87+MNGPuwBRNHTkWdTWzvHIiTcZD/Hy9A2CjqoJFbg5YhE89kCkhS
-Ya6iRrAINGTRZqBHgXW4yChaZb7hV5LYTmG6e2V4SsyLjbbhtob6cebK2aTRjHaW
-NJavIpnBOD1HpAF/9eVGFaQmeRBRoMoOKdgUFybUwM8uN+5zWKAq4LZsKl6+lRMK
-4Bq22Moa50mfLoklDNecv2u6iMYsHJMSlJmu7zvy4DpBr9rdkZbo+VFUY/L3jw79
-/5dVFjJoQtHYe6T8UZ00pLjqC8sYOgC/HL8jsMTWjVFYnDwQ4KDcykO/75uXgTDB
-3AJNG0iMGjGErConEses
-=97td
------END PGP SIGNATURE-----
-
---jjSFIbvlMxRTGckRabHgJ7hFrHBeFgAeM--

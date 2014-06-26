@@ -1,50 +1,86 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 04 Jun 2014 06:52:56 +0000
-Subject: [PATCH v3 0/7] OMAPDSS: Support multiple DPI instances
-Message-Id: <1401864063-19196-1-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 26 Jun 2014 12:28:50 +0000
+Subject: Re: [PATCH v3 0/7] OMAPDSS: Support multiple DPI instances
+Message-Id: <53AC1202.5050901@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="PmqUKt4C4LTlMJCxFXq1o2ILlpMWPItlN"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401096492-1405-1-git-send-email-archit@ti.com>
-In-Reply-To: <1401096492-1405-1-git-send-email-archit@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+References: <1401096492-1405-1-git-send-email-archit@ti.com> <1401864063-19196-1-git-send-email-archit@ti.com>
+In-Reply-To: <1401864063-19196-1-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-DSS on DRA7x has 3 DPI outputs. In order to get them to work. We need to make
-the DPI driver support multiple DPI instances. We also need to tweak the
-DT parsing done to match an encoder/connector/panel driver to find the
-corresponding omapdss output. This series tries to achieve the above 2 tasks.
+--PmqUKt4C4LTlMJCxFXq1o2ILlpMWPItlN
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Changes in v3:
+On 04/06/14 09:40, Archit Taneja wrote:
+> DSS on DRA7x has 3 DPI outputs. In order to get them to work. We need t=
+o make
+> the DPI driver support multiple DPI instances. We also need to tweak th=
+e
+> DT parsing done to match an encoder/connector/panel driver to find the
+> corresponding omapdss output. This series tries to achieve the above 2 =
+tasks.
+>=20
+> Changes in v3:
+>=20
+> - Make indexes in port lists not depend on DPI and SDI CONFIGs.
+> - Cleaner code in dss_init_ports/uninit_ports.
+> - Split up the patch which creates multi DPI instances.
+> - Switch to a simpler way of extracting DPI driver data from dssdev.
+> - Change some of the dss-of fucntions, such that
+>   omapdss_of_find_source_for_first_ep is simplified.
+>=20
+> Archit Taneja (7):
+>   OMAPDSS: DPI: Use DPI driver data
+>   OMAPDSS: DPI: Allocate driver data
+>   OMAPDSS: DPI: Store dpi_data pointer in the DT port's data
+>   OMAPDSS: DSS: init dss ports cleanly
+>   OMAPDSS: DT: Get source endpoint by matching reg-id
+>   OMAPDSS: DPI: Add support for multiple instances
+>   omapdss: DSS: add reg-id param to dpi_select_source
+>=20
+>  .../fbdev/omap2/displays-new/encoder-tfp410.c      |   1 +
+>  .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   1 +
+>  drivers/video/fbdev/omap2/dss/dpi.c                | 259 +++++++++++++=
++-------
+>  drivers/video/fbdev/omap2/dss/dss-of.c             |  58 +++--
+>  drivers/video/fbdev/omap2/dss/dss.c                | 108 +++++++--
+>  drivers/video/fbdev/omap2/dss/dss.h                |  34 ++-
+>  drivers/video/fbdev/omap2/dss/output.c             |  19 +-
+>  drivers/video/fbdev/omap2/dss/sdi.c                |   2 +-
+>  include/video/omapdss.h                            |   5 +-
+>  9 files changed, 354 insertions(+), 133 deletions(-)
 
-- Make indexes in port lists not depend on DPI and SDI CONFIGs.
-- Cleaner code in dss_init_ports/uninit_ports.
-- Split up the patch which creates multi DPI instances.
-- Switch to a simpler way of extracting DPI driver data from dssdev.
-- Change some of the dss-of fucntions, such that
-  omapdss_of_find_source_for_first_ep is simplified.
+Other than the couple minor comments I had, the series looks good.
 
-Archit Taneja (7):
-  OMAPDSS: DPI: Use DPI driver data
-  OMAPDSS: DPI: Allocate driver data
-  OMAPDSS: DPI: Store dpi_data pointer in the DT port's data
-  OMAPDSS: DSS: init dss ports cleanly
-  OMAPDSS: DT: Get source endpoint by matching reg-id
-  OMAPDSS: DPI: Add support for multiple instances
-  omapdss: DSS: add reg-id param to dpi_select_source
+ Tomi
 
- .../fbdev/omap2/displays-new/encoder-tfp410.c      |   1 +
- .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   1 +
- drivers/video/fbdev/omap2/dss/dpi.c                | 259 ++++++++++++++-------
- drivers/video/fbdev/omap2/dss/dss-of.c             |  58 +++--
- drivers/video/fbdev/omap2/dss/dss.c                | 108 +++++++--
- drivers/video/fbdev/omap2/dss/dss.h                |  34 ++-
- drivers/video/fbdev/omap2/dss/output.c             |  19 +-
- drivers/video/fbdev/omap2/dss/sdi.c                |   2 +-
- include/video/omapdss.h                            |   5 +-
- 9 files changed, 354 insertions(+), 133 deletions(-)
 
--- 
-1.8.3.2
 
+
+--PmqUKt4C4LTlMJCxFXq1o2ILlpMWPItlN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTrBICAAoJEPo9qoy8lh718PcP/1SBee+MRTfEu0ccT3Bnr/WQ
+q/enD2Ps8uLhhH1Hiz9RVbuGbDlfbqL9I16lFQQwYPboyRQ9DoRdc7JYYax+gSY/
+j0TtCUcovYbtLA54OdpLp0WZHeVQO8LOSckV/P4XPd1/Z7qB0x6qZlvM99jFls7h
+fUyJjn5EdcL+4N74HVqG0Ce8w0qahOkyCCW9hwEKyi4lWOqHdOywAUeznzgULDcE
+Ewp2tlCJW80l7XHARuM++dz+KbY743Yo2YNIUngkl+NDEKkO8kDKidBwXtuCx3aZ
+KpRIEIj2+anreyc0M3eagWuWLG3aUgXw3MYbppc/REa+4STM1xVLlLS5fLyZv1l3
+OardvUfr2n+naWEIW4KUY8bcOI1rsPK0EMkiLBxtq3+SgfOqlIvJHE+OEefom/B+
+wg7rjszwJbFCCJCSBz5doZ5tOzUneLU+A1Foh5iFwfqE9f6nR2/KoQMcKzseuebX
+tGMjQLuUt9dtXRnzKqeJhjQe6KPq40W1h0XokyP8MrynlnNFj6IcV3qbN+IwUpE+
+HkREILSvxeq/Wt3qiz6IJjoYPO8TJE0IQ75N9TmsYWf214LspAmMgSx/IpqZVY04
+ZpR4rf5o7mswhdaG+oShi4JasNWlJAHAERxlT4CxM7XbE19vSTnqvBLl/Y+5znU/
+7Mi7o4fhR5n48EE2RBbj
+=EdQh
+-----END PGP SIGNATURE-----
+
+--PmqUKt4C4LTlMJCxFXq1o2ILlpMWPItlN--

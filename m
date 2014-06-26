@@ -1,35 +1,15 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jun 2014 10:03:50 +0000
-Subject: [PATCH 05/15] OMAPDSS: Kconfig: select HDMI
-Message-Id: <1403604240-16738-6-git-send-email-tomi.valkeinen@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Thu, 26 Jun 2014 19:26:41 +0000
+Subject: Please ignore this orphan patch.
+Message-Id: <53AC73F1.1060304@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1403604240-16738-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1403807726.git.jsarha@ti.com> <8e2fa441e7ffab7c5eaa68f72eb19691a9d26692.1403807726.git.jsarha@ti.com>
+In-Reply-To: <8e2fa441e7ffab7c5eaa68f72eb19691a9d26692.1403807726.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi
 
-Select HDMI support to be able to use HDMI infoframe helpers.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
-index 285bcd103dce..3d5eb6c36c22 100644
---- a/drivers/video/fbdev/omap2/dss/Kconfig
-+++ b/drivers/video/fbdev/omap2/dss/Kconfig
-@@ -5,6 +5,7 @@ menuconfig OMAP2_DSS
-         tristate "OMAP2+ Display Subsystem support"
- 	select VIDEOMODE_HELPERS
- 	select OMAP2_DSS_INIT
-+	select HDMI
-         help
- 	  OMAP2+ Display Subsystem support.
- 
--- 
-1.9.1
-
+Best regards,
+Jyri

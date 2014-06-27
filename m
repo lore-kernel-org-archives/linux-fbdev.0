@@ -1,181 +1,62 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Mon, 23 Jun 2014 14:55:18 +0000
-Subject: [PATCH v2 2/2] ARM: vexpress: Add CLCD Device Tree properties
-Message-Id: <1403535318-19333-2-git-send-email-pawel.moll@arm.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 27 Jun 2014 18:38:48 +0000
+Subject: [PATCH v2 06/13] OMAPDSS: Kconfig: Update OMAP4_DSS_HDMI_AUDIO option
+Message-Id: <60203a25c536855bfcbda46afcc7c3db67bc03ca.1403894190.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403532837.3804.29.camel@hornet>
- <1403535318-19333-1-git-send-email-pawel.moll@arm.com>
-In-Reply-To: <1403535318-19333-1-git-send-email-pawel.moll@arm.com>
+References: <cover.1403894190.git.jsarha@ti.com>
+In-Reply-To: <cover.1403894190.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
 
-... for V2M-P1 motherboard CLCD (limited to 640x480 16bpp and using
-dedicated video RAM bank) and for V2P-CA9 (up to 1024x768 16bpp).
+Add help section to OMAP4_DSS_HDMI_AUDIO with dependency to
+OMAP4_DSS_HDMI and select for newly created OMAP_DSS_HDMI_AUDIO. The
+OMAP_DSS_HDMI_AUDIO option is for common HDMI audio support and it is
+is dependent on SND_SOC.
 
-Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+Also selects SND_OMAP_SOC, SND_SOC_HDMI_CODEC, and SND_SIMPLE_CARD for
+OMAP2_DSS if OMAP_DSS_HDMI_AUDIO is enabled.
+
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/boot/dts/vexpress-v2m-rs1.dtsi | 34 ++++++++++++++++++++++++++++++++-
- arch/arm/boot/dts/vexpress-v2m.dtsi     | 34 ++++++++++++++++++++++++++++++++-
- arch/arm/boot/dts/vexpress-v2p-ca9.dts  | 31 ++++++++++++++++++++++++++++++
- 3 files changed, 97 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/omap2/dss/Kconfig |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-index 756c986..c14c026 100644
---- a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-+++ b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-@@ -246,9 +246,41 @@
- 			clcd@1f0000 {
- 				compatible = "arm,pl111", "arm,primecell";
- 				reg = <0x1f0000 0x1000>;
-+				interrupt-names = "combined";
- 				interrupts = <14>;
- 				clocks = <&v2m_oscclk1>, <&smbclk>;
- 				clock-names = "clcdclk", "apb_pclk";
-+				arm,pl11x,framebuffer = <0x18000000 0x00800000>;
-+				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
-+
-+				port {
-+					v2m_clcd_pads: endpoint {
-+						remote-endpoint = <&v2m_clcd_panel>;
-+						arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
-+					};
-+				};
-+
-+				panel {
-+					compatible = "panel-dpi";
-+
-+					port {
-+						v2m_clcd_panel: endpoint {
-+							remote-endpoint = <&v2m_clcd_pads>;
-+						};
-+					};
-+
-+					panel-timing {
-+						clock-frequency = <25175000>;
-+						hactive = <640>;
-+						hback-porch = <40>;
-+						hfront-porch = <24>;
-+						hsync-len = <96>;
-+						vactive = <480>;
-+						vback-porch = <32>;
-+						vfront-porch = <11>;
-+						vsync-len = <2>;
-+					};
-+				};
- 			};
- 		};
+diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
+index 41fb8ac..701164a 100644
+--- a/drivers/video/fbdev/omap2/dss/Kconfig
++++ b/drivers/video/fbdev/omap2/dss/Kconfig
+@@ -6,6 +6,9 @@ menuconfig OMAP2_DSS
+ 	select VIDEOMODE_HELPERS
+ 	select OMAP2_DSS_INIT
+ 	select HDMI
++	select SND_OMAP_SOC if OMAP_DSS_HDMI_AUDIO
++	select SND_SOC_HDMI_CODEC if OMAP_DSS_HDMI_AUDIO
++	select SND_SIMPLE_CARD if OMAP_DSS_HDMI_AUDIO
+         help
+ 	  OMAP2+ Display Subsystem support.
  
-@@ -350,7 +382,7 @@
- 				/* CLCD clock */
- 				compatible = "arm,vexpress-osc";
- 				arm,vexpress-sysreg,func = <1 1>;
--				freq-range = <23750000 63500000>;
-+				freq-range = <23750000 65000000>;
- 				#clock-cells = <0>;
- 				clock-output-names = "v2m:oscclk1";
- 			};
-diff --git a/arch/arm/boot/dts/vexpress-v2m.dtsi b/arch/arm/boot/dts/vexpress-v2m.dtsi
-index ba856d6..a448420 100644
---- a/arch/arm/boot/dts/vexpress-v2m.dtsi
-+++ b/arch/arm/boot/dts/vexpress-v2m.dtsi
-@@ -245,9 +245,41 @@
- 			clcd@1f000 {
- 				compatible = "arm,pl111", "arm,primecell";
- 				reg = <0x1f000 0x1000>;
-+				interrupt-names = "combined";
- 				interrupts = <14>;
- 				clocks = <&v2m_oscclk1>, <&smbclk>;
- 				clock-names = "clcdclk", "apb_pclk";
-+				arm,pl11x,framebuffer = <0x4c000000 0x00800000>;
-+				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
-+
-+				port {
-+					v2m_clcd_pads: endpoint {
-+						remote-endpoint = <&v2m_clcd_panel>;
-+						arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
-+					};
-+				};
-+
-+				panel {
-+					compatible = "panel-dpi";
-+
-+					port {
-+						v2m_clcd_panel: endpoint {
-+							remote-endpoint = <&v2m_clcd_pads>;
-+						};
-+					};
-+
-+					panel-timing {
-+						clock-frequency = <25175000>;
-+						hactive = <640>;
-+						hback-porch = <40>;
-+						hfront-porch = <24>;
-+						hsync-len = <96>;
-+						vactive = <480>;
-+						vback-porch = <32>;
-+						vfront-porch = <11>;
-+						vsync-len = <2>;
-+					};
-+				};
- 			};
- 		};
+@@ -78,7 +81,17 @@ config OMAP4_DSS_HDMI
+ 	  HDMI support for OMAP4 based SoCs.
  
-@@ -349,7 +381,7 @@
- 				/* CLCD clock */
- 				compatible = "arm,vexpress-osc";
- 				arm,vexpress-sysreg,func = <1 1>;
--				freq-range = <23750000 63500000>;
-+				freq-range = <23750000 65000000>;
- 				#clock-cells = <0>;
- 				clock-output-names = "v2m:oscclk1";
- 			};
-diff --git a/arch/arm/boot/dts/vexpress-v2p-ca9.dts b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-index 62d9b22..31107cd 100644
---- a/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-+++ b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-@@ -70,9 +70,40 @@
- 	clcd@10020000 {
- 		compatible = "arm,pl111", "arm,primecell";
- 		reg = <0x10020000 0x1000>;
-+		interrupt-names = "combined";
- 		interrupts = <0 44 4>;
- 		clocks = <&oscclk1>, <&oscclk2>;
- 		clock-names = "clcdclk", "apb_pclk";
-+		max-memory-bandwidth = <94371840>; /* Bps, 1024x768@60 16bpp */
-+
-+		port {
-+			clcd_pads: endpoint {
-+				remote-endpoint = <&clcd_panel>;
-+				arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
-+			};
-+		};
-+
-+		panel {
-+			compatible = "panel-dpi";
-+
-+			port {
-+				clcd_panel: endpoint {
-+					remote-endpoint = <&clcd_pads>;
-+				};
-+			};
-+
-+			panel-timing {
-+				clock-frequency = <63500127>;
-+				hactive = <1024>;
-+				hback-porch = <152>;
-+				hfront-porch = <48>;
-+				hsync-len = <104>;
-+				vactive = <768>;
-+				vback-porch = <23>;
-+				vfront-porch = <3>;
-+				vsync-len = <4>;
-+			};
-+		};
- 	};
+ config OMAP4_DSS_HDMI_AUDIO
+-	bool
++	bool "HDMI audio support for OMAP4"
++	depends on OMAP4_DSS_HDMI
++	depends on SND_SOC=y || OMAP2_DSS = SND_SOC
++	select OMAP_DSS_HDMI_AUDIO
++	default y
++	help
++	  HDMI audio support for OMAP4 based SoCs. Adds integrated
++	  ASoC Digital Audio Interface component driver into OMAPDSS
++	  module. If enabled OMAP2_DSS selects SND_OMAP_SOC,
++	  SND_SOC_HDMI_CODEC, and SND_SIMPLE_CARD for full HDMI
++	  audio support.
  
- 	memory-controller@100e0000 {
+ config OMAP5_DSS_HDMI
+ 	bool "HDMI support for OMAP5"
 -- 
-1.9.1
+1.7.9.5
 

@@ -1,16 +1,16 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 27 Jun 2014 11:10:29 +0000
+Date: Fri, 27 Jun 2014 11:57:28 +0000
 Subject: Re: [PATCH 04/12] OMAPDSS: hdmi_audio: Integrated ASoC DAI component driver implementation
-Message-Id: <53AD5125.4040006@ti.com>
+Message-Id: <53AD5C28.6000009@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="o32J7124B18dJ7EPASTM4qUDo9LDXdTON"
+Content-Type: multipart/mixed; boundary="KHqoidoJmj00O3sRCGQbcfaEMCIOqxVQx"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1403807781.git.jsarha@ti.com> <69f5b1481bd8b8a005b5d9142626f3529a0d71c7.1403807781.git.jsarha@ti.com>
 In-Reply-To: <69f5b1481bd8b8a005b5d9142626f3529a0d71c7.1403807781.git.jsarha@ti.com>
 To: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, detheridge@ti.com, jyri.sarha@iki.fi
 
---o32J7124B18dJ7EPASTM4qUDo9LDXdTON
+--KHqoidoJmj00O3sRCGQbcfaEMCIOqxVQx
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
@@ -44,76 +44,21 @@ dmi_pll.o \
 > +omapdss-$(CONFIG_OMAP4_DSS_HDMI_AUDIO) +=3D hdmi_audio.o
 >  omapdss-$(CONFIG_OMAP5_DSS_HDMI) +=3D hdmi5.o hdmi5_core.o
 > +omapdss-$(CONFIG_OMAP5_DSS_HDMI_AUDIO) +=3D hdmi_audio.o
->  ccflags-$(CONFIG_OMAP2_DSS_DEBUG) +=3D -DDEBUG
-> diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev=
-/omap2/dss/hdmi.h
-> index 927cb4d..cc6ecb5 100644
-> --- a/drivers/video/fbdev/omap2/dss/hdmi.h
-> +++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-> @@ -25,6 +25,11 @@
->  #include <linux/hdmi.h>
->  #include <video/omapdss.h>
-> =20
-> +#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_H=
-DMI_AUDIO)
 
-I think you're a bit overeager with these ifdefs =3D). They make the code=
+This adds the hdmi_audio.o twice. I'm not sure what the linker does, but
+I don't think that's correct.
 
-more difficult to read. The question is, what is their purpose here? I'm
-quite sure those includes below can be included just fine even without
-HDMI support in the driver. So as far as I see, their only purpose would
-be to very minimally speed up the kernel compilation.
+Maybe have a internal CONFIG_OMAP_DSS_HDMI_AUDIO option, which is
+selected if OMAP4 or OMAP5 HDMI AUDIO is selected by the user.
 
-> +#include <sound/dmaengine_pcm.h>
-> +#include <uapi/sound/asound.h>
-> +#endif
-> +
->  #include "dss.h"
-> =20
->  /* HDMI Wrapper */
-> @@ -338,6 +343,35 @@ int hdmi_parse_lanes_of(struct platform_device *pd=
-ev, struct device_node *ep,
->  	struct hdmi_phy_data *phy);
-> =20
->  #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_H=
-DMI_AUDIO)
-
-Same here. The struct definition doesn't do any harm, even if the audio
-support is not compiled in.
-
-> +struct hdmi_audio_data {
-> +	/* These should be initialized when hdmi_audio_register() is called *=
-/
-> +	struct mutex *hdmi_lock;
-> +	struct hdmi_wp_data *wp;
-> +	struct hdmi_core_data *core;
-> +	struct hdmi_config *cfg;
-> +	struct snd_soc_dai_driver *hdmi_dai_drv;
-> +
-> +	int (*audio_start)(struct hdmi_core_data *core,
-> +			   struct hdmi_wp_data *wp);
-> +	void (*audio_stop)(struct hdmi_core_data *core,
-> +			   struct hdmi_wp_data *wp);
-> +	int (*audio_config)(struct hdmi_core_data *core,
-> +			    struct hdmi_wp_data *wp,
-> +			    struct omap_dss_audio *audio,
-> +			    u32 pclk);
-> +
-> +	/* These are of audio implementation's private use */
-> +	struct snd_dmaengine_dai_dma_data dma_data;
-> +	struct omap_dss_audio dss_audio;
-> +	struct snd_aes_iec958 iec;
-> +	struct snd_cea_861_aud_if cea;
-> +	struct platform_device *codec_pdev;
-> +	struct platform_device *card_pdev;
-> +};
+That same internal option could be used in the code also (where is
+applies), instead of "if OMAP4_AUDIO || OMAP5_AUDIO".
 
  Tomi
 
 
 
-
---o32J7124B18dJ7EPASTM4qUDo9LDXdTON
+--KHqoidoJmj00O3sRCGQbcfaEMCIOqxVQx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -121,19 +66,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJTrVEqAAoJEPo9qoy8lh71/LwP/i8wEqAyCmej15rxHgDwgqyV
-qPJNNqn4n3iRqGf6cyj2oIDh3cjF92rLfUziJ0A4pJVkyh81DioOHDmPHBTO3HG8
-E6dh7s+JFyLfvlShbraOi/aKnFXmjMhAxXA69R5GL010+GUCZiDDwCjz5OL3pyP+
-xJdIzgaucRx7G1TRYSpO+Wlm9LpADQsJMr4e8E5+i4GJIuCWTF+C/3lB8i7Jz2FX
-3i3TddRsJM6IC6I1v/jN9xh47WFYgWKdl8nQe2uZSF1fo77KQvrLjN/27K4HbXhi
-Fzh/we/gnVrd8cGSGJ8iXEO0pRvSe6fEuGjcPg2q9BFG1aJm0e2OL8+gH1sjsA+Y
-KN1CGx14DLfIav014gXOSY0IY9V450j9i16QouVZYx1JOFiND3Ncb2DOR3b1rggo
-m13qH/woq4b6YUzJRmAtET8xxkBLiYtmKg/pNJTiZn5ia3tG6DUXqtdc7d2+jrqm
-YGv3ObEqMft6fg80go1Zf4pMSXRJy6n8P9iFw9W+uy/x6q4+7titC/cRpvOfkndm
-5s9bE60qCJU3CjkD3cx2eCBfMTrmKHCCEHbFfg4BiJ4tUmqnLNYn/fobFJdoTWp0
-y2EMUhD0QCod/TvpIgwQ/1Mwt4pOxU1U0uXNUQ9gxWzDN3wRADf4p5ancYmN3Nst
-yN9/ez5vLAiuhggWsiXZ
-=qz5n
+iQIcBAEBAgAGBQJTrVwtAAoJEPo9qoy8lh71C48QAIa7G0+IrrRWToT81cqP2S1R
+zCXhZpmED7tCYg8ikvVz+wxhaoKeswhuWZkWDFQilLHXil7nJXfH5XjeeuhT0Lj0
+gSYWRTDlHVKcS57ge38tdKJYBTs/4DW7PXB16eHTqCDp+dQDkP2KwXN6Sb1OXkMU
+ZfnGDC/C6+tzvYL8c7moalmnUd2kE0gAKrsWZ96zM6h78KCrtyh+G7nFYF7pt5W/
+iNRciVmpeTygqE6aXKTBBURnIh0vc95IRwDeznRJMCGLBaE4YN16MKPrnojgpIMu
+omrOS8EsSyXL0CrV9lYhKTboeLWgrRLYzsCDuMB+9IKcLkHWLgfNt5Q6SOEq4151
+U53stdcxQj9qDeIs2jR2+K7ivIUgN8q7vC96fckD6mZqjWeGtr647wKuP9ORrGgz
+fKUdIlODSHioz3fcqw3o+Rbx7eMItpPFgwbOxMTG8j/RBj12W7NsDa5z9gd3wD1g
+6neBee+/hyjOh9YhW6DllYA5Z6owM7pkI+zuCKLRIIWPES0Jwm2njichgECRV0tY
+5+n5wCDI73ginN/VaU4fOFQscApkakKAqZiyz2rG2XorEjaPF+pIBGqs2s20nlED
+oKwhKzkuU2Ibv92wfHY6nLvBmnsPGC/BZqPw4hIVuz6AXMZjlqSwlw89AzZiXXl4
+VQ/sOTqi+aMJOoHv5jMa
+=EQTL
 -----END PGP SIGNATURE-----
 
---o32J7124B18dJ7EPASTM4qUDo9LDXdTON--
+--KHqoidoJmj00O3sRCGQbcfaEMCIOqxVQx--

@@ -1,75 +1,71 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Tue, 24 Jun 2014 11:54:40 +0000
-Subject: Re: [PATCH v7 1/2] video: ARM CLCD: Add DT support
-Message-Id: <1403610880.26821.10.camel@hornet>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 27 Jun 2014 18:38:43 +0000
+Subject: [PATCH v2 01/13] ARM: OMAP2+: Remove non working OMAP HDMI audio initialization
+Message-Id: <41571cc2e5a93ff95eda9263a4b5808bba7e6e36.1403894190.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403018494-10264-1-git-send-email-pawel.moll@arm.com>
- <20140620170901.GA12059@leverpostej> <1403532837.3804.29.camel@hornet>
- <CAL_Jsq+6SveWhzWPrtziTJ-tDOFaJV4sXO+r_CEhAZf=tQE6FA@mail.gmail.com>
- <1403539186.3804.46.camel@hornet>
- <CAL_JsqLQTT5N8D_GTDd5YVgr2SSCXtC6EcRQxW2=_-J8Wmsf0g@mail.gmail.com>
-In-Reply-To: <CAL_JsqLQTT5N8D_GTDd5YVgr2SSCXtC6EcRQxW2=_-J8Wmsf0g@mail.gmail.com>
+References: <cover.1403894190.git.jsarha@ti.com>
+In-Reply-To: <cover.1403894190.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
 
-On Mon, 2014-06-23 at 18:56 +0100, Rob Herring wrote:
-> On Mon, Jun 23, 2014 at 10:59 AM, Pawel Moll <pawel.moll@arm.com> wrote:
-> > On Mon, 2014-06-23 at 16:43 +0100, Rob Herring wrote:
-> >> On Mon, Jun 23, 2014 at 9:13 AM, Pawel Moll <pawel.moll@arm.com> wrote:
-> >> > On Fri, 2014-06-20 at 18:09 +0100, Mark Rutland wrote:
-> 
-> >> >> > +- max-memory-bandwidth: maximum bandwidth in bytes per second that the
-> >> >> > +   cell's memory interface can handle
-> >> >>
-> >> >> When should I set this, given it is optional?
-> >> >
-> >> > When there is a (significant) limitation of the bandwidth available for
-> >> > the cell's memory interface. One will either be told by the soc guys or
-> >> > will figure it out in the hard way, as we did :-(
-> >>
-> >> What are you going to do with this information? b/w is a function of
-> >> screen size and pixel depth. Are you going to refuse certain configs
-> >> based on that? Seems like someone doing their own modes should know
-> >> what they are doing and the limitations.
-> >>
-> >> Again, drop it until there is a defined need for this.
-> >
-> > Yes, there is. Use case: PL111 is wired up to a HDMI formatter, which
-> > will take everything up to 1080p. This is what a DRM driver (what/if
-> > it's ready) will get from the encoder driver (and rightly so). But the
-> > chip interconnect limitations is make the chip being able to get 480p at
-> > 60Hz tops.
-> >
-> > Or do you want me to add a subnode with timings for all achievable modes
-> > instead?
-> 
-> I want this solved in a generic way and not something pl111 specific.
-> If this is already defined then use it. If not, I would drop this for
-> now and get a pl111 binding in place finally.
+This code is not working currently and it can be removed. There is a
+conflict in sharing resources with the actual HDMI driver and with
+the ASoC HDMI audio DAI driver.
 
-Hardware limitation on bandwidth available to a memory interface is
-definitely not a PL111 specific phenomenon, and I don't know how can be
-it described in a more generic way than a number of bytes per second.
-Grepping through existing bindings, it turned out that it's not the
-first time the problem is being solved. "ti,am33x-tilcdc" defines this:
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ arch/arm/mach-omap2/devices.c |   28 ----------------------------
+ 1 file changed, 28 deletions(-)
 
- - max-bandwidth: The maximum pixels per second that the memory
-   interface / lcd controller combination can sustain
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index 592ba0a..b6f8f34 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -297,33 +297,6 @@ static void omap_init_audio(void)
+ static inline void omap_init_audio(void) {}
+ #endif
  
-Don't know that hardware, but in my case "pixels" doesn't cut. On
-V2P-CA9 I have a choice of 640x480 32bpp or 1024x768 16bpp, 1024x768
-32bpp won't work. The driver must know this somehow and you can't work
-out the memory color model from display timings. So, to summarize - this
-property is here to stay, or the binding is useless from my perspective.
-
-I'll post v9 in a second, replacing the pl11x-specific framebuffer
-property with the "memory-region" phandle (I don't see how "dma-regions"
-would fit here), especially as the "reserved-memory" examples cites a
-use case identical to mine. Fortunately all I had to do code-wise was
-reverting a single function to a version from September 2013 and
-changing a compatible string.
-
-Pawel
+-#if defined(CONFIG_SND_OMAP_SOC_OMAP_HDMI) || \
+-		defined(CONFIG_SND_OMAP_SOC_OMAP_HDMI_MODULE)
+-
+-static struct platform_device omap_hdmi_audio = {
+-	.name	= "omap-hdmi-audio",
+-	.id	= -1,
+-};
+-
+-static void __init omap_init_hdmi_audio(void)
+-{
+-	struct omap_hwmod *oh;
+-	struct platform_device *pdev;
+-
+-	oh = omap_hwmod_lookup("dss_hdmi");
+-	if (!oh)
+-		return;
+-
+-	pdev = omap_device_build("omap-hdmi-audio-dai", -1, oh, NULL, 0);
+-	WARN(IS_ERR(pdev),
+-	     "Can't build omap_device for omap-hdmi-audio-dai.\n");
+-
+-	platform_device_register(&omap_hdmi_audio);
+-}
+-#else
+-static inline void omap_init_hdmi_audio(void) {}
+-#endif
+-
+ #if defined(CONFIG_SPI_OMAP24XX) || defined(CONFIG_SPI_OMAP24XX_MODULE)
+ 
+ #include <linux/platform_data/spi-omap2-mcspi.h>
+@@ -459,7 +432,6 @@ static int __init omap2_init_devices(void)
+ 	 */
+ 	omap_init_audio();
+ 	omap_init_camera();
+-	omap_init_hdmi_audio();
+ 	omap_init_mbox();
+ 	/* If dtb is there, the devices will be created dynamically */
+ 	if (!of_have_populated_dt()) {
+-- 
+1.7.9.5
 

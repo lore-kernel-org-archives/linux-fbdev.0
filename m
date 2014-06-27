@@ -1,75 +1,47 @@
-From: Alexander Shiyan <shc_work@mail.ru>
-Date: Thu, 19 Jun 2014 16:21:17 +0000
-Subject: [PATCH v2 2/2] video: clps711x: Add bindings documentation for CLPS711X framebuffer
-Message-Id: <1403194877-32616-1-git-send-email-shc_work@mail.ru>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 27 Jun 2014 18:38:50 +0000
+Subject: [PATCH v2 08/13] OMAPDSS: Kconfig: Update OMAP5_DSS_HDMI_AUDIO option
+Message-Id: <f68ca2272946daa23dfce69e804628563c65acf5.1403894190.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1403894190.git.jsarha@ti.com>
+In-Reply-To: <cover.1403894190.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexander Shiyan <shc_work-JGs/UdohzUI@public.gmane.org>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
 
-Add OF document for Cirrus Logic CLPS711X framebuffer driver.
+Add help section to OMAP5_DSS_HDMI_AUDIO with dependency to
+OMAP5_DSS_HDMI and select for OMAP_DSS_HDMI_AUDIO.
 
-Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- .../bindings/video/cirrus,clps711x-fb.txt          | 47 ++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
+ drivers/video/fbdev/omap2/dss/Kconfig |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt b/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
-new file mode 100644
-index 0000000..6fc3c6a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/cirrus,clps711x-fb.txt
-@@ -0,0 +1,47 @@
-+* Currus Logic CLPS711X Framebuffer
-+
-+Required properties:
-+- compatible: Shall contain "cirrus,clps711x-fb".
-+- reg       : Physical base address and length of the controller's registers +
-+              location and size of the framebuffer memory.
-+- clocks    : phandle + clock specifier pair of the FB reference clock.
-+- display   : phandle to a display node as described in
-+              Documentation/devicetree/bindings/video/display-timing.txt.
-+              Additionally, the display node has to define properties:
-+  - bits-per-pixel: Bits per pixel.
-+  - ac-prescale   : LCD AC bias frequency. This frequency is the required
-+                    AC bias frequency for a given manufacturer's LCD plate.
-+  - cmap-invert   : Invert the color levels (Optional).
-+
-+Optional properties:
-+- lcd-supply: Regulator for LCD supply voltage.
-+
-+Example:
-+	fb: fb@800002c0 {
-+		compatible = "cirrus,ep7312-fb", "cirrus,clps711x-fb";
-+		reg = <0x800002c0 0xd44>, <0x60000000 0xc000>;
-+		clocks = <&clks 2>;
-+		lcd-supply = <&reg5v0>;
-+		display = <&display>;
-+	};
-+
-+	display: display {
-+		model = "320x240x4";
-+		native-mode = <&timing0>;
-+		bits-per-pixel = <4>;
-+		ac-prescale = <17>;
-+
-+		display-timings {
-+			timing0: 320x240 {
-+				hactive = <320>;
-+				hback-porch = <0>;
-+				hfront-porch = <0>;
-+				hsync-len = <0>;
-+				vactive = <240>;
-+				vback-porch = <0>;
-+				vfront-porch = <0>;
-+				vsync-len = <0>;
-+				clock-frequency = <6500000>;
-+			};
-+		};
-+	};
+diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
+index 701164a..abd2e92 100644
+--- a/drivers/video/fbdev/omap2/dss/Kconfig
++++ b/drivers/video/fbdev/omap2/dss/Kconfig
+@@ -103,8 +103,17 @@ config OMAP5_DSS_HDMI
+ 	  specification.
+ 
+ config OMAP5_DSS_HDMI_AUDIO
++	bool "HDMI audio support for OMAP5"
+ 	depends on OMAP5_DSS_HDMI
+-	bool
++	depends on SND_SOC=y || OMAP2_DSS = SND_SOC
++	select OMAP_DSS_HDMI_AUDIO
++	default y
++	help
++	  HDMI audio support for OMAP5 based SoCs. Adds integrated
++	  ASoC Digital Audio Interface component driver into OMAPDSS
++	  module. If enabled OMAP2_DSS selects SND_OMAP_SOC,
++	  SND_SOC_HDMI_CODEC, and SND_SIMPLE_CARD for full HDMI
++	  audio support.
+ 
+ config OMAP2_DSS_SDI
+ 	bool "SDI support"
 -- 
-1.8.5.5
+1.7.9.5
 

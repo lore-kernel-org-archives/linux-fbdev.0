@@ -1,180 +1,267 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Tue, 17 Jun 2014 15:21:34 +0000
-Subject: [PATCH v7 2/2] ARM: vexpress: Add CLCD Device Tree properties
-Message-Id: <1403018494-10264-2-git-send-email-pawel.moll@arm.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 27 Jun 2014 18:38:55 +0000
+Subject: [PATCH v2 13/13] OMAPDSS: Remove all references to obsolete HDMI audio callbacks
+Message-Id: <c62a45f04179a921514c339cb67c4ccd6b9e128a.1403894190.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403018494-10264-1-git-send-email-pawel.moll@arm.com>
-In-Reply-To: <1403018494-10264-1-git-send-email-pawel.moll@arm.com>
+References: <cover.1403894190.git.jsarha@ti.com>
+In-Reply-To: <cover.1403894190.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
 
-... for V2M-P1 motherboard CLCD (limited to 640x480 16bpp and using
-dedicated video RAM bank) and for V2P-CA9 (up to 1024x768 16bpp).
+In new model these callbacks are obsolete since the ASoC component
+drivers are integrated into the HDMI drivers and no callbacks are
+needed anymore.
 
-Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/boot/dts/vexpress-v2m-rs1.dtsi | 34 ++++++++++++++++++++++++++++++++-
- arch/arm/boot/dts/vexpress-v2m.dtsi     | 34 ++++++++++++++++++++++++++++++++-
- arch/arm/boot/dts/vexpress-v2p-ca9.dts  | 31 ++++++++++++++++++++++++++++++
- 3 files changed, 97 insertions(+), 2 deletions(-)
+ .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 --------------------
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 -----------
+ include/video/omapdss.h                            |   31 ------
+ 3 files changed, 186 deletions(-)
 
-diff --git a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-index 756c986..0ac0623 100644
---- a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-+++ b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-@@ -246,9 +246,41 @@
- 			clcd@1f0000 {
- 				compatible = "arm,pl111", "arm,primecell";
- 				reg = <0x1f0000 0x1000>;
-+				interrupt-names = "combined";
- 				interrupts = <14>;
- 				clocks = <&v2m_oscclk1>, <&smbclk>;
- 				clock-names = "clcdclk", "apb_pclk";
-+				arm,pl11x,framebuffer-base = <0x18000000 0x00800000>;
-+				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
-+
-+				port {
-+					v2m_clcd_pads: endpoint {
-+						remote-endpoint = <&v2m_clcd_panel>;
-+						arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
-+					};
-+				};
-+
-+				panel {
-+					compatible = "panel-dpi";
-+
-+					port {
-+						v2m_clcd_panel: endpoint {
-+							remote-endpoint = <&v2m_clcd_pads>;
-+						};
-+					};
-+
-+					panel-timing {
-+						clock-frequency = <25175000>;
-+						hactive = <640>;
-+						hback-porch = <40>;
-+						hfront-porch = <24>;
-+						hsync-len = <96>;
-+						vactive = <480>;
-+						vback-porch = <32>;
-+						vfront-porch = <11>;
-+						vsync-len = <2>;
-+					};
-+				};
- 			};
- 		};
+diff --git a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
+index 131c6e2..dd36d71 100644
+--- a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
++++ b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
+@@ -170,98 +170,6 @@ static bool hdmic_detect(struct omap_dss_device *dssdev)
+ 		return in->ops.hdmi->detect(in);
+ }
  
-@@ -350,7 +382,7 @@
- 				/* CLCD clock */
- 				compatible = "arm,vexpress-osc";
- 				arm,vexpress-sysreg,func = <1 1>;
--				freq-range = <23750000 63500000>;
-+				freq-range = <23750000 65000000>;
- 				#clock-cells = <0>;
- 				clock-output-names = "v2m:oscclk1";
- 			};
-diff --git a/arch/arm/boot/dts/vexpress-v2m.dtsi b/arch/arm/boot/dts/vexpress-v2m.dtsi
-index ba856d6..bbe1858 100644
---- a/arch/arm/boot/dts/vexpress-v2m.dtsi
-+++ b/arch/arm/boot/dts/vexpress-v2m.dtsi
-@@ -245,9 +245,41 @@
- 			clcd@1f000 {
- 				compatible = "arm,pl111", "arm,primecell";
- 				reg = <0x1f000 0x1000>;
-+				interrupt-names = "combined";
- 				interrupts = <14>;
- 				clocks = <&v2m_oscclk1>, <&smbclk>;
- 				clock-names = "clcdclk", "apb_pclk";
-+				arm,pl11x,framebuffer-base = <0x4c000000 0x00800000>;
-+				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
-+
-+				port {
-+					v2m_clcd_pads: endpoint {
-+						remote-endpoint = <&v2m_clcd_panel>;
-+						arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
-+					};
-+				};
-+
-+				panel {
-+					compatible = "panel-dpi";
-+
-+					port {
-+						v2m_clcd_panel: endpoint {
-+							remote-endpoint = <&v2m_clcd_pads>;
-+						};
-+					};
-+
-+					panel-timing {
-+						clock-frequency = <25175000>;
-+						hactive = <640>;
-+						hback-porch = <40>;
-+						hfront-porch = <24>;
-+						hsync-len = <96>;
-+						vactive = <480>;
-+						vback-porch = <32>;
-+						vfront-porch = <11>;
-+						vsync-len = <2>;
-+					};
-+				};
- 			};
- 		};
+-static int hdmic_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-	int r;
+-
+-	/* enable audio only if the display is active */
+-	if (!omapdss_device_is_enabled(dssdev))
+-		return -EPERM;
+-
+-	r = in->ops.hdmi->audio_enable(in);
+-	if (r)
+-		return r;
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_ENABLED;
+-
+-	return 0;
+-}
+-
+-static void hdmic_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_disable(in);
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_DISABLED;
+-}
+-
+-static int hdmic_audio_start(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-	int r;
+-
+-	/*
+-	 * No need to check the panel state. It was checked when trasitioning
+-	 * to AUDIO_ENABLED.
+-	 */
+-	if (dssdev->audio_state != OMAP_DSS_AUDIO_ENABLED)
+-		return -EPERM;
+-
+-	r = in->ops.hdmi->audio_start(in);
+-	if (r)
+-		return r;
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_PLAYING;
+-
+-	return 0;
+-}
+-
+-static void hdmic_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_stop(in);
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_ENABLED;
+-}
+-
+-static bool hdmic_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	if (!omapdss_device_is_enabled(dssdev))
+-		return false;
+-
+-	return in->ops.hdmi->audio_supported(in);
+-}
+-
+-static int hdmic_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-	int r;
+-
+-	/* config audio only if the display is active */
+-	if (!omapdss_device_is_enabled(dssdev))
+-		return -EPERM;
+-
+-	r = in->ops.hdmi->audio_config(in, audio);
+-	if (r)
+-		return r;
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_CONFIGURED;
+-
+-	return 0;
+-}
+-
+ static int hdmic_set_hdmi_mode(struct omap_dss_device *dssdev, bool hdmi_mode)
+ {
+ 	struct panel_drv_data *ddata = to_panel_data(dssdev);
+@@ -296,13 +204,6 @@ static struct omap_dss_driver hdmic_driver = {
+ 	.detect			= hdmic_detect,
+ 	.set_hdmi_mode		= hdmic_set_hdmi_mode,
+ 	.set_hdmi_infoframe	= hdmic_set_infoframe,
+-
+-	.audio_enable		= hdmic_audio_enable,
+-	.audio_disable		= hdmic_audio_disable,
+-	.audio_start		= hdmic_audio_start,
+-	.audio_stop		= hdmic_audio_stop,
+-	.audio_supported	= hdmic_audio_supported,
+-	.audio_config		= hdmic_audio_config,
+ };
  
-@@ -349,7 +381,7 @@
- 				/* CLCD clock */
- 				compatible = "arm,vexpress-osc";
- 				arm,vexpress-sysreg,func = <1 1>;
--				freq-range = <23750000 63500000>;
-+				freq-range = <23750000 65000000>;
- 				#clock-cells = <0>;
- 				clock-output-names = "v2m:oscclk1";
- 			};
-diff --git a/arch/arm/boot/dts/vexpress-v2p-ca9.dts b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-index 62d9b22..31107cd 100644
---- a/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-+++ b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-@@ -70,9 +70,40 @@
- 	clcd@10020000 {
- 		compatible = "arm,pl111", "arm,primecell";
- 		reg = <0x10020000 0x1000>;
-+		interrupt-names = "combined";
- 		interrupts = <0 44 4>;
- 		clocks = <&oscclk1>, <&oscclk2>;
- 		clock-names = "clcdclk", "apb_pclk";
-+		max-memory-bandwidth = <94371840>; /* Bps, 1024x768@60 16bpp */
-+
-+		port {
-+			clcd_pads: endpoint {
-+				remote-endpoint = <&clcd_panel>;
-+				arm,pl11x,tft-r0g0b0-pads = <0 8 16>;
-+			};
-+		};
-+
-+		panel {
-+			compatible = "panel-dpi";
-+
-+			port {
-+				clcd_panel: endpoint {
-+					remote-endpoint = <&clcd_pads>;
-+				};
-+			};
-+
-+			panel-timing {
-+				clock-frequency = <63500127>;
-+				hactive = <1024>;
-+				hback-porch = <152>;
-+				hfront-porch = <48>;
-+				hsync-len = <104>;
-+				vactive = <768>;
-+				vback-porch = <23>;
-+				vfront-porch = <3>;
-+				vsync-len = <4>;
-+			};
-+		};
- 	};
+ static int hdmic_probe_pdata(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
+index c891d8f..235e3d5 100644
+--- a/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
++++ b/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
+@@ -193,55 +193,6 @@ static bool tpd_detect(struct omap_dss_device *dssdev)
+ 	return gpio_get_value_cansleep(ddata->hpd_gpio);
+ }
  
- 	memory-controller@100e0000 {
+-static int tpd_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_enable(in);
+-}
+-
+-static void tpd_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_disable(in);
+-}
+-
+-static int tpd_audio_start(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_start(in);
+-}
+-
+-static void tpd_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_stop(in);
+-}
+-
+-static bool tpd_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_supported(in);
+-}
+-
+-static int tpd_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_config(in, audio);
+-}
+-
+ static int tpd_set_infoframe(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi)
+ {
+@@ -275,13 +226,6 @@ static const struct omapdss_hdmi_ops tpd_hdmi_ops = {
+ 	.detect			= tpd_detect,
+ 	.set_infoframe		= tpd_set_infoframe,
+ 	.set_hdmi_mode		= tpd_set_hdmi_mode,
+-
+-	.audio_enable		= tpd_audio_enable,
+-	.audio_disable		= tpd_audio_disable,
+-	.audio_start		= tpd_audio_start,
+-	.audio_stop		= tpd_audio_stop,
+-	.audio_supported	= tpd_audio_supported,
+-	.audio_config		= tpd_audio_config,
+ };
+ 
+ static int tpd_probe_pdata(struct platform_device *pdev)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 069dfca..9035325 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -635,19 +635,6 @@ struct omapdss_hdmi_ops {
+ 	int (*set_hdmi_mode)(struct omap_dss_device *dssdev, bool hdmi_mode);
+ 	int (*set_infoframe)(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi);
+-
+-	/*
+-	 * Note: These functions might sleep. Do not call while
+-	 * holding a spinlock/readlock.
+-	 */
+-	int (*audio_enable)(struct omap_dss_device *dssdev);
+-	void (*audio_disable)(struct omap_dss_device *dssdev);
+-	bool (*audio_supported)(struct omap_dss_device *dssdev);
+-	int (*audio_config)(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio);
+-	/* Note: These functions may not sleep */
+-	int (*audio_start)(struct omap_dss_device *dssdev);
+-	void (*audio_stop)(struct omap_dss_device *dssdev);
+ };
+ 
+ struct omapdss_dsi_ops {
+@@ -858,24 +845,6 @@ struct omap_dss_driver {
+ 	int (*set_hdmi_mode)(struct omap_dss_device *dssdev, bool hdmi_mode);
+ 	int (*set_hdmi_infoframe)(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi);
+-
+-	/*
+-	 * For display drivers that support audio. This encompasses
+-	 * HDMI and DisplayPort at the moment.
+-	 */
+-	/*
+-	 * Note: These functions might sleep. Do not call while
+-	 * holding a spinlock/readlock.
+-	 */
+-	int (*audio_enable)(struct omap_dss_device *dssdev);
+-	void (*audio_disable)(struct omap_dss_device *dssdev);
+-	bool (*audio_supported)(struct omap_dss_device *dssdev);
+-	int (*audio_config)(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio);
+-	/* Note: These functions may not sleep */
+-	int (*audio_start)(struct omap_dss_device *dssdev);
+-	void (*audio_stop)(struct omap_dss_device *dssdev);
+-
+ };
+ 
+ enum omapdss_version omapdss_get_version(void);
 -- 
-1.9.1
+1.7.9.5
 

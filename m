@@ -1,33 +1,65 @@
-From: Daniel Jeong <gshark.jeong@gmail.com>
-Date: Tue, 24 Jun 2014 07:18:48 +0000
-Subject: [RFC v3 0/2]  backlight: add new tps611xx backlight driver
-Message-Id: <1403594330-15387-1-git-send-email-gshark.jeong@gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 27 Jun 2014 18:38:45 +0000
+Subject: [PATCH v2 03/13] OMAPDSS: hdmi_wp: Add function for getting audio dma address
+Message-Id: <e90168befc41157a0b06b719b3b62c42ad16c53d.1403894190.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1403894190.git.jsarha@ti.com>
+In-Reply-To: <cover.1403894190.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Randy Dunlap <rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
-Cc: Daniel Jeong <daniel.jeong-l0cyMroinI0@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Daniel Jeong <gshark.jeong-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
 
-This driver a general version for tps611xx backlgiht chips of TI.
-It supports tps61158, tps61161, tps61163 and tps61165 backlight driver
-based on EasyScale protocol.
+The audio dma port is found in the hdmi_wp physical address space.
 
-Daniel Jeong (2):
-  backlight
-  backlight: add new tps611xx backlight device tree support      This
-    commit is tps611xx device tree documentation.
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi.h    |    2 ++
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c |    6 ++++++
+ 2 files changed, 8 insertions(+)
 
- .../video/backlight/tps611xx-backlight.txt         |   16 +
- drivers/video/backlight/Kconfig                    |    7 +
- drivers/video/backlight/Makefile                   |    1 +
- drivers/video/backlight/tps611xx_bl.c              |  494 ++++++++++++++++++++
- include/linux/platform_data/tps611xx_bl.h          |   31 ++
- 5 files changed, 549 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
- create mode 100644 drivers/video/backlight/tps611xx_bl.c
- create mode 100644 include/linux/platform_data/tps611xx_bl.h
-
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 1f01068..9e85b86 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -250,6 +250,7 @@ struct hdmi_core_audio_config {
+ 
+ struct hdmi_wp_data {
+ 	void __iomem *base;
++	phys_addr_t phys_base;
+ };
+ 
+ struct hdmi_pll_data {
+@@ -317,6 +318,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
+ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ 		struct omap_video_timings *timings, struct hdmi_config *param);
+ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
++phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp);
+ 
+ /* HDMI PLL funcs */
+ int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index 496327e..43bf93e 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -247,6 +247,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 		DSSERR("can't get WP mem resource\n");
+ 		return -EINVAL;
+ 	}
++	wp->phys_base = res->start;
+ 
+ 	wp->base = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(wp->base)) {
+@@ -256,3 +257,8 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 
+ 	return 0;
+ }
++
++phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp)
++{
++	return wp->phys_base + HDMI_WP_AUDIO_DATA;
++}
 -- 
 1.7.9.5
 

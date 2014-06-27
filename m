@@ -1,32 +1,155 @@
-From: Daniel Jeong <gshark.jeong@gmail.com>
-Date: Mon, 16 Jun 2014 02:17:21 +0000
-Subject: [RFC 0/2]  backlight: add new tps611xx backlight driver
-Message-Id: <1402885043-3626-1-git-send-email-gshark.jeong@gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 27 Jun 2014 18:38:53 +0000
+Subject: [PATCH v2 11/13] OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
+Message-Id: <ff82608a5935a50e519c2726fc225e23d373c640.1403894190.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1403894190.git.jsarha@ti.com>
+In-Reply-To: <cover.1403894190.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
-Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi, Jyri Sarha <jsarha@ti.com>
 
-This driver a general version for tps611xx backlgiht chips of TI.
-It supports tps61158, tps61161, tps61163 and tps61165 backlight driver
-based on EasyScale protocol.
+Removes the OMAP4 HDMI audio callbacks for an external audio driver and
+the old external DAI driver does not work anymore after this patch.
 
-Daniel Jeong (2):
-  backlight: add new tps611xx backlight driver
-  backlight: add new tps611xx backlight device tree support
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi4.c |  113 ---------------------------------
+ 1 file changed, 113 deletions(-)
 
- .../video/backlight/tps611xx-backlight.txt         |   16 +
- drivers/video/backlight/Kconfig                    |    7 +
- drivers/video/backlight/Makefile                   |    1 +
- drivers/video/backlight/tps611xx_bl.c              |  486 ++++++++++++++++++++
- include/linux/platform_data/tps611xx_bl.h          |   30 ++
- 5 files changed, 540 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
- create mode 100644 drivers/video/backlight/tps611xx_bl.c
- create mode 100644 include/linux/platform_data/tps611xx_bl.h
-
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 3840f3f..e3937fa 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -472,112 +472,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
+ 	return r;
+ }
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	int r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi_wp_audio_enable(&hdmi.wp, true);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_enable(&hdmi.wp, false);
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return hdmi4_audio_start(&hdmi.core, &hdmi.wp);
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	hdmi4_audio_stop(&hdmi.core, &hdmi.wp);
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	bool r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	r = hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode);
+-
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	int r;
+-	u32 pclk = hdmi.cfg.timings.pixelclock;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi4_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-#else
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	return false;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	return -EPERM;
+-}
+-#endif
+-
+ static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi)
+ {
+@@ -606,13 +500,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.read_edid		= hdmi_read_edid,
+ 	.set_infoframe		= hdmi_set_infoframe,
+ 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
+-
+-	.audio_enable		= hdmi_audio_enable,
+-	.audio_disable		= hdmi_audio_disable,
+-	.audio_start		= hdmi_audio_start,
+-	.audio_stop		= hdmi_audio_stop,
+-	.audio_supported	= hdmi_audio_supported,
+-	.audio_config		= hdmi_audio_config,
+ };
+ 
+ static void hdmi_init_output(struct platform_device *pdev)
 -- 
 1.7.9.5
 

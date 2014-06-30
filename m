@@ -1,173 +1,64 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Jun 2014 12:27:16 +0000
-Subject: [GIT PULL] main fbdev changes for 3.16
-Message-Id: <538F10A4.5050708@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="TjAnn6wNJdqmI8OipDLCeBQcfjDcbcRlo"
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Mon, 30 Jun 2014 11:51:07 +0000
+Subject: [PATCH 3.12 046/181] drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap
+Message-Id: <e4b1dada19b4fc97ca2aafd952c7edebf3276a1f.1404128998.git.jslaby@suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+References: <61844d8e25eb8899b0836afa9796fa239db80f1f.1404128997.git.jslaby@suse.cz>
+In-Reply-To: <61844d8e25eb8899b0836afa9796fa239db80f1f.1404128997.git.jslaby@suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: stable@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Zhichuang SUN <sunzc522@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
 
---TjAnn6wNJdqmI8OipDLCeBQcfjDcbcRlo
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Zhichuang SUN <sunzc522@gmail.com>
 
-Hi Linus,
+3.12-stable review patch.  If anyone has any objections, please let me know.
 
-Please pull the main fbdev changes for 3.16.
+=======
+commit fbc6c4a13bbfb420eedfdb26a0a859f9c07e8a7b upstream.
 
- Tomi
+Function unifb_mmap calls functions which are defined in linux/mm.h
+and asm/pgtable.h
 
-The following changes since commit a798c10faf62a505d24e5f6213fbaf904a3962=
-3f:
+The related error (for unicore32 with unicore32_defconfig):
+	CC      drivers/video/fbdev/fb-puv3.o
+	drivers/video/fbdev/fb-puv3.c: In function 'unifb_mmap':
+	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+				      function 'vm_iomap_memory'
+	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+				      function 'pgprot_noncached'
 
-  Linux 3.15-rc2 (2014-04-20 11:08:50 -0700)
+Signed-off-by: Zhichuang Sun <sunzc522@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Joe Perches <joe@perches.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org
+Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+---
+ drivers/video/fb-puv3.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-are available in the git repository at:
+diff --git a/drivers/video/fb-puv3.c b/drivers/video/fb-puv3.c
+index 27fc956166fa..520112531eb0 100644
+--- a/drivers/video/fb-puv3.c
++++ b/drivers/video/fb-puv3.c
+@@ -18,8 +18,10 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/console.h>
++#include <linux/mm.h>
+ 
+ #include <asm/sizes.h>
++#include <asm/pgtable.h>
+ #include <mach/hardware.h>
+ 
+ /* Platform_data reserved for unifb registers. */
+-- 
+2.0.0
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-main-3.16
-
-for you to fetch changes up to fbc6c4a13bbfb420eedfdb26a0a859f9c07e8a7b:
-
-  drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap=
- (2014-05-23 13:51:10 +0300)
-
-----------------------------------------------------------------
-fbdev changes for 3.16 (main part)
-
-Mainly fixes and small improvements. The biggest change seems to be backl=
-ight
-control support for mx3fb.
-
-----------------------------------------------------------------
-Aaro Koskinen (1):
-      video: omap: delete support for early fbmem allocation
-
-Alexander Stein (1):
-      video: mx3fb: Add backlight control support
-
-Arnd Bergmann (7):
-      video: sh_mobile_lcdcfb depends on meram
-      video: clarify I2C dependencies
-      video/omap: fix modular build
-      video/mbx: fix building debugfs support
-      video: export fb_prepare_logo
-      video: atmel needs FB_BACKLIGHT
-      video/nuc900: allow modular build
-
-Boris BREZILLON (1):
-      video: of: display_timing: fix default native-mode setting
-
-Brian W Hart (1):
-      fbdev/fb.h: silence warning with -Wsign-compare
-
-Dan Carpenter (1):
-      video: mmpfb: cleanup some static checker warnings in probe()
-
-David Ung (1):
-      video: Check EDID for HDMI connection
-
-Denis Carikli (1):
-      video: mx3fb: Use devm_kzalloc
-
-Fabian Frederick (1):
-      fbdev: fbmem: remove positive test on unsigned values
-
-Jean Delvare (3):
-      fbdev: Fix tmiofb driver dependencies
-      video: exynos: Add a dependency to the menu
-      video: Kconfig: Add a dependency to the Goldfish framebuffer driver=
-
-
-Jingoo Han (1):
-      video: pxa3xx-gcu: use devm_ioremap_resource()
-
-Jon Ringle (1):
-      video: da8xx-fb: Add support for Densitron 84-0023-001T
-
-Julia Lawall (1):
-      video: delete unneeded call to platform_get_drvdata
-
-Lucas Stach (1):
-      video: of: display_timing: remove two unsafe error messages
-
-Masami Ichikawa (1):
-      fbcon: Fix memory leak in con2fb_release_oldinfo()
-
-Masanari Iida (2):
-      video: fbdev: Fix format string mismatch in wm8505fb.c
-      video: fbdev: Fix format string mismatch in gbefb.c
-
-Mikulas Patocka (1):
-      matroxfb: perform a dummy read of M_STATUS
-
-Richard Weinberger (2):
-      video: mmp: Remove references to CPU_MMP3
-      video: mmp: Remove references to CPU_PXA988
-
-Rickard Strandqvist (2):
-      video: fbdev: grvga.c: Fix for possible null pointer dereference
-      video: fbdev: s3fb.c: Fix for possible null pointer dereference
-
-Zhichuang SUN (1):
-      drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_=
-mmap
-
- drivers/video/console/fbcon.c              |  1 +
- drivers/video/fbdev/Kconfig                | 11 ++--
- drivers/video/fbdev/bf54x-lq043fb.c        |  2 -
- drivers/video/fbdev/core/fbmem.c           |  7 +--
- drivers/video/fbdev/core/fbmon.c           |  9 +++-
- drivers/video/fbdev/da8xx-fb.c             | 14 +++++
- drivers/video/fbdev/exynos/Kconfig         |  2 +-
- drivers/video/fbdev/fb-puv3.c              |  2 +
- drivers/video/fbdev/gbefb.c                |  2 +-
- drivers/video/fbdev/grvga.c                |  3 +-
- drivers/video/fbdev/matrox/matroxfb_base.h |  2 +-
- drivers/video/fbdev/mbx/Makefile           |  3 +-
- drivers/video/fbdev/mbx/mbxdebugfs.c       |  2 +-
- drivers/video/fbdev/mbx/mbxfb.c            |  2 +
- drivers/video/fbdev/mmp/Kconfig            |  2 +-
- drivers/video/fbdev/mmp/fb/mmpfb.c         |  9 +---
- drivers/video/fbdev/mmp/hw/Kconfig         |  6 +--
- drivers/video/fbdev/mmp/hw/mmp_ctrl.h      | 32 -----------
- drivers/video/fbdev/mx3fb.c                | 85 ++++++++++++++++++++++++=
-++++--
- drivers/video/fbdev/omap/Kconfig           |  9 ++++
- drivers/video/fbdev/omap/Makefile          | 23 ++++----
- drivers/video/fbdev/omap/lcdc.c            | 67 +----------------------
- drivers/video/fbdev/omap/omapfb_main.c     |  1 +
- drivers/video/fbdev/pxa3xx-gcu.c           |  6 +--
- drivers/video/fbdev/s3fb.c                 |  3 +-
- drivers/video/fbdev/wm8505fb.c             |  2 +-
- drivers/video/of_display_timing.c          | 10 ++--
- include/linux/fb.h                         |  3 +-
- include/linux/omap-dma.h                   |  2 +-
- 29 files changed, 169 insertions(+), 153 deletions(-)
-
-
---TjAnn6wNJdqmI8OipDLCeBQcfjDcbcRlo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTjxCqAAoJEPo9qoy8lh71YksQAILVG7HbSj64fxEkyss/6CDz
-H/JJtmr9mWh4cgDKfMxo1/sI+9o6eI+7kWv1RP5aJcp9GkEMu3JlXFIOryajw6uk
-2QwPBJ0D83SEctqC1LoMIAiUVaoXTFYm+esnr1lA2ZWU9VGPBMF3eO7WinuTiI8/
-sdGVbc9vIkwh0pAGR8fVFRUfcvIpXhjrq1TSBR/iXzma9ThRMt/K6DRePWs10bSP
-Fbc3ahlkUWzv7dyKdXV+uSMXCwRJgwhBCnFkNhooXVHfBrkNFn9BETp6Ao2NAb4j
-kyAg7NXzjHW9umD12W2fpd1Jr6P+ujtzkEWAy7HfMCaT/2kX4r9tDDs/3X5rbn7E
-2tblhdhBTh3IeQEwaZDcfm2zL1rp0AOCgX07BWr+ozOGWz1aYxir4hh8V+8KqvAV
-6BNwAnErByapgj0kd2XqUzfDySvZ7vmfZnzfMc0xfDhzQowXPL781hCnZZRSmroc
-ihW0E/PP4mNxbwqDyDxZTzGExnIgxNKPEaVPkAW6AsLEDcVJvp5oSVokploU4/b/
-RMxTSv2R3LxTi3Vra7b8vW3/qZueSX5wRQuquJ3vhVliXjWgq2il4Akren3tz37W
-Ae5t+Gia9vc2BNcJIQ62L+zq6n0t5QOdpZ+/3plQMaI8xWMkQGkugKDBlfaCCq1n
-YEK7TeMlGnfjeo5hJ6I7
-=C41W
------END PGP SIGNATURE-----
-
---TjAnn6wNJdqmI8OipDLCeBQcfjDcbcRlo--

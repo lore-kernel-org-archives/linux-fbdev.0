@@ -1,44 +1,34 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:33:10 +0000
-Subject: [PATCH] video: fbdev: i810: i810_main.c:  Cleaning up variable that is never used
-Message-Id: <1404671590-18288-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Scott Jiang <scott.jiang.linux@gmail.com>
+Date: Tue, 01 Jul 2014 06:57:24 +0000
+Subject: [PATCH] fb: adv7393: add missing semicolon
+Message-Id: <1404284022-24866-1-git-send-email-scott.jiang.linux@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404562990-19606-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404562990-19606-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Julia Lawall <Julia.Lawall@lip6.fr>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Variable ar assigned a value that is never used.
-I have also removed all the code that thereby serves no purpose.
+Commit f8bd493456c3da372ae81ed8f6b903f6207b9d98 by Jingoo Han
+introduced this problem. This makes bfin_adv7393fb.c failed to compile.
 
-This was found using a static code analysis program called cppcheck
-
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Signed-off-by: Scott Jiang <scott.jiang.linux@gmail.com>
 ---
- drivers/video/fbdev/i810/i810_main.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/bfin_adv7393fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
-index bb674e4..754ef33 100644
---- a/drivers/video/fbdev/i810/i810_main.c
-+++ b/drivers/video/fbdev/i810/i810_main.c
-@@ -1135,12 +1135,11 @@ static int encode_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
- static void decode_var(const struct fb_var_screeninfo *var, 
- 		       struct i810fb_par *par)
- {
--	u32 xres, yres, vxres, vyres;
-+	u32 xres, yres, vxres;
- 
- 	xres = var->xres;
- 	yres = var->yres;
- 	vxres = var->xres_virtual;
--	vyres = var->yres_virtual;
- 
- 	switch (var->bits_per_pixel) {
- 	case 8:
+diff --git a/drivers/video/fbdev/bfin_adv7393fb.c b/drivers/video/fbdev/bfin_adv7393fb.c
+index a54f7f7..8fe41ca 100644
+--- a/drivers/video/fbdev/bfin_adv7393fb.c
++++ b/drivers/video/fbdev/bfin_adv7393fb.c
+@@ -408,7 +408,7 @@ static int bfin_adv7393_fb_probe(struct i2c_client *client,
+ 	/* Workaround "PPI Does Not Start Properly In Specific Mode" */
+ 	if (ANOMALY_05000400) {
+ 		ret = gpio_request_one(P_IDENT(P_PPI0_FS3), GPIOF_OUT_INIT_LOW,
+-					"PPI0_FS3")
++					"PPI0_FS3");
+ 		if (ret) {
+ 			dev_err(&client->dev, "PPI0_FS3 GPIO request failed\n");
+ 			ret = -EBUSY;
 -- 
-1.7.10.4
+1.7.9.5
 

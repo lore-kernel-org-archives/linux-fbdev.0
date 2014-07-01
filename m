@@ -1,56 +1,54 @@
-From: Daniel Jeong <gshark.jeong@gmail.com>
-Date: Tue, 15 Jul 2014 10:09:18 +0000
-Subject: [RFC v5 2/2] backlight: device tree: add new tps611xx backlight binding
-Message-Id: <1405418958-7596-3-git-send-email-gshark.jeong@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 01 Jul 2014 06:15:45 +0000
+Subject: Re: [PATCH] video: fbdev: s3c2410fb: Move to clk_prepare_enable/clk_disable_unprepare
+Message-Id: <53B25211.1000600@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="mctXk8pti7WENTOOJllMHBrcUmLWsAkVJ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1405418958-7596-1-git-send-email-gshark.jeong@gmail.com>
-In-Reply-To: <1405418958-7596-1-git-send-email-gshark.jeong@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
-Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>
+References: <1404155672-3158-1-git-send-email-anarsoul@gmail.com>
+In-Reply-To: <1404155672-3158-1-git-send-email-anarsoul@gmail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-This commit is about tps611xx device tree documentation.
+--mctXk8pti7WENTOOJllMHBrcUmLWsAkVJ
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
----
- .../video/backlight/tps611xx-backlight.txt         |   26 ++++++++++++++++++++
- 1 file changed, 26 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
+On 30/06/14 22:14, Vasily Khoruzhick wrote:
+> Use clk_prepare_enable/clk_disable_unprepare to make the driver
+> work properly with common clock framework.
+>=20
+> Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
+> ---
+>  drivers/video/fbdev/s3c2410fb.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
-new file mode 100644
-index 0000000..905c61b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
-@@ -0,0 +1,26 @@
-+TPS611xx family of backlight driver based on EasyScale.
-+
-+EasyScale is a simple but flexible one pin interface to configure the current.
-+
-+Required properties:
-+- compatible: should contain at least one of
-+  "ti,tps61158"
-+  "ti,tps61161"
-+  "ti,tps61163"
-+  "ti,tps61165"
-+- es-gpio : GPIO for easy-scale communication.(see GPIO binding[0])
-+
-+Optional properties:
-+- rfa-enable: enable request for acknowledge.
-+  If RFA is enabled, the data byte includes the RFA bit and device will wait
-+  and check acknowledge from device.
-+
-+[0]: Documentation/devicetree/bindings/gpio/gpio.txt
-+
-+Example:
-+
-+	backlight {
-+		compatible = "ti,tps61163";
-+		es-gpio = <&gpio 45 0>;
-+		rfa-enable;
-+	};
--- 
-1.7.9.5
+Thanks, queued for 3.17.
 
+ Tomi
+
+
+
+--mctXk8pti7WENTOOJllMHBrcUmLWsAkVJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTslIRAAoJEPo9qoy8lh71OYgQAKx5SF2BKlLiro2jbPcJgQhM
+wNlmeieuhMEjomTj0oyQFBidxs0CLZt4aO75FqqIFZwwwA/Bum2xbtBCoDwCiJ/8
+TIZKjOXDndOGoNpaMAHO2LxpC1no+7te92uM0SoXD741nxBnHLJzZ0eGFNiPpjqu
+pZiXDCqgaWT8/ej+OF9+9wecfN0wiKkpFLijCrUHmMJuVukqBEBnJg1W7t5td5Da
+GrYfEkK8CckMqkmwyCJ1QpKmJzAdPRuiig84cfyabQAAo8z4FwTsjvCMLz/g5tge
+AxRN+1eGMTjuF4Jrx442jlMFZtwKSBx86DnNvKa41Co/1PcJKYO1DgxbRqzBUF+T
+c7iAoCA9PoNvxUtAT2KSRSaUiDK8GD7fktpv9jw7C1nh6oZ83Qrfb0UP991Qibx/
+hAmaTwTo6q4XFPTIK24dj3fetHJpRrJBkqFNRWUV3xxVY67hHm8sW9ynzMfTiMcT
+l/NxHPlWbCcMXmkOhE87x0se79r65aa0mCghN/Gwv1AGjHGiXsD8JlVPmAF+Z2ao
+08+cbVz6DccRXVulQ/mLEGzSzVlzc0qFWVfzTzRo99z7GmOicrqSuVBqScnMxVNv
+JiVQkJcn6TzJgjJWgR7+V1A9W7gDt9kJ8hT00X7PT8ELMGd27168sX/hwHIWtmOu
+v/FvncjGQR582FiGnAyc
+=yAIT
+-----END PGP SIGNATURE-----
+
+--mctXk8pti7WENTOOJllMHBrcUmLWsAkVJ--

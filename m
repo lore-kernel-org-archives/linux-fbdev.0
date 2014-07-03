@@ -1,64 +1,32 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 07 Jul 2014 23:58:21 +0000
-Subject: [PATCH 3.14 91/94] drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap
-Message-Id: <20140707235759.447179528@linuxfoundation.org>
+From: Daniel Jeong <gshark.jeong@gmail.com>
+Date: Thu, 03 Jul 2014 06:01:15 +0000
+Subject: [RFC v4 0/2]  backlight: add new tps611xx backlight driver
+Message-Id: <1404367277-12003-1-git-send-email-gshark.jeong@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140707235756.780319003@linuxfoundation.org>
-In-Reply-To: <20140707235756.780319003@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Zhichuang Sun <sunzc522@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, Xuetao Guan <gxt@mprc.pku.edu.cn>, Guenter Roeck <linux@roeck-us.net>
+To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
+Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>
 
-3.14-stable review patch.  If anyone has any objections, please let me know.
+This driver is a general version for tps611xx backlgiht chips of TI.
+It supports tps61158, tps61161, tps61163 and tps61165 backlight driver
+based on EasyScale protocol.
 
-------------------
+Daniel Jeong (2):
+  backlight
+  backlight: add new tps611xx backlight device tree support
 
-From: Zhichuang SUN <sunzc522@gmail.com>
+ .../video/backlight/tps611xx-backlight.txt         |   24 +
+ drivers/video/backlight/Kconfig                    |    7 +
+ drivers/video/backlight/Makefile                   |    1 +
+ drivers/video/backlight/tps611xx_bl.c              |  479 ++++++++++++++++++++
+ include/linux/platform_data/tps611xx_bl.h          |   31 ++
+ 5 files changed, 542 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
+ create mode 100644 drivers/video/backlight/tps611xx_bl.c
+ create mode 100644 include/linux/platform_data/tps611xx_bl.h
 
-commit fbc6c4a13bbfb420eedfdb26a0a859f9c07e8a7b upstream.
-
-Function unifb_mmap calls functions which are defined in linux/mm.h
-and asm/pgtable.h
-
-The related error (for unicore32 with unicore32_defconfig):
-	CC      drivers/video/fbdev/fb-puv3.o
-	drivers/video/fbdev/fb-puv3.c: In function 'unifb_mmap':
-	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
-				      function 'vm_iomap_memory'
-	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
-				      function 'pgprot_noncached'
-
-Signed-off-by: Zhichuang Sun <sunzc522@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Joe Perches <joe@perches.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org
-Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
----
- drivers/video/fb-puv3.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- a/drivers/video/fb-puv3.c
-+++ b/drivers/video/fb-puv3.c
-@@ -18,8 +18,10 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/console.h>
-+#include <linux/mm.h>
- 
- #include <asm/sizes.h>
-+#include <asm/pgtable.h>
- #include <mach/hardware.h>
- 
- /* Platform_data reserved for unifb registers. */
-
+-- 
+1.7.9.5
 

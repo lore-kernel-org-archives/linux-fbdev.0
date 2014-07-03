@@ -1,89 +1,42 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 04 Jul 2014 08:06:31 +0000
-Subject: Re: [PATCH 2/2] video: clps711x: Fix sparse warnings
-Message-Id: <53B66087.1040500@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="u5IGDM0HOXpn67Dr9xwiIRO7bMBD9QCoN"
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Thu, 03 Jul 2014 21:15:21 +0000
+Subject: [PATCH] video: fbdev: sis: init.c:  Cleaning up redundant condition is always true
+Message-Id: <1404422121-11298-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1403937246-14506-2-git-send-email-shc_work@mail.ru>
-In-Reply-To: <1403937246-14506-2-git-send-email-shc_work@mail.ru>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Mauro Carvalho Chehab <m.chehab@samsung.com>, "Chen, Gong" <gong.chen@linux.intel.com>, Dan Carpenter <dan.carpenter@oracle.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---u5IGDM0HOXpn67Dr9xwiIRO7bMBD9QCoN
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Removal of a redundant condition that is always true
 
-Hi,
+This was found using a static code analysis program called cppcheck
 
-On 01/07/14 13:31, Alexander Shiyan wrote:
-> Tue, 1 Jul 2014 13:22:51 +0300 =D0=BE=D1=82 Tomi Valkeinen <tomi.valkei=
-nen@ti.com>:
->> On 01/07/14 09:23, Alexander Shiyan wrote:
->>> Tue, 1 Jul 2014 09:14:02 +0300 =D0=BE=D1=82 Tomi Valkeinen <tomi.valk=
-einen@ti.com>:
->>>> On 28/06/14 09:34, Alexander Shiyan wrote:
->>>>> This patch fixes below warnings:
->>>>> CHECK   drivers/video/fbdev/clps711x-fb.c
->>>>>   drivers/video/fbdev/clps711x-fb.c:247:24: warning: incorrect type=
- in argument 1 (different address spaces)
->>>>>   drivers/video/fbdev/clps711x-fb.c:247:24:    expected void const =
-*ptr
->>>>>   drivers/video/fbdev/clps711x-fb.c:247:24:    got char [noderef] <=
-asn:2>*screen_base
->>>>>   drivers/video/fbdev/clps711x-fb.c:248:35: warning: incorrect type=
- in argument 1 (different address spaces)
->>>>>   drivers/video/fbdev/clps711x-fb.c:248:35:    expected void const =
-*ptr
->>>>>   drivers/video/fbdev/clps711x-fb.c:248:35:    got char [noderef] <=
-asn:2>*screen_base
->>> ...
->>>>>  	info->screen_base =3D devm_ioremap_resource(dev, res);
->>>>> -	if (IS_ERR(info->screen_base)) {
->>>>> -		ret =3D PTR_ERR(info->screen_base);
->>>>> +	if (IS_ERR((__force void *)info->screen_base)) {
->>>>> +		ret =3D PTR_ERR((__force void *)info->screen_base);
->>>>
->>>> I don't see any other user of devm_ioremap_resource() having that ki=
-nd
->>>> of casts. Why are they needed here?
->>>
->>> Not needed, type cast was done only to remove sparse warnings.
->>
->> Right, but I think either sparse is wrong here, or the PTR_ERR/IS_ERR
->> are wrong. You shouldn't do typecasts like that to hide those warnings=
-=2E
->=20
-> Well, I'll remove these changes and send a second version of the patch.=
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/sis/init.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/fbdev/sis/init.c b/drivers/video/fbdev/sis/init.c
+index bd40f5e..9e2dd96 100644
+--- a/drivers/video/fbdev/sis/init.c
++++ b/drivers/video/fbdev/sis/init.c
+@@ -355,12 +355,12 @@ SiS_GetModeID(int VGAEngine, unsigned int VBFlags, int HDisplay, int VDisplay,
+ 		}
+ 		break;
+ 	case 400:
+-		if((!(VBFlags & CRT1_LCDA)) || ((LCDwidth >= 800) && (LCDwidth >= 600))) {
++		if ((!(VBFlags & CRT1_LCDA)) || (LCDwidth >= 600)) {
+ 			if(VDisplay = 300) ModeIndex = ModeIndex_400x300[Depth];
+ 		}
+ 		break;
+ 	case 512:
+-		if((!(VBFlags & CRT1_LCDA)) || ((LCDwidth >= 1024) && (LCDwidth >= 768))) {
++		if ((!(VBFlags & CRT1_LCDA)) || (LCDwidth >= 768)) {
+ 			if(VDisplay = 384) ModeIndex = ModeIndex_512x384[Depth];
+ 		}
+ 		break;
+-- 
+1.7.10.4
 
-I applied these two patches, and removed the type casts from the second o=
-ne.
-
- Tomi
-
-
-
---u5IGDM0HOXpn67Dr9xwiIRO7bMBD9QCoN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTtmCHAAoJEPo9qoy8lh71FKIQAKRAMIYaoElDK/9GTQUb19lU
-WMosINjmyBvtM2I/+1ILHbSaZJUHHHT/J1uQklMQS2XoFmw+mLr9j5yV6+PNDdNL
-R1K8BeB8wdIFkr2M1nAbIfVxA+EaGoUzQtnMDicvPTz4gRBRCQtqTVD4hc80tXVv
-uB37G6D2u31bBjdMRemgVRWurd6UkeKtSo4uTlzw7DYE7PfPGsBf9MMiK3Jd51By
-0YyhYRjG/71YbCCAjYIw1rrxLaL74wqZU2NGUkSWnxoMBy4PfyqPChOhMK0VRt5i
-b0/Cm0J1C8iCrFxR1zf+sR7UNflmjZf2ItkPVA/3/IYUmMG8pXwgLKUSKzjYafAC
-vDyfZdjlXeSs7CpC491judCdWO+9eyUq/etmfsim4xKBClKUTgETSYpwvvDLn6C6
-jZ81mfooF9RnGNy8LyLdTfk8djLOuVmmNlhxRaKDwoDv5zjLSUEoGflLOMNcyTLE
-aLidvzzeDdRmPFSv6VnpPzkYAm+9PukJIMmHLka4nsSsiJrHzfqxAp7s0j59VzfJ
-msRWCTWq2fAVsFjFXUykHCYb1qnbTTIIAUWi49Mis1dU4DBKNhVWxKaybOH3UG9t
-kpt0znUDHVzUsdoKkXAA6Qx6sQQ8IPM+0ktT6kCiWkSYZYfXPDUandCVv/rJ1+1q
-DbdONJb5kJ2bJ/Yg+QM4
-=qFdK
------END PGP SIGNATURE-----
-
---u5IGDM0HOXpn67Dr9xwiIRO7bMBD9QCoN--

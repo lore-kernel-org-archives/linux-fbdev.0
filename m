@@ -1,60 +1,44 @@
-From: Alexandre Courbot <gnurou@gmail.com>
-Date: Fri, 25 Jul 2014 14:46:51 +0000
-Subject: Re: [PATCH v2] pwm-backlight: fix probing from device-tree without enable-gpios
-Message-Id: <CAAVeFu+Gaabwt_3GB8VQRyOYPKsOjCkCDEYnSet3UaQztnb+Bg@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 03 Jul 2014 13:39:56 +0000
+Subject: [PATCH 0/4] SiI9022 HDMI encoder for AM4xxx boards
+Message-Id: <1404394800-18138-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1406284115-489-1-git-send-email-m.olbrich@pengutronix.de> <1406288841-23140-1-git-send-email-m.olbrich@pengutronix.de>
-In-Reply-To: <1406288841-23140-1-git-send-email-m.olbrich@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Olbrich <m.olbrich@pengutronix.de>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Alexandre Courbot <acourbot@nvidia.com>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sascha Hauer <kernel@pengutronix.de>
+To: linux-arm-kernel@lists.infradead.org
 
-On Fri, Jul 25, 2014 at 8:47 PM, Michael Olbrich
-<m.olbrich@pengutronix.de> wrote:
-> Since 257462dbf3ed ("pwm-backlight: switch to gpiod interface")
-> enable_gpio is no longer set and remains 0 when probing from
-> device-tree. This is a valid gpio number. With no enable-gpios
-> specified in the device-tree this is used and probing fails
-> with:
->
-> pwm-backlight lcd-backlight.3: failed to request GPIO#0: -16
->
-> Fix this by setting enable_gpio to -1 which is not a valid gpio
-> number.
+Hi,
 
-Looks good indeed. My bad for overlooking this.
+This series adds a driver for SiI9022 HDMI encoder, which is used on AM437x GP
+and AM43x EPOS boards.
 
-Acked-by: Alexandre Courbot <acourbot@nvidia.com>
+The series is based on the OMAPDSS HDMI infoframe series sent earlier, as the
+SiI9022 driver uses the new infoframe support.
 
->
-> Signed-off-by: Michael Olbrich <m.olbrich@pengutronix.de>
-> ---
->
-> Sorry, I sent the wrong version. This one actually compiles.
->
-> Michael
->
->  drivers/video/backlight/pwm_bl.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index 38ca88b..e7e43cd 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -211,6 +211,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->                         dev_err(&pdev->dev, "failed to find platform data\n");
->                         return ret;
->                 }
-> +               defdata.enable_gpio = -1;
->
->                 data = &defdata;
->         }
-> --
-> 2.0.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ Tomi
+
+Tomi Valkeinen (4):
+  OMAPDSS: add SiI9022 encoder driver
+  Doc/DT: Add SiI9022 binding documentation
+  arm/dts: am43x EPOS HDMI support
+  arm/dts: am437x GP HDMI support
+
+ .../devicetree/bindings/video/sil,sii9022.txt      |  53 ++
+ arch/arm/boot/dts/Makefile                         |   4 +-
+ arch/arm/boot/dts/am437x-gp-evm-hdmi.dts           |  70 ++
+ arch/arm/boot/dts/am43x-epos-evm-hdmi.dts          |  83 ++
+ drivers/video/fbdev/omap2/displays-new/Kconfig     |   8 +
+ drivers/video/fbdev/omap2/displays-new/Makefile    |   1 +
+ .../fbdev/omap2/displays-new/encoder-sii9022.c     | 966 +++++++++++++++++++++
+ .../fbdev/omap2/displays-new/encoder-sii9022.h     |  58 ++
+ 8 files changed, 1242 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/video/sil,sii9022.txt
+ create mode 100644 arch/arm/boot/dts/am437x-gp-evm-hdmi.dts
+ create mode 100644 arch/arm/boot/dts/am43x-epos-evm-hdmi.dts
+ create mode 100644 drivers/video/fbdev/omap2/displays-new/encoder-sii9022.c
+ create mode 100644 drivers/video/fbdev/omap2/displays-new/encoder-sii9022.h
+
+-- 
+1.9.1
+

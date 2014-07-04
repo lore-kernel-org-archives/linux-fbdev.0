@@ -1,45 +1,30 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Date: Fri, 11 Jul 2014 16:13:27 +0000
-Subject: [PATCH v2 trivial 5/6] video: mx3fb: Update comment for dmaengine_prep_slave_sg() API
-Message-Id: <1405095208-14642-5-git-send-email-geert+renesas@glider.be>
+From: Kewal Agola <kewalagola@gmail.com>
+Date: Fri, 04 Jul 2014 07:57:51 +0000
+Subject: Trouble with Virtual Terminal
+Message-Id: <CAOsdogr=0wUt_hedm83SmJBDEB-50isx4i-G47U0PEeBc5U-cg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1405095208-14642-1-git-send-email-geert+renesas@glider.be>
-In-Reply-To: <1405095208-14642-1-git-send-email-geert+renesas@glider.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>
-Cc: dmaengine@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jiri Kosina <trivial@kernel.org>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Commit 16052827d98fbc13c31ebad560af4bd53e2b4dd5 ("dmaengine/dma_slave:
-introduce inline wrappers") changed the code to use the new API, but forgot
-to update a comment.
+Hi,
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jiri Kosina <trivial@kernel.org>
-Cc: linux-fbdev@vger.kernel.org
---
-v2:
-  - New
----
- drivers/video/fbdev/mx3fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I am using a customized ARM based platform with an LCD monitor. I am
+having trouble with virtual terminal. Terminal emulator with X-serve
+works fine. But as soon as I switch to virtual terminal (ctrl + alt +
+F1), the characters get scrambled. If I type character 'a', at first
+character 'a' looks as if it were written with a broken line,
+gradually after few seconds proper shape comes up. If I enter command
+"dmesg" the output looks garbled due to overlapping of two consecutive
+lines.
 
-diff --git a/drivers/video/fbdev/mx3fb.c b/drivers/video/fbdev/mx3fb.c
-index c645a0a0c341..5e97baf92721 100644
---- a/drivers/video/fbdev/mx3fb.c
-+++ b/drivers/video/fbdev/mx3fb.c
-@@ -1179,7 +1179,7 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
- 
- 	/*
- 	 * We enable the End of Frame interrupt, which will free a tx-descriptor,
--	 * which we will need for the next device_prep_slave_sg(). The
-+	 * which we will need for the next dmaengine_prep_slave_sg(). The
- 	 * IRQ-handler will disable the IRQ again.
- 	 */
- 	init_completion(&mx3_fbi->flip_cmpl);
--- 
-1.9.1
+Processor Family : ARMv7.
+Linux Kernel version : 3.0.31
+Operating system : ARM Ubuntu.
 
+I know there is some issue with display driver. But I do not know what
+changes could help me. Can someone suggest me the way out?
+
+Thanks,
+Kewal

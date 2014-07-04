@@ -1,37 +1,57 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 17:25:55 +0000
-Subject: [PATCH] video: fbdev: core: fbmon.c:  Cleaning up useless assignment of function parameter
-Message-Id: <1404667555-14675-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Michael Welling <mwelling@ieee.org>
+Date: Fri, 04 Jul 2014 02:26:36 +0000
+Subject: [PATCH] drivers: video: fbdev: atmel_lcdfb.c: Add ability to inverted backlight PWM.
+Message-Id: <1404440796-11090-1-git-send-email-mwelling@ieee.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404565710-22433-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404565710-22433-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, David Ung <davidu@nvidia.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Michael Welling <mwelling-EkmVulN54Sk@public.gmane.org>
 
-Remove assignment of function parameter, that has no effect outside the function
+The code has a variable to change the polarity of the PWM backlight control but
+it was not being initialized. This patch adds a devicetree entry to set the
+variable if required.
 
-This was found using a static code analysis program called cppcheck
-
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Signed-off-by: Michael Welling <mwelling@ieee.org>
 ---
- drivers/video/fbdev/core/fbmon.c |    1 -
- 1 file changed, 1 deletion(-)
+ .../devicetree/bindings/video/atmel,lcdc.txt       |    1 +
+ drivers/video/fbdev/atmel_lcdfb.c                  |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index 5b0e313..71ec1ab 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -1481,7 +1481,6 @@ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
- }
- void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- {
--	specs = NULL;
- }
- void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- {
+diff --git a/Documentation/devicetree/bindings/video/atmel,lcdc.txt b/Documentation/devicetree/bindings/video/atmel,lcdc.txt
+index 1ec175e..b75af94 100644
+--- a/Documentation/devicetree/bindings/video/atmel,lcdc.txt
++++ b/Documentation/devicetree/bindings/video/atmel,lcdc.txt
+@@ -46,6 +46,7 @@ Required properties (as per of_videomode_helper):
+ 
+ Optional properties (as per of_videomode_helper):
+  - atmel,lcdcon-backlight: enable backlight
++ - atmel,lcdcon-backlight-inverted: invert backlight PWM polarity
+  - atmel,lcd-wiring-mode: lcd wiring mode "RGB" or "BRG"
+  - atmel,power-control-gpio: gpio to power on or off the LCD (as many as needed)
+ 
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
+index d36e830..92640d4 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -290,7 +290,7 @@ static void init_contrast(struct atmel_lcdfb_info *sinfo)
+ 
+ 	/* contrast pwm can be 'inverted' */
+ 	if (pdata->lcdcon_pol_negative)
+-			contrast_ctr &= ~(ATMEL_LCDC_POL_POSITIVE);
++		contrast_ctr &= ~(ATMEL_LCDC_POL_POSITIVE);
+ 
+ 	/* have some default contrast/backlight settings */
+ 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
+@@ -1097,6 +1097,7 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
+ 	pdata->lcd_wiring_mode = ret;
+ 
+ 	pdata->lcdcon_is_backlight = of_property_read_bool(display_np, "atmel,lcdcon-backlight");
++	pdata->lcdcon_pol_negative = of_property_read_bool(display_np, "atmel,lcdcon-backlight-inverted");
+ 
+ 	timings = of_get_display_timings(display_np);
+ 	if (!timings) {
 -- 
-1.7.10.4
+1.7.9.5
 

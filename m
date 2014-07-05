@@ -1,47 +1,37 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:41:26 +0000
-Subject: [PATCH] video: fbdev: mbx: mbxfb.c:  Cleaning up variable that is never used
-Message-Id: <1404672086-18977-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 13:10:29 +0000
+Subject: [PATCH] video: fbdev: xen-fbfront.c:  Cleaning up useless assignment of function parameter
+Message-Id: <1404565829-22602-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404563456-20273-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404563456-20273-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Variable ar assigned a value that is never used.
-I have also removed all the code that thereby serves no purpose.
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+
+Removal of assignment of function parameter, that has no effect outside the function
 
 This was found using a static code analysis program called cppcheck
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/mbx/mbxfb.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/xen-fbfront.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/mbx/mbxfb.c b/drivers/video/fbdev/mbx/mbxfb.c
-index 2bd52ed..320f263 100644
---- a/drivers/video/fbdev/mbx/mbxfb.c
-+++ b/drivers/video/fbdev/mbx/mbxfb.c
-@@ -689,7 +689,6 @@ static struct fb_ops mbxfb_ops = {
- */
- static void setup_memc(struct fb_info *fbi)
- {
--	unsigned long tmp;
- 	int i;
+diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
+index 901014b..e1207a1 100644
+--- a/drivers/video/fbdev/xen-fbfront.c
++++ b/drivers/video/fbdev/xen-fbfront.c
+@@ -222,7 +222,6 @@ static int xenfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 	red = CNVT_TOHW(red, info->var.red.length);
+ 	green = CNVT_TOHW(green, info->var.green.length);
+ 	blue = CNVT_TOHW(blue, info->var.blue.length);
+-	transp = CNVT_TOHW(transp, info->var.transp.length);
+ #undef CNVT_TOHW
  
- 	/* FIXME: use platform specific parameters */
-@@ -714,7 +713,7 @@ static void setup_memc(struct fb_info *fbi)
- 	write_reg_dly(LMPWR_MC_PWR_ACT, LMPWR);
- 	/* perform dummy reads */
- 	for ( i = 0; i < 16; i++ ) {
--		tmp = readl(fbi->screen_base);
-+		readl(fbi->screen_base);
- 	}
- }
- 
+ 	v = (red << info->var.red.offset) |
 -- 
 1.7.10.4
 

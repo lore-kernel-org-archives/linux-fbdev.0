@@ -1,33 +1,48 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 28 Jul 2014 08:54:34 +0000
-Subject: Re: [PATCH] video: clcd-versatile: Depend on ARM
-Message-Id: <5789388.BhevNhh9tO@wuerfel>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 13:17:38 +0000
+Subject: [PATCH] video: fbdev: omap2: dss: display-sysfs.c:  Cleaning up wrong type in format string
+Message-Id: <1404566258-22901-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1406480658-27243-1-git-send-email-broonie@kernel.org>
-In-Reply-To: <1406480658-27243-1-git-send-email-broonie@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sunday 27 July 2014 18:04:18 Mark Brown wrote:
-> From: Mark Brown <broonie@linaro.org>
-> 
-> The Versatile CLCD helpers call dma_alloc_writecombine() which is only
-> available on ARM and AVR32, meaning they won't build on other platforms
-> including arm64. Unfortunately the current Kconfig enables the symbol
-> by default if ARCH_VEXPRESS is defined which means that it is enabled on
-> arm64 when building for the ARM reference platforms and models for ARMv8
-> since they have many hardware similarities with their pre-ARMv8 systems.
-> 
-> Since all the systems that need the helpers are ARM systems fix this by
-> adding a dependency on ARM.
-> 
-> Signed-off-by: Mark Brown <broonie@linaro.org>
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-I guess this one is for me, as the bug only exists in linux-next through
-arm-soc, introduced by my previous fix for another bug.
+Wrong type in printf format string, requires 'unsigned int'
+but the argument type is 'int'
 
-Applied to next/cleanup, thanks a lot for fixing it!
+This was found using a static code analysis program called cppcheck
 
-	Arnd
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/omap2/dss/display-sysfs.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/dss/display-sysfs.c b/drivers/video/fbdev/omap2/dss/display-sysfs.c
+index 5a2095a..5928bc9 100644
+--- a/drivers/video/fbdev/omap2/dss/display-sysfs.c
++++ b/drivers/video/fbdev/omap2/dss/display-sysfs.c
+@@ -184,7 +184,7 @@ static ssize_t display_rotate_show(struct device *dev,
+ 	if (!dssdev->driver->get_rotate)
+ 		return -ENOENT;
+ 	rotate = dssdev->driver->get_rotate(dssdev);
+-	return snprintf(buf, PAGE_SIZE, "%u\n", rotate);
++	return snprintf(buf, PAGE_SIZE, "%d\n", rotate);
+ }
+ 
+ static ssize_t display_rotate_store(struct device *dev,
+@@ -215,7 +215,7 @@ static ssize_t display_mirror_show(struct device *dev,
+ 	if (!dssdev->driver->get_mirror)
+ 		return -ENOENT;
+ 	mirror = dssdev->driver->get_mirror(dssdev);
+-	return snprintf(buf, PAGE_SIZE, "%u\n", mirror);
++	return snprintf(buf, PAGE_SIZE, "%d\n", mirror);
+ }
+ 
+ static ssize_t display_mirror_store(struct device *dev,
+-- 
+1.7.10.4
+

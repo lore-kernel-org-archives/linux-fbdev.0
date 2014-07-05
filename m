@@ -1,83 +1,36 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 03 Jul 2014 13:39:58 +0000
-Subject: [PATCH 2/4] Doc/DT: Add SiI9022 binding documentation
-Message-Id: <1404394800-18138-3-git-send-email-tomi.valkeinen@ti.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sat, 05 Jul 2014 13:56:42 +0000
+Subject: Re: [PATCH] video: fbdev: valkyriefb.c: Cleaning up variable that is never used
+Message-Id: <CAMuHMdX6fdwWPQoBpHTGpatd+MZQqYZauUpC0w4rp_u2R0oZqQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404394800-18138-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1404394800-18138-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1404564740-22066-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404564740-22066-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Add DT binding documentation for Silicon Image SiI9022 HDMI encoder.
+On Sat, Jul 5, 2014 at 2:52 PM, Rickard Strandqvist
+<rickard_strandqvist@spectrumdigital.se> wrote:
+> From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+>
+> Variable ar assigned a value that is never used.
+> I have also removed all the code that thereby serves no purpose.
+>
+> This was found using a static code analysis program called cppcheck
+>
+> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org
----
- .../devicetree/bindings/video/sil,sii9022.txt      | 53 ++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/sil,sii9022.txt
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-diff --git a/Documentation/devicetree/bindings/video/sil,sii9022.txt b/Documentation/devicetree/bindings/video/sil,sii9022.txt
-new file mode 100644
-index 000000000000..0cd926636998
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/sil,sii9022.txt
-@@ -0,0 +1,53 @@
-+Silicon Image SiI9022 HDMI Encoder
-+=================
-+
-+Silicon Image SiI9022 is an HDMI encoder that encodes parallel RGB
-+signal to HDMI signal. The SiI9022 is controlled with i2c command, and
-+it has a single reset pin and single interrupt pin.
-+
-+Required properties:
-+- compatible: "sil,sii9022"
-+
-+Optional properties:
-+- reset-gpio: reset gpio
-+- interrupts: interrupt line
-+
-+Required nodes:
-+- Video port 0 for parallel video input
-+- Video port 1 for HDMI output
-+
-+Example
-+-------
-+
-+&i2c2 {
-+	sii9022: sii9022@3b {
-+		compatible = "sil,sii9022";
-+		reg = <0x3b>;
-+
-+		reset-gpio = <&gpio2 1 GPIO_ACTIVE_LOW>;
-+
-+		interrupt-parent = <&gpio1>;
-+		interrupts = <18 IRQ_TYPE_LEVEL_LOW>;
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				sii9022_in: endpoint {
-+					remote-endpoint = <&dpi_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				sii9022_out: endpoint {
-+					remote-endpoint = <&hdmi_connector_in>;
-+				};
-+			};
-+		};
-+	};
-+};
--- 
-1.9.1
+Gr{oetje,eeting}s,
 
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

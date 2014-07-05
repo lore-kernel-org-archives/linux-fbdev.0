@@ -1,37 +1,66 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 17:59:37 +0000
-Subject: [PATCH] video: fbdev: omap2: dss: sdi.c:  Cleaning up removal variable thet is never used
-Message-Id: <1404669577-15942-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:46:31 +0000
+Subject: [PATCH] video: fbdev: savage: savagefb.h:  Cleaning up variable that is never used
+Message-Id: <1404564391-21548-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404577396-25151-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404577396-25151-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Archit Taneja <archit@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Removal of struct member variable thet is never used
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
 This was found using a static code analysis program called cppcheck
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/omap2/dss/sdi.c |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/fbdev/savage/savagefb.h |   12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/sdi.c b/drivers/video/fbdev/omap2/dss/sdi.c
-index 911dcc9..c6491ac 100644
---- a/drivers/video/fbdev/omap2/dss/sdi.c
-+++ b/drivers/video/fbdev/omap2/dss/sdi.c
-@@ -34,7 +34,6 @@
- static struct {
- 	struct platform_device *pdev;
+diff --git a/drivers/video/fbdev/savage/savagefb.h b/drivers/video/fbdev/savage/savagefb.h
+index dcaab90..8ff4ab1 100644
+--- a/drivers/video/fbdev/savage/savagefb.h
++++ b/drivers/video/fbdev/savage/savagefb.h
+@@ -351,32 +351,26 @@ static inline void VGAwSEQ(u8 index, u8 val, struct savagefb_par *par)
  
--	bool update_enabled;
- 	struct regulator *vdds_sdi_reg;
+ static inline void VGAenablePalette(struct savagefb_par *par)
+ {
+-	u8 tmp;
+-
+-	tmp = vga_in8(0x3da, par);
++	vga_in8(0x3da, par);
+ 	vga_out8(0x3c0, 0x00, par);
+ 	par->paletteEnabled = 1;
+ }
  
- 	struct dss_lcd_mgr_config mgr_config;
+ static inline void VGAdisablePalette(struct savagefb_par *par)
+ {
+-	u8 tmp;
+-
+-	tmp = vga_in8(0x3da, par);
++	vga_in8(0x3da, par);
+ 	vga_out8(0x3c0, 0x20, par);
+ 	par->paletteEnabled = 0;
+ }
+ 
+ static inline void VGAwATTR(u8 index, u8 value, struct savagefb_par *par)
+ {
+-	u8 tmp;
+-
+ 	if (par->paletteEnabled)
+ 		index &= ~0x20;
+ 	else
+ 		index |= 0x20;
+ 
+-	tmp = vga_in8(0x3da, par);
++	vga_in8(0x3da, par);
+ 	vga_out8(0x3c0, index, par);
+ 	vga_out8 (0x3c0, value, par);
+ }
 -- 
 1.7.10.4
 

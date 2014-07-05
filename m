@@ -1,15 +1,15 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:45:34 +0000
-Subject: [PATCH] video: fbdev: neofb.c:  Cleaning up variable that is never used
-Message-Id: <1404672334-19313-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:42:29 +0000
+Subject: [PATCH] video: fbdev: omap2: dss: rfbi.c:  Cleaning up variable that is never used
+Message-Id: <1404564149-21193-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404563688-20603-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404563688-20603-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Joe Perches <joe@perches.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
 Variable ar assigned a value that is never used.
 I have also removed all the code that thereby serves no purpose.
@@ -18,50 +18,38 @@ This was found using a static code analysis program called cppcheck
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/neofb.c |    6 ------
- 1 file changed, 6 deletions(-)
+ drivers/video/fbdev/omap2/dss/rfbi.c |   11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
 
-diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
-index 44f99a6..b1779ae 100644
---- a/drivers/video/fbdev/neofb.c
-+++ b/drivers/video/fbdev/neofb.c
-@@ -701,8 +701,6 @@ neofb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 	if (memlen > vramlen) {
- 		var->yres_virtual =  vramlen * 8 / (var->xres_virtual *
- 				   	var->bits_per_pixel);
--		memlen = var->xres_virtual * var->bits_per_pixel *
--				var->yres_virtual / 8;
- 	}
+diff --git a/drivers/video/fbdev/omap2/dss/rfbi.c b/drivers/video/fbdev/omap2/dss/rfbi.c
+index c8a81a2..6f03bbb 100644
+--- a/drivers/video/fbdev/omap2/dss/rfbi.c
++++ b/drivers/video/fbdev/omap2/dss/rfbi.c
+@@ -574,7 +574,6 @@ static int rfbi_setup_te(enum omap_rfbi_te_mode mode,
+ {
+ 	int hs, vs;
+ 	int min;
+-	u32 l;
  
- 	/* we must round yres/xres down, we already rounded y/xres_virtual up
-@@ -1855,7 +1853,6 @@ static int neo_init_hw(struct fb_info *info)
- 	struct neofb_par *par = info->par;
- 	int videoRam = 896;
- 	int maxClock = 65000;
--	int CursorMem = 1024;
- 	int CursorOff = 0x100;
+ 	hs = ps_to_rfbi_ticks(hs_pulse_time, 1);
+ 	vs = ps_to_rfbi_ticks(vs_pulse_time, 1);
+@@ -595,15 +594,7 @@ static int rfbi_setup_te(enum omap_rfbi_te_mode mode,
+ 	rfbi_write_reg(RFBI_HSYNC_WIDTH, hs);
+ 	rfbi_write_reg(RFBI_VSYNC_WIDTH, vs);
  
- 	DBG("neo_init_hw");
-@@ -1907,19 +1904,16 @@ static int neo_init_hw(struct fb_info *info)
- 	case FB_ACCEL_NEOMAGIC_NM2070:
- 	case FB_ACCEL_NEOMAGIC_NM2090:
- 	case FB_ACCEL_NEOMAGIC_NM2093:
--		CursorMem = 2048;
- 		CursorOff = 0x100;
- 		break;
- 	case FB_ACCEL_NEOMAGIC_NM2097:
- 	case FB_ACCEL_NEOMAGIC_NM2160:
--		CursorMem = 1024;
- 		CursorOff = 0x100;
- 		break;
- 	case FB_ACCEL_NEOMAGIC_NM2200:
- 	case FB_ACCEL_NEOMAGIC_NM2230:
- 	case FB_ACCEL_NEOMAGIC_NM2360:
- 	case FB_ACCEL_NEOMAGIC_NM2380:
--		CursorMem = 1024;
- 		CursorOff = 0x1000;
+-	l = rfbi_read_reg(RFBI_CONFIG(0));
+-	if (hs_pol_inv)
+-		l &= ~(1 << 21);
+-	else
+-		l |= 1 << 21;
+-	if (vs_pol_inv)
+-		l &= ~(1 << 20);
+-	else
+-		l |= 1 << 20;
++	rfbi_read_reg(RFBI_CONFIG(0));
  
- 		par->neo2200 = (Neo2200 __iomem *) par->mmio_vbase;
+ 	return 0;
+ }
 -- 
 1.7.10.4
 

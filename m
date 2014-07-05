@@ -1,65 +1,44 @@
-From: Colin King <colin.king@canonical.com>
-Date: Thu, 12 Jun 2014 10:18:08 +0000
-Subject: [PATCH] video: fbdev: broadsheetfb.c: fix memory leak on sector_buffer
-Message-Id: <1402568288-10397-1-git-send-email-colin.king@canonical.com>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:12:05 +0000
+Subject: [PATCH] video: backlight: jornada720_lcd.c:  Cleaning up variable that is never used
+Message-Id: <1404562325-18471-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-static code analysis from cppcheck reports:
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
-[drivers/video/fbdev/broadsheetfb.c:673]:
-  (error) Memory leak: sector_buffer
+This was found using a static code analysis program called cppcheck
 
-sector_buffer is not being kfree'd on each call to
-broadsheet_spiflash_rewrite_sector(), so free it.
-
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/broadsheetfb.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/video/backlight/jornada720_lcd.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/broadsheetfb.c b/drivers/video/fbdev/broadsheetfb.c
-index 8556264..235542f 100644
---- a/drivers/video/fbdev/broadsheetfb.c
-+++ b/drivers/video/fbdev/broadsheetfb.c
-@@ -636,7 +636,7 @@ static int broadsheet_spiflash_rewrite_sector(struct broadsheetfb_par *par,
- 		err = broadsheet_spiflash_read_range(par, start_sector_addr,
- 						data_start_addr, sector_buffer);
- 		if (err)
--			return err;
-+			goto out;
- 	}
+diff --git a/drivers/video/backlight/jornada720_lcd.c b/drivers/video/backlight/jornada720_lcd.c
+index da3876c..b304319 100644
+--- a/drivers/video/backlight/jornada720_lcd.c
++++ b/drivers/video/backlight/jornada720_lcd.c
+@@ -56,12 +56,10 @@ static int jornada_lcd_get_contrast(struct lcd_device *ld)
  
- 	/* now we copy our data into the right place in the sector buffer */
-@@ -657,7 +657,7 @@ static int broadsheet_spiflash_rewrite_sector(struct broadsheetfb_par *par,
- 		err = broadsheet_spiflash_read_range(par, tail_start_addr,
- 			tail_len, sector_buffer + tail_start_addr);
- 		if (err)
--			return err;
-+			goto out;
- 	}
+ static int jornada_lcd_set_contrast(struct lcd_device *ld, int value)
+ {
+-	int ret;
+-
+ 	jornada_ssp_start();
  
- 	/* if we got here we have the full sector that we want to rewrite. */
-@@ -665,11 +665,13 @@ static int broadsheet_spiflash_rewrite_sector(struct broadsheetfb_par *par,
- 	/* first erase the sector */
- 	err = broadsheet_spiflash_erase_sector(par, start_sector_addr);
- 	if (err)
--		return err;
-+		goto out;
+ 	/* start by sending our set contrast cmd to mcu */
+-	ret = jornada_ssp_byte(SETCONTRAST);
++	jornada_ssp_byte(SETCONTRAST);
  
- 	/* now write it */
- 	err = broadsheet_spiflash_write_sector(par, start_sector_addr,
- 					sector_buffer, sector_size);
-+out:
-+	kfree(sector_buffer);
- 	return err;
- }
- 
+ 	/* push the new value */
+ 	if (jornada_ssp_byte(value) != TXDUMMY) {
 -- 
-2.0.0
+1.7.10.4
 

@@ -1,78 +1,72 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 04 Jul 2014 08:02:57 +0000
-Subject: Re: [PATCH 0/4] SiI9022 HDMI encoder for AM4xxx boards
-Message-Id: <53B65FB1.5020901@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="BHvgkEVcAxpdG7S5NU41qDQL688NiQD9V"
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:26:04 +0000
+Subject: [PATCH] video: fbdev: kyro: STG4000InitDevice.c:  Cleaning up variable that is never used
+Message-Id: <1404563164-19855-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404394800-18138-1-git-send-email-tomi.valkeinen@ti.com>
- <87k37u7bp5.fsf@lebrac.rtp-net.org>
-In-Reply-To: <87k37u7bp5.fsf@lebrac.rtp-net.org>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---BHvgkEVcAxpdG7S5NU41qDQL688NiQD9V
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-On 03/07/14 17:34, Arnaud Patard wrote:
-> Tomi Valkeinen <tomi.valkeinen@ti.com> writes:
->=20
->> Hi,
->=20
-> Hi,
->=20
->>
->> This series adds a driver for SiI9022 HDMI encoder, which is used on A=
-M437x GP
->> and AM43x EPOS boards.
->>
->> The series is based on the OMAPDSS HDMI infoframe series sent earlier,=
- as the
->> SiI9022 driver uses the new infoframe support.
->=20
-> Is there any small possibility to not make it an omap specific driver?
-> There are other boards with sii9022 out there. imx5x dev boards could
-> receive a daughter board with this chip (both sold by Freescale) and
-> efikamx platform has it too. I think that some old msm platforms has it=
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
-> too.
-> I've not compared the code of the drivers and don't know how the sii902=
-2
-> works but would be annoying to have 2 or more drivers for the same piec=
-e
-> of HW. imho, it would be nice if it could be avoided.
+This was found using a static code analysis program called cppcheck
 
-No, not at the moment. There is no framework to create generic drivers
-for display components.
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/kyro/STG4000InitDevice.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-There has been work towards that (google for "Common Display
-Framework"), but that is far from finished.
+diff --git a/drivers/video/fbdev/kyro/STG4000InitDevice.c b/drivers/video/fbdev/kyro/STG4000InitDevice.c
+index 1d3f2080..21875d3 100644
+--- a/drivers/video/fbdev/kyro/STG4000InitDevice.c
++++ b/drivers/video/fbdev/kyro/STG4000InitDevice.c
+@@ -120,7 +120,7 @@ u32 ProgramClock(u32 refClock,
+ {
+ 	u32 R = 0, F = 0, OD = 0, ODIndex = 0;
+ 	u32 ulBestR = 0, ulBestF = 0, ulBestOD = 0;
+-	u32 ulBestVCO = 0, ulBestClk = 0, ulBestScore = 0;
++	u32 ulBestClk = 0, ulBestScore = 0;
+ 	u32 ulScore, ulPhaseScore, ulVcoScore;
+ 	u32 ulTmp = 0, ulVCO;
+ 	u32 ulScaleClockReq, ulMinClock, ulMaxClock;
+@@ -189,7 +189,6 @@ u32 ProgramClock(u32 refClock,
+ 						ulScore = ulPhaseScore + ulVcoScore;
+ 
+ 						if (!ulBestScore) {
+-							ulBestVCO = ulVCO;
+ 							ulBestOD = OD;
+ 							ulBestF = F;
+ 							ulBestR = R;
+@@ -206,7 +205,6 @@ u32 ProgramClock(u32 refClock,
+                           but we shall keep this code in case new restrictions come into play
+                           --------------------------------------------------------------------------*/
+ 						if ((ulScore >= ulBestScore) && (OD > 0)) {
+-							ulBestVCO = ulVCO;
+ 							ulBestOD = OD;
+ 							ulBestF = F;
+ 							ulBestR = R;
+@@ -244,7 +242,6 @@ int SetCoreClockPLL(volatile STG4000REG __iomem *pSTGReg, struct pci_dev *pDev)
+ {
+ 	u32 F, R, P;
+ 	u16 core_pll = 0, sub;
+-	u32 ulCoreClock;
+ 	u32 tmp;
+ 	u32 ulChipSpeed;
+ 
+@@ -282,7 +279,7 @@ int SetCoreClockPLL(volatile STG4000REG __iomem *pSTGReg, struct pci_dev *pDev)
+ 	if (ulChipSpeed = 0)
+ 		return -EINVAL;
+ 
+-	ulCoreClock = ProgramClock(REF_FREQ, CORE_PLL_FREQ, &F, &R, &P);
++	ProgramClock(REF_FREQ, CORE_PLL_FREQ, &F, &R, &P);
+ 
+ 	core_pll |= ((P) | ((F - 2) << 2) | ((R - 2) << 11));
+ 
+-- 
+1.7.10.4
 
- Tomi
-
-
-
---BHvgkEVcAxpdG7S5NU41qDQL688NiQD9V
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTtl+0AAoJEPo9qoy8lh71r5gP/3AY24J1vqen2aqul9iPSgI4
-2hbkoWJ5QN7FNTwlNDBqUEJoG5iv3H9XqewhB5OVt9bC5DU/2ifRV3GNJPWtwn37
-GEBtztSqU3DwJP7/tXqpNpF600RDARaT7+6I4s5an4GOhbYNAS+yY8Lhe7QAvjvH
-Vu8jbQd4obxcFk756w3XOMZ4dkWg6IDKsxImT7PIVc/CC0GHNeHTCJGkJgZGmc5U
-nypGneSL+XuqFF1W2hNvSjiW2amQhsw0kr+uYrK0/bKLvGnLN+uvGrnFGtwqYmTc
-Jils3ZajKly30cQ9LBufSzQ/fSbRWvCv5rCrFcVPUmqW4aR3eJBu3cDCLa8zZrfy
-MuL57H9uZDE6YMC90s1jRKGAuNGq4NOsss/vvxNowVLTxONNwOteRQF+MvED8kPC
-y7bsNQVCxCDfWt8A6pIueEYdjP0H7pCjYTBJWJoR6774x0zvYTn7Ii/OcSRWRnzC
-y7EJI8qbAEQO2DjQFrspBbo+9jNG0QFr2BLSnoCv2HEMa1MEawHeObtkVCKg85W0
-C3m+lju5A0h3hsbzP9eEMaMxtyG17dYtH56cwYEXYX7NyCuvPmoRlYD88U/fkRBQ
-7KrMldkihcKCUeCINmk4/Ka1fvdfrVT1tAfG/Xy57SjOAXWPjAxMYtc7691c76ZX
-t6uZqlNjXWeDIK33UR9h
-=j3k3
------END PGP SIGNATURE-----
-
---BHvgkEVcAxpdG7S5NU41qDQL688NiQD9V--

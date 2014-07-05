@@ -1,26 +1,37 @@
-From: Webmail Admin <jcampos@munisjl.gob.pe>
-Date: Tue, 29 Jul 2014 15:17:24 +0000
-Subject: Mailbox Warning
-Message-Id: <20140729150732.996006D20C8@zirius.ipresspublicas.gob.pe>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 13:09:31 +0000
+Subject: [PATCH] video: fbdev: vga16fb.c:  Cleaning up useless assignment of function parameter
+Message-Id: <1404565771-22515-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140729121801.E5D1B4D1577@zirius.ipresspublicas.gob.pe>
-In-Reply-To: <20140729121801.E5D1B4D1577@zirius.ipresspublicas.gob.pe>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Recipients <jcampos@munisjl.gob.pe>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Luis Henriques <luis.henriques@canonical.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Email Account Warning !!!
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-This mail is from Administrator; we wish to bring to your notice the Condition of your email account.
-We have just noticed that you have exceeded your email Database limit of 500 MB quota and your email IP is causing conflict because it is been accessed in different server location. You need to Upgrade and expand your email quota limit before you can continue to use your email. Provide details or click the link below :
+Removal of assignment of function parameter, that has no effect outside the function
 
+This was found using a static code analysis program called cppcheck
 
-Update your email quota limit to 2.6 GB, use the below web link:
-      https://www.formlogix.com/Manager/UserConditionalSurvey248587.aspx?Param=VXNlcklkPTI0ODU4Ny5Gb3JtSWQ9MQ%3d%3d
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/vga16fb.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Failure to do this will result to email deactivation within 24hours
-Thank you for your understanding.
+diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
+index 283d335..d92e4fd 100644
+--- a/drivers/video/fbdev/vga16fb.c
++++ b/drivers/video/fbdev/vga16fb.c
+@@ -275,7 +275,6 @@ static void vga16fb_clock_chip(struct vga16fb_par *par,
+ 	}
+ 	par->misc |= best->misc;
+ 	par->clkdiv = best->seq_clock_mode;
+-	pixclock = (best->pixclock * div) / mul;		
+ }
+ 			       
+ #define FAIL(X) return -EINVAL
+-- 
+1.7.10.4
 
-Copyright 2014 Help Desk
-Email Upgrade 

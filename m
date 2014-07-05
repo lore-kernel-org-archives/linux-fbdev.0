@@ -1,52 +1,56 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 01 Jul 2014 10:18:11 +0000
-Subject: Re: [PATCH V3] MAINTAINERS: Update Framebuffer file patterns
-Message-Id: <53B28AE3.7080304@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="62ll6SwW23F943B5L5ofA57g1JagNw7Nj"
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:28:00 +0000
+Subject: [PATCH] video: fbdev: mb862xx: mb862xx-i2c.c:  Cleaning up variable that is never used
+Message-Id: <1404563280-20023-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <002601cf94f6$b9ea9d20$2dbfd760$%han@samsung.com>
-In-Reply-To: <002601cf94f6$b9ea9d20$2dbfd760$%han@samsung.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---62ll6SwW23F943B5L5ofA57g1JagNw7Nj
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-On 01/07/14 09:36, Jingoo Han wrote:
-> Since the commit f7018c2 "video: move fbdev to drivers/video/fbdev",
-> all framebuffer drivers were moved to fbdev directory. Thus, file
-> patterns of these framebuffer drivers should be updated correctly.
->=20
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
-Thanks, queued for 3.17.
+This was found using a static code analysis program called cppcheck
 
- Tomi
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/mb862xx/mb862xx-i2c.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
+diff --git a/drivers/video/fbdev/mb862xx/mb862xx-i2c.c b/drivers/video/fbdev/mb862xx/mb862xx-i2c.c
+index c87e17a..6b9769f 100644
+--- a/drivers/video/fbdev/mb862xx/mb862xx-i2c.c
++++ b/drivers/video/fbdev/mb862xx/mb862xx-i2c.c
+@@ -20,7 +20,6 @@
+ 
+ static int mb862xx_i2c_wait_event(struct i2c_adapter *adap)
+ {
+-	struct mb862xxfb_par *par = adap->algo_data;
+ 	u32 reg;
+ 
+ 	do {
+@@ -48,8 +47,6 @@ static int mb862xx_i2c_do_address(struct i2c_adapter *adap, int addr)
+ 
+ static int mb862xx_i2c_write_byte(struct i2c_adapter *adap, u8 byte)
+ {
+-	struct mb862xxfb_par *par = adap->algo_data;
+-
+ 	outreg(i2c, GC_I2C_DAR, byte);
+ 	outreg(i2c, GC_I2C_BCR, I2C_START);
+ 	if (!mb862xx_i2c_wait_event(adap))
+@@ -59,8 +56,6 @@ static int mb862xx_i2c_write_byte(struct i2c_adapter *adap, u8 byte)
+ 
+ static int mb862xx_i2c_read_byte(struct i2c_adapter *adap, u8 *byte, int last)
+ {
+-	struct mb862xxfb_par *par = adap->algo_data;
+-
+ 	outreg(i2c, GC_I2C_BCR, I2C_START | (last ? 0 : I2C_ACK));
+ 	if (!mb862xx_i2c_wait_event(adap))
+ 		return 0;
+-- 
+1.7.10.4
 
-
---62ll6SwW23F943B5L5ofA57g1JagNw7Nj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJTsorjAAoJEPo9qoy8lh71mYYQAJ+MEmyPwYssQTr1G4owwnOi
-LQ07sNZ6ewHax7z5mMb3bGgg6fEN40zTEitPhDh3cC1VSNjuIb4iMb0se8UPgKCv
-DocEyhJDdn/b/nVue6GlhXFt6kq43OE1ZLF5cCnoTXt1R2FFRQhSiUOIpxV877/O
-iiOkvs9MG4hXmzHvvQcQs9+fvwKQx4jimdgvvRYqTIajR1J/EYYvD6n8ygAyhNId
-YHvy71NapNIhpOrIXUruary/Hte7GMMYlc3adWXTtvUJ2kHiPM1OYItC2D8rRXHH
-8/QuZSh5t/k2VOBXvboqLsuLHUdxT0DuAa+M8xnC4I3fxO+/2Z4Trq64fbxWQpqK
-QjTQFMGmTtViAl6JvYLEhlJhZm3XHV5uIlxmvVGm+5bg+xUJxMEQmAsVcJMtFeMn
-bOktkIxW959CPiedJcVgLqnmX+Z2kEJ6D4X5QFJjJk7ndRwIe/93s0RAcc2J/hnZ
-8Jo/7MQN5au53F67yb6kOp+Dpy6dUGOc5KR5/m6SYGHSBZ2swzuJ+Dtv9V7EzJcH
-Wez0Y2HCdB42+6nuuUkU64TYy2Vzjdwth9LJynoPAhDbpuZ+BU5ek6lQaRUiosHW
-QAbOuivSyeVufyYYkhM4X3fQ/+T1UOVgb9seYgeqg4G5L42ILpmefgD5uhxOz4IP
-O2qcHzP9y49eg2EWs/ID
-=mTji
------END PGP SIGNATURE-----
-
---62ll6SwW23F943B5L5ofA57g1JagNw7Nj--

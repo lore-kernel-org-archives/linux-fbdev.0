@@ -1,56 +1,48 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Mon, 07 Jul 2014 20:52:26 +0000
-Subject: Re: [PATCH] video: fbdev: core: fbmon.c: Cleaning up useless assignment of function parameter
-Message-Id: <CAFo99gaWUTzbxgmA6ahtFhCOBog1iYBx1oSvr9m_rAQgcNq6oA@mail.gmail.com>
+Date: Sat, 05 Jul 2014 12:40:06 +0000
+Subject: [PATCH] video: fbdev: omap2: dss: hdmi4_core.c:  Cleaning up variable that is never used
+Message-Id: <1404564007-21024-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404667555-14675-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-	<CAMuHMdV++wyFLbqmnqEBTrWdgTNKpy=r9-mYFhQGCj7kUUUhKQ@mail.gmail.com>
-In-Reply-To: <CAMuHMdV++wyFLbqmnqEBTrWdgTNKpy=r9-mYFhQGCj7kUUUhKQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, David Ung <davidu@nvidia.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Archit Taneja <archit@ti.com>, Ricardo Neri <ricardo.neri@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Mythri P K <mythripk@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-2014-07-07 22:43 GMT+02:00 Geert Uytterhoeven <geert@linux-m68k.org>:
-> On Sun, Jul 6, 2014 at 7:25 PM, Rickard Strandqvist
-> <rickard_strandqvist@spectrumdigital.se> wrote:
->> Remove assignment of function parameter, that has no effect outside the function
->>
->> This was found using a static code analysis program called cppcheck
->>
->> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
->> ---
->>  drivers/video/fbdev/core/fbmon.c |    1 -
->>  1 file changed, 1 deletion(-)
->>
->> diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
->> index 5b0e313..71ec1ab 100644
->> --- a/drivers/video/fbdev/core/fbmon.c
->> +++ b/drivers/video/fbdev/core/fbmon.c
->> @@ -1481,7 +1481,6 @@ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
->>  }
->>  void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
->>  {
->> -       specs = NULL;
->
-> I guess the intention was:
->
-> memset(specs, 0, sizeof(struct fb_monspecs));
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
-Hi Geert!
+This was found using a static code analysis program called cppcheck
 
-Yeah, maybe. Just looks to be a little too elementary mistake..?
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/omap2/dss/hdmi4_core.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-But do you want me to change it to that?
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+index 8bde7b7..0af76d2 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+@@ -796,7 +796,7 @@ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 	struct hdmi_audio_format audio_format;
+ 	struct hdmi_audio_dma audio_dma;
+ 	struct hdmi_core_audio_config acore;
+-	int err, n, cts, channel_count;
++	int n, cts, channel_count;
+ 	unsigned int fs_nr;
+ 	bool word_length_16b = false;
+ 
+@@ -858,7 +858,7 @@ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 		return -EINVAL;
+ 	}
+ 
+-	err = hdmi_compute_acr(pclk, fs_nr, &n, &cts);
++	hdmi_compute_acr(pclk, fs_nr, &n, &cts);
+ 
+ 	/* Audio clock regeneration settings */
+ 	acore.n = n;
+-- 
+1.7.10.4
 
-With a:
-if(specs)
-  memset()
-
-maybe..?
-
-
-Kind regards
-Rickard Strandqvist

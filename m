@@ -1,15 +1,15 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:55:08 +0000
-Subject: [PATCH] video: fbdev: pxa168fb.c:  Cleaning up variable that is never used
-Message-Id: <1404672908-20071-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:28:59 +0000
+Subject: [PATCH] video: fbdev: mb862xx: mb862xxfb_accel.c:  Cleaning up variable that is never used
+Message-Id: <1404563339-20105-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404564274-21364-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404564274-21364-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
 Variable ar assigned a value that is never used.
 I have also removed all the code that thereby serves no purpose.
@@ -18,41 +18,46 @@ This was found using a static code analysis program called cppcheck
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/pxa168fb.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/mb862xx/mb862xxfb_accel.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
-index c95b9e4..fd6c56b 100644
---- a/drivers/video/fbdev/pxa168fb.c
-+++ b/drivers/video/fbdev/pxa168fb.c
-@@ -405,9 +405,8 @@ static int pxa168fb_set_par(struct fb_info *info)
- 	struct fb_var_screeninfo *var = &info->var;
- 	struct fb_videomode mode;
- 	u32 x;
--	struct pxa168fb_mach_info *mi;
+diff --git a/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c b/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c
+index fe92eed..aa778ba 100644
+--- a/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c
++++ b/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c
+@@ -28,7 +28,6 @@
  
--	mi = dev_get_platdata(fbi->dev);
-+	dev_get_platdata(fbi->dev);
- 
- 	/*
- 	 * Set additional mode info.
-@@ -787,7 +786,6 @@ static int pxa168fb_remove(struct platform_device *pdev)
+ static void mb862xxfb_write_fifo(u32 count, u32 *data, struct fb_info *info)
  {
- 	struct pxa168fb_info *fbi = platform_get_drvdata(pdev);
- 	struct fb_info *info;
--	int irq;
- 	unsigned int data;
+-	struct mb862xxfb_par *par = info->par;
+ 	static u32 free;
  
- 	if (!fbi)
-@@ -807,7 +805,7 @@ static int pxa168fb_remove(struct platform_device *pdev)
- 	if (info->cmap.len)
- 		fb_dealloc_cmap(&info->cmap);
+ 	u32 total = 0;
+@@ -188,7 +187,6 @@ static void mb86290fb_imageblit16(u32 *cmd, u16 step, u16 dx, u16 dy,
+ static void mb86290fb_imageblit(struct fb_info *info,
+ 				const struct fb_image *image)
+ {
+-	int mdr;
+ 	u32 *cmd = NULL;
+ 	void (*cmdfn) (u32 *, u16, u16, u16, u16, u16, u32, u32,
+ 		       const struct fb_image *, struct fb_info *) = NULL;
+@@ -200,7 +198,6 @@ static void mb86290fb_imageblit(struct fb_info *info,
+ 	u16 dx = image->dx, dy = image->dy;
+ 	int x2, y2, vxres, vyres;
  
--	irq = platform_get_irq(pdev, 0);
-+	platform_get_irq(pdev, 0);
+-	mdr = (GDC_ROP_COPY << 9);
+ 	x2 = image->dx + image->width;
+ 	y2 = image->dy + image->height;
+ 	vxres = info->var.xres_virtual;
+@@ -309,8 +306,6 @@ static void mb86290fb_fillrect(struct fb_info *info,
  
- 	dma_free_writecombine(fbi->dev, PAGE_ALIGN(info->fix.smem_len),
- 				info->screen_base, info->fix.smem_start);
+ void mb862xxfb_init_accel(struct fb_info *info, int xres)
+ {
+-	struct mb862xxfb_par *par = info->par;
+-
+ 	if (info->var.bits_per_pixel = 32) {
+ 		info->fbops->fb_fillrect = cfb_fillrect;
+ 		info->fbops->fb_copyarea = cfb_copyarea;
 -- 
 1.7.10.4
 

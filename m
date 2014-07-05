@@ -1,39 +1,57 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 22 Jul 2014 12:49:22 +0000
-Subject: Re: PATCH] video: fix up versatile CLCD helper move
-Message-Id: <CACRpkdb3hFm6+NzdY6PNh-u5JE90mxSBXrLvxA=gOrG_gYD0kw@mail.gmail.com>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:22:12 +0000
+Subject: [PATCH] video: fbdev: gbefb.c:  Cleaning up variable that is never used
+Message-Id: <1404562932-19522-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <9561883.zqovrcBa4A@wuerfel>
-In-Reply-To: <9561883.zqovrcBa4A@wuerfel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Masanari Iida <standby24x7@gmail.com>, "H. Peter Anvin" <hpa@linux.intel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Jul 15, 2014 at 10:39 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-> commit 11c32d7b6274cb0f ("video: move Versatile CLCD helpers")
-> moved files out of the plat-versatile directory but in the process
-> got a few of the dependencies wrong:
->
-> - If CONFIG_FB is not set, the file no longer gets built, resulting
->   in a link error
-> - If CONFIG_FB or CONFIG_FB_ARMCLCD are disabled, we also get a
->   Kconfig warning for incorrect dependencies due to the symbol
->   being 'select'ed from the platform Kconfig.
-> - When the file is not built, we also get a link error for missing
->   symbols.
->
-> This patch should fix all three, by removing the 'select' statements,
-> changing the Kconfig description of the symbol to be enabled in
-> exactly the right configurations, and adding inline stub functions
-> for the case when the framebuffer driver is disabled.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
-Excellent, thanks a lot Arnd! I struggled with this but didn't
-get it right after all :-/
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+This was found using a static code analysis program called cppcheck
 
-Yours,
-Linus Walleij
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/gbefb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
+index 4aa56ba..4227570 100644
+--- a/drivers/video/fbdev/gbefb.c
++++ b/drivers/video/fbdev/gbefb.c
+@@ -205,7 +205,7 @@ static void gbe_reset(void)
+ static void gbe_turn_off(void)
+ {
+ 	int i;
+-	unsigned int val, x, y, vpixen_off;
++	unsigned int val, y, vpixen_off;
+ 
+ 	gbe_turned_on = 0;
+ 
+@@ -256,7 +256,7 @@ static void gbe_turn_off(void)
+ 
+ 	for (i = 0; i < 100000; i++) {
+ 		val = gbe->vt_xy;
+-		x = GET_GBE_FIELD(VT_XY, X, val);
++		GET_GBE_FIELD(VT_XY, X, val);
+ 		y = GET_GBE_FIELD(VT_XY, Y, val);
+ 		if (y < vpixen_off)
+ 			break;
+@@ -267,7 +267,7 @@ static void gbe_turn_off(void)
+ 		       "gbefb: wait for vpixen_off timed out\n");
+ 	for (i = 0; i < 10000; i++) {
+ 		val = gbe->vt_xy;
+-		x = GET_GBE_FIELD(VT_XY, X, val);
++		GET_GBE_FIELD(VT_XY, X, val);
+ 		y = GET_GBE_FIELD(VT_XY, Y, val);
+ 		if (y > vpixen_off)
+ 			break;
+-- 
+1.7.10.4
+

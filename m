@@ -1,44 +1,37 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 19:03:24 +0000
-Subject: [PATCH] video: fbdev: via: lcd.c:  Cleaning up variable that is never used
-Message-Id: <1404673404-20755-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 16:23:16 +0000
+Subject: [PATCH] video: fbdev: omap2: dss: sdi.c:  Cleaning up removal variable thet is never used
+Message-Id: <1404577396-25151-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404564798-22148-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404564798-22148-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Archit Taneja <archit@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Variable ar assigned a value that is never used.
-I have also removed all the code that thereby serves no purpose.
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+
+Removal of struct member variable thet is never used
 
 This was found using a static code analysis program called cppcheck
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/via/lcd.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/omap2/dss/sdi.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd.c
-index 5d21ff4..c15ed30 100644
---- a/drivers/video/fbdev/via/lcd.c
-+++ b/drivers/video/fbdev/via/lcd.c
-@@ -551,11 +551,11 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
- 	u32 clock;
- 	struct via_display_timing timing;
- 	struct fb_var_screeninfo panel_var;
--	const struct fb_videomode *mode_crt_table, *panel_crt_table;
-+	const struct fb_videomode, *panel_crt_table;
+diff --git a/drivers/video/fbdev/omap2/dss/sdi.c b/drivers/video/fbdev/omap2/dss/sdi.c
+index 911dcc9..c6491ac 100644
+--- a/drivers/video/fbdev/omap2/dss/sdi.c
++++ b/drivers/video/fbdev/omap2/dss/sdi.c
+@@ -34,7 +34,6 @@
+ static struct {
+ 	struct platform_device *pdev;
  
- 	DEBUG_MSG(KERN_INFO "viafb_lcd_set_mode!!\n");
- 	/* Get mode table */
--	mode_crt_table = viafb_get_best_mode(set_hres, set_vres, 60);
-+	viafb_get_best_mode(set_hres, set_vres, 60);
- 	/* Get panel table Pointer */
- 	panel_crt_table = viafb_get_best_mode(panel_hres, panel_vres, 60);
- 	viafb_fill_var_timing_info(&panel_var, panel_crt_table);
+-	bool update_enabled;
+ 	struct regulator *vdds_sdi_reg;
+ 
+ 	struct dss_lcd_mgr_config mgr_config;
 -- 
 1.7.10.4
 

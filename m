@@ -1,54 +1,77 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Wed, 23 Jul 2014 20:37:40 +0000
-Subject: Re: [PATCH] video: fbdev: uvesafb.c: Cleaning up variable that is never used
-Message-Id: <CAFo99gZfTLwSGikUa_nnmvJOBvzaOFJjEDmKbbJqjGgYZ7Y+GA@mail.gmail.com>
+Date: Sat, 05 Jul 2014 12:13:13 +0000
+Subject: [PATCH] video: fbdev: amifb.c:  Cleaning up variable that is never used
+Message-Id: <1404562393-18641-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404564682-21983-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-	<20140721212527.GC3824@amd.pavel.ucw.cz>
-	<CAFo99gYhrNR68mdJY=fn1x-+4U=6gdv=C4-Xn-w-YJAPSa5bBQ@mail.gmail.com>
-	<20140722092757.GA8796@amd.pavel.ucw.cz>
-In-Reply-To: <20140722092757.GA8796@amd.pavel.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Joe Perches <joe@perches.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sachin Kamat <sachin.kamat@linaro.org>, Evgeniy Polyakov <zbr@ioremap.net>, Wang YanQing <udknight@gmail.com>, Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Jingoo Han <jg1.han@samsung.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, David Fries <David@fries.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Geert Uytterhoeven <geert@linux-m68k.org>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Sachin Kamat <sachin.kamat@linaro.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-There is a lot in what you say.
-In the beginning I send in a remark to the maintainer. It happened
-absolutely nothing.
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
-When I send out a patch that code is not used, then this code will be
-reviewed. Which is the main purpose!
+This was found using a static code analysis program called cppcheck
 
-However, agree that this was perhaps an unusually clear solution.
-I submit such a patch now.
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/amifb.c |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-Kind regards
-Rickard Strandqvist
+diff --git a/drivers/video/fbdev/amifb.c b/drivers/video/fbdev/amifb.c
+index 518f790..19ed1fa 100644
+--- a/drivers/video/fbdev/amifb.c
++++ b/drivers/video/fbdev/amifb.c
+@@ -1124,7 +1124,6 @@ static int ami_decode_var(struct fb_var_screeninfo *var, struct amifb_par *par,
+ {
+ 	u_short clk_shift, line_shift;
+ 	u_long maxfetchstop, fstrt, fsize, fconst, xres_n, yres_n;
+-	u_int htotal, vtotal;
+ 
+ 	/*
+ 	 * Find a matching Pixel Clock
+@@ -1270,8 +1269,6 @@ static int ami_decode_var(struct fb_var_screeninfo *var, struct amifb_par *par,
+ 				DPRINTK("diwstrt_v too low for pal\n");
+ 				return -EINVAL;
+ 			}
+-			htotal = PAL_HTOTAL>>clk_shift;
+-			vtotal = PAL_VTOTAL>>1;
+ 			if (!IS_OCS) {
+ 				par->beamcon0 = BMC0_PAL;
+ 				par->bplcon3 |= BPC3_BRDRBLNK;
+@@ -1300,8 +1297,6 @@ static int ami_decode_var(struct fb_var_screeninfo *var, struct amifb_par *par,
+ 				DPRINTK("diwstrt_v too low for ntsc\n");
+ 				return -EINVAL;
+ 			}
+-			htotal = NTSC_HTOTAL>>clk_shift;
+-			vtotal = NTSC_VTOTAL>>1;
+ 			if (!IS_OCS) {
+ 				par->beamcon0 = 0;
+ 				par->bplcon3 |= BPC3_BRDRBLNK;
+@@ -1360,8 +1355,6 @@ static int ami_decode_var(struct fb_var_screeninfo *var, struct amifb_par *par,
+ 			par->beamcon0 |= BMC0_VSYTRUE;
+ 		if (var->sync & FB_SYNC_COMP_HIGH_ACT)
+ 			par->beamcon0 |= BMC0_CSYTRUE;
+-		htotal = par->htotal>>clk_shift;
+-		vtotal = par->vtotal>>1;
+ 	} else {
+ 		DPRINTK("only broadcast modes possible for ocs\n");
+ 		return -EINVAL;
+@@ -1847,10 +1840,9 @@ static int ami_get_var_cursorinfo(struct fb_var_cursorinfo *var,
+ 	register short delta;
+ 	register u_char color;
+ 	short height, width, bits, words;
+-	int size, alloc;
++	int size;
+ 
+ 	size = par->crsr.height * par->crsr.width;
+-	alloc = var->height * var->width;
+ 	var->height = par->crsr.height;
+ 	var->width = par->crsr.width;
+ 	var->xspot = par->crsr.spot_x;
+-- 
+1.7.10.4
 
-
-2014-07-22 11:27 GMT+02:00 Pavel Machek <pavel@ucw.cz>:
-> On Tue 2014-07-22 11:16:58, Rickard Strandqvist wrote:
->> Hi
->>
->> Sure, I agree. But as I thought that I would not change
->> currentfunctionality, I would increase the chance that the patches were
->> included. And it would of course also clarify this type of problem.
->
-> I'm trying to say that getting rid of the variables without changing
-> functionality might be wrong thing to do, for example in this case. It
-> looks like error handing is missing by mistake, and you are removing
-> traces saying that error handing is required here.
->
-> Dunno. Perhaps don't push patches where solution is not obvious?
->
-> Or push them but mark the place with fixme?
->
->                                                                         Pavel
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

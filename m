@@ -1,51 +1,44 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 30 Jul 2014 07:42:04 +0000
-Subject: Re: [PATCH -next] backlight: ipaq_micro: Fix sparse non static symbol warning
-Message-Id: <20140730074204.GE9030@lee--X1>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:53:18 +0000
+Subject: [PATCH] video: fbdev: via: lcd.c:  Cleaning up variable that is never used
+Message-Id: <1404564798-22148-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAK5ve-K6WpvN++xdKsHw=-BipV-mYh1PP63G78K=ExynBD9VGQ@mail.gmail.com>
-In-Reply-To: <CAK5ve-K6WpvN++xdKsHw=-BipV-mYh1PP63G78K=ExynBD9VGQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 30 Jul 2014, weiyj_lk@163.com wrote:
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->=20
-> Fixes the following sparse warnings:
->=20
-> drivers/video/backlight/ipaq_micro_bl.c:73:24: warning:
->  symbol 'micro_backlight_device_driver' was not declared. Should it be st=
-atic?
->=20
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
-> ---
->  drivers/video/backlight/ipaq_micro_bl.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
-Applied with Bryan's Ack.
+This was found using a static code analysis program called cppcheck
 
-> diff --git a/drivers/video/backlight/ipaq_micro_bl.c b/drivers/video/back=
-light/ipaq_micro_bl.c
-> index feab29c..347dc11 100644
-> --- a/drivers/video/backlight/ipaq_micro_bl.c
-> +++ b/drivers/video/backlight/ipaq_micro_bl.c
-> @@ -70,7 +70,7 @@ static int micro_backlight_probe(struct platform_device=
- *pdev)
->  	return 0;
->  }
-> =20
-> -struct platform_driver micro_backlight_device_driver =3D {
-> +static struct platform_driver micro_backlight_device_driver =3D {
->  	.driver =3D {
->  		.name    =3D "ipaq-micro-backlight",
->  	},
->=20
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/via/lcd.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd.c
+index 5d21ff4..c15ed30 100644
+--- a/drivers/video/fbdev/via/lcd.c
++++ b/drivers/video/fbdev/via/lcd.c
+@@ -551,11 +551,11 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
+ 	u32 clock;
+ 	struct via_display_timing timing;
+ 	struct fb_var_screeninfo panel_var;
+-	const struct fb_videomode *mode_crt_table, *panel_crt_table;
++	const struct fb_videomode, *panel_crt_table;
+ 
+ 	DEBUG_MSG(KERN_INFO "viafb_lcd_set_mode!!\n");
+ 	/* Get mode table */
+-	mode_crt_table = viafb_get_best_mode(set_hres, set_vres, 60);
++	viafb_get_best_mode(set_hres, set_vres, 60);
+ 	/* Get panel table Pointer */
+ 	panel_crt_table = viafb_get_best_mode(panel_hres, panel_vres, 60);
+ 	viafb_fill_var_timing_info(&panel_var, panel_crt_table);
+-- 
+1.7.10.4
+

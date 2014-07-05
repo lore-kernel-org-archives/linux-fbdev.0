@@ -1,58 +1,56 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 29 Jul 2014 11:30:56 +0000
-Subject: Re: [PATCH 3/3] driver:gpio remove all usage of gpio_remove retval in driver
-Message-Id: <53D785F0.1000309@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nDvig6w1IaO5idwNJGff6KXjnBUdsJGt1"
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:25:06 +0000
+Subject: [PATCH] video: fbdev: intelfb: intelfbhw.c:  Cleaning up variable that is never used
+Message-Id: <1404563106-19774-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CACRpkda6mzVdaN0cvOxpbsxWyCv2nGyDXOjZg_5aT8u7SSQeUw@mail.gmail.com>	<1405197014-25225-1-git-send-email-berthe.ab@gmail.com>	<1405197014-25225-4-git-send-email-berthe.ab@gmail.com> <CACRpkdasp9bLULT7NJM9nYX58rRSsQKXFddOLz9Ah6kp-j-3=Q@mail.gmail.com>
-In-Reply-To: <CACRpkdasp9bLULT7NJM9nYX58rRSsQKXFddOLz9Ah6kp-j-3=Q@mail.gmail.com>
-To: Linus Walleij <linus.walleij@linaro.org>, abdoulaye berthe <berthe.ab@gmail.com>, "arm@kernel.org" <arm@kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Mauro Carvalho Chehab <m.chehab@samsung.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, Michael Buesch <m@bues.ch>, Greg KH <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>
-Cc: Alexandre Courbot <gnurou@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---nDvig6w1IaO5idwNJGff6KXjnBUdsJGt1
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-On 22/07/14 18:08, Linus Walleij wrote:
-> On Sat, Jul 12, 2014 at 10:30 PM, abdoulaye berthe <berthe.ab@gmail.com=
-> wrote:
->=20
-> Heads up. Requesting ACKs for this patch or I'm atleast warning that it=
- will be
-> applied. We're getting rid of the return value from gpiochip_remove().
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
->>  drivers/video/fbdev/via/via-gpio.c             | 10 +++-------
->=20
-> Tomi can you ACK this?
+This was found using a static code analysis program called cppcheck
 
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/intelfb/intelfbhw.c |    9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
- Tomi
+diff --git a/drivers/video/fbdev/intelfb/intelfbhw.c b/drivers/video/fbdev/intelfb/intelfbhw.c
+index fbad61d..dea89ed 100644
+--- a/drivers/video/fbdev/intelfb/intelfbhw.c
++++ b/drivers/video/fbdev/intelfb/intelfbhw.c
+@@ -937,15 +937,11 @@ static int calc_pll_params(int index, int clock, u32 *retm1, u32 *retm2,
+ {
+ 	u32 m1, m2, n, p1, p2, n1, testm;
+ 	u32 f_vco, p, p_best = 0, m, f_out = 0;
+-	u32 err_max, err_target, err_best = 10000000;
+-	u32 n_best = 0, m_best = 0, f_best, f_err;
++	u32 err_best = 10000000;
++	u32 n_best = 0, m_best = 0, f_err;
+ 	u32 p_min, p_max, p_inc, div_max;
+ 	struct pll_min_max *pll = &plls[index];
+ 
+-	/* Accept 0.5% difference, but aim for 0.1% */
+-	err_max = 5 * clock / 1000;
+-	err_target = clock / 1000;
+-
+ 	DBG_MSG("Clock is %d\n", clock);
+ 
+ 	div_max = pll->max_vco / clock;
+@@ -992,7 +988,6 @@ static int calc_pll_params(int index, int clock, u32 *retm1, u32 *retm2,
+ 					m_best = testm;
+ 					n_best = n;
+ 					p_best = p;
+-					f_best = f_out;
+ 					err_best = f_err;
+ 				}
+ 			}
+-- 
+1.7.10.4
 
-
-
---nDvig6w1IaO5idwNJGff6KXjnBUdsJGt1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJT14X1AAoJEPo9qoy8lh71gvsP/iJDf8dcnv2JZFloH/noIb3s
-DCXfxyTW2zDeWEEH7rLW+fP5JKu5TutqOCF2Y85HaPa/DV1iMI4S+IUeEwNiw0wd
-JTwMqUbS2ua22J87F1Oc5kXshDk+uqLRfpxO7xs0Pd/JcsrOgA7zqJN67jeDwQo/
-XsiRTBmJ3CNR/qur7AKN8toHdZp+KaHZ/4cazUxxp/cu71eFuRfFJMjE/cGk8cva
-fsIrugCAFjYIy3z88VtW4VPj1rcNDYUlxcklbpNtosOKUuPfNoDwToLUCdjE22G9
-v93XHZKlv0iWso5fo9HA2BTDK7N37WMsyktqF1ULEUiKIyoWs6a0WG9eREVLKlpi
-ugiCLH6c4jQYycmSTmFGZnzuhz5hN5oirXpKtba6hVHh6ZNkIkGtFElGTZYjVhKn
-k06HXBVTTYwf4pg2PGSGPsl2dIx0Zyl8pG+iFn10LSxELxbNU6N/wYzf6LquPLok
-cnnfX2riaFV6DgQHhHlTqr0tN6NFb8smYeH9rq37+4GyVYnokXuBMJ+qQ5In8BDZ
-9ZgW2N1PH2aRO2RZERVwll4otqtZgJcmWdAgeZzjkl0nBpWH8X78c41O3T3LUscq
-3cDDyXHCLDGabHGuab5JPofNnN1GW8xM/wN8jLmH/abZICdjfGqRVzaQh7FJjc97
-PbSJaJG3ZaHHHc6LWcil
-=W85Y
------END PGP SIGNATURE-----
-
---nDvig6w1IaO5idwNJGff6KXjnBUdsJGt1--

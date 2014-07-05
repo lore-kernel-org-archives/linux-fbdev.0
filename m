@@ -1,52 +1,39 @@
-From: Varka Bhadram <varkabhadram@gmail.com>
-Date: Tue, 15 Jul 2014 10:37:05 +0000
-Subject: Re: [RFC v5 1/2] backlight: add new tps611xx backlight driver
-Message-Id: <53C50181.3060302@gmail.com>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:47:29 +0000
+Subject: [PATCH] video: fbdev: savage: savagefb_driver.c:  Cleaning up variable that is never used
+Message-Id: <1404564449-21633-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1405418958-7596-1-git-send-email-gshark.jeong@gmail.com> <1405418958-7596-2-git-send-email-gshark.jeong@gmail.com>
-In-Reply-To: <1405418958-7596-2-git-send-email-gshark.jeong@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Jeong <gshark.jeong@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
-Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 07/15/2014 03:39 PM, Daniel Jeong wrote:
-(...)
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-> +
-> +static int tps611xx_backlight_remove(struct platform_device *pdev)
-> +{
-> +	struct tps611xx_bl_data *pchip = platform_get_drvdata(pdev);
-> +	const struct tps611xx_esdata *esdata = pchip->esdata;
-> +
-> +	device_remove_file(&(pchip->bled->dev), &dev_attr_enable);
-> +	gpio_direction_output(pchip->en_gpio, 0);
-> +	mdelay(esdata->time.reset);
-> +	return 0;
-> +}
-> +
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
-Better to move the of_device_ids also here... We can see of_match_table directly...
+This was found using a static code analysis program called cppcheck
 
-> +static const struct platform_device_id tps611xx_id_table[] = {
-> +	{TPS61158_NAME, (unsigned long)&tps611xx_info[TPS61158_ID]},
-> +	{TPS61161_NAME, (unsigned long)&tps611xx_info[TPS61161_ID]},
-> +	{TPS61163_NAME, (unsigned long)&tps611xx_info[TPS61163_ID]},
-> +	{TPS61165_NAME, (unsigned long)&tps611xx_info[TPS61165_ID]},
-> +	{}
-> +};
-> +
-> +static struct platform_driver tps611xx_backlight_driver = {
-> +	.driver = {
-> +		.name = TPS611XX_NAME,
-> +		.owner = THIS_MODULE,
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/savage/savagefb_driver.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-No need to update .owner
-
-see:http://lxr.free-electrons.com/source/include/linux/platform_device.h#L190
-
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
+index 4dbf45f..5c7620e 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -951,8 +951,6 @@ static int savagefb_check_var(struct fb_var_screeninfo   *var,
+ 	if (memlen > vramlen) {
+ 		var->yres_virtual = vramlen * 8 /
+ 			(var->xres_virtual * var->bits_per_pixel);
+-		memlen = var->xres_virtual * var->bits_per_pixel *
+-			var->yres_virtual / 8;
+ 	}
+ 
+ 	/* we must round yres/xres down, we already rounded y/xres_virtual up
 -- 
-Regards,
-Varka Bhadram.
+1.7.10.4
 

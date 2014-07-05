@@ -1,60 +1,41 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 07 Jul 2014 10:50:58 +0000
-Subject: Re: [PATCH] video: backlight: ili922x.c:  Cleaning up variable that is never used
-Message-Id: <20140707105058.GD6407@lee--X1>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:21:14 +0000
+Subject: [PATCH] video: fbdev: g364fb.c:  Cleaning up variable that is never used
+Message-Id: <1404562874-19440-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404562270-18387-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404562270-18387-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sat, 05 Jul 2014, Rickard Strandqvist wrote:
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-> From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
->=20
-> Variable ar assigned a value that is never used.
-> I have also removed all the code that thereby serves no purpose.
->=20
-> This was found using a static code analysis program called cppcheck
->=20
-> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.s=
-e>
-> ---
->  drivers/video/backlight/ili922x.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
-Is this different from the patch I just applied?
+This was found using a static code analysis program called cppcheck
 
-> diff --git a/drivers/video/backlight/ili922x.c b/drivers/video/backlight/=
-ili922x.c
-> index ea67fe1..06936c8 100644
-> --- a/drivers/video/backlight/ili922x.c
-> +++ b/drivers/video/backlight/ili922x.c
-> @@ -251,7 +251,7 @@ static int ili922x_write(struct spi_device *spi, u8 r=
-eg, u16 value)
->  	struct spi_transfer xfer_regindex, xfer_regvalue;
->  	unsigned char tbuf[CMD_BUFSIZE];
->  	unsigned char rbuf[CMD_BUFSIZE];
-> -	int ret, len =3D 0;
-> +	int ret;
-> =20
->  	memset(&xfer_regindex, 0, sizeof(struct spi_transfer));
->  	memset(&xfer_regvalue, 0, sizeof(struct spi_transfer));
-> @@ -273,7 +273,6 @@ static int ili922x_write(struct spi_device *spi, u8 r=
-eg, u16 value)
->  	ret =3D spi_sync(spi, &msg);
-> =20
->  	spi_message_init(&msg);
-> -	len =3D 0;
->  	tbuf[0] =3D set_tx_byte(START_BYTE(ili922x_id, START_RS_REG,
->  					 START_RW_WRITE));
->  	tbuf[1] =3D set_tx_byte((value & 0xFF00) >> 8);
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/g364fb.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+diff --git a/drivers/video/fbdev/g364fb.c b/drivers/video/fbdev/g364fb.c
+index 223896c..f84a70e 100644
+--- a/drivers/video/fbdev/g364fb.c
++++ b/drivers/video/fbdev/g364fb.c
+@@ -194,11 +194,9 @@ static int g364fb_setcolreg(u_int regno, u_int red, u_int green,
+  */
+ int __init g364fb_init(void)
+ {
+-	volatile unsigned int *pal_ptr -	    (volatile unsigned int *) CLR_PAL_REG;
+ 	volatile unsigned int *curs_pal_ptr  	    (volatile unsigned int *) CURS_PAL_REG;
+-	int mem, i, j;
++	int mem, i;
+ 
+ 	if (fb_get_options("g364fb", NULL))
+ 		return -ENODEV;
+-- 
+1.7.10.4
+

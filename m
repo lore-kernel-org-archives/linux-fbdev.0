@@ -1,52 +1,57 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Wed, 02 Jul 2014 21:44:53 +0000
-Subject: [PATCH] video: fbdev: core: fbmon.c:  Fix for possible null pointer dereference
-Message-Id: <1404337493-6416-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sat, 05 Jul 2014 14:04:22 +0000
+Subject: Re: [PATCH] video: fbdev: amifb.c: Cleaning up variable that is never used
+Message-Id: <CAMuHMdWYGVt0=knBTZX04xwQHar0CohUQ5EKGvzMQ49nNRxiCw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1404562393-18641-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404562393-18641-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, David Ung <davidu@nvidia.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Sachin Kamat <sachin.kamat@linaro.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Fix a possible null pointer dereference, there is otherwise a risk of a possible null pointer dereference
+On Sat, Jul 5, 2014 at 2:13 PM, Rickard Strandqvist
+<rickard_strandqvist@spectrumdigital.se> wrote:
+> From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+>
+> Variable ar assigned a value that is never used.
+> I have also removed all the code that thereby serves no purpose.
+>
+> This was found using a static code analysis program called cppcheck
+>
+> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 
-This was found using a static code analysis program called cppcheck
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/video/fbdev/core/fbmon.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+> --- a/drivers/video/fbdev/amifb.c
+> +++ b/drivers/video/fbdev/amifb.c
+> @@ -1124,7 +1124,6 @@ static int ami_decode_var(struct fb_var_screeninfo *var, struct amifb_par *par,
+>  {
+>         u_short clk_shift, line_shift;
+>         u_long maxfetchstop, fstrt, fsize, fconst, xres_n, yres_n;
+> -       u_int htotal, vtotal;
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index 5b0e313..9ec81ee 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -608,6 +608,11 @@ static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
- 	int num = 0, i, first = 1;
- 	int ver, rev;
- 
-+	if (edid = NULL || !edid_checksum(edid) ||
-+		!edid_check_header(edid)) {
-+		return NULL;
-+	}
-+
- 	ver = edid[EDID_STRUCT_VERSION];
- 	rev = edid[EDID_STRUCT_REVISION];
- 
-@@ -615,12 +620,6 @@ static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
- 	if (mode = NULL)
- 		return NULL;
- 
--	if (edid = NULL || !edid_checksum(edid) ||
--	    !edid_check_header(edid)) {
--		kfree(mode);
--		return NULL;
--	}
--
- 	*dbsize = 0;
- 
- 	DPRINTK("   Detailed Timings\n");
--- 
-1.7.10.4
+These became unused by commit 3161986224a3faa8ccca3e665b7404d81e7ee3cf
+Author: Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed Dec 13 00:35:54 2006 -0800
 
+    [PATCH] fbdev: remove references to non-existent fbmon_valid_timings()
+
+    Remove references to non-existent fbmon_valid_timings()
+
+    Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+    Cc: James Simmons <jsimmons@infradead.org>
+    Signed-off-by: Andrew Morton <akpm@osdl.org>
+    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

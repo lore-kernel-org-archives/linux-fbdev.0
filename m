@@ -1,15 +1,15 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:52:02 +0000
-Subject: [PATCH] video: fbdev: omap2: dss: hdmi5_core.c:  Cleaning up variable that is never used
-Message-Id: <1404672722-19820-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:37:42 +0000
+Subject: [PATCH] video: fbdev: omap: hwa742.c:  Cleaning up variable that is never used
+Message-Id: <1404563862-20852-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404564084-21109-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404564084-21109-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jyri Sarha <jsarha@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
 Variable ar assigned a value that is never used.
 I have also removed all the code that thereby serves no purpose.
@@ -18,47 +18,31 @@ This was found using a static code analysis program called cppcheck
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/omap2/dss/hdmi5_core.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/omap/hwa742.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-index 7528c7a..3975e83 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-@@ -142,7 +142,6 @@ static int hdmi_core_ddc_edid(struct hdmi_core_data *core, u8 *pedid, u8 ext)
+diff --git a/drivers/video/fbdev/omap/hwa742.c b/drivers/video/fbdev/omap/hwa742.c
+index a4ee65b..65b2370 100644
+--- a/drivers/video/fbdev/omap/hwa742.c
++++ b/drivers/video/fbdev/omap/hwa742.c
+@@ -787,7 +787,7 @@ static void calc_hwa742_clk_rates(unsigned long ext_clk,
+ 
+ static int setup_tearsync(unsigned long pix_clk, int extif_div)
  {
- 	void __iomem *base = core->base;
- 	u8 cur_addr;
--	char checksum = 0;
- 	const int retries = 1000;
- 	u8 seg_ptr = ext / 2;
- 	u8 edidbase = ((ext % 2) * 0x80);
-@@ -191,7 +190,6 @@ static int hdmi_core_ddc_edid(struct hdmi_core_data *core, u8 *pedid, u8 ext)
- 		}
+-	int hdisp, vdisp;
++	int hdisp;
+ 	int hndp, vndp;
+ 	int hsw, vsw;
+ 	int hs, vs;
+@@ -803,7 +803,7 @@ static int setup_tearsync(unsigned long pix_clk, int extif_div)
+ 	vsw = vsw & 0x3f;
  
- 		pedid[cur_addr] = REG_GET(base, HDMI_CORE_I2CM_DATAI, 7, 0);
--		checksum += pedid[cur_addr];
- 	}
+ 	hdisp = (hwa742_read_reg(HWA742_H_DISP_REG) & 0x7f) * 8;
+-	vdisp = hwa742_read_reg(HWA742_V_DISP_1_REG) +
++	hwa742_read_reg(HWA742_V_DISP_1_REG) +
+ 		((hwa742_read_reg(HWA742_V_DISP_2_REG) & 0x3) << 8);
  
- 	return 0;
-@@ -810,7 +808,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 	struct hdmi_audio_format audio_format;
- 	struct hdmi_audio_dma audio_dma;
- 	struct hdmi_core_audio_config core_cfg;
--	int err, n, cts, channel_count;
-+	int n, cts, channel_count;
- 	unsigned int fs_nr;
- 	bool word_length_16b = false;
- 
-@@ -853,7 +851,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 		return -EINVAL;
- 	}
- 
--	err = hdmi_compute_acr(pclk, fs_nr, &n, &cts);
-+	hdmi_compute_acr(pclk, fs_nr, &n, &cts);
- 	core_cfg.n = n;
- 	core_cfg.cts = cts;
- 
+ 	hndp = hwa742_read_reg(HWA742_H_NDP_REG) & 0x7f;
 -- 
 1.7.10.4
 

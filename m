@@ -1,15 +1,15 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:36:16 +0000
-Subject: [PATCH] video: fbdev: kyro: STG4000InitDevice.c:  Cleaning up variable that is never used
-Message-Id: <1404671776-18549-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:43:27 +0000
+Subject: [PATCH] video: fbdev: pvr2fb.c:  Cleaning up variable that is never used
+Message-Id: <1404564207-21282-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404563164-19855-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404563164-19855-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
 Variable ar assigned a value that is never used.
 I have also removed all the code that thereby serves no purpose.
@@ -18,54 +18,28 @@ This was found using a static code analysis program called cppcheck
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/kyro/STG4000InitDevice.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/pvr2fb.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/kyro/STG4000InitDevice.c b/drivers/video/fbdev/kyro/STG4000InitDevice.c
-index 1d3f2080..21875d3 100644
---- a/drivers/video/fbdev/kyro/STG4000InitDevice.c
-+++ b/drivers/video/fbdev/kyro/STG4000InitDevice.c
-@@ -120,7 +120,7 @@ u32 ProgramClock(u32 refClock,
+diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+index 167cfff..da06b16 100644
+--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -1075,7 +1075,6 @@ static struct pvr2_board {
+ static int __init pvr2fb_init(void)
  {
- 	u32 R = 0, F = 0, OD = 0, ODIndex = 0;
- 	u32 ulBestR = 0, ulBestF = 0, ulBestOD = 0;
--	u32 ulBestVCO = 0, ulBestClk = 0, ulBestScore = 0;
-+	u32 ulBestClk = 0, ulBestScore = 0;
- 	u32 ulScore, ulPhaseScore, ulVcoScore;
- 	u32 ulTmp = 0, ulVCO;
- 	u32 ulScaleClockReq, ulMinClock, ulMaxClock;
-@@ -189,7 +189,6 @@ u32 ProgramClock(u32 refClock,
- 						ulScore = ulPhaseScore + ulVcoScore;
+ 	int i, ret = -ENODEV;
+-	int size;
  
- 						if (!ulBestScore) {
--							ulBestVCO = ulVCO;
- 							ulBestOD = OD;
- 							ulBestF = F;
- 							ulBestR = R;
-@@ -206,7 +205,6 @@ u32 ProgramClock(u32 refClock,
-                           but we shall keep this code in case new restrictions come into play
-                           --------------------------------------------------------------------------*/
- 						if ((ulScore >= ulBestScore) && (OD > 0)) {
--							ulBestVCO = ulVCO;
- 							ulBestOD = OD;
- 							ulBestF = F;
- 							ulBestR = R;
-@@ -244,7 +242,6 @@ int SetCoreClockPLL(volatile STG4000REG __iomem *pSTGReg, struct pci_dev *pDev)
- {
- 	u32 F, R, P;
- 	u16 core_pll = 0, sub;
--	u32 ulCoreClock;
- 	u32 tmp;
- 	u32 ulChipSpeed;
+ #ifndef MODULE
+ 	char *option = NULL;
+@@ -1084,7 +1083,6 @@ static int __init pvr2fb_init(void)
+ 		return -ENODEV;
+ 	pvr2fb_setup(option);
+ #endif
+-	size = sizeof(struct fb_info) + sizeof(struct pvr2fb_par) + 16 * sizeof(u32);
  
-@@ -282,7 +279,7 @@ int SetCoreClockPLL(volatile STG4000REG __iomem *pSTGReg, struct pci_dev *pDev)
- 	if (ulChipSpeed = 0)
- 		return -EINVAL;
- 
--	ulCoreClock = ProgramClock(REF_FREQ, CORE_PLL_FREQ, &F, &R, &P);
-+	ProgramClock(REF_FREQ, CORE_PLL_FREQ, &F, &R, &P);
- 
- 	core_pll |= ((P) | ((F - 2) << 2) | ((R - 2) << 11));
+ 	fb_info = framebuffer_alloc(sizeof(struct pvr2fb_par), NULL);
  
 -- 
 1.7.10.4

@@ -1,15 +1,15 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:38:20 +0000
-Subject: [PATCH] video: fbdev: mb862xx: mb862xx-i2c.c:  Cleaning up variable that is never used
-Message-Id: <1404671900-18722-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:30:55 +0000
+Subject: [PATCH] video: fbdev: mbx: mbxfb.c:  Cleaning up variable that is never used
+Message-Id: <1404563456-20273-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404563280-20023-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404563280-20023-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
 Variable ar assigned a value that is never used.
 I have also removed all the code that thereby serves no purpose.
@@ -18,39 +18,30 @@ This was found using a static code analysis program called cppcheck
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/mb862xx/mb862xx-i2c.c |    5 -----
- 1 file changed, 5 deletions(-)
+ drivers/video/fbdev/mbx/mbxfb.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/mb862xx/mb862xx-i2c.c b/drivers/video/fbdev/mb862xx/mb862xx-i2c.c
-index c87e17a..6b9769f 100644
---- a/drivers/video/fbdev/mb862xx/mb862xx-i2c.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xx-i2c.c
-@@ -20,7 +20,6 @@
- 
- static int mb862xx_i2c_wait_event(struct i2c_adapter *adap)
+diff --git a/drivers/video/fbdev/mbx/mbxfb.c b/drivers/video/fbdev/mbx/mbxfb.c
+index 2bd52ed..320f263 100644
+--- a/drivers/video/fbdev/mbx/mbxfb.c
++++ b/drivers/video/fbdev/mbx/mbxfb.c
+@@ -689,7 +689,6 @@ static struct fb_ops mbxfb_ops = {
+ */
+ static void setup_memc(struct fb_info *fbi)
  {
--	struct mb862xxfb_par *par = adap->algo_data;
- 	u32 reg;
+-	unsigned long tmp;
+ 	int i;
  
- 	do {
-@@ -48,8 +47,6 @@ static int mb862xx_i2c_do_address(struct i2c_adapter *adap, int addr)
+ 	/* FIXME: use platform specific parameters */
+@@ -714,7 +713,7 @@ static void setup_memc(struct fb_info *fbi)
+ 	write_reg_dly(LMPWR_MC_PWR_ACT, LMPWR);
+ 	/* perform dummy reads */
+ 	for ( i = 0; i < 16; i++ ) {
+-		tmp = readl(fbi->screen_base);
++		readl(fbi->screen_base);
+ 	}
+ }
  
- static int mb862xx_i2c_write_byte(struct i2c_adapter *adap, u8 byte)
- {
--	struct mb862xxfb_par *par = adap->algo_data;
--
- 	outreg(i2c, GC_I2C_DAR, byte);
- 	outreg(i2c, GC_I2C_BCR, I2C_START);
- 	if (!mb862xx_i2c_wait_event(adap))
-@@ -59,8 +56,6 @@ static int mb862xx_i2c_write_byte(struct i2c_adapter *adap, u8 byte)
- 
- static int mb862xx_i2c_read_byte(struct i2c_adapter *adap, u8 *byte, int last)
- {
--	struct mb862xxfb_par *par = adap->algo_data;
--
- 	outreg(i2c, GC_I2C_BCR, I2C_START | (last ? 0 : I2C_ACK));
- 	if (!mb862xx_i2c_wait_event(adap))
- 		return 0;
 -- 
 1.7.10.4
 

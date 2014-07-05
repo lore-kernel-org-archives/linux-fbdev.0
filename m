@@ -1,42 +1,55 @@
-From: David Miller <davem@davemloft.net>
-Date: Mon, 21 Jul 2014 04:18:13 +0000
-Subject: Re: [PATCH 0/25] Replace DEFINE_PCI_DEVICE_TABLE macro use
-Message-Id: <20140720.211813.942862864883062133.davem@davemloft.net>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 12:24:08 +0000
+Subject: [PATCH] video: fbdev: intelfb: intelfb_i2c.c:  Cleaning up variable that is never used
+Message-Id: <1404563048-19690-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1405697232-11785-1-git-send-email-benoit.taine@lip6.fr>
-In-Reply-To: <1405697232-11785-1-git-send-email-benoit.taine@lip6.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: benoit.taine@lip6.fr
-Cc: linux-pci@vger.kernel.org, ath5k-devel@venema.h4ckr.net, ath9k-devel@venema.h4ckr.net, linux-hippi@sunsite.dk, dri-devel@lists.freedesktop.org, linux-acenic@sunsite.dk, wil6210@qca.qualcomm.com, platform-driver-x86@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, linux-mips@linux-mips.org, users@rt2x00.serialmonkey.com, linux-rdma@vger.kernel.org, virtualization@lists.linux-foundation.org, industrypack-devel@lists.sourceforge.net, linux-can@vger.kernel.org, linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org, ath10k@lists.infradead.org, linux-crypto@vger.kernel.org, MPT-FusionLinux.pdl@avagotech.com, devel@linuxdriverproject.org, xen-devel@lists.xenproject.org, linux-pcmcia@lists.infradead.org, e1000-devel@lists.sourceforge.net
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Benoit Taine <benoit.taine@lip6.fr>
-Date: Fri, 18 Jul 2014 17:26:47 +0200
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-> We should prefer `const struct pci_device_id` over
-> `DEFINE_PCI_DEVICE_TABLE` to meet kernel coding style guidelines.
-> This issue was reported by checkpatch.
-> 
-> A simplified version of the semantic patch that makes this change is as
-> follows (http://coccinelle.lip6.fr/):
-> 
-> // <smpl>
-> 
-> @@
-> identifier i;
-> declarer name DEFINE_PCI_DEVICE_TABLE;
-> initializer z;
-> @@
-> 
-> - DEFINE_PCI_DEVICE_TABLE(i)
-> + const struct pci_device_id i[]
-> = z;
-> 
-> // </smpl>
-> 
-> I have 103 patches ready, and will only send a few for you to judge if
-> it is useful enough, and to prevent from spamming too much.
+Variable ar assigned a value that is never used.
+I have also removed all the code that thereby serves no purpose.
 
-I'm fine with this wrt. the networking changes, but I don't think this should
-be merged via my tree.
+This was found using a static code analysis program called cppcheck
+
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/intelfb/intelfb_i2c.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/intelfb/intelfb_i2c.c b/drivers/video/fbdev/intelfb/intelfb_i2c.c
+index 3300bd3..4df2f1f 100644
+--- a/drivers/video/fbdev/intelfb/intelfb_i2c.c
++++ b/drivers/video/fbdev/intelfb/intelfb_i2c.c
+@@ -55,22 +55,20 @@ static void intelfb_gpio_setscl(void *data, int state)
+ {
+ 	struct intelfb_i2c_chan *chan = data;
+ 	struct intelfb_info *dinfo = chan->dinfo;
+-	u32 val;
+ 
+ 	OUTREG(chan->reg, (state ? SCL_VAL_OUT : 0) |
+ 	       SCL_DIR | SCL_DIR_MASK | SCL_VAL_MASK);
+-	val = INREG(chan->reg);
++	INREG(chan->reg);
+ }
+ 
+ static void intelfb_gpio_setsda(void *data, int state)
+ {
+ 	struct intelfb_i2c_chan *chan = data;
+ 	struct intelfb_info *dinfo = chan->dinfo;
+-	u32 val;
+ 
+ 	OUTREG(chan->reg, (state ? SDA_VAL_OUT : 0) |
+ 	       SDA_DIR | SDA_DIR_MASK | SDA_VAL_MASK);
+-	val = INREG(chan->reg);
++	INREG(chan->reg);
+ }
+ 
+ static int intelfb_gpio_getscl(void *data)
+-- 
+1.7.10.4
+

@@ -1,56 +1,33 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:35:14 +0000
-Subject: [PATCH] video: fbdev: intelfb: intelfbhw.c:  Cleaning up variable that is never used
-Message-Id: <1404671714-18460-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sat, 05 Jul 2014 19:44:56 +0000
+Subject: Re: [PATCH] video: fbdev: sis: init.c: Cleaning up variable that is never used
+Message-Id: <CAMuHMdVNgCFZ1Nu77ds62COtqMPRYw4p_fifoZnAQKjq_D+kOQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404563106-19774-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404563106-19774-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+References: <1404564507-21718-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+	<20140705192317.GD25934@mwanda>
+In-Reply-To: <20140705192317.GD25934@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Mauro Carvalho Chehab <m.chehab@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "Chen, Gong" <gong.chen@linux.intel.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Variable ar assigned a value that is never used.
-I have also removed all the code that thereby serves no purpose.
+On Sat, Jul 5, 2014 at 9:23 PM, Dan Carpenter <dan.carpenter@oracle.com> wrote:
+> On Sat, Jul 05, 2014 at 02:48:27PM +0200, Rickard Strandqvist wrote:
+>> From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+>
+> These for lines are for when you are sending on someone else's behalf.
 
-This was found using a static code analysis program called cppcheck
+Or for when you are sending the patches from a different email address
+than the one that should be recorded in git.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/video/fbdev/intelfb/intelfbhw.c |    9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+Gr{oetje,eeting}s,
 
-diff --git a/drivers/video/fbdev/intelfb/intelfbhw.c b/drivers/video/fbdev/intelfb/intelfbhw.c
-index fbad61d..dea89ed 100644
---- a/drivers/video/fbdev/intelfb/intelfbhw.c
-+++ b/drivers/video/fbdev/intelfb/intelfbhw.c
-@@ -937,15 +937,11 @@ static int calc_pll_params(int index, int clock, u32 *retm1, u32 *retm2,
- {
- 	u32 m1, m2, n, p1, p2, n1, testm;
- 	u32 f_vco, p, p_best = 0, m, f_out = 0;
--	u32 err_max, err_target, err_best = 10000000;
--	u32 n_best = 0, m_best = 0, f_best, f_err;
-+	u32 err_best = 10000000;
-+	u32 n_best = 0, m_best = 0, f_err;
- 	u32 p_min, p_max, p_inc, div_max;
- 	struct pll_min_max *pll = &plls[index];
- 
--	/* Accept 0.5% difference, but aim for 0.1% */
--	err_max = 5 * clock / 1000;
--	err_target = clock / 1000;
--
- 	DBG_MSG("Clock is %d\n", clock);
- 
- 	div_max = pll->max_vco / clock;
-@@ -992,7 +988,6 @@ static int calc_pll_params(int index, int clock, u32 *retm1, u32 *retm2,
- 					m_best = testm;
- 					n_best = n;
- 					p_best = p;
--					f_best = f_out;
- 					err_best = f_err;
- 				}
- 			}
--- 
-1.7.10.4
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

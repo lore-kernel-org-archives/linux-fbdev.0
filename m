@@ -1,8 +1,10 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sat, 05 Jul 2014 13:22:31 +0000
-Subject: [PATCH] video: fbdev: omap: omapfb_main.c:  Cleaning up wrong type in format string
-Message-Id: <1404566552-23096-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 16:24:20 +0000
+Subject: [PATCH] video: fbdev: omap: omapfb_main.c:  Cleaning up removal variable thet is never used
+Message-Id: <1404577460-25251-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1404566552-23096-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404566552-23096-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,29 +13,27 @@ Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvis
 
 From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-Wrong type in sscanf format string, requires 'int *' but the
-argument type is 'unsigned int *'
+Removal of union member variable thet is never used
 
 This was found using a static code analysis program called cppcheck
 
 Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/omap/omapfb_main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/omap/omapfb_main.c |    1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-index d8d028d..7df0764 100644
+index d8d028d..557aaa3 100644
 --- a/drivers/video/fbdev/omap/omapfb_main.c
 +++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -1371,7 +1371,7 @@ static ssize_t omapfb_store_bklight_level(struct device *dev,
- 	if (fbdev->panel->set_bklight_level) {
- 		unsigned int level;
- 
--		if (sscanf(buf, "%10d", &level) = 1) {
-+		if (sscanf(buf, "%10u", &level) = 1) {
- 			r = fbdev->panel->set_bklight_level(fbdev->panel,
- 							    level);
- 		} else
+@@ -1096,7 +1096,6 @@ static int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd,
+ 		enum omapfb_update_mode		update_mode;
+ 		struct omapfb_caps		caps;
+ 		unsigned int		mirror;
+-		int			plane_out;
+ 		int			enable_plane;
+ 	} p;
+ 	int r = 0;
 -- 
 1.7.10.4
 

@@ -1,45 +1,37 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Fri, 04 Jul 2014 08:35:44 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSCAyLzJdIHZpZGVvOiBjbHBzNzExeDogRml4IHNwYXJzZSB3?= =?UTF-8?B?YXJuaW5ncw==?=
-Message-Id: <1404462944.266158031@f344.i.mail.ru>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 13:08:30 +0000
+Subject: [PATCH] video: fbdev: core: fbmon.c:  Cleaning up useless assignment of function parameter
+Message-Id: <1404565710-22433-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374825597.724071106@f170.mail.ru>
-In-Reply-To: <1374825597.724071106@f170.mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, David Ung <davidu@nvidia.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-RnJpLCA0IEp1bCAyMDE0IDExOjA2OjMxICswMzAwINC+0YIgVG9taSBWYWxrZWluZW4gPHRvbWku
-dmFsa2VpbmVuQHRpLmNvbT46Cj4gT24gMDEvMDcvMTQgMTM6MzEsIEFsZXhhbmRlciBTaGl5YW4g
-d3JvdGU6Cj4gPiBUdWUsIDEgSnVsIDIwMTQgMTM6MjI6NTEgKzAzMDAg0L7RgiBUb21pIFZhbGtl
-aW5lbiA8dG9taS52YWxrZWluZW5AdGkuY29tPjoKPiA+PiBPbiAwMS8wNy8xNCAwOToyMywgQWxl
-eGFuZGVyIFNoaXlhbiB3cm90ZToKPiA+Pj4gVHVlLCAxIEp1bCAyMDE0IDA5OjE0OjAyICswMzAw
-INC+0YIgVG9taSBWYWxrZWluZW4gPHRvbWkudmFsa2VpbmVuQHRpLmNvbT46Cj4gPj4+PiBPbiAy
-OC8wNi8xNCAwOTozNCwgQWxleGFuZGVyIFNoaXlhbiB3cm90ZToKPiA+Pj4+PiBUaGlzIHBhdGNo
-IGZpeGVzIGJlbG93IHdhcm5pbmdzOgo+ID4+Pj4+IENIRUNLICAgZHJpdmVycy92aWRlby9mYmRl
-di9jbHBzNzExeC1mYi5jCj4gPj4+Pj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NscHM3MTF4LWZi
-LmM6MjQ3OjI0OiB3YXJuaW5nOiBpbmNvcnJlY3QgdHlwZSBpbiBhcmd1bWVudCAxIChkaWZmZXJl
-bnQgYWRkcmVzcyBzcGFjZXMpCj4gPj4+Pj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NscHM3MTF4
-LWZiLmM6MjQ3OjI0OiAgICBleHBlY3RlZCB2b2lkIGNvbnN0ICpwdHIKPiA+Pj4+PiAgIGRyaXZl
-cnMvdmlkZW8vZmJkZXYvY2xwczcxMXgtZmIuYzoyNDc6MjQ6ICAgIGdvdCBjaGFyIFtub2RlcmVm
-XSA8YXNuOjI+KnNjcmVlbl9iYXNlCj4gPj4+Pj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NscHM3
-MTF4LWZiLmM6MjQ4OjM1OiB3YXJuaW5nOiBpbmNvcnJlY3QgdHlwZSBpbiBhcmd1bWVudCAxIChk
-aWZmZXJlbnQgYWRkcmVzcyBzcGFjZXMpCj4gPj4+Pj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2Ns
-cHM3MTF4LWZiLmM6MjQ4OjM1OiAgICBleHBlY3RlZCB2b2lkIGNvbnN0ICpwdHIKPiA+Pj4+PiAg
-IGRyaXZlcnMvdmlkZW8vZmJkZXYvY2xwczcxMXgtZmIuYzoyNDg6MzU6ICAgIGdvdCBjaGFyIFtu
-b2RlcmVmXSA8YXNuOjI+KnNjcmVlbl9iYXNlCj4gPj4+IC4uLgo+ID4+Pj4+ICAJaW5mby0+c2Ny
-ZWVuX2Jhc2UgPSBkZXZtX2lvcmVtYXBfcmVzb3VyY2UoZGV2LCByZXMpOwo+ID4+Pj4+IC0JaWYg
-KElTX0VSUihpbmZvLT5zY3JlZW5fYmFzZSkpIHsKPiA+Pj4+PiAtCQlyZXQgPSBQVFJfRVJSKGlu
-Zm8tPnNjcmVlbl9iYXNlKTsKPiA+Pj4+PiArCWlmIChJU19FUlIoKF9fZm9yY2Ugdm9pZCAqKWlu
-Zm8tPnNjcmVlbl9iYXNlKSkgewo+ID4+Pj4+ICsJCXJldCA9IFBUUl9FUlIoKF9fZm9yY2Ugdm9p
-ZCAqKWluZm8tPnNjcmVlbl9iYXNlKTsKPiA+Pj4+Cj4gPj4+PiBJIGRvbid0IHNlZSBhbnkgb3Ro
-ZXIgdXNlciBvZiBkZXZtX2lvcmVtYXBfcmVzb3VyY2UoKSBoYXZpbmcgdGhhdCBraW5kCj4gPj4+
-PiBvZiBjYXN0cy4gV2h5IGFyZSB0aGV5IG5lZWRlZCBoZXJlPwo+ID4+Pgo+ID4+PiBOb3QgbmVl
-ZGVkLCB0eXBlIGNhc3Qgd2FzIGRvbmUgb25seSB0byByZW1vdmUgc3BhcnNlIHdhcm5pbmdzLgo+
-ID4+Cj4gPj4gUmlnaHQsIGJ1dCBJIHRoaW5rIGVpdGhlciBzcGFyc2UgaXMgd3JvbmcgaGVyZSwg
-b3IgdGhlIFBUUl9FUlIvSVNfRVJSCj4gPj4gYXJlIHdyb25nLiBZb3Ugc2hvdWxkbid0IGRvIHR5
-cGVjYXN0cyBsaWtlIHRoYXQgdG8gaGlkZSB0aG9zZSB3YXJuaW5ncy4KPiA+IAo+ID4gV2VsbCwg
-SSdsbCByZW1vdmUgdGhlc2UgY2hhbmdlcyBhbmQgc2VuZCBhIHNlY29uZCB2ZXJzaW9uIG9mIHRo
-ZSBwYXRjaC4KPiAKPiBJIGFwcGxpZWQgdGhlc2UgdHdvIHBhdGNoZXMsIGFuZCByZW1vdmVkIHRo
-ZSB0eXBlIGNhc3RzIGZyb20gdGhlIHNlY29uZCBvbmUuCgpPSywgVGhhbmtzIQoKLS0tCgo
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+
+Removal of assignment of function parameter, that has no effect outside the function
+
+This was found using a static code analysis program called cppcheck
+
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/core/fbmon.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index 5b0e313..71ec1ab 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -1481,7 +1481,6 @@ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ }
+ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ {
+-	specs = NULL;
+ }
+ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ {
+-- 
+1.7.10.4
+

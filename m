@@ -1,27 +1,39 @@
-From: Marek Vasut <marex@denx.de>
-Date: Sun, 06 Jul 2014 21:06:59 +0000
-Subject: Re: [PATCH] video: fbdev: mxsfb.c:  Cleaning up variable that is never used
-Message-Id: <201407062306.59317.marex@denx.de>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 05 Jul 2014 13:22:31 +0000
+Subject: [PATCH] video: fbdev: omap: omapfb_main.c:  Cleaning up wrong type in format string
+Message-Id: <1404566552-23096-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404672272-19231-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404672272-19231-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Lothar =?iso-8859-1?q?Wa=DFmann?= <LW@karo-electronics.de>, Jingoo Han <jg1.han@samsung.com>, Fabio Estevam <fabio.estevam@freescale.com>, Julia Lawall <Julia.Lawall@lip6.fr>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sunday, July 06, 2014 at 08:44:32 PM, Rickard Strandqvist wrote:
-> Variable ar assigned a value that is never used.
-> I have also removed all the code that thereby serves no purpose.
-> 
-> This was found using a static code analysis program called cppcheck
-> 
-> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
-Makes perfect sense.
+Wrong type in sscanf format string, requires 'int *' but the
+argument type is 'unsigned int *'
 
-Acked-by: Marek Vasut <marex@denx.de>
+This was found using a static code analysis program called cppcheck
 
-Best regards,
-Marek Vasut
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/omap/omapfb_main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index d8d028d..7df0764 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1371,7 +1371,7 @@ static ssize_t omapfb_store_bklight_level(struct device *dev,
+ 	if (fbdev->panel->set_bklight_level) {
+ 		unsigned int level;
+ 
+-		if (sscanf(buf, "%10d", &level) = 1) {
++		if (sscanf(buf, "%10u", &level) = 1) {
+ 			r = fbdev->panel->set_bklight_level(fbdev->panel,
+ 							    level);
+ 		} else
+-- 
+1.7.10.4
+

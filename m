@@ -1,15 +1,15 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sat, 05 Jul 2014 13:18:37 +0000
+Date: Sun, 06 Jul 2014 17:36:30 +0000
 Subject: [PATCH] video: fbdev: sis: sis_main.c:  Cleaning up wrong type in format string
-Message-Id: <1404566317-22987-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Message-Id: <1404668190-15199-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1404566317-22987-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404566317-22987-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-
-From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
 Wrong type in printf format string, requires 'unsigned int'
 but the argument type is 'int'

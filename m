@@ -1,15 +1,15 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sat, 05 Jul 2014 12:52:20 +0000
+Date: Sun, 06 Jul 2014 19:02:22 +0000
 Subject: [PATCH] video: fbdev: valkyriefb.c:  Cleaning up variable that is never used
-Message-Id: <1404564740-22066-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Message-Id: <1404673342-20672-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1404564740-22066-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404564740-22066-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Geert Uytterhoeven <geert@linux-m68k.org>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-
-From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Geert Uytterhoeven <geert@linux-m68k.org>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
 Variable ar assigned a value that is never used.
 I have also removed all the code that thereby serves no purpose.

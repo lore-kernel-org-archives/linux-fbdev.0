@@ -1,14 +1,14 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sat, 05 Jul 2014 12:20:15 +0000
+Date: Sun, 06 Jul 2014 18:30:03 +0000
 Subject: [PATCH] video: fbdev: exynos: s6e8ax0.c:  Cleaning up variable that is never used
-Message-Id: <1404562815-19356-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Message-Id: <1404671404-18025-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1404562815-19356-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404562815-19356-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
-
-From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
 
 Variable ar assigned a value that is never used.
 I have also removed all the code that thereby serves no purpose.

@@ -1,7 +1,7 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sat, 05 Jul 2014 12:49:25 +0000
+Date: Sun, 06 Jul 2014 18:59:16 +0000
 Subject: [PATCH] video: fbdev: sis: init301.c:  Cleaning up variable that is never used
-Message-Id: <1404564566-21814-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Message-Id: <1404673156-20413-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1402869130-4962-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 In-Reply-To: <1402869130-4962-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
@@ -9,9 +9,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-
-From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
 Variable ar assigned a value that is never used.
 I have also removed all the code that thereby serves no purpose.

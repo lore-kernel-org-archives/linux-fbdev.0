@@ -1,17 +1,17 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sat, 05 Jul 2014 13:09:31 +0000
+Date: Sun, 06 Jul 2014 17:26:38 +0000
 Subject: [PATCH] video: fbdev: vga16fb.c:  Cleaning up useless assignment of function parameter
-Message-Id: <1404565771-22515-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Message-Id: <1404667598-14772-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1404565771-22515-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404565771-22515-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Luis Henriques <luis.henriques@canonical.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Luis Henriques <luis.henriques@canonical.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
-
-Removal of assignment of function parameter, that has no effect outside the function
+Remove assignment of function parameter, that has no effect outside the function
 
 This was found using a static code analysis program called cppcheck
 

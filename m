@@ -1,15 +1,15 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sat, 05 Jul 2014 12:17:21 +0000
+Date: Sun, 06 Jul 2014 18:26:57 +0000
 Subject: [PATCH] video: fbdev: aty: radeon_base.c:  Cleaning up variable that is never used
-Message-Id: <1404562641-19081-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Message-Id: <1404671217-17772-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1404562641-19081-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404562641-19081-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Sachin Kamat <sachin.kamat@linaro.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
-
-From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Sachin Kamat <sachin.kamat@linaro.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
 Variable ar assigned a value that is never used.
 I have also removed all the code that thereby serves no purpose.

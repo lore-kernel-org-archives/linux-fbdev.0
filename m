@@ -1,15 +1,15 @@
 From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sat, 05 Jul 2014 12:11:10 +0000
+Date: Sun, 06 Jul 2014 18:20:47 +0000
 Subject: [PATCH] video: backlight: ili922x.c:  Cleaning up variable that is never used
-Message-Id: <1404562270-18387-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Message-Id: <1404670847-17249-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1404562270-18387-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404562270-18387-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>
-Cc: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-
-From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
 Variable ar assigned a value that is never used.
 I have also removed all the code that thereby serves no purpose.

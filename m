@@ -1,7 +1,7 @@
 From: Ed Tomlinson <edt@aei.ca>
-Date: Mon, 07 Jul 2014 10:45:49 +0000
+Date: Mon, 07 Jul 2014 10:59:47 +0000
 Subject: Re: [Intel-gfx] [PATCH 5/5] drm/i915: Kick out vga console
-Message-Id: <1974170.pJAPFfvtjC@grover>
+Message-Id: <3881706.SMQbnEkzkB@grover>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1401980308-5116-1-git-send-email-daniel.vetter@ffwll.ch>
  <20140630065955.GD7687@nuc-i3427.alporthouse.com>
@@ -14,13 +14,9 @@ To: Chris Wilson <chris@chris-wilson.co.uk>, Intel Graphics Development <intel-g
 
 Daniel,
 
-I am not quite sure I understand what you want me to test?
-Do you want me to try it without:
+Just to be sure.  The intel card here should not be claiming the real console.  It does
+not have an output device and the bios set set so the radeon is the primary device.
 
-> > +               if (ret = 0) {
-> > +                       ret = do_unregister_con_driver(&vga_con);
-
-Thanks
 Ed
 
 

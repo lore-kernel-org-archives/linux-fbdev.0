@@ -1,59 +1,64 @@
-From: Daniel Jeong <gshark.jeong@gmail.com>
-Date: Wed, 23 Jul 2014 08:10:52 +0000
-Subject: [RFC v6 2/2] backlight: device tree: add new tps611xx backlight binding
-Message-Id: <1406103053-12225-3-git-send-email-gshark.jeong@gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 07 Jul 2014 23:58:21 +0000
+Subject: [PATCH 3.14 91/94] drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap
+Message-Id: <20140707235759.447179528@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1406103053-12225-1-git-send-email-gshark.jeong@gmail.com>
-In-Reply-To: <1406103053-12225-1-git-send-email-gshark.jeong@gmail.com>
+References: <20140707235756.780319003@linuxfoundation.org>
+In-Reply-To: <20140707235756.780319003@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
-Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Zhichuang Sun <sunzc522@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, Xuetao Guan <gxt@mprc.pku.edu.cn>, Guenter Roeck <linux@roeck-us.net>
 
-This commit is about tps611xx device tree documentation.
+3.14-stable review patch.  If anyone has any objections, please let me know.
 
-Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
+------------------
+
+From: Zhichuang SUN <sunzc522@gmail.com>
+
+commit fbc6c4a13bbfb420eedfdb26a0a859f9c07e8a7b upstream.
+
+Function unifb_mmap calls functions which are defined in linux/mm.h
+and asm/pgtable.h
+
+The related error (for unicore32 with unicore32_defconfig):
+	CC      drivers/video/fbdev/fb-puv3.o
+	drivers/video/fbdev/fb-puv3.c: In function 'unifb_mmap':
+	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+				      function 'vm_iomap_memory'
+	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+				      function 'pgprot_noncached'
+
+Signed-off-by: Zhichuang Sun <sunzc522@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Joe Perches <joe@perches.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org
+Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
 ---
-[v6]
-Nothing changed from v5. Driver files were changed
----
- .../video/backlight/tps611xx-backlight.txt         |   26 ++++++++++++++++++++
- 1 file changed, 26 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
+ drivers/video/fb-puv3.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
-new file mode 100644
-index 0000000..905c61b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
-@@ -0,0 +1,26 @@
-+TPS611xx family of backlight driver based on EasyScale.
-+
-+EasyScale is a simple but flexible one pin interface to configure the current.
-+
-+Required properties:
-+- compatible: should contain at least one of
-+  "ti,tps61158"
-+  "ti,tps61161"
-+  "ti,tps61163"
-+  "ti,tps61165"
-+- es-gpio : GPIO for easy-scale communication.(see GPIO binding[0])
-+
-+Optional properties:
-+- rfa-enable: enable request for acknowledge.
-+  If RFA is enabled, the data byte includes the RFA bit and device will wait
-+  and check acknowledge from device.
-+
-+[0]: Documentation/devicetree/bindings/gpio/gpio.txt
-+
-+Example:
-+
-+	backlight {
-+		compatible = "ti,tps61163";
-+		es-gpio = <&gpio 45 0>;
-+		rfa-enable;
-+	};
--- 
-1.7.9.5
+--- a/drivers/video/fb-puv3.c
++++ b/drivers/video/fb-puv3.c
+@@ -18,8 +18,10 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/console.h>
++#include <linux/mm.h>
+ 
+ #include <asm/sizes.h>
++#include <asm/pgtable.h>
+ #include <mach/hardware.h>
+ 
+ /* Platform_data reserved for unifb registers. */
+
 

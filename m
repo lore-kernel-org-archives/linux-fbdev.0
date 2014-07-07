@@ -1,57 +1,64 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sat, 05 Jul 2014 14:04:22 +0000
-Subject: Re: [PATCH] video: fbdev: amifb.c: Cleaning up variable that is never used
-Message-Id: <CAMuHMdWYGVt0=knBTZX04xwQHar0CohUQ5EKGvzMQ49nNRxiCw@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 07 Jul 2014 23:58:03 +0000
+Subject: [PATCH 3.15 121/122] drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap
+Message-Id: <20140707235737.865461900@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404562393-18641-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404562393-18641-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+References: <20140707235734.234226883@linuxfoundation.org>
+In-Reply-To: <20140707235734.234226883@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Sachin Kamat <sachin.kamat@linaro.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Zhichuang Sun <sunzc522@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, Xuetao Guan <gxt@mprc.pku.edu.cn>, Guenter Roeck <linux@roeck-us.net>
 
-On Sat, Jul 5, 2014 at 2:13 PM, Rickard Strandqvist
-<rickard_strandqvist@spectrumdigital.se> wrote:
-> From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
->
-> Variable ar assigned a value that is never used.
-> I have also removed all the code that thereby serves no purpose.
->
-> This was found using a static code analysis program called cppcheck
->
-> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+3.15-stable review patch.  If anyone has any objections, please let me know.
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+------------------
 
-> --- a/drivers/video/fbdev/amifb.c
-> +++ b/drivers/video/fbdev/amifb.c
-> @@ -1124,7 +1124,6 @@ static int ami_decode_var(struct fb_var_screeninfo *var, struct amifb_par *par,
->  {
->         u_short clk_shift, line_shift;
->         u_long maxfetchstop, fstrt, fsize, fconst, xres_n, yres_n;
-> -       u_int htotal, vtotal;
+From: Zhichuang SUN <sunzc522@gmail.com>
 
-These became unused by commit 3161986224a3faa8ccca3e665b7404d81e7ee3cf
-Author: Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed Dec 13 00:35:54 2006 -0800
+commit fbc6c4a13bbfb420eedfdb26a0a859f9c07e8a7b upstream.
 
-    [PATCH] fbdev: remove references to non-existent fbmon_valid_timings()
+Function unifb_mmap calls functions which are defined in linux/mm.h
+and asm/pgtable.h
 
-    Remove references to non-existent fbmon_valid_timings()
+The related error (for unicore32 with unicore32_defconfig):
+	CC      drivers/video/fbdev/fb-puv3.o
+	drivers/video/fbdev/fb-puv3.c: In function 'unifb_mmap':
+	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+				      function 'vm_iomap_memory'
+	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+				      function 'pgprot_noncached'
 
-    Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-    Cc: James Simmons <jsimmons@infradead.org>
-    Signed-off-by: Andrew Morton <akpm@osdl.org>
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+Signed-off-by: Zhichuang Sun <sunzc522@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Joe Perches <joe@perches.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org
+Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Gr{oetje,eeting}s,
+---
+ drivers/video/fbdev/fb-puv3.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-                        Geert
+--- a/drivers/video/fbdev/fb-puv3.c
++++ b/drivers/video/fbdev/fb-puv3.c
+@@ -18,8 +18,10 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/console.h>
++#include <linux/mm.h>
+ 
+ #include <asm/sizes.h>
++#include <asm/pgtable.h>
+ #include <mach/hardware.h>
+ 
+ /* Platform_data reserved for unifb registers. */
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

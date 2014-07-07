@@ -1,42 +1,64 @@
-From: Michael Olbrich <m.olbrich@pengutronix.de>
-Date: Fri, 25 Jul 2014 10:28:35 +0000
-Subject: [PATCH] pwm-backlight: fix probing from device-tree without enable-gpios
-Message-Id: <1406284115-489-1-git-send-email-m.olbrich@pengutronix.de>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 07 Jul 2014 23:58:37 +0000
+Subject: [PATCH 3.10 52/53] drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap
+Message-Id: <20140707235830.856569798@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20140707235829.281783607@linuxfoundation.org>
+In-Reply-To: <20140707235829.281783607@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Alexandre Courbot <acourbot@nvidia.com>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de, Michael Olbrich <m.olbrich@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Zhichuang Sun <sunzc522@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, Xuetao Guan <gxt@mprc.pku.edu.cn>, Guenter Roeck <linux@roeck-us.net>
 
-Since 257462dbf3ed ("pwm-backlight: switch to gpiod interface")
-enable_gpio is no longer set and remains 0 when probing from
-device-tree. This is a valid gpio number. With no enable-gpios
-specified in the device-tree this is used and probing fails
-with:
+3.10-stable review patch.  If anyone has any objections, please let me know.
 
-pwm-backlight lcd-backlight.3: failed to request GPIO#0: -16
+------------------
 
-Fix this by setting enable_gpio to -1 which is not a valid gpio
-number.
+From: Zhichuang SUN <sunzc522@gmail.com>
 
-Signed-off-by: Michael Olbrich <m.olbrich@pengutronix.de>
+commit fbc6c4a13bbfb420eedfdb26a0a859f9c07e8a7b upstream.
+
+Function unifb_mmap calls functions which are defined in linux/mm.h
+and asm/pgtable.h
+
+The related error (for unicore32 with unicore32_defconfig):
+	CC      drivers/video/fbdev/fb-puv3.o
+	drivers/video/fbdev/fb-puv3.c: In function 'unifb_mmap':
+	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+				      function 'vm_iomap_memory'
+	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
+				      function 'pgprot_noncached'
+
+Signed-off-by: Zhichuang Sun <sunzc522@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Joe Perches <joe@perches.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org
+Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
 ---
- drivers/video/backlight/pwm_bl.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fb-puv3.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 38ca88b..5213d13 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -211,6 +211,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 			dev_err(&pdev->dev, "failed to find platform data\n");
- 			return ret;
- 		}
-+		devdata.enable_gpio = -1;
+--- a/drivers/video/fb-puv3.c
++++ b/drivers/video/fb-puv3.c
+@@ -18,8 +18,10 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/console.h>
++#include <linux/mm.h>
  
- 		data = &defdata;
- 	}
--- 
-2.0.1
+ #include <asm/sizes.h>
++#include <asm/pgtable.h>
+ #include <mach/hardware.h>
+ 
+ /* Platform_data reserved for unifb registers. */
+
 

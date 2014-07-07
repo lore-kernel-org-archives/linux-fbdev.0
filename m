@@ -1,52 +1,84 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:47:38 +0000
-Subject: [PATCH] video: fbdev: nvidia: nv_setup.c:  Cleaning up variable that is never used
-Message-Id: <1404672458-19484-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Tony Lindgren <tony@atomide.com>
+Date: Mon, 07 Jul 2014 11:46:25 +0000
+Subject: Re: [PATCH 01/12] ARM: OMAP2+: Remove non working OMAP HDMI audio initialization
+Message-Id: <20140707114625.GT28884@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404563804-20770-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404563804-20770-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+References: <cover.1403807781.git.jsarha@ti.com>
+ <b0764a3af8181db55db046d6139119def363e8eb.1403807781.git.jsarha@ti.com>
+In-Reply-To: <b0764a3af8181db55db046d6139119def363e8eb.1403807781.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jyri Sarha <jsarha@ti.com>
+Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, jyri.sarha@iki.fi
 
-Variable ar assigned a value that is never used.
-I have also removed all the code that thereby serves no purpose.
+* Jyri Sarha <jsarha@ti.com> [140626 12:26]:
+> This code is not working currently and it can be removed. There is a
+> conflict in sharing resources with the actual HDMI driver and with
+> the ASoC HDMI audio DAI driver.
 
-This was found using a static code analysis program called cppcheck
+Is this OK to queue for v3.17 or do we need this for v3.16-rc series?
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/video/fbdev/nvidia/nv_setup.c |    8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+Regards,
 
-diff --git a/drivers/video/fbdev/nvidia/nv_setup.c b/drivers/video/fbdev/nvidia/nv_setup.c
-index 2f2e162..37cdde6 100644
---- a/drivers/video/fbdev/nvidia/nv_setup.c
-+++ b/drivers/video/fbdev/nvidia/nv_setup.c
-@@ -89,9 +89,7 @@ u8 NVReadSeq(struct nvidia_par *par, u8 index)
- }
- void NVWriteAttr(struct nvidia_par *par, u8 index, u8 value)
- {
--	volatile u8 tmp;
--
--	tmp = VGA_RD08(par->PCIO, par->IOBase + 0x0a);
-+	VGA_RD08(par->PCIO, par->IOBase + 0x0a);
- 	if (par->paletteEnabled)
- 		index &= ~0x20;
- 	else
-@@ -101,9 +99,7 @@ void NVWriteAttr(struct nvidia_par *par, u8 index, u8 value)
- }
- u8 NVReadAttr(struct nvidia_par *par, u8 index)
- {
--	volatile u8 tmp;
--
--	tmp = VGA_RD08(par->PCIO, par->IOBase + 0x0a);
-+	VGA_RD08(par->PCIO, par->IOBase + 0x0a);
- 	if (par->paletteEnabled)
- 		index &= ~0x20;
- 	else
--- 
-1.7.10.4
-
+Tony
+ 
+> Signed-off-by: Jyri Sarha <jsarha@ti.com>
+> ---
+>  arch/arm/mach-omap2/devices.c |   28 ----------------------------
+>  1 file changed, 28 deletions(-)
+> 
+> diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+> index 592ba0a..b6f8f34 100644
+> --- a/arch/arm/mach-omap2/devices.c
+> +++ b/arch/arm/mach-omap2/devices.c
+> @@ -297,33 +297,6 @@ static void omap_init_audio(void)
+>  static inline void omap_init_audio(void) {}
+>  #endif
+>  
+> -#if defined(CONFIG_SND_OMAP_SOC_OMAP_HDMI) || \
+> -		defined(CONFIG_SND_OMAP_SOC_OMAP_HDMI_MODULE)
+> -
+> -static struct platform_device omap_hdmi_audio = {
+> -	.name	= "omap-hdmi-audio",
+> -	.id	= -1,
+> -};
+> -
+> -static void __init omap_init_hdmi_audio(void)
+> -{
+> -	struct omap_hwmod *oh;
+> -	struct platform_device *pdev;
+> -
+> -	oh = omap_hwmod_lookup("dss_hdmi");
+> -	if (!oh)
+> -		return;
+> -
+> -	pdev = omap_device_build("omap-hdmi-audio-dai", -1, oh, NULL, 0);
+> -	WARN(IS_ERR(pdev),
+> -	     "Can't build omap_device for omap-hdmi-audio-dai.\n");
+> -
+> -	platform_device_register(&omap_hdmi_audio);
+> -}
+> -#else
+> -static inline void omap_init_hdmi_audio(void) {}
+> -#endif
+> -
+>  #if defined(CONFIG_SPI_OMAP24XX) || defined(CONFIG_SPI_OMAP24XX_MODULE)
+>  
+>  #include <linux/platform_data/spi-omap2-mcspi.h>
+> @@ -459,7 +432,6 @@ static int __init omap2_init_devices(void)
+>  	 */
+>  	omap_init_audio();
+>  	omap_init_camera();
+> -	omap_init_hdmi_audio();
+>  	omap_init_mbox();
+>  	/* If dtb is there, the devices will be created dynamically */
+>  	if (!of_have_populated_dt()) {
+> -- 
+> 1.7.9.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 

@@ -1,18 +1,20 @@
 From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 07 Jul 2014 10:48:00 +0000
+Date: Mon, 07 Jul 2014 10:50:58 +0000
 Subject: Re: [PATCH] video: backlight: ili922x.c:  Cleaning up variable that is never used
-Message-Id: <20140707104800.GB6407@lee--X1>
+Message-Id: <20140707105058.GD6407@lee--X1>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404670847-17249-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404670847-17249-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+References: <1404562270-18387-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404562270-18387-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
 To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sun, 06 Jul 2014, Rickard Strandqvist wrote:
+On Sat, 05 Jul 2014, Rickard Strandqvist wrote:
 
+> From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
+>=20
 > Variable ar assigned a value that is never used.
 > I have also removed all the code that thereby serves no purpose.
 >=20
@@ -24,7 +26,7 @@ e>
 >  drivers/video/backlight/ili922x.c |    3 +--
 >  1 file changed, 1 insertion(+), 2 deletions(-)
 
-Applied, thanks.
+Is this different from the patch I just applied?
 
 > diff --git a/drivers/video/backlight/ili922x.c b/drivers/video/backlight/=
 ili922x.c

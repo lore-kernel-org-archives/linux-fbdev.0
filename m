@@ -1,47 +1,28 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:43:30 +0000
-Subject: [PATCH] video: fbdev: mx3fb.c:  Cleaning up variable that is never used
-Message-Id: <1404672210-19147-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Tue, 08 Jul 2014 13:06:07 +0000
+Subject: Re: [PATCH v9] video: ARM CLCD: Add DT support
+Message-Id: <1404824767.21897.7.camel@hornet>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404563572-20440-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404563572-20440-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+References: <1403610911-31491-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1403610911-31491-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Denis Carikli <denis@eukrea.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Sascha Hauer <s.hauer@pengutronix.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Variable ar assigned a value that is never used.
-I have also removed all the code that thereby serves no purpose.
+On Tue, 2014-06-24 at 12:55 +0100, Pawel Moll wrote:
+> This patch adds basic DT bindings for the PL11x CLCD cells
+> and make their fbdev driver use them.
+> 
+> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
 
-This was found using a static code analysis program called cppcheck
+As two weeks passed without any further comment, I'm assuming that there
+are no more obstacles for this patch to be merged.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/video/fbdev/mx3fb.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Tomi, will you pick it up for 3.17, as you offered? Russell, if you
+prefer to take it via your tree, it's in your system as 8005/4.
 
-diff --git a/drivers/video/fbdev/mx3fb.c b/drivers/video/fbdev/mx3fb.c
-index c645a0a..ac38cb1 100644
---- a/drivers/video/fbdev/mx3fb.c
-+++ b/drivers/video/fbdev/mx3fb.c
-@@ -449,7 +449,6 @@ static void sdc_enable_channel(struct mx3fb_info *mx3_fbi)
- static void sdc_disable_channel(struct mx3fb_info *mx3_fbi)
- {
- 	struct mx3fb_data *mx3fb = mx3_fbi->mx3fb;
--	uint32_t enabled;
- 	unsigned long flags;
- 
- 	if (mx3_fbi->txd = NULL)
-@@ -457,7 +456,7 @@ static void sdc_disable_channel(struct mx3fb_info *mx3_fbi)
- 
- 	spin_lock_irqsave(&mx3fb->lock, flags);
- 
--	enabled = sdc_fb_uninit(mx3_fbi);
-+	sdc_fb_uninit(mx3_fbi);
- 
- 	spin_unlock_irqrestore(&mx3fb->lock, flags);
- 
--- 
-1.7.10.4
+Thanks!
+
+Pawel
 

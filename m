@@ -1,27 +1,35 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 11 Jul 2014 09:21:36 +0000
-Subject: [patch] video: of: display_timing: double free on error
-Message-Id: <20140711092136.GA9339@mwanda>
+From: Fabian Frederick <fabf@skynet.be>
+Date: Tue, 08 Jul 2014 16:27:18 +0000
+Subject: [PATCH 1/1] video: vermilion: remove unnecessary break after goto
+Message-Id: <1404836838-6953-1-git-send-email-fabf@skynet.be>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, linux-fbdev@vger.kernel.org
 
-The display_timings_release() function frees "disp" and we free it
-again on the next line.
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Fabian Frederick <fabf@skynet.be>
+---
+ drivers/video/fbdev/vermilion/vermilion.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+diff --git a/drivers/video/fbdev/vermilion/vermilion.c b/drivers/video/fbdev/vermilion/vermilion.c
+index 048a666..5f930ae 100644
+--- a/drivers/video/fbdev/vermilion/vermilion.c
++++ b/drivers/video/fbdev/vermilion/vermilion.c
+@@ -481,7 +481,6 @@ static int vml_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	default:
+ 		err = -ENODEV;
+ 		goto out_err_1;
+-		break;
+ 	}
+ 
+ 	info = &vinfo->info;
+-- 
+1.8.4.5
 
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-index 987edf1..5c098d5 100644
---- a/drivers/video/of_display_timing.c
-+++ b/drivers/video/of_display_timing.c
-@@ -236,6 +236,7 @@ timingfail:
- 	if (native_mode)
- 		of_node_put(native_mode);
- 	display_timings_release(disp);
-+	disp = NULL;
- entryfail:
- 	kfree(disp);
- dispfail:

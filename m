@@ -1,48 +1,55 @@
-From: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Date: Tue, 08 Jul 2014 22:34:25 +0000
-Subject: Re: [PATCH v2] video: hyperv: hyperv_fb: refresh the VM screen by force on VM panic
-Message-Id: <20140708223425.GB6310@kroah.com>
+From: Dexuan Cui <decui@microsoft.com>
+Date: Wed, 09 Jul 2014 01:46:18 +0000
+Subject: RE: [PATCH v2] video: hyperv: hyperv_fb: refresh the VM screen by force on VM panic
+Message-Id: <EE124450C0AAF944A40DD71E61F878C987AEB9@SINEX14MBXC417.southpacific.corp.microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1403818501-15547-1-git-send-email-decui@microsoft.com>
  <20140708092709.GI25880@mwanda>
  <EE124450C0AAF944A40DD71E61F878C987A663@SINEX14MBXC417.southpacific.corp.microsoft.com>
-In-Reply-To: <EE124450C0AAF944A40DD71E61F878C987A663@SINEX14MBXC417.southpacific.corp.microsoft.com>
+ <20140708223425.GB6310@kroah.com>
+In-Reply-To: <20140708223425.GB6310@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dexuan Cui <decui@microsoft.com>
+To: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
 Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "jasowang@redhat.com" <jasowang@redhat.com>, "driverdev-devel@linuxdriverproject.org" <driverdev-devel@linuxdriverproject.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tomi.valkeinen@ti.com" <tomi.valkeinen@ti.com>, "olaf@aepfle.de" <olaf@aepfle.de>, "apw@canonical.com" <apw@canonical.com>, "plagnioj@jcrosoft.com" <plagnioj@jcrosoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Dan Carpenter <dan.carpenter@oracle.com>
 
-On Tue, Jul 08, 2014 at 10:17:48PM +0000, Dexuan Cui wrote:
-> > -----Original Message-----
-> > From: Dan Carpenter [mailto:dan.carpenter@oracle.com]
-> > Sent: Tuesday, July 8, 2014 17:27 PM
-> > To: Dexuan Cui
-> > Cc: gregkh@linuxfoundation.org; linux-kernel@vger.kernel.org; driverdev-
-> > devel@linuxdriverproject.org; plagnioj@jcrosoft.com;
-> > tomi.valkeinen@ti.com; linux-fbdev@vger.kernel.org; olaf@aepfle.de;
-> > apw@canonical.com; jasowang@redhat.com; Haiyang Zhang
-> > Subject: Re: [PATCH v2] video: hyperv: hyperv_fb: refresh the VM screen by
-> > force on VM panic
-> > 
-> > Don't use likely/unlikely unless you have benchmark numbers to show that
-> > it makes a speed up.
-> > 
-> > regards,
-> > dan carpenter
+> -----Original Message-----
+> > > From: Dan Carpenter [mailto:dan.carpenter@oracle.com]
+> > > Sent: Tuesday, July 8, 2014 17:27 PM
+> > > To: Dexuan Cui
+> > > Cc: gregkh@linuxfoundation.org; linux-kernel@vger.kernel.org;
+> driverdev-
+> > > devel@linuxdriverproject.org; plagnioj@jcrosoft.com;
+> > > tomi.valkeinen@ti.com; linux-fbdev@vger.kernel.org; olaf@aepfle.de;
+> > > apw@canonical.com; jasowang@redhat.com; Haiyang Zhang
+> > > Subject: Re: [PATCH v2] video: hyperv: hyperv_fb: refresh the VM screen
+> by
+> > > force on VM panic
+> > >
+> > > Don't use likely/unlikely unless you have benchmark numbers to show
+> that
+> > > it makes a speed up.
+> > >
+> > > regards,
+> > > dan carpenter
+> >
+> > Hi Dan,
+> > Here the variable 'synchronous_fb' is only set to true when the system
+> panics.
+> > So before the system panics, it's always 'unlikely'. :-)
 > 
-> Hi Dan,
-> Here the variable 'synchronous_fb' is only set to true when the system panics.
-> So before the system panics, it's always 'unlikely'. :-)
+> Then take advantage of gcc's and your processor's prediction, which
+> knows that 0 is the "common" case and will choose to do the right thing
+> here.
+> 
+> Dan is right, never put those markings in your code unless you can
+> benchmark the difference.  Which means in reality, never put them in
+> your code.
+> 
+> gerg k-h
 
-Then take advantage of gcc's and your processor's prediction, which
-knows that 0 is the "common" case and will choose to do the right thing
-here.
+OK, let me send out a v3 patch, which will remove the unlikely.
 
-Dan is right, never put those markings in your code unless you can
-benchmark the difference.  Which means in reality, never put them in
-your code.
-
-thanks,
-
-gerg k-h
+Thanks,
+-- Dexuan

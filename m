@@ -1,66 +1,142 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:57:12 +0000
-Subject: [PATCH] video: fbdev: savage: savagefb.h:  Cleaning up variable that is never used
-Message-Id: <1404673032-20246-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Dexuan Cui <decui@microsoft.com>
+Date: Wed, 09 Jul 2014 02:04:06 +0000
+Subject: [PATCH v3] video: hyperv: hyperv_fb: refresh the VM screen by force on VM panic
+Message-Id: <1404875063-27424-1-git-send-email-decui@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404564391-21548-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404564391-21548-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: gregkh@linuxfoundation.org, dan.carpenter@oracle.com, linux-kernel@vger.kernel.org, driverdev-devel@linuxdriverproject.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org
+Cc: olaf@aepfle.de, apw@canonical.com, jasowang@redhat.com, kys@microsoft.com, haiyangz@microsoft.com
 
-Variable ar assigned a value that is never used.
-I have also removed all the code that thereby serves no purpose.
+Currently the VSC has no chance to notify the VSP of the dirty rectangle on VM
+panic because the notification work is done in a workqueue, and in panic() the
+kernel typically ends up in an infinite loop, and a typical kernel config has
+CONFIG_PREEMPT_VOLUNTARY=y and CONFIG_PREEMPT is not set, so a context switch
+can't happen in panic() and the workqueue won't have a chance to run. As a
+result, the VM Connection window can't refresh until it's closed and we
+re-connect to the VM.
 
-This was found using a static code analysis program called cppcheck
+We can register a handler on panic_notifier_list: the handler can notify
+the VSC and switch the framebuffer driver to a "synchronous mode", meaning
+the VSC flushes any future framebuffer change to the VSP immediately.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+v2: removed the MS-TFS line in the commit message
+v3: remove some 'unlikely' markings
+
+Signed-off-by: Dexuan Cui <decui@microsoft.com>
+Reviewed-by: Haiyang Zhang <haiyangz@microsoft.com>
 ---
- drivers/video/fbdev/savage/savagefb.h |   12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/hyperv_fb.c | 58 ++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 55 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/savage/savagefb.h b/drivers/video/fbdev/savage/savagefb.h
-index dcaab90..8ff4ab1 100644
---- a/drivers/video/fbdev/savage/savagefb.h
-+++ b/drivers/video/fbdev/savage/savagefb.h
-@@ -351,32 +351,26 @@ static inline void VGAwSEQ(u8 index, u8 val, struct savagefb_par *par)
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index e23392e..a7b98e1 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -226,11 +226,16 @@ struct hvfb_par {
+ 	u8 recv_buf[MAX_VMBUS_PKT_SIZE];
+ };
  
- static inline void VGAenablePalette(struct savagefb_par *par)
- {
--	u8 tmp;
--
--	tmp = vga_in8(0x3da, par);
-+	vga_in8(0x3da, par);
- 	vga_out8(0x3c0, 0x00, par);
- 	par->paletteEnabled = 1;
++static struct fb_info *hvfb_info;
++
+ static uint screen_width = HVFB_WIDTH;
+ static uint screen_height = HVFB_HEIGHT;
+ static uint screen_depth;
+ static uint screen_fb_size;
+ 
++/* If true, the VSC notifies the VSP on every framebuffer change */
++static bool synchronous_fb;
++
+ /* Send message to Hyper-V host */
+ static inline int synthvid_send(struct hv_device *hdev,
+ 				struct synthvid_msg *msg)
+@@ -532,6 +537,20 @@ static void hvfb_update_work(struct work_struct *w)
+ 		schedule_delayed_work(&par->dwork, HVFB_UPDATE_DELAY);
  }
  
- static inline void VGAdisablePalette(struct savagefb_par *par)
- {
--	u8 tmp;
--
--	tmp = vga_in8(0x3da, par);
-+	vga_in8(0x3da, par);
- 	vga_out8(0x3c0, 0x20, par);
- 	par->paletteEnabled = 0;
++static int hvfb_on_panic(struct notifier_block *nb,
++			unsigned long e, void *p)
++{
++	if (hvfb_info)
++		synthvid_update(hvfb_info);
++
++	synchronous_fb = true;
++
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block hvfb_panic_nb = {
++	.notifier_call = hvfb_on_panic,
++};
+ 
+ /* Framebuffer operation handlers */
+ 
+@@ -582,14 +601,41 @@ static int hvfb_blank(int blank, struct fb_info *info)
+ 	return 1;	/* get fb_blank to set the colormap to all black */
  }
  
- static inline void VGAwATTR(u8 index, u8 value, struct savagefb_par *par)
- {
--	u8 tmp;
--
- 	if (par->paletteEnabled)
- 		index &= ~0x20;
- 	else
- 		index |= 0x20;
++static void hvfb_cfb_fillrect(struct fb_info *p,
++				const struct fb_fillrect *rect)
++{
++	cfb_fillrect(p, rect);
++
++	if (synchronous_fb)
++		synthvid_update(p);
++}
++
++static void hvfb_cfb_copyarea(struct fb_info *p,
++				const struct fb_copyarea *area)
++{
++	cfb_copyarea(p, area);
++
++	if (synchronous_fb)
++		synthvid_update(p);
++}
++
++static void hvfb_cfb_imageblit(struct fb_info *p,
++				const struct fb_image *image)
++{
++	cfb_imageblit(p, image);
++
++	if (synchronous_fb)
++		synthvid_update(p);
++}
++
+ static struct fb_ops hvfb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_check_var = hvfb_check_var,
+ 	.fb_set_par = hvfb_set_par,
+ 	.fb_setcolreg = hvfb_setcolreg,
+-	.fb_fillrect = cfb_fillrect,
+-	.fb_copyarea = cfb_copyarea,
+-	.fb_imageblit = cfb_imageblit,
++	.fb_fillrect = hvfb_cfb_fillrect,
++	.fb_copyarea = hvfb_cfb_copyarea,
++	.fb_imageblit = hvfb_cfb_imageblit,
+ 	.fb_blank = hvfb_blank,
+ };
  
--	tmp = vga_in8(0x3da, par);
-+	vga_in8(0x3da, par);
- 	vga_out8(0x3c0, index, par);
- 	vga_out8 (0x3c0, value, par);
- }
+@@ -801,6 +847,9 @@ static int hvfb_probe(struct hv_device *hdev,
+ 
+ 	par->fb_ready = true;
+ 
++	hvfb_info = info;
++	atomic_notifier_chain_register(&panic_notifier_list, &hvfb_panic_nb);
++
+ 	return 0;
+ 
+ error:
+@@ -820,6 +869,9 @@ static int hvfb_remove(struct hv_device *hdev)
+ 	struct fb_info *info = hv_get_drvdata(hdev);
+ 	struct hvfb_par *par = info->par;
+ 
++	atomic_notifier_chain_unregister(&panic_notifier_list, &hvfb_panic_nb);
++	hvfb_info = NULL;
++
+ 	par->update = false;
+ 	par->fb_ready = false;
+ 
 -- 
-1.7.10.4
+1.9.1
 

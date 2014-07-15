@@ -1,61 +1,32 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Wed, 02 Jul 2014 21:31:12 +0000
-Subject: [PATCH] video: fbdev: broadsheetfb.c:  Fix a memory leak
-Message-Id: <1404336673-6099-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Daniel Jeong <gshark.jeong@gmail.com>
+Date: Tue, 15 Jul 2014 10:09:16 +0000
+Subject: [RFC v5 0/2]  backlight: add new tps611xx backlight driver
+Message-Id: <1405418958-7596-1-git-send-email-gshark.jeong@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Hanjun Guo <hanjun.guo@linaro.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Randy Dunlap <rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Cc: Daniel Jeong <daniel.jeong-l0cyMroinI0@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Daniel Jeong <gshark.jeong-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-Fix a memory leak.
+This driver a general version for tps611xx backlgiht chips of TI.
+It supports tps61158, tps61161, tps61163 and tps61165 backlight driver
+based on EasyScale protocol.
 
-This was found using a static code analysis program called cppcheck
+Daniel Jeong (2):
+  [RFC v5 1/2] backlight: add new tps611xx backlight driver
+  [RFC v5 2/2] backlight: device tree: add new tps611xx backlight binding
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/video/fbdev/broadsheetfb.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ .../video/backlight/tps611xx-backlight.txt         |   26 ++
+ drivers/video/backlight/Kconfig                    |    7 +
+ drivers/video/backlight/Makefile                   |    1 +
+ drivers/video/backlight/tps611xx_bl.c              |  479 ++++++++++++++++++++
+ include/linux/platform_data/tps611xx_bl.h          |   31 ++
+ 5 files changed, 544 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
+ create mode 100644 drivers/video/backlight/tps611xx_bl.c
+ create mode 100644 include/linux/platform_data/tps611xx_bl.h
 
-diff --git a/drivers/video/fbdev/broadsheetfb.c b/drivers/video/fbdev/broadsheetfb.c
-index 8556264..526e5e84 100644
---- a/drivers/video/fbdev/broadsheetfb.c
-+++ b/drivers/video/fbdev/broadsheetfb.c
-@@ -636,7 +636,7 @@ static int broadsheet_spiflash_rewrite_sector(struct broadsheetfb_par *par,
- 		err = broadsheet_spiflash_read_range(par, start_sector_addr,
- 						data_start_addr, sector_buffer);
- 		if (err)
--			return err;
-+			goto end_release;
- 	}
- 
- 	/* now we copy our data into the right place in the sector buffer */
-@@ -657,7 +657,7 @@ static int broadsheet_spiflash_rewrite_sector(struct broadsheetfb_par *par,
- 		err = broadsheet_spiflash_read_range(par, tail_start_addr,
- 			tail_len, sector_buffer + tail_start_addr);
- 		if (err)
--			return err;
-+			goto end_release;
- 	}
- 
- 	/* if we got here we have the full sector that we want to rewrite. */
-@@ -665,11 +665,14 @@ static int broadsheet_spiflash_rewrite_sector(struct broadsheetfb_par *par,
- 	/* first erase the sector */
- 	err = broadsheet_spiflash_erase_sector(par, start_sector_addr);
- 	if (err)
--		return err;
-+		goto end_release;
- 
- 	/* now write it */
- 	err = broadsheet_spiflash_write_sector(par, start_sector_addr,
- 					sector_buffer, sector_size);
-+
-+end_release:
-+	kfree(sector_buffer);
- 	return err;
- }
- 
 -- 
-1.7.10.4
+1.7.9.5
 

@@ -1,54 +1,115 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:40:24 +0000
-Subject: [PATCH] video: fbdev: mb862xx: mb862xxfbdrv.c:  Cleaning up variable that is never used
-Message-Id: <1404672024-18891-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 15 Jul 2014 08:39:57 +0000
+Subject: PATCH] video: fix up versatile CLCD helper move
+Message-Id: <9561883.zqovrcBa4A@wuerfel>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404563339-20105-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404563339-20105-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Anatolij Gustschin <agust@denx.de>, Sachin Kamat <sachin.kamat@linaro.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Variable ar assigned a value that is never used.
-I have also removed all the code that thereby serves no purpose.
+commit 11c32d7b6274cb0f ("video: move Versatile CLCD helpers")
+moved files out of the plat-versatile directory but in the process
+got a few of the dependencies wrong:
 
-This was found using a static code analysis program called cppcheck
+- If CONFIG_FB is not set, the file no longer gets built, resulting
+  in a link error
+- If CONFIG_FB or CONFIG_FB_ARMCLCD are disabled, we also get a
+  Kconfig warning for incorrect dependencies due to the symbol
+  being 'select'ed from the platform Kconfig.
+- When the file is not built, we also get a link error for missing
+  symbols.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c |    3 ---
- 1 file changed, 3 deletions(-)
+This patch should fix all three, by removing the 'select' statements,
+changing the Kconfig description of the symbol to be enabled in
+exactly the right configurations, and adding inline stub functions
+for the case when the framebuffer driver is disabled.
 
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-index 0cd4c33..24be945 100644
---- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-@@ -273,7 +273,6 @@ static int mb862xxfb_set_par(struct fb_info *fbi)
- static int mb862xxfb_pan(struct fb_var_screeninfo *var,
- 			 struct fb_info *info)
- {
--	struct mb862xxfb_par *par = info->par;
- 	unsigned long reg;
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index fceb014c54a1..76e0d6752bd8 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -336,7 +336,6 @@ config ARCH_VERSATILE
+ 	select HAVE_MACH_CLKDEV
+ 	select ICST
+ 	select PLAT_VERSATILE
+-	select PLAT_VERSATILE_CLCD
+ 	select PLAT_VERSATILE_CLOCK
+ 	select VERSATILE_FPGA_IRQ
+ 	help
+diff --git a/arch/arm/mach-realview/Kconfig b/arch/arm/mach-realview/Kconfig
+index 3b02ba4e7094..4b7649d59bf6 100644
+--- a/arch/arm/mach-realview/Kconfig
++++ b/arch/arm/mach-realview/Kconfig
+@@ -9,7 +9,6 @@ config ARCH_REALVIEW
+ 	select GPIO_PL061 if GPIOLIB
+ 	select ICST
+ 	select PLAT_VERSATILE
+-	select PLAT_VERSATILE_CLCD
+ 	help
+ 	  This enables support for ARM Ltd RealView boards.
  
- 	reg = pack(var->yoffset, var->xoffset);
-@@ -286,7 +285,6 @@ static int mb862xxfb_pan(struct fb_var_screeninfo *var,
+diff --git a/arch/arm/mach-vexpress/Kconfig b/arch/arm/mach-vexpress/Kconfig
+index d8b9330f896a..e9166dfc4756 100644
+--- a/arch/arm/mach-vexpress/Kconfig
++++ b/arch/arm/mach-vexpress/Kconfig
+@@ -13,7 +13,6 @@ menuconfig ARCH_VEXPRESS
+ 	select ICST
+ 	select NO_IOPORT_MAP
+ 	select PLAT_VERSATILE
+-	select PLAT_VERSATILE_CLCD
+ 	select POWER_RESET
+ 	select POWER_RESET_VEXPRESS
+ 	select POWER_SUPPLY
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index e2dd9b493580..a16efe729988 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -292,10 +292,8 @@ config FB_ARMCLCD
  
- static int mb862xxfb_blank(int mode, struct fb_info *fbi)
- {
--	struct mb862xxfb_par  *par = fbi->par;
- 	unsigned long reg;
+ # Helper logic selected only by the ARM Versatile platform family.
+ config PLAT_VERSATILE_CLCD
+-	depends on FB_ARMCLCD
+-	depends on (PLAT_VERSATILE || ARCH_INTEGRATOR)
+-	default y
+-	bool
++	def_bool ARCH_VERSATILE || ARCH_REALVIEW || ARCH_VEXPRESS
++	depends on FB_ARMCLCD && FB=y
  
- 	dev_dbg(fbi->dev, "blank mode=%d\n", mode);
-@@ -548,7 +546,6 @@ static ssize_t mb862xxfb_show_dispregs(struct device *dev,
- 				       struct device_attribute *attr, char *buf)
- {
- 	struct fb_info *fbi = dev_get_drvdata(dev);
--	struct mb862xxfb_par *par = fbi->par;
- 	char *ptr = buf;
- 	unsigned int reg;
+ config FB_ACORN
+ 	bool "Acorn VIDC support"
+diff --git a/include/linux/platform_data/video-clcd-versatile.h b/include/linux/platform_data/video-clcd-versatile.h
+index 6bb6a1d2019b..09ccf182af4d 100644
+--- a/include/linux/platform_data/video-clcd-versatile.h
++++ b/include/linux/platform_data/video-clcd-versatile.h
+@@ -1,9 +1,27 @@
+ #ifndef PLAT_CLCD_H
+ #define PLAT_CLCD_H
  
--- 
-1.7.10.4
++#ifdef CONFIG_PLAT_VERSATILE_CLCD
+ struct clcd_panel *versatile_clcd_get_panel(const char *);
+ int versatile_clcd_setup_dma(struct clcd_fb *, unsigned long);
+ int versatile_clcd_mmap_dma(struct clcd_fb *, struct vm_area_struct *);
+ void versatile_clcd_remove_dma(struct clcd_fb *);
++#else
++static inline struct clcd_panel *versatile_clcd_get_panel(const char *s)
++{
++	return NULL;
++}
++static inline int versatile_clcd_setup_dma(struct clcd_fb *fb, unsigned long framesize)
++{
++	return -ENODEV;
++}
++static inline int versatile_clcd_mmap_dma(struct clcd_fb *fb, struct vm_area_struct *vm)
++{
++	return -ENODEV;
++}
++static inline void versatile_clcd_remove_dma(struct clcd_fb *fb)
++{
++}
++#endif
+ 
+ #endif
 

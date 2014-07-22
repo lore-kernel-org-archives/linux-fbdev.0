@@ -1,47 +1,125 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Wed, 02 Jul 2014 21:57:12 +0000
-Subject: [PATCH] video: fbdev: sh_mipi_dsi.c:  Cleaning up Boolean used in bitwise operation
-Message-Id: <1404338232-6708-2-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 22 Jul 2014 15:08:13 +0000
+Subject: Re: [PATCH 3/3] driver:gpio remove all usage of gpio_remove retval in driver
+Message-Id: <CACRpkdasp9bLULT7NJM9nYX58rRSsQKXFddOLz9Ah6kp-j-3=Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404338232-6708-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404338232-6708-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+References: <CACRpkda6mzVdaN0cvOxpbsxWyCv2nGyDXOjZg_5aT8u7SSQeUw@mail.gmail.com>
+	<1405197014-25225-1-git-send-email-berthe.ab@gmail.com>
+	<1405197014-25225-4-git-send-email-berthe.ab@gmail.com>
+In-Reply-To: <1405197014-25225-4-git-send-email-berthe.ab@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: abdoulaye berthe <berthe.ab@gmail.com>, "arm@kernel.org" <arm@kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Mauro Carvalho Chehab <m.chehab@samsung.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, Michael Buesch <m@bues.ch>, Greg KH <gregkh@linuxfoundation.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>
+Cc: Alexandre Courbot <gnurou@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
 
-Boolean variable is used in bitwise operation.
+On Sat, Jul 12, 2014 at 10:30 PM, abdoulaye berthe <berthe.ab@gmail.com> wr=
+ote:
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/video/fbdev/sh_mipi_dsi.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+Heads up. Requesting ACKs for this patch or I'm atleast warning that it wil=
+l be
+applied. We're getting rid of the return value from gpiochip_remove().
 
-diff --git a/drivers/video/fbdev/sh_mipi_dsi.c b/drivers/video/fbdev/sh_mipi_dsi.c
-index 8f6e8ff..39417ab 100644
---- a/drivers/video/fbdev/sh_mipi_dsi.c
-+++ b/drivers/video/fbdev/sh_mipi_dsi.c
-@@ -113,11 +113,18 @@ static int sh_mipi_dcs_param(int handle, u8 cmd, u8 param)
- 
- static void sh_mipi_dsi_enable(struct sh_mipi *mipi, bool enable)
- {
-+	unsigned int enable_value;
-+
-+	if (enable)
-+		enable_value = 0x00000003;
-+	else
-+		enable_value = 0x00000002;
-+
- 	/*
- 	 * enable LCDC data tx, transition to LPS after completion of each HS
- 	 * packet
- 	 */
--	iowrite32(0x00000002 | enable, mipi->linkbase + DTCTR);
-+	iowrite32(enable_value, mipi->linkbase + DTCTR);
- }
- 
- static void sh_mipi_shutdown(struct platform_device *pdev)
--- 
-1.7.10.4
+> this remove all reference to gpio_remove retval in all driver
+> except pinctrl and gpio. the same thing is done for gpio and
+> pinctrl in two different patches.
+>
+> Signed-off-by: abdoulaye berthe <berthe.ab@gmail.com>
+(...)
 
+I think this patch probably needs to be broken down per-subsystem as it
+hits all over the map. But let's start requesting ACKs for the
+individual pieces.
+Actually I think it will be OK to merge because there is likely not much ch=
+urn
+around these code sites.
+
+I'm a bit torn between just wanting a big patch for this hitting drivers/gp=
+io
+and smaller patches hitting one subsystem at a time. We should be able
+to hammer this in one switch strike.
+
+>  arch/arm/common/scoop.c                        | 10 ++--------
+
+ARM SoC folks, can you ACK this?
+
+>  arch/mips/txx9/generic/setup.c                 |  4 ++--
+
+Ralf can you ACK this?
+
+>  arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |  3 ++-
+
+Benji, can you ACK this?
+
+>  arch/sh/boards/mach-x3proto/gpio.c             |  6 ++----
+
+Aha noone can ACK this, whatever...
+
+>  drivers/bcma/driver_gpio.c                     |  3 ++-
+
+Rafa=C5=82 can you ACK this?
+
+>  drivers/hid/hid-cp2112.c                       |  6 ++----
+
+Jiri can you ACK this?
+
+>  drivers/input/keyboard/adp5588-keys.c          |  4 +---
+>  drivers/input/keyboard/adp5589-keys.c          |  4 +---
+>  drivers/input/touchscreen/ad7879.c             | 10 +++-------
+
+Dmitry can you ACK this?
+
+>  drivers/leds/leds-pca9532.c                    | 10 ++--------
+>  drivers/leds/leds-tca6507.c                    |  7 ++-----
+
+Bryan can you ACK this?
+
+>  drivers/media/dvb-frontends/cxd2820r_core.c    | 10 +++-------
+
+Mauro can you ACK this?
+
+(Hm that looks weird. Mental note to look closer at this.)
+
+>  drivers/mfd/asic3.c                            |  3 ++-
+>  drivers/mfd/htc-i2cpld.c                       |  8 +-------
+>  drivers/mfd/sm501.c                            | 17 +++--------------
+>  drivers/mfd/tc6393xb.c                         | 13 ++++---------
+>  drivers/mfd/ucb1x00-core.c                     |  8 ++------
+
+Lee/Sam can either of you ACK this?
+
+>  drivers/pinctrl/pinctrl-abx500.c               | 15 +++------------
+>  drivers/pinctrl/pinctrl-exynos5440.c           |  6 +-----
+>  drivers/pinctrl/pinctrl-msm.c                  | 10 +++-------
+>  drivers/pinctrl/pinctrl-nomadik.c              |  2 +-
+>  drivers/pinctrl/pinctrl-samsung.c              | 14 ++++----------
+
+Abdoulaye: these should be in the other patch for pinctrl.
+
+>  drivers/platform/x86/intel_pmic_gpio.c         |  3 +--
+
+Matthew can you ACK this?
+
+>  drivers/ssb/driver_gpio.c                      |  3 ++-
+
+Michael can you (A) ACK this and
+(B) think of moving this driver to drivers/gpio... Patches welcome.
+
+>  drivers/staging/vme/devices/vme_pio2_gpio.c    |  4 +---
+>  drivers/tty/serial/max310x.c                   | 10 ++++------
+
+Greg can you ACK this?
+
+>  drivers/video/fbdev/via/via-gpio.c             | 10 +++-------
+
+Tomi can you ACK this?
+
+>  sound/soc/codecs/wm5100.c                      |  5 +----
+>  sound/soc/codecs/wm8903.c                      |  6 +-----
+>  sound/soc/codecs/wm8962.c                      |  5 +----
+>  sound/soc/codecs/wm8996.c                      |  6 +-----
+
+Liam || Mark can you ACK this?
+
+Yours,
+Linus Walleij

@@ -1,49 +1,32 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 30 Jul 2014 13:12:53 +0000
-Subject: fbdev patches for 3.17
-Message-Id: <53D8EF55.5060209@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="E1JiJ3xnPFCCMpPeRFq24QSIbGM4eHg7q"
+From: Daniel Jeong <gshark.jeong@gmail.com>
+Date: Wed, 23 Jul 2014 08:10:50 +0000
+Subject: [RFC v6 0/2] backlight: add new tps611xx backlight driver
+Message-Id: <1406103053-12225-1-git-send-email-gshark.jeong@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Randy Dunlap <rdunlap@infradead.org>
+Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>
 
---E1JiJ3xnPFCCMpPeRFq24QSIbGM4eHg7q
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+This driver a general version for tps611xx backlgiht chips of TI.
+It supports tps61158, tps61161, tps61163 and tps61165 backlight driver
+based on EasyScale protocol.
 
-Hi,
+Daniel Jeong (2):
+  [RFC v6 1/2] backlight: add new tps611xx backlight driver
+  [RFC v6 2/2] backlight: device tree: add new tps611xx backlight binding
 
-I just came back from vacation, and 3.17 merge window is getting close.
-I have tons of emails in my inbox, so if you have important fbdev
-patches for 3.17, please resend or ping.
+ .../video/backlight/tps611xx-backlight.txt         |   26 ++
+ drivers/video/backlight/Kconfig                    |    7 +
+ drivers/video/backlight/Makefile                   |    1 +
+ drivers/video/backlight/tps611xx_bl.c              |  479 ++++++++++++++++++++
+ include/linux/platform_data/tps611xx_bl.h          |   31 ++
+ 5 files changed, 544 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/tps611xx-backlight.txt
+ create mode 100644 drivers/video/backlight/tps611xx_bl.c
+ create mode 100644 include/linux/platform_data/tps611xx_bl.h
 
-I'll try to find them myself but I most likely don't have time to go
-through all of them for 3.17.
+-- 
+1.7.9.5
 
- Tomi
-
-
---E1JiJ3xnPFCCMpPeRFq24QSIbGM4eHg7q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJT2O9VAAoJEPo9qoy8lh71+PsP/j3lZJwnF8JqVWxVc/S163om
-4+tzP0cu/GosmnxI1wfm3y684xMTVpAO52B3Pvc3VbLxaEQei+KF48y7raCRhPvJ
-zRtoR6y43XBC55GoS4jKRpjZFQkKg96dEZFVTcPLbQVZ+ZcnnnnzgH4TeR3JaUkp
-MgugwZQYWB38dMcCMNQYro6Mfpp/8GYcbJ2Ze1n2ccnrgmV62fxPvCs1ZKv4kslI
-j9cSBn3WqBgfI3BMmP7cHTzVyqu1OXqC+XocF6BXPvr/8qECKGbs5CvL17ZvJUVZ
-j4MlQoHlrF9Y1JtIRhYX7ZyLl3qAJdEqvgdN0iRbCyVSua9OHWv6rCRoqMK0s9+c
-x6XWH4q9ZPVppcXfnCFBtEW+8QhvrQIDrmb/FTe1ViTG6ESWGAYDpBSrLIYaZdo0
-asJ3wYNPdDqdr3IcTe2S+hBp8r1QKTW+kLedlEcdq/D161OVcPORyVVVM4N+1Wgy
-szDaeppA6iVM96jAmo00nQSKjXZSZVclLJynZW7sJrwKW+0DugrF760638T4mseo
-FKs4ZEY2IWz+DMTnb13AUwiA+GlRlfePk10HgbcdsS8RGFhMW0daAxuuiNwYPXRf
-EYyvKD0nUoqJYfEouzpHXF4+KNnIBUQDjoO5BUMxCGO5R7pU/nzV3cNSIyzr1W/b
-GOXWYE/k076fsVVIo6s1
-=TXSy
------END PGP SIGNATURE-----
-
---E1JiJ3xnPFCCMpPeRFq24QSIbGM4eHg7q--

@@ -1,80 +1,36 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Tue, 08 Jul 2014 08:10:12 +0000
-Subject: Re: [Intel-gfx] [PATCH 5/5] drm/i915: Kick out vga console
-Message-Id: <20140708081012.GN17271@phenom.ffwll.local>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Wed, 23 Jul 2014 21:20:27 +0000
+Subject: [PATCH v2] video: fbdev: uvesafb.c:  Added additional error checking
+Message-Id: <1406150427-26077-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1401980308-5116-1-git-send-email-daniel.vetter@ffwll.ch>
- <1974170.pJAPFfvtjC@grover>
- <20140707122654.GQ5821@phenom.ffwll.local>
- <2319392.n3fnJUhemF@grover>
-In-Reply-To: <2319392.n3fnJUhemF@grover>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ed Tomlinson <edt@aei.ca>
-Cc: linux-fbdev@vger.kernel.org, Dave Airlie <airlied@linux.ie>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, David Herrmann <dh.herrmann@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Wang YanQing <udknight@gmail.com>, Jingoo Han <jg1.han@samsung.com>, David Fries <David@Fries.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Joe Perches <joe@perches.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Jul 07, 2014 at 10:53:16PM -0400, Ed Tomlinson wrote:
-> Hi Daniel,
-> 
-> The patch below also works.  You can use my Tested By for it.
+Variable was assigned a value that is never used.
+Now the variable is used, and the function returns if a call to
+uvesafb_exec() returns a error.
 
-Thanks a lot for testing, patch submitted and should get forwarded asap.
-> 
-> Thanks
-> Ed Tomlinson <edtoml@gmail.com>
-> 
-> PS. I _really_ need to get a serial console working on my i7 box.
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/uvesafb.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Usually this doesn't help a lot with gfx initialization issues since we do
-an awful lot of setup while holding the console_lock. Which prevents any
-dmesg output on any console :(
-
-Cheers, Daniel
-
-> 
-> On Monday 07 July 2014 14:26:54 Daniel Vetter wrote:
-> > On Mon, Jul 07, 2014 at 06:45:49AM -0400, Ed Tomlinson wrote:
-> > > Daniel,
-> > > 
-> > > I am not quite sure I understand what you want me to test?
-> > > Do you want me to try it without:
-> > > 
-> > > > > +               if (ret = 0) {
-> > > > > +                       ret = do_unregister_con_driver(&vga_con);
-> > 
-> > Below the diff of what I mean.
-> > -Daniel
-> > 
-> > 
-> > diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-> > index 5e583a1838f8..bd8517151479 100644
-> > --- a/drivers/gpu/drm/i915/i915_dma.c
-> > +++ b/drivers/gpu/drm/i915/i915_dma.c
-> > @@ -1466,12 +1466,13 @@ static int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
-> >  #else
-> >  static int i915_kick_out_vgacon(struct drm_i915_private *dev_priv)
-> >  {
-> > -	int ret;
-> > +	int ret = 0;
-> >  
-> >  	DRM_INFO("Replacing VGA console driver\n");
-> >  
-> >  	console_lock();
-> > -	ret = do_take_over_console(&dummy_con, 0, MAX_NR_CONSOLES - 1, 1);
-> > +	if (con_is_bound(&vga_con))
-> > +		ret = do_take_over_console(&dummy_con, 0, MAX_NR_CONSOLES - 1, 1);
-> >  	if (ret = 0) {
-> >  		ret = do_unregister_con_driver(&vga_con);
-> >  
-> > 
-> 
-> _______________________________________________
-> Intel-gfx mailing list
-> Intel-gfx@lists.freedesktop.org
-> http://lists.freedesktop.org/mailman/listinfo/intel-gfx
-
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index 509d452..47c2d74 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -561,6 +561,8 @@ static int uvesafb_vbe_getpmi(struct uvesafb_ktask *task,
+ 	task->t.regs.eax = 0x4f0a;
+ 	task->t.regs.ebx = 0x0;
+ 	err = uvesafb_exec(task);
++	if (err)
++		return err;
+ 
+ 	if ((task->t.regs.eax & 0xffff) != 0x4f || task->t.regs.es < 0xc000) {
+ 		par->pmi_setpal = par->ypan = 0;
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+1.7.10.4
+

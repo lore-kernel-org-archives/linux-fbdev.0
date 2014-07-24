@@ -1,7 +1,7 @@
 From: Wang YanQing <udknight@gmail.com>
-Date: Thu, 24 Jul 2014 17:31:12 +0000
+Date: Thu, 24 Jul 2014 17:36:13 +0000
 Subject: Re: [PATCH v2] video: fbdev: uvesafb.c:  Added additional error checking
-Message-Id: <20140724173112.GA2015@udknight>
+Message-Id: <20140724173613.GA2203@udknight>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1406150427-26077-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 In-Reply-To: <1406150427-26077-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
@@ -9,7 +9,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, David Fries <David@Fries.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Joe Perches <joe@perches.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, David Fries <David@Fries.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Joe Perches <joe@perches.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, pavel@ucw.cz
 
 On Wed, Jul 23, 2014 at 11:20:27PM +0200, Rickard Strandqvist wrote:
 > Variable was assigned a value that is never used.
@@ -30,5 +30,8 @@ Or we check uvesafb_vbe_getpmi's return value, then the code will looks like bel
 if (uvesafb_vbe_getpmi(task, par))
     par->pmi_setpal = par->ypan = 0;
 
+
+Add cc:pavel@ucw.cz, you should cc all the people who replied your patch 
+in later patch version.
 
 Thanks.

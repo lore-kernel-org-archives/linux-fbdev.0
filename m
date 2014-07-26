@@ -1,64 +1,54 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 07 Jul 2014 23:58:03 +0000
-Subject: [PATCH 3.15 121/122] drivers/video/fbdev/fb-puv3.c: Add header files for function unifb_mmap
-Message-Id: <20140707235737.865461900@linuxfoundation.org>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 26 Jul 2014 10:19:17 +0000
+Subject: Re: [PATCH v2] video: fbdev: uvesafb.c: Added additional error checking
+Message-Id: <CAFo99gYv1h-J11836Rt=OycJ+cQ_aa4KTf6sVjQKpnCyNsZQUw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140707235734.234226883@linuxfoundation.org>
-In-Reply-To: <20140707235734.234226883@linuxfoundation.org>
+References: <1406150427-26077-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+ <20140724173613.GA2203@udknight>
+In-Reply-To: <20140724173613.GA2203@udknight>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Zhichuang Sun <sunzc522@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Joe Perches <joe@perches.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, Xuetao Guan <gxt@mprc.pku.edu.cn>, Guenter Roeck <linux@roeck-us.net>
+To: Wang YanQing <udknight@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, David Fries <David@fries.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Joe Perches <joe@perches.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-3.15-stable review patch.  If anyone has any objections, please let me know.
-
-------------------
-
-From: Zhichuang SUN <sunzc522@gmail.com>
-
-commit fbc6c4a13bbfb420eedfdb26a0a859f9c07e8a7b upstream.
-
-Function unifb_mmap calls functions which are defined in linux/mm.h
-and asm/pgtable.h
-
-The related error (for unicore32 with unicore32_defconfig):
-	CC      drivers/video/fbdev/fb-puv3.o
-	drivers/video/fbdev/fb-puv3.c: In function 'unifb_mmap':
-	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
-				      function 'vm_iomap_memory'
-	drivers/video/fbdev/fb-puv3.c:646: error: implicit declaration of
-				      function 'pgprot_noncached'
-
-Signed-off-by: Zhichuang Sun <sunzc522@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Joe Perches <joe@perches.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org
-Acked-by: Xuetao Guan <gxt@mprc.pku.edu.cn>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
----
- drivers/video/fbdev/fb-puv3.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- a/drivers/video/fbdev/fb-puv3.c
-+++ b/drivers/video/fbdev/fb-puv3.c
-@@ -18,8 +18,10 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/console.h>
-+#include <linux/mm.h>
- 
- #include <asm/sizes.h>
-+#include <asm/pgtable.h>
- #include <mach/hardware.h>
- 
- /* Platform_data reserved for unifb registers. */
+2014-07-24 19:36 GMT+02:00 Wang YanQing <udknight@gmail.com>:
+> On Wed, Jul 23, 2014 at 11:20:27PM +0200, Rickard Strandqvist wrote:
+>> Variable was assigned a value that is never used.
+>> Now the variable is used, and the function returns if a call to
+>> uvesafb_exec() returns a error.
+>
+> Because the only user of uvesafb_vbe_getpmi in uvesafb.c
+> don't check its return value, it should do the check indeed,
+> so maybe below change is better:
+>
+> -       if ((task->t.regs.eax & 0xffff) != 0x4f || task->t.regs.es < 0xc000) {
+> +       if (err || (task->t.regs.eax & 0xffff) != 0x4f || task->t.regs.es < 0xc000) {
+>                 par->pmi_setpal = par->ypan = 0;
+>         }
+>
+> Or we check uvesafb_vbe_getpmi's return value, then the code will looks like below:
+>
+> if (uvesafb_vbe_getpmi(task, par))
+>     par->pmi_setpal = par->ypan = 0;
 
 
+Hi
+
+Sure, I saw that much of the other code using something like:
+if (err || ...)
+
+
+But this whole discussion start with that you wished it would return
+the error, and then error code I assumed?
+
+Ok, but something like this then?
+
+err = uvesafb_exec(task);
+if (err) {
+  par->pmi_setpal = par->ypan = 0;
+  return err;
+}
+
+
+Kind regards
+Rickard Strandqvist

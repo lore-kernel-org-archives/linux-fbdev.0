@@ -1,27 +1,24 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Mon, 21 Jul 2014 21:25:27 +0000
-Subject: Re: [PATCH] video: fbdev: uvesafb.c:  Cleaning up variable that is never used
-Message-Id: <20140721212527.GC3824@amd.pavel.ucw.cz>
+From: Webmail Admin <jcampos@munisjl.gob.pe>
+Date: Tue, 29 Jul 2014 12:27:33 +0000
+Subject: Mailbox Warning
+Message-Id: <20140729121801.E5D1B4D1577@zirius.ipresspublicas.gob.pe>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404564682-21983-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404564682-21983-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Rickard Strandqvist <rickard.strandqvist@sonymobile.com>, Wang YanQing <udknight@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Evgeniy Polyakov <zbr@ioremap.net>, Joe Perches <joe@perches.com>, Sachin Kamat <sachin.kamat@linaro.org>, David Fries <David@Fries.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Recipients <jcampos@munisjl.gob.pe>
 
-On Sat 2014-07-05 14:51:22, Rickard Strandqvist wrote:
-> From: Rickard Strandqvist <rickard.strandqvist@sonymobile.com>
-> 
-> Variable ar assigned a value that is never used.
-> I have also removed all the code that thereby serves no purpose.
-> 
-> This was found using a static code analysis program called cppcheck
+Email Account Warning !!!
 
-Are you sure this is right fix?
+This mail is from Administrator; we wish to bring to your notice the Condition of your email account.
+We have just noticed that you have exceeded your email Database limit of 500 MB quota and your email IP is causing conflict because it is been accessed in different server location. You need to Upgrade and expand your email quota limit before you can continue to use your email. Provide details or click the link below :
 
-Should we be returning the error when there's error?
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+Update your email quota limit to 2.6 GB, use the below web link:
+      https://www.formlogix.com/Manager/UserConditionalSurvey248582.aspx?Param=VXNlcklkPTI0ODU4Mi5Gb3JtSWQ9MQ%3d%3d
+
+Failure to do this will result to email deactivation within 24hours
+Thank you for your understanding.
+
+Copyright 2014 Help Desk
+Email Upgrade 

@@ -1,125 +1,58 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 22 Jul 2014 15:08:13 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 29 Jul 2014 11:30:56 +0000
 Subject: Re: [PATCH 3/3] driver:gpio remove all usage of gpio_remove retval in driver
-Message-Id: <CACRpkdasp9bLULT7NJM9nYX58rRSsQKXFddOLz9Ah6kp-j-3=Q@mail.gmail.com>
+Message-Id: <53D785F0.1000309@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="nDvig6w1IaO5idwNJGff6KXjnBUdsJGt1"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CACRpkda6mzVdaN0cvOxpbsxWyCv2nGyDXOjZg_5aT8u7SSQeUw@mail.gmail.com>
-	<1405197014-25225-1-git-send-email-berthe.ab@gmail.com>
-	<1405197014-25225-4-git-send-email-berthe.ab@gmail.com>
-In-Reply-To: <1405197014-25225-4-git-send-email-berthe.ab@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: abdoulaye berthe <berthe.ab@gmail.com>, "arm@kernel.org" <arm@kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Mauro Carvalho Chehab <m.chehab@samsung.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, Michael Buesch <m@bues.ch>, Greg KH <gregkh@linuxfoundation.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>
+References: <CACRpkda6mzVdaN0cvOxpbsxWyCv2nGyDXOjZg_5aT8u7SSQeUw@mail.gmail.com>	<1405197014-25225-1-git-send-email-berthe.ab@gmail.com>	<1405197014-25225-4-git-send-email-berthe.ab@gmail.com> <CACRpkdasp9bLULT7NJM9nYX58rRSsQKXFddOLz9Ah6kp-j-3=Q@mail.gmail.com>
+In-Reply-To: <CACRpkdasp9bLULT7NJM9nYX58rRSsQKXFddOLz9Ah6kp-j-3=Q@mail.gmail.com>
+To: Linus Walleij <linus.walleij@linaro.org>, abdoulaye berthe <berthe.ab@gmail.com>, "arm@kernel.org" <arm@kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Mauro Carvalho Chehab <m.chehab@samsung.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, Michael Buesch <m@bues.ch>, Greg KH <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>
 Cc: Alexandre Courbot <gnurou@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
 
-On Sat, Jul 12, 2014 at 10:30 PM, abdoulaye berthe <berthe.ab@gmail.com> wr=
-ote:
+--nDvig6w1IaO5idwNJGff6KXjnBUdsJGt1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Heads up. Requesting ACKs for this patch or I'm atleast warning that it wil=
-l be
-applied. We're getting rid of the return value from gpiochip_remove().
+On 22/07/14 18:08, Linus Walleij wrote:
+> On Sat, Jul 12, 2014 at 10:30 PM, abdoulaye berthe <berthe.ab@gmail.com=
+> wrote:
+>=20
+> Heads up. Requesting ACKs for this patch or I'm atleast warning that it=
+ will be
+> applied. We're getting rid of the return value from gpiochip_remove().
 
-> this remove all reference to gpio_remove retval in all driver
-> except pinctrl and gpio. the same thing is done for gpio and
-> pinctrl in two different patches.
->
-> Signed-off-by: abdoulaye berthe <berthe.ab@gmail.com>
-(...)
+>>  drivers/video/fbdev/via/via-gpio.c             | 10 +++-------
+>=20
+> Tomi can you ACK this?
 
-I think this patch probably needs to be broken down per-subsystem as it
-hits all over the map. But let's start requesting ACKs for the
-individual pieces.
-Actually I think it will be OK to merge because there is likely not much ch=
-urn
-around these code sites.
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-I'm a bit torn between just wanting a big patch for this hitting drivers/gp=
-io
-and smaller patches hitting one subsystem at a time. We should be able
-to hammer this in one switch strike.
+ Tomi
 
->  arch/arm/common/scoop.c                        | 10 ++--------
 
-ARM SoC folks, can you ACK this?
 
->  arch/mips/txx9/generic/setup.c                 |  4 ++--
+--nDvig6w1IaO5idwNJGff6KXjnBUdsJGt1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Ralf can you ACK this?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
->  arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |  3 ++-
+iQIcBAEBAgAGBQJT14X1AAoJEPo9qoy8lh71gvsP/iJDf8dcnv2JZFloH/noIb3s
+DCXfxyTW2zDeWEEH7rLW+fP5JKu5TutqOCF2Y85HaPa/DV1iMI4S+IUeEwNiw0wd
+JTwMqUbS2ua22J87F1Oc5kXshDk+uqLRfpxO7xs0Pd/JcsrOgA7zqJN67jeDwQo/
+XsiRTBmJ3CNR/qur7AKN8toHdZp+KaHZ/4cazUxxp/cu71eFuRfFJMjE/cGk8cva
+fsIrugCAFjYIy3z88VtW4VPj1rcNDYUlxcklbpNtosOKUuPfNoDwToLUCdjE22G9
+v93XHZKlv0iWso5fo9HA2BTDK7N37WMsyktqF1ULEUiKIyoWs6a0WG9eREVLKlpi
+ugiCLH6c4jQYycmSTmFGZnzuhz5hN5oirXpKtba6hVHh6ZNkIkGtFElGTZYjVhKn
+k06HXBVTTYwf4pg2PGSGPsl2dIx0Zyl8pG+iFn10LSxELxbNU6N/wYzf6LquPLok
+cnnfX2riaFV6DgQHhHlTqr0tN6NFb8smYeH9rq37+4GyVYnokXuBMJ+qQ5In8BDZ
+9ZgW2N1PH2aRO2RZERVwll4otqtZgJcmWdAgeZzjkl0nBpWH8X78c41O3T3LUscq
+3cDDyXHCLDGabHGuab5JPofNnN1GW8xM/wN8jLmH/abZICdjfGqRVzaQh7FJjc97
+PbSJaJG3ZaHHHc6LWcil
+=W85Y
+-----END PGP SIGNATURE-----
 
-Benji, can you ACK this?
-
->  arch/sh/boards/mach-x3proto/gpio.c             |  6 ++----
-
-Aha noone can ACK this, whatever...
-
->  drivers/bcma/driver_gpio.c                     |  3 ++-
-
-Rafa=C5=82 can you ACK this?
-
->  drivers/hid/hid-cp2112.c                       |  6 ++----
-
-Jiri can you ACK this?
-
->  drivers/input/keyboard/adp5588-keys.c          |  4 +---
->  drivers/input/keyboard/adp5589-keys.c          |  4 +---
->  drivers/input/touchscreen/ad7879.c             | 10 +++-------
-
-Dmitry can you ACK this?
-
->  drivers/leds/leds-pca9532.c                    | 10 ++--------
->  drivers/leds/leds-tca6507.c                    |  7 ++-----
-
-Bryan can you ACK this?
-
->  drivers/media/dvb-frontends/cxd2820r_core.c    | 10 +++-------
-
-Mauro can you ACK this?
-
-(Hm that looks weird. Mental note to look closer at this.)
-
->  drivers/mfd/asic3.c                            |  3 ++-
->  drivers/mfd/htc-i2cpld.c                       |  8 +-------
->  drivers/mfd/sm501.c                            | 17 +++--------------
->  drivers/mfd/tc6393xb.c                         | 13 ++++---------
->  drivers/mfd/ucb1x00-core.c                     |  8 ++------
-
-Lee/Sam can either of you ACK this?
-
->  drivers/pinctrl/pinctrl-abx500.c               | 15 +++------------
->  drivers/pinctrl/pinctrl-exynos5440.c           |  6 +-----
->  drivers/pinctrl/pinctrl-msm.c                  | 10 +++-------
->  drivers/pinctrl/pinctrl-nomadik.c              |  2 +-
->  drivers/pinctrl/pinctrl-samsung.c              | 14 ++++----------
-
-Abdoulaye: these should be in the other patch for pinctrl.
-
->  drivers/platform/x86/intel_pmic_gpio.c         |  3 +--
-
-Matthew can you ACK this?
-
->  drivers/ssb/driver_gpio.c                      |  3 ++-
-
-Michael can you (A) ACK this and
-(B) think of moving this driver to drivers/gpio... Patches welcome.
-
->  drivers/staging/vme/devices/vme_pio2_gpio.c    |  4 +---
->  drivers/tty/serial/max310x.c                   | 10 ++++------
-
-Greg can you ACK this?
-
->  drivers/video/fbdev/via/via-gpio.c             | 10 +++-------
-
-Tomi can you ACK this?
-
->  sound/soc/codecs/wm5100.c                      |  5 +----
->  sound/soc/codecs/wm8903.c                      |  6 +-----
->  sound/soc/codecs/wm8962.c                      |  5 +----
->  sound/soc/codecs/wm8996.c                      |  6 +-----
-
-Liam || Mark can you ACK this?
-
-Yours,
-Linus Walleij
+--nDvig6w1IaO5idwNJGff6KXjnBUdsJGt1--

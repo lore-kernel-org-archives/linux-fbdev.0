@@ -1,39 +1,42 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 06 Jul 2014 18:58:14 +0000
-Subject: [PATCH] video: fbdev: savage: savagefb_driver.c:  Cleaning up variable that is never used
-Message-Id: <1404673094-20329-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Bryan Wu <cooloney@gmail.com>
+Date: Tue, 29 Jul 2014 23:25:43 +0000
+Subject: Re: [PATCH -next] backlight: ipaq_micro: Fix sparse non static symbol warning
+Message-Id: <CAK5ve-K6WpvN++xdKsHw=-BipV-mYh1PP63G78K=ExynBD9VGQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404564449-21633-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1404564449-21633-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Variable ar assigned a value that is never used.
-I have also removed all the code that thereby serves no purpose.
+On Tue, Jul 29, 2014 at 4:20 PM,  <weiyj_lk@163.com> wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+>
+> Fixes the following sparse warnings:
+>
+> drivers/video/backlight/ipaq_micro_bl.c:73:24: warning:
+>  symbol 'micro_backlight_device_driver' was not declared. Should it be static?
+>
 
-This was found using a static code analysis program called cppcheck
+I've merged a similar fix for led-ipaq-micro. So this one looks good to me:
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/video/fbdev/savage/savagefb_driver.c |    2 --
- 1 file changed, 2 deletions(-)
+Acked-by: Bryan Wu <cooloney@gmail.com>
 
-diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
-index 4dbf45f..5c7620e 100644
---- a/drivers/video/fbdev/savage/savagefb_driver.c
-+++ b/drivers/video/fbdev/savage/savagefb_driver.c
-@@ -951,8 +951,6 @@ static int savagefb_check_var(struct fb_var_screeninfo   *var,
- 	if (memlen > vramlen) {
- 		var->yres_virtual = vramlen * 8 /
- 			(var->xres_virtual * var->bits_per_pixel);
--		memlen = var->xres_virtual * var->bits_per_pixel *
--			var->yres_virtual / 8;
- 	}
- 
- 	/* we must round yres/xres down, we already rounded y/xres_virtual up
--- 
-1.7.10.4
-
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+> ---
+>  drivers/video/backlight/ipaq_micro_bl.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/backlight/ipaq_micro_bl.c b/drivers/video/backlight/ipaq_micro_bl.c
+> index feab29c..347dc11 100644
+> --- a/drivers/video/backlight/ipaq_micro_bl.c
+> +++ b/drivers/video/backlight/ipaq_micro_bl.c
+> @@ -70,7 +70,7 @@ static int micro_backlight_probe(struct platform_device *pdev)
+>         return 0;
+>  }
+>
+> -struct platform_driver micro_backlight_device_driver = {
+> +static struct platform_driver micro_backlight_device_driver = {
+>         .driver = {
+>                 .name    = "ipaq-micro-backlight",
+>         },
+>

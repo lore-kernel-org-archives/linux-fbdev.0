@@ -1,44 +1,49 @@
-From: Ian Abbott <abbotti@mev.co.uk>
-Date: Thu, 03 Jul 2014 13:46:39 +0000
-Subject: [PATCH] video: da8xx-fb: preserve display width when changing HSYNC
-Message-Id: <1404395199-5726-1-git-send-email-abbotti@mev.co.uk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 30 Jul 2014 13:12:53 +0000
+Subject: fbdev patches for 3.17
+Message-Id: <53D8EF55.5060209@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="E1JiJ3xnPFCCMpPeRFq24QSIbGM4eHg7q"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org, Ian Abbott <abbotti@mev.co.uk>
 
-When looking at this driver for a client, I noticed the code that
-configures the HSYNC pulse clobbers the display width in the same
-register.  It only preserves the MS part of the width in bit 3 and zeros
-the LS part of the width in bits 9 to 4.  This doesn't matter during
-initialization as the width is configured afterwards, but subsequent use
-of the FBIPUT_HSYNC ioctl would clobber the width.
+--E1JiJ3xnPFCCMpPeRFq24QSIbGM4eHg7q
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Preserve bits 9 to 0 of LCD_RASTER_TIMING_0_REG when configuring the
-horizontal sync.
+Hi,
 
-Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
----
-I haven't tested this change, but it's pretty trivial.
----
- drivers/video/fbdev/da8xx-fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I just came back from vacation, and 3.17 merge window is getting close.
+I have tons of emails in my inbox, so if you have important fbdev
+patches for 3.17, please resend or ping.
 
-diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
-index 788f6b3..10c876c 100644
---- a/drivers/video/fbdev/da8xx-fb.c
-+++ b/drivers/video/fbdev/da8xx-fb.c
-@@ -419,7 +419,7 @@ static void lcd_cfg_horizontal_sync(int back_porch, int pulse_width,
- {
- 	u32 reg;
- 
--	reg = lcdc_read(LCD_RASTER_TIMING_0_REG) & 0xf;
-+	reg = lcdc_read(LCD_RASTER_TIMING_0_REG) & 0x3ff;
- 	reg |= (((back_porch-1) & 0xff) << 24)
- 	    | (((front_porch-1) & 0xff) << 16)
- 	    | (((pulse_width-1) & 0x3f) << 10);
--- 
-2.0.0
+I'll try to find them myself but I most likely don't have time to go
+through all of them for 3.17.
 
+ Tomi
+
+
+--E1JiJ3xnPFCCMpPeRFq24QSIbGM4eHg7q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJT2O9VAAoJEPo9qoy8lh71+PsP/j3lZJwnF8JqVWxVc/S163om
+4+tzP0cu/GosmnxI1wfm3y684xMTVpAO52B3Pvc3VbLxaEQei+KF48y7raCRhPvJ
+zRtoR6y43XBC55GoS4jKRpjZFQkKg96dEZFVTcPLbQVZ+ZcnnnnzgH4TeR3JaUkp
+MgugwZQYWB38dMcCMNQYro6Mfpp/8GYcbJ2Ze1n2ccnrgmV62fxPvCs1ZKv4kslI
+j9cSBn3WqBgfI3BMmP7cHTzVyqu1OXqC+XocF6BXPvr/8qECKGbs5CvL17ZvJUVZ
+j4MlQoHlrF9Y1JtIRhYX7ZyLl3qAJdEqvgdN0iRbCyVSua9OHWv6rCRoqMK0s9+c
+x6XWH4q9ZPVppcXfnCFBtEW+8QhvrQIDrmb/FTe1ViTG6ESWGAYDpBSrLIYaZdo0
+asJ3wYNPdDqdr3IcTe2S+hBp8r1QKTW+kLedlEcdq/D161OVcPORyVVVM4N+1Wgy
+szDaeppA6iVM96jAmo00nQSKjXZSZVclLJynZW7sJrwKW+0DugrF760638T4mseo
+FKs4ZEY2IWz+DMTnb13AUwiA+GlRlfePk10HgbcdsS8RGFhMW0daAxuuiNwYPXRf
+EYyvKD0nUoqJYfEouzpHXF4+KNnIBUQDjoO5BUMxCGO5R7pU/nzV3cNSIyzr1W/b
+GOXWYE/k076fsVVIo6s1
+=TXSy
+-----END PGP SIGNATURE-----
+
+--E1JiJ3xnPFCCMpPeRFq24QSIbGM4eHg7q--

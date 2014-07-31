@@ -1,22 +1,112 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Date: Thu, 31 Jul 2014 11:54:31 +0000
+Date: Thu, 31 Jul 2014 11:56:45 +0000
 Subject: Re: [RFC] pwm-backlight: Allow backlight to remain disabled on boot
-Message-Id: <20140731115429.GA12627@ulmo>
+Message-Id: <20140731115644.GB12627@ulmo>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="EVF5PPMfhYS0aIcm"
+Content-Type: multipart/mixed; boundary="61jdw2sOBCFtR2d/"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1406806970-12561-1-git-send-email-thierry.reding@gmail.com>
 In-Reply-To: <1406806970-12561-1-git-send-email-thierry.reding@gmail.com>
 To: linux-arm-kernel@lists.infradead.org
 
 
---EVF5PPMfhYS0aIcm
+--61jdw2sOBCFtR2d/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
+Cc'ing Ajay (who raised this on a different thread recently), therefore
+quoting all of the original email.
+
+Thierry
+
 On Thu, Jul 31, 2014 at 01:42:50PM +0200, Thierry Reding wrote:
-[...]
+> From: Thierry Reding <treding@nvidia.com>
+>=20
+> The default for backlight devices is to be enabled immediately when
+> registering with the backlight core. This can be useful for setups that
+> use a simple framebuffer device and where the backlight cannot otherwise
+> be hooked up to the panel.
+>=20
+> However, when dealing with more complex setups, such as those of recent
+> ARM SoCs, this can be problematic. Since the backlight is usually setup
+> separately from the display controller, the probe order is not usually
+> deterministic. That can lead to situations where the backlight will be
+> powered up and the panel will show an uninitialized framebuffer.
+>=20
+> Furthermore, subsystems such as DRM have advanced functionality to set
+> the power mode of a panel. In order to allow such setups to power up the
+> panel at exactly the right moment, a way is needed to prevent the
+> backlight core from powering the backlight up automatically when it is
+> registered.
+>=20
+> This commit introduces a new boot_off field in the platform data (and
+> also implements getting the same information from device tree). When set
+> the initial backlight power mode will be set to "off".
+>=20
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
+> ---
+> I've been meaning to send this for a while but was always holding back
+> because of the indoctrination that this type of configuration shouldn't
+> be part of device tree. However this issue was recently raised again in
+> the context of power up sequences for display panels. As described above
+> the issue is that panel datasheets recommend that the backlight attached
+> to a panel be turned on at the very last step to avoid visual glitches
+> during the panel's power up sequence. With the current implementation it
+> is typical for the backlight to be probed before the display panel. That
+> has, in many cases, the side-effect of enabling the backlight, therefore
+> making the screen content visible before it's actually initialized.
+>=20
+> Some panels come up with random garbage when uninitialized, others show
+> all white. With some luck the panel will be all black and users won't
+> really notice.
+>=20
+> This patch is an attempt to enable boards to override the default of
+> turning on the backlight for the pwm-backlight driver. I'm not sure if
+> there was a specific reason to turn on the backlight by default when
+> this driver was initially written, but the fact is that since it has
+> pretty much always been like this we can't really go and change the
+> default, otherwise a lot of people may end up with no backlight and no
+> clue as to how to enable it. So the only reasonable thing we can do is
+> to keep the old behaviour and give new boards a way to override it if
+> they know that some other part of the stack will enable it at the right
+> moment.
+>=20
+>  .../devicetree/bindings/video/backlight/pwm-backlight.txt         | 1 +
+>  drivers/video/backlight/pwm_bl.c                                  | 8 ++=
+++++++
+>  include/linux/pwm_backlight.h                                     | 2 ++
+>  3 files changed, 11 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/video/backlight/pwm-backli=
+ght.txt b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.t=
+xt
+> index 764db86d441a..65e001a1733d 100644
+> --- a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+> +++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+> @@ -17,6 +17,7 @@ Optional properties:
+>                 "pwms" property (see PWM binding[0])
+>    - enable-gpios: contains a single GPIO specifier for the GPIO which en=
+ables
+>                    and disables the backlight (see GPIO binding[1])
+> +  - backlight-boot-off: keep the backlight disabled on boot
+> =20
+>  [0]: Documentation/devicetree/bindings/pwm/pwm.txt
+>  [1]: Documentation/devicetree/bindings/gpio/gpio.txt
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
+wm_bl.c
+> index d7a3d13e72ec..62adfc9d37a7 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -173,6 +173,8 @@ static int pwm_backlight_parse_dt(struct device *dev,
+>  		data->max_brightness--;
+>  	}
+> =20
+> +	data->boot_off =3D of_property_read_bool(node, "backlight-boot-off");
+> +
+>  	return 0;
+>  }
+> =20
 > @@ -317,6 +319,12 @@ static int pwm_backlight_probe(struct platform_devic=
 e *pdev)
 >  	}
@@ -29,49 +119,44 @@ e *pdev)
 > +		bl->props.power =3D FB_BLANK_UNBLANK;
 > +
 >  	backlight_update_status(bl);
+> =20
+>  	platform_set_drvdata(pdev, bl);
+> diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
+> index efdd9227a49c..1fc14989da4a 100644
+> --- a/include/linux/pwm_backlight.h
+> +++ b/include/linux/pwm_backlight.h
+> @@ -15,6 +15,8 @@ struct platform_pwm_backlight_data {
+>  	unsigned int *levels;
+>  	/* TODO remove once all users are switched to gpiod_* API */
+>  	int enable_gpio;
+> +	bool boot_off;
+> +
+>  	int (*init)(struct device *dev);
+>  	int (*notify)(struct device *dev, int brightness);
+>  	void (*notify_after)(struct device *dev, int brightness);
+> --=20
+> 2.0.3
+>=20
 
-Looking at this again, perhaps a more sensible thing to do would be to
-not call backlight_update_status() in the first place. For example if
-the board defines that backlight should be kept off at boot, but the
-bootloader had already enabled it, then this would effectively turn off
-the backlight again.
-
-I think it's safe to assume that if the bootloader sets up the backlight
-then it would also set up the display. Therefore not touching the
-backlight state at all at probe time seems like the safest default.
-
-Of course that doesn't help people who use some dumb framebuffer driver
-and therefore nothing explicitly enables the backlight. So it would
-still be changing behaviour for people for whom the bootloader doesn't
-set up the backlight at all and who therefore rely on the kernel to turn
-it on.
-
-We could perhaps alleviate that pain a little by making this dependent
-on whether or not the board is booted using DT on the assumption that
-anything that uses DT would be "modern" enough to provide a means to
-automatically enable the backlight at the right moment.
-
-Thierry
-
---EVF5PPMfhYS0aIcm
+--61jdw2sOBCFtR2d/
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBAgAGBQJT2i51AAoJEN0jrNd/PrOhqOsP/3lKe0zwoqXz7QbmZA7GQfmV
-KYLIXLvFutXVgY46HoQ2gCtO0ohL069pG+Yp6T+AMhIiEiaP08IZpB5OrgvGdVXv
-0K3IAYO8Ed6YCcjP6T6lT1dlf3xdU3zfB3p6dOZXydDNygmeumT5d/vAVojW2DcX
-+l9v4UNEbRM8RZJekNpWmE55hguO2EeSGBX3peZUVhta42YlUdk5nipVmNJV9Wh4
-AsOSofOBrroyWA8JC7nmun6gCLkp2RsASUUyganCVbIKfRs+d9XQC76ghhZYIok1
-6XxACHTMsAOgwGN1+UoclF/QXOF7MHNrqH3TYr8PcTsryLFjmKG+xFcUeame6+VP
-pQ70xBq+70G8d5oKiusVfnf2JbafMloob7/+WiUGIP/x5ZpDQS0EcnbD2FMoJ6LB
-EcrnksJWWVvoO7U50LRBLxy+vQxG7elpeluwRk+X6ksXIqhSftYUb68lvoewKFiG
-KuiWueuLwjTogbsdzkYQYxDKeNxcUQ6xdgPm0/l3gXuLTOCwlCVz5ahnUMTf1eaV
-vuZNKm6oLkMEH/koJtCK/l72vTrpcAIz60x/Hxn/RgiGKdGEwT8pM4BOoEp9xpP2
-EGuhB97tuqL1uYlFCTclepXL5/PtZIpyDOoOemnJcDPIftSSwz9LfPSn+F1mrPha
-gB9X+y8LItqD35zMWzCI
-=cfJo
+iQIcBAEBAgAGBQJT2i78AAoJEN0jrNd/PrOhMIkQAIIV8vrSJSNDQKLZEGVyLLai
+VFdhQgVBLvZmlpD+SFcQAvBclxARKtRmNa2DfSnpZO+ggiQvHKKulkeorKFHq3/x
+8ro1BzID5CtaKSpfD4PqhLaFIZ5r54WT4ho8I7XcoMINVPNQnTAomlFGVW+DFF2M
+CpRiUhptGfjyfXw0ftdFcOuUKt56DIxlVyK7Kvw8jh0RGAB0IMFBpOtsYUBiit1F
+z7IZmeayiijAjSMBEOhlUQ7AUqSyhnirvvZsqVCACxjfM83rmemW8RDxgNfY3GrS
+hiB9wde7MDlLXkcb4DPZyEvzgb0L1fhII/IrjUAO3yz02dILnAJXIVRbMecOPNI9
+UDw+HL9INwZO//RoF4X1N7ZK9BAC7Sp0r5tYIyqX4xC+juvPEcj7YPkYhiCotbrj
+WQ9fkh+IZF5mF+wTbFACFpOvLndzTZlaAhpfR/PC2ub8PpHroxwhL5jPOeXt+s0J
+nmTqI7TStDWgnJvWkid/AU0oBLTRkIyHHAgPxF7ooOvUYiZ03MHqAlKxuUY9qHgm
+T1+CHuNMo36Q7PyXlWeEDSDl2IOa1E9pfzxO8DXVDDfEjcDvkNOsO3FkVlPa9iTz
+i31CR2Ow16XIS3Xum96gxOzuNlx3CniWKHicHm7v6GcZYPRF6vA3yL53sQhVN1sP
+c/3yQXBA9s8BF88n2gak
+=/I5A
 -----END PGP SIGNATURE-----
 
---EVF5PPMfhYS0aIcm--
+--61jdw2sOBCFtR2d/--

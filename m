@@ -1,35 +1,24 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Fri, 01 Aug 2014 15:53:50 +0000
-Subject: [PATCH] video: amba-clcd: Select FB_MODE_HELPERS
-Message-Id: <1406908430-18487-1-git-send-email-broonie@kernel.org>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Fri, 01 Aug 2014 18:27:03 +0000
+Subject: Re: [PATCH] video: amba-clcd: Select FB_MODE_HELPERS
+Message-Id: <20140801182703.GU30282@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1406908430-18487-1-git-send-email-broonie@kernel.org>
+In-Reply-To: <1406908430-18487-1-git-send-email-broonie@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-From: Mark Brown <broonie@linaro.org>
+On Fri, Aug 01, 2014 at 04:53:50PM +0100, Mark Brown wrote:
+> From: Mark Brown <broonie@linaro.org>
+> 
+> The AMBA CLCD driver uses fb_videomode_from_videomode() so it needs to
+> select DB_MODE_HELPERS as well as VIDEOMODE_HELPERS.
 
-The AMBA CLCD driver uses fb_videomode_from_videomode() so it needs to
-select DB_MODE_HELPERS as well as VIDEOMODE_HELPERS.
+It doesn't, not as I designed it at least.  It depends what other people
+have done to my driver...
 
-Signed-off-by: Mark Brown <broonie@linaro.org>
----
- drivers/video/fbdev/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 37d473f..e222048 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -280,6 +280,7 @@ config FB_ARMCLCD
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select FB_MODE_HELPERS
- 	select VIDEOMODE_HELPERS if OF
- 	help
- 	  This framebuffer device driver is for the ARM PrimeCell PL110
 -- 
-2.0.0
-
+FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
+according to speedtest.net.

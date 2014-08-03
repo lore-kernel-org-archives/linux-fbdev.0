@@ -1,7 +1,7 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 03 Aug 2014 15:15:20 +0000
+From: Jean Delvare <jdelvare@suse.de>
+Date: Sun, 03 Aug 2014 16:03:31 +0000
 Subject: Re: Question on s3fb DDC support
-Message-Id: <201408031715.20890.linux@rainbow-software.org>
+Message-Id: <20140803180331.14e0123d@endymion.delvare>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20140803144236.0494b47a@endymion.delvare>
 In-Reply-To: <20140803144236.0494b47a@endymion.delvare>
@@ -10,7 +10,9 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Sunday 03 August 2014 16:47:17 Geert Uytterhoeven wrote:
+Hi Geert,
+
+On Sun, 3 Aug 2014 16:47:17 +0200, Geert Uytterhoeven wrote:
 > On Sun, Aug 3, 2014 at 2:42 PM, Jean Delvare <jdelvare@suse.de> wrote:
 > > I am looking at the DDC / I2C implementation in that driver and I'm not
 > > sure I understand how it works. Specifically I am wondering about bit
@@ -30,9 +32,9 @@ On Sunday 03 August 2014 16:47:17 Geert Uytterhoeven wrote:
 > > broken [1], I'm also not sure how to fix it.
 > >
 > > So if you could clarify how bit DDC_DRIVE_EN works, that would be great.
->
+> 
 > http://www.vgamuseum.info/images/stories/doc/s3/virge.pdf, p. 24-11:
->
+> 
 > Bit 0 SCW - Serial Clock Write
 > 0 = Pin 205 is driven low
 > 1 = Pin 205 is tri-stated
@@ -58,27 +60,14 @@ On Sunday 03 August 2014 16:47:17 Geert Uytterhoeven wrote:
 > Bit 4 SPE - Serial Port Enable
 > 0 = Use of bits 1-0 of this register disabled
 > 1 = Use of bits 1-0 of this register enabled
->
-> Still doesn't explain well the real meaning of bit 4, but it does confirm
-> that writing a 1 to bit 0 or bit 1 doesn't drive the line high.
+> 
+> Still doesn't explain well the real meaning of bit 4, but it does confirm that
+> writing a 1 to bit 0 or bit 1 doesn't drive the line high.
 
-Thanks for explanation and datasheet. I wrote that code without docs, just 
-observing what card's BIOS does. "DRIVE_EN" name was just a guess.
-The bit is set always because other code (especially X11) can mess with the HW 
-behind our back.
-
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 --
-> geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker.
-> But when I'm talking to journalists I just say "programmer" or something
-> like that. -- Linus Torvalds
-
+Very nice, thanks for the documentation. So the driver code looks
+correct and I can move on to the remaining two suspect drivers (intelfb
+and i740fb.)
 
 -- 
-Ondrej Zary
+Jean Delvare
+SUSE L3 Support

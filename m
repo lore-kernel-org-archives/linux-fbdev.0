@@ -1,52 +1,71 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Fri, 01 Aug 2014 18:48:05 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 04 Aug 2014 06:48:54 +0000
 Subject: Re: [PATCH] video: amba-clcd: Select FB_MODE_HELPERS
-Message-Id: <20140801184805.GN30458@sirena.org.uk>
+Message-Id: <53DF2CD6.1050406@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="IiH5iyEqjK6f5lUg"
+Content-Type: multipart/mixed; boundary="LQCUFvcSJtLkc3QcHVCR0DFkGPUfkrUgD"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1406908430-18487-1-git-send-email-broonie@kernel.org>
 In-Reply-To: <1406908430-18487-1-git-send-email-broonie@kernel.org>
 To: linux-fbdev@vger.kernel.org
 
+--LQCUFvcSJtLkc3QcHVCR0DFkGPUfkrUgD
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
---IiH5iyEqjK6f5lUg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi,
 
-On Fri, Aug 01, 2014 at 07:27:03PM +0100, Russell King - ARM Linux wrote:
-> On Fri, Aug 01, 2014 at 04:53:50PM +0100, Mark Brown wrote:
+On 01/08/14 18:53, Mark Brown wrote:
+> From: Mark Brown <broonie@linaro.org>
+>=20
+> The AMBA CLCD driver uses fb_videomode_from_videomode() so it needs to
+> select DB_MODE_HELPERS as well as VIDEOMODE_HELPERS.
+>=20
+> Signed-off-by: Mark Brown <broonie@linaro.org>
+> ---
+>  drivers/video/fbdev/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index 37d473f..e222048 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -280,6 +280,7 @@ config FB_ARMCLCD
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> +	select FB_MODE_HELPERS
+>  	select VIDEOMODE_HELPERS if OF
+>  	help
+>  	  This framebuffer device driver is for the ARM PrimeCell PL110
 
-> > The AMBA CLCD driver uses fb_videomode_from_videomode() so it needs to
-> > select DB_MODE_HELPERS as well as VIDEOMODE_HELPERS.
+Pawel sent a patch fixing the same issue. I've applied that one.
 
-> It doesn't, not as I designed it at least.  It depends what other people
-> have done to my driver...
+ Tomi
 
-Ah, sorry - I didn't notice that this is as a result of an out of tree
-patch I'm carrying adding DT support (which I'd forgotten all about as
-I've needed it for so long).  Please disregard this patch.
 
---IiH5iyEqjK6f5lUg
+
+--LQCUFvcSJtLkc3QcHVCR0DFkGPUfkrUgD
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQIcBAEBAgAGBQJT2+DiAAoJELSic+t+oim9q+oQAIQP6c7Y+AYlic+5/UMmpGMZ
-uTT62fja80XVfx4ztLqIgPXPtIHBDZIAuY1ySi+heQjXSDVEydWbVsZH2uKiMpu6
-fVdSxxY6V4ywNtDYTFn3fRUmL+ZaLezw2T31wlUdcgFLM/k0TldflBdanoFsDO6p
-KlbXl6jiJYkrtcE6N88g8CHetQmPsDCP+ilPko+YTyhm87nkmQWT/L9Uw3Rl3GaY
-2GdTss02PqQRHPQOd1s043jhCLb5/wW9AlAfqu7clmJ5v5H3x41cmdetB+sZWI7N
-2qi6sjDoHUSGtP27yFhovoD+DueXMS5BgKpERp7wfeVjYPL3s/5biSmN84mk0HOj
-Skz5f2JTqt3w9graUMa6DPFwW5DHd26jw8R6sKAKWoGH6dORM9NVa++U5Ib4sH3V
-aymsTodYqHweJbk3Slv0k7Ry6ENB9fMl+spQqyGCnis7H2vNGtF/1uozj8FpHFzO
-qVIMQ3+SbGyx0DOoZuANdmC/0g2kqcQjshUlPLDoIZt74nQzbI5RCfjK5BFe5ItL
-zVes/wkYeJseDWt35rR1bRC9UBNU3blBJC4nAWkTLOqnB85KNVxX2hSFnb/EdR8p
-TyKYfMoemOgBaK7HVT9lMDXnkAFoiXvQOPqqCSqjup4DdbbkLXXc7cwW+amqGSXY
-bLxgsbueZ7m1ZPPSaZSe
-=8FpZ
+iQIcBAEBAgAGBQJT3yzWAAoJEPo9qoy8lh71sm0QAJLQfRdsHvM7YzTs0K3hjilu
+/e+cS9eAAzQTSSZ3o8l54p5kXCO51YaMtTGO4T2rhUQB1V074g6IRMtzQQlsyTCf
+7+bXQgU8tYSk3BlfXWCEmVWmLahMlYxV8fkseOwY1jTOtd0SGG1WaL+bJqyb7s0m
+2DZmUAxE6kCgSyZU2EI4uEjgQsGQ7ty8CigyVBbspoX8mhOlgeoxtPZRMN1/fFAs
+PknDHvdpJuiQ1ZvuyGIBNAv7kyMGDuXfnp6+WQVe+3OvH06AcVYmNFU/tXGx1C9D
+lKJ0u58Zq2oNUWVvRO7hcVrVryIYUpSBjFBVTjvh0UwCjdv86VeFv88xhK4Bta0d
+NYxi9Tatg4LfF+KHWhmfX/fOLLfKuFF57nsu97SQmfsaIRfidg2l152rwBi7QOKC
+0nTlW3BfjAUF/90dauXZ3luQ4n8aYEuX1Qwscd3EY7yugXntm9CMSp/Vewwvrdl1
+lr3Q0HPIk3ZolB6or4daahA+B/7yBVifTdPXu7uu+hkDl58OVtc/4Y3qw7Dy9WDc
+rVO5vrOj9+2APrD8Ph1M13eAJaKh/doK7HLBkttWnbLE/axqsPTO4kFfqUmIqKrq
+w1pVmi+eHPvwf5aqXx8nU+Nm5DAL2m/XCRpQe22kr9S3sCLGOSPkRhE8lKycJCYj
+84UGAb/sBZhKaAhZ929W
+=h239
 -----END PGP SIGNATURE-----
 
---IiH5iyEqjK6f5lUg--
+--LQCUFvcSJtLkc3QcHVCR0DFkGPUfkrUgD--

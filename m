@@ -1,65 +1,68 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Fri, 01 Aug 2014 14:43:34 +0000
-Subject: [PATCH] video: ARM CLCD: Fix DT-related build problems
-Message-Id: <1406904214-7360-1-git-send-email-pawel.moll@arm.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 04 Aug 2014 06:38:01 +0000
+Subject: Re: [PATCH] video: ARM CLCD: Fix DT-related build problems
+Message-Id: <53DF2A49.9080609@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="99vEjlAkcLLhOh9CVWJtwvuvQvi9F6PPv"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+References: <1406904214-7360-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1406904214-7360-1-git-send-email-pawel.moll@arm.com>
 To: linux-fbdev@vger.kernel.org
 
-This patch fixes the following error when !CONFIG_OF:
+--99vEjlAkcLLhOh9CVWJtwvuvQvi9F6PPv
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-drivers/video/fbdev/amba-clcd.c:800:54: warning: ‘struct amba_dev’ declared inside parameter list [enabled by default]
- static struct clcd_board *clcdfb_of_get_board(struct amba_dev *dev)
-                                                      ^
-and adds a missing Kconfig select causing this
-when CONFIG_OF && !CONFIG_FB_MODE_HELPERS:
+On 01/08/14 17:43, Pawel Moll wrote:
+> This patch fixes the following error when !CONFIG_OF:
+>=20
+> drivers/video/fbdev/amba-clcd.c:800:54: warning: =E2=80=98struct amba_d=
+ev=E2=80=99 declared inside parameter list [enabled by default]
+>  static struct clcd_board *clcdfb_of_get_board(struct amba_dev *dev)
+>                                                       ^
+> and adds a missing Kconfig select causing this
+> when CONFIG_OF && !CONFIG_FB_MODE_HELPERS:
+>=20
+> drivers/video/fbdev/amba-clcd.c:567: undefined reference to `fb_videomo=
+de_from_videomode'
+>=20
+> Reported-by: Fengguang Wu <fengguang.wu@intel.com>
+> Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+> ---
+>=20
+> Hi Tomi,
+>=20
+> This fixes two small problems detected in next by the kbuild test robot=
 
-drivers/video/fbdev/amba-clcd.c:567: undefined reference to `fb_videomode_from_videomode'
+> (thanks, Fengguang!) Hope you can apply it before the merge window.
 
-Reported-by: Fengguang Wu <fengguang.wu@intel.com>
-Signed-off-by: Pawel Moll <pawel.moll@arm.com>
----
+Thanks, applied.
 
-Hi Tomi,
+ Tomi
 
-This fixes two small problems detected in next by the kbuild test robot
-(thanks, Fengguang!) Hope you can apply it before the merge window.
 
-Cheers!
 
-Pawel
+--99vEjlAkcLLhOh9CVWJtwvuvQvi9F6PPv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
- drivers/video/fbdev/Kconfig     | 1 +
- drivers/video/fbdev/amba-clcd.c | 2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index a518fe5..7eed249 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -280,6 +280,7 @@ config FB_ARMCLCD
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select FB_MODE_HELPERS if OF
- 	select VIDEOMODE_HELPERS if OF
- 	help
- 	  This framebuffer device driver is for the ARM PrimeCell PL110
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index 23b3519..beadd3e 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -797,7 +797,7 @@ static struct clcd_board *clcdfb_of_get_board(struct amba_device *dev)
- 	return board;
- }
- #else
--static struct clcd_board *clcdfb_of_get_board(struct amba_dev *dev)
-+static struct clcd_board *clcdfb_of_get_board(struct amba_device *dev)
- {
- 	return NULL;
- }
--- 
-1.9.1
+iQIcBAEBAgAGBQJT3ypJAAoJEPo9qoy8lh71CSEQAJXO7/gtcn4K9S9x0EBdh2pn
+4CMU8UJiXsXXsfC2lHwb56CDGZSHIQSGV+bDCV6AlR43Ek1q2gJIhJkE+QRPByG8
+vzQ9mMEXC5tL0y94OvSz34vYal/ltquZAkRaqvF47/3Jtp1J3AWptJkFPg06x4hs
+HNcKHhEH2iMKjSD1X6Xr2aIY6Ow0KiOrB9s84rZlnVVefqalNzSxpUBn68EcVUQv
+wgVPSyFEt9UGSR7MycpY7L6QYbLnRdmRj4ilZT+mAsvKRLJqMNa0XiBOnWL4Nuhh
+XCaW6cPi5GF0pWdBOmUO18O7i3EgQE/HDRBwtoxHIyE1ilBR2D+iifqSvvpT6/tW
+XhY/xBduZHYk/8ZbZTGcxbUj2BuLZjZh/13MoGR2F6ibtxP2/7KdzH3Ns2w4d8vH
+0UM0GnQcMP7ug2SbzpcVDV4sUvLUvR37Onatkfijc/2UwvAEEh7QbYjU+XGY+I7q
+DSpTkJCVuIFdsVjb2nk9rCHsubaPOy4xRTWqJYSaHKI5y/qxkwi78tYoPQSUC1DK
+gMZIR6HWFlaqCezPu/BcqhugjJUlDlJSQ36Hpspti0md7rA5dPxnh3aBnnVyx+Ol
+QbqR1J46vNUus0mkjgowsh+M2HnGGtSL2QlV9u2JfhcijFN2/u+PKgCwLxtj/Q56
+u5B3mv2X7GQQB/pZ7c/b
+=uJpQ
+-----END PGP SIGNATURE-----
 
+--99vEjlAkcLLhOh9CVWJtwvuvQvi9F6PPv--

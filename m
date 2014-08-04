@@ -1,68 +1,96 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Thu, 28 Aug 2014 07:35:08 +0000
-Subject: Re: [PATCH] backlight: generic_bl: Remove unused function
-Message-Id: <20140828073508.GI24579@lee--X1>
+From: Pramod Gurav <pramod.gurav@smartplayin.com>
+Date: Mon, 04 Aug 2014 14:55:53 +0000
+Subject: [PATCH] msm: msm_fb: Add remove function for platform driver for clean unloading
+Message-Id: <1407163433-13528-1-git-send-email-pramod.gurav@smartplayin.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1409168700-19042-1-git-send-email-festevam@gmail.com>
-In-Reply-To: <1409168700-19042-1-git-send-email-festevam@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Jingoo Han <jg1.han@samsung.com>, Rob Clark <robdclark@gmail.com>
 
-On Wed, 27 Aug 2014, Fabio Estevam wrote:
+This adds a  remove function to platform driver structure so that
+resources are released when driver is unloaded.
 
-> From: Fabio Estevam <fabio.estevam@freescale.com>
->=20
-> genericbl_limit_intensity() is exported, but it is never
-> called anywhere else.
->=20
-> Fix the following sparse warning:
->=20
-> drivers/video/backlight/generic_bl.c:59:6: warning: symbol 'genericbl_lim=
-it_intensity' was not declared. Should it be static?
->=20
-> Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
-> ---
->  drivers/video/backlight/generic_bl.c | 18 ------------------
->  1 file changed, 18 deletions(-)
+Moved kzalloc to use managed resource and adds a return check if failed.
 
-Applied, thanks.
+CC: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+CC: Tomi Valkeinen <tomi.valkeinen@ti.com>
+CC: Stephen Boyd <sboyd@codeaurora.org>
+CC: Jingoo Han <jg1.han@samsung.com>
+CC: Rob Clark <robdclark@gmail.com>
 
-> diff --git a/drivers/video/backlight/generic_bl.c b/drivers/video/backlig=
-ht/generic_bl.c
-> index 5d8d652..67dfb93 100644
-> --- a/drivers/video/backlight/generic_bl.c
-> +++ b/drivers/video/backlight/generic_bl.c
-> @@ -52,24 +52,6 @@ static int genericbl_get_intensity(struct backlight_de=
-vice *bd)
->  	return genericbl_intensity;
->  }
-> =20
-> -/*
-> - * Called when the battery is low to limit the backlight intensity.
-> - * If limit=3D0 clear any limit, otherwise limit the intensity
-> - */
-> -void genericbl_limit_intensity(int limit)
-> -{
-> -	struct backlight_device *bd =3D generic_backlight_device;
-> -
-> -	mutex_lock(&bd->ops_lock);
-> -	if (limit)
-> -		bd->props.state |=3D GENERICBL_BATTLOW;
-> -	else
-> -		bd->props.state &=3D ~GENERICBL_BATTLOW;
-> -	backlight_update_status(generic_backlight_device);
-> -	mutex_unlock(&bd->ops_lock);
-> -}
-> -EXPORT_SYMBOL(genericbl_limit_intensity);
-> -
->  static const struct backlight_ops genericbl_ops =3D {
->  	.options =3D BL_CORE_SUSPENDRESUME,
->  	.get_brightness =3D genericbl_get_intensity,
+Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+---
+ drivers/video/fbdev/msm/msm_fb.c |   28 +++++++++++++++++++++++++---
+ 1 file changed, 25 insertions(+), 3 deletions(-)
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+diff --git a/drivers/video/fbdev/msm/msm_fb.c b/drivers/video/fbdev/msm/msm_fb.c
+index 1374803..ac277e2 100644
+--- a/drivers/video/fbdev/msm/msm_fb.c
++++ b/drivers/video/fbdev/msm/msm_fb.c
+@@ -553,6 +553,7 @@ static int msmfb_probe(struct platform_device *pdev)
+ 	fb = framebuffer_alloc(sizeof(struct msmfb_info), &pdev->dev);
+ 	if (!fb)
+ 		return -ENOMEM;
++
+ 	msmfb = fb->par;
+ 	msmfb->fb = fb;
+ 	msmfb->panel = panel;
+@@ -569,8 +570,13 @@ static int msmfb_probe(struct platform_device *pdev)
+ 	mutex_init(&msmfb->panel_init_lock);
+ 	init_waitqueue_head(&msmfb->frame_wq);
+ 	INIT_WORK(&msmfb->resume_work, power_on_panel);
+-	msmfb->black = kzalloc(msmfb->fb->var.bits_per_pixel*msmfb->xres,
+-			       GFP_KERNEL);
++	msmfb->black = devm_kzalloc(&pdev->dev,
++				    msmfb->fb->var.bits_per_pixel*msmfb->xres,
++				    GFP_KERNEL);
++	if (!msmfb->black) {
++		ret = -ENOMEM;
++		goto error_register_framebuffer;
++	}
+ 
+ 	printk(KERN_INFO "msmfb_probe() installing %d x %d panel\n",
+ 	       msmfb->xres, msmfb->yres);
+@@ -589,6 +595,8 @@ static int msmfb_probe(struct platform_device *pdev)
+ 
+ 	msmfb->sleeping = WAKING;
+ 
++	platform_set_drvdata(pdev, msmfb);
++
+ 	return 0;
+ 
+ error_register_framebuffer:
+@@ -598,13 +606,27 @@ error_setup_fbmem:
+ 	return ret;
+ }
+ 
++static int msmfb_remove(struct platform_device *pdev)
++{
++	struct msmfb_info *msmfb = NULL;
++
++	msmfb = platform_get_drvdata(pdev);
++	if (msmfb) {
++		unregister_framebuffer(msmfb->fb);
++		iounmap(msmfb->fb->screen_base);
++		framebuffer_release(msmfb->fb);
++	}
++
++	return 0;
++}
++
+ static struct platform_driver msm_panel_driver = {
+ 	/* need to write remove */
+ 	.probe = msmfb_probe,
++	.remove = msmfb_remove,
+ 	.driver = {.name = "msm_panel"},
+ };
+ 
+-
+ static int msmfb_add_mdp_device(struct device *dev,
+ 				struct class_interface *class_intf)
+ {
+-- 
+1.7.9.5
+

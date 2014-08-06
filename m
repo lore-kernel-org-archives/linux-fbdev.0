@@ -1,142 +1,263 @@
-From: Ajay kumar <ajaynumb@gmail.com>
-Date: Thu, 07 Aug 2014 09:54:22 +0000
-Subject: Re: [RFC] pwm-backlight: Allow backlight to remain disabled on boot
-Message-Id: <CAEC9eQNRCRBr7THFdu9=qtzcTn=oxVO8jRQWL3WCa8q70aagTQ@mail.gmail.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Wed, 06 Aug 2014 09:43:46 +0000
+Subject: [PATCH] video/fbdev: Always built-in video= cmdline parsing
+Message-Id: <1407318226-23169-1-git-send-email-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1406806970-12561-1-git-send-email-thierry.reding@gmail.com>
- <20140731115644.GB12627@ulmo>
-In-Reply-To: <20140731115644.GB12627@ulmo>
+References: <1407312512-6533-1-git-send-email-daniel.vetter@ffwll.ch>
+In-Reply-To: <1407312512-6533-1-git-send-email-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
 
-Hi Thierry,
+In drm/i915 we want to get at the video= cmdline modes even when we
+don't have fbdev support enabled, so that users can always override
+the kernel's initial mode selection.
 
-Thanks for adding me.
+But that gives us a direct depency upon the parsing code in the fbdev
+subsystem. Since it's so little code just extract these 2 functions
+and always build them in.
 
-On Thu, Jul 31, 2014 at 5:26 PM, Thierry Reding
-<thierry.reding@gmail.com> wrote:
-> Cc'ing Ajay (who raised this on a different thread recently), therefore
-> quoting all of the original email.
->
-> Thierry
->
-> On Thu, Jul 31, 2014 at 01:42:50PM +0200, Thierry Reding wrote:
->> From: Thierry Reding <treding@nvidia.com>
->>
->> The default for backlight devices is to be enabled immediately when
->> registering with the backlight core. This can be useful for setups that
->> use a simple framebuffer device and where the backlight cannot otherwise
->> be hooked up to the panel.
->>
->> However, when dealing with more complex setups, such as those of recent
->> ARM SoCs, this can be problematic. Since the backlight is usually setup
->> separately from the display controller, the probe order is not usually
->> deterministic. That can lead to situations where the backlight will be
->> powered up and the panel will show an uninitialized framebuffer.
->>
->> Furthermore, subsystems such as DRM have advanced functionality to set
->> the power mode of a panel. In order to allow such setups to power up the
->> panel at exactly the right moment, a way is needed to prevent the
->> backlight core from powering the backlight up automatically when it is
->> registered.
->>
->> This commit introduces a new boot_off field in the platform data (and
->> also implements getting the same information from device tree). When set
->> the initial backlight power mode will be set to "off".
->>
->> Signed-off-by: Thierry Reding <treding@nvidia.com>
->> ---
->> I've been meaning to send this for a while but was always holding back
->> because of the indoctrination that this type of configuration shouldn't
->> be part of device tree. However this issue was recently raised again in
->> the context of power up sequences for display panels. As described above
->> the issue is that panel datasheets recommend that the backlight attached
->> to a panel be turned on at the very last step to avoid visual glitches
->> during the panel's power up sequence. With the current implementation it
->> is typical for the backlight to be probed before the display panel. That
->> has, in many cases, the side-effect of enabling the backlight, therefore
->> making the screen content visible before it's actually initialized.
->>
->> Some panels come up with random garbage when uninitialized, others show
->> all white. With some luck the panel will be all black and users won't
->> really notice.
-Right, most of the DSI panels are lucky. But the case is not the same
-with few eDP/LVDS panels.
+Whiel at it fix the checkpatch fail in this code.
 
->> This patch is an attempt to enable boards to override the default of
->> turning on the backlight for the pwm-backlight driver. I'm not sure if
->> there was a specific reason to turn on the backlight by default when
->> this driver was initially written, but the fact is that since it has
->> pretty much always been like this we can't really go and change the
->> default, otherwise a lot of people may end up with no backlight and no
->> clue as to how to enable it. So the only reasonable thing we can do is
->> to keep the old behaviour and give new boards a way to override it if
->> they know that some other part of the stack will enable it at the right
->> moment.
-Agreed! And, I have tested this patch.
-This resolves the only remaining problem for display on peach_pi.
-I cannot see the boot time glitch anymore :)
+Cc: Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-Ajay
+--
 
->>  .../devicetree/bindings/video/backlight/pwm-backlight.txt         | 1 +
->>  drivers/video/backlight/pwm_bl.c                                  | 8 ++++++++
->>  include/linux/pwm_backlight.h                                     | 2 ++
->>  3 files changed, 11 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
->> index 764db86d441a..65e001a1733d 100644
->> --- a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
->> +++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
->> @@ -17,6 +17,7 @@ Optional properties:
->>                 "pwms" property (see PWM binding[0])
->>    - enable-gpios: contains a single GPIO specifier for the GPIO which enables
->>                    and disables the backlight (see GPIO binding[1])
->> +  - backlight-boot-off: keep the backlight disabled on boot
->>
->>  [0]: Documentation/devicetree/bindings/pwm/pwm.txt
->>  [1]: Documentation/devicetree/bindings/gpio/gpio.txt
->> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
->> index d7a3d13e72ec..62adfc9d37a7 100644
->> --- a/drivers/video/backlight/pwm_bl.c
->> +++ b/drivers/video/backlight/pwm_bl.c
->> @@ -173,6 +173,8 @@ static int pwm_backlight_parse_dt(struct device *dev,
->>               data->max_brightness--;
->>       }
->>
->> +     data->boot_off = of_property_read_bool(node, "backlight-boot-off");
->> +
->>       return 0;
->>  }
->>
->> @@ -317,6 +319,12 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->>       }
->>
->>       bl->props.brightness = data->dft_brightness;
->> +
->> +     if (data->boot_off)
->> +             bl->props.power = FB_BLANK_POWERDOWN;
->> +     else
->> +             bl->props.power = FB_BLANK_UNBLANK;
->> +
->>       backlight_update_status(bl);
->>
->>       platform_set_drvdata(pdev, bl);
->> diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
->> index efdd9227a49c..1fc14989da4a 100644
->> --- a/include/linux/pwm_backlight.h
->> +++ b/include/linux/pwm_backlight.h
->> @@ -15,6 +15,8 @@ struct platform_pwm_backlight_data {
->>       unsigned int *levels;
->>       /* TODO remove once all users are switched to gpiod_* API */
->>       int enable_gpio;
->> +     bool boot_off;
->> +
->>       int (*init)(struct device *dev);
->>       int (*notify)(struct device *dev, int brightness);
->>       void (*notify_after)(struct device *dev, int brightness);
->> --
->> 2.0.3
->>
+I prefer if we can merge this through drm-next since we'll use it
+there in follow-up patches.
+-Daniel
+---
+ drivers/video/fbdev/core/Makefile     |   2 +-
+ drivers/video/fbdev/core/fb_cmdline.c | 103 ++++++++++++++++++++++++++++++++++
+ drivers/video/fbdev/core/fbmem.c      |  92 ------------------------------
+ 3 files changed, 104 insertions(+), 93 deletions(-)
+ create mode 100644 drivers/video/fbdev/core/fb_cmdline.c
+
+diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+index fa306538dac2..891c1f890e03 100644
+--- a/drivers/video/fbdev/core/Makefile
++++ b/drivers/video/fbdev/core/Makefile
+@@ -1,4 +1,4 @@
+-obj-y                             += fb_notify.o
++obj-y                             += fb_notify.o fb_cmdline.o
+ obj-$(CONFIG_FB)                  += fb.o
+ fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
+                                      modedb.o fbcvt.o
+diff --git a/drivers/video/fbdev/core/fb_cmdline.c b/drivers/video/fbdev/core/fb_cmdline.c
+new file mode 100644
+index 000000000000..91503a43213e
+--- /dev/null
++++ b/drivers/video/fbdev/core/fb_cmdline.c
+@@ -0,0 +1,103 @@
++/*
++ *  linux/drivers/video/fb_cmdline.c
++ *
++ *  Copyright (C) 2014 Intel Corp
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive
++ * for more details.
++ *
++ * Authors:
++ *    Vetter <danie.vetter@ffwll.ch>
++ */
++#include <linux/init.h>
++#include <linux/fb.h>
++
++static char *video_options[FB_MAX] __read_mostly;
++static int ofonly __read_mostly;
++
++/**
++ * fb_get_options - get kernel boot parameters
++ * @name:   framebuffer name as it would appear in
++ *          the boot parameter line
++ *          (video=<name>:<options>)
++ * @option: the option will be stored here
++ *
++ * NOTE: Needed to maintain backwards compatibility
++ */
++int fb_get_options(const char *name, char **option)
++{
++	char *opt, *options = NULL;
++	int retval = 0;
++	int name_len = strlen(name), i;
++
++	if (name_len && ofonly && strncmp(name, "offb", 4))
++		retval = 1;
++
++	if (name_len && !retval) {
++		for (i = 0; i < FB_MAX; i++) {
++			if (video_options[i] = NULL)
++				continue;
++			if (!video_options[i][0])
++				continue;
++			opt = video_options[i];
++			if (!strncmp(name, opt, name_len) &&
++			    opt[name_len] = ':')
++				options = opt + name_len + 1;
++		}
++	}
++	/* No match, pass global option */
++	if (!options && option && fb_mode_option)
++		options = kstrdup(fb_mode_option, GFP_KERNEL);
++	if (options && !strncmp(options, "off", 3))
++		retval = 1;
++
++	if (option)
++		*option = options;
++
++	return retval;
++}
++EXPORT_SYMBOL(fb_get_options);
++
++/**
++ *	video_setup - process command line options
++ *	@options: string of options
++ *
++ *	Process command line options for frame buffer subsystem.
++ *
++ *	NOTE: This function is a __setup and __init function.
++ *            It only stores the options.  Drivers have to call
++ *            fb_get_options() as necessary.
++ *
++ *	Returns zero.
++ *
++ */
++static int __init video_setup(char *options)
++{
++	int i, global = 0;
++
++	if (!options || !*options)
++		global = 1;
++
++	if (!global && !strncmp(options, "ofonly", 6)) {
++		ofonly = 1;
++		global = 1;
++	}
++
++	if (!global && !strchr(options, ':')) {
++		fb_mode_option = options;
++		global = 1;
++	}
++
++	if (!global) {
++		for (i = 0; i < FB_MAX; i++) {
++			if (video_options[i] = NULL) {
++				video_options[i] = options;
++				break;
++			}
++		}
++	}
++
++	return 1;
++}
++__setup("video=", video_setup);
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index b5e85f6c1c26..0705d8883ede 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1908,96 +1908,4 @@ int fb_new_modelist(struct fb_info *info)
+ 	return err;
+ }
+ 
+-static char *video_options[FB_MAX] __read_mostly;
+-static int ofonly __read_mostly;
+-
+-/**
+- * fb_get_options - get kernel boot parameters
+- * @name:   framebuffer name as it would appear in
+- *          the boot parameter line
+- *          (video=<name>:<options>)
+- * @option: the option will be stored here
+- *
+- * NOTE: Needed to maintain backwards compatibility
+- */
+-int fb_get_options(const char *name, char **option)
+-{
+-	char *opt, *options = NULL;
+-	int retval = 0;
+-	int name_len = strlen(name), i;
+-
+-	if (name_len && ofonly && strncmp(name, "offb", 4))
+-		retval = 1;
+-
+-	if (name_len && !retval) {
+-		for (i = 0; i < FB_MAX; i++) {
+-			if (video_options[i] = NULL)
+-				continue;
+-			if (!video_options[i][0])
+-				continue;
+-			opt = video_options[i];
+-			if (!strncmp(name, opt, name_len) &&
+-			    opt[name_len] = ':')
+-				options = opt + name_len + 1;
+-		}
+-	}
+-	/* No match, pass global option */
+-	if (!options && option && fb_mode_option)
+-		options = kstrdup(fb_mode_option, GFP_KERNEL);
+-	if (options && !strncmp(options, "off", 3))
+-		retval = 1;
+-
+-	if (option)
+-		*option = options;
+-
+-	return retval;
+-}
+-EXPORT_SYMBOL(fb_get_options);
+-
+-#ifndef MODULE
+-/**
+- *	video_setup - process command line options
+- *	@options: string of options
+- *
+- *	Process command line options for frame buffer subsystem.
+- *
+- *	NOTE: This function is a __setup and __init function.
+- *            It only stores the options.  Drivers have to call
+- *            fb_get_options() as necessary.
+- *
+- *	Returns zero.
+- *
+- */
+-static int __init video_setup(char *options)
+-{
+-	int i, global = 0;
+-
+-	if (!options || !*options)
+- 		global = 1;
+-
+- 	if (!global && !strncmp(options, "ofonly", 6)) {
+- 		ofonly = 1;
+- 		global = 1;
+- 	}
+-
+- 	if (!global && !strchr(options, ':')) {
+- 		fb_mode_option = options;
+- 		global = 1;
+- 	}
+-
+- 	if (!global) {
+- 		for (i = 0; i < FB_MAX; i++) {
+- 			if (video_options[i] = NULL) {
+- 				video_options[i] = options;
+- 				break;
+- 			}
+-
+-		}
+-	}
+-
+-	return 1;
+-}
+-__setup("video=", video_setup);
+-#endif
+-
+ MODULE_LICENSE("GPL");
+-- 
+2.0.1
+

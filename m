@@ -1,83 +1,316 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Aug 2014 09:50:03 +0000
-Subject: Re: [PATCH] fbdev: Remove __init from chips_hw_init() to fix build failure
-Message-Id: <53FC584B.7070508@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="N1fIQi9faawGQFQOVLv0mwsC15pDi8WAX"
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Wed, 06 Aug 2014 12:52:41 +0000
+Subject: [PATCH 1/2] video/fbdev: Always built-in video= cmdline parsing
+Message-Id: <1407329562-10832-1-git-send-email-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1408623838-8275-1-git-send-email-bobby.prani@gmail.com>
-In-Reply-To: <1408623838-8275-1-git-send-email-bobby.prani@gmail.com>
-To: Pranith Kumar <bobby.prani@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Rob Clark <robdclark@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, FRAMEBUFFER LAYER <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+References: <1407312512-6533-1-git-send-email-daniel.vetter@ffwll.ch>
+In-Reply-To: <1407312512-6533-1-git-send-email-daniel.vetter@ffwll.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Plagniol-Villard <plagnioj@jcrosoft.com>
 
---N1fIQi9faawGQFQOVLv0mwsC15pDi8WAX
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+In drm/i915 we want to get at the video= cmdline modes even when we
+don't have fbdev support enabled, so that users can always override
+the kernel's initial mode selection.
 
-On 21/08/14 15:23, Pranith Kumar wrote:
-> Fix build failure caused as follows:
->=20
-> The function chipsfb_pci_init() references
-> the function __init chips_hw_init().
-> This is often because chipsfb_pci_init lacks a __init=20
-> annotation or the annotation of chips_hw_init is wrong.
->=20
-> make: *** [drivers] Error 2
->=20
-> by removing the __init annotation from chips_hw_init(). The other thing=
- that
-> could have been done was annotating chipsfb_pci_init(). But that cannot=
- be done
-> since chipsfb_pci_init() is called from non __init functions.
->=20
-> Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
-> ---
->  drivers/video/fbdev/chipsfb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsf=
-b.c
-> index 206a66b..59abdc6 100644
-> --- a/drivers/video/fbdev/chipsfb.c
-> +++ b/drivers/video/fbdev/chipsfb.c
-> @@ -273,7 +273,7 @@ static struct chips_init_reg chips_init_xr[] =3D {
->  	{ 0xa8, 0x00 }
->  };
-> =20
-> -static void __init chips_hw_init(void)
-> +static void chips_hw_init(void)
->  {
->  	int i;
-> =20
->=20
+But that gives us a direct depency upon the parsing code in the fbdev
+subsystem. Since it's so little code just extract these 2 functions
+and always build them in.
 
-Thanks, queued for 3.17 fbdev fixes.
+Whiel at it fix the checkpatch fail in this code.
 
- Tomi
+v2: Also move fb_mode_option. Spotted by the kbuild.
 
+v3: Review from Geert:
+- Keep the old copyright notice from fb_mem.c, although I have no
+idea what exactly applies.
+- Only compile this when needed.
 
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
---N1fIQi9faawGQFQOVLv0mwsC15pDi8WAX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+I prefer if we can merge this through drm-next since we'll use it
+there in follow-up patches.
+-Daniel
+---
+ drivers/video/fbdev/Kconfig           |   4 ++
+ drivers/video/fbdev/core/Makefile     |   1 +
+ drivers/video/fbdev/core/fb_cmdline.c | 110 ++++++++++++++++++++++++++++++++++
+ drivers/video/fbdev/core/fbmem.c      |  92 ----------------------------
+ drivers/video/fbdev/core/modedb.c     |   3 -
+ 5 files changed, 115 insertions(+), 95 deletions(-)
+ create mode 100644 drivers/video/fbdev/core/fb_cmdline.c
 
-iQIcBAEBAgAGBQJT/FhLAAoJEPo9qoy8lh71LxsP/2ro1AlsY1EcsHlsG/B+SRqd
-rCVrP04UEcxKV3JP0FonyacT9/5FXCLnIF/eEeCdZgOuX2s0IS8O8ZDJVCvwoCc7
-1SLso7Vz/JAFmW5VnG4gIzSv3eDvZf7Gq84pZ055eX/p21+qGln2GJJWezjhdKhI
-jgaKFmfRjLi2rHm20I9pOXhtsqeYBeWtLL2tm4zS6WaTnh5egEoC4lmjVdSZC6ap
-6HrBz85hDX2QjH6BKKAJ7/nq+RhSya2wCpVh80Yydzd1nPlRff4vJGG0iJ+fwJcm
-fb46wCvv0pwlxbBuU0xqOYxs2T1xUTTFkR0r1m2ZOl5vlW+tPlf43R/Ogn5OK4l5
-MUp+5ioXBP8X7IukioHVYrqtct0fXSWizcYN0/3jihMUa9UpaF9LeIf/Bu0eQGV9
-2wkQgb6D52k8qcYtLo2HapWbGk+Wlin0vYHglmbjQgr0hj16XapahfcGLQP7qKb6
-CiHt7D4wYdBrEXKq1bQFa4WtOXKlI4kT/4GjX2627RXlSHJbsem4ZULKWouIOxSs
-peV1+ZuJksenQJ/iTGerjQKd9JNhuy7iCkk1C/xs0zbp/dTTpQSkAtS7B3zglhyT
-Jv3IM+TnGf0GAihE185088n6fenXa9AiG/tn8qHIjn9cuWphga+STuf7EVXKels4
-TDAidOgx7bjXVQl8+EkA
-=c8f3
------END PGP SIGNATURE-----
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 59c98bfd5a8a..f1458c95a688 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -4,6 +4,7 @@
+ 
+ menuconfig FB
+ 	tristate "Support for frame buffer devices"
++	select FB_CMDLINE
+ 	---help---
+ 	  The frame buffer device provides an abstraction for the graphics
+ 	  hardware. It represents the frame buffer of some video hardware and
+@@ -52,6 +53,9 @@ config FIRMWARE_EDID
+ 	 combination with certain motherboards and monitors are known to
+ 	 suffer from this problem.
+ 
++config FB_CMDLINE
++	bool
++
+ config FB_DDC
+        tristate
+        depends on FB
+diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+index fa306538dac2..67f28e20a892 100644
+--- a/drivers/video/fbdev/core/Makefile
++++ b/drivers/video/fbdev/core/Makefile
+@@ -1,4 +1,5 @@
+ obj-y                             += fb_notify.o
++obj-$(CONFIG_FB_CMDLINE)          += fb_cmdline.o
+ obj-$(CONFIG_FB)                  += fb.o
+ fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
+                                      modedb.o fbcvt.o
+diff --git a/drivers/video/fbdev/core/fb_cmdline.c b/drivers/video/fbdev/core/fb_cmdline.c
+new file mode 100644
+index 000000000000..39509ccd92f1
+--- /dev/null
++++ b/drivers/video/fbdev/core/fb_cmdline.c
+@@ -0,0 +1,110 @@
++/*
++ *  linux/drivers/video/fb_cmdline.c
++ *
++ *  Copyright (C) 2014 Intel Corp
++ *  Copyright (C) 1994 Martin Schaller
++ *
++ *	2001 - Documented with DocBook
++ *	- Brad Douglas <brad@neruo.com>
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive
++ * for more details.
++ *
++ * Authors:
++ *    Vetter <danie.vetter@ffwll.ch>
++ */
++#include <linux/init.h>
++#include <linux/fb.h>
++
++static char *video_options[FB_MAX] __read_mostly;
++static int ofonly __read_mostly;
++
++const char *fb_mode_option;
++EXPORT_SYMBOL_GPL(fb_mode_option);
++
++/**
++ * fb_get_options - get kernel boot parameters
++ * @name:   framebuffer name as it would appear in
++ *          the boot parameter line
++ *          (video=<name>:<options>)
++ * @option: the option will be stored here
++ *
++ * NOTE: Needed to maintain backwards compatibility
++ */
++int fb_get_options(const char *name, char **option)
++{
++	char *opt, *options = NULL;
++	int retval = 0;
++	int name_len = strlen(name), i;
++
++	if (name_len && ofonly && strncmp(name, "offb", 4))
++		retval = 1;
++
++	if (name_len && !retval) {
++		for (i = 0; i < FB_MAX; i++) {
++			if (video_options[i] = NULL)
++				continue;
++			if (!video_options[i][0])
++				continue;
++			opt = video_options[i];
++			if (!strncmp(name, opt, name_len) &&
++			    opt[name_len] = ':')
++				options = opt + name_len + 1;
++		}
++	}
++	/* No match, pass global option */
++	if (!options && option && fb_mode_option)
++		options = kstrdup(fb_mode_option, GFP_KERNEL);
++	if (options && !strncmp(options, "off", 3))
++		retval = 1;
++
++	if (option)
++		*option = options;
++
++	return retval;
++}
++EXPORT_SYMBOL(fb_get_options);
++
++/**
++ *	video_setup - process command line options
++ *	@options: string of options
++ *
++ *	Process command line options for frame buffer subsystem.
++ *
++ *	NOTE: This function is a __setup and __init function.
++ *            It only stores the options.  Drivers have to call
++ *            fb_get_options() as necessary.
++ *
++ *	Returns zero.
++ *
++ */
++static int __init video_setup(char *options)
++{
++	int i, global = 0;
++
++	if (!options || !*options)
++		global = 1;
++
++	if (!global && !strncmp(options, "ofonly", 6)) {
++		ofonly = 1;
++		global = 1;
++	}
++
++	if (!global && !strchr(options, ':')) {
++		fb_mode_option = options;
++		global = 1;
++	}
++
++	if (!global) {
++		for (i = 0; i < FB_MAX; i++) {
++			if (video_options[i] = NULL) {
++				video_options[i] = options;
++				break;
++			}
++		}
++	}
++
++	return 1;
++}
++__setup("video=", video_setup);
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index b5e85f6c1c26..0705d8883ede 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1908,96 +1908,4 @@ int fb_new_modelist(struct fb_info *info)
+ 	return err;
+ }
+ 
+-static char *video_options[FB_MAX] __read_mostly;
+-static int ofonly __read_mostly;
+-
+-/**
+- * fb_get_options - get kernel boot parameters
+- * @name:   framebuffer name as it would appear in
+- *          the boot parameter line
+- *          (video=<name>:<options>)
+- * @option: the option will be stored here
+- *
+- * NOTE: Needed to maintain backwards compatibility
+- */
+-int fb_get_options(const char *name, char **option)
+-{
+-	char *opt, *options = NULL;
+-	int retval = 0;
+-	int name_len = strlen(name), i;
+-
+-	if (name_len && ofonly && strncmp(name, "offb", 4))
+-		retval = 1;
+-
+-	if (name_len && !retval) {
+-		for (i = 0; i < FB_MAX; i++) {
+-			if (video_options[i] = NULL)
+-				continue;
+-			if (!video_options[i][0])
+-				continue;
+-			opt = video_options[i];
+-			if (!strncmp(name, opt, name_len) &&
+-			    opt[name_len] = ':')
+-				options = opt + name_len + 1;
+-		}
+-	}
+-	/* No match, pass global option */
+-	if (!options && option && fb_mode_option)
+-		options = kstrdup(fb_mode_option, GFP_KERNEL);
+-	if (options && !strncmp(options, "off", 3))
+-		retval = 1;
+-
+-	if (option)
+-		*option = options;
+-
+-	return retval;
+-}
+-EXPORT_SYMBOL(fb_get_options);
+-
+-#ifndef MODULE
+-/**
+- *	video_setup - process command line options
+- *	@options: string of options
+- *
+- *	Process command line options for frame buffer subsystem.
+- *
+- *	NOTE: This function is a __setup and __init function.
+- *            It only stores the options.  Drivers have to call
+- *            fb_get_options() as necessary.
+- *
+- *	Returns zero.
+- *
+- */
+-static int __init video_setup(char *options)
+-{
+-	int i, global = 0;
+-
+-	if (!options || !*options)
+- 		global = 1;
+-
+- 	if (!global && !strncmp(options, "ofonly", 6)) {
+- 		ofonly = 1;
+- 		global = 1;
+- 	}
+-
+- 	if (!global && !strchr(options, ':')) {
+- 		fb_mode_option = options;
+- 		global = 1;
+- 	}
+-
+- 	if (!global) {
+- 		for (i = 0; i < FB_MAX; i++) {
+- 			if (video_options[i] = NULL) {
+- 				video_options[i] = options;
+- 				break;
+- 			}
+-
+-		}
+-	}
+-
+-	return 1;
+-}
+-__setup("video=", video_setup);
+-#endif
+-
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
+index a9a907c440d7..388f7971494b 100644
+--- a/drivers/video/fbdev/core/modedb.c
++++ b/drivers/video/fbdev/core/modedb.c
+@@ -29,9 +29,6 @@
+ #define DPRINTK(fmt, args...)
+ #endif
+ 
+-const char *fb_mode_option;
+-EXPORT_SYMBOL_GPL(fb_mode_option);
+-
+ /*
+  *  Standard video mode definitions (taken from XFree86)
+  */
+-- 
+2.0.1
 
---N1fIQi9faawGQFQOVLv0mwsC15pDi8WAX--

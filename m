@@ -1,53 +1,54 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Fri, 08 Aug 2014 10:07:55 +0000
-Subject: =?UTF-8?q?=5BPATCH=2014/14=5D=20video=3A=20of=3A=20display=5Ftiming=3A=20delete=20unneeded=20test=20
-Message-Id: <1407492475-26283-14-git-send-email-Julia.Lawall@lip6.fr>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 07 Aug 2014 07:04:27 +0000
+Subject: Re: [PATCH v2 04/13] OMAPDSS: hdmi: Make hdmi structure public
+Message-Id: <53E324FB.7060000@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="mO8tOErt0ND4aRjh2qJqpRa9U8GsXWd2F"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+References: <cover.1403894190.git.jsarha@ti.com> <536afa4069bd73195b05aee3097c86d7e517ae7e.1403894190.git.jsarha@ti.com>
+In-Reply-To: <536afa4069bd73195b05aee3097c86d7e517ae7e.1403894190.git.jsarha@ti.com>
+To: Jyri Sarha <jsarha@ti.com>
+Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, detheridge@ti.com, jyri.sarha@iki.fi
+
+--mO8tOErt0ND4aRjh2qJqpRa9U8GsXWd2F
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: kernel-janitors@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 
-From: Julia Lawall <Julia.Lawall@lip6.fr>
+On 27/06/14 21:38, Jyri Sarha wrote:
+> Name the anonymous hdmi struct as omap_hdmi. Move the struct definition=
+ to
+> hdmi.h and turn core member into a pointer to deal with it's different
+> definitions for omap4 and omap5. Make associated changes to hdmi4.c
+> and hdmi5.c.
 
-Of_node_put supports NULL as its argument, so the initial test is not
-necessary.  Furthermore, native_mode cannot be NULL at this point.
+I didn't understand this one. Why did you make struct hdmi_core_data a
+pointer?
 
-Suggested by Uwe Kleine-K=C3=B6nig.
+ Tomi
 
-The semantic patch that fixes this problem is as follows:
-(http://coccinelle.lip6.fr/)
 
-// <smpl>
-@@
-expression e;
-@@
 
--if (e)
-   of_node_put(e);
-// </smpl>
+--mO8tOErt0ND4aRjh2qJqpRa9U8GsXWd2F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
----
- drivers/video/of_display_timing.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+iQIcBAEBAgAGBQJT4yT7AAoJEPo9qoy8lh71I28P/jaUn4Q8HixcB++Q12K80hmM
+XLDcy5LKMAvXf7E+1evvwiZN4nG8d7/lnd7bqoQ2JXldESDw4UdKiJjevhPY8DBx
+2tN5roZvb1TMDUovyl9uDiofiv+lFi9nOPVQ6Rss738x8+t+ncug3tss0Pf+zYJt
+oSHtNuCEfLSghqjFPuROW3alNFk8lKBng+z1/DP/mEIPon/oOwSRPkQBTP74UIpV
+9NzSYYp8ITILMS7PCwmTQdvswSgNaZjAQmzFrqP6gXEQpKcaZHXKt27Ni6Ocfe6+
+Ud5vtAjgBjh8umownRTMJcB4HUdMRW8VLyeld6LEpYku2yLbFyseevFMOTmQdBgZ
+p/zi6urX3HKWM7+Q6EH6z7c15ejqQhvJ1r/F+/Aax8c/tR8hlSJzji7pqGC3c+0K
+mhMbK5yrsv+UTsvZLGrImpF4hsZcggc6yHlfKYD9VgFqdv28rLhB5TNPM/lGXzOF
+pGequeCW88JYlhicyh7IF208oaqOXnSJYazEXAhBdlymo4gEG9YHBjB7vRYcKhrv
+SMRPA85d9ItWR0/B0yk+r/3jSfoAVp6Kdz/IluC/llQuG5C7RAfQNM2TKZmKxYbf
+lq6Su7pE5T59+rjA6jgdMbNFMg48JM9hipl56NiGmTcux4NQpdc4TmSW9omcUOJS
+UY4ZFuqBD3fRucfQSCri
+=xkXO
+-----END PGP SIGNATURE-----
 
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_t=
-iming.c
-index 987edf1..339f831 100644
---- a/drivers/video/of_display_timing.c
-+++ b/drivers/video/of_display_timing.c
-@@ -233,8 +233,7 @@ struct display_timings *of_get_display_timings(struct d=
-evice_node *np)
- 	return disp;
-=20
- timingfail:
--	if (native_mode)
--		of_node_put(native_mode);
-+	of_node_put(native_mode);
- 	display_timings_release(disp);
- entryfail:
- 	kfree(disp);
-
+--mO8tOErt0ND4aRjh2qJqpRa9U8GsXWd2F--

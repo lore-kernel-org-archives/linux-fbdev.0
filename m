@@ -1,34 +1,166 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 07 Aug 2014 07:04:27 +0000
-Subject: Re: [PATCH v2 04/13] OMAPDSS: hdmi: Make hdmi structure public
-Message-Id: <53E324FB.7060000@ti.com>
+Date: Fri, 08 Aug 2014 11:36:28 +0000
+Subject: [GIT PULL] fbdev changes for 3.17
+Message-Id: <53E4B63C.5050402@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="mO8tOErt0ND4aRjh2qJqpRa9U8GsXWd2F"
+Content-Type: multipart/mixed; boundary="1sp2B5OnJ3ihALDSUeIr4pQb2m57BpAvF"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1403894190.git.jsarha@ti.com> <536afa4069bd73195b05aee3097c86d7e517ae7e.1403894190.git.jsarha@ti.com>
-In-Reply-To: <536afa4069bd73195b05aee3097c86d7e517ae7e.1403894190.git.jsarha@ti.com>
-To: Jyri Sarha <jsarha@ti.com>
-Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, detheridge@ti.com, jyri.sarha@iki.fi
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
 
---mO8tOErt0ND4aRjh2qJqpRa9U8GsXWd2F
-Content-Type: text/plain; charset=windows-1252
+--1sp2B5OnJ3ihALDSUeIr4pQb2m57BpAvF
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On 27/06/14 21:38, Jyri Sarha wrote:
-> Name the anonymous hdmi struct as omap_hdmi. Move the struct definition=
- to
-> hdmi.h and turn core member into a pointer to deal with it's different
-> definitions for omap4 and omap5. Make associated changes to hdmi4.c
-> and hdmi5.c.
+Hi Linus,
 
-I didn't understand this one. Why did you make struct hdmi_core_data a
-pointer?
+Please pull the fbdev changes for 3.17.
 
  Tomi
 
 
+The following changes since commit a497c3ba1d97fc69c1e78e7b96435ba8c2cb42=
+ee:
 
---mO8tOErt0ND4aRjh2qJqpRa9U8GsXWd2F
+  Linux 3.16-rc2 (2014-06-21 19:02:54 -1000)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-3.17
+
+for you to fetch changes up to e4e42b8ad24cabf4d6d3c20a63f18dd6b954d9c2:
+
+  OMAPDSS: DSI: fix depopulating dsi peripherals (2014-08-08 14:26:36 +03=
+00)
+
+----------------------------------------------------------------
+fbdev changes for 3.17
+
+* Much better HDMI infoframe support for OMAP
+* Cirrus Logic CLPS711X framebuffer driver
+* DT support for PL11x CLCD driver
+* Various small fixes
+
+----------------------------------------------------------------
+Alexander Shiyan (4):
+      video: clps711x: Add new Cirrus Logic CLPS711X framebuffer driver
+      video: clps711x: Add bindings documentation for CLPS711X framebuffe=
+r
+      video: clps711x: Fix driver build for CONFIG_FB=3Dm
+      video: clps711x: Fix sparse warnings
+
+Archit Taneja (1):
+      fbdev: arm has __raw I/O accessors, use them in fb.h
+
+Dan Carpenter (1):
+      video/mbx: indent some if statements
+
+Dexuan Cui (1):
+      video: hyperv: hyperv_fb: refresh the VM screen by force on VM pani=
+c
+
+Emil Goode (1):
+      video: vt8500lcdfb: Remove kfree call since devm_kzalloc() is used
+
+Fabian Frederick (1):
+      drivers/video/fbdev/sis/sis_main.c: remove unnecessary test on unsi=
+gned value
+
+Himangi Saraogi (2):
+      video: msm: Introduce the use of the managed version of kzalloc
+      drivers/video/fbdev : dereference without an error test
+
+Jingoo Han (1):
+      MAINTAINERS: Update Framebuffer file patterns
+
+Joe Perches (1):
+      fbdev: da8xx-fb: Use dma_zalloc_coherent
+
+Michael Welling (1):
+      drivers: video: fbdev: atmel_lcdfb.c: Add ability to inverted backl=
+ight PWM.
+
+Paul Bolle (1):
+      video: 68328fb: remove check for CONFIG_FB_68328_INVERT
+
+Pawel Moll (2):
+      video: ARM CLCD: Add DT support
+      video: ARM CLCD: Fix DT-related build problems
+
+Rasmus Villemoes (1):
+      drivers/video/fbdev/sis: Add missing else
+
+Tomi Valkeinen (17):
+      OMAPDSS: DISPC: fix debugfs reg dump
+      OMAPDSS: DISPC: reject interlace for lcd out
+      OMAPDSS: DISPC: clean up dispc_mgr_timings_ok
+      OMAPDSS: HDMI: fix name conflict
+      OMAPDSS: Kconfig: select HDMI
+      OMAPDSS: HDMI4: use common AVI infoframe support
+      OMAPDSS: HDMI5: use common AVI infoframe support
+      OMAPDSS: HDMI: remove custom avi infoframe
+      OMAPDSS: add hdmi ops to hdmi_ops and omap_dss_driver
+      OMAPDSS: add hdmi ops to hdmi-connector and tpd12s015
+      OMAPDSS: HDMI: add infoframe and hdmi_dvi_mode fields
+      OMAPDSS: HDMI4: add support to set infoframe & HDMI mode
+      OMAPDSS: HDMI5: add support to set infoframe & HDMI mode
+      OMAPDSS: HDMI: remove the unused code
+      drm/omap: Add infoframe & dvi/hdmi mode support
+      Merge branch '3.17/hdmi-infoframe' into for-next
+      OMAPDSS: DSI: fix depopulating dsi peripherals
+
+Vasily Khoruzhick (1):
+      video: fbdev: s3c2410fb: Move to clk_prepare_enable/clk_disable_unp=
+repare
+
+ .../devicetree/bindings/video/arm,pl11x.txt        | 109 ++++++
+ .../devicetree/bindings/video/atmel,lcdc.txt       |   1 +
+ .../bindings/video/cirrus,clps711x-fb.txt          |  47 +++
+ MAINTAINERS                                        |  74 ++--
+ drivers/gpu/drm/omapdrm/omap_connector.c           |  12 +
+ drivers/gpu/drm/omapdrm/omap_drv.h                 |   1 +
+ drivers/gpu/drm/omapdrm/omap_encoder.c             |  27 ++
+ drivers/video/fbdev/68328fb.c                      |   8 +-
+ drivers/video/fbdev/Kconfig                        |  23 +-
+ drivers/video/fbdev/Makefile                       |   3 +-
+ drivers/video/fbdev/amba-clcd.c                    | 263 ++++++++++++++
+ drivers/video/fbdev/atmel_lcdfb.c                  |   3 +-
+ drivers/video/fbdev/clps711x-fb.c                  | 397 +++++++++++++++=
+++++++
+ drivers/video/fbdev/da8xx-fb.c                     |   9 +-
+ drivers/video/fbdev/hyperv_fb.c                    |  62 +++-
+ drivers/video/fbdev/mbx/mbxfb.c                    |   4 +-
+ drivers/video/fbdev/msm/mddi_client_dummy.c        |  19 +-
+ .../fbdev/omap2/displays-new/connector-hdmi.c      |  19 +
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |  20 ++
+ .../omap2/displays-new/panel-sony-acx565akm.c      |   5 +
+ drivers/video/fbdev/omap2/dss/Kconfig              |   1 +
+ drivers/video/fbdev/omap2/dss/dispc.c              |  22 +-
+ drivers/video/fbdev/omap2/dss/dsi.c                |   9 +-
+ drivers/video/fbdev/omap2/dss/hdmi.h               | 107 +-----
+ drivers/video/fbdev/omap2/dss/hdmi4.c              |  53 ++-
+ drivers/video/fbdev/omap2/dss/hdmi4_core.c         | 164 ++-------
+ drivers/video/fbdev/omap2/dss/hdmi4_core.h         |   1 +
+ drivers/video/fbdev/omap2/dss/hdmi5.c              |  53 ++-
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c         | 124 +++----
+ drivers/video/fbdev/omap2/dss/hdmi_common.c        | 316 ---------------=
+-
+ drivers/video/fbdev/s3c2410fb.c                    |  10 +-
+ drivers/video/fbdev/sis/init.c                     |   2 +-
+ drivers/video/fbdev/sis/sis_main.c                 |   4 -
+ drivers/video/fbdev/vt8500lcdfb.c                  |   2 -
+ include/linux/fb.h                                 |   2 +-
+ include/video/omapdss.h                            |   9 +
+ 36 files changed, 1194 insertions(+), 791 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/arm,pl11x.txt=
+
+ create mode 100644 Documentation/devicetree/bindings/video/cirrus,clps71=
+1x-fb.txt
+ create mode 100644 drivers/video/fbdev/clps711x-fb.c
+
+
+--1sp2B5OnJ3ihALDSUeIr4pQb2m57BpAvF
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -36,19 +168,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJT4yT7AAoJEPo9qoy8lh71I28P/jaUn4Q8HixcB++Q12K80hmM
-XLDcy5LKMAvXf7E+1evvwiZN4nG8d7/lnd7bqoQ2JXldESDw4UdKiJjevhPY8DBx
-2tN5roZvb1TMDUovyl9uDiofiv+lFi9nOPVQ6Rss738x8+t+ncug3tss0Pf+zYJt
-oSHtNuCEfLSghqjFPuROW3alNFk8lKBng+z1/DP/mEIPon/oOwSRPkQBTP74UIpV
-9NzSYYp8ITILMS7PCwmTQdvswSgNaZjAQmzFrqP6gXEQpKcaZHXKt27Ni6Ocfe6+
-Ud5vtAjgBjh8umownRTMJcB4HUdMRW8VLyeld6LEpYku2yLbFyseevFMOTmQdBgZ
-p/zi6urX3HKWM7+Q6EH6z7c15ejqQhvJ1r/F+/Aax8c/tR8hlSJzji7pqGC3c+0K
-mhMbK5yrsv+UTsvZLGrImpF4hsZcggc6yHlfKYD9VgFqdv28rLhB5TNPM/lGXzOF
-pGequeCW88JYlhicyh7IF208oaqOXnSJYazEXAhBdlymo4gEG9YHBjB7vRYcKhrv
-SMRPA85d9ItWR0/B0yk+r/3jSfoAVp6Kdz/IluC/llQuG5C7RAfQNM2TKZmKxYbf
-lq6Su7pE5T59+rjA6jgdMbNFMg48JM9hipl56NiGmTcux4NQpdc4TmSW9omcUOJS
-UY4ZFuqBD3fRucfQSCri
-=xkXO
+iQIcBAEBAgAGBQJT5LY8AAoJEPo9qoy8lh71SJEQAJ8Fqe1uPROFyMKR3dw4L0H9
+fTjNAnYNnG2bdyYGyXIXYfAJCWEEQJ5vY0au6Pvm6yI1TwQNqPYt8z40Tj4zXOqw
+6G+adh+NYmeHwWUDXmmEUxOp+olmc12ogK1h+vVYMlPN7fAHmufeDQQSzkCVuh0/
+Hgo7xsOfu5kr2F774I/zjRo8OOjI3vG8p6s5l+Mz1s+hZDnOnpSGUkBGfY+0gsiZ
+RuJlsy+QycK0/67hgS3KtJnX+6yZdE59fkdh2GaN7dEiwnK/T46R3CYN8bkqtL6i
+nBJbSiYnzOmEUBCg7Ee3YEe0sRBmznlzafaL3X9iW0CJoEoRieaD9qZ/nBg7tK74
+ZL+XH9zjXnW9C3/5NKf8LKV4bApXTxy0K5f7GhnYH/j3BHxhQTVCFhLu/Vc+2hoF
+cIP2SSVClMb0syn7eJe/aM2Tzm0FLD8bc02rc9/ioozvkE367XxNiRryl3eDEr6O
+Vu/uPu00Vs2w0Bv6dG/pAEbpj/g1j4PDC3qj3Qwx0j+/rxrMcnm4hamTzSNhXJCy
+5l7RtyJ/AYBQ5ypWKCcs7G7KuWmT4pdJd8P2U1PEiN6j1hTDjLlgxBxYeHyiDbR5
+9aC2wQ88Qqssys5Vnv3E2eme/ljE/7ztwssQs7//Ez8RtY5P9GsW0OqRbgpzrx8H
+e8zo6sHM2Pccvmq6cfMH
+=7Qht
 -----END PGP SIGNATURE-----
 
---mO8tOErt0ND4aRjh2qJqpRa9U8GsXWd2F--
+--1sp2B5OnJ3ihALDSUeIr4pQb2m57BpAvF--

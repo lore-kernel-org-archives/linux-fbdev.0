@@ -1,86 +1,180 @@
-From: =?UTF-8?B?5L2Q44CF5pyo5aSn6LyU?= <daisuke.sasaki@atmark-techno.com>
-Date: Tue, 26 Aug 2014 09:38:10 +0000
-Subject: Questions about cea_modes database in modedb.c
-Message-Id: <CAAr_WKyXnPuN2NjcUAhoPX1=MY2ztxC=gzRKX4UsX2KDb4Cefg@mail.gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 08 Aug 2014 13:23:46 +0000
+Subject: [PATCH v3 05/14] OMAPDSS: hdmi: Make hdmi structure public
+Message-Id: <d5c2563a7d49e000db6eafff1ba4cf637fa7043b.1407503813.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1407503813.git.jsarha@ti.com>
+In-Reply-To: <cover.1407503813.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Dear experts,
+Unify the private anonymous struct in hdmi4.c and hdmi5.c, name it as
+struct omap_hdmi, and make it public in hdmi.h.
 
-This is a first time for me to write a email to this mailing list.
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi.h  |   21 +++++++++++++++++++++
+ drivers/video/fbdev/omap2/dss/hdmi4.c |   31 ++++++++-----------------------
+ drivers/video/fbdev/omap2/dss/hdmi5.c |   20 ++------------------
+ 3 files changed, 31 insertions(+), 41 deletions(-)
 
-I am trying to output the video signal from the LCD controller of the
-embedded system. I want to output the signal whose timings are defined in the
-"CEA Standard ".
-I am looking at the documentation for the CEA-816-D.
-
-I understand that the signal timing of CEA Standard is defined as
-"drivers/fbdev/core/modedb.c".
-
-I have some questions on cea_modes database in modedb.c.
-
-Q.1) In interlaced mode, for the values of the upper_margin, lower_margin
-     and vsync_len, do I need to set the doubled number of the specs
-     of the CEA Standard?
-
-Q.2) When the two pixel clock frequencies are defined in one format, how
-     would you choose the value of pixclock?
-     For example, Format 5 can be selected 74.025MHz and 74.176MHz.
-     The modedb.c file, how do I manage about this format?
-     (Can I use in common to this file? Or, rewritten for each system?)
-
-Q.3) Format 5: is the value of pixclock correct?
-     In CEA Standard, pixclock of this format is 74.176 or 74.250MHz.
-
-Q.4) Format 7 and 9: is the value of pixclock correct?
-     In CEA Standard, pixclock of this format is 27.000 or 27.027MHz.
-
-Q.5) Format 20: The value of hsync_len is wrong?
-     I think, hsync_len should be 44.
-
-Any feedback is really appreciated.
-
-
-diff --git drivers/video/fbdev/core/modedb.c drivers/video/fbdev/core/modedb.c
-index a9a907c..ed6b883 100644
---- drivers/video/fbdev/core/modedb.c
-+++ drivers/video/fbdev/core/modedb.c
-@@ -305,18 +305,18 @@ const struct fb_videomode cea_modes[64] = {
-        },
-        /* #5: 1920x1080i@59.94/60Hz */
-        [5] = {
--               NULL, 60, 1920, 1080, 13763, 148, 88, 15, 2, 44, 5,
-+               NULL, 60, 1920, 1080, 13468, 148, 88, 30, 4, 44, 10,
-                FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-                FB_VMODE_INTERLACED, 0,
-        },
-        /* #7: 720(1440)x480iH@59.94/60Hz */
-        [7] = {
--               NULL, 60, 1440, 480, 18554/*37108*/, 114, 38, 15, 4, 124, 3, 0,
-+               NULL, 60, 1440, 480, 37037, 114, 38, 30, 8, 124, 6, 0,
-                FB_VMODE_INTERLACED, 0,
-        },
-        /* #9: 720(1440)x240pH@59.94/60Hz */
-        [9] = {
--               NULL, 60, 1440, 240, 18554, 114, 38, 16, 4, 124, 3, 0,
-+               NULL, 60, 1440, 240, 37037, 114, 38, 16, 4, 124, 3, 0,
-                FB_VMODE_NONINTERLACED, 0,
-        },
-        /* #18: 720x576pH@50Hz */
-@@ -332,7 +332,7 @@ const struct fb_videomode cea_modes[64] = {
-        },
-        /* #20: 1920x1080i@50Hz */
-        [20] = {
--               NULL, 50, 1920, 1080, 13480, 148, 528, 15, 5, 528, 5,
-+               NULL, 50, 1920, 1080, 13468, 148, 528, 30, 4, 44, 10,
-                FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-                FB_VMODE_INTERLACED, 0,
-        },
-
---
-Daisuke Sasaki
-Atmark Techno, Inc.
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 9e85b86..f5ae8ae 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -349,5 +349,26 @@ static inline bool hdmi_mode_has_audio(int mode)
+ {
+ 	return mode = HDMI_HDMI ? true : false;
+ }
++
++/* HDMI DRV data */
++struct omap_hdmi {
++	struct mutex lock;
++	struct platform_device *pdev;
++
++	struct hdmi_wp_data	wp;
++	struct hdmi_pll_data	pll;
++	struct hdmi_phy_data	phy;
++	struct hdmi_core_data	core;
++
++	struct hdmi_config cfg;
++
++	struct clk *sys_clk;
++	struct regulator *vdda_reg;
++
++	bool core_enabled;
++
++	struct omap_dss_device output;
++};
++
+ #endif
+ #endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 6a8550c..b98186e 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -37,25 +37,9 @@
+ #include "hdmi4_core.h"
+ #include "dss.h"
+ #include "dss_features.h"
++#include "hdmi.h"
+ 
+-static struct {
+-	struct mutex lock;
+-	struct platform_device *pdev;
+-
+-	struct hdmi_wp_data	wp;
+-	struct hdmi_pll_data	pll;
+-	struct hdmi_phy_data	phy;
+-	struct hdmi_core_data	core;
+-
+-	struct hdmi_config cfg;
+-
+-	struct clk *sys_clk;
+-	struct regulator *vdda_hdmi_dac_reg;
+-
+-	bool core_enabled;
+-
+-	struct omap_dss_device output;
+-} hdmi;
++static struct omap_hdmi hdmi;
+ 
+ static int hdmi_runtime_get(void)
+ {
+@@ -117,7 +101,7 @@ static int hdmi_init_regulator(void)
+ 	int r;
+ 	struct regulator *reg;
+ 
+-	if (hdmi.vdda_hdmi_dac_reg != NULL)
++	if (hdmi.vdda_reg != NULL)
+ 		return 0;
+ 
+ 	reg = devm_regulator_get(&hdmi.pdev->dev, "vdda");
+@@ -137,7 +121,7 @@ static int hdmi_init_regulator(void)
+ 		}
+ 	}
+ 
+-	hdmi.vdda_hdmi_dac_reg = reg;
++	hdmi.vdda_reg = reg;
+ 
+ 	return 0;
+ }
+@@ -146,7 +130,7 @@ static int hdmi_power_on_core(struct omap_dss_device *dssdev)
+ {
+ 	int r;
+ 
+-	r = regulator_enable(hdmi.vdda_hdmi_dac_reg);
++	r = regulator_enable(hdmi.vdda_reg);
+ 	if (r)
+ 		return r;
+ 
+@@ -162,7 +146,7 @@ static int hdmi_power_on_core(struct omap_dss_device *dssdev)
+ 	return 0;
+ 
+ err_runtime_get:
+-	regulator_disable(hdmi.vdda_hdmi_dac_reg);
++	regulator_disable(hdmi.vdda_reg);
+ 
+ 	return r;
+ }
+@@ -172,7 +156,7 @@ static void hdmi_power_off_core(struct omap_dss_device *dssdev)
+ 	hdmi.core_enabled = false;
+ 
+ 	hdmi_runtime_put();
+-	regulator_disable(hdmi.vdda_hdmi_dac_reg);
++	regulator_disable(hdmi.vdda_reg);
+ }
+ 
+ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
+@@ -678,6 +662,7 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	int irq;
+ 
+ 	hdmi.pdev = pdev;
++	dev_set_drvdata(&pdev->dev, &hdmi);
+ 
+ 	mutex_init(&hdmi.lock);
+ 
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index 32d02ec..90410f5 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -43,24 +43,7 @@
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+-static struct {
+-	struct mutex lock;
+-	struct platform_device *pdev;
+-
+-	struct hdmi_wp_data	wp;
+-	struct hdmi_pll_data	pll;
+-	struct hdmi_phy_data	phy;
+-	struct hdmi_core_data	core;
+-
+-	struct hdmi_config cfg;
+-
+-	struct clk *sys_clk;
+-	struct regulator *vdda_reg;
+-
+-	bool core_enabled;
+-
+-	struct omap_dss_device output;
+-} hdmi;
++static struct omap_hdmi hdmi;
+ 
+ static int hdmi_runtime_get(void)
+ {
+@@ -703,6 +686,7 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	int irq;
+ 
+ 	hdmi.pdev = pdev;
++	dev_set_drvdata(&pdev->dev, &hdmi);
+ 
+ 	mutex_init(&hdmi.lock);
+ 
+-- 
+1.7.9.5
 

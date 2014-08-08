@@ -1,148 +1,155 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 26 Aug 2014 16:58:45 +0000
-Subject: Re: [PATCHv2 27/27] OMAPDSS: connector-analog-tv: Add DT support
-Message-Id: <21704808.AJTjtXoZly@avalon>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 08 Aug 2014 13:23:54 +0000
+Subject: [PATCH v3 13/14] OMAPDSS: hdmi5: Remove callbacks for an external ASoC DAI driver
+Message-Id: <d44c88c50daa4835e22f4d689ffeaa908912698c.1407503813.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com> <1387205794-32246-28-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1387205794-32246-28-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+References: <cover.1407503813.git.jsarha@ti.com>
+In-Reply-To: <cover.1407503813.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Hi Tomi,
+Removes the OMAP5 HDMI audio callbacks for an external audio driver and
+the old external DAI driver does not work anymore after this patch.
 
-On Monday 16 December 2013 16:56:34 Tomi Valkeinen wrote:
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->  .../video/omap2/displays-new/connector-analog-tv.c | 66 ++++++++++++++++++-
->  1 file changed, 65 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/omap2/displays-new/connector-analog-tv.c
-> b/drivers/video/omap2/displays-new/connector-analog-tv.c index
-> ccd9073f706f..ebed25a86487 100644
-> --- a/drivers/video/omap2/displays-new/connector-analog-tv.c
-> +++ b/drivers/video/omap2/displays-new/connector-analog-tv.c
-> @@ -12,6 +12,7 @@
->  #include <linux/slab.h>
->  #include <linux/module.h>
->  #include <linux/platform_device.h>
-> +#include <linux/of.h>
-> 
->  #include <video/omapdss.h>
->  #include <video/omap-panel-data.h>
-> @@ -42,6 +43,12 @@ static const struct omap_video_timings tvc_pal_timings > { .interlace	= true,
->  };
-> 
-> +static const struct of_device_id tvc_of_match[];
-> +
-> +struct tvc_of_data {
-> +	enum omap_dss_venc_type connector_type;
-> +};
-> +
->  #define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
-> 
->  static int tvc_connect(struct omap_dss_device *dssdev)
-> @@ -92,7 +99,10 @@ static int tvc_enable(struct omap_dss_device *dssdev)
->  	in->ops.atv->set_timings(in, &ddata->timings);
-> 
->  	in->ops.atv->set_type(in, ddata->connector_type);
-> -	in->ops.atv->invert_vid_out_polarity(in, ddata->invert_polarity);
-> +
-> +	if (!ddata->dev->of_node)
-> +		in->ops.atv->invert_vid_out_polarity(in,
-> +			ddata->invert_polarity);
-> 
->  	r = in->ops.atv->enable(in);
->  	if (r)
-> @@ -205,6 +215,35 @@ static int tvc_probe_pdata(struct platform_device
-> *pdev) return 0;
->  }
-> 
-> +static int tvc_probe_of(struct platform_device *pdev)
-> +{
-> +	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-> +	struct device_node *node = pdev->dev.of_node;
-> +	struct omap_dss_device *in;
-> +	const struct of_device_id *match;
-> +	const struct tvc_of_data *data;
-> +
-> +	match = of_match_node(tvc_of_match, pdev->dev.of_node);
-> +	if (!match) {
-> +		dev_err(&pdev->dev, "unsupported device\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	data = match->data;
-> +
-> +	in = omapdss_of_find_source_for_first_ep(node);
-> +	if (IS_ERR(in)) {
-> +		dev_err(&pdev->dev, "failed to find video source\n");
-> +		return PTR_ERR(in);
-> +	}
-> +
-> +	ddata->in = in;
-> +
-> +	ddata->connector_type = data->connector_type;
-> +
-> +	return 0;
-> +}
-> +
->  static int tvc_probe(struct platform_device *pdev)
->  {
->  	struct panel_drv_data *ddata;
-> @@ -222,6 +261,10 @@ static int tvc_probe(struct platform_device *pdev)
->  		r = tvc_probe_pdata(pdev);
->  		if (r)
->  			return r;
-> +	} else if (pdev->dev.of_node) {
-> +		r = tvc_probe_of(pdev);
-> +		if (r)
-> +			return r;
->  	} else {
->  		return -ENODEV;
->  	}
-> @@ -263,12 +306,33 @@ static int __exit tvc_remove(struct platform_device
-> *pdev) return 0;
->  }
-> 
-> +static const struct tvc_of_data tv_svideo_data = {
-> +	.connector_type = OMAP_DSS_VENC_TYPE_SVIDEO,
-> +};
-> +
-> +static const struct tvc_of_data tv_composite_video_data = {
-> +	.connector_type = OMAP_DSS_VENC_TYPE_COMPOSITE,
-> +};
-> +
-> +static const struct of_device_id tvc_of_match[] = {
-> +	{
-> +		.compatible = "svideo-connector",
-> +		.data = &tv_svideo_data,
-> +	},
-> +	{
-> +		.compatible = "composite-video-connector",
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi5.c |  113 ---------------------------------
+ 1 file changed, 113 deletions(-)
 
-I've just noticed that this doesn't match the bindings that document the 
-compatible value to be "composite-connector".
-
-> +		.data = &tv_composite_video_data,
-> +	},
-> +	{},
-> +};
-> +
->  static struct platform_driver tvc_connector_driver = {
->  	.probe	= tvc_probe,
->  	.remove	= __exit_p(tvc_remove),
->  	.driver	= {
->  		.name	= "connector-analog-tv",
->  		.owner	= THIS_MODULE,
-> +		.of_match_table = tvc_of_match,
->  	},
->  };
-
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index d796071..d91ea36 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -495,112 +495,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
+ 	return r;
+ }
+ 
+-#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	int r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi_wp_audio_enable(&hdmi.wp, true);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_enable(&hdmi.wp, false);
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return hdmi_wp_audio_core_req_enable(&hdmi.wp, true);
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_core_req_enable(&hdmi.wp, false);
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	bool r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	r = hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode);
+-
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	int r;
+-	u32 pclk = hdmi.cfg.timings.pixelclock;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi5_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-#else
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	return false;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	return -EPERM;
+-}
+-#endif
+-
+ static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi)
+ {
+@@ -629,13 +523,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.read_edid		= hdmi_read_edid,
+ 	.set_infoframe		= hdmi_set_infoframe,
+ 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
+-
+-	.audio_enable		= hdmi_audio_enable,
+-	.audio_disable		= hdmi_audio_disable,
+-	.audio_start		= hdmi_audio_start,
+-	.audio_stop		= hdmi_audio_stop,
+-	.audio_supported	= hdmi_audio_supported,
+-	.audio_config		= hdmi_audio_config,
+ };
+ 
+ static void hdmi_init_output(struct platform_device *pdev)
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.9.5
 

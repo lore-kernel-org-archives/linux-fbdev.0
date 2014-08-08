@@ -1,7 +1,7 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 08 Aug 2014 13:23:48 +0000
-Subject: [PATCH v3 07/14] OMAPDSS: Kconfig: Update OMAP4_DSS_HDMI_AUDIO option
-Message-Id: <daa20965e48245a7a751ea6d3989579a293d1443.1407503813.git.jsarha@ti.com>
+Date: Fri, 08 Aug 2014 13:23:53 +0000
+Subject: [PATCH v3 12/14] OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
+Message-Id: <8b8e1888482194bc9aa9c92da23096c0d4b414e5.1407503813.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1407503813.git.jsarha@ti.com>
 In-Reply-To: <cover.1407503813.git.jsarha@ti.com>
@@ -11,52 +11,145 @@ Content-Transfer-Encoding: 7bit
 To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Add help section to OMAP4_DSS_HDMI_AUDIO with dependency to
-OMAP4_DSS_HDMI and select for newly created OMAP_DSS_HDMI_AUDIO. The
-OMAP_DSS_HDMI_AUDIO option is for common HDMI audio support and it is
-is dependent on SND_SOC.
-
-Also selects SND_OMAP_SOC, SND_SOC_HDMI_CODEC, and SND_SIMPLE_CARD for
-OMAP2_DSS if OMAP_DSS_HDMI_AUDIO is enabled.
+Removes the OMAP4 HDMI audio callbacks for an external audio driver and
+the old external DAI driver does not work anymore after this patch.
 
 Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/Kconfig |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/hdmi4.c |  113 ---------------------------------
+ 1 file changed, 113 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
-index 41fb8ac..701164a 100644
---- a/drivers/video/fbdev/omap2/dss/Kconfig
-+++ b/drivers/video/fbdev/omap2/dss/Kconfig
-@@ -6,6 +6,9 @@ menuconfig OMAP2_DSS
- 	select VIDEOMODE_HELPERS
- 	select OMAP2_DSS_INIT
- 	select HDMI
-+	select SND_OMAP_SOC if OMAP_DSS_HDMI_AUDIO
-+	select SND_SOC_HDMI_CODEC if OMAP_DSS_HDMI_AUDIO
-+	select SND_SIMPLE_CARD if OMAP_DSS_HDMI_AUDIO
-         help
- 	  OMAP2+ Display Subsystem support.
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 707dcec..a7ee70d 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -471,112 +471,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
+ 	return r;
+ }
  
-@@ -78,7 +81,17 @@ config OMAP4_DSS_HDMI
- 	  HDMI support for OMAP4 based SoCs.
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	int r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi_wp_audio_enable(&hdmi.wp, true);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_enable(&hdmi.wp, false);
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return hdmi4_audio_start(&hdmi.core, &hdmi.wp);
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	hdmi4_audio_stop(&hdmi.core, &hdmi.wp);
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	bool r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	r = hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode);
+-
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	int r;
+-	u32 pclk = hdmi.cfg.timings.pixelclock;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi4_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-#else
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	return false;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	return -EPERM;
+-}
+-#endif
+-
+ static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi)
+ {
+@@ -605,13 +499,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.read_edid		= hdmi_read_edid,
+ 	.set_infoframe		= hdmi_set_infoframe,
+ 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
+-
+-	.audio_enable		= hdmi_audio_enable,
+-	.audio_disable		= hdmi_audio_disable,
+-	.audio_start		= hdmi_audio_start,
+-	.audio_stop		= hdmi_audio_stop,
+-	.audio_supported	= hdmi_audio_supported,
+-	.audio_config		= hdmi_audio_config,
+ };
  
- config OMAP4_DSS_HDMI_AUDIO
--	bool
-+	bool "HDMI audio support for OMAP4"
-+	depends on OMAP4_DSS_HDMI
-+	depends on SND_SOC=y || OMAP2_DSS = SND_SOC
-+	select OMAP_DSS_HDMI_AUDIO
-+	default y
-+	help
-+	  HDMI audio support for OMAP4 based SoCs. Adds integrated
-+	  ASoC Digital Audio Interface component driver into OMAPDSS
-+	  module. If enabled OMAP2_DSS selects SND_OMAP_SOC,
-+	  SND_SOC_HDMI_CODEC, and SND_SIMPLE_CARD for full HDMI
-+	  audio support.
- 
- config OMAP5_DSS_HDMI
- 	bool "HDMI support for OMAP5"
+ static void hdmi_init_output(struct platform_device *pdev)
 -- 
 1.7.9.5
 

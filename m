@@ -1,83 +1,65 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Aug 2014 12:37:54 +0000
-Subject: Re: [PATCH] video: da8xx-fb: preserve display width when changing HSYNC
-Message-Id: <53FC7FA2.1010201@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="7RSmutHEFgX4pfSMU5NWQAbPU4P4MbH8l"
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 08 Aug 2014 13:23:45 +0000
+Subject: [PATCH v3 04/14] OMAPDSS: hdmi_wp: Add function for getting audio dma address
+Message-Id: <67c75df896a0ab9b1cf66a28a3ed0d89b0e5ba5f.1407503813.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404395199-5726-1-git-send-email-abbotti@mev.co.uk>
-In-Reply-To: <1404395199-5726-1-git-send-email-abbotti@mev.co.uk>
-To: Ian Abbott <abbotti@mev.co.uk>, linux-fbdev@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel@vger.kernel.org
+References: <cover.1407503813.git.jsarha@ti.com>
+In-Reply-To: <cover.1407503813.git.jsarha@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
---7RSmutHEFgX4pfSMU5NWQAbPU4P4MbH8l
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+The audio dma port is found in the hdmi_wp physical address space.
 
-On 03/07/14 16:46, Ian Abbott wrote:
-> When looking at this driver for a client, I noticed the code that
-> configures the HSYNC pulse clobbers the display width in the same
-> register.  It only preserves the MS part of the width in bit 3 and zero=
-s
-> the LS part of the width in bits 9 to 4.  This doesn't matter during
-> initialization as the width is configured afterwards, but subsequent us=
-e
-> of the FBIPUT_HSYNC ioctl would clobber the width.
->=20
-> Preserve bits 9 to 0 of LCD_RASTER_TIMING_0_REG when configuring the
-> horizontal sync.
->=20
-> Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
-> ---
-> I haven't tested this change, but it's pretty trivial.
-> ---
->  drivers/video/fbdev/da8xx-fb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx=
--fb.c
-> index 788f6b3..10c876c 100644
-> --- a/drivers/video/fbdev/da8xx-fb.c
-> +++ b/drivers/video/fbdev/da8xx-fb.c
-> @@ -419,7 +419,7 @@ static void lcd_cfg_horizontal_sync(int back_porch,=
- int pulse_width,
->  {
->  	u32 reg;
-> =20
-> -	reg =3D lcdc_read(LCD_RASTER_TIMING_0_REG) & 0xf;
-> +	reg =3D lcdc_read(LCD_RASTER_TIMING_0_REG) & 0x3ff;
->  	reg |=3D (((back_porch-1) & 0xff) << 24)
->  	    | (((front_porch-1) & 0xff) << 16)
->  	    | (((pulse_width-1) & 0x3f) << 10);
->=20
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi.h    |    2 ++
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c |    6 ++++++
+ 2 files changed, 8 insertions(+)
 
-Thanks, queued for 3.17 fixes.
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 1f01068..9e85b86 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -250,6 +250,7 @@ struct hdmi_core_audio_config {
+ 
+ struct hdmi_wp_data {
+ 	void __iomem *base;
++	phys_addr_t phys_base;
+ };
+ 
+ struct hdmi_pll_data {
+@@ -317,6 +318,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
+ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ 		struct omap_video_timings *timings, struct hdmi_config *param);
+ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
++phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp);
+ 
+ /* HDMI PLL funcs */
+ int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index 496327e..43bf93e 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -247,6 +247,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 		DSSERR("can't get WP mem resource\n");
+ 		return -EINVAL;
+ 	}
++	wp->phys_base = res->start;
+ 
+ 	wp->base = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(wp->base)) {
+@@ -256,3 +257,8 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 
+ 	return 0;
+ }
++
++phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp)
++{
++	return wp->phys_base + HDMI_WP_AUDIO_DATA;
++}
+-- 
+1.7.9.5
 
- Tomi
-
-
-
---7RSmutHEFgX4pfSMU5NWQAbPU4P4MbH8l
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJT/H+iAAoJEPo9qoy8lh71BjsP/AsAEyfdizCCgIw3EQ+QpzVy
-yqgjdB7c1raut8z/8ogyTceno8wZm6Wl+eWlkAJmhauXWU2UvVCllcczi9Av+Ps3
-d3WKDnqfgc/qYgcE9lIsFGm4MA7hCEJSYY8EOCuRogXv2PE20qfE906ZiBsiLn6u
-MJFqzEzpQPBC9kYecGYiODf4SooTreQ7V/HFgmvkeHpefHiuXc3mjC2Wge9FIPpM
-8H5TE45f7B45l2NHNYKnmCArqGnyzy7syBHGIvQkRTmmuLk2PqKuUPr5HlC2Rh79
-O5z6Gro5qoPWuxJR/Qh2oe6Vwmi/Vjf8cqlQOiHEyM+yKSbLraJLgqoiMe3z82lU
-KoIkcfJAW/l6eXF8Zyfv90V1dkpMjzz/QOIY7kM7U7/Q0/NMYyVQj0RLCTM9LOqW
-NEqPmGLGXLIwOVPGNoAWS+i1s1JzqWN+PUE6WpM+9+qqGgm4pfGac8Ycff4+eaa0
-upfYX2/sVecrzrH613fDW8zFx9gkF1aeTmI/8zg1hchCWl+1027Nn0s0EkLW/pad
-9pA4RWlPm+gNoLEzoG/8xUNFZvuw5cwXi0pqupImzw6ZTm8ULGJ6Y8ZlmGrS52Li
-EN02O21gjtPimkSleDtglgu93xr7Uxc6+Zh87sqPJktQJ1AshtWJ7pKnPLTzUmOO
-Ylx6RBc1PoU8cJB8bSVB
-=4NXw
------END PGP SIGNATURE-----
-
---7RSmutHEFgX4pfSMU5NWQAbPU4P4MbH8l--

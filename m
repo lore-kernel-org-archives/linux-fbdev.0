@@ -1,83 +1,62 @@
-From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Date: Wed, 27 Aug 2014 16:41:02 +0000
-Subject: [PATCH 05/16] video: Add THC63LVDM83D DT bindings documentation
-Message-Id: <1409157673-4154-6-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 08 Aug 2014 13:23:48 +0000
+Subject: [PATCH v3 07/14] OMAPDSS: Kconfig: Update OMAP4_DSS_HDMI_AUDIO option
+Message-Id: <daa20965e48245a7a751ea6d3989579a293d1443.1407503813.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1409157673-4154-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-In-Reply-To: <1409157673-4154-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+References: <cover.1407503813.git.jsarha@ti.com>
+In-Reply-To: <cover.1407503813.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-sh@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-The THC63LVDM83D is a video LVDS serializer described by an input port,
-an output port, and an optional power down GPIO.
+Add help section to OMAP4_DSS_HDMI_AUDIO with dependency to
+OMAP4_DSS_HDMI and select for newly created OMAP_DSS_HDMI_AUDIO. The
+OMAP_DSS_HDMI_AUDIO option is for common HDMI audio support and it is
+is dependent on SND_SOC.
 
-Cc: devicetree@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Also selects SND_OMAP_SOC, SND_SOC_HDMI_CODEC, and SND_SIMPLE_CARD for
+OMAP2_DSS if OMAP_DSS_HDMI_AUDIO is enabled.
+
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- .../devicetree/bindings/video/thine,thc63lvdm83d   | 50 ++++++++++++++++++++++
- 1 file changed, 50 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/thine,thc63lvdm83d
+ drivers/video/fbdev/omap2/dss/Kconfig |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/video/thine,thc63lvdm83d b/Documentation/devicetree/bindings/video/thine,thc63lvdm83d
-new file mode 100644
-index 0000000..527e236
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/thine,thc63lvdm83d
-@@ -0,0 +1,50 @@
-+THine Electronics THC63LVDM83D LVDS serializer
-+----------------------------------------------
-+
-+The THC63LVDM83D is an LVDS serializer designed to support pixel data
-+transmission between a host and a flat panel.
-+
-+Required properties:
-+
-+- compatible: Should be "thine,thc63lvdm83d"
-+
-+Optional properties:
-+
-+- pwdn-gpios: Power down control GPIO
-+
-+Required nodes:
-+
-+The THC63LVDM83D has two video ports. Their connections are modeled using the
-+OFgraph bindings specified in Documentation/devicetree/bindings/graph.txt.
-+
-+- Video port 0 for CMOS/TTL input
-+- Video port 1 for LVDS output
-+
-+
-+Example
-+-------
-+
-+	lvds_enc: encoder@0 {
-+		compatible = "thine,thc63lvdm83d";
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				lvds_enc_in: endpoint@0 {
-+					remote-endpoint = <&rgb_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				lvds_enc_out: endpoint@0 {
-+					remote-endpoint = <&panel_in>;
-+				};
-+			};
-+		};
-+	};
+diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
+index 41fb8ac..701164a 100644
+--- a/drivers/video/fbdev/omap2/dss/Kconfig
++++ b/drivers/video/fbdev/omap2/dss/Kconfig
+@@ -6,6 +6,9 @@ menuconfig OMAP2_DSS
+ 	select VIDEOMODE_HELPERS
+ 	select OMAP2_DSS_INIT
+ 	select HDMI
++	select SND_OMAP_SOC if OMAP_DSS_HDMI_AUDIO
++	select SND_SOC_HDMI_CODEC if OMAP_DSS_HDMI_AUDIO
++	select SND_SIMPLE_CARD if OMAP_DSS_HDMI_AUDIO
+         help
+ 	  OMAP2+ Display Subsystem support.
+ 
+@@ -78,7 +81,17 @@ config OMAP4_DSS_HDMI
+ 	  HDMI support for OMAP4 based SoCs.
+ 
+ config OMAP4_DSS_HDMI_AUDIO
+-	bool
++	bool "HDMI audio support for OMAP4"
++	depends on OMAP4_DSS_HDMI
++	depends on SND_SOC=y || OMAP2_DSS = SND_SOC
++	select OMAP_DSS_HDMI_AUDIO
++	default y
++	help
++	  HDMI audio support for OMAP4 based SoCs. Adds integrated
++	  ASoC Digital Audio Interface component driver into OMAPDSS
++	  module. If enabled OMAP2_DSS selects SND_OMAP_SOC,
++	  SND_SOC_HDMI_CODEC, and SND_SIMPLE_CARD for full HDMI
++	  audio support.
+ 
+ config OMAP5_DSS_HDMI
+ 	bool "HDMI support for OMAP5"
 -- 
-1.8.5.5
+1.7.9.5
 

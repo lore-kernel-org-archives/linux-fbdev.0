@@ -1,316 +1,92 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Wed, 06 Aug 2014 12:52:41 +0000
-Subject: [PATCH 1/2] video/fbdev: Always built-in video= cmdline parsing
-Message-Id: <1407329562-10832-1-git-send-email-daniel.vetter@ffwll.ch>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 08 Aug 2014 13:23:41 +0000
+Subject: [PATCH v3 00/14] Rework OMAP4+ HDMI audio support
+Message-Id: <cover.1407503813.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1407312512-6533-1-git-send-email-daniel.vetter@ffwll.ch>
-In-Reply-To: <1407312512-6533-1-git-send-email-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: DRI Development <dri-devel@lists.freedesktop.org>
-Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Plagniol-Villard <plagnioj@jcrosoft.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-In drm/i915 we want to get at the video= cmdline modes even when we
-don't have fbdev support enabled, so that users can always override
-the kernel's initial mode selection.
+Question to ASoC maintainers:
+  Do feel it is Ok to put ASoC code outside sound/soc the way I do
+  in these patches (in patch 0006 particularly)?
 
-But that gives us a direct depency upon the parsing code in the fbdev
-subsystem. Since it's so little code just extract these 2 functions
-and always build them in.
+The patches are based on:
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
 
-Whiel at it fix the checkpatch fail in this code.
+The base, the patches, and couple of additional not-to-be-merged
+omap2plus_defconfig patches can be found here:
 
-v2: Also move fb_mode_option. Spotted by the kbuild.
+git://git.ti.com/~jyrisarha/ti-linux-kernel/jyrisarhas-audio-video-linux-feature-tree.git omap-hdmi-audio
 
-v3: Review from Geert:
-- Keep the old copyright notice from fb_mem.c, although I have no
-idea what exactly applies.
-- Only compile this when needed.
+Changes since v2 version of the patches:
+- Add "OMAPDSS: hdmi_common: hdmi_compute_acr is needed for OMAP5 HDMI audio too"
+- Fix "OMAPDSS: hdmi: Make hdmi structure public". There was no need to make
+  "core"-member a pointer.
+- Make functional division between hdmi_audio.c and hdmi[45].c more clear.
+  hdmi_audio.c does not touch anything but "audio"-member in omap_hdmi struct
+  that is stored in drvdata.
 
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+The patch set fixes OMAP4+ HDMI audio. The structure of the
+implementation looks a bit different than before. Instead of creating
+a driver specific API for a separate ASoC component driver to connect
+to, this implementation integrates an the ASoC cpu-dai component
+driver into the HDMI driver. Also the other ASoC component drivers
+needed for operational audio are automatically registered by the HDMI
+driver. There is no need to add anything to the device tree as long as
+the nodes needed for HDMI video are there.
 
---
+Big part of the HDMI audio code is still unchanged and there is a need
+for a cleanup there. Also there is still probably something wrong with
+speaker mapping of multi-channel streams. I will get back to cleaning
+up these issues later.
 
-I prefer if we can merge this through drm-next since we'll use it
-there in follow-up patches.
--Daniel
----
- drivers/video/fbdev/Kconfig           |   4 ++
- drivers/video/fbdev/core/Makefile     |   1 +
- drivers/video/fbdev/core/fb_cmdline.c | 110 ++++++++++++++++++++++++++++++++++
- drivers/video/fbdev/core/fbmem.c      |  92 ----------------------------
- drivers/video/fbdev/core/modedb.c     |   3 -
- 5 files changed, 115 insertions(+), 95 deletions(-)
- create mode 100644 drivers/video/fbdev/core/fb_cmdline.c
+Best regards,
+Jyri
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 59c98bfd5a8a..f1458c95a688 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -4,6 +4,7 @@
- 
- menuconfig FB
- 	tristate "Support for frame buffer devices"
-+	select FB_CMDLINE
- 	---help---
- 	  The frame buffer device provides an abstraction for the graphics
- 	  hardware. It represents the frame buffer of some video hardware and
-@@ -52,6 +53,9 @@ config FIRMWARE_EDID
- 	 combination with certain motherboards and monitors are known to
- 	 suffer from this problem.
- 
-+config FB_CMDLINE
-+	bool
-+
- config FB_DDC
-        tristate
-        depends on FB
-diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-index fa306538dac2..67f28e20a892 100644
---- a/drivers/video/fbdev/core/Makefile
-+++ b/drivers/video/fbdev/core/Makefile
-@@ -1,4 +1,5 @@
- obj-y                             += fb_notify.o
-+obj-$(CONFIG_FB_CMDLINE)          += fb_cmdline.o
- obj-$(CONFIG_FB)                  += fb.o
- fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
-                                      modedb.o fbcvt.o
-diff --git a/drivers/video/fbdev/core/fb_cmdline.c b/drivers/video/fbdev/core/fb_cmdline.c
-new file mode 100644
-index 000000000000..39509ccd92f1
---- /dev/null
-+++ b/drivers/video/fbdev/core/fb_cmdline.c
-@@ -0,0 +1,110 @@
-+/*
-+ *  linux/drivers/video/fb_cmdline.c
-+ *
-+ *  Copyright (C) 2014 Intel Corp
-+ *  Copyright (C) 1994 Martin Schaller
-+ *
-+ *	2001 - Documented with DocBook
-+ *	- Brad Douglas <brad@neruo.com>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive
-+ * for more details.
-+ *
-+ * Authors:
-+ *    Vetter <danie.vetter@ffwll.ch>
-+ */
-+#include <linux/init.h>
-+#include <linux/fb.h>
-+
-+static char *video_options[FB_MAX] __read_mostly;
-+static int ofonly __read_mostly;
-+
-+const char *fb_mode_option;
-+EXPORT_SYMBOL_GPL(fb_mode_option);
-+
-+/**
-+ * fb_get_options - get kernel boot parameters
-+ * @name:   framebuffer name as it would appear in
-+ *          the boot parameter line
-+ *          (video=<name>:<options>)
-+ * @option: the option will be stored here
-+ *
-+ * NOTE: Needed to maintain backwards compatibility
-+ */
-+int fb_get_options(const char *name, char **option)
-+{
-+	char *opt, *options = NULL;
-+	int retval = 0;
-+	int name_len = strlen(name), i;
-+
-+	if (name_len && ofonly && strncmp(name, "offb", 4))
-+		retval = 1;
-+
-+	if (name_len && !retval) {
-+		for (i = 0; i < FB_MAX; i++) {
-+			if (video_options[i] = NULL)
-+				continue;
-+			if (!video_options[i][0])
-+				continue;
-+			opt = video_options[i];
-+			if (!strncmp(name, opt, name_len) &&
-+			    opt[name_len] = ':')
-+				options = opt + name_len + 1;
-+		}
-+	}
-+	/* No match, pass global option */
-+	if (!options && option && fb_mode_option)
-+		options = kstrdup(fb_mode_option, GFP_KERNEL);
-+	if (options && !strncmp(options, "off", 3))
-+		retval = 1;
-+
-+	if (option)
-+		*option = options;
-+
-+	return retval;
-+}
-+EXPORT_SYMBOL(fb_get_options);
-+
-+/**
-+ *	video_setup - process command line options
-+ *	@options: string of options
-+ *
-+ *	Process command line options for frame buffer subsystem.
-+ *
-+ *	NOTE: This function is a __setup and __init function.
-+ *            It only stores the options.  Drivers have to call
-+ *            fb_get_options() as necessary.
-+ *
-+ *	Returns zero.
-+ *
-+ */
-+static int __init video_setup(char *options)
-+{
-+	int i, global = 0;
-+
-+	if (!options || !*options)
-+		global = 1;
-+
-+	if (!global && !strncmp(options, "ofonly", 6)) {
-+		ofonly = 1;
-+		global = 1;
-+	}
-+
-+	if (!global && !strchr(options, ':')) {
-+		fb_mode_option = options;
-+		global = 1;
-+	}
-+
-+	if (!global) {
-+		for (i = 0; i < FB_MAX; i++) {
-+			if (video_options[i] = NULL) {
-+				video_options[i] = options;
-+				break;
-+			}
-+		}
-+	}
-+
-+	return 1;
-+}
-+__setup("video=", video_setup);
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index b5e85f6c1c26..0705d8883ede 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1908,96 +1908,4 @@ int fb_new_modelist(struct fb_info *info)
- 	return err;
- }
- 
--static char *video_options[FB_MAX] __read_mostly;
--static int ofonly __read_mostly;
--
--/**
-- * fb_get_options - get kernel boot parameters
-- * @name:   framebuffer name as it would appear in
-- *          the boot parameter line
-- *          (video=<name>:<options>)
-- * @option: the option will be stored here
-- *
-- * NOTE: Needed to maintain backwards compatibility
-- */
--int fb_get_options(const char *name, char **option)
--{
--	char *opt, *options = NULL;
--	int retval = 0;
--	int name_len = strlen(name), i;
--
--	if (name_len && ofonly && strncmp(name, "offb", 4))
--		retval = 1;
--
--	if (name_len && !retval) {
--		for (i = 0; i < FB_MAX; i++) {
--			if (video_options[i] = NULL)
--				continue;
--			if (!video_options[i][0])
--				continue;
--			opt = video_options[i];
--			if (!strncmp(name, opt, name_len) &&
--			    opt[name_len] = ':')
--				options = opt + name_len + 1;
--		}
--	}
--	/* No match, pass global option */
--	if (!options && option && fb_mode_option)
--		options = kstrdup(fb_mode_option, GFP_KERNEL);
--	if (options && !strncmp(options, "off", 3))
--		retval = 1;
--
--	if (option)
--		*option = options;
--
--	return retval;
--}
--EXPORT_SYMBOL(fb_get_options);
--
--#ifndef MODULE
--/**
-- *	video_setup - process command line options
-- *	@options: string of options
-- *
-- *	Process command line options for frame buffer subsystem.
-- *
-- *	NOTE: This function is a __setup and __init function.
-- *            It only stores the options.  Drivers have to call
-- *            fb_get_options() as necessary.
-- *
-- *	Returns zero.
-- *
-- */
--static int __init video_setup(char *options)
--{
--	int i, global = 0;
--
--	if (!options || !*options)
-- 		global = 1;
--
-- 	if (!global && !strncmp(options, "ofonly", 6)) {
-- 		ofonly = 1;
-- 		global = 1;
-- 	}
--
-- 	if (!global && !strchr(options, ':')) {
-- 		fb_mode_option = options;
-- 		global = 1;
-- 	}
--
-- 	if (!global) {
-- 		for (i = 0; i < FB_MAX; i++) {
-- 			if (video_options[i] = NULL) {
-- 				video_options[i] = options;
-- 				break;
-- 			}
--
--		}
--	}
--
--	return 1;
--}
--__setup("video=", video_setup);
--#endif
--
- MODULE_LICENSE("GPL");
-diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
-index a9a907c440d7..388f7971494b 100644
---- a/drivers/video/fbdev/core/modedb.c
-+++ b/drivers/video/fbdev/core/modedb.c
-@@ -29,9 +29,6 @@
- #define DPRINTK(fmt, args...)
- #endif
- 
--const char *fb_mode_option;
--EXPORT_SYMBOL_GPL(fb_mode_option);
--
- /*
-  *  Standard video mode definitions (taken from XFree86)
-  */
+Jyri Sarha (14):
+  ARM: OMAP2+: Remove non working OMAP HDMI audio initialization
+  OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
+  OMAPDSS: hdmi_common: hdmi_compute_acr is needed for OMAP5 HDMI audio
+    too
+  OMAPDSS: hdmi_wp: Add function for getting audio dma address
+  OMAPDSS: hdmi: Make hdmi structure public
+  OMAPDSS: hdmi_audio: Integrated ASoC DAI component driver
+    implementation
+  OMAPDSS: Kconfig: Update OMAP4_DSS_HDMI_AUDIO option
+  OMAPDSS: hdmi4: Register HDMI audio ASoC drivers from HDMI driver
+  OMAPDSS: Kconfig: Update OMAP5_DSS_HDMI_AUDIO option
+  OMAPDSS: hdmi5: Register HDMI audio ASoC drivers from HDMI driver
+  ASoC: omap: Remove obsolete HDMI audio code and Kconfig options
+  OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
+  OMAPDSS: hdmi5: Remove callbacks for an external ASoC DAI driver
+  OMAPDSS: Remove all references to obsolete HDMI audio callbacks
+
+ arch/arm/mach-omap2/devices.c                      |   28 --
+ .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 ------
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 ---
+ drivers/video/fbdev/omap2/dss/Kconfig              |   29 +-
+ drivers/video/fbdev/omap2/dss/Makefile             |    1 +
+ drivers/video/fbdev/omap2/dss/hdmi.h               |   61 +++-
+ drivers/video/fbdev/omap2/dss/hdmi4.c              |  231 +++++--------
+ drivers/video/fbdev/omap2/dss/hdmi5.c              |  213 +++++-------
+ drivers/video/fbdev/omap2/dss/hdmi_audio.c         |  298 ++++++++++++++++
+ drivers/video/fbdev/omap2/dss/hdmi_common.c        |    2 +-
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c            |    6 +
+ include/video/omapdss.h                            |   31 --
+ sound/soc/omap/Kconfig                             |   13 -
+ sound/soc/omap/Makefile                            |    4 -
+ sound/soc/omap/omap-hdmi-card.c                    |   87 -----
+ sound/soc/omap/omap-hdmi.c                         |  364 --------------------
+ sound/soc/omap/omap-hdmi.h                         |   38 --
+ 17 files changed, 567 insertions(+), 994 deletions(-)
+ create mode 100644 drivers/video/fbdev/omap2/dss/hdmi_audio.c
+ delete mode 100644 sound/soc/omap/omap-hdmi-card.c
+ delete mode 100644 sound/soc/omap/omap-hdmi.c
+ delete mode 100644 sound/soc/omap/omap-hdmi.h
+
 -- 
-2.0.1
+1.7.9.5
 

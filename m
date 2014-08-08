@@ -1,7 +1,7 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 08 Aug 2014 13:23:51 +0000
-Subject: [PATCH v3 10/14] OMAPDSS: hdmi5: Register HDMI audio ASoC drivers from HDMI driver
-Message-Id: <be0d313cea0b6c5fab98a3adb189a54aae11f56c.1407503813.git.jsarha@ti.com>
+Date: Fri, 08 Aug 2014 13:23:49 +0000
+Subject: [PATCH v3 08/14] OMAPDSS: hdmi4: Register HDMI audio ASoC drivers from HDMI driver
+Message-Id: <e1efcf27e2c9a3f6b9f477eda8614965bc3cdf51.1407503813.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1407503813.git.jsarha@ti.com>
 In-Reply-To: <cover.1407503813.git.jsarha@ti.com>
@@ -18,28 +18,28 @@ machine driver for complete HDMI audio support.
 
 Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi5.c |   80 +++++++++++++++++++++++++++++++++
- 1 file changed, 80 insertions(+)
+ drivers/video/fbdev/omap2/dss/hdmi4.c |   87 +++++++++++++++++++++++++++++++++
+ 1 file changed, 87 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index 90410f5..d796071 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -39,6 +39,9 @@
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index b98186e..707dcec 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -34,6 +34,9 @@
  #include <linux/regulator/consumer.h>
  #include <video/omapdss.h>
  
 +#include <sound/soc.h>
 +#include <sound/soc-dai.h>
 +
- #include "hdmi5_core.h"
+ #include "hdmi4_core.h"
  #include "dss.h"
  #include "dss_features.h"
-@@ -679,6 +682,66 @@ err:
+@@ -655,6 +658,73 @@ err:
  	return r;
  }
  
-+#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
 +static int mode_has_audio(struct omap_hdmi *hd)
 +{
 +	int ret;
@@ -67,7 +67,14 @@ index 90410f5..d796071 100644
 +
 +static int audio_start(struct omap_hdmi *hd, bool enable)
 +{
-+	return hdmi_wp_audio_core_req_enable(&hd->wp, enable);
++	int ret = 0;
++
++	if (enable)
++		ret = hdmi4_audio_start(&hd->core, &hd->wp);
++	else
++		hdmi4_audio_stop(&hd->core, &hd->wp);
++
++	return ret;
 +}
 +
 +static int audio_config(struct omap_hdmi *hd, struct omap_dss_audio *dss_audio)
@@ -78,7 +85,7 @@ index 90410f5..d796071 100644
 +	if (!hdmi_mode_has_audio(&hd->cfg))
 +		ret = -EPERM;
 +	else
-+		ret = hdmi5_audio_config(&hd->core, &hd->wp, dss_audio,
++		ret = hdmi4_audio_config(&hd->core, &hd->wp, dss_audio,
 +					 hd->cfg.timings.pixelclock);
 +	mutex_unlock(&hd->lock);
 +
@@ -86,7 +93,7 @@ index 90410f5..d796071 100644
 +}
 +
 +static struct snd_soc_dai_driver omap_hdmi_dai = {
-+	.name = "omap5-hdmi-dai",
++	.name = "omap4-hdmi-dai",
 +	.playback = {
 +		.channels_min = 2,
 +		.channels_max = 8,
@@ -94,7 +101,7 @@ index 90410f5..d796071 100644
 +			  SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 |
 +			  SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 |
 +			  SNDRV_PCM_RATE_192000),
-+		.formats = SNDRV_PCM_FMTBIT_S16_LE,
++		.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE,
 +	},
 +};
 +#endif
@@ -102,11 +109,11 @@ index 90410f5..d796071 100644
  /* HDMI HW IP initialisation */
  static int omapdss_hdmihw_probe(struct platform_device *pdev)
  {
-@@ -736,6 +799,20 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+@@ -712,6 +782,20 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
  
  	hdmi_init_output(pdev);
  
-+#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
 +	hdmi.audio.hdmi_dai_drv = &omap_hdmi_dai;
 +	hdmi.audio.mode_has_audio = mode_has_audio;
 +	hdmi.audio.audio_enable = audio_enable;
@@ -123,11 +130,11 @@ index 90410f5..d796071 100644
  	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
  
  	return 0;
-@@ -743,6 +820,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+@@ -719,6 +803,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
  
  static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
  {
-+#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
++#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
 +	hdmi_audio_unregister(pdev);
 +#endif
  	hdmi_uninit_output(pdev);

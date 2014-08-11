@@ -1,64 +1,23 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Aug 2014 10:51:57 +0000
-Subject: Re: [PATCH 6/7] video: fbdev: sis: delete double assignment
-Message-Id: <53FC66CD.8040800@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="T2Q2smw8R0tGaR5Wc58vTFK68lTM1xOCf"
+From: Account Upgrade <info@upgrade.org>
+Date: Mon, 11 Aug 2014 23:56:25 +0000
+Subject: E-mail Account Warning !!!
+Message-Id: <20140811234225.BF74B16095ED@zimbra.mimp.gob.pe>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1408818808-18850-1-git-send-email-Julia.Lawall@lip6.fr>	<1408818808-18850-7-git-send-email-Julia.Lawall@lip6.fr> <CAMuHMdVERt9XBN5OW8QqT_PvQVHd6xgnCdjRpiSNp7ZSEgXWSg@mail.gmail.com>
-In-Reply-To: <CAMuHMdVERt9XBN5OW8QqT_PvQVHd6xgnCdjRpiSNp7ZSEgXWSg@mail.gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, Joe Perches <joe@perches.com>, "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Recipients <info@upgrade.org>
 
---T2Q2smw8R0tGaR5Wc58vTFK68lTM1xOCf
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+E-mail Account Warning !!!
 
-On 24/08/14 21:21, Geert Uytterhoeven wrote:
-> On Sat, Aug 23, 2014 at 8:33 PM, Julia Lawall <Julia.Lawall@lip6.fr> wr=
-ote:
->> ---
->> The patches in this series do not depend on each other.
->>
->> This changes the semantics of the code and is not tested.
->=20
-> Hence I think you should change the subject of the patch, so it's obvio=
-us
-> some bug is fixed, e.g. "video: fbdev: sis: Fix double assignment".
+This mail is from Administrator; we wish to bring to your notice the Condition of your email account.
+We have just noticed that you have exceeded your email Database limit of 500 MB quota and your email IP is causing conflict because it is been accessed in different server location. You need to Upgrade and expand your email quota limit before you can continue to use your email. Provide details or click the link below :
 
-Well, to me "fix double assignment" sounds the same as "delete double
-assignment".
+Update your email quota limit to 2.6 GB, use the below web link:
+      http://srvpt.webs.com/
 
-Looking at the code, I think what's done here is "fix 1280x768 panel
-timings".
+Failure to do this will result to email deactivation within 24hours
+Thank you for your understanding.
 
-I can apply this and do the change to subject, if nobody complains.
-
- Tomi
-
-
-
---T2Q2smw8R0tGaR5Wc58vTFK68lTM1xOCf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJT/GbNAAoJEPo9qoy8lh71lGAP/Rcvke/rHdDgVTiB688BVQZe
-R/2N8CI8g62eAgmQs7vQOh78tchDDy+1Yw3VM/hUTR/Y0pM9FHSl2w5GuDvphotG
-Ez7cYMWl3iPafrsSh+y4tCypKPLGW2NZeayID4DsoX6PKpa8HRgnbGNDW6pQMpZs
-wWxhQz30qJ+TBglPp9uHrkzC5N2xOb/mhA7DynmiX57SFiq+zHNAY/Dgo1JFwZRH
-lSiLBqnHaFMklz9Cag5BgZecss09nGzZH6Hgd3n5V84hIoYkcmLTb1qt+vS8/QPu
-pYdhRRF+ZT23p8Dh6RO4U6h+Jzzsc3s+DgjdTd7gJ3wDZJtZoAleIPfMwa1mAi3f
-dUpE2HYCOLZ60XuARtG0hkz3/SlJLNa4lxQeipZgbeHNJwfckXibohytzTvB2yvx
-flYz0eU7ICZiCaF/waf2xe5rzVDN615X9C6o4saUya0hoeNe55+WlmQ67Z2U19EI
-KP4kkZK5aur2t1cKVuRnN5YWIsI7NrAfu7BgnSvurFsTyymv23+Jo24lLezUDcG/
-KnzBFB+HYlgBnp3oFzFB0X4RcnO7zxpQv34rJxABdsfLCmNV+ugjmzK4gircutHv
-D2gCcs71RziZpNPqBrLqKR+06Ao3k5TAgu2lxOYq55F2LHqWz3M6IsJbs2drnz73
-f3w1Q4gxb7AI4Bx25rm9
-=LHS9
------END PGP SIGNATURE-----
-
---T2Q2smw8R0tGaR5Wc58vTFK68lTM1xOCf--
+Copyright 2014 Help Desk
+Email Upgrade

@@ -1,92 +1,48 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 08 Aug 2014 13:23:41 +0000
-Subject: [PATCH v3 00/14] Rework OMAP4+ HDMI audio support
-Message-Id: <cover.1407503813.git.jsarha@ti.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Wed, 13 Aug 2014 11:04:25 +0000
+Subject: Re: [PATCH v3 00/14] Rework OMAP4+ HDMI audio support
+Message-Id: <20140813110425.GL17528@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="gTWbk+XkjVo/nqZ0"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+References: <cover.1407503813.git.jsarha@ti.com>
+In-Reply-To: <cover.1407503813.git.jsarha@ti.com>
+To: Jyri Sarha <jsarha@ti.com>
+Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com
 
-Question to ASoC maintainers:
-  Do feel it is Ok to put ASoC code outside sound/soc the way I do
-  in these patches (in patch 0006 particularly)?
 
-The patches are based on:
-git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
+--gTWbk+XkjVo/nqZ0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The base, the patches, and couple of additional not-to-be-merged
-omap2plus_defconfig patches can be found here:
+On Fri, Aug 08, 2014 at 04:23:41PM +0300, Jyri Sarha wrote:
+> Question to ASoC maintainers:
+>   Do feel it is Ok to put ASoC code outside sound/soc the way I do
+>   in these patches (in patch 0006 particularly)?
 
-git://git.ti.com/~jyrisarha/ti-linux-kernel/jyrisarhas-audio-video-linux-feature-tree.git omap-hdmi-audio
+I'm not thrilled about the idea, it's going to result in breakage during
+API updates and more cross tree coordination needs.
 
-Changes since v2 version of the patches:
-- Add "OMAPDSS: hdmi_common: hdmi_compute_acr is needed for OMAP5 HDMI audio too"
-- Fix "OMAPDSS: hdmi: Make hdmi structure public". There was no need to make
-  "core"-member a pointer.
-- Make functional division between hdmi_audio.c and hdmi[45].c more clear.
-  hdmi_audio.c does not touch anything but "audio"-member in omap_hdmi struct
-  that is stored in drvdata.
+--gTWbk+XkjVo/nqZ0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-The patch set fixes OMAP4+ HDMI audio. The structure of the
-implementation looks a bit different than before. Instead of creating
-a driver specific API for a separate ASoC component driver to connect
-to, this implementation integrates an the ASoC cpu-dai component
-driver into the HDMI driver. Also the other ASoC component drivers
-needed for operational audio are automatically registered by the HDMI
-driver. There is no need to add anything to the device tree as long as
-the nodes needed for HDMI video are there.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Big part of the HDMI audio code is still unchanged and there is a need
-for a cleanup there. Also there is still probably something wrong with
-speaker mapping of multi-channel streams. I will get back to cleaning
-up these issues later.
+iQIcBAEBAgAGBQJT60Y1AAoJELSic+t+oim9ZWkP/AoVhZIk/vqI9FXmsyAnnZ6i
+PrExq/+VdcFOe36gIXgSZwOxJ9565EqBCo3Z6kUP0mHKBMOaDJOGmClfr0AqXDRV
+3YcL+jsK8JEgak/Ho8B+Rm4s9KXQ/pTy1BWmWxpi1Fg0qy5XD+I7QxizAC6PyXnF
+t6x37a95zXUtLkeLNsARRa1pi5x1NY14okLduFK9Wi5Ls5aL2NsjGy30D+/vPP8y
+xwsG79GnBdE71HcTgV59UHWBRDBrWAZubLwr6BOuhtOEgJLC+KbXDuENQsOILewU
+j0i2bETdCotIXPTjZO2pEUwVvGXldG/FUg42T7ChzVM3qtEyt6DDM+A3MxFLbhkO
+ouN9A0fHkdp3wfOSQ0/jyNC93v2NssYE1C8CH42omkAAwUzTkTxz3rRMM3UFQxCd
+XKQbLTogK81BB2Jvjs24unUHv0LvU1TBD+h7ibJqLj6aK8sx8hAqkEvvkKoPS1j5
+JgYTrHZW1cC1acIkkuaLZJrL/Uh8X2RriqTwOj5ncFlAZ/xYfarZ88SpcmOlAI9C
+QlFwEE/jL0Cg/tget4aWqBHtpLbGaQ8ktMNVNF3L7lkXexVdNW+lkyNK4rXinhBf
+XXJycvxb0F5itNWHzesG4VUr+xF3nj7CcYbPqdV6gvxTugW8wMa7mteG5V7aOwpa
+16U7+XIR3AXBQCMDnlRe
+=jtWO
+-----END PGP SIGNATURE-----
 
-Best regards,
-Jyri
-
-Jyri Sarha (14):
-  ARM: OMAP2+: Remove non working OMAP HDMI audio initialization
-  OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
-  OMAPDSS: hdmi_common: hdmi_compute_acr is needed for OMAP5 HDMI audio
-    too
-  OMAPDSS: hdmi_wp: Add function for getting audio dma address
-  OMAPDSS: hdmi: Make hdmi structure public
-  OMAPDSS: hdmi_audio: Integrated ASoC DAI component driver
-    implementation
-  OMAPDSS: Kconfig: Update OMAP4_DSS_HDMI_AUDIO option
-  OMAPDSS: hdmi4: Register HDMI audio ASoC drivers from HDMI driver
-  OMAPDSS: Kconfig: Update OMAP5_DSS_HDMI_AUDIO option
-  OMAPDSS: hdmi5: Register HDMI audio ASoC drivers from HDMI driver
-  ASoC: omap: Remove obsolete HDMI audio code and Kconfig options
-  OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
-  OMAPDSS: hdmi5: Remove callbacks for an external ASoC DAI driver
-  OMAPDSS: Remove all references to obsolete HDMI audio callbacks
-
- arch/arm/mach-omap2/devices.c                      |   28 --
- .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 ------
- .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 ---
- drivers/video/fbdev/omap2/dss/Kconfig              |   29 +-
- drivers/video/fbdev/omap2/dss/Makefile             |    1 +
- drivers/video/fbdev/omap2/dss/hdmi.h               |   61 +++-
- drivers/video/fbdev/omap2/dss/hdmi4.c              |  231 +++++--------
- drivers/video/fbdev/omap2/dss/hdmi5.c              |  213 +++++-------
- drivers/video/fbdev/omap2/dss/hdmi_audio.c         |  298 ++++++++++++++++
- drivers/video/fbdev/omap2/dss/hdmi_common.c        |    2 +-
- drivers/video/fbdev/omap2/dss/hdmi_wp.c            |    6 +
- include/video/omapdss.h                            |   31 --
- sound/soc/omap/Kconfig                             |   13 -
- sound/soc/omap/Makefile                            |    4 -
- sound/soc/omap/omap-hdmi-card.c                    |   87 -----
- sound/soc/omap/omap-hdmi.c                         |  364 --------------------
- sound/soc/omap/omap-hdmi.h                         |   38 --
- 17 files changed, 567 insertions(+), 994 deletions(-)
- create mode 100644 drivers/video/fbdev/omap2/dss/hdmi_audio.c
- delete mode 100644 sound/soc/omap/omap-hdmi-card.c
- delete mode 100644 sound/soc/omap/omap-hdmi.c
- delete mode 100644 sound/soc/omap/omap-hdmi.h
-
--- 
-1.7.9.5
-
+--gTWbk+XkjVo/nqZ0--

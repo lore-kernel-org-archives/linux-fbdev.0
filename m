@@ -1,38 +1,109 @@
-From: Dexuan Cui <decui@microsoft.com>
-Date: Fri, 01 Aug 2014 10:22:53 +0000
-Subject: RE: [PATCH v3] video: hyperv: hyperv_fb: refresh the VM screen by force on VM panic
-Message-Id: <EE124450C0AAF944A40DD71E61F878C98FBD6A@SINEX14MBXC417.southpacific.corp.microsoft.com>
+From: Luc Verhaegen <libv@skynet.be>
+Date: Wed, 13 Aug 2014 07:17:18 +0000
+Subject: [PATCH 3/4] simplefb: disable dt node upon remove
+Message-Id: <1407914239-12054-4-git-send-email-libv@skynet.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404875063-27424-1-git-send-email-decui@microsoft.com>
- <53D90008.4060908@ti.com>
- <EE124450C0AAF944A40DD71E61F878C98F6F78@SINEX14MBXC417.southpacific.corp.microsoft.com>
- <53DA46C3.9080905@ti.com>
-In-Reply-To: <53DA46C3.9080905@ti.com>
+References: <1407914239-12054-1-git-send-email-libv@skynet.be>
+In-Reply-To: <1407914239-12054-1-git-send-email-libv@skynet.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "jasowang@redhat.com" <jasowang@redhat.com>, "driverdev-devel@linuxdriverproject.org" <driverdev-devel@linuxdriverproject.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "olaf@aepfle.de" <olaf@aepfle.de>, "apw@canonical.com" <apw@canonical.com>, "plagnioj@jcrosoft.com" <plagnioj@jcrosoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>
+To: linux-arm-kernel@lists.infradead.org
 
-> -----Original Message-----
-> From: Tomi Valkeinen [mailto:tomi.valkeinen@ti.com]
-> Sent: Thursday, July 31, 2014 21:38 PM
-> > I think in hvfb_on_panic() we should be able to get the
-> > hvfb_info pointer by
-> > hvfb_info = container_of(nb, struct hv_fb_panic_nb, nb).
-> >
-> > If you like that or have a better idea, please let me know so
-> > I can make a new patch.
-> 
-> Or maybe you can add the notifier_block and the synchronous_fb to
-> hvfb_par? From the notifier_block pointer you could then get hvfp_par,
-> and from there hvfb_info.
->  Tomi
+The next commit will handle clocks correctly, so that these do not get
+automatically disabled on certain SoC simplefb implementations. As a
+result, the removal of this simplefb driver, and the release of the
+clocks, is rather final, and only a full display driver can work after
+this. So, it makes sense to also flag the dt node as disabled, even
+though it has no real value today.
 
-Hi Tomi,
-Thanks a lot for the suggestion! It's better.
-I'll send out a v4 patch for your review.
+Signed-off-by: Luc Verhaegen <libv@skynet.be>
+---
+ drivers/video/fbdev/simplefb.c |   43 ++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 39 insertions(+), 4 deletions(-)
 
-Thanks,
--- Dexuan
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 72a4f20..74c4b2a 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -138,6 +138,32 @@ static int simplefb_parse_dt(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
++/*
++ * Make sure that nothing tries to inadvertedly re-use this node...
++ */
++static int
++simplefb_dt_disable(struct platform_device *pdev)
++{
++	struct device_node *np = pdev->dev.of_node;
++	struct property *property;
++	int ret;
++
++	property = kzalloc(sizeof(struct property), GFP_KERNEL);
++	if (!property)
++		return -ENOMEM;
++
++	property->name = "status";
++	property->value = "disabled";
++	property->length = strlen(property->value) + 1;
++
++	ret = of_update_property(np, property);
++	if (ret)
++		dev_err(&pdev->dev, "%s: failed to update property: %d\n",
++			__func__, ret);
++
++	return ret;
++}
++
+ static int simplefb_parse_pd(struct platform_device *pdev,
+ 			     struct simplefb_params *params)
+ {
+@@ -187,17 +213,20 @@ static int simplefb_probe(struct platform_device *pdev)
+ 		ret = simplefb_parse_dt(pdev, &params);
+ 
+ 	if (ret)
+-		return ret;
++		goto error_dt_disable;
+ 
+ 	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!mem) {
+ 		dev_err(&pdev->dev, "No memory resource\n");
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto error_dt_disable;
+ 	}
+ 
+ 	info = framebuffer_alloc(sizeof(struct simplefb_par), &pdev->dev);
+-	if (!info)
+-		return -ENOMEM;
++	if (!info) {
++		ret = -ENOMEM;
++		goto error_dt_disable;
++	}
+ 	platform_set_drvdata(pdev, info);
+ 
+ 	par = info->par;
+@@ -260,6 +289,10 @@ static int simplefb_probe(struct platform_device *pdev)
+  error_fb_release:
+ 	framebuffer_release(info);
+ 
++ error_dt_disable:
++	if (!dev_get_platdata(&pdev->dev) && pdev->dev.of_node)
++		simplefb_dt_disable(pdev);
++
+ 	return ret;
+ }
+ 
+@@ -269,6 +302,8 @@ static int simplefb_remove(struct platform_device *pdev)
+ 
+ 	unregister_framebuffer(info);
+ 	framebuffer_release(info);
++	if (!dev_get_platdata(&pdev->dev) && pdev->dev.of_node)
++		simplefb_dt_disable(pdev);
+ 
+ 	return 0;
+ }
+-- 
+1.7.7
 

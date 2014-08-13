@@ -1,7 +1,7 @@
-From: Luc Verhaegen <libv@skynet.be>
-Date: Wed, 13 Aug 2014 19:25:06 +0000
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Wed, 13 Aug 2014 19:58:36 +0000
 Subject: Re: [PATCH 3/4] simplefb: disable dt node upon remove
-Message-Id: <20140813192506.GH31326@skynet.be>
+Message-Id: <53EBC36C.7050800@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1407914239-12054-1-git-send-email-libv@skynet.be>
  <1407914239-12054-4-git-send-email-libv@skynet.be>
@@ -11,26 +11,26 @@ References: <1407914239-12054-1-git-send-email-libv@skynet.be>
  <20140813094524.GC31326@skynet.be> <20140813101923.GD31326@skynet.be>
  <CAKON4OwLOAq1EOzZmuefcnZ4hw0i35e3k0F6XGNRy-5jer2vyA@mail.gmail.com>
  <CACxGe6szX3LyhGHbVHrEFfaWGYUcgcxgkuhfc9ac-R0qJs-HXw@mail.gmail.com>
-In-Reply-To: <CACxGe6szX3LyhGHbVHrEFfaWGYUcgcxgkuhfc9ac-R0qJs-HXw@mail.gmail.com>
+ <20140813192506.GH31326@skynet.be>
+In-Reply-To: <20140813192506.GH31326@skynet.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Aug 13, 2014 at 08:14:37PM +0100, Grant Likely wrote:
-> 
-> BTW, Is anyone currently using the simple framebuffer for early
-> console? For early console we would want to start using it well before
-> setting up platform devices.
+On 08/13/2014 01:25 PM, Luc Verhaegen wrote:
+> On Wed, Aug 13, 2014 at 08:14:37PM +0100, Grant Likely wrote:
+>>
+>> BTW, Is anyone currently using the simple framebuffer for early
+>> console? For early console we would want to start using it well before
+>> setting up platform devices.
+>
+> The code that sets up simplefb for sunxi is primarily for providing a
+> console in u-boot (using the ancient cfbconsole infrastructure). From
+> what i can tell, the u-boot code for rpi is about showing a splash
+> screen (using the much newer lcd infrastructure).
 
-The code that sets up simplefb for sunxi is primarily for providing a 
-console in u-boot (using the ancient cfbconsole infrastructure). From 
-what i can tell, the u-boot code for rpi is about showing a splash 
-screen (using the much newer lcd infrastructure).
-
-With u-boot showing a console, it really seemed only a small step to add 
-simplefb. And quite a few people in our sunxi community are interested 
-in it, primarily for u-boot and early console, and only secondarily as a 
-stop-gap for a full driver.
-
-Luc Verhaegen.
+There's no splash screen on the Pi in the upstream U-Boot code. The LCD 
+displays the U-Boot console/stdout. If USB support for the Pi's USB host 
+is ever sent upstream, that will allow the user to use USB/LCD for 
+U-Boot control, rather than serial.

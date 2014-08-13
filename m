@@ -1,111 +1,102 @@
-From: "jonsmirl@gmail.com" <jonsmirl@gmail.com>
-Date: Wed, 13 Aug 2014 17:44:07 +0000
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 13 Aug 2014 19:14:37 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 3/4] simplefb: disable dt node upon remove
-Message-Id: <CAKON4OxUe7csTB=1BcU4SR9Kk9_pFKfmNGgm0Gw28jOj+TF5FA@mail.gmail.com>
+Message-Id: <CACxGe6szX3LyhGHbVHrEFfaWGYUcgcxgkuhfc9ac-R0qJs-HXw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1407914239-12054-1-git-send-email-libv@skynet.be>
  <1407914239-12054-4-git-send-email-libv@skynet.be>
  <CACxGe6vaPUa4QvYWBA-QY7MTmJYoeqnPt9Zh5jpky6S9UYbrvQ@mail.gmail.com>
  <CANq1E4ReOB87RX8VhnW1Ln=SK3Tw5V962ujcsfuz-2E9Uc61yQ@mail.gmail.com>
- <53EB95D4.6010500@wwwdotorg.org>
- <CAKON4OxoPDCAvOK8UEeMaJDuzFfQHwb0pVbFgoqSkn=_W5pAYw@mail.gmail.com>
- <53EBA18F.1030309@wwwdotorg.org>
-In-Reply-To: <53EBA18F.1030309@wwwdotorg.org>
+ <CACxGe6vQrhd8QOAyGnjRppmuANpT60Ao2+KmkDfF4FNeoZSZgw@mail.gmail.com>
+ <20140813094524.GC31326@skynet.be> <20140813101923.GD31326@skynet.be>
+ <CAKON4OwLOAq1EOzZmuefcnZ4hw0i35e3k0F6XGNRy-5jer2vyA@mail.gmail.com>
+In-Reply-To: <CAKON4OwLOAq1EOzZmuefcnZ4hw0i35e3k0F6XGNRy-5jer2vyA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Aug 13, 2014 at 1:34 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 08/13/2014 11:26 AM, jonsmirl@gmail.com wrote:
->>
->> On Wed, Aug 13, 2014 at 12:44 PM, Stephen Warren <swarren@wwwdotorg.org>
->> wrote:
+On Wed, Aug 13, 2014 at 1:54 PM, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
+> On Wed, Aug 13, 2014 at 6:19 AM, Luc Verhaegen <libv@skynet.be> wrote:
+>> On Wed, Aug 13, 2014 at 11:45:24AM +0200, Luc Verhaegen wrote:
+>>> On Wed, Aug 13, 2014 at 10:23:14AM +0100, Grant Likely wrote:
+>>> >
+>>> > The majority of the DT code is based on the assumption of a static
+>>> > tree. Pantelis has been working on being able to modify it at runtime
+>>> > with overlays, but he has had to go through a lot of rework because it
+>>> > is not a trivial task. When you get into modifying the DT, you need to
+>>> > have a lot more understanding of the side effects to changing the
+>>> > tree. The DT structure also has a lifecycle that can go beyond the
+>>> > current lifecycle of the kernel. The kexec tool will extract the
+>>> > current tree from the kernel, make the appropriate modifications, and
+>>> > use that to boot the next kernel. Allowing any driver to modify the
+>>> > tree has side effects beyond just the current kernel.
+>>> >
+>>> > In this specific case, it will interact badly with the work Pantelis
+>>> > is doing to make platform devices work with overlays. Modifying the
+>>> > status property will cause the associated struct device to get removed
+>>> > in the middle of probing a driver for that device! That will most
+>>> > likely cause an oops.
+>>> >
+>>> > Besides, Luc straight out *said*: "...even though it has no real value
+>>> > today". In what circumstance is that justification for modifying the
+>>> > tree?
 >>>
->>> On 08/13/2014 02:49 AM, David Herrmann wrote:
->>>>
->>>>
->>>> Hi
->>>>
->>>> On Wed, Aug 13, 2014 at 10:40 AM, Grant Likely
->>>> <grant.likely@secretlab.ca> wrote:
->>>>>
->>>>>
->>>>> On Wed, Aug 13, 2014 at 8:17 AM, Luc Verhaegen <libv@skynet.be> wrote:
->>>>>>
->>>>>>
->>>>>> The next commit will handle clocks correctly, so that these do not get
->>>>>> automatically disabled on certain SoC simplefb implementations. As a
->>>>>> result, the removal of this simplefb driver, and the release of the
->>>>>> clocks, is rather final, and only a full display driver can work after
->>>>>> this. So, it makes sense to also flag the dt node as disabled, even
->>>>>> though it has no real value today.
->>>>>>
->>>>>> Signed-off-by: Luc Verhaegen <libv@skynet.be>
->>>>>
->>>>>
->>>>>
->>>>> Please, no.
->>>>>
->>>>> Drivers should not be modifying the device tree without and
->>>>> exceptionally good reason for doing so. Drivers are to treat the DT as
->>>>> immutable.
->>>>>
->>>>> * the exception is an overlay driver which add new devices to the
->>>>> kernel. Definitely not the case here.
->>>>
->>>>
->>>>
->>>> Why? I think we have exactly that case:
->>>>    * DT describes the real hw properly and those parts are immutable
->>>>    * Additionally, bootloaders create firmware-framebuffers and
->>>>      create simple-framebuffer devices for them. Those are
->>>>      valid as long as no driver reconfigured the real hw.
->>>>    * Once a real hw-driver loads, it might destroy the existing
->>>>      framebuffers, thus, it should also destroy the platform device.
->>>>    * If the real hw-driver is unloaded, it might re-create the FB
->>>>      and thus create a new (or enable the old) platform device.
+>>> With that sentence i meant that given the current state of things, it
+>>> has no real value.
 >>>
+>>> It has no value currently as re-probing simplefb is not going to happen.
+>>> But it's not a big leap to turn simplefb into a proper module. Not that
+>>> that makes much sense, but that's never stopped anyone.
 >>>
+>>> To me it seemed simple, dt is what drives simplefb, so dt then also
+>>> becomes responsible for making sure that simplefb or another driver does
+>>> not attempt to blindly use this info again. The way this is implemented
+>>> i do not care for in any way, i just knew that i could not do nothing
+>>> here, given the catastrophic effect disabling the clocks has on simplefb
+>>> on sunxi. Given the discussion that errupted here, i'd say that this
+>>> does need some resolution, and altering the dt is going to have to be
+>>> part of the solution.
 >>>
->>> My intention was always that a bootloader's addition of a simplefb node
->>> to
->>> the DT would be user-configurable or driven by the original DT content.
->>> As
->>> such, there shouldn't ever be both a DT node describing the "real" HW and
->>> simplefb. In other words, if the DT already has the "real" DT node, the
->>> bootloader should automatically (or under user command) not add the
->>> simpefb
->>> node.
+>>> In any case, i will gladly drop this patch, as it is not absolutely
+>>> necessary. But it should be very clear that there is no going back on
+>>> this dt node after the clocks were released once.
+>>>
+>>> Luc Verhaegen.
 >>
->>
->> DT is just the wrong mechanism to signal this, use an ATAG or kernel
->> command line parameter.
->>
->> real hardware has compatible = "real-hardware-name, simplefb"
->>
->> simplefb is built into kernel. It will attach to the device because of
->> the compatible string. Then it can look at the command line and see if
->> the bootloader also supported simplefb and already set things up.
->>
->> Then some mechanism will have to be designed to arrange a handoff
->> between simplefb and the chip specific KMS driver. But that's a Linux
->> problem, not a DT one.
+>> What about approaching this from the other end? U-Boot could add a
+>> property named "once-only" or so.
 >
->
-> Having a single DT node that conforms to both the binding for
-> "real-hardware-name" and "simplefb" doesn't seem like a good approach. What
-> if the properties required by the two bindings conflict in some way? The
-> approach you advocate certainly hasn't ever been used AFAIK.
+> Device tree is supposed to be a static description of the hardware
+> usable on all operating systems. It is the wrong mechanism for
+> communicating between uboot and the kernel. Use something like atags
+> or the kernel command line to tell the kernel that the console has
+> already been set up.
 
-I believe we do have something like this - SPI core implements a lot
-of core DT functions. All SPI nodes use this core. Then hardware
-specific attributes are added.
+Not accurate. While it is primarily hardware description, it is also
+used for firmware communication. There is loads of precedence for
+this. The /chosen node is the most significant example, but there are
+other places where the tree is used to provide state. For example, the
+current-speed property on UART nodes.
 
-The conflicts would need to get sorted out. That's why we should have
-a schema in place for device tree. Then the properties for specific
-video hardware would inherit from the properties for simplefb.
+> The switch over from simple to KMS should not be done via a node
+> add/del to the device tree either.  No one has removed the device from
+> the system, the device tree should not be changing.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+The simple-framebuffer binding appears to be insufficient in this
+regard in that it doesn't have any linkage with the actual device
+providing the framebuffer. Ideally, I would put the simple framebuffer
+state directly into the video device node and use the chosen node to
+point to the stdout device (probably with the stdout-path property).
+Then the driver already knows it can just ignore the simple properties
+because it owns the device node when it binds.
+
+That said, simple-framebuffer as it stands is in use so we're not
+going to deprecate it. I would like to see an addition that specifies
+how a controller can be associated with a simple framebuffer node.
+
+BTW, Is anyone currently using the simple framebuffer for early
+console? For early console we would want to start using it well before
+setting up platform devices.
+
+g.

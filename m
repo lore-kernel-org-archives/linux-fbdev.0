@@ -1,7 +1,7 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Wed, 13 Aug 2014 09:32:10 +0000
+From: Luc Verhaegen <libv@skynet.be>
+Date: Wed, 13 Aug 2014 09:45:24 +0000
 Subject: Re: [PATCH 3/4] simplefb: disable dt node upon remove
-Message-Id: <CANq1E4QwYX+XY0PUdGenqB6cUDPSTbQEKzv_6VxT=NpvuEmFFA@mail.gmail.com>
+Message-Id: <20140813094524.GC31326@skynet.be>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1407914239-12054-1-git-send-email-libv@skynet.be>
  <1407914239-12054-4-git-send-email-libv@skynet.be>
@@ -14,18 +14,8 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi
-
-On Wed, Aug 13, 2014 at 11:23 AM, Grant Likely
-<grant.likely@secretlab.ca> wrote:
-> On Wed, Aug 13, 2014 at 9:49 AM, David Herrmann <dh.herrmann@gmail.com> wrote:
->> On Wed, Aug 13, 2014 at 10:40 AM, Grant Likely
->> <grant.likely@secretlab.ca> wrote:
->>> * the exception is an overlay driver which add new devices to the
->>> kernel. Definitely not the case here.
->>
->> Why?
->
+On Wed, Aug 13, 2014 at 10:23:14AM +0100, Grant Likely wrote:
+> 
 > The majority of the DT code is based on the assumption of a static
 > tree. Pantelis has been working on being able to modify it at runtime
 > with overlays, but he has had to go through a lot of rework because it
@@ -36,26 +26,35 @@ On Wed, Aug 13, 2014 at 11:23 AM, Grant Likely
 > current tree from the kernel, make the appropriate modifications, and
 > use that to boot the next kernel. Allowing any driver to modify the
 > tree has side effects beyond just the current kernel.
-
-Ok, fair enough. So we leave the DT untouched. That still allows
-calling device_add() / device_del() on platform-devices, right?
-
+> 
 > In this specific case, it will interact badly with the work Pantelis
 > is doing to make platform devices work with overlays. Modifying the
 > status property will cause the associated struct device to get removed
 > in the middle of probing a driver for that device! That will most
 > likely cause an oops.
->
+> 
 > Besides, Luc straight out *said*: "...even though it has no real value
 > today". In what circumstance is that justification for modifying the
 > tree?
 
-Sorry, I wasn't clear enough: I'm not arguing in favor of this patch.
-I just want to figure out what to do once we implement
-hardware-handover for graphics devices on non-x86 (which this series
-is kinda preparing for). This patch just reminded me, that we could do
-this on a DT level, instead of driver-core level. But I'm fine with
-avoiding that, if you warn about complications.
+With that sentence i meant that given the current state of things, it 
+has no real value.
 
-Thanks
-David
+It has no value currently as re-probing simplefb is not going to happen. 
+But it's not a big leap to turn simplefb into a proper module. Not that 
+that makes much sense, but that's never stopped anyone.
+
+To me it seemed simple, dt is what drives simplefb, so dt then also 
+becomes responsible for making sure that simplefb or another driver does 
+not attempt to blindly use this info again. The way this is implemented 
+i do not care for in any way, i just knew that i could not do nothing 
+here, given the catastrophic effect disabling the clocks has on simplefb 
+on sunxi. Given the discussion that errupted here, i'd say that this 
+does need some resolution, and altering the dt is going to have to be 
+part of the solution.
+
+In any case, i will gladly drop this patch, as it is not absolutely 
+necessary. But it should be very clear that there is no going back on 
+this dt node after the clocks were released once.
+
+Luc Verhaegen.

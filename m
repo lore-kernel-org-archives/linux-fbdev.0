@@ -1,7 +1,7 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Wed, 13 Aug 2014 19:58:36 +0000
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 13 Aug 2014 20:00:07 +0000
 Subject: Re: [PATCH 3/4] simplefb: disable dt node upon remove
-Message-Id: <53EBC36C.7050800@wwwdotorg.org>
+Message-Id: <CACxGe6t3+7cqgOSjof60oCO_QD65Qx_cqtMSnSgU0jttyuK9tg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1407914239-12054-1-git-send-email-libv@skynet.be>
  <1407914239-12054-4-git-send-email-libv@skynet.be>
@@ -18,7 +18,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 08/13/2014 01:25 PM, Luc Verhaegen wrote:
+On Wed, Aug 13, 2014 at 8:25 PM, Luc Verhaegen <libv@skynet.be> wrote:
 > On Wed, Aug 13, 2014 at 08:14:37PM +0100, Grant Likely wrote:
 >>
 >> BTW, Is anyone currently using the simple framebuffer for early
@@ -29,8 +29,28 @@ On 08/13/2014 01:25 PM, Luc Verhaegen wrote:
 > console in u-boot (using the ancient cfbconsole infrastructure). From
 > what i can tell, the u-boot code for rpi is about showing a splash
 > screen (using the much newer lcd infrastructure).
+>
+> With u-boot showing a console, it really seemed only a small step to add
+> simplefb. And quite a few people in our sunxi community are interested
+> in it, primarily for u-boot and early console, and only secondarily as a
+> stop-gap for a full driver.
 
-There's no splash screen on the Pi in the upstream U-Boot code. The LCD 
-displays the U-Boot console/stdout. If USB support for the Pi's USB host 
-is ever sent upstream, that will allow the user to use USB/LCD for 
-U-Boot control, rather than serial.
+Both of which make sense and should be supported, so I agree we need
+to find a solution.
+
+The problem I think comes down to the handoff mechanism. There are a
+lot of different video controllers which could all be configured for a
+simple framebuffer.
+
+I don't think the "run this only once" test is the right approach.
+Sometimes the simple framebuffer will never be torn down. It is
+conceivable that a simple framebuffer will get /added/ at runtime with
+an overlay, or even rebound to the driver. The simple framebuffer
+driver really needs to be explicitly told from outside itself that it
+is being taken over since it doesn't actually have the information to
+know when a framebuffer becomes invalid. Only the real video driver
+can provide that information.
+
+How does the sunxi driver currently take over from the simplefb?
+
+g.

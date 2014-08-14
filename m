@@ -1,53 +1,59 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Thu, 14 Aug 2014 09:28:07 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Thu, 14 Aug 2014 19:10:08 +0000
 Subject: Re: [PATCH v3 00/14] Rework OMAP4+ HDMI audio support
-Message-Id: <53EC8127.7090405@ti.com>
+Message-Id: <20140814191008.GE17528@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="hKlCbHbSDGogBfqt"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1407503813.git.jsarha@ti.com> <20140813110425.GL17528@sirena.org.uk> <53EB5F6A.9060308@ti.com> <20140813172632.GE17528@sirena.org.uk>
-In-Reply-To: <20140813172632.GE17528@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@kernel.org>
+References: <cover.1407503813.git.jsarha@ti.com>
+ <20140813110425.GL17528@sirena.org.uk>
+ <53EB5F6A.9060308@ti.com>
+ <20140813172632.GE17528@sirena.org.uk>
+ <53EC8127.7090405@ti.com>
+In-Reply-To: <53EC8127.7090405@ti.com>
+To: Jyri Sarha <jsarha@ti.com>
 Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com
 
-On 08/13/2014 08:26 PM, Mark Brown wrote:
-> On Wed, Aug 13, 2014 at 03:51:54PM +0300, Jyri Sarha wrote:
->
->> I guess then the least bad alternative would be cutting the cpu-dai driver
->> away from drivers/video/fbdev/omap2/dss/hdmi_audio.c and placing it under
->> sound/soc/omap and registering it from hdmi_audio.c the same way as
->> hdmi-audio-codec and asoc-simple-card is now registered.
->
->> There would be two devices for a single ip, but at least the ASoC side
->> driver would receive its resources directly from the HDMI video driver with
->> necessary tools to synchronize the access.
->
-> Just a MFD really.
->
->> This approach would work for other HDMI audio situation too, where there
->> would usually (for tda998x and SiI9022 at least) be a need to register an
->> i2s codec driver associated with the HDMI encoder. It would probably be
->> possible to make a single codec driver to work with multiple HDMI encoders
->> if the API between the codec and endcoder drivers is designed that in mind.
->
->> How does this sound?
->
-> This sounds like a way forward, I definitely think it's a good idea to
-> standardise the interfaces as much as we can.
->
 
-After discussing with Peter and Tomi I decided to change the approach a 
-bit. There should not be any new device registered, just ASoC components 
-that are implemented under sound/soc as a library rather than a device 
-driver.
+--hKlCbHbSDGogBfqt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The library would export a register and unregister functions to be 
-called from video driver directory. The functions will then register the 
-necessary ASoC components under the video device.
+On Thu, Aug 14, 2014 at 12:28:07PM +0300, Jyri Sarha wrote:
 
-If there are no objections I'll go ahead implementing this approach, 
-first for OMAP HDMI audio, and later for SiI9022 driver we are cooking.
+> After discussing with Peter and Tomi I decided to change the approach a bit.
+> There should not be any new device registered, just ASoC components that are
+> implemented under sound/soc as a library rather than a device driver.
 
-Best regards,
-Jyri
+> The library would export a register and unregister functions to be called
+> from video driver directory. The functions will then register the necessary
+> ASoC components under the video device.
+
+> If there are no objections I'll go ahead implementing this approach, first
+> for OMAP HDMI audio, and later for SiI9022 driver we are cooking.
+
+That also sounds perfectly sensible.
+
+--hKlCbHbSDGogBfqt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJT7QmMAAoJELSic+t+oim9VikP/3b0/Vli9SYeaan6A7lPeUnW
+366oz6KwXmJPOLEcjFsmhXpMj+RJlVw2aMvu6wH/dUzJsN1QeKD+nvhTi8wrgBmU
+8Z+uYkOLs2Q6fapTV6LlU7Ek+tNHLoIz6bn2AsAd4m+HEqKyRgEsydU5Lteh3ih6
+YLPI6NhDqbH7Y/MbwY7Uo7GD8pnkuKDUEwKdAHymXn47kvNpVEsvtNpQ2oiZRwKM
+OIAr3RkOrg0udYf+lTOTQnk1cXFM7UUq4q/JSOVfRUx+cMYz8woLkUl0VyZXt0Eq
+RQoRHrwaC4mPBBxtlQVYTmD9nHyCPs3SuTEvp6yVzZYKppyqeWPUOYYdN8AtD/Pn
+8l9jJmkldW1lrICIhYvtfDVH7zDLYoJpI8QrATrH5Ck4dxaspmRDxeFbGmOieAYa
+kNOISmqZ3WcE0KvbSL83HK0Fq/QJG1vTgGmRt9jwI44kJ8YoGcYFc/WvXllTsxsP
+XgafrPmLiqu4XfLec63pTTt+atSQorFYH2YxT4DqrGlbtI9BuO7DIakOpOXqqTg+
+DaN12zI12DgjCkvqTOXS3TMHEZQnV4Bv5U6HGOOiY+DWo1jzCMYhuAQHN9NSuJOz
+i12YLLY34hSj6EZdQmgU0hbkHCCYsxxxtQNQ08T+8ES4IQLj+CqXnodilhm9NGah
+qSXp8h+UgYXYeUG3l4TL
+=Mrqw
+-----END PGP SIGNATURE-----
+
+--hKlCbHbSDGogBfqt--

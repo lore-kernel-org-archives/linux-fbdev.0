@@ -1,110 +1,71 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Aug 2014 10:56:13 +0000
-Subject: Re: [PATCH 2/7] video: fbdev: intelfb: delete double assignment
-Message-Id: <53FC67CD.8020901@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="iIc1iRTTQgiHXSr1IKcp5ingP1jvcI2Ik"
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Date: Tue, 19 Aug 2014 13:07:31 +0000
+Subject: [PATCH] video: ARM CLCD: Ensure bits-per-pixel is a power of 2 and <= 32
+Message-Id: <1408453651.3746.41.camel@linaro1.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1408818808-18850-1-git-send-email-Julia.Lawall@lip6.fr> <1408818808-18850-3-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1408818808-18850-3-git-send-email-Julia.Lawall@lip6.fr>
-To: Julia Lawall <Julia.Lawall@lip6.fr>, Maik Broemme <mbroemme@plusserver.de>
-Cc: joe@perches.com, kernel-janitors@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---iIc1iRTTQgiHXSr1IKcp5ingP1jvcI2Ik
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+If the device-tree specifies a max-memory-bandwidth property then
+the CLCD driver uses that to calculate the bits-per-pixel supported,
+however, it doesn't ensure that the result is a sane value, i.e. a
+power of 2 and <= 32 as the rest of the code assumes.
 
-On 23/08/14 21:33, Julia Lawall wrote:
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
-> Delete successive assignments to the same location.
->=20
-> In the second case, =3D is converted to |=3D, which looks appropriate b=
-ased on
-> the values involved.
->=20
-> A simplified version of the semantic match that finds this problem is a=
-s
-> follows: (http://coccinelle.lip6.fr/)
->=20
-> // <smpl>
-> @@
-> expression i;
-> @@
->=20
-> *i =3D ...;
->  i =3D ...;
-> // </smpl>
->=20
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
-> ---
-> The patches in this series do not depend on each other.
->=20
-> This changes the behavior of the code in the second case and is not tes=
-ted.
+Acked-by: Pawel Moll <pawel.moll@arm.com>
+Signed-off-by: Jon Medhurst <tixy@linaro.org>
+---
 
-In this patch, as in the sis one, the behavior is changed. The subject
-might perhaps be "fix cursor initialization"?
+This fixes code which is new in 3.17 (commit d10715be03) and so I assume
+is a candidate for adding to a coming -rc ? Without the fix, people can
+be left (as I was) with a blank non-functioning screen even if they
+create a valid device-tree for the new driver functionality.
 
-The patch does look like it could cause a regression, though. Anyone
-able to test this?
+ drivers/video/fbdev/amba-clcd.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
- Tomi
-
->=20
->  drivers/video/fbdev/intelfb/intelfbhw.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/intelfb/intelfbhw.c b/drivers/video/fb=
-dev/intelfb/intelfbhw.c
-> index fbad61d..d31ed4e 100644
-> --- a/drivers/video/fbdev/intelfb/intelfbhw.c
-> +++ b/drivers/video/fbdev/intelfb/intelfbhw.c
-> @@ -1191,7 +1191,6 @@ int intelfbhw_mode_to_hw(struct intelfb_info *din=
-fo,
->  	vsync_end =3D vsync_start + var->vsync_len;
->  	vtotal =3D vsync_end + var->upper_margin;
->  	vblank_start =3D vactive;
-> -	vblank_end =3D vtotal;
->  	vblank_end =3D vsync_end + 1;
-> =20
->  	DBG_MSG("V: act %d, ss %d, se %d, tot %d bs %d, be %d\n",
-> @@ -1859,7 +1858,7 @@ void intelfbhw_cursor_init(struct intelfb_info *d=
-info)
->  		tmp =3D INREG(CURSOR_CONTROL);
->  		tmp &=3D ~(CURSOR_FORMAT_MASK | CURSOR_GAMMA_ENABLE |
->  			 CURSOR_ENABLE | CURSOR_STRIDE_MASK);
-> -		tmp =3D CURSOR_FORMAT_3C;
-> +		tmp |=3D CURSOR_FORMAT_3C;
->  		OUTREG(CURSOR_CONTROL, tmp);
->  		OUTREG(CURSOR_A_BASEADDR, dinfo->cursor.offset << 12);
->  		tmp =3D (64 << CURSOR_SIZE_H_SHIFT) |
->=20
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index beadd3e..98b66b7 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -24,6 +24,7 @@
+ #include <linux/list.h>
+ #include <linux/amba/bus.h>
+ #include <linux/amba/clcd.h>
++#include <linux/bitops.h>
+ #include <linux/clk.h>
+ #include <linux/hardirq.h>
+ #include <linux/dma-mapping.h>
+@@ -650,6 +651,7 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
+ {
+ 	struct device_node *endpoint;
+ 	int err;
++	int bpp;
+ 	u32 max_bandwidth;
+ 	u32 tft_r0b0g0[3];
+ 
+@@ -667,11 +669,15 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
+ 
+ 	err = of_property_read_u32(fb->dev->dev.of_node, "max-memory-bandwidth",
+ 			&max_bandwidth);
+-	if (!err)
+-		fb->panel->bpp = 8 * max_bandwidth / (fb->panel->mode.xres *
++	if (!err) {
++		bpp = 8 * max_bandwidth / (fb->panel->mode.xres *
+ 				fb->panel->mode.yres * fb->panel->mode.refresh);
+-	else
+-		fb->panel->bpp = 32;
++		bpp = rounddown_pow_of_two(bpp);
++		if (bpp > 32)
++			bpp = 32;
++	} else
++		bpp = 32;
++	fb->panel->bpp = bpp;
+ 
+ #ifdef CONFIG_CPU_BIG_ENDIAN
+ 	fb->panel->cntl |= CNTL_BEBO;
+-- 
+2.0.1
 
 
-
---iIc1iRTTQgiHXSr1IKcp5ingP1jvcI2Ik
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJT/GfNAAoJEPo9qoy8lh714d4QAKOcT8ic+Ac09d6nl3jtnid5
-HWc7eMhRNQbsuKkScAal465EciwqsjAOaPLW3fneREKNRY7mjOR+xQEM1GuDmYd2
-fyRO5XnsQfUJ9yPTDtvzG9oFckO/8y12z2ZLd/r+ikXzqCwO1ALda4QRb9FH9VMi
-WYnfBxySAhJY9GgzvlnjCtSSvEOXYfKp+14tThTwnxuqooYU5O4qw5RG5Re6DYdI
-VmbGmQVDj/IEGltKFKJq9XHLIvUkDZfhHEyrbRO+qi6MdzHLjt8ryQQP5TG/FPaY
-f2NsJG/K55EmxtQVFZHq+k2kGNLBN17MoCx/BkMsD4ULEq/Wwz7NrGOY/5km8j5U
-FoXC/ZDqBI8V46fto/YjIchw8vYw7swazTSDUptZoB+vHPvtkv0o83Sfx0z7FDHt
-+YHqVN6ipaiFtWx0cXWbzM9ucibueA5X0HCt8YGyi5Ub5u3tOGQEX7oSZj3eZrrD
-lwZSv09fk1wAPx12+CkUzGwHidrXgudFfHa/pNG5geXlSJQyXID+UpAdM9X0dQ+5
-0CEDqnkYwMwK47zE0msaZu93sMmQsOjslh6thgOebykOhZ++dqY+DK7MG7b6Ao3+
-dhfr1u+zChVdZXjCXENRVWz97DJj7O7/EijtP/tDaoeZqBBWvHhPXvv+8gW664JG
-qFbcehcvqXUesnwfHzdb
-=5u3c
------END PGP SIGNATURE-----
-
---iIc1iRTTQgiHXSr1IKcp5ingP1jvcI2Ik--

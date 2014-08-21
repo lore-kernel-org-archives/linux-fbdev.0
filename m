@@ -1,64 +1,44 @@
-From: DaeSeok Youn <daeseok.youn@gmail.com>
-Date: Wed, 27 Aug 2014 10:00:58 +0000
-Subject: Re: [PATCH V2] video : remove redundant error check
-Message-Id: <CAHb8M2C4FygA5k9bPbuoJTv1EWZ-iGZrD7X7jrHoVqH=_L-_+Q@mail.gmail.com>
+From: Pranith Kumar <bobby.prani@gmail.com>
+Date: Thu, 21 Aug 2014 12:23:57 +0000
+Subject: [PATCH] fbdev: Remove __init from chips_hw_init() to fix build failure
+Message-Id: <1408623838-8275-1-git-send-email-bobby.prani@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140516093123.GA17245@devel.8.8.4.4>
-	<53FC629A.2050101@ti.com>
-In-Reply-To: <53FC629A.2050101@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Antonino Daplas <adaplas@gmail.com>, jg1.han@samsung.com, laurent.pinchart@ideasonboard.com, Rob Clark <robdclark@gmail.com>, daniel.vetter@ffwll.ch, Julia Lawall <Julia.Lawall@lip6.fr>, linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Rob Clark <robdclark@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-Hi,
+Fix build failure caused as follows:
 
-2014-08-26 19:34 GMT+09:00 Tomi Valkeinen <tomi.valkeinen@ti.com>:
-> On 16/05/14 12:31, Daeseok Youn wrote:
->> It doesn't need to check "err" for printing info.
->> And also use pr_info instead of printk.
->>
->> Signed-off-by: Daeseok Youn <daeseok.youn@gmail.com>
->> ---
->> V2: removes unneeded lines for sending a patch
->>
->>  drivers/video/fbdev/i810/i810_main.c |    7 +++----
->>  1 files changed, 3 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
->> index bb674e4..15cb397 100644
->> --- a/drivers/video/fbdev/i810/i810_main.c
->> +++ b/drivers/video/fbdev/i810/i810_main.c
->> @@ -1910,13 +1910,12 @@ static void i810fb_find_init_mode(struct fb_info *info)
->>
->>       for (i = 0; i < par->ddc_num + 1; i++) {
->>               err = i810_probe_i2c_connector(info, &par->edid, i);
->> -             if (!err)
->> +             if (!err) {
->> +                     pr_info("i810fb_init_pci: DDC probe successful\n");
->>                       break;
->> +             }
->>       }
->>
->> -     if (!err)
->> -             printk("i810fb_init_pci: DDC probe successful\n");
->> -
->>       fb_edid_to_monspecs(par->edid, specs);
->>
->>       if (specs->modedb = NULL)
->>
->
-> I don't know... I think I personally like more the original version. In
-> fact, the whole print looks quite useless to me, or at least it should
-> be a debug print.
-Yes. this patch doesn't need.
+The function chipsfb_pci_init() references
+the function __init chips_hw_init().
+This is often because chipsfb_pci_init lacks a __init 
+annotation or the annotation of chips_hw_init is wrong.
 
-Thanks for review.
+make: *** [drivers] Error 2
 
-regards,
-Daeseok Youn.
->
->  Tomi
->
->
+by removing the __init annotation from chips_hw_init(). The other thing that
+could have been done was annotating chipsfb_pci_init(). But that cannot be done
+since chipsfb_pci_init() is called from non __init functions.
+
+Signed-off-by: Pranith Kumar <bobby.prani@gmail.com>
+---
+ drivers/video/fbdev/chipsfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+index 206a66b..59abdc6 100644
+--- a/drivers/video/fbdev/chipsfb.c
++++ b/drivers/video/fbdev/chipsfb.c
+@@ -273,7 +273,7 @@ static struct chips_init_reg chips_init_xr[] = {
+ 	{ 0xa8, 0x00 }
+ };
+ 
+-static void __init chips_hw_init(void)
++static void chips_hw_init(void)
+ {
+ 	int i;
+ 
+-- 
+1.9.1
+

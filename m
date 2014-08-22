@@ -1,102 +1,72 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 29 Aug 2014 11:43:28 +0000
-Subject: Re: [PATCH v4 00/15] Rework OMAP4+ HDMI audio support
-Message-Id: <54006760.2010404@ti.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Fri, 22 Aug 2014 22:00:56 +0000
+Subject: Re: [PATCH v7][ 3/5] video: mx3fb: Introduce regulator support.
+Message-Id: <20140822220056.GE24407@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="4loEm8vkm2dPEmEM"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1408993242.git.jsarha@ti.com>
-In-Reply-To: <cover.1408993242.git.jsarha@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com
+References: <1394788369-5096-1-git-send-email-denis@eukrea.com>
+ <1394788369-5096-3-git-send-email-denis@eukrea.com>
+ <20140317062026.GZ17250@pengutronix.de>
+ <5397083D.4090400@eukrea.com>
+In-Reply-To: <5397083D.4090400@eukrea.com>
+To: linux-arm-kernel@lists.infradead.org
 
-After discussing with Tomi we decided to turn the omap-hdmi-audio ASoC 
-library into a platform device. So do not waste too much time in 
-reviewing these patches. I'll mail a new series soon.
 
-Best regards,
-Jyri
+--4loEm8vkm2dPEmEM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On 08/25/2014 10:04 PM, Jyri Sarha wrote:
-> The patches are based on:
-> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
->
-> The base, the patches, and couple of additional not-to-be-merged
-> omap2plus_defconfig patches can be found here:
->
-> git://git.ti.com/~jyrisarha/ti-linux-kernel/jyrisarhas-audio-video-linux-feature-tree.git omap-hdmi-audio
->
-> Changes since v3:
-> - Move ASoC parts into library module under sound/soc/omap
-> - Come up with API for the library
-> - Some cleaning up
->
-> The patch set fixes OMAP4+ HDMI audio. The structure of the
-> implementation looks a bit different than before. Instead of creating
-> a driver specific API for a separate ASoC component driver to connect
-> to, these patches implement a single audio library module under
-> sound/soc/omap for ASoC side implementation. The library exports
-> omap_hdmi_audio_register() and omap_hdmi_audio_unregister()
-> functions. With the functions OMAPDSS HDMI implementation registers
-> and unregisters all ASoC components needed for OMAP HDMI audio.
->
-> The library implements cpu-dai component using the callbacks provided
-> by OMAPDSS. Omap-pcm is registered for platform component, dummy
-> hdmi-audio-codec is registered for codec component, and
-> asoc-simple-card is registered for machine driver.
->
-> Big part of the HDMI audio code is still unchanged and there is a need
-> for a cleanup there. Also there is still probably something wrong with
-> speaker mapping of multi-channel streams. I will get back to cleaning
-> up these issues later.
->
-> Best regards,
-> Jyri
->
-> Jyri Sarha (15):
->    OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
->    OMAPDSS: hdmi: Remove most of OMAP[45]_DSS_HDMI_AUDIO ifdefs
->    OMAPDSS: hdmi4_core: Remove unused hdmi4_audio_get_dma_port()
->    OMAPDSS: hdmi_wp: Add function for getting audio dma address
->    OMAPDSS: hdmi: Make hdmi structure public
->    OMAPDSS: hdmi: Add exported functions for storing HDMI audio data
->    OMAPDSS: hdmi: Make hdmi_mode_has_audio() more user friedly
->    ASoC: omap-hdmi-audio: Add OMAP HDMI audio support library
->    OMAPDSS: Kconfig: Implement options for OMAP4 and OMAP5 HDMI audio
->      support
->    OMAPDSS: hdmi4: Register HDMI audio with omap_hdmi_audio_register()
->    OMAPDSS: hdmi5: Register HDMI audio with omap_hdmi_audio_register()
->    ASoC: omap: Remove obsolete HDMI audio code and Kconfig options
->    OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
->    OMAPDSS: hdmi5: Remove callbacks for an external ASoC DAI driver
->    OMAPDSS: Remove all references to obsolete HDMI audio callbacks
->
->   .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 ------
->   .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 ---
->   drivers/video/fbdev/omap2/dss/Kconfig              |   28 +-
->   drivers/video/fbdev/omap2/dss/hdmi.h               |   35 +-
->   drivers/video/fbdev/omap2/dss/hdmi4.c              |  233 ++++++-------
->   drivers/video/fbdev/omap2/dss/hdmi4_core.c         |   14 -
->   drivers/video/fbdev/omap2/dss/hdmi4_core.h         |    4 -
->   drivers/video/fbdev/omap2/dss/hdmi5.c              |  216 +++++-------
->   drivers/video/fbdev/omap2/dss/hdmi5_core.c         |    6 -
->   drivers/video/fbdev/omap2/dss/hdmi5_core.h         |    2 -
->   drivers/video/fbdev/omap2/dss/hdmi_common.c        |   18 +-
->   drivers/video/fbdev/omap2/dss/hdmi_wp.c            |    8 +-
->   include/sound/omap-hdmi-audio.h                    |   50 +++
->   include/video/omapdss.h                            |   34 +-
->   sound/soc/omap/Kconfig                             |   15 +-
->   sound/soc/omap/Makefile                            |    6 +-
->   sound/soc/omap/omap-hdmi-audio.c                   |  357 +++++++++++++++++++
->   sound/soc/omap/omap-hdmi-card.c                    |   87 -----
->   sound/soc/omap/omap-hdmi.c                         |  364 --------------------
->   sound/soc/omap/omap-hdmi.h                         |   38 --
->   20 files changed, 676 insertions(+), 994 deletions(-)
->   create mode 100644 include/sound/omap-hdmi-audio.h
->   create mode 100644 sound/soc/omap/omap-hdmi-audio.c
->   delete mode 100644 sound/soc/omap/omap-hdmi-card.c
->   delete mode 100644 sound/soc/omap/omap-hdmi.c
->   delete mode 100644 sound/soc/omap/omap-hdmi.h
->
+On Tue, Jun 10, 2014 at 03:29:33PM +0200, Denis Carikli wrote:
+> On 03/17/2014 07:20 AM, Sascha Hauer wrote:
 
+> >This patch adds regulator support for the display of a i.MX3 IPU. The
+> >problem Denis has to solve here is that he needs to get the regulator,
+> >but the display devicenode doesn't have a struct device associated with
+> >it, so he cannot provide one to regulator_get(). One way out here could
+> >be a of_regulator_get(struct device_node *). Mark, would this be ok with
+> >you?
+
+> Here, the display devicenode has no struct device associated with it like
+> mentioned above.
+> Because of that, retriving the regulator from the devicetree, for instance
+> like regulator_dev_lookup() does, would require a different approach.
+
+> As I understand it, what happen in regulator_dev_lookup when
+> regulator_get(NULL, regulator_name) is used is the following:
+
+> Since the struct device is NULL, it skips the struct device based lookup,
+> but also the devicetree lookup (it uses dev->of_node for that)
+> At the end it falls back on a match on the regulator name to find it.
+
+> would keeping regulator_get(NULL, regulator_name); in the driver instead be
+> better for now?
+
+It would be much better to have an actual device to get things for,
+using a hard coded regulator name is very much deprecated.  Using a hard
+coded name is fragile and we don't have support for mapping this
+properly in the device tree.
+
+--4loEm8vkm2dPEmEM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJT972VAAoJELSic+t+oim97YYQAJaMabhWT+llhsEfZGgklo48
+nR41iWFFTGyhTUN6QrRzeJYWZDqMsvpUcB+HLEC/FMWAQ22o50RqmNAUKhCssfSN
+TFYpcd/IkNKPe2Zgesvb/qYZ6wsn8V7Wjhhvq7YsCEHz9eY9fVCyuWa4NHVksJVg
+ZcHd7Rdg5TV5BElnxe3IbkAqJVRMP+NBFU9ksSi9QX/IEw1FFCyprEDtiUsZZeMz
+Vp82jn/YSCtWtWSb0RxHGkU1KAIgrzwpkwOxxAlhb04p2F4q2g6qQ0RhqKOWhQ3h
+jx4j5VRl7orJ7ZeI+SRGHwcd3roDG9MaGW6cl/xUzDVgB4hMPS6UPs83GU6Wjsxu
+maRvsElvKvtKblndme+gFSmgt7pPnj3ea2AXGqTriD5V7PZjoZaCrYfvpeY/cxsa
+gYSo8/yesz4Jk+KzwyBbctRxDnZ33SIpEAy31o7joO0zf2oAILjTfpMUZTNnaEk6
+zOB/po1pteRAj8W5gQiJt9euTy3QliMEJmgj5iSrgn68oPt+9jGAa7VSFdb7/mEZ
++IL1kzHmVaIqevBjkrnogHD+ZrqeyKj5l5mmbV11u+yrmHKmpDqJmcsa343MTg8u
+D4QDdHkeS5qJ9TwDjNl1NG7lVbSTEa3VpQQFk6SyzMtcbl9M896tVPXdiLX2+QEB
+plHTYWKOaGKUwTYnPk6W
+=VMrw
+-----END PGP SIGNATURE-----
+
+--4loEm8vkm2dPEmEM--

@@ -1,59 +1,128 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Thu, 14 Aug 2014 19:10:08 +0000
-Subject: Re: [PATCH v3 00/14] Rework OMAP4+ HDMI audio support
-Message-Id: <20140814191008.GE17528@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="hKlCbHbSDGogBfqt"
+From: Julia Lawall <julia.lawall@lip6.fr>
+Date: Sat, 23 Aug 2014 15:50:28 +0000
+Subject: [PATCH 8/9 v2] video: fbdev: aty: use c99 initializers in structures
+Message-Id: <alpine.DEB.2.02.1408231749030.2068@localhost6.localdomain6>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1407503813.git.jsarha@ti.com>
- <20140813110425.GL17528@sirena.org.uk>
- <53EB5F6A.9060308@ti.com>
- <20140813172632.GE17528@sirena.org.uk>
- <53EC8127.7090405@ti.com>
-In-Reply-To: <53EC8127.7090405@ti.com>
-To: Jyri Sarha <jsarha@ti.com>
-Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com
+References: <1408792831-25615-1-git-send-email-Julia.Lawall@lip6.fr> <1408792831-25615-9-git-send-email-Julia.Lawall@lip6.fr> <20140823152015.GB2074@thin>
+In-Reply-To: <20140823152015.GB2074@thin>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Josh Triplett <josh@joshtriplett.org>
+Cc: Paul Mackerras <paulus@samba.org>, kernel-janitors@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+From nobody Sat Aug 23 12:48:19 CEST 2014
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,Tomi Valkeinen <tomi.valkeinen@ti.com>,linux-fbdev@vger.kernel.org,linux-kernel@vger.kernel.org
+Subject: [PATCH 8/9] video: fbdev: aty: use c99 initializers in structures
 
---hKlCbHbSDGogBfqt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-On Thu, Aug 14, 2014 at 12:28:07PM +0300, Jyri Sarha wrote:
+Use c99 initializers for structures.
 
-> After discussing with Peter and Tomi I decided to change the approach a bit.
-> There should not be any new device registered, just ASoC components that are
-> implemented under sound/soc as a library rather than a device driver.
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
 
-> The library would export a register and unregister functions to be called
-> from video driver directory. The functions will then register the necessary
-> ASoC components under the video device.
+// <smpl>
+@decl@
+identifier i1,fld;
+type T;
+field list[n] fs;
+@@
 
-> If there are no objections I'll go ahead implementing this approach, first
-> for OMAP HDMI audio, and later for SiI9022 driver we are cooking.
+struct i1 {
+ fs
+ T fld;
+ ...};
 
-That also sounds perfectly sensible.
+@bad@
+identifier decl.i1,i2;
+expression e;
+initializer list[decl.n] is;
+@@
 
---hKlCbHbSDGogBfqt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+struct i1 i2 = { is,
++ .fld = e
+- e
+ ,...};
+// </smpl>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-iQIcBAEBAgAGBQJT7QmMAAoJELSic+t+oim9VikP/3b0/Vli9SYeaan6A7lPeUnW
-366oz6KwXmJPOLEcjFsmhXpMj+RJlVw2aMvu6wH/dUzJsN1QeKD+nvhTi8wrgBmU
-8Z+uYkOLs2Q6fapTV6LlU7Ek+tNHLoIz6bn2AsAd4m+HEqKyRgEsydU5Lteh3ih6
-YLPI6NhDqbH7Y/MbwY7Uo7GD8pnkuKDUEwKdAHymXn47kvNpVEsvtNpQ2oiZRwKM
-OIAr3RkOrg0udYf+lTOTQnk1cXFM7UUq4q/JSOVfRUx+cMYz8woLkUl0VyZXt0Eq
-RQoRHrwaC4mPBBxtlQVYTmD9nHyCPs3SuTEvp6yVzZYKppyqeWPUOYYdN8AtD/Pn
-8l9jJmkldW1lrICIhYvtfDVH7zDLYoJpI8QrATrH5Ck4dxaspmRDxeFbGmOieAYa
-kNOISmqZ3WcE0KvbSL83HK0Fq/QJG1vTgGmRt9jwI44kJ8YoGcYFc/WvXllTsxsP
-XgafrPmLiqu4XfLec63pTTt+atSQorFYH2YxT4DqrGlbtI9BuO7DIakOpOXqqTg+
-DaN12zI12DgjCkvqTOXS3TMHEZQnV4Bv5U6HGOOiY+DWo1jzCMYhuAQHN9NSuJOz
-i12YLLY34hSj6EZdQmgU0hbkHCCYsxxxtQNQ08T+8ES4IQLj+CqXnodilhm9NGah
-qSXp8h+UgYXYeUG3l4TL
-=Mrqw
------END PGP SIGNATURE-----
+---
+The patches in this series do not depend on each other.
 
---hKlCbHbSDGogBfqt--
+v2: Move close braces down to the next line and add trailing commas, as 
+suggested by Josh Triplett.
+
+diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
+index ff60701..aedf2fb 100644
+--- a/drivers/video/fbdev/aty/aty128fb.c
++++ b/drivers/video/fbdev/aty/aty128fb.c
+@@ -324,14 +324,61 @@ struct aty128_meminfo {
+ };
+ 
+ /* various memory configurations */
+-static const struct aty128_meminfo sdr_128   -	{ 4, 4, 3, 3, 1, 3, 1, 16, 30, 16, "128-bit SDR SGRAM (1:1)" };
+-static const struct aty128_meminfo sdr_64    -	{ 4, 8, 3, 3, 1, 3, 1, 17, 46, 17, "64-bit SDR SGRAM (1:1)" };
+-static const struct aty128_meminfo sdr_sgram -	{ 4, 4, 1, 2, 1, 2, 1, 16, 24, 16, "64-bit SDR SGRAM (2:1)" };
+-static const struct aty128_meminfo ddr_sgram -	{ 4, 4, 3, 3, 2, 3, 1, 16, 31, 16, "64-bit DDR SGRAM" };
++static const struct aty128_meminfo sdr_128 = {
++	.ML = 4,
++	.MB = 4,
++	.Trcd = 3,
++	.Trp = 3,
++	.Twr = 1,
++	.CL = 3,
++	.Tr2w = 1,
++	.LoopLatency = 16,
++	.DspOn = 30,
++	.Rloop = 16,
++	.name = "128-bit SDR SGRAM (1:1)",
++};
++
++static const struct aty128_meminfo sdr_64 = {
++	.ML = 4,
++	.MB = 8,
++	.Trcd = 3,
++	.Trp = 3,
++	.Twr = 1,
++	.CL = 3,
++	.Tr2w = 1,
++	.LoopLatency = 17,
++	.DspOn = 46,
++	.Rloop = 17,
++	.name = "64-bit SDR SGRAM (1:1)",
++};
++
++static const struct aty128_meminfo sdr_sgram = {
++	.ML = 4,
++	.MB = 4,
++	.Trcd = 1,
++	.Trp = 2,
++	.Twr = 1,
++	.CL = 2,
++	.Tr2w = 1,
++	.LoopLatency = 16,
++	.DspOn = 24,
++	.Rloop = 16,
++	.name = "64-bit SDR SGRAM (2:1)",
++};
++
++static const struct aty128_meminfo ddr_sgram = {
++	.ML = 4,
++	.MB = 4,
++	.Trcd = 3,
++	.Trp = 3,
++	.Twr = 2,
++	.CL = 3,
++	.Tr2w = 1,
++	.LoopLatency = 16,
++	.DspOn = 31,
++	.Rloop = 16,
++	.name = "64-bit DDR SGRAM",
++};
+ 
+ static struct fb_fix_screeninfo aty128fb_fix = {
+ 	.id		= "ATY Rage128",

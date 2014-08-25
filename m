@@ -1,43 +1,60 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 14 Aug 2014 11:18:29 +0000
-Subject: Re: [linux-sunxi] [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <53EC9B05.3010702@redhat.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 25 Aug 2014 12:12:30 +0000
+Subject: Re: [PATCH 4/4] simplefb: add clock handling code
+Message-Id: <20140825121228.GB4163@ulmo.nvidia.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="MW5yreqqjyrRcusr"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1407914239-12054-1-git-send-email-libv@skynet.be>
  <1407914239-12054-5-git-send-email-libv@skynet.be>
  <53EB9471.3090204@wwwdotorg.org> <20140813170106.GT15297@lukather>
- <53EC834F.6020307@redhat.com>
- <9B9D62CA-8037-4653-BCF0-C79BFFEB4279@dominion.thruhere.net>
- <20140814105711.GC1000@skynet.be>
-In-Reply-To: <20140814105711.GC1000@skynet.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20140813170106.GT15297@lukather>
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
 
-On 08/14/2014 12:57 PM, Luc Verhaegen wrote:
-> On Thu, Aug 14, 2014 at 12:31:50PM +0200, Koen Kooi wrote:
->>
->> How many DRM drivers are there on ARM and what's the size impact of building them all into the kernel? I know from experience that it's not possible on x86 especially with efifb in the mix, but I wonder what the situation on ARM is. I only have TI, sunxi and exynos boards to test on and building in both TI drm drivers and the exynos one seems to work. 
->> Note that I'm not talking about the non-DRM abortions that maskerade as graphics drivers for ARM SoCs, only proper DRM ones.
->>
->> regards,
->>
->> Koen
-> 
-> A quick check tells me that my current sunxi-3.4 sunxi_drm.ko measures 
-> 1.7MB
+--MW5yreqqjyrRcusr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That likely is with debug-info, try running "strip --strip-debug" on the .ko
-file. Note don't use plain "strip" that ruins kernel modules.
+On Wed, Aug 13, 2014 at 07:01:06PM +0200, Maxime Ripard wrote:
+> On Wed, Aug 13, 2014 at 10:38:09AM -0600, Stephen Warren wrote:
+[...]
+> > If not, perhaps the clock driver should force the clock to be
+> > enabled (perhaps only if the DRM/KMS driver isn't enabled?).
+>=20
+> I'm sorry, but I'm not going to take any code that will do that in our
+> clock driver.
+>=20
+> I'm not going to have a huge list of ifdef depending on configuration
+> options to know which clock to enable, especially when clk_get should
+> have the consumer device as an argument.
 
-Regards,
+Are you saying is that you want to solve a platform-specific problem by
+pushing code into simple, generic drivers so that your platform code can
+stay "clean"?
 
-Hans
+Thierry
 
-p.s.
+--MW5yreqqjyrRcusr
+Content-Type: application/pgp-signature
 
-I'm leaving home (and the internet) for vacation tomorrow. I'll be back
-on Mon Aug 25.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJT+ygsAAoJEN0jrNd/PrOh+8cP+gKsZ9xE9JReLJXvmAxGWf2H
+ZmNaUUaRk5X6i0IRHv07ZyiY5Nh/ir1EY4QY705rcc8MKvfM9+NlcH73lCGKSJYL
+t71WdTY4Gg912NlAr1AAhXsOmMPVT3tegfpsOrMndlAAqp7ZV6I6u7J2vwnbqH4F
+wptToc/pBBSGp6oEsLRLz1e2q1jk1/MILJdXB5WGvH2oQ0BMfx8hrOo5ImcDKh2p
+T0qqxWPp4c4G+/c0CLdrau6AcVdeEN1hjLX6Omb0T+zZHDftSUAEA7BlpSrqtngx
+BvNmctYh9U7yJfyoMqJ8v2guFlq8pq1srrRGvdxpQAQyygSWDOq40KGcVjGq/F6+
+5I0vGmoOE7tw9zRKbtvBCjw7dGHxJOXl+OkeC/kKIxPC1Agd8VzsAGtcT7uCLoXg
+2RChvz37dqIL9G/fBVjarI6hcO1leul6G94WO8BXeg4dgipsEX2l2P4gzhBWOrFI
+BkaoyIPID/qpdEVFcwOQK26k6y+3b7Hl48uf8J1h54uYvlt0w1MVxfrkcvFwKsf6
+3RgTAdgnfgnJMprIfT2+Nk1DJmfI555SRJo5pDkkQIBapD8gV6sEZZMe6KAMdaXE
+7STiJl+ayn6oyGEQz+KM1wOecnAHvFMdN6hAa4I/Hiw8WohayEjOeG8kWzfMz/wX
+Y/x99ArRjD4RO02sLI4H
+=NT3s
+-----END PGP SIGNATURE-----
+
+--MW5yreqqjyrRcusr--

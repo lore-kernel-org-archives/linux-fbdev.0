@@ -1,11 +1,10 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Mon, 25 Aug 2014 15:07:05 +0000
+From: "jonsmirl@gmail.com" <jonsmirl@gmail.com>
+Date: Mon, 25 Aug 2014 15:08:48 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <20140825150705.GB15297@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="qrXwk4mdkt00hRU3"
+Message-Id: <CAKON4OwGd8Fuv=nRdchoBrMLQSKafhKqu6eJ6RPEDUeLhrEfPQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1407914239-12054-5-git-send-email-libv@skynet.be>
+References: <1407914239-12054-1-git-send-email-libv@skynet.be>
+ <1407914239-12054-5-git-send-email-libv@skynet.be>
  <53EB9471.3090204@wwwdotorg.org> <20140813170106.GT15297@lukather>
  <20140825121228.GB4163@ulmo.nvidia.com>
  <20140825124410.GZ15297@lukather>
@@ -15,15 +14,69 @@ References: <1407914239-12054-5-git-send-email-libv@skynet.be>
  <53FB46FF.1010208@redhat.com>
  <20140825145303.GC14763@ulmo.nvidia.com>
 In-Reply-To: <20140825145303.GC14763@ulmo.nvidia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-
---qrXwk4mdkt00hRU3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Aug 25, 2014 at 04:53:06PM +0200, Thierry Reding wrote:
+On Mon, Aug 25, 2014 at 10:53 AM, Thierry Reding
+<thierry.reding@gmail.com> wrote:
+> On Mon, Aug 25, 2014 at 04:23:59PM +0200, Hans de Goede wrote:
+>> Hi,
+>>
+>> On 08/25/2014 04:16 PM, Thierry Reding wrote:
+>> > On Mon, Aug 25, 2014 at 03:47:43PM +0200, Hans de Goede wrote:
+>> >> On 08/25/2014 03:39 PM, Thierry Reding wrote:
+>> >>> On Mon, Aug 25, 2014 at 02:44:10PM +0200, Maxime Ripard wrote:
+>> >>>> On Mon, Aug 25, 2014 at 02:12:30PM +0200, Thierry Reding wrote:
+>> >>>>> On Wed, Aug 13, 2014 at 07:01:06PM +0200, Maxime Ripard wrote:
+>> >>>>>> On Wed, Aug 13, 2014 at 10:38:09AM -0600, Stephen Warren wrote:
+>> >>>>> [...]
+>> >>>>>>> If not, perhaps the clock driver should force the clock to be
+>> >>>>>>> enabled (perhaps only if the DRM/KMS driver isn't enabled?).
+>> >>>>>>
+>> >>>>>> I'm sorry, but I'm not going to take any code that will do that in our
+>> >>>>>> clock driver.
+>> >>>>>>
+>> >>>>>> I'm not going to have a huge list of ifdef depending on configuration
+>> >>>>>> options to know which clock to enable, especially when clk_get should
+>> >>>>>> have the consumer device as an argument.
+>> >>>>>
+>> >>>>> Are you saying is that you want to solve a platform-specific problem by
+>> >>>>> pushing code into simple, generic drivers so that your platform code can
+>> >>>>> stay "clean"?
+>> >>>>
+>> >>>> Are you saying that this driver would become "dirty" with such a patch?
+>> >>>
+>> >>> Yes. Others have said the same and even provided alternative solutions
+>> >>> on how to solve what's seemingly a platform-specific problem in a
+>> >>> platform-specific way.
+>> >>
+>> >> This is not platform specific, any platform with a complete clock driver
+>> >> will suffer from the same problem (the clock driver disabling unclaimed
+>> >> ahb gates, and thus killing the video output) if it wants to use simplefb
+>> >> for early console support.
+>> >
+>> > It is platform specific in that your platform may require certain clocks
+>> > to remain on. The next platform may require power domains to remain on
+>> > during boot and yet another one may rely on regulators to stay on during
+>> > boot. By your argument simplefb will need to be taught to handle pretty
+>> > much every type of resource that the kernel has.
+>> >
+>> >> As for the suggestion to simply never disable the plls / ahb gates by blocking
+>> >> them from ever being disabled in the sunxi clock driver, that is not really
+>> >> a solution either, as we want to be able to turn these things off to safe
+>> >> power on screen blank once control has been turned over to the kms driver.
+>> >
+>> > Then perhaps part of the hand-off procedure between simplefb and DRM/KMS
+>> > should involve marking PLLs or "gates" as properly managed.
+>>
+>> And by your earlier argument also power domains, regulators, etc. So now we need
+>> to add code to each of the clock core, power-domain core, regulator core, etc. to
+>> have them now about this initially unmanaged state thing you're introducing, as
+>> well as modify all involved clock / regulator / etc. drivers to mark certain
+>> resources as unmanaged.
+>
 > Hmm... that's true. But we already have a way to deal with exactly this
 > situation for regulators. There's a property called regulator-boot-on
 > which a bootloader should set whet it has enabled a given regulator. It
@@ -32,37 +85,20 @@ On Mon, Aug 25, 2014 at 04:53:06PM +0200, Thierry Reding wrote:
 > property for clocks so that the clock framework will not inadvertently
 > turn off a clock that's still being used.
 
-Except that such a property won't work either. Regulators with
-regulator-boot-on will still be disabled if there's no one to claim
-it. Just like what happens currently for the clocks.
+There should probably be a generic 'boot-initialized;' property that
+can be added to any DT device node.   Then uboot can add that property
+to the device node for anything it has turned on.
 
-Maxime
+You could even use it to add more info 'boot-initialized = <"9600 8 N 1">;'
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+That passes the info in an OS agnostic manner.
 
---qrXwk4mdkt00hRU3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+>
+> Thierry
 
-iQIcBAEBAgAGBQJT+1EZAAoJEBx+YmzsjxAgD3AP/i7ysvnBzkMlQ8UAfCbxTY3D
-4NHfA7kQmr/dTNOvhof12RPvy3HlwqgQil+c5URGoz+FChYWt39F+77lD8aZcKni
-kowB9fRH3GujP2m8gD6ne3wxNt9df71mjE+KQMX6/4kNeXCHQsfRLKblBNcPFiVb
-tv8vtCwLJLYRlNGEfrS7vbtnjM0cSBcuxBDse+4Sjqy9RCQJb6OGjJKbc8KOFulp
-CMr1s6vyomb+/8ACAcV4HJuJcMv/k6UVyhwSE0GJA2Nq1DEHPBvL2W/yKEnEpIMy
-ITr3PPRUYlPo72oSxI0EA7G5nRXAP1rYy3GEdiioL7FXdneBMVbmCe1vOPtmWd/R
-EeabsKt0iyk3OpC7TVUIA3ZpNqezSpGKAkF2/+ElCo82z2rhjJSDYer6/WtWV/CZ
-F+Pa+ivnwonG3jI3nskEcB+ZROWOKb1lKPVf+dPae30CeJK0UQDyNjLMxX7X5h7z
-2uI/u4aIAvLE0mUWmtLDNGgtQkTBRk4qWI6+NPR5q2T+8xtqwfi7fhA7huDQarSl
-jJ3KAWvWmXzyewihQ1byjLlN7WcNZs/n3fbNovtew6EvHHRzzkWYmTOe6Btghj4O
-DudlJdfJNhMc1+B5B8j2WBLzZSUq5Z5o7IjQdn3x4C4UwjToeZFeQ+zPYxa1ge0/
-CArj4eSfsOIos13M0vb8
-=hv01
------END PGP SIGNATURE-----
 
---qrXwk4mdkt00hRU3--
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com

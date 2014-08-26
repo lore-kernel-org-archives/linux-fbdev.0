@@ -1,96 +1,126 @@
-From: Pramod Gurav <pramod.gurav@smartplayin.com>
-Date: Mon, 04 Aug 2014 14:55:53 +0000
-Subject: [PATCH] msm: msm_fb: Add remove function for platform driver for clean unloading
-Message-Id: <1407163433-13528-1-git-send-email-pramod.gurav@smartplayin.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 26 Aug 2014 11:19:18 +0000
+Subject: Re: [PATCH] msm: msm_fb: Add remove function for platform driver for clean unloading
+Message-Id: <53FC6D36.8000102@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="CekNernRPhHRFJJ8d4Sn2Ie3F4Lag1TaD"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Jingoo Han <jg1.han@samsung.com>, Rob Clark <robdclark@gmail.com>
+References: <1407163433-13528-1-git-send-email-pramod.gurav@smartplayin.com>
+In-Reply-To: <1407163433-13528-1-git-send-email-pramod.gurav@smartplayin.com>
+To: Pramod Gurav <pramod.gurav@smartplayin.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Stephen Boyd <sboyd@codeaurora.org>, Jingoo Han <jg1.han@samsung.com>, Rob Clark <robdclark@gmail.com>
 
-This adds a  remove function to platform driver structure so that
-resources are released when driver is unloaded.
+--CekNernRPhHRFJJ8d4Sn2Ie3F4Lag1TaD
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Moved kzalloc to use managed resource and adds a return check if failed.
+Hi,
 
-CC: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-CC: Tomi Valkeinen <tomi.valkeinen@ti.com>
-CC: Stephen Boyd <sboyd@codeaurora.org>
-CC: Jingoo Han <jg1.han@samsung.com>
-CC: Rob Clark <robdclark@gmail.com>
+On 04/08/14 17:43, Pramod Gurav wrote:
+> This adds a  remove function to platform driver structure so that
+> resources are released when driver is unloaded.
+>=20
+> Moved kzalloc to use managed resource and adds a return check if failed=
+=2E
 
-Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
----
- drivers/video/fbdev/msm/msm_fb.c |   28 +++++++++++++++++++++++++---
- 1 file changed, 25 insertions(+), 3 deletions(-)
+Please split this patch into two. You change two unrelated things here,
+the unloading and the kzalloc part.
 
-diff --git a/drivers/video/fbdev/msm/msm_fb.c b/drivers/video/fbdev/msm/msm_fb.c
-index 1374803..ac277e2 100644
---- a/drivers/video/fbdev/msm/msm_fb.c
-+++ b/drivers/video/fbdev/msm/msm_fb.c
-@@ -553,6 +553,7 @@ static int msmfb_probe(struct platform_device *pdev)
- 	fb = framebuffer_alloc(sizeof(struct msmfb_info), &pdev->dev);
- 	if (!fb)
- 		return -ENOMEM;
-+
- 	msmfb = fb->par;
- 	msmfb->fb = fb;
- 	msmfb->panel = panel;
-@@ -569,8 +570,13 @@ static int msmfb_probe(struct platform_device *pdev)
- 	mutex_init(&msmfb->panel_init_lock);
- 	init_waitqueue_head(&msmfb->frame_wq);
- 	INIT_WORK(&msmfb->resume_work, power_on_panel);
--	msmfb->black = kzalloc(msmfb->fb->var.bits_per_pixel*msmfb->xres,
--			       GFP_KERNEL);
-+	msmfb->black = devm_kzalloc(&pdev->dev,
-+				    msmfb->fb->var.bits_per_pixel*msmfb->xres,
-+				    GFP_KERNEL);
-+	if (!msmfb->black) {
-+		ret = -ENOMEM;
-+		goto error_register_framebuffer;
-+	}
- 
- 	printk(KERN_INFO "msmfb_probe() installing %d x %d panel\n",
- 	       msmfb->xres, msmfb->yres);
-@@ -589,6 +595,8 @@ static int msmfb_probe(struct platform_device *pdev)
- 
- 	msmfb->sleeping = WAKING;
- 
-+	platform_set_drvdata(pdev, msmfb);
-+
- 	return 0;
- 
- error_register_framebuffer:
-@@ -598,13 +606,27 @@ error_setup_fbmem:
- 	return ret;
- }
- 
-+static int msmfb_remove(struct platform_device *pdev)
-+{
-+	struct msmfb_info *msmfb = NULL;
-+
-+	msmfb = platform_get_drvdata(pdev);
-+	if (msmfb) {
-+		unregister_framebuffer(msmfb->fb);
-+		iounmap(msmfb->fb->screen_base);
-+		framebuffer_release(msmfb->fb);
-+	}
-+
-+	return 0;
-+}
-+
- static struct platform_driver msm_panel_driver = {
- 	/* need to write remove */
- 	.probe = msmfb_probe,
-+	.remove = msmfb_remove,
- 	.driver = {.name = "msm_panel"},
- };
- 
--
- static int msmfb_add_mdp_device(struct device *dev,
- 				struct class_interface *class_intf)
- {
--- 
-1.7.9.5
+> CC: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> CC: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> CC: Stephen Boyd <sboyd@codeaurora.org>
+> CC: Jingoo Han <jg1.han@samsung.com>
+> CC: Rob Clark <robdclark@gmail.com>
+>=20
+> Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+> ---
+>  drivers/video/fbdev/msm/msm_fb.c |   28 +++++++++++++++++++++++++---
+>  1 file changed, 25 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/msm/msm_fb.c b/drivers/video/fbdev/msm=
+/msm_fb.c
+> index 1374803..ac277e2 100644
+> --- a/drivers/video/fbdev/msm/msm_fb.c
+> +++ b/drivers/video/fbdev/msm/msm_fb.c
+> @@ -553,6 +553,7 @@ static int msmfb_probe(struct platform_device *pdev=
+)
+>  	fb =3D framebuffer_alloc(sizeof(struct msmfb_info), &pdev->dev);
+>  	if (!fb)
+>  		return -ENOMEM;
+> +
+>  	msmfb =3D fb->par;
+>  	msmfb->fb =3D fb;
+>  	msmfb->panel =3D panel;
+> @@ -569,8 +570,13 @@ static int msmfb_probe(struct platform_device *pde=
+v)
+>  	mutex_init(&msmfb->panel_init_lock);
+>  	init_waitqueue_head(&msmfb->frame_wq);
+>  	INIT_WORK(&msmfb->resume_work, power_on_panel);
+> -	msmfb->black =3D kzalloc(msmfb->fb->var.bits_per_pixel*msmfb->xres,
+> -			       GFP_KERNEL);
+> +	msmfb->black =3D devm_kzalloc(&pdev->dev,
+> +				    msmfb->fb->var.bits_per_pixel*msmfb->xres,
+> +				    GFP_KERNEL);
+> +	if (!msmfb->black) {
+> +		ret =3D -ENOMEM;
+> +		goto error_register_framebuffer;
+> +	}
+> =20
+>  	printk(KERN_INFO "msmfb_probe() installing %d x %d panel\n",
+>  	       msmfb->xres, msmfb->yres);
+> @@ -589,6 +595,8 @@ static int msmfb_probe(struct platform_device *pdev=
+)
+> =20
+>  	msmfb->sleeping =3D WAKING;
+> =20
+> +	platform_set_drvdata(pdev, msmfb);
+> +
+>  	return 0;
+> =20
+>  error_register_framebuffer:
+> @@ -598,13 +606,27 @@ error_setup_fbmem:
+>  	return ret;
+>  }
+> =20
+> +static int msmfb_remove(struct platform_device *pdev)
+> +{
+> +	struct msmfb_info *msmfb =3D NULL;
 
+No need to initialize to NULL, msmfb is initialized always below.
+
+> +
+> +	msmfb =3D platform_get_drvdata(pdev);
+> +	if (msmfb) {
+
+Can msmfb ever be NULL here? If I'm not mistaken, remove is only called
+if the probe had succeeded. And if probe had succeeded, the drvdata is
+always set to a proper pointer to msmfb_info.
+
+ Tomi
+
+
+
+--CekNernRPhHRFJJ8d4Sn2Ie3F4Lag1TaD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJT/G02AAoJEPo9qoy8lh71sgIP/RVtP4PYUlohr2ve74Mwy/JE
+6WrjB0q883nFLJaapssK9RI8AGWA4WdPqXg1lQuI9Y/A3uuNKyIVt4Gf5u9zAz4U
+6fGO0Hicrn2tyEyborZxPEMI8U9PinSY9lV9TF69+dKmY5/h+Y7wZQWMJvtmYRLU
+JAptwsnzfj5UbqsStfDZwq4vKYN2kWOvskaMaSLc5hyHeE7GYC25e1jTDCa1Rg+2
+b0NfbLJ8JnJZk0H6oKXwAjGVuulz9E0nfiYL/3Wi5BPJ7izBxLP/5SmkYCrlvztg
+uK7y5pQTKEEkydjnORRFBjPUpEtQyf9/lmRg3OKB3SYurlh0m+oIlGwdXkhIlyju
+RI8PHq5w7Jdx/xYBMsWY/z+yHCY87DJXmbkb8uCm/omDJxYwlZPXBMdwJ0eUR676
+63eMdKqSIpMjUoTJc0hK8qlRu6yNRbhlCtzSM/RavRQHA3dmbmiCK9QAcnwZGDP+
+5K1A5GRMT2OBQCrXowcetbH8aMu/x7Lvt/A15/p5++Ek+lX9Q9k7qsGD4iWDKXan
+GaZ69Dekfy7GvJJnH2Pee2oiIyOYBotqCvdBJ0BTg18uTEqQSesIJELgHXCbCreH
+WB0c/B72zVF6puPoISjB6WKMK8YDe4Xn4IXbwasdJQPT1turKJkI2ocorJ24zHwt
+BQRFrqmKws5Zn9CrbgXC
+=QkVU
+-----END PGP SIGNATURE-----
+
+--CekNernRPhHRFJJ8d4Sn2Ie3F4Lag1TaD--

@@ -1,55 +1,83 @@
-From: Luc Verhaegen <libv@skynet.be>
-Date: Tue, 26 Aug 2014 12:33:57 +0000
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Tue, 26 Aug 2014 13:19:48 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <20140826123357.GB22395@skynet.be>
+Message-Id: <20140826131948.GK15297@lukather>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="dYbRCasfhpyZLUd7"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140825124410.GZ15297@lukather>
- <20140825133953.GJ4163@ulmo.nvidia.com> <53FB3E7F.4000503@redhat.com>
- <20140825141600.GA14763@ulmo.nvidia.com> <20140825145854.GA15297@lukather>
- <20140825150501.GE14763@ulmo.nvidia.com> <20140825150900.GB21020@skynet.be>
- <20140826075247.GC17263@ulmo> <20140826120258.GA22395@skynet.be>
- <20140826122112.GC641@ulmo>
-In-Reply-To: <20140826122112.GC641@ulmo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1407914239-12054-1-git-send-email-libv@skynet.be>
+ <1407914239-12054-5-git-send-email-libv@skynet.be>
+ <53EB9471.3090204@wwwdotorg.org> <20140813170106.GT15297@lukather>
+ <20140825121228.GB4163@ulmo.nvidia.com>
+ <20140825124410.GZ15297@lukather>
+ <20140825133953.GJ4163@ulmo.nvidia.com>
+ <53FB3E7F.4000503@redhat.com> <53FB555E.5040409@suse.de>
+In-Reply-To: <53FB555E.5040409@suse.de>
 To: linux-arm-kernel@lists.infradead.org
 
-On Tue, Aug 26, 2014 at 02:21:16PM +0200, Thierry Reding wrote:
-> On Tue, Aug 26, 2014 at 02:02:58PM +0200, Luc Verhaegen wrote:
-> > On Tue, Aug 26, 2014 at 09:52:49AM +0200, Thierry Reding wrote:
-> > > On Mon, Aug 25, 2014 at 05:09:00PM +0200, Luc Verhaegen wrote:
-> > > > On Mon, Aug 25, 2014 at 05:05:04PM +0200, Thierry Reding wrote:
-> > > > > 
-> > > > > No. simplefb just wants to write to some memory that hardware has been
-> > > > > set up to scan out. The platform requires that the clocks be on.
-> > > > 
-> > > > Simplefb also requires that the memory is there and is persistent. Fine 
-> > > > for discrete graphics cards, fine for rpi where most things are hidden 
-> > > > from the ARM core anyway, not so fine for anybody else.
-> > > 
-> > > I don't understand. This patch series isn't changing anything about the
-> > > memory aspects of the driver yet it's working for you on sunxi, isn't
-> > > it? So it can't be all that broken.
-> > > 
-> > > Thierry
-> > 
-> > Oh, i had to go wrestle with UBoot options and reserve 8MB off the top, 
-> > which the kernel never gets told about. A nice throwback to x86 IGP 
-> > bioses, a past i had thought i had left behind forgood.
-> 
-> Can you not use the reserved memory code (drivers/of/of_reserved_mem.c
-> in the kernel)? I think that's the generally accepted way to do this
-> with DT.
-> 
-> Thierry
 
-It was mentioned to me, and I probably could do that, but this seemed 
-even more DT wrangling from within u-boot, and it didn't seem finished 
-yet. Plus, all of this already was way more wrangling than i bargained 
-for, especially with the promise of "simple"-fb. Then there is the 
-really awkward way in which one gets to define clocks outside of a 
-dts/compiler (you've seen the code, right?), i really did not feel like 
-repeating something like that.
+--dYbRCasfhpyZLUd7
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Luc Verhaegen.
+Hi,
+
+On Mon, Aug 25, 2014 at 05:25:18PM +0200, Andreas F=E4rber wrote:
+> Hi,
+>=20
+> Am 25.08.2014 15:47, schrieb Hans de Goede:
+> > On 08/25/2014 03:39 PM, Thierry Reding wrote:
+> >> On Mon, Aug 25, 2014 at 02:44:10PM +0200, Maxime Ripard wrote:
+> >>> On Mon, Aug 25, 2014 at 02:12:30PM +0200, Thierry Reding wrote:
+> >>>> On Wed, Aug 13, 2014 at 07:01:06PM +0200, Maxime Ripard wrote:
+> >>>>> On Wed, Aug 13, 2014 at 10:38:09AM -0600, Stephen Warren wrote:
+> >>>>>> If not, perhaps the clock driver should force the clock to be
+> >>>>>> enabled (perhaps only if the DRM/KMS driver isn't enabled?).
+> [...]
+> > As for the suggestion to simply never disable the plls / ahb gates by b=
+locking
+> > them from ever being disabled in the sunxi clock driver, that is not re=
+ally
+> > a solution either, as we want to be able to turn these things off to sa=
+fe
+> > power on screen blank once control has been turned over to the kms driv=
+er.
+>=20
+> Without wanting to take sides on the simplefb matter, can't you just use
+> clk_ignore_unused in bootargs to work around the issue at hand?
+> That's what I do on the Spring Chromebook.
+
+Leaving *all* the clocks enabled just to workaround a driver failing
+to grab its clocks doesn't look like a solution either.
+
+Maxime
+
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+
+--dYbRCasfhpyZLUd7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJT/Il0AAoJEBx+YmzsjxAg1CoP/3UDwlCtLT45Pe997OIgFwva
+ecRX5YaGqCOUc6B7MJoTm2GGd2Ij432RKNu2WqMgmEZukfCMUE2x4s3QfhFbZe/f
+eRfGYgZrYCA8jaUp+zT6y2qp3LOim2tXXNRi5BNN5oneZNORQkEjFpdks8SSUrb9
+dtjLZYtftsGXWmi2lDj2a00O+UbnQD9HOjH2irv3t04m4G1tDiyr09Tn70ZMhrC2
+E1qCi/EC7SNTD9AJQUuSFsZvb3k5R97zrQwNnl9mr2Rpsl8mqIF0ognA+Ajszje9
+2aINNANUm1aL+tAfziS+PMA2JrLe0hnbqcYNbW4SZgauuBMiRvvQbwsqGkKygxkD
+yr9SWtlT/MLwDrTfG9f3BS3NkmsrPzQqYxRlUqX+OVmT2vV+D3KdULmgDlm7W7i0
+iHqJ54kNxDezXYE8yyf+pTJ0m7n5iNF2hpAfSTwY/UAVLEpmCANo/YHHJ5e/Bnz9
+/+5xaWIllAxIENtv2lXvzY7058jxTRF1+IjZ4+INJAMdDQAsMkpGQHQsI4v62ZUn
+RglnQwmcVGrS+Pbc4gfcyGB/tn7mxi3RB12dLsSj7NIWG5PvKzrO0qjU59AvrRTM
+Q5pzf0RmQnSRU3/xaa5BXqrS74EXSQuM6WcXq2oU2eILtg1THQ8fWjBg/oGP2jNd
+H9LG6RQCTUuFmKTKqSpi
+=zAXj
+-----END PGP SIGNATURE-----
+
+--dYbRCasfhpyZLUd7--

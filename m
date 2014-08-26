@@ -1,78 +1,102 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Tue, 26 Aug 2014 13:43:14 +0000
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Tue, 26 Aug 2014 13:53:41 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <20140826134312.GB2980@ulmo>
+Message-Id: <20140826135341.GM15297@lukather>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="9zSXsLTf0vkW971A"
+Content-Type: multipart/mixed; boundary="CvOg3jo0sXL5jEc+"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140825124410.GZ15297@lukather>
+References: <20140813170106.GT15297@lukather>
+ <20140825121228.GB4163@ulmo.nvidia.com>
+ <20140825124410.GZ15297@lukather>
  <20140825133953.GJ4163@ulmo.nvidia.com>
  <53FB3E7F.4000503@redhat.com>
  <20140825141600.GA14763@ulmo.nvidia.com>
- <CAKON4OyjJ+QcBGOzrUDH9J+DxBEKLmXeOcnUyOHHHV_DtCG0zA@mail.gmail.com>
- <53FB47B8.2090104@redhat.com>
- <20140825151255.GA14967@ulmo.nvidia.com>
- <20140825151822.GC21020@skynet.be> <20140826084026.GF17263@ulmo>
- <20140826132207.GL15297@lukather>
-In-Reply-To: <20140826132207.GL15297@lukather>
+ <20140825145854.GA15297@lukather>
+ <20140825150501.GE14763@ulmo.nvidia.com>
+ <20140825152232.GE15297@lukather> <20140826080432.GD17263@ulmo>
+In-Reply-To: <20140826080432.GD17263@ulmo>
 To: linux-arm-kernel@lists.infradead.org
 
 
---9zSXsLTf0vkW971A
+--CvOg3jo0sXL5jEc+
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Aug 26, 2014 at 03:22:07PM +0200, Maxime Ripard wrote:
-> On Tue, Aug 26, 2014 at 10:40:27AM +0200, Thierry Reding wrote:
-> > On Mon, Aug 25, 2014 at 05:18:22PM +0200, Luc Verhaegen wrote:
-> > > On Mon, Aug 25, 2014 at 05:12:58PM +0200, Thierry Reding wrote:
-> > > >=20
-> > > > Out of curiosity, how does this work in practice? How does the
-> > > > bootloader create this entry? Does it scan the DT to see which cloc=
-ks
-> > > > the real hardware device references and then simply copies them to =
-the
-> > > > simplefb node?
-> > > >=20
-> > > > Thierry
-> > >=20
-> > > https://www.mail-archive.com/linux-sunxi@googlegroups.com/msg06619.ht=
-ml
+On Tue, Aug 26, 2014 at 10:04:33AM +0200, Thierry Reding wrote:
+> > > No. simplefb just wants to write to some memory that hardware has been
+> > > set up to scan out. The platform requires that the clocks be on. Other
+> > > platforms may not even allow turning off the clocks.
 > >=20
-> > That looks like a royal pain. Again, I think it'd be much simpler (but
-> > not less code, unfortunately) to do this on a per-resource basis. That
-> > way these low-level firmware drivers in the kernel can stay trivial,
-> > keeping the real complexity where they belong: in hardware-specific
-> > drivers such as DRM/KMS.
+> > Like what? the rpi? Come on. Just because the videocore is some black
+> > box we know nothing about doesn't mean we should use it as an example.
 >=20
-> So we have to write a DRM/KMS driver in order to have display working
-> while waiting for a DRM/KMS driver to be worked on? Come on...
+> You make it sound like the Raspberry Pi is somehow less important than
+> sunxi.
 
-Perhaps you should go and read this thread again. That's not at all what
-I've been saying.
+No. What I mean is that it seems like we are somehow punished, or at
+least blamed, for having a better and more complete kernel support.
 
-Thierry
+> > Any decent enough SoC, with a decent support in the kernel will have
+> > clocks for this, and I really wonder how simplefb will behave once its
+> > clocks will be turned off...
+>=20
+> There are other devices besides ARM SoCs that may want to use this
+> driver and that don't have clock support.
 
---9zSXsLTf0vkW971A
-Content-Type: application/pgp-signature
+And in this case, with this patch, simplefb will not claim any clock,
+nor will fail probing.
+
+> But you're missing my point. What I'm saying is that the simplefb driver
+> is meant to serve as a way to take over whatever framebuffer a firmware
+> set up. Therefore I think it makes the most sense to assume that nothing
+> needs to be controlled in any way since already been set up by firmware.
+> Eventually there should be a driver that takes over from simplefb that
+> knows how to properly handle the device's specifics, but that's not
+> simplefb.
+
+I guess such a hand over if it were to happen in the kernel would
+involve the second driver claiming the resources before the first one
+release them. How is that different in this case?
+
+> The goal of this patch series is to keep clocks from being turned off.
+> But that's not what it does. What it does is turn clocks on to prevent
+> them from being turned off. In my opinion that's a workaround for a
+> deficiency in the kernel (and the firmware/kernel interface) and I think
+> it should be fixed at the root. So a much better solution would be to
+> establish a way for firmware to communicate to the kernel that a given
+> resource has been enabled by firmware and shouldn't be disabled. Such a
+> solution can be implement for all types of resources and can be reused
+> by all drivers since they don't have to worry about these details.
+
+Mike Turquette repeatedly said that he was against such a DT property:
+https://lkml.org/lkml/2014/5/12/693
+
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+
+--CvOg3jo0sXL5jEc+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQIcBAEBAgAGBQJT/I7wAAoJEN0jrNd/PrOh4c8P/0PojPZpyCN84clnaRLPurD8
-MEOtDiBINUOsCB4FPoBrEzmg+g+8zgGzXnOm3ASTJjjTnbIsGMjgKJzfYUrfGy9c
-nuFB9d+xoW0Qhsc17ynYQFCK/VDtXDDi0my9N0Kr5HVLIhVAQJfPBqRqf6uRpaC5
-3bZdRBqW2VXmuqY1yN0bmSnPMRkhrSS8n8shom0UkvxMZorWVrWuddXKAFewddCa
-Tke4q/GXcupco0sYDUlh/6Qom6NwNnio/M/NdO1VocjzTu0hChh2lpMeWrsHhAS+
-ICwARAg9whYVusLM+zOYgsDZKx8BMRiwlWaK4VeCVrU5lsT9K4kbSQOKax1aso+N
-vVeFT76B7g/r9tD6NJ0rFAKXT1zR2koQhK28Z5liPoE/lk6R8jvRGvMPaY2btBna
-uyAkJXwoHzrWodDQgkWrXGpTS8S9e9t3vnOroDHfKqEzti7zlgc+jrWY2rr+F2zh
-T9MbE+tmohN6coIrNrjnPWx3QefhVuVoJllrDtLpiCHfOlDrZ3SB7y7T/PYLhl4S
-EIMU2hH2kPJNa/GrPF5IdnHZtEg35cmZ9g2wtFytV02igIhgxSwq8xXXx5ld0wvu
-1kHn85OIxcpbM1WvxvJLbhzYVn1d95suFCj9U/9pTr85UagEjmVyq8yX1ixFcko3
-2P2DGLOCo4XC3qa9Cz3x
-=JbLN
+iQIcBAEBAgAGBQJT/JFlAAoJEBx+YmzsjxAgfukP/Ro3ntrJCM/RtWnJww8cC7l1
+nhleHkJb1BqsTMwSbuJtgLV0zz6Rt4GUF2bdzbt/Bwe7v3pd9ijUeVpTfaTZ5S6w
+fHGxhslpWp9R/0LOINtR5DucbiJGrSDT8t4YjusyAQKZ3lWA1EQAMW9ycI3RFOZ6
+RWqEK9+RNySDAUjda1rxfz/APDFWZFMmZYSv9VMMEYB9ZYSzp8vHo+uMkSKdqLUK
+cMPdHwkHBow8zebBjmriSYHfaLor56hhohbc/P7SA8/13hckQhRn3tvlpE0K040B
+oKzVmOddtG7u/ov7xLkdtsWYfJ3uwmIHNIcAzWtmSDZ2gcGRc9ThAcLTouvajChM
+qXGIxi2GdixMt3sAKtqHquVXXEfM+ahsWBJR4cMjQ3d/5LzySfcKbfSFgxKr9F1b
+cG5qaCyoXlHbNee5XBnvrw1hvKF774Py4U4ssMehkNIAgKWWjlrUbSsM/5LI6VY9
+cTSYao+1Wu0iBlmp3LvLcujLLNu53V3QtgK3caBnSxcL2LZvZYfZ2yeA8mbSXFDk
+uIXSxled3dNMMk23Vr6J/gTMsvGdvxEEprhGudthbBO8PhSOop6zLGZi8Rvs3dR0
+FW0hcMSG45CDeVDZI2MVvR1Uwc5qPKivzX2Hn/F42WndVhYj5jxOWTDg8lm/t/Lf
+wjNK68Ktqj2kmLQzDuxy
+=D87s
 -----END PGP SIGNATURE-----
 
---9zSXsLTf0vkW971A--
+--CvOg3jo0sXL5jEc+--

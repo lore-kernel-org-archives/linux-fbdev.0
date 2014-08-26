@@ -1,136 +1,148 @@
-From: Fabio Estevam <fabio.estevam@freescale.com>
-Date: Tue, 19 Aug 2014 18:23:07 +0000
-Subject: [RFC] fbdev: mxsfb: Add support for mx6sl and mx6sx
-Message-Id: <1408472587-4998-1-git-send-email-fabio.estevam@freescale.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 26 Aug 2014 16:58:45 +0000
+Subject: Re: [PATCHv2 27/27] OMAPDSS: connector-analog-tv: Add DT support
+Message-Id: <21704808.AJTjtXoZly@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1387205794-32246-1-git-send-email-tomi.valkeinen@ti.com> <1387205794-32246-28-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1387205794-32246-28-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-mx6sl and mx6sx share the same LCD controller as mx23 and mx28.
+Hi Tomi,
 
-Add support for it.
+On Monday 16 December 2013 16:56:34 Tomi Valkeinen wrote:
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> ---
+>  .../video/omap2/displays-new/connector-analog-tv.c | 66 ++++++++++++++++++-
+>  1 file changed, 65 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/omap2/displays-new/connector-analog-tv.c
+> b/drivers/video/omap2/displays-new/connector-analog-tv.c index
+> ccd9073f706f..ebed25a86487 100644
+> --- a/drivers/video/omap2/displays-new/connector-analog-tv.c
+> +++ b/drivers/video/omap2/displays-new/connector-analog-tv.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/of.h>
+> 
+>  #include <video/omapdss.h>
+>  #include <video/omap-panel-data.h>
+> @@ -42,6 +43,12 @@ static const struct omap_video_timings tvc_pal_timings > { .interlace	= true,
+>  };
+> 
+> +static const struct of_device_id tvc_of_match[];
+> +
+> +struct tvc_of_data {
+> +	enum omap_dss_venc_type connector_type;
+> +};
+> +
+>  #define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
+> 
+>  static int tvc_connect(struct omap_dss_device *dssdev)
+> @@ -92,7 +99,10 @@ static int tvc_enable(struct omap_dss_device *dssdev)
+>  	in->ops.atv->set_timings(in, &ddata->timings);
+> 
+>  	in->ops.atv->set_type(in, ddata->connector_type);
+> -	in->ops.atv->invert_vid_out_polarity(in, ddata->invert_polarity);
+> +
+> +	if (!ddata->dev->of_node)
+> +		in->ops.atv->invert_vid_out_polarity(in,
+> +			ddata->invert_polarity);
+> 
+>  	r = in->ops.atv->enable(in);
+>  	if (r)
+> @@ -205,6 +215,35 @@ static int tvc_probe_pdata(struct platform_device
+> *pdev) return 0;
+>  }
+> 
+> +static int tvc_probe_of(struct platform_device *pdev)
+> +{
+> +	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+> +	struct device_node *node = pdev->dev.of_node;
+> +	struct omap_dss_device *in;
+> +	const struct of_device_id *match;
+> +	const struct tvc_of_data *data;
+> +
+> +	match = of_match_node(tvc_of_match, pdev->dev.of_node);
+> +	if (!match) {
+> +		dev_err(&pdev->dev, "unsupported device\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	data = match->data;
+> +
+> +	in = omapdss_of_find_source_for_first_ep(node);
+> +	if (IS_ERR(in)) {
+> +		dev_err(&pdev->dev, "failed to find video source\n");
+> +		return PTR_ERR(in);
+> +	}
+> +
+> +	ddata->in = in;
+> +
+> +	ddata->connector_type = data->connector_type;
+> +
+> +	return 0;
+> +}
+> +
+>  static int tvc_probe(struct platform_device *pdev)
+>  {
+>  	struct panel_drv_data *ddata;
+> @@ -222,6 +261,10 @@ static int tvc_probe(struct platform_device *pdev)
+>  		r = tvc_probe_pdata(pdev);
+>  		if (r)
+>  			return r;
+> +	} else if (pdev->dev.of_node) {
+> +		r = tvc_probe_of(pdev);
+> +		if (r)
+> +			return r;
+>  	} else {
+>  		return -ENODEV;
+>  	}
+> @@ -263,12 +306,33 @@ static int __exit tvc_remove(struct platform_device
+> *pdev) return 0;
+>  }
+> 
+> +static const struct tvc_of_data tv_svideo_data = {
+> +	.connector_type = OMAP_DSS_VENC_TYPE_SVIDEO,
+> +};
+> +
+> +static const struct tvc_of_data tv_composite_video_data = {
+> +	.connector_type = OMAP_DSS_VENC_TYPE_COMPOSITE,
+> +};
+> +
+> +static const struct of_device_id tvc_of_match[] = {
+> +	{
+> +		.compatible = "svideo-connector",
+> +		.data = &tv_svideo_data,
+> +	},
+> +	{
+> +		.compatible = "composite-video-connector",
 
-The basic difference is the number of clocks that are required:
+I've just noticed that this doesn't match the bindings that document the 
+compatible value to be "composite-connector".
 
-- mx23/mx28: only one clock
-- mx6sl: two clocks
-- mx6sx: three clocks
+> +		.data = &tv_composite_video_data,
+> +	},
+> +	{},
+> +};
+> +
+>  static struct platform_driver tvc_connector_driver = {
+>  	.probe	= tvc_probe,
+>  	.remove	= __exit_p(tvc_remove),
+>  	.driver	= {
+>  		.name	= "connector-analog-tv",
+>  		.owner	= THIS_MODULE,
+> +		.of_match_table = tvc_of_match,
+>  	},
+>  };
 
-Tested on a mx28evk and mx6slevk.
-
-Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
----
-I am sending it as RFC because the scrolling is showing some artifacts when
-I boot with console=tty0. The kernel messages are displayed correctly, but when
-it scrolls I see some garbage.
-
-Appreciate any comment/suggestion to improve this.
-
- drivers/video/fbdev/Kconfig |  2 +-
- drivers/video/fbdev/mxsfb.c | 47 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 48 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index e911b9c..fd28987 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2420,7 +2420,7 @@ config FB_JZ4740
- 
- config FB_MXS
- 	tristate "MXS LCD framebuffer support"
--	depends on FB && ARCH_MXS
-+	depends on FB && (ARCH_MXS || ARCH_MXC)
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
-index accf48a2..a567cc6 100644
---- a/drivers/video/fbdev/mxsfb.c
-+++ b/drivers/video/fbdev/mxsfb.c
-@@ -172,6 +172,10 @@ struct mxsfb_info {
- 	struct fb_info fb_info;
- 	struct platform_device *pdev;
- 	struct clk *clk;
-+	struct clk *clk_axi;
-+	struct clk *clk_disp_axi;
-+	bool clk_axi_enabled;
-+	bool clk_disp_axi_enabled;
- 	void __iomem *base;	/* registers */
- 	unsigned allocated_size;
- 	int enabled;
-@@ -185,6 +189,42 @@ struct mxsfb_info {
- #define mxsfb_is_v3(host) (host->devdata->ipversion = 3)
- #define mxsfb_is_v4(host) (host->devdata->ipversion = 4)
- 
-+/* Enable lcdif axi clock */
-+static inline void clk_enable_axi(struct mxsfb_info *host)
-+{
-+	if (!host->clk_axi_enabled && (!IS_ERR(host->clk_axi))) {
-+		clk_prepare_enable(host->clk_axi);
-+		host->clk_axi_enabled = true;
-+	}
-+}
-+
-+/* Disable lcdif axi clock */
-+static inline void clk_disable_axi(struct mxsfb_info *host)
-+{
-+	if (host->clk_axi_enabled && (!IS_ERR(host->clk_axi))) {
-+		clk_disable_unprepare(host->clk_axi);
-+		host->clk_axi_enabled = false;
-+	}
-+}
-+
-+/* Enable DISP axi clock */
-+static inline void clk_enable_disp_axi(struct mxsfb_info *host)
-+{
-+	if (!host->clk_disp_axi_enabled && (!IS_ERR(host->clk_disp_axi))) {
-+		clk_prepare_enable(host->clk_disp_axi);
-+		host->clk_disp_axi_enabled = true;
-+	}
-+}
-+
-+/* Disable DISP axi clock */
-+static inline void clk_disable_disp_axi(struct mxsfb_info *host)
-+{
-+	if (host->clk_disp_axi_enabled && (!IS_ERR(host->clk_disp_axi))) {
-+		clk_disable_unprepare(host->clk_disp_axi);
-+		host->clk_disp_axi_enabled = false;
-+	}
-+}
-+
- static const struct mxsfb_devdata mxsfb_devdata[] = {
- 	[MXSFB_V3] = {
- 		.transfer_count = LCDC_V3_TRANSFER_COUNT,
-@@ -331,6 +371,8 @@ static void mxsfb_enable_controller(struct fb_info *fb_info)
- 		}
- 	}
- 
-+	clk_enable_axi(host);
-+	clk_enable_disp_axi(host);
- 	clk_prepare_enable(host->clk);
- 	clk_set_rate(host->clk, PICOS2KHZ(fb_info->var.pixclock) * 1000U);
- 
-@@ -374,6 +416,8 @@ static void mxsfb_disable_controller(struct fb_info *fb_info)
- 	writel(reg & ~VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4);
- 
- 	clk_disable_unprepare(host->clk);
-+	clk_disable_disp_axi(host);
-+	clk_disable_axi(host);
- 
- 	host->enabled = 0;
- 
-@@ -867,6 +911,9 @@ static int mxsfb_probe(struct platform_device *pdev)
- 		goto fb_release;
- 	}
- 
-+	host->clk_axi = devm_clk_get(&host->pdev->dev, "axi");
-+	host->clk_disp_axi = devm_clk_get(&host->pdev->dev, "disp_axi");
-+
- 	host->reg_lcd = devm_regulator_get(&pdev->dev, "lcd");
- 	if (IS_ERR(host->reg_lcd))
- 		host->reg_lcd = NULL;
 -- 
-1.9.1
+Regards,
+
+Laurent Pinchart
 

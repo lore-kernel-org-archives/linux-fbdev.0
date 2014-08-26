@@ -1,120 +1,64 @@
-From: "jonsmirl@gmail.com" <jonsmirl@gmail.com>
-Date: Mon, 25 Aug 2014 15:49:24 +0000
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Tue, 26 Aug 2014 07:52:49 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <CAKON4OzR=JACaVE2ATm6n95LCTbH2rXBzG_ExkD1kO8Qzzf1CA@mail.gmail.com>
+Message-Id: <20140826075247.GC17263@ulmo>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Clx92ZfkiYIKRjnr"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1407914239-12054-5-git-send-email-libv@skynet.be>
- <53EB9471.3090204@wwwdotorg.org> <20140813170106.GT15297@lukather>
+References: <53EB9471.3090204@wwwdotorg.org> <20140813170106.GT15297@lukather>
  <20140825121228.GB4163@ulmo.nvidia.com>
  <20140825124410.GZ15297@lukather>
  <20140825133953.GJ4163@ulmo.nvidia.com>
  <53FB3E7F.4000503@redhat.com>
  <20140825141600.GA14763@ulmo.nvidia.com>
- <CAKON4OyjJ+QcBGOzrUDH9J+DxBEKLmXeOcnUyOHHHV_DtCG0zA@mail.gmail.com>
- <53FB47B8.2090104@redhat.com>
- <20140825151255.GA14967@ulmo.nvidia.com>
-In-Reply-To: <20140825151255.GA14967@ulmo.nvidia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <20140825145854.GA15297@lukather>
+ <20140825150501.GE14763@ulmo.nvidia.com>
+ <20140825150900.GB21020@skynet.be>
+In-Reply-To: <20140825150900.GB21020@skynet.be>
 To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Aug 25, 2014 at 11:12 AM, Thierry Reding
-<thierry.reding@gmail.com> wrote:
-> On Mon, Aug 25, 2014 at 04:27:04PM +0200, Hans de Goede wrote:
->> Hi,
->>
->> On 08/25/2014 04:23 PM, jonsmirl@gmail.com wrote:
->> > On Mon, Aug 25, 2014 at 10:16 AM, Thierry Reding
->> > <thierry.reding@gmail.com> wrote:
->> >> On Mon, Aug 25, 2014 at 03:47:43PM +0200, Hans de Goede wrote:
->> >>> On 08/25/2014 03:39 PM, Thierry Reding wrote:
->> >>>> On Mon, Aug 25, 2014 at 02:44:10PM +0200, Maxime Ripard wrote:
->> >>>>> On Mon, Aug 25, 2014 at 02:12:30PM +0200, Thierry Reding wrote:
->> >>>>>> On Wed, Aug 13, 2014 at 07:01:06PM +0200, Maxime Ripard wrote:
->> >>>>>>> On Wed, Aug 13, 2014 at 10:38:09AM -0600, Stephen Warren wrote:
->> >>>>>> [...]
->> >>>>>>>> If not, perhaps the clock driver should force the clock to be
->> >>>>>>>> enabled (perhaps only if the DRM/KMS driver isn't enabled?).
->> >>>>>>>
->> >>>>>>> I'm sorry, but I'm not going to take any code that will do that in our
->> >>>>>>> clock driver.
->> >>>>>>>
->> >>>>>>> I'm not going to have a huge list of ifdef depending on configuration
->> >>>>>>> options to know which clock to enable, especially when clk_get should
->> >>>>>>> have the consumer device as an argument.
->> >>>>>>
->> >>>>>> Are you saying is that you want to solve a platform-specific problem by
->> >>>>>> pushing code into simple, generic drivers so that your platform code can
->> >>>>>> stay "clean"?
->> >>>>>
->> >>>>> Are you saying that this driver would become "dirty" with such a patch?
->> >>>>
->> >>>> Yes. Others have said the same and even provided alternative solutions
->> >>>> on how to solve what's seemingly a platform-specific problem in a
->> >>>> platform-specific way.
->> >>>
->> >>> This is not platform specific, any platform with a complete clock driver
->> >>> will suffer from the same problem (the clock driver disabling unclaimed
->> >>> ahb gates, and thus killing the video output) if it wants to use simplefb
->> >>> for early console support.
->> >>
->> >> It is platform specific in that your platform may require certain clocks
->> >> to remain on. The next platform may require power domains to remain on
->> >> during boot and yet another one may rely on regulators to stay on during
->> >> boot. By your argument simplefb will need to be taught to handle pretty
->> >> much every type of resource that the kernel has.
->> >
->> > Why can't simplefb be a driver library that is called from a device
->> > specific device driver that only claims the clocks (or regulators)?
->> > Then build all of these device specific drivers into the generic ARM
->> > kernel. They will be quite small since all they do is claim the clocks
->> > (or regulator).  Maybe we can even figure out some protocol for
->> > removing the unused ones from memory later.
->> >
->> > Later during the boot process the device specific driver can load its
->> > KMS code which has also been implemented as a driver library. Maybe
->> > use E_PROBE_DEFER to do this. Match on the device ID, claim the
->> > clocks, defer until the full KMS library can be loaded.
->>
->> There is no need for all this complexity, all that is needed is for the
->> simplefb driver to be thought to claim + enable any clocks listed in
->> its dt node.
->
-> Out of curiosity, how does this work in practice? How does the
-> bootloader create this entry? Does it scan the DT to see which clocks
-> the real hardware device references and then simply copies them to the
-> simplefb node?
 
-That's why this is such a problem. There is a general rule in Linux -
-one device, one driver.  All of the kernel device driver code is
-written around this assumption. We're trying to make two drivers for
-one device and the kernel is not designed to support that. There
-shouldn't be an independent 'simplefb' node. That is creating two
-device descriptions for a single device.
+--Clx92ZfkiYIKRjnr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Adding 'chosen' information to the devices nodes might work.
+On Mon, Aug 25, 2014 at 05:09:00PM +0200, Luc Verhaegen wrote:
+> On Mon, Aug 25, 2014 at 05:05:04PM +0200, Thierry Reding wrote:
+> >=20
+> > No. simplefb just wants to write to some memory that hardware has been
+> > set up to scan out. The platform requires that the clocks be on.
+>=20
+> Simplefb also requires that the memory is there and is persistent. Fine=
+=20
+> for discrete graphics cards, fine for rpi where most things are hidden=20
+> from the ARM core anyway, not so fine for anybody else.
 
-video@1345 {
-    compatible = "sunxi-a20-video";
-    reg = <...>;
-    clocks = <...>;
-    chosen {
-      compatible = "simplefb";     // dynamically added by uboot
-      buffer = <0x4564>;    // dynamically added by uboot
-   };
-};
+I don't understand. This patch series isn't changing anything about the
+memory aspects of the driver yet it's working for you on sunxi, isn't
+it? So it can't be all that broken.
 
-This will initialize the simplefb driver without attaching it to any
-specific hardware.  It can then look in its parent node for clocks and
-regulators and claim them.
+Thierry
 
+--Clx92ZfkiYIKRjnr
+Content-Type: application/pgp-signature
 
->
-> Thierry
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
+iQIcBAEBAgAGBQJT/DzPAAoJEN0jrNd/PrOhlL4QAJ/h2zWpl+YmZ8g7VPZe7fBD
+OY0ZRMx47lUFuizTOJ3b1WArFfLYON//LHd9P1IfDnaXG0wAGT0Ml6UuEGHrepoJ
+y6lf2l3JxnrNV860Z8G0rop7h+lsfd8hsBMFcsGjT9pYeuzV7oQAFQTGCqJwjryp
+wsxcti8PZOVTt75yl5zrYcQz5B6qYFAPH+lTh4jZbNzpXhjWeuaZggGNfsIr3KEC
+Rjzui43Pxzf90A2DCIaGXxjgtKdFOMRY5Rx3LXJBXNJ/44hf0kbq+JPwUG4/MfGO
+ClvVeybWesWhEtKIr3ZUujRRDBy69Ca5T4VP4hGhXcXYm+4/hI/ndqUrPqh0XH2A
+HF8QeJGlSTUXFX4VaNjjsF4VZzhehuDLu5WKMxsvn7ijF2fojBkI78HhMX43haK9
++l9y6Wgj+8wROecnRSyKYzLQVVDSOUzg9I2IJ35hz9OU2e2X2BW3fmc97XHseFyw
+yMrFvRfJNtFyrc8R2321Zjljmb1A6Oy+zdcgoQx0OJkCtb8OdJsESRrT4VK94TIZ
+J0Kvg6jH4qW6InmQWwy142Kjbkq6fpMv0LftsaIt+697Iq950ChcHw+yOtmnpZfy
+hXlYMoMJIdw04BfcRowNoJnYIOCkbNSv2/kIcgU44o7YpxdYQJic3IkRFju4u5Op
+l5mxwjB9ZeQqTbnQhdo2
+=stZD
+-----END PGP SIGNATURE-----
 
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+--Clx92ZfkiYIKRjnr--

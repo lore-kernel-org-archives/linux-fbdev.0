@@ -1,122 +1,84 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 03 Jul 2014 13:40:00 +0000
-Subject: [PATCH 4/4] arm/dts: am437x GP HDMI support
-Message-Id: <1404394800-18138-5-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 26 Aug 2014 10:34:02 +0000
+Subject: Re: [PATCH V2] video : remove redundant error check
+Message-Id: <53FC629A.2050101@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="jcac2m5J2GXAW87hsuD8axsqafEnEldkg"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1404394800-18138-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1404394800-18138-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+References: <20140516093123.GA17245@devel.8.8.4.4>
+In-Reply-To: <20140516093123.GA17245@devel.8.8.4.4>
+To: Daeseok Youn <daeseok.youn@gmail.com>, plagnioj@jcrosoft.com, Antonino Daplas <adaplas@gmail.com>
+Cc: jg1.han@samsung.com, laurent.pinchart@ideasonboard.com, robdclark@gmail.com, daniel.vetter@ffwll.ch, Julia.Lawall@lip6.fr, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-AM437x GP board has both LCD and HDMI outputs. The active display is
-selected with a GPIO, which affects video and audio signal routing, and
-LCD backlight.
+--jcac2m5J2GXAW87hsuD8axsqafEnEldkg
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Managing the gpio dynamically has proven rather difficult, so the
-approach taken here is just to have two separate .dts files for LCD/HDMI
-use cases. The HDMI dts file includes the base file, which has LCD
-support, and overrides and adds the necessary items.
+On 16/05/14 12:31, Daeseok Youn wrote:
+> It doesn't need to check "err" for printing info.
+> And also use pr_info instead of printk.
+>=20
+> Signed-off-by: Daeseok Youn <daeseok.youn@gmail.com>
+> ---
+> V2: removes unneeded lines for sending a patch
+>=20
+>  drivers/video/fbdev/i810/i810_main.c |    7 +++----
+>  1 files changed, 3 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev=
+/i810/i810_main.c
+> index bb674e4..15cb397 100644
+> --- a/drivers/video/fbdev/i810/i810_main.c
+> +++ b/drivers/video/fbdev/i810/i810_main.c
+> @@ -1910,13 +1910,12 @@ static void i810fb_find_init_mode(struct fb_inf=
+o *info)
+> =20
+>  	for (i =3D 0; i < par->ddc_num + 1; i++) {
+>  		err =3D i810_probe_i2c_connector(info, &par->edid, i);
+> -		if (!err)
+> +		if (!err) {
+> +			pr_info("i810fb_init_pci: DDC probe successful\n");
+>  			break;
+> +		}
+>  	}
+> =20
+> -	if (!err)
+> -		printk("i810fb_init_pci: DDC probe successful\n");
+> -
+>  	fb_edid_to_monspecs(par->edid, specs);
+> =20
+>  	if (specs->modedb =3D=3D NULL)
+>=20
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
----
- arch/arm/boot/dts/Makefile               |  3 +-
- arch/arm/boot/dts/am437x-gp-evm-hdmi.dts | 70 ++++++++++++++++++++++++++++++++
- 2 files changed, 72 insertions(+), 1 deletion(-)
- create mode 100644 arch/arm/boot/dts/am437x-gp-evm-hdmi.dts
+I don't know... I think I personally like more the original version. In
+fact, the whole print looks quite useless to me, or at least it should
+be a debug print.
 
-diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 5a1fba6d10b5..3065fb2d113b 100644
---- a/arch/arm/boot/dts/Makefile
-+++ b/arch/arm/boot/dts/Makefile
-@@ -302,7 +302,8 @@ dtb-$(CONFIG_ARCH_OMAP4) += omap4-duovero-parlor.dtb \
- 	omap4-var-stk-om44.dtb
- dtb-$(CONFIG_SOC_AM43XX) += am43x-epos-evm.dtb \
- 	am437x-gp-evm.dtb \
--	am43x-epos-evm-hdmi.dtb
-+	am43x-epos-evm-hdmi.dtb \
-+	am437x-gp-evm-hdmi.dtb
- dtb-$(CONFIG_SOC_OMAP5) += omap5-cm-t54.dtb \
- 	omap5-sbc-t54.dtb \
- 	omap5-uevm.dtb
-diff --git a/arch/arm/boot/dts/am437x-gp-evm-hdmi.dts b/arch/arm/boot/dts/am437x-gp-evm-hdmi.dts
-new file mode 100644
-index 000000000000..9380a422227b
---- /dev/null
-+++ b/arch/arm/boot/dts/am437x-gp-evm-hdmi.dts
-@@ -0,0 +1,70 @@
-+/*
-+ * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+/* AM437x GP EVM with HDMI output */
-+
-+#include "am437x-gp-evm.dts"
-+
-+/ {
-+	aliases {
-+		display0 = &hdmi;
-+	};
-+
-+	hdmi: connector {
-+		compatible = "hdmi-connector";
-+		label = "hdmi";
-+
-+		type = "b";
-+
-+		port {
-+			hdmi_connector_in: endpoint {
-+				remote-endpoint = <&sii9022_out>;
-+			};
-+		};
-+	};
-+};
-+
-+&i2c1 {
-+	sii9022@3b {
-+		compatible = "sil,sii9022";
-+		reg = <0x3b>;
-+
-+		/* XXX 'SelLCDorHDMI' Gpio, LOW to select HDMI */
-+		reset-gpios = <&gpio5 8 GPIO_ACTIVE_HIGH>;
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+
-+				sii9022_in: endpoint {
-+					remote-endpoint = <&dpi_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+
-+				sii9022_out: endpoint {
-+					remote-endpoint = <&hdmi_connector_in>;
-+				};
-+			};
-+		};
-+	};
-+};
-+
-+&dss {
-+	port {
-+		dpi_out: endpoint@0 {
-+			remote-endpoint = <&sii9022_in>;
-+			data-lines = <24>;
-+		};
-+	};
-+};
--- 
-1.9.1
+ Tomi
 
+
+
+--jcac2m5J2GXAW87hsuD8axsqafEnEldkg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJT/GKaAAoJEPo9qoy8lh71hB8P/RmRNDhH7SiXHpWaIwfDhSf4
+krOsifo9MkHzR0Pnrd63UUbXV1hujsP0VMd3tKb67o8XUQ/3AUL2ccH/GM5BGEyY
+ymEP8U+OiUcqH6Da6IVfw04cDjKIOJE05ia2ds4no7FH4rW03/oSd6tFPeP4euZT
+Mx/WRC8RsjUIUIk0pbP/b9rGZnr9JaDNK4+merTvDOWo5w0yJH3UGea8JqyZ+nUe
+TcaT2fHuP4mDYb1D4AfcT5OrALXgjuBmZNIf2cF6+tULZWda9/m8WgBrqI7GdprM
+9o/L1Pt2BCWtvddFaLSFdmn5uGsdhk0vVoJn5QtsMh5jnU46JC21idqxrWEDprYd
+9/G0+ttKt0CEc2kEIKnAWBK5IFPR3YnWQfLVtapbmcT3bTnZjeFo+XEjEqpKyEDW
+pfDUv8vWOUfiEZFFZGQsQbEVQ6WH9rmC2oXnRzOW7Q2aMA6u86W7jQGjX0Hih6cr
+pDNPFYDqXZvgPsatpnhJJoc9z19lM03Z9wsS55EYu1Ahgyv9u4EQixgscO7OsSqd
+GjeQALtZZ9C8Kgvt4abwMvJ5dqdQEmy4TiL24UFtgBH8elI1wYBnoriXJnJFqj47
+GUpVQpx/nyH+ga2N1glO7d/5lDwgVvQbmcjO/OfIzcTemmxjugW9GXl4G2v9NkHi
+O/UqzBFh/MqdoN+18I2G
+=4Hqj
+-----END PGP SIGNATURE-----
+
+--jcac2m5J2GXAW87hsuD8axsqafEnEldkg--

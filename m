@@ -1,64 +1,52 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 29 Aug 2014 13:43:35 +0000
-Subject: [GIT PULL] fbdev fixes for 3.17
-Message-Id: <54008387.9090003@ti.com>
+Date: Tue, 26 Aug 2014 12:41:03 +0000
+Subject: Re: [PATCH 1/1] video: vermilion: remove unnecessary break after goto
+Message-Id: <53FC805F.5040807@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="bgtt6OwgDjeTQ8UU8JXP7HgOQfcbfkfRA"
+Content-Type: multipart/mixed; boundary="7UJuFtT020P8oFaEMoTxmTIhOSO4rH1lL"
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <1404836838-6953-1-git-send-email-fabf@skynet.be>
+In-Reply-To: <1404836838-6953-1-git-send-email-fabf@skynet.be>
+To: Fabian Frederick <fabf@skynet.be>, linux-kernel@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, linux-fbdev@vger.kernel.org
 
---bgtt6OwgDjeTQ8UU8JXP7HgOQfcbfkfRA
-Content-Type: text/plain; charset=utf-8
+--7UJuFtT020P8oFaEMoTxmTIhOSO4rH1lL
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-Hi Linus,
+On 08/07/14 19:27, Fabian Frederick wrote:
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Jingoo Han <jg1.han@samsung.com>
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Fabian Frederick <fabf@skynet.be>
+> ---
+>  drivers/video/fbdev/vermilion/vermilion.c | 1 -
+>  1 file changed, 1 deletion(-)
+>=20
+> diff --git a/drivers/video/fbdev/vermilion/vermilion.c b/drivers/video/=
+fbdev/vermilion/vermilion.c
+> index 048a666..5f930ae 100644
+> --- a/drivers/video/fbdev/vermilion/vermilion.c
+> +++ b/drivers/video/fbdev/vermilion/vermilion.c
+> @@ -481,7 +481,6 @@ static int vml_pci_probe(struct pci_dev *dev, const=
+ struct pci_device_id *id)
+>  	default:
+>  		err =3D -ENODEV;
+>  		goto out_err_1;
+> -		break;
+>  	}
+> =20
+>  	info =3D &vinfo->info;
+>=20
 
-The following changes since commit 52addcf9d6669fa439387610bc65c92fa0980c=
-ef:
+Thanks, queued for 3.18.
 
-  Linux 3.17-rc2 (2014-08-25 15:36:20 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-3.17
-
-for you to fetch changes up to 4d4e2c003bd6c6bdd85080bd096d54d5d251defa:
-
-  video: da8xx-fb: preserve display width when changing HSYNC (2014-08-26=
- 15:36:51 +0300)
-
-----------------------------------------------------------------
-fbdev fixes for 3.17
-
-Minor fbdev fixes for da8xx-fb, atmel_lcdfb, arm clcd and chipsfb.
-
-----------------------------------------------------------------
-Dan Carpenter (1):
-      video: of: display_timing: double free on error
-
-Ian Abbott (1):
-      video: da8xx-fb: preserve display width when changing HSYNC
-
-Jon Medhurst (Tixy) (1):
-      video: ARM CLCD: Fix calculation of bits-per-pixel
-
-Julia Lawall (1):
-      drivers: video: fbdev: atmel_lcdfb.c: fix error return code
-
-Pranith Kumar (1):
-      fbdev: Remove __init from chips_hw_init() to fix build failure
-
- drivers/video/fbdev/amba-clcd.c   | 23 ++++++++++++++++++-----
- drivers/video/fbdev/atmel_lcdfb.c |  2 ++
- drivers/video/fbdev/chipsfb.c     |  2 +-
- drivers/video/fbdev/da8xx-fb.c    |  2 +-
- drivers/video/of_display_timing.c |  1 +
- 5 files changed, 23 insertions(+), 7 deletions(-)
+ Tomi
 
 
---bgtt6OwgDjeTQ8UU8JXP7HgOQfcbfkfRA
+
+--7UJuFtT020P8oFaEMoTxmTIhOSO4rH1lL
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -66,19 +54,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUAIOHAAoJEPo9qoy8lh71f2sQALHoGmRiwIeJix1a8gCIJ599
-iha90gb9tV8AN0/+4U4BbUHt1PIGaUYR9okVrhyGjShDeX3cN89BLcgWg1AaiiC4
-Ks6V53sKjoa1ZOhjy21GQjxqfKS7ubnnciXHa/QNBzuqZowy7tRKU4LlP24mysV9
-o2K13DPrLAwUmeHGsRlNzWRXPkkQz4YArWHzwNJnAaBo4w8VduAzGVHc23qZI7Lu
-jg7JiowR611Uh9iRcVYKfI9BiPo/bklDKX0KaZd9qcC+u+MDAmNu+ZkPQvOC05Po
-5T/oTdGgVTGfmq9kXo1Uplf0JyC2Nt+rg0K11cZ0T9cx9HFULp3pQ9IztOt9PgTs
-Z9AJqk9goHZaZNMr1r0hRkHZcR8l5e482nU6wH3o7hxmI2Tx17ikdK2nG2GHe+x1
-AoJus4Np34JF38LMO7GfQaPEiWdWsW5m4mxtsp91JYCeQLi0lDDEzKrmDJw1pGWU
-cYIrAwLyZyFI/N5ffXoLRXCCSCX9HKH2IOxtsSA2609gm15W6RSKOs0HZiIFEMTI
-Lka5E/2wxXguTvE02xy2SjghXQ4emh0LmPl7jF1U+6jmOKzQpwRvkwd6j1YBooA+
-8VEkMxN5vbAacfq3m9VsV3YmWDmt+1KPtzSmPDD06TEzV30MxqAHxt/rlvQ3QQSw
-8Sp3MgrX2XNHkV3xCWV/
-=FO9l
+iQIcBAEBAgAGBQJT/IBfAAoJEPo9qoy8lh71sdEP/0Z+UCpOkK+72kYyX84hIoz6
+FETMfIcoPBYsg70BnX9AbjxbFFxx47ByRpp+bzuhScZj37+YalLWwBR6pfomA0i/
+63Kia6jDcHbb6BTPM4llAkL7cs1zE/5LMM2hpXTS16QGDEQKcrPQNy9YqY/+nk4d
+9x6/x5a0mDgqi5eTYv+N0h4VxFgEttdoZiuaLQOsXsTRMHr2pvVgzgb1dyP5M1yW
+lUxc4x1QTPqTEVOjcvgVEJ0L0bcT5h5KCUOo14epYZ8Hd/fTfeMcOq7mkPPeY7Sj
+Wzgx+2QEJVFYb3uJyBpZP5B3VsTTwAa7dadGwyv5YOu8bDzmOIqTLofLFbxZkv+9
+lwXa04XKug/dUWG79yP8puBLXA/0bWpMEx0J5wYb6WLMLd2Z9pEA/H92ZStErI2z
+HFyuHfBcXF0jvfFyNH+3u7jHRuquGktE9gbvA8kerHfDpDS6y4G50ScAm7sLjHAB
+YFYDObKY5jdS8ymBQyq+kQc7AStBmEDJaWqq0RGclMIQb0fUqvdzfm3/mTz6lJ5K
+mf6FrzdG5PyVSEHfMFNUzS/NXajypvzb1ia4XGVkuU1aisHuJIIweKRHsoiUHb/I
+3GGPMe/TB9YGlRAOY3jb0MvLzYoBjP7LD/Bluewl/Vw2qRaJd4kol8M/RG9f+GQu
+OrRnqLXyDGbanb5qrNeo
+=Z0ve
 -----END PGP SIGNATURE-----
 
---bgtt6OwgDjeTQ8UU8JXP7HgOQfcbfkfRA--
+--7UJuFtT020P8oFaEMoTxmTIhOSO4rH1lL--

@@ -1,66 +1,53 @@
-From: Pramod Gurav <pramod.gurav@smartplayin.com>
-Date: Tue, 26 Aug 2014 12:22:37 +0000
-Subject: [PATCH v2 1/2] msm: msm_fb: Add remove function for platform driver for clean unloading
-Message-Id: <1409055038-9204-1-git-send-email-pramod.gurav@smartplayin.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 26 Aug 2014 12:52:01 +0000
+Subject: Re: [PATCH v2 1/2] msm: msm_fb: Add remove function for platform driver for clean unloading
+Message-Id: <53FC82F1.5000709@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="bgw8PcqXxfofNAmxR3CBSuOXi20wHT1Nr"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Pramod Gurav <pramod.gurav@smartplayin.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Jingoo Han <jg1.han@samsung.com>, Rob Clark <robdclark@gmail.com>
+References: <1409055038-9204-1-git-send-email-pramod.gurav@smartplayin.com>
+In-Reply-To: <1409055038-9204-1-git-send-email-pramod.gurav@smartplayin.com>
+To: Pramod Gurav <pramod.gurav@smartplayin.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Stephen Boyd <sboyd@codeaurora.org>, Jingoo Han <jg1.han@samsung.com>, Rob Clark <robdclark@gmail.com>
 
-This adds a  remove function to platform driver structure so that
-resources are released when driver is unloaded.
+--bgw8PcqXxfofNAmxR3CBSuOXi20wHT1Nr
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+On 26/08/14 15:10, Pramod Gurav wrote:
+> This adds a  remove function to platform driver structure so that
+> resources are released when driver is unloaded.
+>=20
+> Signed-off-by: Pramod Gurav <pramod.gurav@smartplayin.com>
+>=20
 
-CC: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-CC: Tomi Valkeinen <tomi.valkeinen@ti.com>
-CC: Stephen Boyd <sboyd@codeaurora.org>
-CC: Jingoo Han <jg1.han@samsung.com>
-CC: Rob Clark <robdclark@gmail.com>
+Thanks, queued this series for 3.18.
 
----
- drivers/video/fbdev/msm/msm_fb.c |   16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ Tomi
 
-diff --git a/drivers/video/fbdev/msm/msm_fb.c b/drivers/video/fbdev/msm/msm_fb.c
-index 1374803..4640188 100644
---- a/drivers/video/fbdev/msm/msm_fb.c
-+++ b/drivers/video/fbdev/msm/msm_fb.c
-@@ -589,6 +589,8 @@ static int msmfb_probe(struct platform_device *pdev)
- 
- 	msmfb->sleeping = WAKING;
- 
-+	platform_set_drvdata(pdev, msmfb);
-+
- 	return 0;
- 
- error_register_framebuffer:
-@@ -598,9 +600,23 @@ error_setup_fbmem:
- 	return ret;
- }
- 
-+static int msmfb_remove(struct platform_device *pdev)
-+{
-+	struct msmfb_info *msmfb;
-+
-+	msmfb = platform_get_drvdata(pdev);
-+
-+	unregister_framebuffer(msmfb->fb);
-+	iounmap(msmfb->fb->screen_base);
-+	framebuffer_release(msmfb->fb);
-+
-+	return 0;
-+}
-+
- static struct platform_driver msm_panel_driver = {
- 	/* need to write remove */
- 	.probe = msmfb_probe,
-+	.remove = msmfb_remove,
- 	.driver = {.name = "msm_panel"},
- };
- 
--- 
-1.7.9.5
 
+
+--bgw8PcqXxfofNAmxR3CBSuOXi20wHT1Nr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJT/ILxAAoJEPo9qoy8lh71ZnwQAKo4GEDhaZpPw/mKdTz/Gs45
+7J6KQkhkWjpe6HavFlxaWdauNYu/eq4EeLCs6QJZrnHCQqzJPj1JLWCoBluaj8+Q
+JWPd1q97aCOUl/3kMJYqky7FOaXvBwgw01rDdRMqcx8JMZCVQ4W0Uu20N6cDAGAD
+hEcUiTvmc7T01EGwAsE3SKWZn5bowWA7H5xfNZg/TSpIA7G2FPPMLOFe4JwpkEg8
+ObqBRh9dwvn28HnttG4PUBpfuRg060j/3Nwm1TQBrYyquCXlmdiNsR7kFBmLmEoc
+uanLMqrv4wKxG07+XMUaQ7bb9DZEn7B1aeGSEijB5ZRzU6MctdR5Tu9cqEjqeEIy
+jPOpbMUXKdpKiIerJk3kAJCwk4Os6UEBWzZsK1yKPesBW1b/HtGhtcSib4bmgEDc
+1Jw+O7ngm6UrDxTvL6IaqXC/z0FQ7US4hyEDF8Ozqj3zNUJtaCjYgXYX2P2nyKKj
+aTHgWQU/hH3jkYU0qxQYV76lg+c8ZlDl6sEDzTh2EUOwm4JNpGbRMCSIlUGTjuxw
+Sqo/4VcBLVi6KRwzmrQnSVsYqbXjchLl387ClSTmjomhA7UoNjiIkDKV2AxfFeYQ
+4hmDjC1roxA3Hla9pHO5nmFSKvz2OtbEMKsw01kJcv2yyLs2GJ3QubShq7OU4BXa
+BpeLV2qqBztZlbeafTe0
+=ePcy
+-----END PGP SIGNATURE-----
+
+--bgw8PcqXxfofNAmxR3CBSuOXi20wHT1Nr--

@@ -1,166 +1,63 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Aug 2014 11:36:28 +0000
-Subject: [GIT PULL] fbdev changes for 3.17
-Message-Id: <53E4B63C.5050402@ti.com>
+Date: Tue, 26 Aug 2014 12:37:54 +0000
+Subject: Re: [PATCH] video: da8xx-fb: preserve display width when changing HSYNC
+Message-Id: <53FC7FA2.1010201@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="1sp2B5OnJ3ihALDSUeIr4pQb2m57BpAvF"
+Content-Type: multipart/mixed; boundary="7RSmutHEFgX4pfSMU5NWQAbPU4P4MbH8l"
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+References: <1404395199-5726-1-git-send-email-abbotti@mev.co.uk>
+In-Reply-To: <1404395199-5726-1-git-send-email-abbotti@mev.co.uk>
+To: Ian Abbott <abbotti@mev.co.uk>, linux-fbdev@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel@vger.kernel.org
 
---1sp2B5OnJ3ihALDSUeIr4pQb2m57BpAvF
-Content-Type: text/plain; charset=utf-8
+--7RSmutHEFgX4pfSMU5NWQAbPU4P4MbH8l
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-Hi Linus,
+On 03/07/14 16:46, Ian Abbott wrote:
+> When looking at this driver for a client, I noticed the code that
+> configures the HSYNC pulse clobbers the display width in the same
+> register.  It only preserves the MS part of the width in bit 3 and zero=
+s
+> the LS part of the width in bits 9 to 4.  This doesn't matter during
+> initialization as the width is configured afterwards, but subsequent us=
+e
+> of the FBIPUT_HSYNC ioctl would clobber the width.
+>=20
+> Preserve bits 9 to 0 of LCD_RASTER_TIMING_0_REG when configuring the
+> horizontal sync.
+>=20
+> Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
+> ---
+> I haven't tested this change, but it's pretty trivial.
+> ---
+>  drivers/video/fbdev/da8xx-fb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx=
+-fb.c
+> index 788f6b3..10c876c 100644
+> --- a/drivers/video/fbdev/da8xx-fb.c
+> +++ b/drivers/video/fbdev/da8xx-fb.c
+> @@ -419,7 +419,7 @@ static void lcd_cfg_horizontal_sync(int back_porch,=
+ int pulse_width,
+>  {
+>  	u32 reg;
+> =20
+> -	reg =3D lcdc_read(LCD_RASTER_TIMING_0_REG) & 0xf;
+> +	reg =3D lcdc_read(LCD_RASTER_TIMING_0_REG) & 0x3ff;
+>  	reg |=3D (((back_porch-1) & 0xff) << 24)
+>  	    | (((front_porch-1) & 0xff) << 16)
+>  	    | (((pulse_width-1) & 0x3f) << 10);
+>=20
 
-Please pull the fbdev changes for 3.17.
+Thanks, queued for 3.17 fixes.
 
  Tomi
 
 
-The following changes since commit a497c3ba1d97fc69c1e78e7b96435ba8c2cb42=
-ee:
 
-  Linux 3.16-rc2 (2014-06-21 19:02:54 -1000)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-3.17
-
-for you to fetch changes up to e4e42b8ad24cabf4d6d3c20a63f18dd6b954d9c2:
-
-  OMAPDSS: DSI: fix depopulating dsi peripherals (2014-08-08 14:26:36 +03=
-00)
-
-----------------------------------------------------------------
-fbdev changes for 3.17
-
-* Much better HDMI infoframe support for OMAP
-* Cirrus Logic CLPS711X framebuffer driver
-* DT support for PL11x CLCD driver
-* Various small fixes
-
-----------------------------------------------------------------
-Alexander Shiyan (4):
-      video: clps711x: Add new Cirrus Logic CLPS711X framebuffer driver
-      video: clps711x: Add bindings documentation for CLPS711X framebuffe=
-r
-      video: clps711x: Fix driver build for CONFIG_FB=3Dm
-      video: clps711x: Fix sparse warnings
-
-Archit Taneja (1):
-      fbdev: arm has __raw I/O accessors, use them in fb.h
-
-Dan Carpenter (1):
-      video/mbx: indent some if statements
-
-Dexuan Cui (1):
-      video: hyperv: hyperv_fb: refresh the VM screen by force on VM pani=
-c
-
-Emil Goode (1):
-      video: vt8500lcdfb: Remove kfree call since devm_kzalloc() is used
-
-Fabian Frederick (1):
-      drivers/video/fbdev/sis/sis_main.c: remove unnecessary test on unsi=
-gned value
-
-Himangi Saraogi (2):
-      video: msm: Introduce the use of the managed version of kzalloc
-      drivers/video/fbdev : dereference without an error test
-
-Jingoo Han (1):
-      MAINTAINERS: Update Framebuffer file patterns
-
-Joe Perches (1):
-      fbdev: da8xx-fb: Use dma_zalloc_coherent
-
-Michael Welling (1):
-      drivers: video: fbdev: atmel_lcdfb.c: Add ability to inverted backl=
-ight PWM.
-
-Paul Bolle (1):
-      video: 68328fb: remove check for CONFIG_FB_68328_INVERT
-
-Pawel Moll (2):
-      video: ARM CLCD: Add DT support
-      video: ARM CLCD: Fix DT-related build problems
-
-Rasmus Villemoes (1):
-      drivers/video/fbdev/sis: Add missing else
-
-Tomi Valkeinen (17):
-      OMAPDSS: DISPC: fix debugfs reg dump
-      OMAPDSS: DISPC: reject interlace for lcd out
-      OMAPDSS: DISPC: clean up dispc_mgr_timings_ok
-      OMAPDSS: HDMI: fix name conflict
-      OMAPDSS: Kconfig: select HDMI
-      OMAPDSS: HDMI4: use common AVI infoframe support
-      OMAPDSS: HDMI5: use common AVI infoframe support
-      OMAPDSS: HDMI: remove custom avi infoframe
-      OMAPDSS: add hdmi ops to hdmi_ops and omap_dss_driver
-      OMAPDSS: add hdmi ops to hdmi-connector and tpd12s015
-      OMAPDSS: HDMI: add infoframe and hdmi_dvi_mode fields
-      OMAPDSS: HDMI4: add support to set infoframe & HDMI mode
-      OMAPDSS: HDMI5: add support to set infoframe & HDMI mode
-      OMAPDSS: HDMI: remove the unused code
-      drm/omap: Add infoframe & dvi/hdmi mode support
-      Merge branch '3.17/hdmi-infoframe' into for-next
-      OMAPDSS: DSI: fix depopulating dsi peripherals
-
-Vasily Khoruzhick (1):
-      video: fbdev: s3c2410fb: Move to clk_prepare_enable/clk_disable_unp=
-repare
-
- .../devicetree/bindings/video/arm,pl11x.txt        | 109 ++++++
- .../devicetree/bindings/video/atmel,lcdc.txt       |   1 +
- .../bindings/video/cirrus,clps711x-fb.txt          |  47 +++
- MAINTAINERS                                        |  74 ++--
- drivers/gpu/drm/omapdrm/omap_connector.c           |  12 +
- drivers/gpu/drm/omapdrm/omap_drv.h                 |   1 +
- drivers/gpu/drm/omapdrm/omap_encoder.c             |  27 ++
- drivers/video/fbdev/68328fb.c                      |   8 +-
- drivers/video/fbdev/Kconfig                        |  23 +-
- drivers/video/fbdev/Makefile                       |   3 +-
- drivers/video/fbdev/amba-clcd.c                    | 263 ++++++++++++++
- drivers/video/fbdev/atmel_lcdfb.c                  |   3 +-
- drivers/video/fbdev/clps711x-fb.c                  | 397 +++++++++++++++=
-++++++
- drivers/video/fbdev/da8xx-fb.c                     |   9 +-
- drivers/video/fbdev/hyperv_fb.c                    |  62 +++-
- drivers/video/fbdev/mbx/mbxfb.c                    |   4 +-
- drivers/video/fbdev/msm/mddi_client_dummy.c        |  19 +-
- .../fbdev/omap2/displays-new/connector-hdmi.c      |  19 +
- .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |  20 ++
- .../omap2/displays-new/panel-sony-acx565akm.c      |   5 +
- drivers/video/fbdev/omap2/dss/Kconfig              |   1 +
- drivers/video/fbdev/omap2/dss/dispc.c              |  22 +-
- drivers/video/fbdev/omap2/dss/dsi.c                |   9 +-
- drivers/video/fbdev/omap2/dss/hdmi.h               | 107 +-----
- drivers/video/fbdev/omap2/dss/hdmi4.c              |  53 ++-
- drivers/video/fbdev/omap2/dss/hdmi4_core.c         | 164 ++-------
- drivers/video/fbdev/omap2/dss/hdmi4_core.h         |   1 +
- drivers/video/fbdev/omap2/dss/hdmi5.c              |  53 ++-
- drivers/video/fbdev/omap2/dss/hdmi5_core.c         | 124 +++----
- drivers/video/fbdev/omap2/dss/hdmi_common.c        | 316 ---------------=
--
- drivers/video/fbdev/s3c2410fb.c                    |  10 +-
- drivers/video/fbdev/sis/init.c                     |   2 +-
- drivers/video/fbdev/sis/sis_main.c                 |   4 -
- drivers/video/fbdev/vt8500lcdfb.c                  |   2 -
- include/linux/fb.h                                 |   2 +-
- include/video/omapdss.h                            |   9 +
- 36 files changed, 1194 insertions(+), 791 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/arm,pl11x.txt=
-
- create mode 100644 Documentation/devicetree/bindings/video/cirrus,clps71=
-1x-fb.txt
- create mode 100644 drivers/video/fbdev/clps711x-fb.c
-
-
---1sp2B5OnJ3ihALDSUeIr4pQb2m57BpAvF
+--7RSmutHEFgX4pfSMU5NWQAbPU4P4MbH8l
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -168,19 +65,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJT5LY8AAoJEPo9qoy8lh71SJEQAJ8Fqe1uPROFyMKR3dw4L0H9
-fTjNAnYNnG2bdyYGyXIXYfAJCWEEQJ5vY0au6Pvm6yI1TwQNqPYt8z40Tj4zXOqw
-6G+adh+NYmeHwWUDXmmEUxOp+olmc12ogK1h+vVYMlPN7fAHmufeDQQSzkCVuh0/
-Hgo7xsOfu5kr2F774I/zjRo8OOjI3vG8p6s5l+Mz1s+hZDnOnpSGUkBGfY+0gsiZ
-RuJlsy+QycK0/67hgS3KtJnX+6yZdE59fkdh2GaN7dEiwnK/T46R3CYN8bkqtL6i
-nBJbSiYnzOmEUBCg7Ee3YEe0sRBmznlzafaL3X9iW0CJoEoRieaD9qZ/nBg7tK74
-ZL+XH9zjXnW9C3/5NKf8LKV4bApXTxy0K5f7GhnYH/j3BHxhQTVCFhLu/Vc+2hoF
-cIP2SSVClMb0syn7eJe/aM2Tzm0FLD8bc02rc9/ioozvkE367XxNiRryl3eDEr6O
-Vu/uPu00Vs2w0Bv6dG/pAEbpj/g1j4PDC3qj3Qwx0j+/rxrMcnm4hamTzSNhXJCy
-5l7RtyJ/AYBQ5ypWKCcs7G7KuWmT4pdJd8P2U1PEiN6j1hTDjLlgxBxYeHyiDbR5
-9aC2wQ88Qqssys5Vnv3E2eme/ljE/7ztwssQs7//Ez8RtY5P9GsW0OqRbgpzrx8H
-e8zo6sHM2Pccvmq6cfMH
-=7Qht
+iQIcBAEBAgAGBQJT/H+iAAoJEPo9qoy8lh71BjsP/AsAEyfdizCCgIw3EQ+QpzVy
+yqgjdB7c1raut8z/8ogyTceno8wZm6Wl+eWlkAJmhauXWU2UvVCllcczi9Av+Ps3
+d3WKDnqfgc/qYgcE9lIsFGm4MA7hCEJSYY8EOCuRogXv2PE20qfE906ZiBsiLn6u
+MJFqzEzpQPBC9kYecGYiODf4SooTreQ7V/HFgmvkeHpefHiuXc3mjC2Wge9FIPpM
+8H5TE45f7B45l2NHNYKnmCArqGnyzy7syBHGIvQkRTmmuLk2PqKuUPr5HlC2Rh79
+O5z6Gro5qoPWuxJR/Qh2oe6Vwmi/Vjf8cqlQOiHEyM+yKSbLraJLgqoiMe3z82lU
+KoIkcfJAW/l6eXF8Zyfv90V1dkpMjzz/QOIY7kM7U7/Q0/NMYyVQj0RLCTM9LOqW
+NEqPmGLGXLIwOVPGNoAWS+i1s1JzqWN+PUE6WpM+9+qqGgm4pfGac8Ycff4+eaa0
+upfYX2/sVecrzrH613fDW8zFx9gkF1aeTmI/8zg1hchCWl+1027Nn0s0EkLW/pad
+9pA4RWlPm+gNoLEzoG/8xUNFZvuw5cwXi0pqupImzw6ZTm8ULGJ6Y8ZlmGrS52Li
+EN02O21gjtPimkSleDtglgu93xr7Uxc6+Zh87sqPJktQJ1AshtWJ7pKnPLTzUmOO
+Ylx6RBc1PoU8cJB8bSVB
+=4NXw
 -----END PGP SIGNATURE-----
 
---1sp2B5OnJ3ihALDSUeIr4pQb2m57BpAvF--
+--7RSmutHEFgX4pfSMU5NWQAbPU4P4MbH8l--

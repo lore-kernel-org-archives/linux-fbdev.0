@@ -1,155 +1,83 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 08 Aug 2014 13:23:54 +0000
-Subject: [PATCH v3 13/14] OMAPDSS: hdmi5: Remove callbacks for an external ASoC DAI driver
-Message-Id: <d44c88c50daa4835e22f4d689ffeaa908912698c.1407503813.git.jsarha@ti.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Wed, 27 Aug 2014 16:41:02 +0000
+Subject: [PATCH 05/16] video: Add THC63LVDM83D DT bindings documentation
+Message-Id: <1409157673-4154-6-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1407503813.git.jsarha@ti.com>
-In-Reply-To: <cover.1407503813.git.jsarha@ti.com>
+References: <1409157673-4154-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1409157673-4154-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: dri-devel@lists.freedesktop.org
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-sh@vger.kernel.org
 
-Removes the OMAP5 HDMI audio callbacks for an external audio driver and
-the old external DAI driver does not work anymore after this patch.
+The THC63LVDM83D is a video LVDS serializer described by an input port,
+an output port, and an optional power down GPIO.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Cc: devicetree@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi5.c |  113 ---------------------------------
- 1 file changed, 113 deletions(-)
+ .../devicetree/bindings/video/thine,thc63lvdm83d   | 50 ++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/thine,thc63lvdm83d
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index d796071..d91ea36 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -495,112 +495,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
- 	return r;
- }
- 
--#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	int r;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi_wp_audio_enable(&hdmi.wp, true);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--	hdmi_wp_audio_enable(&hdmi.wp, false);
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return hdmi_wp_audio_core_req_enable(&hdmi.wp, true);
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--	hdmi_wp_audio_core_req_enable(&hdmi.wp, false);
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	bool r;
--
--	mutex_lock(&hdmi.lock);
--
--	r = hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode);
--
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	int r;
--	u32 pclk = hdmi.cfg.timings.pixelclock;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi5_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--#else
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	return false;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	return -EPERM;
--}
--#endif
--
- static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
- 		const struct hdmi_avi_infoframe *avi)
- {
-@@ -629,13 +523,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
- 	.read_edid		= hdmi_read_edid,
- 	.set_infoframe		= hdmi_set_infoframe,
- 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
--
--	.audio_enable		= hdmi_audio_enable,
--	.audio_disable		= hdmi_audio_disable,
--	.audio_start		= hdmi_audio_start,
--	.audio_stop		= hdmi_audio_stop,
--	.audio_supported	= hdmi_audio_supported,
--	.audio_config		= hdmi_audio_config,
- };
- 
- static void hdmi_init_output(struct platform_device *pdev)
+diff --git a/Documentation/devicetree/bindings/video/thine,thc63lvdm83d b/Documentation/devicetree/bindings/video/thine,thc63lvdm83d
+new file mode 100644
+index 0000000..527e236
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/thine,thc63lvdm83d
+@@ -0,0 +1,50 @@
++THine Electronics THC63LVDM83D LVDS serializer
++----------------------------------------------
++
++The THC63LVDM83D is an LVDS serializer designed to support pixel data
++transmission between a host and a flat panel.
++
++Required properties:
++
++- compatible: Should be "thine,thc63lvdm83d"
++
++Optional properties:
++
++- pwdn-gpios: Power down control GPIO
++
++Required nodes:
++
++The THC63LVDM83D has two video ports. Their connections are modeled using the
++OFgraph bindings specified in Documentation/devicetree/bindings/graph.txt.
++
++- Video port 0 for CMOS/TTL input
++- Video port 1 for LVDS output
++
++
++Example
++-------
++
++	lvds_enc: encoder@0 {
++		compatible = "thine,thc63lvdm83d";
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				lvds_enc_in: endpoint@0 {
++					remote-endpoint = <&rgb_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++
++				lvds_enc_out: endpoint@0 {
++					remote-endpoint = <&panel_in>;
++				};
++			};
++		};
++	};
 -- 
-1.7.9.5
+1.8.5.5
 

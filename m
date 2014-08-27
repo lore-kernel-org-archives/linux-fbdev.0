@@ -1,81 +1,132 @@
-From: "jonsmirl@gmail.com" <jonsmirl@gmail.com>
-Date: Wed, 27 Aug 2014 12:44:05 +0000
+From: Julian Calaby <julian.calaby@gmail.com>
+Date: Wed, 27 Aug 2014 12:45:14 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <CAKON4Owj=b7r_iuOOrr_5R++oSbxqF0G0i4puFz7aTaUF+weuw@mail.gmail.com>
+Message-Id: <CAGRGNgWy=ijkakoKtXiEnFuVQpQT6WXW45-nL4x9DvfTKoA1OA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140825133953.GJ4163@ulmo.nvidia.com>
- <53FB3E7F.4000503@redhat.com>
- <20140825141600.GA14763@ulmo.nvidia.com>
- <20140825145854.GA15297@lukather>
- <20140825150501.GE14763@ulmo.nvidia.com>
- <20140825152232.GE15297@lukather> <20140826080432.GD17263@ulmo>
- <20140826135341.GM15297@lukather> <20140826143550.GB3027@ulmo>
- <53FCE704.4030103@redhat.com> <20140827093121.GA23186@ulmo>
- <53FDB46C.5010609@redhat.com>
-In-Reply-To: <53FDB46C.5010609@redhat.com>
+References: <53FB46FF.1010208@redhat.com>
+ <20140825145303.GC14763@ulmo.nvidia.com>
+ <20140825150705.GB15297@lukather> <20140826082626.GE17263@ulmo>
+ <20140826090035.GB17528@sirena.org.uk> <20140826091853.GI17263@ulmo>
+ <20140826100612.GH17528@sirena.org.uk> <20140826105451.GD31124@ulmo>
+ <1409078409.2701.17.camel@localhost> <20140827074057.GS17528@sirena.org.uk>
+ <20140827082208.GQ15297@lukather>
+ <CAMuHMdVkEPBtVT0dcDqQOQ_J0p+zYJwaUW8LqQX0Z+h6CHihRg@mail.gmail.com>
+In-Reply-To: <CAMuHMdVkEPBtVT0dcDqQOQ_J0p+zYJwaUW8LqQX0Z+h6CHihRg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Aug 27, 2014 at 6:35 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->> On 08/27/2014 11:31 AM, Thierry Reding wrote:
+Hi All,
 
-snip
-
-> In another mail in this thread you've mentioned 2 uses for simplefb:
+On Wed, Aug 27, 2014 at 6:37 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Hi Maxime,
 >
-> 1) Serving as *the* fb until a kms driver is present
-> 2) Allowing for output of early kernel boot messages.
+> On Wed, Aug 27, 2014 at 10:22 AM, Maxime Ripard
+> <maxime.ripard@free-electrons.com> wrote:
+>> On Wed, Aug 27, 2014 at 08:40:57AM +0100, Mark Brown wrote:
+>>> On Tue, Aug 26, 2014 at 08:40:09PM +0200, Henrik Nordstr=C3=B6m wrote:
+>>>
+>>> > It is not clear to me where the hardware resources should be listed in
+>>> > DT, being it a simplefb node or part of the actual hardware device no=
+de
+>>> > properly marked as dynamic boot defaults or something else? It's
+>>> > somewhere inbetween hardware and virtual device, and somewhat volatil=
+e.
+>>> > As far as simplefb is concerned it is a hardware desription of the
+>>> > framebuffer, but for a kms driver it's no more than firmware handover=
+ of
+>>> > boottime settings and ceases to exists once the kms driver have
+>>> > reconfigured the hardware.
+>>>
+>>> Is simplefb something that should be in the device tree distinctly in
+>>> the first place - shouldn't it be a subset of the functionality of the
+>>> video nodes?  It's the same hardware being driven differently.
+>>
+>> Therorically, yes, but that would mean knowing beforehand what the
+>> final binding will look like, even before submitting the driver. Since
+>> the bindings are always reviewed, and most of the time changed
+>> slightly, that wouldn't work very well with the DT as a stable ABI
+>> policy I guess.
 >
-> I agree that those are the 2 use-cases we're dealing with here.
+> If you don't know how the bindings for a device will look like at the tim=
+e of
+> writing your DTS, you're always screwed, whether you add a simpefb
+> node or not.
 >
-> Note that the whole discussion we're having hear about disabling the clocks
-> once hardware probing is "done", is moot for 1. One possible way mentioned
-> of dealing with 1. is to mark these clocks as always on for now, and then we
-> need to drop this hack (I cannot call this anything else then a hack), once
-> we get kms, meaning interdependencies between the dropping patch and the kms
-> adding patches, etc. All not very pretty.
+> If you know how the bindings look like, just add the device, with an extra
+> "linux,simplefb" compatibility value.
+> If you don't know how the bindings look like, do your utter best in
+> guessing. Your DTS must be amended later anyway, either because
+> you guessed wrong[*] (in case you added a node to have simplefb
+> working), or because you have to add a real device node (in case you
+> didn't add one for simplefb).
 >
-> For 2. We have what you call "mostly integration issues". Allow me to copy
-> and paste in another bit of this thread here:
+> [*] Actually you may have guessed right, in which case it'll continue
+>     working as-is, and everybody will be happy.
+>     Whether you want to keep backwards-compatibility in your future driver
+>     with the "guessed wrong" node is up to you.
 
-These are two independent problems.
+I apologise if I'm stepping on anyone's toes or horribly
+misrepresenting device tree's capabilities, but couldn't we start out
+with something like:
 
-> 1) Serving as *the* fb until a kms driver is present
+disp@whatever {
+    compatible =3D "sunxi,sun4i-disp";
+    clocks =3D <&stuff 1>, <&stuff 2>, <&stuff 3>;
+}
 
-Why can't we whip together a real device specific fbdev driver and
-quit trying to run without a device specific driver in place? History
-has shown that to be bad idea except during early boot when there
-isn't a choice.
+as our binding?
 
-fbdev drivers are pretty simple things and you don't have to make one
-that implements every feature. fbdev driver don't even have to
-implement mode setting. They can just live with the mode initially
-provided and refuse to change it. Communicating this initial mode info
-on the kernel command line is already supported so we don't even need
-a device tree change. This is the transition tool until KMS gets
-written.
+u-boot could then set up a framebuffer and mangle this to:
 
-But it needs to be a device specific fbdev implementation, not
-simplefb. That's because the device specific driver is going to claim
-those clocks and regulators.
+disp@whatever {
+    compatible =3D "sunxi,sun4i-disp", "linux,simplefb";
+    clocks =3D <&stuff 1>, <&stuff 2>, <&stuff 3>;
+    // simplefb stuff
+}
 
-> 2) Allowing for output of early kernel boot messages.
+Hell, if we have a reserved memory driver, couldn't we then mangle
+this to something like:
 
-For this to work the kernel needs to know two things - address of the
-framebuffer and the x/y layout. Then just nuke this display when the
-kernel finishes the boot process.
+disp@whatever {
+    compatible =3D "sunxi,sun4i-disp", "linux,simplefb";
+    clocks =3D <&stuff 1>, <&stuff 2>, <&stuff 3>;
+    // simplefb stuff
+    // reserved mem stuff
+}
 
-One of two things will happen.
-1) the fbdev driver has been loaded. It has claimed the clocks, taken
-care of memory, etc. If KMS is around, load it instead. When kernel
-tries to nuke the display nothing will happen.
-2) Your display goes blank because the kernel has disabled clocks and
-reclaimed the memory. Take that as a hint to write a fbdev driver.
+simplefb is modified to be smart enough to grab the clocks (that's a
+small amount of code that almost every DT-enabled driver has, right?)
+and if we're going to use the reserved memory driver to ensure nobody
+messes with it's in-memory framebuffer, it'll have to deal with that
+too.
 
-pages more snipped....
+Eventually sunxi-kms gets submitted, and it takes the
+"sunxi,sun4i-disp" compatible, which we've already defined, however we
+need some more stuff so we just add more stuff to the binding and end
+up with something like:
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+disp@whatever {
+    compatible =3D "sunxi,sun4i-disp";
+    clocks =3D <&stuff 1>, <&stuff 2>, <&stuff 3>;
+    // sunxi-kms stuff
+}
+
+I believe there'd be no backwards compatibility issues as we're only
+adding, not subtracting or modifying. We already know which clocks are
+required for the display IP, right? And if not, we can add them. I
+believe this minimises the mangling u-boot has to do (at least
+initially) and is forward and backward compatible.
+
+That'd work, right?
+
+Thanks,
+
+--=20
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+Profile: http://www.google.com/profiles/julian.calaby/
+.Plan: http://sites.google.com/site/juliancalaby/

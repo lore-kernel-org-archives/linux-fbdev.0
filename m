@@ -1,461 +1,94 @@
-From: Daniel Jeong <gshark.jeong@gmail.com>
-Date: Fri, 29 Aug 2014 10:46:14 +0000
-Subject: [PATCH] backlight: add new lm3509 backlight driver
-Message-Id: <1409309174-1137-1-git-send-email-gshark.jeong@gmail.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Wed, 27 Aug 2014 16:40:57 +0000
+Subject: [PATCH 00/16] R-Car Display Unit DT bindings
+Message-Id: <1409157673-4154-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Daniel Jeong <daniel.jeong@ti.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>
+To: dri-devel@lists.freedesktop.org
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-sh@vger.kernel.org
 
-This is a general driver for LM3509 backlgiht chip of TI.
-LM3509 is High Efficiency Boost for White LED's and/or OLED Displays with Dual
-Current Sinks. This driver supports OLED/White LED select, brightness control
-sub/main conrtorl. 
-You can refer to the datasheet at http://www.ti.com/product/lm3509 for review.
+Hello,
 
-Signed-off-by: Daniel Jeong <gshark.jeong@gmail.com>
----
- drivers/video/backlight/Kconfig     |    7 +
- drivers/video/backlight/Makefile    |    1 +
- drivers/video/backlight/lm3509_bl.c |  399 +++++++++++++++++++++++++++++++++++
- 3 files changed, 407 insertions(+)
- create mode 100644 drivers/video/backlight/lm3509_bl.c
+This patch series documents and implements DT bindings support for the R-Car
+Display Unit (DU).
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 8d03924..9dc119e 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -366,6 +366,13 @@ config BACKLIGHT_AAT2870
- 	  If you have a AnalogicTech AAT2870 say Y to enable the
- 	  backlight driver.
- 
-+config BACKLIGHT_LM3509
-+	tristate "Backlight Driver for LM3509"
-+	depends on BACKLIGHT_CLASS_DEVICE && I2C
-+	select REGMAP_I2C
-+	help
-+	  This supports TI LM3509 Backlight Driver
-+
- config BACKLIGHT_LM3630A
- 	tristate "Backlight Driver for LM3630A"
- 	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index fcd50b73..c34ed98 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_BACKLIGHT_GPIO)		+= gpio_backlight.o
- obj-$(CONFIG_BACKLIGHT_HP680)		+= hp680_bl.o
- obj-$(CONFIG_BACKLIGHT_HP700)		+= jornada720_bl.o
- obj-$(CONFIG_BACKLIGHT_IPAQ_MICRO)	+= ipaq_micro_bl.o
-+obj-$(CONFIG_BACKLIGHT_LM3509)		+= lm3509_bl.o
- obj-$(CONFIG_BACKLIGHT_LM3533)		+= lm3533_bl.o
- obj-$(CONFIG_BACKLIGHT_LM3630A)		+= lm3630a_bl.o
- obj-$(CONFIG_BACKLIGHT_LM3639)		+= lm3639_bl.o
-diff --git a/drivers/video/backlight/lm3509_bl.c b/drivers/video/backlight/lm3509_bl.c
-new file mode 100644
-index 0000000..4f4fb85
---- /dev/null
-+++ b/drivers/video/backlight/lm3509_bl.c
-@@ -0,0 +1,399 @@
-+/*
-+ * Simple driver for Texas Instruments LM3509 Backlight driver chip
-+ * Copyright (C) 2014 Texas Instruments
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+#include <linux/backlight.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/i2c.h>
-+#include <linux/module.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+#include <linux/uaccess.h>
-+
-+#define LM3509_NAME "lm3509"
-+
-+#define REG_GP	0x10
-+#define REG_BMAIN	0xa0
-+#define REG_BSUB	0xb0
-+#define REG_MAX		0xff
-+
-+#define LM3509_POR_BR_MAIN	0xe0
-+#define LM3509_POR_BR_SUB	0xe0
-+#define LM3509_MAX_BR		0xff
-+
-+enum lm3509_leds {
-+	BLED_BMAIN = 0,
-+	BLED_BSUB
-+};
-+
-+struct lm3509_chip {
-+	struct device *dev;
-+	struct backlight_device *bmain;
-+	struct backlight_device *bsub;
-+	struct regmap *regmap;
-+};
-+
-+/*
-+ * enable main
-+ * 0 : disables the main current sink and forces MAIN high impedence.
-+ * 1 : enables the main current sink.
-+ */
-+static ssize_t lm3509_bmain_enable_store(struct device *dev,
-+				      struct device_attribute *devAttr,
-+				      const char *buf, size_t size)
-+{
-+	struct lm3509_chip *pchip = dev_get_drvdata(dev);
-+	unsigned int state;
-+	ssize_t ret;
-+
-+	ret = kstrtouint(buf, 10, &state);
-+	if (ret) {
-+		dev_err(pchip->dev, "input conversion fail\n");
-+		return ret;
-+	}
-+
-+	if (!state)
-+		ret = regmap_update_bits(pchip->regmap, REG_GP, 0x1, 0x0);
-+	else
-+		ret = regmap_update_bits(pchip->regmap, REG_GP, 0x1, 0x1);
-+	if (ret < 0) {
-+		dev_err(pchip->dev, "i2c access fail to register\n");
-+		return ret;
-+	}
-+
-+	return size;
-+}
-+
-+static DEVICE_ATTR(main_enable, S_IWUSR, NULL, lm3509_bmain_enable_store);
-+
-+/*
-+ * OLED mode control
-+ * 0 : white led mode - main and sub current sinks are active
-+ * 1 : OLED mode - sub current sink is idabled
-+ */
-+static ssize_t lm3509_oled_mode_store(struct device *dev,
-+				      struct device_attribute *devAttr,
-+				      const char *buf, size_t size)
-+{
-+	struct lm3509_chip *pchip = dev_get_drvdata(dev);
-+	unsigned int state;
-+	ssize_t ret;
-+
-+	ret = kstrtouint(buf, 10, &state);
-+	if (ret) {
-+		dev_err(pchip->dev, "input conversion fail\n");
-+		return ret;
-+	}
-+
-+	if (!state)
-+		ret = regmap_update_bits(pchip->regmap, REG_GP, 0x20, 0x00);
-+	else
-+		ret = regmap_update_bits(pchip->regmap, REG_GP, 0x20, 0x20);
-+	if (ret < 0) {
-+		dev_err(pchip->dev, "i2c access fail to register\n");
-+		return ret;
-+	}
-+
-+	return size;
-+}
-+
-+static DEVICE_ATTR(oled_enable, S_IWUSR, NULL, lm3509_oled_mode_store);
-+
-+/*
-+ * brightness rate of change
-+ * set the rate of change of the LED current in to MAIN and SUB/FB
-+ * in response to change in the contents of registers
-+ * 0 - 51 us/step
-+ * 1 - 13 ms/step
-+ * 2 - 26 ms/step
-+ * 3 - 52 ms/step
-+ */
-+static ssize_t lm3509_rate_store(struct device *dev,
-+				      struct device_attribute *devAttr,
-+				      const char *buf, size_t size)
-+{
-+	struct lm3509_chip *pchip = dev_get_drvdata(dev);
-+	unsigned int state;
-+	ssize_t ret;
-+
-+	ret = kstrtouint(buf, 10, &state);
-+	if (ret) {
-+		dev_err(pchip->dev, "input conversion fail\n");
-+		return ret;
-+	}
-+
-+	ret = regmap_update_bits(pchip->regmap, REG_GP, 0x18, state << 3);
-+	if (ret < 0) {
-+		dev_err(pchip->dev, "i2c access fail to register\n");
-+		return ret;
-+	}
-+
-+	return size;
-+}
-+
-+static DEVICE_ATTR(rate, S_IWUSR, NULL, lm3509_rate_store);
-+
-+/* update and get brightness */
-+static int lm3509_bmain_update_status(struct backlight_device *bl)
-+{
-+	struct lm3509_chip *pchip = bl_get_data(bl);
-+	int ret;
-+
-+	ret = regmap_write(pchip->regmap, REG_BMAIN, bl->props.brightness);
-+	if (ret < 0)
-+		dev_err(pchip->dev, "i2c access fail to register\n");
-+	return bl->props.brightness;
-+}
-+
-+static int lm3509_bmain_get_brightness(struct backlight_device *bl)
-+{
-+	return bl->props.brightness;
-+}
-+
-+static const struct backlight_ops lm3509_bmain_ops = {
-+	.options = BL_CORE_SUSPENDRESUME,
-+	.update_status = lm3509_bmain_update_status,
-+	.get_brightness = lm3509_bmain_get_brightness,
-+};
-+
-+/*
-+ * enable sub
-+ * 0 : disables the secondary current sink and forces SUB/FB high impedence.
-+ * 1 : enables the secondary current sink.
-+ */
-+static ssize_t lm3509_bsub_enable_store(struct device *dev,
-+				      struct device_attribute *devAttr,
-+				      const char *buf, size_t size)
-+{
-+	struct lm3509_chip *pchip = dev_get_drvdata(dev);
-+	unsigned int state;
-+	ssize_t ret;
-+
-+	ret = kstrtouint(buf, 10, &state);
-+	if (ret) {
-+		dev_err(pchip->dev, "input conversion fail\n");
-+		return ret;
-+	}
-+
-+	if (!state)
-+		ret = regmap_update_bits(pchip->regmap, REG_GP, 0x2, 0x0);
-+	else
-+		ret = regmap_update_bits(pchip->regmap, REG_GP, 0x2, 0x2);
-+	if (ret < 0) {
-+		dev_err(pchip->dev, "i2c access fail to register\n");
-+		return ret;
-+	}
-+
-+	return size;
-+}
-+
-+static DEVICE_ATTR(sub_enable, S_IWUSR, NULL, lm3509_bsub_enable_store);
-+
-+/*
-+ * uni mode select
-+ * 0 : allows the current into MAIN and SUB/FB to be independently controlled
-+ *     via the bmain and bsub.
-+ * 1 : disables the bsub register and causes the contents of bmain to set
-+ *     the current in both the MAIN and SUB/FB current sinks.
-+ */
-+static ssize_t lm3509_uni_mode_store(struct device *dev,
-+				      struct device_attribute *devAttr,
-+				      const char *buf, size_t size)
-+{
-+	struct lm3509_chip *pchip = dev_get_drvdata(dev);
-+	unsigned int state;
-+	ssize_t ret;
-+
-+	ret = kstrtouint(buf, 10, &state);
-+	if (ret) {
-+		dev_err(pchip->dev, "input conversion fail\n");
-+		return ret;
-+	}
-+
-+	if (!state)
-+		ret = regmap_update_bits(pchip->regmap, REG_GP, 0x4, 0x0);
-+	else
-+		ret = regmap_update_bits(pchip->regmap, REG_GP, 0x4, 0x4);
-+	if (ret < 0) {
-+		dev_err(pchip->dev, "i2c access fail to register\n");
-+		return ret;
-+	}
-+
-+	return size;
-+}
-+
-+static DEVICE_ATTR(uni_mode, S_IWUSR, NULL, lm3509_uni_mode_store);
-+
-+/* update and get brightness */
-+static int lm3509_bsub_update_status(struct backlight_device *bl)
-+{
-+	struct lm3509_chip *pchip = bl_get_data(bl);
-+	int ret;
-+
-+	ret = regmap_write(pchip->regmap, REG_BSUB, bl->props.brightness);
-+	if (ret < 0)
-+		dev_err(pchip->dev, "i2c access fail to register\n");
-+	return bl->props.brightness;
-+}
-+
-+static int lm3509_bsub_get_brightness(struct backlight_device *bl)
-+{
-+	return bl->props.brightness;
-+}
-+
-+static const struct backlight_ops lm3509_bsub_ops = {
-+	.options = BL_CORE_SUSPENDRESUME,
-+	.update_status = lm3509_bsub_update_status,
-+	.get_brightness = lm3509_bsub_get_brightness,
-+};
-+
-+static int lm3509_backlight_register(struct lm3509_chip *pchip,
-+				     enum lm3509_leds ledno)
-+{
-+	struct backlight_properties props;
-+
-+	props.type = BACKLIGHT_RAW;
-+	switch (ledno) {
-+	case BLED_BMAIN:
-+		props.brightness = LM3509_POR_BR_MAIN;
-+		props.max_brightness = LM3509_MAX_BR;
-+		pchip->bmain +			devm_backlight_device_register(pchip->dev, "bmain",
-+				pchip->dev, pchip, &lm3509_bmain_ops, &props);
-+		if (IS_ERR(pchip->bmain))
-+			return -EIO;
-+		break;
-+	case BLED_BSUB:
-+		props.brightness = LM3509_POR_BR_SUB;
-+		props.max_brightness = LM3509_MAX_BR;
-+		pchip->bsub +			devm_backlight_device_register(pchip->dev, "bsub",
-+				pchip->dev, pchip, &lm3509_bsub_ops, &props);
-+		if (IS_ERR(pchip->bsub))
-+			return -EIO;
-+		break;
-+	default:
-+		BUG();
-+	}
-+	return 0;
-+}
-+
-+static const struct regmap_config lm3509_regmap = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+	.max_register = REG_MAX,
-+};
-+
-+static int lm3509_probe(struct i2c_client *client,
-+				  const struct i2c_device_id *id)
-+{
-+	struct lm3509_chip *pchip;
-+	int ret;
-+
-+	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
-+		dev_err(&client->dev, "fail : i2c functionality check\n");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	pchip = devm_kzalloc(&client->dev, sizeof(struct lm3509_chip),
-+			     GFP_KERNEL);
-+	if (!pchip)
-+		return -ENOMEM;
-+	pchip->dev = &client->dev;
-+
-+	pchip->regmap = devm_regmap_init_i2c(client, &lm3509_regmap);
-+	if (IS_ERR(pchip->regmap)) {
-+		dev_err(&client->dev, "fail : allocate register map\n");
-+		ret = PTR_ERR(pchip->regmap);
-+		return ret;
-+	}
-+	i2c_set_clientdata(client, pchip);
-+
-+	ret = lm3509_backlight_register(pchip, BLED_BMAIN);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = lm3509_backlight_register(pchip, BLED_BSUB);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = device_create_file(&(pchip->bmain->dev), &dev_attr_main_enable);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = device_create_file(&(pchip->bmain->dev), &dev_attr_oled_enable);
-+	if (ret < 0)
-+		goto err_oled_enable;
-+
-+	ret = device_create_file(&(pchip->bmain->dev), &dev_attr_rate);
-+	if (ret < 0)
-+		goto err_rate;
-+
-+	ret = device_create_file(&(pchip->bsub->dev), &dev_attr_sub_enable);
-+	if (ret < 0)
-+		goto err_sub_enable;
-+
-+	ret = device_create_file(&(pchip->bsub->dev), &dev_attr_uni_mode);
-+	if (ret < 0)
-+		goto err_uni_mode;
-+
-+	return 0;
-+
-+err_uni_mode:
-+	device_remove_file(&(pchip->bsub->dev), &dev_attr_sub_enable);
-+err_sub_enable:
-+	device_remove_file(&(pchip->bmain->dev), &dev_attr_rate);
-+err_rate:
-+	device_remove_file(&(pchip->bmain->dev), &dev_attr_oled_enable);
-+err_oled_enable:
-+	device_remove_file(&(pchip->bmain->dev), &dev_attr_main_enable);
-+	dev_err(pchip->dev, "failed : add sysfs entries\n");
-+
-+	return ret;
-+}
-+
-+static int lm3509_remove(struct i2c_client *client)
-+{
-+	int ret;
-+	struct lm3509_chip *pchip = i2c_get_clientdata(client);
-+
-+	device_remove_file(&(pchip->bsub->dev), &dev_attr_uni_mode);
-+	device_remove_file(&(pchip->bsub->dev), &dev_attr_sub_enable);
-+	device_remove_file(&(pchip->bmain->dev), &dev_attr_rate);
-+	device_remove_file(&(pchip->bmain->dev), &dev_attr_oled_enable);
-+	device_remove_file(&(pchip->bmain->dev), &dev_attr_main_enable);
-+
-+	ret = regmap_write(pchip->regmap, REG_GP, 0x0);
-+	if (ret < 0)
-+		dev_err(pchip->dev, "i2c failed to access register\n");
-+
-+	return 0;
-+}
-+
-+static const struct i2c_device_id lm3509_id[] = {
-+	{LM3509_NAME, 0},
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(i2c, lm3509_id);
-+
-+static struct i2c_driver lm3509_i2c_driver = {
-+	.driver = {
-+		.name = LM3509_NAME,
-+	},
-+	.probe = lm3509_probe,
-+	.remove = lm3509_remove,
-+	.id_table = lm3509_id,
-+};
-+
-+module_i2c_driver(lm3509_i2c_driver);
-+
-+MODULE_DESCRIPTION("Texas Instruments Backlight driver for LM3509");
-+MODULE_AUTHOR("Daniel Jeong <gshark.jeong@gmail.com>");
-+MODULE_LICENSE("GPL v2");
+Unlike the previous attempt that tried to create a new model for composite
+display devices and failed to get any real traction from DRM developers, the
+approach taken here focuses on DT bindings without requiring core changes
+outside of the DU driver.
+
+Aside of the usual boring core properties (compatible, reg, interrupts and
+clocks), the proposed bindings use the OF graph bindings to model connections
+between the DU output video ports and the on-board and off-board components.
+As such they do not depend on any particular implementation or implementation
+philosophy.
+
+The series starts by documenting DT bindings for the devices present on the
+Marzen, Lager and Koelsch boards not already supported in the mainline kernel
+(01/16 to 05/16) and for the DU (06/16). It then reworks the rcar_du platform
+data to ease implementation of the DT bindings (07/16). The next step is to
+implement support for the DU DT bindings in the R-Car DU DRM driver (08/16).
+Finally the remaining patches add the DU DT nodes for all supported SoCs
+(09/16 to 11/16), remove DU platform data from the DT-based board files (12/16
+and 13/16) and describe the on-board devices connected to the DU outputs for
+the Marzen, Lager and Koelsch boards (14/16 to 16/16).
+
+Cc: devicetree@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+
+Laurent Pinchart (16):
+  devicetree: Add vendor prefix "mitsubishi" to vendor-prefixes.txt
+  devicetree: Add vendor prefix "thine" to vendor-prefixes.txt
+  video: Add DT binding documentation for VGA connector
+  video: Add ADV7123 DT bindings documentation
+  video: Add THC63LVDM83D DT bindings documentation
+  video: Add DT bindings for the R-Car Display Unit
+  drm/rcar-du: Use struct videomode in platform data
+  drm/rcar-du: Add OF support
+  ARM: shmobile: r8a7779: Add DU node to device tree
+  ARM: shmobile: r8a7790: Add DU node to device tree
+  ARM: shmobile: r8a7791: Add DU node to device tree
+  ARM: shmobile: lager-reference: Remove DU platform device
+  ARM: shmobile: koelsch-reference: Remove DU platform device
+  ARM: shmobile: marzen: Enable DU device in DT
+  ARM: shmobile: lager: Enable DU device in DT
+  ARM: shmobile: koelsch: Enable DU device in DT
+
+ .../devicetree/bindings/vendor-prefixes.txt        |   2 +
+ .../devicetree/bindings/video/adi,adv7123.txt      |  50 +++++
+ .../devicetree/bindings/video/renesas,du.txt       |  84 ++++++++
+ .../devicetree/bindings/video/thine,thc63lvdm83d   |  50 +++++
+ .../devicetree/bindings/video/vga-connector.txt    |  28 +++
+ arch/arm/boot/dts/r8a7779-marzen.dts               | 106 ++++++++++
+ arch/arm/boot/dts/r8a7779.dtsi                     |  24 +++
+ arch/arm/boot/dts/r8a7790-lager.dts                |  78 ++++++-
+ arch/arm/boot/dts/r8a7790.dtsi                     |  39 ++++
+ arch/arm/boot/dts/r8a7791-koelsch.dts              |  43 +++-
+ arch/arm/boot/dts/r8a7791.dtsi                     |  30 +++
+ arch/arm/mach-shmobile/board-koelsch-reference.c   |  74 -------
+ arch/arm/mach-shmobile/board-koelsch.c             |  19 +-
+ arch/arm/mach-shmobile/board-lager-reference.c     |  81 --------
+ arch/arm/mach-shmobile/board-lager.c               |  19 +-
+ arch/arm/mach-shmobile/board-marzen.c              |  19 +-
+ drivers/gpu/drm/rcar-du/Kconfig                    |   1 +
+ drivers/gpu/drm/rcar-du/rcar_du_drv.c              | 170 ++++++++-------
+ drivers/gpu/drm/rcar-du/rcar_du_drv.h              |   2 +
+ drivers/gpu/drm/rcar-du/rcar_du_encoder.c          |  11 +-
+ drivers/gpu/drm/rcar-du/rcar_du_encoder.h          |   3 +-
+ drivers/gpu/drm/rcar-du/rcar_du_kms.c              | 231 +++++++++++++++++++--
+ drivers/gpu/drm/rcar-du/rcar_du_lvdscon.c          |  43 ++--
+ drivers/gpu/drm/rcar-du/rcar_du_lvdscon.h          |   3 +-
+ include/linux/platform_data/rcar-du.h              |   4 +-
+ 25 files changed, 904 insertions(+), 310 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/adi,adv7123.txt
+ create mode 100644 Documentation/devicetree/bindings/video/renesas,du.txt
+ create mode 100644 Documentation/devicetree/bindings/video/thine,thc63lvdm83d
+ create mode 100644 Documentation/devicetree/bindings/video/vga-connector.txt
+
 -- 
-1.7.9.5
+Regards,
+
+Laurent Pinchart
 

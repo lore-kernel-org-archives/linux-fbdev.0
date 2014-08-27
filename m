@@ -1,155 +1,83 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 08 Aug 2014 13:23:53 +0000
-Subject: [PATCH v3 12/14] OMAPDSS: hdmi4: Remove callbacks for an external ASoC DAI driver
-Message-Id: <8b8e1888482194bc9aa9c92da23096c0d4b414e5.1407503813.git.jsarha@ti.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Wed, 27 Aug 2014 16:41:01 +0000
+Subject: [PATCH 04/16] video: Add ADV7123 DT bindings documentation
+Message-Id: <1409157673-4154-5-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1407503813.git.jsarha@ti.com>
-In-Reply-To: <cover.1407503813.git.jsarha@ti.com>
+References: <1409157673-4154-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1409157673-4154-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: dri-devel@lists.freedesktop.org
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-sh@vger.kernel.org
 
-Removes the OMAP4 HDMI audio callbacks for an external audio driver and
-the old external DAI driver does not work anymore after this patch.
+The ADV7123 is a video DAC described by an input port, an output port,
+and an optional power save GPIO.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Cc: devicetree@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi4.c |  113 ---------------------------------
- 1 file changed, 113 deletions(-)
+ .../devicetree/bindings/video/adi,adv7123.txt      | 50 ++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/adi,adv7123.txt
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index 707dcec..a7ee70d 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -471,112 +471,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
- 	return r;
- }
- 
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	int r;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi_wp_audio_enable(&hdmi.wp, true);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--	hdmi_wp_audio_enable(&hdmi.wp, false);
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return hdmi4_audio_start(&hdmi.core, &hdmi.wp);
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--	hdmi4_audio_stop(&hdmi.core, &hdmi.wp);
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	bool r;
--
--	mutex_lock(&hdmi.lock);
--
--	r = hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode);
--
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	int r;
--	u32 pclk = hdmi.cfg.timings.pixelclock;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi4_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--#else
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	return false;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	return -EPERM;
--}
--#endif
--
- static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
- 		const struct hdmi_avi_infoframe *avi)
- {
-@@ -605,13 +499,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
- 	.read_edid		= hdmi_read_edid,
- 	.set_infoframe		= hdmi_set_infoframe,
- 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
--
--	.audio_enable		= hdmi_audio_enable,
--	.audio_disable		= hdmi_audio_disable,
--	.audio_start		= hdmi_audio_start,
--	.audio_stop		= hdmi_audio_stop,
--	.audio_supported	= hdmi_audio_supported,
--	.audio_config		= hdmi_audio_config,
- };
- 
- static void hdmi_init_output(struct platform_device *pdev)
+diff --git a/Documentation/devicetree/bindings/video/adi,adv7123.txt b/Documentation/devicetree/bindings/video/adi,adv7123.txt
+new file mode 100644
+index 0000000..a6b2b2b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/adi,adv7123.txt
+@@ -0,0 +1,50 @@
++Analog Device ADV7123 Video DAC
++-------------------------------
++
++The ADV7123 is a digital-to-analog converter that outputs VGA signals from a
++parallel video input.
++
++Required properties:
++
++- compatible: Should be "adi,adv7123"
++
++Optional properties:
++
++- psave-gpios: Power save control GPIO
++
++Required nodes:
++
++The ADV7123 has two video ports. Their connections are modeled using the OF
++graph bindings specified in Documentation/devicetree/bindings/graph.txt.
++
++- Video port 0 for DPI input
++- Video port 1 for VGA output
++
++
++Example
++-------
++
++	adv7123: encoder@0 {
++		compatible = "adi,adv7123";
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				adv7123_in: endpoint@0 {
++					remote-endpoint = <&dpi_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++
++				adv7123_out: endpoint@0 {
++					remote-endpoint = <&vga_connector_in>;
++				};
++			};
++		};
++	};
 -- 
-1.7.9.5
+1.8.5.5
 

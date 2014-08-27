@@ -1,87 +1,56 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 27 Aug 2014 17:22:42 +0000
-Subject: Re: [PATCH 03/16] video: Add DT binding documentation for VGA connector
-Message-Id: <1455918.Ek46oPnquz@avalon>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Wed, 27 Aug 2014 19:45:00 +0000
+Subject: [PATCH] backlight: generic_bl: Remove unused function
+Message-Id: <1409168700-19042-1-git-send-email-festevam@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1409157673-4154-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
- <1409157673-4154-4-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
- <CAL_JsqLOzrgncpTa3SqMjc=XeYuvXhGrvk9dKA+Fgh_g_wycCA@mail.gmail.com>
-In-Reply-To: <CAL_JsqLOzrgncpTa3SqMjc=XeYuvXhGrvk9dKA+Fgh_g_wycCA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robherring2@gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, dri-devel@lists.freedesktop.org, SH-Linux <linux-sh@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-Hi Rob,
+From: Fabio Estevam <fabio.estevam@freescale.com>
 
-On Wednesday 27 August 2014 12:12:36 Rob Herring wrote:
-> On Wed, Aug 27, 2014 at 11:41 AM, Laurent Pinchart wrote:
-> > The VGA connector is described by a single input port and an optional
-> > DDC bus.
-> 
-> Wasn't there a generic connector binding for DVI, HDMI, etc.?
+genericbl_limit_intensity() is exported, but it is never
+called anywhere else.
 
-As far as I know, there are three separate generic bindings for DVI 
-connectors, HDMI connectors, and analog TV connectors. The VGA connector 
-doesn't seem to really fit into one of those categories.
+Fix the following sparse warning:
 
-> > Cc: devicetree@vger.kernel.org
-> > Cc: linux-fbdev@vger.kernel.org
-> > Signed-off-by: Laurent Pinchart
-> > <laurent.pinchart+renesas@ideasonboard.com>
-> > ---
-> > 
-> >  .../devicetree/bindings/video/vga-connector.txt    | 28
-> >  ++++++++++++++++++++++ 1 file changed, 28 insertions(+)
-> >  create mode 100644
-> >  Documentation/devicetree/bindings/video/vga-connector.txt> 
-> > diff --git a/Documentation/devicetree/bindings/video/vga-connector.txt
-> > b/Documentation/devicetree/bindings/video/vga-connector.txt new file mode
-> > 100644
-> > index 0000000..9a45ec1
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/video/vga-connector.txt
-> > @@ -0,0 +1,28 @@
-> > +VGA Connector
-> > +=======
-> > +
-> > +Required properties:
-> > +- compatible: "vga-connector"
-> > +
-> > +Optional properties:
-> > +- label: a symbolic name for the connector
-> 
-> ...which corresponds to hardware labels.
-> 
-> > +- ddc-i2c-bus: phandle to the I2C bus that is connected to VGA DDC
-> > +
-> > +Required nodes:
-> > +- Video port for VGA input
-> 
-> A reference to the relevant video graph bindings should be added here.
+drivers/video/backlight/generic_bl.c:59:6: warning: symbol 'genericbl_limit_intensity' was not declared. Should it be static?
 
-I'll fix that.
+Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
+---
+ drivers/video/backlight/generic_bl.c | 18 ------------------
+ 1 file changed, 18 deletions(-)
 
-> > +
-> > +Example
-> > +-------
-> > +
-> > +vga0: connector@0 {
-> > +       compatible = "vga-connector";
-> > +       label = "vga";
-> > +
-> > +       ddc-i2c-bus = <&i2c3>;
-> > +
-> > +       port {
-> > +               vga_connector_in: endpoint {
-> > +                       remote-endpoint = <&adv7123_out>;
-> > +               };
-> > +       };
-> > +};
-
+diff --git a/drivers/video/backlight/generic_bl.c b/drivers/video/backlight/generic_bl.c
+index 5d8d652..67dfb93 100644
+--- a/drivers/video/backlight/generic_bl.c
++++ b/drivers/video/backlight/generic_bl.c
+@@ -52,24 +52,6 @@ static int genericbl_get_intensity(struct backlight_device *bd)
+ 	return genericbl_intensity;
+ }
+ 
+-/*
+- * Called when the battery is low to limit the backlight intensity.
+- * If limit=0 clear any limit, otherwise limit the intensity
+- */
+-void genericbl_limit_intensity(int limit)
+-{
+-	struct backlight_device *bd = generic_backlight_device;
+-
+-	mutex_lock(&bd->ops_lock);
+-	if (limit)
+-		bd->props.state |= GENERICBL_BATTLOW;
+-	else
+-		bd->props.state &= ~GENERICBL_BATTLOW;
+-	backlight_update_status(generic_backlight_device);
+-	mutex_unlock(&bd->ops_lock);
+-}
+-EXPORT_SYMBOL(genericbl_limit_intensity);
+-
+ static const struct backlight_ops genericbl_ops = {
+ 	.options = BL_CORE_SUSPENDRESUME,
+ 	.get_brightness = genericbl_get_intensity,
 -- 
-Regards,
-
-Laurent Pinchart
+1.9.1
 

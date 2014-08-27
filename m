@@ -1,42 +1,76 @@
-From: Henrik =?ISO-8859-1?Q?Nordstr=F6m?= <henrik@henriknordstrom.net>
-Date: Wed, 27 Aug 2014 08:17:04 +0000
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 27 Aug 2014 08:22:08 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <1409127424.2701.27.camel@localhost>
+Message-Id: <20140827082208.GQ15297@lukather>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="ogqL7AgPWhApULZI"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140813170106.GT15297@lukather>
- <20140825121228.GB4163@ulmo.nvidia.com> <20140825124410.GZ15297@lukather>
- <20140825133953.GJ4163@ulmo.nvidia.com> <53FB3E7F.4000503@redhat.com>
- <20140825141600.GA14763@ulmo.nvidia.com> <20140825145854.GA15297@lukather>
- <20140825150501.GE14763@ulmo.nvidia.com> <20140825152232.GE15297@lukather>
- <20140826080432.GD17263@ulmo> <20140826135341.GM15297@lukather>
-In-Reply-To: <20140826135341.GM15297@lukather>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <53FB46FF.1010208@redhat.com>
+ <20140825145303.GC14763@ulmo.nvidia.com>
+ <20140825150705.GB15297@lukather> <20140826082626.GE17263@ulmo>
+ <20140826090035.GB17528@sirena.org.uk>
+ <20140826091853.GI17263@ulmo>
+ <20140826100612.GH17528@sirena.org.uk>
+ <20140826105451.GD31124@ulmo> <1409078409.2701.17.camel@localhost>
+ <20140827074057.GS17528@sirena.org.uk>
+In-Reply-To: <20140827074057.GS17528@sirena.org.uk>
 To: linux-arm-kernel@lists.infradead.org
 
-tis 2014-08-26 klockan 15:53 +0200 skrev Maxime Ripard:
-> > it should be fixed at the root. So a much better solution would be to
-> > establish a way for firmware to communicate to the kernel that a given
-> > resource has been enabled by firmware and shouldn't be disabled. Such a
-> > solution can be implement for all types of resources and can be reused
-> > by all drivers since they don't have to worry about these details.
-> 
-> Mike Turquette repeatedly said that he was against such a DT property:
-> https://lkml.org/lkml/2014/5/12/693
 
-And not really what we want here. The clocks should be turned off if not
-in use, i.e. when simplefb is unbound from the device and no other
-driver has taken over. Maybe even in the case where there is no simplefb
-driver in-kernel, but if the use case is to be generalized then this
-kind of resources need to be held until explicitly released to allow
-resources to be held until their driver is loaded, which may happen long
-after kernel bootup.
+--ogqL7AgPWhApULZI
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-But again, for many use cases it is a virtual hardware property, not
-really hardware in it's own but still smells a lot like hardware. These
-parameters is only valid until the hardware have been reconfigured.
+On Wed, Aug 27, 2014 at 08:40:57AM +0100, Mark Brown wrote:
+> On Tue, Aug 26, 2014 at 08:40:09PM +0200, Henrik Nordstr=F6m wrote:
+>=20
+> > It is not clear to me where the hardware resources should be listed in
+> > DT, being it a simplefb node or part of the actual hardware device node
+> > properly marked as dynamic boot defaults or something else? It's
+> > somewhere inbetween hardware and virtual device, and somewhat volatile.
+> > As far as simplefb is concerned it is a hardware desription of the
+> > framebuffer, but for a kms driver it's no more than firmware handover of
+> > boottime settings and ceases to exists once the kms driver have
+> > reconfigured the hardware.
+>=20
+> Is simplefb something that should be in the device tree distinctly in
+> the first place - shouldn't it be a subset of the functionality of the
+> video nodes?  It's the same hardware being driven differently.
 
-Regards
-Henrik
+Therorically, yes, but that would mean knowing beforehand what the
+final binding will look like, even before submitting the driver. Since
+the bindings are always reviewed, and most of the time changed
+slightly, that wouldn't work very well with the DT as a stable ABI
+policy I guess.
 
+Maxime
+
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+
+--ogqL7AgPWhApULZI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJT/ZUwAAoJEBx+YmzsjxAgWhwP/0NYnLbqs8WoE+PnxubNpayr
+k+XAhsm6wuaia2Gjp4tuXNy1yewmS0ji9evTL0tsuIlaPwKoe92CzKTjsjvzmA7J
+Xb84JpRUJKOGUgQgN3F6L2pKBx4zrpWkpGlbL6mFESWvVr4yN+wz/zJnSfxn5bii
+DjZF0jxeGmvdSb/vfDEbtvAEn8guZUlKPGeLfQwU4pnOIkV6sxCTwyPiv05BJbh/
+TFfAEofUtYGQ1Op7V7H/HZfMC8R4BJ8/DAC3ir5UUBwDYYM0jr01jI32+f9OI7J7
+dYRKs9U3jhbS86R73S4bAU1EclizMZw/wzkhGpzWVfIJ78nw9ojY67EhkcPps0RB
+8wFik8WoyDBgSOYoN0cylmFJmKuhZZKd/fAm9qu45Hm/82udnulbrCVuqE5j8sBB
+8aGwOj2VO70i9/aGL0W/crO5I5VtwgQUp+5xNN9i2gjl0B9Uy9mfpctA2hMYgl2r
+J1b61EPIfz6w9MiKo0BlA/cT+EEDPobm+G8Rf4Jv+kcn1x1XhMQobT16eG5dlUJz
+PLdR/+cZy7FbmPbh2Il41ixPRX1iAvPnu3lZQ0/6JZbKaD3zCcZChjaLy3OEdJcT
+DbKMmpicDp6ZjjAOUrXYLmZdr3fbVFCvUpurbT71BgvmdCrUFtFrp4mhokETim7c
+bw9pBwDVCd6JzPtFp/ra
+=5bHy
+-----END PGP SIGNATURE-----
+
+--ogqL7AgPWhApULZI--

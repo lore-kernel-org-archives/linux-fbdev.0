@@ -1,215 +1,101 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Fri, 29 Aug 2014 08:12:42 +0000
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Fri, 29 Aug 2014 13:57:08 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <20140829081236.GA13371@ulmo>
+Message-Id: <20140829135708.GG15297@lukather>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="YZ5djTAD1cGYuMQK"
+Content-Type: multipart/mixed; boundary="OyvJ9bcDTA2jS0yg"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140826143550.GB3027@ulmo> <53FCE704.4030103@redhat.com>
- <20140827093121.GA23186@ulmo> <53FDB46C.5010609@redhat.com>
- <20140827125613.GF23186@ulmo> <53FDE0CE.5030807@redhat.com>
- <20140827141632.GB32243@ulmo> <53FF1D6C.6090205@redhat.com>
- <20140829070116.GC13106@ulmo> <54002A7D.90402@redhat.com>
-In-Reply-To: <54002A7D.90402@redhat.com>
+References: <20140826135341.GM15297@lukather> <20140826143550.GB3027@ulmo>
+ <20140826210248.GO15297@lukather> <20140827065440.GG15640@ulmo>
+ <20140827084526.GR15297@lukather> <20140827095241.GC23186@ulmo>
+ <20140827154221.GX15297@lukather> <20140828101140.GB14388@ulmo>
+ <20140828204603.GB15297@lukather> <20140829062932.GB13106@ulmo>
+In-Reply-To: <20140829062932.GB13106@ulmo>
 To: linux-arm-kernel@lists.infradead.org
 
 
---YZ5djTAD1cGYuMQK
+--OyvJ9bcDTA2jS0yg
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Aug 29, 2014 at 09:23:41AM +0200, Hans de Goede wrote:
-> On 08/29/2014 09:01 AM, Thierry Reding wrote:
-> > On Thu, Aug 28, 2014 at 02:15:40PM +0200, Hans de Goede wrote:
-[...]
-> >> 2) Tie these resources to simplefb so that the kernel can know when th=
-ey
-> >> are no longer in use, and it may e.g. re-use the memory
+On Fri, Aug 29, 2014 at 08:29:33AM +0200, Thierry Reding wrote:
+> On Thu, Aug 28, 2014 at 10:46:03PM +0200, Maxime Ripard wrote:
+> > On Thu, Aug 28, 2014 at 12:11:41PM +0200, Thierry Reding wrote:
+> [...]
+> > > Then since firmware already knows what it set up it can tell the
+> > > kernel to not touch those.
 > >=20
-> > For the memory there shouldn't be a problem because it's already in the
-> > DT node anyway. It has to be there so that simplefb knows where to write
-> > to.
+> > Somehow, I've been raised kernel-wise into thinking that you can never
+> > fully trust your firmware. Or at least that you should have a way to
+> > recover from any bug/bad behaviour from it.
 >=20
-> The memory information currently in the dt node is not complete enough to
-> reclaim memory, e.g. the sunxi driver always reserves 8M, but the simplefb
-> reg entry only describes the part actually used for the framebuffer.
+> If you don't trust your firmware then you shouldn't be taking over a
+> device that it's set up for you. Rather you should write a proper driver
+> that sets things up from the start.
+>=20
+> This whole "we don't trust firmware" isn't going to work if we want to
+> have hand-off from firmware to kernel. And it's already been decided in
+> other threads that moving more code out of the kernel and into firmware
+> is a requirement (c.f. ARM64).
 
-You can easily fix that.
+Except that in ARM64 case, it has been asked before having any
+SoC/boards out. We're definitely not in this situation there.
 
-> >> To me the most logical and also most "correct" way of modelling this i=
-s to
-> >> put the resources inside the simplefb dt node.
+> Also in this case you wrote the firmware, so why wouldn't you trust it?
+
+We partly wrote the firmware, on some of the available SoCs. Some
+other just have allwinner's own. But yeah, in this case they wouldn't
+even set up the framebuffer in the first place.
+
+> > Moreover, the way I see it, there's a major flaw in having an
+> > attribute in the clock node: you don't even know if the clock is ever
+> > going to be used.
 > >=20
-> > Except that simplefb isn't a real device, so there's a hard time
-> > justifying its existence in DT as it is. Claiming resources from a
-> > virtual device doesn't sound correct to me at all.
+> > If simplefb is not compiled in, you won't claim the clocks, and they
+> > will be disabled, which is imho a good thing. This case wouldn't be
+> > covered with an attribute at the clock node, because you don't have a
+> > link to what device/feature actually uses it in the system, and so you
+> > have to make the assumption that it will be used. And you will end up
+> > with clocks with a rather high rate running for nothing.
 >=20
-> Yet you want it to claim memory that does not seem consistent to me.
+> That's completely hypothetical. If simplefb isn't enabled and the clock
+> isn't claimed there's probably still going to be some other driver
+> taking over eventually. If there isn't, what's the point of firmware
+> setting up display in the first case?
 
-Because it needs to explicitly access that memory. It does not need to
-explicitly access the clocks.
+And now, here is a new requirement for the firmware: that in addition
+to being reliable, that it must not be dumb, or take shortcuts, like
+setting up the framebuffer in every case, no matter wether there's a
+screen or not.
 
-> >>>> The key word here is "the used resources" to me this is not about si=
-mlefb
-> >>>> managing resources, but marking them as used as long as it needs the=
-m, like
-> >>>> it will need to do for the reserved mem chunk.
-> >>>
-> >>> The difference between the clocks and the memory resource is that the
-> >>> driver needs to directly access the memory (it needs to map it and
-> >>> provide a userspace mapping for it) whereas it doesn't need to touch =
-the
-> >>> clocks (except to workaround a Linux-specific implementation detail).
-> >>
-> >> Erm, no, the need to map the memory and the memory being a resource
-> >> which may be released are an orthogonal problem. E.g. a system with
-> >> dedicated framebuffer memory won't need to use a reserved main-memory
-> >> chunk, nor need to worry about returning that mem when simplefb is no
-> >> longer in use.
-> >=20
-> > I would think the memory should still be reserved anyway to make sure
-> > nothing else is writing over it. And it's in the device tree anyway
-> > because the driver needs to know where to put framebuffer content.
->=20
-> No, the address were to write framebuffer contents currently is in the
-> simplefb node, not the actually backing memory info. I can fully see
-> some crazy hardware where a chunk of main memory is reserved for some
-> funky video engine, and then that chunk of memory gets accessed through
-> io-mem addresses for framebuffer access (e.g. the hardware may need this
-> to know when the fb is dirtied).
+Maxime
 
-We're drifting off into the realm of hypotheses here. Of course if you
-can't make the hardware work with these simple assumptions because it's
-too whacky then that's just tough luck.
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
 
-> > So
-> > the point I was trying to make is that we can't treat the memory in the
-> > same way as clocks because it needs to be explicitly managed. Whereas
-> > clocks don't. The driver is simply too generic to know what to do with
-> > the clocks. It doesn't know what frequency they should be running at or
-> > what they're used for, so by any definition of what DT should describe
-> > they're useless for this virtual device.
->=20
-> I don't see why you keep insisting that the memory is so special, it is
-> just another resource which we need to claim,
-
-It's the only resource which we need to claim. Because it is the only
-resource that needs to be explicitly accessed. simplefb is useless if
-you don't write to that memory.
-
->                                               and tie to the simplefb node
-> so that it can be re-used (or disabled) when simplefb is no longer used
-> (it could e.g. be unbound explicitly on headless systems).
-
-On headless systems the firmware shouldn't be setting up a framebuffer
-in the first place.
-
-> > Furthermore it's fairly likely that as your kernel support progresses
-> > you'll find that the driver all of a sudden needs to manage some other
-> > type of resource that you just haven't needed until now because it may
-> > default to being always on. Then you'll have a hard time keeping
-> > backwards-compatibility and will have to resort to the kinds of hacks
-> > that you don't want to see in the kernel.
->=20
-> kernel support? This is about u-boot's video code and the simplefb bindin=
-gs.
-
-And the kernel doesn't need to use the simplefb bindings? Why are we
-even having this conversation, then?
-
-> > So it really boils down to the DT needing to describe a complete device
-> > with all the dependencies. And just clocks aren't the complete
-> > description. But if you want the complete description then you're going
-> > to need a complete driver as well and simplefb is out of the picture
-> > anyway.
->=20
-> Yes we eventually need a full kernel driver, with its own bindings, that
-> is not what this is about.
-
-It is to some degree. The whole point of simplefb is to provide a useful
-graphical output until a full driver is in place. The way to achieve
-that is by taking advantage of the firmware setting things up for you.
-Which is what I've been saying all along. If the firmware has already
-set things up for you, you shouldn't need to do anything special like
-enabling clocks because they are already on.
-
-Oh, and let me restate that that's not actually what the patch is doing.
-It isn't enabling clocks at all. It's merely a workaround to keep them
-running.
-
-> > Once again, the current, basic form of the binding allows for a
-> > completely generic implementation of the driver because it makes
-> > assumptions about firmware setting things up the right way so that the
-> > driver doesn't have to.
->=20
-> Except that it does not work because it does not claim the necessary
-> resources.
-
-Wrong. The reason it doesn't work is because the clock framework
-disables the clocks. That's a Linux-specific implementation detail and
-therefore shouldn't influence the binding in any way.
-
-> We seem to be at a point where this discussion is just going in circles,
-> and since there seems to be no reasonable alternative to the proposed
-> solution of adding the clocks to the simplefb node, can you please just
-> stop blocking progress on this?
-
-A couple of different solutions to the problem were proposed during the
-discussion. It's just that nobody's been willing to take a step back and
-look at this from a different perspective.
-
-> Your objection to this has been duly noted,
-
-Right. Ignored is how I would put it.
-
->                                             but no one is forcing you or
-> other people to actually use the clocks property in your implementation
-> of simplefb. So if your 101% certain that this is a bad idea, can you
-> please just let us (the sunxi people) make our own mistakes and learn
-> from those ?
-
-Ugh... This isn't just about letting you make your own mistakes. This is
-about solving things in a wrong way (and device specific way) and baking
-something into an ABI that really doesn't need to be there. And more
-specifically if we let clocks be "managed" by simplefb we can no longer
-claim that it is simple and therefore can't block adding all other sorts
-of device-specific hacks to it.
-
-> As we actually plan to use the clocks property, we will be
-> the ones which will have to deal with any issues.
-
-Wrong. Everyone that potentially wants to use the driver will have to
-deal with this.
-
-Anyway, I am getting tired of this whole discussion and as you already
-said we're not making any progress. You really should repost this series
-to the devicetree mailing list and give people there a chance to look at
-the proposed changes. If everybody else is fine with it my objections
-will be overruled anyway. I'll just have to sort out/live with the mess
-when I want to use simplefb for hand-off.
-
-Thierry
-
---YZ5djTAD1cGYuMQK
-Content-Type: application/pgp-signature
+--OyvJ9bcDTA2jS0yg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUADX0AAoJEN0jrNd/PrOhRv0QAIh0GE+W3SUqkucq/2BHkZpE
-m5E3UhWL4HaaVdWSGLFbLo2P8/TCLIl1TUuS/uh9u2aSEysTGsXl6P2OyBBuIUy6
-MjS5K3rdcAY55bPVxVE+36dbh50o9VBtJjSwkQTN/XopceDmZh7LRFEP9MN4/ZaW
-liPxJVuSFwlUPORGjGNhuk0K4W579DGNrT9SR5FbhijQSij18F5MuVVQhVg9rWrI
-n4pTWP8MSGdZG4Dwb0WUFJIpiqlk72pm9JybplJF3rIWRLOkaJvUQMIyVReBJLiL
-9iVViEVA1u5bv0utSSmPbnHs8I/dVhcS42+fz/NM09vt45d5CBVX2bfHsXiC740C
-3HGESh3iRrIW2IHrld/eWk/yx4FiDchDgwusPizsuJCO4oJWXlWqbaaxR+r33W+E
-03MsUQDF7Ur70nBZFNZAGiF+6ok4FUQPeezt6VYTodTzQgX2c1zq2OcUEdh7h+r3
-EyQvrYv4QxvJW8/8R48EMomxLHhpuOoNTjLykmRUGH/y7HNCDgAm69JJM0QH+Y+W
-rtVUNF1zJCdprrclRgHvWgNcXH1oqL2fQqfJHEKwg9nxfKFsB1sQj+9iMYzdbMHW
-3CpYEmwNwjnWwgRrWVpyUWDqyQNv60u4zM5I//LMSfoZFqFKI2QhIrMgUikiGjVk
-mksGAgeUW0x8xXkz4EA6
-=+PIw
+iQIcBAEBAgAGBQJUAIa0AAoJEBx+YmzsjxAgfLsQAJeJv7eDy3R/zak1r7O9EhZN
+ghnNtdX2Ayn0VhQpi15p7TLKAJuK5WYLPpoEndu2kdQOZQyn+DGZUyfdbAcotMSI
+OnwUaD6qF++D6TMNUKoVrQTTzZ1bHCVAI0G3p9FdgOJv5v0b3XQhhngcWFQis0Pp
+7EkOEflv0PFEFe0sT1jO5+5HTiWXJC9LpBb4ZFO1ZQZ8ULiM/3AOHIFV6znnz3yM
+d+841Vju/7BZQ/x5BAVRvFNvLPDPY744PTLb16wE+CJkzsAN5MSHCuX4iGAOsrFj
+P81M9VXxh6lhrLUSmfj+p/ijoYKpKVqpnYKCmmbnBGnR5XTPME2AQKdlh6OxpAEa
++K1F5OOMKAa4JrROK5SC9dAXTdBtmUWHYAHjdoJ2f/YOCnwl9vrp7jiZ8c62HiVf
+/4kxQCWu1bqAvjCYY49MuqRaPMoQpupfCkpiGC2wNeOfAcxe72q65/mr4/si277g
+t4IjL+5knHqCwZ8sshiWHqg/YrXSnB4YqOOCT3RW7MF3CBggCr03YYxc4e8oIXsr
+vYPOVLQfcf9GLI5AtAljBOgjpprmdSlj6Q2MNUsgoyDiU3au6Sv7l32/h3aELt4h
+5qneMVSPteapHZyKobF9GqYqXAEnbSWtO2Ug/z8gmpxEc1kSFxuWSVv6MRehoOj1
+prRtYiCef5WewJGfcLqC
+=E4el
 -----END PGP SIGNATURE-----
 
---YZ5djTAD1cGYuMQK--
+--OyvJ9bcDTA2jS0yg--

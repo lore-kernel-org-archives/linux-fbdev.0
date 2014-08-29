@@ -1,162 +1,82 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Date: Fri, 29 Aug 2014 06:19:12 +0000
+Date: Fri, 29 Aug 2014 06:29:33 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <20140829061910.GA13106@ulmo>
+Message-Id: <20140829062932.GB13106@ulmo>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ZPt4rx8FFjLCG7dd"
+Content-Type: multipart/mixed; boundary="uQr8t48UFsdbeI+V"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140826135341.GM15297@lukather> <20140826143550.GB3027@ulmo>
- <20140826210248.GO15297@lukather> <20140827065440.GG15640@ulmo>
- <20140827084526.GR15297@lukather> <20140827095241.GC23186@ulmo>
- <20140827154221.GX15297@lukather>
- <CAOMqctSY7AJKHthe+aG8--Ok6JiY1g2zM_tN10S2nELOSe=qMw@mail.gmail.com>
- <20140828100834.GA14388@ulmo>
- <CAOMqctSwhQHJynn=tW==uuznJW+0CrivNP=os+xem1MAuDP7ZQ@mail.gmail.com>
-In-Reply-To: <CAOMqctSwhQHJynn=tW==uuznJW+0CrivNP=os+xem1MAuDP7ZQ@mail.gmail.com>
+References: <20140826080432.GD17263@ulmo> <20140826135341.GM15297@lukather>
+ <20140826143550.GB3027@ulmo> <20140826210248.GO15297@lukather>
+ <20140827065440.GG15640@ulmo> <20140827084526.GR15297@lukather>
+ <20140827095241.GC23186@ulmo> <20140827154221.GX15297@lukather>
+ <20140828101140.GB14388@ulmo> <20140828204603.GB15297@lukather>
+In-Reply-To: <20140828204603.GB15297@lukather>
 To: linux-arm-kernel@lists.infradead.org
 
 
---ZPt4rx8FFjLCG7dd
+--uQr8t48UFsdbeI+V
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Aug 29, 2014 at 07:13:22AM +0200, Michal Suchanek wrote:
-> On 28 August 2014 12:08, Thierry Reding <thierry.reding@gmail.com> wrote:
-> > On Wed, Aug 27, 2014 at 10:57:29PM +0200, Michal Suchanek wrote:
-> >> Hello,
-> >>
-> >> On 27 August 2014 17:42, Maxime Ripard <maxime.ripard@free-electrons.c=
-om> wrote:
-> >> > On Wed, Aug 27, 2014 at 11:52:48AM +0200, Thierry Reding wrote:
-> >> >> On Wed, Aug 27, 2014 at 10:45:26AM +0200, Maxime Ripard wrote:
-> >> >> > On Wed, Aug 27, 2014 at 08:54:41AM +0200, Thierry Reding wrote:
-> >> >> > > On Tue, Aug 26, 2014 at 11:02:48PM +0200, Maxime Ripard wrote:
-> >> >> > > > On Tue, Aug 26, 2014 at 04:35:51PM +0200, Thierry Reding wrot=
-e:
-> >> >> [...]
-> >> >> > > > > > Mike Turquette repeatedly said that he was against such a=
- DT property:
-> >> >> > > > > > https://lkml.org/lkml/2014/5/12/693
-> >> >> > > > >
-> >> >> > > > > Mike says in that email that he's opposing the addition of =
-a property
-> >> >> > > > > for clocks that is the equivalent of regulator-always-on. T=
-hat's not
-> >> >> > > > > what this is about. If at all it'd be a property to mark a =
-clock that
-> >> >> > > > > should not be disabled by default because it's essential.
-> >> >> > > >
-> >> >> > > > It's just semantic. How is "a clock that should not be disabl=
-ed by
-> >> >> > > > default because it's essential" not a clock that stays always=
- on?
-> >> >> > >
-> >> >> > > Because a clock that should not be disabled by default can be t=
-urned off
-> >> >> > > when appropriate. A clock that is always on can't be turned off.
-> >> >> >
-> >> >> > If a clock is essential, then it should never be disabled. Or we =
-don't
-> >> >> > share the same meaning of essential.
-> >> >>
-> >> >> Essential for the particular use-case.
-> >> >
-> >> > So, how would the clock driver would know about which use case we're
-> >> > in? How would it know about which display engine is currently runnin=
-g?
-> >> > How would it know about which video output is being set?
-> >> >
-> >> > Currently, we have two separate display engines, which can each outp=
-ut
-> >> > either to 4 different outputs (HDMI, RGB/LVDS, 2 DSI). Each and every
-> >> > one of these combinations would require different clocks. What clocks
-> >> > will we put in the driver? All of them?
-> >> >
-> >>
-> >> since simplefb cannot be extended how about adding, say, dtfb which
-> >> claims the resources from dt and then instantiates a simplefb once the
-> >> resources are claimed? That is have a dtfb which has the clocks
-> >> assigned and has simplefb as child dt node.
-> >
-> > I don't see how that changes anything. All you do is add another layer
-> > of indirection. The fundamental problem remains the same and isn't
-> > solved.
+On Thu, Aug 28, 2014 at 10:46:03PM +0200, Maxime Ripard wrote:
+> On Thu, Aug 28, 2014 at 12:11:41PM +0200, Thierry Reding wrote:
+[...]
+> > Then since firmware already knows what it set up it can tell the
+> > kernel to not touch those.
 >=20
-> It keeps clock code out of simplefb and provides driver for the kind
-> of framebuffer set up by firmware that exists on sunxi, exynos, and
-> probably many other SoCs. That is a framebuffer that needs some clocks
-> and possibly regulators enabled to keep running because the reality of
-> the platform is that it has clocks and regulators unlike some other
-> platforms that do not.
->=20
-> These clocks and regulators are used but not configured by the
-> framebuffer and should be reclaimed when firmware framebuffer is
-> disabled. This is the same as the chunk of  memory used by simplefb
-> which is currently lost but should be reclaimed when simplefb is
-> disabled.
->=20
-> This memory is not 'reserved for firmware' and unusable but reserved
-> for framebuffer and the regulators are not 'always on' or 'should
-> never be disabled' but should be enabled while framebuffer is used.
->=20
-> As far as I can tell in DT this is expressed by creating a DT node
-> associated with the framebuffer driver that tells the kernel that this
-> memory, clocks and regulators are associated with the framebuffer
-> driver and can be reclaimed if this driver is stopped or not enabled
-> in the kernel at all. If you are going to be asinine about simplefb
-> not getting support for managing any resource other than the memory
-> chunk then another layer of indirection is required for platforms that
-> have more resources to manage.
->=20
-> If there is another way to associate resources with a driver in DT
-> then please enlighten me.
->=20
-> AFAICT simplefb is the framebuffer driver already in kernel closest to
-> the driver that is required for sunxi - simplefb also relies on
-> firmware to set up the framebuffer but unlike vesafb or efifb it
-> already has DT integration. So the most efficient way to implement
-> framebuffer for sunxi is to extend simplefb or if necessary add
-> another layer of indirection under simplefb. If there is a better
-> fitting driver in the kernel then please enlighten me and the
-> developer that wrote this patch what driver it would be.
+> Somehow, I've been raised kernel-wise into thinking that you can never
+> fully trust your firmware. Or at least that you should have a way to
+> recover from any bug/bad behaviour from it.
 
-I think simplefb is exactly the right driver to use for this case. But I
-don't think making it manage all the resources is the right thing to do.
-While it's fairly easy to do it, it's also something that needs to be
-done for every other driver with similar requirements. Consider for
-example what happens if you want to play some welcome sound in the
-bootloader and keep it playing while the kernel is booting. You'd need
-to repeat exactly what this driver does to keep clocks for audio
-hardware running. And there are possibly other similar use-cases as
-well.
+If you don't trust your firmware then you shouldn't be taking over a
+device that it's set up for you. Rather you should write a proper driver
+that sets things up from the start.
 
-One other issue with simplefb is that it isn't a real device to begin
-with. It's completely virtual, so in the same way that it doesn't
-program any device-specific registers I don't think it should claim any
-resources.
+This whole "we don't trust firmware" isn't going to work if we want to
+have hand-off from firmware to kernel. And it's already been decided in
+other threads that moving more code out of the kernel and into firmware
+is a requirement (c.f. ARM64).
+
+Also in this case you wrote the firmware, so why wouldn't you trust it?
+
+> Moreover, the way I see it, there's a major flaw in having an
+> attribute in the clock node: you don't even know if the clock is ever
+> going to be used.
+>=20
+> If simplefb is not compiled in, you won't claim the clocks, and they
+> will be disabled, which is imho a good thing. This case wouldn't be
+> covered with an attribute at the clock node, because you don't have a
+> link to what device/feature actually uses it in the system, and so you
+> have to make the assumption that it will be used. And you will end up
+> with clocks with a rather high rate running for nothing.
+
+That's completely hypothetical. If simplefb isn't enabled and the clock
+isn't claimed there's probably still going to be some other driver
+taking over eventually. If there isn't, what's the point of firmware
+setting up display in the first case?
 
 Thierry
 
---ZPt4rx8FFjLCG7dd
+--uQr8t48UFsdbeI+V
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUABteAAoJEN0jrNd/PrOhfM4P/RZMC1rtKyzL+KnUxeDGi42G
-k18/XiU426fZmwIsimwiM+pzKbwnUwCBv8yj5VK2bkWVVCp8rECSqXTTy8/79y1V
-MzasTvzWLXsdlKAtXszY6UVrsV/tq2Ae5MaIVv/RF9XzrMCLjxtMah2QguqNPbc0
-nDf+hJiHmzgonZ27xK3KEY2A3/hDexqjHojqOrThgmXQ2ZZeXKimqMFqCLDOq0Hh
-11cZJReMD98/70axsMRBZgK2cD5h5TyJnXU4ALND+bYInHWluClRWu35zTDHnmC6
-t0fK1Q9zXCEDJAbSuzniqtJ46OubrCeexsfbXynHihda+scs3089EM7x4C/kwOVr
-u4G/lXWlYIQ6y8GnNYm72ZUlTStQBm2vbgSXgUUV0/GVcLrgwxlPCLWZyiwP0qA8
-0VfBbjSe998N3H3lsm7/vvs35C3/kzZ15rpH3EYc2gBxk9IX6QIUiLX2O6kn0V0K
-sloJgcE97gGDTJokymwJVvf9QwhM6g+VYnyaZ82ScckQ2iaETTtUuiS/fKylrxzq
-9CkqGtL5/PAiqpXAf18eEaW3XtMqkBJybO1gE21na473vdzDhYBVXv2c47h/6iS+
-KV5ZMWUnhiW7s0JkpjiUI+0XoI/fUkebcQbi49X591SMIIvKgGE2NOyJ3zGf4wh9
-HwU9dWOLKEEQFIy+mteL
-=FsN3
+iQIcBAEBAgAGBQJUAB3MAAoJEN0jrNd/PrOhfBwP+wfFd6hYpRzGb9NxODXf6CYl
+8WXciA20B9R1OpKeJdvi5duyJnIqX90SpxQ+4YBy7whzuy8SZjIzch3igKIDw6r/
+9fPJ8tgrbpnC+EW42KG7A8vQgpJ+ILI0tZENjFXD2G3vcna64BJFuQiWE2GtnkWD
+ggW0/uepwZ7eAr/vmBxc+e6RczBmf5E2lwaoeKmkYPV3hOXgG0mZ1ZuuKwa26TBD
+/giNxLiq1NUB+cgenDr8Gcirz3Zn2mZEvDJym3cSK3p1bW9Ao/4/FuBKbb/7G7t1
+NYd4yzoabyIS++m3dtxOS/GIMVIRf1l+r+scu6z0UVS2XoDUdYyppC7hCBfqGv/l
+nI5dg4ZA6quF9yw4WPYnyRA0YwWeauFDFScHNrbugLpNAyiV1o0ifNTZjC15x0L8
+FudKH1bILRj7rxSvzhMq3vREAFg4CGhVtGrEaYnU6rhL5Og5LRs/zyPze5dDLE0x
+aaMCQYDYz3GBiINUQgbQDJKsPNP/2p4fJiQq8tf5Dfi6Stcinu77SUUKBT7m0dhD
+OC4ATW25cyTfy+KBGB43ahRkUsBgofyp50QtcLpGfxK1z5bs7YkkVvGpT3Dz+eZL
+snjW0JLTJ9Fs7uoCP7cC5Oa/slG+axrlKBMvHgr0vLfq/OHKy8E63KO46I0nKn6B
+lAYAM5Mf6736fWOtGpRr
+=bKIH
 -----END PGP SIGNATURE-----
 
---ZPt4rx8FFjLCG7dd--
+--uQr8t48UFsdbeI+V--

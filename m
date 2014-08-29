@@ -1,150 +1,173 @@
-From: Michal Suchanek <hramrach@gmail.com>
-Date: Fri, 29 Aug 2014 06:48:42 +0000
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Fri, 29 Aug 2014 07:01:17 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <CAOMqctTUZA-Fx1pOaqxvC9W0G5BGNFYq-gh1019pqXZ1mNynJA@mail.gmail.com>
+Message-Id: <20140829070116.GC13106@ulmo>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="mvpLiMfbWzRoNl4x"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140826135341.GM15297@lukather> <20140826143550.GB3027@ulmo>
- <20140826210248.GO15297@lukather> <20140827065440.GG15640@ulmo>
- <20140827084526.GR15297@lukather> <20140827095241.GC23186@ulmo>
- <20140827154221.GX15297@lukather>
- <CAOMqctSY7AJKHthe+aG8--Ok6JiY1g2zM_tN10S2nELOSe=qMw@mail.gmail.com>
- <20140828100834.GA14388@ulmo>
- <CAOMqctSwhQHJynn=tW==uuznJW+0CrivNP=os+xem1MAuDP7ZQ@mail.gmail.com>
- <20140829061910.GA13106@ulmo>
-In-Reply-To: <20140829061910.GA13106@ulmo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <20140826080432.GD17263@ulmo> <20140826135341.GM15297@lukather>
+ <20140826143550.GB3027@ulmo> <53FCE704.4030103@redhat.com>
+ <20140827093121.GA23186@ulmo> <53FDB46C.5010609@redhat.com>
+ <20140827125613.GF23186@ulmo> <53FDE0CE.5030807@redhat.com>
+ <20140827141632.GB32243@ulmo> <53FF1D6C.6090205@redhat.com>
+In-Reply-To: <53FF1D6C.6090205@redhat.com>
 To: linux-arm-kernel@lists.infradead.org
 
-On 29 August 2014 08:19, Thierry Reding <thierry.reding@gmail.com> wrote:
-> On Fri, Aug 29, 2014 at 07:13:22AM +0200, Michal Suchanek wrote:
->> On 28 August 2014 12:08, Thierry Reding <thierry.reding@gmail.com> wrote:
->> > On Wed, Aug 27, 2014 at 10:57:29PM +0200, Michal Suchanek wrote:
->> >> Hello,
->> >>
->> >> On 27 August 2014 17:42, Maxime Ripard <maxime.ripard@free-electrons.com> wrote:
->> >> > On Wed, Aug 27, 2014 at 11:52:48AM +0200, Thierry Reding wrote:
->> >> >> On Wed, Aug 27, 2014 at 10:45:26AM +0200, Maxime Ripard wrote:
->> >> >> > On Wed, Aug 27, 2014 at 08:54:41AM +0200, Thierry Reding wrote:
->> >> >> > > On Tue, Aug 26, 2014 at 11:02:48PM +0200, Maxime Ripard wrote:
->> >> >> > > > On Tue, Aug 26, 2014 at 04:35:51PM +0200, Thierry Reding wrote:
->> >> >> [...]
->> >> >> > > > > > Mike Turquette repeatedly said that he was against such a DT property:
->> >> >> > > > > > https://lkml.org/lkml/2014/5/12/693
->> >> >> > > > >
->> >> >> > > > > Mike says in that email that he's opposing the addition of a property
->> >> >> > > > > for clocks that is the equivalent of regulator-always-on. That's not
->> >> >> > > > > what this is about. If at all it'd be a property to mark a clock that
->> >> >> > > > > should not be disabled by default because it's essential.
->> >> >> > > >
->> >> >> > > > It's just semantic. How is "a clock that should not be disabled by
->> >> >> > > > default because it's essential" not a clock that stays always on?
->> >> >> > >
->> >> >> > > Because a clock that should not be disabled by default can be turned off
->> >> >> > > when appropriate. A clock that is always on can't be turned off.
->> >> >> >
->> >> >> > If a clock is essential, then it should never be disabled. Or we don't
->> >> >> > share the same meaning of essential.
->> >> >>
->> >> >> Essential for the particular use-case.
->> >> >
->> >> > So, how would the clock driver would know about which use case we're
->> >> > in? How would it know about which display engine is currently running?
->> >> > How would it know about which video output is being set?
->> >> >
->> >> > Currently, we have two separate display engines, which can each output
->> >> > either to 4 different outputs (HDMI, RGB/LVDS, 2 DSI). Each and every
->> >> > one of these combinations would require different clocks. What clocks
->> >> > will we put in the driver? All of them?
->> >> >
->> >>
->> >> since simplefb cannot be extended how about adding, say, dtfb which
->> >> claims the resources from dt and then instantiates a simplefb once the
->> >> resources are claimed? That is have a dtfb which has the clocks
->> >> assigned and has simplefb as child dt node.
->> >
->> > I don't see how that changes anything. All you do is add another layer
->> > of indirection. The fundamental problem remains the same and isn't
->> > solved.
->>
->> It keeps clock code out of simplefb and provides driver for the kind
->> of framebuffer set up by firmware that exists on sunxi, exynos, and
->> probably many other SoCs. That is a framebuffer that needs some clocks
->> and possibly regulators enabled to keep running because the reality of
->> the platform is that it has clocks and regulators unlike some other
->> platforms that do not.
->>
->> These clocks and regulators are used but not configured by the
->> framebuffer and should be reclaimed when firmware framebuffer is
->> disabled. This is the same as the chunk of  memory used by simplefb
->> which is currently lost but should be reclaimed when simplefb is
->> disabled.
->>
->> This memory is not 'reserved for firmware' and unusable but reserved
->> for framebuffer and the regulators are not 'always on' or 'should
->> never be disabled' but should be enabled while framebuffer is used.
->>
->> As far as I can tell in DT this is expressed by creating a DT node
->> associated with the framebuffer driver that tells the kernel that this
->> memory, clocks and regulators are associated with the framebuffer
->> driver and can be reclaimed if this driver is stopped or not enabled
->> in the kernel at all. If you are going to be asinine about simplefb
->> not getting support for managing any resource other than the memory
->> chunk then another layer of indirection is required for platforms that
->> have more resources to manage.
->>
->> If there is another way to associate resources with a driver in DT
->> then please enlighten me.
->>
->> AFAICT simplefb is the framebuffer driver already in kernel closest to
->> the driver that is required for sunxi - simplefb also relies on
->> firmware to set up the framebuffer but unlike vesafb or efifb it
->> already has DT integration. So the most efficient way to implement
->> framebuffer for sunxi is to extend simplefb or if necessary add
->> another layer of indirection under simplefb. If there is a better
->> fitting driver in the kernel then please enlighten me and the
->> developer that wrote this patch what driver it would be.
->
-> I think simplefb is exactly the right driver to use for this case. But I
-> don't think making it manage all the resources is the right thing to do.
 
-And what is supposed to manage resources used by simplefb when not simplefb?
+--mvpLiMfbWzRoNl4x
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> While it's fairly easy to do it, it's also something that needs to be
-> done for every other driver with similar requirements.
+On Thu, Aug 28, 2014 at 02:15:40PM +0200, Hans de Goede wrote:
+> On 08/27/2014 04:16 PM, Thierry Reding wrote:
+[...]
+> >> Hmm I see, in my mind the problem is not that the clk framework disabl=
+es
+> >> unused clocks, but that no one is marking the clocks in question as us=
+ed.
+> >> Someone should mark these clocks as used so that they do not get disab=
+led.
+> >>
+> >> We could add a clk_mark_in_use function and have the simplefb patch ca=
+ll
+> >> that instead of clk_prepare_and_enable, or maybe even better just only
+> >> claim the clks and teach the clk framework to not disable claimed clk
+> >> in its cleanup run. That would make it clear that simplefb is not enab=
+ling
+> >> anything, just claiming resource its need to avoid them getting removed
+> >> from underneath simplefb, would that work for you ?
+> >=20
+> > That would be more accurate, but it boils down to the same problem where
+> > we still need a driver to claim the resources in some way whereas the
+> > problem is fundamentally one where the bootloader should be telling the
+> > kernel not to disable it. It's in fact the bootloader that's claiming
+> > the resources.
+>=20
+> Yes, but those resources do not belong to the bootloader in a sense
+> that traditional bootloader / firmware claimed resources (e.g. acpi
+> reserved resources) do. These traditional resources are claimed for ever.
 
-Other drivers that require clocks do manage them, yes. And some
-drivers that did not do that in the past were extended for that.
+I thought that at least on x86 there was a way for the kernel to reclaim
+memory set apart for an early framebuffer.
 
-> Consider for
-> example what happens if you want to play some welcome sound in the
-> bootloader and keep it playing while the kernel is booting. You'd need
-> to repeat exactly what this driver does to keep clocks for audio
-> hardware running. And there are possibly other similar use-cases as
-> well.
+> Where as these resources are claimed by the bootloader to keep the simple=
+fb
+> it provides working, as soon as the simplefb is no longer used, they beco=
+me
+> unused.
 
-Why would you want to do that? If the kernel boots fast the welcome
-sound can be played from userspace when all drivers all in place. If
-it boots slow you can just play the sound and let the kernel boot.
+Right. And when simplefb goes away it is because a real driver is taking
+over, in which case it will claim the resources explicitly.
 
-If you implement enough of audio driver that the kernel can actually
-change the startup sound then there is not much left out. You cannot
-just place random data in a buffer but have to synchronize with the
-hardware for audio playback to work.
+> > The copy and paste is for code that's platform specific. The clocks have
+> > different names, resets are different, supplies are different. The fact
+> > that many can currently use the same driver is likely just coincidence
+> > rather than design and it's entirely possible that at some point they'll
+> > add support for a more advanced feature that makes them incompatible
+> > with the rest of the generic drivers. And then you have a big mess
+> > because you need to add quirks all over the place.
+> >=20
+> > And this isn't all that far off-topic, since simplefb also needs to deal
+> > with this kind of situation. And what I've been arguing is that in order
+> > to really be generic it has to make assumptions, one of which is that it
+> > uses only resources that it doesn't need to explicitly handle.
+>=20
+> I can understand that you're worried about generic ?hci drivers dealing w=
+ith
+> clocks / resets / etc. As there may be strict ordering requirements there,
+> but for simplefb that is not the case.
+>=20
+> All we're asking for is for a way to communicate 2 things to the kernel:
+>=20
+> 1) These resources are in use (we are not asking the kernel to do anything
+> with them, rather the opposite, we're asking to leave them alone so no
+> ordering issues)
 
->
-> One other issue with simplefb is that it isn't a real device to begin
-> with. It's completely virtual, so in the same way that it doesn't
-> program any device-specific registers I don't think it should claim any
-> resources.
+Right. That's the issue that needs to be solved. We still only disagree
+on how it should be solved.
 
-OK, so the framebuffer memory that simplefb uses for scanout should
-not be claimed by it ever, either?
+> 2) Tie these resources to simplefb so that the kernel can know when they
+> are no longer in use, and it may e.g. re-use the memory
 
-So how is it supposed to be handled? Reserved as unusable memory
-forever as it is now?
+For the memory there shouldn't be a problem because it's already in the
+DT node anyway. It has to be there so that simplefb knows where to write
+to.
 
-Thanks
+For all the other resources, if 1) is solved properly then 2) becomes a
+non-issue.
 
-Michal
+> To me the most logical and also most "correct" way of modelling this is to
+> put the resources inside the simplefb dt node.
+
+Except that simplefb isn't a real device, so there's a hard time
+justifying its existence in DT as it is. Claiming resources from a
+virtual device doesn't sound correct to me at all.
+
+> >> The key word here is "the used resources" to me this is not about siml=
+efb
+> >> managing resources, but marking them as used as long as it needs them,=
+ like
+> >> it will need to do for the reserved mem chunk.
+> >=20
+> > The difference between the clocks and the memory resource is that the
+> > driver needs to directly access the memory (it needs to map it and
+> > provide a userspace mapping for it) whereas it doesn't need to touch the
+> > clocks (except to workaround a Linux-specific implementation detail).
+>=20
+> Erm, no, the need to map the memory and the memory being a resource
+> which may be released are an orthogonal problem. E.g. a system with
+> dedicated framebuffer memory won't need to use a reserved main-memory
+> chunk, nor need to worry about returning that mem when simplefb is no
+> longer in use.
+
+I would think the memory should still be reserved anyway to make sure
+nothing else is writing over it. And it's in the device tree anyway
+because the driver needs to know where to put framebuffer content. So
+the point I was trying to make is that we can't treat the memory in the
+same way as clocks because it needs to be explicitly managed. Whereas
+clocks don't. The driver is simply too generic to know what to do with
+the clocks. It doesn't know what frequency they should be running at or
+what they're used for, so by any definition of what DT should describe
+they're useless for this virtual device.
+
+Furthermore it's fairly likely that as your kernel support progresses
+you'll find that the driver all of a sudden needs to manage some other
+type of resource that you just haven't needed until now because it may
+default to being always on. Then you'll have a hard time keeping
+backwards-compatibility and will have to resort to the kinds of hacks
+that you don't want to see in the kernel.
+
+So it really boils down to the DT needing to describe a complete device
+with all the dependencies. And just clocks aren't the complete
+description. But if you want the complete description then you're going
+to need a complete driver as well and simplefb is out of the picture
+anyway. Once again, the current, basic form of the binding allows for a
+completely generic implementation of the driver because it makes
+assumptions about firmware setting things up the right way so that the
+driver doesn't have to.
+
+Thierry
+
+--mvpLiMfbWzRoNl4x
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJUACU8AAoJEN0jrNd/PrOhaCYP/jbZVJgB7EmknWRpDFJjM8fm
+aC4Y6T0IkAMtRwOQQqh4iTbZBVf8UWBaCfS0yxvFZXpHFgq2x4UQas+p0MUTnVrF
+ZCdn2uKngDP8eB6F47UtyDqWwvxVROu57IXOgdOR/4RbUcuIr6DVVWjE8HV4v/Zb
+tJEWxhBep8j59nkwrCU9vQy92hWMFgsYBJS5d4Rq77kj9AIa9hmKIL3AF+epozyK
+da6ljiC2VT627JK3zckzbDWjSrjQdiooFz43YThE79eFs2njVNG/CjsE/zZALQhm
+l/ZE6u9EDQ1FxdPF1fjkGURdJeHy+OtZP8jSuI4daakjvXU5mizBtRku3bT09x6B
+glR/3bOdVXYTeHAsRfNTL8jCvisHIBufuCY2JGh8AdBONy6zFhEodCKW7nzzeVjS
+HU+y2WymiGVNPKEeUDjGH1leoK+4TFX528+3DW6lG2bAdZUg5A+R9Tcxx4jUcPi0
+hVBtrVaOAcoXTcHLxKwPVDIEDk8Vgg5qbxfD4GchlhZBwFPasiucd49jPYrAvbz4
++tUswofq8yDc77QI3RBWcfCMBZ/+zXECLES1aLtFhuVBB9n9Q5eM6vkYmqbIyM7O
+r/Zo2c6S1YfCwmtMzN5kWreFaWOgibtVYO+TwLQRe462cYZepg9K8VN0FFYKbsC2
+TSvvZd+nU8R+5ePC9d5/
+=AHt7
+-----END PGP SIGNATURE-----
+
+--mvpLiMfbWzRoNl4x--

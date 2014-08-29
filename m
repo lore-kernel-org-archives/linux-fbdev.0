@@ -1,110 +1,107 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Date: Fri, 29 Aug 2014 14:31:49 +0000
+Date: Fri, 29 Aug 2014 14:38:14 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <20140829143148.GB31264@ulmo>
+Message-Id: <20140829143812.GC31264@ulmo>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="A6N2fC+uXW/VQSAv"
+Content-Type: multipart/mixed; boundary="4ZLFUWh1odzi/v6L"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140826143550.GB3027@ulmo> <20140826210248.GO15297@lukather>
- <20140827065440.GG15640@ulmo> <20140827084526.GR15297@lukather>
- <20140827095241.GC23186@ulmo> <20140827154221.GX15297@lukather>
- <20140828101140.GB14388@ulmo> <20140828204603.GB15297@lukather>
- <20140829062932.GB13106@ulmo> <20140829135708.GG15297@lukather>
-In-Reply-To: <20140829135708.GG15297@lukather>
+References: <20140826143550.GB3027@ulmo> <53FCE704.4030103@redhat.com>
+ <20140827093121.GA23186@ulmo> <53FDB46C.5010609@redhat.com>
+ <20140827125613.GF23186@ulmo> <53FDE0CE.5030807@redhat.com>
+ <20140827141632.GB32243@ulmo> <53FF1D6C.6090205@redhat.com>
+ <20140829070116.GC13106@ulmo> <20140829141244.GH15297@lukather>
+In-Reply-To: <20140829141244.GH15297@lukather>
 To: linux-arm-kernel@lists.infradead.org
 
 
---A6N2fC+uXW/VQSAv
+--4ZLFUWh1odzi/v6L
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Aug 29, 2014 at 03:57:08PM +0200, Maxime Ripard wrote:
-> On Fri, Aug 29, 2014 at 08:29:33AM +0200, Thierry Reding wrote:
-> > On Thu, Aug 28, 2014 at 10:46:03PM +0200, Maxime Ripard wrote:
-> > > On Thu, Aug 28, 2014 at 12:11:41PM +0200, Thierry Reding wrote:
-> > [...]
-> > > > Then since firmware already knows what it set up it can tell the
-> > > > kernel to not touch those.
-> > >=20
-> > > Somehow, I've been raised kernel-wise into thinking that you can never
-> > > fully trust your firmware. Or at least that you should have a way to
-> > > recover from any bug/bad behaviour from it.
-> >=20
-> > If you don't trust your firmware then you shouldn't be taking over a
-> > device that it's set up for you. Rather you should write a proper driver
-> > that sets things up from the start.
-> >=20
-> > This whole "we don't trust firmware" isn't going to work if we want to
-> > have hand-off from firmware to kernel. And it's already been decided in
-> > other threads that moving more code out of the kernel and into firmware
-> > is a requirement (c.f. ARM64).
+On Fri, Aug 29, 2014 at 04:12:44PM +0200, Maxime Ripard wrote:
+> On Fri, Aug 29, 2014 at 09:01:17AM +0200, Thierry Reding wrote:
+> > I would think the memory should still be reserved anyway to make sure
+> > nothing else is writing over it. And it's in the device tree anyway
+> > because the driver needs to know where to put framebuffer content. So
+> > the point I was trying to make is that we can't treat the memory in the
+> > same way as clocks because it needs to be explicitly managed. Whereas
+> > clocks don't. The driver is simply too generic to know what to do with
+> > the clocks.
 >=20
-> Except that in ARM64 case, it has been asked before having any
-> SoC/boards out. We're definitely not in this situation there.
+> You agreed on the fact that the only thing we need to do with the
+> clocks is claim them. Really, I don't find what's complicated there
+> (or not generic).
 
-You're still in the situation where you need to trust your firmware, so
-my point remains valid.
+That's not what I agreed on. What I said is that the only thing we need
+to do with the clocks is nothing. They are already in the state that
+they need to be.
 
-> > Also in this case you wrote the firmware, so why wouldn't you trust it?
+> > It doesn't know what frequency they should be running at
 >=20
-> We partly wrote the firmware, on some of the available SoCs. Some
-> other just have allwinner's own. But yeah, in this case they wouldn't
-> even set up the framebuffer in the first place.
+> We don't care about that. Just like we don't care about which
+> frequency is the memory bus running at. It will just run at whatever
+> frequency is appropriate.
 
-Even if you didn't write it, you could still trust it provided that you
-had the source code for it. The whole argument of "never trust firmware"
-is based on the assumption that you can't fix it. And even if that's the
-case, it's still perfectly acceptable to not trust firmware. But if you
-don't trust firmware then you really shouldn't be using simplefb in the
-first place and do everything in the kernel.
+Exactly. And you shouldn't have to care about them at all. Firmware has
+already configured the clocks to run at the correct frequencies, and it
+has made sure that they are enabled.
 
-> > > Moreover, the way I see it, there's a major flaw in having an
-> > > attribute in the clock node: you don't even know if the clock is ever
-> > > going to be used.
-> > >=20
-> > > If simplefb is not compiled in, you won't claim the clocks, and they
-> > > will be disabled, which is imho a good thing. This case wouldn't be
-> > > covered with an attribute at the clock node, because you don't have a
-> > > link to what device/feature actually uses it in the system, and so you
-> > > have to make the assumption that it will be used. And you will end up
-> > > with clocks with a rather high rate running for nothing.
-> >=20
-> > That's completely hypothetical. If simplefb isn't enabled and the clock
-> > isn't claimed there's probably still going to be some other driver
-> > taking over eventually. If there isn't, what's the point of firmware
-> > setting up display in the first case?
+> > or what they're used for
 >=20
-> And now, here is a new requirement for the firmware: that in addition
-> to being reliable, that it must not be dumb, or take shortcuts, like
-> setting up the framebuffer in every case, no matter wether there's a
-> screen or not.
+> And we don't care about that either. You're not interested in what
+> output the framebuffer is setup to use, which is pretty much the same
+> here, this is the same thing here.
 
-Firmware should never do that anyway. The whole point of firmware is to
-be device-specific and therefore it already knows when there's a need to
-activate a framebuffer or not.
+That's precisely what I've been saying. The only thing that simplefb
+cares about is the memory it should be using and the format of the
+pixels (and how many of them) it writes into that memory. Everything
+else is assumed to have been set up.
+
+Including clocks.
+
+> > so by any definition of what DT should describe they're useless for
+> > this virtual device.
+> >
+> > Furthermore it's fairly likely that as your kernel support progresses
+> > you'll find that the driver all of a sudden needs to manage some other
+> > type of resource that you just haven't needed until now because it may
+> > default to being always on. Then you'll have a hard time keeping
+> > backwards-compatibility and will have to resort to the kinds of hacks
+> > that you don't want to see in the kernel.
+>=20
+> Not such a hard time. An older DT wouldn't define the new requirements
+> anyway, so they wouldn't be used, and we would end up in pretty much
+> the current case.
+
+Except that you have firmware in the wild that sets up an incomplete
+simplefb node and if you don't want to break compatibility you need to
+provide fallbacks for the resources that aren't listed in the DT node.
+And given that those fallbacks are all very board specific you'll need
+to find ways to keep them enabled if you want to keep existing setups
+working.
 
 Thierry
 
---A6N2fC+uXW/VQSAv
+--4ZLFUWh1odzi/v6L
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUAI7UAAoJEN0jrNd/PrOhEJYQAJeuYRqe3MJfC4VwiTMzxtY0
-ChoLLKCa5sEMeIplgxwnrzxgXpy6zLW+z5kZ8SQnmIDqcPpXV+dxla0yJMxzOFsd
-yYbW4A3DXCNB2QoGtDH0PsRgQ86WNvQnKZV2C2/0n15yOviaX2wVCTw6QkFu/fbx
-vhXBN2Pt8Il3SJlkH7BRz5VZ3VpcOQ119/XTGIeJ5ALUUMBV6U3Ndy0oAzzW2Lyr
-J4svc2vnG49wboo5RmKBAyFEZ9b7YzT/veG91xWPWES6OkNKB/Zp5bWQVs2/LQXT
-6d4I0dlXdkeBqnNiVlsmOzBhfCLHUaUnZcQk/eOl7cGNFPj0jMi592sJsmDq3mpX
-3Hs8U45efa67CyzIc/DknxdldqJZW+EG+FQjD5lyOZVXc0nB6ZTMFAtFlQgBw5sz
-a3c/HZgi18AeKq9R6u6PikBjkk1s+plM8zVw+huPkD4253yd2Xoec+yMWltha6In
-5GB5SNJISvvA4RYa3l3rHttOCpcyTgLI8MKRgUT26k2B8Zq00tDfyE8w49WR+m7G
-rItbyLabgemLLR8coqqDyFPmyzcL5jwABu9Mys89lHm+syejQFfHjmcGzZwaylNN
-VHyyVFa+ohJJ3vErq+HjnV1tOzHalaT5BIauU69zjlgH2pwYzrxh116Ev7TiXGL8
-r9feuUpfNZNB8TUg3FW2
-=iimS
+iQIcBAEBAgAGBQJUAJBUAAoJEN0jrNd/PrOhABEP/RiFL8UAyHrSgqAWbm0A3Zs0
+2yfhEdIaqRNZXqx1ClM0pI69OVgZ7h9y656STzA5Fcbg1Ywzw+7g5lQqcncQk8UW
+gG5qlawHLpok1Nka43Brpt0jPtjUeq+BWJHKaKHHEeB94fanhl/o/jOfH4GrA83A
+KK6qMo0IlRmJEW5+Z7RjBs1A8LKWfDneEafmgvNwaUAMeqyoxiR457ze1R5unikR
+lewvoG0dXoB/aSAQrkPRMh/bDOhbOKOxcawXwjbVq7KzoWPbOlDpOJ6q5WhEvEeN
+u0hzAN/7ezzatjUvDJR3kYoIUpRBtDno5+8j7iN7/6xkLRA+Gla//XFa0e0Tkru0
+fVPRT+mpyuf2B2XZ/zJp09MJA9jFqqvod0PbyVMt6ztKR4uYJ/HL4OmZZ0PgbDYe
+QCu7XUA/3CHegFbmUHwax+VBe0wJKAN8Z5ecc6IcKxcFzXqJLYYmrUGgg6L20Z2R
+daHKxDcwO4BVR5QpRfGhRJjOlTNfAdEIe19FmwTIoSajK4Oa44TytqAbjoO3iuSV
+f6dtG5wRwV5AJF00hNN87hZpmuz4xpHBrvcTWJBftc0QJhnQlXRdItxXjev9aY7n
+Gvgf5wQA0bHHILaDkUeHJTrqx2oQZExzfmu/8vfi0+jdCLqD0CCw8P7y1TyPZejp
+86k9Z1/4UjGai51Zu4em
+=s94B
 -----END PGP SIGNATURE-----
 
---A6N2fC+uXW/VQSAv--
+--4ZLFUWh1odzi/v6L--

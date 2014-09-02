@@ -1,85 +1,70 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Sep 2014 10:08:58 +0000
-Subject: Re: [PATCH 1/6] video: fbdev: stifb.c: use container_of to resolve stifb_info from fb_info
-Message-Id: <542A813A.6010603@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="p6vxtaDxfn1sGQMCs9rLURodcWsq1VG22"
+Date: Tue, 02 Sep 2014 07:35:46 +0000
+Subject: [PATCH] video: fix composite video connector compatible string
+Message-Id: <1409643346-8656-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1410980419-5326-1-git-send-email-fabf@skynet.be> <1410980419-5326-2-git-send-email-fabf@skynet.be>
-In-Reply-To: <1410980419-5326-2-git-send-email-fabf@skynet.be>
-To: Fabian Frederick <fabf@skynet.be>, linux-kernel@vger.kernel.org
-Cc: daniel.vetter@intel.com, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Tony Lindgren <tony@atomide.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---p6vxtaDxfn1sGQMCs9rLURodcWsq1VG22
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+The quite-recently-added analog-tv-connector bindings say that the
+compatible string for composite video connector is
+"composite-connector". That string is also used in the omap3-n900.dts
+file. However, the connector driver uses "composite-video-connector", so
+this has never worked.
 
-Hi,
+While changing the driver's compatible string to "composite-connector"
+would be safer, as published DT bindings should not be changed, I'd
+rather fix the bindings in this case for two reasons:
 
-On 17/09/14 22:00, Fabian Frederick wrote:
-> Use container_of instead of casting first structure member.
->=20
-> Signed-off-by: Fabian Frederick <fabf@skynet.be>
-> ---
-> PARISC cross-compiled but untested.
->=20
->  drivers/video/fbdev/stifb.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
-> index cfe8a2f..86621fa 100644
-> --- a/drivers/video/fbdev/stifb.c
-> +++ b/drivers/video/fbdev/stifb.c
-> @@ -918,7 +918,7 @@ static int
->  stifb_setcolreg(u_int regno, u_int red, u_int green,
->  	      u_int blue, u_int transp, struct fb_info *info)
->  {
-> -	struct stifb_info *fb =3D (struct stifb_info *) info;
-> +	struct stifb_info *fb =3D container_of(info, struct stifb_info, info)=
-;
->  	u32 color;
-> =20
->  	if (regno >=3D NR_PALETTE)
-> @@ -978,7 +978,7 @@ stifb_setcolreg(u_int regno, u_int red, u_int green=
-,
->  static int
->  stifb_blank(int blank_mode, struct fb_info *info)
->  {
-> -	struct stifb_info *fb =3D (struct stifb_info *) info;
-> +	struct stifb_info *fb =3D container_of(info, struct stifb_info, info)=
-;
->  	int enable =3D (blank_mode =3D=3D 0) ? ENABLE : DISABLE;
-> =20
->  	switch (fb->id) {
->=20
+* composite-connector is a bit too generic name, as it doesn't even hint
+  at video.
+* it's clear that this has never worked, which means no one has used
+  those bindings, which should make it safe to change this.
 
-Thanks, queuing the series for 3.18.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reported-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ Documentation/devicetree/bindings/video/analog-tv-connector.txt | 4 ++--
+ arch/arm/boot/dts/omap3-n900.dts                                | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
- Tomi
+diff --git a/Documentation/devicetree/bindings/video/analog-tv-connector.txt b/Documentation/devicetree/bindings/video/analog-tv-connector.txt
+index 0218fcdc1299..0c0970c210ab 100644
+--- a/Documentation/devicetree/bindings/video/analog-tv-connector.txt
++++ b/Documentation/devicetree/bindings/video/analog-tv-connector.txt
+@@ -2,7 +2,7 @@ Analog TV Connector
+ ========= 
+ Required properties:
+-- compatible: "composite-connector" or "svideo-connector"
++- compatible: "composite-video-connector" or "svideo-connector"
+ 
+ Optional properties:
+ - label: a symbolic name for the connector
+@@ -14,7 +14,7 @@ Example
+ -------
+ 
+ tv: connector {
+-	compatible = "composite-connector";
++	compatible = "composite-video-connector";
+ 	label = "tv";
+ 
+ 	port {
+diff --git a/arch/arm/boot/dts/omap3-n900.dts b/arch/arm/boot/dts/omap3-n900.dts
+index 1fe45d1f75ec..4361777a08d8 100644
+--- a/arch/arm/boot/dts/omap3-n900.dts
++++ b/arch/arm/boot/dts/omap3-n900.dts
+@@ -93,7 +93,7 @@
+ 	};
+ 
+ 	tv: connector {
+-		compatible = "composite-connector";
++		compatible = "composite-video-connector";
+ 		label = "tv";
+ 
+ 		port {
+-- 
+1.9.1
 
-
-
---p6vxtaDxfn1sGQMCs9rLURodcWsq1VG22
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUKoE6AAoJEPo9qoy8lh71ge8P/1hcSpUn1+7zt50TUtefryPc
-vGc+vd4QuI1GOh73BwV8O0PWR3R7OWkIHjoEK+ShZsv/W8r2auaHqwqaOH43nwED
-P/yHj/sZGxluOlYixwehs0zNaOYWp7DTRZzWJb1AyqAueba2jPMslvYT6eGXiZP6
-+esvP4GQ8kKc+NoiZ7ODz1Nzk35VUNoHzTPm0xoRtK8Hv4TKWWpAQxSY7KoUwnoG
-5bWHPAYtnVhgMJchkB9CfAeD1KzLHKMHvdlrFju0hZw/tVNtS02kyz9hfK8Vx3n1
-rW5O/57W7hAmobhjzNLsGutZfXUYuGArjU610tAaRekTFfmhFS1ggICYtoHGYh+X
-P+GZcCumuac+RM8ETTTcFj/mCS8wPSGK5cp5GxEU1HWXK1sVk7jMaIuh9IIn8TIb
-FeqlHtts1efr/mO7HYcNt4n0QZ0VhNoMAriZh1QuH7u/lE8fhV7xPRKXQCbQ+7uV
-APMe1z1P7X1K60ROeaosLZgifU9hOXzVITNF2TO84fiCM2hsRgV2mJItPzUE0Hzb
-COz/iCSMylDKV9guHOQc3K0sKiF5dgjDgbxAOQIL17zAXvUwdbfUf5BOZUxN2KXa
-jeKb+xs8iRN5qz4e7kjzFDxMK5EMLRMZxjXK9BkuSBh5mHVFHiHdgSBsICmIUTg2
-JeMii1QDpuS24HXKCNoK
-=5q0y
------END PGP SIGNATURE-----
-
---p6vxtaDxfn1sGQMCs9rLURodcWsq1VG22--

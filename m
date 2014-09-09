@@ -1,63 +1,57 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Fri, 05 Sep 2014 14:47:35 +0000
-Subject: [PATCH] video: fbdev: use %*ph specifier to dump small buffers
-Message-Id: <1409928455-31086-1-git-send-email-andriy.shevchenko@linux.intel.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 09 Sep 2014 11:04:56 +0000
+Subject: Re: [PATCH] video: fbdev: use %*ph specifier to dump small buffers
+Message-Id: <540EDED8.50102@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="9I3F5fmNwj6OJSvVkVO3B8f40a8IPPqtT"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1409928455-31086-1-git-send-email-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <1409928455-31086-1-git-send-email-andriy.shevchenko@linux.intel.com>
 To: linux-fbdev@vger.kernel.org
 
-Instead of dereference each byte let's use %*ph specifier in the printk()
-calls.
+--9I3F5fmNwj6OJSvVkVO3B8f40a8IPPqtT
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/video/fbdev/core/fbsysfs.c | 12 ++----------
- drivers/video/fbdev/udlfb.c        |  7 ++-----
- 2 files changed, 4 insertions(+), 15 deletions(-)
+On 05/09/14 17:47, Andy Shevchenko wrote:
+> Instead of dereference each byte let's use %*ph specifier in the printk=
+()
+> calls.
+>=20
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/video/fbdev/core/fbsysfs.c | 12 ++----------
+>  drivers/video/fbdev/udlfb.c        |  7 ++-----
+>  2 files changed, 4 insertions(+), 15 deletions(-)
+>=20
 
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index 53444ac..60c3f0a 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -485,16 +485,8 @@ static ssize_t show_bl_curve(struct device *device,
- 
- 	mutex_lock(&fb_info->bl_curve_mutex);
- 	for (i = 0; i < FB_BACKLIGHT_LEVELS; i += 8)
--		len += snprintf(&buf[len], PAGE_SIZE,
--				"%02x %02x %02x %02x %02x %02x %02x %02x\n",
--				fb_info->bl_curve[i + 0],
--				fb_info->bl_curve[i + 1],
--				fb_info->bl_curve[i + 2],
--				fb_info->bl_curve[i + 3],
--				fb_info->bl_curve[i + 4],
--				fb_info->bl_curve[i + 5],
--				fb_info->bl_curve[i + 6],
--				fb_info->bl_curve[i + 7]);
-+		len += snprintf(&buf[len], PAGE_SIZE, "%8ph\n",
-+				fb_info->bl_curve + i);
- 	mutex_unlock(&fb_info->bl_curve_mutex);
- 
- 	return len;
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index 77b890e..046d51d 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -1528,11 +1528,8 @@ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dev,
- 	}
- 
- 	if (total_len > 5) {
--		pr_info("vendor descriptor length:%x data:%02x %02x %02x %02x" \
--			"%02x %02x %02x %02x %02x %02x %02x\n",
--			total_len, desc[0],
--			desc[1], desc[2], desc[3], desc[4], desc[5], desc[6],
--			desc[7], desc[8], desc[9], desc[10]);
-+		pr_info("vendor descriptor length:%x data:%11ph\n", total_len,
-+			desc);
- 
- 		if ((desc[0] != total_len) || /* descriptor length */
- 		    (desc[1] != 0x5f) ||   /* vendor descriptor type */
--- 
-2.1.0
+Thanks, queued for 3.18.
 
+ Tomi
+
+
+
+--9I3F5fmNwj6OJSvVkVO3B8f40a8IPPqtT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUDt7YAAoJEPo9qoy8lh715PAP/Az+KKJkRqEg4Oq8GIb5idD1
+bF4yqxVEBSzFrT7/kL/G6oqfVdylnfwtpj9CktZK9RXUl29DEemrj4usfRjce4Q+
+HSc9YxrvTt4q8/GJHbu/n4BQ3QMcz0SfJDH1Me/ecA11k6QsyHj2++bi3j0AG1BS
+DqONxgaqdnbpMqROGCBbroAPyvbAD0y6XU/O4qtTMlibFoR3p5kw6ItH96sUuUyO
+/Nmu4yhK2WSzbSknAHGAfGmpdPOENBJyGYfq2dN+bUNjaFpoySFFWadPH8PMf4L+
+2WYXR1lwEmW1KDHHCbLSgf5fQcvHoWxO5SneIGfvh/ouZLMRRP4RdT+ayJOAx5dV
+3Ia5qrTNSQeCN9dpn7s7msyo+C1s6PegujBlqEjGvt6TEIY9MUGQdKJ94PKpagKs
+dxA1vzPQBw43EbhlRUQXwaPy7xx52cJBOeFAEhkH0Ztjq4rGGP+w9DrSG0CnrLOm
+Q8ZvZAhwgVZWgDieWuEmEUG5oVajO8wAn3YQxXhV+6aBmR+LBEPVzVCyDxhQx4Jp
+PcxG2i5VChqB00Ot8yNnYQYgw/mGpSOU4s0rBhb7n4a0MUSw3gd2Zyvu5CF6dDsc
+U3QPxJ9zIsq4k9E2BMpU2OEmF0FJ9tqGOarq0m8FjnZP4bPrhELzLcYFcmZn4ZXH
+MkzqJzddQ1krSrPm+hBE
+=vg+y
+-----END PGP SIGNATURE-----
+
+--9I3F5fmNwj6OJSvVkVO3B8f40a8IPPqtT--

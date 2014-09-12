@@ -1,97 +1,73 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 16 Sep 2014 10:04:14 +0000
-Subject: [PATCH v5 00/15] Rework OMAP4+ HDMI audio support
-Message-Id: <cover.1410860765.git.jsarha@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 12 Sep 2014 09:10:24 +0000
+Subject: [GIT PULL] fbdev fixes for 3.17
+Message-Id: <5412B880.8000705@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="pNk3rP8Mb3rmjBn01mx00r2JIUlrv4Kpg"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-The patches are based on:
-git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
+--pNk3rP8Mb3rmjBn01mx00r2JIUlrv4Kpg
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-The base, the patches, and couple of additional not-to-be-merged
-omap2plus_defconfig patches can be found here:
+The following changes since commit 69e273c0b0a3c337a521d083374c918dc52c66=
+6f:
 
-git://git.ti.com/~jyrisarha/ti-linux-kernel/jyrisarhas-audio-video-linux-feature-tree.git omap-hdmi-audio
+  Linux 3.17-rc3 (2014-08-31 18:23:04 -0700)
 
-Changes since v4:
-- Turn ASoC parts into a platform device driver
-- Some cleaning up
-- reorder the patches to keep bisect working
+are available in the git repository at:
 
-Changes since v3:
-- Move ASoC parts into library module under sound/soc/omap
-- Come up with API for the library 
-- Some cleaning up
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-fixes-3.17
 
-The patch set fixes OMAP4+ HDMI audio. The structure of the
-implementation looks a bit different than before. Instead of creating
-a driver specific API for a separate ASoC component driver to connect
-to, these patches implement a platform device driver under
-sound/soc/omap for ASoC side implementation. This driver should only
-be registered from OMAPDSS HDMI code. 
+for you to fetch changes up to e4cf39ea473329dfc07de1246f97d27b7fc96f79:
 
-The ASoC side driver implements cpu-dai component using the callbacks
-provided by OMAPDSS. Omap-pcm is registered for platform component,
-dummy hdmi-audio-codec is registered for codec component, and
-asoc-simple-card is registered for machine driver.
+  video: ARM CLCD: Fix color model capabilities for DT platforms (2014-09=
+-12 11:45:10 +0300)
 
-Big part of the HDMI audio code is still unchanged and there is a need
-for a cleanup there. Also there is still probably something wrong with
-speaker mapping of multi-channel streams. I will get back to cleaning
-up these issues later.
+----------------------------------------------------------------
+fbdev fixes for 3.17
 
-Best regards,
-Jyri
+Minor fixes for amba-clcd and video DT bindings.
 
-Jyri Sarha (15):
-  OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
-  OMAPDSS: hdmi: Remove most of OMAP[45]_DSS_HDMI_AUDIO ifdefs
-  OMAPDSS: hdmi4_core: Remove unused hdmi4_audio_get_dma_port()
-  OMAPDSS: hdmi_wp: Add function for getting audio dma address
-  OMAPDSS: hdmi: Make hdmi structure public
-  OMAPDSS: hdmi: Add pdev pointer for audio_pdev in HDMI DRV data
-  ASoC: omap-hdmi-audio: Add platfrom device for OMAP HDMI audio
-    support
-  OMAPDSS: Kconfig: Remove HDMI audio booleans from Kconfig
-  OMAPDSS: hdmi: Make hdmi_mode_has_audio() more user friedly
-  OMAPDSS: hdmi4: Register ASoC platfrom device for omap hdmi audio
-  OMAPDSS: hdmi5: Register ASoC platfrom device for omap hdmi audio
-  ASoC: omap: Remove obsolete HDMI audio code and Kconfig options
-  OMAPDSS: hdmi4: Remove callbacks for the old ASoC DAI driver
-  OMAPDSS: hdmi5: Remove callbacks for the old ASoC DAI driver
-  OMAPDSS: Remove all references to obsolete HDMI audio callbacks
+----------------------------------------------------------------
+Pawel Moll (1):
+      video: ARM CLCD: Fix color model capabilities for DT platforms
 
- .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 -----
- .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 ---
- drivers/video/fbdev/omap2/dss/Kconfig              |    7 -
- drivers/video/fbdev/omap2/dss/hdmi.h               |   35 +-
- drivers/video/fbdev/omap2/dss/hdmi4.c              |  247 ++++++-------
- drivers/video/fbdev/omap2/dss/hdmi4_core.c         |   14 -
- drivers/video/fbdev/omap2/dss/hdmi4_core.h         |    4 -
- drivers/video/fbdev/omap2/dss/hdmi5.c              |  230 +++++-------
- drivers/video/fbdev/omap2/dss/hdmi5_core.c         |    6 -
- drivers/video/fbdev/omap2/dss/hdmi5_core.h         |    2 -
- drivers/video/fbdev/omap2/dss/hdmi_common.c        |    2 -
- drivers/video/fbdev/omap2/dss/hdmi_wp.c            |    8 +-
- include/sound/omap-hdmi-audio.h                    |   38 ++
- include/video/omapdss.h                            |   31 --
- sound/soc/omap/Kconfig                             |   22 +-
- sound/soc/omap/Makefile                            |    6 +-
- sound/soc/omap/omap-hdmi-audio.c                   |  379 ++++++++++++++++++++
- sound/soc/omap/omap-hdmi-card.c                    |   87 -----
- sound/soc/omap/omap-hdmi.c                         |  364 -------------------
- sound/soc/omap/omap-hdmi.h                         |   38 --
- 20 files changed, 675 insertions(+), 1000 deletions(-)
- create mode 100644 include/sound/omap-hdmi-audio.h
- create mode 100644 sound/soc/omap/omap-hdmi-audio.c
- delete mode 100644 sound/soc/omap/omap-hdmi-card.c
- delete mode 100644 sound/soc/omap/omap-hdmi.c
- delete mode 100644 sound/soc/omap/omap-hdmi.h
+Tomi Valkeinen (1):
+      video: fix composite video connector compatible string
 
--- 
-1.7.9.5
+ Documentation/devicetree/bindings/video/analog-tv-connector.txt | 4 ++--=
 
+ arch/arm/boot/dts/omap3-n900.dts                                | 2 +-
+ drivers/video/fbdev/amba-clcd.c                                 | 4 +---=
+
+ 3 files changed, 4 insertions(+), 6 deletions(-)
+
+
+--pNk3rP8Mb3rmjBn01mx00r2JIUlrv4Kpg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUEriAAAoJEPo9qoy8lh71rfUP/3bT81nkZ3un+HQ+6nIE9sm+
+WKbAUeOZ4eFh0Y07ZDy+RGKTKlU36eD7cUpa6nz6K3Z3W1syUOiGp1i9zJf2599x
+qY3UwY6oQB0RFkM9wx5zJlCcf9AXGK45bVdsgrz2yR5Njy+0DiiHOJr4T3xCuGWe
+eyV3ZPIxZsVBHn3Pr1yCqo8ao1O13d13aXDWIQ0Q4Vq7ieUCSLP4T8liOvuEKy2A
+xvmIxF+Y4St7D9fLoaBj+dNNyUCLP2bJyNlvz3B33ftEEu0jI/yR311NADmja4hf
+M+eCiC9FI5M+RkyFihLh2sbXJJOgVMKeIM/ZQmNztwGEFY2jcTIa5xzjkoWBR+Yz
+Ebogx09JD3jEdXoPaTHQroo77JBLgYPrYuwWuVfVb95s2GeoX81xGjMr+Mr5OqiF
+jAzgCxxer15t4uLsMmo+I47xcSaH8JTogmAUZx6pKCnRIleNbLQQZYeYgC6A+keL
+Kfq8ZhGbmcJD+xUTaNnXDCcDWGl/T0uB9WoglgKSRfGSAnQfG2/bSet/DQ9sMK19
+Brn+Hp3aXKig6CvdJOH1rJffFDX1YhFAt5OWW7ssYDLP9elgVNsIvEteDGC+RKYz
+EeKzKPtimuFwcgOKwOGX/PCaXShgN3MX0V8RuZRl5GALr5j7ns1JBTw/N3npomAa
+oK0PnPETzGNw/z6x4suU
+=1Vh/
+-----END PGP SIGNATURE-----
+
+--pNk3rP8Mb3rmjBn01mx00r2JIUlrv4Kpg--

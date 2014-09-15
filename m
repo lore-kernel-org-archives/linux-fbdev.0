@@ -1,52 +1,80 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Sep 2014 10:41:34 +0000
-Subject: Re: [PATCH] framebuffer: fix screen corruption when copying
-Message-Id: <542A88DE.6080301@ti.com>
+Date: Mon, 15 Sep 2014 08:52:58 +0000
+Subject: Re: [PATCH 03/16] video: Add DT binding documentation for VGA connector
+Message-Id: <5416A8EA.1070402@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="q09BGuI7AAmfIaFncEcDWRQ8Ior3A6W1v"
+Content-Type: multipart/mixed; boundary="H4VhjwoeT4PGpv3718xbDV0DSVD73oOGA"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LRH.2.02.1409161236550.3150@file01.intranet.prod.int.rdu2.redhat.com>
-In-Reply-To: <alpine.LRH.2.02.1409161236550.3150@file01.intranet.prod.int.rdu2.redhat.com>
-To: Mikulas Patocka <mpatocka@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1409157673-4154-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <1409157673-4154-4-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1409157673-4154-4-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Cc: dri-devel@lists.freedesktop.org, linux-sh@vger.kernel.org, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org
 
---q09BGuI7AAmfIaFncEcDWRQ8Ior3A6W1v
+--H4VhjwoeT4PGpv3718xbDV0DSVD73oOGA
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-On 16/09/14 19:38, Mikulas Patocka wrote:
-> The function bitcpy_rev has a bug that may result in screen corruption.=
+Hi,
 
-> The bug happens under these conditions:
-> * the end of the destination area of a copy operation is aligned on a l=
-ong
->   word boundary
-> * the end of the source area is not aligned on a long word boundary
-> * we are copying more than one long word
+On 27/08/14 19:41, Laurent Pinchart wrote:
+> The VGA connector is described by a single input port and an optional
+> DDC bus.
 >=20
-> In this case, the variable shift is non-zero and the variable first is
-> zero. The statements FB_WRITEL(comp(d0, FB_READL(dst), first), dst) rea=
-ds
-> the last long word of the destination and writes it back unchanged
-> (because first is zero). Correctly, we should write the variable d0 to =
-the
-> last word of the destination in this case.
+> Cc: devicetree@vger.kernel.org
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.=
+com>
+> ---
+>  .../devicetree/bindings/video/vga-connector.txt    | 28 ++++++++++++++=
+++++++++
+>  1 file changed, 28 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/video/vga-connect=
+or.txt
 >=20
-> This patch fixes the bug by introducing and extra test if first is zero=
-=2E
+> diff --git a/Documentation/devicetree/bindings/video/vga-connector.txt =
+b/Documentation/devicetree/bindings/video/vga-connector.txt
+> new file mode 100644
+> index 0000000..9a45ec1
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/video/vga-connector.txt
+> @@ -0,0 +1,28 @@
+> +VGA Connector
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +Required properties:
+> +- compatible: "vga-connector"
+> +
+> +Optional properties:
+> +- label: a symbolic name for the connector
+> +- ddc-i2c-bus: phandle to the I2C bus that is connected to VGA DDC
+> +
+> +Required nodes:
+> +- Video port for VGA input
+> +
+> +Example
+> +-------
+> +
+> +vga0: connector@0 {
+> +	compatible =3D "vga-connector";
+> +	label =3D "vga";
+> +
+> +	ddc-i2c-bus =3D <&i2c3>;
+> +
+> +	port {
+> +		vga_connector_in: endpoint {
+> +			remote-endpoint =3D <&adv7123_out>;
+> +		};
+> +	};
+> +};
 >=20
-> The patch also removes the references to fb_memmove in the code that is=
 
-> commented out because fb_memmove was removed from framebuffer subsystem=
-=2E
-
-Thanks, queued for 3.18.
+Looks good to me.
 
  Tomi
 
 
 
---q09BGuI7AAmfIaFncEcDWRQ8Ior3A6W1v
+--H4VhjwoeT4PGpv3718xbDV0DSVD73oOGA
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -54,19 +82,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUKojeAAoJEPo9qoy8lh71lXMP/RTdWCb+w77kj6x/P+xap8Mx
-lM+OD2Go1/5Ye4UlVXIJdfQOL4c6ukTyLcLqtJTQaccgqvzjsf8opEqYLU4PgiMs
-Qx31XEHJfW9fo1XUWJefAKARmAhYzuB62Q5tKToJ9/3sVX+ETDwxHaW4VmRuE0ZP
-l04RjAKu7FBpqUWL1R/UIfQZmlUp8WPk5ncYevfx2FFXGBq0sNb8GjZtSurGeWSB
-TzRDoBn6MUQKpbEQ11el5zRhc5cdhzBcd3SXQHSGF4rtCpE85rN3+GJ+2/oTZfg1
-PcGUE4LMry/T7jpV9+BLnWylrfQ9eQAGtrSKEYBOQ61QqWvn9/YQSG+R4Xe+JGzP
-mbpzZ5fMZW7F+ixCfUsAQm8Ybr+eZYfdRaEIInkJyOWhVzSfo5/xyxHsU31IzqEL
-E0pEPw1cBV9NA8H8rMNdPAueMTyUDMUIglPtvsoQmeBFIFd6p8GHjVya4447/O0m
-HJ15shs946MVx1Wxd4lFsCplD3Pn7xkzvwOuXqzJET8P0ZLgfYAJI9uQhQQVyzrf
-mIh4I6CxqYKI6dYSzTFFMWcYXGQ0y/Ww+qZB57CETMJXIqGbWz4USN85Jelwuc0O
-vdlmsI7GGzOKN5dgVPWJ6VOOaTLSBOiOuJLgrHbnMvbGqwdDY8mmVLt4UVju3OpX
-wu5LbGrsbuawLYjZiCVt
-=44MG
+iQIcBAEBAgAGBQJUFqjwAAoJEPo9qoy8lh71/VcP/jo7YNg0B1MyfKaUNQCiftsm
+pFQUlLkiC6tticqYOlYnlcNcLSctyYfV4gmUD/9wOpXAXJynP0SZaqRyDg0ckCTj
+Syhrd+ILrCUmLwtCNY9lKisWtAatu6MgTI/sm5SBzQS2TIYAfEslXnePVVy/bsA+
+bYXpTbuaJhaBkERQ3tWtJjjUtr3IJVPSOcviZhU6rcHWVgxUCwuardJ8vlGmreq8
+5+tyKprnDu47Aq6D7zkmZpDcyybLCfpEei0s7sBdvEX1UcCUkIQ6D3RWks18zIjs
+YCzGdDQHES4zCYWgeuM91hX7WD4xEQrt53326WjbdOWjgeIPcDC6KyiD27QqTrtX
+mRE2yvb8iHtGA94igm7z1nFK5vVKvC8eWXSfHPs0XYguhEQsoauNDwLt2u2xsasP
+gLWqx54uYDV2oLu7iNJii4e6HA5gxyIcUBzUhG0GODqTUiwZJV5xO2zbHo640EM5
+y47+Nv0sIKIjH7Fs6Ht7YFSdxHLPq9fcixMJYGB0BDcPgFz66xHx2IFWRLgrtAxj
+f+kS5Ws0xzp9xp/3dBjPPQwvmXhgHSwqaWj3aUDDUQwFkytJXUJKfU4QIT97yoVv
+yDvJ1w/4h8wuidW3Sjr8q/XiwNunJ+dQwjJw6O7ksMhIfqCq9jxoecnsXUyMwlWX
+b6uVcjvRSAoIwZklP/B/
+=/fjI
 -----END PGP SIGNATURE-----
 
---q09BGuI7AAmfIaFncEcDWRQ8Ior3A6W1v--
+--H4VhjwoeT4PGpv3718xbDV0DSVD73oOGA--

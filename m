@@ -1,83 +1,65 @@
-From: Fabian Frederick <fabf@skynet.be>
-Date: Wed, 17 Sep 2014 19:00:15 +0000
-Subject: [PATCH 2/6] video: fbdev: sa1100fb.c: use container_of to resolve sa1100fb_info from fb_info
-Message-Id: <1410980419-5326-3-git-send-email-fabf@skynet.be>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 16 Sep 2014 10:04:18 +0000
+Subject: [PATCH v5 04/15] OMAPDSS: hdmi_wp: Add function for getting audio dma address
+Message-Id: <6a32977df30e0100e58b4f8c1cb4e9da8029df98.1410860765.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1410980419-5326-1-git-send-email-fabf@skynet.be>
-In-Reply-To: <1410980419-5326-1-git-send-email-fabf@skynet.be>
+References: <cover.1410860765.git.jsarha@ti.com>
+In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: daniel.vetter@intel.com, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Use container_of instead of casting first structure member.
+The audio dma port is found in the hdmi_wp physical address space.
 
-Signed-off-by: Fabian Frederick <fabf@skynet.be>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
-ARM/SA1100 cross-compiled but untested.
+ drivers/video/fbdev/omap2/dss/hdmi.h    |    2 ++
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c |    6 ++++++
+ 2 files changed, 8 insertions(+)
 
- drivers/video/fbdev/sa1100fb.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-index 580c444e..9690216 100644
---- a/drivers/video/fbdev/sa1100fb.c
-+++ b/drivers/video/fbdev/sa1100fb.c
-@@ -268,7 +268,8 @@ static int
- sa1100fb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
- 		       u_int trans, struct fb_info *info)
- {
--	struct sa1100fb_info *fbi = (struct sa1100fb_info *)info;
-+	struct sa1100fb_info *fbi +		container_of(info, struct sa1100fb_info, fb);
- 	u_int val, ret = 1;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 03726b5..9ba7c1a 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -250,6 +250,7 @@ struct hdmi_core_audio_config {
  
- 	if (regno < fbi->palette_size) {
-@@ -289,7 +290,8 @@ static int
- sa1100fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 		   u_int trans, struct fb_info *info)
- {
--	struct sa1100fb_info *fbi = (struct sa1100fb_info *)info;
-+	struct sa1100fb_info *fbi +		container_of(info, struct sa1100fb_info, fb);
- 	unsigned int val;
- 	int ret = 1;
+ struct hdmi_wp_data {
+ 	void __iomem *base;
++	phys_addr_t phys_base;
+ };
  
-@@ -366,7 +368,8 @@ static inline unsigned int sa1100fb_display_dma_period(struct fb_var_screeninfo
- static int
- sa1100fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
--	struct sa1100fb_info *fbi = (struct sa1100fb_info *)info;
-+	struct sa1100fb_info *fbi +		container_of(info, struct sa1100fb_info, fb);
- 	int rgbidx;
+ struct hdmi_pll_data {
+@@ -317,6 +318,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
+ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ 		struct omap_video_timings *timings, struct hdmi_config *param);
+ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
++phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp);
  
- 	if (var->xres < MIN_XRES)
-@@ -433,7 +436,8 @@ static void sa1100fb_set_visual(struct sa1100fb_info *fbi, u32 visual)
-  */
- static int sa1100fb_set_par(struct fb_info *info)
- {
--	struct sa1100fb_info *fbi = (struct sa1100fb_info *)info;
-+	struct sa1100fb_info *fbi +		container_of(info, struct sa1100fb_info, fb);
- 	struct fb_var_screeninfo *var = &info->var;
- 	unsigned long palette_mem_size;
+ /* HDMI PLL funcs */
+ int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index f1b53de..5154120 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -245,6 +245,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 		DSSERR("can't get WP mem resource\n");
+ 		return -EINVAL;
+ 	}
++	wp->phys_base = res->start;
  
-@@ -526,7 +530,8 @@ sa1100fb_set_cmap(struct fb_cmap *cmap, int kspc, int con,
-  */
- static int sa1100fb_blank(int blank, struct fb_info *info)
- {
--	struct sa1100fb_info *fbi = (struct sa1100fb_info *)info;
-+	struct sa1100fb_info *fbi +		container_of(info, struct sa1100fb_info, fb);
- 	int i;
+ 	wp->base = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(wp->base)) {
+@@ -254,3 +255,8 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
  
- 	dev_dbg(fbi->dev, "sa1100fb_blank: blank=%d\n", blank);
-@@ -555,7 +560,8 @@ static int sa1100fb_blank(int blank, struct fb_info *info)
- static int sa1100fb_mmap(struct fb_info *info,
- 			 struct vm_area_struct *vma)
- {
--	struct sa1100fb_info *fbi = (struct sa1100fb_info *)info;
-+	struct sa1100fb_info *fbi +		container_of(info, struct sa1100fb_info, fb);
- 	unsigned long off = vma->vm_pgoff << PAGE_SHIFT;
- 
- 	if (off < info->fix.smem_len) {
+ 	return 0;
+ }
++
++phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp)
++{
++	return wp->phys_base + HDMI_WP_AUDIO_DATA;
++}
 -- 
-2.1.0
+1.7.9.5
 

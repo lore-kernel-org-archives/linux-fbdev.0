@@ -1,70 +1,105 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 30 Sep 2014 11:53:16 +0000
-Subject: Re: [PATCH 1/2] video/fbdev: Always built-in video= cmdline parsing
-Message-Id: <CAKMK7uFgdwNFvu4m4KO+uSHOfm6dYP8-POxUWVJdffZQKWZHfg@mail.gmail.com>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Tue, 16 Sep 2014 16:40:26 +0000
+Subject: [PATCH] framebuffer: fix border color
+Message-Id: <alpine.LRH.2.02.1409161238560.3150@file01.intranet.prod.int.rdu2.redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1407312512-6533-1-git-send-email-daniel.vetter@ffwll.ch>
- <1407329562-10832-1-git-send-email-daniel.vetter@ffwll.ch>
- <542A96BF.7080303@ti.com>
-In-Reply-To: <542A96BF.7080303@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Plagniol-Villard <plagnioj@jcrosoft.com>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Sep 30, 2014 at 1:40 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 06/08/14 15:52, Daniel Vetter wrote:
->> In drm/i915 we want to get at the video= cmdline modes even when we
->> don't have fbdev support enabled, so that users can always override
->> the kernel's initial mode selection.
->>
->> But that gives us a direct depency upon the parsing code in the fbdev
->> subsystem. Since it's so little code just extract these 2 functions
->> and always build them in.
->>
->> Whiel at it fix the checkpatch fail in this code.
->>
->> v2: Also move fb_mode_option. Spotted by the kbuild.
->>
->> v3: Review from Geert:
->> - Keep the old copyright notice from fb_mem.c, although I have no
->> idea what exactly applies.
->> - Only compile this when needed.
->>
->> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
->> Cc: Plagniol-Villard <plagnioj@jcrosoft.com>
->> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> Cc: linux-fbdev@vger.kernel.org
->> Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->>
->> --
->>
->> I prefer if we can merge this through drm-next since we'll use it
->> there in follow-up patches.
->> -Daniel
->> ---
->>  drivers/video/fbdev/Kconfig           |   4 ++
->>  drivers/video/fbdev/core/Makefile     |   1 +
->>  drivers/video/fbdev/core/fb_cmdline.c | 110 ++++++++++++++++++++++++++++++++++
->>  drivers/video/fbdev/core/fbmem.c      |  92 ----------------------------
->>  drivers/video/fbdev/core/modedb.c     |   3 -
->>  5 files changed, 115 insertions(+), 95 deletions(-)
->>  create mode 100644 drivers/video/fbdev/core/fb_cmdline.c
->
-> Sorry for late response.
->
-> Looks fine for me, and I'm fine merging it via drm-next.
->
-> Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+The framebuffer code uses the current background color to fill the border
+when switching consoles, however, this results in inconsistent behavior.
+For example:
+- start Midnigh Commander
+- the border is black
+- switch to another console and switch back
+- the border is cyan
+- type something into the command line in mc
+- the border is cyan
+- switch to another console and switch back
+- the border is black
+- press F9 to go to menu
+- the border is black
+- switch to another console and switch back
+- the border is dark blue
 
-Well totally forgotten about this one here - I even forgot to drop the
-"pls ack this" text from the commit message before sending the pull
-request to Dave :(
+When switching to a console with Midnight Commander, the border is random
+color that was left selected by the slang subsystem.
 
-Anyway, thanks for having a look.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+This patch fixes this inconsistency by always using black as the
+background color when switching consoles.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: stable@vger.kernel.org
+
+---
+ drivers/video/console/bitblit.c   |    3 +--
+ drivers/video/console/fbcon_ccw.c |    3 +--
+ drivers/video/console/fbcon_cw.c  |    3 +--
+ drivers/video/console/fbcon_ud.c  |    3 +--
+ 4 files changed, 4 insertions(+), 8 deletions(-)
+
+Index: linux-3.14.18/drivers/video/console/bitblit.c
+=================================--- linux-3.14.18.orig/drivers/video/console/bitblit.c	2014-09-16 00:15:21.622812568 +0200
++++ linux-3.14.18/drivers/video/console/bitblit.c	2014-09-16 00:16:00.447137568 +0200
+@@ -205,7 +205,6 @@ static void bit_putcs(struct vc_data *vc
+ static void bit_clear_margins(struct vc_data *vc, struct fb_info *info,
+ 			      int bottom_only)
+ {
+-	int bgshift = (vc->vc_hi_font_mask) ? 13 : 12;
+ 	unsigned int cw = vc->vc_font.width;
+ 	unsigned int ch = vc->vc_font.height;
+ 	unsigned int rw = info->var.xres - (vc->vc_cols*cw);
+@@ -214,7 +213,7 @@ static void bit_clear_margins(struct vc_
+ 	unsigned int bs = info->var.yres - bh;
+ 	struct fb_fillrect region;
+ 
+-	region.color = attr_bgcol_ec(bgshift, vc, info);
++	region.color = 0;
+ 	region.rop = ROP_COPY;
+ 
+ 	if (rw && !bottom_only) {
+Index: linux-3.14.18/drivers/video/console/fbcon_ccw.c
+=================================--- linux-3.14.18.orig/drivers/video/console/fbcon_ccw.c	2014-09-16 00:15:21.619479721 +0200
++++ linux-3.14.18/drivers/video/console/fbcon_ccw.c	2014-09-16 00:16:00.450470414 +0200
+@@ -197,9 +197,8 @@ static void ccw_clear_margins(struct vc_
+ 	unsigned int bh = info->var.xres - (vc->vc_rows*ch);
+ 	unsigned int bs = vc->vc_rows*ch;
+ 	struct fb_fillrect region;
+-	int bgshift = (vc->vc_hi_font_mask) ? 13 : 12;
+ 
+-	region.color = attr_bgcol_ec(bgshift,vc,info);
++	region.color = 0;
+ 	region.rop = ROP_COPY;
+ 
+ 	if (rw && !bottom_only) {
+Index: linux-3.14.18/drivers/video/console/fbcon_cw.c
+=================================--- linux-3.14.18.orig/drivers/video/console/fbcon_cw.c	2014-09-16 00:15:21.622812568 +0200
++++ linux-3.14.18/drivers/video/console/fbcon_cw.c	2014-09-16 00:16:00.450470414 +0200
+@@ -180,9 +180,8 @@ static void cw_clear_margins(struct vc_d
+ 	unsigned int bh = info->var.xres - (vc->vc_rows*ch);
+ 	unsigned int rs = info->var.yres - rw;
+ 	struct fb_fillrect region;
+-	int bgshift = (vc->vc_hi_font_mask) ? 13 : 12;
+ 
+-	region.color = attr_bgcol_ec(bgshift,vc,info);
++	region.color = 0;
+ 	region.rop = ROP_COPY;
+ 
+ 	if (rw && !bottom_only) {
+Index: linux-3.14.18/drivers/video/console/fbcon_ud.c
+=================================--- linux-3.14.18.orig/drivers/video/console/fbcon_ud.c	2014-09-16 00:15:21.622812568 +0200
++++ linux-3.14.18/drivers/video/console/fbcon_ud.c	2014-09-16 00:16:00.453803261 +0200
+@@ -227,9 +227,8 @@ static void ud_clear_margins(struct vc_d
+ 	unsigned int rw = info->var.xres - (vc->vc_cols*cw);
+ 	unsigned int bh = info->var.yres - (vc->vc_rows*ch);
+ 	struct fb_fillrect region;
+-	int bgshift = (vc->vc_hi_font_mask) ? 13 : 12;
+ 
+-	region.color = attr_bgcol_ec(bgshift,vc,info);
++	region.color = 0;
+ 	region.rop = ROP_COPY;
+ 
+ 	if (rw && !bottom_only) {

@@ -1,7 +1,7 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 16 Sep 2014 10:04:15 +0000
-Subject: [PATCH v5 01/15] OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
-Message-Id: <c8325a85e768204fcffbcf748f1f29fda959873f.1410860765.git.jsarha@ti.com>
+Date: Tue, 16 Sep 2014 10:04:24 +0000
+Subject: [PATCH v5 10/15] OMAPDSS: hdmi4: Register ASoC platfrom device for omap hdmi audio
+Message-Id: <6a127d68e305161aa8da7f776c860eab64835aaa.1410860765.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1410860765.git.jsarha@ti.com>
 In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
@@ -11,29 +11,148 @@ Content-Transfer-Encoding: 7bit
 To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-The OMAP5 HDMI audio implementation needs HDMI_AUDIO_LAYOUT_6CH in
-hdmi_core_audio_layout enum. I found the correct value from ti-linux
-3.8 tree.
+Implements callbacks for OMAP HDMI audio platform driver and registers
+it in probe function. Unregistering is done in remove function.
 
 Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/hdmi4.c |  103 +++++++++++++++++++++++++++++++++
+ 1 file changed, 103 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 262771b..1f01068 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -160,7 +160,8 @@ enum hdmi_audio_blk_strt_end_sig {
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index b98186e..2e87229 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -33,6 +33,7 @@
+ #include <linux/gpio.h>
+ #include <linux/regulator/consumer.h>
+ #include <video/omapdss.h>
++#include <sound/omap-hdmi-audio.h>
  
- enum hdmi_core_audio_layout {
- 	HDMI_AUDIO_LAYOUT_2CH = 0,
--	HDMI_AUDIO_LAYOUT_8CH = 1
-+	HDMI_AUDIO_LAYOUT_8CH = 1,
-+	HDMI_AUDIO_LAYOUT_6CH = 2
- };
+ #include "hdmi4_core.h"
+ #include "dss.h"
+@@ -655,6 +656,97 @@ err:
+ 	return r;
+ }
  
- enum hdmi_core_cts_mode {
++/* Audio callbacks */
++static int mode_has_audio(struct device *dev)
++{
++	struct omap_hdmi *hd = dev_get_drvdata(dev);
++	int ret;
++
++	mutex_lock(&hd->lock);
++	ret = hdmi_mode_has_audio(&hd->cfg);
++	mutex_unlock(&hd->lock);
++
++	return ret;
++}
++
++static int audio_enable(struct device *dev, bool enable)
++{
++	struct omap_hdmi *hd = dev_get_drvdata(dev);
++	int ret;
++
++	mutex_lock(&hd->lock);
++	if (!hdmi_mode_has_audio(&hd->cfg))
++		ret = -EPERM;
++	else
++		ret = hdmi_wp_audio_enable(&hd->wp, enable);
++	mutex_unlock(&hd->lock);
++
++	return ret;
++}
++
++static int audio_start(struct device *dev, bool enable)
++{
++	struct omap_hdmi *hd = dev_get_drvdata(dev);
++	int ret = 0;
++
++	if (enable)
++		ret = hdmi4_audio_start(&hd->core, &hd->wp);
++	else
++		hdmi4_audio_stop(&hd->core, &hd->wp);
++
++	return ret;
++}
++
++static int audio_config(struct device *dev, struct omap_dss_audio *dss_audio)
++{
++	struct omap_hdmi *hd = dev_get_drvdata(dev);
++	int ret;
++
++	mutex_lock(&hd->lock);
++	if (!hdmi_mode_has_audio(&hd->cfg))
++		ret = -EPERM;
++	else
++		ret = hdmi4_audio_config(&hd->core, &hd->wp, dss_audio,
++					 hd->cfg.timings.pixelclock);
++	mutex_unlock(&hd->lock);
++
++	return ret;
++}
++
++static int hdmi_audio_register(struct device *dev)
++{
++	struct omap_hdmi_audio_pdata pdata = {
++		.dev = dev,
++		.hw_version = OMAP4_HDMI,
++		.audio_dma_addr = hdmi_wp_get_audio_dma_addr(&hdmi.wp),
++		.mode_has_audio = mode_has_audio,
++		.audio_enable = audio_enable,
++		.audio_start = audio_start,
++		.audio_config = audio_config,
++	};
++	struct of_phandle_args dma_spec;
++	int ret;
++
++	ret = of_property_match_string(dev->of_node, "dma-names", "audio_tx");
++	if (ret < 0)
++		return ret;
++
++	ret = of_parse_phandle_with_args(dev->of_node, "dmas", "#dma-cells",
++					 ret, &dma_spec);
++	if (ret < 0)
++		return ret;
++
++	pdata.audio_dma_req = dma_spec.args[0];
++
++	hdmi.audio_pdev +		platform_device_register_data(dev, "omap-hdmi-audio", 0,
++					      &pdata, sizeof(pdata));
++	if (IS_ERR(hdmi.audio_pdev))
++		return PTR_ERR(hdmi.audio_pdev);
++
++	return 0;
++}
++
+ /* HDMI HW IP initialisation */
+ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ {
+@@ -712,6 +804,14 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 
+ 	hdmi_init_output(pdev);
+ 
++	r = hdmi_audio_register(&pdev->dev);
++	if (r) {
++		DSSERR("Registering HDMI audio failed\n");
++		hdmi_uninit_output(pdev);
++		pm_runtime_disable(&pdev->dev);
++		return r;
++	}
++
+ 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
+ 
+ 	return 0;
+@@ -719,6 +819,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 
+ static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
+ {
++	if (hdmi.audio_pdev)
++		platform_device_unregister(hdmi.audio_pdev);
++
+ 	hdmi_uninit_output(pdev);
+ 
+ 	pm_runtime_disable(&pdev->dev);
 -- 
 1.7.9.5
 

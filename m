@@ -1,71 +1,154 @@
-From: =?utf-8?B?5bCP6IyD?= <admin@icnc-fskd.lntu.edu.cn>
-Date: Mon, 29 Sep 2014 03:03:09 +0000
-Subject: =?utf-8?B?55So5LqG5LiA5qyh5L2g5bCx5Lya6KeJ5b6X5piv5pyA5aW955qE55+t5L+h5Y+R6YCB5bmz5Y+wIA==?= =?utf-8
-Message-Id: <20140929110316106376@icnc-fskd.lntu.edu.cn>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 16 Sep 2014 10:04:28 +0000
+Subject: [PATCH v5 14/15] OMAPDSS: hdmi5: Remove callbacks for the old ASoC DAI driver
+Message-Id: <8e2439df0a0889380f2e9bf5c24395026d2b10b5.1410860765.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1410860765.git.jsarha@ti.com>
+In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-DQogIOi/meS4quefreS/oeWPkemAgeW5s+WPsOWunuWcqOaYr+WkquWlveeUqOS6hu+8jOWGjeS5
-n+S4jeaEgeaJvuS4jeWIsOWlveeahOW5s+WPsOS6hu+8jOWPquimgeaYr+S9oOWPkeeahOWGheWu
-ueaYr+ato+inhOeahO+8jOi9u+advuWwseWPr+S7peWPkemAgeWHuuWOu+OAguWKoFFRMTkzOTg5
-NzI15YW35L2T5ZKo6K+i77yM5Y+v5Lul5byA6LSm5Y+35rWL5pWI5p6c44CCDQoNCg0KDQoNCg0K
-IA0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0K
-DQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoN
-Cg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0K
-DQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCuS5n+S4jeWlveWvueWlueiC
-huaXoOW/jOaDrueahOeMpeeQkOOAgiAgICDku5bku47luorkuIrlnZDotbfmnaXvvIzliLDlhazl
-hbHljavnlJ/pl7TmtJfkuobmiorohLjvvIzplZzlrZDkuK3nmoToh6rlt7Hov5jnnJ/mnInlh6Dl
-iIbluIXmsJTvvIznu5noh6rlt7HkuIDkuKroh6rkv6HnmoTlvq7nrJHvvIzlj4jlgZrkuobkuKro
-o4XpgLznmoTmt7Hmsonooajmg4XvvIzkuIvmpbzljrvljr/mlL/lupzlpKfpmaLmib7ooaXor77i
-gKbigKbigJ0gICAg5Lyv5q+N5q2k5pe25LuO6YeM5bGL6LWw5Ye65p2l77yM6L+e5b+Z5Yi25q2i
-77yM6YGT77ya4oCc5Yir5Lmx5p2l77yM56OV5L2P5L2g5byf5byf77yf4oCdICAgIOWkj+aTjuWk
-qeS4gOe/u+eZveecvO+8jOmBk++8muKAnOS7luaJjeWkmumHje+8n+aIkeS8muWkseaJi++8n+KA
-nSAgICDkuI3ov4fov5jmmK/miorlvJ/lvJ/nqLPnqLPlnLDmlL7lnKjlnLDkuIrjgIIgICAg5LuW
-5aW95YOP6auY5bqm5qaC5ous77yM4oCc5aSp5LiL5L2V5Lq65LiN6K+G5ZCb4oCd5Y+v5piv5LiA
-54K56YO95LiN5aS45byg77yM5Y+q5piv546w5Zyo5oCO5LmI6IO96K+05piO77yf6Zq+6YGT6K+0
-6Ieq5bex56m/6LaK6L+H5p2l55qE77yf5Zyo5oiR55qE5YmN5LiW77yM5L2g5bCx5piv5ZCN5ruh
-5YWo55CD55qE5aSn5Lq654mp77yfICAgIOadqOaZr+WInemBk++8muKAnOWUie+8jOWls+S6uu+8
-jOaIkeaDs+W+l+W8gO+8jOWlueWPquaYr+mHjOOAgiAgICDpmYjnuqLosYbmhI/lkbPmt7Hplb/l
-nLDnnIvkuoblpI/lsI/mtJvkuIDnnLzvvIzpgZPvvJrigJzkvaDku6zkubDov4fnpajkuoblkKfv
-vIzmiJHljrvkubDnpajvvIzmsqHkubDnmoTor53miJHluK7kvaDku6zluKbjgILigJ0gICAg5aSP
-5bCP5rSb5b+D5Lit6aqC6YGT77yM6I2J5rOl6ams77yM5aW95YOP5oiR5by65pq05LqG5L2g5a62
-5L2V6K+X6Z+15Ly85Zyw44CCICAgIOmZiOe6ouixhuKAnOi6q+S9k+WjsOWQn+WUseedgOS4gOmm
-lkJhYnlmYWNl55qE44CK6ZmM55Sf5Lq655qE55y844CL44CCICAgIOS4pOS6uuWGsumFkuS/neim
-geS6huS4pOeTtueZvuWoge+8jOaFouaFouWcsOWWneedgO+8jOecr+edgOi/keinhuecvO+8jOeb
-ruWFieWcqOaVtOS4qumFkuWQp+adpeWbnuepv+aire+8jOWvu+aJvuW/g+S7queahOeMjueJqeOA
-giAgICDigJzlmL/vvIzkvaDnnIvpgqPovrnpgqPkuKTljLnigJTigJTlpKfmtIvpqazvvIHosJHp
-gZPjgIIgICAg5YmN5LiW6Ieq5bex54i25Lqy6L+Z5LmI5pyJ5bm96buY5oSf77yM6Ieq5bex5oCO
-5LmI5LuO5p2l5rKh5pyJ5Y2w6LGh77yf5ZSJ77yM5aSn57qm5piv5LuW5ZCO5p2l5LuV6YCU5LiN
-6aG677yM5oqR6YOB5LqG5LiA55Sf77yM6L+Z56eN5aSp54S255qE5LmQ5aSp6KKr6Imw6Zq+55qE
-55Sf5rS75raI56Oo5o6J5LqG5ZCn44CCICAgIOaXoueEtuiHquW3seS7iueUn+mHjeadpe+8jOWw
-seS4jeiDveWcqOiuqQkNCueUn+S9oOermei1t+adpe+8jOS9oOaJvuaIkeS7rOWNq+eUn+WxgOac
-ieWVpeS6i++8n+KAneWkj+i/keS4nOa4qeiogOmBk++8jOKAnOaIkeaYr+WNq+eUn+WxgOWJr+Wx
-gOmVv++8jOacieS7gOS5iOS6i++8jOS9oOWRiuivieaIkeOAguKAnSAgICDigJzlk47lkYDvvIzl
-jp/mnaXmmK/lpKfpooblr7zllYrvvIHmiJHlj6/mib7nnYDkurrkuobjgILigJ3ogIHmsYnlj4jm
-v4Dliqjlj4jmga3mlazlnLDor7TvvIzkuJzku6XlpI/lsI/mtJvmiYDor7TnmoTigJzooaXplIXm
-s5XigJ3ov4XpgJ/lnLDlj43otKXkuLrog5zvvIzmjIHkuYXkvZzmiJjnmoTor53vvIznjovkv4rk
-vJ/kuZ/kuI3mmK/lr7nmiYvjgIIgICAg5L2G5piv5q2k5pe255qE5L2V5Lqs55Sf5ZKM5Y2i5Yab
-6LaF55qE6L+Z5Zy65paX5LqJ6KaB5piv5byA5oiY55qE6K+d77yM5pW05L2T5p2l6K+077yM5L2V
-5Lqs55Sf5YiZ5aSE5LqO5byx5Yq/5Zyw5L2N44CC5bO75bOw6Ieq5bex5Lmf5rKh5LuA5LmI5aW9
-5Yqe5rOV77yM6Kej5pWR5Lq66LSo5Y6G5p2l5piv5omA5pyJ56qB5Y+R5LqL5Lu25Lit5pyA5Zuw
-6Zq+55qE77yM5LuW5Lus5bCP5bCP5Y6/5Z+O6K2m5Yqb5Y+I5LiN5YWF6Laz77yM5rKh5pyJ54uZ
-5Ye75omL77yb5Y2z5L2/5pyJ54uZ5Ye75omL77yM6ZmE6L+R5Lmf5rKh5pyJ6auY55qE5bu6562R
-77yM5Zyw5b2i5a+55LuW5Lus5Lmf5b6I5LiN5Yip77yM77yM5YCY6Iul6KaB5LuO5qW8576k5LyX
-77yM55av5Lq65p6c5b2T572X5rGJ5p6c5Y2W77yB5ZCD5q275Lq66YO95LiN55+l6YGT5oCO5LmI
-5q2755qE44CC4oCdICAgIOS4jeaZk+W+l+S7gOS5iOaXtuWAme+8jOavjeS6suiuuOWwj+abvOW3
-sue7j+WFs+S6hueUteinhu+8jOWdkOWcqOS7luS7rOi6q+i+ue+8jOWQrOedgOeItuWtkOS6jOS6
-uuWVhuiuruWkp+S6i++8jOi/meS8muemgeS4jeS9j+aPkuWYtOi1t+adpeOAgiAgICDlpI/ov5Hk
-uJzmraTml7blv4PlpI/lsI/mtJvmiZPph4/nnYDmn7PmnIjvvIzlpbnkuIrouqvnqb/nnYDkuIDk
-u7bmrL7lvI/mlrDpopbnmoTnn63mrL7nmoToloToloTnmoTnvr3nu5LmnI3vvIzkuIvouqvnqb/n
-nYDkuIDku7bpu5HoibLnmoTniZvku5Too6TvvIzlj6vkuIrnqb/nnYDkuIDlj4zljYrpq5jot5/n
-moTpu5HoibLnmq7pnovvvIzmlbTkuKrkurrmmL7lvpfkuq3kuq3njonnq4vvvIzkuIDlj4zmvIbp
-u5HnmoTlpKfnnLznnZvnnavmr5vmmL7lvpflj4jplb/ph43mnaXkuozljYHlubTvvIzmmK/orqno
-h6rlt7HotY7nvarnmoTkuYjvvJ8gICAg5Lq655Sf6KeC5q+U6L6D5oKy6KeC55qE5Y+U5pys5Y2O
-5pu+57uP6K+06L+H77yM5pmu6YCa5Lq65Y+q5piv5oOz6L+H5aaC5L2V5bqm6L+H5pe26Ze077yM
-6ICM5LiN5q275aaC5L2V5Yip55So5pe26Ze044CC6Ieq5bex6K+75Yiw6L+Z5Y+l6K+d55qE5pe2
-5YCZ77yM5bey57uP5piv6ICM56uL5LmL5bm077yM6YKj5pe25YCZ77yM5Y+q5pyJ5o2PCQ0K
+Removes the OMAP5 HDMI audio callbacks for the old external DAI driver.
 
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi5.c |  113 ---------------------------------
+ 1 file changed, 113 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index 360b31f..0a67c84 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -493,112 +493,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
+ 	return r;
+ }
+ 
+-#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	int r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi_wp_audio_enable(&hdmi.wp, true);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_enable(&hdmi.wp, false);
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return hdmi_wp_audio_core_req_enable(&hdmi.wp, true);
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_core_req_enable(&hdmi.wp, false);
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	bool r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	r = hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode);
+-
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	int r;
+-	u32 pclk = hdmi.cfg.timings.pixelclock;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi5_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-#else
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	return false;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	return -EPERM;
+-}
+-#endif
+-
+ static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi)
+ {
+@@ -627,13 +521,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.read_edid		= hdmi_read_edid,
+ 	.set_infoframe		= hdmi_set_infoframe,
+ 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
+-
+-	.audio_enable		= hdmi_audio_enable,
+-	.audio_disable		= hdmi_audio_disable,
+-	.audio_start		= hdmi_audio_start,
+-	.audio_stop		= hdmi_audio_stop,
+-	.audio_supported	= hdmi_audio_supported,
+-	.audio_config		= hdmi_audio_config,
+ };
+ 
+ static void hdmi_init_output(struct platform_device *pdev)
+-- 
+1.7.9.5
 

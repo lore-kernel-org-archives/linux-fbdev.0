@@ -1,65 +1,37 @@
-From: Fabian Frederick <fabf@skynet.be>
-Date: Wed, 17 Sep 2014 19:00:19 +0000
-Subject: [PATCH 6/6] video: fbdev: valkyriefb.c: use container_of to resolve fb_info_valkyrie from fb_info
-Message-Id: <1410980419-5326-7-git-send-email-fabf@skynet.be>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 16 Sep 2014 10:04:23 +0000
+Subject: [PATCH v5 09/15] OMAPDSS: hdmi: Make hdmi_mode_has_audio() more user friedly
+Message-Id: <7761f0cbdb1b3029d0f5a72024c059ad3d04970c.1410860765.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1410980419-5326-1-git-send-email-fabf@skynet.be>
-In-Reply-To: <1410980419-5326-1-git-send-email-fabf@skynet.be>
+References: <cover.1410860765.git.jsarha@ti.com>
+In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: daniel.vetter@intel.com, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Use container_of instead of casting first structure member.
-
-Signed-off-by: Fabian Frederick <fabf@skynet.be>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
-PPC32 cross-compiled but untested.
+ drivers/video/fbdev/omap2/dss/hdmi.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- drivers/video/fbdev/valkyriefb.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index 97cb9bd..9c98945 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -136,7 +136,8 @@ static struct fb_ops valkyriefb_ops = {
- /* Sets the video mode according to info->var */
- static int valkyriefb_set_par(struct fb_info *info)
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index a6e08ff..6d129f2 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -345,9 +345,9 @@ void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
+ 		struct hdmi_audio_format *aud_fmt);
+ void hdmi_wp_audio_config_dma(struct hdmi_wp_data *wp,
+ 		struct hdmi_audio_dma *aud_dma);
+-static inline bool hdmi_mode_has_audio(int mode)
++static inline bool hdmi_mode_has_audio(struct hdmi_config *cfg)
  {
--	struct fb_info_valkyrie *p = (struct fb_info_valkyrie *) info;
-+	struct fb_info_valkyrie *p +		container_of(info, struct fb_info_valkyrie, info);
- 	volatile struct valkyrie_regs __iomem *valkyrie_regs = p->valkyrie_regs;
- 	struct fb_par_valkyrie *par = info->par;
- 	struct valkyrie_regvals	*init;
-@@ -194,7 +195,8 @@ valkyriefb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
-  */
- static int valkyriefb_blank(int blank_mode, struct fb_info *info)
- {
--	struct fb_info_valkyrie *p = (struct fb_info_valkyrie *) info;
-+	struct fb_info_valkyrie *p +		container_of(info, struct fb_info_valkyrie, info);
- 	struct fb_par_valkyrie *par = info->par;
- 	struct valkyrie_regvals	*init = par->init;
+-	return mode = HDMI_HDMI ? true : false;
++	return cfg->hdmi_dvi_mode = HDMI_HDMI ? true : false;
+ }
  
-@@ -226,7 +228,8 @@ static int valkyriefb_blank(int blank_mode, struct fb_info *info)
- static int valkyriefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 			     u_int transp, struct fb_info *info)
- {
--	struct fb_info_valkyrie *p = (struct fb_info_valkyrie *) info;
-+	struct fb_info_valkyrie *p +		container_of(info, struct fb_info_valkyrie, info);
- 	volatile struct cmap_regs __iomem *cmap_regs = p->cmap_regs;
- 	struct fb_par_valkyrie *par = info->par;
- 
-@@ -465,7 +468,8 @@ static int valkyrie_var_to_par(struct fb_var_screeninfo *var,
- {
- 	int vmode, cmode;
- 	struct valkyrie_regvals *init;
--	struct fb_info_valkyrie *p = (struct fb_info_valkyrie *) fb_info;
-+	struct fb_info_valkyrie *p +		container_of(fb_info, struct fb_info_valkyrie, info);
- 
- 	if (mac_var_to_vmode(var, &vmode, &cmode) != 0) {
- 		printk(KERN_ERR "valkyriefb: can't do %dx%dx%d.\n",
+ /* HDMI DRV data */
 -- 
-2.1.0
+1.7.9.5
 

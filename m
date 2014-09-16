@@ -1,7 +1,7 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 16 Sep 2014 10:04:18 +0000
-Subject: [PATCH v5 04/15] OMAPDSS: hdmi_wp: Add function for getting audio dma address
-Message-Id: <6a32977df30e0100e58b4f8c1cb4e9da8029df98.1410860765.git.jsarha@ti.com>
+Date: Tue, 16 Sep 2014 10:04:22 +0000
+Subject: [PATCH v5 08/15] OMAPDSS: Kconfig: Remove HDMI audio booleans from Kconfig
+Message-Id: <368338029236c13764737a77f0a125ad2f77e17b.1410860765.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1410860765.git.jsarha@ti.com>
 In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
@@ -11,55 +11,39 @@ Content-Transfer-Encoding: 7bit
 To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-The audio dma port is found in the hdmi_wp physical address space.
+The booleans are not used anymore. Just select SND_OMAP_SOC_HDMI_AUDIO
+to enable OMAP HDMI audio support.
 
 Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h    |    2 ++
- drivers/video/fbdev/omap2/dss/hdmi_wp.c |    6 ++++++
- 2 files changed, 8 insertions(+)
+ drivers/video/fbdev/omap2/dss/Kconfig |    7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 03726b5..9ba7c1a 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -250,6 +250,7 @@ struct hdmi_core_audio_config {
+diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
+index 3d5eb6c..d1fa730 100644
+--- a/drivers/video/fbdev/omap2/dss/Kconfig
++++ b/drivers/video/fbdev/omap2/dss/Kconfig
+@@ -74,9 +74,6 @@ config OMAP4_DSS_HDMI
+ 	help
+ 	  HDMI support for OMAP4 based SoCs.
  
- struct hdmi_wp_data {
- 	void __iomem *base;
-+	phys_addr_t phys_base;
- };
+-config OMAP4_DSS_HDMI_AUDIO
+-	bool
+-
+ config OMAP5_DSS_HDMI
+ 	bool "HDMI support for OMAP5"
+ 	default n
+@@ -86,10 +83,6 @@ config OMAP5_DSS_HDMI
+ 	  Definition Multimedia Interface. See http://www.hdmi.org/ for HDMI
+ 	  specification.
  
- struct hdmi_pll_data {
-@@ -317,6 +318,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
- void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
- 		struct omap_video_timings *timings, struct hdmi_config *param);
- int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
-+phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp);
- 
- /* HDMI PLL funcs */
- int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-index f1b53de..5154120 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-@@ -245,6 +245,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
- 		DSSERR("can't get WP mem resource\n");
- 		return -EINVAL;
- 	}
-+	wp->phys_base = res->start;
- 
- 	wp->base = devm_ioremap_resource(&pdev->dev, res);
- 	if (IS_ERR(wp->base)) {
-@@ -254,3 +255,8 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
- 
- 	return 0;
- }
-+
-+phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp)
-+{
-+	return wp->phys_base + HDMI_WP_AUDIO_DATA;
-+}
+-config OMAP5_DSS_HDMI_AUDIO
+-	depends on OMAP5_DSS_HDMI
+-	bool
+-
+ config OMAP2_DSS_SDI
+ 	bool "SDI support"
+         default n
 -- 
 1.7.9.5
 

@@ -1,31 +1,179 @@
-From: Fabian Frederick <fabf@skynet.be>
-Date: Wed, 17 Sep 2014 19:00:13 +0000
-Subject: [PATCH 0/6] video: fbdev: use container_of where possible
-Message-Id: <1410980419-5326-1-git-send-email-fabf@skynet.be>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 16 Sep 2014 10:04:19 +0000
+Subject: [PATCH v5 05/15] OMAPDSS: hdmi: Make hdmi structure public
+Message-Id: <7f3bb0f27fb0ce3f3488549ae60e6b6e89ef6df4.1410860765.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1410860765.git.jsarha@ti.com>
+In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Small patchset using container_of instead of casting on first structure member address.
+Unify the private anonymous struct in hdmi4.c and hdmi5.c, name it as
+struct omap_hdmi, and make it public in hdmi.h.
 
-Fabian Frederick (6):
-  video: fbdev: stifb.c: use container_of to resolve stifb_info from fb_info
-  video: fbdev: sa1100fb.c: use container_of to resolve sa1100fb_info from fb_info
-  video: fbdev: controlfb.c: use container_of to resolve fb_info_control from fb_info
-  video: fbdev: cyber2000fb.c: use container_of to resolve cfb_info from fb_info
-  video: fbdev: pxafb.c: use container_of to resolve pxafb_info/layer from fb_info
-  video: fbdev: valkyriefb.c: use container_of to resolve fb_info_valkyrie from fb_info
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi.h  |   21 +++++++++++++++++++++
+ drivers/video/fbdev/omap2/dss/hdmi4.c |   31 ++++++++-----------------------
+ drivers/video/fbdev/omap2/dss/hdmi5.c |   20 ++------------------
+ 3 files changed, 31 insertions(+), 41 deletions(-)
 
- drivers/video/fbdev/controlfb.c   | 15 ++++++++++-----
- drivers/video/fbdev/cyber2000fb.c | 16 ++++++++--------
- drivers/video/fbdev/pxafb.c       | 20 ++++++++++----------
- drivers/video/fbdev/sa1100fb.c    | 18 ++++++++++++------
- drivers/video/fbdev/stifb.c       |  4 ++--
- drivers/video/fbdev/valkyriefb.c  | 12 ++++++++----
- 6 files changed, 50 insertions(+), 35 deletions(-)
-
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 9ba7c1a..6bf077b 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -349,4 +349,25 @@ static inline bool hdmi_mode_has_audio(int mode)
+ {
+ 	return mode = HDMI_HDMI ? true : false;
+ }
++
++/* HDMI DRV data */
++struct omap_hdmi {
++	struct mutex lock;
++	struct platform_device *pdev;
++
++	struct hdmi_wp_data	wp;
++	struct hdmi_pll_data	pll;
++	struct hdmi_phy_data	phy;
++	struct hdmi_core_data	core;
++
++	struct hdmi_config cfg;
++
++	struct clk *sys_clk;
++	struct regulator *vdda_reg;
++
++	bool core_enabled;
++
++	struct omap_dss_device output;
++};
++
+ #endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 6a8550c..b98186e 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -37,25 +37,9 @@
+ #include "hdmi4_core.h"
+ #include "dss.h"
+ #include "dss_features.h"
++#include "hdmi.h"
+ 
+-static struct {
+-	struct mutex lock;
+-	struct platform_device *pdev;
+-
+-	struct hdmi_wp_data	wp;
+-	struct hdmi_pll_data	pll;
+-	struct hdmi_phy_data	phy;
+-	struct hdmi_core_data	core;
+-
+-	struct hdmi_config cfg;
+-
+-	struct clk *sys_clk;
+-	struct regulator *vdda_hdmi_dac_reg;
+-
+-	bool core_enabled;
+-
+-	struct omap_dss_device output;
+-} hdmi;
++static struct omap_hdmi hdmi;
+ 
+ static int hdmi_runtime_get(void)
+ {
+@@ -117,7 +101,7 @@ static int hdmi_init_regulator(void)
+ 	int r;
+ 	struct regulator *reg;
+ 
+-	if (hdmi.vdda_hdmi_dac_reg != NULL)
++	if (hdmi.vdda_reg != NULL)
+ 		return 0;
+ 
+ 	reg = devm_regulator_get(&hdmi.pdev->dev, "vdda");
+@@ -137,7 +121,7 @@ static int hdmi_init_regulator(void)
+ 		}
+ 	}
+ 
+-	hdmi.vdda_hdmi_dac_reg = reg;
++	hdmi.vdda_reg = reg;
+ 
+ 	return 0;
+ }
+@@ -146,7 +130,7 @@ static int hdmi_power_on_core(struct omap_dss_device *dssdev)
+ {
+ 	int r;
+ 
+-	r = regulator_enable(hdmi.vdda_hdmi_dac_reg);
++	r = regulator_enable(hdmi.vdda_reg);
+ 	if (r)
+ 		return r;
+ 
+@@ -162,7 +146,7 @@ static int hdmi_power_on_core(struct omap_dss_device *dssdev)
+ 	return 0;
+ 
+ err_runtime_get:
+-	regulator_disable(hdmi.vdda_hdmi_dac_reg);
++	regulator_disable(hdmi.vdda_reg);
+ 
+ 	return r;
+ }
+@@ -172,7 +156,7 @@ static void hdmi_power_off_core(struct omap_dss_device *dssdev)
+ 	hdmi.core_enabled = false;
+ 
+ 	hdmi_runtime_put();
+-	regulator_disable(hdmi.vdda_hdmi_dac_reg);
++	regulator_disable(hdmi.vdda_reg);
+ }
+ 
+ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
+@@ -678,6 +662,7 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	int irq;
+ 
+ 	hdmi.pdev = pdev;
++	dev_set_drvdata(&pdev->dev, &hdmi);
+ 
+ 	mutex_init(&hdmi.lock);
+ 
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index 32d02ec..90410f5 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -43,24 +43,7 @@
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+-static struct {
+-	struct mutex lock;
+-	struct platform_device *pdev;
+-
+-	struct hdmi_wp_data	wp;
+-	struct hdmi_pll_data	pll;
+-	struct hdmi_phy_data	phy;
+-	struct hdmi_core_data	core;
+-
+-	struct hdmi_config cfg;
+-
+-	struct clk *sys_clk;
+-	struct regulator *vdda_reg;
+-
+-	bool core_enabled;
+-
+-	struct omap_dss_device output;
+-} hdmi;
++static struct omap_hdmi hdmi;
+ 
+ static int hdmi_runtime_get(void)
+ {
+@@ -703,6 +686,7 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	int irq;
+ 
+ 	hdmi.pdev = pdev;
++	dev_set_drvdata(&pdev->dev, &hdmi);
+ 
+ 	mutex_init(&hdmi.lock);
+ 
 -- 
-2.1.0
+1.7.9.5
 

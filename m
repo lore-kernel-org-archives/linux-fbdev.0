@@ -1,100 +1,267 @@
-From: Fabian Frederick <fabf@skynet.be>
-Date: Wed, 17 Sep 2014 19:00:17 +0000
-Subject: [PATCH 4/6] video: fbdev: cyber2000fb.c: use container_of to resolve cfb_info from fb_info
-Message-Id: <1410980419-5326-5-git-send-email-fabf@skynet.be>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 16 Sep 2014 10:04:29 +0000
+Subject: [PATCH v5 15/15] OMAPDSS: Remove all references to obsolete HDMI audio callbacks
+Message-Id: <30396d4aea2e167f137c964b5bde36557db7f9b4.1410860765.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1410980419-5326-1-git-send-email-fabf@skynet.be>
-In-Reply-To: <1410980419-5326-1-git-send-email-fabf@skynet.be>
+References: <cover.1410860765.git.jsarha@ti.com>
+In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Use container_of instead of casting first structure member.
+In new model these callbacks are obsolete since the ASoC component
+drivers are integrated into the HDMI drivers and no callbacks are
+needed anymore.
 
-Signed-off-by: Fabian Frederick <fabf@skynet.be>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
-Compiled but untested.
+ .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 --------------------
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 -----------
+ include/video/omapdss.h                            |   31 ------
+ 3 files changed, 186 deletions(-)
 
- drivers/video/fbdev/cyber2000fb.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
-index b0a950f..99acf53 100644
---- a/drivers/video/fbdev/cyber2000fb.c
-+++ b/drivers/video/fbdev/cyber2000fb.c
-@@ -159,7 +159,7 @@ cyber2000_seqw(unsigned int reg, unsigned int val, struct cfb_info *cfb)
- static void
- cyber2000fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- {
--	struct cfb_info *cfb = (struct cfb_info *)info;
-+	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
- 	unsigned long dst, col;
+diff --git a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
+index 131c6e2..dd36d71 100644
+--- a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
++++ b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
+@@ -170,98 +170,6 @@ static bool hdmic_detect(struct omap_dss_device *dssdev)
+ 		return in->ops.hdmi->detect(in);
+ }
  
- 	if (!(cfb->fb.var.accel_flags & FB_ACCELF_TEXT)) {
-@@ -191,7 +191,7 @@ cyber2000fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- static void
- cyber2000fb_copyarea(struct fb_info *info, const struct fb_copyarea *region)
+-static int hdmic_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-	int r;
+-
+-	/* enable audio only if the display is active */
+-	if (!omapdss_device_is_enabled(dssdev))
+-		return -EPERM;
+-
+-	r = in->ops.hdmi->audio_enable(in);
+-	if (r)
+-		return r;
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_ENABLED;
+-
+-	return 0;
+-}
+-
+-static void hdmic_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_disable(in);
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_DISABLED;
+-}
+-
+-static int hdmic_audio_start(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-	int r;
+-
+-	/*
+-	 * No need to check the panel state. It was checked when trasitioning
+-	 * to AUDIO_ENABLED.
+-	 */
+-	if (dssdev->audio_state != OMAP_DSS_AUDIO_ENABLED)
+-		return -EPERM;
+-
+-	r = in->ops.hdmi->audio_start(in);
+-	if (r)
+-		return r;
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_PLAYING;
+-
+-	return 0;
+-}
+-
+-static void hdmic_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_stop(in);
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_ENABLED;
+-}
+-
+-static bool hdmic_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	if (!omapdss_device_is_enabled(dssdev))
+-		return false;
+-
+-	return in->ops.hdmi->audio_supported(in);
+-}
+-
+-static int hdmic_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-	int r;
+-
+-	/* config audio only if the display is active */
+-	if (!omapdss_device_is_enabled(dssdev))
+-		return -EPERM;
+-
+-	r = in->ops.hdmi->audio_config(in, audio);
+-	if (r)
+-		return r;
+-
+-	dssdev->audio_state = OMAP_DSS_AUDIO_CONFIGURED;
+-
+-	return 0;
+-}
+-
+ static int hdmic_set_hdmi_mode(struct omap_dss_device *dssdev, bool hdmi_mode)
  {
--	struct cfb_info *cfb = (struct cfb_info *)info;
-+	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
- 	unsigned int cmd = CO_CMD_L_PATTERN_FGCOL;
- 	unsigned long src, dst;
+ 	struct panel_drv_data *ddata = to_panel_data(dssdev);
+@@ -296,13 +204,6 @@ static struct omap_dss_driver hdmic_driver = {
+ 	.detect			= hdmic_detect,
+ 	.set_hdmi_mode		= hdmic_set_hdmi_mode,
+ 	.set_hdmi_infoframe	= hdmic_set_infoframe,
+-
+-	.audio_enable		= hdmic_audio_enable,
+-	.audio_disable		= hdmic_audio_disable,
+-	.audio_start		= hdmic_audio_start,
+-	.audio_stop		= hdmic_audio_stop,
+-	.audio_supported	= hdmic_audio_supported,
+-	.audio_config		= hdmic_audio_config,
+ };
  
-@@ -241,7 +241,7 @@ cyber2000fb_imageblit(struct fb_info *info, const struct fb_image *image)
+ static int hdmic_probe_pdata(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
+index c891d8f..235e3d5 100644
+--- a/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
++++ b/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
+@@ -193,55 +193,6 @@ static bool tpd_detect(struct omap_dss_device *dssdev)
+ 	return gpio_get_value_cansleep(ddata->hpd_gpio);
+ }
  
- static int cyber2000fb_sync(struct fb_info *info)
+-static int tpd_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_enable(in);
+-}
+-
+-static void tpd_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_disable(in);
+-}
+-
+-static int tpd_audio_start(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_start(in);
+-}
+-
+-static void tpd_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	in->ops.hdmi->audio_stop(in);
+-}
+-
+-static bool tpd_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_supported(in);
+-}
+-
+-static int tpd_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	struct panel_drv_data *ddata = to_panel_data(dssdev);
+-	struct omap_dss_device *in = ddata->in;
+-
+-	return in->ops.hdmi->audio_config(in, audio);
+-}
+-
+ static int tpd_set_infoframe(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi)
  {
--	struct cfb_info *cfb = (struct cfb_info *)info;
-+	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
- 	int count = 100000;
+@@ -275,13 +226,6 @@ static const struct omapdss_hdmi_ops tpd_hdmi_ops = {
+ 	.detect			= tpd_detect,
+ 	.set_infoframe		= tpd_set_infoframe,
+ 	.set_hdmi_mode		= tpd_set_hdmi_mode,
+-
+-	.audio_enable		= tpd_audio_enable,
+-	.audio_disable		= tpd_audio_disable,
+-	.audio_start		= tpd_audio_start,
+-	.audio_stop		= tpd_audio_stop,
+-	.audio_supported	= tpd_audio_supported,
+-	.audio_config		= tpd_audio_config,
+ };
  
- 	if (!(cfb->fb.var.accel_flags & FB_ACCELF_TEXT))
-@@ -276,7 +276,7 @@ static int
- cyber2000fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 		      u_int transp, struct fb_info *info)
- {
--	struct cfb_info *cfb = (struct cfb_info *)info;
-+	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
- 	struct fb_var_screeninfo *var = &cfb->fb.var;
- 	u32 pseudo_val;
- 	int ret = 1;
-@@ -758,7 +758,7 @@ cyber2000fb_decode_clock(struct par_info *hw, struct cfb_info *cfb,
- static int
- cyber2000fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
--	struct cfb_info *cfb = (struct cfb_info *)info;
-+	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
- 	struct par_info hw;
- 	unsigned int mem;
- 	int err;
-@@ -861,7 +861,7 @@ cyber2000fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ static int tpd_probe_pdata(struct platform_device *pdev)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 069dfca..9035325 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -635,19 +635,6 @@ struct omapdss_hdmi_ops {
+ 	int (*set_hdmi_mode)(struct omap_dss_device *dssdev, bool hdmi_mode);
+ 	int (*set_infoframe)(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi);
+-
+-	/*
+-	 * Note: These functions might sleep. Do not call while
+-	 * holding a spinlock/readlock.
+-	 */
+-	int (*audio_enable)(struct omap_dss_device *dssdev);
+-	void (*audio_disable)(struct omap_dss_device *dssdev);
+-	bool (*audio_supported)(struct omap_dss_device *dssdev);
+-	int (*audio_config)(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio);
+-	/* Note: These functions may not sleep */
+-	int (*audio_start)(struct omap_dss_device *dssdev);
+-	void (*audio_stop)(struct omap_dss_device *dssdev);
+ };
  
- static int cyber2000fb_set_par(struct fb_info *info)
- {
--	struct cfb_info *cfb = (struct cfb_info *)info;
-+	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
- 	struct fb_var_screeninfo *var = &cfb->fb.var;
- 	struct par_info hw;
- 	unsigned int mem;
-@@ -971,7 +971,7 @@ static int cyber2000fb_set_par(struct fb_info *info)
- static int
- cyber2000fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
- {
--	struct cfb_info *cfb = (struct cfb_info *)info;
-+	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
+ struct omapdss_dsi_ops {
+@@ -858,24 +845,6 @@ struct omap_dss_driver {
+ 	int (*set_hdmi_mode)(struct omap_dss_device *dssdev, bool hdmi_mode);
+ 	int (*set_hdmi_infoframe)(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi);
+-
+-	/*
+-	 * For display drivers that support audio. This encompasses
+-	 * HDMI and DisplayPort at the moment.
+-	 */
+-	/*
+-	 * Note: These functions might sleep. Do not call while
+-	 * holding a spinlock/readlock.
+-	 */
+-	int (*audio_enable)(struct omap_dss_device *dssdev);
+-	void (*audio_disable)(struct omap_dss_device *dssdev);
+-	bool (*audio_supported)(struct omap_dss_device *dssdev);
+-	int (*audio_config)(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio);
+-	/* Note: These functions may not sleep */
+-	int (*audio_start)(struct omap_dss_device *dssdev);
+-	void (*audio_stop)(struct omap_dss_device *dssdev);
+-
+ };
  
- 	if (cyber2000fb_update_start(cfb, var))
- 		return -EINVAL;
-@@ -1007,7 +1007,7 @@ cyber2000fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
-  */
- static int cyber2000fb_blank(int blank, struct fb_info *info)
- {
--	struct cfb_info *cfb = (struct cfb_info *)info;
-+	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
- 	unsigned int sync = 0;
- 	int i;
- 
+ enum omapdss_version omapdss_get_version(void);
 -- 
-2.1.0
+1.7.9.5
 

@@ -1,34 +1,55 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Sun, 14 Sep 2014 17:35:48 +0000
-Subject: [PATCH] video: fbdev: sis: sis_main.c:  Cleaning up missing null-terminate in conjunction with strnc
-Message-Id: <1410716148-16243-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 16 Sep 2014 10:04:17 +0000
+Subject: [PATCH v5 03/15] OMAPDSS: hdmi4_core: Remove unused hdmi4_audio_get_dma_port()
+Message-Id: <cd9362738e188412220f0ee320efc9bb6402cb59.1410860765.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1410860765.git.jsarha@ti.com>
+In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Winischhofer <thomas@winischhofer.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Replacing strncpy with strlcpy to avoid strings that lacks null terminate.
+hdmi4_audio_get_dma_port() is unused and and broken.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/sis/sis_main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/hdmi4_core.c |    9 ---------
+ drivers/video/fbdev/omap2/dss/hdmi4_core.h |    2 --
+ 2 files changed, 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index 3f12a2d..1f4c216 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -5830,7 +5830,7 @@ static int sisfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 			ivideo->cardnumber++;
- 	}
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+index 3b448d9..7eafea5 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+@@ -874,15 +874,6 @@ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp)
+ 	hdmi_wp_audio_core_req_enable(wp, false);
+ }
  
--	strncpy(ivideo->myid, chipinfo->chip_name, 30);
-+	strlcpy(ivideo->myid, chipinfo->chip_name, sizeof(ivideo->myid));
- 
- 	ivideo->warncount = 0;
- 	ivideo->chip_id = pdev->device;
+-int hdmi4_audio_get_dma_port(u32 *offset, u32 *size)
+-{
+-	if (!offset || !size)
+-		return -EINVAL;
+-	*offset = HDMI_WP_AUDIO_DATA;
+-	*size = 4;
+-	return 0;
+-}
+-
+ int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+ {
+ 	struct resource *res;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.h b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
+index c1959f7..a069f96 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
+@@ -270,6 +270,4 @@ int hdmi4_audio_start(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
+ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
+ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 		struct omap_dss_audio *audio, u32 pclk);
+-int hdmi4_audio_get_dma_port(u32 *offset, u32 *size);
+-
+ #endif
 -- 
-1.7.10.4
+1.7.9.5
 

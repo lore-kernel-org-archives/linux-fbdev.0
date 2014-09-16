@@ -1,73 +1,182 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 12 Sep 2014 09:10:24 +0000
-Subject: [GIT PULL] fbdev fixes for 3.17
-Message-Id: <5412B880.8000705@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="pNk3rP8Mb3rmjBn01mx00r2JIUlrv4Kpg"
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 16 Sep 2014 10:04:16 +0000
+Subject: [PATCH v5 02/15] OMAPDSS: hdmi: Remove most of OMAP[45]_DSS_HDMI_AUDIO ifdefs
+Message-Id: <ebbea42832a5daa91fe759830997e84453af2133.1410860765.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <cover.1410860765.git.jsarha@ti.com>
+In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
---pNk3rP8Mb3rmjBn01mx00r2JIUlrv4Kpg
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+It does not waste too many bytes to compile all audio related core
+functions always in with HDMI support. It should help readability and
+in keeping the audio code in working shape. Leave the options just for
+disabling and enabling the functionality in hdmi[45].c.
 
-The following changes since commit 69e273c0b0a3c337a521d083374c918dc52c66=
-6f:
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi.h        |    3 +--
+ drivers/video/fbdev/omap2/dss/hdmi4_core.c  |    5 -----
+ drivers/video/fbdev/omap2/dss/hdmi4_core.h  |    2 --
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c  |    6 ------
+ drivers/video/fbdev/omap2/dss/hdmi5_core.h  |    2 --
+ drivers/video/fbdev/omap2/dss/hdmi_common.c |    2 --
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c     |    2 --
+ 7 files changed, 1 insertion(+), 21 deletions(-)
 
-  Linux 3.17-rc3 (2014-08-31 18:23:04 -0700)
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 1f01068..03726b5 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -335,7 +335,7 @@ int hdmi_phy_parse_lanes(struct hdmi_phy_data *phy, const u32 *lanes);
+ int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
+ 	struct hdmi_phy_data *phy);
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
++/* Audio funcs */
+ int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts);
+ int hdmi_wp_audio_enable(struct hdmi_wp_data *wp, bool enable);
+ int hdmi_wp_audio_core_req_enable(struct hdmi_wp_data *wp, bool enable);
+@@ -348,4 +348,3 @@ static inline bool hdmi_mode_has_audio(int mode)
+ 	return mode = HDMI_HDMI ? true : false;
+ }
+ #endif
+-#endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+index 4ad39cf..3b448d9 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+@@ -31,10 +31,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/string.h>
+ #include <linux/seq_file.h>
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ #include <sound/asound.h>
+ #include <sound/asoundef.h>
+-#endif
+ 
+ #include "hdmi4_core.h"
+ #include "dss_features.h"
+@@ -530,7 +528,6 @@ void hdmi4_core_dump(struct hdmi_core_data *core, struct seq_file *s)
+ 	DUMPCOREAV(HDMI_CORE_AV_CEC_ADDR_ID);
+ }
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ static void hdmi_core_audio_config(struct hdmi_core_data *core,
+ 					struct hdmi_core_audio_config *cfg)
+ {
+@@ -886,8 +883,6 @@ int hdmi4_audio_get_dma_port(u32 *offset, u32 *size)
+ 	return 0;
+ }
+ 
+-#endif
+-
+ int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+ {
+ 	struct resource *res;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.h b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
+index 827909e..c1959f7 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
+@@ -266,12 +266,10 @@ void hdmi4_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ void hdmi4_core_dump(struct hdmi_core_data *core, struct seq_file *s);
+ int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core);
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ int hdmi4_audio_start(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
+ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
+ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 		struct omap_dss_audio *audio, u32 pclk);
+ int hdmi4_audio_get_dma_port(u32 *offset, u32 *size);
+-#endif
+ 
+ #endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+index 83acbf7..8eab25b 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+@@ -30,10 +30,8 @@
+ #include <linux/string.h>
+ #include <linux/seq_file.h>
+ #include <drm/drm_edid.h>
+-#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+ #include <sound/asound.h>
+ #include <sound/asoundef.h>
+-#endif
+ 
+ #include "hdmi5_core.h"
+ 
+@@ -644,9 +642,6 @@ void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 	hdmi_core_enable_interrupts(core);
+ }
+ 
+-
+-#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+-
+ static void hdmi5_core_audio_config(struct hdmi_core_data *core,
+ 			struct hdmi_core_audio_config *cfg)
+ {
+@@ -894,7 +889,6 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+ {
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.h b/drivers/video/fbdev/omap2/dss/hdmi5_core.h
+index ce7e9f3..f2f1022 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5_core.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.h
+@@ -299,8 +299,6 @@ void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 			struct hdmi_config *cfg);
+ int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core);
+ 
+-#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 			struct omap_dss_audio *audio, u32 pclk);
+ #endif
+-#endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_common.c b/drivers/video/fbdev/omap2/dss/hdmi_common.c
+index 7d5f103..1b8fcc6 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_common.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_common.c
+@@ -48,7 +48,6 @@ int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
+ 	return 0;
+ }
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts)
+ {
+ 	u32 deep_color;
+@@ -147,4 +146,3 @@ int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts)
+ 
+ 	return 0;
+ }
+-#endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index 496327e..f1b53de 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -185,7 +185,6 @@ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ 	timings->interlace = param->timings.interlace;
+ }
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+ void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
+ 		struct hdmi_audio_format *aud_fmt)
+ {
+@@ -236,7 +235,6 @@ int hdmi_wp_audio_core_req_enable(struct hdmi_wp_data *wp, bool enable)
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ {
+-- 
+1.7.9.5
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-3.17
-
-for you to fetch changes up to e4cf39ea473329dfc07de1246f97d27b7fc96f79:
-
-  video: ARM CLCD: Fix color model capabilities for DT platforms (2014-09=
--12 11:45:10 +0300)
-
-----------------------------------------------------------------
-fbdev fixes for 3.17
-
-Minor fixes for amba-clcd and video DT bindings.
-
-----------------------------------------------------------------
-Pawel Moll (1):
-      video: ARM CLCD: Fix color model capabilities for DT platforms
-
-Tomi Valkeinen (1):
-      video: fix composite video connector compatible string
-
- Documentation/devicetree/bindings/video/analog-tv-connector.txt | 4 ++--=
-
- arch/arm/boot/dts/omap3-n900.dts                                | 2 +-
- drivers/video/fbdev/amba-clcd.c                                 | 4 +---=
-
- 3 files changed, 4 insertions(+), 6 deletions(-)
-
-
---pNk3rP8Mb3rmjBn01mx00r2JIUlrv4Kpg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUEriAAAoJEPo9qoy8lh71rfUP/3bT81nkZ3un+HQ+6nIE9sm+
-WKbAUeOZ4eFh0Y07ZDy+RGKTKlU36eD7cUpa6nz6K3Z3W1syUOiGp1i9zJf2599x
-qY3UwY6oQB0RFkM9wx5zJlCcf9AXGK45bVdsgrz2yR5Njy+0DiiHOJr4T3xCuGWe
-eyV3ZPIxZsVBHn3Pr1yCqo8ao1O13d13aXDWIQ0Q4Vq7ieUCSLP4T8liOvuEKy2A
-xvmIxF+Y4St7D9fLoaBj+dNNyUCLP2bJyNlvz3B33ftEEu0jI/yR311NADmja4hf
-M+eCiC9FI5M+RkyFihLh2sbXJJOgVMKeIM/ZQmNztwGEFY2jcTIa5xzjkoWBR+Yz
-Ebogx09JD3jEdXoPaTHQroo77JBLgYPrYuwWuVfVb95s2GeoX81xGjMr+Mr5OqiF
-jAzgCxxer15t4uLsMmo+I47xcSaH8JTogmAUZx6pKCnRIleNbLQQZYeYgC6A+keL
-Kfq8ZhGbmcJD+xUTaNnXDCcDWGl/T0uB9WoglgKSRfGSAnQfG2/bSet/DQ9sMK19
-Brn+Hp3aXKig6CvdJOH1rJffFDX1YhFAt5OWW7ssYDLP9elgVNsIvEteDGC+RKYz
-EeKzKPtimuFwcgOKwOGX/PCaXShgN3MX0V8RuZRl5GALr5j7ns1JBTw/N3npomAa
-oK0PnPETzGNw/z6x4suU
-=1Vh/
------END PGP SIGNATURE-----
-
---pNk3rP8Mb3rmjBn01mx00r2JIUlrv4Kpg--

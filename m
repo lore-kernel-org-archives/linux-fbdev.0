@@ -1,73 +1,31 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Sun, 28 Sep 2014 12:43:37 +0000
-Subject: [PATCH 3/4] simplefb: add goto error path to probe
-Message-Id: <1411908218-20947-3-git-send-email-hdegoede@redhat.com>
+From: Fabian Frederick <fabf@skynet.be>
+Date: Wed, 17 Sep 2014 19:00:13 +0000
+Subject: [PATCH 0/6] video: fbdev: use container_of where possible
+Message-Id: <1410980419-5326-1-git-send-email-fabf@skynet.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1411908218-20947-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1411908218-20947-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Luc Verhaegen <libv@skynet.be>
+Small patchset using container_of instead of casting on first structure member address.
 
-Signed-off-by: Luc Verhaegen <libv@skynet.be>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/video/fbdev/simplefb.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+Fabian Frederick (6):
+  video: fbdev: stifb.c: use container_of to resolve stifb_info from fb_info
+  video: fbdev: sa1100fb.c: use container_of to resolve sa1100fb_info from fb_info
+  video: fbdev: controlfb.c: use container_of to resolve fb_info_control from fb_info
+  video: fbdev: cyber2000fb.c: use container_of to resolve cfb_info from fb_info
+  video: fbdev: pxafb.c: use container_of to resolve pxafb_info/layer from fb_info
+  video: fbdev: valkyriefb.c: use container_of to resolve fb_info_valkyrie from fb_info
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index ec112c1..b7d5c08 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -220,8 +220,8 @@ static int simplefb_probe(struct platform_device *pdev)
- 
- 	info->apertures = alloc_apertures(1);
- 	if (!info->apertures) {
--		framebuffer_release(info);
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto error_fb_release;
- 	}
- 	info->apertures->ranges[0].base = info->fix.smem_start;
- 	info->apertures->ranges[0].size = info->fix.smem_len;
-@@ -231,8 +231,8 @@ static int simplefb_probe(struct platform_device *pdev)
- 	info->screen_base = ioremap_wc(info->fix.smem_start,
- 				       info->fix.smem_len);
- 	if (!info->screen_base) {
--		framebuffer_release(info);
--		return -ENODEV;
-+		ret = -ENODEV;
-+		goto error_fb_release;
- 	}
- 	info->pseudo_palette = par->palette;
- 
-@@ -247,14 +247,20 @@ static int simplefb_probe(struct platform_device *pdev)
- 	ret = register_framebuffer(info);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
--		iounmap(info->screen_base);
--		framebuffer_release(info);
--		return ret;
-+		goto error_unmap;
- 	}
- 
- 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
- 
- 	return 0;
-+
-+ error_unmap:
-+	iounmap(info->screen_base);
-+
-+ error_fb_release:
-+	framebuffer_release(info);
-+
-+	return ret;
- }
- 
- static int simplefb_remove(struct platform_device *pdev)
+ drivers/video/fbdev/controlfb.c   | 15 ++++++++++-----
+ drivers/video/fbdev/cyber2000fb.c | 16 ++++++++--------
+ drivers/video/fbdev/pxafb.c       | 20 ++++++++++----------
+ drivers/video/fbdev/sa1100fb.c    | 18 ++++++++++++------
+ drivers/video/fbdev/stifb.c       |  4 ++--
+ drivers/video/fbdev/valkyriefb.c  | 12 ++++++++----
+ 6 files changed, 50 insertions(+), 35 deletions(-)
+
 -- 
 2.1.0
 

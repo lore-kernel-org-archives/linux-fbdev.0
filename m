@@ -1,49 +1,74 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 16 Sep 2014 10:04:22 +0000
-Subject: [PATCH v5 08/15] OMAPDSS: Kconfig: Remove HDMI audio booleans from Kconfig
-Message-Id: <368338029236c13764737a77f0a125ad2f77e17b.1410860765.git.jsarha@ti.com>
+From: Fabian Frederick <fabf@skynet.be>
+Date: Wed, 17 Sep 2014 19:00:16 +0000
+Subject: [PATCH 3/6] video: fbdev: controlfb.c: use container_of to resolve fb_info_control from fb_info
+Message-Id: <1410980419-5326-4-git-send-email-fabf@skynet.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1410860765.git.jsarha@ti.com>
-In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
+References: <1410980419-5326-1-git-send-email-fabf@skynet.be>
+In-Reply-To: <1410980419-5326-1-git-send-email-fabf@skynet.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-kernel@vger.kernel.org
+Cc: daniel.vetter@intel.com, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-The booleans are not used anymore. Just select SND_OMAP_SOC_HDMI_AUDIO
-to enable OMAP HDMI audio support.
+Use container_of instead of casting first structure member.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Fabian Frederick <fabf@skynet.be>
 ---
- drivers/video/fbdev/omap2/dss/Kconfig |    7 -------
- 1 file changed, 7 deletions(-)
+PPC32 cross-compiled but untested.
 
-diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
-index 3d5eb6c..d1fa730 100644
---- a/drivers/video/fbdev/omap2/dss/Kconfig
-+++ b/drivers/video/fbdev/omap2/dss/Kconfig
-@@ -74,9 +74,6 @@ config OMAP4_DSS_HDMI
- 	help
- 	  HDMI support for OMAP4 based SoCs.
+ drivers/video/fbdev/controlfb.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index fdadef9..080fdd2 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -218,7 +218,8 @@ static int controlfb_check_var (struct fb_var_screeninfo *var, struct fb_info *i
+  */
+ static int controlfb_set_par (struct fb_info *info)
+ {
+-	struct fb_info_control *p = (struct fb_info_control *) info;
++	struct fb_info_control *p +		container_of(info, struct fb_info_control, info);
+ 	struct fb_par_control par;
+ 	int err;
  
--config OMAP4_DSS_HDMI_AUDIO
--	bool
--
- config OMAP5_DSS_HDMI
- 	bool "HDMI support for OMAP5"
- 	default n
-@@ -86,10 +83,6 @@ config OMAP5_DSS_HDMI
- 	  Definition Multimedia Interface. See http://www.hdmi.org/ for HDMI
- 	  specification.
+@@ -258,7 +259,8 @@ static int controlfb_pan_display(struct fb_var_screeninfo *var,
+ 				 struct fb_info *info)
+ {
+ 	unsigned int xoffset, hstep;
+-	struct fb_info_control *p = (struct fb_info_control *)info;
++	struct fb_info_control *p +		container_of(info, struct fb_info_control, info);
+ 	struct fb_par_control *par = &p->par;
  
--config OMAP5_DSS_HDMI_AUDIO
--	depends on OMAP5_DSS_HDMI
--	bool
--
- config OMAP2_DSS_SDI
- 	bool "SDI support"
-         default n
+ 	/*
+@@ -309,7 +311,8 @@ static int controlfb_mmap(struct fb_info *info,
+ 
+ static int controlfb_blank(int blank_mode, struct fb_info *info)
+ {
+-	struct fb_info_control *p = (struct fb_info_control *) info;
++	struct fb_info_control *p +		container_of(info, struct fb_info_control, info);
+ 	unsigned ctrl;
+ 
+ 	ctrl = ld_le32(CNTRL_REG(p,ctrl));
+@@ -342,7 +345,8 @@ static int controlfb_blank(int blank_mode, struct fb_info *info)
+ static int controlfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 			     u_int transp, struct fb_info *info)
+ {
+-	struct fb_info_control *p = (struct fb_info_control *) info;
++	struct fb_info_control *p +		container_of(info, struct fb_info_control, info);
+ 	__u8 r, g, b;
+ 
+ 	if (regno > 255)
+@@ -833,7 +837,8 @@ static int control_var_to_par(struct fb_var_screeninfo *var,
+ 	unsigned hperiod, hssync, hsblank, hesync, heblank, piped, heq, hlfln,
+ 		 hserr, vperiod, vssync, vesync, veblank, vsblank, vswin, vewin;
+ 	unsigned long pixclock;
+-	struct fb_info_control *p = (struct fb_info_control *) fb_info;
++	struct fb_info_control *p +		container_of(fb_info, struct fb_info_control, info);
+ 	struct control_regvals *r = &par->regvals;
+ 
+ 	switch (var->bits_per_pixel) {
 -- 
-1.7.9.5
+2.1.0
 

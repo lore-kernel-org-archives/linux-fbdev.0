@@ -1,182 +1,65 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 16 Sep 2014 10:04:16 +0000
-Subject: [PATCH v5 02/15] OMAPDSS: hdmi: Remove most of OMAP[45]_DSS_HDMI_AUDIO ifdefs
-Message-Id: <ebbea42832a5daa91fe759830997e84453af2133.1410860765.git.jsarha@ti.com>
+From: Fabian Frederick <fabf@skynet.be>
+Date: Wed, 17 Sep 2014 19:00:19 +0000
+Subject: [PATCH 6/6] video: fbdev: valkyriefb.c: use container_of to resolve fb_info_valkyrie from fb_info
+Message-Id: <1410980419-5326-7-git-send-email-fabf@skynet.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1410860765.git.jsarha@ti.com>
-In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
+References: <1410980419-5326-1-git-send-email-fabf@skynet.be>
+In-Reply-To: <1410980419-5326-1-git-send-email-fabf@skynet.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-kernel@vger.kernel.org
+Cc: daniel.vetter@intel.com, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-It does not waste too many bytes to compile all audio related core
-functions always in with HDMI support. It should help readability and
-in keeping the audio code in working shape. Leave the options just for
-disabling and enabling the functionality in hdmi[45].c.
+Use container_of instead of casting first structure member.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Fabian Frederick <fabf@skynet.be>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h        |    3 +--
- drivers/video/fbdev/omap2/dss/hdmi4_core.c  |    5 -----
- drivers/video/fbdev/omap2/dss/hdmi4_core.h  |    2 --
- drivers/video/fbdev/omap2/dss/hdmi5_core.c  |    6 ------
- drivers/video/fbdev/omap2/dss/hdmi5_core.h  |    2 --
- drivers/video/fbdev/omap2/dss/hdmi_common.c |    2 --
- drivers/video/fbdev/omap2/dss/hdmi_wp.c     |    2 --
- 7 files changed, 1 insertion(+), 21 deletions(-)
+PPC32 cross-compiled but untested.
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 1f01068..03726b5 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -335,7 +335,7 @@ int hdmi_phy_parse_lanes(struct hdmi_phy_data *phy, const u32 *lanes);
- int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
- 	struct hdmi_phy_data *phy);
- 
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
-+/* Audio funcs */
- int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts);
- int hdmi_wp_audio_enable(struct hdmi_wp_data *wp, bool enable);
- int hdmi_wp_audio_core_req_enable(struct hdmi_wp_data *wp, bool enable);
-@@ -348,4 +348,3 @@ static inline bool hdmi_mode_has_audio(int mode)
- 	return mode = HDMI_HDMI ? true : false;
- }
- #endif
--#endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-index 4ad39cf..3b448d9 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-@@ -31,10 +31,8 @@
- #include <linux/platform_device.h>
- #include <linux/string.h>
- #include <linux/seq_file.h>
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
- #include <sound/asound.h>
- #include <sound/asoundef.h>
--#endif
- 
- #include "hdmi4_core.h"
- #include "dss_features.h"
-@@ -530,7 +528,6 @@ void hdmi4_core_dump(struct hdmi_core_data *core, struct seq_file *s)
- 	DUMPCOREAV(HDMI_CORE_AV_CEC_ADDR_ID);
- }
- 
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
- static void hdmi_core_audio_config(struct hdmi_core_data *core,
- 					struct hdmi_core_audio_config *cfg)
+ drivers/video/fbdev/valkyriefb.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index 97cb9bd..9c98945 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -136,7 +136,8 @@ static struct fb_ops valkyriefb_ops = {
+ /* Sets the video mode according to info->var */
+ static int valkyriefb_set_par(struct fb_info *info)
  {
-@@ -886,8 +883,6 @@ int hdmi4_audio_get_dma_port(u32 *offset, u32 *size)
- 	return 0;
- }
- 
--#endif
--
- int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+-	struct fb_info_valkyrie *p = (struct fb_info_valkyrie *) info;
++	struct fb_info_valkyrie *p +		container_of(info, struct fb_info_valkyrie, info);
+ 	volatile struct valkyrie_regs __iomem *valkyrie_regs = p->valkyrie_regs;
+ 	struct fb_par_valkyrie *par = info->par;
+ 	struct valkyrie_regvals	*init;
+@@ -194,7 +195,8 @@ valkyriefb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+  */
+ static int valkyriefb_blank(int blank_mode, struct fb_info *info)
  {
- 	struct resource *res;
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.h b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-index 827909e..c1959f7 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-@@ -266,12 +266,10 @@ void hdmi4_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- void hdmi4_core_dump(struct hdmi_core_data *core, struct seq_file *s);
- int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core);
+-	struct fb_info_valkyrie *p = (struct fb_info_valkyrie *) info;
++	struct fb_info_valkyrie *p +		container_of(info, struct fb_info_valkyrie, info);
+ 	struct fb_par_valkyrie *par = info->par;
+ 	struct valkyrie_regvals	*init = par->init;
  
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
- int hdmi4_audio_start(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
- void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
- int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 		struct omap_dss_audio *audio, u32 pclk);
- int hdmi4_audio_get_dma_port(u32 *offset, u32 *size);
--#endif
- 
- #endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-index 83acbf7..8eab25b 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-@@ -30,10 +30,8 @@
- #include <linux/string.h>
- #include <linux/seq_file.h>
- #include <drm/drm_edid.h>
--#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
- #include <sound/asound.h>
- #include <sound/asoundef.h>
--#endif
- 
- #include "hdmi5_core.h"
- 
-@@ -644,9 +642,6 @@ void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 	hdmi_core_enable_interrupts(core);
- }
- 
--
--#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
--
- static void hdmi5_core_audio_config(struct hdmi_core_data *core,
- 			struct hdmi_core_audio_config *cfg)
+@@ -226,7 +228,8 @@ static int valkyriefb_blank(int blank_mode, struct fb_info *info)
+ static int valkyriefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 			     u_int transp, struct fb_info *info)
  {
-@@ -894,7 +889,6 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+-	struct fb_info_valkyrie *p = (struct fb_info_valkyrie *) info;
++	struct fb_info_valkyrie *p +		container_of(info, struct fb_info_valkyrie, info);
+ 	volatile struct cmap_regs __iomem *cmap_regs = p->cmap_regs;
+ 	struct fb_par_valkyrie *par = info->par;
  
- 	return 0;
- }
--#endif
- 
- int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+@@ -465,7 +468,8 @@ static int valkyrie_var_to_par(struct fb_var_screeninfo *var,
  {
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.h b/drivers/video/fbdev/omap2/dss/hdmi5_core.h
-index ce7e9f3..f2f1022 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5_core.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.h
-@@ -299,8 +299,6 @@ void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 			struct hdmi_config *cfg);
- int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core);
+ 	int vmode, cmode;
+ 	struct valkyrie_regvals *init;
+-	struct fb_info_valkyrie *p = (struct fb_info_valkyrie *) fb_info;
++	struct fb_info_valkyrie *p +		container_of(fb_info, struct fb_info_valkyrie, info);
  
--#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
- int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 			struct omap_dss_audio *audio, u32 pclk);
- #endif
--#endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_common.c b/drivers/video/fbdev/omap2/dss/hdmi_common.c
-index 7d5f103..1b8fcc6 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_common.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_common.c
-@@ -48,7 +48,6 @@ int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
- 	return 0;
- }
- 
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
- int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts)
- {
- 	u32 deep_color;
-@@ -147,4 +146,3 @@ int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts)
- 
- 	return 0;
- }
--#endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-index 496327e..f1b53de 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-@@ -185,7 +185,6 @@ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
- 	timings->interlace = param->timings.interlace;
- }
- 
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
- void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
- 		struct hdmi_audio_format *aud_fmt)
- {
-@@ -236,7 +235,6 @@ int hdmi_wp_audio_core_req_enable(struct hdmi_wp_data *wp, bool enable)
- 
- 	return 0;
- }
--#endif
- 
- int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
- {
+ 	if (mac_var_to_vmode(var, &vmode, &cmode) != 0) {
+ 		printk(KERN_ERR "valkyriefb: can't do %dx%dx%d.\n",
 -- 
-1.7.9.5
+2.1.0
 

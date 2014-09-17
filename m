@@ -1,134 +1,100 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Sep 2014 10:54:58 +0000
-Subject: Re: [RFC] fbdev: mxsfb: Add support for mx6sl and mx6sx
-Message-Id: <542A8C02.4060305@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="coTSmNIkDfSUjFao8ODXFFABNjki4J90M"
+From: Fabian Frederick <fabf@skynet.be>
+Date: Wed, 17 Sep 2014 19:00:17 +0000
+Subject: [PATCH 4/6] video: fbdev: cyber2000fb.c: use container_of to resolve cfb_info from fb_info
+Message-Id: <1410980419-5326-5-git-send-email-fabf@skynet.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <1410980419-5326-1-git-send-email-fabf@skynet.be>
+In-Reply-To: <1410980419-5326-1-git-send-email-fabf@skynet.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---coTSmNIkDfSUjFao8ODXFFABNjki4J90M
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Use container_of instead of casting first structure member.
 
-On 19/08/14 21:23, Fabio Estevam wrote:
-> mx6sl and mx6sx share the same LCD controller as mx23 and mx28.
->=20
-> Add support for it.
->=20
-> The basic difference is the number of clocks that are required:
->=20
-> - mx23/mx28: only one clock
-> - mx6sl: two clocks
-> - mx6sx: three clocks
->=20
-> Tested on a mx28evk and mx6slevk.
->=20
-> Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
-> ---
-> I am sending it as RFC because the scrolling is showing some artifacts =
-when
-> I boot with console=3Dtty0. The kernel messages are displayed correctly=
-, but when
-> it scrolls I see some garbage.
+Signed-off-by: Fabian Frederick <fabf@skynet.be>
+---
+Compiled but untested.
 
-Is the garbage on the framebuffer memory? If so, I don't think this
-patch can cause it.
+ drivers/video/fbdev/cyber2000fb.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-> Appreciate any comment/suggestion to improve this.
->=20
->  drivers/video/fbdev/Kconfig |  2 +-
->  drivers/video/fbdev/mxsfb.c | 47 +++++++++++++++++++++++++++++++++++++=
-++++++++
->  2 files changed, 48 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> index e911b9c..fd28987 100644
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -2420,7 +2420,7 @@ config FB_JZ4740
-> =20
->  config FB_MXS
->  	tristate "MXS LCD framebuffer support"
-> -	depends on FB && ARCH_MXS
-> +	depends on FB && (ARCH_MXS || ARCH_MXC)
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
-> index accf48a2..a567cc6 100644
-> --- a/drivers/video/fbdev/mxsfb.c
-> +++ b/drivers/video/fbdev/mxsfb.c
-> @@ -172,6 +172,10 @@ struct mxsfb_info {
->  	struct fb_info fb_info;
->  	struct platform_device *pdev;
->  	struct clk *clk;
-> +	struct clk *clk_axi;
-> +	struct clk *clk_disp_axi;
-> +	bool clk_axi_enabled;
-> +	bool clk_disp_axi_enabled;
->  	void __iomem *base;	/* registers */
->  	unsigned allocated_size;
->  	int enabled;
-> @@ -185,6 +189,42 @@ struct mxsfb_info {
->  #define mxsfb_is_v3(host) (host->devdata->ipversion =3D=3D 3)
->  #define mxsfb_is_v4(host) (host->devdata->ipversion =3D=3D 4)
-> =20
-> +/* Enable lcdif axi clock */
-> +static inline void clk_enable_axi(struct mxsfb_info *host)
-> +{
-> +	if (!host->clk_axi_enabled && (!IS_ERR(host->clk_axi))) {
-> +		clk_prepare_enable(host->clk_axi);
-> +		host->clk_axi_enabled =3D true;
-> +	}
-> +}
-> +
-> +/* Disable lcdif axi clock */
-> +static inline void clk_disable_axi(struct mxsfb_info *host)
-> +{
-> +	if (host->clk_axi_enabled && (!IS_ERR(host->clk_axi))) {
-> +		clk_disable_unprepare(host->clk_axi);
-> +		host->clk_axi_enabled =3D false;
-> +	}
+diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
+index b0a950f..99acf53 100644
+--- a/drivers/video/fbdev/cyber2000fb.c
++++ b/drivers/video/fbdev/cyber2000fb.c
+@@ -159,7 +159,7 @@ cyber2000_seqw(unsigned int reg, unsigned int val, struct cfb_info *cfb)
+ static void
+ cyber2000fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ {
+-	struct cfb_info *cfb = (struct cfb_info *)info;
++	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
+ 	unsigned long dst, col;
+ 
+ 	if (!(cfb->fb.var.accel_flags & FB_ACCELF_TEXT)) {
+@@ -191,7 +191,7 @@ cyber2000fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ static void
+ cyber2000fb_copyarea(struct fb_info *info, const struct fb_copyarea *region)
+ {
+-	struct cfb_info *cfb = (struct cfb_info *)info;
++	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
+ 	unsigned int cmd = CO_CMD_L_PATTERN_FGCOL;
+ 	unsigned long src, dst;
+ 
+@@ -241,7 +241,7 @@ cyber2000fb_imageblit(struct fb_info *info, const struct fb_image *image)
+ 
+ static int cyber2000fb_sync(struct fb_info *info)
+ {
+-	struct cfb_info *cfb = (struct cfb_info *)info;
++	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
+ 	int count = 100000;
+ 
+ 	if (!(cfb->fb.var.accel_flags & FB_ACCELF_TEXT))
+@@ -276,7 +276,7 @@ static int
+ cyber2000fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 		      u_int transp, struct fb_info *info)
+ {
+-	struct cfb_info *cfb = (struct cfb_info *)info;
++	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
+ 	struct fb_var_screeninfo *var = &cfb->fb.var;
+ 	u32 pseudo_val;
+ 	int ret = 1;
+@@ -758,7 +758,7 @@ cyber2000fb_decode_clock(struct par_info *hw, struct cfb_info *cfb,
+ static int
+ cyber2000fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+-	struct cfb_info *cfb = (struct cfb_info *)info;
++	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
+ 	struct par_info hw;
+ 	unsigned int mem;
+ 	int err;
+@@ -861,7 +861,7 @@ cyber2000fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 
+ static int cyber2000fb_set_par(struct fb_info *info)
+ {
+-	struct cfb_info *cfb = (struct cfb_info *)info;
++	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
+ 	struct fb_var_screeninfo *var = &cfb->fb.var;
+ 	struct par_info hw;
+ 	unsigned int mem;
+@@ -971,7 +971,7 @@ static int cyber2000fb_set_par(struct fb_info *info)
+ static int
+ cyber2000fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+-	struct cfb_info *cfb = (struct cfb_info *)info;
++	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
+ 
+ 	if (cyber2000fb_update_start(cfb, var))
+ 		return -EINVAL;
+@@ -1007,7 +1007,7 @@ cyber2000fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+  */
+ static int cyber2000fb_blank(int blank, struct fb_info *info)
+ {
+-	struct cfb_info *cfb = (struct cfb_info *)info;
++	struct cfb_info *cfb = container_of(info, struct cfb_info, fb);
+ 	unsigned int sync = 0;
+ 	int i;
+ 
+-- 
+2.1.0
 
-I think you could do the IS_ERR(clk_axi) check when getting the clock,
-and if there's an error, do host->clk_axi =3D NULL. Then above you can do=
-
-just:
-
-if (host->clk_axi)
-	clk_disable_unprepare(host->clk_axi);
-
-And no need to clk_axi_enabled. And probably the helper functions can be
-left out and have the code inline.
-
-And similarly for clk_disp_axi, of course.
-
- Tomi
-
-
-
---coTSmNIkDfSUjFao8ODXFFABNjki4J90M
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUKowCAAoJEPo9qoy8lh71emYP/iu81fXZbj4weyZmjejE7Fx1
-pkSW+PM82RdtuurRTBRiKM9psqmX/rQ/DKx2bYRsfarhWJ4Mtoys7iIULeRcEtT9
-Cy3IfNv8V2MbW1dVNc6CKIGarsOycfMpQIjNEc11zM9/cCzIOqx6QtDIyA8wce/L
-ibkx/czq0FuHDrI3M/b1xNQak14Fix159AV8/nkI8wCZrjHltHJeK24Kd0xySEmF
-P/IIy2WAL/AcwvzxW+VYakO5FLCIuzIQ8RQV+/oJ5YAA9BP/WbsykTcrCQ/XAQH8
-fRJ/6+91Sw53BZD89enVYKo7+hBAu6U5fxskcA84OVLhzW8TFtr3IjflefPJMFrW
-xJwxOuVFLwwUbdYzxDoy/+hKizENyqOTdsrm3Vw0JntR+CYy8bt6qk/yUU6WlOwI
-JtrA+0jePLRNNsU2OzpeB8kacg4eFf+OPgh/3sY/qRM+bPN5NpflSswc9bLc06MF
-oL7T/PT89Wlq+324gCBIGSNQDJ8C3caEOvyjKLx+8YiECKp9M6tiGyhMzdRr+rpW
-KuloSR8dV14LNBuXQIFPnconarwqpdmysgL2ee/rzBaGIFY0cslyjeU5XO4qqcnO
-RkgTqEPeQ0//+C6Bqk/pnjzUzVXwO3IHEE3L15z0DVa5xuma5oFZwGGbEEITMB0r
-VQxpq5lVtisPsItRV2Rv
-=zfXf
------END PGP SIGNATURE-----
-
---coTSmNIkDfSUjFao8ODXFFABNjki4J90M--

@@ -1,72 +1,42 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Sep 2014 10:41:14 +0000
-Subject: Re: [PATCH] framebuffer: fix border color
-Message-Id: <542A88CA.2000404@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="iodI1qUHwJBKaweKlUwkEDaQNqlnAM950"
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 25 Sep 2014 09:32:45 +0000
+Subject: Re: [PATCH] drm/exynos/fbdev: set smem_len for fbdev
+Message-Id: <CAMuHMdUoh6+gDcZty76HJhcQcJvM5DyBiD4YrZGuAX9e+F32-w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LRH.2.02.1409161238560.3150@file01.intranet.prod.int.rdu2.redhat.com>
-In-Reply-To: <alpine.LRH.2.02.1409161238560.3150@file01.intranet.prod.int.rdu2.redhat.com>
-To: Mikulas Patocka <mpatocka@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1408891857-14258-1-git-send-email-djkurtz@chromium.org>
+In-Reply-To: <1408891857-14258-1-git-send-email-djkurtz@chromium.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Daniel Kurtz <djkurtz@chromium.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, DRI Development <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?UTF-8?Q?G=C3=BCnther_Noack?= <me@guenthernoack.de>
 
---iodI1qUHwJBKaweKlUwkEDaQNqlnAM950
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+On Sun, Aug 24, 2014 at 4:50 PM, Daniel Kurtz <djkurtz@chromium.org> wrote:
+> Commit [0] stopped setting fix.smem_start and fix.smem_len when creating
+> the fbdev.
+>
+> [0] 2f1eab8d8ab59e799f7d51d62410b398607a7bc3
+>   drm/exynos/fbdev: don't set fix.smem/mmio_{start,len}
+>
+> However, smem_len is used by some userland applications to calculate the
+> size for mmap.  In particular, it is used by xf86-video-fbdev:
+>
+> http://cgit.freedesktop.org/xorg/xserver/tree/hw/xfree86/fbdevhw/fbdevhw.c?id=xorg-server-1.15.99.903#n571
+>
+> So, let's restore setting the smem_len to unbreak things for these users.
+>
+> Note: we are still leaving smem_start set to 0.
 
-On 16/09/14 19:40, Mikulas Patocka wrote:
-> The framebuffer code uses the current background color to fill the bord=
-er
-> when switching consoles, however, this results in inconsistent behavior=
-=2E
-> For example:
-> - start Midnigh Commander
-> - the border is black
-> - switch to another console and switch back
-> - the border is cyan
-> - type something into the command line in mc
-> - the border is cyan
-> - switch to another console and switch back
-> - the border is black
-> - press F9 to go to menu
-> - the border is black
-> - switch to another console and switch back
-> - the border is dark blue
->=20
-> When switching to a console with Midnight Commander, the border is rand=
-om
-> color that was left selected by the slang subsystem.
->=20
-> This patch fixes this inconsistency by always using black as the
-> background color when switching consoles.
+Doesn't this cause a system crash when userspace (e.g. fbtest) writes into
+the mmap()ed /dev/fb*, as the wrong MMIO region is mapped?
 
-Thanks, queued for 3.18.
+Gr{oetje,eeting}s,
 
- Tomi
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
---iodI1qUHwJBKaweKlUwkEDaQNqlnAM950
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUKojKAAoJEPo9qoy8lh71kHUQAJaFXD1A9yVJUDVuUwnB9iar
-Ct6OtOwsJ0Yb9eKXhL82FXLPD1tBL6KCDCghyM86e3QgOPQwHeYfcSWm1GoV9J5D
-6g90p6fNX6vwG0P8nS/S3M2jhjQEuctA3TLjKnd2wVqkRdAvShwUplmNmXVvZlnp
-hyr0wPH0r7pWd0nFNyD9cDKXz9vrcOitRFrlgnPPPgmgZHbD7M0bwgEWjlWkfB/w
-QVG213osh77oRfBVmP+UPHwnr9R8x/4YxEZauJmGsANi8+95srZ5J+TYBzUofISp
-IavYpmAc2ZJuyCJhEmIG+ONEoXJ2WwXecsxoH72rEACd4AlWGBN43T2472+Epent
-phLtNBVfFBEbdi/32k3ft1vt2HbHsJ7Y9Una7p2EeVee9eFa4hNibgg8kZr5LUOy
-U7aydSy47II8QuqUM60V5/jRUqL1n+Nq9R442dAQ5rMuBj/RhFsXY/wW27sEG+kt
-bT8uHzvGlhtZobl0B40nu9DcfqmXwRO6NwuulrrUQPmErVkX7AN9kzgzCckInOlf
-ofgqpSBmHIc8Jakj2lF6/SPHjnFC9fkV6GQ3WMjDqAYHkXybHwxIQq9cu546Mz+r
-JSouwuOwZnPAJjHi2gKM7u2btiy1fdgXtakYdV8tSRK4QcSrf684Msq1irDfNKiU
-3fk6VEi7GCAhQH0Gmt/v
-=b4sk
------END PGP SIGNATURE-----
-
---iodI1qUHwJBKaweKlUwkEDaQNqlnAM950--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

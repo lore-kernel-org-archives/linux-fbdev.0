@@ -1,59 +1,60 @@
-From: Behan Webster <behanw@converseincode.com>
-Date: Sat, 27 Sep 2014 01:10:53 +0000
-Subject: [PATCH 2/2] arm, fbdev, omap2, LLVMLinux: Remove nested function from omapfb
-Message-Id: <1411780253-4492-3-git-send-email-behanw@converseincode.com>
+From: Felipe Balbi <balbi@ti.com>
+Date: Sat, 27 Sep 2014 16:46:46 +0000
+Subject: Re: [PATCH 2/2] arm, fbdev, omap2, LLVMLinux: Remove nested function from omapfb
+Message-Id: <20140927164639.GB7076@saruman>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="HWvPVVuAAfuRc6SZ"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1411780253-4492-1-git-send-email-behanw@converseincode.com>
-In-Reply-To: <1411780253-4492-1-git-send-email-behanw@converseincode.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: behanw@converseincode.com, archit@ti.com, daniel.vetter@ffwll.ch, geert@linux-m68k.org, laurent.pinchart@ideasonboard.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, robdclark@gmail.com, Arnd Bergmann <arnd@arndb.de>
+ <1411780253-4492-3-git-send-email-behanw@converseincode.com>
+In-Reply-To: <1411780253-4492-3-git-send-email-behanw@converseincode.com>
+To: Behan Webster <behanw@converseincode.com>
+Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, daniel.vetter@ffwll.ch, geert@linux-m68k.org, laurent.pinchart@ideasonboard.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, robdclark@gmail.com, Arnd Bergmann <arnd@arndb.de>
 
-Replace the use of nested functions where a normal function will suffice.
+--HWvPVVuAAfuRc6SZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Nested functions are not liked by upstream kernel developers in general. Their
-use breaks the use of clang as a compiler, and doesn't make the code any
-better.
+On Fri, Sep 26, 2014 at 06:10:53PM -0700, Behan Webster wrote:
+> Replace the use of nested functions where a normal function will suffice.
+>=20
+> Nested functions are not liked by upstream kernel developers in general. =
+Their
+> use breaks the use of clang as a compiler, and doesn't make the code any
+> better.
+>=20
+> This code now works for both gcc and clang.
+>=20
+> Signed-off-by: Behan Webster <behanw@converseincode.com>
+> Suggested-by: Arnd Bergmann <arnd@arndb.de>
+> Cc: Arnd Bergmann <arnd@arndb.de>
 
-This code now works for both gcc and clang.
+Reviewed-by: Felipe Balbi <balbi@ti.com>
 
-Signed-off-by: Behan Webster <behanw@converseincode.com>
-Suggested-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Arnd Bergmann <arnd@arndb.de>
----
- drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+--=20
+balbi
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-index ec2d132..1587243 100644
---- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-@@ -273,16 +273,16 @@ static struct omapfb_colormode omapfb_colormodes[] = {
- 	},
- };
- 
-+static bool cmp_component(struct fb_bitfield *f1, struct fb_bitfield *f2)
-+{
-+	return f1->length = f2->length &&
-+		f1->offset = f2->offset &&
-+		f1->msb_right = f2->msb_right;
-+}
-+
- static bool cmp_var_to_colormode(struct fb_var_screeninfo *var,
- 		struct omapfb_colormode *color)
- {
--	bool cmp_component(struct fb_bitfield *f1, struct fb_bitfield *f2)
--	{
--		return f1->length = f2->length &&
--			f1->offset = f2->offset &&
--			f1->msb_right = f2->msb_right;
--	}
--
- 	if (var->bits_per_pixel = 0 ||
- 			var->red.length = 0 ||
- 			var->blue.length = 0 ||
--- 
-1.9.1
+--HWvPVVuAAfuRc6SZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUJun2AAoJEIaOsuA1yqREZOsP/jkvwOXOIAl1Y076UospTf4u
+M8DeRHJx8MLor1oPixp0BPxLxLJI+PnLHjn2c0v+shrvgkjbw07UQlJ3F7NSO1q3
+Ehhbe0EBKnQDRfvxN5YkA5MJs1a1w/V8MPokKMo/525y9yaaVoD87fgKNNA3uz1c
+aUU0bYyLUxeviQ1YSzEzfOeodrDksSNeKqsqgbQIZyl8s1aw2/d2Ek/88u92DTNp
+WGM3wAt0c+XYHucUG5YJwBV5kF3C4UVWTN9pjPE5jhEwkWEBnprmg4iFkeABRleo
+2qjHJrby2TClpBCCPGfwNxgZjdaHXAkLqoZsVy51PK1ztSWscxcbDsvcjj/Rtp3d
+utWsBoS18U9RAtjaYa0nz7SYDRB6XgVeKPJ9EARTosj2Afw10Nc6saVIgXqwgLyP
+80+L9pcwCW4n8KVKhpROUf1E/vhNWTtlVI/7KsB5G2XZCPiNmWOfWwm7Bog7XxST
+myKIe+W9MtRx3fw2Yk+dEBhwLZAWna1aRbmebs3tjhj763fPnrkDJU1h1cgsvZO/
+O265yKDHUmxTWRmIquBvVuglL5iAYNKHNVemjcT5XenX+hz4JuPKR27xehyFlfup
+O0p2jpIJTRYnwJmH93PRsw3cu7N9h8pHn96bJxU3+AUoO+N+pSxszz1vvhn4IZS3
+C0Ew/UoZe/tPOeRRDGkR
+=cC3G
+-----END PGP SIGNATURE-----
+
+--HWvPVVuAAfuRc6SZ--

@@ -1,73 +1,59 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Sep 2014 10:01:00 +0000
-Subject: Re: [PATCH] video: fbdev: sis: sis_main.c:  Cleaning up missing null-terminate in conjunction with s
-Message-Id: <542A7F5C.8030200@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="h5Op2XSvhKoobEP3hkRgQmlFPsi9f1QFH"
+From: Behan Webster <behanw@converseincode.com>
+Date: Sat, 27 Sep 2014 01:10:53 +0000
+Subject: [PATCH 2/2] arm, fbdev, omap2, LLVMLinux: Remove nested function from omapfb
+Message-Id: <1411780253-4492-3-git-send-email-behanw@converseincode.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1410716148-16243-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1410716148-16243-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Thomas Winischhofer <thomas@winischhofer.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1411780253-4492-1-git-send-email-behanw@converseincode.com>
+In-Reply-To: <1411780253-4492-1-git-send-email-behanw@converseincode.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: behanw@converseincode.com, archit@ti.com, daniel.vetter@ffwll.ch, geert@linux-m68k.org, laurent.pinchart@ideasonboard.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, robdclark@gmail.com, Arnd Bergmann <arnd@arndb.de>
 
---h5Op2XSvhKoobEP3hkRgQmlFPsi9f1QFH
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Replace the use of nested functions where a normal function will suffice.
 
-On 14/09/14 20:35, Rickard Strandqvist wrote:
-> Replacing strncpy with strlcpy to avoid strings that lacks null termina=
-te.
->=20
-> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital=
-=2Ese>
-> ---
->  drivers/video/fbdev/sis/sis_main.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/s=
-is/sis_main.c
-> index 3f12a2d..1f4c216 100644
-> --- a/drivers/video/fbdev/sis/sis_main.c
-> +++ b/drivers/video/fbdev/sis/sis_main.c
-> @@ -5830,7 +5830,7 @@ static int sisfb_probe(struct pci_dev *pdev, cons=
-t struct pci_device_id *ent)
->  			ivideo->cardnumber++;
->  	}
-> =20
-> -	strncpy(ivideo->myid, chipinfo->chip_name, 30);
-> +	strlcpy(ivideo->myid, chipinfo->chip_name, sizeof(ivideo->myid));
-> =20
->  	ivideo->warncount =3D 0;
->  	ivideo->chip_id =3D pdev->device;
->=20
+Nested functions are not liked by upstream kernel developers in general. Their
+use breaks the use of clang as a compiler, and doesn't make the code any
+better.
 
-Thanks, queued for 3.18.
+This code now works for both gcc and clang.
 
- Tomi
+Signed-off-by: Behan Webster <behanw@converseincode.com>
+Suggested-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index ec2d132..1587243 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -273,16 +273,16 @@ static struct omapfb_colormode omapfb_colormodes[] = {
+ 	},
+ };
+ 
++static bool cmp_component(struct fb_bitfield *f1, struct fb_bitfield *f2)
++{
++	return f1->length = f2->length &&
++		f1->offset = f2->offset &&
++		f1->msb_right = f2->msb_right;
++}
++
+ static bool cmp_var_to_colormode(struct fb_var_screeninfo *var,
+ 		struct omapfb_colormode *color)
+ {
+-	bool cmp_component(struct fb_bitfield *f1, struct fb_bitfield *f2)
+-	{
+-		return f1->length = f2->length &&
+-			f1->offset = f2->offset &&
+-			f1->msb_right = f2->msb_right;
+-	}
+-
+ 	if (var->bits_per_pixel = 0 ||
+ 			var->red.length = 0 ||
+ 			var->blue.length = 0 ||
+-- 
+1.9.1
 
-
---h5Op2XSvhKoobEP3hkRgQmlFPsi9f1QFH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUKn9cAAoJEPo9qoy8lh71m6cQAK4+zzcHnKTdSCQXfVjryIZf
-b2P8A26pdQQkzJXDhiUG8XzKLYrRYIoxons/L7SaY/upep5RaDpMfqL/rjMyhVbJ
-kydxmqrMVXDzIjK8UVisH7MNrYP5xcIYCiEKU5Hr0mHvYpDiPGXerfoJCEX4oZmn
-cGwVO/ohv8bF+OV4hbJVgkbE2jSsHb9YGcLm06Pkl1myHNy+qVMBCu1nt7q+05RP
-Na05zxgJFbw77sWoRF0+vQikABErqBv4sJ7wY2y4oeCUvAQS6Un/r6QAtBUXmfgX
-UMgMUmfw9krfeAvBhZrt4RqRYCl6edB5AdJo057s+N3/GQNZZyMv3kEaTh7PFumy
-pvKGGfh+IOf3LQKUS44of0LsAvgg/GjrAkkE5uPSQ2M55bcJvSjpJBrCLuNQAZER
-26gFBVWCoNk/lg/y17NJnGshdD9M6xuo1Dyqmy+BGuFuUHU4kkLRehTek7rG+AjY
-JoVcrEr/edjDUoOKQLaU7Kd6ScCVtET+RVQ9020olkVPv5VlSluB3hGk/XUvqEmV
-5jlBykZEGlvj8/IG1W/JniE96xLQcjRWSq6VlCRogVGwRQrN1tIBv7zL6K0fLovK
-6WN6GwH9tUIb8oOhgJRlYS5cvsiN/zqUdgX4Z1jHDdOlaBWu3P8H41MthZh/Q0mi
-O9tMSbbHX+cqhDR3p8Bx
-=wJD+
------END PGP SIGNATURE-----
-
---h5Op2XSvhKoobEP3hkRgQmlFPsi9f1QFH--

@@ -1,140 +1,177 @@
-From: Mike Turquette <mturquette@linaro.org>
-Date: Sat, 27 Sep 2014 23:56:01 +0000
-Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <20140927235601.19023.31593@quantum>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Sun, 28 Sep 2014 12:43:38 +0000
+Subject: [PATCH 4/4] simplefb: add clock handling code
+Message-Id: <1411908218-20947-4-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <53FCE704.4030103@redhat.com> <53FDB46C.5010609@redhat.com>
- <20140827125613.GF23186@ulmo> <53FDE0CE.5030807@redhat.com>
- <20140827141632.GB32243@ulmo> <53FF1D6C.6090205@redhat.com>
- <20140829070116.GC13106@ulmo> <20140829141244.GH15297@lukather>
- <20140829143812.GC31264@ulmo> <20140902092508.GR15297@lukather>
-In-Reply-To: <20140902092508.GR15297@lukather>
+References: <1411908218-20947-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1411908218-20947-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Quoting Maxime Ripard (2014-09-02 02:25:08)
-> On Fri, Aug 29, 2014 at 04:38:14PM +0200, Thierry Reding wrote:
-> > On Fri, Aug 29, 2014 at 04:12:44PM +0200, Maxime Ripard wrote:
-> > > On Fri, Aug 29, 2014 at 09:01:17AM +0200, Thierry Reding wrote:
-> > > > I would think the memory should still be reserved anyway to make sure
-> > > > nothing else is writing over it. And it's in the device tree anyway
-> > > > because the driver needs to know where to put framebuffer content. So
-> > > > the point I was trying to make is that we can't treat the memory in the
-> > > > same way as clocks because it needs to be explicitly managed. Whereas
-> > > > clocks don't. The driver is simply too generic to know what to do with
-> > > > the clocks.
-> > > 
-> > > You agreed on the fact that the only thing we need to do with the
-> > > clocks is claim them. Really, I don't find what's complicated there
-> > > (or not generic).
-> > 
-> > That's not what I agreed on. What I said is that the only thing we need
-> > to do with the clocks is nothing. They are already in the state that
-> > they need to be.
-> 
-> Claim was probably a poor choice of words, but still. We have to keep
-> the clock running, and both the solution you've been giving and this
-> patch do so in a generic way.
-> 
-> > > > It doesn't know what frequency they should be running at
-> > > 
-> > > We don't care about that. Just like we don't care about which
-> > > frequency is the memory bus running at. It will just run at whatever
-> > > frequency is appropriate.
-> > 
-> > Exactly. And you shouldn't have to care about them at all. Firmware has
-> > already configured the clocks to run at the correct frequencies, and it
-> > has made sure that they are enabled.
-> > 
-> > > > or what they're used for
-> > > 
-> > > And we don't care about that either. You're not interested in what
-> > > output the framebuffer is setup to use, which is pretty much the same
-> > > here, this is the same thing here.
-> > 
-> > That's precisely what I've been saying. The only thing that simplefb
-> > cares about is the memory it should be using and the format of the
-> > pixels (and how many of them) it writes into that memory. Everything
-> > else is assumed to have been set up.
-> > 
-> > Including clocks.
-> 
-> We're really discussing in circles here.
-> 
-> Mike?
-> 
+From: Luc Verhaegen <libv@skynet.be>
 
--EHIGHLATENCYRESPONSE
+This claims and enables clocks listed in the simple framebuffer dt node.
+This is needed so that the display engine, in case the required clocks
+are known by the kernel code and are described in the dt, will remain
+properly enabled.
 
-I forgot about this thread. Sorry.
+Signed-off-by: Luc Verhaegen <libv@skynet.be>
+[hdegoede@redhat.com: drop dev_err on kzalloc failure]
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/video/fbdev/simplefb.c | 100 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 98 insertions(+), 2 deletions(-)
 
-In an attempt to provide the least helpful answer possible, I will stay
-clear of all of the stuff relating to "how simple should simplefb be"
-and the related reserved memory discussion.
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index b7d5c08..f329cc1 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -26,6 +26,7 @@
+ #include <linux/module.h>
+ #include <linux/platform_data/simplefb.h>
+ #include <linux/platform_device.h>
++#include <linux/clk-provider.h>
+ 
+ static struct fb_fix_screeninfo simplefb_fix = {
+ 	.id		= "simple",
+@@ -165,8 +166,98 @@ static int simplefb_parse_pd(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
++/*
++ * Clock handling code.
++ *
++ * Here we handle the clocks property of our "simple-framebuffer" dt node.
++ * This is necessary so that we can make sure that any clocks needed by
++ * the display engine that the bootloader set up for us (and for which it
++ * provided a simplefb dt node), stay up, for the life of the simplefb
++ * driver.
++ *
++ * When the driver unloads, we cleanly disable, and then release the clocks.
++ */
++struct simplefb_clock {
++	struct list_head list;
++	struct clk *clock;
++};
++
++/*
++ * We only complain about errors here, no action is taken as the most likely
++ * error can only happen due to a mismatch between the bootloader which set
++ * up simplefb, and the clock definitions in the device tree. Chances are
++ * that there are no adverse effects, and if there are, a clean teardown of
++ * the fb probe will not help us much either. So just complain and carry on,
++ * and hope that the user actually gets a working fb at the end of things.
++ */
++static void
++simplefb_clocks_init(struct platform_device *pdev, struct list_head *list)
++{
++	struct device_node *np = pdev->dev.of_node;
++	int clock_count, i;
++
++	INIT_LIST_HEAD(list);
++
++	if (dev_get_platdata(&pdev->dev) || !np)
++		return;
++
++	clock_count = of_clk_get_parent_count(np);
++	for (i = 0; i < clock_count; i++) {
++		struct simplefb_clock *entry;
++		struct clk *clock = of_clk_get(np, i);
++		int ret;
++
++		if (IS_ERR(clock)) {
++			dev_err(&pdev->dev, "%s: clock %d not found: %ld\n",
++			       __func__, i, PTR_ERR(clock));
++			continue;
++		}
++
++		ret = clk_prepare_enable(clock);
++		if (ret) {
++			dev_err(&pdev->dev,
++				"%s: failed to enable clock %d: %d\n",
++			       __func__, i, ret);
++			clk_put(clock);
++			continue;
++		}
++
++		entry = kzalloc(sizeof(struct simplefb_clock), GFP_KERNEL);
++		if (!entry) {
++			clk_disable_unprepare(clock);
++			clk_put(clock);
++			continue;
++		}
++
++		entry->clock = clock;
++		/*
++		 * add to the front of the list, so we disable clocks in the
++		 * correct order.
++		 */
++		list_add(&entry->list, list);
++	}
++}
++
++static void
++simplefb_clocks_destroy(struct list_head *list)
++{
++	struct list_head *pos, *n;
++
++	list_for_each_safe(pos, n, list) {
++		struct simplefb_clock *entry +			container_of(pos, struct simplefb_clock, list);
++
++		list_del(&entry->list);
++
++		clk_disable_unprepare(entry->clock);
++		clk_put(entry->clock);
++		kfree(entry);
++	}
++}
++
+ struct simplefb_par {
+ 	u32 palette[PSEUDO_PALETTE_SIZE];
++	struct list_head clock_list[1];
+ };
+ 
+ static int simplefb_probe(struct platform_device *pdev)
+@@ -236,6 +327,8 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	}
+ 	info->pseudo_palette = par->palette;
+ 
++	simplefb_clocks_init(pdev, par->clock_list);
++
+ 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
+ 			     info->fix.smem_start, info->fix.smem_len,
+ 			     info->screen_base);
+@@ -247,14 +340,15 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	ret = register_framebuffer(info);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
+-		goto error_unmap;
++		goto error_clocks;
+ 	}
+ 
+ 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
+ 
+ 	return 0;
+ 
+- error_unmap:
++ error_clocks:
++	simplefb_clocks_destroy(par->clock_list);
+ 	iounmap(info->screen_base);
+ 
+  error_fb_release:
+@@ -266,8 +360,10 @@ static int simplefb_probe(struct platform_device *pdev)
+ static int simplefb_remove(struct platform_device *pdev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(pdev);
++	struct simplefb_par *par = info->par;
+ 
+ 	unregister_framebuffer(info);
++	simplefb_clocks_destroy(par->clock_list);
+ 	framebuffer_release(info);
+ 
+ 	return 0;
+-- 
+2.1.0
 
-A few times in this thread it is stated that we can't prevent unused
-clocks from being disabled. That is only partially true.
-
-The clock framework DOES provide a flag to prevent UNUSED clocks from
-being disabled at late_initcall-time by a clock "garbage collector"
-mechanism. Maxime and others familiar with the clock framework are aware
-of this.
-
-What the framework doesn't do is to allow for a magic flag in DT, in
-platform_data or elsewhere that says, "don't let me get turned off until
-the right driver claims me". That would be an external or alternative
-method for preventing a clock from being disabled. We have a method for
-preventing clocks from being disabled. It is as follows:
-
-struct clk *my_clk = clk_get(...);
-clk_prepare_enable(my_clk);
-
-That is how it should be done. Period.
-
-With that said I think that Luc's approach is very sensible. I'm not
-sure what purpose in the universe DT is supposed to serve if not for
-_this_exact_case_. We have a nice abstracted driver, usable by many
-people. The hardware details of how it is hooked up at the board level
-can all be hidden behind stable DT bindings that everyone already uses.
-
-What more could you want?
-
-Regards,
-Mike
-
-> Your opinion would be very valuable.
-> 
-> > > > so by any definition of what DT should describe they're useless for
-> > > > this virtual device.
-> > > >
-> > > > Furthermore it's fairly likely that as your kernel support progresses
-> > > > you'll find that the driver all of a sudden needs to manage some other
-> > > > type of resource that you just haven't needed until now because it may
-> > > > default to being always on. Then you'll have a hard time keeping
-> > > > backwards-compatibility and will have to resort to the kinds of hacks
-> > > > that you don't want to see in the kernel.
-> > > 
-> > > Not such a hard time. An older DT wouldn't define the new requirements
-> > > anyway, so they wouldn't be used, and we would end up in pretty much
-> > > the current case.
-> > 
-> > Except that you have firmware in the wild that sets up an incomplete
-> > simplefb node and if you don't want to break compatibility you need to
-> > provide fallbacks for the resources that aren't listed in the DT node.
-> > And given that those fallbacks are all very board specific you'll need
-> > to find ways to keep them enabled if you want to keep existing setups
-> > working.
-> 
-> How would an *optional* property break those users?
-> 
-> If you don't need any clock to be kept running (or are hiding them
-> under the carpet), of course you don't need such a property.
-> 
-> Maxime
-> 
-> -- 
-> Maxime Ripard, Free Electrons
-> Embedded Linux, Kernel and Android engineering
-> http://free-electrons.com

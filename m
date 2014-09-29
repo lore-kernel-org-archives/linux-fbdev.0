@@ -1,152 +1,71 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 16 Sep 2014 10:04:25 +0000
-Subject: [PATCH v5 11/15] OMAPDSS: hdmi5: Register ASoC platfrom device for omap hdmi audio
-Message-Id: <e1f8b92b4180bf99973a4fe8b0ccee5753870583.1410860765.git.jsarha@ti.com>
+From: =?utf-8?B?5bCP6IyD?= <admin@icnc-fskd.lntu.edu.cn>
+Date: Mon, 29 Sep 2014 03:03:09 +0000
+Subject: =?utf-8?B?55So5LqG5LiA5qyh5L2g5bCx5Lya6KeJ5b6X5piv5pyA5aW955qE55+t5L+h5Y+R6YCB5bmz5Y+wIA==?= =?utf-8
+Message-Id: <20140929110316106376@icnc-fskd.lntu.edu.cn>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1410860765.git.jsarha@ti.com>
-In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Implements callbacks for OMAP HDMI audio platform driver and registers
-it in probe function. Unregistering is done in remove function.
+DQogIOi/meS4quefreS/oeWPkemAgeW5s+WPsOWunuWcqOaYr+WkquWlveeUqOS6hu+8jOWGjeS5
+n+S4jeaEgeaJvuS4jeWIsOWlveeahOW5s+WPsOS6hu+8jOWPquimgeaYr+S9oOWPkeeahOWGheWu
+ueaYr+ato+inhOeahO+8jOi9u+advuWwseWPr+S7peWPkemAgeWHuuWOu+OAguWKoFFRMTkzOTg5
+NzI15YW35L2T5ZKo6K+i77yM5Y+v5Lul5byA6LSm5Y+35rWL5pWI5p6c44CCDQoNCg0KDQoNCg0K
+IA0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0K
+DQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoN
+Cg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0K
+DQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCuS5n+S4jeWlveWvueWlueiC
+huaXoOW/jOaDrueahOeMpeeQkOOAgiAgICDku5bku47luorkuIrlnZDotbfmnaXvvIzliLDlhazl
+hbHljavnlJ/pl7TmtJfkuobmiorohLjvvIzplZzlrZDkuK3nmoToh6rlt7Hov5jnnJ/mnInlh6Dl
+iIbluIXmsJTvvIznu5noh6rlt7HkuIDkuKroh6rkv6HnmoTlvq7nrJHvvIzlj4jlgZrkuobkuKro
+o4XpgLznmoTmt7Hmsonooajmg4XvvIzkuIvmpbzljrvljr/mlL/lupzlpKfpmaLmib7ooaXor77i
+gKbigKbigJ0gICAg5Lyv5q+N5q2k5pe25LuO6YeM5bGL6LWw5Ye65p2l77yM6L+e5b+Z5Yi25q2i
+77yM6YGT77ya4oCc5Yir5Lmx5p2l77yM56OV5L2P5L2g5byf5byf77yf4oCdICAgIOWkj+aTjuWk
+qeS4gOe/u+eZveecvO+8jOmBk++8muKAnOS7luaJjeWkmumHje+8n+aIkeS8muWkseaJi++8n+KA
+nSAgICDkuI3ov4fov5jmmK/miorlvJ/lvJ/nqLPnqLPlnLDmlL7lnKjlnLDkuIrjgIIgICAg5LuW
+5aW95YOP6auY5bqm5qaC5ous77yM4oCc5aSp5LiL5L2V5Lq65LiN6K+G5ZCb4oCd5Y+v5piv5LiA
+54K56YO95LiN5aS45byg77yM5Y+q5piv546w5Zyo5oCO5LmI6IO96K+05piO77yf6Zq+6YGT6K+0
+6Ieq5bex56m/6LaK6L+H5p2l55qE77yf5Zyo5oiR55qE5YmN5LiW77yM5L2g5bCx5piv5ZCN5ruh
+5YWo55CD55qE5aSn5Lq654mp77yfICAgIOadqOaZr+WInemBk++8muKAnOWUie+8jOWls+S6uu+8
+jOaIkeaDs+W+l+W8gO+8jOWlueWPquaYr+mHjOOAgiAgICDpmYjnuqLosYbmhI/lkbPmt7Hplb/l
+nLDnnIvkuoblpI/lsI/mtJvkuIDnnLzvvIzpgZPvvJrigJzkvaDku6zkubDov4fnpajkuoblkKfv
+vIzmiJHljrvkubDnpajvvIzmsqHkubDnmoTor53miJHluK7kvaDku6zluKbjgILigJ0gICAg5aSP
+5bCP5rSb5b+D5Lit6aqC6YGT77yM6I2J5rOl6ams77yM5aW95YOP5oiR5by65pq05LqG5L2g5a62
+5L2V6K+X6Z+15Ly85Zyw44CCICAgIOmZiOe6ouixhuKAnOi6q+S9k+WjsOWQn+WUseedgOS4gOmm
+lkJhYnlmYWNl55qE44CK6ZmM55Sf5Lq655qE55y844CL44CCICAgIOS4pOS6uuWGsumFkuS/neim
+geS6huS4pOeTtueZvuWoge+8jOaFouaFouWcsOWWneedgO+8jOecr+edgOi/keinhuecvO+8jOeb
+ruWFieWcqOaVtOS4qumFkuWQp+adpeWbnuepv+aire+8jOWvu+aJvuW/g+S7queahOeMjueJqeOA
+giAgICDigJzlmL/vvIzkvaDnnIvpgqPovrnpgqPkuKTljLnigJTigJTlpKfmtIvpqazvvIHosJHp
+gZPjgIIgICAg5YmN5LiW6Ieq5bex54i25Lqy6L+Z5LmI5pyJ5bm96buY5oSf77yM6Ieq5bex5oCO
+5LmI5LuO5p2l5rKh5pyJ5Y2w6LGh77yf5ZSJ77yM5aSn57qm5piv5LuW5ZCO5p2l5LuV6YCU5LiN
+6aG677yM5oqR6YOB5LqG5LiA55Sf77yM6L+Z56eN5aSp54S255qE5LmQ5aSp6KKr6Imw6Zq+55qE
+55Sf5rS75raI56Oo5o6J5LqG5ZCn44CCICAgIOaXoueEtuiHquW3seS7iueUn+mHjeadpe+8jOWw
+seS4jeiDveWcqOiuqQkNCueUn+S9oOermei1t+adpe+8jOS9oOaJvuaIkeS7rOWNq+eUn+WxgOac
+ieWVpeS6i++8n+KAneWkj+i/keS4nOa4qeiogOmBk++8jOKAnOaIkeaYr+WNq+eUn+WxgOWJr+Wx
+gOmVv++8jOacieS7gOS5iOS6i++8jOS9oOWRiuivieaIkeOAguKAnSAgICDigJzlk47lkYDvvIzl
+jp/mnaXmmK/lpKfpooblr7zllYrvvIHmiJHlj6/mib7nnYDkurrkuobjgILigJ3ogIHmsYnlj4jm
+v4Dliqjlj4jmga3mlazlnLDor7TvvIzkuJzku6XlpI/lsI/mtJvmiYDor7TnmoTigJzooaXplIXm
+s5XigJ3ov4XpgJ/lnLDlj43otKXkuLrog5zvvIzmjIHkuYXkvZzmiJjnmoTor53vvIznjovkv4rk
+vJ/kuZ/kuI3mmK/lr7nmiYvjgIIgICAg5L2G5piv5q2k5pe255qE5L2V5Lqs55Sf5ZKM5Y2i5Yab
+6LaF55qE6L+Z5Zy65paX5LqJ6KaB5piv5byA5oiY55qE6K+d77yM5pW05L2T5p2l6K+077yM5L2V
+5Lqs55Sf5YiZ5aSE5LqO5byx5Yq/5Zyw5L2N44CC5bO75bOw6Ieq5bex5Lmf5rKh5LuA5LmI5aW9
+5Yqe5rOV77yM6Kej5pWR5Lq66LSo5Y6G5p2l5piv5omA5pyJ56qB5Y+R5LqL5Lu25Lit5pyA5Zuw
+6Zq+55qE77yM5LuW5Lus5bCP5bCP5Y6/5Z+O6K2m5Yqb5Y+I5LiN5YWF6Laz77yM5rKh5pyJ54uZ
+5Ye75omL77yb5Y2z5L2/5pyJ54uZ5Ye75omL77yM6ZmE6L+R5Lmf5rKh5pyJ6auY55qE5bu6562R
+77yM5Zyw5b2i5a+55LuW5Lus5Lmf5b6I5LiN5Yip77yM77yM5YCY6Iul6KaB5LuO5qW8576k5LyX
+77yM55av5Lq65p6c5b2T572X5rGJ5p6c5Y2W77yB5ZCD5q275Lq66YO95LiN55+l6YGT5oCO5LmI
+5q2755qE44CC4oCdICAgIOS4jeaZk+W+l+S7gOS5iOaXtuWAme+8jOavjeS6suiuuOWwj+abvOW3
+sue7j+WFs+S6hueUteinhu+8jOWdkOWcqOS7luS7rOi6q+i+ue+8jOWQrOedgOeItuWtkOS6jOS6
+uuWVhuiuruWkp+S6i++8jOi/meS8muemgeS4jeS9j+aPkuWYtOi1t+adpeOAgiAgICDlpI/ov5Hk
+uJzmraTml7blv4PlpI/lsI/mtJvmiZPph4/nnYDmn7PmnIjvvIzlpbnkuIrouqvnqb/nnYDkuIDk
+u7bmrL7lvI/mlrDpopbnmoTnn63mrL7nmoToloToloTnmoTnvr3nu5LmnI3vvIzkuIvouqvnqb/n
+nYDkuIDku7bpu5HoibLnmoTniZvku5Too6TvvIzlj6vkuIrnqb/nnYDkuIDlj4zljYrpq5jot5/n
+moTpu5HoibLnmq7pnovvvIzmlbTkuKrkurrmmL7lvpfkuq3kuq3njonnq4vvvIzkuIDlj4zmvIbp
+u5HnmoTlpKfnnLznnZvnnavmr5vmmL7lvpflj4jplb/ph43mnaXkuozljYHlubTvvIzmmK/orqno
+h6rlt7HotY7nvarnmoTkuYjvvJ8gICAg5Lq655Sf6KeC5q+U6L6D5oKy6KeC55qE5Y+U5pys5Y2O
+5pu+57uP6K+06L+H77yM5pmu6YCa5Lq65Y+q5piv5oOz6L+H5aaC5L2V5bqm6L+H5pe26Ze077yM
+6ICM5LiN5q275aaC5L2V5Yip55So5pe26Ze044CC6Ieq5bex6K+75Yiw6L+Z5Y+l6K+d55qE5pe2
+5YCZ77yM5bey57uP5piv6ICM56uL5LmL5bm077yM6YKj5pe25YCZ77yM5Y+q5pyJ5o2PCQ0K
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- drivers/video/fbdev/omap2/dss/hdmi5.c |   97 +++++++++++++++++++++++++++++++++
- 1 file changed, 97 insertions(+)
-
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index 90410f5..360b31f 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -38,6 +38,7 @@
- #include <linux/gpio.h>
- #include <linux/regulator/consumer.h>
- #include <video/omapdss.h>
-+#include <sound/omap-hdmi-audio.h>
- 
- #include "hdmi5_core.h"
- #include "dss.h"
-@@ -679,6 +680,91 @@ err:
- 	return r;
- }
- 
-+/* Audio callbacks */
-+static int mode_has_audio(struct device *dev)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+	int ret;
-+
-+	mutex_lock(&hd->lock);
-+	ret = hdmi_mode_has_audio(&hd->cfg);
-+	mutex_unlock(&hd->lock);
-+
-+	return ret;
-+}
-+
-+static int audio_enable(struct device *dev, bool enable)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+	int ret;
-+
-+	mutex_lock(&hd->lock);
-+	if (!hdmi_mode_has_audio(&hd->cfg))
-+		ret = -EPERM;
-+	else
-+		ret = hdmi_wp_audio_enable(&hd->wp, enable);
-+	mutex_unlock(&hd->lock);
-+
-+	return ret;
-+}
-+
-+static int audio_start(struct device *dev, bool enable)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+
-+	return hdmi_wp_audio_core_req_enable(&hd->wp, enable);
-+}
-+
-+static int audio_config(struct device *dev, struct omap_dss_audio *dss_audio)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+	int ret;
-+
-+	mutex_lock(&hd->lock);
-+	if (!hdmi_mode_has_audio(&hd->cfg))
-+		ret = -EPERM;
-+	else
-+		ret = hdmi5_audio_config(&hd->core, &hd->wp, dss_audio,
-+					 hd->cfg.timings.pixelclock);
-+	mutex_unlock(&hd->lock);
-+
-+	return ret;
-+}
-+
-+static int hdmi_audio_register(struct device *dev)
-+{
-+	struct omap_hdmi_audio_pdata pdata = {
-+		.dev = dev,
-+		.hw_version = OMAP5_HDMI,
-+		.audio_dma_addr = hdmi_wp_get_audio_dma_addr(&hdmi.wp),
-+		.mode_has_audio = mode_has_audio,
-+		.audio_enable = audio_enable,
-+		.audio_start = audio_start,
-+		.audio_config = audio_config,
-+	};
-+	struct of_phandle_args dma_spec;
-+	int ret;
-+
-+	ret = of_property_match_string(dev->of_node, "dma-names", "audio_tx");
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = of_parse_phandle_with_args(dev->of_node, "dmas", "#dma-cells",
-+					 ret, &dma_spec);
-+	if (ret < 0)
-+		return ret;
-+
-+	pdata.audio_dma_req = dma_spec.args[0];
-+
-+	hdmi.audio_pdev +		platform_device_register_data(dev, "omap-hdmi-audio", 0,
-+					      &pdata, sizeof(pdata));
-+	if (IS_ERR(hdmi.audio_pdev))
-+		return PTR_ERR(hdmi.audio_pdev);
-+
-+	return 0;
-+}
-+
- /* HDMI HW IP initialisation */
- static int omapdss_hdmihw_probe(struct platform_device *pdev)
- {
-@@ -736,6 +822,14 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- 	hdmi_init_output(pdev);
- 
-+	r = hdmi_audio_register(&pdev->dev);
-+	if (r) {
-+		DSSERR("Registering HDMI audio failed %d\n", r);
-+		hdmi_uninit_output(pdev);
-+		pm_runtime_disable(&pdev->dev);
-+		return r;
-+	}
-+
- 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
- 
- 	return 0;
-@@ -743,6 +837,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
- {
-+	if (hdmi.audio_pdev)
-+		platform_device_unregister(hdmi.audio_pdev);
-+
- 	hdmi_uninit_output(pdev);
- 
- 	pm_runtime_disable(&pdev->dev);
--- 
-1.7.9.5
 

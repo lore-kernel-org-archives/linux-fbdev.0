@@ -1,249 +1,134 @@
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Date: Tue, 16 Sep 2014 20:51:18 +0000
-Subject: [PATCH 04/22] video: fbdev: Replace strnicmp with strncasecmp
-Message-Id: <1410900696-6481-5-git-send-email-linux@rasmusvillemoes.dk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 30 Sep 2014 10:54:58 +0000
+Subject: Re: [RFC] fbdev: mxsfb: Add support for mx6sl and mx6sx
+Message-Id: <542A8C02.4060305@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="coTSmNIkDfSUjFao8ODXFFABNjki4J90M"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1410900696-6481-1-git-send-email-linux@rasmusvillemoes.dk>
-In-Reply-To: <1410900696-6481-1-git-send-email-linux@rasmusvillemoes.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-The kernel used to contain two functions for length-delimited,
-case-insensitive string comparison, strnicmp with correct semantics
-and a slightly buggy strncasecmp. The latter is the POSIX name, so
-strnicmp was renamed to strncasecmp, and strnicmp made into a wrapper
-for the new strncasecmp to avoid breaking existing users.
+--coTSmNIkDfSUjFao8ODXFFABNjki4J90M
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-To allow the compat wrapper strnicmp to be removed at some point in
-the future, and to avoid the extra indirection cost, do
-s/strnicmp/strncasecmp/g.
+On 19/08/14 21:23, Fabio Estevam wrote:
+> mx6sl and mx6sx share the same LCD controller as mx23 and mx28.
+>=20
+> Add support for it.
+>=20
+> The basic difference is the number of clocks that are required:
+>=20
+> - mx23/mx28: only one clock
+> - mx6sl: two clocks
+> - mx6sx: three clocks
+>=20
+> Tested on a mx28evk and mx6slevk.
+>=20
+> Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
+> ---
+> I am sending it as RFC because the scrolling is showing some artifacts =
+when
+> I boot with console=3Dtty0. The kernel messages are displayed correctly=
+, but when
+> it scrolls I see some garbage.
 
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
----
- drivers/video/fbdev/pvr2fb.c       |  2 +-
- drivers/video/fbdev/s3c2410fb.c    |  8 ++---
- drivers/video/fbdev/sis/sis_main.c | 66 +++++++++++++++++++-------------------
- drivers/video/fbdev/sm501fb.c      |  4 +--
- 4 files changed, 40 insertions(+), 40 deletions(-)
+Is the garbage on the framebuffer memory? If so, I don't think this
+patch can cause it.
 
-diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
-index 167cfff..7c74f58 100644
---- a/drivers/video/fbdev/pvr2fb.c
-+++ b/drivers/video/fbdev/pvr2fb.c
-@@ -1001,7 +1001,7 @@ static int pvr2_get_param(const struct pvr2_params *p, const char *s, int val,
- 
- 	for (i = 0 ; i < size ; i++ ) {
- 		if (s != NULL) {
--			if (!strnicmp(p[i].name, s, strlen(s)))
-+			if (!strncasecmp(p[i].name, s, strlen(s)))
- 				return p[i].val;
- 		} else {
- 			if (p[i].val = val)
-diff --git a/drivers/video/fbdev/s3c2410fb.c b/drivers/video/fbdev/s3c2410fb.c
-index 43c63a4..e350eb5 100644
---- a/drivers/video/fbdev/s3c2410fb.c
-+++ b/drivers/video/fbdev/s3c2410fb.c
-@@ -601,12 +601,12 @@ static int s3c2410fb_debug_store(struct device *dev,
- 	if (len < 1)
- 		return -EINVAL;
- 
--	if (strnicmp(buf, "on", 2) = 0 ||
--	    strnicmp(buf, "1", 1) = 0) {
-+	if (strncasecmp(buf, "on", 2) = 0 ||
-+	    strncasecmp(buf, "1", 1) = 0) {
- 		debug = 1;
- 		dev_dbg(dev, "s3c2410fb: Debug On");
--	} else if (strnicmp(buf, "off", 3) = 0 ||
--		   strnicmp(buf, "0", 1) = 0) {
-+	} else if (strncasecmp(buf, "off", 3) = 0 ||
-+		   strncasecmp(buf, "0", 1) = 0) {
- 		debug = 0;
- 		dev_dbg(dev, "s3c2410fb: Debug Off");
- 	} else {
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index 3f12a2d..4f5cf03 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -162,7 +162,7 @@ static void sisfb_search_mode(char *name, bool quiet)
- 		return;
- 	}
- 
--	if(!strnicmp(name, sisbios_mode[MODE_INDEX_NONE].name, strlen(name))) {
-+	if(!strncasecmp(name, sisbios_mode[MODE_INDEX_NONE].name, strlen(name))) {
- 		if(!quiet)
- 			printk(KERN_ERR "sisfb: Mode 'none' not supported anymore. Using default.\n");
- 
-@@ -201,7 +201,7 @@ static void sisfb_search_mode(char *name, bool quiet)
- 
- 	i = 0; j = 0;
- 	while(sisbios_mode[i].mode_no[0] != 0) {
--		if(!strnicmp(nameptr, sisbios_mode[i++].name, strlen(nameptr))) {
-+		if(!strncasecmp(nameptr, sisbios_mode[i++].name, strlen(nameptr))) {
- 			if(sisfb_fstn) {
- 				if(sisbios_mode[i-1].mode_no[1] = 0x50 ||
- 				   sisbios_mode[i-1].mode_no[1] = 0x56 ||
-@@ -262,7 +262,7 @@ sisfb_search_crt2type(const char *name)
- 	if(name = NULL) return;
- 
- 	while(sis_crt2type[i].type_no != -1) {
--		if(!strnicmp(name, sis_crt2type[i].name, strlen(sis_crt2type[i].name))) {
-+		if(!strncasecmp(name, sis_crt2type[i].name, strlen(sis_crt2type[i].name))) {
- 			sisfb_crt2type = sis_crt2type[i].type_no;
- 			sisfb_tvplug = sis_crt2type[i].tvplug_no;
- 			sisfb_crt2flags = sis_crt2type[i].flags;
-@@ -289,7 +289,7 @@ sisfb_search_tvstd(const char *name)
- 		return;
- 
- 	while(sis_tvtype[i].type_no != -1) {
--		if(!strnicmp(name, sis_tvtype[i].name, strlen(sis_tvtype[i].name))) {
-+		if(!strncasecmp(name, sis_tvtype[i].name, strlen(sis_tvtype[i].name))) {
- 			sisfb_tvstd = sis_tvtype[i].type_no;
- 			break;
- 		}
-@@ -308,12 +308,12 @@ sisfb_search_specialtiming(const char *name)
- 	if(name = NULL)
- 		return;
- 
--	if(!strnicmp(name, "none", 4)) {
-+	if(!strncasecmp(name, "none", 4)) {
- 		sisfb_specialtiming = CUT_FORCENONE;
- 		printk(KERN_DEBUG "sisfb: Special timing disabled\n");
- 	} else {
- 		while(mycustomttable[i].chipID != 0) {
--			if(!strnicmp(name,mycustomttable[i].optionName,
-+			if(!strncasecmp(name,mycustomttable[i].optionName,
- 			   strlen(mycustomttable[i].optionName))) {
- 				sisfb_specialtiming = mycustomttable[i].SpecialID;
- 				found = true;
-@@ -3952,68 +3952,68 @@ static int __init sisfb_setup(char *options)
- 
- 		if(!(*this_opt)) continue;
- 
--		if(!strnicmp(this_opt, "off", 3)) {
-+		if(!strncasecmp(this_opt, "off", 3)) {
- 			sisfb_off = 1;
--		} else if(!strnicmp(this_opt, "forcecrt2type:", 14)) {
-+		} else if(!strncasecmp(this_opt, "forcecrt2type:", 14)) {
- 			/* Need to check crt2 type first for fstn/dstn */
- 			sisfb_search_crt2type(this_opt + 14);
--		} else if(!strnicmp(this_opt, "tvmode:",7)) {
-+		} else if(!strncasecmp(this_opt, "tvmode:",7)) {
- 			sisfb_search_tvstd(this_opt + 7);
--		} else if(!strnicmp(this_opt, "tvstandard:",11)) {
-+		} else if(!strncasecmp(this_opt, "tvstandard:",11)) {
- 			sisfb_search_tvstd(this_opt + 11);
--		} else if(!strnicmp(this_opt, "mode:", 5)) {
-+		} else if(!strncasecmp(this_opt, "mode:", 5)) {
- 			sisfb_search_mode(this_opt + 5, false);
--		} else if(!strnicmp(this_opt, "vesa:", 5)) {
-+		} else if(!strncasecmp(this_opt, "vesa:", 5)) {
- 			sisfb_search_vesamode(simple_strtoul(this_opt + 5, NULL, 0), false);
--		} else if(!strnicmp(this_opt, "rate:", 5)) {
-+		} else if(!strncasecmp(this_opt, "rate:", 5)) {
- 			sisfb_parm_rate = simple_strtoul(this_opt + 5, NULL, 0);
--		} else if(!strnicmp(this_opt, "forcecrt1:", 10)) {
-+		} else if(!strncasecmp(this_opt, "forcecrt1:", 10)) {
- 			sisfb_forcecrt1 = (int)simple_strtoul(this_opt + 10, NULL, 0);
--		} else if(!strnicmp(this_opt, "mem:",4)) {
-+		} else if(!strncasecmp(this_opt, "mem:",4)) {
- 			sisfb_parm_mem = simple_strtoul(this_opt + 4, NULL, 0);
--		} else if(!strnicmp(this_opt, "pdc:", 4)) {
-+		} else if(!strncasecmp(this_opt, "pdc:", 4)) {
- 			sisfb_pdc = simple_strtoul(this_opt + 4, NULL, 0);
--		} else if(!strnicmp(this_opt, "pdc1:", 5)) {
-+		} else if(!strncasecmp(this_opt, "pdc1:", 5)) {
- 			sisfb_pdca = simple_strtoul(this_opt + 5, NULL, 0);
--		} else if(!strnicmp(this_opt, "noaccel", 7)) {
-+		} else if(!strncasecmp(this_opt, "noaccel", 7)) {
- 			sisfb_accel = 0;
--		} else if(!strnicmp(this_opt, "accel", 5)) {
-+		} else if(!strncasecmp(this_opt, "accel", 5)) {
- 			sisfb_accel = -1;
--		} else if(!strnicmp(this_opt, "noypan", 6)) {
-+		} else if(!strncasecmp(this_opt, "noypan", 6)) {
- 			sisfb_ypan = 0;
--		} else if(!strnicmp(this_opt, "ypan", 4)) {
-+		} else if(!strncasecmp(this_opt, "ypan", 4)) {
- 			sisfb_ypan = -1;
--		} else if(!strnicmp(this_opt, "nomax", 5)) {
-+		} else if(!strncasecmp(this_opt, "nomax", 5)) {
- 			sisfb_max = 0;
--		} else if(!strnicmp(this_opt, "max", 3)) {
-+		} else if(!strncasecmp(this_opt, "max", 3)) {
- 			sisfb_max = -1;
--		} else if(!strnicmp(this_opt, "userom:", 7)) {
-+		} else if(!strncasecmp(this_opt, "userom:", 7)) {
- 			sisfb_userom = (int)simple_strtoul(this_opt + 7, NULL, 0);
--		} else if(!strnicmp(this_opt, "useoem:", 7)) {
-+		} else if(!strncasecmp(this_opt, "useoem:", 7)) {
- 			sisfb_useoem = (int)simple_strtoul(this_opt + 7, NULL, 0);
--		} else if(!strnicmp(this_opt, "nocrt2rate", 10)) {
-+		} else if(!strncasecmp(this_opt, "nocrt2rate", 10)) {
- 			sisfb_nocrt2rate = 1;
--		} else if(!strnicmp(this_opt, "scalelcd:", 9)) {
-+		} else if(!strncasecmp(this_opt, "scalelcd:", 9)) {
- 			unsigned long temp = 2;
- 			temp = simple_strtoul(this_opt + 9, NULL, 0);
- 			if((temp = 0) || (temp = 1)) {
- 			   sisfb_scalelcd = temp ^ 1;
- 			}
--		} else if(!strnicmp(this_opt, "tvxposoffset:", 13)) {
-+		} else if(!strncasecmp(this_opt, "tvxposoffset:", 13)) {
- 			int temp = 0;
- 			temp = (int)simple_strtol(this_opt + 13, NULL, 0);
- 			if((temp >= -32) && (temp <= 32)) {
- 			   sisfb_tvxposoffset = temp;
- 			}
--		} else if(!strnicmp(this_opt, "tvyposoffset:", 13)) {
-+		} else if(!strncasecmp(this_opt, "tvyposoffset:", 13)) {
- 			int temp = 0;
- 			temp = (int)simple_strtol(this_opt + 13, NULL, 0);
- 			if((temp >= -32) && (temp <= 32)) {
- 			   sisfb_tvyposoffset = temp;
- 			}
--		} else if(!strnicmp(this_opt, "specialtiming:", 14)) {
-+		} else if(!strncasecmp(this_opt, "specialtiming:", 14)) {
- 			sisfb_search_specialtiming(this_opt + 14);
--		} else if(!strnicmp(this_opt, "lvdshl:", 7)) {
-+		} else if(!strncasecmp(this_opt, "lvdshl:", 7)) {
- 			int temp = 4;
- 			temp = simple_strtoul(this_opt + 7, NULL, 0);
- 			if((temp >= 0) && (temp <= 3)) {
-@@ -4022,9 +4022,9 @@ static int __init sisfb_setup(char *options)
- 		} else if(this_opt[0] >= '0' && this_opt[0] <= '9') {
- 			sisfb_search_mode(this_opt, true);
- #if !defined(__i386__) && !defined(__x86_64__)
--		} else if(!strnicmp(this_opt, "resetcard", 9)) {
-+		} else if(!strncasecmp(this_opt, "resetcard", 9)) {
- 			sisfb_resetcard = 1;
--	        } else if(!strnicmp(this_opt, "videoram:", 9)) {
-+	        } else if(!strncasecmp(this_opt, "videoram:", 9)) {
- 			sisfb_videoram = simple_strtoul(this_opt + 9, NULL, 0);
- #endif
- 		} else {
-diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
-index c2c8eb6..9e74e8f 100644
---- a/drivers/video/fbdev/sm501fb.c
-+++ b/drivers/video/fbdev/sm501fb.c
-@@ -1187,9 +1187,9 @@ static ssize_t sm501fb_crtsrc_store(struct device *dev,
- 	if (len < 1)
- 		return -EINVAL;
- 
--	if (strnicmp(buf, "crt", 3) = 0)
-+	if (strncasecmp(buf, "crt", 3) = 0)
- 		head = HEAD_CRT;
--	else if (strnicmp(buf, "panel", 5) = 0)
-+	else if (strncasecmp(buf, "panel", 5) = 0)
- 		head = HEAD_PANEL;
- 	else
- 		return -EINVAL;
--- 
-2.0.4
+> Appreciate any comment/suggestion to improve this.
+>=20
+>  drivers/video/fbdev/Kconfig |  2 +-
+>  drivers/video/fbdev/mxsfb.c | 47 +++++++++++++++++++++++++++++++++++++=
+++++++++
+>  2 files changed, 48 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index e911b9c..fd28987 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -2420,7 +2420,7 @@ config FB_JZ4740
+> =20
+>  config FB_MXS
+>  	tristate "MXS LCD framebuffer support"
+> -	depends on FB && ARCH_MXS
+> +	depends on FB && (ARCH_MXS || ARCH_MXC)
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
+> index accf48a2..a567cc6 100644
+> --- a/drivers/video/fbdev/mxsfb.c
+> +++ b/drivers/video/fbdev/mxsfb.c
+> @@ -172,6 +172,10 @@ struct mxsfb_info {
+>  	struct fb_info fb_info;
+>  	struct platform_device *pdev;
+>  	struct clk *clk;
+> +	struct clk *clk_axi;
+> +	struct clk *clk_disp_axi;
+> +	bool clk_axi_enabled;
+> +	bool clk_disp_axi_enabled;
+>  	void __iomem *base;	/* registers */
+>  	unsigned allocated_size;
+>  	int enabled;
+> @@ -185,6 +189,42 @@ struct mxsfb_info {
+>  #define mxsfb_is_v3(host) (host->devdata->ipversion =3D=3D 3)
+>  #define mxsfb_is_v4(host) (host->devdata->ipversion =3D=3D 4)
+> =20
+> +/* Enable lcdif axi clock */
+> +static inline void clk_enable_axi(struct mxsfb_info *host)
+> +{
+> +	if (!host->clk_axi_enabled && (!IS_ERR(host->clk_axi))) {
+> +		clk_prepare_enable(host->clk_axi);
+> +		host->clk_axi_enabled =3D true;
+> +	}
+> +}
+> +
+> +/* Disable lcdif axi clock */
+> +static inline void clk_disable_axi(struct mxsfb_info *host)
+> +{
+> +	if (host->clk_axi_enabled && (!IS_ERR(host->clk_axi))) {
+> +		clk_disable_unprepare(host->clk_axi);
+> +		host->clk_axi_enabled =3D false;
+> +	}
 
+I think you could do the IS_ERR(clk_axi) check when getting the clock,
+and if there's an error, do host->clk_axi =3D NULL. Then above you can do=
+
+just:
+
+if (host->clk_axi)
+	clk_disable_unprepare(host->clk_axi);
+
+And no need to clk_axi_enabled. And probably the helper functions can be
+left out and have the code inline.
+
+And similarly for clk_disp_axi, of course.
+
+ Tomi
+
+
+
+--coTSmNIkDfSUjFao8ODXFFABNjki4J90M
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUKowCAAoJEPo9qoy8lh71emYP/iu81fXZbj4weyZmjejE7Fx1
+pkSW+PM82RdtuurRTBRiKM9psqmX/rQ/DKx2bYRsfarhWJ4Mtoys7iIULeRcEtT9
+Cy3IfNv8V2MbW1dVNc6CKIGarsOycfMpQIjNEc11zM9/cCzIOqx6QtDIyA8wce/L
+ibkx/czq0FuHDrI3M/b1xNQak14Fix159AV8/nkI8wCZrjHltHJeK24Kd0xySEmF
+P/IIy2WAL/AcwvzxW+VYakO5FLCIuzIQ8RQV+/oJ5YAA9BP/WbsykTcrCQ/XAQH8
+fRJ/6+91Sw53BZD89enVYKo7+hBAu6U5fxskcA84OVLhzW8TFtr3IjflefPJMFrW
+xJwxOuVFLwwUbdYzxDoy/+hKizENyqOTdsrm3Vw0JntR+CYy8bt6qk/yUU6WlOwI
+JtrA+0jePLRNNsU2OzpeB8kacg4eFf+OPgh/3sY/qRM+bPN5NpflSswc9bLc06MF
+oL7T/PT89Wlq+324gCBIGSNQDJ8C3caEOvyjKLx+8YiECKp9M6tiGyhMzdRr+rpW
+KuloSR8dV14LNBuXQIFPnconarwqpdmysgL2ee/rzBaGIFY0cslyjeU5XO4qqcnO
+RkgTqEPeQ0//+C6Bqk/pnjzUzVXwO3IHEE3L15z0DVa5xuma5oFZwGGbEEITMB0r
+VQxpq5lVtisPsItRV2Rv
+=zfXf
+-----END PGP SIGNATURE-----
+
+--coTSmNIkDfSUjFao8ODXFFABNjki4J90M--

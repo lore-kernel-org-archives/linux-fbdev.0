@@ -1,40 +1,72 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Wed, 17 Sep 2014 11:44:14 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 30 Sep 2014 10:41:34 +0000
 Subject: Re: [PATCH] framebuffer: fix screen corruption when copying
-Message-Id: <alpine.LRH.2.02.1409170736370.15277@file01.intranet.prod.int.rdu2.redhat.com>
+Message-Id: <542A88DE.6080301@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="q09BGuI7AAmfIaFncEcDWRQ8Ior3A6W1v"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LRH.2.02.1409161236550.3150@file01.intranet.prod.int.rdu2.redhat.com> <CAMuHMdXVwUrK1dscSAX7mFbG9nquF5mYC=xbOKmV5ZXC-T7fLA@mail.gmail.com>
-In-Reply-To: <CAMuHMdXVwUrK1dscSAX7mFbG9nquF5mYC=xbOKmV5ZXC-T7fLA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <alpine.LRH.2.02.1409161236550.3150@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.1409161236550.3150@file01.intranet.prod.int.rdu2.redhat.com>
+To: Mikulas Patocka <mpatocka@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+--q09BGuI7AAmfIaFncEcDWRQ8Ior3A6W1v
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
+
+On 16/09/14 19:38, Mikulas Patocka wrote:
+> The function bitcpy_rev has a bug that may result in screen corruption.=
+
+> The bug happens under these conditions:
+> * the end of the destination area of a copy operation is aligned on a l=
+ong
+>   word boundary
+> * the end of the source area is not aligned on a long word boundary
+> * we are copying more than one long word
+>=20
+> In this case, the variable shift is non-zero and the variable first is
+> zero. The statements FB_WRITEL(comp(d0, FB_READL(dst), first), dst) rea=
+ds
+> the last long word of the destination and writes it back unchanged
+> (because first is zero). Correctly, we should write the variable d0 to =
+the
+> last word of the destination in this case.
+>=20
+> This patch fixes the bug by introducing and extra test if first is zero=
+=2E
+>=20
+> The patch also removes the references to fb_memmove in the code that is=
+
+> commented out because fb_memmove was removed from framebuffer subsystem=
+=2E
+
+Thanks, queued for 3.18.
+
+ Tomi
 
 
 
-On Wed, 17 Sep 2014, Geert Uytterhoeven wrote:
+--q09BGuI7AAmfIaFncEcDWRQ8Ior3A6W1v
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-> Hi Mikulas,
-> 
-> On Tue, Sep 16, 2014 at 6:38 PM, Mikulas Patocka <mpatocka@redhat.com> wrote:
-> > The patch also removes the references to fb_memmove in the code that is
-> > commented out because fb_memmove was removed from framebuffer subsystem.
-> 
-> I'd leave it as-is. Using plain memmove() is not correct, as it should operate
-> on MMIO space, not RAM. On x86 it works with memmove(), though, but
-> not on all architectures.
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-That code is disabled with #if 0. So it doesn't matter if it's incorrect 
-in some specific situation.
+iQIcBAEBAgAGBQJUKojeAAoJEPo9qoy8lh71lXMP/RTdWCb+w77kj6x/P+xap8Mx
+lM+OD2Go1/5Ye4UlVXIJdfQOL4c6ukTyLcLqtJTQaccgqvzjsf8opEqYLU4PgiMs
+Qx31XEHJfW9fo1XUWJefAKARmAhYzuB62Q5tKToJ9/3sVX+ETDwxHaW4VmRuE0ZP
+l04RjAKu7FBpqUWL1R/UIfQZmlUp8WPk5ncYevfx2FFXGBq0sNb8GjZtSurGeWSB
+TzRDoBn6MUQKpbEQ11el5zRhc5cdhzBcd3SXQHSGF4rtCpE85rN3+GJ+2/oTZfg1
+PcGUE4LMry/T7jpV9+BLnWylrfQ9eQAGtrSKEYBOQ61QqWvn9/YQSG+R4Xe+JGzP
+mbpzZ5fMZW7F+ixCfUsAQm8Ybr+eZYfdRaEIInkJyOWhVzSfo5/xyxHsU31IzqEL
+E0pEPw1cBV9NA8H8rMNdPAueMTyUDMUIglPtvsoQmeBFIFd6p8GHjVya4447/O0m
+HJ15shs946MVx1Wxd4lFsCplD3Pn7xkzvwOuXqzJET8P0ZLgfYAJI9uQhQQVyzrf
+mIh4I6CxqYKI6dYSzTFFMWcYXGQ0y/Ww+qZB57CETMJXIqGbWz4USN85Jelwuc0O
+vdlmsI7GGzOKN5dgVPWJ6VOOaTLSBOiOuJLgrHbnMvbGqwdDY8mmVLt4UVju3OpX
+wu5LbGrsbuawLYjZiCVt
+=44MG
+-----END PGP SIGNATURE-----
 
-The purpose of that disabled code is to be able to verify that the bug is 
-in bitcpy_rev. I get screen corruption - so I enable that "memmove" 
-statement - the screen corruption goes away - so I know that the bug is in 
-bitcpy_rev.
-
-Mikulas
+--q09BGuI7AAmfIaFncEcDWRQ8Ior3A6W1v--

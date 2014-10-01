@@ -1,63 +1,116 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Date: Wed, 01 Oct 2014 12:48:02 +0000
+Date: Wed, 01 Oct 2014 12:48:53 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <20141001124800.GA21733@ulmo>
+Message-Id: <20141001124852.GB21733@ulmo>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="xHFwDpU9dbj6ez1V"
+Content-Type: multipart/mixed; boundary="GID0FwUMdk1T2AWN"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140929092301.GC4388@lukather> <20140929101805.GB26008@ulmo>
- <20140929114643.GB4081@lukather> <20140929134708.GB30998@ulmo>
- <20140929155517.GR16977@sirena.org.uk>
- <20140930050923.GB29874@ulmo> <20140930173928.GH4273@sirena.org.uk>
- <20141001074139.GB18463@ulmo>
- <CABxcv=nKErHGPRLM5yer2YnOc2VJPWLmeKgwXbXEU3r_XvsCyg@mail.gmail.com>
- <20141001123250.GY4273@sirena.org.uk>
-In-Reply-To: <20141001123250.GY4273@sirena.org.uk>
+References: <20140829141244.GH15297@lukather> <20140829143812.GC31264@ulmo>
+ <20140902092508.GR15297@lukather>
+ <20140927235601.19023.31593@quantum> <20140929080637.GB12506@ulmo>
+ <20140929161101.GS16977@sirena.org.uk>
+ <20140930060312.GE29874@ulmo> <20140930180036.GI4273@sirena.org.uk>
+ <20141001081443.GC18463@ulmo> <20141001122008.GW4273@sirena.org.uk>
+In-Reply-To: <20141001122008.GW4273@sirena.org.uk>
 To: linux-arm-kernel@lists.infradead.org
 
 
---xHFwDpU9dbj6ez1V
+--GID0FwUMdk1T2AWN
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 01, 2014 at 01:32:50PM +0100, Mark Brown wrote:
-> On Wed, Oct 01, 2014 at 01:10:46PM +0200, Javier Martinez Canillas wrote:
-[...]
-> > Adding your resources (clock, regulators, etc) incrementally and only
-> > when the driver for the device that use these resources is available,
-> > will only make adding support for a new platform slower IMHO since
-> > there will be more patches to be posted, reviewed and merged.
+On Wed, Oct 01, 2014 at 01:20:08PM +0100, Mark Brown wrote:
+> On Wed, Oct 01, 2014 at 10:14:44AM +0200, Thierry Reding wrote:
+> > On Tue, Sep 30, 2014 at 07:00:36PM +0100, Mark Brown wrote:
 >=20
-> So don't do that if you're worried about it then, provide the bits of DT
-> that hook everything up from the start or otherwise describe things as
-> being in use.
+> > > You may well need to extend the binding in future for an actual driver
+> > > but from the point of view of what's going into the block it really
+> > > should just be a case of reading the datasheet and mechanically typing
+> > > that in.  If we can work out how to say where the framebuffer is we
+> > > really ought to be able to work this stuff out.
+>=20
+> > I agree from a technical point of view. However given the dynamically
+> > generated nature of the node the problem is more of a logistical nature.
+> > As we've seen U-Boot is being enabled to add clocks to the simplefb node
+> > but I'm fairly certain that there's a regulator somewhere that needs to
+> > be enabled too, be it for powering the display controller, the panel or
+> > the backlight. I wouldn't even be surprised if there were one for each
+> > of those. If so simplefb on this board will break when the regulators
+> > are described in the kernel's DTS.
+>=20
+> > If we don't consider this a problem then the whole DT ABI stability
+> > business is a farce.
+>=20
+> I think you're setting constraints on the implementation you want to see
+> which make it unworkable but I don't think those constraints are needed.
+> You're starting from the position that the DT needs to be updated without
+> the bootloader
 
-"Otherwise describe things as being in use" doesn't work for clocks for
-example. And Mike already said he wasn't willing to add something like
-an always-on DT property for clocks.
+No, what I'm saying is that what the simplefb driver expects and what
+the bootloader sets up may diverge as resource drivers are added to the
+kernel. The DT /could/ be updated without the bootloader. You may only
+be able to replace the DTB but not the bootloader on a given platform.
+
+>                and that the DT must not contain any hint of simplefb as
+> shipped separately.
+
+Well, I don't think it should because it describes the same resources
+that the device tree node for the real device already describes. But
+perhaps this is one of the cases where duplication isn't all that bad?
+
+>                     That's never going to work well as far as I can see
+> but doesn't seem like an ABI stability issue, or at least not a
+> reasonable one.
+
+It would work well under the assumption that the kernel wouldn't be
+touching any of the resources that simplefb depends on. If that's not a
+reasonable assumption then I think we can't make simplefb work the way
+it's currently written.
+
+> Either the bootloader needs to be updated along with the DT
+
+I thought we had decided that this was one of the big no-nos. But
+perhaps I'm misremembering.
+
+>                                                             or the DT
+> needs to offer the bootloader a stable interface of its own for adding
+> the description of what it has set up (like a default disabled node
+> with the FB description, I'm sure other ideas are possible).  Obviously
+> the goal with the stable ABI is that the DT will be distributed along
+> with the platform.
+
+So instead of pretending that this is in any way generic, maybe a better
+idea would be to provide code in DRM/KMS drivers that is called early,
+grabs all the resources as defined in the binding for the device and
+then instantiates simplefb using the parsed information. Which is kind
+of the stub driver that Grant had suggested.
+
+Of course that means duplicating most of the resource handling from the
+real driver into this stub driver. And it means that this part of the
+driver would have to be built into the kernel and bloat it some more.
 
 Thierry
 
---xHFwDpU9dbj6ez1V
+--GID0FwUMdk1T2AWN
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUK/gAAAoJEN0jrNd/PrOhLgMQAJcQaJ5nwl/I8jIBl8FtHfFG
-+xnmjZlGjr6C7GMcuYVlNAIlkShsQ4gM0CNmBNFbcPbXgOOsx1nX9OOMVgdsE4hd
-e57JbxSyNZVy9+4+82NzXAV/HoEkmPjxLW5BX7tpJjLN0Ct3NBxEd73CalzBxx1V
-WlshRwavHT0Ol1HEjCR/neiWTpa46KdHDi9BPMEho7Kof34s71zJCp5Cis6OIeEw
-8f3XgK+C7YqotVJizjiQ3QWLJLRToTBzdqPhWTsTVVbsc2F1lYUOu9+L5L/hhsjH
-LqGkR7Uoa4bgRB3/Ty9ZEtyoZ64YQtCc407P0y4TNU9tcCJ064+G1hgCyOp4fdQd
-oDvz3NIPSOIjOK7c6bUCnt6v/CY1at2gE4/yejdGND3SYDHkE8gPigPs3oDnE/xR
-UuuqkFyT8cMEZegKARNpp0N1R9fybV9Jo3yjf2eaNLjpnMoh2hZF8ZIP6+N2KLrL
-0RT1QNFvTqlgLODX5/+iKXE4BaloGiOhhZwUph9y1jB7VQlbGIgFBG9hlKvy8bXo
-JexMUEsbuakpHZJO+bUQ4wrmGpvd5yQHSESP/ty1IM9iKmVqy9KkGSwusCWiuVKd
-D1JRkBuavM4ilmWFUTs8FXthZpxCmwasvaMyuWtaSG7FlVl4dbyv+vAGe2Jw87k/
-lRhqPbjVwGhbHmWyVFNK
-=c/AO
+iQIcBAEBAgAGBQJUK/g0AAoJEN0jrNd/PrOhZq4QAKF4Hx72ss4wrcHj7siBPlKM
+X3sYznHEh8iQ+jey/6BOl1SwdTwfFgXcEQ8Ey8kb/6LBxVCU0Uor2LsuTuPPitt5
+mptgE17eI0Cf5uGNhEFXHYV0Wjts88aGo1sRSXwx/eBf4GqHLj6+WvpHnobqNiEk
+8g1bi0Psqu8cVBKK+jmeIisQMZj92x9PEBwWF5AZT/UfCi1HkA76hIGwZIIOXIfL
+2n0wSqlGvLBTFRJVpsPS4sgA6M/QARzSiWqO7sjNFlmthPuFHK38PIu+lD05o9JD
+i7fNSRvEdZFBRqerAWVL4LhGmLm59QOrdDByz8hbyx8BvOYi1cGi88btgpCoXdJs
+ah05yilAaM4hMoFpOmvcbVkOsXyXml6yfhmOhPTof4NW7PpLF5sUTthosiZ+69CL
+aeVTGZVlje7aSHl1jM1LV1GAgffFUpdOI0ZqjMEdwQYjge6Ox1L0H6w7Bi6Zvh2q
+ZRSmuOR1u+Pb91dyvY6YmRXec8Tb02/y8tEgf7E28qTxVnRMylNKjYrE/PoR18HZ
+1Panc9LrJrXYA13FzIgBFjWOM46On/b+5lUkicZwneFe4AEG/C7nq4DBODY9qOgd
+mqQXOS1whLFuIIgKmjnOzTpYtl6oCb6uxZ37E0+ws39UOxXqJRNn3VxD2k4Krbrf
+1dxCv05HfxZEsWAPBD1W
+=KTtP
 -----END PGP SIGNATURE-----
 
---xHFwDpU9dbj6ez1V--
+--GID0FwUMdk1T2AWN--

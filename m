@@ -1,71 +1,49 @@
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Date: Wed, 01 Oct 2014 11:10:46 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Wed, 01 Oct 2014 11:31:49 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <CABxcv=nKErHGPRLM5yer2YnOc2VJPWLmeKgwXbXEU3r_XvsCyg@mail.gmail.com>
+Message-Id: <20141001113149.GS4273@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="v6YRErhBvjoBjrPV"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140902092508.GR15297@lukather>
- <20140927235601.19023.31593@quantum> <20140929080637.GB12506@ulmo>
+References: <20140927235601.19023.31593@quantum> <20140929080637.GB12506@ulmo>
  <20140929092301.GC4388@lukather> <20140929101805.GB26008@ulmo>
  <20140929114643.GB4081@lukather> <20140929134708.GB30998@ulmo>
  <20140929155517.GR16977@sirena.org.uk>
  <20140930050923.GB29874@ulmo> <20140930173928.GH4273@sirena.org.uk>
  <20141001074139.GB18463@ulmo>
 In-Reply-To: <20141001074139.GB18463@ulmo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Oct 1, 2014 at 9:41 AM, Thierry Reding <thierry.reding@gmail.com> wrote:
+
+--v6YRErhBvjoBjrPV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, Oct 01, 2014 at 09:41:40AM +0200, Thierry Reding wrote:
 > On Tue, Sep 30, 2014 at 06:39:28PM +0100, Mark Brown wrote:
->> On Tue, Sep 30, 2014 at 07:09:24AM +0200, Thierry Reding wrote:
->> > On Mon, Sep 29, 2014 at 04:55:17PM +0100, Mark Brown wrote:
->>
->> > > So long as we're ensuring that when we don't start supporting resources
->> > > without DT additions or at least require DT additions to actively manage
->> > > them (which can then include simplefb hookup) we should be fine.
->>
->> > I'm not sure I understand what you mean. If we add a driver for the PMIC
->> > that exposes these regulators and then add a DT node for the PMIC, we'd
->> > still need to fix the firmware to generate the appropriate DT properties
->> > to allow simplefb to enable the regulators.
->>
->> No, you don't.  It's only if you start describing the regulators in the
->> PMIC in DT that you run into problems.  Unconfigured regulators won't be
->> touched.
->
+
+> > No, you don't.  It's only if you start describing the regulators in the
+> > PMIC in DT that you run into problems.  Unconfigured regulators won't be
+> > touched.
+
 > Okay, that's what I meant. It seems rather odd to add a PMIC DT node but
 > omit the description of the regulators that it exposes. Unless the
 > regulators are truly unused, as in not connected to any peripherals.
->
 
-Agreed, I added similar PMIC support to other Chromebooks (Peach Pit
-and Pi) DTS and for me it made totally sense to add nodes for all the
-regulators that are connected to peripherals according to the board
-schematic. Specially since the framework is smart enough to disable
-any regulator that is not used.
+Well, if one does decide to add a description of a regulator which is in
+use but which hasn't yet been hooked up to users for some reason then it
+needs to be marked as always on.
 
-After all, a DT is meant to describe the hardware, so how can possibly
-be an issue to add more details about the hw in a DTS?
+> > > So unless firmware is updated at the same time, regulators will get
+> > > disabled because they are unused.
 
-If something is working relying on parts of the hw on not being
-described, then is essentially relying on side-effects and
-implementation details which are bound to be broken anyways.
+> > That won't happen unless the regulators are explicitly described, if
+> > they are described as unused then this will of course happen.
 
->> > So unless firmware is updated at the same time, regulators will get
->> > disabled because they are unused.
->>
->> That won't happen unless the regulators are explicitly described, if
->> they are described as unused then this will of course happen.
->
 > With described as unused you mean they have a node in DT, so constraints
 > are applied and all that, but no driver actually uses them?
->
 
-Adding your resources (clock, regulators, etc) incrementally and only
-when the driver for the device that use these resources is available,
-will only make adding support for a new platform slower IMHO since
-there will be more patches to be posted, reviewed and merged.
+Yes.
 
 > The fundamental issue is that if we start describing simplefb nodes with
 > an incomplete set of resources then we're bound to run into problems
@@ -73,70 +51,39 @@ there will be more patches to be posted, reviewed and merged.
 > the simplefb node was described in the DTS then this would be less of a
 > problem because the resources could be added to the simplefb node at the
 > same time.
->
 
-Agreed, the assumptions made by simplefb are quite fragile so we
-should either document somewhere that simplefb ignores all the
-resources and that is a best effort so users should not consider the
-display breaking a regression or make it robust enough so users can
-expect that it will always work.
-
-Just adding the clocks is a partial solution which I think will make
-the situation even worst since it will give a false illusion of
-robustness but as you said it will break anyways due other resources.
+I'm not sure I follow this.  If we add descriptions of new resources
+then it shouldn't be hard to also add information about their use (or
+that their description is incomplete) at the same time.
 
 > However given that simplefb is supposed to be generated by firmware this
 > is no longer possible. It will inevitably break unless you upgrade the
 > DTB and the firmware at the same time. And it was already decided long
 > ago that upgrading the firmware should never be a requirement for
 > keeping things working.
->
-
-AFAICT in practice most platforms' firmware do not generate the
-simplefb by default. In the case of Chromebooks for example, a custom
-U-boot needs to be flashed in order to have simplefb support. In fact
-most people working on mainline support for Chromebooks do not use
-simplefb and that is why the issue was not spot when adding the
-support for clocks and regulators.
-
-Personally I didn't even know how simplefb worked before Will reported
-that his display used to work on Snow before 3.16. So I assume that
-his reasonable to expect that users using simplefb are able to update
-their bootloader.
-
-Which brings a more general question about DT and backward
-compatibility. Should we have backward compatibility only with the
-official firmware that is ship on a device when is bought or should we
-maintain backward compatibility against any firmware out there that
-someone re-built and added logic to mangle the FDT before is passed to
-the kernel?
-
-Going back to simplefb, I think the fact that the simplefb is not in
-the DTS is the fundamental issue here. For me, the most reasonable
-approach to solve this is the one suggested by Doug Anderson. That is
-to have the simplefb node in the DTS so all the references to the
-resources it uses can be added in the DTS but keep the simplefb node
-as status = "disabled".
-
-The bootloader can find the simplefb node and fill all the information
-about the framebuffer memory region (location and size, width, height,
-format, etc) and also enable the node by setting the status to "okay"
-so the simplefb driver will be probed.
-
-If a FDT does not have a simplefb node then the boot loader can create
-one (like is made for the /choosen node in most bootloaders) and make
-it a best effort in that case, assuming that all the resources enabled
-by the bootloader will remain enabled once the kernel boots.
-
-This of course will require users to update their boot-loaders but as
-stated above I think that is reasonable since anyone using simplefb is
-using a non-official firmware anyways.
 
 > I don't see any way to prevent that other than ignoring the resources in
 > simplefb completely.
->
-> Thierry
->
 
-Best regards,
-Javier
+One of the approaches that was being talked about was having a
+placeholder in DT that the firmware fills in rather than having to
+create the node from whole cloth each time, that makes life a lot
+easier.
+
+--v6YRErhBvjoBjrPV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUK+YkAAoJECTWi3JdVIfQNEUIAICpikul9F6uHd2MwmX/Fnhp
+AQHk/ztCDF7X9qfE41510+SDQCfUxfLk2s9+JDqTxTB09QaOxZlLc38yXCrl9L48
++BHEMhMwR2GVd0j9y6gVmmsVF8hxh5kPYOgzWRPWYIaXuwnsqVQANGhIrg8dJpAp
+FWZz7N99IE67iUFUDirI6aZMrhBgBdycnT/zSt3R6bhjiCfuUJaffkpKsLkNwvWv
+PvQCqb/jAcnfYX8zh/Y9Jsc6NUozebvKCheNWuBH6rgzSw7fdvaB7aTemuRUZIRf
+iIExEux88Kd3wn2UlwJqp8zeY5cXsL1AlJsJxn/eXSDVhpNHbQiL8o+IPA1eLso=
+=Bm1X
+-----END PGP SIGNATURE-----
+
+--v6YRErhBvjoBjrPV--

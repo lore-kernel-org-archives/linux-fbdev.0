@@ -1,38 +1,46 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Thu, 02 Oct 2014 15:49:09 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 02 Oct 2014 19:15:06 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <542D73F5.9040605@wwwdotorg.org>
+Message-Id: <CAMuHMdXDp8oE0XR6VWKw+S3C=p+3c79SoQUweZWL6UF=UyooTg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140929101805.GB26008@ulmo>	<20140929114643.GB4081@lukather>	<20140929134708.GB30998@ulmo>	<20140929155517.GR16977@sirena.org.uk>	<20140930050923.GB29874@ulmo>	<20140930173928.GH4273@sirena.org.uk>	<20141001074139.GB18463@ulmo>	<CABxcv=nKErHGPRLM5yer2YnOc2VJPWLmeKgwXbXEU3r_XvsCyg@mail.gmail.com>	<20141001123250.GY4273@sirena.org.uk>	<20141001124800.GA21733@ulmo>	<20141001170517.GF4273@sirena.org.uk>	<542C3934.3040409@redhat.com>
+References: <20140929101805.GB26008@ulmo> <20140929114643.GB4081@lukather>
+ <20140929134708.GB30998@ulmo>
+ <20140929155517.GR16977@sirena.org.uk>
+ <20140930050923.GB29874@ulmo> <20140930173928.GH4273@sirena.org.uk>
+ <20141001074139.GB18463@ulmo>
+ <CABxcv=nKErHGPRLM5yer2YnOc2VJPWLmeKgwXbXEU3r_XvsCyg@mail.gmail.com>
+ <20141001123250.GY4273@sirena.org.uk> <20141001124800.GA21733@ulmo>
+ <20141001170517.GF4273@sirena.org.uk> <542C3934.3040409@redhat.com>
  <CAKON4OxzerMyuza-GSfmYiLMqA=Y3HOXko7a8rOcP_8PkHVF3w@mail.gmail.com>
  <542C4404.8040501@wwwdotorg.org> <542CF3C3.2050708@redhat.com>
-In-Reply-To: <542CF3C3.2050708@redhat.com>
+ <CAKON4Oy8sZ-d6JzWLi7pUeNFE5ge0fr5Tgoc_PSpKcOoiN-0yQ@mail.gmail.com>
+In-Reply-To: <CAKON4Oy8sZ-d6JzWLi7pUeNFE5ge0fr5Tgoc_PSpKcOoiN-0yQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 10/02/2014 12:42 AM, Hans de Goede wrote:
-...
-> The whole reason why we want to use simplefb is not just to get things
-> running until HW specific driver is in place, but also to have early console
-> output (to help debugging boot problems on devices without a serial console),
-> in a world where most video drivers are build as loadable modules, so we
-> won't have video output until quite late into the boot process.
+On Thu, Oct 2, 2014 at 2:22 PM, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
+> 1) temporary early boot console -- this is nothing but an address in
+> RAM and the x/y layout. The character set from framebuffer is built
+> into the kernel.  The parallel to this is early-printk and how it uses
+> the UARTs without interrupts. This console vaporizes late in the boot
+> process -- the same thing happens with the early printk UART driver.
+> EARLYPRINTK on the command line enables this.
 
-That's a very different use-case than what was originally envisaged.
+JFYI, the early serial console can also vanish, even very early in the boot
+process, before the unused clocks are disabled.
+Cfr. http://marc.info/?l=linux-sh&m1227657322649&w=2
 
-...
-> You indicate that you don't have the time for this discussion, and I note that
-> there is no MAINTAINERS entry for drivers/video/fbdev/simplefb.c . So how about
-> the following, I pick up drivers/video/fbdev/simplefb.c maintainership, adding
-> MAINTAINERS entry for it with my name in it. Then as the maintainer it will be
-> my responsibility (and in my own benefit) to stop this from growing into
-> a monster ?
+So there's no safety in this world without calling clk_prepare_enable().
 
-I have no issue with you being the maintainer.
+Gr{oetje,eeting}s,
 
-I would suggest you track down whoever it was that was involved in the 
-original discussion and objected to simplefb performing resource 
-management, and get their explicit ack for the addition of 
-clocks/regulators/... to it. But, that's just a suggestion.
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

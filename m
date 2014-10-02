@@ -1,9 +1,19 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 02 Oct 2014 13:14:33 +0000
+From: Michal Suchanek <hramrach@gmail.com>
+Date: Thu, 02 Oct 2014 13:23:50 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <542D4FB9.6090805@redhat.com>
+Message-Id: <CAOMqctSnmN3YScH8+hCkmEVB076u=VsCAJVTz5=NEYzQJpYR6A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140929101805.GB26008@ulmo>	<20140929114643.GB4081@lukather>	<20140929134708.GB30998@ulmo>	<20140929155517.GR16977@sirena.org.uk>	<20140930050923.GB29874@ulmo>	<20140930173928.GH4273@sirena.org.uk>	<20141001074139.GB18463@ulmo>	<CABxcv=nKErHGPRLM5yer2YnOc2VJPWLmeKgwXbXEU3r_XvsCyg@mail.gmail.com>	<20141001123250.GY4273@sirena.org.uk>	<20141001124800.GA21733@ulmo>	<20141001170517.GF4273@sirena.org.uk>	<542C3934.3040409@redhat.com>	<CAKON4OxzerMyuza-GSfmYiLMqA=Y3HOXko7a8rOcP_8PkHVF3w@mail.gmail.com>	<542C4404.8040501@wwwdotorg.org>	<542CF3C3.2050708@redhat.com>	<CAKON4Oy8sZ-d6JzWLi7pUeNFE5ge0fr5Tgoc_PSpKcOoiN-0yQ@mail.gmail.com>	<542D476D.50004@redhat.com>
+References: <20140929101805.GB26008@ulmo> <20140929114643.GB4081@lukather>
+ <20140929134708.GB30998@ulmo> <20140929155517.GR16977@sirena.org.uk>
+ <20140930050923.GB29874@ulmo> <20140930173928.GH4273@sirena.org.uk>
+ <20141001074139.GB18463@ulmo>
+ <CABxcv=nKErHGPRLM5yer2YnOc2VJPWLmeKgwXbXEU3r_XvsCyg@mail.gmail.com>
+ <20141001123250.GY4273@sirena.org.uk> <20141001124800.GA21733@ulmo>
+ <20141001170517.GF4273@sirena.org.uk> <542C3934.3040409@redhat.com>
+ <CAKON4OxzerMyuza-GSfmYiLMqA=Y3HOXko7a8rOcP_8PkHVF3w@mail.gmail.com>
+ <542C4404.8040501@wwwdotorg.org> <542CF3C3.2050708@redhat.com>
+ <CAKON4Oy8sZ-d6JzWLi7pUeNFE5ge0fr5Tgoc_PSpKcOoiN-0yQ@mail.gmail.com>
+ <542D476D.50004@redhat.com>
  <CAKON4OwOFVFZjxN-SJpDJLcyCpNOT4_mjjr9OpgGXmTYvZwT+A@mail.gmail.com>
 In-Reply-To: <CAKON4OwOFVFZjxN-SJpDJLcyCpNOT4_mjjr9OpgGXmTYvZwT+A@mail.gmail.com>
 MIME-Version: 1.0
@@ -11,9 +21,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
-
-On 10/02/2014 02:56 PM, jonsmirl@gmail.com wrote:
+On 2 October 2014 14:56, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
 > On Thu, Oct 2, 2014 at 8:39 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 >> Hi,
 >>
@@ -73,25 +81,42 @@ On 10/02/2014 02:56 PM, jonsmirl@gmail.com wrote:
 >>
 >> Eventually we need both, yes. But 1) should stay working until 2) loads,
 >> not until some phase of the bootup is completed, but simply until 2) loads.
-> 
+>
 > No, that is where you get into trouble. The device specific driver has
 > to go onto initrd where it can be loaded as early in the boot process
 > as possible.
+>
+> Trying to indefinitely extend the life of the earlyprintk or
+> earlyframeuffer is what causes problems.  Doing that forces you to
+> basically turn them into device specific drivers which do things like
+> claiming device specific resources and gaining device specific
+> dependency knowledge, things that shouldn't be in earlyframebuffer.
+>
 
-This is an argument in the "you cannot do that" / "your use case is not valid"
-category, IOW this is not a technical argument. You say I cannot do that I
-say I can, deadlock.
+No. When initrd is running boot has already finished as far as kernel
+is concerned.
 
-I've already explained that we not only can do that (we already have working
-code proving that), but also that this is something which we absolutely need:
+And you have to extend the life of the simplefb from the time boot has
+finished through the time kernel mounts initrd (or other root) and
+hands over to userspace found on the initrd, through the time this
+userspace searches for the kms driver and until the time it has
+finally loaded if that ever succeeds.
 
->> One example why this is necessary is e.g. to debug things where the problem
->> is that the right module is not included in the initrd.
+From the point of view of kernel once it has handed over to init in
+initrd the boot is finished. The init is normal userspace running off
+normal filesystem backed by a device-specific driver (initrd).
 
-If we ever want ARM support to stop being about cute embedded non-sense hacks,
-we must be able to have users get some meaningful output in failure cases like
-this without needing to first solder a serial console to some test pads.
+That some systems do not continue to run off this filesystem
+indefinitely and in fact go out of their way to expunge the initrd
+filesystem and reclaim its resources by exercising some syscalls
+specifically devised for that use case is not relevant to the kernel.
+It cannot know when the userspace considers the boot finished enough.
+Sometimes even manual steps are required to finish booting when the
+automatic scripts fail.
 
-Regards,
+simplefb as early console is meant exactly for diagnosing and fixing
+such failures in absence of an uart.
 
-Hans
+Thanks
+
+Michal

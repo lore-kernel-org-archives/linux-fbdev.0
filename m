@@ -1,7 +1,7 @@
-From: "jonsmirl@gmail.com" <jonsmirl@gmail.com>
-Date: Thu, 02 Oct 2014 15:30:04 +0000
+From: Michal Suchanek <hramrach@gmail.com>
+Date: Thu, 02 Oct 2014 15:36:58 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <CAKON4OyvUeSidyR8OWk9BM4X3BmvzSLyZtbhnMaB75kr-AFuew@mail.gmail.com>
+Message-Id: <CAOMqctS6pLrDbRJdCvC-boQ4AdqCihTdXYbfozJBGJhh2+nhOA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20140929101805.GB26008@ulmo> <20141001074139.GB18463@ulmo>
  <CABxcv=nKErHGPRLM5yer2YnOc2VJPWLmeKgwXbXEU3r_XvsCyg@mail.gmail.com>
@@ -28,129 +28,126 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Oct 2, 2014 at 11:14 AM, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
-> On Thu, Oct 2, 2014 at 10:50 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->> Hi,
->>
->> On 10/02/2014 04:41 PM, jonsmirl@gmail.com wrote:
->>> On Thu, Oct 2, 2014 at 10:21 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->>>> Hi,
->>>>
->>>> On 10/02/2014 04:16 PM, jonsmirl@gmail.com wrote:
->>>>> On Thu, Oct 2, 2014 at 10:08 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->>
->> <snip>
->>
->>>>>>> So there are two ways to do this...
->>>>>>> 1) modify things like earlyconsole to protect device specific resource
->>>>>>> (I think this is a bad idea)
->>>>>>
->>>>>> Why is this a bad idea? If the bootloader tells us exactly which resources
->>>>>> are needed, then earlyconsole can claim them, and release them on
->>>>>> handover to the real display driver.
->>>>
->>>> Jon, can you please answer this ? I really really want to know why people
->>>> think this is such a bad idea. Understanding why people think this is a bad
->>>> idea is necessary to be able to come up with an alternative solution.
+On 2 October 2014 17:30, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
+> On Thu, Oct 2, 2014 at 11:14 AM, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
+>> On Thu, Oct 2, 2014 at 10:50 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>>> Hi,
 >>>
->>> The list of resources should not be duplicated in the device tree -
->>> once in the simplefb node and again in the real device node.
+>>> On 10/02/2014 04:41 PM, jonsmirl@gmail.com wrote:
+>>>> On Thu, Oct 2, 2014 at 10:21 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>>>>> Hi,
+>>>>>
+>>>>> On 10/02/2014 04:16 PM, jonsmirl@gmail.com wrote:
+>>>>>> On Thu, Oct 2, 2014 at 10:08 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>>>
+>>> <snip>
+>>>
+>>>>>>>> So there are two ways to do this...
+>>>>>>>> 1) modify things like earlyconsole to protect device specific resource
+>>>>>>>> (I think this is a bad idea)
+>>>>>>>
+>>>>>>> Why is this a bad idea? If the bootloader tells us exactly which resources
+>>>>>>> are needed, then earlyconsole can claim them, and release them on
+>>>>>>> handover to the real display driver.
+>>>>>
+>>>>> Jon, can you please answer this ? I really really want to know why people
+>>>>> think this is such a bad idea. Understanding why people think this is a bad
+>>>>> idea is necessary to be able to come up with an alternative solution.
+>>>>
+>>>> The list of resources should not be duplicated in the device tree -
+>>>> once in the simplefb node and again in the real device node.
+>>>
+>>> It is not duplicated, the simplefb node will list the clocks used for the
+>>> mode / output as setup by the firmware, which are often not all clocks
+>>> which the display engine supports. Where as the real device node will list
+>>> all clocks the display engine may use.
+>>>
+>>>> Device
+>>>> tree is a hardware description and it is being twisted to solve a
+>>>> software issue.
+>>>
+>>> This is not true, various core devicetree developers have already said
+>>> that storing other info in the devicetree is fine, and being able to do so
+>>> is part of the original design.
+>>>
+>>>> This problem is not limited to clocks, same problem
+>>>> exists with regulators. On SGI systems this would exist with entire
+>>>> bus controllers (but they are x86 based, console is not on the root
+>>>> bus). This is a very messy problem and will lead to a Frankenstein
+>>>> sized driver over time.
+>>>
+>>> This is a "what if ..." argument, we can discuss potential hypothetical
+>>> problems all day long, what happens if the sky falls down?
+>>>
+>>>> But... I think this is a red herring which is masking the real
+>>>> problem. The real problem seems to be that there is no window for
+>>>> loading device specific drivers before the resource clean up phase
+>>>> happens. That's a real problem -- multi architecture distros are going
+>>>> to have lots of loadable device specific drivers.
+>>>
+>>> As Maxime pointed out to my alternative solution to fixing the clocks
+>>> problem, this is not strictly a when to do cleanup problem. If another
+>>> driver uses the same clocks, and does a clk_disable call after probing
+>>> (because the device is put in low power mode until used by userspace),
+>>> then the clk will be disabled even without any cleanup running at all.
+>>>
+>>> The real problem here is simply that to work the simplefb needs certain
+>>> resources, just like any other device. And while for any other device
+>>> simply listing the needed resources is an accepted practice, for simplefb
+>>> for some reason (which I still do not understand) people all of a sudden
+>>> see listing resources as a problem.
 >>
->> It is not duplicated, the simplefb node will list the clocks used for the
->> mode / output as setup by the firmware, which are often not all clocks
->> which the display engine supports. Where as the real device node will list
->> all clocks the display engine may use.
+>> Because you are creating two different device tree nodes describing a
+>> single piece of hardware and that's not suppose to happen in a device
+>> tree.  The accurate description of the hardware is being perverted to
+>> solve a software problem.
 >>
->>> Device
->>> tree is a hardware description and it is being twisted to solve a
->>> software issue.
->>
->> This is not true, various core devicetree developers have already said
->> that storing other info in the devicetree is fine, and being able to do so
->> is part of the original design.
->>
->>> This problem is not limited to clocks, same problem
->>> exists with regulators. On SGI systems this would exist with entire
->>> bus controllers (but they are x86 based, console is not on the root
->>> bus). This is a very messy problem and will lead to a Frankenstein
->>> sized driver over time.
->>
->> This is a "what if ..." argument, we can discuss potential hypothetical
->> problems all day long, what happens if the sky falls down?
->>
->>> But... I think this is a red herring which is masking the real
->>> problem. The real problem seems to be that there is no window for
->>> loading device specific drivers before the resource clean up phase
->>> happens. That's a real problem -- multi architecture distros are going
->>> to have lots of loadable device specific drivers.
->>
->> As Maxime pointed out to my alternative solution to fixing the clocks
->> problem, this is not strictly a when to do cleanup problem. If another
->> driver uses the same clocks, and does a clk_disable call after probing
->> (because the device is put in low power mode until used by userspace),
->> then the clk will be disabled even without any cleanup running at all.
->>
->> The real problem here is simply that to work the simplefb needs certain
->> resources, just like any other device. And while for any other device
->> simply listing the needed resources is an accepted practice, for simplefb
->> for some reason (which I still do not understand) people all of a sudden
->> see listing resources as a problem.
+>> One node describes the hardware in a format to make simplefb happy.
+>> Another node describes the same hardware in a format to make the
+>> device specific driver happy.
+
+No.
+
+one node describes the state in which the hardware was left by u-boot
+and other node describes the display hardware in full.
+
+Obviously, this will overlap but is not duplication.
+
+Or as pointed out the simplefb node is not hardware description but
+'other information' which is part of the DT design. If your system
+does not use simplefb it can be ignored with no ill side effect (once
+the part with claiming memory for simplefb cleanly is resolved).
+
+Did we not discuss that several times already?
+
 >
-> Because you are creating two different device tree nodes describing a
-> single piece of hardware and that's not suppose to happen in a device
-> tree.  The accurate description of the hardware is being perverted to
-> solve a software problem.
+> But... I think all of this device tree stuff is a red herring and not
+> the core problem.
 >
-> One node describes the hardware in a format to make simplefb happy.
-> Another node describes the same hardware in a format to make the
-> device specific driver happy.
-
-But... I think all of this device tree stuff is a red herring and not
-the core problem.
-
-Core problem.....
-
-Bios sets stuff up
-Built-in drivers initialize
-Bios settings get cleaned up (display goes blank)
-Loadable drivers initialize (display comes back)
-
-In multi-architecture kernels almost all of the drivers are loadable.
-We need to figure out how to change the order....
-
-Bios sets stuff up
-Built-in drivers initialize
-Loadable drivers initialize
-Bios settings get cleaned up
-
-Maybe the Bios cleanup turns into a small app you place at the end of
-your init scripts. It's just a power saving cleanup and shouldn't be
-causing this much trouble.
-
-I don't think leaving the order as is and using the device tree to
-construct a big list of exceptions to the clean up process is the
-right approach.
-
+> Core problem.....
 >
+> Bios sets stuff up
+> Built-in drivers initialize
+> Bios settings get cleaned up (display goes blank)
+> Loadable drivers initialize (display comes back)
 >
->>
->> Regards,
->>
->> Hans
->>
->> --
->> You received this message because you are subscribed to the Google Groups "linux-sunxi" group.
->> To unsubscribe from this group and stop receiving emails from it, send an email to linux-sunxi+unsubscribe@googlegroups.com.
->> For more options, visit https://groups.google.com/d/optout.
+> In multi-architecture kernels almost all of the drivers are loadable.
+> We need to figure out how to change the order....
 >
+> Bios sets stuff up
+> Built-in drivers initialize
+> Loadable drivers initialize
+> Bios settings get cleaned up
 >
->
-> --
-> Jon Smirl
-> jonsmirl@gmail.com
+> Maybe the Bios cleanup turns into a small app you place at the end of
+> your init scripts. It's just a power saving cleanup and shouldn't be
+> causing this much trouble.
 
+No. You need to do cleanup during driver loading as well. So not doing
+the cleanup early gives you more bizarre problems.
 
+Did we not discuss that several times as well?
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Thanks
+
+Michal

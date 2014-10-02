@@ -1,34 +1,20 @@
-From: Michal Suchanek <hramrach@gmail.com>
-Date: Thu, 02 Oct 2014 15:36:58 +0000
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 02 Oct 2014 15:38:17 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <CAOMqctS6pLrDbRJdCvC-boQ4AdqCihTdXYbfozJBGJhh2+nhOA@mail.gmail.com>
+Message-Id: <542D7169.8020500@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140929101805.GB26008@ulmo> <20141001074139.GB18463@ulmo>
- <CABxcv=nKErHGPRLM5yer2YnOc2VJPWLmeKgwXbXEU3r_XvsCyg@mail.gmail.com>
- <20141001123250.GY4273@sirena.org.uk> <20141001124800.GA21733@ulmo>
- <20141001170517.GF4273@sirena.org.uk> <542C3934.3040409@redhat.com>
- <CAKON4OxzerMyuza-GSfmYiLMqA=Y3HOXko7a8rOcP_8PkHVF3w@mail.gmail.com>
- <542C4404.8040501@wwwdotorg.org> <542CF3C3.2050708@redhat.com>
- <CAKON4Oy8sZ-d6JzWLi7pUeNFE5ge0fr5Tgoc_PSpKcOoiN-0yQ@mail.gmail.com>
- <542D476D.50004@redhat.com>
- <CAKON4OwOFVFZjxN-SJpDJLcyCpNOT4_mjjr9OpgGXmTYvZwT+A@mail.gmail.com>
- <542D4FB9.6090805@redhat.com>
- <CAKON4Oyb3KBWhGgKfwNop7+cwR=p=ZpVs-jfH0iQwm5scfOJ-A@mail.gmail.com>
- <542D5444.8090903@redhat.com>
- <CAKON4OxTmNRxSJum17RZGLLku5dAFPauzqyP0BOF-VC=bD=Hng@mail.gmail.com>
- <542D5C74.4050602@redhat.com>
- <CAKON4OxHeHszmcbMw_LRJbcaFW5JP7Atsa4RMRwWfqMrCueAnQ@mail.gmail.com>
- <542D5F62.60907@redhat.com>
- <CAKON4Oz8mL5jGzBHZeznd5NbPqq93q7PpTDqHHcV_HYSfqBVHA@mail.gmail.com>
- <542D6633.20907@redhat.com>
- <CAKON4OwMf-zXC_B=VqdVNrD_ExC3zGiGUm4j5KKgS-U4cPB2zg@mail.gmail.com>
-In-Reply-To: <CAKON4OwMf-zXC_B=VqdVNrD_ExC3zGiGUm4j5KKgS-U4cPB2zg@mail.gmail.com>
+References: <20140929101805.GB26008@ulmo>	<20141001124800.GA21733@ulmo>	<20141001170517.GF4273@sirena.org.uk>	<542C3934.3040409@redhat.com>	<CAKON4OxzerMyuza-GSfmYiLMqA=Y3HOXko7a8rOcP_8PkHVF3w@mail.gmail.com>	<542C4404.8040501@wwwdotorg.org>	<542CF3C3.2050708@redhat.com>	<CAKON4Oy8sZ-d6JzWLi7pUeNFE5ge0fr5Tgoc_PSpKcOoiN-0yQ@mail.gmail.com>	<542D476D.50004@redhat.com>	<CAKON4OwOFVFZjxN-SJpDJLcyCpNOT4_mjjr9OpgGXmTYvZwT+A@mail.gmail.com>	<542D4FB9.6090805@redhat.com>	<CAKON4Oyb3KBWhGgKfwNop7+cwR=p=ZpVs-jfH0iQwm5scfOJ-A@mail.gmail.com>	<542D5444.8090903@redhat.com>	<CAKON4OxTmNRxSJum17RZGLLku5dAFPauzqyP0BOF-VC=bD=Hng@mail.gmail.com>	<542D5C74.4050602@redhat.com>	<CAKON4OxHeHszmcbMw_LRJbcaFW5JP7Atsa4RMRwWfqMrCueAnQ@mail.gmail.com>	<542D5F62.60907@redhat.com>	<CAKON4Oz8mL5jGzBHZeznd5NbPqq93q7PpTDqHHcV_HYSfqBVHA@mail.gmail.com>	<542D6633.20907@redhat.com>	<CAKON4OwMf-zXC_B=VqdVNrD_ExC3zGiGUm4j5KKgS-U4cPB2zg@mail.gmail.com>
+ <CAKON4OyvUeSidyR8OWk9BM4X3BmvzSLyZtbhnMaB75kr-AFuew@mail.gm!
+ ail.com>
+In-Reply-To: <CAKON4OyvUeSidyR8OWk9BM4X3BmvzSLyZtbhnMaB75kr-AFuew@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 2 October 2014 17:30, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
+Hi,
+
+On 10/02/2014 05:30 PM, jonsmirl@gmail.com wrote:
 > On Thu, Oct 2, 2014 at 11:14 AM, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
 >> On Thu, Oct 2, 2014 at 10:50 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 >>> Hi,
@@ -99,55 +85,47 @@ On 2 October 2014 17:30, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
 >>
 >> Because you are creating two different device tree nodes describing a
 >> single piece of hardware and that's not suppose to happen in a device
->> tree.  The accurate description of the hardware is being perverted to
+>> tree.
+
+That again is a very narrow reading of what is a very generic descriptive
+language. Also note that we are already in this situation with simplefb,
+all we're advocating is extending the info which is in the simplefb node
+so that it is actually usable in a much wider range of scenarios.
+
+>> The accurate description of the hardware is being perverted to
 >> solve a software problem.
->>
+
+Again, devicetree is not strictly a hardware description language.
+
 >> One node describes the hardware in a format to make simplefb happy.
 >> Another node describes the same hardware in a format to make the
 >> device specific driver happy.
-
-No.
-
-one node describes the state in which the hardware was left by u-boot
-and other node describes the display hardware in full.
-
-Obviously, this will overlap but is not duplication.
-
-Or as pointed out the simplefb node is not hardware description but
-'other information' which is part of the DT design. If your system
-does not use simplefb it can be ignored with no ill side effect (once
-the part with claiming memory for simplefb cleanly is resolved).
-
-Did we not discuss that several times already?
-
->
+> 
 > But... I think all of this device tree stuff is a red herring and not
 > the core problem.
->
-> Core problem.....
->
-> Bios sets stuff up
-> Built-in drivers initialize
-> Bios settings get cleaned up (display goes blank)
-> Loadable drivers initialize (display comes back)
->
-> In multi-architecture kernels almost all of the drivers are loadable.
-> We need to figure out how to change the order....
->
-> Bios sets stuff up
-> Built-in drivers initialize
-> Loadable drivers initialize
-> Bios settings get cleaned up
->
-> Maybe the Bios cleanup turns into a small app you place at the end of
-> your init scripts. It's just a power saving cleanup and shouldn't be
-> causing this much trouble.
 
-No. You need to do cleanup during driver loading as well. So not doing
-the cleanup early gives you more bizarre problems.
+Actually the red herring is people focussing on the init ordering
+solution, which as already explained will simply never work, quoting
+myself (from above):
 
-Did we not discuss that several times as well?
+>>> As Maxime pointed out to my alternative solution to fixing the clocks
+>>> problem, this is not strictly a when to do cleanup problem. If another
+>>> driver uses the same clocks, and does a clk_disable call after probing
+>>> (because the device is put in low power mode until used by userspace),
+>>> then the clk will be disabled even without any cleanup running at all.
 
-Thanks
+And to repeat myself yet again:
 
-Michal
+"The real problem here is simply that to work the simplefb needs certain
+resources, just like any other device."
+
+So the logical thing to do is to just put the clocks in the node. The only
+counter argument I hear you make is "this is not a hardware description,
+so it does not belong in devicetree". An argument which has already
+been discussed earlier in this thread (about a month ago) and one of the
+officialo devicetree maintainers responded to that saying that it is fine
+to have non hardware info in the dt.
+
+Regards,
+
+Hans

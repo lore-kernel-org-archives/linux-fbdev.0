@@ -1,65 +1,48 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 14 Oct 2014 17:29:23 +0000
-Subject: [PATCH v6 04/18] OMAPDSS: hdmi_wp: Add function for getting audio dma address
-Message-Id: <f56679af8371c78e901a29e37398f050a17b1c6c.1413306131.git.jsarha@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 03 Oct 2014 11:52:00 +0000
+Subject: [PATCH v2 0/5] simplefb: Add clock support to simplefb
+Message-Id: <1412337125-14388-1-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1413306131.git.jsarha@ti.com>
-In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The audio dma port is found in the hdmi_wp physical address space.
+Hi Tomi,
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- drivers/video/fbdev/omap2/dss/hdmi.h    |    2 ++
- drivers/video/fbdev/omap2/dss/hdmi_wp.c |    6 ++++++
- 2 files changed, 8 insertions(+)
+Here is v2 of the patch-set to add clocks support to simplefb.
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 03726b5..9ba7c1a 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -250,6 +250,7 @@ struct hdmi_core_audio_config {
- 
- struct hdmi_wp_data {
- 	void __iomem *base;
-+	phys_addr_t phys_base;
- };
- 
- struct hdmi_pll_data {
-@@ -317,6 +318,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
- void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
- 		struct omap_video_timings *timings, struct hdmi_config *param);
- int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
-+phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp);
- 
- /* HDMI PLL funcs */
- int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-index f1b53de..5154120 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-@@ -245,6 +245,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
- 		DSSERR("can't get WP mem resource\n");
- 		return -EINVAL;
- 	}
-+	wp->phys_base = res->start;
- 
- 	wp->base = devm_ioremap_resource(&pdev->dev, res);
- 	if (IS_ERR(wp->base)) {
-@@ -254,3 +255,8 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
- 
- 	return 0;
- }
-+
-+phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp)
-+{
-+	return wp->phys_base + HDMI_WP_AUDIO_DATA;
-+}
--- 
-1.7.9.5
+Changes in v2:
+-Added "simplefb: Add simplefb MAINTAINERS entry" patch
 
+If you've followed the discussion sofar, then you know that not everyone
+agrees 100% with this. The primary concern being that this will turn simplefb
+into not-so-simplefb.
+
+However no-one has been able to come up with a workable alternative solution.
+
+We've asked input from Mike Turquette, the clk maintainer, and he agrees
+that the solution in this patch-set is the right way to deal with clocks for
+simplefb, and he has given his Reviewed-by for the dt-bindings patch.
+
+As for the simplefb code becoming to complex for this, I noticed that
+simplefb currently does not have an active maintainer. I've discussed this
+with Stephen Warren <swarren@wwwdotorg.org>, the original author of simplefb,
+and with his permisson I'm picking up maintainership of simplefb.
+
+And as the new maintainer of simplefb I agree that the approach in this
+patch-set is the best way forward, and I've added my Reviewed-by to Luc's
+patches adding the clocks property support. I fully commit myself to
+actively maintain simplefb for the foreseeable future.
+
+I believe that having the acks of both the clk and simplefb maintainer
+is more then good enough to get this set merged despite not everyone
+agreeing 100% with it (note some people have expressed concerns, but no one
+has actually nacked it).
+
+Therefor I would like to ask you to merge this set for 3.19, or if there is
+still time for 3.18.
+
+Thanks & Regards,
+
+Hans

@@ -1,37 +1,75 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Oct 2014 08:39:32 +0000
-Subject: [PATCH 3/5] OMAPDSS: DISPC: fix mflag offset
-Message-Id: <1413967174-28009-3-git-send-email-tomi.valkeinen@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 03 Oct 2014 11:52:04 +0000
+Subject: [PATCH v2 4/5] simplefb: add goto error path to probe
+Message-Id: <1412337125-14388-5-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413967174-28009-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1413967174-28009-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1412337125-14388-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1412337125-14388-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The register offset for DISPC_OVL_MFLAG_THRESHOLD is wrong, fix it.
+From: Luc Verhaegen <libv@skynet.be>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Luc Verhaegen <libv@skynet.be>
+Acked-by: Stephen Warren <swarren@nvidia.com>
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/fbdev/omap2/dss/dispc.h | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/simplefb.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.h b/drivers/video/fbdev/omap2/dss/dispc.h
-index 78edb449c763..3043d6e0a5f9 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.h
-+++ b/drivers/video/fbdev/omap2/dss/dispc.h
-@@ -101,8 +101,7 @@
- 					DISPC_FIR_COEF_V2_OFFSET(n, i))
- #define DISPC_OVL_PRELOAD(n)		(DISPC_OVL_BASE(n) + \
- 					DISPC_PRELOAD_OFFSET(n))
--#define DISPC_OVL_MFLAG_THRESHOLD(n)	(DISPC_OVL_BASE(n) + \
--					DISPC_MFLAG_THRESHOLD_OFFSET(n))
-+#define DISPC_OVL_MFLAG_THRESHOLD(n)	DISPC_MFLAG_THRESHOLD_OFFSET(n)
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index ec112c1..b7d5c08 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -220,8 +220,8 @@ static int simplefb_probe(struct platform_device *pdev)
  
- /* DISPC up/downsampling FIR filter coefficient structure */
- struct dispc_coef {
+ 	info->apertures = alloc_apertures(1);
+ 	if (!info->apertures) {
+-		framebuffer_release(info);
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto error_fb_release;
+ 	}
+ 	info->apertures->ranges[0].base = info->fix.smem_start;
+ 	info->apertures->ranges[0].size = info->fix.smem_len;
+@@ -231,8 +231,8 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	info->screen_base = ioremap_wc(info->fix.smem_start,
+ 				       info->fix.smem_len);
+ 	if (!info->screen_base) {
+-		framebuffer_release(info);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto error_fb_release;
+ 	}
+ 	info->pseudo_palette = par->palette;
+ 
+@@ -247,14 +247,20 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	ret = register_framebuffer(info);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
+-		iounmap(info->screen_base);
+-		framebuffer_release(info);
+-		return ret;
++		goto error_unmap;
+ 	}
+ 
+ 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
+ 
+ 	return 0;
++
++ error_unmap:
++	iounmap(info->screen_base);
++
++ error_fb_release:
++	framebuffer_release(info);
++
++	return ret;
+ }
+ 
+ static int simplefb_remove(struct platform_device *pdev)
 -- 
-2.1.1
+2.1.0
 

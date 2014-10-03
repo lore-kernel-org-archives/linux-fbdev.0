@@ -1,132 +1,89 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 Oct 2014 13:20:11 +0000
-Subject: [GIT PULL] fbdev fixes for 3.18
-Message-Id: <54523B0B.8010003@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="4CBQKDreR6C7sBvXt7OEsmCJ5fRkHj6e4"
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 03 Oct 2014 11:52:03 +0000
+Subject: [PATCH v2 3/5] simplefb: formalize pseudo palette handling
+Message-Id: <1412337125-14388-4-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <1412337125-14388-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1412337125-14388-1-git-send-email-hdegoede@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---4CBQKDreR6C7sBvXt7OEsmCJ5fRkHj6e4
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+From: Luc Verhaegen <libv@skynet.be>
 
-Hi Linus,
+Signed-off-by: Luc Verhaegen <libv@skynet.be>
+Acked-by: Stephen Warren <swarren@nvidia.com>
+[hdegoede@redhat.com: drop unnecessary void * cast]
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/video/fbdev/simplefb.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-Please pull fbdev fixes for 3.18.
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 210f3a0..ec112c1 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -41,6 +41,8 @@ static struct fb_var_screeninfo simplefb_var = {
+ 	.vmode		= FB_VMODE_NONINTERLACED,
+ };
+ 
++#define PSEUDO_PALETTE_SIZE 16
++
+ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 			      u_int transp, struct fb_info *info)
+ {
+@@ -50,7 +52,7 @@ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 	u32 cb = blue >> (16 - info->var.blue.length);
+ 	u32 value;
+ 
+-	if (regno >= 16)
++	if (regno >= PSEUDO_PALETTE_SIZE)
+ 		return -EINVAL;
+ 
+ 	value = (cr << info->var.red.offset) |
+@@ -163,11 +165,16 @@ static int simplefb_parse_pd(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
++struct simplefb_par {
++	u32 palette[PSEUDO_PALETTE_SIZE];
++};
++
+ static int simplefb_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+ 	struct simplefb_params params;
+ 	struct fb_info *info;
++	struct simplefb_par *par;
+ 	struct resource *mem;
+ 
+ 	if (fb_get_options("simplefb", NULL))
+@@ -188,11 +195,13 @@ static int simplefb_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
+-	info = framebuffer_alloc(sizeof(u32) * 16, &pdev->dev);
++	info = framebuffer_alloc(sizeof(struct simplefb_par), &pdev->dev);
+ 	if (!info)
+ 		return -ENOMEM;
+ 	platform_set_drvdata(pdev, info);
+ 
++	par = info->par;
++
+ 	info->fix = simplefb_fix;
+ 	info->fix.smem_start = mem->start;
+ 	info->fix.smem_len = resource_size(mem);
+@@ -225,7 +234,7 @@ static int simplefb_probe(struct platform_device *pdev)
+ 		framebuffer_release(info);
+ 		return -ENODEV;
+ 	}
+-	info->pseudo_palette = (void *)(info + 1);
++	info->pseudo_palette = par->palette;
+ 
+ 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
+ 			     info->fix.smem_start, info->fix.smem_len,
+-- 
+2.1.0
 
- Tomi
-
-The following changes since commit f114040e3ea6e07372334ade75d1ee0775c355=
-e1:
-
-  Linux 3.18-rc1 (2014-10-19 18:08:38 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-3.18
-
-for you to fetch changes up to a942535d6e5c23f0015d6674d28c91dd59a720e4:
-
-  Merge branch '3.18/omapdss-fixes' into 3.18/fbdev-fixes (2014-10-30 14:=
-53:49 +0200)
-
-----------------------------------------------------------------
-fbdev fixes for 3.18
-
-* Fix fb console option parsing
-* Fixes for OMAPDSS/OMAPFB crashes related to module unloading and
-  device/driver binding & unbinding.
-* Fix for OMAP HDMI PLL locking failing in certain cases
-* Misc minor fixes for atmel lcdfb and OMAP
-
-----------------------------------------------------------------
-Alexandre Belloni (1):
-      drivers: video: fbdev: atmel_lcdfb.c: remove unnecessary header
-
-Felipe Balbi (2):
-      OMAPFB: add missing MODULE_ALIAS()
-      OMAPFB: remove __exit annotation
-
-Maarten ter Huurne (1):
-      fbcon: Fix option parsing control flow in fb_console_setup
-
-Marek Belisko (1):
-      omap: dss: connector-analog-tv: Add missing module device table
-
-Mark Rustad (1):
-      video/console: Resolve several shadow warnings
-
-Tomi Valkeinen (10):
-      OMAPDSS: set suppress_bind_attrs
-      OMAPDSS: apply: wait pending updates on manager disable
-      OMAPFB: fix overlay disable when freeing resources.
-      OMAPFB: fix releasing overlays
-      OMAPDSS: HDMI: fix PLL GO bit handling
-      OMAPDSS: HDMI: fix regsd write
-      OMAPDSS: DISPC: fix mflag offset
-      OMAPDSS: fix dispc register dump for preload & mflag
-      OMAPDSS: DSI: Fix PLL_SELFEQDCO field width
-      Merge branch '3.18/omapdss-fixes' into 3.18/fbdev-fixes
-
- drivers/video/console/fbcon.c                      | 19 ++++++++--------=
--
- drivers/video/console/vgacon.c                     | 24 +++++++++++-----=
-------
- drivers/video/fbdev/atmel_lcdfb.c                  |  1 -
- .../fbdev/omap2/displays-new/connector-analog-tv.c |  3 +++
- .../video/fbdev/omap2/displays-new/connector-dvi.c |  1 +
- .../fbdev/omap2/displays-new/connector-hdmi.c      |  1 +
- .../fbdev/omap2/displays-new/encoder-tfp410.c      |  1 +
- .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |  1 +
- drivers/video/fbdev/omap2/displays-new/panel-dpi.c |  1 +
- .../video/fbdev/omap2/displays-new/panel-dsi-cm.c  |  1 +
- .../omap2/displays-new/panel-lgphilips-lb035q02.c  |  1 +
- .../omap2/displays-new/panel-nec-nl8048hl11.c      |  1 +
- .../omap2/displays-new/panel-sharp-ls037v7dw01.c   |  1 +
- .../omap2/displays-new/panel-sony-acx565akm.c      |  1 +
- .../omap2/displays-new/panel-tpo-td028ttec1.c      |  1 +
- .../omap2/displays-new/panel-tpo-td043mtea1.c      |  1 +
- drivers/video/fbdev/omap2/dss/apply.c              |  2 ++
- drivers/video/fbdev/omap2/dss/dispc.c              |  8 ++++----
- drivers/video/fbdev/omap2/dss/dispc.h              |  3 +--
- drivers/video/fbdev/omap2/dss/dpi.c                |  1 +
- drivers/video/fbdev/omap2/dss/dsi.c                |  3 ++-
- drivers/video/fbdev/omap2/dss/dss.c                |  1 +
- drivers/video/fbdev/omap2/dss/hdmi4.c              |  1 +
- drivers/video/fbdev/omap2/dss/hdmi5.c              |  1 +
- drivers/video/fbdev/omap2/dss/hdmi_pll.c           | 13 ++++++------
- drivers/video/fbdev/omap2/dss/rfbi.c               |  1 +
- drivers/video/fbdev/omap2/dss/sdi.c                |  1 +
- drivers/video/fbdev/omap2/dss/venc.c               |  1 +
- drivers/video/fbdev/omap2/omapfb/omapfb-main.c     | 18 ++++++++--------=
-
- 29 files changed, 67 insertions(+), 46 deletions(-)
-
-
---4CBQKDreR6C7sBvXt7OEsmCJ5fRkHj6e4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUUjsLAAoJEPo9qoy8lh71gOwQAIjG4xI2BiAyOcK6QVc9fftX
-1ya7qr7m6Z2nBmmUdBxPfb2EXxYA+47SO4gJivwJMAQHr8nQfiapJ73MqHQheh++
-yaIqwAAypztiYaH9QF7hnx8DyFzcWnwi82c34jnYXbWDAkqLVvWUEDEAE3ya1udn
-eQE0IMyfHQ/u1baQWEp5ps6q5gHci+ysI/JUTYTddoPfOqzzLADkkocYqxZRcZ1V
-2DZ+splqErMwAflcCL7Dy27n9OJx+LjfM/h3n4HIBPw7K3ujfimnOZfl1HzhmLtU
-szhIk8JvqNh5suGBaH4SeWLsPWAGOTuS42hlZUCCObRjYmOh4uJmL39bWB9KtLKC
-Cs8LXInik+/0aHctblqXNt89z07juWkiDUdB8oe9oY0VZ6/GHh3k1ndWOXNDyEzR
-TlKxOq1NuX/cVHiQykBhdOetoETxOo5IuB9z7LfoGKXnoC1id1hyWOlC8Z7CIHiB
-rYu6z/bzUq3csLD21d3nSVeV5CClRHJpFGqn4w3bS6dBrI5scQKqOjJlJgo71Y+R
-2eFWTdfAsadODt0YISt0uc6IG4rMIOSYMtRB0bedKsF/h2OFZvJQ0n1TWaBlo49t
-ACmuGdYk4H9LvxBURCxKCFqV/hAcZVAwWj3/2gWHzNpb0z8WlYPWUKh1+U5lOmMQ
-DxdaDHT6dBSnoo6IstlJ
-=oTki
------END PGP SIGNATURE-----
-
---4CBQKDreR6C7sBvXt7OEsmCJ5fRkHj6e4--

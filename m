@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Date: Fri, 03 Oct 2014 11:52:03 +0000
-Subject: [PATCH v2 3/5] simplefb: formalize pseudo palette handling
-Message-Id: <1412337125-14388-4-git-send-email-hdegoede@redhat.com>
+Date: Fri, 03 Oct 2014 11:52:01 +0000
+Subject: [PATCH v2 1/5] simplefb: Add simplefb MAINTAINERS entry
+Message-Id: <1412337125-14388-2-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1412337125-14388-1-git-send-email-hdegoede@redhat.com>
 In-Reply-To: <1412337125-14388-1-git-send-email-hdegoede@redhat.com>
@@ -10,80 +10,37 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Luc Verhaegen <libv@skynet.be>
+During the discussion about adding clock handling code to simplefb, it became
+clear that simplefb currently does not have an active maintainer.
 
-Signed-off-by: Luc Verhaegen <libv@skynet.be>
-Acked-by: Stephen Warren <swarren@nvidia.com>
-[hdegoede@redhat.com: drop unnecessary void * cast]
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+I've discussed this with Stephen Warren <swarren@wwwdotorg.org>, the original
+author of simplefb, and with his permisson I'm picking up maintainership of
+simplefb.
+
+Cc: Stephen Warren <swarren@wwwdotorg.org>
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/fbdev/simplefb.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ MAINTAINERS | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index 210f3a0..ec112c1 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -41,6 +41,8 @@ static struct fb_var_screeninfo simplefb_var = {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3705430..01a5fd8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8289,6 +8289,13 @@ F:	drivers/media/usb/siano/
+ F:	drivers/media/usb/siano/
+ F:	drivers/media/mmc/siano/
  
-+#define PSEUDO_PALETTE_SIZE 16
++SIMPLEFB FB DRIVER
++M:	Hans de Goede <hdegoede@redhat.com>
++L:	linux-fbdev@vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/video/simple-framebuffer.txt
++F:	drivers/video/fbdev/simplefb.c
 +
- static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 			      u_int transp, struct fb_info *info)
- {
-@@ -50,7 +52,7 @@ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 	u32 cb = blue >> (16 - info->var.blue.length);
- 	u32 value;
- 
--	if (regno >= 16)
-+	if (regno >= PSEUDO_PALETTE_SIZE)
- 		return -EINVAL;
- 
- 	value = (cr << info->var.red.offset) |
-@@ -163,11 +165,16 @@ static int simplefb_parse_pd(struct platform_device *pdev,
- 	return 0;
- }
- 
-+struct simplefb_par {
-+	u32 palette[PSEUDO_PALETTE_SIZE];
-+};
-+
- static int simplefb_probe(struct platform_device *pdev)
- {
- 	int ret;
- 	struct simplefb_params params;
- 	struct fb_info *info;
-+	struct simplefb_par *par;
- 	struct resource *mem;
- 
- 	if (fb_get_options("simplefb", NULL))
-@@ -188,11 +195,13 @@ static int simplefb_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	info = framebuffer_alloc(sizeof(u32) * 16, &pdev->dev);
-+	info = framebuffer_alloc(sizeof(struct simplefb_par), &pdev->dev);
- 	if (!info)
- 		return -ENOMEM;
- 	platform_set_drvdata(pdev, info);
- 
-+	par = info->par;
-+
- 	info->fix = simplefb_fix;
- 	info->fix.smem_start = mem->start;
- 	info->fix.smem_len = resource_size(mem);
-@@ -225,7 +234,7 @@ static int simplefb_probe(struct platform_device *pdev)
- 		framebuffer_release(info);
- 		return -ENODEV;
- 	}
--	info->pseudo_palette = (void *)(info + 1);
-+	info->pseudo_palette = par->palette;
- 
- 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
- 			     info->fix.smem_start, info->fix.smem_len,
+ SH_VEU V4L2 MEM2MEM DRIVER
+ L:	linux-media@vger.kernel.org
+ S:	Orphan
 -- 
 2.1.0
 

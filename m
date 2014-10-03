@@ -1,62 +1,55 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Oct 2014 07:02:32 +0000
-Subject: Re: [PATCH] drivers: video: fbdev: atmel_lcdfb.c: remove unnecessary header
-Message-Id: <54475688.3090902@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="JfDdJEsOJUsSskD1fKJVInRgdE5n9EOu7"
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 03 Oct 2014 14:05:20 +0000
+Subject: [PATCH v3] dt-bindings: Add a clocks property to the simple-framebuffer binding
+Message-Id: <1412345120-24588-1-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413548355-499-1-git-send-email-alexandre.belloni@free-electrons.com>
- <5444FE2E.6030509@atmel.com>
-In-Reply-To: <5444FE2E.6030509@atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---JfDdJEsOJUsSskD1fKJVInRgdE5n9EOu7
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+A simple-framebuffer node represents a framebuffer setup by the firmware /
+bootloader. Such a framebuffer may have a number of clocks in use, add a
+property to communicate this to the OS.
 
-On 20/10/14 15:21, Nicolas Ferre wrote:
-> On 17/10/2014 14:19, Alexandre Belloni :
->> Remove unnecessary mach/cpu.h header to be able to converge to a multi=
-platform
->> kernel.
->>
->> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com=
->
->=20
-> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
->=20
-> Thanks.
->=20
-> Tomi, can you take it?
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Reviewed-by: Mike Turquette <mturquette@linaro.org>
 
-Thanks, queued for 3.18 fixes.
+--
+Changes in v2:
+-Added Reviewed-by: Mike Turquette <mturquette@linaro.org>
+Changes in v3:
+-Updated description to make clear simplefb deals with more then just memory
+---
+ Documentation/devicetree/bindings/video/simple-framebuffer.txt | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
- Tomi
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+index 70c26f3..91176ee 100644
+--- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+@@ -1,8 +1,8 @@
+ Simple Framebuffer
+ 
+-A simple frame-buffer describes a raw memory region that may be rendered to,
+-with the assumption that the display hardware has already been set up to scan
+-out from that buffer.
++A simple frame-buffer describes a frame-buffer setup by firmware or
++the bootloader, with the assumption that the display hardware has already
++been set up to scan out from the memory pointed to by the ref property.
+ 
+ Required properties:
+ - compatible: "simple-framebuffer"
+@@ -14,6 +14,9 @@ Required properties:
+   - r5g6b5 (16-bit pixels, d[15:11]=r, d[10:5]=g, d[4:0]=b).
+   - a8b8g8r8 (32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r).
+ 
++Optional properties:
++- clocks : List of clocks used by the framebuffer
++
+ Example:
+ 
+ 	framebuffer {
+-- 
+2.1.0
 
-
-
-
---JfDdJEsOJUsSskD1fKJVInRgdE5n9EOu7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUR1aIAAoJEPo9qoy8lh71JLkQAIpD2m1Xb7+RUIdVD/eXGN9W
-E9sl/hk9WPGSH+QhqmiImw6qJb8FPk2M+KqNFgFtmFjm7Eus8aJ6xvM3q4kgVC7U
-KEIZsIZ/qFQ7YBCLRc0kLjcvPJK8SCrEGvPpkpxfWOIRKTg6Ii9IlsF20SY79um0
-AMkpToq8GAgQmDg14cuH+hGYexzDvYMkqVBW5YZVmUGy1IoLD7qbkapyxuOPq1vF
-VAHGeMvPwJhmwAQ7PTtpx80aqLfIolRTZxPqZF1h+TC0q6YibdFJHe1fcIRw1gVT
-pytqZCNgwFOGLwhBi1i2hJ7M0hkmwUFkwaU2Geo1WeRei481IFJUHEPfZiTbBhO7
-f9nT1auKMvRj/bJ0q3RoG7wU7JaeEImEs7PxHPV3vBn4HLjRdyH1jHg1acfwI5ad
-u+NpPcEOZzZZWX53E/aocUjJKNxP4UwP95iguiKbTvyKRITOBk82OZTJHwlTe5D4
-ZLTaBK3NARl2XSzRi9sRHzolPW4TVRkT5i3Z3H7PNdXvjoxM/WWosAa91O4G5Llf
-bXuC57YnXYBkVXZ91Lfpi+v9B7Yhn5HP8387a91zxibzh+32iS6ewLAnKnv9FsqS
-XQaV1gSTzDtnq6H1kf1LOMXYXhx1ZgHJkhf2mvIeGfeAdM1rwRB+KPTk9NQSmxXf
-3L5zJhYwdhUfRMqN4eMG
-=k+tx
------END PGP SIGNATURE-----
-
---JfDdJEsOJUsSskD1fKJVInRgdE5n9EOu7--

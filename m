@@ -1,7 +1,7 @@
 From: "jonsmirl@gmail.com" <jonsmirl@gmail.com>
-Date: Sun, 05 Oct 2014 15:17:49 +0000
+Date: Sun, 05 Oct 2014 15:29:16 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH v3] dt-bindings: Add a clocks property to the simple-framebuffer bindin
-Message-Id: <CAKON4OyE8Zw-yA-mKhPEs=yz-R4=wkZSwA1g8-61pD4RPp1gNQ@mail.gmail.com>
+Message-Id: <CAKON4Oxi_2wVfjMhZKYDbbMXeGnKAyRZyH_SYhTjJCfJbDve6w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1412345120-24588-1-git-send-email-hdegoede@redhat.com>
  <CAL_JsqKU2n8p=YfJua3k-mR40bG_4SiZY8_-SL-MXtuWN5NeHg@mail.gmail.com>
@@ -14,17 +14,15 @@ References: <1412345120-24588-1-git-send-email-hdegoede@redhat.com>
  <CAKON4OwYg8obyjPp9VL5O4fq6zK5jhd+Jr-v59yisoHqX09iag@mail.gmail.com>
  <54315556.2050308@redhat.com>
  <CAKON4Ozo3qZjdweUpkF8kwyisjgwmHeQx_jzh6S5TzGEBnVpnw@mail.gmail.com>
- <543160D6.5040703@redhat.com>
-In-Reply-To: <543160D6.5040703@redhat.com>
+ <CAGb2v67SYW0mS1tLmcNBnNRugwiGEX3ZrDwQMx4B_dUB4-PPuA@mail.gmail.com>
+In-Reply-To: <CAGb2v67SYW0mS1tLmcNBnNRugwiGEX3ZrDwQMx4B_dUB4-PPuA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Sun, Oct 5, 2014 at 11:16 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> Hi,
->
-> On 10/05/2014 05:07 PM, jonsmirl@gmail.com wrote:
+On Sun, Oct 5, 2014 at 11:17 AM, Chen-Yu Tsai <wens@csie.org> wrote:
+> On Sun, Oct 5, 2014 at 11:07 PM, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
 >> On Sun, Oct 5, 2014 at 10:27 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 >>> Hi,
 >>>
@@ -294,31 +292,95 @@ On Sun, Oct 5, 2014 at 11:16 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 >> tkeep problem side effects I know of to a minimum. You are relying on
 >> the BIOS to provide detailed, accurate information. Relying on BIOSes
 >> to do that has historically been a very bad idea.
+>>
+>> If you go the way of putting this info into the chosen section you are
+>> going to have to mark the clocks/regulators in use for all of the
+>> outputs too -- hdmi, TV, LCD, backlights, etc, etc. Not going to be
+>> useful if the backlight turns off because simplefb hasn't grabbed it.
+>>
+>> This is the only real difference between the proposals - you want
+>> uboot to enumerate what needs to be protected. I don't trust the BIOS
+>> to do that reliably so I'd preferred to just protect everything in the
+>> device hardware chain until the device specific drivers load.
+>>
+>> -------------------------------------------------------
+>>
+>> I also still believe this is a problem up in Linux that we shouldn't
+>> be using the device tree to fix.
+>>
+>> It seems to me that the need for something like a 'protected' mode is
+>> a generic problem that could be extended to all hardware. In protected
+>> mode things can be turned on but nothing can be turned off.  Only
+>> after the kernel has all of the necessary drivers loaded would a small
+>> app run that hits an IOCTL and says, ok protected mode is over now
+>> clean up these things wasting power.
 >
-> And here we come to the gist of your objections, I don't agree for
-> various reasons:
->
-> 1) Despite firmware sometimes having bugs, we simply have to trust the firmware,
-> e.g. the reg property of simplefb could be set to point to some mmio rather then
-> just the framebuffer, and writing that mmio could do real bad things, yet we trust
-> it not to do that.
->
-> 2) The firmware we're talking about here, at least for now, is u-boot which
-> is fully FOSS and under our control.
->
-> 3) "I don't trust foo" is not a technical argument, and decisions like this
-> should be made on technical arguments.
+> What happens if some clock needs to be disabled?
+> Like clocks that must be gated before setting a new clock rate
+> or reparenting. The kernel supports these, and it wouldn't surprise me
+> if some driver actually requires this. You might end up blocking that driver
+> or breaking its probe function.
 
-You also realize that uboot now is going to have to be compiled with
-the same DTS that the kernel is using so that the phandles will match
-up. And now you are going to have to recompile your uboot everytime
-that DTS changes.
+Arggh, using those phandles in the chosen section means uboot is going
+to have to get recompiled every time the DTS changes. I think we need
+to come up with a scheme that doesn't need for uboot to be aware of
+phandles.
+
+Something like this...
+uboot adds the chosen section then Linux would error out if the
+framebuffer in the chosen section doesn't match the reserved memory it
+is expecting.  Or make uboot smart enough to hunt down the reserved
+memory section and patch it like it does with dramsize.
+
+ reserved-memory {
+     #address-cells = <1>;
+     #size-cells = <1>;
+     ranges;
+
+     display_reserved: framebuffer@78000000 {
+         reg = <0x78000000  (1600 * 1200 * 2)>;
+     };
+ };
+
+ lcd0: lcd-controller@820000 {
+     compatible = "marvell,dove-lcd";
+     reg = <0x820000 0x1000>;
+     interrupts = <47>;
+     framebuffer = <&display_reserved>;
+     clocks = <&si5351 0>;
+     clock-names = "ext_ref_clk_1";
+ };
+
+ chosen {
+     boot-framebuffer {
+        framebuffer = <0x78000000>;
+        width = <1600>;
+        height = <1200>;
+        stride = <(1600 * 2)>;
+        format = "r5g6b5";
+     };
+ }
+
 
 
 >
-> Regards,
+> And what if reset controls are asserted then de-asserted in the probe function?
+> IIRC there are drivers that do this to reset the underlying hardware.
 >
-> Hans
+>> Maybe it should be renamed 'boot' mode. To implement this the various
+>> 'turn off' functions would get a 'boot' mode flag. In boot mode they
+>> track the ref counts but don't turn things off when the ref count hits
+>> zero.  Then that ioctl() that the user space app calls runs the chains
+>> of all of the clocks/regulators/etc and if the ref count is zero turns
+>> them off again and clears 'boot' mode. Doesn't matter if you turn off
+>> something again that is already off.
+>
+> And what if something just happened to be left on that some driver
+> wants to turn off? You are assuming everything not used is off,
+> which is not always the case.
+>
+>
+> ChenYu
 
 
 

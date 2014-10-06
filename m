@@ -1,35 +1,148 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 06 Oct 2014 09:57:51 +0000
+From: "jonsmirl@gmail.com" <jonsmirl@gmail.com>
+Date: Mon, 06 Oct 2014 11:26:13 +0000
 Subject: Re: Fixing boot-time hiccups in your display
-Message-Id: <CAMuHMdWYiXngW-WKH-R2+QRh0T1_FiuxJOBX+nhL8D+iSnC8Gw@mail.gmail.com>
+Message-Id: <CAKON4Ozum1SeAhecR14uuAmk1NqfMuLZAEyGZnv3Yr0CwAavzA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CAKON4OxRFCvMPMfZhxYNVaxscgAs5AX46YzK-4SU5o6E-iTD1w@mail.gmail.com>
  <20141005200150.4379.28017@quantum>
-In-Reply-To: <20141005200150.4379.28017@quantum>
+ <CAKON4OxunQNC_Ebf5u9yh9EnGS2A+DdWCRyoFcJWS7GSNoLoqA@mail.gmail.com>
+ <54324445.9070400@redhat.com>
+In-Reply-To: <54324445.9070400@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Sun, Oct 5, 2014 at 10:01 PM, Mike Turquette <mturquette@linaro.org> wrote:
-> Quoting jonsmirl@gmail.com (2014-10-05 10:09:52)
->> I edited the subject line to something more appropriate. This impacts
->> a lot of platforms and we should be getting more replies from people
->> on the ARM kernel list. This is likely something that deserves a
->> Kernel Summit discussion.
+On Mon, Oct 6, 2014 at 3:27 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
 >
-> ELC-E and LPC are just around the corner as well. I am attending both. I
-> suppose some of the others interested in this topic will be present?
+> On 10/05/2014 10:34 PM, jonsmirl@gmail.com wrote:
+>> On Sun, Oct 5, 2014 at 4:01 PM, Mike Turquette <mturquette@linaro.org> wrote:
+>>> Quoting jonsmirl@gmail.com (2014-10-05 10:09:52)
+>>>> I edited the subject line to something more appropriate. This impacts
+>>>> a lot of platforms and we should be getting more replies from people
+>>>> on the ARM kernel list. This is likely something that deserves a
+>>>> Kernel Summit discussion.
+>>>
+>>> ELC-E and LPC are just around the corner as well. I am attending both. I
+>>> suppose some of the others interested in this topic will be present?
+>>>
+>>>>
+>>>> To summarize the problem....
+>>>>
+>>>> The BIOS (uboot, etc) may have set various devices up into a working
+>>>> state before handing off to the kernel.  The most obvious example of
+>>>> this is the boot display.
+>>>>
+>>>> So how do we transition onto the kernel provided device specific
+>>>> drivers without interrupting these functioning devices?
+>>>>
+>>>> This used to be simple, just build everything into the kernel. But
+>>>> then along came multi-architecture kernels where most drivers are not
+>>>> built in. Those kernels clean up everything (ie turn off unused
+>>>> clocks, regulators, etc) right before user space starts. That's done
+>>>> as a power saving measure.
+>>>>
+>>>> Unfortunately that code turns off the clocks and regulators providing
+>>>> the display on your screen. Which then promptly gets turned back on a
+>>>> half second later when the boot scripts load the display driver. Let's
+>>>> all hope the boot doesn't fail while the display is turned off.
+>>>
+>>> I would say this is one half of the discussion. How do you ever really
+>>> know when it is safe to disable these things? In a world with loadable
+>>> modules the kernel cannot know that everything that is going to be
+>>> loaded has been loaded. There really is no boundary that makes it easy
+>>> to say, "OK, now it is truly safe for me to disable these things because
+>>> I know every possible piece of code that might claim these resources has
+>>> probed".
+>>
+>> Humans know where this boundary is and can insert the clean up command
+>> at the right point in the bootscript.
+>
+> No they don't, we've been over this so many times already it just is
+> not funny anymore. So I'm not even go to repeat the same old technical
+> arguments why this is not true.
+>
+> There is only one 100% correct moment when it is safe to turn of resources
+> used by something like simplefb, which is when a real driver takes over.
+>
+> The same for any other resources used by any other firmware setup things,
+> the right moment to release those resources is at handover time, and
+> the handover time may differ from driver to driver, so there is no
+> single magic moment to disable this.
 
-I'll be at ELC-E.
+Process works like this...
 
-Gr{oetje,eeting}s,
+boot kernel with built in drivers
+user space starts
+loadable drivers load
+- load device specific framebuffer which claims resources from BIOS
+all the loadable drivers are loaded
+now run the 'clean up' command
 
-                        Geert
+The 'clean up' command only releases resources that no one was
+claimed. The device specific framebuffer loaded and claimed all of the
+video resources, so this command has no impact on those resources.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> Also this non-solution completely discards the use case where e.g. simplefb
+> is used as an early bringup mechanism and there may complete be no real
+> driver for a long time (months if not years). So then again there is no
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+I in no way support long term use of simplefb after the boot process.
+The problems with this model are legendary on the x86. Try running
+your X server right now on the VBIOS driver, see if it functions.
+
+I will point out:
+a) if you are crazy enough to do this, you can do it by simply not
+running the 'clean up' command
+b) write a device specific framebuffer driver while you wait years for
+KMS to appear. Should take under a week to get the device specific
+framebuffer driver going.
+
+> right magic moment to turn the resources off, because in this use case the
+> magic moment is *never*.
+>
+> I'm all for finding a proper solution for this, but you seem to be blind
+> to anything other then your own idea that this is just a boot ordering problem,
+
+Because this needs to be fixed in the OS without relying on detailed
+communication with the BIOS.  Of course you can get this going on one
+box with one BIOS and one kernel. The problems occur when you try to
+get this going on all boxes, all BIOS and all kernels.
+
+> which it is not, the problem is that things like simplefb simply need to claim
+> the resources they use, and then all ordering problems go away.
+>
+> We've tried this "ordering magic" kind of solutions before, see e.g. the
+> scsi_wait_scan module hack, which was not enough, so then initrd-s started
+> inserting sleeps to wait for storage to be available, and the hacks just got
+> uglier and uglier, until we moved to an event based system, and instead
+> of waiting for a "magic moment", actually waited for the storage device
+> we're looking for to show up, which is exactly the same as what we should
+> do here, wait for the real driver to show up.
+>
+> This also means that we need to tie resources to devices like simplefb,
+> because the event causing their release will be that the real driver for
+> the display pipeline loaded, which is not a single event for all similar
+> drivers. And since there is no single event, there is no single moment
+> to do the magic ioctl for this.
+>
+> Really this is a solved problem, The only 100% correct solution is to tie
+> the ordering of releasing the resources to the lifetime of the simplefb,
+> which is easily achieved by making the simplefb properly claim the resources
+> it needs.
+
+...and make sure every BIOS properly describes this. Something that
+never happened in the x86 world in the last thirty years.
+
+>
+> Regards,
+>
+> Hans
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com

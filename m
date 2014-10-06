@@ -1,93 +1,143 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Fri, 31 Oct 2014 09:54:08 +0000
-Subject: Re: [PATCH 01/15] mfd: add new driver for Sharp LoCoMo
-Message-Id: <CALT56yNX8v4mZn=o1ZoVLHPmg6wq0dgFNowpqNuFtU=eCc+d8w@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 06 Oct 2014 12:18:57 +0000
+Subject: Re: [PATCH] videomode: provide dummy of_get_display_timing helper
+Message-Id: <543288B1.8060700@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="XVIrHPBQJpFP2vEInKmIvfVhWhoAKXm7C"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
-	<1414454528-24240-2-git-send-email-dbaryshkov@gmail.com>
-	<CACRpkdbW3NA00zMZr216ZeZpgVkXwKUo30biTVd5kcHKGGtkHg@mail.gmail.com>
-In-Reply-To: <CACRpkdbW3NA00zMZr216ZeZpgVkXwKUo30biTVd5kcHKGGtkHg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo
+References: <1957575.to7BPgiTer@wuerfel>
+In-Reply-To: <1957575.to7BPgiTer@wuerfel>
+To: linux-fbdev@vger.kernel.org
 
-Hello,
+--XVIrHPBQJpFP2vEInKmIvfVhWhoAKXm7C
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Thank you for the review of patches.
-
-2014-10-31 10:42 GMT+03:00 Linus Walleij <linus.walleij@linaro.org>:
-> On Tue, Oct 28, 2014 at 1:01 AM, Dmitry Eremin-Solenikov
-> <dbaryshkov@gmail.com> wrote:
->
->> LoCoMo is a GA used on Sharp Zaurus SL-5x00. Current driver does has
->> several design issues (special bus instead of platform bus, doesn't use
->> mfd-core, etc).
+On 29/09/14 23:43, Laurent Pinchart wrote:
+> Hi Arnd,
+>=20
+> Thank you for the patch.
+>=20
+> On Monday 29 September 2014 18:00:33 Arnd Bergmann wrote:
+>> If CONFIG_OF is disabled but we build any driver that tries to
+>> use of_get_display_timing, we get this link error:
 >>
->> Implement 'core' parts of locomo support as an mfd driver.
+>> ERROR: "of_get_display_timing" [drivers/gpu/drm/rcar-du/rcar-du-drm.ko=
+]
+>> undefined!
 >>
->> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> (...)
->
->> +/* DAC send data */
->> +#define        M62332_SLAVE_ADDR       0x4e    /* Slave address  */
->> +#define        M62332_W_BIT            0x00    /* W bit (0 only) */
->> +#define        M62332_SUB_ADDR         0x00    /* Sub address    */
->> +#define        M62332_A_BIT            0x00    /* A bit (0 only) */
->> +
->> +/* DAC setup and hold times (expressed in us) */
->> +#define DAC_BUS_FREE_TIME      5       /*   4.7 us */
->> +#define DAC_START_SETUP_TIME   5       /*   4.7 us */
->> +#define DAC_STOP_SETUP_TIME    4       /*   4.0 us */
->> +#define DAC_START_HOLD_TIME    5       /*   4.7 us */
->> +#define DAC_SCL_LOW_HOLD_TIME  5       /*   4.7 us */
->> +#define DAC_SCL_HIGH_HOLD_TIME 4       /*   4.0 us */
->> +#define DAC_DATA_SETUP_TIME    1       /*   250 ns */
->> +#define DAC_DATA_HOLD_TIME     1       /*   300 ns */
->> +#define DAC_LOW_SETUP_TIME     1       /*   300 ns */
->> +#define DAC_HIGH_SETUP_TIME    1       /*  1000 ns */
-> (...)
->
-> It seems some DAC handling is part of the MFD driver, and we recently
-> discussed that MFD should not be doing misc stuff but mainly act as
-> arbiter and switching station.
->
-> Can you please move the DAC parts of the driver to
-> drivers/iio/dac?
->
-> The IIO DAC subsystem will likely add other goodies to
-> the driver for free and give a nice API to consumers.
+>> This adds an empty inline function as an alternative, to avoid changin=
+g
+>> each driver using this function when we want to build them without
+>> CONFIG_OF.
+>>
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>=20
+> Shouldn't empty functions also be defined for of_get_display_timings an=
+d=20
+> of_display_timings_exist ?
 
-I wanted this part to be as simple as possible. I will look into IIO
-DAC subsystem.
-The DAC is as simple 2 channel 8-bit i2c device connected to a separate i2c bus
-controlled through a register in LoCoMo device. One channel is used
-for backlight,
-other will be used for volume control. So (in theory) I can add the
-following device
-chain:  locomo -> i2c-locomo -> m62332 -> IIO DAC client.  However isn't that
-quite an overkill for just backlight & volume control? Please advice me on this.
+I took the liberty of updating the patch.=20
+
+Btw, if I just select "Renesas ARM SoCs (non-multiplatform)", without any=
+ of
+the "Renesas ARM SoCs System Type" items, I get compile prints like "warn=
+ing:
+"__LINUX_ARM_ARCH__" is not defined".
+
+And if I select only "ARCH_SH7372", I get "arm-linux-gnueabihf-ld: no mac=
+hine
+record defined".
+
+In any case, I was able to compile the drivers/gpu/drm/rcar-du/rcar-du-dr=
+m.ko,
+so I believe the patch is ok.
+
+ Tomi
+
+=46rom bd1815e4bff50b5569d1989aaf9096d14ce71d12 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 6 Oct 2014 15:03:57 +0300
+Subject: [PATCH] videomode: provide dummy inline functions for !CONFIG_OF=
 
 
-[skipped the irqdomain part - I will use them, thanks for the suggestion.]
+If CONFIG_OF is disabled but we build any driver that tries to
+use of_get_display_timing, we get this link error:
 
->> +       /* Longtime timer */
->> +       writew(0, lchip->base + LOCOMO_LTINT);
->> +       /* SPI */
->> +       writew(0, lchip->base + LOCOMO_SPI + LOCOMO_SPIIE);
->> +
->> +       writew(6 + 8 + 320 + 30 - 10, lchip->base + LOCOMO_ASD);
->
-> That's a few magic numbers and calculation don't you think?
->
-> A comment stating what's going on would be helpful.
+ERROR: "of_get_display_timing" [drivers/gpu/drm/rcar-du/rcar-du-drm.ko] u=
+ndefined!
 
-Unfortunately little is known here - these values are c&p from old 2.4
-Lineo code.
-This part is related to generating synchronization pulses for accessing
-touchscreen.
+This adds an empty inline function as an alternative, to avoid changing
+each driver using this function when we want to build them without
+CONFIG_OF.
 
--- 
-With best wishes
-Dmitry
+Reported-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ include/video/of_display_timing.h | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/include/video/of_display_timing.h b/include/video/of_display=
+_timing.h
+index 79e6697af6cf..3a180c097e7c 100644
+--- a/include/video/of_display_timing.h
++++ b/include/video/of_display_timing.h
+@@ -15,9 +15,26 @@ struct display_timings;
+=20
+ #define OF_USE_NATIVE_MODE -1
+=20
++#ifdef CONFIG_OF
+ int of_get_display_timing(struct device_node *np, const char *name,
+ 		struct display_timing *dt);
+ struct display_timings *of_get_display_timings(struct device_node *np);
+ int of_display_timings_exist(struct device_node *np);
++#else
++static inline int of_get_display_timing(struct device_node *np, const ch=
+ar *name,
++		struct display_timing *dt)
++{
++	return -ENOSYS;
++}
++static inline struct display_timings *of_get_display_timings(struct devi=
+ce_node *np)
++{
++	return NULL;
++}
++static inline int of_display_timings_exist(struct device_node *np)
++{
++	return -ENOSYS;
++}
++
++#endif
+=20
+ #endif
+--=20
+2.1.1
+
+
+
+
+--XVIrHPBQJpFP2vEInKmIvfVhWhoAKXm7C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUMoixAAoJEPo9qoy8lh71efYP/R3pM6hkCnyfXM6yjKES8e8S
+EQL8ctKR3raY4uLrgsOlaDnMyiXexZJTLoPzl4VxJXoG3OeYd7udwe7ajRVaih1e
+Uy5M1sGXNrqpggS/x3idTuHHmpi9pdRiFzNx2e3EL27Yi5fZNwXMIgkoKBsZhxPy
+lOo0qC51JZNxt0md/elgFjAgXvpu0f93DuJyOoy+mpXrrf3lwWeluEK5aEZTp9I8
+XfJo+FUINLCeAi7Y2pXbf8ZZ9SXWVE9Mi/BZTmJa86PtTUaqs9k2f4eRRUwPdY9x
+ycWjHv2ejNoD1mMpfTX7ftcEV5yPwGLG5CtErjcbEm81Ba276BccybJSEJ1DOUlW
+gHmjaUAAfM0N9vrxTSh8WIZvQp7+Sl1t4eDPXUySHKBY5gFkTc4STTgnBmWY9wu5
+0Xi+GvI22U7Usq9f5H12QbmzwPijs3tB5rpeNgAuc27ETTEn8mjeX9/Kiqr1Cn5x
+vkSmIleP+phGo9skyz0HD1uxToWydpLy549R5Y5D2r1cA43+71bxH6uplMqbrPP5
+TCfUWwxbzGk5XAOxPayFVxIEnYIsiG+rfHY46etPyESKou5t/Sv3HyXkoFDUew5v
+fdnYjIzaR6zPnb5K2YY8Q6yLS+ySRISTQ879B4P4FzJL4OVks6jRW7vIwRPG4PId
+gdkbdkfChLY4NbHl0Ygy
+=FgIx
+-----END PGP SIGNATURE-----
+
+--XVIrHPBQJpFP2vEInKmIvfVhWhoAKXm7C--

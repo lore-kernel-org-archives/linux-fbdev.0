@@ -1,94 +1,168 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Fri, 24 Oct 2014 10:37:26 +0000
-Subject: [PATCH 4/5] pcmcia: sa1100: make use of device clock
-Message-Id: <1414147047-12892-5-git-send-email-dbaryshkov@gmail.com>
+From: Davor Joja <davorjoja@logicbricks.com>
+Date: Mon, 06 Oct 2014 13:32:54 +0000
+Subject: [RFC 04/10] video: fbdev: Xylon: Framebuffer driver pixel clock
+Message-Id: <13dd570a-6add-4a96-a872-9e937778d83b@mail.xylon.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1414147047-12892-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1414147047-12892-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Use per-device clock (instead of calling cpufreq_get(0), which can
-return 0 if no cpu frequency driver is selected) to program timings.
+Driver pixel clock control functionality supporting Xylon logiCLK IP
+core clock generator and Silicon labs Si570 I2C clock generator.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
 ---
- drivers/pcmcia/sa1100_generic.c |  1 +
- drivers/pcmcia/sa11xx_base.c    | 14 ++++++++++++--
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/xylon/xylonfb_pixclk.c | 140 +++++++++++++++++++++++++++++
+ 1 file changed, 140 insertions(+)
+ create mode 100644 drivers/video/fbdev/xylon/xylonfb_pixclk.c
 
-diff --git a/drivers/pcmcia/sa1100_generic.c b/drivers/pcmcia/sa1100_generic.c
-index ff8a027..d2ab060 100644
---- a/drivers/pcmcia/sa1100_generic.c
-+++ b/drivers/pcmcia/sa1100_generic.c
-@@ -93,6 +93,7 @@ static int sa11x0_drv_pcmcia_remove(struct platform_device *dev)
- 	for (i = 0; i < sinfo->nskt; i++)
- 		soc_pcmcia_remove_one(&sinfo->skt[i]);
- 
-+	clk_put(sinfo->clk);
- 	kfree(sinfo);
- 	return 0;
- }
-diff --git a/drivers/pcmcia/sa11xx_base.c b/drivers/pcmcia/sa11xx_base.c
-index 54d3089..6dd94bb 100644
---- a/drivers/pcmcia/sa11xx_base.c
-+++ b/drivers/pcmcia/sa11xx_base.c
-@@ -135,14 +135,16 @@ sa1100_pcmcia_frequency_change(struct soc_pcmcia_socket *skt,
- static int
- sa1100_pcmcia_set_timing(struct soc_pcmcia_socket *skt)
- {
--	return sa1100_pcmcia_set_mecr(skt, cpufreq_get(0));
-+	unsigned long clk = clk_get_rate(skt->clk);
+diff --git a/drivers/video/fbdev/xylon/xylonfb_pixclk.c b/drivers/video/fbdev/xylon/xylonfb_pixclk.c
+new file mode 100644
+index 0000000..c7b8674
+--- /dev/null
++++ b/drivers/video/fbdev/xylon/xylonfb_pixclk.c
+@@ -0,0 +1,140 @@
++/*
++ * Xylon logiCVC frame buffer driver pixel clock control
++ *
++ * Copyright (C) 2014 Xylon d.o.o.
++ * Author: Davor Joja <davor.joja@logicbricks.com>
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
-+	return sa1100_pcmcia_set_mecr(skt, clk / 1000);
- }
- 
- static int
- sa1100_pcmcia_show_timing(struct soc_pcmcia_socket *skt, char *buf)
- {
- 	struct soc_pcmcia_timing timing;
--	unsigned int clock = cpufreq_get(0);
-+	unsigned int clock = clk_get_rate(skt->clk);
- 	unsigned long mecr = MECR;
- 	char *p = buf;
- 
-@@ -218,6 +220,11 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
- 	struct skt_dev_info *sinfo;
- 	struct soc_pcmcia_socket *skt;
- 	int i, ret = 0;
++#include <linux/clk.h>
++#include <linux/device.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
++
++struct xylonfb_pixclk {
++	struct device *dev;
++	struct device_node *dn;
 +	struct clk *clk;
++};
 +
-+	clk = clk_get(dev, NULL);
-+	if (IS_ERR(clk))
-+		return -ENODEV;
- 
- 	sa11xx_drv_pcmcia_ops(ops);
- 
-@@ -226,12 +233,14 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
- 		return -ENOMEM;
- 
- 	sinfo->nskt = nr;
-+	sinfo->clk = clk;
- 
- 	/* Initialize processor specific parameters */
- 	for (i = 0; i < nr; i++) {
- 		skt = &sinfo->skt[i];
- 
- 		skt->nr = first + i;
-+		skt->clk = clk;
- 		soc_pcmcia_init_one(skt, ops, dev);
- 
- 		ret = sa11xx_drv_pcmcia_add_one(skt);
-@@ -242,6 +251,7 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
- 	if (ret) {
- 		while (--i >= 0)
- 			soc_pcmcia_remove_one(&sinfo->skt[i]);
-+		clk_put(clk);
- 		kfree(sinfo);
- 	} else {
- 		dev_set_drvdata(dev, sinfo);
++#if defined(CONFIG_FB_XYLON_PIXCLK_LOGICLK)
++static const struct of_device_id logiclk_of_match[] = {
++	{ .compatible = "xylon,logiclk-1.02.b" },
++	{/* end of table */}
++};
++static struct xylonfb_pixclk logiclk;
++#endif
++
++#if defined(CONFIG_FB_XYLON_PIXCLK_SI570)
++static const struct of_device_id si570_of_match[] = {
++	{ .compatible = "silabs,si570" },
++	{/* end of table */}
++};
++static struct xylonfb_pixclk si570;
++#endif
++
++bool xylonfb_hw_pixclk_supported(struct device *dev, struct device_node *dn);
++void xylonfb_hw_pixclk_unload(struct device_node *dn);
++int xylonfb_hw_pixclk_set(struct device *dev, struct device_node *dn,
++			  unsigned long pixclk_khz);
++
++#if defined(CONFIG_FB_XYLON_PIXCLK)
++static int xylonfb_hw_pixclk_set_freq(struct device *dev,
++				      struct device_node *dn,
++				      unsigned long freq_khz)
++{
++	struct clk *clk = NULL;
++
++#if defined(CONFIG_FB_XYLON_PIXCLK_LOGICLK)
++	if (dn = logiclk.dn)
++		clk = logiclk.clk;
++#endif
++
++#if defined(CONFIG_FB_XYLON_PIXCLK_SI570)
++	if (dn = si570.dn)
++		clk = si570.clk;
++#endif
++
++	if (clk && clk_set_rate(clk, (freq_khz * 1000))) {
++		dev_err(dev, "failed set pixel clock frequency\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++#endif
++
++bool xylonfb_hw_pixclk_supported(struct device *dev, struct device_node *dn)
++{
++	struct clk **clk;
++	bool clk_dev = false;
++
++#if defined(CONFIG_FB_XYLON_PIXCLK_LOGICLK)
++	if (of_match_node(logiclk_of_match, of_get_parent(dn))) {
++		clk = &logiclk.clk;
++		logiclk.dev = dev;
++		logiclk.dn = dn;
++		clk_dev = true;
++	}
++#endif
++
++#if defined(CONFIG_FB_XYLON_PIXCLK_SI570)
++	if (of_match_node(si570_of_match, dn)) {
++		clk = &si570.clk;
++		si570.dev = dev;
++		si570.dn = dn;
++		clk_dev = true;
++	}
++#endif
++
++	if (clk_dev) {
++		*clk = devm_clk_get(dev, NULL);
++		if (IS_ERR(*clk)) {
++			dev_err(dev, "failed get pixel clock\n");
++			return false;
++		}
++		if (clk_prepare_enable(*clk)) {
++			dev_err(dev,
++				"failed prepare/enable pixel clock\n");
++			return false;
++		}
++
++		return true;
++	} else {
++		return false;
++	}
++}
++
++void xylonfb_hw_pixclk_unload(struct device_node *dn)
++{
++	struct clk *clk = NULL;
++
++#if defined(CONFIG_FB_XYLON_PIXCLK_LOGICLK)
++	clk = logiclk.clk;
++#endif
++#if defined(CONFIG_FB_XYLON_PIXCLK_SI570)
++	clk = si570.clk;
++#endif
++
++	if (clk)
++		clk_disable_unprepare(clk);
++}
++
++int xylonfb_hw_pixclk_set(struct device *dev, struct device_node *dn,
++			  unsigned long pixclk_khz)
++{
++#if defined(CONFIG_FB_XYLON_PIXCLK)
++	return xylonfb_hw_pixclk_set_freq(dev, dn, pixclk_khz);
++#else
++	dev_warn(dev, "pixel clock control not supported\n");
++	return -ENODEV;
++#endif
++}
 -- 
-2.1.1
+1.9.1
 

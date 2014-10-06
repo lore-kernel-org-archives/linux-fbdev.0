@@ -1,49 +1,23 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 14 Oct 2014 17:29:29 +0000
-Subject: [PATCH v6 10/18] OMAPDSS: Kconfig: Remove HDMI audio booleans from Kconfig
-Message-Id: <4f1911097ffc2039b3988e83369c27a70a4154ab.1413306131.git.jsarha@ti.com>
+From: Davor Joja <davorjoja@logicbricks.com>
+Date: Mon, 06 Oct 2014 13:32:50 +0000
+Subject: Xylon framebuffer driver
+Message-Id: <1412602380-28956-1-git-send-email-davorjoja@logicbricks.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1413306131.git.jsarha@ti.com>
-In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The booleans are not used anymore. Just select SND_OMAP_SOC_HDMI_AUDIO
-to enable OMAP HDMI audio support.
+Hi,
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- drivers/video/fbdev/omap2/dss/Kconfig |    7 -------
- 1 file changed, 7 deletions(-)
+Following patches implement Xylon framebuffer driver for logiCVC IP
+core device. logiCVC is Configurable Video Controller developed and
+optimized for Xilinx FPGA Spartan 6 and Series 7 devices.
+Driver is used within Xilinx Linux kernel for ARM by Xylon and Xilinx
+Zynq SoC reference designs or custom applications to get fb console or
+GUI (Ubuntu desktop, Android) on LCD monitors or embedded device LCDs by
+wide number of users accross the world.
 
-diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
-index 3d5eb6c..d1fa730 100644
---- a/drivers/video/fbdev/omap2/dss/Kconfig
-+++ b/drivers/video/fbdev/omap2/dss/Kconfig
-@@ -74,9 +74,6 @@ config OMAP4_DSS_HDMI
- 	help
- 	  HDMI support for OMAP4 based SoCs.
- 
--config OMAP4_DSS_HDMI_AUDIO
--	bool
--
- config OMAP5_DSS_HDMI
- 	bool "HDMI support for OMAP5"
- 	default n
-@@ -86,10 +83,6 @@ config OMAP5_DSS_HDMI
- 	  Definition Multimedia Interface. See http://www.hdmi.org/ for HDMI
- 	  specification.
- 
--config OMAP5_DSS_HDMI_AUDIO
--	depends on OMAP5_DSS_HDMI
--	bool
--
- config OMAP2_DSS_SDI
- 	bool "SDI support"
-         default n
--- 
-1.7.9.5
+Thanks,
+Davor
 

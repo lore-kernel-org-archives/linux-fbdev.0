@@ -1,18 +1,24 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 07 Oct 2014 09:06:27 +0000
+From: Markus Pargmann <mpa@pengutronix.de>
+Date: Tue, 07 Oct 2014 09:07:18 +0000
 Subject: Re: [PATCH] pwm-backlight: Turn off pwm backlight in probe
-Message-Id: <20141007090627.GH25331@lee--X1>
+Message-Id: <20141007090718.GC5042@pengutronix.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="gatW/ieO32f1wygP"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1412623364-14583-1-git-send-email-mpa@pengutronix.de>
  <20141007083548.GD24254@ulmo>
 In-Reply-To: <20141007083548.GD24254@ulmo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-On Tue, 07 Oct 2014, Thierry Reding wrote:
 
+--gatW/ieO32f1wygP
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Tue, Oct 07, 2014 at 10:35:49AM +0200, Thierry Reding wrote:
 > On Mon, Oct 06, 2014 at 09:22:44PM +0200, Markus Pargmann wrote:
 > > The backlight will be enabled by the panel again if it is used. So we
 > > can save the default brightness and disable the pwm backlight when
@@ -59,12 +65,41 @@ ice *pdev)
 > Lee and Bryan could look at it again and see if we can come up with some
 > way to deal with this situation.
 
-I don't have any experience with this stuff.  Jingoo and Bryan are the
-_real_ reviewers for Backlight.  I just maintain the patches.  That
-and I'm already swamped with MFD.
+Yes your proposal looks a lot better to handle the different use cases.
+The DT-binding is not a hardware description but I don't see any better
+way of passing that information. So it would be good to get your
+solution mainline.
+
+Best regards,
+
+Markus
 
 --=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+
+--gatW/ieO32f1wygP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJUM61GAAoJEEpcgKtcEGQQsZYP/0dzt4YcC1HPXUm3lzWO5LrA
+kqjOVFcNTFzk/SSiDWQq0NPCj3Ete82S9UgYPv1mBpLJ1lCmh3N8EmajLAe+8N9e
+iDLCA1XR7/OIpQpnKKIbMfVxwUxqLnd9sAQW6lBuU0lN8zeX5air7FzaOYPhzKw1
+jsu/i0bpNURLU7zyBiRiHcenMl9rDbXqc84QmKxw3g7NSe5GMenXR9dM3gCnPF5O
+ESz/OMnZIs7Cl1iw0CvZGPm2mEHFlAparQzl1VLCursQeOSsCCPNshCdQN1XELZ1
+jhhmkan2IrvmqDFUcRS/dUYf7INJZY2QW5mmLkeKDYXzDLA6XTztoIyWGd0fmTgg
+kwu+BsN81ww/0q78sbMN5aBmWXMbV0HcLMbNQVhqnKACoRsEN2Uk4glnk0xhSe0u
+DH5EnCbJ0Y8lEKVaiDqBq8yTQw+ha0AZV9jyoDyU/Co0RsSwmv6HCpBsSIuSlKnh
+TqvoP41OEmGKDZB/NfuqdoELMEAfG3az14EhLELUDyDdZCD7vxW+ETg01IIxx1Vw
+5ewar84952bhae2JNEUhQ2xIXaDiyE2UEr97SSPCsU2Xkj9tOCQGxp7wOA/dUd2P
+p9P4BgMawKQUnhZ44uvgUXCmfgywnmMTECzGbZGwEENJvJIduobAW9ON/gB3RLfU
+GdeSUkpKzxJqdwAqehWN
+=/rIG
+-----END PGP SIGNATURE-----
+
+--gatW/ieO32f1wygP--

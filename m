@@ -1,120 +1,110 @@
-From: Markus Pargmann <mpa@pengutronix.de>
-Date: Wed, 08 Oct 2014 09:55:37 +0000
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Wed, 08 Oct 2014 12:13:37 +0000
 Subject: Re: [PATCH] pwm-backlight: Turn off pwm backlight in probe
-Message-Id: <20141008095537.GJ5042@pengutronix.de>
+Message-Id: <20141008121334.GA7357@ulmo.nvidia.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="X+nYw8KZ/oNxZ8JS"
+Content-Type: multipart/mixed; boundary="ew6BAiZeqk4r7MaW"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1412623364-14583-1-git-send-email-mpa@pengutronix.de>
  <20141007083548.GD24254@ulmo>
- <20141007090718.GC5042@pengutronix.de>
- <CAEC9eQNhFE9=0ycbOyf6BzKTyvdGh9EGSCJqDiF7oTtvDWgTTw@mail.gmail.com>
-In-Reply-To: <CAEC9eQNhFE9=0ycbOyf6BzKTyvdGh9EGSCJqDiF7oTtvDWgTTw@mail.gmail.com>
+ <001601cfe2dc$6e964ca0$4bc2e5e0$%han@samsung.com>
+In-Reply-To: <001601cfe2dc$6e964ca0$4bc2e5e0$%han@samsung.com>
 To: linux-arm-kernel@lists.infradead.org
 
 
---X+nYw8KZ/oNxZ8JS
-Content-Type: text/plain; charset=utf-8
+--ew6BAiZeqk4r7MaW
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 07, 2014 at 02:47:53PM +0530, Ajay kumar wrote:
-> On Tue, Oct 7, 2014 at 2:37 PM, Markus Pargmann <mpa@pengutronix.de> wrot=
-e:
-> > Hi,
-> >
-> > On Tue, Oct 07, 2014 at 10:35:49AM +0200, Thierry Reding wrote:
-> >> On Mon, Oct 06, 2014 at 09:22:44PM +0200, Markus Pargmann wrote:
-> >> > The backlight will be enabled by the panel again if it is used. So we
-> >> > can save the default brightness and disable the pwm backlight when
-> >> > probing.
-> >> >
-> >> > Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-> >> > ---
-> >> >  drivers/video/backlight/pwm_bl.c | 4 +++-
-> >> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> >> >
-> >> > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backli=
-ght/pwm_bl.c
-> >> > index 336b83be7e2d..b4f433a6f106 100644
-> >> > --- a/drivers/video/backlight/pwm_bl.c
-> >> > +++ b/drivers/video/backlight/pwm_bl.c
-> >> > @@ -317,9 +317,11 @@ static int pwm_backlight_probe(struct platform_=
-device *pdev)
-> >> >             data->dft_brightness =3D data->max_brightness;
-> >> >     }
-> >> >
-> >> > -   bl->props.brightness =3D data->dft_brightness;
-> >> > +   bl->props.brightness =3D 0;
-> >> >     backlight_update_status(bl);
-> >> >
-> >> > +   bl->props.brightness =3D data->dft_brightness;
-> >> > +
-> >> >     platform_set_drvdata(pdev, bl);
-> >> >     return 0;
-> >> >
-> >>
-> >> It would be nice if it was that easy. But we can't do this, because it
-> >> will regress for users of this driver that don't use a panel or DRM. If
-> >> the PWM backlight driver is used for example in conjunction with a pla=
-in
-> >> fbdev driver it isn't necessarily hooked up with anything and won't be
-> >> enabled automatically. That's really bad if fbdev is the only output y=
-ou
-> >> have since you'd have to blindly type the commands to enable the
-> >> backlight. Furthermore disabling backlight isn't always what you want =
-to
-> >> do. For example if the bootloader already turned it on and you hand ov=
-er
-> >> from bootloader to kernel in a seamless way, then you absolutely want =
-to
-> >> keep backlight on all the time.
-> >>
-> >> See also[0] for a different proposal to solve the same problem. Back at
-> >> the time that received only a very few replies, but it would be nice if
-> >> Lee and Bryan could look at it again and see if we can come up with so=
-me
-> >> way to deal with this situation.
-> >
-> > Yes your proposal looks a lot better to handle the different use cases.
-> > The DT-binding is not a hardware description but I don't see any better
-> > way of passing that information. So it would be good to get your
-> > solution mainline.
-> +1
-> And, I have already tested Thierry's proposal on Exynos5800 peach_pi.
+On Wed, Oct 08, 2014 at 06:44:19PM +0900, Jingoo Han wrote:
+> On Tuesday, October 07, 2014 5:36 PM, Thierry Reding wrote:
+> > On Mon, Oct 06, 2014 at 09:22:44PM +0200, Markus Pargmann wrote:
+> > > The backlight will be enabled by the panel again if it is used. So we
+> > > can save the default brightness and disable the pwm backlight when
+> > > probing.
+> > >
+> > > Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> > > ---
+> > >  drivers/video/backlight/pwm_bl.c | 4 +++-
+> > >  1 file changed, 3 insertions(+), 1 deletion(-)
+> > >
+> > > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlig=
+ht/pwm_bl.c
+> > > index 336b83be7e2d..b4f433a6f106 100644
+> > > --- a/drivers/video/backlight/pwm_bl.c
+> > > +++ b/drivers/video/backlight/pwm_bl.c
+> > > @@ -317,9 +317,11 @@ static int pwm_backlight_probe(struct platform_d=
+evice *pdev)
+> > >  		data->dft_brightness =3D data->max_brightness;
+> > >  	}
+> > >
+> > > -	bl->props.brightness =3D data->dft_brightness;
+> > > +	bl->props.brightness =3D 0;
+> > >  	backlight_update_status(bl);
+> > >
+> > > +	bl->props.brightness =3D data->dft_brightness;
+> > > +
+> > >  	platform_set_drvdata(pdev, bl);
+> > >  	return 0;
+> > >
+> >=20
+> > It would be nice if it was that easy. But we can't do this, because it
+> > will regress for users of this driver that don't use a panel or DRM. If
+> > the PWM backlight driver is used for example in conjunction with a plain
+> > fbdev driver it isn't necessarily hooked up with anything and won't be
+> > enabled automatically. That's really bad if fbdev is the only output you
+> > have since you'd have to blindly type the commands to enable the
+> > backlight. Furthermore disabling backlight isn't always what you want to
+> > do. For example if the bootloader already turned it on and you hand over
+> > from bootloader to kernel in a seamless way, then you absolutely want to
+> > keep backlight on all the time.
+> >=20
+> > See also[0] for a different proposal to solve the same problem. Back at
+> > the time that received only a very few replies, but it would be nice if
+> > Lee and Bryan could look at it again and see if we can come up with some
+> > way to deal with this situation.
+>=20
+> (+cc Ajay Kumar)
+>=20
+> As I said earlier, I agree with this proposal.
 
-I also tested Thierry's patch on i.MX6s now and it works fine.
+I'm not sure which proposal exactly. I originally proposed adding a
+backlight-boot-off property, but that received some pushback from DT
+people because it isn't strictly hardware information but configuration
+data.
 
-Regards,
+Perhaps a better solution would be to default to not touching the
+backlight status on probe at all. But we can't do that for non-DT
+because of backwards-compatibility. For DT it seems like all users have
+some form of DRM/KMS driver too, so I'd expect them to turn it off when
+appropriate.
 
-Markus
+Should we just go and make that change (no changing backlight state for
+DT) and see if anybody complains? If so, I'll gladly prepare a patch to
+do just that.
 
---=20
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Thierry
 
---X+nYw8KZ/oNxZ8JS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+--ew6BAiZeqk4r7MaW
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUNQoZAAoJEEpcgKtcEGQQ8ogP/3QTZ3/uW9F9K0EEgdGBAXVy
-1p2yEpJiSARFXEs11GAj3W64iwE59q5SxOs0qKT18XKb180gbpzWlDv103/+ujsC
-NFU83QLJgYd2rUcxhTZIZqsirmuC7+HCT9IKnRf6VVOAT7Gsx7CV32LU+fV6mr/0
-k5pYvJKF8ZZGW0wEhE1fOYPjl7y24WB9SIoVy1aJnuioI5xnL2N0zCx9lzFl6nu6
-z1j/k9WYWUINmIJVrxmtvRCEP1ZLRa+POZOkH2t5UhaOc6iqWG0RmcjBBfGZ+eNq
-x4uL7U6mN982hWUZAfkuv5PQshPT6fOuSF7AJbnMMplIJmm02kQGq8eMkcfXZhok
-zJbPSGanJkLwyOTILv3wtm62OjqZndE9MteqJIeTVir1tFi/IEVi+Hn/IWCJsLP5
-kLkCLAFuraKYunNxK8Z2TnRlq3g3HT+UtZEDF/tzqlZCpu2IVZPv/iYOjGDSF1cE
-HALmLnt4YJnK+LhIVDmMXZ70MGrtSr4pNW5x84MI1Ois6fnIpMhEAV2GuFmvKzB7
-tMtfS5Vw6q+KHifoSoOrnIz5KUaJPnvCiYYlJtY8QiRiuid+TpkJuTWZtnEBVRX3
-74WJlUnydF9WItk3SG82FR3Fumbt5gq3NOUd1nRhvnmdx70TZ+zRmuiMkRQzEuQy
-7jaiZAVZDfQZgm2iCV+z
-=R7Zb
+iQIcBAEBAgAGBQJUNSpuAAoJEN0jrNd/PrOhF3MP/3I1wJF3YUTIJe+8YMoLMVYJ
+CdE9w0c5jar6AARLwOpIWQgKJ9PJiiIklmfyQ4WVO+nVCGb2Y9+zMzUXRQxl6uyn
+ojIQLO7NHmexHfN7w5BnMdfFLZxfOoqrvivwyiUERniQ39ZD9RAeFklArj7TzOhx
+Q89xuIy7J9VJBVAbc8osZ5ItvNZUvCKrbRyOAFvyqQ6LmtqyqKlaojjIkGeVDTXw
++WcKZJTI7zv7U8XQDX4K7ESy0RrWLhHTJKo3EML4CWm8EFmMD1zdfnHXZEFqFs9n
+lZ58z5OxGZzJHHtzzHiZI+7Ppe3TaOz99oHyCt3Kq5t/tqxkd2EvJ5BNk2OSalbt
+MfgkuZLAEIXF26h9+sYXf0x3acB8O9O1dSVxAiy+olxDEcJJBsjpG1yK5+FKsR09
+TG0aB01n63pCR2v5MO3+IpDbEsoKwLuxJQgZOPYt3CI1rjc/wXqi31V7i0LDfJgi
+wRm6SCp88jQ8ebj70/eGuA2AO2Dw6Mlol3BmvCwpHKYTJZ7mbS28gJ7Olpuqtzay
+CYdzXKelHUoRPwzXN688xT/Soeyp3n7EkJHg4hUsBv5o3iiG10MKWoeIMBnvaPil
+hMX9tjmQz5LkPKNoSMZLf2BMViavP81z3aqWSHfm4gEuuuTyBihIF2+EcJAdogED
+BqhRx70HsauPixD5ikiM
+=zcuU
 -----END PGP SIGNATURE-----
 
---X+nYw8KZ/oNxZ8JS--
+--ew6BAiZeqk4r7MaW--

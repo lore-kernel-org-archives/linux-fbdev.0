@@ -1,20 +1,17 @@
-From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Date: Thu, 02 Oct 2014 12:40:37 +0000
+From: Maarten ter Huurne <maarten@treewalker.org>
+Date: Wed, 08 Oct 2014 07:25:11 +0000
 Subject: Re: [PATCH] fonts: Add 6x10 font
-Message-Id: <20141002134037.4d437d7b@alan.etchedpixels.co.uk>
+Message-Id: <2514574.0C4va8fPM6@hyperion>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1410263188-10532-1-git-send-email-maarten@treewalker.org>
-	<542A7ADA.4010500@ti.com>
+References: <1410263188-10532-1-git-send-email-maarten@treewalker.org> <542A7ADA.4010500@ti.com>
 In-Reply-To: <542A7ADA.4010500@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Maarten ter Huurne <maarten@treewalker.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Apelete Seketeli <apelete@seketeli.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Apelete Seketeli <apelete@seketeli.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 30 Sep 2014 12:41:46 +0300
-Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-
+On Tuesday 30 September 2014 12:41:46 Tomi Valkeinen wrote:
 > Hi,
 > 
 > On 09/09/14 14:46, Maarten ter Huurne wrote:
@@ -28,25 +25,29 @@ Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
 > > 
 > > Signed-off-by: Maarten ter Huurne <maarten@treewalker.org>
 > > ---
+> > 
 > >  include/linux/font.h  |    4 +-
 > >  lib/fonts/Kconfig     |    9 +
 > >  lib/fonts/Makefile    |    1 +
-> >  lib/fonts/font_6x10.c | 3086 +++++++++++++++++++++++++++++++++++++++++++++++++
-> >  lib/fonts/fonts.c     |    4 +
+> >  lib/fonts/font_6x10.c | 3086
+> >  +++++++++++++++++++++++++++++++++++++++++++++++++ lib/fonts/fonts.c   
+> >   |    4 +
 > >  5 files changed, 3103 insertions(+), 1 deletion(-)
 > >  create mode 100644 lib/fonts/font_6x10.c
 > 
 > I think the patch is fine, but there hasn't been any comments or acks
 > for this. I'm a bit reluctant to add this much data to the kernel if
 > there are no users (except you) for this.
-> 
-> So I'd like to hear at least one "yeah, I could maybe use that font"
-> from someone =).
 
-It only going to get linked if someone asks for it so that seems ok to
-me. We support a variety of panels and the like with 320x240 displays and
-ucLinux platforms so IMHO it makes sense to have such a font available.
+Are you counting end users, developers or projects? We've got at least 
+several thousand end users in OpenDingux for Dingoo A320 and GCW Zero 
+combined. I could ask a few fellow developers for signed-off-by lines, if 
+that helps. But it's all from the same project.
 
-I am planning to use the font - just ermm.. not in Linux ;)
+I think the font fills a space that is currently unoccupied: the 4x6 font is 
+space efficient but barely readable, the 8x8 font gets only 40 columns on 
+320x240 and the 6x11 font doesn't use the vertical space efficiently.
 
-Alan
+Bye,
+		Maarten
+

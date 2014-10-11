@@ -1,39 +1,58 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Wed, 29 Oct 2014 18:41:01 +0000
-Subject: Re: [PATCH 0/5] arm: sa1100: fix sa1100 fb and pcmcia w/o cpufreq
-Message-Id: <CALT56yM0A9HiU8JgN2Of5XT8wC9tB-vK0j40SuRebtyJ3KbUfw@mail.gmail.com>
+From: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+Date: Sat, 11 Oct 2014 13:46:25 +0000
+Subject: [PATCH 1/2] backlight: pwm: don't call legacy pwm request for device defined in dt
+Message-Id: <1413035186-11771-2-git-send-email-vladimir_zapolskiy@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1414147047-12892-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1414147047-12892-1-git-send-email-dbaryshkov@gmail.com>
+References: <1413035186-11771-1-git-send-email-vladimir_zapolskiy@mentor.com>
+In-Reply-To: <1413035186-11771-1-git-send-email-vladimir_zapolskiy@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org
+Cc: Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, stable@vger.kernel.org
 
-2014-10-24 13:37 GMT+03:00 Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>:
-> Hello,
->
-> These patches were sitting in my queue for some time. On SA-1100
-> framebuffer and PCMCIA drivers make use of cpufreq_get(0) function call
-> to determine the cpu frequency. Russell's commit
-> 1937f5b91833e2e8e53bcc821fc7a5fbe6ccb9b5 (ARM: fix sa1100 build) fixed
-> the build issues, but broke two devices (Collie and Jornada720). For
-> those two boards the cpufreq code gets compiled but is not enabled (as
-> board files do not provide timing information for the CPUFREQ driver).
-> Thus cpufreq_get(0) returns incorrect values and incorrect timings get
-> programmed into the hardware.
->
-> PXA2xx (the very similar platform) uses Clock API to determine CPU
-> frequency both in framebuffer and PCMCIA drivers. These patches make
-> similar changes to StrongARM drivers.
->
-> These patches are required to make use of framebuffer and CF card on
-> Sharp Collie (and possibly on HP Jornada 720).
+Platform PWM backlight data provided by board's device tree should be
+complete enough to successfully request a pwm device using pwm_get() API.
 
-Russell, what about these patches?
-They are absolutely required for Collie to work properly.
+Based on initial implementation done by Dmitry Eremin-Solenikov.
 
+Reported-by: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
+Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Bryan Wu <cooloney@gmail.com>
+Cc: Lee Jones <lee.jones@linaro.org>
+---
+ drivers/video/backlight/pwm_bl.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index cb5ae4c..dd7aaf7 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -272,15 +272,15 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+-	if (IS_ERR(pb->pwm)) {
++	if (IS_ERR(pb->pwm) && !pdev->dev.of_node) {
+ 		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+-
+ 		pb->pwm = pwm_request(data->pwm_id, "pwm-backlight");
+-		if (IS_ERR(pb->pwm)) {
+-			dev_err(&pdev->dev, "unable to request legacy PWM\n");
+-			ret = PTR_ERR(pb->pwm);
+-			goto err_alloc;
+-		}
++	}
++
++	if (IS_ERR(pb->pwm)) {
++		dev_err(&pdev->dev, "unable to request PWM\n");
++		ret = PTR_ERR(pb->pwm);
++		goto err_alloc;
+ 	}
+ 
+ 	dev_dbg(&pdev->dev, "got pwm for backlight\n");
 -- 
-With best wishes
-Dmitry
+1.7.10.4
+

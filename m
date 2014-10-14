@@ -1,286 +1,182 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Tue, 28 Oct 2014 00:02:00 +0000
-Subject: [PATCH 07/15] video: backlight: drop old locomo bl/lcd driver
-Message-Id: <1414454528-24240-8-git-send-email-dbaryshkov@gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 14 Oct 2014 17:29:21 +0000
+Subject: [PATCH v6 02/18] OMAPDSS: hdmi: Remove most of OMAP[45]_DSS_HDMI_AUDIO ifdefs
+Message-Id: <7828fe827cada19ad03a9965744cc9175af7327e.1413306131.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
+References: <cover.1413306131.git.jsarha@ti.com>
+In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Old locomolcd driver is now completely obsolete by new locomo_bl and
-locomo_lcd drivers, so let's drop it.
+It does not waste too many bytes to compile all audio related core
+functions always in with HDMI support. It should help readability and
+in keeping the audio code in working shape. Leave the options just for
+disabling and enabling the functionality in hdmi[45].c.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/backlight/locomolcd.c | 255 ------------------------------------
- 1 file changed, 255 deletions(-)
- delete mode 100644 drivers/video/backlight/locomolcd.c
+ drivers/video/fbdev/omap2/dss/hdmi.h        |    3 +--
+ drivers/video/fbdev/omap2/dss/hdmi4_core.c  |    5 -----
+ drivers/video/fbdev/omap2/dss/hdmi4_core.h  |    2 --
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c  |    6 ------
+ drivers/video/fbdev/omap2/dss/hdmi5_core.h  |    2 --
+ drivers/video/fbdev/omap2/dss/hdmi_common.c |    2 --
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c     |    2 --
+ 7 files changed, 1 insertion(+), 21 deletions(-)
 
-diff --git a/drivers/video/backlight/locomolcd.c b/drivers/video/backlight/locomolcd.c
-deleted file mode 100644
-index 6c3ec42..0000000
---- a/drivers/video/backlight/locomolcd.c
-+++ /dev/null
-@@ -1,255 +0,0 @@
--/*
-- * Backlight control code for Sharp Zaurus SL-5500
-- *
-- * Copyright 2005 John Lenz <lenz@cs.wisc.edu>
-- * Maintainer: Pavel Machek <pavel@ucw.cz> (unless John wants to :-)
-- * GPL v2
-- *
-- * This driver assumes single CPU. That's okay, because collie is
-- * slightly old hardware, and no one is going to retrofit second CPU to
-- * old PDA.
-- */
--
--/* LCD power functions */
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/delay.h>
--#include <linux/device.h>
--#include <linux/interrupt.h>
--#include <linux/fb.h>
--#include <linux/backlight.h>
--
--#include <asm/hardware/locomo.h>
--#include <asm/irq.h>
--#include <asm/mach/sharpsl_param.h>
--#include <asm/mach-types.h>
--
--#include "../../../arch/arm/mach-sa1100/generic.h"
--
--static struct backlight_device *locomolcd_bl_device;
--static struct locomo_dev *locomolcd_dev;
--static unsigned long locomolcd_flags;
--#define LOCOMOLCD_SUSPENDED     0x01
--
--static void locomolcd_on(int comadj)
--{
--	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHA_ON, 0);
--	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHA_ON, 1);
--	mdelay(2);
--
--	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHD_ON, 0);
--	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHD_ON, 1);
--	mdelay(2);
--
--	locomo_m62332_senddata(locomolcd_dev, comadj, 0);
--	mdelay(5);
--
--	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VEE_ON, 0);
--	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VEE_ON, 1);
--	mdelay(10);
--
--	/* TFTCRST | CPSOUT=0 | CPSEN */
--	locomo_writel(0x01, locomolcd_dev->mapbase + LOCOMO_TC);
--
--	/* Set CPSD */
--	locomo_writel(6, locomolcd_dev->mapbase + LOCOMO_CPSD);
--
--	/* TFTCRST | CPSOUT=0 | CPSEN */
--	locomo_writel((0x04 | 0x01), locomolcd_dev->mapbase + LOCOMO_TC);
--	mdelay(10);
--
--	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_MOD, 0);
--	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_MOD, 1);
--}
--
--static void locomolcd_off(int comadj)
--{
--	/* TFTCRST=1 | CPSOUT=1 | CPSEN = 0 */
--	locomo_writel(0x06, locomolcd_dev->mapbase + LOCOMO_TC);
--	mdelay(1);
--
--	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHA_ON, 0);
--	mdelay(110);
--
--	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VEE_ON, 0);
--	mdelay(700);
--
--	/* TFTCRST=0 | CPSOUT=0 | CPSEN = 0 */
--	locomo_writel(0, locomolcd_dev->mapbase + LOCOMO_TC);
--	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_MOD, 0);
--	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHD_ON, 0);
--}
--
--void locomolcd_power(int on)
--{
--	int comadj = sharpsl_param.comadj;
--	unsigned long flags;
--
--	local_irq_save(flags);
--
--	if (!locomolcd_dev) {
--		local_irq_restore(flags);
--		return;
--	}
--
--	/* read comadj */
--	if (comadj = -1 && machine_is_collie())
--		comadj = 128;
--	if (comadj = -1 && machine_is_poodle())
--		comadj = 118;
--
--	if (on)
--		locomolcd_on(comadj);
--	else
--		locomolcd_off(comadj);
--
--	local_irq_restore(flags);
--}
--EXPORT_SYMBOL(locomolcd_power);
--
--static int current_intensity;
--
--static int locomolcd_set_intensity(struct backlight_device *bd)
--{
--	int intensity = bd->props.brightness;
--
--	if (bd->props.power != FB_BLANK_UNBLANK)
--		intensity = 0;
--	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
--		intensity = 0;
--	if (locomolcd_flags & LOCOMOLCD_SUSPENDED)
--		intensity = 0;
--
--	switch (intensity) {
--	/*
--	 * AC and non-AC are handled differently,
--	 * but produce same results in sharp code?
--	 */
--	case 0:
--		locomo_frontlight_set(locomolcd_dev, 0, 0, 161);
--		break;
--	case 1:
--		locomo_frontlight_set(locomolcd_dev, 117, 0, 161);
--		break;
--	case 2:
--		locomo_frontlight_set(locomolcd_dev, 163, 0, 148);
--		break;
--	case 3:
--		locomo_frontlight_set(locomolcd_dev, 194, 0, 161);
--		break;
--	case 4:
--		locomo_frontlight_set(locomolcd_dev, 194, 1, 161);
--		break;
--	default:
--		return -ENODEV;
--	}
--	current_intensity = intensity;
--	return 0;
--}
--
--static int locomolcd_get_intensity(struct backlight_device *bd)
--{
--	return current_intensity;
--}
--
--static const struct backlight_ops locomobl_data = {
--	.get_brightness = locomolcd_get_intensity,
--	.update_status  = locomolcd_set_intensity,
--};
--
--#ifdef CONFIG_PM_SLEEP
--static int locomolcd_suspend(struct device *dev)
--{
--	locomolcd_flags |= LOCOMOLCD_SUSPENDED;
--	locomolcd_set_intensity(locomolcd_bl_device);
--	return 0;
--}
--
--static int locomolcd_resume(struct device *dev)
--{
--	locomolcd_flags &= ~LOCOMOLCD_SUSPENDED;
--	locomolcd_set_intensity(locomolcd_bl_device);
--	return 0;
--}
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 1f01068..03726b5 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -335,7 +335,7 @@ int hdmi_phy_parse_lanes(struct hdmi_phy_data *phy, const u32 *lanes);
+ int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
+ 	struct hdmi_phy_data *phy);
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
++/* Audio funcs */
+ int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts);
+ int hdmi_wp_audio_enable(struct hdmi_wp_data *wp, bool enable);
+ int hdmi_wp_audio_core_req_enable(struct hdmi_wp_data *wp, bool enable);
+@@ -348,4 +348,3 @@ static inline bool hdmi_mode_has_audio(int mode)
+ 	return mode = HDMI_HDMI ? true : false;
+ }
+ #endif
+-#endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+index 4ad39cf..3b448d9 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+@@ -31,10 +31,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/string.h>
+ #include <linux/seq_file.h>
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ #include <sound/asound.h>
+ #include <sound/asoundef.h>
+-#endif
+ 
+ #include "hdmi4_core.h"
+ #include "dss_features.h"
+@@ -530,7 +528,6 @@ void hdmi4_core_dump(struct hdmi_core_data *core, struct seq_file *s)
+ 	DUMPCOREAV(HDMI_CORE_AV_CEC_ADDR_ID);
+ }
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ static void hdmi_core_audio_config(struct hdmi_core_data *core,
+ 					struct hdmi_core_audio_config *cfg)
+ {
+@@ -886,8 +883,6 @@ int hdmi4_audio_get_dma_port(u32 *offset, u32 *size)
+ 	return 0;
+ }
+ 
 -#endif
 -
--static SIMPLE_DEV_PM_OPS(locomolcd_pm_ops, locomolcd_suspend, locomolcd_resume);
+ int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+ {
+ 	struct resource *res;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.h b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
+index 827909e..c1959f7 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
+@@ -266,12 +266,10 @@ void hdmi4_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ void hdmi4_core_dump(struct hdmi_core_data *core, struct seq_file *s);
+ int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core);
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ int hdmi4_audio_start(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
+ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
+ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 		struct omap_dss_audio *audio, u32 pclk);
+ int hdmi4_audio_get_dma_port(u32 *offset, u32 *size);
+-#endif
+ 
+ #endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+index 83acbf7..8eab25b 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+@@ -30,10 +30,8 @@
+ #include <linux/string.h>
+ #include <linux/seq_file.h>
+ #include <drm/drm_edid.h>
+-#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+ #include <sound/asound.h>
+ #include <sound/asoundef.h>
+-#endif
+ 
+ #include "hdmi5_core.h"
+ 
+@@ -644,9 +642,6 @@ void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 	hdmi_core_enable_interrupts(core);
+ }
+ 
 -
--static int locomolcd_probe(struct locomo_dev *ldev)
--{
--	struct backlight_properties props;
--	unsigned long flags;
+-#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
 -
--	local_irq_save(flags);
--	locomolcd_dev = ldev;
--
--	locomo_gpio_set_dir(ldev->dev.parent, LOCOMO_GPIO_FL_VR, 0);
--
--	/*
--	 * the poodle_lcd_power function is called for the first time
--	 * from fs_initcall, which is before locomo is activated.
--	 * We need to recall poodle_lcd_power here
--	 */
--	if (machine_is_poodle())
--		locomolcd_power(1);
--
--	local_irq_restore(flags);
--
--	memset(&props, 0, sizeof(struct backlight_properties));
--	props.type = BACKLIGHT_RAW;
--	props.max_brightness = 4;
--	locomolcd_bl_device = backlight_device_register("locomo-bl",
--							&ldev->dev, NULL,
--							&locomobl_data, &props);
--
--	if (IS_ERR(locomolcd_bl_device))
--		return PTR_ERR(locomolcd_bl_device);
--
--	/* Set up frontlight so that screen is readable */
--	locomolcd_bl_device->props.brightness = 2;
--	locomolcd_set_intensity(locomolcd_bl_device);
--
--	return 0;
--}
--
--static int locomolcd_remove(struct locomo_dev *dev)
--{
--	unsigned long flags;
--
--	locomolcd_bl_device->props.brightness = 0;
--	locomolcd_bl_device->props.power = 0;
--	locomolcd_set_intensity(locomolcd_bl_device);
--
--	backlight_device_unregister(locomolcd_bl_device);
--	local_irq_save(flags);
--	locomolcd_dev = NULL;
--	local_irq_restore(flags);
--	return 0;
--}
--
--static struct locomo_driver poodle_lcd_driver = {
--	.drv = {
--		.name	= "locomo-backlight",
--		.pm	= &locomolcd_pm_ops,
--	},
--	.devid	= LOCOMO_DEVID_BACKLIGHT,
--	.probe	= locomolcd_probe,
--	.remove	= locomolcd_remove,
--};
--
--static int __init locomolcd_init(void)
--{
--	return locomo_driver_register(&poodle_lcd_driver);
--}
--
--static void __exit locomolcd_exit(void)
--{
--	locomo_driver_unregister(&poodle_lcd_driver);
--}
--
--module_init(locomolcd_init);
--module_exit(locomolcd_exit);
--
--MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>, Pavel Machek <pavel@ucw.cz>");
--MODULE_DESCRIPTION("Collie LCD driver");
--MODULE_LICENSE("GPL");
+ static void hdmi5_core_audio_config(struct hdmi_core_data *core,
+ 			struct hdmi_core_audio_config *cfg)
+ {
+@@ -894,7 +889,6 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+ {
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.h b/drivers/video/fbdev/omap2/dss/hdmi5_core.h
+index ce7e9f3..f2f1022 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5_core.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.h
+@@ -299,8 +299,6 @@ void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 			struct hdmi_config *cfg);
+ int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core);
+ 
+-#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 			struct omap_dss_audio *audio, u32 pclk);
+ #endif
+-#endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_common.c b/drivers/video/fbdev/omap2/dss/hdmi_common.c
+index 7d5f103..1b8fcc6 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_common.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_common.c
+@@ -48,7 +48,6 @@ int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
+ 	return 0;
+ }
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts)
+ {
+ 	u32 deep_color;
+@@ -147,4 +146,3 @@ int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts)
+ 
+ 	return 0;
+ }
+-#endif
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index 496327e..f1b53de 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -185,7 +185,6 @@ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ 	timings->interlace = param->timings.interlace;
+ }
+ 
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+ void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
+ 		struct hdmi_audio_format *aud_fmt)
+ {
+@@ -236,7 +235,6 @@ int hdmi_wp_audio_core_req_enable(struct hdmi_wp_data *wp, bool enable)
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ {
 -- 
-2.1.1
+1.7.9.5
 

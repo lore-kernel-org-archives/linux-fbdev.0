@@ -1,37 +1,40 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Sat, 11 Oct 2014 14:21:46 +0000
-Subject: Re: [PATCH 1/2] backlight: pwm: don't call legacy pwm request for device defined in dt
-Message-Id: <20141011142146.GB11456@kroah.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 14 Oct 2014 17:29:27 +0000
+Subject: [PATCH v6 08/18] ASoC: codecs/hdmi: HDMI codec doesn't benefit from pmdown delay
+Message-Id: <aa7ad47271e780b75b608382a8830cdc22c4193a.1413306131.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413035186-11771-1-git-send-email-vladimir_zapolskiy@mentor.com>
- <1413035186-11771-2-git-send-email-vladimir_zapolskiy@mentor.com>
-In-Reply-To: <1413035186-11771-2-git-send-email-vladimir_zapolskiy@mentor.com>
+References: <cover.1413306131.git.jsarha@ti.com>
+In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Cc: linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, stable@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-On Sat, Oct 11, 2014 at 04:46:25PM +0300, Vladimir Zapolskiy wrote:
-> Platform PWM backlight data provided by board's device tree should be
-> complete enough to successfully request a pwm device using pwm_get() API.
-> 
-> Based on initial implementation done by Dmitry Eremin-Solenikov.
-> 
-> Reported-by: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
-> Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-> Cc: Thierry Reding <thierry.reding@gmail.com>
-> Cc: Jingoo Han <jg1.han@samsung.com>
-> Cc: Bryan Wu <cooloney@gmail.com>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> ---
->  drivers/video/backlight/pwm_bl.c |   14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
+Adds .ignore_pmdown_time = true to codec driver struct.
 
-<formletter>
+HDMI codec is currently a dummy codec and doesn't benefit from pmdown
+delay. Even if in the future the codec would controll HDMI encoder, it
+would still be a digital to digital interface that should have no need
+for pmdown delay.
 
-This is not the correct way to submit patches for inclusion in the
-stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
-for how to do this properly.
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ sound/soc/codecs/hdmi.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-</formletter>
+diff --git a/sound/soc/codecs/hdmi.c b/sound/soc/codecs/hdmi.c
+index 2a52b90..1391ad5 100644
+--- a/sound/soc/codecs/hdmi.c
++++ b/sound/soc/codecs/hdmi.c
+@@ -76,6 +76,7 @@ static struct snd_soc_codec_driver hdmi_codec = {
+ 	.num_dapm_widgets = ARRAY_SIZE(hdmi_widgets),
+ 	.dapm_routes = hdmi_routes,
+ 	.num_dapm_routes = ARRAY_SIZE(hdmi_routes),
++	.ignore_pmdown_time = true,
+ };
+ 
+ static int hdmi_codec_probe(struct platform_device *pdev)
+-- 
+1.7.9.5
+

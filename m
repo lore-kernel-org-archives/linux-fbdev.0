@@ -1,92 +1,49 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 22 Oct 2014 16:45:09 +0000
-Subject: [PATCH v4 3/5] simplefb: formalize pseudo palette handling
-Message-Id: <1413996311-4287-4-git-send-email-hdegoede@redhat.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 14 Oct 2014 17:29:29 +0000
+Subject: [PATCH v6 10/18] OMAPDSS: Kconfig: Remove HDMI audio booleans from Kconfig
+Message-Id: <4f1911097ffc2039b3988e83369c27a70a4154ab.1413306131.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
+References: <cover.1413306131.git.jsarha@ti.com>
+In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-From: Luc Verhaegen <libv@skynet.be>
+The booleans are not used anymore. Just select SND_OMAP_SOC_HDMI_AUDIO
+to enable OMAP HDMI audio support.
 
-Signed-off-by: Luc Verhaegen <libv@skynet.be>
-Acked-by: Stephen Warren <swarren@nvidia.com>
-[hdegoede@redhat.com: drop unnecessary void * cast]
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/simplefb.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/omap2/dss/Kconfig |    7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index 210f3a0..ec112c1 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -41,6 +41,8 @@ static struct fb_var_screeninfo simplefb_var = {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
+diff --git a/drivers/video/fbdev/omap2/dss/Kconfig b/drivers/video/fbdev/omap2/dss/Kconfig
+index 3d5eb6c..d1fa730 100644
+--- a/drivers/video/fbdev/omap2/dss/Kconfig
++++ b/drivers/video/fbdev/omap2/dss/Kconfig
+@@ -74,9 +74,6 @@ config OMAP4_DSS_HDMI
+ 	help
+ 	  HDMI support for OMAP4 based SoCs.
  
-+#define PSEUDO_PALETTE_SIZE 16
-+
- static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 			      u_int transp, struct fb_info *info)
- {
-@@ -50,7 +52,7 @@ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 	u32 cb = blue >> (16 - info->var.blue.length);
- 	u32 value;
+-config OMAP4_DSS_HDMI_AUDIO
+-	bool
+-
+ config OMAP5_DSS_HDMI
+ 	bool "HDMI support for OMAP5"
+ 	default n
+@@ -86,10 +83,6 @@ config OMAP5_DSS_HDMI
+ 	  Definition Multimedia Interface. See http://www.hdmi.org/ for HDMI
+ 	  specification.
  
--	if (regno >= 16)
-+	if (regno >= PSEUDO_PALETTE_SIZE)
- 		return -EINVAL;
- 
- 	value = (cr << info->var.red.offset) |
-@@ -163,11 +165,16 @@ static int simplefb_parse_pd(struct platform_device *pdev,
- 	return 0;
- }
- 
-+struct simplefb_par {
-+	u32 palette[PSEUDO_PALETTE_SIZE];
-+};
-+
- static int simplefb_probe(struct platform_device *pdev)
- {
- 	int ret;
- 	struct simplefb_params params;
- 	struct fb_info *info;
-+	struct simplefb_par *par;
- 	struct resource *mem;
- 
- 	if (fb_get_options("simplefb", NULL))
-@@ -188,11 +195,13 @@ static int simplefb_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	info = framebuffer_alloc(sizeof(u32) * 16, &pdev->dev);
-+	info = framebuffer_alloc(sizeof(struct simplefb_par), &pdev->dev);
- 	if (!info)
- 		return -ENOMEM;
- 	platform_set_drvdata(pdev, info);
- 
-+	par = info->par;
-+
- 	info->fix = simplefb_fix;
- 	info->fix.smem_start = mem->start;
- 	info->fix.smem_len = resource_size(mem);
-@@ -225,7 +234,7 @@ static int simplefb_probe(struct platform_device *pdev)
- 		framebuffer_release(info);
- 		return -ENODEV;
- 	}
--	info->pseudo_palette = (void *)(info + 1);
-+	info->pseudo_palette = par->palette;
- 
- 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
- 			     info->fix.smem_start, info->fix.smem_len,
+-config OMAP5_DSS_HDMI_AUDIO
+-	depends on OMAP5_DSS_HDMI
+-	bool
+-
+ config OMAP2_DSS_SDI
+ 	bool "SDI support"
+         default n
 -- 
-2.1.0
+1.7.9.5
 

@@ -1,7 +1,7 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 14 Oct 2014 17:29:22 +0000
-Subject: [PATCH v6 03/18] OMAPDSS: hdmi4_core: Remove unused hdmi4_audio_get_dma_port()
-Message-Id: <87a848e28ba91aeede8e3cf37f41f4df354b096d.1413306131.git.jsarha@ti.com>
+Date: Tue, 14 Oct 2014 17:29:23 +0000
+Subject: [PATCH v6 04/18] OMAPDSS: hdmi_wp: Add function for getting audio dma address
+Message-Id: <f56679af8371c78e901a29e37398f050a17b1c6c.1413306131.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1413306131.git.jsarha@ti.com>
 In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
@@ -11,45 +11,55 @@ Content-Transfer-Encoding: 7bit
 To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-hdmi4_audio_get_dma_port() is unused and and broken.
+The audio dma port is found in the hdmi_wp physical address space.
 
 Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi4_core.c |    9 ---------
- drivers/video/fbdev/omap2/dss/hdmi4_core.h |    2 --
- 2 files changed, 11 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi.h    |    2 ++
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c |    6 ++++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-index 3b448d9..7eafea5 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-@@ -874,15 +874,6 @@ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp)
- 	hdmi_wp_audio_core_req_enable(wp, false);
- }
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 03726b5..9ba7c1a 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -250,6 +250,7 @@ struct hdmi_core_audio_config {
  
--int hdmi4_audio_get_dma_port(u32 *offset, u32 *size)
--{
--	if (!offset || !size)
--		return -EINVAL;
--	*offset = HDMI_WP_AUDIO_DATA;
--	*size = 4;
--	return 0;
--}
--
- int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
- {
- 	struct resource *res;
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.h b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-index c1959f7..a069f96 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-@@ -270,6 +270,4 @@ int hdmi4_audio_start(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
- void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
- int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 		struct omap_dss_audio *audio, u32 pclk);
--int hdmi4_audio_get_dma_port(u32 *offset, u32 *size);
--
- #endif
+ struct hdmi_wp_data {
+ 	void __iomem *base;
++	phys_addr_t phys_base;
+ };
+ 
+ struct hdmi_pll_data {
+@@ -317,6 +318,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
+ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ 		struct omap_video_timings *timings, struct hdmi_config *param);
+ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
++phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp);
+ 
+ /* HDMI PLL funcs */
+ int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index f1b53de..5154120 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -245,6 +245,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 		DSSERR("can't get WP mem resource\n");
+ 		return -EINVAL;
+ 	}
++	wp->phys_base = res->start;
+ 
+ 	wp->base = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(wp->base)) {
+@@ -254,3 +255,8 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 
+ 	return 0;
+ }
++
++phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp)
++{
++	return wp->phys_base + HDMI_WP_AUDIO_DATA;
++}
 -- 
 1.7.9.5
 

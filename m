@@ -1,113 +1,36 @@
-From: Davor Joja <davorjoja@logicbricks.com>
-Date: Mon, 06 Oct 2014 13:32:57 +0000
-Subject: [RFC 07/10] include: uapi: linux: Xylon framebuffer driver header file
-Message-Id: <729d07b2-c697-40a9-96e1-d0bc08b1c3b1@mail.xylon.local>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 14 Oct 2014 17:29:25 +0000
+Subject: [PATCH v6 06/18] OMAPDSS: hdmi: Add pdev pointer for audio_pdev in HDMI DRV data
+Message-Id: <edfccd85dbe95035c0b4ff1905ec16623fd38482.1413306131.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1413306131.git.jsarha@ti.com>
+In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Driver header file containing structures and IOCTLs for user space
-apps to be able to use complete logiCVC hw functionality.
+This is used to store omap-hdmi-audio pdev for unregistering it.
 
-Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- include/uapi/linux/xylonfb.h | 85 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 85 insertions(+)
- create mode 100644 include/uapi/linux/xylonfb.h
+ drivers/video/fbdev/omap2/dss/hdmi.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/include/uapi/linux/xylonfb.h b/include/uapi/linux/xylonfb.h
-new file mode 100644
-index 0000000..5db8344
---- /dev/null
-+++ b/include/uapi/linux/xylonfb.h
-@@ -0,0 +1,85 @@
-+/*
-+ * Xylon logiCVC frame buffer driver IOCTL parameters
-+ *
-+ * Copyright (C) 2014 Xylon d.o.o.
-+ * Author: Davor Joja <davor.joja@logicbricks.com>
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 6bf077b..a6e08ff 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -368,6 +368,8 @@ struct omap_hdmi {
+ 	bool core_enabled;
+ 
+ 	struct omap_dss_device output;
 +
-+#ifndef __XYLONFB_H__
-+#define __XYLONFB_H__
-+
-+#include <linux/types.h>
-+
-+struct xylonfb_hw_access {
-+	__u32 offset;
-+	__u32 value;
-+	bool set;
-+};
-+
-+/* Used only with logiCVC 3.x */
-+struct xylonfb_layer_buffer {
-+	__u8 id;
-+	bool set;
-+};
-+
-+struct xylonfb_layer_color {
-+	__u32 raw_rgb;
-+	__u8 use_raw;
-+	__u8 r;
-+	__u8 g;
-+	__u8 b;
-+	bool set;
-+};
-+
-+struct xylonfb_layer_geometry {
-+	__u16 x;
-+	__u16 y;
-+	__u16 width;
-+	__u16 height;
-+	__u16 x_offset;
-+	__u16 y_offset;
-+	bool set;
-+};
-+
-+struct xylonfb_layer_transparency {
-+	__u8 alpha;
-+	bool set;
-+};
-+
-+/* Xylon FB IOCTL's */
-+#define XYLONFB_IOW(num, dtype)		_IOW('x', num, dtype)
-+#define XYLONFB_IOR(num, dtype)		_IOR('x', num, dtype)
-+#define XYLONFB_IOWR(num, dtype)	_IOWR('x', num, dtype)
-+#define XYLONFB_IO(num)			_IO('x', num)
-+
-+#define XYLONFB_VSYNC_CTRL		XYLONFB_IOR(30, bool)
-+#define XYLONFB_LAYER_IDX		XYLONFB_IOR(31, unsigned int)
-+#define XYLONFB_LAYER_ALPHA		\
-+	XYLONFB_IOR(32, struct xylonfb_layer_transparency)
-+#define XYLONFB_LAYER_COLOR_TRANSP_CTRL	XYLONFB_IOW(33, bool)
-+#define XYLONFB_LAYER_COLOR_TRANSP \
-+	XYLONFB_IOR(34, struct xylonfb_layer_color)
-+#define XYLONFB_LAYER_GEOMETRY \
-+	XYLONFB_IOR(35, struct xylonfb_layer_geometry)
-+#define XYLONFB_LAYER_BUFFER \
-+	XYLONFB_IOR(36, struct xylonfb_layer_buffer)
-+#define XYLONFB_LAYER_BUFFER_OFFSET	XYLONFB_IOR(37, unsigned int)
-+#define XYLONFB_BACKGROUND_COLOR \
-+	XYLONFB_IOR(38, struct xylonfb_layer_color)
-+#define XYLONFB_LAYER_EXT_BUFF_SWITCH	XYLONFB_IOW(39, bool)
-+#define XYLONFB_HW_ACCESS \
-+	XYLONFB_IOR(40, struct xylonfb_hw_access)
-+#define XYLONFB_IP_CORE_VERSION		XYLONFB_IOR(41, __u32)
-+#define XYLONFB_WAIT_EDID		XYLONFB_IOW(42, unsigned int)
-+#define XYLONFB_GET_EDID		XYLONFB_IOR(43, char)
-+
-+#endif /* __XYLONFB_H__ */
++	struct platform_device *audio_pdev;
+ };
+ 
+ #endif
 -- 
-1.9.1
+1.7.9.5
 

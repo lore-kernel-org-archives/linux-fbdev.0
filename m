@@ -1,43 +1,110 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Fri, 03 Oct 2014 11:53:31 +0000
-Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
-Message-Id: <542E8E3B.9070003@redhat.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Tue, 14 Oct 2014 11:53:49 +0000
+Subject: [PATCH] video/console: Resolve several shadow warnings
+Message-Id: <1413287629-11749-1-git-send-email-jeffrey.t.kirsher@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20140929101805.GB26008@ulmo>	<20140929114643.GB4081@lukather>	<20140929134708.GB30998@ulmo>	<20140929155517.GR16977@sirena.org.uk>	<20140930050923.GB29874@ulmo>	<20140930173928.GH4273@sirena.org.uk>	<20141001074139.GB18463@ulmo>	<CABxcv=nKErHGPRLM5yer2YnOc2VJPWLmeKgwXbXEU3r_XvsCyg@mail.gmail.com>	<20141001123250.GY4273@sirena.org.uk>	<20141001124800.GA21733@ulmo>	<20141001170517.GF4273@sirena.org.uk>	<542C3934.3040409@redhat.com>
- <CAKON4OxzerMyuza-GSfmYiLMqA=Y3HOXko7a8rOcP_8PkHVF3w@mail.gmail.com>
- <542C4404.8040501@wwwdotorg.org> <542CF3C3.2050708@redhat.com>
- <542D73F5.9040605@wwwdotorg.org> <542E8590.70206@redhat.com>
- <542E8C4E.7010001@ti.com>
-In-Reply-To: <542E8C4E.7010001@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: Mark Rustad <mark.d.rustad@intel.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Hi Tomi,
+From: Mark Rustad <mark.d.rustad@intel.com>
 
-On 10/03/2014 01:45 PM, Tomi Valkeinen wrote:
-> On 03/10/14 14:16, Hans de Goede wrote:
-> 
->>>> You indicate that you don't have the time for this discussion, and I note that
->>>> there is no MAINTAINERS entry for drivers/video/fbdev/simplefb.c . So how about
->>>> the following, I pick up drivers/video/fbdev/simplefb.c maintainership, adding
->>>> MAINTAINERS entry for it with my name in it. Then as the maintainer it will be
->>>> my responsibility (and in my own benefit) to stop this from growing into
->>>> a monster ?
->>>
->>> I have no issue with you being the maintainer.
->>
->> Great, I'll send a patch for MAINTAINERS for this then.
-> 
-> In that case, could you, as the maintainer, summarize the plans and/or
-> biggest issues for simplefb? =)
-> 
-> I've been planning to read this monster thread, but I just haven't found
-> time.
+Resolve shadow warnings that appear in W=2 builds by renaming
+the "state" global to "vgastate".
 
-See the cover letter of the patch-set I've just send.
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
+ drivers/video/console/vgacon.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-Regards,
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 6e6aa70..517f565 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -56,7 +56,7 @@ static int cursor_size_lastfrom;
+ static int cursor_size_lastto;
+ static u32 vgacon_xres;
+ static u32 vgacon_yres;
+-static struct vgastate state;
++static struct vgastate vgastate;
+ 
+ #define BLANK 0x0020
+ 
+@@ -400,7 +400,7 @@ static const char *vgacon_startup(void)
+ 
+ 	vga_video_num_lines = screen_info.orig_video_lines;
+ 	vga_video_num_columns = screen_info.orig_video_cols;
+-	state.vgabase = NULL;
++	vgastate.vgabase = NULL;
+ 
+ 	if (screen_info.orig_video_mode = 7) {
+ 		/* Monochrome display */
+@@ -851,12 +851,12 @@ static void vga_set_palette(struct vc_data *vc, unsigned char *table)
+ {
+ 	int i, j;
+ 
+-	vga_w(state.vgabase, VGA_PEL_MSK, 0xff);
++	vga_w(vgastate.vgabase, VGA_PEL_MSK, 0xff);
+ 	for (i = j = 0; i < 16; i++) {
+-		vga_w(state.vgabase, VGA_PEL_IW, table[i]);
+-		vga_w(state.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
+-		vga_w(state.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
+-		vga_w(state.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
++		vga_w(vgastate.vgabase, VGA_PEL_IW, table[i]);
++		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
++		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
++		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
+ 	}
+ }
+ 
+@@ -1008,7 +1008,7 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
+ 	switch (blank) {
+ 	case 0:		/* Unblank */
+ 		if (vga_vesa_blanked) {
+-			vga_vesa_unblank(&state);
++			vga_vesa_unblank(&vgastate);
+ 			vga_vesa_blanked = 0;
+ 		}
+ 		if (vga_palette_blanked) {
+@@ -1022,7 +1022,7 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
+ 	case 1:		/* Normal blanking */
+ 	case -1:	/* Obsolete */
+ 		if (!mode_switch && vga_video_type = VIDEO_TYPE_VGAC) {
+-			vga_pal_blank(&state);
++			vga_pal_blank(&vgastate);
+ 			vga_palette_blanked = 1;
+ 			return 0;
+ 		}
+@@ -1034,7 +1034,7 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
+ 		return 1;
+ 	default:		/* VESA blanking */
+ 		if (vga_video_type = VIDEO_TYPE_VGAC) {
+-			vga_vesa_blank(&state, blank - 1);
++			vga_vesa_blank(&vgastate, blank - 1);
+ 			vga_vesa_blanked = blank;
+ 		}
+ 		return 0;
+@@ -1280,7 +1280,7 @@ static int vgacon_font_set(struct vc_data *c, struct console_font *font, unsigne
+ 	    (charcount != 256 && charcount != 512))
+ 		return -EINVAL;
+ 
+-	rc = vgacon_do_font_op(&state, font->data, 1, charcount = 512);
++	rc = vgacon_do_font_op(&vgastate, font->data, 1, charcount = 512);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -1299,7 +1299,7 @@ static int vgacon_font_get(struct vc_data *c, struct console_font *font)
+ 	font->charcount = vga_512_chars ? 512 : 256;
+ 	if (!font->data)
+ 		return 0;
+-	return vgacon_do_font_op(&state, font->data, 0, vga_512_chars);
++	return vgacon_do_font_op(&vgastate, font->data, 0, vga_512_chars);
+ }
+ 
+ #else
+-- 
+1.9.3
 
-Hans

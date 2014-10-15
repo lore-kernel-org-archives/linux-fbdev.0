@@ -1,85 +1,97 @@
-From: Felipe Balbi <balbi@ti.com>
-Date: Wed, 15 Oct 2014 14:38:49 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 15 Oct 2014 15:45:15 +0000
 Subject: Re: [PATCH 2/3] video: fbdev: omap2: omapfb: add missing MODULE_ALIAS()
-Message-Id: <20141015143849.GC10888@saruman>
+Message-Id: <543E968B.3030802@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="iFRdW5/EC4oqxDHL"
+Content-Type: multipart/mixed; boundary="sW1N06TlJk8jnK9hQQnNi6P5DoL1QbbgR"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1413311335-25083-1-git-send-email-balbi@ti.com>
- <1413311335-25083-2-git-send-email-balbi@ti.com>
- <543E6683.5040103@ti.com>
-In-Reply-To: <543E6683.5040103@ti.com>
+ <1413311335-25083-2-git-send-email-balbi@ti.com> <543E6683.5040103@ti.com>
+ <20141015143849.GC10888@saruman>
+In-Reply-To: <20141015143849.GC10888@saruman>
 To: linux-arm-kernel@lists.infradead.org
 
---iFRdW5/EC4oqxDHL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--sW1N06TlJk8jnK9hQQnNi6P5DoL1QbbgR
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 15, 2014 at 03:20:19PM +0300, Tomi Valkeinen wrote:
-> On 14/10/14 21:28, Felipe Balbi wrote:
-> > without MODULE_ALIAS(), omapfb won't get loaded
-> > automatically.
-> >=20
-> > Signed-off-by: Felipe Balbi <balbi@ti.com>
-> > ---
-> >  drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> >=20
-> > diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/v=
-ideo/fbdev/omap2/omapfb/omapfb-main.c
-> > index 9cbf1ce..b4b9244 100644
-> > --- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-> > +++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-> > @@ -2651,6 +2651,7 @@ module_param_named(mirror, def_mirror, bool, 0);
-> > =20
-> >  module_platform_driver(omapfb_driver);
-> > =20
-> > +MODULE_ALIAS("platform:omapfb");
-> >  MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@nokia.com>");
-> >  MODULE_DESCRIPTION("OMAP2/3 Framebuffer");
-> >  MODULE_LICENSE("GPL v2");
-> >=20
->=20
-> Thanks, I've queued this.
->=20
-> Unfortunately it's somewhat based on luck if the automatic loading works
-> correctly. We can't add more displays after omapfb has been probed, so
-> all the panel and encoder drivers have to be loaded before omapfb.
->=20
-> We have two workarounds there, which help the situation a bit. First is
-> that if omapfb finds no displays, it returns EPROBE_DEFER. The second is
-> that if there are displays, but no main display (display0), then omapfb
-> returns EPROBE_DEFER.
->=20
-> So even with these workarounds it is possible that drivers for secondary
-> displays are loaded after omapfb, causing them to be ignored.
+On 15/10/14 17:38, Felipe Balbi wrote:
+> On Wed, Oct 15, 2014 at 03:20:19PM +0300, Tomi Valkeinen wrote:
+>> On 14/10/14 21:28, Felipe Balbi wrote:
+>>> without MODULE_ALIAS(), omapfb won't get loaded
+>>> automatically.
+>>>
+>>> Signed-off-by: Felipe Balbi <balbi@ti.com>
+>>> ---
+>>>  drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 1 +
+>>>  1 file changed, 1 insertion(+)
+>>>
+>>> diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers=
+/video/fbdev/omap2/omapfb/omapfb-main.c
+>>> index 9cbf1ce..b4b9244 100644
+>>> --- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+>>> +++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+>>> @@ -2651,6 +2651,7 @@ module_param_named(mirror, def_mirror, bool, 0)=
+;
+>>> =20
+>>>  module_platform_driver(omapfb_driver);
+>>> =20
+>>> +MODULE_ALIAS("platform:omapfb");
+>>>  MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@nokia.com>");
+>>>  MODULE_DESCRIPTION("OMAP2/3 Framebuffer");
+>>>  MODULE_LICENSE("GPL v2");
+>>>
+>>
+>> Thanks, I've queued this.
+>>
+>> Unfortunately it's somewhat based on luck if the automatic loading wor=
+ks
+>> correctly. We can't add more displays after omapfb has been probed, so=
 
-then there is another case to fix, right ? :-)
+>> all the panel and encoder drivers have to be loaded before omapfb.
+>>
+>> We have two workarounds there, which help the situation a bit. First i=
+s
+>> that if omapfb finds no displays, it returns EPROBE_DEFER. The second =
+is
+>> that if there are displays, but no main display (display0), then omapf=
+b
+>> returns EPROBE_DEFER.
+>>
+>> So even with these workarounds it is possible that drivers for seconda=
+ry
+>> displays are loaded after omapfb, causing them to be ignored.
+>=20
+> then there is another case to fix, right ? :-)
 
---=20
-balbi
+Yes, but don't hold your breath. The issue's been there for ages and no
+good solutions have been found. The same problem is there for omapdrm.
 
---iFRdW5/EC4oqxDHL
+ Tomi
+
+
+
+--sW1N06TlJk8jnK9hQQnNi6P5DoL1QbbgR
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUPob5AAoJEIaOsuA1yqRESrgP/1XvsANYLf7WhOaxFd7ABhSB
-GDoICmVuZuF04xX+TNrfxt831g5/SuPECf+j694sD+dVr+ghZVRrrIidPgwSxDHP
-eSiRCvOYB4SqN2BEP4ADoBOv03LEN3VgFJ/kyNYQWxbc04MaP8uDeEzFTxn5WDxn
-N+VYAf1TRlAI7l21oKL1gvLESfnnkEBXfRq5k8de6YtQoriR3PHl+ecqLpYWowAw
-GPOCqvopzZ9lJIN3rOkZuDmxAeegj3yX1Tnv50kumT1OgSsuGOojOk6RrWGxW2pq
-EbFy32MeSg4AmcWo11jfdaY0hJKYQzXcHByMV1e1XIRkPMY9e95kEl8NlipaLbbz
-ByxQHvzujCSOInQNsPzye9bO5GldlL/wvKZ1C9Rp2z3dnEOHmz6BcBB/abwyXCI3
-UwNpIT2IwcE9QPasOAZFcNUDMzPwfDFNMITqFaTNK/Qr5fYE2OOilcfwwVmLX4Kv
-qofo4dgZaSFo+YjvLi7iO/G/anvL4JPjnbQqh78lGQaavrfTVt0YF2VAoKfxevNJ
-AYgAmXrQ6LPXAAXEVI9ewp3Ez+Ves5po+pljgUxNVUqXtkCMMFefTO2euwt0UlEB
-6P2hvrOc35j1FcJnuqpihRtlWAhD0wYFXnZwrfPU2XabLjk3pKLqxmfAX6g05uLU
-+fQNw9zLsRJ1tNC54w8K
-=ASvG
+iQIcBAEBAgAGBQJUPpaLAAoJEPo9qoy8lh71BVkP/2c9ekbzzTMI+UqRFEVlDA7P
+OuzDajqC5cyu1Nkwk3GI/6rmpWgkOpUfZeUwjF8BKbJvLyG9tCQvF1DhI4o2lgAn
+ciXWbmxlCs9kQT0ELT7vixO+12ARJHZNmomRoKdXOYecXTVP/R4apRao2fIoGLES
+a7M3SKBBhRf5JvjSE9HVBr5Pkk1rXtW4OI6suRrNKhLeiZJV2Ri85v8DStFOJmJ1
+X5qKuvgAA/i5bVldn2X+Vz+JRYljwkATzP9vae2jQr4TBSRjOIgAGLN9bWYHR5wL
+bbiZVTrE73mm9qmpr+EEyzfoCIeEuzwkBUR+bz4MX6vpwyAqM2JBNWJUO6RKon/2
+XnV8dkqXo7L9XbAJz+sAVsPhkg/B3NPYLi+d35mGKFxICU9oi7wXFsoG8LB1ryPd
+YeYPcbohn+iLrczXbucOHjG/6cWL+UI3Sc3zm/ebIYwVu5Vop0XVziItm/GoHzsd
+eOXxn19WCeGgL9Mx98AejoLYUQRoUFJ0+xK2d8Mil1K4rtt6NKiLzCKI2RqUSLu/
+9n6CRQ9hZPhA7832rIn3PUtU131hCBZdf8YlHO/rgX23Q5VrlyJcVJ7bgI67XjfF
+Q0zrXWVUKXc4FvSfyw9qxbdDI2nyUp9w/o5fnffiJRggpwro1bY+AVkAe59PyEm8
+NmkVWLf062zQlpy7V4zY
+=KM8U
 -----END PGP SIGNATURE-----
 
---iFRdW5/EC4oqxDHL--
+--sW1N06TlJk8jnK9hQQnNi6P5DoL1QbbgR--

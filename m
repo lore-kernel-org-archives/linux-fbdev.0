@@ -1,37 +1,43 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 14 Oct 2014 17:29:26 +0000
-Subject: [PATCH v6 07/18] ASoC: codecs/hdmi: Mark the maximum significant bits to HDMI codec
-Message-Id: <9d3aa456eb4d753c38fc642bf0a8cd5fdc5af54a.1413306131.git.jsarha@ti.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Wed, 15 Oct 2014 10:25:54 +0000
+Subject: Re: [PATCH v6 07/18] ASoC: codecs/hdmi: Mark the maximum significant bits to HDMI codec
+Message-Id: <20141015102553.GA27755@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="EkX7vcqEIssJSBlq"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1413306131.git.jsarha@ti.com>
-In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+ <9d3aa456eb4d753c38fc642bf0a8cd5fdc5af54a.1413306131.git.jsarha@ti.com>
+In-Reply-To: <9d3aa456eb4d753c38fc642bf0a8cd5fdc5af54a.1413306131.git.jsarha@ti.com>
+To: Jyri Sarha <jsarha@ti.com>
+Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com
 
-HDMI audio can not have more than 24 bits even if on i2s bus there
-would be 32 bit samples. Mark this by adding .sig_bits = 24 to
-playback stream definition.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- sound/soc/codecs/hdmi.c |    1 +
- 1 file changed, 1 insertion(+)
+--EkX7vcqEIssJSBlq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/sound/soc/codecs/hdmi.c b/sound/soc/codecs/hdmi.c
-index 1087fd5..2a52b90 100644
---- a/sound/soc/codecs/hdmi.c
-+++ b/sound/soc/codecs/hdmi.c
-@@ -47,6 +47,7 @@ static struct snd_soc_dai_driver hdmi_codec_dai = {
- 			SNDRV_PCM_RATE_176400 | SNDRV_PCM_RATE_192000,
- 		.formats = SNDRV_PCM_FMTBIT_S16_LE |
- 			SNDRV_PCM_FMTBIT_S24_LE | SNDRV_PCM_FMTBIT_S32_LE,
-+		.sig_bits = 24,
- 	},
- 	.capture = {
- 		.stream_name = "Capture",
--- 
-1.7.9.5
+On Tue, Oct 14, 2014 at 08:29:26PM +0300, Jyri Sarha wrote:
+> HDMI audio can not have more than 24 bits even if on i2s bus there
+> would be 32 bit samples. Mark this by adding .sig_bits = 24 to
+> playback stream definition.
 
+Applied, thanks.  Please use subject lines matching the style for the
+subsystem (no codecs/).
+
+--EkX7vcqEIssJSBlq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUPkuxAAoJECTWi3JdVIfQjjwH/RzFFl4tVHtgWGCDi7sCOnnp
+lFyPVeSgYzloEHfXhVp57wzf6KXyBJkTlifVRJTViPfHwTuRw+cV5OdrdJztITRy
+6XwA6MJZCgCwu0e0x924nAmTQ653od5H0DpNaKiYq67entzVsILZ85iEVwAC5Aew
+KfuqZHq0p7n/lZIqVIpZF+Go4kGFVhr3QFUvCt9Pzc8b2Byb/AeF8uKYpadBC4q9
+jGYa6xbTpDliMRvWof+mx+xLEIDqXLQcAaSenmkRq2y/lhPXe6bRjolD4vGda48p
+kW5qS258V3Y1uq6tczUS0Wk/UKAmTmyN75YNeiy578SsYunLo+LNZS+xrMso2+0=
+=rvsH
+-----END PGP SIGNATURE-----
+
+--EkX7vcqEIssJSBlq--

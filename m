@@ -1,62 +1,49 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 15 Oct 2014 12:20:19 +0000
+Date: Wed, 15 Oct 2014 12:46:10 +0000
 Subject: Re: [PATCH 2/3] video: fbdev: omap2: omapfb: add missing MODULE_ALIAS()
-Message-Id: <543E6683.5040103@ti.com>
+Message-Id: <543E6C92.7090404@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="tUhCXevdn4QJxJhl5mRNJSx7QbvnavL4L"
+Content-Type: multipart/mixed; boundary="ErP36q2fVkgcQqGDK2BsdcN3joj2BkhUT"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1413311335-25083-1-git-send-email-balbi@ti.com>
  <1413311335-25083-2-git-send-email-balbi@ti.com>
-In-Reply-To: <1413311335-25083-2-git-send-email-balbi@ti.com>
+ <20141014183426.GA19491@saruman>
+In-Reply-To: <20141014183426.GA19491@saruman>
 To: linux-arm-kernel@lists.infradead.org
 
---tUhCXevdn4QJxJhl5mRNJSx7QbvnavL4L
+--ErP36q2fVkgcQqGDK2BsdcN3joj2BkhUT
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-On 14/10/14 21:28, Felipe Balbi wrote:
-> without MODULE_ALIAS(), omapfb won't get loaded
-> automatically.
+On 14/10/14 21:34, Felipe Balbi wrote:
+> On Tue, Oct 14, 2014 at 01:28:54PM -0500, Felipe Balbi wrote:
+>> without MODULE_ALIAS(), omapfb won't get loaded
+>> automatically.
+>>
+>> Signed-off-by: Felipe Balbi <balbi@ti.com>
 >=20
-> Signed-off-by: Felipe Balbi <balbi@ti.com>
-> ---
->  drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 1 +
->  1 file changed, 1 insertion(+)
+> little note here. This makes omapfb load automatically, but display
+> still doesn't work with DSS as modules. Backlight is working and pixel
+> clock is running just fine. Still, nothing on display.
 >=20
-> diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/v=
-ideo/fbdev/omap2/omapfb/omapfb-main.c
-> index 9cbf1ce..b4b9244 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-> @@ -2651,6 +2651,7 @@ module_param_named(mirror, def_mirror, bool, 0);
-> =20
->  module_platform_driver(omapfb_driver);
-> =20
-> +MODULE_ALIAS("platform:omapfb");
->  MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@nokia.com>");
->  MODULE_DESCRIPTION("OMAP2/3 Framebuffer");
->  MODULE_LICENSE("GPL v2");
->=20
+> I thought I'd leave that for Tomi to deal with.
 
-Thanks, I've queued this.
+I presume this is about am437x-sk. I don't have the board, so there's
+not too much I can do except send emails.
 
-Unfortunately it's somewhat based on luck if the automatic loading works
-correctly. We can't add more displays after omapfb has been probed, so
-all the panel and encoder drivers have to be loaded before omapfb.
+So the panel works fine if display drivers are built-in?
 
-We have two workarounds there, which help the situation a bit. First is
-that if omapfb finds no displays, it returns EPROBE_DEFER. The second is
-that if there are displays, but no main display (display0), then omapfb
-returns EPROBE_DEFER.
+The compatible string seems to be wrong in the .dts file. It says
+"osddisplays,osd057T0559-34ts" which is not the panel used. But that
+shouldn't affect this.
 
-So even with these workarounds it is possible that drivers for secondary
-displays are loaded after omapfb, causing them to be ignored.
+What do you mean with "pixel clock is running"?
 
  Tomi
 
 
 
---tUhCXevdn4QJxJhl5mRNJSx7QbvnavL4L
+--ErP36q2fVkgcQqGDK2BsdcN3joj2BkhUT
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -64,19 +51,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUPmaDAAoJEPo9qoy8lh71PqgQAKNvz7YkITi4vduo+dtIKV45
-unislLF7FV0Xc1K/gE1quq3e295C2e2sPen3ZibR/M+QJB5PoNdl65G7CCnL+T6p
-kmLxYFdiXHZHju+Gfplq/8JTzCSMkU1/N0v2Q28dR8WS6uvONiBW8TADR1pa7ArB
-QCHDLGnLEM+ZA8H0FMarUbDCDvNJJGhlhEr7dZrWx5pb+qh0WedkrRPToPZxKLwL
-H337zBtt7zlsr9bDUcX56CY2oetr5AfJLWMx3Lxtsrd85Nggtca47nZHcU8FTiL4
-lIRRSJTYucWjUYUQ+TbpewHNC+d0W2AXjlR77Bc5gdd1p1/JwzlVGQixCMQ7P40o
-If73Gq2CQfzreXhPT7Z3bqhBH5l/IvCMihh9Vp9oBnLnWAURbV4haduk+yzVDElB
-aneMt1oifym7BeicfzMhdbTKrjlWyeRZldQWXl5f9QMUNDmuCrefqw31l/lvapUE
-vRB7ZA0f3UtHGfw1KOFKVGzJLAsmz0/7J9R7DA4IkAJDuqbk5h8R5IzbQxH1DWoB
-+oZQwx4H7jqvOWwJWBOJrJu8VQ3BmPq628aIuTdt3DUpsh+NLOMr/u6Hci4BEFAG
-/TPolP1GmpzlyUo3KbZzrPFRnj1Ga0bYqajUWB9cUcvDTZ482ejgsD0xPPIJTMeL
-O0NVREBVEzfy1MEzWJK6
-=69at
+iQIcBAEBAgAGBQJUPmySAAoJEPo9qoy8lh71BVEP/jG3FuSshFCAIpmlm2LLO525
+ONT7cGyWYJum6BE6+VYwYDNiw+l0sokxFjtzPLSztXPVFtcQueACLikdQtWCu64j
+CYk6nY4YPS0TzZi9LxwnFR+ZBz+OGiTbOEbl9teNZnEVaeAGkq5LRqB0+l46LQ8H
+FCgVQOWBGxm9xGuI1a8xhaa+pihcdTuaZ1abf/RQ1uUE9BD0oP++UrzTeXhDMXiB
+ayoJM0tUeF8HMVCS7tssiv00swQO4E30HYbu5WDJQsWnaSEZmi5229P7SJmllw/G
+yt8PeHSQAOUh83EgDa3lBIfzO5ncM02eYqNkI5C31j7Ys5cGQsIBuJ4aDAjYcEKe
+Rg8MywP8eIFuD9m2eQA8aPvvwqgn4TINNRpdh22uWVGPUQc9ZnHpkibn4qosvZwc
+rrW1WJj6Cyj9uhvqMVAvdT9j9TbrXqjuUWPkRTS/cIv24ISqnajZpyZyo8o7Pt8H
+njMAiTr4RPFo4crEBcUX9jIa4mSJ8kuwt/j7En8yOOSpijk3n9Lbyu9Y8GY4PwS0
+fNpXEu4hl2vjYOJLZRGFOAhRRFMdUsUVdK79C/j5tCIXPUynqHl9mlaiBqrb9gEq
+2RHUrF2+V4lr9vy+Tvn7Q1LdKpgKFqfBJAf3+TNbozUIO89+irw3w20s56DENfYK
+oCGZC+WjdmZeVL3N86pX
+=lnU3
 -----END PGP SIGNATURE-----
 
---tUhCXevdn4QJxJhl5mRNJSx7QbvnavL4L--
+--ErP36q2fVkgcQqGDK2BsdcN3joj2BkhUT--

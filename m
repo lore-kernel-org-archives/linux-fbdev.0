@@ -1,40 +1,46 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 14 Oct 2014 17:29:27 +0000
-Subject: [PATCH v6 08/18] ASoC: codecs/hdmi: HDMI codec doesn't benefit from pmdown delay
-Message-Id: <aa7ad47271e780b75b608382a8830cdc22c4193a.1413306131.git.jsarha@ti.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Wed, 15 Oct 2014 10:27:16 +0000
+Subject: Re: [PATCH v6 08/18] ASoC: codecs/hdmi: HDMI codec doesn't benefit from pmdown delay
+Message-Id: <20141015102716.GB27755@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="xEUC5fB8Sf//E0AF"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1413306131.git.jsarha@ti.com>
-In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+ <aa7ad47271e780b75b608382a8830cdc22c4193a.1413306131.git.jsarha@ti.com>
+In-Reply-To: <aa7ad47271e780b75b608382a8830cdc22c4193a.1413306131.git.jsarha@ti.com>
+To: Jyri Sarha <jsarha@ti.com>
+Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com
 
-Adds .ignore_pmdown_time = true to codec driver struct.
 
-HDMI codec is currently a dummy codec and doesn't benefit from pmdown
-delay. Even if in the future the codec would controll HDMI encoder, it
-would still be a digital to digital interface that should have no need
-for pmdown delay.
+--xEUC5fB8Sf//E0AF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- sound/soc/codecs/hdmi.c |    1 +
- 1 file changed, 1 insertion(+)
+On Tue, Oct 14, 2014 at 08:29:27PM +0300, Jyri Sarha wrote:
+> Adds .ignore_pmdown_time =3D true to codec driver struct.
+>=20
+> HDMI codec is currently a dummy codec and doesn't benefit from pmdown
+> delay. Even if in the future the codec would controll HDMI encoder, it
+> would still be a digital to digital interface that should have no need
+> for pmdown delay.
 
-diff --git a/sound/soc/codecs/hdmi.c b/sound/soc/codecs/hdmi.c
-index 2a52b90..1391ad5 100644
---- a/sound/soc/codecs/hdmi.c
-+++ b/sound/soc/codecs/hdmi.c
-@@ -76,6 +76,7 @@ static struct snd_soc_codec_driver hdmi_codec = {
- 	.num_dapm_widgets = ARRAY_SIZE(hdmi_widgets),
- 	.dapm_routes = hdmi_routes,
- 	.num_dapm_routes = ARRAY_SIZE(hdmi_routes),
-+	.ignore_pmdown_time = true,
- };
- 
- static int hdmi_codec_probe(struct platform_device *pdev)
--- 
-1.7.9.5
+Applied, thanks.
 
+--xEUC5fB8Sf//E0AF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUPkwDAAoJECTWi3JdVIfQArgH/1BXNHUAeg6597g6sd0YW46v
+DG+9aEoZKD4ciU50q2GS9T6wLWnNAFV/5vPHFrDyqgt4o5YnOx7t/M7Kh/gG+SsV
+NxZdqMmr66XQKueS5vwkxIZ4VwQbb2HWxUwAf5E1iVP2LSqSIr1kJnmo1fzrViUx
+G16Yg6N5SBZvkYocn+2mhsUYSpuc6B/3jmRzctuiX0vsISb0vqoY6npU9r48a72a
+aJ8ursduLA4+A9Es75rLhu+3Bst4tUpc7OZkG3P8B+5RIxsr97wQ4T+rsZr/I1Yt
+pOqGz1rQP4Kw3rx2B+XYn1zOvkrJQS9GK8rfWCsmlJxEy5eBZFjYYQzhX6MDC/Q=
+=S90N
+-----END PGP SIGNATURE-----
+
+--xEUC5fB8Sf//E0AF--

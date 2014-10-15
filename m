@@ -1,118 +1,108 @@
-From: Felipe Balbi <balbi@ti.com>
-Date: Wed, 15 Oct 2014 14:41:40 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 15 Oct 2014 15:43:40 +0000
 Subject: Re: [PATCH 1/3] video: fbdev: omap2: omapfb: remove __exit annotation
-Message-Id: <20141015144140.GD10888@saruman>
+Message-Id: <543E962C.2050505@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="hoZxPH4CaxYzWscb"
+Content-Type: multipart/mixed; boundary="QeSwm7DQBnTjjvdkodf9iumcHoaidVFJG"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1413311335-25083-1-git-send-email-balbi@ti.com>
- <543E64EE.4070104@ti.com>
-In-Reply-To: <543E64EE.4070104@ti.com>
+ <543E64EE.4070104@ti.com> <20141015144140.GD10888@saruman>
+In-Reply-To: <20141015144140.GD10888@saruman>
 To: linux-arm-kernel@lists.infradead.org
 
---hoZxPH4CaxYzWscb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--QeSwm7DQBnTjjvdkodf9iumcHoaidVFJG
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On 15/10/14 17:41, Felipe Balbi wrote:
 
-On Wed, Oct 15, 2014 at 03:13:34PM +0300, Tomi Valkeinen wrote:
-> Hi,
+>> Interesting. I don't know if I'm doing something funny, but without th=
+is
+>> patch, I can unbind omapfb, kind of.
+>>
+>> "echo omapfb > unbind" goes ok, but remove is obviously not called.
 >=20
-> On 14/10/14 21:28, Felipe Balbi wrote:
-> > if we leave __exit annotation, driver can't be unbound
-> > through sysfs.
-> >=20
-> > Signed-off-by: Felipe Balbi <balbi@ti.com>
-> > ---
-> >  drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> >=20
-> > diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/v=
-ideo/fbdev/omap2/omapfb/omapfb-main.c
-> > index ec2d132..9cbf1ce 100644
-> > --- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-> > +++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-> > @@ -2619,7 +2619,7 @@ err0:
-> >  	return r;
-> >  }
-> > =20
-> > -static int __exit omapfb_remove(struct platform_device *pdev)
-> > +static int omapfb_remove(struct platform_device *pdev)
-> >  {
-> >  	struct omapfb2_device *fbdev =3D platform_get_drvdata(pdev);
-> > =20
-> > @@ -2636,7 +2636,7 @@ static int __exit omapfb_remove(struct platform_d=
-evice *pdev)
-> > =20
-> >  static struct platform_driver omapfb_driver =3D {
-> >  	.probe		=3D omapfb_probe,
-> > -	.remove         =3D __exit_p(omapfb_remove),
-> > +	.remove         =3D omapfb_remove,
-> >  	.driver         =3D {
-> >  		.name   =3D "omapfb",
-> >  		.owner  =3D THIS_MODULE,
+> remove isn't called because it won't exist if it's built-in. Look at th=
+e
+> definition of __exit_p()
+
+Yes, that's what I meant with "obviously".
+
+>> Somehow omapfb device is still unbound from the driver, as I can then
+>> bind it again, causing probe to be called. Which breaks everything.
+>>
+>> I would've thought that unbinding is not possible if remove is missing=
+,
+>> but that doesn't seem to be the case. I guess it just means that remov=
+e
+>> is not called when the driver & device are unbound.
 >=20
-> Interesting. I don't know if I'm doing something funny, but without this
-> patch, I can unbind omapfb, kind of.
+> if no remove it provided on platform_driver structure, platform bus
+> assumes you have nothing to do on your ->remove(), so you end up leakin=
+g
+> all resources you allocated on ->probe() (unless you *really* don't nee=
+d
+> to do anything on ->remove).
+
+Yep. That's quite odd, still. grep shows quite many uses of __exit_p(),
+and all for remove callback. So, if you have something to release in
+remove(), you should set it always, for both module and built-in. And if
+you don't have anything to release, you would always just set .release
+to NULL.
+
+I mean, what's the use case for __exit_p()? With a quick glance, at
+least some of the other users also use __exit_p() the same way omapdss
+does (i.e. in the wrong way).
+
+>> We have 18 __exit_p()s in omapdss and related drivers. I guess they ar=
+e
+>> all broken the same way.
 >=20
-> "echo omapfb > unbind" goes ok, but remove is obviously not called.
-
-remove isn't called because it won't exist if it's built-in. Look at the
-definition of __exit_p()
-
-> Somehow omapfb device is still unbound from the driver, as I can then
-> bind it again, causing probe to be called. Which breaks everything.
+> yup, I should've grepped.
 >=20
-> I would've thought that unbinding is not possible if remove is missing,
-> but that doesn't seem to be the case. I guess it just means that remove
-> is not called when the driver & device are unbound.
+>> Note that omapfb unbind & bind does not work even with this patch, but=
 
-if no remove it provided on platform_driver structure, platform bus
-assumes you have nothing to do on your ->remove(), so you end up leaking
-all resources you allocated on ->probe() (unless you *really* don't need
-to do anything on ->remove).
+>> results in a crash as some old state is left into omapdss. The same
+>> happens also with unloading and loading omapfb module (but keeping
+>> omapdss module loaded).
+>=20
+> It worked fine for me. I unbound and bound omapfb multiple times.
 
-> We have 18 __exit_p()s in omapdss and related drivers. I guess they are
-> all broken the same way.
+Hmm, ok. Odd, the bug was quite clear and I think it should happen every
+time. Well, I was using omap4. If you used AM4xx, that's basically omap3
+DSS. Maybe there's a diff there.
 
-yup, I should've grepped.
+>> So there seems to be more issues around this.
+>=20
+> quite a few more, I'd say
 
-> Note that omapfb unbind & bind does not work even with this patch, but
-> results in a crash as some old state is left into omapdss. The same
-> happens also with unloading and loading omapfb module (but keeping
-> omapdss module loaded).
+Yep, I'll have a look at this.
 
-It worked fine for me. I unbound and bound omapfb multiple times.
+ Tomi
 
-> So there seems to be more issues around this.
 
-quite a few more, I'd say
 
---=20
-balbi
-
---hoZxPH4CaxYzWscb
+--QeSwm7DQBnTjjvdkodf9iumcHoaidVFJG
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUPoekAAoJEIaOsuA1yqREZpMP/0G3EgRfFWOZXhyspHIwIkvW
-HQ1f6YeYCttLrCGdKa28STKo1HiJRkI5EVrewuKkimKytl7S88OM22HeaCF61lS+
-B9cWEy8GzkBVP7qdwFjX4KFag3Q2tYuqaavd22AkjwuTZu4nNO2KRKzeWBWo3qb8
-AKMlLm1La44tcQPjs0pAoTJNJ36hsiavY7RdmNGvthO3WD/o++pDT8JyRuhgPWgm
-tHc+JF1VoqDz/gx6mi7F8+pUO60l1pbPmXErIUdtyC8vRHlWQiM+g+UAXK6VSCGa
-idkhd/FQFow/sJgl4NiTo3s57obkJmYQXBrQTttWYjpSyiM+Kv+Uz+dj8s+7k3IU
-4opCT7IGu/seup7FB/iH0t85apiJXzoxI3J+ZEWcIRkB1dN+NVh5Oo3p/Ovf1cq7
-5vBMk+5KwFnDH0RxlWbK287S1A/PLLVkp5UlV5tol4kXxlVWPXarJ+GBKnGru8lN
-Ufc/toDPftB0+1LZcvXEUYzU6Fbj5z6+/wq9Ihn9pdZAwEjvP5GdedDhzTfnKekU
-uxmI4NM2UdAjaxXmlya1zo5utlG3WW0t2/EkjcVC/itrbOpN9E43bogvG0jHf3Al
-Gb4pkqtLoiIvIszkS9INiv4iCQhg6/lBs0W1QS5O8xy3OiX+N6yfEhK57tXO0oH1
-ehcL62ehVnidjJqV37WP
-=f0Y2
+iQIcBAEBAgAGBQJUPpYsAAoJEPo9qoy8lh71XagP/3+V8v3Aozr1Z/WTC9yD3ri7
+6V9iifymnQhyTotuEBqY0kXvtyj4lqFhw4N59D0V+Vwgk+Oxl9t3KY6jsziZbZ5t
+iQZx6CBgHc10Fvjv3SKElxJuYfxab7x6o2iy6K4ops/XudWxanZfptao9GWssZRw
+MLzht3+1ptBe/Lp3NcLkOhGbbJhip4RVmvNtFsrbs3FQTbW+bF0AY0zcyjbCFqDT
+JDODHttjHATdAL7A3gyNicgTR7OyEHf9OtpdxRTzn+qOzocHty6RqjsI/LUwDxvb
+YxayrA/h8Qitf5/F8XO+STSQDUXs7dQQ2F17QKwhZWJvwULafsHLtN2pVCDUNzXW
+X/XF5Z5CeiuGXpo+/jPl5RZUTlxgXkNOV2ldvT57eheFsGAtVd5L26YKBLWRknVh
+ZiMoaqxw3esybv/AEryIwmf0nmR2wJ+4YASJm4RZ1CkGIJ1HKa47AXy118z7JiwV
+vvhv14y4gPwPbNNegUCDdUKkh3bb7ycGr3BNOHzdWNJpaO+nwON+pNKRGxSuiUFD
+8u4yEkL923TXbaTW5zy/tbzf0GDVBqQsBVbs7SLd8pK+26c01H7evi8CX5nN+CTh
+jNFqCFtxCW0J5XXAr6I/fT/zlNfMFI3NEr2D7JvxfpnJ2Wz55IEOAVTzxSggVUcm
+NHee8roHraxhcli8INX3
+=04LQ
 -----END PGP SIGNATURE-----
 
---hoZxPH4CaxYzWscb--
+--QeSwm7DQBnTjjvdkodf9iumcHoaidVFJG--

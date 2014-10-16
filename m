@@ -1,179 +1,48 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 16 Sep 2014 10:04:19 +0000
-Subject: [PATCH v5 05/15] OMAPDSS: hdmi: Make hdmi structure public
-Message-Id: <7f3bb0f27fb0ce3f3488549ae60e6b6e89ef6df4.1410860765.git.jsarha@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 16 Oct 2014 09:39:44 +0000
+Subject: [PATCH 2/5] OMAPFB: remove wrong __exit and __exit_p()
+Message-Id: <1413452387-25452-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1410860765.git.jsarha@ti.com>
-In-Reply-To: <cover.1410860765.git.jsarha@ti.com>
+References: <1413452387-25452-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1413452387-25452-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Felipe Balbi <balbi@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Unify the private anonymous struct in hdmi4.c and hdmi5.c, name it as
-struct omap_hdmi, and make it public in hdmi.h.
+omapfb device can be unbound, so using __exit_p() for the driver's
+remove callback is wrong.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Remove __exit_p() and __exit from the driver's remove.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h  |   21 +++++++++++++++++++++
- drivers/video/fbdev/omap2/dss/hdmi4.c |   31 ++++++++-----------------------
- drivers/video/fbdev/omap2/dss/hdmi5.c |   20 ++------------------
- 3 files changed, 31 insertions(+), 41 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 9ba7c1a..6bf077b 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -349,4 +349,25 @@ static inline bool hdmi_mode_has_audio(int mode)
- {
- 	return mode = HDMI_HDMI ? true : false;
- }
-+
-+/* HDMI DRV data */
-+struct omap_hdmi {
-+	struct mutex lock;
-+	struct platform_device *pdev;
-+
-+	struct hdmi_wp_data	wp;
-+	struct hdmi_pll_data	pll;
-+	struct hdmi_phy_data	phy;
-+	struct hdmi_core_data	core;
-+
-+	struct hdmi_config cfg;
-+
-+	struct clk *sys_clk;
-+	struct regulator *vdda_reg;
-+
-+	bool core_enabled;
-+
-+	struct omap_dss_device output;
-+};
-+
- #endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index 6a8550c..b98186e 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -37,25 +37,9 @@
- #include "hdmi4_core.h"
- #include "dss.h"
- #include "dss_features.h"
-+#include "hdmi.h"
- 
--static struct {
--	struct mutex lock;
--	struct platform_device *pdev;
--
--	struct hdmi_wp_data	wp;
--	struct hdmi_pll_data	pll;
--	struct hdmi_phy_data	phy;
--	struct hdmi_core_data	core;
--
--	struct hdmi_config cfg;
--
--	struct clk *sys_clk;
--	struct regulator *vdda_hdmi_dac_reg;
--
--	bool core_enabled;
--
--	struct omap_dss_device output;
--} hdmi;
-+static struct omap_hdmi hdmi;
- 
- static int hdmi_runtime_get(void)
- {
-@@ -117,7 +101,7 @@ static int hdmi_init_regulator(void)
- 	int r;
- 	struct regulator *reg;
- 
--	if (hdmi.vdda_hdmi_dac_reg != NULL)
-+	if (hdmi.vdda_reg != NULL)
- 		return 0;
- 
- 	reg = devm_regulator_get(&hdmi.pdev->dev, "vdda");
-@@ -137,7 +121,7 @@ static int hdmi_init_regulator(void)
- 		}
- 	}
- 
--	hdmi.vdda_hdmi_dac_reg = reg;
-+	hdmi.vdda_reg = reg;
- 
- 	return 0;
- }
-@@ -146,7 +130,7 @@ static int hdmi_power_on_core(struct omap_dss_device *dssdev)
- {
- 	int r;
- 
--	r = regulator_enable(hdmi.vdda_hdmi_dac_reg);
-+	r = regulator_enable(hdmi.vdda_reg);
- 	if (r)
- 		return r;
- 
-@@ -162,7 +146,7 @@ static int hdmi_power_on_core(struct omap_dss_device *dssdev)
- 	return 0;
- 
- err_runtime_get:
--	regulator_disable(hdmi.vdda_hdmi_dac_reg);
-+	regulator_disable(hdmi.vdda_reg);
- 
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index ec2d132c782d..9cbf1ced51c2 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -2619,7 +2619,7 @@ err0:
  	return r;
  }
-@@ -172,7 +156,7 @@ static void hdmi_power_off_core(struct omap_dss_device *dssdev)
- 	hdmi.core_enabled = false;
  
- 	hdmi_runtime_put();
--	regulator_disable(hdmi.vdda_hdmi_dac_reg);
-+	regulator_disable(hdmi.vdda_reg);
- }
- 
- static int hdmi_power_on_full(struct omap_dss_device *dssdev)
-@@ -678,6 +662,7 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 	int irq;
- 
- 	hdmi.pdev = pdev;
-+	dev_set_drvdata(&pdev->dev, &hdmi);
- 
- 	mutex_init(&hdmi.lock);
- 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index 32d02ec..90410f5 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -43,24 +43,7 @@
- #include "dss.h"
- #include "dss_features.h"
- 
--static struct {
--	struct mutex lock;
--	struct platform_device *pdev;
--
--	struct hdmi_wp_data	wp;
--	struct hdmi_pll_data	pll;
--	struct hdmi_phy_data	phy;
--	struct hdmi_core_data	core;
--
--	struct hdmi_config cfg;
--
--	struct clk *sys_clk;
--	struct regulator *vdda_reg;
--
--	bool core_enabled;
--
--	struct omap_dss_device output;
--} hdmi;
-+static struct omap_hdmi hdmi;
- 
- static int hdmi_runtime_get(void)
+-static int __exit omapfb_remove(struct platform_device *pdev)
++static int omapfb_remove(struct platform_device *pdev)
  {
-@@ -703,6 +686,7 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 	int irq;
+ 	struct omapfb2_device *fbdev = platform_get_drvdata(pdev);
  
- 	hdmi.pdev = pdev;
-+	dev_set_drvdata(&pdev->dev, &hdmi);
+@@ -2636,7 +2636,7 @@ static int __exit omapfb_remove(struct platform_device *pdev)
  
- 	mutex_init(&hdmi.lock);
- 
+ static struct platform_driver omapfb_driver = {
+ 	.probe		= omapfb_probe,
+-	.remove         = __exit_p(omapfb_remove),
++	.remove         = omapfb_remove,
+ 	.driver         = {
+ 		.name   = "omapfb",
+ 		.owner  = THIS_MODULE,
 -- 
-1.7.9.5
+2.1.1
 

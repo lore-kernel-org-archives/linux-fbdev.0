@@ -1,46 +1,40 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Fri, 03 Oct 2014 11:52:01 +0000
-Subject: [PATCH v2 1/5] simplefb: Add simplefb MAINTAINERS entry
-Message-Id: <1412337125-14388-2-git-send-email-hdegoede@redhat.com>
+From: Western Union Online <wumt@wumon.com>
+Date: Thu, 16 Oct 2014 15:15:05 +0000
+Subject: *** Your Money Transfer Control Number [MTCN] is: 590575410 *** 364dcyax585 ( linux-fbdev@vger.kerne
+Message-Id: <20141016191505.55C0381CEF870360@wumon.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1412337125-14388-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1412337125-14388-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-During the discussion about adding clock handling code to simplefb, it became
-clear that simplefb currently does not have an active maintainer.
+Dear customer,
 
-I've discussed this with Stephen Warren <swarren@wwwdotorg.org>, the original
-author of simplefb, and with his permisson I'm picking up maintainership of
-simplefb.
+Thank you for using the Western Union Money Transfer=AE.
 
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- MAINTAINERS | 7 +++++++
- 1 file changed, 7 insertions(+)
+Your money transfer has been authorized and is now available for pick up by=
+ the receiver.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3705430..01a5fd8 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8289,6 +8289,13 @@ F:	drivers/media/usb/siano/
- F:	drivers/media/usb/siano/
- F:	drivers/media/mmc/siano/
- 
-+SIMPLEFB FB DRIVER
-+M:	Hans de Goede <hdegoede@redhat.com>
-+L:	linux-fbdev@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/video/simple-framebuffer.txt
-+F:	drivers/video/fbdev/simplefb.c
-+
- SH_VEU V4L2 MEM2MEM DRIVER
- L:	linux-media@vger.kernel.org
- S:	Orphan
--- 
-2.1.0
+Transfers to certain destinations may be subject to further delay or additi=
+onal restrictions.
+
+TRANSACTION DETAILS:
+
+Your Money Transfer Control Number [MTCN] is: 590575410
+
+Please use this number for any inquiries.
+
+Date of Order: Th, 16 Oct 2014 11:26:48
+Amount Sent: $94.50
+
+You can cancel this transfer by using the hyperlink below:
+
+http://hoodoola.com/WUCOMWEB.transactions.HomePage.cancel.php.session.mtcn.=
+590575482.summ_2294.50.date.Wed.Th.16.Oct.2014.11.26.48/
+
+Thank you for using Western Union!
+
+=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=97=96
+DO NOT REPLY TO THIS EMAIL.
+
 

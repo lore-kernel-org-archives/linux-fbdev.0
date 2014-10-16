@@ -1,154 +1,38 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 14 Oct 2014 17:29:32 +0000
-Subject: [PATCH v6 13/18] OMAPDSS: hdmi4: Remove callbacks for the old ASoC DAI driver
-Message-Id: <4c3e4e923068cda9e4be68fe8aa1603b25fd9884.1413306131.git.jsarha@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 16 Oct 2014 09:39:45 +0000
+Subject: [PATCH 3/5] OMAPDSS: apply: wait pending updates on manager disable
+Message-Id: <1413452387-25452-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1413306131.git.jsarha@ti.com>
-In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
+References: <1413452387-25452-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1413452387-25452-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Felipe Balbi <balbi@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Removes the OMAP4 HDMI audio callbacks for the old external DAI driver.
+We should wait for any pending updates when an overlay manager is
+about to be disabled, because the updates will never be finished if the
+manager is disabled too early.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi4.c |  113 ---------------------------------
- 1 file changed, 113 deletions(-)
+ drivers/video/fbdev/omap2/dss/apply.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index b98186e..4c671ee 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -468,112 +468,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
- 	return r;
- }
+diff --git a/drivers/video/fbdev/omap2/dss/apply.c b/drivers/video/fbdev/omap2/dss/apply.c
+index 0a0b084ce65d..663ccc3bf4e5 100644
+--- a/drivers/video/fbdev/omap2/dss/apply.c
++++ b/drivers/video/fbdev/omap2/dss/apply.c
+@@ -1132,6 +1132,8 @@ static void dss_mgr_disable_compat(struct omap_overlay_manager *mgr)
+ 	if (!mp->enabled)
+ 		goto out;
  
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	int r;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi_wp_audio_enable(&hdmi.wp, true);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--	hdmi_wp_audio_enable(&hdmi.wp, false);
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return hdmi4_audio_start(&hdmi.core, &hdmi.wp);
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--	hdmi4_audio_stop(&hdmi.core, &hdmi.wp);
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	bool r;
--
--	mutex_lock(&hdmi.lock);
--
--	r = hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode);
--
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	int r;
--	u32 pclk = hdmi.cfg.timings.pixelclock;
--
--	mutex_lock(&hdmi.lock);
--
--	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
--		r = -EPERM;
--		goto err;
--	}
--
--	r = hdmi4_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
--	if (r)
--		goto err;
--
--	mutex_unlock(&hdmi.lock);
--	return 0;
--
--err:
--	mutex_unlock(&hdmi.lock);
--	return r;
--}
--#else
--static int hdmi_audio_enable(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_disable(struct omap_dss_device *dssdev)
--{
--}
--
--static int hdmi_audio_start(struct omap_dss_device *dssdev)
--{
--	return -EPERM;
--}
--
--static void hdmi_audio_stop(struct omap_dss_device *dssdev)
--{
--}
--
--static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
--{
--	return false;
--}
--
--static int hdmi_audio_config(struct omap_dss_device *dssdev,
--		struct omap_dss_audio *audio)
--{
--	return -EPERM;
--}
--#endif
--
- static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
- 		const struct hdmi_avi_infoframe *avi)
- {
-@@ -602,13 +496,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
- 	.read_edid		= hdmi_read_edid,
- 	.set_infoframe		= hdmi_set_infoframe,
- 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
--
--	.audio_enable		= hdmi_audio_enable,
--	.audio_disable		= hdmi_audio_disable,
--	.audio_start		= hdmi_audio_start,
--	.audio_stop		= hdmi_audio_stop,
--	.audio_supported	= hdmi_audio_supported,
--	.audio_config		= hdmi_audio_config,
- };
++	wait_pending_extra_info_updates();
++
+ 	if (!mgr_manual_update(mgr))
+ 		dispc_mgr_disable_sync(mgr->id);
  
- static void hdmi_init_output(struct platform_device *pdev)
 -- 
-1.7.9.5
+2.1.1
 

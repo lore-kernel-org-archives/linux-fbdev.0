@@ -1,46 +1,35 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Fri, 31 Oct 2014 09:35:18 +0000
-Subject: Re: [PATCH 14/15] gpio: locomo: implement per-pin irq handling
-Message-Id: <CALT56yM7yp7N04BSk9GZOObLSxaKepy5njRHQHOe3-bRSX3yQA@mail.gmail.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Fri, 17 Oct 2014 12:19:15 +0000
+Subject: [PATCH] drivers: video: fbdev: atmel_lcdfb.c: remove unnecessary header
+Message-Id: <1413548355-499-1-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
-	<1414454528-24240-15-git-send-email-dbaryshkov@gmail.com>
-	<CACRpkdamVriR9kJSeY=LVAx7ADukT8+GpqmNH9YMnL3OKUk8iw@mail.gmail.com>
-In-Reply-To: <CACRpkdamVriR9kJSeY=LVAx7ADukT8+GpqmNH9YMnL3OKUk8iw@mail.gmail.com>
+References: <1404440796-11090-1-git-send-email-mwelling@ieee.org>
+In-Reply-To: <1404440796-11090-1-git-send-email-mwelling@ieee.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo
+To: linux-arm-kernel@lists.infradead.org
 
-2014-10-31 11:00 GMT+03:00 Linus Walleij <linus.walleij@linaro.org>:
-> On Tue, Oct 28, 2014 at 1:02 AM, Dmitry Eremin-Solenikov
-> <dbaryshkov@gmail.com> wrote:
->
->> LoCoMo has a possibility to generate per-GPIO edge irqs. Support for
->> that was there in old locomo driver, got 'cleaned up' during old driver
->> IRQ cascading cleanup and is now reimplemented. It is expected that
->> SL-5500 (collie) will use locomo gpio irqs for mmc detection irq.
->>
->> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
->
-> Please don't use open-coded IRQ handling like this, we are moving
-> away from that.
->
-> In Kconfig,
->
-> select GPIOLIB_IRQCHIP
->
-> and look at the other drivers selecting this for inspiration. There
-> is even some documentation in Documentation/gpio/driver.txt
->
-> You will find that it cuts down a lot of overhead from your driver
-> and does everything in the right way in a central place.
+Remove unnecessary mach/cpu.h header to be able to converge to a multiplatform
+kernel.
 
-Thanks, I will take a look.
-[Skipped the rest of the comments mostly dedicated to gpiolib_irqchip].
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ drivers/video/fbdev/atmel_lcdfb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
+index 1d8bdb92939b..ea45a30fd4d2 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -26,7 +26,6 @@
+ #include <video/of_display_timing.h>
+ #include <video/videomode.h>
+ 
+-#include <mach/cpu.h>
+ #include <asm/gpio.h>
+ 
+ #include <video/atmel_lcdc.h>
 -- 
-With best wishes
-Dmitry
+1.9.1
+

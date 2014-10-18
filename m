@@ -1,45 +1,35 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Oct 2014 08:39:30 +0000
-Subject: [PATCH 1/5] OMAPDSS: HDMI: fix PLL GO bit handling
-Message-Id: <1413967174-28009-1-git-send-email-tomi.valkeinen@ti.com>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Sat, 18 Oct 2014 22:14:56 +0000
+Subject: [PATCH 3/5] video: fbdev: uvesafb.c:  Cleaning up missing null-terminate by switching from strncpy t
+Message-Id: <1413670496-6387-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Michal Januszewski <spock@gentoo.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Andi Kleen <ak@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Dan Carpenter <dan.carpenter@oracle.com>, Grant Likely <grant.likely@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The PLL settings are committed by setting GO bit, which is then cleared
-by the HW when the settings have been taken into use.
+Ensures that the string is null-terminate in connection with the
+use of strncpy, by switching from strncpy to strzcpy.
 
-The current PLL code handles this wrong: instead of waiting for the bit
-to be cleared, it waits for the bit to be set. Usually, the bit is
-always set, as the CPU has just set it before. However, if the CPU takes
-enough time between setting the GO bit and checking it, the HW may
-already have cleared the bit and this leads to timeout error.
-
-Fix the wait to check the bit properly.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/omap2/dss/hdmi_pll.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/uvesafb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-index 54df12a8d744..d4ec815ba42e 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-@@ -144,8 +144,8 @@ static int hdmi_pll_config(struct hdmi_pll_data *pll)
- 
- 	/* wait for bit change */
- 	if (hdmi_wait_for_bit_change(pll->base, PLLCTRL_PLL_GO,
--			0, 0, 1) != 1) {
--		DSSERR("PLL GO bit not set\n");
-+			0, 0, 0) != 0) {
-+		DSSERR("PLL GO bit not clearing\n");
- 		return -ETIMEDOUT;
- 	}
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index 509d452..3383b34 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -1892,7 +1892,7 @@ static ssize_t show_v86d(struct device_driver *dev, char *buf)
+ static ssize_t store_v86d(struct device_driver *dev, const char *buf,
+ 		size_t count)
+ {
+-	strncpy(v86d_path, buf, PATH_MAX);
++	strzcpy(v86d_path, buf, sizeof(v86d_path));
+ 	return count;
+ }
  
 -- 
-2.1.1
+1.7.10.4
 

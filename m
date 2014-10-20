@@ -1,50 +1,53 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Oct 2014 08:39:31 +0000
-Subject: [PATCH 2/5] OMAPDSS: HDMI: fix regsd write
-Message-Id: <1413967174-28009-2-git-send-email-tomi.valkeinen@ti.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 20 Oct 2014 07:10:37 +0000
+Subject: Re: [PATCH 3/5] video: fbdev: uvesafb.c: Cleaning up missing null-terminate by switching from strncp
+Message-Id: <CAMuHMdV-2-t_NaH04pS4nRskDXswn7j2nuxSxp0gOAHfvTJ7FQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413967174-28009-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1413967174-28009-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1413670496-6387-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1413670496-6387-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Cc: Michal Januszewski <spock@gentoo.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andi Kleen <ak@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Dan Carpenter <dan.carpenter@oracle.com>, Grant Likely <grant.likely@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-HDMI PLL's REGSD field is only set by the driver if the PLL's output
-clock is over 1GHz. This is clearly an error, as REGSD should be set
-always.
+On Sun, Oct 19, 2014 at 12:14 AM, Rickard Strandqvist
+<rickard_strandqvist@spectrumdigital.se> wrote:
+> Ensures that the string is null-terminate in connection with the
+> use of strncpy, by switching from strncpy to strzcpy.
+>
+> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+> ---
+>  drivers/video/fbdev/uvesafb.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+> index 509d452..3383b34 100644
+> --- a/drivers/video/fbdev/uvesafb.c
+> +++ b/drivers/video/fbdev/uvesafb.c
+> @@ -1892,7 +1892,7 @@ static ssize_t show_v86d(struct device_driver *dev, char *buf)
+>  static ssize_t store_v86d(struct device_driver *dev, const char *buf,
+>                 size_t count)
+>  {
+> -       strncpy(v86d_path, buf, PATH_MAX);
+> +       strzcpy(v86d_path, buf, sizeof(v86d_path));
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/hdmi_pll.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+I think strlcpy() should be good enough here?
+Or am I missing a reason why the rest of the buffer should be zero-filled?
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-index d4ec815ba42e..6d92bb32fe51 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-@@ -124,16 +124,15 @@ static int hdmi_pll_config(struct hdmi_pll_data *pll)
- 	r = FLD_MOD(r, 0x0, 14, 14);	/* PHY_CLKINEN de-assert during locking */
- 	r = FLD_MOD(r, fmt->refsel, 22, 21);	/* REFSEL */
- 
--	if (fmt->dcofreq) {
--		/* divider programming for frequency beyond 1000Mhz */
--		REG_FLD_MOD(pll->base, PLLCTRL_CFG3, fmt->regsd, 17, 10);
-+	if (fmt->dcofreq)
- 		r = FLD_MOD(r, 0x4, 3, 1);	/* 1000MHz and 2000MHz */
--	} else {
-+	else
- 		r = FLD_MOD(r, 0x2, 3, 1);	/* 500MHz and 1000MHz */
--	}
- 
- 	hdmi_write_reg(pll->base, PLLCTRL_CFG2, r);
- 
-+	REG_FLD_MOD(pll->base, PLLCTRL_CFG3, fmt->regsd, 17, 10);
-+
- 	r = hdmi_read_reg(pll->base, PLLCTRL_CFG4);
- 	r = FLD_MOD(r, fmt->regm2, 24, 18);
- 	r = FLD_MOD(r, fmt->regmf, 17, 0);
--- 
-2.1.1
+Nevertheless, I think this (or an alternative) change should be applied to
+stable, as call_usermodehelper() might crash by writing to sysfs.
 
+>         return count;
+>  }
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

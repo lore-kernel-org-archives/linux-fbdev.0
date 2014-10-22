@@ -1,110 +1,58 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 14 Oct 2014 11:53:49 +0000
-Subject: [PATCH] video/console: Resolve several shadow warnings
-Message-Id: <1413287629-11749-1-git-send-email-jeffrey.t.kirsher@intel.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 22 Oct 2014 06:58:23 +0000
+Subject: Re: [PATCH] video/console: Resolve several shadow warnings
+Message-Id: <5447558F.90706@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="EtotUrbCTSE98j2H7LcTr1hSaxDg22Ngt"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: Mark Rustad <mark.d.rustad@intel.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+References: <1413287629-11749-1-git-send-email-jeffrey.t.kirsher@intel.com>
+In-Reply-To: <1413287629-11749-1-git-send-email-jeffrey.t.kirsher@intel.com>
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>, plagnioj@jcrosoft.com
+Cc: Mark Rustad <mark.d.rustad@intel.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-From: Mark Rustad <mark.d.rustad@intel.com>
+--EtotUrbCTSE98j2H7LcTr1hSaxDg22Ngt
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Resolve shadow warnings that appear in W=2 builds by renaming
-the "state" global to "vgastate".
+On 14/10/14 14:53, Jeff Kirsher wrote:
+> From: Mark Rustad <mark.d.rustad@intel.com>
+>=20
+> Resolve shadow warnings that appear in W=3D2 builds by renaming
+> the "state" global to "vgastate".
+>=20
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> ---
+>  drivers/video/console/vgacon.c | 24 ++++++++++++------------
+>  1 file changed, 12 insertions(+), 12 deletions(-)
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
- drivers/video/console/vgacon.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+Thanks, queued for 3.18 fixes.
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 6e6aa70..517f565 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -56,7 +56,7 @@ static int cursor_size_lastfrom;
- static int cursor_size_lastto;
- static u32 vgacon_xres;
- static u32 vgacon_yres;
--static struct vgastate state;
-+static struct vgastate vgastate;
- 
- #define BLANK 0x0020
- 
-@@ -400,7 +400,7 @@ static const char *vgacon_startup(void)
- 
- 	vga_video_num_lines = screen_info.orig_video_lines;
- 	vga_video_num_columns = screen_info.orig_video_cols;
--	state.vgabase = NULL;
-+	vgastate.vgabase = NULL;
- 
- 	if (screen_info.orig_video_mode = 7) {
- 		/* Monochrome display */
-@@ -851,12 +851,12 @@ static void vga_set_palette(struct vc_data *vc, unsigned char *table)
- {
- 	int i, j;
- 
--	vga_w(state.vgabase, VGA_PEL_MSK, 0xff);
-+	vga_w(vgastate.vgabase, VGA_PEL_MSK, 0xff);
- 	for (i = j = 0; i < 16; i++) {
--		vga_w(state.vgabase, VGA_PEL_IW, table[i]);
--		vga_w(state.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
--		vga_w(state.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
--		vga_w(state.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
-+		vga_w(vgastate.vgabase, VGA_PEL_IW, table[i]);
-+		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
-+		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
-+		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
- 	}
- }
- 
-@@ -1008,7 +1008,7 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
- 	switch (blank) {
- 	case 0:		/* Unblank */
- 		if (vga_vesa_blanked) {
--			vga_vesa_unblank(&state);
-+			vga_vesa_unblank(&vgastate);
- 			vga_vesa_blanked = 0;
- 		}
- 		if (vga_palette_blanked) {
-@@ -1022,7 +1022,7 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
- 	case 1:		/* Normal blanking */
- 	case -1:	/* Obsolete */
- 		if (!mode_switch && vga_video_type = VIDEO_TYPE_VGAC) {
--			vga_pal_blank(&state);
-+			vga_pal_blank(&vgastate);
- 			vga_palette_blanked = 1;
- 			return 0;
- 		}
-@@ -1034,7 +1034,7 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
- 		return 1;
- 	default:		/* VESA blanking */
- 		if (vga_video_type = VIDEO_TYPE_VGAC) {
--			vga_vesa_blank(&state, blank - 1);
-+			vga_vesa_blank(&vgastate, blank - 1);
- 			vga_vesa_blanked = blank;
- 		}
- 		return 0;
-@@ -1280,7 +1280,7 @@ static int vgacon_font_set(struct vc_data *c, struct console_font *font, unsigne
- 	    (charcount != 256 && charcount != 512))
- 		return -EINVAL;
- 
--	rc = vgacon_do_font_op(&state, font->data, 1, charcount = 512);
-+	rc = vgacon_do_font_op(&vgastate, font->data, 1, charcount = 512);
- 	if (rc)
- 		return rc;
- 
-@@ -1299,7 +1299,7 @@ static int vgacon_font_get(struct vc_data *c, struct console_font *font)
- 	font->charcount = vga_512_chars ? 512 : 256;
- 	if (!font->data)
- 		return 0;
--	return vgacon_do_font_op(&state, font->data, 0, vga_512_chars);
-+	return vgacon_do_font_op(&vgastate, font->data, 0, vga_512_chars);
- }
- 
- #else
--- 
-1.9.3
+ Tomi
 
+
+
+--EtotUrbCTSE98j2H7LcTr1hSaxDg22Ngt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUR1WPAAoJEPo9qoy8lh71diQP/2avyd7NGmGHXsylUl0Rdb0v
+Zuy1AQowkK1icClbVlOIeZrLdka3N0xMEnGaDfHsUST8IIYME+P9X3x5QTyNwqCf
+qRATfzDBwQJcJWHQS/hyHhInSwycYYeaxP+1Wg8zSZxa6XSPAI/mT6wDPLtRY0Uk
+VQxq/dKbg+ly2b4Ov8NnlwQo6s0hwNEAcRtnXhwcch5k0yzHIU66YXBbQWu8IBYN
+hZS18sPlJlXZKHlbykr+Jd3ZeiWSeigUC++K2BOELI5BL2Z/C5sxQTWgeMuFJX3f
+w1T2QO+ymO29EWTSfTvzhBVL/iqHZ67iKpwnLOLjq+F25SuKVQbHvMh+QphOXGWH
+cZOc8u6+bsPUdRgEi7ut1DR3mrbMP02Gu7xnLosLkk2WM7HorHQ23mghfVqGKrJ3
+TuiqazsiJmv5MPcfzS7pJ3nxWFEv7h04J/S3F2A3psdK3qTEg0dfuc1cZmHJOPrz
+VFyYwfD/QR6+wIQGulYHop/2/CZ8O8z1hs279BZ8/JANET9JgSDpOqBRTBBAdo2T
+wkjVcbJuH3E0OBaie8EF7seE0DelvHgim8k9szqMyKd6XodfmgsT1Fm9wJ5TlYoA
+daqv3R4C3aLrh+uY2t3Kh7e/SzAQsDOkiyeJt7OkRcL3zNBJ+1NSvbUHvswxuSjS
+N4ZRPjsbq/KHfRm/9t1e
+=3T40
+-----END PGP SIGNATURE-----
+
+--EtotUrbCTSE98j2H7LcTr1hSaxDg22Ngt--

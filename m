@@ -1,47 +1,62 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Mon, 20 Oct 2014 12:21:02 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 22 Oct 2014 07:02:32 +0000
 Subject: Re: [PATCH] drivers: video: fbdev: atmel_lcdfb.c: remove unnecessary header
-Message-Id: <5444FE2E.6030509@atmel.com>
+Message-Id: <54475688.3090902@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="JfDdJEsOJUsSskD1fKJVInRgdE5n9EOu7"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1413548355-499-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1413548355-499-1-git-send-email-alexandre.belloni@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <5444FE2E.6030509@atmel.com>
+In-Reply-To: <5444FE2E.6030509@atmel.com>
 To: linux-arm-kernel@lists.infradead.org
 
-On 17/10/2014 14:19, Alexandre Belloni :
-> Remove unnecessary mach/cpu.h header to be able to converge to a multiplatform
-> kernel.
-> 
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+--JfDdJEsOJUsSskD1fKJVInRgdE5n9EOu7
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+On 20/10/14 15:21, Nicolas Ferre wrote:
+> On 17/10/2014 14:19, Alexandre Belloni :
+>> Remove unnecessary mach/cpu.h header to be able to converge to a multi=
+platform
+>> kernel.
+>>
+>> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com=
+>
+>=20
+> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+>=20
+> Thanks.
+>=20
+> Tomi, can you take it?
 
-Thanks.
+Thanks, queued for 3.18 fixes.
 
-Tomi, can you take it?
-
-Bye,
-
-> ---
->  drivers/video/fbdev/atmel_lcdfb.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-> index 1d8bdb92939b..ea45a30fd4d2 100644
-> --- a/drivers/video/fbdev/atmel_lcdfb.c
-> +++ b/drivers/video/fbdev/atmel_lcdfb.c
-> @@ -26,7 +26,6 @@
->  #include <video/of_display_timing.h>
->  #include <video/videomode.h>
->  
-> -#include <mach/cpu.h>
->  #include <asm/gpio.h>
->  
->  #include <video/atmel_lcdc.h>
-> 
+ Tomi
 
 
--- 
-Nicolas Ferre
+
+
+--JfDdJEsOJUsSskD1fKJVInRgdE5n9EOu7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUR1aIAAoJEPo9qoy8lh71JLkQAIpD2m1Xb7+RUIdVD/eXGN9W
+E9sl/hk9WPGSH+QhqmiImw6qJb8FPk2M+KqNFgFtmFjm7Eus8aJ6xvM3q4kgVC7U
+KEIZsIZ/qFQ7YBCLRc0kLjcvPJK8SCrEGvPpkpxfWOIRKTg6Ii9IlsF20SY79um0
+AMkpToq8GAgQmDg14cuH+hGYexzDvYMkqVBW5YZVmUGy1IoLD7qbkapyxuOPq1vF
+VAHGeMvPwJhmwAQ7PTtpx80aqLfIolRTZxPqZF1h+TC0q6YibdFJHe1fcIRw1gVT
+pytqZCNgwFOGLwhBi1i2hJ7M0hkmwUFkwaU2Geo1WeRei481IFJUHEPfZiTbBhO7
+f9nT1auKMvRj/bJ0q3RoG7wU7JaeEImEs7PxHPV3vBn4HLjRdyH1jHg1acfwI5ad
+u+NpPcEOZzZZWX53E/aocUjJKNxP4UwP95iguiKbTvyKRITOBk82OZTJHwlTe5D4
+ZLTaBK3NARl2XSzRi9sRHzolPW4TVRkT5i3Z3H7PNdXvjoxM/WWosAa91O4G5Llf
+bXuC57YnXYBkVXZ91Lfpi+v9B7Yhn5HP8387a91zxibzh+32iS6ewLAnKnv9FsqS
+XQaV1gSTzDtnq6H1kf1LOMXYXhx1ZgHJkhf2mvIeGfeAdM1rwRB+KPTk9NQSmxXf
+3L5zJhYwdhUfRMqN4eMG
+=k+tx
+-----END PGP SIGNATURE-----
+
+--JfDdJEsOJUsSskD1fKJVInRgdE5n9EOu7--

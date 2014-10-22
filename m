@@ -1,39 +1,92 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 14 Oct 2014 17:29:20 +0000
-Subject: [PATCH v6 01/18] OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
-Message-Id: <8ad9d9e201e84daf8e20908f307fa2bfb9674bab.1413306131.git.jsarha@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 22 Oct 2014 16:45:09 +0000
+Subject: [PATCH v4 3/5] simplefb: formalize pseudo palette handling
+Message-Id: <1413996311-4287-4-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1413306131.git.jsarha@ti.com>
-In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
+References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The OMAP5 HDMI audio implementation needs HDMI_AUDIO_LAYOUT_6CH in
-hdmi_core_audio_layout enum. I found the correct value from ti-linux
-3.8 tree.
+From: Luc Verhaegen <libv@skynet.be>
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Luc Verhaegen <libv@skynet.be>
+Acked-by: Stephen Warren <swarren@nvidia.com>
+[hdegoede@redhat.com: drop unnecessary void * cast]
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/simplefb.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 262771b..1f01068 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -160,7 +160,8 @@ enum hdmi_audio_blk_strt_end_sig {
- 
- enum hdmi_core_audio_layout {
- 	HDMI_AUDIO_LAYOUT_2CH = 0,
--	HDMI_AUDIO_LAYOUT_8CH = 1
-+	HDMI_AUDIO_LAYOUT_8CH = 1,
-+	HDMI_AUDIO_LAYOUT_6CH = 2
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 210f3a0..ec112c1 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -41,6 +41,8 @@ static struct fb_var_screeninfo simplefb_var = {
+ 	.vmode		= FB_VMODE_NONINTERLACED,
  };
  
- enum hdmi_core_cts_mode {
++#define PSEUDO_PALETTE_SIZE 16
++
+ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 			      u_int transp, struct fb_info *info)
+ {
+@@ -50,7 +52,7 @@ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 	u32 cb = blue >> (16 - info->var.blue.length);
+ 	u32 value;
+ 
+-	if (regno >= 16)
++	if (regno >= PSEUDO_PALETTE_SIZE)
+ 		return -EINVAL;
+ 
+ 	value = (cr << info->var.red.offset) |
+@@ -163,11 +165,16 @@ static int simplefb_parse_pd(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
++struct simplefb_par {
++	u32 palette[PSEUDO_PALETTE_SIZE];
++};
++
+ static int simplefb_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+ 	struct simplefb_params params;
+ 	struct fb_info *info;
++	struct simplefb_par *par;
+ 	struct resource *mem;
+ 
+ 	if (fb_get_options("simplefb", NULL))
+@@ -188,11 +195,13 @@ static int simplefb_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
+-	info = framebuffer_alloc(sizeof(u32) * 16, &pdev->dev);
++	info = framebuffer_alloc(sizeof(struct simplefb_par), &pdev->dev);
+ 	if (!info)
+ 		return -ENOMEM;
+ 	platform_set_drvdata(pdev, info);
+ 
++	par = info->par;
++
+ 	info->fix = simplefb_fix;
+ 	info->fix.smem_start = mem->start;
+ 	info->fix.smem_len = resource_size(mem);
+@@ -225,7 +234,7 @@ static int simplefb_probe(struct platform_device *pdev)
+ 		framebuffer_release(info);
+ 		return -ENODEV;
+ 	}
+-	info->pseudo_palette = (void *)(info + 1);
++	info->pseudo_palette = par->palette;
+ 
+ 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
+ 			     info->fix.smem_start, info->fix.smem_len,
 -- 
-1.7.9.5
+2.1.0
 

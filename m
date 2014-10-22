@@ -1,38 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Oct 2014 08:39:34 +0000
-Subject: [PATCH 5/5] OMAPDSS: DSI: Fix PLL_SELFEQDCO field width
-Message-Id: <1413967174-28009-5-git-send-email-tomi.valkeinen@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 22 Oct 2014 16:45:07 +0000
+Subject: [PATCH v4 1/5] simplefb: Add simplefb MAINTAINERS entry
+Message-Id: <1413996311-4287-2-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413967174-28009-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1413967174-28009-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-PLL_SELFREQDCO bitfield is from bit 3 to 1, but the driver writes bits
-from 4 to 1. The bit 4 is 'reserved', so this probably should not cause
-any issues, but it's better to fix it.
+During the discussion about adding clock handling code to simplefb, it became
+clear that simplefb currently does not have an active maintainer.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+I've discussed this with Stephen Warren <swarren@wwwdotorg.org>, the original
+author of simplefb, and with his permisson I'm picking up maintainership of
+simplefb.
+
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Acked-by: Stephen Warren <swarren@wwwdotorg.org>
+Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
 ---
- drivers/video/fbdev/omap2/dss/dsi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
-index 947bd7b93375..0793bc67a275 100644
---- a/drivers/video/fbdev/omap2/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/dss/dsi.c
-@@ -1603,7 +1603,7 @@ int dsi_pll_set_clock_div(struct platform_device *dsidev,
- 	} else if (dss_has_feature(FEAT_DSI_PLL_SELFREQDCO)) {
- 		f = cinfo->clkin4ddr < 1000000000 ? 0x2 : 0x4;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 73d1aef..6e92e73 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8416,6 +8416,14 @@ F:	drivers/media/usb/siano/
+ F:	drivers/media/usb/siano/
+ F:	drivers/media/mmc/siano/
  
--		l = FLD_MOD(l, f, 4, 1);	/* PLL_SELFREQDCO */
-+		l = FLD_MOD(l, f, 3, 1);	/* PLL_SELFREQDCO */
- 	}
- 
- 	l = FLD_MOD(l, 1, 13, 13);		/* DSI_PLL_REFEN */
++SIMPLEFB FB DRIVER
++M:	Hans de Goede <hdegoede@redhat.com>
++L:	linux-fbdev@vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/video/simple-framebuffer.txt
++F:	drivers/video/fbdev/simplefb.c
++F:	include/linux/platform_data/simplefb.h
++
+ SH_VEU V4L2 MEM2MEM DRIVER
+ L:	linux-media@vger.kernel.org
+ S:	Orphan
 -- 
-2.1.1
+2.1.0
 

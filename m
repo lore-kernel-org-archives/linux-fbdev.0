@@ -1,114 +1,50 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 14 Oct 2014 17:29:19 +0000
-Subject: [PATCH v6 00/18] Rework OMAP4+ HDMI audio support
-Message-Id: <cover.1413306131.git.jsarha@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 22 Oct 2014 08:39:31 +0000
+Subject: [PATCH 2/5] OMAPDSS: HDMI: fix regsd write
+Message-Id: <1413967174-28009-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1413967174-28009-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1413967174-28009-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The patches are based on:
-git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
+HDMI PLL's REGSD field is only set by the driver if the PLL's output
+clock is over 1GHz. This is clearly an error, as REGSD should be set
+always.
 
-The base, the patches, and couple of additional not-to-be-merged
-omap2plus_defconfig patches can be found here:
-https://github.com/jsarha/linux.git
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-It would make the most sense to get these in trough fbdev tree. So it
-would be nice to get acked-bys (if the patches are Ok) for ASoC side
-changes from appropriate maintainers.
-
-Changes since v5:
-Still lot of changes, most of them were suggested by Tomi
-Valkeinen. The most significant changes:
-- Fix HDMI unplugging crashes when playing audio etc.
-- Don't use simple-card but implement bare minimum ASoC card under pdev
-- Register cpu-dai under OMAPDSS HDMI device and get dai drvdata
-  trough card drvdata via snd_pcm_substream
-- Some more cleaning up
-
-Changes since v4:
-- Turn ASoC parts into a platform device driver
-- Some cleaning up
-- reorder the patches to keep bisect working
-
-Changes since v3:
-- Move ASoC parts into library module under sound/soc/omap
-- Come up with API for the library 
-- Some cleaning up
-
-The patch set fixes OMAP4+ HDMI audio. The structure of the
-implementation looks a bit different than before. Instead of creating
-a driver specific API for a separate ASoC component driver to connect
-to, these patches implement a platform device driver under
-sound/soc/omap for ASoC side implementation. This driver should only
-be registered from OMAPDSS HDMI code. 
-
-The ASoC side driver implements cpu-dai component using the callbacks
-provided by OMAPDSS and registers the component under DSS HDMI
-device. Omap-pcm is registered for platform component, dummy
-hdmi-audio-codec is registered for codec component, and ASoC driver
-implements also a bare minimum card driver and registeres it under
-itself.
-
-Big part of the HDMI audio code is still unchanged and there is a need
-for a cleanup there. Also there is still probably something wrong with
-speaker mapping of multi-channel streams. I will get back to cleaning
-up these issues later.
-
-Best regards,
-Jyri
-
-  OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
-  OMAPDSS: hdmi: Remove most of OMAP[45]_DSS_HDMI_AUDIO ifdefs
-  OMAPDSS: hdmi4_core: Remove unused hdmi4_audio_get_dma_port()
-  OMAPDSS: hdmi_wp: Add function for getting audio dma address
-  OMAPDSS: hdmi: Make hdmi structure public
-  OMAPDSS: hdmi: Add pdev pointer for audio_pdev in HDMI DRV data
-  ASoC: codecs/hdmi: Mark the maximum significant bits to HDMI codec
-  ASoC: codecs/hdmi: HDMI codec doesn't benefit from pmdown delay
-  ASoC: omap-hdmi-audio: Add platfrom device for OMAP HDMI audio
-    support
-  OMAPDSS: Kconfig: Remove HDMI audio booleans from Kconfig
-  OMAPDSS: hdmi: Make hdmi_mode_has_audio() more user friedly
-  OMAPDSS: hdmi.h: Add members to hdmi drvdata for audio implementation
-  OMAPDSS: hdmi4: Remove callbacks for the old ASoC DAI driver
-  OMAPDSS: hdmi4: Register ASoC platfrom device for omap hdmi audio
-  OMAPDSS: hdmi5: Remove callbacks for the old ASoC DAI driver
-  OMAPDSS: hdmi5: Register ASoC platfrom device for omap hdmi audio
-  ASoC: omap: Remove obsolete HDMI audio code and Kconfig options
-  OMAPDSS: Remove all references to obsolete HDMI audio callbacks
-
- .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 -----
- .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 ---
- drivers/video/fbdev/omap2/dss/Kconfig              |    7 -
- drivers/video/fbdev/omap2/dss/hdmi.h               |   37 +-
- drivers/video/fbdev/omap2/dss/hdmi4.c              |  268 ++++++-------
- drivers/video/fbdev/omap2/dss/hdmi4_core.c         |   14 -
- drivers/video/fbdev/omap2/dss/hdmi4_core.h         |    4 -
- drivers/video/fbdev/omap2/dss/hdmi5.c              |  257 ++++++------
- drivers/video/fbdev/omap2/dss/hdmi5_core.c         |    6 -
- drivers/video/fbdev/omap2/dss/hdmi5_core.h         |    2 -
- drivers/video/fbdev/omap2/dss/hdmi_common.c        |    2 -
- drivers/video/fbdev/omap2/dss/hdmi_wp.c            |    8 +-
- include/sound/omap-hdmi-audio.h                    |   43 ++
- include/video/omapdss.h                            |   31 --
- sound/soc/codecs/hdmi.c                            |    2 +
- sound/soc/omap/Kconfig                             |   21 +-
- sound/soc/omap/Makefile                            |    6 +-
- sound/soc/omap/omap-hdmi-audio.c                   |  420 ++++++++++++++++++++
- sound/soc/omap/omap-hdmi-card.c                    |   87 ----
- sound/soc/omap/omap-hdmi.c                         |  364 -----------------
- sound/soc/omap/omap-hdmi.h                         |   38 --
- 21 files changed, 772 insertions(+), 1000 deletions(-)
- create mode 100644 include/sound/omap-hdmi-audio.h
- create mode 100644 sound/soc/omap/omap-hdmi-audio.c
- delete mode 100644 sound/soc/omap/omap-hdmi-card.c
- delete mode 100644 sound/soc/omap/omap-hdmi.c
- delete mode 100644 sound/soc/omap/omap-hdmi.h
-
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
+index d4ec815ba42e..6d92bb32fe51 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
+@@ -124,16 +124,15 @@ static int hdmi_pll_config(struct hdmi_pll_data *pll)
+ 	r = FLD_MOD(r, 0x0, 14, 14);	/* PHY_CLKINEN de-assert during locking */
+ 	r = FLD_MOD(r, fmt->refsel, 22, 21);	/* REFSEL */
+ 
+-	if (fmt->dcofreq) {
+-		/* divider programming for frequency beyond 1000Mhz */
+-		REG_FLD_MOD(pll->base, PLLCTRL_CFG3, fmt->regsd, 17, 10);
++	if (fmt->dcofreq)
+ 		r = FLD_MOD(r, 0x4, 3, 1);	/* 1000MHz and 2000MHz */
+-	} else {
++	else
+ 		r = FLD_MOD(r, 0x2, 3, 1);	/* 500MHz and 1000MHz */
+-	}
+ 
+ 	hdmi_write_reg(pll->base, PLLCTRL_CFG2, r);
+ 
++	REG_FLD_MOD(pll->base, PLLCTRL_CFG3, fmt->regsd, 17, 10);
++
+ 	r = hdmi_read_reg(pll->base, PLLCTRL_CFG4);
+ 	r = FLD_MOD(r, fmt->regm2, 24, 18);
+ 	r = FLD_MOD(r, fmt->regmf, 17, 0);
 -- 
-1.7.9.5
+2.1.1
 

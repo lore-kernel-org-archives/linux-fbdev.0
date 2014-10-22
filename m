@@ -1,90 +1,64 @@
-From: Maarten ter Huurne <maarten@treewalker.org>
-Date: Thu, 09 Oct 2014 09:48:30 +0000
-Subject: [PATCH] fbcon: Fix option parsing control flow in fb_console_setup
-Message-Id: <1412848110-12734-1-git-send-email-maarten@treewalker.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 22 Oct 2014 06:53:30 +0000
+Subject: Re: [PATCH] fbcon: Fix option parsing control flow in fb_console_setup
+Message-Id: <5447546A.8070800@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="sj0NFaMBx5725hebH183id5JplDNGmxVc"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, Maarten ter Huurne <maarten@treewalker.org>
+References: <1412848110-12734-1-git-send-email-maarten@treewalker.org>
+In-Reply-To: <1412848110-12734-1-git-send-email-maarten@treewalker.org>
+To: Maarten ter Huurne <maarten@treewalker.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 
-Since strsep is used to tokenize the options string, after each option
-match the code should use "continue" to get the next token from strsep.
-This patch applies this pattern consistently.
+--sj0NFaMBx5725hebH183id5JplDNGmxVc
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Previously, for "scrollback:" and "map:" the parse code would return
-(unconditionally: strsep ensures *options != ','), causing any
-following option to be ignored, while for "vc:" the parse code would
-go on to parse further options within the same token, which could lead
-to invalid input being accepted.
+On 09/10/14 12:48, Maarten ter Huurne wrote:
+> Since strsep is used to tokenize the options string, after each option
+> match the code should use "continue" to get the next token from strsep.=
 
-Signed-off-by: Maarten ter Huurne <maarten@treewalker.org>
-Acked-by: Paul Cercueil <paul@crapouillou.net>
----
- drivers/video/console/fbcon.c | 19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+> This patch applies this pattern consistently.
+>=20
+> Previously, for "scrollback:" and "map:" the parse code would return
+> (unconditionally: strsep ensures *options !=3D ','), causing any
+> following option to be ignored, while for "vc:" the parse code would
+> go on to parse further options within the same token, which could lead
+> to invalid input being accepted.
+>=20
+> Signed-off-by: Maarten ter Huurne <maarten@treewalker.org>
+> Acked-by: Paul Cercueil <paul@crapouillou.net>
+> ---
+>  drivers/video/console/fbcon.c | 19 +++++++++----------
+>  1 file changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 57b1d44..eb976ee 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -448,8 +448,10 @@ static int __init fb_console_setup(char *this_opt)
- 		return 1;
- 
- 	while ((options = strsep(&this_opt, ",")) != NULL) {
--		if (!strncmp(options, "font:", 5))
-+		if (!strncmp(options, "font:", 5)) {
- 			strlcpy(fontname, options + 5, sizeof(fontname));
-+			continue;
-+		}
- 		
- 		if (!strncmp(options, "scrollback:", 11)) {
- 			options += 11;
-@@ -457,13 +459,9 @@ static int __init fb_console_setup(char *this_opt)
- 				fbcon_softback_size = simple_strtoul(options, &options, 0);
- 				if (*options = 'k' || *options = 'K') {
- 					fbcon_softback_size *= 1024;
--					options++;
- 				}
--				if (*options != ',')
--					return 1;
--				options++;
--			} else
--				return 1;
-+			}
-+			continue;
- 		}
- 		
- 		if (!strncmp(options, "map:", 4)) {
-@@ -478,8 +476,7 @@ static int __init fb_console_setup(char *this_opt)
- 
- 				fbcon_map_override();
- 			}
--
--			return 1;
-+			continue;
- 		}
- 
- 		if (!strncmp(options, "vc:", 3)) {
-@@ -491,7 +488,8 @@ static int __init fb_console_setup(char *this_opt)
- 			if (*options++ = '-')
- 				last_fb_vc = simple_strtoul(options, &options, 10) - 1;
- 			fbcon_is_default = 0; 
--		}	
-+			continue;
-+		}
- 
- 		if (!strncmp(options, "rotate:", 7)) {
- 			options += 7;
-@@ -499,6 +497,7 @@ static int __init fb_console_setup(char *this_opt)
- 				initial_rotation = simple_strtoul(options, &options, 0);
- 			if (initial_rotation > 3)
- 				initial_rotation = 0;
-+			continue;
- 		}
- 	}
- 	return 1;
--- 
-1.8.4.5
+Thanks, queued for 3.18 fixes.
 
+ Tomi
+
+
+
+--sj0NFaMBx5725hebH183id5JplDNGmxVc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUR1RxAAoJEPo9qoy8lh717esQAJvxCPlq+L4JgggEeeU4t948
+yrEVN+5jc9zXboLuYFokfUVpqoE9zl1XuzT6ZKHOpwvf/gGQjL8KGRkAW15MUZAH
+GzkBIT4hVzOBOc4HqQEUbphg0JfS9JksthMaQXNWLs9SJ0Qh7+tgO72UD9PX1AQy
+yrhCQBjK7XCo08IbW3MBDO+RdseXALYy8Qm2z0pr+eAtzKbir2O1qg2PPzeTvAHj
+0MRv80vfgghXjj1zmK+72/64OP2w3+yYEMfdMwKg9uQDo8WU9vwtL+bI6IRP4EIv
+rtgxOsiXLg9GLrIjDU046RNwL9b4kJWQYmuKPY9SLTXUfkxPje/T1tEGekJrV1px
+beTH3ncZhToo6EOFqPS5tF9qecr4DaCqkR3FDjFJEHeqH4KZdpXJV9pt/DdKb/6Q
+G/AHU9jw7D4b2BH1qf8eG2l2kd95Q8k6d4LHd30c2syCrnaBxpPn8Oif+pyy9p1V
+zE0QRC1y6goBrumNJuiPODZ6faR1rtvCa2yFSFNUuarDMYIq9g9Yfa5n5RCuMPs9
+yhFf/DSe9WJDM0KstMxlg9NwhcuwPRdGEpYdoKAzmQvnTqTlpXDVM0wcGyuWfiRT
+lAPKjWbML1sGzQQSzGck30yLVOThjEnIG5E1G8iiBrVHG03KrYAg4afZL27yHWtR
+JdsO7OKQZkhPArVE5EfN
+=P8Y9
+-----END PGP SIGNATURE-----
+
+--sj0NFaMBx5725hebH183id5JplDNGmxVc--

@@ -1,231 +1,188 @@
-From: Davor Joja <davorjoja@logicbricks.com>
-Date: Mon, 06 Oct 2014 13:33:00 +0000
-Subject: [RFC 10/10] Documentation: devicetree: bindings: video: Xylon logiCVC IP binding
-Message-Id: <65a48e47-9eba-4e16-b1ef-292e3ecbc691@mail.xylon.local>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 22 Oct 2014 16:45:11 +0000
+Subject: [PATCH v4 5/5] simplefb: add clock handling code
+Message-Id: <1413996311-4287-6-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Xylon logiCVC IP core binding description.
+From: Luc Verhaegen <libv@skynet.be>
 
-Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
+This claims and enables clocks listed in the simple framebuffer dt node.
+This is needed so that the display engine, in case the required clocks
+are known by the kernel code and are described in the dt, will remain
+properly enabled.
+
+Signed-off-by: Luc Verhaegen <libv@skynet.be>
+[hdegoede@redhat.com: Change clks from list to dynamic array]
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
+
+--
+Changes in v4:
+-change clks from linkedlist to dynamic allocated array
+-propagate EPROBE_DEFER up from simplefb_clocks_init to simplefb_probe
 ---
- .../devicetree/bindings/video/xylon-logicvc.txt    | 207 +++++++++++++++++++++
- 1 file changed, 207 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/xylon-logicvc.txt
+ drivers/video/fbdev/simplefb.c | 101 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 100 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/video/xylon-logicvc.txt b/Documentation/devicetree/bindings/video/xylon-logicvc.txt
-new file mode 100644
-index 0000000..12f24c5
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/xylon-logicvc.txt
-@@ -0,0 +1,207 @@
-+Binding for Xylon logiCVC configurable video controller IP core
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index cdcf1fe..cd96edd 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -26,6 +26,7 @@
+ #include <linux/module.h>
+ #include <linux/platform_data/simplefb.h>
+ #include <linux/platform_device.h>
++#include <linux/clk-provider.h>
+ 
+ static struct fb_fix_screeninfo simplefb_fix = {
+ 	.id		= "simple",
+@@ -167,8 +168,98 @@ static int simplefb_parse_pd(struct platform_device *pdev,
+ 
+ struct simplefb_par {
+ 	u32 palette[PSEUDO_PALETTE_SIZE];
++	int clk_count;
++	struct clk **clks;
+ };
+ 
++/*
++ * Clock handling code.
++ *
++ * Here we handle the clocks property of our "simple-framebuffer" dt node.
++ * This is necessary so that we can make sure that any clocks needed by
++ * the display engine that the bootloader set up for us (and for which it
++ * provided a simplefb dt node), stay up, for the life of the simplefb
++ * driver.
++ *
++ * When the driver unloads, we cleanly disable, and then release the clocks.
++ *
++ * We only complain about errors here, no action is taken as the most likely
++ * error can only happen due to a mismatch between the bootloader which set
++ * up simplefb, and the clock definitions in the device tree. Chances are
++ * that there are no adverse effects, and if there are, a clean teardown of
++ * the fb probe will not help us much either. So just complain and carry on,
++ * and hope that the user actually gets a working fb at the end of things.
++ */
++static int
++simplefb_clocks_init(struct simplefb_par *par, struct platform_device *pdev)
++{
++	struct device_node *np = pdev->dev.of_node;
++	struct clk *clock;
++	int i, ret;
 +
-+Required properties:
-+ - compatible: "xylon,logicvc-4.00.a", "xylon,logicvc-4.01.a"
-+ - reg: MMIO base address and size of the logiCVC IP core address space
-+ - interrupts-parent: the phandle for interrupt controller
-+ - interrupts: the interrupt number
-+ - pixel-stride: layer width in pixels
-+      Common for all available logiCVC standard layers.
++	if (dev_get_platdata(&pdev->dev) || !np)
++		return 0;
 +
-+ - layer_N: layer has its own configuration described with below properties,
-+      where N is layer ID in range 0 - 4
-+   - bits-per-pixel: layer bits per pixel configuration (8, 16, 32)
-+         Layer is configured to be used with specified pixel width in bits.
-+         Pixels written to layer video memory must match in size to configured
-+         "bits-per-pixel" value.
-+         Note: Allowed "transparency" for values of "bits-per-pixel":
++	par->clk_count = of_clk_get_parent_count(np);
++	if (par->clk_count <= 0)
++		return 0;
 +
-+         =======================+             bits-per-pixel             transparency
-+         =======================+                   8                       clut16
-+                   8                       clut32
-+                   8                       layer
-+                   16                      layer
-+                   32                      layer, pixel
-+         =======================+
-+   - type: layer type (rgb, yuv, alpha)
-+         Layer is configured to be used with specified color space.
-+         Pixels written to layer video memory must match specified color format.
-+         Type is set to "alpha" if layer contains only pixel alpha values
-+         used by layer above. Permitted layer IDs for configuring layer alpha
-+         are 1 and 3.
-+   - transparency: layer transparency (clut16, clut32, layer, pixel)
-+         logiCVC layer can be configured to have transparency control on
-+         CLUT, layer or pixel level.
-+         "CLUT" mode enables controlling of layer transparency by changing
-+         alpha value in logiCVC CLUT registers.
-+         "Layer" mode enables controlling of layer transparency by changing
-+         alpha value in single logiCVC register.
-+         "Pixel" mode enables controlling of pixel transparency by changing
-+         dedicated alpha bits of specific pixel in video memory.
-+         Note: "transparency" property is not used if "type" property is set
-+         to "alpha".
++	par->clks = kcalloc(par->clk_count, sizeof(struct clk *), GFP_KERNEL);
++	if (!par->clks)
++		return -ENOMEM;
 +
-+Optional properties:
-+ - background-layer-bits-per-pixel: background layer bits per pixel (8, 16, 32)
-+      If omitted, last available layer is logiCVC standard layer, which has its
-+      own video memory of specific size, color format and specified
-+      bits per pixel.
-+      If 8, 16 or 32, last available layer is logiCVC background layer,
-+      with only specified bits per pixel value.
-+ - background-layer-type: background layer type (rgb, yuv)
-+      Must be used only when "background-layer-bits-per-pixel" exist.
-+      If set to "rgb", in case of 32 bits per pixel, background color register
-+      must be written with XRGB8888 value. In case of 16 bits per pixel,
-+      background color register must be written with RGB565 value.
-+      If set to "yuv", background color register must be written with XYUV8888
-+      value.
-+ - hsync-active-low: horizontal synchronization pulse is active low "L"
-+      If omitted, generated horizontal synchronization pulse polarity is logic
-+      high "H".
-+ - vsync-active-low: vertical synchronization pulse is active low "L"
-+      If omitted, generated vertical synchronization pulse polarity is logic
-+      high "H".
-+ - pixel-data-invert: output pixel data polarity is inverted
-+      If omitted, logiCVC outputs pixel data at default interface polarity.
-+ - pixel-data-output-trigger-high: output pixel data triggers on rising edge
-+      If omitted, logiCVC outputs pixel data on falling edge of pixel clock.
-+ - readable-regs: all logiCVC registers are available for reading
-+      If omitted, only Interrupt Status, Power Control and IP Version registers
-+      are available for reading.
-+ - size-position: logiCVC functionality for controlling on screen layer size
-+      and position available
-+      If omitted, functionality not available.
-+ - component-swap: swap the order of colour components inside the pixel
-+ - data-enable-active-low: data enable signal is active low "L"
-+      If omitted, generated data enable polarity is logic high "H".
-+ - display-interface-itu656: modifies RGB to YUV conversion coefficients
-+ - address: layer video memory address for layer_N where
-+      N is layer ID in range 0 - 4.
-+      logiCVC can be configured to have layer video memory address hardcoded
-+      as layer register reset value. This video memory is not part of the system
-+      memory. Still it is accessible by CPU and HW devices.
-+      If omitted, layer video memory address is set dynamically by
-+      device driver.Layer video memory address can be changed dynamically
-+      despite the hardcoded address.
-+      Note: Additionally, address range parameter can be set. It defines range
-+      of video memory in bytes starting from provided address. It is mandatory
-+      for physically last layer in memory. If range parameter is omitted for
-+      physically last layer, range will be by default set to 2048 lines.
-+      If omitted for any other layer then physically last layer,
-+      range will be calculated according to address of next physical layer.
-+ - buffer-offset: buffer address offset represented in number of lines
-+      Used only for HW buffer switching.
-+      If omitted, buffer offset variable is by default set to "0".
-+ - power-delay: delay in ms after enabling display power supply
-+      If omitted, delay is by default set to "0".
-+ - signal-delay: delay in ms after enabling display control and data signals
-+      in parallel and LVDS interface
-+      If omitted, delay is by default set to "0".
-+ - display-timings: custom display video mode timing parameters
-+      If omitted, driver will use its default video mode timings.
-+      native-mode optional parameter determines which video mode timings from
-+      the list are used. If native-mode parameter is omitted, first available
-+      video mode timings are used.
++	for (i = 0; i < par->clk_count; i++) {
++		clock = of_clk_get(np, i);
++		if (IS_ERR(clock)) {
++			if (PTR_ERR(clock) = -EPROBE_DEFER) {
++				while (--i >= 0) {
++					if (par->clks[i])
++						clk_put(par->clks[i]);
++				}
++				kfree(par->clks);
++				return -EPROBE_DEFER;
++			}
++			dev_err(&pdev->dev, "%s: clock %d not found: %ld\n",
++				__func__, i, PTR_ERR(clock));
++			continue;
++		}
++		par->clks[i] = clock;
++	}
 +
-+Example:
++	for (i = 0; i < par->clk_count; i++) {
++		if (par->clks[i]) {
++			ret = clk_prepare_enable(par->clks[i]);
++			if (ret) {
++				dev_err(&pdev->dev,
++					"%s: failed to enable clock %d: %d\n",
++					__func__, i, ret);
++				clk_put(par->clks[i]);
++				par->clks[i] = NULL;
++			}
++		}
++	}
 +
-+	logicvc_0: logicvc@40000000 {
-+		compatible = "xylon,logicvc-4.00.a";
-+		reg = <0x40030000 0x6000>;
-+		interrupt-parent = <&ps7_scugic_0>;
-+		interrupts = <0 59 4>;
-+		background-layer-bits-per-pixel = <32>;
-+		background-layer-type = "rgb";
-+		display-interface-itu656;
-+		hsync-active-low;
-+		vsync-active-low;
-+		data-enable-active-low;
-+		pixel-data-invert;
-+		pixel-data-output-trigger-high;
-+		readable-regs;
-+		size-position;
-+		pixel-stride = <2048>;
-+		power-delay = <100>;
-+		signal-delay = <50>;
-+		layer_0 {
-+			address = <0x30000000>
-+			buffer-offset = <512>;
-+			bits-per-pixel = <16>;
-+			type = "yuv";
-+			transparency = "layer";
-+			component-swap;
-+		};
-+		layer_1 {
-+			address = <0x30600000>;
-+			bits-per-pixel = <32>;
-+			type = "rgb";
-+			transparency = "pixel";
-+		};
-+		layer_2 {
-+			address = <0x31F50000>;
-+			bits-per-pixel = <8>;
-+			type = "rgb";
-+			transparency = "clut32";
-+		};
-+		layer_3 {
-+			address = <0x3216C000 0xCA8000>;
-+			bits-per-pixel = <16>;
-+			type = "rgb";
-+			transparency = "layer";
-+		};
++	return 0;
++}
 +
-+		display-timings {
-+			native-mode = <&wsxga>;
-+			hd720p: 1280x720 {
-+				clock-frequency = <74250000>;
-+				hactive = <1280>;
-+				vactive = <720>;
-+				hfront-porch = <110>;
-+				hback-porch = <220>;
-+				hsync-len = <40>;
-+				vfront-porch = <5>;
-+				vback-porch = <20>;
-+				vsync-len = <5>;
-+				hsync-active = <0>;
-+				vsync-active = <0>;
-+				de-active = <1>;
-+				pixelclk-active = <1>;
-+			};
-+			wsxga: 1680x1050 {
-+				clock-frequency = <119000000>;
-+				hactive = <1680>;
-+				vactive = <1050>;
-+				hfront-porch = <48>;
-+				hback-porch = <80>;
-+				hsync-len = <32>;
-+				vfront-porch = <3>;
-+				vback-porch = <21>;
-+				vsync-len = <6>;
-+			};
-+			hd1080p: 1920x1080 {
-+				clock-frequency = <148500000>;
-+				hactive = <1920>;
-+				vactive = <1080>;
-+				hfront-porch = <88>;
-+				hback-porch = <148>;
-+				hsync-len = <44>;
-+				vfront-porch = <4>;
-+				vback-porch = <36>;
-+				vsync-len = <5>;
-+			};
-+			TM050RBH01: 800x480 {
-+				clock-frequency = <30000000>;
-+				hactive = <800>;
-+				vactive = <480>;
-+				hfront-porch = <40>;
-+				hback-porch = <40>;
-+				hsync-len = <48>;
-+				vfront-porch = <13>;
-+				vback-porch = <29>;
-+				vsync-len = <3>;
-+			};
-+		};
-+	};
++static void
++simplefb_clocks_destroy(struct simplefb_par *par)
++{
++	int i;
++
++	if (!par->clks)
++		return;
++
++	for (i = 0; i < par->clk_count; i++) {
++		if (par->clks[i]) {
++			clk_disable_unprepare(par->clks[i]);
++			clk_put(par->clks[i]);
++		}
++	}
++
++	kfree(par->clks);
++}
++
+ static int simplefb_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+@@ -236,6 +327,10 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	}
+ 	info->pseudo_palette = par->palette;
+ 
++	ret = simplefb_clocks_init(par, pdev);
++	if (ret < 0)
++		goto error_unmap;
++
+ 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
+ 			     info->fix.smem_start, info->fix.smem_len,
+ 			     info->screen_base);
+@@ -247,13 +342,15 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	ret = register_framebuffer(info);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
+-		goto error_unmap;
++		goto error_clocks;
+ 	}
+ 
+ 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
+ 
+ 	return 0;
+ 
++error_clocks:
++	simplefb_clocks_destroy(par);
+ error_unmap:
+ 	iounmap(info->screen_base);
+ error_fb_release:
+@@ -264,8 +361,10 @@ error_fb_release:
+ static int simplefb_remove(struct platform_device *pdev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(pdev);
++	struct simplefb_par *par = info->par;
+ 
+ 	unregister_framebuffer(info);
++	simplefb_clocks_destroy(par);
+ 	framebuffer_release(info);
+ 
+ 	return 0;
 -- 
-1.9.1
+2.1.0
 

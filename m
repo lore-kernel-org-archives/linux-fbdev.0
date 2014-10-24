@@ -1,46 +1,122 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Wed, 15 Oct 2014 10:27:16 +0000
-Subject: Re: [PATCH v6 08/18] ASoC: codecs/hdmi: HDMI codec doesn't benefit from pmdown delay
-Message-Id: <20141015102716.GB27755@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="xEUC5fB8Sf//E0AF"
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Fri, 24 Oct 2014 10:37:25 +0000
+Subject: [PATCH 3/5] fbdev: sa1100fb: make use of device clock
+Message-Id: <1414147047-12892-4-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1413306131.git.jsarha@ti.com>
- <aa7ad47271e780b75b608382a8830cdc22c4193a.1413306131.git.jsarha@ti.com>
-In-Reply-To: <aa7ad47271e780b75b608382a8830cdc22c4193a.1413306131.git.jsarha@ti.com>
-To: Jyri Sarha <jsarha@ti.com>
-Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com
+References: <1414147047-12892-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1414147047-12892-1-git-send-email-dbaryshkov@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
+Use per-device clock (instead of calling cpufreq_get(0), which can
+return 0 if no cpu frequency driver is selected) to program timings.
 
---xEUC5fB8Sf//E0AF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ drivers/video/fbdev/sa1100fb.c | 24 +++++++++++++++++-------
+ drivers/video/fbdev/sa1100fb.h |  1 +
+ 2 files changed, 18 insertions(+), 7 deletions(-)
 
-On Tue, Oct 14, 2014 at 08:29:27PM +0300, Jyri Sarha wrote:
-> Adds .ignore_pmdown_time =3D true to codec driver struct.
->=20
-> HDMI codec is currently a dummy codec and doesn't benefit from pmdown
-> delay. Even if in the future the codec would controll HDMI encoder, it
-> would still be a digital to digital interface that should have no need
-> for pmdown delay.
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index 580c444e..8933840 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -178,6 +178,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/mutex.h>
+ #include <linux/io.h>
++#include <linux/clk.h>
+ 
+ #include <video/sa1100fb.h>
+ 
+@@ -413,9 +414,9 @@ sa1100fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 		var->transp.offset);
+ 
+ #ifdef CONFIG_CPU_FREQ
+-	dev_dbg(fbi->dev, "dma period = %d ps, clock = %d kHz\n",
++	dev_dbg(fbi->dev, "dma period = %d ps, clock = %ld kHz\n",
+ 		sa1100fb_display_dma_period(var),
+-		cpufreq_get(smp_processor_id()));
++		clk_get_rate(fbi->clk) / 1000);
+ #endif
+ 
+ 	return 0;
+@@ -586,9 +587,10 @@ static struct fb_ops sa1100fb_ops = {
+  * Calculate the PCD value from the clock rate (in picoseconds).
+  * We take account of the PPCR clock setting.
+  */
+-static inline unsigned int get_pcd(unsigned int pixclock, unsigned int cpuclock)
++static inline unsigned int get_pcd(struct sa1100fb_info *fbi,
++		unsigned int pixclock)
+ {
+-	unsigned int pcd = cpuclock / 100;
++	unsigned int pcd = clk_get_rate(fbi->clk) / 100 / 1000;
+ 
+ 	pcd *= pixclock;
+ 	pcd /= 10000000;
+@@ -667,7 +669,7 @@ static int sa1100fb_activate_var(struct fb_var_screeninfo *var, struct sa1100fb_
+ 		LCCR2_BegFrmDel(var->upper_margin) +
+ 		LCCR2_EndFrmDel(var->lower_margin);
+ 
+-	pcd = get_pcd(var->pixclock, cpufreq_get(0));
++	pcd = get_pcd(fbi, var->pixclock);
+ 	new_regs.lccr3 = LCCR3_PixClkDiv(pcd) | fbi->inf->lccr3 |
+ 		(var->sync & FB_SYNC_HOR_HIGH_ACT ? LCCR3_HorSnchH : LCCR3_HorSnchL) |
+ 		(var->sync & FB_SYNC_VERT_HIGH_ACT ? LCCR3_VrtSnchH : LCCR3_VrtSnchL);
+@@ -1003,7 +1005,6 @@ sa1100fb_freq_transition(struct notifier_block *nb, unsigned long val,
+ 			 void *data)
+ {
+ 	struct sa1100fb_info *fbi = TO_INF(nb, freq_transition);
+-	struct cpufreq_freqs *f = data;
+ 	u_int pcd;
+ 
+ 	switch (val) {
+@@ -1012,7 +1013,7 @@ sa1100fb_freq_transition(struct notifier_block *nb, unsigned long val,
+ 		break;
+ 
+ 	case CPUFREQ_POSTCHANGE:
+-		pcd = get_pcd(fbi->fb.var.pixclock, f->new);
++		pcd = get_pcd(fbi, fbi->fb.var.pixclock);
+ 		fbi->reg_lccr3 = (fbi->reg_lccr3 & ~0xff) | LCCR3_PixClkDiv(pcd);
+ 		set_ctrlr_state(fbi, C_ENABLE_CLKCHANGE);
+ 		break;
+@@ -1219,6 +1220,13 @@ static int sa1100fb_probe(struct platform_device *pdev)
+ 	if (!fbi)
+ 		goto failed;
+ 
++	fbi->clk = clk_get(&pdev->dev, NULL);
++	if (IS_ERR(fbi->clk)) {
++		ret = PTR_ERR(fbi->clk);
++		fbi->clk = NULL;
++		goto failed;
++	}
++
+ 	fbi->base = ioremap(res->start, resource_size(res));
+ 	if (!fbi->base)
+ 		goto failed;
+@@ -1271,6 +1279,8 @@ static int sa1100fb_probe(struct platform_device *pdev)
+  failed:
+ 	if (fbi)
+ 		iounmap(fbi->base);
++	if (fbi->clk)
++		clk_put(fbi->clk);
+ 	kfree(fbi);
+ 	release_mem_region(res->start, resource_size(res));
+ 	return ret;
+diff --git a/drivers/video/fbdev/sa1100fb.h b/drivers/video/fbdev/sa1100fb.h
+index fc5d429..0139d13 100644
+--- a/drivers/video/fbdev/sa1100fb.h
++++ b/drivers/video/fbdev/sa1100fb.h
+@@ -68,6 +68,7 @@ struct sa1100fb_info {
+ #endif
+ 
+ 	const struct sa1100fb_mach_info *inf;
++	struct clk *clk;
+ };
+ 
+ #define TO_INF(ptr,member)	container_of(ptr,struct sa1100fb_info,member)
+-- 
+2.1.1
 
-Applied, thanks.
-
---xEUC5fB8Sf//E0AF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUPkwDAAoJECTWi3JdVIfQArgH/1BXNHUAeg6597g6sd0YW46v
-DG+9aEoZKD4ciU50q2GS9T6wLWnNAFV/5vPHFrDyqgt4o5YnOx7t/M7Kh/gG+SsV
-NxZdqMmr66XQKueS5vwkxIZ4VwQbb2HWxUwAf5E1iVP2LSqSIr1kJnmo1fzrViUx
-G16Yg6N5SBZvkYocn+2mhsUYSpuc6B/3jmRzctuiX0vsISb0vqoY6npU9r48a72a
-aJ8ursduLA4+A9Es75rLhu+3Bst4tUpc7OZkG3P8B+5RIxsr97wQ4T+rsZr/I1Yt
-pOqGz1rQP4Kw3rx2B+XYn1zOvkrJQS9GK8rfWCsmlJxEy5eBZFjYYQzhX6MDC/Q=
-=S90N
------END PGP SIGNATURE-----
-
---xEUC5fB8Sf//E0AF--

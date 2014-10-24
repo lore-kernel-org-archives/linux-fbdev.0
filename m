@@ -1,40 +1,45 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 14 Oct 2014 17:29:31 +0000
-Subject: [PATCH v6 12/18] OMAPDSS: hdmi.h: Add members to hdmi drvdata for audio implementation
-Message-Id: <3811cd4b435ab6bff3697a690af0af9070378c9c.1413306131.git.jsarha@ti.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Fri, 24 Oct 2014 10:37:27 +0000
+Subject: [PATCH 5/5] pcmcia: sa1111: provide device clock
+Message-Id: <1414147047-12892-6-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1413306131.git.jsarha@ti.com>
-In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
+References: <1414147047-12892-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1414147047-12892-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Adds display_enabled flag and audio_abort_cb callback to struct hdmi.
+Both pxa2xx (long ago) and sa1100 (now) make use of clock device to get
+the cpu speed. Make sa1111 glue code provide clock to platform layer.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/pcmcia/sa1111_generic.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 6d129f2..bfaaf2f 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -366,10 +366,12 @@ struct omap_hdmi {
- 	struct regulator *vdda_reg;
+diff --git a/drivers/pcmcia/sa1111_generic.c b/drivers/pcmcia/sa1111_generic.c
+index 65b02c3..c5988be 100644
+--- a/drivers/pcmcia/sa1111_generic.c
++++ b/drivers/pcmcia/sa1111_generic.c
+@@ -145,6 +145,9 @@ int sa1111_pcmcia_add(struct sa1111_dev *dev, struct pcmcia_low_level *ops,
+ 			return -ENOMEM;
  
- 	bool core_enabled;
-+	bool display_enabled;
+ 		s->soc.nr = ops->first + i;
++		s->soc.clk = clk_get(&dev->dev, NULL);
++		if (IS_ERR(s->soc.clk))
++			return -ENODEV;
+ 		soc_pcmcia_init_one(&s->soc, ops, &dev->dev);
+ 		s->dev = dev;
+ 		if (s->soc.nr) {
+@@ -220,6 +223,7 @@ static int pcmcia_remove(struct sa1111_dev *dev)
+ 	for (; s; s = next) {
+ 		next = s->next;
+ 		soc_pcmcia_remove_one(&s->soc);
++		clk_put(s->soc.clk);
+ 		kfree(s);
+ 	}
  
- 	struct omap_dss_device output;
- 
- 	struct platform_device *audio_pdev;
-+	void (*audio_abort_cb)(struct device *dev);
- };
- 
- #endif
 -- 
-1.7.9.5
+2.1.1
 

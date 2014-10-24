@@ -1,73 +1,116 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Tue, 28 Oct 2014 00:29:28 +0000
-Subject: Re: [PATCH 00/15] new locomo driver
-Message-Id: <20141028002928.GK18557@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="vkzoT2Bc9VsM/9ev"
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Fri, 24 Oct 2014 10:37:23 +0000
+Subject: [PATCH 1/5] arm: sa1100: add cpu clock
+Message-Id: <1414147047-12892-2-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
- <20141028001338.GZ27405@n2100.arm.linux.org.uk>
-In-Reply-To: <20141028001338.GZ27405@n2100.arm.linux.org.uk>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Andrea Adami <andrea.adami@gmail.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jg1.han@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>
+References: <1414147047-12892-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1414147047-12892-1-git-send-email-dbaryshkov@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
+Both SA1100 framebuffer and PCMCIA drivers require knowledge of cpu
+frequency to correctly program timings.  Currently they receive timing
+information by calling cpufreq_get(0).  However if cpu frequency driver
+is not enabled (e.g. due to unsupported DRAM chip/board on sa1110)
+cpufreq_get(0) returns 0, causing incorrect timings to be programmed.
 
---vkzoT2Bc9VsM/9ev
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Add cpu clock returning cpu frequency, to be used by sa11x0 fb and
+pcmcia drivers.
 
-On Tue, Oct 28, 2014 at 12:13:39AM +0000, Russell King - ARM Linux wrote:
-> On Tue, Oct 28, 2014 at 03:01:53AM +0300, Dmitry Eremin-Solenikov wrote:
-> > Sharp Zaurus SL-5500 and SL-5600 use special companion Gate Array. Current
-> > drivers present in Linux kernel has some problems:
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/arm/mach-sa1100/clock.c | 41 ++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 34 insertions(+), 7 deletions(-)
 
-> >  * It uses custom bus instead of platform bus/mfd core.
+diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
+index 9fa6a99..53f750d 100644
+--- a/arch/arm/mach-sa1100/clock.c
++++ b/arch/arm/mach-sa1100/clock.c
+@@ -15,10 +15,12 @@
+ #include <linux/clkdev.h>
+ 
+ #include <mach/hardware.h>
++#include <mach/generic.h>
+ 
+ struct clkops {
+ 	void			(*enable)(struct clk *);
+ 	void			(*disable)(struct clk *);
++	unsigned long		(*get_rate)(struct clk *);
+ };
+ 
+ struct clk {
+@@ -33,13 +35,6 @@ struct clk clk_##_name = {				\
+ 
+ static DEFINE_SPINLOCK(clocks_lock);
+ 
+-/* Dummy clk routine to build generic kernel parts that may be using them */
+-unsigned long clk_get_rate(struct clk *clk)
+-{
+-	return 0;
+-}
+-EXPORT_SYMBOL(clk_get_rate);
+-
+ static void clk_gpio27_enable(struct clk *clk)
+ {
+ 	/*
+@@ -58,6 +53,19 @@ static void clk_gpio27_disable(struct clk *clk)
+ 	GAFR &= ~GPIO_32_768kHz;
+ }
+ 
++static void clk_cpu_enable(struct clk *clk)
++{
++}
++
++static void clk_cpu_disable(struct clk *clk)
++{
++}
++
++static unsigned long clk_cpu_get_rate(struct clk *clk)
++{
++	return sa11x0_getspeed(0) * 1000;
++}
++
+ int clk_enable(struct clk *clk)
+ {
+ 	unsigned long flags;
+@@ -87,16 +95,35 @@ void clk_disable(struct clk *clk)
+ }
+ EXPORT_SYMBOL(clk_disable);
+ 
++unsigned long clk_get_rate(struct clk *clk)
++{
++	if (clk && clk->ops && clk->ops->get_rate)
++		return clk->ops->get_rate(clk);
++
++	return 0;
++}
++EXPORT_SYMBOL(clk_get_rate);
++
+ const struct clkops clk_gpio27_ops = {
+ 	.enable		= clk_gpio27_enable,
+ 	.disable	= clk_gpio27_disable,
+ };
+ 
++const struct clkops clk_cpu_ops = {
++	.enable		= clk_cpu_enable,
++	.disable	= clk_cpu_disable,
++	.get_rate	= clk_cpu_get_rate,
++};
++
+ static DEFINE_CLK(gpio27, &clk_gpio27_ops);
+ 
++static DEFINE_CLK(cpu, &clk_cpu_ops);
++
+ static struct clk_lookup sa11xx_clkregs[] = {
+ 	CLKDEV_INIT("sa1111.0", NULL, &clk_gpio27),
+ 	CLKDEV_INIT("sa1100-rtc", NULL, NULL),
++	CLKDEV_INIT("sa11x0-fb", NULL, &clk_cpu),
++	CLKDEV_INIT("sa11x0-pcmcia", NULL, &clk_cpu),
+ };
+ 
+ static int __init sa11xx_clk_init(void)
+-- 
+2.1.1
 
-> I believe Greg wouldn't see that as a positive point.
-
-> Don't think that the platform bus _should_ always be used.  It shouldn't
-> (Greg has said he'd like to see the platform bus to be totally killed off.)
-> Instead, custom buses properly suited to the class of device in question
-> is much preferred, especially if it aids in...
-
-> >  * Device drivers are not well layered/separated.
-
-> ... better layering or separation of drivers.
-
-> So, thinking that converting from a custom bus to a platform bus
-> definitely is /not/ a positive step forward.
-
-> (Why mfd was ever allowed to re-use the platform bus stuff is a separate
-> question not relevent to these patches.)
-
-The reason we ended up reusing the platform bus so much was that
-originally people were doing custom buses but people started complaining
-that the code was (or should be) a cut'n'paste of the platform bus and
-that this duplication was both not pretty and a bit tedious for anyone
-doing anything that involved deploying good practice over a lot of
-buses.  Early MFDs were actually MMIO devices so the platform bus was a
-good fit, then people (including me when I upstreamed the wm97xx drivers
-and apparently whoever worked on these devices) started adding custom
-buses and then people complianed that we should reuse both the bus type
-and the MFD infrastructure so here we are.
-
-Probably a way of sharing the platform code but giving the bus another
-name and bus_type would allow for better separation here.
-
---vkzoT2Bc9VsM/9ev
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUTuNnAAoJECTWi3JdVIfQ/RIH/13QFgkARw+0ATxYA3IhJU00
-xxCwDEGaCEzBxYxnPxxS44qRJdLa8M2ewRTStp/8W7ecZ/LzqwMLJq/IKfOYkQMO
-o9MxJ8y6dk2RMbXw5CcnXj7cBZxfkxSKh401TYWnJpW98NHj/vufWjkOSDpHuVfL
-tzCiVMhYYoC7Rsadji1r5ChEBjn4jQgqvHnVrm+rVNcNGAeHwYyM6cb1rY7Knbwv
-fPpqFx1qDWs9E2lYCCkzsS1y8sjqMO5M2fyE9e2kE0ndVPM42OLplEH4wMLighKu
-90ukluplp5DR0SEXaFN/KDC1uGmoeGyklSHnp7a2gXyuFQN/UjdXss0gxQc5QE4=
-=65AP
------END PGP SIGNATURE-----
-
---vkzoT2Bc9VsM/9ev--

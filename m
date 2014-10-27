@@ -1,127 +1,166 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Mon, 27 Oct 2014 11:59:31 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 27 Oct 2014 13:13:13 +0000
 Subject: Re: [PATCH] drivers: depend on instead of select BACKLIGHT_CLASS_DEVICE and ACPI_VIDEO
-Message-Id: <87a94hu3j0.fsf@intel.com>
+Message-Id: <544E44E9.4040208@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="IThmeWp4bmW702xcFe3J70JjLFnfi99Q7"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413580403-16225-1-git-send-email-jani.nikula@intel.com> <54476492.6090105@ti.com>
-In-Reply-To: <54476492.6090105@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linuxppc-dev@lists.ozlabs.org, platform-driver-x86@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Randy Dunlap <rdunlap@infradead.org>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel.vetter@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Darren Hart <dvhart@infradead.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jens Frederich <jfrederich@gmail.com>, Daniel Drake <dsd@laptop.org>, Jon Nettleton <jon.nettleton@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>
+References: <1413580403-16225-1-git-send-email-jani.nikula@intel.com> <54476492.6090105@ti.com> <87a94hu3j0.fsf@intel.com>
+In-Reply-To: <87a94hu3j0.fsf@intel.com>
+To: Jani Nikula <jani.nikula@intel.com>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linuxppc-dev@lists.ozlabs.org, platform-driver-x86@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel.vetter@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Darren Hart <dvhart@infradead.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jens Frederich <jfrederich@gmail.com>, Daniel Drake <dsd@laptop.org>, Jon Nettleton <jon.nettleton@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>
 
-On Wed, 22 Oct 2014, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 18/10/14 00:13, Jani Nikula wrote:
->> Documentation/kbuild/kconfig-language.txt warns to use select with care,
->> and in general use select only for non-visible symbols and for symbols
->> with no dependencies, because select will force a symbol to a value
->> without visiting the dependencies.
->> 
->> Select has become particularly problematic, interdependently, with the
->> BACKLIGHT_CLASS_DEVICE and ACPI_VIDEO configs. For example:
->> 
->> scripts/kconfig/conf --randconfig Kconfig
->> KCONFIG_SEED=0x48312B00
->> warning: (DRM_RADEON && DRM_NOUVEAU && DRM_I915 && DRM_GMA500 &&
->> DRM_SHMOBILE && DRM_TILCDC && FB_BACKLIGHT && FB_MX3 && USB_APPLEDISPLAY
->> && FB_OLPC_DCON && ASUS_LAPTOP && SONY_LAPTOP && THINKPAD_ACPI &&
->> EEEPC_LAPTOP && ACPI_CMPC && SAMSUNG_Q10) selects BACKLIGHT_CLASS_DEVICE
->> which has unmet direct dependencies (HAS_IOMEM && BACKLIGHT_LCD_SUPPORT)
->> warning: (DRM_RADEON && DRM_NOUVEAU && DRM_I915 && DRM_GMA500 &&
->> DRM_SHMOBILE && DRM_TILCDC && FB_BACKLIGHT && FB_MX3 && USB_APPLEDISPLAY
->> && FB_OLPC_DCON && ASUS_LAPTOP && SONY_LAPTOP && THINKPAD_ACPI &&
->> EEEPC_LAPTOP && ACPI_CMPC && SAMSUNG_Q10) selects BACKLIGHT_CLASS_DEVICE
->> which has unmet direct dependencies (HAS_IOMEM && BACKLIGHT_LCD_SUPPORT)
->> 
->> With tristates it's possible to end up selecting FOO=y depending on
->> BAR=m in the config, which gets discovered at build time, not config
->> time, like reported in the thread referenced below.
->> 
->> Do the following to fix the dependencies:
->> 
->> * Depend on instead of select BACKLIGHT_CLASS_DEVICE everywhere. Drop
->>   select BACKLIGHT_LCD_SUPPORT in such cases, as it's a dependency of
->>   BACKLIGHT_CLASS_DEVICE.
->> 
->> * Remove config FB_BACKLIGHT altogether, and replace it with a
->>   dependency on BACKLIGHT_CLASS_DEVICE. All configs selecting
->>   FB_BACKLIGHT select or depend on FB anyway, so we can simplify.
->> 
->> * Depend on (ACPI && ACPI_VIDEO) || ACPI=n in several places instead of
->>   selecting ACPI_VIDEO and a number of its dependencies if ACPI is
->>   enabled. This is tied to backlight, as ACPI_VIDEO depends on
->>   BACKLIGHT_CLASS_DEVICE.
->> 
->> * Replace a couple of select INPUT/VT with depends as it seemed to be
->>   necessary.
->
-> While doing 'depends on' instead of 'select' is an "easy" fix for this,
-> I do dislike it quite a bit. It's a major pain to go around the kernel
-> config, trying to find all the dependencies that a particular driver
-> wants. If I need fb-foobar, I should just be able to enable it, instead
-> of first searching and selecting its minor dependencies individually.
+--IThmeWp4bmW702xcFe3J70JjLFnfi99Q7
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Agreed, but I don't think that's specific to this patch.
+On 27/10/14 13:59, Jani Nikula wrote:
 
-> So, not a NACK, but a "isn't there an another way to fix this?".
+>> While doing 'depends on' instead of 'select' is an "easy" fix for this=
+,
+>> I do dislike it quite a bit. It's a major pain to go around the kernel=
 
-I think the real answer would be to fix kconfig to also show menu items
-whose dependencies are not met, and then recursively enabling the
-dependencies when the item is enabled. Beyond my scope.
+>> config, trying to find all the dependencies that a particular driver
+>> wants. If I need fb-foobar, I should just be able to enable it, instea=
+d
+>> of first searching and selecting its minor dependencies individually.
+>=20
+> Agreed, but I don't think that's specific to this patch.
 
-> Looking at backlight... BACKLIGHT_LCD_SUPPORT seems to be a "meta"
-> option, it only enables a Kconfig submenu.
->
-> So I think we could just remove the whole BACKLIGHT_LCD_SUPPORT option.
-> But if we do that, all the items in drivers/video/backlight/Kconfig with
-> default 'y' or 'm' would get enabled by default, so I think we should
-> remove the 'default's from that file. That makes sense in any case, as I
-> don't see why "HP Jornada 700 series LCD Driver" should be "default y".
->
-> BACKLIGHT_CLASS_DEVICE doesn't depend on anything except
-> BACKLIGHT_LCD_SUPPORT, so after removing BACKLIGHT_LCD_SUPPORT it should
-> be safe to 'select' BACKLIGHT_CLASS_DEVICE.
->
-> BACKLIGHT_CLASS_DEVICE could be made a hidden option, and the drivers in
-> drivers/video/backlight/Kconfig which are under BACKLIGHT_CLASS_DEVICE
-> could be made to select BACKLIGHT_CLASS_DEVICE instead.
+Well, no, the generic problem is not specific to this patch, but we can
+avoid the issue with proper use of 'select' (at least in some cases),
+which is specific to this patch.
 
-I think it should be possible to choose between y and m when it's
-selected, and it should be possible to enable it when it's not selected
-by any drivers. I'm not sure a hidden option is good for that.
+>> So, not a NACK, but a "isn't there an another way to fix this?".
+>=20
+> I think the real answer would be to fix kconfig to also show menu items=
 
-> That doesn't exactly fix anything, but I think it makes sense as
-> BACKLIGHT_CLASS_DEVICE is something that's selected from all around the
-> kernel, so it should be a selectable "library" instead of a Kconfig menu
-> option.
+> whose dependencies are not met, and then recursively enabling the
+> dependencies when the item is enabled. Beyond my scope.
+>=20
+>> Looking at backlight... BACKLIGHT_LCD_SUPPORT seems to be a "meta"
+>> option, it only enables a Kconfig submenu.
+>>
+>> So I think we could just remove the whole BACKLIGHT_LCD_SUPPORT option=
+=2E
+>> But if we do that, all the items in drivers/video/backlight/Kconfig wi=
+th
+>> default 'y' or 'm' would get enabled by default, so I think we should
+>> remove the 'default's from that file. That makes sense in any case, as=
+ I
+>> don't see why "HP Jornada 700 series LCD Driver" should be "default y"=
+=2E
+>>
+>> BACKLIGHT_CLASS_DEVICE doesn't depend on anything except
+>> BACKLIGHT_LCD_SUPPORT, so after removing BACKLIGHT_LCD_SUPPORT it shou=
+ld
+>> be safe to 'select' BACKLIGHT_CLASS_DEVICE.
+>>
+>> BACKLIGHT_CLASS_DEVICE could be made a hidden option, and the drivers =
+in
+>> drivers/video/backlight/Kconfig which are under BACKLIGHT_CLASS_DEVICE=
 
-At least for drm/i915 BACKLIGHT_CLASS_DEVICE is "an option". We use it
-if it's enabled, but we are just fine if it's not. I've learned the way
-to express that is
+>> could be made to select BACKLIGHT_CLASS_DEVICE instead.
+>=20
+> I think it should be possible to choose between y and m when it's
 
-	depends on BACKLIGHT_CLASS_DEVICE || BACKLIGHT_CLASS_DEVICE=n
+If I'm not mistaken, if CONFIG_FOO is 'm', and it 'select's CONFIG_BAR,
+and CONFIG_BAR is tristate, then CONFIG_BAR will be set to 'm'.
 
-but I don't think there's a way to express that in terms of select, is
-there? The dependency above guarantees there's no DRM_I915=y and
-BACKLIGHT_CLASS_DEVICE=m combo which would fail. And this, btw, is where
-this whole patch got started, as select didn't handle that properly.
+> selected, and it should be possible to enable it when it's not selected=
 
-> I didn't look at the ACPI_VIDEO side, so no idea how messy that is.
+> by any drivers. I'm not sure a hidden option is good for that.
 
-Basically it's another dependency on BACKLIGHT_CLASS_DEVICE. I can only
-imagine trying to solve this problem with select is going to end up in
-recursive dependencies that spread out and need changing about as wide
-as this patch.
+Why would you want to enable it if no one uses it? Does
+BACKLIGHT_CLASS_DEVICE enable something even if no driver uses it?
 
-In the end, I agree with the problem you have with this patch, but yet I
-think it's the right thing to do in terms of expressing the
-dependencies.
+>> That doesn't exactly fix anything, but I think it makes sense as
+>> BACKLIGHT_CLASS_DEVICE is something that's selected from all around th=
+e
+>> kernel, so it should be a selectable "library" instead of a Kconfig me=
+nu
+>> option.
+>=20
+> At least for drm/i915 BACKLIGHT_CLASS_DEVICE is "an option". We use it
+> if it's enabled, but we are just fine if it's not. I've learned the way=
+
+> to express that is
+>=20
+> 	depends on BACKLIGHT_CLASS_DEVICE || BACKLIGHT_CLASS_DEVICE=3Dn
+>=20
+> but I don't think there's a way to express that in terms of select, is
+> there? The dependency above guarantees there's no DRM_I915=3Dy and
+> BACKLIGHT_CLASS_DEVICE=3Dm combo which would fail. And this, btw, is wh=
+ere
+> this whole patch got started, as select didn't handle that properly.
+
+If backlight support is considered an option for drm/i915, then I think
+there should be a Kconfig option for i915 to enable backlight support,
+which in turn selects BACKLIGHT_CLASS_DEVICE. And that select will force
+BACKLIGHT_CLASS_DEVICE to be built-in if drm/i915 is built-in.
+
+Oh, but it doesn't work optimally with modules. The new option needed
+for that would be boolean, so BACKLIGHT_CLASS_DEVICE would always be
+either y or n. Sigh...
+
+>> I didn't look at the ACPI_VIDEO side, so no idea how messy that is.
+>=20
+> Basically it's another dependency on BACKLIGHT_CLASS_DEVICE. I can only=
+
+> imagine trying to solve this problem with select is going to end up in
+> recursive dependencies that spread out and need changing about as wide
+> as this patch.
+
+If ACPI_VIDEO uses select to enable BACKLIGHT_CLASS_DEVICE, then, I
+think, selecting ACPI_VIDEO will also select BACKLIGHT_CLASS_DEVICE. So
+I don't right away see any recursive dependencies. Or what did you have
+in mind?
+
+> In the end, I agree with the problem you have with this patch, but yet =
+I
+> think it's the right thing to do in terms of expressing the
+> dependencies.
+
+Well, dri/i915 doesn't exactly depend on backlight, if I understood you
+correctly. Instead, backlight is an option for dri/i915, and you kind of
+hack it to be implemented with that 'depends on BACKLIGHT_CLASS_DEVICE
+|| BACKLIGHT_CLASS_DEVICE=3Dn'.
+
+I guess it's debatable whether drivers should automatically use features
+in the kernel if they happen to be enabled in the Kconfig, or should
+they be individually enabled for that driver. I personally like the
+latter option, as it allows more precise control, but it probably also
+depends on the feature in question.
+
+I also think the 'depends on BACKLIGHT_CLASS_DEVICE ||
+BACKLIGHT_CLASS_DEVICE=3Dn' pattern is quite... interesting (i.e. sounds
+like a hack to me =3D).
+
+ Tomi
 
 
-BR,
-Jani.
 
+--IThmeWp4bmW702xcFe3J70JjLFnfi99Q7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
--- 
-Jani Nikula, Intel Open Source Technology Center
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUTkTpAAoJEPo9qoy8lh71U98P/0ToqL27YX+eqcL/5N0AoPLI
+a6RzpXaYXyOhR+qs+SuJN9pbdtq5UIoyfCiH622788KHWde6ySZ6WUSFE5VD4V6D
+DTugUTu4P6Ro4ousv2snQy2OFB3nlqOFzN5ew0comtuizWnyeuzUSDhntEzRHZT7
+r3ziGIKdf6rdid6JkeUpDC5U5vhXhFTMGmLoHU3geHgwTLeP2D1CQze/V7Y+M3zp
+zIQfHP1BpOvaA8HZSvNqXbQyA6MQyOfE2pc16ZK5oMpwc3K49mBjQLiuEMwnCIpu
+5qOXqh5rkfmY13jKQz9FMVo7VY3lJ9oG5+N9H4V3UPQYaHPBzgM+tNqLRUVL9e0T
+SxspA36SpwHYTeV1sV9fzyugVpdssc/u2175Qxm3mNMu4YKW8G5sXWslPbY6LjRN
+qijQ+A9UsR9041Bkn1u73EF8KGBEtf5MmS+lUYfceGRJ59zb5C/QmPokw9y8WjEs
+omyHKlK/io5nLYWJZdOx+fgy5lZCzRobQ0Q1swICX8jDwBhZOPUBb6R4K/ibnTXl
+1eipk3BkJtuFiNjhkTetlLJ3s/cboxuMuy34oCylxh/6676IYUVXDANsw5eOsyuK
+erDeNiqQ4DDy/TQhtitLRjJpM7PBorxILcEGg7N8EAKmQiDwE+VYFmeRkd7jUHSr
+LMPXbmpPV4jf9SgNhf4E
+=iLH8
+-----END PGP SIGNATURE-----
+
+--IThmeWp4bmW702xcFe3J70JjLFnfi99Q7--

@@ -1,58 +1,64 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 22 Oct 2014 16:45:06 +0000
-Subject: [PATCH v4 0/5] simplefb: add clock handling code
-Message-Id: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 28 Oct 2014 10:44:10 +0000
+Subject: Re: [PATCH v4 0/5] simplefb: add clock handling code
+Message-Id: <544F737A.7000109@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="OlxhDqcf3w05tM4r8FnJdrENGuXD7ElC7"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Tomi,
+--OlxhDqcf3w05tM4r8FnJdrENGuXD7ElC7
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Here is v4 of the patch-set to add clocks support to simplefb.
+On 22/10/14 19:45, Hans de Goede wrote:
 
-Changes in v2:
--Added "simplefb: Add simplefb MAINTAINERS entry" patch
+> Since we seem to have broad agreement on how to move forward with this,=
+ I
+> would like to ask you to please merge this patch-set for 3.19.
+>=20
+> I know 3.19 is still somewhat ar away, but I would like to submit the u=
+-boot
+> side of this to upstream ASAP, so can you please let me know if you pla=
+n to=20
+> take this patch-set for 3.19 soon ?
 
-Changes in v3:
--Improved description of simplefb binding
+This series looks fine to me, except patch 3 is missing a description,
+and patch 4 makes the desc a continuation of the subject. Each patch
+should have a description (independent from subject).
 
-Changes in v4:
--Change clocks in simplefb from a linked-list to a (simpler) dynamically
- allocated array
+No need to resend, I can cook up something for those, or I can edit the
+descs if you provide the text.
 
-v2 got some objections from some people because clocks are hardware description
-and as such do not belong in a virtual device node as simplefb is. As explained
-in the following thread the use of clocks in simplefb has nothing to do with   
-clock topology (so hardware description), but is about which clocks of a
-number of possible clocks where actually chosen by the firmware to bring
-of the fb, as such this clearly is state description.
+So if there are no strong objections, I'll queue this for 3.19.
 
-AFAIK at the end of the thread no one was disagreeing with this anymore
-(I did not get any replies to my last mails explaining this).
+ Tomi
 
-Some of us also got together at the Plumbers conference in Dusseldorf to
-discuss this, present were: David Herrmann, Maxime Ripard, Geert Uytterhoeven
-and Hans de Goede (me), conclusions:
--We will add a clocks property to the simplefb devicetree bindings, so
- that u-boot setup framebuffers passed to the kernel (for early console
- support) can properly list the clocks used, and simplefb can claim them to
- avoid them getting turned off, thereby breaking the early console
--simplefb/simpledrm -> native-kms driver handoff will keep using the
- linear framebuffer address to identify which simplefb platform device to
- destroy during handoff, so that if their are multiple kms devices
- involved, the handover happens at the right moment and we don't loose
- console output anywhere (and we should be able to do a flickerfree
- handover)
 
-Since we seem to have broad agreement on how to move forward with this, I
-would like to ask you to please merge this patch-set for 3.19.
 
-I know 3.19 is still somewhat ar away, but I would like to submit the u-boot
-side of this to upstream ASAP, so can you please let me know if you plan to 
-take this patch-set for 3.19 soon ?
+--OlxhDqcf3w05tM4r8FnJdrENGuXD7ElC7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Regards,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Hans
+iQIcBAEBAgAGBQJUT3N+AAoJEPo9qoy8lh71m+0P/0LdN7HM5Utmnuza5UDHOO2P
+fD3h4p7EDUvGxP+kE7QwV+2YNnY1cGWHIDy0wL0URrRpVrtV9BVrpLHssIPqWCQt
+w3IE9fK8S3vpkw21YQdN+vz0HmzESM52kODAjn1seiLtCSuytEXIBSym/bMQP6DD
+W4sY99+8Rww68mmD3l1Jv3yMX2GyovMPmmQYLGbpNfKdpcVNYIPDBwbfS0udEePt
+jq7PzWj9niC1CVEW7/LxklowDG89p3yuh1bQsHhPnpqqX8paxIq3pDx151+qRdH3
+gsRBPwRzJik4BiLRkHqYy40svhq8cPWgsR8cyOLkSQ0/zFGzDEuX9nxxRQbuMU/5
+tmhbYCV2+cidlMytPHNVMpGYXqBme6nA7cKyIsswk8lj2G4fX52tArQH9dMJl84l
+HxqXDfj4+O2sRksPwc9IdXeQ7RE6zET8ZXU4rJ/sA9MqgUjVmJsryG4X1cQSrG7K
+npSC1+ZLtDQ14I8v03IzP3Nb7dqY94AAgJqJWKkMwL1DIYdO5MH3jDh22IXv1VVV
+3f29epRXrcEBl4EjEldg8xNnX/U301c0fhBhZq636rx0XuAEi68j2/E9xhre33JW
+4Zj8gZfNU7WlKNZRI8fRdiRuPr6zx67JtNC3zlD0DHSOLL9RPxewbzys+oNgwrRV
+uRjDW0XAeZAaohs7+RFA
+=NbE4
+-----END PGP SIGNATURE-----
+
+--OlxhDqcf3w05tM4r8FnJdrENGuXD7ElC7--

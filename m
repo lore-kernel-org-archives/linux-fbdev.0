@@ -1,78 +1,286 @@
-From: Davor Joja <davorjoja@logicbricks.com>
-Date: Mon, 06 Oct 2014 13:32:56 +0000
-Subject: [RFC 06/10] video: fbdev: Xylon: Framebuffer driver kernel and make configuration
-Message-Id: <f274040f-d420-4704-a872-5dd5c1445262@mail.xylon.local>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 28 Oct 2014 00:02:00 +0000
+Subject: [PATCH 07/15] video: backlight: drop old locomo bl/lcd driver
+Message-Id: <1414454528-24240-8-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>
 
-Driver kernel and build configuration.
+Old locomolcd driver is now completely obsolete by new locomo_bl and
+locomo_lcd drivers, so let's drop it.
 
-Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- drivers/video/fbdev/xylon/Kconfig  | 40 ++++++++++++++++++++++++++++++++++++++
- drivers/video/fbdev/xylon/Makefile |  3 +++
- 2 files changed, 43 insertions(+)
- create mode 100644 drivers/video/fbdev/xylon/Kconfig
- create mode 100644 drivers/video/fbdev/xylon/Makefile
+ drivers/video/backlight/locomolcd.c | 255 ------------------------------------
+ 1 file changed, 255 deletions(-)
+ delete mode 100644 drivers/video/backlight/locomolcd.c
 
-diff --git a/drivers/video/fbdev/xylon/Kconfig b/drivers/video/fbdev/xylon/Kconfig
-new file mode 100644
-index 0000000..25ae308
---- /dev/null
-+++ b/drivers/video/fbdev/xylon/Kconfig
-@@ -0,0 +1,40 @@
-+menuconfig FB_XYLON
-+	tristate "Xylon logiCVC frame buffer support"
-+	depends on FB
-+	default n
-+	select FB_CFB_FILLRECT
-+	select FB_CFB_COPYAREA
-+	select FB_CFB_IMAGEBLIT
-+	select VIDEOMODE_HELPERS
-+	help
-+	  Choose this option if you want to use the Xylon logiCVC as frame
-+	  buffer device. Without the support of PCI & AGP.
-+
-+config FB_XYLON_PIXCLK
-+	bool "Xylon logiCVC pixel clock"
-+	depends on FB_XYLON
-+	default n
-+	help
-+	  logiCVC pixel clock generated from:
-+	  - External generator not controllable by Xylon framebuffer driver
-+	    This is default selection.
-+	  - Generators controllable by Xylon framebuffer driver
-+
-+config FB_XYLON_PIXCLK_LOGICLK
-+	bool "Xylon logiCLK pixel clock generator"
-+	depends on FB_XYLON && FB_XYLON_PIXCLK
-+	default n
-+	select COMMON_CLK_LOGICLK
-+	help
-+	  Support for controlling pixel clock generation from
-+	  Xylon logiCLK FGPA IP core.
-+
-+config FB_XYLON_PIXCLK_SI570
-+	bool "Si570 pixel clock generator"
-+	depends on FB_XYLON && FB_XYLON_PIXCLK
-+	default n
-+	select I2C
-+	select COMMON_CLK_SI570
-+	help
-+	  Support for controlling pixel clock generation from
-+	  Si570 clock generator.
-diff --git a/drivers/video/fbdev/xylon/Makefile b/drivers/video/fbdev/xylon/Makefile
-new file mode 100644
-index 0000000..3baa96a
---- /dev/null
-+++ b/drivers/video/fbdev/xylon/Makefile
-@@ -0,0 +1,3 @@
-+xylonfb-y := xylonfb_main.o xylonfb_core.o xylonfb_ioctl.o xylonfb_pixclk.o
-+
-+obj-$(CONFIG_FB_XYLON) += xylonfb.o
+diff --git a/drivers/video/backlight/locomolcd.c b/drivers/video/backlight/locomolcd.c
+deleted file mode 100644
+index 6c3ec42..0000000
+--- a/drivers/video/backlight/locomolcd.c
++++ /dev/null
+@@ -1,255 +0,0 @@
+-/*
+- * Backlight control code for Sharp Zaurus SL-5500
+- *
+- * Copyright 2005 John Lenz <lenz@cs.wisc.edu>
+- * Maintainer: Pavel Machek <pavel@ucw.cz> (unless John wants to :-)
+- * GPL v2
+- *
+- * This driver assumes single CPU. That's okay, because collie is
+- * slightly old hardware, and no one is going to retrofit second CPU to
+- * old PDA.
+- */
+-
+-/* LCD power functions */
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/delay.h>
+-#include <linux/device.h>
+-#include <linux/interrupt.h>
+-#include <linux/fb.h>
+-#include <linux/backlight.h>
+-
+-#include <asm/hardware/locomo.h>
+-#include <asm/irq.h>
+-#include <asm/mach/sharpsl_param.h>
+-#include <asm/mach-types.h>
+-
+-#include "../../../arch/arm/mach-sa1100/generic.h"
+-
+-static struct backlight_device *locomolcd_bl_device;
+-static struct locomo_dev *locomolcd_dev;
+-static unsigned long locomolcd_flags;
+-#define LOCOMOLCD_SUSPENDED     0x01
+-
+-static void locomolcd_on(int comadj)
+-{
+-	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHA_ON, 0);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHA_ON, 1);
+-	mdelay(2);
+-
+-	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHD_ON, 0);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHD_ON, 1);
+-	mdelay(2);
+-
+-	locomo_m62332_senddata(locomolcd_dev, comadj, 0);
+-	mdelay(5);
+-
+-	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VEE_ON, 0);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VEE_ON, 1);
+-	mdelay(10);
+-
+-	/* TFTCRST | CPSOUT=0 | CPSEN */
+-	locomo_writel(0x01, locomolcd_dev->mapbase + LOCOMO_TC);
+-
+-	/* Set CPSD */
+-	locomo_writel(6, locomolcd_dev->mapbase + LOCOMO_CPSD);
+-
+-	/* TFTCRST | CPSOUT=0 | CPSEN */
+-	locomo_writel((0x04 | 0x01), locomolcd_dev->mapbase + LOCOMO_TC);
+-	mdelay(10);
+-
+-	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_MOD, 0);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_MOD, 1);
+-}
+-
+-static void locomolcd_off(int comadj)
+-{
+-	/* TFTCRST=1 | CPSOUT=1 | CPSEN = 0 */
+-	locomo_writel(0x06, locomolcd_dev->mapbase + LOCOMO_TC);
+-	mdelay(1);
+-
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHA_ON, 0);
+-	mdelay(110);
+-
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VEE_ON, 0);
+-	mdelay(700);
+-
+-	/* TFTCRST=0 | CPSOUT=0 | CPSEN = 0 */
+-	locomo_writel(0, locomolcd_dev->mapbase + LOCOMO_TC);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_MOD, 0);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHD_ON, 0);
+-}
+-
+-void locomolcd_power(int on)
+-{
+-	int comadj = sharpsl_param.comadj;
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-
+-	if (!locomolcd_dev) {
+-		local_irq_restore(flags);
+-		return;
+-	}
+-
+-	/* read comadj */
+-	if (comadj = -1 && machine_is_collie())
+-		comadj = 128;
+-	if (comadj = -1 && machine_is_poodle())
+-		comadj = 118;
+-
+-	if (on)
+-		locomolcd_on(comadj);
+-	else
+-		locomolcd_off(comadj);
+-
+-	local_irq_restore(flags);
+-}
+-EXPORT_SYMBOL(locomolcd_power);
+-
+-static int current_intensity;
+-
+-static int locomolcd_set_intensity(struct backlight_device *bd)
+-{
+-	int intensity = bd->props.brightness;
+-
+-	if (bd->props.power != FB_BLANK_UNBLANK)
+-		intensity = 0;
+-	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
+-		intensity = 0;
+-	if (locomolcd_flags & LOCOMOLCD_SUSPENDED)
+-		intensity = 0;
+-
+-	switch (intensity) {
+-	/*
+-	 * AC and non-AC are handled differently,
+-	 * but produce same results in sharp code?
+-	 */
+-	case 0:
+-		locomo_frontlight_set(locomolcd_dev, 0, 0, 161);
+-		break;
+-	case 1:
+-		locomo_frontlight_set(locomolcd_dev, 117, 0, 161);
+-		break;
+-	case 2:
+-		locomo_frontlight_set(locomolcd_dev, 163, 0, 148);
+-		break;
+-	case 3:
+-		locomo_frontlight_set(locomolcd_dev, 194, 0, 161);
+-		break;
+-	case 4:
+-		locomo_frontlight_set(locomolcd_dev, 194, 1, 161);
+-		break;
+-	default:
+-		return -ENODEV;
+-	}
+-	current_intensity = intensity;
+-	return 0;
+-}
+-
+-static int locomolcd_get_intensity(struct backlight_device *bd)
+-{
+-	return current_intensity;
+-}
+-
+-static const struct backlight_ops locomobl_data = {
+-	.get_brightness = locomolcd_get_intensity,
+-	.update_status  = locomolcd_set_intensity,
+-};
+-
+-#ifdef CONFIG_PM_SLEEP
+-static int locomolcd_suspend(struct device *dev)
+-{
+-	locomolcd_flags |= LOCOMOLCD_SUSPENDED;
+-	locomolcd_set_intensity(locomolcd_bl_device);
+-	return 0;
+-}
+-
+-static int locomolcd_resume(struct device *dev)
+-{
+-	locomolcd_flags &= ~LOCOMOLCD_SUSPENDED;
+-	locomolcd_set_intensity(locomolcd_bl_device);
+-	return 0;
+-}
+-#endif
+-
+-static SIMPLE_DEV_PM_OPS(locomolcd_pm_ops, locomolcd_suspend, locomolcd_resume);
+-
+-static int locomolcd_probe(struct locomo_dev *ldev)
+-{
+-	struct backlight_properties props;
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-	locomolcd_dev = ldev;
+-
+-	locomo_gpio_set_dir(ldev->dev.parent, LOCOMO_GPIO_FL_VR, 0);
+-
+-	/*
+-	 * the poodle_lcd_power function is called for the first time
+-	 * from fs_initcall, which is before locomo is activated.
+-	 * We need to recall poodle_lcd_power here
+-	 */
+-	if (machine_is_poodle())
+-		locomolcd_power(1);
+-
+-	local_irq_restore(flags);
+-
+-	memset(&props, 0, sizeof(struct backlight_properties));
+-	props.type = BACKLIGHT_RAW;
+-	props.max_brightness = 4;
+-	locomolcd_bl_device = backlight_device_register("locomo-bl",
+-							&ldev->dev, NULL,
+-							&locomobl_data, &props);
+-
+-	if (IS_ERR(locomolcd_bl_device))
+-		return PTR_ERR(locomolcd_bl_device);
+-
+-	/* Set up frontlight so that screen is readable */
+-	locomolcd_bl_device->props.brightness = 2;
+-	locomolcd_set_intensity(locomolcd_bl_device);
+-
+-	return 0;
+-}
+-
+-static int locomolcd_remove(struct locomo_dev *dev)
+-{
+-	unsigned long flags;
+-
+-	locomolcd_bl_device->props.brightness = 0;
+-	locomolcd_bl_device->props.power = 0;
+-	locomolcd_set_intensity(locomolcd_bl_device);
+-
+-	backlight_device_unregister(locomolcd_bl_device);
+-	local_irq_save(flags);
+-	locomolcd_dev = NULL;
+-	local_irq_restore(flags);
+-	return 0;
+-}
+-
+-static struct locomo_driver poodle_lcd_driver = {
+-	.drv = {
+-		.name	= "locomo-backlight",
+-		.pm	= &locomolcd_pm_ops,
+-	},
+-	.devid	= LOCOMO_DEVID_BACKLIGHT,
+-	.probe	= locomolcd_probe,
+-	.remove	= locomolcd_remove,
+-};
+-
+-static int __init locomolcd_init(void)
+-{
+-	return locomo_driver_register(&poodle_lcd_driver);
+-}
+-
+-static void __exit locomolcd_exit(void)
+-{
+-	locomo_driver_unregister(&poodle_lcd_driver);
+-}
+-
+-module_init(locomolcd_init);
+-module_exit(locomolcd_exit);
+-
+-MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>, Pavel Machek <pavel@ucw.cz>");
+-MODULE_DESCRIPTION("Collie LCD driver");
+-MODULE_LICENSE("GPL");
 -- 
-1.9.1
+2.1.1
 

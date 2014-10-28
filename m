@@ -1,86 +1,139 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Tue, 28 Oct 2014 11:03:53 +0000
-Subject: Re: [PATCH 15/15] spi: add locomo SPI driver
-Message-Id: <20141028110353.GR18557@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="5LBS9LiS8wIv0ZHM"
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 28 Oct 2014 00:02:04 +0000
+Subject: [PATCH 11/15] sound: soc: poodle: make use of new locomo GPIO interface
+Message-Id: <1414454528-24240-12-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
- <1414454528-24240-16-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1414454528-24240-16-git-send-email-dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-To: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+In-Reply-To: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>
 
+Since LoCoMo driver has been converted to provide proper gpiolib
+interface, make poodle ASoC platform driver use gpiolib API.
 
---5LBS9LiS8wIv0ZHM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ sound/soc/pxa/poodle.c | 51 ++++++++++++++++++++++++--------------------------
+ 1 file changed, 24 insertions(+), 27 deletions(-)
 
-On Tue, Oct 28, 2014 at 03:02:08AM +0300, Dmitry Eremin-Solenikov wrote:
-> LoCoMo chip has a built-in simple SPI controller. On Sharp SL-5500 PDDAs
-> it is connected to external MMC slot.
+diff --git a/sound/soc/pxa/poodle.c b/sound/soc/pxa/poodle.c
+index 21f3400..a593bff 100644
+--- a/sound/soc/pxa/poodle.c
++++ b/sound/soc/pxa/poodle.c
+@@ -20,12 +20,12 @@
+ #include <linux/i2c.h>
+ #include <linux/interrupt.h>
+ #include <linux/platform_device.h>
++#include <linux/gpio.h>
+ #include <sound/core.h>
+ #include <sound/pcm.h>
+ #include <sound/soc.h>
+ 
+ #include <asm/mach-types.h>
+-#include <asm/hardware/locomo.h>
+ #include <mach/poodle.h>
+ #include <mach/audio.h>
+ 
+@@ -48,16 +48,12 @@ static void poodle_ext_control(struct snd_soc_dapm_context *dapm)
+ 	/* set up jack connection */
+ 	if (poodle_jack_func = POODLE_HP) {
+ 		/* set = unmute headphone */
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_L, 1);
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_R, 1);
++		gpio_set_value(POODLE_GPIO_MUTE_L, 1);
++		gpio_set_value(POODLE_GPIO_MUTE_R, 1);
+ 		snd_soc_dapm_enable_pin(dapm, "Headphone Jack");
+ 	} else {
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_L, 0);
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_R, 0);
++		gpio_set_value(POODLE_GPIO_MUTE_L, 0);
++		gpio_set_value(POODLE_GPIO_MUTE_R, 0);
+ 		snd_soc_dapm_disable_pin(dapm, "Headphone Jack");
+ 	}
+ 
+@@ -85,10 +81,8 @@ static int poodle_startup(struct snd_pcm_substream *substream)
+ static void poodle_shutdown(struct snd_pcm_substream *substream)
+ {
+ 	/* set = unmute headphone */
+-	locomo_gpio_write(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_L, 1);
+-	locomo_gpio_write(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_R, 1);
++	gpio_set_value(POODLE_GPIO_MUTE_L, 1);
++	gpio_set_value(POODLE_GPIO_MUTE_R, 1);
+ }
+ 
+ static int poodle_hw_params(struct snd_pcm_substream *substream,
+@@ -178,12 +172,7 @@ static int poodle_set_spk(struct snd_kcontrol *kcontrol,
+ static int poodle_amp_event(struct snd_soc_dapm_widget *w,
+ 	struct snd_kcontrol *k, int event)
+ {
+-	if (SND_SOC_DAPM_EVENT_ON(event))
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_AMP_ON, 0);
+-	else
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_AMP_ON, 1);
++	gpio_set_value(POODLE_GPIO_AMP_ON, !(SND_SOC_DAPM_EVENT_ON(event)));
+ 
+ 	return 0;
+ }
+@@ -263,25 +252,32 @@ static struct snd_soc_card poodle = {
+ 	.num_dapm_routes = ARRAY_SIZE(poodle_audio_map),
+ };
+ 
++struct gpio poodle_gpios[] = {
++	{ POODLE_GPIO_AMP_ON, GPIOF_OUT_INIT_HIGH, "Amplifier" },
++	{ POODLE_GPIO_MUTE_L, GPIOF_OUT_INIT_LOW, "Mute left" },
++	{ POODLE_GPIO_MUTE_R, GPIOF_OUT_INIT_LOW, "Mute right" },
++};
++
+ static int poodle_probe(struct platform_device *pdev)
+ {
+ 	struct snd_soc_card *card = &poodle;
+ 	int ret;
+ 
+-	locomo_gpio_set_dir(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_AMP_ON, 0);
+-	/* should we mute HP at startup - burning power ?*/
+-	locomo_gpio_set_dir(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_L, 0);
+-	locomo_gpio_set_dir(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_R, 0);
++	ret = gpio_request_array(poodle_gpios, ARRAY_SIZE(poodle_gpios));
++	if (ret) {
++		dev_err(&pdev->dev, "gpio_request_array() failed: %d\n",
++				ret);
++		return ret;
++	}
+ 
+ 	card->dev = &pdev->dev;
+ 
+ 	ret = snd_soc_register_card(card);
+-	if (ret)
++	if (ret) {
+ 		dev_err(&pdev->dev, "snd_soc_register_card() failed: %d\n",
+ 			ret);
++		gpio_free_array(poodle_gpios, ARRAY_SIZE(poodle_gpios));
++	}
+ 	return ret;
+ }
+ 
+@@ -290,6 +286,7 @@ static int poodle_remove(struct platform_device *pdev)
+ 	struct snd_soc_card *card = platform_get_drvdata(pdev);
+ 
+ 	snd_soc_unregister_card(card);
++	gpio_free_array(poodle_gpios, ARRAY_SIZE(poodle_gpios));
+ 	return 0;
+ }
+ 
+-- 
+2.1.1
 
-> +config SPI_LOCOMO
-> +	tristate "Locomo SPI master"
-> +	depends on MFD_LOCOMO
-> +	select SPI_BITBANG
-
-Rather than using SPI_BITBANG it'd be good for new drivers to convert to
-using the core transfer_one() functionality which replaces most of what
-the bitbang code is doing.  The bitbang functionality was misnamed for
-most of the users and we're going to try to move most of the functionality
-not actually related to bitbanging out of it.
-
-> +	/* if (locomospi_carddetect()) { */
-> +	r = readw(spidev->base + LOCOMO_SPIMD);
-> +	r |= LOCOMO_SPIMD_XON;
-> +	writew(r, spidev->base + LOCOMO_SPIMD);
-> +
-> +	r = readw(spidev->base + LOCOMO_SPIMD);
-> +	r |= LOCOMO_SPIMD_XEN;
-> +	writew(r, spidev->base + LOCOMO_SPIMD);
-> +	/* } */
-
-Either remove or implement the comments.
-
-> +	r = readw(spidev->base + LOCOMO_SPICT);
-> +	r |= LOCOMO_SPIMD_XEN; /* FIXME */
-> +	writew(r, spidev->base + LOCOMO_SPICT);
-
-FIXME?
-
-> +	if (t)
-> +		hz = t->speed_hz;
-> +	if (!hz)
-> +		hz = spi->max_speed_hz;
-
-The core will ensure that the transfer always has a speed set in it.
-
-> +static int locomo_spi_probe(struct platform_device *pdev)
-> +{
-> +	struct resource *res;
-> +	struct spi_master *master;
-> +	struct locomospi_dev *spidev;
-> +	int ret;
-> +
-> +	dev_info(&pdev->dev, "LoCoO SPI Driver\n");
-
-Remove this, it's not adding anything.
-
---5LBS9LiS8wIv0ZHM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUT3gYAAoJECTWi3JdVIfQMRUH/1ywHd6UOGA0VNyAiMVZYi+x
-XlQspIiJGWfZFNWBuga40yvkX7JD1xGNSVzVAYkjowyN8iDKW9xrBhP+sRoANS8K
-mvQ4NALGqU7dQW5/mFItbnCNcEWn3B65Y3fj3vlxQ4CGkQr3IoKG4wexl+pO3aju
-584wwezeESMuNdOrPKIHjksY6/QAY35hPOooIaDW5H9t+9gHOMe/JToxbru+8liw
-h0k52r2CkuXb5thCqAkeF45aBaNSXqbPZ0TMVnh0GvSQiGE9U62WWOJH8fvVG+5s
-BW/2DUoHYtmpsf3kNDmD/gilT7+f4YjKKUw6tkBc6ewbkLe5wb1rSNM+JkiElcU=
-=55Nr
------END PGP SIGNATURE-----
-
---5LBS9LiS8wIv0ZHM--

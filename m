@@ -1,61 +1,79 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 16 Oct 2014 13:23:00 +0000
-Subject: Re: [PATCH 2/5] OMAPFB: remove wrong __exit and __exit_p()
-Message-Id: <543FC6B4.4060304@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="A14KlWknjRXGN4Cb5cRDr5UPjRlbblcIB"
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 28 Oct 2014 00:01:53 +0000
+Subject: [PATCH 00/15] new locomo driver
+Message-Id: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413452387-25452-1-git-send-email-tomi.valkeinen@ti.com> <1413452387-25452-2-git-send-email-tomi.valkeinen@ti.com> <20141016131939.GB3480@saruman>
-In-Reply-To: <20141016131939.GB3480@saruman>
-To: balbi@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>
 
---A14KlWknjRXGN4Cb5cRDr5UPjRlbblcIB
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Sharp Zaurus SL-5500 and SL-5600 use special companion Gate Array. Current
+drivers present in Linux kernel has some problems:
 
-On 16/10/14 16:19, Felipe Balbi wrote:
-> On Thu, Oct 16, 2014 at 12:39:44PM +0300, Tomi Valkeinen wrote:
->> omapfb device can be unbound, so using __exit_p() for the driver's
->> remove callback is wrong.
->>
->> Remove __exit_p() and __exit from the driver's remove.
->>
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->=20
-> and why was my version dropped ?
->=20
-> http://marc.info/?l=3Dlinux-fbdev&m=3D141331137230988&w=3D2
+ * It uses custom bus instead of platform bus/mfd core.
+ * Device drivers are not well layered/separated.
+ * It uses custom gpio accessors instead of using GPIOLIB.
 
-Oh, sorry, for no reason. I started from scratch as there seemed to be
-enough issues there, and didn't remember you had the exact same patch.
-I'll use yours instead of my version.
+With this patchset I tried to modernise and restructure the LoCoMo driver.
+Also I added an experimental SPI driver that will be used by mmc-spi on
+Sharp SL-5500 collie devices.
 
- Tomi
+----------------------------------------------------------------
+Dmitry Eremin-Solenikov (15):
+      mfd: add new driver for Sharp LoCoMo
+      GPIO: port LoCoMo gpio support from old driver
+      leds: port locomo leds driver to new locomo core
+      input: convert LoCoMo keyboard driver to use new locomo core
+      video: backlight: add new locomo backlight driver
+      video: lcd: add LoCoMo LCD driver
+      video: backlight: drop old locomo bl/lcd driver
+      ARM: sa1100: make collie use new locomo drivers
+      ARM: sa1100: don't preallocate IRQ space for locomo
+      ARM: pxa: poodle: use new LoCoMo driver
+      sound: soc: poodle: make use of new locomo GPIO interface
+      ARM: pxa: poodle: don't preallocate IRQ space for locomo
+      ARM: drop old LoCoMo driver
+      gpio: locomo: implement per-pin irq handling
+      spi: add locomo SPI driver
 
-
-
---A14KlWknjRXGN4Cb5cRDr5UPjRlbblcIB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUP8a0AAoJEPo9qoy8lh71UEkP/14mzsSjbdDqJ1Ttfbv0OXnR
-bMLvYQ0YlURTo/3NT6xmZRMvLNT8w7q/ujAfjWYFmtFQeYOJAS7OaE8NZQ5MohtT
-W5pEYwsHJdI0TXaBWzSQA+NcozAHmX+CxsvlhiNHrqvYasm1h1Z3ReRRLjHJzIJF
-2DvddHrkB53MzjWrnK1uHDnwvEgnFYajgc5nYu8jNc2dA1yK180+miqpCHyzeMGg
-gmCGx+KzNWvdE2pbTIPj09App6R2KfZn430d1/RFr+CBwLDQBybzj3mcm8dSgZWS
-lo/FC+1yp00sA9jpJ3cUFU5bXmvdeLXt7U4CgSE6BwlP0s2TZqzGJAH+3S4n5rHK
-myuyBI+qwd8oniwcsNetpQQFcLr47EwSUoZBEfxK69tBcccoJO8NOriZvnev3tW5
-yx/hHXgFl8qfIlL21Gm4OS+2Jvcp/CkWFzzWAf+Rxn+20pGQm8VAKksAHZLT5+qa
-f20so+V992+42zf7YHTBrnqfMEd+xbi8IXKTpHZWTTwZk8nNtjMQbYZXTayZiube
-Ub5xitZu5ohznieqQURXqnWot8zBlTnw+V6Jjbryiscz1z8efotMb8p/6dwgGBbn
-aGjWdrrbbiEfAId/rB9XMuCzGBKpRAwNxArCUmtZDoEEa3h79wsL94V2K6TPie4I
-Sn91BUlGs1cOMNFgK86R
-=PP7L
------END PGP SIGNATURE-----
-
---A14KlWknjRXGN4Cb5cRDr5UPjRlbblcIB--
+ arch/arm/common/Kconfig                            |   3 -
+ arch/arm/common/Makefile                           |   1 -
+ arch/arm/common/locomo.c                           | 914 ---------------------
+ arch/arm/mach-pxa/Kconfig                          |   1 -
+ arch/arm/mach-pxa/include/mach/poodle.h            |  16 +-
+ arch/arm/mach-pxa/poodle.c                         |  23 +-
+ arch/arm/mach-sa1100/Kconfig                       |   1 -
+ arch/arm/mach-sa1100/collie.c                      | 112 +--
+ arch/arm/mach-sa1100/include/mach/collie.h         |  25 +-
+ arch/arm/mach-sa1100/include/mach/irqs.h           |  19 +-
+ drivers/gpio/Kconfig                               |   7 +
+ drivers/gpio/Makefile                              |   1 +
+ drivers/gpio/gpio-locomo.c                         | 386 +++++++++
+ drivers/input/keyboard/Kconfig                     |   1 -
+ drivers/input/keyboard/locomokbd.c                 | 165 ++--
+ drivers/leds/Kconfig                               |   1 -
+ drivers/leds/leds-locomo.c                         | 104 ++-
+ drivers/mfd/Kconfig                                |   8 +
+ drivers/mfd/Makefile                               |   1 +
+ drivers/mfd/locomo.c                               | 644 +++++++++++++++
+ drivers/spi/Kconfig                                |   8 +
+ drivers/spi/Makefile                               |   1 +
+ drivers/spi/spi-locomo.c                           | 370 +++++++++
+ drivers/video/backlight/Kconfig                    |  14 +-
+ drivers/video/backlight/Makefile                   |   3 +-
+ drivers/video/backlight/locomo_bl.c                | 171 ++++
+ drivers/video/backlight/locomo_lcd.c               | 224 +++++
+ drivers/video/backlight/locomolcd.c                | 255 ------
+ .../asm/hardware => include/linux/mfd}/locomo.h    | 148 ++--
+ sound/soc/pxa/poodle.c                             |  51 +-
+ 30 files changed, 2185 insertions(+), 1493 deletions(-)
+ delete mode 100644 arch/arm/common/locomo.c
+ create mode 100644 drivers/gpio/gpio-locomo.c
+ create mode 100644 drivers/mfd/locomo.c
+ create mode 100644 drivers/spi/spi-locomo.c
+ create mode 100644 drivers/video/backlight/locomo_bl.c
+ create mode 100644 drivers/video/backlight/locomo_lcd.c
+ delete mode 100644 drivers/video/backlight/locomolcd.c
+ rename {arch/arm/include/asm/hardware => include/linux/mfd}/locomo.h (55%)

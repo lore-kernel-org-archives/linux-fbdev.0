@@ -1,32 +1,71 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Sat, 11 Oct 2014 14:21:56 +0000
-Subject: Re: [PATCH 2/2] backlight: pwm: clean up pwm requested using legacy API
-Message-Id: <20141011142156.GC11456@kroah.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 28 Oct 2014 00:02:05 +0000
+Subject: [PATCH 12/15] ARM: pxa: poodle: don't preallocate IRQ space for locomo
+Message-Id: <1414454528-24240-13-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413035186-11771-1-git-send-email-vladimir_zapolskiy@mentor.com>
- <1413035186-11771-3-git-send-email-vladimir_zapolskiy@mentor.com>
-In-Reply-To: <1413035186-11771-3-git-send-email-vladimir_zapolskiy@mentor.com>
+References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1414454528-24240-1-git-send-email-dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Cc: linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, stable@vger.kernel.org
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org
+Cc: Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-On Sat, Oct 11, 2014 at 04:46:26PM +0300, Vladimir Zapolskiy wrote:
-> If PWM device is requested by means of legacy API pwm_request(), its
-> resources are not freed on module unbind, which may cause an oops on
-> access, e.g. by reading /sys/kernel/debug/pwm.
-> 
-> Reported-by: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
-> Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-> ---
->  drivers/video/backlight/pwm_bl.c |    4 ++++
->  1 file changed, 4 insertions(+)
+As new locomo driver supports SPARSE_IRQ, don't preallocate NR_IRQS
+space for it on poodle.
 
-<formletter>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/arm/mach-pxa/include/mach/poodle.h | 2 +-
+ arch/arm/mach-pxa/poodle.c              | 8 ++++++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
-This is not the correct way to submit patches for inclusion in the
-stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
-for how to do this properly.
+diff --git a/arch/arm/mach-pxa/include/mach/poodle.h b/arch/arm/mach-pxa/include/mach/poodle.h
+index e8eb51e..105410a 100644
+--- a/arch/arm/mach-pxa/include/mach/poodle.h
++++ b/arch/arm/mach-pxa/include/mach/poodle.h
+@@ -91,7 +91,7 @@
+ #define POODLE_GPIO_MUTE_L	(POODLE_LOCOMO_GPIO_BASE + 10)
+ #define POODLE_GPIO_MUTE_R	(POODLE_LOCOMO_GPIO_BASE + 11)
+ 
+-#define POODLE_NR_IRQS		(IRQ_BOARD_START + 4)	/* 4 for LoCoMo */
++#define POODLE_NR_IRQS		IRQ_BOARD_START
+ 
+ extern struct platform_device poodle_locomo_device;
+ 
+diff --git a/arch/arm/mach-pxa/poodle.c b/arch/arm/mach-pxa/poodle.c
+index 3041d83..97eced9 100644
+--- a/arch/arm/mach-pxa/poodle.c
++++ b/arch/arm/mach-pxa/poodle.c
+@@ -181,14 +181,18 @@ static struct locomo_platform_data locomo_info = {
+ 	.gpio_data = {
+ 		.gpio_base = POODLE_LOCOMO_GPIO_BASE,
+ 	},
+-	.bl_data = {
++	.lcd_data = {
+ 		.comadj	          = 118,
+ 		.gpio_lcd_vsha_on = POODLE_GPIO_LCD_VSHA_ON,
+ 		.gpio_lcd_vshd_on = POODLE_GPIO_LCD_VSHD_ON,
+ 		.gpio_lcd_vee_on  = POODLE_GPIO_LCD_VEE_ON,
+ 		.gpio_lcd_mod     = POODLE_GPIO_LCD_MOD,
++	},
++	.bl_data = {
+ 		.gpio_fl_vr       = POODLE_GPIO_FL_VR,
+ 	},
++	.gpio_amp1_on	= -1,
++	.gpio_amp2_on	= -1,
+ };
+ 
+ struct platform_device poodle_locomo_device = {
+@@ -453,7 +457,7 @@ static void __init poodle_init(void)
+ 	platform_scoop_config = &poodle_pcmcia_config;
+ 
+ 	if (sharpsl_param.comadj != -1)
+-		locomo_info.bl_data.comadj = sharpsl_param.comadj;
++		locomo_info.lcd_data.comadj = sharpsl_param.comadj;
+ 
+ 	ret = platform_add_devices(devices, ARRAY_SIZE(devices));
+ 	if (ret)
+-- 
+2.1.1
 
-</formletter>

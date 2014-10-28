@@ -1,79 +1,39 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Tue, 28 Oct 2014 00:01:53 +0000
-Subject: [PATCH 00/15] new locomo driver
-Message-Id: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Tue, 28 Oct 2014 00:13:39 +0000
+Subject: Re: [PATCH 00/15] new locomo driver
+Message-Id: <20141028001338.GZ27405@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Greg KH <greg@kroah.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Andrea Adami <andrea.adami@gmail.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>
 
-Sharp Zaurus SL-5500 and SL-5600 use special companion Gate Array. Current
-drivers present in Linux kernel has some problems:
+On Tue, Oct 28, 2014 at 03:01:53AM +0300, Dmitry Eremin-Solenikov wrote:
+> Sharp Zaurus SL-5500 and SL-5600 use special companion Gate Array. Current
+> drivers present in Linux kernel has some problems:
+> 
+>  * It uses custom bus instead of platform bus/mfd core.
 
- * It uses custom bus instead of platform bus/mfd core.
- * Device drivers are not well layered/separated.
- * It uses custom gpio accessors instead of using GPIOLIB.
+I believe Greg wouldn't see that as a positive point.
 
-With this patchset I tried to modernise and restructure the LoCoMo driver.
-Also I added an experimental SPI driver that will be used by mmc-spi on
-Sharp SL-5500 collie devices.
+Don't think that the platform bus _should_ always be used.  It shouldn't
+(Greg has said he'd like to see the platform bus to be totally killed off.)
+Instead, custom buses properly suited to the class of device in question
+is much preferred, especially if it aids in...
 
-----------------------------------------------------------------
-Dmitry Eremin-Solenikov (15):
-      mfd: add new driver for Sharp LoCoMo
-      GPIO: port LoCoMo gpio support from old driver
-      leds: port locomo leds driver to new locomo core
-      input: convert LoCoMo keyboard driver to use new locomo core
-      video: backlight: add new locomo backlight driver
-      video: lcd: add LoCoMo LCD driver
-      video: backlight: drop old locomo bl/lcd driver
-      ARM: sa1100: make collie use new locomo drivers
-      ARM: sa1100: don't preallocate IRQ space for locomo
-      ARM: pxa: poodle: use new LoCoMo driver
-      sound: soc: poodle: make use of new locomo GPIO interface
-      ARM: pxa: poodle: don't preallocate IRQ space for locomo
-      ARM: drop old LoCoMo driver
-      gpio: locomo: implement per-pin irq handling
-      spi: add locomo SPI driver
+>  * Device drivers are not well layered/separated.
 
- arch/arm/common/Kconfig                            |   3 -
- arch/arm/common/Makefile                           |   1 -
- arch/arm/common/locomo.c                           | 914 ---------------------
- arch/arm/mach-pxa/Kconfig                          |   1 -
- arch/arm/mach-pxa/include/mach/poodle.h            |  16 +-
- arch/arm/mach-pxa/poodle.c                         |  23 +-
- arch/arm/mach-sa1100/Kconfig                       |   1 -
- arch/arm/mach-sa1100/collie.c                      | 112 +--
- arch/arm/mach-sa1100/include/mach/collie.h         |  25 +-
- arch/arm/mach-sa1100/include/mach/irqs.h           |  19 +-
- drivers/gpio/Kconfig                               |   7 +
- drivers/gpio/Makefile                              |   1 +
- drivers/gpio/gpio-locomo.c                         | 386 +++++++++
- drivers/input/keyboard/Kconfig                     |   1 -
- drivers/input/keyboard/locomokbd.c                 | 165 ++--
- drivers/leds/Kconfig                               |   1 -
- drivers/leds/leds-locomo.c                         | 104 ++-
- drivers/mfd/Kconfig                                |   8 +
- drivers/mfd/Makefile                               |   1 +
- drivers/mfd/locomo.c                               | 644 +++++++++++++++
- drivers/spi/Kconfig                                |   8 +
- drivers/spi/Makefile                               |   1 +
- drivers/spi/spi-locomo.c                           | 370 +++++++++
- drivers/video/backlight/Kconfig                    |  14 +-
- drivers/video/backlight/Makefile                   |   3 +-
- drivers/video/backlight/locomo_bl.c                | 171 ++++
- drivers/video/backlight/locomo_lcd.c               | 224 +++++
- drivers/video/backlight/locomolcd.c                | 255 ------
- .../asm/hardware => include/linux/mfd}/locomo.h    | 148 ++--
- sound/soc/pxa/poodle.c                             |  51 +-
- 30 files changed, 2185 insertions(+), 1493 deletions(-)
- delete mode 100644 arch/arm/common/locomo.c
- create mode 100644 drivers/gpio/gpio-locomo.c
- create mode 100644 drivers/mfd/locomo.c
- create mode 100644 drivers/spi/spi-locomo.c
- create mode 100644 drivers/video/backlight/locomo_bl.c
- create mode 100644 drivers/video/backlight/locomo_lcd.c
- delete mode 100644 drivers/video/backlight/locomolcd.c
- rename {arch/arm/include/asm/hardware => include/linux/mfd}/locomo.h (55%)
+... better layering or separation of drivers.
+
+So, thinking that converting from a custom bus to a platform bus
+definitely is /not/ a positive step forward.
+
+(Why mfd was ever allowed to re-use the platform bus stuff is a separate
+question not relevent to these patches.)
+
+-- 
+FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
+according to speedtest.net.

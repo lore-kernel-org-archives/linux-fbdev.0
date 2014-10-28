@@ -1,315 +1,238 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 06 Oct 2014 07:12:03 +0000
-Subject: Re: [linux-sunxi] Re: [PATCH v3] dt-bindings: Add a clocks property to the simple-framebuffer bindin
-Message-Id: <543240C3.5050407@redhat.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 28 Oct 2014 00:01:58 +0000
+Subject: [PATCH 05/15] video: backlight: add new locomo backlight driver
+Message-Id: <1414454528-24240-6-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1412345120-24588-1-git-send-email-hdegoede@redhat.com>	<CAL_JsqKU2n8p=YfJua3k-mR40bG_4SiZY8_-SL-MXtuWN5NeHg@mail.gmail.com>	<542EDE11.3010802@redhat.com>	<CAL_Jsq+3c7ToCGaR4Nz7dDXvebBKzzMv85swzy2mzOou+gM5iw@mail.gmail.com>	<CAKON4OxxQ3hp0npr1Zh6w-2-HwMyC+8OxOCBmFFmBZ0N+6N0dw@mail.gmail.com>	<542FC2E6.5040800@redhat.com>	<CAKON4Owg_ABPJ9JfXqZwj9TQQNSPa8LKgr7U762B6--NTrOVFQ@mail.gmail.com>	<54310955.2090708@redhat.com>	<CAKON4OwYg8obyjPp9VL5O4fq6zK5jhd+Jr-v59yisoHqX09iag@mail.gmail.com>	<54315556.2050308@redhat.com>	<CAKON4Ozo3qZjdweUpkF8kwyisjgwmHeQx_jzh6S5TzGEBnVpnw@mail.gmail.com>	<543160D6.5040703@redhat.com>
- <CAKON4OyE8Zw-yA-mKhPEs=yz-R4=wkZSwA1g8-61pD4RPp1gNQ@mail.gmail.com>
-In-Reply-To: <CAKON4OyE8Zw-yA-mKhPEs=yz-R4=wkZSwA1g8-61pD4RPp1gNQ@mail.gmail.com>
+References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>
 
-Hi,
+Add new simple backlight driver - it cares only about PWM/frontlight
+part of LoCoMo, it does not touch TFT settings and does not export TFT
+power control.
 
-On 10/05/2014 05:17 PM, jonsmirl@gmail.com wrote:
-> On Sun, Oct 5, 2014 at 11:16 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->> Hi,
->>
->> On 10/05/2014 05:07 PM, jonsmirl@gmail.com wrote:
->>> On Sun, Oct 5, 2014 at 10:27 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->>>> Hi,
->>>>
->>>> On 10/05/2014 02:52 PM, jonsmirl@gmail.com wrote:
->>>>> On Sun, Oct 5, 2014 at 5:03 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->>>>>> Hi,
->>>>>>
->>>>>> On 10/04/2014 02:38 PM, jonsmirl@gmail.com wrote:
->>>>>>> On Sat, Oct 4, 2014 at 5:50 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->>>>>>>> Hi,
->>>>>>>>
->>>>>>>> On 10/04/2014 12:56 AM, jonsmirl@gmail.com wrote:
->>>>>>>>> On Fri, Oct 3, 2014 at 4:08 PM, Rob Herring <robherring2@gmail.com> wrote:
->>>>>>>>>> On Fri, Oct 3, 2014 at 12:34 PM, Hans de Goede <hdegoede@redhat.com> wrote:
->>>>>>>>>>> Hi,
->>>>>>>>>>>
->>>>>>>>>>> On 10/03/2014 05:57 PM, Rob Herring wrote:
->>>>>>>>>>>> On Fri, Oct 3, 2014 at 9:05 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->>>>>>>>>>>>> A simple-framebuffer node represents a framebuffer setup by the firmware /
->>>>>>>>>>>>> bootloader. Such a framebuffer may have a number of clocks in use, add a
->>>>>>>>>>>>> property to communicate this to the OS.
->>>>>>>>>>>>>
->>>>>>>>>>>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->>>>>>>>>>>>> Reviewed-by: Mike Turquette <mturquette@linaro.org>
->>>>>>>>>>>>>
->>>>>>>>>>>>> --
->>>>>>>>>>>>> Changes in v2:
->>>>>>>>>>>>> -Added Reviewed-by: Mike Turquette <mturquette@linaro.org>
->>>>>>>>>>>>> Changes in v3:
->>>>>>>>>>>>> -Updated description to make clear simplefb deals with more then just memory
->>>>>>>>>>>>
->>>>>>>>>>>> NAK. "Fixing" the description is not what I meant and does not address
->>>>>>>>>>>> my concerns. Currently, simplefb is configuration data. It is
->>>>>>>>>>>> auxiliary data about how a chunk of memory is used. Using it or not
->>>>>>>>>>>> has no side effects on the hardware setup, but you are changing that
->>>>>>>>>>>> aspect. You are mixing in a hardware description that is simply
->>>>>>>>>>>> inaccurate.
->>>>>>>>>>>
->>>>>>>>>>> Memory is hardware too, what simplefb is is best seen as a virtual device, and
->>>>>>>>>>> even virtual devices have hardware resources they need, such as a chunk of memory,
->>>>>>>>>>> which the kernel should not touch other then use it as a framebuffer, likewise
->>>>>>>>>>> on some systems the virtual device needs clocks to keep running.
->>>>>>>>>>>
->>>>>>>>>>>> The kernel has made the decision to turn off "unused" clocks. If its
->>>>>>>>>>>> determination of what is unused is wrong, then it is not a problem to
->>>>>>>>>>>> fix in DT.
->>>>>>>>>>>
->>>>>>>>>>> No, it is up to DT to tell the kernel what clocks are used, that is how it works
->>>>>>>>>>> for any other device. I don't understand why some people keep insisting simplefb
->>>>>>>>>>> for some reason is o so very very special, because it is not special, it needs
->>>>>>>>>>> resources, and it needs to tell the kernel about this or bad things happen.
->>>>>>>>>>
->>>>>>>>>> No, the DT describes the connections of clocks from h/w block to h/w
->>>>>>>>>> block. Their use is implied by the connection.
->>>>>>>>>>
->>>>>>>>>> And yes, as the other thread mentioned DT is more than just hardware
->>>>>>>>>> information. However, what you are adding IS hardware information and
->>>>>>>>>> clearly has a place somewhere else. And adding anything which is not
->>>>>>>>>> hardware description gets much more scrutiny.
->>>>>>>>>>
->>>>>>>>>>> More over it is a bit late to start making objections now. This has already been
->>>>>>>>>>> discussed to death for weeks now, and every argument against this patch has already
->>>>>>>>>>> been countered multiple times (including the one you are making now). Feel free to
->>>>>>>>>>> read the entire thread in the archives under the subject:
->>>>>>>>>>> "[PATCH 4/4] simplefb: add clock handling code"
->>>>>>>>>>
->>>>>>>>>> You are on v2 and I hardly see any consensus on the v1 thread. Others
->>>>>>>>>> have made suggestions which I would agree with and you've basically
->>>>>>>>>> ignored them.
->>>>>>>>>>
->>>>>>>>>>> At one point in time we need to stop bickering and make a decision, that time has
->>>>>>>>>>> come now, so please lets get this discussion over with and merge this, so that
->>>>>>>>>>> we can all move on and spend out time in a more productive manner.
->>>>>>>>>>
->>>>>>>>>> Not an effective argument to get things merged.
->>>>>>>>>
->>>>>>>>> If there is not good solution to deferring clock clean up in the
->>>>>>>>> kernel, another approach is to change how simple-framebuffer is
->>>>>>>>> described in the device tree....
->>>>>>>>>
->>>>>>>>> Right now it is a stand-alone item that looks like a device node, but
->>>>>>>>> it isn't a device.
->>>>>>>>>
->>>>>>>>> framebuffer {
->>>>>>>>>     compatible = "simple-framebuffer";
->>>>>>>>>     reg = <0x1d385000 (1600 * 1200 * 2)>;
->>>>>>>>>     width = <1600>;
->>>>>>>>>     height = <1200>;
->>>>>>>>>     stride = <(1600 * 2)>;
->>>>>>>>>     format = "r5g6b5";
->>>>>>>>> };
->>>>>>>>>
->>>>>>>>> How about something like this?
->>>>>>>>>
->>>>>>>>> reserved-memory {
->>>>>>>>>     #address-cells = <1>;
->>>>>>>>>     #size-cells = <1>;
->>>>>>>>>     ranges;
->>>>>>>>>
->>>>>>>>>     display_reserved: framebuffer@78000000 {
->>>>>>>>>         reg = <0x78000000  (1600 * 1200 * 2)>;
->>>>>>>>>     };
->>>>>>>>> };
->>>>>>>>>
->>>>>>>>> lcd0: lcd-controller@820000 {
->>>>>>>>>     compatible = "marvell,dove-lcd";
->>>>>>>>>     reg = <0x820000 0x1000>;
->>>>>>>>>     interrupts = <47>;
->>>>>>>>>     clocks = <&si5351 0>;
->>>>>>>>>     clock-names = "ext_ref_clk_1";
->>>>>>>>> };
->>>>>>>>>
->>>>>>>>> chosen {
->>>>>>>>>     boot-framebuffer {
->>>>>>>>>        compatible = "simple-framebuffer";
->>>>>>>>>        device = <&lcd0>;
->>>>>>>>>        framebuffer = <&display_reserved>;
->>>>>>>>>        width = <1600>;
->>>>>>>>>        height = <1200>;
->>>>>>>>>        stride = <(1600 * 2)>;
->>>>>>>>>        format = "r5g6b5";
->>>>>>>>>     };
->>>>>>>>> }
->>>>>>>>>
->>>>>>>>>
->>>>>>>>> This moves the definition of the boot framebuffer setup into the area
->>>>>>>>> where bootloader info is suppose to go. Then you can use the phandle
->>>>>>>>> to follow the actual device chains and protect the clocks and
->>>>>>>>> regulators. To make that work you are required to provide an accurate
->>>>>>>>> description of the real video hardware so that this chain can be
->>>>>>>>> followed.
->>>>>>>>
->>>>>>>> This will not work, first of all multiple blocks may be involved, so
->>>>>>>> the device = in the boot-framebuffer would need to be a list. That in
->>>>>>>> itself is not a problem, the problem is that the blocks used may have
->>>>>>>> multiple clocks, of which the setup mode likely uses only a few.
->>>>>>>>
->>>>>>>> So if we do things this way, we end up keeping way to many clocks
->>>>>>>> enabled.
->>>>>>>
->>>>>>> That doesn't hurt anything.
->>>>>>
->>>>>> <snip lots of stuff based on the above>
->>>>>>
->>>>>> Wrong, that does hurt things. As already discussed simply stopping the
->>>>>> clocks from being disabled by the unused_clks mechanism is not enough,
->>>>>> since clocks may be shared, and we must stop another device driver
->>>>>> sharing the clock and doing clk_enable; probe; clk_disable; disabling
->>>>>> the shared clk, which means calling clk_enable on it to mark it as
->>>>>> being in use. So this will hurt cause it will cause us to enable a bunch
->>>>>> of clks which should not be enabled.
->>>>>
->>>>> I said earlier that you would need to add a protected mechanism to
->>>>> clocks to handle this phase. When a clock/regulator is protected you
->>>>> can turn it on but you can't turn it off. When simplefb exits it will
->>>>> clear this protected status. When the protected status gets cleared
->>>>> treat it as a ref count decrement and turn off the clock/regulator if
->>>>> indicated to do so. If a clock is protected, all of it parents get the
->>>>> protected bit set too.
->>>>>
->>>>> Protected mode
->>>>>    you can turn clocks on, but not off
->>>>>    it is ref counted
->>>>>   when it hits zero, look at the normal refcount and set that state
->>>>>
->>>>> Protected mode is not long lived. It only hangs around until the real
->>>>> device driver loads.
->>>>
->>>> And that has already been nacked by the clk maintainer because it is
->>>> too complicated, and I agree this is tons more complicated then simply
->>>> adding the list of clocks to the simplefb node.
->>>>
->>>>>> I've been thinking more about this, and I understand that people don't
->>>>>> want to put hardware description in the simplefb node, but this is
->>>>>> not hardware description.
->>>>>>
->>>>>> u-boot sets up the display-pipeline to scan out of a certain part of
->>>>>> memory, in order to do this it writes the memory address to some registers
->>>>>> in the display pipeline, so what it is passing is not hardware description
->>>>>> (it is not passing all possible memory addresses for the framebuffer), but
->>>>>> it is passing information about the state in which it has left the display
->>>>>> pipeline, iow it is passing state information.
->>>>>
->>>>> Giving the buffer to a piece of hardware is more than setting state.
->>>>> The hardware now owns that buffer.  That ownership needs to be managed
->>>>> so that if the hardware decides it doesn't want the buffer it can be
->>>>> returned to the global pool.
->>>>>
->>>>> That's why the buffer has to go into that reserved memory section, not
->>>>> the chosen section.
->>>>
->>>> But is not in the reserved memory section, it is in the simplefb
->>>> section, and we're stuck with this because of backward compatibility.
->>>>
->>>>  An OS doesn't have to process chosen, it is just
->>>>> there for informational purposes. To keep the OS from thinking it owns
->>>>> the memory in that video buffer and can use it for OS purposes, it has
->>>>> to go into that reserved memory section.
->>>>>
->>>>> The clocks are different. We know exactly who owns those clocks, the
->>>>> graphics hardware.
->>>>>
->>>>> You want something like this where the state of the entire video path
->>>>> is encoded into the chosen section. But that info is going to vary all
->>>>> over the place with TV output, HDMI output, LCD panels, etc. simplefb
->>>>> isn't going to be simple any more. Plus the purposes of adding all of
->>>>> this complexity is just to handle the half second transition from boot
->>>>> loader control to real driver.
->>>>>
->>>>>  reserved-memory {
->>>>>      #address-cells = <1>;
->>>>>      #size-cells = <1>;
->>>>>      ranges;
->>>>>
->>>>>      display_reserved: framebuffer@78000000 {
->>>>>          reg = <0x78000000  (1600 * 1200 * 2)>;
->>>>>      };
->>>>>  };
->>>>>
->>>>>  lcd0: lcd-controller@820000 {
->>>>>      compatible = "marvell,dove-lcd";
->>>>>      reg = <0x820000 0x1000>;
->>>>>      interrupts = <47>;
->>>>>      framebuffer = <&display_reserved>;
->>>>>      clocks = <&si5351 0>;
->>>>>      clock-names = "ext_ref_clk_1";
->>>>>  };
->>>>>
->>>>>  chosen {
->>>>>      boot-framebuffer {
->>>>>         compatible = "simple-framebuffer";
->>>>>         state {
->>>>>             device = <&lcd0>;
->>>>>             width = <1600>;
->>>>>             height = <1200>;
->>>>>             stride = <(1600 * 2)>;
->>>>>             format = "r5g6b5";
->>>>>             clocks = <&si5351 on 10mhz>;
->>>>
->>>> Right, so here we get a list of clocks which are actually in use
->>>> by the simplefb, just as I've been advocating all the time already.
->>>>
->>>> Note that the clock speed is not necessary, all the kernel needs to
->>>> know is that it must not change it.
->>>>
->>>> So as you seem to agree that we need to pass some sort of clock state
->>>> info, then all we need to agree on now is where to put it, as said adding
->>>> the reg property to a reserved-memory node is out of the question because
->>>> of backward compat, likewise storing width, height and format in a state
->>>> sub-node are out of the question for the same reason. But other then that
->>>> I'm fine with putting the simplefb node under chosen and putting clocks
->>>> in there (without the state subnode) as you suggest above.
->>>>
->>>> So we seem to be in agreement here :)
->>>>
->>>>>            output = "hdmi";
->>>>>            state {
->>>>>                  device = <&hdmi>
->>>>>                  clocks = <&xyz on 12mhz>;
->>>>>           }
->>>>
->>>> That level of detail won't be necessary, simplefb is supposed to be
->>>> simple, the kernel does not need to know which outputs there are, there
->>>> will always be only one for simplefb.
->>>
->>> I don't agree, but you are going to do it any way so I'll try and help
->>> tkeep problem side effects I know of to a minimum. You are relying on
->>> the BIOS to provide detailed, accurate information. Relying on BIOSes
->>> to do that has historically been a very bad idea.
->>
->> And here we come to the gist of your objections, I don't agree for
->> various reasons:
->>
->> 1) Despite firmware sometimes having bugs, we simply have to trust the firmware,
->> e.g. the reg property of simplefb could be set to point to some mmio rather then
->> just the framebuffer, and writing that mmio could do real bad things, yet we trust
->> it not to do that.
->>
->> 2) The firmware we're talking about here, at least for now, is u-boot which
->> is fully FOSS and under our control.
->>
->> 3) "I don't trust foo" is not a technical argument, and decisions like this
->> should be made on technical arguments.
-> 
-> You also realize that uboot now is going to have to be compiled with
-> the same DTS that the kernel is using so that the phandles will match
-> up. And now you are going to have to recompile your uboot everytime
-> that DTS changes.
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ drivers/video/backlight/Kconfig     |   6 +-
+ drivers/video/backlight/Makefile    |   2 +-
+ drivers/video/backlight/locomo_bl.c | 171 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 175 insertions(+), 4 deletions(-)
+ create mode 100644 drivers/video/backlight/locomo_bl.c
 
-That is simply not true. Please stop spreading FUD about this without actually
-knowing how it works / having read the code.
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 8d03924..03b77b33 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -218,12 +218,12 @@ config BACKLIGHT_LM3533
+ 	  levels.
+ 
+ config BACKLIGHT_LOCOMO
+-	tristate "Sharp LOCOMO LCD/Backlight Driver"
+-	depends on SHARP_LOCOMO
++	tristate "Sharp LOCOMO Backlight Driver"
++	depends on MFD_LOCOMO
+ 	default y
+ 	help
+ 	  If you have a Sharp Zaurus SL-5500 (Collie) or SL-5600 (Poodle) say y to
+-	  enable the LCD/backlight driver.
++	  enable the backlight driver.
+ 
+ config BACKLIGHT_OMAP1
+ 	tristate "OMAP1 PWL-based LCD Backlight"
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index fcd50b73..2a61b7e 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -39,7 +39,7 @@ obj-$(CONFIG_BACKLIGHT_IPAQ_MICRO)	+= ipaq_micro_bl.o
+ obj-$(CONFIG_BACKLIGHT_LM3533)		+= lm3533_bl.o
+ obj-$(CONFIG_BACKLIGHT_LM3630A)		+= lm3630a_bl.o
+ obj-$(CONFIG_BACKLIGHT_LM3639)		+= lm3639_bl.o
+-obj-$(CONFIG_BACKLIGHT_LOCOMO)		+= locomolcd.o
++obj-$(CONFIG_BACKLIGHT_LOCOMO)		+= locomo_bl.o
+ obj-$(CONFIG_BACKLIGHT_LP855X)		+= lp855x_bl.o
+ obj-$(CONFIG_BACKLIGHT_LP8788)		+= lp8788_bl.o
+ obj-$(CONFIG_BACKLIGHT_LV5207LP)	+= lv5207lp.o
+diff --git a/drivers/video/backlight/locomo_bl.c b/drivers/video/backlight/locomo_bl.c
+new file mode 100644
+index 0000000..cec1b51
+--- /dev/null
++++ b/drivers/video/backlight/locomo_bl.c
+@@ -0,0 +1,171 @@
++/*
++ * Backlight control code for Sharp Zaurus SL-5500
++ *
++ * Copyright 2005 John Lenz <lenz@cs.wisc.edu>
++ * Maintainer: Pavel Machek <pavel@ucw.cz> (unless John wants to :-)
++ * GPL v2
++ *
++ * This driver assumes single CPU. That's okay, because collie is
++ * slightly old hardware, and no one is going to retrofit second CPU to
++ * old PDA.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
++#include <linux/err.h>
++#include <linux/gpio.h>
++#include <linux/delay.h>
++#include <linux/mfd/locomo.h>
++
++struct locomo_bl {
++	void __iomem *regs;
++	int current_intensity;
++	int gpio_fl_vr;
++};
++
++static const struct {
++	u16 duty, bpwf;
++	bool vr;
++} locomo_bl_pwm[] = {
++	{ 0, 161, false },
++	{ 117, 161, false },
++	{ 163, 148, false },
++	{ 194, 161, false },
++	{ 194, 161, true },
++};
++
++static int locomo_bl_set_intensity(struct backlight_device *bd)
++{
++	int intensity = bd->props.brightness;
++	struct locomo_bl *bl = dev_get_drvdata(&bd->dev);
++
++	if (bd->props.power != FB_BLANK_UNBLANK)
++		intensity = 0;
++	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
++		intensity = 0;
++	if (bd->props.state & BL_CORE_SUSPENDED)
++		intensity = 0;
++
++	gpio_set_value(bl->gpio_fl_vr, locomo_bl_pwm[intensity].vr);
++
++	writew(locomo_bl_pwm[intensity].bpwf, bl->regs + LOCOMO_ALS);
++	udelay(100);
++	writew(locomo_bl_pwm[intensity].duty, bl->regs + LOCOMO_ALD);
++	udelay(100);
++	writew(locomo_bl_pwm[intensity].bpwf | LOCOMO_ALC_EN,
++			bl->regs + LOCOMO_ALS);
++
++	bl->current_intensity = intensity;
++	if (bd->props.state & BL_CORE_SUSPENDED)
++		writew(0x00, bl->regs + LOCOMO_ALS);
++
++	return 0;
++}
++
++static int locomo_bl_get_intensity(struct backlight_device *bd)
++{
++	struct locomo_bl *bl = dev_get_drvdata(&bd->dev);
++
++	return bl->current_intensity;
++}
++
++static const struct backlight_ops locomo_bl_ops = {
++	.options	= BL_CORE_SUSPENDRESUME,
++	.get_brightness = locomo_bl_get_intensity,
++	.update_status  = locomo_bl_set_intensity,
++};
++
++static int locomo_bl_probe(struct platform_device *dev)
++{
++	struct backlight_properties props;
++	struct resource *res;
++	struct locomo_bl_platform_data *pdata;
++	struct locomo_bl *bl;
++	struct backlight_device *locomo_bl_device;
++	int rc;
++
++	bl = devm_kmalloc(&dev->dev, sizeof(struct locomo_bl), GFP_KERNEL);
++	if (!bl)
++		return -ENOMEM;
++
++	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!res)
++		return -EINVAL;
++	bl->regs = devm_ioremap_resource(&dev->dev, res);
++	if (!bl->regs)
++		return -EINVAL;
++
++	pdata = dev_get_platdata(&dev->dev);
++	if (!pdata)
++		return -EINVAL;
++
++	bl->gpio_fl_vr = pdata->gpio_fl_vr;
++	rc = devm_gpio_request_one(&dev->dev, bl->gpio_fl_vr,
++			GPIOF_OUT_INIT_LOW, "FL VR");
++	if (rc)
++		return rc;
++
++	writew(0, bl->regs + LOCOMO_ALS);
++	writew(0, bl->regs + LOCOMO_ALD);
++
++	memset(&props, 0, sizeof(struct backlight_properties));
++	props.type = BACKLIGHT_RAW;
++	props.max_brightness = ARRAY_SIZE(locomo_bl_pwm) - 1;
++	props.brightness = props.max_brightness / 2;
++	locomo_bl_device = backlight_device_register("locomo-bl",
++						&dev->dev, bl,
++						&locomo_bl_ops, &props);
++
++	if (IS_ERR(locomo_bl_device))
++		return PTR_ERR(locomo_bl_device);
++
++	platform_set_drvdata(dev, locomo_bl_device);
++
++	/* Set up frontlight so that screen is readable */
++	backlight_update_status(locomo_bl_device);
++
++	return 0;
++}
++
++static int locomo_bl_remove(struct platform_device *dev)
++{
++	struct backlight_device *locomo_bl_device = platform_get_drvdata(dev);
++
++	locomo_bl_device->props.brightness = 0;
++	locomo_bl_device->props.power = 0;
++	locomo_bl_set_intensity(locomo_bl_device);
++
++	backlight_device_unregister(locomo_bl_device);
++
++	return 0;
++}
++
++static void locomo_bl_shutdown(struct platform_device *dev)
++{
++	struct backlight_device *locomo_bl_device = platform_get_drvdata(dev);
++
++	locomo_bl_device->props.brightness = 0;
++	locomo_bl_device->props.power = 0;
++	locomo_bl_set_intensity(locomo_bl_device);
++}
++
++static struct platform_driver locomo_bl_driver = {
++	.driver = {
++		.name	= "locomo-backlight",
++		.owner	= THIS_MODULE,
++	},
++	.probe	= locomo_bl_probe,
++	.remove	= locomo_bl_remove,
++	/* Turn off bl on power off/reboot */
++	.shutdown = locomo_bl_shutdown,
++};
++
++module_platform_driver(locomo_bl_driver);
++
++MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>, Pavel Machek <pavel@ucw.cz>");
++MODULE_DESCRIPTION("Collie Backlight driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:locomo-backlight");
+-- 
+2.1.1
 
-Regards,
-
-Hans

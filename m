@@ -1,39 +1,58 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Tue, 28 Oct 2014 00:13:39 +0000
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 28 Oct 2014 00:28:53 +0000
 Subject: Re: [PATCH 00/15] new locomo driver
-Message-Id: <20141028001338.GZ27405@n2100.arm.linux.org.uk>
+Message-Id: <CALT56yObXu53ZenS6KNJq-Dx-AYuQnWpT+ejyBg+WCm--tfXXg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
+	<20141028001338.GZ27405@n2100.arm.linux.org.uk>
+In-Reply-To: <20141028001338.GZ27405-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Greg KH <greg@kroah.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Andrea Adami <andrea.adami@gmail.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>
+To: Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Cc: Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-input <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-leds <linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-spi <linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-On Tue, Oct 28, 2014 at 03:01:53AM +0300, Dmitry Eremin-Solenikov wrote:
-> Sharp Zaurus SL-5500 and SL-5600 use special companion Gate Array. Current
-> drivers present in Linux kernel has some problems:
-> 
->  * It uses custom bus instead of platform bus/mfd core.
+2014-10-28 4:13 GMT+04:00 Russell King - ARM Linux <linux@arm.linux.org.uk>:
+> On Tue, Oct 28, 2014 at 03:01:53AM +0300, Dmitry Eremin-Solenikov wrote:
+>> Sharp Zaurus SL-5500 and SL-5600 use special companion Gate Array. Current
+>> drivers present in Linux kernel has some problems:
+>>
+>>  * It uses custom bus instead of platform bus/mfd core.
+>
+> I believe Greg wouldn't see that as a positive point.
+>
+> Don't think that the platform bus _should_ always be used.  It shouldn't
+> (Greg has said he'd like to see the platform bus to be totally killed off.)
+> Instead, custom buses properly suited to the class of device in question
+> is much preferred, especially if it aids in...
 
-I believe Greg wouldn't see that as a positive point.
+I'm sorry, I must be outdated on this topic. Few years ago things were exactly
+opposite - we explicitly had to use platform bus for mfd devices. I
+still think that
+mfd devices containing several cells should use mfd-core (is it still
+OK to use it?).
+And mfd-core (up to now) uses platform bus.
 
-Don't think that the platform bus _should_ always be used.  It shouldn't
-(Greg has said he'd like to see the platform bus to be totally killed off.)
-Instead, custom buses properly suited to the class of device in question
-is much preferred, especially if it aids in...
+>
+>>  * Device drivers are not well layered/separated.
+>
+> ... better layering or separation of drivers.
+>
+> So, thinking that converting from a custom bus to a platform bus
+> definitely is /not/ a positive step forward.
 
->  * Device drivers are not well layered/separated.
+Is there an example of new approach? Current locomo-dev implementation
+is poisoned with several bugs. For example it passes ioremapped memory
+as resources to child devices that later call request_resource() on it.
+Adding additional features (like correct work with IRQs) will duplicate
+platform bus code and mfd functions.
 
-... better layering or separation of drivers.
+>
+> (Why mfd was ever allowed to re-use the platform bus stuff is a separate
+> question not relevent to these patches.)
 
-So, thinking that converting from a custom bus to a platform bus
-definitely is /not/ a positive step forward.
-
-(Why mfd was ever allowed to re-use the platform bus stuff is a separate
-question not relevent to these patches.)
+I remember this story - Ian Molton and me wrote mfd-core.c.
 
 -- 
-FTTC broadband for 0.8mile line: currently at 9.5Mbps down 400kbps up
-according to speedtest.net.
+With best wishes
+Dmitry

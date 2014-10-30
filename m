@@ -1,51 +1,132 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 22 Oct 2014 16:45:07 +0000
-Subject: [PATCH v4 1/5] simplefb: Add simplefb MAINTAINERS entry
-Message-Id: <1413996311-4287-2-git-send-email-hdegoede@redhat.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 Oct 2014 13:20:11 +0000
+Subject: [GIT PULL] fbdev fixes for 3.18
+Message-Id: <54523B0B.8010003@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="4CBQKDreR6C7sBvXt7OEsmCJ5fRkHj6e4"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-During the discussion about adding clock handling code to simplefb, it became
-clear that simplefb currently does not have an active maintainer.
+--4CBQKDreR6C7sBvXt7OEsmCJ5fRkHj6e4
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-I've discussed this with Stephen Warren <swarren@wwwdotorg.org>, the original
-author of simplefb, and with his permisson I'm picking up maintainership of
-simplefb.
+Hi Linus,
 
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Acked-by: Stephen Warren <swarren@wwwdotorg.org>
-Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
----
- MAINTAINERS | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Please pull fbdev fixes for 3.18.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 73d1aef..6e92e73 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8416,6 +8416,14 @@ F:	drivers/media/usb/siano/
- F:	drivers/media/usb/siano/
- F:	drivers/media/mmc/siano/
- 
-+SIMPLEFB FB DRIVER
-+M:	Hans de Goede <hdegoede@redhat.com>
-+L:	linux-fbdev@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/video/simple-framebuffer.txt
-+F:	drivers/video/fbdev/simplefb.c
-+F:	include/linux/platform_data/simplefb.h
-+
- SH_VEU V4L2 MEM2MEM DRIVER
- L:	linux-media@vger.kernel.org
- S:	Orphan
--- 
-2.1.0
+ Tomi
 
+The following changes since commit f114040e3ea6e07372334ade75d1ee0775c355=
+e1:
+
+  Linux 3.18-rc1 (2014-10-19 18:08:38 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-fixes-3.18
+
+for you to fetch changes up to a942535d6e5c23f0015d6674d28c91dd59a720e4:
+
+  Merge branch '3.18/omapdss-fixes' into 3.18/fbdev-fixes (2014-10-30 14:=
+53:49 +0200)
+
+----------------------------------------------------------------
+fbdev fixes for 3.18
+
+* Fix fb console option parsing
+* Fixes for OMAPDSS/OMAPFB crashes related to module unloading and
+  device/driver binding & unbinding.
+* Fix for OMAP HDMI PLL locking failing in certain cases
+* Misc minor fixes for atmel lcdfb and OMAP
+
+----------------------------------------------------------------
+Alexandre Belloni (1):
+      drivers: video: fbdev: atmel_lcdfb.c: remove unnecessary header
+
+Felipe Balbi (2):
+      OMAPFB: add missing MODULE_ALIAS()
+      OMAPFB: remove __exit annotation
+
+Maarten ter Huurne (1):
+      fbcon: Fix option parsing control flow in fb_console_setup
+
+Marek Belisko (1):
+      omap: dss: connector-analog-tv: Add missing module device table
+
+Mark Rustad (1):
+      video/console: Resolve several shadow warnings
+
+Tomi Valkeinen (10):
+      OMAPDSS: set suppress_bind_attrs
+      OMAPDSS: apply: wait pending updates on manager disable
+      OMAPFB: fix overlay disable when freeing resources.
+      OMAPFB: fix releasing overlays
+      OMAPDSS: HDMI: fix PLL GO bit handling
+      OMAPDSS: HDMI: fix regsd write
+      OMAPDSS: DISPC: fix mflag offset
+      OMAPDSS: fix dispc register dump for preload & mflag
+      OMAPDSS: DSI: Fix PLL_SELFEQDCO field width
+      Merge branch '3.18/omapdss-fixes' into 3.18/fbdev-fixes
+
+ drivers/video/console/fbcon.c                      | 19 ++++++++--------=
+-
+ drivers/video/console/vgacon.c                     | 24 +++++++++++-----=
+------
+ drivers/video/fbdev/atmel_lcdfb.c                  |  1 -
+ .../fbdev/omap2/displays-new/connector-analog-tv.c |  3 +++
+ .../video/fbdev/omap2/displays-new/connector-dvi.c |  1 +
+ .../fbdev/omap2/displays-new/connector-hdmi.c      |  1 +
+ .../fbdev/omap2/displays-new/encoder-tfp410.c      |  1 +
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |  1 +
+ drivers/video/fbdev/omap2/displays-new/panel-dpi.c |  1 +
+ .../video/fbdev/omap2/displays-new/panel-dsi-cm.c  |  1 +
+ .../omap2/displays-new/panel-lgphilips-lb035q02.c  |  1 +
+ .../omap2/displays-new/panel-nec-nl8048hl11.c      |  1 +
+ .../omap2/displays-new/panel-sharp-ls037v7dw01.c   |  1 +
+ .../omap2/displays-new/panel-sony-acx565akm.c      |  1 +
+ .../omap2/displays-new/panel-tpo-td028ttec1.c      |  1 +
+ .../omap2/displays-new/panel-tpo-td043mtea1.c      |  1 +
+ drivers/video/fbdev/omap2/dss/apply.c              |  2 ++
+ drivers/video/fbdev/omap2/dss/dispc.c              |  8 ++++----
+ drivers/video/fbdev/omap2/dss/dispc.h              |  3 +--
+ drivers/video/fbdev/omap2/dss/dpi.c                |  1 +
+ drivers/video/fbdev/omap2/dss/dsi.c                |  3 ++-
+ drivers/video/fbdev/omap2/dss/dss.c                |  1 +
+ drivers/video/fbdev/omap2/dss/hdmi4.c              |  1 +
+ drivers/video/fbdev/omap2/dss/hdmi5.c              |  1 +
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c           | 13 ++++++------
+ drivers/video/fbdev/omap2/dss/rfbi.c               |  1 +
+ drivers/video/fbdev/omap2/dss/sdi.c                |  1 +
+ drivers/video/fbdev/omap2/dss/venc.c               |  1 +
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c     | 18 ++++++++--------=
+
+ 29 files changed, 67 insertions(+), 46 deletions(-)
+
+
+--4CBQKDreR6C7sBvXt7OEsmCJ5fRkHj6e4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUUjsLAAoJEPo9qoy8lh71gOwQAIjG4xI2BiAyOcK6QVc9fftX
+1ya7qr7m6Z2nBmmUdBxPfb2EXxYA+47SO4gJivwJMAQHr8nQfiapJ73MqHQheh++
+yaIqwAAypztiYaH9QF7hnx8DyFzcWnwi82c34jnYXbWDAkqLVvWUEDEAE3ya1udn
+eQE0IMyfHQ/u1baQWEp5ps6q5gHci+ysI/JUTYTddoPfOqzzLADkkocYqxZRcZ1V
+2DZ+splqErMwAflcCL7Dy27n9OJx+LjfM/h3n4HIBPw7K3ujfimnOZfl1HzhmLtU
+szhIk8JvqNh5suGBaH4SeWLsPWAGOTuS42hlZUCCObRjYmOh4uJmL39bWB9KtLKC
+Cs8LXInik+/0aHctblqXNt89z07juWkiDUdB8oe9oY0VZ6/GHh3k1ndWOXNDyEzR
+TlKxOq1NuX/cVHiQykBhdOetoETxOo5IuB9z7LfoGKXnoC1id1hyWOlC8Z7CIHiB
+rYu6z/bzUq3csLD21d3nSVeV5CClRHJpFGqn4w3bS6dBrI5scQKqOjJlJgo71Y+R
+2eFWTdfAsadODt0YISt0uc6IG4rMIOSYMtRB0bedKsF/h2OFZvJQ0n1TWaBlo49t
+ACmuGdYk4H9LvxBURCxKCFqV/hAcZVAwWj3/2gWHzNpb0z8WlYPWUKh1+U5lOmMQ
+DxdaDHT6dBSnoo6IstlJ
+=oTki
+-----END PGP SIGNATURE-----
+
+--4CBQKDreR6C7sBvXt7OEsmCJ5fRkHj6e4--

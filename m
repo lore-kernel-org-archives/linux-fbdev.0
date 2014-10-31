@@ -1,37 +1,39 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 14 Oct 2014 17:29:30 +0000
-Subject: [PATCH v6 11/18] OMAPDSS: hdmi: Make hdmi_mode_has_audio() more user friedly
-Message-Id: <444fd20a0320a215be4cb69055b617d1b3f385c9.1413306131.git.jsarha@ti.com>
+From: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Date: Fri, 31 Oct 2014 22:40:47 +0000
+Subject: [PATCH] m501fb: don't return zero on failure path in sm501fb_probe()
+Message-Id: <1414795247-14686-1-git-send-email-khoroshilov@ispras.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1413306131.git.jsarha@ti.com>
-In-Reply-To: <cover.1413306131.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, detheridge@ti.com, Jyri Sarha <jsarha@ti.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Alexey Khoroshilov <khoroshilov@ispras.ru>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+If no framebuffers found, sm501fb_probe() breaks off initialization,
+deallocates sm501fb_info, but returns zero. As a result, use after free
+can happen in sm501fb_remove().
+
+The patch adds -ENODEV as a return value in this case.
+
+Found by Linux Driver Verification project (linuxtesting.org).
+
+Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/sm501fb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index a6e08ff..6d129f2 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -345,9 +345,9 @@ void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
- 		struct hdmi_audio_format *aud_fmt);
- void hdmi_wp_audio_config_dma(struct hdmi_wp_data *wp,
- 		struct hdmi_audio_dma *aud_dma);
--static inline bool hdmi_mode_has_audio(int mode)
-+static inline bool hdmi_mode_has_audio(struct hdmi_config *cfg)
- {
--	return mode = HDMI_HDMI ? true : false;
-+	return cfg->hdmi_dvi_mode = HDMI_HDMI ? true : false;
- }
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index 9e74e8fbe074..8b98b011fc04 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -1988,6 +1988,7 @@ static int sm501fb_probe(struct platform_device *pdev)
+ 	if (info->fb[HEAD_PANEL] = NULL &&
+ 	    info->fb[HEAD_CRT] = NULL) {
+ 		dev_err(dev, "no framebuffers found\n");
++		ret = -ENODEV;
+ 		goto err_alloc;
+ 	}
  
- /* HDMI DRV data */
 -- 
-1.7.9.5
+1.9.1
 

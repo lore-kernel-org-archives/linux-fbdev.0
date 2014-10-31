@@ -1,96 +1,41 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 29 Oct 2014 11:08:21 +0000
-Subject: Re: [linux-sunxi] Re: [PATCH v4 0/5] simplefb: add clock handling code
-Message-Id: <5450CAA5.5020205@ti.com>
+Date: Fri, 31 Oct 2014 08:15:31 +0000
+Subject: Re: [PATCH v4 0/5] simplefb: add clock handling code
+Message-Id: <54534523.8080801@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="R8PTPoLvQiNvl7iqU3U9jUAweQJhjbGDM"
+Content-Type: multipart/mixed; boundary="ER492xxKe18xpMuW2luQFtQPIs7CSwEuS"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
- <544F737A.7000109@ti.com>
- <CAL_JsqJ2JRg7k21CEVe4-At7enD+y3TN_7wfqhY0OHZm-_j17w@mail.gmail.com>
- <544F7E5D.60104@redhat.com>
-In-Reply-To: <544F7E5D.60104@redhat.com>
+In-Reply-To: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
 To: linux-arm-kernel@lists.infradead.org
 
---R8PTPoLvQiNvl7iqU3U9jUAweQJhjbGDM
-Content-Type: text/plain; charset=utf-8
+--ER492xxKe18xpMuW2luQFtQPIs7CSwEuS
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-Hi Hans, Rob,
+Hi Hans,
 
-On 28/10/14 13:30, Hans de Goede wrote:
-> Hi,
->=20
-> On 10/28/2014 12:11 PM, Rob Herring wrote:
+On 22/10/14 19:45, Hans de Goede wrote:
 
->> Yes, I object to the binding still as it has not changed from what was=
+> -We will add a clocks property to the simplefb devicetree bindings, so
+>  that u-boot setup framebuffers passed to the kernel (for early console=
 
->> previously posted.
->=20
-> It would be helpful if you could explain why you object. Last time you
-> said: " You are mixing in a hardware description that is simply inaccur=
-ate."
->=20
-> I then explained that this is not hardware description, but runtime sta=
-te
-> information, as it tells the kernel which clocks were chosen to drive t=
-he
-> display (out of typically a list of possible options, depending on whic=
-h
-> output is used, etc.). Just like which memory address the bootloader ha=
-s
-> chosen to scan out the video image from.
->=20
-> Then you got quiet, so sorry, but this time your objection really is to=
-o
-> late. You cannot simply go quiet halfway through a discussion and then =
-pop
-> up again when a new version is posted to say "I object" yet another tim=
-e,
-> you've had your chance to make your arguments last time, and chose to s=
-tay
-> quiet after I explained in detail that this is not hardware description=
- but
-> state information, so now it is simply too late.
->=20
-> These bindings have been discussed at Plumbers with various interested =
-people
-> present, and the conclusion was that this really is the best way to han=
-dle this,
-> so this patch is:
->=20
->     Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->     Reviewed-by: Mike Turquette <mturquette@linaro.org>
->     Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
->     Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
->=20
-> And David Herrman who is working on simpledrm, which will be merged soo=
-n, which
-> will also use the simplefb bindings also agrees. So we have the simplef=
-b maintainer,
-> simpledrm maintainer, and the clk subsystem maintainer + 2 other mainta=
-iners all
-> agreeing on a way forward, the time for bikeshedding now really really =
-really is
-> over.
->=20
-> Tomi, can you please let us know how you plan to proceed with this ?
+>  support) can properly list the clocks used, and simplefb can claim the=
+m to
+>  avoid them getting turned off, thereby breaking the early console
 
-I won't merge DT bindings via fbdev tree, if a DT maintainer says no.
+Perhaps this has been discussed earlier, but I started to wonder if
+managing clocks is enough.
 
-I took Rob's silence to the earlier series as a silent ack for your
-explanation. Obviously that was not the case.
-
-Rob, please advice asap what should be done to the bindings to get your
-ack. As Hans explained above, this discussion has been going on for a
-long time, and afaik this series is the best way forward of all the
-options discussed.
+What about regulators (to power the LCD), gpios (to keep the LCD
+enabled) and pinctrl (for video signals)? I guess any those could be
+reset by the kernel if no driver uses them.
 
  Tomi
 
 
 
---R8PTPoLvQiNvl7iqU3U9jUAweQJhjbGDM
+--ER492xxKe18xpMuW2luQFtQPIs7CSwEuS
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -98,19 +43,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUUMqlAAoJEPo9qoy8lh71rO4P/07cj6xRTdRmk0+1TrMQMCgI
-rVsIPuyHAm+0nT0yo/7Dk0VvMu3ox2iWrbUnBMyZ1alQgSN8vTMm4eyjmxdJ+XUJ
-DVMeX1GpuuydjpyXxjNeq/xrGalIEie/E1/mCom0Ewr0QCDwG8PRDSaHNUqs2onx
-1Dq9zBZ2rZcohBog6elVzJ7TbznUb/JOn2wdj7r0sLd32fcjfUERhhxEozq+tTaD
-lVflN2H/zKEUTdWEn5ioMEJscypFG6rW410CzTPZ2tLpMgTc/3qc5nmFZNcqU+sP
-mINyPA+RZ8RgIbdSEIcLVaEkI7mUfC/DyOMWQYYM1hZsbDggzMV8DfyfF16JYhWb
-6vqYkw2PAErax7EP51nzt1XMuax8/yCAuEZ0Os3JaMJLb9IR0iVb6tMZ5rRjQu8S
-yQK9pqLsPq0k7QETtgKensRya4i+q5Blkt0ITQo6owQhp2fQGXUC2jl96CMRwhFj
-9mwr01mXhkUA7lQJaN9RDg4D74/Alzu4f/DdJLyrnMJlSS3ojhcmRWyhRarrQElP
-kg6O3o9UrSKDd6amsYxH98ZrNm5uD125sn8y0fFzTq1LIsOWQ0FtzvDeQ6Xl0fDI
-+JzCKFYVN627wuEOjTyhi0rQ6PndudgRJJMe6/bUKgRa4+CWk+MVHaog04N/uwL2
-RLDw6FE9flvdY+6aYrRB
-=WwAI
+iQIcBAEBAgAGBQJUU0UjAAoJEPo9qoy8lh71Rq4P/iBMueYx1qH1hmpij6KbM3zy
+xv920ZWRO6ZmV+lvcZRE+rFJJHkjqOySvcZZxrM35Kfdmu3DgtPKAZmVlr296bhK
+Ler9dTX7oXjDJ1liOD+C+5GRLqpr74wWX2bDtjfhdjsQBtHIOkFVyv0/hO0G+wee
+X+6aiYlBBbRLizzYTPEyBLTXkI57WmfnPtLfs+11rS7FrFk+LwZ1trdGJjwY3/C3
+P+kJkYrd8b5s73giOXsfgsKK4j9rMnfP3eNlEABjBPY+JRN0kQbC3PGoNKJE+CXA
+kkJFvxc1WdkZMFoVo32wQm2dQYEz6qPQxg4gWYJGiJrIJ3LRlep3yVPSvOafAOpu
+y+7KK98JgzG2wx18y2dPqbJSuTZiF/ndeiysXtHftnjDvJJaVr+OIJrPKpLrSyj/
+oqUOIjB7Qs1JWFZ512u67gGzm+cN2oagnGDAW3pCOVmvMXmPCcJk2X0dSDSd23cd
+t6ewYybrZP5ip95vAyhFk2m9C3PbnFWWV6NKflG9vEklC9fZFKHTrXMd4O8UTBgO
+0T0IXt8KLfvLCY9jWzU6Ve9mYjttUxrAaI8hjqHLb8L/BgJc9NhZ26QX1YVoYmqt
+6Pk0Dyry/4vgSvKMzew3eXOe4vwqMW/G4I7NWnqf+R8yHitjHKHlzJWSiqNAczv1
+0VdACYy3HLfIbv2oryev
+=m8dE
 -----END PGP SIGNATURE-----
 
---R8PTPoLvQiNvl7iqU3U9jUAweQJhjbGDM--
+--ER492xxKe18xpMuW2luQFtQPIs7CSwEuS--

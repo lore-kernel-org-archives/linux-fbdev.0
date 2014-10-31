@@ -1,104 +1,88 @@
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Date: Fri, 31 Oct 2014 10:19:36 +0000
+From: Rob Herring <robherring2@gmail.com>
+Date: Fri, 31 Oct 2014 20:47:56 +0000
 Subject: Re: [linux-sunxi] Re: [PATCH v4 0/5] simplefb: add clock handling code
-Message-Id: <CABxcv=mRZj4NhiU_yCY9ih00xObLGSQErh-6_P=0c6-UuiY42w@mail.gmail.com>
+Message-Id: <CAL_JsqKWqq+H5ymUW3n8tkmLJHEUGaKDLX5+orJmGUQ3ECQwUQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
- <54534523.8080801@ti.com> <54534FAE.1060401@redhat.com>
- <CABxcv=kdRTXKE8S-M_qRo_qz_Ap-e+qz393NQseNe=rkXZrxiw@mail.gmail.com>
- <54535B8D.7040508@redhat.com>
-In-Reply-To: <54535B8D.7040508@redhat.com>
+ <544F737A.7000109@ti.com>
+ <CAL_JsqJ2JRg7k21CEVe4-At7enD+y3TN_7wfqhY0OHZm-_j17w@mail.gmail.com>
+ <544F7E5D.60104@redhat.com> <5450CAA5.5020205@ti.com>
+In-Reply-To: <5450CAA5.5020205@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hello Hans,
-
-Thanks for your answers.
-
-On Fri, Oct 31, 2014 at 10:51 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->>>> What about regulators (to power the LCD), gpios (to keep the LCD
->>>> enabled) and pinctrl (for video signals)? I guess any those could be
->>>> reset by the kernel if no driver uses them.
->>>
->>> Yes this has been discussed before, AFAIK gpio / pinctrls should not be
->>> spontaneously reset by the kernels. Regulators will be a problem, but there
->>> we can pretty much follow whatever solution we end up with for clocks, since
->>> they work very much alike (e.g. we could add a supply property to the
->>> simplefb node).
->>>
+On Wed, Oct 29, 2014 at 7:08 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> Hi Hans, Rob,
+>
+> On 28/10/14 13:30, Hans de Goede wrote:
+>> Hi,
 >>
->> I think someone already said this but with regulators is not that easy
->> since you don't have an equivalent of the "clocks" property.
+>> On 10/28/2014 12:11 PM, Rob Herring wrote:
+>
+>>> Yes, I object to the binding still as it has not changed from what was
+>>> previously posted.
 >>
->> You need a "<name>-supply" property for each regulator that is an
->> input supply. Some boards may need different regulators for their
->> display (e.g: one to power the LCD and another to power the backlight)
->> so adding a single supply property will not be enough.
->
-> Right so we can simply insert simplefbvdd1-supply, simplefbvdd2-supply, etc.
-> regulator nodes into the simplefb node, and have the simplefb kernel code look
-> for supplies with a name of simplefb_vdd%d in a loop until it fails to find one.
->
-> Note that the foo-supply names are local to the simplefb node, these do not
-> need to be the same as the ones in the nodes describing the actual hardware
-> blocks. Not having an array is somewhat inconvenient, but easily worked around
-> and once worked around this really is just the same problem as with clocks.
->
-
-Yes, I guess the question is how many regulators the driver should
-support but I expect most displays don't need more than a couple.
-
->>> Note I've no intention to add regulator support atm, we can do that when the
->>> need arises, so that we can actually test the code.
->>>
+>> It would be helpful if you could explain why you object. Last time you
+>> said: " You are mixing in a hardware description that is simply inaccurate."
 >>
->> AFAIU that's exactly what Thierry was complaining about. There seems
->> to be only a focus on solving the clocks issue since that is needed
->> for sunxi but ignoring how the problem for other resources should be
->> solved.
+>> I then explained that this is not hardware description, but runtime state
+>> information, as it tells the kernel which clocks were chosen to drive the
+>> display (out of typically a list of possible options, depending on which
+>> output is used, etc.). Just like which memory address the bootloader has
+>> chosen to scan out the video image from.
+>>
+>> Then you got quiet, so sorry, but this time your objection really is too
+>> late. You cannot simply go quiet halfway through a discussion and then pop
+>> up again when a new version is posted to say "I object" yet another time,
+>> you've had your chance to make your arguments last time, and chose to stay
+>> quiet after I explained in detail that this is not hardware description but
+>> state information, so now it is simply too late.
+>>
+>> These bindings have been discussed at Plumbers with various interested people
+>> present, and the conclusion was that this really is the best way to handle this,
+>> so this patch is:
+>>
+>>     Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>>     Reviewed-by: Mike Turquette <mturquette@linaro.org>
+>>     Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>>     Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+>>
+>> And David Herrman who is working on simpledrm, which will be merged soon, which
+>> will also use the simplefb bindings also agrees. So we have the simplefb maintainer,
+>> simpledrm maintainer, and the clk subsystem maintainer + 2 other maintainers all
+>> agreeing on a way forward, the time for bikeshedding now really really really is
+>> over.
+>>
+>> Tomi, can you please let us know how you plan to proceed with this ?
 >
-> That is simply not true, I'm fully aware that we may eventually need other
-> resources, e.g. regulators. I just want to take this one step at a time,
-> I really believe that once we have this figured out for one resource, it
-> becomes a lot easier to also figure out for other resources.
+> I won't merge DT bindings via fbdev tree, if a DT maintainer says no.
 >
-
-Great, I'm glad to hear that you are willing to add support for
-regulators (and other resources).
-
->> The assumptions made by simplefb are quite fragile and only adding
->> support for managing clocks is just a partial solution that will give
->> a false sense of robustness since it could break later due to other
->> resources.
+> I took Rob's silence to the earlier series as a silent ack for your
+> explanation. Obviously that was not the case.
 >
-> The key word here being resources. We need to figure out how to do
-> resource management for simplefb, once we have that figured out for one
-> resource, the others can follow the same "design-pattern". As the long
-> thread about the clocks support has shown, getting consensus on this
-> with only one resource in play already is hard enough, so baby steps
-> is the way to go.
->
+> Rob, please advice asap what should be done to the bindings to get your
+> ack. As Hans explained above, this discussion has been going on for a
+> long time, and afaik this series is the best way forward of all the
+> options discussed.
 
-I'm certainly not against adding clock management if that will make
-simplefb more robust. I was just worried that other resources could be
-ignored. But I'm ok of doing baby steps if there is a long term plan.
+I still think for the most part this is a kernel problem. It is a
+kernel policy to turn off unused clocks. The clock framework could
+just as easily decide that any clocks enabled at boot and left
+un-managed (i.e. w/o a driver) are kept on until they are managed. I'm
+not saying this can't be in DT, only that DT is not the only solution
+here. This problem is not unique to simplefb. A serial console could
+stop working if no serial driver is loaded before unused clocks are
+disabled. CPU core clocks have a similar issue as well (often enabled
+in platform code). I want to see this solved in a generic way for any
+clock.
 
-As I mentioned in another thread, I believe Doug's suggestion is the
-best approach. That is to have the simplefb node with all its
-resources in the DTS but with status = "disabled". The bootloader
-should only fill the information about the framebuffer memory region
-(location and size, width, height, format, etc) and change the
-simplefb node status to "okay".
+As regulators were also mentioned, they already have a
+"regulator-boot-on" property defined. Perhaps this is suitable to be
+mirrored for clocks. If it is not, then I'm wondering why we have it.
+A key difference here is that the property is part of the provider and
+can be dealt with in the clock driver rather than requiring a
+temporary driver.
 
-If a FDT does not have a simplefb node then the bootloader can create
-one (like is made for the /choosen node in most bootloaders).
-
-That will better document which resources are really used when someone
-reads the DTS and also avoid duplicating code in the bootloaders to
-fill all the information about resources but is just my humble opinion
-and I really don't want to bikesheed more on this.
-
-Best regards,
-Javier
+Rob

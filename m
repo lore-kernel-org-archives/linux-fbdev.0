@@ -1,89 +1,70 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Fri, 31 Oct 2014 07:48:35 +0000
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Fri, 31 Oct 2014 09:39:59 +0000
 Subject: Re: [PATCH 02/15] GPIO: port LoCoMo gpio support from old driver
-Message-Id: <CACRpkdY7tRadod2vQfEytmw-ubaMAvr_=XTczD5bUMkqie0xkg@mail.gmail.com>
+Message-Id: <CALT56yOgMUA7o2dzfHph=S2zkDV4zERzMh4ishpPwpAx7Cqj6Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
 	<1414454528-24240-3-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1414454528-24240-3-git-send-email-dbaryshkov@gmail.com>
+	<CACRpkdY7tRadod2vQfEytmw-ubaMAvr_=XTczD5bUMkqie0xkg@mail.gmail.com>
+In-Reply-To: <CACRpkdY7tRadod2vQfEytmw-ubaMAvr_=XTczD5bUMkqie0xkg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo
+To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Input <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org" <alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo
 
-On Tue, Oct 28, 2014 at 1:01 AM, Dmitry Eremin-Solenikov
-<dbaryshkov@gmail.com> wrote:
-
-> Add gpiolib driver for gpio pins placed on the LoCoMo GA.
+2014-10-31 10:48 GMT+03:00 Linus Walleij <linus.walleij@linaro.org>:
+> On Tue, Oct 28, 2014 at 1:01 AM, Dmitry Eremin-Solenikov
+> <dbaryshkov@gmail.com> wrote:
 >
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>> Add gpiolib driver for gpio pins placed on the LoCoMo GA.
+>>
+>> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>
 
-(...)
-> +static int locomo_gpio_get(struct gpio_chip *chip,
-> +               unsigned offset)
-> +{
-> +       struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-> +
-> +       return readw(lg->regs + LOCOMO_GPL) & (1 << offset);
+[skipped]
 
-Do this:
+> (etc, everywhere this pattern occurs).
+>> +static void locomo_gpio_set(struct gpio_chip *chip,
+>> +               unsigned offset, int value)
+>> +{
+>> +       struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
+>> +       unsigned long flags;
+>> +
+>> +       spin_lock_irqsave(&lg->lock, flags);
+>> +
+>> +       __locomo_gpio_set(chip, offset, value);
+>> +
+>> +       spin_unlock_irqrestore(&lg->lock, flags);
+>
+> If you actually always have to be getting and releasing a spin lock around
+> the register writes, contemplate using regmap-mmio because that
+> is part of what it does.
+>
+> But is this locking really necessary?
 
-#include <linux/bitops.h>
+I have a custom of doing such locking and never having to think about
+somebody breaking into RMW cycles.
 
-return !!(readw(lg->regs + LOCOMO_GPL) & BIT(offset));
+Also isn't regmap an overkill here? Wouldn't regmap also do a lock/unlock
+around each register read/write/RMW?
 
-So you clamp the returned value to a bool.
+>> +static int locomo_gpio_remove(struct platform_device *pdev)
+>> +{
+>> +       struct locomo_gpio *lg = platform_get_drvdata(pdev);
+>> +       int ret;
+>> +
+>> +       ret = gpiochip_remove(&lg->gpio);
+>> +       if (ret) {
+>> +               dev_err(&pdev->dev, "Can't remove gpio chip: %d\n", ret);
+>> +               return ret;
+>> +       }
+>
+> The return value from gpiochip_remove() has been removed in v3.18-rc1
+> so this will not compile.
 
-> +static void __locomo_gpio_set(struct gpio_chip *chip,
-> +               unsigned offset, int value)
-> +{
-> +       struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-> +       u16  r;
-> +
-> +       r = readw(lg->regs + LOCOMO_GPO);
-> +       if (value)
-> +               r |= 1 << offset;
+Yes, the fix will be in the next iteration. This patchset was based on 3.17
 
-r |= BIT(offset);
-
-> +       else
-> +               r &= ~(1 << offset);
-
-r &= BIT(offset);
-
-(etc, everywhere this pattern occurs).
-> +static void locomo_gpio_set(struct gpio_chip *chip,
-> +               unsigned offset, int value)
-> +{
-> +       struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-> +       unsigned long flags;
-> +
-> +       spin_lock_irqsave(&lg->lock, flags);
-> +
-> +       __locomo_gpio_set(chip, offset, value);
-> +
-> +       spin_unlock_irqrestore(&lg->lock, flags);
-
-If you actually always have to be getting and releasing a spin lock around
-the register writes, contemplate using regmap-mmio because that
-is part of what it does.
-
-But is this locking really necessary?
-
-> +static int locomo_gpio_remove(struct platform_device *pdev)
-> +{
-> +       struct locomo_gpio *lg = platform_get_drvdata(pdev);
-> +       int ret;
-> +
-> +       ret = gpiochip_remove(&lg->gpio);
-> +       if (ret) {
-> +               dev_err(&pdev->dev, "Can't remove gpio chip: %d\n", ret);
-> +               return ret;
-> +       }
-
-The return value from gpiochip_remove() has been removed in v3.18-rc1
-so this will not compile.
-
-Yours,
-Linus Walleij
+-- 
+With best wishes
+Dmitry

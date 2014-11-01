@@ -1,60 +1,61 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Thu, 13 Nov 2014 16:49:30 +0000
-Subject: Re: [PATCH 1/7] ARM: dts: sunxi: Add regulator-boot-on property to ahci-5v regulator
-Message-Id: <20141113164930.GP20972@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="iq/fWD14IMVFWBCD"
+From: Alexandre Courbot <gnurou@gmail.com>
+Date: Sat, 01 Nov 2014 05:42:33 +0000
+Subject: Re: [PATCH 11/15] sound: soc: poodle: make use of new locomo GPIO interface
+Message-Id: <CAAVeFuKuBeoF0i4RpuXo=H1G4C6BfjC0hEUyN2TO02UM0DsHfg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
+ <1414454528-24240-12-git-send-email-dbaryshkov@gmail.com> <20141028145850.GU18557@sirena.org.uk>
+ <CAAVeFuKgARoMFzf+663iP6cULs93d4WSQS8ESjUb9VcxguWurA@mail.gmail.com>
+ <CACRpkdY-RDuxGMWe_SD613ovsEoHhxjP1+3T-m_zKQSx=mkFjA@mail.gmail.com> <CALT56yP6K-sXOGM4z-WRsvFVjOi-13wM+Ewqn6WpDmNB4xcOEg@mail.gmail.com>
+In-Reply-To: <CALT56yP6K-sXOGM4z-WRsvFVjOi-13wM+Ewqn6WpDmNB4xcOEg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Ji
 
+On Fri, Oct 31, 2014 at 6:58 PM, Dmitry Eremin-Solenikov
+<dbaryshkov@gmail.com> wrote:
+> 2014-10-31 12:52 GMT+03:00 Linus Walleij <linus.walleij@linaro.org>:
+>> On Wed, Oct 29, 2014 at 4:03 AM, Alexandre Courbot <gnurou@gmail.com> wrote:
+>>> On Tue, Oct 28, 2014 at 11:58 PM, Mark Brown <broonie@kernel.org> wrote:
+>>>> On Tue, Oct 28, 2014 at 03:02:04AM +0300, Dmitry Eremin-Solenikov wrote:
+>>>>> Since LoCoMo driver has been converted to provide proper gpiolib
+>>>>> interface, make poodle ASoC platform driver use gpiolib API.
+>>>>
+>>>> Please use subject lines matching the style for the subsystem.
+>>>>
+>>>>> +     ret = gpio_request_array(poodle_gpios, ARRAY_SIZE(poodle_gpios));
+>>>>> +     if (ret) {
+>>>>> +             dev_err(&pdev->dev, "gpio_request_array() failed: %d\n",
+>>>>> +                             ret);
+>>>>> +             return ret;
+>>>>> +     }
+>>>>
+>>>> I sense a need for devm_gpio_request_array() here.  Otherwise this looks
+>>>> fine - ideally it'd move to gpiod but moving to gpiolib is a clear win
+>>>> so no need to block on this.
+>>>
+>>> I wish Dmitry took the opportunity to move this driver to the gpiod
+>>> API, especially since doing so would be trivial for this driver.
+>>
+>> +1 on this.
+>>
+>> However this platform is not device tree, so this implies setting up
+>> a descriptor table for the affected driver(s) to work properly.
+>> See Documentation/gpio/board.txt
+>
+> I checked the gpiod interfaces after original suggestion by Alexandre.
+>
+> Introducing those mapping tables (much like pinctrl tables) look like
+> a duplicate effort if Russell will permit adding a DT support. So
+> I thought that I will reconsider gpiod/pinctrl/etc after fixing
+> LoCoMo, reiterating IRQ patches, possibly switching to COMMON_CLK
+> and (finally) thinking about device tree support.
 
---iq/fWD14IMVFWBCD
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Nov 13, 2014 at 10:31:43AM +0100, Hans de Goede wrote:
-> This avoids it getting briefly turned off between when the regulator gett=
-ing
-> registered and the ahci driver turning it back on, thus avoiding the disk
-> going into emergency head park mode.
->=20
-> Cc: Bruno Pr=E9mont <bonbons@linux-vserver.org>
-> Reported-and-tested-by: Bruno Pr=E9mont <bonbons@linux-vserver.org>
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-
-Applied, and split up the tags.
-
-Thanks!
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---iq/fWD14IMVFWBCD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUZOEaAAoJEBx+YmzsjxAgUsAQAI4y7FhjRpixo6vCOoBapNE1
-TV5uLjuvbckr3dyk/PWxXPk5IUjpKXqnbw/dXYaf6I2F7eNu6rE04MPlf93cUv1z
-x/JaN9eYviJyztow1Pf8M5WFQmapXKG6FE4Io2lYyqP0nLQbbUmTszKndqwUD6jk
-K7KvXGqBQlU7JMSCdnjJbfSKymnzChp07pn/04w+pKZ3IHeKBgQ3avUuqaS8k07B
-jsw1XTT3ZDqtcFy8QiZiQLVU+qtaqqY3HtaT0uei3NwPFRI+PNS6key63DDIqSPY
-mKV9phyYmf99T6IL2oZJeCGQbeWc40FHwErNYkMzwLIE/c0tBauQqNoTc0dAbuU6
-4mwncHYyUuJCJkbkwU21+EO6t3L5ioUgFVizD83taSKj1tr8xZnRBigHtBcyi+CD
-LgAvCvUCl8zATgC8HhgwJ6XV/dl/AcibpG/b2GHVZ0qSbMWzV4FTyGfXWFFTYKmP
-lJYSpX0Vk/ml3kdTzy1VqC6L/d42CPDR4D7KwIlzeBmucdgblGMdyEtxOFWfNmLH
-nkHgaZwY7r5+c33UtU8a0IcceckSJXklzEMzMJp0DmAuWhwjzfvgPTgKUBxFR0V3
-ad53x5U4A3i1ce/PGisTgjUX2Ljd3rpmsYdp6MQXzwLcyNr372JqH0oGk15d8Kg0
-MH14iHNh4Q9tG/vPtcIz
-=6a3R
------END PGP SIGNATURE-----
-
---iq/fWD14IMVFWBCD--
+Note that the mapping tables are likely not going to end up being
+huge, and taking that step will allow you to convert to the gpiod
+interface, something you would probably want to do later when adding
+DT support anyway. So at the end of the day there would be very little
+wasted effort: once converting to DT, just add the GPIO properties
+into the appropriate node, remove the mapping tables, and you're done.

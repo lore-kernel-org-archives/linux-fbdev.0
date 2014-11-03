@@ -1,73 +1,59 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 24 Nov 2014 11:47:49 +0000
-Subject: Re: [PATCH v2 1/5] video: omapdss: Add opa362 driver
-Message-Id: <54731AE5.7080607@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="asMv6T3AhxpSsONL8BhSXnENaI4SpaU7P"
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 03 Nov 2014 13:43:21 +0000
+Subject: Re: [PATCH 02/15] GPIO: port LoCoMo gpio support from old driver
+Message-Id: <CACRpkdb7v3LmOhbhQ9TPk1_bnLnpwizawW6RQvhQRLSjRewAaQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415830247-31633-1-git-send-email-marek@goldelico.com>
- <1415830247-31633-2-git-send-email-marek@goldelico.com>
- <54649B43.1000801@ti.com>
- <9FD016B8-4EA2-4A0D-B790-6494AB449B31@goldelico.com>
- <5464DF26.2010707@ti.com>
- <BF6765C1-8D5C-4ABA-8796-195058C82E17@goldelico.com>
-In-Reply-To: <BF6765C1-8D5C-4ABA-8796-195058C82E17@goldelico.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
+	<1414454528-24240-3-git-send-email-dbaryshkov@gmail.com>
+	<CACRpkdY7tRadod2vQfEytmw-ubaMAvr_=XTczD5bUMkqie0xkg@mail.gmail.com>
+	<CALT56yOgMUA7o2dzfHph=S2zkDV4zERzMh4ishpPwpAx7Cqj6Q@mail.gmail.com>
+In-Reply-To: <CALT56yOgMUA7o2dzfHph=S2zkDV4zERzMh4ishpPwpAx7Cqj6Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Input <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org" <alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo
 
---asMv6T3AhxpSsONL8BhSXnENaI4SpaU7P
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+On Fri, Oct 31, 2014 at 10:39 AM, Dmitry Eremin-Solenikov
+<dbaryshkov@gmail.com> wrote:
+> 2014-10-31 10:48 GMT+03:00 Linus Walleij <linus.walleij@linaro.org>:
+>> On Tue, Oct 28, 2014 at 1:01 AM, Dmitry Eremin-Solenikov
+>> <dbaryshkov@gmail.com> wrote:
+>>
+>>> Add gpiolib driver for gpio pins placed on the LoCoMo GA.
+>>>
+>>> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>>
+>
+> [skipped]
+>
+>> (etc, everywhere this pattern occurs).
+>>> +static void locomo_gpio_set(struct gpio_chip *chip,
+>>> +               unsigned offset, int value)
+>>> +{
+>>> +       struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
+>>> +       unsigned long flags;
+>>> +
+>>> +       spin_lock_irqsave(&lg->lock, flags);
+>>> +
+>>> +       __locomo_gpio_set(chip, offset, value);
+>>> +
+>>> +       spin_unlock_irqrestore(&lg->lock, flags);
+>>
+>> If you actually always have to be getting and releasing a spin lock around
+>> the register writes, contemplate using regmap-mmio because that
+>> is part of what it does.
+>>
+>> But is this locking really necessary?
+>
+> I have a custom of doing such locking and never having to think about
+> somebody breaking into RMW cycles.
+>
+> Also isn't regmap an overkill here? Wouldn't regmap also do a lock/unlock
+> around each register read/write/RMW?
 
-On 19/11/14 17:10, Dr. H. Nikolaus Schaller wrote:
+Yes that's the point: if you use regmap mmio you get the RMW-locking
+for free, with the regmap implementation.
 
->> You don't need to ask. The connector calls invert_vid_out_polarity
->> before enabling the output.
->=20
-> Unfortunately it doesn=92t. At least not always.
->=20
-> It does only for pdata systems but not for DT based systems:
->=20
-> 	if (!ddata->dev->of_node) {
-> 		in->ops.atv->set_type(in, ddata->connector_type);
-> 		in->ops.atv->invert_vid_out_polarity(in,
-> 			ddata->invert_polarity);
-> 	}
->=20
-> Not calling is in our case different from calling with ddata->invert_po=
-larity =3D=3D 0.
-
-Ah, sorry, my mistake. I should've read the code more carefully =3D).
-
-So, with DT only approach, those calls above are not supported. If you
-make the OPA driver DT only, you can remove those functions.
-
-You only need to set the invert-polarity property in the venc DT node.
-
- Tomi
-
-
-
---asMv6T3AhxpSsONL8BhSXnENaI4SpaU7P
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUcxrlAAoJEPo9qoy8lh71VfIP/1K809jW8yR4bjZJb3fbcU/F
-CxhFr1i6//Iwb2iadzBBP8mYzboTSHtRBBXQ0TS3A0+JPO8gAy0eblkR4wsEFbRa
-+7mYVu1bsrMqu9YDWghZvfwNpEIDfHMRu3Lq0sdPPLYTcxx/suero7rLUSDpocwJ
-2UB17hVPYDV6YP1XCIkB38MzAWDmJVAL3O3pspfLo/a8tfA5E+6ffkkMdYPhQTZG
-uiNB/FSu3I+RsuQUmsb6Q5RADNIIzzg882XLNG2Emsrfv5MHjqO9+sowDsVhgAuS
-OOWm8MY9BfohZiFUFk9ghA11LadqdPRAlOtNcg0W8WN9wEJ4Hfh9eLi15n3NKPTs
-I1oL8D5ab6JH/JiBw4h8eNcjtKQvDBJe4V+lolCYw5NnNQAsgpW9BCx4dIn2yTr8
-zH26VgGHJ+6npstDP63pWvwO3kw9ChjewzqClf/nIciHoU+3Tlfxu6i0EP+1ZOE3
-3WMJI5qw6zyCCfwigVpOI72g/9+4bqZQpet1ASqqWErrcpuSGZuUh7cykfiWmCj9
-mUxSKAzpF+NGeauKQz0ug560Wp45U11R1iO4mVWyO4bmrtl6BJiVCHFcvAHKFo09
-mgO3RLDIN49/KTHdhJ6cO7us1c0xaJ03bWrbaeKgdUE4k4IiqwC0oUkw0njhQBR1
-AfXetgHxat4hR0IyjHih
-=tfEx
------END PGP SIGNATURE-----
-
---asMv6T3AhxpSsONL8BhSXnENaI4SpaU7P--
+Yours,
+Linus Walleij

@@ -1,56 +1,42 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Thu, 13 Nov 2014 16:48:32 +0000
-Subject: Re: [PATCH 7/7] ARM: dts: sun6i: Add support for the status led
-Message-Id: <20141113164832.GO20972@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="E+IgQzR66AIOcbjA"
+From: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+Date: Thu, 06 Nov 2014 22:10:25 +0000
+Subject: Re: [PATCH 2/2] backlight: pwm: clean up pwm requested using legacy API
+Message-Id: <545BF1D1.30304@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
- <1415871109-28332-7-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415871109-28332-7-git-send-email-hdegoede@redhat.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1413035186-11771-1-git-send-email-vladimir_zapolskiy@mentor.com> <1413035186-11771-3-git-send-email-vladimir_zapolskiy@mentor.com> <20141011142156.GC11456@kroah.com>
+In-Reply-To: <20141011142156.GC11456@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg KH <gregkh@linuxfoundation.org>, Thierry Reding <thierry.reding@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
 
+Hello Greg, Thierry,
 
---E+IgQzR66AIOcbjA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 11.10.2014 17:21, Greg KH wrote:
+> On Sat, Oct 11, 2014 at 04:46:26PM +0300, Vladimir Zapolskiy wrote:
+>> If PWM device is requested by means of legacy API pwm_request(), its
+>> resources are not freed on module unbind, which may cause an oops on
+>> access, e.g. by reading /sys/kernel/debug/pwm.
+>>
+>> Reported-by: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
+>> Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+>> ---
+>>  drivers/video/backlight/pwm_bl.c |    4 ++++
+>>  1 file changed, 4 insertions(+)
+> 
+> <formletter>
+> 
+> This is not the correct way to submit patches for inclusion in the
+> stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
+> for how to do this properly.
+> 
+> </formletter>
+> --
 
-On Thu, Nov 13, 2014 at 10:31:49AM +0100, Hans de Goede wrote:
-> The Mele M9 / A1000G quad has a blue status led, add support for this.
->=20
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+could you please review the change? I believe it would be nice to have
+oops fix in v3.18.
 
-Applied, with a newline after the pnictrl node.
-
-Thanks!
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---E+IgQzR66AIOcbjA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUZODgAAoJEBx+YmzsjxAgnV0P/2Y8bStzyoU4qShIVD0WZmIS
-xWy0Ok/OsRC4sMbGgEKyws74gc+52GYBUcbcgqJfhsTVf4zmc+XicB8YrwBK5+mb
-iaOVsnJTJFKhNGMqFpfZWxmCE9Mbots8f4RX4Q0dTTM7xSGyGhz0ZD2JNVhzE+Io
-NKd4G9hAyZ1NN82RR6KLl+au5wbEIAs21StSnLFZcpXmJzuo2FQutmHO8lJ50Gm5
-TuvXCUDnhA0NE4M1WrKRdYZkVSmFL74PkXBd5hC1JcdVuMNylFbGB3h6B3H/wyWU
-J4f5BIhZTGrysPNmIHaDG0c4EfzV9VPH8XdxHlvDvemMy1oGH/at2FtPqxxRTbUG
-CfjXP64yJW4nfg060t5Fu4ZuTzStXYHiDua9t+iLHBRRhF34GJAleipal8mwP2qP
-pfFY+hvbcrSeKgplYWRiC0OBW4rOJCe42GKxJSKervujDxwy3o9IBBWxkU3j958+
-TZXUMCJ9TqUA5LOZqRsoiCaCU+7DIFFAL3V4wTrEHmj0f/M57fx7AEqmyOXdvssP
-qvFoO4g0qADweAeyHpX74RRQZKyRzvSZ4mGYdKPyrtfGZscBKsKSqal5t+QfcGEQ
-hKsbLO0Clh95J2JGI03GxMWDSXRIYFSY6PX4r247aPybs03XT0JafRKRKos2Cyvk
-uQtyIUbPWNbd4EXGm6fE
-=SYSW
------END PGP SIGNATURE-----
-
---E+IgQzR66AIOcbjA--
+--
+With best wishes,
+Vladimir

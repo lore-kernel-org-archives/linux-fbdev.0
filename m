@@ -1,99 +1,92 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 12 Nov 2014 16:15:50 +0000
-Subject: [PATCH v5 3/5] simplefb: formalize pseudo palette handling
-Message-Id: <1415808952-23549-4-git-send-email-hdegoede@redhat.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Thu, 06 Nov 2014 07:41:16 +0000
+Subject: [PATCH RESEND 4/5] pcmcia: sa1100: make use of device clock
+Message-Id: <1415259677-18770-5-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-From: Luc Verhaegen <libv@skynet.be>
+Use per-device clock (instead of calling cpufreq_get(0), which can
+return 0 if no cpu frequency driver is selected) to program timings.
 
-Add a proper struct describing simplefb private data, with the palette in there,
-instead of directly storing the palette in the fb_info->par pointer.
-
-Signed-off-by: Luc Verhaegen <libv@skynet.be>
-Acked-by: Stephen Warren <swarren@nvidia.com>
-[hdegoede@redhat.com: drop unnecessary void * cast]
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
-Acked-by: Grant Likely <grant.likely@linaro.org>
---
-Changes in v5:
--Improved commit message
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- drivers/video/fbdev/simplefb.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ drivers/pcmcia/sa1100_generic.c |  1 +
+ drivers/pcmcia/sa11xx_base.c    | 14 ++++++++++++--
+ 2 files changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index 210f3a0..ec112c1 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -41,6 +41,8 @@ static struct fb_var_screeninfo simplefb_var = {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
+diff --git a/drivers/pcmcia/sa1100_generic.c b/drivers/pcmcia/sa1100_generic.c
+index ff8a027..d2ab060 100644
+--- a/drivers/pcmcia/sa1100_generic.c
++++ b/drivers/pcmcia/sa1100_generic.c
+@@ -93,6 +93,7 @@ static int sa11x0_drv_pcmcia_remove(struct platform_device *dev)
+ 	for (i = 0; i < sinfo->nskt; i++)
+ 		soc_pcmcia_remove_one(&sinfo->skt[i]);
  
-+#define PSEUDO_PALETTE_SIZE 16
-+
- static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 			      u_int transp, struct fb_info *info)
- {
-@@ -50,7 +52,7 @@ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 	u32 cb = blue >> (16 - info->var.blue.length);
- 	u32 value;
- 
--	if (regno >= 16)
-+	if (regno >= PSEUDO_PALETTE_SIZE)
- 		return -EINVAL;
- 
- 	value = (cr << info->var.red.offset) |
-@@ -163,11 +165,16 @@ static int simplefb_parse_pd(struct platform_device *pdev,
++	clk_put(sinfo->clk);
+ 	kfree(sinfo);
  	return 0;
  }
- 
-+struct simplefb_par {
-+	u32 palette[PSEUDO_PALETTE_SIZE];
-+};
-+
- static int simplefb_probe(struct platform_device *pdev)
+diff --git a/drivers/pcmcia/sa11xx_base.c b/drivers/pcmcia/sa11xx_base.c
+index 54d3089..6dd94bb 100644
+--- a/drivers/pcmcia/sa11xx_base.c
++++ b/drivers/pcmcia/sa11xx_base.c
+@@ -135,14 +135,16 @@ sa1100_pcmcia_frequency_change(struct soc_pcmcia_socket *skt,
+ static int
+ sa1100_pcmcia_set_timing(struct soc_pcmcia_socket *skt)
  {
- 	int ret;
- 	struct simplefb_params params;
- 	struct fb_info *info;
-+	struct simplefb_par *par;
- 	struct resource *mem;
- 
- 	if (fb_get_options("simplefb", NULL))
-@@ -188,11 +195,13 @@ static int simplefb_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	info = framebuffer_alloc(sizeof(u32) * 16, &pdev->dev);
-+	info = framebuffer_alloc(sizeof(struct simplefb_par), &pdev->dev);
- 	if (!info)
- 		return -ENOMEM;
- 	platform_set_drvdata(pdev, info);
- 
-+	par = info->par;
+-	return sa1100_pcmcia_set_mecr(skt, cpufreq_get(0));
++	unsigned long clk = clk_get_rate(skt->clk);
 +
- 	info->fix = simplefb_fix;
- 	info->fix.smem_start = mem->start;
- 	info->fix.smem_len = resource_size(mem);
-@@ -225,7 +234,7 @@ static int simplefb_probe(struct platform_device *pdev)
- 		framebuffer_release(info);
- 		return -ENODEV;
- 	}
--	info->pseudo_palette = (void *)(info + 1);
-+	info->pseudo_palette = par->palette;
++	return sa1100_pcmcia_set_mecr(skt, clk / 1000);
+ }
  
- 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
- 			     info->fix.smem_start, info->fix.smem_len,
+ static int
+ sa1100_pcmcia_show_timing(struct soc_pcmcia_socket *skt, char *buf)
+ {
+ 	struct soc_pcmcia_timing timing;
+-	unsigned int clock = cpufreq_get(0);
++	unsigned int clock = clk_get_rate(skt->clk);
+ 	unsigned long mecr = MECR;
+ 	char *p = buf;
+ 
+@@ -218,6 +220,11 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
+ 	struct skt_dev_info *sinfo;
+ 	struct soc_pcmcia_socket *skt;
+ 	int i, ret = 0;
++	struct clk *clk;
++
++	clk = clk_get(dev, NULL);
++	if (IS_ERR(clk))
++		return -ENODEV;
+ 
+ 	sa11xx_drv_pcmcia_ops(ops);
+ 
+@@ -226,12 +233,14 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
+ 		return -ENOMEM;
+ 
+ 	sinfo->nskt = nr;
++	sinfo->clk = clk;
+ 
+ 	/* Initialize processor specific parameters */
+ 	for (i = 0; i < nr; i++) {
+ 		skt = &sinfo->skt[i];
+ 
+ 		skt->nr = first + i;
++		skt->clk = clk;
+ 		soc_pcmcia_init_one(skt, ops, dev);
+ 
+ 		ret = sa11xx_drv_pcmcia_add_one(skt);
+@@ -242,6 +251,7 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
+ 	if (ret) {
+ 		while (--i >= 0)
+ 			soc_pcmcia_remove_one(&sinfo->skt[i]);
++		clk_put(clk);
+ 		kfree(sinfo);
+ 	} else {
+ 		dev_set_drvdata(dev, sinfo);
 -- 
-2.1.0
+2.1.1
 

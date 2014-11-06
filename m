@@ -1,143 +1,34 @@
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Mon, 24 Nov 2014 23:05:33 +0000
-Subject: [PATCH V2 3/6] fbdev: sa1100fb: make use of device clock
-Message-Id: <1416870336-30114-4-git-send-email-dbaryshkov@gmail.com>
+Date: Thu, 06 Nov 2014 07:41:14 +0000
+Subject: [PATCH RESEND 2/5] arm: sa1100: add a clock alias for sa1111 pcmcia device
+Message-Id: <1415259677-18770-3-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Use per-device clock (instead of calling cpufreq_get(0), which can
-return 0 if no cpu frequency driver is selected) to program timings.
+SA-1111 uses internal MMIO space offsets as a device name, so device
+name for sa1111 pcmcia is 1800 (PCMCIA is at offset 0x1800).
 
 Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/sa1100fb.c | 30 +++++++++++++++++++++++-------
- drivers/video/fbdev/sa1100fb.h |  1 +
- 2 files changed, 24 insertions(+), 7 deletions(-)
+ arch/arm/mach-sa1100/clock.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-index 580c444e..2133cf1 100644
---- a/drivers/video/fbdev/sa1100fb.c
-+++ b/drivers/video/fbdev/sa1100fb.c
-@@ -178,6 +178,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/mutex.h>
- #include <linux/io.h>
-+#include <linux/clk.h>
- 
- #include <video/sa1100fb.h>
- 
-@@ -413,9 +414,9 @@ sa1100fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 		var->transp.offset);
- 
- #ifdef CONFIG_CPU_FREQ
--	dev_dbg(fbi->dev, "dma period = %d ps, clock = %d kHz\n",
-+	dev_dbg(fbi->dev, "dma period = %d ps, clock = %ld kHz\n",
- 		sa1100fb_display_dma_period(var),
--		cpufreq_get(smp_processor_id()));
-+		clk_get_rate(fbi->clk) / 1000);
- #endif
- 
- 	return 0;
-@@ -586,9 +587,10 @@ static struct fb_ops sa1100fb_ops = {
-  * Calculate the PCD value from the clock rate (in picoseconds).
-  * We take account of the PPCR clock setting.
-  */
--static inline unsigned int get_pcd(unsigned int pixclock, unsigned int cpuclock)
-+static inline unsigned int get_pcd(struct sa1100fb_info *fbi,
-+		unsigned int pixclock)
- {
--	unsigned int pcd = cpuclock / 100;
-+	unsigned int pcd = clk_get_rate(fbi->clk) / 100 / 1000;
- 
- 	pcd *= pixclock;
- 	pcd /= 10000000;
-@@ -667,7 +669,7 @@ static int sa1100fb_activate_var(struct fb_var_screeninfo *var, struct sa1100fb_
- 		LCCR2_BegFrmDel(var->upper_margin) +
- 		LCCR2_EndFrmDel(var->lower_margin);
- 
--	pcd = get_pcd(var->pixclock, cpufreq_get(0));
-+	pcd = get_pcd(fbi, var->pixclock);
- 	new_regs.lccr3 = LCCR3_PixClkDiv(pcd) | fbi->inf->lccr3 |
- 		(var->sync & FB_SYNC_HOR_HIGH_ACT ? LCCR3_HorSnchH : LCCR3_HorSnchL) |
- 		(var->sync & FB_SYNC_VERT_HIGH_ACT ? LCCR3_VrtSnchH : LCCR3_VrtSnchL);
-@@ -781,6 +783,9 @@ static void sa1100fb_enable_controller(struct sa1100fb_info *fbi)
- 	fbi->palette_cpu[0] &= 0xcfff;
- 	fbi->palette_cpu[0] |= palette_pbs(&fbi->fb.var);
- 
-+	/* enable LCD controller clock */
-+	clk_prepare_enable(fbi->clk);
-+
- 	/* Sequence from 11.7.10 */
- 	writel_relaxed(fbi->reg_lccr3, fbi->base + LCCR3);
- 	writel_relaxed(fbi->reg_lccr2, fbi->base + LCCR2);
-@@ -825,6 +830,9 @@ static void sa1100fb_disable_controller(struct sa1100fb_info *fbi)
- 
- 	schedule_timeout(20 * HZ / 1000);
- 	remove_wait_queue(&fbi->ctrlr_wait, &wait);
-+
-+	/* disable LCD controller clock */
-+	clk_disable_unprepare(fbi->clk);
- }
- 
- /*
-@@ -1003,7 +1011,6 @@ sa1100fb_freq_transition(struct notifier_block *nb, unsigned long val,
- 			 void *data)
- {
- 	struct sa1100fb_info *fbi = TO_INF(nb, freq_transition);
--	struct cpufreq_freqs *f = data;
- 	u_int pcd;
- 
- 	switch (val) {
-@@ -1012,7 +1019,7 @@ sa1100fb_freq_transition(struct notifier_block *nb, unsigned long val,
- 		break;
- 
- 	case CPUFREQ_POSTCHANGE:
--		pcd = get_pcd(fbi->fb.var.pixclock, f->new);
-+		pcd = get_pcd(fbi, fbi->fb.var.pixclock);
- 		fbi->reg_lccr3 = (fbi->reg_lccr3 & ~0xff) | LCCR3_PixClkDiv(pcd);
- 		set_ctrlr_state(fbi, C_ENABLE_CLKCHANGE);
- 		break;
-@@ -1219,6 +1226,13 @@ static int sa1100fb_probe(struct platform_device *pdev)
- 	if (!fbi)
- 		goto failed;
- 
-+	fbi->clk = clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(fbi->clk)) {
-+		ret = PTR_ERR(fbi->clk);
-+		fbi->clk = NULL;
-+		goto failed;
-+	}
-+
- 	fbi->base = ioremap(res->start, resource_size(res));
- 	if (!fbi->base)
- 		goto failed;
-@@ -1271,6 +1285,8 @@ static int sa1100fb_probe(struct platform_device *pdev)
-  failed:
- 	if (fbi)
- 		iounmap(fbi->base);
-+	if (fbi->clk)
-+		clk_put(fbi->clk);
- 	kfree(fbi);
- 	release_mem_region(res->start, resource_size(res));
- 	return ret;
-diff --git a/drivers/video/fbdev/sa1100fb.h b/drivers/video/fbdev/sa1100fb.h
-index fc5d429..0139d13 100644
---- a/drivers/video/fbdev/sa1100fb.h
-+++ b/drivers/video/fbdev/sa1100fb.h
-@@ -68,6 +68,7 @@ struct sa1100fb_info {
- #endif
- 
- 	const struct sa1100fb_mach_info *inf;
-+	struct clk *clk;
+diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
+index 53f750d..03c75a8 100644
+--- a/arch/arm/mach-sa1100/clock.c
++++ b/arch/arm/mach-sa1100/clock.c
+@@ -124,6 +124,8 @@ static struct clk_lookup sa11xx_clkregs[] = {
+ 	CLKDEV_INIT("sa1100-rtc", NULL, NULL),
+ 	CLKDEV_INIT("sa11x0-fb", NULL, &clk_cpu),
+ 	CLKDEV_INIT("sa11x0-pcmcia", NULL, &clk_cpu),
++	/* sa1111 names devices using internal offsets, PCMCIA is at 0x1800 */
++	CLKDEV_INIT("1800", NULL, &clk_cpu),
  };
  
- #define TO_INF(ptr,member)	container_of(ptr,struct sa1100fb_info,member)
+ static int __init sa11xx_clk_init(void)
 -- 
-2.1.3
+2.1.1
 

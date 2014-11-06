@@ -1,48 +1,114 @@
-From: Grant Likely <grant.likely@linaro.org>
-Date: Tue, 11 Nov 2014 21:54:30 +0000
-Subject: Re: [linux-sunxi] Re: [PATCH v4 0/5] simplefb: add clock =?iso-8859-1?Q?handling=0D?= code
-Message-Id: <20141111215430.3FA41C41610@trevor.secretlab.ca>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Thu, 06 Nov 2014 07:41:13 +0000
+Subject: [PATCH RESEND 1/5] arm: sa1100: add cpu clock
+Message-Id: <1415259677-18770-2-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
- <54534523.8080801@ti.com> <545B8338.8060908@ti.com>
- <545B8E29.90807@redhat.com>
-In-Reply-To: <545B8E29.90807@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Thu, 06 Nov 2014 16:05:13 +0100
-, Hans de Goede <hdegoede@redhat.com>
- wrote:
-> Hi,
-> 
-> On 11/06/2014 03:18 PM, Tomi Valkeinen wrote:
-> > On 31/10/14 10:15, Tomi Valkeinen wrote:
-> >> Hi Hans,
-> >>
-> >> On 22/10/14 19:45, Hans de Goede wrote:
-> >>
-> >>> -We will add a clocks property to the simplefb devicetree bindings, so
-> >>>  that u-boot setup framebuffers passed to the kernel (for early console
-> >>>  support) can properly list the clocks used, and simplefb can claim them to
-> >>>  avoid them getting turned off, thereby breaking the early console
-> >>
-> >> Perhaps this has been discussed earlier, but I started to wonder if
-> >> managing clocks is enough.
-> >>
-> >> What about regulators (to power the LCD), gpios (to keep the LCD
-> >> enabled) and pinctrl (for video signals)? I guess any those could be
-> >> reset by the kernel if no driver uses them.
+Both SA1100 framebuffer and PCMCIA drivers require knowledge of cpu
+frequency to correctly program timings.  Currently they receive timing
+information by calling cpufreq_get(0).  However if cpu frequency driver
+is not enabled (e.g. due to unsupported DRAM chip/board on sa1110)
+cpufreq_get(0) returns 0, causing incorrect timings to be programmed.
 
-I'm okay with extending the binding for each of these dependencies
-/providing/ it can be argued that the way simplefb uses it is merely to
-inhibit the kernel from making any changes to the resource, and then
-releasing the resource when it is done. Each resource type will need to
-be taken on a case-by-case basis since each has it's own behaviour. I'll
-want to see that the simplefb driver doesn't need to do anything special
-per device, and that the resource binding is well established and
-generic.
+Add cpu clock returning cpu frequency, to be used by sa11x0 fb and
+pcmcia drivers.
 
-g.
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/arm/mach-sa1100/clock.c | 41 ++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 34 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
+index 9fa6a99..53f750d 100644
+--- a/arch/arm/mach-sa1100/clock.c
++++ b/arch/arm/mach-sa1100/clock.c
+@@ -15,10 +15,12 @@
+ #include <linux/clkdev.h>
+ 
+ #include <mach/hardware.h>
++#include <mach/generic.h>
+ 
+ struct clkops {
+ 	void			(*enable)(struct clk *);
+ 	void			(*disable)(struct clk *);
++	unsigned long		(*get_rate)(struct clk *);
+ };
+ 
+ struct clk {
+@@ -33,13 +35,6 @@ struct clk clk_##_name = {				\
+ 
+ static DEFINE_SPINLOCK(clocks_lock);
+ 
+-/* Dummy clk routine to build generic kernel parts that may be using them */
+-unsigned long clk_get_rate(struct clk *clk)
+-{
+-	return 0;
+-}
+-EXPORT_SYMBOL(clk_get_rate);
+-
+ static void clk_gpio27_enable(struct clk *clk)
+ {
+ 	/*
+@@ -58,6 +53,19 @@ static void clk_gpio27_disable(struct clk *clk)
+ 	GAFR &= ~GPIO_32_768kHz;
+ }
+ 
++static void clk_cpu_enable(struct clk *clk)
++{
++}
++
++static void clk_cpu_disable(struct clk *clk)
++{
++}
++
++static unsigned long clk_cpu_get_rate(struct clk *clk)
++{
++	return sa11x0_getspeed(0) * 1000;
++}
++
+ int clk_enable(struct clk *clk)
+ {
+ 	unsigned long flags;
+@@ -87,16 +95,35 @@ void clk_disable(struct clk *clk)
+ }
+ EXPORT_SYMBOL(clk_disable);
+ 
++unsigned long clk_get_rate(struct clk *clk)
++{
++	if (clk && clk->ops && clk->ops->get_rate)
++		return clk->ops->get_rate(clk);
++
++	return 0;
++}
++EXPORT_SYMBOL(clk_get_rate);
++
+ const struct clkops clk_gpio27_ops = {
+ 	.enable		= clk_gpio27_enable,
+ 	.disable	= clk_gpio27_disable,
+ };
+ 
++const struct clkops clk_cpu_ops = {
++	.enable		= clk_cpu_enable,
++	.disable	= clk_cpu_disable,
++	.get_rate	= clk_cpu_get_rate,
++};
++
+ static DEFINE_CLK(gpio27, &clk_gpio27_ops);
+ 
++static DEFINE_CLK(cpu, &clk_cpu_ops);
++
+ static struct clk_lookup sa11xx_clkregs[] = {
+ 	CLKDEV_INIT("sa1111.0", NULL, &clk_gpio27),
+ 	CLKDEV_INIT("sa1100-rtc", NULL, NULL),
++	CLKDEV_INIT("sa11x0-fb", NULL, &clk_cpu),
++	CLKDEV_INIT("sa11x0-pcmcia", NULL, &clk_cpu),
+ };
+ 
+ static int __init sa11xx_clk_init(void)
+-- 
+2.1.1
 

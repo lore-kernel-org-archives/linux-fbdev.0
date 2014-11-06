@@ -1,45 +1,43 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 13 Nov 2014 09:31:47 +0000
-Subject: [PATCH 5/7] ARM: dts: sun7i: Add simplefb node
-Message-Id: <1415871109-28332-5-git-send-email-hdegoede@redhat.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Thu, 06 Nov 2014 07:41:17 +0000
+Subject: [PATCH RESEND 5/5] pcmcia: sa1111: provide device clock
+Message-Id: <1415259677-18770-6-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Add a simplefb template node for u-boot to further fill and activate.
+Both pxa2xx (long ago) and sa1100 (now) make use of clock device to get
+the cpu speed. Make sa1111 glue code provide clock to platform layer.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- arch/arm/boot/dts/sun7i-a20.dtsi | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/pcmcia/sa1111_generic.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/boot/dts/sun7i-a20.dtsi b/arch/arm/boot/dts/sun7i-a20.dtsi
-index 81d4e55..3ef078f 100644
---- a/arch/arm/boot/dts/sun7i-a20.dtsi
-+++ b/arch/arm/boot/dts/sun7i-a20.dtsi
-@@ -64,6 +64,18 @@
- 		serial7 = &uart7;
- 	};
+diff --git a/drivers/pcmcia/sa1111_generic.c b/drivers/pcmcia/sa1111_generic.c
+index 65b02c3..c5988be 100644
+--- a/drivers/pcmcia/sa1111_generic.c
++++ b/drivers/pcmcia/sa1111_generic.c
+@@ -145,6 +145,9 @@ int sa1111_pcmcia_add(struct sa1111_dev *dev, struct pcmcia_low_level *ops,
+ 			return -ENOMEM;
  
-+	chosen {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		framebuffer0 {
-+			compatible = "simple-framebuffer";
-+			clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
-+			status = "disabled";
-+		};
-+	};
-+
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
+ 		s->soc.nr = ops->first + i;
++		s->soc.clk = clk_get(&dev->dev, NULL);
++		if (IS_ERR(s->soc.clk))
++			return -ENODEV;
+ 		soc_pcmcia_init_one(&s->soc, ops, &dev->dev);
+ 		s->dev = dev;
+ 		if (s->soc.nr) {
+@@ -220,6 +223,7 @@ static int pcmcia_remove(struct sa1111_dev *dev)
+ 	for (; s; s = next) {
+ 		next = s->next;
+ 		soc_pcmcia_remove_one(&s->soc);
++		clk_put(s->soc.clk);
+ 		kfree(s);
+ 	}
+ 
 -- 
-2.1.0
+2.1.1
 

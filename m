@@ -1,23 +1,19 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Fri, 07 Nov 2014 13:47:36 +0000
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 10 Nov 2014 10:01:29 +0000
 Subject: Re: [PATCH 2/2] backlight: pwm: clean up pwm requested using legacy API
-Message-Id: <20141107134735.GA31950@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="n8g4imXOkfNTN/H1"
+Message-Id: <20141110100129.GK21424@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1413035186-11771-1-git-send-email-vladimir_zapolskiy@mentor.com>
  <1413035186-11771-3-git-send-email-vladimir_zapolskiy@mentor.com>
 In-Reply-To: <1413035186-11771-3-git-send-email-vladimir_zapolskiy@mentor.com>
-To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Cc: linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, stable@vger.kernel.org
-
-
---n8g4imXOkfNTN/H1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+MIME-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
+To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+Cc: linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, stable@vger.kernel.org
 
-On Sat, Oct 11, 2014 at 04:46:26PM +0300, Vladimir Zapolskiy wrote:
+On Sat, 11 Oct 2014, Vladimir Zapolskiy wrote:
+
 > If PWM device is requested by means of legacy API pwm_request(), its
 > resources are not freed on module unbind, which may cause an oops on
 > access, e.g. by reading /sys/kernel/debug/pwm.
@@ -28,30 +24,43 @@ On Sat, Oct 11, 2014 at 04:46:26PM +0300, Vladimir Zapolskiy wrote:
 >  drivers/video/backlight/pwm_bl.c |    4 ++++
 >  1 file changed, 4 insertions(+)
 
-Hopefully this can soon go away when all users of the legacy API have
-been converted. Until then:
+Applied with Thierry's Ack.
 
-Acked-by: Thierry Reding <thierry.reding@gmail.com>
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
+wm_bl.c
+> index dd7aaf7..40770dd 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -34,6 +34,7 @@ struct pwm_bl_data {
+>  	struct regulator	*power_supply;
+>  	struct gpio_desc	*enable_gpio;
+>  	unsigned int		scale;
+> +	bool			legacy;
+>  	int			(*notify)(struct device *,
+>  					  int brightness);
+>  	void			(*notify_after)(struct device *,
+> @@ -274,6 +275,7 @@ static int pwm_backlight_probe(struct platform_device=
+ *pdev)
+>  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
+>  	if (IS_ERR(pb->pwm) && !pdev->dev.of_node) {
+>  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+> +		pb->legacy =3D true;
+>  		pb->pwm =3D pwm_request(data->pwm_id, "pwm-backlight");
+>  	}
+> =20
+> @@ -339,6 +341,8 @@ static int pwm_backlight_remove(struct platform_devic=
+e *pdev)
+> =20
+>  	if (pb->exit)
+>  		pb->exit(&pdev->dev);
+> +	if (pb->legacy)
+> +		pwm_free(pb->pwm);
+> =20
+>  	return 0;
+>  }
 
---n8g4imXOkfNTN/H1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJUXM13AAoJEN0jrNd/PrOhPV0P/Ro6JoXbveNYGPOmHjVLRG9A
-5sUV5KSU4dkszYcMhQElvarLMvAEnp5CTuRLGdf5Oev0XNZZHTsmdOPc0KqnP5cn
-DBT1FrCjbO1TVn/czFDBMk8K5vOzyyXXv7EnQrBhxjg0Nq6SqjaVwWKdis4icizT
-mFPEUNWBzDRI93iu2eh3/CbSClzFZ1bkb0AMQb1it/1LoBELRRSd/ywWU67V0yZz
-NNVcnnUUwI0quWbKg1g99Z2cuQXNLJylA59rXqBcSeja34ED6awOPObnSoYRln29
-lEQ3oMjCiCvC1YhwwAgFxpeX3P5AYcYUtc72OUcqsKa4AKjPla3ZJQCle3sKLD4v
-HH3q6t40sZxedh6SRXGF32FcwMnrxd1anpt0fKgxG3FG+ei6VxZ7fGlobfwuSW0c
-Ao+cjO5p6NH/bWkl2ED36cbHI4alXET05WEPOgZ3F4g82BO07R5GLtb2m1kZtGps
-18BebmBmXLH+lMABPitXKmeTnccv2igmmXHxadwblMvJrna+8KwRvejmoudeF0eS
-j+oZTBjUrZDMSlgZckUR2TmfsrRN3549pMXbPv2aebyJJXGIFwZwNzjJGB8JG9dD
-W291vTefiH27DYWTKM/KgbaHZHLffW2vNCZ1YnJLa2PwiybJaEMLzIW9Lcoxv/gs
-MccTLZKZp+uy5NYjcB+z
-=ZXiE
------END PGP SIGNATURE-----
-
---n8g4imXOkfNTN/H1--
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

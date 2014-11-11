@@ -1,178 +1,61 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Fri, 21 Nov 2014 14:36:04 +0000
-Subject: Re: [PATCH 2/2] dt-bindings: simplefb-sunxi: Add sunxi simplefb extensions
-Message-Id: <20141121143604.GF4752@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="xkXJwpr35CY/Lc3I"
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 11 Nov 2014 16:15:30 +0000
+Subject: Re: [linux-sunxi] Re: [PATCH 4/4] simplefb: add clock handling code
+Message-Id: <20141111161530.3FBF8C416AF@trevor.secretlab.ca>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1416224086-5698-1-git-send-email-hdegoede@redhat.com>
- <1416224086-5698-3-git-send-email-hdegoede@redhat.com>
- <20141117124721.GQ6414@lukather>
- <CACxGe6vqiC08sP+o3bduGfvUdwRtHm8+_7EdZccJjS86qVKvxQ@mail.gmail.com>
- <20141117155514.GU6414@lukather>
- <CACxGe6tqRS=oCeqbrez86uLLXtQ_C4ETEesNqgxKGb38QOQ8SQ@mail.gmail.com>
-In-Reply-To: <CACxGe6tqRS=oCeqbrez86uLLXtQ_C4ETEesNqgxKGb38QOQ8SQ@mail.gmail.com>
+References: <20140929101805.GB26008@ulmo> <20141001124800.GA21733@ulmo>
+ <20141001170517.GF4273@sirena.org.uk> <542C3934.3040409@redhat.com>
+ <CAKON4OxzerMyuza-GSfmYiLMqA=Y3HOXko7a8rOcP_8PkHVF3w@mail.gmail.com>
+ <542C4404.8040501@wwwdotorg.org> <542CF3C3.2050708@redhat.com>
+ <CAKON4Oy8sZ-d6JzWLi7pUeNFE5ge0fr5Tgoc_PSpKcOoiN-0yQ@mail.gmail.com>
+ <542D476D.50004@redhat.com>
+ <CAKON4OwOFVFZjxN-SJpDJLcyCpNOT4_mjjr9OpgGXmTYvZwT+A@mail.gmail.com>
+ <542D4FB9.6090805@redhat.com>
+ <CAKON4Oyb3KBWhGgKfwNop7+cwR=p=ZpVs-jfH0iQwm5scfOJ-A@mail.gmail.com>
+ <542D5444.8090903@redhat.com>
+ <CAKON4OxTmNRxSJum17RZGLLku5dAFPauzqyP0BOF-VC=bD=Hng@mail.gmail.com>
+ <542D5C74.4050602@redhat.com>
+ <CAKON4OxHeHszmcbMw_LRJbcaFW5JP7Atsa4RMRwWfqMrCueAnQ@mail.gmail.com>
+ <542D5F62.60907@redhat.com>
+ <CAKON4Oz8mL5jGzBHZeznd5NbPqq93q7PpTDqHHcV_HYSfqBVHA@mail.gmail.com>
+ <542D6633.20907@redhat.com>
+ <CAKON4OwMf-zXC_B=VqdVNrD_ExC3zGiGUm4j5KKgS-U4cPB2zg@mail.gmail.com>
+ <CAGRGNgUUG6TOzC5YJgqqKfCM_iK9KcDXW9DPEr1P5OoO1qwd8w@mail.gm!>
+In-Reply-To: <542E56AB.40208@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-
---xkXJwpr35CY/Lc3I
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Nov 19, 2014 at 02:05:48PM +0000, Grant Likely wrote:
-> On Mon, Nov 17, 2014 at 3:55 PM, Maxime Ripard
-> <maxime.ripard@free-electrons.com> wrote:
-> > On Mon, Nov 17, 2014 at 01:39:18PM +0000, Grant Likely wrote:
-> >> On Mon, Nov 17, 2014 at 12:47 PM, Maxime Ripard
-> >> <maxime.ripard@free-electrons.com> wrote:
-> >> > On Mon, Nov 17, 2014 at 12:34:46PM +0100, Hans de Goede wrote:
-> >> >> If pre-filled framebuffer nodes are used, the firmware may need ext=
-ra
-> >> >> properties to find the right node. This documents the properties to=
- use
-> >> >> for this on sunxi platforms.
-> >> >>
-> >> >> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> >> >> ---
-> >> >>  .../bindings/video/simple-framebuffer-sunxi.txt    | 33 ++++++++++=
-++++++++++++
-> >> >>  1 file changed, 33 insertions(+)
-> >> >>  create mode 100644 Documentation/devicetree/bindings/video/simple-=
-framebuffer-sunxi.txt
-> >> >>
-> >> >> diff --git a/Documentation/devicetree/bindings/video/simple-framebu=
-ffer-sunxi.txt b/Documentation/devicetree/bindings/video/simple-framebuffer=
--sunxi.txt
-> >> >> new file mode 100644
-> >> >> index 0000000..84ca264
-> >> >> --- /dev/null
-> >> >> +++ b/Documentation/devicetree/bindings/video/simple-framebuffer-su=
-nxi.txt
-> >> >> @@ -0,0 +1,33 @@
-> >> >> +Sunxi specific Simple Framebuffer bindings
-> >> >> +
-> >> >> +This binding documents sunxi specific extensions to the simple-fra=
-mebuffer
-> >> >> +bindings. The sunxi simplefb u-boot code relies on the devicetree =
-containing
-> >> >> +pre-populated simplefb nodes.
-> >> >> +
-> >> >> +These extensions are intended so that u-boot can select the right =
-node based
-> >> >> +on which pipeline and output is being used. As such they are solel=
-y intended
-> >> >> +for firmware / bootloader use, and the OS should ignore them.
-> >> >> +
-> >> >> +Required properties:
-> >> >> +- compatible: "sunxi,framebuffer"
-> >> >> +- sunxi,pipeline:
-> >> >> +  <0> for the de_be0 -> lcdc0 -> output pipeline
-> >> >> +  <1> for the de_be1 -> lcdc1 -> output pipeline
-> >> >> +- sunxi,output: One of: "hdmi", "lcd", "vga", and "composite"
-> >> >> +
-> >> >> +Example:
-> >> >> +
-> >> >> +chosen {
-> >> >> +     #address-cells =3D <1>;
-> >> >> +     #size-cells =3D <1>;
-> >> >> +     ranges;
-> >> >> +
-> >> >> +     framebuffer@0 {
-> >> >> +             compatible =3D "sunxi,framebuffer", "simple-framebuff=
-er";
-> >> >> +             sunxi,pipeline =3D <0>;
-> >> >> +             sunxi,output =3D "hdmi";
-> >> >> +             clocks =3D <&pll5 1>, <&ahb_gates 36>, <&ahb_gates 43=
->,
-> >> >> +                      <&ahb_gates 44>;
-> >> >
-> >> > If we're going that way, then maybe having to specify clock-names
-> >> > would be better in order to know which clock is what?
+On Fri, 03 Oct 2014 09:56:27 +0200
+, Hans de Goede <hdegoede@redhat.com>
+ wrote:
+> On 10/03/2014 01:31 AM, Julian Calaby wrote:
+> > On Fri, Oct 3, 2014 at 1:14 AM, jonsmirl@gmail.com <jonsmirl@gmail.com> wrote:
+> >> Because you are creating two different device tree nodes describing a
+> >> single piece of hardware and that's not suppose to happen in a device
+> >> tree.  The accurate description of the hardware is being perverted to
+> >> solve a software problem.
 > >>
-> >> I wouldn't go that way with this binding since the driver has no need
-> >> to differentiate between the clocks, and driver authors shouldn't be
-> >> encouraged to do so. The purpose of the clocks in this node is only
-> >> for itemizing dependencies, not for how to configure the clocks.
-> >> Firmware shouldn't care at all about the clocks list, it only needs to
-> >> find the correct pre-populated node to fill in and enable.
-> >
-> > Well, if we want to play the "DT as an ABI" stuff, you have no
-> > guarantee that in the future, simplefb will still be the driver bound
-> > to "sunxi,framebuffer", and that this driver doesn't need to
-> > differentiate which clocks it needs to protect and which are not
-> > needed. Especially with the combination of the output that you now
-> > hardcode.
->=20
-> As long as the node claims compatibility with "simple-framebuffer",
-> then it must abide by the simple framebuffer rules. It cannot depend
-> on the driver having special knowledge about what to do with the
-> clocks. It is fine for a driver that understands "sunxi,framebuffer"
-> to enable additional features over and above simple-framebuffer,
-> providing it doesn't break the vanilla "simple-framebuffer" interface.
->=20
-> The simple-framebuffer binding is clear that it will treat the clocks
-> as dependencies only.
+> >> One node describes the hardware in a format to make simplefb happy.
+> >> Another node describes the same hardware in a format to make the
+> >> device specific driver happy.
+> > 
+> > Stupid question: What about mangling an existing device node to be
+> > simplefb compatible, and writing simplefb to be binding agnostic?
+> 
+> That will not work, with simplefb a single node represents the currently
+> active video output. While in real hardware that may involve multiple
+> blocks, e.g on sunxi for hdmi out this involves the compositor (which
+> generates video data from 1 or more layers) which feeds into the
+> lcd-controller (which in this case is only used to generate hsync + vsync)
+> signals really, which feeds into the hdmi encoder, all 3 of which are
+> separate hardware blocks with their own clocks, etc.
 
-Isn't the compatible list precisely made to be able to define more
-specific behaviours if needed?
+The answer here should be, 'whoever does the DMA'.
 
-If I get a list with "sunxi,framebuffer", "simple-framebuffer", I've
-always thought that sunxi,framebuffer was defining exactly what the
-device was about, and that simple-framebuffer was only aimed at
-providing roughly the same functionnality, possibly with degraded
-features, and with a compatible DT bindings.
+Julian's suggestion is actually the sanest approach, and there is
+precedence for doing exactly that in DT, both for serial devices
+(of_serial.c) and framebuffers (offb.c).
 
-I don't see how if we require a clock-names list in sunxi,framebuffer
-that would break the binding of simple-framebuffer. It's just more
-information, that might prove useful in the future.
-
-> > Of course, if now we don't care at all about this ABI thing, it's
-> > completely fine for me. But I'll archive this email preciously.
->=20
-> I do not in any way mean to say it is okay to break ABI.
->=20
-> Also, my comments above are advice that I would give to U-Boot
-> authors, not something that should go in the binding. The
-> simple-framebuffer binding doesn't need to know about the clock names
-> at all, and if the assumption is that firmware will merely enable a
-> pre-populated framebuffer node in the tree, then it probably doesn't
-> need to parse the clocks property either. However, if it actually is
-> better for the U-Boot implementation to have clocks with names in the
-> node, then I'm not going to object.
-
-I'm not speaking about u-boot here, but the kernel itself.
-
-What if we want from that pipeline property to enable (or rather keep
-enabled) only a few clocks, and not all of them?
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---xkXJwpr35CY/Lc3I
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUb03UAAoJEBx+YmzsjxAgQ20P/jxUNFYnfVaAl/LPwrluqA6M
-YhAlpSX1K30W1bGMfpg1PDWmCpkj9GwsodqvxSlB9aVRD/O54yUVgW8aDlfIm/1U
-Nk6RoQ5cQkIg07otqPdT/dkxykMf7QHaV+bom1Ck0JM5hhrWXzTAGyn9WIjPbPHP
-iD6HHU3vhgK47HCmurF0UqK6tF9NqsqTNXJYq71oUXUbwJqSrREnmN0Ng8j0+oF0
-M3QANITd3+0QDJiRzSYf68wV1zPKgebhgONzTDiOZ+1tYdVYiSNxQpKjwM2pRDVu
-jqQj6xPdIAtXvriFuhGDXwU3zpbbvBAP2uzyKRn6tuuiZmebhsUjhOi81cziYSRv
-O5Yt5+GmqS6QkwuXDfxQvhp+1Rib3zbfU4Xm1vi6MnjxWjGJtQcLSNsK+P+xpdyL
-X1NSBJ4sA6LKL4JL1r8sm92Pj5UXA7hjxqgipo8WqED6v1hhLoMkL40A8bK/wPSD
-/eRll7i0tD1TdZiXuBj2E4nL1Z2BYIk2ZkZuar5xrMm61agvk0AjuBin8bCDXA3x
-s8lsYNWnf2phsTby1qyW0Lo4rtDt7KxhjCp8GviYsztp9DLqekp4RjR2cT0+fhST
-aKV3HLpHlMvS135H5iIt9x1T6acg1ZZHq3kZDn/1pCx+EaaAeAc+swiqAf+VPXz2
-ZuepcY6fuO5Ul0dSZ2AE
-=codj
------END PGP SIGNATURE-----
-
---xkXJwpr35CY/Lc3I--
+g.

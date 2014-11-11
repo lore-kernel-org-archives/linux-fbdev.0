@@ -1,41 +1,48 @@
-From: Marek Belisko <marek@goldelico.com>
-Date: Sun, 30 Nov 2014 13:07:44 +0000
-Subject: [PATCH v3 0/3] omapdss: Add video output support for gta04
-Message-Id: <1417352867-7436-1-git-send-email-marek@goldelico.com>
+From: Grant Likely <grant.likely@linaro.org>
+Date: Tue, 11 Nov 2014 21:54:30 +0000
+Subject: Re: [linux-sunxi] Re: [PATCH v4 0/5] simplefb: add clock =?iso-8859-1?Q?handling=0D?= code
+Message-Id: <20141111215430.3FA41C41610@trevor.secretlab.ca>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
+ <54534523.8080801@ti.com> <545B8338.8060908@ti.com>
+ <545B8E29.90807@redhat.com>
+In-Reply-To: <545B8E29.90807@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-changes from v2:
-- rename amplifier-opa362.c to encoder-opa362
-- drop inversion handlign from driver
-- add ti,invert-polarity to venc node
+On Thu, 06 Nov 2014 16:05:13 +0100
+, Hans de Goede <hdegoede@redhat.com>
+ wrote:
+> Hi,
+> 
+> On 11/06/2014 03:18 PM, Tomi Valkeinen wrote:
+> > On 31/10/14 10:15, Tomi Valkeinen wrote:
+> >> Hi Hans,
+> >>
+> >> On 22/10/14 19:45, Hans de Goede wrote:
+> >>
+> >>> -We will add a clocks property to the simplefb devicetree bindings, so
+> >>>  that u-boot setup framebuffers passed to the kernel (for early console
+> >>>  support) can properly list the clocks used, and simplefb can claim them to
+> >>>  avoid them getting turned off, thereby breaking the early console
+> >>
+> >> Perhaps this has been discussed earlier, but I started to wonder if
+> >> managing clocks is enough.
+> >>
+> >> What about regulators (to power the LCD), gpios (to keep the LCD
+> >> enabled) and pinctrl (for video signals)? I guess any those could be
+> >> reset by the kernel if no driver uses them.
 
-I also drop devconf1 handling patches because discussion how to
-properly implement is not yet finished and this part is independent
-from video driver.
+I'm okay with extending the binding for each of these dependencies
+/providing/ it can be argued that the way simplefb uses it is merely to
+inhibit the kernel from making any changes to the resource, and then
+releasing the resource when it is done. Each resource type will need to
+be taken on a case-by-case basis since each has it's own behaviour. I'll
+want to see that the simplefb driver doesn't need to do anything special
+per device, and that the resource binding is well established and
+generic.
 
-changes from v1:
-- fix opa362 compilation error
-- fix opa362 DT documentation
-- move devconf1 definition to omap3.dtsi
-
-Marek Belisko (3):
-  video: omapdss: Add opa362 driver
-  Documentation: DT: Add documentation for ti,opa362 bindings
-  arm: dts: omap3-gta04: Add handling for tv output
-
- .../devicetree/bindings/video/ti,opa362.txt        |  38 +++
- arch/arm/boot/dts/omap3-gta04.dtsi                 |  49 ++++
- drivers/video/fbdev/omap2/displays-new/Kconfig     |   6 +
- drivers/video/fbdev/omap2/displays-new/Makefile    |   1 +
- .../fbdev/omap2/displays-new/encoder-opa362.c      | 283 +++++++++++++++++++++
- 5 files changed, 377 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/ti,opa362.txt
- create mode 100644 drivers/video/fbdev/omap2/displays-new/encoder-opa362.c
-
--- 
-1.9.1
+g.
 

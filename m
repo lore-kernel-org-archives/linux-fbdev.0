@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 12 Nov 2014 16:15:51 +0000
-Subject: [PATCH v5 4/5] simplefb: add goto error path to probe
-Message-Id: <1415808952-23549-5-git-send-email-hdegoede@redhat.com>
+Date: Wed, 12 Nov 2014 16:15:49 +0000
+Subject: [PATCH v5 2/5] dt-bindings: Add a clocks property to the simple-framebuffer binding
+Message-Id: <1415808952-23549-3-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
 In-Reply-To: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
@@ -10,76 +10,56 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Luc Verhaegen <libv@skynet.be>
+A simple-framebuffer node represents a framebuffer setup by the firmware /
+bootloader. Such a framebuffer may have a number of clocks in use, add a
+property to communicate this to the OS.
 
-Use the usual kernel style of goto error_foo to free resources on probe
-error. This is a preparation patch for adding clocks support.
-
-While at it also update ioremap_wc error return from ENODEV to ENOMEM.
-
-Signed-off-by: Luc Verhaegen <libv@skynet.be>
-Acked-by: Stephen Warren <swarren@nvidia.com>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Reviewed-by: Mike Turquette <mturquette@linaro.org>
 Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
 Acked-by: Grant Likely <grant.likely@linaro.org>
---
-Changes in v5:
--Improved commit message
----
- drivers/video/fbdev/simplefb.c | 18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index ec112c1..cdcf1fe 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -220,8 +220,8 @@ static int simplefb_probe(struct platform_device *pdev)
+--
+Changes in v2:
+-Added Reviewed-by: Mike Turquette <mturquette@linaro.org>
+Changes in v3:
+-Updated description to make clear simplefb deals with more then just memory
+Changes in v5:
+-Improved clocks property description
+---
+ .../devicetree/bindings/video/simple-framebuffer.txt         | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+index 70c26f3..8f35718 100644
+--- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+@@ -1,8 +1,8 @@
+ Simple Framebuffer
  
- 	info->apertures = alloc_apertures(1);
- 	if (!info->apertures) {
--		framebuffer_release(info);
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto error_fb_release;
- 	}
- 	info->apertures->ranges[0].base = info->fix.smem_start;
- 	info->apertures->ranges[0].size = info->fix.smem_len;
-@@ -231,8 +231,8 @@ static int simplefb_probe(struct platform_device *pdev)
- 	info->screen_base = ioremap_wc(info->fix.smem_start,
- 				       info->fix.smem_len);
- 	if (!info->screen_base) {
--		framebuffer_release(info);
--		return -ENODEV;
-+		ret = -ENOMEM;
-+		goto error_fb_release;
- 	}
- 	info->pseudo_palette = par->palette;
+-A simple frame-buffer describes a raw memory region that may be rendered to,
+-with the assumption that the display hardware has already been set up to scan
+-out from that buffer.
++A simple frame-buffer describes a frame-buffer setup by firmware or
++the bootloader, with the assumption that the display hardware has already
++been set up to scan out from the memory pointed to by the reg property.
  
-@@ -247,14 +247,18 @@ static int simplefb_probe(struct platform_device *pdev)
- 	ret = register_framebuffer(info);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
--		iounmap(info->screen_base);
--		framebuffer_release(info);
--		return ret;
-+		goto error_unmap;
- 	}
+ Required properties:
+ - compatible: "simple-framebuffer"
+@@ -14,6 +14,12 @@ Required properties:
+   - r5g6b5 (16-bit pixels, d[15:11]=r, d[10:5]=g, d[4:0]=b).
+   - a8b8g8r8 (32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r).
  
- 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
- 
- 	return 0;
++Optional properties:
++- clocks : List of clocks used by the framebuffer. Clocks listed here
++           are expected to already be configured correctly. The OS must
++           ensure these clocks are not modified or disabled while the
++           simple framebuffer remains active.
 +
-+error_unmap:
-+	iounmap(info->screen_base);
-+error_fb_release:
-+	framebuffer_release(info);
-+	return ret;
- }
+ Example:
  
- static int simplefb_remove(struct platform_device *pdev)
+ 	framebuffer {
 -- 
 2.1.0
 

@@ -1,85 +1,37 @@
-From: Grant Likely <grant.likely@linaro.org>
-Date: Thu, 13 Nov 2014 10:27:20 +0000
-Subject: Re: [PATCH v2 2/4] simplefb: Add support for enumerating simplefb dt nodes in /chosen
-Message-Id: <CACxGe6sgY_w7t805YuuDzO-u0aYOOn168iEnRZqpR190_75XXA@mail.gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 14:41:02 +0000
+Subject: [PATCH v7.1 11/19] OMAPDSS: hdmi: Make hdmi_mode_has_audio() more user friedly
+Message-Id: <8047b50c76efecd72e7219f7871c59cc4a8ee5f5.1415803065.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415868610-13297-1-git-send-email-hdegoede@redhat.com>
- <1415868610-13297-2-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415868610-13297-2-git-send-email-hdegoede@redhat.com>
+References: <cover.1415803064.git.jsarha@ti.com>
+In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-On Thu, Nov 13, 2014 at 8:50 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> Update simplefb to support the new preferred location for simplefb dt nodes
-> under /chosen.
->
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> --
-> Changes in v2:
-> -Make name array larger in case we ever encounter more then 10000 framebuffers
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-I just replied on v1, but for completeness I'm replying here. Nak on
-this method. for_each_child_of_node() should be used instead.
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index a6e08ff..6d129f2 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -345,9 +345,9 @@ void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
+ 		struct hdmi_audio_format *aud_fmt);
+ void hdmi_wp_audio_config_dma(struct hdmi_wp_data *wp,
+ 		struct hdmi_audio_dma *aud_dma);
+-static inline bool hdmi_mode_has_audio(int mode)
++static inline bool hdmi_mode_has_audio(struct hdmi_config *cfg)
+ {
+-	return mode = HDMI_HDMI ? true : false;
++	return cfg->hdmi_dvi_mode = HDMI_HDMI ? true : false;
+ }
+ 
+ /* HDMI DRV data */
+-- 
+1.7.9.5
 
-g.
-
-> ---
->  drivers/video/fbdev/simplefb.c | 33 ++++++++++++++++++++++++++++++++-
->  1 file changed, 32 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-> index cd96edd..2705af8 100644
-> --- a/drivers/video/fbdev/simplefb.c
-> +++ b/drivers/video/fbdev/simplefb.c
-> @@ -27,6 +27,7 @@
->  #include <linux/platform_data/simplefb.h>
->  #include <linux/platform_device.h>
->  #include <linux/clk-provider.h>
-> +#include <linux/of_platform.h>
->
->  static struct fb_fix_screeninfo simplefb_fix = {
->         .id             = "simple",
-> @@ -385,7 +386,37 @@ static struct platform_driver simplefb_driver = {
->         .probe = simplefb_probe,
->         .remove = simplefb_remove,
->  };
-> -module_platform_driver(simplefb_driver);
-> +
-> +static int __init simplefb_init(void)
-> +{
-> +       int i, ret;
-> +       char name[32];
-> +       struct device_node *np;
-> +
-> +       ret = platform_driver_register(&simplefb_driver);
-> +       if (ret)
-> +               return ret;
-> +
-> +       for (i = 0; ; i++) {
-> +               snprintf(name, sizeof(name), "framebuffer%d", i);
-> +               np = of_find_node_by_name(of_chosen, name);
-> +               if (!np)
-> +                       break;
-> +
-> +               /* of_platform_device_create will check status for us */
-> +               of_platform_device_create(np, NULL, NULL);
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static void __exit simplefb_exit(void)
-> +{
-> +       platform_driver_unregister(&simplefb_driver);
-> +}
-> +
-> +module_init(simplefb_init);
-> +module_exit(simplefb_exit);
->
->  MODULE_AUTHOR("Stephen Warren <swarren@wwwdotorg.org>");
->  MODULE_DESCRIPTION("Simple framebuffer driver");
-> --
-> 2.1.0
->

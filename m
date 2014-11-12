@@ -1,57 +1,424 @@
-From: Rob Herring <robherring2@gmail.com>
-Date: Wed, 12 Nov 2014 17:43:56 +0000
-Subject: Re: [PATCH v4 2/5] dt-bindings: Add a clocks property to the simple-framebuffer binding
-Message-Id: <CAL_Jsq+fzmTOSr8g+6b5R=KPao1ZeumsyNS3nfYBzfVQCiPbWA@mail.gmail.com>
+From: Marek Belisko <marek@goldelico.com>
+Date: Wed, 12 Nov 2014 22:10:43 +0000
+Subject: [PATCH v2 1/5] video: omapdss: Add opa362 driver
+Message-Id: <1415830247-31633-2-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413996311-4287-1-git-send-email-hdegoede@redhat.com>
- <1413996311-4287-3-git-send-email-hdegoede@redhat.com>
- <20141111214217.19EF5C41610@trevor.secretlab.ca>
- <546373C6.4010001@redhat.com>
- <CACxGe6v15EjpALit4ZJLXDgCkwEYM4t1mryjoQpa3=wpKmXWEg@mail.gmail.com>
- <CACxGe6vBq5Y6HbogbpVUy9VLaocfrAsR_XRbio4zBB_vY5GRsw@mail.gmail.com>
-In-Reply-To: <CACxGe6vBq5Y6HbogbpVUy9VLaocfrAsR_XRbio4zBB_vY5GRsw@mail.gmail.com>
+References: <1415830247-31633-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1415830247-31633-1-git-send-email-marek@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Nov 12, 2014 at 10:38 AM, Grant Likely <grant.likely@linaro.org> wrote:
-> Rob, seeing as we disagree on patch #5, do you have time to discuss this
-> evening, or tomorrow?
+opa362 is amplifier for video and can be connected to the tvout pads
+of the OMAP3. It has one gpio control for enable/disable of the output
+(high impedance).
 
-Yes, either is fine.
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ drivers/video/fbdev/omap2/displays-new/Kconfig     |   6 +
+ drivers/video/fbdev/omap2/displays-new/Makefile    |   1 +
+ .../fbdev/omap2/displays-new/amplifier-opa362.c    | 343 +++++++++++++++++++++
+ include/video/omap-panel-data.h                    |  12 +
+ 4 files changed, 362 insertions(+)
+ create mode 100644 drivers/video/fbdev/omap2/displays-new/amplifier-opa362.c
 
-Rob
+diff --git a/drivers/video/fbdev/omap2/displays-new/Kconfig b/drivers/video/fbdev/omap2/displays-new/Kconfig
+index e6cfc38..211b3ec 100644
+--- a/drivers/video/fbdev/omap2/displays-new/Kconfig
++++ b/drivers/video/fbdev/omap2/displays-new/Kconfig
+@@ -1,6 +1,12 @@
+ menu "OMAP Display Device Drivers (new device model)"
+         depends on OMAP2_DSS
+ 
++config DISPLAY_AMPLIFIER_OPA362
++        tristate "external analog amplifier with output disable/high-Z (e.g. OPA362)"
++	help
++	  Driver to enable an external analog TV amplifier (e.g. OPA362)
++	  through a GPIO.
++
+ config DISPLAY_ENCODER_TFP410
+         tristate "TFP410 DPI to DVI Encoder"
+ 	help
+diff --git a/drivers/video/fbdev/omap2/displays-new/Makefile b/drivers/video/fbdev/omap2/displays-new/Makefile
+index 0323a8a..b311542 100644
+--- a/drivers/video/fbdev/omap2/displays-new/Makefile
++++ b/drivers/video/fbdev/omap2/displays-new/Makefile
+@@ -1,3 +1,4 @@
++obj-$(CONFIG_DISPLAY_AMPLIFIER_OPA362) += amplifier-opa362.o
+ obj-$(CONFIG_DISPLAY_ENCODER_TFP410) += encoder-tfp410.o
+ obj-$(CONFIG_DISPLAY_ENCODER_TPD12S015) += encoder-tpd12s015.o
+ obj-$(CONFIG_DISPLAY_CONNECTOR_DVI) += connector-dvi.o
+diff --git a/drivers/video/fbdev/omap2/displays-new/amplifier-opa362.c b/drivers/video/fbdev/omap2/displays-new/amplifier-opa362.c
+new file mode 100644
+index 0000000..8065a28
+--- /dev/null
++++ b/drivers/video/fbdev/omap2/displays-new/amplifier-opa362.c
+@@ -0,0 +1,343 @@
++/*
++ * OPA362 analog video amplifier with output/power control
++ *
++ * Copyright (C) 2014 Golden Delicious Computers
++ * Author: H. Nikolaus Schaller <hns@goldelico.com>
++ *
++ * based on encoder-tfp410
++ *
++ * Copyright (C) 2013 Texas Instruments
++ * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++
++#include <linux/gpio.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <linux/of_gpio.h>
++
++#include <video/omapdss.h>
++#include <video/omap-panel-data.h>
++
++struct panel_drv_data {
++	struct omap_dss_device dssdev;
++	struct omap_dss_device *in;
++
++	int enable_gpio;
++
++	struct omap_video_timings timings;
++};
++
++#define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
++
++static int opa362_connect(struct omap_dss_device *dssdev,
++		struct omap_dss_device *dst)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++	int r;
++
++	dev_dbg(dssdev->dev, "connect\n");
++
++	if (omapdss_device_is_connected(dssdev))
++		return -EBUSY;
++
++	r = in->ops.atv->connect(in, dssdev);
++	if (r)
++		return r;
++
++	dst->src = dssdev;
++	dssdev->dst = dst;
++
++	return 0;
++}
++
++static void opa362_disconnect(struct omap_dss_device *dssdev,
++		struct omap_dss_device *dst)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	dev_dbg(dssdev->dev, "disconnect\n");
++
++	WARN_ON(!omapdss_device_is_connected(dssdev));
++	if (!omapdss_device_is_connected(dssdev))
++		return;
++
++	WARN_ON(dst != dssdev->dst);
++	if (dst != dssdev->dst)
++		return;
++
++	dst->src = NULL;
++	dssdev->dst = NULL;
++
++	in->ops.atv->disconnect(in, &ddata->dssdev);
++}
++
++static int opa362_enable(struct omap_dss_device *dssdev)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++	int r;
++
++	dev_dbg(dssdev->dev, "enable\n");
++
++	if (!omapdss_device_is_connected(dssdev))
++		return -ENODEV;
++
++	if (omapdss_device_is_enabled(dssdev))
++		return 0;
++
++	in->ops.atv->set_timings(in, &ddata->timings);
++	/* fixme: should we receive the invert from our consumer, i.e. the connector? */
++	in->ops.atv->invert_vid_out_polarity(in, true);
++
++	r = in->ops.atv->enable(in);
++	if (r)
++		return r;
++
++	if (gpio_is_valid(ddata->enable_gpio))
++		gpio_set_value_cansleep(ddata->enable_gpio, 1);
++
++	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++
++	return 0;
++}
++
++static void opa362_disable(struct omap_dss_device *dssdev)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	dev_dbg(dssdev->dev, "disable\n");
++
++	if (!omapdss_device_is_enabled(dssdev))
++		return;
++
++	if (gpio_is_valid(ddata->enable_gpio))
++		gpio_set_value_cansleep(ddata->enable_gpio, 0);
++
++	in->ops.atv->disable(in);
++
++	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
++}
++
++static void opa362_set_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	dev_dbg(dssdev->dev, "set_timings\n");
++
++	ddata->timings = *timings;
++	dssdev->panel.timings = *timings;
++
++	in->ops.atv->set_timings(in, timings);
++}
++
++static void opa362_get_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++
++	dev_dbg(dssdev->dev, "get_timings\n");
++
++	*timings = ddata->timings;
++}
++
++static int opa362_check_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	dev_dbg(dssdev->dev, "check_timings\n");
++
++	return in->ops.atv->check_timings(in, timings);
++}
++
++static void opa362_set_type(struct omap_dss_device *dssdev,
++		enum omap_dss_venc_type type)
++{
++	/* we can only drive a COMPOSITE output */
++	WARN_ON(type != OMAP_DSS_VENC_TYPE_COMPOSITE);
++
++}
++
++static void opa362_invert_vid_out_polarity(struct omap_dss_device *dssdev,
++		bool invert_polarity)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	/* OPA362 inverts the polarity */
++	in->ops.atv->invert_vid_out_polarity(in, !invert_polarity);
++}
++
++static const struct omapdss_atv_ops opa362_atv_ops = {
++	.connect	= opa362_connect,
++	.disconnect	= opa362_disconnect,
++
++	.enable		= opa362_enable,
++	.disable	= opa362_disable,
++
++	.check_timings	= opa362_check_timings,
++	.set_timings	= opa362_set_timings,
++	.get_timings	= opa362_get_timings,
++
++	.set_type	= opa362_set_type,
++	.invert_vid_out_polarity	= opa362_invert_vid_out_polarity,
++};
++
++static int opa362_probe_pdata(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct amplifier_opa362_platform_data *pdata;
++	struct omap_dss_device *dssdev, *in;
++
++	pdata = dev_get_platdata(&pdev->dev);
++
++	ddata->enable_gpio = pdata->enable_gpio;
++
++	in = omap_dss_find_output(pdata->source);
++	if (in = NULL) {
++		dev_err(&pdev->dev, "Failed to find video source\n");
++		return -ENODEV;
++	}
++
++	ddata->in = in;
++
++	dssdev = &ddata->dssdev;
++	dssdev->name = pdata->name;
++
++	return 0;
++}
++
++static int opa362_probe_of(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	int gpio;
++
++	gpio = of_get_gpio(node, 0);
++
++	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++		ddata->enable_gpio = gpio;
++	} else {
++		dev_err(&pdev->dev, "failed to parse enable gpio\n");
++		return gpio;
++	}
++
++	in = omapdss_of_find_source_for_first_ep(node);
++	if (IS_ERR(in)) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return PTR_ERR(in);
++	}
++
++	ddata->in = in;
++
++	return 0;
++}
++
++static int opa362_probe(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata;
++	struct omap_dss_device *dssdev;
++	int r;
++
++	dev_dbg(&pdev->dev, "probe\n");
++
++	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
++	if (!ddata)
++		return -ENOMEM;
++
++	platform_set_drvdata(pdev, ddata);
++
++	if (dev_get_platdata(&pdev->dev)) {
++		r = opa362_probe_pdata(pdev);
++		if (r)
++			return r;
++	} else {
++		r = opa362_probe_of(pdev);
++		if (r)
++			return r;
++	}
++
++	if (gpio_is_valid(ddata->enable_gpio)) {
++		r = devm_gpio_request_one(&pdev->dev, ddata->enable_gpio,
++				GPIOF_OUT_INIT_LOW, "opa362 enable");
++		if (r) {
++			dev_err(&pdev->dev, "Failed to request enable GPIO %d\n",
++					ddata->enable_gpio);
++			goto err_gpio;
++		}
++	}
++
++	dssdev = &ddata->dssdev;
++	dssdev->ops.atv = &opa362_atv_ops;
++	dssdev->dev = &pdev->dev;
++	dssdev->type = OMAP_DISPLAY_TYPE_VENC;
++	dssdev->output_type = OMAP_DISPLAY_TYPE_VENC;
++	dssdev->owner = THIS_MODULE;
++
++	r = omapdss_register_output(dssdev);
++	if (r) {
++		dev_err(&pdev->dev, "Failed to register output\n");
++		goto err_reg;
++	}
++
++	return 0;
++err_reg:
++err_gpio:
++	omap_dss_put_device(ddata->in);
++	return r;
++}
++
++static int __exit opa362_remove(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct omap_dss_device *dssdev = &ddata->dssdev;
++	struct omap_dss_device *in = ddata->in;
++
++	omapdss_unregister_output(&ddata->dssdev);
++
++	WARN_ON(omapdss_device_is_enabled(dssdev));
++	if (omapdss_device_is_enabled(dssdev))
++		opa362_disable(dssdev);
++
++	WARN_ON(omapdss_device_is_connected(dssdev));
++	if (omapdss_device_is_connected(dssdev))
++		opa362_disconnect(dssdev, dssdev->dst);
++
++	omap_dss_put_device(in);
++
++	return 0;
++}
++
++static const struct of_device_id opa362_of_match[] = {
++	{ .compatible = "omapdss,ti,opa362", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, opa362_of_match);
++
++static struct platform_driver opa362_driver = {
++	.probe	= opa362_probe,
++	.remove	= __exit_p(opa362_remove),
++	.driver	= {
++		.name	= "amplifier-opa362",
++		.owner	= THIS_MODULE,
++		.of_match_table = opa362_of_match,
++	},
++};
++
++module_platform_driver(opa362_driver);
++
++MODULE_AUTHOR("H. Nikolaus Schaller <hns@goldelico.com>");
++MODULE_DESCRIPTION("OPA362 analog video amplifier with output/power control");
++MODULE_LICENSE("GPL");
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index 69279c0..5c3076c 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -251,4 +251,16 @@ struct panel_tpo_td028ttec1_platform_data {
+ 	int data_lines;
+ };
+ 
++/**
++ * amplifier_opa362_platform_data platform data
++ * @name: name for this display entity
++ * @source: name of the display entity used as a video source
++ * @enable_gpio: gpio number for enable pi
++ */
++struct amplifier_opa362_platform_data {
++	const char *name;
++	const char *source;
++	int enable_gpio;
++};
++
+ #endif /* __OMAP_PANEL_DATA_H */
+-- 
+1.9.1
 
->
-> g.
->
-> On 12 Nov 2014 14:56, "Grant Likely" <grant.likely@linaro.org> wrote:
->>
->> [Replying on-list and with original ccs]
->>
->> On Wed, Nov 12, 2014 at 2:50 PM, Hans de Goede <hdegoede@redhat.com>
->> wrote:
->> > Hi,
->> >
->> > On 11/11/2014 10:42 PM, Grant Likely wrote:
->> >> - clocks : List of clocks used by the framebuffer. Clocks listed here
->> >>            are expected to already be configured correctly. The OS must
->> >>            ensure these clocks are not modified or disabled while the
->> >>            simple framebuffer remains active.
->> >
->> > Updated in my local tree, where I've also added proper commit messages
->> > to the 2 patches missing them. Shall I send a v5 of the set, and may I
->> > add your Acked-by to this patch when sending v5?
->>
->> For this whole series, please add my Acked-by.
->>
->> Acked-by: Grant Likely <grant.likely@linaro.org>
->>
->> I'm okay with the bindings, and I'm okay with adding the clock
->> dependency to a simplefb node. I'm happy with the conversation we had
->> today on IRC, and I'm expecting to see a binding that covers expected
->> firmware/OS behaviour and association with the real hardware posted to
->> the list shortly.
->>
->> g.

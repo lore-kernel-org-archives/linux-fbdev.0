@@ -1,31 +1,55 @@
-From: Xiubo Li <Li.Xiubo@freescale.com>
-Date: Mon, 24 Nov 2014 10:20:50 +0000
-Subject: [PATCH 0/4] LS1021A: Add dcfb framebuffer driver support.
-Message-Id: <1416824454-28156-1-git-send-email-Li.Xiubo@freescale.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 10:49:07 +0000
+Subject: [PATCH v7 05/20] OMAPDSS: hdmi4_core: Remove unused hdmi4_audio_get_dma_port()
+Message-Id: <82d7787bcd3ac79c863c8026bf0e3bc7f31f0ffc.1415786458.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1415786458.git.jsarha@ti.com>
+In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Framebuffer driver for the Freescale SoC Display Controller.
+hdmi4_audio_get_dma_port() is unused and and broken.
 
-Xiubo Li (4):
-  video: fsl-dcfb: Add dcfb framebuffer driver for LS1021A platform
-  video: fsl-dcfb: Add devicetree binding support
-  ARM: ls1021a: dtsi: Add dt node support for dcfb.
-  ARM: ls1021a: dts: Add and enable dt node for dcfb.
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi4_core.c |    9 ---------
+ drivers/video/fbdev/omap2/dss/hdmi4_core.h |    2 --
+ 2 files changed, 11 deletions(-)
 
- .../devicetree/bindings/video/fsl,dcfb.txt         |  52 ++
- arch/arm/boot/dts/ls1021a-twr.dts                  |  26 +
- arch/arm/boot/dts/ls1021a.dtsi                     |  10 +
- drivers/video/fbdev/Kconfig                        |  19 +
- drivers/video/fbdev/Makefile                       |   1 +
- drivers/video/fbdev/fsl-dcfb.c                     | 811 +++++++++++++++++++++
- 6 files changed, 919 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/fsl,dcfb.txt
- create mode 100644 drivers/video/fbdev/fsl-dcfb.c
-
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+index 3b448d9..7eafea5 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+@@ -874,15 +874,6 @@ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp)
+ 	hdmi_wp_audio_core_req_enable(wp, false);
+ }
+ 
+-int hdmi4_audio_get_dma_port(u32 *offset, u32 *size)
+-{
+-	if (!offset || !size)
+-		return -EINVAL;
+-	*offset = HDMI_WP_AUDIO_DATA;
+-	*size = 4;
+-	return 0;
+-}
+-
+ int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+ {
+ 	struct resource *res;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.h b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
+index c1959f7..a069f96 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
+@@ -270,6 +270,4 @@ int hdmi4_audio_start(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
+ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
+ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 		struct omap_dss_audio *audio, u32 pclk);
+-int hdmi4_audio_get_dma_port(u32 *offset, u32 *size);
+-
+ #endif
 -- 
-2.1.0.27.g96db324
+1.7.9.5
 

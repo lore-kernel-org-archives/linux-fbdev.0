@@ -1,43 +1,95 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Fri, 14 Nov 2014 13:05:48 +0000
-Subject: Re: [PATCH RESEND 0/5] arm: sa1100: add cpu clock for fbdev and pcmcia
-Message-Id: <CALT56yMS0QaDrueFSHNPaSRCF4ZqcGH9goBCOhuWKN=7cEJZQw@mail.gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 14:40:51 +0000
+Subject: [PATCH v7.1 00/19] Rework OMAP4+ HDMI audio support
+Message-Id: <cover.1415803064.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415259677-18770-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1415259677-18770-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Dear Russell,
+The patches are based on:
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
 
-2014-11-06 10:41 GMT+03:00 Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>:
-> These patches are required to make SL-5500 (collie) to work properly.
-> Framebuffer maintainer added his ack to the respective patch. PCMCIA
-> subsystem seems to be unmaintained at this moment. Russell, could you
-> please review and hopefully ack these patches?
->
-> On SA-1100 framebuffer and PCMCIA drivers make use of cpufreq_get(0)
-> function call to determine the cpu frequency. Russell's commit
-> 1937f5b91833e2e8e53bcc821fc7a5fbe6ccb9b5 (ARM: fix sa1100 build) fixed
-> the build issues, but broke two devices (Collie and Jornada720). For
-> those two boards the cpufreq code gets compiled but is not enabled (as
-> board files do not provide timing information for the CPUFREQ driver).
-> Thus cpufreq_get(0) returns incorrect value and incorrect timings get
-> programmed into the hardware.
->
-> PXA2xx (the very similar platform) uses Clock API to determine CPU
-> frequency both in framebuffer and PCMCIA drivers. These patches make
-> similar changes to StrongARM drivers.
+The base, the patches, and couple of additional not-to-be-merged
+omap2plus_defconfig patches can be found here:
+https://github.com/jsarha/linux.git omap-hdmi-audio
 
-We can continue to carry over this patch set in local tree. Having a grave bug
-in upstream kernels. What is the purpose of upstream kernel then? Why did
-we have so many talks about bad practice of 'vendor/local/private' Linux trees?
+It would make the most sense to get these in trough fbdev tree. So it
+would be nice to get acked-bys (if the patches are Ok) for ASoC side
+changes from appropriate maintainers.
 
-Do you see anything wrong with this patchset? Why do you keep on ignoring it?
-Did you stop caring about sa11x0?
+Changes since v7:
+- Squash: 
+  - "OMAPDSS: omapdss.h: Remove audio_state member of struct omap_dss_device"
+  - into "OMAPDSS: Remove all references to obsolete HDMI audio callbacks"
+
+Changes since v6:
+- "ASoC: omap-hdmi-audio: Add platform device for OMAP HDMI audio support"
+  - Fix Kconfig help text
+  - Remove #include <sound/simple_card.h>
+  - Use snd-soc-dummy codec instead of hdmi-audio-codec
+- Add: OMAPDSS: hdmi_wp: Protect reserved bits in hdmi_wp_audio_config_format()
+- Add: OMAPDSS: hdmi5_core: Initialize mandatory sample_order parameter
+- Add: "OMAPDSS: omapdss.h: Remove audio_state member of struct omap_dss_device"
+- "OMAPDSS: hdmi4: Register ASoC platform device for omap hdmi audio"
+  - Register "omap-hdmi-audio" with PLATFORM_DEVID_AUTO
+- "OMAPDSS: hdmi5: Register ASoC platform device for omap hdmi audio"
+  - Register "omap-hdmi-audio" with PLATFORM_DEVID_AUTO
+- Add: "OMAPDSS: hdmi5: Change hdmi_wp idlemode to to no_idle for audio playback"
+
+Jyri Sarha (19):
+  OMAPDSS: hdmi_wp: Protect reserved bits in
+    hdmi_wp_audio_config_format()
+  OMAPDSS: hdmi5_core: Initialize mandatory sample_order parameter
+  OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
+  OMAPDSS: hdmi: Remove most of OMAP[45]_DSS_HDMI_AUDIO ifdefs
+  OMAPDSS: hdmi4_core: Remove unused hdmi4_audio_get_dma_port()
+  OMAPDSS: hdmi_wp: Add function for getting audio dma address
+  OMAPDSS: hdmi: Make hdmi structure public
+  OMAPDSS: hdmi: Add pdev pointer for audio_pdev in HDMI DRV data
+  ASoC: omap-hdmi-audio: Add platform device for OMAP HDMI audio
+    support
+  OMAPDSS: Kconfig: Remove HDMI audio booleans from Kconfig
+  OMAPDSS: hdmi: Make hdmi_mode_has_audio() more user friedly
+  OMAPDSS: hdmi.h: Add members to hdmi drvdata for audio implementation
+  OMAPDSS: hdmi4: Remove callbacks for the old ASoC DAI driver
+  OMAPDSS: hdmi4: Register ASoC platform device for omap hdmi audio
+  OMAPDSS: hdmi5: Remove callbacks for the old ASoC DAI driver
+  OMAPDSS: hdmi5: Register ASoC platform device for omap hdmi audio
+  ASoC: omap: Remove obsolete HDMI audio code and Kconfig options
+  OMAPDSS: Remove all references to obsolete HDMI audio callbacks
+  OMAPDSS: hdmi5: Change hdmi_wp idlemode to to no_idle for audio
+    playback
+
+ .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 -----
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 ---
+ drivers/video/fbdev/omap2/dss/Kconfig              |    7 -
+ drivers/video/fbdev/omap2/dss/hdmi.h               |   38 +-
+ drivers/video/fbdev/omap2/dss/hdmi4.c              |  269 +++++++------
+ drivers/video/fbdev/omap2/dss/hdmi4_core.c         |   14 -
+ drivers/video/fbdev/omap2/dss/hdmi4_core.h         |    4 -
+ drivers/video/fbdev/omap2/dss/hdmi5.c              |  265 ++++++-------
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c         |    9 +-
+ drivers/video/fbdev/omap2/dss/hdmi5_core.h         |    2 -
+ drivers/video/fbdev/omap2/dss/hdmi_common.c        |    2 -
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c            |   16 +-
+ include/sound/omap-hdmi-audio.h                    |   43 +++
+ include/video/omapdss.h                            |   40 --
+ sound/soc/omap/Kconfig                             |   26 +-
+ sound/soc/omap/Makefile                            |    6 +-
+ sound/soc/omap/omap-hdmi-audio.c                   |  407 ++++++++++++++++++++
+ sound/soc/omap/omap-hdmi-card.c                    |   87 -----
+ sound/soc/omap/omap-hdmi.c                         |  364 -----------------
+ sound/soc/omap/omap-hdmi.h                         |   38 --
+ 20 files changed, 781 insertions(+), 1011 deletions(-)
+ create mode 100644 include/sound/omap-hdmi-audio.h
+ create mode 100644 sound/soc/omap/omap-hdmi-audio.c
+ delete mode 100644 sound/soc/omap/omap-hdmi-card.c
+ delete mode 100644 sound/soc/omap/omap-hdmi.c
+ delete mode 100644 sound/soc/omap/omap-hdmi.h
 
 -- 
-With best wishes
-Dmitry
+1.7.9.5
+

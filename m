@@ -1,39 +1,40 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Nov 2014 11:52:17 +0000
-Subject: [PATCH 15/22] OMAPDSS: HDMI5: disable interlace modes
-Message-Id: <1415793144-11723-16-git-send-email-tomi.valkeinen@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 14:41:03 +0000
+Subject: [PATCH v7.1 12/19] OMAPDSS: hdmi.h: Add members to hdmi drvdata for audio implementation
+Message-Id: <34f0cd3f1e273a702eb5e962d2eca93d8f34ff86.1415803065.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1415803064.git.jsarha@ti.com>
+In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-We don't support interlace modes properly on OMAP5+ HDMI, so we need to
-reject interlace timings.
+Adds display_enabled flag and audio_abort_cb callback to struct hdmi.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi5.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/video/fbdev/omap2/dss/hdmi.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index 169b764bb9d4..c053d692ec16 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -290,6 +290,10 @@ static int hdmi_display_check_timing(struct omap_dss_device *dssdev,
- {
- 	struct omap_dss_device *out = &hdmi.output;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 6d129f2..bfaaf2f 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -366,10 +366,12 @@ struct omap_hdmi {
+ 	struct regulator *vdda_reg;
  
-+	/* TODO: proper interlace support */
-+	if (timings->interlace)
-+		return -EINVAL;
-+
- 	if (!dispc_mgr_timings_ok(out->dispc_channel, timings))
- 		return -EINVAL;
+ 	bool core_enabled;
++	bool display_enabled;
  
+ 	struct omap_dss_device output;
+ 
+ 	struct platform_device *audio_pdev;
++	void (*audio_abort_cb)(struct device *dev);
+ };
+ 
+ #endif
 -- 
-2.1.3
+1.7.9.5
 

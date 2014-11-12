@@ -1,66 +1,24 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 10 Nov 2014 10:01:29 +0000
-Subject: Re: [PATCH 2/2] backlight: pwm: clean up pwm requested using legacy API
-Message-Id: <20141110100129.GK21424@x1>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 12 Nov 2014 16:15:47 +0000
+Subject: [PATCH v5 0/5] simplefb: add clock handling code
+Message-Id: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413035186-11771-1-git-send-email-vladimir_zapolskiy@mentor.com>
- <1413035186-11771-3-git-send-email-vladimir_zapolskiy@mentor.com>
-In-Reply-To: <1413035186-11771-3-git-send-email-vladimir_zapolskiy@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Cc: linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-On Sat, 11 Oct 2014, Vladimir Zapolskiy wrote:
+Hi Tomi,
 
-> If PWM device is requested by means of legacy API pwm_request(), its
-> resources are not freed on module unbind, which may cause an oops on
-> access, e.g. by reading /sys/kernel/debug/pwm.
->=20
-> Reported-by: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
-> Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-> ---
->  drivers/video/backlight/pwm_bl.c |    4 ++++
->  1 file changed, 4 insertions(+)
+Here is v5 of my simplefb patch-set, this time with an Ack from
+Grant Likely for the dt-bindings bits, which should end all controversy
+surrounding that patch.
 
-Applied with Thierry's Ack.
+For changes since the original postings please see the per patch changelogs
+in the patch commit messages.
 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
-wm_bl.c
-> index dd7aaf7..40770dd 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -34,6 +34,7 @@ struct pwm_bl_data {
->  	struct regulator	*power_supply;
->  	struct gpio_desc	*enable_gpio;
->  	unsigned int		scale;
-> +	bool			legacy;
->  	int			(*notify)(struct device *,
->  					  int brightness);
->  	void			(*notify_after)(struct device *,
-> @@ -274,6 +275,7 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
->  	if (IS_ERR(pb->pwm) && !pdev->dev.of_node) {
->  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
-> +		pb->legacy =3D true;
->  		pb->pwm =3D pwm_request(data->pwm_id, "pwm-backlight");
->  	}
-> =20
-> @@ -339,6 +341,8 @@ static int pwm_backlight_remove(struct platform_devic=
-e *pdev)
-> =20
->  	if (pb->exit)
->  		pb->exit(&pdev->dev);
-> +	if (pb->legacy)
-> +		pwm_free(pb->pwm);
-> =20
->  	return 0;
->  }
+Please merge this into your tree for 3.19.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Thanks & Regards,
+
+Hans

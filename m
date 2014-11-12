@@ -1,43 +1,36 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Thu, 06 Nov 2014 07:41:17 +0000
-Subject: [PATCH RESEND 5/5] pcmcia: sa1111: provide device clock
-Message-Id: <1415259677-18770-6-git-send-email-dbaryshkov@gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 14:40:59 +0000
+Subject: [PATCH v7.1 08/19] OMAPDSS: hdmi: Add pdev pointer for audio_pdev in HDMI DRV data
+Message-Id: <268eca0e54dc22f1c1c648dfbd108e2f032be47a.1415803065.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1415803064.git.jsarha@ti.com>
+In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Both pxa2xx (long ago) and sa1100 (now) make use of clock device to get
-the cpu speed. Make sa1111 glue code provide clock to platform layer.
+This is used to store omap-hdmi-audio pdev for unregistering it.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/pcmcia/sa1111_generic.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/video/fbdev/omap2/dss/hdmi.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/pcmcia/sa1111_generic.c b/drivers/pcmcia/sa1111_generic.c
-index 65b02c3..c5988be 100644
---- a/drivers/pcmcia/sa1111_generic.c
-+++ b/drivers/pcmcia/sa1111_generic.c
-@@ -145,6 +145,9 @@ int sa1111_pcmcia_add(struct sa1111_dev *dev, struct pcmcia_low_level *ops,
- 			return -ENOMEM;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 6bf077b..a6e08ff 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -368,6 +368,8 @@ struct omap_hdmi {
+ 	bool core_enabled;
  
- 		s->soc.nr = ops->first + i;
-+		s->soc.clk = clk_get(&dev->dev, NULL);
-+		if (IS_ERR(s->soc.clk))
-+			return -ENODEV;
- 		soc_pcmcia_init_one(&s->soc, ops, &dev->dev);
- 		s->dev = dev;
- 		if (s->soc.nr) {
-@@ -220,6 +223,7 @@ static int pcmcia_remove(struct sa1111_dev *dev)
- 	for (; s; s = next) {
- 		next = s->next;
- 		soc_pcmcia_remove_one(&s->soc);
-+		clk_put(s->soc.clk);
- 		kfree(s);
- 	}
+ 	struct omap_dss_device output;
++
++	struct platform_device *audio_pdev;
+ };
  
+ #endif
 -- 
-2.1.1
+1.7.9.5
 

@@ -1,133 +1,40 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Nov 2014 11:52:21 +0000
-Subject: [PATCH 19/22] OMAPDSS: HDMI: split PLL enable & config
-Message-Id: <1415793144-11723-20-git-send-email-tomi.valkeinen@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 12 Nov 2014 22:08:44 +0000
+Subject: [PATCH 4/4] fbcon: Change fbcon_init from module_init to fs_initcall
+Message-Id: <1415830124-28787-4-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1415830124-28787-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1415830124-28787-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-At the moment we have one function, hdmi_pll_enable, which enables the
-PLL and writes the PLL configuration to registers.
+Various fb drivers register themselves before module_init so as to have a
+console as early as possible, this is of little use if fbcon does not initialze
+early too.
 
-To make the HDMI PLL ahere to the DSS PLL API, split the hdmi_pll_enable
-into two parts: hdmi_pll_enable which enables the PLL HW, and
-hdmi_pll_set_config which writes the config.
+Fbcon cannot initialize earlier then fs_initcall, because then the creation
+of /sys/class/graphics/fbcon will fail.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h     |  1 +
- drivers/video/fbdev/omap2/dss/hdmi4.c    | 10 ++++++++--
- drivers/video/fbdev/omap2/dss/hdmi5.c    | 10 ++++++++--
- drivers/video/fbdev/omap2/dss/hdmi_pll.c |  6 +-----
- 4 files changed, 18 insertions(+), 9 deletions(-)
+ drivers/video/console/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 03761ecb81a6..7595274a9bcf 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -316,6 +316,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
- /* HDMI PLL funcs */
- int hdmi_pll_enable(struct hdmi_pll_data *pll);
- void hdmi_pll_disable(struct hdmi_pll_data *pll);
-+int hdmi_pll_set_config(struct hdmi_pll_data *pll);
- void hdmi_pll_dump(struct hdmi_pll_data *pll, struct seq_file *s);
- void hdmi_pll_compute(struct hdmi_pll_data *pll, unsigned long clkin,
- 	unsigned long target_tmds);
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index 2094b6eae99e..98aa910241b8 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -196,13 +196,18 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
- 
- 	hdmi_pll_compute(&hdmi.pll, clk_get_rate(hdmi.sys_clk), p->pixelclock);
- 
--	/* config the PLL and PHY hdmi_set_pll_pwrfirst */
- 	r = hdmi_pll_enable(&hdmi.pll);
- 	if (r) {
--		DSSDBG("Failed to lock PLL\n");
-+		DSSERR("Failed to enable PLL\n");
- 		goto err_pll_enable;
- 	}
- 
-+	r = hdmi_pll_set_config(&hdmi.pll);
-+	if (r) {
-+		DSSERR("Failed to configure PLL\n");
-+		goto err_pll_cfg;
-+	}
-+
- 	r = hdmi_phy_configure(&hdmi.phy, hdmi.pll.info.clkdco,
- 		hdmi.pll.info.clkout);
- 	if (r) {
-@@ -241,6 +246,7 @@ err_vid_enable:
- err_phy_cfg:
- 	hdmi_wp_set_phy_pwr(&hdmi.wp, HDMI_PHYPWRCMD_OFF);
- err_phy_pwr:
-+err_pll_cfg:
- 	hdmi_pll_disable(&hdmi.pll);
- err_pll_enable:
- 	hdmi_power_off_core(dssdev);
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index fb8c14507a4d..facc4e070520 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -214,13 +214,18 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
- 	hdmi_wp_set_irqstatus(&hdmi.wp,
- 			hdmi_wp_get_irqstatus(&hdmi.wp));
- 
--	/* config the PLL and PHY hdmi_set_pll_pwrfirst */
- 	r = hdmi_pll_enable(&hdmi.pll);
- 	if (r) {
--		DSSDBG("Failed to lock PLL\n");
-+		DSSERR("Failed to enable PLL\n");
- 		goto err_pll_enable;
- 	}
- 
-+	r = hdmi_pll_set_config(&hdmi.pll);
-+	if (r) {
-+		DSSERR("Failed to configure PLL\n");
-+		goto err_pll_cfg;
-+	}
-+
- 	r = hdmi_phy_configure(&hdmi.phy, hdmi.pll.info.clkdco,
- 		hdmi.pll.info.clkout);
- 	if (r) {
-@@ -259,6 +264,7 @@ err_vid_enable:
- 	hdmi_wp_set_phy_pwr(&hdmi.wp, HDMI_PHYPWRCMD_OFF);
- err_phy_pwr:
- err_phy_cfg:
-+err_pll_cfg:
- 	hdmi_pll_disable(&hdmi.pll);
- err_pll_enable:
- 	hdmi_power_off_core(dssdev);
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-index 190bede1dcb9..c14c3d132513 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-@@ -103,7 +103,7 @@ void hdmi_pll_compute(struct hdmi_pll_data *pll, unsigned long clkin,
- 	pi->clkout = clkout;
- }
- 
--static int hdmi_pll_config(struct hdmi_pll_data *pll)
-+int hdmi_pll_set_config(struct hdmi_pll_data *pll)
- {
- 	u32 r;
- 	struct hdmi_pll_info *fmt = &pll->info;
-@@ -179,10 +179,6 @@ int hdmi_pll_enable(struct hdmi_pll_data *pll)
- 	if (r)
- 		return r;
- 
--	r = hdmi_pll_config(pll);
--	if (r)
--		return r;
--
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index eb976ee..ea43724 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -3624,7 +3624,7 @@ static int __init fb_console_init(void)
  	return 0;
  }
  
+-module_init(fb_console_init);
++fs_initcall(fb_console_init);
+ 
+ #ifdef MODULE
+ 
 -- 
-2.1.3
+2.1.0
 

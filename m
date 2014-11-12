@@ -1,141 +1,99 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Nov 2014 11:52:06 +0000
-Subject: [PATCH 04/22] OMAPDSS: DSI: separate LP clock info from dsi_clock_info
-Message-Id: <1415793144-11723-5-git-send-email-tomi.valkeinen@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 12 Nov 2014 16:15:50 +0000
+Subject: [PATCH v5 3/5] simplefb: formalize pseudo palette handling
+Message-Id: <1415808952-23549-4-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-struct dsi_clock_info represents the clocks handled by the DSI, mostly
-PLL related clocks. In an effort to create common PLL code, we need to
-remove all the non-PLL items from dsi_clock_info.
+From: Luc Verhaegen <libv@skynet.be>
 
-This patch removes LP clock related fields from dsi_clock_info, and
-creates a new struct dsi_lp_clock_info for holding clock info for the LP
-clock.
+Add a proper struct describing simplefb private data, with the palette in there,
+instead of directly storing the palette in the fb_info->par pointer.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Luc Verhaegen <libv@skynet.be>
+Acked-by: Stephen Warren <swarren@nvidia.com>
+[hdegoede@redhat.com: drop unnecessary void * cast]
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
+Acked-by: Grant Likely <grant.likely@linaro.org>
+--
+Changes in v5:
+-Improved commit message
 ---
- drivers/video/fbdev/omap2/dss/dsi.c | 30 +++++++++++++++++++-----------
- drivers/video/fbdev/omap2/dss/dss.h |  2 --
- 2 files changed, 19 insertions(+), 13 deletions(-)
+ drivers/video/fbdev/simplefb.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
-index 0083f6500949..1c5a15581669 100644
---- a/drivers/video/fbdev/omap2/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/dss/dsi.c
-@@ -287,6 +287,11 @@ struct dsi_clk_calc_ctx {
- 	struct omap_dss_dsi_videomode_timings dsi_vm;
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 210f3a0..ec112c1 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -41,6 +41,8 @@ static struct fb_var_screeninfo simplefb_var = {
+ 	.vmode		= FB_VMODE_NONINTERLACED,
  };
  
-+struct dsi_lp_clock_info {
-+	unsigned long lp_clk;
-+	u16 lp_clk_div;
-+};
++#define PSEUDO_PALETTE_SIZE 16
 +
- struct dsi_data {
- 	struct platform_device *pdev;
- 	void __iomem *proto_base;
-@@ -307,6 +312,9 @@ struct dsi_data {
- 
- 	struct dsi_clock_info current_cinfo;
- 
-+	struct dsi_lp_clock_info user_lp_cinfo;
-+	struct dsi_lp_clock_info current_lp_cinfo;
-+
- 	bool vdds_dsi_enabled;
- 	struct regulator *vdds_dsi_reg;
- 
-@@ -1293,10 +1301,10 @@ static unsigned long dsi_fclk_rate(struct platform_device *dsidev)
- 	return r;
- }
- 
--static int dsi_lp_clock_calc(struct dsi_clock_info *cinfo,
--		unsigned long lp_clk_min, unsigned long lp_clk_max)
-+static int dsi_lp_clock_calc(unsigned long dsi_fclk,
-+		unsigned long lp_clk_min, unsigned long lp_clk_max,
-+		struct dsi_lp_clock_info *lp_cinfo)
+ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 			      u_int transp, struct fb_info *info)
  {
--	unsigned long dsi_fclk = cinfo->dsi_pll_hsdiv_dsi_clk;
- 	unsigned lp_clk_div;
- 	unsigned long lp_clk;
+@@ -50,7 +52,7 @@ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 	u32 cb = blue >> (16 - info->var.blue.length);
+ 	u32 value;
  
-@@ -1306,8 +1314,8 @@ static int dsi_lp_clock_calc(struct dsi_clock_info *cinfo,
- 	if (lp_clk < lp_clk_min || lp_clk > lp_clk_max)
+-	if (regno >= 16)
++	if (regno >= PSEUDO_PALETTE_SIZE)
  		return -EINVAL;
  
--	cinfo->lp_clk_div = lp_clk_div;
--	cinfo->lp_clk = lp_clk;
-+	lp_cinfo->lp_clk_div = lp_clk_div;
-+	lp_cinfo->lp_clk = lp_clk;
- 
+ 	value = (cr << info->var.red.offset) |
+@@ -163,11 +165,16 @@ static int simplefb_parse_pd(struct platform_device *pdev,
  	return 0;
  }
-@@ -1319,7 +1327,7 @@ static int dsi_set_lp_clk_divisor(struct platform_device *dsidev)
- 	unsigned lp_clk_div;
- 	unsigned long lp_clk;
  
--	lp_clk_div = dsi->user_dsi_cinfo.lp_clk_div;
-+	lp_clk_div = dsi->user_lp_cinfo.lp_clk_div;
++struct simplefb_par {
++	u32 palette[PSEUDO_PALETTE_SIZE];
++};
++
+ static int simplefb_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+ 	struct simplefb_params params;
+ 	struct fb_info *info;
++	struct simplefb_par *par;
+ 	struct resource *mem;
  
- 	if (lp_clk_div = 0 || lp_clk_div > dsi->lpdiv_max)
+ 	if (fb_get_options("simplefb", NULL))
+@@ -188,11 +195,13 @@ static int simplefb_probe(struct platform_device *pdev)
  		return -EINVAL;
-@@ -1329,8 +1337,8 @@ static int dsi_set_lp_clk_divisor(struct platform_device *dsidev)
- 	lp_clk = dsi_fclk / 2 / lp_clk_div;
+ 	}
  
- 	DSSDBG("LP_CLK_DIV %u, LP_CLK %lu\n", lp_clk_div, lp_clk);
--	dsi->current_cinfo.lp_clk = lp_clk;
--	dsi->current_cinfo.lp_clk_div = lp_clk_div;
-+	dsi->current_lp_cinfo.lp_clk = lp_clk;
-+	dsi->current_lp_cinfo.lp_clk_div = lp_clk_div;
+-	info = framebuffer_alloc(sizeof(u32) * 16, &pdev->dev);
++	info = framebuffer_alloc(sizeof(struct simplefb_par), &pdev->dev);
+ 	if (!info)
+ 		return -ENOMEM;
+ 	platform_set_drvdata(pdev, info);
  
- 	/* LP_CLK_DIVISOR */
- 	REG_FLD_MOD(dsidev, DSI_CLK_CTRL, lp_clk_div, 12, 0);
-@@ -1801,7 +1809,7 @@ static void dsi_dump_dsidev_clocks(struct platform_device *dsidev,
++	par = info->par;
++
+ 	info->fix = simplefb_fix;
+ 	info->fix.smem_start = mem->start;
+ 	info->fix.smem_len = resource_size(mem);
+@@ -225,7 +234,7 @@ static int simplefb_probe(struct platform_device *pdev)
+ 		framebuffer_release(info);
+ 		return -ENODEV;
+ 	}
+-	info->pseudo_palette = (void *)(info + 1);
++	info->pseudo_palette = par->palette;
  
- 	seq_printf(s,	"TxByteClkHS\t%lu\n", dsi_get_txbyteclkhs(dsidev));
- 
--	seq_printf(s,	"LP_CLK\t\t%lu\n", cinfo->lp_clk);
-+	seq_printf(s,	"LP_CLK\t\t%lu\n", dsi->current_lp_cinfo.lp_clk);
- 
- 	dsi_runtime_put(dsidev);
- }
-@@ -5110,8 +5118,8 @@ static int dsi_set_config(struct omap_dss_device *dssdev,
- 
- 	dsi_pll_calc_dsi_fck(&ctx.dsi_cinfo);
- 
--	r = dsi_lp_clock_calc(&ctx.dsi_cinfo, config->lp_clk_min,
--			config->lp_clk_max);
-+	r = dsi_lp_clock_calc(ctx.dsi_cinfo.dsi_pll_hsdiv_dsi_clk,
-+		config->lp_clk_min, config->lp_clk_max, &dsi->user_lp_cinfo);
- 	if (r) {
- 		DSSERR("failed to find suitable DSI LP clock settings\n");
- 		goto err;
-diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
-index 2defcaedbef5..712592d2e5f7 100644
---- a/drivers/video/fbdev/omap2/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/dss/dss.h
-@@ -119,7 +119,6 @@ struct dsi_clock_info {
- 						 * OMAP4: PLLx_CLK1 */
- 	unsigned long dsi_pll_hsdiv_dsi_clk;	/* OMAP3: DSI2_PLL_CLK
- 						 * OMAP4: PLLx_CLK2 */
--	unsigned long lp_clk;
- 
- 	/* dividers */
- 	u16 regn;
-@@ -128,7 +127,6 @@ struct dsi_clock_info {
- 			 * OMAP4: REGM4 */
- 	u16 regm_dsi;	/* OMAP3: REGM4
- 			 * OMAP4: REGM5 */
--	u16 lp_clk_div;
- };
- 
- struct dss_lcd_mgr_config {
+ 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
+ 			     info->fix.smem_start, info->fix.smem_len,
 -- 
-2.1.3
+2.1.0
 

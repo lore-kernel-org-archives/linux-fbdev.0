@@ -1,7 +1,7 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 10:49:05 +0000
-Subject: [PATCH v7 03/20] OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
-Message-Id: <b52c098c51f335a3643fa64afc3b6397b8c3b94d.1415786458.git.jsarha@ti.com>
+Date: Wed, 12 Nov 2014 10:49:03 +0000
+Subject: [PATCH v7 01/20] OMAPDSS: hdmi_wp: Protect reserved bits in hdmi_wp_audio_config_format()
+Message-Id: <97e78fc41195719e4423d2aedf1b90b4740379c7.1415786458.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1415786458.git.jsarha@ti.com>
 In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
@@ -11,29 +11,32 @@ Content-Transfer-Encoding: 7bit
 To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-The OMAP5 HDMI audio implementation needs HDMI_AUDIO_LAYOUT_6CH in
-hdmi_core_audio_layout enum. I found the correct value from ti-linux
-3.8 tree.
+Only OMAP4 DSS has non reserved bits above 6th bit in HDMI_WP_AUDIO_CFG.
 
 Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 262771b..1f01068 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -160,7 +160,8 @@ enum hdmi_audio_blk_strt_end_sig {
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index 496327e..71b499e 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -194,8 +194,12 @@ void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
+ 	DSSDBG("Enter hdmi_wp_audio_config_format\n");
  
- enum hdmi_core_audio_layout {
- 	HDMI_AUDIO_LAYOUT_2CH = 0,
--	HDMI_AUDIO_LAYOUT_8CH = 1
-+	HDMI_AUDIO_LAYOUT_8CH = 1,
-+	HDMI_AUDIO_LAYOUT_6CH = 2
- };
- 
- enum hdmi_core_cts_mode {
+ 	r = hdmi_read_reg(wp->base, HDMI_WP_AUDIO_CFG);
+-	r = FLD_MOD(r, aud_fmt->stereo_channels, 26, 24);
+-	r = FLD_MOD(r, aud_fmt->active_chnnls_msk, 23, 16);
++	if (omapdss_get_version() = OMAPDSS_VER_OMAP4430_ES1 ||
++	    omapdss_get_version() = OMAPDSS_VER_OMAP4430_ES2 ||
++	    omapdss_get_version() = OMAPDSS_VER_OMAP4) {
++		r = FLD_MOD(r, aud_fmt->stereo_channels, 26, 24);
++		r = FLD_MOD(r, aud_fmt->active_chnnls_msk, 23, 16);
++	}
+ 	r = FLD_MOD(r, aud_fmt->en_sig_blk_strt_end, 5, 5);
+ 	r = FLD_MOD(r, aud_fmt->type, 4, 4);
+ 	r = FLD_MOD(r, aud_fmt->justification, 3, 3);
 -- 
 1.7.9.5
 

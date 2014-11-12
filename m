@@ -1,43 +1,40 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 22 Nov 2014 16:00:21 +0000
-Subject: [PATCH 1/1] video: fbdev-LCDC: Deletion of an unnecessary check before the function call "vfree"
-Message-Id: <5470B315.8000507@users.sourceforge.net>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 10:49:15 +0000
+Subject: [PATCH v7 13/20] OMAPDSS: hdmi.h: Add members to hdmi drvdata for audio implementation
+Message-Id: <8da94a8e447429cef1551a2966b2b75d24210417.1415786458.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net>
-In-Reply-To: <5317A59D.4@users.sourceforge.net>
+References: <cover.1415786458.git.jsarha@ti.com>
+In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 22 Nov 2014 16:51:31 +0100
+Adds display_enabled flag and audio_abort_cb callback to struct hdmi.
 
-The vfree() function performs also input parameter validation.
-Thus the test around the call is not needed.
-
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index 2bcc84a..cfde21d 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -2181,8 +2181,7 @@ sh_mobile_lcdc_channel_fb_cleanup(struct sh_mobile_lcdc_chan *ch)
- 	if (!info || !info->device)
- 		return;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 6d129f2..bfaaf2f 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -366,10 +366,12 @@ struct omap_hdmi {
+ 	struct regulator *vdda_reg;
  
--	if (ch->sglist)
--		vfree(ch->sglist);
-+	vfree(ch->sglist);
+ 	bool core_enabled;
++	bool display_enabled;
  
- 	fb_dealloc_cmap(&info->cmap);
- 	framebuffer_release(info);
+ 	struct omap_dss_device output;
+ 
+ 	struct platform_device *audio_pdev;
++	void (*audio_abort_cb)(struct device *dev);
+ };
+ 
+ #endif
 -- 
-2.1.3
+1.7.9.5
 

@@ -1,35 +1,54 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 10:49:11 +0000
-Subject: [PATCH v7 09/20] OMAPDSS: hdmi: Add pdev pointer for audio_pdev in HDMI DRV data
-Message-Id: <4fccfd6c603fd479db11b427723eb4358504bde3.1415786458.git.jsarha@ti.com>
+Date: Wed, 12 Nov 2014 14:40:56 +0000
+Subject: [PATCH v7.1 05/19] OMAPDSS: hdmi4_core: Remove unused hdmi4_audio_get_dma_port()
+Message-Id: <82d7787bcd3ac79c863c8026bf0e3bc7f31f0ffc.1415803065.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415786458.git.jsarha@ti.com>
-In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
+References: <cover.1415803064.git.jsarha@ti.com>
+In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-This is used to store omap-hdmi-audio pdev for unregistering it.
+hdmi4_audio_get_dma_port() is unused and and broken.
 
 Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/omap2/dss/hdmi4_core.c |    9 ---------
+ drivers/video/fbdev/omap2/dss/hdmi4_core.h |    2 --
+ 2 files changed, 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 6bf077b..a6e08ff 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -368,6 +368,8 @@ struct omap_hdmi {
- 	bool core_enabled;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+index 3b448d9..7eafea5 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+@@ -874,15 +874,6 @@ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp)
+ 	hdmi_wp_audio_core_req_enable(wp, false);
+ }
  
- 	struct omap_dss_device output;
-+
-+	struct platform_device *audio_pdev;
- };
- 
+-int hdmi4_audio_get_dma_port(u32 *offset, u32 *size)
+-{
+-	if (!offset || !size)
+-		return -EINVAL;
+-	*offset = HDMI_WP_AUDIO_DATA;
+-	*size = 4;
+-	return 0;
+-}
+-
+ int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+ {
+ 	struct resource *res;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.h b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
+index c1959f7..a069f96 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
+@@ -270,6 +270,4 @@ int hdmi4_audio_start(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
+ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
+ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 		struct omap_dss_audio *audio, u32 pclk);
+-int hdmi4_audio_get_dma_port(u32 *offset, u32 *size);
+-
  #endif
 -- 
 1.7.9.5

@@ -1,92 +1,89 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Thu, 06 Nov 2014 07:41:16 +0000
-Subject: [PATCH RESEND 4/5] pcmcia: sa1100: make use of device clock
-Message-Id: <1415259677-18770-5-git-send-email-dbaryshkov@gmail.com>
+From: Marek Belisko <marek@goldelico.com>
+Date: Wed, 12 Nov 2014 22:10:45 +0000
+Subject: [PATCH v2 3/5] arm: dts: omap3-gta04: Add handling for tv output
+Message-Id: <1415830247-31633-4-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1415830247-31633-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1415830247-31633-1-git-send-email-marek@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Use per-device clock (instead of calling cpufreq_get(0), which can
-return 0 if no cpu frequency driver is selected) to program timings.
+Add handling for gta04 tv out chain:
+venc -> opa362 -> svideo
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Marek Belisko <marek@goldelico.com>
 ---
- drivers/pcmcia/sa1100_generic.c |  1 +
- drivers/pcmcia/sa11xx_base.c    | 14 ++++++++++++--
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/omap3-gta04.dtsi | 48 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
 
-diff --git a/drivers/pcmcia/sa1100_generic.c b/drivers/pcmcia/sa1100_generic.c
-index ff8a027..d2ab060 100644
---- a/drivers/pcmcia/sa1100_generic.c
-+++ b/drivers/pcmcia/sa1100_generic.c
-@@ -93,6 +93,7 @@ static int sa11x0_drv_pcmcia_remove(struct platform_device *dev)
- 	for (i = 0; i < sinfo->nskt; i++)
- 		soc_pcmcia_remove_one(&sinfo->skt[i]);
- 
-+	clk_put(sinfo->clk);
- 	kfree(sinfo);
- 	return 0;
- }
-diff --git a/drivers/pcmcia/sa11xx_base.c b/drivers/pcmcia/sa11xx_base.c
-index 54d3089..6dd94bb 100644
---- a/drivers/pcmcia/sa11xx_base.c
-+++ b/drivers/pcmcia/sa11xx_base.c
-@@ -135,14 +135,16 @@ sa1100_pcmcia_frequency_change(struct soc_pcmcia_socket *skt,
- static int
- sa1100_pcmcia_set_timing(struct soc_pcmcia_socket *skt)
- {
--	return sa1100_pcmcia_set_mecr(skt, cpufreq_get(0));
-+	unsigned long clk = clk_get_rate(skt->clk);
+diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
+index fd34f91..b50dc10 100644
+--- a/arch/arm/boot/dts/omap3-gta04.dtsi
++++ b/arch/arm/boot/dts/omap3-gta04.dtsi
+@@ -83,6 +83,41 @@
+ 		compatible = "usb-nop-xceiv";
+ 		reset-gpios = <&gpio6 14 GPIO_ACTIVE_LOW>;
+ 	};
 +
-+	return sa1100_pcmcia_set_mecr(skt, clk / 1000);
- }
- 
- static int
- sa1100_pcmcia_show_timing(struct soc_pcmcia_socket *skt, char *buf)
- {
- 	struct soc_pcmcia_timing timing;
--	unsigned int clock = cpufreq_get(0);
-+	unsigned int clock = clk_get_rate(skt->clk);
- 	unsigned long mecr = MECR;
- 	char *p = buf;
- 
-@@ -218,6 +220,11 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
- 	struct skt_dev_info *sinfo;
- 	struct soc_pcmcia_socket *skt;
- 	int i, ret = 0;
-+	struct clk *clk;
++	tv0: connector@1 {
++		compatible = "svideo-connector";
++		label = "tv";
 +
-+	clk = clk_get(dev, NULL);
-+	if (IS_ERR(clk))
-+		return -ENODEV;
++		port {
++			tv_connector_in: endpoint {
++				remote-endpoint = <&opa_out>;
++			};
++		};
++	};
++
++	tv_amp: opa362 {
++		compatible = "ti,opa362";
++		gpios = <&gpio1 23 0>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++				opa_in: endpoint@0 {
++					remote-endpoint = <&venc_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++				opa_out: endpoint@0 {
++					remote-endpoint = <&tv_connector_in>;
++				};
++			};
++		};
++	};
+ };
  
- 	sa11xx_drv_pcmcia_ops(ops);
+ &omap3_pmx_core {
+@@ -396,6 +431,19 @@
+ 	};
+ };
  
-@@ -226,12 +233,14 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
- 		return -ENOMEM;
++&venc {
++	status = "okay";
++
++	vdda-supply = <&vdac>;
++
++	port {
++		venc_out: endpoint {
++			remote-endpoint = <&opa_in>;
++			ti,channels = <2>;
++		};
++	};
++};
++
+ &gpmc {
+ 	ranges = <0 0 0x30000000 0x04>; /* CS0: NAND */
  
- 	sinfo->nskt = nr;
-+	sinfo->clk = clk;
- 
- 	/* Initialize processor specific parameters */
- 	for (i = 0; i < nr; i++) {
- 		skt = &sinfo->skt[i];
- 
- 		skt->nr = first + i;
-+		skt->clk = clk;
- 		soc_pcmcia_init_one(skt, ops, dev);
- 
- 		ret = sa11xx_drv_pcmcia_add_one(skt);
-@@ -242,6 +251,7 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
- 	if (ret) {
- 		while (--i >= 0)
- 			soc_pcmcia_remove_one(&sinfo->skt[i]);
-+		clk_put(clk);
- 		kfree(sinfo);
- 	} else {
- 		dev_set_drvdata(dev, sinfo);
 -- 
-2.1.1
+1.9.1
 

@@ -1,64 +1,69 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 23 Nov 2014 13:14:10 +0000
-Subject: [PATCH 1/1] video: fbdev-OMAP2: Deletion of unnecessary checks before the function call "i2c_put_ada
-Message-Id: <5471DDA2.1060000@users.sourceforge.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 12 Nov 2014 11:52:03 +0000
+Subject: [PATCH 01/22] OMAPDSS: DSI: wait for hsdiv clocks when enabling PLL
+Message-Id: <1415793144-11723-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.so
- urceforge.net>
-In-Reply-To: <5317A59D.4@users.sourceforge.net>
+References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 23 Nov 2014 14:07:22 +0100
+At the moment we have two functions to wait for the HSDIV clocks to get
+active, dsi_wait_pll_hsdiv_dispc_active and
+dsi_wait_pll_hsdiv_dsi_active. Instead of such inconvenient functions,
+let's just make sure that the hsdiv clocks are active after the pll has
+been enabled.
 
-The i2c_put_adapter() function tests whether its argument is NULL
-and then returns immediately. Thus the test around the call is not needed.
+This patch adds code to dsi_pll_set_clock_div() to wait until HSDIV
+clocks are active.
 
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/displays-new/connector-dvi.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/omap2/dss/dsi.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/displays-new/connector-dvi.c b/drivers/video/fbdev/omap2/displays-new/connector-dvi.c
-index 74de2bc..196c61a 100644
---- a/drivers/video/fbdev/omap2/displays-new/connector-dvi.c
-+++ b/drivers/video/fbdev/omap2/displays-new/connector-dvi.c
-@@ -262,8 +262,7 @@ static int dvic_probe_pdata(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
+index 0793bc67a275..fe8196b17a5e 100644
+--- a/drivers/video/fbdev/omap2/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/dss/dsi.c
+@@ -1514,6 +1514,20 @@ static void dsi_pll_calc_dsi_fck(struct dsi_clock_info *cinfo)
+ 	cinfo->dsi_pll_hsdiv_dsi_clk = cinfo->clkin4ddr / cinfo->regm_dsi;
+ }
  
- 	in = omap_dss_find_output(pdata->source);
- 	if (in = NULL) {
--		if (ddata->i2c_adapter)
--			i2c_put_adapter(ddata->i2c_adapter);
-+		i2c_put_adapter(ddata->i2c_adapter);
++static int dsi_wait_hsdiv_ack(struct platform_device *dsidev, u32 hsdiv_ack_mask)
++{
++	int t = 100;
++
++	while (t-- > 0) {
++		u32 v = dsi_read_reg(dsidev, DSI_PLL_STATUS);
++		v &= hsdiv_ack_mask;
++		if (v = hsdiv_ack_mask)
++			return 0;
++	}
++
++	return -ETIMEDOUT;
++}
++
+ int dsi_pll_set_clock_div(struct platform_device *dsidev,
+ 		struct dsi_clock_info *cinfo)
+ {
+@@ -1646,6 +1660,13 @@ int dsi_pll_set_clock_div(struct platform_device *dsidev,
+ 	l = FLD_MOD(l, 0, 20, 20);	/* DSI_HSDIVBYPASS */
+ 	dsi_write_reg(dsidev, DSI_PLL_CONFIGURATION2, l);
  
- 		dev_err(&pdev->dev, "Failed to find video source\n");
- 		return -EPROBE_DEFER;
-@@ -352,8 +351,7 @@ static int dvic_probe(struct platform_device *pdev)
- err_reg:
- 	omap_dss_put_device(ddata->in);
- 
--	if (ddata->i2c_adapter)
--		i2c_put_adapter(ddata->i2c_adapter);
-+	i2c_put_adapter(ddata->i2c_adapter);
- 
++	r = dsi_wait_hsdiv_ack(dsidev, BIT(7) | BIT(8));
++	if (r) {
++		DSSERR("failed to enable HSDIV clocks: %d\n", r);
++		goto err;
++	}
++
++
+ 	DSSDBG("PLL config done\n");
+ err:
  	return r;
- }
-@@ -371,8 +369,7 @@ static int __exit dvic_remove(struct platform_device *pdev)
- 
- 	omap_dss_put_device(in);
- 
--	if (ddata->i2c_adapter)
--		i2c_put_adapter(ddata->i2c_adapter);
-+	i2c_put_adapter(ddata->i2c_adapter);
- 
- 	return 0;
- }
 -- 
 2.1.3
 

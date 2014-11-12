@@ -1,53 +1,85 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 12 Nov 2014 15:49:08 +0000
-Subject: simplefb device tree bindings enumeration and handover
-Message-Id: <54638174.50306@redhat.com>
+Date: Wed, 12 Nov 2014 16:15:51 +0000
+Subject: [PATCH v5 4/5] simplefb: add goto error path to probe
+Message-Id: <1415808952-23549-5-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, David Herrmann <dh.herrmann-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi all,
+From: Luc Verhaegen <libv@skynet.be>
 
-Today I've had a long discussion with Grant Likely on irc, in the
-#devicetree channel, on the devicetree bindings for simplefb.
+Use the usual kernel style of goto error_foo to free resources on probe
+error. This is a preparation patch for adding clocks support.
 
-The 2 topics discussed were enumeration of simplefb nodes, and the
-handover to a hw specific driver later in the boot process.
+While at it also update ioremap_wc error return from ENODEV to ENOMEM.
 
-We've come to the following conclusions:
+Signed-off-by: Luc Verhaegen <libv@skynet.be>
+Acked-by: Stephen Warren <swarren@nvidia.com>
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
+Acked-by: Grant Likely <grant.likely@linaro.org>
+--
+Changes in v5:
+-Improved commit message
+---
+ drivers/video/fbdev/simplefb.c | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
-1) Since simplefb nodes represent runtime information they must be sub-nodes
-of the chosen node. The primary display node must be named framebuffer0,
-additional nodes must be called framebuffer1, etc.
-
-2) If a simplefb node represents the preferred console for user
-interaction, then the chosen node's stdout-path property must point to it.
-
-3) Older devicetree files may have a compatible = "simple-framebuffer"
-node in a different place, operating systems must first enumerate any
-framebuffer# nodes found under chosen and then check for other compatible
-nodes.
-
-4) If the devicetree contains nodes for the display hardware used by a simplefb,
-then one of the hw nodes must have a property called "framebuffer" pointing to
-the framebuffer# node in chosen, so that the operating system knows which
-simplefb to disable when handing over control to a driver for the real
-hardware. The bindings for the hw nodes must specify which node contains the
-framebuffer property.
-
-5) It is advised that devicetree files contain pre-filled, disabled framebuffer#
-nodes, so that the firmware only needs to update the mode information and
-enable them. This way if e.g. later on support for more display clocks get
-added, the simplefb nodes will already contain this info and the firmware
-does not need to be updated.
-
-I'll post a patch updating Documentation/devicetree/bindings/video/simple-framebuffer.txt
-to reflect this soon.
-
-Regards,
-
-Hans
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index ec112c1..cdcf1fe 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -220,8 +220,8 @@ static int simplefb_probe(struct platform_device *pdev)
+ 
+ 	info->apertures = alloc_apertures(1);
+ 	if (!info->apertures) {
+-		framebuffer_release(info);
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto error_fb_release;
+ 	}
+ 	info->apertures->ranges[0].base = info->fix.smem_start;
+ 	info->apertures->ranges[0].size = info->fix.smem_len;
+@@ -231,8 +231,8 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	info->screen_base = ioremap_wc(info->fix.smem_start,
+ 				       info->fix.smem_len);
+ 	if (!info->screen_base) {
+-		framebuffer_release(info);
+-		return -ENODEV;
++		ret = -ENOMEM;
++		goto error_fb_release;
+ 	}
+ 	info->pseudo_palette = par->palette;
+ 
+@@ -247,14 +247,18 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	ret = register_framebuffer(info);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
+-		iounmap(info->screen_base);
+-		framebuffer_release(info);
+-		return ret;
++		goto error_unmap;
+ 	}
+ 
+ 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
+ 
+ 	return 0;
++
++error_unmap:
++	iounmap(info->screen_base);
++error_fb_release:
++	framebuffer_release(info);
++	return ret;
+ }
+ 
+ static int simplefb_remove(struct platform_device *pdev)
+-- 
+2.1.0
 

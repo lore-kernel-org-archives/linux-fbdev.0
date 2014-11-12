@@ -1,66 +1,53 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Nov 2014 11:52:08 +0000
-Subject: [PATCH 06/22] OMAPDSS: DSI: remove pll_locked field
-Message-Id: <1415793144-11723-7-git-send-email-tomi.valkeinen@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 12 Nov 2014 15:49:08 +0000
+Subject: simplefb device tree bindings enumeration and handover
+Message-Id: <54638174.50306@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, David Herrmann <dh.herrmann-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-We have pll_locked field in struct dsi_data, but it doesn't have any
-meaningful use anymore, and can be removed.
+Hi all,
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/dsi.c | 10 ----------
- 1 file changed, 10 deletions(-)
+Today I've had a long discussion with Grant Likely on irc, in the
+#devicetree channel, on the devicetree bindings for simplefb.
 
-diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
-index deab4135ddc0..37517e407f37 100644
---- a/drivers/video/fbdev/omap2/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/dss/dsi.c
-@@ -329,8 +329,6 @@ struct dsi_data {
- 	struct mutex lock;
- 	struct semaphore bus_lock;
- 
--	unsigned pll_locked;
--
- 	spinlock_t irq_lock;
- 	struct dsi_isr_tables isr_tables;
- 	/* space for a copy used by the interrupt handler */
-@@ -1206,11 +1204,6 @@ static inline void dsi_enable_pll_clock(struct platform_device *dsidev,
- 		clk_prepare_enable(dsi->sys_clk);
- 	else
- 		clk_disable_unprepare(dsi->sys_clk);
--
--	if (enable && dsi->pll_locked) {
--		if (wait_for_bit_change(dsidev, DSI_PLL_STATUS, 1, 1) != 1)
--			DSSERR("cannot lock PLL when enabling clocks\n");
--	}
- }
- 
- static void _dsi_print_reset_status(struct platform_device *dsidev)
-@@ -1647,8 +1640,6 @@ int dsi_pll_set_clock_div(struct platform_device *dsidev,
- 		goto err;
- 	}
- 
--	dsi->pll_locked = 1;
--
- 	l = dsi_read_reg(dsidev, DSI_PLL_CONFIGURATION2);
- 	l = FLD_MOD(l, 0, 0, 0);	/* DSI_PLL_IDLE */
- 	l = FLD_MOD(l, 0, 5, 5);	/* DSI_PLL_PLLLPMODE */
-@@ -1739,7 +1730,6 @@ void dsi_pll_uninit(struct platform_device *dsidev, bool disconnect_lanes)
- {
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 
--	dsi->pll_locked = 0;
- 	dsi_pll_power(dsidev, DSI_PLL_POWER_OFF);
- 	if (disconnect_lanes) {
- 		WARN_ON(!dsi->vdds_dsi_enabled);
--- 
-2.1.3
+The 2 topics discussed were enumeration of simplefb nodes, and the
+handover to a hw specific driver later in the boot process.
+
+We've come to the following conclusions:
+
+1) Since simplefb nodes represent runtime information they must be sub-nodes
+of the chosen node. The primary display node must be named framebuffer0,
+additional nodes must be called framebuffer1, etc.
+
+2) If a simplefb node represents the preferred console for user
+interaction, then the chosen node's stdout-path property must point to it.
+
+3) Older devicetree files may have a compatible = "simple-framebuffer"
+node in a different place, operating systems must first enumerate any
+framebuffer# nodes found under chosen and then check for other compatible
+nodes.
+
+4) If the devicetree contains nodes for the display hardware used by a simplefb,
+then one of the hw nodes must have a property called "framebuffer" pointing to
+the framebuffer# node in chosen, so that the operating system knows which
+simplefb to disable when handing over control to a driver for the real
+hardware. The bindings for the hw nodes must specify which node contains the
+framebuffer property.
+
+5) It is advised that devicetree files contain pre-filled, disabled framebuffer#
+nodes, so that the firmware only needs to update the mode information and
+enable them. This way if e.g. later on support for more display clocks get
+added, the simplefb nodes will already contain this info and the firmware
+does not need to be updated.
+
+I'll post a patch updating Documentation/devicetree/bindings/video/simple-framebuffer.txt
+to reflect this soon.
+
+Regards,
+
+Hans
 

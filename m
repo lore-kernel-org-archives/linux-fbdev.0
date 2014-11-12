@@ -1,288 +1,141 @@
-From: Quentin Lambert <lambert.quentin@gmail.com>
-Date: Thu, 27 Nov 2014 10:41:33 +0000
-Subject: [PATCH] Converting int usage to bool
-Message-Id: <20141127104133.GA5051@wrath>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 12 Nov 2014 11:52:06 +0000
+Subject: [PATCH 04/22] OMAPDSS: DSI: separate LP clock info from dsi_clock_info
+Message-Id: <1415793144-11723-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The following semantic patch was used to find
-functions and variables declared as int but
-used as boolean. The patch resulted in a
-significant number of false positive that I
-have ignored.
+struct dsi_clock_info represents the clocks handled by the DSI, mostly
+PLL related clocks. In an effort to create common PLL code, we need to
+remove all the non-PLL items from dsi_clock_info.
 
-I am not hyper confident about the modification
-I made to the functions. Some of them seem to
-have quite significant side effects, which is not
-necesserarily intended from a boolean function.
-In particular both *_rwtest functions write data.
-Moreover sisfb_find_host_bridge name may suggest
-more than a boolean return.
+This patch removes LP clock related fields from dsi_clock_info, and
+creates a new struct dsi_lp_clock_info for holding clock info for the LP
+clock.
 
-/* match all explicit boolean functions */
-@boolean_function@
-identifier fbool;
-typedef bool;
-@@
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dsi.c | 30 +++++++++++++++++++-----------
+ drivers/video/fbdev/omap2/dss/dss.h |  2 --
+ 2 files changed, 19 insertions(+), 13 deletions(-)
 
-bool fbool(...) {
-...
-}
-
-/* match variables eligible for boolean conversion */
-@eligible_var exists@
-identifier f, boolean_function.fbool;
-local idexpression int x;
-identifier xname;
-expression e;
-position p;
-@@
-
-f@p(...) {
-...when any
-(
-  x@xname = 1;
-|
-  x@xname = 0;
-|
-  x@xname = (e) ? 0 : 1;
-|
-  x@xname = (e) ? 1 : 0;
-|
-  x@xname = fbool(...);
-)
-...when any
-}
-
-/* match all acceptable complex assignement */
-@valid_assign exists@
-identifier eligible_var.f, boolean_function.fbool;
-local idexpression int eligible_var.x;
-expression e;
-position p;
-@@
-
-f(...) {
-...when any
-(
-  x@p = (e) ? 0 : 1;
-|
-  x@p = (e) ? 1 : 0;
-|
-  x@p = fbool(...);
-)
-...when any
-}
-
-/* match any expression where x is used as an int */
-@badvar1 exists@
-identifier eligible_var.f;
-local idexpression int eligible_var.x;
-expression e1 != {0, 1}, e2;
-position p != {valid_assign.p};
-@@
-
-f(...) {
-...when any
-(
-  x@p = e1;
-|
-  x++
-|
-  ++x
-|
-  x--
-|
-  --x
-|
-  x + e2
-|
-  x - e2
-|
-  e2 - x
-|
-  x & e2
-|
-  x * e2
-|
-  x / e2
-|
-  e2 / x
-)
-...when any
-}
-
-/* match all return statement involving an eligible variable */
-@valid_var_return depends on !badvar1 exists@
-identifier eligible_var.f;
-local idexpression int eligible_var.x;
-position p;
-@@
-
-f(...) {
-...when any
-  return x@p;
-}
-
-/* match all function eligible for boolean conversion */
-/* do not match function returning only boolean variable different from the one considered */
-@eligible_func exists@
-identifier f;
-local idexpression int x;
-position valid_var_return.p;
-@@
-
-int f(...) {
-...when any
-(
-  return 1;
-|
-  return 0;
-|
-  return x@p;
-)
-}
-
-/* match functions returning something else than a bool */
-@badfunc1 exists@
-identifier eligible_func.f;
-expression e != {0, 1};
-position p != valid_var_return.p;
-@@
-
-int
-f(...) {
-...when any
-  return e@p;
-}
-
-/* satisfied when eligible_var is variable of eligible_func */
-@same_function depends on eligible_var exists@
-identifier eligible_func.f;
-position eligible_var.p;
-@@
-
-int
-f@p(...) {
-...
-}
-
-/* match variable being returned as well as other non boolean variable */
-@badvar2 depends on badfunc1 && same_function exists@
-local idexpression int eligible_var.x;
-identifier eligible_func.f;
-@@
-
-int
-f(...) {
-...when any
-  return x;
-}
-
-@depends on (!eligible_func || eligible_func && !same_function) && !badvar1@
-identifier eligible_var.f;
-local idexpression int eligible_var.x;
-identifier eligible_var.xname;
-expression e;
-@@
-
-
-f(...) {
-...
-(
-++ bool xname;
-- int xname;
-|
-++ bool xname = false;
-- int xname = 0;
-|
-++ bool xname = true;
-- int xname = 1;
-)
-<...
-(
-  x - 1;
-+ true;
-|
-  x - 0;
-+ false;
-|
-- x = (e) ? 1 : 0;
-+ x = (e) ? true : false;
-|
-- x = (e) ? 0 : 1;
-+ x = (e) ? false : true;
-)
-...>
-
-}
-
-@depends on eligible_func && same_function && !badvar1 && !badvar2@
-identifier eligible_func.f;
-local idexpression int eligible_var.x;
-identifier eligible_var.xname;
-expression e;
-@@
-
-
-f(...) {
-...
-(
-++ bool xname;
-- int xname;
-|
-++ bool xname = false;
-- int xname = 0;
-|
-++ bool xname = true;
-- int xname = 1;
-)
-<...
-(
-  x - 1;
-+ true;
-|
-  x - 0;
-+ false;
-|
-- x = (e) ? 1 : 0;
-+ x = (e) ? true : false;
-|
-- x = (e) ? 0 : 1;
-+ x = (e) ? false : true;
-)
-...>
-
-}
-
-@depends on !badfunc1@
-identifier eligible_func.f;
-@@
-
-- int
-+ bool
-f(...) {
-<...
-(
-- return 1;
-+ return true;
-|
-- return 0;
-+ return false;
-)
-...>
-}
-
-Quentin Lambert (1):
-  video: fbdev: sis: sis_main.c: converting relevant int to bool
-
- drivers/video/fbdev/sis/sis_main.c | 64 ++++++++++++++++++++------------------
- 1 file changed, 33 insertions(+), 31 deletions(-)
-
+diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
+index 0083f6500949..1c5a15581669 100644
+--- a/drivers/video/fbdev/omap2/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/dss/dsi.c
+@@ -287,6 +287,11 @@ struct dsi_clk_calc_ctx {
+ 	struct omap_dss_dsi_videomode_timings dsi_vm;
+ };
+ 
++struct dsi_lp_clock_info {
++	unsigned long lp_clk;
++	u16 lp_clk_div;
++};
++
+ struct dsi_data {
+ 	struct platform_device *pdev;
+ 	void __iomem *proto_base;
+@@ -307,6 +312,9 @@ struct dsi_data {
+ 
+ 	struct dsi_clock_info current_cinfo;
+ 
++	struct dsi_lp_clock_info user_lp_cinfo;
++	struct dsi_lp_clock_info current_lp_cinfo;
++
+ 	bool vdds_dsi_enabled;
+ 	struct regulator *vdds_dsi_reg;
+ 
+@@ -1293,10 +1301,10 @@ static unsigned long dsi_fclk_rate(struct platform_device *dsidev)
+ 	return r;
+ }
+ 
+-static int dsi_lp_clock_calc(struct dsi_clock_info *cinfo,
+-		unsigned long lp_clk_min, unsigned long lp_clk_max)
++static int dsi_lp_clock_calc(unsigned long dsi_fclk,
++		unsigned long lp_clk_min, unsigned long lp_clk_max,
++		struct dsi_lp_clock_info *lp_cinfo)
+ {
+-	unsigned long dsi_fclk = cinfo->dsi_pll_hsdiv_dsi_clk;
+ 	unsigned lp_clk_div;
+ 	unsigned long lp_clk;
+ 
+@@ -1306,8 +1314,8 @@ static int dsi_lp_clock_calc(struct dsi_clock_info *cinfo,
+ 	if (lp_clk < lp_clk_min || lp_clk > lp_clk_max)
+ 		return -EINVAL;
+ 
+-	cinfo->lp_clk_div = lp_clk_div;
+-	cinfo->lp_clk = lp_clk;
++	lp_cinfo->lp_clk_div = lp_clk_div;
++	lp_cinfo->lp_clk = lp_clk;
+ 
+ 	return 0;
+ }
+@@ -1319,7 +1327,7 @@ static int dsi_set_lp_clk_divisor(struct platform_device *dsidev)
+ 	unsigned lp_clk_div;
+ 	unsigned long lp_clk;
+ 
+-	lp_clk_div = dsi->user_dsi_cinfo.lp_clk_div;
++	lp_clk_div = dsi->user_lp_cinfo.lp_clk_div;
+ 
+ 	if (lp_clk_div = 0 || lp_clk_div > dsi->lpdiv_max)
+ 		return -EINVAL;
+@@ -1329,8 +1337,8 @@ static int dsi_set_lp_clk_divisor(struct platform_device *dsidev)
+ 	lp_clk = dsi_fclk / 2 / lp_clk_div;
+ 
+ 	DSSDBG("LP_CLK_DIV %u, LP_CLK %lu\n", lp_clk_div, lp_clk);
+-	dsi->current_cinfo.lp_clk = lp_clk;
+-	dsi->current_cinfo.lp_clk_div = lp_clk_div;
++	dsi->current_lp_cinfo.lp_clk = lp_clk;
++	dsi->current_lp_cinfo.lp_clk_div = lp_clk_div;
+ 
+ 	/* LP_CLK_DIVISOR */
+ 	REG_FLD_MOD(dsidev, DSI_CLK_CTRL, lp_clk_div, 12, 0);
+@@ -1801,7 +1809,7 @@ static void dsi_dump_dsidev_clocks(struct platform_device *dsidev,
+ 
+ 	seq_printf(s,	"TxByteClkHS\t%lu\n", dsi_get_txbyteclkhs(dsidev));
+ 
+-	seq_printf(s,	"LP_CLK\t\t%lu\n", cinfo->lp_clk);
++	seq_printf(s,	"LP_CLK\t\t%lu\n", dsi->current_lp_cinfo.lp_clk);
+ 
+ 	dsi_runtime_put(dsidev);
+ }
+@@ -5110,8 +5118,8 @@ static int dsi_set_config(struct omap_dss_device *dssdev,
+ 
+ 	dsi_pll_calc_dsi_fck(&ctx.dsi_cinfo);
+ 
+-	r = dsi_lp_clock_calc(&ctx.dsi_cinfo, config->lp_clk_min,
+-			config->lp_clk_max);
++	r = dsi_lp_clock_calc(ctx.dsi_cinfo.dsi_pll_hsdiv_dsi_clk,
++		config->lp_clk_min, config->lp_clk_max, &dsi->user_lp_cinfo);
+ 	if (r) {
+ 		DSSERR("failed to find suitable DSI LP clock settings\n");
+ 		goto err;
+diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
+index 2defcaedbef5..712592d2e5f7 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.h
++++ b/drivers/video/fbdev/omap2/dss/dss.h
+@@ -119,7 +119,6 @@ struct dsi_clock_info {
+ 						 * OMAP4: PLLx_CLK1 */
+ 	unsigned long dsi_pll_hsdiv_dsi_clk;	/* OMAP3: DSI2_PLL_CLK
+ 						 * OMAP4: PLLx_CLK2 */
+-	unsigned long lp_clk;
+ 
+ 	/* dividers */
+ 	u16 regn;
+@@ -128,7 +127,6 @@ struct dsi_clock_info {
+ 			 * OMAP4: REGM4 */
+ 	u16 regm_dsi;	/* OMAP3: REGM4
+ 			 * OMAP4: REGM5 */
+-	u16 lp_clk_div;
+ };
+ 
+ struct dss_lcd_mgr_config {
 -- 
-1.9.1
+2.1.3
 

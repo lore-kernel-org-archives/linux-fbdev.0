@@ -1,7 +1,7 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 10:49:04 +0000
-Subject: [PATCH v7 02/20] OMAPDSS: hdmi5_core: Initialize mandatory sample_order parameter
-Message-Id: <89ed6487617455c4ec5dd039df488292e1e170d0.1415786458.git.jsarha@ti.com>
+Date: Wed, 12 Nov 2014 10:49:11 +0000
+Subject: [PATCH v7 09/20] OMAPDSS: hdmi: Add pdev pointer for audio_pdev in HDMI DRV data
+Message-Id: <4fccfd6c603fd479db11b427723eb4358504bde3.1415786458.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1415786458.git.jsarha@ti.com>
 In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
@@ -11,29 +11,26 @@ Content-Transfer-Encoding: 7bit
 To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-The hdmi_wp_audio_config_format() expects sample_order of struct
-hdmi_audio_format to be initialized. The only allowed value is
-HDMI_AUDIO_SAMPLE_LEFT_FIRST.
+This is used to store omap-hdmi-audio pdev for unregistering it.
 
 Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi5_core.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/video/fbdev/omap2/dss/hdmi.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-index 83acbf7..9ffa805 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-@@ -879,6 +879,9 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 	/* only LPCM atm */
- 	audio_format.type = HDMI_AUDIO_TYPE_LPCM;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 6bf077b..a6e08ff 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -368,6 +368,8 @@ struct omap_hdmi {
+ 	bool core_enabled;
  
-+	/* only allowed option */
-+	audio_format.sample_order = HDMI_AUDIO_SAMPLE_LEFT_FIRST;
+ 	struct omap_dss_device output;
 +
- 	/* disable start/stop signals of IEC 60958 blocks */
- 	audio_format.en_sig_blk_strt_end = HDMI_AUDIO_BLOCK_SIG_STARTEND_ON;
++	struct platform_device *audio_pdev;
+ };
  
+ #endif
 -- 
 1.7.9.5
 

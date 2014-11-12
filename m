@@ -1,113 +1,95 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 12 Nov 2014 15:02:11 +0000
+From: Belisko Marek <marek.belisko@gmail.com>
+Date: Wed, 12 Nov 2014 21:02:52 +0000
 Subject: Re: [PATCH 4/4] arm: dts: omap3-gta04: Add static configuration for devconf1 register
-Message-Id: <20141112150210.GC26481@atomide.com>
+Message-Id: <CAAfyv34sPAa94dYM1QoHKEX+MN8NMnzE91HLhXW6MG1Yr=o8mQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1415051968-4878-1-git-send-email-marek@goldelico.com>
  <1415051968-4878-5-git-send-email-marek@goldelico.com>
- <5463585D.9070209@ti.com>
-In-Reply-To: <5463585D.9070209@ti.com>
+ <20141110233630.GD31454@atomide.com>
+In-Reply-To: <20141110233630.GD31454@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [141112 04:56]:
-> Hi,
-> 
-> On 03/11/14 23:59, Marek Belisko wrote:
-> > gta04 board need for tvout enabled 2 bits in devconf1 register (tvbypass and acbias).
-> > Add single pinmux entry and enable it.
-> > 
-> > Signed-off-by: Marek Belisko <marek@goldelico.com>
-> > ---
-> >  arch/arm/boot/dts/omap3-gta04.dtsi | 22 ++++++++++++++++++++++
-> >  1 file changed, 22 insertions(+)
-> > 
-> > diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
-> > index e4d05f0..a456d37 100644
-> > --- a/arch/arm/boot/dts/omap3-gta04.dtsi
-> > +++ b/arch/arm/boot/dts/omap3-gta04.dtsi
-> > @@ -118,6 +118,17 @@
-> >  			};
-> >  		};
-> >  	};
-> > +
-> > +	/* pinmux for devconf1 */
-> > +	control_devconf1: pinmux@480022d8 {
-> > +		compatible = "pinctrl-single";
-> > +		reg = <0x480022d8 4>;	/* single register */
-> > +		#address-cells = <1>;
-> > +		#size-cells = <0>;
-> > +		pinctrl-single,bit-per-mux;
-> > +		pinctrl-single,register-width = <32>;
-> > +		pinctrl-single,function-mask = <0xfc0bd5>;
-> > +	};
-> >  };
-> >  
-> >  &omap3_pmx_core {
-> > @@ -497,3 +508,14 @@
-> >  		};
-> >  	};
-> >  };
-> > +
-> > +&control_devconf1 {
-> > +	pinctrl-name = "default";
-> > +	pinctrl-0 = < &tv_acbias_pins>;
-> > +
-> > +	tv_acbias_pins: pinmux_tv_acbias_pins {
-> > +		pinctrl-single,bits = <
-> > +			0 0x40800 0x40800
-> 
-> I think it would be good to have a comment in the .dts above, mentioning
-> that TVOUTBYPASS and TVACEN bits are being set.
-> 
-> > +		>;
-> > +	};
-> > +};
-> > 
-> 
-> OMAP3630 seems to have CONTROL_AVDAC1 and CONTROL_AVDAC2 registers. Did
-> you check if the SoC you use have those? It looks like they need
-> configuration also, if the exist.
+Hi Tony,
 
-Those look like AVDAC specific control registers that are not mux
-registers. So those should be accessed the existing SCM (System Control
-Mmodule) syscon area by the DSS code. For examples, see what
-pbias-regulator.c is doing for some other registers in the syscon area.
- 
-> So, I don't think tvbypass and acbias are really pinmux stuff, but it
-> does seem like an easy way to handle the devconf1 register, and I don't
-> see any issues with the setting being fixed.
+On Tue, Nov 11, 2014 at 12:36 AM, Tony Lindgren <tony@atomide.com> wrote:
+> * Marek Belisko <marek@goldelico.com> [141103 14:01]:
+>> gta04 board need for tvout enabled 2 bits in devconf1 register (tvbypass and acbias).
+>> Add single pinmux entry and enable it.
+>>
+>> Signed-off-by: Marek Belisko <marek@goldelico.com>
+>> ---
+>>  arch/arm/boot/dts/omap3-gta04.dtsi | 22 ++++++++++++++++++++++
+>>  1 file changed, 22 insertions(+)
+>>
+>> diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
+>> index e4d05f0..a456d37 100644
+>> --- a/arch/arm/boot/dts/omap3-gta04.dtsi
+>> +++ b/arch/arm/boot/dts/omap3-gta04.dtsi
+>> @@ -118,6 +118,17 @@
+>>                       };
+>>               };
+>>       };
+>> +
+>> +     /* pinmux for devconf1 */
+>> +     control_devconf1: pinmux@480022d8 {
+>> +             compatible = "pinctrl-single";
+>> +             reg = <0x480022d8 4>;   /* single register */
+>> +             #address-cells = <1>;
+>> +             #size-cells = <0>;
+>> +             pinctrl-single,bit-per-mux;
+>> +             pinctrl-single,register-width = <32>;
+>> +             pinctrl-single,function-mask = <0xfc0bd5>;
+>> +     };
+>>  };
+>>
+>
+> The pinctrl-single entry should be in omap3.dtsi as the mux register is there
+> for all the omap3 devices, can you please update the patch for that?
+Ok I'll do. Just one question. I checked TRM for omap3430 and omap3630 and
+reserved bits in devconf1 are different. So keep function-mask for
+omap3430 in omap3.dtsi
+and redefine in omap36xx.dtsi (not sure if this will work in this
+way)? Or exist other way how to deal with that? Thanks.
+>
+> Regards,
+>
+> Tony
+>
+>>  &omap3_pmx_core {
+>> @@ -497,3 +508,14 @@
+>>               };
+>>       };
+>>  };
+>> +
+>> +&control_devconf1 {
+>> +     pinctrl-name = "default";
+>> +     pinctrl-0 = < &tv_acbias_pins>;
+>> +
+>> +     tv_acbias_pins: pinmux_tv_acbias_pins {
+>> +             pinctrl-single,bits = <
+>> +                     0 0x40800 0x40800
+>> +             >;
+>> +     };
+>> +};
+>> --
+>> 1.9.1
+>>
 
-The CONTROL_DEVCONF registers seem to be all related to muxing signals
-and configuring ping signal levels. So I think the pinctrl-single is
-OK to use with these.
- 
-> However, devconf1 register seems to have bits for many devices,
-> including mcbsp, mmc, and even some "Force MPU writes to be nonposted" bit.
+BR,
 
-Yes the"Force MPU writes to be nonposted" debug bit is an odd one
-there :) But we're not using that luckily anywhere..
- 
-> And, with a quick grep, I see CONTROL_DEVCONF1 touched in multiple
-> places in the kernel. I wonder if adding a pinmux entry for it could
-> cause some rather odd problems.
+marek
 
-They can all use pinctrl-single no problem.
- 
-> Tony, any idea about this? How should CONTROL_DEVCONFx registers be
-> accessed?
+-- 
+as simple and primitive as possible
+-------------------------------------------------
+Marek Belisko - OPEN-NANDRA
+Freelance Developer
 
-If they are pinctrl related like the CONTROL_DEVCONF registers, then
-pincatrl-single is OK. However, for any registers in the SCM that are
-not just routing signals, then the syscon mapping should be used. And
-we should have a separate driver implementing some standard Linux
-generic framework driver. For example a regulator or clock driver.
-
-Anyways, I'll drop this $subject patch for now and set up a new branch
-for the .dts changes.
-
-Regards,
-
-Tony
+Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
+Tel: +421 915 052 184
+skype: marekwhite
+twitter: #opennandra
+web: http://open-nandra.com

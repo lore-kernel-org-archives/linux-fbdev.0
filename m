@@ -1,65 +1,154 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Nov 2014 11:52:19 +0000
-Subject: [PATCH 17/22] OMAPDSS: HDMI: Remove HDMI PLL reset
-Message-Id: <1415793144-11723-18-git-send-email-tomi.valkeinen@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 10:49:18 +0000
+Subject: [PATCH v7 16/20] OMAPDSS: hdmi5: Remove callbacks for the old ASoC DAI driver
+Message-Id: <709d33d39a5a85768474a78bbf10fd98f988e390.1415786458.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1415786458.git.jsarha@ti.com>
+In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-The SYSRESET bits in HDMI PLL do not reset the PLL itself, but only
-affect the power used for the PLL.
+Removes the OMAP5 HDMI audio callbacks for the old external DAI driver.
 
-Afaik there is no reason to use the SYSRESET bits, and we don't use it
-in the other PLLs, so let's remove the HDMI PLL reset to make the PLL
-code simpler and similar to other PLLs.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi_pll.c | 19 -------------------
- 1 file changed, 19 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi5.c |  113 ---------------------------------
+ 1 file changed, 113 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-index f04d435c4c0f..0942bdc8dfa6 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-@@ -166,21 +166,6 @@ static int hdmi_pll_config(struct hdmi_pll_data *pll)
- 	return 0;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index 694cdee..1b9c86a 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -492,112 +492,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
+ 	return r;
  }
  
--static int hdmi_pll_reset(struct hdmi_pll_data *pll)
+-#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
 -{
--	/* SYSRESET  controlled by power FSM */
--	REG_FLD_MOD(pll->base, PLLCTRL_PLL_CONTROL, pll_feat->sys_reset, 3, 3);
+-	int r;
 -
--	/* READ 0x0 reset is in progress */
--	if (hdmi_wait_for_bit_change(pll->base, PLLCTRL_PLL_STATUS, 0, 0, 1)
--			!= 1) {
--		DSSERR("Failed to sysreset PLL\n");
--		return -ETIMEDOUT;
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
 -	}
 -
+-	r = hdmi_wp_audio_enable(&hdmi.wp, true);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
 -	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
 -}
 -
- int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp)
- {
- 	u16 r = 0;
-@@ -193,10 +178,6 @@ int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp)
- 	if (r)
- 		return r;
- 
--	r = hdmi_pll_reset(pll);
--	if (r)
--		return r;
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_enable(&hdmi.wp, false);
+-}
 -
- 	r = hdmi_pll_config(pll);
- 	if (r)
- 		return r;
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return hdmi_wp_audio_core_req_enable(&hdmi.wp, true);
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_core_req_enable(&hdmi.wp, false);
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	bool r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	r = hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode);
+-
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	int r;
+-	u32 pclk = hdmi.cfg.timings.pixelclock;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi5_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-#else
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	return false;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	return -EPERM;
+-}
+-#endif
+-
+ static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi)
+ {
+@@ -626,13 +520,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.read_edid		= hdmi_read_edid,
+ 	.set_infoframe		= hdmi_set_infoframe,
+ 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
+-
+-	.audio_enable		= hdmi_audio_enable,
+-	.audio_disable		= hdmi_audio_disable,
+-	.audio_start		= hdmi_audio_start,
+-	.audio_stop		= hdmi_audio_stop,
+-	.audio_supported	= hdmi_audio_supported,
+-	.audio_config		= hdmi_audio_config,
+ };
+ 
+ static void hdmi_init_output(struct platform_device *pdev)
 -- 
-2.1.3
+1.7.9.5
 

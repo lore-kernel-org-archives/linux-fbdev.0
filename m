@@ -1,159 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Nov 2014 11:52:13 +0000
-Subject: [PATCH 11/22] OMAPDSS: DSI: dsi_runtime_get/put in pll_init
-Message-Id: <1415793144-11723-12-git-send-email-tomi.valkeinen@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 10:49:04 +0000
+Subject: [PATCH v7 02/20] OMAPDSS: hdmi5_core: Initialize mandatory sample_order parameter
+Message-Id: <89ed6487617455c4ec5dd039df488292e1e170d0.1415786458.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1415786458.git.jsarha@ti.com>
+In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-When DPI uses the DSI PLL for pixel clock, the DPI code will call
-dsi_runtime_get/put to keep the DSI block enabled. A much simpler way to
-handle this is to do dsi_runtime_get/put in DSI's dsi_pll_init() and
-dsi_pll_uninit(), thus removing the need for DSI to call the runtime PM
-functions.
+The hdmi_wp_audio_config_format() expects sample_order of struct
+hdmi_audio_format to be initialized. The only allowed value is
+HDMI_AUDIO_SAMPLE_LEFT_FIRST.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dpi.c | 17 +----------------
- drivers/video/fbdev/omap2/dss/dsi.c | 10 ++++++++--
- drivers/video/fbdev/omap2/dss/dss.h | 10 ----------
- 3 files changed, 9 insertions(+), 28 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
-index 0b9af5d3e650..81dd5e61e75e 100644
---- a/drivers/video/fbdev/omap2/dss/dpi.c
-+++ b/drivers/video/fbdev/omap2/dss/dpi.c
-@@ -402,10 +402,6 @@ static int dpi_display_enable(struct omap_dss_device *dssdev)
- 		goto err_src_sel;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+index 83acbf7..9ffa805 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+@@ -879,6 +879,9 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 	/* only LPCM atm */
+ 	audio_format.type = HDMI_AUDIO_TYPE_LPCM;
  
- 	if (dpi->dsidev) {
--		r = dsi_runtime_get(dpi->dsidev);
--		if (r)
--			goto err_get_dsi;
--
- 		r = dsi_pll_init(dpi->dsidev);
- 		if (r)
- 			goto err_dsi_pll_init;
-@@ -432,9 +428,6 @@ err_set_mode:
- 	if (dpi->dsidev)
- 		dsi_pll_uninit(dpi->dsidev, true);
- err_dsi_pll_init:
--	if (dpi->dsidev)
--		dsi_runtime_put(dpi->dsidev);
--err_get_dsi:
- err_src_sel:
- 	dispc_runtime_put();
- err_get_dispc:
-@@ -459,7 +452,6 @@ static void dpi_display_disable(struct omap_dss_device *dssdev)
- 	if (dpi->dsidev) {
- 		dss_select_lcd_clk_source(mgr->id, OMAP_DSS_CLK_SRC_FCK);
- 		dsi_pll_uninit(dpi->dsidev, true);
--		dsi_runtime_put(dpi->dsidev);
- 	}
- 
- 	dispc_runtime_put();
-@@ -554,18 +546,11 @@ static int dpi_verify_dsi_pll(struct platform_device *dsidev)
- 
- 	/* do initial setup with the PLL to see if it is operational */
- 
--	r = dsi_runtime_get(dsidev);
--	if (r)
--		return r;
--
- 	r = dsi_pll_init(dsidev);
--	if (r) {
--		dsi_runtime_put(dsidev);
-+	if (r)
- 		return r;
--	}
- 
- 	dsi_pll_uninit(dsidev, true);
--	dsi_runtime_put(dsidev);
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
-index 22cc91851e94..e8415b5e877e 100644
---- a/drivers/video/fbdev/omap2/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/dss/dsi.c
-@@ -1144,7 +1144,7 @@ static u32 dsi_get_errors(struct platform_device *dsidev)
- 	return e;
- }
- 
--int dsi_runtime_get(struct platform_device *dsidev)
-+static int dsi_runtime_get(struct platform_device *dsidev)
- {
- 	int r;
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-@@ -1156,7 +1156,7 @@ int dsi_runtime_get(struct platform_device *dsidev)
- 	return r < 0 ? r : 0;
- }
- 
--void dsi_runtime_put(struct platform_device *dsidev)
-+static void dsi_runtime_put(struct platform_device *dsidev)
- {
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	int r;
-@@ -1674,6 +1674,10 @@ int dsi_pll_init(struct platform_device *dsidev)
- 	if (r)
- 		return r;
- 
-+	r = dsi_runtime_get(dsidev);
-+	if (r)
-+		return r;
++	/* only allowed option */
++	audio_format.sample_order = HDMI_AUDIO_SAMPLE_LEFT_FIRST;
 +
- 	dsi_enable_pll_clock(dsidev, 1);
- 	/*
- 	 * Note: SCP CLK is not required on OMAP3, but it is required on OMAP4.
-@@ -1717,6 +1721,7 @@ err1:
- err0:
- 	dsi_disable_scp_clk(dsidev);
- 	dsi_enable_pll_clock(dsidev, 0);
-+	dsi_runtime_put(dsidev);
- 	return r;
- }
+ 	/* disable start/stop signals of IEC 60958 blocks */
+ 	audio_format.en_sig_blk_strt_end = HDMI_AUDIO_BLOCK_SIG_STARTEND_ON;
  
-@@ -1733,6 +1738,7 @@ void dsi_pll_uninit(struct platform_device *dsidev, bool disconnect_lanes)
- 
- 	dsi_disable_scp_clk(dsidev);
- 	dsi_enable_pll_clock(dsidev, 0);
-+	dsi_runtime_put(dsidev);
- 
- 	DSSDBG("PLL uninit done\n");
- }
-diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
-index e14a75b743a4..4c268985235c 100644
---- a/drivers/video/fbdev/omap2/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/dss/dss.h
-@@ -268,9 +268,6 @@ struct file_operations;
- int dsi_init_platform_driver(void) __init;
- void dsi_uninit_platform_driver(void) __exit;
- 
--int dsi_runtime_get(struct platform_device *dsidev);
--void dsi_runtime_put(struct platform_device *dsidev);
--
- void dsi_dump_clocks(struct seq_file *s);
- 
- void dsi_irq_handler(void);
-@@ -291,13 +288,6 @@ int dsi_pll_init(struct platform_device *dsidev);
- void dsi_pll_uninit(struct platform_device *dsidev, bool disconnect_lanes);
- struct platform_device *dsi_get_dsidev_from_id(int module);
- #else
--static inline int dsi_runtime_get(struct platform_device *dsidev)
--{
--	return 0;
--}
--static inline void dsi_runtime_put(struct platform_device *dsidev)
--{
--}
- static inline u8 dsi_get_pixel_size(enum omap_dss_dsi_pixel_format fmt)
- {
- 	WARN("%s: DSI not compiled in, returning pixel_size as 0\n", __func__);
 -- 
-2.1.3
+1.7.9.5
 

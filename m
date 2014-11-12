@@ -1,188 +1,133 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 12 Nov 2014 16:15:52 +0000
-Subject: [PATCH v5 5/5] simplefb: add clock handling code
-Message-Id: <1415808952-23549-6-git-send-email-hdegoede@redhat.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 12 Nov 2014 11:52:21 +0000
+Subject: [PATCH 19/22] OMAPDSS: HDMI: split PLL enable & config
+Message-Id: <1415793144-11723-20-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
+References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Luc Verhaegen <libv@skynet.be>
+At the moment we have one function, hdmi_pll_enable, which enables the
+PLL and writes the PLL configuration to registers.
 
-This claims and enables clocks listed in the simple framebuffer dt node.
-This is needed so that the display engine, in case the required clocks
-are known by the kernel code and are described in the dt, will remain
-properly enabled.
+To make the HDMI PLL ahere to the DSS PLL API, split the hdmi_pll_enable
+into two parts: hdmi_pll_enable which enables the PLL HW, and
+hdmi_pll_set_config which writes the config.
 
-Signed-off-by: Luc Verhaegen <libv@skynet.be>
-[hdegoede@redhat.com: Change clks from list to dynamic array]
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
-Acked-by: Grant Likely <grant.likely@linaro.org>
---
-Changes in v4:
--change clks from linkedlist to dynamic allocated array
--propagate EPROBE_DEFER up from simplefb_clocks_init to simplefb_probe
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/simplefb.c | 101 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 100 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/hdmi.h     |  1 +
+ drivers/video/fbdev/omap2/dss/hdmi4.c    | 10 ++++++++--
+ drivers/video/fbdev/omap2/dss/hdmi5.c    | 10 ++++++++--
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c |  6 +-----
+ 4 files changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index cdcf1fe..cd96edd 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -26,6 +26,7 @@
- #include <linux/module.h>
- #include <linux/platform_data/simplefb.h>
- #include <linux/platform_device.h>
-+#include <linux/clk-provider.h>
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 03761ecb81a6..7595274a9bcf 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -316,6 +316,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
+ /* HDMI PLL funcs */
+ int hdmi_pll_enable(struct hdmi_pll_data *pll);
+ void hdmi_pll_disable(struct hdmi_pll_data *pll);
++int hdmi_pll_set_config(struct hdmi_pll_data *pll);
+ void hdmi_pll_dump(struct hdmi_pll_data *pll, struct seq_file *s);
+ void hdmi_pll_compute(struct hdmi_pll_data *pll, unsigned long clkin,
+ 	unsigned long target_tmds);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 2094b6eae99e..98aa910241b8 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -196,13 +196,18 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
  
- static struct fb_fix_screeninfo simplefb_fix = {
- 	.id		= "simple",
-@@ -167,8 +168,98 @@ static int simplefb_parse_pd(struct platform_device *pdev,
+ 	hdmi_pll_compute(&hdmi.pll, clk_get_rate(hdmi.sys_clk), p->pixelclock);
  
- struct simplefb_par {
- 	u32 palette[PSEUDO_PALETTE_SIZE];
-+	int clk_count;
-+	struct clk **clks;
- };
- 
-+/*
-+ * Clock handling code.
-+ *
-+ * Here we handle the clocks property of our "simple-framebuffer" dt node.
-+ * This is necessary so that we can make sure that any clocks needed by
-+ * the display engine that the bootloader set up for us (and for which it
-+ * provided a simplefb dt node), stay up, for the life of the simplefb
-+ * driver.
-+ *
-+ * When the driver unloads, we cleanly disable, and then release the clocks.
-+ *
-+ * We only complain about errors here, no action is taken as the most likely
-+ * error can only happen due to a mismatch between the bootloader which set
-+ * up simplefb, and the clock definitions in the device tree. Chances are
-+ * that there are no adverse effects, and if there are, a clean teardown of
-+ * the fb probe will not help us much either. So just complain and carry on,
-+ * and hope that the user actually gets a working fb at the end of things.
-+ */
-+static int
-+simplefb_clocks_init(struct simplefb_par *par, struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct clk *clock;
-+	int i, ret;
-+
-+	if (dev_get_platdata(&pdev->dev) || !np)
-+		return 0;
-+
-+	par->clk_count = of_clk_get_parent_count(np);
-+	if (par->clk_count <= 0)
-+		return 0;
-+
-+	par->clks = kcalloc(par->clk_count, sizeof(struct clk *), GFP_KERNEL);
-+	if (!par->clks)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < par->clk_count; i++) {
-+		clock = of_clk_get(np, i);
-+		if (IS_ERR(clock)) {
-+			if (PTR_ERR(clock) = -EPROBE_DEFER) {
-+				while (--i >= 0) {
-+					if (par->clks[i])
-+						clk_put(par->clks[i]);
-+				}
-+				kfree(par->clks);
-+				return -EPROBE_DEFER;
-+			}
-+			dev_err(&pdev->dev, "%s: clock %d not found: %ld\n",
-+				__func__, i, PTR_ERR(clock));
-+			continue;
-+		}
-+		par->clks[i] = clock;
-+	}
-+
-+	for (i = 0; i < par->clk_count; i++) {
-+		if (par->clks[i]) {
-+			ret = clk_prepare_enable(par->clks[i]);
-+			if (ret) {
-+				dev_err(&pdev->dev,
-+					"%s: failed to enable clock %d: %d\n",
-+					__func__, i, ret);
-+				clk_put(par->clks[i]);
-+				par->clks[i] = NULL;
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static void
-+simplefb_clocks_destroy(struct simplefb_par *par)
-+{
-+	int i;
-+
-+	if (!par->clks)
-+		return;
-+
-+	for (i = 0; i < par->clk_count; i++) {
-+		if (par->clks[i]) {
-+			clk_disable_unprepare(par->clks[i]);
-+			clk_put(par->clks[i]);
-+		}
-+	}
-+
-+	kfree(par->clks);
-+}
-+
- static int simplefb_probe(struct platform_device *pdev)
- {
- 	int ret;
-@@ -236,6 +327,10 @@ static int simplefb_probe(struct platform_device *pdev)
- 	}
- 	info->pseudo_palette = par->palette;
- 
-+	ret = simplefb_clocks_init(par, pdev);
-+	if (ret < 0)
-+		goto error_unmap;
-+
- 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
- 			     info->fix.smem_start, info->fix.smem_len,
- 			     info->screen_base);
-@@ -247,13 +342,15 @@ static int simplefb_probe(struct platform_device *pdev)
- 	ret = register_framebuffer(info);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
--		goto error_unmap;
-+		goto error_clocks;
+-	/* config the PLL and PHY hdmi_set_pll_pwrfirst */
+ 	r = hdmi_pll_enable(&hdmi.pll);
+ 	if (r) {
+-		DSSDBG("Failed to lock PLL\n");
++		DSSERR("Failed to enable PLL\n");
+ 		goto err_pll_enable;
  	}
  
- 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
++	r = hdmi_pll_set_config(&hdmi.pll);
++	if (r) {
++		DSSERR("Failed to configure PLL\n");
++		goto err_pll_cfg;
++	}
++
+ 	r = hdmi_phy_configure(&hdmi.phy, hdmi.pll.info.clkdco,
+ 		hdmi.pll.info.clkout);
+ 	if (r) {
+@@ -241,6 +246,7 @@ err_vid_enable:
+ err_phy_cfg:
+ 	hdmi_wp_set_phy_pwr(&hdmi.wp, HDMI_PHYPWRCMD_OFF);
+ err_phy_pwr:
++err_pll_cfg:
+ 	hdmi_pll_disable(&hdmi.pll);
+ err_pll_enable:
+ 	hdmi_power_off_core(dssdev);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index fb8c14507a4d..facc4e070520 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -214,13 +214,18 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
+ 	hdmi_wp_set_irqstatus(&hdmi.wp,
+ 			hdmi_wp_get_irqstatus(&hdmi.wp));
  
- 	return 0;
+-	/* config the PLL and PHY hdmi_set_pll_pwrfirst */
+ 	r = hdmi_pll_enable(&hdmi.pll);
+ 	if (r) {
+-		DSSDBG("Failed to lock PLL\n");
++		DSSERR("Failed to enable PLL\n");
+ 		goto err_pll_enable;
+ 	}
  
-+error_clocks:
-+	simplefb_clocks_destroy(par);
- error_unmap:
- 	iounmap(info->screen_base);
- error_fb_release:
-@@ -264,8 +361,10 @@ error_fb_release:
- static int simplefb_remove(struct platform_device *pdev)
++	r = hdmi_pll_set_config(&hdmi.pll);
++	if (r) {
++		DSSERR("Failed to configure PLL\n");
++		goto err_pll_cfg;
++	}
++
+ 	r = hdmi_phy_configure(&hdmi.phy, hdmi.pll.info.clkdco,
+ 		hdmi.pll.info.clkout);
+ 	if (r) {
+@@ -259,6 +264,7 @@ err_vid_enable:
+ 	hdmi_wp_set_phy_pwr(&hdmi.wp, HDMI_PHYPWRCMD_OFF);
+ err_phy_pwr:
+ err_phy_cfg:
++err_pll_cfg:
+ 	hdmi_pll_disable(&hdmi.pll);
+ err_pll_enable:
+ 	hdmi_power_off_core(dssdev);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
+index 190bede1dcb9..c14c3d132513 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
+@@ -103,7 +103,7 @@ void hdmi_pll_compute(struct hdmi_pll_data *pll, unsigned long clkin,
+ 	pi->clkout = clkout;
+ }
+ 
+-static int hdmi_pll_config(struct hdmi_pll_data *pll)
++int hdmi_pll_set_config(struct hdmi_pll_data *pll)
  {
- 	struct fb_info *info = platform_get_drvdata(pdev);
-+	struct simplefb_par *par = info->par;
+ 	u32 r;
+ 	struct hdmi_pll_info *fmt = &pll->info;
+@@ -179,10 +179,6 @@ int hdmi_pll_enable(struct hdmi_pll_data *pll)
+ 	if (r)
+ 		return r;
  
- 	unregister_framebuffer(info);
-+	simplefb_clocks_destroy(par);
- 	framebuffer_release(info);
- 
+-	r = hdmi_pll_config(pll);
+-	if (r)
+-		return r;
+-
  	return 0;
+ }
+ 
 -- 
-2.1.0
+2.1.3
 

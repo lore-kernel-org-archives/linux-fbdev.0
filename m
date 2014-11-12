@@ -1,77 +1,90 @@
-From: "maxime.ripard@free-electrons.com" <maxime.ripard@free-electrons.com>
-Date: Tue, 18 Nov 2014 15:20:29 +0000
-Subject: Re: SSD1306 OLED driver
-Message-Id: <20141118152029.GF6414@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="i6U+WTAJHBcf3BHs"
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 12 Nov 2014 22:08:41 +0000
+Subject: [PATCH 1/4] dt-bindings: simplefb: Specify node location and handoff related properties
+Message-Id: <1415830124-28787-1-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <BAY176-W246A4D5C3A23D1928FC5D3D38C0@phx.gbl>
-In-Reply-To: <BAY176-W246A4D5C3A23D1928FC5D3D38C0@phx.gbl>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
+Since simplefb nodes do not relate directly to hw typically they have been
+placed in the root of the devicetree. As the represent runtime information
+having them as sub-nodes of /chosen is more logical, specify this.
 
---i6U+WTAJHBcf3BHs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Also specify when to set the chosen stdout-path property to a simplefb node.
 
-On Tue, Nov 18, 2014 at 08:29:51PM +0530, Ssagarr Patil wrote:
-> Hi Maxime,
->=20
-> >
-> > On Fri, Nov 14, 2014 at 05:09:09PM +0530, Ssagarr Patil wrote:
-> >> Hi,
-> >>
-> >> I have the SSD1306 oled device connected via spi, will the same
-> >> driver work ? as the current one is based on i2c what all mods would
-> >> be required to have it working with SPI ?
-> >
-> > It won't work out of the box, but it should be fairly easy to support.
-> >
-> > You need to had support for SPI probing, and then provide some generic
-> > accessors the rest of the code can use to wrap around the i2c and spi
-> > calls.
-> >
-> > I'm not sure regmap can be used for this, but this would be something
-> > worth looking into to do that.
-> >
-> Thanks for the inputs :)
->=20
-> Does the driver work as a standard fbdev driver, is there any library on =
-top
-> of it to ease the user space ?
+For reliable handover to a hardware specific driver, that driver needs to
+know which simplefb to unregister when taking over, specify how the hw driver
+can find the matching simplefb node.
 
-It exposes a monochrome fbdev, so the usual framebuffer tools and
-libraries are supposed to work quite well, provided they've been
-written to handle monochrome displays.
+Last add some advice on how to fill and use simplefb nodes from a firmware
+pov.
 
-Maxime
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ .../bindings/video/simple-framebuffer.txt          | 37 +++++++++++++++++++++-
+ 1 file changed, 36 insertions(+), 1 deletion(-)
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+index 8f35718..95fe284 100644
+--- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+@@ -4,6 +4,26 @@ A simple frame-buffer describes a frame-buffer setup by firmware or
+ the bootloader, with the assumption that the display hardware has already
+ been set up to scan out from the memory pointed to by the reg property.
+ 
++Since simplefb nodes represent runtime information they must be sub-nodes of
++the chosen node (*). The primary display node must be named framebuffer0,
++additional nodes must be called framebuffer1, etc.
++
++If a simplefb node represents the preferred console for user interaction,
++then the chosen node's stdout-path property must point to it.
++
++If the devicetree contains nodes for the display hardware used by a simplefb,
++then one of the hw nodes must have a property called "framebuffer" pointing to
++the framebuffer# node in chosen, so that the operating system knows which
++simplefb to disable when handing over control to a driver for the real
++hardware. The bindings for the hw nodes must specify which node contains the
++framebuffer property.
++
++It is advised that devicetree files contain pre-filled, disabled framebuffer#
++nodes, so that the firmware only needs to update the mode information and
++enable them. This way if e.g. later on support for more display clocks get
++added, the simplefb nodes will already contain this info and the firmware
++does not need to be updated.
++
+ Required properties:
+ - compatible: "simple-framebuffer"
+ - reg: Should contain the location and size of the framebuffer memory.
+@@ -22,11 +42,26 @@ Optional properties:
+ 
+ Example:
+ 
+-	framebuffer {
++chosen {
++	framebuffer0 {
+ 		compatible = "simple-framebuffer";
+ 		reg = <0x1d385000 (1600 * 1200 * 2)>;
+ 		width = <1600>;
+ 		height = <1200>;
+ 		stride = <(1600 * 2)>;
+ 		format = "r5g6b5";
++		clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
+ 	};
++};
++
++soc@01c00000 {
++	lcdc0: lcdc@1c0c000 {
++		compatible = "allwinner,sun4i-a10-lcdc";
++		framebuffer = <&framebuffer0>;
++	};
++};
++
++
++*) Older devicetree files may have a compatible = "simple-framebuffer" node
++in a different place, operating systems must first enumerate any framebuffer#
++nodes found under chosen and then check for other compatible nodes.
+-- 
+2.1.0
 
---i6U+WTAJHBcf3BHs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUa2O9AAoJEBx+YmzsjxAghbcP/0qEYj+2Bk/MEMrIxE7qtQDm
-boYlZdnIso6x7SnCBNffxdrCUnXWlJsKLVBza592wWm4Z0zW/u4oBL2wkHjWuC7A
-j18JHZjofMY/ZHYz/VaZt+VFXhKs1PQHX2HGv7+o0lgRHNrQ316VT3/uUYX27oTW
-4KxJk2Dz1gHeRCZimQ9RTnkUwKgEItzR+cwtPF1ACVEoiYh5iZjP6b4mXbSoWw0l
-8mSwHuf/6GcYPwP+nNiWGrDahS2Nn/GSkP28z0Hbtly3758imcn4N7p1L6CuFXjl
-pQakU9i025UrMw+o6uHtg5dPrR8opdNA+iN9+QIRtiQbb2dleSC8SdtAjBtFt7xY
-L/bLfVY1WGF0vfWWp53FRYcsvTE1C82gTnbWQauwxBMydN9tQiKFN1Jq252ulUZz
-sb4i60pMZd2+FVUKVSyACSWK6aYsW+X3TXIVME1u4n+l9qSTdoyku96NJFLYATeE
-sTqa1l+kimBertdZoLaRIfPtgdwjf2LaOI5rc1gIBLosQYg9glDBmfVm1Iz/DEg9
-VJqBkqVGLbmFV6l5XlEH1dtAU6rLp9i3TWI06rQkySB4ryxfZfYc46VtRhE+6tZj
-o8vH4xHMS2hzolZWBVUBeHmZnVHmlAiM4Xgc0qTIQqJfzUUSNERD9zwRXSz9iFVK
-o87oNa33Lbowe9ac6hGg
-=XGfm
------END PGP SIGNATURE-----
-
---i6U+WTAJHBcf3BHs--

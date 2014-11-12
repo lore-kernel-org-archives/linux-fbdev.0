@@ -1,10 +1,10 @@
 From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 10:49:21 +0000
-Subject: [PATCH v7 19/20] OMAPDSS: Remove all references to obsolete HDMI audio callbacks
-Message-Id: <f1966f1f2cd51046370b875e3b9518e418d077ae.1415786458.git.jsarha@ti.com>
+Date: Wed, 12 Nov 2014 14:41:09 +0000
+Subject: [PATCH v7.1 18/19] OMAPDSS: Remove all references to obsolete HDMI audio callbacks
+Message-Id: <5b786b44582e4358926f9141ef818f0066300c53.1415803065.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415786458.git.jsarha@ti.com>
-In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
+References: <cover.1415803064.git.jsarha@ti.com>
+In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,8 +19,8 @@ Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
  .../fbdev/omap2/displays-new/connector-hdmi.c      |   99 --------------------
  .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |   56 -----------
- include/video/omapdss.h                            |   31 ------
- 3 files changed, 186 deletions(-)
+ include/video/omapdss.h                            |   40 --------
+ 3 files changed, 195 deletions(-)
 
 diff --git a/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c b/drivers/video/fbdev/omap2/displays-new/connector-hdmi.c
 index 7b25967..219f14f 100644
@@ -214,10 +214,24 @@ index c4abd56..6fc8b9d 100644
  
  static int tpd_probe_pdata(struct platform_device *pdev)
 diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 9f2699f..7de6765 100644
+index 069dfca..7de6765 100644
 --- a/include/video/omapdss.h
 +++ b/include/video/omapdss.h
-@@ -628,19 +628,6 @@ struct omapdss_hdmi_ops {
+@@ -166,13 +166,6 @@ enum omap_dss_display_state {
+ 	OMAP_DSS_DISPLAY_ACTIVE,
+ };
+ 
+-enum omap_dss_audio_state {
+-	OMAP_DSS_AUDIO_DISABLED = 0,
+-	OMAP_DSS_AUDIO_ENABLED,
+-	OMAP_DSS_AUDIO_CONFIGURED,
+-	OMAP_DSS_AUDIO_PLAYING,
+-};
+-
+ struct omap_dss_audio {
+ 	struct snd_aes_iec958 *iec;
+ 	struct snd_cea_861_aud_if *cea;
+@@ -635,19 +628,6 @@ struct omapdss_hdmi_ops {
  	int (*set_hdmi_mode)(struct omap_dss_device *dssdev, bool hdmi_mode);
  	int (*set_infoframe)(struct omap_dss_device *dssdev,
  		const struct hdmi_avi_infoframe *avi);
@@ -237,7 +251,16 @@ index 9f2699f..7de6765 100644
  };
  
  struct omapdss_dsi_ops {
-@@ -849,24 +836,6 @@ struct omap_dss_driver {
+@@ -783,8 +763,6 @@ struct omap_dss_device {
+ 
+ 	enum omap_dss_display_state state;
+ 
+-	enum omap_dss_audio_state audio_state;
+-
+ 	/* OMAP DSS output specific fields */
+ 
+ 	struct list_head list;
+@@ -858,24 +836,6 @@ struct omap_dss_driver {
  	int (*set_hdmi_mode)(struct omap_dss_device *dssdev, bool hdmi_mode);
  	int (*set_hdmi_infoframe)(struct omap_dss_device *dssdev,
  		const struct hdmi_avi_infoframe *avi);

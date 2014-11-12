@@ -1,36 +1,65 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Mon, 24 Nov 2014 23:05:32 +0000
-Subject: [PATCH V2 2/6] ARM: sa1100: add a clock alias for sa1111 pcmcia device
-Message-Id: <1416870336-30114-3-git-send-email-dbaryshkov@gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 14:40:57 +0000
+Subject: [PATCH v7.1 06/19] OMAPDSS: hdmi_wp: Add function for getting audio dma address
+Message-Id: <412ad8ccfcd4233107a5798db70e149d468944ae.1415803065.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
+References: <cover.1415803064.git.jsarha@ti.com>
+In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-SA-1111 uses internal MMIO space offsets as a device name, so device
-name for sa1111 pcmcia is 1800 (PCMCIA is at offset 0x1800).
+The audio dma port is found in the hdmi_wp physical address space.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/mach-sa1100/clock.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/omap2/dss/hdmi.h    |    2 ++
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c |    6 ++++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
-index 53f750d..03c75a8 100644
---- a/arch/arm/mach-sa1100/clock.c
-+++ b/arch/arm/mach-sa1100/clock.c
-@@ -124,6 +124,8 @@ static struct clk_lookup sa11xx_clkregs[] = {
- 	CLKDEV_INIT("sa1100-rtc", NULL, NULL),
- 	CLKDEV_INIT("sa11x0-fb", NULL, &clk_cpu),
- 	CLKDEV_INIT("sa11x0-pcmcia", NULL, &clk_cpu),
-+	/* sa1111 names devices using internal offsets, PCMCIA is at 0x1800 */
-+	CLKDEV_INIT("1800", NULL, &clk_cpu),
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 03726b5..9ba7c1a 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -250,6 +250,7 @@ struct hdmi_core_audio_config {
+ 
+ struct hdmi_wp_data {
+ 	void __iomem *base;
++	phys_addr_t phys_base;
  };
  
- static int __init sa11xx_clk_init(void)
+ struct hdmi_pll_data {
+@@ -317,6 +318,7 @@ void hdmi_wp_video_config_timing(struct hdmi_wp_data *wp,
+ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ 		struct omap_video_timings *timings, struct hdmi_config *param);
+ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
++phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp);
+ 
+ /* HDMI PLL funcs */
+ int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index 4ead962..c15377e 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -249,6 +249,7 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 		DSSERR("can't get WP mem resource\n");
+ 		return -EINVAL;
+ 	}
++	wp->phys_base = res->start;
+ 
+ 	wp->base = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(wp->base)) {
+@@ -258,3 +259,8 @@ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
+ 
+ 	return 0;
+ }
++
++phys_addr_t hdmi_wp_get_audio_dma_addr(struct hdmi_wp_data *wp)
++{
++	return wp->phys_base + HDMI_WP_AUDIO_DATA;
++}
 -- 
-2.1.3
+1.7.9.5
 

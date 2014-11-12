@@ -1,55 +1,42 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 10:49:07 +0000
-Subject: [PATCH v7 05/20] OMAPDSS: hdmi4_core: Remove unused hdmi4_audio_get_dma_port()
-Message-Id: <82d7787bcd3ac79c863c8026bf0e3bc7f31f0ffc.1415786458.git.jsarha@ti.com>
+From: Marek Belisko <marek@goldelico.com>
+Date: Wed, 12 Nov 2014 22:10:47 +0000
+Subject: [PATCH v2 5/5] arm: dts: omap3-gta04: Add static configuration for devconf1 register
+Message-Id: <1415830247-31633-6-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415786458.git.jsarha@ti.com>
-In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
+References: <1415830247-31633-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1415830247-31633-1-git-send-email-marek@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-hdmi4_audio_get_dma_port() is unused and and broken.
+gta04 board need for tvout enabled 2 bits in devconf1 register (tvbypass and acbias).
+Add pinctrl single entry and enable it.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Marek Belisko <marek@goldelico.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi4_core.c |    9 ---------
- drivers/video/fbdev/omap2/dss/hdmi4_core.h |    2 --
- 2 files changed, 11 deletions(-)
+ arch/arm/boot/dts/omap3-gta04.dtsi | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-index 3b448d9..7eafea5 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-@@ -874,15 +874,6 @@ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp)
- 	hdmi_wp_audio_core_req_enable(wp, false);
- }
- 
--int hdmi4_audio_get_dma_port(u32 *offset, u32 *size)
--{
--	if (!offset || !size)
--		return -EINVAL;
--	*offset = HDMI_WP_AUDIO_DATA;
--	*size = 4;
--	return 0;
--}
--
- int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
- {
- 	struct resource *res;
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.h b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-index c1959f7..a069f96 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-@@ -270,6 +270,4 @@ int hdmi4_audio_start(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
- void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
- int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 		struct omap_dss_audio *audio, u32 pclk);
--int hdmi4_audio_get_dma_port(u32 *offset, u32 *size);
--
- #endif
+diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
+index b50dc10..0015316 100644
+--- a/arch/arm/boot/dts/omap3-gta04.dtsi
++++ b/arch/arm/boot/dts/omap3-gta04.dtsi
+@@ -497,3 +497,14 @@
+ 		};
+ 	};
+ };
++
++&control_devconf1 {
++	pinctrl-name = "default";
++	pinctrl-0 = <&tv_acbias_pins>;
++
++	tv_acbias_pins: pinmux_tv_acbias_pins {
++		pinctrl-single,bits = <
++			0 0x40800 0x40800
++		>;
++	};
++};
 -- 
-1.7.9.5
+1.9.1
 

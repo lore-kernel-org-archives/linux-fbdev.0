@@ -1,40 +1,65 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Fri, 14 Nov 2014 11:03:15 +0000
-Subject: [PATCH v5 4/5] fbcon: Change fbcon_init from module_init to fs_initcall
-Message-Id: <1415962996-31712-4-git-send-email-hdegoede@redhat.com>
+From: Marek Belisko <marek@goldelico.com>
+Date: Wed, 12 Nov 2014 22:10:44 +0000
+Subject: [PATCH v2 2/5] Documentation: DT: Add documentation for ti,opa362 bindings
+Message-Id: <1415830247-31633-3-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415962996-31712-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415962996-31712-1-git-send-email-hdegoede@redhat.com>
+References: <1415830247-31633-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1415830247-31633-1-git-send-email-marek@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Various fb drivers register themselves before module_init so as to have a
-console as early as possible, this is of little use if fbcon does not
-initialize early too.
-
-Fbcon cannot initialize earlier then fs_initcall, because then the creation
-of /sys/class/graphics/fbcon will fail.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Marek Belisko <marek@goldelico.com>
 ---
- drivers/video/console/fbcon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../devicetree/bindings/video/ti,opa362.txt        | 38 ++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/ti,opa362.txt
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index eb976ee..ea43724 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3624,7 +3624,7 @@ static int __init fb_console_init(void)
- 	return 0;
- }
- 
--module_init(fb_console_init);
-+fs_initcall(fb_console_init);
- 
- #ifdef MODULE
- 
+diff --git a/Documentation/devicetree/bindings/video/ti,opa362.txt b/Documentation/devicetree/bindings/video/ti,opa362.txt
+new file mode 100644
+index 0000000..4747ef9
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/ti,opa362.txt
+@@ -0,0 +1,38 @@
++OPA362 analog video amplifier
++
++Required properties:
++- compatible: "ti,opa362"
++- gpio: enable/disable output gpio
++
++Required node:
++- Video port 0 for opa362 input
++- Video port 1 for opa362 output
++
++Example:
++
++tv_amp: opa362 {
++	compatible = "ti,opa362";
++	gpios = <&gpio1 23 0>;  /* GPIO to enable video out amplifier */
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@0 {
++			reg = <0>;
++			opa_in: endpoint@0 {
++				remote-endpoint = <&venc_out>;
++			};
++		};
++
++		port@1 {
++			reg = <1>;
++			opa_out: endpoint@0 {
++				remote-endpoint = <&tv_connector_in>;
++			};
++		};
++	};
++};
++
++
++
 -- 
-2.1.0
+1.9.1
 

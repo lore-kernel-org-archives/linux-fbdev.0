@@ -1,199 +1,197 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Fri, 14 Nov 2014 11:03:02 +0000
-Subject: [PATCH v7] simplefb: add clock handling code
-Message-Id: <1415962982-31667-1-git-send-email-hdegoede@redhat.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 10:49:17 +0000
+Subject: [PATCH v7 15/20] OMAPDSS: hdmi4: Register ASoC platform device for omap hdmi audio
+Message-Id: <21ee831da15efc2b2f456c53162b41e5ddacdf9c.1415786458.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1415786458.git.jsarha@ti.com>
+In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-From: Luc Verhaegen <libv@skynet.be>
+Implements callbacks for OMAP HDMI audio platform driver and registers
+it in probe function. Unregistering is done in remove function.
 
-This claims and enables clocks listed in the simple framebuffer dt node.
-This is needed so that the display engine, in case the required clocks
-are known by the kernel code and are described in the dt, will remain
-properly enabled.
-
-Signed-off-by: Luc Verhaegen <libv@skynet.be>
-[hdegoede@redhat.com: Change clks from list to dynamic array]
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
-Acked-by: Grant Likely <grant.likely@linaro.org>
---
-Changes in v4:
--change clks from linkedlist to dynamic allocated array
--propagate EPROBE_DEFER up from simplefb_clocks_init to simplefb_probe
-Changes in v6:
--Wrap the clock code in #ifdef CONFIG_OF, as simplefb is used on non
- devicetree platforms too
-Changes in v7:
--Put function return type and the rest of the prototype on the same line
--Cleanup #ifdef CONFIG_OF handling
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/simplefb.c | 108 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 107 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/hdmi4.c |  125 +++++++++++++++++++++++++++++++++
+ 1 file changed, 125 insertions(+)
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index cdcf1fe..d192946 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -26,6 +26,7 @@
- #include <linux/module.h>
- #include <linux/platform_data/simplefb.h>
- #include <linux/platform_device.h>
-+#include <linux/clk-provider.h>
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 6f6764c..28a55b2 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -33,6 +33,7 @@
+ #include <linux/gpio.h>
+ #include <linux/regulator/consumer.h>
+ #include <video/omapdss.h>
++#include <sound/omap-hdmi-audio.h>
  
- static struct fb_fix_screeninfo simplefb_fix = {
- 	.id		= "simple",
-@@ -167,8 +168,105 @@ static int simplefb_parse_pd(struct platform_device *pdev,
+ #include "hdmi4_core.h"
+ #include "dss.h"
+@@ -336,6 +337,8 @@ static int hdmi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err0;
+ 	}
  
- struct simplefb_par {
- 	u32 palette[PSEUDO_PALETTE_SIZE];
-+#ifdef CONFIG_OF
-+	int clk_count;
-+	struct clk **clks;
-+#endif
- };
++	hdmi.display_enabled = true;
++
+ 	mutex_unlock(&hdmi.lock);
+ 	return 0;
  
-+#ifdef CONFIG_OF
-+/*
-+ * Clock handling code.
-+ *
-+ * Here we handle the clocks property of our "simple-framebuffer" dt node.
-+ * This is necessary so that we can make sure that any clocks needed by
-+ * the display engine that the bootloader set up for us (and for which it
-+ * provided a simplefb dt node), stay up, for the life of the simplefb
-+ * driver.
-+ *
-+ * When the driver unloads, we cleanly disable, and then release the clocks.
-+ *
-+ * We only complain about errors here, no action is taken as the most likely
-+ * error can only happen due to a mismatch between the bootloader which set
-+ * up simplefb, and the clock definitions in the device tree. Chances are
-+ * that there are no adverse effects, and if there are, a clean teardown of
-+ * the fb probe will not help us much either. So just complain and carry on,
-+ * and hope that the user actually gets a working fb at the end of things.
-+ */
-+static int simplefb_clocks_init(struct simplefb_par *par,
-+				struct platform_device *pdev)
+@@ -350,8 +353,13 @@ static void hdmi_display_disable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&hdmi.lock);
+ 
++	if (hdmi.audio_pdev && hdmi.audio_abort_cb)
++		hdmi.audio_abort_cb(&hdmi.audio_pdev->dev);
++
+ 	hdmi_power_off_full(dssdev);
+ 
++	hdmi.display_enabled = false;
++
+ 	mutex_unlock(&hdmi.lock);
+ }
+ 
+@@ -542,6 +550,112 @@ err:
+ 	return r;
+ }
+ 
++/* Audio callbacks */
++static int hdmi_audio_startup(struct device *dev,
++			      void (*abort_cb)(struct device *dev))
 +{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct clk *clock;
-+	int i, ret;
++	struct omap_hdmi *hd = dev_get_drvdata(dev);
++	int ret = 0;
 +
-+	if (dev_get_platdata(&pdev->dev) || !np)
-+		return 0;
++	mutex_lock(&hd->lock);
 +
-+	par->clk_count = of_clk_get_parent_count(np);
-+	if (par->clk_count <= 0)
-+		return 0;
-+
-+	par->clks = kcalloc(par->clk_count, sizeof(struct clk *), GFP_KERNEL);
-+	if (!par->clks)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < par->clk_count; i++) {
-+		clock = of_clk_get(np, i);
-+		if (IS_ERR(clock)) {
-+			if (PTR_ERR(clock) = -EPROBE_DEFER) {
-+				while (--i >= 0) {
-+					if (par->clks[i])
-+						clk_put(par->clks[i]);
-+				}
-+				kfree(par->clks);
-+				return -EPROBE_DEFER;
-+			}
-+			dev_err(&pdev->dev, "%s: clock %d not found: %ld\n",
-+				__func__, i, PTR_ERR(clock));
-+			continue;
-+		}
-+		par->clks[i] = clock;
++	if (!hdmi_mode_has_audio(&hd->cfg) || !hd->display_enabled) {
++		ret = -EPERM;
++		goto out;
 +	}
 +
-+	for (i = 0; i < par->clk_count; i++) {
-+		if (par->clks[i]) {
-+			ret = clk_prepare_enable(par->clks[i]);
-+			if (ret) {
-+				dev_err(&pdev->dev,
-+					"%s: failed to enable clock %d: %d\n",
-+					__func__, i, ret);
-+				clk_put(par->clks[i]);
-+				par->clks[i] = NULL;
-+			}
-+		}
-+	}
++	hd->audio_abort_cb = abort_cb;
++
++out:
++	mutex_unlock(&hd->lock);
++
++	return ret;
++}
++
++static int hdmi_audio_shutdown(struct device *dev)
++{
++	struct omap_hdmi *hd = dev_get_drvdata(dev);
++
++	mutex_lock(&hd->lock);
++	hd->audio_abort_cb = NULL;
++	mutex_unlock(&hd->lock);
 +
 +	return 0;
 +}
 +
-+static void simplefb_clocks_destroy(struct simplefb_par *par)
++static int hdmi_audio_start(struct device *dev)
 +{
-+	int i;
++	struct omap_hdmi *hd = dev_get_drvdata(dev);
 +
-+	if (!par->clks)
-+		return;
++	WARN_ON(!hdmi_mode_has_audio(&hd->cfg));
++	WARN_ON(!hd->display_enabled);
 +
-+	for (i = 0; i < par->clk_count; i++) {
-+		if (par->clks[i]) {
-+			clk_disable_unprepare(par->clks[i]);
-+			clk_put(par->clks[i]);
-+		}
++	hdmi_wp_audio_enable(&hd->wp, true);
++	hdmi4_audio_start(&hd->core, &hd->wp);
++
++	return 0;
++}
++
++static void hdmi_audio_stop(struct device *dev)
++{
++	struct omap_hdmi *hd = dev_get_drvdata(dev);
++
++	WARN_ON(!hdmi_mode_has_audio(&hd->cfg));
++	WARN_ON(!hd->display_enabled);
++
++	hdmi4_audio_stop(&hd->core, &hd->wp);
++	hdmi_wp_audio_enable(&hd->wp, false);
++}
++
++static int hdmi_audio_config(struct device *dev,
++			     struct omap_dss_audio *dss_audio)
++{
++	struct omap_hdmi *hd = dev_get_drvdata(dev);
++	int ret;
++
++	mutex_lock(&hd->lock);
++
++	if (!hdmi_mode_has_audio(&hd->cfg) || !hd->display_enabled) {
++		ret = -EPERM;
++		goto out;
 +	}
 +
-+	kfree(par->clks);
++	ret = hdmi4_audio_config(&hd->core, &hd->wp, dss_audio,
++				 hd->cfg.timings.pixelclock);
++
++out:
++	mutex_unlock(&hd->lock);
++
++	return ret;
 +}
-+#else
-+static int simplefb_clocks_init(struct simplefb_par *par,
-+	struct platform_device *pdev) { return 0; }
-+static void simplefb_clocks_destroy(struct simplefb_par *par) { }
-+#endif
 +
- static int simplefb_probe(struct platform_device *pdev)
++static const struct omap_hdmi_audio_ops hdmi_audio_ops = {
++	.audio_startup = hdmi_audio_startup,
++	.audio_shutdown = hdmi_audio_shutdown,
++	.audio_start = hdmi_audio_start,
++	.audio_stop = hdmi_audio_stop,
++	.audio_config = hdmi_audio_config,
++};
++
++static int hdmi_audio_register(struct device *dev)
++{
++	struct omap_hdmi_audio_pdata pdata = {
++		.dev = dev,
++		.dss_version = omapdss_get_version(),
++		.audio_dma_addr = hdmi_wp_get_audio_dma_addr(&hdmi.wp),
++		.ops = &hdmi_audio_ops,
++	};
++
++	hdmi.audio_pdev = platform_device_register_data(
++		dev, "omap-hdmi-audio", PLATFORM_DEVID_AUTO,
++		&pdata, sizeof(pdata));
++
++	if (IS_ERR(hdmi.audio_pdev))
++		return PTR_ERR(hdmi.audio_pdev);
++
++	return 0;
++}
++
+ /* HDMI HW IP initialisation */
+ static int omapdss_hdmihw_probe(struct platform_device *pdev)
  {
- 	int ret;
-@@ -236,6 +334,10 @@ static int simplefb_probe(struct platform_device *pdev)
- 	}
- 	info->pseudo_palette = par->palette;
+@@ -599,6 +713,14 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
  
-+	ret = simplefb_clocks_init(par, pdev);
-+	if (ret < 0)
-+		goto error_unmap;
+ 	hdmi_init_output(pdev);
+ 
++	r = hdmi_audio_register(&pdev->dev);
++	if (r) {
++		DSSERR("Registering HDMI audio failed\n");
++		hdmi_uninit_output(pdev);
++		pm_runtime_disable(&pdev->dev);
++		return r;
++	}
 +
- 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
- 			     info->fix.smem_start, info->fix.smem_len,
- 			     info->screen_base);
-@@ -247,13 +349,15 @@ static int simplefb_probe(struct platform_device *pdev)
- 	ret = register_framebuffer(info);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
--		goto error_unmap;
-+		goto error_clocks;
- 	}
- 
- 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
+ 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
  
  	return 0;
+@@ -606,6 +728,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
  
-+error_clocks:
-+	simplefb_clocks_destroy(par);
- error_unmap:
- 	iounmap(info->screen_base);
- error_fb_release:
-@@ -264,8 +368,10 @@ error_fb_release:
- static int simplefb_remove(struct platform_device *pdev)
+ static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
  {
- 	struct fb_info *info = platform_get_drvdata(pdev);
-+	struct simplefb_par *par = info->par;
++	if (hdmi.audio_pdev)
++		platform_device_unregister(hdmi.audio_pdev);
++
+ 	hdmi_uninit_output(pdev);
  
- 	unregister_framebuffer(info);
-+	simplefb_clocks_destroy(par);
- 	framebuffer_release(info);
- 
- 	return 0;
+ 	pm_runtime_disable(&pdev->dev);
 -- 
-2.1.0
+1.7.9.5
 

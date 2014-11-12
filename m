@@ -1,93 +1,154 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Nov 2014 11:52:16 +0000
-Subject: [PATCH 14/22] OMAPDSS: HDMI: fix setting REFSEL
-Message-Id: <1415793144-11723-15-git-send-email-tomi.valkeinen@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 14:41:04 +0000
+Subject: [PATCH v7.1 13/19] OMAPDSS: hdmi4: Remove callbacks for the old ASoC DAI driver
+Message-Id: <5583ef2dbb46e6a9b1c37c0b922b6c9e9e8e655f.1415803065.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1415803064.git.jsarha@ti.com>
+In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Only OMAP5+ has REFSEL field, but at the moment it's set also on OMAP4.
+Removes the OMAP4 HDMI audio callbacks for the old external DAI driver.
 
-Fix this by adding a "has_refsel" field, and setting the REFSEL based on
-that.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h     | 8 --------
- drivers/video/fbdev/omap2/dss/hdmi_pll.c | 8 ++++----
- 2 files changed, 4 insertions(+), 12 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi4.c |  113 ---------------------------------
+ 1 file changed, 113 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 262771b9b76b..4bbc9d206f4a 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -101,13 +101,6 @@ enum hdmi_core_hdmi_dvi {
- 	HDMI_HDMI = 1
- };
- 
--enum hdmi_clk_refsel {
--	HDMI_REFSEL_PCLK = 0,
--	HDMI_REFSEL_REF1 = 1,
--	HDMI_REFSEL_REF2 = 2,
--	HDMI_REFSEL_SYSCLK = 3
--};
--
- enum hdmi_packing_mode {
- 	HDMI_PACK_10b_RGB_YUV444 = 0,
- 	HDMI_PACK_24b_RGB_YUV444_YUV422 = 1,
-@@ -199,7 +192,6 @@ struct hdmi_pll_info {
- 	u16 regm2;
- 	u16 regsd;
- 	u16 dcofreq;
--	enum hdmi_clk_refsel refsel;
- };
- 
- struct hdmi_audio_format {
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-index 6d92bb32fe51..b28d41a08a8f 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-@@ -24,6 +24,7 @@
- #define HDMI_DEFAULT_REGM2 1
- 
- struct hdmi_pll_features {
-+	bool has_refsel;
- 	bool sys_reset;
- 	/* this is a hack, need to replace it with a better computation of M2 */
- 	bool bound_dcofreq;
-@@ -96,9 +97,6 @@ void hdmi_pll_compute(struct hdmi_pll_data *pll, unsigned long clkin, int phy)
- 	pi->dcofreq = phy > 1000 * 100;
- 	pi->regsd = ((pi->regm * clkin / 10) / (pi->regn * 250) + 5) / 10;
- 
--	/* Set the reference clock to sysclk reference */
--	pi->refsel = HDMI_REFSEL_SYSCLK;
--
- 	DSSDBG("M = %d Mf = %d\n", pi->regm, pi->regmf);
- 	DSSDBG("range = %d sd = %d\n", pi->dcofreq, pi->regsd);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 764443e..6f6764c 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -468,112 +468,6 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev,
+ 	return r;
  }
-@@ -122,7 +120,8 @@ static int hdmi_pll_config(struct hdmi_pll_data *pll)
- 	r = FLD_MOD(r, 0x0, 12, 12);	/* PLL_HIGHFREQ divide by 2 */
- 	r = FLD_MOD(r, 0x1, 13, 13);	/* PLL_REFEN */
- 	r = FLD_MOD(r, 0x0, 14, 14);	/* PHY_CLKINEN de-assert during locking */
--	r = FLD_MOD(r, fmt->refsel, 22, 21);	/* REFSEL */
-+	if (pll_feat->has_refsel)
-+		r = FLD_MOD(r, 0x3, 22, 21);	/* REFSEL = SYSCLK */
  
- 	if (fmt->dcofreq)
- 		r = FLD_MOD(r, 0x4, 3, 1);	/* 1000MHz and 2000MHz */
-@@ -222,6 +221,7 @@ static const struct hdmi_pll_features omap44xx_pll_feats = {
+-#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	int r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi_wp_audio_enable(&hdmi.wp, true);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-	hdmi_wp_audio_enable(&hdmi.wp, false);
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return hdmi4_audio_start(&hdmi.core, &hdmi.wp);
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-	hdmi4_audio_stop(&hdmi.core, &hdmi.wp);
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	bool r;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	r = hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode);
+-
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	int r;
+-	u32 pclk = hdmi.cfg.timings.pixelclock;
+-
+-	mutex_lock(&hdmi.lock);
+-
+-	if (!hdmi_mode_has_audio(hdmi.cfg.hdmi_dvi_mode)) {
+-		r = -EPERM;
+-		goto err;
+-	}
+-
+-	r = hdmi4_audio_config(&hdmi.core, &hdmi.wp, audio, pclk);
+-	if (r)
+-		goto err;
+-
+-	mutex_unlock(&hdmi.lock);
+-	return 0;
+-
+-err:
+-	mutex_unlock(&hdmi.lock);
+-	return r;
+-}
+-#else
+-static int hdmi_audio_enable(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_disable(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static int hdmi_audio_start(struct omap_dss_device *dssdev)
+-{
+-	return -EPERM;
+-}
+-
+-static void hdmi_audio_stop(struct omap_dss_device *dssdev)
+-{
+-}
+-
+-static bool hdmi_audio_supported(struct omap_dss_device *dssdev)
+-{
+-	return false;
+-}
+-
+-static int hdmi_audio_config(struct omap_dss_device *dssdev,
+-		struct omap_dss_audio *audio)
+-{
+-	return -EPERM;
+-}
+-#endif
+-
+ static int hdmi_set_infoframe(struct omap_dss_device *dssdev,
+ 		const struct hdmi_avi_infoframe *avi)
+ {
+@@ -602,13 +496,6 @@ static const struct omapdss_hdmi_ops hdmi_ops = {
+ 	.read_edid		= hdmi_read_edid,
+ 	.set_infoframe		= hdmi_set_infoframe,
+ 	.set_hdmi_mode		= hdmi_set_hdmi_mode,
+-
+-	.audio_enable		= hdmi_audio_enable,
+-	.audio_disable		= hdmi_audio_disable,
+-	.audio_start		= hdmi_audio_start,
+-	.audio_stop		= hdmi_audio_stop,
+-	.audio_supported	= hdmi_audio_supported,
+-	.audio_config		= hdmi_audio_config,
  };
  
- static const struct hdmi_pll_features omap54xx_pll_feats = {
-+	.has_refsel		=	true,
- 	.sys_reset		=	true,
- 	.bound_dcofreq		=	true,
- 	.fint_min		=	620000,
+ static void hdmi_init_output(struct platform_device *pdev)
 -- 
-2.1.3
+1.7.9.5
 

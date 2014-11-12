@@ -1,114 +1,83 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Thu, 06 Nov 2014 07:41:13 +0000
-Subject: [PATCH RESEND 1/5] arm: sa1100: add cpu clock
-Message-Id: <1415259677-18770-2-git-send-email-dbaryshkov@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 12 Nov 2014 11:52:02 +0000
+Subject: [PATCH 00/22] OMAPDSS: Create a DSS PLL library
+Message-Id: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Both SA1100 framebuffer and PCMCIA drivers require knowledge of cpu
-frequency to correctly program timings.  Currently they receive timing
-information by calling cpufreq_get(0).  However if cpu frequency driver
-is not enabled (e.g. due to unsupported DRAM chip/board on sa1110)
-cpufreq_get(0) returns 0, causing incorrect timings to be programmed.
+Hi,
 
-Add cpu clock returning cpu frequency, to be used by sa11x0 fb and
-pcmcia drivers.
+OMAP DSS hardware contains two different PLLs at the moment: DSI and HDMI PLLs.
+With the DRA7x we will have a new PLL, video PLL. The code for DSI and HDMI
+PLLs are totally separate, with no shared code.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- arch/arm/mach-sa1100/clock.c | 41 ++++++++++++++++++++++++++++++++++-------
- 1 file changed, 34 insertions(+), 7 deletions(-)
+This series cleans up the PLL code for DSI and HDMI, and creates a common
+framework for DSS PLLs, which will also be used by the video PLLs.
 
-diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
-index 9fa6a99..53f750d 100644
---- a/arch/arm/mach-sa1100/clock.c
-+++ b/arch/arm/mach-sa1100/clock.c
-@@ -15,10 +15,12 @@
- #include <linux/clkdev.h>
- 
- #include <mach/hardware.h>
-+#include <mach/generic.h>
- 
- struct clkops {
- 	void			(*enable)(struct clk *);
- 	void			(*disable)(struct clk *);
-+	unsigned long		(*get_rate)(struct clk *);
- };
- 
- struct clk {
-@@ -33,13 +35,6 @@ struct clk clk_##_name = {				\
- 
- static DEFINE_SPINLOCK(clocks_lock);
- 
--/* Dummy clk routine to build generic kernel parts that may be using them */
--unsigned long clk_get_rate(struct clk *clk)
--{
--	return 0;
--}
--EXPORT_SYMBOL(clk_get_rate);
--
- static void clk_gpio27_enable(struct clk *clk)
- {
- 	/*
-@@ -58,6 +53,19 @@ static void clk_gpio27_disable(struct clk *clk)
- 	GAFR &= ~GPIO_32_768kHz;
- }
- 
-+static void clk_cpu_enable(struct clk *clk)
-+{
-+}
-+
-+static void clk_cpu_disable(struct clk *clk)
-+{
-+}
-+
-+static unsigned long clk_cpu_get_rate(struct clk *clk)
-+{
-+	return sa11x0_getspeed(0) * 1000;
-+}
-+
- int clk_enable(struct clk *clk)
- {
- 	unsigned long flags;
-@@ -87,16 +95,35 @@ void clk_disable(struct clk *clk)
- }
- EXPORT_SYMBOL(clk_disable);
- 
-+unsigned long clk_get_rate(struct clk *clk)
-+{
-+	if (clk && clk->ops && clk->ops->get_rate)
-+		return clk->ops->get_rate(clk);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(clk_get_rate);
-+
- const struct clkops clk_gpio27_ops = {
- 	.enable		= clk_gpio27_enable,
- 	.disable	= clk_gpio27_disable,
- };
- 
-+const struct clkops clk_cpu_ops = {
-+	.enable		= clk_cpu_enable,
-+	.disable	= clk_cpu_disable,
-+	.get_rate	= clk_cpu_get_rate,
-+};
-+
- static DEFINE_CLK(gpio27, &clk_gpio27_ops);
- 
-+static DEFINE_CLK(cpu, &clk_cpu_ops);
-+
- static struct clk_lookup sa11xx_clkregs[] = {
- 	CLKDEV_INIT("sa1111.0", NULL, &clk_gpio27),
- 	CLKDEV_INIT("sa1100-rtc", NULL, NULL),
-+	CLKDEV_INIT("sa11x0-fb", NULL, &clk_cpu),
-+	CLKDEV_INIT("sa11x0-pcmcia", NULL, &clk_cpu),
- };
- 
- static int __init sa11xx_clk_init(void)
+The first half of the patches clean up and rework DSI PLL code to make it more
+suitable with the common PLL code. We then add the common PLL library, and make
+DSI use that.
+
+The second half does the same for HDMI.
+
+There should be no changes visible to the user, although the exact settings for
+the PLLs may be slightly different from what we currently end up programming in
+to the registers.
+
+Tested on OMAP3/4/5 boards.
+
+This series is based on Archit's "OMAPDSS: Support multiple DPI instances"
+series. I have pushed these to:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/pll-library
+
+ Tomi
+
+Tomi Valkeinen (22):
+  OMAPDSS: DSI: wait for hsdiv clocks when enabling PLL
+  OMAPDSS: DSI: remove unused hsdiv wait funcs
+  OMAPDSS: DSI: always power on hsclk & hsdiv
+  OMAPDSS: DSI: separate LP clock info from dsi_clock_info
+  OMAPDSS: DSI: remove clkin from dsi_clock_info
+  OMAPDSS: DSI: remove pll_locked field
+  OMAPDSS: DSI: use struct copy instead of individual field copy
+  OMAPDSS: DSI: rename clkin4ddr to clkdco
+  OMAPDSS: DSI: turn hsdivs fields to arrays
+  OMAPDSS: DSI: features: combine dsi & dispc hsdivs
+  OMAPDSS: DSI: dsi_runtime_get/put in pll_init
+  OMAPDSS: Add common PLL code
+  OMAPDSS: DSI: use common DSS PLL support
+  OMAPDSS: HDMI: fix setting REFSEL
+  OMAPDSS: HDMI5: disable interlace modes
+  OMAPDSS: HDMI: rewrite HDMI PLL calculation code
+  OMAPDSS: HDMI: Remove HDMI PLL reset
+  OMAPDSS: HDMI: store WP pointer to hdmi_pll_data
+  OMAPDSS: HDMI: split PLL enable & config
+  OMAPDSS: HDMI: remove extra poweroff
+  OMAPDSS: HDMI: use common DSS PLL support
+  OMAPDSS: features: remove unused DSI PLL features
+
+ drivers/video/fbdev/omap2/dss/Makefile       |   2 +-
+ drivers/video/fbdev/omap2/dss/dispc.c        |  20 +-
+ drivers/video/fbdev/omap2/dss/dpi.c          | 106 ++---
+ drivers/video/fbdev/omap2/dss/dsi.c          | 659 ++++++++++-----------------
+ drivers/video/fbdev/omap2/dss/dss.c          |  15 -
+ drivers/video/fbdev/omap2/dss/dss.h          | 193 ++++----
+ drivers/video/fbdev/omap2/dss/dss_features.c |  42 --
+ drivers/video/fbdev/omap2/dss/dss_features.h |  12 -
+ drivers/video/fbdev/omap2/dss/hdmi.h         |  34 +-
+ drivers/video/fbdev/omap2/dss/hdmi4.c        |  68 ++-
+ drivers/video/fbdev/omap2/dss/hdmi5.c        |  73 ++-
+ drivers/video/fbdev/omap2/dss/hdmi_phy.c     |  31 +-
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c     | 313 ++++++-------
+ drivers/video/fbdev/omap2/dss/pll.c          | 378 +++++++++++++++
+ 14 files changed, 979 insertions(+), 967 deletions(-)
+ create mode 100644 drivers/video/fbdev/omap2/dss/pll.c
+
 -- 
-2.1.1
+2.1.3
 

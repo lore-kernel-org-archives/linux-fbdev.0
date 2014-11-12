@@ -1,197 +1,52 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 10:49:19 +0000
-Subject: [PATCH v7 17/20] OMAPDSS: hdmi5: Register ASoC platform device for omap hdmi audio
-Message-Id: <afcbd1cf531564dca5c093abbb40cac0f3efe682.1415786458.git.jsarha@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 12 Nov 2014 16:15:48 +0000
+Subject: [PATCH v5 1/5] simplefb: Add simplefb MAINTAINERS entry
+Message-Id: <1415808952-23549-2-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415786458.git.jsarha@ti.com>
-In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
+References: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Implements callbacks for OMAP HDMI audio platform driver and registers
-it in probe function. Unregistering is done in remove function.
+During the discussion about adding clock handling code to simplefb, it became
+clear that simplefb currently does not have an active maintainer.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+I've discussed this with Stephen Warren <swarren@wwwdotorg.org>, the original
+author of simplefb, and with his permisson I'm picking up maintainership of
+simplefb.
+
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Acked-by: Stephen Warren <swarren@wwwdotorg.org>
+Reviewed-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
+Acked-by: Grant Likely <grant.likely@linaro.org>
 ---
- drivers/video/fbdev/omap2/dss/hdmi5.c |  125 +++++++++++++++++++++++++++++++++
- 1 file changed, 125 insertions(+)
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index 1b9c86a..feb76e2 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -38,6 +38,7 @@
- #include <linux/gpio.h>
- #include <linux/regulator/consumer.h>
- #include <video/omapdss.h>
-+#include <sound/omap-hdmi-audio.h>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index df82827..7678808 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8442,6 +8442,14 @@ F:	drivers/media/usb/siano/
+ F:	drivers/media/usb/siano/
+ F:	drivers/media/mmc/siano/
  
- #include "hdmi5_core.h"
- #include "dss.h"
-@@ -360,6 +361,8 @@ static int hdmi_display_enable(struct omap_dss_device *dssdev)
- 		goto err0;
- 	}
- 
-+	hdmi.display_enabled = true;
++SIMPLEFB FB DRIVER
++M:	Hans de Goede <hdegoede@redhat.com>
++L:	linux-fbdev@vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/video/simple-framebuffer.txt
++F:	drivers/video/fbdev/simplefb.c
++F:	include/linux/platform_data/simplefb.h
 +
- 	mutex_unlock(&hdmi.lock);
- 	return 0;
- 
-@@ -374,8 +377,13 @@ static void hdmi_display_disable(struct omap_dss_device *dssdev)
- 
- 	mutex_lock(&hdmi.lock);
- 
-+	if (hdmi.audio_pdev && hdmi.audio_abort_cb)
-+		hdmi.audio_abort_cb(&hdmi.audio_pdev->dev);
-+
- 	hdmi_power_off_full(dssdev);
- 
-+	hdmi.display_enabled = false;
-+
- 	mutex_unlock(&hdmi.lock);
- }
- 
-@@ -566,6 +574,112 @@ err:
- 	return r;
- }
- 
-+/* Audio callbacks */
-+static int hdmi_audio_startup(struct device *dev,
-+			      void (*abort_cb)(struct device *dev))
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+	int ret = 0;
-+
-+	mutex_lock(&hd->lock);
-+
-+	if (!hdmi_mode_has_audio(&hd->cfg) || !hd->display_enabled) {
-+		ret = -EPERM;
-+		goto out;
-+	}
-+
-+	hd->audio_abort_cb = abort_cb;
-+
-+out:
-+	mutex_unlock(&hd->lock);
-+
-+	return ret;
-+}
-+
-+static int hdmi_audio_shutdown(struct device *dev)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+
-+	mutex_lock(&hd->lock);
-+	hd->audio_abort_cb = NULL;
-+	mutex_unlock(&hd->lock);
-+
-+	return 0;
-+}
-+
-+static int hdmi_audio_start(struct device *dev)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+
-+	WARN_ON(!hdmi_mode_has_audio(&hd->cfg));
-+	WARN_ON(!hd->display_enabled);
-+
-+	hdmi_wp_audio_enable(&hd->wp, true);
-+	hdmi_wp_audio_core_req_enable(&hd->wp, true);
-+
-+	return 0;
-+}
-+
-+static void hdmi_audio_stop(struct device *dev)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+
-+	WARN_ON(!hdmi_mode_has_audio(&hd->cfg));
-+	WARN_ON(!hd->display_enabled);
-+
-+	hdmi_wp_audio_core_req_enable(&hd->wp, false);
-+	hdmi_wp_audio_enable(&hd->wp, false);
-+}
-+
-+static int hdmi_audio_config(struct device *dev,
-+			     struct omap_dss_audio *dss_audio)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+	int ret;
-+
-+	mutex_lock(&hd->lock);
-+
-+	if (!hdmi_mode_has_audio(&hd->cfg) || !hd->display_enabled) {
-+		ret = -EPERM;
-+		goto out;
-+	}
-+
-+	ret = hdmi5_audio_config(&hd->core, &hd->wp, dss_audio,
-+				 hd->cfg.timings.pixelclock);
-+
-+out:
-+	mutex_unlock(&hd->lock);
-+
-+	return ret;
-+}
-+
-+static const struct omap_hdmi_audio_ops hdmi_audio_ops = {
-+	.audio_startup = hdmi_audio_startup,
-+	.audio_shutdown = hdmi_audio_shutdown,
-+	.audio_start = hdmi_audio_start,
-+	.audio_stop = hdmi_audio_stop,
-+	.audio_config = hdmi_audio_config,
-+};
-+
-+static int hdmi_audio_register(struct device *dev)
-+{
-+	struct omap_hdmi_audio_pdata pdata = {
-+		.dev = dev,
-+		.dss_version = omapdss_get_version(),
-+		.audio_dma_addr = hdmi_wp_get_audio_dma_addr(&hdmi.wp),
-+		.ops = &hdmi_audio_ops,
-+	};
-+
-+	hdmi.audio_pdev = platform_device_register_data(
-+		dev, "omap-hdmi-audio", PLATFORM_DEVID_AUTO,
-+		&pdata, sizeof(pdata));
-+
-+	if (IS_ERR(hdmi.audio_pdev))
-+		return PTR_ERR(hdmi.audio_pdev);
-+
-+	return 0;
-+}
-+
- /* HDMI HW IP initialisation */
- static int omapdss_hdmihw_probe(struct platform_device *pdev)
- {
-@@ -623,6 +737,14 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- 	hdmi_init_output(pdev);
- 
-+	r = hdmi_audio_register(&pdev->dev);
-+	if (r) {
-+		DSSERR("Registering HDMI audio failed %d\n", r);
-+		hdmi_uninit_output(pdev);
-+		pm_runtime_disable(&pdev->dev);
-+		return r;
-+	}
-+
- 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
- 
- 	return 0;
-@@ -630,6 +752,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
- {
-+	if (hdmi.audio_pdev)
-+		platform_device_unregister(hdmi.audio_pdev);
-+
- 	hdmi_uninit_output(pdev);
- 
- 	pm_runtime_disable(&pdev->dev);
+ SH_VEU V4L2 MEM2MEM DRIVER
+ L:	linux-media@vger.kernel.org
+ S:	Orphan
 -- 
-1.7.9.5
+2.1.0
 

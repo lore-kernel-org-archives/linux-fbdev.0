@@ -1,95 +1,66 @@
-From: Belisko Marek <marek.belisko@gmail.com>
-Date: Wed, 12 Nov 2014 21:02:52 +0000
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 12 Nov 2014 21:23:41 +0000
 Subject: Re: [PATCH 4/4] arm: dts: omap3-gta04: Add static configuration for devconf1 register
-Message-Id: <CAAfyv34sPAa94dYM1QoHKEX+MN8NMnzE91HLhXW6MG1Yr=o8mQ@mail.gmail.com>
+Message-Id: <20141112212340.GL26481@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1415051968-4878-1-git-send-email-marek@goldelico.com>
  <1415051968-4878-5-git-send-email-marek@goldelico.com>
  <20141110233630.GD31454@atomide.com>
-In-Reply-To: <20141110233630.GD31454@atomide.com>
+ <CAAfyv34sPAa94dYM1QoHKEX+MN8NMnzE91HLhXW6MG1Yr=o8mQ@mail.gmail.com>
+In-Reply-To: <CAAfyv34sPAa94dYM1QoHKEX+MN8NMnzE91HLhXW6MG1Yr=o8mQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Tony,
+* Belisko Marek <marek.belisko@gmail.com> [141112 13:04]:
+> Hi Tony,
+> 
+> On Tue, Nov 11, 2014 at 12:36 AM, Tony Lindgren <tony@atomide.com> wrote:
+> > * Marek Belisko <marek@goldelico.com> [141103 14:01]:
+> >> gta04 board need for tvout enabled 2 bits in devconf1 register (tvbypass and acbias).
+> >> Add single pinmux entry and enable it.
+> >>
+> >> Signed-off-by: Marek Belisko <marek@goldelico.com>
+> >> ---
+> >>  arch/arm/boot/dts/omap3-gta04.dtsi | 22 ++++++++++++++++++++++
+> >>  1 file changed, 22 insertions(+)
+> >>
+> >> diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
+> >> index e4d05f0..a456d37 100644
+> >> --- a/arch/arm/boot/dts/omap3-gta04.dtsi
+> >> +++ b/arch/arm/boot/dts/omap3-gta04.dtsi
+> >> @@ -118,6 +118,17 @@
+> >>                       };
+> >>               };
+> >>       };
+> >> +
+> >> +     /* pinmux for devconf1 */
+> >> +     control_devconf1: pinmux@480022d8 {
+> >> +             compatible = "pinctrl-single";
+> >> +             reg = <0x480022d8 4>;   /* single register */
+> >> +             #address-cells = <1>;
+> >> +             #size-cells = <0>;
+> >> +             pinctrl-single,bit-per-mux;
+> >> +             pinctrl-single,register-width = <32>;
+> >> +             pinctrl-single,function-mask = <0xfc0bd5>;
+> >> +     };
+> >>  };
+> >>
+> >
+> > The pinctrl-single entry should be in omap3.dtsi as the mux register is there
+> > for all the omap3 devices, can you please update the patch for that?
+> Ok I'll do. Just one question. I checked TRM for omap3430 and omap3630 and
+> reserved bits in devconf1 are different. So keep function-mask for
+> omap3430 in omap3.dtsi
+> and redefine in omap36xx.dtsi (not sure if this will work in this
+> way)? Or exist other way how to deal with that? Thanks.
 
-On Tue, Nov 11, 2014 at 12:36 AM, Tony Lindgren <tony@atomide.com> wrote:
-> * Marek Belisko <marek@goldelico.com> [141103 14:01]:
->> gta04 board need for tvout enabled 2 bits in devconf1 register (tvbypass and acbias).
->> Add single pinmux entry and enable it.
->>
->> Signed-off-by: Marek Belisko <marek@goldelico.com>
->> ---
->>  arch/arm/boot/dts/omap3-gta04.dtsi | 22 ++++++++++++++++++++++
->>  1 file changed, 22 insertions(+)
->>
->> diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
->> index e4d05f0..a456d37 100644
->> --- a/arch/arm/boot/dts/omap3-gta04.dtsi
->> +++ b/arch/arm/boot/dts/omap3-gta04.dtsi
->> @@ -118,6 +118,17 @@
->>                       };
->>               };
->>       };
->> +
->> +     /* pinmux for devconf1 */
->> +     control_devconf1: pinmux@480022d8 {
->> +             compatible = "pinctrl-single";
->> +             reg = <0x480022d8 4>;   /* single register */
->> +             #address-cells = <1>;
->> +             #size-cells = <0>;
->> +             pinctrl-single,bit-per-mux;
->> +             pinctrl-single,register-width = <32>;
->> +             pinctrl-single,function-mask = <0xfc0bd5>;
->> +     };
->>  };
->>
->
-> The pinctrl-single entry should be in omap3.dtsi as the mux register is there
-> for all the omap3 devices, can you please update the patch for that?
-Ok I'll do. Just one question. I checked TRM for omap3430 and omap3630 and
-reserved bits in devconf1 are different. So keep function-mask for
-omap3430 in omap3.dtsi
-and redefine in omap36xx.dtsi (not sure if this will work in this
-way)? Or exist other way how to deal with that? Thanks.
->
-> Regards,
->
-> Tony
->
->>  &omap3_pmx_core {
->> @@ -497,3 +508,14 @@
->>               };
->>       };
->>  };
->> +
->> +&control_devconf1 {
->> +     pinctrl-name = "default";
->> +     pinctrl-0 = < &tv_acbias_pins>;
->> +
->> +     tv_acbias_pins: pinmux_tv_acbias_pins {
->> +             pinctrl-single,bits = <
->> +                     0 0x40800 0x40800
->> +             >;
->> +     };
->> +};
->> --
->> 1.9.1
->>
+Oh OK. Yes if they are different you should have the common entry in
+omap3.dtsi and the SoC specific fields in omap34xx.dtsi and
+omap36xx.dtsi. And please leave out the bit for configuring the
+MPUFORCEWRNP.
 
-BR,
+Regards,
 
-marek
-
--- 
-as simple and primitive as possible
--------------------------------------------------
-Marek Belisko - OPEN-NANDRA
-Freelance Developer
-
-Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
-Tel: +421 915 052 184
-skype: marekwhite
-twitter: #opennandra
-web: http://open-nandra.com
+Tony

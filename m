@@ -1,45 +1,42 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 13 Nov 2014 09:31:44 +0000
-Subject: [PATCH 2/7] ARM: dts: sun4i: Add simplefb node
-Message-Id: <1415871109-28332-2-git-send-email-hdegoede@redhat.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 14:40:52 +0000
+Subject: [PATCH v7.1 01/19] OMAPDSS: hdmi_wp: Protect reserved bits in hdmi_wp_audio_config_format()
+Message-Id: <97e78fc41195719e4423d2aedf1b90b4740379c7.1415803065.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
+References: <cover.1415803064.git.jsarha@ti.com>
+In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-Add a simplefb template node for u-boot to further fill and activate.
+Only OMAP4 DSS has non reserved bits above 6th bit in HDMI_WP_AUDIO_CFG.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- arch/arm/boot/dts/sun4i-a10.dtsi | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/video/fbdev/omap2/dss/hdmi_wp.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/sun4i-a10.dtsi b/arch/arm/boot/dts/sun4i-a10.dtsi
-index 1ef7d57..686d8ef 100644
---- a/arch/arm/boot/dts/sun4i-a10.dtsi
-+++ b/arch/arm/boot/dts/sun4i-a10.dtsi
-@@ -27,6 +27,18 @@
- 		serial7 = &uart7;
- 	};
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+index 496327e..71b499e 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
+@@ -194,8 +194,12 @@ void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
+ 	DSSDBG("Enter hdmi_wp_audio_config_format\n");
  
-+	chosen {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		framebuffer0 {
-+			compatible = "simple-framebuffer";
-+			clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
-+			status = "disabled";
-+		};
-+	};
-+
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
+ 	r = hdmi_read_reg(wp->base, HDMI_WP_AUDIO_CFG);
+-	r = FLD_MOD(r, aud_fmt->stereo_channels, 26, 24);
+-	r = FLD_MOD(r, aud_fmt->active_chnnls_msk, 23, 16);
++	if (omapdss_get_version() = OMAPDSS_VER_OMAP4430_ES1 ||
++	    omapdss_get_version() = OMAPDSS_VER_OMAP4430_ES2 ||
++	    omapdss_get_version() = OMAPDSS_VER_OMAP4) {
++		r = FLD_MOD(r, aud_fmt->stereo_channels, 26, 24);
++		r = FLD_MOD(r, aud_fmt->active_chnnls_msk, 23, 16);
++	}
+ 	r = FLD_MOD(r, aud_fmt->en_sig_blk_strt_end, 5, 5);
+ 	r = FLD_MOD(r, aud_fmt->type, 4, 4);
+ 	r = FLD_MOD(r, aud_fmt->justification, 3, 3);
 -- 
-2.1.0
+1.7.9.5
 

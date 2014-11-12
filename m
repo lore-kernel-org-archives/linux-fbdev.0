@@ -1,42 +1,39 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 24 Nov 2014 18:05:35 +0000
-Subject: [PATCH v2] backlight: lp8788: Deletion of a check before backlight_device_unregister()
-Message-Id: <5473736F.8070705@users.sourceforge.net>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 12 Nov 2014 14:40:53 +0000
+Subject: [PATCH v7.1 02/19] OMAPDSS: hdmi5_core: Initialize mandatory sample_order parameter
+Message-Id: <89ed6487617455c4ec5dd039df488292e1e170d0.1415803065.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54720DEB.4060109@users.sourceforge.net> <20141124101006.GD4241@x1>
-In-Reply-To: <20141124101006.GD4241@x1>
+References: <cover.1415803064.git.jsarha@ti.com>
+In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Bryan Wu <cooloney@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
+The hdmi_wp_audio_config_format() expects sample_order of struct
+hdmi_audio_format to be initialized. The only allowed value is
+HDMI_AUDIO_SAMPLE_LEFT_FIRST.
 
-The backlight_device_unregister() function tests whether its argument is NULL
-and then returns immediately. Thus the test around the call is not needed.
-
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/backlight/lp8788_bl.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backlight/lp8788_bl.c
-index d6c4f6a..24a055c 100644
---- a/drivers/video/backlight/lp8788_bl.c
-+++ b/drivers/video/backlight/lp8788_bl.c
-@@ -221,8 +221,7 @@ static void lp8788_backlight_unregister(struct lp8788_bl *bl)
- {
- 	struct backlight_device *bl_dev = bl->bl_dev;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+index 83acbf7..9ffa805 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+@@ -879,6 +879,9 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 	/* only LPCM atm */
+ 	audio_format.type = HDMI_AUDIO_TYPE_LPCM;
  
--	if (bl_dev)
--		backlight_device_unregister(bl_dev);
-+	backlight_device_unregister(bl_dev);
- }
++	/* only allowed option */
++	audio_format.sample_order = HDMI_AUDIO_SAMPLE_LEFT_FIRST;
++
+ 	/* disable start/stop signals of IEC 60958 blocks */
+ 	audio_format.en_sig_blk_strt_end = HDMI_AUDIO_BLOCK_SIG_STARTEND_ON;
  
- static ssize_t lp8788_get_bl_ctl_mode(struct device *dev,
 -- 
-2.1.3
+1.7.9.5
 

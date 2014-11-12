@@ -1,73 +1,185 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 13 Nov 2014 13:34:03 +0000
-Subject: [PATCH v3 2/4] simplefb: Add support for enumerating simplefb dt nodes in /chosen
-Message-Id: <1415885645-24613-2-git-send-email-hdegoede@redhat.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 12 Nov 2014 11:52:20 +0000
+Subject: [PATCH 18/22] OMAPDSS: HDMI: store WP pointer to hdmi_pll_data
+Message-Id: <1415793144-11723-19-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415885645-24613-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415885645-24613-1-git-send-email-hdegoede@redhat.com>
+References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Update simplefb to support the new preferred location for simplefb dt nodes
-under /chosen.
+HDMI PLL code needs the pointer to the WP block so that it can manage
+its power. Currently this is passed as a function parameter to
+hdmi_pll_enable and hdmi_pll_disable. To make the PLL function adhere to
+the DSS PLL API, we need to remove the WP parameter.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
---
-Changes in v2:
--Make name array larger in case we ever encounter more then 10000 framebuffers
-Changes in v3:
--Switch to for_each_child_of_node to loop over the nodes under chosen
+This patch stores the WP pointer to hdmi_pll_data in hdmi_pll_init, so
+that it's available when needed.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/simplefb.c | 27 ++++++++++++++++++++++++++-
- 1 file changed, 26 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/hdmi.h     |  9 ++++++---
+ drivers/video/fbdev/omap2/dss/hdmi4.c    |  8 ++++----
+ drivers/video/fbdev/omap2/dss/hdmi5.c    |  8 ++++----
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c | 12 +++++++++---
+ 4 files changed, 23 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index cd96edd..223f230 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -27,6 +27,7 @@
- #include <linux/platform_data/simplefb.h>
- #include <linux/platform_device.h>
- #include <linux/clk-provider.h>
-+#include <linux/of_platform.h>
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+index 4b9bf0804a48..03761ecb81a6 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+@@ -248,6 +248,8 @@ struct hdmi_wp_data {
+ struct hdmi_pll_data {
+ 	void __iomem *base;
  
- static struct fb_fix_screeninfo simplefb_fix = {
- 	.id		= "simple",
-@@ -385,7 +386,31 @@ static struct platform_driver simplefb_driver = {
- 	.probe = simplefb_probe,
- 	.remove = simplefb_remove,
++	struct hdmi_wp_data *wp;
++
+ 	struct hdmi_pll_info info;
  };
--module_platform_driver(simplefb_driver);
-+
-+static int __init simplefb_init(void)
-+{
-+	int ret;
-+	struct device_node *np;
-+
-+	ret = platform_driver_register(&simplefb_driver);
-+	if (ret)
-+		return ret;
-+
-+	for_each_child_of_node(of_chosen, np) {
-+		if (of_device_is_compatible(np, "simple-framebuffer"))
-+			of_platform_device_create(np, NULL, NULL);
-+	}
-+
-+	return 0;
-+}
-+
-+static void __exit simplefb_exit(void)
-+{
-+	platform_driver_unregister(&simplefb_driver);
-+}
-+
-+module_init(simplefb_init);
-+module_exit(simplefb_exit);
  
- MODULE_AUTHOR("Stephen Warren <swarren@wwwdotorg.org>");
- MODULE_DESCRIPTION("Simple framebuffer driver");
+@@ -312,12 +314,13 @@ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
+ int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp);
+ 
+ /* HDMI PLL funcs */
+-int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
+-void hdmi_pll_disable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp);
++int hdmi_pll_enable(struct hdmi_pll_data *pll);
++void hdmi_pll_disable(struct hdmi_pll_data *pll);
+ void hdmi_pll_dump(struct hdmi_pll_data *pll, struct seq_file *s);
+ void hdmi_pll_compute(struct hdmi_pll_data *pll, unsigned long clkin,
+ 	unsigned long target_tmds);
+-int hdmi_pll_init(struct platform_device *pdev, struct hdmi_pll_data *pll);
++int hdmi_pll_init(struct platform_device *pdev, struct hdmi_pll_data *pll,
++	struct hdmi_wp_data *wp);
+ 
+ /* HDMI PHY funcs */
+ int hdmi_phy_configure(struct hdmi_phy_data *phy, unsigned long hfbitclk,
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 1f2fbccaff1f..2094b6eae99e 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -197,7 +197,7 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
+ 	hdmi_pll_compute(&hdmi.pll, clk_get_rate(hdmi.sys_clk), p->pixelclock);
+ 
+ 	/* config the PLL and PHY hdmi_set_pll_pwrfirst */
+-	r = hdmi_pll_enable(&hdmi.pll, &hdmi.wp);
++	r = hdmi_pll_enable(&hdmi.pll);
+ 	if (r) {
+ 		DSSDBG("Failed to lock PLL\n");
+ 		goto err_pll_enable;
+@@ -241,7 +241,7 @@ err_vid_enable:
+ err_phy_cfg:
+ 	hdmi_wp_set_phy_pwr(&hdmi.wp, HDMI_PHYPWRCMD_OFF);
+ err_phy_pwr:
+-	hdmi_pll_disable(&hdmi.pll, &hdmi.wp);
++	hdmi_pll_disable(&hdmi.pll);
+ err_pll_enable:
+ 	hdmi_power_off_core(dssdev);
+ 	return -EIO;
+@@ -259,7 +259,7 @@ static void hdmi_power_off_full(struct omap_dss_device *dssdev)
+ 
+ 	hdmi_wp_set_phy_pwr(&hdmi.wp, HDMI_PHYPWRCMD_OFF);
+ 
+-	hdmi_pll_disable(&hdmi.pll, &hdmi.wp);
++	hdmi_pll_disable(&hdmi.pll);
+ 
+ 	hdmi_power_off_core(dssdev);
+ }
+@@ -688,7 +688,7 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	if (r)
+ 		return r;
+ 
+-	r = hdmi_pll_init(pdev, &hdmi.pll);
++	r = hdmi_pll_init(pdev, &hdmi.pll, &hdmi.wp);
+ 	if (r)
+ 		return r;
+ 
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index e8ca9106c8af..fb8c14507a4d 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -215,7 +215,7 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
+ 			hdmi_wp_get_irqstatus(&hdmi.wp));
+ 
+ 	/* config the PLL and PHY hdmi_set_pll_pwrfirst */
+-	r = hdmi_pll_enable(&hdmi.pll, &hdmi.wp);
++	r = hdmi_pll_enable(&hdmi.pll);
+ 	if (r) {
+ 		DSSDBG("Failed to lock PLL\n");
+ 		goto err_pll_enable;
+@@ -259,7 +259,7 @@ err_vid_enable:
+ 	hdmi_wp_set_phy_pwr(&hdmi.wp, HDMI_PHYPWRCMD_OFF);
+ err_phy_pwr:
+ err_phy_cfg:
+-	hdmi_pll_disable(&hdmi.pll, &hdmi.wp);
++	hdmi_pll_disable(&hdmi.pll);
+ err_pll_enable:
+ 	hdmi_power_off_core(dssdev);
+ 	return -EIO;
+@@ -277,7 +277,7 @@ static void hdmi_power_off_full(struct omap_dss_device *dssdev)
+ 
+ 	hdmi_wp_set_phy_pwr(&hdmi.wp, HDMI_PHYPWRCMD_OFF);
+ 
+-	hdmi_pll_disable(&hdmi.pll, &hdmi.wp);
++	hdmi_pll_disable(&hdmi.pll);
+ 
+ 	hdmi_power_off_core(dssdev);
+ }
+@@ -717,7 +717,7 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	if (r)
+ 		return r;
+ 
+-	r = hdmi_pll_init(pdev, &hdmi.pll);
++	r = hdmi_pll_init(pdev, &hdmi.pll, &hdmi.wp);
+ 	if (r)
+ 		return r;
+ 
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
+index 0942bdc8dfa6..190bede1dcb9 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
+@@ -166,8 +166,9 @@ static int hdmi_pll_config(struct hdmi_pll_data *pll)
+ 	return 0;
+ }
+ 
+-int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp)
++int hdmi_pll_enable(struct hdmi_pll_data *pll)
+ {
++	struct hdmi_wp_data *wp = pll->wp;
+ 	u16 r = 0;
+ 
+ 	r = hdmi_wp_set_pll_pwr(wp, HDMI_PLLPWRCMD_ALLOFF);
+@@ -185,8 +186,10 @@ int hdmi_pll_enable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp)
+ 	return 0;
+ }
+ 
+-void hdmi_pll_disable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp)
++void hdmi_pll_disable(struct hdmi_pll_data *pll)
+ {
++	struct hdmi_wp_data *wp = pll->wp;
++
+ 	hdmi_wp_set_pll_pwr(wp, HDMI_PLLPWRCMD_ALLOFF);
+ }
+ 
+@@ -245,11 +248,14 @@ static int hdmi_pll_init_features(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-int hdmi_pll_init(struct platform_device *pdev, struct hdmi_pll_data *pll)
++int hdmi_pll_init(struct platform_device *pdev, struct hdmi_pll_data *pll,
++	struct hdmi_wp_data *wp)
+ {
+ 	int r;
+ 	struct resource *res;
+ 
++	pll->wp = wp;
++
+ 	r = hdmi_pll_init_features(pdev);
+ 	if (r)
+ 		return r;
 -- 
-2.1.0
+2.1.3
 

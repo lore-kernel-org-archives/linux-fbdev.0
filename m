@@ -1,7 +1,7 @@
-From: Grant Likely <grant.likely@linaro.org>
-Date: Thu, 13 Nov 2014 12:03:52 +0000
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 13 Nov 2014 12:14:26 +0000
 Subject: Re: [PATCH v2 1/4] dt-bindings: simplefb: Specify node location and handoff related properties
-Message-Id: <CACxGe6uPKcZ4XqdiPQtia-0D+BnqjDE3eW-oDCR+byUrVtNpSg@mail.gmail.com>
+Message-Id: <5464A0A2.1080503@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1415868610-13297-1-git-send-email-hdegoede@redhat.com>
  <CACxGe6uX7V-TcZfM0vP4SvjxKx3T_RGByX8wFqTdFo4LEzP2Yg@mail.gmail.com>
@@ -11,7 +11,9 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Nov 13, 2014 at 11:02 AM, Grant Likely <grant.likely@linaro.org> wrote:
+Hi,
+
+On 11/13/2014 12:02 PM, Grant Likely wrote:
 > On Thu, Nov 13, 2014 at 8:50 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 >> Since simplefb nodes do not relate directly to hw typically they have been
 >> placed in the root of the devicetree. As the represent runtime information
@@ -46,57 +48,27 @@ On Thu, Nov 13, 2014 at 11:02 AM, Grant Likely <grant.likely@linaro.org> wrote:
 >> +Since simplefb nodes represent runtime information they must be sub-nodes of
 >> +the chosen node (*). The primary display node must be named framebuffer0,
 >> +additional nodes must be called framebuffer1, etc.
->
+> 
 > Thinking more about our conversation yesterday, the preferred name
 > should still be framebuffer@<address>. There is no reason to break
 > with established convention, and as mentioned in my reply on patch #2,
 > using the name is not the preferred way to identify a device node. So,
 > my recommendation is to prefer the name "framebuffer@<addr>", but if
 > it is inconvenient because the address isn't known, then
-> "framebuffer#" is acceptable. Then use /aliases for actual enumeration
+> "framebuffer#" is acceptable.
+
+Since we want to use pre-filled simplefb nodes already present in the devicetree,
+and u-boot is the one chosing the framebuffer address we don't know the
+address to put in the dts file beforehand, so framebuffer# it is.
+
+> Then use /aliases for actual enumeration
 > which has the advantage of also working for framebuffers that aren't
 > in /chosen.
 
-Some more thoughts about aliases.
+I'll discuss the aliases in my reply to your next mail which goes into
+more details about this.
 
-There is a natural tension between enumerate framebuffers or
-enumerating displays. There is precedence for displays to be named
-'display...' and to use /aliases/display* to enumerate them. What do
-we do for framebuffers? Does it make sense to have a separate
-/aliases/framebuffer* enumeration, or would it be better to have a
-single 'display' namespace so that the same name is used right
-through?
-
-Right now I'm leaning towards using /aliases/display* for everything,
-and making simplefb understand that /aliases/display# could either
-point directly to the framebuffer when there is not node for the
-hardware, or point to the display node. This would make it easy to
-have consistent names for display. For example, with the kexec
-scenario, if /aliases/display0 points at the display node then the
-alias won't need to be changed between first boot when firmware sets
-up a framebuffer, and kexec boot after the kernel has torn down the
-original framebuffer. If /aliases/display0 points to the framebuffer
-node directly, then the linkage from /aliases/display0 to the HW
-display node will be lost when the framebuffer gets torn down.
-
-Doing it this way does make two assumptions though. It assumes that
-each display will have its own node somewhere so that no two
-framebuffers will point to the same node. Second, it assumes that we
-have a mechanism to handoff a display name (/dev/fb*)? from simplefb
-to another device. I don't know enough about the fbdev subsystem to
-know whether or not this will be a problem. Or if there are any
-namespace conflicts between fbdev and drm.
-
-Implementation would be simple to do. If the simple framebuffer node
-has a 'display' property, then it will call of_alias_get_id() on the
-target of that phandle. Otherwise it will call of_alias_get_id() on
-itself.
-
-Thoughts?
-
-g.
-
->
+> 
 >> +
 >> +If a simplefb node represents the preferred console for user interaction,
 >> +then the chosen node's stdout-path property must point to it.
@@ -107,7 +79,7 @@ g.
 >> +simplefb to disable when handing over control to a driver for the real
 >> +hardware. The bindings for the hw nodes must specify which node contains the
 >> +framebuffer property.
->
+> 
 > I've also been thinking about this. When we talked yesterday I said I
 > didn't have a preference as to which direction the link between the
 > framebuffer and the display hardware pointed. Thinking about it now,
@@ -120,7 +92,7 @@ g.
 > by the firmware, it need to modify the display controller node to
 > match. And, when the framebuffer is disabled, the HW node is left with
 > a dangling link that kexec won't necessarily know how to fix up.
->
+> 
 > If instead the link goes the other way, as a property in the
 > framebuffer node pointing to display controller, all of the
 > functionality still stays the same, but the display controller node
@@ -131,9 +103,22 @@ g.
 > return all the framebuffers associated to a given display controller
 > node. The real HW driver will be able to use that to find its
 > framebuffers and coordinate handover between them.
->
+
+Ok, I'll change the bindings so that the link goes the other way, note that
+he firmware should not be touching the link at all, we've a pre-populated
+simplefb node in the devicetree for the firmware to further fill in
+(and enable), and that should already contain the link.
+
+Regards,
+
+Hans
+
+
+
+
+> 
 > g.
->
+> 
 >> +
 >> +It is advised that devicetree files contain pre-filled, disabled framebuffer#
 >> +nodes, so that the firmware only needs to update the mode information and

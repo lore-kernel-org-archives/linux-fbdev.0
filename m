@@ -1,87 +1,57 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Date: Fri, 14 Nov 2014 11:00:45 +0000
-Subject: Re: [PATCH v4 2/4] simplefb: Add support for enumerating simplefb dt nodes in /chosen
-Message-Id: <5465E0DD.6070005@redhat.com>
+Date: Thu, 13 Nov 2014 09:31:49 +0000
+Subject: [PATCH 7/7] ARM: dts: sun6i: Add support for the status led
+Message-Id: <1415871109-28332-7-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415906594-2461-1-git-send-email-hdegoede@redhat.com>
- <1415906594-2461-2-git-send-email-hdegoede@redhat.com>
- <CACxGe6u3_GJA6pbDGX6puDhyJ2E9T+WujmzASw2VE+5-x9q9sA@mail.gmail.com>
-In-Reply-To: <CACxGe6u3_GJA6pbDGX6puDhyJ2E9T+WujmzASw2VE+5-x9q9sA@mail.gmail.com>
+References: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+The Mele M9 / A1000G quad has a blue status led, add support for this.
 
-On 11/14/2014 10:28 AM, Grant Likely wrote:
-> On Thu, Nov 13, 2014 at 7:23 PM, Hans de Goede <hdegoede@redhat.com> wrote:
->> Update simplefb to support the new preferred location for simplefb dt nodes
->> under /chosen.
->>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> --
->> Changes in v2:
->> -Make name array larger in case we ever encounter more then 10000 framebuffers
->> Changes in v3:
->> -Switch to for_each_child_of_node to loop over the nodes under chosen
->> Changes in v4:
->> -Wrap the chosen enumeration code in #ifdef CONFIG_OF, as simplefb is used on
->>  non devicetree platforms too
->> -simplefb can only be built-in, so drop the module_exit function calling
->>  platform_driver_unregister
->> ---
->>  drivers/video/fbdev/simplefb.c | 23 ++++++++++++++++++++++-
->>  1 file changed, 22 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
->> index 868099a..e381a53 100644
->> --- a/drivers/video/fbdev/simplefb.c
->> +++ b/drivers/video/fbdev/simplefb.c
->> @@ -27,6 +27,7 @@
->>  #include <linux/platform_data/simplefb.h>
->>  #include <linux/platform_device.h>
->>  #include <linux/clk-provider.h>
->> +#include <linux/of_platform.h>
->>
->>  static struct fb_fix_screeninfo simplefb_fix = {
->>         .id             = "simple",
->> @@ -390,7 +391,27 @@ static struct platform_driver simplefb_driver = {
->>         .probe = simplefb_probe,
->>         .remove = simplefb_remove,
->>  };
->> -module_platform_driver(simplefb_driver);
->> +
->> +static int __init simplefb_init(void)
->> +{
->> +       int ret;
->> +       struct device_node __maybe_unused *np;
->> +
->> +       ret = platform_driver_register(&simplefb_driver);
->> +       if (ret)
->> +               return ret;
->> +
->> +#ifdef CONFIG_OF
->> +       for_each_child_of_node(of_chosen, np) {
->> +               if (of_device_is_compatible(np, "simple-framebuffer"))
->> +                       of_platform_device_create(np, NULL, NULL);
->> +       }
->> +#endif
-> 
-> Nit: Kind of ugly. This should work instead:
-> 
->         if (IS_ENABLED(CONFIG_OF_PLATFORM) && of_chosen) {
->                 for_each_child_of_node(of_chosen, np)
->                         if (of_device_is_compatible(np, "simple-framebuffer"))
->                                 of_platform_device_create(np, NULL, NULL);
->         }
-> 
-> And move the forward declaration of of_chosen in include/linux/of.h up
-> 5 lines so that it is always declared. gcc will optimize it out, but
-> it will still get properly syntax checked on every build.
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ arch/arm/boot/dts/sun6i-a31-m9.dts | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-Ok, fixed for v5.
+diff --git a/arch/arm/boot/dts/sun6i-a31-m9.dts b/arch/arm/boot/dts/sun6i-a31-m9.dts
+index c85247e..43f8f18 100644
+--- a/arch/arm/boot/dts/sun6i-a31-m9.dts
++++ b/arch/arm/boot/dts/sun6i-a31-m9.dts
+@@ -46,6 +46,12 @@
+ 		};
+ 
+ 		pio: pinctrl@01c20800 {
++			led_pins_m9: led_pins@0 {
++				allwinner,pins = "PH13";
++				allwinner,function = "gpio_out";
++				allwinner,drive = <0>;
++				allwinner,pull = <0>;
++			};
+ 			mmc0_cd_pin_m9: mmc0_cd_pin@0 {
+ 				allwinner,pins = "PH22";
+ 				allwinner,function = "gpio_in";
+@@ -67,6 +73,17 @@
+ 		};
+ 	};
+ 
++	leds {
++		compatible = "gpio-leds";
++		pinctrl-names = "default";
++		pinctrl-0 = <&led_pins_m9>;
++
++		blue {
++			label = "m9:blue:usr";
++			gpios = <&pio 7 13 0>;
++		};
++	};
++
+ 	reg_usb1_vbus: usb1-vbus {
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&usb1_vbus_pin_m9>;
+-- 
+2.1.0
 
-Regards,
-
-Hans

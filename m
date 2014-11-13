@@ -1,40 +1,45 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 10:49:15 +0000
-Subject: [PATCH v7 13/20] OMAPDSS: hdmi.h: Add members to hdmi drvdata for audio implementation
-Message-Id: <8da94a8e447429cef1551a2966b2b75d24210417.1415786458.git.jsarha@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 13 Nov 2014 09:31:47 +0000
+Subject: [PATCH 5/7] ARM: dts: sun7i: Add simplefb node
+Message-Id: <1415871109-28332-5-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415786458.git.jsarha@ti.com>
-In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
+References: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Adds display_enabled flag and audio_abort_cb callback to struct hdmi.
+Add a simplefb template node for u-boot to further fill and activate.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm/boot/dts/sun7i-a20.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 6d129f2..bfaaf2f 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -366,10 +366,12 @@ struct omap_hdmi {
- 	struct regulator *vdda_reg;
+diff --git a/arch/arm/boot/dts/sun7i-a20.dtsi b/arch/arm/boot/dts/sun7i-a20.dtsi
+index 81d4e55..3ef078f 100644
+--- a/arch/arm/boot/dts/sun7i-a20.dtsi
++++ b/arch/arm/boot/dts/sun7i-a20.dtsi
+@@ -64,6 +64,18 @@
+ 		serial7 = &uart7;
+ 	};
  
- 	bool core_enabled;
-+	bool display_enabled;
- 
- 	struct omap_dss_device output;
- 
- 	struct platform_device *audio_pdev;
-+	void (*audio_abort_cb)(struct device *dev);
- };
- 
- #endif
++	chosen {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++
++		framebuffer0 {
++			compatible = "simple-framebuffer";
++			clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
++			status = "disabled";
++		};
++	};
++
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
 -- 
-1.7.9.5
+2.1.0
 

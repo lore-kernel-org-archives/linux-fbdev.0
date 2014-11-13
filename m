@@ -1,48 +1,44 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Mon, 24 Nov 2014 23:05:35 +0000
-Subject: [PATCH V2 5/6] pcmcia: sa1111: provide device clock
-Message-Id: <1416870336-30114-6-git-send-email-dbaryshkov@gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 13 Nov 2014 08:50:09 +0000
+Subject: [PATCH v2 3/4] simplefb: Change simplefb_init from module_init to fs_initcall
+Message-Id: <1415868610-13297-3-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
+References: <1415868610-13297-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1415868610-13297-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Both pxa2xx (long ago) and sa1100 (now) make use of clock device to get
-the cpu speed. Make sa1111 glue code provide clock to platform layer.
+One of the reasons for having the simplefb nodes in /chosen, and doing
+explicit enumeration of the nodes there, is too allow enumerating them sooner,
+so that we get a console earlier on.
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Doing this earlier then fs_initcall is not useful, since the fb only turns into
+a console when fbcon intializes, which is a fs_initcall too.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/pcmcia/sa1111_generic.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/video/fbdev/simplefb.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pcmcia/sa1111_generic.c b/drivers/pcmcia/sa1111_generic.c
-index 65b02c3..7bae7e5 100644
---- a/drivers/pcmcia/sa1111_generic.c
-+++ b/drivers/pcmcia/sa1111_generic.c
-@@ -145,6 +145,12 @@ int sa1111_pcmcia_add(struct sa1111_dev *dev, struct pcmcia_low_level *ops,
- 			return -ENOMEM;
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 2705af8..48e292a 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -415,7 +415,11 @@ static void __exit simplefb_exit(void)
+ 	platform_driver_unregister(&simplefb_driver);
+ }
  
- 		s->soc.nr = ops->first + i;
-+		s->soc.clk = clk_get(&dev->dev, NULL);
-+		if (IS_ERR(s->soc.clk)) {
-+			ret = PTR_ERR(s->soc.clk);
-+			kfree(s);
-+			return ret;
-+		}
- 		soc_pcmcia_init_one(&s->soc, ops, &dev->dev);
- 		s->dev = dev;
- 		if (s->soc.nr) {
-@@ -220,6 +226,7 @@ static int pcmcia_remove(struct sa1111_dev *dev)
- 	for (; s; s = next) {
- 		next = s->next;
- 		soc_pcmcia_remove_one(&s->soc);
-+		clk_put(s->soc.clk);
- 		kfree(s);
- 	}
+-module_init(simplefb_init);
++/*
++ * While this can be a module, if builtin it's most likely the console
++ * So let's leave module_exit but move module_init to an earlier place
++ */
++fs_initcall(simplefb_init);
+ module_exit(simplefb_exit);
  
+ MODULE_AUTHOR("Stephen Warren <swarren@wwwdotorg.org>");
 -- 
-2.1.3
+2.1.0
 

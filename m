@@ -1,89 +1,130 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Thu, 13 Nov 2014 14:54:48 +0000
+From: Jean-Francois Moine <moinejf@free.fr>
+Date: Thu, 13 Nov 2014 14:57:06 +0000
 Subject: Re: [alsa-devel] [PATCH v7.1 00/19] Rework OMAP4+ HDMI audio support
-Message-Id: <5464C638.40708@ti.com>
+Message-Id: <20141113160002.7a1157a5@armhf>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com>	<20141112222344.GU3815@sirena.org.uk>	<54646648.5030807@ti.com> <20141113101738.6338bb1c@armhf> <54648149.9070104@ti.com>
+References: <cover.1415803064.git.jsarha@ti.com>
+ <20141112222344.GU3815@sirena.org.uk>
+ <54646648.5030807@ti.com>
+ <20141113101738.6338bb1c@armhf>
+ <54648149.9070104@ti.com>
 In-Reply-To: <54648149.9070104@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Francois Moine <moinejf@free.fr>
-Cc: Mark Brown <broonie@kernel.org>, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, alsa-devel@alsa-project.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Mark Brown <broonie@kernel.org>, Jyri Sarha <jsarha@ti.com>, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, alsa-devel@alsa-project.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On 11/13/2014 12:00 PM, Tomi Valkeinen wrote:
-> Hi,
->
-> On 13/11/14 11:17, Jean-Francois Moine wrote:
->> On Thu, 13 Nov 2014 10:05:28 +0200
->> Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-...
->> and I saw only a few dependencies between the 2 subsystems:
->>
->> - the CODEC must know the transmitter parameters (DAIs - static -,
->>    audio constraints - dynamic -),
->
+On Thu, 13 Nov 2014 12:00:41 +0200
+Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+
+	[snip]
+> Jyri or Peter knows this better, but I think one difference with OMAP
+> HDMI case and tda998x is that tda998x is an external encoder, and you
+> transfer audio data to it via i2s or spdif, whereas OMAP HDMI is inside
+> the SoC, and the HDMI IP gets the audio data via system DMA.
+>=20
+> The system DMA transfers are triggered by the HDMI IP, and the HDMI IP
+> has to be enabled and properly configured for the DMA ports to function.
+>=20
+> So, correct me if I'm wrong, but I think this is the fundamental differen=
+ce:
+>=20
+> In your case, the actual audio playback happens with the i2s or spdif
+> side. You can enable the playback at any time, no matter what is the
+> status of tda998x. If tda998x is not operational, the audio data will
+> just go to /dev/null.
+>=20
+> In our case, the actual audio playback happens inside the HDMI block. We
+> need the whole HDMI block to be operational and correctly configured for
+> (fake or real) playback to be possible.
+
+When the tda998x is not operational, the CODEC knows it and reports an
+error to the audio subsystem on device open. But, once the tda998x has
+been started, it always stays operational, even without HDMI connection.
+
+> > and I saw only a few dependencies between the 2 subsystems:
+> >=20
+> > - the CODEC must know the transmitter parameters (DAIs - static -,
+> >   audio constraints - dynamic -),
+>=20
 > The video mode (i.e. availability of audio) or the EDID (i.e. the
 > supported audio parameters) may change at any time, so I presume in your
 > series the video side will inform the codec of these changes at any point?
->
->> - the CODEC must alert the transmitter on audio start and stop.
->>
->> I don't think that stopping audio streaming on HDMI disconnection is
->
+
+Such changes occur only when the HDMI output device (TV) is replaced by
+an other one (manual cable exchange or HDMI switcher). I wonder if
+these changes are correctly treated in the HDMI transmitters, DRM core,
+DRM drivers, X11/wayland...
+
+So, no, actually, once streaming is started, no information go from the
+HDMI transmitter to the CODEC.
+
+> > - the CODEC must alert the transmitter on audio start and stop.
+> >=20
+> > I don't think that stopping audio streaming on HDMI disconnection is
+>=20
 > And you allow audio playback also if the monitor does not support audio,
 > or the video mode does not supprot audio?
->
->> useful. I even let audio streaming start when the HDMI cable is
->> disconnected.
->
+
+Bug in my patch: audio playback will be rejected if there will be no
+audio support.
+
+> > useful. I even let audio streaming start when the HDMI cable is
+> > disconnected.
+>=20
 > Ah, this is actually unclear thing to me: what should the audio side
 > behavior be when the HDMI cable is disconnected or the video is blanked?
 > I believe the options are:
->
+>=20
 > a) Always keep the audio device operational, no matter what is the
 > status of the video side. How should this work if the HDMI videomode or
 > the HDMI monitor does not support audio? Is it desirable that the
 > userspace has no idea that the audio is not actually going anywhere?
->
+>=20
 > b) Remove the audio device when audio support is not available. This
 > kind of makes sense, as, well, there's no possibility for audio output.
 > But maybe this is not how linux sound devices are supposed to behave?
->
+>=20
 > c) Return errors when playback is attempted when audio support is not
 > available. Again, this kind of makes sense, as audio playback is not
 > possible. But maybe this is also not how audio devices generally work.
->
+>=20
 > Jyri, were there some other options we discussed?
->
+>=20
+> Currently, the OMAP HDMI version does c). It's the easiest solution for u=
+s.
 
-There was the 4th option: the driver forcing pause on the pcm when the 
-cable is disconnected or screen is blanked and resuming it automatically 
-when the picture is back. But I think that is maybe too hackish solution.
+Same for me, but checking the audio capability is done on audio streaming
+start only.
 
-Considering the big picture, including the userspace. I think we would 
-need some way to tell the userspace when the HDMI device is available. 
-The problem is the same for both a and c cases. Maybe a read only alsa 
-mixer could be used for that.
+When the HDMI output device is disconnected, the video and audio outputs
+don't need to be changed. I often switch off my TV set when I will not
+use my computer for a while, letting the computer itself running. When
+I get back and switch on back the TV set, video and audio are still
+there.
 
-Cheers,
-Jyri
-
-> Currently, the OMAP HDMI version does c). It's the easiest solution for us.
->
 > Option a) is a bit problematic for us, as it requires the HDMI IP side
 > to be fully operational, with the video output configured and enabled,
 > as that is what drives the audio DMA. If we stop the video, I believe
 > the audio DMA will freeze, and it'll lead to timeouts on the audio side.
->
+>=20
 > I haven't tried, but I believe we could program the HDMI IP to some safe
 > default video mode if the cable is disconnected, and turn off the actual
 > HDMI PHY, so that the audio side could work even if the HDMI stream is
 > not going anywhere. I think it would be quite big change to how the HDMI
 > driver works at the moment.
->
+>=20
 > But then, if the cable _is_ connected and the video mode is such that it
 > cannot not support audio, I wonder if we can still fake the audio
 > playback or will the HDMI IP get confused...
->
 
+AFAIK, the HDMI transmitters don't know if the video or audio is
+displayed/played by the external device(s). Only the user knows.
+
+BTW, you are talking about video modes without audio support. What are
+you thinking about?
+
+--=20
+Ken ar c'henta=C3=B1	|	      ** Breizh ha Linux atav! **
+Jef		|		http://moinejf.free.fr/

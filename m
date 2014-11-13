@@ -1,40 +1,44 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 14:41:03 +0000
-Subject: [PATCH v7.1 12/19] OMAPDSS: hdmi.h: Add members to hdmi drvdata for audio implementation
-Message-Id: <34f0cd3f1e273a702eb5e962d2eca93d8f34ff86.1415803065.git.jsarha@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 13 Nov 2014 19:23:14 +0000
+Subject: [PATCH v4 4/4] simplefb: Change simplefb_init from module_init to fs_initcall
+Message-Id: <1415906594-2461-4-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com>
-In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
+References: <1415906594-2461-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1415906594-2461-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Adds display_enabled flag and audio_abort_cb callback to struct hdmi.
+One of the reasons for having the simplefb nodes in /chosen, and doing
+explicit enumeration of the nodes there, is too allow enumerating them sooner,
+so that we get a console earlier on.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Doing this earlier then fs_initcall is not useful, since the fb only turns
+into a console when fbcon intializes, which is a fs_initcall too.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+--
+Changes in v4 (of the patch-set):
+-Drop the comment about using fs_initcall vs module_exit, as we no longer have
+ a module_exit
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/simplefb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 6d129f2..bfaaf2f 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -366,10 +366,12 @@ struct omap_hdmi {
- 	struct regulator *vdda_reg;
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index e381a53..1fc973c 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -411,7 +411,7 @@ static int __init simplefb_init(void)
+ 	return 0;
+ }
  
- 	bool core_enabled;
-+	bool display_enabled;
+-module_init(simplefb_init);
++fs_initcall(simplefb_init);
  
- 	struct omap_dss_device output;
- 
- 	struct platform_device *audio_pdev;
-+	void (*audio_abort_cb)(struct device *dev);
- };
- 
- #endif
+ MODULE_AUTHOR("Stephen Warren <swarren@wwwdotorg.org>");
+ MODULE_DESCRIPTION("Simple framebuffer driver");
 -- 
-1.7.9.5
+2.1.0
 

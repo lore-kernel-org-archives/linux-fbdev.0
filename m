@@ -1,85 +1,77 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Nov 2014 14:00:14 +0000
-Subject: Re: [PATCH 2/4] Documentation: DT: Add documentation for ti,opa362 bindings
-Message-Id: <546367EE.3040600@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="X2ieMLxDB39d4REA0BmaIGN0G23iiAGBt"
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 13 Nov 2014 09:31:48 +0000
+Subject: [PATCH 6/7] ARM: dts: sun6i: Add EHCI support for the M9 board
+Message-Id: <1415871109-28332-6-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415051968-4878-1-git-send-email-marek@goldelico.com>
- <1415051968-4878-3-git-send-email-marek@goldelico.com>
-In-Reply-To: <1415051968-4878-3-git-send-email-marek@goldelico.com>
+References: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1415871109-28332-1-git-send-email-hdegoede@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---X2ieMLxDB39d4REA0BmaIGN0G23iiAGBt
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+The Mele M9 / A1000G quad uses both usb-ports, one goes to an internal
+usb wifi card, the other to a build-in usb-hub, so neither need their
+OHCI companion controller to be enabled since the are always connected at
+USB-2 speeds.
 
-On 03/11/14 23:59, Marek Belisko wrote:
-> Signed-off-by: Marek Belisko <marek@goldelico.com>
-> ---
->  .../devicetree/bindings/video/ti,opa362.txt        | 38 ++++++++++++++=
-++++++++
->  1 file changed, 38 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/ti,opa362.t=
-xt
->=20
-> diff --git a/Documentation/devicetree/bindings/video/ti,opa362.txt b/Do=
-cumentation/devicetree/bindings/video/ti,opa362.txt
-> new file mode 100644
-> index 0000000..d7ed11a
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/ti,opa362.txt
-> @@ -0,0 +1,38 @@
-> +OPA362 analog video amplifier
-> +
-> +Required properties:
-> +- compatible: "ti,opa362"
-> +- gpio: enable/disable output gpio
-> +
-> +Required node:
-> +- Video port 0 for opa362 input
-> +- Video port 1 for opa362 output
-> +
-> +Example:
-> +
-> +tv_amp: opa362 {
-> +	 compatible =3D "ti,opa362";
-> +	 gpios =3D <&gpio1 23 0>;  /* GPIO to enable video out amplifier */
-> +	=20
-> +	label =3D "opa362";
+The controller which is attached to the wifi also does not need a vbus
+regulator.
 
-opa shouldn't have label property. label is meant for the
-end-of-the-chain component, like the connector.
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ arch/arm/boot/dts/sun6i-a31-m9.dts | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-> +	 ports {
+diff --git a/arch/arm/boot/dts/sun6i-a31-m9.dts b/arch/arm/boot/dts/sun6i-a31-m9.dts
+index bc6115d..c85247e 100644
+--- a/arch/arm/boot/dts/sun6i-a31-m9.dts
++++ b/arch/arm/boot/dts/sun6i-a31-m9.dts
+@@ -32,6 +32,19 @@
+ 			status = "okay";
+ 		};
+ 
++		usbphy: phy@01c19400 {
++			usb1_vbus-supply = <&reg_usb1_vbus>;
++			status = "okay";
++		};
++
++		ehci0: usb@01c1a000 {
++			status = "okay";
++		};
++
++		ehci1: usb@01c1b000 {
++			status = "okay";
++		};
++
+ 		pio: pinctrl@01c20800 {
+ 			mmc0_cd_pin_m9: mmc0_cd_pin@0 {
+ 				allwinner,pins = "PH22";
+@@ -39,6 +52,12 @@
+ 				allwinner,drive = <0>;
+ 				allwinner,pull = <1>;
+ 			};
++			usb1_vbus_pin_m9: usb1_vbus_pin@0 {
++				allwinner,pins = "PC27";
++				allwinner,function = "gpio_out";
++				allwinner,drive = <0>;
++				allwinner,pull = <0>;
++			};
+ 		};
+ 
+ 		uart0: serial@01c28000 {
+@@ -47,4 +66,11 @@
+ 			status = "okay";
+ 		};
+ 	};
++
++	reg_usb1_vbus: usb1-vbus {
++		pinctrl-names = "default";
++		pinctrl-0 = <&usb1_vbus_pin_m9>;
++		gpio = <&pio 2 27 0>;
++		status = "okay";
++	};
+ };
+-- 
+2.1.0
 
-Hmm, I think there is extra space before 'ports', maybe below also.
-
- Tomi
-
-
-
---X2ieMLxDB39d4REA0BmaIGN0G23iiAGBt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUY2fuAAoJEPo9qoy8lh71pNUP/0eSYIW+IQOmh+wgPNEGQ9zl
-dST/jabWPXr7FLF5e+inV6O4VMabcaB2y3tAT0trVZ9EBvU3M8KZ73Jlq86d3Tff
-sbx1HI43117kppgwY24ly1LIMMbcI3rOSo6nXtRe53vKYM5/AZwK1za7/p53+11P
-7U07JvB+FRn2QqfqjmI2gxARM3EVOJE7Pd+KpPO+9A+OVUWaX6Za1waSZ/FEp42Q
-en7rwWCT6b4MoH12Hou96wxh290D3vraodP/prHkuHcfko0DMecouad7Br3L0uHt
-yNt8eMSdUBFb8TMw1cgaYkMJVg70cJ1QcXWJdaaZkAAz1V5GSOnLEQRdspLTew7j
-8gLUHCKdpqBIsKurFQWXt6XrOJ5+Y+vXAmDZdldlIKkI2WUswIzINCphz0wUK1Fz
-79XzAsGZZjmyWJXc+AwX0v/Yhv77vDyKV07GEtcaFcEovYQmjJ/vZ2N2oj7j/dBa
-zKTHpGeQlGdzhBUqf2gUxgvnNn7P6uJ7jfAud+Onn5Kc+mRmPcVUxMEhLb5uhGgo
-kQo3srQhaO4/uqvpndIajXDF6x7QXfQL0EfxQ/TG03KAzmlYrat2rhhv7OBePj+7
-6akNz+p3KKwrI7HcCjPNWGVKeRUxHrKF1KPewwHuM6m76fHNY2iKqpcdd6gQnz/j
-YKeUkU1qk7zSDO29d911
-=JojM
------END PGP SIGNATURE-----
-
---X2ieMLxDB39d4REA0BmaIGN0G23iiAGBt--

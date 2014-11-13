@@ -1,40 +1,117 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Fri, 14 Nov 2014 15:30:22 +0000
-Subject: Re: [PATCH 01/15] mfd: add new driver for Sharp LoCoMo
-Message-Id: <CALT56yPkKO=_FYyQvgvnCBA4XU6ETZk_3NNjRu-0mhHy-4aSAQ@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 13 Nov 2014 13:34:02 +0000
+Subject: [PATCH v3 1/4] dt-bindings: simplefb: Specify node location and handoff related properties
+Message-Id: <1415885645-24613-1-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
-	<1414454528-24240-2-git-send-email-dbaryshkov@gmail.com>
-	<CACRpkdbW3NA00zMZr216ZeZpgVkXwKUo30biTVd5kcHKGGtkHg@mail.gmail.com>
-	<CALT56yNX8v4mZn=o1ZoVLHPmg6wq0dgFNowpqNuFtU=eCc+d8w@mail.gmail.com>
-	<CACRpkdaKUZjbSEH75M9xudTF9HefwOCVEe5otv9-9f2UG8=hVg@mail.gmail.com>
-	<CALT56yM8B3ffYb0=EZVbRRGDZSxMci2sRp9XVtjQuLa5abN+cg@mail.gmail.com>
-	<20141105202405.GJ8509@sirena.org.uk>
-	<CALT56yOtjNbYOWM4ba5yP8pz7bNLY5BWpkkpfmv5QZU-7Y5u_g@mail.gmail.com>
-	<20141114151000.GC3815@sirena.org.uk>
-In-Reply-To: <20141114151000.GC3815@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@kernel.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
+To: linux-arm-kernel@lists.infradead.org
 
-2014-11-14 18:10 GMT+03:00 Mark Brown <broonie@kernel.org>:
-> On Fri, Nov 14, 2014 at 04:47:00PM +0400, Dmitry Eremin-Solenikov wrote:
->
->> I'm actually looking at the regulator interface. Since this DAC serves mostly
->> like a (semi-)constant voltage interface, would it be rather logical to use
->> regulator subsystem to drive it?
->
-> Possibly...  it's mostly a function of what the consumers of the
-> functionality look like - if that code looks weird calling into the
-> regulator API then it's bad, if that code looks OK it's fine.  I haven't
-> looked at the hardware at all so don't have strong feelings either way
-> so long as the result looks tasteful.
+Since simplefb nodes do not relate directly to hw typically they have been
+placed in the root of the devicetree. As the represent runtime information
+having them as sub-nodes of /chosen is more logical, specify this.
 
-The DAC is used in backlight driver (control brightness) and in ASoC
-machine driver (master joined volume).
+Also specify when to set the chosen stdout-path property to a simplefb node.
 
+For reliable handover to a hardware specific driver, that driver needs to
+know which simplefb to unregister when taking over, specify how the hw driver
+can find the matching simplefb node.
+
+Last add some advice on how to fill and use simplefb nodes from a firmware
+pov.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+--
+Changes in v2:
+-Add stdout-path to the example code
+Changes in v3:
+-Specify that the node name must be "framebuffer@<address>"
+-Specify that the link to link simplefb node and display hw noded to one
+ another for handover goes into the simplefb node, and must be called "display"
+-Specify how aliases may be used to tell the OS how to number displays
+-Update the example to reflect these changes
+---
+ .../bindings/video/simple-framebuffer.txt          | 51 +++++++++++++++++++++-
+ 1 file changed, 49 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+index 8f35718..6c7339b 100644
+--- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+@@ -4,6 +4,31 @@ A simple frame-buffer describes a frame-buffer setup by firmware or
+ the bootloader, with the assumption that the display hardware has already
+ been set up to scan out from the memory pointed to by the reg property.
+ 
++Since simplefb nodes represent runtime information they must be sub-nodes of
++the chosen node (*). Simplefb nodes must be named "framebuffer@<address>".
++
++If a simplefb node represents the preferred console for user interaction,
++then the chosen node's stdout-path property must point to it.
++
++If the devicetree contains nodes for the display hardware used by a simplefb,
++then the simplefb node must contain a property called "display", which
++contains a phandle pointing to the primary display hw node, so that the OS
++knows which simplefb to disable when handing over control to a driver for the
++real hardware. The bindings for the hw nodes must specify which node is
++considered the primary node.
++
++It is advised to add display# aliases to help the OS determine how to number
++things. If display# aliases are used, then if the simplefb node contains a
++"display" property then the /aliases/display# path must point to the display
++hw node the "display" property points to, otherwise it must point directly
++to the simplefb node.
++
++It is advised that devicetree files contain pre-filled, disabled framebuffer
++nodes, so that the firmware only needs to update the mode information and
++enable them. This way if e.g. later on support for more display clocks get
++added, the simplefb nodes will already contain this info and the firmware
++does not need to be updated.
++
+ Required properties:
+ - compatible: "simple-framebuffer"
+ - reg: Should contain the location and size of the framebuffer memory.
+@@ -19,14 +44,36 @@ Optional properties:
+            are expected to already be configured correctly. The OS must
+            ensure these clocks are not modified or disabled while the
+            simple framebuffer remains active.
++- display : phandle pointing to the primary display hardware node
+ 
+ Example:
+ 
+-	framebuffer {
++aliases {
++	display0 = &lcdc0;
++}
++
++chosen {
++	framebuffer0: framebuffer@5fc00000 {
+ 		compatible = "simple-framebuffer";
+-		reg = <0x1d385000 (1600 * 1200 * 2)>;
++		reg = <0x5fc00000 (4096 * 1024)>;
+ 		width = <1600>;
+ 		height = <1200>;
+ 		stride = <(1600 * 2)>;
+ 		format = "r5g6b5";
++		clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
++		display = <&lcdc0>;
++	};
++	stdout-path = &framebuffer0;
++};
++
++soc@01c00000 {
++	lcdc0: lcdc@1c0c000 {
++		compatible = "allwinner,sun4i-a10-lcdc";
++		...
+ 	};
++};
++
++
++*) Older devicetree files may have a compatible = "simple-framebuffer" node
++in a different place, operating systems must first enumerate any compatible
++nodes found under chosen and then check for other compatible nodes.
 -- 
-With best wishes
-Dmitry
+2.1.0
+

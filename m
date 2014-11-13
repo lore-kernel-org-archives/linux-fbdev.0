@@ -1,130 +1,163 @@
-From: Jean-Francois Moine <moinejf@free.fr>
-Date: Thu, 13 Nov 2014 14:57:06 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 13 Nov 2014 15:44:38 +0000
 Subject: Re: [alsa-devel] [PATCH v7.1 00/19] Rework OMAP4+ HDMI audio support
-Message-Id: <20141113160002.7a1157a5@armhf>
+Message-Id: <5464D1E6.4050508@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="ilEgJkmO4JHLAQi5dKqAscXjDHBisk6bQ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com>
- <20141112222344.GU3815@sirena.org.uk>
- <54646648.5030807@ti.com>
- <20141113101738.6338bb1c@armhf>
- <54648149.9070104@ti.com>
-In-Reply-To: <54648149.9070104@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <cover.1415803064.git.jsarha@ti.com> <20141112222344.GU3815@sirena.org.uk> <54646648.5030807@ti.com> <20141113101738.6338bb1c@armhf> <54648149.9070104@ti.com> <20141113160002.7a1157a5@armhf>
+In-Reply-To: <20141113160002.7a1157a5@armhf>
+To: Jean-Francois Moine <moinejf@free.fr>
 Cc: Mark Brown <broonie@kernel.org>, Jyri Sarha <jsarha@ti.com>, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, alsa-devel@alsa-project.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Thu, 13 Nov 2014 12:00:41 +0200
-Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+--ilEgJkmO4JHLAQi5dKqAscXjDHBisk6bQ
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-	[snip]
-> Jyri or Peter knows this better, but I think one difference with OMAP
-> HDMI case and tda998x is that tda998x is an external encoder, and you
-> transfer audio data to it via i2s or spdif, whereas OMAP HDMI is inside
-> the SoC, and the HDMI IP gets the audio data via system DMA.
->=20
-> The system DMA transfers are triggered by the HDMI IP, and the HDMI IP
-> has to be enabled and properly configured for the DMA ports to function.
->=20
-> So, correct me if I'm wrong, but I think this is the fundamental differen=
-ce:
->=20
-> In your case, the actual audio playback happens with the i2s or spdif
-> side. You can enable the playback at any time, no matter what is the
-> status of tda998x. If tda998x is not operational, the audio data will
-> just go to /dev/null.
->=20
-> In our case, the actual audio playback happens inside the HDMI block. We
-> need the whole HDMI block to be operational and correctly configured for
-> (fake or real) playback to be possible.
+On 13/11/14 17:00, Jean-Francois Moine wrote:
 
-When the tda998x is not operational, the CODEC knows it and reports an
-error to the audio subsystem on device open. But, once the tda998x has
-been started, it always stays operational, even without HDMI connection.
+> When the tda998x is not operational, the CODEC knows it and reports an
+> error to the audio subsystem on device open. But, once the tda998x has
+> been started, it always stays operational, even without HDMI connection=
+=2E
 
-> > and I saw only a few dependencies between the 2 subsystems:
-> >=20
-> > - the CODEC must know the transmitter parameters (DAIs - static -,
-> >   audio constraints - dynamic -),
+What does "started" mean here? tda998x device/driver has been probed?
+
+The reason for the above is probably to handle hotplug? I.e. tda998x
+needs to be enabled always to detect HPD?
+
+Usually for OMAP, the HPD detection happens outside the HDMI IP. Thus
+the HDMI IP is turned fully off when the video is disabled.
+
+I believe tda998x could be used the same way, if the HPD pin is
+connected to a SoC GPIO instead of tda998x.
+
+>>> and I saw only a few dependencies between the 2 subsystems:
+>>>
+>>> - the CODEC must know the transmitter parameters (DAIs - static -,
+>>>   audio constraints - dynamic -),
+>>
+>> The video mode (i.e. availability of audio) or the EDID (i.e. the
+>> supported audio parameters) may change at any time, so I presume in yo=
+ur
+>> series the video side will inform the codec of these changes at any po=
+int?
 >=20
-> The video mode (i.e. availability of audio) or the EDID (i.e. the
-> supported audio parameters) may change at any time, so I presume in your
-> series the video side will inform the codec of these changes at any point?
+> Such changes occur only when the HDMI output device (TV) is replaced by=
 
-Such changes occur only when the HDMI output device (TV) is replaced by
-an other one (manual cable exchange or HDMI switcher). I wonder if
-these changes are correctly treated in the HDMI transmitters, DRM core,
-DRM drivers, X11/wayland...
 
-So, no, actually, once streaming is started, no information go from the
-HDMI transmitter to the CODEC.
+The user can change the video mode at any time. The audio data packets
+are sent in the video blanking intervals, and if those intervals are too
+short, the video mode cannot support audio.
 
-> > - the CODEC must alert the transmitter on audio start and stop.
-> >=20
-> > I don't think that stopping audio streaming on HDMI disconnection is
+If I'm not mistaken, officially only certain video modes defined in the
+HDMI spec support audio.
+
+> an other one (manual cable exchange or HDMI switcher). I wonder if
+> these changes are correctly treated in the HDMI transmitters, DRM core,=
+
+> DRM drivers, X11/wayland...
+
+HPD (which usually equals to cable change, but not always) is handled.
+
+>> a) Always keep the audio device operational, no matter what is the
+>> status of the video side. How should this work if the HDMI videomode o=
+r
+>> the HDMI monitor does not support audio? Is it desirable that the
+>> userspace has no idea that the audio is not actually going anywhere?
+>>
+>> b) Remove the audio device when audio support is not available. This
+>> kind of makes sense, as, well, there's no possibility for audio output=
+=2E
+>> But maybe this is not how linux sound devices are supposed to behave?
+>>
+>> c) Return errors when playback is attempted when audio support is not
+>> available. Again, this kind of makes sense, as audio playback is not
+>> possible. But maybe this is also not how audio devices generally work.=
+
+>>
+>> Jyri, were there some other options we discussed?
+>>
+>> Currently, the OMAP HDMI version does c). It's the easiest solution fo=
+r us.
 >=20
-> And you allow audio playback also if the monitor does not support audio,
-> or the video mode does not supprot audio?
+> Same for me, but checking the audio capability is done on audio streami=
+ng
+> start only.
 
-Bug in my patch: audio playback will be rejected if there will be no
-audio support.
+Hmm, I understood you have option a)? You said "I even let audio
+streaming start when the HDMI cable is
+disconnected".
 
-> > useful. I even let audio streaming start when the HDMI cable is
-> > disconnected.
->=20
-> Ah, this is actually unclear thing to me: what should the audio side
-> behavior be when the HDMI cable is disconnected or the video is blanked?
-> I believe the options are:
->=20
-> a) Always keep the audio device operational, no matter what is the
-> status of the video side. How should this work if the HDMI videomode or
-> the HDMI monitor does not support audio? Is it desirable that the
-> userspace has no idea that the audio is not actually going anywhere?
->=20
-> b) Remove the audio device when audio support is not available. This
-> kind of makes sense, as, well, there's no possibility for audio output.
-> But maybe this is not how linux sound devices are supposed to behave?
->=20
-> c) Return errors when playback is attempted when audio support is not
-> available. Again, this kind of makes sense, as audio playback is not
-> possible. But maybe this is also not how audio devices generally work.
->=20
-> Jyri, were there some other options we discussed?
->=20
-> Currently, the OMAP HDMI version does c). It's the easiest solution for u=
-s.
+With "audio support is not available" I mean also the case when the
+cable is not connected, as then we don't have EDID information, and thus
+we don't have a HDMI monitor with audio support on the other end.
 
-Same for me, but checking the audio capability is done on audio streaming
-start only.
+So to clarify, our driver only has "audio support available" if:
+- we successfully read EDID
+- EDID shows it's a HDMI monitor
+- EDID shows it has audio support for the format we support (this we
+don't actually do yet)
 
-When the HDMI output device is disconnected, the video and audio outputs
-don't need to be changed. I often switch off my TV set when I will not
-use my computer for a while, letting the computer itself running. When
-I get back and switch on back the TV set, video and audio are still
-there.
+Otherwise we default to DVI, which means no audio.
 
-> Option a) is a bit problematic for us, as it requires the HDMI IP side
-> to be fully operational, with the video output configured and enabled,
-> as that is what drives the audio DMA. If we stop the video, I believe
-> the audio DMA will freeze, and it'll lead to timeouts on the audio side.
->=20
-> I haven't tried, but I believe we could program the HDMI IP to some safe
-> default video mode if the cable is disconnected, and turn off the actual
-> HDMI PHY, so that the audio side could work even if the HDMI stream is
-> not going anywhere. I think it would be quite big change to how the HDMI
-> driver works at the moment.
->=20
-> But then, if the cable _is_ connected and the video mode is such that it
-> cannot not support audio, I wonder if we can still fake the audio
-> playback or will the HDMI IP get confused...
+If, at any point, the situation changes to "no audio support available",
+the audio playback is aborted and starting new audio playback fails.
 
-AFAIK, the HDMI transmitters don't know if the video or audio is
-displayed/played by the external device(s). Only the user knows.
+> AFAIK, the HDMI transmitters don't know if the video or audio is
+> displayed/played by the external device(s). Only the user knows.
 
-BTW, you are talking about video modes without audio support. What are
-you thinking about?
+True.
 
---=20
-Ken ar c'henta=C3=B1	|	      ** Breizh ha Linux atav! **
-Jef		|		http://moinejf.free.fr/
+But the HDMI transmitter can know if the audio absolutely cannot be
+played, because there's no cable, or because the monitor says it doesn't
+support audio, or because the video mode cannot support audio, or
+because the HDMI output stream is disabled.
+
+So the question is, do we want/need to inform the userspace about those
+situations? Should a HDMI transmitted always look like it can play
+audio, even if it's clear it cannot?
+
+Again, I know very little about audio, but I think it would be nice that
+if I open the sound configuration window on my desktop, it'd show me
+that the HDMI audio device is disabled (because there's no cable).
+
+But perhaps that's a separate feature. We could have HDMI audio device
+always there and functional, but the desktop could get the information
+about HDMI cable connection some other way (DRM). And if the cable is
+not there, it knows that this particular audio device is also out, and
+thus doesn't show it (even if it's functional).
+
+> BTW, you are talking about video modes without audio support. What are
+> you thinking about?
+
+This I covered above.
+
+ Tomi
+
+
+
+--ilEgJkmO4JHLAQi5dKqAscXjDHBisk6bQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUZNHmAAoJEPo9qoy8lh71ZnsQAJ3u5vsLVQeeP3aFXi+5ImDj
+AwOx15QoWcd8MuBj5iToGCRhI1OFtTXWtqLzTfiTdm6PTKSUEkKyyUkfo9SdRyjb
+upb6TqbhoxSl4KAeqQHaDoXjqyIV/F8fk3hxNrnxVyQ/0sn3RP/QjCdU2ZYDHe1y
+LIcoTGSNisswzUGAEHaAvgpU4Le/7MtcBEjw0x5EzMCtO8+IDiUyQ6k1xThS87m8
+fXDBk0m77D6DXwWVx0QciZCY/aZkbV5C0xnwgfyEA1tIU0FRZwyAq+t+wD3QbHv0
+Yde7itRljdDbpqlL6t8yUNLnBS5zaFBbEDE8/N2UKyKx7YAiu+QNomEfJCTErvx4
+eWbrY2sA/4Ex0Dp1owSGKKhY7iww1FiFsY0yaKyXfKVtHj9iuUzF9C5zVD9VD3Gj
+80mcQyvcCdqBgx8hfcl3GhZS23R+xD7EGs2DDBbNxg0sWWwnfPwIQFOOY6zahV2E
+RgVDWKj2gE/6ee8nJmyuWGRXIbM90aM5VSqGzHXzRTA/KV25KTc+iO7srDBxxern
+DHn+x/N/sdB+6kDJVv0QooIU6HTwzcgr0yp7qx5xWx3yMJVTBcEfGzCMHZHII5wy
+XHnxCcnhtIr3iZi3pnPjtlEdWMZff9bwflxaQtjjPG8qRiZWl+f8JyEzjPjbbkkI
+LlUaPEfX4ceg8aGGRzRQ
+=sqDc
+-----END PGP SIGNATURE-----
+
+--ilEgJkmO4JHLAQi5dKqAscXjDHBisk6bQ--

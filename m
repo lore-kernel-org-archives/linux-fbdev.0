@@ -1,74 +1,91 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 13 Nov 2014 16:22:42 +0000
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 13 Nov 2014 18:00:56 +0000
 Subject: Re: [PATCH v5 0/5] simplefb: add clock handling code
-Message-Id: <5464DAD2.5040505@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="DQWa9XcFRIK46LUSVgrfulOQdUPRvDduE"
+Message-Id: <5464F1D8.5060106@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1415808952-23549-1-git-send-email-hdegoede@redhat.com>
- <CACxGe6ua8OF5+SNjgO3Nc5ZSVvaic3OzrFES-5=f+bsj-fvE3g@mail.gmail.com>
- <CACxGe6ssdeOnQnem1012h_jFK1wWOD_WwosjFgiAcgBoqyDt9A@mail.gmail.com>
-In-Reply-To: <CACxGe6ssdeOnQnem1012h_jFK1wWOD_WwosjFgiAcgBoqyDt9A@mail.gmail.com>
+ <5464CC5A.7010508@ti.com>
+In-Reply-To: <5464CC5A.7010508@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
---DQWa9XcFRIK46LUSVgrfulOQdUPRvDduE
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On 13/11/14 18:05, Grant Likely wrote:
-> On Thu, Nov 13, 2014 at 7:38 AM, Grant Likely <grant.likely@linaro.org>=
- wrote:
->> On Wed, Nov 12, 2014 at 4:15 PM, Hans de Goede <hdegoede@redhat.com> w=
-rote:
->>> Hi Tomi,
->>>
->>> Here is v5 of my simplefb patch-set, this time with an Ack from
->>> Grant Likely for the dt-bindings bits, which should end all controver=
-sy
->>> surrounding that patch.
->>>
->>> For changes since the original postings please see the per patch chan=
-gelogs
->>> in the patch commit messages.
->>>
->>> Please merge this into your tree for 3.19.
->>
+On 11/13/2014 04:20 PM, Tomi Valkeinen wrote:
+> On 12/11/14 18:15, Hans de Goede wrote:
 >> Hi Tomi,
 >>
->> I'm discussing this with Rob today. Please hold off 24 hours before
->> merging. If you don't hear anything to the contrary by tomorrow then
->> go ahead and merge.
+>> Here is v5 of my simplefb patch-set, this time with an Ack from
+>> Grant Likely for the dt-bindings bits, which should end all controversy
+>> surrounding that patch.
+>>
+>> For changes since the original postings please see the per patch changel=
+ogs
+>> in the patch commit messages.
+>>
+>> Please merge this into your tree for 3.19.
 >=20
-> I just talked to Rob. All is good, you can apply.
+> I applied this and the "dt-bindings: simplefb: Specify node location and
+> handoff related properties" v3 series to my test branch, compiled for
+> x64 and:
+>=20
+> drivers/video/fbdev/simplefb.c: In function =91simplefb_clocks_init=92:
+> drivers/video/fbdev/simplefb.c:204:2: error: implicit declaration of
+> function =91of_clk_get_parent_count=92 [-Werror=3Dimplicit-function-decla=
+ration]
+>   par->clk_count =3D of_clk_get_parent_count(np);
+>   ^
+> In file included from include/linux/i2c.h:33:0,
+>                  from include/uapi/linux/fb.h:5,
+>                  from include/linux/fb.h:5,
+>                  from drivers/video/fbdev/simplefb.c:24:
+> drivers/video/fbdev/simplefb.c: In function =91simplefb_init=92:
+> drivers/video/fbdev/simplefb.c:399:25: error: =91of_chosen=92 undeclared
+> (first use in this function)
+>   for_each_child_of_node(of_chosen, np) {
+>                          ^
+> include/linux/of.h:736:33: note: in definition of macro
+> =91for_each_child_of_node=92
+>   for (child =3D of_get_next_child(parent, NULL); child !=3D NULL; \
+>                                  ^
+> drivers/video/fbdev/simplefb.c:399:25: note: each undeclared identifier
+> is reported only once for each function it appears in
+>   for_each_child_of_node(of_chosen, np) {
+>                          ^
+> include/linux/of.h:736:33: note: in definition of macro
+> =91for_each_child_of_node=92
+>   for (child =3D of_get_next_child(parent, NULL); child !=3D NULL; \
+>                                  ^
+>=20
+> We need "depends on OF"?
 
-Ok. I'll apply tomorrow if there are no more comments during the night
-for the new series, and the compilation issue has been solved.
+Good catch!
 
- Tomi
+So a quick-grep through the entire kernel sources has thought me that
+apparently simplefb is used on non devicetree / of platforms through
+platform-device instantiation, using the trick of naming the platform-devic=
+e the
+same as the driver to get the driver to bind.
+
+So the answer to your compile breakage is to make the relevant code bits
+be #ifdef CONFIG_OF
+
+I'll respin the offending patch (5/5) in the "simplefb: add clock handling =
+code"
+series, and I'll respin the entire second series, as I need to also address
+your comment on the example in the bindings there.
+
+I hope to be able to post a re-spun version of both later tonight.
+
+Regards,
+
+Hans
 
 
 
---DQWa9XcFRIK46LUSVgrfulOQdUPRvDduE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUZNrSAAoJEPo9qoy8lh71ogMP/i/Ae6CzfHaeU8RVb1J06Xyo
-8v34UGlKGLLa8zrzxCylJqPvrA4X974i7n4858BnUMZ/f80Lq9uJ4oOxSFp1Ighf
-v8BIiTE73iMjFkkLxxwEP+OjPEat7KSo3uJ2qFMqI14veW36Y/tcT4neFo6dqkdT
-ZArbvwwwAbrXSZ5N0GzXDPNmSR5unkrxccQSneuzz2NnpCFJEQ98tZovB9C7HurG
-EjdB9UJtbAFVMME7VYKMmEJ1So6lZhwMDb3BjDAm3RSe1ScaqzaPwYZqcEudfH5j
-OCn72cPeobzQbgWiQi16EFZ9hgHLHp++Sjn+egpVCYbABErFJDvggvEoCMmxMxkn
-GvrIxguOo2EWWPS4N+LcrG9mJr9oYwWPCEOBKnSvil9BxhmCQnQitQ/TtkfITJ70
-uUnYllEl7GpCv+T+ufmrsTARPL6pLh36x4dieYMfKJkeX/ZPpGu5k4lsUED9ndQg
-6GKOCLvAoMJVqucN6EVLT1Zto/PRacem0KP96HRNO7XyXXB6XcZ8Cd9V6+YVBNI9
-Thv8wC8TeLM3L9PkgEsMYrMO0GYv5d9fUwkzOJMrb+tyumsxsCu7sZlNxSfXAgr1
-YFgBZ7+6Nv7Q/gykM7PuuOdAuSJDKvzlYcAoKSwu3dwectiknBymUNrFk4LgrKxD
-NA/sdID3CbIGQf1S94wy
-=ZpwK
------END PGP SIGNATURE-----
-
---DQWa9XcFRIK46LUSVgrfulOQdUPRvDduE--
+>=20
+>  Tomi
+>=20
+>=20

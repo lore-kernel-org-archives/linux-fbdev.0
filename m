@@ -1,69 +1,136 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Thu, 13 Nov 2014 10:45:20 +0000
+From: Grant Likely <grant.likely@linaro.org>
+Date: Thu, 13 Nov 2014 11:02:14 +0000
 Subject: Re: [PATCH v2 1/4] dt-bindings: simplefb: Specify node location and handoff related properties
-Message-Id: <20141113104520.GG20972@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="S5HS5MvDw4DmbRmb"
+Message-Id: <CACxGe6uX7V-TcZfM0vP4SvjxKx3T_RGByX8wFqTdFo4LEzP2Yg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1415868610-13297-1-git-send-email-hdegoede@redhat.com>
 In-Reply-To: <1415868610-13297-1-git-send-email-hdegoede@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-
---S5HS5MvDw4DmbRmb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Nov 13, 2014 at 09:50:07AM +0100, Hans de Goede wrote:
+On Thu, Nov 13, 2014 at 8:50 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 > Since simplefb nodes do not relate directly to hw typically they have been
 > placed in the root of the devicetree. As the represent runtime information
 > having them as sub-nodes of /chosen is more logical, specify this.
->=20
-> Also specify when to set the chosen stdout-path property to a simplefb no=
-de.
->=20
+>
+> Also specify when to set the chosen stdout-path property to a simplefb node.
+>
 > For reliable handover to a hardware specific driver, that driver needs to
-> know which simplefb to unregister when taking over, specify how the hw dr=
-iver
+> know which simplefb to unregister when taking over, specify how the hw driver
 > can find the matching simplefb node.
->=20
+>
 > Last add some advice on how to fill and use simplefb nodes from a firmware
 > pov.
->=20
+>
 > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 > Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> --
+> Changes in v2:
+> -Add stdout-path to the example code
+> ---
+>  .../bindings/video/simple-framebuffer.txt          | 38 +++++++++++++++++++++-
+>  1 file changed, 37 insertions(+), 1 deletion(-)
+>
+> diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+> index 8f35718..8b7ecf6 100644
+> --- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+> +++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+> @@ -4,6 +4,26 @@ A simple frame-buffer describes a frame-buffer setup by firmware or
+>  the bootloader, with the assumption that the display hardware has already
+>  been set up to scan out from the memory pointed to by the reg property.
+>
+> +Since simplefb nodes represent runtime information they must be sub-nodes of
+> +the chosen node (*). The primary display node must be named framebuffer0,
+> +additional nodes must be called framebuffer1, etc.
 
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Thinking more about our conversation yesterday, the preferred name
+should still be framebuffer@<address>. There is no reason to break
+with established convention, and as mentioned in my reply on patch #2,
+using the name is not the preferred way to identify a device node. So,
+my recommendation is to prefer the name "framebuffer@<addr>", but if
+it is inconvenient because the address isn't known, then
+"framebuffer#" is acceptable. Then use /aliases for actual enumeration
+which has the advantage of also working for framebuffers that aren't
+in /chosen.
 
-Thanks!
-Maxime
+> +
+> +If a simplefb node represents the preferred console for user interaction,
+> +then the chosen node's stdout-path property must point to it.
+> +
+> +If the devicetree contains nodes for the display hardware used by a simplefb,
+> +then one of the hw nodes must have a property called "framebuffer" pointing to
+> +the framebuffer# node in chosen, so that the operating system knows which
+> +simplefb to disable when handing over control to a driver for the real
+> +hardware. The bindings for the hw nodes must specify which node contains the
+> +framebuffer property.
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+I've also been thinking about this. When we talked yesterday I said I
+didn't have a preference as to which direction the link between the
+framebuffer and the display hardware pointed. Thinking about it now,
+between the two nodes, the HW node is pretty much static, but the FB
+node is dynamic and in most scenarios will be enabled by firmware, and
+then disabled by the operating system. If the framebuffer property is
+in the HW node, then that means the firmware needs to modify two nodes
+to set up the linkage correctly. It needs to enable the framebuffer,
+and then add the link. If one of several possible FB nodes was enabled
+by the firmware, it need to modify the display controller node to
+match. And, when the framebuffer is disabled, the HW node is left with
+a dangling link that kexec won't necessarily know how to fix up.
 
---S5HS5MvDw4DmbRmb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+If instead the link goes the other way, as a property in the
+framebuffer node pointing to display controller, all of the
+functionality still stays the same, but the display controller node
+never needs to change when framebuffers are
+enabled/disabled/added/removed. Since the location and/or compatible
+value of framebuffers is always well known, (aside from the fact that
+the simplefb driver binds to them), we can have a single API that will
+return all the framebuffers associated to a given display controller
+node. The real HW driver will be able to use that to find its
+framebuffers and coordinate handover between them.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+g.
 
-iQIcBAEBAgAGBQJUZIvAAAoJEBx+YmzsjxAgAswQAKTKad6EYIpFwIe06o7tOisF
-zrq4r7vcSxyp5LRB/qHUIU2kQQGaL4C3hMI+jItEPmqttaFdmt4a7pquGuRtmq/y
-X+t0fpEL8gfdhL3xj14GVLZAqzA0xaEO1X8h0kqEw3kCP2QfyP3n0t33yELBmX3m
-9dE5nUJqgwKoQSxub/TpBWkDblLGZ/0S+dNfr6vbV0PXIr0j0UyD+6JPFODCo9Fb
-41NAChpygoWwWnk6WhFCFm0kgdISZexhtqFUp1wtph4LKMMVvS6/E5/s6lYGa8Hv
-alKsVJijmZelqWn10MDlGjskeik82WHSnJ6Mlu59gqxnf0Q8PtzVqFfEavCrwMyV
-LvzwoxsvCXCq7WwR/sWKSj5WuA/O1N7+cXDTczOv4aNtId8Z9kPfRlj6V1yDIl9f
-4cNHBv3Je9woVshyvOs38fGVmq+NmGPD0chxEAqCc/hDjG8YSAqSaXAMP9PbPoba
-jAJniVV4BuSsWMmaIEESn3KF6BgiNTM9a+NXz05+t/ArTXLAUhWlJ5loqYc2sGNZ
-JVvS1GGdJ+MYOb48XngXSQUOqtHnYYcWCCt+xhUjSrEff8Dt3NLSw8CDq5gR9QbV
-Gugq892Jm9G8ttas3LCnshhrTIklo8ObCnYu8rHHEb1sM3Irp87GxQzAphCHNS4H
-1jqDXfTZkl07Ae+eV2xY
-=7MD5
------END PGP SIGNATURE-----
-
---S5HS5MvDw4DmbRmb--
+> +
+> +It is advised that devicetree files contain pre-filled, disabled framebuffer#
+> +nodes, so that the firmware only needs to update the mode information and
+> +enable them. This way if e.g. later on support for more display clocks get
+> +added, the simplefb nodes will already contain this info and the firmware
+> +does not need to be updated.
+> +
+>  Required properties:
+>  - compatible: "simple-framebuffer"
+>  - reg: Should contain the location and size of the framebuffer memory.
+> @@ -22,11 +42,27 @@ Optional properties:
+>
+>  Example:
+>
+> -       framebuffer {
+> +chosen {
+> +       framebuffer0 {
+>                 compatible = "simple-framebuffer";
+>                 reg = <0x1d385000 (1600 * 1200 * 2)>;
+>                 width = <1600>;
+>                 height = <1200>;
+>                 stride = <(1600 * 2)>;
+>                 format = "r5g6b5";
+> +               clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
+>         };
+> +       stdout-path = &framebuffer0;
+> +};
+> +
+> +soc@01c00000 {
+> +       lcdc0: lcdc@1c0c000 {
+> +               compatible = "allwinner,sun4i-a10-lcdc";
+> +               framebuffer = <&framebuffer0>;
+> +       };
+> +};
+> +
+> +
+> +*) Older devicetree files may have a compatible = "simple-framebuffer" node
+> +in a different place, operating systems must first enumerate any framebuffer#
+> +nodes found under chosen and then check for other compatible nodes.
+> --
+> 2.1.0
+>

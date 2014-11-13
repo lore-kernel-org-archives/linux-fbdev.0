@@ -1,79 +1,118 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 25 Nov 2014 10:55:14 +0000
-Subject: Re: [PATCH 3/6] video: fbdev-MMP: Fix typos for the word "destroy"
-Message-Id: <54746012.3050505@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="iNfvWhrwnEhIOmgsVxmQUaC48RJdl7ub3"
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 13 Nov 2014 19:23:11 +0000
+Subject: [PATCH v4 1/4] dt-bindings: simplefb: Specify node location and handoff related properties
+Message-Id: <1415906594-2461-1-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <54736422.90409@users.sourceforge.net> <547368BB.2050401@users.sourceforge.net>
-In-Reply-To: <547368BB.2050401@users.sourceforge.net>
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, trivial@kernel.org, LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---iNfvWhrwnEhIOmgsVxmQUaC48RJdl7ub3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Since simplefb nodes do not relate directly to hw typically they have been
+placed in the root of the devicetree. As the represent runtime information
+having them as sub-nodes of /chosen is more logical, specify this.
 
-On 24/11/14 19:19, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Mon, 24 Nov 2014 15:50:15 +0100
->=20
-> Two mistyped words were corrected in the description for
-> the mmp_unregister_path() function.
->=20
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  drivers/video/fbdev/mmp/core.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/mmp/core.c b/drivers/video/fbdev/mmp/c=
-ore.c
-> index b563b92..43ed576 100644
-> --- a/drivers/video/fbdev/mmp/core.c
-> +++ b/drivers/video/fbdev/mmp/core.c
-> @@ -223,10 +223,10 @@ struct mmp_path *mmp_register_path(struct mmp_pat=
-h_info *info)
->  EXPORT_SYMBOL_GPL(mmp_register_path);
-> =20
->  /*
-> - * mmp_unregister_path - unregister and destory path
-> + * mmp_unregister_path - unregister and destroy path
->   * @p: path to be destoried.
->   *
-> - * this function registers path and destorys it.
-> + * this function registers path and destroys it.
->   */
->  void mmp_unregister_path(struct mmp_path *path)
->  {
->=20
+Also specify when to set the chosen stdout-path property to a simplefb node.
 
-Thanks, applied this and the patch 5/6 to fbdev tree.
+For reliable handover to a hardware specific driver, that driver needs to
+know which simplefb to unregister when taking over, specify how the hw driver
+can find the matching simplefb node.
 
- Tomi
+Last add some advice on how to fill and use simplefb nodes from a firmware
+pov.
 
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+--
+Changes in v2:
+-Add stdout-path to the example code
+Changes in v3:
+-Specify that the node name must be "framebuffer@<address>"
+-Specify that the link to link simplefb node and display hw nodes to one
+ another for handover goes into the simplefb node, and must be called "display"
+-Specify how aliases may be used to tell the OS how to number displays
+-Update the example to reflect these changes
+Changes in v4:
+-Keep the size of the reg property in the example as it was before
+---
+ .../bindings/video/simple-framebuffer.txt          | 49 +++++++++++++++++++++-
+ 1 file changed, 48 insertions(+), 1 deletion(-)
 
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+index 8f35718..c548f33 100644
+--- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+@@ -4,6 +4,31 @@ A simple frame-buffer describes a frame-buffer setup by firmware or
+ the bootloader, with the assumption that the display hardware has already
+ been set up to scan out from the memory pointed to by the reg property.
+ 
++Since simplefb nodes represent runtime information they must be sub-nodes of
++the chosen node (*). Simplefb nodes must be named "framebuffer@<address>".
++
++If a simplefb node represents the preferred console for user interaction,
++then the chosen node's stdout-path property must point to it.
++
++If the devicetree contains nodes for the display hardware used by a simplefb,
++then the simplefb node must contain a property called "display", which
++contains a phandle pointing to the primary display hw node, so that the OS
++knows which simplefb to disable when handing over control to a driver for the
++real hardware. The bindings for the hw nodes must specify which node is
++considered the primary node.
++
++It is advised to add display# aliases to help the OS determine how to number
++things. If display# aliases are used, then if the simplefb node contains a
++"display" property then the /aliases/display# path must point to the display
++hw node the "display" property points to, otherwise it must point directly
++to the simplefb node.
++
++It is advised that devicetree files contain pre-filled, disabled framebuffer
++nodes, so that the firmware only needs to update the mode information and
++enable them. This way if e.g. later on support for more display clocks get
++added, the simplefb nodes will already contain this info and the firmware
++does not need to be updated.
++
+ Required properties:
+ - compatible: "simple-framebuffer"
+ - reg: Should contain the location and size of the framebuffer memory.
+@@ -19,14 +44,36 @@ Optional properties:
+            are expected to already be configured correctly. The OS must
+            ensure these clocks are not modified or disabled while the
+            simple framebuffer remains active.
++- display : phandle pointing to the primary display hardware node
+ 
+ Example:
+ 
+-	framebuffer {
++aliases {
++	display0 = &lcdc0;
++}
++
++chosen {
++	framebuffer0: framebuffer@1d385000 {
+ 		compatible = "simple-framebuffer";
+ 		reg = <0x1d385000 (1600 * 1200 * 2)>;
+ 		width = <1600>;
+ 		height = <1200>;
+ 		stride = <(1600 * 2)>;
+ 		format = "r5g6b5";
++		clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
++		display = <&lcdc0>;
++	};
++	stdout-path = &framebuffer0;
++};
++
++soc@01c00000 {
++	lcdc0: lcdc@1c0c000 {
++		compatible = "allwinner,sun4i-a10-lcdc";
++		...
+ 	};
++};
++
++
++*) Older devicetree files may have a compatible = "simple-framebuffer" node
++in a different place, operating systems must first enumerate any compatible
++nodes found under chosen and then check for other compatible nodes.
+-- 
+2.1.0
 
---iNfvWhrwnEhIOmgsVxmQUaC48RJdl7ub3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUdGASAAoJEPo9qoy8lh71oQ4QAJW03l7JJL5NGV6nY3nMrAlX
-FrxP+x0V85vdyp4BYvYAZ+jiU1KIu8ObpgHcvbvmyU6lPjhhIcm9VTKt6/lWAA7a
-9Yr8aS0r+Xowh8z6LEBkSblMAL2VfnjsBiG/Ti6IPZgec+uD0aFGcgmi9EP597iB
-/GDyZZTn1Eb0i/Z359/kAYcrIfj6DcLNCniNbxWvk8Q9Q1Ij+UwV5CsbehgDw0pz
-4ERkEjhAQI0z2fMro1n4JEikutUuNCJb2B/J/5sfKM/l/jpTovfAETXyJqnoxZ5e
-52mz5N7yAo+Nrem/2bGGLrwuU+O/DSwYTyA+rxBUSIDLz0ZJViLjBYpP2BpA9IyA
-S794k2C92EjoybC4zFXjyLXqa2fGmQoCCqu3olwpUSoCLzh18BaqTAp48Zt1MytZ
-E12rqnGUosZREAIEJsd19Poq0JxHxrY44JkGkxa/DpCCT4SGqE5sjfH+LaT6NkOY
-mdL8W9JxcG4g5imCDLAaif+OSiCroKoriB9B8pIARdqRKTm1LFOIsVhY4PdPauxj
-3unM5DLoxN1+xfiAmc5p3FNM9ennU3OcKLVIjH2ssIKlmo8hcevg/TjglUTqVFnY
-v5wrWigjzSJEr9tb1FFoWDVNNrJREs9hyL/nG3gWh9i3sI6BEbnO4XeKMMeGlNmj
-eUq2/7QtIKmW6a1L8ibu
-=xW4g
------END PGP SIGNATURE-----
-
---iNfvWhrwnEhIOmgsVxmQUaC48RJdl7ub3--

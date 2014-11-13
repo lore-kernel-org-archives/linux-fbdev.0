@@ -1,7 +1,7 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 13 Nov 2014 08:58:41 +0000
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 13 Nov 2014 09:24:05 +0000
 Subject: Re: [PATCH 3/4] simplefb: Change simplefb_init from module_init to fs_initcall
-Message-Id: <CAMuHMdXZ4V4GHvyDLOP8FYvPuGArc5G0aO6NCE9FKHT24YRGPg@mail.gmail.com>
+Message-Id: <546478B5.2040002@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1415830124-28787-1-git-send-email-hdegoede@redhat.com>
  <1415830124-28787-3-git-send-email-hdegoede@redhat.com>
@@ -12,30 +12,44 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Maxime,
+Hi,
 
-On Thu, Nov 13, 2014 at 9:52 AM, Maxime Ripard
-<maxime.ripard@free-electrons.com> wrote:
+On 11/13/2014 09:52 AM, Maxime Ripard wrote:
+> On Wed, Nov 12, 2014 at 11:08:43PM +0100, Hans de Goede wrote:
+>> One of the reasons for having the simplefb nodes in /chosen, and doing
+>> explicit enumeration of the nodes there, is too allow enumerating them sooner,
+>> so that we get a console earlier on.
+>>
+>> Doing this earlier then fs_initcall is not useful, since the fb only turns into
+>> a console when fbcon intializes, which is a fs_initcall too.
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> ---
+>>  drivers/video/fbdev/simplefb.c | 6 +++++-
+>>  1 file changed, 5 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+>> index be7d288..8c0c972 100644
+>> --- a/drivers/video/fbdev/simplefb.c
+>> +++ b/drivers/video/fbdev/simplefb.c
+>> @@ -415,7 +415,11 @@ static void __exit simplefb_exit(void)
+>>  	platform_driver_unregister(&simplefb_driver);
+>>  }
+>>  
 >> -module_init(simplefb_init);
 >> +/*
 >> + * While this can be a module, if builtin it's most likely the console
 >> + * So let's leave module_exit but move module_init to an earlier place
 >> + */
->
+> 
 > Not really related to this patch itself, but do we want to support
 > simplefb as a module? It seems like it's going to be most of the time
 > broken.
 
-If it depends on clocks, it won't work as a module, as CCF will have disabled
-all unused clocks at that point.
+A valid point, my mean reasoning here is that some may see not being able to
+use it as a module as a regression, so I just kept things as is, but I do
+agree that it is advisable to just build it in.
 
-Gr{oetje,eeting}s,
+Regards,
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Hans

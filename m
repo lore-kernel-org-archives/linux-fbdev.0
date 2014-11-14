@@ -1,37 +1,53 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 14:41:02 +0000
-Subject: [PATCH v7.1 11/19] OMAPDSS: hdmi: Make hdmi_mode_has_audio() more user friedly
-Message-Id: <8047b50c76efecd72e7219f7871c59cc4a8ee5f5.1415803065.git.jsarha@ti.com>
+From: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+Date: Fri, 14 Nov 2014 14:37:18 +0000
+Subject: Re: [PATCH v7.1 11/19] OMAPDSS: hdmi: Make hdmi_mode_has_audio() more user friedly
+Message-Id: <5466139E.5040308@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com>
-In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
+References: <cover.1415803064.git.jsarha@ti.com> <8047b50c76efecd72e7219f7871c59cc4a8ee5f5.1415803065.git.jsarha@ti.com>
+In-Reply-To: <8047b50c76efecd72e7219f7871c59cc4a8ee5f5.1415803065.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
+To: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
----
- drivers/video/fbdev/omap2/dss/hdmi.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Hi Jyri,
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index a6e08ff..6d129f2 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -345,9 +345,9 @@ void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
- 		struct hdmi_audio_format *aud_fmt);
- void hdmi_wp_audio_config_dma(struct hdmi_wp_data *wp,
- 		struct hdmi_audio_dma *aud_dma);
--static inline bool hdmi_mode_has_audio(int mode)
-+static inline bool hdmi_mode_has_audio(struct hdmi_config *cfg)
- {
--	return mode = HDMI_HDMI ? true : false;
-+	return cfg->hdmi_dvi_mode = HDMI_HDMI ? true : false;
- }
- 
- /* HDMI DRV data */
--- 
-1.7.9.5
+On 12.11.2014 16:41, Jyri Sarha wrote:
+> Signed-off-by: Jyri Sarha <jsarha@ti.com>
+> ---
+>  drivers/video/fbdev/omap2/dss/hdmi.h |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
+> index a6e08ff..6d129f2 100644
+> --- a/drivers/video/fbdev/omap2/dss/hdmi.h
+> +++ b/drivers/video/fbdev/omap2/dss/hdmi.h
+> @@ -345,9 +345,9 @@ void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
+>  		struct hdmi_audio_format *aud_fmt);
+>  void hdmi_wp_audio_config_dma(struct hdmi_wp_data *wp,
+>  		struct hdmi_audio_dma *aud_dma);
+> -static inline bool hdmi_mode_has_audio(int mode)
+> +static inline bool hdmi_mode_has_audio(struct hdmi_config *cfg)
+>  {
+> -	return mode = HDMI_HDMI ? true : false;
+> +	return cfg->hdmi_dvi_mode = HDMI_HDMI ? true : false;
+>  }
+>  
+>  /* HDMI DRV data */
+> 
 
+would it be possible for you to rearrange the changes preserving the
+following sequence?
+
+1) 13/19
+2) 15/19
+3) 11/19
+4) 14/19
+5) 16/19
+
+Otherwise I'm worried that someone's git rebase may fail.
+
+--
+With best wishes,
+Vladimir

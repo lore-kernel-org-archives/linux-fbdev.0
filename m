@@ -1,51 +1,53 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Fri, 14 Nov 2014 12:47:00 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Fri, 14 Nov 2014 15:10:00 +0000
 Subject: Re: [PATCH 01/15] mfd: add new driver for Sharp LoCoMo
-Message-Id: <CALT56yOtjNbYOWM4ba5yP8pz7bNLY5BWpkkpfmv5QZU-7Y5u_g@mail.gmail.com>
+Message-Id: <20141114151000.GC3815@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="0hFlL8mdTQLjOaTk"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1414454528-24240-1-git-send-email-dbaryshkov@gmail.com>
-	<1414454528-24240-2-git-send-email-dbaryshkov@gmail.com>
-	<CACRpkdbW3NA00zMZr216ZeZpgVkXwKUo30biTVd5kcHKGGtkHg@mail.gmail.com>
-	<CALT56yNX8v4mZn=o1ZoVLHPmg6wq0dgFNowpqNuFtU=eCc+d8w@mail.gmail.com>
-	<CACRpkdaKUZjbSEH75M9xudTF9HefwOCVEe5otv9-9f2UG8=hVg@mail.gmail.com>
-	<CALT56yM8B3ffYb0=EZVbRRGDZSxMci2sRp9XVtjQuLa5abN+cg@mail.gmail.com>
-	<20141105202405.GJ8509@sirena.org.uk>
-In-Reply-To: <20141105202405.GJ8509@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@kernel.org>
+ <1414454528-24240-2-git-send-email-dbaryshkov@gmail.com>
+ <CACRpkdbW3NA00zMZr216ZeZpgVkXwKUo30biTVd5kcHKGGtkHg@mail.gmail.com>
+ <CALT56yNX8v4mZn=o1ZoVLHPmg6wq0dgFNowpqNuFtU=eCc+d8w@mail.gmail.com>
+ <CACRpkdaKUZjbSEH75M9xudTF9HefwOCVEe5otv9-9f2UG8=hVg@mail.gmail.com>
+ <CALT56yM8B3ffYb0=EZVbRRGDZSxMci2sRp9XVtjQuLa5abN+cg@mail.gmail.com>
+ <20141105202405.GJ8509@sirena.org.uk>
+ <CALT56yOtjNbYOWM4ba5yP8pz7bNLY5BWpkkpfmv5QZU-7Y5u_g@mail.gmail.com>
+In-Reply-To: <CALT56yOtjNbYOWM4ba5yP8pz7bNLY5BWpkkpfmv5QZU-7Y5u_g@mail.gmail.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Cc: Linus Walleij <linus.walleij@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Andrea Adami <andrea.adami@gmail.com>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
 
-Hello,
 
-2014-11-05 23:24 GMT+03:00 Mark Brown <broonie@kernel.org>:
-> On Thu, Nov 06, 2014 at 12:02:49AM +0400, Dmitry Eremin-Solenikov wrote:
->> 2014-11-03 16:41 GMT+03:00 Linus Walleij <linus.walleij@linaro.org>:
->
->> > The point is still the same: no unrelated code in drivers/mfd,
->> > then either use IIO DAC as a middle layer or sink the DAC handling
->> > into respective subdriver, i.e. push it into the backlight or
->> > volume directly then.
->
->> The problem is that the DAC is equally used by backlight and by sound
->> device (WIP).
->> What about true i2c device driver sitting in drivers/misc and exporting a regmap
->> of 2 8-bit registers?
->
-> If it can just export registers that sounds like a MFD.  If it needs to
-> export functionality then like Linus says the IIO subsystem abstracts
-> DACs.
+--0hFlL8mdTQLjOaTk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I took a look at IIO subsystem. Thanks for the pointer. Indeed max517 driver
-can drive m62332 DAC with minimal modifications. However write support
-of the consumer interface is non-existing yet (which would be required
-to support DACs in unified manner).
+On Fri, Nov 14, 2014 at 04:47:00PM +0400, Dmitry Eremin-Solenikov wrote:
 
-I'm actually looking at the regulator interface. Since this DAC serves mostly
-like a (semi-)constant voltage interface, would it be rather logical to use
-regulator subsystem to drive it?
+> I'm actually looking at the regulator interface. Since this DAC serves mostly
+> like a (semi-)constant voltage interface, would it be rather logical to use
+> regulator subsystem to drive it?
 
--- 
-With best wishes
-Dmitry
+Possibly...  it's mostly a function of what the consumers of the
+functionality look like - if that code looks weird calling into the
+regulator API then it's bad, if that code looks OK it's fine.  I haven't
+looked at the hardware at all so don't have strong feelings either way
+so long as the result looks tasteful.
+
+--0hFlL8mdTQLjOaTk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUZhtHAAoJECTWi3JdVIfQ9u0H/0MiTrLksAi3U2z6tRBVRifd
+8X7vBDcAuPO8IdYuNRiUzB8b6jaDmnAmUc5lrJ4rrAwhrhMKk6I+wNNTAvXXWSRz
+FVjX3yHZomhQ1+Jlz98zcFSnEVxxHpJpN3pRXKL7BN5NTd7fedq5mvdN6899KRIa
+VQ8ByRl5sA8PkMvHN85dT+ECCQbTNQ8Szw96k5/LIRLAR+53rb8oB4y6d23Sqbvh
+mbXzzzjj0ap0LypK8XP7pNrXage5XVY/Y7bLusETEgdhR2Bxkc3YzlhgKY8/gHo4
+x3xdPJAUB/KUQxxEchL/wysUIlC1P8K5Tj29lyuhfztFM9RFxkpnyp8CoCusZtw=
+=Pl/n
+-----END PGP SIGNATURE-----
+
+--0hFlL8mdTQLjOaTk--

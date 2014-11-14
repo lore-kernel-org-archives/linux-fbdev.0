@@ -1,7 +1,7 @@
-From: Tero Kristo <t-kristo@ti.com>
-Date: Fri, 14 Nov 2014 07:32:06 +0000
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Fri, 14 Nov 2014 14:36:58 +0000
 Subject: Re: [PATCH 4/4] arm: dts: omap3-gta04: Add static configuration for devconf1 register
-Message-Id: <5465AFF6.506@ti.com>
+Message-Id: <CANOLnONkQu-BBvZH5nb+VngCxq=xnk60JkTd6Jha1uFt2j8gJQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1415051968-4878-1-git-send-email-marek@goldelico.com>
  <1415051968-4878-5-git-send-email-marek@goldelico.com>
@@ -11,53 +11,55 @@ References: <1415051968-4878-1-git-send-email-marek@goldelico.com>
  <20141113235840.GS26481@atomide.com>
 In-Reply-To: <20141113235840.GS26481@atomide.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-On 11/14/2014 01:58 AM, Tony Lindgren wrote:
+On Fri, Nov 14, 2014 at 1:58 AM, Tony Lindgren <tony@atomide.com> wrote:
 > * Paul Walmsley <paul@pwsan.com> [141113 15:01]:
 >> Hi
 >>
 >> On Thu, 13 Nov 2014, Tony Lindgren wrote:
 >>
->>> * Tomi Valkeinen <tomi.valkeinen@ti.com> [141113 03:33]:
->>>> On 12/11/14 17:02, Tony Lindgren wrote:
->>>>
->>>>>> And, with a quick grep, I see CONTROL_DEVCONF1 touched in multiple
->>>>>> places in the kernel. I wonder if adding a pinmux entry for it could
->>>>>> cause some rather odd problems.
->>>>>
->>>>> They can all use pinctrl-single no problem.
->>>>
->>>> Can, but don't. That's my worry. If we touch the DEVCONF1 via pinmux,
->>>> and we have code in mach-omap2 that also touch DEVCONF1, without any
->>>> knowledge (and locking) between those...
->>>
->>> Hmm yeah the McBSP clock mux could be racy as the mux register for
->>> McBSP is treated as a clock. This register muxes the clock between
->>> external pin and internal clock. Considering that this should be
->>> selectable at board level as the external clock probably needs to be
->>> used if level shifters are being used, it should be really handled by
->>> pinctrl-single.
->>>
->>> The other use for hsmmc.c and pdata-quirks.c for the one time mux for
->>> MMC clock from the MMC clock pin. That can be done with pinctrl-single
->>> from the MMC driver too for DT based booting.
->>>
->>> Then we just have the save and restore of the registers for
->>> off-idle.
->>>
->>>> So _maybe_ that's not an issue, as the pinmux config we have here is
->>>> fixed, and done once at boot time, and maybe the code in mach-omap2 that
->>>> touch DEVCONF1 is also ran just once and not at the same time as the
->>>> pinmux. But I don't know if that's so.
->>>
->>> It seems we could just do a read-only check for McBSP in the clock
->>> code for the mux register, or even completely drop that code from
->>> cclock3xxx_data.c and start using the pinctrl for that mux.
->>>
->>> Paul & Tero, got any comments here?
+>> > * Tomi Valkeinen <tomi.valkeinen@ti.com> [141113 03:33]:
+>> > > On 12/11/14 17:02, Tony Lindgren wrote:
+>> > >
+>> > > >> And, with a quick grep, I see CONTROL_DEVCONF1 touched in multiple
+>> > > >> places in the kernel. I wonder if adding a pinmux entry for it co=
+uld
+>> > > >> cause some rather odd problems.
+>> > > >
+>> > > > They can all use pinctrl-single no problem.
+>> > >
+>> > > Can, but don't. That's my worry. If we touch the DEVCONF1 via pinmux,
+>> > > and we have code in mach-omap2 that also touch DEVCONF1, without any
+>> > > knowledge (and locking) between those...
+>> >
+>> > Hmm yeah the McBSP clock mux could be racy as the mux register for
+>> > McBSP is treated as a clock. This register muxes the clock between
+>> > external pin and internal clock. Considering that this should be
+>> > selectable at board level as the external clock probably needs to be
+>> > used if level shifters are being used, it should be really handled by
+>> > pinctrl-single.
+>> >
+>> > The other use for hsmmc.c and pdata-quirks.c for the one time mux for
+>> > MMC clock from the MMC clock pin. That can be done with pinctrl-single
+>> > from the MMC driver too for DT based booting.
+>> >
+>> > Then we just have the save and restore of the registers for
+>> > off-idle.
+>> >
+>> > > So _maybe_ that's not an issue, as the pinmux config we have here is
+>> > > fixed, and done once at boot time, and maybe the code in mach-omap2 =
+that
+>> > > touch DEVCONF1 is also ran just once and not at the same time as the
+>> > > pinmux. But I don't know if that's so.
+>> >
+>> > It seems we could just do a read-only check for McBSP in the clock
+>> > code for the mux register, or even completely drop that code from
+>> > cclock3xxx_data.c and start using the pinctrl for that mux.
+>> >
+>> > Paul & Tero, got any comments here?
 >>
 >> It's best to move all of the SCM register reads/writes to an SCM IP block
 >> driver.  This driver would be the only entity that would touch the SCM IP
@@ -81,23 +83,9 @@ On 11/14/2014 01:58 AM, Tony Lindgren wrote:
 > Having the mux register as the clock enable register is not nice..
 > Who knows what the clock coming from the external pin might be :)
 
-The PRCM/clock cleanups that I have under work basically splits the 
-clock inits under their respective IP blocks; currently everything is 
-registered under generic PRCM. System control module will be one of the 
-clock providers (and is going to look like a driver), which will be 
-registering its own clocks. This doesn't change the fact that pinctrl is 
-directly mapping its own register space atm though, it might be possible 
-to re-route this to use the generic system control module if need be though.
+How will audio do dynamic muxing without that code?
+The pin must be remuxed back to internal clock when audio stops, or
+else PM breaks.
 
-I guess its just a political decision which way we want to go, currently 
-we have lots of system control clocks under the clock data (for 
-AM33xx,AM43xx,OMAP3), but we can remove these easily if need be. In some 
-cases it is nicer to have the data in the clock tree though, the drivers 
-don't need to care if they are touching a clock or a pinctrl entity. 
-Some people have been converting additional stuff to CCF outside of 
-PRCM, like Archit did some work to try and get control module clock 
-support for DRA7, and Tomi has been talking to convert some of the DSS 
-internal clocks to CCF also.
 
--Tero
-
+Gra=C5=BEvydas

@@ -1,31 +1,30 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 13 Nov 2014 19:39:33 +0000
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 14 Nov 2014 07:58:39 +0000
 Subject: Re: [PATCH v6] simplefb: add clock handling code
-Message-Id: <CAMuHMdW-6Eb9DSE=JQm7xWMhJUpt1xxLqS=6KU+=ZDMsmtiBag@mail.gmail.com>
+Message-Id: <5465B62F.1000306@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1415906546-2408-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415906546-2408-1-git-send-email-hdegoede@redhat.com>
+ <CAMuHMdW-6Eb9DSE=JQm7xWMhJUpt1xxLqS=6KU+=ZDMsmtiBag@mail.gmail.com>
+In-Reply-To: <CAMuHMdW-6Eb9DSE=JQm7xWMhJUpt1xxLqS=6KU+=ZDMsmtiBag@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Nov 13, 2014 at 8:22 PM, Hans de Goede <hdegoede@redhat.com> wrote:
-> changes in v6:
-> -Wrap the clock code in #ifdef CONFIG_OF, as simplefb is used on non
->  devicetree platforms too
+Hi,
 
-With clocks?
+On 11/13/2014 08:39 PM, Geert Uytterhoeven wrote:
+> On Thu, Nov 13, 2014 at 8:22 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> changes in v6:
+>> -Wrap the clock code in #ifdef CONFIG_OF, as simplefb is used on non
+>>  devicetree platforms too
+> 
+> With clocks?
 
-If yes, "clk_get(&pdev->dev, NULL)" can return a clock...
+No, the existing users are in arch/x86/kernel/sysfb*.c so no clock support.
 
-Gr{oetje,eeting}s,
+And any new users which need clocks should use devicetree.
 
-                        Geert
+Regards,
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Hans

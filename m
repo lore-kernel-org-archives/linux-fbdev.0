@@ -1,44 +1,131 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 11 Nov 2014 15:00:19 +0000
-Subject: Re: [PATCH 3/4] arm: dts: omap3-gta04: Add handling for tv output
-Message-Id: <20141111150018.GL31454@atomide.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 14 Nov 2014 11:03:12 +0000
+Subject: [PATCH v5 1/5] dt-bindings: simplefb: Specify node location and handoff related properties
+Message-Id: <1415962996-31712-1-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415051968-4878-1-git-send-email-marek@goldelico.com>
- <1415051968-4878-4-git-send-email-marek@goldelico.com>
- <20141110233050.GC31454@atomide.com> <5461BDC6.7090308@ti.com>
-In-Reply-To: <5461BDC6.7090308@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [141110 23:44]:
-> Tony,
-> 
-> On 11/11/14 01:30, Tony Lindgren wrote:
-> > * Marek Belisko <marek@goldelico.com> [141103 14:01]:
-> >> Add handling for gta04 tv out chain:
-> >> venc -> opa362 -> svideo
-> >>
-> >> Signed-off-by: Marek Belisko <marek@goldelico.com>
-> >> ---
-> >>  arch/arm/boot/dts/omap3-gta04.dtsi | 48 ++++++++++++++++++++++++++++++++++++++
-> >>  1 file changed, 48 insertions(+)
-> > 
-> > Applying this patch into omap-for-v3.19/dt thanks.
-> 
-> There are changes needed for this series, so don't apply yet.
-> 
-> I'll try to find the time to do a review and send comments soon.
+Since simplefb nodes do not relate directly to hw typically they have been
+placed in the root of the devicetree. As the represent runtime information
+having them as sub-nodes of /chosen is more logical, specify this.
 
-I've already pushed out the omap-for-v3.19/dt branch with
-this patch buried in it. I'd rather not start redoing the
-branch if the $subject patch is mostly correct and usable
-with changes to the driver patches.
+Also specify when to set the chosen stdout-path property to a simplefb node.
 
-However, if the $subject patch needs to be redone for
-the driver changes, let me know and I'll redo the branch.
+For reliable handover to a hardware specific driver, that driver needs to
+know which simplefb to unregister when taking over, specify how the hw driver
+can find the matching simplefb node.
 
-Regards,
+Last add some advice on how to fill and use simplefb nodes from a firmware
+pov.
 
-Tony
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+--
+Changes in v2:
+-Add stdout-path to the example code
+Changes in v3:
+-Specify that the node name must be "framebuffer@<address>"
+-Specify that the link to link simplefb node and display hw nodes to one
+ another for handover goes into the simplefb node, and must be called "display"
+-Specify how aliases may be used to tell the OS how to number displays
+-Update the example to reflect these changes
+Changes in v4:
+-Keep the size of the reg property in the example as it was before
+Changes in v5:
+-Specify that stdout-path property should work the same way as the aliases,
+ or just point to an alias
+-Document naming scheme for pre-populated simplefb nodes
+---
+ .../bindings/video/simple-framebuffer.txt          | 58 +++++++++++++++++++++-
+ 1 file changed, 57 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+index 8f35718..f8fb7e6 100644
+--- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+@@ -4,6 +4,40 @@ A simple frame-buffer describes a frame-buffer setup by firmware or
+ the bootloader, with the assumption that the display hardware has already
+ been set up to scan out from the memory pointed to by the reg property.
+ 
++Since simplefb nodes represent runtime information they must be sub-nodes of
++the chosen node (*). Simplefb nodes must be named "framebuffer@<address>".
++
++If the devicetree contains nodes for the display hardware used by a simplefb,
++then the simplefb node must contain a property called "display", which
++contains a phandle pointing to the primary display hw node, so that the OS
++knows which simplefb to disable when handing over control to a driver for the
++real hardware. The bindings for the hw nodes must specify which node is
++considered the primary node.
++
++It is advised to add display# aliases to help the OS determine how to number
++things. If display# aliases are used, then if the simplefb node contains a
++"display" property then the /aliases/display# path must point to the display
++hw node the "display" property points to, otherwise it must point directly
++to the simplefb node.
++
++If a simplefb node represents the preferred console for user interaction,
++then the chosen node's stdout-path property should point to it, or to the
++primary display hw node, as with display# aliases. If display aliases are
++used then it should be set to the alias instead.
++
++It is advised that devicetree files contain pre-filled, disabled framebuffer
++nodes, so that the firmware only needs to update the mode information and
++enable them. This way if e.g. later on support for more display clocks get
++added, the simplefb nodes will already contain this info and the firmware
++does not need to be updated.
++
++If pre-filled framebuffer nodes are used, they should be named
++"framebuffer#-<output>", e.g. "framebuffer0-hdmi". The output should be
++included in the name since different outputs typically require different
++clocks and the clocks are part of the pre-populated nodes. The firmware must
++rename the nodes to the standard "framebuffer@<address>" name using the
++runtime chosen address when enabling the nodes.
++
+ Required properties:
+ - compatible: "simple-framebuffer"
+ - reg: Should contain the location and size of the framebuffer memory.
+@@ -19,14 +53,36 @@ Optional properties:
+            are expected to already be configured correctly. The OS must
+            ensure these clocks are not modified or disabled while the
+            simple framebuffer remains active.
++- display : phandle pointing to the primary display hardware node
+ 
+ Example:
+ 
+-	framebuffer {
++aliases {
++	display0 = &lcdc0;
++}
++
++chosen {
++	framebuffer0: framebuffer@1d385000 {
+ 		compatible = "simple-framebuffer";
+ 		reg = <0x1d385000 (1600 * 1200 * 2)>;
+ 		width = <1600>;
+ 		height = <1200>;
+ 		stride = <(1600 * 2)>;
+ 		format = "r5g6b5";
++		clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
++		display = <&lcdc0>;
++	};
++	stdout-path = "display0";
++};
++
++soc@01c00000 {
++	lcdc0: lcdc@1c0c000 {
++		compatible = "allwinner,sun4i-a10-lcdc";
++		...
+ 	};
++};
++
++
++*) Older devicetree files may have a compatible = "simple-framebuffer" node
++in a different place, operating systems must first enumerate any compatible
++nodes found under chosen and then check for other compatible nodes.
+-- 
+2.1.0
+

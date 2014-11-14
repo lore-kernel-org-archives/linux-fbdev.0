@@ -1,40 +1,40 @@
-From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Date: Wed, 26 Nov 2014 22:07:25 +0000
-Subject: [PATCH 3/3] video: fbdev: arkfb: suppress build warning
-Message-Id: <1417039645-5313-3-git-send-email-prabhakar.csengg@gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 14 Nov 2014 11:03:15 +0000
+Subject: [PATCH v5 4/5] fbcon: Change fbcon_init from module_init to fs_initcall
+Message-Id: <1415962996-31712-4-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417039645-5313-1-git-send-email-prabhakar.csengg@gmail.com>
-In-Reply-To: <1417039645-5313-1-git-send-email-prabhakar.csengg@gmail.com>
+References: <1415962996-31712-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1415962996-31712-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-this patch fixes following build warning:
+Various fb drivers register themselves before module_init so as to have a
+console as early as possible, this is of little use if fbcon does not
+initialize early too.
 
-drivers/video/fbdev/arkfb.c: In function ‘ark_pci_probe’:
-drivers/video/fbdev/arkfb.c:1019:23: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-  par->state.vgabase = (void __iomem *) vga_res.start;
-                       ^
-Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+Fbcon cannot initialize earlier then fs_initcall, because then the creation
+of /sys/class/graphics/fbcon will fail.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/fbdev/arkfb.c | 2 +-
+ drivers/video/console/fbcon.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index adc4ea2..b305a1e 100644
---- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -1016,7 +1016,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index eb976ee..ea43724 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -3624,7 +3624,7 @@ static int __init fb_console_init(void)
+ 	return 0;
+ }
  
- 	pcibios_bus_to_resource(dev->bus, &vga_res, &bus_reg);
+-module_init(fb_console_init);
++fs_initcall(fb_console_init);
  
--	par->state.vgabase = (void __iomem *) vga_res.start;
-+	par->state.vgabase = (void __iomem *) (unsigned long) vga_res.start;
+ #ifdef MODULE
  
- 	/* FIXME get memsize */
- 	regval = vga_rseq(par->state.vgabase, 0x10);
 -- 
-1.9.1
+2.1.0
 

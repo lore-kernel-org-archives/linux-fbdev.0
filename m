@@ -1,7 +1,7 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 17 Nov 2014 13:07:23 +0000
+From: Grant Likely <grant.likely@linaro.org>
+Date: Mon, 17 Nov 2014 13:39:18 +0000
 Subject: Re: [PATCH 2/2] dt-bindings: simplefb-sunxi: Add sunxi simplefb extensions
-Message-Id: <5469F30B.7080507@redhat.com>
+Message-Id: <CACxGe6vqiC08sP+o3bduGfvUdwRtHm8+_7EdZccJjS86qVKvxQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1416224086-5698-1-git-send-email-hdegoede@redhat.com>
  <1416224086-5698-3-git-send-email-hdegoede@redhat.com>
@@ -12,9 +12,8 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
-
-On 11/17/2014 01:47 PM, Maxime Ripard wrote:
+On Mon, Nov 17, 2014 at 12:47 PM, Maxime Ripard
+<maxime.ripard@free-electrons.com> wrote:
 > On Mon, Nov 17, 2014 at 12:34:46PM +0100, Hans de Goede wrote:
 >> If pre-filled framebuffer nodes are used, the firmware may need extra
 >> properties to find the right node. This documents the properties to use
@@ -47,30 +46,30 @@ On 11/17/2014 01:47 PM, Maxime Ripard wrote:
 >> +- sunxi,pipeline:
 >> +  <0> for the de_be0 -> lcdc0 -> output pipeline
 >> +  <1> for the de_be1 -> lcdc1 -> output pipeline
->> +- sunxi,output: One of: "hdmi", "lcd", "vga", and "composite"  
+>> +- sunxi,output: One of: "hdmi", "lcd", "vga", and "composite"
 >> +
 >> +Example:
 >> +
 >> +chosen {
->> +	#address-cells = <1>;
->> +	#size-cells = <1>;
->> +	ranges;
+>> +     #address-cells = <1>;
+>> +     #size-cells = <1>;
+>> +     ranges;
 >> +
->> +	framebuffer@0 {
->> +		compatible = "sunxi,framebuffer", "simple-framebuffer";
->> +		sunxi,pipeline = <0>;
->> +		sunxi,output = "hdmi";
->> +		clocks = <&pll5 1>, <&ahb_gates 36>, <&ahb_gates 43>,
->> +			 <&ahb_gates 44>;
-> 
+>> +     framebuffer@0 {
+>> +             compatible = "sunxi,framebuffer", "simple-framebuffer";
+>> +             sunxi,pipeline = <0>;
+>> +             sunxi,output = "hdmi";
+>> +             clocks = <&pll5 1>, <&ahb_gates 36>, <&ahb_gates 43>,
+>> +                      <&ahb_gates 44>;
+>
 > If we're going that way, then maybe having to specify clock-names
 > would be better in order to know which clock is what?
 
-I agree that using clock-names is more human readable then phandle's,
-but that is simply not how clocks are specified anywhere in dt.
+I wouldn't go that way with this binding since the driver has no need
+to differentiate between the clocks, and driver authors shouldn't be
+encouraged to do so. The purpose of the clocks in this node is only
+for itemizing dependencies, not for how to configure the clocks.
+Firmware shouldn't care at all about the clocks list, it only needs to
+find the correct pre-populated node to fill in and enable.
 
-Regards,
-
-Hans
-
-
+g.

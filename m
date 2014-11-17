@@ -1,197 +1,65 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 10:49:17 +0000
-Subject: [PATCH v7 15/20] OMAPDSS: hdmi4: Register ASoC platform device for omap hdmi audio
-Message-Id: <21ee831da15efc2b2f456c53162b41e5ddacdf9c.1415786458.git.jsarha@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Mon, 17 Nov 2014 15:37:05 +0000
+Subject: [PATCH v2 2/2] dt-bindings: simplefb-sunxi: Add sunxi simplefb extensions
+Message-Id: <1416238625-28590-3-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415786458.git.jsarha@ti.com>
-In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
+References: <1416238625-28590-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1416238625-28590-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Implements callbacks for OMAP HDMI audio platform driver and registers
-it in probe function. Unregistering is done in remove function.
+If pre-filled framebuffer nodes are used, the firmware may need extra
+properties to find the right node. This documents the properties to use
+for this on sunxi platforms.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Grant Likely <grant.likely@linaro.org>
 ---
- drivers/video/fbdev/omap2/dss/hdmi4.c |  125 +++++++++++++++++++++++++++++++++
- 1 file changed, 125 insertions(+)
+ .../bindings/video/simple-framebuffer-sunxi.txt    | 33 ++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/simple-framebuffer-sunxi.txt
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index 6f6764c..28a55b2 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -33,6 +33,7 @@
- #include <linux/gpio.h>
- #include <linux/regulator/consumer.h>
- #include <video/omapdss.h>
-+#include <sound/omap-hdmi-audio.h>
- 
- #include "hdmi4_core.h"
- #include "dss.h"
-@@ -336,6 +337,8 @@ static int hdmi_display_enable(struct omap_dss_device *dssdev)
- 		goto err0;
- 	}
- 
-+	hdmi.display_enabled = true;
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer-sunxi.txt b/Documentation/devicetree/bindings/video/simple-framebuffer-sunxi.txt
+new file mode 100644
+index 0000000..4188606
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer-sunxi.txt
+@@ -0,0 +1,33 @@
++Sunxi specific Simple Framebuffer bindings
 +
- 	mutex_unlock(&hdmi.lock);
- 	return 0;
- 
-@@ -350,8 +353,13 @@ static void hdmi_display_disable(struct omap_dss_device *dssdev)
- 
- 	mutex_lock(&hdmi.lock);
- 
-+	if (hdmi.audio_pdev && hdmi.audio_abort_cb)
-+		hdmi.audio_abort_cb(&hdmi.audio_pdev->dev);
++This binding documents sunxi specific extensions to the simple-framebuffer
++bindings. The sunxi simplefb u-boot code relies on the devicetree containing
++pre-populated simplefb nodes.
 +
- 	hdmi_power_off_full(dssdev);
- 
-+	hdmi.display_enabled = false;
++These extensions are intended so that u-boot can select the right node based
++on which pipeline is being used. As such they are solely intended for
++firmware / bootloader use, and the OS should ignore them.
 +
- 	mutex_unlock(&hdmi.lock);
- }
- 
-@@ -542,6 +550,112 @@ err:
- 	return r;
- }
- 
-+/* Audio callbacks */
-+static int hdmi_audio_startup(struct device *dev,
-+			      void (*abort_cb)(struct device *dev))
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+	int ret = 0;
++Required properties:
++- compatible: "sunxi,framebuffer"
++- sunxi,pipeline, one of:
++  "de_be0-lcd0"
++  "de_be1-lcd1"
++  "de_be0-lcd0-hdmi"
++  "de_be1-lcd1-hdmi"
 +
-+	mutex_lock(&hd->lock);
++Example:
 +
-+	if (!hdmi_mode_has_audio(&hd->cfg) || !hd->display_enabled) {
-+		ret = -EPERM;
-+		goto out;
-+	}
++chosen {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	ranges;
 +
-+	hd->audio_abort_cb = abort_cb;
-+
-+out:
-+	mutex_unlock(&hd->lock);
-+
-+	return ret;
-+}
-+
-+static int hdmi_audio_shutdown(struct device *dev)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+
-+	mutex_lock(&hd->lock);
-+	hd->audio_abort_cb = NULL;
-+	mutex_unlock(&hd->lock);
-+
-+	return 0;
-+}
-+
-+static int hdmi_audio_start(struct device *dev)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+
-+	WARN_ON(!hdmi_mode_has_audio(&hd->cfg));
-+	WARN_ON(!hd->display_enabled);
-+
-+	hdmi_wp_audio_enable(&hd->wp, true);
-+	hdmi4_audio_start(&hd->core, &hd->wp);
-+
-+	return 0;
-+}
-+
-+static void hdmi_audio_stop(struct device *dev)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+
-+	WARN_ON(!hdmi_mode_has_audio(&hd->cfg));
-+	WARN_ON(!hd->display_enabled);
-+
-+	hdmi4_audio_stop(&hd->core, &hd->wp);
-+	hdmi_wp_audio_enable(&hd->wp, false);
-+}
-+
-+static int hdmi_audio_config(struct device *dev,
-+			     struct omap_dss_audio *dss_audio)
-+{
-+	struct omap_hdmi *hd = dev_get_drvdata(dev);
-+	int ret;
-+
-+	mutex_lock(&hd->lock);
-+
-+	if (!hdmi_mode_has_audio(&hd->cfg) || !hd->display_enabled) {
-+		ret = -EPERM;
-+		goto out;
-+	}
-+
-+	ret = hdmi4_audio_config(&hd->core, &hd->wp, dss_audio,
-+				 hd->cfg.timings.pixelclock);
-+
-+out:
-+	mutex_unlock(&hd->lock);
-+
-+	return ret;
-+}
-+
-+static const struct omap_hdmi_audio_ops hdmi_audio_ops = {
-+	.audio_startup = hdmi_audio_startup,
-+	.audio_shutdown = hdmi_audio_shutdown,
-+	.audio_start = hdmi_audio_start,
-+	.audio_stop = hdmi_audio_stop,
-+	.audio_config = hdmi_audio_config,
-+};
-+
-+static int hdmi_audio_register(struct device *dev)
-+{
-+	struct omap_hdmi_audio_pdata pdata = {
-+		.dev = dev,
-+		.dss_version = omapdss_get_version(),
-+		.audio_dma_addr = hdmi_wp_get_audio_dma_addr(&hdmi.wp),
-+		.ops = &hdmi_audio_ops,
++	framebuffer@0 {
++		compatible = "sunxi,framebuffer", "simple-framebuffer";
++		sunxi,pipeline = "de_be0-lcd0-hdmi";
++		clocks = <&pll5 1>, <&ahb_gates 36>, <&ahb_gates 43>,
++			 <&ahb_gates 44>;
++		status = "disabled";
 +	};
-+
-+	hdmi.audio_pdev = platform_device_register_data(
-+		dev, "omap-hdmi-audio", PLATFORM_DEVID_AUTO,
-+		&pdata, sizeof(pdata));
-+
-+	if (IS_ERR(hdmi.audio_pdev))
-+		return PTR_ERR(hdmi.audio_pdev);
-+
-+	return 0;
-+}
-+
- /* HDMI HW IP initialisation */
- static int omapdss_hdmihw_probe(struct platform_device *pdev)
- {
-@@ -599,6 +713,14 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- 	hdmi_init_output(pdev);
- 
-+	r = hdmi_audio_register(&pdev->dev);
-+	if (r) {
-+		DSSERR("Registering HDMI audio failed\n");
-+		hdmi_uninit_output(pdev);
-+		pm_runtime_disable(&pdev->dev);
-+		return r;
-+	}
-+
- 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
- 
- 	return 0;
-@@ -606,6 +728,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
- {
-+	if (hdmi.audio_pdev)
-+		platform_device_unregister(hdmi.audio_pdev);
-+
- 	hdmi_uninit_output(pdev);
- 
- 	pm_runtime_disable(&pdev->dev);
++};
 -- 
-1.7.9.5
+2.1.0
 

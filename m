@@ -1,79 +1,45 @@
-From: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Date: Mon, 17 Nov 2014 15:12:59 +0000
-Subject: Re: [PATCH v7.1 11/19] OMAPDSS: hdmi: Make hdmi_mode_has_audio() more user friedly
-Message-Id: <546A107B.1030800@mentor.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Mon, 17 Nov 2014 11:34:45 +0000
+Subject: [PATCH 1/2] dt-bindings: simplefb: Drop the advice about using a specific path for nodes
+Message-Id: <1416224086-5698-2-git-send-email-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com> <8047b50c76efecd72e7219f7871c59cc4a8ee5f5.1415803065.git.jsarha@ti.com> <5466139E.5040308@mentor.com> <54661A30.3010708@ti.com>
-In-Reply-To: <54661A30.3010708@ti.com>
+References: <1416224086-5698-1-git-send-email-hdegoede@redhat.com>
+In-Reply-To: <1416224086-5698-1-git-send-email-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Jyri,
+This goes contrary to how devicetree usually works, so drop it. Instead if
+the firmware needs to be able to find a specific node it should use a
+platform specific compatible + properties for this.
 
-On 14.11.2014 17:05, Jyri Sarha wrote:
-> On 11/14/2014 04:37 PM, Vladimir Zapolskiy wrote:
->> Hi Jyri,
->>
->> On 12.11.2014 16:41, Jyri Sarha wrote:
->>> Signed-off-by: Jyri Sarha <jsarha@ti.com>
->>> ---
->>>   drivers/video/fbdev/omap2/dss/hdmi.h |    4 ++--
->>>   1 file changed, 2 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
->>> index a6e08ff..6d129f2 100644
->>> --- a/drivers/video/fbdev/omap2/dss/hdmi.h
->>> +++ b/drivers/video/fbdev/omap2/dss/hdmi.h
->>> @@ -345,9 +345,9 @@ void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
->>>   		struct hdmi_audio_format *aud_fmt);
->>>   void hdmi_wp_audio_config_dma(struct hdmi_wp_data *wp,
->>>   		struct hdmi_audio_dma *aud_dma);
->>> -static inline bool hdmi_mode_has_audio(int mode)
->>> +static inline bool hdmi_mode_has_audio(struct hdmi_config *cfg)
->>>   {
->>> -	return mode = HDMI_HDMI ? true : false;
->>> +	return cfg->hdmi_dvi_mode = HDMI_HDMI ? true : false;
->>>   }
->>>
->>>   /* HDMI DRV data */
->>>
->>
->> would it be possible for you to rearrange the changes preserving the
->> following sequence?
->>
->> 1) 13/19
->> 2) 15/19
->> 3) 11/19
->> 4) 14/19
->> 5) 16/19
->>
-> 
-> Sure, I can do that. Everything should be fine in that order too.
-> 
->> Otherwise I'm worried that someone's git rebase may fail.
->>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ Documentation/devicetree/bindings/video/simple-framebuffer.txt | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-sorry again, I meant git-bisect, git rebase is fine.
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+index f8fb7e6..4474ef6 100644
+--- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+@@ -31,12 +31,10 @@ enable them. This way if e.g. later on support for more display clocks get
+ added, the simplefb nodes will already contain this info and the firmware
+ does not need to be updated.
+ 
+-If pre-filled framebuffer nodes are used, they should be named
+-"framebuffer#-<output>", e.g. "framebuffer0-hdmi". The output should be
+-included in the name since different outputs typically require different
+-clocks and the clocks are part of the pre-populated nodes. The firmware must
+-rename the nodes to the standard "framebuffer@<address>" name using the
+-runtime chosen address when enabling the nodes.
++If pre-filled framebuffer nodes are used, the firmware may need extra
++information to find the right node. In that case an extra platform specific
++compatible and platform specific properties should be used and documented,
++see e.g. simple-framebuffer-sunxi.txt .
+ 
+ Required properties:
+ - compatible: "simple-framebuffer"
+-- 
+2.1.0
 
-> But do not follow why. Did you notice that 10/19 removes the config 
-> options that enable the pieces of code that are deleted in 13/19 and 
-> 15/19. IOW, the code that uses hdmi_mode_has_audio() (and would become 
-> broken by 11/19) is already disabled by 10/19. Git-wise I see no problem 
-> either.
-
-Right, I was worried by changed hdmi_mode_has_audio() API and still
-present source code, which uses the old API (it is fixed in the
-following patches). If the code that uses hdmi_mode_has_audio() is
-disabled by 10/19 and the kernel can be successfully compiled and
-working on partial application of the changeset, then there should be no
-problem with git-bisect, and probably no need to rearrange the commits.
-
-> I'll rearrange the patches if you still insist there is a problem with 
-> current order, but I would like to understand why.
-
---
-With best wishes,
-Vladimir

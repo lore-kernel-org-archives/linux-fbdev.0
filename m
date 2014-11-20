@@ -1,92 +1,93 @@
-From: Jean-Francois Moine <moinejf@free.fr>
-Date: Fri, 14 Nov 2014 10:59:16 +0000
-Subject: Re: [alsa-devel] [PATCH v7.1 00/19] Rework OMAP4+ HDMI audio support
-Message-Id: <20141114115916.6af5adce@armhf>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 20 Nov 2014 10:59:44 +0000
+Subject: Re: [PATCH v7.1 00/19] Rework OMAP4+ HDMI audio support
+Message-Id: <546DC9A0.8060700@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="KOm0QGWw94tfVQ6w097nXl6lFc0Hrw5Tp"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com>
-	<20141112222344.GU3815@sirena.org.uk>
-	<54646648.5030807@ti.com>
-	<20141113101738.6338bb1c@armhf>
-	<54648149.9070104@ti.com>
-	<20141113160002.7a1157a5@armhf>
-	<5464D1E6.4050508@ti.com>
-In-Reply-To: <5464D1E6.4050508@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+References: <cover.1415803064.git.jsarha@ti.com> <20141112222344.GU3815@sirena.org.uk> <54646648.5030807@ti.com>
+In-Reply-To: <54646648.5030807@ti.com>
+To: Mark Brown <broonie@kernel.org>, Jyri Sarha <jsarha@ti.com>
+Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com
+
+--KOm0QGWw94tfVQ6w097nXl6lFc0Hrw5Tp
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Mark Brown <broonie@kernel.org>, Jyri Sarha <jsarha@ti.com>, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, alsa-devel@alsa-project.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Thu, 13 Nov 2014 17:44:38 +0200
-Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-	[snip]
-> >> a) Always keep the audio device operational, no matter what is the
-> >> status of the video side. How should this work if the HDMI videomode or
-> >> the HDMI monitor does not support audio? Is it desirable that the
-> >> userspace has no idea that the audio is not actually going anywhere?
-> >>
-> >> b) Remove the audio device when audio support is not available. This
-> >> kind of makes sense, as, well, there's no possibility for audio output.
-> >> But maybe this is not how linux sound devices are supposed to behave?
-> >>
-> >> c) Return errors when playback is attempted when audio support is not
-> >> available. Again, this kind of makes sense, as audio playback is not
-> >> possible. But maybe this is also not how audio devices generally work.
-> >>
-> >> Jyri, were there some other options we discussed?
-> >>
-> >> Currently, the OMAP HDMI version does c). It's the easiest solution fo=
-r us. =20
-> >=20
-> > Same for me, but checking the audio capability is done on audio streami=
-ng
-> > start only. =20
+Hi Mark,
+
+On 13/11/14 10:05, Tomi Valkeinen wrote:
+> Hi Mark,
 >=20
-> Hmm, I understood you have option a)? You said "I even let audio
-> streaming start when the HDMI cable is
-> disconnected".
+> On 13/11/14 00:23, Mark Brown wrote:
+>> On Wed, Nov 12, 2014 at 04:40:51PM +0200, Jyri Sarha wrote:
+>>
+>>> It would make the most sense to get these in trough fbdev tree. So it=
 
-The option a) is the one of the patch, but I am moving towards option c).
+>>> would be nice to get acked-bys (if the patches are Ok) for ASoC side
+>>> changes from appropriate maintainers.
+>>
+>> So, this is a very large series which gets reposted every so often to =
+no
+>> apparent interest from the video side, there's been no response at all=
 
-> With "audio support is not available" I mean also the case when the
-> cable is not connected, as then we don't have EDID information, and thus
-> we don't have a HDMI monitor with audio support on the other end.
-
-What I was saying is: when the cable is connected, all audio/video
-parameters are known. Then, when the cable is disconnected, there is
-no reason, a priori, to change these parameters, and audio/video
-streaming may continue. The problem might be raised later when an other
-monitor with different parameters will be connected.
-
-> So to clarify, our driver only has "audio support available" if:
-> - we successfully read EDID
-> - EDID shows it's a HDMI monitor
-> - EDID shows it has audio support for the format we support (this we
-> don't actually do yet)
 >=20
-> Otherwise we default to DVI, which means no audio.
+> Sorry for the lack of communication. We've been discussing this series
+> on irc. It's been mostly about how to manage the device/driver split
+> between drivers/video/ and sound/ sides.
 >=20
-> If, at any point, the situation changes to "no audio support available",
-> the audio playback is aborted and starting new audio playback fails.
-	[snip]
+>> that I can remember and even the earlier bits of the series before it
+>> starts touching audio don't seem to be getting merged.  What's going o=
+n
+>> here?
+>=20
+> The series is all audio in terms of functionality. The first few patche=
+s
+> could probably be merged independently, but I've wanted this whole OMAP=
 
-So, to summarize, you need the information 'audio support available' on
-the audio side.
+> HDMI audio rewrite to be in one series.
+>=20
+> I'll start testing this latest series, and I hope we can merge it for
+> the next merge window so that we'll finally get the OMAP HDMI audio wor=
+king.
+>=20
+> I don't have much knowledge of the asoc architecture, so I probably
+> can't comment much on the sound/ side design. For me the most important=
 
-It should not be difficult to export a function in the generic HDMI
-driver for this job. This function would have the following arguments:
+> things are that 1) it works 2) I can easily unload/load the modules
+> (which was broken in some of the earlier versions).
 
-- device (child device of the HDMI transmitter)
-- pin (output widget name)
-- status (enable/disable)
+The series looks good to me, and works for me.
 
-and would:
+Do you have any comments for the sound/ parts? If not, I can merge this
+series via fbdev tree, and for that I'd like your ack on the sound/ patch=
+es.
 
-- set the pin status so that the HDMI output would be included or not
-  in the audio path, and
+ Tomi
 
-- abort audio streaming on disabling audio.
 
---=20
-Ken ar c'henta=C3=B1	|	      ** Breizh ha Linux atav! **
-Jef		|		http://moinejf.free.fr/
+
+--KOm0QGWw94tfVQ6w097nXl6lFc0Hrw5Tp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUbcmgAAoJEPo9qoy8lh71tSoQAJib29Jg0UfS/a3bbi5Ck4wJ
+EIR3qvutuUj7LGemWrAGTwe/lbAuwnTjcgW4uBfY6qEIOTkh5N8VALfKTOla/gei
+W7punQ2wDNGrXtN9infG+cBI/WMxk4TZEcrZNVpAD0rWoewwgZfh1v8lcn+wfgHI
+t7z2blyyMqWNFFpGF7H5NU4Q5i6xjNXqbSNdWiCHNsOZWDaJVae55UKJcISRKs5z
+xLtvG5oeToNLfz00Y11ZqBzRkncf+4hugVegx+o1LR6NWzP0AMu9EEtKAhC6GgHn
+f34Rw5Nn5ErVHY2JBS4mNTwUK/5OhoAg3Acb4oEH2ixVtLB6LFvb07759mKP9owP
+/2VVJfZMZ9PVdG1aN/2LdPKPt6KmMWp1DFlhjXClFj9Mh+XAfPmphtarq+LtyZQo
+4WBYXrn2sGQAczo5pSd4s34cL2PUWkIHlQ0mBCntrBIK9Hy/066BR6UYRJbWMiCf
+O2+rai2Dt58gCHp7+IuBBnJMA3Y+Pn1Zj1EcXZrv1zFwxf4Q32cq1d7zB/tFKruD
+wU+BOY6fkp8xJM7sH1ZYYj1/5XYIAsYQGy9WGYm9XM2PkJ4j9/+SxMts3BGTmqS4
+A+jLwk9E30Oj58WVlBMRZiA76osvRAiq18XILLtPftT4crD7EVDliMMyHstgB7ed
+Ivdpi0gtWblT2iPYZh3H
+=A7KX
+-----END PGP SIGNATURE-----
+
+--KOm0QGWw94tfVQ6w097nXl6lFc0Hrw5Tp--

@@ -1,93 +1,64 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 20 Nov 2014 10:59:44 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Fri, 21 Nov 2014 11:23:17 +0000
 Subject: Re: [PATCH v7.1 00/19] Rework OMAP4+ HDMI audio support
-Message-Id: <546DC9A0.8060700@ti.com>
+Message-Id: <20141121112317.GQ3815@sirena.org.uk>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="KOm0QGWw94tfVQ6w097nXl6lFc0Hrw5Tp"
+Content-Type: multipart/mixed; boundary="NLEjUu5vKZJctsGO"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com> <20141112222344.GU3815@sirena.org.uk> <54646648.5030807@ti.com>
-In-Reply-To: <54646648.5030807@ti.com>
-To: Mark Brown <broonie@kernel.org>, Jyri Sarha <jsarha@ti.com>
-Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com
+References: <cover.1415803064.git.jsarha@ti.com>
+ <20141112222344.GU3815@sirena.org.uk>
+ <54646648.5030807@ti.com>
+ <546DC9A0.8060700@ti.com>
+In-Reply-To: <546DC9A0.8060700@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com
 
---KOm0QGWw94tfVQ6w097nXl6lFc0Hrw5Tp
-Content-Type: text/plain; charset=windows-1252
+
+--NLEjUu5vKZJctsGO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Mark,
+On Thu, Nov 20, 2014 at 12:59:44PM +0200, Tomi Valkeinen wrote:
 
-On 13/11/14 10:05, Tomi Valkeinen wrote:
-> Hi Mark,
->=20
-> On 13/11/14 00:23, Mark Brown wrote:
->> On Wed, Nov 12, 2014 at 04:40:51PM +0200, Jyri Sarha wrote:
->>
->>> It would make the most sense to get these in trough fbdev tree. So it=
+> The series looks good to me, and works for me.
 
->>> would be nice to get acked-bys (if the patches are Ok) for ASoC side
->>> changes from appropriate maintainers.
->>
->> So, this is a very large series which gets reposted every so often to =
-no
->> apparent interest from the video side, there's been no response at all=
-
->=20
-> Sorry for the lack of communication. We've been discussing this series
-> on irc. It's been mostly about how to manage the device/driver split
-> between drivers/video/ and sound/ sides.
->=20
->> that I can remember and even the earlier bits of the series before it
->> starts touching audio don't seem to be getting merged.  What's going o=
-n
->> here?
->=20
-> The series is all audio in terms of functionality. The first few patche=
-s
-> could probably be merged independently, but I've wanted this whole OMAP=
-
-> HDMI audio rewrite to be in one series.
->=20
-> I'll start testing this latest series, and I hope we can merge it for
-> the next merge window so that we'll finally get the OMAP HDMI audio wor=
-king.
->=20
-> I don't have much knowledge of the asoc architecture, so I probably
-> can't comment much on the sound/ side design. For me the most important=
-
-> things are that 1) it works 2) I can easily unload/load the modules
-> (which was broken in some of the earlier versions).
-
-The series looks good to me, and works for me.
-
-Do you have any comments for the sound/ parts? If not, I can merge this
-series via fbdev tree, and for that I'd like your ack on the sound/ patch=
+> Do you have any comments for the sound/ parts? If not, I can merge this
+> series via fbdev tree, and for that I'd like your ack on the sound/ patch=
 es.
 
- Tomi
+I've not reviewed it yet and I'm still seeing some fairly basic
+discussion between Jiri and Jean-Francois about approaches to
+integrating HDMI which seem to have ground to a halt (I've not been
+reading them in any detail).  The fact that we're getting no sharing at
+all between all the different HDMI devices people are supporting and
+very limited dialogue between them is really setting off alarm bells.
 
+As far as I can tell in order to figure out what to do with all this
+HDMI stuff I'm going to need to go to square one, get an overview of the
+hardware that's out there for myself and try to work out what to do with=20
+it.=20
 
+With this specific series I also need to figure out what all the video
+side is about (like I said earlier a lot of the patches look like
+they're supposed to be simple fixes for the video code not terribly
+closely tied to the rest of the series but none of them are getting
+applied) and what the end goal is beyond mechanically moving code.
 
---KOm0QGWw94tfVQ6w097nXl6lFc0Hrw5Tp
+--NLEjUu5vKZJctsGO
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUbcmgAAoJEPo9qoy8lh71tSoQAJib29Jg0UfS/a3bbi5Ck4wJ
-EIR3qvutuUj7LGemWrAGTwe/lbAuwnTjcgW4uBfY6qEIOTkh5N8VALfKTOla/gei
-W7punQ2wDNGrXtN9infG+cBI/WMxk4TZEcrZNVpAD0rWoewwgZfh1v8lcn+wfgHI
-t7z2blyyMqWNFFpGF7H5NU4Q5i6xjNXqbSNdWiCHNsOZWDaJVae55UKJcISRKs5z
-xLtvG5oeToNLfz00Y11ZqBzRkncf+4hugVegx+o1LR6NWzP0AMu9EEtKAhC6GgHn
-f34Rw5Nn5ErVHY2JBS4mNTwUK/5OhoAg3Acb4oEH2ixVtLB6LFvb07759mKP9owP
-/2VVJfZMZ9PVdG1aN/2LdPKPt6KmMWp1DFlhjXClFj9Mh+XAfPmphtarq+LtyZQo
-4WBYXrn2sGQAczo5pSd4s34cL2PUWkIHlQ0mBCntrBIK9Hy/066BR6UYRJbWMiCf
-O2+rai2Dt58gCHp7+IuBBnJMA3Y+Pn1Zj1EcXZrv1zFwxf4Q32cq1d7zB/tFKruD
-wU+BOY6fkp8xJM7sH1ZYYj1/5XYIAsYQGy9WGYm9XM2PkJ4j9/+SxMts3BGTmqS4
-A+jLwk9E30Oj58WVlBMRZiA76osvRAiq18XILLtPftT4crD7EVDliMMyHstgB7ed
-Ivdpi0gtWblT2iPYZh3H
-=A7KX
+iQEcBAEBAgAGBQJUbyCkAAoJECTWi3JdVIfQxD4H/0W1DwQCu+doHME9r5gREKif
+ZWGtQdztNZ7SLxbKL9hqTbQA0UX4pguMw0gkHYMF3Pp3KQVN+ZbeUbUBWcy9XthG
+/kl9Cj0XbPVyaYi6yd9rRm8djwTXWtdu9Z2uf1LqQWuRdYvyTQHejXm0Dz9su9CL
+fcw1QHX/MiCu0k/6WbAMEE0Fn2BLaTMMUtGAhvCiV+9b64UJOhmDhY+3LyXq1h5g
+irbiDeLDaE71TR/MdbhFg2uhvAOomYgr1XMBBkje+JO8RnCkQZxTmzSyzRa5SuFC
+suafPCeSrV3lZpBfI8yV5baT2dDxdmNBXYZVzKY6XZZWL+8CuM8EIyoSh9eCQhs=
+=IvNm
 -----END PGP SIGNATURE-----
 
---KOm0QGWw94tfVQ6w097nXl6lFc0Hrw5Tp--
+--NLEjUu5vKZJctsGO--

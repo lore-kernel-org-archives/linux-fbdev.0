@@ -1,59 +1,43 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 10:49:22 +0000
-Subject: [PATCH v7 20/20] OMAPDSS: hdmi5: Change hdmi_wp idlemode to to no_idle for audio playback
-Message-Id: <cab1610d065e20f519c71f201812ac978520cc9e.1415786458.git.jsarha@ti.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 23 Nov 2014 15:33:25 +0000
+Subject: [PATCH 1/1] video: fbdev-VIA: Deletion of an unnecessary check before the function call "framebuffer
+Message-Id: <5471FE45.4010802@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415786458.git.jsarha@ti.com>
-In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net>
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 23 Nov 2014 16:30:05 +0100
+
+The framebuffer_release() function tests whether its argument is NULL
+and then returns immediately. Thus the test around the call is not needed.
+
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h  |    1 +
- drivers/video/fbdev/omap2/dss/hdmi5.c |    7 +++++++
- 2 files changed, 8 insertions(+)
+ drivers/video/fbdev/via/viafbdev.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index bfaaf2f..f991dbf 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -372,6 +372,7 @@ struct omap_hdmi {
- 
- 	struct platform_device *audio_pdev;
- 	void (*audio_abort_cb)(struct device *dev);
-+	int wp_idlemode;
- };
- 
- #endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index feb76e2..c91685e 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -614,6 +614,10 @@ static int hdmi_audio_start(struct device *dev)
- 	WARN_ON(!hdmi_mode_has_audio(&hd->cfg));
- 	WARN_ON(!hd->display_enabled);
- 
-+	/* No-idle while playing audio, store the old value */
-+	hd->wp_idlemode = REG_GET(hdmi.wp.base, HDMI_WP_SYSCONFIG, 3, 2);
-+	REG_FLD_MOD(hdmi.wp.base, HDMI_WP_SYSCONFIG, 1, 3, 2);
-+
- 	hdmi_wp_audio_enable(&hd->wp, true);
- 	hdmi_wp_audio_core_req_enable(&hd->wp, true);
- 
-@@ -629,6 +633,9 @@ static void hdmi_audio_stop(struct device *dev)
- 
- 	hdmi_wp_audio_core_req_enable(&hd->wp, false);
- 	hdmi_wp_audio_enable(&hd->wp, false);
-+
-+	/* Playback stopped, restore original idlemode */
-+	REG_FLD_MOD(hdmi.wp.base, HDMI_WP_SYSCONFIG, hd->wp_idlemode, 3, 2);
- }
- 
- static int hdmi_audio_config(struct device *dev,
+diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
+index 325c43c..f9718f0 100644
+--- a/drivers/video/fbdev/via/viafbdev.c
++++ b/drivers/video/fbdev/via/viafbdev.c
+@@ -1937,8 +1937,7 @@ out_fb1_unreg_lcd_cle266:
+ out_dealloc_cmap:
+ 	fb_dealloc_cmap(&viafbinfo->cmap);
+ out_fb1_release:
+-	if (viafbinfo1)
+-		framebuffer_release(viafbinfo1);
++	framebuffer_release(viafbinfo1);
+ out_fb_release:
+ 	i2c_bus_free(viaparinfo->shared);
+ 	framebuffer_release(viafbinfo);
 -- 
-1.7.9.5
+2.1.3
 

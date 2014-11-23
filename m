@@ -1,115 +1,43 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Fri, 14 Nov 2014 22:11:26 +0000
-Subject: Re: [PATCH] x86, ia64: Do not lose track of the EFI default VGA device
-Message-Id: <20141114231126.7a0d45c1@neptune.home>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 23 Nov 2014 10:11:11 +0000
+Subject: [PATCH 1/1] video: uvesafb: Deletion of an unnecessary check before the function call "uvesafb_free"
+Message-Id: <5471B2BF.4040707@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415969610-1469-1-git-send-email-rydberg@euromail.se>
-	<20141114154252.0fb66bba@pluto.restena.lu>
-	<20141114191157.GA1648@polaris.bitmath.org>
-In-Reply-To: <20141114191157.GA1648@polaris.bitmath.org>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net>
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Henrik Rydberg <rydberg@euromail.se>
-Cc: linux-fbdev@vger.kernel.org, Peter Jones <pjones@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Michal Januszewski <spock@gentoo.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-Hi Hendrick,
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 23 Nov 2014 11:00:26 +0100
 
-On Fri, 14 November 2014 Henrik Rydberg <rydberg@euromail.se> wrote:
-> > So it would need to at least be select VGA_ARB if (PCI && !S390)
-> > in order to not have broken kernel configuration (in more or less
-> > exotic cases) while depends on VGA_ARB would be the only correct option
-> > if the rule 'select only allowed for leafs' is enforced.
->=20
-> Here is a tested patch that does just that, thanks for the suggestion.
+The uvesafb_free() function tests whether its argument is NULL and then
+returns immediately. Thus the test around the call is not needed.
 
-Sure it will cover your case but with a few issues.
+This issue was detected by using the Coccinelle software.
 
-As you might have noted, VGA_ARB can only be disabled if you select
-EXPERT. In that case you kind of give up warranty.
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/video/fbdev/uvesafb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-In addition, prior to the patches that landed in 3.17, just selecting
-X86_SYSFB would runtime-disable EFI_FB disabling boot_vga tagging
-based on screen_info as well.
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index 509d452..f718627 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -1219,8 +1219,7 @@ static int uvesafb_release(struct fb_info *info, int user)
+ 	uvesafb_vbe_state_restore(par, par->vbe_state_orig);
+ out:
+ 	atomic_dec(&par->ref_count);
+-	if (task)
+-		uvesafb_free(task);
++	uvesafb_free(task);
+ 	return 0;
+ }
+ 
+-- 
+2.1.3
 
-Stating in the commit message that EFI_FB depends on VGA_ARB is pretty
-wrong. A more correct phrasing would be that before the commit EFI_FB
-included boot_vga detection which has been moved around, but that
-feature is not inherent to EFI_FB. Doing the select only keeps
-`make oldconfig` provide the same feature set.
-
-
-
-
-As boot_vga is a PCI thing maybe the whole detection should effectively
-be fully dissociated from runtime GPU switching and be adjusted to
-really only flag the boot GPU (even when there is no VGA around).
-
-Unfortunately this attribute is not explicitly documented so drawing the
-line one way or another may trip on some user's feet.
-
-We have some more or less conflicting information in commit messages though:
-
-217f45de3d2 by Dave Airlie introducing boot_vgain 2009:
-    PCI: expose boot VGA device via sysfs.
-   =20
-    X really would like to know which VGA device was considered the boot
-    device by the system. The x86 PCI fixups have support for discovering
-    this but we provide no way to expose it to userspace.
-   =20
-    This adds a sysfs file per VGA class device which has the value 0 for
-    non the boot device or unknown, and 1 if the VGA device is the boot
-    device.
-
-1a39b310e92 by Matthew Garrett making it variable in 2012:
-    vgaarb: Add support for setting the default video device (v2)
-   =20
-    The default VGA device is a somewhat fluid concept on platforms with
-    multiple GPUs. Add support for setting it so switching code can update
-    things appropriately, and make sure that the sysfs code returns the rig=
-ht
-    device if it's changed.
-
-So should boot_vga now represent the main GPU of the system or should
-it represent the one(s) that were used for booting? (I've not heard
-of systems with more than one active firmware GPU... but why not!
-
-Matthew covered the case where multiple GPUs are in a set where only one
-of them can be active as in driving displays. Maybe this would need some
-alternative sysfs attribute kind of "preferred_gpu".
-
-Bruno
-
-
-> From 43c16bbc7adbcb17aac73d09f046bf2779771c4c Mon Sep 17 00:00:00 2001
-> From: Henrik Rydberg <rydberg@euromail.se>
-> Date: Fri, 14 Nov 2014 20:01:21 +0100
-> Subject: [PATCH v2] x86, ia64: Do not lose track of the EFI default VGA d=
-evice
-> MIME-Version: 1.0
-> Content-Type: text/plain; charset=3DUTF-8
-> Content-Transfer-Encoding: 8bit
->=20
-> Since commit 20cde694 in the 3.17 merge window, the EFI framebuffer
-> depends on the VGA arbitration layer. However, the configuration does
-> not reflect this, which leads to a hard-to-find bug when FB_EFI is
-> configured without VGA_ARB. Add a select clause to remedy this.
->=20
-> Cc: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
-> Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
-> ---
->  drivers/video/fbdev/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> index c7bf606..1615a1b 100644
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -761,6 +761,7 @@ config FB_EFI
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> +	select VGA_ARB if (PCI && !S390)
->  	help
->  	  This is the EFI frame buffer device driver. If the firmware on
->  	  your platform is EFI 1.10 or UEFI 2.0, select Y to add support for

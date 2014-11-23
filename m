@@ -1,179 +1,63 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 14:40:58 +0000
-Subject: [PATCH v7.1 07/19] OMAPDSS: hdmi: Make hdmi structure public
-Message-Id: <a0d56167ac1a66cdbc12f53ed634e3f237d9b827.1415803065.git.jsarha@ti.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 23 Nov 2014 10:44:51 +0000
+Subject: [PATCH 1/1] video: udlfb: Deletion of unnecessary checks before the function call "vfree"
+Message-Id: <5471BAA3.3010409@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com>
-In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net>
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-Unify the private anonymous struct in hdmi4.c and hdmi5.c, name it as
-struct omap_hdmi, and make it public in hdmi.h.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 23 Nov 2014 11:40:47 +0100
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+The vfree() function performs also input parameter validation. Thus the test
+around the call is not needed.
+
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h  |   21 +++++++++++++++++++++
- drivers/video/fbdev/omap2/dss/hdmi4.c |   31 ++++++++-----------------------
- drivers/video/fbdev/omap2/dss/hdmi5.c |   20 ++------------------
- 3 files changed, 31 insertions(+), 41 deletions(-)
+ drivers/video/fbdev/udlfb.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 9ba7c1a..6bf077b 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -349,4 +349,25 @@ static inline bool hdmi_mode_has_audio(int mode)
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 77b890e..01fff0c 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -922,8 +922,7 @@ static void dlfb_free(struct kref *kref)
  {
- 	return mode = HDMI_HDMI ? true : false;
- }
-+
-+/* HDMI DRV data */
-+struct omap_hdmi {
-+	struct mutex lock;
-+	struct platform_device *pdev;
-+
-+	struct hdmi_wp_data	wp;
-+	struct hdmi_pll_data	pll;
-+	struct hdmi_phy_data	phy;
-+	struct hdmi_core_data	core;
-+
-+	struct hdmi_config cfg;
-+
-+	struct clk *sys_clk;
-+	struct regulator *vdda_reg;
-+
-+	bool core_enabled;
-+
-+	struct omap_dss_device output;
-+};
-+
- #endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index 9a8713c..764443e 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -37,25 +37,9 @@
- #include "hdmi4_core.h"
- #include "dss.h"
- #include "dss_features.h"
-+#include "hdmi.h"
+ 	struct dlfb_data *dev = container_of(kref, struct dlfb_data, kref);
  
--static struct {
--	struct mutex lock;
--	struct platform_device *pdev;
--
--	struct hdmi_wp_data	wp;
--	struct hdmi_pll_data	pll;
--	struct hdmi_phy_data	phy;
--	struct hdmi_core_data	core;
--
--	struct hdmi_config cfg;
--
--	struct clk *sys_clk;
--	struct regulator *vdda_hdmi_dac_reg;
--
--	bool core_enabled;
--
--	struct omap_dss_device output;
--} hdmi;
-+static struct omap_hdmi hdmi;
+-	if (dev->backing_buffer)
+-		vfree(dev->backing_buffer);
++	vfree(dev->backing_buffer);
  
- static int hdmi_runtime_get(void)
- {
-@@ -117,7 +101,7 @@ static int hdmi_init_regulator(void)
- 	int r;
- 	struct regulator *reg;
+ 	kfree(dev->edid);
  
--	if (hdmi.vdda_hdmi_dac_reg != NULL)
-+	if (hdmi.vdda_reg != NULL)
- 		return 0;
+@@ -953,8 +952,7 @@ static void dlfb_free_framebuffer(struct dlfb_data *dev)
+ 			fb_dealloc_cmap(&info->cmap);
+ 		if (info->monspecs.modedb)
+ 			fb_destroy_modedb(info->monspecs.modedb);
+-		if (info->screen_base)
+-			vfree(info->screen_base);
++		vfree(info->screen_base);
  
- 	reg = devm_regulator_get(&hdmi.pdev->dev, "vdda");
-@@ -137,7 +121,7 @@ static int hdmi_init_regulator(void)
+ 		fb_destroy_modelist(&info->modelist);
+ 
+@@ -1203,8 +1201,7 @@ static int dlfb_realloc_framebuffer(struct dlfb_data *dev, struct fb_info *info)
+ 		if (!new_back)
+ 			pr_info("No shadow/backing buffer allocated\n");
+ 		else {
+-			if (dev->backing_buffer)
+-				vfree(dev->backing_buffer);
++			vfree(dev->backing_buffer);
+ 			dev->backing_buffer = new_back;
  		}
  	}
- 
--	hdmi.vdda_hdmi_dac_reg = reg;
-+	hdmi.vdda_reg = reg;
- 
- 	return 0;
- }
-@@ -146,7 +130,7 @@ static int hdmi_power_on_core(struct omap_dss_device *dssdev)
- {
- 	int r;
- 
--	r = regulator_enable(hdmi.vdda_hdmi_dac_reg);
-+	r = regulator_enable(hdmi.vdda_reg);
- 	if (r)
- 		return r;
- 
-@@ -162,7 +146,7 @@ static int hdmi_power_on_core(struct omap_dss_device *dssdev)
- 	return 0;
- 
- err_runtime_get:
--	regulator_disable(hdmi.vdda_hdmi_dac_reg);
-+	regulator_disable(hdmi.vdda_reg);
- 
- 	return r;
- }
-@@ -172,7 +156,7 @@ static void hdmi_power_off_core(struct omap_dss_device *dssdev)
- 	hdmi.core_enabled = false;
- 
- 	hdmi_runtime_put();
--	regulator_disable(hdmi.vdda_hdmi_dac_reg);
-+	regulator_disable(hdmi.vdda_reg);
- }
- 
- static int hdmi_power_on_full(struct omap_dss_device *dssdev)
-@@ -678,6 +662,7 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 	int irq;
- 
- 	hdmi.pdev = pdev;
-+	dev_set_drvdata(&pdev->dev, &hdmi);
- 
- 	mutex_init(&hdmi.lock);
- 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index 169b764..694cdee 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -43,24 +43,7 @@
- #include "dss.h"
- #include "dss_features.h"
- 
--static struct {
--	struct mutex lock;
--	struct platform_device *pdev;
--
--	struct hdmi_wp_data	wp;
--	struct hdmi_pll_data	pll;
--	struct hdmi_phy_data	phy;
--	struct hdmi_core_data	core;
--
--	struct hdmi_config cfg;
--
--	struct clk *sys_clk;
--	struct regulator *vdda_reg;
--
--	bool core_enabled;
--
--	struct omap_dss_device output;
--} hdmi;
-+static struct omap_hdmi hdmi;
- 
- static int hdmi_runtime_get(void)
- {
-@@ -703,6 +686,7 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 	int irq;
- 
- 	hdmi.pdev = pdev;
-+	dev_set_drvdata(&pdev->dev, &hdmi);
- 
- 	mutex_init(&hdmi.lock);
- 
 -- 
-1.7.9.5
+2.1.3
 

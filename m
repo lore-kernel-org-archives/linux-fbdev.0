@@ -1,51 +1,43 @@
-From: Grant Likely <grant.likely@linaro.org>
-Date: Thu, 13 Nov 2014 16:07:18 +0000
-Subject: Re: [linux-sunxi] Re: [PATCH v3 1/4] dt-bindings: simplefb: Specify node location and handoff relate
-Message-Id: <CACxGe6tA90T+nj5aBbWWd4SJVofzKLY9AS2cXeqUJyAVMYECbw@mail.gmail.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 23 Nov 2014 16:40:11 +0000
+Subject: [PATCH 1/1] backlight: lp8788: Deletion of an unnecessary check before the function call "backlight_
+Message-Id: <54720DEB.4060109@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415885645-24613-1-git-send-email-hdegoede@redhat.com>
- <5464C026.7030300@ti.com> <5464C444.4050101@redhat.com>
- <5464D3C7.7060707@ti.com>
-In-Reply-To: <5464D3C7.7060707@ti.com>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net>
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Bryan Wu <cooloney@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Lee Jones <lee.jones@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-On Thu, Nov 13, 2014 at 3:52 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 13/11/14 16:46, Hans de Goede wrote:
->> Hi,
->>
->> On 11/13/2014 03:28 PM, Tomi Valkeinen wrote:
->>> On 13/11/14 15:34, Hans de Goede wrote:
->>>
->>>> +chosen {
->>>> +   framebuffer0: framebuffer@5fc00000 {
->>>>             compatible = "simple-framebuffer";
->>>> -           reg = <0x1d385000 (1600 * 1200 * 2)>;
->>>> +           reg = <0x5fc00000 (4096 * 1024)>;
->>>
->>> Was there a reason for this change?
->>
->> I changed the node name to match the new bindings text which
->> specifies that the node name must be framebuffer@<address>,
->> while at it I've taken a real world address range.
->>
->> I assume you refer to the bit where the size of the reg property
->> is changed ? That indeed is not really necessary.
->
-> Yes, I meant the size of the reg prop. As this is an example, I think it
-> should be as clear as possible.
->
-> I guess a valid use case here is to set the size to larger-than-needed,
-> so that it gets preallocated and you don't need to worry about getting
-> the memory later when the system has already been running for a longer
-> time. But if that's the case in this example, I think it would be better
-> to describe it explicitly.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 23 Nov 2014 17:33:08 +0100
 
-Besides, we already have a mechanism for that called /reserved-memory.
-Any memory used by a framebuffer needs to be described in the reserved
-map anyway, and that region can be made larger than the firmware
-configured framebuffer.
+The backlight_device_unregister() function tests whether its argument is NULL
+and then returns immediately. Thus the test around the call is not needed.
 
-g.
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/video/backlight/lp8788_bl.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backlight/lp8788_bl.c
+index d6c4f6a..24a055c 100644
+--- a/drivers/video/backlight/lp8788_bl.c
++++ b/drivers/video/backlight/lp8788_bl.c
+@@ -221,8 +221,7 @@ static void lp8788_backlight_unregister(struct lp8788_bl *bl)
+ {
+ 	struct backlight_device *bl_dev = bl->bl_dev;
+ 
+-	if (bl_dev)
+-		backlight_device_unregister(bl_dev);
++	backlight_device_unregister(bl_dev);
+ }
+ 
+ static ssize_t lp8788_get_bl_ctl_mode(struct device *dev,
+-- 
+2.1.3
+

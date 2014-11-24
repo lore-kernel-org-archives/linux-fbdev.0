@@ -1,46 +1,94 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 17 Nov 2014 15:37:04 +0000
-Subject: [PATCH v2 1/2] dt-bindings: simplefb: Drop the advice about using a specific path for nodes
-Message-Id: <1416238625-28590-2-git-send-email-hdegoede@redhat.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Mon, 24 Nov 2014 23:05:36 +0000
+Subject: [PATCH V2 6/6] pcmcia: sa1100: make use of device clock
+Message-Id: <1416870336-30114-7-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1416238625-28590-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1416238625-28590-1-git-send-email-hdegoede@redhat.com>
+References: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This goes contrary to how devicetree usually works, so drop it. Instead if
-the firmware needs to be able to find a specific node it should use a
-platform specific compatible + properties for this.
+Use per-device clock (instead of calling cpufreq_get(0), which can
+return 0 if no cpu frequency driver is selected) to program timings.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Grant Likely <grant.likely@linaro.org>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- Documentation/devicetree/bindings/video/simple-framebuffer.txt | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ drivers/pcmcia/sa1100_generic.c |  1 +
+ drivers/pcmcia/sa11xx_base.c    | 14 ++++++++++++--
+ 2 files changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-index f8fb7e6..4474ef6 100644
---- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-+++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-@@ -31,12 +31,10 @@ enable them. This way if e.g. later on support for more display clocks get
- added, the simplefb nodes will already contain this info and the firmware
- does not need to be updated.
+diff --git a/drivers/pcmcia/sa1100_generic.c b/drivers/pcmcia/sa1100_generic.c
+index ff8a027..d2ab060 100644
+--- a/drivers/pcmcia/sa1100_generic.c
++++ b/drivers/pcmcia/sa1100_generic.c
+@@ -93,6 +93,7 @@ static int sa11x0_drv_pcmcia_remove(struct platform_device *dev)
+ 	for (i = 0; i < sinfo->nskt; i++)
+ 		soc_pcmcia_remove_one(&sinfo->skt[i]);
  
--If pre-filled framebuffer nodes are used, they should be named
--"framebuffer#-<output>", e.g. "framebuffer0-hdmi". The output should be
--included in the name since different outputs typically require different
--clocks and the clocks are part of the pre-populated nodes. The firmware must
--rename the nodes to the standard "framebuffer@<address>" name using the
--runtime chosen address when enabling the nodes.
-+If pre-filled framebuffer nodes are used, the firmware may need extra
-+information to find the right node. In that case an extra platform specific
-+compatible and platform specific properties should be used and documented,
-+see e.g. simple-framebuffer-sunxi.txt .
++	clk_put(sinfo->clk);
+ 	kfree(sinfo);
+ 	return 0;
+ }
+diff --git a/drivers/pcmcia/sa11xx_base.c b/drivers/pcmcia/sa11xx_base.c
+index 54d3089..cf6de2c 100644
+--- a/drivers/pcmcia/sa11xx_base.c
++++ b/drivers/pcmcia/sa11xx_base.c
+@@ -135,14 +135,16 @@ sa1100_pcmcia_frequency_change(struct soc_pcmcia_socket *skt,
+ static int
+ sa1100_pcmcia_set_timing(struct soc_pcmcia_socket *skt)
+ {
+-	return sa1100_pcmcia_set_mecr(skt, cpufreq_get(0));
++	unsigned long clk = clk_get_rate(skt->clk);
++
++	return sa1100_pcmcia_set_mecr(skt, clk / 1000);
+ }
  
- Required properties:
- - compatible: "simple-framebuffer"
+ static int
+ sa1100_pcmcia_show_timing(struct soc_pcmcia_socket *skt, char *buf)
+ {
+ 	struct soc_pcmcia_timing timing;
+-	unsigned int clock = cpufreq_get(0);
++	unsigned int clock = clk_get_rate(skt->clk);
+ 	unsigned long mecr = MECR;
+ 	char *p = buf;
+ 
+@@ -218,6 +220,11 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
+ 	struct skt_dev_info *sinfo;
+ 	struct soc_pcmcia_socket *skt;
+ 	int i, ret = 0;
++	struct clk *clk;
++
++	clk = clk_get(dev, NULL);
++	if (IS_ERR(clk))
++		return PTR_ERR(clk);
+ 
+ 	sa11xx_drv_pcmcia_ops(ops);
+ 
+@@ -226,12 +233,14 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
+ 		return -ENOMEM;
+ 
+ 	sinfo->nskt = nr;
++	sinfo->clk = clk;
+ 
+ 	/* Initialize processor specific parameters */
+ 	for (i = 0; i < nr; i++) {
+ 		skt = &sinfo->skt[i];
+ 
+ 		skt->nr = first + i;
++		skt->clk = clk;
+ 		soc_pcmcia_init_one(skt, ops, dev);
+ 
+ 		ret = sa11xx_drv_pcmcia_add_one(skt);
+@@ -242,6 +251,7 @@ int sa11xx_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops,
+ 	if (ret) {
+ 		while (--i >= 0)
+ 			soc_pcmcia_remove_one(&sinfo->skt[i]);
++		clk_put(clk);
+ 		kfree(sinfo);
+ 	} else {
+ 		dev_set_drvdata(dev, sinfo);
 -- 
-2.1.0
+2.1.3
 

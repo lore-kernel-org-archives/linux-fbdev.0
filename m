@@ -1,55 +1,96 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Mon, 24 Nov 2014 14:55:32 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Mon, 24 Nov 2014 17:39:20 +0000
 Subject: Re: [PATCH v7.1 00/19] Rework OMAP4+ HDMI audio support
-Message-Id: <547346E4.2030801@ti.com>
+Message-Id: <20141124173920.GL7712@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="j3olVFx0FsM75XyV"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com> <20141112222344.GU3815@sirena.org.uk> <54646648.5030807@ti.com> <546DC9A0.8060700@ti.com> <20141121112317.GQ3815@sirena.org.uk> <546F2BA3.9050203@ti.com> <20141121163815.GT3815@sirena.org.uk>
-In-Reply-To: <20141121163815.GT3815@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@kernel.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com
+References: <cover.1415803064.git.jsarha@ti.com>
+ <20141112222344.GU3815@sirena.org.uk>
+ <54646648.5030807@ti.com>
+ <546DC9A0.8060700@ti.com>
+ <20141121112317.GQ3815@sirena.org.uk>
+ <546F317B.9030004@ti.com>
+ <20141121161435.GS3815@sirena.org.uk>
+ <5472E9D7.7000908@ti.com>
+In-Reply-To: <5472E9D7.7000908@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com
 
-On 11/21/2014 06:38 PM, Mark Brown wrote:
-> On Fri, Nov 21, 2014 at 02:10:11PM +0200, Jyri Sarha wrote:
->
->> OMAP HDMI audio is fundamentally different to the case on Armada or on BBB.
->> In omap the whole HDMI IP is integrated to the SoC and there really is no
->> codec in the ASoC sense. The the cpu-dai transmits the audio directly to
->> hdmi wire and there is no i2s bus involved. So this case should not be mixed
->> with the patches Jean-Francois working on. The code is also orthogonal in
->> that sense that the latest omap-hdmi-audio uses the generic dymmy codec.
->
-> The discussion seemed to be about what to do with unplugged connections
-> which isn't what you're talking about there and does seem like an area
-> where we should at least be aiming for common behaviour even if not a
-> common implementation.
->
 
-In the discussion we recognized three modes of operation,
-a) try to keep audio device always operational even if audio is not 
-going anywhere (cable is disconnected or video mode does not support audio)
-b) remove the audio device when audio is not available
-c) disable audio device if audio is not available and abort any ongoing 
-stream when audio becomes unavailable
-d) force pause on the stream when audio is not available
+--j3olVFx0FsM75XyV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The implementation in the patches follows mode c) and in my mind it 
-makes the most sense. The mode is not carved into stone by the current 
-implementation and it can be changed if we decide so. I see no point in 
-keeping the hdmi audio completely broken until we collectively decide on 
-how all HDMI audio devices should behave.
+On Mon, Nov 24, 2014 at 10:18:31AM +0200, Tomi Valkeinen wrote:
+> On 21/11/14 18:14, Mark Brown wrote:
 
-> There's also all the stuff about parsing EDIDs for capabilities which
-> would seem to be related to that but seems to have gone off into the
-> weeds.
->
+> > But in what way is it broken and how did this happen?  Why are none of
 
-The idea of the patch set is to restore the old hdmi audio functionality 
-in a form that is easier to use and maintain. Additional functionality 
-can be added later. For instance restricting the allowed sample rates 
-etc. based EDID Short Audio Descriptors.
+> I don't have a clear answer, but it probably involves lack of use, and
+> buggy and hard to use implementation. Things have changed around the
+> original HDMI audio implementation, and it stopped working at some point.
 
-Best regards,
-Jyri
+> As the original implementation was found rather lacking, and with some
+> fundamental issues, it was deemed better to have a fresh approach.
+
+OK...  this is all telling me that I *really* need to scrub this in
+detail.  It's all sounding very vague, it's an area which seems to cause
+lots of problems and I don't want to be sitting here next time around
+trying to figure out if another rewrite makes things better or worse or
+if another driver should look similar or different.
+
+> > the patches which look like they're supposed to be bug fixes early on in
+> > the series getting applied?  I had thought this was just a lack of
+> > interest on the video side but it seems there's some other problems
+> > since the series has apparently been discussed off-list and still it's
+> > just as big as it was initially.
+
+> The whole series is about HDMI audio, not video.
+
+You know exactly what I mean - the early patches are in drivers/video,
+don't touch anything outside of that and have no obvious dependencies.
+
+> This series only touch the parts about HDMI audio, so the fixes early on
+> don't really fix anything without the rest of the series (as the current
+> HDMI audio doesn't work).
+
+> And in any case, I don't like applying individual patches from a series.
+> Usually that just complicates things. If I would apply some of the early
+> patches to fbdev, then this series would no longer work on plain
+> mainline kernel, and would instead depend on fbdev tree. The situation
+
+But I thought everyone was saying this hardware doesn't work anyway and
+that you want to apply all these changes to fbdev?
+
+> would be ever worse if you'd also pick some of the audio patches to
+> sound tree, creating a dependency to two subsystem trees.
+
+> So if there's no particular important reason to pick patches from a
+> series, I rather keep it as a whole to simplify merging and testing.
+
+This means we're all then stuck reading reposts of the same enormous
+series over and over again - as a reviewer a really big series that
+appears from the subject lines to be mostly about another system is
+really offputting.  If you're going to do something like this please at
+least reply to the messages, that way it's clearer that there's not
+going to be a dependency problem getting the patches applied (which is
+part of what makes things offputting).
+
+--j3olVFx0FsM75XyV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJUc21IAAoJECTWi3JdVIfQkQEH/0TwF2YImsmrtx8xGeglQDK4
+uFQDuTDQJ+qbmmRMHcS3aqqb6D4SsUYbMBL+M9VMJWwek6cxQbyTbNQGNHSaBT3h
+t9ex3GkqeapUbvT2Vn8yxJmG0gyA4wuOna9gDYuFP3TXjcTtnEZa9zkWGewOv2r9
+OFGCXku8L3AGF8SWRFmjQHlX1QS50BD+CDtrhcVuiU0EE1kBwc482Zt4SR1SCHda
+RpmazBIVBW5v/nX0oiQSvRxqcLgwmZ4+n+aXOp2trVYDupMcNV0Rx562Op5K6y6Y
+wlD3vn41TvM6Bk4Mj1+L/H5qegwvwtfZVMxf+5Z1KE8LpEJzWtP/T6BfjavWzYY=
+=ipBV
+-----END PGP SIGNATURE-----
+
+--j3olVFx0FsM75XyV--

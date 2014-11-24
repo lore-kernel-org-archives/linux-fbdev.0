@@ -1,40 +1,116 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 13 Nov 2014 19:23:13 +0000
-Subject: [PATCH v4 3/4] fbcon: Change fbcon_init from module_init to fs_initcall
-Message-Id: <1415906594-2461-3-git-send-email-hdegoede@redhat.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Mon, 24 Nov 2014 23:05:31 +0000
+Subject: [PATCH V2 1/6] ARM: sa1100: add cpu clock
+Message-Id: <1416870336-30114-2-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415906594-2461-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415906594-2461-1-git-send-email-hdegoede@redhat.com>
+References: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Various fb drivers register themselves before module_init so as to have a
-console as early as possible, this is of little use if fbcon does not
-initialize early too.
+Both SA1100 framebuffer and PCMCIA drivers require knowledge of cpu
+frequency to correctly program timings.  Currently they receive timing
+information by calling cpufreq_get(0).  However if cpu frequency driver
+is not enabled (e.g. due to unsupported DRAM chip/board on sa1110)
+cpufreq_get(0) returns 0, causing incorrect timings to be programmed.
 
-Fbcon cannot initialize earlier then fs_initcall, because then the creation
-of /sys/class/graphics/fbcon will fail.
+Add cpu clock returning cpu frequency, to be used by sa11x0 fb and
+pcmcia drivers.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- drivers/video/console/fbcon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/mach-sa1100/clock.c | 41 ++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 34 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index eb976ee..ea43724 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3624,7 +3624,7 @@ static int __init fb_console_init(void)
- 	return 0;
+diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
+index 9fa6a99..53f750d 100644
+--- a/arch/arm/mach-sa1100/clock.c
++++ b/arch/arm/mach-sa1100/clock.c
+@@ -15,10 +15,12 @@
+ #include <linux/clkdev.h>
+ 
+ #include <mach/hardware.h>
++#include <mach/generic.h>
+ 
+ struct clkops {
+ 	void			(*enable)(struct clk *);
+ 	void			(*disable)(struct clk *);
++	unsigned long		(*get_rate)(struct clk *);
+ };
+ 
+ struct clk {
+@@ -33,13 +35,6 @@ struct clk clk_##_name = {				\
+ 
+ static DEFINE_SPINLOCK(clocks_lock);
+ 
+-/* Dummy clk routine to build generic kernel parts that may be using them */
+-unsigned long clk_get_rate(struct clk *clk)
+-{
+-	return 0;
+-}
+-EXPORT_SYMBOL(clk_get_rate);
+-
+ static void clk_gpio27_enable(struct clk *clk)
+ {
+ 	/*
+@@ -58,6 +53,19 @@ static void clk_gpio27_disable(struct clk *clk)
+ 	GAFR &= ~GPIO_32_768kHz;
  }
  
--module_init(fb_console_init);
-+fs_initcall(fb_console_init);
++static void clk_cpu_enable(struct clk *clk)
++{
++}
++
++static void clk_cpu_disable(struct clk *clk)
++{
++}
++
++static unsigned long clk_cpu_get_rate(struct clk *clk)
++{
++	return sa11x0_getspeed(0) * 1000;
++}
++
+ int clk_enable(struct clk *clk)
+ {
+ 	unsigned long flags;
+@@ -87,16 +95,35 @@ void clk_disable(struct clk *clk)
+ }
+ EXPORT_SYMBOL(clk_disable);
  
- #ifdef MODULE
++unsigned long clk_get_rate(struct clk *clk)
++{
++	if (clk && clk->ops && clk->ops->get_rate)
++		return clk->ops->get_rate(clk);
++
++	return 0;
++}
++EXPORT_SYMBOL(clk_get_rate);
++
+ const struct clkops clk_gpio27_ops = {
+ 	.enable		= clk_gpio27_enable,
+ 	.disable	= clk_gpio27_disable,
+ };
  
++const struct clkops clk_cpu_ops = {
++	.enable		= clk_cpu_enable,
++	.disable	= clk_cpu_disable,
++	.get_rate	= clk_cpu_get_rate,
++};
++
+ static DEFINE_CLK(gpio27, &clk_gpio27_ops);
+ 
++static DEFINE_CLK(cpu, &clk_cpu_ops);
++
+ static struct clk_lookup sa11xx_clkregs[] = {
+ 	CLKDEV_INIT("sa1111.0", NULL, &clk_gpio27),
+ 	CLKDEV_INIT("sa1100-rtc", NULL, NULL),
++	CLKDEV_INIT("sa11x0-fb", NULL, &clk_cpu),
++	CLKDEV_INIT("sa11x0-pcmcia", NULL, &clk_cpu),
+ };
+ 
+ static int __init sa11xx_clk_init(void)
 -- 
-2.1.0
+2.1.3
 

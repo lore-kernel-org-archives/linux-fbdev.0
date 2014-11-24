@@ -1,42 +1,60 @@
-From: Marek Belisko <marek@goldelico.com>
-Date: Wed, 12 Nov 2014 22:10:47 +0000
-Subject: [PATCH v2 5/5] arm: dts: omap3-gta04: Add static configuration for devconf1 register
-Message-Id: <1415830247-31633-6-git-send-email-marek@goldelico.com>
+From: Xiubo Li <Li.Xiubo@freescale.com>
+Date: Mon, 24 Nov 2014 10:20:54 +0000
+Subject: [PATCH 4/4] ARM: ls1021a: dts: Add and enable dt node for dcfb.
+Message-Id: <1416824454-28156-5-git-send-email-Li.Xiubo@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415830247-31633-1-git-send-email-marek@goldelico.com>
-In-Reply-To: <1415830247-31633-1-git-send-email-marek@goldelico.com>
+References: <1416824454-28156-1-git-send-email-Li.Xiubo@freescale.com>
+In-Reply-To: <1416824454-28156-1-git-send-email-Li.Xiubo@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-gta04 board need for tvout enabled 2 bits in devconf1 register (tvbypass and acbias).
-Add pinctrl single entry and enable it.
+On LS1021A TWR board, the TFT LCD panel is WQVGA "480x272", and
+the bpp is 24.
 
-Signed-off-by: Marek Belisko <marek@goldelico.com>
+Signed-off-by: Xiubo Li <Li.Xiubo@freescale.com>
 ---
- arch/arm/boot/dts/omap3-gta04.dtsi | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/arm/boot/dts/ls1021a-twr.dts | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
-index b50dc10..0015316 100644
---- a/arch/arm/boot/dts/omap3-gta04.dtsi
-+++ b/arch/arm/boot/dts/omap3-gta04.dtsi
-@@ -497,3 +497,14 @@
- 		};
+diff --git a/arch/arm/boot/dts/ls1021a-twr.dts b/arch/arm/boot/dts/ls1021a-twr.dts
+index a2c591e..3602286 100644
+--- a/arch/arm/boot/dts/ls1021a-twr.dts
++++ b/arch/arm/boot/dts/ls1021a-twr.dts
+@@ -58,6 +58,32 @@
  	};
  };
+ 
++&dcfb {
++	display = <&display>;
++	status = "okay";
 +
-+&control_devconf1 {
-+	pinctrl-name = "default";
-+	pinctrl-0 = <&tv_acbias_pins>;
++	display: display@0 {
++		bits-per-pixel = <24>;
 +
-+	tv_acbias_pins: pinmux_tv_acbias_pins {
-+		pinctrl-single,bits = <
-+			0 0x40800 0x40800
-+		>;
++		display-timings {
++			native-mode = <&timing0>;
++			timing0: nl4827hc19 {
++				clock-frequency = <10870000>;
++				hactive = <480>;
++				vactive = <272>;
++				hback-porch = <2>;
++				hfront-porch = <2>;
++				vback-porch = <2>;
++				vfront-porch = <2>;
++				hsync-len = <41>;
++				vsync-len = <4>;
++				hsync-active = <1>;
++				vsync-active = <1>;
++			};
++		};
 +	};
 +};
++
+ &dspi1 {
+ 	bus-num = <0>;
+ 	status = "okay";
 -- 
-1.9.1
+2.1.0.27.g96db324
 

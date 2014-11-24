@@ -1,7 +1,7 @@
 From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 24 Nov 2014 10:09:24 +0000
+Date: Mon, 24 Nov 2014 10:10:06 +0000
 Subject: Re: [PATCH 1/1] backlight: lp8788: Deletion of an unnecessary check before the function call "backli
-Message-Id: <20141124100924.GC4241@x1>
+Message-Id: <20141124101006.GD4241@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <530C5E18.1020800@users.sourceforge.net>
  <alpine.DEB.2.10.1402251014170.2080@hadrien>
@@ -24,15 +24,13 @@ On Sun, 23 Nov 2014, SF Markus Elfring wrote:
 
 > From: Markus Elfring <elfring@users.sourceforge.net>
 > Date: Sun, 23 Nov 2014 17:33:08 +0100
-
-What format is this?
-
-Can you use `git format-patch` and `git send-email` instead please?
-=20
+>=20
 > The backlight_device_unregister() function tests whether its argument is =
 NULL
 > and then returns immediately. Thus the test around the call is not needed.
->=20
+
+Also the $SUBJECT should be less than 75 chars.
+
 > This issue was detected by using the Coccinelle software.
 >=20
 > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>

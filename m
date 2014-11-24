@@ -1,70 +1,36 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 23 Nov 2014 12:00:23 +0000
-Subject: [PATCH 1/1] video: fbdev-SIS: Deletion of unnecessary checks before the function call "pci_dev_put"
-Message-Id: <5471CC57.8040603@users.sourceforge.net>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Mon, 24 Nov 2014 23:05:32 +0000
+Subject: [PATCH V2 2/6] ARM: sa1100: add a clock alias for sa1111 pcmcia device
+Message-Id: <1416870336-30114-3-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net>
-In-Reply-To: <5317A59D.4@users.sourceforge.net>
+References: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1416870336-30114-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Winischhofer <thomas@winischhofer.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: linux-arm-kernel@lists.infradead.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 23 Nov 2014 12:55:25 +0100
+SA-1111 uses internal MMIO space offsets as a device name, so device
+name for sa1111 pcmcia is 1800 (PCMCIA is at offset 0x1800).
 
-The pci_dev_put() function tests whether its argument is NULL
-and then returns immediately. Thus the test around the call
-is not needed.
-
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- drivers/video/fbdev/sis/sis_main.c | 14 +++++---------
- 1 file changed, 5 insertions(+), 9 deletions(-)
+ arch/arm/mach-sa1100/clock.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index 3f12a2d..6548a3e 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -5989,7 +5989,7 @@ static int sisfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
+index 53f750d..03c75a8 100644
+--- a/arch/arm/mach-sa1100/clock.c
++++ b/arch/arm/mach-sa1100/clock.c
+@@ -124,6 +124,8 @@ static struct clk_lookup sa11xx_clkregs[] = {
+ 	CLKDEV_INIT("sa1100-rtc", NULL, NULL),
+ 	CLKDEV_INIT("sa11x0-fb", NULL, &clk_cpu),
+ 	CLKDEV_INIT("sa11x0-pcmcia", NULL, &clk_cpu),
++	/* sa1111 names devices using internal offsets, PCMCIA is at 0x1800 */
++	CLKDEV_INIT("1800", NULL, &clk_cpu),
+ };
  
- 	if(!ivideo->sisvga_enabled) {
- 		if(pci_enable_device(pdev)) {
--			if(ivideo->nbridge) pci_dev_put(ivideo->nbridge);
-+			pci_dev_put(ivideo->nbridge);
- 			framebuffer_release(sis_fb_info);
- 			return -EIO;
- 		}
-@@ -6202,10 +6202,8 @@ error_0:	iounmap(ivideo->video_vbase);
- error_1:	release_mem_region(ivideo->video_base, ivideo->video_size);
- error_2:	release_mem_region(ivideo->mmio_base, ivideo->mmio_size);
- error_3:	vfree(ivideo->bios_abase);
--		if(ivideo->lpcdev)
--			pci_dev_put(ivideo->lpcdev);
--		if(ivideo->nbridge)
--			pci_dev_put(ivideo->nbridge);
-+		pci_dev_put(ivideo->lpcdev);
-+		pci_dev_put(ivideo->nbridge);
- 		if(!ivideo->sisvga_enabled)
- 			pci_disable_device(pdev);
- 		framebuffer_release(sis_fb_info);
-@@ -6505,11 +6503,9 @@ static void sisfb_remove(struct pci_dev *pdev)
- 
- 	vfree(ivideo->bios_abase);
- 
--	if(ivideo->lpcdev)
--		pci_dev_put(ivideo->lpcdev);
-+	pci_dev_put(ivideo->lpcdev);
- 
--	if(ivideo->nbridge)
--		pci_dev_put(ivideo->nbridge);
-+	pci_dev_put(ivideo->nbridge);
- 
- #ifdef CONFIG_MTRR
- 	/* Release MTRR region */
+ static int __init sa11xx_clk_init(void)
 -- 
 2.1.3
 

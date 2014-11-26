@@ -1,23 +1,39 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 17 Nov 2014 11:34:44 +0000
-Subject: [PATCH 0/2] dt-bindings: simplefb: Drop the advice about using a specific path for nodes
-Message-Id: <1416224086-5698-1-git-send-email-hdegoede@redhat.com>
+From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Date: Wed, 26 Nov 2014 22:07:24 +0000
+Subject: [PATCH 2/3] video: fbdev: s3fb: suppress build warning
+Message-Id: <1417039645-5313-2-git-send-email-prabhakar.csengg@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1417039645-5313-1-git-send-email-prabhakar.csengg@gmail.com>
+In-Reply-To: <1417039645-5313-1-git-send-email-prabhakar.csengg@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 
-Hi All,
+this patch fixes following build warning:
+drivers/video/fbdev/s3fb.c: In function ‘s3_pci_probe’:
+drivers/video/fbdev/s3fb.c:1185:23: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+  par->state.vgabase = (void __iomem *) vga_res.start;
+                       ^
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+---
+ drivers/video/fbdev/s3fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Review of the u-boot sunxi simplefb patches has lead to the decision that
-u-boot should not use a specific path to find the nodes as this goes contrary
-to how devicetree usually works.
+diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
+index c43b969..f0ae61a 100644
+--- a/drivers/video/fbdev/s3fb.c
++++ b/drivers/video/fbdev/s3fb.c
+@@ -1182,7 +1182,7 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 
+ 	pcibios_bus_to_resource(dev->bus, &vga_res, &bus_reg);
+ 
+-	par->state.vgabase = (void __iomem *) vga_res.start;
++	par->state.vgabase = (void __iomem *) (unsigned long) vga_res.start;
+ 
+ 	/* Unlock regs */
+ 	cr38 = vga_rcrt(par->state.vgabase, 0x38);
+-- 
+1.9.1
 
-Instead a platform specific compatible + properties should be used for this.
-
-This series updates the simplefb bindings reflect this.
-
-Regards,
-
-Hans

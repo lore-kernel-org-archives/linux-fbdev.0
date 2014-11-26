@@ -1,554 +1,112 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Wed, 12 Nov 2014 12:03:26 +0000
-Subject: Re: [PATCH v7 10/20] ASoC: omap-hdmi-audio: Add platform device for OMAP HDMI audio support
-Message-Id: <54634C8E.8020509@ti.com>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Wed, 26 Nov 2014 19:11:03 +0000
+Subject: [PATCH 1/2] backlight/lp855x: Refactor dt parsing code
+Message-Id: <1417029064-12460-1-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415786458.git.jsarha@ti.com> <0296c0174b951e083064f49762122a703a1ac2f9.1415786458.git.jsarha@ti.com>
-In-Reply-To: <0296c0174b951e083064f49762122a703a1ac2f9.1415786458.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, milo.kim-l0cyMroinI0@public.gmane.org
+Cc: seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, =?UTF-8?q?St=C3=A9phane=20Marchesin?= <marcheu-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 
-On 11/12/2014 12:49 PM, Jyri Sarha wrote:
-> The platform device should only be registered from OMAPDSS HDMI
-> driver. The platform driver registers and unregisters all ASoC
-> components needed for OMAP HDMI audio.
->=20
-> The hdmi audio driver implements cpu-dai component using the callbacks
-> provided by OMAPDSS and registers the component under DSS HDMI
-> device. Omap-pcm is registered for platform component also under DSS
-> HDMI device. Dummy codec is used as as codec component. The hdmi audio
-> driver implements also the card and registers it under its own
-> platform device.
->=20
-> Signed-off-by: Jyri Sarha <jsarha@ti.com>
+This patch refactors the dt parsing code to avoid setting platform_data,
+instead just setting lp->pdata directly. This facilitates easier
+probe deferral since the current scheme would require us to clear out
+dev->platform_data before deferring.
 
-Acked-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Cc: St=C3=A9phane Marchesin <marcheu@chromium.org>
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+---
+ drivers/video/backlight/lp855x_bl.c | 37 ++++++++++++++++++---------------=
+----
+ 1 file changed, 18 insertions(+), 19 deletions(-)
 
-> ---
->  include/sound/omap-hdmi-audio.h  |   43 ++++
->  sound/soc/omap/Kconfig           |   15 ++
->  sound/soc/omap/Makefile          |    2 +
->  sound/soc/omap/omap-hdmi-audio.c |  407 ++++++++++++++++++++++++++++++++=
-++++++
->  4 files changed, 467 insertions(+)
->  create mode 100644 include/sound/omap-hdmi-audio.h
->  create mode 100644 sound/soc/omap/omap-hdmi-audio.c
->=20
-> diff --git a/include/sound/omap-hdmi-audio.h b/include/sound/omap-hdmi-au=
-dio.h
-> new file mode 100644
-> index 0000000..afdb416
-> --- /dev/null
-> +++ b/include/sound/omap-hdmi-audio.h
-> @@ -0,0 +1,43 @@
-> +/*
-> + * hdmi-audio.c -- OMAP4+ DSS HDMI audio support library
-> + *
-> + * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com
-> + *
-> + * Author: Jyri Sarha <jsarha@ti.com>
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + *
-> + */
-> +
-> +#include <video/omapdss.h>
-> +
-> +#ifndef __OMAP_HDMI_AUDIO_H__
-> +#define __OMAP_HDMI_AUDIO_H__
-> +
-> +struct omap_hdmi_audio_ops {
-> +	int (*audio_startup)(struct device *dev,
-> +			     void (*abort_cb)(struct device *dev));
-> +	int (*audio_shutdown)(struct device *dev);
-> +	int (*audio_start)(struct device *dev);
-> +	void (*audio_stop)(struct device *dev);
-> +	int (*audio_config)(struct device *dev,
-> +			    struct omap_dss_audio *dss_audio);
-> +};
-> +
-> +/* HDMI audio initalization data */
-> +struct omap_hdmi_audio_pdata {
-> +	struct device *dev;
-> +	enum omapdss_version dss_version;
-> +	phys_addr_t audio_dma_addr;
-> +
-> +	const struct omap_hdmi_audio_ops *ops;
-> +};
-> +
-> +#endif /* __OMAP_HDMI_AUDIO_H__ */
-> diff --git a/sound/soc/omap/Kconfig b/sound/soc/omap/Kconfig
-> index d44463a..2b32b3e 100644
-> --- a/sound/soc/omap/Kconfig
-> +++ b/sound/soc/omap/Kconfig
-> @@ -15,6 +15,21 @@ config SND_OMAP_SOC_MCPDM
->  config SND_OMAP_SOC_HDMI
->  	tristate
-> =20
-> +config SND_OMAP_SOC_HDMI_AUDIO
-> +	tristate "HDMI audio support for OMAP4+ based SoCs"
-> +	depends on SND_OMAP_SOC
-> +	help
-> +	  For HDMI audio to work OMAPDSS HDMI support should be
-> +	  enabled.
-> +	  The hdmi audio driver implements cpu-dai component using the
-> +	  callbacks provided by OMAPDSS and registers the component
-> +	  under DSS HDMI device. Omap-pcm is registered for platform
-> +	  component also under DSS HDMI device. Dummy codec is used as
-> +	  as codec component. The hdmi audio driver implements also
-> +	  the card and registers it under its own platform device.
-> +	  The device for the dirver is registered by OMAPDSS hdmi
-> +	  driver.
-> +
->  config SND_OMAP_SOC_N810
->  	tristate "SoC Audio support for Nokia N810"
->  	depends on SND_OMAP_SOC && MACH_NOKIA_N810 && I2C
-> diff --git a/sound/soc/omap/Makefile b/sound/soc/omap/Makefile
-> index a725905..40688a6 100644
-> --- a/sound/soc/omap/Makefile
-> +++ b/sound/soc/omap/Makefile
-> @@ -4,12 +4,14 @@ snd-soc-omap-dmic-objs :=3D omap-dmic.o
->  snd-soc-omap-mcbsp-objs :=3D omap-mcbsp.o mcbsp.o
->  snd-soc-omap-mcpdm-objs :=3D omap-mcpdm.o
->  snd-soc-omap-hdmi-objs :=3D omap-hdmi.o
-> +snd-soc-omap-hdmi-audio-objs :=3D omap-hdmi-audio.o
-> =20
->  obj-$(CONFIG_SND_OMAP_SOC) +=3D snd-soc-omap.o
->  obj-$(CONFIG_SND_OMAP_SOC_DMIC) +=3D snd-soc-omap-dmic.o
->  obj-$(CONFIG_SND_OMAP_SOC_MCBSP) +=3D snd-soc-omap-mcbsp.o
->  obj-$(CONFIG_SND_OMAP_SOC_MCPDM) +=3D snd-soc-omap-mcpdm.o
->  obj-$(CONFIG_SND_OMAP_SOC_HDMI) +=3D snd-soc-omap-hdmi.o
-> +obj-$(CONFIG_SND_OMAP_SOC_HDMI_AUDIO) +=3D snd-soc-omap-hdmi-audio.o
-> =20
->  # OMAP Machine Support
->  snd-soc-n810-objs :=3D n810.o
-> diff --git a/sound/soc/omap/omap-hdmi-audio.c b/sound/soc/omap/omap-hdmi-=
-audio.c
-> new file mode 100644
-> index 0000000..3f9ac7d
-> --- /dev/null
-> +++ b/sound/soc/omap/omap-hdmi-audio.c
-> @@ -0,0 +1,407 @@
-> +/*
-> + * omap-hdmi-audio.c -- OMAP4+ DSS HDMI audio support library
-> + *
-> + * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com
-> + *
-> + * Author: Jyri Sarha <jsarha@ti.com>
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/err.h>
-> +#include <linux/string.h>
-> +#include <linux/platform_device.h>
-> +#include <sound/soc.h>
-> +#include <sound/pcm_params.h>
-> +#include <sound/dmaengine_pcm.h>
-> +#include <uapi/sound/asound.h>
-> +#include <sound/asoundef.h>
-> +#include <sound/omap-pcm.h>
-> +#include <sound/omap-hdmi-audio.h>
-> +#include <video/omapdss.h>
-> +
-> +#define DRV_NAME "omap-hdmi-audio"
-> +
-> +struct hdmi_audio_data {
-> +	struct snd_soc_card *card;
-> +
-> +	const struct omap_hdmi_audio_ops *ops;
-> +	struct device *dssdev;
-> +	struct snd_dmaengine_dai_dma_data dma_data;
-> +	struct omap_dss_audio dss_audio;
-> +	struct snd_aes_iec958 iec;
-> +	struct snd_cea_861_aud_if cea;
-> +
-> +	struct mutex current_stream_lock;
-> +	struct snd_pcm_substream *current_stream;
-> +};
-> +
-> +static
-> +struct hdmi_audio_data *card_drvdata_substream(struct snd_pcm_substream =
-*ss)
-> +{
-> +	struct snd_soc_pcm_runtime *rtd =3D ss->private_data;
-> +
-> +	return snd_soc_card_get_drvdata(rtd->card);
-> +}
-> +
-> +static void hdmi_dai_abort(struct device *dev)
-> +{
-> +	struct hdmi_audio_data *ad =3D dev_get_drvdata(dev);
-> +
-> +	mutex_lock(&ad->current_stream_lock);
-> +	if (ad->current_stream && ad->current_stream->runtime &&
-> +	    snd_pcm_running(ad->current_stream)) {
-> +		dev_err(dev, "HDMI display disabled, aborting playback\n");
-> +		snd_pcm_stream_lock_irq(ad->current_stream);
-> +		snd_pcm_stop(ad->current_stream, SNDRV_PCM_STATE_DISCONNECTED);
-> +		snd_pcm_stream_unlock_irq(ad->current_stream);
-> +	}
-> +	mutex_unlock(&ad->current_stream_lock);
-> +}
-> +
-> +static int hdmi_dai_startup(struct snd_pcm_substream *substream,
-> +			    struct snd_soc_dai *dai)
-> +{
-> +	struct hdmi_audio_data *ad =3D card_drvdata_substream(substream);
-> +	int ret;
-> +	/*
-> +	 * Make sure that the period bytes are multiple of the DMA packet size.
-> +	 * Largest packet size we use is 32 32-bit words =3D 128 bytes
-> +	 */
-> +	ret =3D snd_pcm_hw_constraint_step(substream->runtime, 0,
-> +					 SNDRV_PCM_HW_PARAM_PERIOD_BYTES, 128);
-> +	if (ret < 0) {
-> +		dev_err(dai->dev, "could not apply constraint\n");
-> +		return ret;
-> +	}
-> +
-> +	snd_soc_dai_set_dma_data(dai, substream, &ad->dma_data);
-> +
-> +	mutex_lock(&ad->current_stream_lock);
-> +	ad->current_stream =3D substream;
-> +	mutex_unlock(&ad->current_stream_lock);
-> +
-> +	ret =3D ad->ops->audio_startup(ad->dssdev, hdmi_dai_abort);
-> +
-> +	if (ret) {
-> +		mutex_lock(&ad->current_stream_lock);
-> +		ad->current_stream =3D NULL;
-> +		mutex_unlock(&ad->current_stream_lock);
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
-> +			      struct snd_pcm_hw_params *params,
-> +			      struct snd_soc_dai *dai)
-> +{
-> +	struct hdmi_audio_data *ad =3D card_drvdata_substream(substream);
-> +	struct snd_aes_iec958 *iec =3D &ad->iec;
-> +	struct snd_cea_861_aud_if *cea =3D &ad->cea;
-> +
-> +	WARN_ON(ad->current_stream !=3D substream);
-> +
-> +	switch (params_format(params)) {
-> +	case SNDRV_PCM_FORMAT_S16_LE:
-> +		ad->dma_data.maxburst =3D 16;
-> +		break;
-> +	case SNDRV_PCM_FORMAT_S24_LE:
-> +		ad->dma_data.maxburst =3D 32;
-> +		break;
-> +	default:
-> +		dev_err(dai->dev, "format not supported!\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	ad->dss_audio.iec =3D iec;
-> +	ad->dss_audio.cea =3D cea;
-> +	/*
-> +	 * fill the IEC-60958 channel status word
-> +	 */
-> +	/* initialize the word bytes */
-> +	memset(iec->status, 0, sizeof(iec->status));
-> +
-> +	/* specify IEC-60958-3 (commercial use) */
-> +	iec->status[0] &=3D ~IEC958_AES0_PROFESSIONAL;
-> +
-> +	/* specify that the audio is LPCM*/
-> +	iec->status[0] &=3D ~IEC958_AES0_NONAUDIO;
-> +
-> +	iec->status[0] |=3D IEC958_AES0_CON_NOT_COPYRIGHT;
-> +
-> +	iec->status[0] |=3D IEC958_AES0_CON_EMPHASIS_NONE;
-> +
-> +	iec->status[0] |=3D IEC958_AES1_PRO_MODE_NOTID;
-> +
-> +	iec->status[1] =3D IEC958_AES1_CON_GENERAL;
-> +
-> +	iec->status[2] |=3D IEC958_AES2_CON_SOURCE_UNSPEC;
-> +
-> +	iec->status[2] |=3D IEC958_AES2_CON_CHANNEL_UNSPEC;
-> +
-> +	switch (params_rate(params)) {
-> +	case 32000:
-> +		iec->status[3] |=3D IEC958_AES3_CON_FS_32000;
-> +		break;
-> +	case 44100:
-> +		iec->status[3] |=3D IEC958_AES3_CON_FS_44100;
-> +		break;
-> +	case 48000:
-> +		iec->status[3] |=3D IEC958_AES3_CON_FS_48000;
-> +		break;
-> +	case 88200:
-> +		iec->status[3] |=3D IEC958_AES3_CON_FS_88200;
-> +		break;
-> +	case 96000:
-> +		iec->status[3] |=3D IEC958_AES3_CON_FS_96000;
-> +		break;
-> +	case 176400:
-> +		iec->status[3] |=3D IEC958_AES3_CON_FS_176400;
-> +		break;
-> +	case 192000:
-> +		iec->status[3] |=3D IEC958_AES3_CON_FS_192000;
-> +		break;
-> +	default:
-> +		dev_err(dai->dev, "rate not supported!\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	/* specify the clock accuracy */
-> +	iec->status[3] |=3D IEC958_AES3_CON_CLOCK_1000PPM;
-> +
-> +	/*
-> +	 * specify the word length. The same word length value can mean
-> +	 * two different lengths. Hence, we need to specify the maximum
-> +	 * word length as well.
-> +	 */
-> +	switch (params_format(params)) {
-> +	case SNDRV_PCM_FORMAT_S16_LE:
-> +		iec->status[4] |=3D IEC958_AES4_CON_WORDLEN_20_16;
-> +		iec->status[4] &=3D ~IEC958_AES4_CON_MAX_WORDLEN_24;
-> +		break;
-> +	case SNDRV_PCM_FORMAT_S24_LE:
-> +		iec->status[4] |=3D IEC958_AES4_CON_WORDLEN_24_20;
-> +		iec->status[4] |=3D IEC958_AES4_CON_MAX_WORDLEN_24;
-> +		break;
-> +	default:
-> +		dev_err(dai->dev, "format not supported!\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	/*
-> +	 * Fill the CEA-861 audio infoframe (see spec for details)
-> +	 */
-> +
-> +	cea->db1_ct_cc =3D (params_channels(params) - 1)
-> +		& CEA861_AUDIO_INFOFRAME_DB1CC;
-> +	cea->db1_ct_cc |=3D CEA861_AUDIO_INFOFRAME_DB1CT_FROM_STREAM;
-> +
-> +	cea->db2_sf_ss =3D CEA861_AUDIO_INFOFRAME_DB2SF_FROM_STREAM;
-> +	cea->db2_sf_ss |=3D CEA861_AUDIO_INFOFRAME_DB2SS_FROM_STREAM;
-> +
-> +	cea->db3 =3D 0; /* not used, all zeros */
-> +
-> +	/*
-> +	 * The OMAP HDMI IP requires to use the 8-channel channel code when
-> +	 * transmitting more than two channels.
-> +	 */
-> +	if (params_channels(params) =3D 2)
-> +		cea->db4_ca =3D 0x0;
-> +	else
-> +		cea->db4_ca =3D 0x13;
-> +
-> +	cea->db5_dminh_lsv =3D CEA861_AUDIO_INFOFRAME_DB5_DM_INH_PROHIBITED;
-> +	/* the expression is trivial but makes clear what we are doing */
-> +	cea->db5_dminh_lsv |=3D (0 & CEA861_AUDIO_INFOFRAME_DB5_LSV);
-> +
-> +	return ad->ops->audio_config(ad->dssdev, &ad->dss_audio);
-> +}
-> +
-> +static int hdmi_dai_trigger(struct snd_pcm_substream *substream, int cmd,
-> +			    struct snd_soc_dai *dai)
-> +{
-> +	struct hdmi_audio_data *ad =3D card_drvdata_substream(substream);
-> +	int err =3D 0;
-> +
-> +	WARN_ON(ad->current_stream !=3D substream);
-> +
-> +	switch (cmd) {
-> +	case SNDRV_PCM_TRIGGER_START:
-> +	case SNDRV_PCM_TRIGGER_RESUME:
-> +	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-> +		err =3D ad->ops->audio_start(ad->dssdev);
-> +		break;
-> +	case SNDRV_PCM_TRIGGER_STOP:
-> +	case SNDRV_PCM_TRIGGER_SUSPEND:
-> +	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-> +		ad->ops->audio_stop(ad->dssdev);
-> +		break;
-> +	default:
-> +		err =3D -EINVAL;
-> +	}
-> +	return err;
-> +}
-> +
-> +static void hdmi_dai_shutdown(struct snd_pcm_substream *substream,
-> +			      struct snd_soc_dai *dai)
-> +{
-> +	struct hdmi_audio_data *ad =3D card_drvdata_substream(substream);
-> +
-> +	WARN_ON(ad->current_stream !=3D substream);
-> +
-> +	ad->ops->audio_shutdown(ad->dssdev);
-> +
-> +	mutex_lock(&ad->current_stream_lock);
-> +	ad->current_stream =3D NULL;
-> +	mutex_unlock(&ad->current_stream_lock);
-> +}
-> +
-> +static const struct snd_soc_dai_ops hdmi_dai_ops =3D {
-> +	.startup	=3D hdmi_dai_startup,
-> +	.hw_params	=3D hdmi_dai_hw_params,
-> +	.trigger	=3D hdmi_dai_trigger,
-> +	.shutdown	=3D hdmi_dai_shutdown,
-> +};
-> +
-> +static const struct snd_soc_component_driver omap_hdmi_component =3D {
-> +	.name =3D "omapdss_hdmi",
-> +};
-> +
-> +static struct snd_soc_dai_driver omap5_hdmi_dai =3D {
-> +	.name =3D "omap5-hdmi-dai",
-> +	.playback =3D {
-> +		.channels_min =3D 2,
-> +		.channels_max =3D 8,
-> +		.rates =3D (SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |
-> +			  SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 |
-> +			  SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 |
-> +			  SNDRV_PCM_RATE_192000),
-> +		.formats =3D SNDRV_PCM_FMTBIT_S16_LE,
-> +	},
-> +	.ops =3D &hdmi_dai_ops,
-> +};
-> +
-> +static struct snd_soc_dai_driver omap4_hdmi_dai =3D {
-> +	.name =3D "omap4-hdmi-dai",
-> +	.playback =3D {
-> +		.channels_min =3D 2,
-> +		.channels_max =3D 8,
-> +		.rates =3D (SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |
-> +			  SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 |
-> +			  SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 |
-> +			  SNDRV_PCM_RATE_192000),
-> +		.formats =3D SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE,
-> +	},
-> +	.ops =3D &hdmi_dai_ops,
-> +};
-> +
-> +static int omap_hdmi_audio_probe(struct platform_device *pdev)
-> +{
-> +	struct omap_hdmi_audio_pdata *ha =3D pdev->dev.platform_data;
-> +	struct device *dev =3D &pdev->dev;
-> +	struct hdmi_audio_data *ad;
-> +	struct snd_soc_dai_driver *dai_drv;
-> +	struct snd_soc_card *card;
-> +	int ret;
-> +
-> +	if (!ha) {
-> +		dev_err(dev, "No platform data\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	ad =3D devm_kzalloc(dev, sizeof(*ad), GFP_KERNEL);
-> +	if (!ad)
-> +		return -ENOMEM;
-> +	ad->dssdev =3D ha->dev;
-> +	ad->ops =3D ha->ops;
-> +	ad->dma_data.addr =3D ha->audio_dma_addr;
-> +	ad->dma_data.filter_data =3D "audio_tx";
-> +	ad->dma_data.addr_width =3D DMA_SLAVE_BUSWIDTH_4_BYTES;
-> +	mutex_init(&ad->current_stream_lock);
-> +
-> +	switch (ha->dss_version) {
-> +	case OMAPDSS_VER_OMAP4430_ES1:
-> +	case OMAPDSS_VER_OMAP4430_ES2:
-> +	case OMAPDSS_VER_OMAP4:
-> +		dai_drv =3D &omap4_hdmi_dai;
-> +		break;
-> +	case OMAPDSS_VER_OMAP5:
-> +		dai_drv =3D &omap5_hdmi_dai;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +	ret =3D snd_soc_register_component(ad->dssdev, &omap_hdmi_component,
-> +					 dai_drv, 1);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret =3D omap_pcm_platform_register(ad->dssdev);
-> +	if (ret)
-> +		return ret;
-> +
-> +	card =3D devm_kzalloc(dev, sizeof(*card), GFP_KERNEL);
-> +	card->name =3D devm_kasprintf(dev, GFP_KERNEL,
-> +				    "HDMI %s", dev_name(ad->dssdev));
-> +	card->owner =3D THIS_MODULE;
-> +	card->dai_link > +		devm_kzalloc(dev, sizeof(*(card->dai_link)), GFP_KE=
-RNEL);
-> +	card->dai_link->name =3D card->name;
-> +	card->dai_link->stream_name =3D card->name;
-> +	card->dai_link->cpu_dai_name =3D dev_name(ad->dssdev);
-> +	card->dai_link->platform_name =3D dev_name(ad->dssdev);
-> +	card->dai_link->codec_name =3D "snd-soc-dummy";
-> +	card->dai_link->codec_dai_name =3D "snd-soc-dummy-dai";
-> +	card->num_links =3D 1;
-> +	card->dev =3D dev;
-> +
-> +	ret =3D snd_soc_register_card(card);
-> +	if (ret) {
-> +		dev_err(dev, "snd_soc_register_card failed (%d)\n", ret);
-> +		snd_soc_unregister_component(ad->dssdev);
-> +		return ret;
-> +	}
-> +
-> +	ad->card =3D card;
-> +	snd_soc_card_set_drvdata(card, ad);
-> +
-> +	dev_set_drvdata(dev, ad);
-> +
-> +	return 0;
-> +}
-> +
-> +static int omap_hdmi_audio_remove(struct platform_device *pdev)
-> +{
-> +	struct hdmi_audio_data *ad =3D platform_get_drvdata(pdev);
-> +
-> +	snd_soc_unregister_card(ad->card);
-> +	snd_soc_unregister_component(ad->dssdev);
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver hdmi_audio_driver =3D {
-> +	.driver =3D {
-> +		.name =3D DRV_NAME,
-> +		.owner =3D THIS_MODULE,
-> +	},
-> +	.probe =3D omap_hdmi_audio_probe,
-> +	.remove =3D omap_hdmi_audio_remove,
-> +};
-> +
-> +module_platform_driver(hdmi_audio_driver);
-> +
-> +MODULE_AUTHOR("Jyri Sarha <jsarha@ti.com>");
-> +MODULE_DESCRIPTION("OMAP HDMI Audio Driver");
-> +MODULE_LICENSE("GPL");
-> +MODULE_ALIAS("platform:" DRV_NAME);
->=20
-
-
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/=
+lp855x_bl.c
+index 25fb8e3..257b3ba 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -341,8 +341,10 @@ static const struct attribute_group lp855x_attr_group =
+=3D {
+ };
+=20
+ #ifdef CONFIG_OF
+-static int lp855x_parse_dt(struct device *dev, struct device_node *node)
++static int lp855x_parse_dt(struct lp855x *lp)
+ {
++	struct device *dev =3D lp->dev;
++	struct device_node *node =3D dev->of_node;
+ 	struct lp855x_platform_data *pdata;
+ 	int rom_length;
+=20
+@@ -381,12 +383,12 @@ static int lp855x_parse_dt(struct device *dev, struct=
+ device_node *node)
+ 		pdata->rom_data =3D &rom[0];
+ 	}
+=20
+-	dev->platform_data =3D pdata;
++	lp->pdata =3D pdata;
+=20
+ 	return 0;
+ }
+ #else
+-static int lp855x_parse_dt(struct device *dev, struct device_node *node)
++static int lp855x_parse_dt(struct lp855x *lp)
+ {
+ 	return -EINVAL;
+ }
+@@ -395,18 +397,8 @@ static int lp855x_parse_dt(struct device *dev, struct =
+device_node *node)
+ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id =
+*id)
+ {
+ 	struct lp855x *lp;
+-	struct lp855x_platform_data *pdata =3D dev_get_platdata(&cl->dev);
+-	struct device_node *node =3D cl->dev.of_node;
+ 	int ret;
+=20
+-	if (!pdata) {
+-		ret =3D lp855x_parse_dt(&cl->dev, node);
+-		if (ret < 0)
+-			return ret;
+-
+-		pdata =3D dev_get_platdata(&cl->dev);
+-	}
+-
+ 	if (!i2c_check_functionality(cl->adapter, I2C_FUNC_SMBUS_I2C_BLOCK))
+ 		return -EIO;
+=20
+@@ -414,16 +406,23 @@ static int lp855x_probe(struct i2c_client *cl, const =
+struct i2c_device_id *id)
+ 	if (!lp)
+ 		return -ENOMEM;
+=20
+-	if (pdata->period_ns > 0)
+-		lp->mode =3D PWM_BASED;
+-	else
+-		lp->mode =3D REGISTER_BASED;
+-
+ 	lp->client =3D cl;
+ 	lp->dev =3D &cl->dev;
+-	lp->pdata =3D pdata;
+ 	lp->chipname =3D id->name;
+ 	lp->chip_id =3D id->driver_data;
++	lp->pdata =3D dev_get_platdata(&cl->dev);
++
++	if (!lp->pdata) {
++		ret =3D lp855x_parse_dt(lp);
++		if (ret < 0)
++			return ret;
++	}
++
++	if (lp->pdata->period_ns > 0)
++		lp->mode =3D PWM_BASED;
++	else
++		lp->mode =3D REGISTER_BASED;
++
+ 	i2c_set_clientdata(cl, lp);
+=20
+ 	ret =3D lp855x_configure(lp);
 --=20
-P=E9ter
+2.1.1
+

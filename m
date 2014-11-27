@@ -1,182 +1,315 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 12 Nov 2014 10:49:06 +0000
-Subject: [PATCH v7 04/20] OMAPDSS: hdmi: Remove most of OMAP[45]_DSS_HDMI_AUDIO ifdefs
-Message-Id: <b1fbe1434a0f733e70674d85c00b6ed88ebb4261.1415786458.git.jsarha@ti.com>
+From: Quentin Lambert <lambert.quentin@gmail.com>
+Date: Thu, 27 Nov 2014 10:42:31 +0000
+Subject: [PATCH] video: fbdev: sis: sis_main.c: converting relevant int to bool
+Message-Id: <20141127104231.GA5500@wrath>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415786458.git.jsarha@ti.com>
-In-Reply-To: <cover.1415786458.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, Jyri Sarha <jsarha@ti.com>
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-It does not waste too many bytes to compile all audio related core
-functions always in with HDMI support. It should help readability and
-in keeping the audio code in working shape. Leave the options just for
-disabling and enabling the functionality in hdmi[45].c.
+Convert int variables and functions to boolean when
+relevant. The eligible cases were found using Coccinelle.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+A simplified version of the semantic patch used to find
+candidate is presented below :
+@r exists@
+identifier f;
+local idexpression int x;
+identifier xname;
+@@
+
+f(...) {
+...when any
+(
+  x@xname = 1;
+|
+  x@xname = 0;
+)
+...when any
+}
+
+@bad exists@
+identifier r.f;
+local idexpression int r.x
+expression e1 != {0, 1}, e2;
+@@
+
+f(...) {
+...when any
+(
+  x = e1;
+|
+  x + e2
+)
+...when any
+}
+
+@depends on !bad@
+identifier r.f;
+local idexpression int r.x;
+identifier r.xname;
+@@
+
+f(...) {
+...
+++ bool xname;
+- int xname;
+<...
+(
+  x - 1;
++ true;
+|
+  x - -1;
++ false;
+)
+...>
+
+}
+
+Signed-off-by: Quentin Lambert <lambert.quentin@gmail.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi.h        |    3 +--
- drivers/video/fbdev/omap2/dss/hdmi4_core.c  |    5 -----
- drivers/video/fbdev/omap2/dss/hdmi4_core.h  |    2 --
- drivers/video/fbdev/omap2/dss/hdmi5_core.c  |    6 ------
- drivers/video/fbdev/omap2/dss/hdmi5_core.h  |    2 --
- drivers/video/fbdev/omap2/dss/hdmi_common.c |    2 --
- drivers/video/fbdev/omap2/dss/hdmi_wp.c     |    2 --
- 7 files changed, 1 insertion(+), 21 deletions(-)
+ drivers/video/fbdev/sis/sis_main.c | 64 ++++++++++++++++++++------------------
+ 1 file changed, 33 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi.h b/drivers/video/fbdev/omap2/dss/hdmi.h
-index 1f01068..03726b5 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi.h
-@@ -335,7 +335,7 @@ int hdmi_phy_parse_lanes(struct hdmi_phy_data *phy, const u32 *lanes);
- int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
- 	struct hdmi_phy_data *phy);
+diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
+index e5d11b1..5884846 100644
+--- a/drivers/video/fbdev/sis/sis_main.c
++++ b/drivers/video/fbdev/sis/sis_main.c
+@@ -108,7 +108,8 @@ sisfb_setdefaultparms(void)
  
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
-+/* Audio funcs */
- int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts);
- int hdmi_wp_audio_enable(struct hdmi_wp_data *wp, bool enable);
- int hdmi_wp_audio_core_req_enable(struct hdmi_wp_data *wp, bool enable);
-@@ -348,4 +348,3 @@ static inline bool hdmi_mode_has_audio(int mode)
- 	return mode = HDMI_HDMI ? true : false;
+ static void sisfb_search_vesamode(unsigned int vesamode, bool quiet)
+ {
+-	int i = 0, j = 0;
++	bool j = false;
++	int i = 0;
+ 
+ 	/* We don't know the hardware specs yet and there is no ivideo */
+ 
+@@ -137,7 +138,7 @@ static void sisfb_search_vesamode(unsigned int vesamode, bool quiet)
+ 					continue;
+ 			}
+ 			sisfb_mode_idx = i - 1;
+-			j = 1;
++			j = true;
+ 			break;
+ 		}
+ 	}
+@@ -1185,7 +1186,8 @@ sisfb_do_set_var(struct fb_var_screeninfo *var, int isactive, struct fb_info *in
+ 	struct sis_video_info *ivideo = (struct sis_video_info *)info->par;
+ 	unsigned int htotal = 0, vtotal = 0;
+ 	unsigned int drate = 0, hrate = 0;
+-	int found_mode = 0, ret;
++	bool found_mode = false;
++	int ret;
+ 	int old_mode;
+ 	u32 pixclock;
+ 
+@@ -1228,7 +1230,7 @@ sisfb_do_set_var(struct fb_var_screeninfo *var, int isactive, struct fb_info *in
+ 		    (sisbios_mode[ivideo->sisfb_mode_idx].yres = var->yres) &&
+ 		    (sisbios_mode[ivideo->sisfb_mode_idx].bpp = var->bits_per_pixel)) {
+ 			ivideo->mode_no = sisbios_mode[ivideo->sisfb_mode_idx].mode_no[ivideo->mni];
+-			found_mode = 1;
++			found_mode = true;
+ 			break;
+ 		}
+ 		ivideo->sisfb_mode_idx++;
+@@ -1431,7 +1433,7 @@ sisfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	struct sis_video_info *ivideo = (struct sis_video_info *)info->par;
+ 	unsigned int htotal = 0, vtotal = 0, myrateindex = 0;
+ 	unsigned int drate = 0, hrate = 0, maxyres;
+-	int found_mode = 0;
++	bool found_mode = false;
+ 	int refresh_rate, search_idx, tidx;
+ 	bool recalc_clock = false;
+ 	u32 pixclock;
+@@ -1466,7 +1468,7 @@ sisfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 		    (sisbios_mode[search_idx].bpp = var->bits_per_pixel)) {
+ 			if((tidx = sisfb_validate_mode(ivideo, search_idx,
+ 						ivideo->currentvbflags)) > 0) {
+-				found_mode = 1;
++				found_mode = true;
+ 				search_idx = tidx;
+ 				break;
+ 			}
+@@ -1482,7 +1484,7 @@ sisfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 		       (var->bits_per_pixel = sisbios_mode[search_idx].bpp) ) {
+ 			if((tidx = sisfb_validate_mode(ivideo,search_idx,
+ 						ivideo->currentvbflags)) > 0) {
+-				found_mode = 1;
++				found_mode = true;
+ 				search_idx = tidx;
+ 				break;
+ 			}
+@@ -3224,7 +3226,7 @@ sisfb_poh_allocate(struct SIS_HEAP *memheap, u32 size)
+ {
+ 	struct SIS_OH	*pohThis;
+ 	struct SIS_OH	*pohRoot;
+-	int		bAllocated = 0;
++	bool            bAllocated = false;
+ 
+ 	if(size > memheap->max_freesize) {
+ 		DPRINTK("sisfb: Can't allocate %dk video memory\n",
+@@ -3236,7 +3238,7 @@ sisfb_poh_allocate(struct SIS_HEAP *memheap, u32 size)
+ 
+ 	while(pohThis != &memheap->oh_free) {
+ 		if(size <= pohThis->size) {
+-			bAllocated = 1;
++			bAllocated = true;
+ 			break;
+ 		}
+ 		pohThis = pohThis->poh_next;
+@@ -3299,13 +3301,13 @@ sisfb_poh_free(struct SIS_HEAP *memheap, u32 base)
+ 	struct SIS_OH *poh_next;
+ 	u32    ulUpper;
+ 	u32    ulLower;
+-	int    foundNode = 0;
++	bool   foundNode = false;
+ 
+ 	poh_freed = memheap->oh_used.poh_next;
+ 
+ 	while(poh_freed != &memheap->oh_used) {
+ 		if(poh_freed->offset = base) {
+-			foundNode = 1;
++			foundNode = true;
+ 			break;
+ 		}
+ 
+@@ -3892,7 +3894,7 @@ sisfb_reset_mode(struct sis_video_info *ivideo)
+ static void
+ sisfb_handle_command(struct sis_video_info *ivideo, struct sisfb_cmd *sisfb_command)
+ {
+-	int mycrt1off;
++	bool mycrt1off;
+ 
+ 	switch(sisfb_command->sisfb_cmd) {
+ 	case SISFB_CMD_GETVBFLAGS:
+@@ -3919,7 +3921,7 @@ sisfb_handle_command(struct sis_video_info *ivideo, struct sisfb_cmd *sisfb_comm
+ 			sisfb_command->sisfb_result[0] = SISFB_CMD_ERR_NOCRT2;
+ 		} else {
+ 			sisfb_command->sisfb_result[0] = SISFB_CMD_ERR_OK;
+-			mycrt1off = sisfb_command->sisfb_arg[0] ? 0 : 1;
++			mycrt1off = sisfb_command->sisfb_arg[0] ? false : true;
+ 			if( ((ivideo->currentvbflags & VB_DISPTYPE_CRT1) && mycrt1off) ||
+ 			    ((!(ivideo->currentvbflags & VB_DISPTYPE_CRT1)) && !mycrt1off) ) {
+ 				ivideo->sisfb_crt1off = mycrt1off;
+@@ -4037,32 +4039,32 @@ static int __init sisfb_setup(char *options)
  }
  #endif
--#endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-index 4ad39cf..3b448d9 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-@@ -31,10 +31,8 @@
- #include <linux/platform_device.h>
- #include <linux/string.h>
- #include <linux/seq_file.h>
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
- #include <sound/asound.h>
- #include <sound/asoundef.h>
--#endif
  
- #include "hdmi4_core.h"
- #include "dss_features.h"
-@@ -530,7 +528,6 @@ void hdmi4_core_dump(struct hdmi_core_data *core, struct seq_file *s)
- 	DUMPCOREAV(HDMI_CORE_AV_CEC_ADDR_ID);
- }
- 
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
- static void hdmi_core_audio_config(struct hdmi_core_data *core,
- 					struct hdmi_core_audio_config *cfg)
+-static int sisfb_check_rom(void __iomem *rom_base,
++static bool sisfb_check_rom(void __iomem *rom_base,
+ 			   struct sis_video_info *ivideo)
  {
-@@ -886,8 +883,6 @@ int hdmi4_audio_get_dma_port(u32 *offset, u32 *size)
- 	return 0;
+ 	void __iomem *rom;
+ 	int romptr;
+ 
+ 	if((readb(rom_base) != 0x55) || (readb(rom_base + 1) != 0xaa))
+-		return 0;
++		return false;
+ 
+ 	romptr = (readb(rom_base + 0x18) | (readb(rom_base + 0x19) << 8));
+ 	if(romptr > (0x10000 - 8))
+-		return 0;
++		return false;
+ 
+ 	rom = rom_base + romptr;
+ 
+ 	if((readb(rom)     != 'P') || (readb(rom + 1) != 'C') ||
+ 	   (readb(rom + 2) != 'I') || (readb(rom + 3) != 'R'))
+-		return 0;
++		return false;
+ 
+ 	if((readb(rom + 4) | (readb(rom + 5) << 8)) != ivideo->chip_vendor)
+-		return 0;
++		return false;
+ 
+ 	if((readb(rom + 6) | (readb(rom + 7) << 8)) != ivideo->chip_id)
+-		return 0;
++		return false;
+ 
+-	return 1;
++	return true;
  }
  
--#endif
--
- int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+ static unsigned char *sisfb_find_rom(struct pci_dev *pdev)
+@@ -4215,7 +4217,7 @@ static const unsigned short SiS_DRAMType[17][5] = {
+ 	{0x09,0x08,0x01,0x01,0x00}
+ };
+ 
+-static int sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration,
++static bool sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration,
+ 				 int buswidth, int PseudoRankCapacity,
+ 				 int PseudoAdrPinCount, unsigned int mapsize)
  {
- 	struct resource *res;
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.h b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-index 827909e..c1959f7 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.h
-@@ -266,12 +266,10 @@ void hdmi4_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- void hdmi4_core_dump(struct hdmi_core_data *core, struct seq_file *s);
- int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core);
+@@ -4275,10 +4277,10 @@ static int sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration,
  
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
- int hdmi4_audio_start(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
- void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp);
- int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 		struct omap_dss_audio *audio, u32 pclk);
- int hdmi4_audio_get_dma_port(u32 *offset, u32 *size);
--#endif
+ 		/* Read data */
+ 		if(readw(FBAddr + BankNumHigh + PhysicalAdrHigh) = PhysicalAdrHigh)
+-			return 1;
++			return true;
+ 	}
  
- #endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-index 9ffa805..a711579 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-@@ -30,10 +30,8 @@
- #include <linux/string.h>
- #include <linux/seq_file.h>
- #include <drm/drm_edid.h>
--#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
- #include <sound/asound.h>
- #include <sound/asoundef.h>
--#endif
- 
- #include "hdmi5_core.h"
- 
-@@ -644,9 +642,6 @@ void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 	hdmi_core_enable_interrupts(core);
+-	return 0;
++	return false;
  }
  
--
--#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
--
- static void hdmi5_core_audio_config(struct hdmi_core_data *core,
- 			struct hdmi_core_audio_config *cfg)
+ static void sisfb_post_300_ramsize(struct pci_dev *pdev, unsigned int mapsize)
+@@ -4539,18 +4541,18 @@ static void sisfb_post_xgi_delay(struct sis_video_info *ivideo, int delay)
+ 	}
+ }
+ 
+-static int sisfb_find_host_bridge(struct sis_video_info *ivideo,
++static bool sisfb_find_host_bridge(struct sis_video_info *ivideo,
+ 				  struct pci_dev *mypdev,
+ 				  unsigned short pcivendor)
  {
-@@ -897,7 +892,6 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 	struct pci_dev *pdev = NULL;
+ 	unsigned short temp;
+-	int ret = 0;
++	bool ret = false;
  
- 	return 0;
+ 	while((pdev = pci_get_class(PCI_CLASS_BRIDGE_HOST, pdev))) {
+ 		temp = pdev->vendor;
+ 		if(temp = pcivendor) {
+-			ret = 1;
++			ret = true;
+ 			pci_dev_put(pdev);
+ 			break;
+ 		}
+@@ -4559,7 +4561,7 @@ static int sisfb_find_host_bridge(struct sis_video_info *ivideo,
+ 	return ret;
  }
--#endif
  
- int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
+-static int sisfb_post_xgi_rwtest(struct sis_video_info *ivideo, int starta,
++static bool sisfb_post_xgi_rwtest(struct sis_video_info *ivideo, int starta,
+ 				 unsigned int enda, unsigned int mapsize)
  {
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.h b/drivers/video/fbdev/omap2/dss/hdmi5_core.h
-index ce7e9f3..f2f1022 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5_core.h
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.h
-@@ -299,8 +299,6 @@ void hdmi5_configure(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 			struct hdmi_config *cfg);
- int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core);
+ 	unsigned int pos;
+@@ -4576,18 +4578,18 @@ static int sisfb_post_xgi_rwtest(struct sis_video_info *ivideo, int starta,
+ 	sisfb_post_xgi_delay(ivideo, 150);
  
--#if defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
- int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 			struct omap_dss_audio *audio, u32 pclk);
- #endif
--#endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_common.c b/drivers/video/fbdev/omap2/dss/hdmi_common.c
-index 7d5f103..1b8fcc6 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_common.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_common.c
-@@ -48,7 +48,6 @@ int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
- 	return 0;
+ 	if(readl(ivideo->video_vbase) != 0)
+-		return 0;
++		return false;
+ 
+ 	for(i = starta; i <= enda; i++) {
+ 		pos = 1 << i;
+ 		if(pos < mapsize) {
+ 			if(readl(ivideo->video_vbase + pos) != pos)
+-				return 0;
++				return false;
+ 		} else
+-			return 0;
++			return false;
+ 	}
+ 
+-	return 1;
++	return true;
  }
  
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
- int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts)
- {
- 	u32 deep_color;
-@@ -147,4 +146,3 @@ int hdmi_compute_acr(u32 pclk, u32 sample_freq, u32 *n, u32 *cts)
- 
- 	return 0;
- }
--#endif
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-index 71b499e..4ead962 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-@@ -185,7 +185,6 @@ void hdmi_wp_init_vid_fmt_timings(struct hdmi_video_format *video_fmt,
- 	timings->interlace = param->timings.interlace;
- }
- 
--#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO) || defined(CONFIG_OMAP5_DSS_HDMI_AUDIO)
- void hdmi_wp_audio_config_format(struct hdmi_wp_data *wp,
- 		struct hdmi_audio_format *aud_fmt)
- {
-@@ -240,7 +239,6 @@ int hdmi_wp_audio_core_req_enable(struct hdmi_wp_data *wp, bool enable)
- 
- 	return 0;
- }
--#endif
- 
- int hdmi_wp_init(struct platform_device *pdev, struct hdmi_wp_data *wp)
- {
+ static int sisfb_post_xgi_ramsize(struct sis_video_info *ivideo)
 -- 
-1.7.9.5
+1.9.1
 

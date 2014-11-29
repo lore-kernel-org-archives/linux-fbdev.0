@@ -1,83 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Nov 2014 11:02:11 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Sat, 29 Nov 2014 11:59:57 +0000
 Subject: Re: [PATCH v7.1 00/19] Rework OMAP4+ HDMI audio support
-Message-Id: <5475B333.4010804@ti.com>
+Message-Id: <20141129115957.GE7712@sirena.org.uk>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="92BocwDsoc75xCRvPE3SNfuofJwOdGvws"
+Content-Type: multipart/mixed; boundary="E9xT1P6Q9DbJSWaX"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com> <20141112222344.GU3815@sirena.org.uk> <54646648.5030807@ti.com> <546DC9A0.8060700@ti.com> <20141121112317.GQ3815@sirena.org.uk> <546F317B.9030004@ti.com> <20141121161435.GS3815@sirena.org.uk> <5472E9D7.7000908@ti.com> <20141124173920.GL7712@sirena.org.uk> <54744B4C.2030105@ti.com> <20141125181020.GJ7712@sirena.org.uk>
-In-Reply-To: <20141125181020.GJ7712@sirena.org.uk>
-To: Mark Brown <broonie@kernel.org>
-Cc: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com
+References: <cover.1415803064.git.jsarha@ti.com>
+In-Reply-To: <cover.1415803064.git.jsarha@ti.com>
+To: Jyri Sarha <jsarha@ti.com>
+Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com
 
---92BocwDsoc75xCRvPE3SNfuofJwOdGvws
-Content-Type: text/plain; charset=windows-1252
+
+--E9xT1P6Q9DbJSWaX
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 25/11/14 20:10, Mark Brown wrote:
-> On Tue, Nov 25, 2014 at 11:26:36AM +0200, Tomi Valkeinen wrote:
->> On 24/11/14 19:39, Mark Brown wrote:
+On Wed, Nov 12, 2014 at 04:40:51PM +0200, Jyri Sarha wrote:
+> The patches are based on:
+> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
 >=20
->>>> The whole series is about HDMI audio, not video.
->=20
->>> You know exactly what I mean - the early patches are in drivers/video=
-,
->>> don't touch anything outside of that and have no obvious dependencies=
-=2E
->=20
->> My point was, there's no particular reason to apply those patches
->> individually. It's an independent series, about HDMI audio, and applyi=
-ng
->> only some of the earlier patches does not improve the kernel in visibl=
-e
->> manner.
->=20
-> Can you please apply them, I'll try to get round to reviewing the audio=
+> The base, the patches, and couple of additional not-to-be-merged
+> omap2plus_defconfig patches can be found here:
+> https://github.com/jsarha/linux.git omap-hdmi-audio
 
-> bits soon but either these will need applying if the rest of it's OK or=
+I guess I'm OK with these so
 
-> if there does turn out to be a problem they cut down on the size of the=
+Reviewed-by: Mark Brown <broonie@kernel.org>
 
-> series.  I really do want to read it closely, but hopefully by the
-> weekend.
+but like I said in reply to the patch adding the new driver I think
+we're going to want to generalize this a bit.
 
-Ok, I've picked the following patches:
-
-OMAPDSS: hdmi.h: Add members to hdmi drvdata for audio implementation
-OMAPDSS: hdmi: Add pdev pointer for audio_pdev in HDMI DRV data
-OMAPDSS: hdmi: Make hdmi structure public
-OMAPDSS: hdmi_wp: Add function for getting audio dma address
-OMAPDSS: hdmi4_core: Remove unused hdmi4_audio_get_dma_port()
-OMAPDSS: hdmi: Remove most of OMAP[45]_DSS_HDMI_AUDIO ifdefs
-OMAPDSS: hdmi.h: Add HDMI_AUDIO_LAYOUT_6CH enum value
-OMAPDSS: hdmi5_core: Initialize mandatory sample_order parameter
-OMAPDSS: hdmi_wp: Protect reserved bits in hdmi_wp_audio_config_format()
-
- Tomi
-
-
-
---92BocwDsoc75xCRvPE3SNfuofJwOdGvws
+--E9xT1P6Q9DbJSWaX
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUdbMzAAoJEPo9qoy8lh71kqUQAJh8MwPiz8eWsu3tdfcpvkYC
-oU8PIhIrt5kZaA0A3EWnnpfDOEqK1lVkLRGqMQQcE6IEdxQJZejv9CmkctSXJsNT
-+dy7gWPRGlfrzidUoktU4NKjJJhSIXAY+CZ6YJfBHUQYm/NPflnYrsn1fHKN3g7R
-LYy5+8xB6sb4CeqJHnccflZT/LqCnUd8c9EdWg9A1ckc84MFmFzkYzdUets3bvin
-81HP2XJT4CGZhTv+J2E5iQ435AUQK0wsays0QcsodDPFOtZFvvYqW6f1eLbYMRm8
-9tIwlCeZbkxh7NTA26SV0mMQ2ua4x299YgifPTtxUMa3GYdH+t7Ljj5+Fmjsj5iQ
-U/vfqRkRr0mvFoBvNE4ThRyjAUf5hDhxhfIZ7wtlMN8NXZLiNg3H3ozsKvQACcyx
-i7r+mG5W/kgIVRQ9QjHy0eyNvyu0fdXzDiRpBCROmfUiECwmFwTSb48PxwgRif5b
-t5rfS/pIWOiLq7Ko+DyFp4HVMwUcxT7E0gENLWkcqgpzyYRhqQGBV8FO+EqI58Oy
-CTijKJ0gm4wwcf0wzri+lebp2oimGepOWVsT99tHE2hjENWbE5nK25hnb55o7Q69
-lnf9JEZm1VRkij97TMSHy8RTFD0Y1jdfrjLrObNLadjsycp9Iq6DJilPrjR3n3lY
-aiLUoKV7b6HSzMzm5/wU
-=XQji
+iQEcBAEBAgAGBQJUebU8AAoJECTWi3JdVIfQ78IH/2AdWVLRYBvFDrw9S/whhca+
+B79+Nh36/btjkb8YuAtjFnd+VjQtEbkSSHLa5sZ3Y0R/LSu3bmHsslRtJs+m3RVG
+ds041/+3sbIkJtTxrcYHJEVhOxUDbT9poKtIE8Tkh2/1ZERrzSY2qgTFNVu2SMYM
+MAskTD81ns/DKZb7vv+5VbQqyA8sbWMckBdpdYK3ssKPGt+d0yQ+4XJ9J73oxljd
+3TudKYFRfP/TyFgdHeTu/W4dB+GjYmaFTo5X9mtYP47t53N1QoGYQw/6rTkuTlW9
+Jq4fCTN4sG//mvluThUnT5HuIdBjydP/lPjUI83ysibxjQen7ECUKGwwl5oLrw8=
+=6fpC
 -----END PGP SIGNATURE-----
 
---92BocwDsoc75xCRvPE3SNfuofJwOdGvws--
+--E9xT1P6Q9DbJSWaX--

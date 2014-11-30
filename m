@@ -1,44 +1,93 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 13 Nov 2014 08:50:09 +0000
-Subject: [PATCH v2 3/4] simplefb: Change simplefb_init from module_init to fs_initcall
-Message-Id: <1415868610-13297-3-git-send-email-hdegoede@redhat.com>
+From: Marek Belisko <marek@goldelico.com>
+Date: Sun, 30 Nov 2014 13:07:47 +0000
+Subject: [PATCH v3 3/3] arm: dts: omap3-gta04: Add handling for tv output
+Message-Id: <1417352867-7436-4-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415868610-13297-1-git-send-email-hdegoede@redhat.com>
-In-Reply-To: <1415868610-13297-1-git-send-email-hdegoede@redhat.com>
+References: <1417352867-7436-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1417352867-7436-1-git-send-email-marek@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-One of the reasons for having the simplefb nodes in /chosen, and doing
-explicit enumeration of the nodes there, is too allow enumerating them sooner,
-so that we get a console earlier on.
+Add handling for gta04 tv out chain:
+venc -> opa362 -> svideo
 
-Doing this earlier then fs_initcall is not useful, since the fb only turns into
-a console when fbcon intializes, which is a fs_initcall too.
+Use invert-polarity in venc node because opa362
+is doing polarity inversion also.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Marek Belisko <marek@goldelico.com>
 ---
- drivers/video/fbdev/simplefb.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/omap3-gta04.dtsi | 49 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index 2705af8..48e292a 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -415,7 +415,11 @@ static void __exit simplefb_exit(void)
- 	platform_driver_unregister(&simplefb_driver);
- }
+diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
+index fd34f91..e9f221d 100644
+--- a/arch/arm/boot/dts/omap3-gta04.dtsi
++++ b/arch/arm/boot/dts/omap3-gta04.dtsi
+@@ -83,6 +83,41 @@
+ 		compatible = "usb-nop-xceiv";
+ 		reset-gpios = <&gpio6 14 GPIO_ACTIVE_LOW>;
+ 	};
++
++	tv0: connector@1 {
++		compatible = "svideo-connector";
++		label = "tv";
++
++		port {
++			tv_connector_in: endpoint {
++				remote-endpoint = <&opa_out>;
++			};
++		};
++	};
++
++	tv_amp: opa362 {
++		compatible = "ti,opa362";
++		gpios = <&gpio1 23 0>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++				opa_in: endpoint@0 {
++					remote-endpoint = <&venc_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++				opa_out: endpoint@0 {
++					remote-endpoint = <&tv_connector_in>;
++				};
++			};
++		};
++	};
+ };
  
--module_init(simplefb_init);
-+/*
-+ * While this can be a module, if builtin it's most likely the console
-+ * So let's leave module_exit but move module_init to an earlier place
-+ */
-+fs_initcall(simplefb_init);
- module_exit(simplefb_exit);
+ &omap3_pmx_core {
+@@ -396,6 +431,20 @@
+ 	};
+ };
  
- MODULE_AUTHOR("Stephen Warren <swarren@wwwdotorg.org>");
++&venc {
++	status = "okay";
++
++	vdda-supply = <&vdac>;
++
++	port {
++		venc_out: endpoint {
++			remote-endpoint = <&opa_in>;
++			ti,channels = <2>;
++			ti,invert-polarity;
++		};
++	};
++};
++
+ &gpmc {
+ 	ranges = <0 0 0x30000000 0x04>; /* CS0: NAND */
+ 
 -- 
-2.1.0
+1.9.1
 

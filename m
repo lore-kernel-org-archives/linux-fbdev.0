@@ -1,69 +1,41 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Nov 2014 11:52:03 +0000
-Subject: [PATCH 01/22] OMAPDSS: DSI: wait for hsdiv clocks when enabling PLL
-Message-Id: <1415793144-11723-2-git-send-email-tomi.valkeinen@ti.com>
+From: Marek Belisko <marek@goldelico.com>
+Date: Sun, 30 Nov 2014 13:07:44 +0000
+Subject: [PATCH v3 0/3] omapdss: Add video output support for gta04
+Message-Id: <1417352867-7436-1-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-At the moment we have two functions to wait for the HSDIV clocks to get
-active, dsi_wait_pll_hsdiv_dispc_active and
-dsi_wait_pll_hsdiv_dsi_active. Instead of such inconvenient functions,
-let's just make sure that the hsdiv clocks are active after the pll has
-been enabled.
+changes from v2:
+- rename amplifier-opa362.c to encoder-opa362
+- drop inversion handlign from driver
+- add ti,invert-polarity to venc node
 
-This patch adds code to dsi_pll_set_clock_div() to wait until HSDIV
-clocks are active.
+I also drop devconf1 handling patches because discussion how to
+properly implement is not yet finished and this part is independent
+from video driver.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/dsi.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+changes from v1:
+- fix opa362 compilation error
+- fix opa362 DT documentation
+- move devconf1 definition to omap3.dtsi
 
-diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
-index 0793bc67a275..fe8196b17a5e 100644
---- a/drivers/video/fbdev/omap2/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/dss/dsi.c
-@@ -1514,6 +1514,20 @@ static void dsi_pll_calc_dsi_fck(struct dsi_clock_info *cinfo)
- 	cinfo->dsi_pll_hsdiv_dsi_clk = cinfo->clkin4ddr / cinfo->regm_dsi;
- }
- 
-+static int dsi_wait_hsdiv_ack(struct platform_device *dsidev, u32 hsdiv_ack_mask)
-+{
-+	int t = 100;
-+
-+	while (t-- > 0) {
-+		u32 v = dsi_read_reg(dsidev, DSI_PLL_STATUS);
-+		v &= hsdiv_ack_mask;
-+		if (v = hsdiv_ack_mask)
-+			return 0;
-+	}
-+
-+	return -ETIMEDOUT;
-+}
-+
- int dsi_pll_set_clock_div(struct platform_device *dsidev,
- 		struct dsi_clock_info *cinfo)
- {
-@@ -1646,6 +1660,13 @@ int dsi_pll_set_clock_div(struct platform_device *dsidev,
- 	l = FLD_MOD(l, 0, 20, 20);	/* DSI_HSDIVBYPASS */
- 	dsi_write_reg(dsidev, DSI_PLL_CONFIGURATION2, l);
- 
-+	r = dsi_wait_hsdiv_ack(dsidev, BIT(7) | BIT(8));
-+	if (r) {
-+		DSSERR("failed to enable HSDIV clocks: %d\n", r);
-+		goto err;
-+	}
-+
-+
- 	DSSDBG("PLL config done\n");
- err:
- 	return r;
+Marek Belisko (3):
+  video: omapdss: Add opa362 driver
+  Documentation: DT: Add documentation for ti,opa362 bindings
+  arm: dts: omap3-gta04: Add handling for tv output
+
+ .../devicetree/bindings/video/ti,opa362.txt        |  38 +++
+ arch/arm/boot/dts/omap3-gta04.dtsi                 |  49 ++++
+ drivers/video/fbdev/omap2/displays-new/Kconfig     |   6 +
+ drivers/video/fbdev/omap2/displays-new/Makefile    |   1 +
+ .../fbdev/omap2/displays-new/encoder-opa362.c      | 283 +++++++++++++++++++++
+ 5 files changed, 377 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/ti,opa362.txt
+ create mode 100644 drivers/video/fbdev/omap2/displays-new/encoder-opa362.c
+
 -- 
-2.1.3
+1.9.1
 

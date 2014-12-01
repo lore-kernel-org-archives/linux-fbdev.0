@@ -1,110 +1,68 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Thu, 18 Dec 2014 08:32:22 +0000
-Subject: Re: [PATCH v10 3/6] devicetree: mfd: Add new SKY81452 mfd binding
-Message-Id: <20141218083222.GS13885@x1>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 01 Dec 2014 09:07:06 +0000
+Subject: Re: [PATCH v7.1 00/19] Rework OMAP4+ HDMI audio support
+Message-Id: <547C2FBA.4030204@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="blQAtojEKCpEraSF8CEc62QM0jTNWlldg"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1418881671-3495-1-git-send-email-jack.yoo@skyworksinc.com>
- <1418881671-3495-4-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1418881671-3495-4-git-send-email-jack.yoo@skyworksinc.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+References: <cover.1415803064.git.jsarha@ti.com> <20141129115957.GE7712@sirena.org.uk>
+In-Reply-To: <20141129115957.GE7712@sirena.org.uk>
+To: Mark Brown <broonie@kernel.org>, Jyri Sarha <jsarha@ti.com>
+Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com
+
+--blQAtojEKCpEraSF8CEc62QM0jTNWlldg
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
-To: gyungoh@gmail.com
-Cc: sameo@linux.intel.com, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org, akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-On Thu, 18 Dec 2014, gyungoh@gmail.com wrote:
+On 29/11/14 13:59, Mark Brown wrote:
+> On Wed, Nov 12, 2014 at 04:40:51PM +0200, Jyri Sarha wrote:
+>> The patches are based on:
+>> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next=
 
-> From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+>>
+>> The base, the patches, and couple of additional not-to-be-merged
+>> omap2plus_defconfig patches can be found here:
+>> https://github.com/jsarha/linux.git omap-hdmi-audio
 >=20
-> Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> ---
-> Changes v10:
-> Nothing
+> I guess I'm OK with these so
 >=20
-> Changes v9:
-> Nothing
->=20
-> Changes v8:
-> Made up the example for backlight DT
->=20
-> Changes v7:
-> Nothing
->=20
-> Changes v6:
-> Nothing
->=20
-> Changes v5:
-> Changed DT for regulator : 'lout' node should be defined under 'regulator'
-> Removed compatible string from sky81452-regulator driver
->=20
-> Changes v4:
-> Nothing
->=20
-> Changes v3:
-> Nothing
->=20
-> Changes v2:
-> Added reg attribute for I2C slave address
->=20
->  Documentation/devicetree/bindings/mfd/sky81452.txt | 36 ++++++++++++++++=
-++++++
->  1 file changed, 36 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/mfd/sky81452.txt b/Documen=
-tation/devicetree/bindings/mfd/sky81452.txt
-> new file mode 100644
-> index 0000000..ab71473
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/sky81452.txt
-> @@ -0,0 +1,36 @@
-> +SKY81452 bindings
-> +
-> +Required properties:
-> +- compatible	: Must be "skyworks,sky81452"
-> +- reg		: I2C slave address
-> +
-> +Required child nodes:
-> +- backlight	: container node for backlight following the binding
-> +		in video/backlight/sky81452-backlight.txt
-> +- regulator	: container node for regulators following the binding
-> +		in regulator/sky81452-regulator.txt
+> Reviewed-by: Mark Brown <broonie@kernel.org>
 
-For these MFD parts.
+Thanks. And just to be sure, that's "ok, we can merge these in the next
+merge window"?
 
-Acked-by: Lee Jones <lee.jones@linaro.org>
+> but like I said in reply to the patch adding the new driver I think
+> we're going to want to generalize this a bit.
 
-[Don't forget to apply the Acks you receive on subsequent submissions]
+Yep, if I'm not mistaken I did suggest that to Jyri at some point. We
+can continue working on that, but I'd rather not do anything big on that
+front before there is some other SoC that has the same setup.
 
-The Backlight parts need closer inspection by the DT people.
+ Tomi
 
-> +Example:
-> +
-> +	sky81452@2c {
-> +		compatible =3D "skyworks,sky81452";
-> +		reg =3D <0x2c>;
-> +
-> +		backlight {
-> +			compatible =3D "skyworks,sky81452-backlight";
-> +			name =3D "pwm-backlight";
-> +			skyworks,en-channels =3D <0x3f>;
-> +			skyworks,ignore-pwm;
-> +			skyworks,phase-shift;
-> +			skyworks,ovp-level =3D <20>;
-> +			skyworks,current-limit =3D <2300>;
-> +		};
-> +
-> +		regulator {
-> +			lout {
-> +				regulator-name =3D "sky81452-lout";
-> +				regulator-min-microvolt =3D <4500000>;
-> +				regulator-max-microvolt =3D <8000000>;
-> +			};
-> +		};
-> +	};
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+
+--blQAtojEKCpEraSF8CEc62QM0jTNWlldg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUfC+6AAoJEPo9qoy8lh71N+EP/0AYndnEucrVPo1Wg9ARmSu2
+o8CDwQlVAijTtsF2g0tHyk2dwUfWQAu7bXGs9poCMPckAxPQ0jcO8R4CYnOpH+ot
+pWqMj3/x6HBLbzMI9Lt50ucj4nVMWX9+aBLt7gux4vJja1OPw05jNzYRg+mHarKE
+9+M/sb6aI06/XcDB4Pi+7RqiquqyQGU5FioqSlamiU9jx11aPFWCJKYc43QOfAYn
+JGoYaBuX+95LKurfUdn2s8R8dfSU4Vi3GIOosfsMrW7E5ZAPbqP1kSYf6A78hzkz
+QAP+t0TCBRGJ/FxXQPleY5TL0Qpskt49suqMjJhzTJ4biiQQdTqgmau43EiSePHD
+AsTS6CPlMy8NE1XJlVlYq0QZ/dgReM519M3Po5CF1ZLZ4YriONcBEYWNay/nJhHq
+4Q9ASgjYCXTAG7JkKt8LH2uAw3RDifj1ILqIZ16dUnOf74ZNIPzFb5pnRitERqOa
+FLJYjDRdKFLpDYIex+HD8g1MsUrI2MzxcvvD+mX3uYjaoMcTHQVTI1/69U47Ival
+OUVT93TeAjFGt2cP47FU126DUn1Q1hIp08xVZFbzNyCNJ3grNsT8f/xpf/MnHDQv
+qFZ6k9r1dRiRsgfb9Cc23NrxxcdRzQvRD4Dls1H7HD0oFqcmZVS19VYqOet/cf1B
+PwtILvmX7JcGQb98yA6E
+=W/24
+-----END PGP SIGNATURE-----
+
+--blQAtojEKCpEraSF8CEc62QM0jTNWlldg--

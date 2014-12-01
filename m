@@ -1,63 +1,96 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Mon, 01 Dec 2014 19:21:52 +0000
-Subject: Re: [PATCH v7.1 09/19] ASoC: omap-hdmi-audio: Add platform device for OMAP HDMI audio support
-Message-Id: <20141201192152.GK7712@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="66JA64BHvaVFYarG"
+From: Alexander Stein <alexander.stein@systec-electronic.com>
+Date: Mon, 01 Dec 2014 13:29:23 +0000
+Subject: Re: [PATCH 1/4] video: fsl-dcfb: Add dcfb framebuffer driver for LS1021A platform
+Message-Id: <1645594.e2cfs6JOiv@ws-stein>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com>
- <9a528990bbe116d9bb073f690b835c847b3fa0bf.1415803065.git.jsarha@ti.com>
- <20141129113230.GC7712@sirena.org.uk>
- <547C1598.1000509@ti.com>
-In-Reply-To: <547C1598.1000509@ti.com>
-To: Jyri Sarha <jsarha@ti.com>
-Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com
+References: <1416824454-28156-1-git-send-email-Li.Xiubo@freescale.com>
+ <1416824454-28156-2-git-send-email-Li.Xiubo@freescale.com>
+In-Reply-To: <1416824454-28156-2-git-send-email-Li.Xiubo@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
+On Monday 24 November 2014 18:20:51, Xiubo Li wrote:
+> [...]
+> +static int fsl_dcfb_init_fbinfo(struct fb_info *info)
+> +{
+> +	struct fsl_dcfb_mfb_info *mfbi = info->par;
+> +	struct fb_var_screeninfo *var = &info->var;
+> +	struct fsl_dcfb_fb_private *dcfb = mfbi->parent;
+> +	struct device_node *np = dcfb->dev->of_node;
+> +	struct device_node *dnp, *tnp;
+> +	struct display_timings *timings;
+> +	int i, ret;
+> +
+> +	dnp = of_parse_phandle(np, "display", 0);
+> +	if (!dnp) {
+> +		dev_err(dcfb->dev, "failed to find \"display\" phandle.\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	ret = of_property_read_u32(dnp, "bits-per-pixel",
+> +				   &var->bits_per_pixel);
+> +	if (ret < 0) {
+> +		dev_err(dcfb->dev, "failed to get \"bits-per-pixel\" property.\n");
+> +		goto put_dnp;
+> +	}
+> +
+> +	timings = of_get_display_timings(dnp);
+> +	if (!timings) {
+> +		dev_err(dcfb->dev, "failed to get display timings\n");
+> +		return -ENODEV;
+> +		goto put_dnp;
+> +	}
+> +
+> +	tnp = of_find_node_by_name(dnp, "display-timings");
+> +	if (!tnp) {
+> +		dev_err(dcfb->dev, "failed to find \"display-timings\" node\n");
+> +		return -ENODEV;
+> +		goto put_dnp;
+> +	}
+> +
+> +	for (i = 0; i < of_get_child_count(tnp); i++) {
+> +		struct videomode vm;
+> +		struct fb_videomode fb_vm;
+> +
+> +		ret = videomode_from_timings(timings, &vm, i);
+> +		if (ret < 0)
+> +			goto put_tnp;
+> +
+> +		ret = fb_videomode_from_videomode(&vm, &fb_vm);
+> +		if (ret < 0)
+> +			goto put_tnp;
+> +
+> +		fb_add_videomode(&fb_vm, &info->modelist);
+> +	}
 
---66JA64BHvaVFYarG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Adding each display timing to the modelist here...
 
-On Mon, Dec 01, 2014 at 09:15:36AM +0200, Jyri Sarha wrote:
+> [...]
+> +	ret = fsl_dcfb_init_fbinfo(info);
+> +	if (ret)
+> +		goto err_cmap;
+> +
+> +	modelist = list_first_entry(&info->modelist,
+> +			struct fb_modelist, list);
+> +	fb_videomode_to_var(&info->var, &modelist->mode);
 
-> The only reason is that I have not encountered any other audio capable HDMI
-> device falling in this category (cpu-dai integrated within HDMI device
-> block). Without at least two devices utilizing this code it remains
-> questionable whether the code is really generic. At least the dss_version
-> should be replaced with some explicit data to fill struct
-> snd_soc_dai_driver. Also struct omap_dss_audio is coming directly from omap
-> dss code, its contents is generic but I am not sure if the information
-> within struct snd_aes_iec958 and struct snd_cea_861_aud_if is enough to
-> configure the HDMI IP in all possible cases.
+... and just picking the first here, essentially renders the "native-mode" property in device tree as useless, since only the first in that list is picked (which seems to be the last one inserted).
 
-It should be no big deal to add extra information if required.  Given
-how poor the upstreaming state is for HDMI I expect we'd get people
-coming out of the woodwork if there were infrastructure, some of the
-Exynos stuff looked similar to your situation for example.
+Best regards,
+Alexander
+-- 
+Dipl.-Inf. Alexander Stein
 
-> I can work on making this API look more generic, but before there is another
-> candidate to use this API it is questionable if the code will ever be used
-> by any other device.
+SYS TEC electronic GmbH
+Am Windrad 2
+08468 Heinsdorfergrund
+Tel.: 03765 38600-1156
+Fax: 03765 38600-4100
+Email: alexander.stein@systec-electronic.com
+Website: www.systec-electronic.com
+ 
+Managing Director: Dipl.-Phys. Siegmar Schmidt
+Commercial registry: Amtsgericht Chemnitz, HRB 28082
 
-Unless there is something obviously terrible about the hardware design
-that I'm missing which means nobody else would ever have implemented
-something like it I'd expect there will be at least one other system
-that can make use of the code.
-
---66JA64BHvaVFYarG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJUfL/QAAoJECTWi3JdVIfQvpsIAIAVOmnFJVHllx/jP1YZDmNd
-0tY0PUpiCl9a7N5nTkegNtWDJA1IT+qMEcPavj8o/w5Uzto/ZvWHDMfTqsNr0ps5
-mSyyxvDw4aSZYZhNSlNXP3/9Ml3UR58r30GYmUUEekAbqu+alpguIJAR/Fb1G6Fy
-JvF5tZCv4G1b7o3JrRePyiq/zfCSUaYdNxfkOEhGCW/4WWq+81cpazx2eYQtky4+
-6Tc5OkX9yi2LiQ7+Kl6CVDbvp0xVsyVb2dvdKzKEYWUSK9wcKzkFZP6vzbui1WmF
-FcQ5owT1/Bd4cokGPE5+AetnfxL/y3CS9dn/MDib4QLK1iBMXGblL8A9hPsTLXg=
-=xl8q
------END PGP SIGNATURE-----
-
---66JA64BHvaVFYarG--

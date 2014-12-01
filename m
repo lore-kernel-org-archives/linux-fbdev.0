@@ -1,136 +1,128 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 18 Dec 2014 13:58:35 +0000
-Subject: Re: [PATCH] video/logo: prevent use of logos after they have been freed
-Message-Id: <5492DD8B.7040308@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="UQh8VEK55w7iAaGVobFcnJONrUJPlVQhc"
+From: Sean Paul <seanpaul@chromium.org>
+Date: Mon, 01 Dec 2014 21:07:59 +0000
+Subject: [PATCH v2 2/2] backlight/lp855x: Add supply regulator to lp855x
+Message-Id: <1417468079-4990-1-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1418903842-22450-1-git-send-email-tomi.valkeinen@ti.com>	<1418903842-22450-2-git-send-email-tomi.valkeinen@ti.com>
- <CAMuHMdX9GB_ikDsGNLTgkDuAeRy81a-A9CVAFmX7Taab8_Z=oQ@mail.gmail.com>
-In-Reply-To: <CAMuHMdX9GB_ikDsGNLTgkDuAeRy81a-A9CVAFmX7Taab8_Z=oQ@mail.gmail.com>
-To: linux-arm-kernel@lists.infradead.org
-
---UQh8VEK55w7iAaGVobFcnJONrUJPlVQhc
-Content-Type: text/plain; charset=utf-8
+References: <54767F43.2060901@ti.com>
+In-Reply-To: <54767F43.2060901-l0cyMroinI0@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, milo.kim-l0cyMroinI0@public.gmane.org
+Cc: jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Sean Paul <seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, =?UTF-8?q?St=C3=A9phane=20Marchesin?= <marcheu-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Aaron Durbin <adurbin-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 
-On 18/12/14 15:46, Geert Uytterhoeven wrote:
-> Hi Tomi,
->=20
-> On Thu, Dec 18, 2014 at 12:57 PM, Tomi Valkeinen <tomi.valkeinen@ti.com=
-> wrote:
->> If the probe of an fb driver has been deferred due to missing
->> dependencies, and the probe is later ran when a module is loaded, the
->> fbdev framework will try to find a logo to use.
->>
->> However, the logos are __initdata, and have already been freed. This
->> causes sometimes page faults, if the logo memory is not mapped,
->> sometimes other random crashes as the logo data is invalid, and
->> sometimes nothing, if the fbdev decides to reject the logo (e.g. the
->> random value depicting the logo's height is too big).
->>
->> This patch adds a late_initcall function to mark the logos as freed. I=
-n
->> reality the logos are freed later, and fbdev probe may be ran between
->> this late_initcall and the freeing of the logos. In that case we will
->> miss drawing the logo, even if it would be possible.
->>
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> ---
->>  drivers/video/logo/logo.c | 17 ++++++++++++++++-
->>  1 file changed, 16 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
->> index 940cd196eef5..10fbfd8ab963 100644
->> --- a/drivers/video/logo/logo.c
->> +++ b/drivers/video/logo/logo.c
->> @@ -21,6 +21,21 @@ static bool nologo;
->>  module_param(nologo, bool, 0);
->>  MODULE_PARM_DESC(nologo, "Disables startup logo");
->>
->> +/*
->> + * Logos are located in the initdata, and will be freed in kernel_ini=
-t.
->> + * Use late_init to mark the logos as freed to prevent any further us=
-e.
->> + */
->> +
->> +static bool logos_freed;
->> +
->> +static int __init fb_logo_late_init(void)
->> +{
->> +       logos_freed =3D true;
->=20
-> Just set nologo to true?
+This patch adds a supply regulator to the lp855x platform data to facilitate
+powering on/off the 3V rail attached to the controller.
 
-That was my first thought, but then I started to wonder if it's possible
-that someone would set it to false afterwards. I'm not quite sure how,
-as the module_param parsing should happen early. But I just wanted to
-play safe.
+Cc: St=C3=A9phane Marchesin <marcheu@chromium.org>
+Cc: Aaron Durbin <adurbin@chromium.org>
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+---
 
->=20
->> +       return 0;
->> +}
->> +
->> +late_initcall(fb_logo_late_init);
->=20
-> Hmm...
->=20
->> +
->>  /* logo's are marked __initdata. Use __init_refok to tell
->>   * modpost that it is intended that this function uses data
->>   * marked __initdata.
->> @@ -29,7 +44,7 @@ const struct linux_logo * __init_refok fb_find_logo(=
-int depth)
->>  {
->>         const struct linux_logo *logo =3D NULL;
->>
->> -       if (nologo)
->> +       if (nologo || logos_freed)
->=20
-> A long time ago (ibefore 2.1.124), we used to have a test on initmem_fr=
-eed
-> here. But that variable no longer exists.
-
-I guess it was removed because it was considered a hack? =3D) The
-functions accessing __initdata should be __init.
-
-> Perhaps you can check system_state? That's variable is changed from
-> SYSTEM_BOOTING to SYSTEM_RUNNING in kernel_init(), after freeing
-> initmem.
-
-Hmm maybe. But there's a time period between free_initmem() and setting
-system_state to SYSTEM_RUNNING. Calling fb_find_logo() between those
-would again break. I don't know if it's possible for fb_find_logo to be
-called there in practice, but... Again, I'd rather play it safe. It's
-not nice to debug crashes that happen inside the console code, as you
-won't see the crashes on the console.
-
- Tomi
+Changes in v2:
+	- Add NULL check in lp855x_remove
 
 
+ .../devicetree/bindings/video/backlight/lp855x.txt     |  2 ++
+ drivers/video/backlight/lp855x_bl.c                    | 18 ++++++++++++++=
+++++
+ include/linux/platform_data/lp855x.h                   |  2 ++
+ 3 files changed, 22 insertions(+)
 
---UQh8VEK55w7iAaGVobFcnJONrUJPlVQhc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+diff --git a/Documentation/devicetree/bindings/video/backlight/lp855x.txt b=
+/Documentation/devicetree/bindings/video/backlight/lp855x.txt
+index 96e83a5..0a3ecbc 100644
+--- a/Documentation/devicetree/bindings/video/backlight/lp855x.txt
++++ b/Documentation/devicetree/bindings/video/backlight/lp855x.txt
+@@ -12,6 +12,7 @@ Optional properties:
+   - pwm-period: PWM period value. Set only PWM input mode used (u32)
+   - rom-addr: Register address of ROM area to be updated (u8)
+   - rom-val: Register value to be updated (u8)
++  - power-supply: Regulator which controls the 3V rail
+=20
+ Example:
+=20
+@@ -56,6 +57,7 @@ Example:
+ 	backlight@2c {
+ 		compatible =3D "ti,lp8557";
+ 		reg =3D <0x2c>;
++		power-supply =3D <&backlight_vdd>;
+=20
+ 		dev-ctrl =3D /bits/ 8 <0x41>;
+ 		init-brt =3D /bits/ 8 <0x0a>;
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/=
+lp855x_bl.c
+index 257b3ba..a26d3bb 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -17,6 +17,7 @@
+ #include <linux/of.h>
+ #include <linux/platform_data/lp855x.h>
+ #include <linux/pwm.h>
++#include <linux/regulator/consumer.h>
+=20
+ /* LP8550/1/2/3/6 Registers */
+ #define LP855X_BRIGHTNESS_CTRL		0x00
+@@ -383,6 +384,13 @@ static int lp855x_parse_dt(struct lp855x *lp)
+ 		pdata->rom_data =3D &rom[0];
+ 	}
+=20
++	pdata->supply =3D devm_regulator_get(dev, "power");
++	if (IS_ERR(pdata->supply)) {
++		if (PTR_ERR(pdata->supply) =3D -EPROBE_DEFER)
++			return -EPROBE_DEFER;
++		pdata->supply =3D NULL;
++	}
++
+ 	lp->pdata =3D pdata;
+=20
+ 	return 0;
+@@ -423,6 +431,14 @@ static int lp855x_probe(struct i2c_client *cl, const s=
+truct i2c_device_id *id)
+ 	else
+ 		lp->mode =3D REGISTER_BASED;
+=20
++	if (lp->pdata->supply) {
++		ret =3D regulator_enable(lp->pdata->supply);
++		if (ret < 0) {
++			dev_err(&cl->dev, "failed to enable supply: %d\n", ret);
++			return ret;
++		}
++	}
++
+ 	i2c_set_clientdata(cl, lp);
+=20
+ 	ret =3D lp855x_configure(lp);
+@@ -454,6 +470,8 @@ static int lp855x_remove(struct i2c_client *cl)
+=20
+ 	lp->bl->props.brightness =3D 0;
+ 	backlight_update_status(lp->bl);
++	if (lp->pdata->supply)
++		regulator_disable(lp->pdata->supply);
+ 	sysfs_remove_group(&lp->dev->kobj, &lp855x_attr_group);
+=20
+ 	return 0;
+diff --git a/include/linux/platform_data/lp855x.h b/include/linux/platform_=
+data/lp855x.h
+index 1b2ba24..9c7fd1e 100644
+--- a/include/linux/platform_data/lp855x.h
++++ b/include/linux/platform_data/lp855x.h
+@@ -136,6 +136,7 @@ struct lp855x_rom_data {
+ 		Only valid when mode is PWM_BASED.
+  * @size_program : total size of lp855x_rom_data
+  * @rom_data : list of new eeprom/eprom registers
++ * @supply : regulator that supplies 3V input
+  */
+ struct lp855x_platform_data {
+ 	const char *name;
+@@ -144,6 +145,7 @@ struct lp855x_platform_data {
+ 	unsigned int period_ns;
+ 	int size_program;
+ 	struct lp855x_rom_data *rom_data;
++	struct regulator *supply;
+ };
+=20
+ #endif
+--=20
+2.2.0.rc0.207.ga3a616c
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUkt2LAAoJEPo9qoy8lh71PSwP/RBS7lVSdYm/z8J6oK+dxsph
-i/Nad5AQx/hZtsE+V5+4rqWD8ca/7sPruXS4SFjV+zV2BKuNGmbzcZ8dvpxXcjHe
-+2UsjtgI0HpY0oeISSw6o7mYkAyDVp9BcY3n//GSyjsuLRpiIBsGCVS7O5na+NIS
-5A7TwJ9x8kLUnlxdJ1sBbiWZ0K14+Aj5CxbEjX+MVpItu09ExsJHyu73BzEPJoZx
-tWlRPFLLEvxUCzBTwL1dvPpCCsxuf2ZHD9S1CC93Z8YGjgfq+Miq5zC8VhSi9/pI
-K1szmrTaQq16V3/3Nrfe1ks6MBUtvVboHZaKRlNNZ6uABS3aNJDXqlk1s/z7P4V1
-RyPIoZ59+poYpt2ib5b8zKEyLH0oinTZC12Wn5JByy0iwZMX0QBBd5edPl6l7AD7
-vL0DKE8wuLCwdx0dW46I23nkk5P28BbUTiD2ov/+SqExKUr5Z086ji0t1pFbywJv
-vZR3eHA76kImbzXBMfgu8wSVs4+P29s+AfF3zZtGU/7Z+5b/wHV/YUNy7lrYp2Rj
-HRdOfpYgbXtOVBusLBYT285uEE8Gnd6t49DgatsiOpMH+at2w4+Jlm9hiMl5x013
-fi2b7Hvv/PpAszcB0XSwMiIOFtovQs7azBzB7TehAB5GAimSzq041/+8DTLsHwnL
-QNAKnzPrSSeYV/qaTRSB
-=yMA9
------END PGP SIGNATURE-----
-
---UQh8VEK55w7iAaGVobFcnJONrUJPlVQhc--

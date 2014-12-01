@@ -1,68 +1,62 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 01 Dec 2014 09:07:06 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Mon, 01 Dec 2014 19:31:12 +0000
 Subject: Re: [PATCH v7.1 00/19] Rework OMAP4+ HDMI audio support
-Message-Id: <547C2FBA.4030204@ti.com>
+Message-Id: <20141201193112.GN7712@sirena.org.uk>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="blQAtojEKCpEraSF8CEc62QM0jTNWlldg"
+Content-Type: multipart/mixed; boundary="eSIQo8/L/IVtUaNr"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1415803064.git.jsarha@ti.com> <20141129115957.GE7712@sirena.org.uk>
-In-Reply-To: <20141129115957.GE7712@sirena.org.uk>
-To: Mark Brown <broonie@kernel.org>, Jyri Sarha <jsarha@ti.com>
-Cc: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com
-
---blQAtojEKCpEraSF8CEc62QM0jTNWlldg
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-
-On 29/11/14 13:59, Mark Brown wrote:
-> On Wed, Nov 12, 2014 at 04:40:51PM +0200, Jyri Sarha wrote:
->> The patches are based on:
->> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next=
-
->>
->> The base, the patches, and couple of additional not-to-be-merged
->> omap2plus_defconfig patches can be found here:
->> https://github.com/jsarha/linux.git omap-hdmi-audio
->=20
-> I guess I'm OK with these so
->=20
-> Reviewed-by: Mark Brown <broonie@kernel.org>
-
-Thanks. And just to be sure, that's "ok, we can merge these in the next
-merge window"?
-
-> but like I said in reply to the patch adding the new driver I think
-> we're going to want to generalize this a bit.
-
-Yep, if I'm not mistaken I did suggest that to Jyri at some point. We
-can continue working on that, but I'd rather not do anything big on that
-front before there is some other SoC that has the same setup.
-
- Tomi
+References: <cover.1415803064.git.jsarha@ti.com>
+ <20141129115957.GE7712@sirena.org.uk>
+ <547C2FBA.4030204@ti.com>
+In-Reply-To: <547C2FBA.4030204@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jyri Sarha <jsarha@ti.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com
 
 
+--eSIQo8/L/IVtUaNr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
---blQAtojEKCpEraSF8CEc62QM0jTNWlldg
+On Mon, Dec 01, 2014 at 11:07:06AM +0200, Tomi Valkeinen wrote:
+> On 29/11/14 13:59, Mark Brown wrote:
+
+> > Reviewed-by: Mark Brown <broonie@kernel.org>
+
+> Thanks. And just to be sure, that's "ok, we can merge these in the next
+> merge window"?
+
+Yes.
+
+> > but like I said in reply to the patch adding the new driver I think
+> > we're going to want to generalize this a bit.
+
+> Yep, if I'm not mistaken I did suggest that to Jyri at some point. We
+> can continue working on that, but I'd rather not do anything big on that
+> front before there is some other SoC that has the same setup.
+
+I really want to see people making an effort to make code shareable here
+- I think one of the reasons nobody is upstreaming any of their code is
+that there's nothing generic in place to handle generic tasks so people
+just look at their code, think it's too much of a device specific hack
+and think they'll get back to looking at it later.  If this is a
+sensible set of callbacks to have to pass configuration around let's
+make that discoverable without requiring people to look through the OMAP
+drivers.
+
+--eSIQo8/L/IVtUaNr
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUfC+6AAoJEPo9qoy8lh71N+EP/0AYndnEucrVPo1Wg9ARmSu2
-o8CDwQlVAijTtsF2g0tHyk2dwUfWQAu7bXGs9poCMPckAxPQ0jcO8R4CYnOpH+ot
-pWqMj3/x6HBLbzMI9Lt50ucj4nVMWX9+aBLt7gux4vJja1OPw05jNzYRg+mHarKE
-9+M/sb6aI06/XcDB4Pi+7RqiquqyQGU5FioqSlamiU9jx11aPFWCJKYc43QOfAYn
-JGoYaBuX+95LKurfUdn2s8R8dfSU4Vi3GIOosfsMrW7E5ZAPbqP1kSYf6A78hzkz
-QAP+t0TCBRGJ/FxXQPleY5TL0Qpskt49suqMjJhzTJ4biiQQdTqgmau43EiSePHD
-AsTS6CPlMy8NE1XJlVlYq0QZ/dgReM519M3Po5CF1ZLZ4YriONcBEYWNay/nJhHq
-4Q9ASgjYCXTAG7JkKt8LH2uAw3RDifj1ILqIZ16dUnOf74ZNIPzFb5pnRitERqOa
-FLJYjDRdKFLpDYIex+HD8g1MsUrI2MzxcvvD+mX3uYjaoMcTHQVTI1/69U47Ival
-OUVT93TeAjFGt2cP47FU126DUn1Q1hIp08xVZFbzNyCNJ3grNsT8f/xpf/MnHDQv
-qFZ6k9r1dRiRsgfb9Cc23NrxxcdRzQvRD4Dls1H7HD0oFqcmZVS19VYqOet/cf1B
-PwtILvmX7JcGQb98yA6E
-=W/24
+iQEcBAEBAgAGBQJUfMH/AAoJECTWi3JdVIfQg5IH/i3sTbK4INdyckCWZ873u1cU
+5nuZ99BN8e/5Dzl8Juvy0uqovDFcysVjyB4q8lBqxH/O1sEAnH6CaX+qu3rfWgTZ
+4xX/7gp4qmrF6SR5LJ7DFFWUbP91V04ciabM+WKu/3z7EIJtJLZs3zaLEQ01rv8U
+OlM//Zy4Zmh1DhBbAxRHCIqZ1dHET9o0SE7v+IMiuFwWR9mQXdv3mXqJFf1TJ2Bq
+EPKKdKW+DO453MKwE4lkBuYYfX3ZTpwQZkzAbb6jvyaEs+DKQ9hXB3ovBbnQZ53b
+vbLRmVTQgaVjp5/zsjBRtPyu9KAHc3oXxVr6OMCKf+XQSax3rls+37qHr2ehhrc=
+=AAsU
 -----END PGP SIGNATURE-----
 
---blQAtojEKCpEraSF8CEc62QM0jTNWlldg--
+--eSIQo8/L/IVtUaNr--

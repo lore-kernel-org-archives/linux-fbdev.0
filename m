@@ -1,43 +1,64 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 31 Dec 2014 12:38:45 +0000
-Subject: [PATCH 3/3] MAINTAINERS: update for SM7XX driver
-Message-Id: <1420028805-30488-3-git-send-email-sudipm.mukherjee@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 03 Dec 2014 11:53:38 +0000
+Subject: Re: [PATCH] Converting int usage to bool
+Message-Id: <547EF9C2.60106@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Il5MoGSHs36JbqMLbsEESBmaj3750TQse"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420028805-30488-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1420028805-30488-1-git-send-email-sudipm.mukherjee@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Sudip Mukherjee <sudip@vectorindia.org>, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
+References: <20141127104133.GA5051@wrath>
+In-Reply-To: <20141127104133.GA5051@wrath>
+To: Quentin Lambert <lambert.quentin@gmail.com>, Thomas Winischhofer <thomas@winischhofer.net>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-add myself and Teddy Wang as the Maintainer of the
-SM7XX FRAME BUFFER DRIVER.
+--Il5MoGSHs36JbqMLbsEESBmaj3750TQse
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
- MAINTAINERS | 8 ++++++++
- 1 file changed, 8 insertions(+)
+On 27/11/14 12:41, Quentin Lambert wrote:
+> The following semantic patch was used to find
+> functions and variables declared as int but
+> used as boolean. The patch resulted in a
+> significant number of false positive that I
+> have ignored.
+>=20
+> I am not hyper confident about the modification
+> I made to the functions. Some of them seem to
+> have quite significant side effects, which is not
+> necesserarily intended from a boolean function.
+> In particular both *_rwtest functions write data.
+> Moreover sisfb_find_host_bridge name may suggest
+> more than a boolean return.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6e18e65..4ffe882 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9178,6 +9178,14 @@ L:	linux-wireless@vger.kernel.org
- S:	Maintained
- F:	drivers/staging/rtl8723au/
- 
-+STAGING - SILICON MOTION SM7XX FRAME BUFFER DRIVER
-+M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-+M:	Teddy Wang <teddy.wang@siliconmotion.com>
-+M:	Sudip Mukherjee <sudip@vectorindia.org>
-+L:	linux-fbdev@vger.kernel.org
-+S:	Maintained
-+F:	drivers/staging/sm7xxfb/
-+
- STAGING - SLICOSS
- M:	Lior Dotan <liodot@gmail.com>
- M:	Christopher Harrer <charrer@alacritech.com>
--- 
-1.9.1
+I don't think I'm going to apply based on the above. I do like bools
+where a boolean value is used, but changing it like this to a single
+fbdev driver.. Well, I don't really see much benefit in this patch, and
+there's a possibility for regressions.
 
+ Tomi
+
+
+
+--Il5MoGSHs36JbqMLbsEESBmaj3750TQse
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUfvnDAAoJEPo9qoy8lh71Wl8P/0jBeENpJLhDbG4G572QarhN
+AziXFgxaULZWi+2atxW5lcI3D3Rca9i6Rb/NDWNrRQtomuha5Tm3mSS1DA5LIb+u
+XpAj788GvsMShIFqEvon6zhdfzOguBDPk6gi6IH0Tj6QteCkAiv+45scTMNu/sZk
+/iACZlIcjcBpG4e+lG9Kq0NKN4hadEmnTbuWKT0qalGQnqDYs+z63UND30b6hgYT
+ssvhWttXZ2RauP/zKO5U+b1GsIqJehYwZMwjs2tiiccg3truYwknSsSXOiqN8fcB
+IhOt8Aexpvf3a9UEUROKwyyFbH0mb6/f0klkIn/nUeMG5RIaqrSdS+BLtodoyBUj
+3fRV+hucLW3LoGOnjdl6wTZQ8ezi7jgYNparwcZgb3SSATr87AqTh6mqRM46A3PT
+/udlDMJsgcs65IL0gixPiZN+t/uInNvCRlKpgygOLr+CkIBp8LXdzJjCIDotkB2X
+RbBPOdcAuhUZrfr5mdkpr7wDL0Z0UN96/xn4wODmvoc0MkDm9SqSiczaUjJIUIOV
+3nxfv/iYzh4+0WlzsilbLTnLMoazcKXKsk7ETT78AuXjydHJRTXDOXv/NqV+2kHW
+MLn8sR6ztT06lJ3cwdumtpYaiq6OU9eBd8J3RpOLk0TB1Zi4VFdQqRzXF5YnkSv0
+QQ/Gi6/yXmWIHNSApcla
+=eMHP
+-----END PGP SIGNATURE-----
+
+--Il5MoGSHs36JbqMLbsEESBmaj3750TQse--

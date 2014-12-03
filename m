@@ -1,83 +1,89 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 12 Nov 2014 11:52:02 +0000
-Subject: [PATCH 00/22] OMAPDSS: Create a DSS PLL library
-Message-Id: <1415793144-11723-1-git-send-email-tomi.valkeinen@ti.com>
+From: gyungoh@gmail.com
+Date: Wed, 03 Dec 2014 07:05:30 +0000
+Subject: [PATCH v10 4/6] devicetree: backlight: Add new SKY81452 backlight binding
+Message-Id: <1417590332-4912-5-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi,
+From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
-OMAP DSS hardware contains two different PLLs at the moment: DSI and HDMI PLLs.
-With the DRA7x we will have a new PLL, video PLL. The code for DSI and HDMI
-PLLs are totally separate, with no shared code.
+Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+Acked-by: Bryan Wu <cooloney@gmail.com>
+---
+Changes v10:
+Nothing
 
-This series cleans up the PLL code for DSI and HDMI, and creates a common
-framework for DSS PLLs, which will also be used by the video PLLs.
+Changes v9:
+Nothing
 
-The first half of the patches clean up and rework DSI PLL code to make it more
-suitable with the common PLL code. We then add the common PLL library, and make
-DSI use that.
+Changes v8:
+Renamed property names for backlight with vendor prefix
+Modified gpio-enable property to generic property for GPIO
+Made up the example for backlight DT
 
-The second half does the same for HDMI.
+Changes v7:
+Nothing
 
-There should be no changes visible to the user, although the exact settings for
-the PLLs may be slightly different from what we currently end up programming in
-to the registers.
+Changes v6:
+Nothing
 
-Tested on OMAP3/4/5 boards.
+Changes v5:
+Nothing
 
-This series is based on Archit's "OMAPDSS: Support multiple DPI instances"
-series. I have pushed these to:
+Changes v4:
+Nothing
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/pll-library
+Changes v3:
+Nothing
 
- Tomi
+Changes v2:
+Added reg attribute for I2C slave address
 
-Tomi Valkeinen (22):
-  OMAPDSS: DSI: wait for hsdiv clocks when enabling PLL
-  OMAPDSS: DSI: remove unused hsdiv wait funcs
-  OMAPDSS: DSI: always power on hsclk & hsdiv
-  OMAPDSS: DSI: separate LP clock info from dsi_clock_info
-  OMAPDSS: DSI: remove clkin from dsi_clock_info
-  OMAPDSS: DSI: remove pll_locked field
-  OMAPDSS: DSI: use struct copy instead of individual field copy
-  OMAPDSS: DSI: rename clkin4ddr to clkdco
-  OMAPDSS: DSI: turn hsdivs fields to arrays
-  OMAPDSS: DSI: features: combine dsi & dispc hsdivs
-  OMAPDSS: DSI: dsi_runtime_get/put in pll_init
-  OMAPDSS: Add common PLL code
-  OMAPDSS: DSI: use common DSS PLL support
-  OMAPDSS: HDMI: fix setting REFSEL
-  OMAPDSS: HDMI5: disable interlace modes
-  OMAPDSS: HDMI: rewrite HDMI PLL calculation code
-  OMAPDSS: HDMI: Remove HDMI PLL reset
-  OMAPDSS: HDMI: store WP pointer to hdmi_pll_data
-  OMAPDSS: HDMI: split PLL enable & config
-  OMAPDSS: HDMI: remove extra poweroff
-  OMAPDSS: HDMI: use common DSS PLL support
-  OMAPDSS: features: remove unused DSI PLL features
+ .../video/backlight/sky81452-backlight.txt         | 29 ++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
 
- drivers/video/fbdev/omap2/dss/Makefile       |   2 +-
- drivers/video/fbdev/omap2/dss/dispc.c        |  20 +-
- drivers/video/fbdev/omap2/dss/dpi.c          | 106 ++---
- drivers/video/fbdev/omap2/dss/dsi.c          | 659 ++++++++++-----------------
- drivers/video/fbdev/omap2/dss/dss.c          |  15 -
- drivers/video/fbdev/omap2/dss/dss.h          | 193 ++++----
- drivers/video/fbdev/omap2/dss/dss_features.c |  42 --
- drivers/video/fbdev/omap2/dss/dss_features.h |  12 -
- drivers/video/fbdev/omap2/dss/hdmi.h         |  34 +-
- drivers/video/fbdev/omap2/dss/hdmi4.c        |  68 ++-
- drivers/video/fbdev/omap2/dss/hdmi5.c        |  73 ++-
- drivers/video/fbdev/omap2/dss/hdmi_phy.c     |  31 +-
- drivers/video/fbdev/omap2/dss/hdmi_pll.c     | 313 ++++++-------
- drivers/video/fbdev/omap2/dss/pll.c          | 378 +++++++++++++++
- 14 files changed, 979 insertions(+), 967 deletions(-)
- create mode 100644 drivers/video/fbdev/omap2/dss/pll.c
-
+diff --git a/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt b/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
+new file mode 100644
+index 0000000..8daebf5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
+@@ -0,0 +1,29 @@
++SKY81452-backlight bindings
++
++Required properties:
++- compatible		: Must be "skyworks,sky81452-backlight"
++
++Optional properties:
++- name			: Name of backlight device. Default is 'lcd-backlight'.
++- gpios			: GPIO to use to EN pin.
++			See Documentation/devicetree/bindings/gpio/gpio.txt
++- skyworks,en-channels	: Enable mask for current sink channel 1 to 6.
++- skyworks,ignore-pwm	: Ignore both PWM input
++- skyworks,dpwm-mode	: Enable DPWM dimming mode, otherwise Analog dimming.
++- skyworks,phase-shift	: Enable phase shift mode
++- skyworks,ovp-level	: Over-voltage protection level.
++			Should be between 14 or 28V.
++- skyworks,short-detection-threshold	: It should be one of 4, 5, 6 and 7V.
++- skyworks,current-limit	: It should be 2300mA or 2750mA.
++
++Example:
++
++	backlight {
++		compatible = "skyworks,sky81452-backlight";
++		name = "pwm-backlight";
++		skyworks,en-channels = <0x3f>;
++		skyworks,ignore-pwm;
++		skyworks,phase-shift;
++		skyworks,ovp-level = <20>;
++		skyworks,current-limit = <2300>;
++	};
 -- 
-2.1.3
+1.9.1
 

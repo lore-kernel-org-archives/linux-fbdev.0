@@ -1,81 +1,94 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Dec 2014 11:44:54 +0000
-Subject: [GIT PULL] fbdev fixes for 3.19
-Message-Id: <54A29036.4020507@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="qhuBLOxK9COm3Rf8d6G3PrWF9Mv6hUmHK"
+From: gyungoh@gmail.com
+Date: Wed, 03 Dec 2014 07:05:29 +0000
+Subject: [PATCH v10 3/6] devicetree: mfd: Add new SKY81452 mfd binding
+Message-Id: <1417590332-4912-4-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <54899F0E.4090309@ti.com>
-In-Reply-To: <54899F0E.4090309@ti.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
---qhuBLOxK9COm3Rf8d6G3PrWF9Mv6hUmHK
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
-Hi Linus,
+Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+---
+Changes v10:
+Nothing
 
-The following changes since commit b7392d2247cfe6771f95d256374f1a8e6a6f48=
-d6:
+Changes v9:
+Nothing
 
-  Linux 3.19-rc2 (2014-12-28 16:49:37 -0800)
+Changes v8:
+Made up the example for backlight DT
 
-are available in the git repository at:
+Changes v7:
+Nothing
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-3.19
+Changes v6:
+Nothing
 
-for you to fetch changes up to a32442d4f8b712b701ea577c841d6a0a7c5993c1:
+Changes v5:
+Changed DT for regulator : 'lout' node should be defined under 'regulator'
+Removed compatible string from sky81452-regulator driver
 
-  OMAPDSS: SDI: fix output port_num (2014-12-30 11:18:30 +0200)
+Changes v4:
+Nothing
 
-----------------------------------------------------------------
-fbdev fixes for 3.19
+Changes v3:
+Nothing
 
-* Fix regression with Nokia N900 display
-* Fix crash on fbdev using freed __initdata logos
-* Fix fb_deferred_io_fsync() return value.
+Changes v2:
+Added reg attribute for I2C slave address
 
-----------------------------------------------------------------
-Dan Carpenter (1):
-      OMAPDSS: pll: NULL dereference in error handling
+ Documentation/devicetree/bindings/mfd/sky81452.txt | 36 ++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
 
-Tomi Valkeinen (4):
-      OMAPDSS: HDMI: remove double initializer entries
-      video/logo: prevent use of logos after they have been freed
-      video/fbdev: fix defio's fsync
-      OMAPDSS: SDI: fix output port_num
+diff --git a/Documentation/devicetree/bindings/mfd/sky81452.txt b/Documentation/devicetree/bindings/mfd/sky81452.txt
+new file mode 100644
+index 0000000..ab71473
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/sky81452.txt
+@@ -0,0 +1,36 @@
++SKY81452 bindings
++
++Required properties:
++- compatible	: Must be "skyworks,sky81452"
++- reg		: I2C slave address
++
++Required child nodes:
++- backlight	: container node for backlight following the binding
++		in video/backlight/sky81452-backlight.txt
++- regulator	: container node for regulators following the binding
++		in regulator/sky81452-regulator.txt
++
++Example:
++
++	sky81452@2c {
++		compatible = "skyworks,sky81452";
++		reg = <0x2c>;
++
++		backlight {
++			compatible = "skyworks,sky81452-backlight";
++			name = "pwm-backlight";
++			skyworks,en-channels = <0x3f>;
++			skyworks,ignore-pwm;
++			skyworks,phase-shift;
++			skyworks,ovp-level = <20>;
++			skyworks,current-limit = <2300>;
++		};
++
++		regulator {
++			lout {
++				regulator-name = "sky81452-lout";
++				regulator-min-microvolt = <4500000>;
++				regulator-max-microvolt = <8000000>;
++			};
++		};
++	};
+-- 
+1.9.1
 
- drivers/video/fbdev/core/fb_defio.c      |  5 +++--
- drivers/video/fbdev/omap2/dss/hdmi_pll.c |  2 --
- drivers/video/fbdev/omap2/dss/pll.c      |  3 ++-
- drivers/video/fbdev/omap2/dss/sdi.c      |  2 ++
- drivers/video/logo/logo.c                | 17 ++++++++++++++++-
- 5 files changed, 23 insertions(+), 6 deletions(-)
-
-
---qhuBLOxK9COm3Rf8d6G3PrWF9Mv6hUmHK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUopA3AAoJEPo9qoy8lh71Zp4P/1mzbvgmquGW1/oQQjHn8d8t
-EJiXcwFeGAvhAwtGlmYK40brq/OdRh+Y3xlSLZYZSi+cXAMN2cNqUSwamKPQvB3o
-1zI8hFDNpz91ttoP1RALaEa860jZG/GgR5UqNJq6qZvqIWrOUXGIn5kYv66xP22/
-2TF+75ehv78zGr6jejCwXv2G0GHZypvsABY8fpaZJJiyEIHAFxoQKTfTKWM9FwYZ
-QU32M0WsdoyJhqY2CO9J+QTQdqDytiLDHXQK0bk3ku5Z4Z4FdbLKiwSTH/Dla++x
-NlyoJlY71k1L57dimM96u7LaSQH8S74kqTwJzSEEUA/Fqj/mjbLdjV5xvD5wZa9R
-qJsOLeFkTV3iw1lnZx4nEZU2MsrVhpKwvV2+8MhsbVSXtezROumEAaxbzcZzfFtW
-i46woHxQARGQ2s5CSb9ueUFqp6tx8xAPh55acOfYwMOfdCLt2TEVC3A7EUTXlm8Y
-5SWHvnNK3A842WTCqOg3t/S8ickDpFHlMsifvbnald/GTQ7hk20j+FFxzV32d3fZ
-hEgAHiEcM4sA34KAgw1jwd2qp3BjMhrE/qnU5v2svaBr2vpZ3GXObP1tjS3IhPU1
-IDPhJJcutQtLk04xvAbehL22QCQTctr2Wt0jaz+2mBULaZRoqg0G6zTf4+IQI/gP
-1/+01g8lXd9cIdSq4sXa
-=DWAl
------END PGP SIGNATURE-----
-
---qhuBLOxK9COm3Rf8d6G3PrWF9Mv6hUmHK--

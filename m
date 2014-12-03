@@ -1,40 +1,69 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Thu, 18 Dec 2014 21:39:57 +0000
-Subject: [PATCH 1/6] tridentfb: fix hang on Blade3D with CONFIG_CC_OPTIMIZE_FOR_SIZE
-Message-Id: <1418938797-28945-1-git-send-email-linux@rainbow-software.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 03 Dec 2014 12:18:25 +0000
+Subject: Re: [PATCH v3 2/3] Documentation: DT: Add documentation for ti,opa362 bindings
+Message-Id: <547EFF91.7040405@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="FGD71uUJv2Mt07HihEmfgkv9rcNFNp7eh"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+References: <1417352867-7436-1-git-send-email-marek@goldelico.com>
+ <1417352867-7436-3-git-send-email-marek@goldelico.com>
+In-Reply-To: <1417352867-7436-3-git-send-email-marek@goldelico.com>
+To: linux-arm-kernel@lists.infradead.org
 
-When the kernel is compiled with -Os (CONFIG_CC_OPTIMIZE_FOR_SIZE), tridentfb
-hangs the machine upon load with Blade3D cards unless acceleration is disabled.
+--FGD71uUJv2Mt07HihEmfgkv9rcNFNp7eh
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-This is caused by memcpy() which copies data byte-by-byte (rep movsb) when
-compiled with -Os. The card does not like that - it requires 32-bit access.
+On 30/11/14 15:07, Marek Belisko wrote:
+> Signed-off-by: Marek Belisko <marek@goldelico.com>
+> ---
+>  .../devicetree/bindings/video/ti,opa362.txt        | 38 ++++++++++++++=
+++++++++
+>  1 file changed, 38 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/video/ti,opa362.t=
+xt
+>=20
+> diff --git a/Documentation/devicetree/bindings/video/ti,opa362.txt b/Do=
+cumentation/devicetree/bindings/video/ti,opa362.txt
+> new file mode 100644
+> index 0000000..4747ef9
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/video/ti,opa362.txt
+> @@ -0,0 +1,38 @@
+> +OPA362 analog video amplifier
+> +
+> +Required properties:
+> +- compatible: "ti,opa362"
+> +- gpio: enable/disable output gpio
 
-Use iowrite_32() instead.
+Either this or the example is wrong. If I'm not mistaken 'gpios' is the
+correct form.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
----
- drivers/video/fbdev/tridentfb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Tomi
 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 7ed9a22..7429713 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -226,7 +226,7 @@ static void blade_image_blit(struct tridentfb_par *par, const char *data,
- 	writemmr(par, DST1, point(x, y));
- 	writemmr(par, DST2, point(x + w - 1, y + h - 1));
- 
--	memcpy(par->io_virt + 0x10000, data, 4 * size);
-+	iowrite32_rep(par->io_virt + 0x10000, data, size);
- }
- 
- static void blade_copy_rect(struct tridentfb_par *par,
--- 
-Ondrej Zary
 
+
+--FGD71uUJv2Mt07HihEmfgkv9rcNFNp7eh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUfv+RAAoJEPo9qoy8lh71PyoP/jH0TKf2mTKRM0mk3KY08LJb
+yfnzOFb0GybghvFvdf9c415HFa0zReQkw1d/zSIpLU9ZC3jWcH5vUR+oxsSpBiZM
+xhvU3hAqUm4P4NjIekWpOI7vhnk3NdQLVGYrIMFzSTHaLigi7xzKTnbEYlVsfQaU
+0AwRsU7/hkx8aKFUSYxsFvo28CCYROjmwodnnq4B53GnsErdIJsKtqjlwY0i706p
+6S7CHUNzj+mQah7gJAFcBgQ/rmnRNXc+NZ3hmRgpeJVDP3XgqFfadjTvveYB1saz
+TchQjXTwwE6/bKIxj1eQ0U+Y9UJ5qikyTMfe2OaTNr7eHH73CKLpQbmid41u7cXW
+/Mjv9Zs5PvOI4B/bsOZR5AuXfKBvMTzA8Pqp1JMx3oybAFG605AXxuTTONDk7XH3
+QdoXo8IEdaRejqsr5CATQLjIdzH2yGrdg7iZjWvmKSPblj8pZ4TGapMqpr0kOgBg
+oIwR2Z4mHN6BQLfbmfBMCWvCZlv3zJpv1xP7wuRsp4fnnTGs5aIcvHq73MKxtvk6
+0oYmSSnyDIljJu8taPeYVoCjt9e4yM0doetiRFGRzj0/5rPCW2/CcHkC/l9alvnx
+pcvI403wi9x4V/GWrlKTu04GK2JWt0TjJdgEP15G60tcHKfYJ1ARwj+hWVUyfyjq
+E5r+OHo3sNbjjUy7NvMz
+=IY7P
+-----END PGP SIGNATURE-----
+
+--FGD71uUJv2Mt07HihEmfgkv9rcNFNp7eh--

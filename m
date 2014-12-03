@@ -1,48 +1,60 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Fri, 19 Dec 2014 02:00:21 +0000
-Subject: [PATCH v2 2/7] gpu: ipu-di: remove some non-functional code
-Message-Id: <1418954426-21909-3-git-send-email-steve_longerbeam@mentor.com>
+From: Xiubo Li <Li.Xiubo@freescale.com>
+Date: Wed, 03 Dec 2014 09:16:02 +0000
+Subject: [PATCHv2 4/4] ARM: ls1021a: dts: Add and enable dt node for dcfb.
+Message-Id: <1417598162-40433-5-git-send-email-Li.Xiubo@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
+References: <1417598162-40433-1-git-send-email-Li.Xiubo@freescale.com>
+In-Reply-To: <1417598162-40433-1-git-send-email-Li.Xiubo@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Philipp Zabel <p.zabel@pengutronix.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>, Fabio Estevam <fabio.estevam@freescale.com>, Shawn Guo <shawn.guo@linaro.org>, Denis Carikli <denis@eukrea.com>, Jiada Wang <jiada_wang@mentor.com>, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: linux-arm-kernel@lists.infradead.org
 
-h_total and v_total were calculated in ipu_di_init_sync_panel()
-but never actually used. Remove.
+On LS1021A TWR board, the TFT LCD panel is WQVGA "480x272", and
+the bpp is 24.
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+Signed-off-by: Xiubo Li <Li.Xiubo@freescale.com>
 ---
- drivers/gpu/ipu-v3/ipu-di.c |    6 ------
- 1 file changed, 6 deletions(-)
+ arch/arm/boot/dts/ls1021a-twr.dts | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-di.c b/drivers/gpu/ipu-v3/ipu-di.c
-index 46f9570..41df8d7 100644
---- a/drivers/gpu/ipu-v3/ipu-di.c
-+++ b/drivers/gpu/ipu-v3/ipu-di.c
-@@ -545,7 +545,6 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
- 	u32 reg;
- 	u32 di_gen, vsync_cnt;
- 	u32 div;
--	u32 h_total, v_total;
+diff --git a/arch/arm/boot/dts/ls1021a-twr.dts b/arch/arm/boot/dts/ls1021a-twr.dts
+index a2c591e..3602286 100644
+--- a/arch/arm/boot/dts/ls1021a-twr.dts
++++ b/arch/arm/boot/dts/ls1021a-twr.dts
+@@ -58,6 +58,32 @@
+ 	};
+ };
  
- 	dev_dbg(di->ipu->dev, "disp %d: panel size = %d x %d\n",
- 		di->id, sig->width, sig->height);
-@@ -553,11 +552,6 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
- 	if ((sig->v_sync_width = 0) || (sig->h_sync_width = 0))
- 		return -EINVAL;
- 
--	h_total = sig->width + sig->h_sync_width + sig->h_start_width +
--		sig->h_end_width;
--	v_total = sig->height + sig->v_sync_width + sig->v_start_width +
--		sig->v_end_width;
--
- 	dev_dbg(di->ipu->dev, "Clocks: IPU %luHz DI %luHz Needed %luHz\n",
- 		clk_get_rate(di->clk_ipu),
- 		clk_get_rate(di->clk_di),
++&dcfb {
++	display = <&display>;
++	status = "okay";
++
++	display: display@0 {
++		bits-per-pixel = <24>;
++
++		display-timings {
++			native-mode = <&timing0>;
++			timing0: nl4827hc19 {
++				clock-frequency = <10870000>;
++				hactive = <480>;
++				vactive = <272>;
++				hback-porch = <2>;
++				hfront-porch = <2>;
++				vback-porch = <2>;
++				vfront-porch = <2>;
++				hsync-len = <41>;
++				vsync-len = <4>;
++				hsync-active = <1>;
++				vsync-active = <1>;
++			};
++		};
++	};
++};
++
+ &dspi1 {
+ 	bus-num = <0>;
+ 	status = "okay";
 -- 
-1.7.9.5
+2.1.0.27.g96db324
 

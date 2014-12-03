@@ -1,116 +1,97 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 04 Dec 2014 13:40:51 +0000
-Subject: Re: [PATCH 1/3] video: fbdev: vt8623fb: suppress build warning
-Message-Id: <54806463.5040409@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="NsbF5ITsVQRmFFKbXk2qEQJ4mLUJCQqxa"
+From: gyungoh@gmail.com
+Date: Wed, 03 Dec 2014 07:05:26 +0000
+Subject: [PATCH v10 0/6] Add Skyworks SKY81452 device drivers
+Message-Id: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417039645-5313-1-git-send-email-prabhakar.csengg@gmail.com>	<547EF8CC.9030502@ti.com>	<CA+V-a8vnv4B77XvbzwNkJk=vqGCFWoXxFoyUf0ZNiKwa+gY2ug@mail.gmail.com>	<548007CA.7010900@ti.com>	<20141204074641.GB4311@sudip-PC>	<548013B0.4080108@ti.com> <CAMuHMdX6rbaPYFpSR7nGf6Di0G=cGL9yFZLLpjUDi7TLyu1wmw@mail.gmail.com>
-In-Reply-To: <CAMuHMdX6rbaPYFpSR7nGf6Di0G=cGL9yFZLLpjUDi7TLyu1wmw@mail.gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Prabhakar Lad <prabhakar.csengg@gmail.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, LFBDEV <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, ktsai-GubuWUlQtMwciDkP5Hr2oA@public.gmane.org, hs-ynQEQJNshbs@public.gmane.org, stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org, matti.vaittinen-OYasijW0DpE@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, shawn.guo-KZfg59tc24xl57MIdRCFDg@public.gmane.org, florian.vaussard-p8DiymsW2f8@public.gmane.org, andrew-g2DYL2Zd6BY@public.gmane.org, antonynpavlov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hytszk-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, jack.yoo-tjhQNA90jdKqndwCJWfcng@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
---NsbF5ITsVQRmFFKbXk2qEQJ4mLUJCQqxa
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
-On 04/12/14 15:29, Geert Uytterhoeven wrote:
-> On Thu, Dec 4, 2014 at 8:56 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> =
-wrote:
->> On 04/12/14 09:46, Sudip Mukherjee wrote:
->>> On Thu, Dec 04, 2014 at 09:05:46AM +0200, Tomi Valkeinen wrote:
->>>> On 03/12/14 20:29, Prabhakar Lad wrote:
->>>>> On Wed, Dec 3, 2014 at 11:49 AM, Tomi Valkeinen <tomi.valkeinen@ti.=
-com> wrote:
->>>>>> On 27/11/14 00:07, Lad, Prabhakar wrote:
->>>>>>> this patch fixes following build warning:
->>>>>>> drivers/video/fbdev/vt8623fb.c: In function =E2=80=98vt8623_pci_p=
-robe=E2=80=99:
->>>>>>> drivers/video/fbdev/vt8623fb.c:734:23: warning: cast to pointer f=
-rom integer of different size [-Wint-to-pointer-cast]
->>>>>>>   par->state.vgabase =3D (void __iomem *) vga_res.start;
->>>>>>>                        ^
->>>>>>> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
->>>>>>> ---
->>>>>>>  drivers/video/fbdev/vt8623fb.c | 2 +-
->>>>>>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>>>>>
->>>>>>> diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev=
-/vt8623fb.c
->>>>>>> index 5c7cbc6..ea7f056 100644
->>>>>>> --- a/drivers/video/fbdev/vt8623fb.c
->>>>>>> +++ b/drivers/video/fbdev/vt8623fb.c
->>>>>>> @@ -731,7 +731,7 @@ static int vt8623_pci_probe(struct pci_dev *d=
-ev, const struct pci_device_id *id)
->>>>>>>
->>>>>>>       pcibios_bus_to_resource(dev->bus, &vga_res, &bus_reg);
->>>>>>>
->>>>>>> -     par->state.vgabase =3D (void __iomem *) vga_res.start;
->>>>>>> +     par->state.vgabase =3D (void __iomem *) (unsigned long) vga=
-_res.start;
->>>>>>
->>>>>> This does look quite ugly... Where does the warning come from in t=
-he
->>>>>> first place. Isn't vga_res.start (resource_size_t) the size of a p=
-ointer?
->>>>>>
->>>>> Yes looks ugly, I am not sure what you meant from 'where does this =
-warning
->>>>> come from' its in the commit message.
->>>>
->>>> I meant why is there a warning at all. With a quick glance,
->>>> vga_res.start is the size of a pointer. So the sizes of the integer =
-and
->>>> the pointer should be the same. But the warning still says "of diffe=
-rent
->>>> size".
->>>
->>> poking my nose into your discussion.
->>> I tried to see the warning, and I re-compiled like make W=3D1 M=3Ddri=
-vers/video/fbdev/ (before that make clean M=3Ddrivers/video/fbdev was don=
-e)
->>> I can see warning with many other files, but drivers/video/fbdev/vt86=
-23fb.o was quiet and there was no warning.
->>> I tested with next=3D20141203.
->>> did i miss something in checking the warning ?
->>
->> I don't see the warning either when compiling for arm or x86_64. On wh=
-at
->> architecture do you see the warning?
->=20
-> On 32-bit systems with PHYS_ADDR_T_64BIT=3Dy, resource_size_t is u64,
-> while pointers are still 32-bit.
+This patch set includes regulator and backlight driver for SKY81452.
+Also it includes documents for device tree and module.
+sky81452-regulator was already applied. So this series doesn't
+include it.
 
-Ah, I see. Yes, I can reproduce the warning with that config.
+v10:
+Removed trivial get_brightness implementations for sky81452-backlight
 
-So, still rather ugly, but looks correct to me, so I'll apply the series.=
+v9:
+Removed the change to remove MODULE_VERSION() for sky81452-regulator
 
+v8:
+Renamed property names for backlight with vendor prefix
+Modified gpio-enable property to generic property for GPIO
+Made up the example for backlight DT
+Changed the DT parsing of regulator using regulator_node and of_match
 
- Tomi
+v7:
+Modified licensing text to GPLv2
+Splitted Kconfig renaming from DT patch
 
+v6:
+Added new line character at the end of line of dev_err()
 
+v5:
+Changed DT for regulator : 'lout' node should be defined under 'regulator'
+Removed compatible string from sky81452-regulator driver
+Modified sky81452-regulator to return EINVAL when of_node is NULL
+Move sky81452-backlight.h to include/linux/platform_data
 
---NsbF5ITsVQRmFFKbXk2qEQJ4mLUJCQqxa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+v4:
+Removed MODULE_VERSION()
+Modified license to GPLv2
+Removed calling to backlight_device_unregister() in sky81452-backlight
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+v3:
+Cleaned-up DBG messages
+Cleaned-up DT
+Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
+Assigned mfd_cell.of_compatible for binding device node
+Modified error messages
+Modified sky81452-regulator to return ENODATA when of_node is NULL
 
-iQIcBAEBAgAGBQJUgGRjAAoJEPo9qoy8lh71A9IP/1PK9qkl/Ga8bULBmYAU7IAe
-PiLRUxylPKeEfGoNPVVVdfp3DI/8Sq0zUAcDM6mXjAjHqPpS4o16j4apBFgeWoyM
-+hU4bhGHOAS5KqqdYOU13mNUnCCxHl3lp56SgvgwwXNn3ohupRO5QwT72XTlD61p
-sHds4nHfyatsjqKKk2Xuf+d67z02IDXyuFGE3MdFDxzvO4u1hMQRvIJuxUQrXgRn
-UbqgDWZLaJAlFQgFfeMYaq4ClftOzkmonf1KjjNlXi+h279Cm9J17Rujom7TkGWN
-fT7Z31d16mIbdZ4S5eZ6ws2uWmqPevxZQ6/RoZIG9J1JrY9kM4hC44Kw6EwcwLud
-ifcpmQEV3hi0pR7tne24f8+wMfQtJZXUL9ZpnD2rrutyXPi443yg2+UzGUcembgb
-UY6zfY72gXpBXi+ezm39d28pH66QAM23hcUVUEa+/30/RLPuQt/1FBYGSvDdARRB
-BysuRhfuUnxeg06SUQewUFAFZU4fhXotB8SEQKezmfkF8px19bHVbcI8fl6pm2Wp
-8W3yKG+9WU1iF4Tb46DJHUKipTCBkOpP/MukESppJERmsJLzlSrIoD+d5/S/NUMR
-7UH/fp+cyrLf1mmw8ZH2Y7Oy8/EIb6L4j3Zsy2Z/SGMHQXu/a/NS9mupZL60Hrs4
-cgwtB2rSjvC/0k+T6Ohw
-=nbOq
------END PGP SIGNATURE-----
+v2:
+Split the patches for each sub-system
+Added 'reg' attribute for I2C address in device tree documents
+Added 'compatible' attribute in child drivers
+Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
+Changed the dependency from I2C=y to I2C, for CONFIG_MFD_SKY81452
+Added message for exception or errors.
+Added vendor prefix for Skyworks Solutions, Inc.
+Add SKY81452 to the Trivial Devices list
 
---NsbF5ITsVQRmFFKbXk2qEQJ4mLUJCQqxa--
+Gyungoh Yoo (6):
+  mfd: Add support for Skyworks SKY81452 driver
+  backlight: Add support Skyworks SKY81452 backlight driver
+  devicetree: mfd: Add new SKY81452 mfd binding
+  devicetree: backlight: Add new SKY81452 backlight binding
+  devicetree: Add vendor prefix for Skyworks Solutions, Inc.
+  devicetree: i2c: Add SKY81452 to the Trivial Devices list
+
+ .../devicetree/bindings/i2c/trivial-devices.txt    |   1 +
+ Documentation/devicetree/bindings/mfd/sky81452.txt |  36 +++
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ .../video/backlight/sky81452-backlight.txt         |  29 ++
+ drivers/mfd/Kconfig                                |  12 +
+ drivers/mfd/Makefile                               |   1 +
+ drivers/mfd/sky81452.c                             | 108 +++++++
+ drivers/video/backlight/Kconfig                    |  10 +
+ drivers/video/backlight/Makefile                   |   1 +
+ drivers/video/backlight/sky81452-backlight.c       | 334 +++++++++++++++++++++
+ include/linux/mfd/sky81452.h                       |  31 ++
+ include/linux/platform_data/sky81452-backlight.h   |  46 +++
+ 12 files changed, 610 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
+ create mode 100644 drivers/mfd/sky81452.c
+ create mode 100644 drivers/video/backlight/sky81452-backlight.c
+ create mode 100644 include/linux/mfd/sky81452.h
+ create mode 100644 include/linux/platform_data/sky81452-backlight.h
+
+-- 
+1.9.1
+

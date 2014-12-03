@@ -1,99 +1,112 @@
-From: gyungoh@gmail.com
-Date: Thu, 18 Dec 2014 05:47:45 +0000
-Subject: [PATCH v10 0/6] Add Skyworks SKY81452 device drivers
-Message-Id: <1418881671-3495-1-git-send-email-jack.yoo@skyworksinc.com>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Wed, 03 Dec 2014 01:39:11 +0000
+Subject: [PATCH v2 1/2] backlight/lp855x: Refactor dt parsing code
+Message-Id: <1417570752-23633-1-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, ktsai-GubuWUlQtMwciDkP5Hr2oA@public.gmane.org, hs-ynQEQJNshbs@public.gmane.org, stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org, matti.vaittinen-OYasijW0DpE@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, shawn.guo-KZfg59tc24xl57MIdRCFDg@public.gmane.org, florian.vaussard-p8DiymsW2f8@public.gmane.org, andrew-g2DYL2Zd6BY@public.gmane.org, antonynpavlov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hytszk-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, jack.yoo-tjhQNA90jdKqndwCJWfcng@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: milo.kim-l0cyMroinI0@public.gmane.org, cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Sean Paul <seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, =?UTF-8?q?St=C3=A9phane=20Marchesin?= <marcheu-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 
-From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+This patch refactors the dt parsing code to avoid setting platform_data,
+instead just setting lp->pdata directly. This facilitates easier
+probe deferral since the current scheme would require us to clear out
+dev->platform_data before deferring.
 
-This patch set includes regulator and backlight driver for SKY81452.
-Also it includes documents for device tree and module.
-sky81452-regulator was already applied. So this series doesn't
-include it.
+Cc: St=C3=A9phane Marchesin <marcheu@chromium.org>
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+---
+ drivers/video/backlight/lp855x_bl.c | 37 ++++++++++++++++++---------------=
+----
+ 1 file changed, 18 insertions(+), 19 deletions(-)
 
-v10:
-Removed trivial get_brightness implementations for sky81452-backlight
-
-v9:
-Removed the change to remove MODULE_VERSION() for sky81452-regulator
-
-v8:
-Renamed property names for backlight with vendor prefix
-Modified gpio-enable property to generic property for GPIO
-Made up the example for backlight DT
-Changed the DT parsing of regulator using regulator_node and of_match
-
-v7:
-Modified licensing text to GPLv2
-Splitted Kconfig renaming from DT patch
-
-v6:
-Added new line character at the end of line of dev_err()
-
-v5:
-Changed DT for regulator : 'lout' node should be defined under 'regulator'
-Removed compatible string from sky81452-regulator driver
-Modified sky81452-regulator to return EINVAL when of_node is NULL
-Move sky81452-backlight.h to include/linux/platform_data
-
-v4:
-Removed MODULE_VERSION()
-Modified license to GPLv2
-Removed calling to backlight_device_unregister() in sky81452-backlight
-
-v3:
-Cleaned-up DBG messages
-Cleaned-up DT
-Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
-Assigned mfd_cell.of_compatible for binding device node
-Modified error messages
-Modified sky81452-regulator to return ENODATA when of_node is NULL
-
-v2:
-Split the patches for each sub-system
-Added 'reg' attribute for I2C address in device tree documents
-Added 'compatible' attribute in child drivers
-Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
-Changed the dependency from I2C=y to I2C, for CONFIG_MFD_SKY81452
-Added message for exception or errors.
-Added vendor prefix for Skyworks Solutions, Inc.
-Add SKY81452 to the Trivial Devices list
-
-Gyungoh Yoo (6):
-  mfd: Add support for Skyworks SKY81452 driver
-  backlight: Add support Skyworks SKY81452 backlight driver
-  devicetree: mfd: Add new SKY81452 mfd binding
-  devicetree: backlight: Add new SKY81452 backlight binding
-  devicetree: Add vendor prefix for Skyworks Solutions, Inc.
-  devicetree: i2c: Add SKY81452 to the Trivial Devices list
-
- .../devicetree/bindings/i2c/trivial-devices.txt    |   1 +
- Documentation/devicetree/bindings/mfd/sky81452.txt |  36 +++
- .../devicetree/bindings/vendor-prefixes.txt        |   1 +
- .../video/backlight/sky81452-backlight.txt         |  29 ++
- drivers/mfd/Kconfig                                |  12 +
- drivers/mfd/Makefile                               |   1 +
- drivers/mfd/sky81452.c                             | 108 +++++++
- drivers/video/backlight/Kconfig                    |  10 +
- drivers/video/backlight/Makefile                   |   1 +
- drivers/video/backlight/sky81452-backlight.c       | 334 +++++++++++++++++++++
- include/linux/mfd/sky81452.h                       |  31 ++
- include/linux/platform_data/sky81452-backlight.h   |  46 +++
- 12 files changed, 610 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
- create mode 100644 Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
- create mode 100644 drivers/mfd/sky81452.c
- create mode 100644 drivers/video/backlight/sky81452-backlight.c
- create mode 100644 include/linux/mfd/sky81452.h
- create mode 100644 include/linux/platform_data/sky81452-backlight.h
-
--- 
-1.9.1
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/=
+lp855x_bl.c
+index 25fb8e3..257b3ba 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -341,8 +341,10 @@ static const struct attribute_group lp855x_attr_group =
+=3D {
+ };
+=20
+ #ifdef CONFIG_OF
+-static int lp855x_parse_dt(struct device *dev, struct device_node *node)
++static int lp855x_parse_dt(struct lp855x *lp)
+ {
++	struct device *dev =3D lp->dev;
++	struct device_node *node =3D dev->of_node;
+ 	struct lp855x_platform_data *pdata;
+ 	int rom_length;
+=20
+@@ -381,12 +383,12 @@ static int lp855x_parse_dt(struct device *dev, struct=
+ device_node *node)
+ 		pdata->rom_data =3D &rom[0];
+ 	}
+=20
+-	dev->platform_data =3D pdata;
++	lp->pdata =3D pdata;
+=20
+ 	return 0;
+ }
+ #else
+-static int lp855x_parse_dt(struct device *dev, struct device_node *node)
++static int lp855x_parse_dt(struct lp855x *lp)
+ {
+ 	return -EINVAL;
+ }
+@@ -395,18 +397,8 @@ static int lp855x_parse_dt(struct device *dev, struct =
+device_node *node)
+ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id =
+*id)
+ {
+ 	struct lp855x *lp;
+-	struct lp855x_platform_data *pdata =3D dev_get_platdata(&cl->dev);
+-	struct device_node *node =3D cl->dev.of_node;
+ 	int ret;
+=20
+-	if (!pdata) {
+-		ret =3D lp855x_parse_dt(&cl->dev, node);
+-		if (ret < 0)
+-			return ret;
+-
+-		pdata =3D dev_get_platdata(&cl->dev);
+-	}
+-
+ 	if (!i2c_check_functionality(cl->adapter, I2C_FUNC_SMBUS_I2C_BLOCK))
+ 		return -EIO;
+=20
+@@ -414,16 +406,23 @@ static int lp855x_probe(struct i2c_client *cl, const =
+struct i2c_device_id *id)
+ 	if (!lp)
+ 		return -ENOMEM;
+=20
+-	if (pdata->period_ns > 0)
+-		lp->mode =3D PWM_BASED;
+-	else
+-		lp->mode =3D REGISTER_BASED;
+-
+ 	lp->client =3D cl;
+ 	lp->dev =3D &cl->dev;
+-	lp->pdata =3D pdata;
+ 	lp->chipname =3D id->name;
+ 	lp->chip_id =3D id->driver_data;
++	lp->pdata =3D dev_get_platdata(&cl->dev);
++
++	if (!lp->pdata) {
++		ret =3D lp855x_parse_dt(lp);
++		if (ret < 0)
++			return ret;
++	}
++
++	if (lp->pdata->period_ns > 0)
++		lp->mode =3D PWM_BASED;
++	else
++		lp->mode =3D REGISTER_BASED;
++
+ 	i2c_set_clientdata(cl, lp);
+=20
+ 	ret =3D lp855x_configure(lp);
+--=20
+2.1.1
 

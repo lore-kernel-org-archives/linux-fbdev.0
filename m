@@ -1,26 +1,62 @@
-From: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Date: Sun, 07 Dec 2014 06:08:30 +0000
-Subject: Re: [PATCH] video: ocfb: Fix data type warning
-Message-Id: <20141207060829.GA18983@chokladfabriken.org>
+From: gyungoh@gmail.com
+Date: Wed, 03 Dec 2014 07:05:32 +0000
+Subject: [PATCH v10 6/6] devicetree: i2c: Add SKY81452 to the Trivial Devices list
+Message-Id: <1417590332-4912-7-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417767510-31462-1-git-send-email-qiang2.chen@sonymobile.com>
-In-Reply-To: <1417767510-31462-1-git-send-email-qiang2.chen@sonymobile.com>
+References: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Qiang Chen <qiang2.chen@sonymobile.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Qiang Chen <qcwj.lk@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-On Fri, Dec 05, 2014 at 04:18:30PM +0800, Qiang Chen wrote:
-> When allocate framebuffer memory using dma_alloc_coherent(),
-> we'd better use dma_addr_t instead of phys_addr_t. Because the
-> address we got in fact is DMA or bus address for the platform.
-> 
-> This patch also fixes below build warning:
-> drivers/video/fbdev/ocfb.c:335:2:
-> 	warning: passing argument 3 of ‘dma_alloc_attrs’
-> 	from incompatible pointer type [enabled by default]
-> 
-> Signed-off-by: Qiang Chen <qiang2.chen@sonymobile.com>
+From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
-Acked-by: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+---
+Changes v10:
+Nothing
+
+Changes v9:
+Nothing
+
+Changes v8:
+Nothing
+
+Changes v7:
+Nothing
+
+Changes v6:
+Nothing
+
+Changes v5:
+Nothing
+
+Changes v4:
+Nothing
+
+Changes v3:
+Nothing
+
+Changes v2:
+Add SKY81452 to the Trivial Devices list
+
+ Documentation/devicetree/bindings/i2c/trivial-devices.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/i2c/trivial-devices.txt b/Documentation/devicetree/bindings/i2c/trivial-devices.txt
+index fbde415..122fa1e 100644
+--- a/Documentation/devicetree/bindings/i2c/trivial-devices.txt
++++ b/Documentation/devicetree/bindings/i2c/trivial-devices.txt
+@@ -77,6 +77,7 @@ ramtron,24c64		i2c serial eeprom  (24cxx)
+ ricoh,rs5c372a		I2C bus SERIAL INTERFACE REAL-TIME CLOCK IC
+ samsung,24ad0xd1	S524AD0XF1 (128K/256K-bit Serial EEPROM for Low Power)
+ sii,s35390a		2-wire CMOS real-time clock
++skyworks,sky81452	Skyworks SKY81452: Six-Channel White LED Driver with Touch Panel Bias Supply
+ st-micro,24c256		i2c serial eeprom  (24cxx)
+ stm,m41t00		Serial Access TIMEKEEPER
+ stm,m41t62		Serial real-time clock (RTC) with alarm
+-- 
+1.9.1
+

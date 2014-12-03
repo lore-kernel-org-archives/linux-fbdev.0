@@ -1,62 +1,37 @@
-From: gyungoh@gmail.com
-Date: Thu, 18 Dec 2014 05:47:51 +0000
-Subject: [PATCH v10 6/6] devicetree: i2c: Add SKY81452 to the Trivial Devices list
-Message-Id: <1418881671-3495-7-git-send-email-jack.yoo@skyworksinc.com>
+From: Xiubo Li <Li.Xiubo@freescale.com>
+Date: Wed, 03 Dec 2014 09:15:58 +0000
+Subject: [PATCHv2 0/4] LS1021A: Add dcfb framebuffer driver support.
+Message-Id: <1417598162-40433-1-git-send-email-Li.Xiubo@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1418881671-3495-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1418881671-3495-1-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
-Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+Framebuffer driver for the Freescale SoC Display Controller.
 
-Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
----
-Changes v10:
-Nothing
 
-Changes v9:
-Nothing
+Change in V2:
+- Use the native-mode timing as default.
+- Add to_fsl_private().
 
-Changes v8:
-Nothing
 
-Changes v7:
-Nothing
+Xiubo Li (4):
+  video: fsl-dcfb: Add dcfb framebuffer driver for LS1021A platform
+  video: fsl-dcfb: Add devicetree binding support
+  ARM: ls1021a: dtsi: Add dt node support for dcfb.
+  ARM: ls1021a: dts: Add and enable dt node for dcfb.
 
-Changes v6:
-Nothing
+ .../devicetree/bindings/video/fsl,dcfb.txt         |  52 ++
+ arch/arm/boot/dts/ls1021a-twr.dts                  |  26 +
+ arch/arm/boot/dts/ls1021a.dtsi                     |  10 +
+ drivers/video/fbdev/Kconfig                        |  19 +
+ drivers/video/fbdev/Makefile                       |   1 +
+ drivers/video/fbdev/fsl-dcfb.c                     | 814 +++++++++++++++++++++
+ 6 files changed, 922 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/fsl,dcfb.txt
+ create mode 100644 drivers/video/fbdev/fsl-dcfb.c
 
-Changes v5:
-Nothing
-
-Changes v4:
-Nothing
-
-Changes v3:
-Nothing
-
-Changes v2:
-Add SKY81452 to the Trivial Devices list
-
- Documentation/devicetree/bindings/i2c/trivial-devices.txt | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/Documentation/devicetree/bindings/i2c/trivial-devices.txt b/Documentation/devicetree/bindings/i2c/trivial-devices.txt
-index fbde415..122fa1e 100644
---- a/Documentation/devicetree/bindings/i2c/trivial-devices.txt
-+++ b/Documentation/devicetree/bindings/i2c/trivial-devices.txt
-@@ -77,6 +77,7 @@ ramtron,24c64		i2c serial eeprom  (24cxx)
- ricoh,rs5c372a		I2C bus SERIAL INTERFACE REAL-TIME CLOCK IC
- samsung,24ad0xd1	S524AD0XF1 (128K/256K-bit Serial EEPROM for Low Power)
- sii,s35390a		2-wire CMOS real-time clock
-+skyworks,sky81452	Skyworks SKY81452: Six-Channel White LED Driver with Touch Panel Bias Supply
- st-micro,24c256		i2c serial eeprom  (24cxx)
- stm,m41t00		Serial Access TIMEKEEPER
- stm,m41t62		Serial real-time clock (RTC) with alarm
 -- 
-1.9.1
+2.1.0.27.g96db324
 

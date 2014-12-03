@@ -1,93 +1,46 @@
 From: Marek Belisko <marek@goldelico.com>
-Date: Wed, 03 Dec 2014 21:33:22 +0000
-Subject: [PATCH v4 3/3] arm: dts: omap3-gta04: Add handling for tv output
-Message-Id: <1417642402-20538-4-git-send-email-marek@goldelico.com>
+Date: Wed, 03 Dec 2014 21:33:19 +0000
+Subject: [PATCH v4 0/3] omapdss: Add video output support for gta04
+Message-Id: <1417642402-20538-1-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417642402-20538-1-git-send-email-marek@goldelico.com>
-In-Reply-To: <1417642402-20538-1-git-send-email-marek@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Add handling for gta04 tv out chain:
-venc -> opa362 -> svideo
+changes from v3:
+- use GPL v2 instead GPL
+- fix wrong gpios property name in doc and DT
+- set gpio to NULL if invalid
+- drop unnecessary header
 
-Use invert-polarity in venc node because opa362
-is doing polarity inversion also.
+changes from v2:
+- rename amplifier-opa362.c to encoder-opa362
+- drop inversion handlign from driver
+- add ti,invert-polarity to venc node
 
-Signed-off-by: Marek Belisko <marek@goldelico.com>
----
- arch/arm/boot/dts/omap3-gta04.dtsi | 49 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 49 insertions(+)
+I also drop devconf1 handling patches because discussion how to
+properly implement is not yet finished and this part is independent
+from video driver.
 
-diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
-index fd34f91..a6e995b 100644
---- a/arch/arm/boot/dts/omap3-gta04.dtsi
-+++ b/arch/arm/boot/dts/omap3-gta04.dtsi
-@@ -83,6 +83,41 @@
- 		compatible = "usb-nop-xceiv";
- 		reset-gpios = <&gpio6 14 GPIO_ACTIVE_LOW>;
- 	};
-+
-+	tv0: connector@1 {
-+		compatible = "svideo-connector";
-+		label = "tv";
-+
-+		port {
-+			tv_connector_in: endpoint {
-+				remote-endpoint = <&opa_out>;
-+			};
-+		};
-+	};
-+
-+	tv_amp: opa362 {
-+		compatible = "ti,opa362";
-+		enable-gpios = <&gpio1 23 0>;
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@0 {
-+				reg = <0>;
-+				opa_in: endpoint@0 {
-+					remote-endpoint = <&venc_out>;
-+				};
-+			};
-+
-+			port@1 {
-+				reg = <1>;
-+				opa_out: endpoint@0 {
-+					remote-endpoint = <&tv_connector_in>;
-+				};
-+			};
-+		};
-+	};
- };
- 
- &omap3_pmx_core {
-@@ -396,6 +431,20 @@
- 	};
- };
- 
-+&venc {
-+	status = "okay";
-+
-+	vdda-supply = <&vdac>;
-+
-+	port {
-+		venc_out: endpoint {
-+			remote-endpoint = <&opa_in>;
-+			ti,channels = <2>;
-+			ti,invert-polarity;
-+		};
-+	};
-+};
-+
- &gpmc {
- 	ranges = <0 0 0x30000000 0x04>; /* CS0: NAND */
- 
+changes from v1:
+- fix opa362 compilation error
+- fix opa362 DT documentation
+- move devconf1 definition to omap3.dtsi
+Marek Belisko (3):
+  video: omapdss: Add opa362 driver
+  Documentation: DT: Add documentation for ti,opa362 bindings
+  arm: dts: omap3-gta04: Add handling for tv output
+
+ .../devicetree/bindings/video/ti,opa362.txt        |  38 +++
+ arch/arm/boot/dts/omap3-gta04.dtsi                 |  49 ++++
+ drivers/video/fbdev/omap2/displays-new/Kconfig     |   6 +
+ drivers/video/fbdev/omap2/displays-new/Makefile    |   1 +
+ .../fbdev/omap2/displays-new/encoder-opa362.c      | 285 +++++++++++++++++++++
+ 5 files changed, 379 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/ti,opa362.txt
+ create mode 100644 drivers/video/fbdev/omap2/displays-new/encoder-opa362.c
+
 -- 
 1.9.1
 

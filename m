@@ -1,247 +1,235 @@
-From: gyungoh@gmail.com
-Date: Thu, 18 Dec 2014 05:47:46 +0000
-Subject: [PATCH v10 1/6] mfd: Add support for Skyworks SKY81452 driver
-Message-Id: <1418881671-3495-2-git-send-email-jack.yoo@skyworksinc.com>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Fri, 05 Dec 2014 18:44:28 +0000
+Subject: [PATCH 3/4] backlight/lp855x: Merge lp855x_platform_data with lp855x
+Message-Id: <1417805069-20441-3-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1418881671-3495-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1418881671-3495-1-git-send-email-jack.yoo-tjhQNA90jdKqndwCJWfcng@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, ktsai-GubuWUlQtMwciDkP5Hr2oA@public.gmane.org, hs-ynQEQJNshbs@public.gmane.org, stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org, matti.vaittinen-OYasijW0DpE@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, shawn.guo-KZfg59tc24xl57MIdRCFDg@public.gmane.org, florian.vaussard-p8DiymsW2f8@public.gmane.org, andrew-g2DYL2Zd6BY@public.gmane.org, antonynpavlov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hytszk-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, jack.yoo-tjhQNA90jdKqndwCJWfcng@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-fbdev@vger.kernel.org
 
-From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+Now that we have removed the platform_data header, merge lp855x_platform_data
+with lp855x and remove all traces of platform_data from the driver.
 
-Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
 ---
-Changes v10:
-Nothing
+ drivers/video/backlight/lp855x_bl.c | 100 +++++++++++++++++-------------------
+ 1 file changed, 46 insertions(+), 54 deletions(-)
 
-Changes v9:
-Nothing
-
-Changes v8:
-Nothing
-
-Changes v7:
-Modified licensing text to GPLv2
-
-Changes v6:
-Added new line character at the end of line of dev_err()
-
-Changes v5:
-Move sky81452-backlight.h to include/linux/platform_data
-
-Changes v4:
-Removed MODULE_VERSION()
-Modified license to GPLv2
-
-Changes v3:
-Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
-Assigned mfd_cell.of_compatible for binding device node
-Modified error messages
-
-Changes v2:
-Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
-Changed the dependency from I2C=y to I2C, for CONFIG_MFD_SKY81452
-Added message for exception or errors
-
- drivers/mfd/Kconfig          |  12 +++++
- drivers/mfd/Makefile         |   1 +
- drivers/mfd/sky81452.c       | 108 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/sky81452.h |  31 +++++++++++++
- 4 files changed, 152 insertions(+)
- create mode 100644 drivers/mfd/sky81452.c
- create mode 100644 include/linux/mfd/sky81452.h
-
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 1456ea7..a54244c 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -693,6 +693,18 @@ config MFD_SM501_GPIO
- 	 lines on the SM501. The platform data is used to supply the
- 	 base number for the first GPIO line to register.
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+index d19b61c..8b81d8e 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -78,8 +78,16 @@ struct lp855x_rom_data {
+ };
  
-+config MFD_SKY81452
-+	tristate "Skyworks Solutions SKY81452"
-+	select MFD_CORE
-+	select REGMAP_I2C
-+	depends on I2C
-+	help
-+	  This is the core driver for the Skyworks SKY81452 backlight and
-+	  voltage regulator device.
+ /**
+- * struct lp855x_platform_data
+- * @name : Backlight driver name. If it is not defined, default name is set.
++ * struct lp855x
++ * @chipname : Chip name, comes from the i2c_device_id
++ * @blname : Backlight driver name. If it is not defined, default name is set.
++ * @chip_id : The type of lp855x
++ * @mode : Whether brightness is controlled via pwm or register
++ * @cfg : Chip specific hooks & register offsets
++ * @client : The i2c client
++ * @bl : The backlight device
++ * @dev : Device pointer
++ * @pwm : The pwm device (if available)
+  * @device_control : value of DEVICE CONTROL register
+  * @initial_brightness : initial value of backlight brightness
+  * @period_ns : platform specific pwm period value. unit is nano.
+@@ -88,26 +96,23 @@ struct lp855x_rom_data {
+  * @rom_data : list of new eeprom/eprom registers
+  * @supply : regulator that supplies 3V input
+  */
+-struct lp855x_platform_data {
+-	const char *name;
+-	u8 device_control;
+-	u8 initial_brightness;
+-	unsigned int period_ns;
+-	int size_program;
+-	struct lp855x_rom_data *rom_data;
+-	struct regulator *supply;
+-};
+-
+ struct lp855x {
+ 	const char *chipname;
++	const char *blname;
+ 	enum lp855x_chip_id chip_id;
+ 	enum lp855x_brightness_ctrl_mode mode;
+ 	struct lp855x_device_config *cfg;
+ 	struct i2c_client *client;
+ 	struct backlight_device *bl;
+ 	struct device *dev;
+-	struct lp855x_platform_data *pdata;
+ 	struct pwm_device *pwm;
 +
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called sky81452.
-+
- config MFD_SMSC
-        bool "SMSC ECE1099 series chips"
-        depends on I2C=y
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 8bd54b1..d9683ea 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -174,6 +174,7 @@ obj-$(CONFIG_MFD_STW481X)	+= stw481x.o
- obj-$(CONFIG_MFD_IPAQ_MICRO)	+= ipaq-micro.o
- obj-$(CONFIG_MFD_MENF21BMC)	+= menf21bmc.o
- obj-$(CONFIG_MFD_HI6421_PMIC)	+= hi6421-pmic-core.o
-+obj-$(CONFIG_MFD_SKY81452)		+= sky81452.o
++	u8 device_control;
++	u8 initial_brightness;
++	unsigned int period_ns;
++	int size_program;
++	struct lp855x_rom_data *rom_data;
++	struct regulator *supply;
+ };
  
- intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
- obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
-diff --git a/drivers/mfd/sky81452.c b/drivers/mfd/sky81452.c
-new file mode 100644
-index 0000000..b0c9b04
---- /dev/null
-+++ b/drivers/mfd/sky81452.c
-@@ -0,0 +1,108 @@
-+/*
-+ * sky81452.c	SKY81452 MFD driver
-+ *
-+ * Copyright 2014 Skyworks Solutions Inc.
-+ * Author : Gyungoh Yoo <jack.yoo@skyworksinc.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/err.h>
-+#include <linux/slab.h>
-+#include <linux/i2c.h>
-+#include <linux/regmap.h>
-+#include <linux/mfd/core.h>
-+#include <linux/mfd/sky81452.h>
-+
-+static const struct regmap_config sky81452_config = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+};
-+
-+static int sky81452_probe(struct i2c_client *client,
-+				const struct i2c_device_id *id)
-+{
-+	struct device *dev = &client->dev;
-+	const struct sky81452_platform_data *pdata = dev_get_platdata(dev);
-+	struct mfd_cell cells[2];
-+	struct regmap *regmap;
-+	int ret;
-+
-+	if (!pdata) {
-+		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
-+		if (!pdata)
-+			return -ENOMEM;
-+	}
-+
-+	regmap = devm_regmap_init_i2c(client, &sky81452_config);
-+	if (IS_ERR(regmap)) {
-+		dev_err(dev, "failed to initialize.err=%ld\n", PTR_ERR(regmap));
-+		return PTR_ERR(regmap);
-+	}
-+
-+	i2c_set_clientdata(client, regmap);
-+
-+	memset(cells, 0, sizeof(cells));
-+	cells[0].name = "sky81452-backlight";
-+	cells[0].of_compatible = "skyworks,sky81452-backlight";
-+	cells[0].platform_data = pdata->bl_pdata;
-+	cells[0].pdata_size = sizeof(*pdata->bl_pdata);
-+	cells[1].name = "sky81452-regulator";
-+	cells[1].platform_data = pdata->regulator_init_data;
-+	cells[1].pdata_size = sizeof(*pdata->regulator_init_data);
-+
-+	ret = mfd_add_devices(dev, -1, cells, ARRAY_SIZE(cells), NULL, 0, NULL);
-+	if (ret)
-+		dev_err(dev, "failed to add child devices. err=%d\n", ret);
-+
-+	return ret;
-+}
-+
-+static int sky81452_remove(struct i2c_client *client)
-+{
-+	mfd_remove_devices(&client->dev);
-+	return 0;
-+}
-+
-+static const struct i2c_device_id sky81452_ids[] = {
-+	{ "sky81452" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, sky81452_ids);
-+
-+#ifdef CONFIG_OF
-+static const struct of_device_id sky81452_of_match[] = {
-+	{ .compatible = "skyworks,sky81452", },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, sky81452_of_match);
-+#endif
-+
-+static struct i2c_driver sky81452_driver = {
-+	.driver = {
-+		.name = "sky81452",
-+		.of_match_table = of_match_ptr(sky81452_of_match),
-+	},
-+	.probe = sky81452_probe,
-+	.remove = sky81452_remove,
-+	.id_table = sky81452_ids,
-+};
-+
-+module_i2c_driver(sky81452_driver);
-+
-+MODULE_DESCRIPTION("Skyworks SKY81452 MFD driver");
-+MODULE_AUTHOR("Gyungoh Yoo <jack.yoo@skyworksinc.com>");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/mfd/sky81452.h b/include/linux/mfd/sky81452.h
-new file mode 100644
-index 0000000..b0925fa
---- /dev/null
-+++ b/include/linux/mfd/sky81452.h
-@@ -0,0 +1,31 @@
-+/*
-+ * sky81452.h	SKY81452 MFD driver
-+ *
-+ * Copyright 2014 Skyworks Solutions Inc.
-+ * Author : Gyungoh Yoo <jack.yoo@skyworksinc.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef _SKY81452_H
-+#define _SKY81452_H
-+
-+#include <linux/platform_data/sky81452-backlight.h>
-+#include <linux/regulator/machine.h>
-+
-+struct sky81452_platform_data {
-+	struct sky81452_bl_platform_data *bl_pdata;
-+	struct regulator_init_data *regulator_init_data;
-+};
-+
-+#endif
+ static int lp855x_write_byte(struct lp855x *lp, u8 reg, u8 data)
+@@ -204,7 +209,6 @@ static int lp855x_configure(struct lp855x *lp)
+ {
+ 	u8 val, addr;
+ 	int i, ret;
+-	struct lp855x_platform_data *pd = lp->pdata;
+ 
+ 	switch (lp->chip_id) {
+ 	case LP8550:
+@@ -230,20 +234,20 @@ static int lp855x_configure(struct lp855x *lp)
+ 		}
+ 	}
+ 
+-	val = pd->initial_brightness;
++	val = lp->initial_brightness;
+ 	ret = lp855x_write_byte(lp, lp->cfg->reg_brightness, val);
+ 	if (ret)
+ 		goto err;
+ 
+-	val = pd->device_control;
++	val = lp->device_control;
+ 	ret = lp855x_write_byte(lp, lp->cfg->reg_devicectrl, val);
+ 	if (ret)
+ 		goto err;
+ 
+-	if (pd->size_program > 0) {
+-		for (i = 0; i < pd->size_program; i++) {
+-			addr = pd->rom_data[i].addr;
+-			val = pd->rom_data[i].val;
++	if (lp->size_program > 0) {
++		for (i = 0; i < lp->size_program; i++) {
++			addr = lp->rom_data[i].addr;
++			val = lp->rom_data[i].val;
+ 			if (!lp855x_is_valid_rom_area(lp, addr))
+ 				continue;
+ 
+@@ -269,7 +273,7 @@ err:
+ 
+ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
+ {
+-	unsigned int period = lp->pdata->period_ns;
++	unsigned int period = lp->period_ns;
+ 	unsigned int duty = br * period / max_br;
+ 	struct pwm_device *pwm;
+ 
+@@ -320,16 +324,15 @@ static int lp855x_backlight_register(struct lp855x *lp)
+ {
+ 	struct backlight_device *bl;
+ 	struct backlight_properties props;
+-	struct lp855x_platform_data *pdata = lp->pdata;
+-	const char *name = pdata->name ? : DEFAULT_BL_NAME;
++	const char *name = lp->blname ? : DEFAULT_BL_NAME;
+ 
+ 	props.type = BACKLIGHT_PLATFORM;
+ 	props.max_brightness = MAX_BRIGHTNESS;
+ 
+-	if (pdata->initial_brightness > props.max_brightness)
+-		pdata->initial_brightness = props.max_brightness;
++	if (lp->initial_brightness > props.max_brightness)
++		lp->initial_brightness = props.max_brightness;
+ 
+-	props.brightness = pdata->initial_brightness;
++	props.brightness = lp->initial_brightness;
+ 
+ 	bl = devm_backlight_device_register(lp->dev, name, lp->dev, lp,
+ 				       &lp855x_bl_ops, &props);
+@@ -381,7 +384,6 @@ static int lp855x_parse_dt(struct lp855x *lp)
+ {
+ 	struct device *dev = lp->dev;
+ 	struct device_node *node = dev->of_node;
+-	struct lp855x_platform_data *pdata;
+ 	int rom_length;
+ 
+ 	if (!node) {
+@@ -389,14 +391,10 @@ static int lp855x_parse_dt(struct lp855x *lp)
+ 		return -EINVAL;
+ 	}
+ 
+-	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
+-	if (!pdata)
+-		return -ENOMEM;
+-
+-	of_property_read_string(node, "bl-name", &pdata->name);
+-	of_property_read_u8(node, "dev-ctrl", &pdata->device_control);
+-	of_property_read_u8(node, "init-brt", &pdata->initial_brightness);
+-	of_property_read_u32(node, "pwm-period", &pdata->period_ns);
++	of_property_read_string(node, "bl-name", &lp->blname);
++	of_property_read_u8(node, "dev-ctrl", &lp->device_control);
++	of_property_read_u8(node, "init-brt", &lp->initial_brightness);
++	of_property_read_u32(node, "pwm-period", &lp->period_ns);
+ 
+ 	/* Fill ROM platform data if defined */
+ 	rom_length = of_get_child_count(node);
+@@ -415,19 +413,16 @@ static int lp855x_parse_dt(struct lp855x *lp)
+ 			i++;
+ 		}
+ 
+-		pdata->size_program = rom_length;
+-		pdata->rom_data = &rom[0];
++		lp->size_program = rom_length;
++		lp->rom_data = &rom[0];
+ 	}
+ 
+-	pdata->supply = devm_regulator_get(dev, "power");
+-	if (IS_ERR(pdata->supply)) {
+-		if (PTR_ERR(pdata->supply) = -EPROBE_DEFER)
++	lp->supply = devm_regulator_get(dev, "power");
++	if (IS_ERR(lp->supply)) {
++		if (PTR_ERR(lp->supply) = -EPROBE_DEFER)
+ 			return -EPROBE_DEFER;
+-		pdata->supply = NULL;
+ 	}
+ 
+-	lp->pdata = pdata;
+-
+ 	return 0;
+ }
+ #else
+@@ -453,21 +448,18 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 	lp->dev = &cl->dev;
+ 	lp->chipname = id->name;
+ 	lp->chip_id = id->driver_data;
+-	lp->pdata = dev_get_platdata(&cl->dev);
+ 
+-	if (!lp->pdata) {
+-		ret = lp855x_parse_dt(lp);
+-		if (ret < 0)
+-			return ret;
+-	}
++	ret = lp855x_parse_dt(lp);
++	if (ret < 0)
++		return ret;
+ 
+-	if (lp->pdata->period_ns > 0)
++	if (lp->period_ns > 0)
+ 		lp->mode = PWM_BASED;
+ 	else
+ 		lp->mode = REGISTER_BASED;
+ 
+-	if (lp->pdata->supply) {
+-		ret = regulator_enable(lp->pdata->supply);
++	if (lp->supply) {
++		ret = regulator_enable(lp->supply);
+ 		if (ret < 0) {
+ 			dev_err(&cl->dev, "failed to enable supply: %d\n", ret);
+ 			return ret;
+@@ -505,8 +497,8 @@ static int lp855x_remove(struct i2c_client *cl)
+ 
+ 	lp->bl->props.brightness = 0;
+ 	backlight_update_status(lp->bl);
+-	if (lp->pdata->supply)
+-		regulator_disable(lp->pdata->supply);
++	if (lp->supply)
++		regulator_disable(lp->supply);
+ 	sysfs_remove_group(&lp->dev->kobj, &lp855x_attr_group);
+ 
+ 	return 0;
 -- 
-1.9.1
+2.2.0.rc0.207.ga3a616c
 

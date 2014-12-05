@@ -1,82 +1,41 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 09 Dec 2014 01:36:36 +0000
-Subject: Re: [PATCH v2 4/4] backlight/lp855x: Remove CONFIG_OF ifdef in favor of Kconfig depends
-Message-Id: <000001d01350$9276b930$b7642b90$%han@samsung.com>
+From: Qiang Chen <qiang2.chen@sonymobile.com>
+Date: Fri, 05 Dec 2014 08:18:30 +0000
+Subject: [PATCH] video: ocfb: Fix data type warning
+Message-Id: <1417767510-31462-1-git-send-email-qiang2.chen@sonymobile.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1418077278-14144-4-git-send-email-seanpaul@chromium.org>
-In-Reply-To: <1418077278-14144-4-git-send-email-seanpaul@chromium.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Qiang Chen <qcwj.lk@gmail.com>
 
-On Tuesday, December 09, 2014 7:21 AM, Sean Paul wrote:
-> 
-> Now that we've removed all traces of pdata, remove the CONFIG_OF ifdef
-> from lp855x and instead make the driver depend on OF.
-> 
-> Signed-off-by: Sean Paul <seanpaul@chromium.org>
+When allocate framebuffer memory using dma_alloc_coherent(),
+we'd better use dma_addr_t instead of phys_addr_t. Because the
+address we got in fact is DMA or bus address for the platform.
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+This patch also fixes below build warning:
+drivers/video/fbdev/ocfb.c:335:2:
+	warning: passing argument 3 of ‘dma_alloc_attrs’
+	from incompatible pointer type [enabled by default]
 
-Best regards,
-Jingoo Han
+Signed-off-by: Qiang Chen <qiang2.chen@sonymobile.com>
+---
+ drivers/video/fbdev/ocfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> ---
-> Changes in v2:
-> 	- Remove of_match_ptr() wrapper
-> 
->  drivers/video/backlight/Kconfig     | 2 +-
->  drivers/video/backlight/lp855x_bl.c | 9 +--------
->  2 files changed, 2 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 8d03924..113c8b3 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -384,7 +384,7 @@ config BACKLIGHT_LM3639
-> 
->  config BACKLIGHT_LP855X
->  	tristate "Backlight driver for TI LP855X"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM
-> +	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM && OF
->  	help
->  	  This supports TI LP8550, LP8551, LP8552, LP8553, LP8555, LP8556 and
->  	  LP8557 backlight driver.
-> diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-> index 6530d60..f0a85f5 100644
-> --- a/drivers/video/backlight/lp855x_bl.c
-> +++ b/drivers/video/backlight/lp855x_bl.c
-> @@ -379,7 +379,6 @@ static const struct attribute_group lp855x_attr_group = {
->  	.attrs = lp855x_attributes,
->  };
-> 
-> -#ifdef CONFIG_OF
->  static int lp855x_parse_dt(struct lp855x *lp)
->  {
->  	struct device *dev = lp->dev;
-> @@ -426,12 +425,6 @@ static int lp855x_parse_dt(struct lp855x *lp)
-> 
->  	return 0;
->  }
-> -#else
-> -static int lp855x_parse_dt(struct lp855x *lp)
-> -{
-> -	return -EINVAL;
-> -}
-> -#endif
-> 
->  static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
->  {
-> @@ -532,7 +525,7 @@ MODULE_DEVICE_TABLE(i2c, lp855x_ids);
->  static struct i2c_driver lp855x_driver = {
->  	.driver = {
->  		   .name = "lp855x",
-> -		   .of_match_table = of_match_ptr(lp855x_dt_ids),
-> +		   .of_match_table = lp855x_dt_ids,
->  		   },
->  	.probe = lp855x_probe,
->  	.remove = lp855x_remove,
-> --
-> 2.1.1
+diff --git a/drivers/video/fbdev/ocfb.c b/drivers/video/fbdev/ocfb.c
+index 7f9dc9b..de98196 100644
+--- a/drivers/video/fbdev/ocfb.c
++++ b/drivers/video/fbdev/ocfb.c
+@@ -61,7 +61,7 @@ struct ocfb_dev {
+ 	/* flag indicating whether the regs are little endian accessed */
+ 	int little_endian;
+ 	/* Physical and virtual addresses of framebuffer */
+-	phys_addr_t fb_phys;
++	dma_addr_t fb_phys;
+ 	void __iomem *fb_virt;
+ 	u32 pseudo_palette[PALETTE_SIZE];
+ };
+-- 
+1.8.2.2
 

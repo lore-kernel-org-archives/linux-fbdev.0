@@ -1,101 +1,63 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 05 Dec 2014 12:02:19 +0000
-Subject: Re: [PATCH 2/3] video: fbdev: Check Standard Timing against DMT
-Message-Id: <54819ECB.1090607@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="NWs72P1dlGaXvuw7egkqQAedo0huMRfm3"
+From: David Ung <davidu@nvidia.com>
+Date: Fri, 05 Dec 2014 19:47:19 +0000
+Subject: RE: [PATCH 2/3] video: fbdev: Check Standard Timing against DMT
+Message-Id: <d20ca765747c4160b76322966b25dc78@HQMAIL102.nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1417643369-20603-2-git-send-email-davidu@nvidia.com>
 In-Reply-To: <1417643369-20603-2-git-send-email-davidu@nvidia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
---NWs72P1dlGaXvuw7egkqQAedo0huMRfm3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-On 03/12/14 23:49, David Ung wrote:
-> Add the VESA Display Monitor Timing (DMT) table.
-> During parsing of Standard Timings, it compare the 2 byte STD code
-> with DMT to see what the VESA mode should be.  If there is no entry
-> in the vesa_modes table or no match found, it fallsback to the
-> GTF timings.
->=20
-> Signed-off-by: David Ung <davidu@nvidia.com>
-> ---
->  drivers/video/fbdev/core/fbmon.c  | 20 ++++++----
->  drivers/video/fbdev/core/modedb.c | 84 +++++++++++++++++++++++++++++++=
-++++++++
->  include/linux/fb.h                | 10 +++++
->  3 files changed, 107 insertions(+), 7 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/cor=
-e/fbmon.c
-> index 5b0e313..aa1110a 100644
-> --- a/drivers/video/fbdev/core/fbmon.c
-> +++ b/drivers/video/fbdev/core/fbmon.c
-> @@ -526,16 +526,22 @@ static int get_std_timing(unsigned char *block, s=
-truct fb_videomode *mode,
->  	refresh =3D (block[1] & 0x3f) + 60;
-> =20
->  	DPRINTK("      %dx%d@%dHz\n", xres, yres, refresh);
-> -	for (i =3D 0; i < VESA_MODEDB_SIZE; i++) {
-> -		if (vesa_modes[i].xres =3D=3D xres &&
-> -		    vesa_modes[i].yres =3D=3D yres &&
-> -		    vesa_modes[i].refresh =3D=3D refresh) {
-> -			*mode =3D vesa_modes[i];
-> +	for (i =3D 0; i < DMT_SIZE; i++) {
-> +		u32 std_2byte_code =3D block[0] << 8 | block[1];
-> +
-> +		if (std_2byte_code =3D=3D dmt_modes[i].std_2byte_code) {
-> +			if (!dmt_modes[i].mode)
-> +				break;
-> +			*mode =3D *dmt_modes[i].mode;
->  			mode->flag |=3D FB_MODE_IS_STANDARD;
-> -			return 1;
-> +			DPRINTK("        DMT id=3D%d\n", dmt_modes[i].dmt_id);
-> +			break;
->  		}
->  	}
-> -	calc_mode_timings(xres, yres, refresh, mode);
-> +
-> +	if (i =3D=3D DMT_SIZE || !dmt_modes[i].mode)
-> +		calc_mode_timings(xres, yres, refresh, mode);
-> +
->  	return 1;
->  }
-
-I think this could be made a bit cleaner.
-
-The xres/yres/refresh calculation in get_std_timing doesn't matter for
-the DMT code above. So in get_std_timing() you could first do the search
-for the DMT mode, and if found, return from the function. After that the
-code would do the GTF calculation.
-
- Tomi
-
-
-
---NWs72P1dlGaXvuw7egkqQAedo0huMRfm3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUgZ7LAAoJEPo9qoy8lh71S5MP/0CIzp7cWHgmu38eiyQOwkWY
-3jILrXYBO5O1qT3z9aWT36XSxOxVKfLmZ/9VBFH2hvvgZxiCqEfvOZkMo+VYgC5I
-CobLKKUNG+noaoOg3a5RgYXRu5f11ddbnbfImVgOMGS9VbrmmLECRXaetWdPuIuM
-yimbCmEkLptoMlI/0Hr1GkpJt4q7EiNcACBGTh80q4RzCtXEHdYpUN00kHGhYqA0
-joCiPiJ5upKveklIE6uB+29ugAwJnxAquGbZqy1qcOZKacwO9yTt2RL5dCIyIEos
-FVPQvWdGzgu8Am6/cM/JT3AkgmwGu+UFGzitzvb3wIGu1dtqrflDtsAikdDNm0T8
-Q14UJBCL4LnF98aYdWZNbZsWZmh7Mqek7HOCmHT23Ni1PJ48/zpTZqc6TCZDtwrn
-mRZcZa91ZWoEBUB17FE6StwRiHGMd9iD+XGOaVzbOb7cMPRGssTcC6Zo/FDIICRB
-JZ1/ARDwDVaje7B57J1hAnukoI4El85fqnqQW+SVcqOEcWIB4mLMSWPyMpUvHuTW
-o9i9mlkiN6IoHQh7cJ00i7sXQggA0pvXs3crYVuw3vVIV82JIB9XxC5P9XQ9Vb3O
-4QAMesmjaWUbBIATWCVJ5WzfgGYbUvHTiKNfxXCrh/0DZ+10WN3Cr20k0a2OY3z3
-cyF5/lo/ake60jbK3FM2
-=Fr3H
------END PGP SIGNATURE-----
-
---NWs72P1dlGaXvuw7egkqQAedo0huMRfm3--
+DQo+IE9uIDAzLzEyLzE0IDIzOjQ5LCBEYXZpZCBVbmcgd3JvdGU6DQo+ID4gQWRkIHRoZSBWRVNB
+IERpc3BsYXkgTW9uaXRvciBUaW1pbmcgKERNVCkgdGFibGUuDQo+ID4gRHVyaW5nIHBhcnNpbmcg
+b2YgU3RhbmRhcmQgVGltaW5ncywgaXQgY29tcGFyZSB0aGUgMiBieXRlIFNURCBjb2RlDQo+ID4g
+d2l0aCBETVQgdG8gc2VlIHdoYXQgdGhlIFZFU0EgbW9kZSBzaG91bGQgYmUuICBJZiB0aGVyZSBp
+cyBubyBlbnRyeSBpbg0KPiA+IHRoZSB2ZXNhX21vZGVzIHRhYmxlIG9yIG5vIG1hdGNoIGZvdW5k
+LCBpdCBmYWxsc2JhY2sgdG8gdGhlIEdURg0KPiA+IHRpbWluZ3MuDQo+ID4NCj4gPiBTaWduZWQt
+b2ZmLWJ5OiBEYXZpZCBVbmcgPGRhdmlkdUBudmlkaWEuY29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2
+ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJtb24uYyAgfCAyMCArKysrKystLS0tDQo+ID4gZHJpdmVy
+cy92aWRlby9mYmRldi9jb3JlL21vZGVkYi5jIHwgODQNCj4gKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrDQo+ID4gIGluY2x1ZGUvbGludXgvZmIuaCAgICAgICAgICAgICAg
+ICB8IDEwICsrKysrDQo+ID4gIDMgZmlsZXMgY2hhbmdlZCwgMTA3IGluc2VydGlvbnMoKyksIDcg
+ZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9j
+b3JlL2ZibW9uLmMNCj4gPiBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1vbi5jDQo+ID4g
+aW5kZXggNWIwZTMxMy4uYWExMTEwYSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2Zi
+ZGV2L2NvcmUvZmJtb24uYw0KPiA+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1v
+bi5jDQo+ID4gQEAgLTUyNiwxNiArNTI2LDIyIEBAIHN0YXRpYyBpbnQgZ2V0X3N0ZF90aW1pbmco
+dW5zaWduZWQgY2hhciAqYmxvY2ssDQo+IHN0cnVjdCBmYl92aWRlb21vZGUgKm1vZGUsDQo+ID4g
+IAlyZWZyZXNoID0gKGJsb2NrWzFdICYgMHgzZikgKyA2MDsNCj4gPg0KPiA+ICAJRFBSSU5USygi
+ICAgICAgJWR4JWRAJWRIelxuIiwgeHJlcywgeXJlcywgcmVmcmVzaCk7DQo+ID4gLQlmb3IgKGkg
+PSAwOyBpIDwgVkVTQV9NT0RFREJfU0laRTsgaSsrKSB7DQo+ID4gLQkJaWYgKHZlc2FfbW9kZXNb
+aV0ueHJlcyA9PSB4cmVzICYmDQo+ID4gLQkJICAgIHZlc2FfbW9kZXNbaV0ueXJlcyA9PSB5cmVz
+ICYmDQo+ID4gLQkJICAgIHZlc2FfbW9kZXNbaV0ucmVmcmVzaCA9PSByZWZyZXNoKSB7DQo+ID4g
+LQkJCSptb2RlID0gdmVzYV9tb2Rlc1tpXTsNCj4gPiArCWZvciAoaSA9IDA7IGkgPCBETVRfU0la
+RTsgaSsrKSB7DQo+ID4gKwkJdTMyIHN0ZF8yYnl0ZV9jb2RlID0gYmxvY2tbMF0gPDwgOCB8IGJs
+b2NrWzFdOw0KPiA+ICsNCj4gPiArCQlpZiAoc3RkXzJieXRlX2NvZGUgPT0gZG10X21vZGVzW2ld
+LnN0ZF8yYnl0ZV9jb2RlKSB7DQo+ID4gKwkJCWlmICghZG10X21vZGVzW2ldLm1vZGUpDQo+ID4g
+KwkJCQlicmVhazsNCj4gPiArCQkJKm1vZGUgPSAqZG10X21vZGVzW2ldLm1vZGU7DQo+ID4gIAkJ
+CW1vZGUtPmZsYWcgfD0gRkJfTU9ERV9JU19TVEFOREFSRDsNCj4gPiAtCQkJcmV0dXJuIDE7DQo+
+ID4gKwkJCURQUklOVEsoIiAgICAgICAgRE1UIGlkPSVkXG4iLA0KPiBkbXRfbW9kZXNbaV0uZG10
+X2lkKTsNCj4gPiArCQkJYnJlYWs7DQo+ID4gIAkJfQ0KPiA+ICAJfQ0KPiA+IC0JY2FsY19tb2Rl
+X3RpbWluZ3MoeHJlcywgeXJlcywgcmVmcmVzaCwgbW9kZSk7DQo+ID4gKw0KPiA+ICsJaWYgKGkg
+PT0gRE1UX1NJWkUgfHwgIWRtdF9tb2Rlc1tpXS5tb2RlKQ0KPiA+ICsJCWNhbGNfbW9kZV90aW1p
+bmdzKHhyZXMsIHlyZXMsIHJlZnJlc2gsIG1vZGUpOw0KPiA+ICsNCj4gPiAgCXJldHVybiAxOw0K
+PiA+ICB9DQo+IA0KPiBJIHRoaW5rIHRoaXMgY291bGQgYmUgbWFkZSBhIGJpdCBjbGVhbmVyLg0K
+PiANCj4gVGhlIHhyZXMveXJlcy9yZWZyZXNoIGNhbGN1bGF0aW9uIGluIGdldF9zdGRfdGltaW5n
+IGRvZXNuJ3QgbWF0dGVyIGZvciB0aGUNCj4gRE1UIGNvZGUgYWJvdmUuIFNvIGluIGdldF9zdGRf
+dGltaW5nKCkgeW91IGNvdWxkIGZpcnN0IGRvIHRoZSBzZWFyY2ggZm9yIHRoZQ0KPiBETVQgbW9k
+ZSwgYW5kIGlmIGZvdW5kLCByZXR1cm4gZnJvbSB0aGUgZnVuY3Rpb24uIEFmdGVyIHRoYXQgdGhl
+IGNvZGUNCj4gd291bGQgZG8gdGhlIEdURiBjYWxjdWxhdGlvbi4NCj4gDQoNClllcywgSSd2ZSBk
+ZWxldGVkIHRoZSB4cmVzL3lyZXMvcmVmcmVzaCBjYWxjdWxhdGlvbi4NClRoZSByZWFzb24gZm9y
+IHRoZSBicmVhayBpbnN0ZWFkIG9mIGEgcmV0dXJuIGlzIGJlY2F1c2Ugb2YgcGF0Y2ggMy8zLCB3
+aGljaA0Kd2lsbCB0aGVuIHZhbGlkYXRlcyB0aGUgbW9kZSBhZ2FpbnN0IG1vbnNwZWMuDQpEYXZp
+ZA0KDQoNCg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NClRoaXMgZW1haWwgbWVzc2FnZSBp
+cyBmb3IgdGhlIHNvbGUgdXNlIG9mIHRoZSBpbnRlbmRlZCByZWNpcGllbnQocykgYW5kIG1heSBj
+b250YWluDQpjb25maWRlbnRpYWwgaW5mb3JtYXRpb24uICBBbnkgdW5hdXRob3JpemVkIHJldmll
+dywgdXNlLCBkaXNjbG9zdXJlIG9yIGRpc3RyaWJ1dGlvbg0KaXMgcHJvaGliaXRlZC4gIElmIHlv
+dSBhcmUgbm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQsIHBsZWFzZSBjb250YWN0IHRoZSBzZW5k
+ZXIgYnkNCnJlcGx5IGVtYWlsIGFuZCBkZXN0cm95IGFsbCBjb3BpZXMgb2YgdGhlIG9yaWdpbmFs
+IG1lc3NhZ2UuDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0K

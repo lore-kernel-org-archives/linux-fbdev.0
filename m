@@ -1,71 +1,81 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 05 Dec 2014 11:41:06 +0000
+Date: Fri, 05 Dec 2014 12:02:19 +0000
 Subject: Re: [PATCH 2/3] video: fbdev: Check Standard Timing against DMT
-Message-Id: <548199D2.7010101@ti.com>
+Message-Id: <54819ECB.1090607@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="mJsJqpDhMDL59xNwf8onwgKnuOhV8GQc6"
+Content-Type: multipart/mixed; boundary="NWs72P1dlGaXvuw7egkqQAedo0huMRfm3"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1417643369-20603-2-git-send-email-davidu@nvidia.com>
 In-Reply-To: <1417643369-20603-2-git-send-email-davidu@nvidia.com>
 To: linux-fbdev@vger.kernel.org
 
---mJsJqpDhMDL59xNwf8onwgKnuOhV8GQc6
-Content-Type: text/plain; charset=windows-1252
+--NWs72P1dlGaXvuw7egkqQAedo0huMRfm3
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On 05/12/14 06:08, David Ung wrote:
->>> diff --git a/drivers/video/fbdev/core/modedb.c
->>> b/drivers/video/fbdev/core/modedb.c
->>> index 0b57c1df..858a97e 100644
->>> --- a/drivers/video/fbdev/core/modedb.c
->>> +++ b/drivers/video/fbdev/core/modedb.c
->>> @@ -497,6 +497,90 @@ const struct fb_videomode vesa_modes[] =3D {
->>>  	  FB_SYNC_HOR_HIGH_ACT, FB_VMODE_NONINTERLACED,
->> FB_MODE_IS_VESA },
->>> };  EXPORT_SYMBOL(vesa_modes);
->>> +
->>> +const struct dmt_videomode dmt_modes[DMT_SIZE] =3D {
->>> +	{ 0x01, 0x0000, 0x000000, &vesa_modes[0] },
->>> +	{ 0x02, 0x3119, 0x000000, &vesa_modes[1] },
->>> +	{ 0x03, 0x0000, 0x000000, &vesa_modes[2] },
->>> +	{ 0x04, 0x3140, 0x000000, &vesa_modes[3] },
->>> +	{ 0x05, 0x314c, 0x000000, &vesa_modes[4] },
->>> +	{ 0x06, 0x314f, 0x000000, &vesa_modes[5] },
->>> +	{ 0x07, 0x3159, 0x000000, &vesa_modes[6] },
->>> +	{ 0x08, 0x0000, 0x000000, &vesa_modes[7] },
->>> +	{ 0x09, 0x4540, 0x000000, &vesa_modes[8] },
->>> +	{ 0x0a, 0x454c, 0x000000, &vesa_modes[9] },
->>> +	{ 0x0b, 0x454f, 0x000000, &vesa_modes[10] },
->>> +	{ 0x0c, 0x4559, 0x000000, &vesa_modes[11] },
->>> +	{ 0x0d, 0x0000, 0x000000, 0 },
->>> +	{ 0x0e, 0x0000, 0x000000, 0 },
->>
->> You've filled only some of the modes in this table. What's the logic w=
-hich
->> modes are left out?
->>
+On 03/12/14 23:49, David Ung wrote:
+> Add the VESA Display Monitor Timing (DMT) table.
+> During parsing of Standard Timings, it compare the 2 byte STD code
+> with DMT to see what the VESA mode should be.  If there is no entry
+> in the vesa_modes table or no match found, it fallsback to the
+> GTF timings.
 >=20
-> For DMT id 0xd, it has no STD 2byte id, no 3byte CVT code and no mode t=
-imings
-> currently defined in vesa_modes struct.
-> There is 80 DMT ids, but only 43 vesa_modes defined in fbdev.  So I've =
-left those
-> entries empty.  If we eventually have all the VESA timings, the last co=
-lumn could
-> be eliminated.
+> Signed-off-by: David Ung <davidu@nvidia.com>
+> ---
+>  drivers/video/fbdev/core/fbmon.c  | 20 ++++++----
+>  drivers/video/fbdev/core/modedb.c | 84 +++++++++++++++++++++++++++++++=
+++++++++
+>  include/linux/fb.h                | 10 +++++
+>  3 files changed, 107 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/cor=
+e/fbmon.c
+> index 5b0e313..aa1110a 100644
+> --- a/drivers/video/fbdev/core/fbmon.c
+> +++ b/drivers/video/fbdev/core/fbmon.c
+> @@ -526,16 +526,22 @@ static int get_std_timing(unsigned char *block, s=
+truct fb_videomode *mode,
+>  	refresh =3D (block[1] & 0x3f) + 60;
+> =20
+>  	DPRINTK("      %dx%d@%dHz\n", xres, yres, refresh);
+> -	for (i =3D 0; i < VESA_MODEDB_SIZE; i++) {
+> -		if (vesa_modes[i].xres =3D=3D xres &&
+> -		    vesa_modes[i].yres =3D=3D yres &&
+> -		    vesa_modes[i].refresh =3D=3D refresh) {
+> -			*mode =3D vesa_modes[i];
+> +	for (i =3D 0; i < DMT_SIZE; i++) {
+> +		u32 std_2byte_code =3D block[0] << 8 | block[1];
+> +
+> +		if (std_2byte_code =3D=3D dmt_modes[i].std_2byte_code) {
+> +			if (!dmt_modes[i].mode)
+> +				break;
+> +			*mode =3D *dmt_modes[i].mode;
+>  			mode->flag |=3D FB_MODE_IS_STANDARD;
+> -			return 1;
+> +			DPRINTK("        DMT id=3D%d\n", dmt_modes[i].dmt_id);
+> +			break;
+>  		}
+>  	}
+> -	calc_mode_timings(xres, yres, refresh, mode);
+> +
+> +	if (i =3D=3D DMT_SIZE || !dmt_modes[i].mode)
+> +		calc_mode_timings(xres, yres, refresh, mode);
+> +
+>  	return 1;
+>  }
 
-Ok. So you added the modes to vesa_modes table that you were interested
-in for your use case, and then filled the dmt_modes table with the modes
-that were available in vesa_modes?
+I think this could be made a bit cleaner.
 
-That's ok, I just want to understand the logic for which modes you added
-and which you left out.
+The xres/yres/refresh calculation in get_std_timing doesn't matter for
+the DMT code above. So in get_std_timing() you could first do the search
+for the DMT mode, and if found, return from the function. After that the
+code would do the GTF calculation.
 
  Tomi
 
 
 
---mJsJqpDhMDL59xNwf8onwgKnuOhV8GQc6
+--NWs72P1dlGaXvuw7egkqQAedo0huMRfm3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -73,19 +83,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUgZnSAAoJEPo9qoy8lh71DEMQAJTSY2mFkG3OVC6UPU9Fh4gm
-bRyN4aJbPiZwcpdQxjWBpVSKFI+vXdANWz6j1HP1AZtJY373R/2xj9UygaDpW/ZD
-wM/bvoELxTSs+I35NirwYy12w4SFlbSkU2hRxYoUsGbfpAGVyHPbkl/FBz+9TiHf
-i07dXAkUphK+dfK2KqxxkehMQu6MXLBoNGfc521W1L4Lvpaz73/cNFccwSQ7eEk4
-gXBouQIxKl/1E1UA1jndsPNZtoFSDrL8aM+lCGN/HYwqLg9+QzUKeqR82gO1zash
-lrnMMxppF3A1aArv0T2/K54qDUIkGOwgy7bLL7O+EogEvX394i5FmteyRTTi1HUC
-WbAPDRtERQq2DBN+nFWM5ZxhNmUx8ebJp8WpCRH07Y8Nerxb75GqEylwH9dpgXv/
-ipNPJ3+COgLHVTr1z59OSg6Ma4miupICCrUa9rbfFvPGOjxfU8Fn30+du8uiPNPh
-2BtszqHh5BYgkhHAYxjlXy1kw1PXBEGLmFoXeHgR5EiuBZ8Vta53bdwArWVyoa+s
-hT/nCua5TzQijTMEkG/vUsJXmBlpCPsiy/kTzDhmjUjGopA+mwvYCCbDqt+abmc8
-77lEbiAYqt4iLJ0TaGSb2It0MkmpdfU26fw3qC51HumSHPaIm06aOyU/QIqO/XP4
-8d6g8OPBq4rxyZ7YSoQ6
-=I8Km
+iQIcBAEBAgAGBQJUgZ7LAAoJEPo9qoy8lh71S5MP/0CIzp7cWHgmu38eiyQOwkWY
+3jILrXYBO5O1qT3z9aWT36XSxOxVKfLmZ/9VBFH2hvvgZxiCqEfvOZkMo+VYgC5I
+CobLKKUNG+noaoOg3a5RgYXRu5f11ddbnbfImVgOMGS9VbrmmLECRXaetWdPuIuM
+yimbCmEkLptoMlI/0Hr1GkpJt4q7EiNcACBGTh80q4RzCtXEHdYpUN00kHGhYqA0
+joCiPiJ5upKveklIE6uB+29ugAwJnxAquGbZqy1qcOZKacwO9yTt2RL5dCIyIEos
+FVPQvWdGzgu8Am6/cM/JT3AkgmwGu+UFGzitzvb3wIGu1dtqrflDtsAikdDNm0T8
+Q14UJBCL4LnF98aYdWZNbZsWZmh7Mqek7HOCmHT23Ni1PJ48/zpTZqc6TCZDtwrn
+mRZcZa91ZWoEBUB17FE6StwRiHGMd9iD+XGOaVzbOb7cMPRGssTcC6Zo/FDIICRB
+JZ1/ARDwDVaje7B57J1hAnukoI4El85fqnqQW+SVcqOEcWIB4mLMSWPyMpUvHuTW
+o9i9mlkiN6IoHQh7cJ00i7sXQggA0pvXs3crYVuw3vVIV82JIB9XxC5P9XQ9Vb3O
+4QAMesmjaWUbBIATWCVJ5WzfgGYbUvHTiKNfxXCrh/0DZ+10WN3Cr20k0a2OY3z3
+cyF5/lo/ake60jbK3FM2
+=Fr3H
 -----END PGP SIGNATURE-----
 
---mJsJqpDhMDL59xNwf8onwgKnuOhV8GQc6--
+--NWs72P1dlGaXvuw7egkqQAedo0huMRfm3--

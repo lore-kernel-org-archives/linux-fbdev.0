@@ -1,89 +1,138 @@
-From: Felipe Balbi <balbi@ti.com>
-Date: Thu, 04 Dec 2014 15:05:38 +0000
-Subject: Re: [PATCH 3/3] arm: boot: dts: am437x-sk: fix lcd enable pin mux data
-Message-Id: <20141204150538.GE18045@saruman>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ffoCPvUAPMgSXi6H"
+From: Sean Paul <seanpaul@chromium.org>
+Date: Fri, 05 Dec 2014 18:44:26 +0000
+Subject: [PATCH 1/4] backlight/lp855x: Remove stale code from lp855x.h
+Message-Id: <1417805069-20441-1-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413311335-25083-1-git-send-email-balbi@ti.com>
- <1413311335-25083-3-git-send-email-balbi@ti.com>
- <543E6774.8000406@ti.com> <20141204144325.GA17269@saruman>
-In-Reply-To: <20141204144325.GA17269@saruman>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---ffoCPvUAPMgSXi6H
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+These aren't used by anyone, remove them.
 
-On Thu, Dec 04, 2014 at 08:43:25AM -0600, Felipe Balbi wrote:
-> HI,
->=20
-> On Wed, Oct 15, 2014 at 03:24:20PM +0300, Tomi Valkeinen wrote:
-> > On 14/10/14 21:28, Felipe Balbi wrote:
-> > > Caused by a copy & paste error. Note that even with
-> > > this bug AM437x SK display still works because GPIO
-> > > mux mode is always enabled. It's still wrong to mux
-> > > somebody else's pin.
-> > >=20
-> > > Luckily ball D25 (offset 0x238 - gpio5_8) on AM437x
-> > > isn't used for anything.
-> > >=20
-> > > Signed-off-by: Felipe Balbi <balbi@ti.com>
-> > > ---
-> > >  arch/arm/boot/dts/am437x-sk-evm.dts | 3 +--
-> > >  1 file changed, 1 insertion(+), 2 deletions(-)
-> > >=20
-> > > diff --git a/arch/arm/boot/dts/am437x-sk-evm.dts b/arch/arm/boot/dts/=
-am437x-sk-evm.dts
-> > > index 859ff3d..681be00 100644
-> > > --- a/arch/arm/boot/dts/am437x-sk-evm.dts
-> > > +++ b/arch/arm/boot/dts/am437x-sk-evm.dts
-> > > @@ -320,8 +320,7 @@
-> > > =20
-> > >  	lcd_pins: lcd_pins {
-> > >  		pinctrl-single,pins =3D <
-> > > -			/* GPIO 5_8 to select LCD / HDMI */
-> > > -			0x238 (PIN_OUTPUT_PULLUP | MUX_MODE7)
-> > > +			0x1c (PIN_OUTPUT_PULLUP | MUX_MODE7) /* gpcm_ad7.gpio1_7 */
-> > >  		>;
-> > >  	};
-> > >  };
-> >=20
-> > I didn't verify the offset, but based on the comments this looks fine t=
-o me.
-> >=20
-> > Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->=20
-> Tony, are you taking this patch ? Looks like it has been forgotten and
-> now it needs to be backported to v3.17 and v3.18 (assuming it's too late
-> for v3.18).
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+---
+ include/linux/platform_data/lp855x.h | 100 -----------------------------------
+ 1 file changed, 100 deletions(-)
 
-I'll send a new version and Cc stable.
+diff --git a/include/linux/platform_data/lp855x.h b/include/linux/platform_data/lp855x.h
+index 9c7fd1e..9e3ac3c 100644
+--- a/include/linux/platform_data/lp855x.h
++++ b/include/linux/platform_data/lp855x.h
+@@ -12,65 +12,6 @@
+ #ifndef _LP855X_H
+ #define _LP855X_H
+ 
+-#define BL_CTL_SHFT	(0)
+-#define BRT_MODE_SHFT	(1)
+-#define BRT_MODE_MASK	(0x06)
+-
+-/* Enable backlight. Only valid when BRT_MODE(I2C only) */
+-#define ENABLE_BL	(1)
+-#define DISABLE_BL	(0)
+-
+-#define I2C_CONFIG(id)	id ## _I2C_CONFIG
+-#define PWM_CONFIG(id)	id ## _PWM_CONFIG
+-
+-/* DEVICE CONTROL register - LP8550 */
+-#define LP8550_PWM_CONFIG	(LP8550_PWM_ONLY << BRT_MODE_SHFT)
+-#define LP8550_I2C_CONFIG	((ENABLE_BL << BL_CTL_SHFT) | \
+-				(LP8550_I2C_ONLY << BRT_MODE_SHFT))
+-
+-/* DEVICE CONTROL register - LP8551 */
+-#define LP8551_PWM_CONFIG	LP8550_PWM_CONFIG
+-#define LP8551_I2C_CONFIG	LP8550_I2C_CONFIG
+-
+-/* DEVICE CONTROL register - LP8552 */
+-#define LP8552_PWM_CONFIG	LP8550_PWM_CONFIG
+-#define LP8552_I2C_CONFIG	LP8550_I2C_CONFIG
+-
+-/* DEVICE CONTROL register - LP8553 */
+-#define LP8553_PWM_CONFIG	LP8550_PWM_CONFIG
+-#define LP8553_I2C_CONFIG	LP8550_I2C_CONFIG
+-
+-/* CONFIG register - LP8555 */
+-#define LP8555_PWM_STANDBY	BIT(7)
+-#define LP8555_PWM_FILTER	BIT(6)
+-#define LP8555_RELOAD_EPROM	BIT(3)	/* use it if EPROMs should be reset
+-					   when the backlight turns on */
+-#define LP8555_OFF_OPENLEDS	BIT(2)
+-#define LP8555_PWM_CONFIG	LP8555_PWM_ONLY
+-#define LP8555_I2C_CONFIG	LP8555_I2C_ONLY
+-#define LP8555_COMB1_CONFIG	LP8555_COMBINED1
+-#define LP8555_COMB2_CONFIG	LP8555_COMBINED2
+-
+-/* DEVICE CONTROL register - LP8556 */
+-#define LP8556_PWM_CONFIG	(LP8556_PWM_ONLY << BRT_MODE_SHFT)
+-#define LP8556_COMB1_CONFIG	(LP8556_COMBINED1 << BRT_MODE_SHFT)
+-#define LP8556_I2C_CONFIG	((ENABLE_BL << BL_CTL_SHFT) | \
+-				(LP8556_I2C_ONLY << BRT_MODE_SHFT))
+-#define LP8556_COMB2_CONFIG	(LP8556_COMBINED2 << BRT_MODE_SHFT)
+-#define LP8556_FAST_CONFIG	BIT(7) /* use it if EPROMs should be maintained
+-					  when exiting the low power mode */
+-
+-/* CONFIG register - LP8557 */
+-#define LP8557_PWM_STANDBY	BIT(7)
+-#define LP8557_PWM_FILTER	BIT(6)
+-#define LP8557_RELOAD_EPROM	BIT(3)	/* use it if EPROMs should be reset
+-					   when the backlight turns on */
+-#define LP8557_OFF_OPENLEDS	BIT(2)
+-#define LP8557_PWM_CONFIG	LP8557_PWM_ONLY
+-#define LP8557_I2C_CONFIG	LP8557_I2C_ONLY
+-#define LP8557_COMB1_CONFIG	LP8557_COMBINED1
+-#define LP8557_COMB2_CONFIG	LP8557_COMBINED2
+-
+ enum lp855x_chip_id {
+ 	LP8550,
+ 	LP8551,
+@@ -81,47 +22,6 @@ enum lp855x_chip_id {
+ 	LP8557,
+ };
+ 
+-enum lp8550_brighntess_source {
+-	LP8550_PWM_ONLY,
+-	LP8550_I2C_ONLY = 2,
+-};
+-
+-enum lp8551_brighntess_source {
+-	LP8551_PWM_ONLY = LP8550_PWM_ONLY,
+-	LP8551_I2C_ONLY = LP8550_I2C_ONLY,
+-};
+-
+-enum lp8552_brighntess_source {
+-	LP8552_PWM_ONLY = LP8550_PWM_ONLY,
+-	LP8552_I2C_ONLY = LP8550_I2C_ONLY,
+-};
+-
+-enum lp8553_brighntess_source {
+-	LP8553_PWM_ONLY = LP8550_PWM_ONLY,
+-	LP8553_I2C_ONLY = LP8550_I2C_ONLY,
+-};
+-
+-enum lp8555_brightness_source {
+-	LP8555_PWM_ONLY,
+-	LP8555_I2C_ONLY,
+-	LP8555_COMBINED1,	/* Brightness register with shaped PWM */
+-	LP8555_COMBINED2,	/* PWM with shaped brightness register */
+-};
+-
+-enum lp8556_brightness_source {
+-	LP8556_PWM_ONLY,
+-	LP8556_COMBINED1,	/* pwm + i2c before the shaper block */
+-	LP8556_I2C_ONLY,
+-	LP8556_COMBINED2,	/* pwm + i2c after the shaper block */
+-};
+-
+-enum lp8557_brightness_source {
+-	LP8557_PWM_ONLY,
+-	LP8557_I2C_ONLY,
+-	LP8557_COMBINED1,	/* pwm + i2c after the shaper block */
+-	LP8557_COMBINED2,	/* pwm + i2c before the shaper block */
+-};
+-
+ struct lp855x_rom_data {
+ 	u8 addr;
+ 	u8 val;
+-- 
+2.2.0.rc0.207.ga3a616c
 
---=20
-balbi
-
---ffoCPvUAPMgSXi6H
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUgHhCAAoJEIaOsuA1yqREoAIP/2gojRE9cAW1gCGlsRfyvwJG
-aKSB8OhUFrYFA6Bxf57/P0vLeOTCmZh2usa68Yfgc9MqOU6WYkIbP3OXJm++JyX/
-t5QlhXA7JqigYAoahGZnBeOZ+fAWFJJkWr3st7WSz2u3a+icmkO5vLdhOZzV63hi
-AIG11SJfXvb0t/Fl5Kg9S23MWf3uqsxmQuzrc3k7jIJntW7aMu/zQFXqlchu0W8n
-DY/07iF/OiS/NTBJQ9AZ/LdfuB83cwq6sbFYzbAW2gXnilzwuBqLa1DvGPgJkWjB
-Ab7Hp+HyMspjS+iXlkVnFQPX4kVemzbJcA8SpoQjHtVgUKXKswY17G/+hY2XiG9L
-K71IndkLkEQ9k6bIpHu0hYpU5erDpBftBhAuYJt+nyrbmzUX/A3hn2mNw3aRuhDt
-NQp8PivHkRszO24j/qkGymwKkTR/elJdck0jTjudJT0Z1AZYO9pOdrUWzn0t7Kpt
-25EUwiXsdRYyyZdg3D4OG7kxLLWSi4QVEHxPBKEIFO7LU7EL+HEjuL5AowO/dM5X
-gw73Scl1GHGoPMEvq9yD5MSy17imOz/vuS/IqVVfQUutxQoskEHd2pM/yVR4Xsux
-CgatJzlMFOcM5GMYJKi0l7f1x9dnaJf0fkvLENQn6zhLXgADFwtLi3bWRNV7r78K
-z59SqGOlqacNOGZXfFyy
-=EU5g
------END PGP SIGNATURE-----
-
---ffoCPvUAPMgSXi6H--

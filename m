@@ -1,26 +1,60 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Fri, 19 Dec 2014 19:10:31 +0000
-Subject: Re: [PATCH v2 3/7] drm_modes: add videomode_from_drm_display_mode
-Message-Id: <54947827.5050104@gmail.com>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Fri, 05 Dec 2014 18:44:29 +0000
+Subject: [PATCH 4/4] backlight/lp855x: Remove CONFIG_OF ifdef in favor of Kconfig depends
+Message-Id: <1417805069-20441-4-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>	 <1418954426-21909-4-git-send-email-steve_longerbeam@mentor.com> <1418986984.3165.64.camel@pengutronix.de>
-In-Reply-To: <1418986984.3165.64.camel@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Russell King <rmk+kernel@arm.linux.org.uk>, Fabio Estevam <fabio.estevam@freescale.com>, Shawn Guo <shawn.guo@linaro.org>, Denis Carikli <denis@eukrea.com>, Jiada Wang <jiada_wang@mentor.com>, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: linux-fbdev@vger.kernel.org
 
-On 12/19/2014 03:03 AM, Philipp Zabel wrote:
->
-> +EXPORT_SYMBOL_GPL(videomode_from_drm_display_mode);
-> Is it ok for drm_modes to export a function that doesn't start with
-> drm_ ? We could just rename this to drm_display_mode_to_videomode if
-> necessary. I can fix it up as I apply it, but I'd like to know which is
-> preferred.
+Now that we've removed all traces of pdata, remove the CONFIG_OF ifdef
+from lp855x and instead make the driver depend on OF.
 
-Yeah, drm_display_mode_to_videomode() is probably better,
-makes it more clear it's part of the DRM kernel interfaces.
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+---
+ drivers/video/backlight/Kconfig     | 2 +-
+ drivers/video/backlight/lp855x_bl.c | 7 -------
+ 2 files changed, 1 insertion(+), 8 deletions(-)
 
-Steve
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 8d03924..113c8b3 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -384,7 +384,7 @@ config BACKLIGHT_LM3639
+ 
+ config BACKLIGHT_LP855X
+ 	tristate "Backlight driver for TI LP855X"
+-	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM
++	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM && OF
+ 	help
+ 	  This supports TI LP8550, LP8551, LP8552, LP8553, LP8555, LP8556 and
+ 	  LP8557 backlight driver.
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+index 8b81d8e..3d3b8cf 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -379,7 +379,6 @@ static const struct attribute_group lp855x_attr_group = {
+ 	.attrs = lp855x_attributes,
+ };
+ 
+-#ifdef CONFIG_OF
+ static int lp855x_parse_dt(struct lp855x *lp)
+ {
+ 	struct device *dev = lp->dev;
+@@ -425,12 +424,6 @@ static int lp855x_parse_dt(struct lp855x *lp)
+ 
+ 	return 0;
+ }
+-#else
+-static int lp855x_parse_dt(struct lp855x *lp)
+-{
+-	return -EINVAL;
+-}
+-#endif
+ 
+ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ {
+-- 
+2.2.0.rc0.207.ga3a616c
 

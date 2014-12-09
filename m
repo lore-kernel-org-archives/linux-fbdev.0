@@ -1,106 +1,42 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 19 Dec 2014 11:59:41 +0000
-Subject: Re: msync on fbdev
-Message-Id: <5494132D.50204@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="KETsAPm2w4AAXm2iJkubaQjv14awmSgFu"
+From: Luc Verhaegen <libv@skynet.be>
+Date: Tue, 09 Dec 2014 14:39:26 +0000
+Subject: Re: FOSDEM15: Graphics DevRoom: call for speakers.
+Message-Id: <20141209143926.GB17341@skynet.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CABMKUD9mtus77hdfPA5mAtwc8MCpyJQ-kvvvyVmKQuw2Tuo9mA@mail.gmail.com>
-In-Reply-To: <CABMKUD9mtus77hdfPA5mAtwc8MCpyJQ-kvvvyVmKQuw2Tuo9mA@mail.gmail.com>
-To: linux-fbdev@vger.kernel.org
+References: <20141002174457.GA11725@skynet.be>
+In-Reply-To: <20141002174457.GA11725@skynet.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: mesa-dev@lists.freedesktop.org, xorg-devel@lists.x.org, wayland-devel@lists.freedesktop.org, mir-devel@lists.ubuntu.com, directfb-dev@directfb.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, xorg@lists.x.org, xorg-announce@lists.freedesktop.org
 
---KETsAPm2w4AAXm2iJkubaQjv14awmSgFu
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+On Thu, Oct 02, 2014 at 07:44:57PM +0200, Luc Verhaegen wrote:
+> Hi,
+> 
+> At FOSDEM on the 31st of january and the 1st of February 2015, there 
+> will be another graphics DevRoom. URL: https://fosdem.org/2015/
 
-On 18/12/14 15:55, Martin Jackson wrote:
-> Dear fbdev developers,
->=20
-> This relates to the core implementation of fbdev with the
-> CONFIG_FB_DEFERRED_IO option enabled.
->=20
-> I believe I have found a bug when doing msync(2) on a framebuffer
-> device. We are using an old (2.6.37) kernel on an embedded plaform,
-> but if I look at the current torvalds kernel (fbdev kernel looks
-> rather old!?), the bug seems to still be there.
->=20
-> When looking at the msync(2) man page, msync is meant to return 0 on
-> success and -1 on failure, however we are seeing it return 1, which is
-> undocumented and in my opinion wrong.
->=20
-> This is because the fb_deferred_io_fsync method returns the code from
-> 'schedule_delayed_work', which is either 0 or 1 depending on whether
-> the work was already scheduled, leading to the possibility that msync
-> returns the value 1 to userland.
+> Slots will be handed out on a first come, first serve basis. The best 
+> slots will go to those who apply the earliest. The amount of slots is 
+> currently not known yet, but i expect there to be around 16 available (8 
+> on each day), so act quickly.
 
-Indeed, looks broken. schedule_delayed_work() never returns an error, it
-just returns a bool telling if the work was already scheduled.
+> As for deadlines, i hope to have a pretty much complete schedule between 
+> christmas and the new year. The rockhard printed schedule deadline is 
+> probably January 9th, after that you will not be featured in the booklet 
+> and you will have a lot less visitors. I will hopefully be able to lock 
+> down entries and descriptions after that date.
 
-I guess no one really uses deferred io much =3D).
+It's been more than 2 months since the original email, it's less than 
+two months away from the event, and one month away from what usually is 
+the deadline for the booklet. File your talk now, while there are still 
+some useful slots available.
 
-Here's a patch:
+Also, for those who have filed already but who have left their abstracts 
+open, please get those filed in ASAP. Your talk will be only be ordered 
+in when at least the basics are provided.
 
-=46rom 9cc80b3cf9d6023ede084d024ed8b5c0cb247bc2 Mon Sep 17 00:00:00 2001
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 19 Dec 2014 13:55:41 +0200
-Subject: [PATCH] video/fbdev: fix defio's fsync
+Thanks,
 
-fb_deferred_io_fsync() returns the value of schedule_delayed_work() as
-an error code, but schedule_delayed_work() does not return an error. It
-returns true/false depending on whether the work was already queued.
-
-Fix this by ignoring the return value of schedule_delayed_work().
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/core/fb_defio.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/fb_defio.c
-b/drivers/video/fbdev/core/fb_defio.c
-index 900aa4ecd617..d6cab1fd9a47 100644
---- a/drivers/video/fbdev/core/fb_defio.c
-+++ b/drivers/video/fbdev/core/fb_defio.c
-@@ -83,9 +83,10 @@ int fb_deferred_io_fsync(struct file *file, loff_t
-start, loff_t end, int datasy
- 	cancel_delayed_work_sync(&info->deferred_work);
-
- 	/* Run it immediately */
--	err =3D schedule_delayed_work(&info->deferred_work, 0);
-+	schedule_delayed_work(&info->deferred_work, 0);
- 	mutex_unlock(&inode->i_mutex);
--	return err;
-+
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(fb_deferred_io_fsync);
-
---=20
-2.2.0
-
-
-
---KETsAPm2w4AAXm2iJkubaQjv14awmSgFu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUlBMtAAoJEPo9qoy8lh71pIQP/01u7Nl3cP3M1kfJmejH2/eK
-r8dmVrRO6Xo8ieeAQ+d47cbsfxyEt3bRQSelgpEE2TcNdtNVod/n/CygFPAx/vuX
-3wfhYijI98Rfg0mFL3oxQiFkkBhRGUlt/k3uw2G492mZdXIv2AmweH8uDtf9LLvm
-iR37e+HhWZHg4t9uH8EKfeg/MMdU85NHRicmorRmSO5zLAl5/3WHsFCssPsfOvB/
-+85AyCV3G5YLx8qsMcROeV/TTw/pNqo3dkTXYfrpDHWwerO1F6+txKLM1IjYng3l
-1PryniN9ivwVVtCpG/UXCaIQRDf+97+n4HsYU5H1w6FtN7cFe9hnaYZ/5BDdl10c
-Diw0MP0zrUva++ysHTpoFHC8E4MNw2/9jDRWAEWbM+A5ISYubcES+GmMq5S5i83P
-KgfAxEkK6Sp15Cn6o6kaUs3rHR1GztDRE2vEENVda65O+ThvHgyIywwfnFGKQCCg
-YlSb/Ta54NNujuVQoX6gXEeYZa1GB21f2tHjGJ7yr3An/CTy6WV+xvgsxbHr8l+f
-2SaA8ZHGgEeOP6RxGWx7CmgoipdrqyI7Idpo4Vy0RkI1ygKWJ6eSixfpnYp1jUGu
-8FLEdIUOwz2M7vekosZ1tF9Uq5Fn8Z5+oIjFDBROM1m7x1Ow/5tF2pI4+FZDZusU
-b7XgQKu9AiUhk5N+QU47
-=sOqQ
------END PGP SIGNATURE-----
-
---KETsAPm2w4AAXm2iJkubaQjv14awmSgFu--
+Luc Verhaegen.

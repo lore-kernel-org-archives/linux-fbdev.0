@@ -1,141 +1,151 @@
-From: Sean Paul <seanpaul@chromium.org>
-Date: Mon, 08 Dec 2014 22:21:15 +0000
-Subject: [PATCH v2 1/4] backlight/lp855x: Remove stale code from lp855x.h
-Message-Id: <1418077278-14144-1-git-send-email-seanpaul@chromium.org>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 09 Dec 2014 01:25:47 +0000
+Subject: Re: [PATCH v2 1/4] backlight/lp855x: Remove stale code from lp855x.h
+Message-Id: <000701d0134f$0f5a3aa0$2e0eafe0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1418077278-14144-1-git-send-email-seanpaul@chromium.org>
+In-Reply-To: <1418077278-14144-1-git-send-email-seanpaul@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-These aren't used by anyone, remove them.
+On Tuesday, December 09, 2014 7:21 AM, Sean Paul wrote:
+> 
+> These aren't used by anyone, remove them.
+> 
+> Signed-off-by: Sean Paul <seanpaul@chromium.org>
 
-Signed-off-by: Sean Paul <seanpaul@chromium.org>
----
-Changes in v2:
-	- None
+Acked-by: Jingoo Han <jg1.han@samsung.com>
 
- include/linux/platform_data/lp855x.h | 100 -----------------------------------
- 1 file changed, 100 deletions(-)
+Best regards,
+Jingoo Han
 
-diff --git a/include/linux/platform_data/lp855x.h b/include/linux/platform_data/lp855x.h
-index 9c7fd1e..9e3ac3c 100644
---- a/include/linux/platform_data/lp855x.h
-+++ b/include/linux/platform_data/lp855x.h
-@@ -12,65 +12,6 @@
- #ifndef _LP855X_H
- #define _LP855X_H
- 
--#define BL_CTL_SHFT	(0)
--#define BRT_MODE_SHFT	(1)
--#define BRT_MODE_MASK	(0x06)
--
--/* Enable backlight. Only valid when BRT_MODE(I2C only) */
--#define ENABLE_BL	(1)
--#define DISABLE_BL	(0)
--
--#define I2C_CONFIG(id)	id ## _I2C_CONFIG
--#define PWM_CONFIG(id)	id ## _PWM_CONFIG
--
--/* DEVICE CONTROL register - LP8550 */
--#define LP8550_PWM_CONFIG	(LP8550_PWM_ONLY << BRT_MODE_SHFT)
--#define LP8550_I2C_CONFIG	((ENABLE_BL << BL_CTL_SHFT) | \
--				(LP8550_I2C_ONLY << BRT_MODE_SHFT))
--
--/* DEVICE CONTROL register - LP8551 */
--#define LP8551_PWM_CONFIG	LP8550_PWM_CONFIG
--#define LP8551_I2C_CONFIG	LP8550_I2C_CONFIG
--
--/* DEVICE CONTROL register - LP8552 */
--#define LP8552_PWM_CONFIG	LP8550_PWM_CONFIG
--#define LP8552_I2C_CONFIG	LP8550_I2C_CONFIG
--
--/* DEVICE CONTROL register - LP8553 */
--#define LP8553_PWM_CONFIG	LP8550_PWM_CONFIG
--#define LP8553_I2C_CONFIG	LP8550_I2C_CONFIG
--
--/* CONFIG register - LP8555 */
--#define LP8555_PWM_STANDBY	BIT(7)
--#define LP8555_PWM_FILTER	BIT(6)
--#define LP8555_RELOAD_EPROM	BIT(3)	/* use it if EPROMs should be reset
--					   when the backlight turns on */
--#define LP8555_OFF_OPENLEDS	BIT(2)
--#define LP8555_PWM_CONFIG	LP8555_PWM_ONLY
--#define LP8555_I2C_CONFIG	LP8555_I2C_ONLY
--#define LP8555_COMB1_CONFIG	LP8555_COMBINED1
--#define LP8555_COMB2_CONFIG	LP8555_COMBINED2
--
--/* DEVICE CONTROL register - LP8556 */
--#define LP8556_PWM_CONFIG	(LP8556_PWM_ONLY << BRT_MODE_SHFT)
--#define LP8556_COMB1_CONFIG	(LP8556_COMBINED1 << BRT_MODE_SHFT)
--#define LP8556_I2C_CONFIG	((ENABLE_BL << BL_CTL_SHFT) | \
--				(LP8556_I2C_ONLY << BRT_MODE_SHFT))
--#define LP8556_COMB2_CONFIG	(LP8556_COMBINED2 << BRT_MODE_SHFT)
--#define LP8556_FAST_CONFIG	BIT(7) /* use it if EPROMs should be maintained
--					  when exiting the low power mode */
--
--/* CONFIG register - LP8557 */
--#define LP8557_PWM_STANDBY	BIT(7)
--#define LP8557_PWM_FILTER	BIT(6)
--#define LP8557_RELOAD_EPROM	BIT(3)	/* use it if EPROMs should be reset
--					   when the backlight turns on */
--#define LP8557_OFF_OPENLEDS	BIT(2)
--#define LP8557_PWM_CONFIG	LP8557_PWM_ONLY
--#define LP8557_I2C_CONFIG	LP8557_I2C_ONLY
--#define LP8557_COMB1_CONFIG	LP8557_COMBINED1
--#define LP8557_COMB2_CONFIG	LP8557_COMBINED2
--
- enum lp855x_chip_id {
- 	LP8550,
- 	LP8551,
-@@ -81,47 +22,6 @@ enum lp855x_chip_id {
- 	LP8557,
- };
- 
--enum lp8550_brighntess_source {
--	LP8550_PWM_ONLY,
--	LP8550_I2C_ONLY = 2,
--};
--
--enum lp8551_brighntess_source {
--	LP8551_PWM_ONLY = LP8550_PWM_ONLY,
--	LP8551_I2C_ONLY = LP8550_I2C_ONLY,
--};
--
--enum lp8552_brighntess_source {
--	LP8552_PWM_ONLY = LP8550_PWM_ONLY,
--	LP8552_I2C_ONLY = LP8550_I2C_ONLY,
--};
--
--enum lp8553_brighntess_source {
--	LP8553_PWM_ONLY = LP8550_PWM_ONLY,
--	LP8553_I2C_ONLY = LP8550_I2C_ONLY,
--};
--
--enum lp8555_brightness_source {
--	LP8555_PWM_ONLY,
--	LP8555_I2C_ONLY,
--	LP8555_COMBINED1,	/* Brightness register with shaped PWM */
--	LP8555_COMBINED2,	/* PWM with shaped brightness register */
--};
--
--enum lp8556_brightness_source {
--	LP8556_PWM_ONLY,
--	LP8556_COMBINED1,	/* pwm + i2c before the shaper block */
--	LP8556_I2C_ONLY,
--	LP8556_COMBINED2,	/* pwm + i2c after the shaper block */
--};
--
--enum lp8557_brightness_source {
--	LP8557_PWM_ONLY,
--	LP8557_I2C_ONLY,
--	LP8557_COMBINED1,	/* pwm + i2c after the shaper block */
--	LP8557_COMBINED2,	/* pwm + i2c before the shaper block */
--};
--
- struct lp855x_rom_data {
- 	u8 addr;
- 	u8 val;
--- 
-2.1.1
+> ---
+> Changes in v2:
+> 	- None
+> 
+>  include/linux/platform_data/lp855x.h | 100 -----------------------------------
+>  1 file changed, 100 deletions(-)
+> 
+> diff --git a/include/linux/platform_data/lp855x.h b/include/linux/platform_data/lp855x.h
+> index 9c7fd1e..9e3ac3c 100644
+> --- a/include/linux/platform_data/lp855x.h
+> +++ b/include/linux/platform_data/lp855x.h
+> @@ -12,65 +12,6 @@
+>  #ifndef _LP855X_H
+>  #define _LP855X_H
+> 
+> -#define BL_CTL_SHFT	(0)
+> -#define BRT_MODE_SHFT	(1)
+> -#define BRT_MODE_MASK	(0x06)
+> -
+> -/* Enable backlight. Only valid when BRT_MODE(I2C only) */
+> -#define ENABLE_BL	(1)
+> -#define DISABLE_BL	(0)
+> -
+> -#define I2C_CONFIG(id)	id ## _I2C_CONFIG
+> -#define PWM_CONFIG(id)	id ## _PWM_CONFIG
+> -
+> -/* DEVICE CONTROL register - LP8550 */
+> -#define LP8550_PWM_CONFIG	(LP8550_PWM_ONLY << BRT_MODE_SHFT)
+> -#define LP8550_I2C_CONFIG	((ENABLE_BL << BL_CTL_SHFT) | \
+> -				(LP8550_I2C_ONLY << BRT_MODE_SHFT))
+> -
+> -/* DEVICE CONTROL register - LP8551 */
+> -#define LP8551_PWM_CONFIG	LP8550_PWM_CONFIG
+> -#define LP8551_I2C_CONFIG	LP8550_I2C_CONFIG
+> -
+> -/* DEVICE CONTROL register - LP8552 */
+> -#define LP8552_PWM_CONFIG	LP8550_PWM_CONFIG
+> -#define LP8552_I2C_CONFIG	LP8550_I2C_CONFIG
+> -
+> -/* DEVICE CONTROL register - LP8553 */
+> -#define LP8553_PWM_CONFIG	LP8550_PWM_CONFIG
+> -#define LP8553_I2C_CONFIG	LP8550_I2C_CONFIG
+> -
+> -/* CONFIG register - LP8555 */
+> -#define LP8555_PWM_STANDBY	BIT(7)
+> -#define LP8555_PWM_FILTER	BIT(6)
+> -#define LP8555_RELOAD_EPROM	BIT(3)	/* use it if EPROMs should be reset
+> -					   when the backlight turns on */
+> -#define LP8555_OFF_OPENLEDS	BIT(2)
+> -#define LP8555_PWM_CONFIG	LP8555_PWM_ONLY
+> -#define LP8555_I2C_CONFIG	LP8555_I2C_ONLY
+> -#define LP8555_COMB1_CONFIG	LP8555_COMBINED1
+> -#define LP8555_COMB2_CONFIG	LP8555_COMBINED2
+> -
+> -/* DEVICE CONTROL register - LP8556 */
+> -#define LP8556_PWM_CONFIG	(LP8556_PWM_ONLY << BRT_MODE_SHFT)
+> -#define LP8556_COMB1_CONFIG	(LP8556_COMBINED1 << BRT_MODE_SHFT)
+> -#define LP8556_I2C_CONFIG	((ENABLE_BL << BL_CTL_SHFT) | \
+> -				(LP8556_I2C_ONLY << BRT_MODE_SHFT))
+> -#define LP8556_COMB2_CONFIG	(LP8556_COMBINED2 << BRT_MODE_SHFT)
+> -#define LP8556_FAST_CONFIG	BIT(7) /* use it if EPROMs should be maintained
+> -					  when exiting the low power mode */
+> -
+> -/* CONFIG register - LP8557 */
+> -#define LP8557_PWM_STANDBY	BIT(7)
+> -#define LP8557_PWM_FILTER	BIT(6)
+> -#define LP8557_RELOAD_EPROM	BIT(3)	/* use it if EPROMs should be reset
+> -					   when the backlight turns on */
+> -#define LP8557_OFF_OPENLEDS	BIT(2)
+> -#define LP8557_PWM_CONFIG	LP8557_PWM_ONLY
+> -#define LP8557_I2C_CONFIG	LP8557_I2C_ONLY
+> -#define LP8557_COMB1_CONFIG	LP8557_COMBINED1
+> -#define LP8557_COMB2_CONFIG	LP8557_COMBINED2
+> -
+>  enum lp855x_chip_id {
+>  	LP8550,
+>  	LP8551,
+> @@ -81,47 +22,6 @@ enum lp855x_chip_id {
+>  	LP8557,
+>  };
+> 
+> -enum lp8550_brighntess_source {
+> -	LP8550_PWM_ONLY,
+> -	LP8550_I2C_ONLY = 2,
+> -};
+> -
+> -enum lp8551_brighntess_source {
+> -	LP8551_PWM_ONLY = LP8550_PWM_ONLY,
+> -	LP8551_I2C_ONLY = LP8550_I2C_ONLY,
+> -};
+> -
+> -enum lp8552_brighntess_source {
+> -	LP8552_PWM_ONLY = LP8550_PWM_ONLY,
+> -	LP8552_I2C_ONLY = LP8550_I2C_ONLY,
+> -};
+> -
+> -enum lp8553_brighntess_source {
+> -	LP8553_PWM_ONLY = LP8550_PWM_ONLY,
+> -	LP8553_I2C_ONLY = LP8550_I2C_ONLY,
+> -};
+> -
+> -enum lp8555_brightness_source {
+> -	LP8555_PWM_ONLY,
+> -	LP8555_I2C_ONLY,
+> -	LP8555_COMBINED1,	/* Brightness register with shaped PWM */
+> -	LP8555_COMBINED2,	/* PWM with shaped brightness register */
+> -};
+> -
+> -enum lp8556_brightness_source {
+> -	LP8556_PWM_ONLY,
+> -	LP8556_COMBINED1,	/* pwm + i2c before the shaper block */
+> -	LP8556_I2C_ONLY,
+> -	LP8556_COMBINED2,	/* pwm + i2c after the shaper block */
+> -};
+> -
+> -enum lp8557_brightness_source {
+> -	LP8557_PWM_ONLY,
+> -	LP8557_I2C_ONLY,
+> -	LP8557_COMBINED1,	/* pwm + i2c after the shaper block */
+> -	LP8557_COMBINED2,	/* pwm + i2c before the shaper block */
+> -};
+> -
+>  struct lp855x_rom_data {
+>  	u8 addr;
+>  	u8 val;
+> --
+> 2.1.1
 

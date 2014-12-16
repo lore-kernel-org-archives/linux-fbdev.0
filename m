@@ -1,34 +1,29 @@
-From: David Ung <davidu@nvidia.com>
-Date: Mon, 29 Dec 2014 21:51:23 +0000
-Subject: RE: [patch] fbdev: off by one test (harmless)
-Message-Id: <410219d77f8c4d0982cc9e99d0364acb@DRHQMAIL102.nvidia.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 16 Dec 2014 23:54:42 +0000
+Subject: [patch] OMAPDSS: pll: NULL dereference in error handling
+Message-Id: <20141216235442.GE31467@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20141226172657.GA14762@mwanda>
-In-Reply-To: <20141226172657.GA14762@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org
 
+The regulator_disable() doesn't accept NULL pointers.
 
-> > test is really a no-op.  But it's still off by one and upsets the
-> > static checkers so we may as well correct it.
-> 
-> 'idx' should be 0~63, because cea_modes array is defined as
-> 'cea_modes[64]'.
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-According to CEA/EIA-861E, there are 64 defined modes, but idx is valid for 1-64, 0 is reserved hence the check for 
-
-        If (!idx || idx > 63) {
-
-Think idx check really should be !idx || idx > 64 if following CEA/EIA-861E
-
-CEA/EIA-861F add additional entries and idx is valid from 1-107
-
-David
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+diff --git a/drivers/video/fbdev/omap2/dss/pll.c b/drivers/video/fbdev/omap2/dss/pll.c
+index 50bc62c5..335ffac 100644
+--- a/drivers/video/fbdev/omap2/dss/pll.c
++++ b/drivers/video/fbdev/omap2/dss/pll.c
+@@ -97,7 +97,8 @@ int dss_pll_enable(struct dss_pll *pll)
+ 	return 0;
+ 
+ err_enable:
+-	regulator_disable(pll->regulator);
++	if (pll->regulator)
++		regulator_disable(pll->regulator);
+ err_reg:
+ 	clk_disable_unprepare(pll->clkin);
+ 	return r;

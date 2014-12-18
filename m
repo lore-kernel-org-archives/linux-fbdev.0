@@ -1,10 +1,10 @@
 From: gyungoh@gmail.com
-Date: Wed, 03 Dec 2014 07:05:32 +0000
+Date: Thu, 18 Dec 2014 05:47:51 +0000
 Subject: [PATCH v10 6/6] devicetree: i2c: Add SKY81452 to the Trivial Devices list
-Message-Id: <1417590332-4912-7-git-send-email-jack.yoo@skyworksinc.com>
+Message-Id: <1418881671-3495-7-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
+References: <1418881671-3495-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1418881671-3495-1-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

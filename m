@@ -1,43 +1,40 @@
-From: Xiubo Li <Li.Xiubo@freescale.com>
-Date: Wed, 03 Dec 2014 09:16:01 +0000
-Subject: [PATCHv2 3/4] ARM: ls1021a: dtsi: Add dt node support for dcfb.
-Message-Id: <1417598162-40433-4-git-send-email-Li.Xiubo@freescale.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Thu, 18 Dec 2014 21:39:57 +0000
+Subject: [PATCH 1/6] tridentfb: fix hang on Blade3D with CONFIG_CC_OPTIMIZE_FOR_SIZE
+Message-Id: <1418938797-28945-1-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417598162-40433-1-git-send-email-Li.Xiubo@freescale.com>
-In-Reply-To: <1417598162-40433-1-git-send-email-Li.Xiubo@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-On LS1021A SoC, the dcfb device is in BE mode.
+When the kernel is compiled with -Os (CONFIG_CC_OPTIMIZE_FOR_SIZE), tridentfb
+hangs the machine upon load with Blade3D cards unless acceleration is disabled.
 
-Signed-off-by: Xiubo Li <Li.Xiubo@freescale.com>
+This is caused by memcpy() which copies data byte-by-byte (rep movsb) when
+compiled with -Os. The card does not like that - it requires 32-bit access.
+
+Use iowrite_32() instead.
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- arch/arm/boot/dts/ls1021a.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/video/fbdev/tridentfb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
-index c70bb27..740a04e 100644
---- a/arch/arm/boot/dts/ls1021a.dtsi
-+++ b/arch/arm/boot/dts/ls1021a.dtsi
-@@ -383,6 +383,16 @@
- 				 <&platform_clk 1>;
- 		};
+diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
+index 7ed9a22..7429713 100644
+--- a/drivers/video/fbdev/tridentfb.c
++++ b/drivers/video/fbdev/tridentfb.c
+@@ -226,7 +226,7 @@ static void blade_image_blit(struct tridentfb_par *par, const char *data,
+ 	writemmr(par, DST1, point(x, y));
+ 	writemmr(par, DST2, point(x + w - 1, y + h - 1));
  
-+		dcfb: dcfb@2ce0000 {
-+			compatible = "fsl,ls1021a-dcfb";
-+			reg = <0x0 0x2ce0000 0x0 0x10000>;
-+			clocks = <&platform_clk 0>;
-+			clock-names = "dcfb";
-+			scfg-controller = <&scfg>;
-+			big-endian;
-+			status = "disabled";
-+		};
-+
- 		mdio0: mdio@2d24000 {
- 			compatible = "gianfar";
- 			device_type = "mdio";
+-	memcpy(par->io_virt + 0x10000, data, 4 * size);
++	iowrite32_rep(par->io_virt + 0x10000, data, size);
+ }
+ 
+ static void blade_copy_rect(struct tridentfb_par *par,
 -- 
-2.1.0.27.g96db324
+Ondrej Zary
 

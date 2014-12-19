@@ -1,39 +1,47 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Thu, 11 Dec 2014 23:07:44 +0000
-Subject: Re: Compiled tridentfb hangs but distribution kernel works fine
-Message-Id: <201412120007.45242.linux@rainbow-software.org>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Fri, 19 Dec 2014 02:00:19 +0000
+Subject: [PATCH v2 0/7] imx-drm: ipuv3-crtc: Implement mode_fixup
+Message-Id: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201412092233.17030.linux@rainbow-software.org> <1418195704.5312.31.camel@marge.simpson.net>
-In-Reply-To: <1418195704.5312.31.camel@marge.simpson.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Galbraith <umgwanakikbuti@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Philipp Zabel <p.zabel@pengutronix.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>, Fabio Estevam <fabio.estevam@freescale.com>, Shawn Guo <shawn.guo@linaro.org>, Denis Carikli <denis@eukrea.com>, Jiada Wang <jiada_wang@mentor.com>, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-On Wednesday 10 December 2014 08:15:04 Mike Galbraith wrote:
-> On Tue, 2014-12-09 at 22:33 +0100, Ondrej Zary wrote:
-> > Hello,
-> > I'm doing some work on tridentfb driver but encountered a weird problem.
-> >
-> > When I compile custom kernel with tridentfb, it hangs with Blade3D card
-> > (ID 0x9880) in blade_image_blit(). The screen is blank with some
-> > artifacts and machine does not respond to ping or keyboard. However, it
-> > can be rebooted by Alt+SysRq+B. It works fine with other cards (3DImage
-> > 9750 and CyberBlade XP) with no blit implementation. Commenting out
-> > contents of blade_image_blit() function makes the hang go away (nothing
-> > useful on the screen, of course).
-> >
-> > The weird thing is that the Blade3D card works fine when I load Debian
-> > kernels! Debian 3.16-0.bpo.3-686-pae works fine but when I compile 3.16
-> > kernel, it hangs.
-> >
-> > Any ideas?
->
-> I'd start by looking for what Debian changed in source and/or config.
+This patchset implements ->mode_fixup() in the imx ipuv3-crtc driver,
+using a new support function ipu_di_adjust_videomode(). This new
+function needs to be subsystem independent, so it accepts a video
+mode as a 'struct videomode'. Hence ipu-crtc ->mode_fixup() needs
+another support function to convert a drm_display_mode to a videomode
+before passing the mode to ipu_di_adjust_videomode() for fixup.
 
-Seems that the problem appears only of CONFIG_CC_OPTIMIZE_FOR_SIZE is enabled. 
-Really weird.
+Also some related code cleanup: 'struct ipu_di_signal_cfg' should
+use 'struct videomode' for mode timings.
+
+
+Jiada Wang (1):
+  gpu: ipu-di: Add ipu_di_adjust_videomode()
+
+Steve Longerbeam (6):
+  gpu: ipu-di: remove some non-functional code
+  drm_modes: add videomode_from_drm_display_mode
+  imx-drm: ipuv3-crtc: Implement mode_fixup
+  imx-drm: encoder prepare/mode_set must use adjusted mode
+  gpu: ipu-v3: Use videomode in struct ipu_di_signal_cfg
+  gpu: ipu-di: Switch to DIV_ROUND_CLOSEST for DI clock divider calc
+
+ drivers/gpu/drm/drm_modes.c            |   40 +++++++++++
+ drivers/gpu/drm/imx/imx-hdmi.c         |    4 +-
+ drivers/gpu/drm/imx/imx-ldb.c          |    6 +-
+ drivers/gpu/drm/imx/imx-tve.c          |    4 +-
+ drivers/gpu/drm/imx/ipuv3-crtc.c       |   38 +++++-----
+ drivers/gpu/drm/imx/parallel-display.c |    4 +-
+ drivers/gpu/ipu-v3/ipu-di.c            |  121 +++++++++++++++++++-------------
+ include/drm/drm_modes.h                |    2 +
+ include/video/imx-ipu-v3.h             |   21 ++----
+ 9 files changed, 147 insertions(+), 93 deletions(-)
 
 -- 
-Ondrej Zary
+1.7.9.5
+

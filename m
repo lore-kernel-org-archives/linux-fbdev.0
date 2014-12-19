@@ -1,69 +1,48 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 03 Dec 2014 12:18:25 +0000
-Subject: Re: [PATCH v3 2/3] Documentation: DT: Add documentation for ti,opa362 bindings
-Message-Id: <547EFF91.7040405@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="FGD71uUJv2Mt07HihEmfgkv9rcNFNp7eh"
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Fri, 19 Dec 2014 02:00:21 +0000
+Subject: [PATCH v2 2/7] gpu: ipu-di: remove some non-functional code
+Message-Id: <1418954426-21909-3-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417352867-7436-1-git-send-email-marek@goldelico.com>
- <1417352867-7436-3-git-send-email-marek@goldelico.com>
-In-Reply-To: <1417352867-7436-3-git-send-email-marek@goldelico.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Philipp Zabel <p.zabel@pengutronix.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>, Fabio Estevam <fabio.estevam@freescale.com>, Shawn Guo <shawn.guo@linaro.org>, Denis Carikli <denis@eukrea.com>, Jiada Wang <jiada_wang@mentor.com>, Steve Longerbeam <steve_longerbeam@mentor.com>
 
---FGD71uUJv2Mt07HihEmfgkv9rcNFNp7eh
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+h_total and v_total were calculated in ipu_di_init_sync_panel()
+but never actually used. Remove.
 
-On 30/11/14 15:07, Marek Belisko wrote:
-> Signed-off-by: Marek Belisko <marek@goldelico.com>
-> ---
->  .../devicetree/bindings/video/ti,opa362.txt        | 38 ++++++++++++++=
-++++++++
->  1 file changed, 38 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/ti,opa362.t=
-xt
->=20
-> diff --git a/Documentation/devicetree/bindings/video/ti,opa362.txt b/Do=
-cumentation/devicetree/bindings/video/ti,opa362.txt
-> new file mode 100644
-> index 0000000..4747ef9
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/ti,opa362.txt
-> @@ -0,0 +1,38 @@
-> +OPA362 analog video amplifier
-> +
-> +Required properties:
-> +- compatible: "ti,opa362"
-> +- gpio: enable/disable output gpio
+Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+---
+ drivers/gpu/ipu-v3/ipu-di.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
-Either this or the example is wrong. If I'm not mistaken 'gpios' is the
-correct form.
+diff --git a/drivers/gpu/ipu-v3/ipu-di.c b/drivers/gpu/ipu-v3/ipu-di.c
+index 46f9570..41df8d7 100644
+--- a/drivers/gpu/ipu-v3/ipu-di.c
++++ b/drivers/gpu/ipu-v3/ipu-di.c
+@@ -545,7 +545,6 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
+ 	u32 reg;
+ 	u32 di_gen, vsync_cnt;
+ 	u32 div;
+-	u32 h_total, v_total;
+ 
+ 	dev_dbg(di->ipu->dev, "disp %d: panel size = %d x %d\n",
+ 		di->id, sig->width, sig->height);
+@@ -553,11 +552,6 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
+ 	if ((sig->v_sync_width = 0) || (sig->h_sync_width = 0))
+ 		return -EINVAL;
+ 
+-	h_total = sig->width + sig->h_sync_width + sig->h_start_width +
+-		sig->h_end_width;
+-	v_total = sig->height + sig->v_sync_width + sig->v_start_width +
+-		sig->v_end_width;
+-
+ 	dev_dbg(di->ipu->dev, "Clocks: IPU %luHz DI %luHz Needed %luHz\n",
+ 		clk_get_rate(di->clk_ipu),
+ 		clk_get_rate(di->clk_di),
+-- 
+1.7.9.5
 
- Tomi
-
-
-
---FGD71uUJv2Mt07HihEmfgkv9rcNFNp7eh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUfv+RAAoJEPo9qoy8lh71PyoP/jH0TKf2mTKRM0mk3KY08LJb
-yfnzOFb0GybghvFvdf9c415HFa0zReQkw1d/zSIpLU9ZC3jWcH5vUR+oxsSpBiZM
-xhvU3hAqUm4P4NjIekWpOI7vhnk3NdQLVGYrIMFzSTHaLigi7xzKTnbEYlVsfQaU
-0AwRsU7/hkx8aKFUSYxsFvo28CCYROjmwodnnq4B53GnsErdIJsKtqjlwY0i706p
-6S7CHUNzj+mQah7gJAFcBgQ/rmnRNXc+NZ3hmRgpeJVDP3XgqFfadjTvveYB1saz
-TchQjXTwwE6/bKIxj1eQ0U+Y9UJ5qikyTMfe2OaTNr7eHH73CKLpQbmid41u7cXW
-/Mjv9Zs5PvOI4B/bsOZR5AuXfKBvMTzA8Pqp1JMx3oybAFG605AXxuTTONDk7XH3
-QdoXo8IEdaRejqsr5CATQLjIdzH2yGrdg7iZjWvmKSPblj8pZ4TGapMqpr0kOgBg
-oIwR2Z4mHN6BQLfbmfBMCWvCZlv3zJpv1xP7wuRsp4fnnTGs5aIcvHq73MKxtvk6
-0oYmSSnyDIljJu8taPeYVoCjt9e4yM0doetiRFGRzj0/5rPCW2/CcHkC/l9alvnx
-pcvI403wi9x4V/GWrlKTu04GK2JWt0TjJdgEP15G60tcHKfYJ1ARwj+hWVUyfyjq
-E5r+OHo3sNbjjUy7NvMz
-=IY7P
------END PGP SIGNATURE-----
-
---FGD71uUJv2Mt07HihEmfgkv9rcNFNp7eh--

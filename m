@@ -1,42 +1,96 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 31 Dec 2014 12:38:44 +0000
-Subject: [PATCH 2/3] staging: sm7xxfb: update TODO file
-Message-Id: <1420028805-30488-2-git-send-email-sudipm.mukherjee@gmail.com>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Fri, 19 Dec 2014 02:00:24 +0000
+Subject: [PATCH v2 5/7] imx-drm: encoder prepare/mode_set must use adjusted mode
+Message-Id: <1418954426-21909-6-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420028805-30488-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1420028805-30488-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Sudip Mukherjee <sudip@vectorindia.org>, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Philipp Zabel <p.zabel@pengutronix.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>, Fabio Estevam <fabio.estevam@freescale.com>, Shawn Guo <shawn.guo@linaro.org>, Denis Carikli <denis@eukrea.com>, Jiada Wang <jiada_wang@mentor.com>, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-update the email addresses in the TODO file, also update the final
-destination of this driver. 
+The encoder ->prepare() and ->mode_set() methods need to use the
+hw adjusted mode, not the original mode.
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
 ---
- drivers/staging/sm7xxfb/TODO | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/imx/imx-hdmi.c         |    4 ++--
+ drivers/gpu/drm/imx/imx-ldb.c          |    6 +++---
+ drivers/gpu/drm/imx/imx-tve.c          |    4 ++--
+ drivers/gpu/drm/imx/parallel-display.c |    4 ++--
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/staging/sm7xxfb/TODO b/drivers/staging/sm7xxfb/TODO
-index 1fcead5..6377380 100644
---- a/drivers/staging/sm7xxfb/TODO
-+++ b/drivers/staging/sm7xxfb/TODO
-@@ -3,7 +3,10 @@ TODO:
- - 2D acceleration support
- - use kernel coding style
- - refine the code and remove unused code
--- move it to drivers/video/sm7xxfb.c
-+- move it to drivers/video/fbdev/sm7xxfb.c
+diff --git a/drivers/gpu/drm/imx/imx-hdmi.c b/drivers/gpu/drm/imx/imx-hdmi.c
+index aaec6b2..32116cc 100644
+--- a/drivers/gpu/drm/imx/imx-hdmi.c
++++ b/drivers/gpu/drm/imx/imx-hdmi.c
+@@ -1417,8 +1417,8 @@ static struct drm_encoder *imx_hdmi_connector_best_encoder(struct drm_connector
+ }
  
--Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
--Teddy Wang <teddy.wang@siliconmotion.com.cn>.
-+Please send any patches to
-+	Greg Kroah-Hartman <greg@kroah.com>
-+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-+	Teddy Wang <teddy.wang@siliconmotion.com>
-+	Sudip Mukherjee <sudip@vectorindia.org>
+ static void imx_hdmi_encoder_mode_set(struct drm_encoder *encoder,
+-			struct drm_display_mode *mode,
+-			struct drm_display_mode *adjusted_mode)
++			struct drm_display_mode *orig_mode,
++			struct drm_display_mode *mode)
+ {
+ 	struct imx_hdmi *hdmi = container_of(encoder, struct imx_hdmi, encoder);
+ 
+diff --git a/drivers/gpu/drm/imx/imx-ldb.c b/drivers/gpu/drm/imx/imx-ldb.c
+index 4662e00..5b9c875 100644
+--- a/drivers/gpu/drm/imx/imx-ldb.c
++++ b/drivers/gpu/drm/imx/imx-ldb.c
+@@ -168,7 +168,7 @@ static void imx_ldb_encoder_prepare(struct drm_encoder *encoder)
+ {
+ 	struct imx_ldb_channel *imx_ldb_ch = enc_to_imx_ldb_ch(encoder);
+ 	struct imx_ldb *ldb = imx_ldb_ch->ldb;
+-	struct drm_display_mode *mode = &encoder->crtc->mode;
++	struct drm_display_mode *mode = &encoder->crtc->hwmode;
+ 	u32 pixel_fmt;
+ 	unsigned long serial_clk;
+ 	unsigned long di_clk = mode->clock * 1000;
+@@ -246,8 +246,8 @@ static void imx_ldb_encoder_commit(struct drm_encoder *encoder)
+ }
+ 
+ static void imx_ldb_encoder_mode_set(struct drm_encoder *encoder,
+-			 struct drm_display_mode *mode,
+-			 struct drm_display_mode *adjusted_mode)
++			 struct drm_display_mode *orig_mode,
++			 struct drm_display_mode *mode)
+ {
+ 	struct imx_ldb_channel *imx_ldb_ch = enc_to_imx_ldb_ch(encoder);
+ 	struct imx_ldb *ldb = imx_ldb_ch->ldb;
+diff --git a/drivers/gpu/drm/imx/imx-tve.c b/drivers/gpu/drm/imx/imx-tve.c
+index 42c651b..9709bf9a 100644
+--- a/drivers/gpu/drm/imx/imx-tve.c
++++ b/drivers/gpu/drm/imx/imx-tve.c
+@@ -312,8 +312,8 @@ static void imx_tve_encoder_prepare(struct drm_encoder *encoder)
+ }
+ 
+ static void imx_tve_encoder_mode_set(struct drm_encoder *encoder,
+-				     struct drm_display_mode *mode,
+-				     struct drm_display_mode *adjusted_mode)
++				     struct drm_display_mode *orig_mode,
++				     struct drm_display_mode *mode)
+ {
+ 	struct imx_tve *tve = enc_to_tve(encoder);
+ 	unsigned long rounded_rate;
+diff --git a/drivers/gpu/drm/imx/parallel-display.c b/drivers/gpu/drm/imx/parallel-display.c
+index 015a454..d0842a4 100644
+--- a/drivers/gpu/drm/imx/parallel-display.c
++++ b/drivers/gpu/drm/imx/parallel-display.c
+@@ -131,8 +131,8 @@ static void imx_pd_encoder_commit(struct drm_encoder *encoder)
+ }
+ 
+ static void imx_pd_encoder_mode_set(struct drm_encoder *encoder,
+-			 struct drm_display_mode *mode,
+-			 struct drm_display_mode *adjusted_mode)
++			 struct drm_display_mode *orig_mode,
++			 struct drm_display_mode *mode)
+ {
+ }
+ 
 -- 
-1.9.1
+1.7.9.5
 

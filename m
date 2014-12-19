@@ -1,141 +1,372 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Fri, 12 Dec 2014 22:51:06 +0000
-Subject: CONFIG_CC_OPTIMIZE_FOR_SIZE breaking tridentfb
-Message-Id: <201412122351.06995.linux@rainbow-software.org>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Fri, 19 Dec 2014 02:00:25 +0000
+Subject: [PATCH v2 6/7] gpu: ipu-v3: Use videomode in struct ipu_di_signal_cfg
+Message-Id: <1418954426-21909-7-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kernel development list <linux-kernel@vger.kernel.org>
-Cc: linux-fbdev@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Philipp Zabel <p.zabel@pengutronix.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>, Fabio Estevam <fabio.estevam@freescale.com>, Shawn Guo <shawn.guo@linaro.org>, Denis Carikli <denis@eukrea.com>, Jiada Wang <jiada_wang@mentor.com>, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-Hello,
-I have a weird problem with CONFIG_CC_OPTIMIZE_FOR_SIZE.
+This patch changes struct ipu_di_signal_cfg to use struct videomode
+to define video timings and flags.
 
-When it's enabled, tridentfb hangs with Blade3D card (ID 0x9880) in 
-blade_image_blit(). The screen is blank with some artifacts and  machine does 
-not respond to ping or keyboard. However, it can be rebooted by Alt+SysRq+B. 
-It works fine with other cards (3DImage 9750 and CyberBlade XP) with no blit 
-implementation. Commenting out contents of blade_image_blit() function makes 
-the hang go away (nothing useful on the screen, of course).
+Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+---
+ drivers/gpu/drm/imx/ipuv3-crtc.c |   26 +++--------
+ drivers/gpu/ipu-v3/ipu-di.c      |   89 ++++++++++++++++++++------------------
+ include/video/imx-ipu-v3.h       |   19 ++------
+ 3 files changed, 56 insertions(+), 78 deletions(-)
 
-Compiled kernel without CONFIG_CC_OPTIMIZE_FOR_SIZE: works
-Then inserted #pragma GCC optimize ("Os") line into tridentfb.c: hangs (1)
-Then added __attribute__((optimize("O2"))) to blade_image_blit(): works (2)
-
-Compiled kernel with CONFIG_CC_OPTIMIZE_FOR_SIZE: hangs.
-Then inserted #pragma GCC optimize ("O2") line into tridentfb.c: still hangs!
-Then added __attribute__((optimize("O2"))) to blade_image_blit(): still hangs
-
-$ gcc --version
-gcc (Debian 4.7.2-5) 4.7.2
-
-WTF is going on here?
-
-objdumps from case (1) and (2):
-this one hangs:
-00000965 <blade_image_blit>:
-     965:       55                      push   %ebp
-     966:       57                      push   %edi
-     967:       56                      push   %esi
-     968:       89 d6                   mov    %edx,%esi
-     96a:       53                      push   %ebx
-     96b:       8b 38                   mov    (%eax),%edi
-     96d:       8b 54 24 14             mov    0x14(%esp),%edx
-     971:       8b 5c 24 18             mov    0x18(%esp),%ebx
-     975:       8b 6c 24 1c             mov    0x1c(%esp),%ebp
-     979:       8b 44 24 20             mov    0x20(%esp),%eax
-     97d:       89 87 60 21 00 00       mov    %eax,0x2160(%edi)
-     983:       8b 44 24 24             mov    0x24(%esp),%eax
-     987:       89 87 64 21 00 00       mov    %eax,0x2164(%edi)
-     98d:       b8 00 00 18 a0          mov    $0xa0180000,%eax
-     992:       89 87 44 21 00 00       mov    %eax,0x2144(%edi)
-     998:       89 d0                   mov    %edx,%eax
-     99a:       c1 e0 10                shl    $0x10,%eax
-     99d:       09 c8                   or     %ecx,%eax
-     99f:       89 87 08 21 00 00       mov    %eax,0x2108(%edi)
-     9a5:       8d 44 2a ff             lea    -0x1(%edx,%ebp,1),%eax
-     9a9:       c1 e0 10                shl    $0x10,%eax
-     9ac:       8d 54 19 ff             lea    -0x1(%ecx,%ebx,1),%edx
-     9b0:       09 d0                   or     %edx,%eax
-     9b2:       89 87 0c 21 00 00       mov    %eax,0x210c(%edi)
-     9b8:       8d 43 1f                lea    0x1f(%ebx),%eax
-     9bb:       8d 0c ad 00 00 00 00    lea    0x0(,%ebp,4),%ecx
-     9c2:       c1 e8 05                shr    $0x5,%eax
-     9c5:       8d 97 00 00 01 00       lea    0x10000(%edi),%edx
-     9cb:       0f af c8                imul   %eax,%ecx
-     9ce:       89 d7                   mov    %edx,%edi
-     9d0:       f3 a4                   rep movsb %ds:(%esi),%es:(%edi)
-     9d2:       5b                      pop    %ebx
-     9d3:       5e                      pop    %esi
-     9d4:       5f                      pop    %edi
-     9d5:       5d                      pop    %ebp
-     9d6:       c3                      ret
-
-this one works:
-00000965 <writemmr.isra.8>:
-     965:       01 d0                   add    %edx,%eax
-     967:       89 08                   mov    %ecx,(%eax)
-     969:       c3                      ret
-     96a:       8d b6 00 00 00 00       lea    0x0(%esi),%esi
-
-00000970 <blade_image_blit>:
-     970:       83 ec 1c                sub    $0x1c,%esp
-     973:       89 5c 24 0c             mov    %ebx,0xc(%esp)
-     977:       89 c3                   mov    %eax,%ebx
-     979:       8b 44 24 28             mov    0x28(%esp),%eax
-     97d:       89 74 24 10             mov    %esi,0x10(%esp)
-     981:       89 ce                   mov    %ecx,%esi
-     983:       8b 4c 24 2c             mov    0x2c(%esp),%ecx
-     987:       89 54 24 04             mov    %edx,0x4(%esp)
-     98b:       ba 60 21 00 00          mov    $0x2160,%edx
-     990:       89 7c 24 14             mov    %edi,0x14(%esp)
-     994:       8b 7c 24 20             mov    0x20(%esp),%edi
-     998:       89 04 24                mov    %eax,(%esp)
-     99b:       8b 44 24 30             mov    0x30(%esp),%eax
-     99f:       89 6c 24 18             mov    %ebp,0x18(%esp)
-     9a3:       8b 6c 24 24             mov    0x24(%esp),%ebp
-     9a7:       89 44 24 08             mov    %eax,0x8(%esp)
-     9ab:       8b 03                   mov    (%ebx),%eax
-     9ad:       e8 b3 ff ff ff          call   965 <writemmr.isra.8>
-     9b2:       8b 4c 24 08             mov    0x8(%esp),%ecx
-     9b6:       ba 64 21 00 00          mov    $0x2164,%edx
-     9bb:       8b 03                   mov    (%ebx),%eax
-     9bd:       e8 a3 ff ff ff          call   965 <writemmr.isra.8>
-     9c2:       8b 03                   mov    (%ebx),%eax
-     9c4:       b9 00 00 18 a0          mov    $0xa0180000,%ecx
-     9c9:       ba 44 21 00 00          mov    $0x2144,%edx
-     9ce:       e8 92 ff ff ff          call   965 <writemmr.isra.8>
-     9d3:       8b 03                   mov    (%ebx),%eax
-     9d5:       89 f9                   mov    %edi,%ecx
-     9d7:       c1 e1 10                shl    $0x10,%ecx
-     9da:       ba 08 21 00 00          mov    $0x2108,%edx
-     9df:       09 f1                   or     %esi,%ecx
-     9e1:       e8 7f ff ff ff          call   965 <writemmr.isra.8>
-     9e6:       8b 04 24                mov    (%esp),%eax
-     9e9:       ba 0c 21 00 00          mov    $0x210c,%edx
-     9ee:       8d 4c 07 ff             lea    -0x1(%edi,%eax,1),%ecx
-     9f2:       c1 e1 10                shl    $0x10,%ecx
-     9f5:       8d 44 2e ff             lea    -0x1(%esi,%ebp,1),%eax
-     9f9:       09 c1                   or     %eax,%ecx
-     9fb:       8b 03                   mov    (%ebx),%eax
-     9fd:       e8 63 ff ff ff          call   965 <writemmr.isra.8>
-     a02:       8b 0c 24                mov    (%esp),%ecx
-     a05:       8d 55 1f                lea    0x1f(%ebp),%edx
-     a08:       8b 03                   mov    (%ebx),%eax
-     a0a:       c1 ea 05                shr    $0x5,%edx
-     a0d:       8b 5c 24 0c             mov    0xc(%esp),%ebx
-     a11:       8b 74 24 10             mov    0x10(%esp),%esi
-     a15:       c1 e1 02                shl    $0x2,%ecx
-     a18:       8b 7c 24 14             mov    0x14(%esp),%edi
-     a1c:       0f af ca                imul   %edx,%ecx
-     a1f:       8b 6c 24 18             mov    0x18(%esp),%ebp
-     a23:       05 00 00 01 00          add    $0x10000,%eax
-     a28:       8b 54 24 04             mov    0x4(%esp),%edx
-     a2c:       83 c4 1c                add    $0x1c,%esp
-     a2f:       e9 fc ff ff ff          jmp    a30 <blade_image_blit+0xc0>
-                        a30: R_386_PC32 memcpy
-
-
+diff --git a/drivers/gpu/drm/imx/ipuv3-crtc.c b/drivers/gpu/drm/imx/ipuv3-crtc.c
+index fb16026..1ca6492 100644
+--- a/drivers/gpu/drm/imx/ipuv3-crtc.c
++++ b/drivers/gpu/drm/imx/ipuv3-crtc.c
+@@ -158,35 +158,19 @@ static int ipu_crtc_mode_set(struct drm_crtc *crtc,
+ 
+ 	out_pixel_fmt = ipu_crtc->interface_pix_fmt;
+ 
+-	if (mode->flags & DRM_MODE_FLAG_INTERLACE)
+-		sig_cfg.interlaced = 1;
+-	if (mode->flags & DRM_MODE_FLAG_PHSYNC)
+-		sig_cfg.Hsync_pol = 1;
+-	if (mode->flags & DRM_MODE_FLAG_PVSYNC)
+-		sig_cfg.Vsync_pol = 1;
+-
+ 	sig_cfg.enable_pol = 1;
+ 	sig_cfg.clk_pol = 0;
+-	sig_cfg.width = mode->hdisplay;
+-	sig_cfg.height = mode->vdisplay;
+ 	sig_cfg.pixel_fmt = out_pixel_fmt;
+-	sig_cfg.h_start_width = mode->htotal - mode->hsync_end;
+-	sig_cfg.h_sync_width = mode->hsync_end - mode->hsync_start;
+-	sig_cfg.h_end_width = mode->hsync_start - mode->hdisplay;
+-
+-	sig_cfg.v_start_width = mode->vtotal - mode->vsync_end;
+-	sig_cfg.v_sync_width = mode->vsync_end - mode->vsync_start;
+-	sig_cfg.v_end_width = mode->vsync_start - mode->vdisplay;
+-	sig_cfg.pixelclock = mode->clock * 1000;
+ 	sig_cfg.clkflags = ipu_crtc->di_clkflags;
+-
+ 	sig_cfg.v_to_h_sync = 0;
+-
+ 	sig_cfg.hsync_pin = ipu_crtc->di_hsync_pin;
+ 	sig_cfg.vsync_pin = ipu_crtc->di_vsync_pin;
+ 
+-	ret = ipu_dc_init_sync(ipu_crtc->dc, ipu_crtc->di, sig_cfg.interlaced,
+-			out_pixel_fmt, mode->hdisplay);
++	videomode_from_drm_display_mode(mode, &sig_cfg.mode);
++
++	ret = ipu_dc_init_sync(ipu_crtc->dc, ipu_crtc->di,
++			       mode->flags & DRM_MODE_FLAG_INTERLACE,
++			       out_pixel_fmt, mode->hdisplay);
+ 	if (ret) {
+ 		dev_err(ipu_crtc->dev,
+ 				"initializing display controller failed with %d\n",
+diff --git a/drivers/gpu/ipu-v3/ipu-di.c b/drivers/gpu/ipu-v3/ipu-di.c
+index 41df8d7..d95fbd0 100644
+--- a/drivers/gpu/ipu-v3/ipu-di.c
++++ b/drivers/gpu/ipu-v3/ipu-di.c
+@@ -207,10 +207,10 @@ static void ipu_di_sync_config(struct ipu_di *di, struct di_sync_config *config,
+ static void ipu_di_sync_config_interlaced(struct ipu_di *di,
+ 		struct ipu_di_signal_cfg *sig)
+ {
+-	u32 h_total = sig->width + sig->h_sync_width +
+-		sig->h_start_width + sig->h_end_width;
+-	u32 v_total = sig->height + sig->v_sync_width +
+-		sig->v_start_width + sig->v_end_width;
++	u32 h_total = sig->mode.hactive + sig->mode.hsync_len +
++		sig->mode.hback_porch + sig->mode.hfront_porch;
++	u32 v_total = sig->mode.vactive + sig->mode.vsync_len +
++		sig->mode.vback_porch + sig->mode.vfront_porch;
+ 	u32 reg;
+ 	struct di_sync_config cfg[] = {
+ 		{
+@@ -229,13 +229,13 @@ static void ipu_di_sync_config_interlaced(struct ipu_di *di,
+ 		}, {
+ 			.run_count = v_total / 2 - 1,
+ 			.run_src = DI_SYNC_HSYNC,
+-			.offset_count = sig->v_start_width,
++			.offset_count = sig->mode.vback_porch,
+ 			.offset_src = DI_SYNC_HSYNC,
+ 			.repeat_count = 2,
+ 			.cnt_clr_src = DI_SYNC_VSYNC,
+ 		}, {
+ 			.run_src = DI_SYNC_HSYNC,
+-			.repeat_count = sig->height / 2,
++			.repeat_count = sig->mode.vactive / 2,
+ 			.cnt_clr_src = 4,
+ 		}, {
+ 			.run_count = v_total - 1,
+@@ -249,9 +249,9 @@ static void ipu_di_sync_config_interlaced(struct ipu_di *di,
+ 			.cnt_clr_src = DI_SYNC_VSYNC,
+ 		}, {
+ 			.run_src = DI_SYNC_CLK,
+-			.offset_count = sig->h_start_width,
++			.offset_count = sig->mode.hback_porch,
+ 			.offset_src = DI_SYNC_CLK,
+-			.repeat_count = sig->width,
++			.repeat_count = sig->mode.hactive,
+ 			.cnt_clr_src = 5,
+ 		}, {
+ 			.run_count = v_total - 1,
+@@ -277,10 +277,10 @@ static void ipu_di_sync_config_interlaced(struct ipu_di *di,
+ static void ipu_di_sync_config_noninterlaced(struct ipu_di *di,
+ 		struct ipu_di_signal_cfg *sig, int div)
+ {
+-	u32 h_total = sig->width + sig->h_sync_width + sig->h_start_width +
+-		sig->h_end_width;
+-	u32 v_total = sig->height + sig->v_sync_width + sig->v_start_width +
+-		sig->v_end_width;
++	u32 h_total = sig->mode.hactive + sig->mode.hsync_len +
++		sig->mode.hback_porch + sig->mode.hfront_porch;
++	u32 v_total = sig->mode.vactive + sig->mode.vsync_len +
++		sig->mode.vback_porch + sig->mode.vfront_porch;
+ 	struct di_sync_config cfg[] = {
+ 		{
+ 			/* 1: INT_HSYNC */
+@@ -294,27 +294,29 @@ static void ipu_di_sync_config_noninterlaced(struct ipu_di *di,
+ 			.offset_src = DI_SYNC_CLK,
+ 			.cnt_polarity_gen_en = 1,
+ 			.cnt_polarity_trigger_src = DI_SYNC_CLK,
+-			.cnt_down = sig->h_sync_width * 2,
++			.cnt_down = sig->mode.hsync_len * 2,
+ 		} , {
+ 			/* PIN3: VSYNC */
+ 			.run_count = v_total - 1,
+ 			.run_src = DI_SYNC_INT_HSYNC,
+ 			.cnt_polarity_gen_en = 1,
+ 			.cnt_polarity_trigger_src = DI_SYNC_INT_HSYNC,
+-			.cnt_down = sig->v_sync_width * 2,
++			.cnt_down = sig->mode.vsync_len * 2,
+ 		} , {
+ 			/* 4: Line Active */
+ 			.run_src = DI_SYNC_HSYNC,
+-			.offset_count = sig->v_sync_width + sig->v_start_width,
++			.offset_count = sig->mode.vsync_len +
++					sig->mode.vback_porch,
+ 			.offset_src = DI_SYNC_HSYNC,
+-			.repeat_count = sig->height,
++			.repeat_count = sig->mode.vactive,
+ 			.cnt_clr_src = DI_SYNC_VSYNC,
+ 		} , {
+ 			/* 5: Pixel Active, referenced by DC */
+ 			.run_src = DI_SYNC_CLK,
+-			.offset_count = sig->h_sync_width + sig->h_start_width,
++			.offset_count = sig->mode.hsync_len +
++					sig->mode.hback_porch,
+ 			.offset_src = DI_SYNC_CLK,
+-			.repeat_count = sig->width,
++			.repeat_count = sig->mode.hactive,
+ 			.cnt_clr_src = 5, /* Line Active */
+ 		} , {
+ 			/* unused */
+@@ -339,9 +341,10 @@ static void ipu_di_sync_config_noninterlaced(struct ipu_di *di,
+ 		} , {
+ 			/* 3: Line Active */
+ 			.run_src = DI_SYNC_INT_HSYNC,
+-			.offset_count = sig->v_sync_width + sig->v_start_width,
++			.offset_count = sig->mode.vsync_len +
++					sig->mode.vback_porch,
+ 			.offset_src = DI_SYNC_INT_HSYNC,
+-			.repeat_count = sig->height,
++			.repeat_count = sig->mode.vactive,
+ 			.cnt_clr_src = 3 /* VSYNC */,
+ 		} , {
+ 			/* PIN4: HSYNC for VGA via TVEv2 on TQ MBa53 */
+@@ -351,13 +354,14 @@ static void ipu_di_sync_config_noninterlaced(struct ipu_di *di,
+ 			.offset_src = DI_SYNC_CLK,
+ 			.cnt_polarity_gen_en = 1,
+ 			.cnt_polarity_trigger_src = DI_SYNC_CLK,
+-			.cnt_down = sig->h_sync_width * 2,
++			.cnt_down = sig->mode.hsync_len * 2,
+ 		} , {
+ 			/* 5: Pixel Active signal to DC */
+ 			.run_src = DI_SYNC_CLK,
+-			.offset_count = sig->h_sync_width + sig->h_start_width,
++			.offset_count = sig->mode.hsync_len +
++					sig->mode.hback_porch,
+ 			.offset_src = DI_SYNC_CLK,
+-			.repeat_count = sig->width,
++			.repeat_count = sig->mode.hactive,
+ 			.cnt_clr_src = 4, /* Line Active */
+ 		} , {
+ 			/* PIN6: VSYNC for VGA via TVEv2 on TQ MBa53 */
+@@ -367,7 +371,7 @@ static void ipu_di_sync_config_noninterlaced(struct ipu_di *di,
+ 			.offset_src = DI_SYNC_INT_HSYNC,
+ 			.cnt_polarity_gen_en = 1,
+ 			.cnt_polarity_trigger_src = DI_SYNC_INT_HSYNC,
+-			.cnt_down = sig->v_sync_width * 2,
++			.cnt_down = sig->mode.vsync_len * 2,
+ 		} , {
+ 			/* PIN4: HSYNC for VGA via TVEv2 on i.MX53-QSB */
+ 			.run_count = h_total - 1,
+@@ -376,7 +380,7 @@ static void ipu_di_sync_config_noninterlaced(struct ipu_di *di,
+ 			.offset_src = DI_SYNC_CLK,
+ 			.cnt_polarity_gen_en = 1,
+ 			.cnt_polarity_trigger_src = DI_SYNC_CLK,
+-			.cnt_down = sig->h_sync_width * 2,
++			.cnt_down = sig->mode.hsync_len * 2,
+ 		} , {
+ 			/* PIN6: VSYNC for VGA via TVEv2 on i.MX53-QSB */
+ 			.run_count = v_total - 1,
+@@ -385,7 +389,7 @@ static void ipu_di_sync_config_noninterlaced(struct ipu_di *di,
+ 			.offset_src = DI_SYNC_INT_HSYNC,
+ 			.cnt_polarity_gen_en = 1,
+ 			.cnt_polarity_trigger_src = DI_SYNC_INT_HSYNC,
+-			.cnt_down = sig->v_sync_width * 2,
++			.cnt_down = sig->mode.vsync_len * 2,
+ 		} , {
+ 			/* unused */
+ 		},
+@@ -433,10 +437,11 @@ static void ipu_di_config_clock(struct ipu_di *di,
+ 			unsigned long in_rate;
+ 			unsigned div;
+ 
+-			clk_set_rate(clk, sig->pixelclock);
++			clk_set_rate(clk, sig->mode.pixelclock);
+ 
+ 			in_rate = clk_get_rate(clk);
+-			div = (in_rate + sig->pixelclock / 2) / sig->pixelclock;
++			div = (in_rate + sig->mode.pixelclock / 2) /
++				sig->mode.pixelclock;
+ 			if (div = 0)
+ 				div = 1;
+ 
+@@ -454,10 +459,11 @@ static void ipu_di_config_clock(struct ipu_di *di,
+ 		unsigned div, error;
+ 
+ 		clkrate = clk_get_rate(di->clk_ipu);
+-		div = (clkrate + sig->pixelclock / 2) / sig->pixelclock;
++		div = (clkrate + sig->mode.pixelclock / 2) /
++			sig->mode.pixelclock;
+ 		rate = clkrate / div;
+ 
+-		error = rate / (sig->pixelclock / 1000);
++		error = rate / (sig->mode.pixelclock / 1000);
+ 
+ 		dev_dbg(di->ipu->dev, "  IPU clock can give %lu with divider %u, error %d.%u%%\n",
+ 			rate, div, (signed)(error - 1000) / 10, error % 10);
+@@ -473,10 +479,11 @@ static void ipu_di_config_clock(struct ipu_di *di,
+ 
+ 			clk = di->clk_di;
+ 
+-			clk_set_rate(clk, sig->pixelclock);
++			clk_set_rate(clk, sig->mode.pixelclock);
+ 
+ 			in_rate = clk_get_rate(clk);
+-			div = (in_rate + sig->pixelclock / 2) / sig->pixelclock;
++			div = (in_rate + sig->mode.pixelclock / 2) /
++				sig->mode.pixelclock;
+ 			if (div = 0)
+ 				div = 1;
+ 
+@@ -504,7 +511,7 @@ static void ipu_di_config_clock(struct ipu_di *di,
+ 	ipu_di_write(di, val, DI_GENERAL);
+ 
+ 	dev_dbg(di->ipu->dev, "Want %luHz IPU %luHz DI %luHz using %s, %luHz\n",
+-		sig->pixelclock,
++		sig->mode.pixelclock,
+ 		clk_get_rate(di->clk_ipu),
+ 		clk_get_rate(di->clk_di),
+ 		clk = di->clk_di ? "DI" : "IPU",
+@@ -547,15 +554,15 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
+ 	u32 div;
+ 
+ 	dev_dbg(di->ipu->dev, "disp %d: panel size = %d x %d\n",
+-		di->id, sig->width, sig->height);
++		di->id, sig->mode.hactive, sig->mode.vactive);
+ 
+-	if ((sig->v_sync_width = 0) || (sig->h_sync_width = 0))
++	if ((sig->mode.vsync_len = 0) || (sig->mode.hsync_len = 0))
+ 		return -EINVAL;
+ 
+ 	dev_dbg(di->ipu->dev, "Clocks: IPU %luHz DI %luHz Needed %luHz\n",
+ 		clk_get_rate(di->clk_ipu),
+ 		clk_get_rate(di->clk_di),
+-		sig->pixelclock);
++		sig->mode.pixelclock);
+ 
+ 	mutex_lock(&di_mutex);
+ 
+@@ -574,7 +581,7 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
+ 	di_gen = ipu_di_read(di, DI_GENERAL) & DI_GEN_DI_CLK_EXT;
+ 	di_gen |= DI_GEN_DI_VSYNC_EXT;
+ 
+-	if (sig->interlaced) {
++	if (sig->mode.flags & DISPLAY_FLAGS_INTERLACED) {
+ 		ipu_di_sync_config_interlaced(di, sig);
+ 
+ 		/* set y_sel = 1 */
+@@ -584,9 +591,9 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
+ 
+ 		vsync_cnt = 7;
+ 
+-		if (sig->Hsync_pol)
++		if (sig->mode.flags & DISPLAY_FLAGS_HSYNC_HIGH)
+ 			di_gen |= DI_GEN_POLARITY_3;
+-		if (sig->Vsync_pol)
++		if (sig->mode.flags & DISPLAY_FLAGS_VSYNC_HIGH)
+ 			di_gen |= DI_GEN_POLARITY_2;
+ 	} else {
+ 		ipu_di_sync_config_noninterlaced(di, sig, div);
+@@ -600,7 +607,7 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
+ 			if (!(sig->hsync_pin = 2 && sig->vsync_pin = 3))
+ 				vsync_cnt = 6;
+ 
+-		if (sig->Hsync_pol) {
++		if (sig->mode.flags & DISPLAY_FLAGS_HSYNC_HIGH) {
+ 			if (sig->hsync_pin = 2)
+ 				di_gen |= DI_GEN_POLARITY_2;
+ 			else if (sig->hsync_pin = 4)
+@@ -608,7 +615,7 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
+ 			else if (sig->hsync_pin = 7)
+ 				di_gen |= DI_GEN_POLARITY_7;
+ 		}
+-		if (sig->Vsync_pol) {
++		if (sig->mode.flags & DISPLAY_FLAGS_VSYNC_HIGH) {
+ 			if (sig->vsync_pin = 3)
+ 				di_gen |= DI_GEN_POLARITY_3;
+ 			else if (sig->vsync_pin = 6)
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index d333d54..73390c1 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -33,28 +33,15 @@ enum ipuv3_type {
+  * Bitfield of Display Interface signal polarities.
+  */
+ struct ipu_di_signal_cfg {
+-	unsigned datamask_en:1;
+-	unsigned interlaced:1;
+-	unsigned odd_field_first:1;
+-	unsigned clksel_en:1;
+-	unsigned clkidle_en:1;
+ 	unsigned data_pol:1;	/* true = inverted */
+ 	unsigned clk_pol:1;	/* true = rising edge */
+ 	unsigned enable_pol:1;
+-	unsigned Hsync_pol:1;	/* true = active high */
+-	unsigned Vsync_pol:1;
+ 
+-	u16 width;
+-	u16 height;
++	struct videomode mode;
++
+ 	u32 pixel_fmt;
+-	u16 h_start_width;
+-	u16 h_sync_width;
+-	u16 h_end_width;
+-	u16 v_start_width;
+-	u16 v_sync_width;
+-	u16 v_end_width;
+ 	u32 v_to_h_sync;
+-	unsigned long pixelclock;
++
+ #define IPU_DI_CLKMODE_SYNC	(1 << 0)
+ #define IPU_DI_CLKMODE_EXT	(1 << 1)
+ 	unsigned long clkflags;
 -- 
-Ondrej Zary
+1.7.9.5
+

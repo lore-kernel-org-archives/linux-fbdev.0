@@ -1,88 +1,88 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Thu, 18 Dec 2014 08:30:36 +0000
-Subject: Re: [PATCH v10 4/6] devicetree: backlight: Add new SKY81452 backlight binding
-Message-Id: <20141218083036.GR13885@x1>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Fri, 19 Dec 2014 02:00:22 +0000
+Subject: [PATCH v2 3/7] drm_modes: add videomode_from_drm_display_mode
+Message-Id: <1418954426-21909-4-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1418881671-3495-1-git-send-email-jack.yoo@skyworksinc.com>
- <1418881671-3495-5-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1418881671-3495-5-git-send-email-jack.yoo@skyworksinc.com>
+References: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: gyungoh@gmail.com
-Cc: sameo@linux.intel.com, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org, akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Philipp Zabel <p.zabel@pengutronix.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>, Fabio Estevam <fabio.estevam@freescale.com>, Shawn Guo <shawn.guo@linaro.org>, Denis Carikli <denis@eukrea.com>, Jiada Wang <jiada_wang@mentor.com>, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-DT Ack please.
+Add conversion from drm_display_mode to videomode.
 
-> From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
->=20
-> Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> Acked-by: Bryan Wu <cooloney@gmail.com>
-> ---
+Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+---
+ drivers/gpu/drm/drm_modes.c |   40 ++++++++++++++++++++++++++++++++++++++++
+ include/drm/drm_modes.h     |    2 ++
+ 2 files changed, 42 insertions(+)
 
-[...]
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 6d8b941..583a391 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -615,6 +615,46 @@ void drm_display_mode_from_videomode(const struct videomode *vm,
+ }
+ EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
+ 
++/**
++ * videomode_from_drm_display_mode - fill in @vm using @dmode,
++ * @dmode: drm_display_mode structure to use as source
++ * @vm: videomode structure to use as destination
++ *
++ * Fills out @vm using the display mode specified in @dmode.
++ */
++void videomode_from_drm_display_mode(const struct drm_display_mode *dmode,
++				     struct videomode *vm)
++{
++	vm->hactive = dmode->hdisplay;
++	vm->hfront_porch = dmode->hsync_start - dmode->hdisplay;
++	vm->hsync_len = dmode->hsync_end - dmode->hsync_start;
++	vm->hback_porch = dmode->htotal - dmode->hsync_end;
++
++	vm->vactive = dmode->vdisplay;
++	vm->vfront_porch = dmode->vsync_start - dmode->vdisplay;
++	vm->vsync_len = dmode->vsync_end - dmode->vsync_start;
++	vm->vback_porch = dmode->vtotal - dmode->vsync_end;
++
++	vm->pixelclock = dmode->clock * 1000;
++
++	vm->flags = 0;
++	if (dmode->flags & DRM_MODE_FLAG_PHSYNC)
++		vm->flags |= DISPLAY_FLAGS_HSYNC_HIGH;
++	else if (dmode->flags & DRM_MODE_FLAG_NHSYNC)
++		vm->flags |= DISPLAY_FLAGS_HSYNC_LOW;
++	if (dmode->flags & DRM_MODE_FLAG_PVSYNC)
++		vm->flags |= DISPLAY_FLAGS_VSYNC_HIGH;
++	else if (dmode->flags & DRM_MODE_FLAG_NVSYNC)
++		vm->flags |= DISPLAY_FLAGS_VSYNC_LOW;
++	if (dmode->flags & DRM_MODE_FLAG_INTERLACE)
++		vm->flags |= DISPLAY_FLAGS_INTERLACED;
++	if (dmode->flags & DRM_MODE_FLAG_DBLSCAN)
++		vm->flags |= DISPLAY_FLAGS_DOUBLESCAN;
++	if (dmode->flags & DRM_MODE_FLAG_DBLCLK)
++		vm->flags |= DISPLAY_FLAGS_DOUBLECLK;
++}
++EXPORT_SYMBOL_GPL(videomode_from_drm_display_mode);
++
+ #ifdef CONFIG_OF
+ /**
+  * of_get_drm_display_mode - get a drm_display_mode from devicetree
+diff --git a/include/drm/drm_modes.h b/include/drm/drm_modes.h
+index 91d0582..60c0144 100644
+--- a/include/drm/drm_modes.h
++++ b/include/drm/drm_modes.h
+@@ -197,6 +197,8 @@ struct drm_display_mode *drm_gtf_mode_complex(struct drm_device *dev,
+ 					      int GTF_K, int GTF_2J);
+ void drm_display_mode_from_videomode(const struct videomode *vm,
+ 				     struct drm_display_mode *dmode);
++void videomode_from_drm_display_mode(const struct drm_display_mode *dmode,
++				     struct videomode *vm);
+ int of_get_drm_display_mode(struct device_node *np,
+ 			    struct drm_display_mode *dmode,
+ 			    int index);
+-- 
+1.7.9.5
 
-> Changes v8:
-> Renamed property names for backlight with vendor prefix
-> Modified gpio-enable property to generic property for GPIO
-> Made up the example for backlight DT
-
-[...]
-
-> Changes v2:
-> Added reg attribute for I2C slave address
->=20
->  .../video/backlight/sky81452-backlight.txt         | 29 ++++++++++++++++=
-++++++
->  1 file changed, 29 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/backlight/sky=
-81452-backlight.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/video/backlight/sky81452-b=
-acklight.txt b/Documentation/devicetree/bindings/video/backlight/sky81452-b=
-acklight.txt
-> new file mode 100644
-> index 0000000..8daebf5
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/backlight/sky81452-backligh=
-t.txt
-> @@ -0,0 +1,29 @@
-> +SKY81452-backlight bindings
-> +
-> +Required properties:
-> +- compatible		: Must be "skyworks,sky81452-backlight"
-> +
-> +Optional properties:
-> +- name			: Name of backlight device. Default is 'lcd-backlight'.
-> +- gpios			: GPIO to use to EN pin.
-> +			See Documentation/devicetree/bindings/gpio/gpio.txt
-> +- skyworks,en-channels	: Enable mask for current sink channel 1 to 6.
-> +- skyworks,ignore-pwm	: Ignore both PWM input
-> +- skyworks,dpwm-mode	: Enable DPWM dimming mode, otherwise Analog dimmin=
-g.
-> +- skyworks,phase-shift	: Enable phase shift mode
-> +- skyworks,ovp-level	: Over-voltage protection level.
-> +			Should be between 14 or 28V.
-> +- skyworks,short-detection-threshold	: It should be one of 4, 5, 6 and 7=
-V.
-> +- skyworks,current-limit	: It should be 2300mA or 2750mA.
-
-These need a DT Ack (if they are still alive).
-
-> +Example:
-> +
-> +	backlight {
-> +		compatible =3D "skyworks,sky81452-backlight";
-> +		name =3D "pwm-backlight";
-> +		skyworks,en-channels =3D <0x3f>;
-> +		skyworks,ignore-pwm;
-> +		skyworks,phase-shift;
-> +		skyworks,ovp-level =3D <20>;
-> +		skyworks,current-limit =3D <2300>;
-> +	};
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

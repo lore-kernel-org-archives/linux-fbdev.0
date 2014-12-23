@@ -1,7 +1,7 @@
 From: David Ung <davidu@nvidia.com>
-Date: Fri, 05 Dec 2014 20:07:50 +0000
-Subject: RE: [PATCH 3/3] video: fbdev: Validate mode timing against monspec
-Message-Id: <7dfb0ced84df4fc6b3a5f7c665f3afb1@HQMAIL102.nvidia.com>
+Date: Tue, 23 Dec 2014 00:27:50 +0000
+Subject: [PATCH 3/3] video: fbdev: Validate mode timing against monspec
+Message-Id: <1419294470-6315-1-git-send-email-davidu@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1417643369-20603-3-git-send-email-davidu@nvidia.com>
 In-Reply-To: <1417643369-20603-3-git-send-email-davidu@nvidia.com>
@@ -10,59 +10,107 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+fbmon may generate mode timings that are out of spec of the monitor.
+eg DELL U2410 has a max clock 170mhz but advertises a resolutions of
+1920x1200@60 in its Standard Timings using 2byte code of D1 00.
+When this is looked up in the DMT table it gives it a 193mhz clock.
+Although the DELL monitor supports 1920x1200@60, it can only run with
+reduced timings at 154mhz or DMT id 0x44 which has no STD 2byte code.
+This patch checks to see if the mode can be supported by the monitor
+by comparing against monspecs.dclkmax.
+
+Signed-off-by: David Ung <davidu@nvidia.com>
+---
+ drivers/video/fbdev/core/fbmon.c | 27 ++++++++++++++++++---------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index aa1110a..cc3ea6c8 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -496,7 +496,7 @@ static int get_est_timing(unsigned char *block, struct fb_videomode *mode)
+ }
  
-> On 03/12/14 23:49, David Ung wrote:
-> > fbmon may generate mode timings that are out of spec of the monitor.
-> > eg DELL U2410 has a max clock 170mhz but advertises a resolutions of
-> > 1920x1200@60 in its Standard Timings, fbmon creates a mode using the
-> > GTF timing calculation which gave it a 193mhz clock.
-> 
-> The above is not exactly true with the previous patches, as fbmon doesn't
-> calculate it with GTF, but looks it up from the DMT table.
+ static int get_std_timing(unsigned char *block, struct fb_videomode *mode,
+-		int ver, int rev)
++			  int ver, int rev, struct fb_monspecs *specs)
+ {
+ 	int xres, yres = 0, refresh, ratio, i;
+ 
+@@ -542,16 +542,23 @@ static int get_std_timing(unsigned char *block, struct fb_videomode *mode,
+ 	if (i = DMT_SIZE || !dmt_modes[i].mode)
+ 		calc_mode_timings(xres, yres, refresh, mode);
+ 
++	/* Check the mode we got is within valid spec of the monitor */
++	if (specs && specs->dclkmax
++	    && PICOS2KHZ(mode->pixclock) * 1000 > specs->dclkmax) {
++		DPRINTK("        mode exceed max DCLK\n");
++		return 0;
++	}
++
+ 	return 1;
+ }
+ 
+-static int get_dst_timing(unsigned char *block,
+-			  struct fb_videomode *mode, int ver, int rev)
++static int get_dst_timing(unsigned char *block, struct fb_videomode *mode,
++			  int ver, int rev, struct fb_monspecs *specs)
+ {
+ 	int j, num = 0;
+ 
+ 	for (j = 0; j < 6; j++, block += STD_TIMING_DESCRIPTION_SIZE)
+-		num += get_std_timing(block, &mode[num], ver, rev);
++		num += get_std_timing(block, &mode[num], ver, rev, specs);
+ 
+ 	return num;
+ }
+@@ -607,7 +614,8 @@ static void get_detailed_timing(unsigned char *block,
+  * This function builds a mode database using the contents of the EDID
+  * data
+  */
+-static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
++static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize,
++					     struct fb_monspecs *specs)
+ {
+ 	struct fb_videomode *mode, *m;
+ 	unsigned char *block;
+@@ -649,12 +657,13 @@ static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
+ 	DPRINTK("   Standard Timings\n");
+ 	block = edid + STD_TIMING_DESCRIPTIONS_START;
+ 	for (i = 0; i < STD_TIMING; i++, block += STD_TIMING_DESCRIPTION_SIZE)
+-		num += get_std_timing(block, &mode[num], ver, rev);
++		num += get_std_timing(block, &mode[num], ver, rev, specs);
+ 
+ 	block = edid + DETAILED_TIMING_DESCRIPTIONS_START;
+ 	for (i = 0; i < 4; i++, block+= DETAILED_TIMING_DESCRIPTION_SIZE) {
+ 		if (block[0] = 0x00 && block[1] = 0x00 && block[3] = 0xfa)
+-			num += get_dst_timing(block + 5, &mode[num], ver, rev);
++			num += get_dst_timing(block + 5, &mode[num],
++					      ver, rev, specs);
+ 	}
+ 
+ 	/* Yikes, EDID data is totally useless */
+@@ -713,7 +722,7 @@ static int fb_get_monitor_limits(unsigned char *edid, struct fb_monspecs *specs)
+ 		int num_modes, hz, hscan, pixclock;
+ 		int vtotal, htotal;
+ 
+-		modes = fb_create_modedb(edid, &num_modes);
++		modes = fb_create_modedb(edid, &num_modes, specs);
+ 		if (!modes) {
+ 			DPRINTK("None Available\n");
+ 			return 1;
+@@ -970,7 +979,7 @@ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ 	DPRINTK("   Display Characteristics:\n");
+ 	get_monspecs(edid, specs);
+ 
+-	specs->modedb = fb_create_modedb(edid, &specs->modedb_len);
++	specs->modedb = fb_create_modedb(edid, &specs->modedb_len, specs);
+ 
+ 	/*
+ 	 * Workaround for buggy EDIDs that sets that the first
+-- 
+1.8.1.5
 
-Aiye.  that was the original problem before the existence of the DMT table.
-I can adjust the commit message to add comments below.
-
-
-> I have to say it's quite odd that the monitor advertises a mode it cannot
-> display...
-
-It does support 1920x1200, but with reduced timings (like most modern panels)
-What it really want is DMT 0x44 which is reduced timing version of 1920x1200
-(0x44, 0x0000, 0x572821, &vesa_modes[34])
-
-But there is no STD 2byte code for this, so it uses 0xd100 in the edid,
-which gave it 193mhz
-
-
-> > This patch checks to see if the mode can be supported by the monitor
-> > by comparing against monspecs.dclkmax.
-> 
-> I don't know about this patch... It looks a bit messy, and only handles a too
-> high clock in the get_std_timing. We could as well get bad timing from
-> get_est_timing() or somewhere else.
-> 
-> And I don't know if get_std_timing() should even do such filtering in the
-> first place. I'd say it's supposed to return the mode from the EDID block.
-> Whether the monitor or the device actually supports the mode is a separate
-> thing.
-
-I agree that the EDID block should be correct.  But as I explained above, it's
-not always correct and the dclkmax is there to combat one of these situations.
-Yes, it will not solve all cases but it's a start.  Hopefully these wrong edid
-cases don't occur that often.
-
-
-> Also, generally speaking, while I have no objection in fixing bugs in fbdev,
-> I'd wish everyone just moved to DRM if at all possible. So if this starts
-> turning into a bigger change, with possibilities for regressions, we have to
-> consider if the fix is important enough.
-
-Right.  Though not everyone can simply switch to DRM.
-I hope this patch will not have much impact on any existing code.  As you already
-mention it should only be restricted to high clocks.
-
-David
 
 -----------------------------------------------------------------------------------
 This email message is for the sole use of the intended recipient(s) and may contain

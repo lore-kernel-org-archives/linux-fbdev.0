@@ -1,7 +1,7 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Sat, 27 Dec 2014 01:29:23 +0000
-Subject: Re: [patch] fbdev: off by one test (harmless)
-Message-Id: <000101d02174$8bcee760$a36cb620$%han@samsung.com>
+From: David Ung <davidu@nvidia.com>
+Date: Mon, 29 Dec 2014 21:51:23 +0000
+Subject: RE: [patch] fbdev: off by one test (harmless)
+Message-Id: <410219d77f8c4d0982cc9e99d0364acb@DRHQMAIL102.nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20141226172657.GA14762@mwanda>
 In-Reply-To: <20141226172657.GA14762@mwanda>
@@ -10,39 +10,25 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Saturday, December 27, 2014 2:27 AM, Dan Carpenter wrote:
+
+> > test is really a no-op.  But it's still off by one and upsets the
+> > static checkers so we may as well correct it.
 > 
-> ARRAY_SIZE(cea_modes) is 64 so the "idx > 63" test earlier means this
+> 'idx' should be 0~63, because cea_modes array is defined as
+> 'cea_modes[64]'.
 
-Good.
-'cea_modes' is defined as below. So, ARRAY_SIZE(cea_modes) is 64.
-extern const struct fb_videomode cea_modes[64];
+According to CEA/EIA-861E, there are 64 defined modes, but idx is valid for 1-64, 0 is reserved hence the check for 
 
-> test is really a no-op.  But it's still off by one and upsets the static
-> checkers so we may as well correct it.
+        If (!idx || idx > 63) {
 
-'idx' should be 0~63, because cea_modes array is defined as 'cea_modes[64]'.
+Think idx check really should be !idx || idx > 64 if following CEA/EIA-861E
 
-> 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+CEA/EIA-861F add additional entries and idx is valid from 1-107
 
-Reviewed-by: Jingoo Han <jg1.han@samsung.com>
-
-Best regards,
-Jingoo Han
-
-> 
-> diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-> index 5b0e313..3030269 100644
-> --- a/drivers/video/fbdev/core/fbmon.c
-> +++ b/drivers/video/fbdev/core/fbmon.c
-> @@ -1061,7 +1061,7 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
->  		int idx = svd[i - specs->modedb_len - num];
->  		if (!idx || idx > 63) {
->  			pr_warning("Reserved SVD code %d\n", idx);
-> -		} else if (idx > ARRAY_SIZE(cea_modes) || !cea_modes[idx].xres) {
-> +		} else if (idx >= ARRAY_SIZE(cea_modes) || !cea_modes[idx].xres) {
->  			pr_warning("Unimplemented SVD code %d\n", idx);
->  		} else {
->  			memcpy(&m[i], cea_modes + idx, sizeof(m[i]));
-
+David
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------

@@ -1,44 +1,61 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Dec 2014 08:13:12 +0000
-Subject: Re: [GIT PULL] fbdev fixes for 3.19
-Message-Id: <54A10D18.1060308@ti.com>
+Date: Tue, 30 Dec 2014 11:44:54 +0000
+Subject: [GIT PULL] fbdev fixes for 3.19
+Message-Id: <54A29036.4020507@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="t2mwM2X2VItUwrbIGIJGmu0UWEJKOquhI"
+Content-Type: multipart/mixed; boundary="qhuBLOxK9COm3Rf8d6G3PrWF9Mv6hUmHK"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <54899F0E.4090309@ti.com> <20141220210125.GB16705@amd> <20141220212027.GC16705@amd> <20141220215718.GA25101@amd> <20141223111250.GA30284@amd>
-In-Reply-To: <20141223111250.GA30284@amd>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Mark Brown <broonie@kernel.org>
+References: <54899F0E.4090309@ti.com>
+In-Reply-To: <54899F0E.4090309@ti.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
---t2mwM2X2VItUwrbIGIJGmu0UWEJKOquhI
-Content-Type: text/plain; charset=windows-1252
+--qhuBLOxK9COm3Rf8d6G3PrWF9Mv6hUmHK
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Linus,
 
-On 23/12/14 13:12, Pavel Machek wrote:
+The following changes since commit b7392d2247cfe6771f95d256374f1a8e6a6f48=
+d6:
 
->>> I test-merged 3315764efceaccfb02c7d4c99ef8eed6716cd861, and boom,
->>> video is gone.
->>
->> I reverted
->> 4b4123f0c7b02f7cf1a3189f967f079197578c3a..9051909e451a0368c95ccf74562a=
-db53fd2719f8
->> in 3.19, and voila, video is back.
->=20
-> Tomi?
->=20
-> Your merge causes regression on my hardware. I'd expect some
-> communication from you. If you don't have time right now, can we
-> revert the merge until its fixed?
+  Linux 3.19-rc2 (2014-12-28 16:49:37 -0800)
 
-I've posted a fix on the "n900 regressions" thread.
+are available in the git repository at:
 
- Tomi
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-fixes-3.19
+
+for you to fetch changes up to a32442d4f8b712b701ea577c841d6a0a7c5993c1:
+
+  OMAPDSS: SDI: fix output port_num (2014-12-30 11:18:30 +0200)
+
+----------------------------------------------------------------
+fbdev fixes for 3.19
+
+* Fix regression with Nokia N900 display
+* Fix crash on fbdev using freed __initdata logos
+* Fix fb_deferred_io_fsync() return value.
+
+----------------------------------------------------------------
+Dan Carpenter (1):
+      OMAPDSS: pll: NULL dereference in error handling
+
+Tomi Valkeinen (4):
+      OMAPDSS: HDMI: remove double initializer entries
+      video/logo: prevent use of logos after they have been freed
+      video/fbdev: fix defio's fsync
+      OMAPDSS: SDI: fix output port_num
+
+ drivers/video/fbdev/core/fb_defio.c      |  5 +++--
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c |  2 --
+ drivers/video/fbdev/omap2/dss/pll.c      |  3 ++-
+ drivers/video/fbdev/omap2/dss/sdi.c      |  2 ++
+ drivers/video/logo/logo.c                | 17 ++++++++++++++++-
+ 5 files changed, 23 insertions(+), 6 deletions(-)
 
 
-
---t2mwM2X2VItUwrbIGIJGmu0UWEJKOquhI
+--qhuBLOxK9COm3Rf8d6G3PrWF9Mv6hUmHK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -46,19 +63,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUoQ0YAAoJEPo9qoy8lh71LUIP/0jxnBS0cRYNsQ8+WLhUdQ8r
-ny2loQU60fSR8WTh+NPFbiyax33O4HnBFV1a0qw9QsoQMULCiUam4duexXCk3h5m
-68b6z4H/7iDmDnMDOSOfosmnGIiaW/PO+oN8gikLyMPeNFouOw5aMu+UtbuRVgbV
-xZlV2dcteSbv7rAtw2tE75cngVgvqkfrMonIiiMLbJqwrCgK7zhO47ZkiWA3bZFi
-VG9zqZtVhl8ofAe3zE6BiyyiSaetvrsSM1Riiui8ITHVKBwsiPfaPgb1c68STdPo
-s2iNIUI7d7KBt4dh/lapS9yHWLcLfC8+tGon3RojxsUYeZLb3IIhMYg8RpQ+w3Om
-79+As9kJQWK8gWjJ8UGaT++qZ/bcCf9PDtXcXtVxAYADdSYDK56X6P2djrTA/R+a
-5aZryNRM/hMqNKmwrEggm4kTKxNqlX5bK2W8rFXvAJUcyH0jWjciuB4raA3HVeEC
-hLLppthEcv4DhG1QVH8t7juO0qnfjdMz+0K72jmaUAaOCRV2lViLoYU8ZwqrTu4+
-eePNbt13j91876bm9M/VKOGsjskMdsOXQH6c31zU0xYzuHTwsfAu/SH5uKPnJPzO
-Yhh7gaWBj7Zs5vIOPhjD/Z6UH+7BR29l4IE+qkyLt0+4LhxNV/aBW3uSfYVlYHzx
-hlCbmkvpKhJDctzTn8Av
-=N6PP
+iQIcBAEBAgAGBQJUopA3AAoJEPo9qoy8lh71Zp4P/1mzbvgmquGW1/oQQjHn8d8t
+EJiXcwFeGAvhAwtGlmYK40brq/OdRh+Y3xlSLZYZSi+cXAMN2cNqUSwamKPQvB3o
+1zI8hFDNpz91ttoP1RALaEa860jZG/GgR5UqNJq6qZvqIWrOUXGIn5kYv66xP22/
+2TF+75ehv78zGr6jejCwXv2G0GHZypvsABY8fpaZJJiyEIHAFxoQKTfTKWM9FwYZ
+QU32M0WsdoyJhqY2CO9J+QTQdqDytiLDHXQK0bk3ku5Z4Z4FdbLKiwSTH/Dla++x
+NlyoJlY71k1L57dimM96u7LaSQH8S74kqTwJzSEEUA/Fqj/mjbLdjV5xvD5wZa9R
+qJsOLeFkTV3iw1lnZx4nEZU2MsrVhpKwvV2+8MhsbVSXtezROumEAaxbzcZzfFtW
+i46woHxQARGQ2s5CSb9ueUFqp6tx8xAPh55acOfYwMOfdCLt2TEVC3A7EUTXlm8Y
+5SWHvnNK3A842WTCqOg3t/S8ickDpFHlMsifvbnald/GTQ7hk20j+FFxzV32d3fZ
+hEgAHiEcM4sA34KAgw1jwd2qp3BjMhrE/qnU5v2svaBr2vpZ3GXObP1tjS3IhPU1
+IDPhJJcutQtLk04xvAbehL22QCQTctr2Wt0jaz+2mBULaZRoqg0G6zTf4+IQI/gP
+1/+01g8lXd9cIdSq4sXa
+=DWAl
 -----END PGP SIGNATURE-----
 
---t2mwM2X2VItUwrbIGIJGmu0UWEJKOquhI--
+--qhuBLOxK9COm3Rf8d6G3PrWF9Mv6hUmHK--

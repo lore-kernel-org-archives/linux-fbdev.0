@@ -1,60 +1,42 @@
-From: Xiubo Li <Li.Xiubo@freescale.com>
-Date: Wed, 03 Dec 2014 09:16:02 +0000
-Subject: [PATCHv2 4/4] ARM: ls1021a: dts: Add and enable dt node for dcfb.
-Message-Id: <1417598162-40433-5-git-send-email-Li.Xiubo@freescale.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Wed, 31 Dec 2014 12:38:44 +0000
+Subject: [PATCH 2/3] staging: sm7xxfb: update TODO file
+Message-Id: <1420028805-30488-2-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417598162-40433-1-git-send-email-Li.Xiubo@freescale.com>
-In-Reply-To: <1417598162-40433-1-git-send-email-Li.Xiubo@freescale.com>
+References: <1420028805-30488-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1420028805-30488-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Sudip Mukherjee <sudip@vectorindia.org>, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
 
-On LS1021A TWR board, the TFT LCD panel is WQVGA "480x272", and
-the bpp is 24.
+update the email addresses in the TODO file, also update the final
+destination of this driver. 
 
-Signed-off-by: Xiubo Li <Li.Xiubo@freescale.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- arch/arm/boot/dts/ls1021a-twr.dts | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ drivers/staging/sm7xxfb/TODO | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/ls1021a-twr.dts b/arch/arm/boot/dts/ls1021a-twr.dts
-index a2c591e..3602286 100644
---- a/arch/arm/boot/dts/ls1021a-twr.dts
-+++ b/arch/arm/boot/dts/ls1021a-twr.dts
-@@ -58,6 +58,32 @@
- 	};
- };
+diff --git a/drivers/staging/sm7xxfb/TODO b/drivers/staging/sm7xxfb/TODO
+index 1fcead5..6377380 100644
+--- a/drivers/staging/sm7xxfb/TODO
++++ b/drivers/staging/sm7xxfb/TODO
+@@ -3,7 +3,10 @@ TODO:
+ - 2D acceleration support
+ - use kernel coding style
+ - refine the code and remove unused code
+-- move it to drivers/video/sm7xxfb.c
++- move it to drivers/video/fbdev/sm7xxfb.c
  
-+&dcfb {
-+	display = <&display>;
-+	status = "okay";
-+
-+	display: display@0 {
-+		bits-per-pixel = <24>;
-+
-+		display-timings {
-+			native-mode = <&timing0>;
-+			timing0: nl4827hc19 {
-+				clock-frequency = <10870000>;
-+				hactive = <480>;
-+				vactive = <272>;
-+				hback-porch = <2>;
-+				hfront-porch = <2>;
-+				vback-porch = <2>;
-+				vfront-porch = <2>;
-+				hsync-len = <41>;
-+				vsync-len = <4>;
-+				hsync-active = <1>;
-+				vsync-active = <1>;
-+			};
-+		};
-+	};
-+};
-+
- &dspi1 {
- 	bus-num = <0>;
- 	status = "okay";
+-Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
+-Teddy Wang <teddy.wang@siliconmotion.com.cn>.
++Please send any patches to
++	Greg Kroah-Hartman <greg@kroah.com>
++	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
++	Teddy Wang <teddy.wang@siliconmotion.com>
++	Sudip Mukherjee <sudip@vectorindia.org>
 -- 
-2.1.0.27.g96db324
+1.9.1
 

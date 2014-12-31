@@ -1,40 +1,43 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Thu, 18 Dec 2014 21:41:22 +0000
-Subject: [PATCH] tridentfb: fix hang on Blade3D with CONFIG_CC_OPTIMIZE_FOR_SIZE
-Message-Id: <1418938882-28984-1-git-send-email-linux@rainbow-software.org>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Wed, 31 Dec 2014 12:38:45 +0000
+Subject: [PATCH 3/3] MAINTAINERS: update for SM7XX driver
+Message-Id: <1420028805-30488-3-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1420028805-30488-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1420028805-30488-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Sudip Mukherjee <sudip@vectorindia.org>, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
 
-When the kernel is compiled with -Os (CONFIG_CC_OPTIMIZE_FOR_SIZE), tridentfb
-hangs the machine upon load with Blade3D cards unless acceleration is disabled.
+add myself and Teddy Wang as the Maintainer of the
+SM7XX FRAME BUFFER DRIVER.
 
-This is caused by memcpy() which copies data byte-by-byte (rep movsb) when
-compiled with -Os. The card does not like that - it requires 32-bit access.
-
-Use iowrite_32() instead.
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/tridentfb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 7ed9a22..7429713 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -226,7 +226,7 @@ static void blade_image_blit(struct tridentfb_par *par, const char *data,
- 	writemmr(par, DST1, point(x, y));
- 	writemmr(par, DST2, point(x + w - 1, y + h - 1));
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6e18e65..4ffe882 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -9178,6 +9178,14 @@ L:	linux-wireless@vger.kernel.org
+ S:	Maintained
+ F:	drivers/staging/rtl8723au/
  
--	memcpy(par->io_virt + 0x10000, data, 4 * size);
-+	iowrite32_rep(par->io_virt + 0x10000, data, size);
- }
- 
- static void blade_copy_rect(struct tridentfb_par *par,
++STAGING - SILICON MOTION SM7XX FRAME BUFFER DRIVER
++M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
++M:	Teddy Wang <teddy.wang@siliconmotion.com>
++M:	Sudip Mukherjee <sudip@vectorindia.org>
++L:	linux-fbdev@vger.kernel.org
++S:	Maintained
++F:	drivers/staging/sm7xxfb/
++
+ STAGING - SLICOSS
+ M:	Lior Dotan <liodot@gmail.com>
+ M:	Christopher Harrer <charrer@alacritech.com>
 -- 
-Ondrej Zary
+1.9.1
 

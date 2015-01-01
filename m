@@ -1,118 +1,61 @@
-From: David Ung <davidu@nvidia.com>
-Date: Wed, 14 Jan 2015 03:04:27 +0000
-Subject: [PATCH V2 3/3] video: fbdev: Validate mode timing against monspec
-Message-Id: <1421204667-16669-3-git-send-email-davidu@nvidia.com>
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Thu, 01 Jan 2015 15:34:58 +0000
+Subject: [PATCH] video: fbdev: omap2: dss: dss.c:  Remove unused function
+Message-Id: <1420126498-27648-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>, Jingoo Han <jg1.han@samsung.com>, Sathya Prakash M R <sathyap@ti.com>, Fabian Frederick <fabf@skynet.be>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-fbmon may generate mode timings that are out of spec of the monitor.
-eg DELL U2410 has a max clock 170mhz but advertises a resolutions of
-1920x1200@60 in its Standard Timings using 2byte code of D1 00.
-When this is looked up in the DMT table it gives it a 193mhz clock.
-Although the DELL monitor supports 1920x1200@60, it can only run with
-reduced timings at 154mhz or DMT id 0x44 which has no STD 2byte code.
-This patch checks to see if the mode can be supported by the monitor
-by comparing against monspecs.dclkmax.
+Remove the function dss_get_hdmi_venc_clk_source() that is not used anywhere.
 
-Signed-off-by: David Ung <davidu@nvidia.com>
+This was partially found by using a static code analysis program called cppcheck.
+
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 ---
- drivers/video/fbdev/core/fbmon.c | 27 ++++++++++++++++++---------
- 1 file changed, 18 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/omap2/dss/dss.c |   14 --------------
+ drivers/video/fbdev/omap2/dss/dss.h |    1 -
+ 2 files changed, 15 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index 0f234c1..9533859 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -496,7 +496,7 @@ static int get_est_timing(unsigned char *block, struct fb_videomode *mode)
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 14bcd6c..d9482c8 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -550,20 +550,6 @@ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select src)
+ 		REG_FLD_MOD(DSS_CONTROL, src, 15, 15);	/* VENC_HDMI_SWITCH */
  }
  
- static int get_std_timing(unsigned char *block, struct fb_videomode *mode,
--		int ver, int rev)
-+			  int ver, int rev, const struct fb_monspecs *specs)
+-enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void)
+-{
+-	enum omap_display_type displays;
+-
+-	displays = dss_feat_get_supported_displays(OMAP_DSS_CHANNEL_DIGIT);
+-	if ((displays & OMAP_DISPLAY_TYPE_HDMI) = 0)
+-		return DSS_VENC_TV_CLK;
+-
+-	if ((displays & OMAP_DISPLAY_TYPE_VENC) = 0)
+-		return DSS_HDMI_M_PCLK;
+-
+-	return REG_GET(DSS_CONTROL, 15, 15);
+-}
+-
+ static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
  {
- 	int i;
+ 	if (channel != OMAP_DSS_CHANNEL_LCD)
+diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
+index 8ff22c1..f4bb25b 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.h
++++ b/drivers/video/fbdev/omap2/dss/dss.h
+@@ -211,7 +211,6 @@ void dss_uninit_platform_driver(void);
+ unsigned long dss_get_dispc_clk_rate(void);
+ int dss_dpi_select_source(enum omap_channel channel);
+ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
+-enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
+ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
+ void dss_dump_clocks(struct seq_file *s);
  
-@@ -544,16 +544,23 @@ static int get_std_timing(unsigned char *block, struct fb_videomode *mode,
- 		calc_mode_timings(xres, yres, refresh, mode);
- 	}
- 
-+	/* Check the mode we got is within valid spec of the monitor */
-+	if (specs && specs->dclkmax
-+	    && PICOS2KHZ(mode->pixclock) * 1000 > specs->dclkmax) {
-+		DPRINTK("        mode exceed max DCLK\n");
-+		return 0;
-+	}
-+
- 	return 1;
- }
- 
--static int get_dst_timing(unsigned char *block,
--			  struct fb_videomode *mode, int ver, int rev)
-+static int get_dst_timing(unsigned char *block, struct fb_videomode *mode,
-+			  int ver, int rev, const struct fb_monspecs *specs)
- {
- 	int j, num = 0;
- 
- 	for (j = 0; j < 6; j++, block += STD_TIMING_DESCRIPTION_SIZE)
--		num += get_std_timing(block, &mode[num], ver, rev);
-+		num += get_std_timing(block, &mode[num], ver, rev, specs);
- 
- 	return num;
- }
-@@ -609,7 +616,8 @@ static void get_detailed_timing(unsigned char *block,
-  * This function builds a mode database using the contents of the EDID
-  * data
-  */
--static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
-+static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize,
-+					     const struct fb_monspecs *specs)
- {
- 	struct fb_videomode *mode, *m;
- 	unsigned char *block;
-@@ -651,12 +659,13 @@ static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
- 	DPRINTK("   Standard Timings\n");
- 	block = edid + STD_TIMING_DESCRIPTIONS_START;
- 	for (i = 0; i < STD_TIMING; i++, block += STD_TIMING_DESCRIPTION_SIZE)
--		num += get_std_timing(block, &mode[num], ver, rev);
-+		num += get_std_timing(block, &mode[num], ver, rev, specs);
- 
- 	block = edid + DETAILED_TIMING_DESCRIPTIONS_START;
- 	for (i = 0; i < 4; i++, block+= DETAILED_TIMING_DESCRIPTION_SIZE) {
- 		if (block[0] = 0x00 && block[1] = 0x00 && block[3] = 0xfa)
--			num += get_dst_timing(block + 5, &mode[num], ver, rev);
-+			num += get_dst_timing(block + 5, &mode[num],
-+					      ver, rev, specs);
- 	}
- 
- 	/* Yikes, EDID data is totally useless */
-@@ -715,7 +724,7 @@ static int fb_get_monitor_limits(unsigned char *edid, struct fb_monspecs *specs)
- 		int num_modes, hz, hscan, pixclock;
- 		int vtotal, htotal;
- 
--		modes = fb_create_modedb(edid, &num_modes);
-+		modes = fb_create_modedb(edid, &num_modes, specs);
- 		if (!modes) {
- 			DPRINTK("None Available\n");
- 			return 1;
-@@ -972,7 +981,7 @@ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- 	DPRINTK("   Display Characteristics:\n");
- 	get_monspecs(edid, specs);
- 
--	specs->modedb = fb_create_modedb(edid, &specs->modedb_len);
-+	specs->modedb = fb_create_modedb(edid, &specs->modedb_len, specs);
- 
- 	/*
- 	 * Workaround for buggy EDIDs that sets that the first
 -- 
-1.8.1.5
+1.7.10.4
 
-
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------

@@ -1,49 +1,65 @@
-From: Kevin Hao <haokexin@gmail.com>
-Date: Sat, 31 Jan 2015 13:47:33 +0000
-Subject: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
-Message-Id: <1422712065-9403-4-git-send-email-haokexin@gmail.com>
+From: Mathias Krause <minipli@googlemail.com>
+Date: Sun, 04 Jan 2015 14:04:34 +0000
+Subject: [PATCH] atyfb: mark DMI system id table as __initconst
+Message-Id: <1420380274-8015-1-git-send-email-minipli@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
-Cc: Kevin Hao <haokexin@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Paul Mackerras <paulus@samba.org>
+To: linux-fbdev@vger.kernel.org
 
-The PPC_OF is a ppc specific option which is used to mean that the
-firmware device tree access functions are available. Since all the
-ppc platforms have a device tree, it is aways set to 'y' for ppc.
-So it makes no sense to keep a such option in the current kernel.
-Replace it with PPC.
+We can mark the DMI system id table as __initconst by using a helper
+variable that'll tell us if we need to unregister the reboot notifier in
+atyfb_exit() instead of matching the DMI system id again.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
+This frees up ~680 bytes of runtime memory, the DMI table occupies.
+
+Signed-off-by: Mathias Krause <minipli@googlemail.com>
 ---
- drivers/video/fbdev/aty/aty128fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/aty/atyfb_base.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index aedf2fbf9bf6..0156954bf340 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -965,7 +965,7 @@ static void __iomem *aty128_find_mem_vbios(struct aty128fb_par *par)
- /* fill in known card constants if pll_block is not available */
- static void aty128_timings(struct aty128fb_par *par)
- {
--#ifdef CONFIG_PPC_OF
-+#ifdef CONFIG_PPC
- 	/* instead of a table lookup, assume OF has properly
- 	 * setup the PLL registers and use their values
- 	 * to set the XCLK values and reference divider values */
-@@ -979,7 +979,7 @@ static void aty128_timings(struct aty128fb_par *par)
- 	if (!par->constants.ref_clk)
- 		par->constants.ref_clk = 2950;
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 37ec09b3fffd..8789e487b96e 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3948,7 +3948,7 @@ static struct notifier_block atyfb_reboot_notifier = {
+ 	.notifier_call = atyfb_reboot_notify,
+ };
  
--#ifdef CONFIG_PPC_OF
-+#ifdef CONFIG_PPC
- 	x_mpll_ref_fb_div = aty_ld_pll(X_MPLL_REF_FB_DIV);
- 	xclk_cntl = aty_ld_pll(XCLK_CNTL) & 0x7;
- 	Nx = (x_mpll_ref_fb_div & 0x00ff00) >> 8;
+-static const struct dmi_system_id atyfb_reboot_ids[] = {
++static const struct dmi_system_id atyfb_reboot_ids[] __initconst = {
+ 	{
+ 		.ident = "HP OmniBook 500",
+ 		.matches = {
+@@ -3960,6 +3960,7 @@ static const struct dmi_system_id atyfb_reboot_ids[] = {
+ 
+ 	{ }
+ };
++static bool registered_notifier = false;
+ 
+ static int __init atyfb_init(void)
+ {
+@@ -3982,15 +3983,17 @@ static int __init atyfb_init(void)
+ 	if (err1 && err2)
+ 		return -ENODEV;
+ 
+-	if (dmi_check_system(atyfb_reboot_ids))
++	if (dmi_check_system(atyfb_reboot_ids)) {
+ 		register_reboot_notifier(&atyfb_reboot_notifier);
++		registered_notifier = true;
++	}
+ 
+ 	return 0;
+ }
+ 
+ static void __exit atyfb_exit(void)
+ {
+-	if (dmi_check_system(atyfb_reboot_ids))
++	if (registered_notifier)
+ 		unregister_reboot_notifier(&atyfb_reboot_notifier);
+ 
+ #ifdef CONFIG_PCI
 -- 
-1.9.3
+1.7.10.4
 

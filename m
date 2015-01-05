@@ -1,77 +1,36 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Jan 2015 11:23:01 +0000
-Subject: [GIT PULL] fbdev fixes for 3.19
-Message-Id: <54B7A315.4030104@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="3LFwKP5277brCdPLa0X1LBC1DMaILVvmX"
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Mon, 05 Jan 2015 13:09:47 +0000
+Subject: [PATCH] fbdev: omap2: Fix typo in tvc_probe_pdata
+Message-Id: <1420463387-26391-1-git-send-email-linux@rasmusvillemoes.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <54899F0E.4090309@ti.com>
-In-Reply-To: <54899F0E.4090309@ti.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---3LFwKP5277brCdPLa0X1LBC1DMaILVvmX
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Assigning ddata->invert_polarity to itself is not very useful; the
+context suggests that the right-hand side should have been
+pdata->invert_polarity.
 
-Hi Linus,
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+ drivers/video/fbdev/omap2/displays-new/connector-analog-tv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Please pull fbdev fixes for 3.19:
+diff --git a/drivers/video/fbdev/omap2/displays-new/connector-analog-tv.c b/drivers/video/fbdev/omap2/displays-new/connector-analog-tv.c
+index 9a2b5ce58545..8511c648a15c 100644
+--- a/drivers/video/fbdev/omap2/displays-new/connector-analog-tv.c
++++ b/drivers/video/fbdev/omap2/displays-new/connector-analog-tv.c
+@@ -208,7 +208,7 @@ static int tvc_probe_pdata(struct platform_device *pdev)
+ 	ddata->in = in;
+ 
+ 	ddata->connector_type = pdata->connector_type;
+-	ddata->invert_polarity = ddata->invert_polarity;
++	ddata->invert_polarity = pdata->invert_polarity;
+ 
+ 	dssdev = &ddata->dssdev;
+ 	dssdev->name = pdata->name;
+-- 
+2.1.3
 
-The following changes since commit eaa27f34e91a14cdceed26ed6c6793ec1d1861=
-15:
-
-  linux 3.19-rc4 (2015-01-11 12:44:53 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-3.19
-
-for you to fetch changes up to ef6899cdc8608e2f018e590683f04bb04a069704:
-
-  fbdev/broadsheetfb: fix memory leak (2015-01-13 15:13:45 +0200)
-
-----------------------------------------------------------------
-fbdev fixes for 3.19
-
-* broadsheetfb: fix memory leak
-* simplefb: fix build failure on sparc
-
-----------------------------------------------------------------
-Colin Ian King (1):
-      fbdev/broadsheetfb: fix memory leak
-
-Hans de Goede (1):
-      simplefb: Fix build failure on Sparc
-
- drivers/video/fbdev/broadsheetfb.c | 8 +++++---
- drivers/video/fbdev/simplefb.c     | 2 +-
- 2 files changed, 6 insertions(+), 4 deletions(-)
-
-
-
---3LFwKP5277brCdPLa0X1LBC1DMaILVvmX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUt6MVAAoJEPo9qoy8lh71XXUP/ijC5Jq4X4t4boEBi79AFqgL
-5aVQYpvDqVWdoUqwOV17Ui2JHdZtU69Y5zVWg3NUCMcTZ3hD13coDWczf6MbB69O
-ku4wSFKbLM3ovUxPnVRKVThV89Cmk9lCxVP9Bbw1lObKPBlCPT+hKH56RvV8xKBU
-oR3z8HOvOV3Tc2bVgZp3K/Ob7ztmHtFsLVtACEy2aSC+5MiYHlWtEbuEmQBpfWl6
-ilpAZ7sQpw9lh4A0UV1MUzOYMtgbem3z5i82ahMQHxox+gdnZERyL/DAxUarylGj
-/saOtZJh+bF+VVRw+c08rfqabHIT6qc9xF+ZVCdRBLTxI/ckCoaBEKQ6bu/JtNIV
-UkGtFUUkKOsFv/6ZlZimtormA8x3YApIgaDWf6ETY2XYvS5e7n+XNUui9NivcT8v
-zOPyPCAeJB/rUC3a9QUw04NtnHW6YAZXrE/QBNksdWRWNDSr/ddwayUe1xzyyQIK
-jpmwp2YzbfmKqVvh0hzoa0L5O3kxWvzIaKbs0cammtlnZu5hCdt/zhT6Sd0eK1A3
-RtpZtRQBodb7a77m/tM1Bhh4s3PrGKTSChj2p2uk4OzwFlkyFM915ry6nmf9POBj
-OXxqBFmsmAxsRzjQ3e7494dnnXiPE5niBGl91AbPF4GVTL/3mVm4vEk9PvXWnbQA
-jDyhwYHiaeCw+Az5KEWL
-=uZSB
------END PGP SIGNATURE-----
-
---3LFwKP5277brCdPLa0X1LBC1DMaILVvmX--

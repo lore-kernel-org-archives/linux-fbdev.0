@@ -1,73 +1,95 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 13 Jan 2015 11:26:50 +0000
-Subject: Re: [PATCH] fbdev: omap2: Fix typo in tvc_probe_pdata
-Message-Id: <54B500FA.60705@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="cQxp8Hj3cjm8oKQAmukRGDnGqGBnLL4No"
+From: gyungoh@gmail.com
+Date: Wed, 07 Jan 2015 02:19:24 +0000
+Subject: [PATCH v10 3/6] devicetree: mfd: Add new SKY81452 mfd binding
+Message-Id: <1420597167-3188-4-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420463387-26391-1-git-send-email-linux@rasmusvillemoes.dk>
-In-Reply-To: <1420463387-26391-1-git-send-email-linux@rasmusvillemoes.dk>
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1420597167-3188-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1420597167-3188-1-git-send-email-jack.yoo@skyworksinc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
---cQxp8Hj3cjm8oKQAmukRGDnGqGBnLL4No
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
-On 05/01/15 15:09, Rasmus Villemoes wrote:
-> Assigning ddata->invert_polarity to itself is not very useful; the
-> context suggests that the right-hand side should have been
-> pdata->invert_polarity.
->=20
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> ---
->  drivers/video/fbdev/omap2/displays-new/connector-analog-tv.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/omap2/displays-new/connector-analog-tv=
-=2Ec b/drivers/video/fbdev/omap2/displays-new/connector-analog-tv.c
-> index 9a2b5ce58545..8511c648a15c 100644
-> --- a/drivers/video/fbdev/omap2/displays-new/connector-analog-tv.c
-> +++ b/drivers/video/fbdev/omap2/displays-new/connector-analog-tv.c
-> @@ -208,7 +208,7 @@ static int tvc_probe_pdata(struct platform_device *=
-pdev)
->  	ddata->in =3D in;
-> =20
->  	ddata->connector_type =3D pdata->connector_type;
-> -	ddata->invert_polarity =3D ddata->invert_polarity;
-> +	ddata->invert_polarity =3D pdata->invert_polarity;
-> =20
->  	dssdev =3D &ddata->dssdev;
->  	dssdev->name =3D pdata->name;
+Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+---
+Changes v10:
+Nothing
 
-Good catch, thanks! Queueing for 3.20 (as no one is using that flag in
-3.19).
+Changes v9:
+Nothing
 
- Tomi
+Changes v8:
+Made up the example for backlight DT
 
+Changes v7:
+Nothing
 
+Changes v6:
+Nothing
 
---cQxp8Hj3cjm8oKQAmukRGDnGqGBnLL4No
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Changes v5:
+Changed DT for regulator : 'lout' node should be defined under 'regulator'
+Removed compatible string from sky81452-regulator driver
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Changes v4:
+Nothing
 
-iQIcBAEBAgAGBQJUtQD6AAoJEPo9qoy8lh71qeYP/joXqnk3VuGV1O6bl91308z5
-RQ4tu++yvbBZHcELlZmZ0grx1zztnje3+/mFi2FqgCEmCZzIqAVtbbQHrwxsZjSe
-ZwnK6rho44fijtbecZ8Y6iBjU1rrmrBGJmYcCrO3LMLgeyb+/Nhn6CJql9o6n/HT
-/sg+s1f1i+nzTQmD5xCPCM39rJAg9x+J3m8R0HXYVJ733dX5N4DIzXSKW3IBpnZH
-scdn7hKeY1B1b9YKDhzB5HHTSdcn4fUtlGiLW6Y7E7XKywtvOOcXzrxALm4PsgTM
-o/rmQSU5HD1Sbp69QQChAnAx7iP3cs+ZhqmGPvTSb6PFGlbJTrArY+3LtoD0Y41L
-zgsFz+anpC/ZjP9nWKHhQ673yljkAOLkrU5JJJY0+VfG0ifXuPApbHdEn692lf4Z
-sks/46quvMSYmVwogi/VTaK9zZS2yF4RrqgmPywax6mn/BI+lGVrm86ugV0pB34r
-RAMPsriOftJrQNGALENdSS/Jz5zs0PvaH1i415B+lHmiNbsAfErYeXf1fO9OOxHo
-Aiu7cwbBUlI5nUVW2KAdDsNXReJebyO0T92LQGuEJ2kOS4D/z5uzsCpU5jO3loQU
-XZyp7PKd5WK+i051yDHjU0qpm00LD8mJaWBR5rUoeblMck0BkhcabBYFhCWGZyjn
-AhYMOlOftDHOW+Kd08vH
-=49jG
------END PGP SIGNATURE-----
+Changes v3:
+Nothing
 
---cQxp8Hj3cjm8oKQAmukRGDnGqGBnLL4No--
+Changes v2:
+Added reg attribute for I2C slave address
+
+ Documentation/devicetree/bindings/mfd/sky81452.txt | 36 ++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
+
+diff --git a/Documentation/devicetree/bindings/mfd/sky81452.txt b/Documentation/devicetree/bindings/mfd/sky81452.txt
+new file mode 100644
+index 0000000..ab71473
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/sky81452.txt
+@@ -0,0 +1,36 @@
++SKY81452 bindings
++
++Required properties:
++- compatible	: Must be "skyworks,sky81452"
++- reg		: I2C slave address
++
++Required child nodes:
++- backlight	: container node for backlight following the binding
++		in video/backlight/sky81452-backlight.txt
++- regulator	: container node for regulators following the binding
++		in regulator/sky81452-regulator.txt
++
++Example:
++
++	sky81452@2c {
++		compatible = "skyworks,sky81452";
++		reg = <0x2c>;
++
++		backlight {
++			compatible = "skyworks,sky81452-backlight";
++			name = "pwm-backlight";
++			skyworks,en-channels = <0x3f>;
++			skyworks,ignore-pwm;
++			skyworks,phase-shift;
++			skyworks,ovp-level = <20>;
++			skyworks,current-limit = <2300>;
++		};
++
++		regulator {
++			lout {
++				regulator-name = "sky81452-lout";
++				regulator-min-microvolt = <4500000>;
++				regulator-max-microvolt = <8000000>;
++			};
++		};
++	};
+-- 
+1.9.1
+

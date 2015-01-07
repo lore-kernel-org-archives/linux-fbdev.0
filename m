@@ -1,54 +1,30 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Jan 2015 11:38:55 +0000
-Subject: Re: [PATCH V2 1/3] video: fbdev: Add additional vesa modes
-Message-Id: <54B7A6CF.3070706@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="BeMTMgBjdFQL8urfAxSV92TPpOsqVU5i5"
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Wed, 07 Jan 2015 18:27:28 +0000
+Subject: Re: [PATCH v2 0/7] imx-drm: ipuv3-crtc: Implement mode_fixup
+Message-Id: <1420655248.3191.73.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421204667-16669-1-git-send-email-davidu@nvidia.com>
-In-Reply-To: <1421204667-16669-1-git-send-email-davidu@nvidia.com>
-To: linux-fbdev@vger.kernel.org
+References: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Steve Longerbeam <slongerbeam@gmail.com>
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Russell King <rmk+kernel@arm.linux.org.uk>, Fabio Estevam <fabio.estevam@freescale.com>, Shawn Guo <shawn.guo@linaro.org>, Denis Carikli <denis@eukrea.com>, Jiada Wang <jiada_wang@mentor.com>, Steve Longerbeam <steve_longerbeam@mentor.com>
 
---BeMTMgBjdFQL8urfAxSV92TPpOsqVU5i5
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Am Donnerstag, den 18.12.2014, 18:00 -0800 schrieb Steve Longerbeam:
+> This patchset implements ->mode_fixup() in the imx ipuv3-crtc driver,
+> using a new support function ipu_di_adjust_videomode(). This new
+> function needs to be subsystem independent, so it accepts a video
+> mode as a 'struct videomode'. Hence ipu-crtc ->mode_fixup() needs
+> another support function to convert a drm_display_mode to a videomode
+> before passing the mode to ipu_di_adjust_videomode() for fixup.
+> 
+> Also some related code cleanup: 'struct ipu_di_signal_cfg' should
+> use 'struct videomode' for mode timings.
 
-On 14/01/15 05:04, David Ung wrote:
-> Add high resolution modes to vesa_modes struct.
->=20
-> Signed-off-by: David Ung <davidu@nvidia.com>
-> ---
->  drivers/video/fbdev/core/modedb.c | 27 +++++++++++++++++++++++++++
->  include/linux/fb.h                |  2 +-
->  2 files changed, 28 insertions(+), 1 deletion(-)
+Alright, I have applied the series with
+s/videomode_from_drm_display_mode/drm_display_mode_to_videomode/
 
-Thanks, queued the series for 3.20.
+thanks
+Philipp
 
- Tomi
-
-
-
---BeMTMgBjdFQL8urfAxSV92TPpOsqVU5i5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUt6bPAAoJEPo9qoy8lh71udgP+wVQq+NKs544TI+2u0D4O9Jv
-XqcrZuO14t+RgD/PSQXVuYd+H/9KOC0jA/QhmUNtPiJ88POFsopws1xdrOR59WXz
-KLDaDbkx0sFFSdvinu7pLDgiCWdGrNmozdA2RgKFebXNoQqkNDbbckKK2YS0ulmZ
-qCdHvr6ZngWCJt03QPDdvSo3C+xG3ocWS9VxwpFqst7+nX8H2jfldz2f4kYE6tcc
-ehCNv7sQQwlSbnNUYeApawlXbaHTPYZeVGwx05awj6HRTDBqzxfqxAkHqJyty4NH
-8IodWHvpFYr9ccxWT6PwPr3zGUGUXCU+OVBO5H2DbIpIw2Yss7ifqNv0ebhFvh+7
-W0naREfKIF7CSZpO/vOW+ghWug0Wc7b6wwXgOe0J9/keArm9oAglzoxwpvADgP24
-JPmyLtSZ/qrgORUU2ZEPE5S5wrZdmeTdmuZHREEoIVe6fHgoLBesHJtOgckIACyJ
-/nDfrl4o/A5WMbLXrdY9rwqxDdurvKKsnWvwkSwYtBSWqjH0iPVTgkf33MMgjNqy
-YxCLQ7TbcW2mZMTLLhgDMypseqHMGXjgYYMBJ1krjzDlNA2+Ykpp93r0FdKxMVVA
-MhPyFCvgd4a5kTb+tmHi1QwmWjGkH2oCjoKxRmd1Lwc2zaHWKiI7KViZ89JuA2ok
-8i7lj/e+C/up508bIshf
-=zCAk
------END PGP SIGNATURE-----
-
---BeMTMgBjdFQL8urfAxSV92TPpOsqVU5i5--

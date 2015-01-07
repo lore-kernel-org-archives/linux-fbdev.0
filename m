@@ -1,176 +1,99 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 26 Jan 2015 12:08:43 +0000
-Subject: Re: [RFC PATCH 2/2] fbcon: expose cursor blink interval via sysfs
-Message-Id: <54C62E4B.3070009@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="8jiWxLuqvo41UPBV66nxhatBBwIimxwep"
+From: gyungoh@gmail.com
+Date: Wed, 07 Jan 2015 02:19:21 +0000
+Subject: [PATCH v10 0/6] Add Skyworks SKY81452 device drivers
+Message-Id: <1420597167-3188-1-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501240109060.3489@localhost.localdomain> <alpine.DEB.2.11.1501240117400.3639@localhost.localdomain>
-In-Reply-To: <alpine.DEB.2.11.1501240117400.3639@localhost.localdomain>
-To: Scot Doyle <lkml14@scotdoyle.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1417590332-4912-1-git-send-email-jack.yoo@skyworksinc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
---8jiWxLuqvo41UPBV66nxhatBBwIimxwep
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
-On 24/01/15 03:19, Scot Doyle wrote:
-> The fbcon cursor, when set to blink, is hardcoded to toggle display sta=
-te
-> five times per second. Expose this setting via
-> /sys/class/graphics/fbcon/cursor_blink_ms
->=20
-> Values written to the interface set the approximate time interval in
-> milliseconds between cursor toggles, from 1 to 32767. Since the interva=
-l
-> is stored internally as a number of jiffies, the millisecond value read=
+This patch set includes regulator and backlight driver for SKY81452.
+Also it includes documents for device tree and module.
+sky81452-regulator was already applied. So this series doesn't
+include it.
 
-> from the interface may not exactly match the entered value.
->=20
-> An outstanding blink timer is reset after a new value is entered.
->=20
-> If the cursor blink is disabled, either via the 'cursor_blink' boolean
-> setting or some other mechanism, the 'cursor_blink_ms' setting may stil=
-l
-> be modified. The new value will be used if the blink is reactivated.
->=20
-> Tested with intelfb.
->=20
-> Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
-> ---
->  drivers/video/console/fbcon.c | 75 +++++++++++++++++++++++++++++++++++=
-++++++++
->  1 file changed, 75 insertions(+)
->=20
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbco=
-n.c
-> index 7a2030b..0ddfcf6 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -3495,11 +3495,86 @@ err:
->  	return count;
->  }
-> =20
-> +static ssize_t show_cursor_blink_ms(struct device *device,
-> +				    struct device_attribute *attr, char *buf)
-> +{
-> +	struct fb_info *info;
-> +	struct fbcon_ops *ops;
-> +	int idx, ms =3D -1;
-> +
-> +	if (fbcon_has_exited)
-> +		return 0;
+v10:
+Removed trivial get_brightness implementations for sky81452-backlight
 
-Why not return an error here?
+v9:
+Removed the change to remove MODULE_VERSION() for sky81452-regulator
 
-> +
-> +	console_lock();
-> +	idx =3D con2fb_map[fg_console];
-> +
-> +	if (idx =3D=3D -1 || registered_fb[idx] =3D=3D NULL)
-> +		goto err;
+v8:
+Renamed property names for backlight with vendor prefix
+Modified gpio-enable property to generic property for GPIO
+Made up the example for backlight DT
+Changed the DT parsing of regulator using regulator_node and of_match
 
-Same here?
+v7:
+Modified licensing text to GPLv2
+Splitted Kconfig renaming from DT patch
 
-> +	info =3D registered_fb[idx];
-> +	ops =3D info->fbcon_par;
-> +
-> +	if (!ops)
-> +		goto err;
+v6:
+Added new line character at the end of line of dev_err()
 
-And here.
+v5:
+Changed DT for regulator : 'lout' node should be defined under 'regulator'
+Removed compatible string from sky81452-regulator driver
+Modified sky81452-regulator to return EINVAL when of_node is NULL
+Move sky81452-backlight.h to include/linux/platform_data
 
-> +
-> +	ms =3D jiffies_to_msecs(ops->blink_jiffies);
-> +
-> +err:
-> +	console_unlock();
-> +	return snprintf(buf, PAGE_SIZE, "%d\n", ms);
-> +}
-> +
-> +static ssize_t store_cursor_blink_ms(struct device *device,
-> +				     struct device_attribute *attr,
-> +				     const char *buf, size_t count)
-> +{
-> +	struct fb_info *info;
-> +	struct fbcon_ops *ops;
-> +	int idx;
-> +	unsigned long ms;
-> +
-> +	if (fbcon_has_exited)
-> +		return count;
-> +
-> +	console_lock();
-> +	idx =3D con2fb_map[fg_console];
-> +
-> +	if (idx =3D=3D -1 || registered_fb[idx] =3D=3D NULL)
-> +		goto err;
-> +
-> +	info =3D registered_fb[idx];
-> +
-> +	if (!info->fbcon_par)
-> +		goto err;
-> +
-> +	ops =3D info->fbcon_par;
-> +
-> +	if (!ops)
-> +		goto err;
+v4:
+Removed MODULE_VERSION()
+Modified license to GPLv2
+Removed calling to backlight_device_unregister() in sky81452-backlight
 
-Here also all the above look like errors to me, so why not return an erro=
-r?
+v3:
+Cleaned-up DBG messages
+Cleaned-up DT
+Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
+Assigned mfd_cell.of_compatible for binding device node
+Modified error messages
+Modified sky81452-regulator to return ENODATA when of_node is NULL
 
-> +
-> +	if (!kstrtoul(buf, 0, &ms)) {
-> +		ms =3D min_t(unsigned long, ms, SHRT_MAX);
-> +		ops->blink_jiffies =3D max_t(int, msecs_to_jiffies(ms), 1);
-> +
-> +		if (info->queue.func =3D=3D fb_flashcursor &&
-> +		    ops->flags & FBCON_FLAGS_CURSOR_TIMER) {
-> +			fbcon_del_cursor_timer(info);
-> +			fbcon_add_cursor_timer(info);
-> +		}
-> +	}
-> +
-> +err:
-> +	console_unlock();
-> +	return count;
-> +}
-> +
->  static struct device_attribute device_attrs[] =3D {
->  	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
->  	__ATTR(rotate_all, S_IWUSR, NULL, store_rotate_all),
->  	__ATTR(cursor_blink, S_IRUGO|S_IWUSR, show_cursor_blink,
->  	       store_cursor_blink),
-> +	__ATTR(cursor_blink_ms, S_IRUGO|S_IWUSR, show_cursor_blink_ms,
-> +	       store_cursor_blink_ms),
->  };
-> =20
->  static int fbcon_init_device(void)
->=20
+v2:
+Split the patches for each sub-system
+Added 'reg' attribute for I2C address in device tree documents
+Added 'compatible' attribute in child drivers
+Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
+Changed the dependency from I2C=y to I2C, for CONFIG_MFD_SKY81452
+Added message for exception or errors.
+Added vendor prefix for Skyworks Solutions, Inc.
+Add SKY81452 to the Trivial Devices list
 
+Gyungoh Yoo (6):
+  mfd: Add support for Skyworks SKY81452 driver
+  backlight: Add support Skyworks SKY81452 backlight driver
+  devicetree: mfd: Add new SKY81452 mfd binding
+  devicetree: backlight: Add new SKY81452 backlight binding
+  devicetree: Add vendor prefix for Skyworks Solutions, Inc.
+  devicetree: i2c: Add SKY81452 to the Trivial Devices list
 
+ .../devicetree/bindings/i2c/trivial-devices.txt    |   1 +
+ Documentation/devicetree/bindings/mfd/sky81452.txt |  36 +++
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ .../video/backlight/sky81452-backlight.txt         |  29 ++
+ drivers/mfd/Kconfig                                |  12 +
+ drivers/mfd/Makefile                               |   1 +
+ drivers/mfd/sky81452.c                             | 108 +++++++
+ drivers/video/backlight/Kconfig                    |  10 +
+ drivers/video/backlight/Makefile                   |   1 +
+ drivers/video/backlight/sky81452-backlight.c       | 334 +++++++++++++++++++++
+ include/linux/mfd/sky81452.h                       |  31 ++
+ include/linux/platform_data/sky81452-backlight.h   |  46 +++
+ 12 files changed, 610 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
+ create mode 100644 drivers/mfd/sky81452.c
+ create mode 100644 drivers/video/backlight/sky81452-backlight.c
+ create mode 100644 include/linux/mfd/sky81452.h
+ create mode 100644 include/linux/platform_data/sky81452-backlight.h
 
---8jiWxLuqvo41UPBV66nxhatBBwIimxwep
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+-- 
+1.9.1
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUxi5LAAoJEPo9qoy8lh71ihUP/RbpnLCFo5eKVIHzUv3fNQzk
-0z+ZyxMtcheXHxheXxDfnYrRS4QQISu52izQFsb7MHG5fsD6EJiLb0MikYPE6Kni
-3QBEZGmYlMtrEvQIOGDUxvPmVzKo4PuEN+ZqBxj6d6nannFKSe2izdn/hW7ZybFR
-8tubgA24jRuFLhq7SArK5FJvnkp7gBp71AcqQkpzQGcxF3dZk8Wu+4IvQtRiXP2j
-1+dnivpTCHpOa7WUVqtvTiw0usjp3GwxrwmD6Wwl3ldIoF4FHUHGwlkIirUCoy3j
-JDVIN4UBWlPA0tP3ZzDqGMC9YuiMDJl3opvsN4IE7ldvrCUfFF68VYEjrp0fnjPp
-BHRznC0h7vPJqHRYxEvnm1vGza3K3glLWVOHhdSVvit4DurZV5QfrDu2SOOqXyT3
-xHcM9309s1YY20Q8WGt2M4AmTRowzNTeKfNiJ1sTqDRe61vF0MoqBuN9wn3lG4m2
-f6/dcCEWa7/hytIsAV6FlBWEYiXVe+f/wXPlmqNOpaYV/LpaAhYlibA+D62lxMRp
-71iMpKpzjFOakoRGzXoXi6eI4MEQhkvwDxBHIRv0I9Ym4VsrBhWyopYxUeL8eTe2
-OsmfiZgrffUUAwrpYJyReOYhOCi7gvfAFAkuLTuK4B+hR65MIMMsac91La5+kyZf
-ekxUsMmnjLyF3OpLYRBl
-=7oBh
------END PGP SIGNATURE-----
-
---8jiWxLuqvo41UPBV66nxhatBBwIimxwep--

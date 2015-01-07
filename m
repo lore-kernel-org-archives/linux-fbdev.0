@@ -1,65 +1,89 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 13 Jan 2015 11:34:17 +0000
-Subject: Re: [PATCH] fbdev: savage: remove unused variable
-Message-Id: <54B502B9.9030609@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="WXbjBBrieNW08IrKTjBplel7iRLSiA6nc"
+From: gyungoh@gmail.com
+Date: Wed, 07 Jan 2015 02:19:25 +0000
+Subject: [PATCH v10 4/6] devicetree: backlight: Add new SKY81452 backlight binding
+Message-Id: <1420597167-3188-5-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420549930-16607-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1420549930-16607-1-git-send-email-sudipm.mukherjee@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1420597167-3188-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1420597167-3188-1-git-send-email-jack.yoo@skyworksinc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
---WXbjBBrieNW08IrKTjBplel7iRLSiA6nc
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
-On 06/01/15 15:12, Sudip Mukherjee wrote:
-> vga_in8() was storing the return value in tmp, but that return value
-> was never used again. so it should be safe to remove those variables.
->=20
-> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
-> ---
->=20
-> just one doubt:
-> vga_in8() is calling savage_in8() which is a readb().
-> so in effect we are reading one byte from
-> (par->mmio.vbase + 0x8000 + 0x3da) and then discarding that value.
-> so if we are discarding that value then why we are reading it?
+Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+Acked-by: Bryan Wu <cooloney@gmail.com>
+---
+Changes v10:
+Nothing
 
-Sometimes reading a HW register without actually using the returned
-value has some effect. I don't know if there's a reason for that in this
-case, though, as I'm not familiar with the HW.
+Changes v9:
+Nothing
 
-In any case, it's safer to keep the read there as you did.
+Changes v8:
+Renamed property names for backlight with vendor prefix
+Modified gpio-enable property to generic property for GPIO
+Made up the example for backlight DT
 
-Queued for 3.20.
+Changes v7:
+Nothing
 
- Tomi
+Changes v6:
+Nothing
 
+Changes v5:
+Nothing
 
+Changes v4:
+Nothing
 
---WXbjBBrieNW08IrKTjBplel7iRLSiA6nc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Changes v3:
+Nothing
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Changes v2:
+Added reg attribute for I2C slave address
 
-iQIcBAEBAgAGBQJUtQK5AAoJEPo9qoy8lh71NxkP/04ytN7Fp6p1UW5cq8YYMz/P
-JN2nF+bIRE+v3S4m2OAuo2RvEb1OixtLA5QjKZOvrOFwybDLQMhRhji9EHOrm2pL
-vuw+7XbnRM18iwmbs6MPlrapACplfj0dNRqB71FLPL1VP3ejJWRmHGexnegGUScL
-8/go8KWABQDdw5f6uKA54Rtq6C8tl1TW4NojVo0fMpOpP/YMjyGIkHESQzP7zMS1
-DetBildrfPNTBZWO7dFAeOkTQNL7iSov6MWfcyIYo61/oNV66/wBcT5Vb6lEYH8d
-XPjwgY2QlCtOCmz1Lj6iL9eFF/QDdR0gKLC4XyjAONAZ+lF/L2svD4Dts3KnaEEV
-ozSrNbbnLNUR8fB5ra7Fst0GYD0V6RraH9VXvv12/BaFaUOmF5RGyTUN1r+kjZtK
-xVUuC7VbcOCuGlnRGEfflgfDlltpFF+93uja6p4IlAgQhMXGVsf3LzOakNHHI2V0
-KtuazuIWuZwI0zJ8bSdhcbLSHyda41Svxx5RqaQRXjDfvNJecUGXvvVLzGauMtNr
-ducZSZ7RJOFbCAVeCH09qc3GET52YQnQ0dkhVsdUyxAv6UiA5hgn5GNx/PDdcLrM
-Lf/3d/ww1m4nl8rywmbQB8yjrlAtmwoa+fXroXuzYYKgG5Ansv/lWdVOwH1t2xp9
-qvaPT19VxRDHztYHR+dc
-=TzEP
------END PGP SIGNATURE-----
+ .../video/backlight/sky81452-backlight.txt         | 29 ++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
 
---WXbjBBrieNW08IrKTjBplel7iRLSiA6nc--
+diff --git a/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt b/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
+new file mode 100644
+index 0000000..8daebf5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
+@@ -0,0 +1,29 @@
++SKY81452-backlight bindings
++
++Required properties:
++- compatible		: Must be "skyworks,sky81452-backlight"
++
++Optional properties:
++- name			: Name of backlight device. Default is 'lcd-backlight'.
++- gpios			: GPIO to use to EN pin.
++			See Documentation/devicetree/bindings/gpio/gpio.txt
++- skyworks,en-channels	: Enable mask for current sink channel 1 to 6.
++- skyworks,ignore-pwm	: Ignore both PWM input
++- skyworks,dpwm-mode	: Enable DPWM dimming mode, otherwise Analog dimming.
++- skyworks,phase-shift	: Enable phase shift mode
++- skyworks,ovp-level	: Over-voltage protection level.
++			Should be between 14 or 28V.
++- skyworks,short-detection-threshold	: It should be one of 4, 5, 6 and 7V.
++- skyworks,current-limit	: It should be 2300mA or 2750mA.
++
++Example:
++
++	backlight {
++		compatible = "skyworks,sky81452-backlight";
++		name = "pwm-backlight";
++		skyworks,en-channels = <0x3f>;
++		skyworks,ignore-pwm;
++		skyworks,phase-shift;
++		skyworks,ovp-level = <20>;
++		skyworks,current-limit = <2300>;
++	};
+-- 
+1.9.1
+

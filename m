@@ -1,97 +1,247 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 05 Jan 2015 12:13:06 +0000
-Subject: Re: [PATCH] simplefb: Fix build failure on Sparc
-Message-Id: <54AA7FD2.7040701@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="2s9He6u5Xxb0QaJBxqmOP5L2paBIlaHKA"
+From: gyungoh@gmail.com
+Date: Wed, 07 Jan 2015 02:19:22 +0000
+Subject: [PATCH v10 1/6] mfd: Add support for Skyworks SKY81452 driver
+Message-Id: <1420597167-3188-2-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420445716-13468-1-git-send-email-hdegoede@redhat.com>
- <54AA72CB.1020303@ti.com> <54AA73D1.3@redhat.com>
-In-Reply-To: <54AA73D1.3@redhat.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1420597167-3188-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1420597167-3188-1-git-send-email-jack.yoo@skyworksinc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
---2s9He6u5Xxb0QaJBxqmOP5L2paBIlaHKA
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
-On 05/01/15 13:21, Hans de Goede wrote:
-> Hi,
->=20
-> On 05-01-15 12:17, Tomi Valkeinen wrote:
->> On 05/01/15 10:15, Hans de Goede wrote:
->>> of_platform_device_create is only defined when CONFIG_OF_ADDRESS is s=
-et,
->>> which is normally always the case when CONFIG_OF is defined, except
->>> on Sparc,
->>> so explicitly check for CONFIG_OF_ADDRESS rather then for CONFIG_OF.
->>>
->>> Reported-by: kbuild test robot <fengguang.wu@intel.com>
->>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->>> ---
->>>   drivers/video/fbdev/simplefb.c | 2 +-
->>>   1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/video/fbdev/simplefb.c
->>> b/drivers/video/fbdev/simplefb.c
->>> index 92cac80..1085c04 100644
->>> --- a/drivers/video/fbdev/simplefb.c
->>> +++ b/drivers/video/fbdev/simplefb.c
->>> @@ -402,7 +402,7 @@ static int __init simplefb_init(void)
->>>       if (ret)
->>>           return ret;
->>>
->>> -    if (IS_ENABLED(CONFIG_OF) && of_chosen) {
->>> +    if (IS_ENABLED(CONFIG_OF_ADDRESS) && of_chosen) {
->>>           for_each_child_of_node(of_chosen, np) {
->>>               if (of_device_is_compatible(np, "simple-framebuffer"))
->>>                   of_platform_device_create(np, NULL, NULL);
->>>
->>
->> Doesn't this depend on the compiler optimizing the
->> of_platform_device_create call away?
->=20
-> Yes it does.
->=20
->> Isn't that rather dangerous assumption?
->=20
-> The kernel relies on being build with optimization enabled in various
-> places,
-> this specific construction was suggested during review (by Grant Likely=
+Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+---
+Changes v10:
+Nothing
 
-> IIRC)
-> I initially had an #ifdef here. Note that this construction is used in
-> various
-> places throughout the kernel and it seems to be used more and more ofte=
-n.
+Changes v9:
+Nothing
 
-Ok. Well, I can't say I'm very happy about that, but if that's the
-common accepted way, I'm fine. I'll queue this for fbdev fixes.
+Changes v8:
+Nothing
 
- Tomi
+Changes v7:
+Modified licensing text to GPLv2
 
+Changes v6:
+Added new line character at the end of line of dev_err()
 
+Changes v5:
+Move sky81452-backlight.h to include/linux/platform_data
 
---2s9He6u5Xxb0QaJBxqmOP5L2paBIlaHKA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Changes v4:
+Removed MODULE_VERSION()
+Modified license to GPLv2
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Changes v3:
+Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
+Assigned mfd_cell.of_compatible for binding device node
+Modified error messages
 
-iQIcBAEBAgAGBQJUqn/SAAoJEPo9qoy8lh712FIP/0Q9axkBLxpbGzd4MvYGckmn
-w0n7id+8hzF1NzXOIB1zBy2AvzQ0p4bURMklqEYYFW1Vdm1xjO+AZnBrmWJ8p/Vq
-Apwx7jC4NAcYS4wP0utEeKENoiEsxUUAbuOwM62lYKj4nBIFUJdUqCWccgF1Gg0j
-xtTElcXeYa9ch7r2/uD5UTzdCqyKcGEC7mp8B4cPf73cI0Ewy25u9ICAl0DAIRRy
-r9AOSAHrYYMFASX2T3GapShhKttJGTwJqFab3GVRgT33l7F7dpv2hC/wMol6uTOJ
-oWBuaSDkHoHhNLYuY/yyVVqhduiq4cwz1ZNm0vMqwG6DuFslVjd1XevT63ZhLFqh
-26s2NIkj4gmQgfOhmz/QTFZvJrMD4Y329hnzWXLdyY0u99k8v0A+DPzZiktJJaGO
-Fcfv8mJUuhXh6uxttABC+1qmE7G6sOWdl4FAPidyYUUEKyNpG9B7CFPAeCEnuoOa
-2qbYg6qhop+lptPTTA25zvQ2ohRLmOI7XSzdFLx9qfsDHr9IrygpzKXKfxi47Vj3
-CJLRSoeKqqRkVwXXSsIuiR31Xs7kAsUWWg62o9pk7YG1dnyrX66WPHH7kcoAo7Zs
-7GhCM9gTXDhpC4Y39SgywXYDiPuw14lvTjdIV7L5SR99Icn7TAQ2yrYo5s6nynmL
-k0Qnozm3vf/wW9vjuJ10
-=VB5N
------END PGP SIGNATURE-----
+Changes v2:
+Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
+Changed the dependency from I2C=y to I2C, for CONFIG_MFD_SKY81452
+Added message for exception or errors
 
---2s9He6u5Xxb0QaJBxqmOP5L2paBIlaHKA--
+ drivers/mfd/Kconfig          |  12 +++++
+ drivers/mfd/Makefile         |   1 +
+ drivers/mfd/sky81452.c       | 108 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/sky81452.h |  31 +++++++++++++
+ 4 files changed, 152 insertions(+)
+ create mode 100644 drivers/mfd/sky81452.c
+ create mode 100644 include/linux/mfd/sky81452.h
+
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 1456ea7..a54244c 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -693,6 +693,18 @@ config MFD_SM501_GPIO
+ 	 lines on the SM501. The platform data is used to supply the
+ 	 base number for the first GPIO line to register.
+ 
++config MFD_SKY81452
++	tristate "Skyworks Solutions SKY81452"
++	select MFD_CORE
++	select REGMAP_I2C
++	depends on I2C
++	help
++	  This is the core driver for the Skyworks SKY81452 backlight and
++	  voltage regulator device.
++
++	  This driver can also be built as a module.  If so, the module
++	  will be called sky81452.
++
+ config MFD_SMSC
+        bool "SMSC ECE1099 series chips"
+        depends on I2C=y
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index 8bd54b1..d9683ea 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -174,6 +174,7 @@ obj-$(CONFIG_MFD_STW481X)	+= stw481x.o
+ obj-$(CONFIG_MFD_IPAQ_MICRO)	+= ipaq-micro.o
+ obj-$(CONFIG_MFD_MENF21BMC)	+= menf21bmc.o
+ obj-$(CONFIG_MFD_HI6421_PMIC)	+= hi6421-pmic-core.o
++obj-$(CONFIG_MFD_SKY81452)		+= sky81452.o
+ 
+ intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
+ obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
+diff --git a/drivers/mfd/sky81452.c b/drivers/mfd/sky81452.c
+new file mode 100644
+index 0000000..b0c9b04
+--- /dev/null
++++ b/drivers/mfd/sky81452.c
+@@ -0,0 +1,108 @@
++/*
++ * sky81452.c	SKY81452 MFD driver
++ *
++ * Copyright 2014 Skyworks Solutions Inc.
++ * Author : Gyungoh Yoo <jack.yoo@skyworksinc.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/err.h>
++#include <linux/slab.h>
++#include <linux/i2c.h>
++#include <linux/regmap.h>
++#include <linux/mfd/core.h>
++#include <linux/mfd/sky81452.h>
++
++static const struct regmap_config sky81452_config = {
++	.reg_bits = 8,
++	.val_bits = 8,
++};
++
++static int sky81452_probe(struct i2c_client *client,
++				const struct i2c_device_id *id)
++{
++	struct device *dev = &client->dev;
++	const struct sky81452_platform_data *pdata = dev_get_platdata(dev);
++	struct mfd_cell cells[2];
++	struct regmap *regmap;
++	int ret;
++
++	if (!pdata) {
++		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
++		if (!pdata)
++			return -ENOMEM;
++	}
++
++	regmap = devm_regmap_init_i2c(client, &sky81452_config);
++	if (IS_ERR(regmap)) {
++		dev_err(dev, "failed to initialize.err=%ld\n", PTR_ERR(regmap));
++		return PTR_ERR(regmap);
++	}
++
++	i2c_set_clientdata(client, regmap);
++
++	memset(cells, 0, sizeof(cells));
++	cells[0].name = "sky81452-backlight";
++	cells[0].of_compatible = "skyworks,sky81452-backlight";
++	cells[0].platform_data = pdata->bl_pdata;
++	cells[0].pdata_size = sizeof(*pdata->bl_pdata);
++	cells[1].name = "sky81452-regulator";
++	cells[1].platform_data = pdata->regulator_init_data;
++	cells[1].pdata_size = sizeof(*pdata->regulator_init_data);
++
++	ret = mfd_add_devices(dev, -1, cells, ARRAY_SIZE(cells), NULL, 0, NULL);
++	if (ret)
++		dev_err(dev, "failed to add child devices. err=%d\n", ret);
++
++	return ret;
++}
++
++static int sky81452_remove(struct i2c_client *client)
++{
++	mfd_remove_devices(&client->dev);
++	return 0;
++}
++
++static const struct i2c_device_id sky81452_ids[] = {
++	{ "sky81452" },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, sky81452_ids);
++
++#ifdef CONFIG_OF
++static const struct of_device_id sky81452_of_match[] = {
++	{ .compatible = "skyworks,sky81452", },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, sky81452_of_match);
++#endif
++
++static struct i2c_driver sky81452_driver = {
++	.driver = {
++		.name = "sky81452",
++		.of_match_table = of_match_ptr(sky81452_of_match),
++	},
++	.probe = sky81452_probe,
++	.remove = sky81452_remove,
++	.id_table = sky81452_ids,
++};
++
++module_i2c_driver(sky81452_driver);
++
++MODULE_DESCRIPTION("Skyworks SKY81452 MFD driver");
++MODULE_AUTHOR("Gyungoh Yoo <jack.yoo@skyworksinc.com>");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/mfd/sky81452.h b/include/linux/mfd/sky81452.h
+new file mode 100644
+index 0000000..b0925fa
+--- /dev/null
++++ b/include/linux/mfd/sky81452.h
+@@ -0,0 +1,31 @@
++/*
++ * sky81452.h	SKY81452 MFD driver
++ *
++ * Copyright 2014 Skyworks Solutions Inc.
++ * Author : Gyungoh Yoo <jack.yoo@skyworksinc.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, see <http://www.gnu.org/licenses/>.
++ */
++
++#ifndef _SKY81452_H
++#define _SKY81452_H
++
++#include <linux/platform_data/sky81452-backlight.h>
++#include <linux/regulator/machine.h>
++
++struct sky81452_platform_data {
++	struct sky81452_bl_platform_data *bl_pdata;
++	struct regulator_init_data *regulator_init_data;
++};
++
++#endif
+-- 
+1.9.1
+

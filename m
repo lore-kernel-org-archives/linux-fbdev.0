@@ -1,37 +1,58 @@
-From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Date: Thu, 08 Jan 2015 08:17:59 +0000
-Subject: [PATCH 2/2] fbdev: ssd1307fb: check return value while setting offset
-Message-Id: <1420705079-3741-3-git-send-email-prabhakar.csengg@gmail.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Thu, 08 Jan 2015 09:32:03 +0000
+Subject: Re: [PATCH 2/2] fbdev: ssd1307fb: check return value while setting offset
+Message-Id: <20150108093203.GN7853@lukather>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="liZWpUHqzTS6Vbk9"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1420705079-3741-1-git-send-email-prabhakar.csengg@gmail.com>
-In-Reply-To: <1420705079-3741-1-git-send-email-prabhakar.csengg@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+ <1420705079-3741-3-git-send-email-prabhakar.csengg@gmail.com>
+In-Reply-To: <1420705079-3741-3-git-send-email-prabhakar.csengg@gmail.com>
+To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Cc: LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, LKML <linux-kernel@vger.kernel.org>
 
-this patch checks the return value of write command while
-setting the display offset.
 
-Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
----
- drivers/video/fbdev/ssd1307fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--liZWpUHqzTS6Vbk9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 70e3ce8..a7ecaa6 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -342,7 +342,7 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
- 
- 	/* set display offset value */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_DISPLAY_OFFSET);
--	ret = ssd1307fb_write_cmd(par->client, 0x20);
-+	ret = ret & ssd1307fb_write_cmd(par->client, 0x20);
- 	if (ret < 0)
- 		return ret;
- 
--- 
-1.9.1
+On Thu, Jan 08, 2015 at 08:17:59AM +0000, Lad, Prabhakar wrote:
+> this patch checks the return value of write command while
+> setting the display offset.
+>=20
+> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
 
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+
+Thanks!
+Maxime
+
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+
+--liZWpUHqzTS6Vbk9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUrk6TAAoJEBx+YmzsjxAghRIQAJsMbLwR5XQwP8QwoylLUFWN
+TVi1ZLcnf7ackF7MY6r3LjwZbvzz3NicKIBOpdIZZxJxTyXYdXgijrXHfD5JSGzt
+7EtIPmqPFqGezBWX8xVyQvYsvocAhnf0MZasURDFKDjnw9FRMjQoMF1trEaVE+1T
+1gW7YV9SKO4nQ2Yc3uRXMS9mUkRgOoWQ0WCOA4sGnFo/IO0doVBuVw9AQamtiyDU
+WxY/2B+oH18vNj4oXHdexbMhY7ycYknS7F5XhaogmyRkjEzVewaFg8LwbaAQh5Df
+olzI0oSeG2tUV6k/4Hsa23vDIfPwtS0cpDvsU929kkFWEGN8f0x2gcWANGgQFHU9
+ULz+wCCO4A9NwTAhDfI4TekPHowmjcEhUSRGaYlTbr0hBfNFluPzVmW+NGaZMnXY
+bcqu+0kLQs+zwIpz0u3Qn0Hy7HKepbXX/VV2nxFbnzLdQMnw/RnXWsrXyviWD6Ga
+t3tDS79L5wFXcdF0J4zDswug4/dN/C1tq75REqLih/W2/aE3zOdizyLE6HicpXXQ
+BWVzKkoZOU4Y5yKrwW6q9I3T8wxPeooAdkUA4YEoulIl/v+pzpXkhP/8hXDK2uL9
+UEWD2D4kLE2ffl09G29vDys09iK7yuDe3hTICCmwTuHCvAnci8heS2vLnGU2sre+
+QQyBQqmnyC9UhxfH2D/9
+=QlF1
+-----END PGP SIGNATURE-----
+
+--liZWpUHqzTS6Vbk9--

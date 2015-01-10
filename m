@@ -1,96 +1,107 @@
-From: "maxime.ripard@free-electrons.com" <maxime.ripard@free-electrons.com>
-Date: Fri, 09 Jan 2015 22:31:38 +0000
+From: Noralf Tronnes <notro@tronnes.org>
+Date: Sat, 10 Jan 2015 00:03:04 +0000
 Subject: Re: SSD1306 OLED driver
-Message-Id: <20150109223138.GB4891@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="WYTEVAkct0FjGQmd"
+Message-Id: <54B06C38.6040207@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <BAY176-W246A4D5C3A23D1928FC5D3D38C0@phx.gbl>
 In-Reply-To: <BAY176-W246A4D5C3A23D1928FC5D3D38C0@phx.gbl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-
---WYTEVAkct0FjGQmd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Jan 09, 2015 at 06:13:43PM +0530, Ssagarr Patil wrote:
-> Hi Maxime,
->=20
-> Thanks for your response!
->=20
-> > On Fri, Jan 09, 2015 at 03:45:01PM +0530, Ssagarr Patil wrote:
-> >>
-> >> Hi Maxime,
-> >>
-> >>>>> Thanks for the pointer, I am using spi_write() call and I see /dev/=
+Den 09.01.2015 23:31, skrev maxime.ripard@free-electrons.com:
+> On Fri, Jan 09, 2015 at 06:13:43PM +0530, Ssagarr Patil wrote:
+>> Hi Maxime,
+>>
+>> Thanks for your response!
+>>
+>>> On Fri, Jan 09, 2015 at 03:45:01PM +0530, Ssagarr Patil wrote:
+>>>> Hi Maxime,
+>>>>
+>>>>>>> Thanks for the pointer, I am using spi_write() call and I see /dev/=
 fb0 node created.
-> >>>>> but when I do echo "1121"> /dev/fb0 nothing comes up on oled any po=
+>>>>>>> but when I do echo "1121"> /dev/fb0 nothing comes up on oled any po=
 inters on this ?
-> >>>>
-> >>>> You can't use it like that. It's a standard framebuffer, that is
-> >>>> represented as an array of pixels, so you need to use a font renderi=
+>>>>>> You can't use it like that. It's a standard framebuffer, that is
+>>>>>> represented as an array of pixels, so you need to use a font renderi=
 ng
-> >>>> software if you want to output some text.
-> >>>>
-> >>> can fbtest
-> >>> (https://git.kernel.org/cgit/linux/kernel/git/geert/fbtest.git/)
-> >>> be used to to draw something ?
-> >>>
-> >> how do I set pixels of it ? Please if you can point me to some stuff t=
+>>>>>> software if you want to output some text.
+>>>>>>
+>>>>> can fbtest
+>>>>> (https://git.kernel.org/cgit/linux/kernel/git/geert/fbtest.git/)
+>>>>> be used to to draw something ?
+>>>>>
+>>>> how do I set pixels of it ? Please if you can point me to some stuff t=
 hat would be helpful.
-> >
-> > Last time I tried, fbtest didn't support monochrome display.
-> >
-> > And you'll find anything you need in the documentation.
-> > https://www.kernel.org/doc/Documentation/fb/framebuffer.txt
-> >
+>>> Last time I tried, fbtest didn't support monochrome display.
+>>>
+>>> And you'll find anything you need in the documentation.
+>>> https://www.kernel.org/doc/Documentation/fb/framebuffer.txt
+>>>
+>> In my case I see that init is done but I dont see any pixels on the
+>> screen at all.
+>>
+>> I am now concerned if the driver was tested in first place ?
+> No. I just submitted some good looking code that never ever got
+> tested.
 >
-> In my case I see that init is done but I dont see any pixels on the
-> screen at all.
+> More seriously, There's a few thing that comes to my mind:
+>    - Your controller doesn't behave the same way than the ones already
+>      supported.
+>    - You haven't posted your changes yet, so maybe you're not doing the
+>      transfers right
+>    - Your SPI controller is doing something weird
 >
-> I am now concerned if the driver was tested in first place ?
+> What happens if you plug a logical analyzer on the bus?
+>
+> Maxime
+>
+Hi,
 
-No. I just submitted some good looking code that never ever got
-tested.
+The major difference between the SSD1306 SPI and I2C interfaces, is that=20
+SPI uses a D/C pin to signal whether it's data or command coming in.
+Looking at ssd1307fb, this Data/Command info is embedded as the first=20
+byte in the i2c package/message.
+Without looking up the datasheet, I would guess that this is the only=20
+difference, the way the D/C bit is handled.
+The rest of the package payload should be the same.
+So:
+dc=3D0, spi write command
+dc=3D1, spi write data (optional)
 
-More seriously, There's a few thing that comes to my mind:
-  - Your controller doesn't behave the same way than the ones already
-    supported.
-  - You haven't posted your changes yet, so maybe you're not doing the
-    transfers right
-  - Your SPI controller is doing something weird
 
-What happens if you plug a logical analyzer on the bus?
+Apart from that, I have SSD1306 SPI support in a project of mine:
 
-Maxime
+This is the part writing the framebuffer:=20
+https://github.com/notro/fbtft/blob/master/fb_ssd1306.c#L173
+This writes commands (for many controllers):=20
+https://github.com/notro/fbtft/blob/master/fbtft-bus.c#L10
+This is the SPI specific part:=20
+https://github.com/notro/fbtft/blob/master/fbtft-io.c#L10
+Project wiki: https://github.com/notro/fbtft/wiki
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+The code isn't particularly pretty, it was my first venture into the kernel.
+It has recently been submitted for the staging tree:=20
+https://github.com/notro/fbtft/issues/161#issuecomment-68431405
 
---WYTEVAkct0FjGQmd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+I'm currently rewriting the project armed with better knowledge of the=20
+kernel and the various LCD controllers.
+I haven't done the SSD1306 controller yet, but the principle is almost=20
+the same for all these MIPI DBI like controllers.
+The major difference is that it's monochrome and has a different=20
+register map.
+In my rewrite I have made an abstraction for the LCD register:=20
+https://github.com/notro/fbdbi/blob/master/core/lcdreg.h#L46
+SPI part matching several controller variations:=20
+https://github.com/notro/fbdbi/blob/master/core/lcdreg-spi.c
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+In case you wonder: In my code I set the the window where the update is=20
+to take place every time, whereas ssd1307fb does this only once in init.
+I do this because controllers supporting higher resolutions can be sped=20
+up using partial updates (set_addr_win).
 
-iQIcBAEBAgAGBQJUsFbKAAoJEBx+YmzsjxAg9SgP/RTSWcoOvZOdJCR18ZSAEB3C
-ai+vsvXToLP9xCc63BgxJAOEIT+CJuQQDfOXCJdVX+pOO+IP1FcwNE29Dm7Rud63
-775UoVJYz0DrNR5LlYwvIhkXb1oAB4nbvM3lvGBvUqr7iVsMNPHY0sFQgfi31GVL
-40AzHJL4xCYDZAZw1uSR+v5iDbyUyih9W8jTF+bnrOex2Diif+q1di/J3JalNSwk
-s7kbxtJo7TkFkhMjYgX70XFr2uTnTJ+HmKe6KUswP06PmI0IW5Vye+48eI8GsJCv
-rH2h83hhM0qJmqBTQJuyIi7wWQThNHYGLj00pcOaRa05XVyjxV5MoE/vwRqtaX18
-SMlc5FsY+/aasVz+JENRGBj9G1C0rATS2ynj0K5wsCVJwBeZk5V+CpahKBcX+5m1
-jQdEib/t0sWCJiRk0HMaFrYYhCf5gVyu4tHWv/VhM073oUBthfF7Iqaf/iV3mHqH
-hHZdX+SHCb7xfdNFqb29zcI9Yr4bSdTdCmKR0wI6+zQqd1s72GcOCZ7UpM7g8VBR
-5m7VRzK2jB7AOWfIIgxtIlEVPG0N3/H3aLUBMAcn6HsFLdtoDhUMs1ZjJx72Sw4C
-wN31szimEIIaQE06Z0sVKdcux8X9UUwkWbgEKUc3Odi3uI9opJ2WwXeWPnZfMm0q
-OZ8uovUBfKrGKMCeVgW4
-=ImYc
------END PGP SIGNATURE-----
 
---WYTEVAkct0FjGQmd--
+Regards,
+Noralf Tr=F8nnes
+

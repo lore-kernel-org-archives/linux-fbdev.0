@@ -1,76 +1,78 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 13 Jan 2015 10:49:17 +0000
-Subject: Re: [PATCH] video: ocfb: Fix data type warning
-Message-Id: <54B4F82D.6040905@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="PR2USXRS78Fcnb85D4bHB6PaCi78qGcTq"
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 12 Jan 2015 20:17:02 +0000
+Subject: [PATCH resend] console/dummy: Move screen size selection from CPP to Kconfig
+Message-Id: <1421093822-26761-1-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417767510-31462-1-git-send-email-qiang2.chen@sonymobile.com>
-In-Reply-To: <1417767510-31462-1-git-send-email-qiang2.chen@sonymobile.com>
-To: Qiang Chen <qiang2.chen@sonymobile.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Qiang Chen <qcwj.lk@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
---PR2USXRS78Fcnb85D4bHB6PaCi78qGcTq
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+PA-RISC already handled the dummy console screen size selection in
+Kconfig, so generalize this to other platforms.
 
-On 05/12/14 10:18, Qiang Chen wrote:
-> When allocate framebuffer memory using dma_alloc_coherent(),
-> we'd better use dma_addr_t instead of phys_addr_t. Because the
-> address we got in fact is DMA or bus address for the platform.
->=20
-> This patch also fixes below build warning:
-> drivers/video/fbdev/ocfb.c:335:2:
-> 	warning: passing argument 3 of =E2=80=98dma_alloc_attrs=E2=80=99
-> 	from incompatible pointer type [enabled by default]
->=20
-> Signed-off-by: Qiang Chen <qiang2.chen@sonymobile.com>
-> ---
->  drivers/video/fbdev/ocfb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/ocfb.c b/drivers/video/fbdev/ocfb.c
-> index 7f9dc9b..de98196 100644
-> --- a/drivers/video/fbdev/ocfb.c
-> +++ b/drivers/video/fbdev/ocfb.c
-> @@ -61,7 +61,7 @@ struct ocfb_dev {
->  	/* flag indicating whether the regs are little endian accessed */
->  	int little_endian;
->  	/* Physical and virtual addresses of framebuffer */
-> -	phys_addr_t fb_phys;
-> +	dma_addr_t fb_phys;
->  	void __iomem *fb_virt;
->  	u32 pseudo_palette[PALETTE_SIZE];
->  };
->=20
+ARM keeps on using screen_info, which is filled in by
+platform-specific code, or from ATAGS.
 
-Thanks, queued for 3.20.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/video/console/Kconfig    | 16 ++++++++++------
+ drivers/video/console/dummycon.c |  5 +----
+ 2 files changed, 11 insertions(+), 10 deletions(-)
 
- Tomi
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index fe1cd0148e139eaa..ba97efc3bf707db8 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -77,18 +77,22 @@ config DUMMY_CONSOLE
+ 
+ config DUMMY_CONSOLE_COLUMNS
+         int "Initial number of console screen columns"
+-        depends on PARISC && DUMMY_CONSOLE
+-        default "160"
++        depends on DUMMY_CONSOLE && !ARM
++        default 160 if PARISC
++        default 80
+         help
+-          The default value is 160, which should fit a 1280x1024 monitor.
++          On PA-RISC, the default value is 160, which should fit a 1280x1024
++          monitor.
+           Select 80 if you use a 640x480 resolution by default.
+ 
+ config DUMMY_CONSOLE_ROWS
+         int "Initial number of console screen rows"
+-        depends on PARISC && DUMMY_CONSOLE
+-        default "64"
++        depends on DUMMY_CONSOLE && !ARM
++        default 64 if PARISC
++        default 25
+         help
+-          The default value is 64, which should fit a 1280x1024 monitor.
++          On PA-RISC, the default value is 64, which should fit a 1280x1024
++          monitor.
+           Select 25 if you use a 640x480 resolution by default.
+ 
+ config FRAMEBUFFER_CONSOLE
+diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
+index 40bec8d64b0a4a56..0efc52f11ad003ae 100644
+--- a/drivers/video/console/dummycon.c
++++ b/drivers/video/console/dummycon.c
+@@ -20,13 +20,10 @@
+ #if defined(__arm__)
+ #define DUMMY_COLUMNS	screen_info.orig_video_cols
+ #define DUMMY_ROWS	screen_info.orig_video_lines
+-#elif defined(__hppa__)
++#else
+ /* set by Kconfig. Use 80x25 for 640x480 and 160x64 for 1280x1024 */
+ #define DUMMY_COLUMNS	CONFIG_DUMMY_CONSOLE_COLUMNS
+ #define DUMMY_ROWS	CONFIG_DUMMY_CONSOLE_ROWS
+-#else
+-#define DUMMY_COLUMNS	80
+-#define DUMMY_ROWS	25
+ #endif
+ 
+ static const char *dummycon_startup(void)
+-- 
+1.9.1
 
-
-
---PR2USXRS78Fcnb85D4bHB6PaCi78qGcTq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUtPg1AAoJEPo9qoy8lh71FnQP/0MYvke7PTHgwySdJGMyXfv3
-CRY7/RfEmOEGZqinWvTfrT1S8G8vUPrf8OzGIRy/btYBHlq/A95odLMkKeWBIQkj
-tw+7LwQEbQqUjK+qgXTTnR6gHpvfKXVTizvKuxPthv6biCPXba91J5/m32nE67Q2
-6ngNj8evZAm2WhRY15ytMpzCB3L+EMb4HGscDVqG+DoSUyIsf5+VLVTYsDHF6udF
-1JiQmZOie+89W9Kd+hMjVKh1W3aUJsmOMgHdboEdzUnaI1YE+ltKFkEbncQpaq9X
-WqYCdIeZObjgtSIQI3LyJT/ZJhD0665pSizjuU+0bFuUTEGiK/vCQwCa01cZsXpx
-tBn9ycNSTLrATebyGoiPrzGiwosPh8flk2E6CICR4h1UThETYC7tQ+ClJYWZjCr4
-nbj3augG5qFxPEGIIiIgZQlB/t3iBZClA/s9yaISWJZuOD2deuKdSPo0Xwa6Yuxg
-bPFDSB8T3mv8jHbb2ynVLrPr3Qga//jgrtT75RCx5zrfh/jHnPKCAjtM1XZF6SAh
-4lEIoxj8EjZF5hbZXRPN6Z1lmnCqLCiBcr2CT3hBqeo9TQrGNz384GBpVyRDWCpX
-QMeJYTC2EZHq2WeHAeBnE0qxadM6x7jpVyrheyKs64FvhrKn3AFgBwnCjLf86Q/g
-+QVjN0WdE8T9i0XquB9i
-=Z/EI
------END PGP SIGNATURE-----
-
---PR2USXRS78Fcnb85D4bHB6PaCi78qGcTq--

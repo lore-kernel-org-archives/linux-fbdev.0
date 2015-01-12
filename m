@@ -1,58 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 05 Jan 2015 12:53:22 +0000
-Subject: Re: [PATCH] atyfb: mark DMI system id table as __initconst
-Message-Id: <54AA8942.1060906@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="x52HnufK6BDjmxf0XLIxQfn6tJJbqX1dj"
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 12 Jan 2015 08:40:19 +0000
+Subject: [PATCH 3/5] video: atafb: Remove obsolete IRQ_TYPE_PRIO
+Message-Id: <1421052021-12560-4-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420380274-8015-1-git-send-email-minipli@googlemail.com>
-In-Reply-To: <1420380274-8015-1-git-send-email-minipli@googlemail.com>
-To: linux-fbdev@vger.kernel.org
+References: <1421052021-12560-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1421052021-12560-1-git-send-email-geert@linux-m68k.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "David S. Miller" <davem@davemloft.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
+Cc: linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org
 
---x52HnufK6BDjmxf0XLIxQfn6tJJbqX1dj
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+IRQ_TYPE_PRIO is no longer used by the Atari platform interrupt code
+since commit 734085651c9b80aa ("[PATCH] m68k: convert atari irq code")
+in v2.6.18-rc1, so drop it.
 
-On 04/01/15 16:04, Mathias Krause wrote:
-> We can mark the DMI system id table as __initconst by using a helper
-> variable that'll tell us if we need to unregister the reboot notifier i=
-n
-> atyfb_exit() instead of matching the DMI system id again.
->=20
-> This frees up ~680 bytes of runtime memory, the DMI table occupies.
->=20
-> Signed-off-by: Mathias Krause <minipli@googlemail.com>
-> ---
->  drivers/video/fbdev/aty/atyfb_base.c |    9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+Note that its value has been reused for a different purpose
+(IRQ_TYPE_EDGE_FALLING) since commit 6a6de9ef5850d063 ("[PATCH] genirq:
+core") in v2.6.18-rc1.
 
-Thanks, queued for 3.20.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/fbdev/atafb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
- Tomi
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index b2d38097a95718ce..7b231771a4b668b0 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -3121,8 +3121,7 @@ int __init atafb_init(void)
+ 			printk("atafb_init: initializing Falcon hw\n");
+ 			fbhw = &falcon_switch;
+ 			atafb_ops.fb_setcolreg = &falcon_setcolreg;
+-			error = request_irq(IRQ_AUTO_4, falcon_vbl_switcher,
+-					    IRQ_TYPE_PRIO,
++			error = request_irq(IRQ_AUTO_4, falcon_vbl_switcher, 0,
+ 					    "framebuffer:modeswitch",
+ 					    falcon_vbl_switcher);
+ 			if (error)
+-- 
+1.9.1
 
-
-
---x52HnufK6BDjmxf0XLIxQfn6tJJbqX1dj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUqolCAAoJEPo9qoy8lh71YRMP/0h8RWoHM1CPU7crT+r2Nms3
-ASFr1+7rP+T+W4YzH7CVFbGt5GB+WOxu5IytV84iNdKkZ9S4/UhGNBBedirtO/qC
-K5G1hOa9Z+5GVMrqxaoXYXr69qec6Bt+nFcAxmFsD0y7JiQdqPoArZxwupDm/UAu
-Ga6K9Qw3M8z6i/dIE3PYjwlsYO4Sfvqjj3g4fidWwHAuUNFJtI2QZcarxG5b37mA
-2thKMWS5lfnwjk7kg6Bxg+hDTK02TiXBP7KLXEur3K3DhFx7bWEBdNPeDpM944El
-vFkEq/mM1lNi+7cEjhNMdbfPMRRP6W6z2U5XZ2pmWuabIUlkm1vt/Jua5sxnefD6
-Wt/UjHu3FkQ/bsmRG4pm260v9O/oePy+IjNgC+MWfac64boOcBQ3mY2HMHYxUURZ
-WIAJMVM1e+nqzupXzpVm3geZ/SivOc5VAvZ3FRt5YpluLgf4laf5FM5ORPDZzUn2
-QIU54O7Nuooq9gFtSjSF6EQX4uWEyQqKQq+4jEGTl8MD9TMYtSDEc1H0lmp/Uz31
-J66Qvu+6js928swpgMSv24rN1/mWYUlW7lS3LbmfHFJu/Aqk2OJTmaz/r0sPXHwv
-18plq8ZEqBSssFNkM1A5qBhmKT5rGGXwGzn6e2KBSgioMH+cEBKziqfE+Ma/wEWN
-FP/UGL6NQ40tn+mQ0KrA
-=VB5O
------END PGP SIGNATURE-----
-
---x52HnufK6BDjmxf0XLIxQfn6tJJbqX1dj--

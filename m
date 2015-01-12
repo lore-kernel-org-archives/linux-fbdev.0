@@ -1,55 +1,49 @@
-From: Luc Verhaegen <libv@skynet.be>
-Date: Tue, 13 Jan 2015 12:27:41 +0000
-Subject: Re: FOSDEM15: Graphics DevRoom: call for speakers.
-Message-Id: <20150113122741.GG16665@skynet.be>
+From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Date: Mon, 12 Jan 2015 19:21:14 +0000
+Subject: [PATCH] fbdev: ssd1307fb: drop unused function ssd1307fb_write_data()
+Message-Id: <1421090474-4243-1-git-send-email-prabhakar.csengg@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20141002174457.GA11725@skynet.be>
- <20141209143926.GB17341@skynet.be> <20150113121415.GA22145@ulmo.nvidia.com>
-In-Reply-To: <20150113121415.GA22145@ulmo.nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, xorg-devel@lists.x.org, xorg-announce@lists.freedesktop.org, wayland-devel@lists.freedesktop.org, xorg@lists.x.org, directfb-dev@directfb.org, mir-devel@lists.ubuntu.com, mesa-dev@lists.freedesktop.org, linux-media@vger.kernel.org
+To: LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 
-On Tue, Jan 13, 2015 at 01:14:17PM +0100, Thierry Reding wrote:
-> On Tue, Dec 09, 2014 at 03:39:26PM +0100, Luc Verhaegen wrote:
-> > On Thu, Oct 02, 2014 at 07:44:57PM +0200, Luc Verhaegen wrote:
-> > > Hi,
-> > > 
-> > > At FOSDEM on the 31st of january and the 1st of February 2015, there 
-> > > will be another graphics DevRoom. URL: https://fosdem.org/2015/
-> > 
-> > > Slots will be handed out on a first come, first serve basis. The best 
-> > > slots will go to those who apply the earliest. The amount of slots is 
-> > > currently not known yet, but i expect there to be around 16 available (8 
-> > > on each day), so act quickly.
-> > 
-> > > As for deadlines, i hope to have a pretty much complete schedule between 
-> > > christmas and the new year. The rockhard printed schedule deadline is 
-> > > probably January 9th, after that you will not be featured in the booklet 
-> > > and you will have a lot less visitors. I will hopefully be able to lock 
-> > > down entries and descriptions after that date.
-> > 
-> > It's been more than 2 months since the original email, it's less than 
-> > two months away from the event, and one month away from what usually is 
-> > the deadline for the booklet. File your talk now, while there are still 
-> > some useful slots available.
-> > 
-> > Also, for those who have filed already but who have left their abstracts 
-> > open, please get those filed in ASAP. Your talk will be only be ordered 
-> > in when at least the basics are provided.
-> 
-> Hi Luc,
-> 
-> I realize I'm terribly late, but it took quite some time to get travel
-> arranged. Looking at the schedule there still seem to be some free
-> slots. Does it make sense to still submit a talk? I was asked to give
-> one on atomic modesetting from a driver developer's perspective.
-> 
-> Thierry
+this patch drops the unused function ssd1307fb_write_data().
 
-Yes, but be quick, the hard booklet deadline is thursday evening. I will 
-not be accepting talks past tomorrow evening.
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+---
+ drivers/video/fbdev/ssd1307fb.c | 17 -----------------
+ 1 file changed, 17 deletions(-)
 
-Luc Verhaegen.
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index a7ecaa6..c891f11 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -122,23 +122,6 @@ static inline int ssd1307fb_write_cmd(struct i2c_client *client, u8 cmd)
+ 	return ret;
+ }
+ 
+-static inline int ssd1307fb_write_data(struct i2c_client *client, u8 data)
+-{
+-	struct ssd1307fb_array *array;
+-	int ret;
+-
+-	array = ssd1307fb_alloc_array(1, SSD1307FB_DATA);
+-	if (!array)
+-		return -ENOMEM;
+-
+-	array->data[0] = data;
+-
+-	ret = ssd1307fb_write_array(client, array, 1);
+-	kfree(array);
+-
+-	return ret;
+-}
+-
+ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
+ {
+ 	struct ssd1307fb_array *array;
+-- 
+1.9.1
+

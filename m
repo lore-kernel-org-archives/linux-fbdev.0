@@ -1,62 +1,58 @@
-From: gyungoh@gmail.com
-Date: Fri, 23 Jan 2015 06:28:35 +0000
-Subject: [PATCH v10 6/6] devicetree: i2c: Add SKY81452 to the Trivial Devices list
-Message-Id: <1421994515-3070-7-git-send-email-jack.yoo@skyworksinc.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 12 Jan 2015 20:10:12 +0000
+Subject: [PATCH v2 1/2] drm: Drop superfluous "select VT_HW_CONSOLE_BINDING"
+Message-Id: <1421093413-26336-1-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
-Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: David Airlie <airlied@linux.ie>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+commit 765d5b9c2b72f5b9 ("fbdev: fbcon: select VT_HW_CONSOLE_BINDING")
+made FRAMEBUFFER_CONSOLE always select VT_HW_CONSOLE_BINDING, but forgot
+to remove
 
-Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+	select VT_HW_CONSOLE_BINDING if FRAMEBUFFER_CONSOLE
+
+from the individual drivers' sections that already did this before.
+
+Remove it, also from new drivers.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
-Changes v10:
-Nothing
+v2:
+  - Split in two (drm and video) patches,
+  - Fix recently added rockchip.
+---
+ drivers/gpu/drm/exynos/Kconfig   | 1 -
+ drivers/gpu/drm/rockchip/Kconfig | 1 -
+ 2 files changed, 2 deletions(-)
 
-Changes v9:
-Nothing
-
-Changes v8:
-Nothing
-
-Changes v7:
-Nothing
-
-Changes v6:
-Nothing
-
-Changes v5:
-Nothing
-
-Changes v4:
-Nothing
-
-Changes v3:
-Nothing
-
-Changes v2:
-Add SKY81452 to the Trivial Devices list
-
- Documentation/devicetree/bindings/i2c/trivial-devices.txt | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/Documentation/devicetree/bindings/i2c/trivial-devices.txt b/Documentation/devicetree/bindings/i2c/trivial-devices.txt
-index fbde415..122fa1e 100644
---- a/Documentation/devicetree/bindings/i2c/trivial-devices.txt
-+++ b/Documentation/devicetree/bindings/i2c/trivial-devices.txt
-@@ -77,6 +77,7 @@ ramtron,24c64		i2c serial eeprom  (24cxx)
- ricoh,rs5c372a		I2C bus SERIAL INTERFACE REAL-TIME CLOCK IC
- samsung,24ad0xd1	S524AD0XF1 (128K/256K-bit Serial EEPROM for Low Power)
- sii,s35390a		2-wire CMOS real-time clock
-+skyworks,sky81452	Skyworks SKY81452: Six-Channel White LED Driver with Touch Panel Bias Supply
- st-micro,24c256		i2c serial eeprom  (24cxx)
- stm,m41t00		Serial Access TIMEKEEPER
- stm,m41t62		Serial real-time clock (RTC) with alarm
+diff --git a/drivers/gpu/drm/exynos/Kconfig b/drivers/gpu/drm/exynos/Kconfig
+index 7f9f6f9e9b7e7992..c072999b7e0345c6 100644
+--- a/drivers/gpu/drm/exynos/Kconfig
++++ b/drivers/gpu/drm/exynos/Kconfig
+@@ -6,7 +6,6 @@ config DRM_EXYNOS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select VT_HW_CONSOLE_BINDING if FRAMEBUFFER_CONSOLE
+ 	select VIDEOMODE_HELPERS
+ 	help
+ 	  Choose this option if you have a Samsung SoC EXYNOS chipset.
+diff --git a/drivers/gpu/drm/rockchip/Kconfig b/drivers/gpu/drm/rockchip/Kconfig
+index ca9f085efa922982..8652dad82009e3ce 100644
+--- a/drivers/gpu/drm/rockchip/Kconfig
++++ b/drivers/gpu/drm/rockchip/Kconfig
+@@ -7,7 +7,6 @@ config DRM_ROCKCHIP
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select VT_HW_CONSOLE_BINDING if FRAMEBUFFER_CONSOLE
+ 	select VIDEOMODE_HELPERS
+ 	help
+ 	  Choose this option if you have a Rockchip soc chipset.
 -- 
 1.9.1
 

@@ -1,78 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 13 Jan 2015 12:51:36 +0000
-Subject: Re: [PATCH 3/5] video: atafb: Remove obsolete IRQ_TYPE_PRIO
-Message-Id: <54B514D8.9020507@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="IeH71uidaU8LdDdSd7R3B3XBCvMlaoBnI"
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Date: Tue, 13 Jan 2015 18:19:20 +0000
+Subject: [PATCH] video: fbdev: tridentfb: Remove unused function
+Message-Id: <1421173160-3644-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421052021-12560-1-git-send-email-geert@linux-m68k.org> <1421052021-12560-4-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1421052021-12560-4-git-send-email-geert@linux-m68k.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, "David S. Miller" <davem@davemloft.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---IeH71uidaU8LdDdSd7R3B3XBCvMlaoBnI
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Remove the function shadowmode_off() that is not used anywhere.
 
-On 12/01/15 10:40, Geert Uytterhoeven wrote:
-> IRQ_TYPE_PRIO is no longer used by the Atari platform interrupt code
-> since commit 734085651c9b80aa ("[PATCH] m68k: convert atari irq code")
-> in v2.6.18-rc1, so drop it.
->=20
-> Note that its value has been reused for a different purpose
-> (IRQ_TYPE_EDGE_FALLING) since commit 6a6de9ef5850d063 ("[PATCH] genirq:=
+This was partially found by using a static code analysis program called cppcheck.
 
-> core") in v2.6.18-rc1.
->=20
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: linux-fbdev@vger.kernel.org
-> ---
->  drivers/video/fbdev/atafb.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-> index b2d38097a95718ce..7b231771a4b668b0 100644
-> --- a/drivers/video/fbdev/atafb.c
-> +++ b/drivers/video/fbdev/atafb.c
-> @@ -3121,8 +3121,7 @@ int __init atafb_init(void)
->  			printk("atafb_init: initializing Falcon hw\n");
->  			fbhw =3D &falcon_switch;
->  			atafb_ops.fb_setcolreg =3D &falcon_setcolreg;
-> -			error =3D request_irq(IRQ_AUTO_4, falcon_vbl_switcher,
-> -					    IRQ_TYPE_PRIO,
-> +			error =3D request_irq(IRQ_AUTO_4, falcon_vbl_switcher, 0,
->  					    "framebuffer:modeswitch",
->  					    falcon_vbl_switcher);
->  			if (error)
->=20
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/video/fbdev/tridentfb.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
+index 7ed9a22..b5cbd2c 100644
+--- a/drivers/video/fbdev/tridentfb.c
++++ b/drivers/video/fbdev/tridentfb.c
+@@ -999,11 +999,6 @@ static inline void shadowmode_on(struct tridentfb_par *par)
+ 	write3CE(par, CyberControl, read3CE(par, CyberControl) | 0x81);
+ }
+ 
+-static inline void shadowmode_off(struct tridentfb_par *par)
+-{
+-	write3CE(par, CyberControl, read3CE(par, CyberControl) & 0x7E);
+-}
+-
+ /* Set the hardware to the requested video mode */
+ static int tridentfb_set_par(struct fb_info *info)
+ {
+-- 
+1.7.10.4
 
- Tomi
-
-
-
---IeH71uidaU8LdDdSd7R3B3XBCvMlaoBnI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUtRTYAAoJEPo9qoy8lh71QGEQAJCHbpZqmfy4dDqM4CpxCQNb
-5oXUXmEeQgrJaUmHYNPyjoQpGyccz/p7gQo14b7MPP3obD1yitNedgz/EhoeC6rQ
-GGxR00Z/WcJ+hhkKgH9EwaQvhozeUQhqSxT2rZGHJud+fFVop69MgirvKADBqrCk
-ub4h9Px7r+rEtUlkFbehpcHtF03IWRjRXk7rH7ulJxBN11b0F9rJnWLi7ZzTmnF7
-RhhegHuxTaxKrVtPDYSPVeeFukF4JozGXah4f6j+FaDUlVUtp8grVt6gJRzc8uDj
-43YdU14dYAZ+qOtp46x9w97QiA4WohLodQJVVj7QiySnkzdUumYkItjuKMwri96t
-j7FKWnag5HkYO+WhqQyzhSMSbLBewz/PHhiNR+ueKfG5RlpEs41199XozyuWJSm8
-tiU2Dxr0XLhxMhN7QpLTwCrfYYdQJypGptXjifQc0kUB3PZMYp2N/RXLpBnGeEcy
-8zBEvq7kSPB+/t7pps8YsQYK3WLQgijQSFh/TlOIXYwZk51pdlEBvBlmmMW8Og7Z
-DqZ9qsxYK2/KOxP9OvMXZSn/6c6bCKwGWEDQ7gnVSQNDj6lxpOnvOn9CRrlz70vO
-Etp6rnHD9Aqb0KYUdnidoV/FQ3b7eeTFJAirH7ZtKfyqtO6IVM8kxNHCDNJiOxf6
-HiaQ+1csV3vj0cT+qpLQ
-=5XS9
------END PGP SIGNATURE-----
-
---IeH71uidaU8LdDdSd7R3B3XBCvMlaoBnI--

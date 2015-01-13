@@ -1,69 +1,65 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 06 Jan 2015 13:24:10 +0000
-Subject: [PATCH] fbdev: savage: remove unused variable
-Message-Id: <1420549930-16607-1-git-send-email-sudipm.mukherjee@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 13 Jan 2015 11:34:17 +0000
+Subject: Re: [PATCH] fbdev: savage: remove unused variable
+Message-Id: <54B502B9.9030609@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="WXbjBBrieNW08IrKTjBplel7iRLSiA6nc"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1420549930-16607-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1420549930-16607-1-git-send-email-sudipm.mukherjee@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-vga_in8() was storing the return value in tmp, but that return value
-was never used again. so it should be safe to remove those variables.
+--WXbjBBrieNW08IrKTjBplel7iRLSiA6nc
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
+On 06/01/15 15:12, Sudip Mukherjee wrote:
+> vga_in8() was storing the return value in tmp, but that return value
+> was never used again. so it should be safe to remove those variables.
+>=20
+> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> ---
+>=20
+> just one doubt:
+> vga_in8() is calling savage_in8() which is a readb().
+> so in effect we are reading one byte from
+> (par->mmio.vbase + 0x8000 + 0x3da) and then discarding that value.
+> so if we are discarding that value then why we are reading it?
 
-just one doubt:
-vga_in8() is calling savage_in8() which is a readb().
-so in effect we are reading one byte from
-(par->mmio.vbase + 0x8000 + 0x3da) and then discarding that value.
-so if we are discarding that value then why we are reading it?
+Sometimes reading a HW register without actually using the returned
+value has some effect. I don't know if there's a reason for that in this
+case, though, as I'm not familiar with the HW.
 
- drivers/video/fbdev/savage/savagefb.h | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+In any case, it's safer to keep the read there as you did.
 
-diff --git a/drivers/video/fbdev/savage/savagefb.h b/drivers/video/fbdev/savage/savagefb.h
-index dcaab90..8ff4ab1 100644
---- a/drivers/video/fbdev/savage/savagefb.h
-+++ b/drivers/video/fbdev/savage/savagefb.h
-@@ -351,32 +351,26 @@ static inline void VGAwSEQ(u8 index, u8 val, struct savagefb_par *par)
- 
- static inline void VGAenablePalette(struct savagefb_par *par)
- {
--	u8 tmp;
--
--	tmp = vga_in8(0x3da, par);
-+	vga_in8(0x3da, par);
- 	vga_out8(0x3c0, 0x00, par);
- 	par->paletteEnabled = 1;
- }
- 
- static inline void VGAdisablePalette(struct savagefb_par *par)
- {
--	u8 tmp;
--
--	tmp = vga_in8(0x3da, par);
-+	vga_in8(0x3da, par);
- 	vga_out8(0x3c0, 0x20, par);
- 	par->paletteEnabled = 0;
- }
- 
- static inline void VGAwATTR(u8 index, u8 value, struct savagefb_par *par)
- {
--	u8 tmp;
--
- 	if (par->paletteEnabled)
- 		index &= ~0x20;
- 	else
- 		index |= 0x20;
- 
--	tmp = vga_in8(0x3da, par);
-+	vga_in8(0x3da, par);
- 	vga_out8(0x3c0, index, par);
- 	vga_out8 (0x3c0, value, par);
- }
--- 
-1.8.1.2
+Queued for 3.20.
 
+ Tomi
+
+
+
+--WXbjBBrieNW08IrKTjBplel7iRLSiA6nc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUtQK5AAoJEPo9qoy8lh71NxkP/04ytN7Fp6p1UW5cq8YYMz/P
+JN2nF+bIRE+v3S4m2OAuo2RvEb1OixtLA5QjKZOvrOFwybDLQMhRhji9EHOrm2pL
+vuw+7XbnRM18iwmbs6MPlrapACplfj0dNRqB71FLPL1VP3ejJWRmHGexnegGUScL
+8/go8KWABQDdw5f6uKA54Rtq6C8tl1TW4NojVo0fMpOpP/YMjyGIkHESQzP7zMS1
+DetBildrfPNTBZWO7dFAeOkTQNL7iSov6MWfcyIYo61/oNV66/wBcT5Vb6lEYH8d
+XPjwgY2QlCtOCmz1Lj6iL9eFF/QDdR0gKLC4XyjAONAZ+lF/L2svD4Dts3KnaEEV
+ozSrNbbnLNUR8fB5ra7Fst0GYD0V6RraH9VXvv12/BaFaUOmF5RGyTUN1r+kjZtK
+xVUuC7VbcOCuGlnRGEfflgfDlltpFF+93uja6p4IlAgQhMXGVsf3LzOakNHHI2V0
+KtuazuIWuZwI0zJ8bSdhcbLSHyda41Svxx5RqaQRXjDfvNJecUGXvvVLzGauMtNr
+ducZSZ7RJOFbCAVeCH09qc3GET52YQnQ0dkhVsdUyxAv6UiA5hgn5GNx/PDdcLrM
+Lf/3d/ww1m4nl8rywmbQB8yjrlAtmwoa+fXroXuzYYKgG5Ansv/lWdVOwH1t2xp9
+qvaPT19VxRDHztYHR+dc
+=TzEP
+-----END PGP SIGNATURE-----
+
+--WXbjBBrieNW08IrKTjBplel7iRLSiA6nc--

@@ -1,33 +1,47 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 30 Jan 2015 07:40:58 +0000
-Subject: Re: [PATCH v2] fbdev: ssd1307fb: return proper error code if write command fails
-Message-Id: <54CB358A.7080205@ti.com>
+Date: Tue, 13 Jan 2015 10:49:17 +0000
+Subject: Re: [PATCH] video: ocfb: Fix data type warning
+Message-Id: <54B4F82D.6040905@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="WljsMuhkqfPB3B8ibPANcxvme8rKMVpu6"
+Content-Type: multipart/mixed; boundary="PR2USXRS78Fcnb85D4bHB6PaCi78qGcTq"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421348737-4606-1-git-send-email-prabhakar.csengg@gmail.com>
-In-Reply-To: <1421348737-4606-1-git-send-email-prabhakar.csengg@gmail.com>
-To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
+References: <1417767510-31462-1-git-send-email-qiang2.chen@sonymobile.com>
+In-Reply-To: <1417767510-31462-1-git-send-email-qiang2.chen@sonymobile.com>
+To: Qiang Chen <qiang2.chen@sonymobile.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Qiang Chen <qcwj.lk@gmail.com>
 
---WljsMuhkqfPB3B8ibPANcxvme8rKMVpu6
-Content-Type: text/plain; charset=windows-1252
+--PR2USXRS78Fcnb85D4bHB6PaCi78qGcTq
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On 15/01/15 21:05, Lad, Prabhakar wrote:
-> From: Prabhakar Lad <prabhakar.csengg@gmail.com>
+On 05/12/14 10:18, Qiang Chen wrote:
+> When allocate framebuffer memory using dma_alloc_coherent(),
+> we'd better use dma_addr_t instead of phys_addr_t. Because the
+> address we got in fact is DMA or bus address for the platform.
 >=20
-> this patch fixes ssd1307fb_ssd1306_init() function to return
-> proper error codes in case of failures.
+> This patch also fixes below build warning:
+> drivers/video/fbdev/ocfb.c:335:2:
+> 	warning: passing argument 3 of =E2=80=98dma_alloc_attrs=E2=80=99
+> 	from incompatible pointer type [enabled by default]
 >=20
-> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+> Signed-off-by: Qiang Chen <qiang2.chen@sonymobile.com>
 > ---
->  Changes for v2:
->  a: Added new line as per Maxime's suggestion.
+>  drivers/video/fbdev/ocfb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
->  drivers/video/fbdev/ssd1307fb.c | 67 ++++++++++++++++++++++++++++++++-=
---------
->  1 file changed, 53 insertions(+), 14 deletions(-)
+> diff --git a/drivers/video/fbdev/ocfb.c b/drivers/video/fbdev/ocfb.c
+> index 7f9dc9b..de98196 100644
+> --- a/drivers/video/fbdev/ocfb.c
+> +++ b/drivers/video/fbdev/ocfb.c
+> @@ -61,7 +61,7 @@ struct ocfb_dev {
+>  	/* flag indicating whether the regs are little endian accessed */
+>  	int little_endian;
+>  	/* Physical and virtual addresses of framebuffer */
+> -	phys_addr_t fb_phys;
+> +	dma_addr_t fb_phys;
+>  	void __iomem *fb_virt;
+>  	u32 pseudo_palette[PALETTE_SIZE];
+>  };
 >=20
 
 Thanks, queued for 3.20.
@@ -36,7 +50,7 @@ Thanks, queued for 3.20.
 
 
 
---WljsMuhkqfPB3B8ibPANcxvme8rKMVpu6
+--PR2USXRS78Fcnb85D4bHB6PaCi78qGcTq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -44,19 +58,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUyzWKAAoJEPo9qoy8lh71xOsP/2D3KF5nJ8je+z//ROVntxbH
-61FbulCUNb/8WGqIR4tSLYDB2ZoWNCk4E3wL8RKLrQ2xP4lhpWKkb0i6Eog5rYqG
-LEdoDDE8Tfr7I9+Uai/SFBWRn4nQ7UI4OybhnU9uwpdb534+LeI9cw8rNpvsfJMI
-k0aRwUFKRn1uOXfQzdvnktvIsHELlcU/OFT9ruRZ0vpdggdxApUeho4NkjaqGVF9
-gR+6m0ISO+7Mb7stktKY89l7LYYK/9pHXWF3I1eRuW2lkIW5gZ0gNK8QC2zKVRmx
-rNrg9mvlirg7jfbHizmOmbJdVADTnURhJYlokemmbkmKZ6cDuqo7QQX1+nJvSiEd
-7AkEw/ILxEDehDuF854QaIk+GlBmuIhd3vDjGgMrarORTZO4bcWQzrTAW7Mbxqf4
-UzBMcuP6JSU/2/lC1oG7EX0wCG7QOyrhsj0iYU+UukjipLnSf0pNSh2XySHKGNrN
-CC3hSlIXw3A25rUfVXv3c2QCQwh9coPNJ7jyhQVnV2MX/XgRh7sfK7XFzB9NTUMK
-YSA71OZnPF2sQkX6td9x3TTmkl1S4JOtZO0lQVCLP1VxFwYYqQFiOAY6Il81tGeR
-SxLJ6XvE+bHk2o2UNmQeMcMDYbveqoEsLxz4lT5/vLVSd6JQdRBB3CioE63hnQfk
-jvE0B03mUhlR6v8DcPHY
-=01dx
+iQIcBAEBAgAGBQJUtPg1AAoJEPo9qoy8lh71FnQP/0MYvke7PTHgwySdJGMyXfv3
+CRY7/RfEmOEGZqinWvTfrT1S8G8vUPrf8OzGIRy/btYBHlq/A95odLMkKeWBIQkj
+tw+7LwQEbQqUjK+qgXTTnR6gHpvfKXVTizvKuxPthv6biCPXba91J5/m32nE67Q2
+6ngNj8evZAm2WhRY15ytMpzCB3L+EMb4HGscDVqG+DoSUyIsf5+VLVTYsDHF6udF
+1JiQmZOie+89W9Kd+hMjVKh1W3aUJsmOMgHdboEdzUnaI1YE+ltKFkEbncQpaq9X
+WqYCdIeZObjgtSIQI3LyJT/ZJhD0665pSizjuU+0bFuUTEGiK/vCQwCa01cZsXpx
+tBn9ycNSTLrATebyGoiPrzGiwosPh8flk2E6CICR4h1UThETYC7tQ+ClJYWZjCr4
+nbj3augG5qFxPEGIIiIgZQlB/t3iBZClA/s9yaISWJZuOD2deuKdSPo0Xwa6Yuxg
+bPFDSB8T3mv8jHbb2ynVLrPr3Qga//jgrtT75RCx5zrfh/jHnPKCAjtM1XZF6SAh
+4lEIoxj8EjZF5hbZXRPN6Z1lmnCqLCiBcr2CT3hBqeo9TQrGNz384GBpVyRDWCpX
+QMeJYTC2EZHq2WeHAeBnE0qxadM6x7jpVyrheyKs64FvhrKn3AFgBwnCjLf86Q/g
++QVjN0WdE8T9i0XquB9i
+=Z/EI
 -----END PGP SIGNATURE-----
 
---WljsMuhkqfPB3B8ibPANcxvme8rKMVpu6--
+--PR2USXRS78Fcnb85D4bHB6PaCi78qGcTq--

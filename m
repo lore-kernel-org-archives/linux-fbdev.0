@@ -1,235 +1,65 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Thu, 01 Jan 2015 15:29:09 +0000
-Subject: [PATCH] video: fbdev: omap2: dss: dispc.c:  Remove some unused functions
-Message-Id: <1420126149-27019-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 13 Jan 2015 11:22:55 +0000
+Subject: Re: [PATCH] video: fbdev: omap2: dss: dispc.c:  Remove some unused functions
+Message-Id: <54B5000F.8030408@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="kj63F3rPpMtD0LpUpJHXREUhaUAa5NA2C"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+References: <1420126149-27019-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1420126149-27019-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-Removes some functions that are not used anywhere:
-dispc_wb_go() dispc_wb_go_busy() dispc_wb_get_framedone_irq()
-dispc_mgr_get_clock_div() dispc_wb_is_enabled() dispc_wb_enable()
-dispc_wb_setup() dispc_enable_fifomerge() dispc_wb_set_channel_in()
+--kj63F3rPpMtD0LpUpJHXREUhaUAa5NA2C
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-This was partially found by using a static code analysis program called cppcheck.
+On 01/01/15 17:29, Rickard Strandqvist wrote:
+> Removes some functions that are not used anywhere:
+> dispc_wb_go() dispc_wb_go_busy() dispc_wb_get_framedone_irq()
+> dispc_mgr_get_clock_div() dispc_wb_is_enabled() dispc_wb_enable()
+> dispc_wb_setup() dispc_enable_fifomerge() dispc_wb_set_channel_in()
+>=20
+> This was partially found by using a static code analysis program called=
+ cppcheck.
+>=20
+> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital=
+=2Ese>
+> ---
+>  drivers/video/fbdev/omap2/dss/dispc.c |  124 -------------------------=
+--------
+>  drivers/video/fbdev/omap2/dss/dss.h   |   12 ----
+>  2 files changed, 136 deletions(-)
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/video/fbdev/omap2/dss/dispc.c |  124 ---------------------------------
- drivers/video/fbdev/omap2/dss/dss.h   |   12 ----
- 2 files changed, 136 deletions(-)
+The functions are for DSS's write-back functionality. We're going to
+implement that hopefully sometime soon, so I don't want to remove those
+functions.
 
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index 0e9a74b..9fb2743 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -536,11 +536,6 @@ u32 dispc_mgr_get_sync_lost_irq(enum omap_channel channel)
- }
- EXPORT_SYMBOL(dispc_mgr_get_sync_lost_irq);
- 
--u32 dispc_wb_get_framedone_irq(void)
--{
--	return DISPC_IRQ_FRAMEDONEWB;
--}
--
- bool dispc_mgr_go_busy(enum omap_channel channel)
- {
- 	return mgr_fld_read(channel, DISPC_MGR_FLD_GO) = 1;
-@@ -558,30 +553,6 @@ void dispc_mgr_go(enum omap_channel channel)
- }
- EXPORT_SYMBOL(dispc_mgr_go);
- 
--bool dispc_wb_go_busy(void)
--{
--	return REG_GET(DISPC_CONTROL2, 6, 6) = 1;
--}
--
--void dispc_wb_go(void)
--{
--	enum omap_plane plane = OMAP_DSS_WB;
--	bool enable, go;
--
--	enable = REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0) = 1;
--
--	if (!enable)
--		return;
--
--	go = REG_GET(DISPC_CONTROL2, 6, 6) = 1;
--	if (go) {
--		DSSERR("GO bit not down for WB\n");
--		return;
--	}
--
--	REG_FLD_MOD(DISPC_CONTROL2, 1, 6, 6);
--}
--
- static void dispc_ovl_write_firh_reg(enum omap_plane plane, int reg, u32 value)
- {
- 	dispc_write_reg(DISPC_OVL_FIR_COEF_H(plane, reg), value);
-@@ -1003,13 +974,6 @@ static enum omap_channel dispc_ovl_get_channel_out(enum omap_plane plane)
- 	return channel;
- }
- 
--void dispc_wb_set_channel_in(enum dss_writeback_channel channel)
--{
--	enum omap_plane plane = OMAP_DSS_WB;
--
--	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), channel, 18, 16);
--}
--
- static void dispc_ovl_set_burst_size(enum omap_plane plane,
- 		enum omap_burst_size burst_size)
- {
-@@ -1213,17 +1177,6 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
- }
- EXPORT_SYMBOL(dispc_ovl_set_fifo_threshold);
- 
--void dispc_enable_fifomerge(bool enable)
--{
--	if (!dss_has_feature(FEAT_FIFO_MERGE)) {
--		WARN_ON(enable);
--		return;
--	}
--
--	DSSDBG("FIFO merge %s\n", enable ? "enabled" : "disabled");
--	REG_FLD_MOD(DISPC_CONFIG, enable ? 1 : 0, 14, 14);
--}
--
- void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
- 		u32 *fifo_low, u32 *fifo_high, bool use_fifomerge,
- 		bool manual_update)
-@@ -2593,57 +2546,6 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
- }
- EXPORT_SYMBOL(dispc_ovl_setup);
- 
--int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
--		bool mem_to_mem, const struct omap_video_timings *mgr_timings)
--{
--	int r;
--	u32 l;
--	enum omap_plane plane = OMAP_DSS_WB;
--	const int pos_x = 0, pos_y = 0;
--	const u8 zorder = 0, global_alpha = 0;
--	const bool replication = false;
--	bool truncation;
--	int in_width = mgr_timings->x_res;
--	int in_height = mgr_timings->y_res;
--	enum omap_overlay_caps caps -		OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA;
--
--	DSSDBG("dispc_wb_setup, pa %x, pa_uv %x, %d,%d -> %dx%d, cmode %x, "
--		"rot %d, mir %d\n", wi->paddr, wi->p_uv_addr, in_width,
--		in_height, wi->width, wi->height, wi->color_mode, wi->rotation,
--		wi->mirror);
--
--	r = dispc_ovl_setup_common(plane, caps, wi->paddr, wi->p_uv_addr,
--		wi->buf_width, pos_x, pos_y, in_width, in_height, wi->width,
--		wi->height, wi->color_mode, wi->rotation, wi->mirror, zorder,
--		wi->pre_mult_alpha, global_alpha, wi->rotation_type,
--		replication, mgr_timings, mem_to_mem);
--
--	switch (wi->color_mode) {
--	case OMAP_DSS_COLOR_RGB16:
--	case OMAP_DSS_COLOR_RGB24P:
--	case OMAP_DSS_COLOR_ARGB16:
--	case OMAP_DSS_COLOR_RGBA16:
--	case OMAP_DSS_COLOR_RGB12U:
--	case OMAP_DSS_COLOR_ARGB16_1555:
--	case OMAP_DSS_COLOR_XRGB16_1555:
--	case OMAP_DSS_COLOR_RGBX16:
--		truncation = true;
--		break;
--	default:
--		truncation = false;
--		break;
--	}
--
--	/* setup extra DISPC_WB_ATTRIBUTES */
--	l = dispc_read_reg(DISPC_OVL_ATTRIBUTES(plane));
--	l = FLD_MOD(l, truncation, 10, 10);	/* TRUNCATIONENABLE */
--	l = FLD_MOD(l, mem_to_mem, 19, 19);	/* WRITEBACKMODE */
--	dispc_write_reg(DISPC_OVL_ATTRIBUTES(plane), l);
--
--	return r;
--}
--
- int dispc_ovl_enable(enum omap_plane plane, bool enable)
- {
- 	DSSDBG("dispc_enable_plane %d, %d\n", plane, enable);
-@@ -2674,16 +2576,6 @@ bool dispc_mgr_is_enabled(enum omap_channel channel)
- }
- EXPORT_SYMBOL(dispc_mgr_is_enabled);
- 
--void dispc_wb_enable(bool enable)
--{
--	dispc_ovl_enable(OMAP_DSS_WB, enable);
--}
--
--bool dispc_wb_is_enabled(void)
--{
--	return dispc_ovl_enabled(OMAP_DSS_WB);
--}
--
- static void dispc_lcd_enable_signal_polarity(bool act_high)
- {
- 	if (!dss_has_feature(FEAT_LCDENABLEPOL))
-@@ -3446,22 +3338,6 @@ void dispc_mgr_set_clock_div(enum omap_channel channel,
- 	dispc_mgr_set_lcd_divisor(channel, cinfo->lck_div, cinfo->pck_div);
- }
- 
--int dispc_mgr_get_clock_div(enum omap_channel channel,
--		struct dispc_clock_info *cinfo)
--{
--	unsigned long fck;
--
--	fck = dispc_fclk_rate();
--
--	cinfo->lck_div = REG_GET(DISPC_DIVISORo(channel), 23, 16);
--	cinfo->pck_div = REG_GET(DISPC_DIVISORo(channel), 7, 0);
--
--	cinfo->lck = fck / cinfo->lck_div;
--	cinfo->pck = cinfo->lck / cinfo->pck_div;
--
--	return 0;
--}
--
- u32 dispc_read_irqstatus(void)
- {
- 	return dispc_read_reg(DISPC_IRQSTATUS);
-diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
-index 8ff22c1..229c4c5 100644
---- a/drivers/video/fbdev/omap2/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/dss/dss.h
-@@ -371,7 +371,6 @@ void dispc_disable_sidle(void);
- 
- void dispc_lcd_enable_signal(bool enable);
- void dispc_pck_free_enable(bool enable);
--void dispc_enable_fifomerge(bool enable);
- void dispc_enable_gamma_table(bool enable);
- void dispc_set_loadmode(enum omap_dss_load_mode mode);
- 
-@@ -398,19 +397,8 @@ unsigned long dispc_mgr_pclk_rate(enum omap_channel channel);
- unsigned long dispc_core_clk_rate(void);
- void dispc_mgr_set_clock_div(enum omap_channel channel,
- 		const struct dispc_clock_info *cinfo);
--int dispc_mgr_get_clock_div(enum omap_channel channel,
--		struct dispc_clock_info *cinfo);
- void dispc_set_tv_pclk(unsigned long pclk);
- 
--u32 dispc_wb_get_framedone_irq(void);
--bool dispc_wb_go_busy(void);
--void dispc_wb_go(void);
--void dispc_wb_enable(bool enable);
--bool dispc_wb_is_enabled(void);
--void dispc_wb_set_channel_in(enum dss_writeback_channel channel);
--int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
--		bool mem_to_mem, const struct omap_video_timings *timings);
--
- /* VENC */
- int venc_init_platform_driver(void) __init;
- void venc_uninit_platform_driver(void) __exit;
--- 
-1.7.10.4
+ Tomi
 
+
+
+--kj63F3rPpMtD0LpUpJHXREUhaUAa5NA2C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUtQAPAAoJEPo9qoy8lh71xXAP/R6mRGjCizsEHhHRUPcbSYF0
+4DfVaQnO1+95wOAnA5gXkQR4yBVIgaIIPqMoxq9jyu9RKqaJYP4M1rdvTjIJiYEL
+2Bb8yHlApfQQ4B5LOXIW6c4+srGwOrAk2lX4yGkfVRS4QhOLjkyHs+TLyNmKHsM3
+v1xliHCvkKx3qcxJNSU+DVWhRyrCS3MY0gCyK2/k5gfPwlrCdDmL9WDJYzN/gNMU
+svN7s0JhW7SQzicrCmpfK9NkHNcwiQnsRlOiUvrKi1MckpV1K3bvZp6cXXhpTstn
+QOn+Nr1vdYBzLevQas917OtAC+Xp5wFYluIJnczJjxjO+3QXeQ2/xdvTmWrm1bu3
+UUOwPwpUibwPRAyI+IHBE2cg28RAw592L2qsv74xvY2HXcr5o/gMtxDZr0oqaLXq
+SJu+t9JK6EkrYHkwGSxb5MUwtK+uuAs5eFOmLZGEHwmZgoVuZrwQpyVTNF7AwCG/
+ay82NgzjLfZgh74N0GD2Acs37fwf4a/miHg4QGpH5LmpZLUOj2ocQOsoN47OoOAR
+MnAd37C/7aRjMPPnhYZTq99pe2zZTDZUcKn5aAUk1qD7cST20rZe1NTRnpPHqQ1l
+TTjaqzuUNbuIq2ziU+zBLiplKPrfUlWvZk1yrnSlBJoa4fo6cjiZ0n+40vHbFrHk
+mM7PfyW4QXTCMLx0k2Ew
+=R4vl
+-----END PGP SIGNATURE-----
+
+--kj63F3rPpMtD0LpUpJHXREUhaUAa5NA2C--

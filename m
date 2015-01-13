@@ -1,44 +1,61 @@
-From: Colin Ian King <colin.king@canonical.com>
-Date: Mon, 12 Jan 2015 18:03:32 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 13 Jan 2015 13:15:33 +0000
 Subject: Re: [PATCH][RESEND] static code analysis from cppcheck reports:
-Message-Id: <54B40C74.5030102@canonical.com>
+Message-Id: <54B51A75.1000308@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="oFQ2TwE9RKDtGAaFAKopuMvtLdjlCFsdI"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421076472-7101-1-git-send-email-colin.king@canonical.com> <CAMuHMdXXRpFM2VkEz6gGMA5tmXEKt0mpfUMbgM=SPBZgwVg3Eg@mail.gmail.com>
-In-Reply-To: <CAMuHMdXXRpFM2VkEz6gGMA5tmXEKt0mpfUMbgM=SPBZgwVg3Eg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1421076472-7101-1-git-send-email-colin.king@canonical.com>
+In-Reply-To: <1421076472-7101-1-git-send-email-colin.king@canonical.com>
+To: Colin King <colin.king@canonical.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-On 12/01/15 18:02, Geert Uytterhoeven wrote:
-> On Mon, Jan 12, 2015 at 4:27 PM, Colin King <colin.king@canonical.com> wrote:
->> From: Colin Ian King <colin.king@canonical.com>
->>
->> [drivers/video/fbdev/broadsheetfb.c:673]:
->>   (error) Memory leak: sector_buffer
->>
->> sector_buffer is not being kfree'd on each call to
->> broadsheet_spiflash_rewrite_sector(), so free it.
->>
->> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> 
-> So you can make the box go OOM by repeatedly writing to the
-> loadstore_waveform device attribute file?
+--oFQ2TwE9RKDtGAaFAKopuMvtLdjlCFsdI
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-..well, not quickly.
+On 12/01/15 17:27, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+>=20
+> [drivers/video/fbdev/broadsheetfb.c:673]:
+>   (error) Memory leak: sector_buffer
+>=20
+> sector_buffer is not being kfree'd on each call to
+> broadsheet_spiflash_rewrite_sector(), so free it.
+>=20
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>  drivers/video/fbdev/broadsheetfb.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
 
-> Do we want this applied to -stable?
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
-> 
+Thanks, I've queued this for 3.19 fbdev fixes.
 
+ Tomi
+
+
+
+
+--oFQ2TwE9RKDtGAaFAKopuMvtLdjlCFsdI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUtRp1AAoJEPo9qoy8lh7167YP/i6owjTNe0G0pykrUv5euit8
+QY3Pof8rK+xGMntBix2cw4/1Qp6pbFzLacy8/DM6lpVsI77EUOn9WjOIOYDi8TO0
+R5DINFJABy4ZAQ/6VScsxLXpe45W0NWiloz8rw+vNcJAj4KWrKyalttkJqQSygHt
+qUMSL7nFKFnzFdJuX2WUbSkIp6kF25hmhRGepsNGerFm4fWkvhHB2OB6PjuZAAr4
+ehSIWU5h6vRT1Zm/KWAz74ZGMfIHgO01NTp/seVcx4QsXZBJ0QvrI0q69XTMYEy2
+gZLJbY2E+c/gvtENiYBF7uDzD3atp0SK9uxun+VmG5SwsrXChmkmV5mfPenJf+Qp
+0J92fYt9w3cpK5Xe0XCiaU72Vea5U0yzHFgT30bbyBB9TWTZ97xBDZIF8ku0k+fG
+kZ+4HF4D8GJC2PwPhw72onviXSg+iWIYPIvR999CvNT3Oza2XR5pAlIjO6y20vPb
+O/OXBEgIq/DS6hopcf1BYuIshZmTNwtm+3uNOfU/zLAE8JKg9i8NGTNIrxaabQZB
+zOqz39xiixiudwYdyBWuxUAM7KOu+74/fFjVVSFWfJ61uemvKCvCW8AhpTzDfnAf
+4Hxh4MpzEZ2sE6N89wYVH0fK2Y8Iug/1cwUstS+y0FfITWLiKIu72XPLeFAeRZA0
+Cq0AGWfdLrT8MDZNJNki
+=cBQH
+-----END PGP SIGNATURE-----
+
+--oFQ2TwE9RKDtGAaFAKopuMvtLdjlCFsdI--

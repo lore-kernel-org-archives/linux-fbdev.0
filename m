@@ -1,101 +1,132 @@
-From: Nicholas Mc Guire <der.herr@hofr.at>
-Date: Thu, 29 Jan 2015 09:43:15 +0000
-Subject: Re: [PATCH] video: treat signal like timeout as failure
-Message-Id: <20150129094315.GC23666@opentech.at>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 13 Jan 2015 10:35:35 +0000
+Subject: Re: [PATCH 2/3] video: fbdev: Check Standard Timing against DMT
+Message-Id: <54B4F4F7.6040704@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="xfn6IXNbP8ph2MFWxQS97fSaOjO9rRWqd"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421731430-13207-1-git-send-email-der.herr@hofr.at>
- <20150126125905.GI26493@n2100.arm.linux.org.uk>
-In-Reply-To: <20150126125905.GI26493@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+References: <1417643369-20603-2-git-send-email-davidu@nvidia.com>
+In-Reply-To: <1417643369-20603-2-git-send-email-davidu@nvidia.com>
+To: linux-fbdev@vger.kernel.org
 
-On Mon, 26 Jan 2015, Russell King - ARM Linux wrote:
+--xfn6IXNbP8ph2MFWxQS97fSaOjO9rRWqd
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, Jan 20, 2015 at 06:23:50AM +0100, Nicholas Mc Guire wrote:
-> > if(!wait_for_completion_interruptible_timeout(...))
-> > only handles the timeout case - this patch adds handling the
-> > signal case the same as timeout and cleans up.
-> > 
-> > Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
-> > ---
-> > 
-> > Only the timeout case was being handled, return of 0 in 
-> > wait_for_completion_interruptible_timeout, the signal case (-ERESTARTSYS)
-> > was treated just like the case of successful completion, which is most 
-> > likely not reasonable.
-> > 
-> > Note that exynos_mipi_dsi_wr_data/exynos_mipi_dsi_rd_data return values
-> > are not checked at the call sites in s6e8ax0.c (cmd_read/cmd_write)!
-> > 
-> > This patch simply treats the signal case the same way as the timeout case,
-> > by releasing locks and returning 0 - which might not be the right thing to
-> > do - this needs a review by someone knowing the details of this driver.
-> > 
-> > Patch is against 3.19.0-rc5 -next-20150119
-> > 
-> > Patch was only compile-tested with exynos_defconfig
-> > 
-> >  drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c |   17 +++++++++++------
-> >  1 file changed, 11 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c b/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
-> > index 2358a2f..55a7a45 100644
-> > --- a/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
-> > +++ b/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
-> > @@ -157,6 +157,7 @@ int exynos_mipi_dsi_wr_data(struct mipi_dsim_device *dsim, unsigned int data_id,
-> >  	const unsigned char *data0, unsigned int data_size)
-> >  {
-> >  	unsigned int check_rx_ack = 0;
-> > +	long timeout;
-> >  
-> >  	if (dsim->state = DSIM_STATE_ULPS) {
-> >  		dev_err(dsim->dev, "state is ULPS.\n");
-> > @@ -244,9 +245,11 @@ int exynos_mipi_dsi_wr_data(struct mipi_dsim_device *dsim, unsigned int data_id,
-> >  		exynos_mipi_dsi_wr_tx_header(dsim, data_id, data_size & 0xff,
-> >  			(data_size & 0xff00) >> 8);
-> >  
-> > -		if (!wait_for_completion_interruptible_timeout(&dsim_wr_comp,
-> > -							MIPI_FIFO_TIMEOUT)) {
-> > -			dev_warn(dsim->dev, "command write timeout.\n");
-> > +		timeout = wait_for_completion_interruptible_timeout(
-> > +					&dsim_wr_comp, MIPI_FIFO_TIMEOUT);
-> > +		if (timeout <= 0) {
-> > +			dev_warn(dsim->dev,
-> > +				"command write timed-out/interrupted.\n");
-> 
-> This is really silly.  Let's say that the program which results in
-> this function called is using signals (eg, alarm() with SIGALRM, or
-> asynchronous IO with SIGIO, etc).
-> 
-> Why should having a SIGALRM raised print a kernel message?  If this
-> happens a lot, it will result in the kernel log being flooded with
-> these messages.
-> 
-> Signals should not be seen as exceptional conditions.  For some programs,
-> they are merely asynchronous events which are a normal part of the
-> programs operation (eg, SIGIO, SIGALRM, etc.)
-> 
-> Please, if you are going to handle signals, then handle them properly.
-> If you're not going to handle them properly, don't use a wait that
-> caters for them - use wait_for_completion_killable_timeout() which
-> doesn't finish waiting on a signal unless the signal is going to result
-> in the death of the program.
->
+On 05/12/14 21:47, David Ung wrote:
+>=20
+>> On 03/12/14 23:49, David Ung wrote:
+>>> Add the VESA Display Monitor Timing (DMT) table.
+>>> During parsing of Standard Timings, it compare the 2 byte STD code
+>>> with DMT to see what the VESA mode should be.  If there is no entry i=
+n
+>>> the vesa_modes table or no match found, it fallsback to the GTF
+>>> timings.
+>>>
+>>> Signed-off-by: David Ung <davidu@nvidia.com>
+>>> ---
+>>>  drivers/video/fbdev/core/fbmon.c  | 20 ++++++----
+>>> drivers/video/fbdev/core/modedb.c | 84
+>> +++++++++++++++++++++++++++++++++++++++
+>>>  include/linux/fb.h                | 10 +++++
+>>>  3 files changed, 107 insertions(+), 7 deletions(-)
+>>>
+>>> diff --git a/drivers/video/fbdev/core/fbmon.c
+>>> b/drivers/video/fbdev/core/fbmon.c
+>>> index 5b0e313..aa1110a 100644
+>>> --- a/drivers/video/fbdev/core/fbmon.c
+>>> +++ b/drivers/video/fbdev/core/fbmon.c
+>>> @@ -526,16 +526,22 @@ static int get_std_timing(unsigned char *block,=
 
-the current code would treat the signal case identical with the
-completion success case - and that hardly can be the intention
-so while it might not be necessary to call printk in the signal
-case it should in some way be handled - if there is not need to 
-handle signals then it might be more resonable to use
-wait_for_completion_timeout which is not interruptible.
+>> struct fb_videomode *mode,
+>>>  	refresh =3D (block[1] & 0x3f) + 60;
+>>>
+>>>  	DPRINTK("      %dx%d@%dHz\n", xres, yres, refresh);
+>>> -	for (i =3D 0; i < VESA_MODEDB_SIZE; i++) {
+>>> -		if (vesa_modes[i].xres =3D=3D xres &&
+>>> -		    vesa_modes[i].yres =3D=3D yres &&
+>>> -		    vesa_modes[i].refresh =3D=3D refresh) {
+>>> -			*mode =3D vesa_modes[i];
+>>> +	for (i =3D 0; i < DMT_SIZE; i++) {
+>>> +		u32 std_2byte_code =3D block[0] << 8 | block[1];
+>>> +
+>>> +		if (std_2byte_code =3D=3D dmt_modes[i].std_2byte_code) {
+>>> +			if (!dmt_modes[i].mode)
+>>> +				break;
+>>> +			*mode =3D *dmt_modes[i].mode;
+>>>  			mode->flag |=3D FB_MODE_IS_STANDARD;
+>>> -			return 1;
+>>> +			DPRINTK("        DMT id=3D%d\n",
+>> dmt_modes[i].dmt_id);
+>>> +			break;
+>>>  		}
+>>>  	}
+>>> -	calc_mode_timings(xres, yres, refresh, mode);
+>>> +
+>>> +	if (i =3D=3D DMT_SIZE || !dmt_modes[i].mode)
+>>> +		calc_mode_timings(xres, yres, refresh, mode);
+>>> +
+>>>  	return 1;
+>>>  }
+>>
+>> I think this could be made a bit cleaner.
+>>
+>> The xres/yres/refresh calculation in get_std_timing doesn't matter for=
+ the
+>> DMT code above. So in get_std_timing() you could first do the search f=
+or the
+>> DMT mode, and if found, return from the function. After that the code
+>> would do the GTF calculation.
+>>
+>=20
+> Yes, I've deleted the xres/yres/refresh calculation.
 
-So the key issue here is not that a signal should necessarily print
-a message but that it should not be treated as the success case. The
-current code will only treat timeout as an error condition and a received
-signal (implying that the condition being waited for is most likely not
-satisfied) as a successful completion.
+Sorry it's taken a while for me to respond...
 
-thx!
-hofrat 
+I mean that the whole 'switch (ratio)' and related code in the beginning
+of the get_std_timing() are not needed for the DMT loop. All that could
+be moved inside the 'if (i =3D=3D DMT_SIZE || !dmt_modes[i].mode)' block.=
+
+
+Also, in my opinion the code would be more easily understandable with
+something like:
+
+for (dmt loop) {
+	if (std_2byte_code matches)
+		break;
+}
+
+if (i < DMT_SIZE && dmt_modes[i].mode) {
+	// DMT mode found
+} else {
+	// calculate GTF
+}
+
+ Tomi
+
+
+
+--xfn6IXNbP8ph2MFWxQS97fSaOjO9rRWqd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUtPT3AAoJEPo9qoy8lh71N3MP/0IvnX5tALecC9BZq7sgF18U
+3iEK/0ARmX3QcnAucQcmuBUVo5zlNVupLGnWsKLCoCZ7G25W8pI8bV2C03H1tI2o
+MT1r7iOAsr5aJhBbNoVQMLOGE8hzppC1ibywWoMQIwZp8RWfAD7fnLCnNfvtOlfd
+XP5+5Sy77RTY17R/NA++eYN8VrXZCz40J+KHzGJTSvOIkuUO49AERA1GLyqBgFI8
+N30bvhrffn5ZCJCmExe7SwZLJZbaH33/6VIcH073XT8rwIRFihIoEgOQGyuLDZhE
+jgBTBJmw/q3y/plx5V3hKkFGsXd8MWQk7CIbZN7eBGSgsWoA2fRpKt+qXfH3m8Kr
+SL29ErQNvy4uONLKn9LH4AIoLnQtOMncJ9HHN1byx/C3L+LQqYgGNocVvDTXHK/e
+1kJos4OOFMInrTgLhpVgAmgZ1Nk/Uwe1Vg/xWDTCAtWvBgj15pOrqKUOKwpN0gwm
+nDTDveo3t3v9Ka8XRLAr8xIW0SNRKuQY30Hk2qjzaPn5X79ZQ7TyWTMhsgwO2sUs
+/ELLItmM1K/gBJBKyY8Y3K19V39p7S8rlhX5kXCIb5h9f2Bk1SDfRwnjXECUh9Mk
+7L43zqtJwl+dq6v04kXfJn8f0GzMCO5iuBbUXpPzH3aoZwKKsNX++HG6NfIsS3m1
++1fkjabMSGHxuJyaf+l3
+=8xLR
+-----END PGP SIGNATURE-----
+
+--xfn6IXNbP8ph2MFWxQS97fSaOjO9rRWqd--

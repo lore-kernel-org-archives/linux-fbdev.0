@@ -1,65 +1,76 @@
 From: David Ung <davidu@nvidia.com>
-Date: Mon, 26 Jan 2015 20:21:33 +0000
-Subject: RE: [PATCH] fbdev: fix CVT vertical front and back porch values
-Message-Id: <d60f2ef79b004c0b8b5d9cc8476062a0@HQMAIL102.nvidia.com>
+Date: Wed, 14 Jan 2015 03:04:25 +0000
+Subject: [PATCH V2 1/3] video: fbdev: Add additional vesa modes
+Message-Id: <1421204667-16669-1-git-send-email-davidu@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422277830-5163-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1422277830-5163-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+Add high resolution modes to vesa_modes struct.
 
-> -----Original Message-----
-> From: Tomi Valkeinen [mailto:tomi.valkeinen@ti.com]
-> Sent: Monday, January 26, 2015 5:11 AM
-> To: linux-fbdev@vger.kernel.org
-> Cc: Tomi Valkeinen; David Ung; Antonino A. Daplas
-> Subject: [PATCH] fbdev: fix CVT vertical front and back porch values
-> 
-> CVT v1.1 spec says: "the vertical front porch shall in all cases be fixed to 3
-> lines". The code in fbcvt.c instead sets the _back_ porch to
-> 3 (plus margin).
-> 
-> After swapping cvt.v_front_porch and cvt.v_back_porch the resulting
-> timings were in line with CVT timings in VESA DMT spec.
-> 
-> The bug seems to be more than 9 years old, but I presume it has not been
-> noticed as usually the video timings come from the EDID or from the timing
-> tables in fbdev, and probably swapped values for vfp and vbp work fine for
-> most of the displays.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: David Ung <davidu@nvidia.com>
-> Cc: Antonino A. Daplas <adaplas@gmail.com>
-> ---
->  drivers/video/fbdev/core/fbcvt.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/fbcvt.c
-> b/drivers/video/fbdev/core/fbcvt.c
-> index 7cb715dfc0e1..55d2bd0ce5c0 100644
-> --- a/drivers/video/fbdev/core/fbcvt.c
-> +++ b/drivers/video/fbdev/core/fbcvt.c
-> @@ -369,9 +369,9 @@ int fb_find_mode_cvt(struct fb_videomode *mode,
-> int margins, int rb)
->  	cvt.h_back_porch = cvt.hblank/2 + cvt.h_margin;
->  	cvt.h_front_porch = cvt.hblank - cvt.hsync - cvt.h_back_porch +
->  		2 * cvt.h_margin;
-> -	cvt.v_back_porch = 3 + cvt.v_margin;
-> -	cvt.v_front_porch = cvt.vtotal - cvt.yres/cvt.interlace -
-> -	    cvt.v_back_porch - cvt.vsync;
-> +	cvt.v_front_porch = 3 + cvt.v_margin;
-> +	cvt.v_back_porch = cvt.vtotal - cvt.yres/cvt.interlace -
-> +	    cvt.v_front_porch - cvt.vsync;
->  	fb_cvt_print_name(&cvt);
->  	fb_cvt_convert_to_mode(&cvt, mode);
-> 
-> --
-> 2.2.2
+Signed-off-by: David Ung <davidu@nvidia.com>
+---
+ drivers/video/fbdev/core/modedb.c | 27 +++++++++++++++++++++++++++
+ include/linux/fb.h                |  2 +-
+ 2 files changed, 28 insertions(+), 1 deletion(-)
 
-lgtm
+diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
+index 388f797..0b57c1df 100644
+--- a/drivers/video/fbdev/core/modedb.c
++++ b/drivers/video/fbdev/core/modedb.c
+@@ -468,6 +468,33 @@ const struct fb_videomode vesa_modes[] = {
+ 	/* 33 1920x1440-75 VESA */
+ 	{ NULL, 75, 1920, 1440, 3367, 352, 144, 56, 1, 224, 3,
+ 	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
++	/* 34 1920x1200-60 RB VESA */
++	{ NULL, 60, 1920, 1200, 6493, 80, 48, 26, 3, 32, 6,
++	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
++	/* 35 1920x1200-60 VESA */
++	{ NULL, 60, 1920, 1200, 5174, 336, 136, 36, 3, 200, 6,
++	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
++	/* 36 1920x1200-75 VESA */
++	{ NULL, 75, 1920, 1200, 4077, 344, 136, 46, 3, 208, 6,
++	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
++	/* 37 1920x1200-85 VESA */
++	{ NULL, 85, 1920, 1200, 3555, 352, 144, 53, 3, 208, 6,
++	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
++	/* 38 2560x1600-60 RB VESA */
++	{ NULL, 60, 2560, 1600, 3724, 80, 48, 37, 3, 32, 6,
++	  FB_SYNC_HOR_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
++	/* 39 2560x1600-60 VESA */
++	{ NULL, 60, 2560, 1600, 2869, 472, 192, 49, 3, 280, 6,
++	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
++	/* 40 2560x1600-75 VESA */
++	{ NULL, 75, 2560, 1600, 2256, 488, 208, 63, 3, 280, 6,
++	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
++	/* 41 2560x1600-85 VESA */
++	{ NULL, 85, 2560, 1600, 1979, 488, 208, 73, 3, 280, 6,
++	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
++	/* 42 2560x1600-120 RB VESA */
++	{ NULL, 120, 2560, 1600, 1809, 80, 48, 85, 3, 32, 6,
++	  FB_SYNC_HOR_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
+ };
+ EXPORT_SYMBOL(vesa_modes);
+ #endif /* CONFIG_FB_MODE_HELPERS */
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 09bb7a1..882dbd1 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -726,7 +726,7 @@ extern int fb_videomode_from_videomode(const struct videomode *vm,
+ 				       struct fb_videomode *fbmode);
+ 
+ /* drivers/video/modedb.c */
+-#define VESA_MODEDB_SIZE 34
++#define VESA_MODEDB_SIZE 43
+ extern void fb_var_to_videomode(struct fb_videomode *mode,
+ 				const struct fb_var_screeninfo *var);
+ extern void fb_videomode_to_var(struct fb_var_screeninfo *var,
+-- 
+1.8.1.5
+
+
 -----------------------------------------------------------------------------------
 This email message is for the sole use of the intended recipient(s) and may contain
 confidential information.  Any unauthorized review, use, disclosure or distribution

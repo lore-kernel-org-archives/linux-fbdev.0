@@ -1,77 +1,45 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 13 Jan 2015 13:19:06 +0000
-Subject: Re: [PATCH v2 2/2] video: Drop superfluous "select VT_HW_CONSOLE_BINDING"
-Message-Id: <54B51B4A.1080007@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="POWMPf7D1hriFuMoMTek3grbd0ltS2h7O"
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Date: Wed, 14 Jan 2015 13:51:59 +0000
+Subject: [PATCH 3/3] backlight: 88pm860x_bl: Use of_get_child_by_name() instead of refcount hack
+Message-Id: <1421243519-6257-4-git-send-email-geert+renesas@glider.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421093413-26336-1-git-send-email-geert@linux-m68k.org> <1421093413-26336-2-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1421093413-26336-2-git-send-email-geert@linux-m68k.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1421243519-6257-1-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <1421243519-6257-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
---POWMPf7D1hriFuMoMTek3grbd0ltS2h7O
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+of_find_node_by_name() calls of_node_put() on its "from" parameter.
+To counter this, pm860x_backlight_dt_init() calls of_node_get() first.
 
-On 12/01/15 22:10, Geert Uytterhoeven wrote:
-> commit 765d5b9c2b72f5b99722cdfcf4bf8f88c556cf92 ("fbdev: fbcon: select
-> VT_HW_CONSOLE_BINDING") made FRAMEBUFFER_CONSOLE always select
-> VT_HW_CONSOLE_BINDING, but forgot to remove
->=20
-> 	select VT_HW_CONSOLE_BINDING if FRAMEBUFFER_CONSOLE
->=20
-> from the individual drivers' sections that already did this before.
->=20
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
-> v2:
->   - Split in two (drm and video) patches.
-> ---
->  drivers/video/fbdev/Kconfig | 1 -
->  1 file changed, 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> index 4916c97216f880fc..f2c3fb7d03992ad1 100644
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -2151,7 +2151,6 @@ config FB_PS3
->  	select FB_SYS_COPYAREA
->  	select FB_SYS_IMAGEBLIT
->  	select FB_SYS_FOPS
-> -	select VT_HW_CONSOLE_BINDING if FRAMEBUFFER_CONSOLE
->  	---help---
->  	  Include support for the virtual frame buffer in the PS3 platform.
-> =20
->=20
+Use of_get_child_by_name() instead to get rid of the refcount hack.
 
-Thanks, queued for 3.20.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: linux-fbdev@vger.kernel.org
+---
+Compile-tested only
+---
+ drivers/video/backlight/88pm860x_bl.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
- Tomi
+diff --git a/drivers/video/backlight/88pm860x_bl.c b/drivers/video/backlight/88pm860x_bl.c
+index 9a23698b6fe8398c..2da5862876d1fe78 100644
+--- a/drivers/video/backlight/88pm860x_bl.c
++++ b/drivers/video/backlight/88pm860x_bl.c
+@@ -168,10 +168,7 @@ static int pm860x_backlight_dt_init(struct platform_device *pdev,
+ 	struct device_node *nproot, *np;
+ 	int iset = 0;
+ 
+-	nproot = of_node_get(pdev->dev.parent->of_node);
+-	if (!nproot)
+-		return -ENODEV;
+-	nproot = of_find_node_by_name(nproot, "backlights");
++	nproot = of_get_child_by_name(pdev->dev.parent->of_node, "backlights");
+ 	if (!nproot) {
+ 		dev_err(&pdev->dev, "failed to find backlights node\n");
+ 		return -ENODEV;
+-- 
+1.9.1
 
-
-
---POWMPf7D1hriFuMoMTek3grbd0ltS2h7O
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUtRtKAAoJEPo9qoy8lh71IPcP/jf6a3gUtaLlBoPltU2JJtFB
-U+9EFtx6kAL37B1C2byrjouk/XBBRL2WvfHWuA3gNQwrS7OajWdYFJar3eEVzSUs
-vrCRQUvQXQyl1oSKVPkcMUOcYgFY6vgv0XbxQL5jdO5LgtTq97XU77HOJe/pqj0p
-5SwACR0r9zIfWgmpTzju6D/0F6CyRoxqJ8NX4M3nJRJQ8tsyCiuwnDdxSwPbO8h2
-xyO3qUmDj09hFAu4aTfOw48RFPWipFhiWdnzI2DHXXBdmlz1BkK3OZ+d7evsJ5Fi
-OSM+17RKV8vRINdL1nmsiO8vLO5Fmdodo2g2Ahwp59JEOgq9PkxtX4l/pM6Ey5lt
-JMR/+P3xCR2sS2aSt9bBYxl0i7pUJ4Vg3agxiz52sQ+KTwELOC+Cs4BhR9aRTfvS
-WfPbWFUHcKxTnq5SPViSkT3eU/Pbc53cP6JEzNEhMsRqU81jNVyQss5rNtQZowj/
-SqWDnX4bSj4QFm1GGsv4ZgFXa8+7UqLkeXkPppcXQ220uy90jievvVItOezP1QDl
-+nAPkjNQaGSqC8AIrFmjuGwaKZpwXt2SoYxHB/gys+R8tv4yTEisAJovdIv+lZ7P
-kxju1yqHlnjVlDUCEw65E62az7wm20my6aWpWKkl1N4gikQYrF7CtPSi99SfSe5j
-t+tHeDMmsk1YZVV3nrJg
-=lf6e
------END PGP SIGNATURE-----
-
---POWMPf7D1hriFuMoMTek3grbd0ltS2h7O--

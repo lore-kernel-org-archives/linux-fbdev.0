@@ -1,97 +1,118 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 19 Jan 2015 18:46:57 +0000
-Subject: [PATCH 8/9] video: Less function calls in valkyriefb_init() after error detection
-Message-Id: <54BD5121.8010801@users.sourceforge.net>
+From: David Ung <davidu@nvidia.com>
+Date: Wed, 14 Jan 2015 03:04:27 +0000
+Subject: [PATCH V2 3/3] video: fbdev: Validate mode timing against monspec
+Message-Id: <1421204667-16669-3-git-send-email-davidu@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54BD44F0.3040705@users.sourceforge.net>
-In-Reply-To: <54BD44F0.3040705@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: linux-fbdev@vger.kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 19 Jan 2015 17:01:25 +0100
+fbmon may generate mode timings that are out of spec of the monitor.
+eg DELL U2410 has a max clock 170mhz but advertises a resolutions of
+1920x1200@60 in its Standard Timings using 2byte code of D1 00.
+When this is looked up in the DMT table it gives it a 193mhz clock.
+Although the DELL monitor supports 1920x1200@60, it can only run with
+reduced timings at 154mhz or DMT id 0x44 which has no STD 2byte code.
+This patch checks to see if the mode can be supported by the monitor
+by comparing against monspecs.dclkmax.
 
-The iounmap() function could be called in three cases by the valkyriefb_init()
-function during error handling even if the passed data structure element
-contained still a null pointer.
-
-This implementation detail could be improved by adjustments for jump labels
-(according also to current Linux coding style) and error messages.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: David Ung <davidu@nvidia.com>
 ---
- drivers/video/fbdev/valkyriefb.c | 32 +++++++++++++++++++++-----------
- 1 file changed, 21 insertions(+), 11 deletions(-)
+ drivers/video/fbdev/core/fbmon.c | 27 ++++++++++++++++++---------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index 2a9213b..a81a0f1 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -369,40 +369,50 @@ int __init valkyriefb_init(void)
- 	}
- 	p->total_vram = 0x100000;
- 	p->frame_buffer_phys = frame_buffer_phys;
-+	err = -ENOMEM;
- 	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
-+	if (p->frame_buffer = NULL) {
-+		pr_err("%s: %s failed\n", __func__, "Frame buffer mapping");
-+		goto free_memory;
-+	}
- 	p->cmap_regs_phys = cmap_regs_phys;
- 	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
-+	if (p->cmap_regs = NULL) {
-+		pr_err("%s: %s failed\n", __func__, "cmap");
-+		goto io_unmap_framebuffer;
-+	}
- 	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
- 	p->valkyrie_regs = ioremap(p->valkyrie_regs_phys, 0x1000);
--	err = -ENOMEM;
--	if (p->frame_buffer = NULL || p->cmap_regs = NULL
--	    || p->valkyrie_regs = NULL) {
--		printk(KERN_ERR "valkyriefb: couldn't map resources\n");
--		goto out_free;
-+	if (p->valkyrie_regs = NULL) {
-+		pr_err("%s: %s failed\n", __func__, "ioremap");
-+		goto io_unmap_cmap;
- 	}
- 
- 	valkyrie_choose_mode(p);
- 	mac_vmode_to_var(default_vmode, default_cmode, &p->info.var);
- 	err = valkyrie_init_info(&p->info, p);
- 	if (err < 0)
--		goto out_free;
-+		goto io_unmap_valkyrie;
- 	valkyrie_init_fix(&p->info.fix, p);
- 	if (valkyriefb_set_par(&p->info))
- 		/* "can't happen" */
- 		printk(KERN_ERR "valkyriefb: can't set default video mode\n");
- 
- 	if ((err = register_framebuffer(&p->info)) != 0)
--		goto out_cmap_free;
-+		goto dealloc_cmap;
- 
- 	fb_info(&p->info, "valkyrie frame buffer device\n");
- 	return 0;
- 
-- out_cmap_free:
-+dealloc_cmap:
- 	fb_dealloc_cmap(&p->info.cmap);
-- out_free:
--	iounmap(p->frame_buffer);
--	iounmap(p->cmap_regs);
-+io_unmap_valkyrie:
- 	iounmap(p->valkyrie_regs);
-+io_unmap_cmap:
-+	iounmap(p->cmap_regs);
-+io_unmap_framebuffer:
-+	iounmap(p->frame_buffer);
-+free_memory:
- 	kfree(p);
- 	return err;
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index 0f234c1..9533859 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -496,7 +496,7 @@ static int get_est_timing(unsigned char *block, struct fb_videomode *mode)
  }
+ 
+ static int get_std_timing(unsigned char *block, struct fb_videomode *mode,
+-		int ver, int rev)
++			  int ver, int rev, const struct fb_monspecs *specs)
+ {
+ 	int i;
+ 
+@@ -544,16 +544,23 @@ static int get_std_timing(unsigned char *block, struct fb_videomode *mode,
+ 		calc_mode_timings(xres, yres, refresh, mode);
+ 	}
+ 
++	/* Check the mode we got is within valid spec of the monitor */
++	if (specs && specs->dclkmax
++	    && PICOS2KHZ(mode->pixclock) * 1000 > specs->dclkmax) {
++		DPRINTK("        mode exceed max DCLK\n");
++		return 0;
++	}
++
+ 	return 1;
+ }
+ 
+-static int get_dst_timing(unsigned char *block,
+-			  struct fb_videomode *mode, int ver, int rev)
++static int get_dst_timing(unsigned char *block, struct fb_videomode *mode,
++			  int ver, int rev, const struct fb_monspecs *specs)
+ {
+ 	int j, num = 0;
+ 
+ 	for (j = 0; j < 6; j++, block += STD_TIMING_DESCRIPTION_SIZE)
+-		num += get_std_timing(block, &mode[num], ver, rev);
++		num += get_std_timing(block, &mode[num], ver, rev, specs);
+ 
+ 	return num;
+ }
+@@ -609,7 +616,8 @@ static void get_detailed_timing(unsigned char *block,
+  * This function builds a mode database using the contents of the EDID
+  * data
+  */
+-static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
++static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize,
++					     const struct fb_monspecs *specs)
+ {
+ 	struct fb_videomode *mode, *m;
+ 	unsigned char *block;
+@@ -651,12 +659,13 @@ static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
+ 	DPRINTK("   Standard Timings\n");
+ 	block = edid + STD_TIMING_DESCRIPTIONS_START;
+ 	for (i = 0; i < STD_TIMING; i++, block += STD_TIMING_DESCRIPTION_SIZE)
+-		num += get_std_timing(block, &mode[num], ver, rev);
++		num += get_std_timing(block, &mode[num], ver, rev, specs);
+ 
+ 	block = edid + DETAILED_TIMING_DESCRIPTIONS_START;
+ 	for (i = 0; i < 4; i++, block+= DETAILED_TIMING_DESCRIPTION_SIZE) {
+ 		if (block[0] = 0x00 && block[1] = 0x00 && block[3] = 0xfa)
+-			num += get_dst_timing(block + 5, &mode[num], ver, rev);
++			num += get_dst_timing(block + 5, &mode[num],
++					      ver, rev, specs);
+ 	}
+ 
+ 	/* Yikes, EDID data is totally useless */
+@@ -715,7 +724,7 @@ static int fb_get_monitor_limits(unsigned char *edid, struct fb_monspecs *specs)
+ 		int num_modes, hz, hscan, pixclock;
+ 		int vtotal, htotal;
+ 
+-		modes = fb_create_modedb(edid, &num_modes);
++		modes = fb_create_modedb(edid, &num_modes, specs);
+ 		if (!modes) {
+ 			DPRINTK("None Available\n");
+ 			return 1;
+@@ -972,7 +981,7 @@ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ 	DPRINTK("   Display Characteristics:\n");
+ 	get_monspecs(edid, specs);
+ 
+-	specs->modedb = fb_create_modedb(edid, &specs->modedb_len);
++	specs->modedb = fb_create_modedb(edid, &specs->modedb_len, specs);
+ 
+ 	/*
+ 	 * Workaround for buggy EDIDs that sets that the first
 -- 
-2.2.2
+1.8.1.5
 
+
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------

@@ -1,67 +1,138 @@
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Date: Thu, 29 Jan 2015 13:02:09 +0000
-Subject: Re: [PATCH 2/3 v3] hyperv: hyperv_fb.c: match wait_for_completion_timeout return type
-Message-Id: <87oaph7nam.fsf@vitty.brq.redhat.com>
+From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Date: Wed, 14 Jan 2015 08:24:49 +0000
+Subject: [PATCH] fbdev: ssd1307fb: return proper error code if write command fails
+Message-Id: <1421223889-9448-1-git-send-email-prabhakar.csengg@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422527056-24929-1-git-send-email-der.herr@hofr.at>
-In-Reply-To: <1422527056-24929-1-git-send-email-der.herr@hofr.at> (Nicholas Mc
-	Guire's message of "Thu, 29 Jan 2015 11:24:16 +0100")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nicholas Mc Guire <der.herr@hofr.at>
-Cc: "K. Y. Srinivasan" <kys@microsoft.com>, linux-fbdev@vger.kernel.org, Haiyang Zhang <haiyangz@microsoft.com>, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, devel@linuxdriverproject.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 
-Nicholas Mc Guire <der.herr@hofr.at> writes:
+this patch fixes ssd1307fb_ssd1306_init() function to return
+proper error codes in case of failures.
 
-> The return type of wait_for_completion_timeout is unsigned long not
-> int. This patch fixes up the declarations only.
->
-> Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+---
+ drivers/video/fbdev/ssd1307fb.c | 54 ++++++++++++++++++++++++++++++-----------
+ 1 file changed, 40 insertions(+), 14 deletions(-)
 
-I would be slightly better to remove ".c" from your subject like,
-anyway:
-
-Reviewed-by: Vitaly Kuznetsov <vkuznets@redhat.com>
-
-> ---
->
-> v2: fixed subject line
-> v3: fixed patch description as recommended by Dan Carpenter
->     <dan.carpenter@oracle.com>
->
-> Patch was compile tested only for x86_64_defconfig + CONFIG_X86_VSMP=y
-> CONFIG_HYPERV=m, CONFIG_FB_HYPERV=m
->
-> Patch is against 3.19.0-rc5 -next-20150123
->
->  drivers/video/fbdev/hyperv_fb.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-> index 4254336..807ee22 100644
-> --- a/drivers/video/fbdev/hyperv_fb.c
-> +++ b/drivers/video/fbdev/hyperv_fb.c
-> @@ -415,7 +415,8 @@ static int synthvid_negotiate_ver(struct hv_device *hdev, u32 ver)
->  	struct fb_info *info = hv_get_drvdata(hdev);
->  	struct hvfb_par *par = info->par;
->  	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
-> -	int t, ret = 0;
-> +	int ret = 0;
-> +	unsigned long t;
->
->  	memset(msg, 0, sizeof(struct synthvid_msg));
->  	msg->vid_hdr.type = SYNTHVID_VERSION_REQUEST;
-> @@ -488,7 +489,8 @@ static int synthvid_send_config(struct hv_device *hdev)
->  	struct fb_info *info = hv_get_drvdata(hdev);
->  	struct hvfb_par *par = info->par;
->  	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
-> -	int t, ret = 0;
-> +	int ret = 0;
-> +	unsigned long t;
->
->  	/* Send VRAM location */
->  	memset(msg, 0, sizeof(struct synthvid_msg));
-
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index f4daa59..528ea16 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -320,7 +320,9 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
+ 
+ 	/* Set initial contrast */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_CONTRAST);
+-	ret = ret & ssd1307fb_write_cmd(par->client, 0x7f);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client, 0x7f);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -336,63 +338,87 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
+ 
+ 	/* Set multiplex ratio value */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_MULTIPLEX_RATIO);
+-	ret = ret & ssd1307fb_write_cmd(par->client, par->height - 1);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client, par->height - 1);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	/* set display offset value */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_DISPLAY_OFFSET);
++	if (ret < 0)
++		return ret;
+ 	ret = ssd1307fb_write_cmd(par->client, 0x20);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	/* Set clock frequency */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_CLOCK_FREQ);
+-	ret = ret & ssd1307fb_write_cmd(par->client, 0xf0);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client, 0xf0);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	/* Set precharge period in number of ticks from the internal clock */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PRECHARGE_PERIOD);
+-	ret = ret & ssd1307fb_write_cmd(par->client, 0x22);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client, 0x22);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	/* Set COM pins configuration */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COM_PINS_CONFIG);
+-	ret = ret & ssd1307fb_write_cmd(par->client, 0x22);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client, 0x22);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	/* Set VCOMH */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_VCOMH);
+-	ret = ret & ssd1307fb_write_cmd(par->client, 0x49);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client, 0x49);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	/* Turn on the DC-DC Charge Pump */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_CHARGE_PUMP);
+-	ret = ret & ssd1307fb_write_cmd(par->client, 0x14);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client, 0x14);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	/* Switch to horizontal addressing mode */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_ADDRESS_MODE);
+-	ret = ret & ssd1307fb_write_cmd(par->client,
+-					SSD1307FB_SET_ADDRESS_MODE_HORIZONTAL);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client,
++				  SSD1307FB_SET_ADDRESS_MODE_HORIZONTAL);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COL_RANGE);
+-	ret = ret & ssd1307fb_write_cmd(par->client, 0x0);
+-	ret = ret & ssd1307fb_write_cmd(par->client, par->width - 1);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client, 0x0);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client, par->width - 1);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PAGE_RANGE);
+-	ret = ret & ssd1307fb_write_cmd(par->client, 0x0);
+-	ret = ret & ssd1307fb_write_cmd(par->client,
+-					par->page_offset + (par->height / 8) - 1);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client, 0x0);
++	if (ret < 0)
++		return ret;
++	ret = ssd1307fb_write_cmd(par->client,
++				  par->page_offset + (par->height / 8) - 1);
+ 	if (ret < 0)
+ 		return ret;
+ 
 -- 
-  Vitaly
+1.9.1
+

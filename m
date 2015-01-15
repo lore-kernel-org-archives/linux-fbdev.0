@@ -1,41 +1,57 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 13 Jan 2015 13:15:33 +0000
-Subject: Re: [PATCH][RESEND] static code analysis from cppcheck reports:
-Message-Id: <54B51A75.1000308@ti.com>
+Date: Thu, 15 Jan 2015 11:23:01 +0000
+Subject: [GIT PULL] fbdev fixes for 3.19
+Message-Id: <54B7A315.4030104@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="oFQ2TwE9RKDtGAaFAKopuMvtLdjlCFsdI"
+Content-Type: multipart/mixed; boundary="3LFwKP5277brCdPLa0X1LBC1DMaILVvmX"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421076472-7101-1-git-send-email-colin.king@canonical.com>
-In-Reply-To: <1421076472-7101-1-git-send-email-colin.king@canonical.com>
-To: Colin King <colin.king@canonical.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+References: <54899F0E.4090309@ti.com>
+In-Reply-To: <54899F0E.4090309@ti.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
---oFQ2TwE9RKDtGAaFAKopuMvtLdjlCFsdI
-Content-Type: text/plain; charset=windows-1252
+--3LFwKP5277brCdPLa0X1LBC1DMaILVvmX
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On 12/01/15 17:27, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
->=20
-> [drivers/video/fbdev/broadsheetfb.c:673]:
->   (error) Memory leak: sector_buffer
->=20
-> sector_buffer is not being kfree'd on each call to
-> broadsheet_spiflash_rewrite_sector(), so free it.
->=20
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/video/fbdev/broadsheetfb.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
+Hi Linus,
 
-Thanks, I've queued this for 3.19 fbdev fixes.
+Please pull fbdev fixes for 3.19:
 
- Tomi
+The following changes since commit eaa27f34e91a14cdceed26ed6c6793ec1d1861=
+15:
+
+  linux 3.19-rc4 (2015-01-11 12:44:53 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-fixes-3.19
+
+for you to fetch changes up to ef6899cdc8608e2f018e590683f04bb04a069704:
+
+  fbdev/broadsheetfb: fix memory leak (2015-01-13 15:13:45 +0200)
+
+----------------------------------------------------------------
+fbdev fixes for 3.19
+
+* broadsheetfb: fix memory leak
+* simplefb: fix build failure on sparc
+
+----------------------------------------------------------------
+Colin Ian King (1):
+      fbdev/broadsheetfb: fix memory leak
+
+Hans de Goede (1):
+      simplefb: Fix build failure on Sparc
+
+ drivers/video/fbdev/broadsheetfb.c | 8 +++++---
+ drivers/video/fbdev/simplefb.c     | 2 +-
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
 
 
-
---oFQ2TwE9RKDtGAaFAKopuMvtLdjlCFsdI
+--3LFwKP5277brCdPLa0X1LBC1DMaILVvmX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -43,19 +59,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUtRp1AAoJEPo9qoy8lh7167YP/i6owjTNe0G0pykrUv5euit8
-QY3Pof8rK+xGMntBix2cw4/1Qp6pbFzLacy8/DM6lpVsI77EUOn9WjOIOYDi8TO0
-R5DINFJABy4ZAQ/6VScsxLXpe45W0NWiloz8rw+vNcJAj4KWrKyalttkJqQSygHt
-qUMSL7nFKFnzFdJuX2WUbSkIp6kF25hmhRGepsNGerFm4fWkvhHB2OB6PjuZAAr4
-ehSIWU5h6vRT1Zm/KWAz74ZGMfIHgO01NTp/seVcx4QsXZBJ0QvrI0q69XTMYEy2
-gZLJbY2E+c/gvtENiYBF7uDzD3atp0SK9uxun+VmG5SwsrXChmkmV5mfPenJf+Qp
-0J92fYt9w3cpK5Xe0XCiaU72Vea5U0yzHFgT30bbyBB9TWTZ97xBDZIF8ku0k+fG
-kZ+4HF4D8GJC2PwPhw72onviXSg+iWIYPIvR999CvNT3Oza2XR5pAlIjO6y20vPb
-O/OXBEgIq/DS6hopcf1BYuIshZmTNwtm+3uNOfU/zLAE8JKg9i8NGTNIrxaabQZB
-zOqz39xiixiudwYdyBWuxUAM7KOu+74/fFjVVSFWfJ61uemvKCvCW8AhpTzDfnAf
-4Hxh4MpzEZ2sE6N89wYVH0fK2Y8Iug/1cwUstS+y0FfITWLiKIu72XPLeFAeRZA0
-Cq0AGWfdLrT8MDZNJNki
-=cBQH
+iQIcBAEBAgAGBQJUt6MVAAoJEPo9qoy8lh71XXUP/ijC5Jq4X4t4boEBi79AFqgL
+5aVQYpvDqVWdoUqwOV17Ui2JHdZtU69Y5zVWg3NUCMcTZ3hD13coDWczf6MbB69O
+ku4wSFKbLM3ovUxPnVRKVThV89Cmk9lCxVP9Bbw1lObKPBlCPT+hKH56RvV8xKBU
+oR3z8HOvOV3Tc2bVgZp3K/Ob7ztmHtFsLVtACEy2aSC+5MiYHlWtEbuEmQBpfWl6
+ilpAZ7sQpw9lh4A0UV1MUzOYMtgbem3z5i82ahMQHxox+gdnZERyL/DAxUarylGj
+/saOtZJh+bF+VVRw+c08rfqabHIT6qc9xF+ZVCdRBLTxI/ckCoaBEKQ6bu/JtNIV
+UkGtFUUkKOsFv/6ZlZimtormA8x3YApIgaDWf6ETY2XYvS5e7n+XNUui9NivcT8v
+zOPyPCAeJB/rUC3a9QUw04NtnHW6YAZXrE/QBNksdWRWNDSr/ddwayUe1xzyyQIK
+jpmwp2YzbfmKqVvh0hzoa0L5O3kxWvzIaKbs0cammtlnZu5hCdt/zhT6Sd0eK1A3
+RtpZtRQBodb7a77m/tM1Bhh4s3PrGKTSChj2p2uk4OzwFlkyFM915ry6nmf9POBj
+OXxqBFmsmAxsRzjQ3e7494dnnXiPE5niBGl91AbPF4GVTL/3mVm4vEk9PvXWnbQA
+jDyhwYHiaeCw+Az5KEWL
+=uZSB
 -----END PGP SIGNATURE-----
 
---oFQ2TwE9RKDtGAaFAKopuMvtLdjlCFsdI--
+--3LFwKP5277brCdPLa0X1LBC1DMaILVvmX--

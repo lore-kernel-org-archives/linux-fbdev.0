@@ -1,57 +1,72 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Thu, 08 Jan 2015 09:31:42 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Jan 2015 11:27:06 +0000
 Subject: Re: [PATCH 1/2] fbdev: ssd1307fb: set default height if not found in DT node
-Message-Id: <20150108093142.GM7853@lukather>
+Message-Id: <54B7A40A.3050509@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="QyKdZyDmv5hkaBi2"
+Content-Type: multipart/mixed; boundary="r9b76Td07I7h6u0r5SVtBU9muBM0fsWMx"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420705079-3741-1-git-send-email-prabhakar.csengg@gmail.com>
- <1420705079-3741-2-git-send-email-prabhakar.csengg@gmail.com>
+References: <1420705079-3741-1-git-send-email-prabhakar.csengg@gmail.com> <1420705079-3741-2-git-send-email-prabhakar.csengg@gmail.com>
 In-Reply-To: <1420705079-3741-2-git-send-email-prabhakar.csengg@gmail.com>
-To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Cc: LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, LKML <linux-kernel@vger.kernel.org>
+To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-
---QyKdZyDmv5hkaBi2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--r9b76Td07I7h6u0r5SVtBU9muBM0fsWMx
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jan 08, 2015 at 08:17:58AM +0000, Lad, Prabhakar wrote:
+On 08/01/15 10:17, Lad, Prabhakar wrote:
 > this patch sets the default height if its not found in DT.
 >=20
 > Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+> ---
+>  drivers/video/fbdev/ssd1307fb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1=
+307fb.c
+> index f4daa59..70e3ce8 100644
+> --- a/drivers/video/fbdev/ssd1307fb.c
+> +++ b/drivers/video/fbdev/ssd1307fb.c
+> @@ -460,7 +460,7 @@ static int ssd1307fb_probe(struct i2c_client *clien=
+t,
+>  		par->width =3D 96;
+> =20
+>  	if (of_property_read_u32(node, "solomon,height", &par->height))
+> -		par->width =3D 16;
+> +		par->height =3D 16;
+> =20
+>  	if (of_property_read_u32(node, "solomon,page-offset", &par->page_offs=
+et))
+>  		par->page_offset =3D 1;
+>=20
 
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Thanks, queued for 3.20.
 
-Thanks!
-Maxime
+ Tomi
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
 
---QyKdZyDmv5hkaBi2
+
+--r9b76Td07I7h6u0r5SVtBU9muBM0fsWMx
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUrk5+AAoJEBx+YmzsjxAg7yYQAI00jJv9PjU+X4UaYlZBIwK6
-oqJy+PXI2S7PIoF4+Aq75yOYcNsfoSy5SDKhJB6s4B+uYHIEzXAxt07mL39B4PrY
-umshUl0AitRXsLgO+dDdqm6N77wDjAMHNOt2chWHRhU2WDA87/zXJjWAbI6KWRHC
-bKe6cGmRjDCR0mu91kxdacxjowEaqbQc9R63N1tJdgS08lnAAVgMJnZTfZhpHiH8
-NkPF9nHLFFqHGQ6ImlEFfalSp5tQiqNENzEOIABKXniVDE8mTgEBLm8xCpvzXFdR
-PoQ7YytPZiI8UAePdhPEPqx00CCza3S8pWGrJZWDzE0582YLRAxNNrRNc4IJGsQs
-Ct5vqch0Shbc1+mwGG5634nSFMODP9JTy3lXQ8wtusN1jxawuhp2F3ci2QxhJ1nd
-tVPufvGBZe35AC5AmlchRAA1S5AZgFKFUxWLz5K1Ez3hvBryeoS60xJsYlJjjibn
-kdmP2khZ00rRtNt/Pazn/tO0C2aWEKdoqZrDXUKF/T6PgDqqkhWEZVdPuL+s3dnt
-RcEMIVMan+jAc8wvq088jhKAOKmhqR8ud6IzxY/eMimC0tzxT0ZpJCBvGG0NKzpr
-1wqx4psb1RZQjEXWARXb6RF7mVzur3Wo/GznvEzKhBOwMJS3hIfYUGSfKQuht6eV
-BMAPy/RWNneBJMUHShVe
-=fu5Y
+iQIcBAEBAgAGBQJUt6QKAAoJEPo9qoy8lh71FxAQALGNDABKCbo8XSeGr7TjKtmn
+oF8YbLLFqw54ht5VVLEXf4stKjKWNiofQoj/gIU7MMDs/tw0zO1joRogSjL5gQoB
+h+FT7AvJ6qK3sSfr3Q/2Rtfq1Cinr3cfd7yQJZITtjn3V/H3Mgs3Rhq1SmJjWrOS
+S2o4eB40V4GjSXViaLplxnn6Q+9IAs1/otpElFvm5YW0xiDeTyTGMZectvPbY7Cb
+6s/mSSrwaxEFDy2cklFYX68UDiObCYnUwWV4Rwq0aB71GmWhb6qJCU70P0grbSqJ
+Y2eAD2hR0KKE7ryx1LeN/YcozXX8DAwMdJNLv0MZZ72IW0tHCtMmUmZxqZIbaBqV
+n9v5MtzjSSt8eJnCN638F0Od+T0C3aO5MG+y7P7PZZvzNbhYkMQ8LHDCp7s8ueql
+HUa5hF97Zto/GbMho7/BMkV24Nw+59JMonoSG12TMsCvatbq/2An8BW1rN5RDU6s
+pszOTHMX12YqjE8PaTtLEUUfy0PzgKLcErsSFPnj0HOT8dycQSodjlMrX9DQ+2i/
+Lk2DeeQURGr/6vH5g0l6yUUEJnOq7r+kJldwbZw8whXaiW3JLOjT+j99nxB73IqP
+H3dsnFZj42G3braGG5eGwKx33Bg33YmY5FB2HSpHwShGiLXkycncvbp9m2OvGTQX
+7hp2eR+6PO2qqlDgwcs6
+=Skr8
 -----END PGP SIGNATURE-----
 
---QyKdZyDmv5hkaBi2--
+--r9b76Td07I7h6u0r5SVtBU9muBM0fsWMx--

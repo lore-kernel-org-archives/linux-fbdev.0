@@ -1,55 +1,87 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Tue, 13 Jan 2015 13:43:31 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Jan 2015 11:26:47 +0000
 Subject: Re: [PATCH] fbdev: ssd1307fb: drop unused function ssd1307fb_write_data()
-Message-Id: <20150113134331.GW4891@lukather>
+Message-Id: <54B7A3F7.8010107@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="XQSDX3NWE02rtiZq"
+Content-Type: multipart/mixed; boundary="iAsx0Ap6tldKTsjOk47HWk4MaaDidxePF"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1421090474-4243-1-git-send-email-prabhakar.csengg@gmail.com>
 In-Reply-To: <1421090474-4243-1-git-send-email-prabhakar.csengg@gmail.com>
-To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Cc: LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, LKML <linux-kernel@vger.kernel.org>
+To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-
---XQSDX3NWE02rtiZq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--iAsx0Ap6tldKTsjOk47HWk4MaaDidxePF
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jan 12, 2015 at 07:21:14PM +0000, Lad, Prabhakar wrote:
+On 12/01/15 21:21, Lad, Prabhakar wrote:
 > this patch drops the unused function ssd1307fb_write_data().
 >=20
 > Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+> ---
+>  drivers/video/fbdev/ssd1307fb.c | 17 -----------------
+>  1 file changed, 17 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1=
+307fb.c
+> index a7ecaa6..c891f11 100644
+> --- a/drivers/video/fbdev/ssd1307fb.c
+> +++ b/drivers/video/fbdev/ssd1307fb.c
+> @@ -122,23 +122,6 @@ static inline int ssd1307fb_write_cmd(struct i2c_c=
+lient *client, u8 cmd)
+>  	return ret;
+>  }
+> =20
+> -static inline int ssd1307fb_write_data(struct i2c_client *client, u8 d=
+ata)
+> -{
+> -	struct ssd1307fb_array *array;
+> -	int ret;
+> -
+> -	array =3D ssd1307fb_alloc_array(1, SSD1307FB_DATA);
+> -	if (!array)
+> -		return -ENOMEM;
+> -
+> -	array->data[0] =3D data;
+> -
+> -	ret =3D ssd1307fb_write_array(client, array, 1);
+> -	kfree(array);
+> -
+> -	return ret;
+> -}
+> -
+>  static void ssd1307fb_update_display(struct ssd1307fb_par *par)
+>  {
+>  	struct ssd1307fb_array *array;
+>=20
 
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Thanks, queued for 3.20.
 
-Maxime
+ Tomi
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
 
---XQSDX3NWE02rtiZq
+
+--iAsx0Ap6tldKTsjOk47HWk4MaaDidxePF
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUtSEDAAoJEBx+YmzsjxAgYKwP/2E5rkyDySlyJUufvDAg/U+L
-wb8xJ0lnA7J3QI/yYjH3TWNYKMXM1uFJyVcLpH2FLG1jyYc+fAE18SYmZx/CoiD/
-HNp+pgjVRLBLLOMPDnyS/oQ4MSA9mBwaDKsdvRP9kKasDaXU/lZBRrWRaHyrpPPl
-cLo12a1hibpdirD48u7/4KcIWyo1ko52GsvNyizSjvNUPlp1v8PgbiX9QHU0S0ZK
-XAKy/qPXaMe7qucqCXhlHgVT6qJhgNzRfKdMUBA5EwmHxO6hkuQsyiXEtOdDDUEj
-KdhNu+JRg2uCIyoysh7rXrNp8QCERAXIPqT6CZeYHyMMl8rZ7qvPbfGzsY0okJpl
-7Xo0P4/QPxNbfhWG5VwKdqt2DyiEItAFEqSO6ijVv1Juu6yW43KMZ/q75Byepm1w
-CyLd8l5ghF1a1JVbQvcriuiZjgnTS8ltpQ6XU74IHBbk0WF9QbIwkMZSQ5+bmt2N
-a1jHqa4gNY5n+4BAPTReUM0tb2Np3ngMsKm8QRKiY84sMuEr9h9ED+tdgi0t0crg
-G25+7yb7oAQhQfJ10qaV2HXRmm3Bcm7a2SNbr+ZPAxxp+KIiJJviqcfFYdyZ6nvq
-Ajj6sBJC+Xosdo+Gnzg2TdfnD86VOe14q0Nkqe3VqjmfVSxhUjihS6We7oIIWm9n
-jvN2sSM36LBLas5ejVj/
-=kxiP
+iQIcBAEBAgAGBQJUt6P3AAoJEPo9qoy8lh71oAgP+wcK9Obgxnlz8C+J5vM36D+t
+bVAFoDbOK3gLWOXkM9LB0Er3M1emBLHwPI6u4kiYsLGpiBodemP4/gajRIQ3GK5V
+POQQCGlSm9h/t6gq0DlP3k8sSPokAv8RRjXE8oHqbkpWjXfjgzZB4xq+7YpHWhD8
+BdzcW0hQvM0XOlz9zkLdoUDuM0dNox8VYxFyN8XzDEtpWUFH8I69plSNsnSG79Zy
+O8/0NpFK3g/5rQjVbv6usKNy9OGi+W7BlABxG89YnRno032sTeDykrt8HF+OZ4p7
+vN00fO7rZfClibkfEcTHN4dj9mlNWwPUpo9JEiiwN/fmwmwuaEXKXCybFHWt5osv
+NbvVgCdM35uZ1UVX7cqpZnktgSjSFd4frkRc+6zMNQg5FyH4s66DTHYuw0a9VXDq
+IvrydwigLJznorxAXI2/2+3Akd6Qgz+RGxzwp9gyWUYllPkmdDbhVtvkMhqqJB2t
+SyhE9xM0nZzP31ov8MCuSGGewIBsQHl5mjZjWJowNUqUDx1bukNFjBkHLfeMTKvW
+omk0Gwe//4oAHVNzBNy1dbyVH8z4J9SHeGuk+QuCRLWAnBkzJhyuMclUtl2Q7TiW
+q1hPTDYQwTHqmj1ixEYUYEs2mGMtsEIxJZf0C0qi6RfXPoq2T5egllEVpd+rjLzo
+hPOoBza5Lg0rJiGvxlty
+=qp6D
 -----END PGP SIGNATURE-----
 
---XQSDX3NWE02rtiZq--
+--iAsx0Ap6tldKTsjOk47HWk4MaaDidxePF--

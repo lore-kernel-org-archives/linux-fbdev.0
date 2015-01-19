@@ -1,129 +1,126 @@
-From: Scot Doyle <lkml14@scotdoyle.com>
-Date: Sat, 24 Jan 2015 17:41:50 +0000
-Subject: [PATCH v2 2/2] fbcon: expose cursor blink interval via sysfs
-Message-Id: <alpine.DEB.2.11.1501241739420.2516@localhost.localdomain>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 19 Jan 2015 18:49:39 +0000
+Subject: [PATCH 9/9] video: Less function calls in w100fb_probe() after error detection
+Message-Id: <54BD51C3.8000507@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501240109060.3489@localhost.localdomain> <alpine.DEB.2.11.1501240117400.3639@localhost.localdomain> <CAMuHMdX2cs_JW4QEC=E=m2Z6gg=kZE5PnHBQYZ5RnFp1E9m_fQ@mail.gmail.com>
-In-Reply-To: <CAMuHMdX2cs_JW4QEC=E=m2Z6gg=kZE5PnHBQYZ5RnFp1E9m_fQ@mail.gmail.com>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54BD44F0.3040705@users.sourceforge.net>
+In-Reply-To: <54BD44F0.3040705@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-The fbcon cursor, when set to blink, is hardcoded to toggle display state
-five times per second. Expose this setting via
-/sys/class/graphics/fbcon/cursor_blink_ms
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 19 Jan 2015 17:56:11 +0100
 
-Values written to the interface set the approximate time interval in
-milliseconds between cursor toggles, from 1 to 32767. Since the interval
-is stored internally as a number of jiffies, the millisecond value read
-from the interface may not exactly match the entered value.
+The iounmap() function could be called in three cases by the w100fb_probe()
+function during error handling even if the passed data structure element
+contained still a null pointer.
 
-An outstanding blink timer is reset after a new value is entered.
+* This implementation detail could be improved by adjustments for
+  jump labels.
 
-If the cursor blink is disabled, either via the 'cursor_blink' boolean
-setting or some other mechanism, the 'cursor_blink_ms' setting may still
-be modified. The new value will be used if the blink is reactivated.
+* Let us also delete two unnecessary null pointer checks for the
+  variable "info".
 
-Tested with intelfb.
-
-Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
-v2:  Use kstrtos16() instead of kstrtoul() and min_t(). Thanks Geert!
+ drivers/video/fbdev/w100fb.c | 31 +++++++++++++++++--------------
+ 1 file changed, 17 insertions(+), 14 deletions(-)
 
- drivers/video/console/fbcon.c | 73 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 73 insertions(+)
-
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 7a2030b..7b6815d 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3495,11 +3495,84 @@ err:
- 	return count;
+diff --git a/drivers/video/fbdev/w100fb.c b/drivers/video/fbdev/w100fb.c
+index aeb53eb..67ddc57 100644
+--- a/drivers/video/fbdev/w100fb.c
++++ b/drivers/video/fbdev/w100fb.c
+@@ -645,12 +645,12 @@ int w100fb_probe(struct platform_device *pdev)
+ 	/* Remap the chip base address */
+ 	remapped_base = ioremap_nocache(mem->start+W100_CFG_BASE, W100_CFG_LEN);
+ 	if (remapped_base = NULL)
+-		goto out;
++		goto exit;
+ 
+ 	/* Map the register space */
+ 	remapped_regs = ioremap_nocache(mem->start+W100_REG_BASE, W100_REG_LEN);
+ 	if (remapped_regs = NULL)
+-		goto out;
++		goto io_unmap_base;
+ 
+ 	/* Identify the chip */
+ 	printk("Found ");
+@@ -662,19 +662,19 @@ int w100fb_probe(struct platform_device *pdev)
+ 		default:
+ 			printk("Unknown imageon chip ID\n");
+ 			err = -ENODEV;
+-			goto out;
++			goto io_unmap_regs;
+ 	}
+ 	printk(" at 0x%08lx.\n", (unsigned long) mem->start+W100_CFG_BASE);
+ 
+ 	/* Remap the framebuffer */
+ 	remapped_fbuf = ioremap_nocache(mem->start+MEM_WINDOW_BASE, MEM_WINDOW_SIZE);
+ 	if (remapped_fbuf = NULL)
+-		goto out;
++		goto io_unmap_regs;
+ 
+ 	info=framebuffer_alloc(sizeof(struct w100fb_par), &pdev->dev);
+ 	if (!info) {
+ 		err = -ENOMEM;
+-		goto out;
++		goto io_unmap_framebuffer;
+ 	}
+ 
+ 	par = info->par;
+@@ -690,13 +690,13 @@ int w100fb_probe(struct platform_device *pdev)
+ 	if (!par->pll_table) {
+ 		printk(KERN_ERR "No matching Xtal definition found\n");
+ 		err = -EINVAL;
+-		goto out;
++		goto release_framebuffer;
+ 	}
+ 
+ 	info->pseudo_palette = kmalloc(sizeof (u32) * MAX_PALETTES, GFP_KERNEL);
+ 	if (!info->pseudo_palette) {
+ 		err = -ENOMEM;
+-		goto out;
++		goto release_framebuffer;
+ 	}
+ 
+ 	info->fbops = &w100fb_ops;
+@@ -716,7 +716,7 @@ int w100fb_probe(struct platform_device *pdev)
+ 
+ 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
+ 		err = -ENOMEM;
+-		goto out;
++		goto free_palette;
+ 	}
+ 
+ 	par->mode = &inf->modelist[0];
+@@ -766,15 +766,18 @@ int w100fb_probe(struct platform_device *pdev)
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+ 	return 0;
+ out:
+-	if (info) {
+-		fb_dealloc_cmap(&info->cmap);
+-		kfree(info->pseudo_palette);
+-	}
++	fb_dealloc_cmap(&info->cmap);
++free_palette:
++	kfree(info->pseudo_palette);
++release_framebuffer:
++	framebuffer_release(info);
++io_unmap_framebuffer:
+ 	iounmap(remapped_fbuf);
++io_unmap_regs:
+ 	iounmap(remapped_regs);
++io_unmap_base:
+ 	iounmap(remapped_base);
+-	if (info)
+-		framebuffer_release(info);
++exit:
+ 	return err;
  }
  
-+static ssize_t show_cursor_blink_ms(struct device *device,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct fb_info *info;
-+	struct fbcon_ops *ops;
-+	int idx, ms = -1;
-+
-+	if (fbcon_has_exited)
-+		return 0;
-+
-+	console_lock();
-+	idx = con2fb_map[fg_console];
-+
-+	if (idx = -1 || registered_fb[idx] = NULL)
-+		goto err;
-+
-+	info = registered_fb[idx];
-+	ops = info->fbcon_par;
-+
-+	if (!ops)
-+		goto err;
-+
-+	ms = jiffies_to_msecs(ops->blink_jiffies);
-+
-+err:
-+	console_unlock();
-+	return snprintf(buf, PAGE_SIZE, "%d\n", ms);
-+}
-+
-+static ssize_t store_cursor_blink_ms(struct device *device,
-+				     struct device_attribute *attr,
-+				     const char *buf, size_t count)
-+{
-+	struct fb_info *info;
-+	struct fbcon_ops *ops;
-+	int idx;
-+	short ms;
-+
-+	if (fbcon_has_exited)
-+		return count;
-+
-+	console_lock();
-+	idx = con2fb_map[fg_console];
-+
-+	if (idx = -1 || registered_fb[idx] = NULL)
-+		goto err;
-+
-+	info = registered_fb[idx];
-+
-+	if (!info->fbcon_par)
-+		goto err;
-+
-+	ops = info->fbcon_par;
-+
-+	if (!ops)
-+		goto err;
-+
-+	if (!kstrtos16(buf, 0, &ms)) {
-+		ops->blink_jiffies = max_t(int, msecs_to_jiffies(ms), 1);
-+		if (info->queue.func = fb_flashcursor &&
-+		    ops->flags & FBCON_FLAGS_CURSOR_TIMER) {
-+			fbcon_del_cursor_timer(info);
-+			fbcon_add_cursor_timer(info);
-+		}
-+	}
-+
-+err:
-+	console_unlock();
-+	return count;
-+}
-+
- static struct device_attribute device_attrs[] = {
- 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
- 	__ATTR(rotate_all, S_IWUSR, NULL, store_rotate_all),
- 	__ATTR(cursor_blink, S_IRUGO|S_IWUSR, show_cursor_blink,
- 	       store_cursor_blink),
-+	__ATTR(cursor_blink_ms, S_IRUGO|S_IWUSR, show_cursor_blink_ms,
-+	       store_cursor_blink_ms),
- };
- 
- static int fbcon_init_device(void)
 -- 
-2.1.4
+2.2.2
 

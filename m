@@ -1,23 +1,42 @@
-From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Date: Thu, 08 Jan 2015 08:17:57 +0000
-Subject: [PATCH 0/2] fbdev: ssd1307fb: fixes
-Message-Id: <1420705079-3741-1-git-send-email-prabhakar.csengg@gmail.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Mon, 19 Jan 2015 08:23:01 +0000
+Subject: [PATCH v2 2/7] staging: sm7xxfb: update TODO file
+Message-Id: <1421655067-7490-2-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1421655067-7490-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1421655067-7490-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
 
-This patch series fixes trivial issues in ssd1307fb driver.
+update the email addresses in the TODO file, also update the final
+destination of this driver.
 
-Lad, Prabhakar (2):
-  fbdev: ssd1307fb: set default height if not found in DT node
-  fbdev: ssd1307fb: check return value while setting offset
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+---
+ drivers/staging/sm7xxfb/TODO | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
- drivers/video/fbdev/ssd1307fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/staging/sm7xxfb/TODO b/drivers/staging/sm7xxfb/TODO
+index 1fcead5..7cb0b24 100644
+--- a/drivers/staging/sm7xxfb/TODO
++++ b/drivers/staging/sm7xxfb/TODO
+@@ -3,7 +3,10 @@ TODO:
+ - 2D acceleration support
+ - use kernel coding style
+ - refine the code and remove unused code
+-- move it to drivers/video/sm7xxfb.c
++- move it to drivers/video/fbdev/sm7xxfb.c
+ 
+-Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
+-Teddy Wang <teddy.wang@siliconmotion.com.cn>.
++Please send any patches to
++	Greg Kroah-Hartman <greg@kroah.com>
++	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
++	Teddy Wang <teddy.wang@siliconmotion.com>
++	Sudip Mukherjee <sudip@vectorindia.org>
 -- 
-1.9.1
+1.8.1.2
 

@@ -1,142 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 27 Jan 2015 10:50:36 +0000
-Subject: [PATCH 08/14] OMAPDSS: DSS: Add DRA7xx base support
-Message-Id: <1422355842-11234-9-git-send-email-tomi.valkeinen@ti.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 19 Jan 2015 18:30:42 +0000
+Subject: [PATCH 3/9] video: One function call less in vesafb_probe() after, error detection
+Message-Id: <54BD4D52.2090902@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54BD44F0.3040705@users.sourceforge.net>
+In-Reply-To: <54BD44F0.3040705@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-Add base support for DRA7xx to DSS core.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 19 Jan 2015 11:30:33 +0100
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+The iounmap() function could be called in two cases by the vesafb_probe()
+function during error handling even if the passed data structure element
+contained still a null pointer.
+
+This implementation detail could be improved by adjustments for jump labels.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/omap2/dss/dss.c               | 40 +++++++++++++++++++++++
- drivers/video/fbdev/omap2/dss/dss.h               |  2 ++
- drivers/video/fbdev/omap2/dss/dss_features.c      |  1 +
- drivers/video/fbdev/omap2/dss/omapdss-boot-init.c |  1 +
- 4 files changed, 44 insertions(+)
+ drivers/video/fbdev/vesafb.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-index 1884c29ef482..8c79839fbe87 100644
---- a/drivers/video/fbdev/omap2/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/dss/dss.c
-@@ -605,6 +605,26 @@ static int dss_dpi_select_source_omap5(int port, enum omap_channel channel)
- 	return 0;
- }
- 
-+static int dss_dpi_select_source_dra7xx(int port, enum omap_channel channel)
-+{
-+	switch (port) {
-+	case 0:
-+		return dss_dpi_select_source_omap5(port, channel);
-+	case 1:
-+		if (channel != OMAP_DSS_CHANNEL_LCD2)
-+			return -EINVAL;
-+		break;
-+	case 2:
-+		if (channel != OMAP_DSS_CHANNEL_LCD3)
-+			return -EINVAL;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- int dss_dpi_select_source(int port, enum omap_channel channel)
- {
- 	return dss.feat->dpi_select_source(port, channel);
-@@ -686,6 +706,12 @@ static const enum omap_display_type omap34xx_ports[] = {
- 	OMAP_DISPLAY_TYPE_SDI,
- };
- 
-+static const enum omap_display_type dra7xx_ports[] = {
-+	OMAP_DISPLAY_TYPE_DPI,
-+	OMAP_DISPLAY_TYPE_DPI,
-+	OMAP_DISPLAY_TYPE_DPI,
-+};
-+
- static const struct dss_features omap24xx_dss_feats __initconst = {
- 	/*
- 	 * fck div max is really 16, but the divider range has gaps. The range
-@@ -744,6 +770,15 @@ static const struct dss_features am43xx_dss_feats __initconst = {
- 	.num_ports		=	ARRAY_SIZE(omap2plus_ports),
- };
- 
-+static const struct dss_features dra7xx_dss_feats __initconst = {
-+	.fck_div_max		=	64,
-+	.dss_fck_multiplier	=	1,
-+	.parent_clk_name	=	"dpll_per_x2_ck",
-+	.dpi_select_source	=	&dss_dpi_select_source_dra7xx,
-+	.ports			=	dra7xx_ports,
-+	.num_ports		=	ARRAY_SIZE(dra7xx_ports),
-+};
-+
- static int __init dss_init_features(struct platform_device *pdev)
- {
- 	const struct dss_features *src;
-@@ -784,6 +819,10 @@ static int __init dss_init_features(struct platform_device *pdev)
- 		src = &am43xx_dss_feats;
- 		break;
- 
-+	case OMAPDSS_VER_DRA7xx:
-+		src = &dra7xx_dss_feats;
-+		break;
-+
- 	default:
- 		return -ENODEV;
+diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
+index 693d18e..de7cad0 100644
+--- a/drivers/video/fbdev/vesafb.c
++++ b/drivers/video/fbdev/vesafb.c
+@@ -303,7 +303,7 @@ static int vesafb_probe(struct platform_device *dev)
+ 	info->apertures = alloc_apertures(1);
+ 	if (!info->apertures) {
+ 		err = -ENOMEM;
+-		goto err;
++		goto release_framebuffer;
  	}
-@@ -1003,6 +1042,7 @@ static const struct of_device_id dss_of_match[] = {
- 	{ .compatible = "ti,omap3-dss", },
- 	{ .compatible = "ti,omap4-dss", },
- 	{ .compatible = "ti,omap5-dss", },
-+	{ .compatible = "ti,dra7-dss", },
- 	{},
- };
+ 	info->apertures->ranges[0].base = screen_info.lfb_base;
+ 	info->apertures->ranges[0].size = size_total;
+@@ -462,7 +462,7 @@ static int vesafb_probe(struct platform_device *dev)
+ 		       "vesafb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
+ 			vesafb_fix.smem_len, vesafb_fix.smem_start);
+ 		err = -EIO;
+-		goto err;
++		goto release_framebuffer;
+ 	}
  
-diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
-index d6c9c3d3db14..4bca36a591ca 100644
---- a/drivers/video/fbdev/omap2/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/dss/dss.h
-@@ -104,6 +104,8 @@ enum dss_pll_id {
- 	DSS_PLL_DSI1,
- 	DSS_PLL_DSI2,
- 	DSS_PLL_HDMI,
-+	DSS_PLL_VIDEO1,
-+	DSS_PLL_VIDEO2,
- };
- 
- struct dss_pll;
-diff --git a/drivers/video/fbdev/omap2/dss/dss_features.c b/drivers/video/fbdev/omap2/dss/dss_features.c
-index 0e6f3f54749f..376270b777f8 100644
---- a/drivers/video/fbdev/omap2/dss/dss_features.c
-+++ b/drivers/video/fbdev/omap2/dss/dss_features.c
-@@ -943,6 +943,7 @@ void dss_features_init(enum omapdss_version version)
- 		break;
- 
- 	case OMAPDSS_VER_OMAP5:
-+	case OMAPDSS_VER_DRA7xx:
- 		omap_current_dss_features = &omap5_dss_features;
- 		break;
- 
-diff --git a/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
-index 2f0822ee3ff9..42b87f95267c 100644
---- a/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
-+++ b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
-@@ -186,6 +186,7 @@ static const struct of_device_id omapdss_of_match[] __initconst = {
- 	{ .compatible = "ti,omap3-dss", },
- 	{ .compatible = "ti,omap4-dss", },
- 	{ .compatible = "ti,omap5-dss", },
-+	{ .compatible = "ti,dra7-dss", },
- 	{},
- };
- 
+ 	printk(KERN_INFO "vesafb: framebuffer at 0x%lx, mapped to 0x%p, "
+@@ -492,6 +492,7 @@ static int vesafb_probe(struct platform_device *dev)
+ 	return 0;
+ err:
+ 	iounmap(info->screen_base);
++release_framebuffer:
+ 	framebuffer_release(info);
+ 	release_mem_region(vesafb_fix.smem_start, size_total);
+ 	return err;
 -- 
 2.2.2
 

@@ -1,69 +1,76 @@
-From: Scot Doyle <lkml14@scotdoyle.com>
-Date: Fri, 30 Jan 2015 09:37:48 +0000
-Subject: [PATCH v6 1/2] fbcon: store cursor blink interval in fbcon_ops
-Message-Id: <alpine.DEB.2.11.1501300936310.2359@localhost.localdomain>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 19 Jan 2015 18:38:08 +0000
+Subject: [PATCH 5/9] video: Less function calls in trident_pci_probe() after error detection
+Message-Id: <54BD4F10.9040401@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain> <alpine.DEB.2.11.1501300843200.2423@localhost.localdomain> <alpine.DEB.2.11.1501300932470.2288@localhost.localdomain>
-In-Reply-To: <alpine.DEB.2.11.1501300932470.2288@localhost.localdomain>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54BD44F0.3040705@users.sourceforge.net>
+In-Reply-To: <54BD44F0.3040705@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-fbcon toggles cursor display state every 200 milliseconds when blinking.
-Since users prefer different toggle intervals, prepare to expose the
-interval via sysfs by moving it to fbdev_ops and setting the default
-to 200 milliseconds.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 19 Jan 2015 14:18:47 +0100
 
-Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+The functions "iounmap" and "kfree" could be called in a few cases by the
+trident_pci_probe() function during error handling even if the passed data
+structure element contained still a null pointer.
+
+This implementation detail could be improved by adjustments for jump labels.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/console/fbcon.c | 5 +++--
- drivers/video/console/fbcon.h | 1 +
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/tridentfb.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index ea43724..7a2030b 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -405,7 +405,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
- 	struct fbcon_ops *ops = info->fbcon_par;
+diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
+index 71567401..86d4733 100644
+--- a/drivers/video/fbdev/tridentfb.c
++++ b/drivers/video/fbdev/tridentfb.c
+@@ -1436,7 +1436,7 @@ static int trident_pci_probe(struct pci_dev *dev,
+ 	if (!default_par->io_virt) {
+ 		debug("ioremap failed\n");
+ 		err = -1;
+-		goto out_unmap1;
++		goto release_memory_region_mmio;
+ 	}
  
- 	queue_work(system_power_efficient_wq, &info->queue);
--	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
-+	mod_timer(&ops->cursor_timer, jiffies + ops->blink_jiffies);
- }
+ 	enable_mmio(default_par);
+@@ -1459,7 +1459,7 @@ static int trident_pci_probe(struct pci_dev *dev,
+ 	if (!info->screen_base) {
+ 		debug("ioremap failed\n");
+ 		err = -1;
+-		goto out_unmap2;
++		goto release_memory_region_smem;
+ 	}
  
- static void fbcon_add_cursor_timer(struct fb_info *info)
-@@ -420,7 +420,7 @@ static void fbcon_add_cursor_timer(struct fb_info *info)
+ 	default_par->flatpanel = is_flatpanel(default_par);
+@@ -1485,7 +1485,7 @@ static int trident_pci_probe(struct pci_dev *dev,
+ 	info->pixmap.addr = kmalloc(4096, GFP_KERNEL);
+ 	if (!info->pixmap.addr) {
+ 		err = -ENOMEM;
+-		goto out_unmap2;
++		goto io_unmap_screenbase;
+ 	}
  
- 		init_timer(&ops->cursor_timer);
- 		ops->cursor_timer.function = cursor_timer_handler;
--		ops->cursor_timer.expires = jiffies + HZ / 5;
-+		ops->cursor_timer.expires = jiffies + ops->blink_jiffies;
- 		ops->cursor_timer.data = (unsigned long ) info;
- 		add_timer(&ops->cursor_timer);
- 		ops->flags |= FBCON_FLAGS_CURSOR_TIMER;
-@@ -959,6 +959,7 @@ static const char *fbcon_startup(void)
- 	ops->currcon = -1;
- 	ops->graphics = 1;
- 	ops->cur_rotate = -1;
-+	ops->blink_jiffies = msecs_to_jiffies(200);
- 	info->fbcon_par = ops;
- 	p->con_rotate = initial_rotation;
- 	set_blitting_type(vc, info);
-diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
-index 6bd2e0c..642c4e7 100644
---- a/drivers/video/console/fbcon.h
-+++ b/drivers/video/console/fbcon.h
-@@ -70,6 +70,7 @@ struct fbcon_ops {
- 	struct fb_cursor cursor_state;
- 	struct display *p;
-         int    currcon;	                /* Current VC. */
-+	int    blink_jiffies;
- 	int    cursor_flash;
- 	int    cursor_reset;
- 	int    blank_state;
+ 	info->pixmap.size = 4096;
+@@ -1531,11 +1531,14 @@ static int trident_pci_probe(struct pci_dev *dev,
+ 
+ out_unmap2:
+ 	kfree(info->pixmap.addr);
++io_unmap_screenbase:
+ 	iounmap(info->screen_base);
++release_memory_region_smem:
+ 	release_mem_region(tridentfb_fix.smem_start, tridentfb_fix.smem_len);
+ 	disable_mmio(info->par);
+ out_unmap1:
+ 	iounmap(default_par->io_virt);
++release_memory_region_mmio:
+ 	release_mem_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
+ 	framebuffer_release(info);
+ 	return err;
 -- 
-2.1.4
+2.2.2
 

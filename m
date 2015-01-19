@@ -1,124 +1,95 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Thu, 01 Jan 2015 19:14:24 +0000
-Subject: [PATCH] video: fbdev: exynos: exynos_mipi_dsi_common:  Remove some unused functions
-Message-Id: <1420139664-3008-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 19 Jan 2015 18:25:29 +0000
+Subject: video: One function call less in tdfxfb_probe() after error detection
+Message-Id: <54BD4C19.6040500@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54BD44F0.3040705@users.sourceforge.net>
+In-Reply-To: <54BD44F0.3040705@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-Removes some functions that are not used anywhere:
-exynos_mipi_dsi_fifo_clear() exynos_mipi_dsi_set_data_transfer_mode()
-exynos_mipi_dsi_enable_frame_done_int()
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 18 Jan 2015 23:30:41 +0100
 
-This was partially found by using a static code analysis program called cppcheck.
+The iounmap() function could be called in two cases by the tdfxfb_probe()
+function during error handling even if the passed data structure element
+contained still a null pointer.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+This implementation detail could be improved by adjustments for jump labels.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- .../video/fbdev/exynos/exynos_mipi_dsi_common.c    |   53 --------------------
- .../video/fbdev/exynos/exynos_mipi_dsi_common.h    |    7 ---
- 2 files changed, 60 deletions(-)
+ drivers/video/fbdev/tdfxfb.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c b/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
-index 85edabf..d7b4abc 100644
---- a/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
-+++ b/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
-@@ -690,15 +690,6 @@ void exynos_mipi_dsi_init_interrupt(struct mipi_dsim_device *dsim)
- 	exynos_mipi_dsi_set_interrupt_mask(dsim, src, 1);
- }
+diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
+index 69d4062..c280a3b 100644
+--- a/drivers/video/fbdev/tdfxfb.c
++++ b/drivers/video/fbdev/tdfxfb.c
+@@ -1438,20 +1438,20 @@ static int tdfxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	if (!default_par->regbase_virt) {
+ 		printk(KERN_ERR "fb: Can't remap %s register area.\n",
+ 				info->fix.id);
+-		goto out_err_regbase;
++		goto release_memory_region_regbase;
+ 	}
  
--int exynos_mipi_dsi_enable_frame_done_int(struct mipi_dsim_device *dsim,
--	unsigned int enable)
--{
--	/* enable only frame done interrupt */
--	exynos_mipi_dsi_set_interrupt_mask(dsim, INTMSK_FRAME_DONE, enable);
--
--	return 0;
--}
--
- void exynos_mipi_dsi_stand_by(struct mipi_dsim_device *dsim,
- 		unsigned int enable)
- {
-@@ -819,30 +810,6 @@ int exynos_mipi_dsi_set_hs_enable(struct mipi_dsim_device *dsim)
- 	return 0;
- }
+ 	info->fix.smem_start = pci_resource_start(pdev, 1);
+ 	info->fix.smem_len = do_lfb_size(default_par, pdev->device);
+ 	if (!info->fix.smem_len) {
+ 		printk(KERN_ERR "fb: Can't count %s memory.\n", info->fix.id);
+-		goto out_err_regbase;
++		goto io_unmap_regbase;
+ 	}
  
--int exynos_mipi_dsi_set_data_transfer_mode(struct mipi_dsim_device *dsim,
--		unsigned int mode)
--{
--	if (mode) {
--		if (dsim->state != DSIM_STATE_HSCLKEN) {
--			dev_err(dsim->dev, "HS Clock lane is not enabled.\n");
--			return -EINVAL;
--		}
--
--		exynos_mipi_dsi_set_lcdc_transfer_mode(dsim, 0);
--	} else {
--		if (dsim->state = DSIM_STATE_INIT || dsim->state =
--			DSIM_STATE_ULPS) {
--			dev_err(dsim->dev,
--				"DSI Master is not STOP or HSDT state.\n");
--			return -EINVAL;
--		}
--
--		exynos_mipi_dsi_set_cpu_transfer_mode(dsim, 0);
--	}
--
--	return 0;
--}
--
- int exynos_mipi_dsi_get_frame_done_status(struct mipi_dsim_device *dsim)
- {
- 	return _exynos_mipi_dsi_get_frame_done_status(dsim);
-@@ -855,26 +822,6 @@ int exynos_mipi_dsi_clear_frame_done(struct mipi_dsim_device *dsim)
- 	return 0;
- }
+ 	if (!request_mem_region(info->fix.smem_start,
+ 				pci_resource_len(pdev, 1), "tdfx smem")) {
+ 		printk(KERN_ERR "tdfxfb: Can't reserve smem\n");
+-		goto out_err_regbase;
++		goto io_unmap_regbase;
+ 	}
  
--int exynos_mipi_dsi_fifo_clear(struct mipi_dsim_device *dsim,
--				unsigned int val)
--{
--	int try = TRY_FIFO_CLEAR;
--
--	exynos_mipi_dsi_sw_reset_release(dsim);
--	exynos_mipi_dsi_func_reset(dsim);
--
--	do {
--		if (exynos_mipi_dsi_get_sw_reset_release(dsim)) {
--			exynos_mipi_dsi_init_interrupt(dsim);
--			dev_dbg(dsim->dev, "reset release done.\n");
--			return 0;
--		}
--	} while (--try);
--
--	dev_err(dsim->dev, "failed to clear dsim fifo.\n");
--	return -EAGAIN;
--}
--
- MODULE_AUTHOR("InKi Dae <inki.dae@samsung.com>");
- MODULE_DESCRIPTION("Samusung SoC MIPI-DSI common driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.h b/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.h
-index 4125522..5c1c30b 100644
---- a/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.h
-+++ b/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.h
-@@ -31,16 +31,9 @@ int exynos_mipi_dsi_set_display_mode(struct mipi_dsim_device *dsim,
- 			struct mipi_dsim_config *dsim_info);
- int exynos_mipi_dsi_init_link(struct mipi_dsim_device *dsim);
- int exynos_mipi_dsi_set_hs_enable(struct mipi_dsim_device *dsim);
--int exynos_mipi_dsi_set_data_transfer_mode(struct mipi_dsim_device *dsim,
--		unsigned int mode);
--int exynos_mipi_dsi_enable_frame_done_int(struct mipi_dsim_device *dsim,
--	unsigned int enable);
- int exynos_mipi_dsi_get_frame_done_status(struct mipi_dsim_device *dsim);
- int exynos_mipi_dsi_clear_frame_done(struct mipi_dsim_device *dsim);
+ 	info->screen_base = ioremap_nocache(info->fix.smem_start,
+@@ -1459,7 +1459,7 @@ static int tdfxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	if (!info->screen_base) {
+ 		printk(KERN_ERR "fb: Can't remap %s framebuffer.\n",
+ 				info->fix.id);
+-		goto out_err_screenbase;
++		goto release_memory_region_screenbase;
+ 	}
  
- extern struct fb_info *registered_fb[FB_MAX] __read_mostly;
+ 	default_par->iobase = pci_resource_start(pdev, 2);
+@@ -1467,7 +1467,7 @@ static int tdfxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	if (!request_region(pci_resource_start(pdev, 2),
+ 			    pci_resource_len(pdev, 2), "tdfx iobase")) {
+ 		printk(KERN_ERR "tdfxfb: Can't reserve iobase\n");
+-		goto out_err_screenbase;
++		goto io_unmap_screenbase;
+ 	}
  
--int exynos_mipi_dsi_fifo_clear(struct mipi_dsim_device *dsim,
--				unsigned int val);
--
- #endif /* _EXYNOS_MIPI_DSI_COMMON_H */
+ 	printk(KERN_INFO "fb: %s memory = %dK\n", info->fix.id,
+@@ -1571,14 +1571,16 @@ out_err_iobase:
+ 			 info->fix.smem_len);
+ 	release_region(pci_resource_start(pdev, 2),
+ 		       pci_resource_len(pdev, 2));
+-out_err_screenbase:
++io_unmap_screenbase:
+ 	iounmap(info->screen_base);
++release_memory_region_screenbase:
+ 	release_mem_region(info->fix.smem_start, pci_resource_len(pdev, 1));
+-out_err_regbase:
++io_unmap_regbase:
+ 	/*
+ 	 * Cleanup after anything that was remapped/allocated.
+ 	 */
+ 	iounmap(default_par->regbase_virt);
++release_memory_region_regbase:
+ 	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
+ out_err:
+ 	framebuffer_release(info);
 -- 
-1.7.10.4
+2.2.2
 

@@ -1,95 +1,64 @@
-From: gyungoh@gmail.com
-Date: Fri, 23 Jan 2015 06:28:32 +0000
-Subject: [PATCH v10 3/6] devicetree: Add new SKY81452 mfd binding
-Message-Id: <1421994515-3070-4-git-send-email-jack.yoo@skyworksinc.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Mon, 19 Jan 2015 08:23:05 +0000
+Subject: [PATCH v2 6/7] staging: sm7xxfb: remove unnecessary blank lines
+Message-Id: <1421655067-7490-6-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
+References: <1421655067-7490-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1421655067-7490-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
-Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
 
-From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+checkpatch cleanup: blank lines are not necessary before closing brace
+and after opening brace.
 
-Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
-Changes v10:
-Nothing
 
-Changes v9:
-Nothing
+these are actually two different checkpatch warning, but am sending
+them together as they are of similar type.
 
-Changes v8:
-Made up the example for backlight DT
+ drivers/staging/sm7xxfb/sm7xxfb.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-Changes v7:
-Nothing
-
-Changes v6:
-Nothing
-
-Changes v5:
-Changed DT for regulator : 'lout' node should be defined under 'regulator'
-Removed compatible string from sky81452-regulator driver
-
-Changes v4:
-Nothing
-
-Changes v3:
-Nothing
-
-Changes v2:
-Added reg attribute for I2C slave address
-
- Documentation/devicetree/bindings/mfd/sky81452.txt | 36 ++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
-
-diff --git a/Documentation/devicetree/bindings/mfd/sky81452.txt b/Documentation/devicetree/bindings/mfd/sky81452.txt
-new file mode 100644
-index 0000000..ab71473
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/sky81452.txt
-@@ -0,0 +1,36 @@
-+SKY81452 bindings
-+
-+Required properties:
-+- compatible	: Must be "skyworks,sky81452"
-+- reg		: I2C slave address
-+
-+Required child nodes:
-+- backlight	: container node for backlight following the binding
-+		in video/backlight/sky81452-backlight.txt
-+- regulator	: container node for regulators following the binding
-+		in regulator/sky81452-regulator.txt
-+
-+Example:
-+
-+	sky81452@2c {
-+		compatible = "skyworks,sky81452";
-+		reg = <0x2c>;
-+
-+		backlight {
-+			compatible = "skyworks,sky81452-backlight";
-+			name = "pwm-backlight";
-+			skyworks,en-channels = <0x3f>;
-+			skyworks,ignore-pwm;
-+			skyworks,phase-shift;
-+			skyworks,ovp-level = <20>;
-+			skyworks,current-limit = <2300>;
-+		};
-+
-+		regulator {
-+			lout {
-+				regulator-name = "sky81452-lout";
-+				regulator-min-microvolt = <4500000>;
-+				regulator-max-microvolt = <8000000>;
-+			};
-+		};
-+	};
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 6f0469a..097747c 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -298,7 +298,6 @@ static int smtc_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 	}
+ 
+ 	return 0;
+-
+ }
+ 
+ #ifdef __BIG_ENDIAN
+@@ -482,7 +481,6 @@ static void sm7xx_set_timing(struct smtcfb_info *sfb)
+ 		    VGAMode[j].mmSizeY = sfb->height &&
+ 		    VGAMode[j].bpp = sfb->fb.var.bits_per_pixel &&
+ 		    VGAMode[j].hz = sfb->hz) {
+-
+ 			dev_dbg(&sfb->pdev->dev,
+ 				"VGAMode[j].mmSizeX=%d VGAMode[j].mmSizeY=%d VGAMode[j].bpp=%d VGAMode[j].hz=%d\n",
+ 				VGAMode[j].mmSizeX, VGAMode[j].mmSizeY,
+@@ -571,7 +569,6 @@ static void sm7xx_set_timing(struct smtcfb_info *sfb)
+ 	}
+ 	writel((u32) (((m_nScreenStride + 2) << 16) | m_nScreenStride),
+ 	       sfb->vp_regs + 0x10);
+-
+ }
+ 
+ static void smtc_set_timing(struct smtcfb_info *sfb)
+@@ -725,7 +722,6 @@ static void smtc_unmap_mmio(struct smtcfb_info *sfb)
+ static int smtc_map_smem(struct smtcfb_info *sfb,
+ 		struct pci_dev *pdev, u_long smem_len)
+ {
+-
+ 	sfb->fb.fix.smem_start = pci_resource_start(pdev, 0);
+ 
+ #ifdef __BIG_ENDIAN
 -- 
-1.9.1
+1.8.1.2
 

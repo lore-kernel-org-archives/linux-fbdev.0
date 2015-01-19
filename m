@@ -1,50 +1,43 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 27 Jan 2015 10:50:31 +0000
-Subject: [PATCH 03/14] OMAPDSS: constify port arrays
-Message-Id: <1422355842-11234-4-git-send-email-tomi.valkeinen@ti.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Mon, 19 Jan 2015 08:23:02 +0000
+Subject: [PATCH v2 3/7] MAINTAINERS: update for SM7XX driver
+Message-Id: <1421655067-7490-3-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1421655067-7490-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1421655067-7490-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
 
-The port arrays are constant data, so set them as 'const'.
+add myself and Teddy Wang as the Maintainer of the
+SM7XX FRAME BUFFER DRIVER.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/omap2/dss/dss.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-index 9987154d50b4..1884c29ef482 100644
---- a/drivers/video/fbdev/omap2/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/dss/dss.c
-@@ -70,7 +70,7 @@ struct dss_features {
- 	u8 fck_div_max;
- 	u8 dss_fck_multiplier;
- 	const char *parent_clk_name;
--	enum omap_display_type *ports;
-+	const enum omap_display_type *ports;
- 	int num_ports;
- 	int (*dpi_select_source)(int port, enum omap_channel channel);
- };
-@@ -677,11 +677,11 @@ void dss_debug_dump_clocks(struct seq_file *s)
- #endif
+diff --git a/MAINTAINERS b/MAINTAINERS
+index dbc17b3..4fd647e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -9220,6 +9220,14 @@ L:	linux-wireless@vger.kernel.org
+ S:	Maintained
+ F:	drivers/staging/rtl8723au/
  
- 
--static enum omap_display_type omap2plus_ports[] = {
-+static const enum omap_display_type omap2plus_ports[] = {
- 	OMAP_DISPLAY_TYPE_DPI,
- };
- 
--static enum omap_display_type omap34xx_ports[] = {
-+static const enum omap_display_type omap34xx_ports[] = {
- 	OMAP_DISPLAY_TYPE_DPI,
- 	OMAP_DISPLAY_TYPE_SDI,
- };
++STAGING - SILICON MOTION SM7XX FRAME BUFFER DRIVER
++M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
++M:	Teddy Wang <teddy.wang@siliconmotion.com>
++M:	Sudip Mukherjee <sudip@vectorindia.org>
++L:	linux-fbdev@vger.kernel.org
++S:	Maintained
++F:	drivers/staging/sm7xxfb/
++
+ STAGING - SLICOSS
+ M:	Lior Dotan <liodot@gmail.com>
+ M:	Christopher Harrer <charrer@alacritech.com>
 -- 
-2.2.2
+1.8.1.2
 

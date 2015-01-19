@@ -1,43 +1,67 @@
-From: Peter Meerwald <pmeerw@pmeerw.net>
-Date: Fri, 30 Jan 2015 07:59:46 +0000
-Subject: [PATCH] omapfb: Return error code when applying overlay settings fails
-Message-Id: <1422604786-6804-1-git-send-email-pmeerw@pmeerw.net>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Mon, 19 Jan 2015 08:23:04 +0000
+Subject: [PATCH v2 5/7] staging: sm7xxfb: no space is necessary after a cast
+Message-Id: <1421655067-7490-5-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1421655067-7490-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1421655067-7490-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org
-Cc: tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, Peter Meerwald <pmeerw@pmeerw.net>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
 
-the check of the return code is missing, user space does not get notified
-about the error condition:
+checkpatch cleanup: space is not necessary after cast
 
-omapdss OVERLAY error: overlay 2 horizontally not inside the display area (403 + 800 >= 800)
-omapdss APPLY error: failed to apply settings: illegal configuration.
-
-Signed-off-by: Peter Meerwald <pmeerw@pmeerw.net>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/staging/sm7xxfb/sm7xxfb.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c b/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
-index 146b6f5..9ddfdd6 100644
---- a/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
-+++ b/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
-@@ -137,8 +137,11 @@ static int omapfb_setup_plane(struct fb_info *fbi, struct omapfb_plane_info *pi)
- 			goto undo;
- 	}
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 6bce9f1..6f0469a 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -352,8 +352,8 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf, size_t
+ 			dst++;
+ 		}
+ 		if (c & 3) {
+-			u8 *dst8 = (u8 *) dst;
+-			u8 __iomem *src8 = (u8 __iomem *) src;
++			u8 *dst8 = (u8 *)dst;
++			u8 __iomem *src8 = (u8 __iomem *)src;
  
--	if (ovl->manager)
--		ovl->manager->apply(ovl->manager);
-+	if (ovl->manager) {
-+		r = ovl->manager->apply(ovl->manager);
-+		if (r)
-+			goto undo;
-+	}
+ 			for (i = c & 3; i--;) {
+ 				if (i & 1) {
+@@ -363,7 +363,7 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf, size_t
+ 					src8 += 2;
+ 				}
+ 			}
+-			src = (u32 __iomem *) src8;
++			src = (u32 __iomem *)src8;
+ 		}
  
- 	if (pi->enabled) {
- 		r = ovl->enable(ovl);
+ 		if (copy_to_user(buf, buffer, c)) {
+@@ -442,8 +442,8 @@ smtcfb_write(struct fb_info *info, const char __user *buf, size_t count,
+ 			src++;
+ 		}
+ 		if (c & 3) {
+-			u8 *src8 = (u8 *) src;
+-			u8 __iomem *dst8 = (u8 __iomem *) dst;
++			u8 *src8 = (u8 *)src;
++			u8 __iomem *dst8 = (u8 __iomem *)dst;
+ 
+ 			for (i = c & 3; i--;) {
+ 				if (i & 1) {
+@@ -453,7 +453,7 @@ smtcfb_write(struct fb_info *info, const char __user *buf, size_t count,
+ 					dst8 += 2;
+ 				}
+ 			}
+-			dst = (u32 __iomem *) dst8;
++			dst = (u32 __iomem *)dst8;
+ 		}
+ 
+ 		*ppos += c;
 -- 
-1.7.10.4
+1.8.1.2
 

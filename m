@@ -1,48 +1,88 @@
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-Date: Fri, 30 Jan 2015 08:49:30 +0000
-Subject: Re: [PATCH v2] video: fbdev: fix sys_copyarea
-Message-Id: <yw1xh9v8bqlh.fsf@unicorn.mansr.com>
+From: Nicholas Mc Guire <der.herr@hofr.at>
+Date: Tue, 20 Jan 2015 05:23:50 +0000
+Subject: [PATCH] video: treat signal like timeout as failure
+Message-Id: <1421731430-13207-1-git-send-email-der.herr@hofr.at>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421889589-16362-1-git-send-email-mans@mansr.com>
-	<54CB38B6.3010202@ti.com>
-In-Reply-To: <54CB38B6.3010202@ti.com> (Tomi Valkeinen's message of "Fri, 30
-	Jan 2015 09:54:30 +0200")
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Tomi Valkeinen <tomi.valkeinen@ti.com> writes:
+if(!wait_for_completion_interruptible_timeout(...))
+only handles the timeout case - this patch adds handling the
+signal case the same as timeout and cleans up.
 
-> On 22/01/15 03:19, Mans Rullgard wrote:
->> The sys_copyarea() function performs the same operation as
->> cfb_copyarea() but using normal memory access instead of I/O
->> accessors.  Since the introduction of sys_copyarea(), there
->> have been two fixes to cfb_copyarea():
->>=20
->> - 00a9d699 ("framebuffer: fix cfb_copyarea")
->> - 5b789da8 ("framebuffer: fix screen corruption when copying")
->>=20
->> This patch incorporates the fixes into sys_copyarea() as well.
->>=20
->> Signed-off-by: Mans Rullgard <mans@mansr.com>
->> ---
->> Changed in v2:
->>  - Fixed wrong first/last calculation in bitcpy_rev()
->> ---
->>  drivers/video/fbdev/core/syscopyarea.c | 137 ++++++++++++++++----------=
--------
->>  1 file changed, 65 insertions(+), 72 deletions(-)
->
-> Thanks, queued for 3.20.
->
-> This makes me wonder, though, if the sys and cfb versions could be
-> somehow combined...
+Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
+---
 
-I would have done it by #including a common template with different
-macro definitions for the memory access operations.
+Only the timeout case was being handled, return of 0 in 
+wait_for_completion_interruptible_timeout, the signal case (-ERESTARTSYS)
+was treated just like the case of successful completion, which is most 
+likely not reasonable.
 
---=20
-M=E5ns Rullg=E5rd
-mans@mansr.com
+Note that exynos_mipi_dsi_wr_data/exynos_mipi_dsi_rd_data return values
+are not checked at the call sites in s6e8ax0.c (cmd_read/cmd_write)!
+
+This patch simply treats the signal case the same way as the timeout case,
+by releasing locks and returning 0 - which might not be the right thing to
+do - this needs a review by someone knowing the details of this driver.
+
+Patch is against 3.19.0-rc5 -next-20150119
+
+Patch was only compile-tested with exynos_defconfig
+
+ drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c |   17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c b/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
+index 2358a2f..55a7a45 100644
+--- a/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
++++ b/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
+@@ -157,6 +157,7 @@ int exynos_mipi_dsi_wr_data(struct mipi_dsim_device *dsim, unsigned int data_id,
+ 	const unsigned char *data0, unsigned int data_size)
+ {
+ 	unsigned int check_rx_ack = 0;
++	long timeout;
+ 
+ 	if (dsim->state = DSIM_STATE_ULPS) {
+ 		dev_err(dsim->dev, "state is ULPS.\n");
+@@ -244,9 +245,11 @@ int exynos_mipi_dsi_wr_data(struct mipi_dsim_device *dsim, unsigned int data_id,
+ 		exynos_mipi_dsi_wr_tx_header(dsim, data_id, data_size & 0xff,
+ 			(data_size & 0xff00) >> 8);
+ 
+-		if (!wait_for_completion_interruptible_timeout(&dsim_wr_comp,
+-							MIPI_FIFO_TIMEOUT)) {
+-			dev_warn(dsim->dev, "command write timeout.\n");
++		timeout = wait_for_completion_interruptible_timeout(
++					&dsim_wr_comp, MIPI_FIFO_TIMEOUT);
++		if (timeout <= 0) {
++			dev_warn(dsim->dev,
++				"command write timed-out/interrupted.\n");
+ 			mutex_unlock(&dsim->lock);
+ 			return -EAGAIN;
+ 		}
+@@ -345,6 +348,7 @@ int exynos_mipi_dsi_rd_data(struct mipi_dsim_device *dsim, unsigned int data_id,
+ 	unsigned int rx_data, rcv_pkt, i;
+ 	u8 response = 0;
+ 	u16 rxsize;
++	long timeout;
+ 
+ 	if (dsim->state = DSIM_STATE_ULPS) {
+ 		dev_err(dsim->dev, "state is ULPS.\n");
+@@ -380,9 +384,10 @@ int exynos_mipi_dsi_rd_data(struct mipi_dsim_device *dsim, unsigned int data_id,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (!wait_for_completion_interruptible_timeout(&dsim_rd_comp,
+-				MIPI_FIFO_TIMEOUT)) {
+-		pr_err("RX done interrupt timeout\n");
++	timeout = wait_for_completion_interruptible_timeout(&dsim_rd_comp,
++				MIPI_FIFO_TIMEOUT);
++	if (timeout <= 0) {
++		pr_err("RX done interrupt timeout/interrupted\n");
+ 		mutex_unlock(&dsim->lock);
+ 		return 0;
+ 	}
+-- 
+1.7.10.4
+

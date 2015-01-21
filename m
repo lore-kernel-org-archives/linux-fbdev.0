@@ -1,247 +1,80 @@
-From: gyungoh@gmail.com
-Date: Fri, 23 Jan 2015 06:28:30 +0000
-Subject: [PATCH v10 1/6] mfd: Add support for Skyworks SKY81452 driver
-Message-Id: <1421994515-3070-2-git-send-email-jack.yoo@skyworksinc.com>
+From: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+Date: Wed, 21 Jan 2015 13:18:37 +0000
+Subject: Re: [PATCH 1/2] backlight: pwm: don't call legacy pwm request for device defined in dt
+Message-Id: <54BFA72D.5040006@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
+References: <1413035186-11771-1-git-send-email-vladimir_zapolskiy@mentor.com> <1413035186-11771-2-git-send-email-vladimir_zapolskiy@mentor.com> <20141107134848.GB31950@ulmo> <545CD4DC.4030409@mentor.com> <545CDDF5.70905@mentor.com> <547C7F8A.40707@mentor.com>
+In-Reply-To: <547C7F8A.40707@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
-Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>
 
-From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+Hello Thierry,
 
-Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
----
-Changes v10:
-Nothing
+On 01.12.2014 16:47, Vladimir Zapolskiy wrote:
+> Hello Thierry,
+> 
+> On 07.11.2014 16:57, Vladimir Zapolskiy wrote:
+>> Thierry,
+>>
+>> On 07.11.2014 16:19, Vladimir Zapolskiy wrote:
+>>> Hi Thierry,
+>>>
+>>> On 07.11.2014 15:48, Thierry Reding wrote:
+>>>> On Sat, Oct 11, 2014 at 04:46:25PM +0300, Vladimir Zapolskiy wrote:
+>>>>> Platform PWM backlight data provided by board's device tree should be
+>>>>> complete enough to successfully request a pwm device using pwm_get() API.
+>>>>>
+>>>>> Based on initial implementation done by Dmitry Eremin-Solenikov.
+>>>>>
+>>>>> Reported-by: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
+>>>>> Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+>>>>> Cc: Thierry Reding <thierry.reding@gmail.com>
+>>>>> Cc: Jingoo Han <jg1.han@samsung.com>
+>>>>> Cc: Bryan Wu <cooloney@gmail.com>
+>>>>> Cc: Lee Jones <lee.jones@linaro.org>
+>>>>> ---
+>>>>>  drivers/video/backlight/pwm_bl.c |   14 +++++++-------
+>>>>>  1 file changed, 7 insertions(+), 7 deletions(-)
+>>>>
+>>>> I don't really understand what this is supposed to do. The commit
+>>>> message doesn't make a very good job of explaining it either.
+>>>>
+>>>> Can you describe in more detail what problem this fixes and why it
+>>>> should be merged?
+>>>
+>>> thank you for review.
+>>>
+>>> As it is shown by the code this particular change rejects fallback to
+>>> legacy PWM device request (which itself in turn is fixed in the next
+>>> commit) for boards with supplied DTS, "pwm-backlight" compatible node
+>>> and unregistered corresponding PWM device in that node.
+>>>
+>>> I don't know if there is a good enough reason to register PWM backlight
+>>> device connected to some quite arbitrary PWM device, if no PWM device
+>>> information is given in the "pwm-backlight" compatible node, so I think
+>>> it makes sense to change the default policy.
+>>>
+>>
+>> also please note that
+>> Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+>> quite fairly describes "pwms" as a required property, but right now this
+>> statement from the documentation is wrong, it is possible to register
+>> pwm-backlight device driver (using notorious pwm_request() legacy API)
+>> connected to some unspecified pwm device.
+>>
+>> I don't think that the current registration policy is correct, that's
+>> why I propose to fix the logic instead of making a documentation update.
+>>
+> 
+> have you had a chance to check the rationale of the change?
+> 
+> If you accept it, should I make the commit message more verbose?
 
-Changes v9:
-Nothing
+any updates? Do you have plans to merge the change?
 
-Changes v8:
-Nothing
-
-Changes v7:
-Modified licensing text to GPLv2
-
-Changes v6:
-Added new line character at the end of line of dev_err()
-
-Changes v5:
-Move sky81452-backlight.h to include/linux/platform_data
-
-Changes v4:
-Removed MODULE_VERSION()
-Modified license to GPLv2
-
-Changes v3:
-Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
-Assigned mfd_cell.of_compatible for binding device node
-Modified error messages
-
-Changes v2:
-Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
-Changed the dependency from I2C=y to I2C, for CONFIG_MFD_SKY81452
-Added message for exception or errors
-
- drivers/mfd/Kconfig          |  12 +++++
- drivers/mfd/Makefile         |   1 +
- drivers/mfd/sky81452.c       | 108 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/sky81452.h |  31 +++++++++++++
- 4 files changed, 152 insertions(+)
- create mode 100644 drivers/mfd/sky81452.c
- create mode 100644 include/linux/mfd/sky81452.h
-
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 1456ea7..a54244c 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -693,6 +693,18 @@ config MFD_SM501_GPIO
- 	 lines on the SM501. The platform data is used to supply the
- 	 base number for the first GPIO line to register.
- 
-+config MFD_SKY81452
-+	tristate "Skyworks Solutions SKY81452"
-+	select MFD_CORE
-+	select REGMAP_I2C
-+	depends on I2C
-+	help
-+	  This is the core driver for the Skyworks SKY81452 backlight and
-+	  voltage regulator device.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called sky81452.
-+
- config MFD_SMSC
-        bool "SMSC ECE1099 series chips"
-        depends on I2C=y
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 8bd54b1..d9683ea 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -174,6 +174,7 @@ obj-$(CONFIG_MFD_STW481X)	+= stw481x.o
- obj-$(CONFIG_MFD_IPAQ_MICRO)	+= ipaq-micro.o
- obj-$(CONFIG_MFD_MENF21BMC)	+= menf21bmc.o
- obj-$(CONFIG_MFD_HI6421_PMIC)	+= hi6421-pmic-core.o
-+obj-$(CONFIG_MFD_SKY81452)		+= sky81452.o
- 
- intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
- obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
-diff --git a/drivers/mfd/sky81452.c b/drivers/mfd/sky81452.c
-new file mode 100644
-index 0000000..b0c9b04
---- /dev/null
-+++ b/drivers/mfd/sky81452.c
-@@ -0,0 +1,108 @@
-+/*
-+ * sky81452.c	SKY81452 MFD driver
-+ *
-+ * Copyright 2014 Skyworks Solutions Inc.
-+ * Author : Gyungoh Yoo <jack.yoo@skyworksinc.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/err.h>
-+#include <linux/slab.h>
-+#include <linux/i2c.h>
-+#include <linux/regmap.h>
-+#include <linux/mfd/core.h>
-+#include <linux/mfd/sky81452.h>
-+
-+static const struct regmap_config sky81452_config = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+};
-+
-+static int sky81452_probe(struct i2c_client *client,
-+				const struct i2c_device_id *id)
-+{
-+	struct device *dev = &client->dev;
-+	const struct sky81452_platform_data *pdata = dev_get_platdata(dev);
-+	struct mfd_cell cells[2];
-+	struct regmap *regmap;
-+	int ret;
-+
-+	if (!pdata) {
-+		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
-+		if (!pdata)
-+			return -ENOMEM;
-+	}
-+
-+	regmap = devm_regmap_init_i2c(client, &sky81452_config);
-+	if (IS_ERR(regmap)) {
-+		dev_err(dev, "failed to initialize.err=%ld\n", PTR_ERR(regmap));
-+		return PTR_ERR(regmap);
-+	}
-+
-+	i2c_set_clientdata(client, regmap);
-+
-+	memset(cells, 0, sizeof(cells));
-+	cells[0].name = "sky81452-backlight";
-+	cells[0].of_compatible = "skyworks,sky81452-backlight";
-+	cells[0].platform_data = pdata->bl_pdata;
-+	cells[0].pdata_size = sizeof(*pdata->bl_pdata);
-+	cells[1].name = "sky81452-regulator";
-+	cells[1].platform_data = pdata->regulator_init_data;
-+	cells[1].pdata_size = sizeof(*pdata->regulator_init_data);
-+
-+	ret = mfd_add_devices(dev, -1, cells, ARRAY_SIZE(cells), NULL, 0, NULL);
-+	if (ret)
-+		dev_err(dev, "failed to add child devices. err=%d\n", ret);
-+
-+	return ret;
-+}
-+
-+static int sky81452_remove(struct i2c_client *client)
-+{
-+	mfd_remove_devices(&client->dev);
-+	return 0;
-+}
-+
-+static const struct i2c_device_id sky81452_ids[] = {
-+	{ "sky81452" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, sky81452_ids);
-+
-+#ifdef CONFIG_OF
-+static const struct of_device_id sky81452_of_match[] = {
-+	{ .compatible = "skyworks,sky81452", },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, sky81452_of_match);
-+#endif
-+
-+static struct i2c_driver sky81452_driver = {
-+	.driver = {
-+		.name = "sky81452",
-+		.of_match_table = of_match_ptr(sky81452_of_match),
-+	},
-+	.probe = sky81452_probe,
-+	.remove = sky81452_remove,
-+	.id_table = sky81452_ids,
-+};
-+
-+module_i2c_driver(sky81452_driver);
-+
-+MODULE_DESCRIPTION("Skyworks SKY81452 MFD driver");
-+MODULE_AUTHOR("Gyungoh Yoo <jack.yoo@skyworksinc.com>");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/mfd/sky81452.h b/include/linux/mfd/sky81452.h
-new file mode 100644
-index 0000000..b0925fa
---- /dev/null
-+++ b/include/linux/mfd/sky81452.h
-@@ -0,0 +1,31 @@
-+/*
-+ * sky81452.h	SKY81452 MFD driver
-+ *
-+ * Copyright 2014 Skyworks Solutions Inc.
-+ * Author : Gyungoh Yoo <jack.yoo@skyworksinc.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef _SKY81452_H
-+#define _SKY81452_H
-+
-+#include <linux/platform_data/sky81452-backlight.h>
-+#include <linux/regulator/machine.h>
-+
-+struct sky81452_platform_data {
-+	struct sky81452_bl_platform_data *bl_pdata;
-+	struct regulator_init_data *regulator_init_data;
-+};
-+
-+#endif
--- 
-1.9.1
-
+--
+With best wishes,
+Vladimir

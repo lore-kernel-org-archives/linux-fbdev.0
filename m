@@ -1,65 +1,89 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 13 Jan 2015 11:22:55 +0000
-Subject: Re: [PATCH] video: fbdev: omap2: dss: dispc.c:  Remove some unused functions
-Message-Id: <54B5000F.8030408@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="kj63F3rPpMtD0LpUpJHXREUhaUAa5NA2C"
+From: gyungoh@gmail.com
+Date: Fri, 23 Jan 2015 06:28:33 +0000
+Subject: [PATCH v10 4/6] devicetree: Add new SKY81452 backlight binding
+Message-Id: <1421994515-3070-5-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420126149-27019-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1420126149-27019-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+References: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
---kj63F3rPpMtD0LpUpJHXREUhaUAa5NA2C
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
-On 01/01/15 17:29, Rickard Strandqvist wrote:
-> Removes some functions that are not used anywhere:
-> dispc_wb_go() dispc_wb_go_busy() dispc_wb_get_framedone_irq()
-> dispc_mgr_get_clock_div() dispc_wb_is_enabled() dispc_wb_enable()
-> dispc_wb_setup() dispc_enable_fifomerge() dispc_wb_set_channel_in()
->=20
-> This was partially found by using a static code analysis program called=
- cppcheck.
->=20
-> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital=
-=2Ese>
-> ---
->  drivers/video/fbdev/omap2/dss/dispc.c |  124 -------------------------=
---------
->  drivers/video/fbdev/omap2/dss/dss.h   |   12 ----
->  2 files changed, 136 deletions(-)
+Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+Acked-by: Bryan Wu <cooloney@gmail.com>
+---
+Changes v10:
+Nothing
 
-The functions are for DSS's write-back functionality. We're going to
-implement that hopefully sometime soon, so I don't want to remove those
-functions.
+Changes v9:
+Nothing
 
- Tomi
+Changes v8:
+Renamed property names for backlight with vendor prefix
+Modified gpio-enable property to generic property for GPIO
+Made up the example for backlight DT
 
+Changes v7:
+Nothing
 
+Changes v6:
+Nothing
 
---kj63F3rPpMtD0LpUpJHXREUhaUAa5NA2C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Changes v5:
+Nothing
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Changes v4:
+Nothing
 
-iQIcBAEBAgAGBQJUtQAPAAoJEPo9qoy8lh71xXAP/R6mRGjCizsEHhHRUPcbSYF0
-4DfVaQnO1+95wOAnA5gXkQR4yBVIgaIIPqMoxq9jyu9RKqaJYP4M1rdvTjIJiYEL
-2Bb8yHlApfQQ4B5LOXIW6c4+srGwOrAk2lX4yGkfVRS4QhOLjkyHs+TLyNmKHsM3
-v1xliHCvkKx3qcxJNSU+DVWhRyrCS3MY0gCyK2/k5gfPwlrCdDmL9WDJYzN/gNMU
-svN7s0JhW7SQzicrCmpfK9NkHNcwiQnsRlOiUvrKi1MckpV1K3bvZp6cXXhpTstn
-QOn+Nr1vdYBzLevQas917OtAC+Xp5wFYluIJnczJjxjO+3QXeQ2/xdvTmWrm1bu3
-UUOwPwpUibwPRAyI+IHBE2cg28RAw592L2qsv74xvY2HXcr5o/gMtxDZr0oqaLXq
-SJu+t9JK6EkrYHkwGSxb5MUwtK+uuAs5eFOmLZGEHwmZgoVuZrwQpyVTNF7AwCG/
-ay82NgzjLfZgh74N0GD2Acs37fwf4a/miHg4QGpH5LmpZLUOj2ocQOsoN47OoOAR
-MnAd37C/7aRjMPPnhYZTq99pe2zZTDZUcKn5aAUk1qD7cST20rZe1NTRnpPHqQ1l
-TTjaqzuUNbuIq2ziU+zBLiplKPrfUlWvZk1yrnSlBJoa4fo6cjiZ0n+40vHbFrHk
-mM7PfyW4QXTCMLx0k2Ew
-=R4vl
------END PGP SIGNATURE-----
+Changes v3:
+Nothing
 
---kj63F3rPpMtD0LpUpJHXREUhaUAa5NA2C--
+Changes v2:
+Added reg attribute for I2C slave address
+
+ .../video/backlight/sky81452-backlight.txt         | 29 ++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
+
+diff --git a/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt b/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
+new file mode 100644
+index 0000000..8daebf5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
+@@ -0,0 +1,29 @@
++SKY81452-backlight bindings
++
++Required properties:
++- compatible		: Must be "skyworks,sky81452-backlight"
++
++Optional properties:
++- name			: Name of backlight device. Default is 'lcd-backlight'.
++- gpios			: GPIO to use to EN pin.
++			See Documentation/devicetree/bindings/gpio/gpio.txt
++- skyworks,en-channels	: Enable mask for current sink channel 1 to 6.
++- skyworks,ignore-pwm	: Ignore both PWM input
++- skyworks,dpwm-mode	: Enable DPWM dimming mode, otherwise Analog dimming.
++- skyworks,phase-shift	: Enable phase shift mode
++- skyworks,ovp-level	: Over-voltage protection level.
++			Should be between 14 or 28V.
++- skyworks,short-detection-threshold	: It should be one of 4, 5, 6 and 7V.
++- skyworks,current-limit	: It should be 2300mA or 2750mA.
++
++Example:
++
++	backlight {
++		compatible = "skyworks,sky81452-backlight";
++		name = "pwm-backlight";
++		skyworks,en-channels = <0x3f>;
++		skyworks,ignore-pwm;
++		skyworks,phase-shift;
++		skyworks,ovp-level = <20>;
++		skyworks,current-limit = <2300>;
++	};
+-- 
+1.9.1
+

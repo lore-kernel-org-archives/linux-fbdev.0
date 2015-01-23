@@ -1,10 +1,10 @@
 From: gyungoh@gmail.com
-Date: Wed, 07 Jan 2015 02:19:22 +0000
+Date: Fri, 23 Jan 2015 06:28:30 +0000
 Subject: [PATCH v10 1/6] mfd: Add support for Skyworks SKY81452 driver
-Message-Id: <1420597167-3188-2-git-send-email-jack.yoo@skyworksinc.com>
+Message-Id: <1421994515-3070-2-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420597167-3188-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1420597167-3188-1-git-send-email-jack.yoo@skyworksinc.com>
+References: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

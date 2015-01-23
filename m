@@ -1,45 +1,41 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Fri, 23 Jan 2015 10:50:36 +0000
+From: Fabio Estevam <festevam@gmail.com>
+Date: Fri, 23 Jan 2015 14:44:21 +0000
 Subject: Re: [PATCH v2 0/7] imx-drm: ipuv3-crtc: Implement mode_fixup
-Message-Id: <1422010236.3017.12.camel@pengutronix.de>
+Message-Id: <CAOMZO5AjsjW=F7_8yS03uBtq0qKMmmNYUn-5Z+KGXOnm4up2RQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1418954426-21909-1-git-send-email-steve_longerbeam@mentor.com>
- <1420655248.3191.73.camel@pengutronix.de> <20150123025643.GA11412@victor>
-In-Reply-To: <20150123025643.GA11412@victor>
+ <1420655248.3191.73.camel@pengutronix.de>
+ <20150123025643.GA11412@victor>
+ <1422010236.3017.12.camel@pengutronix.de>
+In-Reply-To: <1422010236.3017.12.camel@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Liu Ying <Ying.Liu@freescale.com>
-Cc: Fabio Estevam <fabio.estevam@freescale.com>, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Denis Carikli <denis@eukrea.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Steve Longerbeam <slongerbeam@gmail.com>, Russell King <rmk+kernel@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Fabio Estevam <fabio.estevam@freescale.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Steve Longerbeam <steve_longerbeam@mentor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel <linux-kernel@vger.kernel.org>, DRI mailing list <dri-devel@lists.freedesktop.org>, Denis Carikli <denis@eukrea.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Steve Longerbeam <slongerbeam@gmail.com>, Russell King <rmk+kernel@arm.linux.org.uk>
 
-Hi Liu,
+Hi Philipp,
 
-Am Freitag, den 23.01.2015, 10:56 +0800 schrieb Liu Ying:
-> Hi,
-> 
-> It looks that the below commit makes my Hannstar XGA LVDS panel stop working
-> on the i.MX6DL SabreSD board.  Any idea?
-> 
-> commit eb10d6355532def3a74aaabd115e2373cca70b9d
-> Author: Steve Longerbeam <slongerbeam@gmail.com>
-> Date:   Thu Dec 18 18:00:24 2014 -0800
-> 
-> imx-drm: encoder prepare/mode_set must use adjusted mode
-> 
-> The encoder ->prepare() and ->mode_set() methods need to use the
-> hw adjusted mode, not the original mode.
-> 
-> Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
-> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> 
-> Regards,
-> Liu Ying
+On Fri, Jan 23, 2015 at 8:50 AM, Philipp Zabel <p.zabel@pengutronix.de> wrote:
 
-What are this panel timings? The adjustment should increase the vertical
-back porch by up to two lines (so it is at least two lines), reducing
-the front porch or vsync length by the same amount. Does this panel use
-the HSYNC/VSYNC signals embedded in the LVDS stream?
+> What are this panel timings? The adjustment should increase the vertical
+> back porch by up to two lines (so it is at least two lines), reducing
+> the front porch or vsync length by the same amount. Does this panel use
+> the HSYNC/VSYNC signals embedded in the LVDS stream?
 
-regards
-Philipp
+The panel on this board is a Hannstar HSD100PXN1. The timings we use
+are described in imx6qdl-sabresd.dtsi:
 
+        display-timings {
+            native-mode = <&timing0>;
+            timing0: hsd100pxn1 {
+                clock-frequency = <65000000>;
+                hactive = <1024>;
+                vactive = <768>;
+                hback-porch = <220>;
+                hfront-porch = <40>;
+                vback-porch = <21>;
+                vfront-porch = <7>;
+                hsync-len = <60>;
+                vsync-len = <10>;
+            };

@@ -1,129 +1,44 @@
-From: Scot Doyle <lkml14@scotdoyle.com>
-Date: Sat, 24 Jan 2015 01:19:45 +0000
-Subject: [RFC PATCH 2/2] fbcon: expose cursor blink interval via sysfs
-Message-Id: <alpine.DEB.2.11.1501240117400.3639@localhost.localdomain>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sat, 24 Jan 2015 15:50:58 +0000
+Subject: Re: [RFC PATCH 2/2] fbcon: expose cursor blink interval via sysfs
+Message-Id: <CAMuHMdX2cs_JW4QEC=E=m2Z6gg=kZE5PnHBQYZ5RnFp1E9m_fQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <alpine.DEB.2.11.1501240109060.3489@localhost.localdomain>
-In-Reply-To: <alpine.DEB.2.11.1501240109060.3489@localhost.localdomain>
+	<alpine.DEB.2.11.1501240117400.3639@localhost.localdomain>
+In-Reply-To: <alpine.DEB.2.11.1501240117400.3639@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Scot Doyle <lkml14@scotdoyle.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-The fbcon cursor, when set to blink, is hardcoded to toggle display state
-five times per second. Expose this setting via
-/sys/class/graphics/fbcon/cursor_blink_ms
+On Sat, Jan 24, 2015 at 2:19 AM, Scot Doyle <lkml14@scotdoyle.com> wrote:
+> +static ssize_t store_cursor_blink_ms(struct device *device,
+> +                                    struct device_attribute *attr,
+> +                                    const char *buf, size_t count)
+> +{
 
-Values written to the interface set the approximate time interval in
-milliseconds between cursor toggles, from 1 to 32767. Since the interval
-is stored internally as a number of jiffies, the millisecond value read
-from the interface may not exactly match the entered value.
+...
 
-An outstanding blink timer is reset after a new value is entered.
+> +       unsigned long ms;
 
-If the cursor blink is disabled, either via the 'cursor_blink' boolean
-setting or some other mechanism, the 'cursor_blink_ms' setting may still
-be modified. The new value will be used if the blink is reactivated.
+...
 
-Tested with intelfb.
+> +       if (!kstrtoul(buf, 0, &ms)) {
 
-Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
----
- drivers/video/console/fbcon.c | 75 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 75 insertions(+)
+kstrtos16()?
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 7a2030b..0ddfcf6 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3495,11 +3495,86 @@ err:
- 	return count;
- }
- 
-+static ssize_t show_cursor_blink_ms(struct device *device,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct fb_info *info;
-+	struct fbcon_ops *ops;
-+	int idx, ms = -1;
-+
-+	if (fbcon_has_exited)
-+		return 0;
-+
-+	console_lock();
-+	idx = con2fb_map[fg_console];
-+
-+	if (idx = -1 || registered_fb[idx] = NULL)
-+		goto err;
-+
-+	info = registered_fb[idx];
-+	ops = info->fbcon_par;
-+
-+	if (!ops)
-+		goto err;
-+
-+	ms = jiffies_to_msecs(ops->blink_jiffies);
-+
-+err:
-+	console_unlock();
-+	return snprintf(buf, PAGE_SIZE, "%d\n", ms);
-+}
-+
-+static ssize_t store_cursor_blink_ms(struct device *device,
-+				     struct device_attribute *attr,
-+				     const char *buf, size_t count)
-+{
-+	struct fb_info *info;
-+	struct fbcon_ops *ops;
-+	int idx;
-+	unsigned long ms;
-+
-+	if (fbcon_has_exited)
-+		return count;
-+
-+	console_lock();
-+	idx = con2fb_map[fg_console];
-+
-+	if (idx = -1 || registered_fb[idx] = NULL)
-+		goto err;
-+
-+	info = registered_fb[idx];
-+
-+	if (!info->fbcon_par)
-+		goto err;
-+
-+	ops = info->fbcon_par;
-+
-+	if (!ops)
-+		goto err;
-+
-+	if (!kstrtoul(buf, 0, &ms)) {
-+		ms = min_t(unsigned long, ms, SHRT_MAX);
-+		ops->blink_jiffies = max_t(int, msecs_to_jiffies(ms), 1);
-+
-+		if (info->queue.func = fb_flashcursor &&
-+		    ops->flags & FBCON_FLAGS_CURSOR_TIMER) {
-+			fbcon_del_cursor_timer(info);
-+			fbcon_add_cursor_timer(info);
-+		}
-+	}
-+
-+err:
-+	console_unlock();
-+	return count;
-+}
-+
- static struct device_attribute device_attrs[] = {
- 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
- 	__ATTR(rotate_all, S_IWUSR, NULL, store_rotate_all),
- 	__ATTR(cursor_blink, S_IRUGO|S_IWUSR, show_cursor_blink,
- 	       store_cursor_blink),
-+	__ATTR(cursor_blink_ms, S_IRUGO|S_IWUSR, show_cursor_blink_ms,
-+	       store_cursor_blink_ms),
- };
- 
- static int fbcon_init_device(void)
--- 
-2.1.4
+> +               ms = min_t(unsigned long, ms, SHRT_MAX);
+> +               ops->blink_jiffies = max_t(int, msecs_to_jiffies(ms), 1);
 
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -1,52 +1,68 @@
-From: Nicholas Mc Guire <der.herr@hofr.at>
-Date: Sun, 25 Jan 2015 11:02:28 +0000
-Subject: [PATCH 2/3] hyperv: hyperv_fb.c: fixup-of-wait_for_completion_timeout-return-type
-Message-Id: <1422183748-7585-1-git-send-email-der.herr@hofr.at>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Sat, 24 Jan 2015 01:14:41 +0000
+Subject: [RFC PATCH 1/2] fbcon: store cursor blink interval in fbcon_ops
+Message-Id: <alpine.DEB.2.11.1501240112130.3576@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <alpine.DEB.2.11.1501240109060.3489@localhost.localdomain>
+In-Reply-To: <alpine.DEB.2.11.1501240109060.3489@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "K. Y. Srinivasan" <kys@microsoft.com>
-Cc: Haiyang Zhang <haiyangz@microsoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, devel@linuxdriverproject.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Mc Guire <der.herr@hofr.at>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
+The fbcon cursor, when set to blink, is hardcoded to toggle display state
+five times per second. Move this setting to a the driver's fbdev_ops
+structure, retaining the default blink interval.
+
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
 ---
+ drivers/video/console/fbcon.c | 5 +++--
+ drivers/video/console/fbcon.h | 1 +
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-The return type of wait_for_completion_timeout is unsigned long not
-int. This patch fixes up the declarations only.
-
-Patch was compile tested only for x86_64_defconfig + CONFIG_X86_VSMP=y
-CONFIG_HYPERV=m, CONFIG_FB_HYPERV=m
-
-Patch is against 3.19.0-rc5 -next-20150123
-
- drivers/video/fbdev/hyperv_fb.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-index 4254336..807ee22 100644
---- a/drivers/video/fbdev/hyperv_fb.c
-+++ b/drivers/video/fbdev/hyperv_fb.c
-@@ -415,7 +415,8 @@ static int synthvid_negotiate_ver(struct hv_device *hdev, u32 ver)
- 	struct fb_info *info = hv_get_drvdata(hdev);
- 	struct hvfb_par *par = info->par;
- 	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
--	int t, ret = 0;
-+	int ret = 0;
-+	unsigned long t;
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index ea43724..7a2030b 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -405,7 +405,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
+ 	struct fbcon_ops *ops = info->fbcon_par;
  
- 	memset(msg, 0, sizeof(struct synthvid_msg));
- 	msg->vid_hdr.type = SYNTHVID_VERSION_REQUEST;
-@@ -488,7 +489,8 @@ static int synthvid_send_config(struct hv_device *hdev)
- 	struct fb_info *info = hv_get_drvdata(hdev);
- 	struct hvfb_par *par = info->par;
- 	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
--	int t, ret = 0;
-+	int ret = 0;
-+	unsigned long t;
+ 	queue_work(system_power_efficient_wq, &info->queue);
+-	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
++	mod_timer(&ops->cursor_timer, jiffies + ops->blink_jiffies);
+ }
  
- 	/* Send VRAM location */
- 	memset(msg, 0, sizeof(struct synthvid_msg));
+ static void fbcon_add_cursor_timer(struct fb_info *info)
+@@ -420,7 +420,7 @@ static void fbcon_add_cursor_timer(struct fb_info *info)
+ 
+ 		init_timer(&ops->cursor_timer);
+ 		ops->cursor_timer.function = cursor_timer_handler;
+-		ops->cursor_timer.expires = jiffies + HZ / 5;
++		ops->cursor_timer.expires = jiffies + ops->blink_jiffies;
+ 		ops->cursor_timer.data = (unsigned long ) info;
+ 		add_timer(&ops->cursor_timer);
+ 		ops->flags |= FBCON_FLAGS_CURSOR_TIMER;
+@@ -959,6 +959,7 @@ static const char *fbcon_startup(void)
+ 	ops->currcon = -1;
+ 	ops->graphics = 1;
+ 	ops->cur_rotate = -1;
++	ops->blink_jiffies = msecs_to_jiffies(200);
+ 	info->fbcon_par = ops;
+ 	p->con_rotate = initial_rotation;
+ 	set_blitting_type(vc, info);
+diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+index 6bd2e0c..642c4e7 100644
+--- a/drivers/video/console/fbcon.h
++++ b/drivers/video/console/fbcon.h
+@@ -70,6 +70,7 @@ struct fbcon_ops {
+ 	struct fb_cursor cursor_state;
+ 	struct display *p;
+         int    currcon;	                /* Current VC. */
++	int    blink_jiffies;
+ 	int    cursor_flash;
+ 	int    cursor_reset;
+ 	int    blank_state;
 -- 
-1.7.10.4
+2.1.4
 

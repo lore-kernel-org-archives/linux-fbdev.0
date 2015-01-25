@@ -1,45 +1,54 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 27 Jan 2015 13:20:04 +0000
-Subject: Re: [PATCH] video: fbdev: sis: remove unused variables
-Message-Id: <20150127130804.GA25333@sudip-PC>
+From: Nicholas Mc Guire <der.herr@hofr.at>
+Date: Sun, 25 Jan 2015 14:47:02 +0000
+Subject: [PATCH 2/3 v2] hyperv: hyperv_fb.c: match wait_for_completion_timeout return type
+Message-Id: <1422197222-7967-1-git-send-email-der.herr@hofr.at>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421940699-20670-1-git-send-email-sudipm.mukherjee@gmail.com>
- <54C63506.3020106@ti.com>
-In-Reply-To: <54C63506.3020106@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "K. Y. Srinivasan" <kys@microsoft.com>
+Cc: Haiyang Zhang <haiyangz@microsoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, devel@linuxdriverproject.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Mc Guire <der.herr@hofr.at>
 
-On Mon, Jan 26, 2015 at 02:37:26PM +0200, Tomi Valkeinen wrote:
-> On 22/01/15 17:31, Sudip Mukherjee wrote:
-> > removed some variables which were not used. Few calls to SiS_GetReg()
-> > were left behind as they are reading from the hardare, removing them
-> > might affect the overall functionality.
-> > 
-> > Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
-> > ---
-> > This patch will generate checkpatch error, to fix that error we need
-> > to change the style of init.c and init301.c
-> > 
-> >  drivers/video/fbdev/sis/init.c     | 33 +++++----------------------------
-> >  drivers/video/fbdev/sis/init301.c  | 10 ++--------
-> >  drivers/video/fbdev/sis/sis_main.c |  9 ++++-----
-> >  3 files changed, 11 insertions(+), 41 deletions(-)
-> 
-> Are you able to test this?
-> 
-> The patch doesn't look too complex, but it's still slightly too complex
-> for me to comfortably merge it without any testing.
+Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
+---
 
-No. It is not tested on actual hardware.
+v2: fixed subject line
 
-Sudip
+The return type of wait_for_completion_timeout is unsigned long not
+int. This patch fixes up the declarations only.
 
-> 
->  Tomi
-> 
-> 
+Patch was compile tested only for x86_64_defconfig + CONFIG_X86_VSMP=y
+CONFIG_HYPERV=m, CONFIG_FB_HYPERV=m
 
+Patch is against 3.19.0-rc5 -next-20150123
+
+ drivers/video/fbdev/hyperv_fb.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 4254336..807ee22 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -415,7 +415,8 @@ static int synthvid_negotiate_ver(struct hv_device *hdev, u32 ver)
+ 	struct fb_info *info = hv_get_drvdata(hdev);
+ 	struct hvfb_par *par = info->par;
+ 	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
+-	int t, ret = 0;
++	int ret = 0;
++	unsigned long t;
+ 
+ 	memset(msg, 0, sizeof(struct synthvid_msg));
+ 	msg->vid_hdr.type = SYNTHVID_VERSION_REQUEST;
+@@ -488,7 +489,8 @@ static int synthvid_send_config(struct hv_device *hdev)
+ 	struct fb_info *info = hv_get_drvdata(hdev);
+ 	struct hvfb_par *par = info->par;
+ 	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
+-	int t, ret = 0;
++	int ret = 0;
++	unsigned long t;
+ 
+ 	/* Send VRAM location */
+ 	memset(msg, 0, sizeof(struct synthvid_msg));
+-- 
+1.7.10.4
 

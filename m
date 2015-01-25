@@ -1,118 +1,52 @@
-From: Scot Doyle <lkml14@scotdoyle.com>
-Date: Fri, 30 Jan 2015 08:44:42 +0000
-Subject: [PATCH v5 2/2] fbcon: expose cursor blink interval via sysfs
-Message-Id: <alpine.DEB.2.11.1501300843200.2423@localhost.localdomain>
+From: Nicholas Mc Guire <der.herr@hofr.at>
+Date: Sun, 25 Jan 2015 11:02:28 +0000
+Subject: [PATCH 2/3] hyperv: hyperv_fb.c: fixup-of-wait_for_completion_timeout-return-type
+Message-Id: <1422183748-7585-1-git-send-email-der.herr@hofr.at>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain>
-In-Reply-To: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "K. Y. Srinivasan" <kys@microsoft.com>
+Cc: Haiyang Zhang <haiyangz@microsoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, devel@linuxdriverproject.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Mc Guire <der.herr@hofr.at>
 
-fbcon toggles cursor display state every 200 milliseconds when blinking.
-Since users prefer different toggle intervals, expose the interval via
-/sys/class/graphics/fbcon/cursor_blink_ms so that it may be customized.
-
-Values written to the interface set the approximate time interval in
-milliseconds between cursor toggles, from 1 to 32767. Since the interval
-is stored internally as a number of jiffies, the millisecond value read
-from the interface may not exactly match the entered value.
-
-An outstanding blink timer is reset after a new value is entered.
-
-If the cursor blink is disabled, either via the 'cursor_blink' boolean
-setting or some other mechanism, the 'cursor_blink_ms' setting may still
-be modified. The new value will be used if the blink is reactivated.
-
-Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
 ---
- drivers/video/console/fbcon.c | 66 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 66 insertions(+)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 7a2030b..f026f65 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3495,11 +3495,77 @@ err:
- 	return count;
- }
+The return type of wait_for_completion_timeout is unsigned long not
+int. This patch fixes up the declarations only.
+
+Patch was compile tested only for x86_64_defconfig + CONFIG_X86_VSMP=y
+CONFIG_HYPERV=m, CONFIG_FB_HYPERV=m
+
+Patch is against 3.19.0-rc5 -next-20150123
+
+ drivers/video/fbdev/hyperv_fb.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 4254336..807ee22 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -415,7 +415,8 @@ static int synthvid_negotiate_ver(struct hv_device *hdev, u32 ver)
+ 	struct fb_info *info = hv_get_drvdata(hdev);
+ 	struct hvfb_par *par = info->par;
+ 	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
+-	int t, ret = 0;
++	int ret = 0;
++	unsigned long t;
  
-+static ssize_t show_cursor_blink_ms(struct device *device,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct fbcon_ops *ops;
-+	int idx, ms = -1;
-+
-+	if (fbcon_has_exited)
-+		return -ENODEV;
-+
-+	console_lock();
-+	idx = con2fb_map[fg_console];
-+
-+	if (idx != -1 && registered_fb[idx] != NULL) {
-+		ops = ((struct fb_info *)registered_fb[idx])->fbcon_par;
-+		if (ops != NULL)
-+			ms = jiffies_to_msecs(ops->blink_jiffies);
-+	}
-+
-+	console_unlock();
-+	return ms < 0 ? -ENODEV : scnprintf(buf, PAGE_SIZE, "%d\n", ms);
-+}
-+
-+static ssize_t store_cursor_blink_ms(struct device *device,
-+				     struct device_attribute *attr,
-+				     const char *buf, size_t count)
-+{
-+	struct fb_info *info;
-+	struct fbcon_ops *ops;
-+	int idx;
-+	short ms;
-+	int r = -ENODEV;
-+
-+	if (fbcon_has_exited)
-+		return r;
-+
-+	console_lock();
-+	idx = con2fb_map[fg_console];
-+
-+	if (idx = -1 || registered_fb[idx] = NULL)
-+		goto err;
-+
-+	info = registered_fb[idx];
-+	ops = info->fbcon_par;
-+
-+	if (ops = NULL)
-+		goto err;
-+
-+	if (!kstrtos16(buf, 0, &ms) && ms > 0) {
-+		//ops->blink_jiffies = max_t(int, msecs_to_jiffies(ms), 1);
-+		ops->blink_jiffies = msecs_to_jiffies(ms);
-+		if (info->queue.func = fb_flashcursor &&
-+		    ops->flags & FBCON_FLAGS_CURSOR_TIMER) {
-+			fbcon_del_cursor_timer(info);
-+			fbcon_add_cursor_timer(info);
-+		}
-+		r = count;
-+	} else
-+		r = -EINVAL;
-+
-+err:
-+	console_unlock();
-+	return r;
-+}
-+
- static struct device_attribute device_attrs[] = {
- 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
- 	__ATTR(rotate_all, S_IWUSR, NULL, store_rotate_all),
- 	__ATTR(cursor_blink, S_IRUGO|S_IWUSR, show_cursor_blink,
- 	       store_cursor_blink),
-+	__ATTR(cursor_blink_ms, S_IRUGO|S_IWUSR, show_cursor_blink_ms,
-+	       store_cursor_blink_ms),
- };
+ 	memset(msg, 0, sizeof(struct synthvid_msg));
+ 	msg->vid_hdr.type = SYNTHVID_VERSION_REQUEST;
+@@ -488,7 +489,8 @@ static int synthvid_send_config(struct hv_device *hdev)
+ 	struct fb_info *info = hv_get_drvdata(hdev);
+ 	struct hvfb_par *par = info->par;
+ 	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
+-	int t, ret = 0;
++	int ret = 0;
++	unsigned long t;
  
- static int fbcon_init_device(void)
+ 	/* Send VRAM location */
+ 	memset(msg, 0, sizeof(struct synthvid_msg));
 -- 
-2.1.4
+1.7.10.4
 

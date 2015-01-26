@@ -1,37 +1,68 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 13 Jan 2015 15:56:35 +0000
-Subject: Re: [PATCH v4 3/3] arm: dts: omap3-gta04: Add handling for tv output
-Message-Id: <20150113155634.GD2419@atomide.com>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Mon, 26 Jan 2015 20:40:26 +0000
+Subject: [PATCH v3 1/2] fbcon: store cursor blink interval in fbcon_ops
+Message-Id: <alpine.DEB.2.11.1501262038450.2052@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417642402-20538-1-git-send-email-marek@goldelico.com>
- <1417642402-20538-4-git-send-email-marek@goldelico.com>
- <54B4EF43.50300@ti.com>
-In-Reply-To: <54B4EF43.50300@ti.com>
+References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
+In-Reply-To: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [150113 02:14]:
-> On 03/12/14 23:33, Marek Belisko wrote:
-> > Add handling for gta04 tv out chain:
-> > venc -> opa362 -> svideo
-> > 
-> > Use invert-polarity in venc node because opa362
-> > is doing polarity inversion also.
-> > 
-> > Signed-off-by: Marek Belisko <marek@goldelico.com>
-> > ---
-> >  arch/arm/boot/dts/omap3-gta04.dtsi | 49 ++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 49 insertions(+)
-> 
-> Looks fine to me.
-> 
-> Tony, do you want to pick this up? I can take the first two patches via
-> fbdev.
+The fbcon cursor, when set to blink, is hardcoded to toggle display
+state five times per second. Move this setting to the driver's fbdev_ops
+structure, retaining the default blink interval.
 
-OK will pick the dtsi change.
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+---
+ drivers/video/console/fbcon.c | 5 +++--
+ drivers/video/console/fbcon.h | 1 +
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-Thanks,
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index ea43724..7a2030b 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -405,7 +405,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 
+ 	queue_work(system_power_efficient_wq, &info->queue);
+-	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
++	mod_timer(&ops->cursor_timer, jiffies + ops->blink_jiffies);
+ }
+ 
+ static void fbcon_add_cursor_timer(struct fb_info *info)
+@@ -420,7 +420,7 @@ static void fbcon_add_cursor_timer(struct fb_info *info)
+ 
+ 		init_timer(&ops->cursor_timer);
+ 		ops->cursor_timer.function = cursor_timer_handler;
+-		ops->cursor_timer.expires = jiffies + HZ / 5;
++		ops->cursor_timer.expires = jiffies + ops->blink_jiffies;
+ 		ops->cursor_timer.data = (unsigned long ) info;
+ 		add_timer(&ops->cursor_timer);
+ 		ops->flags |= FBCON_FLAGS_CURSOR_TIMER;
+@@ -959,6 +959,7 @@ static const char *fbcon_startup(void)
+ 	ops->currcon = -1;
+ 	ops->graphics = 1;
+ 	ops->cur_rotate = -1;
++	ops->blink_jiffies = msecs_to_jiffies(200);
+ 	info->fbcon_par = ops;
+ 	p->con_rotate = initial_rotation;
+ 	set_blitting_type(vc, info);
+diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+index 6bd2e0c..642c4e7 100644
+--- a/drivers/video/console/fbcon.h
++++ b/drivers/video/console/fbcon.h
+@@ -70,6 +70,7 @@ struct fbcon_ops {
+ 	struct fb_cursor cursor_state;
+ 	struct display *p;
+         int    currcon;	                /* Current VC. */
++	int    blink_jiffies;
+ 	int    cursor_flash;
+ 	int    cursor_reset;
+ 	int    blank_state;
+-- 
+2.1.4
 
-Tony

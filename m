@@ -1,62 +1,131 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 13 Jan 2015 10:11:15 +0000
-Subject: Re: [PATCH v4 3/3] arm: dts: omap3-gta04: Add handling for tv output
-Message-Id: <54B4EF43.50300@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="FsKh27OBDuG4WVkpv3ap5Q76vqlvrDUU5"
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Mon, 26 Jan 2015 23:14:06 +0000
+Subject: [PATCH v4 2/2] fbcon: expose cursor blink interval via sysfs
+Message-Id: <alpine.DEB.2.11.1501262312060.2861@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1417642402-20538-1-git-send-email-marek@goldelico.com>
- <1417642402-20538-4-git-send-email-marek@goldelico.com>
-In-Reply-To: <1417642402-20538-4-git-send-email-marek@goldelico.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <alpine.DEB.2.11.1501262305150.2783@localhost.localdomain>
+In-Reply-To: <alpine.DEB.2.11.1501262305150.2783@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---FsKh27OBDuG4WVkpv3ap5Q76vqlvrDUU5
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+fbcon toggles cursor display state every 200 milliseconds when blinking.
+Since users prefer different toggle intervals, expose the interval via
+/sys/class/graphics/fbcon/cursor_blink_ms so that it may be customized.
 
-On 03/12/14 23:33, Marek Belisko wrote:
-> Add handling for gta04 tv out chain:
-> venc -> opa362 -> svideo
->=20
-> Use invert-polarity in venc node because opa362
-> is doing polarity inversion also.
->=20
-> Signed-off-by: Marek Belisko <marek@goldelico.com>
-> ---
->  arch/arm/boot/dts/omap3-gta04.dtsi | 49 ++++++++++++++++++++++++++++++=
-++++++++
->  1 file changed, 49 insertions(+)
+Values written to the interface set the approximate time interval in
+milliseconds between cursor toggles, from 1 to 32767. Since the interval
+is stored internally as a number of jiffies, the millisecond value read
+from the interface may not exactly match the entered value.
 
-Looks fine to me.
+An outstanding blink timer is reset after a new value is entered.
 
-Tony, do you want to pick this up? I can take the first two patches via
-fbdev.
+If the cursor blink is disabled, either via the 'cursor_blink' boolean
+setting or some other mechanism, the 'cursor_blink_ms' setting may still
+be modified. The new value will be used if the blink is reactivated.
 
- Tomi
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+---
+ drivers/video/console/fbcon.c | 79 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 79 insertions(+)
 
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 7a2030b..19620d2 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -3495,11 +3495,90 @@ err:
+ 	return count;
+ }
+ 
++static ssize_t show_cursor_blink_ms(struct device *device,
++				    struct device_attribute *attr, char *buf)
++{
++	struct fb_info *info;
++	struct fbcon_ops *ops;
++	int idx, ms = -1;
++
++	if (fbcon_has_exited) {
++		pr_err("%s: framebuffer console exited", __func__);
++		return 0;
++	}
++
++	console_lock();
++	idx = con2fb_map[fg_console];
++
++	if (idx = -1 || registered_fb[idx] = NULL) {
++		pr_err("%s: no console to framebuffer mapping", __func__);
++		goto err;
++	}
++
++	info = registered_fb[idx];
++
++	if ((ops = info->fbcon_par) = NULL) {
++		pr_err("%s: framebuffer has no device info", __func__);
++		goto err;
++	}
++
++	ms = jiffies_to_msecs(ops->blink_jiffies);
++
++err:
++	console_unlock();
++	return snprintf(buf, PAGE_SIZE, "%d\n", ms);
++}
++
++static ssize_t store_cursor_blink_ms(struct device *device,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	struct fb_info *info;
++	struct fbcon_ops *ops;
++	int idx;
++	short ms;
++
++	if (fbcon_has_exited) {
++		pr_err("%s: framebuffer console exited", __func__);
++		return count;
++	}
++
++	console_lock();
++	idx = con2fb_map[fg_console];
++
++	if (idx = -1 || registered_fb[idx] = NULL) {
++		pr_err("%s: no console to framebuffer mapping", __func__);
++		goto err;
++	}
++
++	info = registered_fb[idx];
++
++	if ((ops = info->fbcon_par) = NULL) {
++		pr_err("%s: framebuffer has no device info", __func__);
++		goto err;
++	}
++
++	if (!kstrtos16(buf, 0, &ms)) {
++		ops->blink_jiffies = max_t(int, msecs_to_jiffies(ms), 1);
++		if (info->queue.func = fb_flashcursor &&
++		    ops->flags & FBCON_FLAGS_CURSOR_TIMER) {
++			fbcon_del_cursor_timer(info);
++			fbcon_add_cursor_timer(info);
++		}
++	}
++
++err:
++	console_unlock();
++	return count;
++}
++
+ static struct device_attribute device_attrs[] = {
+ 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
+ 	__ATTR(rotate_all, S_IWUSR, NULL, store_rotate_all),
+ 	__ATTR(cursor_blink, S_IRUGO|S_IWUSR, show_cursor_blink,
+ 	       store_cursor_blink),
++	__ATTR(cursor_blink_ms, S_IRUGO|S_IWUSR, show_cursor_blink_ms,
++	       store_cursor_blink_ms),
+ };
+ 
+ static int fbcon_init_device(void)
+-- 
+2.1.4
 
-
---FsKh27OBDuG4WVkpv3ap5Q76vqlvrDUU5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUtO9DAAoJEPo9qoy8lh71qwgP/0WaNBxbpL5Z0jyxf2NkpKHJ
-C5bKasUpileQUe4LxHe0VZzwiOrKDC4RcpdYRoo2c5+MrEmVRCuPEYWx64h2Yvvq
-kLc+aJH+vmSBfej/CNgieRvElDaPy7ESzBxSIZT1znAkWYvzeyWclp1SX98cgJgg
-GnB/bVSN3xHWuKfYDIp/+yyiwxSHLuKTsjPCQ/fEmovdXL35vZSePmeQEO6vzvol
-AltR1EC/Nvgd2Yz/fiZtStwT8rKrsDV15QufnLQf+b5maIFzO4Erd564pbLIOu2c
-xOoG3Gwc5lWlRqBiZxL7Q6wJEOGO+IBOnmw+btiJbemeWOuLmUl0Owp/npz6c4pr
-wq5jJ0SHxe5XksFq9FKmqoBK03WFmv8syRtrBZgFlI8vidJGUw/4fpPMx70c5lmB
-tLoe6prLlCTxebqamCTjwwtROWBkQg9CRljzR5yRjUPWQUoleMZkvdSjMJWedfGH
-/Nm51fnpzWE59uRMd5hnrmlVG3t7dN6YDKvlrUFDIP8Gvv9Ep6s16I0VIbf4huo/
-Yj7jyl47LMpewUCzhragJ2anvpTjJJFNcWdgLYxTT7mokgA5+YTsPge94HQ8Sfzk
-urxnggTsg+3tEQ9qOn9HPPcfs0YsPIXJyjl3so091pgLHwyneOLAwCgQ5JOeskoc
-97Z7hmnsaRcjHVnc0Pl8
-=sNxd
------END PGP SIGNATURE-----
-
---FsKh27OBDuG4WVkpv3ap5Q76vqlvrDUU5--

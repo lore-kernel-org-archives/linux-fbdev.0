@@ -1,88 +1,75 @@
-From: Nicholas Mc Guire <der.herr@hofr.at>
-Date: Tue, 20 Jan 2015 05:23:50 +0000
-Subject: [PATCH] video: treat signal like timeout as failure
-Message-Id: <1421731430-13207-1-git-send-email-der.herr@hofr.at>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 26 Jan 2015 12:50:16 +0000
+Subject: Re: [PATCH] video: treat signal like timeout as failure
+Message-Id: <54C63808.5070505@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="DmL8GCDmfpxL65I4pOhTWoVEQR6lijXME"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1421731430-13207-1-git-send-email-der.herr@hofr.at>
+In-Reply-To: <1421731430-13207-1-git-send-email-der.herr@hofr.at>
 To: linux-arm-kernel@lists.infradead.org
 
-if(!wait_for_completion_interruptible_timeout(...))
-only handles the timeout case - this patch adds handling the
-signal case the same as timeout and cleans up.
+--DmL8GCDmfpxL65I4pOhTWoVEQR6lijXME
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
----
+Hi,
 
-Only the timeout case was being handled, return of 0 in 
-wait_for_completion_interruptible_timeout, the signal case (-ERESTARTSYS)
-was treated just like the case of successful completion, which is most 
-likely not reasonable.
+On 20/01/15 07:23, Nicholas Mc Guire wrote:
+> if(!wait_for_completion_interruptible_timeout(...))
+> only handles the timeout case - this patch adds handling the
+> signal case the same as timeout and cleans up.
+>=20
+> Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
+> ---
+>=20
+> Only the timeout case was being handled, return of 0 in=20
+> wait_for_completion_interruptible_timeout, the signal case (-ERESTARTSY=
+S)
+> was treated just like the case of successful completion, which is most =
 
-Note that exynos_mipi_dsi_wr_data/exynos_mipi_dsi_rd_data return values
-are not checked at the call sites in s6e8ax0.c (cmd_read/cmd_write)!
+> likely not reasonable.
+>=20
+> Note that exynos_mipi_dsi_wr_data/exynos_mipi_dsi_rd_data return values=
 
-This patch simply treats the signal case the same way as the timeout case,
-by releasing locks and returning 0 - which might not be the right thing to
-do - this needs a review by someone knowing the details of this driver.
+> are not checked at the call sites in s6e8ax0.c (cmd_read/cmd_write)!
+>=20
+> This patch simply treats the signal case the same way as the timeout ca=
+se,
+> by releasing locks and returning 0 - which might not be the right thing=
+ to
+> do - this needs a review by someone knowing the details of this driver.=
 
-Patch is against 3.19.0-rc5 -next-20150119
 
-Patch was only compile-tested with exynos_defconfig
+The code changes look ok to me, but again you have detailed descriptions
+above which are not in the patch description. All the above looks like
+something that should be in the patch description.
 
- drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c |   17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ Tomi
 
-diff --git a/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c b/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
-index 2358a2f..55a7a45 100644
---- a/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
-+++ b/drivers/video/fbdev/exynos/exynos_mipi_dsi_common.c
-@@ -157,6 +157,7 @@ int exynos_mipi_dsi_wr_data(struct mipi_dsim_device *dsim, unsigned int data_id,
- 	const unsigned char *data0, unsigned int data_size)
- {
- 	unsigned int check_rx_ack = 0;
-+	long timeout;
- 
- 	if (dsim->state = DSIM_STATE_ULPS) {
- 		dev_err(dsim->dev, "state is ULPS.\n");
-@@ -244,9 +245,11 @@ int exynos_mipi_dsi_wr_data(struct mipi_dsim_device *dsim, unsigned int data_id,
- 		exynos_mipi_dsi_wr_tx_header(dsim, data_id, data_size & 0xff,
- 			(data_size & 0xff00) >> 8);
- 
--		if (!wait_for_completion_interruptible_timeout(&dsim_wr_comp,
--							MIPI_FIFO_TIMEOUT)) {
--			dev_warn(dsim->dev, "command write timeout.\n");
-+		timeout = wait_for_completion_interruptible_timeout(
-+					&dsim_wr_comp, MIPI_FIFO_TIMEOUT);
-+		if (timeout <= 0) {
-+			dev_warn(dsim->dev,
-+				"command write timed-out/interrupted.\n");
- 			mutex_unlock(&dsim->lock);
- 			return -EAGAIN;
- 		}
-@@ -345,6 +348,7 @@ int exynos_mipi_dsi_rd_data(struct mipi_dsim_device *dsim, unsigned int data_id,
- 	unsigned int rx_data, rcv_pkt, i;
- 	u8 response = 0;
- 	u16 rxsize;
-+	long timeout;
- 
- 	if (dsim->state = DSIM_STATE_ULPS) {
- 		dev_err(dsim->dev, "state is ULPS.\n");
-@@ -380,9 +384,10 @@ int exynos_mipi_dsi_rd_data(struct mipi_dsim_device *dsim, unsigned int data_id,
- 		return -EINVAL;
- 	}
- 
--	if (!wait_for_completion_interruptible_timeout(&dsim_rd_comp,
--				MIPI_FIFO_TIMEOUT)) {
--		pr_err("RX done interrupt timeout\n");
-+	timeout = wait_for_completion_interruptible_timeout(&dsim_rd_comp,
-+				MIPI_FIFO_TIMEOUT);
-+	if (timeout <= 0) {
-+		pr_err("RX done interrupt timeout/interrupted\n");
- 		mutex_unlock(&dsim->lock);
- 		return 0;
- 	}
--- 
-1.7.10.4
 
+
+--DmL8GCDmfpxL65I4pOhTWoVEQR6lijXME
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUxjgIAAoJEPo9qoy8lh71xkgP/1LWI281Ua37tkCYWjhvjtHg
+CmmTtNyfi5DZcMewq2NhCxnE8zeu3So54LTsQgjDjlSVPWAyhD84POY6a7CbNvjb
+ZbhaB3t04I5v+REIG3rc7SkIXV2QP4EVvzHBajiz75YbSlM1hG+d76ZW1gqFNmoi
+8V4Yn2a3JNRzGMB9xQEdZKC45dyvafRhKCB3GYsyCR8SMa1tW0i2ZW/nAHOwd0QD
+nI5XSpJwhXgIexgWwhMciz1eJqNQJtotjqK8xOCld4vP9FnCrKHrNXgfxlZ88+oL
+KOkzTzeDJCAm4PnK/LPBfmj5B7kqxEhLJ0LFyWL5UA4uxYnLxb0rJBTVNerorug2
+Ew2NMWgDvzExZsWIjRIqrk5oYsYalmpdxMYeYyEtBkp+pBTACNhW64q1bW0Vy9eS
+CWPHCC7x7ZgWDU1J8/0foZ8cyjC7H+eMsw+1gDbw8XLSsuc9E73au6cjD7zLSkbF
+E7wjPio/ramhobiCaRNWgzoyza/2ekbsXBDMbhmPtiI+iFbqPXyQ1EC8fzim+TFb
+NQb1yZUuZPIMQF+TrtW1z/L5FNVBUfm9+Eqdyn46sB0XCUCapbw3lWq1o/ZuRce+
+/FXBoQQz+oy/JgjJCh6a62/nLpDL3U+9RQTnGuxyq0YquKBH6rd4my6eqSMJFbM0
+RK5sLlnIlf8PncgR63us
+=ec8W
+-----END PGP SIGNATURE-----
+
+--DmL8GCDmfpxL65I4pOhTWoVEQR6lijXME--

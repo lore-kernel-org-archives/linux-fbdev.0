@@ -1,64 +1,82 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 19 Jan 2015 18:34:58 +0000
-Subject: [PATCH 4/9] video: Add check for return value of ioremap() in cirrusfb_pci_register()
-Message-Id: <54BD4E52.7000308@users.sourceforge.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 27 Jan 2015 10:50:41 +0000
+Subject: [PATCH 13/14] OMAPDSS: HDMI: Add DRA7xx support
+Message-Id: <1422355842-11234-14-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54BD44F0.3040705@users.sourceforge.net>
-In-Reply-To: <54BD44F0.3040705@users.sourceforge.net>
+References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 19 Jan 2015 13:18:50 +0100
+Add support for DRA7xx to the HDMI driver.
 
-The return value from a call of the ioremap() function was not checked
-by the implementation of the cirrusfb_pci_register() function.
-Let us complete the corresponding error detection and exception handling
-at this source code place.
+The HDMI block on DRA7xx is the same as on OMAP5, except we need to
+enable and disable the HDMI PLL via the CONTROL module.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/cirrusfb.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi5.c    | 1 +
+ drivers/video/fbdev/omap2/dss/hdmi_phy.c | 1 +
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c | 5 +++++
+ 3 files changed, 7 insertions(+)
 
-diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
-index d8b3359..aa4050c 100644
---- a/drivers/video/fbdev/cirrusfb.c
-+++ b/drivers/video/fbdev/cirrusfb.c
-@@ -2111,6 +2111,10 @@ static int cirrusfb_pci_register(struct pci_dev *pdev,
- 	/* FIXME: this forces VGA.  alternatives? */
- 	cinfo->regbase = NULL;
- 	cinfo->laguna_mmio = ioremap(info->fix.mmio_start, 0x1000);
-+	if (!cinfo->laguna_mmio) {
-+		ret = -EIO;
-+		goto err_release_fb;
-+	}
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index 39aae3aa7136..3f0b34a7031a 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -787,6 +787,7 @@ static const struct dev_pm_ops hdmi_pm_ops = {
  
- 	dev_dbg(info->device, "Board address: 0x%lx, register address: 0x%lx\n",
- 		board_addr, info->fix.mmio_start);
-@@ -2122,7 +2126,7 @@ static int cirrusfb_pci_register(struct pci_dev *pdev,
- 	if (ret < 0) {
- 		dev_err(info->device, "cannot reserve region 0x%lx, abort\n",
- 			board_addr);
--		goto err_release_fb;
-+		goto io_unmap_laguna;
- 	}
- #if 0 /* if the system didn't claim this region, we would... */
- 	if (!request_mem_region(0xA0000, 65535, "cirrusfb")) {
-@@ -2163,8 +2167,9 @@ err_release_legacy:
- err_release_regions:
- #endif
- 	pci_release_regions(pdev);
--err_release_fb:
-+io_unmap_laguna:
- 	iounmap(cinfo->laguna_mmio);
-+err_release_fb:
- 	framebuffer_release(info);
- err_out:
- 	return ret;
+ static const struct of_device_id hdmi_of_match[] = {
+ 	{ .compatible = "ti,omap5-hdmi", },
++	{ .compatible = "ti,dra7-hdmi", },
+ 	{},
+ };
+ 
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_phy.c b/drivers/video/fbdev/omap2/dss/hdmi_phy.c
+index bc9e07d2afbe..1f5d19c119ce 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_phy.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_phy.c
+@@ -208,6 +208,7 @@ static int hdmi_phy_init_features(struct platform_device *pdev)
+ 		break;
+ 
+ 	case OMAPDSS_VER_OMAP5:
++	case OMAPDSS_VER_DRA7xx:
+ 		src = &omap54xx_phy_feats;
+ 		break;
+ 
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
+index b808f7c72d83..06e23a7c432c 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
+@@ -104,6 +104,8 @@ static int hdmi_pll_enable(struct dss_pll *dsspll)
+ 	struct hdmi_wp_data *wp = pll->wp;
+ 	u16 r = 0;
+ 
++	dss_ctrl_pll_enable(DSS_PLL_HDMI, true);
++
+ 	r = hdmi_wp_set_pll_pwr(wp, HDMI_PLLPWRCMD_BOTHON_ALLCLKS);
+ 	if (r)
+ 		return r;
+@@ -117,6 +119,8 @@ static void hdmi_pll_disable(struct dss_pll *dsspll)
+ 	struct hdmi_wp_data *wp = pll->wp;
+ 
+ 	hdmi_wp_set_pll_pwr(wp, HDMI_PLLPWRCMD_ALLOFF);
++
++	dss_ctrl_pll_enable(DSS_PLL_HDMI, false);
+ }
+ 
+ static const struct dss_pll_ops dsi_pll_ops = {
+@@ -197,6 +201,7 @@ static int dsi_init_pll_data(struct platform_device *pdev, struct hdmi_pll_data
+ 		break;
+ 
+ 	case OMAPDSS_VER_OMAP5:
++	case OMAPDSS_VER_DRA7xx:
+ 		pll->hw = &dss_omap5_hdmi_pll_hw;
+ 		break;
+ 
 -- 
 2.2.2
 

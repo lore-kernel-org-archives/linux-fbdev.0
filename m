@@ -1,39 +1,50 @@
-From: Kevin Hao <haokexin@gmail.com>
-Date: Sat, 31 Jan 2015 13:47:38 +0000
-Subject: [PATCH 08/15] fbdev: remove the unnecessary includes of ppc specific header files
-Message-Id: <1422712065-9403-9-git-send-email-haokexin@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 27 Jan 2015 10:50:31 +0000
+Subject: [PATCH 03/14] OMAPDSS: constify port arrays
+Message-Id: <1422355842-11234-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
-Cc: Kevin Hao <haokexin@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-In the current kernel, we don't need to include these arch specific
-header files for ppc.
+The port arrays are constant data, so set them as 'const'.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/core/fbmon.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/video/fbdev/omap2/dss/dss.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index 95338593ebf4..3ae868c58cef 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -33,10 +33,6 @@
- #include <video/edid.h>
- #include <video/of_videomode.h>
- #include <video/videomode.h>
--#ifdef CONFIG_PPC_OF
--#include <asm/prom.h>
--#include <asm/pci-bridge.h>
--#endif
- #include "../edid.h"
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 9987154d50b4..1884c29ef482 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -70,7 +70,7 @@ struct dss_features {
+ 	u8 fck_div_max;
+ 	u8 dss_fck_multiplier;
+ 	const char *parent_clk_name;
+-	enum omap_display_type *ports;
++	const enum omap_display_type *ports;
+ 	int num_ports;
+ 	int (*dpi_select_source)(int port, enum omap_channel channel);
+ };
+@@ -677,11 +677,11 @@ void dss_debug_dump_clocks(struct seq_file *s)
+ #endif
  
- /*
+ 
+-static enum omap_display_type omap2plus_ports[] = {
++static const enum omap_display_type omap2plus_ports[] = {
+ 	OMAP_DISPLAY_TYPE_DPI,
+ };
+ 
+-static enum omap_display_type omap34xx_ports[] = {
++static const enum omap_display_type omap34xx_ports[] = {
+ 	OMAP_DISPLAY_TYPE_DPI,
+ 	OMAP_DISPLAY_TYPE_SDI,
+ };
 -- 
-1.9.3
+2.2.2
 

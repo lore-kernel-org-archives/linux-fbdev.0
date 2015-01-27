@@ -1,68 +1,78 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 13 Jan 2015 11:00:39 +0000
-Subject: Re: [PATCH] video: fbdev: omap2: dss: rfbi.c:  Remove some unused functions
-Message-Id: <54B4FAD7.305@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="cRad0NA9F68M9i05cAJSvgnjeS0j0FxFf"
+Date: Tue, 27 Jan 2015 10:50:39 +0000
+Subject: [PATCH 11/14] OMAPDSS: DISPC: Add DRA7xx support
+Message-Id: <1422355842-11234-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1419181332-9322-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-In-Reply-To: <1419181332-9322-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---cRad0NA9F68M9i05cAJSvgnjeS0j0FxFf
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Add DRA7xx support to DISPC driver. The DISPC block is the same as on
+OMAP5, except the PLL's used for clocking are "videoX", not "dsiX".
 
-On 21/12/14 19:02, Rickard Strandqvist wrote:
-> Removes some functions that are not used anywhere:
-> rfbi_init_display() rfbi_display_disable() rfbi_display_enable()
-> rfbi_set_interface_timings() rfbi_set_data_lines() rfbi_set_pixel_size(=
-)
-> rfbi_set_size() rfbi_update() rfbi_configure() rfbi_enable_te()
-> rfbi_setup_te() rfbi_write_pixels() rfbi_write_data() rfbi_read_data()
-> rfbi_write_command() rfbi_bus_unlock() rfbi_bus_lock()
->=20
-> This was partially found by using a static code analysis program called=
- cppcheck.
->=20
-> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital=
-=2Ese>
-> ---
->  drivers/video/fbdev/omap2/dss/rfbi.c |  297 --------------------------=
---------
->  1 file changed, 297 deletions(-)
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dispc.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-It's true those functions are not used anywhere, but RFBI is currently
-marked as BROKEN so it cannot be compiled and the functions do not do
-any harm. I'd rather keep them, as they give an insight how the rfbi
-should work if and when someone will fix the driver.
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index 9850d9ef9a9d..48429bab294a 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -3037,10 +3037,16 @@ unsigned long dispc_fclk_rate(void)
+ 		break;
+ 	case OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC:
+ 		pll = dss_pll_find("dsi0");
++		if (!pll)
++			pll = dss_pll_find("video0");
++
+ 		r = pll->cinfo.clkout[0];
+ 		break;
+ 	case OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC:
+ 		pll = dss_pll_find("dsi1");
++		if (!pll)
++			pll = dss_pll_find("video1");
++
+ 		r = pll->cinfo.clkout[0];
+ 		break;
+ 	default:
+@@ -3069,10 +3075,16 @@ unsigned long dispc_mgr_lclk_rate(enum omap_channel channel)
+ 			break;
+ 		case OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC:
+ 			pll = dss_pll_find("dsi0");
++			if (!pll)
++				pll = dss_pll_find("video0");
++
+ 			r = pll->cinfo.clkout[0];
+ 			break;
+ 		case OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC:
+ 			pll = dss_pll_find("dsi1");
++			if (!pll)
++				pll = dss_pll_find("video1");
++
+ 			r = pll->cinfo.clkout[0];
+ 			break;
+ 		default:
+@@ -3668,6 +3680,7 @@ static int __init dispc_init_features(struct platform_device *pdev)
+ 		break;
+ 
+ 	case OMAPDSS_VER_OMAP5:
++	case OMAPDSS_VER_DRA7xx:
+ 		src = &omap54xx_dispc_feats;
+ 		break;
+ 
+@@ -3832,6 +3845,7 @@ static const struct of_device_id dispc_of_match[] = {
+ 	{ .compatible = "ti,omap3-dispc", },
+ 	{ .compatible = "ti,omap4-dispc", },
+ 	{ .compatible = "ti,omap5-dispc", },
++	{ .compatible = "ti,dra7-dispc", },
+ 	{},
+ };
+ 
+-- 
+2.2.2
 
- Tomi
-
-
-
---cRad0NA9F68M9i05cAJSvgnjeS0j0FxFf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUtPrXAAoJEPo9qoy8lh71k/kP/0Q2zE/mX6PNjrgc69EMybQX
-bBHal1CCTk6o5wyJVdStqJhTE6BjlER3Yj1pqFDeXuW8j3bq9wbY8pm4v1Heuk/6
-lK/wbNsnFTCZMDx4kvnbdMn74/HqwLEcR6oK1SRXNN+zjPua1r0T/iJWPRIs7pKf
-fdqMnd13DyFUOTejTneqSx9JAIpggAWVE7SXgkC0+vNa7XWln5F1HU0e10zp3M7g
-hgQPOhw4QGxS+icgjgV3gRCVfH3hQw1ajQ4Tmp8cariU8kz+s7oKftUB4L+JgzU4
-I3HjNYHv51Aj1YdX2yh19/SxDHkGax3Izgjc4WiDnilpz4HMcFHNHKEEpPw7c2Jh
-X5v9YF5FWMaQz76QUW+hcsZMuREQVlysBtzYA0RnJCR5XBCKNIjvrOAhtv+sjcEk
-p+cuYKokyL9l5Z0ljhXXyxm71/pK5JqYdMbtUXZ+/Hon4qy8qM37x5Eu+9FhmVvH
-CGpxark838ldu5DQTij+7pHCbvorw5ijuOGpX0BfB7uLe/hPpEdgd92MK65ksaiI
-KyvTeMyJu4aPlhge4XGpcxrZBzV6oJyHzWkRfkfKYWstxuf9/vo+ZV9Rk0cmHgy3
-2ViwmMJMq6fZ5iL8AJeT72YKs6lY9zqNqqfwTPG4ijv4PV8WIlBatbadYLXn9k3P
-XJ0wwBTKbfce8c06vWts
-=KO+6
------END PGP SIGNATURE-----
-
---cRad0NA9F68M9i05cAJSvgnjeS0j0FxFf--

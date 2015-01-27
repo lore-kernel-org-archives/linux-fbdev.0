@@ -1,58 +1,41 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 19 Jan 2015 17:54:56 +0000
-Subject: [PATCH 0/9] video: fbdev: Deletion of some unnecessary checks
-Message-Id: <54BD44F0.3040705@users.sourceforge.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 27 Jan 2015 10:50:32 +0000
+Subject: [PATCH 04/14] OMAPDSS: OMAP5: fix digit output's allowed mgrs
+Message-Id: <1422355842-11234-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.so
- urceforge.net>
-In-Reply-To: <5317A59D.4@users.sourceforge.net>
+References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@gmail.com>, Ferenc Bakonyi <fero@drama.obuda.kando.hu>, Hans de Goede <hdegoede@redhat.com>, Helge Deller <deller@gmx.de>, "James E. J. Bottomley" <jejb@parisc-linux.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Kristoffer Ericson <kristoffer.ericson@gmail.com>, Peter Jones <pjones@redhat.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-nvidia@lists.surfsouth.com, linux-parisc@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 19 Jan 2015 17:57:25 +0100
+The OMAP5 HW supports directing DIGIT channel to DPI output, but the
+driver doesn't support that. However, we have marked that configuration
+as possible in the dss features, so in certain cases the driver tries to
+use that configuration, leading to broken display.
 
-Further update suggestions were taken into account after a patch was applied
-from static source code analysis.
+Fix the problem by allowing DIGIT channel to go only to HDMI output.
 
-Markus Elfring (9):
-  fbdev: Deletion of checks before the function call "iounmap"
-  One function call less in tdfxfb_probe() after error detection
-  One function call less in vesafb_probe() after error detection
-  Add check for return value of ioremap() in cirrusfb_pci_register()
-  Less function calls in trident_pci_probe() after error detection
-  One function call less in pvr2fb_common_init() after error detection
-  One function call less in tgafb_register() after error detection
-  Less function calls in valkyriefb_init() after error detection
-  Less function calls in w100fb_probe() after error detection
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dss_features.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/video/fbdev/aty/atyfb_base.c   | 15 +++++--------
- drivers/video/fbdev/cirrusfb.c         | 10 ++++++---
- drivers/video/fbdev/controlfb.c        |  6 ++---
- drivers/video/fbdev/efifb.c            |  3 +--
- drivers/video/fbdev/hgafb.c            |  3 +--
- drivers/video/fbdev/hpfb.c             |  3 +--
- drivers/video/fbdev/i810/i810_main.c   |  6 ++---
- drivers/video/fbdev/macfb.c            | 15 +++++--------
- drivers/video/fbdev/offb.c             |  3 +--
- drivers/video/fbdev/pvr2fb.c           | 15 ++++++-------
- drivers/video/fbdev/s1d13xxxfb.c       |  3 +--
- drivers/video/fbdev/s3fb.c             |  6 ++---
- drivers/video/fbdev/sh_mobile_hdmi.c   |  6 ++---
- drivers/video/fbdev/sh_mobile_lcdcfb.c |  3 +--
- drivers/video/fbdev/simplefb.c         |  3 +--
- drivers/video/fbdev/stifb.c            |  3 +--
- drivers/video/fbdev/tdfxfb.c           | 22 +++++++++----------
- drivers/video/fbdev/tgafb.c            | 20 ++++++++---------
- drivers/video/fbdev/tridentfb.c        | 15 +++++++------
- drivers/video/fbdev/valkyriefb.c       | 37 ++++++++++++++++++-------------
- drivers/video/fbdev/vesafb.c           | 11 +++++-----
- drivers/video/fbdev/w100fb.c           | 40 +++++++++++++++++-----------------
- 22 files changed, 116 insertions(+), 132 deletions(-)
-
+diff --git a/drivers/video/fbdev/omap2/dss/dss_features.c b/drivers/video/fbdev/omap2/dss/dss_features.c
+index 0e3da809473c..0e6f3f54749f 100644
+--- a/drivers/video/fbdev/omap2/dss/dss_features.c
++++ b/drivers/video/fbdev/omap2/dss/dss_features.c
+@@ -223,7 +223,7 @@ static const enum omap_dss_output_id omap5_dss_supported_outputs[] = {
+ 	OMAP_DSS_OUTPUT_DSI1 | OMAP_DSS_OUTPUT_DSI2,
+ 
+ 	/* OMAP_DSS_CHANNEL_DIGIT */
+-	OMAP_DSS_OUTPUT_HDMI | OMAP_DSS_OUTPUT_DPI,
++	OMAP_DSS_OUTPUT_HDMI,
+ 
+ 	/* OMAP_DSS_CHANNEL_LCD2 */
+ 	OMAP_DSS_OUTPUT_DPI | OMAP_DSS_OUTPUT_DBI |
 -- 
 2.2.2
 

@@ -1,65 +1,45 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 26 Jan 2015 12:37:26 +0000
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 27 Jan 2015 13:20:04 +0000
 Subject: Re: [PATCH] video: fbdev: sis: remove unused variables
-Message-Id: <54C63506.3020106@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="e2Mvn7ckpOhQ4MSFDodcmeA6BE37N8kGQ"
+Message-Id: <20150127130804.GA25333@sudip-PC>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1421940699-20670-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1421940699-20670-1-git-send-email-sudipm.mukherjee@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+ <54C63506.3020106@ti.com>
+In-Reply-To: <54C63506.3020106@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Thomas Winischhofer <thomas@winischhofer.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---e2Mvn7ckpOhQ4MSFDodcmeA6BE37N8kGQ
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jan 26, 2015 at 02:37:26PM +0200, Tomi Valkeinen wrote:
+> On 22/01/15 17:31, Sudip Mukherjee wrote:
+> > removed some variables which were not used. Few calls to SiS_GetReg()
+> > were left behind as they are reading from the hardare, removing them
+> > might affect the overall functionality.
+> > 
+> > Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> > ---
+> > This patch will generate checkpatch error, to fix that error we need
+> > to change the style of init.c and init301.c
+> > 
+> >  drivers/video/fbdev/sis/init.c     | 33 +++++----------------------------
+> >  drivers/video/fbdev/sis/init301.c  | 10 ++--------
+> >  drivers/video/fbdev/sis/sis_main.c |  9 ++++-----
+> >  3 files changed, 11 insertions(+), 41 deletions(-)
+> 
+> Are you able to test this?
+> 
+> The patch doesn't look too complex, but it's still slightly too complex
+> for me to comfortably merge it without any testing.
 
-On 22/01/15 17:31, Sudip Mukherjee wrote:
-> removed some variables which were not used. Few calls to SiS_GetReg()
-> were left behind as they are reading from the hardare, removing them
-> might affect the overall functionality.
->=20
-> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
-> ---
-> This patch will generate checkpatch error, to fix that error we need
-> to change the style of init.c and init301.c
->=20
->  drivers/video/fbdev/sis/init.c     | 33 +++++-------------------------=
----
->  drivers/video/fbdev/sis/init301.c  | 10 ++--------
->  drivers/video/fbdev/sis/sis_main.c |  9 ++++-----
->  3 files changed, 11 insertions(+), 41 deletions(-)
+No. It is not tested on actual hardware.
 
-Are you able to test this?
+Sudip
 
-The patch doesn't look too complex, but it's still slightly too complex
-for me to comfortably merge it without any testing.
-
- Tomi
+> 
+>  Tomi
+> 
+> 
 
 
-
---e2Mvn7ckpOhQ4MSFDodcmeA6BE37N8kGQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUxjUGAAoJEPo9qoy8lh71cnIP/3HA7IZ09M3THHjJCe5C2Dgo
-iZ0dM66ulp7mbdICDJhpZTpaVtU6l9sONyF0BRMxRcdeE2UhNLIzUN9MPa6THOMM
-qzEJ0Yqw9xpFpsz7Ap+jxdcqGh/SIX2EcdO6yZqz8cKox8BQDoTgQHVZTLrcKt+C
-Q7ZsBUXV8M+w6WKqYRYvhvnXR1x7FTXm2UUb/HOg4Dd6UZbrJX3oHBmwPhuzFZxq
-eUONR85FUR9xXV0qk3N12TKxRjwbmujsuINMsdDV8hilJBpg4PtEQ+Wz8KhJM5X2
-R6oQRxadTJLgFCSkmZWlr+VmkDtSKON86lwWZm3UvcPewiTOeGxN0rxjXujFZw0V
-zjEJJk9057SOXQKRTIIIMY+PennV+i8frfQrTjZjY74zYFzhbIuzkSs4L3yDY20Y
-cvc0icEfHEC4bFk8Js1oNLYfSslNInAvhbZEGTHiFdlgPQ01+6tUaO82/fn0MB1S
-HesimVYkhHF4z34aVUlYHYTUpsOXVuW4+t3Kj26NU8MfOf32vmFtrETzIDMNr2Pq
-FPSRPhI38W3hPXOvQ9KZsb+YrkZr05WxbE7P80MzboqzAPhNx2kcgG+gd69FKGNw
-DVxHv3hAB/+3da3QWTfb7hNpgT6ejDDTMjxHtuQSawCvzSkfGMFvic3Wv/IIcUK1
-1aEx6IAHdklZg83Tx/Ll
-=y+B3
------END PGP SIGNATURE-----
-
---e2Mvn7ckpOhQ4MSFDodcmeA6BE37N8kGQ--

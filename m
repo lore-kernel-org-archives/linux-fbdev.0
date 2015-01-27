@@ -1,32 +1,35 @@
-From: Scot Doyle <lkml14@scotdoyle.com>
-Date: Fri, 30 Jan 2015 08:40:44 +0000
-Subject: [PATCH v5 0/2] fbcon: user-defined cursor blink interval
-Message-Id: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 27 Jan 2015 10:50:34 +0000
+Subject: [PATCH 06/14] OMAPDSS: add define for DRA7xx HW version
+Message-Id: <1422355842-11234-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Since users prefer different fbcon cursor blink intervals, allow the
-interval to be set via sysfs. The current interval of 200 milliseconds
-is retained as the default. Tested with intelfb.
+Add define for DRA7xx DSS version.
 
-v2:  Use kstrtos16() instead of kstrtoul() and min_t() as suggested by
-     Geert Uytterhoeven
-v3:  Add error messages as suggested by Tomi Valkeinen
-v4:  Add rationale into the patches as suggested by Richard Weinberger
-v5:  Return error codes instead of logging error messages (my mistake)
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ include/video/omapdss.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-Scot Doyle (2):
-  fbcon: store cursor blink interval in fbcon_ops
-  fbcon: expose cursor blink interval via sysfs
-
- drivers/video/console/fbcon.c | 71 +++++++++++++++++++++++++++++++++++++++++--
- drivers/video/console/fbcon.h |  1 +
- 2 files changed, 70 insertions(+), 2 deletions(-)
-
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 6a84498ea513..60de61fea8e3 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -314,6 +314,7 @@ enum omapdss_version {
+ 	OMAPDSS_VER_OMAP4,		/* All other OMAP4s */
+ 	OMAPDSS_VER_OMAP5,
+ 	OMAPDSS_VER_AM43xx,
++	OMAPDSS_VER_DRA7xx,
+ };
+ 
+ /* Board specific data */
 -- 
-2.1.4
+2.2.2
 

@@ -1,94 +1,99 @@
-From: Kevin Hao <haokexin@gmail.com>
-Date: Sat, 31 Jan 2015 13:47:36 +0000
-Subject: [PATCH 06/15] fbdev: nvidia: remove the dependency on PPC_OF
-Message-Id: <1422712065-9403-7-git-send-email-haokexin@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 27 Jan 2015 10:50:35 +0000
+Subject: [PATCH 07/14] Doc/DT: Add DT binding doc for DRA7xx DSS
+Message-Id: <1422355842-11234-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
-Cc: Kevin Hao <haokexin@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Antonino Daplas <adaplas@gmail.com>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, devicetree@vger.kernel.org
 
-The OF functionality has moved to a common place and be used by many
-archs. So we don't need to include the ppc arch specific header files
-and depend on PPC_OF option any more. This is a preparation for
-killing PPC_OF.
+Add device tree binding documentation for DRA7xx display subsystem.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: devicetree@vger.kernel.org
 ---
- drivers/video/fbdev/nvidia/Makefile   | 3 +--
- drivers/video/fbdev/nvidia/nv_of.c    | 3 ---
- drivers/video/fbdev/nvidia/nv_proto.h | 8 --------
- drivers/video/fbdev/nvidia/nvidia.c   | 4 ----
- 4 files changed, 1 insertion(+), 17 deletions(-)
+ .../devicetree/bindings/video/ti,dra7-dss.txt      | 69 ++++++++++++++++++++++
+ 1 file changed, 69 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/ti,dra7-dss.txt
 
-diff --git a/drivers/video/fbdev/nvidia/Makefile b/drivers/video/fbdev/nvidia/Makefile
-index ca47432113e0..917d3eb05feb 100644
---- a/drivers/video/fbdev/nvidia/Makefile
-+++ b/drivers/video/fbdev/nvidia/Makefile
-@@ -5,9 +5,8 @@
- obj-$(CONFIG_FB_NVIDIA)          += nvidiafb.o
- 
- nvidiafb-y                       := nvidia.o nv_hw.o nv_setup.o \
--			            nv_accel.o
-+			            nv_accel.o nv_of.o
- nvidiafb-$(CONFIG_FB_NVIDIA_I2C) += nv_i2c.o
- nvidiafb-$(CONFIG_FB_NVIDIA_BACKLIGHT)  += nv_backlight.o
--nvidiafb-$(CONFIG_PPC_OF)	 += nv_of.o
- 
- nvidiafb-objs                    := $(nvidiafb-y)
-diff --git a/drivers/video/fbdev/nvidia/nv_of.c b/drivers/video/fbdev/nvidia/nv_of.c
-index 3bc13df4b120..5f3e5179c25a 100644
---- a/drivers/video/fbdev/nvidia/nv_of.c
-+++ b/drivers/video/fbdev/nvidia/nv_of.c
-@@ -19,9 +19,6 @@
- 
- #include <asm/io.h>
- 
--#include <asm/prom.h>
--#include <asm/pci-bridge.h>
--
- #include "nv_type.h"
- #include "nv_local.h"
- #include "nv_proto.h"
-diff --git a/drivers/video/fbdev/nvidia/nv_proto.h b/drivers/video/fbdev/nvidia/nv_proto.h
-index ff5c410355ea..878a5ce02299 100644
---- a/drivers/video/fbdev/nvidia/nv_proto.h
-+++ b/drivers/video/fbdev/nvidia/nv_proto.h
-@@ -42,16 +42,8 @@ int nvidia_probe_i2c_connector(struct fb_info *info, int conn,
- #define nvidia_probe_i2c_connector(p, c, edid) (-1)
- #endif
- 
--#ifdef CONFIG_PPC_OF
- int nvidia_probe_of_connector(struct fb_info *info, int conn,
- 			      u8 ** out_edid);
--#else
--static inline int nvidia_probe_of_connector(struct fb_info *info, int conn,
--				      u8 ** out_edid)
--{
--	return -1;
--}
--#endif
- 
- /* in nv_accel.c */
- extern void NVResetGraphics(struct fb_info *info);
-diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
-index def041204676..4273c6ee8cf6 100644
---- a/drivers/video/fbdev/nvidia/nvidia.c
-+++ b/drivers/video/fbdev/nvidia/nvidia.c
-@@ -24,10 +24,6 @@
- #ifdef CONFIG_MTRR
- #include <asm/mtrr.h>
- #endif
--#ifdef CONFIG_PPC_OF
--#include <asm/prom.h>
--#include <asm/pci-bridge.h>
--#endif
- #ifdef CONFIG_BOOTX_TEXT
- #include <asm/btext.h>
- #endif
+diff --git a/Documentation/devicetree/bindings/video/ti,dra7-dss.txt b/Documentation/devicetree/bindings/video/ti,dra7-dss.txt
+new file mode 100644
+index 000000000000..f33a05137b0e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/ti,dra7-dss.txt
+@@ -0,0 +1,69 @@
++Texas Instruments DRA7x Display Subsystem
++====================+
++See Documentation/devicetree/bindings/video/ti,omap-dss.txt for generic
++description about OMAP Display Subsystem bindings.
++
++DSS Core
++--------
++
++Required properties:
++- compatible: "ti,dra7-dss"
++- reg: address and length of the register spaces for 'dss'
++- ti,hwmods: "dss_core"
++- clocks: handle to fclk
++- clock-names: "fck"
++- syscon: phandle to control module core syscon node
++
++Optional properties:
++
++Some DRA7xx SoCs have one dedicated video PLL, some have two. These properties
++can be used to describe the video PLLs:
++
++- reg: address and length of the register spaces for 'pll1_clkctrl',
++  'pll1', 'pll2_clkctrl', 'pll2'
++- clocks: handle to video1 pll clock and video2 pll clock
++- clock-names: "video1_clk" and "video2_clk"
++
++Required nodes:
++- DISPC
++
++Optional nodes:
++- DSS Submodules: HDMI
++- Video port for DPI output
++
++DPI Endpoint required properties:
++- data-lines: number of lines used
++
++
++DISPC
++-----
++
++Required properties:
++- compatible: "ti,dra7-dispc"
++- reg: address and length of the register space
++- ti,hwmods: "dss_dispc"
++- interrupts: the DISPC interrupt
++- clocks: handle to fclk
++- clock-names: "fck"
++
++HDMI
++----
++
++Required properties:
++- compatible: "ti,dra7-hdmi"
++- reg: addresses and lengths of the register spaces for 'wp', 'pll', 'phy',
++       'core'
++- reg-names: "wp", "pll", "phy", "core"
++- interrupts: the HDMI interrupt line
++- ti,hwmods: "dss_hdmi"
++- vdda-supply: vdda power supply
++- clocks: handles to fclk and pll clock
++- clock-names: "fck", "sys_clk"
++
++Optional nodes:
++- Video port for HDMI output
++
++HDMI Endpoint optional properties:
++- lanes: list of 8 pin numbers for the HDMI lanes: CLK+, CLK-, D0+, D0-,
++  D1+, D1-, D2+, D2-. (default: 0,1,2,3,4,5,6,7)
 -- 
-1.9.3
+2.2.2
 

@@ -1,117 +1,106 @@
-From: Scot Doyle <lkml14@scotdoyle.com>
-Date: Fri, 30 Jan 2015 09:40:10 +0000
-Subject: [PATCH v6 2/2] fbcon: expose cursor blink interval via sysfs
-Message-Id: <alpine.DEB.2.11.1501300938070.2359@localhost.localdomain>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 27 Jan 2015 10:50:40 +0000
+Subject: [PATCH 12/14] OMAPDSS: DISPC: program dispc polarities to control module
+Message-Id: <1422355842-11234-13-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain> <alpine.DEB.2.11.1501300843200.2423@localhost.localdomain> <alpine.DEB.2.11.1501300932470.2288@localhost.localdomain>
-In-Reply-To: <alpine.DEB.2.11.1501300932470.2288@localhost.localdomain>
+References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-fbcon toggles cursor display state every 200 milliseconds when blinking.
-Since users prefer different toggle intervals, expose the interval via
-/sys/class/graphics/fbcon/cursor_blink_ms so that it may be customized.
+On DRA7xx, DISPC needs to write output signal polarities not only to a
+DISPC register, like for all earlier DSS versions, but to control
+module's CTRL_CORE_SMA_SW_1 register.
 
-Values written to the interface set the approximate time interval in
-milliseconds between cursor toggles, from 1 to 32767. Since the interval
-is stored internally as a number of jiffies, the millisecond value read
-from the interface may not exactly match the entered value.
+This patch adds support to write the polarities to control module.
 
-An outstanding blink timer is reset after a new value is entered.
-
-If the cursor blink is disabled, either via the 'cursor_blink' boolean
-setting or some other mechanism, the 'cursor_blink_ms' setting may still
-be modified. The new value will be used if the blink is reactivated.
-
-Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/console/fbcon.c | 65 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 65 insertions(+)
+ drivers/video/fbdev/omap2/dss/dispc.c | 40 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 7a2030b..7baa333 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3495,11 +3495,76 @@ err:
- 	return count;
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index 48429bab294a..31b743c70272 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -36,6 +36,9 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/sizes.h>
++#include <linux/mfd/syscon.h>
++#include <linux/regmap.h>
++#include <linux/of.h>
+ 
+ #include <video/omapdss.h>
+ 
+@@ -117,6 +120,9 @@ static struct {
+ 	const struct dispc_features *feat;
+ 
+ 	bool is_enabled;
++
++	struct regmap *syscon_pol;
++	u32 syscon_pol_offset;
+ } dispc;
+ 
+ enum omap_color_component {
+@@ -2958,6 +2964,25 @@ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
+ 		FLD_VAL(vsync_level, 12, 12);
+ 
+ 	dispc_write_reg(DISPC_POL_FREQ(channel), l);
++
++	if (dispc.syscon_pol) {
++		const int shifts[] = {
++			[OMAP_DSS_CHANNEL_LCD] = 0,
++			[OMAP_DSS_CHANNEL_LCD2] = 1,
++			[OMAP_DSS_CHANNEL_LCD3] = 2,
++		};
++
++		u32 mask, val;
++
++		mask = (1 << 0) | (1 << 3) | (1 << 6);
++		val = (rf << 0) | (ipc << 3) | (onoff << 6);
++
++		mask <<= 16 + shifts[channel];
++		val <<= 16 + shifts[channel];
++
++		regmap_update_bits(dispc.syscon_pol, dispc.syscon_pol_offset,
++			mask, val);
++	}
  }
  
-+static ssize_t show_cursor_blink_ms(struct device *device,
-+				    struct device_attribute *attr, char *buf)
-+{
-+	struct fbcon_ops *ops;
-+	int idx, ms = -1;
+ /* change name to mode? */
+@@ -3741,6 +3766,7 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 	u32 rev;
+ 	int r = 0;
+ 	struct resource *dispc_mem;
++	struct device_node *np = pdev->dev.of_node;
+ 
+ 	dispc.pdev = pdev;
+ 
+@@ -3767,6 +3793,20 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	if (np && of_property_read_bool(np, "syscon-pol")) {
++		dispc.syscon_pol = syscon_regmap_lookup_by_phandle(np, "syscon-pol");
++		if (IS_ERR(dispc.syscon_pol)) {
++			dev_err(&pdev->dev, "failed to get syscon-pol regmap\n");
++			return PTR_ERR(dispc.syscon_pol);
++		}
 +
-+	if (fbcon_has_exited)
-+		return -ENODEV;
-+
-+	console_lock();
-+	idx = con2fb_map[fg_console];
-+
-+	if (idx != -1 && registered_fb[idx] != NULL) {
-+		ops = ((struct fb_info *)registered_fb[idx])->fbcon_par;
-+		if (ops != NULL)
-+			ms = jiffies_to_msecs(ops->blink_jiffies);
++		if (of_property_read_u32_index(np, "syscon-pol", 1,
++				&dispc.syscon_pol_offset)) {
++			dev_err(&pdev->dev, "failed to get syscon-pol offset\n");
++			return -EINVAL;
++		}
 +	}
 +
-+	console_unlock();
-+	return ms < 0 ? -ENODEV : scnprintf(buf, PAGE_SIZE, "%d\n", ms);
-+}
-+
-+static ssize_t store_cursor_blink_ms(struct device *device,
-+				     struct device_attribute *attr,
-+				     const char *buf, size_t count)
-+{
-+	struct fb_info *info;
-+	struct fbcon_ops *ops;
-+	int idx;
-+	short ms;
-+	int r = -ENODEV;
-+
-+	if (fbcon_has_exited)
-+		return r;
-+
-+	console_lock();
-+	idx = con2fb_map[fg_console];
-+
-+	if (idx = -1 || registered_fb[idx] = NULL)
-+		goto err;
-+
-+	info = registered_fb[idx];
-+	ops = info->fbcon_par;
-+
-+	if (ops = NULL)
-+		goto err;
-+
-+	if (!kstrtos16(buf, 0, &ms) && ms > 0) {
-+		ops->blink_jiffies = max_t(int, msecs_to_jiffies(ms), 1);
-+		if (info->queue.func = fb_flashcursor &&
-+		    ops->flags & FBCON_FLAGS_CURSOR_TIMER) {
-+			fbcon_del_cursor_timer(info);
-+			fbcon_add_cursor_timer(info);
-+		}
-+		r = count;
-+	} else
-+		r = -EINVAL;
-+
-+err:
-+	console_unlock();
-+	return r;
-+}
-+
- static struct device_attribute device_attrs[] = {
- 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
- 	__ATTR(rotate_all, S_IWUSR, NULL, store_rotate_all),
- 	__ATTR(cursor_blink, S_IRUGO|S_IWUSR, show_cursor_blink,
- 	       store_cursor_blink),
-+	__ATTR(cursor_blink_ms, S_IRUGO|S_IWUSR, show_cursor_blink_ms,
-+	       store_cursor_blink_ms),
- };
+ 	pm_runtime_enable(&pdev->dev);
  
- static int fbcon_init_device(void)
+ 	r = dispc_runtime_get();
 -- 
-2.1.4
+2.2.2
 

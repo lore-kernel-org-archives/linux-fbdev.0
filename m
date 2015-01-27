@@ -1,106 +1,78 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 27 Jan 2015 10:50:40 +0000
-Subject: [PATCH 12/14] OMAPDSS: DISPC: program dispc polarities to control module
-Message-Id: <1422355842-11234-13-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 27 Jan 2015 10:50:28 +0000
+Subject: [PATCH 00/14] OMAPDSS: Add TI DRA7xx support
+Message-Id: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On DRA7xx, DISPC needs to write output signal polarities not only to a
-DISPC register, like for all earlier DSS versions, but to control
-module's CTRL_CORE_SMA_SW_1 register.
+Hi,
 
-This patch adds support to write the polarities to control module.
+This series adds DSS support for Texas Instrument's DRA7xx SoCs. The DSS on
+DRA7xx is very much like OMAP5's DSS. The main differences are in the
+integration of the DSS.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/dispc.c | 40 +++++++++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+There are three main differences to OMAP5:
+* DRA7xx has one (DRA72x) or two (DRA74x) video PLLs, which are almost like
+  OMAP5's DSI PLLs, except integrated slightly differently.
+* DRA7xx supports 3 DPI outputs, instead of 1 DPI output.
+* need to set various bits in CONTROL module, which is handled via syscon
 
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index 48429bab294a..31b743c70272 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -36,6 +36,9 @@
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
- #include <linux/sizes.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/regmap.h>
-+#include <linux/of.h>
- 
- #include <video/omapdss.h>
- 
-@@ -117,6 +120,9 @@ static struct {
- 	const struct dispc_features *feat;
- 
- 	bool is_enabled;
-+
-+	struct regmap *syscon_pol;
-+	u32 syscon_pol_offset;
- } dispc;
- 
- enum omap_color_component {
-@@ -2958,6 +2964,25 @@ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
- 		FLD_VAL(vsync_level, 12, 12);
- 
- 	dispc_write_reg(DISPC_POL_FREQ(channel), l);
-+
-+	if (dispc.syscon_pol) {
-+		const int shifts[] = {
-+			[OMAP_DSS_CHANNEL_LCD] = 0,
-+			[OMAP_DSS_CHANNEL_LCD2] = 1,
-+			[OMAP_DSS_CHANNEL_LCD3] = 2,
-+		};
-+
-+		u32 mask, val;
-+
-+		mask = (1 << 0) | (1 << 3) | (1 << 6);
-+		val = (rf << 0) | (ipc << 3) | (onoff << 6);
-+
-+		mask <<= 16 + shifts[channel];
-+		val <<= 16 + shifts[channel];
-+
-+		regmap_update_bits(dispc.syscon_pol, dispc.syscon_pol_offset,
-+			mask, val);
-+	}
- }
- 
- /* change name to mode? */
-@@ -3741,6 +3766,7 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
- 	u32 rev;
- 	int r = 0;
- 	struct resource *dispc_mem;
-+	struct device_node *np = pdev->dev.of_node;
- 
- 	dispc.pdev = pdev;
- 
-@@ -3767,6 +3793,20 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
-+	if (np && of_property_read_bool(np, "syscon-pol")) {
-+		dispc.syscon_pol = syscon_regmap_lookup_by_phandle(np, "syscon-pol");
-+		if (IS_ERR(dispc.syscon_pol)) {
-+			dev_err(&pdev->dev, "failed to get syscon-pol regmap\n");
-+			return PTR_ERR(dispc.syscon_pol);
-+		}
-+
-+		if (of_property_read_u32_index(np, "syscon-pol", 1,
-+				&dispc.syscon_pol_offset)) {
-+			dev_err(&pdev->dev, "failed to get syscon-pol offset\n");
-+			return -EINVAL;
-+		}
-+	}
-+
- 	pm_runtime_enable(&pdev->dev);
- 
- 	r = dispc_runtime_get();
+This series only adds the support to DSS driver. arch/arm/ changes are not yet
+finalized. The main issue there is the missing support for DSS_DESHDCP clock,
+which probably needs to be handled via regmap.
+
+My plan is to merge the driver side changes first for 3.20, and the arch/arm/
+changes for 3.21 (if solutions to the issues have been found). This will also
+make the merging easier, as there won't be a merge-window cross dependency
+between arm and fbdev trees.
+
+These patches, and the additional arch/arm/ patches needed to get DSS working
+on DRA7xx, can be found from:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dra7-dss
+
+ Tomi
+
+Tomi Valkeinen (14):
+  OMAPDSS: Add enum dss_pll_id
+  OMAPDSS: PLL: add dss_pll_wait_reset_done()
+  OMAPDSS: constify port arrays
+  OMAPDSS: OMAP5: fix digit output's allowed mgrs
+  OMAPDSS: encoder-tpd12s015: Fix race issue with LS_OE
+  OMAPDSS: add define for DRA7xx HW version
+  Doc/DT: Add DT binding doc for DRA7xx DSS
+  OMAPDSS: DSS: Add DRA7xx base support
+  OMAPDSS: Add functions for external control of PLL
+  OMAPDSS: Add Video PLLs for DRA7xx
+  OMAPDSS: DISPC: Add DRA7xx support
+  OMAPDSS: DISPC: program dispc polarities to control module
+  OMAPDSS: HDMI: Add DRA7xx support
+  OMAPDSS: DPI: DRA7xx support
+
+ .../devicetree/bindings/video/ti,dra7-dss.txt      |  69 +++++++
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |  57 +-----
+ drivers/video/fbdev/omap2/dss/Makefile             |   2 +-
+ drivers/video/fbdev/omap2/dss/dispc.c              |  54 +++++
+ drivers/video/fbdev/omap2/dss/dpi.c                |  26 +++
+ drivers/video/fbdev/omap2/dss/dsi.c                |   1 +
+ drivers/video/fbdev/omap2/dss/dss.c                | 219 ++++++++++++++++++++-
+ drivers/video/fbdev/omap2/dss/dss.h                |  22 +++
+ drivers/video/fbdev/omap2/dss/dss_features.c       |   3 +-
+ drivers/video/fbdev/omap2/dss/hdmi5.c              |   1 +
+ drivers/video/fbdev/omap2/dss/hdmi_phy.c           |   1 +
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c           |   6 +
+ drivers/video/fbdev/omap2/dss/omapdss-boot-init.c  |   1 +
+ drivers/video/fbdev/omap2/dss/pll.c                |  10 +
+ drivers/video/fbdev/omap2/dss/video-pll.c          | 211 ++++++++++++++++++++
+ include/video/omapdss.h                            |   1 +
+ 16 files changed, 627 insertions(+), 57 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/ti,dra7-dss.txt
+ create mode 100644 drivers/video/fbdev/omap2/dss/video-pll.c
+
 -- 
 2.2.2
 

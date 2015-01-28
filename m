@@ -1,31 +1,44 @@
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-Date: Thu, 22 Jan 2015 01:18:40 +0000
-Subject: Re: [PATCH] video: fbdev: fix sys_copyarea
-Message-Id: <yw1xlhkvd34f.fsf@unicorn.mansr.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 28 Jan 2015 20:13:50 +0000
+Subject: [PATCH] video/mmpfb: allow modular build
+Message-Id: <8150312.I9dm5QVFgr@wuerfel>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421885875-24145-1-git-send-email-mans@mansr.com>
-In-Reply-To: <1421885875-24145-1-git-send-email-mans@mansr.com> (Mans
-	Rullgard's message of "Thu, 22 Jan 2015 00:17:55 +0000")
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Mans Rullgard <mans@mansr.com> writes:
+The frame buffer core can be a module, which means any fb drivers
+should be able to build as modules too. This turns mmpfb into
+a tristate option to allow that and fix a possible randconfig
+build error.
 
-> The sys_copyarea() function performs the same operation as
-> cfb_copyarea() but using normal memory access instead of I/O
-> accessors.  Since the introduction of sys_copyarea(), there
-> have been two fixes to cfb_copyarea():
->
-> - 00a9d699 ("framebuffer: fix cfb_copyarea")
-> - 5b789da8 ("framebuffer: fix screen corruption when copying")
->
-> This patch incorporates the fixes into sys_copyarea() as well.
+drivers/built-in.o: In function `modes_setup':
+:(.text+0x11b34): undefined reference to `fb_videomode_to_modelist'
+:(.text+0x11b5c): undefined reference to `fb_videomode_to_var'
 
-Scratch that, this patch is broken.  Correct patch coming soon.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
---=20
-M=E5ns Rullg=E5rd
-mans@mansr.com
+diff --git a/drivers/video/fbdev/mmp/Makefile b/drivers/video/fbdev/mmp/Makefile
+index a014cb358bf8..924dd0930cc7 100644
+--- a/drivers/video/fbdev/mmp/Makefile
++++ b/drivers/video/fbdev/mmp/Makefile
+@@ -1 +1,3 @@
+-obj-y += core.o hw/ panel/ fb/
++obj-$(CONFIG_MMP_DISP) += mmp_disp.o hw/ panel/ fb/
++
++mmp_disp-y		+= core.o
+diff --git a/drivers/video/fbdev/mmp/fb/Kconfig b/drivers/video/fbdev/mmp/fb/Kconfig
+index 9b0141f105f5..985e1a7cd254 100644
+--- a/drivers/video/fbdev/mmp/fb/Kconfig
++++ b/drivers/video/fbdev/mmp/fb/Kconfig
+@@ -1,7 +1,7 @@
+ if MMP_DISP
+ 
+ config MMP_FB
+-	bool "fb driver for Marvell MMP Display Subsystem"
++	tristate "fb driver for Marvell MMP Display Subsystem"
+ 	depends on FB
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+

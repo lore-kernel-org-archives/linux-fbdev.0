@@ -1,58 +1,56 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 13 Jan 2015 11:31:10 +0000
-Subject: Re: [PATCH] fbdev: geocode: remove unneeded NULL check
-Message-Id: <54B501FE.1010006@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="QXL71rawlXQK1KKngNHHEsiA3aooWl3cs"
+From: Nicholas Mc Guire <der.herr@hofr.at>
+Date: Thu, 29 Jan 2015 10:24:16 +0000
+Subject: [PATCH 2/3 v3] hyperv: hyperv_fb.c: match wait_for_completion_timeout return type
+Message-Id: <1422527056-24929-1-git-send-email-der.herr@hofr.at>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420548302-11489-1-git-send-email-sudipm.mukherjee@gmail.com> <1420548302-11489-2-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1420548302-11489-2-git-send-email-sudipm.mukherjee@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "K. Y. Srinivasan" <kys@microsoft.com>
+Cc: Haiyang Zhang <haiyangz@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, devel@linuxdriverproject.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Mc Guire <der.herr@hofr.at>
 
---QXL71rawlXQK1KKngNHHEsiA3aooWl3cs
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+The return type of wait_for_completion_timeout is unsigned long not
+int. This patch fixes up the declarations only.
 
-On 06/01/15 14:45, Sudip Mukherjee wrote:
-> the check for info is not required as we are checking it immediately
-> after gxfb_init_fbinfo() and lxfb_init_fbinfo() and returnig -ENOMEM
-> if it is NULL.
->=20
-> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
-> ---
-> Hi Tomi,
-> This patch is similar to my last patch which you have already queued
-> for 3.20. if you can revert that then i can send you a single patch
-> with all these three changes together.
+Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
+---
 
-No need for that, two separate patches is fine. So queued for 3.20.
+v2: fixed subject line
+v3: fixed patch description as recommended by Dan Carpenter
+    <dan.carpenter@oracle.com>
 
- Tomi
+Patch was compile tested only for x86_64_defconfig + CONFIG_X86_VSMP=y
+CONFIG_HYPERV=m, CONFIG_FB_HYPERV=m
 
+Patch is against 3.19.0-rc5 -next-20150123
 
+ drivers/video/fbdev/hyperv_fb.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---QXL71rawlXQK1KKngNHHEsiA3aooWl3cs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 4254336..807ee22 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -415,7 +415,8 @@ static int synthvid_negotiate_ver(struct hv_device *hdev, u32 ver)
+ 	struct fb_info *info = hv_get_drvdata(hdev);
+ 	struct hvfb_par *par = info->par;
+ 	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
+-	int t, ret = 0;
++	int ret = 0;
++	unsigned long t;
+ 
+ 	memset(msg, 0, sizeof(struct synthvid_msg));
+ 	msg->vid_hdr.type = SYNTHVID_VERSION_REQUEST;
+@@ -488,7 +489,8 @@ static int synthvid_send_config(struct hv_device *hdev)
+ 	struct fb_info *info = hv_get_drvdata(hdev);
+ 	struct hvfb_par *par = info->par;
+ 	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
+-	int t, ret = 0;
++	int ret = 0;
++	unsigned long t;
+ 
+ 	/* Send VRAM location */
+ 	memset(msg, 0, sizeof(struct synthvid_msg));
+-- 
+1.7.10.4
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJUtQH+AAoJEPo9qoy8lh715w8P/Rlcu9kJmuJsT9EXKnHjtmFh
-XJDrRSeIP/bceY+SDbeND7/uxcBBHPnek3v4/VNlGesLLvB15PWVU9hXvz/bH43W
-Dd8OP7f5KXpWvpw3uXDl/WZlhnrPqV42VT7IQe4+hSQqkPhjlTxhrbAmpGtMz0rA
-FUmk9AHy66kKPtH8zG6aiFXJF+b66DfwoaijM4s/hLs1fsT2PhmomTGIyO7B+cHN
-ZTibDavJB8eYglTvbSVy+mLgG9UaT4aDgd2OBu5PiqV76jHpAIIJd1vt2CLm7Br2
-OsLEeqiLJkio/Fk7Wmybw4l8dgpbUfnIJOPij4EupiLqnZJUzU6KUH/onUxsgIWa
-2jn4AuktdMsYFRjUIoi2ANpz7PrVP6rx098VZumAQju1ACfv1/KL5KEjhpfcQE4K
-yV6AvhO8lgvibfNx08HbeG464mUTy08PydOu4CZGPfMqZplq3QmfM7H0hecDkswi
-p5IDtHg/sRQWRlOnHWKkcEqhc2NTwGWvwlw0rUdNE+sA65kvd5aInh6Vzr1GrcwP
-59H77IN1YePrc0QylelEIJynwGPOraEWiBj3oJNRNUjiet8l6Ht3JyfSMdaCZOgw
-/90sL2uAyt+3oz85V91sXpygeqkrahV83pRDaLgWKmF66m16OG8S0q7AqurEJwtl
-Qw3PnXwtt/KJIl+sufp4
-=OPmz
------END PGP SIGNATURE-----
-
---QXL71rawlXQK1KKngNHHEsiA3aooWl3cs--

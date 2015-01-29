@@ -1,82 +1,92 @@
-From: "S. Gilles" <sgilles@terpmail.umd.edu>
-Date: Thu, 29 Jan 2015 02:32:47 +0000
-Subject: i915 framebuffer init too slow to find logo
-Message-Id: <20150129023247.GA10967@number16>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 29 Jan 2015 08:09:39 +0000
+Subject: Re: i915 framebuffer init too slow to find logo
+Message-Id: <54C9EAC3.9040509@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="q0eQ7vntRxq811qSPhVrSQi2OgL34BqWS"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Maik Broemme <mbroemme@plusserver.de>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+References: <20150129023247.GA10967@number16>
+In-Reply-To: <20150129023247.GA10967@number16>
+To: "S. Gilles" <sgilles@terpmail.umd.edu>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Maik Broemme <mbroemme@plusserver.de>
+Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>
 
-Since commit 92b004d1aa9f367c372511ca0330f58216b25703 : prevent use of
-logs after they have been freed, my i915 machine has no logo on boot
-(reverting that commit brings it back on recent trees). My .config
-builds nothing but wireless as =m, so I think this is a genuine false
-positive (as predicted by the commit). Examining an augmented dmesg,
-it appears that the framebuffer setup is too slow by about 0.3s, which
-I wouldn't really expect from this system/driver.
+--q0eQ7vntRxq811qSPhVrSQi2OgL34BqWS
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Is this slowness considered worth fixing, or is this issue considered
-too cosmetic? (Or is this just PEBKAC?)
+On 29/01/15 04:32, S. Gilles wrote:
+> Since commit 92b004d1aa9f367c372511ca0330f58216b25703 : prevent use of
+> logs after they have been freed, my i915 machine has no logo on boot
+> (reverting that commit brings it back on recent trees). My .config
+> builds nothing but wireless as =3Dm, so I think this is a genuine false=
 
-Possibly useful information:
+> positive (as predicted by the commit). Examining an augmented dmesg,
 
-$ lspci | grep VGA
-00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
+It's not so much about modules, but when the code tries to use the
+logos. Drivers as modules might cause the use of logos to happen later,
+but that's only one possible reason.
 
-From various printk()s, it looks like the slow portion of
-fb_console_init() is restore_fbdev_mode(), specifically
-drm_mode_set_config_internal(), which takes about 0.45s, while the
-fb_logo_late_init() call happens about 0.15s into that. I can give the
-full details if requested.
+> it appears that the framebuffer setup is too slow by about 0.3s, which
+> I wouldn't really expect from this system/driver.
+>=20
+> Is this slowness considered worth fixing, or is this issue considered
+> too cosmetic? (Or is this just PEBKAC?)
+>=20
+> Possibly useful information:
+>=20
+> $ lspci | grep VGA
+> 00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Cor=
+e Processor Family Integrated Graphics Controller (rev 09)
+>=20
+> From various printk()s, it looks like the slow portion of
+> fb_console_init() is restore_fbdev_mode(), specifically
+> drm_mode_set_config_internal(), which takes about 0.45s, while the
+> fb_logo_late_init() call happens about 0.15s into that. I can give the
+> full details if requested.
 
-Possibly relevant .config bits:
+When does the driver probe() happen? Does the initialization happen
+outside of the probe(), via workqueue or such? If so, then the fix is
+valid for your case also, as the work could be ran after the logos have
+been freed.
 
-# Graphics support
-CONFIG_AGP=y
-CONFIG_AGP_INTEL=y
-CONFIG_INTEL_GTT=y
-CONFIG_VGA_ARB=y
-CONFIG_VGA_ARB_MAX_GPUS
+However, it does seem that the fix seems to cause logos to disappear for
+many people. I'd be interesting to know how many of those cases were
+working by luck, either by
 
-# Direct Rendering Manager
-CONFIG_DRM=y
-CONFIG_DRM_KMS_HELPER=y
-CONFIG_DRM_KMS_FB_HELPER=y
+1) an async work being ran fast enough, before the logos had been freed
+2) the use of logos happening after the logos had been freed, but if no
+one had trashed the logo memory yet, it still works
 
-# I2C encoder or helper chips
-CONFIG_DRM_I915=y
-CONFIG_DRM_I915_KMS=y
-CONFIG_DRM_I915_FBDEV=y
-CONFIG_DRM_I915_PRELIMINARY_HW_SUPPORT=y
+I don't care so much about the logo myself but people do seem to like
+it, so perhaps we need to change the code as Thierry suggested:
+allocating memory for the logos and keeping them in memory until someone
+uses them the first time, and then free the memory.
 
-# Frame buffer Devices
-CONFIG_FB=y
-CONFIG_FIRMWARE_EDID=y
-CONFIG_FB_CMDLINE=y
-CONFIG_FB_CFB_FILLRECT=y
-CONFIG_FB_CFB_COPYAREA=y
-CONFIG_FB_CFB_IMAGEBLIT=y
+ Tomi
 
-# Frame buffer hardware drivers
-CONFIG_BACKLIGHT_LCD_SUPPORT=y
-CONFIG_LCD_CLASS_DEVICE=y
-CONFIG_LCD_PLATFORM=y
-CONFIG_BACKLIGHT_CLASS_DEVICE=y
-CONFIG_BACKLIGHT_GENERIC=y
-CONFIG_HDMI=y
 
-# Console display driver support
-CONFIG_VGA_CONSOLE=y
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_FRAMEBUFFER_CONSOLE=y
-CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
-CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y
-CONFIG_LOGO=y
-CONFIG_LOGO_LINUX_MONO=y
-CONFIG_LOGO_LINUX_VGA16=y
-CONFIG_LOGO_LINUX_CLUT224=y
 
--- 
-S. Gilles
+--q0eQ7vntRxq811qSPhVrSQi2OgL34BqWS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUyerDAAoJEPo9qoy8lh71szMP/05QLKcO6VCmD6ftyD0sCSX0
+/SKwkU+QGNp2unCsilVEZxXtlPIEnNf1qb64Osz/V/okErxDHm9Ahu4K3BiDh/i0
+ooSk0z/4XhqpshvpTPk+o2gix/luaaoxHPRwju97kg/Q0IgrlFIeciC3d+Uyr2mi
+dozO07ujQ1B17Gb3cbselGutF1ZuULhXXEH1D+Tgyg61PAzMLNhtcaUCoLrziNhO
+9C6czMYOuLSvabq+h6emxhlgCvGr8Jqllk5Hh3Nu7vMolQqJNxkSh45TGeEcmS9b
+T0g5/HBfIMWQ0vcJzXylvaomtCeml/LcTEbl/cG6fpI4kMTUGVYlUNd+yAiCwWBU
+FqHkIPr173kodrW2EU1CXQGw07vtLYx7/9IlKYGt97TI8h615GyBDNhaqbGfnP14
+/8ii/MfNJOlf4vUHwVTZF02xwEzNO/tKLIDH/R2ZQ6G3ZGy9+BF6lqTkmv14E3sV
+vTQ4O18DbaA/Y4Tl5CK1/PZ4KPDoFATX0kFY6pw0j4JbyUJOyG3Zw5OVLPJzU7yL
+N4WAXiCfA0y2S6zELG49SYLIT+JIh6mZ9nQXRTwICze8VXHDmA5SAGl1zpat1OGP
+6YzKK68noCwPROkrbOwRMiNS2I94zZR8OSEKfgXpTVuQ9pM2NHGzsqhUhw3mOPTf
+ed0AQAoFTz5V55KgjU33
+=9ijX
+-----END PGP SIGNATURE-----
+
+--q0eQ7vntRxq811qSPhVrSQi2OgL34BqWS--

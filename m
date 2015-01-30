@@ -1,339 +1,68 @@
-From: Mans Rullgard <mans@mansr.com>
-Date: Thu, 22 Jan 2015 01:19:49 +0000
-Subject: [PATCH v2] video: fbdev: fix sys_copyarea
-Message-Id: <1421889589-16362-1-git-send-email-mans@mansr.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 30 Jan 2015 07:54:30 +0000
+Subject: Re: [PATCH v2] video: fbdev: fix sys_copyarea
+Message-Id: <54CB38B6.3010202@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="cut5KCQ2F0ktVoMK5qat9wchFBlw3GDHl"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1421889589-16362-1-git-send-email-mans@mansr.com>
+In-Reply-To: <1421889589-16362-1-git-send-email-mans@mansr.com>
+To: Mans Rullgard <mans@mansr.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The sys_copyarea() function performs the same operation as
-cfb_copyarea() but using normal memory access instead of I/O
-accessors.  Since the introduction of sys_copyarea(), there
-have been two fixes to cfb_copyarea():
+--cut5KCQ2F0ktVoMK5qat9wchFBlw3GDHl
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-- 00a9d699 ("framebuffer: fix cfb_copyarea")
-- 5b789da8 ("framebuffer: fix screen corruption when copying")
+On 22/01/15 03:19, Mans Rullgard wrote:
+> The sys_copyarea() function performs the same operation as
+> cfb_copyarea() but using normal memory access instead of I/O
+> accessors.  Since the introduction of sys_copyarea(), there
+> have been two fixes to cfb_copyarea():
+>=20
+> - 00a9d699 ("framebuffer: fix cfb_copyarea")
+> - 5b789da8 ("framebuffer: fix screen corruption when copying")
+>=20
+> This patch incorporates the fixes into sys_copyarea() as well.
+>=20
+> Signed-off-by: Mans Rullgard <mans@mansr.com>
+> ---
+> Changed in v2:
+>  - Fixed wrong first/last calculation in bitcpy_rev()
+> ---
+>  drivers/video/fbdev/core/syscopyarea.c | 137 ++++++++++++++++---------=
+--------
+>  1 file changed, 65 insertions(+), 72 deletions(-)
 
-This patch incorporates the fixes into sys_copyarea() as well.
+Thanks, queued for 3.20.
 
-Signed-off-by: Mans Rullgard <mans@mansr.com>
----
-Changed in v2:
- - Fixed wrong first/last calculation in bitcpy_rev()
----
- drivers/video/fbdev/core/syscopyarea.c | 137 ++++++++++++++++-----------------
- 1 file changed, 65 insertions(+), 72 deletions(-)
+This makes me wonder, though, if the sys and cfb versions could be
+somehow combined...
 
-diff --git a/drivers/video/fbdev/core/syscopyarea.c b/drivers/video/fbdev/core/syscopyarea.c
-index 844a32f..c1eda31 100644
---- a/drivers/video/fbdev/core/syscopyarea.c
-+++ b/drivers/video/fbdev/core/syscopyarea.c
-@@ -25,8 +25,8 @@
-      */
- 
- static void
--bitcpy(struct fb_info *p, unsigned long *dst, int dst_idx,
--		const unsigned long *src, int src_idx, int bits, unsigned n)
-+bitcpy(struct fb_info *p, unsigned long *dst, unsigned dst_idx,
-+	const unsigned long *src, unsigned src_idx, int bits, unsigned n)
- {
- 	unsigned long first, last;
- 	int const shift = dst_idx-src_idx;
-@@ -86,15 +86,15 @@ bitcpy(struct fb_info *p, unsigned long *dst, int dst_idx,
- 				first &= last;
- 			if (shift > 0) {
- 				/* Single source word */
--				*dst = comp(*src >> right, *dst, first);
-+				*dst = comp(*src << left, *dst, first);
- 			} else if (src_idx+n <= bits) {
- 				/* Single source word */
--				*dst = comp(*src << left, *dst, first);
-+				*dst = comp(*src >> right, *dst, first);
- 			} else {
- 				/* 2 source words */
- 				d0 = *src++;
- 				d1 = *src;
--				*dst = comp(d0 << left | d1 >> right, *dst,
-+				*dst = comp(d0 >> right | d1 << left, *dst,
- 					    first);
- 			}
- 		} else {
-@@ -109,13 +109,14 @@ bitcpy(struct fb_info *p, unsigned long *dst, int dst_idx,
- 			/* Leading bits */
- 			if (shift > 0) {
- 				/* Single source word */
--				*dst = comp(d0 >> right, *dst, first);
-+				*dst = comp(d0 << left, *dst, first);
- 				dst++;
- 				n -= bits - dst_idx;
- 			} else {
- 				/* 2 source words */
- 				d1 = *src++;
--				*dst = comp(d0 << left | *dst >> right, *dst, first);
-+				*dst = comp(d0 >> right | d1 << left, *dst,
-+					    first);
- 				d0 = d1;
- 				dst++;
- 				n -= bits - dst_idx;
-@@ -126,36 +127,36 @@ bitcpy(struct fb_info *p, unsigned long *dst, int dst_idx,
- 			n /= bits;
- 			while (n >= 4) {
- 				d1 = *src++;
--				*dst++ = d0 << left | d1 >> right;
-+				*dst++ = d0 >> right | d1 << left;
- 				d0 = d1;
- 				d1 = *src++;
--				*dst++ = d0 << left | d1 >> right;
-+				*dst++ = d0 >> right | d1 << left;
- 				d0 = d1;
- 				d1 = *src++;
--				*dst++ = d0 << left | d1 >> right;
-+				*dst++ = d0 >> right | d1 << left;
- 				d0 = d1;
- 				d1 = *src++;
--				*dst++ = d0 << left | d1 >> right;
-+				*dst++ = d0 >> right | d1 << left;
- 				d0 = d1;
- 				n -= 4;
- 			}
- 			while (n--) {
- 				d1 = *src++;
--				*dst++ = d0 << left | d1 >> right;
-+				*dst++ = d0 >> right | d1 << left;
- 				d0 = d1;
- 			}
- 
- 			/* Trailing bits */
--			if (last) {
--				if (m <= right) {
-+			if (m) {
-+				if (m <= bits - right) {
- 					/* Single source word */
--					*dst = comp(d0 << left, *dst, last);
-+					d0 >>= right;
- 				} else {
- 					/* 2 source words */
-  					d1 = *src;
--					*dst = comp(d0 << left | d1 >> right,
--						    *dst, last);
-+					d0 = d0 >> right | d1 << left;
- 				}
-+				*dst = comp(d0, *dst, last);
- 			}
- 		}
- 	}
-@@ -166,40 +167,35 @@ bitcpy(struct fb_info *p, unsigned long *dst, int dst_idx,
-      */
- 
- static void
--bitcpy_rev(struct fb_info *p, unsigned long *dst, int dst_idx,
--		const unsigned long *src, int src_idx, int bits, unsigned n)
-+bitcpy_rev(struct fb_info *p, unsigned long *dst, unsigned dst_idx,
-+	   const unsigned long *src, unsigned src_idx, unsigned bits,
-+	   unsigned n)
- {
- 	unsigned long first, last;
- 	int shift;
- 
--	dst += (n-1)/bits;
--	src += (n-1)/bits;
--	if ((n-1) % bits) {
--		dst_idx += (n-1) % bits;
--		dst += dst_idx >> (ffs(bits) - 1);
--		dst_idx &= bits - 1;
--		src_idx += (n-1) % bits;
--		src += src_idx >> (ffs(bits) - 1);
--		src_idx &= bits - 1;
--	}
-+	dst += (dst_idx + n - 1) / bits;
-+	src += (src_idx + n - 1) / bits;
-+	dst_idx = (dst_idx + n - 1) % bits;
-+	src_idx = (src_idx + n - 1) % bits;
- 
- 	shift = dst_idx-src_idx;
- 
--	first = FB_SHIFT_LOW(p, ~0UL, bits - 1 - dst_idx);
--	last = ~(FB_SHIFT_LOW(p, ~0UL, bits - 1 - ((dst_idx-n) % bits)));
-+	first = ~FB_SHIFT_HIGH(p, ~0UL, (dst_idx + 1) % bits);
-+	last = FB_SHIFT_HIGH(p, ~0UL, (bits + dst_idx + 1 - n) % bits);
- 
- 	if (!shift) {
- 		/* Same alignment for source and dest */
- 		if ((unsigned long)dst_idx+1 >= n) {
- 			/* Single word */
--			if (last)
--				first &= last;
--			*dst = comp(*src, *dst, first);
-+			if (first)
-+				last &= first;
-+			*dst = comp(*src, *dst, last);
- 		} else {
- 			/* Multiple destination words */
- 
- 			/* Leading bits */
--			if (first != ~0UL) {
-+			if (first) {
- 				*dst = comp(*src, *dst, first);
- 				dst--;
- 				src--;
-@@ -222,29 +218,29 @@ bitcpy_rev(struct fb_info *p, unsigned long *dst, int dst_idx,
- 			while (n--)
- 				*dst-- = *src--;
- 			/* Trailing bits */
--			if (last)
-+			if (last != -1UL)
- 				*dst = comp(*src, *dst, last);
- 		}
- 	} else {
- 		/* Different alignment for source and dest */
- 
--		int const left = -shift & (bits-1);
--		int const right = shift & (bits-1);
-+		int const left = shift & (bits-1);
-+		int const right = -shift & (bits-1);
- 
- 		if ((unsigned long)dst_idx+1 >= n) {
- 			/* Single destination word */
--			if (last)
--				first &= last;
-+			if (first)
-+				last &= first;
- 			if (shift < 0) {
- 				/* Single source word */
--				*dst = comp(*src << left, *dst, first);
-+				*dst = comp(*src >> right, *dst, last);
- 			} else if (1+(unsigned long)src_idx >= n) {
- 				/* Single source word */
--				*dst = comp(*src >> right, *dst, first);
-+				*dst = comp(*src << left, *dst, last);
- 			} else {
- 				/* 2 source words */
--				*dst = comp(*src >> right | *(src-1) << left,
--					    *dst, first);
-+				*dst = comp(*src << left | *(src-1) >> right,
-+					    *dst, last);
- 			}
- 		} else {
- 			/* Multiple destination words */
-@@ -261,14 +257,18 @@ bitcpy_rev(struct fb_info *p, unsigned long *dst, int dst_idx,
- 			/* Leading bits */
- 			if (shift < 0) {
- 				/* Single source word */
--				*dst = comp(d0 << left, *dst, first);
-+				d1 = d0;
-+				d0 >>= right;
- 			} else {
- 				/* 2 source words */
- 				d1 = *src--;
--				*dst = comp(d0 >> right | d1 << left, *dst,
--					    first);
--				d0 = d1;
-+				d0 = d0 << left | d1 >> right;
- 			}
-+			if (!first)
-+				*dst = d0;
-+			else
-+				*dst = comp(d0, *dst, first);
-+			d0 = d1;
- 			dst--;
- 			n -= dst_idx+1;
- 
-@@ -277,36 +277,36 @@ bitcpy_rev(struct fb_info *p, unsigned long *dst, int dst_idx,
- 			n /= bits;
- 			while (n >= 4) {
- 				d1 = *src--;
--				*dst-- = d0 >> right | d1 << left;
-+				*dst-- = d0 << left | d1 >> right;
- 				d0 = d1;
- 				d1 = *src--;
--				*dst-- = d0 >> right | d1 << left;
-+				*dst-- = d0 << left | d1 >> right;
- 				d0 = d1;
- 				d1 = *src--;
--				*dst-- = d0 >> right | d1 << left;
-+				*dst-- = d0 << left | d1 >> right;
- 				d0 = d1;
- 				d1 = *src--;
--				*dst-- = d0 >> right | d1 << left;
-+				*dst-- = d0 << left | d1 >> right;
- 				d0 = d1;
- 				n -= 4;
- 			}
- 			while (n--) {
- 				d1 = *src--;
--				*dst-- = d0 >> right | d1 << left;
-+				*dst-- = d0 << left | d1 >> right;
- 				d0 = d1;
- 			}
- 
- 			/* Trailing bits */
--			if (last) {
--				if (m <= left) {
-+			if (m) {
-+				if (m <= bits - left) {
- 					/* Single source word */
--					*dst = comp(d0 >> right, *dst, last);
-+					d0 <<= left;
- 				} else {
- 					/* 2 source words */
- 					d1 = *src;
--					*dst = comp(d0 >> right | d1 << left,
--						    *dst, last);
-+					d0 = d0 << left | d1 >> right;
- 				}
-+				*dst = comp(d0, *dst, last);
- 			}
- 		}
- 	}
-@@ -317,9 +317,9 @@ void sys_copyarea(struct fb_info *p, const struct fb_copyarea *area)
- 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
- 	u32 height = area->height, width = area->width;
- 	unsigned long const bits_per_line = p->fix.line_length*8u;
--	unsigned long *dst = NULL, *src = NULL;
-+	unsigned long *base = NULL;
- 	int bits = BITS_PER_LONG, bytes = bits >> 3;
--	int dst_idx = 0, src_idx = 0, rev_copy = 0;
-+	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
- 
- 	if (p->state != FBINFO_STATE_RUNNING)
- 		return;
-@@ -334,8 +334,7 @@ void sys_copyarea(struct fb_info *p, const struct fb_copyarea *area)
- 
- 	/* split the base of the framebuffer into a long-aligned address and
- 	   the index of the first bit */
--	dst = src = (unsigned long *)((unsigned long)p->screen_base &
--				      ~(bytes-1));
-+	base = (unsigned long *)((unsigned long)p->screen_base & ~(bytes-1));
- 	dst_idx = src_idx = 8*((unsigned long)p->screen_base & (bytes-1));
- 	/* add offset of source and target area */
- 	dst_idx += dy*bits_per_line + dx*p->var.bits_per_pixel;
-@@ -348,20 +347,14 @@ void sys_copyarea(struct fb_info *p, const struct fb_copyarea *area)
- 		while (height--) {
- 			dst_idx -= bits_per_line;
- 			src_idx -= bits_per_line;
--			dst += dst_idx >> (ffs(bits) - 1);
--			dst_idx &= (bytes - 1);
--			src += src_idx >> (ffs(bits) - 1);
--			src_idx &= (bytes - 1);
--			bitcpy_rev(p, dst, dst_idx, src, src_idx, bits,
-+			bitcpy_rev(p, base + (dst_idx / bits), dst_idx % bits,
-+				base + (src_idx / bits), src_idx % bits, bits,
- 				width*p->var.bits_per_pixel);
- 		}
- 	} else {
- 		while (height--) {
--			dst += dst_idx >> (ffs(bits) - 1);
--			dst_idx &= (bytes - 1);
--			src += src_idx >> (ffs(bits) - 1);
--			src_idx &= (bytes - 1);
--			bitcpy(p, dst, dst_idx, src, src_idx, bits,
-+			bitcpy(p, base + (dst_idx / bits), dst_idx % bits,
-+				base + (src_idx / bits), src_idx % bits, bits,
- 				width*p->var.bits_per_pixel);
- 			dst_idx += bits_per_line;
- 			src_idx += bits_per_line;
--- 
-2.0.5
+ Tomi
 
+
+
+--cut5KCQ2F0ktVoMK5qat9wchFBlw3GDHl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUyzi2AAoJEPo9qoy8lh71jugP/iAieYeB8kSLDwQczrIF237/
+HhMrrLyHCWICF/L6qGej8QonOQSJln5DAeQCxXIUFfUS/3/BD5JlUCzYUpOn4rZI
+IQg5oIEvn5DGdbHieUuHBb/URLw1EQlH0EioJQw1nrrvHNITX7PWXwn2wexwZ6Hp
+2q/CZrUau6/B1yo4u1XXVgNfizpZrQAu27Nb5swpJg14au+YDgc4G61GAiKQ8grd
+cL22dJJDUSkOA8xNcGWDY4JOrj91XEqltI9PlmFj/fy0qinAmssc379yZeIDMhoV
+W/aV6I6WAK55ZIqC+y3MWgRQA4RQem7ago2vDDHDCf50BwEtFHFkuY/clWzEpmSe
+dt46UDhWOoW/0rrwfVOi/qWDndIgjHDxkR06+6rJWVASOEDj88CH8Ibz8/jn1RLu
+iNqK9W2YmMEZ5DGC5RwNONM6c4GbWlfRlaYCn7hOP7zApaq9lhhcTPhCkudTu2DY
+xl4FAqWlj2lVZRGQxIfP8SkH20EcgksSqXG1To0yu1d8OJ3LYbulByto/fRe2HWd
+HgG6DP5u7L7hwJqdEprUE/A3kOD5Js686p3RKDramV9YTS+lwMwivDPFgpfv3tvY
+qJKIUcMwBNU1s5E8AGgoIAX2wQJ4laTBZM9jKEFo8XPp8wMivjSzZ+U+5S4UO+6w
+j+B33VjzriZY5KHfNRkB
+=tO3j
+-----END PGP SIGNATURE-----
+
+--cut5KCQ2F0ktVoMK5qat9wchFBlw3GDHl--

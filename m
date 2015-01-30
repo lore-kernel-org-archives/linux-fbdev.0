@@ -1,82 +1,118 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 27 Jan 2015 10:50:42 +0000
-Subject: [PATCH 14/14] OMAPDSS: DPI: DRA7xx support
-Message-Id: <1422355842-11234-15-git-send-email-tomi.valkeinen@ti.com>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Fri, 30 Jan 2015 08:44:42 +0000
+Subject: [PATCH v5 2/2] fbcon: expose cursor blink interval via sysfs
+Message-Id: <alpine.DEB.2.11.1501300843200.2423@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
+References: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain>
+In-Reply-To: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Add support for DRA7xx DPI output.
+fbcon toggles cursor display state every 200 milliseconds when blinking.
+Since users prefer different toggle intervals, expose the interval via
+/sys/class/graphics/fbcon/cursor_blink_ms so that it may be customized.
 
-DRA7xx has three DPI outputs, each of which gets its input from a DISPC
-channel. However, DRA72x has only one video PLL, and DRA74x has two
-video PLLs. In both cases the video PLLs need to be shared between
-multiple outputs. The driver doesn't handle this at the moment.
+Values written to the interface set the approximate time interval in
+milliseconds between cursor toggles, from 1 to 32767. Since the interval
+is stored internally as a number of jiffies, the millisecond value read
+from the interface may not exactly match the entered value.
 
-Also, DRA7xx requires configuring CONTROL module bits to route the clock
-from the PLL to the used DISPC channel.
+An outstanding blink timer is reset after a new value is entered.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+If the cursor blink is disabled, either via the 'cursor_blink' boolean
+setting or some other mechanism, the 'cursor_blink_ms' setting may still
+be modified. The new value will be used if the blink is reactivated.
+
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
 ---
- drivers/video/fbdev/omap2/dss/dpi.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ drivers/video/console/fbcon.c | 66 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
-index 9a2f8c3b102d..f83e7b030249 100644
---- a/drivers/video/fbdev/omap2/dss/dpi.c
-+++ b/drivers/video/fbdev/omap2/dss/dpi.c
-@@ -106,6 +106,17 @@ static struct dss_pll *dpi_get_pll(enum omap_channel channel)
- 			return NULL;
- 		}
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 7a2030b..f026f65 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -3495,11 +3495,77 @@ err:
+ 	return count;
+ }
  
-+	case OMAPDSS_VER_DRA7xx:
-+		switch (channel) {
-+		case OMAP_DSS_CHANNEL_LCD:
-+		case OMAP_DSS_CHANNEL_LCD2:
-+			return dss_pll_find("video0");
-+		case OMAP_DSS_CHANNEL_LCD3:
-+			return dss_pll_find("video1");
-+		default:
-+			return NULL;
++static ssize_t show_cursor_blink_ms(struct device *device,
++				    struct device_attribute *attr, char *buf)
++{
++	struct fbcon_ops *ops;
++	int idx, ms = -1;
++
++	if (fbcon_has_exited)
++		return -ENODEV;
++
++	console_lock();
++	idx = con2fb_map[fg_console];
++
++	if (idx != -1 && registered_fb[idx] != NULL) {
++		ops = ((struct fb_info *)registered_fb[idx])->fbcon_par;
++		if (ops != NULL)
++			ms = jiffies_to_msecs(ops->blink_jiffies);
++	}
++
++	console_unlock();
++	return ms < 0 ? -ENODEV : scnprintf(buf, PAGE_SIZE, "%d\n", ms);
++}
++
++static ssize_t store_cursor_blink_ms(struct device *device,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	struct fb_info *info;
++	struct fbcon_ops *ops;
++	int idx;
++	short ms;
++	int r = -ENODEV;
++
++	if (fbcon_has_exited)
++		return r;
++
++	console_lock();
++	idx = con2fb_map[fg_console];
++
++	if (idx = -1 || registered_fb[idx] = NULL)
++		goto err;
++
++	info = registered_fb[idx];
++	ops = info->fbcon_par;
++
++	if (ops = NULL)
++		goto err;
++
++	if (!kstrtos16(buf, 0, &ms) && ms > 0) {
++		//ops->blink_jiffies = max_t(int, msecs_to_jiffies(ms), 1);
++		ops->blink_jiffies = msecs_to_jiffies(ms);
++		if (info->queue.func = fb_flashcursor &&
++		    ops->flags & FBCON_FLAGS_CURSOR_TIMER) {
++			fbcon_del_cursor_timer(info);
++			fbcon_add_cursor_timer(info);
 +		}
++		r = count;
++	} else
++		r = -EINVAL;
 +
- 	default:
- 		return NULL;
- 	}
-@@ -590,6 +601,10 @@ static void dpi_init_pll(struct dpi_data *dpi)
- 	if (!pll)
- 		return;
++err:
++	console_unlock();
++	return r;
++}
++
+ static struct device_attribute device_attrs[] = {
+ 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
+ 	__ATTR(rotate_all, S_IWUSR, NULL, store_rotate_all),
+ 	__ATTR(cursor_blink, S_IRUGO|S_IWUSR, show_cursor_blink,
+ 	       store_cursor_blink),
++	__ATTR(cursor_blink_ms, S_IRUGO|S_IWUSR, show_cursor_blink_ms,
++	       store_cursor_blink_ms),
+ };
  
-+	/* On DRA7 we need to set a mux to use the PLL */
-+	if (omapdss_get_version() = OMAPDSS_VER_DRA7xx)
-+		dss_ctrl_pll_set_control_mux(pll->id, dpi->output.dispc_channel);
-+
- 	if (dpi_verify_dsi_pll(pll)) {
- 		DSSWARN("DSI PLL not operational\n");
- 		return;
-@@ -615,6 +630,17 @@ static enum omap_channel dpi_get_channel(int port_num)
- 	case OMAPDSS_VER_AM43xx:
- 		return OMAP_DSS_CHANNEL_LCD;
- 
-+	case OMAPDSS_VER_DRA7xx:
-+		switch (port_num) {
-+		case 2:
-+			return OMAP_DSS_CHANNEL_LCD3;
-+		case 1:
-+			return OMAP_DSS_CHANNEL_LCD2;
-+		case 0:
-+		default:
-+			return OMAP_DSS_CHANNEL_LCD;
-+		}
-+
- 	case OMAPDSS_VER_OMAP4430_ES1:
- 	case OMAPDSS_VER_OMAP4430_ES2:
- 	case OMAPDSS_VER_OMAP4:
+ static int fbcon_init_device(void)
 -- 
-2.2.2
+2.1.4
 

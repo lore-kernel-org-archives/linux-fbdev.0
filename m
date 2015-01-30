@@ -1,156 +1,62 @@
-From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Date: Thu, 15 Jan 2015 19:05:37 +0000
-Subject: [PATCH v2] fbdev: ssd1307fb: return proper error code if write command fails
-Message-Id: <1421348737-4606-1-git-send-email-prabhakar.csengg@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 30 Jan 2015 07:40:58 +0000
+Subject: Re: [PATCH v2] fbdev: ssd1307fb: return proper error code if write command fails
+Message-Id: <54CB358A.7080205@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="WljsMuhkqfPB3B8ibPANcxvme8rKMVpu6"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Prabhakar Lad <prabhakar.csengg@gmail.com>
+References: <1421348737-4606-1-git-send-email-prabhakar.csengg@gmail.com>
+In-Reply-To: <1421348737-4606-1-git-send-email-prabhakar.csengg@gmail.com>
+To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-From: Prabhakar Lad <prabhakar.csengg@gmail.com>
+--WljsMuhkqfPB3B8ibPANcxvme8rKMVpu6
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-this patch fixes ssd1307fb_ssd1306_init() function to return
-proper error codes in case of failures.
+On 15/01/15 21:05, Lad, Prabhakar wrote:
+> From: Prabhakar Lad <prabhakar.csengg@gmail.com>
+>=20
+> this patch fixes ssd1307fb_ssd1306_init() function to return
+> proper error codes in case of failures.
+>=20
+> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+> ---
+>  Changes for v2:
+>  a: Added new line as per Maxime's suggestion.
+>=20
+>  drivers/video/fbdev/ssd1307fb.c | 67 ++++++++++++++++++++++++++++++++-=
+--------
+>  1 file changed, 53 insertions(+), 14 deletions(-)
+>=20
 
-Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
----
- Changes for v2:
- a: Added new line as per Maxime's suggestion.
+Thanks, queued for 3.20.
 
- drivers/video/fbdev/ssd1307fb.c | 67 ++++++++++++++++++++++++++++++++---------
- 1 file changed, 53 insertions(+), 14 deletions(-)
+ Tomi
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index f4daa59..0ea6345 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -320,7 +320,10 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
- 
- 	/* Set initial contrast */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_CONTRAST);
--	ret = ret & ssd1307fb_write_cmd(par->client, 0x7f);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, 0x7f);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -336,63 +339,99 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
- 
- 	/* Set multiplex ratio value */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_MULTIPLEX_RATIO);
--	ret = ret & ssd1307fb_write_cmd(par->client, par->height - 1);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, par->height - 1);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* set display offset value */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_DISPLAY_OFFSET);
-+	if (ret < 0)
-+		return ret;
-+
- 	ret = ssd1307fb_write_cmd(par->client, 0x20);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Set clock frequency */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_CLOCK_FREQ);
--	ret = ret & ssd1307fb_write_cmd(par->client, 0xf0);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, 0xf0);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Set precharge period in number of ticks from the internal clock */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PRECHARGE_PERIOD);
--	ret = ret & ssd1307fb_write_cmd(par->client, 0x22);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, 0x22);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Set COM pins configuration */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COM_PINS_CONFIG);
--	ret = ret & ssd1307fb_write_cmd(par->client, 0x22);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, 0x22);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Set VCOMH */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_VCOMH);
--	ret = ret & ssd1307fb_write_cmd(par->client, 0x49);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, 0x49);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Turn on the DC-DC Charge Pump */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_CHARGE_PUMP);
--	ret = ret & ssd1307fb_write_cmd(par->client, 0x14);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, 0x14);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Switch to horizontal addressing mode */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_ADDRESS_MODE);
--	ret = ret & ssd1307fb_write_cmd(par->client,
--					SSD1307FB_SET_ADDRESS_MODE_HORIZONTAL);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client,
-+				  SSD1307FB_SET_ADDRESS_MODE_HORIZONTAL);
- 	if (ret < 0)
- 		return ret;
- 
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COL_RANGE);
--	ret = ret & ssd1307fb_write_cmd(par->client, 0x0);
--	ret = ret & ssd1307fb_write_cmd(par->client, par->width - 1);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, 0x0);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, par->width - 1);
- 	if (ret < 0)
- 		return ret;
- 
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PAGE_RANGE);
--	ret = ret & ssd1307fb_write_cmd(par->client, 0x0);
--	ret = ret & ssd1307fb_write_cmd(par->client,
--					par->page_offset + (par->height / 8) - 1);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, 0x0);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client,
-+				  par->page_offset + (par->height / 8) - 1);
- 	if (ret < 0)
- 		return ret;
- 
--- 
-1.9.1
 
+
+--WljsMuhkqfPB3B8ibPANcxvme8rKMVpu6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJUyzWKAAoJEPo9qoy8lh71xOsP/2D3KF5nJ8je+z//ROVntxbH
+61FbulCUNb/8WGqIR4tSLYDB2ZoWNCk4E3wL8RKLrQ2xP4lhpWKkb0i6Eog5rYqG
+LEdoDDE8Tfr7I9+Uai/SFBWRn4nQ7UI4OybhnU9uwpdb534+LeI9cw8rNpvsfJMI
+k0aRwUFKRn1uOXfQzdvnktvIsHELlcU/OFT9ruRZ0vpdggdxApUeho4NkjaqGVF9
+gR+6m0ISO+7Mb7stktKY89l7LYYK/9pHXWF3I1eRuW2lkIW5gZ0gNK8QC2zKVRmx
+rNrg9mvlirg7jfbHizmOmbJdVADTnURhJYlokemmbkmKZ6cDuqo7QQX1+nJvSiEd
+7AkEw/ILxEDehDuF854QaIk+GlBmuIhd3vDjGgMrarORTZO4bcWQzrTAW7Mbxqf4
+UzBMcuP6JSU/2/lC1oG7EX0wCG7QOyrhsj0iYU+UukjipLnSf0pNSh2XySHKGNrN
+CC3hSlIXw3A25rUfVXv3c2QCQwh9coPNJ7jyhQVnV2MX/XgRh7sfK7XFzB9NTUMK
+YSA71OZnPF2sQkX6td9x3TTmkl1S4JOtZO0lQVCLP1VxFwYYqQFiOAY6Il81tGeR
+SxLJ6XvE+bHk2o2UNmQeMcMDYbveqoEsLxz4lT5/vLVSd6JQdRBB3CioE63hnQfk
+jvE0B03mUhlR6v8DcPHY
+=01dx
+-----END PGP SIGNATURE-----
+
+--WljsMuhkqfPB3B8ibPANcxvme8rKMVpu6--

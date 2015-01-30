@@ -1,126 +1,35 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 19 Jan 2015 18:49:39 +0000
-Subject: [PATCH 9/9] video: Less function calls in w100fb_probe() after error detection
-Message-Id: <54BD51C3.8000507@users.sourceforge.net>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Fri, 30 Jan 2015 09:35:13 +0000
+Subject: [PATCH v6 0/2] fbcon: user-defined cursor blink interval
+Message-Id: <alpine.DEB.2.11.1501300932470.2288@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54BD44F0.3040705@users.sourceforge.net>
-In-Reply-To: <54BD44F0.3040705@users.sourceforge.net>
+References: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain> <alpine.DEB.2.11.1501300843200.2423@localhost.localdomain>
+In-Reply-To: <alpine.DEB.2.11.1501300843200.2423@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 19 Jan 2015 17:56:11 +0100
+Since users prefer different fbcon cursor blink intervals, allow the
+interval to be set via sysfs. The current interval of 200 milliseconds
+is retained as the default. Tested with intelfb.
 
-The iounmap() function could be called in three cases by the w100fb_probe()
-function during error handling even if the passed data structure element
-contained still a null pointer.
+v2:  Use kstrtos16() instead of kstrtoul() and min_t() as suggested by
+     Geert Uytterhoeven
+v3:  Add error messages as suggested by Tomi Valkeinen
+v4:  Add rationale into the patches as suggested by Richard Weinberger
+v5:  Return error codes instead of logging error messages (my mistake)
+v6:  Uncomment the correct line (my mistake again!)
 
-* This implementation detail could be improved by adjustments for
-  jump labels.
+Scot Doyle (2):
+  fbcon: store cursor blink interval in fbcon_ops
+  fbcon: expose cursor blink interval via sysfs
 
-* Let us also delete two unnecessary null pointer checks for the
-  variable "info".
+ drivers/video/console/fbcon.c | 70 +++++++++++++++++++++++++++++++++++++++++--
+ drivers/video/console/fbcon.h |  1 +
+ 2 files changed, 69 insertions(+), 2 deletions(-)
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/video/fbdev/w100fb.c | 31 +++++++++++++++++--------------
- 1 file changed, 17 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/video/fbdev/w100fb.c b/drivers/video/fbdev/w100fb.c
-index aeb53eb..67ddc57 100644
---- a/drivers/video/fbdev/w100fb.c
-+++ b/drivers/video/fbdev/w100fb.c
-@@ -645,12 +645,12 @@ int w100fb_probe(struct platform_device *pdev)
- 	/* Remap the chip base address */
- 	remapped_base = ioremap_nocache(mem->start+W100_CFG_BASE, W100_CFG_LEN);
- 	if (remapped_base = NULL)
--		goto out;
-+		goto exit;
- 
- 	/* Map the register space */
- 	remapped_regs = ioremap_nocache(mem->start+W100_REG_BASE, W100_REG_LEN);
- 	if (remapped_regs = NULL)
--		goto out;
-+		goto io_unmap_base;
- 
- 	/* Identify the chip */
- 	printk("Found ");
-@@ -662,19 +662,19 @@ int w100fb_probe(struct platform_device *pdev)
- 		default:
- 			printk("Unknown imageon chip ID\n");
- 			err = -ENODEV;
--			goto out;
-+			goto io_unmap_regs;
- 	}
- 	printk(" at 0x%08lx.\n", (unsigned long) mem->start+W100_CFG_BASE);
- 
- 	/* Remap the framebuffer */
- 	remapped_fbuf = ioremap_nocache(mem->start+MEM_WINDOW_BASE, MEM_WINDOW_SIZE);
- 	if (remapped_fbuf = NULL)
--		goto out;
-+		goto io_unmap_regs;
- 
- 	info=framebuffer_alloc(sizeof(struct w100fb_par), &pdev->dev);
- 	if (!info) {
- 		err = -ENOMEM;
--		goto out;
-+		goto io_unmap_framebuffer;
- 	}
- 
- 	par = info->par;
-@@ -690,13 +690,13 @@ int w100fb_probe(struct platform_device *pdev)
- 	if (!par->pll_table) {
- 		printk(KERN_ERR "No matching Xtal definition found\n");
- 		err = -EINVAL;
--		goto out;
-+		goto release_framebuffer;
- 	}
- 
- 	info->pseudo_palette = kmalloc(sizeof (u32) * MAX_PALETTES, GFP_KERNEL);
- 	if (!info->pseudo_palette) {
- 		err = -ENOMEM;
--		goto out;
-+		goto release_framebuffer;
- 	}
- 
- 	info->fbops = &w100fb_ops;
-@@ -716,7 +716,7 @@ int w100fb_probe(struct platform_device *pdev)
- 
- 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
- 		err = -ENOMEM;
--		goto out;
-+		goto free_palette;
- 	}
- 
- 	par->mode = &inf->modelist[0];
-@@ -766,15 +766,18 @@ int w100fb_probe(struct platform_device *pdev)
- 	fb_info(info, "%s frame buffer device\n", info->fix.id);
- 	return 0;
- out:
--	if (info) {
--		fb_dealloc_cmap(&info->cmap);
--		kfree(info->pseudo_palette);
--	}
-+	fb_dealloc_cmap(&info->cmap);
-+free_palette:
-+	kfree(info->pseudo_palette);
-+release_framebuffer:
-+	framebuffer_release(info);
-+io_unmap_framebuffer:
- 	iounmap(remapped_fbuf);
-+io_unmap_regs:
- 	iounmap(remapped_regs);
-+io_unmap_base:
- 	iounmap(remapped_base);
--	if (info)
--		framebuffer_release(info);
-+exit:
- 	return err;
- }
- 
 -- 
-2.2.2
+2.1.4
 

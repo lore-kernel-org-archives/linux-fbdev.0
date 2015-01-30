@@ -1,76 +1,32 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 27 Jan 2015 10:50:29 +0000
-Subject: [PATCH 01/14] OMAPDSS: Add enum dss_pll_id
-Message-Id: <1422355842-11234-2-git-send-email-tomi.valkeinen@ti.com>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Fri, 30 Jan 2015 08:40:44 +0000
+Subject: [PATCH v5 0/2] fbcon: user-defined cursor blink interval
+Message-Id: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1422355842-11234-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-In some cases we need global identifiers for the DSS PLLs, for example
-when configuring clock muxing on DRA7. For this purpose let's add a
-'enum dss_pll_id'.
+Since users prefer different fbcon cursor blink intervals, allow the
+interval to be set via sysfs. The current interval of 200 milliseconds
+is retained as the default. Tested with intelfb.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/dsi.c      | 1 +
- drivers/video/fbdev/omap2/dss/dss.h      | 7 +++++++
- drivers/video/fbdev/omap2/dss/hdmi_pll.c | 1 +
- 3 files changed, 9 insertions(+)
+v2:  Use kstrtos16() instead of kstrtoul() and min_t() as suggested by
+     Geert Uytterhoeven
+v3:  Add error messages as suggested by Tomi Valkeinen
+v4:  Add rationale into the patches as suggested by Richard Weinberger
+v5:  Return error codes instead of logging error messages (my mistake)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
-index 3e44c580b1f8..5081f6fb1737 100644
---- a/drivers/video/fbdev/omap2/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/dss/dsi.c
-@@ -5238,6 +5238,7 @@ static int dsi_init_pll_data(struct platform_device *dsidev)
- 	}
- 
- 	pll->name = dsi->module_id = 0 ? "dsi0" : "dsi1";
-+	pll->id = dsi->module_id = 0 ? DSS_PLL_DSI1 : DSS_PLL_DSI2;
- 	pll->clkin = clk;
- 	pll->base = dsi->pll_base;
- 
-diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
-index 14fb0c23f4a2..1826ee96265b 100644
---- a/drivers/video/fbdev/omap2/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/dss/dss.h
-@@ -100,6 +100,12 @@ enum dss_writeback_channel {
- 	DSS_WB_LCD3_MGR =	7,
- };
- 
-+enum dss_pll_id {
-+	DSS_PLL_DSI1,
-+	DSS_PLL_DSI2,
-+	DSS_PLL_HDMI,
-+};
-+
- struct dss_pll;
- 
- #define DSS_PLL_MAX_HSDIVS 4
-@@ -150,6 +156,7 @@ struct dss_pll_hw {
- 
- struct dss_pll {
- 	const char *name;
-+	enum dss_pll_id id;
- 
- 	struct clk *clkin;
- 	struct regulator *regulator;
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-index ac83ef5cfd7d..b808f7c72d83 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_pll.c
-@@ -185,6 +185,7 @@ static int dsi_init_pll_data(struct platform_device *pdev, struct hdmi_pll_data
- 	}
- 
- 	pll->name = "hdmi";
-+	pll->id = DSS_PLL_HDMI;
- 	pll->base = hpll->base;
- 	pll->clkin = clk;
- 
+Scot Doyle (2):
+  fbcon: store cursor blink interval in fbcon_ops
+  fbcon: expose cursor blink interval via sysfs
+
+ drivers/video/console/fbcon.c | 71 +++++++++++++++++++++++++++++++++++++++++--
+ drivers/video/console/fbcon.h |  1 +
+ 2 files changed, 70 insertions(+), 2 deletions(-)
+
 -- 
-2.2.2
+2.1.4
 

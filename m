@@ -1,32 +1,69 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sun, 18 Jan 2015 00:09:14 +0000
-Subject: Re: [PATCH 1/3] Revert "staging: sm7xxfb: remove driver"
-Message-Id: <20150118000914.GA26160@kroah.com>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Fri, 30 Jan 2015 08:43:10 +0000
+Subject: [PATCH v5 1/2] fbcon: store cursor blink interval in fbcon_ops
+Message-Id: <alpine.DEB.2.11.1501300841510.2423@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1420028805-30488-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1420028805-30488-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain>
+In-Reply-To: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudip@vectorindia.org>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Dec 31, 2014 at 05:56:43PM +0530, Sudip Mukherjee wrote:
-> This reverts commit "dc93c85235efa5201e9a3c116bc3fbd1afc1a182"
-> 
-> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
-> ---
-> 
-> Hi Greg K-H
-> With reference to our discussion at https://lkml.org/lkml/2014/11/22/54 ,
-> now I have the hardware and I will be working on the code along with
-> Teddy Wang.
+fbcon toggles cursor display state every 200 milliseconds when blinking.
+Since users prefer different toggle intervals, prepare to expose the
+interval via sysfs by moving it to fbdev_ops and setting the default
+to 200 milliseconds.
 
-I'm not going to accept this revert until I see some cleanup / fix
-patches as well, so please make a larger series with the revert and then
-some work done to the driver, so I at least have a hint it's not
-abandonded.
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+---
+ drivers/video/console/fbcon.c | 5 +++--
+ drivers/video/console/fbcon.h | 1 +
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-thanks,
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index ea43724..7a2030b 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -405,7 +405,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 
+ 	queue_work(system_power_efficient_wq, &info->queue);
+-	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
++	mod_timer(&ops->cursor_timer, jiffies + ops->blink_jiffies);
+ }
+ 
+ static void fbcon_add_cursor_timer(struct fb_info *info)
+@@ -420,7 +420,7 @@ static void fbcon_add_cursor_timer(struct fb_info *info)
+ 
+ 		init_timer(&ops->cursor_timer);
+ 		ops->cursor_timer.function = cursor_timer_handler;
+-		ops->cursor_timer.expires = jiffies + HZ / 5;
++		ops->cursor_timer.expires = jiffies + ops->blink_jiffies;
+ 		ops->cursor_timer.data = (unsigned long ) info;
+ 		add_timer(&ops->cursor_timer);
+ 		ops->flags |= FBCON_FLAGS_CURSOR_TIMER;
+@@ -959,6 +959,7 @@ static const char *fbcon_startup(void)
+ 	ops->currcon = -1;
+ 	ops->graphics = 1;
+ 	ops->cur_rotate = -1;
++	ops->blink_jiffies = msecs_to_jiffies(200);
+ 	info->fbcon_par = ops;
+ 	p->con_rotate = initial_rotation;
+ 	set_blitting_type(vc, info);
+diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+index 6bd2e0c..642c4e7 100644
+--- a/drivers/video/console/fbcon.h
++++ b/drivers/video/console/fbcon.h
+@@ -70,6 +70,7 @@ struct fbcon_ops {
+ 	struct fb_cursor cursor_state;
+ 	struct display *p;
+         int    currcon;	                /* Current VC. */
++	int    blink_jiffies;
+ 	int    cursor_flash;
+ 	int    cursor_reset;
+ 	int    blank_state;
+-- 
+2.1.4
 
-greg k-h

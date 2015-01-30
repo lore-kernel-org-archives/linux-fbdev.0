@@ -1,57 +1,43 @@
-From: Nicholas Mc Guire <der.herr@hofr.at>
-Date: Sun, 18 Jan 2015 01:37:02 +0000
-Subject: [PATCH] video: mx3fb: fix up wait_for_completion_timeout return handling
-Message-Id: <1421545022-24017-1-git-send-email-der.herr@hofr.at>
+From: Peter Meerwald <pmeerw@pmeerw.net>
+Date: Fri, 30 Jan 2015 07:59:46 +0000
+Subject: [PATCH] omapfb: Return error code when applying overlay settings fails
+Message-Id: <1422604786-6804-1-git-send-email-pmeerw@pmeerw.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Jingoo Han <jg1.han@samsung.com>, Denis Carikli <denis@eukrea.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Sascha Hauer <s.hauer@pengutronix.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Mc Guire <der.herr@hofr.at>
+To: linux-omap@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, Peter Meerwald <pmeerw@pmeerw.net>
 
-Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
+the check of the return code is missing, user space does not get notified
+about the error condition:
+
+omapdss OVERLAY error: overlay 2 horizontally not inside the display area (403 + 800 >= 800)
+omapdss APPLY error: failed to apply settings: illegal configuration.
+
+Signed-off-by: Peter Meerwald <pmeerw@pmeerw.net>
 ---
-return type of wait_for_completion_timeout is unsigned long as ret is 
-used only for checking wait_for_completion_timeout here the type was
-changed to unsigned long, wait_for_completion_timeout return >= 0 only
-so the checks for negative return canbe dropped.
+ drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-This patch was only compiletested using imx_v4_v5_defconfig                     
-
-Patch is against 3.19.0-rc4 -next-20150116
-
- drivers/video/fbdev/mx3fb.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/video/fbdev/mx3fb.c b/drivers/video/fbdev/mx3fb.c
-index 7947634..523134f 100644
---- a/drivers/video/fbdev/mx3fb.c
-+++ b/drivers/video/fbdev/mx3fb.c
-@@ -1144,7 +1144,7 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
- 	struct scatterlist *sg = mx3_fbi->sg;
- 	struct dma_chan *dma_chan = &mx3_fbi->idmac_channel->dma_chan;
- 	struct dma_async_tx_descriptor *txd;
--	int ret;
-+	unsigned long ret;
- 
- 	dev_dbg(fbi->device, "%s [%c]\n", __func__,
- 		list_empty(&mx3_fbi->idmac_channel->queue) ? '-' : '+');
-@@ -1184,12 +1184,11 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
- 	enable_irq(mx3_fbi->idmac_channel->eof_irq);
- 
- 	ret = wait_for_completion_timeout(&mx3_fbi->flip_cmpl, HZ / 10);
--	if (ret <= 0) {
-+	if (ret = 0) {
- 		mutex_unlock(&mx3_fbi->mutex);
--		dev_info(fbi->device, "Panning failed due to %s\n", ret < 0 ?
--			 "user interrupt" : "timeout");
-+		dev_info(fbi->device, "Panning failed due to timeout\n");
- 		disable_irq(mx3_fbi->idmac_channel->eof_irq);
--		return ret ? : -ETIMEDOUT;
-+		return -ETIMEDOUT;
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c b/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
+index 146b6f5..9ddfdd6 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
+@@ -137,8 +137,11 @@ static int omapfb_setup_plane(struct fb_info *fbi, struct omapfb_plane_info *pi)
+ 			goto undo;
  	}
  
- 	mx3_fbi->cur_ipu_buf = !mx3_fbi->cur_ipu_buf;
+-	if (ovl->manager)
+-		ovl->manager->apply(ovl->manager);
++	if (ovl->manager) {
++		r = ovl->manager->apply(ovl->manager);
++		if (r)
++			goto undo;
++	}
+ 
+ 	if (pi->enabled) {
+ 		r = ovl->enable(ovl);
 -- 
 1.7.10.4
 

@@ -1,61 +1,326 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Thu, 01 Jan 2015 15:34:58 +0000
-Subject: [PATCH] video: fbdev: omap2: dss: dss.c:  Remove unused function
-Message-Id: <1420126498-27648-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Kevin Hao <haokexin@gmail.com>
+Date: Sat, 31 Jan 2015 13:47:34 +0000
+Subject: [PATCH 04/15] fbdev: radeon: replace PPC_OF with PPC
+Message-Id: <1422712065-9403-5-git-send-email-haokexin@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>, Jingoo Han <jg1.han@samsung.com>, Sathya Prakash M R <sathyap@ti.com>, Fabian Frederick <fabf@skynet.be>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
+Cc: Kevin Hao <haokexin@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-Remove the function dss_get_hdmi_venc_clk_source() that is not used anywhere.
+The PPC_OF is a ppc specific option which is used to mean that the
+firmware device tree access functions are available. Since all the
+ppc platforms have a device tree, it is aways set to 'y' for ppc.
+So it makes no sense to keep a such option in the current kernel.
+Replace it with PPC.
 
-This was partially found by using a static code analysis program called cppcheck.
-
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- drivers/video/fbdev/omap2/dss/dss.c |   14 --------------
- drivers/video/fbdev/omap2/dss/dss.h |    1 -
- 2 files changed, 15 deletions(-)
+ drivers/video/fbdev/Kconfig              |  2 +-
+ drivers/video/fbdev/aty/radeon_base.c    | 24 ++++++++++++------------
+ drivers/video/fbdev/aty/radeon_monitor.c | 20 ++++++++++----------
+ drivers/video/fbdev/aty/radeon_pm.c      | 16 ++++++++--------
+ drivers/video/fbdev/aty/radeonfb.h       |  4 ++--
+ 5 files changed, 33 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-index 14bcd6c..d9482c8 100644
---- a/drivers/video/fbdev/omap2/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/dss/dss.c
-@@ -550,20 +550,6 @@ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select src)
- 		REG_FLD_MOD(DSS_CONTROL, src, 15, 15);	/* VENC_HDMI_SWITCH */
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index f2c3fb7d0399..55161dd4b931 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1333,7 +1333,7 @@ config FB_RADEON
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select FB_MACMODES if PPC_OF
++	select FB_MACMODES if PPC
+ 	help
+ 	  Choose this option if you want to use an ATI Radeon graphics card as
+ 	  a framebuffer device.  There are both PCI and AGP versions.  You
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 26d80a4486fb..01237c8fcdc6 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -74,7 +74,7 @@
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
+ 
+-#ifdef CONFIG_PPC_OF
++#ifdef CONFIG_PPC
+ 
+ #include <asm/pci-bridge.h>
+ #include "../macmodes.h"
+@@ -83,7 +83,7 @@
+ #include <asm/btext.h>
+ #endif
+ 
+-#endif /* CONFIG_PPC_OF */
++#endif /* CONFIG_PPC */
+ 
+ #ifdef CONFIG_MTRR
+ #include <asm/mtrr.h>
+@@ -418,7 +418,7 @@ static int  radeon_find_mem_vbios(struct radeonfb_info *rinfo)
+ }
+ #endif
+ 
+-#if defined(CONFIG_PPC_OF) || defined(CONFIG_SPARC)
++#if defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+ /*
+  * Read XTAL (ref clock), SCLK and MCLK from Open Firmware device
+  * tree. Hopefully, ATI OF driver is kind enough to fill these
+@@ -448,7 +448,7 @@ static int radeon_read_xtal_OF(struct radeonfb_info *rinfo)
+ 
+        	return 0;
+ }
+-#endif /* CONFIG_PPC_OF || CONFIG_SPARC */
++#endif /* CONFIG_PPC || CONFIG_SPARC */
+ 
+ /*
+  * Read PLL infos from chip registers
+@@ -653,7 +653,7 @@ static void radeon_get_pllinfo(struct radeonfb_info *rinfo)
+ 	rinfo->pll.ref_div = INPLL(PPLL_REF_DIV) & PPLL_REF_DIV_MASK;
+ 
+ 
+-#if defined(CONFIG_PPC_OF) || defined(CONFIG_SPARC)
++#if defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+ 	/*
+ 	 * Retrieve PLL infos from Open Firmware first
+ 	 */
+@@ -661,7 +661,7 @@ static void radeon_get_pllinfo(struct radeonfb_info *rinfo)
+        		printk(KERN_INFO "radeonfb: Retrieved PLL infos from Open Firmware\n");
+ 		goto found;
+ 	}
+-#endif /* CONFIG_PPC_OF || CONFIG_SPARC */
++#endif /* CONFIG_PPC || CONFIG_SPARC */
+ 
+ 	/*
+ 	 * Check out if we have an X86 which gave us some PLL informations
+@@ -1910,7 +1910,7 @@ static int radeon_set_fbinfo(struct radeonfb_info *rinfo)
+  * I put the card's memory at 0 in card space and AGP at some random high
+  * local (0xe0000000 for now) that will be changed by XFree/DRI anyway
+  */
+-#ifdef CONFIG_PPC_OF
++#ifdef CONFIG_PPC
+ #undef SET_MC_FB_FROM_APERTURE
+ static void fixup_memory_mappings(struct radeonfb_info *rinfo)
+ {
+@@ -1984,7 +1984,7 @@ static void fixup_memory_mappings(struct radeonfb_info *rinfo)
+ 		((aper_base + aper_size - 1) & 0xffff0000) | (aper_base >> 16),
+ 		0xffff0000 | (agp_base >> 16));
+ }
+-#endif /* CONFIG_PPC_OF */
++#endif /* CONFIG_PPC */
+ 
+ 
+ static void radeon_identify_vram(struct radeonfb_info *rinfo)
+@@ -2236,7 +2236,7 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	    rinfo->family = CHIP_FAMILY_RS200)
+ 		rinfo->errata |= CHIP_ERRATA_PLL_DELAY;
+ 
+-#if defined(CONFIG_PPC_OF) || defined(CONFIG_SPARC)
++#if defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+ 	/* On PPC, we obtain the OF device-node pointer to the firmware
+ 	 * data for this chip
+ 	 */
+@@ -2245,14 +2245,14 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 		printk(KERN_WARNING "radeonfb (%s): Cannot match card to OF node !\n",
+ 		       pci_name(rinfo->pdev));
+ 
+-#endif /* CONFIG_PPC_OF || CONFIG_SPARC */
+-#ifdef CONFIG_PPC_OF
++#endif /* CONFIG_PPC || CONFIG_SPARC */
++#ifdef CONFIG_PPC
+ 	/* On PPC, the firmware sets up a memory mapping that tends
+ 	 * to cause lockups when enabling the engine. We reconfigure
+ 	 * the card internal memory mappings properly
+ 	 */
+ 	fixup_memory_mappings(rinfo);
+-#endif /* CONFIG_PPC_OF */
++#endif /* CONFIG_PPC */
+ 
+ 	/* Get VRAM size and type */
+ 	radeon_identify_vram(rinfo);
+diff --git a/drivers/video/fbdev/aty/radeon_monitor.c b/drivers/video/fbdev/aty/radeon_monitor.c
+index bc078d50d8f1..f1ce229de78d 100644
+--- a/drivers/video/fbdev/aty/radeon_monitor.c
++++ b/drivers/video/fbdev/aty/radeon_monitor.c
+@@ -55,7 +55,7 @@ static char *radeon_get_mon_name(int type)
  }
  
--enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void)
--{
--	enum omap_display_type displays;
--
--	displays = dss_feat_get_supported_displays(OMAP_DSS_CHANNEL_DIGIT);
--	if ((displays & OMAP_DISPLAY_TYPE_HDMI) = 0)
--		return DSS_VENC_TV_CLK;
--
--	if ((displays & OMAP_DISPLAY_TYPE_VENC) = 0)
--		return DSS_HDMI_M_PCLK;
--
--	return REG_GET(DSS_CONTROL, 15, 15);
--}
--
- static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
+ 
+-#if defined(CONFIG_PPC_OF) || defined(CONFIG_SPARC)
++#if defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+ /*
+  * Try to find monitor informations & EDID data out of the Open Firmware
+  * device-tree. This also contains some "hacks" to work around a few machine
+@@ -160,7 +160,7 @@ static int radeon_probe_OF_head(struct radeonfb_info *rinfo, int head_no,
+ 	}
+         return MT_NONE;
+ }
+-#endif /* CONFIG_PPC_OF || CONFIG_SPARC */
++#endif /* CONFIG_PPC || CONFIG_SPARC */
+ 
+ 
+ static int radeon_get_panel_info_BIOS(struct radeonfb_info *rinfo)
+@@ -499,11 +499,11 @@ void radeon_probe_screens(struct radeonfb_info *rinfo,
+ 		 * Old single head cards
+ 		 */
+ 		if (!rinfo->has_CRTC2) {
+-#if defined(CONFIG_PPC_OF) || defined(CONFIG_SPARC)
++#if defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+ 			if (rinfo->mon1_type = MT_NONE)
+ 				rinfo->mon1_type = radeon_probe_OF_head(rinfo, 0,
+ 									&rinfo->mon1_EDID);
+-#endif /* CONFIG_PPC_OF || CONFIG_SPARC */
++#endif /* CONFIG_PPC || CONFIG_SPARC */
+ #ifdef CONFIG_FB_RADEON_I2C
+ 			if (rinfo->mon1_type = MT_NONE)
+ 				rinfo->mon1_type @@ -548,11 +548,11 @@ void radeon_probe_screens(struct radeonfb_info *rinfo,
+ 		/*
+ 		 * Probe primary head (DVI or laptop internal panel)
+ 		 */
+-#if defined(CONFIG_PPC_OF) || defined(CONFIG_SPARC)
++#if defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+ 		if (rinfo->mon1_type = MT_NONE)
+ 			rinfo->mon1_type = radeon_probe_OF_head(rinfo, 0,
+ 								&rinfo->mon1_EDID);
+-#endif /* CONFIG_PPC_OF || CONFIG_SPARC */
++#endif /* CONFIG_PPC || CONFIG_SPARC */
+ #ifdef CONFIG_FB_RADEON_I2C
+ 		if (rinfo->mon1_type = MT_NONE)
+ 			rinfo->mon1_type = radeon_probe_i2c_connector(rinfo, ddc_dvi,
+@@ -576,11 +576,11 @@ void radeon_probe_screens(struct radeonfb_info *rinfo,
+ 		/*
+ 		 * Probe secondary head (mostly VGA, can be DVI)
+ 		 */
+-#if defined(CONFIG_PPC_OF) || defined(CONFIG_SPARC)
++#if defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+ 		if (rinfo->mon2_type = MT_NONE)
+ 			rinfo->mon2_type = radeon_probe_OF_head(rinfo, 1,
+ 								&rinfo->mon2_EDID);
+-#endif /* CONFIG_PPC_OF || defined(CONFIG_SPARC) */
++#endif /* CONFIG_PPC || defined(CONFIG_SPARC) */
+ #ifdef CONFIG_FB_RADEON_I2C
+ 		if (rinfo->mon2_type = MT_NONE)
+ 			rinfo->mon2_type = radeon_probe_i2c_connector(rinfo, ddc_vga,
+@@ -653,7 +653,7 @@ void radeon_probe_screens(struct radeonfb_info *rinfo,
+  */
+ static void radeon_fixup_panel_info(struct radeonfb_info *rinfo)
  {
- 	if (channel != OMAP_DSS_CHANNEL_LCD)
-diff --git a/drivers/video/fbdev/omap2/dss/dss.h b/drivers/video/fbdev/omap2/dss/dss.h
-index 8ff22c1..f4bb25b 100644
---- a/drivers/video/fbdev/omap2/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/dss/dss.h
-@@ -211,7 +211,6 @@ void dss_uninit_platform_driver(void);
- unsigned long dss_get_dispc_clk_rate(void);
- int dss_dpi_select_source(enum omap_channel channel);
- void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
--enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
- const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
- void dss_dump_clocks(struct seq_file *s);
+-#ifdef CONFIG_PPC_OF
++#ifdef CONFIG_PPC
+ 	/*
+ 	 * LCD Flat panels should use fixed dividers, we enfore that on
+ 	 * PPC only for now...
+@@ -676,7 +676,7 @@ static void radeon_fixup_panel_info(struct radeonfb_info *rinfo)
+ 		       (rinfo->panel_info.post_divider << 16),
+ 		       ppll_div_sel);
+ 	}
+-#endif /* CONFIG_PPC_OF */
++#endif /* CONFIG_PPC */
+ }
+ 
+ 
+diff --git a/drivers/video/fbdev/aty/radeon_pm.c b/drivers/video/fbdev/aty/radeon_pm.c
+index 46a12f1a93c3..1417542738fc 100644
+--- a/drivers/video/fbdev/aty/radeon_pm.c
++++ b/drivers/video/fbdev/aty/radeon_pm.c
+@@ -523,7 +523,7 @@ static void radeon_pm_enable_dynamic_mode(struct radeonfb_info *rinfo)
+ 	OUTPLL(pllVCLK_ECP_CNTL, tmp);
+ 
+ 	/* X doesn't do that ... hrm, we do on mobility && Macs */
+-#ifdef CONFIG_PPC_OF
++#ifdef CONFIG_PPC
+ 	if (rinfo->is_mobility) {
+ 		tmp  = INPLL(pllMCLK_CNTL);
+ 		tmp &= ~(MCLK_CNTL__FORCE_MCLKA |
+@@ -541,7 +541,7 @@ static void radeon_pm_enable_dynamic_mode(struct radeonfb_info *rinfo)
+ 		OUTPLL(pllMCLK_MISC, tmp);
+ 		radeon_msleep(15);
+ 	}
+-#endif /* CONFIG_PPC_OF */
++#endif /* CONFIG_PPC */
+ }
+ 
+ #ifdef CONFIG_PM
+@@ -1288,7 +1288,7 @@ static void radeon_pm_full_reset_sdram(struct radeonfb_info *rinfo)
+        		radeon_pm_enable_dll_m10(rinfo);
+ 		radeon_pm_yclk_mclk_sync_m10(rinfo);
+ 
+-#ifdef CONFIG_PPC_OF
++#ifdef CONFIG_PPC
+ 		if (rinfo->of_node != NULL) {
+ 			int size;
+ 
+@@ -1298,7 +1298,7 @@ static void radeon_pm_full_reset_sdram(struct radeonfb_info *rinfo)
+ 			else
+ 				mrtable = default_mrtable;
+ 		}
+-#endif /* CONFIG_PPC_OF */
++#endif /* CONFIG_PPC */
+ 
+ 		/* Program the SDRAM */
+ 		sdram_mode_reg = mrtable[0];
+@@ -1943,7 +1943,7 @@ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
+ }
+ #endif
+ 
+-#ifdef CONFIG_PPC_OF
++#ifdef CONFIG_PPC
+ #ifdef CONFIG_PPC_PMAC
+ static void radeon_pm_m9p_reconfigure_mc(struct radeonfb_info *rinfo)
+ {
+@@ -2512,7 +2512,7 @@ static void radeon_reinitialize_QW(struct radeonfb_info *rinfo)
+ }
+ #endif /* 0 */
+ 
+-#endif /* CONFIG_PPC_OF */
++#endif /* CONFIG_PPC */
+ 
+ static void radeonfb_whack_power_state(struct radeonfb_info *rinfo, pci_power_t state)
+ {
+@@ -2793,7 +2793,7 @@ int radeonfb_pci_resume(struct pci_dev *pdev)
+ 	return rc;
+ }
+ 
+-#ifdef CONFIG_PPC_OF__disabled
++#ifdef CONFIG_PPC__disabled
+ static void radeonfb_early_resume(void *data)
+ {
+         struct radeonfb_info *rinfo = data;
+@@ -2803,7 +2803,7 @@ static void radeonfb_early_resume(void *data)
+ 	radeonfb_pci_resume(rinfo->pdev);
+ 	rinfo->no_schedule = 0;
+ }
+-#endif /* CONFIG_PPC_OF */
++#endif /* CONFIG_PPC */
+ 
+ #endif /* CONFIG_PM */
+ 
+diff --git a/drivers/video/fbdev/aty/radeonfb.h b/drivers/video/fbdev/aty/radeonfb.h
+index cb846044f57c..039def41c920 100644
+--- a/drivers/video/fbdev/aty/radeonfb.h
++++ b/drivers/video/fbdev/aty/radeonfb.h
+@@ -20,7 +20,7 @@
+ 
+ #include <asm/io.h>
+ 
+-#if defined(CONFIG_PPC_OF) || defined(CONFIG_SPARC)
++#if defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+ #include <asm/prom.h>
+ #endif
+ 
+@@ -301,7 +301,7 @@ struct radeonfb_info {
+ 	unsigned long		fb_local_base;
+ 
+ 	struct pci_dev		*pdev;
+-#if defined(CONFIG_PPC_OF) || defined(CONFIG_SPARC)
++#if defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+ 	struct device_node	*of_node;
+ #endif
  
 -- 
-1.7.10.4
+1.9.3
 

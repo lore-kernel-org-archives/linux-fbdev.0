@@ -1,30 +1,94 @@
-From: Noralf Tronnes <notro@tronnes.org>
-Date: Thu, 15 Jan 2015 15:58:02 +0000
-Subject: Is fbdev deprecated?
-Message-Id: <54B7E38A.6000408@tronnes.org>
+From: Kevin Hao <haokexin@gmail.com>
+Date: Sat, 31 Jan 2015 13:47:36 +0000
+Subject: [PATCH 06/15] fbdev: nvidia: remove the dependency on PPC_OF
+Message-Id: <1422712065-9403-7-git-send-email-haokexin@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
+Cc: Kevin Hao <haokexin@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Antonino Daplas <adaplas@gmail.com>
 
-Hi,
+The OF functionality has moved to a common place and be used by many
+archs. So we don't need to include the ppc arch specific header files
+and depend on PPC_OF option any more. This is a preparation for
+killing PPC_OF.
 
-I've read several comments on this list that indicates that fbdev should=20
-be avoided for new drivers.
-I'm writing drivers for MIPI DBI type 1 compatible controllers with=20
-onchip RAM.
-This onchip memory is scanned out to the panel. So the driver just=20
-sync's the
-framebuffer with the controller memory (partial updates also).
-I rely on deferred io to do this. The ssd1307fb is a similar type of driver.
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
+---
+ drivers/video/fbdev/nvidia/Makefile   | 3 +--
+ drivers/video/fbdev/nvidia/nv_of.c    | 3 ---
+ drivers/video/fbdev/nvidia/nv_proto.h | 8 --------
+ drivers/video/fbdev/nvidia/nvidia.c   | 4 ----
+ 4 files changed, 1 insertion(+), 17 deletions(-)
 
-Is this still a use case for fbdev, or is DRM the only way now?
-
-Here's a description of the driver stack:=20
-https://github.com/notro/fbdbi/wiki
-
-
-Regards,
-Noralf Tr=F8nnes
+diff --git a/drivers/video/fbdev/nvidia/Makefile b/drivers/video/fbdev/nvidia/Makefile
+index ca47432113e0..917d3eb05feb 100644
+--- a/drivers/video/fbdev/nvidia/Makefile
++++ b/drivers/video/fbdev/nvidia/Makefile
+@@ -5,9 +5,8 @@
+ obj-$(CONFIG_FB_NVIDIA)          += nvidiafb.o
+ 
+ nvidiafb-y                       := nvidia.o nv_hw.o nv_setup.o \
+-			            nv_accel.o
++			            nv_accel.o nv_of.o
+ nvidiafb-$(CONFIG_FB_NVIDIA_I2C) += nv_i2c.o
+ nvidiafb-$(CONFIG_FB_NVIDIA_BACKLIGHT)  += nv_backlight.o
+-nvidiafb-$(CONFIG_PPC_OF)	 += nv_of.o
+ 
+ nvidiafb-objs                    := $(nvidiafb-y)
+diff --git a/drivers/video/fbdev/nvidia/nv_of.c b/drivers/video/fbdev/nvidia/nv_of.c
+index 3bc13df4b120..5f3e5179c25a 100644
+--- a/drivers/video/fbdev/nvidia/nv_of.c
++++ b/drivers/video/fbdev/nvidia/nv_of.c
+@@ -19,9 +19,6 @@
+ 
+ #include <asm/io.h>
+ 
+-#include <asm/prom.h>
+-#include <asm/pci-bridge.h>
+-
+ #include "nv_type.h"
+ #include "nv_local.h"
+ #include "nv_proto.h"
+diff --git a/drivers/video/fbdev/nvidia/nv_proto.h b/drivers/video/fbdev/nvidia/nv_proto.h
+index ff5c410355ea..878a5ce02299 100644
+--- a/drivers/video/fbdev/nvidia/nv_proto.h
++++ b/drivers/video/fbdev/nvidia/nv_proto.h
+@@ -42,16 +42,8 @@ int nvidia_probe_i2c_connector(struct fb_info *info, int conn,
+ #define nvidia_probe_i2c_connector(p, c, edid) (-1)
+ #endif
+ 
+-#ifdef CONFIG_PPC_OF
+ int nvidia_probe_of_connector(struct fb_info *info, int conn,
+ 			      u8 ** out_edid);
+-#else
+-static inline int nvidia_probe_of_connector(struct fb_info *info, int conn,
+-				      u8 ** out_edid)
+-{
+-	return -1;
+-}
+-#endif
+ 
+ /* in nv_accel.c */
+ extern void NVResetGraphics(struct fb_info *info);
+diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
+index def041204676..4273c6ee8cf6 100644
+--- a/drivers/video/fbdev/nvidia/nvidia.c
++++ b/drivers/video/fbdev/nvidia/nvidia.c
+@@ -24,10 +24,6 @@
+ #ifdef CONFIG_MTRR
+ #include <asm/mtrr.h>
+ #endif
+-#ifdef CONFIG_PPC_OF
+-#include <asm/prom.h>
+-#include <asm/pci-bridge.h>
+-#endif
+ #ifdef CONFIG_BOOTX_TEXT
+ #include <asm/btext.h>
+ #endif
+-- 
+1.9.3
 

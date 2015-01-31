@@ -1,39 +1,57 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Date: Tue, 13 Jan 2015 18:19:20 +0000
-Subject: [PATCH] video: fbdev: tridentfb: Remove unused function
-Message-Id: <1421173160-3644-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Kevin Hao <haokexin@gmail.com>
+Date: Sat, 31 Jan 2015 13:47:35 +0000
+Subject: [PATCH 05/15] fbdev: imsttfb: remove the dependency on PPC_OF
+Message-Id: <1422712065-9403-6-git-send-email-haokexin@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
+Cc: Kevin Hao <haokexin@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-Remove the function shadowmode_off() that is not used anywhere.
+The OF functionality has moved to a common place and be used by many
+archs. So we don't need to depend on PPC_OF option any more. This is
+a preparation for killing PPC_OF.
 
-This was partially found by using a static code analysis program called cppcheck.
-
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- drivers/video/fbdev/tridentfb.c |    5 -----
- 1 file changed, 5 deletions(-)
+ drivers/video/fbdev/imsttfb.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 7ed9a22..b5cbd2c 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -999,11 +999,6 @@ static inline void shadowmode_on(struct tridentfb_par *par)
- 	write3CE(par, CyberControl, read3CE(par, CyberControl) | 0x81);
- }
+diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
+index aae10ce74f14..91a80bb8f988 100644
+--- a/drivers/video/fbdev/imsttfb.c
++++ b/drivers/video/fbdev/imsttfb.c
+@@ -1470,7 +1470,6 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	unsigned long addr, size;
+ 	struct imstt_par *par;
+ 	struct fb_info *info;
+-#ifdef CONFIG_PPC_OF
+ 	struct device_node *dp;
+ 	
+ 	dp = pci_device_to_OF_node(pdev);
+@@ -1478,7 +1477,6 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		printk(KERN_INFO "%s: OF name %s\n",__func__, dp->name);
+ 	else
+ 		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
+-#endif /* CONFIG_PPC_OF */
  
--static inline void shadowmode_off(struct tridentfb_par *par)
--{
--	write3CE(par, CyberControl, read3CE(par, CyberControl) & 0x7E);
--}
--
- /* Set the hardware to the requested video mode */
- static int tridentfb_set_par(struct fb_info *info)
- {
+ 	info = framebuffer_alloc(sizeof(struct imstt_par), &pdev->dev);
+ 
+@@ -1501,11 +1499,9 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	switch (pdev->device) {
+ 		case PCI_DEVICE_ID_IMS_TT128: /* IMS,tt128mbA */
+ 			par->ramdac = IBM;
+-#ifdef CONFIG_PPC_OF
+ 			if (dp && ((strcmp(dp->name, "IMS,tt128mb8") = 0) ||
+ 				   (strcmp(dp->name, "IMS,tt128mb8A") = 0)))
+ 				par->ramdac = TVP;
+-#endif /* CONFIG_PPC_OF */
+ 			break;
+ 		case PCI_DEVICE_ID_IMS_TT3D:  /* IMS,tt3d */
+ 			par->ramdac = TVP;
 -- 
-1.7.10.4
+1.9.3
 

@@ -1,69 +1,39 @@
-From: Scot Doyle <lkml14@scotdoyle.com>
-Date: Fri, 30 Jan 2015 08:43:10 +0000
-Subject: [PATCH v5 1/2] fbcon: store cursor blink interval in fbcon_ops
-Message-Id: <alpine.DEB.2.11.1501300841510.2423@localhost.localdomain>
+From: Kevin Hao <haokexin@gmail.com>
+Date: Sat, 31 Jan 2015 13:47:38 +0000
+Subject: [PATCH 08/15] fbdev: remove the unnecessary includes of ppc specific header files
+Message-Id: <1422712065-9403-9-git-send-email-haokexin@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain>
-In-Reply-To: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
+Cc: Kevin Hao <haokexin@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-fbcon toggles cursor display state every 200 milliseconds when blinking.
-Since users prefer different toggle intervals, prepare to expose the
-interval via sysfs by moving it to fbdev_ops and setting the default
-to 200 milliseconds.
+In the current kernel, we don't need to include these arch specific
+header files for ppc.
 
-Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- drivers/video/console/fbcon.c | 5 +++--
- drivers/video/console/fbcon.h | 1 +
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/core/fbmon.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index ea43724..7a2030b 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -405,7 +405,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
- 	struct fbcon_ops *ops = info->fbcon_par;
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index 95338593ebf4..3ae868c58cef 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -33,10 +33,6 @@
+ #include <video/edid.h>
+ #include <video/of_videomode.h>
+ #include <video/videomode.h>
+-#ifdef CONFIG_PPC_OF
+-#include <asm/prom.h>
+-#include <asm/pci-bridge.h>
+-#endif
+ #include "../edid.h"
  
- 	queue_work(system_power_efficient_wq, &info->queue);
--	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
-+	mod_timer(&ops->cursor_timer, jiffies + ops->blink_jiffies);
- }
- 
- static void fbcon_add_cursor_timer(struct fb_info *info)
-@@ -420,7 +420,7 @@ static void fbcon_add_cursor_timer(struct fb_info *info)
- 
- 		init_timer(&ops->cursor_timer);
- 		ops->cursor_timer.function = cursor_timer_handler;
--		ops->cursor_timer.expires = jiffies + HZ / 5;
-+		ops->cursor_timer.expires = jiffies + ops->blink_jiffies;
- 		ops->cursor_timer.data = (unsigned long ) info;
- 		add_timer(&ops->cursor_timer);
- 		ops->flags |= FBCON_FLAGS_CURSOR_TIMER;
-@@ -959,6 +959,7 @@ static const char *fbcon_startup(void)
- 	ops->currcon = -1;
- 	ops->graphics = 1;
- 	ops->cur_rotate = -1;
-+	ops->blink_jiffies = msecs_to_jiffies(200);
- 	info->fbcon_par = ops;
- 	p->con_rotate = initial_rotation;
- 	set_blitting_type(vc, info);
-diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
-index 6bd2e0c..642c4e7 100644
---- a/drivers/video/console/fbcon.h
-+++ b/drivers/video/console/fbcon.h
-@@ -70,6 +70,7 @@ struct fbcon_ops {
- 	struct fb_cursor cursor_state;
- 	struct display *p;
-         int    currcon;	                /* Current VC. */
-+	int    blink_jiffies;
- 	int    cursor_flash;
- 	int    cursor_reset;
- 	int    blank_state;
+ /*
 -- 
-2.1.4
+1.9.3
 

@@ -1,76 +1,40 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 19 Jan 2015 18:38:08 +0000
-Subject: [PATCH 5/9] video: Less function calls in trident_pci_probe() after error detection
-Message-Id: <54BD4F10.9040401@users.sourceforge.net>
+From: Kevin Hao <haokexin@gmail.com>
+Date: Sat, 31 Jan 2015 13:47:39 +0000
+Subject: [PATCH 09/15] fbdev: kconfig: replace PPC_OF with PPC
+Message-Id: <1422712065-9403-10-git-send-email-haokexin@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5307CAA2.8060406@users.sourceforge.net> <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6> <530A086E.8010901@users.sourceforge.net> <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6> <530A72AA.3000601@users.sourceforge.net> <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6> <530B5FB6.6010207@users.sourceforge.net> <alpine.DEB.2.10.1402241710370.2074@hadrien> <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54BD44F0.3040705@users.sourceforge.net>
-In-Reply-To: <54BD44F0.3040705@users.sourceforge.net>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
+Cc: Kevin Hao <haokexin@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 19 Jan 2015 14:18:47 +0100
+The PPC_OF is a ppc specific option which is used to mean that the
+firmware device tree access functions are available. Since all the
+ppc platforms have a device tree, it is aways set to 'y' for ppc.
+So it makes no sense to keep a such option in the current kernel.
+Replace it with PPC.
 
-The functions "iounmap" and "kfree" could be called in a few cases by the
-trident_pci_probe() function during error handling even if the passed data
-structure element contained still a null pointer.
-
-This implementation detail could be improved by adjustments for jump labels.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- drivers/video/fbdev/tridentfb.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 71567401..86d4733 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -1436,7 +1436,7 @@ static int trident_pci_probe(struct pci_dev *dev,
- 	if (!default_par->io_virt) {
- 		debug("ioremap failed\n");
- 		err = -1;
--		goto out_unmap1;
-+		goto release_memory_region_mmio;
- 	}
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 55161dd4b931..027f9b685b5b 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -479,7 +479,7 @@ config FB_ATARI
  
- 	enable_mmio(default_par);
-@@ -1459,7 +1459,7 @@ static int trident_pci_probe(struct pci_dev *dev,
- 	if (!info->screen_base) {
- 		debug("ioremap failed\n");
- 		err = -1;
--		goto out_unmap2;
-+		goto release_memory_region_smem;
- 	}
- 
- 	default_par->flatpanel = is_flatpanel(default_par);
-@@ -1485,7 +1485,7 @@ static int trident_pci_probe(struct pci_dev *dev,
- 	info->pixmap.addr = kmalloc(4096, GFP_KERNEL);
- 	if (!info->pixmap.addr) {
- 		err = -ENOMEM;
--		goto out_unmap2;
-+		goto io_unmap_screenbase;
- 	}
- 
- 	info->pixmap.size = 4096;
-@@ -1531,11 +1531,14 @@ static int trident_pci_probe(struct pci_dev *dev,
- 
- out_unmap2:
- 	kfree(info->pixmap.addr);
-+io_unmap_screenbase:
- 	iounmap(info->screen_base);
-+release_memory_region_smem:
- 	release_mem_region(tridentfb_fix.smem_start, tridentfb_fix.smem_len);
- 	disable_mmio(info->par);
- out_unmap1:
- 	iounmap(default_par->io_virt);
-+release_memory_region_mmio:
- 	release_mem_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
- 	framebuffer_release(info);
- 	return err;
+ config FB_OF
+ 	bool "Open Firmware frame buffer device support"
+-	depends on (FB = y) && (PPC64 || PPC_OF) && (!PPC_PSERIES || PCI)
++	depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 -- 
-2.2.2
+1.9.3
 

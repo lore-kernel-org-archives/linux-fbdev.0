@@ -1,39 +1,27 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Thu, 05 Feb 2015 14:23:59 +0000
-Subject: [PATCH] fbdev: via: remove unused variable
-Message-Id: <1423145519-30862-1-git-send-email-sudipm.mukherjee@gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Mon, 02 Feb 2015 18:37:45 +0000
+Subject: Re: FB issue in linux-next-20150202
+Message-Id: <54CFC3F9.3020109@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-the mode_crt_table was only assigned some data, but that was never
-again reused. It will be safe to remove that.
+Hi,
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
- drivers/video/fbdev/via/lcd.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+On 02-02-15 15:49, Rares Aioanei wrote:
+> Hi,
+>
+> Can't seem to be able to boot with the kernel in the subject on a Dell
+> Latitude D520. I get a stack trace and the system locks down. This is
+> OpenSUSE 13.2 64-bit. Attached is all the info I could gather. Please
+> let me know if there is anything else.
 
-diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd.c
-index 5d21ff4..51ac3f3 100644
---- a/drivers/video/fbdev/via/lcd.c
-+++ b/drivers/video/fbdev/via/lcd.c
-@@ -551,11 +551,9 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
- 	u32 clock;
- 	struct via_display_timing timing;
- 	struct fb_var_screeninfo panel_var;
--	const struct fb_videomode *mode_crt_table, *panel_crt_table;
-+	const struct fb_videomode *panel_crt_table;
- 
- 	DEBUG_MSG(KERN_INFO "viafb_lcd_set_mode!!\n");
--	/* Get mode table */
--	mode_crt_table = viafb_get_best_mode(set_hres, set_vres, 60);
- 	/* Get panel table Pointer */
- 	panel_crt_table = viafb_get_best_mode(panel_hres, panel_vres, 60);
- 	viafb_fill_var_timing_info(&panel_var, panel_crt_table);
--- 
-1.8.1.2
+This seems to be an issue with the intel gfx kernel driver, please file
+a bug using the instructions provided here:
+https://01.org/linuxgraphics/documentation/how-report-bugs
 
+Regards,
+
+Hans

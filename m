@@ -1,68 +1,74 @@
-From: Kevin Hao <haokexin@gmail.com>
-Date: Tue, 03 Feb 2015 02:20:02 +0000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 03 Feb 2015 02:34:13 +0000
 Subject: Re: [PATCH 05/15] fbdev: imsttfb: remove the dependency on PPC_OF
-Message-Id: <20150203022002.GB28170@pek-khao-d1.corp.ad.wrs.com>
+Message-Id: <20150203133413.5cd9209c@canb.auug.org.au>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="yNb1oOkm5a9FJOVX"
+Content-Type: multipart/mixed; boundary="Sig_/=oEKzMi7Hk+njHrUjh6cSpm"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
  <1422712065-9403-6-git-send-email-haokexin@gmail.com>
  <20150201134433.729a2389@canb.auug.org.au>
  <20150201055150.GA6681@pek-khao-d1.corp.ad.wrs.com>
 In-Reply-To: <20150201055150.GA6681@pek-khao-d1.corp.ad.wrs.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kevin Hao <haokexin@gmail.com>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linuxppc-dev@lists.ozlabs.org
 
-
---yNb1oOkm5a9FJOVX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--Sig_/=oEKzMi7Hk+njHrUjh6cSpm
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Feb 01, 2015 at 01:51:50PM +0800, Kevin Hao wrote:
-> > > diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imst=
-tfb.c
-> > > index aae10ce74f14..91a80bb8f988 100644
-> > > --- a/drivers/video/fbdev/imsttfb.c
-> > > +++ b/drivers/video/fbdev/imsttfb.c
-> > > @@ -1470,7 +1470,6 @@ static int imsttfb_probe(struct pci_dev *pdev, =
+Hi Kevin,
+
+On Sun, 1 Feb 2015 13:51:50 +0800 Kevin Hao <haokexin@gmail.com> wrote:
+>
+> That was my first thought, but the codes protected by the PPC_OF seem not
+> ppc specific and should be safe for other archs which also support OF. So=
+ I
+> drop the PPC_OF completely. Did I miss something?
+
+Ah, ok.
+
+> > >  	dp =3D pci_device_to_OF_node(pdev);
+> > > @@ -1478,7 +1477,6 @@ static int imsttfb_probe(struct pci_dev *pdev, =
 const struct pci_device_id *ent)
-> > >  	unsigned long addr, size;
-> > >  	struct imstt_par *par;
-> > >  	struct fb_info *info;
-> > > -#ifdef CONFIG_PPC_OF
-> > >  	struct device_node *dp;
+> > >  		printk(KERN_INFO "%s: OF name %s\n",__func__, dp->name);
+> > >  	else
+> > >  		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
+> > > -#endif /* CONFIG_PPC_OF */
 > >=20
-> > I see no way in this file for struct device_node to be defined
-> > (especially if CONFIG_PPC is not set).  of.h may be included
-> > implicitly, but that is very dependent on the architecture and CONFIG_
-> > options.
+> > This will emit the above error if CONFIG_OF is not set whereas in the
+> > past it would not.
 >=20
-> This do pass the build test for the non-OF archs, such as x86. But your
-> concerns sound pretty reasonable, so I will explicitly include of.h.
+> How about change it to:
+> 	if (IS_ENABLED(CONFIG_OF))
+>   		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
 
-I took a second look at this. It seems that there is a declaration of
-struct device_node in linux/device.h and there is also no access to the
-member of device_node in this driver. So we are safe to not include of.h he=
-re.
-That is also why I didn't get the build failure for the non-OF archs. :-)
+Looks good.
 
-Thanks,
-Kevin
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
---yNb1oOkm5a9FJOVX
+--Sig_/=oEKzMi7Hk+njHrUjh6cSpm
 Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJU0DBSAAoJEJNY7TDerrFxguMH/1KHo4SR7qPMXNkwmOJW/iJg
-KLStj8GkCGOiFnnCL+xGvSrjWAyhPT9L9uImtuciHKcZ6uRt74PsmiLml/cQ7scs
-i0j4zPip9Bgce6TitqnMb0+FgN0l/5cwjX8WqdMkUnMfB6svhokygPcrgwBLPvm+
-yDaXrUe3ZtK1CfzeIgPAwMa/HiCAG0uRkAIKWHkYsKxd96+ABtXjpVRCt98bH7j2
-pVNB2/PAe1lIhF4uIwAnmN5aNDBJVjHPjnyepx99Xfh9SbSe6CSInl9DXyi/L2YW
-NyPptAfi6/QD2Azygebf3vvxTyJa/4tMW9n6W+mZ4E5TBgci+Bgt6+GCAY+i6ss=
-=27FZ
+iQIcBAEBCAAGBQJU0DOpAAoJEMDTa8Ir7ZwVeYAP/3bCPQTuqdnlR31YED5Gir9v
+NLFLpy7qavxbxZSC1GJUN4azgejMUvlu5JV0j2eiTjWRkTbzI3NpFDawxyLMoGXK
+qMgFTwXcbjW3ifcgeRv5kxHdMqznuVN0x1zD9kZ7izPj+LSmJurhgSBpIWmDTUjY
+hMz7vqPY3+Tg9o/wQRCmHXvDM1MtrCNxb6+ht/VxPpQ2K0gnx+Nu2jVDxhw+xsLI
+kOpztkrT6wrwEbJ+DLkXPJQr8+fyWrcwI3Jmrg4hxqnbv+TtvJD4glw9o5yRmhd7
+XVdCnSNpe8QBCphHqHnk1Y+qsj64ryFxEva5DZNS/s+PzxUn0t9qHLPkiRckQPnU
+SMY4SmVLwaAC55uoAMWe5dUmZuu/xwp24ZsSLYlnBbl77R9ETWdWplg5gvuiXUAM
+cit9t4hm8ZnbgvBP/0YZda6LOVJIy55M8TLDRWF1Jzx5sFGIgMqsB5ItpFUtYwdN
+qHE0tHrGXLzhsyaLEVV9WBI6oGj9vdKy8Z3YSfR5An1L7am8Eu0ngjPgY8QExJ+K
+PxX+yfJy+p+A1U3pCFNRzkyZu4P3OxmqCX6YIRuDrr/SC0mctCMUQO84xMMmsMsd
+6M2XMiQWk9QkvPoUt6Bm08i+qvmT0ulbay3TIemaVjHzCh004jLm6kQCKxbgcXSV
+O1Ppz3123Jpn+OpMg5cC
+=g3tv
 -----END PGP SIGNATURE-----
 
---yNb1oOkm5a9FJOVX--
+--Sig_/=oEKzMi7Hk+njHrUjh6cSpm--

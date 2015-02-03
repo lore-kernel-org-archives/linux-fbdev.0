@@ -1,93 +1,68 @@
 From: Kevin Hao <haokexin@gmail.com>
-Date: Sun, 01 Feb 2015 05:51:50 +0000
+Date: Tue, 03 Feb 2015 02:20:02 +0000
 Subject: Re: [PATCH 05/15] fbdev: imsttfb: remove the dependency on PPC_OF
-Message-Id: <20150201055150.GA6681@pek-khao-d1.corp.ad.wrs.com>
+Message-Id: <20150203022002.GB28170@pek-khao-d1.corp.ad.wrs.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="17pEHd4RhPHOinZp"
+Content-Type: multipart/mixed; boundary="yNb1oOkm5a9FJOVX"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
  <1422712065-9403-6-git-send-email-haokexin@gmail.com>
  <20150201134433.729a2389@canb.auug.org.au>
-In-Reply-To: <20150201134433.729a2389@canb.auug.org.au>
+ <20150201055150.GA6681@pek-khao-d1.corp.ad.wrs.com>
+In-Reply-To: <20150201055150.GA6681@pek-khao-d1.corp.ad.wrs.com>
 To: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linuxppc-dev@lists.ozlabs.org
 
 
---17pEHd4RhPHOinZp
+--yNb1oOkm5a9FJOVX
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Feb 01, 2015 at 01:44:33PM +1100, Stephen Rothwell wrote:
-> Hi Kevin,
+On Sun, Feb 01, 2015 at 01:51:50PM +0800, Kevin Hao wrote:
+> > > diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imst=
+tfb.c
+> > > index aae10ce74f14..91a80bb8f988 100644
+> > > --- a/drivers/video/fbdev/imsttfb.c
+> > > +++ b/drivers/video/fbdev/imsttfb.c
+> > > @@ -1470,7 +1470,6 @@ static int imsttfb_probe(struct pci_dev *pdev, =
+const struct pci_device_id *ent)
+> > >  	unsigned long addr, size;
+> > >  	struct imstt_par *par;
+> > >  	struct fb_info *info;
+> > > -#ifdef CONFIG_PPC_OF
+> > >  	struct device_node *dp;
+> >=20
+> > I see no way in this file for struct device_node to be defined
+> > (especially if CONFIG_PPC is not set).  of.h may be included
+> > implicitly, but that is very dependent on the architecture and CONFIG_
+> > options.
 >=20
-> On Sat, 31 Jan 2015 21:47:35 +0800 Kevin Hao <haokexin@gmail.com> wrote:
-> >
-> > The OF functionality has moved to a common place and be used by many
-> > archs. So we don't need to depend on PPC_OF option any more. This is
-> > a preparation for killing PPC_OF.
->=20
-> I suspect that you want to do the PPC_OF -> PPC conversion on this file
-> rather than just removing PPC_OF uses.
+> This do pass the build test for the non-OF archs, such as x86. But your
+> concerns sound pretty reasonable, so I will explicitly include of.h.
 
-That was my first thought, but the codes protected by the PPC_OF seem not
-ppc specific and should be safe for other archs which also support OF. So I
-drop the PPC_OF completely. Did I miss something?
-
->=20
-> > diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttf=
-b.c
-> > index aae10ce74f14..91a80bb8f988 100644
-> > --- a/drivers/video/fbdev/imsttfb.c
-> > +++ b/drivers/video/fbdev/imsttfb.c
-> > @@ -1470,7 +1470,6 @@ static int imsttfb_probe(struct pci_dev *pdev, co=
-nst struct pci_device_id *ent)
-> >  	unsigned long addr, size;
-> >  	struct imstt_par *par;
-> >  	struct fb_info *info;
-> > -#ifdef CONFIG_PPC_OF
-> >  	struct device_node *dp;
->=20
-> I see no way in this file for struct device_node to be defined
-> (especially if CONFIG_PPC is not set).  of.h may be included
-> implicitly, but that is very dependent on the architecture and CONFIG_
-> options.
-
-This do pass the build test for the non-OF archs, such as x86. But your
-concerns sound pretty reasonable, so I will explicitly include of.h.
-
->=20
-> >  	dp =3D pci_device_to_OF_node(pdev);
-> > @@ -1478,7 +1477,6 @@ static int imsttfb_probe(struct pci_dev *pdev, co=
-nst struct pci_device_id *ent)
-> >  		printk(KERN_INFO "%s: OF name %s\n",__func__, dp->name);
-> >  	else
-> >  		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
-> > -#endif /* CONFIG_PPC_OF */
->=20
-> This will emit the above error if CONFIG_OF is not set whereas in the
-> past it would not.
-
-How about change it to:
-	if (IS_ENABLED(CONFIG_OF))
-  		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
+I took a second look at this. It seems that there is a declaration of
+struct device_node in linux/device.h and there is also no access to the
+member of device_node in this driver. So we are safe to not include of.h he=
+re.
+That is also why I didn't get the build failure for the non-OF archs. :-)
 
 Thanks,
 Kevin
 
---17pEHd4RhPHOinZp
+--yNb1oOkm5a9FJOVX
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJUzb72AAoJEJNY7TDerrFxHbMH/RRO1w9hO0T/7Y5rjZcfOUL4
-AAOZWs25SVSskY6Jd0cxDBMmJ61uy34BGh7F3CPtZ3ptRzdbLFDNLUdtWnNX/lSR
-SEFqKerunjZVw73kTvvH0+LBGCuw5Y/LJ5Nw0l3qpH7SZeKtYUl4AKee6Aaw8C67
-A2/hcdNH8xCw5rkeKXZbNvvPyPGvvJCF4tM6l9zMONh7efK/cI0F1UdkKCCtIWwj
-k90VWMLVWC3fYkKWpDxgotCf9lv5cce9N2dJn0CQTLwKL2JdOB9v0UpbIt++xIou
-KEGObeWt2isk4V3QVIqntsmX+jwbEAZiqpTls3Gr7JZe83ckleNdgzmmJLxv0wM=
-=0REw
+iQEcBAEBAgAGBQJU0DBSAAoJEJNY7TDerrFxguMH/1KHo4SR7qPMXNkwmOJW/iJg
+KLStj8GkCGOiFnnCL+xGvSrjWAyhPT9L9uImtuciHKcZ6uRt74PsmiLml/cQ7scs
+i0j4zPip9Bgce6TitqnMb0+FgN0l/5cwjX8WqdMkUnMfB6svhokygPcrgwBLPvm+
+yDaXrUe3ZtK1CfzeIgPAwMa/HiCAG0uRkAIKWHkYsKxd96+ABtXjpVRCt98bH7j2
+pVNB2/PAe1lIhF4uIwAnmN5aNDBJVjHPjnyepx99Xfh9SbSe6CSInl9DXyi/L2YW
+NyPptAfi6/QD2Azygebf3vvxTyJa/4tMW9n6W+mZ4E5TBgci+Bgt6+GCAY+i6ss=
+=27FZ
 -----END PGP SIGNATURE-----
 
---17pEHd4RhPHOinZp--
+--yNb1oOkm5a9FJOVX--

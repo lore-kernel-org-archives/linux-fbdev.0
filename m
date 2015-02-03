@@ -1,43 +1,34 @@
-From: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
-Date: Thu, 26 Feb 2015 10:48:08 +0000
-Subject: [PATCH 3/3] Moved assignment out of if() statement in efifb.c
-Message-Id: <20150226104803.GC20577@localhost.localdomain>
+From: Max Perepelitsyn <mperepelitsyn@gmail.com>
+Date: Tue, 03 Feb 2015 08:44:28 +0000
+Subject: [PATCH] staging: sm7xxfb: make smtc_scr_info static
+Message-Id: <1422953068-12072-1-git-send-email-mperepelitsyn@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150218083654.GD9820@linuxteamdev.amer.dell.com>
-In-Reply-To: <20150218083654.GD9820@linuxteamdev.amer.dell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: pjones-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
-Cc: linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Max Perepelitsyn <mperepelitsyn@gmail.com>
 
-Removing initialization out of if condition.
+This symbol is never used anywhere else besides sm7xxfb.c
 
-Signed-off-by: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
+Signed-off-by: Max Perepelitsyn <mperepelitsyn@gmail.com>
 ---
- drivers/video/fbdev/efifb.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/staging/sm7xxfb/sm7xxfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index cc1a156..9124ba9 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -275,11 +275,13 @@ static int efifb_probe(struct platform_device *dev)
-        info->fix = efifb_fix;
-        info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
-
--       if ((err = fb_alloc_cmap(&info->cmap, 256, 0)) < 0) {
-+       err = fb_alloc_cmap(&info->cmap, 256, 0);
-+       if (err < 0) {
-                pr_err("efifb: cannot allocate colormap\n");
-                goto err_unmap;
-        }
--       if ((err = register_framebuffer(info)) < 0) {
-+       err = register_framebuffer(info);
-+       if (err < 0) {
-                pr_err("efifb: cannot register framebuffer\n");
-                goto err_fb_dealoc;
-        }
---
-1.9.3
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 2ae9fd0..72036c2 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -111,7 +111,7 @@ static struct vesa_mode vesa_mode_table[] = {
+ 	{"0x31B", 1280, 1024, 24},
+ };
+ 
+-struct screen_info smtc_scr_info;
++static struct screen_info smtc_scr_info;
+ 
+ /* process command line options, get vga parameter */
+ static int __init sm7xx_vga_setup(char *options)
+-- 
+2.2.2
 

@@ -1,69 +1,101 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 20 Feb 2015 12:16:27 +0000
-Subject: Re: [PATCH] video: fbdev: make of_device_id array const
-Message-Id: <54E7259B.7080101@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="tvm83ImpAqdHieXjBSVXLhbLDvQ46H9Pt"
+From: gyungoh@gmail.com
+Date: Thu, 05 Feb 2015 06:31:11 +0000
+Subject: [PATCH v11 0/6] Add Skyworks SKY81452 device drivers
+Message-Id: <1423117877-30667-1-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423479747-17899-1-git-send-email-sanjeev_sharma@mentor.com>
-In-Reply-To: <1423479747-17899-1-git-send-email-sanjeev_sharma@mentor.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
---tvm83ImpAqdHieXjBSVXLhbLDvQ46H9Pt
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
-On 09/02/15 13:02, Sanjeev Sharma wrote:
-> Make of_device_id array const.
->=20
-> Signed-off-by: Sanjeev Sharma <Sanjeev_Sharma@mentor.com>
-> ---
->  drivers/video/fbdev/imxfb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-> index 3b6a3c8..84d1d29 100644
-> --- a/drivers/video/fbdev/imxfb.c
-> +++ b/drivers/video/fbdev/imxfb.c
-> @@ -183,7 +183,7 @@ static struct platform_device_id imxfb_devtype[] =3D=
- {
->  };
->  MODULE_DEVICE_TABLE(platform, imxfb_devtype);
-> =20
-> -static struct of_device_id imxfb_of_dev_id[] =3D {
-> +static const struct of_device_id imxfb_of_dev_id[] =3D {
->  	{
->  		.compatible =3D "fsl,imx1-fb",
->  		.data =3D &imxfb_devtype[IMX1_FB],
->=20
+This patch set includes regulator and backlight driver for SKY81452.
+Also it includes documents for device tree and module.
+sky81452-regulator was already applied. So this series doesn't
+include it.
 
-Thanks, queued for 3.21.
+v11:
+Renamed 'skyworks,en-channels' property to led-sources.
+Removed unused property 'skyworks,ovp-level'.
 
- Tomi
+v10:
+Removed trivial get_brightness implementations for sky81452-backlight
 
+v9:
+Removed the change to remove MODULE_VERSION() for sky81452-regulator
 
+v8:
+Renamed property names for backlight with vendor prefix
+Modified gpio-enable property to generic property for GPIO
+Made up the example for backlight DT
+Changed the DT parsing of regulator using regulator_node and of_match
 
---tvm83ImpAqdHieXjBSVXLhbLDvQ46H9Pt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+v7:
+Modified licensing text to GPLv2
+Splitted Kconfig renaming from DT patch
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+v6:
+Added new line character at the end of line of dev_err()
 
-iQIcBAEBAgAGBQJU5yWbAAoJEPo9qoy8lh71O34QAJmRVOdP/HQnmlKwqqmX6tjG
-gYgY8pidyjkKSorYM6nEzeX5NMSB18RYHWQzSYIjDZWuaODNmXdBRbtMDico05A2
-ZlK7gEUCecktF8ly2ZvYQRZJEBwKH68i8W0k0ChSVqQa/MHhQ7Z1xYJVm9SMzq2m
-1grJiKOC2wjX0GqySVPLK0S9YkFhAf+DSW1KtzgCAm5EdeTsTv+RbuX79HEgqXDc
-S5TBHNW46lpLkU0c5XGlHb1R+JHhRKClt3ddKm4CcVqcJ7NVNRIxiAw+IfyyYi0Z
-Gy1l+Vwsg8lmB1lZ7NnvQpuLQ7LDcj5OnkCim1mJOQi+7dIDPiG6WFzKj/ncJzbY
-qDLhoHafxemNQKMwPI2LJAQuNTjuXF4S5BTpGokRmHcnHzy8mj6Qdq5kXih8qWhw
-1RuKUWhh9H3eFdAe2PADkxnZVBorSc2LHFFvfu9tDzonQgot1rAcr+/tGJ2JOpcm
-GDRITOmKwu6H3h+sT6vI23wKBJUdQbbt7cApaGub6aSs0ERIUMP/P6VzsLzaoeX3
-CkAvSHV609n56N26WPzxq9ha01xZsYYv7eMCXgIZj4BNdGeVD1bzpv4tMHxYwf6Y
-oR8JL/23L1wrnFly6p+BdNR7JpWIxlmlRmEKGGHKsSElAJg/EsRyyaEJgKuTl0yN
-/AyCT8j4oXLKC4MlVe3H
-=bJ+8
------END PGP SIGNATURE-----
+v5:
+Changed DT for regulator : 'lout' node should be defined under 'regulator'
+Removed compatible string from sky81452-regulator driver
+Modified sky81452-regulator to return EINVAL when of_node is NULL
+Move sky81452-backlight.h to include/linux/platform_data
 
---tvm83ImpAqdHieXjBSVXLhbLDvQ46H9Pt--
+v4:
+Removed MODULE_VERSION()
+Modified license to GPLv2
+Removed calling to backlight_device_unregister() in sky81452-backlight
+
+v3:
+Cleaned-up DBG messages
+Cleaned-up DT
+Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
+Assigned mfd_cell.of_compatible for binding device node
+Modified error messages
+Modified sky81452-regulator to return ENODATA when of_node is NULL
+
+v2:
+Split the patches for each sub-system
+Added 'reg' attribute for I2C address in device tree documents
+Added 'compatible' attribute in child drivers
+Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
+Changed the dependency from I2C=y to I2C, for CONFIG_MFD_SKY81452
+Added message for exception or errors.
+Added vendor prefix for Skyworks Solutions, Inc.
+Add SKY81452 to the Trivial Devices list
+
+Gyungoh Yoo (6):
+  mfd: Add support for Skyworks SKY81452 driver
+  backlight: Add support Skyworks SKY81452 backlight driver
+  devicetree: Add new SKY81452 mfd binding
+  devicetree: Add new SKY81452 backlight binding
+  devicetree: Add vendor prefix for Skyworks Solutions, Inc.
+  devicetree: Add SKY81452 to the Trivial Devices list
+
+ .../devicetree/bindings/i2c/trivial-devices.txt    |   1 +
+ Documentation/devicetree/bindings/mfd/sky81452.txt |  35 ++
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ .../video/backlight/sky81452-backlight.txt         |  29 ++
+ drivers/mfd/Kconfig                                |  12 +
+ drivers/mfd/Makefile                               |   1 +
+ drivers/mfd/sky81452.c                             | 108 +++++++
+ drivers/video/backlight/Kconfig                    |  10 +
+ drivers/video/backlight/Makefile                   |   1 +
+ drivers/video/backlight/sky81452-backlight.c       | 352 +++++++++++++++++++++
+ include/linux/mfd/sky81452.h                       |  31 ++
+ include/linux/platform_data/sky81452-backlight.h   |  46 +++
+ 12 files changed, 627 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
+ create mode 100644 drivers/mfd/sky81452.c
+ create mode 100644 drivers/video/backlight/sky81452-backlight.c
+ create mode 100644 include/linux/mfd/sky81452.h
+ create mode 100644 include/linux/platform_data/sky81452-backlight.h
+
+-- 
+1.9.1
+

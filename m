@@ -1,60 +1,41 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 20 Feb 2015 12:26:43 +0000
-Subject: Re: [PATCH] fbdev: via/via_clock: fix sparse warning
-Message-Id: <54E72803.5080204@ti.com>
+Date: Thu, 05 Feb 2015 15:25:42 +0000
+Subject: Re: linux-next for fbdev
+Message-Id: <54D38B76.5070005@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Kjxw2pUwNbL6l1u3n1o32dsUe2SubOKpP"
+Content-Type: multipart/mixed; boundary="S3GPD80kmpk9G3IpCC5t7GDkCsLTde1LE"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423140848-5989-1-git-send-email-prabhakar.csengg@gmail.com>
-In-Reply-To: <1423140848-5989-1-git-send-email-prabhakar.csengg@gmail.com>
-To: Lad Prabhakar <prabhakar.csengg@gmail.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
---Kjxw2pUwNbL6l1u3n1o32dsUe2SubOKpP
+--S3GPD80kmpk9G3IpCC5t7GDkCsLTde1LE
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-On 05/02/15 14:54, Lad Prabhakar wrote:
-> From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
->=20
-> this patch fixes following sparse warning:
->=20
-> via_clock.c:33:12: warning: symbol 'via_slap' was not declared. Should =
-it be static?
->=20
-> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
-> ---
->  Found this issue on linux-next (gcc  version 4.9.2,
->  sparse version  0.4.5-rc1)and applies on top linux-next.
->=20
->  drivers/video/fbdev/via/via_clock.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/via/via_clock.c b/drivers/video/fbdev/=
-via/via_clock.c
-> index db1e392..bf269fa 100644
-> --- a/drivers/video/fbdev/via/via_clock.c
-> +++ b/drivers/video/fbdev/via/via_clock.c
-> @@ -30,7 +30,7 @@
->  #include "global.h"
->  #include "debug.h"
-> =20
-> -const char *via_slap =3D "Please slap VIA Technologies to motivate the=
-m "
-> +static const char *via_slap =3D "Please slap VIA Technologies to motiv=
-ate them "
->  	"releasing full documentation for your platform!\n";
-> =20
->  static inline u32 cle266_encode_pll(struct via_pll_config pll)
->=20
+Hi,
 
-Thanks, queued for 3.21.
+On 05/02/15 17:20, Sudip Mukherjee wrote:
+> Hi,
+> I have noticed that we do not have anything called fbdev-next so patche=
+s to fbdev does not appear in linux-next, but instead waits for the merge=
+ window. That may be because you might not have enough time to maintain a=
+ separate tree or any other reason.
+> Can i help in any way to have a fbdev-next tree? I can have a tree in m=
+y server, where i can apply the patches that you are queuing for the next=
+ merge window (usually you will send reply to the list that it is queued)=
+=2E And that tree can act as fbdev-next.
+>=20
+> This was just an idea, and but I am willing to help you in any way to h=
+ave a fbdev-next.
+
+I have 'for-next' branch in my tree
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git which gets
+pulled into linux-next, and that's where I push fbdev patches.
 
  Tomi
 
 
 
---Kjxw2pUwNbL6l1u3n1o32dsUe2SubOKpP
+--S3GPD80kmpk9G3IpCC5t7GDkCsLTde1LE
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -62,19 +43,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJU5ygDAAoJEPo9qoy8lh71CDIP/2bvJDHkRuzDwor8TLOm/l34
-KAMeiFjJJ8bbihkq09bSeKvmQk5HXwd9aTXNeMcrCLXHH/r8lJVt0YwlwGNAM7p7
-bmPgmk3hYbw3pTD6m9SRc71cWd+tlKORnS4oYe0KMUI9WORfNmbOtY8PvEl452E3
-emQHlNnB3g7ynk0B8ik46MQfv45Shalc/bwSWbZroGPTBaqPZpBHhemUofcAvG/m
-zXUazRNKPpl0BVGadoW880Qfe8TrDttYq3v9+uLctfY1pvl5qL6U0wknWAI2s0Qh
-bPL/2hEW3Ti7yR0lHKZgCgRc6S7vgk57ollSZRsogtlGXbfHEm9pADZxv2G9xqbl
-+QCgDOuhN5uZETgUbTcQHlV/vuAIZLax089/TJFSgHoIjuXFufL7swvXDQH9mgVY
-AtEMobt6ik1e6/MilCX7J9QtgGVgeY4Kx0Y31HIO1gpivRMoSLIelG0d0A5uuhhb
-gy3tz/itGt0NPCgSEkQO6717Bio0XuamWhI8ChAv4eSomKVobpYXxrAF63NzHIPJ
-JzPDsIqacteJFOJsAgzt1ZtWca6DuA7iERagbZuMsnYA7bSlgEfvy4CIf4rYh4c5
-/0XGY3bHFP3ad4SkVXSlTANedcMW05YXbWPy4S9+VFErdjK71PuUoesUEpUILavj
-zr8roc1QSyr4p8WPVrwV
-=AUDW
+iQIcBAEBAgAGBQJU04t2AAoJEPo9qoy8lh71oIEQAJPvg3G2k4qT8Tq50bbVHCqP
+PjjBVNWsLgkUXSrABX4bPdDh2J9hEf1RfefE0tkuHFFNkB3nPCIVP+8ZvqiEtrCf
+c1sSYHym0m/Csw23s51dTerkKNGnqkIzfMK5PPbrmpCgcl3Px68G5A9mcNkRVVZT
+7AR+dJXDN2SOxwlQwD3+dGG3td5BNxiy3jZnz+j5GFKBUayWocvsmBDVvu3CZjDy
+1oWiMwMc/+dU505EdnCTarMKOfzTrXHsxtLppkKC4dDd9iwqu2rKQ7V74AQTvdt7
+OjtBWXVLHvJgJb5HmTIXHgvoGNiqSDEZ66o7AVUv2nWdgbxugMGaBFZfRVPQkwAM
+dBlkYPlPI7hhoPIfMvn7JXrx0Ohal7j4z6FIF/NxPzKvNCSj/glO16DBn0SCyZ+E
+Qtaf9fLoYJvcvicBIY32d9RyE6ZAUtVONxqFv4UARwXtlkzpWsOYi4c/3xO2if7d
+3RnDq8S0uHh+Zh2gD2kXtZ6bGritoH1UQGpbYVfCLp3n7L6O52e2fXkqX1wVYqhL
+tRpX9nZst5dkGcTBFibpwWhvGPTnaaW24zJ0krNKO/tFQ9qzZ9x3nVUgJxccZu2j
+ReLY5mu40rdCYfjYXqy0h0Bo0A9uNTZopnUXHyqwMMqt82bea83tKpVP1OyMb4h4
+0e3HN6lP7bengv6tllvn
+=l1Uk
 -----END PGP SIGNATURE-----
 
---Kjxw2pUwNbL6l1u3n1o32dsUe2SubOKpP--
+--S3GPD80kmpk9G3IpCC5t7GDkCsLTde1LE--

@@ -1,40 +1,39 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Tue, 17 Feb 2015 22:33:54 +0000
-Subject: [PATCH 5/5] gxt4500: enable panning
-Message-Id: <1424212434-12614-5-git-send-email-linux@rainbow-software.org>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Thu, 05 Feb 2015 14:23:59 +0000
+Subject: [PATCH] fbdev: via: remove unused variable
+Message-Id: <1423145519-30862-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424212434-12614-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1424212434-12614-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The driver implements pan_display but the corresponding flags are not set.
+the mode_crt_table was only assigned some data, but that was never
+again reused. It will be safe to remove that.
 
-Add FBINFO_HWACCEL_XPAN and FBINFO_HWACCEL_YPAN to flags to allow HW
-accelerated panning (for fast scrolling).
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/gxt4500.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/via/lcd.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index f278c82..7f97c89 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -699,7 +699,8 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- #endif
+diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd.c
+index 5d21ff4..51ac3f3 100644
+--- a/drivers/video/fbdev/via/lcd.c
++++ b/drivers/video/fbdev/via/lcd.c
+@@ -551,11 +551,9 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
+ 	u32 clock;
+ 	struct via_display_timing timing;
+ 	struct fb_var_screeninfo panel_var;
+-	const struct fb_videomode *mode_crt_table, *panel_crt_table;
++	const struct fb_videomode *panel_crt_table;
  
- 	info->fbops = &gxt4500_ops;
--	info->flags = FBINFO_FLAG_DEFAULT;
-+	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_HWACCEL_XPAN |
-+					    FBINFO_HWACCEL_YPAN;
- 
- 	err = fb_alloc_cmap(&info->cmap, 256, 0);
- 	if (err) {
+ 	DEBUG_MSG(KERN_INFO "viafb_lcd_set_mode!!\n");
+-	/* Get mode table */
+-	mode_crt_table = viafb_get_best_mode(set_hres, set_vres, 60);
+ 	/* Get panel table Pointer */
+ 	panel_crt_table = viafb_get_best_mode(panel_hres, panel_vres, 60);
+ 	viafb_fill_var_timing_info(&panel_var, panel_crt_table);
 -- 
-Ondrej Zary
+1.8.1.2
 

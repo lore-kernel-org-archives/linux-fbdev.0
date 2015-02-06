@@ -1,107 +1,58 @@
-From: Ajay kumar <ajaynumb@gmail.com>
-Date: Thu, 26 Feb 2015 08:25:27 +0000
-Subject: Re: [PATCH 2/2] backlight: pwm: Add backlight-boot-off property
-Message-Id: <CAEC9eQMJoKLaJgniOjG8XEeXcJmu71nZH7W0SXrpL4y6AocPLQ@mail.gmail.com>
+From: Nicholas Mc Guire <hofrat@osadl.org>
+Date: Fri, 06 Feb 2015 09:14:01 +0000
+Subject: [PATCH] video: fbdev: use msecs_to_jiffies for time conversion
+Message-Id: <1423214041-15818-1-git-send-email-hofrat@osadl.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424920366-7626-1-git-send-email-hl@rock-chips.com>
-	<1424921954-8621-1-git-send-email-hl@rock-chips.com>
-	<CAEC9eQP-jFJpneinkjD_VDKi83+SiBE2rcwf2vm2ZmbHV-vdOQ@mail.gmail.com>
-	<54EED3F9.7030009@rock-chips.com>
-In-Reply-To: <54EED3F9.7030009@rock-chips.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: hl <hl@rock-chips.com>
-Cc: Daniel Kurtz <djkurtz@chromium.org>, Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jg1.han@samsung.com>, Lee Jones <lee.jones@linaro.org>, linux-pwm@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-rockchip@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Fabian Frederick <fabf@skynet.be>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nicholas Mc Guire <hofrat@osadl.org>, Wolfram Sang <wsa@the-dreams.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2015 at 1:36 PM, hl <hl@rock-chips.com> wrote:
->
-> On 2015年02月26日 13:47, Ajay kumar wrote:
->>
->> Hi Huang,
->>
->> On Thu, Feb 26, 2015 at 9:09 AM, huang lin <hl@rock-chips.com> wrote:
->>>
->>> Add backlight-boot-off property, so we can keeping the
->>> backlight disabled at boot until it is enabled implicitly
->>> by a panel driver, or explicitly by userspace
->>>
->>> Signed-off-by: huang lin <hl@rock-chips.com>
->>>
->>> ---
->>>
->>>   drivers/video/backlight/pwm_bl.c | 4 ++++
->>>   1 file changed, 4 insertions(+)
->>>
->>> diff --git a/drivers/video/backlight/pwm_bl.c
->>> b/drivers/video/backlight/pwm_bl.c
->>> index 3a145a6..dece351 100644
->>> --- a/drivers/video/backlight/pwm_bl.c
->>> +++ b/drivers/video/backlight/pwm_bl.c
->>> @@ -319,6 +319,10 @@ static int pwm_backlight_probe(struct
->>> platform_device *pdev)
->>>          }
->>>
->>>          bl->props.brightness = data->dft_brightness;
->>> +
->>> +       if (of_find_property(pdev->dev.of_node, "backlight-boot-off",
->>> NULL))
->>> +               bl->props.power = FB_BLANK_POWERDOWN;
->>> +
->>
->> You need to check this. Originally, Thierry proposed it.
->> http://permalink.gmane.org/gmane.linux.drivers.devicetree/84604
->
-> I have applied Thierry patch , and it can work. I think it should be merged,
-> since i use three type of edp panels,
-> they have same issue: when the backlight probe, the panel will visual
-> glitches.
-Right, the same problem exists on Exynos5800-peach-pi display!
-I had tested this long back, and I think its not merged since the DT property
-has an issue that "it doesn't really represent h/w property of the device".
+This is only an API consolidation and should make things more readable
+it replaces var * HZ / 1000 by msecs_to_jiffies(var).
 
->>
->>>          backlight_update_status(bl);
->>>
->>>          platform_set_drvdata(pdev, bl);
->>> --
->>> 1.9.1
->>>
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
->>
->>
->
-> --
-> 黄林
-> 福州瑞芯微电子有限公司
-> Fuzhou Rockchip Electronics Co.Ltd
-> 福建省福州市铜盘路软件大道89号软件园A区21号楼(350003)
-> Addr:No.21 Building, A District, No.89, software Boulevard Fuzhou,
-> Fujian,PRC
-> Email:hl@rock-chips.com
-> Tel:+86-591-83991906/07
->
-> ****************************************************************************************
-> 保密提示：本邮件及其附件含有机密信息，仅发送给本邮件所指特定收件人。若非该特定收件人，请
-> 勿复制、 使用或披露本邮件的任何内容。若误收本邮件，请从系统中永久性删除本邮件及所有附件，
-> 并以回复邮件或其他方式即刻告知发件人。福州瑞芯微电子有限公司拥有本邮件信息的著作权及解释
-> 权，禁止任何未经授权许可的侵权行为。
->  IMPORTANT NOTICE: This email is from Fuzhou Rockchip Electronics Co., Ltd
-> .The contents
-> of this email and any attachments may contain information that is
-> privileged, confidential
-> and/or exempt from disclosure under applicable law and relevant NDA. If you
-> are not the
-> intended recipient, you are hereby notified that any disclosure, copying,
-> distribution,
-> or use of the information is STRICTLY PROHIBITED. Please immediately contact
-> the sender
-> as soon as possible and destroy the material in its entirety in any format.
-> Thank you.
-> ********************************************************************************
->
+Signed-off-by: Nicholas Mc Guire <hofrat@osadl.org>
+---
+
+Patch was only compile tested with viper_defconfig (implies CONFIG_FB_PXA=m)
+
+Patch is against 3.19.0-rc7 (localversion-next is -next-20150204)
+
+ drivers/video/fbdev/pxafb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index da2431e..d8b4743 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -1285,7 +1285,7 @@ static int pxafb_smart_thread(void *arg)
+ 		mutex_unlock(&fbi->ctrlr_lock);
+ 
+ 		set_current_state(TASK_INTERRUPTIBLE);
+-		schedule_timeout(30 * HZ / 1000);
++		schedule_timeout(msecs_to_jiffies(30));
+ 	}
+ 
+ 	pr_debug("%s(): task ending\n", __func__);
+@@ -1460,7 +1460,7 @@ static void pxafb_disable_controller(struct pxafb_info *fbi)
+ #ifdef CONFIG_FB_PXA_SMARTPANEL
+ 	if (fbi->lccr0 & LCCR0_LCDT) {
+ 		wait_for_completion_timeout(&fbi->refresh_done,
+-				200 * HZ / 1000);
++				msecs_to_jiffies(200);
+ 		return;
+ 	}
+ #endif
+@@ -1472,7 +1472,7 @@ static void pxafb_disable_controller(struct pxafb_info *fbi)
+ 	lcd_writel(fbi, LCCR0, lccr0);
+ 	lcd_writel(fbi, LCCR0, lccr0 | LCCR0_DIS);
+ 
+-	wait_for_completion_timeout(&fbi->disable_done, 200 * HZ / 1000);
++	wait_for_completion_timeout(&fbi->disable_done, msecs_to_jiffies(200));
+ 
+ 	/* disable LCD controller clock */
+ 	clk_disable_unprepare(fbi->clk);
+-- 
+1.7.10.4
+

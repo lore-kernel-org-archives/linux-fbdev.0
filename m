@@ -1,79 +1,84 @@
-From: Kevin Hao <haokexin@gmail.com>
-Date: Thu, 26 Feb 2015 12:08:18 +0000
-Subject: [PATCH v2 06/11] fbdev: riva: remove the dependency on PPC_OF
-Message-Id: <1424952503-8247-7-git-send-email-haokexin@gmail.com>
+From: niederp@physik.uni-kl.de
+Date: Fri, 06 Feb 2015 22:28:09 +0000
+Subject: [PATCH 3/8] fbdev: ssd1307fb: Add support for SSD1305
+Message-Id: <1423261694-5939-4-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linuxppc-dev@lists.ozlabs.org, Antonino Daplas <adaplas@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com
+Cc: linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-The OF functionality has moved to a common place and be used by many
-archs. So we don't need to include the ppc arch specific header files
-and depend on PPC_OF option any more. This is a preparation for
-killing PPC_OF.
+From: Thomas Niederprüm <niederp@physik.uni-kl.de>
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
+This patch adds support for the SSD1305 OLED controller.
+
+Signed-off-by: Thomas Niederprüm <niederp@physik.uni-kl.de>
 ---
-v2: No change.
+ Documentation/devicetree/bindings/video/ssd1307fb.txt |  2 +-
+ drivers/video/fbdev/ssd1307fb.c                       | 13 +++++++++++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
- drivers/video/fbdev/riva/fbdev.c | 17 +++++++----------
- 1 file changed, 7 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riva/fbdev.c
-index be73727c7227..294a80908c8c 100644
---- a/drivers/video/fbdev/riva/fbdev.c
-+++ b/drivers/video/fbdev/riva/fbdev.c
-@@ -44,10 +44,6 @@
- #ifdef CONFIG_MTRR
- #include <asm/mtrr.h>
- #endif
--#ifdef CONFIG_PPC_OF
--#include <asm/prom.h>
--#include <asm/pci-bridge.h>
--#endif
- #ifdef CONFIG_PMAC_BACKLIGHT
- #include <asm/machdep.h>
- #include <asm/backlight.h>
-@@ -1735,7 +1731,6 @@ static int riva_set_fbinfo(struct fb_info *info)
- 	return (rivafb_check_var(&info->var, info));
- }
+diff --git a/Documentation/devicetree/bindings/video/ssd1307fb.txt b/Documentation/devicetree/bindings/video/ssd1307fb.txt
+index 1230f68..51fa263 100644
+--- a/Documentation/devicetree/bindings/video/ssd1307fb.txt
++++ b/Documentation/devicetree/bindings/video/ssd1307fb.txt
+@@ -2,7 +2,7 @@
  
--#ifdef CONFIG_PPC_OF
- static int riva_get_EDID_OF(struct fb_info *info, struct pci_dev *pd)
- {
- 	struct riva_par *par = info->par;
-@@ -1766,9 +1761,8 @@ static int riva_get_EDID_OF(struct fb_info *info, struct pci_dev *pd)
- 	NVTRACE_LEAVE();
+ Required properties:
+   - compatible: Should be "solomon,<chip>fb-<bus>". The only supported bus for
+-    now is i2c, and the supported chips are ssd1306 and ssd1307.
++    now is i2c, and the supported chips are ssd1305, ssd1306 and ssd1307.
+   - reg: Should contain address of the controller on the I2C bus. Most likely
+          0x3c or 0x3d
+   - pwm: Should contain the pwm to use according to the OF device tree PWM
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 4f435aa..01cfb46 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -16,6 +16,7 @@
+ #include <linux/pwm.h>
+ #include <linux/delay.h>
+ 
++#define DEVID_SSD1305 5
+ #define DEVID_SSD1306 6
+ #define DEVID_SSD1307 7
+ 
+@@ -427,6 +428,13 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
  	return 0;
  }
--#endif /* CONFIG_PPC_OF */
  
--#if defined(CONFIG_FB_RIVA_I2C) && !defined(CONFIG_PPC_OF)
-+#if defined(CONFIG_FB_RIVA_I2C)
- static int riva_get_EDID_i2c(struct fb_info *info)
- {
- 	struct riva_par *par = info->par;
-@@ -1828,10 +1822,13 @@ static void riva_update_default_var(struct fb_var_screeninfo *var,
- static void riva_get_EDID(struct fb_info *info, struct pci_dev *pdev)
- {
- 	NVTRACE_ENTER();
--#ifdef CONFIG_PPC_OF
--	if (!riva_get_EDID_OF(info, pdev))
-+	if (riva_get_EDID_OF(info, pdev)) {
-+		NVTRACE_LEAVE();
-+		return;
-+	}
-+	if (IS_ENABLED(CONFIG_OF))
- 		printk(PFX "could not retrieve EDID from OF\n");
--#elif defined(CONFIG_FB_RIVA_I2C)
-+#if defined(CONFIG_FB_RIVA_I2C)
- 	if (!riva_get_EDID_i2c(info))
- 		printk(PFX "could not retrieve EDID from DDC/I2C\n");
- #endif
++static struct ssd1307fb_deviceinfo ssd1307fb_ssd1305_deviceinfo = {
++	.device_id  = DEVID_SSD1305,
++	.default_vcomh = 0x34,
++	.default_dclk_div = 0,
++	.default_dclk_frq = 7,
++};
++
+ static struct ssd1307fb_deviceinfo ssd1307fb_ssd1306_deviceinfo = {
+ 	.device_id  = DEVID_SSD1306,
+ 	.default_vcomh = 0x20,
+@@ -443,6 +451,10 @@ static struct ssd1307fb_deviceinfo ssd1307fb_ssd1307_deviceinfo = {
+ 
+ static const struct of_device_id ssd1307fb_of_match[] = {
+ 	{
++		.compatible = "solomon,ssd1305fb-i2c",
++		.data = (void *)&ssd1307fb_ssd1305_deviceinfo,
++	},
++	{
+ 		.compatible = "solomon,ssd1306fb-i2c",
+ 		.data = (void *)&ssd1307fb_ssd1306_deviceinfo,
+ 	},
+@@ -623,6 +635,7 @@ static int ssd1307fb_remove(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id ssd1307fb_i2c_id[] = {
++	{ "ssd1305fb", 0 },
+ 	{ "ssd1306fb", 0 },
+ 	{ "ssd1307fb", 0 },
+ 	{ }
 -- 
-1.9.3
+2.1.1
 

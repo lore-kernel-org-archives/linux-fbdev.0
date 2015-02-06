@@ -1,47 +1,55 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Feb 2015 12:49:03 +0000
-Subject: [PATCH 09/15] OMAPDSS: DISPC: fix div by zero issue in overlay scaling
-Message-Id: <1424954949-12801-9-git-send-email-tomi.valkeinen@ti.com>
+From: niederp@physik.uni-kl.de
+Date: Fri, 06 Feb 2015 22:28:06 +0000
+Subject: [PATCH 0/8] Cleanup and add support for SSD1305
+Message-Id: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com
+Cc: linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-omapdrm doesn't always configure the overlays correctly, causing the
-overlay setup functions to be called with zero timings. This leads to
-division by zero error.
+From: Thomas Niederprüm <niederp@physik.uni-kl.de>
 
-This happens, for example, when a HDMI cable is not connected, but a
-user tries to setup a plane with scaling.
+This patch series is the result of making the ssd1307fb driver work with
+a Newhaven OLED display using the Solomon SSD1305 controller. To achieve
+this the intialization code for the SSD1306 and the SSD1307 is merged
+and based on device tree configuration. This gets rid of the magic bit
+values that were used so far.
+Based on these changes it was straight forward to add support for the
+SSD1305 controller.
 
-Fixing omapdrm is a big job, so for now let's check for the bad timings
-in DISPC and return an error.
+While working with the driver I realized that it was not possible to
+correctly mmap the video memory from userspace since the memory
+reserved by kzalloc is not page aligned. This problem is fixed by
+using vmalloc as it is done inthe vfb driver.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/dispc.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Furthermore module parameters are added to set the bits per pixel
+and the delay for the deferred io update. It makes sense to set
+the bits per pixel for the video memory to 8 bits since there is
+only very poor userspace support for 1 bit framebuffers.
 
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index 8805266a52f4..1123111d3940 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -2322,6 +2322,11 @@ static int dispc_ovl_calc_scaling(unsigned long pclk, unsigned long lclk,
- 	if (width = out_width && height = out_height)
- 		return 0;
- 
-+	if (pclk = 0 || mgr_timings->pixelclock = 0) {
-+		DSSERR("cannot calculate scaling settings: pclk is zero\n");
-+		return -EINVAL;
-+	}
-+
- 	if ((caps & OMAP_DSS_OVL_CAP_SCALE) = 0)
- 		return -EINVAL;
- 
+Also sysfs handles are added to make the contrast settings and dim
+mode setting available in userspace.
+
+Thomas Niederprüm (8):
+  Documentation: dts: add missing Solomon Systech vendor prefix.
+  fbdev: ssd1307fb: Unify init code and make controller configurable
+    from device tree
+  fbdev: ssd1307fb: Add support for SSD1305
+  fbdev: ssd1307fb: Use vmalloc to allocate video memory.
+  fbdev: ssd1307fb: Add module parameter bitsperpixel.
+  fbdev: ssd1307fb: Add module parameter to set update delay of the 
+    deffered io.
+  fbdev: ssd1307fb: Add sysfs handles to expose contrast and dim setting
+    to userspace.
+  fbdev: ssd1307fb: Turn off display on driver unload.
+
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ .../devicetree/bindings/video/ssd1307fb.txt        |  13 +-
+ drivers/video/fbdev/ssd1307fb.c                    | 426 ++++++++++++++++-----
+ 3 files changed, 346 insertions(+), 94 deletions(-)
+
 -- 
-2.3.0
+2.1.1
 

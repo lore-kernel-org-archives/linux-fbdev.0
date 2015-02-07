@@ -1,55 +1,40 @@
-From: niederp@physik.uni-kl.de
-Date: Fri, 06 Feb 2015 22:28:06 +0000
-Subject: [PATCH 0/8] Cleanup and add support for SSD1305
-Message-Id: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sat, 07 Feb 2015 20:53:34 +0000
+Subject: [PATCH 1/4] tridentfb: fix hang on Blade3D with CONFIG_CC_OPTIMIZE_FOR_SIZE
+Message-Id: <1423342417-26069-1-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com
-Cc: linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-From: Thomas Niederprüm <niederp@physik.uni-kl.de>
+When the kernel is compiled with -Os (CONFIG_CC_OPTIMIZE_FOR_SIZE), tridentfb
+hangs the machine upon load with Blade3D cards unless acceleration is disabled.
 
-This patch series is the result of making the ssd1307fb driver work with
-a Newhaven OLED display using the Solomon SSD1305 controller. To achieve
-this the intialization code for the SSD1306 and the SSD1307 is merged
-and based on device tree configuration. This gets rid of the magic bit
-values that were used so far.
-Based on these changes it was straight forward to add support for the
-SSD1305 controller.
+This is caused by memcpy() which copies data byte-by-byte (rep movsb) when
+compiled with -Os. The card does not like that - it requires 32-bit access.
 
-While working with the driver I realized that it was not possible to
-correctly mmap the video memory from userspace since the memory
-reserved by kzalloc is not page aligned. This problem is fixed by
-using vmalloc as it is done inthe vfb driver.
+Use iowrite_32() instead.
 
-Furthermore module parameters are added to set the bits per pixel
-and the delay for the deferred io update. It makes sense to set
-the bits per pixel for the video memory to 8 bits since there is
-only very poor userspace support for 1 bit framebuffers.
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+---
+ drivers/video/fbdev/tridentfb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Also sysfs handles are added to make the contrast settings and dim
-mode setting available in userspace.
-
-Thomas Niederprüm (8):
-  Documentation: dts: add missing Solomon Systech vendor prefix.
-  fbdev: ssd1307fb: Unify init code and make controller configurable
-    from device tree
-  fbdev: ssd1307fb: Add support for SSD1305
-  fbdev: ssd1307fb: Use vmalloc to allocate video memory.
-  fbdev: ssd1307fb: Add module parameter bitsperpixel.
-  fbdev: ssd1307fb: Add module parameter to set update delay of the 
-    deffered io.
-  fbdev: ssd1307fb: Add sysfs handles to expose contrast and dim setting
-    to userspace.
-  fbdev: ssd1307fb: Turn off display on driver unload.
-
- .../devicetree/bindings/vendor-prefixes.txt        |   1 +
- .../devicetree/bindings/video/ssd1307fb.txt        |  13 +-
- drivers/video/fbdev/ssd1307fb.c                    | 426 ++++++++++++++++-----
- 3 files changed, 346 insertions(+), 94 deletions(-)
-
+diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
+index 7ed9a22..7429713 100644
+--- a/drivers/video/fbdev/tridentfb.c
++++ b/drivers/video/fbdev/tridentfb.c
+@@ -226,7 +226,7 @@ static void blade_image_blit(struct tridentfb_par *par, const char *data,
+ 	writemmr(par, DST1, point(x, y));
+ 	writemmr(par, DST2, point(x + w - 1, y + h - 1));
+ 
+-	memcpy(par->io_virt + 0x10000, data, 4 * size);
++	iowrite32_rep(par->io_virt + 0x10000, data, size);
+ }
+ 
+ static void blade_copy_rect(struct tridentfb_par *par,
 -- 
-2.1.1
+Ondrej Zary
 

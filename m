@@ -1,188 +1,47 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Feb 2015 12:49:08 +0000
-Subject: [PATCH 14/15] OMAPDSS: HDMI: hdmi synclost work-around
-Message-Id: <1424954949-12801-14-git-send-email-tomi.valkeinen@ti.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sat, 07 Feb 2015 20:53:35 +0000
+Subject: [PATCH 2/4] tridentfb: Fix set_lwidth on TGUI9440 and CYBER9320
+Message-Id: <1423342417-26069-2-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1423342417-26069-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1423342417-26069-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-DISPC and HDMI have synchronization issues when enabling or disabling
-the output. The symptoms are a lot of sync-lost errors and occasionally
-dispc gets "stuck" and we never get FRAMEDONE when disabling.
+According to X.Org driver, chips older than TGUI9660 have only 1 width bit
+in AddColReg. Touching the 2nd one causes I2C/DDC to fail on TGUI9440.
 
-Testing has shown that this is somehow related to the time when DISPC's
-output gets enabled:
+Set only 1 bit of width in AddColReg on TGUI9440 and CYBER9320.
 
-- If DISPC is disabled when HDMI is in vertical blanking area, DISPC
-  often gets stuck.
-- If DISPC is disabled after vertical blanking area, no sync lost errors
-  are seen.
-- If DISPC is enabled right after HDMI VSYNC event, no sync lost errors
-  are seen.
-
-This patch is a simple work-around for the above issues:
-
-- Before enabling DISPC output, we wait for HDMI VSYNC.
-- Before disabling DISPC output, we wait for HDMI VSYNC and VSW+VBP.
-
-This is not perfect WA, as it relies on the enable/disable of DISPC
-happening relatively soon after the wait has ended. In practice I
-presume there is at least ~10ms timewindow to accomplish the DISPC
-enable/disable, which I hope is enough.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- drivers/video/fbdev/omap2/dss/hdmi4.c | 50 +++++++++++++++++++++++++++++++++++
- drivers/video/fbdev/omap2/dss/hdmi5.c | 50 +++++++++++++++++++++++++++++++++++
- 2 files changed, 100 insertions(+)
+ drivers/video/fbdev/tridentfb.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
-index 916d47978f41..39cdd164d2ae 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
-@@ -217,6 +217,26 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_vid_enable;
- 
-+	/*
-+	 * XXX Seems that on we easily get a flood of sync-lost errors when
-+	 * enabling the output. This seems to be related to the time between
-+	 * HDMI VSYNC and enabling the DISPC output.
-+	 *
-+	 * Testing shows that the sync-lost errors do not happen if we enable
-+	 * the DISPC output very soon after HDMI VBLANK. So wait here for
-+	 * VBLANK to reduce the chances of sync-losts.
-+	 */
-+	hdmi_write_reg(hdmi.wp.base, HDMI_WP_IRQSTATUS, HDMI_IRQ_VIDEO_VSYNC);
-+
-+	while (true) {
-+		u32 v = hdmi_read_reg(hdmi.wp.base, HDMI_WP_IRQSTATUS_RAW);
-+
-+		if (v & HDMI_IRQ_VIDEO_VSYNC)
-+			break;
-+
-+		usleep_range(500, 1000);
-+	}
-+
- 	r = dss_mgr_enable(mgr);
- 	if (r)
- 		goto err_mgr_enable;
-@@ -242,9 +262,39 @@ err_pll_enable:
- static void hdmi_power_off_full(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
+index 7429713..01b43e9 100644
+--- a/drivers/video/fbdev/tridentfb.c
++++ b/drivers/video/fbdev/tridentfb.c
+@@ -673,8 +673,14 @@ static int get_nativex(struct tridentfb_par *par)
+ static inline void set_lwidth(struct tridentfb_par *par, int width)
  {
- 	struct omap_overlay_manager *mgr = hdmi.output.manager;
-+	const struct omap_video_timings *t;
-+	unsigned vblank;
+ 	write3X4(par, VGA_CRTC_OFFSET, width & 0xFF);
+-	write3X4(par, AddColReg,
+-		 (read3X4(par, AddColReg) & 0xCF) | ((width & 0x300) >> 4));
++	/* chips older than TGUI9660 have only 1 width bit in AddColReg */
++	/* touching the other one breaks I2C/DDC */
++	if (par->chip_id = TGUI9440 || par->chip_id = CYBER9320)
++		write3X4(par, AddColReg,
++		     (read3X4(par, AddColReg) & 0xEF) | ((width & 0x100) >> 4));
++	else
++		write3X4(par, AddColReg,
++		     (read3X4(par, AddColReg) & 0xCF) | ((width & 0x300) >> 4));
+ }
  
- 	hdmi_wp_clear_irqenable(&hdmi.wp, 0xffffffff);
- 
-+	/*
-+	 * XXX Seems that on we easily get a flood of sync-lost errors when
-+	 * disabling the output, and sometimes the DISPC seems to get stuck and
-+	 * we never get FRAMEDONE. This seems to happen if we disable DISPC
-+	 * output during HDMI VBLANK.
-+	 *
-+	 * To reduce the possibility for sync-lost errors, calculate the time
-+	 * for the vertical blanking, wait for VBLANK, then wait until VBLANK
-+	 * ends.
-+	 */
-+	t = &hdmi.cfg.timings;
-+	vblank = t->hfp + t->hsw + t->hbp + t->x_res;
-+	vblank *= t->vsw + t->vbp;
-+	vblank = (vblank * 1000) / (t->pixelclock / 1000);
-+
-+	hdmi_write_reg(hdmi.wp.base, HDMI_WP_IRQSTATUS, HDMI_IRQ_VIDEO_VSYNC);
-+
-+	while (true) {
-+		u32 v = hdmi_read_reg(hdmi.wp.base, HDMI_WP_IRQSTATUS_RAW);
-+
-+		if (v & HDMI_IRQ_VIDEO_VSYNC)
-+			break;
-+
-+		usleep_range(500, 1000);
-+	}
-+
-+	usleep_range(vblank, vblank + 1000);
-+
- 	dss_mgr_disable(mgr);
- 
- 	hdmi_wp_video_stop(&hdmi.wp);
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
-index 3f0b34a7031a..65a91ac87a6a 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
-@@ -234,6 +234,26 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_vid_enable;
- 
-+	/*
-+	 * XXX Seems that on we easily get a flood of sync-lost errors when
-+	 * enabling the output. This seems to be related to the time between
-+	 * HDMI VSYNC and enabling the DISPC output.
-+	 *
-+	 * Testing shows that the sync-lost errors do not happen if we enable
-+	 * the DISPC output very soon after HDMI VBLANK. So wait here for
-+	 * VBLANK to reduce the chances of sync-losts.
-+	 */
-+	hdmi_write_reg(hdmi.wp.base, HDMI_WP_IRQSTATUS, HDMI_IRQ_VIDEO_VSYNC);
-+
-+	while (true) {
-+		u32 v = hdmi_read_reg(hdmi.wp.base, HDMI_WP_IRQSTATUS_RAW);
-+
-+		if (v & HDMI_IRQ_VIDEO_VSYNC)
-+			break;
-+
-+		usleep_range(500, 1000);
-+	}
-+
- 	r = dss_mgr_enable(mgr);
- 	if (r)
- 		goto err_mgr_enable;
-@@ -259,9 +279,39 @@ err_pll_enable:
- static void hdmi_power_off_full(struct omap_dss_device *dssdev)
- {
- 	struct omap_overlay_manager *mgr = hdmi.output.manager;
-+	const struct omap_video_timings *t;
-+	unsigned vblank;
- 
- 	hdmi_wp_clear_irqenable(&hdmi.wp, 0xffffffff);
- 
-+	/*
-+	 * XXX Seems that on we easily get a flood of sync-lost errors when
-+	 * disabling the output, and sometimes the DISPC seems to get stuck and
-+	 * we never get FRAMEDONE. This seems to happen if we disable DISPC
-+	 * output during HDMI VBLANK.
-+	 *
-+	 * To reduce the possibility for sync-lost errors, calculate the time
-+	 * for the vertical blanking, wait for VBLANK, then wait until VBLANK
-+	 * ends.
-+	 */
-+	t = &hdmi.cfg.timings;
-+	vblank = t->hfp + t->hsw + t->hbp + t->x_res;
-+	vblank *= t->vsw + t->vbp;
-+	vblank = (vblank * 1000) / (t->pixelclock / 1000);
-+
-+	hdmi_write_reg(hdmi.wp.base, HDMI_WP_IRQSTATUS, HDMI_IRQ_VIDEO_VSYNC);
-+
-+	while (true) {
-+		u32 v = hdmi_read_reg(hdmi.wp.base, HDMI_WP_IRQSTATUS_RAW);
-+
-+		if (v & HDMI_IRQ_VIDEO_VSYNC)
-+			break;
-+
-+		usleep_range(500, 1000);
-+	}
-+
-+	usleep_range(vblank, vblank + 1000);
-+
- 	dss_mgr_disable(mgr);
- 
- 	hdmi_wp_video_stop(&hdmi.wp);
+ /* For resolutions smaller than FP resolution stretch */
 -- 
-2.3.0
+Ondrej Zary
 

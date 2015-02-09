@@ -1,34 +1,23 @@
-From: Sanjeev Sharma <sanjeev_sharma@mentor.com>
-Date: Mon, 09 Feb 2015 11:14:27 +0000
-Subject: [PATCH] video: fbdev: make of_device_id array const
-Message-Id: <1423479747-17899-1-git-send-email-sanjeev_sharma@mentor.com>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Mon, 09 Feb 2015 12:14:53 +0000
+Subject: Re: [PATCH] video: fbdev: make of_device_id array const
+Message-Id: <20150209121453.GG10842@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1423479747-17899-1-git-send-email-sanjeev_sharma@mentor.com>
+In-Reply-To: <1423479747-17899-1-git-send-email-sanjeev_sharma@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: kernel@pengutronix.de, plagnioj@jcrosoft.com
-Cc: tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sanjeev Sharma <sanjeev_sharma@mentor.com>, Sanjeev Sharma <Sanjeev_Sharma@mentor.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Make of_device_id array const.
+On Mon, Feb 09, 2015 at 04:32:27PM +0530, Sanjeev Sharma wrote:
+> Make of_device_id array const.
+>=20
+> Signed-off-by: Sanjeev Sharma <Sanjeev_Sharma@mentor.com>
+Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
 
-Signed-off-by: Sanjeev Sharma <Sanjeev_Sharma@mentor.com>
----
- drivers/video/fbdev/imxfb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Uwe
 
-diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-index 3b6a3c8..84d1d29 100644
---- a/drivers/video/fbdev/imxfb.c
-+++ b/drivers/video/fbdev/imxfb.c
-@@ -183,7 +183,7 @@ static struct platform_device_id imxfb_devtype[] = {
- };
- MODULE_DEVICE_TABLE(platform, imxfb_devtype);
- 
--static struct of_device_id imxfb_of_dev_id[] = {
-+static const struct of_device_id imxfb_of_dev_id[] = {
- 	{
- 		.compatible = "fsl,imx1-fb",
- 		.data = &imxfb_devtype[IMX1_FB],
--- 
-1.7.11.7
-
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |

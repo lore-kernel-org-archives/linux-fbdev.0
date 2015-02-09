@@ -1,205 +1,73 @@
-From: Thomas =?UTF-8?B?TmllZGVycHLDvG0=?= <niederp@physik.uni-kl.de>
-Date: Sat, 07 Feb 2015 16:42:44 +0000
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Mon, 09 Feb 2015 08:52:39 +0000
 Subject: Re: [PATCH 7/8] fbdev: ssd1307fb: Add sysfs handles to expose contrast and dim setting to userspace.
-Message-Id: <20150207174244.25987977@maestro.intranet>
+Message-Id: <20150209085239.GX2079@lukather>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="R9dSeJxMIUBTi9Do"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
-	<1423261694-5939-8-git-send-email-niederp@physik.uni-kl.de>
-	<20150207114329.GQ2079@lukather>
-In-Reply-To: <20150207114329.GQ2079@lukather>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-kernel@vger.kernel.org
+ <1423261694-5939-8-git-send-email-niederp@physik.uni-kl.de>
+ <20150207114329.GQ2079@lukather>
+ <20150207174244.25987977@maestro.intranet>
+In-Reply-To: <20150207174244.25987977@maestro.intranet>
+To: tomi.valkeinen@ti.com, Thomas =?iso-8859-1?Q?Niederpr=FCm?= <niederp@physik.uni-kl.de>
+Cc: linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com, linux-kernel@vger.kernel.org
 
-Am Sat, 7 Feb 2015 12:43:29 +0100
-schrieb Maxime Ripard <maxime.ripard@free-electrons.com>:
 
-> On Fri, Feb 06, 2015 at 11:28:13PM +0100, niederp@physik.uni-kl.de
-> wrote:
-> > From: Thomas Niederprüm <niederp@physik.uni-kl.de>
-> > 
-> > This patch adds sysfs handles to enable userspace control over the
-> > display contrast as well as the dim mode. The handles are available
-> > as "contrast" and "dim" in the framebuffers sysfs domain.
-> > 
-> > Signed-off-by: Thomas Niederprüm <niederp@physik.uni-kl.de>
-> > ---
-> >  drivers/video/fbdev/ssd1307fb.c | 88
-> > ++++++++++++++++++++++++++++++++++++++++- 1 file changed, 87
-> > insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/video/fbdev/ssd1307fb.c
-> > b/drivers/video/fbdev/ssd1307fb.c index b38315d..02931c7 100644
-> > --- a/drivers/video/fbdev/ssd1307fb.c
-> > +++ b/drivers/video/fbdev/ssd1307fb.c
-> > @@ -33,6 +33,7 @@
-> >  #define SSD1307FB_CONTRAST		0x81
-> >  #define	SSD1307FB_CHARGE_PUMP		0x8d
-> >  #define SSD1307FB_SEG_REMAP_ON		0xa1
-> > +#define SSD1307FB_DISPLAY_DIM		0xac
-> >  #define SSD1307FB_DISPLAY_OFF		0xae
-> >  #define SSD1307FB_SET_MULTIPLEX_RATIO	0xa8
-> >  #define SSD1307FB_DISPLAY_ON		0xaf
-> > @@ -43,6 +44,9 @@
-> >  #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
-> >  #define	SSD1307FB_SET_VCOMH		0xdb
-> >  
-> > +#define MIN_CONTRAST 0
-> > +#define MAX_CONTRAST 255
-> > +
-> >  #define BITSPERPIXEL 1
-> >  #define DELAYDIVIDER 20
-> >  
-> > @@ -69,6 +73,7 @@ struct ssd1307fb_par {
-> >  	u32 dclk_div;
-> >  	u32 dclk_frq;
-> >  	struct ssd1307fb_deviceinfo *device_info;
-> > +	u32 dim;
-> >  	struct i2c_client *client;
-> >  	u32 height;
-> >  	struct fb_info *info;
-> > @@ -515,6 +520,79 @@ static const struct of_device_id
-> > ssd1307fb_of_match[] = { };
-> >  MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
-> >  
-> > +static ssize_t show_contrast(struct device *device,
-> > +			   struct device_attribute *attr, char
-> > *buf) +{
-> > +	struct fb_info *info = dev_get_drvdata(device);
-> > +	struct ssd1307fb_par *par = info->par;
-> > +
-> > +	return snprintf(buf, PAGE_SIZE, "%d\n", par->contrast);
-> > +}
-> > +
-> > +static ssize_t store_contrast(struct device *device,
-> > +			    struct device_attribute *attr,
-> > +			    const char *buf, size_t count)
-> > +{
-> > +	struct fb_info *info = dev_get_drvdata(device);
-> > +	struct ssd1307fb_par *par = info->par;
-> > +	unsigned long contrastval;
-> > +	int ret;
-> > +
-> > +	ret = kstrtoul(buf, 0, &contrastval);
-> > +	if (ret < 0)
-> > +		return ret;
-> > +
-> > +	par->contrast = max(min(contrastval,
-> > +		(ulong)MAX_CONTRAST), (ulong)MIN_CONTRAST);
-> > +
-> > +	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_CONTRAST);
-> > +	ret = ret & ssd1307fb_write_cmd(par->client,
-> > par->contrast);
-> > +	if (ret < 0)
-> > +		return ret;
-> > +
-> > +	return count;
-> > +}
-> > +
-> > +
-> > +static ssize_t show_dim(struct device *device,
-> > +			   struct device_attribute *attr, char
-> > *buf) +{
-> > +	struct fb_info *info = dev_get_drvdata(device);
-> > +	struct ssd1307fb_par *par = info->par;
-> > +
-> > +	return snprintf(buf, PAGE_SIZE, "%d\n", par->dim);
-> > +}
-> > +
-> > +static ssize_t store_dim(struct device *device,
-> > +			    struct device_attribute *attr,
-> > +			    const char *buf, size_t count)
-> > +{
-> > +	struct fb_info *info = dev_get_drvdata(device);
-> > +	struct ssd1307fb_par *par = info->par;
-> > +	unsigned long dimval;
-> > +	int ret;
-> > +
-> > +	ret = kstrtoul(buf, 0, &dimval);
-> > +	if (ret < 0)
-> > +		return ret;
-> > +
-> > +	par->dim = max(min(dimval, (ulong)1), (ulong)0);
-> > +	if (par->dim)
-> > +		ret = ssd1307fb_write_cmd(par->client,
-> > SSD1307FB_DISPLAY_DIM);
-> > +	else
-> > +		ret = ssd1307fb_write_cmd(par->client,
-> > SSD1307FB_DISPLAY_ON);
-> > +	if (ret < 0)
-> > +		return ret;
-> > +
-> > +	return count;
-> > +}
-> > +
-> > +static struct device_attribute device_attrs[] = {
-> > +	__ATTR(contrast, S_IRUGO|S_IWUSR, show_contrast,
-> > store_contrast),
-> > +	__ATTR(dim, S_IRUGO|S_IWUSR, show_dim, store_dim),
-> > +
-> > +};
-> > +
-> 
-> I would have thought this was something accessible through the
-> framebuffer ioctl.
-> 
-> Apparently it's not, at least for the contrast, so maybe it should be
-> added there, instead of doing it for a single driver?
+--R9dSeJxMIUBTi9Do
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think the contrast setting for an OLED display is much like the
-backlight setting for LCD panel. Since there is also no ioctl to set
-the backlight of an LCD I wonder if the contrast of an OLED should have
-one.
+On Sat, Feb 07, 2015 at 05:42:44PM +0100, Thomas Niederpr=FCm wrote:
+> > > +static struct device_attribute device_attrs[] =3D {
+> > > +	__ATTR(contrast, S_IRUGO|S_IWUSR, show_contrast,
+> > > store_contrast),
+> > > +	__ATTR(dim, S_IRUGO|S_IWUSR, show_dim, store_dim),
+> > > +
+> > > +};
+> > > +
+> >=20
+> > I would have thought this was something accessible through the
+> > framebuffer ioctl.
+> >=20
+> > Apparently it's not, at least for the contrast, so maybe it should be
+> > added there, instead of doing it for a single driver?
+>=20
+> I think the contrast setting for an OLED display is much like the
+> backlight setting for LCD panel. Since there is also no ioctl to set
+> the backlight of an LCD I wonder if the contrast of an OLED should have
+> one.
 
-> 
-> (oh, and btw, every sysfs file should be documented in
-> Documentation/ABI)
-> 
-> >  static int ssd1307fb_probe(struct i2c_client *client,
-> >  			   const struct i2c_device_id *id)
-> >  {
-> > @@ -523,7 +601,7 @@ static int ssd1307fb_probe(struct i2c_client
-> > *client, u32 vmem_size;
-> >  	struct ssd1307fb_par *par;
-> >  	u8 *vmem;
-> > -	int ret;
-> > +	int ret, i;
-> >  
-> >  	if (!node) {
-> >  		dev_err(&client->dev, "No device tree data
-> > found!\n"); @@ -650,6 +728,14 @@ static int ssd1307fb_probe(struct
-> > i2c_client *client, goto reset_oled_error;
-> >  
-> >  	ret = register_framebuffer(info);
-> > +
-> > +	for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
-> > +		ret = device_create_file(info->dev,
-> > &device_attrs[i]); +
-> > +	if (ret) {
-> > +		dev_err(&client->dev, "Couldn't register sysfs
-> > nodes\n");
-> > +	}
-> > +
-> 
-> sysfs_create_groups does pretty much that already.
+It's too much of framebuffer interface debate for me here. Tomi?
 
-I'll have a look at it.
+Maxime
 
-> 
-> And don't forget to remove these files in the .remove()
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
 
-Good point! :)
+--R9dSeJxMIUBTi9Do
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> 
-> >  	if (ret) {
-> >  		dev_err(&client->dev, "Couldn't register the
-> > framebuffer\n"); goto panel_init_error;
-> > -- 
-> > 2.1.1
-> > 
-> 
-> Maxime
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
+iQIcBAEBAgAGBQJU2HVXAAoJEBx+YmzsjxAgmKgP/AwA5Hukl/UAmFxppcZ4VjVA
+gx4s1PKx9AiMuJDqbYjoCO4X4o+SuuMB5BIVvYj5QmexizbyCPkwxfHJnI2ez9Bf
+wDD3z4jBtazHHa57hilrOOdrhCR4tZkdQE+fYEwrdB2yfkYtr9rnrNTU3v7furmu
+UmIN2VoAISub58a5e+ua1dwoaFKb2rhzY9B+oc440Qt+d7wX4+CYtboWtfx5FrWU
+fnL6xR/mYwcFzHSCO3Z1dtKL2LLnHUrg6RPG96JTChogzzdT1E1/qqtruMxgCnVx
+iHCj3UyxfEoEgyohlosiGuklfqWprFPRDnHct8xc6uNe+x266/oikzl0bYOugXGl
+unqD26exAOcZXDnhiBktJKTvped9mtasBLJ9BgHOS6/oRYuJBrbMGBWwKCUGRK9f
+zktHPD/0vlLSOTEgB8yytzJKB1dbl7kX1Li1LOROJkNvwAf+JSKdwD6AgAN8Pf1H
+7Vk7s53U1oD8H3lcC6gaSiACQ+YAK9DIMBhvPt5fPD+iYvxwajHQ2SFn5ybpHOMG
+xWQ84em4v/78QlTYJ3STcxwnvC6imXNk50KoBl3qGfXR2csBNn7/uLfLuViXuL+V
+AYjWmSwSl31VsM7u6pPKTZ3VjscqyD7KRfmGW8A+ywi1r+4omBYQhx2zGX/VfHpg
+Ku3bV+d7rWafwLxeJqn+
+=Bu58
+-----END PGP SIGNATURE-----
+
+--R9dSeJxMIUBTi9Do--

@@ -1,82 +1,40 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Feb 2015 10:42:41 +0000
-Subject: Re: [PATCH] omapfb: Return error code when applying overlay settings fails
-Message-Id: <54D1F7A1.3010309@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ncxJJ6WNgFE7oLm9GiAU3WIxvaoNH5eiT"
+From: <harald@ccbib.org>
+Date: Mon, 09 Feb 2015 11:38:38 +0000
+Subject: fbdev: =?UTF-8?Q?fb=5Fdefio=20not=20buildable=20as=20module?=
+Message-Id: <73d569a4689073b80531b2f4e98f96bc@imap.cosmopool.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422604786-6804-1-git-send-email-pmeerw@pmeerw.net>
-In-Reply-To: <1422604786-6804-1-git-send-email-pmeerw@pmeerw.net>
-To: Peter Meerwald <pmeerw@pmeerw.net>, linux-omap@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---ncxJJ6WNgFE7oLm9GiAU3WIxvaoNH5eiT
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Hi *,
 
-On 30/01/15 09:59, Peter Meerwald wrote:
-> the check of the return code is missing, user space does not get notifi=
-ed
-> about the error condition:
->=20
-> omapdss OVERLAY error: overlay 2 horizontally not inside the display ar=
-ea (403 + 800 >=3D 800)
-> omapdss APPLY error: failed to apply settings: illegal configuration.
->=20
-> Signed-off-by: Peter Meerwald <pmeerw@pmeerw.net>
-> ---
->  drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c |    7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c b/drivers/=
-video/fbdev/omap2/omapfb/omapfb-ioctl.c
-> index 146b6f5..9ddfdd6 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
-> @@ -137,8 +137,11 @@ static int omapfb_setup_plane(struct fb_info *fbi,=
- struct omapfb_plane_info *pi)
->  			goto undo;
->  	}
-> =20
-> -	if (ovl->manager)
-> -		ovl->manager->apply(ovl->manager);
-> +	if (ovl->manager) {
-> +		r =3D ovl->manager->apply(ovl->manager);
-> +		if (r)
-> +			goto undo;
-> +	}
-> =20
->  	if (pi->enabled) {
->  		r =3D ovl->enable(ovl);
->=20
+in drivers/video/fbdev/Kconfig we have
 
-Thanks, queued for 3.20.
+| menuconfig FB
+|        tristate "Support for frame buffer devices"
+|        select FB_CMDLINE
+|        ---help---
 
- Tomi
+and
 
+| config FB_DEFERRED_IO
+|        bool
+|        depends on FB
 
+but in drivers/video/fbdev/core/Makefile we have the line
+| obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
 
---ncxJJ6WNgFE7oLm9GiAU3WIxvaoNH5eiT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+AFAICS the combination of this leads to fb_defio always
+linked into the kernel image, even if the framebuffer core
+is only built as a module. This doesn't make much sense and
+I couldn't find any reason why this would be necessary.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+The above code is there in one way or the other since the
+initial version of fb_defio.c - I wonder what was the
+intended behaviour or actually what is considered the right
+way today?
 
-iQIcBAEBAgAGBQJU0fehAAoJEPo9qoy8lh71EV4P/3uv3bu2tsSj1SqQZtCuTGEE
-Y/pRjnNP5LbkpyIZdQ/JICf+cGHwVgfgwA6J/fDiBHYJYAznBsh05bydoFXK2cpG
-IO/SKwagvPWT3vvmX1NtaZVASzvLVKwuU65NJqPYIdx+pglb8fRMpDVyJ11F18fI
-JJlkAD6uWBuPs8LP5QFaoNrjUMOd2a9IxyKlGwYCavSY2zsp/yn1HxfGAYlzqadx
-/kZrXbPT/ufzdosS9BEiHMWIJ3IRFqTqV+q2Q67ui+vmALsLCDVqEkzHIXJcjcwH
-EKPBouFGb091SQJiSfMPFt1DYnsdjU+0ZG29i8WEIo8xCdq/kRSwK6hatSX6YGiO
-aBNS2VcDNfjNkrqCNQ6PGIIKzcQjNVYvYtTIB1mMv8tntxLCxA9JC9E5E4xHYnWE
-d1MLWNpxgESopM5u/X3zBi4DLz/3b9EGPuP9A+mUDpWtbfKOuBtJp8V+H5hWVPyG
-vTq8IocoynClhIp6py82ZSGpLfv+ogVlVcMKvpU4nmOdO8IxnClaFUMg/yxDT+AO
-sxkiQFCQ741EXfLKHgbdsZw4lyxAtiR7hztgGZaR0QqZAScGxrHTq/RCr6bkARAu
-thKUstwf+/iSOv+AaIlDIbYmnzFnDLS2GZeKMcJlSRB1HYceUTZuS3X5Q9yvAzUn
-ViURYoR2wzwG+BGAtJ4Y
-=fW6P
------END PGP SIGNATURE-----
-
---ncxJJ6WNgFE7oLm9GiAU3WIxvaoNH5eiT--
+TIA,
+Harald

@@ -1,119 +1,311 @@
-From: Gyungoh Yoo <gyungoh@gmail.com>
-Date: Thu, 05 Feb 2015 04:59:10 +0000
-Subject: Re: [PATCH v10 4/6] devicetree: Add new SKY81452 backlight binding
-Message-Id: <20150205045910.GA4234@jack-ThinkPad-T520>
+From: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
+Date: Mon, 09 Feb 2015 12:55:53 +0000
+Subject: [PATCH] Trivial patch in efifb.c to solve common indent issue and indent error
+Message-Id: <20150209125548.GA27277@linuxteamdev.amer.dell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421994515-3070-1-git-send-email-jack.yoo@skyworksinc.com>
- <1421994515-3070-5-git-send-email-jack.yoo@skyworksinc.com>
- <CAL_JsqJHvpmBY4RDBWFA3RqQ9h_Yf25iSFxQe9oTNdSPybi87g@mail.gmail.com>
-In-Reply-To: <CAL_JsqJHvpmBY4RDBWFA3RqQ9h_Yf25iSFxQe9oTNdSPybi87g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jiri Kosina <trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, ktsai-GubuWUlQtMwciDkP5Hr2oA@public.gmane.org, hs-ynQEQJNshbs@public.gmane.org, "Opensource [Steve Twiss]" <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, matti.vaittinen-OYasijW0DpE@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Heiko =?utf-8?Q?St=C3=BCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Shawn Guo <shawn.guo-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Florian Vaussard <florian.vaussard-p8DiymsW2f8@public.gmane.org>, Andrew Lunn <andrew@l>
+To: pjones-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Wed, Feb 04, 2015 at 09:11:22AM -0600, Rob Herring wrote:
-> On Fri, Jan 23, 2015 at 12:28 AM,  <gyungoh@gmail.com> wrote:
-> > From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> >
-> > Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> > Acked-by: Bryan Wu <cooloney@gmail.com>
-> > ---
-> > Changes v10:
-> > Nothing
-> >
-> > Changes v9:
-> > Nothing
-> >
-> > Changes v8:
-> > Renamed property names for backlight with vendor prefix
-> > Modified gpio-enable property to generic property for GPIO
-> > Made up the example for backlight DT
-> >
-> > Changes v7:
-> > Nothing
-> >
-> > Changes v6:
-> > Nothing
-> >
-> > Changes v5:
-> > Nothing
-> >
-> > Changes v4:
-> > Nothing
-> >
-> > Changes v3:
-> > Nothing
-> >
-> > Changes v2:
-> > Added reg attribute for I2C slave address
-> 
-> You did? Where is it?
+Hi All,
 
-It was just changes on version 2.
-Since that version, the patch series was separted.
+Please review this patch.
+this patch is aimed to solve some indentation issue. It has also solved
+three trivial error in efifb.c file.
 
-> 
-> >  .../video/backlight/sky81452-backlight.txt         | 29 ++++++++++++++++++++++
-> >  1 file changed, 29 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
-> >
-> > diff --git a/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt b/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
-> > new file mode 100644
-> > index 0000000..8daebf5
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
-> > @@ -0,0 +1,29 @@
-> > +SKY81452-backlight bindings
-> > +
-> > +Required properties:
-> > +- compatible           : Must be "skyworks,sky81452-backlight"
-> > +
-> > +Optional properties:
-> > +- name                 : Name of backlight device. Default is 'lcd-backlight'.
-> > +- gpios                        : GPIO to use to EN pin.
-> > +                       See Documentation/devicetree/bindings/gpio/gpio.txt
-> > +- skyworks,en-channels : Enable mask for current sink channel 1 to 6.
-> 
-> Does led-sources property being added in 3.20 work for this?
+And I have also changed printk with pr_err, pr_info ... at respective places.
 
-I think so. I will modify it.
 
-> 
-> > +- skyworks,ignore-pwm  : Ignore both PWM input
-> > +- skyworks,dpwm-mode   : Enable DPWM dimming mode, otherwise Analog dimming.
-> > +- skyworks,phase-shift : Enable phase shift mode
-> > +- skyworks,ovp-level   : Over-voltage protection level.
-> > +                       Should be between 14 or 28V.
-> 
-> Please append units (-volt)
+From c49139fac1d15fe2da80d06e2a79eb8be7c079a7 Mon Sep 17 00:00:00 2001
+From: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
+Date: Mon, 9 Feb 2015 07:33:59 -0500
+Subject: [PATCH] Trival patch: improved indentation, and removed some ERROR
+ from code
 
-I will append it and resubmit the patch.
+Signed-off-by: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
+---
+ drivers/video/fbdev/efifb.c | 158 +++++++++++++++++++++++---------------------
+ 1 file changed, 84 insertions(+), 74 deletions(-)
 
-Thanks.
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 4bfff34..5c03035 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -17,29 +17,28 @@
+ #include <video/vga.h>
+ #include <asm/sysfb.h>
 
-> 
-> > +- skyworks,short-detection-threshold   : It should be one of 4, 5, 6 and 7V.
-> 
-> Please append units (-volt)
-> 
-> > +- skyworks,current-limit       : It should be 2300mA or 2750mA.
-> 
-> Please append units (-mA)
-> 
-> > +
-> > +Example:
-> > +
-> > +       backlight {
-> > +               compatible = "skyworks,sky81452-backlight";
-> > +               name = "pwm-backlight";
-> > +               skyworks,en-channels = <0x3f>;
-> > +               skyworks,ignore-pwm;
-> > +               skyworks,phase-shift;
-> > +               skyworks,ovp-level = <20>;
-> > +               skyworks,current-limit = <2300>;
-> > +       };
-> > --
-> > 1.9.1
-> >
+-static bool request_mem_succeeded = false;
++static bool request_mem_succeeded;
+
+ static struct fb_var_screeninfo efifb_defined = {
+-       .activate               = FB_ACTIVATE_NOW,
+-       .height                 = -1,
+-       .width                  = -1,
+-       .right_margin           = 32,
+-       .upper_margin           = 16,
+-       .lower_margin           = 4,
+-       .vsync_len              = 4,
+-       .vmode                  = FB_VMODE_NONINTERLACED,
++       .activate = FB_ACTIVATE_NOW,
++       .height = -1,
++       .width = -1,
++       .right_margin = 32,
++       .upper_margin = 16,
++       .lower_margin = 4,
++       .vsync_len = 4,
++       .vmode = FB_VMODE_NONINTERLACED,
+ };
+
+ static struct fb_fix_screeninfo efifb_fix = {
+-       .id                     = "EFI VGA",
+-       .type                   = FB_TYPE_PACKED_PIXELS,
+-       .accel                  = FB_ACCEL_NONE,
+-       .visual                 = FB_VISUAL_TRUECOLOR,
++       .id = "EFI VGA",
++       .type = FB_TYPE_PACKED_PIXELS,
++       .accel = FB_ACCEL_NONE,
++       .visual = FB_VISUAL_TRUECOLOR,
+ };
+ static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
+-                          unsigned blue, unsigned transp,
+-                          struct fb_info *info)
++                          unsigned blue, unsigned transp, struct fb_info *info)
+ {
+        /*
+         *  Set a single color register. The values supplied are
+@@ -52,13 +51,13 @@ static int efifb_setcolreg(unsigned regno, unsigned red,
+unsigned green,
+                return 1;
+
+        if (regno < 16) {
+-               red   >>= 8;
++               red >>= 8;
+                green >>= 8;
+-               blue  >>= 8;
+-               ((u32 *)(info->pseudo_palette))[regno] -                       (red   << info->var.red.offset)   |
+-                       (green << info->var.green.offset) |
+-                       (blue  << info->var.blue.offset);
++               blue >>= 8;
++               ((u32 *) (info->pseudo_palette))[regno] +                   (red << info->var.red.offset) |
++                   (green << info->var.green.offset) |
++                   (blue << info->var.blue.offset);
+        }
+        return 0;
+ }
+@@ -74,12 +73,12 @@ static void efifb_destroy(struct fb_info *info)
+ }
+
+ static struct fb_ops efifb_ops = {
+-       .owner          = THIS_MODULE,
+-       .fb_destroy     = efifb_destroy,
+-       .fb_setcolreg   = efifb_setcolreg,
+-       .fb_fillrect    = cfb_fillrect,
+-       .fb_copyarea    = cfb_copyarea,
+-       .fb_imageblit   = cfb_imageblit,
++       .owner = THIS_MODULE,
++       .fb_destroy = efifb_destroy,
++       .fb_setcolreg = efifb_setcolreg,
++       .fb_fillrect = cfb_fillrect,
++       .fb_copyarea = cfb_copyarea,
++       .fb_imageblit = cfb_imageblit,
+ };
+
+ static int efifb_setup(char *options)
+@@ -89,25 +88,35 @@ static int efifb_setup(char *options)
+
+        if (options && *options) {
+                while ((this_opt = strsep(&options, ",")) != NULL) {
+-                       if (!*this_opt) continue;
++                       if (!*this_opt)
++                               continue;
+
+                        for (i = 0; i < M_UNKNOWN; i++) {
+                                if (efifb_dmi_list[i].base != 0 &&
+-                                   !strcmp(this_opt,
+efifb_dmi_list[i].optname)) {
+-                                       screen_info.lfb_base efifb_dmi_list[i].base;
+-                                       screen_info.lfb_linelength efifb_dmi_list[i].stride;
+-                                       screen_info.lfb_width efifb_dmi_list[i].width;
+-                                       screen_info.lfb_height efifb_dmi_list[i].height;
++                                   !strcmp(this_opt,
++                                           efifb_dmi_list[i].optname)) {
++                                       screen_info.lfb_base +                                           efifb_dmi_list[i].base;
++                                       screen_info.lfb_linelength +                                           efifb_dmi_list[i].stride;
++                                       screen_info.lfb_width +                                           efifb_dmi_list[i].width;
++                                       screen_info.lfb_height +                                           efifb_dmi_list[i].height;
+                                }
+                        }
+                        if (!strncmp(this_opt, "base:", 5))
+-                               screen_info.lfb_base simple_strtoul(this_opt+5, NULL, 0);
++                               screen_info.lfb_base +                                   simple_strtoul(this_opt + 5, NULL, 0);
+                        else if (!strncmp(this_opt, "stride:", 7))
+-                               screen_info.lfb_linelength simple_strtoul(this_opt+7, NULL, 0) * 4;
++                               screen_info.lfb_linelength +                                   simple_strtoul(this_opt + 7, NULL, 0) * 4;
+                        else if (!strncmp(this_opt, "height:", 7))
+-                               screen_info.lfb_height simple_strtoul(this_opt+7, NULL, 0);
++                               screen_info.lfb_height +                                   simple_strtoul(this_opt + 7, NULL, 0);
+                        else if (!strncmp(this_opt, "width:", 6))
+-                               screen_info.lfb_width simple_strtoul(this_opt+6, NULL, 0);
++                               screen_info.lfb_width +                                   simple_strtoul(this_opt + 6, NULL, 0);
+                }
+        }
+
+@@ -142,10 +151,10 @@ static int efifb_probe(struct platform_device *dev)
+        if (!screen_info.pages)
+                screen_info.pages = 1;
+        if (!screen_info.lfb_base) {
+-               printk(KERN_DEBUG "efifb: invalid framebuffer address\n");
++               pr_err("efifb: invalid framebuffer address\n");
+                return -ENODEV;
+        }
+-       printk(KERN_INFO "efifb: probing for efifb\n");
++       pr_info("efifb: probing for efifb\n");
+
+        /* just assume they're all unset if any are */
+        if (!screen_info.blue_size) {
+@@ -181,7 +190,7 @@ static int efifb_probe(struct platform_device *dev)
+         *                 use for efifb.  With modern cards it is no
+         *                 option to simply use size_total as that
+         *                 wastes plenty of kernel address space. */
+-       size_remap  = size_vmode * 2;
++       size_remap = size_vmode * 2;
+        if (size_remap > size_total)
+                size_remap = size_total;
+        if (size_remap % PAGE_SIZE)
+@@ -193,14 +202,14 @@ static int efifb_probe(struct platform_device *dev)
+        } else {
+                /* We cannot make this fatal. Sometimes this comes from magic
+                   spaces our resource handlers simply don't know about */
+-               printk(KERN_WARNING
++               pr_warn(
+                       "efifb: cannot reserve video memory at 0x%lx\n",
+-                       efifb_fix.smem_start);
++                      efifb_fix.smem_start);
+        }
+
+        info = framebuffer_alloc(sizeof(u32) * 16, &dev->dev);
+        if (!info) {
+-               printk(KERN_ERR "efifb: cannot allocate framebuffer\n");
++               pr_err("efifb: cannot allocate framebuffer\n");
+                err = -ENOMEM;
+                goto err_release_mem;
+        }
+@@ -216,46 +225,46 @@ static int efifb_probe(struct platform_device *dev)
+        info->apertures->ranges[0].base = efifb_fix.smem_start;
+        info->apertures->ranges[0].size = size_remap;
+
+-       info->screen_base = ioremap_wc(efifb_fix.smem_start,
+efifb_fix.smem_len);
++       info->screen_base +           ioremap_wc(efifb_fix.smem_start, efifb_fix.smem_len);
+        if (!info->screen_base) {
+-               printk(KERN_ERR "efifb: abort, cannot ioremap video memory "
+-                               "0x%x @ 0x%lx\n",
+-                       efifb_fix.smem_len, efifb_fix.smem_start);
++               pr_err("efifb: abort, cannot ioremap video memory "
++                      "0x%x @ 0x%lx\n",
++                      efifb_fix.smem_len, efifb_fix.smem_start);
+                err = -EIO;
+                goto err_release_fb;
+        }
+
+-       printk(KERN_INFO "efifb: framebuffer at 0x%lx, mapped to 0x%p, "
++       pr_info("efifb: framebuffer at 0x%lx, mapped to 0x%p, "
+               "using %dk, total %dk\n",
+               efifb_fix.smem_start, info->screen_base,
+-              size_remap/1024, size_total/1024);
+-       printk(KERN_INFO "efifb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
++              size_remap / 1024, size_total / 1024);
++       pr_info("efifb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
+               efifb_defined.xres, efifb_defined.yres,
+               efifb_defined.bits_per_pixel, efifb_fix.line_length,
+               screen_info.pages);
+
+        efifb_defined.xres_virtual = efifb_defined.xres;
+-       efifb_defined.yres_virtual = efifb_fix.smem_len /
+-                                       efifb_fix.line_length;
+-       printk(KERN_INFO "efifb: scrolling: redraw\n");
++       efifb_defined.yres_virtual = efifb_fix.smem_len / efifb_fix.line_length;
++       pr_info("efifb: scrolling: redraw\n");
+        efifb_defined.yres_virtual = efifb_defined.yres;
+
+        /* some dummy values for timing to make fbset happy */
+-       efifb_defined.pixclock     = 10000000 / efifb_defined.xres *
+-                                       1000 / efifb_defined.yres;
+-       efifb_defined.left_margin  = (efifb_defined.xres / 8) & 0xf8;
+-       efifb_defined.hsync_len    = (efifb_defined.xres / 8) & 0xf8;
+-
+-       efifb_defined.red.offset    = screen_info.red_pos;
+-       efifb_defined.red.length    = screen_info.red_size;
+-       efifb_defined.green.offset  = screen_info.green_pos;
+-       efifb_defined.green.length  = screen_info.green_size;
+-       efifb_defined.blue.offset   = screen_info.blue_pos;
+-       efifb_defined.blue.length   = screen_info.blue_size;
++       efifb_defined.pixclock = 10000000 / efifb_defined.xres *
++           1000 / efifb_defined.yres;
++       efifb_defined.left_margin = (efifb_defined.xres / 8) & 0xf8;
++       efifb_defined.hsync_len = (efifb_defined.xres / 8) & 0xf8;
++
++       efifb_defined.red.offset = screen_info.red_pos;
++       efifb_defined.red.length = screen_info.red_size;
++       efifb_defined.green.offset = screen_info.green_pos;
++       efifb_defined.green.length = screen_info.green_size;
++       efifb_defined.blue.offset = screen_info.blue_pos;
++       efifb_defined.blue.length = screen_info.blue_size;
+        efifb_defined.transp.offset = screen_info.rsvd_pos;
+        efifb_defined.transp.length = screen_info.rsvd_size;
+
+-       printk(KERN_INFO "efifb: %s: "
++       pr_info("efifb: %s: "
+               "size=%d:%d:%d:%d, shift=%d:%d:%d:%d\n",
+               "Truecolor",
+               screen_info.rsvd_size,
+@@ -264,10 +273,9 @@ static int efifb_probe(struct platform_device *dev)
+               screen_info.blue_size,
+               screen_info.rsvd_pos,
+               screen_info.red_pos,
+-              screen_info.green_pos,
+-              screen_info.blue_pos);
++              screen_info.green_pos, screen_info.blue_pos);
+
+-       efifb_fix.ypanstep  = 0;
++       efifb_fix.ypanstep = 0;
+        efifb_fix.ywrapstep = 0;
+
+        info->fbops = &efifb_ops;
+@@ -275,12 +283,14 @@ static int efifb_probe(struct platform_device *dev)
+        info->fix = efifb_fix;
+        info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
+
+-       if ((err = fb_alloc_cmap(&info->cmap, 256, 0)) < 0) {
+-               printk(KERN_ERR "efifb: cannot allocate colormap\n");
++       err = fb_alloc_cmap(&info->cmap, 256, 0);
++       if ((err < 0) {
++               pr_err("efifb: cannot allocate colormap\n");
+                goto err_unmap;
+        }
+-       if ((err = register_framebuffer(info)) < 0) {
+-               printk(KERN_ERR "efifb: cannot register framebuffer\n");
++       err = register_framebuffer(info);
++       if (err < 0) {
++               pr_err("efifb: cannot register framebuffer\n");
+                goto err_fb_dealoc;
+        }
+        fb_info(info, "%s frame buffer device\n", info->fix.id);
+@@ -310,8 +320,8 @@ static int efifb_remove(struct platform_device *pdev)
+
+ static struct platform_driver efifb_driver = {
+        .driver = {
+-               .name = "efi-framebuffer",
+-       },
++                  .name = "efi-framebuffer",
++                  },
+        .probe = efifb_probe,
+        .remove = efifb_remove,
+ };
+--
+1.9.3
+
+

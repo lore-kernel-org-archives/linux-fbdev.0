@@ -1,51 +1,94 @@
-From: Kevin Hao <haokexin@gmail.com>
-Date: Thu, 26 Feb 2015 12:08:14 +0000
-Subject: [PATCH v2 02/11] fbdev: aty128fb: replace PPC_OF with PPC
-Message-Id: <1424952503-8247-3-git-send-email-haokexin@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 11 Feb 2015 15:45:10 +0000
+Subject: [bug report] potential memory corruption in intelfb_cursor()
+Message-Id: <20150211154510.GA31554@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-The PPC_OF is a ppc specific option which is used to mean that the
-firmware device tree access functions are available. Since all the
-ppc platforms have a device tree, it is aways set to 'y' for ppc.
-So it makes no sense to keep a such option in the current kernel.
-Replace it with PPC.
+Some static checker stuff I'm working on complains:
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
-v2: No change.
+	drivers/video/fbdev/intelfb/intelfbdrv.c:1678 intelfb_cursor()
+	error: overflow detected.  __memcpy() 'dinfo->cursor_src' is 64
+	       bytes.  limit = '1-128'
 
- drivers/video/fbdev/aty/aty128fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+The math here is:
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index aedf2fbf9bf6..0156954bf340 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -965,7 +965,7 @@ static void __iomem *aty128_find_mem_vbios(struct aty128fb_par *par)
- /* fill in known card constants if pll_block is not available */
- static void aty128_timings(struct aty128fb_par *par)
- {
--#ifdef CONFIG_PPC_OF
-+#ifdef CONFIG_PPC
- 	/* instead of a table lookup, assume OF has properly
- 	 * setup the PLL registers and use their values
- 	 * to set the XCLK values and reference divider values */
-@@ -979,7 +979,7 @@ static void aty128_timings(struct aty128fb_par *par)
- 	if (!par->constants.ref_clk)
- 		par->constants.ref_clk = 2950;
- 
--#ifdef CONFIG_PPC_OF
-+#ifdef CONFIG_PPC
- 	x_mpll_ref_fb_div = aty_ld_pll(X_MPLL_REF_FB_DIV);
- 	xclk_cntl = aty_ld_pll(XCLK_CNTL) & 0x7;
- 	Nx = (x_mpll_ref_fb_div & 0x00ff00) >> 8;
--- 
-1.9.3
+	size = cursor->image.width / 8 * cursor->image.height;
 
+Since the limit for ".width" and ".height" is 32x32 then
+"32 / 4 * 32 = 128" but 128 is more than the sizeof(dinfo->cursor_src)
+so it creates a buffer overflow warning.
+
+I believe that Smatch is getting 32 as the max size from the tests in
+con_font_set().
+
+drivers/video/fbdev/intelfb/intelfbdrv.c
+
+  1632          if (cursor->set & FB_CUR_SETSIZE) {
+  1633                  if (cursor->image.width > 64 || cursor->image.height > 64)
+
+Here the limit is assumed to be 64 which would make the overflow worse
+than the 32 limit mentioned earlier.
+
+  1634                          return -ENXIO;
+  1635  
+  1636                  intelfbhw_cursor_reset(dinfo);
+  1637          }
+  1638  
+  1639          if (cursor->set & FB_CUR_SETCMAP) {
+  1640                  u32 fg, bg;
+  1641  
+  1642                  if (dinfo->depth != 8) {
+  1643                          fg = dinfo->pseudo_palette[cursor->image.fg_color];
+  1644                          bg = dinfo->pseudo_palette[cursor->image.bg_color];
+  1645                  } else {
+  1646                          fg = cursor->image.fg_color;
+  1647                          bg = cursor->image.bg_color;
+  1648                  }
+  1649  
+  1650                  intelfbhw_cursor_setcolor(dinfo, bg, fg);
+  1651          }
+  1652  
+  1653          if (cursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
+  1654                  u32 s_pitch = (ROUND_UP_TO(cursor->image.width, 8) / 8);
+  1655                  u32 size = s_pitch * cursor->image.height;
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Size is calculated here.
+
+  1656                  u8 *dat = (u8 *) cursor->image.data;
+  1657                  u8 *msk = (u8 *) cursor->mask;
+  1658                  u8 src[64];
+  1659                  u32 i;
+  1660  
+  1661                  if (cursor->image.depth != 1)
+  1662                          return -ENXIO;
+  1663  
+  1664                  switch (cursor->rop) {
+  1665                  case ROP_XOR:
+  1666                          for (i = 0; i < size; i++)
+  1667                                  src[i] = dat[i] ^ msk[i];
+  1668                          break;
+  1669                  case ROP_COPY:
+  1670                  default:
+  1671                          for (i = 0; i < size; i++)
+  1672                                  src[i] = dat[i] & msk[i];
+  1673                          break;
+  1674                  }
+  1678                  memcpy(dinfo->cursor_src, src, size);
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is what Smatch complains about.  The source and dest are 64 bytes
+each but it says the user can specify a size which is 128 bytes.
+
+  1679  
+  1680                  intelfbhw_cursor_load(dinfo, cursor->image.width,
+  1681                                        cursor->image.height, src);
+  1682          }
+
+I am a newbie to this code so I don't know if the warning is real or not
+or how to fix it.  Sorry.
+
+regards,
+dan carpenter

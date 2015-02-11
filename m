@@ -1,57 +1,193 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Thu, 12 Feb 2015 21:11:28 +0000
-Subject: gxt4500 on x86 (Fire GL2)
-Message-Id: <201502122211.28752.linux@rainbow-software.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 11 Feb 2015 09:35:54 +0000
+Subject: [GIT PULL] fbdev changes for 3.20
+Message-Id: <54DB227A.8090409@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="GweXTj9K07Q2xgcOBHN4vI2r1vCE1nQhP"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Hello,
-I'm trying to get gxt4500 driver to work on x86 with Diamond/ATI Fire GL2 AGP
-card:
-01:00.0 VGA compatible controller [0300]: IBM GXT6000P Graphics Adapter [1014:0170] (rev 02) (prog-if 00 [VGA controller])
-        Subsystem: Diamond Multimedia Systems Fire GL2 [1092:0172]
-        Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B+ DisINTx-
-        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Interrupt: pin A routed to IRQ 16
-        Region 0: Memory at f5000000 (32-bit, non-prefetchable) [size8K]
-        Region 1: Memory at f0000000 (32-bit, non-prefetchable) [sizedM]
-        [virtual] Expansion ROM at 30000000 [disabled] [size%6K]
-        Capabilities: [60] Power Management version 0
-                Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [70] AGP version 2.0
-                Status: RQ2 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x1,x2,x4
-                Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- Rate=x1
-        Kernel driver in use: gxt4500
+--GweXTj9K07Q2xgcOBHN4vI2r1vCE1nQhP
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-After patching Kconfig, the driver compiled but does not work - monitor shows
-no signal after driver load. Realized that PPC is big-endian while x86 is
-little-endian and there are no endian conversions in the driver so did this:
+Hi Linus,
 
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -137,8 +137,8 @@ static const unsigned char watfmt[] = {
- /* Colormap array; 1k entries of 4 bytes each */
- #define CMAP                   0x6000
+Please pull fbdev changes for 3.20.
 
--#define readreg(par, reg)      readl((par)->regs + (reg))
--#define writereg(par, reg, val)        writel((val), (par)->regs + (reg))
-+#define readreg(par, reg)      be32_to_cpu(readl((par)->regs + (reg)))
-+#define writereg(par, reg, val)        writel(cpu_to_be32(val), (par)->regs + (reg))
+ Tomi
 
- struct gxt4500_par {
-        void __iomem *regs;
+The following changes since commit eaa27f34e91a14cdceed26ed6c6793ec1d1861=
+15:
+
+  linux 3.19-rc4 (2015-01-11 12:44:53 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-3.20
+
+for you to fetch changes up to d6c2152b3efd73be265f426b5a1bb50ec436d999:
+
+  Merge branches '3.20/fbdev' and '3.20/omapdss' into for-next (2015-02-0=
+4 12:44:11 +0200)
+
+----------------------------------------------------------------
+fbdev changes for v3.20
+
+* omapdss: add DRA7xxx SoC support
+* fbdev: support DMT (Display Monitor Timing) calculation
+
+----------------------------------------------------------------
+Arnd Bergmann (2):
+      fb: via: turn gpiolib and i2c selects into dependencies
+      video/mmpfb: allow modular build
+
+Asaf Vertz (1):
+      fbdev: vgastate: remove trailing whitespaces
+
+David Ung (4):
+      video: fbdev: Add additional vesa modes
+      video: fbdev: Check Standard Timing against DMT
+      video: fbdev: Validate mode timing against monspec
+      video: fbdev: Fix sparse warning messages
+
+Geert Uytterhoeven (2):
+      console/dummy: Move screen size selection from CPP to Kconfig
+      video: Drop superfluous "select VT_HW_CONSOLE_BINDING"
+
+Lad, Prabhakar (2):
+      fbdev: ssd1307fb: drop unused function ssd1307fb_write_data()
+      fbdev: ssd1307fb: set default height if not found in DT node
+
+Mans Rullgard (1):
+      video: fbdev: fix sys_copyarea
+
+Marek Belisko (2):
+      video: omapdss: Add opa362 driver
+      Documentation: DT: Add documentation for ti,opa362 bindings
+
+Mathias Krause (1):
+      atyfb: mark DMI system id table as __initconst
+
+Peter Meerwald (1):
+      omapfb: Return error code when applying overlay settings fails
+
+Prabhakar Lad (1):
+      fbdev: ssd1307fb: return proper error code if write command fails
+
+Qiang Chen (1):
+      video: ocfb: Fix data type warning
+
+Rasmus Villemoes (1):
+      fbdev: omap2: Fix typo in tvc_probe_pdata
+
+Scot Doyle (1):
+      fbcon: Remove unused vblank cursor code
+
+Sudip Mukherjee (5):
+      fbdev: geocode: remove unneeded NULL check
+      fbdev: geocode: remove unneeded NULL check
+      fbdev: savage: remove unused variable
+      video: vt8500lcdfb: remove unneeded continue
+      video: hgafb: remove unneeded comparison
+
+Tomi Valkeinen (16):
+      fbdev: fix CVT vertical front and back porch values
+      OMAPDSS: Add enum dss_pll_id
+      OMAPDSS: PLL: add dss_pll_wait_reset_done()
+      OMAPDSS: constify port arrays
+      OMAPDSS: OMAP5: fix digit output's allowed mgrs
+      OMAPDSS: encoder-tpd12s015: Fix race issue with LS_OE
+      OMAPDSS: add define for DRA7xx HW version
+      Doc/DT: Add DT binding doc for DRA7xx DSS
+      OMAPDSS: DSS: Add DRA7xx base support
+      OMAPDSS: Add functions for external control of PLL
+      OMAPDSS: Add Video PLLs for DRA7xx
+      OMAPDSS: DISPC: Add DRA7xx support
+      OMAPDSS: DISPC: program dispc polarities to control module
+      OMAPDSS: HDMI: Add DRA7xx support
+      OMAPDSS: DPI: DRA7xx support
+      Merge branches '3.20/fbdev' and '3.20/omapdss' into for-next
+
+ .../devicetree/bindings/video/ti,dra7-dss.txt      |  69 +++++
+ .../devicetree/bindings/video/ti,opa362.txt        |  38 +++
+ drivers/video/console/Kconfig                      |  16 +-
+ drivers/video/console/dummycon.c                   |   5 +-
+ drivers/video/console/fbcon.c                      |   4 -
+ drivers/video/fbdev/Kconfig                        |   5 +-
+ drivers/video/fbdev/aty/atyfb_base.c               |   9 +-
+ drivers/video/fbdev/core/fbcvt.c                   |   6 +-
+ drivers/video/fbdev/core/fbmon.c                   | 103 ++++----
+ drivers/video/fbdev/core/modedb.c                  | 111 ++++++++
+ drivers/video/fbdev/core/syscopyarea.c             | 137 +++++-----
+ drivers/video/fbdev/geode/gx1fb_core.c             |   6 +-
+ drivers/video/fbdev/geode/gxfb_core.c              |   6 +-
+ drivers/video/fbdev/geode/lxfb_core.c              |   6 +-
+ drivers/video/fbdev/hgafb.c                        |   3 +-
+ drivers/video/fbdev/mmp/Makefile                   |   4 +-
+ drivers/video/fbdev/mmp/fb/Kconfig                 |   2 +-
+ drivers/video/fbdev/ocfb.c                         |   2 +-
+ drivers/video/fbdev/omap2/displays-new/Kconfig     |   6 +
+ drivers/video/fbdev/omap2/displays-new/Makefile    |   1 +
+ .../fbdev/omap2/displays-new/connector-analog-tv.c |   2 +-
+ .../fbdev/omap2/displays-new/encoder-opa362.c      | 285 +++++++++++++++=
+++++++
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   |  57 +----
+ drivers/video/fbdev/omap2/dss/Makefile             |   2 +-
+ drivers/video/fbdev/omap2/dss/dispc.c              |  54 ++++
+ drivers/video/fbdev/omap2/dss/dpi.c                |  26 ++
+ drivers/video/fbdev/omap2/dss/dsi.c                |   1 +
+ drivers/video/fbdev/omap2/dss/dss.c                | 219 +++++++++++++++=
+-
+ drivers/video/fbdev/omap2/dss/dss.h                |  22 ++
+ drivers/video/fbdev/omap2/dss/dss_features.c       |   3 +-
+ drivers/video/fbdev/omap2/dss/hdmi5.c              |   1 +
+ drivers/video/fbdev/omap2/dss/hdmi_phy.c           |   1 +
+ drivers/video/fbdev/omap2/dss/hdmi_pll.c           |   6 +
+ drivers/video/fbdev/omap2/dss/omapdss-boot-init.c  |   1 +
+ drivers/video/fbdev/omap2/dss/pll.c                |  10 +
+ drivers/video/fbdev/omap2/dss/video-pll.c          | 211 +++++++++++++++=
+
+ drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c    |   7 +-
+ drivers/video/fbdev/savage/savagefb.h              |  12 +-
+ drivers/video/fbdev/ssd1307fb.c                    |  86 ++++---
+ drivers/video/fbdev/vt8500lcdfb.c                  |   4 +-
+ drivers/video/vgastate.c                           |  82 +++---
+ include/linux/fb.h                                 |  12 +-
+ include/video/omapdss.h                            |   1 +
+ 43 files changed, 1342 insertions(+), 302 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/ti,dra7-dss.t=
+xt
+ create mode 100644 Documentation/devicetree/bindings/video/ti,opa362.txt=
+
+ create mode 100644 drivers/video/fbdev/omap2/displays-new/encoder-opa362=
+=2Ec
+ create mode 100644 drivers/video/fbdev/omap2/dss/video-pll.c
 
 
-But nothing changed, still no signal. Any ideas?
+--GweXTj9K07Q2xgcOBHN4vI2r1vCE1nQhP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-I was able to get the ancient fgl23 driver (from AMD web site) to work by
-installing Debian Woody to a small partition. It's not very useful today but
-it might be possible to dump the chip's registers and compare with gxt4500.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
--- 
-Ondrej Zary
+iQIcBAEBAgAGBQJU2yJ6AAoJEPo9qoy8lh71sA4P/jXUVG11ZzZPE91JjrqAtmrw
+l0S3FIFC4Nhy3jjzLYTKuMGrKazZrxO7gtBzZSUfXborDuKExnfbgSWFNl6LWS8j
+EHW4BOkuPd3UqriC2VcUWm5mSH3yYIHhCK88i9jMDt2ZWQ+U0CmmX0QG8/ItHNdw
+RvIl73M8vrr5OBpaU//ilyuNbR98MyoBIIC1CpVCzSoXEFwXOUF6BgStqzmsl0SC
++hJPI4/RDcc1LiBxk1rfccJk29ePV5GsSJfl0kv2X9fSHxSAlq92OVXIkaEXRjV1
+71f5N7/0aZuyBtzsEQZJiVdkB1p6PIADLzbhTgFnLLNulBYBzs4ExdXzYovghrab
+K/BHol4sFc5GteSAHz8UUuP2TEW6UTv2lttTcWWNWawSoP6joJmJOR7P6GxzE9rs
+lPdf8BImUMpTo2mTEuGH3eW5WX7HY55otVBI7+GzXSVVfjOI9LKEGWqw8s1j8XzI
+rKDPJ9pokWN7WwzT177ovv/i7XaeLTGwtPEEFNej+ibusO4ytq25kpxHbU2oKksN
+E6oJDgxTZwk7nVJn1PLPejuu4tYLvCfyWecBRkTJqbiwxyB3SsNlxKvwc16FsCSZ
+jOTg6FntqM9OGBbp4F+AmdAWnGlsT0MffN9/u+ncbIGTj2l9mNFUEUagWeHk0YTY
+LcaWpFfwTQTDexEG1c1/
+=blvg
+-----END PGP SIGNATURE-----
+
+--GweXTj9K07Q2xgcOBHN4vI2r1vCE1nQhP--

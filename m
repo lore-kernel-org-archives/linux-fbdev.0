@@ -1,28 +1,51 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 24 Feb 2015 05:58:27 +0000
-Subject: Re: [PATCH] staging/sm7xxfb: Make 'struct vgamode' static
-Message-Id: <20150224054627.GA3371@sudip-PC>
+From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
+Date: Wed, 11 Feb 2015 18:01:59 +0000
+Subject: Odp: [PATCH 1/4] tridentfb: fix hang on Blade3D with CONFIG_CC_OPTIMIZE_FOR_SIZE
+Message-Id: <54db991773b425.52528287@wp.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424690176-7966-1-git-send-email-peter.senna@gmail.com>
-In-Reply-To: <1424690176-7966-1-git-send-email-peter.senna@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Peter Senna Tschudin <peter.senna@gmail.com>
-Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Mon, Feb 23, 2015 at 12:16:16PM +0100, Peter Senna Tschudin wrote:
-> sparse was complaining that symbol 'vgamode' was not declared.
-> 
-> Declaring vgamode as static.
-a similar patch has already been sent to Greg, which is not yet applied.
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-regards
-sudip
-
-> 
-> Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+Dnia Sobota, 7 Lutego 2015 21:53 Ondrej Zary <linux@rainbow-software.org> n=
+apisa=B3(a)=20
+> When the kernel is compiled with -Os (CONFIG_CC_OPTIMIZE_FOR_SIZE), tride=
+ntfb
+> hangs the machine upon load with Blade3D cards unless acceleration is dis=
+abled.
+>=20
+> This is caused by memcpy() which copies data byte-by-byte (rep movsb) when
+> compiled with -Os. The card does not like that - it requires 32-bit acces=
+s.
+>=20
+> Use iowrite_32() instead.
+>=20
+> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 > ---
-> -- 
-> 2.1.0
-> 
+>  drivers/video/fbdev/tridentfb.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/triden=
+tfb.c
+> index 7ed9a22..7429713 100644
+> --- a/drivers/video/fbdev/tridentfb.c
+> +++ b/drivers/video/fbdev/tridentfb.c
+> @@ -226,7 +226,7 @@ static void blade_image_blit(struct tridentfb_par *pa=
+r, const char *data,
+>  	writemmr(par, DST1, point(x, y));
+>  	writemmr(par, DST2, point(x + w - 1, y + h - 1));
+> =20
+> -	memcpy(par->io_virt + 0x10000, data, 4 * size);
+> +	iowrite32_rep(par->io_virt + 0x10000, data, size);
+>  }
+> =20
+>  static void blade_copy_rect(struct tridentfb_par *par,
+> --=20
+> Ondrej Zary
+
+
+

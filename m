@@ -1,71 +1,69 @@
-From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Date: Wed, 25 Feb 2015 21:01:22 +0000
-Subject: [PATCH] video: ARM CLCD: Correcting timing checks for STN and TFT dispalys
-Message-Id: <1424898082-1522-4-git-send-email-arun.ramamurthy@broadcom.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sat, 14 Feb 2015 22:30:02 +0000
+Subject: [PATCH] gxt4500: enable on non-PPC architectures
+Message-Id: <1423953002-29182-1-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com>
-In-Reply-To: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Dmitry Torokhov <dtor@google.com>, Anatol Pomazau <anatol@google.com>, Jonathan Richardson <jonathar@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-The minimum values for timing parameters such as left margin,
-right margin etc are different for STN and TFT dispalys.
-This commit fixes a check that does not account for
-this difference.
+These chips can be present at least on x86 too - Fire GL2 AGP has GXT6000P but
+this driver is currently limited to PPC.
+Enable it for all architectures and add chip configuration for little-endian.
 
-Reviewed-by: Ray Jui <rjui@broadcom.com>
-Reviewed-by: Scott Branden <sbranden@broadcom.com>
-Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Tested on x86 with Fire GL2 AGP.
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- include/linux/amba/clcd.h | 32 ++++++++++++++++++++++----------
- 1 file changed, 22 insertions(+), 10 deletions(-)
+ drivers/video/fbdev/Kconfig   |    5 +++--
+ drivers/video/fbdev/gxt4500.c |    7 +++++++
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/amba/clcd.h b/include/linux/amba/clcd.h
-index 6a3bc2d..0fe8a17 100644
---- a/include/linux/amba/clcd.h
-+++ b/include/linux/amba/clcd.h
-@@ -288,16 +288,28 @@ static inline int clcdfb_check(struct clcd_fb *fb, struct fb_var_screeninfo *var
- 	var->xres_virtual = var->xres = (var->xres + 15) & ~15;
- 	var->yres_virtual = var->yres = (var->yres + 1) & ~1;
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 08a7a04..cb15734 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2143,7 +2143,7 @@ config FB_UDL
  
--#define CHECK(e,l,h) (var->e < l || var->e > h)
--	if (CHECK(right_margin, (5+1), 256) ||	/* back porch */
--	    CHECK(left_margin, (5+1), 256) ||	/* front porch */
--	    CHECK(hsync_len, (5+1), 256) ||
--	    var->xres > 4096 ||
--	    var->lower_margin > 255 ||		/* back porch */
--	    var->upper_margin > 255 ||		/* front porch */
--	    var->vsync_len > 32 ||
--	    var->yres > 1024)
--		return -EINVAL;
-+#define CHECK(e, l, h) (var->e < l || var->e > h)
-+	if (!(fb->panel->cntl & CNTL_LCDTFT)) {
-+		if (CHECK(right_margin, (5+1), 256) ||	/* back porch */
-+		CHECK(left_margin, (5+1), 256) ||	/* front porch */
-+		CHECK(hsync_len, (5+1), 256) ||
-+		var->xres > 4096 ||
-+		var->lower_margin > 255 ||	/* back porch */
-+		var->upper_margin > 255 ||	/* front porch */
-+		var->vsync_len > 32 ||
-+		var->yres > 1024)
-+			return -EINVAL;
-+	} else {
-+		if (CHECK(right_margin, 1, 256) ||	/* back porch */
-+		CHECK(left_margin, 1, 256) ||	/* front porch */
-+		CHECK(hsync_len, 1, 256) ||
-+		var->xres > 4096 ||
-+		var->lower_margin > 255 ||	/* back porch */
-+		var->upper_margin > 255 ||	/* front porch */
-+		var->vsync_len > 32 ||
-+		var->yres > 1024)
-+			return -EINVAL;
-+	}
- #undef CHECK
+ config FB_IBM_GXT4500
+ 	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
+-	depends on FB && PPC
++	depends on FB
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -2151,7 +2151,8 @@ config FB_IBM_GXT4500
+ 	  Say Y here to enable support for the IBM GXT4000P/6000P and
+ 	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
+ 	  found on some IBM System P (pSeries) machines. This driver
+-	  doesn't use Geometry Engine GT1000.
++	  doesn't use Geometry Engine GT1000. This driver also supports
++	  AGP Fire GL2/3/4 cards on x86.
  
- 	/* single panel mode: PCD = max(PCD, 1) */
+ config FB_PS3
+ 	tristate "PS3 GPU framebuffer driver"
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 135d78a..1bf9894 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -670,8 +670,15 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	pci_set_drvdata(pdev, info);
+ 
++#ifdef __BIG_ENDIAN
+ 	/* Set byte-swapping for DFA aperture for all pixel sizes */
+ 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
++#else /* __LITTLE_ENDIAN */
++	/* not sure what this means but fgl23 driver does that */
++	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x2300);
++/*	pci_write_config_dword(pdev, CFG_ENDIAN0 + 4, 0x400000);*/
++	pci_write_config_dword(pdev, CFG_ENDIAN0 + 8, 0x98530000);
++#endif
+ 
+ 	info->fbops = &gxt4500_ops;
+ 	info->flags = FBINFO_FLAG_DEFAULT;
 -- 
-2.3.0
+Ondrej Zary
 

@@ -1,30 +1,36 @@
-From: huang lin <hl@rock-chips.com>
-Date: Thu, 26 Feb 2015 03:12:44 +0000
-Subject: [PATCH 0/2] backlight: pwm: Add backlight-boot-off property
-Message-Id: <1424920366-7626-1-git-send-email-hl@rock-chips.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 17 Feb 2015 22:33:51 +0000
+Subject: [PATCH 2/5] gxt4500: fix 16bpp 565 mode
+Message-Id: <1424212434-12614-2-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1424212434-12614-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1424212434-12614-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
-Cc: linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, huang lin <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
+Fix wrong colors in 16bpp 565 mode.
 
-Add backlight-boot-off property, so we can keeping the
-backlight disabled at boot until it is enabled implicitly
-by a panel driver, or explicitly by userspace
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+---
+ drivers/video/fbdev/gxt4500.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-
-huang lin (2):
-  Documentation: devicetree: add backlight-boot-off property in
-    pwm-backlight
-  backlight: pwm: Add backlight-boot-off property
-
- Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt | 1 +
- drivers/video/backlight/pwm_bl.c                                    | 4 ++++
- 2 files changed, 5 insertions(+)
-
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 1bf9894..1f2fd5b 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -525,7 +525,7 @@ static int gxt4500_setcolreg(unsigned int reg, unsigned int red,
+ 		u32 val = reg;
+ 		switch (par->pixfmt) {
+ 		case DFA_PIX_16BIT_565:
+-			val |= (reg << 11) | (reg << 6);
++			val |= (reg << 11) | (reg << 5);
+ 			break;
+ 		case DFA_PIX_16BIT_1555:
+ 			val |= (reg << 10) | (reg << 5);
 -- 
-1.9.1
+Ondrej Zary
 

@@ -1,120 +1,69 @@
-From: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
-Date: Thu, 26 Feb 2015 10:42:23 +0000
-Subject: [PATCH 1/3] Printk() is replaced with respective pr_* functions
-Message-Id: <20150226104215.GA20577@localhost.localdomain>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 17 Feb 2015 22:33:50 +0000
+Subject: [PATCH 1/5] gxt4500: enable on non-PPC architectures
+Message-Id: <1424212434-12614-1-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: pjones-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
-Cc: plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-This is a trivial patch. I am replacing printk() with respective pr_* functions.
+These chips can be present at least on x86 too - Fire GL2 AGP has GXT6000P but
+this driver is currently limited to PPC.
+Enable it for all architectures and add chip configuration for little-endian.
 
-Signed-off-by: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
+Tested on x86 with Fire GL2 AGP.
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- drivers/video/fbdev/efifb.c | 26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
+ drivers/video/fbdev/Kconfig   |    5 +++--
+ drivers/video/fbdev/gxt4500.c |    7 +++++++
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index 4bfff34..7557991 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -6,6 +6,8 @@
-  *
-  */
-
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -142,10 +144,10 @@ static int efifb_probe(struct platform_device *dev)
-        if (!screen_info.pages)
-                screen_info.pages = 1;
-        if (!screen_info.lfb_base) {
--               printk(KERN_DEBUG "efifb: invalid framebuffer address\n");
-+               pr_debug("invalid framebuffer address\n");
-                return -ENODEV;
-        }
--       printk(KERN_INFO "efifb: probing for efifb\n");
-+       pr_info("probing for efifb\n");
-
-        /* just assume they're all unset if any are */
-        if (!screen_info.blue_size) {
-@@ -193,14 +195,14 @@ static int efifb_probe(struct platform_device *dev)
-        } else {
-                /* We cannot make this fatal. Sometimes this comes from magic
-                   spaces our resource handlers simply don't know about */
--               printk(KERN_WARNING
--                      "efifb: cannot reserve video memory at 0x%lx\n",
-+               pr_warn(
-+                      "cannot reserve video memory at 0x%lx\n",
-                        efifb_fix.smem_start);
-        }
-
-        info = framebuffer_alloc(sizeof(u32) * 16, &dev->dev);
-        if (!info) {
--               printk(KERN_ERR "efifb: cannot allocate framebuffer\n");
-+               pr_err("cannot allocate framebuffer\n");
-                err = -ENOMEM;
-                goto err_release_mem;
-        }
-@@ -218,18 +220,18 @@ static int efifb_probe(struct platform_device *dev)
-
-        info->screen_base = ioremap_wc(efifb_fix.smem_start,
-efifb_fix.smem_len);
-        if (!info->screen_base) {
--               printk(KERN_ERR "efifb: abort, cannot ioremap video memory "
-+               pr_err("abort, cannot ioremap video memory "
-                                "0x%x @ 0x%lx\n",
-                        efifb_fix.smem_len, efifb_fix.smem_start);
-                err = -EIO;
-                goto err_release_fb;
-        }
-
--       printk(KERN_INFO "efifb: framebuffer at 0x%lx, mapped to 0x%p, "
-+       pr_info("framebuffer at 0x%lx, mapped to 0x%p, "
-               "using %dk, total %dk\n",
-               efifb_fix.smem_start, info->screen_base,
-               size_remap/1024, size_total/1024);
--       printk(KERN_INFO "efifb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
-+       pr_info("mode is %dx%dx%d, linelength=%d, pages=%d\n",
-               efifb_defined.xres, efifb_defined.yres,
-               efifb_defined.bits_per_pixel, efifb_fix.line_length,
-               screen_info.pages);
-@@ -237,7 +239,7 @@ static int efifb_probe(struct platform_device *dev)
-        efifb_defined.xres_virtual = efifb_defined.xres;
-        efifb_defined.yres_virtual = efifb_fix.smem_len /
-                                        efifb_fix.line_length;
--       printk(KERN_INFO "efifb: scrolling: redraw\n");
-+       pr_info("scrolling: redraw\n");
-        efifb_defined.yres_virtual = efifb_defined.yres;
-
-        /* some dummy values for timing to make fbset happy */
-@@ -255,7 +257,7 @@ static int efifb_probe(struct platform_device *dev)
-        efifb_defined.transp.offset = screen_info.rsvd_pos;
-        efifb_defined.transp.length = screen_info.rsvd_size;
-
--       printk(KERN_INFO "efifb: %s: "
-+       pr_info("%s: "
-               "size=%d:%d:%d:%d, shift=%d:%d:%d:%d\n",
-               "Truecolor",
-               screen_info.rsvd_size,
-@@ -276,11 +278,11 @@ static int efifb_probe(struct platform_device *dev)
-        info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
-
-        if ((err = fb_alloc_cmap(&info->cmap, 256, 0)) < 0) {
--               printk(KERN_ERR "efifb: cannot allocate colormap\n");
-+               pr_err("cannot allocate colormap\n");
-                goto err_unmap;
-        }
-        if ((err = register_framebuffer(info)) < 0) {
--               printk(KERN_ERR "efifb: cannot register framebuffer\n");
-+               pr_err("cannot register framebuffer\n");
-                goto err_fb_dealoc;
-        }
-        fb_info(info, "%s frame buffer device\n", info->fix.id);
---
-1.9.3
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 08a7a04..cb15734 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2143,7 +2143,7 @@ config FB_UDL
+ 
+ config FB_IBM_GXT4500
+ 	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
+-	depends on FB && PPC
++	depends on FB
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -2151,7 +2151,8 @@ config FB_IBM_GXT4500
+ 	  Say Y here to enable support for the IBM GXT4000P/6000P and
+ 	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
+ 	  found on some IBM System P (pSeries) machines. This driver
+-	  doesn't use Geometry Engine GT1000.
++	  doesn't use Geometry Engine GT1000. This driver also supports
++	  AGP Fire GL2/3/4 cards on x86.
+ 
+ config FB_PS3
+ 	tristate "PS3 GPU framebuffer driver"
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 135d78a..1bf9894 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -670,8 +670,15 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	pci_set_drvdata(pdev, info);
+ 
++#ifdef __BIG_ENDIAN
+ 	/* Set byte-swapping for DFA aperture for all pixel sizes */
+ 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
++#else /* __LITTLE_ENDIAN */
++	/* not sure what this means but fgl23 driver does that */
++	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x2300);
++/*	pci_write_config_dword(pdev, CFG_ENDIAN0 + 4, 0x400000);*/
++	pci_write_config_dword(pdev, CFG_ENDIAN0 + 8, 0x98530000);
++#endif
+ 
+ 	info->fbops = &gxt4500_ops;
+ 	info->flags = FBINFO_FLAG_DEFAULT;
+-- 
+Ondrej Zary
 

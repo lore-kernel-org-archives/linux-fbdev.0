@@ -1,60 +1,46 @@
-From: Kevin Hao <haokexin@gmail.com>
-Date: Thu, 26 Feb 2015 12:08:16 +0000
-Subject: [PATCH v2 04/11] fbdev: imsttfb: remove the dependency on PPC_OF
-Message-Id: <1424952503-8247-5-git-send-email-haokexin@gmail.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 17 Feb 2015 22:33:52 +0000
+Subject: [PATCH 3/5] gxt4500: fix color order
+Message-Id: <1424212434-12614-3-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
+References: <1424212434-12614-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1424212434-12614-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linuxppc-dev@lists.ozlabs.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-The OF functionality has moved to a common place and be used by many
-archs. So we don't need to depend on PPC_OF option any more. This is
-a preparation for killing PPC_OF.
+The color order in truecolor modes is wrong. This does not affect console but
+is visible e.g. in X11 which has wrong colors.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
+Swap blue and red colors to fix the problem.
+Fixes https://forums.gentoo.org/viewtopic-t-692740-start-0.html
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
-v2: Only print the error log when CONFIG_OF is enabled.
+ drivers/video/fbdev/gxt4500.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
- drivers/video/fbdev/imsttfb.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
-diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
-index aae10ce74f14..9b167f7ef6c6 100644
---- a/drivers/video/fbdev/imsttfb.c
-+++ b/drivers/video/fbdev/imsttfb.c
-@@ -1470,15 +1470,13 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	unsigned long addr, size;
- 	struct imstt_par *par;
- 	struct fb_info *info;
--#ifdef CONFIG_PPC_OF
- 	struct device_node *dp;
- 	
- 	dp = pci_device_to_OF_node(pdev);
- 	if(dp)
- 		printk(KERN_INFO "%s: OF name %s\n",__func__, dp->name);
--	else
-+	else if (IS_ENABLED(CONFIG_OF))
- 		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
--#endif /* CONFIG_PPC_OF */
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 1f2fd5b..442b07c 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -347,11 +347,12 @@ static void gxt4500_unpack_pixfmt(struct fb_var_screeninfo *var,
+ 		break;
+ 	}
+ 	if (pixfmt != DFA_PIX_8BIT) {
+-		var->green.offset = var->red.length;
+-		var->blue.offset = var->green.offset + var->green.length;
++		var->blue.offset = 0;
++		var->green.offset = var->blue.length;
++		var->red.offset = var->green.offset + var->green.length;
+ 		if (var->transp.length)
+ 			var->transp.offset -				var->blue.offset + var->blue.length;
++				var->red.offset + var->red.length;
+ 	}
+ }
  
- 	info = framebuffer_alloc(sizeof(struct imstt_par), &pdev->dev);
- 
-@@ -1501,11 +1499,9 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	switch (pdev->device) {
- 		case PCI_DEVICE_ID_IMS_TT128: /* IMS,tt128mbA */
- 			par->ramdac = IBM;
--#ifdef CONFIG_PPC_OF
- 			if (dp && ((strcmp(dp->name, "IMS,tt128mb8") = 0) ||
- 				   (strcmp(dp->name, "IMS,tt128mb8A") = 0)))
- 				par->ramdac = TVP;
--#endif /* CONFIG_PPC_OF */
- 			break;
- 		case PCI_DEVICE_ID_IMS_TT3D:  /* IMS,tt3d */
- 			par->ramdac = TVP;
 -- 
-1.9.3
+Ondrej Zary
 

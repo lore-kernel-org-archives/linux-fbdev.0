@@ -1,52 +1,40 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Feb 2015 12:49:02 +0000
-Subject: [PATCH 08/15] OMAPDSS: DISPC: change sync_pclk_edge default value
-Message-Id: <1424954949-12801-8-git-send-email-tomi.valkeinen@ti.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 17 Feb 2015 22:33:54 +0000
+Subject: [PATCH 5/5] gxt4500: enable panning
+Message-Id: <1424212434-12614-5-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1424212434-12614-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1424212434-12614-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-The common 'struct videomode' does not have a flag to select when the
-sync signals should be driven.
+The driver implements pan_display but the corresponding flags are not set.
 
-The default behavior of DISPC HW is to drive the sync signal on the
-opposite pixel clock edge from data signal, which is also what the
-videomode_to_omap_video_timings() uses.
+Add FBINFO_HWACCEL_XPAN and FBINFO_HWACCEL_YPAN to flags to allow HW
+accelerated panning (for fast scrolling).
 
-However, it looks like what panels usually expect is that the data and
-sync signals are driven on the same edge, so let's change
-videomode_to_omap_video_timings() to set the sync_pclk_edge accordingly.
-
-Note that this only affect panels drivers that use
-videomode_to_omap_video_timings(), probably when getting the video
-timings directly from DT data. The drivers can still configure the
-sync_pclk_edge independently if they so wish.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- drivers/video/fbdev/omap2/dss/display.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/video/fbdev/gxt4500.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/display.c b/drivers/video/fbdev/omap2/dss/display.c
-index a6fd2d35ad60..ef5b9027985d 100644
---- a/drivers/video/fbdev/omap2/dss/display.c
-+++ b/drivers/video/fbdev/omap2/dss/display.c
-@@ -295,9 +295,7 @@ void videomode_to_omap_video_timings(const struct videomode *vm,
- 		OMAPDSS_DRIVE_SIG_RISING_EDGE :
- 		OMAPDSS_DRIVE_SIG_FALLING_EDGE;
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index f278c82..7f97c89 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -699,7 +699,8 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ #endif
  
--	ovt->sync_pclk_edge = vm->flags & DISPLAY_FLAGS_PIXDATA_POSEDGE ?
--		OMAPDSS_DRIVE_SIG_FALLING_EDGE :
--		OMAPDSS_DRIVE_SIG_RISING_EDGE;
-+	ovt->sync_pclk_edge = ovt->data_pclk_edge;
- }
- EXPORT_SYMBOL(videomode_to_omap_video_timings);
+ 	info->fbops = &gxt4500_ops;
+-	info->flags = FBINFO_FLAG_DEFAULT;
++	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_HWACCEL_XPAN |
++					    FBINFO_HWACCEL_YPAN;
  
+ 	err = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (err) {
 -- 
-2.3.0
+Ondrej Zary
 

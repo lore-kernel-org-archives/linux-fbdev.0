@@ -1,45 +1,44 @@
-From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Date: Mon, 09 Feb 2015 14:24:50 +0000
-Subject: Re: [PATCH] Trivial patch in efifb.c to solve common indent issue and indent error
-Message-Id: <CA+V-a8todzzHHTSaJ1UzT+1sXrdbNaaBah66gFr2kEigNBhQYw@mail.gmail.com>
+From: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
+Date: Wed, 18 Feb 2015 08:36:57 +0000
+Subject: [PATCH 3/3] Moved assignment out of if() statement in efifb.c
+Message-Id: <20150218083654.GD9820@linuxteamdev.amer.dell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150209125548.GA27277@linuxteamdev.amer.dell.com>
-In-Reply-To: <20150209125548.GA27277-uSknhY0EtF8ok8EplQz5xE1Vg53cnbg30E9HWUfgJXw@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Parmeshwr Prasad <parmeshwr_prasad-8PEkshWhKlo@public.gmane.org>
-Cc: pjones-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, LFBDEV <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: pjones@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+This patch depend on my earlier patchs.
 
-Thanks for the patch.
+Moving assignment out of if() statement.
 
-On Mon, Feb 9, 2015 at 12:55 PM, Parmeshwr Prasad
-<parmeshwr_prasad@dell.com> wrote:
-> Hi All,
->
-> Please review this patch.
-> this patch is aimed to solve some indentation issue. It has also solved
-> three trivial error in efifb.c file.
->
-> And I have also changed printk with pr_err, pr_info ... at respective places.
->
->
-> From c49139fac1d15fe2da80d06e2a79eb8be7c079a7 Mon Sep 17 00:00:00 2001
-> From: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
-> Date: Mon, 9 Feb 2015 07:33:59 -0500
-> Subject: [PATCH] Trival patch: improved indentation, and removed some ERROR
->  from code
->
-> Signed-off-by: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
-> ---
+Signed-off-by: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
+---
+ drivers/video/fbdev/efifb.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-1: did you use git to send this patch ?
-2: did you checkpatch it (I see some issues)?
-3: break this patch into 2 one fixing the 3 issues and other fixing
-the indentation.
-4: have proper commit message.
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index cc1a156..9124ba9 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -275,11 +275,13 @@ static int efifb_probe(struct platform_device *dev)
+        info->fix = efifb_fix;
+        info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
 
-Cheers,
---Prabhakar Lad
+-       if ((err = fb_alloc_cmap(&info->cmap, 256, 0)) < 0) {
++       err = fb_alloc_cmap(&info->cmap, 256, 0);
++       if (err < 0) {
+                pr_err("efifb: cannot allocate colormap\n");
+                goto err_unmap;
+        }
+-       if ((err = register_framebuffer(info)) < 0) {
++       err = register_framebuffer(info);
++       if (err < 0) {
+                pr_err("efifb: cannot register framebuffer\n");
+                goto err_fb_dealoc;
+        }
+--
+1.9.3
+
+-Parmeshwr

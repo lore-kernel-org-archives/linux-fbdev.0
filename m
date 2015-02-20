@@ -1,69 +1,100 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Tue, 17 Feb 2015 22:33:50 +0000
-Subject: [PATCH 1/5] gxt4500: enable on non-PPC architectures
-Message-Id: <1424212434-12614-1-git-send-email-linux@rainbow-software.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 20 Feb 2015 12:04:38 +0000
+Subject: Re: [PATCH v6 2/2] fbcon: expose cursor blink interval via sysfs
+Message-Id: <54E722D6.9010900@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="NNlQtaevX9MBKUBeob3X91p4lWOWe7GV9"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+References: <alpine.DEB.2.11.1501300836140.2305@localhost.localdomain> <alpine.DEB.2.11.1501300843200.2423@localhost.localdomain> <alpine.DEB.2.11.1501300932470.2288@localhost.localdomain> <alpine.DEB.2.11.1501300938070.2359@localhost.localdomain>
+In-Reply-To: <alpine.DEB.2.11.1501300938070.2359@localhost.localdomain>
+To: Scot Doyle <lkml14@scotdoyle.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Richard Weinberger <richard.weinberger@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-These chips can be present at least on x86 too - Fire GL2 AGP has GXT6000P but
-this driver is currently limited to PPC.
-Enable it for all architectures and add chip configuration for little-endian.
+--NNlQtaevX9MBKUBeob3X91p4lWOWe7GV9
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Tested on x86 with Fire GL2 AGP.
+On 30/01/15 11:40, Scot Doyle wrote:
+> fbcon toggles cursor display state every 200 milliseconds when blinking=
+=2E
+> Since users prefer different toggle intervals, expose the interval via
+> /sys/class/graphics/fbcon/cursor_blink_ms so that it may be customized.=
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
----
- drivers/video/fbdev/Kconfig   |    5 +++--
- drivers/video/fbdev/gxt4500.c |    7 +++++++
- 2 files changed, 10 insertions(+), 2 deletions(-)
+>=20
+> Values written to the interface set the approximate time interval in
+> milliseconds between cursor toggles, from 1 to 32767. Since the interva=
+l
+> is stored internally as a number of jiffies, the millisecond value read=
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 08a7a04..cb15734 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2143,7 +2143,7 @@ config FB_UDL
- 
- config FB_IBM_GXT4500
- 	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
--	depends on FB && PPC
-+	depends on FB
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -2151,7 +2151,8 @@ config FB_IBM_GXT4500
- 	  Say Y here to enable support for the IBM GXT4000P/6000P and
- 	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
- 	  found on some IBM System P (pSeries) machines. This driver
--	  doesn't use Geometry Engine GT1000.
-+	  doesn't use Geometry Engine GT1000. This driver also supports
-+	  AGP Fire GL2/3/4 cards on x86.
- 
- config FB_PS3
- 	tristate "PS3 GPU framebuffer driver"
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 135d78a..1bf9894 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -670,8 +670,15 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	pci_set_drvdata(pdev, info);
- 
-+#ifdef __BIG_ENDIAN
- 	/* Set byte-swapping for DFA aperture for all pixel sizes */
- 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
-+#else /* __LITTLE_ENDIAN */
-+	/* not sure what this means but fgl23 driver does that */
-+	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x2300);
-+/*	pci_write_config_dword(pdev, CFG_ENDIAN0 + 4, 0x400000);*/
-+	pci_write_config_dword(pdev, CFG_ENDIAN0 + 8, 0x98530000);
-+#endif
- 
- 	info->fbops = &gxt4500_ops;
- 	info->flags = FBINFO_FLAG_DEFAULT;
--- 
-Ondrej Zary
+> from the interface may not exactly match the entered value.
+>=20
+> An outstanding blink timer is reset after a new value is entered.
+>=20
+> If the cursor blink is disabled, either via the 'cursor_blink' boolean
+> setting or some other mechanism, the 'cursor_blink_ms' setting may stil=
+l
+> be modified. The new value will be used if the blink is reactivated.
+>=20
+> Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+> ---
+>  drivers/video/console/fbcon.c | 65 +++++++++++++++++++++++++++++++++++=
+++++++++
+>  1 file changed, 65 insertions(+)
+>=20
+> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbco=
+n.c
+> index 7a2030b..7baa333 100644
+> --- a/drivers/video/console/fbcon.c
+> +++ b/drivers/video/console/fbcon.c
+> @@ -3495,11 +3495,76 @@ err:
+>  	return count;
+>  }
+> =20
+> +static ssize_t show_cursor_blink_ms(struct device *device,
+> +				    struct device_attribute *attr, char *buf)
+> +{
+> +	struct fbcon_ops *ops;
+> +	int idx, ms =3D -1;
+> +
+> +	if (fbcon_has_exited)
+> +		return -ENODEV;
+> +
+> +	console_lock();
+> +	idx =3D con2fb_map[fg_console];
+> +
+> +	if (idx !=3D -1 && registered_fb[idx] !=3D NULL) {
+> +		ops =3D ((struct fb_info *)registered_fb[idx])->fbcon_par;
 
+I don't think the above typecast is needed. I can remove the typecast
+when applying to my tree.
+
+So queuing for 3.21. Thanks!
+
+ Tomi
+
+
+
+--NNlQtaevX9MBKUBeob3X91p4lWOWe7GV9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJU5yLWAAoJEPo9qoy8lh71+iMP/iqdMO158C0m42EmS/4EP11/
+WRPx79Bdb19uTQRt4FSdegGOtQ8oI6LBWyIzcpflyTde5+5UxvXu/kAYWUE7sMWm
+9bCUT285HmIpbasNwyGpogfdXJ2uxbCcRR5MeAPq7kupERP4EaKqBC/BqzQr9hhg
+P70zgtK6k/EbJ5KqZp/5uimjp1DiP5wnKfVd10xjOGUM2prgcifY4RzedVNx7A+j
+QVsw9Ueao1T9QK/6EEoz7PYmHLKwd3MMrwx1bMLRyhjAeUQrKmxWZeBr1FPJDlt+
+XATG1eSjirsxxl1gCWCDBqVglDv8Kt6MWdsTfKKHFmtgLvypUszVjAAqKJODrZDV
+gtXGbn9wJE94c9o3Q7+7hs9sq9cPOfRjSINbu0VVa+fKXzoDFfeoME2LrEVbqi4J
+ySXR+YJ9SYwGB2VbK/h/bFm6EOgMtzTySwO1Ppzq9YNNtKLbupY3NCL4tS9xRp8I
+DX9wg4zF+DIUjPdNaKoYVcHZcaWUAX9K/NA/ofYTjth2BT+2Uul2Odc933Za+Vud
+sB/tCgxjKYpBGwqAJnP2rmKSav5TW08vRTw31JVjbxEZ8EWHiDwNingVcZ5j0KJX
+uli3UefKOdobNMy5h76rDa1uG7lFrzG38zbqD3VFUmE8/snEyHwnH9KKqFyrCysc
+ByJHgfN6jA6JSjSvtGnK
+=X7Tc
+-----END PGP SIGNATURE-----
+
+--NNlQtaevX9MBKUBeob3X91p4lWOWe7GV9--

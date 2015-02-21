@@ -1,41 +1,38 @@
-From: Kevin Hao <haokexin@gmail.com>
-Date: Thu, 26 Feb 2015 12:08:19 +0000
-Subject: [PATCH v2 07/11] fbdev: remove the unnecessary includes of ppc specific header files
-Message-Id: <1424952503-8247-8-git-send-email-haokexin@gmail.com>
+From: Ets Alex Global <johnnanahesq@gmail.com>
+Date: Sat, 21 Feb 2015 15:20:24 +0000
+Subject: CONTRACT SUPPLY.
+Message-Id: <CALTQc6Cb0+Az99yBV0LRv+BMMiypG7iD9wTduTD6=Kn_N2GfCQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linuxppc-dev@lists.ozlabs.org
+To: linux-fbdev@vger.kernel.org
 
-In the current kernel, we don't need to include these arch specific
-header files for ppc.
+Dear Sir/Madam,
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
-v2: No change.
+We are here to introduce our company as a registered Importing company
+based in Supplying and Distributing of all kind of goods.with
+registration endorsement under the Togo Lome Commerce and Industry.
 
- drivers/video/fbdev/core/fbmon.c | 4 ----
- 1 file changed, 4 deletions(-)
+Our company has been into Importation and distribution of goods for
+many years with our international business experience which has given
+us the confident to open Three branches offices out side Togo
+Republic.
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index 95338593ebf4..3ae868c58cef 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -33,10 +33,6 @@
- #include <video/edid.h>
- #include <video/of_videomode.h>
- #include <video/videomode.h>
--#ifdef CONFIG_PPC_OF
--#include <asm/prom.h>
--#include <asm/pci-bridge.h>
--#endif
- #include "../edid.h"
- 
- /*
--- 
-1.9.3
+Recently we have being ask by African Trade Union Organization to
+source out a reliable firm who will be capable to handle a contract
+supply of your products.
 
+We came across your company contact information as a supplier
+manufacturer and exporter of above mentioned in your region,With due
+respect we request you to please send your prices quotation for our
+study in proceedings.
+
+Looking forward to establish a long lasting business with your company.
+
+Regards
+Alex Camara.
+Alex Global Company Limited
+232 Rue Tambina
+Phone:+228-90715121.
+Lome-Togo.

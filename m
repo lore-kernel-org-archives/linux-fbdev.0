@@ -1,39 +1,38 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Wed, 25 Feb 2015 09:49:46 +0000
-Subject: Re: [PATCH v3 2/2] fbcon: expose cursor blink interval via sysfs
-Message-Id: <20150225094946.GA24627@amd>
+From: Peter Senna Tschudin <peter.senna@gmail.com>
+Date: Mon, 23 Feb 2015 11:16:16 +0000
+Subject: [PATCH] staging/sm7xxfb: Make 'struct vgamode' static
+Message-Id: <1424690176-7966-1-git-send-email-peter.senna@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
- <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
-In-Reply-To: <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Scot Doyle <lkml14@scotdoyle.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Cc: Peter Senna Tschudin <peter.senna@gmail.com>
 
-On Mon 2015-01-26 20:41:53, Scot Doyle wrote:
-> The fbcon cursor, when set to blink, is hardcoded to toggle display state
-> five times per second. Expose this setting via
-> /sys/class/graphics/fbcon/cursor_blink_ms
-> 
-> Values written to the interface set the approximate time interval in
-> milliseconds between cursor toggles, from 1 to 32767. Since the interval
-> is stored internally as a number of jiffies, the millisecond value read
-> from the interface may not exactly match the entered value.
-> 
-> An outstanding blink timer is reset after a new value is entered.
-> 
-> If the cursor blink is disabled, either via the 'cursor_blink' boolean
-> setting or some other mechanism, the 'cursor_blink_ms' setting may still
-> be modified. The new value will be used if the blink is reactivated.
-> 
-> Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+sparse was complaining that symbol 'vgamode' was not declared.
 
-Normally, this would be set by ansi escape sequences, no? We can hide
-cursor using them, set its appearance.. makes sense to change timing
-value there, too....
-									Pavel
+Declaring vgamode as static.
+
+Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+---
+Tested by compilation only
+
+ drivers/staging/sm7xxfb/sm7xx.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
+index 7cc1896..c5d6253 100644
+--- a/drivers/staging/sm7xxfb/sm7xx.h
++++ b/drivers/staging/sm7xxfb/sm7xx.h
+@@ -119,7 +119,7 @@ struct ModeInit {
+ /**********************************************************************
+ 			 SM712 Mode table.
+  **********************************************************************/
+-struct ModeInit vgamode[] = {
++static struct ModeInit vgamode[] = {
+ 	{
+ 	 /*  mode#0: 640 x 480  16Bpp  60Hz */
+ 	 640, 480, 16, 60,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.1.0
+

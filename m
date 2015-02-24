@@ -1,126 +1,83 @@
-From: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
-Date: Tue, 24 Feb 2015 17:08:01 +0000
+From: NeilBrown <neilb@suse.de>
+Date: Tue, 24 Feb 2015 20:31:31 +0000
 Subject: Re: [PATCH] OMAPDSS: restore "name" sysfs entry.
-Message-Id: <54237011-FA81-4669-A182-797C4284680D@goldelico.com>
+Message-Id: <20150225073131.7fbff605@notabene.brown>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Sig_/2y6vD25nJhPeM6NCrW+sun3"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20150224203706.1eafa129@notabene.brown>
-In-Reply-To: <20150224203706.1eafa129@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: NeilBrown <neilb@suse.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, GTA04 owners <gta04-owner@goldelico.com>
+	<54EC5520.1020105@ti.com>
+In-Reply-To: <54EC5520.1020105@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, GTA04 owners <gta04-owner@goldelico.com>, "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
 
-I have tested it with
+--Sig_/2y6vD25nJhPeM6NCrW+sun3
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-X.Org X Server 1.12.4
-Release Date: 2012-08-27
-X Protocol Version 11, Revision 0
-Build Operating System: Linux 3.2.0-4-mx5 armv7l Debian
+On Tue, 24 Feb 2015 12:40:32 +0200 Tomi Valkeinen <tomi.valkeinen@ti.com>
+wrote:
 
-(coming from Debian Wheezy) on:
+> Hi,
+>=20
+> On 24/02/15 11:37, NeilBrown wrote:
+> >=20
+> >=20
+> > commit 303e4697e762dc92a40405f4e4b8aac02cd0d70b
+> >     OMAPDSS: rename display-sysfs 'name' entry
+> >=20
+> > broke the xorg X server on my device as it couldn't find the display
+> > any more.  It needs the 'name' file and now there isn't one.
+> >=20
+> > That commit claims that 'name' is not compatible with i2c or spi.
+> > i2c does register it own 'name' file, but spi does not, hence my
+> > problem - I have an spi display.
+> >=20
+> > So create a special case for i2c: add the name attribute for non-i2c
+> > devices.
+>=20
+> What X driver is that? What's it doing with the display name? Is it just
+> using the display name to show something for the user, and the returned
+> value can be essentially any string?
+>=20
+>  Tomi
+>=20
+>=20
+/usr/lib/xorg/modules/drivers/omapfb_drv.so
+from package xserver-xorg-video-omap3 in Debian.
 
-* gta04 (SPI panel)
-* openpandora (SPI panel)
-* BeagleBoard XM (with RGB panel)
-* PandaBoard ES (w/o panel)
-* omap5432-evm + Pyra prototype (MIPI panel)
+I don't know where the main upstream source is, but here:
 
-Without this patch, X Server simply fails with:
+https://gitorious.org/gnutoo-s-programs-for-shr/xf86-video-omapfb/source/28=
+c006c94e57ea71df11ec4fff79d7ffcfc4860f:src/omapfb-output-dss.c#L258
 
-Fatal server error:
-no screens found
-
-So please add
-Tested-by: Nikolaus Schaller <hns@goldelico.com>
+is the code which reads
+   /sys/devices/platform/omapdss/display0/name
+and fails if that file cannot be opened.
 
 Thanks,
-Nikolaus
+NeilBrown
 
+--Sig_/2y6vD25nJhPeM6NCrW+sun3
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-Am 24.02.2015 um 10:37 schrieb NeilBrown <neilb@suse.de>:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-> 
-> 
-> commit 303e4697e762dc92a40405f4e4b8aac02cd0d70b
->    OMAPDSS: rename display-sysfs 'name' entry
-> 
-> broke the xorg X server on my device as it couldn't find the display
-> any more.  It needs the 'name' file and now there isn't one.
-> 
-> That commit claims that 'name' is not compatible with i2c or spi.
-> i2c does register it own 'name' file, but spi does not, hence my
-> problem - I have an spi display.
-> 
-> So create a special case for i2c: add the name attribute for non-i2c
-> devices.
-> 
-> Fixes: 303e4697e762dc92a40405f4e4b8aac02cd0d70b
-> Signed-off-by: NeilBrown <neilb@suse.de>
-> 
-> --
-> 
-> Hi Tomi,
-> I wonder if you would consider this for the next merge window (or maybe even sooner as a bug-fix).
-> I haven't tested it with an i2c display, but it certainly allows xorg to work
-> on my spi-attached display.
-> 
-> Thanks,
-> NeilBrown
-> 
-> 
-> diff --git a/drivers/video/fbdev/omap2/dss/display-sysfs.c b/drivers/video/fbdev/omap2/dss/display-sysfs.c
-> index 5a2095a98ed8..53897b743130 100644
-> --- a/drivers/video/fbdev/omap2/dss/display-sysfs.c
-> +++ b/drivers/video/fbdev/omap2/dss/display-sysfs.c
-> @@ -25,6 +25,15 @@
-> #include <linux/platform_device.h>
-> #include <linux/sysfs.h>
-> 
-> +#if IS_ENABLED(CONFIG_I2C)
-> +#include <linux/i2c.h>
-> +#else
-> +static inline int i2c_verify_client(struct device *dev)
-> +{
-> +	return NULL;
-> +}
-> +#endif
-> +
-> #include <video/omapdss.h>
-> #include "dss.h"
-> 
-> @@ -278,6 +287,7 @@ static ssize_t display_wss_store(struct device *dev,
-> }
-> 
-> static DEVICE_ATTR(display_name, S_IRUGO, display_name_show, NULL);
-> +static DEVICE_ATTR(name, S_IRUGO, display_name_show, NULL);
-> static DEVICE_ATTR(enabled, S_IRUGO|S_IWUSR,
-> 		display_enabled_show, display_enabled_store);
-> static DEVICE_ATTR(tear_elim, S_IRUGO|S_IWUSR,
-> @@ -315,6 +325,17 @@ int display_init_sysfs(struct platform_device *pdev)
-> 			DSSERR("failed to create sysfs files\n");
-> 			goto err;
-> 		}
-> +		if (!i2c_verify_client(dssdev->dev)) {
-> +			/*
-> +			 * Add 'name' file - not compatible with i2c, but
-> +			 * need by Xorg for other devices.
-> +			 */
-> +			r = sysfs_create_file(kobj, &dev_attr_name.attr);
-> +			if (r) {
-> +				DSSERR("fail to create 'name' sysfs file\n");
-> +				goto err;
-> +			}
-> +		}
-> 
-> 		r = sysfs_create_link(&pdev->dev.kobj, kobj, dssdev->alias);
-> 		if (r) {
-> @@ -341,5 +362,7 @@ void display_uninit_sysfs(struct platform_device *pdev)
-> 		sysfs_remove_link(&pdev->dev.kobj, dssdev->alias);
-> 		sysfs_remove_files(&dssdev->dev->kobj,
-> 				display_sysfs_attrs);
-> +		sysfs_remove_file(&dssdev->dev->kobj,
-> +				  &dev_attr_name.attr);
-> 	}
-> }
+iQIVAwUBVOzfoznsnt1WYoG5AQIXJA/+MupFWgKYdlGwDmK2H+1jh5jUjghewEJ+
+oD0+kl2dcyaT8eg60487OSiQa1PiOMxXvEd8Ioabv1vhi2tYmdqK+HtlWa4ZYpPY
+iRNFLWb1fQglxDKydQjS/eWOcu1FHqUOq2X+1r/p7QqyYzPqK//CexRlPX3l4T0C
+toicpiTExwfgXInMO0q/0Zdxbs6oYFhMZKnRf677bjj2Jp6bGmYVtsbzE3Nbt48s
+3wzp8Qo3xXHiHoGKC9S+KpN1OBUy76I9KK38n2X4PZKyqbDYBON5pWosfrVek8Np
+RGdHbh0fsfG/5+l5xZe+EWN2aJlHK9avMcbxTt64uawt+NsI/7Kf3UV690T8zlQP
+E4gI7CbzTs6UARTV482xyCUgrjNVci3E9J6t47K6PIQYOcDhKjziiE4/+RJ3GRVC
+qLPMgqVlFICNU8BBQ6JierrVTTKiNOp8QhyoO56siAYy5ON5MgkCFSKf71BkQJKH
+DNcoasDM+7Rsn6PYKzNs7xM7JzAVYLxa87mRTtqzlMhlzqFozxgkfHatow6iPgdC
+8rokMJQs7KosfAVmK75Z54qs+xKVr0ON2KYBFyaWtO+1HFdTARM5eH3DaZ9Ik4yd
+50otiXpgAewDC/tGNd2oZfAy/f11z6Tl0KD9G6XaEbyiRe1flh/27XqgULoZPfCc
+5F8+gX7BXL0=
+=MLTu
+-----END PGP SIGNATURE-----
 
+--Sig_/2y6vD25nJhPeM6NCrW+sun3--

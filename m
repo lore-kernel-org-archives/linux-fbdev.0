@@ -1,85 +1,124 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 20 Feb 2015 12:13:45 +0000
-Subject: Re: [PATCH] video: fbdev: fix possible null dereference
-Message-Id: <54E724F9.9010404@ti.com>
+From: NeilBrown <neilb@suse.de>
+Date: Tue, 24 Feb 2015 09:37:06 +0000
+Subject: [PATCH] OMAPDSS: restore "name" sysfs entry.
+Message-Id: <20150224203706.1eafa129@notabene.brown>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="BmWJOqP3iK3Us49mMH8BBcASBCpdjhThi"
+Content-Type: multipart/mixed; boundary="Sig_/44/CbQokPf2ZVpXE4fgAtdK"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423756056-15108-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1423756056-15108-1-git-send-email-sudipm.mukherjee@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, GTA04 owners <gta04-owner@goldelico.com>, "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
 
---BmWJOqP3iK3Us49mMH8BBcASBCpdjhThi
-Content-Type: text/plain; charset=windows-1252
+--Sig_/44/CbQokPf2ZVpXE4fgAtdK
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-On 12/02/15 17:47, Sudip Mukherjee wrote:
-> we were dereferencing edid first and the NULL check was after
-> accessing that. now we are using edid only if we know that
-> it is not NULL.
->=20
-> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
-> ---
->  drivers/video/fbdev/core/fbmon.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/cor=
-e/fbmon.c
-> index 9533859..868facd 100644
-> --- a/drivers/video/fbdev/core/fbmon.c
-> +++ b/drivers/video/fbdev/core/fbmon.c
-> @@ -624,9 +624,6 @@ static struct fb_videomode *fb_create_modedb(unsign=
-ed char *edid, int *dbsize,
->  	int num =3D 0, i, first =3D 1;
->  	int ver, rev;
-> =20
-> -	ver =3D edid[EDID_STRUCT_VERSION];
-> -	rev =3D edid[EDID_STRUCT_REVISION];
-> -
->  	mode =3D kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
->  	if (mode =3D=3D NULL)
->  		return NULL;
-> @@ -637,6 +634,9 @@ static struct fb_videomode *fb_create_modedb(unsign=
-ed char *edid, int *dbsize,
->  		return NULL;
->  	}
-> =20
-> +	ver =3D edid[EDID_STRUCT_VERSION];
-> +	rev =3D edid[EDID_STRUCT_REVISION];
-> +
->  	*dbsize =3D 0;
-> =20
->  	DPRINTK("   Detailed Timings\n");
->=20
-
-Thanks, queued for 3.20.
-
- Tomi
 
 
+commit 303e4697e762dc92a40405f4e4b8aac02cd0d70b
+    OMAPDSS: rename display-sysfs 'name' entry
 
---BmWJOqP3iK3Us49mMH8BBcASBCpdjhThi
-Content-Type: application/pgp-signature; name="signature.asc"
+broke the xorg X server on my device as it couldn't find the display
+any more.  It needs the 'name' file and now there isn't one.
+
+That commit claims that 'name' is not compatible with i2c or spi.
+i2c does register it own 'name' file, but spi does not, hence my
+problem - I have an spi display.
+
+So create a special case for i2c: add the name attribute for non-i2c
+devices.
+
+Fixes: 303e4697e762dc92a40405f4e4b8aac02cd0d70b
+Signed-off-by: NeilBrown <neilb@suse.de>
+
+--
+
+Hi Tomi,
+ I wonder if you would consider this for the next merge window (or maybe ev=
+en sooner as a bug-fix).
+I haven't tested it with an i2c display, but it certainly allows xorg to wo=
+rk
+on my spi-attached display.
+
+Thanks,
+NeilBrown
+
+
+diff --git a/drivers/video/fbdev/omap2/dss/display-sysfs.c b/drivers/video/=
+fbdev/omap2/dss/display-sysfs.c
+index 5a2095a98ed8..53897b743130 100644
+--- a/drivers/video/fbdev/omap2/dss/display-sysfs.c
++++ b/drivers/video/fbdev/omap2/dss/display-sysfs.c
+@@ -25,6 +25,15 @@
+ #include <linux/platform_device.h>
+ #include <linux/sysfs.h>
+=20
++#if IS_ENABLED(CONFIG_I2C)
++#include <linux/i2c.h>
++#else
++static inline int i2c_verify_client(struct device *dev)
++{
++	return NULL;
++}
++#endif
++
+ #include <video/omapdss.h>
+ #include "dss.h"
+=20
+@@ -278,6 +287,7 @@ static ssize_t display_wss_store(struct device *dev,
+ }
+=20
+ static DEVICE_ATTR(display_name, S_IRUGO, display_name_show, NULL);
++static DEVICE_ATTR(name, S_IRUGO, display_name_show, NULL);
+ static DEVICE_ATTR(enabled, S_IRUGO|S_IWUSR,
+ 		display_enabled_show, display_enabled_store);
+ static DEVICE_ATTR(tear_elim, S_IRUGO|S_IWUSR,
+@@ -315,6 +325,17 @@ int display_init_sysfs(struct platform_device *pdev)
+ 			DSSERR("failed to create sysfs files\n");
+ 			goto err;
+ 		}
++		if (!i2c_verify_client(dssdev->dev)) {
++			/*
++			 * Add 'name' file - not compatible with i2c, but
++			 * need by Xorg for other devices.
++			 */
++			r =3D sysfs_create_file(kobj, &dev_attr_name.attr);
++			if (r) {
++				DSSERR("fail to create 'name' sysfs file\n");
++				goto err;
++			}
++		}
+=20
+ 		r =3D sysfs_create_link(&pdev->dev.kobj, kobj, dssdev->alias);
+ 		if (r) {
+@@ -341,5 +362,7 @@ void display_uninit_sysfs(struct platform_device *pdev)
+ 		sysfs_remove_link(&pdev->dev.kobj, dssdev->alias);
+ 		sysfs_remove_files(&dssdev->dev->kobj,
+ 				display_sysfs_attrs);
++		sysfs_remove_file(&dssdev->dev->kobj,
++				  &dev_attr_name.attr);
+ 	}
+ }
+
+--Sig_/44/CbQokPf2ZVpXE4fgAtdK
+Content-Type: application/pgp-signature
 Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJU5yT5AAoJEPo9qoy8lh71XPcQAJBsfSLXjlh1OwFTED1qSAzX
-ilzkzrNCG/tQnkYxZ4UTyQ/GuTj32ioVpKbnCV7M4gOJ08uc334HFJise5B0Qicl
-vCnecYBE/nD3fXV6G/Ks+SRCPrNZ0tOzzaDTQVtQbfbKhngzHyE0COFh5y2Jc4lX
-x1RnGdiesF21/Qv35MiIT6jl/RCdJjbgTg9aITd/zxDxtbikSxbgzXH+1xFJlDo6
-JzaEteQUXAMo9zeJdfJqji9ti4JaWqOgM6eGOH8z66o4pIDQJbjJPwCaWalKiAOe
-/xSbKon55rHV6gubXLsERThYSOeu15SBHyl415vDk/EWjhblVC44rTUgPoCXZP+k
-Y6EPR4wii2kSqkKVmZfc7+bxVSOqC43OVrx3E77vgVsiFKSW1A/+aYVH+8455ry1
-C9m7cI/CPyOL0eiv0CmKr35/eN2DO5Ku+uuonxA59QlwaZeR9c3y/qNjiQh1odtY
-7q3Cn7moaZBW3YdCbnBaZufCL4cIG6vP2oQWAVZnoECkMan8wmTmp7fnFQzq+Etd
-HUXXpOHbuU8iXUX0KLdtL0nXQHeycDJ4xkK3NDth9SWKp6s0iFQQLDVo8Gf8k01q
-d1csfuGGvZAezPkCZ7qQaOBxyyyqy5E/qwXVOYaIN0od2z+VI2GE/TX63xA4AKOq
-wqIEflHJch0483I8lRxd
-=btep
+iQIVAwUBVOxGQjnsnt1WYoG5AQJqMQ/+JEn27TgsjKFKBrYHuwD5PJhFJrP1BF64
+v6KVETLI0uF7Tld79ajEpnK0utAX+ntm56Uw+EeJLlH7DLf4lmMD/fqvcF3wqdtS
+xz9iitxD1aGwaC7kTst20GhdNjvsphh4nHdO9gR2kTH7pyfQvEuINAZZ8qa6aJI1
+uvfzAgV9JQt/q47i4L+SBmTOPwpCetU/7RsqA6MCP9EzHOuI5p8L6bB8H8g/oOcF
+JuV1xXDXvXYHJWDvhc7uDOx/LRt+jmOncbuA2sGws0Y9xsr7mxqBtOsWIfSYQXF9
+IwaLPaEYyvRO0dLOx6JzYX7+wJvVeNoUruHc7NZR30WOmMYAEhtfE7ZRLI/zwRtr
+qgcCr+ZBc5e9mcyjli6FQMd5XF1C8MzfInjwcNseh6p2XuZDG9cwkY5GPbL7P7UT
+gbRvcIzibji3133SI1NTTY8AvMSdZcL6SlnTJzVISby2uCcMxc6SS9+FkI4jIAPg
+TgN5tSAbVW5hrGzoLpmj5tJ3WGRetZ/mKP8YKRU6LRrXp1D4zb8CPnEZ/uV3GSrS
+J5SIIETWPBeQQI5VaTLStH3ClwSLXFYyU2AyxZ2f5rsog6+DvV/mOBQxM23M0q4/
+zqdjdmtu/mxDtkmPDS6x04gBwUHhWHW71qkEkWaJUK/pzCR0BbOZIGfcqQDnKeE3
+W9dlZlWOOfI=
+=7KUM
 -----END PGP SIGNATURE-----
 
---BmWJOqP3iK3Us49mMH8BBcASBCpdjhThi--
+--Sig_/44/CbQokPf2ZVpXE4fgAtdK--

@@ -1,124 +1,66 @@
-From: NeilBrown <neilb@suse.de>
-Date: Tue, 24 Feb 2015 09:37:06 +0000
-Subject: [PATCH] OMAPDSS: restore "name" sysfs entry.
-Message-Id: <20150224203706.1eafa129@notabene.brown>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 24 Feb 2015 10:40:32 +0000
+Subject: Re: [PATCH] OMAPDSS: restore "name" sysfs entry.
+Message-Id: <54EC5520.1020105@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Sig_/44/CbQokPf2ZVpXE4fgAtdK"
+Content-Type: multipart/mixed; boundary="LuqB6ELf0qC6l4VTV5lTMQE5nx79wTjeu"
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <20150224203706.1eafa129@notabene.brown>
+In-Reply-To: <20150224203706.1eafa129@notabene.brown>
+To: NeilBrown <neilb@suse.de>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, GTA04 owners <gta04-owner@goldelico.com>, "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
 
---Sig_/44/CbQokPf2ZVpXE4fgAtdK
-Content-Type: text/plain; charset=US-ASCII
+--LuqB6ELf0qC6l4VTV5lTMQE5nx79wTjeu
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
+Hi,
+
+On 24/02/15 11:37, NeilBrown wrote:
+>=20
+>=20
+> commit 303e4697e762dc92a40405f4e4b8aac02cd0d70b
+>     OMAPDSS: rename display-sysfs 'name' entry
+>=20
+> broke the xorg X server on my device as it couldn't find the display
+> any more.  It needs the 'name' file and now there isn't one.
+>=20
+> That commit claims that 'name' is not compatible with i2c or spi.
+> i2c does register it own 'name' file, but spi does not, hence my
+> problem - I have an spi display.
+>=20
+> So create a special case for i2c: add the name attribute for non-i2c
+> devices.
+
+What X driver is that? What's it doing with the display name? Is it just
+using the display name to show something for the user, and the returned
+value can be essentially any string?
+
+ Tomi
 
 
-commit 303e4697e762dc92a40405f4e4b8aac02cd0d70b
-    OMAPDSS: rename display-sysfs 'name' entry
 
-broke the xorg X server on my device as it couldn't find the display
-any more.  It needs the 'name' file and now there isn't one.
-
-That commit claims that 'name' is not compatible with i2c or spi.
-i2c does register it own 'name' file, but spi does not, hence my
-problem - I have an spi display.
-
-So create a special case for i2c: add the name attribute for non-i2c
-devices.
-
-Fixes: 303e4697e762dc92a40405f4e4b8aac02cd0d70b
-Signed-off-by: NeilBrown <neilb@suse.de>
-
---
-
-Hi Tomi,
- I wonder if you would consider this for the next merge window (or maybe ev=
-en sooner as a bug-fix).
-I haven't tested it with an i2c display, but it certainly allows xorg to wo=
-rk
-on my spi-attached display.
-
-Thanks,
-NeilBrown
-
-
-diff --git a/drivers/video/fbdev/omap2/dss/display-sysfs.c b/drivers/video/=
-fbdev/omap2/dss/display-sysfs.c
-index 5a2095a98ed8..53897b743130 100644
---- a/drivers/video/fbdev/omap2/dss/display-sysfs.c
-+++ b/drivers/video/fbdev/omap2/dss/display-sysfs.c
-@@ -25,6 +25,15 @@
- #include <linux/platform_device.h>
- #include <linux/sysfs.h>
-=20
-+#if IS_ENABLED(CONFIG_I2C)
-+#include <linux/i2c.h>
-+#else
-+static inline int i2c_verify_client(struct device *dev)
-+{
-+	return NULL;
-+}
-+#endif
-+
- #include <video/omapdss.h>
- #include "dss.h"
-=20
-@@ -278,6 +287,7 @@ static ssize_t display_wss_store(struct device *dev,
- }
-=20
- static DEVICE_ATTR(display_name, S_IRUGO, display_name_show, NULL);
-+static DEVICE_ATTR(name, S_IRUGO, display_name_show, NULL);
- static DEVICE_ATTR(enabled, S_IRUGO|S_IWUSR,
- 		display_enabled_show, display_enabled_store);
- static DEVICE_ATTR(tear_elim, S_IRUGO|S_IWUSR,
-@@ -315,6 +325,17 @@ int display_init_sysfs(struct platform_device *pdev)
- 			DSSERR("failed to create sysfs files\n");
- 			goto err;
- 		}
-+		if (!i2c_verify_client(dssdev->dev)) {
-+			/*
-+			 * Add 'name' file - not compatible with i2c, but
-+			 * need by Xorg for other devices.
-+			 */
-+			r =3D sysfs_create_file(kobj, &dev_attr_name.attr);
-+			if (r) {
-+				DSSERR("fail to create 'name' sysfs file\n");
-+				goto err;
-+			}
-+		}
-=20
- 		r =3D sysfs_create_link(&pdev->dev.kobj, kobj, dssdev->alias);
- 		if (r) {
-@@ -341,5 +362,7 @@ void display_uninit_sysfs(struct platform_device *pdev)
- 		sysfs_remove_link(&pdev->dev.kobj, dssdev->alias);
- 		sysfs_remove_files(&dssdev->dev->kobj,
- 				display_sysfs_attrs);
-+		sysfs_remove_file(&dssdev->dev->kobj,
-+				  &dev_attr_name.attr);
- 	}
- }
-
---Sig_/44/CbQokPf2ZVpXE4fgAtdK
-Content-Type: application/pgp-signature
+--LuqB6ELf0qC6l4VTV5lTMQE5nx79wTjeu
+Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQIVAwUBVOxGQjnsnt1WYoG5AQJqMQ/+JEn27TgsjKFKBrYHuwD5PJhFJrP1BF64
-v6KVETLI0uF7Tld79ajEpnK0utAX+ntm56Uw+EeJLlH7DLf4lmMD/fqvcF3wqdtS
-xz9iitxD1aGwaC7kTst20GhdNjvsphh4nHdO9gR2kTH7pyfQvEuINAZZ8qa6aJI1
-uvfzAgV9JQt/q47i4L+SBmTOPwpCetU/7RsqA6MCP9EzHOuI5p8L6bB8H8g/oOcF
-JuV1xXDXvXYHJWDvhc7uDOx/LRt+jmOncbuA2sGws0Y9xsr7mxqBtOsWIfSYQXF9
-IwaLPaEYyvRO0dLOx6JzYX7+wJvVeNoUruHc7NZR30WOmMYAEhtfE7ZRLI/zwRtr
-qgcCr+ZBc5e9mcyjli6FQMd5XF1C8MzfInjwcNseh6p2XuZDG9cwkY5GPbL7P7UT
-gbRvcIzibji3133SI1NTTY8AvMSdZcL6SlnTJzVISby2uCcMxc6SS9+FkI4jIAPg
-TgN5tSAbVW5hrGzoLpmj5tJ3WGRetZ/mKP8YKRU6LRrXp1D4zb8CPnEZ/uV3GSrS
-J5SIIETWPBeQQI5VaTLStH3ClwSLXFYyU2AyxZ2f5rsog6+DvV/mOBQxM23M0q4/
-zqdjdmtu/mxDtkmPDS6x04gBwUHhWHW71qkEkWaJUK/pzCR0BbOZIGfcqQDnKeE3
-W9dlZlWOOfI=
-=7KUM
+iQIcBAEBAgAGBQJU7FUgAAoJEPo9qoy8lh71pPgQAKv/B5ahAlSN916J/jDT8GpP
+fjgCEzIJ7V2HYMl2wO5PLE50Lo3lYDlK7+NOtjREctKzERQwMnmCzcrVg9VXKe2X
+9gBINHFWgEqhqFXOtFB2WRwWIwauko0U1pAgwmpo2sBxQfLgQvpGpr8quPekZUWH
+8/Cgplbc/lhdSVhAOIMNZ6cKEHeDpBdzB4CwyjtB/dy9cQe7Vm1sReDz6SXcmLr5
+5pXl8vcOARfGmqn7jRMYXNi+C0Ib71+QZXXF8h4Kb81W516NVcuuhZoXh+hsL2lQ
+Vi+FCj2mRGyLGqv8U2LLZmD4GUlDaR7KuG432C2LuVsXCAWzTGbsYvXvx2XNbe19
+U7MfbNh6ija0ZG51C7gpMPQa3QSyxnoXuK/kkKXiP0qtYxKPr919yKmlobRy9avU
+ArS+XHJYafkQriU09hzvv2CdJGG/gN7IZLIaVOH1jCWtWnkfa1vsqPdDNofIv+vB
+LNfZqRFY0r09FZuD/ELJ0DD9fcbncst40rEBB40nPrw/opEvd9+UwUZtmPmwcvZG
+sDF99S/SUhhYq6IGrPP5wZ+gLxal/uGe2PVfdreEYWr4vce62f0z3oumSlabxiYl
+yukLjes0t1Jq+njctV1rRLwstnjDmpKAc3PRPdIAkHU2JYShgnDXutQC+Kan2h76
+wrSAjoVQQhe4y/sgpgda
+=lkZB
 -----END PGP SIGNATURE-----
 
---Sig_/44/CbQokPf2ZVpXE4fgAtdK--
+--LuqB6ELf0qC6l4VTV5lTMQE5nx79wTjeu--

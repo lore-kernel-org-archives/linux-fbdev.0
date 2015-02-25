@@ -1,37 +1,44 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Fri, 13 Feb 2015 12:03:19 +0000
-Subject: Re: [PATCH 1/2]Trivial patch: to solve indentation warnings in amba-clcd.c driver
-Message-Id: <20150213120319.GX8656@n2100.arm.linux.org.uk>
+From: <grygorii.strashko@linaro.org>
+Date: Wed, 25 Feb 2015 17:03:56 +0000
+Subject: [PATCH] omapdss: extend pm notifier to handle hibernation
+Message-Id: <1424883836-9119-1-git-send-email-grygorii.strashko@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150213112125.GA25078@linuxteamdev.amer.dell.com>
- <20150213113515.GW8656@n2100.arm.linux.org.uk>
- <1423828796.2795.7.camel@perches.com>
-In-Reply-To: <1423828796.2795.7.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: Parmeshwr Prasad <parmeshwr_prasad@dell.com>, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, trivial@kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: nm@ti.com, sumit.semwal@linaro.org, linux-omap@vger.kernel.org, kishon@ti.com, linux-fbdev@vger.kernel.org, Grygorii Strashko <Grygorii.Strashko@linaro.org>
 
-On Fri, Feb 13, 2015 at 03:59:56AM -0800, Joe Perches wrote:
-> Perhaps this could be better as:
-> 
-> 	fb->fb.fix.smem_start > 		 of_translate_address(memory,
-> 				      of_get_address(memory, 0, &size, NULL));
-> 
-> But sometimes using multiple statements instead of
-> embedding function calls as arguments can be simpler
-> and more intelligible for the reader.
-> 
-> 	__be32 addr;
-> 
-> 	...
-> 
-> 	addr = of_get_address(memory, 0, &size, NULL);
-> 	fb->fb.fix.smem_start = of_translate_address(memory, addr);
+From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
 
-Yes, that would be a better solution, thanks.
+Add handling of missed events in omap_dss_pm_notif which are
+needed to support hibernation (suspend to disk).
 
+Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+---
+ drivers/video/fbdev/omap2/dss/core.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/video/fbdev/omap2/dss/core.c b/drivers/video/fbdev/omap2/dss/core.c
+index 6b74f73..e60976a 100644
+--- a/drivers/video/fbdev/omap2/dss/core.c
++++ b/drivers/video/fbdev/omap2/dss/core.c
+@@ -178,11 +178,15 @@ static int omap_dss_pm_notif(struct notifier_block *b, unsigned long v, void *d)
+ 	DSSDBG("pm notif %lu\n", v);
+ 
+ 	switch (v) {
++	case PM_HIBERNATION_PREPARE:
+ 	case PM_SUSPEND_PREPARE:
++	case PM_RESTORE_PREPARE:
+ 		DSSDBG("suspending displays\n");
+ 		return dss_suspend_all_devices();
+ 
+ 	case PM_POST_SUSPEND:
++	case PM_POST_HIBERNATION:
++	case PM_POST_RESTORE:
+ 		DSSDBG("resuming displays\n");
+ 		return dss_resume_all_devices();
+ 
 -- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+1.9.1
+

@@ -1,247 +1,81 @@
-From: gyungoh@gmail.com
-Date: Thu, 05 Feb 2015 06:29:41 +0000
-Subject: [PATCH v10 1/6] mfd: Add support for Skyworks SKY81452 driver
-Message-Id: <1423117786-30610-2-git-send-email-jack.yoo@skyworksinc.com>
+From: NeilBrown <neilb@suse.de>
+Date: Wed, 25 Feb 2015 09:37:08 +0000
+Subject: [PATCH] OMAP: DSS: DPI: disable vt-switch on suspend/resume.
+Message-Id: <20150225203708.0eb2fa96@notabene.brown>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Sig_/gBHHyJuWbq6.K2o/BMsTJV/"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423117786-30610-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1423117786-30610-1-git-send-email-jack.yoo@skyworksinc.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
-Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, GTA04 owners <gta04-owner@goldelico.com>
 
-From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+--Sig_/gBHHyJuWbq6.K2o/BMsTJV/
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
----
-Changes v10:
-Nothing
 
-Changes v9:
-Nothing
+These devices do not need to return to non-graphic console
+for suspend, so disable that option.
+This means there is less work to do in the suspend/resume cycle,
+making it smoother and cheaper.
 
-Changes v8:
-Nothing
 
-Changes v7:
-Modified licensing text to GPLv2
+Signed-off-by: NeilBrown <neil@brown.name>
 
-Changes v6:
-Added new line character at the end of line of dev_err()
+--
+Hi Tomi,
+ I wonder if you would consider this patch too.  It works for me and
+removes pointless vt switching.  I assume no-one would need or want that
+switching on suspend/resume but I guess I cannot be certain.
 
-Changes v5:
-Move sky81452-backlight.h to include/linux/platform_data
+Maybe a module-parameter could be used if there was any uncertainty.
 
-Changes v4:
-Removed MODULE_VERSION()
-Modified license to GPLv2
+thanks,
+NeilBrown
 
-Changes v3:
-Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
-Assigned mfd_cell.of_compatible for binding device node
-Modified error messages
 
-Changes v2:
-Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
-Changed the dependency from I2C=y to I2C, for CONFIG_MFD_SKY81452
-Added message for exception or errors
+diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap=
+2/dss/dpi.c
+index f83e7b030249..4a29bab4ade3 100644
+--- a/drivers/video/fbdev/omap2/dss/dpi.c
++++ b/drivers/video/fbdev/omap2/dss/dpi.c
+@@ -32,6 +32,7 @@
+ #include <linux/string.h>
+ #include <linux/of.h>
+ #include <linux/clk.h>
++#include <linux/suspend.h>
+=20
+ #include <video/omapdss.h>
+=20
+@@ -798,6 +799,8 @@ static int omap_dpi_probe(struct platform_device *pdev)
+ 	mutex_init(&dpi->lock);
+=20
+ 	dpi_init_output(pdev);
++	/* No need to vt_switch in suspend/resume */
++	pm_set_vt_switch(0);
+=20
+ 	return 0;
+ }
 
- drivers/mfd/Kconfig          |  12 +++++
- drivers/mfd/Makefile         |   1 +
- drivers/mfd/sky81452.c       | 108 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/sky81452.h |  31 +++++++++++++
- 4 files changed, 152 insertions(+)
- create mode 100644 drivers/mfd/sky81452.c
- create mode 100644 include/linux/mfd/sky81452.h
+--Sig_/gBHHyJuWbq6.K2o/BMsTJV/
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 1456ea7..a54244c 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -693,6 +693,18 @@ config MFD_SM501_GPIO
- 	 lines on the SM501. The platform data is used to supply the
- 	 base number for the first GPIO line to register.
- 
-+config MFD_SKY81452
-+	tristate "Skyworks Solutions SKY81452"
-+	select MFD_CORE
-+	select REGMAP_I2C
-+	depends on I2C
-+	help
-+	  This is the core driver for the Skyworks SKY81452 backlight and
-+	  voltage regulator device.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called sky81452.
-+
- config MFD_SMSC
-        bool "SMSC ECE1099 series chips"
-        depends on I2C=y
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 8bd54b1..d9683ea 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -174,6 +174,7 @@ obj-$(CONFIG_MFD_STW481X)	+= stw481x.o
- obj-$(CONFIG_MFD_IPAQ_MICRO)	+= ipaq-micro.o
- obj-$(CONFIG_MFD_MENF21BMC)	+= menf21bmc.o
- obj-$(CONFIG_MFD_HI6421_PMIC)	+= hi6421-pmic-core.o
-+obj-$(CONFIG_MFD_SKY81452)		+= sky81452.o
- 
- intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
- obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
-diff --git a/drivers/mfd/sky81452.c b/drivers/mfd/sky81452.c
-new file mode 100644
-index 0000000..b0c9b04
---- /dev/null
-+++ b/drivers/mfd/sky81452.c
-@@ -0,0 +1,108 @@
-+/*
-+ * sky81452.c	SKY81452 MFD driver
-+ *
-+ * Copyright 2014 Skyworks Solutions Inc.
-+ * Author : Gyungoh Yoo <jack.yoo@skyworksinc.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/err.h>
-+#include <linux/slab.h>
-+#include <linux/i2c.h>
-+#include <linux/regmap.h>
-+#include <linux/mfd/core.h>
-+#include <linux/mfd/sky81452.h>
-+
-+static const struct regmap_config sky81452_config = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+};
-+
-+static int sky81452_probe(struct i2c_client *client,
-+				const struct i2c_device_id *id)
-+{
-+	struct device *dev = &client->dev;
-+	const struct sky81452_platform_data *pdata = dev_get_platdata(dev);
-+	struct mfd_cell cells[2];
-+	struct regmap *regmap;
-+	int ret;
-+
-+	if (!pdata) {
-+		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
-+		if (!pdata)
-+			return -ENOMEM;
-+	}
-+
-+	regmap = devm_regmap_init_i2c(client, &sky81452_config);
-+	if (IS_ERR(regmap)) {
-+		dev_err(dev, "failed to initialize.err=%ld\n", PTR_ERR(regmap));
-+		return PTR_ERR(regmap);
-+	}
-+
-+	i2c_set_clientdata(client, regmap);
-+
-+	memset(cells, 0, sizeof(cells));
-+	cells[0].name = "sky81452-backlight";
-+	cells[0].of_compatible = "skyworks,sky81452-backlight";
-+	cells[0].platform_data = pdata->bl_pdata;
-+	cells[0].pdata_size = sizeof(*pdata->bl_pdata);
-+	cells[1].name = "sky81452-regulator";
-+	cells[1].platform_data = pdata->regulator_init_data;
-+	cells[1].pdata_size = sizeof(*pdata->regulator_init_data);
-+
-+	ret = mfd_add_devices(dev, -1, cells, ARRAY_SIZE(cells), NULL, 0, NULL);
-+	if (ret)
-+		dev_err(dev, "failed to add child devices. err=%d\n", ret);
-+
-+	return ret;
-+}
-+
-+static int sky81452_remove(struct i2c_client *client)
-+{
-+	mfd_remove_devices(&client->dev);
-+	return 0;
-+}
-+
-+static const struct i2c_device_id sky81452_ids[] = {
-+	{ "sky81452" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, sky81452_ids);
-+
-+#ifdef CONFIG_OF
-+static const struct of_device_id sky81452_of_match[] = {
-+	{ .compatible = "skyworks,sky81452", },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, sky81452_of_match);
-+#endif
-+
-+static struct i2c_driver sky81452_driver = {
-+	.driver = {
-+		.name = "sky81452",
-+		.of_match_table = of_match_ptr(sky81452_of_match),
-+	},
-+	.probe = sky81452_probe,
-+	.remove = sky81452_remove,
-+	.id_table = sky81452_ids,
-+};
-+
-+module_i2c_driver(sky81452_driver);
-+
-+MODULE_DESCRIPTION("Skyworks SKY81452 MFD driver");
-+MODULE_AUTHOR("Gyungoh Yoo <jack.yoo@skyworksinc.com>");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/mfd/sky81452.h b/include/linux/mfd/sky81452.h
-new file mode 100644
-index 0000000..b0925fa
---- /dev/null
-+++ b/include/linux/mfd/sky81452.h
-@@ -0,0 +1,31 @@
-+/*
-+ * sky81452.h	SKY81452 MFD driver
-+ *
-+ * Copyright 2014 Skyworks Solutions Inc.
-+ * Author : Gyungoh Yoo <jack.yoo@skyworksinc.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef _SKY81452_H
-+#define _SKY81452_H
-+
-+#include <linux/platform_data/sky81452-backlight.h>
-+#include <linux/regulator/machine.h>
-+
-+struct sky81452_platform_data {
-+	struct sky81452_bl_platform_data *bl_pdata;
-+	struct regulator_init_data *regulator_init_data;
-+};
-+
-+#endif
--- 
-1.9.1
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
+iQIVAwUBVO2XxDnsnt1WYoG5AQJnSA/9FuVfxMQ0MInknzRd07Ws4pVaOsy4OwLC
+33XAOFeVRbchprt8Kpl0H1O9U4HTwKANoWPMiWXk5RJ2vDtara5T3UDZgNhXKUoH
+hAnXleBFm39G8U6aolnm3zWBVQmVTBVBM9HMad0zjgXzaF+DC1o5PTQZhW85IqS6
+OBhtsmMolZwqPEREc4vforYyqlchbPXGQCEcTL6seAk9anP/64qtwHiBYio0ejg8
+x3u0WT8kHocehC0zwYERfSslCv+TkhMeySXL5etQtz5735c2VYqxnQRwOQXZhhFB
+D31EmTridLdoyWNJz2e68UUxYsz7AgBxZ9yGAF7XAGK7rxsnhWjxzMNlirridBJA
+kICc4FaH88gW9j0GSzIptvCEo2k9+7TZ0IiG6Z8QAN/j1Ro1ah/IKaYNkkZJ48rh
+8IME811N4gjdaqIJCjdPt7RmBAPrXKZ8MxD3TcW6Lj7E5kFGpJd+JBA11OttEkYP
+QIVeVBmz4J2aPbp53+/LaUZI23LIswMYQWzL8GBmvjmByQf2cysT8dgRv26++kW2
+u4dOC53fFt1xWgL05bjiMWzYV1VzhuTz2wJxkiZLkTTqgjaMEVmcAnxeDYpLG5Rp
+Q1cIN+KIlxBLhxiEi3AFF1u7hcMSG3x01gKcxvm/IUkzJR30CG/+zXs3VLM0afvb
+pSl0V2wod2o=
+=+SqM
+-----END PGP SIGNATURE-----
+
+--Sig_/gBHHyJuWbq6.K2o/BMsTJV/--

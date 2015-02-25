@@ -1,39 +1,71 @@
-From: Scot Doyle <lkml14@scotdoyle.com>
-Date: Fri, 27 Feb 2015 19:10:05 +0000
-Subject: [PATCH 0/2] add cursor blink interval terminal escape sequence
-Message-Id: <alpine.LNX.2.11.1502271905580.4212@localhost>
+From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Date: Wed, 25 Feb 2015 21:01:22 +0000
+Subject: [PATCH] video: ARM CLCD: Correcting timing checks for STN and TFT dispalys
+Message-Id: <1424898082-1522-4-git-send-email-arun.ramamurthy@broadcom.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain> <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain> <20150225094946.GA24627@amd> <alpine.LNX.2.11.1502252319330.276@localhost> <20150226220243.GC9935@amd>
-In-Reply-To: <20150226220243.GC9935@amd>
+References: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com>
+In-Reply-To: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Dmitry Torokhov <dtor@google.com>, Anatol Pomazau <anatol@google.com>, Jonathan Richardson <jonathar@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Arun Ramamurthy <arun.ramamurthy@broadcom.com>
 
-Greg, the first patch of this series is for the tty tree.
+The minimum values for timing parameters such as left margin,
+right margin etc are different for STN and TFT dispalys.
+This commit fixes a check that does not account for
+this difference.
 
-Tomi, the second patch of this series is for your tree, but it depends on
-the first patch. Also, will you remove these two previously queued patches?
-"fbcon: store cursor blink interval in fbcon_ops"
-"fbcon: expose cursor blink interval via sysfs"
+Reviewed-by: Ray Jui <rjui@broadcom.com>
+Reviewed-by: Scott Branden <sbranden@broadcom.com>
+Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+---
+ include/linux/amba/clcd.h | 32 ++++++++++++++++++++++----------
+ 1 file changed, 22 insertions(+), 10 deletions(-)
 
-Michael, I plan to send a documentation patch if these are accepted.
-
-This patch series adds an escape sequence to specify the current console's
-cursor blink interval. The default interval is set to fbcon's currently 
-hardcoded 200 msecs.
-
-Scot Doyle (2):
-  vt: add cursor blink interval escape sequence
-  fbcon: use the cursor blink interval provided by vt
-
- drivers/tty/vt/vt.c            |  9 +++++++++
- drivers/video/console/fbcon.c  | 10 +++++-----
- drivers/video/console/fbcon.h  |  1 +
- include/linux/console_struct.h |  1 +
- 4 files changed, 16 insertions(+), 5 deletions(-)
-
+diff --git a/include/linux/amba/clcd.h b/include/linux/amba/clcd.h
+index 6a3bc2d..0fe8a17 100644
+--- a/include/linux/amba/clcd.h
++++ b/include/linux/amba/clcd.h
+@@ -288,16 +288,28 @@ static inline int clcdfb_check(struct clcd_fb *fb, struct fb_var_screeninfo *var
+ 	var->xres_virtual = var->xres = (var->xres + 15) & ~15;
+ 	var->yres_virtual = var->yres = (var->yres + 1) & ~1;
+ 
+-#define CHECK(e,l,h) (var->e < l || var->e > h)
+-	if (CHECK(right_margin, (5+1), 256) ||	/* back porch */
+-	    CHECK(left_margin, (5+1), 256) ||	/* front porch */
+-	    CHECK(hsync_len, (5+1), 256) ||
+-	    var->xres > 4096 ||
+-	    var->lower_margin > 255 ||		/* back porch */
+-	    var->upper_margin > 255 ||		/* front porch */
+-	    var->vsync_len > 32 ||
+-	    var->yres > 1024)
+-		return -EINVAL;
++#define CHECK(e, l, h) (var->e < l || var->e > h)
++	if (!(fb->panel->cntl & CNTL_LCDTFT)) {
++		if (CHECK(right_margin, (5+1), 256) ||	/* back porch */
++		CHECK(left_margin, (5+1), 256) ||	/* front porch */
++		CHECK(hsync_len, (5+1), 256) ||
++		var->xres > 4096 ||
++		var->lower_margin > 255 ||	/* back porch */
++		var->upper_margin > 255 ||	/* front porch */
++		var->vsync_len > 32 ||
++		var->yres > 1024)
++			return -EINVAL;
++	} else {
++		if (CHECK(right_margin, 1, 256) ||	/* back porch */
++		CHECK(left_margin, 1, 256) ||	/* front porch */
++		CHECK(hsync_len, 1, 256) ||
++		var->xres > 4096 ||
++		var->lower_margin > 255 ||	/* back porch */
++		var->upper_margin > 255 ||	/* front porch */
++		var->vsync_len > 32 ||
++		var->yres > 1024)
++			return -EINVAL;
++	}
+ #undef CHECK
+ 
+ 	/* single panel mode: PCD = max(PCD, 1) */
 -- 
 2.3.0
 

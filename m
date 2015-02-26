@@ -1,69 +1,52 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sat, 14 Feb 2015 22:30:02 +0000
-Subject: [PATCH] gxt4500: enable on non-PPC architectures
-Message-Id: <1423953002-29182-1-git-send-email-linux@rainbow-software.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 26 Feb 2015 12:49:02 +0000
+Subject: [PATCH 08/15] OMAPDSS: DISPC: change sync_pclk_edge default value
+Message-Id: <1424954949-12801-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-These chips can be present at least on x86 too - Fire GL2 AGP has GXT6000P but
-this driver is currently limited to PPC.
-Enable it for all architectures and add chip configuration for little-endian.
+The common 'struct videomode' does not have a flag to select when the
+sync signals should be driven.
 
-Tested on x86 with Fire GL2 AGP.
+The default behavior of DISPC HW is to drive the sync signal on the
+opposite pixel clock edge from data signal, which is also what the
+videomode_to_omap_video_timings() uses.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+However, it looks like what panels usually expect is that the data and
+sync signals are driven on the same edge, so let's change
+videomode_to_omap_video_timings() to set the sync_pclk_edge accordingly.
+
+Note that this only affect panels drivers that use
+videomode_to_omap_video_timings(), probably when getting the video
+timings directly from DT data. The drivers can still configure the
+sync_pclk_edge independently if they so wish.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/Kconfig   |    5 +++--
- drivers/video/fbdev/gxt4500.c |    7 +++++++
- 2 files changed, 10 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/omap2/dss/display.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 08a7a04..cb15734 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2143,7 +2143,7 @@ config FB_UDL
+diff --git a/drivers/video/fbdev/omap2/dss/display.c b/drivers/video/fbdev/omap2/dss/display.c
+index a6fd2d35ad60..ef5b9027985d 100644
+--- a/drivers/video/fbdev/omap2/dss/display.c
++++ b/drivers/video/fbdev/omap2/dss/display.c
+@@ -295,9 +295,7 @@ void videomode_to_omap_video_timings(const struct videomode *vm,
+ 		OMAPDSS_DRIVE_SIG_RISING_EDGE :
+ 		OMAPDSS_DRIVE_SIG_FALLING_EDGE;
  
- config FB_IBM_GXT4500
- 	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
--	depends on FB && PPC
-+	depends on FB
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -2151,7 +2151,8 @@ config FB_IBM_GXT4500
- 	  Say Y here to enable support for the IBM GXT4000P/6000P and
- 	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
- 	  found on some IBM System P (pSeries) machines. This driver
--	  doesn't use Geometry Engine GT1000.
-+	  doesn't use Geometry Engine GT1000. This driver also supports
-+	  AGP Fire GL2/3/4 cards on x86.
+-	ovt->sync_pclk_edge = vm->flags & DISPLAY_FLAGS_PIXDATA_POSEDGE ?
+-		OMAPDSS_DRIVE_SIG_FALLING_EDGE :
+-		OMAPDSS_DRIVE_SIG_RISING_EDGE;
++	ovt->sync_pclk_edge = ovt->data_pclk_edge;
+ }
+ EXPORT_SYMBOL(videomode_to_omap_video_timings);
  
- config FB_PS3
- 	tristate "PS3 GPU framebuffer driver"
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 135d78a..1bf9894 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -670,8 +670,15 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	pci_set_drvdata(pdev, info);
- 
-+#ifdef __BIG_ENDIAN
- 	/* Set byte-swapping for DFA aperture for all pixel sizes */
- 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
-+#else /* __LITTLE_ENDIAN */
-+	/* not sure what this means but fgl23 driver does that */
-+	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x2300);
-+/*	pci_write_config_dword(pdev, CFG_ENDIAN0 + 4, 0x400000);*/
-+	pci_write_config_dword(pdev, CFG_ENDIAN0 + 8, 0x98530000);
-+#endif
- 
- 	info->fbops = &gxt4500_ops;
- 	info->flags = FBINFO_FLAG_DEFAULT;
 -- 
-Ondrej Zary
+2.3.0
 

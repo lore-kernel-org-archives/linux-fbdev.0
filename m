@@ -1,65 +1,120 @@
-From: Nicholas Mc Guire <hofrat@osadl.org>
-Date: Fri, 20 Feb 2015 14:34:01 +0000
-Subject: [PATCH v2] video: fbdev: use msecs_to_jiffies for time conversions
-Message-Id: <1424442841-25466-1-git-send-email-hofrat@osadl.org>
+From: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
+Date: Thu, 26 Feb 2015 10:42:23 +0000
+Subject: [PATCH 1/3] Printk() is replaced with respective pr_* functions
+Message-Id: <20150226104215.GA20577@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Fabian Frederick <fabf@skynet.be>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nicholas Mc Guire <hofrat@osadl.org>, Wolfram Sang <wsa@the-dreams.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: pjones-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
+Cc: plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-This is only an API consolidation and should make things more readable by
-replacing  var * HZ / 1000  by msecs_to_jiffies(var).
+This is a trivial patch. I am replacing printk() with respective pr_* functions.
 
-Signed-off-by: Nicholas Mc Guire <hofrat@osadl.org>
+Signed-off-by: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
 ---
+ drivers/video/fbdev/efifb.c | 26 ++++++++++++++------------
+ 1 file changed, 14 insertions(+), 12 deletions(-)
 
-v2: fixed missing closing parenthesis in pxafb_disable_controller.
-    Compile testing was missing part of the patched code due to
-    the missing CONFIG_FB_PXA_SMARTPANEL=y, so the missing closing
-    parenthesis reported by Tomi Valkeinen <tomi.valkeinen@ti.com>
-    pxafb_disable_controller went unnoticed.
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 4bfff34..7557991 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -6,6 +6,8 @@
+  *
+  */
 
-Patch was only compile tested with viper_defconfig CONFIG_FB_PXA=m,
-CONFIG_FB_PXA_SMARTPANEL=y
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+@@ -142,10 +144,10 @@ static int efifb_probe(struct platform_device *dev)
+        if (!screen_info.pages)
+                screen_info.pages = 1;
+        if (!screen_info.lfb_base) {
+-               printk(KERN_DEBUG "efifb: invalid framebuffer address\n");
++               pr_debug("invalid framebuffer address\n");
+                return -ENODEV;
+        }
+-       printk(KERN_INFO "efifb: probing for efifb\n");
++       pr_info("probing for efifb\n");
 
-Patch is against 3.19.0 (localversion-next is -next-20150220)
+        /* just assume they're all unset if any are */
+        if (!screen_info.blue_size) {
+@@ -193,14 +195,14 @@ static int efifb_probe(struct platform_device *dev)
+        } else {
+                /* We cannot make this fatal. Sometimes this comes from magic
+                   spaces our resource handlers simply don't know about */
+-               printk(KERN_WARNING
+-                      "efifb: cannot reserve video memory at 0x%lx\n",
++               pr_warn(
++                      "cannot reserve video memory at 0x%lx\n",
+                        efifb_fix.smem_start);
+        }
 
- drivers/video/fbdev/pxafb.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+        info = framebuffer_alloc(sizeof(u32) * 16, &dev->dev);
+        if (!info) {
+-               printk(KERN_ERR "efifb: cannot allocate framebuffer\n");
++               pr_err("cannot allocate framebuffer\n");
+                err = -ENOMEM;
+                goto err_release_mem;
+        }
+@@ -218,18 +220,18 @@ static int efifb_probe(struct platform_device *dev)
 
-diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-index da2431e..d8b4743 100644
---- a/drivers/video/fbdev/pxafb.c
-+++ b/drivers/video/fbdev/pxafb.c
-@@ -1285,7 +1285,7 @@ static int pxafb_smart_thread(void *arg)
- 		mutex_unlock(&fbi->ctrlr_lock);
+        info->screen_base = ioremap_wc(efifb_fix.smem_start,
+efifb_fix.smem_len);
+        if (!info->screen_base) {
+-               printk(KERN_ERR "efifb: abort, cannot ioremap video memory "
++               pr_err("abort, cannot ioremap video memory "
+                                "0x%x @ 0x%lx\n",
+                        efifb_fix.smem_len, efifb_fix.smem_start);
+                err = -EIO;
+                goto err_release_fb;
+        }
 
- 		set_current_state(TASK_INTERRUPTIBLE);
--		schedule_timeout(30 * HZ / 1000);
-+		schedule_timeout(msecs_to_jiffies(30));
- 	}
+-       printk(KERN_INFO "efifb: framebuffer at 0x%lx, mapped to 0x%p, "
++       pr_info("framebuffer at 0x%lx, mapped to 0x%p, "
+               "using %dk, total %dk\n",
+               efifb_fix.smem_start, info->screen_base,
+               size_remap/1024, size_total/1024);
+-       printk(KERN_INFO "efifb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
++       pr_info("mode is %dx%dx%d, linelength=%d, pages=%d\n",
+               efifb_defined.xres, efifb_defined.yres,
+               efifb_defined.bits_per_pixel, efifb_fix.line_length,
+               screen_info.pages);
+@@ -237,7 +239,7 @@ static int efifb_probe(struct platform_device *dev)
+        efifb_defined.xres_virtual = efifb_defined.xres;
+        efifb_defined.yres_virtual = efifb_fix.smem_len /
+                                        efifb_fix.line_length;
+-       printk(KERN_INFO "efifb: scrolling: redraw\n");
++       pr_info("scrolling: redraw\n");
+        efifb_defined.yres_virtual = efifb_defined.yres;
 
- 	pr_debug("%s(): task ending\n", __func__);
-@@ -1460,7 +1460,7 @@ static void pxafb_disable_controller(struct pxafb_info *fbi)
- #ifdef CONFIG_FB_PXA_SMARTPANEL
- 	if (fbi->lccr0 & LCCR0_LCDT) {
- 		wait_for_completion_timeout(&fbi->refresh_done,
--				200 * HZ / 1000);
-+				msecs_to_jiffies(200));
- 		return;
- 	}
- #endif
-@@ -1472,7 +1472,7 @@ static void pxafb_disable_controller(struct pxafb_info *fbi)
- 	lcd_writel(fbi, LCCR0, lccr0);
- 	lcd_writel(fbi, LCCR0, lccr0 | LCCR0_DIS);
+        /* some dummy values for timing to make fbset happy */
+@@ -255,7 +257,7 @@ static int efifb_probe(struct platform_device *dev)
+        efifb_defined.transp.offset = screen_info.rsvd_pos;
+        efifb_defined.transp.length = screen_info.rsvd_size;
 
--	wait_for_completion_timeout(&fbi->disable_done, 200 * HZ / 1000);
-+	wait_for_completion_timeout(&fbi->disable_done, msecs_to_jiffies(200));
+-       printk(KERN_INFO "efifb: %s: "
++       pr_info("%s: "
+               "size=%d:%d:%d:%d, shift=%d:%d:%d:%d\n",
+               "Truecolor",
+               screen_info.rsvd_size,
+@@ -276,11 +278,11 @@ static int efifb_probe(struct platform_device *dev)
+        info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
 
- 	/* disable LCD controller clock */
- 	clk_disable_unprepare(fbi->clk);
+        if ((err = fb_alloc_cmap(&info->cmap, 256, 0)) < 0) {
+-               printk(KERN_ERR "efifb: cannot allocate colormap\n");
++               pr_err("cannot allocate colormap\n");
+                goto err_unmap;
+        }
+        if ((err = register_framebuffer(info)) < 0) {
+-               printk(KERN_ERR "efifb: cannot register framebuffer\n");
++               pr_err("cannot register framebuffer\n");
+                goto err_fb_dealoc;
+        }
+        fb_info(info, "%s frame buffer device\n", info->fix.id);
 --
-1.7.10.4
+1.9.3
 

@@ -1,17 +1,17 @@
 From: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
-Date: Wed, 18 Feb 2015 08:36:57 +0000
+Date: Thu, 26 Feb 2015 10:48:08 +0000
 Subject: [PATCH 3/3] Moved assignment out of if() statement in efifb.c
-Message-Id: <20150218083654.GD9820@linuxteamdev.amer.dell.com>
+Message-Id: <20150226104803.GC20577@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20150218083654.GD9820@linuxteamdev.amer.dell.com>
+In-Reply-To: <20150218083654.GD9820@linuxteamdev.amer.dell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: pjones@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: pjones-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
+Cc: linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org
 
-This patch depend on my earlier patchs.
-
-Moving assignment out of if() statement.
+Removing initialization out of if condition.
 
 Signed-off-by: Parmeshwr Prasad <parmeshwr_prasad@dell.com>
 ---
@@ -41,4 +41,3 @@ index cc1a156..9124ba9 100644
 --
 1.9.3
 
--Parmeshwr

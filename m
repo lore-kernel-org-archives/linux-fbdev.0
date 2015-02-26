@@ -1,35 +1,41 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 10 Feb 2015 12:20:40 +0000
-Subject: [PATCH] staging: sm7xxfb: make vgamode static
-Message-Id: <1423570120-9041-1-git-send-email-sudipm.mukherjee@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 26 Feb 2015 12:48:57 +0000
+Subject: [PATCH 03/15] OMAPDSS: fix paddr check for TILER addresses
+Message-Id: <1424954949-12801-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-the variable vgamode is used only in this file and hence can be
-safely made as static.
+The DISPC driver checks that the buffer address is not 0. However, when
+using TILER, the address space is TILER specific and 0 is a valid
+address.
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Fix the check to allow address of 0 for TILER.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reported-by: srinivas pulukuru <srinivas.pulukuru@ti.com>
 ---
- drivers/staging/sm7xxfb/sm7xx.h | 2 +-
+ drivers/video/fbdev/omap2/dss/dispc.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
-index 7cc1896..c5d6253 100644
---- a/drivers/staging/sm7xxfb/sm7xx.h
-+++ b/drivers/staging/sm7xxfb/sm7xx.h
-@@ -119,7 +119,7 @@ struct ModeInit {
- /**********************************************************************
- 			 SM712 Mode table.
-  **********************************************************************/
--struct ModeInit vgamode[] = {
-+static struct ModeInit vgamode[] = {
- 	{
- 	 /*  mode#0: 640 x 480  16Bpp  60Hz */
- 	 640, 480, 16, 60,
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index 31b743c70272..a19a1d4b2d19 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -2441,7 +2441,7 @@ static int dispc_ovl_setup_common(enum omap_plane plane,
+ 	unsigned long pclk = dispc_plane_pclk_rate(plane);
+ 	unsigned long lclk = dispc_plane_lclk_rate(plane);
+ 
+-	if (paddr = 0)
++	if (paddr = 0 && rotation_type != OMAP_DSS_ROT_TILER)
+ 		return -EINVAL;
+ 
+ 	out_width = out_width = 0 ? width : out_width;
 -- 
-1.8.1.2
+2.3.0
 

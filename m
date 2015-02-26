@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Feb 2015 12:48:58 +0000
-Subject: [PATCH 04/15] OMAPDSS: TFP410: fix input sync signals
-Message-Id: <1424954949-12801-4-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 26 Feb 2015 12:49:07 +0000
+Subject: [PATCH 13/15] OMAPDSS: workaround for MFLAG + NV12 issue
+Message-Id: <1424954949-12801-13-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,53 +11,51 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-TFP410 requires that DE is active high and the data and syncs are driven
-on rising pixel clock edge. However, at the moment the driver doesn't
-request such syncs, and the end result is that the sync settings depend
-on default values, which are not right in all cases.
+It was found that having two displays enabled and having an NV12 overlay
+on one of the displays will cause underflows/synclosts. Debugging this
+pointed to some issue with MFLAG.
 
-Set the sync values explicitly.
+It is unclear why this issue is happening, but it looks like there is a
+HW bug related to MFLAG and FIFO management. Disabling MFLAG makes this
+issue go away, but then we lose the benefit of MFLAG. Also forcing MFLAG
+always on makes the issue go away.
+
+Also, using certain values for MFLAG_START, MFLAG thresholds and PRELOAD
+makes the issue go away, but there was no obvious logic to which values
+work and which don't.
+
+As a workaround until more information about this is found, force MFLAG
+always on to make NV12 usable.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/displays-new/encoder-tfp410.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/video/fbdev/omap2/dss/dispc.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/displays-new/encoder-tfp410.c b/drivers/video/fbdev/omap2/displays-new/encoder-tfp410.c
-index 92919a74e715..d9048b3df495 100644
---- a/drivers/video/fbdev/omap2/displays-new/encoder-tfp410.c
-+++ b/drivers/video/fbdev/omap2/displays-new/encoder-tfp410.c
-@@ -114,12 +114,21 @@ static void tfp410_disable(struct omap_dss_device *dssdev)
- 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
- }
- 
-+static void tfp410_fix_timings(struct omap_video_timings *timings)
-+{
-+	timings->data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
-+	timings->sync_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
-+	timings->de_level = OMAPDSS_SIG_ACTIVE_HIGH;
-+}
-+
- static void tfp410_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index 6b056d0ce187..f4fc77d9d3bf 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -1328,8 +1328,18 @@ static void dispc_init_mflag(void)
  {
- 	struct panel_drv_data *ddata = to_panel_data(dssdev);
- 	struct omap_dss_device *in = ddata->in;
+ 	int i;
  
-+	tfp410_fix_timings(timings);
-+
- 	ddata->timings = *timings;
- 	dssdev->panel.timings = *timings;
++	/*
++	 * HACK: NV12 color format and MFLAG seem to have problems working
++	 * together: using two displays, and having an NV12 overlay on one of
++	 * the displays will cause underflows/synclosts when MFLAG_CTRL=2.
++	 * Changing MFLAG thresholds and PRELOAD to certain values seem to
++	 * remove the errors, but there doesn't seem to be a clear logic on
++	 * which values work and which not.
++	 *
++	 * As a work-around, set force MFLAG to always on.
++	 */
+ 	dispc_write_reg(DISPC_GLOBAL_MFLAG_ATTRIBUTE,
+-		(2 << 0) |	/* MFLAG_CTRL = enable */
++		(1 << 0) |	/* MFLAG_CTRL = force always on */
+ 		(0 << 2));	/* MFLAG_START = disable */
  
-@@ -140,6 +149,8 @@ static int tfp410_check_timings(struct omap_dss_device *dssdev,
- 	struct panel_drv_data *ddata = to_panel_data(dssdev);
- 	struct omap_dss_device *in = ddata->in;
- 
-+	tfp410_fix_timings(timings);
-+
- 	return in->ops.dpi->check_timings(in, timings);
- }
- 
+ 	for (i = 0; i < dss_feat_get_num_ovls(); ++i) {
 -- 
 2.3.0
 

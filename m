@@ -1,35 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Feb 2015 12:48:55 +0000
-Subject: [PATCH 01/15] OMAPDSS: fix AM43xx minimum pixel clock divider
-Message-Id: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
+From: Kevin Hao <haokexin@gmail.com>
+Date: Thu, 26 Feb 2015 12:08:16 +0000
+Subject: [PATCH v2 04/11] fbdev: imsttfb: remove the dependency on PPC_OF
+Message-Id: <1424952503-8247-5-git-send-email-haokexin@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linuxppc-dev@lists.ozlabs.org
 
-AM43xx supports pixel clock divider of 1, just like all OMAP3+ SoCs. Fix
-the minimum divider value.
+The OF functionality has moved to a common place and be used by many
+archs. So we don't need to depend on PPC_OF option any more. This is
+a preparation for killing PPC_OF.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- drivers/video/fbdev/omap2/dss/dss_features.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v2: Only print the error log when CONFIG_OF is enabled.
 
-diff --git a/drivers/video/fbdev/omap2/dss/dss_features.c b/drivers/video/fbdev/omap2/dss/dss_features.c
-index 376270b777f8..b0b6dfd657bf 100644
---- a/drivers/video/fbdev/omap2/dss/dss_features.c
-+++ b/drivers/video/fbdev/omap2/dss/dss_features.c
-@@ -440,7 +440,7 @@ static const struct dss_param_range omap3_dss_param_range[] = {
+ drivers/video/fbdev/imsttfb.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
+index aae10ce74f14..9b167f7ef6c6 100644
+--- a/drivers/video/fbdev/imsttfb.c
++++ b/drivers/video/fbdev/imsttfb.c
+@@ -1470,15 +1470,13 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	unsigned long addr, size;
+ 	struct imstt_par *par;
+ 	struct fb_info *info;
+-#ifdef CONFIG_PPC_OF
+ 	struct device_node *dp;
+ 	
+ 	dp = pci_device_to_OF_node(pdev);
+ 	if(dp)
+ 		printk(KERN_INFO "%s: OF name %s\n",__func__, dp->name);
+-	else
++	else if (IS_ENABLED(CONFIG_OF))
+ 		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
+-#endif /* CONFIG_PPC_OF */
  
- static const struct dss_param_range am43xx_dss_param_range[] = {
- 	[FEAT_PARAM_DSS_FCK]			= { 0, 200000000 },
--	[FEAT_PARAM_DSS_PCD]			= { 2, 255 },
-+	[FEAT_PARAM_DSS_PCD]			= { 1, 255 },
- 	[FEAT_PARAM_DOWNSCALE]			= { 1, 4 },
- 	[FEAT_PARAM_LINEWIDTH]			= { 1, 1024 },
- };
+ 	info = framebuffer_alloc(sizeof(struct imstt_par), &pdev->dev);
+ 
+@@ -1501,11 +1499,9 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	switch (pdev->device) {
+ 		case PCI_DEVICE_ID_IMS_TT128: /* IMS,tt128mbA */
+ 			par->ramdac = IBM;
+-#ifdef CONFIG_PPC_OF
+ 			if (dp && ((strcmp(dp->name, "IMS,tt128mb8") = 0) ||
+ 				   (strcmp(dp->name, "IMS,tt128mb8A") = 0)))
+ 				par->ramdac = TVP;
+-#endif /* CONFIG_PPC_OF */
+ 			break;
+ 		case PCI_DEVICE_ID_IMS_TT3D:  /* IMS,tt3d */
+ 			par->ramdac = TVP;
 -- 
-2.3.0
+1.9.3
 

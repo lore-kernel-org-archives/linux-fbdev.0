@@ -1,96 +1,93 @@
-From: Kevin Hao <haokexin@gmail.com>
-Date: Thu, 26 Feb 2015 12:08:17 +0000
-Subject: [PATCH v2 05/11] fbdev: nvidia: remove the dependency on PPC_OF
-Message-Id: <1424952503-8247-6-git-send-email-haokexin@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 26 Feb 2015 12:49:00 +0000
+Subject: [PATCH 06/15] OMAPDSS: DISPC: explicit handling for sync and de levels
+Message-Id: <1424954949-12801-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
+References: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linuxppc-dev@lists.ozlabs.org, Antonino Daplas <adaplas@gmail.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The OF functionality has moved to a common place and be used by many
-archs. So we don't need to include the ppc arch specific header files
-and depend on PPC_OF option any more. This is a preparation for
-killing PPC_OF.
+When configuring the lcd timings, instead of writing enum values
+directly to the HW, use switch-case to get the value to be programmed.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
+This is safer and also allows us to change the enum values.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-v2: No change.
+ drivers/video/fbdev/omap2/dss/dispc.c | 41 +++++++++++++++++++++++++++++++----
+ 1 file changed, 37 insertions(+), 4 deletions(-)
 
- drivers/video/fbdev/nvidia/Makefile   | 3 +--
- drivers/video/fbdev/nvidia/nv_of.c    | 3 ---
- drivers/video/fbdev/nvidia/nv_proto.h | 8 --------
- drivers/video/fbdev/nvidia/nvidia.c   | 4 ----
- 4 files changed, 1 insertion(+), 17 deletions(-)
-
-diff --git a/drivers/video/fbdev/nvidia/Makefile b/drivers/video/fbdev/nvidia/Makefile
-index ca47432113e0..917d3eb05feb 100644
---- a/drivers/video/fbdev/nvidia/Makefile
-+++ b/drivers/video/fbdev/nvidia/Makefile
-@@ -5,9 +5,8 @@
- obj-$(CONFIG_FB_NVIDIA)          += nvidiafb.o
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index 11bd780fcdfa..8805266a52f4 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -2915,7 +2915,7 @@ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
  
- nvidiafb-y                       := nvidia.o nv_hw.o nv_setup.o \
--			            nv_accel.o
-+			            nv_accel.o nv_of.o
- nvidiafb-$(CONFIG_FB_NVIDIA_I2C) += nv_i2c.o
- nvidiafb-$(CONFIG_FB_NVIDIA_BACKLIGHT)  += nv_backlight.o
--nvidiafb-$(CONFIG_PPC_OF)	 += nv_of.o
+ {
+ 	u32 timing_h, timing_v, l;
+-	bool onoff, rf, ipc;
++	bool onoff, rf, ipc, vs, hs, de;
  
- nvidiafb-objs                    := $(nvidiafb-y)
-diff --git a/drivers/video/fbdev/nvidia/nv_of.c b/drivers/video/fbdev/nvidia/nv_of.c
-index 3bc13df4b120..5f3e5179c25a 100644
---- a/drivers/video/fbdev/nvidia/nv_of.c
-+++ b/drivers/video/fbdev/nvidia/nv_of.c
-@@ -19,9 +19,6 @@
+ 	timing_h = FLD_VAL(hsw-1, dispc.feat->sw_start, 0) |
+ 			FLD_VAL(hfp-1, dispc.feat->fp_start, 8) |
+@@ -2927,6 +2927,39 @@ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
+ 	dispc_write_reg(DISPC_TIMING_H(channel), timing_h);
+ 	dispc_write_reg(DISPC_TIMING_V(channel), timing_v);
  
- #include <asm/io.h>
++	switch (vsync_level) {
++	case OMAPDSS_SIG_ACTIVE_LOW:
++		vs = true;
++		break;
++	case OMAPDSS_SIG_ACTIVE_HIGH:
++		vs = false;
++		break;
++	default:
++		BUG();
++	}
++
++	switch (hsync_level) {
++	case OMAPDSS_SIG_ACTIVE_LOW:
++		hs = true;
++		break;
++	case OMAPDSS_SIG_ACTIVE_HIGH:
++		hs = false;
++		break;
++	default:
++		BUG();
++	}
++
++	switch (de_level) {
++	case OMAPDSS_SIG_ACTIVE_LOW:
++		de = true;
++		break;
++	case OMAPDSS_SIG_ACTIVE_HIGH:
++		de = false;
++		break;
++	default:
++		BUG();
++	}
++
+ 	switch (data_pclk_edge) {
+ 	case OMAPDSS_DRIVE_SIG_RISING_EDGE:
+ 		ipc = false;
+@@ -2954,10 +2987,10 @@ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
  
--#include <asm/prom.h>
--#include <asm/pci-bridge.h>
--
- #include "nv_type.h"
- #include "nv_local.h"
- #include "nv_proto.h"
-diff --git a/drivers/video/fbdev/nvidia/nv_proto.h b/drivers/video/fbdev/nvidia/nv_proto.h
-index ff5c410355ea..878a5ce02299 100644
---- a/drivers/video/fbdev/nvidia/nv_proto.h
-+++ b/drivers/video/fbdev/nvidia/nv_proto.h
-@@ -42,16 +42,8 @@ int nvidia_probe_i2c_connector(struct fb_info *info, int conn,
- #define nvidia_probe_i2c_connector(p, c, edid) (-1)
- #endif
+ 	l = FLD_VAL(onoff, 17, 17) |
+ 		FLD_VAL(rf, 16, 16) |
+-		FLD_VAL(de_level, 15, 15) |
++		FLD_VAL(de, 15, 15) |
+ 		FLD_VAL(ipc, 14, 14) |
+-		FLD_VAL(hsync_level, 13, 13) |
+-		FLD_VAL(vsync_level, 12, 12);
++		FLD_VAL(hs, 13, 13) |
++		FLD_VAL(vs, 12, 12);
  
--#ifdef CONFIG_PPC_OF
- int nvidia_probe_of_connector(struct fb_info *info, int conn,
- 			      u8 ** out_edid);
--#else
--static inline int nvidia_probe_of_connector(struct fb_info *info, int conn,
--				      u8 ** out_edid)
--{
--	return -1;
--}
--#endif
+ 	dispc_write_reg(DISPC_POL_FREQ(channel), l);
  
- /* in nv_accel.c */
- extern void NVResetGraphics(struct fb_info *info);
-diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
-index def041204676..4273c6ee8cf6 100644
---- a/drivers/video/fbdev/nvidia/nvidia.c
-+++ b/drivers/video/fbdev/nvidia/nvidia.c
-@@ -24,10 +24,6 @@
- #ifdef CONFIG_MTRR
- #include <asm/mtrr.h>
- #endif
--#ifdef CONFIG_PPC_OF
--#include <asm/prom.h>
--#include <asm/pci-bridge.h>
--#endif
- #ifdef CONFIG_BOOTX_TEXT
- #include <asm/btext.h>
- #endif
 -- 
-1.9.3
+2.3.0
 

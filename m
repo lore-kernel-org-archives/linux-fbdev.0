@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Feb 2015 12:48:57 +0000
-Subject: [PATCH 03/15] OMAPDSS: fix paddr check for TILER addresses
-Message-Id: <1424954949-12801-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 26 Feb 2015 12:49:03 +0000
+Subject: [PATCH 09/15] OMAPDSS: DISPC: fix div by zero issue in overlay scaling
+Message-Id: <1424954949-12801-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1424954949-12801-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,31 +11,37 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The DISPC driver checks that the buffer address is not 0. However, when
-using TILER, the address space is TILER specific and 0 is a valid
-address.
+omapdrm doesn't always configure the overlays correctly, causing the
+overlay setup functions to be called with zero timings. This leads to
+division by zero error.
 
-Fix the check to allow address of 0 for TILER.
+This happens, for example, when a HDMI cable is not connected, but a
+user tries to setup a plane with scaling.
+
+Fixing omapdrm is a big job, so for now let's check for the bad timings
+in DISPC and return an error.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Reported-by: srinivas pulukuru <srinivas.pulukuru@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dispc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/dispc.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index 31b743c70272..a19a1d4b2d19 100644
+index 8805266a52f4..1123111d3940 100644
 --- a/drivers/video/fbdev/omap2/dss/dispc.c
 +++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -2441,7 +2441,7 @@ static int dispc_ovl_setup_common(enum omap_plane plane,
- 	unsigned long pclk = dispc_plane_pclk_rate(plane);
- 	unsigned long lclk = dispc_plane_lclk_rate(plane);
+@@ -2322,6 +2322,11 @@ static int dispc_ovl_calc_scaling(unsigned long pclk, unsigned long lclk,
+ 	if (width = out_width && height = out_height)
+ 		return 0;
  
--	if (paddr = 0)
-+	if (paddr = 0 && rotation_type != OMAP_DSS_ROT_TILER)
++	if (pclk = 0 || mgr_timings->pixelclock = 0) {
++		DSSERR("cannot calculate scaling settings: pclk is zero\n");
++		return -EINVAL;
++	}
++
+ 	if ((caps & OMAP_DSS_OVL_CAP_SCALE) = 0)
  		return -EINVAL;
  
- 	out_width = out_width = 0 ? width : out_width;
 -- 
 2.3.0
 

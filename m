@@ -1,47 +1,42 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sat, 07 Feb 2015 20:53:35 +0000
-Subject: [PATCH 2/4] tridentfb: Fix set_lwidth on TGUI9440 and CYBER9320
-Message-Id: <1423342417-26069-2-git-send-email-linux@rainbow-software.org>
+From: Kevin Hao <haokexin@gmail.com>
+Date: Thu, 26 Feb 2015 12:08:20 +0000
+Subject: [PATCH v2 08/11] fbdev: kconfig: replace PPC_OF with PPC
+Message-Id: <1424952503-8247-9-git-send-email-haokexin@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423342417-26069-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1423342417-26069-1-git-send-email-linux@rainbow-software.org>
+References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linuxppc-dev@lists.ozlabs.org
 
-According to X.Org driver, chips older than TGUI9660 have only 1 width bit
-in AddColReg. Touching the 2nd one causes I2C/DDC to fail on TGUI9440.
+The PPC_OF is a ppc specific option which is used to mean that the
+firmware device tree access functions are available. Since all the
+ppc platforms have a device tree, it is aways set to 'y' for ppc.
+So it makes no sense to keep a such option in the current kernel.
+Replace it with PPC.
 
-Set only 1 bit of width in AddColReg on TGUI9440 and CYBER9320.
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- drivers/video/fbdev/tridentfb.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+v2: No change.
 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 7429713..01b43e9 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -673,8 +673,14 @@ static int get_nativex(struct tridentfb_par *par)
- static inline void set_lwidth(struct tridentfb_par *par, int width)
- {
- 	write3X4(par, VGA_CRTC_OFFSET, width & 0xFF);
--	write3X4(par, AddColReg,
--		 (read3X4(par, AddColReg) & 0xCF) | ((width & 0x300) >> 4));
-+	/* chips older than TGUI9660 have only 1 width bit in AddColReg */
-+	/* touching the other one breaks I2C/DDC */
-+	if (par->chip_id = TGUI9440 || par->chip_id = CYBER9320)
-+		write3X4(par, AddColReg,
-+		     (read3X4(par, AddColReg) & 0xEF) | ((width & 0x100) >> 4));
-+	else
-+		write3X4(par, AddColReg,
-+		     (read3X4(par, AddColReg) & 0xCF) | ((width & 0x300) >> 4));
- }
+ drivers/video/fbdev/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 3b818d7a0983..109462303087 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -479,7 +479,7 @@ config FB_ATARI
  
- /* For resolutions smaller than FP resolution stretch */
+ config FB_OF
+ 	bool "Open Firmware frame buffer device support"
+-	depends on (FB = y) && (PPC64 || PPC_OF) && (!PPC_PSERIES || PCI)
++	depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 -- 
-Ondrej Zary
+1.9.3
 

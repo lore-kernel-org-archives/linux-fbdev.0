@@ -1,15 +1,15 @@
 From: gyungoh@gmail.com
-Date: Thu, 05 Feb 2015 06:31:12 +0000
+Date: Fri, 27 Feb 2015 06:42:21 +0000
 Subject: [PATCH v11 1/6] mfd: Add support for Skyworks SKY81452 driver
-Message-Id: <1423117877-30667-2-git-send-email-jack.yoo@skyworksinc.com>
+Message-Id: <1425019346-4559-2-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423117877-30667-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1423117877-30667-1-git-send-email-jack.yoo@skyworksinc.com>
+References: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
-Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: sameo@linux.intel.com, lee.jones@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: broonie@kernel.org, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, treding@nvidia.com, p.zabel@pengutronix.de, arno@natisbad.org, kuninori.morimoto.gx@renesas.com
 
 From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
@@ -60,10 +60,10 @@ Added message for exception or errors
  create mode 100644 include/linux/mfd/sky81452.h
 
 diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 2e6b731..368f650 100644
+index 38356e3..bc3b540 100644
 --- a/drivers/mfd/Kconfig
 +++ b/drivers/mfd/Kconfig
-@@ -714,6 +714,18 @@ config MFD_SM501_GPIO
+@@ -753,6 +753,18 @@ config MFD_SM501_GPIO
  	 lines on the SM501. The platform data is used to supply the
  	 base number for the first GPIO line to register.
  
@@ -83,13 +83,13 @@ index 2e6b731..368f650 100644
         bool "SMSC ECE1099 series chips"
         depends on I2C=y
 diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 53467e2..afae3ca 100644
+index 19f3d74..75b3ffb 100644
 --- a/drivers/mfd/Makefile
 +++ b/drivers/mfd/Makefile
-@@ -176,6 +176,7 @@ obj-$(CONFIG_MFD_IPAQ_MICRO)	+= ipaq-micro.o
- obj-$(CONFIG_MFD_MENF21BMC)	+= menf21bmc.o
+@@ -178,6 +178,7 @@ obj-$(CONFIG_MFD_MENF21BMC)	+= menf21bmc.o
  obj-$(CONFIG_MFD_HI6421_PMIC)	+= hi6421-pmic-core.o
  obj-$(CONFIG_MFD_DLN2)		+= dln2.o
+ obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
 +obj-$(CONFIG_MFD_SKY81452)	+= sky81452.o
  
  intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o

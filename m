@@ -1,73 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 20 Feb 2015 12:12:12 +0000
-Subject: Re: [PATCH] video: ARM CLCD: Add missing error check for devm_kzalloc
-Message-Id: <54E7249C.8050006@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="qow35mdNAIohDJv4JDGNgL2cVxCmF8L56"
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 27 Feb 2015 00:11:15 +0000
+Subject: Re: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
+Message-Id: <1424995875.4645.42.camel@kernel.crashing.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423647406-858-1-git-send-email-kiran.padwal@smartplayin.com>
-In-Reply-To: <1423647406-858-1-git-send-email-kiran.padwal@smartplayin.com>
-To: Kiran Padwal <kiran.padwal@smartplayin.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Kiran Padwal <kiran.padwal21@gmail.com>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+ <1422712065-9403-4-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1422712065-9403-4-git-send-email-haokexin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Kevin Hao <haokexin@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Paul Mackerras <paulus@samba.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
---qow35mdNAIohDJv4JDGNgL2cVxCmF8L56
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
+> The PPC_OF is a ppc specific option which is used to mean that the
+> firmware device tree access functions are available. Since all the
+> ppc platforms have a device tree, it is aways set to 'y' for ppc.
+> So it makes no sense to keep a such option in the current kernel.
+> Replace it with PPC.
+> 
+> Signed-off-by: Kevin Hao <haokexin@gmail.com>
 
-On 11/02/15 11:36, Kiran Padwal wrote:
-> This patch add a missing check on the return value of devm_kzalloc,
-> which would cause a NULL pointer dereference in a OOM situation.
->=20
-> Signed-off-by: Kiran Padwal <kiran.padwal@smartplayin.com>
+For this and generally the whole series,
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Which tree do we expect this to go through ?
+
+Cheers,
+Ben.
+
 > ---
->  drivers/video/fbdev/amba-clcd.c |    3 +++
->  1 file changed, 3 insertions(+)
->=20
-> diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba=
--clcd.c
-> index 32c0b6b..9362424 100644
-> --- a/drivers/video/fbdev/amba-clcd.c
-> +++ b/drivers/video/fbdev/amba-clcd.c
-> @@ -599,6 +599,9 @@ static int clcdfb_of_get_mode(struct device *dev, s=
-truct device_node *endpoint,
-> =20
->  	len =3D clcdfb_snprintf_mode(NULL, 0, mode);
->  	name =3D devm_kzalloc(dev, len + 1, GFP_KERNEL);
-> +	if (!name)
-> +		return -ENOMEM;
-> +
->  	clcdfb_snprintf_mode(name, len + 1, mode);
->  	mode->name =3D name;
-> =20
->=20
+>  drivers/video/fbdev/aty/aty128fb.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
+> index aedf2fbf9bf6..0156954bf340 100644
+> --- a/drivers/video/fbdev/aty/aty128fb.c
+> +++ b/drivers/video/fbdev/aty/aty128fb.c
+> @@ -965,7 +965,7 @@ static void __iomem *aty128_find_mem_vbios(struct aty128fb_par *par)
+>  /* fill in known card constants if pll_block is not available */
+>  static void aty128_timings(struct aty128fb_par *par)
+>  {
+> -#ifdef CONFIG_PPC_OF
+> +#ifdef CONFIG_PPC
+>  	/* instead of a table lookup, assume OF has properly
+>  	 * setup the PLL registers and use their values
+>  	 * to set the XCLK values and reference divider values */
+> @@ -979,7 +979,7 @@ static void aty128_timings(struct aty128fb_par *par)
+>  	if (!par->constants.ref_clk)
+>  		par->constants.ref_clk = 2950;
+>  
+> -#ifdef CONFIG_PPC_OF
+> +#ifdef CONFIG_PPC
+>  	x_mpll_ref_fb_div = aty_ld_pll(X_MPLL_REF_FB_DIV);
+>  	xclk_cntl = aty_ld_pll(XCLK_CNTL) & 0x7;
+>  	Nx = (x_mpll_ref_fb_div & 0x00ff00) >> 8;
 
-Thanks, queued for 3.20.
 
- Tomi
-
-
-
---qow35mdNAIohDJv4JDGNgL2cVxCmF8L56
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJU5yScAAoJEPo9qoy8lh71a/IP/1NujYjwom4a1xex8pPS92eC
-VqGsyWxG6oD+fR50qzCzGWohNC+YrCYGJdtOGgXHR9tpgj0a4QCl4LqvozYuK64C
-WZXyefvY73Ennj0Lfk01+lG5qekn3aqcXUkgBU5Y/d/WQyxFirGidc01XHSxnovM
-xVA8OCkHXvxqEtj9Vuti4S+Yh7PBvPrv21ymXUK7UDPBBL6DTuRhgk7E815s4liO
-nQUHI0c/syK7IkLuIyZLQ39SV+xCNnSzmbZBl0Z7cQIE9GKHi4qYx9aE4mjbPG3n
-eReBxs7YIbnBF428SjwGtU7zST5aFvmKq3vDjIi0BR+vFLeJAWq3l1GGIXuT5giN
-O0JdIywSN5Ic8YBebdIPoB5UZ3LbuhnTa0kbw6WDac9ZiIqPiXMg7lvqCgqBLtcx
-2Admt6DvkmHRX7PE9lw85NzYz0V0u/vkLrduUokmT+Jh1j105oYZAgKrpR1/3lAP
-o/jBlsgl5cFYPGNFXSovDm8JEfSyvipybe6tmF6Jppg6xLWTo71gOZZcGnGK9wMQ
-3ck560MZiFMDc8CxOs6x2sRiv0OTCZwVGvI0uk6hdg0LIE5FkYGnNA2nwraQQuMi
-9l0RVaVhUytDAaYMNqc519m2pIg0myMOW32AzMYeeOHvUQDtWZKdg2b1QdAzT/LW
-Rex9Z25LkAWqrJUwMRiz
-=DkPh
------END PGP SIGNATURE-----
-
---qow35mdNAIohDJv4JDGNgL2cVxCmF8L56--

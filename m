@@ -1,15 +1,15 @@
 From: gyungoh@gmail.com
-Date: Thu, 05 Feb 2015 06:31:17 +0000
+Date: Fri, 27 Feb 2015 06:42:26 +0000
 Subject: [PATCH v11 6/6] devicetree: Add SKY81452 to the Trivial Devices list
-Message-Id: <1423117877-30667-7-git-send-email-jack.yoo@skyworksinc.com>
+Message-Id: <1425019346-4559-7-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423117877-30667-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1423117877-30667-1-git-send-email-jack.yoo@skyworksinc.com>
+References: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
-Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: sameo@linux.intel.com, lee.jones@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: broonie@kernel.org, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, treding@nvidia.com, p.zabel@pengutronix.de, arno@natisbad.org, kuninori.morimoto.gx@renesas.com
 
 From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
@@ -49,10 +49,10 @@ Add SKY81452 to the Trivial Devices list
  1 file changed, 1 insertion(+)
 
 diff --git a/Documentation/devicetree/bindings/i2c/trivial-devices.txt b/Documentation/devicetree/bindings/i2c/trivial-devices.txt
-index 9f41d05..b026167 100644
+index aaa8325..003bd77 100644
 --- a/Documentation/devicetree/bindings/i2c/trivial-devices.txt
 +++ b/Documentation/devicetree/bindings/i2c/trivial-devices.txt
-@@ -88,6 +88,7 @@ ricoh,rv5c386		I2C bus SERIAL INTERFACE REAL-TIME CLOCK IC
+@@ -89,6 +89,7 @@ ricoh,rv5c386		I2C bus SERIAL INTERFACE REAL-TIME CLOCK IC
  ricoh,rv5c387a		I2C bus SERIAL INTERFACE REAL-TIME CLOCK IC
  samsung,24ad0xd1	S524AD0XF1 (128K/256K-bit Serial EEPROM for Low Power)
  sii,s35390a		2-wire CMOS real-time clock

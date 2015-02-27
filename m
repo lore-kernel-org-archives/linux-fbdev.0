@@ -1,113 +1,75 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Fri, 27 Feb 2015 20:39:38 +0000
-Subject: Re: [PATCH v11 0/6] Add Skyworks SKY81452 device drivers
-Message-Id: <20150227203938.GA12821@x1>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Fri, 27 Feb 2015 19:15:48 +0000
+Subject: [PATCH 2/2] fbcon: use the cursor blink interval provided by vt
+Message-Id: <alpine.LNX.2.11.1502271914040.4248@localhost>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
+References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain> <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain> <20150225094946.GA24627@amd> <alpine.LNX.2.11.1502252319330.276@localhost> <20150226220243.GC9935@amd>
+ <alpine.LNX.2.11.1502271905580.4212@localhost>
+In-Reply-To: <alpine.LNX.2.11.1502271905580.4212@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: gyungoh@gmail.com
-Cc: sameo@linux.intel.com, robh+dt@kernel.org, jg1.han@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org, broonie@kernel.org, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, treding@nvidia.com, p.zabel@pengutronix.de, arno@natisbad.org, kuninori.morimoto.gx@renesas.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Fri, 27 Feb 2015, gyungoh@gmail.com wrote:
+vt now provides a cursor blink interval via vc_data. Use this
+interval instead of the currently hardcoded 200 msecs. Store it in
+fbcon_ops to avoid locking the console in cursor_timer_handler().
 
-> From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
->=20
-> This patch set includes regulator and backlight driver for SKY81452.
-> Also it includes documents for device tree and module.
-> sky81452-regulator was already applied. So this series doesn't
-> include it.
->=20
-> v11:
-> Renamed 'skyworks,en-channels' property to led-sources.
-> Removed unused property 'skyworks,ovp-level'.
->=20
-> v10:
-> Removed trivial get_brightness implementations for sky81452-backlight
->=20
-> v9:
-> Removed the change to remove MODULE_VERSION() for sky81452-regulator
->=20
-> v8:
-> Renamed property names for backlight with vendor prefix
-> Modified gpio-enable property to generic property for GPIO
-> Made up the example for backlight DT
-> Changed the DT parsing of regulator using regulator_node and of_match
->=20
-> v7:
-> Modified licensing text to GPLv2
-> Split Kconfig renaming from DT patch
->=20
-> v6:
-> Added new line character at the end of line of dev_err()
->=20
-> v5:
-> Changed DT for regulator : 'lout' node should be defined under 'regulator'
-> Removed compatible string from sky81452-regulator driver
-> Modified sky81452-regulator to return EINVAL when of_node is NULL
-> Move sky81452-backlight.h to include/linux/platform_data
->=20
-> v4:
-> Removed MODULE_VERSION()
-> Modified license to GPLv2
-> Removed calling to backlight_device_unregister() in sky81452-backlight
->=20
-> v3:
-> Cleaned-up DBG messages
-> Cleaned-up DT
-> Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
-> Assigned mfd_cell.of_compatible for binding device node
-> Modified error messages
-> Modified sky81452-regulator to return ENODATA when of_node is NULL
->=20
-> v2:
-> Split the patches for each sub-system
-> Added 'reg' attribute for I2C address in device tree documents
-> Added 'compatible' attribute in child drivers
-> Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
-> Changed the dependency from I2C=3Dy to I2C, for CONFIG_MFD_SKY81452
-> Added message for exception or errors.
-> Added vendor prefix for Skyworks Solutions, Inc.
-> Add SKY81452 to the Trivial Devices list
->=20
-> Gyungoh Yoo (6):
->   mfd: Add support for Skyworks SKY81452 driver
->   backlight: Add support Skyworks SKY81452 backlight driver
->   devicetree: Add new SKY81452 mfd binding
->   devicetree: Add new SKY81452 backlight binding
->   devicetree: Add vendor prefix for Skyworks Solutions, Inc.
->   devicetree: Add SKY81452 to the Trivial Devices list
->=20
->  .../devicetree/bindings/i2c/trivial-devices.txt    |   1 +
->  Documentation/devicetree/bindings/mfd/sky81452.txt |  35 ++
->  .../devicetree/bindings/vendor-prefixes.txt        |   1 +
->  .../video/backlight/sky81452-backlight.txt         |  29 ++
->  drivers/mfd/Kconfig                                |  12 +
->  drivers/mfd/Makefile                               |   1 +
->  drivers/mfd/sky81452.c                             | 108 +++++++
->  drivers/video/backlight/Kconfig                    |  10 +
->  drivers/video/backlight/Makefile                   |   1 +
->  drivers/video/backlight/sky81452-backlight.c       | 353 +++++++++++++++=
-++++++
->  include/linux/mfd/sky81452.h                       |  31 ++
->  include/linux/platform_data/sky81452-backlight.h   |  46 +++
->  12 files changed, 628 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
->  create mode 100644 Documentation/devicetree/bindings/video/backlight/sky=
-81452-backlight.txt
->  create mode 100644 drivers/mfd/sky81452.c
->  create mode 100644 drivers/video/backlight/sky81452-backlight.c
->  create mode 100644 include/linux/mfd/sky81452.h
->  create mode 100644 include/linux/platform_data/sky81452-backlight.h
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+ drivers/video/console/fbcon.c | 10 +++++-----
+ drivers/video/console/fbcon.h |  1 +
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-Correct me if I'm wrong, but I believe you have all of the relevant
-Acks now.  If so, I plan to pick this up next week and take it
-through the MFD tree.
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index b972106..05b1d1a 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -402,7 +402,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 
+ 	queue_work(system_power_efficient_wq, &info->queue);
+-	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
++	mod_timer(&ops->cursor_timer, jiffies + ops->cur_blink_jiffies);
+ }
+ 
+ static void fbcon_add_cursor_timer(struct fb_info *info)
+@@ -417,7 +417,7 @@ static void fbcon_add_cursor_timer(struct fb_info *info)
+ 
+ 		init_timer(&ops->cursor_timer);
+ 		ops->cursor_timer.function = cursor_timer_handler;
+-		ops->cursor_timer.expires = jiffies + HZ / 5;
++		ops->cursor_timer.expires = jiffies + ops->cur_blink_jiffies;
+ 		ops->cursor_timer.data = (unsigned long ) info;
+ 		add_timer(&ops->cursor_timer);
+ 		ops->flags |= FBCON_FLAGS_CURSOR_TIMER;
+@@ -1309,9 +1309,9 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
+ 	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
+ 		return;
+ 
+-	if (vc->vc_cursor_type & 0x10)
+-		fbcon_del_cursor_timer(info);
+-	else
++	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
++	fbcon_del_cursor_timer(info);
++	if (!(vc->vc_cursor_type & 0x10))
+ 		fbcon_add_cursor_timer(info);
+ 
+ 	ops->cursor_flash = (mode = CM_ERASE) ? 0 : 1;
+diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+index 6bd2e0c..7aaa4ea 100644
+--- a/drivers/video/console/fbcon.h
++++ b/drivers/video/console/fbcon.h
+@@ -70,6 +70,7 @@ struct fbcon_ops {
+ 	struct fb_cursor cursor_state;
+ 	struct display *p;
+         int    currcon;	                /* Current VC. */
++	int    cur_blink_jiffies;
+ 	int    cursor_flash;
+ 	int    cursor_reset;
+ 	int    blank_state;
+-- 
+2.3.0
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

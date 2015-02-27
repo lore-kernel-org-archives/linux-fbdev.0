@@ -1,13 +1,15 @@
 From: gyungoh@gmail.com
-Date: Thu, 05 Feb 2015 06:31:11 +0000
+Date: Fri, 27 Feb 2015 06:42:20 +0000
 Subject: [PATCH v11 0/6] Add Skyworks SKY81452 device drivers
-Message-Id: <1423117877-30667-1-git-send-email-jack.yoo@skyworksinc.com>
+Message-Id: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1423117877-30667-1-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1423117877-30667-1-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sameo@linux.intel.com, lee.jones@linaro.org, grant.likely@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, cooloney@gmail.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
-Cc: akpm@linux-foundation.org, jic23@kernel.org, thomas.petazzoni@free-electrons.com, ktsai@capellamicro.com, hs@denx.de, stwiss.opensource@diasemi.com, matti.vaittinen@nsn.com, broonie@kernel.org, jason@lakedaemon.net, heiko@sntech.de, shawn.guo@freescale.com, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: sameo@linux.intel.com, lee.jones@linaro.org, robh+dt@kernel.org, jg1.han@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org
+Cc: broonie@kernel.org, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, treding@nvidia.com, p.zabel@pengutronix.de, arno@natisbad.org, kuninori.morimoto.gx@renesas.com
 
 From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 
@@ -34,7 +36,7 @@ Changed the DT parsing of regulator using regulator_node and of_match
 
 v7:
 Modified licensing text to GPLv2
-Splitted Kconfig renaming from DT patch
+Split Kconfig renaming from DT patch
 
 v6:
 Added new line character at the end of line of dev_err()
@@ -85,10 +87,10 @@ Gyungoh Yoo (6):
  drivers/mfd/sky81452.c                             | 108 +++++++
  drivers/video/backlight/Kconfig                    |  10 +
  drivers/video/backlight/Makefile                   |   1 +
- drivers/video/backlight/sky81452-backlight.c       | 352 +++++++++++++++++++++
+ drivers/video/backlight/sky81452-backlight.c       | 353 +++++++++++++++++++++
  include/linux/mfd/sky81452.h                       |  31 ++
  include/linux/platform_data/sky81452-backlight.h   |  46 +++
- 12 files changed, 627 insertions(+)
+ 12 files changed, 628 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
  create mode 100644 Documentation/devicetree/bindings/video/backlight/sky81452-backlight.txt
  create mode 100644 drivers/mfd/sky81452.c

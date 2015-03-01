@@ -1,76 +1,45 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 09 Mar 2015 09:41:15 +0000
-Subject: Re: [PATCH v11 6/6] devicetree: Add SKY81452 to the Trivial Devices list
-Message-Id: <20150309094115.GQ3427@x1>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Sun, 01 Mar 2015 22:27:54 +0000
+Subject: [PATCHv2 01/10] fbdev: ssd1307fb: fix memory address smem_start.
+Message-Id: <1425248883-25367-2-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
- <1425019346-4559-7-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1425019346-4559-7-git-send-email-jack.yoo@skyworksinc.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1425248883-25367-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1425248883-25367-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: gyungoh@gmail.com
-Cc: sameo@linux.intel.com, robh+dt@kernel.org, jg1.han@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org, broonie@kernel.org, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, treding@nvidia.com, p.zabel@pengutronix.de, arno@natisbad.org, kuninori.morimoto.gx@renesas.com
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-Applied, thanks.
+the smem_start pointer of the framebuffer info struct needs to hold the
+physical address rather than the virtual address. This patch fixes a
+driver crash on mmaping the framebuffer memory due to an access to the
+memory address.
 
-On Fri, 27 Feb 2015, gyungoh@gmail.com wrote:
+Note however that the memory allocated by kzalloc is not page aligned,
+while the address presented on a mmap call is aligned to the next page
+boudary.
 
-> From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
->=20
-> Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> ---
-> Changes v11:
-> Nothing
->=20
-> Changes v10:
-> Nothing
->=20
-> Changes v9:
-> Nothing
->=20
-> Changes v8:
-> Nothing
->=20
-> Changes v7:
-> Nothing
->=20
-> Changes v6:
-> Nothing
->=20
-> Changes v5:
-> Nothing
->=20
-> Changes v4:
-> Nothing
->=20
-> Changes v3:
-> Nothing
->=20
-> Changes v2:
-> Add SKY81452 to the Trivial Devices list
->=20
->  Documentation/devicetree/bindings/i2c/trivial-devices.txt | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/i2c/trivial-devices.txt b/=
-Documentation/devicetree/bindings/i2c/trivial-devices.txt
-> index aaa8325..003bd77 100644
-> --- a/Documentation/devicetree/bindings/i2c/trivial-devices.txt
-> +++ b/Documentation/devicetree/bindings/i2c/trivial-devices.txt
-> @@ -89,6 +89,7 @@ ricoh,rv5c386		I2C bus SERIAL INTERFACE REAL-TIME CLOCK=
- IC
->  ricoh,rv5c387a		I2C bus SERIAL INTERFACE REAL-TIME CLOCK IC
->  samsung,24ad0xd1	S524AD0XF1 (128K/256K-bit Serial EEPROM for Low Power)
->  sii,s35390a		2-wire CMOS real-time clock
-> +skyworks,sky81452	Skyworks SKY81452: Six-Channel White LED Driver with T=
-ouch Panel Bias Supply
->  st-micro,24c256		i2c serial eeprom  (24cxx)
->  stm,m41t00		Serial Access TIMEKEEPER
->  stm,m41t62		Serial real-time clock (RTC) with alarm
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+---
+ drivers/video/fbdev/ssd1307fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index f7ed6d9..61e0ce8 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -515,7 +515,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 	info->var.blue.offset =3D 0;
+=20
+ 	info->screen_base =3D (u8 __force __iomem *)vmem;
+-	info->fix.smem_start =3D (unsigned long)vmem;
++	info->fix.smem_start =3D __pa(vmem);
+ 	info->fix.smem_len =3D vmem_size;
+=20
+ 	fb_deferred_io_init(info);
 --=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.3.0
+

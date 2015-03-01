@@ -1,74 +1,86 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 11 Mar 2015 07:51:10 +0000
-Subject: Re: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
-Message-Id: <54FFF3EE.3070400@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="oGwk8lbKunKadRHJ00277hRp59sVMXKAR"
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Sun, 01 Mar 2015 22:28:00 +0000
+Subject: [PATCHv2 07/10] fbdev: ssd1307fb: Add module parameter to set refresh rate of the display
+Message-Id: <1425248883-25367-8-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
- <1422712065-9403-4-git-send-email-haokexin@gmail.com>
- <1424995875.4645.42.camel@kernel.crashing.org>
- <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
- <54FEE230.6030006@ti.com>
- <20150311043811.GF28582@pek-khao-d1.corp.ad.wrs.com>
-In-Reply-To: <20150311043811.GF28582@pek-khao-d1.corp.ad.wrs.com>
-To: Kevin Hao <haokexin@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-
---oGwk8lbKunKadRHJ00277hRp59sVMXKAR
-Content-Type: text/plain; charset=windows-1252
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1425248883-25367-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1425248883-25367-1-git-send-email-niederp@physik.uni-kl.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-On 11/03/15 06:38, Kevin Hao wrote:
-> On Tue, Mar 10, 2015 at 02:23:12PM +0200, Tomi Valkeinen wrote:
->>> I just sent out a v2 [1] a few hours earlier with some minor updates.=
- We plan
->>> to merge this patch series via the powerpc tree in 4.1 cycle if I can=
- collect
->>> all the acks from the corresponding driver maintainers.
->>
->> Fbdev changes look ok to me.
->=20
-> Hi Tomi,
->=20
-> I assume that I can add a "Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.=
-com>"
-> for all the following patches, right?
->   http://patchwork.ozlabs.org/patch/443890/
->   http://patchwork.ozlabs.org/patch/443891/
->   http://patchwork.ozlabs.org/patch/443892/
->   http://patchwork.ozlabs.org/patch/443893/
->   http://patchwork.ozlabs.org/patch/443894/
->   http://patchwork.ozlabs.org/patch/443895/
->   http://patchwork.ozlabs.org/patch/443897/
+This patch adds the module parameter "refreshrate" to set delay for the
+deferred io. The refresh rate is given in units of Hertz. The default
+refresh rate is 1 Hz.
 
-Yes, that's right. Sorry for not being clear on the ack.
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+---
+ drivers/video/fbdev/ssd1307fb.c | 23 +++++++++++++++++------
+ 1 file changed, 17 insertions(+), 6 deletions(-)
 
- Tomi
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index c7ed287..ea58e87 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -43,6 +43,11 @@
+ #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
+ #define	SSD1307FB_SET_VCOMH		0xdb
+=20
++#define REFRASHRATE 1
++
++static u_int refreshrate =3D REFRASHRATE;
++module_param(refreshrate, uint, 0);
++
+ static u_int contrast =3D 128;
+ module_param(contrast, uint, S_IRUGO);
+=20
+@@ -270,11 +275,6 @@ static void ssd1307fb_deferred_io(struct fb_info *info,
+ 	ssd1307fb_update_display(info->par);
+ }
+=20
+-static struct fb_deferred_io ssd1307fb_defio =3D {
+-	.delay		=3D HZ,
+-	.deferred_io	=3D ssd1307fb_deferred_io,
+-};
+-
+ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ {
+ 	int ret;
+@@ -475,6 +475,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ {
+ 	struct fb_info *info;
+ 	struct device_node *node =3D client->dev.of_node;
++	struct fb_deferred_io *ssd1307fb_defio;
+ 	u32 vmem_size;
+ 	struct ssd1307fb_par *par;
+ 	u8 *vmem;
+@@ -544,10 +545,20 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 		goto fb_alloc_error;
+ 	}
+=20
++	ssd1307fb_defio =3D devm_kzalloc(&client->dev, sizeof(struct fb_deferred_=
+io), GFP_KERNEL);
++	if (!ssd1307fb_defio) {
++		dev_err(&client->dev, "Couldn't allocate deferred io.\n");
++		ret =3D -ENOMEM;
++		goto fb_alloc_error;
++	}
++
++	ssd1307fb_defio->delay =3D HZ/refreshrate;
++	ssd1307fb_defio->deferred_io =3D ssd1307fb_deferred_io;
++
+ 	info->fbops =3D &ssd1307fb_ops;
+ 	info->fix =3D ssd1307fb_fix;
+ 	info->fix.line_length =3D par->width / 8;
+-	info->fbdefio =3D &ssd1307fb_defio;
++	info->fbdefio =3D ssd1307fb_defio;
+=20
+ 	info->var =3D ssd1307fb_var;
+ 	info->var.xres =3D par->width;
+--=20
+2.3.0
 
-
-
---oGwk8lbKunKadRHJ00277hRp59sVMXKAR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJU//PxAAoJEPo9qoy8lh719t0P/jVOSwn7WVlpsLLqEezSiLCH
-kB/+E6GQ5OGW82TjvhZYIA553eci7OeeY+Vvuj4lfkojV/kJVTBWaUCpZNbT+CmN
-agsrSLkr379YcSPITWoZg6je74a+jEzh6Fq0KViRL+xjgSQ6p14VTkRaz5oMeLVB
-qqZHYSS1HpXmQZQc5dB3TekeVumGH6jWNVM+YjC68yks0/TWXikA4XG15QVQkPIB
-LtsFOw0RlLuSAXXm6TClaQCPfbI3aj69TdSJG6Ge2syit/wURlbMSBTkVrmKgyjF
-f7vquy/VHeIYKr5wR2N31x7fcG1hDac5gxmaaulhiA/YgVPuuZBrGlMrgCTSfIpQ
-O30cpPKgXNJJmttH0XZjZzflVQesxQjVal1GAKbW/jvf8mHMCh1h06QwYTyH5nrJ
-lWtRux5VCOr68yYUU7h+uiRmYJZbSlvIJFjtKF1Q7V4sAmHZ4qzij+r6lb8QPFID
-HaOi+cd1d37AKUJNCBtRGGeR8Y4cc54HXxauQz96vTq5zaYpXOpr5me/uUjcZpGe
-vSEzEpvtzrXQm6KXqj0pvaIHDgL5DEzXr7PTJQL8QHpph52/8tSTbBJnG/YwsfVT
-jUYyny8OUs0fkIZ9opsFGFVp+nUT3UvnSxCQBjQ7lZ8Qi3c/XVMRS/sevKD2rMna
-J87o9N22U+lkFLe7l+VL
-=Z6JI
------END PGP SIGNATURE-----
-
---oGwk8lbKunKadRHJ00277hRp59sVMXKAR--

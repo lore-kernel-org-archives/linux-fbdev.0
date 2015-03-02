@@ -1,29 +1,55 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Thu, 12 Mar 2015 10:44:00 +0000
-Subject: Re: [PATCH] staging: sm750fb: if else block checkpath warnings
-Message-Id: <20150312104400.GA22836@kroah.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Mon, 02 Mar 2015 16:00:29 +0000
+Subject: Re: [PATCH] video: ARM CLCD: Added support for FBIO_WAITFORVSYNC
+Message-Id: <1425312029.3092.1.camel@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150312103319.GA19906@localhost.localdomain>
-In-Reply-To: <20150312103319.GA19906@localhost.localdomain>
+References: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com>
+	 <1424898082-1522-3-git-send-email-arun.ramamurthy@broadcom.com>
+In-Reply-To: <1424898082-1522-3-git-send-email-arun.ramamurthy-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ragavendra BN <ragavendra.bn@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Arun Ramamurthy <arun.ramamurthy-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dtor-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Anatol Pomazau <anatol-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Jonathan Richardson <jonathar-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, "bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org" <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 
-On Thu, Mar 12, 2015 at 03:33:19AM -0700, Ragavendra BN wrote:
-> Signed-off-by: Ragavendra BN <ragavendra.bn@gmail.com>
+On Wed, 2015-02-25 at 21:01 +0000, Arun Ramamurthy wrote:
+> Added ioctl and interrupt handler functions to support FBIO_WAITFORVSYNC
+> Also corrected documentation to make interrupts and interrupt-names
+> optional as they are not required properties.
+
+You may not be aware of this fact, but its the "documentation" what
+defines what properties are required...
+
+> Reviewed-by: Ray Jui <rjui@broadcom.com>
+> Reviewed-by: Scott Branden <sbranden@broadcom.com>
+> Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>0
+> ---
+>  .../devicetree/bindings/video/arm,pl11x.txt        | 11 +--
+>  drivers/video/fbdev/amba-clcd.c                    | 82 ++++++++++++++++++++++
+>  include/linux/amba/clcd.h                          |  4 ++
+>  3 files changed, 89 insertions(+), 8 deletions(-)
 > 
+> diff --git a/Documentation/devicetree/bindings/video/arm,pl11x.txt b/Documentation/devicetree/bindings/video/arm,pl11x.txt
+> index 2262cdb..7d19024 100644
+> --- a/Documentation/devicetree/bindings/video/arm,pl11x.txt
+> +++ b/Documentation/devicetree/bindings/video/arm,pl11x.txt
+> @@ -10,14 +10,6 @@ Required properties:
+>  
+>  - reg: base address and size of the control registers block
+>  
+> -- interrupt-names: either the single entry "combined" representing a
+> -	combined interrupt output (CLCDINTR), or the four entries
+> -	"mbe", "vcomp", "lnbu", "fuf" representing the individual
+> -	CLCDMBEINTR, CLCDVCOMPINTR, CLCDLNBUINTR, CLCDFUFINTR interrupts
+> -
+> -- interrupts: contains an interrupt specifier for each entry in
+> -	interrupt-names
+> -
+>  - clock-names: should contain "clcdclk" and "apb_pclk"
+>  
+>  - clocks: contains phandle and clock specifier pairs for the entries
 
-This goes on the bottom of the changelog text.
+So no, you can't do that.
 
+Pawel
 
-> This patch fixes the coding style warnings found by checkpath.pl for
-> the if else block
-
-It also does something else, so I have to reject this.  Please be very
-specific as to what you are doing here.
-
-thanks,
-
-greg k-h

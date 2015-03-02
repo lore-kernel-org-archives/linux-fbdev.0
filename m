@@ -1,36 +1,37 @@
 From: Pavel Machek <pavel@ucw.cz>
-Date: Sat, 28 Mar 2015 07:51:06 +0000
-Subject: Re: [PATCH v2 3/3] console_codes.4: Add CSI sequence for cursor blink interval
-Message-Id: <20150328075104.GC5248@xo-6d-61-c0.localdomain>
+Date: Mon, 02 Mar 2015 21:03:49 +0000
+Subject: Re: [PATCH] OMAP: DSS: DPI: disable vt-switch on suspend/resume.
+Message-Id: <20150302210349.GE13270@amd>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
- <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
- <20150225094946.GA24627@amd>
- <alpine.LNX.2.11.1502252319330.276@localhost>
- <20150226220243.GC9935@amd>
- <alpine.LNX.2.11.1502271905580.4212@localhost>
- <alpine.LNX.2.11.1502271911380.4248@localhost>
- <20150325111949.GA24230@kroah.com>
- <alpine.DEB.2.11.1503261341260.2164@local>
- <alpine.DEB.2.11.1503261356490.2411@local>
-In-Reply-To: <alpine.DEB.2.11.1503261356490.2411@local>
+References: <20150225203708.0eb2fa96@notabene.brown>
+ <54ED9DF8.8030105@ti.com>
+ <20150226092646.7e20df30@notabene.brown>
+In-Reply-To: <20150226092646.7e20df30@notabene.brown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Scot Doyle <lkml14-enLWO88E2pdl57MIdRCFDg@public.gmane.org>
-Cc: Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: NeilBrown <neilb@suse.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, GTA04 owners <gta04-owner@goldelico.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Thu 2015-03-26 13:57:44, Scot Doyle wrote:
-> Add a Console Private CSI sequence to specify the current console's
-> cursor blink interval. The interval is specified as a number of
-> milliseconds until the next cursor display state toggle, from 50 to
-> 65535.
+Hi!
+
+> > Looking at the drivers/tty/vt/vt_ioctl.c, it sounds to me that we should
+> > always do pm_set_vt_switch(0), as omapdss restores everything just fine
+> > on resume. Although it makes me wonder how it works if there are two
+> > display controllers, one needing the switch and the other not...
 > 
-> Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+> I wondered that too.  It would seem to make more sense for
+> pm_set_vt_switch(0) to be the default, that drivers which need the textmode
+> switch should call (1).  But I suspect there are "historical reasons" for the
+> current situation.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Well... historically, we did not have drivers for graphics cards --
+kernel did not know how to handle it, only X knew. For cards that do
+not have kernel driver, only X one, we need to switch vts.
 
-
+For cards that have proper driver, we should be able to survive
+without VT switch.
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

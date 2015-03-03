@@ -1,43 +1,45 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Wed, 25 Mar 2015 19:50:54 +0000
-Subject: Re: [PATCH v1 03/47] devres: add devm_ioremap_wc()
-Message-Id: <20150325195054.GB12247@wotan.suse.de>
+From: Harald Geyer <harald@ccbib.org>
+Date: Tue, 03 Mar 2015 13:09:53 +0000
+Subject: [PATCH,RESEND] framebuffer: don't link fb_devio into kernel image unconditionally
+Message-Id: <E1YSma9-0001JA-6C@stardust.g4.wien.funkfeuer.at>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
- <1426893517-2511-4-git-send-email-mcgrof@do-not-panic.com>
- <CALCETrX5K4pZE0DqcEwJiKYZofCr6yjJGK8MhjhPXMHNLJ4TTQ@mail.gmail.com>
-In-Reply-To: <CALCETrX5K4pZE0DqcEwJiKYZofCr6yjJGK8MhjhPXMHNLJ4TTQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Juergen Gross <jgross@suse.com>, Jan Beulich <JBeulich@suse.com>, Borislav Petkov <bp@suse.de>, Suresh Siddha <suresh.b.siddha@intel.com>, venkatesh.pallipadi@intel.com, Dave Airlie <airlied@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, X86 ML <x86@kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-On Fri, Mar 20, 2015 at 04:49:51PM -0700, Andy Lutomirski wrote:
-> On Fri, Mar 20, 2015 at 4:17 PM, Luis R. Rodriguez
-> <mcgrof@do-not-panic.com> wrote:
-> > From: "Luis R. Rodriguez" <mcgrof@suse.com>
-> >
-> > We have devm_ioremap_nocache() but no devm_ioremap_wc()
-> > so add that. This will be used later.
-> >
-> > Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-> > Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Juergen Gross <jgross@suse.com>
-> > Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> > Cc: Andy Lutomirski <luto@amacapital.net>
-> > Cc: Dave Airlie <airlied@redhat.com>
-> > Cc: Antonino Daplas <adaplas@gmail.com>
-> > Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > Cc: linux-fbdev@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-> 
-> Looks good to me.
+CONFIG_FB_DEFERRED_IO is defined as bool while CONFIG_FB is defined as
+tristate. Currently fb_defio.o is linked into the kernel image even if
+CONFIG_FB=m. 
 
-Thanks, I'll peg a Reviewed-by.
+I fix this by updating the Makefile to link fb_defio.o into fb.o and thus
+go into one place with the other core framebuffer code.
 
- Luis
+This has been tested on arm/sunxi and arm/mxs.
+
+Signed-off-by: Harald Geyer <harald@ccbib.org>
+---
+Resending this patch as I didn't get any reply for over two weeks.
+
+ drivers/video/fbdev/core/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+index 67f28e2..23d86a8 100644
+--- a/drivers/video/fbdev/core/Makefile
++++ b/drivers/video/fbdev/core/Makefile
+@@ -3,6 +3,7 @@ obj-$(CONFIG_FB_CMDLINE)          += fb_cmdline.o
+ obj-$(CONFIG_FB)                  += fb.o
+ fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
+                                      modedb.o fbcvt.o
++fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
+ fb-objs                           := $(fb-y)
+ 
+ obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
+@@ -14,4 +15,3 @@ obj-$(CONFIG_FB_SYS_IMAGEBLIT) += sysimgblt.o
+ obj-$(CONFIG_FB_SYS_FOPS)      += fb_sys_fops.o
+ obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
+ obj-$(CONFIG_FB_DDC)           += fb_ddc.o
+-obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
+-- 
+2.1.4

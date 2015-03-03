@@ -1,95 +1,106 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 10 Mar 2015 12:38:23 +0000
-Subject: Re: [PATCH 2/3 v3] hyperv: hyperv_fb.c: match wait_for_completion_timeout return type
-Message-Id: <54FEE5BF.2010602@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="vk8qmrgQxi45D4t44SxlQnciNouSjpsHe"
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 03 Mar 2015 21:00:59 +0000
+Subject: [PATCH 4/5] [resend] gxt4500: Use write-combining for framebuffer (PAT and MTRR)
+Message-Id: <1425416460-10773-4-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1422527056-24929-1-git-send-email-der.herr@hofr.at>
-In-Reply-To: <1422527056-24929-1-git-send-email-der.herr@hofr.at>
-To: Nicholas Mc Guire <der.herr@hofr.at>, "K. Y. Srinivasan" <kys@microsoft.com>
-Cc: Haiyang Zhang <haiyangz@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, devel@linuxdriverproject.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1425416460-10773-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1425416460-10773-1-git-send-email-linux@rainbow-software.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
---vk8qmrgQxi45D4t44SxlQnciNouSjpsHe
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Use write-combining for framebuffer to greatly improve performance on x86.
+Add both ioremap_wc (for systems with PAT) and MTRR setup for non-PAT systems.
 
-On 29/01/15 12:24, Nicholas Mc Guire wrote:
-> The return type of wait_for_completion_timeout is unsigned long not
-> int. This patch fixes up the declarations only.
->=20
-> Signed-off-by: Nicholas Mc Guire <der.herr@hofr.at>
-> ---
->=20
-> v2: fixed subject line
-> v3: fixed patch description as recommended by Dan Carpenter
->     <dan.carpenter@oracle.com>
->=20
-> Patch was compile tested only for x86_64_defconfig + CONFIG_X86_VSMP=3D=
-y
-> CONFIG_HYPERV=3Dm, CONFIG_FB_HYPERV=3Dm
->=20
-> Patch is against 3.19.0-rc5 -next-20150123
->=20
->  drivers/video/fbdev/hyperv_fb.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hype=
-rv_fb.c
-> index 4254336..807ee22 100644
-> --- a/drivers/video/fbdev/hyperv_fb.c
-> +++ b/drivers/video/fbdev/hyperv_fb.c
-> @@ -415,7 +415,8 @@ static int synthvid_negotiate_ver(struct hv_device =
-*hdev, u32 ver)
->  	struct fb_info *info =3D hv_get_drvdata(hdev);
->  	struct hvfb_par *par =3D info->par;
->  	struct synthvid_msg *msg =3D (struct synthvid_msg *)par->init_buf;
-> -	int t, ret =3D 0;
-> +	int ret =3D 0;
-> +	unsigned long t;
-> =20
->  	memset(msg, 0, sizeof(struct synthvid_msg));
->  	msg->vid_hdr.type =3D SYNTHVID_VERSION_REQUEST;
-> @@ -488,7 +489,8 @@ static int synthvid_send_config(struct hv_device *h=
-dev)
->  	struct fb_info *info =3D hv_get_drvdata(hdev);
->  	struct hvfb_par *par =3D info->par;
->  	struct synthvid_msg *msg =3D (struct synthvid_msg *)par->init_buf;
-> -	int t, ret =3D 0;
-> +	int ret =3D 0;
-> +	unsigned long t;
-> =20
->  	/* Send VRAM location */
->  	memset(msg, 0, sizeof(struct synthvid_msg));
->=20
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+---
+ drivers/video/fbdev/gxt4500.c |   32 ++++++++++++++++++++++++++++++--
+ 1 file changed, 30 insertions(+), 2 deletions(-)
 
-Thanks, queued for 4.1.
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 442b07c..f278c82 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -13,6 +13,9 @@
+ #include <linux/pci_ids.h>
+ #include <linux/delay.h>
+ #include <linux/string.h>
++#ifdef CONFIG_MTRR
++#include <asm/mtrr.h>
++#endif
+ 
+ #define PCI_DEVICE_ID_IBM_GXT4500P	0x21c
+ #define PCI_DEVICE_ID_IBM_GXT6500P	0x21b
+@@ -142,7 +145,9 @@ static const unsigned char watfmt[] = {
+ 
+ struct gxt4500_par {
+ 	void __iomem *regs;
+-
++#ifdef CONFIG_MTRR
++	int mtrr_reg;
++#endif
+ 	int pixfmt;		/* pixel format, see DFA_PIX_* values */
+ 
+ 	/* PLL parameters */
+@@ -158,6 +163,10 @@ struct gxt4500_par {
+ /* mode requested by user */
+ static char *mode_option;
+ 
++#ifdef CONFIG_MTRR
++static int mtrr = 1;
++#endif
++
+ /* default mode: 1280x1024 @ 60 Hz, 8 bpp */
+ static const struct fb_videomode defaultmode = {
+ 	.refresh = 60,
+@@ -663,7 +672,7 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	info->fix.smem_start = fb_phys;
+ 	info->fix.smem_len = pci_resource_len(pdev, 1);
+-	info->screen_base = pci_ioremap_bar(pdev, 1);
++	info->screen_base = ioremap_wc(fb_phys, info->fix.smem_len);
+ 	if (!info->screen_base) {
+ 		dev_err(&pdev->dev, "gxt4500: cannot map framebuffer\n");
+ 		goto err_unmap_regs;
+@@ -671,6 +680,14 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	pci_set_drvdata(pdev, info);
+ 
++#ifdef CONFIG_MTRR
++	if (mtrr) {
++		par->mtrr_reg = -1;
++		par->mtrr_reg = mtrr_add(info->fix.smem_start,
++				info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
++	}
++#endif
++
+ #ifdef __BIG_ENDIAN
+ 	/* Set byte-swapping for DFA aperture for all pixel sizes */
+ 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
+@@ -735,6 +752,12 @@ static void gxt4500_remove(struct pci_dev *pdev)
+ 		return;
+ 	par = info->par;
+ 	unregister_framebuffer(info);
++#ifdef CONFIG_MTRR
++	if (par->mtrr_reg >= 0) {
++		mtrr_del(par->mtrr_reg, 0, 0);
++		par->mtrr_reg = -1;
++	}
++#endif
+ 	fb_dealloc_cmap(&info->cmap);
+ 	iounmap(par->regs);
+ 	iounmap(info->screen_base);
+@@ -789,3 +812,8 @@ MODULE_DESCRIPTION("FBDev driver for IBM GXT4500P/6500P and GXT4000P/6000P");
+ MODULE_LICENSE("GPL");
+ module_param(mode_option, charp, 0);
+ MODULE_PARM_DESC(mode_option, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\"");
++
++#ifdef CONFIG_MTRR
++module_param(mtrr, int, 0444);
++MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
++#endif
+-- 
+Ondrej Zary
 
- Tomi
-
-
-
---vk8qmrgQxi45D4t44SxlQnciNouSjpsHe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJU/uW/AAoJEPo9qoy8lh71Ky4QAK7gyGlXp9hN5YQtBRt5+aXO
-CtQv1WfxNb0jqkHWjnvtUv2m6vtH6lnjHgSP1qqKTelTHjrI/6dbV/tCZqjgIh/d
-MjOQGZiGzkjgy8ncQdC43geZPgw+h7roySPRjr4e/zpFd+9lIYaHPlO6JgyniNd8
-hf7gCpiolXMINjIedk8ror7rRAMnY1DmzD3qwYrXWXLY7fsBMFePe/p8UWbWlmqs
-1axWf/PVquP41DyPnKaa5A17JqYyPzqViHs15X2W+HUHm5P+SP9kgIp84OtJgpNY
-5A7W2OLd+gkh5Z8zmZn5Vhnmtlw9RRKbhF0ec6/3hSPrb7twq54EXk6tfK8lqd7v
-yK3Zjem+9QY9fjh+a4vSx6eq6y404/w5xyWb1efZ14VcO9tlCPNis2KxNKSmOTyL
-AEG1oAZyE1W5CO8rl+BZZ7W4Z7Aj8tmhVUH1lgJFcIOQ8fpj3M8mJ2GnV8Qdn+Ah
-yAjEC4ZdUbyJx7YcG4wq5BulB056bkC9y7Gov1PnZDnC4po9cAAb9KYjJAkCk47X
-CxCiYRYavXooa9ew0nKHfJ5hiCze10GU2CiYjuhHETtGWK+QukMCbETtk2yRz9Mb
-sceIVymR5u+04D4Ltlth4wCvYbnQHtoJQDp9lJ+Nv0ADPGYuguuLG4J3VPFv+eaL
-2zf64bPW0obMUkDsjzLf
-=LbbE
------END PGP SIGNATURE-----
-
---vk8qmrgQxi45D4t44SxlQnciNouSjpsHe--

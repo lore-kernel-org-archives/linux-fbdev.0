@@ -1,48 +1,36 @@
-From: Davor Joja <davorjoja@logicbricks.com>
-Date: Wed, 11 Mar 2015 15:27:09 +0000
-Subject: [PATCH 08/10] fbdev: Xylon framebuffer driver to fbdev Kconfig and Makefile
-Message-Id: <83805b50-9171-479c-8028-ee8e685309de@mail.xylon.local>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 03 Mar 2015 21:00:57 +0000
+Subject: [PATCH 2/5] [resend] gxt4500: fix 16bpp 565 mode
+Message-Id: <1425416460-10773-2-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
-In-Reply-To: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
+References: <1425416460-10773-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1425416460-10773-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, geert@linux-m68k.org
-Cc: Davor Joja <davorjoja@logicbricks.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-Adding Xylon framebuffer driver to fbdev Kconfig and Makefile.
+Fix wrong colors in 16bpp 565 mode.
 
-Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- drivers/video/fbdev/Kconfig  | 1 +
- drivers/video/fbdev/Makefile | 1 +
- 2 files changed, 2 insertions(+)
+ drivers/video/fbdev/gxt4500.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index b3dd417..3bd0693 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2454,6 +2454,7 @@ source "drivers/video/fbdev/omap/Kconfig"
- source "drivers/video/fbdev/omap2/Kconfig"
- source "drivers/video/fbdev/exynos/Kconfig"
- source "drivers/video/fbdev/mmp/Kconfig"
-+source "drivers/video/fbdev/xylon/Kconfig"
- 
- config FB_SH_MOBILE_MERAM
- 	tristate "SuperH Mobile MERAM read ahead support"
-diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
-index 1979aff..57cb259 100644
---- a/drivers/video/fbdev/Makefile
-+++ b/drivers/video/fbdev/Makefile
-@@ -132,6 +132,7 @@ obj-$(CONFIG_FB_JZ4740)		  += jz4740_fb.o
- obj-$(CONFIG_FB_PUV3_UNIGFX)      += fb-puv3.o
- obj-$(CONFIG_FB_HYPERV)		  += hyperv_fb.o
- obj-$(CONFIG_FB_OPENCORES)	  += ocfb.o
-+obj-$(CONFIG_FB_XYLON)		  += xylon/
- 
- # Platform or fallback drivers go here
- obj-$(CONFIG_FB_UVESA)            += uvesafb.o
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 1bf9894..1f2fd5b 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -525,7 +525,7 @@ static int gxt4500_setcolreg(unsigned int reg, unsigned int red,
+ 		u32 val = reg;
+ 		switch (par->pixfmt) {
+ 		case DFA_PIX_16BIT_565:
+-			val |= (reg << 11) | (reg << 6);
++			val |= (reg << 11) | (reg << 5);
+ 			break;
+ 		case DFA_PIX_16BIT_1555:
+ 			val |= (reg << 10) | (reg << 5);
 -- 
-1.9.1
+Ondrej Zary
 

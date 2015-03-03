@@ -1,61 +1,96 @@
-From: Rob Herring <robherring2@gmail.com>
-Date: Mon, 02 Mar 2015 23:29:05 +0000
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Tue, 03 Mar 2015 10:01:26 +0000
 Subject: Re: [PATCH] video: ARM CLCD: Added support for FBIO_WAITFORVSYNC
-Message-Id: <CAL_JsqJfA3Pxvdux-Um9nFoaZpRh30S9d1TQid_TchDH_qo7Ow@mail.gmail.com>
+Message-Id: <1425376886.3092.25.camel@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com> <1424898082-1522-3-git-send-email-arun.ramamurthy@broadcom.com>
-In-Reply-To: <1424898082-1522-3-git-send-email-arun.ramamurthy-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+References: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com>
+	 <1424898082-1522-3-git-send-email-arun.ramamurthy@broadcom.com>
+	 <1425312029.3092.1.camel@arm.com> <54F4B576.5030702@broadcom.com>
+In-Reply-To: <54F4B576.5030702@broadcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arun Ramamurthy <arun.ramamurthy-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dtor-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Anatol Pomazau <anatol-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Jonathan Richardson <jonathar-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org
+To: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Anatol Pomazau <anatol@google.com>, Jonathan Richardson <jonathar@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, "bcm-kernel-feedback-list@broadcom.com" <bcm-kernel-feedback-list@broadcom.com>
 
-On Wed, Feb 25, 2015 at 3:01 PM, Arun Ramamurthy
-<arun.ramamurthy@broadcom.com> wrote:
-> Added ioctl and interrupt handler functions to support FBIO_WAITFORVSYNC
-> Also corrected documentation to make interrupts and interrupt-names
-> optional as they are not required properties.
->
-> Reviewed-by: Ray Jui <rjui@broadcom.com>
-> Reviewed-by: Scott Branden <sbranden@broadcom.com>
-> Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>0
-> ---
->  .../devicetree/bindings/video/arm,pl11x.txt        | 11 +--
+On Mon, 2015-03-02 at 19:09 +0000, Arun Ramamurthy wrote:
+> On 15-03-02 08:00 AM, Pawel Moll wrote:
+> > On Wed, 2015-02-25 at 21:01 +0000, Arun Ramamurthy wrote:
+> >> Added ioctl and interrupt handler functions to support FBIO_WAITFORVSYNC
+> >> Also corrected documentation to make interrupts and interrupt-names
+> >> optional as they are not required properties.
+> >
+> > You may not be aware of this fact, but its the "documentation" what
+> > defines what properties are required...
+> >
+> Pawel, I was not aware of that. Since the driver code did not require 
+> the interrupts or interrupt-names bindings to load properly, I moved it 
+> out of the required properties. I can remove that change.
 
-Please split bindings to separate patches.
+Cool. Drivers don't have to use all available properties :-) The
+interrupt names are required because CLCD can be wired up with a single,
+combined interrupt or with 4 separate interrupt lines (see "A.4. On-chip
+signals", in the TRM) and the binding has to provide ways of describing
+this. Yes, one could say "1 number = combined, 4 numbers = split", but
+I personally prefer to be explicit than implicit.
 
->  drivers/video/fbdev/amba-clcd.c                    | 82 ++++++++++++++++++++++
->  include/linux/amba/clcd.h                          |  4 ++
->  3 files changed, 89 insertions(+), 8 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/video/arm,pl11x.txt b/Documentation/devicetree/bindings/video/arm,pl11x.txt
-> index 2262cdb..7d19024 100644
-> --- a/Documentation/devicetree/bindings/video/arm,pl11x.txt
-> +++ b/Documentation/devicetree/bindings/video/arm,pl11x.txt
-> @@ -10,14 +10,6 @@ Required properties:
->
->  - reg: base address and size of the control registers block
->
-> -- interrupt-names: either the single entry "combined" representing a
-> -       combined interrupt output (CLCDINTR), or the four entries
-> -       "mbe", "vcomp", "lnbu", "fuf" representing the individual
-> -       CLCDMBEINTR, CLCDVCOMPINTR, CLCDLNBUINTR, CLCDFUFINTR interrupts
-> -
-> -- interrupts: contains an interrupt specifier for each entry in
-> -       interrupt-names
-> -
->  - clock-names: should contain "clcdclk" and "apb_pclk"
->
->  - clocks: contains phandle and clock specifier pairs for the entries
-> @@ -54,6 +46,9 @@ Optional properties:
->         It can be used to configure a virtual y resolution. It
->         must be a value larger than the actual y resolution.
->
-> +- interrupts: contains an interrupt specifier for the clcd vcomp interrupt
-> +        This is required for the driver to handle FBIO_WAITFORVSYNC ioctls.
+Just request the interrupt by name and you'll be fine.
+
+> Any other comments on this change? Thanks
+
+I have no experience with the vsync ioctl, so can't really comment on
+it. One minor thing I did spot is your use of curly brackets in one of
+the switch cases:
+
+On Wed, 2015-02-25 at 21:01 +0000, Arun Ramamurthy wrote:
+@@ -466,6 +468,73 @@ static int clcdfb_pan_display(struct fb_var_screeninfo *var,
+>  	return 0;
+>  }
+>  
+> +static int clcdfb_ioctl(struct fb_info *info,
+> +			unsigned int cmd, unsigned long args)
+> +{
+> +	struct clcd_fb *fb = to_clcd(info);
+> +	int retval = 0;
+> +	u32 val, ienb_val;
 > +
+> +	switch (cmd) {
+> +	case FBIO_WAITFORVSYNC:{
 
-What happened to interrupt-names?
+In the line above...
 
-Rob
+> +		if (fb->lcd_irq <= 0) {
+> +			retval = -EINVAL;
+> +			break;
+> +		}
+> +		/* disable Vcomp interrupts */
+> +		ienb_val = readl(fb->regs + fb->off_ienb);
+> +		ienb_val &= ~CLCD_PL111_IENB_VCOMP;
+> +		writel(ienb_val, fb->regs + fb->off_ienb);
+> +
+> +		/* clear Vcomp interrupt */
+> +		writel(CLCD_PL111_IENB_VCOMP, fb->regs + CLCD_PL111_ICR);
+> +
+> +		/* Generate Interrupt at the start of Vsync */
+> +		reinit_completion(&fb->wait);
+> +		val = readl(fb->regs +  fb->off_cntl);
+> +		val &= ~(CNTL_LCDVCOMP(3));
+> +		writel(val, fb->regs + fb->off_cntl);
+> +
+> +		/* enable Vcomp interrupt */
+> +		ienb_val = readl(fb->regs + fb->off_ienb);
+> +		ienb_val |= CLCD_PL111_IENB_VCOMP;
+> +		writel(ienb_val, fb->regs + fb->off_ienb);
+> +		if (!wait_for_completion_interruptible_timeout
+> +			(&fb->wait, HZ/10))
+> +			retval = -ETIMEDOUT;
+> +		break;
+> +	}
+
+... and here.
+
+Not sure it's needed?
+
+Pawel
+
+

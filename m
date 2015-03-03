@@ -1,46 +1,46 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Thu, 12 Mar 2015 09:50:37 +0000
-Subject: Re: [PATCH] staging: sm750fb: moved open brace next to declaration
-Message-Id: <20150312095037.GY10964@mwanda>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 03 Mar 2015 21:00:58 +0000
+Subject: [PATCH 3/5] [resend] gxt4500: fix color order
+Message-Id: <1425416460-10773-3-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150312093155.GA28806@localhost.localdomain>
-In-Reply-To: <20150312093155.GA28806@localhost.localdomain>
+References: <1425416460-10773-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1425416460-10773-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ragavendra BN <ragavendra.bn@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Thu, Mar 12, 2015 at 02:31:55AM -0700, Ragavendra BN wrote:
-> Signed-off-by: Ragavendra BN <ragavendra.bn@gmail.com [user]>
+The color order in truecolor modes is wrong. This does not affect console but
+is visible e.g. in X11 which has wrong colors.
 
-Don't include this.  Fix your From header so it has your legal name.
-Remover the [user] part.
+Swap blue and red colors to fix the problem.
+Fixes https://forums.gentoo.org/viewtopic-t-692740-start-0.html
 
-> 
-> This patch fixes the coding style warning found by checkpath.pl for the
-> open braces next to declaration.
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+---
+ drivers/video/fbdev/gxt4500.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-No signed-off.
-
-> ---
->  drivers/staging/sm750fb/ddk750_chip.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-> index b71169e..2c12dd0 100644
-> --- a/drivers/staging/sm750fb/ddk750_chip.c
-> +++ b/drivers/staging/sm750fb/ddk750_chip.c
-> @@ -11,8 +11,7 @@ typedef struct _pllcalparam{
->  pllcalparam;
->  
->  
-> -logical_chip_type_t getChipType()
-> -{
-> +logical_chip_type_t getChipType(){
-
-This is not correct.  The braces were better in the original.
-
-regards,
-dan carpenter
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 1f2fd5b..442b07c 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -347,11 +347,12 @@ static void gxt4500_unpack_pixfmt(struct fb_var_screeninfo *var,
+ 		break;
+ 	}
+ 	if (pixfmt != DFA_PIX_8BIT) {
+-		var->green.offset = var->red.length;
+-		var->blue.offset = var->green.offset + var->green.length;
++		var->blue.offset = 0;
++		var->green.offset = var->blue.length;
++		var->red.offset = var->green.offset + var->green.length;
+ 		if (var->transp.length)
+ 			var->transp.offset -				var->blue.offset + var->blue.length;
++				var->red.offset + var->red.length;
+ 	}
+ }
+ 
+-- 
+Ondrej Zary
 

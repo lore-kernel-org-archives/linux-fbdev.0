@@ -1,71 +1,55 @@
-From: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
-Date: Mon, 16 Mar 2015 20:54:47 +0000
-Subject: Re: [PATCH] staging/sm75fb: Declare static functions as such
-Message-Id: <CAPybu_0DKQnGs324ayKZ3LAnFiwQ+1+6bL7Esiu_bimuoa578A@mail.gmail.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 03 Mar 2015 20:56:02 +0000
+Subject: [PATCH 3/4] [resend] fb_ddc: Allow I2C adapters without SCL read capability
+Message-Id: <1425416163-10700-3-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426503069-27901-1-git-send-email-ricardo.ribalda@gmail.com> <CAA5enKbVYqaFx77T94r3t-gEF2+Y6auQheR_a6Tn45BNzt2Aqw@mail.gmail.com>
-In-Reply-To: <CAA5enKbVYqaFx77T94r3t-gEF2+Y6auQheR_a6Tn45BNzt2Aqw@mail.gmail.com>
+References: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lorenzo Stoakes <lstoakes@gmail.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, LKML <linux-kernel@vger.kernel.org>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-Hello Lorenzo
+i2c-algo-bit allows I2C adapters without SCL read capability to work but
+fb_ddc_read fails to work on them.
 
-On Mon, Mar 16, 2015 at 8:03 PM, Lorenzo Stoakes <lstoakes@gmail.com> wrote:
+Fix fb_ddc_read to work with I2C adapters not capable of reading SCL.
 
->
-> I currently have a patch series awaiting the final ok which includes
-> fixes for these warnings
-> (http://lkml.iu.edu/hypermail/linux/kernel/1503.1/02535.html),
-> apologies but assuming there isn't something hideously wrong with my
-> series I suspect they supersedes this patch :(
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+ drivers/video/fbdev/core/fb_ddc.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Sorry about that, I did pull from linux-next and I am crealy not
-subscribed to the right mailing list.
-
-
->
-> It's really easy to accidentally submit a patch that has already been
-> covered elsewhere; I, as a rather new kernel contributor, always find
-> I have to search quite a bit to be *sure* that it's not been covered
-> already.
-
-I miss something like the properly maintained patchwork on
-linux-media. It works really well to see what is on the pipeline. I
-honestly never thought that somebody will take a look to this driver
-:)
-
->
-> Additionally, your subject line is 'staging/sm75fb: Declare static
-> functions as such' which ought to be 'staging: sm750fb: Declare static
-> functions as such' - there's a typo in the device name and I think the
-> convention is always to use colons in subject lines.
-
-About the typo, you are right of course :)
-
-Regarding the colon, there is no convention about that, every
-subsystem has its own preference. I prefer / than :
-
-I agree that is your patch that should be pulled, not this one. But I
-think you should split your patch in one patch per file.
-
-All that said
-
-Nacked-by: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
-
->
-> Best,
-
-Thanks!
-
->
-> --
-> Lorenzo Stoakes
-> https:/ljs.io
-
-
-
+diff --git a/drivers/video/fbdev/core/fb_ddc.c b/drivers/video/fbdev/core/fb_ddc.c
+index 94322cc..22c694a 100644
+--- a/drivers/video/fbdev/core/fb_ddc.c
++++ b/drivers/video/fbdev/core/fb_ddc.c
+@@ -69,10 +69,11 @@ unsigned char *fb_ddc_read(struct i2c_adapter *adapter)
+ 		algo_data->setscl(algo_data->data, 1);
+ 		for (j = 0; j < 5; j++) {
+ 			msleep(10);
+-			if (algo_data->getscl(algo_data->data))
++			if (algo_data->getscl &&
++			    algo_data->getscl(algo_data->data))
+ 				break;
+ 		}
+-		if (j = 5)
++		if (algo_data->getscl && j = 5)
+ 			continue;
+ 
+ 		algo_data->setsda(algo_data->data, 0);
+@@ -91,7 +92,8 @@ unsigned char *fb_ddc_read(struct i2c_adapter *adapter)
+ 		algo_data->setscl(algo_data->data, 1);
+ 		for (j = 0; j < 10; j++) {
+ 			msleep(10);
+-			if (algo_data->getscl(algo_data->data))
++			if (algo_data->getscl &&
++			    algo_data->getscl(algo_data->data))
+ 				break;
+ 		}
+ 
 -- 
-Ricardo Ribalda
+Ondrej Zary
+

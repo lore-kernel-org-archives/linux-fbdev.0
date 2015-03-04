@@ -1,96 +1,43 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Tue, 03 Mar 2015 10:01:26 +0000
-Subject: Re: [PATCH] video: ARM CLCD: Added support for FBIO_WAITFORVSYNC
-Message-Id: <1425376886.3092.25.camel@arm.com>
+From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Date: Wed, 04 Mar 2015 00:31:13 +0000
+Subject: Re: [PATCH] video: ARM CLCD: Added support for FBIOPAN_DISPLAY and virtual y resolution
+Message-Id: <54F65251.4040006@broadcom.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com>
-	 <1424898082-1522-3-git-send-email-arun.ramamurthy@broadcom.com>
-	 <1425312029.3092.1.camel@arm.com> <54F4B576.5030702@broadcom.com>
-In-Reply-To: <54F4B576.5030702@broadcom.com>
+References: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com> <1424898082-1522-2-git-send-email-arun.ramamurthy@broadcom.com> <1425312509.3092.7.camel@arm.com> <20150302161122.GP8656@n2100.arm.linux.org.uk> <54F4B57F.3030306@broadcom.com> <CAL_JsqKMP4JxQ-Q5V1skcaKPdhC4v-joOrNyn++tMfat8arMKA@mail.gmail.com>
+In-Reply-To: <CAL_JsqKMP4JxQ-Q5V1skcaKPdhC4v-joOrNyn++tMfat8arMKA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Anatol Pomazau <anatol@google.com>, Jonathan Richardson <jonathar@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, "bcm-kernel-feedback-list@broadcom.com" <bcm-kernel-feedback-list@broadcom.com>
-
-On Mon, 2015-03-02 at 19:09 +0000, Arun Ramamurthy wrote:
-> On 15-03-02 08:00 AM, Pawel Moll wrote:
-> > On Wed, 2015-02-25 at 21:01 +0000, Arun Ramamurthy wrote:
-> >> Added ioctl and interrupt handler functions to support FBIO_WAITFORVSYNC
-> >> Also corrected documentation to make interrupts and interrupt-names
-> >> optional as they are not required properties.
-> >
-> > You may not be aware of this fact, but its the "documentation" what
-> > defines what properties are required...
-> >
-> Pawel, I was not aware of that. Since the driver code did not require 
-> the interrupts or interrupt-names bindings to load properly, I moved it 
-> out of the required properties. I can remove that change.
-
-Cool. Drivers don't have to use all available properties :-) The
-interrupt names are required because CLCD can be wired up with a single,
-combined interrupt or with 4 separate interrupt lines (see "A.4. On-chip
-signals", in the TRM) and the binding has to provide ways of describing
-this. Yes, one could say "1 number = combined, 4 numbers = split", but
-I personally prefer to be explicit than implicit.
-
-Just request the interrupt by name and you'll be fine.
-
-> Any other comments on this change? Thanks
-
-I have no experience with the vsync ioctl, so can't really comment on
-it. One minor thing I did spot is your use of curly brackets in one of
-the switch cases:
-
-On Wed, 2015-02-25 at 21:01 +0000, Arun Ramamurthy wrote:
-@@ -466,6 +468,73 @@ static int clcdfb_pan_display(struct fb_var_screeninfo *var,
->  	return 0;
->  }
->  
-> +static int clcdfb_ioctl(struct fb_info *info,
-> +			unsigned int cmd, unsigned long args)
-> +{
-> +	struct clcd_fb *fb = to_clcd(info);
-> +	int retval = 0;
-> +	u32 val, ienb_val;
-> +
-> +	switch (cmd) {
-> +	case FBIO_WAITFORVSYNC:{
-
-In the line above...
-
-> +		if (fb->lcd_irq <= 0) {
-> +			retval = -EINVAL;
-> +			break;
-> +		}
-> +		/* disable Vcomp interrupts */
-> +		ienb_val = readl(fb->regs + fb->off_ienb);
-> +		ienb_val &= ~CLCD_PL111_IENB_VCOMP;
-> +		writel(ienb_val, fb->regs + fb->off_ienb);
-> +
-> +		/* clear Vcomp interrupt */
-> +		writel(CLCD_PL111_IENB_VCOMP, fb->regs + CLCD_PL111_ICR);
-> +
-> +		/* Generate Interrupt at the start of Vsync */
-> +		reinit_completion(&fb->wait);
-> +		val = readl(fb->regs +  fb->off_cntl);
-> +		val &= ~(CNTL_LCDVCOMP(3));
-> +		writel(val, fb->regs + fb->off_cntl);
-> +
-> +		/* enable Vcomp interrupt */
-> +		ienb_val = readl(fb->regs + fb->off_ienb);
-> +		ienb_val |= CLCD_PL111_IENB_VCOMP;
-> +		writel(ienb_val, fb->regs + fb->off_ienb);
-> +		if (!wait_for_completion_interruptible_timeout
-> +			(&fb->wait, HZ/10))
-> +			retval = -ETIMEDOUT;
-> +		break;
-> +	}
-
-... and here.
-
-Not sure it's needed?
-
-Pawel
+To: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dtor-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Anatol Pomazau <anatol-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Jonathan Richardson <jonathar-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, "bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org" <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 
 
+
+On 15-03-02 03:22 PM, Rob Herring wrote:
+> On Mon, Mar 2, 2015 at 1:09 PM, Arun Ramamurthy
+> <arun.ramamurthy@broadcom.com> wrote:
+>>
+>>
+>> On 15-03-02 08:11 AM, Russell King - ARM Linux wrote:
+>>>
+>>> On Mon, Mar 02, 2015 at 04:08:29PM +0000, Pawel Moll wrote:
+>>>>
+>>>> I'm not sure about this... The word "virtual" never works well with
+>>>> device tree nodes defined as "hardware description".
+>>>>
+>>>> I understand what you're doing, but adding this property to the display
+>>>> controller's node doesn't sound right. How does this describe hardware?
+>>>> If anywhere, it's more like a job for the panel node?
+>>>
+>>>
+>> I see what you are saying Pawel, I can follow Russell's recommendation of
+>> adding a RAM size node called max-memory-available or something similar
+>
+> We've already got a binding for reserved memory regions for this
+> purpose. And there is also simplefb binding.
+>
+Rob, I am not sure what binding you are referring to, could you be more 
+specific? Also how does the simplefb bindings apply to me considering 
+that is a separate driver? Thanks
+> Rob
+>

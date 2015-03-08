@@ -1,205 +1,36 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:25 +0000
-Subject: [PATCH v1 35/47] video: fbdev: aty: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1426893517-2511-36-git-send-email-mcgrof@do-not-panic.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Sun, 08 Mar 2015 17:52:10 +0000
+Subject: [PATCH 2/3] staging: sm7xxfb: remove unneeded __setup
+Message-Id: <1425836411-15481-2-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1425836411-15481-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1425836411-15481-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+as we start to use kernel boot parameters and fb_get_options()
+we donot need to use __setup() any more.
 
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/aty/aty128fb.c | 36 ++++++------------------------------
- 1 file changed, 6 insertions(+), 30 deletions(-)
+ drivers/staging/sm7xxfb/sm7xxfb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index aedf2fb..f41955b 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -80,10 +80,6 @@
- #include <asm/btext.h>
- #endif /* CONFIG_BOOTX_TEXT */
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 17b3917..e93563f 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -141,7 +141,6 @@ static int __init sm7xx_vga_setup(char *options)
  
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- #include <video/aty128.h>
+ 	return -1;
+ }
+-__setup("vga=", sm7xx_vga_setup);
  
- /* Debug flag */
-@@ -399,10 +395,7 @@ static int default_cmode = CMODE_8;
- 
- static int default_crt_on = 0;
- static int default_lcd_on = 1;
--
--#ifdef CONFIG_MTRR
- static bool mtrr = true;
--#endif
- 
- #ifdef CONFIG_FB_ATY128_BACKLIGHT
- #ifdef CONFIG_PMAC_BACKLIGHT
-@@ -456,9 +449,7 @@ struct aty128fb_par {
- 	u32 vram_size;                      /* onboard video ram   */
- 	int chip_gen;
- 	const struct aty128_meminfo *mem;   /* onboard mem info    */
--#ifdef CONFIG_MTRR
--	struct { int vram; int vram_valid; } mtrr;
--#endif
-+	int wc_cookie;
- 	int blitter_may_be_busy;
- 	int fifo_slots;                 /* free slots in FIFO (64 max) */
- 
-@@ -1725,12 +1716,10 @@ static int aty128fb_setup(char *options)
- #endif
- 			continue;
- 		}
--#ifdef CONFIG_MTRR
- 		if(!strncmp(this_opt, "nomtrr", 6)) {
- 			mtrr = 0;
- 			continue;
- 		}
--#endif
- #ifdef CONFIG_PPC_PMAC
- 		/* vmode and cmode deprecated */
- 		if (!strncmp(this_opt, "vmode:", 6)) {
-@@ -2133,7 +2122,7 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	par->vram_size = aty_ld_le32(CNFG_MEMSIZE) & 0x03FFFFFF;
- 
- 	/* Virtualize the framebuffer */
--	info->screen_base = ioremap(fb_addr, par->vram_size);
-+	info->screen_base = ioremap_wc(fb_addr, par->vram_size);
- 	if (!info->screen_base)
- 		goto err_unmap_out;
- 
-@@ -2170,15 +2159,9 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (!aty128_init(pdev, ent))
- 		goto err_out;
- 
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr.vram = mtrr_add(info->fix.smem_start,
--				par->vram_size, MTRR_TYPE_WRCOMB, 1);
--		par->mtrr.vram_valid = 1;
--		/* let there be speed */
--		printk(KERN_INFO "aty128fb: Rage128 MTRR set to ON\n");
--	}
--#endif /* CONFIG_MTRR */
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  par->vram_size);
- 	return 0;
- 
- err_out:
-@@ -2212,11 +2195,7 @@ static void aty128_remove(struct pci_dev *pdev)
- 	aty128_bl_exit(info->bl_dev);
- #endif
- 
--#ifdef CONFIG_MTRR
--	if (par->mtrr.vram_valid)
--		mtrr_del(par->mtrr.vram, info->fix.smem_start,
--			 par->vram_size);
--#endif /* CONFIG_MTRR */
-+	arch_phys_wc_del(par->wc_cookie);
- 	iounmap(par->regbase);
- 	iounmap(info->screen_base);
- 
-@@ -2625,8 +2604,5 @@ MODULE_DESCRIPTION("FBDev driver for ATI Rage128 / Pro cards");
- MODULE_LICENSE("GPL");
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
--#ifdef CONFIG_MTRR
- module_param_named(nomtrr, mtrr, invbool, 0);
- MODULE_PARM_DESC(nomtrr, "bool: Disable MTRR support (0 or 1=disabled) (default=0)");
--#endif
--
+ static void sm712_setpalette(int regno, unsigned red, unsigned green,
+ 			     unsigned blue, struct fb_info *info)
 -- 
-2.3.2.209.gd67f9d5.dirty
+1.9.1
 

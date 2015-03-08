@@ -1,137 +1,42 @@
 From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sun, 08 Mar 2015 12:43:23 +0000
-Subject: [PATCH 1/4] staging: sm750fb: wrong type for print
-Message-Id: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com>
+Date: Sun, 08 Mar 2015 12:59:14 +0000
+Subject: Re: [PATCH 1/4] staging: sm750fb: wrong type for print
+Message-Id: <20150308125859.GA14649@sudip-PC>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <54FC4323.3010909@gmail.com>
+References: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <54FC4323.3010909@gmail.com>
 In-Reply-To: <54FC4323.3010909@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Giedrius =?utf-8?Q?Statkevi=C4=8Dius?= <giedrius.statkevicius@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-mention correct format specifier while printing
-
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
-
-this patch will give checkpatch warnings about use of printk.
-this patch was mainly to fix the build warnings. printk will be
-converted to pr_* and dev_* in a later patch.
-
- drivers/staging/sm750fb/sm750.c    | 24 ++++++++++++------------
- drivers/staging/sm750fb/sm750.h    |  8 ++++----
- drivers/staging/sm750fb/sm750_hw.c |  4 ++--
- 3 files changed, 18 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 520c69e..753869e 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -530,20 +530,20 @@ static int lynxfb_ops_mmap(struct fb_info * info, struct vm_area_struct * vma)
- 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
- 		return -EINVAL;
- 	off = vma->vm_pgoff << PAGE_SHIFT;
--	printk("lynxfb mmap pgoff: %x\n", vma->vm_pgoff);
--	printk("lynxfb mmap off 1: %x\n", off);
-+	printk("lynxfb mmap pgoff: %lx\n", vma->vm_pgoff);
-+	printk("lynxfb mmap off 1: %lx\n", off);
- 	
- 	/* frame buffer memory */
- 	start = info->fix.smem_start;
- 	len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.smem_len);
- 	
--	printk("lynxfb mmap start 1: %x\n", start);
-+	printk("lynxfb mmap start 1: %lx\n", start);
- 	printk("lynxfb mmap len 1: %x\n", len);
- 	
- 	if (off >= len) {
- 		/* memory mapped io */
- 		off -= len;
--		printk("lynxfb mmap off 2: %x\n", off);
-+		printk("lynxfb mmap off 2: %lx\n", off);
- 		if (info->var.accel_flags) {
- 			printk("lynxfb mmap accel flags true");
- 			return -EINVAL;
-@@ -551,28 +551,28 @@ static int lynxfb_ops_mmap(struct fb_info * info, struct vm_area_struct * vma)
- 		start = info->fix.mmio_start;
- 		len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.mmio_len);
- 		
--		printk("lynxfb mmap start 2: %x\n", start);
-+		printk("lynxfb mmap start 2: %lx\n", start);
- 		printk("lynxfb mmap len 2: %x\n", len);
- 	}
- 	start &= PAGE_MASK;
--	printk("lynxfb mmap start 3: %x\n", start);
--	printk("lynxfb mmap vm start: %x\n", vma->vm_start);
--	printk("lynxfb mmap vm end: %x\n", vma->vm_end);
-+	printk("lynxfb mmap start 3: %lx\n", start);
-+	printk("lynxfb mmap vm start: %lx\n", vma->vm_start);
-+	printk("lynxfb mmap vm end: %lx\n", vma->vm_end);
- 	printk("lynxfb mmap len: %x\n", len);
--	printk("lynxfb mmap off: %x\n", off);
-+	printk("lynxfb mmap off: %lx\n", off);
- 	if ((vma->vm_end - vma->vm_start + off) > len)
- 	{
- 		return -EINVAL;
- 	}
- 	off += start;
--	printk("lynxfb mmap off 3: %x\n", off);
-+	printk("lynxfb mmap off 3: %lx\n", off);
- 	vma->vm_pgoff = off >> PAGE_SHIFT;
- 	/* This is an IO map - tell maydump to skip this VMA */
- 	vma->vm_flags |= VM_IO | VM_DONTEXPAND | VM_DONTDUMP;
- 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
- 	fb_pgprotect(file, vma, off);
--	printk("lynxfb mmap off 4: %x\n", off);
--	printk("lynxfb mmap pgprot: %x\n", vma->vm_page_prot);
-+	printk("lynxfb mmap off 4: %lx\n", off);
-+	printk("lynxfb mmap pgprot: %lx\n", (unsigned long) pgprot_val(vma->vm_page_prot));
- 	if (io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
- 			     vma->vm_end - vma->vm_start, vma->vm_page_prot))
- 		return -EAGAIN;
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 711676c..2ab7b74 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -59,10 +59,10 @@ struct lynx_share{
- 		}mtrr;
- #endif
- 	/* all smi graphic adaptor got below attributes */
--	resource_size_t vidmem_start;
--	resource_size_t vidreg_start;
--	resource_size_t vidmem_size;
--	resource_size_t vidreg_size;
-+	unsigned long vidmem_start;
-+	unsigned long vidreg_start;
-+	unsigned long vidmem_size;
-+	unsigned long vidreg_size;
- 	volatile unsigned char __iomem * pvReg;
- 	unsigned char __iomem * pvMem;
- 	/* locks*/
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index cd971bd..5a62721 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -36,7 +36,7 @@ int hw_sm750_map(struct lynx_share* share,struct pci_dev* pdev)
- 	share->vidreg_start  = pci_resource_start(pdev,1);
- 	share->vidreg_size = MB(2);
- 
--	pr_info("mmio phyAddr = %x\n",share->vidreg_start);
-+	pr_info("mmio phyAddr = %lx\n", share->vidreg_start);
- 
- 	/* reserve the vidreg space of smi adaptor
- 	 * if you do this, u need to add release region code
-@@ -73,7 +73,7 @@ int hw_sm750_map(struct lynx_share* share,struct pci_dev* pdev)
- 	 * @hw_sm750_getVMSize function can be safe.
- 	 * */
- 	share->vidmem_size = hw_sm750_getVMSize(share);
--	pr_info("video memory phyAddr = %x, size = %d bytes\n",
-+	pr_info("video memory phyAddr = %lx, size = %ld bytes\n",
- 	share->vidmem_start,share->vidmem_size);
- 
- 	/* reserve the vidmem space of smi adaptor */
--- 
-1.8.1.2
-
+T24gU3VuLCBNYXIgMDgsIDIwMTUgYXQgMDI6NDA6MDNQTSArMDIwMCwgR2llZHJpdXMgU3RhdGtl
+dmnEjWl1cyB3cm90ZToKPiBPbiAyMDE1LjAzLjA4IDE0OjMxLCBTdWRpcCBNdWtoZXJqZWUgd3Jv
+dGU6Cj4gPiBtZW50aW9uIGNvcnJlY3QgZm9ybWF0IHNwZWNpZmllciB3aGlsZSBwcmludGluZwo+
+ID4gaW5kZXggNzExNjc2Yy4uMmFiN2I3NCAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvc3RhZ2lu
+Zy9zbTc1MGZiL3NtNzUwLmgKPiA+ICsrKyBiL2RyaXZlcnMvc3RhZ2luZy9zbTc1MGZiL3NtNzUw
+LmgKPiA+IEBAIC01OSwxMCArNTksMTAgQEAgc3RydWN0IGx5bnhfc2hhcmV7Cj4gPiAgCQl9bXRy
+cjsKPiA+ICAjZW5kaWYKPiA+ICAJLyogYWxsIHNtaSBncmFwaGljIGFkYXB0b3IgZ290IGJlbG93
+IGF0dHJpYnV0ZXMgKi8KPiA+IC0JcmVzb3VyY2Vfc2l6ZV90IHZpZG1lbV9zdGFydDsKPiA+IC0J
+cmVzb3VyY2Vfc2l6ZV90IHZpZHJlZ19zdGFydDsKPiA+IC0JcmVzb3VyY2Vfc2l6ZV90IHZpZG1l
+bV9zaXplOwo+ID4gLQlyZXNvdXJjZV9zaXplX3QgdmlkcmVnX3NpemU7Cj4gPiArCXVuc2lnbmVk
+IGxvbmcgdmlkbWVtX3N0YXJ0Owo+ID4gKwl1bnNpZ25lZCBsb25nIHZpZHJlZ19zdGFydDsKPiA+
+ICsJdW5zaWduZWQgbG9uZyB2aWRtZW1fc2l6ZTsKPiA+ICsJdW5zaWduZWQgbG9uZyB2aWRyZWdf
+c2l6ZTsKPiAKPiBIYXZlIHlvdSBjaGVja2VkIG90aGVyIHBsYWNlcyB3aGVyZSB0aGVzZSBhcmUg
+dXNlZD8gcmVzb3VyY2Vfc2l6ZV90IGNhbgo+IGJlIGVpdGhlciB1NjQgb3IgdTMyIGRlcGVuZGlu
+ZyBvbiBpZiBDT05GSUdfUEhZU19BRERSX1RfNjRCSVQgaXMKPiAjZGVmaW5lZC4gQXJlIHlvdSBz
+dXJlIHlvdSBhcmVuJ3QgbG9zaW5nIGluZm9ybWF0aW9uIHdoZW4gcmVzdWx0cyBvZgo+IGZ1bmN0
+aW9ucyBhcmUgYmVpbmcgYXNzaWduZWQgdG8gdGhpcz8gTWF5YmUgdGhlcmUgc2hvdWxkIGJlIGEg
+ZnVuY3Rpb24KPiBzaW1pbGFyIHRvIHByaW50ayB0aGF0IGNoYW5nZXMgYmV0d2VlbiAldSBhbmQg
+JWxsdSBkZXBlbmRpbmcgb24gd2hldGhlcgo+IHRoYXQgaXMgZGVmaW5lZD8KCm9vcHMgLi4gbm8g
+Li4gOigKaSBjaGVja2VkIGluIG90aGVyIGZyYW1lYnVmZmVyIGRyaXZlcnMgYW5kIHNhdyB0aGV5
+IGFyZSBtb3N0bHkgdW5zaWduZWQgbG9uZy4KSSB3aWxsIGNoZWNrIGZ1cnRoZXIgb24gdGhpcy4K
+CkdyZWc6IGNhbiB5b3UgcGxlYXNlIGRyb3AgdGhpcyBwYXRjaCAoMS80KSBmcm9tIHlvdXIgcXVl
+dWUgYW5kIG5vdCBhcHBseSB0aGlzIHRvIHlvdXIgdHJlZS4KSSB3aWxsIHNlbmQgaXQgYXMgYSB2
+Mi4KCnJlZ2FyZHMKc3VkaXAKCj4gCj4gLS0gCj4gVGhhbmtzLAo+IEdpZWRyaXVzCi0tClRvIHVu
+c3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51
+eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5l
+bC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpv
+cmRvbW8taW5mby5odG1s

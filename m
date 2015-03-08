@@ -1,43 +1,31 @@
-From: =?UTF-8?B?R2llZHJpdXMgU3RhdGtldmnEjWl1cw==?=  <giedrius.statkevicius@gmail.com>
-Date: Sun, 08 Mar 2015 12:59:03 +0000
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Sun, 08 Mar 2015 17:43:47 +0000
 Subject: Re: [PATCH 3/4] staging: sm750fb: correctly define SM750LE_REVISION_ID
-Message-Id: <54FC4797.6040704@gmail.com>
+Message-Id: <20150308173147.GA15272@sudip-PC>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com> <1425817886-14387-3-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1425817886-14387-3-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <1425817886-14387-3-git-send-email-sudipm.mukherjee@gmail.com>
+ <54FC4797.6040704@gmail.com>
+In-Reply-To: <54FC4797.6040704@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Giedrius =?utf-8?Q?Statkevi=C4=8Dius?= <giedrius.statkevicius@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2015.03.08 14:31, Sudip Mukherjee wrote:
-> check if it is already defined before defining SM750LE_REVISION_ID
-> again and at the same time mention correct data type.
-> 
-> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
-> ---
->  drivers/staging/sm750fb/ddk750_chip.h | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
-> index 1c78875..e7d27e8 100644
-> --- a/drivers/staging/sm750fb/ddk750_chip.h
-> +++ b/drivers/staging/sm750fb/ddk750_chip.h
-> @@ -1,7 +1,9 @@
->  #ifndef DDK750_CHIP_H__
->  #define DDK750_CHIP_H__
->  #define DEFAULT_INPUT_CLOCK 14318181 /* Default reference clock */
-> -#define SM750LE_REVISION_ID (char)0xfe
-> +#ifndef SM750LE_REVISION_ID
-> +#define SM750LE_REVISION_ID ((unsigned char)0xfe)
-> +#endif
-
-Do you need these parantheses? Also, you can now then fix up this line
-too to avoid a redundant cast in the same patch:
-sm750_hw.c: if(share->revid = (unsigned char)SM750LE_REVISION_ID){
-
-
--- 
-Thanks,
-Giedrius
+T24gU3VuLCBNYXIgMDgsIDIwMTUgYXQgMDI6NTk6MDNQTSArMDIwMCwgR2llZHJpdXMgU3RhdGtl
+dmnEjWl1cyB3cm90ZToKPiBPbiAyMDE1LjAzLjA4IDE0OjMxLCBTdWRpcCBNdWtoZXJqZWUgd3Jv
+dGU6Cj4gPiAtI2RlZmluZSBTTTc1MExFX1JFVklTSU9OX0lEIChjaGFyKTB4ZmUKPiA+ICsjaWZu
+ZGVmIFNNNzUwTEVfUkVWSVNJT05fSUQKPiA+ICsjZGVmaW5lIFNNNzUwTEVfUkVWSVNJT05fSUQg
+KCh1bnNpZ25lZCBjaGFyKTB4ZmUpCj4gPiArI2VuZGlmCj4gCj4gRG8geW91IG5lZWQgdGhlc2Ug
+cGFyYW50aGVzZXM/IEFsc28sIHlvdSBjYW4gbm93IHRoZW4gZml4IHVwIHRoaXMgbGluZQo+IHRv
+byB0byBhdm9pZCBhIHJlZHVuZGFudCBjYXN0IGluIHRoZSBzYW1lIHBhdGNoOgo+IHNtNzUwX2h3
+LmM6IGlmKHNoYXJlLT5yZXZpZCA9ICh1bnNpZ25lZCBjaGFyKVNNNzUwTEVfUkVWSVNJT05fSUQp
+ewpnb29kIGlkZWEsIHRoYW5rcy4KdGhhdCBleHRyYSBwYXJlbnRoZXNlcyBpcyBmb3IgY2hlY2tw
+YXRjaCB3YXJuaW5nIG9mIGNvbXBsZXggbWFjcm8gdmFsdWUuCgppIHdpbGwgYmV0dGVyIHNlbmQg
+YSB2MiBvZiB0aGUgd2hvbGUgc2VyaWVzIGFmdGVyIGNoZWNraW5nIHRoYXQgcmVzb3VyY2Vfc2l6
+ZV90LgoKcmVnYXJkcwpzdWRpcAo+IAo+IAo+IC0tIAo+IFRoYW5rcywKPiBHaWVkcml1cwotLQpU
+byB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUg
+bGludXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5r
+ZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcv
+bWFqb3Jkb21vLWluZm8uaHRtbA==

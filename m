@@ -1,25 +1,21 @@
 From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 10 Mar 2015 08:57:36 +0000
-Subject: [PATCH v3 2/5] staging: sm750fb: remove pragma optimize
-Message-Id: <1425977139-25285-2-git-send-email-sudipm.mukherjee@gmail.com>
+Date: Sun, 08 Mar 2015 12:43:24 +0000
+Subject: [PATCH 2/4] staging: sm750fb: remove pragma optimize
+Message-Id: <1425817886-14387-2-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
 remove use of #pragma optimize which will usually be ignored by the
 compiler.
 
 Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
-
-v3: no change
-v2: no change
-
  drivers/staging/sm750fb/ddk750_swi2c.c | 3 ---
  1 file changed, 3 deletions(-)
 

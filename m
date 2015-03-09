@@ -1,187 +1,37 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:20 +0000
-Subject: [PATCH v1 30/47] video: fbdev: neofb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1426893517-2511-31-git-send-email-mcgrof@do-not-panic.com>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Mon, 09 Mar 2015 22:22:05 +0000
+Subject: [PATCHv3 03/10] of: Add Solomon Systech vendor prefix.
+Message-Id: <1425939732-18386-4-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+This patch adds the solomon prefix for Solomon Systech Limited.
 
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
 ---
- drivers/video/fbdev/neofb.c | 26 +++++++-------------------
- include/video/neomagic.h    |  5 +----
- 2 files changed, 8 insertions(+), 23 deletions(-)
+ Documentation/devicetree/bindings/vendor-prefixes.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
-index 44f99a6..db023a9 100644
---- a/drivers/video/fbdev/neofb.c
-+++ b/drivers/video/fbdev/neofb.c
-@@ -71,11 +71,6 @@
- #include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/pgtable.h>
--
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- #include <video/vga.h>
- #include <video/neomagic.h>
- 
-@@ -1710,6 +1705,7 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
- 			 int video_len)
- {
- 	//unsigned long addr;
-+	struct neofb_par *par = info->par;
- 
- 	DBG("neo_map_video");
- 
-@@ -1723,7 +1719,7 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
- 	}
- 
- 	info->screen_base -	    ioremap(info->fix.smem_start, info->fix.smem_len);
-+	    ioremap_wc(info->fix.smem_start, info->fix.smem_len);
- 	if (!info->screen_base) {
- 		printk("neofb: unable to map screen memory\n");
- 		release_mem_region(info->fix.smem_start,
-@@ -1733,11 +1729,8 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
- 		printk(KERN_INFO "neofb: mapped framebuffer at %p\n",
- 		       info->screen_base);
- 
--#ifdef CONFIG_MTRR
--	((struct neofb_par *)(info->par))->mtrr -		mtrr_add(info->fix.smem_start, pci_resource_len(dev, 0),
--				MTRR_TYPE_WRCOMB, 1);
--#endif
-+	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+					  pci_resource_len(dev, 0));
- 
- 	/* Clear framebuffer, it's all white in memory after boot */
- 	memset_io(info->screen_base, 0, info->fix.smem_len);
-@@ -1754,16 +1747,11 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
- 
- static void neo_unmap_video(struct fb_info *info)
- {
--	DBG("neo_unmap_video");
-+	struct neofb_par *par = info->par;
- 
--#ifdef CONFIG_MTRR
--	{
--		struct neofb_par *par = info->par;
-+	DBG("neo_unmap_video");
- 
--		mtrr_del(par->mtrr, info->fix.smem_start,
--			 info->fix.smem_len);
--	}
--#endif
-+	arch_phys_wc_del(par->wc_cookie);
- 	iounmap(info->screen_base);
- 	info->screen_base = NULL;
- 
-diff --git a/include/video/neomagic.h b/include/video/neomagic.h
-index bc5013e..91e225a 100644
---- a/include/video/neomagic.h
-+++ b/include/video/neomagic.h
-@@ -159,10 +159,7 @@ struct neofb_par {
- 	unsigned char VCLK3NumeratorHigh;
- 	unsigned char VCLK3Denominator;
- 	unsigned char VerticalExt;
--
--#ifdef CONFIG_MTRR
--	int mtrr;
--#endif
-+	int wc_cookie;
- 	u8 __iomem *mmio_vbase;
- 	u8 cursorOff;
- 	u8 *cursorPad;		/* Must die !! */
--- 
-2.3.2.209.gd67f9d5.dirty
+diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Docume=
+ntation/devicetree/bindings/vendor-prefixes.txt
+index d3f4809..933c8f5 100644
+--- a/Documentation/devicetree/bindings/vendor-prefixes.txt
++++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
+@@ -169,6 +169,7 @@ sitronix	Sitronix Technology Corporation
+ smsc	Standard Microsystems Corporation
+ snps	Synopsys, Inc.
+ solidrun	SolidRun
++solomon        Solomon Systech Limited
+ sony	Sony Corporation
+ spansion	Spansion Inc.
+ sprd	Spreadtrum Communications Inc.
+--=20
+2.3.0
 

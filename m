@@ -1,85 +1,46 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:17:57 +0000
-Subject: [PATCH v1 07/47] video: fbdev: atyfb: move framebuffer length fudging to helper
-Message-Id: <1426893517-2511-8-git-send-email-mcgrof@do-not-panic.com>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Mon, 09 Mar 2015 22:22:03 +0000
+Subject: [PATCHv3 01/10] fbdev: ssd1307fb: fix memory address smem_start.
+Message-Id: <1425939732-18386-2-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+the smem_start pointer of the framebuffer info struct needs to hold the
+physical address rather than the virtual address. This patch fixes a
+driver crash on mmaping the framebuffer memory due to an access to the
+memory address.
 
-The size of the framebuffer to be used needs to
-be fudged to account for the different type of
-devices that are out there. This captures what
-is required to do well, we'll resuse this later.
+Note however that the memory allocated by kzalloc is not page aligned,
+while the address presented on a mmap call is aligned to the next page
+boudary.
 
-This has no functional changes.
-
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
- drivers/video/fbdev/aty/atyfb_base.c | 23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/ssd1307fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 8789e48..16936bb 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -427,6 +427,20 @@ static struct {
- #endif /* CONFIG_FB_ATY_CT */
- };
- 
-+/*
-+ * Last page of 8 MB (4 MB on ISA) aperture is MMIO,
-+ * unless the auxiliary register aperture is used.
-+ */
-+static void aty_fudge_framebuffer_len(struct fb_info *info)
-+{
-+	struct atyfb_par *par = (struct atyfb_par *) info->par;
-+
-+	if (!par->aux_start &&
-+	    (info->fix.smem_len = 0x800000 ||
-+	     (par->bus_type = ISA && info->fix.smem_len = 0x400000)))
-+		info->fix.smem_len -= GUI_RESERVE;
-+}
-+
- static int correct_chipset(struct atyfb_par *par)
- {
- 	u8 rev;
-@@ -2603,14 +2617,7 @@ static int aty_init(struct fb_info *info)
- 	if (par->pll_ops->resume_pll)
- 		par->pll_ops->resume_pll(info, &par->pll);
- 
--	/*
--	 * Last page of 8 MB (4 MB on ISA) aperture is MMIO,
--	 * unless the auxiliary register aperture is used.
--	 */
--	if (!par->aux_start &&
--	    (info->fix.smem_len = 0x800000 ||
--	     (par->bus_type = ISA && info->fix.smem_len = 0x400000)))
--		info->fix.smem_len -= GUI_RESERVE;
-+	aty_fudge_framebuffer_len(info);
- 
- 	/*
- 	 * Disable register access through the linear aperture
--- 
-2.3.2.209.gd67f9d5.dirty
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index f7ed6d9..61e0ce8 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -515,7 +515,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 	info->var.blue.offset =3D 0;
+=20
+ 	info->screen_base =3D (u8 __force __iomem *)vmem;
+-	info->fix.smem_start =3D (unsigned long)vmem;
++	info->fix.smem_start =3D __pa(vmem);
+ 	info->fix.smem_len =3D vmem_size;
+=20
+ 	fb_deferred_io_init(info);
+--=20
+2.3.0
 

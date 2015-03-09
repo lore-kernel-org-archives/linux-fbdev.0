@@ -1,34 +1,56 @@
 From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Mon, 23 Mar 2015 14:19:58 +0000
-Subject: Re: [PATCH 0/13] staging: sm750: reformat sm750.c
-Message-Id: <20150323140758.GC27897@sudip-PC>
+Date: Mon, 09 Mar 2015 07:47:05 +0000
+Subject: [PATCH v2 3/4] staging: sm750fb: correctly define SM750LE_REVISION_ID
+Message-Id: <1425886506-8643-3-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150322230718.GA16751@x230-arch.club.entropia.de>
-In-Reply-To: <20150322230718.GA16751@x230-arch.club.entropia.de>
+References: <1425886506-8643-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1425886506-8643-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2015 at 02:48:03PM +0100, tofu wrote:
-> On 03/23/2015 02:11 PM, Sudip Mukherjee wrote:
-> > On Mon, Mar 23, 2015 at 02:20:05PM +0300, Dan Carpenter wrote:
-> >> These are going to conflict with Lorenzo's patches.
-> > 
-> > i just checked and informed Lorenzo that his patchset is not applying
-> > to staging-testing, and this patchset also is not applying. Greg has
-> > already applied patches of Raghavendra and Ricardo Ribalda Delgado.
-> > 
-> > Michel - please refresh your patchset against staging-testing after
-> > making the changes that Dan has suggested.
-> I'll update it tonight and rebase it to staging-testing. 
+check if it is already defined before defining SM750LE_REVISION_ID
+again and at the same time mention correct data type.
 
-my apologies. your patchset is applying properly, but it is not
-applying if i apply Lorenzo's patches first. And in all probability
-Greg will apply that first as that has reached his inbox first.
-so better will be if you apply Lorenzo's patches to your tree and
-then prepare your patches and just write a small comment in your
-patch that your patchset depends on the patchset sent by Lorenzo.
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+---
 
-regards
-sudip
+v2: removed the redundant cast in sm750_hw.c
+
+ drivers/staging/sm750fb/ddk750_chip.h | 4 +++-
+ drivers/staging/sm750fb/sm750_hw.c    | 2 +-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index 1c78875..d761b72 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -1,7 +1,9 @@
+ #ifndef DDK750_CHIP_H__
+ #define DDK750_CHIP_H__
+ #define DEFAULT_INPUT_CLOCK 14318181 /* Default reference clock */
+-#define SM750LE_REVISION_ID (char)0xfe
++#ifndef SM750LE_REVISION_ID
++#define SM750LE_REVISION_ID ((unsigned char)0xfe)
++#endif
+ 
+ /* This is all the chips recognized by this library */
+ typedef enum _logical_chip_type_t
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index ec2d499..a2b7fe2 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -277,7 +277,7 @@ int hw_sm750_crtc_checkMode(struct lynxfb_crtc* crtc,struct fb_var_screeninfo* v
+ 		case 16:
+ 			break;
+ 		case 32:
+-			if(share->revid = (unsigned char)SM750LE_REVISION_ID){
++			if (share->revid = SM750LE_REVISION_ID) {
+ 				pr_debug("750le do not support 32bpp\n");
+ 				return -EINVAL;
+ 			}
+-- 
+1.8.1.2
+

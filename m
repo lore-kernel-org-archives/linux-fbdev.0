@@ -1,56 +1,41 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Thu, 12 Mar 2015 15:24:14 +0000
-Subject: [PATCH 8/8] powerpc: get rid of CONFIG_8xx
-Message-Id: <20150312152415.01E7C1A2423@localhost.localdomain>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Mon, 09 Mar 2015 22:22:07 +0000
+Subject: [PATCHv3 05/10] ARM: mxs: fix in tree users of ssd1306
+Message-Id: <1425939732-18386-6-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Vitaly Bordug <vitb@kernel.crashing.org>, scottwood@freescale.com
-Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, user-mode-linux-user@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-Two config options exist to define powerpc MPC8xx:
-* CONFIG_PPC_8xx
-* CONFIG_8xx
-In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
-communication co-processor
+This patch updates the in tree-users of the SSD1306 controller for using
+the newly introduced DT properties.
 
-arch/powerpc/platforms/Kconfig.cputype has contained the following
-comment about CONFIG_8xx item for some years:
-"# this is temp to handle compat with arch=ppc"
-
-It looks like not many places still have that old CONFIG_8xx used,
-so it is likely to be a good time to get rid of it completely ?
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
 ---
- arch/powerpc/platforms/Kconfig.cputype | 5 -----
- 1 file changed, 5 deletions(-)
+ arch/arm/boot/dts/imx28-cfa10036.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 6d481ff..beca3ce 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -32,7 +32,6 @@ config PPC_85xx
- config PPC_8xx
- 	bool "Freescale 8xx"
- 	select FSL_SOC
--	select 8xx
- 	select PPC_LIB_RHEAP
- 
- config 40x
-@@ -157,10 +156,6 @@ config TUNE_CELL
- 	  itself, so the resulting kernel will keep running on all other
- 	  machines.
- 
--# this is temp to handle compat with arch=ppc
--config 8xx
--	bool
--
- config E500
- 	select FSL_EMB_PERFMON
- 	select PPC_FSL_BOOK3E
--- 
-2.1.0
+diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28=
+-cfa10036.dts
+index b04b6b8..faeaa2e 100644
+--- a/arch/arm/boot/dts/imx28-cfa10036.dts
++++ b/arch/arm/boot/dts/imx28-cfa10036.dts
+@@ -99,6 +99,10 @@
+ 					solomon,height =3D <32>;
+ 					solomon,width =3D <128>;
+ 					solomon,page-offset =3D <0>;
++					solomon,segment-remap;
++					solomon,com-lrremap;
++					solomon,com-invdir;
++					solomon,com-offset =3D <32>;
+ 				};
+ 			};
+=20
+--=20
+2.3.0
 

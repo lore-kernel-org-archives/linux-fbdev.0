@@ -1,35 +1,59 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Date: Tue, 31 Mar 2015 00:55:38 +0000
-Subject: Re: [PATCH 6/8] mtd: replace CONFIG_8xx by CONFIG_PPC_8xx
-Message-Id: <20150331005538.GJ32500@ld-irv-0074>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Mon, 09 Mar 2015 20:57:08 +0000
+Subject: [PATCH] staging: sm750fb: Fix sparse warning
+Message-Id: <1425934628-3717-1-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150312152404.D6C391A2421@localhost.localdomain>
-In-Reply-To: <20150312152404.D6C391A2421@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, user-mode-linux-user@lists.sourceforge.net, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-On Thu, Mar 12, 2015 at 04:24:04PM +0100, Christophe Leroy wrote:
-> Two config options exist to define powerpc MPC8xx:
-> * CONFIG_PPC_8xx
-> * CONFIG_8xx
-> In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
-> communication co-processor
-> 
-> arch/powerpc/platforms/Kconfig.cputype has contained the following
-> comment about CONFIG_8xx item for some years:
-> "# this is temp to handle compat with arch=ppc"
-> 
-> It looks like not many places still have that old CONFIG_8xx used,
-> so it is likely to be a good time to get rid of it completely ?
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+This patch fixes the following sparse warning:-
 
-I'm not sure if the consistency aspect is worked out for all symbols
-(Geert's comment on the cover letter), but this one looks fine.
+drivers/staging/sm750fb/ddk750_help.c: warning: incorrect type in assignment (different address spaces)
 
-Applied this patch to l2-mtd.git.
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.h | 4 +++-
+ drivers/staging/sm750fb/ddk750_help.c | 2 +-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-Brian
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index 1c78875..a4e5bcc 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -3,6 +3,8 @@
+ #define DEFAULT_INPUT_CLOCK 14318181 /* Default reference clock */
+ #define SM750LE_REVISION_ID (char)0xfe
+ 
++#include <asm/io.h>
++
+ /* This is all the chips recognized by this library */
+ typedef enum _logical_chip_type_t
+ {
+@@ -70,7 +72,7 @@ logical_chip_type_t getChipType(void);
+ unsigned int calcPllValue(unsigned int request,pll_value_t *pll);
+ unsigned int calcPllValue2(unsigned int,pll_value_t *);
+ unsigned int formatPllReg(pll_value_t *pPLL);
+-void ddk750_set_mmio(volatile unsigned char *,unsigned short,char);
++void ddk750_set_mmio(volatile unsigned char __iomem *,unsigned short,char);
+ unsigned int ddk750_getVMSize(void);
+ int ddk750_initHw(initchip_param_t *);
+ unsigned int getPllValue(clock_type_t clockType, pll_value_t *pPLL);
+diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
+index cc00d2b..6ad4dec 100644
+--- a/drivers/staging/sm750fb/ddk750_help.c
++++ b/drivers/staging/sm750fb/ddk750_help.c
+@@ -7,7 +7,7 @@ char revId750 = 0;
+ unsigned short devId750 = 0;
+ 
+ /* after driver mapped io registers, use this function first */
+-void ddk750_set_mmio(volatile unsigned char * addr,unsigned short devId,char revId)
++void ddk750_set_mmio(volatile unsigned char __iomem * addr,unsigned short devId,char revId)
+ {
+ 	mmio750 = addr;
+ 	devId750 = devId;
+-- 
+2.3.2
+

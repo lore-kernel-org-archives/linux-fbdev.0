@@ -1,195 +1,160 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:27 +0000
-Subject: [PATCH v1 37/47] video: fbdev: i740fb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
-Message-Id: <1426893517-2511-38-git-send-email-mcgrof@do-not-panic.com>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Mon, 09 Mar 2015 22:22:11 +0000
+Subject: [PATCHv3 09/10] fbdev: ssd1307fb: Add sysfs handles to expose contrast and dim setting to userspace.
+Message-Id: <1425939732-18386-10-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+This patch adds sysfs handles to enable userspace control over the display
+contrast as well as the dim mode. The handles are available as "contrast"
+and "dim" in the framebuffers sysfs domain.
 
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
 ---
- drivers/video/fbdev/i740fb.c | 35 ++++++-----------------------------
- 1 file changed, 6 insertions(+), 29 deletions(-)
+ drivers/video/fbdev/ssd1307fb.c | 90 +++++++++++++++++++++++++++++++++++++=
+++++
+ 1 file changed, 90 insertions(+)
 
-diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
-index a2b4204..452e116 100644
---- a/drivers/video/fbdev/i740fb.c
-+++ b/drivers/video/fbdev/i740fb.c
-@@ -27,24 +27,15 @@
- #include <linux/console.h>
- #include <video/vga.h>
- 
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- #include "i740_reg.h"
- 
- static char *mode_option;
--
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
- 
- struct i740fb_par {
- 	unsigned char __iomem *regs;
- 	bool has_sgram;
--#ifdef CONFIG_MTRR
--	int mtrr_reg;
--#endif
-+	int wc_cookie;
- 	bool ddc_registered;
- 	struct i2c_adapter ddc_adapter;
- 	struct i2c_algo_bit_data ddc_algo;
-@@ -1040,7 +1031,7 @@ static int i740fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
- 		goto err_request_regions;
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index 3cf4da1..fee6324 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -33,6 +33,7 @@
+ #define SSD1307FB_CONTRAST		0x81
+ #define	SSD1307FB_CHARGE_PUMP		0x8d
+ #define SSD1307FB_SEG_REMAP_ON		0xa1
++#define SSD1307FB_DISPLAY_DIM		0xac
+ #define SSD1307FB_DISPLAY_OFF		0xae
+ #define SSD1307FB_SET_MULTIPLEX_RATIO	0xa8
+ #define SSD1307FB_DISPLAY_ON		0xaf
+@@ -43,6 +44,9 @@
+ #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
+ #define	SSD1307FB_SET_VCOMH		0xdb
+=20
++#define MIN_CONTRAST 0
++#define MAX_CONTRAST 255
++
+ #define REFRASHRATE 1
+ #define BITSPERPIXEL 1
+=20
+@@ -73,6 +77,7 @@ struct ssd1307fb_par {
+ 	u32 dclk_div;
+ 	u32 dclk_frq;
+ 	struct ssd1307fb_deviceinfo *device_info;
++	u32 dim;
+ 	struct i2c_client *client;
+ 	u32 height;
+ 	struct fb_info *info;
+@@ -476,6 +481,87 @@ static const struct of_device_id ssd1307fb_of_match[] =
+=3D {
+ };
+ MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
+=20
++static ssize_t show_contrast(struct device *device,
++			   struct device_attribute *attr, char *buf)
++{
++	struct fb_info *info =3D dev_get_drvdata(device);
++	struct ssd1307fb_par *par =3D info->par;
++
++	return snprintf(buf, PAGE_SIZE, "%d\n", par->contrast);
++}
++
++static ssize_t store_contrast(struct device *device,
++			    struct device_attribute *attr,
++			    const char *buf, size_t count)
++{
++	struct fb_info *info =3D dev_get_drvdata(device);
++	struct ssd1307fb_par *par =3D info->par;
++	unsigned long contrastval;
++	int ret;
++
++	ret =3D kstrtoul(buf, 0, &contrastval);
++	if (ret < 0)
++		return ret;
++
++	par->contrast =3D max_t(ulong, min_t(ulong, contrastval,
++		(ulong)MAX_CONTRAST), (ulong)MIN_CONTRAST);
++
++	ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_CONTRAST);
++	ret =3D ret & ssd1307fb_write_cmd(par->client, par->contrast);
++	if (ret < 0)
++		return ret;
++
++	return count;
++}
++
++
++static ssize_t show_dim(struct device *device,
++			   struct device_attribute *attr, char *buf)
++{
++	struct fb_info *info =3D dev_get_drvdata(device);
++	struct ssd1307fb_par *par =3D info->par;
++
++	return snprintf(buf, PAGE_SIZE, "%d\n", par->dim);
++}
++
++static ssize_t store_dim(struct device *device,
++			    struct device_attribute *attr,
++			    const char *buf, size_t count)
++{
++	struct fb_info *info =3D dev_get_drvdata(device);
++	struct ssd1307fb_par *par =3D info->par;
++	unsigned long dimval;
++	int ret;
++
++	ret =3D kstrtoul(buf, 0, &dimval);
++	if (ret < 0)
++		return ret;
++
++	par->dim =3D max_t(ulong, min_t(ulong, dimval, (ulong)1), (ulong)0);
++	if (par->dim)
++		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_DIM);
++	else
++		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
++	if (ret < 0)
++		return ret;
++
++	return count;
++}
++
++static DEVICE_ATTR(contrast, S_IRUGO|S_IWUSR, show_contrast, store_contras=
+t);
++static DEVICE_ATTR(dim, S_IRUGO|S_IWUSR, show_dim, store_dim);
++
++static struct attribute *panel_attrs[] =3D {
++		&dev_attr_contrast.attr,
++		&dev_attr_dim.attr,
++		NULL,
++};
++
++static struct attribute_group brightness_attr_grp =3D {
++		.name  =3D "brightness",
++		.attrs =3D panel_attrs,
++};
++
+ static int ssd1307fb_probe(struct i2c_client *client,
+ 			   const struct i2c_device_id *id)
+ {
+@@ -614,6 +700,10 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 		goto panel_init_error;
  	}
- 
--	info->screen_base = pci_ioremap_bar(dev, 0);
-+	info->screen_base = pci_ioremap_wc_bar(dev, 0);
- 	if (!info->screen_base) {
- 		dev_err(info->device, "error remapping base\n");
- 		ret = -ENOMEM;
-@@ -1144,13 +1135,9 @@ static int i740fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
- 
- 	fb_info(info, "%s frame buffer device\n", info->fix.id);
- 	pci_set_drvdata(dev, info);
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start,
--				info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
+=20
++	ret =3D sysfs_create_group(&info->dev->kobj, &brightness_attr_grp);
++	if (ret)
++		dev_err(&client->dev, "Couldn't register sysfs nodes\n");
++
+ 	dev_info(&client->dev, "fb%d: %s framebuffer device registered, using %d =
+bytes of video memory\n", info->node, info->fix.id, vmem_size);
+=20
  	return 0;
- 
- err_reg_framebuffer:
-@@ -1177,13 +1164,7 @@ static void i740fb_remove(struct pci_dev *dev)
- 
- 	if (info) {
- 		struct i740fb_par *par = info->par;
--
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
--#endif
-+		arch_phys_wc_del(par->wc_cookie);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
- 		if (par->ddc_registered)
-@@ -1287,10 +1268,8 @@ static int  __init i740fb_setup(char *options)
- 	while ((opt = strsep(&options, ",")) != NULL) {
- 		if (!*opt)
- 			continue;
--#ifdef CONFIG_MTRR
- 		else if (!strncmp(opt, "mtrr:", 5))
- 			mtrr = simple_strtoul(opt + 5, NULL, 0);
--#endif
- 		else
- 			mode_option = opt;
- 	}
-@@ -1327,7 +1306,5 @@ MODULE_DESCRIPTION("fbdev driver for Intel740");
- module_param(mode_option, charp, 0444);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- 
--#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
--- 
-2.3.2.209.gd67f9d5.dirty
+--=20
+2.3.0
 

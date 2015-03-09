@@ -1,56 +1,31 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sun, 08 Mar 2015 17:52:11 +0000
-Subject: [PATCH 3/3] staging: sm7xxfb: change return of sm7xx_vga_setup
-Message-Id: <1425836411-15481-3-git-send-email-sudipm.mukherjee@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 09 Mar 2015 13:13:43 +0000
+Subject: Re: [PATCH 3/3] staging: sm7xxfb: change return of sm7xx_vga_setup
+Message-Id: <20150309131343.GG10964@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1425836411-15481-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1425836411-15481-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <1425836411-15481-3-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1425836411-15481-3-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-change return type of sm7xx_vga_setup() to void as we are not using
-the return type anywhere. if this function fails we fall back to the
-default configuration.
+On Sun, Mar 08, 2015 at 11:10:11PM +0530, Sudip Mukherjee wrote:
+> change return type of sm7xx_vga_setup() to void as we are not using
+> the return type anywhere. if this function fails we fall back to the
+> default configuration.
+> 
+> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
- drivers/staging/sm7xxfb/sm7xxfb.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+Reviewed-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index e93563f..abdb021 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -116,12 +116,12 @@ static struct screen_info smtc_scr_info;
- static char *mode_option;
- 
- /* process command line options, get vga parameter */
--static int __init sm7xx_vga_setup(char *options)
-+static void __init sm7xx_vga_setup(char *options)
- {
- 	int i;
- 
- 	if (!options || !*options)
--		return -EINVAL;
-+		return;
- 
- 	smtc_scr_info.lfb_width = 0;
- 	smtc_scr_info.lfb_height = 0;
-@@ -135,11 +135,9 @@ static int __init sm7xx_vga_setup(char *options)
- 			smtc_scr_info.lfb_height  						vesa_mode_table[i].lfb_height;
- 			smtc_scr_info.lfb_depth  = vesa_mode_table[i].lfb_depth;
--			return 0;
-+			return;
- 		}
- 	}
--
--	return -1;
- }
- 
- static void sm712_setpalette(int regno, unsigned red, unsigned green,
--- 
-1.9.1
+This patch is fine but if you wanted you could send a follow on which
+set it to SCREEN_X_RES, SCREEN_Y_RES, SCREEN_BPP if there were no
+options.  Then remove the "if (smtc_scr_info.lfb_width != 0) " condition
+in smtcfb_pci_probe().
+
+regards,
+dan carpenter
 

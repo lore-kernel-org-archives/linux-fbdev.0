@@ -1,42 +1,40 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sun, 08 Mar 2015 12:59:14 +0000
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 09 Mar 2015 09:22:09 +0000
 Subject: Re: [PATCH 1/4] staging: sm750fb: wrong type for print
-Message-Id: <20150308125859.GA14649@sudip-PC>
+Message-Id: <20150309092209.GB10964@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com>
- <54FC4323.3010909@gmail.com>
-In-Reply-To: <54FC4323.3010909@gmail.com>
+In-Reply-To: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Giedrius =?utf-8?Q?Statkevi=C4=8Dius?= <giedrius.statkevicius@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-T24gU3VuLCBNYXIgMDgsIDIwMTUgYXQgMDI6NDA6MDNQTSArMDIwMCwgR2llZHJpdXMgU3RhdGtl
-dmnEjWl1cyB3cm90ZToKPiBPbiAyMDE1LjAzLjA4IDE0OjMxLCBTdWRpcCBNdWtoZXJqZWUgd3Jv
-dGU6Cj4gPiBtZW50aW9uIGNvcnJlY3QgZm9ybWF0IHNwZWNpZmllciB3aGlsZSBwcmludGluZwo+
-ID4gaW5kZXggNzExNjc2Yy4uMmFiN2I3NCAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvc3RhZ2lu
-Zy9zbTc1MGZiL3NtNzUwLmgKPiA+ICsrKyBiL2RyaXZlcnMvc3RhZ2luZy9zbTc1MGZiL3NtNzUw
-LmgKPiA+IEBAIC01OSwxMCArNTksMTAgQEAgc3RydWN0IGx5bnhfc2hhcmV7Cj4gPiAgCQl9bXRy
-cjsKPiA+ICAjZW5kaWYKPiA+ICAJLyogYWxsIHNtaSBncmFwaGljIGFkYXB0b3IgZ290IGJlbG93
-IGF0dHJpYnV0ZXMgKi8KPiA+IC0JcmVzb3VyY2Vfc2l6ZV90IHZpZG1lbV9zdGFydDsKPiA+IC0J
-cmVzb3VyY2Vfc2l6ZV90IHZpZHJlZ19zdGFydDsKPiA+IC0JcmVzb3VyY2Vfc2l6ZV90IHZpZG1l
-bV9zaXplOwo+ID4gLQlyZXNvdXJjZV9zaXplX3QgdmlkcmVnX3NpemU7Cj4gPiArCXVuc2lnbmVk
-IGxvbmcgdmlkbWVtX3N0YXJ0Owo+ID4gKwl1bnNpZ25lZCBsb25nIHZpZHJlZ19zdGFydDsKPiA+
-ICsJdW5zaWduZWQgbG9uZyB2aWRtZW1fc2l6ZTsKPiA+ICsJdW5zaWduZWQgbG9uZyB2aWRyZWdf
-c2l6ZTsKPiAKPiBIYXZlIHlvdSBjaGVja2VkIG90aGVyIHBsYWNlcyB3aGVyZSB0aGVzZSBhcmUg
-dXNlZD8gcmVzb3VyY2Vfc2l6ZV90IGNhbgo+IGJlIGVpdGhlciB1NjQgb3IgdTMyIGRlcGVuZGlu
-ZyBvbiBpZiBDT05GSUdfUEhZU19BRERSX1RfNjRCSVQgaXMKPiAjZGVmaW5lZC4gQXJlIHlvdSBz
-dXJlIHlvdSBhcmVuJ3QgbG9zaW5nIGluZm9ybWF0aW9uIHdoZW4gcmVzdWx0cyBvZgo+IGZ1bmN0
-aW9ucyBhcmUgYmVpbmcgYXNzaWduZWQgdG8gdGhpcz8gTWF5YmUgdGhlcmUgc2hvdWxkIGJlIGEg
-ZnVuY3Rpb24KPiBzaW1pbGFyIHRvIHByaW50ayB0aGF0IGNoYW5nZXMgYmV0d2VlbiAldSBhbmQg
-JWxsdSBkZXBlbmRpbmcgb24gd2hldGhlcgo+IHRoYXQgaXMgZGVmaW5lZD8KCm9vcHMgLi4gbm8g
-Li4gOigKaSBjaGVja2VkIGluIG90aGVyIGZyYW1lYnVmZmVyIGRyaXZlcnMgYW5kIHNhdyB0aGV5
-IGFyZSBtb3N0bHkgdW5zaWduZWQgbG9uZy4KSSB3aWxsIGNoZWNrIGZ1cnRoZXIgb24gdGhpcy4K
-CkdyZWc6IGNhbiB5b3UgcGxlYXNlIGRyb3AgdGhpcyBwYXRjaCAoMS80KSBmcm9tIHlvdXIgcXVl
-dWUgYW5kIG5vdCBhcHBseSB0aGlzIHRvIHlvdXIgdHJlZS4KSSB3aWxsIHNlbmQgaXQgYXMgYSB2
-Mi4KCnJlZ2FyZHMKc3VkaXAKCj4gCj4gLS0gCj4gVGhhbmtzLAo+IEdpZWRyaXVzCi0tClRvIHVu
-c3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51
-eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5l
-bC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpv
-cmRvbW8taW5mby5odG1s
+On Sun, Mar 08, 2015 at 06:01:23PM +0530, Sudip Mukherjee wrote:
+> diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+> index 711676c..2ab7b74 100644
+> --- a/drivers/staging/sm750fb/sm750.h
+> +++ b/drivers/staging/sm750fb/sm750.h
+> @@ -59,10 +59,10 @@ struct lynx_share{
+>  		}mtrr;
+>  #endif
+>  	/* all smi graphic adaptor got below attributes */
+> -	resource_size_t vidmem_start;
+> -	resource_size_t vidreg_start;
+> -	resource_size_t vidmem_size;
+> -	resource_size_t vidreg_size;
+> +	unsigned long vidmem_start;
+> +	unsigned long vidreg_start;
+> +	unsigned long vidmem_size;
+> +	unsigned long vidreg_size;
+>  	volatile unsigned char __iomem * pvReg;
+>  	unsigned char __iomem * pvMem;
+>  	/* locks*/
+
+This seems like a very risky sort of change.  It's not explained very
+well in the changelog.  What's the deal?
+
+regards,
+dan carpenter
+

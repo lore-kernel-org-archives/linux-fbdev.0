@@ -1,122 +1,105 @@
 From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 03 Mar 2015 07:42:44 +0000
-Subject: Re: [PATCH v11 0/6] Add Skyworks SKY81452 device drivers
-Message-Id: <20150303074244.GE6976@x1>
+Date: Mon, 09 Mar 2015 09:40:40 +0000
+Subject: Re: [PATCH v11 3/6] devicetree: Add new SKY81452 mfd binding
+Message-Id: <20150309094040.GN3427@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
- <20150227203938.GA12821@x1>
- <20150303022430.GA3667@jack-ThinkPad-T520>
-In-Reply-To: <20150303022430.GA3667@jack-ThinkPad-T520>
+ <1425019346-4559-4-git-send-email-jack.yoo@skyworksinc.com>
+In-Reply-To: <1425019346-4559-4-git-send-email-jack.yoo-tjhQNA90jdKqndwCJWfcng@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: Gyungoh Yoo <gyungoh@gmail.com>
-Cc: sameo@linux.intel.com, robh+dt@kernel.org, jg1.han@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org, broonie@kernel.org, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, treding@nvidia.com, p.zabel@pengutronix.de, arno@natisbad.org, kuninori.morimoto.gx@renesas.com
+To: gyungoh-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, florian.vaussard-p8DiymsW2f8@public.gmane.org, andrew-g2DYL2Zd6BY@public.gmane.org, antonynpavlov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hytszk-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, jack.yoo-tjhQNA90jdKqndwCJWfcng@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, arno-LkuqDEemtHBg9hUCZPvPmw@public.gmane.org, kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org
 
-On Tue, 03 Mar 2015, Gyungoh Yoo wrote:
+Applied, thanks.
 
-> On Fri, Feb 27, 2015 at 08:39:38PM +0000, Lee Jones wrote:
-> > On Fri, 27 Feb 2015, gyungoh@gmail.com wrote:
-> >=20
-> > > From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> > >=20
-> > > This patch set includes regulator and backlight driver for SKY81452.
-> > > Also it includes documents for device tree and module.
-> > > sky81452-regulator was already applied. So this series doesn't
-> > > include it.
-> > >=20
-> > > v11:
-> > > Renamed 'skyworks,en-channels' property to led-sources.
-> > > Removed unused property 'skyworks,ovp-level'.
-> > >=20
-> > > v10:
-> > > Removed trivial get_brightness implementations for sky81452-backlight
-> > >=20
-> > > v9:
-> > > Removed the change to remove MODULE_VERSION() for sky81452-regulator
-> > >=20
-> > > v8:
-> > > Renamed property names for backlight with vendor prefix
-> > > Modified gpio-enable property to generic property for GPIO
-> > > Made up the example for backlight DT
-> > > Changed the DT parsing of regulator using regulator_node and of_match
-> > >=20
-> > > v7:
-> > > Modified licensing text to GPLv2
-> > > Split Kconfig renaming from DT patch
-> > >=20
-> > > v6:
-> > > Added new line character at the end of line of dev_err()
-> > >=20
-> > > v5:
-> > > Changed DT for regulator : 'lout' node should be defined under 'regul=
-ator'
-> > > Removed compatible string from sky81452-regulator driver
-> > > Modified sky81452-regulator to return EINVAL when of_node is NULL
-> > > Move sky81452-backlight.h to include/linux/platform_data
-> > >=20
-> > > v4:
-> > > Removed MODULE_VERSION()
-> > > Modified license to GPLv2
-> > > Removed calling to backlight_device_unregister() in sky81452-backlight
-> > >=20
-> > > v3:
-> > > Cleaned-up DBG messages
-> > > Cleaned-up DT
-> > > Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
-> > > Assigned mfd_cell.of_compatible for binding device node
-> > > Modified error messages
-> > > Modified sky81452-regulator to return ENODATA when of_node is NULL
-> > >=20
-> > > v2:
-> > > Split the patches for each sub-system
-> > > Added 'reg' attribute for I2C address in device tree documents
-> > > Added 'compatible' attribute in child drivers
-> > > Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
-> > > Changed the dependency from I2C=3Dy to I2C, for CONFIG_MFD_SKY81452
-> > > Added message for exception or errors.
-> > > Added vendor prefix for Skyworks Solutions, Inc.
-> > > Add SKY81452 to the Trivial Devices list
-> > >=20
-> > > Gyungoh Yoo (6):
-> > >   mfd: Add support for Skyworks SKY81452 driver
-> > >   backlight: Add support Skyworks SKY81452 backlight driver
-> > >   devicetree: Add new SKY81452 mfd binding
-> > >   devicetree: Add new SKY81452 backlight binding
-> > >   devicetree: Add vendor prefix for Skyworks Solutions, Inc.
-> > >   devicetree: Add SKY81452 to the Trivial Devices list
-> > >=20
-> > >  .../devicetree/bindings/i2c/trivial-devices.txt    |   1 +
-> > >  Documentation/devicetree/bindings/mfd/sky81452.txt |  35 ++
-> > >  .../devicetree/bindings/vendor-prefixes.txt        |   1 +
-> > >  .../video/backlight/sky81452-backlight.txt         |  29 ++
-> > >  drivers/mfd/Kconfig                                |  12 +
-> > >  drivers/mfd/Makefile                               |   1 +
-> > >  drivers/mfd/sky81452.c                             | 108 +++++++
-> > >  drivers/video/backlight/Kconfig                    |  10 +
-> > >  drivers/video/backlight/Makefile                   |   1 +
-> > >  drivers/video/backlight/sky81452-backlight.c       | 353 +++++++++++=
-++++++++++
-> > >  include/linux/mfd/sky81452.h                       |  31 ++
-> > >  include/linux/platform_data/sky81452-backlight.h   |  46 +++
-> > >  12 files changed, 628 insertions(+)
-> > >  create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
-> > >  create mode 100644 Documentation/devicetree/bindings/video/backlight=
-/sky81452-backlight.txt
-> > >  create mode 100644 drivers/mfd/sky81452.c
-> > >  create mode 100644 drivers/video/backlight/sky81452-backlight.c
-> > >  create mode 100644 include/linux/mfd/sky81452.h
-> > >  create mode 100644 include/linux/platform_data/sky81452-backlight.h
-> >=20
-> > Correct me if I'm wrong, but I believe you have all of the relevant
-> > Acks now.  If so, I plan to pick this up next week and take it
-> > through the MFD tree.
+On Fri, 27 Feb 2015, gyungoh@gmail.com wrote:
+
+> From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
 >=20
-> I had got all Acks except DT on v10.
-> Rob from DT reviewed, and v11 includes what he asked.
-
-Let's wait to see if he cares to re-review.  If after a few more days
-he has chosen not to, I'll pick up the set.
+> Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
+> Acked-by: Lee Jones <lee.jones@linaro.org>
+> ---
+> Changes v11:
+> Renamed 'skyworks,en-channels' property to led-sources.
+> Removed unused property 'skyworks,ovp-level'.
+>=20
+> Changes v10:
+> Nothing
+>=20
+> Changes v9:
+> Nothing
+>=20
+> Changes v8:
+> Made up the example for backlight DT
+>=20
+> Changes v7:
+> Nothing
+>=20
+> Changes v6:
+> Nothing
+>=20
+> Changes v5:
+> Changed DT for regulator : 'lout' node should be defined under 'regulator'
+> Removed compatible string from sky81452-regulator driver
+>=20
+> Changes v4:
+> Nothing
+>=20
+> Changes v3:
+> Nothing
+>=20
+> Changes v2:
+> Added reg attribute for I2C slave address
+>=20
+>  Documentation/devicetree/bindings/mfd/sky81452.txt | 35 ++++++++++++++++=
+++++++
+>  1 file changed, 35 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/sky81452.txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/mfd/sky81452.txt b/Documen=
+tation/devicetree/bindings/mfd/sky81452.txt
+> new file mode 100644
+> index 0000000..3518179
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mfd/sky81452.txt
+> @@ -0,0 +1,35 @@
+> +SKY81452 bindings
+> +
+> +Required properties:
+> +- compatible	: Must be "skyworks,sky81452"
+> +- reg		: I2C slave address
+> +
+> +Required child nodes:
+> +- backlight	: container node for backlight following the binding
+> +		in video/backlight/sky81452-backlight.txt
+> +- regulator	: container node for regulators following the binding
+> +		in regulator/sky81452-regulator.txt
+> +
+> +Example:
+> +
+> +	sky81452@2c {
+> +		compatible =3D "skyworks,sky81452";
+> +		reg =3D <0x2c>;
+> +
+> +		backlight {
+> +			compatible =3D "skyworks,sky81452-backlight";
+> +			name =3D "pwm-backlight";
+> +			led-sources =3D <0 1 2 3 6>;
+> +			skyworks,ignore-pwm;
+> +			skyworks,phase-shift;
+> +			skyworks,current-limit =3D <2300>;
+> +		};
+> +
+> +		regulator {
+> +			lout {
+> +				regulator-name =3D "sky81452-lout";
+> +				regulator-min-microvolt =3D <4500000>;
+> +				regulator-max-microvolt =3D <8000000>;
+> +			};
+> +		};
+> +	};
 
 --=20
 Lee Jones

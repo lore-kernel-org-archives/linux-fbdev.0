@@ -1,160 +1,49 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Mon, 09 Mar 2015 22:22:11 +0000
-Subject: [PATCHv3 09/10] fbdev: ssd1307fb: Add sysfs handles to expose contrast and dim setting to userspace.
-Message-Id: <1425939732-18386-10-git-send-email-niederp@physik.uni-kl.de>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 10 Mar 2015 08:57:36 +0000
+Subject: [PATCH v3 2/5] staging: sm750fb: remove pragma optimize
+Message-Id: <1425977139-25285-2-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
+References: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-This patch adds sysfs handles to enable userspace control over the display
-contrast as well as the dim mode. The handles are available as "contrast"
-and "dim" in the framebuffers sysfs domain.
+remove use of #pragma optimize which will usually be ignored by the
+compiler.
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/ssd1307fb.c | 90 +++++++++++++++++++++++++++++++++++++=
-++++
- 1 file changed, 90 insertions(+)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index 3cf4da1..fee6324 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -33,6 +33,7 @@
- #define SSD1307FB_CONTRAST		0x81
- #define	SSD1307FB_CHARGE_PUMP		0x8d
- #define SSD1307FB_SEG_REMAP_ON		0xa1
-+#define SSD1307FB_DISPLAY_DIM		0xac
- #define SSD1307FB_DISPLAY_OFF		0xae
- #define SSD1307FB_SET_MULTIPLEX_RATIO	0xa8
- #define SSD1307FB_DISPLAY_ON		0xaf
-@@ -43,6 +44,9 @@
- #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
- #define	SSD1307FB_SET_VCOMH		0xdb
-=20
-+#define MIN_CONTRAST 0
-+#define MAX_CONTRAST 255
-+
- #define REFRASHRATE 1
- #define BITSPERPIXEL 1
-=20
-@@ -73,6 +77,7 @@ struct ssd1307fb_par {
- 	u32 dclk_div;
- 	u32 dclk_frq;
- 	struct ssd1307fb_deviceinfo *device_info;
-+	u32 dim;
- 	struct i2c_client *client;
- 	u32 height;
- 	struct fb_info *info;
-@@ -476,6 +481,87 @@ static const struct of_device_id ssd1307fb_of_match[] =
-=3D {
- };
- MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
-=20
-+static ssize_t show_contrast(struct device *device,
-+			   struct device_attribute *attr, char *buf)
-+{
-+	struct fb_info *info =3D dev_get_drvdata(device);
-+	struct ssd1307fb_par *par =3D info->par;
-+
-+	return snprintf(buf, PAGE_SIZE, "%d\n", par->contrast);
-+}
-+
-+static ssize_t store_contrast(struct device *device,
-+			    struct device_attribute *attr,
-+			    const char *buf, size_t count)
-+{
-+	struct fb_info *info =3D dev_get_drvdata(device);
-+	struct ssd1307fb_par *par =3D info->par;
-+	unsigned long contrastval;
-+	int ret;
-+
-+	ret =3D kstrtoul(buf, 0, &contrastval);
-+	if (ret < 0)
-+		return ret;
-+
-+	par->contrast =3D max_t(ulong, min_t(ulong, contrastval,
-+		(ulong)MAX_CONTRAST), (ulong)MIN_CONTRAST);
-+
-+	ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_CONTRAST);
-+	ret =3D ret & ssd1307fb_write_cmd(par->client, par->contrast);
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+
-+
-+static ssize_t show_dim(struct device *device,
-+			   struct device_attribute *attr, char *buf)
-+{
-+	struct fb_info *info =3D dev_get_drvdata(device);
-+	struct ssd1307fb_par *par =3D info->par;
-+
-+	return snprintf(buf, PAGE_SIZE, "%d\n", par->dim);
-+}
-+
-+static ssize_t store_dim(struct device *device,
-+			    struct device_attribute *attr,
-+			    const char *buf, size_t count)
-+{
-+	struct fb_info *info =3D dev_get_drvdata(device);
-+	struct ssd1307fb_par *par =3D info->par;
-+	unsigned long dimval;
-+	int ret;
-+
-+	ret =3D kstrtoul(buf, 0, &dimval);
-+	if (ret < 0)
-+		return ret;
-+
-+	par->dim =3D max_t(ulong, min_t(ulong, dimval, (ulong)1), (ulong)0);
-+	if (par->dim)
-+		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_DIM);
-+	else
-+		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR(contrast, S_IRUGO|S_IWUSR, show_contrast, store_contras=
-t);
-+static DEVICE_ATTR(dim, S_IRUGO|S_IWUSR, show_dim, store_dim);
-+
-+static struct attribute *panel_attrs[] =3D {
-+		&dev_attr_contrast.attr,
-+		&dev_attr_dim.attr,
-+		NULL,
-+};
-+
-+static struct attribute_group brightness_attr_grp =3D {
-+		.name  =3D "brightness",
-+		.attrs =3D panel_attrs,
-+};
-+
- static int ssd1307fb_probe(struct i2c_client *client,
- 			   const struct i2c_device_id *id)
- {
-@@ -614,6 +700,10 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 		goto panel_init_error;
- 	}
-=20
-+	ret =3D sysfs_create_group(&info->dev->kobj, &brightness_attr_grp);
-+	if (ret)
-+		dev_err(&client->dev, "Couldn't register sysfs nodes\n");
-+
- 	dev_info(&client->dev, "fb%d: %s framebuffer device registered, using %d =
-bytes of video memory\n", info->node, info->fix.id, vmem_size);
-=20
- 	return 0;
---=20
-2.3.0
+v3: no change
+v2: no change
+
+ drivers/staging/sm750fb/ddk750_swi2c.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+index b53407b..cae6b9b 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.c
++++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+@@ -217,8 +217,6 @@ static unsigned char swI2CReadSDA(void)
+         return 0;
+ }
+ 
+-#pragma optimize( "", off )
+-
+ /*
+  *  This function sends ACK signal
+  */
+@@ -356,7 +354,6 @@ unsigned char swI2CReadByte(unsigned char ack)
+ 
+     return data;
+ }
+-#pragma optimize( "", on )
+ 
+ /*
+  * This function initializes GPIO port for SW I2C communication.
+-- 
+1.8.1.2
 

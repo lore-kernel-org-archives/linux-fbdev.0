@@ -1,38 +1,45 @@
-From: "Michael S. Tsirkin" <mst@redhat.com>
-Date: Sun, 29 Mar 2015 13:42:38 +0000
-Subject: [PATCH 70/86] fbdev/gxt4500: use uapi/linux/pci_ids.h directly
-Message-Id: <1427635734-24786-71-git-send-email-mst@redhat.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 10 Mar 2015 17:28:56 +0000
+Subject: [PATCH 5/6] staging: sm750fb: fix mixed declarations
+Message-Id: <1426007817-1884-6-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1427635734-24786-1-git-send-email-mst@redhat.com>
-In-Reply-To: <1427635734-24786-1-git-send-email-mst@redhat.com>
+References: <1426007817-1884-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1426007817-1884-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Rob Clark <robdclark@gmail.com>, Jingoo Han <jg1.han@samsung.com>, linux-fbdev@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-Header moved from linux/pci_ids.h to uapi/linux/pci_ids.h,
-use the new header directly so we can drop
-the wrapper in include/linux/pci_ids.h.
+we were getting build warning about mixed declaration. the variable
+is now declared at the beginning of the block.
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/gxt4500.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm750fb/sm750.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 135d78a..2415d3d 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -10,7 +10,7 @@
- #include <linux/fb.h>
- #include <linux/console.h>
- #include <linux/pci.h>
--#include <linux/pci_ids.h>
-+#include <uapi/linux/pci_ids.h>
- #include <linux/delay.h>
- #include <linux/string.h>
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 87029b6..021b863 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -1175,6 +1175,7 @@ ALLOC_FB:
+ 		else
+ 		{
+ 			struct lynxfb_par * par;
++			int errno;
+ 			pr_info("framebuffer #%d alloc okay\n",fbidx);
+ 			share->fbinfo[fbidx] = info[fbidx];
+ 			par = info[fbidx]->par;
+@@ -1191,7 +1192,7 @@ ALLOC_FB:
  
+ 			/* register frame buffer*/
+ 			pr_info("Ready to register framebuffer #%d.\n",fbidx);
+-			int errno = register_framebuffer(info[fbidx]);
++			errno = register_framebuffer(info[fbidx]);
+ 			if (errno < 0) {
+ 				pr_err("Failed to register fb_info #%d. err %d\n",fbidx, errno);
+ 				if(fbidx = 0)
 -- 
-MST
+1.8.1.2
 

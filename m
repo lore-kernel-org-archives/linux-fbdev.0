@@ -1,43 +1,76 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 24 Mar 2015 07:57:08 +0000
-Subject: Re: [PATCH] staging: sm750fb: Fixed C99 comments warnings
-Message-Id: <20150324075708.GM10964@mwanda>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 10 Mar 2015 12:23:12 +0000
+Subject: Re: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
+Message-Id: <54FEE230.6030006@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150324045154.GA12298@localhost.localdomain>
-In-Reply-To: <20150324045154.GA12298@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ragavendra Nagraj <ragavendra.bn@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+ <1422712065-9403-4-git-send-email-haokexin@gmail.com>
+ <1424995875.4645.42.camel@kernel.crashing.org>
+ <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
+In-Reply-To: <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
+To: Kevin Hao <haokexin@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 
-On Mon, Mar 23, 2015 at 09:51:54PM -0700, Ragavendra Nagraj wrote:
-> diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-> index 02f9326..1fb00a4 100644
-> --- a/drivers/staging/sm750fb/ddk750_chip.c
-> +++ b/drivers/staging/sm750fb/ddk750_chip.c
-> @@ -17,7 +17,7 @@ logical_chip_type_t getChipType(void)
->  	char physicalRev;
->  	logical_chip_type_t chip;
->  
-> -	physicalID = devId750;//either 0x718 or 0x750
-> +	physicalID = devId750;/*either 0x718 or 0x750*/
+--5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-This should be:
+On 27/02/15 03:05, Kevin Hao wrote:
+> On Fri, Feb 27, 2015 at 11:11:15AM +1100, Benjamin Herrenschmidt wrote:=
 
-	physicalID = devId750; /* either 0x718 or 0x750 */
+>> On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
+>>> The PPC_OF is a ppc specific option which is used to mean that the
+>>> firmware device tree access functions are available. Since all the
+>>> ppc platforms have a device tree, it is aways set to 'y' for ppc.
+>>> So it makes no sense to keep a such option in the current kernel.
+>>> Replace it with PPC.
+>>>
+>>> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+>>
+>> For this and generally the whole series,
+>>
+>> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>=20
+> Thanks Ben.
+>=20
+>>
+>> Which tree do we expect this to go through ?
+>=20
+> I just sent out a v2 [1] a few hours earlier with some minor updates. W=
+e plan
+> to merge this patch series via the powerpc tree in 4.1 cycle if I can c=
+ollect
+> all the acks from the corresponding driver maintainers.
 
-> @@ -501,7 +501,7 @@ unsigned int calcPllValue(unsigned int request_orig,pll_value_t *pll)
->  		}
->  	}
->  
-> -	//printk("Finally:  pll->n[%lu],m[%lu],od[%lu],pod[%lu]\n",pll->N,pll->M,pll->OD,pll->POD);
-> +	/*printk("Finally:  pll->n[%lu],m[%lu],od[%lu],pod[%lu]\n",pll->N,pll->M,pll->OD,pll->POD);*/
+Fbdev changes look ok to me.
 
-Just delete this dead code.
+ Tomi
 
-Please redo.
 
-regards,
-dan carpenter
 
+--5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJU/uIwAAoJEPo9qoy8lh7146YP/1UP6V+PcgFZzDtryhJp/v9I
+vxA3G94XsL1+GZrNvz6CSnl17SS0nytds4UJikLSyvmQ2AjAKCkCcX2HsVq8kF4K
+e1eo+rePMNPI7OUrdjt00rbauT2onn8Jhbm8ERHVNbnEjaK+OiZkC+54XatXjhmp
+ReuSPRBmnIPgbLV2gLSxBQktPLz9jfrlJwwOa0TvaM8C/SkvZp6nZu9iptCUCAIV
+Blx8nzUoSU4ojwAwDSKMDtmKodhb/L9FwKczQ1WYXgCiE/grWmb5tKJd62MKNmWc
+2Km4zNwCueYY0n2msDsDN+Fc0d+wmANJB3U0f141povu+24oJ+w67nr1DxMk24dh
+sDnu5/ZRIHVRfBxFmZrWkLB8KH2/Cm6LwFIpHUgp93XNe8efqFSbVxP3VNI7Z2oW
+zKx58o23eDV0CO0vVFparDA3uxtjA+4Ch06NqjxCszAegAWcHwGgE8oMZzfjDMB7
+r+hCtBiTR8uiDjZk5JKL/iy7/SqXLqbiUIgtPpALOGzUiPyDFUMchyeHfFvhphWR
+fG0UBNPaeMP9IJstvsSYRd7iWJIj6SniwW4LiXq+tS3n5EXwYGPNPaeZKcgGFnJH
+aVsciAtRV6YD02qda9590AMmI9m3vXHobv3uvTl+2hHVKgOTtr2XYXXd1DgWASSg
+NQyWV7HjxQ0t852gIZqf
+=FZKQ
+-----END PGP SIGNATURE-----
+
+--5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv--

@@ -1,51 +1,110 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:03 +0000
-Subject: [PATCH v1 13/47] IB/ipath: add counting for MTRR
-Message-Id: <1426893517-2511-14-git-send-email-mcgrof@do-not-panic.com>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Tue, 10 Mar 2015 15:25:47 +0000
+Subject: [PATCH v3] staging: sm750fb: Cleanup the type of mmio750
+Message-Id: <1426001147-17332-1-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+This patch assigns the more appropriate void* type to the mmio750 variable
+eliminating an unnecessary volatile qualifier in the process. Additionally it
+updates parameter types as necessary where those parameters interact with
+mmio750, removes unnecessary casts and updates the type of the
+lynx_share->pvReg field which is passed to the ddk750_set_mmio method.
 
-There is no good reason not to, we eventually delete it as well.
+As a consequence, this patch fixes the following sparse warning:-
 
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+drivers/staging/sm750fb/ddk750_help.c:12:17: warning: incorrect type in assignment (different address spaces)
+
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
 ---
- drivers/infiniband/hw/ipath/ipath_wc_x86_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm750fb/ddk750_chip.h |  4 +++-
+ drivers/staging/sm750fb/ddk750_help.c |  4 ++--
+ drivers/staging/sm750fb/ddk750_help.h | 10 +++++-----
+ drivers/staging/sm750fb/sm750.h       |  2 +-
+ 4 files changed, 11 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
-index 4ad0b93..70c1f3a 100644
---- a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
-+++ b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
-@@ -127,7 +127,7 @@ int ipath_enable_wc(struct ipath_devdata *dd)
- 			   "(addr %llx, len=0x%llx)\n",
- 			   (unsigned long long) pioaddr,
- 			   (unsigned long long) piolen);
--		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 0);
-+		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 1);
- 		if (cookie < 0) {
- 			{
- 				dev_info(&dd->pcidev->dev,
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index d761b72..04cb0d5 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -5,6 +5,8 @@
+ #define SM750LE_REVISION_ID ((unsigned char)0xfe)
+ #endif
+ 
++#include <linux/io.h>
++
+ /* This is all the chips recognized by this library */
+ typedef enum _logical_chip_type_t
+ {
+@@ -72,7 +74,7 @@ logical_chip_type_t getChipType(void);
+ unsigned int calcPllValue(unsigned int request,pll_value_t *pll);
+ unsigned int calcPllValue2(unsigned int,pll_value_t *);
+ unsigned int formatPllReg(pll_value_t *pPLL);
+-void ddk750_set_mmio(volatile unsigned char *,unsigned short,char);
++void ddk750_set_mmio(void __iomem *,unsigned short,char);
+ unsigned int ddk750_getVMSize(void);
+ int ddk750_initHw(initchip_param_t *);
+ unsigned int getPllValue(clock_type_t clockType, pll_value_t *pPLL);
+diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
+index cc00d2b..c68ff3b 100644
+--- a/drivers/staging/sm750fb/ddk750_help.c
++++ b/drivers/staging/sm750fb/ddk750_help.c
+@@ -2,12 +2,12 @@
+ //#include "ddk750_chip.h"
+ #include "ddk750_help.h"
+ 
+-volatile unsigned char __iomem * mmio750 = NULL;
++void __iomem * mmio750 = NULL;
+ char revId750 = 0;
+ unsigned short devId750 = 0;
+ 
+ /* after driver mapped io registers, use this function first */
+-void ddk750_set_mmio(volatile unsigned char * addr,unsigned short devId,char revId)
++void ddk750_set_mmio(void __iomem * addr,unsigned short devId,char revId)
+ {
+ 	mmio750 = addr;
+ 	devId750 = devId;
+diff --git a/drivers/staging/sm750fb/ddk750_help.h b/drivers/staging/sm750fb/ddk750_help.h
+index 4fc93b5..07c8264 100644
+--- a/drivers/staging/sm750fb/ddk750_help.h
++++ b/drivers/staging/sm750fb/ddk750_help.h
+@@ -12,14 +12,14 @@
+ #if 0
+ /* if 718 big endian turned on,be aware that don't use this driver for general use,only for ppc big-endian */
+ #warning "big endian on target cpu and enable nature big endian support of 718 capability !"
+-#define PEEK32(addr)  			__raw_readl((void __iomem *)(mmio750)+(addr))
+-#define POKE32(addr,data) 		__raw_writel((data),(void __iomem*)(mmio750)+(addr))
++#define PEEK32(addr)  			__raw_readl(mmio750 + addr)
++#define POKE32(addr,data) 		__raw_writel(data, mmio750 + addr)
+ #else /* software control endianess */
+-#define PEEK32(addr) readl((addr)+mmio750)
+-#define POKE32(addr,data) writel((data),(addr)+mmio750)
++#define PEEK32(addr) readl(addr + mmio750)
++#define POKE32(addr,data) writel(data, addr + mmio750)
+ #endif
+ 
+-extern volatile unsigned  char __iomem * mmio750;
++extern void __iomem * mmio750;
+ extern char revId750;
+ extern unsigned short devId750;
+ #else
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index d39968c..5361116 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -63,7 +63,7 @@ struct lynx_share{
+ 	unsigned long vidreg_start;
+ 	__u32 vidmem_size;
+ 	__u32 vidreg_size;
+-	volatile unsigned char __iomem * pvReg;
++	void __iomem * pvReg;
+ 	unsigned char __iomem * pvMem;
+ 	/* locks*/
+ 	spinlock_t slock;
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.3.2
 

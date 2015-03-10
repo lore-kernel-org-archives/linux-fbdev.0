@@ -1,64 +1,61 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 20 Mar 2015 11:15:37 +0000
-Subject: Re: [PATCH] video: fbdev: sh_mobile_lcdcfb: Fix ROP3 sysfs attribute parsing
-Message-Id: <550C0159.3030001@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="cMFfQkbB4Ci9VJkMEghRp8W2dcBdr3VPv"
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Tue, 10 Mar 2015 08:51:59 +0000
+Subject: [PATCH v2] staging: sm750fb: Fix sparse warning
+Message-Id: <1425977519-4810-1-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426347519-2541-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-In-Reply-To: <1426347519-2541-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
---cMFfQkbB4Ci9VJkMEghRp8W2dcBdr3VPv
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+This patch fixes the following sparse warning:-
 
-On 18/03/15 00:27, Laurent Pinchart wrote:
-> Hi Tomi,
->=20
-> Could you please pick this patch up for v4.1 ? I can send a pull reques=
-t if it=20
-> makes your life easier.
->=20
-> On Sunday 15 March 2015 10:32:11 Geert Uytterhoeven wrote:
->> On Sat, Mar 14, 2015 at 4:38 PM, Laurent Pinchart wrote:
->>> The ROP3 attribute is expressed as an integer in the 0-255 range. Rem=
-ove
->>> the wrong conversion to boolean when parsing it.
->>>
->>> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
->>> Signed-off-by: Laurent Pinchart
->>> <laurent.pinchart+renesas@ideasonboard.com>
->>
->> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+drivers/staging/sm750fb/ddk750_help.c: warning: incorrect type in assignment (different address spaces)
 
-Thanks, queued for 4.1.
+In addition it eliminates an unnecessary volatile.
 
- Tomi
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.h | 4 +++-
+ drivers/staging/sm750fb/ddk750_help.c | 2 +-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index 1c78875..a4e5bcc 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -3,6 +3,8 @@
+ #define DEFAULT_INPUT_CLOCK 14318181 /* Default reference clock */
+ #define SM750LE_REVISION_ID (char)0xfe
+ 
++#include <linux/io.h>
++
+ /* This is all the chips recognized by this library */
+ typedef enum _logical_chip_type_t
+ {
+@@ -70,7 +72,7 @@ logical_chip_type_t getChipType(void);
+ unsigned int calcPllValue(unsigned int request,pll_value_t *pll);
+ unsigned int calcPllValue2(unsigned int,pll_value_t *);
+ unsigned int formatPllReg(pll_value_t *pPLL);
+-void ddk750_set_mmio(volatile unsigned char *,unsigned short,char);
++void ddk750_set_mmio(unsigned char __iomem *,unsigned short,char);
+ unsigned int ddk750_getVMSize(void);
+ int ddk750_initHw(initchip_param_t *);
+ unsigned int getPllValue(clock_type_t clockType, pll_value_t *pPLL);
+diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
+index cc00d2b..6ad4dec 100644
+--- a/drivers/staging/sm750fb/ddk750_help.c
++++ b/drivers/staging/sm750fb/ddk750_help.c
+@@ -7,7 +7,7 @@ char revId750 = 0;
+ unsigned short devId750 = 0;
+ 
+ /* after driver mapped io registers, use this function first */
+-void ddk750_set_mmio(volatile unsigned char * addr,unsigned short devId,char revId)
++void ddk750_set_mmio(unsigned char __iomem * addr,unsigned short devId,char revId)
+ {
+ 	mmio750 = addr;
+ 	devId750 = devId;
+-- 
+2.3.2
 
-
---cMFfQkbB4Ci9VJkMEghRp8W2dcBdr3VPv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVDAFZAAoJEPo9qoy8lh71ee0P/0iYK3y2ua/dHk9ZaWR3zSor
-e7DtGZZcLG6MvuPSdE7JhMEgkFiqzsp83Mo5kECuq3lPALpntgbOE0UzkPCVA4w5
-dcPNw6ynpUdVzdL1g93sMBedXfEEgNRJvgGWoT2Xq5PmsY4vtzbFWk2iA3NUPaz7
-DgAS1yNzj/92wTkktxRIhNgfVH9woSRVOxIcL3cL3xrKqf+/pMbJ1V1SlMeguXix
-n3LUZ/gCWNUVFyHPaeqybWp/yY2WxmDGAFeB0kJFUKqiHTxH2+BzoesiaCWXxT8F
-Wmv3wLwemGAT2F90fJci1P0w8GqxmOO+ogrjxSFxiME8ZVlzL9TC+PaifJnQDAw3
-wt1165F/JrmhoGwGRymV9GzoweV3McDyAgcjh717impNd/U0v4F8nowH0vjOJh7c
-5hzre74G9sbNeajDDm251onfF9J5HWjGm33Y049cmlo7buoLO2V5AgSy1wNQbdYl
-PH2B/rZe8sh8W32rrBn2kyEpJ61wuzOZ4x/O7C9qHY6pIZOcAjq66AbDnAPASENS
-ehIbrvs81dE1jdqXFriwHn93H6mjREb7/F4SWZXIrP/lrDe1cfT1kxjwE9yBd1IJ
-SlP28JTNhgXndpx2yRULdxcAGcNS1k5/ttf0Ms7lF+Znnicr+Le9SXUfx0m557fR
-2dvYgjgTKDeOSs0FN5pJ
-=D3Go
------END PGP SIGNATURE-----
-
---cMFfQkbB4Ci9VJkMEghRp8W2dcBdr3VPv--

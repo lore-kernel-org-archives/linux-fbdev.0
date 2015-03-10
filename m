@@ -1,40 +1,24 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 10 Mar 2015 17:28:51 +0000
-Subject: [PATCH 0/6] staging: sm750fb: fixed all build warnings
-Message-Id: <1426007817-1884-1-git-send-email-sudipm.mukherjee@gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Tue, 10 Mar 2015 20:13:07 +0000
+Subject: Re: [PATCH 0/6] staging: sm750fb: fixed all build warnings
+Message-Id: <20150310201307.GA1315@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1426007817-1884-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1426007817-1884-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Greg,
-all the build warnings have been taken care of in this series.
-some of the patches will generate a few checkpatch warning and for some I tried
-to address few of the chcekpatch warnings while modifying them.
+On Tue, Mar 10, 2015 at 10:46:51PM +0530, Sudip Mukherjee wrote:
+> Hi Greg,
+> all the build warnings have been taken care of in this series.
+> some of the patches will generate a few checkpatch warning and for some I tried
+> to address few of the chcekpatch warnings while modifying them.
 
-regards
-sudip
+Don't mix what you do in a single patch please.
 
+thanks,
 
-Sudip Mukherjee (6):
-  staging: sm750fb: remove unused functions
-  staging: sm750fb: remove unused variables
-  staging: sm750fb: correct function return
-  staging: sm750fb: correct incompatible pointer type
-  staging: sm750fb: fix mixed declarations
-  staging: sm750fb: correct integer comparison
-
- drivers/staging/sm750fb/ddk750_display.c | 11 -----
- drivers/staging/sm750fb/ddk750_swi2c.c   |  8 ----
- drivers/staging/sm750fb/sm750.c          | 70 ++------------------------------
- drivers/staging/sm750fb/sm750.h          | 11 ++---
- drivers/staging/sm750fb/sm750_accel.c    |  4 +-
- drivers/staging/sm750fb/sm750_accel.h    |  4 +-
- drivers/staging/sm750fb/sm750_cursor.c   |  5 +--
- 7 files changed, 14 insertions(+), 99 deletions(-)
-
--- 
-1.8.1.2
-
+greg k-h

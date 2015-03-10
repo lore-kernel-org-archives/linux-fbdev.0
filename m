@@ -1,188 +1,44 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:33 +0000
-Subject: [PATCH v1 43/47] video: fbdev: vt8623fb: use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1426893517-2511-44-git-send-email-mcgrof@do-not-panic.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 10 Mar 2015 17:28:53 +0000
+Subject: [PATCH 2/6] staging: sm750fb: remove unused variables
+Message-Id: <1426007817-1884-3-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1426007817-1884-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1426007817-1884-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+removed some variables which were only declared but were never used.
 
-This driver uses the same area for MTRR as for the ioremap().
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/vt8623fb.c | 31 ++++++-------------------------
- 1 file changed, 6 insertions(+), 25 deletions(-)
+ drivers/staging/sm750fb/sm750_cursor.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index ea7f056..60f24828 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
-@@ -26,13 +26,9 @@
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 480615c..76b6029 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -99,7 +99,6 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
+ 	u8 color,mask,opr;
+ 	u16 data;
+ 	u16 * pbuffer,*pstart;
+-	static ulong odd = 0;
  
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- struct vt8623fb_info {
- 	char __iomem *mmio_base;
--	int mtrr_reg;
-+	int wc_cookie;
- 	struct vgastate state;
- 	struct mutex open_lock;
- 	unsigned int ref_count;
-@@ -99,10 +95,7 @@ static struct svga_timing_regs vt8623_timing_regs     = {
- /* Module parameters */
- 
- static char *mode_option = "640x480-8@60";
--
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
- 
- MODULE_AUTHOR("(c) 2006 Ondrej Zajicek <santiago@crfreenet.org>");
- MODULE_LICENSE("GPL");
-@@ -112,11 +105,8 @@ module_param(mode_option, charp, 0644);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0);
- MODULE_PARM_DESC(mode, "Default video mode e.g. '648x480-8@60' (deprecated)");
--
--#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
- 
- 
- /* ------------------------------------------------------------------------- */
-@@ -710,7 +700,7 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.mmio_len = pci_resource_len(dev, 1);
- 
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -781,12 +771,9 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
- 
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
- 
- 	return 0;
- 
-@@ -816,13 +803,7 @@ static void vt8623_pci_remove(struct pci_dev *dev)
- 	if (info) {
- 		struct vt8623fb_info *par = info->par;
- 
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
--#endif
--
-+		arch_phys_wc_del(par->wc_cookie);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
+ 	/*  in byte*/
+ 	pitch = cursor->w >> 3;
+@@ -188,7 +187,7 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
+ 			u16 rop,const u8* pcol,const u8* pmsk)
+ {
+ 	int i,j,count,pitch,offset;
+-	u8 color,mask,opr;
++	u8 color, mask;
+ 	u16 data;
+ 	u16 * pbuffer,*pstart;
  
 -- 
-2.3.2.209.gd67f9d5.dirty
+1.8.1.2
 

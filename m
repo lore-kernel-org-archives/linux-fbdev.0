@@ -1,65 +1,111 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Tue, 03 Mar 2015 07:17:27 +0000
-Subject: Re: [PATCHv2 01/10] fbdev: ssd1307fb: fix memory address smem_start.
-Message-Id: <20150303071727.GD4713@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="rqzD5py0kzyFAOWN"
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Tue, 10 Mar 2015 13:27:48 +0000
+Subject: [PATCH v2] staging: sm750fb: Cleanup the type of mmio750
+Message-Id: <1425994068-8535-1-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1425248883-25367-1-git-send-email-niederp@physik.uni-kl.de>
- <1425248883-25367-2-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1425248883-25367-2-git-send-email-niederp@physik.uni-kl.de>
-To: Thomas =?iso-8859-1?Q?Niederpr=FCm?= <niederp@physik.uni-kl.de>
-Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
+This patch assigns the more appropriate void* type to the mmio750 variable
+eliminating an unnecessary volatile qualifier in the process. Additionally it
+updates parameter types as necessary where those parameters interact with
+mmio750, removes unnecessary casts and updates the type of the
+lynx_share->pvReg field which is passed to the ddk750_set_mmio method.
 
---rqzD5py0kzyFAOWN
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+As a consequence, this patch fixes the following sparse warning:-
 
-On Sun, Mar 01, 2015 at 11:27:54PM +0100, Thomas Niederpr=FCm wrote:
-> the smem_start pointer of the framebuffer info struct needs to hold the
-> physical address rather than the virtual address. This patch fixes a
-> driver crash on mmaping the framebuffer memory due to an access to the
-> memory address.
->=20
-> Note however that the memory allocated by kzalloc is not page aligned,
-> while the address presented on a mmap call is aligned to the next page
-> boudary.
->=20
-> Signed-off-by: Thomas Niederpr=FCm <niederp@physik.uni-kl.de>
+drivers/staging/sm750fb/ddk750_help.c:12:17: warning: incorrect type in assignment (different address spaces)
 
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
 
-Thanks!
-Maxime
+---
+ drivers/staging/sm750fb/ddk750_chip.h |  4 +++-
+ drivers/staging/sm750fb/ddk750_help.c |  4 ++--
+ drivers/staging/sm750fb/ddk750_help.h | 10 +++++-----
+ drivers/staging/sm750fb/sm750.h       |  2 +-
+ 4 files changed, 11 insertions(+), 9 deletions(-)
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index 1c78875..d067b06 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -3,6 +3,8 @@
+ #define DEFAULT_INPUT_CLOCK 14318181 /* Default reference clock */
+ #define SM750LE_REVISION_ID (char)0xfe
+ 
++#include <linux/io.h>
++
+ /* This is all the chips recognized by this library */
+ typedef enum _logical_chip_type_t
+ {
+@@ -70,7 +72,7 @@ logical_chip_type_t getChipType(void);
+ unsigned int calcPllValue(unsigned int request,pll_value_t *pll);
+ unsigned int calcPllValue2(unsigned int,pll_value_t *);
+ unsigned int formatPllReg(pll_value_t *pPLL);
+-void ddk750_set_mmio(volatile unsigned char *,unsigned short,char);
++void ddk750_set_mmio(void __iomem *,unsigned short,char);
+ unsigned int ddk750_getVMSize(void);
+ int ddk750_initHw(initchip_param_t *);
+ unsigned int getPllValue(clock_type_t clockType, pll_value_t *pPLL);
+diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
+index cc00d2b..c68ff3b 100644
+--- a/drivers/staging/sm750fb/ddk750_help.c
++++ b/drivers/staging/sm750fb/ddk750_help.c
+@@ -2,12 +2,12 @@
+ //#include "ddk750_chip.h"
+ #include "ddk750_help.h"
+ 
+-volatile unsigned char __iomem * mmio750 = NULL;
++void __iomem * mmio750 = NULL;
+ char revId750 = 0;
+ unsigned short devId750 = 0;
+ 
+ /* after driver mapped io registers, use this function first */
+-void ddk750_set_mmio(volatile unsigned char * addr,unsigned short devId,char revId)
++void ddk750_set_mmio(void __iomem * addr,unsigned short devId,char revId)
+ {
+ 	mmio750 = addr;
+ 	devId750 = devId;
+diff --git a/drivers/staging/sm750fb/ddk750_help.h b/drivers/staging/sm750fb/ddk750_help.h
+index 4fc93b5..07c8264 100644
+--- a/drivers/staging/sm750fb/ddk750_help.h
++++ b/drivers/staging/sm750fb/ddk750_help.h
+@@ -12,14 +12,14 @@
+ #if 0
+ /* if 718 big endian turned on,be aware that don't use this driver for general use,only for ppc big-endian */
+ #warning "big endian on target cpu and enable nature big endian support of 718 capability !"
+-#define PEEK32(addr)  			__raw_readl((void __iomem *)(mmio750)+(addr))
+-#define POKE32(addr,data) 		__raw_writel((data),(void __iomem*)(mmio750)+(addr))
++#define PEEK32(addr)  			__raw_readl(mmio750 + addr)
++#define POKE32(addr,data) 		__raw_writel(data, mmio750 + addr)
+ #else /* software control endianess */
+-#define PEEK32(addr) readl((addr)+mmio750)
+-#define POKE32(addr,data) writel((data),(addr)+mmio750)
++#define PEEK32(addr) readl(addr + mmio750)
++#define POKE32(addr,data) writel(data, addr + mmio750)
+ #endif
+ 
+-extern volatile unsigned  char __iomem * mmio750;
++extern void __iomem * mmio750;
+ extern char revId750;
+ extern unsigned short devId750;
+ #else
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 711676c..376df5f 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -63,7 +63,7 @@ struct lynx_share{
+ 	resource_size_t vidreg_start;
+ 	resource_size_t vidmem_size;
+ 	resource_size_t vidreg_size;
+-	volatile unsigned char __iomem * pvReg;
++	void __iomem * pvReg;
+ 	unsigned char __iomem * pvMem;
+ 	/* locks*/
+ 	spinlock_t slock;
+-- 
+2.3.2
 
---rqzD5py0kzyFAOWN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJU9WAHAAoJEBx+YmzsjxAgGckQAJbPcdQVdA+gkGiqYHFat+Qr
-XE2SAxrE/Cj7ll6EhrrzSvw/BokoTbSq8GFf2svypWu2N/IgbNPEFnKb9O5f+ruC
-K1uI3T6RkQWlDzXwAG8HfV6ZWuGSb7dYMFAbwvwCq74BKd15vNVneT1fGjNKBgsv
-PcNmGtry+Udgift/4g7uTsSeGWBR84RP2eW6bAe4SHgh+QSk2Cv1UiHcy2FjGheD
-1AFWzUW/lg7zKjqUn1EUqzaE2BKmTyuqsVw0DA+ahtaaZcOMS+HlEW6SF4pSrJHo
-/mzd0GONQ7fHMGXG883EiYItsU2jx5K/CRAZqnOqsblb8dUugnDlpmWKusGSNl+s
-594kDnRcyFfnrh5KU4YQncNvsTuYjJIUYGVI6bCMXfMl4T+B4MtOJZcG3diMWE6Q
-XZTKlw4+y8RV5M/ROdG+MhX5k42Ht8B3QPLMScDtBUJiHKoO4z09lMD+WrHhxsR3
-xayJuuCLBB6uwPKwRKDP0GNGfa6DFJ9CX5UaEHzSxmYQRzm4WxDrLSFSeG2yXLSJ
-P0QiCWKzyf972gmPSKukSBO4pSMGQo+mMIjNeja84DbZvrvkj/87aqIVU+KnSkyY
-BGqNKy56X2U4tKVguj0mjxVyyKICiKVrtrH8puUhaWExisRrsndX1J7vMSHuAUkp
-WgEIP3WMZ71FXeLR/LT0
-=1NGU
------END PGP SIGNATURE-----
-
---rqzD5py0kzyFAOWN--

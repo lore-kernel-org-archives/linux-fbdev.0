@@ -1,46 +1,74 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Mon, 09 Mar 2015 22:22:03 +0000
-Subject: [PATCHv3 01/10] fbdev: ssd1307fb: fix memory address smem_start.
-Message-Id: <1425939732-18386-2-git-send-email-niederp@physik.uni-kl.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 10 Mar 2015 10:49:19 +0000
+Subject: Re: [PATCH 7/8] fbdev: ssd1307fb: Add sysfs handles to expose contrast and dim setting to userspace.
+Message-Id: <54FECC2F.8080804@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="vbC68NMEWDxVXAwhsSrIKioEhRUJ1G2UR"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de> <1423261694-5939-8-git-send-email-niederp@physik.uni-kl.de> <20150207114329.GQ2079@lukather> <20150207174244.25987977@maestro.intranet> <20150209085239.GX2079@lukather>
+In-Reply-To: <20150209085239.GX2079@lukather>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>, =?windows-1252?Q?Thomas_Niederpr=FCm?= <niederp@physik.uni-kl.de>
+Cc: linux-fbdev@vger.kernel.org, plagnioj@jcrosoft.com, linux-kernel@vger.kernel.org
+
+--vbC68NMEWDxVXAwhsSrIKioEhRUJ1G2UR
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-the smem_start pointer of the framebuffer info struct needs to hold the
-physical address rather than the virtual address. This patch fixes a
-driver crash on mmaping the framebuffer memory due to an access to the
-memory address.
+On 09/02/15 10:52, Maxime Ripard wrote:
+> On Sat, Feb 07, 2015 at 05:42:44PM +0100, Thomas Niederpr=FCm wrote:
+>>>> +static struct device_attribute device_attrs[] =3D {
+>>>> +	__ATTR(contrast, S_IRUGO|S_IWUSR, show_contrast,
+>>>> store_contrast),
+>>>> +	__ATTR(dim, S_IRUGO|S_IWUSR, show_dim, store_dim),
+>>>> +
+>>>> +};
+>>>> +
+>>>
+>>> I would have thought this was something accessible through the
+>>> framebuffer ioctl.
+>>>
+>>> Apparently it's not, at least for the contrast, so maybe it should be=
 
-Note however that the memory allocated by kzalloc is not page aligned,
-while the address presented on a mmap call is aligned to the next page
-boudary.
+>>> added there, instead of doing it for a single driver?
+>>
+>> I think the contrast setting for an OLED display is much like the
+>> backlight setting for LCD panel. Since there is also no ioctl to set
+>> the backlight of an LCD I wonder if the contrast of an OLED should hav=
+e
+>> one.
+>=20
+> It's too much of framebuffer interface debate for me here. Tomi?
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
----
- drivers/video/fbdev/ssd1307fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+We have backlight and contrast already in backlight-class and lcd-class
+(drivers/video/backlight/backlight.c and drivers/video/backlight/lcd.c).
+Are those something that could be used here instead of custom sysfs files=
+?
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index f7ed6d9..61e0ce8 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -515,7 +515,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 	info->var.blue.offset =3D 0;
-=20
- 	info->screen_base =3D (u8 __force __iomem *)vmem;
--	info->fix.smem_start =3D (unsigned long)vmem;
-+	info->fix.smem_start =3D __pa(vmem);
- 	info->fix.smem_len =3D vmem_size;
-=20
- 	fb_deferred_io_init(info);
---=20
-2.3.0
+ Tomi
 
+
+
+--vbC68NMEWDxVXAwhsSrIKioEhRUJ1G2UR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJU/swvAAoJEPo9qoy8lh71R50P/04IVpBL0R0XP7N/AXoDf0vU
+D7nBdTkTx3mRi6l03tdN38wpLbft8SUwUvqWHX3UPY/0/nKMyAt7qGQWwtL6Qra6
+ZH5DDLPD4bxeB35x97GivuKbGzF87VgiUcovlpNBBurtLc0gd/AEVv2Y2Zpe/Bwk
+dKh28YMVmfzD8BPiMMbuVkV60DZcd4wQ1NKbICmUI5ZWkvxr09BMsZDl+ZBaWjw5
+Y/eucwdiDcB5E+QMsYaOZRtMyOXdx+wAcIPnOwC1cE88ekrImoHLJ81OwREPP6Qo
+VWQgyZOr2bP2zrKIJ3zrIU6MGjAAZqLAlhUdBI5VRChuYPUtL+9QeLP3DGxBhV4g
+2ynPdGQIDt8tA+ibwoiQ5Fur4vblytscfja6Y3YEgrTZwo0fBcdgzMdtVgIerI3Z
+HUmGklndopETqqzNNA3PT+ky4ZxO3xBTZYr1up3L0LEOF/a7WkkrlYctf9wkUf4y
+G8MsORZ6x1LYwHBzyLxgmAftYG6FpmVtRWgtESG9vRQuaIapVPZOsXYhtBW4EK2Y
+g8LggEXgw7G5mkEbpQzyxnJa62/jB2HGB/FN+XcuLTiAFuQ0/SHoG2AFeZ1liLN4
+YtMw4UcJM2b+9V7UlKC/gfIgM8lrjisRE6feRhhMapR235lMQ4kzy61yPG5cEH/C
+fSqhlnYM4ePSWc6GQ2H9
+=wAG6
+-----END PGP SIGNATURE-----
+
+--vbC68NMEWDxVXAwhsSrIKioEhRUJ1G2UR--

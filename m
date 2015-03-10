@@ -1,106 +1,177 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 22 Mar 2015 19:59:43 +0000
-Subject: [PATCH 4/5] [resend 2] gxt4500: Use write-combining for framebuffer (PAT and MTRR)
-Message-Id: <1427054384-26501-4-git-send-email-linux@rainbow-software.org>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 10 Mar 2015 08:57:38 +0000
+Subject: [PATCH v3 4/5] staging: sm750fb: fix undeclared function
+Message-Id: <1425977139-25285-4-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1427054384-26501-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1427054384-26501-1-git-send-email-linux@rainbow-software.org>
+References: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-Use write-combining for framebuffer to greatly improve performance on x86.
-Add both ioremap_wc (for systems with PAT) and MTRR setup for non-PAT systems.
+kbuild test robot reported that for microblaze-allyesconfig
+chan_to_field() and lynxfb_ops_set_par() were not defined. These two
+functions were defined under CONFIG_PM, so for any archtecture if
+CONFIG_PM is not defined we will have this error.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+while moving the lynxfb_suspend() function some very obvious
+checkpatch errors, like space after comma, space after if, space
+before opening brace, were taken care of.
+
+Reported-by: kbuild test robot <fengguang.wu@intel.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/gxt4500.c |   32 ++++++++++++++++++++++++++++++--
- 1 file changed, 30 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 442b07c..f278c82 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -13,6 +13,9 @@
- #include <linux/pci_ids.h>
- #include <linux/delay.h>
- #include <linux/string.h>
-+#ifdef CONFIG_MTRR
-+#include <asm/mtrr.h>
-+#endif
+v3: no change
+v2: some extra spaces in the comments were removed.
+
+ drivers/staging/sm750fb/sm750.c | 110 +++++++++++++++++++---------------------
+ 1 file changed, 53 insertions(+), 57 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 753869e..476dc5c 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -303,62 +303,6 @@ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
+     return ret;
+ }
  
- #define PCI_DEVICE_ID_IBM_GXT4500P	0x21c
- #define PCI_DEVICE_ID_IBM_GXT6500P	0x21b
-@@ -142,7 +145,9 @@ static const unsigned char watfmt[] = {
- 
- struct gxt4500_par {
- 	void __iomem *regs;
 -
-+#ifdef CONFIG_MTRR
-+	int mtrr_reg;
-+#endif
- 	int pixfmt;		/* pixel format, see DFA_PIX_* values */
+-
+-
+-#ifdef CONFIG_PM
+-static int lynxfb_suspend(struct pci_dev * pdev,pm_message_t mesg)
+-{
+-	struct fb_info * info;
+-	struct lynx_share * share;
+-	int ret;
+-	
+-
+-	if(mesg.event = pdev->dev.power.power_state.event)
+-		return 0;
+-
+-	ret = 0;
+-	share = pci_get_drvdata(pdev);
+-	switch (mesg.event) {
+-	case PM_EVENT_FREEZE:
+-	case PM_EVENT_PRETHAW:
+-		pdev->dev.power.power_state = mesg;
+-		return 0;
+-	}
+-
+-	console_lock();
+-	if (mesg.event & PM_EVENT_SLEEP) {
+-		info = share->fbinfo[0];
+-		if(info)
+-			fb_set_suspend(info, 1);/* 1 means do suspend*/
+-
+-		info = share->fbinfo[1];
+-		if(info)
+-			fb_set_suspend(info, 1);/* 1 means do suspend*/
+-
+-		ret = pci_save_state(pdev);
+-		if(ret){
+-			pr_err("error:%d occured in pci_save_state\n",ret);
+-			return ret;
+-		}
+-
+-		/* set chip to sleep mode	*/
+-		if(share->suspend)
+-			(*share->suspend)(share);
+-
+-		pci_disable_device(pdev);
+-		ret = pci_set_power_state(pdev,pci_choose_state(pdev,mesg));
+-		if(ret){
+-			pr_err("error:%d occured in pci_set_power_state\n",ret);
+-			return ret;
+-		}
+-	}
+-
+-	pdev->dev.power.power_state = mesg;
+-	console_unlock();
+-	return ret;
+-}
+-
+ static int lynxfb_ops_set_par(struct fb_info * info)
+ {
+ 	struct lynxfb_par * par;
+@@ -369,7 +313,6 @@ static int lynxfb_ops_set_par(struct fb_info * info)
+ 	struct fb_fix_screeninfo * fix;
+ 	int ret;
+ 	unsigned int line_length;
+-	
  
- 	/* PLL parameters */
-@@ -158,6 +163,10 @@ struct gxt4500_par {
- /* mode requested by user */
- static char *mode_option;
- 
-+#ifdef CONFIG_MTRR
-+static int mtrr = 1;
-+#endif
+ 	if(!info)
+ 		return -EINVAL;
+@@ -441,6 +384,7 @@ static int lynxfb_ops_set_par(struct fb_info * info)
+ 		ret = output->proc_setMode(output,var,fix);
+ 	return ret;
+ }
 +
- /* default mode: 1280x1024 @ 60 Hz, 8 bpp */
- static const struct fb_videomode defaultmode = {
- 	.refresh = 60,
-@@ -663,7 +672,7 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ static inline unsigned int chan_to_field(unsigned int chan,struct fb_bitfield * bf)
+ {
+ 	chan &= 0xffff;
+@@ -448,6 +392,58 @@ static inline unsigned int chan_to_field(unsigned int chan,struct fb_bitfield *
+ 	return chan << bf->offset;
+ }
  
- 	info->fix.smem_start = fb_phys;
- 	info->fix.smem_len = pci_resource_len(pdev, 1);
--	info->screen_base = pci_ioremap_bar(pdev, 1);
-+	info->screen_base = ioremap_wc(fb_phys, info->fix.smem_len);
- 	if (!info->screen_base) {
- 		dev_err(&pdev->dev, "gxt4500: cannot map framebuffer\n");
- 		goto err_unmap_regs;
-@@ -671,6 +680,14 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	pci_set_drvdata(pdev, info);
- 
-+#ifdef CONFIG_MTRR
-+	if (mtrr) {
-+		par->mtrr_reg = -1;
-+		par->mtrr_reg = mtrr_add(info->fix.smem_start,
-+				info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
++#ifdef CONFIG_PM
++static int lynxfb_suspend(struct pci_dev *pdev, pm_message_t mesg)
++{
++	struct fb_info *info;
++	struct lynx_share *share;
++	int ret;
++
++	if (mesg.event = pdev->dev.power.power_state.event)
++		return 0;
++
++	ret = 0;
++	share = pci_get_drvdata(pdev);
++	switch (mesg.event) {
++	case PM_EVENT_FREEZE:
++	case PM_EVENT_PRETHAW:
++		pdev->dev.power.power_state = mesg;
++		return 0;
 +	}
-+#endif
 +
- #ifdef __BIG_ENDIAN
- 	/* Set byte-swapping for DFA aperture for all pixel sizes */
- 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
-@@ -735,6 +752,12 @@ static void gxt4500_remove(struct pci_dev *pdev)
- 		return;
- 	par = info->par;
- 	unregister_framebuffer(info);
-+#ifdef CONFIG_MTRR
-+	if (par->mtrr_reg >= 0) {
-+		mtrr_del(par->mtrr_reg, 0, 0);
-+		par->mtrr_reg = -1;
++	console_lock();
++	if (mesg.event & PM_EVENT_SLEEP) {
++		info = share->fbinfo[0];
++		if (info)
++			/* 1 means do suspend*/
++			fb_set_suspend(info, 1);
++		info = share->fbinfo[1];
++		if (info)
++			/* 1 means do suspend*/
++			fb_set_suspend(info, 1);
++
++		ret = pci_save_state(pdev);
++		if (ret) {
++			pr_err("error:%d occurred in pci_save_state\n", ret);
++			return ret;
++		}
++
++		/* set chip to sleep mode*/
++		if (share->suspend)
++			(*share->suspend)(share);
++
++		pci_disable_device(pdev);
++		ret = pci_set_power_state(pdev, pci_choose_state(pdev, mesg));
++		if (ret) {
++			pr_err("error:%d occurred in pci_set_power_state\n", ret);
++			return ret;
++		}
 +	}
-+#endif
- 	fb_dealloc_cmap(&info->cmap);
- 	iounmap(par->regs);
- 	iounmap(info->screen_base);
-@@ -789,3 +812,8 @@ MODULE_DESCRIPTION("FBDev driver for IBM GXT4500P/6500P and GXT4000P/6000P");
- MODULE_LICENSE("GPL");
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\"");
 +
-+#ifdef CONFIG_MTRR
-+module_param(mtrr, int, 0444);
-+MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
-+#endif
++	pdev->dev.power.power_state = mesg;
++	console_unlock();
++	return ret;
++}
+ 
+ static int lynxfb_resume(struct pci_dev* pdev)
+ {
 -- 
-Ondrej Zary
+1.8.1.2
 

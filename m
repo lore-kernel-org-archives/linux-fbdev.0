@@ -1,59 +1,67 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Mon, 16 Mar 2015 17:11:58 +0000
-Subject: [PATCHv4 10/10] fbdev: ssd1307fb: Add blank mode
-Message-Id: <1426525918-12745-11-git-send-email-niederp@physik.uni-kl.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 10 Mar 2015 12:47:39 +0000
+Subject: Re: [patch] fbdev: pm3fb: cleanup some confusing indenting
+Message-Id: <54FEE7EB.8070402@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Q56R8VaCa90KBVVU90lFe8bTCnGfXwaxJ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev@vger.kernel.org
+
+--Q56R8VaCa90KBVVU90lFe8bTCnGfXwaxJ
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-This patch adds ssd1307fb_blank() to make the framebuffer capable
-of blanking.
+On 25/02/15 15:25, Dan Carpenter wrote:
+> This if statement should be pushed out one tab to line up with the rest=
+=2E
+>=20
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+>=20
+> diff --git a/drivers/video/fbdev/pm3fb.c b/drivers/video/fbdev/pm3fb.c
+> index 4bf3273..77b99ed 100644
+> --- a/drivers/video/fbdev/pm3fb.c
+> +++ b/drivers/video/fbdev/pm3fb.c
+> @@ -1479,9 +1479,9 @@ static void pm3fb_remove(struct pci_dev *dev)
+>  		fb_dealloc_cmap(&info->cmap);
+> =20
+>  #ifdef CONFIG_MTRR
+> -	if (par->mtrr_handle >=3D 0)
+> -		mtrr_del(par->mtrr_handle, info->fix.smem_start,
+> -			 info->fix.smem_len);
+> +		if (par->mtrr_handle >=3D 0)
+> +			mtrr_del(par->mtrr_handle, info->fix.smem_start,
+> +				 info->fix.smem_len);
+>  #endif /* CONFIG_MTRR */
+>  		iounmap(info->screen_base);
+>  		release_mem_region(fix->smem_start, fix->smem_len);
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
----
- drivers/video/fbdev/ssd1307fb.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+Thanks, queued for 4.1.
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index 4ebfcaf..9271bba 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -241,6 +241,18 @@ static ssize_t ssd1307fb_write(struct fb_info *info, c=
-onst char __user *buf,
- 	return count;
- }
-=20
-+static int ssd1307fb_blank(int blank_mode, struct fb_info *info)
-+{
-+	struct ssd1307fb_par *par =3D info->par;
-+	int ret;
-+
-+	if (blank_mode !=3D FB_BLANK_UNBLANK)
-+		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
-+	else
-+		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
-+	return ret;
-+}
-+
- static void ssd1307fb_fillrect(struct fb_info *info, const struct fb_fillr=
-ect *rect)
- {
- 	struct ssd1307fb_par *par =3D info->par;
-@@ -266,6 +278,7 @@ static struct fb_ops ssd1307fb_ops =3D {
- 	.owner		=3D THIS_MODULE,
- 	.fb_read	=3D fb_sys_read,
- 	.fb_write	=3D ssd1307fb_write,
-+	.fb_blank	=3D ssd1307fb_blank,
- 	.fb_fillrect	=3D ssd1307fb_fillrect,
- 	.fb_copyarea	=3D ssd1307fb_copyarea,
- 	.fb_imageblit	=3D ssd1307fb_imageblit,
---=20
-2.3.0
+ Tomi
 
+
+
+--Q56R8VaCa90KBVVU90lFe8bTCnGfXwaxJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJU/ufrAAoJEPo9qoy8lh71lOAP/R0LVa4/t1snu2LwuqwBGCS/
+ooht8QJT8qL+CGbUW/Zmkd8XVo08VHjphenmDKhVXEcBC5awkiDB0Djfj+JR+lMd
+XwCGKsD2p8mTECwsBR5kPnFuqMJ5SOHpYc/74f44JXj9pLbz/ahKHPYP4jtDNhQh
+pD+fiZ21EdMCpyW4iNTVANh93dZPJYIahOqW7zrwETFhp8mtLqz/mtdvxcdqlTcS
+auG+PciFcCO4wjHr/vDlTw1Nghv3onRap7ftUvS1C7ps1u04PF4PvQnek4DQXg7b
+zqs6As/zlb7FIHp+x1wPd0PMR8rCWccc10Q8TlEgQOIrSg1FeV8HMzeVWnuPJvCy
+GFoGA4k1J0KdV2PSo+wlxHWy/yBougqEeTqxG5bT8ilR4RpKcG/X5ZKddN0tuuYr
+M5xJh2jjQRXBqJxa4hNihZRemVMZp03douKiHOMSj/lxqOKAtqHh6B+pUx9hlWPr
+mLDNLb5K2aYObFTKzOuqPjvw9DeGJSZO0FGsPR72bNTl+hDKClxCuQNpxn1a1wGH
+MrCy5KEaHLsjURmwABPjXq0k1Us0cmlSGXHkBPL9m+dhrt7Ea5NISiWdq+Jbeggg
+U2wtz2Sdpc2rTfu/rrQMd8sChYojoOhoQ7luCDJ2CP1wuDIWc+NO4ySZgWo9Hmyn
+VnZM9n6Ut2pAFPNgsn1Q
+=z6TZ
+-----END PGP SIGNATURE-----
+
+--Q56R8VaCa90KBVVU90lFe8bTCnGfXwaxJ--

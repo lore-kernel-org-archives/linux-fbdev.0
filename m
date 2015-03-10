@@ -1,41 +1,96 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 11 Mar 2015 09:42:01 +0000
-Subject: Re: [PATCH 3/6] staging: sm750fb: Make internal functions static
-Message-Id: <20150311093001.GC4560@sudip-PC>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Tue, 10 Mar 2015 09:57:06 +0000
+Subject: [PATCH] staging: sm750fb: Cleanup the type of mmio750
+Message-Id: <1425981426-20680-1-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426037325-8392-1-git-send-email-lstoakes@gmail.com>
- <1426037325-8392-3-git-send-email-lstoakes@gmail.com>
-In-Reply-To: <1426037325-8392-3-git-send-email-lstoakes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lorenzo Stoakes <lstoakes@gmail.com>
-Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-On Wed, Mar 11, 2015 at 01:28:42AM +0000, Lorenzo Stoakes wrote:
-> This patch declares externally unavailable functions static. This fixes the
-> following sparse warnings:-
-<snip>
-> diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-> index 6521c3b..4aa763b 100644
-> --- a/drivers/staging/sm750fb/sm750_accel.c
-> +++ b/drivers/staging/sm750fb/sm750_accel.c
-> @@ -92,7 +92,7 @@ void hw_set2dformat(struct lynx_accel * accel,int fmt)
->  /* seems sm712 RectFill command is broken,so need use BitBlt to
->   * replace it. */
->  
-> -int hw712_fillrect(struct lynx_accel * accel,
-> +static int hw712_fillrect(struct lynx_accel * accel,
->  				u32 base,u32 pitch,u32 Bpp,
->  				u32 x,u32 y,u32 width,u32 height,
->  				u32 color,u32 rop)
-this is introducing a build warning, better remove this from your patch
-and send a separate patch to remove the function as this function is
-not used anywhere.
+This patch assigns the more appropriate void* type to the mmio750 variable
+eliminating an unnecessary volatile qualifier in the process. Additionally it
+updates parameter types as necessary where those parameters interact with
+mmio750 and removes unnecessary casts.
 
-regards
-sudip
+As a consequence, this patch fixes the following sparse warning:-
 
-> -- 
-> 2.3.2
-> 
+drivers/staging/sm750fb/ddk750_help.c:12:17: warning: incorrect type in assignment (different address spaces)
+
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+
+---
+ drivers/staging/sm750fb/ddk750_chip.h |  4 +++-
+ drivers/staging/sm750fb/ddk750_help.c |  4 ++--
+ drivers/staging/sm750fb/ddk750_help.h | 10 +++++-----
+ 3 files changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index 1c78875..d067b06 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -3,6 +3,8 @@
+ #define DEFAULT_INPUT_CLOCK 14318181 /* Default reference clock */
+ #define SM750LE_REVISION_ID (char)0xfe
+ 
++#include <linux/io.h>
++
+ /* This is all the chips recognized by this library */
+ typedef enum _logical_chip_type_t
+ {
+@@ -70,7 +72,7 @@ logical_chip_type_t getChipType(void);
+ unsigned int calcPllValue(unsigned int request,pll_value_t *pll);
+ unsigned int calcPllValue2(unsigned int,pll_value_t *);
+ unsigned int formatPllReg(pll_value_t *pPLL);
+-void ddk750_set_mmio(volatile unsigned char *,unsigned short,char);
++void ddk750_set_mmio(void __iomem *,unsigned short,char);
+ unsigned int ddk750_getVMSize(void);
+ int ddk750_initHw(initchip_param_t *);
+ unsigned int getPllValue(clock_type_t clockType, pll_value_t *pPLL);
+diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
+index cc00d2b..c68ff3b 100644
+--- a/drivers/staging/sm750fb/ddk750_help.c
++++ b/drivers/staging/sm750fb/ddk750_help.c
+@@ -2,12 +2,12 @@
+ //#include "ddk750_chip.h"
+ #include "ddk750_help.h"
+ 
+-volatile unsigned char __iomem * mmio750 = NULL;
++void __iomem * mmio750 = NULL;
+ char revId750 = 0;
+ unsigned short devId750 = 0;
+ 
+ /* after driver mapped io registers, use this function first */
+-void ddk750_set_mmio(volatile unsigned char * addr,unsigned short devId,char revId)
++void ddk750_set_mmio(void __iomem * addr,unsigned short devId,char revId)
+ {
+ 	mmio750 = addr;
+ 	devId750 = devId;
+diff --git a/drivers/staging/sm750fb/ddk750_help.h b/drivers/staging/sm750fb/ddk750_help.h
+index 4fc93b5..07c8264 100644
+--- a/drivers/staging/sm750fb/ddk750_help.h
++++ b/drivers/staging/sm750fb/ddk750_help.h
+@@ -12,14 +12,14 @@
+ #if 0
+ /* if 718 big endian turned on,be aware that don't use this driver for general use,only for ppc big-endian */
+ #warning "big endian on target cpu and enable nature big endian support of 718 capability !"
+-#define PEEK32(addr)  			__raw_readl((void __iomem *)(mmio750)+(addr))
+-#define POKE32(addr,data) 		__raw_writel((data),(void __iomem*)(mmio750)+(addr))
++#define PEEK32(addr)  			__raw_readl(mmio750 + addr)
++#define POKE32(addr,data) 		__raw_writel(data, mmio750 + addr)
+ #else /* software control endianess */
+-#define PEEK32(addr) readl((addr)+mmio750)
+-#define POKE32(addr,data) writel((data),(addr)+mmio750)
++#define PEEK32(addr) readl(addr + mmio750)
++#define POKE32(addr,data) writel(data, addr + mmio750)
+ #endif
+ 
+-extern volatile unsigned  char __iomem * mmio750;
++extern void __iomem * mmio750;
+ extern char revId750;
+ extern unsigned short devId750;
+ #else
+-- 
+2.3.2
+

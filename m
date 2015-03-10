@@ -1,25 +1,32 @@
 From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Tue, 10 Mar 2015 08:44:36 +0000
+Date: Tue, 10 Mar 2015 08:47:47 +0000
 Subject: Re: [PATCH] staging: sm750fb: Fix sparse warning
-Message-Id: <CAA5enKYQX66C4q0VoUJQZPRDYKiMOS7eq45XZyod-tbLxECg5Q@mail.gmail.com>
+Message-Id: <CAA5enKa5x5R2Z9+Sc4UzKFu+N9rKoh_sW7hfVN8CmmqhF9LMiw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1425934628-3717-1-git-send-email-lstoakes@gmail.com>
-	<20150310074226.GA12561@sudip-PC>
-In-Reply-To: <20150310074226.GA12561@sudip-PC>
+	<20150310070014.GM10964@mwanda>
+In-Reply-To: <20150310070014.GM10964@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: teddy.wang@siliconmotion.com, Greg KH <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, teddy.wang@siliconmotion.com, Greg KH <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 10 March 2015 at 07:42, Sudip Mukherjee <sudipm.mukherjee@gmail.com> wrote:
-> only one concern - if Greg first applies the patches i sent yesterday then this patch will not apply, and if this one is applied first then my series will not apply ...
+On 10 March 2015 at 07:00, Dan Carpenter <dan.carpenter@oracle.com> wrote:
 
-Indeed, I am more than happy to adapt the patch as required if your
-patch series is applied first, I will keep an eye out for this,
-additionally if you ping me if this occurs I will fix it right away.
+> No need for the volatile.
 
-Best,
+Will remove.
+
+> Really mmio750 should be a "void __iomem *"
+> it is declared as "unsigned char __iomem *" but it's not a char pointer
+> that's only to make the pointer math work.  It would work just as well
+> as a void and we could remove some ugly casting.
+
+I'm thinking the change to "void __iomem *" from "unsigned char
+__iomem *" ought to be a separate patch in order to keep this cleanly
+focused on solving the sparse warning? Am more than happy to do this
+and make the appropriate changes to the macros in ddk750_help.h.
 
 -- 
 Lorenzo Stoakes

@@ -1,96 +1,30 @@
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Tue, 10 Mar 2015 09:57:06 +0000
-Subject: [PATCH] staging: sm750fb: Cleanup the type of mmio750
-Message-Id: <1425981426-20680-1-git-send-email-lstoakes@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 10 Mar 2015 11:40:30 +0000
+Subject: Re: [PATCH] staging: sm750fb: Cleanup the type of mmio750
+Message-Id: <20150310114030.GP10964@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1425981426-20680-1-git-send-email-lstoakes@gmail.com>
+In-Reply-To: <1425981426-20680-1-git-send-email-lstoakes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
+To: Lorenzo Stoakes <lstoakes@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch assigns the more appropriate void* type to the mmio750 variable
-eliminating an unnecessary volatile qualifier in the process. Additionally it
-updates parameter types as necessary where those parameters interact with
-mmio750 and removes unnecessary casts.
+On Tue, Mar 10, 2015 at 09:57:06AM +0000, Lorenzo Stoakes wrote:
+> This patch assigns the more appropriate void* type to the mmio750 variable
+> eliminating an unnecessary volatile qualifier in the process. Additionally it
+> updates parameter types as necessary where those parameters interact with
+> mmio750 and removes unnecessary casts.
+> 
+> As a consequence, this patch fixes the following sparse warning:-
+> 
+> drivers/staging/sm750fb/ddk750_help.c:12:17: warning: incorrect type in assignment (different address spaces)
+> 
+> Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
 
-As a consequence, this patch fixes the following sparse warning:-
+Looks good.  Thanks for doing this.
 
-drivers/staging/sm750fb/ddk750_help.c:12:17: warning: incorrect type in assignment (different address spaces)
-
-Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
-
----
- drivers/staging/sm750fb/ddk750_chip.h |  4 +++-
- drivers/staging/sm750fb/ddk750_help.c |  4 ++--
- drivers/staging/sm750fb/ddk750_help.h | 10 +++++-----
- 3 files changed, 10 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
-index 1c78875..d067b06 100644
---- a/drivers/staging/sm750fb/ddk750_chip.h
-+++ b/drivers/staging/sm750fb/ddk750_chip.h
-@@ -3,6 +3,8 @@
- #define DEFAULT_INPUT_CLOCK 14318181 /* Default reference clock */
- #define SM750LE_REVISION_ID (char)0xfe
- 
-+#include <linux/io.h>
-+
- /* This is all the chips recognized by this library */
- typedef enum _logical_chip_type_t
- {
-@@ -70,7 +72,7 @@ logical_chip_type_t getChipType(void);
- unsigned int calcPllValue(unsigned int request,pll_value_t *pll);
- unsigned int calcPllValue2(unsigned int,pll_value_t *);
- unsigned int formatPllReg(pll_value_t *pPLL);
--void ddk750_set_mmio(volatile unsigned char *,unsigned short,char);
-+void ddk750_set_mmio(void __iomem *,unsigned short,char);
- unsigned int ddk750_getVMSize(void);
- int ddk750_initHw(initchip_param_t *);
- unsigned int getPllValue(clock_type_t clockType, pll_value_t *pPLL);
-diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
-index cc00d2b..c68ff3b 100644
---- a/drivers/staging/sm750fb/ddk750_help.c
-+++ b/drivers/staging/sm750fb/ddk750_help.c
-@@ -2,12 +2,12 @@
- //#include "ddk750_chip.h"
- #include "ddk750_help.h"
- 
--volatile unsigned char __iomem * mmio750 = NULL;
-+void __iomem * mmio750 = NULL;
- char revId750 = 0;
- unsigned short devId750 = 0;
- 
- /* after driver mapped io registers, use this function first */
--void ddk750_set_mmio(volatile unsigned char * addr,unsigned short devId,char revId)
-+void ddk750_set_mmio(void __iomem * addr,unsigned short devId,char revId)
- {
- 	mmio750 = addr;
- 	devId750 = devId;
-diff --git a/drivers/staging/sm750fb/ddk750_help.h b/drivers/staging/sm750fb/ddk750_help.h
-index 4fc93b5..07c8264 100644
---- a/drivers/staging/sm750fb/ddk750_help.h
-+++ b/drivers/staging/sm750fb/ddk750_help.h
-@@ -12,14 +12,14 @@
- #if 0
- /* if 718 big endian turned on,be aware that don't use this driver for general use,only for ppc big-endian */
- #warning "big endian on target cpu and enable nature big endian support of 718 capability !"
--#define PEEK32(addr)  			__raw_readl((void __iomem *)(mmio750)+(addr))
--#define POKE32(addr,data) 		__raw_writel((data),(void __iomem*)(mmio750)+(addr))
-+#define PEEK32(addr)  			__raw_readl(mmio750 + addr)
-+#define POKE32(addr,data) 		__raw_writel(data, mmio750 + addr)
- #else /* software control endianess */
--#define PEEK32(addr) readl((addr)+mmio750)
--#define POKE32(addr,data) writel((data),(addr)+mmio750)
-+#define PEEK32(addr) readl(addr + mmio750)
-+#define POKE32(addr,data) writel(data, addr + mmio750)
- #endif
- 
--extern volatile unsigned  char __iomem * mmio750;
-+extern void __iomem * mmio750;
- extern char revId750;
- extern unsigned short devId750;
- #else
--- 
-2.3.2
+regards,
+dan carpenter
 

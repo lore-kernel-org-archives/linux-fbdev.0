@@ -1,201 +1,144 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:21 +0000
-Subject: [PATCH v1 31/47] video: fbdev: s3fb: use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1426893517-2511-32-git-send-email-mcgrof@do-not-panic.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 10 Mar 2015 08:57:35 +0000
+Subject: [PATCH v3 1/5] staging: sm750fb: wrong type for print
+Message-Id: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+mention correct format specifier while printing.
+fixes all the build warnings about incorrect argument type while
+printing.
+since this is a framebuffer device and it should follow what the
+framebuffer layer is suggesting in struct fb_fix_screeninfo at
+smem_start and mmio_start, so accordingly changed the datatypes of
+vidmem_start, vidreg_start, vidmem_size and vidreg_size.
 
-This driver uses the same area for MTRR as for the ioremap().
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/s3fb.c | 35 ++++++-----------------------------
- 1 file changed, 6 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
-index f0ae61a..13b1090 100644
---- a/drivers/video/fbdev/s3fb.c
-+++ b/drivers/video/fbdev/s3fb.c
-@@ -28,13 +28,9 @@
- #include <linux/i2c.h>
- #include <linux/i2c-algo-bit.h>
+v3: changed the commit log.
+v2: changed datatypes of vidmem_size and vidreg_size.
+
+this patch will give checkpatch warnings about use of printk.
+this patch was mainly to fix the build warnings. printk will be
+converted to pr_* and dev_* in a later patch.
+
+ drivers/staging/sm750fb/sm750.c    | 24 ++++++++++++------------
+ drivers/staging/sm750fb/sm750.h    |  8 ++++----
+ drivers/staging/sm750fb/sm750_hw.c |  4 ++--
+ 3 files changed, 18 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 520c69e..753869e 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -530,20 +530,20 @@ static int lynxfb_ops_mmap(struct fb_info * info, struct vm_area_struct * vma)
+ 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
+ 		return -EINVAL;
+ 	off = vma->vm_pgoff << PAGE_SHIFT;
+-	printk("lynxfb mmap pgoff: %x\n", vma->vm_pgoff);
+-	printk("lynxfb mmap off 1: %x\n", off);
++	printk("lynxfb mmap pgoff: %lx\n", vma->vm_pgoff);
++	printk("lynxfb mmap off 1: %lx\n", off);
+ 	
+ 	/* frame buffer memory */
+ 	start = info->fix.smem_start;
+ 	len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.smem_len);
+ 	
+-	printk("lynxfb mmap start 1: %x\n", start);
++	printk("lynxfb mmap start 1: %lx\n", start);
+ 	printk("lynxfb mmap len 1: %x\n", len);
+ 	
+ 	if (off >= len) {
+ 		/* memory mapped io */
+ 		off -= len;
+-		printk("lynxfb mmap off 2: %x\n", off);
++		printk("lynxfb mmap off 2: %lx\n", off);
+ 		if (info->var.accel_flags) {
+ 			printk("lynxfb mmap accel flags true");
+ 			return -EINVAL;
+@@ -551,28 +551,28 @@ static int lynxfb_ops_mmap(struct fb_info * info, struct vm_area_struct * vma)
+ 		start = info->fix.mmio_start;
+ 		len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.mmio_len);
+ 		
+-		printk("lynxfb mmap start 2: %x\n", start);
++		printk("lynxfb mmap start 2: %lx\n", start);
+ 		printk("lynxfb mmap len 2: %x\n", len);
+ 	}
+ 	start &= PAGE_MASK;
+-	printk("lynxfb mmap start 3: %x\n", start);
+-	printk("lynxfb mmap vm start: %x\n", vma->vm_start);
+-	printk("lynxfb mmap vm end: %x\n", vma->vm_end);
++	printk("lynxfb mmap start 3: %lx\n", start);
++	printk("lynxfb mmap vm start: %lx\n", vma->vm_start);
++	printk("lynxfb mmap vm end: %lx\n", vma->vm_end);
+ 	printk("lynxfb mmap len: %x\n", len);
+-	printk("lynxfb mmap off: %x\n", off);
++	printk("lynxfb mmap off: %lx\n", off);
+ 	if ((vma->vm_end - vma->vm_start + off) > len)
+ 	{
+ 		return -EINVAL;
+ 	}
+ 	off += start;
+-	printk("lynxfb mmap off 3: %x\n", off);
++	printk("lynxfb mmap off 3: %lx\n", off);
+ 	vma->vm_pgoff = off >> PAGE_SHIFT;
+ 	/* This is an IO map - tell maydump to skip this VMA */
+ 	vma->vm_flags |= VM_IO | VM_DONTEXPAND | VM_DONTDUMP;
+ 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+ 	fb_pgprotect(file, vma, off);
+-	printk("lynxfb mmap off 4: %x\n", off);
+-	printk("lynxfb mmap pgprot: %x\n", vma->vm_page_prot);
++	printk("lynxfb mmap off 4: %lx\n", off);
++	printk("lynxfb mmap pgprot: %lx\n", (unsigned long) pgprot_val(vma->vm_page_prot));
+ 	if (io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
+ 			     vma->vm_end - vma->vm_start, vma->vm_page_prot))
+ 		return -EAGAIN;
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 711676c..d39968c 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -59,10 +59,10 @@ struct lynx_share{
+ 		}mtrr;
+ #endif
+ 	/* all smi graphic adaptor got below attributes */
+-	resource_size_t vidmem_start;
+-	resource_size_t vidreg_start;
+-	resource_size_t vidmem_size;
+-	resource_size_t vidreg_size;
++	unsigned long vidmem_start;
++	unsigned long vidreg_start;
++	__u32 vidmem_size;
++	__u32 vidreg_size;
+ 	volatile unsigned char __iomem * pvReg;
+ 	unsigned char __iomem * pvMem;
+ 	/* locks*/
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index cd971bd..ec2d499 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -36,7 +36,7 @@ int hw_sm750_map(struct lynx_share* share,struct pci_dev* pdev)
+ 	share->vidreg_start  = pci_resource_start(pdev,1);
+ 	share->vidreg_size = MB(2);
  
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- struct s3fb_info {
- 	int chip, rev, mclk_freq;
--	int mtrr_reg;
-+	int wc_cookie;
- 	struct vgastate state;
- 	struct mutex open_lock;
- 	unsigned int ref_count;
-@@ -154,11 +150,7 @@ static const struct svga_timing_regs s3_timing_regs     = {
+-	pr_info("mmio phyAddr = %x\n",share->vidreg_start);
++	pr_info("mmio phyAddr = %lx\n", share->vidreg_start);
  
+ 	/* reserve the vidreg space of smi adaptor
+ 	 * if you do this, u need to add release region code
+@@ -73,7 +73,7 @@ int hw_sm750_map(struct lynx_share* share,struct pci_dev* pdev)
+ 	 * @hw_sm750_getVMSize function can be safe.
+ 	 * */
+ 	share->vidmem_size = hw_sm750_getVMSize(share);
+-	pr_info("video memory phyAddr = %x, size = %d bytes\n",
++	pr_info("video memory phyAddr = %lx, size = %u bytes\n",
+ 	share->vidmem_start,share->vidmem_size);
  
- static char *mode_option;
--
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
--
- static int fasttext = 1;
- 
- 
-@@ -170,11 +162,8 @@ module_param(mode_option, charp, 0444);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0444);
- MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
--
--#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
- 
- module_param(fasttext, int, 0644);
- MODULE_PARM_DESC(fasttext, "Enable S3 fast text mode (1=enable, 0=disable, default=1)");
-@@ -1168,7 +1157,7 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.smem_len = pci_resource_len(dev, 0);
- 
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -1365,12 +1354,9 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
- 
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
- 
- 	return 0;
- 
-@@ -1405,14 +1391,7 @@ static void s3_pci_remove(struct pci_dev *dev)
- 
- 	if (info) {
- 		par = info->par;
--
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
--#endif
--
-+		arch_phys_wc_del(par->wc_cookie);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
- 
-@@ -1551,10 +1530,8 @@ static int  __init s3fb_setup(char *options)
- 
- 		if (!*opt)
- 			continue;
--#ifdef CONFIG_MTRR
- 		else if (!strncmp(opt, "mtrr:", 5))
- 			mtrr = simple_strtoul(opt + 5, NULL, 0);
--#endif
- 		else if (!strncmp(opt, "fasttext:", 9))
- 			fasttext = simple_strtoul(opt + 9, NULL, 0);
- 		else
+ 	/* reserve the vidmem space of smi adaptor */
 -- 
-2.3.2.209.gd67f9d5.dirty
+1.8.1.2
 

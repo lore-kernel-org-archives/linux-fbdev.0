@@ -1,41 +1,73 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Sat, 28 Mar 2015 07:50:21 +0000
-Subject: Re: [PATCH v2 1/3] vt: add cursor blink interval escape sequence
-Message-Id: <20150328075021.GB5248@xo-6d-61-c0.localdomain>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Wed, 11 Mar 2015 01:28:40 +0000
+Subject: [PATCH 1/6] staging: sm750fb: Use memset_io instead of memset
+Message-Id: <1426037325-8392-1-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
- <20150225094946.GA24627@amd>
- <alpine.LNX.2.11.1502252319330.276@localhost>
- <20150226220243.GC9935@amd>
- <alpine.LNX.2.11.1502271905580.4212@localhost>
- <alpine.LNX.2.11.1502271911380.4248@localhost>
- <20150325111949.GA24230@kroah.com>
- <alpine.DEB.2.11.1503261341260.2164@local>
- <alpine.DEB.2.11.1503261352200.2411@local>
- <20150328003503.GB27135@vapier>
-In-Reply-To: <20150328003503.GB27135@vapier>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Scot Doyle <lkml14-enLWO88E2pdl57MIdRCFDg@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-On Fri 2015-03-27 20:35:03, Mike Frysinger wrote:
-> On 26 Mar 2015 13:54, Scot Doyle wrote:
-> > Add an escape sequence to specify the current console's cursor blink
-> > interval. The interval is specified as a number of milliseconds until
-> > the next cursor display state toggle, from 50 to 65535. /proc/loadavg
-> > did not show a difference with a one msec interval, but the lower
-> > bound is set to 50 msecs since slower hardware wasn't tested.
-> 
-> if they want to be crazy, why not let them ?  it's not like we generally prevent 
-> the user from destroying their machine.  i.e. just require the value to be > 0 
-> (unless you want to let 0 disable things).
+This patch uses memset_io instead of memset when using memset on __iomem
+qualified pointers. This fixes the following sparse warnings:-
 
-Because anyone with access to console can do this, and we only allow root
-users to destroy the machine.
-									Pavel
+drivers/staging/sm750fb/sm750.c:489:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:490:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:501:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:502:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:833:5: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:1154:9: warning: incorrect type in argument 1 (different address spaces)
 
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index aa0888c..3e36b6a 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -486,8 +486,8 @@ static int lynxfb_resume(struct pci_dev* pdev)
+ 		par = info->par;
+ 		crtc = &par->crtc;
+ 		cursor = &crtc->cursor;
+-		memset(cursor->vstart, 0x0, cursor->size);
+-		memset(crtc->vScreen,0x0,crtc->vidmem_size);
++		memset_io(cursor->vstart, 0x0, cursor->size);
++		memset_io(crtc->vScreen,0x0,crtc->vidmem_size);
+ 		lynxfb_ops_set_par(info);
+ 		fb_set_suspend(info, 0);
+ 	}
+@@ -498,8 +498,8 @@ static int lynxfb_resume(struct pci_dev* pdev)
+ 		par = info->par;
+ 		crtc = &par->crtc;
+ 		cursor = &crtc->cursor;
+-		memset(cursor->vstart, 0x0, cursor->size);
+-		memset(crtc->vScreen,0x0,crtc->vidmem_size);
++		memset_io(cursor->vstart, 0x0, cursor->size);
++		memset_io(crtc->vScreen,0x0,crtc->vidmem_size);
+ 		lynxfb_ops_set_par(info);
+ 		fb_set_suspend(info, 0);
+ 	}
+@@ -830,7 +830,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info,int index)
+ 
+ 
+     crtc->cursor.share = share;
+-    memset(crtc->cursor.vstart, 0, crtc->cursor.size);
++    memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
+     if(!g_hwcursor){
+         lynxfb_ops.fb_cursor = NULL;
+         crtc->cursor.disable(&crtc->cursor);
+@@ -1151,7 +1151,7 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
+ 	}
+ #endif
+ 
+-	memset(share->pvMem,0,share->vidmem_size);
++	memset_io(share->pvMem,0,share->vidmem_size);
+ 
+ 	pr_info("sm%3x mmio address = %p\n",share->devid,share->pvReg);
+ 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.3.2
+

@@ -1,58 +1,144 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Tue, 10 Mar 2015 15:26:22 +0000
-Subject: Re: [PATCH] video: treat signal like timeout as failure
-Message-Id: <20150310152622.GN8656@n2100.arm.linux.org.uk>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Wed, 11 Mar 2015 01:28:45 +0000
+Subject: [PATCH 6/6] staging: sm750fb: Spinlock and unlock in the same block
+Message-Id: <1426037325-8392-6-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1421731430-13207-1-git-send-email-der.herr@hofr.at>
- <54FEE70D.3010307@ti.com> <20150310125116.GA26020@opentech.at>
- <20150310141511.GL8656@n2100.arm.linux.org.uk>
- <20150310143928.GA19501@opentech.at>
- <20150310144640.GM8656@n2100.arm.linux.org.uk>
- <54FF05FC.5030704@ti.com>
-In-Reply-To: <54FF05FC.5030704@ti.com>
+References: <1426037325-8392-1-git-send-email-lstoakes@gmail.com>
+In-Reply-To: <1426037325-8392-1-git-send-email-lstoakes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-On Tue, Mar 10, 2015 at 04:55:56PM +0200, Tomi Valkeinen wrote:
-> On 10/03/15 16:46, Russell King - ARM Linux wrote:
-> 
-> > In which case, let me propose that the exynos fbdev driver needs to be
-> > moved to drivers/staging, and stay there until this stuff gets fixed.
-> > drivers/staging is supposed to be for stuff which isn't up to the mark,
-> > and which is potentially unstable.  And that's what this driver exactly
-> > is.
-> 
-> There is drivers/gpu/drm/exynos/ which is getting a lot of updates. So...
-> 
-> I'd propose removing the exynos fbdev driver if the exynos drm driver
-> offers the same functionality. I don't know if that's the case. Does the
-> drm driver support all the devices the fbdev supports?
-> 
-> Also, I'm not sure if and how we can remove drivers. If exynos fbdev
-> driver is dropped, that would perhaps break boards that have exynos
-> fbdev in their .dts file. And if the drm driver doesn't offer the exact
-> same /dev/fbX interface, it would break the userspace.
-> 
-> So I don't know if that's possible. But that's what I'd like to do,
-> eventually, for all the fbdev drivers. Implement drm driver, remove the
-> fbdev one.
+This patch combines spinlock locks and unlocks together in the same block rather
+than occurring in separate blocks preventing a possible deadlock. This fixes the
+following sparse warnings:-
 
-That's why I suggested moving it to drivers/staging - it's a hint that
-the driver needs a serious amount of work, and when built as a module,
-it also provides users with the hint that the module they're loading is
-of questionable quality (which is definitely the case here.)
+drivers/staging/sm750fb/sm750.c:218:22: warning: context imbalance in 'lynxfb_ops_fillrect' - different lock contexts for basic block
+drivers/staging/sm750fb/sm750.c:241:22: warning: context imbalance in 'lynxfb_ops_copyarea' - different lock contexts for basic block
+drivers/staging/sm750fb/sm750.c:282:22: warning: context imbalance in 'lynxfb_ops_imageblit' - different lock contexts for basic block
 
-Others have done that kind of thing before - we've had drivers which
-have fallen by the way side, and at some point the decision has been
-made to move them to drivers/staging, and if nothing happens to fix
-them up (showing that no one cares about them), they've eventually
-been dropped.
+Unfortunately this change involves code (and comment) duplication.
 
-Of course, us talking about this might be enough to spur some effort
-to get the thing properly fixed. :)
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 76 +++++++++++++++++++++++------------------
+ 1 file changed, 43 insertions(+), 33 deletions(-)
 
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 3e36b6a..58c7518 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -56,23 +56,6 @@ static char * g_settings = NULL;
+ static int g_dualview = 0;
+ static char * g_option = NULL;
+ 
+-/* if not use spin_lock,system will die if user load driver
+- * and immediatly unload driver frequently (dual)*/
+-static inline void myspin_lock(spinlock_t * sl){
+-	struct lynx_share * share;
+-	share = container_of(sl,struct lynx_share,slock);
+-	if(share->dual){
+-		spin_lock(sl);
+-	}
+-}
+-
+-static inline void myspin_unlock(spinlock_t * sl){
+-	struct lynx_share * share;
+-	share = container_of(sl,struct lynx_share,slock);
+-	if(share->dual){
+-		spin_unlock(sl);
+-	}
+-}
+ static const struct fb_videomode lynx750_ext[] = {
+ 	/*  	1024x600-60 VESA 	[1.71:1]	*/
+ 	{NULL,  60, 1024, 600, 20423, 144,  40, 18, 1, 104, 3,
+@@ -209,13 +192,22 @@ static void lynxfb_ops_fillrect(struct fb_info* info,const struct fb_fillrect* r
+ 	color = (Bpp = 1)?region->color:((u32*)info->pseudo_palette)[region->color];
+ 	rop = ( region->rop != ROP_COPY ) ? HW_ROP2_XOR:HW_ROP2_COPY;
+ 
+-	myspin_lock(&share->slock);
+-	share->accel.de_fillrect(&share->accel,
+-							base,pitch,Bpp,
+-							region->dx,region->dy,
+-							region->width,region->height,
+-							color,rop);
+-	myspin_unlock(&share->slock);
++	/* if not use spin_lock,system will die if user load driver
++	 * and immediatly unload driver frequently (dual)*/
++	if (share->dual) {
++		spin_lock(&share->slock);
++		share->accel.de_fillrect(&share->accel,
++					base,pitch,Bpp,
++					region->dx,region->dy,
++					region->width,region->height,
++					color,rop);
++		spin_unlock(&share->slock);
++	} else
++		share->accel.de_fillrect(&share->accel,
++					base,pitch,Bpp,
++					region->dx,region->dy,
++					region->width,region->height,
++					color,rop);
+ }
+ 
+ static void lynxfb_ops_copyarea(struct fb_info * info,const struct fb_copyarea * region)
+@@ -233,12 +225,20 @@ static void lynxfb_ops_copyarea(struct fb_info * info,const struct fb_copyarea *
+ 	pitch = info->fix.line_length;
+ 	Bpp = info->var.bits_per_pixel >> 3;
+ 
+-	myspin_lock(&share->slock);
+-	share->accel.de_copyarea(&share->accel,
+-							base,pitch,region->sx,region->sy,
+-							base,pitch,Bpp,region->dx,region->dy,
+-							region->width,region->height,HW_ROP2_COPY);
+-	myspin_unlock(&share->slock);
++	/* if not use spin_lock,system will die if user load driver
++	 * and immediatly unload driver frequently (dual)*/
++	if (share->dual) {
++		spin_lock(&share->slock);
++		share->accel.de_copyarea(&share->accel,
++					base,pitch,region->sx,region->sy,
++					base,pitch,Bpp,region->dx,region->dy,
++					region->width,region->height,HW_ROP2_COPY);
++		spin_unlock(&share->slock);
++	} else
++		share->accel.de_copyarea(&share->accel,
++					base,pitch,region->sx,region->sy,
++					base,pitch,Bpp,region->dx,region->dy,
++					region->width,region->height,HW_ROP2_COPY);
+ }
+ 
+ static void lynxfb_ops_imageblit(struct fb_info*info,const struct fb_image* image)
+@@ -272,14 +272,24 @@ static void lynxfb_ops_imageblit(struct fb_info*info,const struct fb_image* imag
+ 	}
+ 	return;
+ _do_work:
+-	myspin_lock(&share->slock);
+-	share->accel.de_imageblit(&share->accel,
++	/* if not use spin_lock,system will die if user load driver
++	 * and immediatly unload driver frequently (dual)*/
++	if (share->dual) {
++		spin_lock(&share->slock);
++		share->accel.de_imageblit(&share->accel,
++					image->data,image->width>>3,0,
++					base,pitch,Bpp,
++					image->dx,image->dy,
++					image->width,image->height,
++					fgcol,bgcol,HW_ROP2_COPY);
++		spin_unlock(&share->slock);
++	} else
++		share->accel.de_imageblit(&share->accel,
+ 					image->data,image->width>>3,0,
+ 					base,pitch,Bpp,
+ 					image->dx,image->dy,
+ 					image->width,image->height,
+ 					fgcol,bgcol,HW_ROP2_COPY);
+-	myspin_unlock(&share->slock);
+ }
+ 
+ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
 -- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+2.3.2
+

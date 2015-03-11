@@ -1,58 +1,48 @@
-From: Michel von Czettritz <michel.von.czettritz@gmail.com>
-Date: Thu, 26 Mar 2015 22:27:25 +0000
-Subject: [PATCH v2 12/12] staging: sm750: move assignment out of if cond
-Message-Id: <1d869c193fc53160e5a2ef06bbb2b7ce9786bd2e.1427406762.git.michel.von.czettritz@gmail.com>
+From: Davor Joja <davorjoja@logicbricks.com>
+Date: Wed, 11 Mar 2015 15:27:09 +0000
+Subject: [PATCH 08/10] fbdev: Xylon framebuffer driver to fbdev Kconfig and Makefile
+Message-Id: <83805b50-9171-479c-8028-ee8e685309de@mail.xylon.local>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
+In-Reply-To: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, geert@linux-m68k.org
+Cc: Davor Joja <davorjoja@logicbricks.com>
 
-This patch moves the assignments from the if conditions to the line before the condition.
-The 3 occurrence are return values and the checks for errors.
+Adding Xylon framebuffer driver to fbdev Kconfig and Makefile.
 
-Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
 ---
+ drivers/video/fbdev/Kconfig  | 1 +
+ drivers/video/fbdev/Makefile | 1 +
+ 2 files changed, 2 insertions(+)
 
-v2: remove double negation in if statments
----
- drivers/staging/sm750fb/sm750.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index d363f55..25df813 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -477,7 +477,8 @@ static int lynxfb_resume(struct pci_dev *pdev)
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index b3dd417..3bd0693 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2454,6 +2454,7 @@ source "drivers/video/fbdev/omap/Kconfig"
+ source "drivers/video/fbdev/omap2/Kconfig"
+ source "drivers/video/fbdev/exynos/Kconfig"
+ source "drivers/video/fbdev/mmp/Kconfig"
++source "drivers/video/fbdev/xylon/Kconfig"
  
- 	console_lock();
+ config FB_SH_MOBILE_MERAM
+ 	tristate "SuperH Mobile MERAM read ahead support"
+diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
+index 1979aff..57cb259 100644
+--- a/drivers/video/fbdev/Makefile
++++ b/drivers/video/fbdev/Makefile
+@@ -132,6 +132,7 @@ obj-$(CONFIG_FB_JZ4740)		  += jz4740_fb.o
+ obj-$(CONFIG_FB_PUV3_UNIGFX)      += fb-puv3.o
+ obj-$(CONFIG_FB_HYPERV)		  += hyperv_fb.o
+ obj-$(CONFIG_FB_OPENCORES)	  += ocfb.o
++obj-$(CONFIG_FB_XYLON)		  += xylon/
  
--	if ((ret = pci_set_power_state(pdev, PCI_D0)) != 0) {
-+	ret = pci_set_power_state(pdev, PCI_D0);
-+	if (ret) {
- 		pr_err("error:%d occured in pci_set_power_state\n", ret);
- 		return ret;
- 	}
-@@ -485,7 +486,8 @@ static int lynxfb_resume(struct pci_dev *pdev)
- 
- 	if (pdev->dev.power.power_state.event != PM_EVENT_FREEZE) {
- 		pci_restore_state(pdev);
--		if ((ret = pci_enable_device(pdev)) != 0) {
-+		ret = pci_enable_device(pdev);
-+		if (ret) {
- 			pr_err("error:%d occured in pci_enable_device\n", ret);
- 			return ret;
- 		}
-@@ -975,7 +977,8 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 		 info->cmap.red, info->cmap.green, info->cmap.blue,
- 		 info->cmap.transp);
- 
--	if ((ret = fb_alloc_cmap(&info->cmap, 256, 0)) < 0) {
-+	ret = fb_alloc_cmap(&info->cmap, 256, 0);
-+	if (ret < 0) {
- 		pr_err("Could not allcate memory for cmap.\n");
- 		goto exit;
- 	}
+ # Platform or fallback drivers go here
+ obj-$(CONFIG_FB_UVESA)            += uvesafb.o
 -- 
-2.3.3
+1.9.1
 

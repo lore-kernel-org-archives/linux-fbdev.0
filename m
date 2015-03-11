@@ -1,26 +1,32 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 11 Mar 2015 08:56:04 +0000
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Wed, 11 Mar 2015 09:39:10 +0000
 Subject: Re: [PATCH 4/6] staging: sm750fb: Expose hw712_fillrect externally
-Message-Id: <20150311085604.GV10964@mwanda>
+Message-Id: <CAA5enKb1j1UY4wf2FcDu0m87BXA++of-0+Pm1G96UevvMU0Gfw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1426037325-8392-1-git-send-email-lstoakes@gmail.com>
- <1426037325-8392-4-git-send-email-lstoakes@gmail.com>
-In-Reply-To: <1426037325-8392-4-git-send-email-lstoakes@gmail.com>
+	<1426037325-8392-4-git-send-email-lstoakes@gmail.com>
+	<20150311093728.GD4560@sudip-PC>
+In-Reply-To: <20150311093728.GD4560@sudip-PC>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lorenzo Stoakes <lstoakes@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: teddy.wang@siliconmotion.com, Greg KH <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2015 at 01:28:43AM +0000, Lorenzo Stoakes wrote:
-> This patch adds a reference to hw712_fillrect which is not used elsewhere in the driver,
-> but appears to be an alternative to the hw_fillrect method. This patch fixes the following sparse warning:-
-> 
-> drivers/staging/sm750fb/sm750_accel.c:95:5: warning: symbol 'hw712_fillrect' was not declared. Should it be static?
-> 
+On 11 March 2015 at 09:37, Sudip Mukherjee <sudipm.mukherjee@gmail.com> wrote:
+> in your previous patch 3/6 you made it static now you are again
+> removing the static keyword. may i ask why you changed it in 3/6 if you
+> again change it back to original in this patch?
 
-Just delete it.
+There's no good reason, it's just a mistake :) I'll fix it shortly.
 
-regards,
-dan carpenter
+> anyways, like Dan said, delete this function, its not used anywhere.
+> it will not be used also, i missed removing this function from the
+> vendor crude drver.
 
+Will do!
+
+Best,
+-- 
+Lorenzo Stoakes
+https:/ljs.io

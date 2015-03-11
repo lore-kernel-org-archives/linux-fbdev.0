@@ -1,144 +1,150 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 10 Mar 2015 08:57:35 +0000
-Subject: [PATCH v3 1/5] staging: sm750fb: wrong type for print
-Message-Id: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
+From: Davor Joja <davorjoja@logicbricks.com>
+Date: Wed, 11 Mar 2015 15:27:05 +0000
+Subject: [PATCH 04/10] fbdev: xylon: Framebuffer driver pixel clock
+Message-Id: <cf0bb32e-adb8-4a54-a4dc-92f8f9c29c33@mail.xylon.local>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
+In-Reply-To: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, geert@linux-m68k.org
+Cc: Davor Joja <davorjoja@logicbricks.com>
 
-mention correct format specifier while printing.
-fixes all the build warnings about incorrect argument type while
-printing.
-since this is a framebuffer device and it should follow what the
-framebuffer layer is suggesting in struct fb_fix_screeninfo at
-smem_start and mmio_start, so accordingly changed the datatypes of
-vidmem_start, vidreg_start, vidmem_size and vidreg_size.
+Driver pixel clock control functionality supporting optional Xylon logiCLK IP
+core clock generator.
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
 ---
+ drivers/video/fbdev/xylon/xylonfb_pixclk.c | 119 +++++++++++++++++++++++++++++
+ 1 file changed, 119 insertions(+)
+ create mode 100644 drivers/video/fbdev/xylon/xylonfb_pixclk.c
 
-v3: changed the commit log.
-v2: changed datatypes of vidmem_size and vidreg_size.
-
-this patch will give checkpatch warnings about use of printk.
-this patch was mainly to fix the build warnings. printk will be
-converted to pr_* and dev_* in a later patch.
-
- drivers/staging/sm750fb/sm750.c    | 24 ++++++++++++------------
- drivers/staging/sm750fb/sm750.h    |  8 ++++----
- drivers/staging/sm750fb/sm750_hw.c |  4 ++--
- 3 files changed, 18 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 520c69e..753869e 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -530,20 +530,20 @@ static int lynxfb_ops_mmap(struct fb_info * info, struct vm_area_struct * vma)
- 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
- 		return -EINVAL;
- 	off = vma->vm_pgoff << PAGE_SHIFT;
--	printk("lynxfb mmap pgoff: %x\n", vma->vm_pgoff);
--	printk("lynxfb mmap off 1: %x\n", off);
-+	printk("lynxfb mmap pgoff: %lx\n", vma->vm_pgoff);
-+	printk("lynxfb mmap off 1: %lx\n", off);
- 	
- 	/* frame buffer memory */
- 	start = info->fix.smem_start;
- 	len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.smem_len);
- 	
--	printk("lynxfb mmap start 1: %x\n", start);
-+	printk("lynxfb mmap start 1: %lx\n", start);
- 	printk("lynxfb mmap len 1: %x\n", len);
- 	
- 	if (off >= len) {
- 		/* memory mapped io */
- 		off -= len;
--		printk("lynxfb mmap off 2: %x\n", off);
-+		printk("lynxfb mmap off 2: %lx\n", off);
- 		if (info->var.accel_flags) {
- 			printk("lynxfb mmap accel flags true");
- 			return -EINVAL;
-@@ -551,28 +551,28 @@ static int lynxfb_ops_mmap(struct fb_info * info, struct vm_area_struct * vma)
- 		start = info->fix.mmio_start;
- 		len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.mmio_len);
- 		
--		printk("lynxfb mmap start 2: %x\n", start);
-+		printk("lynxfb mmap start 2: %lx\n", start);
- 		printk("lynxfb mmap len 2: %x\n", len);
- 	}
- 	start &= PAGE_MASK;
--	printk("lynxfb mmap start 3: %x\n", start);
--	printk("lynxfb mmap vm start: %x\n", vma->vm_start);
--	printk("lynxfb mmap vm end: %x\n", vma->vm_end);
-+	printk("lynxfb mmap start 3: %lx\n", start);
-+	printk("lynxfb mmap vm start: %lx\n", vma->vm_start);
-+	printk("lynxfb mmap vm end: %lx\n", vma->vm_end);
- 	printk("lynxfb mmap len: %x\n", len);
--	printk("lynxfb mmap off: %x\n", off);
-+	printk("lynxfb mmap off: %lx\n", off);
- 	if ((vma->vm_end - vma->vm_start + off) > len)
- 	{
- 		return -EINVAL;
- 	}
- 	off += start;
--	printk("lynxfb mmap off 3: %x\n", off);
-+	printk("lynxfb mmap off 3: %lx\n", off);
- 	vma->vm_pgoff = off >> PAGE_SHIFT;
- 	/* This is an IO map - tell maydump to skip this VMA */
- 	vma->vm_flags |= VM_IO | VM_DONTEXPAND | VM_DONTDUMP;
- 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
- 	fb_pgprotect(file, vma, off);
--	printk("lynxfb mmap off 4: %x\n", off);
--	printk("lynxfb mmap pgprot: %x\n", vma->vm_page_prot);
-+	printk("lynxfb mmap off 4: %lx\n", off);
-+	printk("lynxfb mmap pgprot: %lx\n", (unsigned long) pgprot_val(vma->vm_page_prot));
- 	if (io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
- 			     vma->vm_end - vma->vm_start, vma->vm_page_prot))
- 		return -EAGAIN;
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 711676c..d39968c 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -59,10 +59,10 @@ struct lynx_share{
- 		}mtrr;
- #endif
- 	/* all smi graphic adaptor got below attributes */
--	resource_size_t vidmem_start;
--	resource_size_t vidreg_start;
--	resource_size_t vidmem_size;
--	resource_size_t vidreg_size;
-+	unsigned long vidmem_start;
-+	unsigned long vidreg_start;
-+	__u32 vidmem_size;
-+	__u32 vidreg_size;
- 	volatile unsigned char __iomem * pvReg;
- 	unsigned char __iomem * pvMem;
- 	/* locks*/
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index cd971bd..ec2d499 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -36,7 +36,7 @@ int hw_sm750_map(struct lynx_share* share,struct pci_dev* pdev)
- 	share->vidreg_start  = pci_resource_start(pdev,1);
- 	share->vidreg_size = MB(2);
- 
--	pr_info("mmio phyAddr = %x\n",share->vidreg_start);
-+	pr_info("mmio phyAddr = %lx\n", share->vidreg_start);
- 
- 	/* reserve the vidreg space of smi adaptor
- 	 * if you do this, u need to add release region code
-@@ -73,7 +73,7 @@ int hw_sm750_map(struct lynx_share* share,struct pci_dev* pdev)
- 	 * @hw_sm750_getVMSize function can be safe.
- 	 * */
- 	share->vidmem_size = hw_sm750_getVMSize(share);
--	pr_info("video memory phyAddr = %x, size = %d bytes\n",
-+	pr_info("video memory phyAddr = %lx, size = %u bytes\n",
- 	share->vidmem_start,share->vidmem_size);
- 
- 	/* reserve the vidmem space of smi adaptor */
+diff --git a/drivers/video/fbdev/xylon/xylonfb_pixclk.c b/drivers/video/fbdev/xylon/xylonfb_pixclk.c
+new file mode 100644
+index 0000000..d63dbeb
+--- /dev/null
++++ b/drivers/video/fbdev/xylon/xylonfb_pixclk.c
+@@ -0,0 +1,119 @@
++/*
++ * Xylon logiCVC frame buffer driver pixel clock control
++ *
++ * Copyright (C) 2015 Xylon d.o.o.
++ * Author: Davor Joja <davor.joja@logicbricks.com>
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/clk.h>
++#include <linux/device.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
++
++struct xylonfb_pixclk {
++	struct device *dev;
++	struct device_node *dn;
++	struct clk *clk;
++};
++
++#if defined(CONFIG_FB_XYLON_PIXCLK_LOGICLK)
++static const struct of_device_id logiclk_of_match[] = {
++	{ .compatible = "xylon,logiclk-1.02.b" },
++	{/* end of table */}
++};
++static struct xylonfb_pixclk logiclk;
++#endif
++
++bool xylonfb_hw_pixclk_supported(struct device *dev, struct device_node *dn);
++void xylonfb_hw_pixclk_unload(struct device_node *dn);
++int xylonfb_hw_pixclk_set(struct device *dev, struct device_node *dn,
++			  unsigned long pixclk_khz);
++
++#if defined(CONFIG_FB_XYLON_PIXCLK)
++static int xylonfb_hw_pixclk_set_freq(struct device *dev,
++				      struct device_node *dn,
++				      unsigned long freq_khz)
++{
++	struct clk *clk = NULL;
++
++#if defined(CONFIG_FB_XYLON_PIXCLK_LOGICLK)
++	if (dn = logiclk.dn)
++		clk = logiclk.clk;
++#endif
++
++	if (clk && clk_set_rate(clk, (freq_khz * 1000))) {
++		dev_err(dev, "failed set pixel clock frequency\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++#endif
++
++bool xylonfb_hw_pixclk_supported(struct device *dev, struct device_node *dn)
++{
++#if defined(CONFIG_FB_XYLON_PIXCLK)
++	struct clk **clk;
++	bool clk_dev = false;
++
++#if defined(CONFIG_FB_XYLON_PIXCLK_LOGICLK)
++	if (of_match_node(logiclk_of_match, of_get_parent(dn))) {
++		clk = &logiclk.clk;
++		logiclk.dev = dev;
++		logiclk.dn = dn;
++		clk_dev = true;
++	}
++#endif
++
++	if (clk_dev) {
++		*clk = devm_clk_get(dev, NULL);
++		if (IS_ERR(*clk)) {
++			dev_err(dev, "failed get pixel clock\n");
++			return false;
++		}
++		if (clk_prepare_enable(*clk)) {
++			dev_err(dev,
++				"failed prepare/enable pixel clock\n");
++			return false;
++		}
++
++		return true;
++	} else {
++		return false;
++	}
++#else
++	return true;
++#endif
++}
++
++void xylonfb_hw_pixclk_unload(struct device_node *dn)
++{
++	struct clk *clk = NULL;
++
++#if defined(CONFIG_FB_XYLON_PIXCLK_LOGICLK)
++	clk = logiclk.clk;
++#endif
++
++	if (clk)
++		clk_disable_unprepare(clk);
++}
++
++int xylonfb_hw_pixclk_set(struct device *dev, struct device_node *dn,
++			  unsigned long pixclk_khz)
++{
++#if defined(CONFIG_FB_XYLON_PIXCLK)
++	return xylonfb_hw_pixclk_set_freq(dev, dn, pixclk_khz);
++#else
++	dev_warn(dev, "pixel clock control not supported\n");
++	return -ENODEV;
++#endif
++}
 -- 
-1.8.1.2
+1.9.1
 

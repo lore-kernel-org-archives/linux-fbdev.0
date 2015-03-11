@@ -1,189 +1,222 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:14 +0000
-Subject: [PATCH v1 24/47] video: fbdev: arkfb: use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1426893517-2511-25-git-send-email-mcgrof@do-not-panic.com>
+From: Davor Joja <davorjoja@logicbricks.com>
+Date: Wed, 11 Mar 2015 15:27:06 +0000
+Subject: [PATCH 05/10] fbdev: xylon: logiCVC IP core definitions
+Message-Id: <6f76e4ca-652d-4bea-b358-236747f628f3@mail.xylon.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
+In-Reply-To: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, geert@linux-m68k.org
+Cc: Davor Joja <davorjoja@logicbricks.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Driver hw parameters and definitions for logiCVC IP core.
 
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
 ---
- drivers/video/fbdev/arkfb.c | 36 +++++-------------------------------
- 1 file changed, 5 insertions(+), 31 deletions(-)
+ drivers/video/fbdev/xylon/logicvc.h | 192 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 192 insertions(+)
+ create mode 100644 drivers/video/fbdev/xylon/logicvc.h
 
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index b305a1e..6a317de 100644
---- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -26,13 +26,9 @@
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
- 
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- struct arkfb_info {
- 	int mclk_freq;
--	int mtrr_reg;
-+	int wc_cookie;
- 
- 	struct dac_info *dac;
- 	struct vgastate state;
-@@ -102,10 +98,6 @@ static const struct svga_timing_regs ark_timing_regs     = {
- 
- static char *mode_option = "640x480-8@60";
- 
--#ifdef CONFIG_MTRR
--static int mtrr = 1;
--#endif
--
- MODULE_AUTHOR("(c) 2007 Ondrej Zajicek <santiago@crfreenet.org>");
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("fbdev driver for ARK 2000PV");
-@@ -115,11 +107,6 @@ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0444);
- MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
- 
--#ifdef CONFIG_MTRR
--module_param(mtrr, int, 0444);
--MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
--
- static int threshold = 4;
- 
- module_param(threshold, int, 0644);
-@@ -1002,7 +989,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.smem_len = pci_resource_len(dev, 0);
- 
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -1057,14 +1044,8 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
--
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
--
-+	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+					  info->fix.smem_len);
- 	return 0;
- 
- 	/* Error handling */
-@@ -1092,14 +1073,7 @@ static void ark_pci_remove(struct pci_dev *dev)
- 
- 	if (info) {
- 		struct arkfb_info *par = info->par;
--
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
--#endif
--
-+		arch_phys_wc_del(par->wc_cookie);
- 		dac_release(par->dac);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
+diff --git a/drivers/video/fbdev/xylon/logicvc.h b/drivers/video/fbdev/xylon/logicvc.h
+new file mode 100644
+index 0000000..7c1266e
+--- /dev/null
++++ b/drivers/video/fbdev/xylon/logicvc.h
+@@ -0,0 +1,192 @@
++/*
++ * Xylon logiCVC IP core parameters
++ *
++ * Copyright (C) 2015 Xylon d.o.o.
++ * Author: Davor Joja <davor.joja@logicbricks.com>
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef __LOGICVC_H__
++#define __LOGICVC_H__
++
++/*
++ * All logiCVC registers are only 32-bit accessible.
++ * All logiCVC registers are aligned to 8 byte boundary.
++ */
++#define LOGICVC_REG_STRIDE		8
++#define LOGICVC_HSYNC_FRONT_PORCH_ROFF	(0  * LOGICVC_REG_STRIDE)
++#define LOGICVC_HSYNC_ROFF		(1  * LOGICVC_REG_STRIDE)
++#define LOGICVC_HSYNC_BACK_PORCH_ROFF	(2  * LOGICVC_REG_STRIDE)
++#define LOGICVC_HRES_ROFF		(3  * LOGICVC_REG_STRIDE)
++#define LOGICVC_VSYNC_FRONT_PORCH_ROFF	(4  * LOGICVC_REG_STRIDE)
++#define LOGICVC_VSYNC_ROFF		(5  * LOGICVC_REG_STRIDE)
++#define LOGICVC_VSYNC_BACK_PORCH_ROFF	(6  * LOGICVC_REG_STRIDE)
++#define LOGICVC_VRES_ROFF		(7  * LOGICVC_REG_STRIDE)
++#define LOGICVC_CTRL_ROFF		(8  * LOGICVC_REG_STRIDE)
++#define LOGICVC_DTYPE_ROFF		(9  * LOGICVC_REG_STRIDE)
++#define LOGICVC_BACKGROUND_COLOR_ROFF	(10 * LOGICVC_REG_STRIDE)
++#define LOGICVC_CLUT_SELECT_ROFF	(12 * LOGICVC_REG_STRIDE)
++#define LOGICVC_INT_STAT_ROFF		(13 * LOGICVC_REG_STRIDE)
++#define LOGICVC_INT_MASK_ROFF		(14 * LOGICVC_REG_STRIDE)
++#define LOGICVC_POWER_CTRL_ROFF		(15 * LOGICVC_REG_STRIDE)
++#define LOGICVC_IP_VERSION_ROFF		(31 * LOGICVC_REG_STRIDE)
++/* Version 3.x */
++#define LOGICVC_VBUFF_SELECT_ROFF	(11 * LOGICVC_REG_STRIDE)
++
++/*
++ * logiCVC layer registers offsets (common for each layer)
++ * Last possible logiCVC layer (No.4) implements only "Layer memory address"
++ * and "Layer control" registers.
++ */
++/* Version 3.x */
++#define LOGICVC_LAYER_HOFF_ROFF		(0 * LOGICVC_REG_STRIDE)
++#define LOGICVC_LAYER_VOFF_ROFF		(1 * LOGICVC_REG_STRIDE)
++/* Version 4.x */
++#define LOGICVC_LAYER_ADDR_ROFF		(0 * LOGICVC_REG_STRIDE)
++/* Common */
++#define LOGICVC_LAYER_HPOS_ROFF		(2 * LOGICVC_REG_STRIDE)
++#define LOGICVC_LAYER_VPOS_ROFF		(3 * LOGICVC_REG_STRIDE)
++#define LOGICVC_LAYER_HSIZE_ROFF	(4 * LOGICVC_REG_STRIDE)
++#define LOGICVC_LAYER_VSIZE_ROFF	(5 * LOGICVC_REG_STRIDE)
++#define LOGICVC_LAYER_ALPHA_ROFF	(6 * LOGICVC_REG_STRIDE)
++#define LOGICVC_LAYER_CTRL_ROFF		(7 * LOGICVC_REG_STRIDE)
++#define LOGICVC_LAYER_TRANSP_COLOR_ROFF	(8 * LOGICVC_REG_STRIDE)
++
++/* logiCVC interrupt bits */
++#define LOGICVC_INT_L0_UPDATED		(1 << 0)
++#define LOGICVC_INT_L1_UPDATED		(1 << 1)
++#define LOGICVC_INT_L2_UPDATED		(1 << 2)
++#define LOGICVC_INT_L3_UPDATED		(1 << 3)
++#define LOGICVC_INT_L4_UPDATED		(1 << 4)
++#define LOGICVC_INT_V_SYNC		(1 << 5)
++#define LOGICVC_INT_E_VIDEO_VALID	(1 << 6)
++#define LOGICVC_INT_FIFO_UNDERRUN	(1 << 7)
++#define LOGICVC_INT_L0_CLUT_SW		(1 << 8)
++#define LOGICVC_INT_L1_CLUT_SW		(1 << 9)
++#define LOGICVC_INT_L2_CLUT_SW		(1 << 10)
++#define LOGICVC_INT_L3_CLUT_SW		(1 << 11)
++#define LOGICVC_INT_L4_CLUT_SW		(1 << 12)
++
++/* logiCVC layer base offsets */
++#define LOGICVC_LAYER_OFFSET		0x80
++#define LOGICVC_LAYER_BASE_OFFSET	0x100
++#define LOGICVC_LAYER_BASE_END		0x338
++#define LOGICVC_LAYER_0_OFFSET		(0 * LOGICVC_LAYER_OFFSET)
++#define LOGICVC_LAYER_1_OFFSET		(1 * LOGICVC_LAYER_OFFSET)
++#define LOGICVC_LAYER_2_OFFSET		(2 * LOGICVC_LAYER_OFFSET)
++#define LOGICVC_LAYER_3_OFFSET		(3 * LOGICVC_LAYER_OFFSET)
++#define LOGICVC_LAYER_4_OFFSET		(4 * LOGICVC_LAYER_OFFSET)
++
++/* logiCVC layer CLUT base offsets */
++#define LOGICVC_CLUT_OFFSET		0x800
++#define LOGICVC_CLUT_BASE_OFFSET	0x1000
++#define LOGICVC_CLUT_L0_CLUT_0_OFFSET	(0 * LOGICVC_CLUT_OFFSET)
++#define LOGICVC_CLUT_L0_CLUT_1_OFFSET	(1 * LOGICVC_CLUT_OFFSET)
++#define LOGICVC_CLUT_L1_CLUT_0_OFFSET	(2 * LOGICVC_CLUT_OFFSET)
++#define LOGICVC_CLUT_L1_CLUT_1_OFFSET	(3 * LOGICVC_CLUT_OFFSET)
++#define LOGICVC_CLUT_L2_CLUT_0_OFFSET	(4 * LOGICVC_CLUT_OFFSET)
++#define LOGICVC_CLUT_L2_CLUT_1_OFFSET	(5 * LOGICVC_CLUT_OFFSET)
++#define LOGICVC_CLUT_L3_CLUT_0_OFFSET	(6 * LOGICVC_CLUT_OFFSET)
++#define LOGICVC_CLUT_L3_CLUT_1_OFFSET	(7 * LOGICVC_CLUT_OFFSET)
++#define LOGICVC_CLUT_L4_CLUT_0_OFFSET	(8 * LOGICVC_CLUT_OFFSET)
++#define LOGICVC_CLUT_L4_CLUT_1_OFFSET	(9 * LOGICVC_CLUT_OFFSET)
++#define LOGICVC_CLUT_REGISTER_SIZE	8
++#define LOGICVC_CLUT_0_INDEX_OFFSET	2
++#define LOGICVC_CLUT_1_INDEX_OFFSET	1
++
++/* logiCVC registers range */
++#define LOGICVC_REGISTERS_RANGE		0x6000
++#define LOGICVC_LAYER_REGISTERS_RANGE	0x80
++
++/* logiCVC control register bits */
++#define LOGICVC_CTRL_HSYNC			(1 << 0)
++#define LOGICVC_CTRL_HSYNC_INVERT		(1 << 1)
++#define LOGICVC_CTRL_VSYNC			(1 << 2)
++#define LOGICVC_CTRL_VSYNC_INVERT		(1 << 3)
++#define LOGICVC_CTRL_DATA_ENABLE		(1 << 4)
++#define LOGICVC_CTRL_DATA_ENABLE_INVERT		(1 << 5)
++#define LOGICVC_CTRL_PIXEL_DATA_INVERT		(1 << 7)
++#define LOGICVC_CTRL_PIXEL_DATA_TRIGGER_INVERT	(1 << 8)
++#define LOGICVC_CTRL_DISABLE_LAYER_UPDATE	(1 << 9)
++
++/* logiCVC layer control register bits */
++#define LOGICVC_LAYER_CTRL_ENABLE			(1 << 0)
++#define LOGICVC_LAYER_CTRL_COLOR_TRANSPARENCY_DISABLE	(1 << 1)
++#define LOGICVC_LAYER_CTRL_EXTERNAL_BUFFER_SWITCH	(1 << 2)
++#define LOGICVC_LAYER_CTRL_INTERLACE		(1 << 3)
++#define LOGICVC_LAYER_CTRL_PIXEL_FORMAT_ABGR	(1 << 4)
++
++/* logiCVC register initial values */
++#define LOGICVC_DTYPE_REG_INIT	0
++
++/* logiCVC display power signals */
++#define LOGICVC_EN_BLIGHT_MSK	(1 << 0)
++#define LOGICVC_EN_VDD_MSK	(1 << 1)
++#define LOGICVC_EN_VEE_MSK	(1 << 2)
++#define LOGICVC_V_EN_MSK	(1 << 3)
++
++/* logiCVC various definitions */
++#define LOGICVC_MAJOR_REVISION_SHIFT	11
++#define LOGICVC_MAJOR_REVISION_MASK	0x3F
++#define LOGICVC_MINOR_REVISION_SHIFT	5
++#define LOGICVC_MINOR_REVISION_MASK	0x3F
++#define LOGICVC_PATCH_LEVEL_MASK	0x1F
++
++#define LOGICVC_MAX_LAYER_BUFFERS	3
++#define LOGICVC_MIN_XRES		64
++#define LOGICVC_MIN_VRES		1
++#define LOGICVC_MAX_XRES		2048
++#define LOGICVC_MAX_VRES		2048
++#define LOGICVC_CLUT_SIZE		256
++
++#define LOGICVC_COEFF_Y_R		29900
++#define LOGICVC_COEFF_Y_G		58700
++#define LOGICVC_COEFF_Y_B		11400
++#define LOGICVC_COEFF_Y			0
++#define LOGICVC_COEFF_U			12800000
++#define LOGICVC_COEFF_V			12800000
++#define LOGICVC_COEFF_U_R		16868
++#define LOGICVC_COEFF_U_G		33107
++#define LOGICVC_COEFF_U_B		49970
++#define LOGICVC_COEFF_V_R		49980
++#define LOGICVC_COEFF_V_G		41850
++#define LOGICVC_COEFF_V_B		8128
++#define LOGICVC_COEFF_ITU656_Y		1600000
++#define LOGICVC_COEFF_ITU656_U_R	17258
++#define LOGICVC_COEFF_ITU656_U_G	33881
++#define LOGICVC_COEFF_ITU656_U_B	51140
++#define LOGICVC_COEFF_ITU656_V_R	51138
++#define LOGICVC_COEFF_ITU656_V_G	42820
++#define LOGICVC_COEFF_ITU656_V_B	8316
++#define LOGICVC_YUV_NORM		100000
++#define LOGICVC_COEFF_R_U		1402524
++#define LOGICVC_COEFF_R			179000000
++#define LOGICVC_COEFF_G_U		714403
++#define LOGICVC_COEFF_G_V		344340
++#define LOGICVC_COEFF_G			135000000
++#define LOGICVC_COEFF_B_V		1773049
++#define LOGICVC_COEFF_B			226000000
++#define LOGICVC_RGB_NORM		1000000
++
++enum xylonfb_layer_type {
++	LOGICVC_LAYER_RGB,
++	LOGICVC_LAYER_YUV,
++	LOGICVC_LAYER_ALPHA
++};
++
++enum xylonfb_alpha_type {
++	LOGICVC_ALPHA_LAYER,
++	LOGICVC_ALPHA_PIXEL,
++	LOGICVC_ALPHA_CLUT_16BPP,
++	LOGICVC_ALPHA_CLUT_32BPP
++};
++
++#endif /* __LOGICVC_H__ */
 -- 
-2.3.2.209.gd67f9d5.dirty
+1.9.1
 

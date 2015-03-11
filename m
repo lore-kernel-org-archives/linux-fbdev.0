@@ -1,76 +1,62 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 10 Mar 2015 12:23:12 +0000
+From: Kevin Hao <haokexin@gmail.com>
+Date: Wed, 11 Mar 2015 04:38:11 +0000
 Subject: Re: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
-Message-Id: <54FEE230.6030006@ti.com>
+Message-Id: <20150311043811.GF28582@pek-khao-d1.corp.ad.wrs.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv"
+Content-Type: multipart/mixed; boundary="jaoouwwPWoQSJZYp"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
  <1422712065-9403-4-git-send-email-haokexin@gmail.com>
  <1424995875.4645.42.camel@kernel.crashing.org>
  <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
-In-Reply-To: <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
-To: Kevin Hao <haokexin@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+ <54FEE230.6030006@ti.com>
+In-Reply-To: <54FEE230.6030006@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
---5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv
-Content-Type: text/plain; charset=windows-1252
+
+--jaoouwwPWoQSJZYp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 27/02/15 03:05, Kevin Hao wrote:
-> On Fri, Feb 27, 2015 at 11:11:15AM +1100, Benjamin Herrenschmidt wrote:=
-
->> On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
->>> The PPC_OF is a ppc specific option which is used to mean that the
->>> firmware device tree access functions are available. Since all the
->>> ppc platforms have a device tree, it is aways set to 'y' for ppc.
->>> So it makes no sense to keep a such option in the current kernel.
->>> Replace it with PPC.
->>>
->>> Signed-off-by: Kevin Hao <haokexin@gmail.com>
->>
->> For this and generally the whole series,
->>
->> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->=20
-> Thanks Ben.
->=20
->>
->> Which tree do we expect this to go through ?
->=20
-> I just sent out a v2 [1] a few hours earlier with some minor updates. W=
+On Tue, Mar 10, 2015 at 02:23:12PM +0200, Tomi Valkeinen wrote:
+> > I just sent out a v2 [1] a few hours earlier with some minor updates. W=
 e plan
-> to merge this patch series via the powerpc tree in 4.1 cycle if I can c=
+> > to merge this patch series via the powerpc tree in 4.1 cycle if I can c=
 ollect
-> all the acks from the corresponding driver maintainers.
+> > all the acks from the corresponding driver maintainers.
+>=20
+> Fbdev changes look ok to me.
 
-Fbdev changes look ok to me.
+Hi Tomi,
 
- Tomi
+I assume that I can add a "Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>"
+for all the following patches, right?
+  http://patchwork.ozlabs.org/patch/443890/
+  http://patchwork.ozlabs.org/patch/443891/
+  http://patchwork.ozlabs.org/patch/443892/
+  http://patchwork.ozlabs.org/patch/443893/
+  http://patchwork.ozlabs.org/patch/443894/
+  http://patchwork.ozlabs.org/patch/443895/
+  http://patchwork.ozlabs.org/patch/443897/
 
+Thanks,
+Kevin
 
-
---5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--jaoouwwPWoQSJZYp
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJU/uIwAAoJEPo9qoy8lh7146YP/1UP6V+PcgFZzDtryhJp/v9I
-vxA3G94XsL1+GZrNvz6CSnl17SS0nytds4UJikLSyvmQ2AjAKCkCcX2HsVq8kF4K
-e1eo+rePMNPI7OUrdjt00rbauT2onn8Jhbm8ERHVNbnEjaK+OiZkC+54XatXjhmp
-ReuSPRBmnIPgbLV2gLSxBQktPLz9jfrlJwwOa0TvaM8C/SkvZp6nZu9iptCUCAIV
-Blx8nzUoSU4ojwAwDSKMDtmKodhb/L9FwKczQ1WYXgCiE/grWmb5tKJd62MKNmWc
-2Km4zNwCueYY0n2msDsDN+Fc0d+wmANJB3U0f141povu+24oJ+w67nr1DxMk24dh
-sDnu5/ZRIHVRfBxFmZrWkLB8KH2/Cm6LwFIpHUgp93XNe8efqFSbVxP3VNI7Z2oW
-zKx58o23eDV0CO0vVFparDA3uxtjA+4Ch06NqjxCszAegAWcHwGgE8oMZzfjDMB7
-r+hCtBiTR8uiDjZk5JKL/iy7/SqXLqbiUIgtPpALOGzUiPyDFUMchyeHfFvhphWR
-fG0UBNPaeMP9IJstvsSYRd7iWJIj6SniwW4LiXq+tS3n5EXwYGPNPaeZKcgGFnJH
-aVsciAtRV6YD02qda9590AMmI9m3vXHobv3uvTl+2hHVKgOTtr2XYXXd1DgWASSg
-NQyWV7HjxQ0t852gIZqf
-=FZKQ
+iQEcBAEBAgAGBQJU/8azAAoJEJNY7TDerrFxM0gIAMU/onSFczQCkrA765tFAUmb
+MeySoXOfj1z6FI2aU65Buylgo9Q7J1AUoj3wLlKHVPhNVaXKM8jJFVl+ovs87adf
+8GERHXxa1x7lxuEuBQEoK/NUF8wUY5RzHBDbKkf3pPIDBj9P0y1mL/LXftQxi0mg
+2/Nyjg9qxkarMStPerflmY7mLHnHgGKD/jwyqSJZugI1nwPh3iVJtodl2i2FKj20
+qjuk/xb9zw67VMrUdUmdRq2OzRe930YcW54psQYknWuya9NqIVQSyTCgeI4SqJZM
+YE2iC9wOzP/G7WfCLYJYzdU2dN0UiY/tKnd0D8Fy8ru/n2w0z7VEM3xc0ZerdRo=
+=i1Om
 -----END PGP SIGNATURE-----
 
---5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv--
+--jaoouwwPWoQSJZYp--

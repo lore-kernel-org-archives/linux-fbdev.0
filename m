@@ -1,113 +1,83 @@
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Fri, 20 Mar 2015 15:22:13 +0000
-Subject: [PATCH RESEND 2 3/5] staging: sm750fb: Remove unused function
-Message-Id: <1426864935-29350-3-git-send-email-lstoakes@gmail.com>
+From: Davor Joja <davorjoja@logicbricks.com>
+Date: Wed, 11 Mar 2015 15:27:11 +0000
+Subject: [PATCH 10/10] bindings: video: Xylon framebuffer driver binding
+Message-Id: <8195d8ed-e97c-4a77-8a0d-7d8dd6f199b4@mail.xylon.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
-In-Reply-To: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
+References: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
+In-Reply-To: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, geert@linux-m68k.org
+Cc: Davor Joja <davorjoja@logicbricks.com>
 
-This patch removes the unused hw712_fillrect function. This patch fixes
-the following sparse warning:-
+Xylon framebuffer driver binding description.
 
-drivers/staging/sm750fb/sm750_accel.c:95:5: warning: symbol 'hw712_fillrect' was not declared. Should it be static?
-
-Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
 ---
- drivers/staging/sm750fb/sm750_accel.c | 78 -----------------------------------
- 1 file changed, 78 deletions(-)
+ .../devicetree/bindings/video/xylon-fb.txt         | 52 ++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/xylon-fb.txt
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 6521c3b..c5a3726 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -89,84 +89,6 @@ void hw_set2dformat(struct lynx_accel * accel,int fmt)
- 	write_dpr(accel,DE_STRETCH_FORMAT,reg);
- }
+diff --git a/Documentation/devicetree/bindings/video/xylon-fb.txt b/Documentation/devicetree/bindings/video/xylon-fb.txt
+new file mode 100644
+index 0000000..665166f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/xylon-fb.txt
+@@ -0,0 +1,52 @@
++Binding for Xylon FB driver
++
++Xylon FB driver supports Xylon configurable video controller
++logiCVC FPGA IP core device.
++
++Required properties:
++ - compatible: value must be "xylon,fb-3.00.a"
++ - device: the phandle for logiCVC video controller device
++
++Optional properties:
++ - clocks: the phandle for the pixel clock generator
++ - console-layer: layer ID for FB console (0 - 4)
++      If omitted, FB console started on default layer ID 0.
++      Note: FB console can be started only on layer configured with one
++      of parameters combination below:
++      ===================
++      bits-per-pixel    type    transparency
++      ===================
++             8           yuv       clut32
++             8           rgb       clut16
++             8           rgb       clut32
++             8           rgb       layer
++            16           rgb       layer
++            32           rgb       layer
++            32           rgb       pixel
++      ===================
++
++ - edid-video-mode: video mode set to preferred EDID resolution
++      If omitted, configured according to "video-mode" property.
++ - edid-print: prints EDID description in system log
++      Must be used only with "edid-video-mode".
++      If omitted, functionality is not available.
++ - vsync-irq: generate interrupt on vertical synchronization pulse
++ - video-mode: preferred video mode resolution
++      If omitted, configures logiCVC to default video resolution "1024x768".
++   - M: Coordinated Video Timings (CVT)
++   - R: reduced video timings for digital displays
++   - i: calculate for an interlaced mode
++   - m: add margins to calculation calculation
++        (1.8% of xres rounded down to 8 pixels and 1.8% of yres).
++Example:
++
++	xylon_fb {
++		compatible = "xylon,fb-3.00.a";
++		clocks = <&clkout_0>;
++		device = <&logicvc_0>;
++		console-layer = <0>;
++		edid-video-mode;
++		edid-print;
++		vsync-irq;
++		video-mode = "1920x1080MR";
++	};
+\ No newline at end of file
+-- 
+1.9.1
 
--/* seems sm712 RectFill command is broken,so need use BitBlt to
-- * replace it. */
--
--int hw712_fillrect(struct lynx_accel * accel,
--				u32 base,u32 pitch,u32 Bpp,
--				u32 x,u32 y,u32 width,u32 height,
--				u32 color,u32 rop)
--{
--	u32 deCtrl;
--	if(accel->de_wait() != 0)
--	{
--		/* int time wait and always busy,seems hardware
--		 * got something error */
--		pr_debug("%s:De engine always bussy\n",__func__);
--		return -1;
--	}
--	/* 24bpp 2d acceleration still not work,we already support 2d on
--	 * both 8/16/32 bpp now, so there is no harm if we disable 2d on
--	 * 24bpp for current stage. */
--#if 0
--	if(Bpp = 3){
--		width *= 3;
--		x *= 3;
--		write_dpr(accel,DE_PITCH,
--			FIELD_VALUE(0,DE_PITCH,DESTINATION,pitch)|
--			FIELD_VALUE(0,DE_PITCH,SOURCE,pitch));//dpr10
--	}
--	else
--#endif
--	{
--		write_dpr(accel,DE_PITCH,
--			FIELD_VALUE(0,DE_PITCH,DESTINATION,pitch/Bpp)|
--			FIELD_VALUE(0,DE_PITCH,SOURCE,pitch/Bpp));//dpr10
--
--	}
--
--	write_dpr(accel,DE_FOREGROUND,color);//DPR14
--	write_dpr(accel,DE_MONO_PATTERN_HIGH,~0);//DPR34
--	write_dpr(accel,DE_MONO_PATTERN_LOW,~0);//DPR38
--
--	write_dpr(accel,DE_WINDOW_SOURCE_BASE,base);//dpr44
--	write_dpr(accel,DE_WINDOW_DESTINATION_BASE,base);//dpr40
--
--
--	write_dpr(accel,DE_WINDOW_WIDTH,
--			FIELD_VALUE(0,DE_WINDOW_WIDTH,DESTINATION,pitch/Bpp)|
--			FIELD_VALUE(0,DE_WINDOW_WIDTH,SOURCE,pitch/Bpp));//dpr3c
--
--
--	write_dpr(accel,DE_DESTINATION,
--			FIELD_SET(0,DE_DESTINATION,WRAP,DISABLE)|
--			FIELD_VALUE(0,DE_DESTINATION,X,x)|
--			FIELD_VALUE(0,DE_DESTINATION,Y,y));//dpr4
--
--	write_dpr(accel,DE_DIMENSION,
--			FIELD_VALUE(0,DE_DIMENSION,X,width)|
--			FIELD_VALUE(0,DE_DIMENSION,Y_ET,height));//dpr8
--
--	deCtrl -		FIELD_SET(0,DE_CONTROL,STATUS,START)|
--		FIELD_SET(0,DE_CONTROL,COMMAND,BITBLT)|
--		FIELD_SET(0,DE_CONTROL,ROP2_SOURCE,PATTERN)|
--		FIELD_SET(0,DE_CONTROL,ROP_SELECT,ROP2)|
--		FIELD_VALUE(0,DE_CONTROL,ROP,rop);//dpr0xc
--#if 0
--		/* dump registers */
--		int i;
--		inf_msg("x,y,w,h = %d,%d,%d,%d\n",x,y,width,height);
--		for(i=0x04;i<=0x44;i+=4){
--			inf_msg("dpr%02x = %08x\n",i,read_dpr(accel,i));
--		}
--		inf_msg("deCtrl = %08x\n",deCtrl);
--#endif
--
--	write_dpr(accel,DE_CONTROL,deCtrl);
--	return 0;
--}
--
- int hw_fillrect(struct lynx_accel * accel,
- 				u32 base,u32 pitch,u32 Bpp,
- 				u32 x,u32 y,u32 width,u32 height,
---
-2.3.2

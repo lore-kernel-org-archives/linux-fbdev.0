@@ -1,43 +1,118 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Tue, 24 Mar 2015 21:23:48 +0000
-Subject: [PATCHv5 01/11] fbdev: ssd1307fb: fix memory address smem_start.
-Message-Id: <1427232238-21099-2-git-send-email-niederp@physik.uni-kl.de>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Wed, 11 Mar 2015 01:28:44 +0000
+Subject: [PATCH 5/6] staging: sm750fb: Fix __iomem pointer types
+Message-Id: <1426037325-8392-5-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
+References: <1426037325-8392-1-git-send-email-lstoakes@gmail.com>
+In-Reply-To: <1426037325-8392-1-git-send-email-lstoakes@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-the smem_start pointer of the framebuffer info struct needs to hold the
-physical address rather than the logical address. Right now the logical
-address returned by kmalloc is stored. This patch converts this address
-to a physical address and thus fixes a driver crash on mmaping the
-framebuffer memory due to an access to the wrong memory address.
+This patch annotates pointers as referring to I/O mapped memory where they ought
+to be, removes now unnecessary ugly casts, eliminates an incorrect deref on I/O
+mapped memory by using iowrite16 instead, and updates the pointer arithmetic
+accordingly to take into account that the pointers are now byte-sized. This
+fixes the following sparse warnings:-
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+drivers/staging/sm750fb/sm750_cursor.c:113:19: warning: cast removes address space of expression
+drivers/staging/sm750fb/sm750_cursor.c:204:19: warning: cast removes address space of expression
+
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm750fb/sm750_cursor.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index f7ed6d9..61e0ce8 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -515,7 +515,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 	info->var.blue.offset =3D 0;
-=20
- 	info->screen_base =3D (u8 __force __iomem *)vmem;
--	info->fix.smem_start =3D (unsigned long)vmem;
-+	info->fix.smem_start =3D __pa(vmem);
- 	info->fix.smem_len =3D vmem_size;
-=20
- 	fb_deferred_io_init(info);
---=20
-2.3.0
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 6cceef1..c2ff3bd 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -98,7 +98,7 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
+ 	int i,j,count,pitch,offset;
+ 	u8 color,mask,opr;
+ 	u16 data;
+-	u16 * pbuffer,*pstart;
++	void __iomem * pbuffer,*pstart;
+ 
+ 	/*  in byte*/
+ 	pitch = cursor->w >> 3;
+@@ -106,11 +106,11 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
+ 	/* in byte	*/
+ 	count = pitch * cursor->h;
+ 
+-	/* in ushort */
+-	offset = cursor->maxW * 2 / 8 / 2;
++	/* in byte */
++	offset = cursor->maxW * 2 / 8;
+ 
+ 	data = 0;
+-	pstart = (u16 *)cursor->vstart;
++	pstart = cursor->vstart;
+ 	pbuffer = pstart;
+ 
+ /*
+@@ -161,7 +161,7 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
+ 			}
+ 		}
+ #endif
+-		*pbuffer = data;
++		iowrite16(data, pbuffer);
+ 
+ 		/* assume pitch is 1,2,4,8,...*/
+ #if 0
+@@ -174,7 +174,7 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
+ 			pstart += offset;
+ 			pbuffer = pstart;
+ 		}else{
+-			pbuffer++;
++			pbuffer += sizeof(u16);
+ 		}
+ 
+ 	}
+@@ -189,7 +189,7 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
+ 	int i,j,count,pitch,offset;
+ 	u8 color, mask;
+ 	u16 data;
+-	u16 * pbuffer,*pstart;
++	void __iomem * pbuffer,*pstart;
+ 
+ 	/*  in byte*/
+ 	pitch = cursor->w >> 3;
+@@ -197,11 +197,11 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
+ 	/* in byte	*/
+ 	count = pitch * cursor->h;
+ 
+-	/* in ushort */
+-	offset = cursor->maxW * 2 / 8 / 2;
++	/* in byte */
++	offset = cursor->maxW * 2 / 8;
+ 
+ 	data = 0;
+-	pstart = (u16 *)cursor->vstart;
++	pstart = cursor->vstart;
+ 	pbuffer = pstart;
+ 
+ 	for(i=0;i<count;i++)
+@@ -234,7 +234,7 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
+ 				data |= ((color & (1<<j))?1:2)<<(j*2);
+ 		}
+ #endif
+-		*pbuffer = data;
++		iowrite16(data, pbuffer);
+ 
+ 		/* assume pitch is 1,2,4,8,...*/
+ 		if(!(i&(pitch-1)))
+@@ -244,7 +244,7 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
+ 			pstart += offset;
+ 			pbuffer = pstart;
+ 		}else{
+-			pbuffer++;
++			pbuffer += sizeof(u16);
+ 		}
+ 
+ 	}
+-- 
+2.3.2
 

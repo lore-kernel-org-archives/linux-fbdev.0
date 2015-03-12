@@ -1,113 +1,88 @@
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Wed, 11 Mar 2015 10:45:47 +0000
-Subject: [PATCH v2 3/6] staging: sm750fb: Make internal functions static
-Message-Id: <1426070749-32024-1-git-send-email-lstoakes@gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Thu, 12 Mar 2015 15:23:44 +0000
+Subject: [PATCH 2/8] um: replace CONFIG_8xx by CONFIG_PPC_8xx
+Message-Id: <20150312152344.83BA31A241D@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
+To: Jeff Dike <jdike@addtoit.com>, Richard Weinberger <richard@nod.at>
+Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, user-mode-linux-user@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 
-This patch declares externally unavailable functions static. This fixes
-the following sparse warnings:-
+Two config options exist to define powerpc MPC8xx:
+* CONFIG_PPC_8xx
+* CONFIG_8xx
+In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
+communication co-processor
 
-drivers/staging/sm750fb/ddk750_swi2c.c:223:6: warning: symbol 'swI2CStart' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_swi2c.c:234:6: warning: symbol 'swI2CStop' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_swi2c.c:252:6: warning: symbol 'swI2CWriteByte' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_swi2c.c:320:15: warning: symbol 'swI2CReadByte' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_swi2c.c:361:6: warning: symbol 'swI2CInit_SM750LE' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_hwi2c.c:63:6: warning: symbol 'hwI2CWaitTXDone' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_hwi2c.c:93:14: warning: symbol 'hwI2CWriteData' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_hwi2c.c:160:14: warning: symbol 'hwI2CReadData' was not declared. Should it be static?
+arch/powerpc/platforms/Kconfig.cputype has contained the following
+comment about CONFIG_8xx item for some years:
+"# this is temp to handle compat with arch=ppc"
 
-Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+It looks like not many places still have that old CONFIG_8xx used,
+so it is likely to be a good time to get rid of it completely ?
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+
 ---
- drivers/staging/sm750fb/ddk750_hwi2c.c |  6 +++---
- drivers/staging/sm750fb/ddk750_swi2c.c | 10 +++++-----
- drivers/staging/sm750fb/sm750_accel.c  |  2 +-
- 3 files changed, 9 insertions(+), 9 deletions(-)
+ arch/um/sys-ppc/misc.S | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_hwi2c.c b/drivers/staging/sm750fb/ddk750_hwi2c.c
-index 84dfb6f..7826376 100644
---- a/drivers/staging/sm750fb/ddk750_hwi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_hwi2c.c
-@@ -60,7 +60,7 @@ void hwI2CClose(void)
- }
+diff --git a/arch/um/sys-ppc/misc.S b/arch/um/sys-ppc/misc.S
+index 1364b7d..163e0b2 100644
+--- a/arch/um/sys-ppc/misc.S
++++ b/arch/um/sys-ppc/misc.S
+@@ -18,7 +18,7 @@
+ #include <asm/processor.h>
+ #include "ppc_asm.h"
  
+-#if defined(CONFIG_4xx) || defined(CONFIG_8xx)
++#if defined(CONFIG_4xx) || defined(CONFIG_PPC_8xx)
+ #define CACHE_LINE_SIZE		16
+ #define LG_CACHE_LINE_SIZE	4
+ #define MAX_COPY_PREFETCH	1
+@@ -26,7 +26,7 @@
+ #define CACHE_LINE_SIZE		32
+ #define LG_CACHE_LINE_SIZE	5
+ #define MAX_COPY_PREFETCH	4
+-#endif /* CONFIG_4xx || CONFIG_8xx */
++#endif /* CONFIG_4xx || CONFIG_PPC_8xx */
  
--long hwI2CWaitTXDone(void)
-+static long hwI2CWaitTXDone(void)
- {
-     unsigned int timeout;
+ 	.text
  
-@@ -90,7 +90,7 @@ long hwI2CWaitTXDone(void)
-  *  Return Value:
-  *      Total number of bytes those are actually written.
-  */
--unsigned int hwI2CWriteData(
-+static unsigned int hwI2CWriteData(
-     unsigned char deviceAddress,
-     unsigned int length,
-     unsigned char *pBuffer
-@@ -157,7 +157,7 @@ unsigned int hwI2CWriteData(
-  *  Return Value:
-  *      Total number of actual bytes read from the slave device
-  */
--unsigned int hwI2CReadData(
-+static unsigned int hwI2CReadData(
-     unsigned char deviceAddress,
-     unsigned int length,
-     unsigned char *pBuffer
-diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-index 1249759..516f5bb 100644
---- a/drivers/staging/sm750fb/ddk750_swi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-@@ -220,7 +220,7 @@ static void swI2CAck(void)
- /*
-  *  This function sends the start command to the slave device
-  */
--void swI2CStart(void)
-+static void swI2CStart(void)
- {
-     /* Start I2C */
-     swI2CSDA(1);
-@@ -231,7 +231,7 @@ void swI2CStart(void)
- /*
-  *  This function sends the stop command to the slave device
-  */
--void swI2CStop(void)
-+static void swI2CStop(void)
- {
-     /* Stop the I2C */
-     swI2CSCL(1);
-@@ -249,7 +249,7 @@ void swI2CStop(void)
-  *       0   - Success
-  *      -1   - Fail to write byte
-  */
--long swI2CWriteByte(unsigned char data)
-+static long swI2CWriteByte(unsigned char data)
- {
-     unsigned char value = data;
-     int i;
-@@ -317,7 +317,7 @@ long swI2CWriteByte(unsigned char data)
-  *  Return Value:
-  *      One byte data read from the Slave device
-  */
--unsigned char swI2CReadByte(unsigned char ack)
-+static unsigned char swI2CReadByte(unsigned char ack)
- {
-     int i;
-     unsigned char data = 0;
-@@ -358,7 +358,7 @@ unsigned char swI2CReadByte(unsigned char ack)
-  *      -1   - Fail to initialize the i2c
-  *       0   - Success
-  */
--long swI2CInit_SM750LE(
-+static long swI2CInit_SM750LE(
-     unsigned char i2cClkGPIO,
-     unsigned char i2cDataGPIO
- )
+@@ -38,7 +38,7 @@
+ _GLOBAL(clear_page)
+ 	li	r0,4096/CACHE_LINE_SIZE
+ 	mtctr	r0
+-#ifdef CONFIG_8xx
++#ifdef CONFIG_PPC_8xx
+ 	li	r4, 0
+ 1:	stw	r4, 0(r3)
+ 	stw	r4, 4(r3)
+@@ -72,7 +72,7 @@ _GLOBAL(copy_page)
+ 	addi	r4,r4,-4
+ 	li	r5,4
+ 
+-#ifndef CONFIG_8xx
++#ifndef CONFIG_PPC_8xx
+ #if MAX_COPY_PREFETCH > 1
+ 	li	r0,MAX_COPY_PREFETCH
+ 	li	r11,4
+@@ -84,12 +84,12 @@ _GLOBAL(copy_page)
+ 	dcbt	r5,r4
+ 	li	r11,CACHE_LINE_SIZE+4
+ #endif /* MAX_COPY_PREFETCH */
+-#endif /* CONFIG_8xx */
++#endif /* CONFIG_PPC_8xx */
+ 
+ 	li	r0,4096/CACHE_LINE_SIZE
+ 	mtctr	r0
+ 1:
+-#ifndef CONFIG_8xx
++#ifndef CONFIG_PPC_8xx
+ 	dcbt	r11,r4
+ 	dcbz	r5,r3
+ #endif
 -- 
-2.3.2
+2.1.0
 

@@ -1,52 +1,67 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Fri, 27 Mar 2015 20:36:46 +0000
-Subject: Re: [PATCH v1 21/47] ethernet: myri10ge: use arch_phys_wc_add()
-Message-Id: <20150327203646.GN5622@wotan.suse.de>
+From: Ragavendra BN <ragavendra.bn@gmail.com>
+Date: Thu, 12 Mar 2015 10:33:19 +0000
+Subject: [PATCH] staging: sm750fb: if else block checkpath warnings
+Message-Id: <20150312103319.GA19906@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
- <1426893517-2511-22-git-send-email-mcgrof@do-not-panic.com>
- <20150321070759.GB8766@gtest01.arcus>
-In-Reply-To: <20150321070759.GB8766@gtest01.arcus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hyong-Youb Kim <hkim@cspi.com>
-Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Hyong-Youb Kim <hykim@myri.com>, netdev@vger.kernel.org, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2015 at 04:08:00PM +0900, Hyong-Youb Kim wrote:
-> On Fri, Mar 20, 2015 at 04:18:11PM -0700, Luis R. Rodriguez wrote:
-> > From: "Luis R. Rodriguez" <mcgrof@suse.com>
-> > 
-> > This driver already uses ioremap_wc() on the same range
-> > so when write-combining is available that will be used
-> > instead.
-> > 
-> [...]
-> > --- a/drivers/net/ethernet/myricom/myri10ge/myri10ge.c
-> > +++ b/drivers/net/ethernet/myricom/myri10ge/myri10ge.c
-> [...]
-> > @@ -1984,7 +1979,6 @@ myri10ge_get_ethtool_stats(struct net_device *netdev,
-> >  		data[i] = ((u64 *)&link_stats)[i];
-> >  
-> >  	data[i++] = (unsigned int)mgp->tx_boundary;
-> > -	data[i++] = (unsigned int)mgp->wc_enabled;
-> >  	data[i++] = (unsigned int)mgp->pdev->irq;
-> >  	data[i++] = (unsigned int)mgp->msi_enabled;
-> >  	data[i++] = (unsigned int)mgp->msix_enabled;
-> 
-> You would have to delete "WC from myri10ge_gstrings_main_stats too.
-> Something like below.  Thanks.
-> 
-> @@ -1905,7 +1905,7 @@ static const char myri10ge_gstrings_main_stats[][ETH_GSTRING_LEN] = {
->  	"tx_aborted_errors", "tx_carrier_errors", "tx_fifo_errors",
->  	"tx_heartbeat_errors", "tx_window_errors",
->  	/* device-specific stats */
-> -	"tx_boundary", "WC", "irq", "MSI", "MSIX",
-> +	"tx_boundary", "irq", "MSI", "MSIX",
->  	"read_dma_bw_MBs", "write_dma_bw_MBs", "read_write_dma_bw_MBs",
->  	"serial_number", "watchdog_resets",
->  #ifdef CONFIG_MYRI10GE_DCA
+Signed-off-by: Ragavendra BN <ragavendra.bn@gmail.com>
 
-OK great thanks. Amended.
+This patch fixes the coding style warnings found by checkpath.pl for
+the if else block
 
-  Luis
+---
+ drivers/staging/sm750fb/ddk750_chip.c |   25 ++++++++++---------------
+ 1 file changed, 10 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 2c12dd0..041a05a 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -11,7 +11,8 @@ typedef struct _pllcalparam{
+ pllcalparam;
+ 
+ 
+-logical_chip_type_t getChipType(){
++logical_chip_type_t getChipType()
++{
+ 	unsigned short physicalID;
+ 	char physicalRev;
+ 	logical_chip_type_t chip;
+@@ -19,22 +20,16 @@ logical_chip_type_t getChipType(){
+ 	physicalID = devId750;//either 0x718 or 0x750
+ 	physicalRev = revId750;
+ 
+-    if (physicalID = 0x718)
+-    {
+-        chip = SM718;
+-    }
+-    else if (physicalID = 0x750)
+-    {
+-        chip = SM750;
++	if (physicalID = 0x718) {
++		chip = SM718;
++	} else if (physicalID = 0x750) {
++		chip = SM750;
+ 		/* SM750 and SM750LE are different in their revision ID only. */
+-		if (physicalRev = SM750LE_REVISION_ID){
++		if (physicalRev = SM750LE_REVISION_ID)
+ 			chip = SM750LE;
+-		}
+-    }
+-    else
+-    {
+-        chip = SM_UNKNOWN;
+-    }
++	} else {
++		chip = SM_UNKNOWN;
++	}
+ 
+ 	return chip;
+ }
+-- 
+1.7.10.4
+

@@ -1,30 +1,46 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sat, 07 Mar 2015 11:20:29 +0000
-Subject: Re: [PATCH 1/2] staging: sm750fb: add sm750 to staging
-Message-Id: <20150307110829.GA5517@sudip-PC>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Thu, 12 Mar 2015 15:24:04 +0000
+Subject: [PATCH 6/8] mtd: replace CONFIG_8xx by CONFIG_PPC_8xx
+Message-Id: <20150312152404.D6C391A2421@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425379867-2176-1-git-send-email-sudipm.mukherjee@gmail.com>
- <1425379867-2176-2-git-send-email-sudipm.mukherjee@gmail.com>
- <20150307003834.GA2577@kroah.com>
-In-Reply-To: <20150307003834.GA2577@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
+To: David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, user-mode-linux-user@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 
-On Fri, Mar 06, 2015 at 04:38:34PM -0800, Greg Kroah-Hartman wrote:
-> On Tue, Mar 03, 2015 at 04:21:06PM +0530, Sudip Mukherjee wrote:
-> > ---
-> > 
-> > this patch has lots of checkpatch warnings including some trailing whitespaces.
-> 
-> And it has build warnings as well.  Please send me patches to fix that
-> up as soon as possible, you will start to get nasty emails from the
-> 0-day build bot about them...
-so build warning should be the first priority? ok, i will have something ready for you over the weekend.
+Two config options exist to define powerpc MPC8xx:
+* CONFIG_PPC_8xx
+* CONFIG_8xx
+In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
+communication co-processor
 
-and i also have few more patches queued up for staging/sm7xxfb and staging/panel, will send you that as soon as you have added my existing ones to staging-next.
+arch/powerpc/platforms/Kconfig.cputype has contained the following
+comment about CONFIG_8xx item for some years:
+"# this is temp to handle compat with arch=ppc"
 
-regards
-sudip
+It looks like not many places still have that old CONFIG_8xx used,
+so it is likely to be a good time to get rid of it completely ?
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+
+---
+ drivers/mtd/maps/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+index ba801d2..e715ae9 100644
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -242,7 +242,7 @@ config MTD_L440GX
+ 
+ config MTD_CFI_FLAGADM
+ 	tristate "CFI Flash device mapping on FlagaDM"
+-	depends on 8xx && MTD_CFI
++	depends on PPC_8xx && MTD_CFI
+ 	help
+ 	  Mapping for the Flaga digital module. If you don't have one, ignore
+ 	  this setting.
+-- 
+2.1.0
+

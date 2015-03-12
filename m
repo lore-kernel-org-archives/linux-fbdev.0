@@ -1,39 +1,55 @@
-From: =?UTF-8?B?R2llZHJpdXMgU3RhdGtldmnEjWl1cw==?=  <giedrius.statkevicius@gmail.com>
-Date: Sun, 08 Mar 2015 13:02:45 +0000
-Subject: Re: [PATCH 4/4] staging: sm750fb: fix undeclared function
-Message-Id: <54FC4875.1050800@gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Thu, 12 Mar 2015 15:24:09 +0000
+Subject: [PATCH 7/8] isdn: replace CONFIG_8xx by CONFIG_PPC_8xx
+Message-Id: <20150312152409.E7B5C1A2422@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com> <1425817886-14387-4-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1425817886-14387-4-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Karsten Keil <isdn@linux-pingi.de>
+Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, user-mode-linux-user@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 
-On 2015.03.08 14:31, Sudip Mukherjee wrote:
-> kbuild test robot reported that for microblaze-allyesconfig
-> chan_to_field() and lynxfb_ops_set_par() were not defined. These two
-> functions were defined under CONFIG_PM, so for any archtecture if
-> CONFIG_PM is not defined we will have this error.
-> while moving the lynxfb_suspend() function some very obvious
-> checkpatch errors were taken care of.
+Two config options exist to define powerpc MPC8xx:
+* CONFIG_PPC_8xx
+* CONFIG_8xx
+In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
+communication co-processor
 
-Such as? If you do you could also fix up the poor things with that
-function too such as the comment style here (no space between ; and the
-comment):
+arch/powerpc/platforms/Kconfig.cputype has contained the following
+comment about CONFIG_8xx item for some years:
+"# this is temp to handle compat with arch=ppc"
 
-> +		if (info)
-> +			fb_set_suspend(info, 1);/* 1 means do suspend*/
-> +
+It looks like not many places still have that old CONFIG_8xx used,
+so it is likely to be a good time to get rid of it completely ?
 
-or here (extra unneeded spaces):
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-> +
-> +		/* set chip to sleep mode	*/
-> +		if (share->suspend)
-> +			(*share->suspend)(share);
+---
+ drivers/isdn/hardware/mISDN/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/isdn/hardware/mISDN/Kconfig b/drivers/isdn/hardware/mISDN/Kconfig
+index 09df54f..ad9deab 100644
+--- a/drivers/isdn/hardware/mISDN/Kconfig
++++ b/drivers/isdn/hardware/mISDN/Kconfig
+@@ -13,7 +13,7 @@ config MISDN_HFCPCI
+ 
+ config MISDN_HFCMULTI
+ 	tristate "Support for HFC multiport cards (HFC-4S/8S/E1)"
+-	depends on PCI || 8xx
++	depends on PCI || PPC_8xx
+ 	depends on MISDN
+ 	help
+ 	  Enable support for cards with Cologne Chip AG's HFC multiport
+@@ -28,7 +28,7 @@ config MISDN_HFCMULTI_8xx
+ 	depends on MISDN
+ 	depends on MISDN_HFCMULTI
+ 	depends on 8xx
+-	default 8xx
++	default PPC_8xx
+ 	help
+ 	  Enable support for the XHFC embedded solution from Speech Design.
+ 
 -- 
-Thanks,
-Giedrius
+2.1.0
+

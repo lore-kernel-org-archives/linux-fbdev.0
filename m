@@ -1,52 +1,56 @@
-From: "Michael S. Tsirkin" <mst@redhat.com>
-Date: Sun, 29 Mar 2015 13:42:50 +0000
-Subject: [PATCH 73/86] fbdev/riva: use uapi/linux/pci_ids.h directly
-Message-Id: <1427635734-24786-74-git-send-email-mst@redhat.com>
+From: Harald Geyer <harald@ccbib.org>
+Date: Thu, 12 Mar 2015 13:43:17 +0000
+Subject: Re: [PATCHv2] framebuffer: don't link fb_devio into kernel image unconditionally
+Message-Id: <E1YW3OP-000183-PZ@stardust.g4.wien.funkfeuer.at>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1427635734-24786-1-git-send-email-mst@redhat.com>
-In-Reply-To: <1427635734-24786-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Header moved from linux/pci_ids.h to uapi/linux/pci_ids.h,
-use the new header directly so we can drop
-the wrapper in include/linux/pci_ids.h.
+CONFIG_FB_DEFERRED_IO is defined as bool while CONFIG_FB is defined as
+tristate. Currently fb_defio.o is linked into the kernel image even if
+CONFIG_FB=m.
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+I fix this by updating the Makefile to link fb_defio.o into fb.o and thus
+go into one place with the other core framebuffer code.
+
+Signed-off-by: Harald Geyer <harald@ccbib.org>
 ---
- drivers/video/fbdev/riva/nv_driver.c | 2 +-
- drivers/video/fbdev/riva/riva_hw.c   | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+changes since v1:
+remove MODULE_LICENSE("GPL"); line from fb_defio.c
 
-diff --git a/drivers/video/fbdev/riva/nv_driver.c b/drivers/video/fbdev/riva/nv_driver.c
-index f3694cf..f597ee5 100644
---- a/drivers/video/fbdev/riva/nv_driver.c
-+++ b/drivers/video/fbdev/riva/nv_driver.c
-@@ -36,7 +36,7 @@
+ drivers/video/fbdev/core/Makefile   |    2 +-
+ drivers/video/fbdev/core/fb_defio.c |    2 --
+ 2 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+index 67f28e2..23d86a8 100644
+--- a/drivers/video/fbdev/core/Makefile
++++ b/drivers/video/fbdev/core/Makefile
+@@ -3,6 +3,7 @@ obj-$(CONFIG_FB_CMDLINE)          += fb_cmdline.o
+ obj-$(CONFIG_FB)                  += fb.o
+ fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
+                                      modedb.o fbcvt.o
++fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
+ fb-objs                           := $(fb-y)
  
- #include <linux/delay.h>
- #include <linux/pci.h>
--#include <linux/pci_ids.h>
-+#include <uapi/linux/pci_ids.h>
- #include "nv_type.h"
- #include "rivafb.h"
- #include "nvreg.h"
-diff --git a/drivers/video/fbdev/riva/riva_hw.c b/drivers/video/fbdev/riva/riva_hw.c
-index 8bdf37f..0d399f6 100644
---- a/drivers/video/fbdev/riva/riva_hw.c
-+++ b/drivers/video/fbdev/riva/riva_hw.c
-@@ -48,7 +48,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/pci.h>
--#include <linux/pci_ids.h>
-+#include <uapi/linux/pci_ids.h>
- #include "riva_hw.h"
- #include "riva_tbl.h"
- #include "nv_type.h"
+ obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
+@@ -14,4 +15,3 @@ obj-$(CONFIG_FB_SYS_IMAGEBLIT) += sysimgblt.o
+ obj-$(CONFIG_FB_SYS_FOPS)      += fb_sys_fops.o
+ obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
+ obj-$(CONFIG_FB_DDC)           += fb_ddc.o
+-obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+index 900aa4e..2082c37 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -241,5 +241,3 @@ void fb_deferred_io_cleanup(struct fb_info *info)
+ 	mutex_destroy(&fbdefio->lock);
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
+-
+-MODULE_LICENSE("GPL");
 -- 
-MST
+1.7.2.5
 

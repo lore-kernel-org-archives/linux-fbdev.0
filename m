@@ -1,108 +1,46 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Tue, 31 Mar 2015 18:27:06 +0000
-Subject: [PATCHv6 00/10] Cleanup and add support for SSD1305
-Message-Id: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Thu, 12 Mar 2015 15:23:49 +0000
+Subject: [PATCH 3/8] video: replace CONFIG_8xx by CONFIG_PPC_8xx
+Message-Id: <20150312152349.943F91A241E@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, user-mode-linux-user@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 
-Hi,
+Two config options exist to define powerpc MPC8xx:
+* CONFIG_PPC_8xx
+* CONFIG_8xx
+In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
+communication co-processor
 
-this patch series is the result of making the ssd1307fb driver work with
-a Newhaven OLED display using the Solomon SSD1305 controller. To achieve
-this the intialization code for the SSD1306 and the SSD1307 is merged
-and based on DT configuration to reflect the various possible wirings
-of the SSD130X controller (04/10). Based on these changes it is straight
-forward to add support for the SSD1305 controller (06/10).
+arch/powerpc/platforms/Kconfig.cputype has contained the following
+comment about CONFIG_8xx item for some years:
+"# this is temp to handle compat with arch=ppc"
 
-While working on the driver I realized that it was not possible to
-correctly mmap the video memory from userspace since the address handed
-to the userspace app is a logical one where it should be a physical one.
-Patch 01/10 fixes this. Furthermore the memory reserved by kzalloc is
-not page aligned while the address handed to userspace is aligned to the
-next page frame. This problem is fixed by using __get_free_pages() in 02/10.
+It looks like not many places still have that old CONFIG_8xx used,
+so it is likely to be a good time to get rid of it completely ?
 
-Furthermore a module parameter is added to set the delay for the
-deferred io update (07/10). Also the backlight class is implemented to make
-the contrast setting available in userspace (09/10).
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-changes since v1 (thanks to Maxime for the feedback):
-- dedicated patch for fixing smem_start address
-- remove page reserve upon vmalloc
-- remove return value check upon display turn-off at module unload
-- use a module parameter refreshrate rather than delaydivider
-- allocate fbdefio dynamically
-- use sysfs_create_groups to create sysfs entries
-- remove contrast, vhcom and dclk properties from DT since they are
-  not part of hw description. The contrast module parameter was added
-  to set contrast at load time. vhcom and dclk stays at it's default
-  values for now.
-- add new DT properties to in tree users of ssd130X
-- rebased to apply on top of linux-next
+---
+ drivers/video/console/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-changes since v2 (thanks to Maxime again):
-- free memory allocated by vmalloc on driver unload
-- set default values in the init code to the ones of the existing ssd1307
-  init code
-- added two ACKs (Maxime Ripard)
-
-changes since v3:
-- use backlight class rather than dedicated sysfs files to set the=20
-  contrast (Thanks to Tomi Valkeinen)
-- remove [PATCHv3 08/10] fbdev: ssd1307fb: Add module parameter bitsperpixel
-- add new patch to blank the display (unreviewed)
-- allocate video memory through __get_free_pages() rather than vmalloc
-  (Thanks to Geert Uytterhoeven)
-- minor rewordings of the commit messages
-
-changes since v4 (thanks to Maxime):
-- added two ACKs (Maxime Ripard)
-- fixed typo: s/REFRASHRATE/REFRESHRATE
-- updated the documentation to make clear the unit of com-offset
-- move addition of the module parameter contrast to a separate patch (09/11)
-- fix indentation errors
-- get rid of device_id in the device_info struct
-
-changes since v5:
-- remove [PATCHv5 09/11] fbdev: ssd1307fb: Add module parameter to set
-  the initial contrast
-- remove unnecessary variable initialization in the deviceinfo struct as
-  pointed out by Maxime
-- make the variable dclk_div hold the actual divider rather than the
-  corresponding bit value
-- remove ret variable in ssd1307fb_blank() (thanks to Olliver Schinagl)
-- fixed bit mask for com_invdir as indicated by Olliver
-- change initialization of the charge pump as suggested by Olliver
-- change the default value for prechargep2 to 0x2 (thanks to Olliver)
-- change DT property name "com-sequential" to "com-seq"
-- added one ACK (Maxime Ripard)
-- added Tested-by Olliver Schinagl
-
-Thomas Niederpr=C3=BCm (10):
-  fbdev: ssd1307fb: fix memory address smem_start.
-  fbdev: ssd1307fb: Allocate page aligned video memory.
-  of: Add Solomon Systech vendor prefix.
-  fbdev: ssd1307fb: Unify init code and obtain hw specific bits from DT
-  ARM: mxs: fix in tree users of ssd1306
-  fbdev: ssd1307fb: Add support for SSD1305
-  fbdev: ssd1307fb: Add a module parameter to set the refresh rate
-  fbdev: ssd1307fb: Turn off display on driver unload.
-  fbdev: ssd1307fb: add backlight controls for setting the contrast
-  fbdev: ssd1307fb: Add blank mode
-
- .../devicetree/bindings/vendor-prefixes.txt        |   1 +
- .../devicetree/bindings/video/ssd1307fb.txt        |  23 +-
- arch/arm/boot/dts/imx28-cfa10036.dts               |   3 +
- drivers/video/fbdev/Kconfig                        |   1 +
- drivers/video/fbdev/ssd1307fb.c                    | 288 +++++++++++++++--=
-----
- 5 files changed, 234 insertions(+), 82 deletions(-)
-
---=20
-2.3.0
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index ba97efc..6ee84c3 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -6,7 +6,7 @@ menu "Console display driver support"
+ 
+ config VGA_CONSOLE
+ 	bool "VGA text console" if EXPERT || !X86
+-	depends on !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && \
++	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC && !FRV && \
+ 		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
+ 		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
+ 		!ARM64
+-- 
+2.1.0
 

@@ -1,72 +1,137 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Wed, 25 Mar 2015 20:06:36 +0000
-Subject: Re: [PATCH v1 04/47] pci: add pci_ioremap_wc_bar()
-Message-Id: <20150325200636.GC12247@wotan.suse.de>
+From: Archit Taneja <architt@codeaurora.org>
+Date: Fri, 13 Mar 2015 06:37:07 +0000
+Subject: Re: [RFC 1/6] drm: Add top level Kconfig option for DRM fbdev emulation
+Message-Id: <550282C3.10903@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
- <1426893517-2511-5-git-send-email-mcgrof@do-not-panic.com>
- <CALCETrXkZipqdY_faY+JOyuqcQKerk_CKH90ChDLTgCJPMKLug@mail.gmail.com>
-In-Reply-To: <CALCETrXkZipqdY_faY+JOyuqcQKerk_CKH90ChDLTgCJPMKLug@mail.gmail.com>
+References: <1425980493-27533-1-git-send-email-architt@codeaurora.org>
+ <1425980493-27533-2-git-send-email-architt@codeaurora.org>
+ <20150310094756.GE3800@phenom.ffwll.local> <54FEBEF1.5000103@codeaurora.org>
+ <20150310100547.GG3800@phenom.ffwll.local> <54FEC5F1.90208@codeaurora.org>
+ <20150310121702.GO3800@phenom.ffwll.local> <54FFFAEE.3020301@codeaurora.org>
+ <20150311151731.GJ3800@phenom.ffwll.local>
+In-Reply-To: <20150311151731.GJ3800@phenom.ffwll.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Juergen Gross <jgross@suse.com>, Jan Beulich <JBeulich@suse.com>, Borislav Petkov <bp@suse.de>, Suresh Siddha <suresh.b.siddha@intel.com>, venkatesh.pallipadi@intel.com, Dave Airlie <airlied@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, X86 ML <x86@kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Jani Nikula <jani.nikula@linux.intel.com>, daniel@ffwll.ch
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, benjamin.gaignard@linaro.org, treding@nvidia.com
 
-On Fri, Mar 20, 2015 at 04:50:32PM -0700, Andy Lutomirski wrote:
-> On Fri, Mar 20, 2015 at 4:17 PM, Luis R. Rodriguez
-> <mcgrof@do-not-panic.com> wrote:
-> > From: "Luis R. Rodriguez" <mcgrof@suse.com>
-> >
-> > This lets drivers take advanate of PAT when available. This
-> > should help with the transition of converting video drivers over
-> > to ioremap_wc() to help with the goal of eventually using
-> > _PAGE_CACHE_UC over _PAGE_CACHE_UC_MINUS on x86 on
-> > ioremap_nocache() (de33c442e)
-> >
-> > Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-> > Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Juergen Gross <jgross@suse.com>
-> > Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> > Cc: Andy Lutomirski <luto@amacapital.net>
-> > Cc: Dave Airlie <airlied@redhat.com>
-> > Cc: Antonino Daplas <adaplas@gmail.com>
-> > Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > Cc: linux-fbdev@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-> > ---
-> >  drivers/pci/pci.c   | 14 ++++++++++++++
-> >  include/linux/pci.h |  1 +
-> >  2 files changed, 15 insertions(+)
-> >
-> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> > index 81f06e8..6afd507 100644
-> > --- a/drivers/pci/pci.c
-> > +++ b/drivers/pci/pci.c
-> > @@ -137,6 +137,20 @@ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar)
-> >                                      pci_resource_len(pdev, bar));
-> >  }
-> >  EXPORT_SYMBOL_GPL(pci_ioremap_bar);
-> > +
-> > +void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar)
-> > +{
-> > +       /*
-> > +        * Make sure the BAR is actually a memory resource, not an IO resource
-> > +        */
-> > +       if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM)) {
-> > +               WARN_ON(1);
-> > +               return NULL;
-> > +       }
-> 
-> if (WARN_ON(...))?
 
-Sure, they are equivalent however this follows the same exact style as
-pci_ioremap_bar() so if we change this one might as well change the style of
-pci_ioremap_bar() as well. Let me know if there is any preference. I personally
-don't mind the extra line as it shortens the check.
 
- Luis
+On 03/11/2015 08:47 PM, Daniel Vetter wrote:
+> On Wed, Mar 11, 2015 at 01:51:02PM +0530, Archit Taneja wrote:
+>>
+>>
+>> On 03/10/2015 05:47 PM, Daniel Vetter wrote:
+>>> On Tue, Mar 10, 2015 at 03:52:41PM +0530, Archit Taneja wrote:
+>>>> On 03/10/2015 03:35 PM, Daniel Vetter wrote:
+>>>>> On Tue, Mar 10, 2015 at 03:22:49PM +0530, Archit Taneja wrote:
+>>>>>> On 03/10/2015 03:17 PM, Daniel Vetter wrote:
+>>>>>>> On Tue, Mar 10, 2015 at 03:11:28PM +0530, Archit Taneja wrote:
+>>>>>>>> diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+>>>>>>>> index 151a050..38f83a0 100644
+>>>>>>>> --- a/drivers/gpu/drm/Kconfig
+>>>>>>>> +++ b/drivers/gpu/drm/Kconfig
+>>>>>>>> @@ -40,6 +40,24 @@ config DRM_KMS_FB_HELPER
+>>>>>>>>   	help
+>>>>>>>>   	  FBDEV helpers for KMS drivers.
+>>>>>>>>
+>>>>>>>> +config DRM_FBDEV_EMULATION
+>>>>>>>> +	bool "Enable legacy fbdev support for your modesetting driver"
+>>>>>>>> +	depends on DRM
+>>>>>>>> +	select DRM_KMS_HELPER
+>>>>>>>> +	select DRM_KMS_FB_HELPER
+>>>>>>>> +	select FB_SYS_FILLRECT
+>>>>>>>> +	select FB_SYS_COPYAREA
+>>>>>>>> +	select FB_SYS_IMAGEBLIT
+>>>>>>>> +	select FB_SYS_FOPS
+>>>>>>>> +	select FB_CFB_FILLRECT
+>>>>>>>> +	select FB_CFB_COPYAREA
+>>>>>>>> +	select FB_CFB_IMAGEBLIT
+>>>>>>>> +	default y
+>>>>>>>> +	help
+>>>>>>>> +	  Choose this option if you have a need for the legacy fbdev
+>>>>>>>> +	  support. Note that this support also provide the linux console
+>>>>>>>> +	  support on top of your modesetting driver.
+>>>>>>>
+>>>>>>> Maybe clarify that for linux console support you also need
+>>>>>>> CONFIG_FRAMEBUFFER_CONSOLE? fbdev alone isn't enough.
+>>>>>>
+>>>>>> DRM_KMS_FB_HELPER selects that for us, right?
+>>>>>
+>>>>> Hm right I've missed that. Reminds me that you need one more patch at the
+>>>>> end to remove all the various select DRM_KMS_FB_HELPER from all drm
+>>>>> drivers. Otherwise this knob here won't work by default if you e.g. select
+>>>>> radeon. In general we can't mix explicit options with menu entries with a
+>>>>> select.
+>>>>
+>>>> I was trying that out. Removing DRM_KMS_FB_HELPER and having
+>>>> DRM_FBDEV_EMULATION disabled breaks drivers which use FB stuff internally in
+>>>> their respective xyz_fbdev.c files.
+>>>
+>>> But with the stubbed out functions that should work, right? Why doesn't
+>>> it?
+>>
+>> There are still calls to functions from fb core like fb_set_suspend and
+>> register_framebuffer which aren't covered by the drm fb helper functions.
+>
+> Hm, sounds like we need another patch to stub out fb_set_suspend when
+> fbdev isn't enabled. Is there anything else?
+
+There are a handful of fb core functions which are called by drm drivers:
+
+fb_alloc_cmap/fb_dealloc_cmap
+
+fb_sys_read/fb_sys_write
+
+register_framebuffer/unregister_framebuffer/unlink_framebuffer/
+remove_conflicting_framebuffers
+
+fb_set_suspend
+
+fb_deferred_io_init/fb_deferred_io_cleanup
+
+framebuffer_alloc/framebuffer_release
+
+
+>
+>>>> Are you saying that we should remove DRM_KMS_FB_HELPER for such drivers and
+>>>> replace them with 'select DRM_FBDEV_EMULATION'?
+>>>>
+>>>> Another option would be to provide #ifdef DRM_FBDEV_EMULATION wrap-arounds
+>>>> for fb related function calls/declarations in each driver, something that's
+>>>> already done for i915 and msm drivers.
+>>>
+>>> The problem with the patch as-is the massive amounts of selects the FB
+>>> helper still has. We need to get rid of them so that when you disable
+>>> fbdev emulation you can indeed disable fbcon and the entire fbdev
+>>> subsystem. I've thought that remove the hidden symbol DRM_KMS_FB_HELPER
+>>> and moving all the selects to DRM_FBDEV_EMULATION should work out? If that
+>>> doesn't work we need to look again how to better stub things out I think.
+>>
+>> That's true. Also, as Jani pointed out, maybe it isn't the best idea to make
+>> every kms driver select DRM_FBDEV_EMULATION?
+>>
+>> Maybe the drivers that are currently built with fbdev emulation by default
+>> can add a 'depends on DRM_FBDEV_EMULATION'? Since the config defaults to y,
+>> the drivers should run as is. Later, we could take up each driver and build
+>> the fb stuff only when DRM_FBDEV_EMULATION is set, like how we do for i915
+>> and msm?
+>
+> Yeah we definitely can't mix select with a user-visible option. I think we
+> just need to fix up the remaining functions and create stubs for them if
+> needed and then drop all the selects. Well in DRM_FBDEV_EMULATION we
+> should still select for fbcon since otherwise tons of bug reports about
+> "where is my fbcon with kms?".
+
+I'll give this a try. Although, it would be a better idea to make the 
+drivers not call these at all when fbdev emulation isn't asked for. With 
+the stubs, if someone does try to use the driver with 
+DRM_FBDEV_EMULATION not set, the worst that'll happen would be that the 
+driver fails to probe. Which isn't so bad.
+
+Archit
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project

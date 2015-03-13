@@ -1,59 +1,28 @@
-From: Ragavendra BN <ragavendra.bn@gmail.com>
-Date: Fri, 13 Mar 2015 06:11:27 +0000
-Subject: [PATCH] staging: sm750fb: braces, indents, spaces fix
-Message-Id: <20150313061127.GA30820@localhost.localdomain>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 13 Mar 2015 07:45:24 +0000
+Subject: Re: [PATCH] staging: sm750fb: braces, indents, spaces fix
+Message-Id: <20150313074524.GE10964@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150313034333.GA10618@localhost.localdomain>
-In-Reply-To: <20150313034333.GA10618@localhost.localdomain>
+References: <20150313061127.GA30820@localhost.localdomain>
+In-Reply-To: <20150313061127.GA30820@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Ragavendra BN <ragavendra.bn@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-This patch removes the braces for the single line if statement. It fixes
-the indent positions correctly. It fixes the spaces appropriately making the code give no
-warnings by the checpath.pl script check. Please accept.
+On Thu, Mar 12, 2015 at 11:11:27PM -0700, Ragavendra BN wrote:
+> This patch removes the braces for the single line if statement. It fixes
+> the indent positions correctly. It fixes the spaces appropriately making the code give no
+> warnings by the checpath.pl script check. Please accept.
+                                            ^^^^^^^^^^^^^^
+Don't put this in the changelog.
 
-Signed-off-by: Ragavendra BN <ragavendra.bn@gmail.com>
----
- drivers/staging/sm750fb/ddk750_chip.c |   22 ++++++++--------------
- 1 file changed, 8 insertions(+), 14 deletions(-)
+> 
+> Signed-off-by: Ragavendra BN <ragavendra.bn@gmail.com>
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index b71169e..041a05a 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -20,22 +20,16 @@ logical_chip_type_t getChipType()
- 	physicalID = devId750;//either 0x718 or 0x750
- 	physicalRev = revId750;
- 
--    if (physicalID = 0x718)
--    {
--        chip = SM718;
--    }
--    else if (physicalID = 0x750)
--    {
--        chip = SM750;
-+	if (physicalID = 0x718) {
-+		chip = SM718;
-+	} else if (physicalID = 0x750) {
-+		chip = SM750;
- 		/* SM750 and SM750LE are different in their revision ID only. */
--		if (physicalRev = SM750LE_REVISION_ID){
-+		if (physicalRev = SM750LE_REVISION_ID)
- 			chip = SM750LE;
--		}
--    }
--    else
--    {
--        chip = SM_UNKNOWN;
--    }
-+	} else {
-+		chip = SM_UNKNOWN;
-+	}
- 
- 	return chip;
- }
--- 
-1.7.10.4
+Is your name *really* BN?
+
+regards,
+dan carpenter
 

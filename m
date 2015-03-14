@@ -1,33 +1,37 @@
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Tue, 10 Mar 2015 15:08:36 +0000
-Subject: Re: [PATCH] staging: sm750fb: Cleanup the type of mmio750
-Message-Id: <CAA5enKYSWZtN6bir3M98f_6GPa+aijmXxMd-10nD-H7czPRccw@mail.gmail.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Sat, 14 Mar 2015 15:38:39 +0000
+Subject: [PATCH] video: fbdev: sh_mobile_lcdcfb: Fix ROP3 sysfs attribute parsing
+Message-Id: <1426347519-2541-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425981426-20680-1-git-send-email-lstoakes@gmail.com>
-	<20150310114030.GP10964@mwanda>
-	<20150310123633.GA2782@sudip-PC>
-	<CAA5enKZMZDVzEjZG1mccn089MEN3AvSQc+TECc6vMZBKB06TRA@mail.gmail.com>
-	<20150310150454.GA22451@kroah.com>
-In-Reply-To: <20150310150454.GA22451@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, teddy.wang@siliconmotion.com, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>
+To: linux-fbdev@vger.kernel.org
 
-On 10 March 2015 at 15:04, Greg KH <gregkh@linuxfoundation.org> wrote:
-> I can't apply patches that add new build warnings, sorry.  Please fix
-> this up in the patch itself.
->
-> greg k-h
+The ROP3 attribute is expressed as an integer in the 0-255 range. Remove
+the wrong conversion to boolean when parsing it.
 
-Hi Greg,
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+---
+ drivers/video/fbdev/sh_mobile_lcdcfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Apologies for this, I've resolved this issue in v2 of the patch, no
-warning messages are added in the updated version of this patch.
-
-Best,
-
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index d3013cd9f976..23421ec1c4e4 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -1461,7 +1461,7 @@ overlay_rop3_store(struct device *dev, struct device_attribute *attr,
+ 	unsigned int rop3;
+ 	char *endp;
+ 
+-	rop3 = !!simple_strtoul(buf, &endp, 10);
++	rop3 = simple_strtoul(buf, &endp, 10);
+ 	if (isspace(*endp))
+ 		endp++;
+ 
 -- 
-Lorenzo Stoakes
-https:/ljs.io
+Regards,
+
+Laurent Pinchart
+

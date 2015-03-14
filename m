@@ -1,28 +1,20 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 13 Mar 2015 07:45:24 +0000
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Sat, 14 Mar 2015 08:39:42 +0000
 Subject: Re: [PATCH] staging: sm750fb: braces, indents, spaces fix
-Message-Id: <20150313074524.GE10964@mwanda>
+Message-Id: <20150314083942.GA7841@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20150313061127.GA30820@localhost.localdomain>
-In-Reply-To: <20150313061127.GA30820@localhost.localdomain>
+ <20150313074524.GE10964@mwanda>
+ <CAPBgb4=np7Bs=sMTZHpZZ1Ef7uriUDYjjz6Y7+49Vs1rOVo59w@mail.gmail.com>
+In-Reply-To: <CAPBgb4=np7Bs=sMTZHpZZ1Ef7uriUDYjjz6Y7+49Vs1rOVo59w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ragavendra BN <ragavendra.bn@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Ragavendra <ragavendra.bn@gmail.com>
+Cc: Dan Carpenter <dan.carpenter@oracle.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, teddy.wang@siliconmotion.com, linux-fbdev <linux-fbdev@vger.kernel.org>, devel <devel@driverdev.osuosl.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-On Thu, Mar 12, 2015 at 11:11:27PM -0700, Ragavendra BN wrote:
-> This patch removes the braces for the single line if statement. It fixes
-> the indent positions correctly. It fixes the spaces appropriately making the code give no
-> warnings by the checpath.pl script check. Please accept.
-                                            ^^^^^^^^^^^^^^
-Don't put this in the changelog.
+On Fri, Mar 13, 2015 at 09:01:48AM -0700, Ragavendra wrote:
+> BN is my initial, should it be expanded?
 
-> 
-> Signed-off-by: Ragavendra BN <ragavendra.bn@gmail.com>
-
-Is your name *really* BN?
-
-regards,
-dan carpenter
+Yes.
 

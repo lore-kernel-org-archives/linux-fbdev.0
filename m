@@ -1,67 +1,88 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Wed, 18 Mar 2015 17:38:05 +0000
-Subject: Re: [PATCHv4 02/10] fbdev: ssd1307fb: Allocate page aligned video memory.
-Message-Id: <20150318173805.GU4638@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="0rpW5bEisVBStM29"
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Mon, 16 Mar 2015 17:11:55 +0000
+Subject: [PATCHv4 07/10] fbdev: ssd1307fb: Add a module parameter to set the refresh rate
+Message-Id: <1426525918-12745-8-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
  <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
- <1426525918-12745-3-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1426525918-12745-3-git-send-email-niederp@physik.uni-kl.de>
-To: Thomas =?iso-8859-1?Q?Niederpr=FCm?= <niederp@physik.uni-kl.de>
-Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-
-
---0rpW5bEisVBStM29
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+In-Reply-To: <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-On Mon, Mar 16, 2015 at 06:11:50PM +0100, Thomas Niederpr=FCm wrote:
-> Currently the videomemory is allocated by kmalloc, making it a memory
-> region that is not necessarily page aligend. This leads to problems
-> upon mmap call, where the video memory's address gets aligned to the
-> next page boundary. The result is that the userspace program that issued
-> the mmap call is not able to access the video memory from the start to
-> the next page boundary.
->=20
-> This patch changes the allocation of the video memory to use
-> __get_free_pages() in order to obtain memory that is aligned
-> to page boundaries.
->=20
-> Signed-off-by: Thomas Niederpr=FCm <niederp@physik.uni-kl.de>
+This patch adds the module parameter "refreshrate" to set delay for the
+deferred io. The refresh rate is given in units of Hertz. The default
+refresh rate is 1 Hz. The refresh rate set through the newly introduced
+parameter applies to all instances of the driver and for now it is not
+possible to change it individually.
 
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+---
+ drivers/video/fbdev/ssd1307fb.c | 23 +++++++++++++++++------
+ 1 file changed, 17 insertions(+), 6 deletions(-)
 
-Thanks!
-Maxime
-
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index 6fecec8..8a8d305 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -42,6 +42,11 @@
+ #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
+ #define	SSD1307FB_SET_VCOMH		0xdb
+=20
++#define REFRASHRATE 1
++
++static u_int refreshrate =3D REFRASHRATE;
++module_param(refreshrate, uint, 0);
++
+ static u_int contrast =3D 128;
+ module_param(contrast, uint, S_IRUGO);
+=20
+@@ -269,11 +274,6 @@ static void ssd1307fb_deferred_io(struct fb_info *info,
+ 	ssd1307fb_update_display(info->par);
+ }
+=20
+-static struct fb_deferred_io ssd1307fb_defio =3D {
+-	.delay		=3D HZ,
+-	.deferred_io	=3D ssd1307fb_deferred_io,
+-};
+-
+ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ {
+ 	int ret;
+@@ -474,6 +474,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ {
+ 	struct fb_info *info;
+ 	struct device_node *node =3D client->dev.of_node;
++	struct fb_deferred_io *ssd1307fb_defio;
+ 	u32 vmem_size;
+ 	struct ssd1307fb_par *par;
+ 	u8 *vmem;
+@@ -544,10 +545,20 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 		goto fb_alloc_error;
+ 	}
+=20
++	ssd1307fb_defio =3D devm_kzalloc(&client->dev, sizeof(struct fb_deferred_=
+io), GFP_KERNEL);
++	if (!ssd1307fb_defio) {
++		dev_err(&client->dev, "Couldn't allocate deferred io.\n");
++		ret =3D -ENOMEM;
++		goto fb_alloc_error;
++	}
++
++	ssd1307fb_defio->delay =3D HZ / refreshrate;
++	ssd1307fb_defio->deferred_io =3D ssd1307fb_deferred_io;
++
+ 	info->fbops =3D &ssd1307fb_ops;
+ 	info->fix =3D ssd1307fb_fix;
+ 	info->fix.line_length =3D par->width / 8;
+-	info->fbdefio =3D &ssd1307fb_defio;
++	info->fbdefio =3D ssd1307fb_defio;
+=20
+ 	info->var =3D ssd1307fb_var;
+ 	info->var.xres =3D par->width;
 --=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+2.3.0
 
---0rpW5bEisVBStM29
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVCbf9AAoJEBx+YmzsjxAgc/QQAI0MT2zaNSG993YVqd20/9DM
-ktIacRncdLBUcfxUJy3E43bPLXl3l/Tuz/oIqw36HvQBPx9118AQVWropvQqgIUr
-PYXkEXXgxfB38/EmcpuHzCO2iCw22e9IbSYk0wehGxUjpSuVqPGn7hr3KNbaUDGd
-LC70h50TecAgvzv5+etr8IwVXI6AQ/al9UVHu+R2FGA5nLp9imKBxsWZRoS65pTo
-+FwCPZSFhbte4KYzRIAjyOPnPn6HrqdtE1ji9saTRUsxjmsoYNo1wflJBijbn6e9
-oXbs8wNCTMKvrm8Ud9Dzr/xagtgJTAyCwpCq90ZvtcrszSNA5ZI4Z/morO/7Vql6
-C/17URq+FldB9ZPfZYN9n1+V1YTg+Y4eNCzJXqBNHQRUmYvDs5C7UkZRkrIRv3kQ
-eF00y+zSl6wX87bk1zUjdNmANA1j6L58LloRhr8FzwuUQM/i+eplpjjVCbbw+m4w
-G9aCY2JxuWXvy7HbiI0oeJw+s+xlh5xT4keNlEVwgqKKGrLmWm00bYPsIePcPnS3
-SlRZwiXJSToslPXy1ff6gDJjG7rCh4DIJm8Mm9pgw3fwpU0IY229WVN/iT/66CE7
-ZycNwjJxA2vDtmbKD6qOuqecw+2mWxUlH41UCG0UmoEmZGSrkRDu5PYrfoHTJAsb
-51GK7cM/FqeW+7laE+8k
-=kNaK
------END PGP SIGNATURE-----
-
---0rpW5bEisVBStM29--

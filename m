@@ -1,264 +1,639 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 09 Mar 2015 09:40:12 +0000
-Subject: Re: [PATCH v11 1/6] mfd: Add support for Skyworks SKY81452 driver
-Message-Id: <20150309094012.GL3427@x1>
+From: Ragavendra Nagraj <ragavendra.bn@gmail.com>
+Date: Mon, 16 Mar 2015 00:21:09 +0000
+Subject: [PATCH] staging:sm750fb:Fixed no space and indent warnings
+Message-Id: <20150316002109.GA6640@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
- <1425019346-4559-2-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1425019346-4559-2-git-send-email-jack.yoo-tjhQNA90jdKqndwCJWfcng@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: gyungoh-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, florian.vaussard-p8DiymsW2f8@public.gmane.org, andrew-g2DYL2Zd6BY@public.gmane.org, antonynpavlov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hytszk-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, jack.yoo-tjhQNA90jdKqndwCJWfcng@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, arno-LkuqDEemtHBg9hUCZPvPmw@public.gmane.org, kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-Applied, thanks.
+This patch fixes the no spaces and indent warnings identified by the
+checkpath.pl script for the entire ddk750_chip.c file by using appropriate tab
+spaces and indents accordingly.
 
-On Fri, 27 Feb 2015, gyungoh@gmail.com wrote:
+Signed-off-by: Ragavendra Nagraj <ragavendra.bn@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c |  454 ++++++++++++++++-----------------
+ 1 file changed, 227 insertions(+), 227 deletions(-)
 
-> From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
->=20
-> Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-> ---
-> Changes v11:
-> Nothing
->=20
-> Changes v10:
-> Nothing
->=20
-> Changes v9:
-> Nothing
->=20
-> Changes v8:
-> Nothing
->=20
-> Changes v7:
-> Modified licensing text to GPLv2
->=20
-> Changes v6:
-> Added new line character at the end of line of dev_err()
->=20
-> Changes v5:
-> Move sky81452-backlight.h to include/linux/platform_data
->=20
-> Changes v4:
-> Removed MODULE_VERSION()
-> Modified license to GPLv2
->=20
-> Changes v3:
-> Fixed the backlight name from 'sky81452-bl' to 'sky81452-backlight'
-> Assigned mfd_cell.of_compatible for binding device node
-> Modified error messages
->=20
-> Changes v2:
-> Renamed CONFIG_SKY81452 to CONFIG_MFD_SKY81452
-> Changed the dependency from I2C=3Dy to I2C, for CONFIG_MFD_SKY81452
-> Added message for exception or errors
->=20
->  drivers/mfd/Kconfig          |  12 +++++
->  drivers/mfd/Makefile         |   1 +
->  drivers/mfd/sky81452.c       | 108 +++++++++++++++++++++++++++++++++++++=
-++++++
->  include/linux/mfd/sky81452.h |  31 +++++++++++++
->  4 files changed, 152 insertions(+)
->  create mode 100644 drivers/mfd/sky81452.c
->  create mode 100644 include/linux/mfd/sky81452.h
->=20
-> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> index 38356e3..bc3b540 100644
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -753,6 +753,18 @@ config MFD_SM501_GPIO
->  	 lines on the SM501. The platform data is used to supply the
->  	 base number for the first GPIO line to register.
-> =20
-> +config MFD_SKY81452
-> +	tristate "Skyworks Solutions SKY81452"
-> +	select MFD_CORE
-> +	select REGMAP_I2C
-> +	depends on I2C
-> +	help
-> +	  This is the core driver for the Skyworks SKY81452 backlight and
-> +	  voltage regulator device.
-> +
-> +	  This driver can also be built as a module.  If so, the module
-> +	  will be called sky81452.
-> +
->  config MFD_SMSC
->         bool "SMSC ECE1099 series chips"
->         depends on I2C=3Dy
-> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> index 19f3d74..75b3ffb 100644
-> --- a/drivers/mfd/Makefile
-> +++ b/drivers/mfd/Makefile
-> @@ -178,6 +178,7 @@ obj-$(CONFIG_MFD_MENF21BMC)	+=3D menf21bmc.o
->  obj-$(CONFIG_MFD_HI6421_PMIC)	+=3D hi6421-pmic-core.o
->  obj-$(CONFIG_MFD_DLN2)		+=3D dln2.o
->  obj-$(CONFIG_MFD_RT5033)	+=3D rt5033.o
-> +obj-$(CONFIG_MFD_SKY81452)	+=3D sky81452.o
-> =20
->  intel-soc-pmic-objs		:=3D intel_soc_pmic_core.o intel_soc_pmic_crc.o
->  obj-$(CONFIG_INTEL_SOC_PMIC)	+=3D intel-soc-pmic.o
-> diff --git a/drivers/mfd/sky81452.c b/drivers/mfd/sky81452.c
-> new file mode 100644
-> index 0000000..b0c9b04
-> --- /dev/null
-> +++ b/drivers/mfd/sky81452.c
-> @@ -0,0 +1,108 @@
-> +/*
-> + * sky81452.c	SKY81452 MFD driver
-> + *
-> + * Copyright 2014 Skyworks Solutions Inc.
-> + * Author : Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify =
-it
-> + * under the terms of the GNU General Public License version 2
-> + * as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License alo=
-ng
-> + * with this program; if not, see <http://www.gnu.org/licenses/>.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/err.h>
-> +#include <linux/slab.h>
-> +#include <linux/i2c.h>
-> +#include <linux/regmap.h>
-> +#include <linux/mfd/core.h>
-> +#include <linux/mfd/sky81452.h>
-> +
-> +static const struct regmap_config sky81452_config =3D {
-> +	.reg_bits =3D 8,
-> +	.val_bits =3D 8,
-> +};
-> +
-> +static int sky81452_probe(struct i2c_client *client,
-> +				const struct i2c_device_id *id)
-> +{
-> +	struct device *dev =3D &client->dev;
-> +	const struct sky81452_platform_data *pdata =3D dev_get_platdata(dev);
-> +	struct mfd_cell cells[2];
-> +	struct regmap *regmap;
-> +	int ret;
-> +
-> +	if (!pdata) {
-> +		pdata =3D devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
-> +		if (!pdata)
-> +			return -ENOMEM;
-> +	}
-> +
-> +	regmap =3D devm_regmap_init_i2c(client, &sky81452_config);
-> +	if (IS_ERR(regmap)) {
-> +		dev_err(dev, "failed to initialize.err=3D%ld\n", PTR_ERR(regmap));
-> +		return PTR_ERR(regmap);
-> +	}
-> +
-> +	i2c_set_clientdata(client, regmap);
-> +
-> +	memset(cells, 0, sizeof(cells));
-> +	cells[0].name =3D "sky81452-backlight";
-> +	cells[0].of_compatible =3D "skyworks,sky81452-backlight";
-> +	cells[0].platform_data =3D pdata->bl_pdata;
-> +	cells[0].pdata_size =3D sizeof(*pdata->bl_pdata);
-> +	cells[1].name =3D "sky81452-regulator";
-> +	cells[1].platform_data =3D pdata->regulator_init_data;
-> +	cells[1].pdata_size =3D sizeof(*pdata->regulator_init_data);
-> +
-> +	ret =3D mfd_add_devices(dev, -1, cells, ARRAY_SIZE(cells), NULL, 0, NUL=
-L);
-> +	if (ret)
-> +		dev_err(dev, "failed to add child devices. err=3D%d\n", ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static int sky81452_remove(struct i2c_client *client)
-> +{
-> +	mfd_remove_devices(&client->dev);
-> +	return 0;
-> +}
-> +
-> +static const struct i2c_device_id sky81452_ids[] =3D {
-> +	{ "sky81452" },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(i2c, sky81452_ids);
-> +
-> +#ifdef CONFIG_OF
-> +static const struct of_device_id sky81452_of_match[] =3D {
-> +	{ .compatible =3D "skyworks,sky81452", },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(of, sky81452_of_match);
-> +#endif
-> +
-> +static struct i2c_driver sky81452_driver =3D {
-> +	.driver =3D {
-> +		.name =3D "sky81452",
-> +		.of_match_table =3D of_match_ptr(sky81452_of_match),
-> +	},
-> +	.probe =3D sky81452_probe,
-> +	.remove =3D sky81452_remove,
-> +	.id_table =3D sky81452_ids,
-> +};
-> +
-> +module_i2c_driver(sky81452_driver);
-> +
-> +MODULE_DESCRIPTION("Skyworks SKY81452 MFD driver");
-> +MODULE_AUTHOR("Gyungoh Yoo <jack.yoo@skyworksinc.com>");
-> +MODULE_LICENSE("GPL v2");
-> diff --git a/include/linux/mfd/sky81452.h b/include/linux/mfd/sky81452.h
-> new file mode 100644
-> index 0000000..b0925fa
-> --- /dev/null
-> +++ b/include/linux/mfd/sky81452.h
-> @@ -0,0 +1,31 @@
-> +/*
-> + * sky81452.h	SKY81452 MFD driver
-> + *
-> + * Copyright 2014 Skyworks Solutions Inc.
-> + * Author : Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify =
-it
-> + * under the terms of the GNU General Public License version 2
-> + * as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License alo=
-ng
-> + * with this program; if not, see <http://www.gnu.org/licenses/>.
-> + */
-> +
-> +#ifndef _SKY81452_H
-> +#define _SKY81452_H
-> +
-> +#include <linux/platform_data/sky81452-backlight.h>
-> +#include <linux/regulator/machine.h>
-> +
-> +struct sky81452_platform_data {
-> +	struct sky81452_bl_platform_data *bl_pdata;
-> +	struct regulator_init_data *regulator_init_data;
-> +};
-> +
-> +#endif
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index b71169e..5c9a118 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -20,22 +20,22 @@ logical_chip_type_t getChipType()
+ 	physicalID = devId750;//either 0x718 or 0x750
+ 	physicalRev = revId750;
+ 
+-    if (physicalID = 0x718)
+-    {
+-        chip = SM718;
+-    }
+-    else if (physicalID = 0x750)
+-    {
+-        chip = SM750;
++	if (physicalID = 0x718)
++	{
++		chip = SM718;
++	}
++	else if (physicalID = 0x750)
++	{
++		chip = SM750;
+ 		/* SM750 and SM750LE are different in their revision ID only. */
+ 		if (physicalRev = SM750LE_REVISION_ID){
+ 			chip = SM750LE;
+ 		}
+-    }
+-    else
+-    {
+-        chip = SM_UNKNOWN;
+-    }
++	}
++	else
++	{
++		chip = SM_UNKNOWN;
++	}
+ 
+ 	return chip;
+ }
+@@ -43,63 +43,63 @@ logical_chip_type_t getChipType()
+ 
+ inline unsigned int twoToPowerOfx(unsigned long x)
+ {
+-    unsigned long i;
+-    unsigned long result = 1;
++	unsigned long i;
++	unsigned long result = 1;
+ 
+-    for (i=1; i<=x; i++)
+-        result *= 2;
+-    return result;
++	for (i=1; i<=x; i++)
++		result *= 2;
++	return result;
+ }
+ 
+ inline unsigned int calcPLL(pll_value_t *pPLL)
+ {
+-    return (pPLL->inputFreq * pPLL->M / pPLL->N / twoToPowerOfx(pPLL->OD) / twoToPowerOfx(pPLL->POD));
++	return (pPLL->inputFreq * pPLL->M / pPLL->N / twoToPowerOfx(pPLL->OD) / twoToPowerOfx(pPLL->POD));
+ }
+ 
+ unsigned int getPllValue(clock_type_t clockType, pll_value_t *pPLL)
+ {
+-    unsigned int ulPllReg = 0;
+-
+-    pPLL->inputFreq = DEFAULT_INPUT_CLOCK;
+-    pPLL->clockType = clockType;
+-
+-    switch (clockType)
+-    {
+-        case MXCLK_PLL:
+-            ulPllReg = PEEK32(MXCLK_PLL_CTRL);
+-            break;
+-        case PRIMARY_PLL:
+-            ulPllReg = PEEK32(PANEL_PLL_CTRL);
+-            break;
+-        case SECONDARY_PLL:
+-            ulPllReg = PEEK32(CRT_PLL_CTRL);
+-            break;
+-        case VGA0_PLL:
+-            ulPllReg = PEEK32(VGA_PLL0_CTRL);
+-            break;
+-        case VGA1_PLL:
+-            ulPllReg = PEEK32(VGA_PLL1_CTRL);
+-            break;
+-    }
+-
+-    pPLL->M = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, M);
+-    pPLL->N = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, N);
+-    pPLL->OD = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, OD);
+-    pPLL->POD = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, POD);
+-
+-    return calcPLL(pPLL);
++	unsigned int ulPllReg = 0;
++
++	pPLL->inputFreq = DEFAULT_INPUT_CLOCK;
++	pPLL->clockType = clockType;
++
++	switch (clockType)
++	{
++	case MXCLK_PLL:
++		ulPllReg = PEEK32(MXCLK_PLL_CTRL);
++		break;
++	case PRIMARY_PLL:
++		ulPllReg = PEEK32(PANEL_PLL_CTRL);
++		break;
++	case SECONDARY_PLL:
++		ulPllReg = PEEK32(CRT_PLL_CTRL);
++		break;
++	case VGA0_PLL:
++		ulPllReg = PEEK32(VGA_PLL0_CTRL);
++		break;
++	case VGA1_PLL:
++		ulPllReg = PEEK32(VGA_PLL1_CTRL);
++		break;
++	}
++
++	pPLL->M = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, M);
++	pPLL->N = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, N);
++	pPLL->OD = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, OD);
++	pPLL->POD = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, POD);
++
++	return calcPLL(pPLL);
+ }
+ 
+ 
+ unsigned int getChipClock()
+ {
+-    pll_value_t pll;
++	pll_value_t pll;
+ #if 1
+ 	if(getChipType() = SM750LE)
+ 		return MHz(130);
+ #endif
+ 
+-    return getPllValue(MXCLK_PLL, &pll);
++	return getPllValue(MXCLK_PLL, &pll);
+ }
+ 
+ 
+@@ -110,75 +110,75 @@ unsigned int getChipClock()
+  */
+ void setChipClock(unsigned int frequency)
+ {
+-    pll_value_t pll;
+-    unsigned int ulActualMxClk;
++	pll_value_t pll;
++	unsigned int ulActualMxClk;
+ #if 1
+ 		/* Cheok_0509: For SM750LE, the chip clock is fixed. Nothing to set. */
+ 		if (getChipType() = SM750LE)
+ 			return;
+ #endif
+ 
+-    if (frequency != 0)
+-    {
+-        /*
+-         * Set up PLL, a structure to hold the value to be set in clocks.
+-         */
+-        pll.inputFreq = DEFAULT_INPUT_CLOCK; /* Defined in CLOCK.H */
+-        pll.clockType = MXCLK_PLL;
+-
+-        /*
+-         * Call calcPllValue() to fill up the other fields for PLL structure.
+-         * Sometime, the chip cannot set up the exact clock required by User.
+-         * Return value from calcPllValue() gives the actual possible clock.
+-         */
+-        ulActualMxClk = calcPllValue(frequency, &pll);
+-
+-        /* Master Clock Control: MXCLK_PLL */
+-        POKE32(MXCLK_PLL_CTRL, formatPllReg(&pll));
+-    }
++	if (frequency != 0)
++		{
++		/*
++		* Set up PLL, a structure to hold the value to be set in clocks.
++		*/
++		pll.inputFreq = DEFAULT_INPUT_CLOCK; /* Defined in CLOCK.H */
++		pll.clockType = MXCLK_PLL;
++
++		/*
++		* Call calcPllValue() to fill up the other fields for PLL structure.
++		* Sometime, the chip cannot set up the exact clock required by User.
++		* Return value from calcPllValue() gives the actual possible clock.
++		*/
++		ulActualMxClk = calcPllValue(frequency, &pll);
++
++		/* Master Clock Control: MXCLK_PLL */
++		POKE32(MXCLK_PLL_CTRL, formatPllReg(&pll));
++	}
+ }
+ 
+ 
+ 
+ void setMemoryClock(unsigned int frequency)
+ {
+-    unsigned int ulReg, divisor;
++	unsigned int ulReg, divisor;
+  #if 1
+ 	/* Cheok_0509: For SM750LE, the memory clock is fixed. Nothing to set. */
+ 	if (getChipType() = SM750LE)
+ 		return;
+ #endif
+-    if (frequency != 0)
+-    {
+-        /* Set the frequency to the maximum frequency that the DDR Memory can take
+-           which is 336MHz. */
+-        if (frequency > MHz(336))
+-            frequency = MHz(336);
+-
+-        /* Calculate the divisor */
+-        divisor = (unsigned int) roundedDiv(getChipClock(), frequency);
+-
+-        /* Set the corresponding divisor in the register. */
+-        ulReg = PEEK32(CURRENT_GATE);
+-        switch(divisor)
+-        {
+-            default:
+-            case 1:
+-                ulReg = FIELD_SET(ulReg, CURRENT_GATE, M2XCLK, DIV_1);
+-                break;
+-            case 2:
+-                ulReg = FIELD_SET(ulReg, CURRENT_GATE, M2XCLK, DIV_2);
+-                break;
+-            case 3:
+-                ulReg = FIELD_SET(ulReg, CURRENT_GATE, M2XCLK, DIV_3);
+-                break;
+-            case 4:
+-                ulReg = FIELD_SET(ulReg, CURRENT_GATE, M2XCLK, DIV_4);
+-                break;
+-        }
+-
+-        setCurrentGate(ulReg);
+-    }
++	if (frequency != 0)
++		{
++		/* Set the frequency to the maximum frequency that the DDR Memory can take
++		which is 336MHz. */
++		if (frequency > MHz(336))
++			frequency = MHz(336);
++
++		/* Calculate the divisor */
++		divisor = (unsigned int) roundedDiv(getChipClock(), frequency);
++
++		/* Set the corresponding divisor in the register. */
++		ulReg = PEEK32(CURRENT_GATE);
++		switch(divisor)
++		{
++			default:
++			case 1:
++				ulReg = FIELD_SET(ulReg, CURRENT_GATE, M2XCLK, DIV_1);
++				break;
++			case 2:
++				ulReg = FIELD_SET(ulReg, CURRENT_GATE, M2XCLK, DIV_2);
++				break;
++			case 3:
++				ulReg = FIELD_SET(ulReg, CURRENT_GATE, M2XCLK, DIV_3);
++				break;
++			case 4:
++				ulReg = FIELD_SET(ulReg, CURRENT_GATE, M2XCLK, DIV_4);
++				break;
++		}
++
++		setCurrentGate(ulReg);
++		}
+ }
+ 
+ 
+@@ -192,43 +192,43 @@ void setMemoryClock(unsigned int frequency)
+  */
+ void setMasterClock(unsigned int frequency)
+ {
+-    unsigned int ulReg, divisor;
++	unsigned int ulReg, divisor;
+   #if 1
+ 	/* Cheok_0509: For SM750LE, the memory clock is fixed. Nothing to set. */
+ 	if (getChipType() = SM750LE)
+ 		return;
+ #endif
+-    if (frequency != 0)
+-    {
+-        /* Set the frequency to the maximum frequency that the SM750 engine can
+-           run, which is about 190 MHz. */
+-        if (frequency > MHz(190))
+-            frequency = MHz(190);
+-
+-        /* Calculate the divisor */
+-        divisor = (unsigned int) roundedDiv(getChipClock(), frequency);
+-
+-        /* Set the corresponding divisor in the register. */
+-        ulReg = PEEK32(CURRENT_GATE);
+-        switch(divisor)
+-        {
+-            default:
+-            case 3:
+-                ulReg = FIELD_SET(ulReg, CURRENT_GATE, MCLK, DIV_3);
+-                break;
+-            case 4:
+-                ulReg = FIELD_SET(ulReg, CURRENT_GATE, MCLK, DIV_4);
+-                break;
+-            case 6:
+-                ulReg = FIELD_SET(ulReg, CURRENT_GATE, MCLK, DIV_6);
+-                break;
+-            case 8:
+-                ulReg = FIELD_SET(ulReg, CURRENT_GATE, MCLK, DIV_8);
+-                break;
+-        }
+-
+-        setCurrentGate(ulReg);
+-    }
++	if (frequency != 0)
++		{
++		/* Set the frequency to the maximum frequency that the SM750 engine can
++		run, which is about 190 MHz. */
++		if (frequency > MHz(190))
++			frequency = MHz(190);
++
++		/* Calculate the divisor */
++		divisor = (unsigned int) roundedDiv(getChipClock(), frequency);
++
++		/* Set the corresponding divisor in the register. */
++		ulReg = PEEK32(CURRENT_GATE);
++		switch(divisor)
++		{
++			default:
++			case 3:
++				ulReg = FIELD_SET(ulReg, CURRENT_GATE, MCLK, DIV_3);
++				break;
++			case 4:
++				ulReg = FIELD_SET(ulReg, CURRENT_GATE, MCLK, DIV_4);
++				break;
++			case 6:
++				ulReg = FIELD_SET(ulReg, CURRENT_GATE, MCLK, DIV_6);
++				break;
++			case 8:
++				ulReg = FIELD_SET(ulReg, CURRENT_GATE, MCLK, DIV_8);
++				break;
++		}
++
++		setCurrentGate(ulReg);
++		}
+ }
+ 
+ 
+@@ -249,11 +249,11 @@ unsigned int ddk750_getVMSize()
+ 	/* get frame buffer size from GPIO */
+ 	reg = FIELD_GET(PEEK32(MISC_CTRL),MISC_CTRL,LOCALMEM_SIZE);
+ 	switch(reg){
+-        case MISC_CTRL_LOCALMEM_SIZE_8M:  data = MB(8);  break; /* 8  Mega byte */
+-        case MISC_CTRL_LOCALMEM_SIZE_16M: data = MB(16); break; /* 16 Mega byte */
+-        case MISC_CTRL_LOCALMEM_SIZE_32M: data = MB(32); break; /* 32 Mega byte */
+-        case MISC_CTRL_LOCALMEM_SIZE_64M: data = MB(64); break; /* 64 Mega byte */
+-		default: data = 0;break;
++	case MISC_CTRL_LOCALMEM_SIZE_8M:  data = MB(8);  break; /* 8  Mega byte */
++	case MISC_CTRL_LOCALMEM_SIZE_16M: data = MB(16); break; /* 16 Mega byte */
++	case MISC_CTRL_LOCALMEM_SIZE_32M: data = MB(32); break; /* 32 Mega byte */
++	case MISC_CTRL_LOCALMEM_SIZE_64M: data = MB(64); break; /* 64 Mega byte */
++	default: data = 0;break;
+ 	}
+ 	return data;
+ 
+@@ -391,10 +391,10 @@ int ddk750_initHw(initchip_param_t * pInitParam)
+ 
+ unsigned int absDiff(unsigned int a, unsigned int b)
+ {
+-    if ( a > b )
+-        return(a - b);
+-    else
+-        return(b - a);
++	if ( a > b )
++		return(a - b);
++	else
++	return(b - a);
+ }
+ 
+ #endif
+@@ -435,7 +435,7 @@ unsigned int calcPllValue(unsigned int request_orig,pll_value_t *pll)
+ 							{3,0,3,8},
+ 							};
+ 
+-	/* 	as sm750 register definition, N located in 2,15 and M located in 1,255	*/
++	/* as sm750 register definition, N located in 2,15 and M located in 1,255	*/
+ 	int N,M,X,d;
+ 	int xcnt;
+ 	int miniDiff;
+@@ -446,11 +446,11 @@ unsigned int calcPllValue(unsigned int request_orig,pll_value_t *pll)
+ 
+ #if 1
+ 	if (getChipType() = SM750LE)
+-    {
+-        /* SM750LE don't have prgrammable PLL and M/N values to work on.
+-           Just return the requested clock. */
+-        return request_orig;
+-    }
++	{
++		/* SM750LE don't have prgrammable PLL and M/N values to work on.
++		Just return the requested clock. */
++		return request_orig;
++	}
+ #endif
+ 
+ 	ret = 0;
+@@ -487,7 +487,7 @@ unsigned int calcPllValue(unsigned int request_orig,pll_value_t *pll)
+ 			{
+ 				unsigned int diff;
+ 				tmpClock = pll->inputFreq *M / N / X;
+-                diff = absDiff(tmpClock,request_orig);
++				diff = absDiff(tmpClock,request_orig);
+ 				if(diff < miniDiff)
+ 				{
+ 					pll->M = M;
+@@ -510,104 +510,104 @@ unsigned int ulRequestClk, /* Required pixel clock in Hz unit */
+ pll_value_t *pPLL           /* Structure to hold the value to be set in PLL */
+ )
+ {
+-    unsigned int M, N, OD, POD = 0, diff, pllClk, odPower, podPower;
+-    unsigned int bestDiff = 0xffffffff; /* biggest 32 bit unsigned number */
++	unsigned int M, N, OD, POD = 0, diff, pllClk, odPower, podPower;
++	unsigned int bestDiff = 0xffffffff; /* biggest 32 bit unsigned number */
+ 	unsigned int ret;
+     /* Init PLL structure to know states */
+-    pPLL->M = 0;
+-    pPLL->N = 0;
+-    pPLL->OD = 0;
+-    pPLL->POD = 0;
++	pPLL->M = 0;
++	pPLL->N = 0;
++	pPLL->OD = 0;
++	pPLL->POD = 0;
+ 
+     /* Sanity check: None at the moment */
+ 
+     /* Convert everything in Khz range in order to avoid calculation overflow */
+-    pPLL->inputFreq /= 1000;
+-    ulRequestClk /= 1000;
++	pPLL->inputFreq /= 1000;
++	ulRequestClk /= 1000;
+ 
+ #ifndef VALIDATION_CHIP
+     /* The maximum of post divider is 8. */
+-    for (POD=0; POD<=3; POD++)
++	for (POD=0; POD<=3; POD++)
+ #endif
+-    {
++		{
+ 
+ #ifndef VALIDATION_CHIP
+-        /* MXCLK_PLL does not have post divider. */
+-        if ((POD > 0) && (pPLL->clockType = MXCLK_PLL))
+-            break;
++	/* MXCLK_PLL does not have post divider. */
++	if ((POD > 0) && (pPLL->clockType = MXCLK_PLL))
++		break;
+ #endif
+ 
+-        /* Work out 2 to the power of POD */
+-        podPower = twoToPowerOfx(POD);
++	/* Work out 2 to the power of POD */
++	podPower = twoToPowerOfx(POD);
+ 
+-        /* OD has only 2 bits [15:14] and its value must between 0 to 3 */
+-        for (OD=0; OD<=3; OD++)
+-        {
+-            /* Work out 2 to the power of OD */
+-            odPower = twoToPowerOfx(OD);
++	/* OD has only 2 bits [15:14] and its value must between 0 to 3 */
++	for (OD=0; OD<=3; OD++)
++		{
++		/* Work out 2 to the power of OD */
++		odPower = twoToPowerOfx(OD);
+ 
+ #ifdef VALIDATION_CHIP
+-            if (odPower > 4)
+-                podPower = 4;
+-            else
+-                podPower = odPower;
++	if (odPower > 4)
++		podPower = 4;
++	else
++		podPower = odPower;
+ #endif
+ 
+-            /* N has 4 bits [11:8] and its value must between 2 and 15.
+-               The N = 1 will behave differently --> Result is not correct. */
+-            for (N=2; N<; N++)
+-            {
+-                /* The formula for PLL is ulRequestClk = inputFreq * M / N / (2^OD)
+-                   In the following steps, we try to work out a best M value given the others are known.
+-                   To avoid decimal calculation, we use 1000 as multiplier for up to 3 decimal places of accuracy.
+-                */
+-                M = ulRequestClk * N * odPower * 1000 / pPLL->inputFreq;
+-                M = roundedDiv(M, 1000);
+-
+-                /* M field has only 8 bits, reject value bigger than 8 bits */
+-                if (M < 256)
+-                {
+-                    /* Calculate the actual clock for a given M & N */
+-                    pllClk = pPLL->inputFreq * M / N / odPower / podPower;
+-
+-                    /* How much are we different from the requirement */
+-                    diff = absDiff(pllClk, ulRequestClk);
+-
+-                    if (diff < bestDiff)
+-                    {
+-                        bestDiff = diff;
+-
+-                        /* Store M and N values */
+-                        pPLL->M  = M;
+-                        pPLL->N  = N;
+-                        pPLL->OD = OD;
++		/* N has 4 bits [11:8] and its value must between 2 and 15.
++		The N = 1 will behave differently --> Result is not correct. */
++	for (N=2; N<; N++)
++		{
++		/* The formula for PLL is ulRequestClk = inputFreq * M / N / (2^OD)
++		In the following steps, we try to work out a best M value given the others are known.
++		To avoid decimal calculation, we use 1000 as multiplier for up to 3 decimal places of accuracy.
++		*/
++		M = ulRequestClk * N * odPower * 1000 / pPLL->inputFreq;
++		M = roundedDiv(M, 1000);
++
++		/* M field has only 8 bits, reject value bigger than 8 bits */
++		if (M < 256)
++		{
++			/* Calculate the actual clock for a given M & N */
++			pllClk = pPLL->inputFreq * M / N / odPower / podPower;
++
++			/* How much are we different from the requirement */
++			diff = absDiff(pllClk, ulRequestClk);
++
++			if (diff < bestDiff)
++			{
++				bestDiff = diff;
++
++				/* Store M and N values */
++				pPLL->M  = M;
++				pPLL->N  = N;
++				pPLL->OD = OD;
+ 
+ #ifdef VALIDATION_CHIP
+-                        if (OD > 2)
+-                            POD = 2;
+-                        else
+-                            POD = OD;
++			if (OD > 2)
++				POD = 2;
++			else
++				POD = OD;
+ #endif
+ 
+-                        pPLL->POD = POD;
+-                    }
+-                }
+-            }
+-        }
+-    }
++			pPLL->POD = POD;
++			}
++		}
++		}
++	}
++	}
+ 
+     /* Restore input frequency from Khz to hz unit */
+ //    pPLL->inputFreq *= 1000;
+-    ulRequestClk *= 1000;
+-    pPLL->inputFreq = DEFAULT_INPUT_CLOCK; /* Default reference clock */
++	ulRequestClk *= 1000;
++	pPLL->inputFreq = DEFAULT_INPUT_CLOCK; /* Default reference clock */
+ 
+     /* Output debug information */
+-    //DDKDEBUGPRINT((DISPLAY_LEVEL, "calcPllValue: Requested Frequency = %d\n", ulRequestClk));
+-    //DDKDEBUGPRINT((DISPLAY_LEVEL, "calcPllValue: Input CLK = %dHz, M=%d, N=%d, OD=%d, POD=%d\n", pPLL->inputFreq, pPLL->M, pPLL->N, pPLL->OD, pPLL->POD));
++	//DDKDEBUGPRINT((DISPLAY_LEVEL, "calcPllValue: Requested Frequency = %d\n", ulRequestClk));
++	//DDKDEBUGPRINT((DISPLAY_LEVEL, "calcPllValue: Input CLK = %dHz, M=%d, N=%d, OD=%d, POD=%d\n", pPLL->inputFreq, pPLL->M, pPLL->N, pPLL->OD, pPLL->POD));
+ 
+     /* Return actual frequency that the PLL can set */
+ 	ret = calcPLL(pPLL);
+-    return ret;
++	return ret;
+ }
+ 
+ 
+@@ -616,24 +616,24 @@ pll_value_t *pPLL           /* Structure to hold the value to be set in PLL */
+ 
+ unsigned int formatPllReg(pll_value_t *pPLL)
+ {
+-    unsigned int ulPllReg = 0;
++	unsigned int ulPllReg = 0;
+ 
+     /* Note that all PLL's have the same format. Here, we just use Panel PLL parameter
+        to work out the bit fields in the register.
+        On returning a 32 bit number, the value can be applied to any PLL in the calling function.
+     */
+-    ulPllReg -        FIELD_SET(  0, PANEL_PLL_CTRL, BYPASS, OFF)
+-      | FIELD_SET(  0, PANEL_PLL_CTRL, POWER,  ON)
+-      | FIELD_SET(  0, PANEL_PLL_CTRL, INPUT,  OSC)
++	ulPllReg +	FIELD_SET(  0, PANEL_PLL_CTRL, BYPASS, OFF)
++	| FIELD_SET(  0, PANEL_PLL_CTRL, POWER,  ON)
++	| FIELD_SET(  0, PANEL_PLL_CTRL, INPUT,  OSC)
+ #ifndef VALIDATION_CHIP
+-      | FIELD_VALUE(0, PANEL_PLL_CTRL, POD,    pPLL->POD)
++	| FIELD_VALUE(0, PANEL_PLL_CTRL, POD,    pPLL->POD)
+ #endif
+-      | FIELD_VALUE(0, PANEL_PLL_CTRL, OD,     pPLL->OD)
+-      | FIELD_VALUE(0, PANEL_PLL_CTRL, N,      pPLL->N)
+-      | FIELD_VALUE(0, PANEL_PLL_CTRL, M,      pPLL->M);
++	| FIELD_VALUE(0, PANEL_PLL_CTRL, OD,     pPLL->OD)
++	| FIELD_VALUE(0, PANEL_PLL_CTRL, N,      pPLL->N)
++	| FIELD_VALUE(0, PANEL_PLL_CTRL, M,      pPLL->M);
+ 
+-    return(ulPllReg);
++	return(ulPllReg);
+ }
+ 
+ 
+-- 
+1.7.10.4
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

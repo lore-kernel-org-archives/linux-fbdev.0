@@ -1,86 +1,40 @@
-From: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
-Date: Mon, 16 Mar 2015 10:51:09 +0000
-Subject: [PATCH] staging/sm75fb: Declare static functions as such
-Message-Id: <1426503069-27901-1-git-send-email-ricardo.ribalda@gmail.com>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Mon, 16 Mar 2015 19:03:12 +0000
+Subject: Re: [PATCH] staging/sm75fb: Declare static functions as such
+Message-Id: <CAA5enKbVYqaFx77T94r3t-gEF2+Y6auQheR_a6Tn45BNzt2Aqw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1426503069-27901-1-git-send-email-ricardo.ribalda@gmail.com>
+In-Reply-To: <1426503069-27901-1-git-send-email-ricardo.ribalda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Cc: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
+To: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-This patch fixes this sparse warning
+On 16 March 2015 at 10:51, Ricardo Ribalda Delgado
+<ricardo.ribalda@gmail.com> wrote:
+> This patch fixes this sparse warning
 
-CHECK   drivers/staging/sm750fb/ddk750_swi2c.c
-drivers/staging/sm750fb/ddk750_swi2c.c:223:6: warning: symbol
-  'swI2CStart' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_swi2c.c:234:6: warning: symbol
-  'swI2CStop' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_swi2c.c:252:6: warning: symbol
-  'swI2CWriteByte' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_swi2c.c:320:15: warning: symbol
-  'swI2CReadByte' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_swi2c.c:361:6: warning: symbol
-  'swI2CInit_SM750LE' was not declared. Should it be static?
+Hi Ricardo,
 
-Signed-off-by: Ricardo Ribalda Delgado <ricardo.ribalda@gmail.com>
----
- drivers/staging/sm750fb/ddk750_swi2c.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+I currently have a patch series awaiting the final ok which includes
+fixes for these warnings
+(http://lkml.iu.edu/hypermail/linux/kernel/1503.1/02535.html),
+apologies but assuming there isn't something hideously wrong with my
+series I suspect they supersedes this patch :(
 
-diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-index 1249759..231ec85 100644
---- a/drivers/staging/sm750fb/ddk750_swi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-@@ -220,7 +220,7 @@ static void swI2CAck(void)
- /*
-  *  This function sends the start command to the slave device
-  */
--void swI2CStart(void)
-+static void swI2CStart(void)
- {
-     /* Start I2C */
-     swI2CSDA(1);
-@@ -231,7 +231,7 @@ void swI2CStart(void)
- /*
-  *  This function sends the stop command to the slave device
-  */
--void swI2CStop(void)
-+static void swI2CStop(void)
- {
-     /* Stop the I2C */
-     swI2CSCL(1);
-@@ -249,7 +249,7 @@ void swI2CStop(void)
-  *       0   - Success
-  *      -1   - Fail to write byte
-  */
--long swI2CWriteByte(unsigned char data)
-+static long swI2CWriteByte(unsigned char data)
- {
-     unsigned char value = data;
-     int i;
-@@ -317,7 +317,7 @@ long swI2CWriteByte(unsigned char data)
-  *  Return Value:
-  *      One byte data read from the Slave device
-  */
--unsigned char swI2CReadByte(unsigned char ack)
-+static unsigned char swI2CReadByte(unsigned char ack)
- {
-     int i;
-     unsigned char data = 0;
-@@ -358,10 +358,8 @@ unsigned char swI2CReadByte(unsigned char ack)
-  *      -1   - Fail to initialize the i2c
-  *       0   - Success
-  */
--long swI2CInit_SM750LE(
--    unsigned char i2cClkGPIO,
--    unsigned char i2cDataGPIO
--)
-+static long swI2CInit_SM750LE(unsigned char i2cClkGPIO,
-+			      unsigned char i2cDataGPIO)
- {
-     int i;
- 
+It's really easy to accidentally submit a patch that has already been
+covered elsewhere; I, as a rather new kernel contributor, always find
+I have to search quite a bit to be *sure* that it's not been covered
+already.
+
+Additionally, your subject line is 'staging/sm75fb: Declare static
+functions as such' which ought to be 'staging: sm750fb: Declare static
+functions as such' - there's a typo in the device name and I think the
+convention is always to use colons in subject lines.
+
+Best,
+
 -- 
-2.1.4
-
+Lorenzo Stoakes
+https:/ljs.io

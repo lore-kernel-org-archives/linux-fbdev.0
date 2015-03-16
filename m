@@ -1,11 +1,11 @@
 From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Tue, 31 Mar 2015 18:27:09 +0000
-Subject: [PATCHv6 03/10] of: Add Solomon Systech vendor prefix.
-Message-Id: <1427826436-21783-4-git-send-email-niederp@physik.uni-kl.de>
+Date: Mon, 16 Mar 2015 17:11:51 +0000
+Subject: [PATCHv4 03/10] of: Add Solomon Systech vendor prefix.
+Message-Id: <1426525918-12745-4-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
+ <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable

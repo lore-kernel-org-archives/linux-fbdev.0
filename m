@@ -1,61 +1,39 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:36 +0000
-Subject: [PATCH v1 46/47] video: fbdev: gxt4500: use pci_ioremap_wc_bar() for framebuffer
-Message-Id: <1426893517-2511-47-git-send-email-mcgrof@do-not-panic.com>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Mon, 16 Mar 2015 17:11:56 +0000
+Subject: [PATCHv4 08/10] fbdev: ssd1307fb: Turn off display on driver unload.
+Message-Id: <1426525918-12745-9-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+This patch turns off the display when the driver is unloaded.
 
-The driver doesn't use mtrr_add() or arch_phys_wc_add() but
-since we know the framebuffer is isolated already on an
-ioremap() we can take advantage of write combining for
-performance where possible.
-
-In this case there are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
-
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
- drivers/video/fbdev/gxt4500.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/ssd1307fb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 135d78a..f19133a 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -662,7 +662,7 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	info->fix.smem_start = fb_phys;
- 	info->fix.smem_len = pci_resource_len(pdev, 1);
--	info->screen_base = pci_ioremap_bar(pdev, 1);
-+	info->screen_base = pci_ioremap_wc_bar(pdev, 1);
- 	if (!info->screen_base) {
- 		dev_err(&pdev->dev, "gxt4500: cannot map framebuffer\n");
- 		goto err_unmap_regs;
--- 
-2.3.2.209.gd67f9d5.dirty
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index 8a8d305..0d851f1 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -628,6 +628,8 @@ static int ssd1307fb_remove(struct i2c_client *client)
+ 	struct fb_info *info =3D i2c_get_clientdata(client);
+ 	struct ssd1307fb_par *par =3D info->par;
+=20
++	ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
++
+ 	unregister_framebuffer(info);
+ 	if (par->device_info->device_id =3D DEVID_SSD1307) {
+ 		pwm_disable(par->pwm);
+--=20
+2.3.0
 

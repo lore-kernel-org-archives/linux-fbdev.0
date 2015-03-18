@@ -1,99 +1,82 @@
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Date: Wed, 18 Mar 2015 10:50:25 +0000
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 18 Mar 2015 10:52:56 +0000
 Subject: Re: [PATCH RESEND 1/5] staging: sm750fb: Use memset_io instead of memset
-Message-Id: <87oanqo9zi.fsf@vitty.brq.redhat.com>
+Message-Id: <20150318105256.GR16501@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1426669046-29935-1-git-send-email-lstoakes@gmail.com>
-In-Reply-To: <1426669046-29935-1-git-send-email-lstoakes@gmail.com> (Lorenzo
-	Stoakes's message of "Wed, 18 Mar 2015 08:57:22 +0000")
+ <20150318101717.GN10964@mwanda>
+ <20150318101857.GO10964@mwanda>
+ <CAA5enKZqRPx8a9Kk7cX1GJih9=N+Wj_zPbhg+hbLDJoKNEau-Q@mail.gmail.com>
+In-Reply-To: <CAA5enKZqRPx8a9Kk7cX1GJih9=N+Wj_zPbhg+hbLDJoKNEau-Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Lorenzo Stoakes <lstoakes@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, Greg KH <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-Lorenzo Stoakes <lstoakes@gmail.com> writes:
+On Wed, Mar 18, 2015 at 10:44:53AM +0000, Lorenzo Stoakes wrote:
+> On 18 March 2015 at 10:18, Dan Carpenter <dan.carpenter@oracle.com> wrote:
+> >>
+> >> This changelog still sucks.  It doesn't describe the effect of this
+> >> behavior change for the user.  It doesn't even make it clear that you
+> >> are aware that this is a behavior change.
+> >
+> > It doesn't say to me that you have asked yourself if the sparse
+> > annotations are correct.  Many times they are wrong.
+> 
+> My understanding, which as a new contributor is of course limited and
+> likely simply wrong in many aspects, is - these memset's are referring
+> to I/O mapped memory, which as far as I can tell is actually the case
+> here, so in order to make it explicit that this is the case and we
+> know it is, we use memset_io. As far as I understand the pointers
+> simply have a modifier applied which marks them as I/O mapped memory
+> for the purposes of sparse checking whether they are used consistently
+> as such and are not treated like they are a normal kernel pointer.
+> 
+> In this case the cursor->vstart and crtc->vScreen pointers, looking
+> through the source, explicitly refer to memory which is I/O mapped,
+> and is annotated as __iomem accordingly throughout.
+> 
+> I will update the message accordingly, obviously if I'm
+> misunderstanding something let me know.
 
-> This patch uses memset_io instead of memset when using memset on __iomem
-> qualified pointers. This fixes the following sparse warnings:-
->
-> drivers/staging/sm750fb/sm750.c:489:17: warning: incorrect type in argument 1 (different address spaces)
-> drivers/staging/sm750fb/sm750.c:490:17: warning: incorrect type in argument 1 (different address spaces)
-> drivers/staging/sm750fb/sm750.c:501:17: warning: incorrect type in argument 1 (different address spaces)
-> drivers/staging/sm750fb/sm750.c:502:17: warning: incorrect type in argument 1 (different address spaces)
-> drivers/staging/sm750fb/sm750.c:833:5: warning: incorrect type in argument 1 (different address spaces)
-> drivers/staging/sm750fb/sm750.c:1154:9: warning: incorrect type in argument 1 (different address spaces)
->
-> Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index aa0888c..3e36b6a 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -486,8 +486,8 @@ static int lynxfb_resume(struct pci_dev* pdev)
->  		par = info->par;
->  		crtc = &par->crtc;
->  		cursor = &crtc->cursor;
-> -		memset(cursor->vstart, 0x0, cursor->size);
-> -		memset(crtc->vScreen,0x0,crtc->vidmem_size);
-> +		memset_io(cursor->vstart, 0x0, cursor->size);
-> +		memset_io(crtc->vScreen,0x0,crtc->vidmem_size);
+This is all fine.
 
-ERROR is reported by scripts/checkpatch.pl (spaces are missing after
-','). This coding style problem was there before your patch but I don't
-think it makes sense to preserve it.
+> 
+> > We have had this discussion before but you still sent the same exact
+> > bad changelog.
+> 
+> Actually you said:-
+> 
+> > When I see a patch like this, then I worry, "What if the Sparse
+> > annotations are wrong?  The patch description doesn't say anything about
+> > that."  After review then I think the annotations are correct so that's
+> > fine.
+> 
+> And:-
 
->  		lynxfb_ops_set_par(info);
->  		fb_set_suspend(info, 0);
->  	}
-> @@ -498,8 +498,8 @@ static int lynxfb_resume(struct pci_dev* pdev)
->  		par = info->par;
->  		crtc = &par->crtc;
->  		cursor = &crtc->cursor;
-> -		memset(cursor->vstart, 0x0, cursor->size);
-> -		memset(crtc->vScreen,0x0,crtc->vidmem_size);
-> +		memset_io(cursor->vstart, 0x0, cursor->size);
-> +		memset_io(crtc->vScreen,0x0,crtc->vidmem_size);
+The patch is fine.  The changelog is not.
 
-the same
+> 
+> > Yes.  The patch is correct.  I wasn't asking you to redo it.  From later
+> > patches it's actually clear that you know that this change is a bugfix
+> > and a behavior change.  But we get a lot of patches where people just
+> > randomly change things to please Sparse and it maybe silences a warning
+> > but it's not correct.  I can think of a few recentish examples where
+> > people used standard struct types which hold __iomem or __user pointers
+> > but they used them in non-standard ways so the pointers were actually
+> > normal kernel pointers.
+> 
+> So it wasn't clear *to me* you wanted me to change that, given you
+> asked me *not* to redo it explicitly (which I assumed applied to the
+> message too) - apologies if I misinterpreted this!
 
->  		lynxfb_ops_set_par(info);
->  		fb_set_suspend(info, 0);
->  	}
-> @@ -830,7 +830,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info,int index)
->
->      crtc->cursor.share = share;
-> -    memset(crtc->cursor.vstart, 0, crtc->cursor.size);
-> +    memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
+I often say "don't resend" because something is minor and I don't want
+to slow you down but since you were resending it anyway then please fix
+it.  Also changelogs are really easy to fix.  In mutt, you can do it
+without leaving your email client.  So I have revised my earlier
+statement, please fix it.  :)
 
-WARNING: please, no spaces at the start of a line
-#137: FILE: drivers/staging/sm750fb/sm750.c:833:
-+    memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);$
+regards,
+dan carpenter
 
->      if(!g_hwcursor){
->          lynxfb_ops.fb_cursor = NULL;
->          crtc->cursor.disable(&crtc->cursor);
-> @@ -1151,7 +1151,7 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
->  	}
->  #endif
->
-> -	memset(share->pvMem,0,share->vidmem_size);
-> +	memset_io(share->pvMem,0,share->vidmem_size);
-
-the same missing spaces
-
->
->  	pr_info("sm%3x mmio address = %p\n",share->devid,share->pvReg);
->
-> --
-> 2.3.2
-> _______________________________________________
-> devel mailing list
-> devel@linuxdriverproject.org
-> http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel
-
--- 
-  Vitaly

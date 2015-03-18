@@ -1,34 +1,35 @@
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Wed, 18 Mar 2015 10:55:26 +0000
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 18 Mar 2015 10:59:20 +0000
 Subject: Re: [PATCH RESEND 1/5] staging: sm750fb: Use memset_io instead of memset
-Message-Id: <CAA5enKbGFZJ30i-S7q_vHM3Ra=S5+a7BP0si_j7pPt+uLyFhSw@mail.gmail.com>
+Message-Id: <20150318105920.GS16501@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1426669046-29935-1-git-send-email-lstoakes@gmail.com>
- <20150318101717.GN10964@mwanda> <20150318101857.GO10964@mwanda>
- <CAA5enKZqRPx8a9Kk7cX1GJih9=N+Wj_zPbhg+hbLDJoKNEau-Q@mail.gmail.com> <20150318105256.GR16501@mwanda>
-In-Reply-To: <20150318105256.GR16501@mwanda>
+ <20150318101717.GN10964@mwanda>
+ <CAA5enKZTjSsfX_4XkZFjbpDchZuBDfTNaK1_5GjFFwthjFZM7Q@mail.gmail.com>
+In-Reply-To: <CAA5enKZTjSsfX_4XkZFjbpDchZuBDfTNaK1_5GjFFwthjFZM7Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, Greg KH <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Lorenzo Stoakes <lstoakes@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg KH <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 18 March 2015 at 10:52, Dan Carpenter <dan.carpenter@oracle.com> wrote:
-> I often say "don't resend" because something is minor and I don't want
-> to slow you down but since you were resending it anyway then please fix
-> it.  Also changelogs are really easy to fix.  In mutt, you can do it
-> without leaving your email client.  So I have revised my earlier
-> statement, please fix it.  :)
+On Wed, Mar 18, 2015 at 10:46:52AM +0000, Lorenzo Stoakes wrote:
+> On 18 March 2015 at 10:17, Dan Carpenter <dan.carpenter@oracle.com> wrote:
+> > Why is there a RESEND in the subject.
+> 
+> To avoid confusion (and Sudip explicitly mentioned there might be
+> some), and in addition I had to update my patch series to take into
+> account that it no longer applied due to another patch which applies
+> the ANSI C function prototype fixes having already been applied.
 
-Will do!
+Btw, sorry for coming down hard on you.  You're a newbie and expected to
+make these mistakes.  Your patches are good and appreciated.
 
-I have experimented with mutt, I tend to just use git send-email
-directly at the moment and edit patch files manually and use the gmail
-web interface for reading/discussion, I am sure I will learn to do
-things a little more sanely in time, the hard way :)
+Call it a v2 patch.  Put a note under the --- cut off line:
+v2: updated to apply to latest linux-next
 
-Best,
+http://kernelnewbies.org/PatchTipsAndTricks
 
--- 
-Lorenzo Stoakes
-https:/ljs.io
+regards,
+dan carpenter
+

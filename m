@@ -1,36 +1,35 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 18 Mar 2015 13:41:41 +0000
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Wed, 18 Mar 2015 19:09:28 +0000
 Subject: Re: [PATCH RESEND 1/5] staging: sm750fb: Use memset_io instead of memset
-Message-Id: <20150318132941.GA1922@sudip-PC>
+Message-Id: <CAA5enKYkzLUB=OtSXU7N+R0F4qCN4B7otDci=OCR+MzxhCFSqg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1426669046-29935-1-git-send-email-lstoakes@gmail.com>
- <87oanqo9zi.fsf@vitty.brq.redhat.com>
- <CAA5enKZYqmysuFqPPptgVvyBJAzX8UYBkod1t3Atvu3Q5TUEjQ@mail.gmail.com>
- <20150318112509.GP10964@mwanda>
- <20150318130607.GB32758@sudip-PC>
- <20150318132339.GR10964@mwanda>
-In-Reply-To: <20150318132339.GR10964@mwanda>
+ <20150318101717.GN10964@mwanda> <CAA5enKZTjSsfX_4XkZFjbpDchZuBDfTNaK1_5GjFFwthjFZM7Q@mail.gmail.com>
+ <20150318105920.GS16501@mwanda>
+In-Reply-To: <20150318105920.GS16501@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>, Greg KH <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg KH <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2015 at 04:23:39PM +0300, Dan Carpenter wrote:
-> > https://lkml.org/lkml/2015/3/10/685
-> > 
-> 
-> You were making random white space changes and not on the same line.  It
-> was hard to review because you had to count how many u32 arguments there
-> were (a million) and really look at it to see what the compile warning
-> was.  There was no compile warning in the end.  Very annoying.
-ok, now understood. Thanks.
-like you said once - combining different changes in a single patch is
-an art. :)
+On 18 March 2015 at 10:59, Dan Carpenter <dan.carpenter@oracle.com> wrote:
+> Call it a v2 patch.  Put a note under the --- cut off line:
+> v2: updated to apply to latest linux-next
+>
+> http://kernelnewbies.org/PatchTipsAndTricks
 
-regards
-sudip
-> 
-> regards,
-> dan carpenter
-> 
+Since each changed patch in the resend already incorporates changes to
+update to apply to the latest linux-next, I instead referenced
+whitespace/description changes (let me know if this isn't usually
+something you'd reference) to avoid confusion, as otherwise I'd have
+to resend other patches unchanged with just a v2 applied, then
+additionally update the ones that need changes.
+
+Let me know if you'd like this done differently!
+
+Best,
+
+-- 
+Lorenzo Stoakes
+https:/ljs.io

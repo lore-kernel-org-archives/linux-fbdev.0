@@ -1,95 +1,119 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Wed, 25 Mar 2015 22:00:59 +0000
-Subject: Re: [PATCHv5 11/11] fbdev: ssd1307fb: Add blank mode
-Message-Id: <20150325220059.GP23664@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="aMDdG8xNveJz2ruI"
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Wed, 18 Mar 2015 19:04:53 +0000
+Subject: [PATCH RESEND v2 4/5] staging: sm750fb: Fix __iomem pointer types
+Message-Id: <1426705493-26615-2-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
- <1427232238-21099-12-git-send-email-niederp@physik.uni-kl.de>
- <5512D92D.3020809@schinagl.nl>
-In-Reply-To: <5512D92D.3020809@schinagl.nl>
-To: Olliver Schinagl <oliver@schinagl.nl>
-Cc: Thomas =?iso-8859-1?Q?Niederpr=FCm?= <niederp@physik.uni-kl.de>, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1426705493-26615-1-git-send-email-lstoakes@gmail.com>
+In-Reply-To: <1426705493-26615-1-git-send-email-lstoakes@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
+This patch annotates pointers as referring to I/O mapped memory where they ought
+to be, removes now unnecessary ugly casts, eliminates an incorrect deref on I/O
+mapped memory by using iowrite16 instead, and updates the pointer arithmetic
+accordingly to take into account that the pointers are now byte-sized. This
+fixes the following sparse warnings:-
 
---aMDdG8xNveJz2ruI
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+drivers/staging/sm750fb/sm750_cursor.c:113:19: warning: cast removes address space of expression
+drivers/staging/sm750fb/sm750_cursor.c:204:19: warning: cast removes address space of expression
 
-On Wed, Mar 25, 2015 at 04:50:05PM +0100, Olliver Schinagl wrote:
-> Hey Thomas,
->=20
-> On 24-03-15 22:23, Thomas Niederpr=FCm wrote:
-> >This patch adds ssd1307fb_blank() to make the framebuffer capable
-> >of blanking.
-> >
-> >Signed-off-by: Thomas Niederpr=FCm <niederp@physik.uni-kl.de>
-> >---
-> >  drivers/video/fbdev/ssd1307fb.c | 13 +++++++++++++
-> >  1 file changed, 13 insertions(+)
-> >
-> >diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd13=
-07fb.c
-> >index 061cc95..9101b27 100644
-> >--- a/drivers/video/fbdev/ssd1307fb.c
-> >+++ b/drivers/video/fbdev/ssd1307fb.c
-> >@@ -238,6 +238,18 @@ static ssize_t ssd1307fb_write(struct fb_info *info=
-, const char __user *buf,
-> >  	return count;
-> >  }
-> >
-> >+static int ssd1307fb_blank(int blank_mode, struct fb_info *info)
-> >+{
-> >+	struct ssd1307fb_par *par =3D info->par;
-> >+	int ret;
-> >+
-> >+	if (blank_mode !=3D FB_BLANK_UNBLANK)
-> >+		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
-> >+	else
-> >+		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
-> I'd probably add an extra return, or drop the ret var at all and just ret=
-urn
-> the function.
->=20
-> or even shorter :)
-> return sd1307fb_write_cmd(par->client, (blank_mode !=3D FB_BLANK_UNBLANK)=
- ?
-> SSD1307FB_DISPLAY_OFF : SSD1307FB_DISPLAY_ON;
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+---
+v2: Whitespace fixups
 
-In some domains, shorter is not better ;)
+ drivers/staging/sm750fb/sm750_cursor.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-This is one of these cases. It's much clearer as it is.
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 6cceef1..c2ff3bd 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -98,7 +98,7 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
+ 	int i,j,count,pitch,offset;
+ 	u8 color,mask,opr;
+ 	u16 data;
+-	u16 * pbuffer,*pstart;
++	void __iomem *pbuffer, *pstart;
 
-Maxime
+ 	/*  in byte*/
+ 	pitch = cursor->w >> 3;
+@@ -106,11 +106,11 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
+ 	/* in byte	*/
+ 	count = pitch * cursor->h;
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+-	/* in ushort */
+-	offset = cursor->maxW * 2 / 8 / 2;
++	/* in byte */
++	offset = cursor->maxW * 2 / 8;
 
---aMDdG8xNveJz2ruI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+ 	data = 0;
+-	pstart = (u16 *)cursor->vstart;
++	pstart = cursor->vstart;
+ 	pbuffer = pstart;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+ /*
+@@ -161,7 +161,7 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
+ 			}
+ 		}
+ #endif
+-		*pbuffer = data;
++		iowrite16(data, pbuffer);
 
-iQIcBAEBAgAGBQJVEzAbAAoJEBx+YmzsjxAgNRcP/ip8jkT3xUD+aorLeZQ1cbni
-VWeVcWCT8FeMej0+fVpajEyZpIotqFtn/FnELalLqvvVl6Cv5tFF4mvZKDafls2m
-pG54NXG2mFJ5/48mu5JwhW6jntNK3/+gwLezFvEA6F2uwieU41Xh1zfh4Cse2Vn+
-+VCE9vB6sWZVqcCvykjAdaGUi+n2aPqsr5B2dZwoooP92ps0by2BfKiHO4420Hpi
-Sz5cB2KoCT3vqeEKhDtcOEpqjf2zTt2xOF/+d2/ZRlcRA56+xXDbVKt4IzGJkYg2
-L0ltO4906RORhtzMvb5KBQuyXIh1xQ7Y/b7geh000A5mfBQDunQkZ2eoHbS++Lae
-QKvUhGTJ7Rr/ukfEPhlgEAyFd8H2bf6ALn00k2nGIuNqJcAkCtZcZ5JDmjT+wdnO
-g76dE+0Vtiulzf0v901MNGIgcfI7IF9sB+E+EwixNLjJ3ynwMwwaXrxTfbYTBRCr
-tsl/fU7wnPjxW/DCMWRiguNUT1/j5Ho/sNMsWVNp+KCMMarlGjkkMImMe+SWJlzb
-F9uiQK1JOOgbDFhNOQRLTtTzmRDyxXGsMbKZiMFnZNCcY/VPU+pbSzpugPb+vB7C
-yVLiM+6Le5HLXP/glr0+odzakZYGbDmsFG6jLt5uTv2hkIGhe6I23SQamCIZAn4y
-eeiNZysKLuax3nEAISWw
-=OJmZ
------END PGP SIGNATURE-----
+ 		/* assume pitch is 1,2,4,8,...*/
+ #if 0
+@@ -174,7 +174,7 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
+ 			pstart += offset;
+ 			pbuffer = pstart;
+ 		}else{
+-			pbuffer++;
++			pbuffer += sizeof(u16);
+ 		}
 
---aMDdG8xNveJz2ruI--
+ 	}
+@@ -189,7 +189,7 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
+ 	int i,j,count,pitch,offset;
+ 	u8 color, mask;
+ 	u16 data;
+-	u16 * pbuffer,*pstart;
++	void __iomem *pbuffer, *pstart;
+
+ 	/*  in byte*/
+ 	pitch = cursor->w >> 3;
+@@ -197,11 +197,11 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
+ 	/* in byte	*/
+ 	count = pitch * cursor->h;
+
+-	/* in ushort */
+-	offset = cursor->maxW * 2 / 8 / 2;
++	/* in byte */
++	offset = cursor->maxW * 2 / 8;
+
+ 	data = 0;
+-	pstart = (u16 *)cursor->vstart;
++	pstart = cursor->vstart;
+ 	pbuffer = pstart;
+
+ 	for(i=0;i<count;i++)
+@@ -234,7 +234,7 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
+ 				data |= ((color & (1<<j))?1:2)<<(j*2);
+ 		}
+ #endif
+-		*pbuffer = data;
++		iowrite16(data, pbuffer);
+
+ 		/* assume pitch is 1,2,4,8,...*/
+ 		if(!(i&(pitch-1)))
+@@ -244,7 +244,7 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
+ 			pstart += offset;
+ 			pbuffer = pstart;
+ 		}else{
+-			pbuffer++;
++			pbuffer += sizeof(u16);
+ 		}
+
+ 	}
+--
+2.3.2

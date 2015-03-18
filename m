@@ -1,38 +1,72 @@
 From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Tue, 10 Mar 2015 09:14:55 +0000
-Subject: Re: [PATCH] staging: sm750fb: Fix sparse warning
-Message-Id: <CAA5enKZDcWV-B1hOt3ffAXA7kxqJq8BrVyzu5DW2vbxDz46ytw@mail.gmail.com>
+Date: Wed, 18 Mar 2015 08:57:22 +0000
+Subject: [PATCH RESEND 1/5] staging: sm750fb: Use memset_io instead of memset
+Message-Id: <1426669046-29935-1-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425934628-3717-1-git-send-email-lstoakes@gmail.com>
-	<20150310070014.GM10964@mwanda>
-	<CAA5enKa5x5R2Z9+Sc4UzKFu+N9rKoh_sW7hfVN8CmmqhF9LMiw@mail.gmail.com>
-	<20150310085915.GB16501@mwanda>
-In-Reply-To: <20150310085915.GB16501@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, teddy.wang@siliconmotion.com, Greg KH <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-On 10 March 2015 at 08:59, Dan Carpenter <dan.carpenter@oracle.com> wrote:
->
-> The patch is:
->
-> [patch] cleanup the type of mmio750
->
-> silencing a Sparse warning is just a side benifit of using correct
-> data types.  The "one thing per patch" rule also means that you should
-> fix a whole problem instead of half a thing per patch.
->
-> regards,
-> dan carpenter
->
+This patch uses memset_io instead of memset when using memset on __iomem
+qualified pointers. This fixes the following sparse warnings:-
 
-Sure, sorry saw the patch as purely a sparse fixup, will adapt to be
-an overall mmio750 cleanup and resubmit!
+drivers/staging/sm750fb/sm750.c:489:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:490:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:501:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:502:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:833:5: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:1154:9: warning: incorrect type in argument 1 (different address spaces)
 
-Best,
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
--- 
-Lorenzo Stoakes
-https:/ljs.io
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index aa0888c..3e36b6a 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -486,8 +486,8 @@ static int lynxfb_resume(struct pci_dev* pdev)
+ 		par = info->par;
+ 		crtc = &par->crtc;
+ 		cursor = &crtc->cursor;
+-		memset(cursor->vstart, 0x0, cursor->size);
+-		memset(crtc->vScreen,0x0,crtc->vidmem_size);
++		memset_io(cursor->vstart, 0x0, cursor->size);
++		memset_io(crtc->vScreen,0x0,crtc->vidmem_size);
+ 		lynxfb_ops_set_par(info);
+ 		fb_set_suspend(info, 0);
+ 	}
+@@ -498,8 +498,8 @@ static int lynxfb_resume(struct pci_dev* pdev)
+ 		par = info->par;
+ 		crtc = &par->crtc;
+ 		cursor = &crtc->cursor;
+-		memset(cursor->vstart, 0x0, cursor->size);
+-		memset(crtc->vScreen,0x0,crtc->vidmem_size);
++		memset_io(cursor->vstart, 0x0, cursor->size);
++		memset_io(crtc->vScreen,0x0,crtc->vidmem_size);
+ 		lynxfb_ops_set_par(info);
+ 		fb_set_suspend(info, 0);
+ 	}
+@@ -830,7 +830,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info,int index)
+
+
+     crtc->cursor.share = share;
+-    memset(crtc->cursor.vstart, 0, crtc->cursor.size);
++    memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
+     if(!g_hwcursor){
+         lynxfb_ops.fb_cursor = NULL;
+         crtc->cursor.disable(&crtc->cursor);
+@@ -1151,7 +1151,7 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
+ 	}
+ #endif
+
+-	memset(share->pvMem,0,share->vidmem_size);
++	memset_io(share->pvMem,0,share->vidmem_size);
+
+ 	pr_info("sm%3x mmio address = %p\n",share->devid,share->pvReg);
+
+--
+2.3.2

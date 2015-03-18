@@ -1,128 +1,114 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:07 +0000
-Subject: [PATCH v1 17/47] video: fbdev: vesafb: only support MTRR_TYPE_WRCOMB
-Message-Id: <1426893517-2511-18-git-send-email-mcgrof@do-not-panic.com>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Wed, 18 Mar 2015 08:57:23 +0000
+Subject: [PATCH RESEND 2/5] staging: sm750fb: Make internal functions static
+Message-Id: <1426669046-29935-2-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1426669046-29935-1-git-send-email-lstoakes@gmail.com>
+In-Reply-To: <1426669046-29935-1-git-send-email-lstoakes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+This patch declares externally unavailable functions static. This fixes
+the following sparse warnings:-
 
-No other video driver uses MTRR types except for MTRR_TYPE_WRCOMB,
-the other MTRR types were implemented and supported here but with
-no real good reason. The ioremap() APIs are architecture agnostic and
-at least on x86 PAT is a new design that extends MTRRs and
-can replace it in a much cleaner way, where so long as the
-proper ioremap_wc() or variant API is used the right thing will
-be done behind the scenes. This is the only driver left using the
-other MTRR types -- and since there is no good reason for it now
-rip them out.
+drivers/staging/sm750fb/ddk750_swi2c.c:223:6: warning: symbol 'swI2CStart' was not declared. Should it be static?
+drivers/staging/sm750fb/ddk750_swi2c.c:234:6: warning: symbol 'swI2CStop' was not declared. Should it be static?
+drivers/staging/sm750fb/ddk750_swi2c.c:252:6: warning: symbol 'swI2CWriteByte' was not declared. Should it be static?
+drivers/staging/sm750fb/ddk750_swi2c.c:320:15: warning: symbol 'swI2CReadByte' was not declared. Should it be static?
+drivers/staging/sm750fb/ddk750_swi2c.c:361:6: warning: symbol 'swI2CInit_SM750LE' was not declared. Should it be static?
+drivers/staging/sm750fb/ddk750_hwi2c.c:63:6: warning: symbol 'hwI2CWaitTXDone' was not declared. Should it be static?
+drivers/staging/sm750fb/ddk750_hwi2c.c:93:14: warning: symbol 'hwI2CWriteData' was not declared. Should it be static?
+drivers/staging/sm750fb/ddk750_hwi2c.c:160:14: warning: symbol 'hwI2CReadData' was not declared. Should it be static?
 
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
 ---
- drivers/video/fbdev/vesafb.c | 62 ++++++++++++--------------------------------
- 1 file changed, 16 insertions(+), 46 deletions(-)
+ drivers/staging/sm750fb/ddk750_hwi2c.c |  6 +++---
+ drivers/staging/sm750fb/ddk750_swi2c.c | 10 +++++-----
+ drivers/staging/sm750fb/sm750_accel.c  |  2 +-
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-index d79a0ac..191156b 100644
---- a/drivers/video/fbdev/vesafb.c
-+++ b/drivers/video/fbdev/vesafb.c
-@@ -404,60 +404,30 @@ static int vesafb_probe(struct platform_device *dev)
- 	 * region already (FIXME) */
- 	request_region(0x3c0, 32, "vesafb");
- 
-+	if (mtrr = 3) {
- #ifdef CONFIG_MTRR
--	if (mtrr) {
- 		unsigned int temp_size = size_total;
--		unsigned int type = 0;
-+		int rc;
- 
--		switch (mtrr) {
--		case 1:
--			type = MTRR_TYPE_UNCACHABLE;
--			break;
--		case 2:
--			type = MTRR_TYPE_WRBACK;
--			break;
--		case 3:
--			type = MTRR_TYPE_WRCOMB;
--			break;
--		case 4:
--			type = MTRR_TYPE_WRTHROUGH;
--			break;
--		default:
--			type = 0;
--			break;
--		}
--
--		if (type) {
--			int rc;
--
--			/* Find the largest power-of-two */
--			temp_size = roundup_pow_of_two(temp_size);
-+		/* Find the largest power-of-two */
-+		temp_size = roundup_pow_of_two(temp_size);
- 
--			/* Try and find a power of two to add */
--			do {
--				rc = mtrr_add(vesafb_fix.smem_start, temp_size,
--					      type, 1);
--				temp_size >>= 1;
--			} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
--		}
--	}
-+		/* Try and find a power of two to add */
-+		do {
-+			rc = mtrr_add(vesafb_fix.smem_start, temp_size,
-+				      MTRR_TYPE_WRCOMB, 1);
-+			temp_size >>= 1;
-+		} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
- #endif
--	
--	switch (mtrr) {
--	case 1: /* uncachable */
--		info->screen_base = ioremap_nocache(vesafb_fix.smem_start, vesafb_fix.smem_len);
--		break;
--	case 2: /* write-back */
--		info->screen_base = ioremap_cache(vesafb_fix.smem_start, vesafb_fix.smem_len);
--		break;
--	case 3: /* write-combining */
- 		info->screen_base = ioremap_wc(vesafb_fix.smem_start, vesafb_fix.smem_len);
--		break;
--	case 4: /* write-through */
--	default:
-+	} else {
-+#ifdef CONFIG_MTRR
-+		if (mtrr && mtrr != 3)
-+			WARN_ONCE(1, "Only MTRR_TYPE_WRCOMB (3) make sense\n");
-+#endif
- 		info->screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
--		break;
- 	}
-+
- 	if (!info->screen_base) {
- 		printk(KERN_ERR
- 		       "vesafb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
--- 
-2.3.2.209.gd67f9d5.dirty
+diff --git a/drivers/staging/sm750fb/ddk750_hwi2c.c b/drivers/staging/sm750fb/ddk750_hwi2c.c
+index 84dfb6f..7826376 100644
+--- a/drivers/staging/sm750fb/ddk750_hwi2c.c
++++ b/drivers/staging/sm750fb/ddk750_hwi2c.c
+@@ -60,7 +60,7 @@ void hwI2CClose(void)
+ }
 
+
+-long hwI2CWaitTXDone(void)
++static long hwI2CWaitTXDone(void)
+ {
+     unsigned int timeout;
+
+@@ -90,7 +90,7 @@ long hwI2CWaitTXDone(void)
+  *  Return Value:
+  *      Total number of bytes those are actually written.
+  */
+-unsigned int hwI2CWriteData(
++static unsigned int hwI2CWriteData(
+     unsigned char deviceAddress,
+     unsigned int length,
+     unsigned char *pBuffer
+@@ -157,7 +157,7 @@ unsigned int hwI2CWriteData(
+  *  Return Value:
+  *      Total number of actual bytes read from the slave device
+  */
+-unsigned int hwI2CReadData(
++static unsigned int hwI2CReadData(
+     unsigned char deviceAddress,
+     unsigned int length,
+     unsigned char *pBuffer
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+index 1249759..516f5bb 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.c
++++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+@@ -220,7 +220,7 @@ static void swI2CAck(void)
+ /*
+  *  This function sends the start command to the slave device
+  */
+-void swI2CStart(void)
++static void swI2CStart(void)
+ {
+     /* Start I2C */
+     swI2CSDA(1);
+@@ -231,7 +231,7 @@ void swI2CStart(void)
+ /*
+  *  This function sends the stop command to the slave device
+  */
+-void swI2CStop(void)
++static void swI2CStop(void)
+ {
+     /* Stop the I2C */
+     swI2CSCL(1);
+@@ -249,7 +249,7 @@ void swI2CStop(void)
+  *       0   - Success
+  *      -1   - Fail to write byte
+  */
+-long swI2CWriteByte(unsigned char data)
++static long swI2CWriteByte(unsigned char data)
+ {
+     unsigned char value = data;
+     int i;
+@@ -317,7 +317,7 @@ long swI2CWriteByte(unsigned char data)
+  *  Return Value:
+  *      One byte data read from the Slave device
+  */
+-unsigned char swI2CReadByte(unsigned char ack)
++static unsigned char swI2CReadByte(unsigned char ack)
+ {
+     int i;
+     unsigned char data = 0;
+@@ -358,7 +358,7 @@ unsigned char swI2CReadByte(unsigned char ack)
+  *      -1   - Fail to initialize the i2c
+  *       0   - Success
+  */
+-long swI2CInit_SM750LE(
++static long swI2CInit_SM750LE(
+     unsigned char i2cClkGPIO,
+     unsigned char i2cDataGPIO
+ )
+--
+2.3.2

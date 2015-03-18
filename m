@@ -1,88 +1,113 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Thu, 12 Mar 2015 15:23:44 +0000
-Subject: [PATCH 2/8] um: replace CONFIG_8xx by CONFIG_PPC_8xx
-Message-Id: <20150312152344.83BA31A241D@localhost.localdomain>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Wed, 18 Mar 2015 08:57:24 +0000
+Subject: [PATCH RESEND 3/5] staging: sm750fb: Remove unused function
+Message-Id: <1426669046-29935-3-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1426669046-29935-1-git-send-email-lstoakes@gmail.com>
+In-Reply-To: <1426669046-29935-1-git-send-email-lstoakes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jeff Dike <jdike@addtoit.com>, Richard Weinberger <richard@nod.at>
-Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, user-mode-linux-user@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-Two config options exist to define powerpc MPC8xx:
-* CONFIG_PPC_8xx
-* CONFIG_8xx
-In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
-communication co-processor
+This patch removes the unused hw712_fillrect function. This patch fixes
+the following sparse warning:-
 
-arch/powerpc/platforms/Kconfig.cputype has contained the following
-comment about CONFIG_8xx item for some years:
-"# this is temp to handle compat with arch=ppc"
+drivers/staging/sm750fb/sm750_accel.c:95:5: warning: symbol 'hw712_fillrect' was not declared. Should it be static?
 
-It looks like not many places still have that old CONFIG_8xx used,
-so it is likely to be a good time to get rid of it completely ?
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
 ---
- arch/um/sys-ppc/misc.S | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/staging/sm750fb/sm750_accel.c | 78 -----------------------------------
+ 1 file changed, 78 deletions(-)
 
-diff --git a/arch/um/sys-ppc/misc.S b/arch/um/sys-ppc/misc.S
-index 1364b7d..163e0b2 100644
---- a/arch/um/sys-ppc/misc.S
-+++ b/arch/um/sys-ppc/misc.S
-@@ -18,7 +18,7 @@
- #include <asm/processor.h>
- #include "ppc_asm.h"
- 
--#if defined(CONFIG_4xx) || defined(CONFIG_8xx)
-+#if defined(CONFIG_4xx) || defined(CONFIG_PPC_8xx)
- #define CACHE_LINE_SIZE		16
- #define LG_CACHE_LINE_SIZE	4
- #define MAX_COPY_PREFETCH	1
-@@ -26,7 +26,7 @@
- #define CACHE_LINE_SIZE		32
- #define LG_CACHE_LINE_SIZE	5
- #define MAX_COPY_PREFETCH	4
--#endif /* CONFIG_4xx || CONFIG_8xx */
-+#endif /* CONFIG_4xx || CONFIG_PPC_8xx */
- 
- 	.text
- 
-@@ -38,7 +38,7 @@
- _GLOBAL(clear_page)
- 	li	r0,4096/CACHE_LINE_SIZE
- 	mtctr	r0
--#ifdef CONFIG_8xx
-+#ifdef CONFIG_PPC_8xx
- 	li	r4, 0
- 1:	stw	r4, 0(r3)
- 	stw	r4, 4(r3)
-@@ -72,7 +72,7 @@ _GLOBAL(copy_page)
- 	addi	r4,r4,-4
- 	li	r5,4
- 
--#ifndef CONFIG_8xx
-+#ifndef CONFIG_PPC_8xx
- #if MAX_COPY_PREFETCH > 1
- 	li	r0,MAX_COPY_PREFETCH
- 	li	r11,4
-@@ -84,12 +84,12 @@ _GLOBAL(copy_page)
- 	dcbt	r5,r4
- 	li	r11,CACHE_LINE_SIZE+4
- #endif /* MAX_COPY_PREFETCH */
--#endif /* CONFIG_8xx */
-+#endif /* CONFIG_PPC_8xx */
- 
- 	li	r0,4096/CACHE_LINE_SIZE
- 	mtctr	r0
- 1:
--#ifndef CONFIG_8xx
-+#ifndef CONFIG_PPC_8xx
- 	dcbt	r11,r4
- 	dcbz	r5,r3
- #endif
--- 
-2.1.0
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 6521c3b..c5a3726 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -89,84 +89,6 @@ void hw_set2dformat(struct lynx_accel * accel,int fmt)
+ 	write_dpr(accel,DE_STRETCH_FORMAT,reg);
+ }
 
+-/* seems sm712 RectFill command is broken,so need use BitBlt to
+- * replace it. */
+-
+-int hw712_fillrect(struct lynx_accel * accel,
+-				u32 base,u32 pitch,u32 Bpp,
+-				u32 x,u32 y,u32 width,u32 height,
+-				u32 color,u32 rop)
+-{
+-	u32 deCtrl;
+-	if(accel->de_wait() != 0)
+-	{
+-		/* int time wait and always busy,seems hardware
+-		 * got something error */
+-		pr_debug("%s:De engine always bussy\n",__func__);
+-		return -1;
+-	}
+-	/* 24bpp 2d acceleration still not work,we already support 2d on
+-	 * both 8/16/32 bpp now, so there is no harm if we disable 2d on
+-	 * 24bpp for current stage. */
+-#if 0
+-	if(Bpp = 3){
+-		width *= 3;
+-		x *= 3;
+-		write_dpr(accel,DE_PITCH,
+-			FIELD_VALUE(0,DE_PITCH,DESTINATION,pitch)|
+-			FIELD_VALUE(0,DE_PITCH,SOURCE,pitch));//dpr10
+-	}
+-	else
+-#endif
+-	{
+-		write_dpr(accel,DE_PITCH,
+-			FIELD_VALUE(0,DE_PITCH,DESTINATION,pitch/Bpp)|
+-			FIELD_VALUE(0,DE_PITCH,SOURCE,pitch/Bpp));//dpr10
+-
+-	}
+-
+-	write_dpr(accel,DE_FOREGROUND,color);//DPR14
+-	write_dpr(accel,DE_MONO_PATTERN_HIGH,~0);//DPR34
+-	write_dpr(accel,DE_MONO_PATTERN_LOW,~0);//DPR38
+-
+-	write_dpr(accel,DE_WINDOW_SOURCE_BASE,base);//dpr44
+-	write_dpr(accel,DE_WINDOW_DESTINATION_BASE,base);//dpr40
+-
+-
+-	write_dpr(accel,DE_WINDOW_WIDTH,
+-			FIELD_VALUE(0,DE_WINDOW_WIDTH,DESTINATION,pitch/Bpp)|
+-			FIELD_VALUE(0,DE_WINDOW_WIDTH,SOURCE,pitch/Bpp));//dpr3c
+-
+-
+-	write_dpr(accel,DE_DESTINATION,
+-			FIELD_SET(0,DE_DESTINATION,WRAP,DISABLE)|
+-			FIELD_VALUE(0,DE_DESTINATION,X,x)|
+-			FIELD_VALUE(0,DE_DESTINATION,Y,y));//dpr4
+-
+-	write_dpr(accel,DE_DIMENSION,
+-			FIELD_VALUE(0,DE_DIMENSION,X,width)|
+-			FIELD_VALUE(0,DE_DIMENSION,Y_ET,height));//dpr8
+-
+-	deCtrl -		FIELD_SET(0,DE_CONTROL,STATUS,START)|
+-		FIELD_SET(0,DE_CONTROL,COMMAND,BITBLT)|
+-		FIELD_SET(0,DE_CONTROL,ROP2_SOURCE,PATTERN)|
+-		FIELD_SET(0,DE_CONTROL,ROP_SELECT,ROP2)|
+-		FIELD_VALUE(0,DE_CONTROL,ROP,rop);//dpr0xc
+-#if 0
+-		/* dump registers */
+-		int i;
+-		inf_msg("x,y,w,h = %d,%d,%d,%d\n",x,y,width,height);
+-		for(i=0x04;i<=0x44;i+=4){
+-			inf_msg("dpr%02x = %08x\n",i,read_dpr(accel,i));
+-		}
+-		inf_msg("deCtrl = %08x\n",deCtrl);
+-#endif
+-
+-	write_dpr(accel,DE_CONTROL,deCtrl);
+-	return 0;
+-}
+-
+ int hw_fillrect(struct lynx_accel * accel,
+ 				u32 base,u32 pitch,u32 Bpp,
+ 				u32 x,u32 y,u32 width,u32 height,
+--
+2.3.2

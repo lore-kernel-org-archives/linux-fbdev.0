@@ -1,38 +1,74 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Fri, 20 Mar 2015 13:04:19 +0000
-Subject: Re: [PATCH] sm750fb: Fix Comment and if else braces
-Message-Id: <20150320130419.GB23287@kroah.com>
+From: =?UTF-8?B?R2llZHJpdXMgU3RhdGtldmnEjWl1cw==?=  <giedrius.statkevicius@gmail.com>
+Date: Thu, 19 Mar 2015 17:42:03 +0000
+Subject: Re: [PATCH] sm750fb: Fix C99 Comments and if else braces
+Message-Id: <550B0A6B.5090008@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150319180556.GA12241@amitoj-Inspiron-3542>
- <550B11C0.1030300@gmail.com>
-In-Reply-To: <550B11C0.1030300@gmail.com>
+References: <20150319173947.GA12061@amitoj-Inspiron-3542>
+In-Reply-To: <20150319173947.GA12061@amitoj-Inspiron-3542>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Giedrius =?utf-8?Q?Statkevi=C4=8Dius?= <giedrius.statkevicius@gmail.com>
-Cc: Amitoj Kaur Chawla <amitoj1606@gmail.com>, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Amitoj Kaur Chawla <amitoj1606@gmail.com>, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-T24gVGh1LCBNYXIgMTksIDIwMTUgYXQgMDg6MTM6MjBQTSArMDIwMCwgR2llZHJpdXMgU3RhdGtl
-dmnEjWl1cyB3cm90ZToKPiBIaSBBbWl0b2ogS2F1ciBDaGF3bGEsCj4gCj4gT24gMjAxNS4wMy4x
-OSAyMDowNSwgQW1pdG9qIEthdXIgQ2hhd2xhIHdyb3RlOgo+ID4gVGhlIGVkaXRzIGhhdmUgYmVl
-biBtYWRlIHRvIGFkZCBhIHNwYWNlIGJlZm9yZSB0aGUgY29tbWVudCBhbmQgdGhlIGVycm9ycyBp
-bgo+ID4gYnJhY2VzIGluIHRoZSBpZi1lbHNlIHN0YXRlbWVudHMuCj4gPiBQcmV2aW91c2x5IGlu
-IGNvbW1pdCAyZDM0ZjUzZjEwNjU4NzhjZDg4MWFjNjFhMTgzZjhlODM2NTgzZDUxLCByZW1vdmVk
-Cj4gPiB0aGUgQzk5IGNvbW1lbnRzIGFuZCBlcnJvcnMgaW4gaWYtZWxzZSBpbmRlbnRhdGlvbiBh
-bmQgYnJhY2VzLgo+IAo+IFRoZSBwcmV2aW91cyBwYXRjaCBpc24ndCBpbiB0aGUgZ2l0IHJlcG8g
-eWV0IHNvIGl0IGRvZXNuJ3QgaGF2ZSBhIGNvbW1pdAo+IGlkIHRodXMgdGhpcyBvbmUgaXMgd3Jv
-bmcuIFlvdSBzaG91bGQndmUganVzdCBtYWRlIGEgdjIgYW5kIG1hZGUgdGhhdAo+IGNoYW5nZS4g
-SSByZWNvbW1lbmQgeW91IHRvIGxvb2sgb3ZlciB0aGlzOgo+IGh0dHA6Ly9rZXJuZWxuZXdiaWVz
-Lm9yZy9GaXJzdEtlcm5lbFBhdGNoIEp1c3QgcmVtb3ZlIHRoZSBIRUFEIGNvbW1pdCBpbgo+IHlv
-dXIgbG9jYWwgZ2l0IHJlcG8sIGFkZCB0aGF0IHNwYWNlIGFuZCB0aGVuIHdoZW4gdXNpbmcgYGdp
-dAo+IGZvcm1hdC1wYXRjaGAgdXNlIHRoZSAiLS1zdWJqZWN0LXByZWZpeCIgb3B0aW9uIHRvIGFk
-ZCB0aGF0IGl0J3MgYQo+IHNlY29uZCB2ZXJzaW9uLiBUaGVuIGFmdGVyICItLS0iIHlvdSBjYW4g
-c2F5IHdoYXQgd2FzIGNoYW5nZWQgaW4gdGhlCj4gc2Vjb25kIHZlcnNpb24uIEZvciBleGFtcGxl
-IChJJ20gc3VyZSB5b3UgY2FuIHRoaW5rIG9mIGEgYmV0dGVyIG9uZSEpOgo+IAo+IFNpZ25lZC1v
-ZmYtYnk6IC4uLgo+IC0tLQo+IHYyOiBhZGRlZCBhIHNwYWNlIGFmdGVyIGEgc3RhdGVtZW50IGlu
-IGEgbGluZSB3aGVyZSBhIGNvZGluZyBzdHlsZSBlcnJvcgo+IHdhcyBmaXhlZC4KPiAKPiBkcml2
-ZXJzLy4uLgoKWWVzLCBwbGVhc2UgcmVzZW5kIGJvdGggb2YgdGhlc2UuCgp0aGFua3MsCgpncmVn
-IGstaAotLQpUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5z
-dWJzY3JpYmUgbGludXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRv
-bW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtl
-cm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA==
+Hi Amitoj Kaur Chawla,
+
+On 2015.03.19 19:39, Amitoj Kaur Chawla wrote:
+> The edits have been made to remove C99 Comments and properly indent
+> the if-else statements in the file while taking care of the braces according to
+> Linux coding style.
+> 
+> Signed-off-by: Amitoj Kaur Chawla <amitoj1606@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_chip.c | 25 +++++++++++--------------
+>  1 file changed, 11 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+> index 33add64..33fa456 100644
+> --- a/drivers/staging/sm750fb/ddk750_chip.c
+> +++ b/drivers/staging/sm750fb/ddk750_chip.c
+> @@ -17,25 +17,22 @@ logical_chip_type_t getChipType(void)
+>  	char physicalRev;
+>  	logical_chip_type_t chip;
+>  
+> -	physicalID = devId750;//either 0x718 or 0x750
+> +	physicalID = devId750;/* either 0x718 or 0x750 */
+
+Add a space here after ;?
+
+>  	physicalRev = revId750;
+>  
+> -    if (physicalID = 0x718)
+> -    {
+> -        chip = SM718;
+> -    }
+> -    else if (physicalID = 0x750)
+> -    {
+> -        chip = SM750;
+> +	if (physicalID = 0x718) {
+> +		chip = SM718;
+> +	}
+> +	else if (physicalID = 0x750) {
+> +		chip = SM750;
+>  		/* SM750 and SM750LE are different in their revision ID only. */
+> -		if (physicalRev = SM750LE_REVISION_ID){
+> +		if (physicalRev = SM750LE_REVISION_ID) {
+>  			chip = SM750LE;
+>  		}
+> -    }
+> -    else
+> -    {
+> -        chip = SM_UNKNOWN;
+> -    }
+> +	}
+> +	else {
+> +		chip = SM_UNKNOWN;
+> +	}
+>  
+>  	return chip;
+>  }
+> 
+
+
+-- 
+Thanks,
+Giedrius

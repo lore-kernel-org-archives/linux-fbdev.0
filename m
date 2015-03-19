@@ -1,26 +1,58 @@
 From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Mon, 09 Mar 2015 13:29:13 +0000
-Subject: Re: [PATCH v2 4/4] staging: sm750fb: fix undeclared function
-Message-Id: <20150309132913.GH10964@mwanda>
+Date: Thu, 19 Mar 2015 12:30:21 +0000
+Subject: possible typo in ancient radeon code
+Message-Id: <20150319123021.GA12264@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425886506-8643-1-git-send-email-sudipm.mukherjee@gmail.com>
- <1425886506-8643-4-git-send-email-sudipm.mukherjee@gmail.com>
- <20150309124222.GE10964@mwanda>
- <20150309125503.GB11724@sudip-PC>
-In-Reply-To: <20150309125503.GB11724@sudip-PC>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: devel@driverdev.osuosl.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Mar 09, 2015 at 06:25:03PM +0530, Sudip Mukherjee wrote:
-> Actually I thought, since this is a vendor crude driver there will be many such changes, so if i can combine some changes together then atleast the number of patches can be kept low and also i thought of clubbing these changes together as Joe Perches once told me "Don't get carried away with patch type separation" (reference: https://lkml.org/lkml/2015/1/1/2).
+Hello FB devs,
 
-How to break up patches is more art than science.  I wouldn't have
-complained about the minor extra white space changes except that I was
-already going to email you about breaking my scripts.
+This ancient code from 1da177e4c3f4: "Linux-2.6.12-rc2" from Apr 16,
+2005, leads to the following static checker warning:
+
+	drivers/video/fbdev/aty/radeon_pm.c:417 radeon_pm_enable_dynamic_mode()
+	warn: we tested 'tmp & (1 << 21)' before and it was 'true'
+
+include/video/radeon.h
+  1216  #define MCLK_CNTL__MRDCKA1_SOUTSEL_MASK                 0x0c000000L
+  1217  #define MCLK_CNTL__MRDCKB0_SOUTSEL_MASK                 0x30000000L
+  1218  #define MCLK_CNTL__MRDCKB1_SOUTSEL_MASK                 0xc0000000L
+  1219  #define MCLK_CNTL__R300_DISABLE_MC_MCLKA                (1 << 21)
+  1220  #define MCLK_CNTL__R300_DISABLE_MC_MCLKB                (1 << 21)
+
+These are probably supposed to refer to different bits.
+
+  1221  
+  1222  // MCLK_MISC
+
+drivers/video/fbdev/aty/radeon_pm.c
+   411                  /* Some releases of vbios have set DISABLE_MC_MCLKA
+   412                   * and DISABLE_MC_MCLKB bits in the vbios table.  Setting these
+   413                   * bits will cause H/W hang when reading video memory with dynamic
+   414                   * clocking enabled.
+   415                   */
+   416                  if ((tmp & MCLK_CNTL__R300_DISABLE_MC_MCLKA) &&
+   417                      (tmp & MCLK_CNTL__R300_DISABLE_MC_MCLKB)) {
+
+The duplicate check here causes a warning.  I guess it probably doesn't
+matter if no one complains...
+
+   418                          /* If both bits are set, then check the active channels */
+   419                          tmp = INPLL(pllMCLK_CNTL);
+   420                          if (rinfo->vram_width = 64) {
+   421                              if (INREG(MEM_CNTL) & R300_MEM_USE_CD_CH_ONLY)
+   422                                  tmp &= ~MCLK_CNTL__R300_DISABLE_MC_MCLKB;
+   423                              else
+   424                                  tmp &= ~MCLK_CNTL__R300_DISABLE_MC_MCLKA;
+   425                          } else {
+   426                              tmp &= ~(MCLK_CNTL__R300_DISABLE_MC_MCLKA |
+   427                                       MCLK_CNTL__R300_DISABLE_MC_MCLKB);
+   428                          }
+   429                  }
+
 
 regards,
 dan carpenter
-

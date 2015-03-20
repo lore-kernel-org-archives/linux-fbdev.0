@@ -1,79 +1,77 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 19 Mar 2015 12:52:31 +0000
-Subject: Re: possible typo in ancient radeon code
-Message-Id: <CAMuHMdU=TiQbq8=ur_CZtMFHCPe7qjjKZXcxjyNq1cjKcB1B2w@mail.gmail.com>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Fri, 20 Mar 2015 15:22:11 +0000
+Subject: [PATCH RESEND 2 1/5] staging: sm750fb: Use memset_io instead of memset
+Message-Id: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150319123021.GA12264@mwanda>
-In-Reply-To: <20150319123021.GA12264@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-CC BenH
+This patch takes into account that cursor->vstart, crtc->vScreen and
+share->pvMem are pointers to memory-mapped I/O and thus we should use memset_io
+to make this explicit. In addition, some architectures require special treatment
+of memory-mapped I/O so the previous code could actually break without this
+change.
 
-On Thu, Mar 19, 2015 at 1:30 PM, Dan Carpenter <dan.carpenter@oracle.com> wrote:
-> Hello FB devs,
->
-> This ancient code from 1da177e4c3f4: "Linux-2.6.12-rc2" from Apr 16,
-> 2005, leads to the following static checker warning:
+This fixes the following sparse warnings:-
 
-Nah, it's a little bit older (in full-history-linux ;-)
+drivers/staging/sm750fb/sm750.c:489:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:490:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:501:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:502:17: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:833:5: warning: incorrect type in argument 1 (different address spaces)
+drivers/staging/sm750fb/sm750.c:1154:9: warning: incorrect type in argument 1 (different address spaces)
 
-commit 9ff343f3d155aa35f79bae8607d7c4500d7ef848
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Thu Feb 10 16:03:30 2005 -0800
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-    [PATCH] radeonfb update
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index aa0888c..3e36b6a 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -486,8 +486,8 @@ static int lynxfb_resume(struct pci_dev* pdev)
+ 		par = info->par;
+ 		crtc = &par->crtc;
+ 		cursor = &crtc->cursor;
+-		memset(cursor->vstart, 0x0, cursor->size);
+-		memset(crtc->vScreen,0x0,crtc->vidmem_size);
++		memset_io(cursor->vstart, 0x0, cursor->size);
++		memset_io(crtc->vScreen, 0x0, crtc->vidmem_size);
+ 		lynxfb_ops_set_par(info);
+ 		fb_set_suspend(info, 0);
+ 	}
+@@ -498,8 +498,8 @@ static int lynxfb_resume(struct pci_dev* pdev)
+ 		par = info->par;
+ 		crtc = &par->crtc;
+ 		cursor = &crtc->cursor;
+-		memset(cursor->vstart, 0x0, cursor->size);
+-		memset(crtc->vScreen,0x0,crtc->vidmem_size);
++		memset_io(cursor->vstart, 0x0, cursor->size);
++		memset_io(crtc->vScreen, 0x0, crtc->vidmem_size);
+ 		lynxfb_ops_set_par(info);
+ 		fb_set_suspend(info, 0);
+ 	}
+@@ -830,7 +830,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info,int index)
 
->
->         drivers/video/fbdev/aty/radeon_pm.c:417 radeon_pm_enable_dynamic_mode()
->         warn: we tested 'tmp & (1 << 21)' before and it was 'true'
->
-> include/video/radeon.h
->   1216  #define MCLK_CNTL__MRDCKA1_SOUTSEL_MASK                 0x0c000000L
->   1217  #define MCLK_CNTL__MRDCKB0_SOUTSEL_MASK                 0x30000000L
->   1218  #define MCLK_CNTL__MRDCKB1_SOUTSEL_MASK                 0xc0000000L
->   1219  #define MCLK_CNTL__R300_DISABLE_MC_MCLKA                (1 << 21)
->   1220  #define MCLK_CNTL__R300_DISABLE_MC_MCLKB                (1 << 21)
->
-> These are probably supposed to refer to different bits.
->
->   1221
->   1222  // MCLK_MISC
->
-> drivers/video/fbdev/aty/radeon_pm.c
->    411                  /* Some releases of vbios have set DISABLE_MC_MCLKA
->    412                   * and DISABLE_MC_MCLKB bits in the vbios table.  Setting these
->    413                   * bits will cause H/W hang when reading video memory with dynamic
->    414                   * clocking enabled.
->    415                   */
->    416                  if ((tmp & MCLK_CNTL__R300_DISABLE_MC_MCLKA) &&
->    417                      (tmp & MCLK_CNTL__R300_DISABLE_MC_MCLKB)) {
->
-> The duplicate check here causes a warning.  I guess it probably doesn't
-> matter if no one complains...
->
->    418                          /* If both bits are set, then check the active channels */
->    419                          tmp = INPLL(pllMCLK_CNTL);
->    420                          if (rinfo->vram_width = 64) {
->    421                              if (INREG(MEM_CNTL) & R300_MEM_USE_CD_CH_ONLY)
->    422                                  tmp &= ~MCLK_CNTL__R300_DISABLE_MC_MCLKB;
->    423                              else
->    424                                  tmp &= ~MCLK_CNTL__R300_DISABLE_MC_MCLKA;
->    425                          } else {
->    426                              tmp &= ~(MCLK_CNTL__R300_DISABLE_MC_MCLKA |
->    427                                       MCLK_CNTL__R300_DISABLE_MC_MCLKB);
->    428                          }
->    429                  }
 
-Gr{oetje,eeting}s,
+     crtc->cursor.share = share;
+-    memset(crtc->cursor.vstart, 0, crtc->cursor.size);
++	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
+     if(!g_hwcursor){
+         lynxfb_ops.fb_cursor = NULL;
+         crtc->cursor.disable(&crtc->cursor);
+@@ -1151,7 +1151,7 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
+ 	}
+ #endif
 
-                        Geert
+-	memset(share->pvMem,0,share->vidmem_size);
++	memset_io(share->pvMem, 0, share->vidmem_size);
+
+ 	pr_info("sm%3x mmio address = %p\n",share->devid,share->pvReg);
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+2.3.2

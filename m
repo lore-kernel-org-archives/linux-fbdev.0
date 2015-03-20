@@ -1,150 +1,65 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Tue, 24 Mar 2015 21:23:57 +0000
-Subject: [PATCHv5 10/11] fbdev: ssd1307fb: add backlight controls for setting the contrast
-Message-Id: <1427232238-21099-11-git-send-email-niederp@physik.uni-kl.de>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:17:51 +0000
+Subject: [PATCH v1 01/47] x86: mtrr: annotate mtrr_type_lookup() is only implemented on generic_mtrr_ops
+Message-Id: <1426893517-2511-2-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Hansen <dave.hansen@linux.intel.com>, Stefan Bader <stefan.bader@canonical.com>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, toshi.kani@hp.com, bhelgaas@google.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, xen-devel@lists.xensource.com
 
-The backlight class is used to create userspace handles for
-setting the OLED contrast.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+There area few users of mtrr_type_lookup(), including PAT.
+Note that PAT can be in theory enabled without MTRR fully
+kicking in, such is the case with Xen.
+
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: venkatesh.pallipadi@intel.com
+Cc: Stefan Bader <stefan.bader@canonical.com>
+Cc: konrad.wilk@oracle.com
+Cc: ville.syrjala@linux.intel.com
+Cc: david.vrabel@citrix.com
+Cc: jbeulich@suse.com
+Cc: toshi.kani@hp.com
+Cc: bhelgaas@google.com
+Cc: Roger Pau Monn=C3=A9 <roger.pau@citrix.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: xen-devel@lists.xensource.com
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/Kconfig     |  1 +
- drivers/video/fbdev/ssd1307fb.c | 58 +++++++++++++++++++++++++++++++++++++=
-++++
- 2 files changed, 59 insertions(+)
+ arch/x86/kernel/cpu/mtrr/generic.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index b3dd417..da70bae 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2478,6 +2478,7 @@ config FB_SSD1307
- 	select FB_SYS_IMAGEBLIT
- 	select FB_DEFERRED_IO
- 	select PWM
-+	select FB_BACKLIGHT
- 	help
- 	  This driver implements support for the Solomon SSD1307
- 	  OLED controller over I2C.
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index d5aec5c..061cc95 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -7,6 +7,7 @@
-  */
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/=
+generic.c
+index 7d74f7b..09c82de 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -230,6 +230,8 @@ u8 mtrr_type_lookup(u64 start, u64 end)
+ 	int repeat;
+ 	u64 partial_end;
 =20
- #include <linux/module.h>
-+#include <linux/backlight.h>
- #include <linux/kernel.h>
- #include <linux/i2c.h>
- #include <linux/fb.h>
-@@ -38,6 +39,8 @@
- #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
- #define	SSD1307FB_SET_VCOMH		0xdb
++	/* XXX: Currently only implemented on generic_mtrr_ops */
++
+ 	type =3D __mtrr_type_lookup(start, end, &partial_end, &repeat);
 =20
-+#define MAX_CONTRAST 255
-+
- #define REFRESHRATE 1
-=20
- static u_int refreshrate =3D REFRESHRATE;
-@@ -428,6 +431,43 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	return 0;
- }
-=20
-+static int ssd1307fb_update_bl(struct backlight_device *bdev)
-+{
-+	struct ssd1307fb_par *par =3D bl_get_data(bdev);
-+	int ret;
-+	int brightness =3D bdev->props.brightness;
-+
-+	par->contrast =3D brightness;
-+
-+	ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_CONTRAST);
-+	if (ret < 0)
-+		return ret;
-+	ret =3D ssd1307fb_write_cmd(par->client, par->contrast);
-+	if (ret < 0)
-+		return ret;
-+	return 0;
-+}
-+
-+static int ssd1307fb_get_brightness(struct backlight_device *bdev)
-+{
-+	struct ssd1307fb_par *par =3D bl_get_data(bdev);
-+
-+	return par->contrast;
-+}
-+
-+static int ssd1307fb_check_fb(struct backlight_device *bdev,
-+				   struct fb_info *info)
-+{
-+	return (info->bl_dev =3D bdev);
-+}
-+
-+static const struct backlight_ops ssd1307fb_bl_ops =3D {
-+	.options	=3D BL_CORE_SUSPENDRESUME,
-+	.update_status	=3D ssd1307fb_update_bl,
-+	.get_brightness	=3D ssd1307fb_get_brightness,
-+	.check_fb	=3D ssd1307fb_check_fb,
-+};
-+
- static struct ssd1307fb_deviceinfo ssd1307fb_ssd1305_deviceinfo =3D {
- 	.default_vcomh =3D 0x34,
- 	.default_dclk_div =3D 0,
-@@ -472,6 +512,8 @@ MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
- static int ssd1307fb_probe(struct i2c_client *client,
- 			   const struct i2c_device_id *id)
- {
-+	struct backlight_device *bl;
-+	char bl_name[12];
- 	struct fb_info *info;
- 	struct device_node *node =3D client->dev.of_node;
- 	struct fb_deferred_io *ssd1307fb_defio;
-@@ -607,10 +649,24 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 		goto panel_init_error;
- 	}
-=20
-+	snprintf(bl_name, sizeof(bl_name), "ssd1307fb%d", info->node);
-+	bl =3D backlight_device_register(bl_name, &client->dev, par,
-+				       &ssd1307fb_bl_ops, NULL);
-+	bl->props.brightness =3D contrast;
-+	bl->props.max_brightness =3D MAX_CONTRAST;
-+	info->bl_dev =3D bl;
-+
-+	if (IS_ERR(bl)) {
-+		dev_err(&client->dev, "unable to register backlight device: %ld\n",
-+			PTR_ERR(bl));
-+		goto bl_init_error;
-+	}
- 	dev_info(&client->dev, "fb%d: %s framebuffer device registered, using %d =
-bytes of video memory\n", info->node, info->fix.id, vmem_size);
-=20
- 	return 0;
-=20
-+bl_init_error:
-+	unregister_framebuffer(info);
- panel_init_error:
- 	if (par->device_info->need_pwm) {
- 		pwm_disable(par->pwm);
-@@ -630,6 +686,8 @@ static int ssd1307fb_remove(struct i2c_client *client)
-=20
- 	ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
-=20
-+	backlight_device_unregister(info->bl_dev);
-+
- 	unregister_framebuffer(info);
- 	if (par->device_info->need_pwm) {
- 		pwm_disable(par->pwm);
+ 	/*
 --=20
-2.3.0
+2.3.2.209.gd67f9d5.dirty
 

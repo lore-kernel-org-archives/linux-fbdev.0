@@ -1,110 +1,113 @@
 From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Tue, 10 Mar 2015 15:25:47 +0000
-Subject: [PATCH v3] staging: sm750fb: Cleanup the type of mmio750
-Message-Id: <1426001147-17332-1-git-send-email-lstoakes@gmail.com>
+Date: Fri, 20 Mar 2015 15:22:13 +0000
+Subject: [PATCH RESEND 2 3/5] staging: sm750fb: Remove unused function
+Message-Id: <1426864935-29350-3-git-send-email-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
+In-Reply-To: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
 Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
 
-This patch assigns the more appropriate void* type to the mmio750 variable
-eliminating an unnecessary volatile qualifier in the process. Additionally it
-updates parameter types as necessary where those parameters interact with
-mmio750, removes unnecessary casts and updates the type of the
-lynx_share->pvReg field which is passed to the ddk750_set_mmio method.
+This patch removes the unused hw712_fillrect function. This patch fixes
+the following sparse warning:-
 
-As a consequence, this patch fixes the following sparse warning:-
-
-drivers/staging/sm750fb/ddk750_help.c:12:17: warning: incorrect type in assignment (different address spaces)
+drivers/staging/sm750fb/sm750_accel.c:95:5: warning: symbol 'hw712_fillrect' was not declared. Should it be static?
 
 Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.h |  4 +++-
- drivers/staging/sm750fb/ddk750_help.c |  4 ++--
- drivers/staging/sm750fb/ddk750_help.h | 10 +++++-----
- drivers/staging/sm750fb/sm750.h       |  2 +-
- 4 files changed, 11 insertions(+), 9 deletions(-)
+ drivers/staging/sm750fb/sm750_accel.c | 78 -----------------------------------
+ 1 file changed, 78 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
-index d761b72..04cb0d5 100644
---- a/drivers/staging/sm750fb/ddk750_chip.h
-+++ b/drivers/staging/sm750fb/ddk750_chip.h
-@@ -5,6 +5,8 @@
- #define SM750LE_REVISION_ID ((unsigned char)0xfe)
- #endif
- 
-+#include <linux/io.h>
-+
- /* This is all the chips recognized by this library */
- typedef enum _logical_chip_type_t
- {
-@@ -72,7 +74,7 @@ logical_chip_type_t getChipType(void);
- unsigned int calcPllValue(unsigned int request,pll_value_t *pll);
- unsigned int calcPllValue2(unsigned int,pll_value_t *);
- unsigned int formatPllReg(pll_value_t *pPLL);
--void ddk750_set_mmio(volatile unsigned char *,unsigned short,char);
-+void ddk750_set_mmio(void __iomem *,unsigned short,char);
- unsigned int ddk750_getVMSize(void);
- int ddk750_initHw(initchip_param_t *);
- unsigned int getPllValue(clock_type_t clockType, pll_value_t *pPLL);
-diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
-index cc00d2b..c68ff3b 100644
---- a/drivers/staging/sm750fb/ddk750_help.c
-+++ b/drivers/staging/sm750fb/ddk750_help.c
-@@ -2,12 +2,12 @@
- //#include "ddk750_chip.h"
- #include "ddk750_help.h"
- 
--volatile unsigned char __iomem * mmio750 = NULL;
-+void __iomem * mmio750 = NULL;
- char revId750 = 0;
- unsigned short devId750 = 0;
- 
- /* after driver mapped io registers, use this function first */
--void ddk750_set_mmio(volatile unsigned char * addr,unsigned short devId,char revId)
-+void ddk750_set_mmio(void __iomem * addr,unsigned short devId,char revId)
- {
- 	mmio750 = addr;
- 	devId750 = devId;
-diff --git a/drivers/staging/sm750fb/ddk750_help.h b/drivers/staging/sm750fb/ddk750_help.h
-index 4fc93b5..07c8264 100644
---- a/drivers/staging/sm750fb/ddk750_help.h
-+++ b/drivers/staging/sm750fb/ddk750_help.h
-@@ -12,14 +12,14 @@
- #if 0
- /* if 718 big endian turned on,be aware that don't use this driver for general use,only for ppc big-endian */
- #warning "big endian on target cpu and enable nature big endian support of 718 capability !"
--#define PEEK32(addr)  			__raw_readl((void __iomem *)(mmio750)+(addr))
--#define POKE32(addr,data) 		__raw_writel((data),(void __iomem*)(mmio750)+(addr))
-+#define PEEK32(addr)  			__raw_readl(mmio750 + addr)
-+#define POKE32(addr,data) 		__raw_writel(data, mmio750 + addr)
- #else /* software control endianess */
--#define PEEK32(addr) readl((addr)+mmio750)
--#define POKE32(addr,data) writel((data),(addr)+mmio750)
-+#define PEEK32(addr) readl(addr + mmio750)
-+#define POKE32(addr,data) writel(data, addr + mmio750)
- #endif
- 
--extern volatile unsigned  char __iomem * mmio750;
-+extern void __iomem * mmio750;
- extern char revId750;
- extern unsigned short devId750;
- #else
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index d39968c..5361116 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -63,7 +63,7 @@ struct lynx_share{
- 	unsigned long vidreg_start;
- 	__u32 vidmem_size;
- 	__u32 vidreg_size;
--	volatile unsigned char __iomem * pvReg;
-+	void __iomem * pvReg;
- 	unsigned char __iomem * pvMem;
- 	/* locks*/
- 	spinlock_t slock;
--- 
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 6521c3b..c5a3726 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -89,84 +89,6 @@ void hw_set2dformat(struct lynx_accel * accel,int fmt)
+ 	write_dpr(accel,DE_STRETCH_FORMAT,reg);
+ }
+
+-/* seems sm712 RectFill command is broken,so need use BitBlt to
+- * replace it. */
+-
+-int hw712_fillrect(struct lynx_accel * accel,
+-				u32 base,u32 pitch,u32 Bpp,
+-				u32 x,u32 y,u32 width,u32 height,
+-				u32 color,u32 rop)
+-{
+-	u32 deCtrl;
+-	if(accel->de_wait() != 0)
+-	{
+-		/* int time wait and always busy,seems hardware
+-		 * got something error */
+-		pr_debug("%s:De engine always bussy\n",__func__);
+-		return -1;
+-	}
+-	/* 24bpp 2d acceleration still not work,we already support 2d on
+-	 * both 8/16/32 bpp now, so there is no harm if we disable 2d on
+-	 * 24bpp for current stage. */
+-#if 0
+-	if(Bpp = 3){
+-		width *= 3;
+-		x *= 3;
+-		write_dpr(accel,DE_PITCH,
+-			FIELD_VALUE(0,DE_PITCH,DESTINATION,pitch)|
+-			FIELD_VALUE(0,DE_PITCH,SOURCE,pitch));//dpr10
+-	}
+-	else
+-#endif
+-	{
+-		write_dpr(accel,DE_PITCH,
+-			FIELD_VALUE(0,DE_PITCH,DESTINATION,pitch/Bpp)|
+-			FIELD_VALUE(0,DE_PITCH,SOURCE,pitch/Bpp));//dpr10
+-
+-	}
+-
+-	write_dpr(accel,DE_FOREGROUND,color);//DPR14
+-	write_dpr(accel,DE_MONO_PATTERN_HIGH,~0);//DPR34
+-	write_dpr(accel,DE_MONO_PATTERN_LOW,~0);//DPR38
+-
+-	write_dpr(accel,DE_WINDOW_SOURCE_BASE,base);//dpr44
+-	write_dpr(accel,DE_WINDOW_DESTINATION_BASE,base);//dpr40
+-
+-
+-	write_dpr(accel,DE_WINDOW_WIDTH,
+-			FIELD_VALUE(0,DE_WINDOW_WIDTH,DESTINATION,pitch/Bpp)|
+-			FIELD_VALUE(0,DE_WINDOW_WIDTH,SOURCE,pitch/Bpp));//dpr3c
+-
+-
+-	write_dpr(accel,DE_DESTINATION,
+-			FIELD_SET(0,DE_DESTINATION,WRAP,DISABLE)|
+-			FIELD_VALUE(0,DE_DESTINATION,X,x)|
+-			FIELD_VALUE(0,DE_DESTINATION,Y,y));//dpr4
+-
+-	write_dpr(accel,DE_DIMENSION,
+-			FIELD_VALUE(0,DE_DIMENSION,X,width)|
+-			FIELD_VALUE(0,DE_DIMENSION,Y_ET,height));//dpr8
+-
+-	deCtrl -		FIELD_SET(0,DE_CONTROL,STATUS,START)|
+-		FIELD_SET(0,DE_CONTROL,COMMAND,BITBLT)|
+-		FIELD_SET(0,DE_CONTROL,ROP2_SOURCE,PATTERN)|
+-		FIELD_SET(0,DE_CONTROL,ROP_SELECT,ROP2)|
+-		FIELD_VALUE(0,DE_CONTROL,ROP,rop);//dpr0xc
+-#if 0
+-		/* dump registers */
+-		int i;
+-		inf_msg("x,y,w,h = %d,%d,%d,%d\n",x,y,width,height);
+-		for(i=0x04;i<=0x44;i+=4){
+-			inf_msg("dpr%02x = %08x\n",i,read_dpr(accel,i));
+-		}
+-		inf_msg("deCtrl = %08x\n",deCtrl);
+-#endif
+-
+-	write_dpr(accel,DE_CONTROL,deCtrl);
+-	return 0;
+-}
+-
+ int hw_fillrect(struct lynx_accel * accel,
+ 				u32 base,u32 pitch,u32 Bpp,
+ 				u32 x,u32 y,u32 width,u32 height,
+--
 2.3.2
-

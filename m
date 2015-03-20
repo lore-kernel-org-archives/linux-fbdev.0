@@ -1,54 +1,38 @@
-From: Amitoj Kaur Chawla <amitoj1606@gmail.com>
-Date: Thu, 19 Mar 2015 18:17:56 +0000
-Subject: [PATCH] sm750fb: Fix Comment and if else braces
-Message-Id: <20150319180556.GA12241@amitoj-Inspiron-3542>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Fri, 20 Mar 2015 13:04:19 +0000
+Subject: Re: [PATCH] sm750fb: Fix Comment and if else braces
+Message-Id: <20150320130419.GB23287@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <550B11C0.1030300@gmail.com>
+References: <20150319180556.GA12241@amitoj-Inspiron-3542>
+ <550B11C0.1030300@gmail.com>
 In-Reply-To: <550B11C0.1030300@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Giedrius =?utf-8?Q?Statkevi=C4=8Dius?= <giedrius.statkevicius@gmail.com>
+Cc: Amitoj Kaur Chawla <amitoj1606@gmail.com>, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-The edits have been made to add a space before the comment and the errors in
-braces in the if-else statements.
-Previously in commit 2d34f53f1065878cd881ac61a183f8e836583d51, removed
-the C99 comments and errors in if-else indentation and braces.
- 
-Signed-off-by: Amitoj Kaur Chawla <amitoj1606@gmail.com>
----
- drivers/staging/sm750fb/ddk750_chip.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 33fa456..bdf6a73 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -17,20 +17,17 @@ logical_chip_type_t getChipType(void)
- 	char physicalRev;
- 	logical_chip_type_t chip;
- 
--	physicalID = devId750;/* either 0x718 or 0x750 */
-+	physicalID = devId750; /* either 0x718 or 0x750 */
- 	physicalRev = revId750;
- 
- 	if (physicalID = 0x718) {
- 		chip = SM718;
--	}
--	else if (physicalID = 0x750) {
-+	} else if (physicalID = 0x750) {
- 		chip = SM750;
- 		/* SM750 and SM750LE are different in their revision ID only. */
--		if (physicalRev = SM750LE_REVISION_ID) {
-+		if (physicalRev = SM750LE_REVISION_ID)
- 			chip = SM750LE;
--		}
--	}
--	else {
-+	} else {
- 		chip = SM_UNKNOWN;
- 	}
- 
--- 
-1.9.1
-
+T24gVGh1LCBNYXIgMTksIDIwMTUgYXQgMDg6MTM6MjBQTSArMDIwMCwgR2llZHJpdXMgU3RhdGtl
+dmnEjWl1cyB3cm90ZToKPiBIaSBBbWl0b2ogS2F1ciBDaGF3bGEsCj4gCj4gT24gMjAxNS4wMy4x
+OSAyMDowNSwgQW1pdG9qIEthdXIgQ2hhd2xhIHdyb3RlOgo+ID4gVGhlIGVkaXRzIGhhdmUgYmVl
+biBtYWRlIHRvIGFkZCBhIHNwYWNlIGJlZm9yZSB0aGUgY29tbWVudCBhbmQgdGhlIGVycm9ycyBp
+bgo+ID4gYnJhY2VzIGluIHRoZSBpZi1lbHNlIHN0YXRlbWVudHMuCj4gPiBQcmV2aW91c2x5IGlu
+IGNvbW1pdCAyZDM0ZjUzZjEwNjU4NzhjZDg4MWFjNjFhMTgzZjhlODM2NTgzZDUxLCByZW1vdmVk
+Cj4gPiB0aGUgQzk5IGNvbW1lbnRzIGFuZCBlcnJvcnMgaW4gaWYtZWxzZSBpbmRlbnRhdGlvbiBh
+bmQgYnJhY2VzLgo+IAo+IFRoZSBwcmV2aW91cyBwYXRjaCBpc24ndCBpbiB0aGUgZ2l0IHJlcG8g
+eWV0IHNvIGl0IGRvZXNuJ3QgaGF2ZSBhIGNvbW1pdAo+IGlkIHRodXMgdGhpcyBvbmUgaXMgd3Jv
+bmcuIFlvdSBzaG91bGQndmUganVzdCBtYWRlIGEgdjIgYW5kIG1hZGUgdGhhdAo+IGNoYW5nZS4g
+SSByZWNvbW1lbmQgeW91IHRvIGxvb2sgb3ZlciB0aGlzOgo+IGh0dHA6Ly9rZXJuZWxuZXdiaWVz
+Lm9yZy9GaXJzdEtlcm5lbFBhdGNoIEp1c3QgcmVtb3ZlIHRoZSBIRUFEIGNvbW1pdCBpbgo+IHlv
+dXIgbG9jYWwgZ2l0IHJlcG8sIGFkZCB0aGF0IHNwYWNlIGFuZCB0aGVuIHdoZW4gdXNpbmcgYGdp
+dAo+IGZvcm1hdC1wYXRjaGAgdXNlIHRoZSAiLS1zdWJqZWN0LXByZWZpeCIgb3B0aW9uIHRvIGFk
+ZCB0aGF0IGl0J3MgYQo+IHNlY29uZCB2ZXJzaW9uLiBUaGVuIGFmdGVyICItLS0iIHlvdSBjYW4g
+c2F5IHdoYXQgd2FzIGNoYW5nZWQgaW4gdGhlCj4gc2Vjb25kIHZlcnNpb24uIEZvciBleGFtcGxl
+IChJJ20gc3VyZSB5b3UgY2FuIHRoaW5rIG9mIGEgYmV0dGVyIG9uZSEpOgo+IAo+IFNpZ25lZC1v
+ZmYtYnk6IC4uLgo+IC0tLQo+IHYyOiBhZGRlZCBhIHNwYWNlIGFmdGVyIGEgc3RhdGVtZW50IGlu
+IGEgbGluZSB3aGVyZSBhIGNvZGluZyBzdHlsZSBlcnJvcgo+IHdhcyBmaXhlZC4KPiAKPiBkcml2
+ZXJzLy4uLgoKWWVzLCBwbGVhc2UgcmVzZW5kIGJvdGggb2YgdGhlc2UuCgp0aGFua3MsCgpncmVn
+IGstaAotLQpUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5z
+dWJzY3JpYmUgbGludXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRv
+bW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtl
+cm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA==

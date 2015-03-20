@@ -1,119 +1,112 @@
-From: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
-Date: Fri, 20 Mar 2015 14:57:09 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 20 Mar 2015 15:21:15 +0000
 Subject: Re: [PATCH] omapdss: extend pm notifier to handle hibernation
-Message-Id: <550C3545.8060702@linaro.org>
+Message-Id: <550C3AEB.1090802@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="wh6MqPi5ftN3vwKhJMjIp8MQxptEn5d1s"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424883836-9119-1-git-send-email-grygorii.strashko@linaro.org> <550C108E.3020907@ti.com>
-In-Reply-To: <550C108E.3020907@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1424883836-9119-1-git-send-email-grygorii.strashko@linaro.org> <550C108E.3020907@ti.com> <550C3545.8060702@linaro.org>
+In-Reply-To: <550C3545.8060702@linaro.org>
+To: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, nm@ti.com, sumit.semwal@linaro.org, linux-omap@vger.kernel.org, kishon@ti.com, linux-fbdev@vger.kernel.org
 
-Hi Tomi,
+--wh6MqPi5ftN3vwKhJMjIp8MQxptEn5d1s
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-On 03/20/2015 02:20 PM, Tomi Valkeinen wrote:
-> On 25/02/15 19:03, grygorii.strashko@linaro.org wrote:
->> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+On 20/03/15 16:57, Grygorii.Strashko@linaro.org wrote:
+> Hi Tomi,
+>=20
+> On 03/20/2015 02:20 PM, Tomi Valkeinen wrote:
+>> On 25/02/15 19:03, grygorii.strashko@linaro.org wrote:
+>>> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+>>>
+>>> Add handling of missed events in omap_dss_pm_notif which are
+>>> needed to support hibernation (suspend to disk).
+>>>
+>>> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+>>> ---
+>>>   drivers/video/fbdev/omap2/dss/core.c | 4 ++++
+>>>   1 file changed, 4 insertions(+)
+>>>
+>>> diff --git a/drivers/video/fbdev/omap2/dss/core.c b/drivers/video/fbd=
+ev/omap2/dss/core.c
+>>> index 6b74f73..e60976a 100644
+>>> --- a/drivers/video/fbdev/omap2/dss/core.c
+>>> +++ b/drivers/video/fbdev/omap2/dss/core.c
+>>> @@ -178,11 +178,15 @@ static int omap_dss_pm_notif(struct notifier_bl=
+ock *b, unsigned long v, void *d)
+>>>   	DSSDBG("pm notif %lu\n", v);
+>>>  =20
+>>>   	switch (v) {
+>>> +	case PM_HIBERNATION_PREPARE:
+>>>   	case PM_SUSPEND_PREPARE:
+>>> +	case PM_RESTORE_PREPARE:
+>>>   		DSSDBG("suspending displays\n");
+>>>   		return dss_suspend_all_devices();
+>>>  =20
+>>>   	case PM_POST_SUSPEND:
+>>> +	case PM_POST_HIBERNATION:
+>>> +	case PM_POST_RESTORE:
+>>>   		DSSDBG("resuming displays\n");
+>>>   		return dss_resume_all_devices();
+>>>  =20
 >>
->> Add handling of missed events in omap_dss_pm_notif which are
->> needed to support hibernation (suspend to disk).
->>
->> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
->> ---
->>   drivers/video/fbdev/omap2/dss/core.c | 4 ++++
->>   1 file changed, 4 insertions(+)
->>
->> diff --git a/drivers/video/fbdev/omap2/dss/core.c b/drivers/video/fbdev/omap2/dss/core.c
->> index 6b74f73..e60976a 100644
->> --- a/drivers/video/fbdev/omap2/dss/core.c
->> +++ b/drivers/video/fbdev/omap2/dss/core.c
->> @@ -178,11 +178,15 @@ static int omap_dss_pm_notif(struct notifier_block *b, unsigned long v, void *d)
->>   	DSSDBG("pm notif %lu\n", v);
->>   
->>   	switch (v) {
->> +	case PM_HIBERNATION_PREPARE:
->>   	case PM_SUSPEND_PREPARE:
->> +	case PM_RESTORE_PREPARE:
->>   		DSSDBG("suspending displays\n");
->>   		return dss_suspend_all_devices();
->>   
->>   	case PM_POST_SUSPEND:
->> +	case PM_POST_HIBERNATION:
->> +	case PM_POST_RESTORE:
->>   		DSSDBG("resuming displays\n");
->>   		return dss_resume_all_devices();
->>   
-> 
-> Why suspend displays when PM_RESTORE_PREPARE happens? Why resume when
-> PM_POST_RESTORE happens?
+>> Why suspend displays when PM_RESTORE_PREPARE happens? Why resume when
+>> PM_POST_RESTORE happens?
+>=20
+> We have following sequence when system is restored from hibernation:
+> - original kernel booted;
+> - late_initcall_sync(software_resume);
+>   - pm_notifier_call_chain(PM_RESTORE_PREPARE);
+>   - freeze_processes
+>   - check & read hibernation image
+>   - suspend all devices (.freeze())
+>   - jump to stored kernel
+>   - restore devices
+>   ...
+>=20
+> So, all devices should be in frozen/suspended state when we will jump t=
+o stored kernel
+> (device's state should be the same as before creating hib image).
+>=20
+> Without this patch I can see a lot of log messages like below:
 
-We have following sequence when system is restored from hibernation:
-- original kernel booted;
-- late_initcall_sync(software_resume);
-  - pm_notifier_call_chain(PM_RESTORE_PREPARE);
-  - freeze_processes
-  - check & read hibernation image
-  - suspend all devices (.freeze())
-  - jump to stored kernel
-  - restore devices
-  ...
+Yes, I am sure a fix is needed for hibernation. But I still don't quite
+understand PM_RESTORE_PREPARE and PM_POST_RESTORE.
 
-So, all devices should be in frozen/suspended state when we will jump to stored kernel
-(device's state should be the same as before creating hib image).
+When we enter hibernation, there's only PM_HIBERNATION_PREPARE?
 
-Without this patch I can see a lot of log messages like below:
+When waking from hibernation, there's first PM_RESTORE_PREPARE, where we
+need to disable displays that were enabled during boot. Then either
+PM_POST_HIBERNATION if all went well, or PM_POST_RESTORE if there was an
+error, and in both cases we want to enable the displays?
 
-[    3.642499] Freezing user space processes ... 
-[    3.647029]  mmcblk1boot1: unknown partition table
-[    3.647043] (elapsed 0.000 seconds) done.
-[    3.686414]  mmcblk1boot0: unknown partition table
-[    3.714552] PM: Using 1 thread(s) for decompression.
-[    3.714552] PM: Loading and decompressing image data (144641 pages)...
-[    4.520388] PM: Image loading progress:   0%
-[    5.153715] PM: Image loading progress:  10%
-[    5.847731] PM: Image loading progress:  20%
-[    6.622024] PM: Image loading progress:  30%
-[    7.023830] PM: Image loading progress:  40%
-[    7.455959] PM: Image loading progress:  50%
-[    8.137186] PM: Image loading progress:  60%
-[    8.567899] PM: Image loading progress:  70%
-[    9.670371] PM: Image loading progress:  80%
-[   10.130646] PM: Image loading progress:  90%
-[   10.525035] PM: Image loading progress: 100%
-[   10.529565] PM: Image loading done.
-[   10.533262] PM: Read 578564 kbytes in 6.80 seconds (85.08 MB/s)
-[   10.545313] Suspending console(s) (use no_console_suspend to debug)
-[  193.721284] PM: freeze of devices complete after 7.891 msecs
-[  193.722618] PM: late freeze of devices complete after 1.325 msecs
-[  193.723969] PM: noirq freeze of devices complete after 1.343 msecs
-[  193.724133] Disabling non-boot CPUs ...
-[  193.724792] CPU1: shutdown
-[  193.725387] PM: Creating hibernation image:
-[  193.725387] PM: Need to copy 144499 pages
-[  193.725439] Enabling non-boot CPUs ...
-[  193.725783] CPU1: smp_ops.cpu_die() returned, trying to resuscitate
-[  193.725790] CPU1: Booted secondary processor
-[  193.726069] CPU1 is up
-[  193.743772] PM: noirq restore of devices complete after 17.693 msecs
-[  193.744691] PM: early restore of devices complete after 0.634 msecs
-[  193.951382] [drm:omap_crtc_error_irq] *ERROR* tv: errors: 00008000
-[  193.951389] [drm:omap_plane_error_irq] *ERROR* gfx: errors: 00000040
-[  193.951402] [drm:omap_crtc_error_irq] *ERROR* tv: errors: 00008000
-[  193.951413] [drm:omap_crtc_error_irq] *ERROR* tv: errors: 00008000
-[  193.951424] [drm:omap_crtc_error_irq] *ERROR* tv: errors: 00008000
-[  193.951435] [drm:omap_crtc_error_irq] *ERROR* tv: errors: 00008000
-[  193.951445] [drm:omap_crtc_error_irq] *ERROR* tv: errors: 00008000
-[  193.951455] [drm:omap_crtc_error_irq] *ERROR* tv: errors: 00008000
-[  193.951465] [drm:omap_crtc_error_irq] *ERROR* tv: errors: 00008000
-[  193.951475] [drm:omap_crtc_error_irq] *ERROR* tv: errors: 00008000
-[  193.951484] [drm:omap_crtc_error_irq] *ERROR* tv: errors: 00008000
-[  193.951567] omap_l3_noc 44000000.ocp: L3 application error: target 2 mod:1 (unclearable)
-[  193.951605] omap_l3_noc 44000000.ocp: L3 debug error: target 2 mod:1 (unclearable)
-[  194.293226] ata1: SATA link down (SStatus 0 SControl 300)
-[  194.560684] PM: restore of devices complete after 610.740 msecs
+ Tomi
 
--- 
-regards,
--grygorii
+
+
+--wh6MqPi5ftN3vwKhJMjIp8MQxptEn5d1s
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVDDrrAAoJEPo9qoy8lh71Y9IP/3MY65KIKCWnEq3J+6t7NknI
+QB1D7pMO3MF5MMKMY95WD2mZxEqOr0X8aJGcugQp0snKDx7xGTE+6QrsIw2rn/9y
+G0f5sVF4N2KUocU0YlFs+3E7SJQCwYuB/nnbBRhQHaqSsncXI801E+CuuSp9skrp
+1WuFBFIj1/FREGMulYCTNJeFuJ3wiE3Y/U/+d8rpK/4jfOTuFpBp9Xtdg1Xxvyei
+dNOuT3eSRzwWWv/+qJHJPsCzG7Aiz9Ae8zkcp4felKHBlv7iIz248kAi46Xw2X0G
+JfhBi7v0/GmCwzmUWzk31lYsWbqQgJjh4h0GYdgpjdji1Flmb9rbVrRlOU+UJRnu
+scEvC9A0jms86P4Giz6razXboh7AeBw4FkTneFcheYoTWrcVg8Oq72U6V/HtlcjU
+1RsSIjfzb73XNfCS/5LxscGtVQobN3HS2WdexGdOLPcOpIwGdZZSksU3RYmyV0qV
+ZrC1Cq8hJ+09VrHHX147wkzwy86EK/MOR/G5NY+4Qk2gYL1Iq2XdfJExGQ8Nx8OQ
+1rceEA2aJeSs6SQ0WOTd0EELFS/SguRgBMdFCa/Nq6vw5/zZeqxmzekA1OwW9hE1
+7Bp9+FmMInfnMzftTbLuSyK4WxjbL+UXbqjaRCIhhMePE+UTERsw3YXDauaWVTep
+EPo4+Cv5PRQ3gg1EaI72
+=pd1m
+-----END PGP SIGNATURE-----
+
+--wh6MqPi5ftN3vwKhJMjIp8MQxptEn5d1s--

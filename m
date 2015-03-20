@@ -1,58 +1,81 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Mon, 09 Mar 2015 09:47:12 +0000
-Subject: Re: [PATCH 1/4] staging: sm750fb: wrong type for print
-Message-Id: <20150309093511.GA9566@sudip-PC>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 20 Mar 2015 12:20:30 +0000
+Subject: Re: [PATCH] omapdss: extend pm notifier to handle hibernation
+Message-Id: <550C108E.3020907@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="eQqrOXR1IJHWj8me6rAi0aok3JqKxXSjq"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com>
- <20150309092209.GB10964@mwanda>
-In-Reply-To: <20150309092209.GB10964@mwanda>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1424883836-9119-1-git-send-email-grygorii.strashko@linaro.org>
+In-Reply-To: <1424883836-9119-1-git-send-email-grygorii.strashko@linaro.org>
+To: grygorii.strashko@linaro.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, nm@ti.com, sumit.semwal@linaro.org, linux-omap@vger.kernel.org, kishon@ti.com, linux-fbdev@vger.kernel.org
 
-On Mon, Mar 09, 2015 at 12:22:09PM +0300, Dan Carpenter wrote:
-> On Sun, Mar 08, 2015 at 06:01:23PM +0530, Sudip Mukherjee wrote:
-> > diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-> > index 711676c..2ab7b74 100644
-> > --- a/drivers/staging/sm750fb/sm750.h
-> > +++ b/drivers/staging/sm750fb/sm750.h
-> > @@ -59,10 +59,10 @@ struct lynx_share{
-> >  		}mtrr;
-> >  #endif
-> >  	/* all smi graphic adaptor got below attributes */
-> > -	resource_size_t vidmem_start;
-> > -	resource_size_t vidreg_start;
-> > -	resource_size_t vidmem_size;
-> > -	resource_size_t vidreg_size;
-> > +	unsigned long vidmem_start;
-> > +	unsigned long vidreg_start;
-> > +	unsigned long vidmem_size;
-> > +	unsigned long vidreg_size;
-> >  	volatile unsigned char __iomem * pvReg;
-> >  	unsigned char __iomem * pvMem;
-> >  	/* locks*/
-> 
-> This seems like a very risky sort of change.  It's not explained very
-> well in the changelog.  What's the deal?
-it mainly started with the build warnings of incorrect format specifier.
+--eQqrOXR1IJHWj8me6rAi0aok3JqKxXSjq
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-v2 gives a little more details in the comments section. copying that here for your convenience:
+On 25/02/15 19:03, grygorii.strashko@linaro.org wrote:
+> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+>=20
+> Add handling of missed events in omap_dss_pm_notif which are
+> needed to support hibernation (suspend to disk).
+>=20
+> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+> ---
+>  drivers/video/fbdev/omap2/dss/core.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+>=20
+> diff --git a/drivers/video/fbdev/omap2/dss/core.c b/drivers/video/fbdev=
+/omap2/dss/core.c
+> index 6b74f73..e60976a 100644
+> --- a/drivers/video/fbdev/omap2/dss/core.c
+> +++ b/drivers/video/fbdev/omap2/dss/core.c
+> @@ -178,11 +178,15 @@ static int omap_dss_pm_notif(struct notifier_bloc=
+k *b, unsigned long v, void *d)
+>  	DSSDBG("pm notif %lu\n", v);
+> =20
+>  	switch (v) {
+> +	case PM_HIBERNATION_PREPARE:
+>  	case PM_SUSPEND_PREPARE:
+> +	case PM_RESTORE_PREPARE:
+>  		DSSDBG("suspending displays\n");
+>  		return dss_suspend_all_devices();
+> =20
+>  	case PM_POST_SUSPEND:
+> +	case PM_POST_HIBERNATION:
+> +	case PM_POST_RESTORE:
+>  		DSSDBG("resuming displays\n");
+>  		return dss_resume_all_devices();
+> =20
 
-"V2: Giedrius commented resource_size_t can be either u64 or u32
-depending on if CONFIG_PHYS_ADDR_T_64BIT. based on his comments i
-should have kept the datatype as resource_size_t and  used %pa as the
-format specifier. But since this is a framebuffer device and it
-should follow what the framebuffer layer is suggesting in
-struct fb_fix_screeninfo at smem_start and mmio_start."
+Why suspend displays when PM_RESTORE_PREPARE happens? Why resume when
+PM_POST_RESTORE happens?
 
-so accoringly, like all other framebuffer devices, vidmem_start and vidreg_start should be unsigned long and vidmem_size and vidreg_size should be __u32.
+ Tomi
 
 
-regards
-sudip
-> 
-> regards,
-> dan carpenter
-> 
+
+--eQqrOXR1IJHWj8me6rAi0aok3JqKxXSjq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVDBCOAAoJEPo9qoy8lh711zYP/jhWQktaeuNeo+w4wMY2fpZ7
+Y76VZvOwjfbYmx2TYvlQXhAgeIgX4XRFvfrtJwC5/NkL8726EGw4To2DsndYA/gh
+dep3AcDuGSgmSWfIMh47XqEGG3+74A9iVM9A+rdWf4o8wSdX+9eM+cwKv69nkmcQ
+X26COqSYEksDocuN39cStaGse32yrTvDvALZffJBlowIK81LF+Do3N6NLxiOz8u4
+yvVtzQ2VkxBfP+aK3rMSfWT4EAojFuPMS+rG/O71eOKmmPsGi/jwrAuCAWabcmo3
+gd4zr4qM1LHybSYhYPHybQMRNUmIHSFxNigOplhRtRmhT598+ybhNOO4SFhF2et5
+UEmHPI8GyRlMsbgEki5o74jIzYs91gQv31gv2WIlf9F/j8ApZCEnIhJZtsktlOIR
+pNdXkCxGyBQvs9s8To2e0Qegu0jZv5+eph2mdEHPNzN+xOtARdK73N2WBZgFsjgx
+a/od+NUSWkO30LZqd079iaaUIQBAbdYoGRIPgGuYRRaLkN3l78tQvgx5fcEAYb4h
+81uuaq4T2MEQAHPmZ04s8gJrNEUbjB7je/NrlxNJC8GRYi5WLImQtwHa8WpVpOyr
+DDAZiCbOYxgwGkzjgeed6dT2YXA70dMYAkhPb4KIjVSRveeVEjh6DfywZ2+3JK5E
+5RV259f6aGB7KIzVStMU
+=OQtZ
+-----END PGP SIGNATURE-----
+
+--eQqrOXR1IJHWj8me6rAi0aok3JqKxXSjq--

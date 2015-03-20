@@ -1,138 +1,138 @@
-From: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
-Date: Fri, 20 Mar 2015 17:19:57 +0000
-Subject: Re: [PATCH] omapdss: extend pm notifier to handle hibernation
-Message-Id: <550C56BD.9000600@linaro.org>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:11 +0000
+Subject: [PATCH v1 21/47] ethernet: myri10ge: use arch_phys_wc_add()
+Message-Id: <1426893517-2511-22-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424883836-9119-1-git-send-email-grygorii.strashko@linaro.org> <550C108E.3020907@ti.com> <550C3545.8060702@linaro.org> <550C3AEB.1090802@ti.com>
-In-Reply-To: <550C3AEB.1090802@ti.com>
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, nm@ti.com, sumit.semwal@linaro.org, linux-omap@vger.kernel.org, kishon@ti.com, linux-fbdev@vger.kernel.org
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Hyong-Youb Kim <hykim@myri.com>, netdev@vger.kernel.org, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 03/20/2015 05:21 PM, Tomi Valkeinen wrote:
-> On 20/03/15 16:57, Grygorii.Strashko@linaro.org wrote:
->> On 03/20/2015 02:20 PM, Tomi Valkeinen wrote:
->>> On 25/02/15 19:03, grygorii.strashko@linaro.org wrote:
->>>> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
->>>>
->>>> Add handling of missed events in omap_dss_pm_notif which are
->>>> needed to support hibernation (suspend to disk).
->>>>
->>>> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
->>>> ---
->>>>    drivers/video/fbdev/omap2/dss/core.c | 4 ++++
->>>>    1 file changed, 4 insertions(+)
->>>>
->>>> diff --git a/drivers/video/fbdev/omap2/dss/core.c b/drivers/video/fbdev/omap2/dss/core.c
->>>> index 6b74f73..e60976a 100644
->>>> --- a/drivers/video/fbdev/omap2/dss/core.c
->>>> +++ b/drivers/video/fbdev/omap2/dss/core.c
->>>> @@ -178,11 +178,15 @@ static int omap_dss_pm_notif(struct notifier_block *b, unsigned long v, void *d)
->>>>    	DSSDBG("pm notif %lu\n", v);
->>>>    
->>>>    	switch (v) {
->>>> +	case PM_HIBERNATION_PREPARE:
->>>>    	case PM_SUSPEND_PREPARE:
->>>> +	case PM_RESTORE_PREPARE:
->>>>    		DSSDBG("suspending displays\n");
->>>>    		return dss_suspend_all_devices();
->>>>    
->>>>    	case PM_POST_SUSPEND:
->>>> +	case PM_POST_HIBERNATION:
->>>> +	case PM_POST_RESTORE:
->>>>    		DSSDBG("resuming displays\n");
->>>>    		return dss_resume_all_devices();
->>>>    
->>>
->>> Why suspend displays when PM_RESTORE_PREPARE happens? Why resume when
->>> PM_POST_RESTORE happens?
->>
->> We have following sequence when system is restored from hibernation:
->> - original kernel booted;
->> - late_initcall_sync(software_resume);
->>    - pm_notifier_call_chain(PM_RESTORE_PREPARE);
->>    - freeze_processes
->>    - check & read hibernation image
->>    - suspend all devices (.freeze())
->>    - jump to stored kernel
->>    - restore devices
->>    ...
->>
->> So, all devices should be in frozen/suspended state when we will jump to stored kernel
->> (device's state should be the same as before creating hib image).
->>
->> Without this patch I can see a lot of log messages like below:
-> 
-> Yes, I am sure a fix is needed for hibernation. But I still don't quite
-> understand PM_RESTORE_PREPARE and PM_POST_RESTORE.
-> 
-> When we enter hibernation, there's only PM_HIBERNATION_PREPARE?
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-No. There is always PM_POST_HIBERNATION:
-    - original Kernel in case of failure
-    - restored Kernel on success
+This driver already uses ioremap_wc() on the same range
+so when write-combining is available that will be used
+instead.
 
-> 
-> When waking from hibernation, there's first PM_RESTORE_PREPARE, where we
-> need to disable displays that were enabled during boot. Then either
-> PM_POST_HIBERNATION if all went well, or PM_POST_RESTORE if there was an
-> error, and in both cases we want to enable the displays?
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Hyong-Youb Kim <hykim@myri.com>
+Cc: netdev@vger.kernel.org
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+---
+ drivers/net/ethernet/myricom/myri10ge/myri10ge.c | 36 ++++++------------------
+ 1 file changed, 8 insertions(+), 28 deletions(-)
 
-Yes.
-
-==
-int hibernate(void)
-	error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
-...
-	error = hibernation_snapshot(hibernation_mode = HIBERNATION_PLATFORM);
-		^^^ restored kernel will start from here
-
-	if (error || freezer_test_done)
-		goto Free_bitmaps;
-
-	if (in_suspend) {
-...
-
-		pr_debug("PM: writing image.\n");
-		error = swsusp_write(flags);
-		swsusp_free();
-		if (!error)
-			power_down();
-		in_suspend = 0;
-		pm_restore_gfp_mask();
-		^^ this part will be executed by Kernel requested Hibernation
-
-	} else {
-		pr_debug("PM: Image restored successfully.\n");
-		^^ this part will be executed by Kernel restored from Hibernation
-	}
-
-...
-	pm_notifier_call_chain(PM_POST_HIBERNATION);
-^^^ Both Kernels will be notified here:
-    - original Kernel in case of failure
-    - restored Kernel on success
-    
-    
-
-
-==
-static int software_resume(void)
-	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-	error = swsusp_read(&flags);
-	swsusp_close(FMODE_READ);
-	if (!error)
-		hibernation_restore(flags & SF_PLATFORM_MODE);
-                ^^^ if ok we will never return from this function
-
-	printk(KERN_ERR "PM: Failed to load hibernation image, recovering.\n");
-	pm_notifier_call_chain(PM_POST_RESTORE);
-^^^
-   if fail - just continue work as usual
-
-
+diff --git a/drivers/net/ethernet/myricom/myri10ge/myri10ge.c b/drivers/net/ethernet/myricom/myri10ge/myri10ge.c
+index 1412f5a..01e4069 100644
+--- a/drivers/net/ethernet/myricom/myri10ge/myri10ge.c
++++ b/drivers/net/ethernet/myricom/myri10ge/myri10ge.c
+@@ -69,11 +69,7 @@
+ #include <net/ip.h>
+ #include <net/tcp.h>
+ #include <asm/byteorder.h>
+-#include <asm/io.h>
+ #include <asm/processor.h>
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+ #include <net/busy_poll.h>
+ 
+ #include "myri10ge_mcp.h"
+@@ -242,8 +238,7 @@ struct myri10ge_priv {
+ 	unsigned int rdma_tags_available;
+ 	int intr_coal_delay;
+ 	__be32 __iomem *intr_coal_delay_ptr;
+-	int mtrr;
+-	int wc_enabled;
++	int wc_cookie;
+ 	int down_cnt;
+ 	wait_queue_head_t down_wq;
+ 	struct work_struct watchdog_work;
+@@ -1984,7 +1979,6 @@ myri10ge_get_ethtool_stats(struct net_device *netdev,
+ 		data[i] = ((u64 *)&link_stats)[i];
+ 
+ 	data[i++] = (unsigned int)mgp->tx_boundary;
+-	data[i++] = (unsigned int)mgp->wc_enabled;
+ 	data[i++] = (unsigned int)mgp->pdev->irq;
+ 	data[i++] = (unsigned int)mgp->msi_enabled;
+ 	data[i++] = (unsigned int)mgp->msix_enabled;
+@@ -4040,14 +4034,7 @@ static int myri10ge_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	mgp->board_span = pci_resource_len(pdev, 0);
+ 	mgp->iomem_base = pci_resource_start(pdev, 0);
+-	mgp->mtrr = -1;
+-	mgp->wc_enabled = 0;
+-#ifdef CONFIG_MTRR
+-	mgp->mtrr = mtrr_add(mgp->iomem_base, mgp->board_span,
+-			     MTRR_TYPE_WRCOMB, 1);
+-	if (mgp->mtrr >= 0)
+-		mgp->wc_enabled = 1;
+-#endif
++	mgp->wc_cookie = arch_phys_wc_add(mgp->iomem_base, mgp->board_span);
+ 	mgp->sram = ioremap_wc(mgp->iomem_base, mgp->board_span);
+ 	if (mgp->sram = NULL) {
+ 		dev_err(&pdev->dev, "ioremap failed for %ld bytes at 0x%lx\n",
+@@ -4146,14 +4133,14 @@ static int myri10ge_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto abort_with_state;
+ 	}
+ 	if (mgp->msix_enabled)
+-		dev_info(dev, "%d MSI-X IRQs, tx bndry %d, fw %s, WC %s\n",
++		dev_info(dev, "%d MSI-X IRQs, tx bndry %d, fw %s, MTRR %s, WC Enabled\n",
+ 			 mgp->num_slices, mgp->tx_boundary, mgp->fw_name,
+-			 (mgp->wc_enabled ? "Enabled" : "Disabled"));
++			 (mgp->wc_cookie > 0 ? "Enabled" : "Disabled"));
+ 	else
+-		dev_info(dev, "%s IRQ %d, tx bndry %d, fw %s, WC %s\n",
++		dev_info(dev, "%s IRQ %d, tx bndry %d, fw %s, MTRR %s, WC Enabled\n",
+ 			 mgp->msi_enabled ? "MSI" : "xPIC",
+ 			 pdev->irq, mgp->tx_boundary, mgp->fw_name,
+-			 (mgp->wc_enabled ? "Enabled" : "Disabled"));
++			 (mgp->wc_cookie > 0 ? "Enabled" : "Disabled"));
+ 
+ 	board_number++;
+ 	return 0;
+@@ -4175,10 +4162,7 @@ abort_with_ioremap:
+ 	iounmap(mgp->sram);
+ 
+ abort_with_mtrr:
+-#ifdef CONFIG_MTRR
+-	if (mgp->mtrr >= 0)
+-		mtrr_del(mgp->mtrr, mgp->iomem_base, mgp->board_span);
+-#endif
++	arch_phys_wc_del(mgp->wc_cookie);
+ 	dma_free_coherent(&pdev->dev, sizeof(*mgp->cmd),
+ 			  mgp->cmd, mgp->cmd_bus);
+ 
+@@ -4220,11 +4204,7 @@ static void myri10ge_remove(struct pci_dev *pdev)
+ 	pci_restore_state(pdev);
+ 
+ 	iounmap(mgp->sram);
+-
+-#ifdef CONFIG_MTRR
+-	if (mgp->mtrr >= 0)
+-		mtrr_del(mgp->mtrr, mgp->iomem_base, mgp->board_span);
+-#endif
++	arch_phys_wc_del(mgp->wc_cookie);
+ 	myri10ge_free_slices(mgp);
+ 	kfree(mgp->msix_vectors);
+ 	dma_free_coherent(&pdev->dev, sizeof(*mgp->cmd),
 -- 
-regards,
--grygorii
+2.3.2.209.gd67f9d5.dirty
+

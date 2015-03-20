@@ -1,7 +1,7 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:13 +0000
-Subject: [PATCH v1 23/47] staging: xgifb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1426893517-2511-24-git-send-email-mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:22 +0000
+Subject: [PATCH v1 32/47] video: fbdev: nvidia: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1426893517-2511-33-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
@@ -13,7 +13,7 @@ Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, x
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-The same area used for ioremap() is used for the MTRR area.
+This driver uses the same area for MTRR and ioremap().
 Convert the driver from using the x86 specific MTRR code to
 the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
 will avoid MTRR if write-combining is available, in order to
@@ -98,74 +98,124 @@ Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/xgifb/XGI_main_26.c | 27 ++++++---------------------
- 1 file changed, 6 insertions(+), 21 deletions(-)
+ drivers/video/fbdev/nvidia/nv_type.h |  7 +------
+ drivers/video/fbdev/nvidia/nvidia.c  | 37 ++++++------------------------------
+ 2 files changed, 7 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/staging/xgifb/XGI_main_26.c b/drivers/staging/xgifb/XGI_main_26.c
-index 74e8820..943d463 100644
---- a/drivers/staging/xgifb/XGI_main_26.c
-+++ b/drivers/staging/xgifb/XGI_main_26.c
-@@ -8,10 +8,7 @@
+diff --git a/drivers/video/fbdev/nvidia/nv_type.h b/drivers/video/fbdev/nvidia/nv_type.h
+index c03f7f5..6ff321a 100644
+--- a/drivers/video/fbdev/nvidia/nv_type.h
++++ b/drivers/video/fbdev/nvidia/nv_type.h
+@@ -148,12 +148,7 @@ struct nvidia_par {
+ 	u32 forceCRTC;
+ 	u32 open_count;
+ 	u8 DDCBase;
+-#ifdef CONFIG_MTRR
+-	struct {
+-		int vram;
+-		int vram_valid;
+-	} mtrr;
+-#endif
++	int wc_cookie;
+ 	struct nvidia_i2c_chan chan[3];
  
- #include <linux/sizes.h>
- #include <linux/module.h>
--
+ 	volatile u32 __iomem *REGS;
+diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
+index def0412..781f5e7 100644
+--- a/drivers/video/fbdev/nvidia/nvidia.c
++++ b/drivers/video/fbdev/nvidia/nvidia.c
+@@ -21,9 +21,6 @@
+ #include <linux/pci.h>
+ #include <linux/console.h>
+ #include <linux/backlight.h>
 -#ifdef CONFIG_MTRR
 -#include <asm/mtrr.h>
 -#endif
-+#include <linux/pci.h>
- 
- #include "XGI_main.h"
- #include "vb_init.h"
-@@ -1770,7 +1767,7 @@ static int xgifb_probe(struct pci_dev *pdev,
- 	}
- 
- 	xgifb_info->video_vbase = hw_info->pjVideoMemoryAddress -	ioremap(xgifb_info->video_base, xgifb_info->video_size);
-+		ioremap_wc(xgifb_info->video_base, xgifb_info->video_size);
- 	xgifb_info->mmio_vbase = ioremap(xgifb_info->mmio_base,
- 					    xgifb_info->mmio_size);
- 
-@@ -2014,12 +2011,8 @@ static int xgifb_probe(struct pci_dev *pdev,
- 
- 	fb_alloc_cmap(&fb_info->cmap, 256, 0);
- 
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -80,9 +77,7 @@ static int paneltweak = 0;
+ static int vram = 0;
+ static int bpp = 8;
+ static int reverse_i2c;
 -#ifdef CONFIG_MTRR
--	xgifb_info->mtrr = mtrr_add(xgifb_info->video_base,
--		xgifb_info->video_size, MTRR_TYPE_WRCOMB, 1);
--	if (xgifb_info->mtrr >= 0)
--		dev_info(&pdev->dev, "Added MTRR\n");
+ static bool nomtrr = false;
 -#endif
-+	xgifb_info->mtrr = arch_phys_wc_add(xgifb_info->video_base,
-+					    xgifb_info->video_size);
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ static int backlight = 1;
+ #else
+@@ -1365,7 +1360,8 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
+ 	par->ScratchBufferStart = par->FbUsableSize - par->ScratchBufferSize;
+ 	par->CursorStart = par->FbUsableSize + (32 * 1024);
  
- 	if (register_framebuffer(fb_info) < 0) {
- 		ret = -EINVAL;
-@@ -2031,11 +2024,7 @@ static int xgifb_probe(struct pci_dev *pdev,
- 	return 0;
+-	info->screen_base = ioremap(nvidiafb_fix.smem_start, par->FbMapSize);
++	info->screen_base = ioremap_wc(nvidiafb_fix.smem_start,
++				       par->FbMapSize);
+ 	info->screen_size = par->FbUsableSize;
+ 	nvidiafb_fix.smem_len = par->RamAmountKBytes * 1024;
  
- error_mtrr:
+@@ -1376,20 +1372,9 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
+ 
+ 	par->FbStart = info->screen_base;
+ 
 -#ifdef CONFIG_MTRR
--	if (xgifb_info->mtrr >= 0)
--		mtrr_del(xgifb_info->mtrr, xgifb_info->video_base,
--			xgifb_info->video_size);
--#endif /* CONFIG_MTRR */
-+	arch_phys_wc_del(xgifb_info->mtrr);
- error_1:
- 	iounmap(xgifb_info->mmio_vbase);
- 	iounmap(xgifb_info->video_vbase);
-@@ -2059,11 +2048,7 @@ static void xgifb_remove(struct pci_dev *pdev)
- 	struct fb_info *fb_info = xgifb_info->fb_info;
+-	if (!nomtrr) {
+-		par->mtrr.vram = mtrr_add(nvidiafb_fix.smem_start,
+-					  par->RamAmountKBytes * 1024,
+-					  MTRR_TYPE_WRCOMB, 1);
+-		if (par->mtrr.vram < 0) {
+-			printk(KERN_ERR PFX "unable to setup MTRR\n");
+-		} else {
+-			par->mtrr.vram_valid = 1;
+-			/* let there be speed */
+-			printk(KERN_INFO PFX "MTRR set to ON\n");
+-		}
+-	}
+-#endif				/* CONFIG_MTRR */
++	if (!nomtrr)
++		par->wc_cookie = arch_phys_wc_add(nvidiafb_fix.smem_start,
++						  par->RamAmountKBytes * 1024);
  
- 	unregister_framebuffer(fb_info);
+ 	info->fbops = &nvidia_fb_ops;
+ 	info->fix = nvidiafb_fix;
+@@ -1447,13 +1432,7 @@ static void nvidiafb_remove(struct pci_dev *pd)
+ 	unregister_framebuffer(info);
+ 
+ 	nvidia_bl_exit(par);
+-
 -#ifdef CONFIG_MTRR
--	if (xgifb_info->mtrr >= 0)
--		mtrr_del(xgifb_info->mtrr, xgifb_info->video_base,
--			xgifb_info->video_size);
--#endif /* CONFIG_MTRR */
-+	arch_phys_wc_del(xgifb_info->mtrr);
- 	iounmap(xgifb_info->mmio_vbase);
- 	iounmap(xgifb_info->video_vbase);
- 	release_mem_region(xgifb_info->mmio_base, xgifb_info->mmio_size);
+-	if (par->mtrr.vram_valid)
+-		mtrr_del(par->mtrr.vram, info->fix.smem_start,
+-			 info->fix.smem_len);
+-#endif				/* CONFIG_MTRR */
+-
++	arch_phys_wc_del(par->wc_cookie);
+ 	iounmap(info->screen_base);
+ 	fb_destroy_modedb(info->monspecs.modedb);
+ 	nvidia_delete_i2c_busses(par);
+@@ -1505,10 +1484,8 @@ static int nvidiafb_setup(char *options)
+ 			vram = simple_strtoul(this_opt+5, NULL, 0);
+ 		} else if (!strncmp(this_opt, "backlight:", 10)) {
+ 			backlight = simple_strtoul(this_opt+10, NULL, 0);
+-#ifdef CONFIG_MTRR
+ 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
+ 			nomtrr = true;
+-#endif
+ 		} else if (!strncmp(this_opt, "fpdither:", 9)) {
+ 			fpdither = simple_strtol(this_opt+9, NULL, 0);
+ 		} else if (!strncmp(this_opt, "bpp:", 4)) {
+@@ -1596,11 +1573,9 @@ MODULE_PARM_DESC(bpp, "pixel width in bits"
+ 		 "(default=8)");
+ module_param(reverse_i2c, int, 0);
+ MODULE_PARM_DESC(reverse_i2c, "reverse port assignment of the i2c bus");
+-#ifdef CONFIG_MTRR
+ module_param(nomtrr, bool, false);
+ MODULE_PARM_DESC(nomtrr, "Disables MTRR support (0 or 1=disabled) "
+ 		 "(default=0)");
+-#endif
+ 
+ MODULE_AUTHOR("Antonino Daplas");
+ MODULE_DESCRIPTION("Framebuffer driver for nVidia graphics chipset");
 -- 
 2.3.2.209.gd67f9d5.dirty
 

@@ -1,126 +1,198 @@
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Fri, 20 Mar 2015 15:22:15 +0000
-Subject: [PATCH RESEND 2 5/5] staging: sm750fb: Remove spinlock helper function
-Message-Id: <1426864935-29350-5-git-send-email-lstoakes@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:24 +0000
+Subject: [PATCH v1 34/47] video: fbdev: sisfb: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1426893517-2511-35-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
-In-Reply-To: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch removes the unnecessary spinlock helper function and instead
-calls spin_lock and spin_unlock directly.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-This does *not* resolve sparse warnings about context imbalances but these are
-spurious.
+This driver uses the same area for MTRR as for the ioremap().
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
-Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/sm750fb/sm750.c | 53 +++++++++++++++++++++++------------------
- 1 file changed, 30 insertions(+), 23 deletions(-)
+ drivers/video/fbdev/sis/sis.h      |  2 +-
+ drivers/video/fbdev/sis/sis_main.c | 27 ++++++---------------------
+ 2 files changed, 7 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index be35429..a6658e1 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -56,23 +56,6 @@ static char * g_settings = NULL;
- static int g_dualview;
- static char * g_option = NULL;
-
--/* if not use spin_lock,system will die if user load driver
-- * and immediatly unload driver frequently (dual)*/
--static inline void myspin_lock(spinlock_t * sl){
--	struct lynx_share * share;
--	share = container_of(sl,struct lynx_share,slock);
--	if(share->dual){
--		spin_lock(sl);
--	}
--}
--
--static inline void myspin_unlock(spinlock_t * sl){
--	struct lynx_share * share;
--	share = container_of(sl,struct lynx_share,slock);
--	if(share->dual){
--		spin_unlock(sl);
--	}
--}
- static const struct fb_videomode lynx750_ext[] = {
- 	/*  	1024x600-60 VESA 	[1.71:1]	*/
- 	{NULL,  60, 1024, 600, 20423, 144,  40, 18, 1, 104, 3,
-@@ -209,13 +192,21 @@ static void lynxfb_ops_fillrect(struct fb_info* info,const struct fb_fillrect* r
- 	color = (Bpp = 1)?region->color:((u32*)info->pseudo_palette)[region->color];
- 	rop = ( region->rop != ROP_COPY ) ? HW_ROP2_XOR:HW_ROP2_COPY;
-
--	myspin_lock(&share->slock);
-+	/*
-+	 * If not use spin_lock,system will die if user load driver
-+	 * and immediatly unload driver frequently (dual)
-+	 */
-+	if (share->dual)
-+		spin_lock(&share->slock);
-+
- 	share->accel.de_fillrect(&share->accel,
- 							base,pitch,Bpp,
- 							region->dx,region->dy,
- 							region->width,region->height,
- 							color,rop);
--	myspin_unlock(&share->slock);
-+
-+	if (share->dual)
-+		spin_unlock(&share->slock);
- }
-
- static void lynxfb_ops_copyarea(struct fb_info * info,const struct fb_copyarea * region)
-@@ -233,12 +224,20 @@ static void lynxfb_ops_copyarea(struct fb_info * info,const struct fb_copyarea *
- 	pitch = info->fix.line_length;
- 	Bpp = info->var.bits_per_pixel >> 3;
-
--	myspin_lock(&share->slock);
-+	/*
-+	 * If not use spin_lock, system will die if user load driver
-+	 * and immediatly unload driver frequently (dual)
-+	 */
-+	if (share->dual)
-+		spin_lock(&share->slock);
-+
- 	share->accel.de_copyarea(&share->accel,
- 							base,pitch,region->sx,region->sy,
- 							base,pitch,Bpp,region->dx,region->dy,
- 							region->width,region->height,HW_ROP2_COPY);
--	myspin_unlock(&share->slock);
-+
-+	if (share->dual)
-+		spin_unlock(&share->slock);
- }
-
- static void lynxfb_ops_imageblit(struct fb_info*info,const struct fb_image* image)
-@@ -272,14 +271,22 @@ static void lynxfb_ops_imageblit(struct fb_info*info,const struct fb_image* imag
+diff --git a/drivers/video/fbdev/sis/sis.h b/drivers/video/fbdev/sis/sis.h
+index 1987f1b7..ea1d1c9 100644
+--- a/drivers/video/fbdev/sis/sis.h
++++ b/drivers/video/fbdev/sis/sis.h
+@@ -458,7 +458,7 @@ struct sis_video_info {
+ 
+ 	unsigned char	*bios_abase;
+ 
+-	int		mtrr;
++	int		wc_cookie;
+ 
+ 	u32		sisfb_mem;
+ 
+diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
+index fcf610e..e923038 100644
+--- a/drivers/video/fbdev/sis/sis_main.c
++++ b/drivers/video/fbdev/sis/sis_main.c
+@@ -53,9 +53,6 @@
+ #include <linux/types.h>
+ #include <linux/uaccess.h>
+ #include <asm/io.h>
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+ 
+ #include "sis.h"
+ #include "sis_main.h"
+@@ -4130,13 +4127,13 @@ static void sisfb_post_map_vram(struct sis_video_info *ivideo,
+ 	if (*mapsize < (min << 20))
+ 		return;
+ 
+-	ivideo->video_vbase = ioremap(ivideo->video_base, (*mapsize));
++	ivideo->video_vbase = ioremap_wc(ivideo->video_base, (*mapsize));
+ 
+ 	if(!ivideo->video_vbase) {
+ 		printk(KERN_ERR
+ 			"sisfb: Unable to map maximum video RAM for size detection\n");
+ 		(*mapsize) >>= 1;
+-		while((!(ivideo->video_vbase = ioremap(ivideo->video_base, (*mapsize))))) {
++		while((!(ivideo->video_vbase = ioremap_wc(ivideo->video_base, (*mapsize))))) {
+ 			(*mapsize) >>= 1;
+ 			if((*mapsize) < (min << 20))
+ 				break;
+@@ -6186,7 +6183,7 @@ static int sisfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto error_2;
  	}
- 	return;
- _do_work:
--	myspin_lock(&share->slock);
-+	/*
-+	 * If not use spin_lock, system will die if user load driver
-+	 * and immediatly unload driver frequently (dual)
-+	 */
-+	if (share->dual)
-+		spin_lock(&share->slock);
-+
- 	share->accel.de_imageblit(&share->accel,
- 					image->data,image->width>>3,0,
- 					base,pitch,Bpp,
- 					image->dx,image->dy,
- 					image->width,image->height,
- 					fgcol,bgcol,HW_ROP2_COPY);
--	myspin_unlock(&share->slock);
-+
-+	if (share->dual)
-+		spin_unlock(&share->slock);
- }
+ 
+-	ivideo->video_vbase = ioremap(ivideo->video_base, ivideo->video_size);
++	ivideo->video_vbase = ioremap_wc(ivideo->video_base, ivideo->video_size);
+ 	ivideo->SiS_Pr.VideoMemoryAddress = ivideo->video_vbase;
+ 	if(!ivideo->video_vbase) {
+ 		printk(KERN_ERR "sisfb: Fatal error: Unable to map framebuffer memory\n");
+@@ -6254,8 +6251,6 @@ error_3:	vfree(ivideo->bios_abase);
+ 	ivideo->SiS_Pr.VideoMemoryAddress += ivideo->video_offset;
+ 	ivideo->SiS_Pr.VideoMemorySize = ivideo->sisfb_mem;
+ 
+-	ivideo->mtrr = -1;
+-
+ 	ivideo->vbflags = 0;
+ 	ivideo->lcddefmodeidx = DEFAULT_LCDMODE;
+ 	ivideo->tvdefmodeidx  = DEFAULT_TVMODE;
+@@ -6443,14 +6438,8 @@ error_3:	vfree(ivideo->bios_abase);
+ 
+ 		printk(KERN_DEBUG "sisfb: Initial vbflags 0x%x\n", (int)ivideo->vbflags);
+ 
+-#ifdef CONFIG_MTRR
+-		ivideo->mtrr = mtrr_add(ivideo->video_base, ivideo->video_size,
+-					MTRR_TYPE_WRCOMB, 1);
+-		if(ivideo->mtrr < 0) {
+-			printk(KERN_DEBUG "sisfb: Failed to add MTRRs\n");
+-		}
+-#endif
+-
++		ivideo->wc_cookie = arch_phys_wc_add(ivideo->video_base,
++						     ivideo->video_size);
+ 		if(register_framebuffer(sis_fb_info) < 0) {
+ 			printk(KERN_ERR "sisfb: Fatal error: Failed to register framebuffer\n");
+ 			ret = -EINVAL;
+@@ -6507,11 +6496,7 @@ static void sisfb_remove(struct pci_dev *pdev)
+ 
+ 	pci_dev_put(ivideo->nbridge);
+ 
+-#ifdef CONFIG_MTRR
+-	/* Release MTRR region */
+-	if(ivideo->mtrr >= 0)
+-		mtrr_del(ivideo->mtrr, ivideo->video_base, ivideo->video_size);
+-#endif
++	arch_phys_wc_del(ivideo->wc_cookie);
+ 
+ 	/* If device was disabled when starting, disable
+ 	 * it when quitting.
+-- 
+2.3.2.209.gd67f9d5.dirty
 
- static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
---
-2.3.3

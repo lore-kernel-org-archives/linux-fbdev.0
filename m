@@ -1,58 +1,195 @@
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Fri, 20 Mar 2015 15:22:12 +0000
-Subject: [PATCH RESEND 2 2/5] staging: sm750fb: Make internal functions static
-Message-Id: <1426864935-29350-2-git-send-email-lstoakes@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:27 +0000
+Subject: [PATCH v1 37/47] video: fbdev: i740fb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
+Message-Id: <1426893517-2511-38-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
-In-Reply-To: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch declares externally unavailable functions static. This fixes
-the following sparse warnings:-
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-drivers/staging/sm750fb/ddk750_hwi2c.c:63:6: warning: symbol 'hwI2CWaitTXDone' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_hwi2c.c:93:14: warning: symbol 'hwI2CWriteData' was not declared. Should it be static?
-drivers/staging/sm750fb/ddk750_hwi2c.c:160:14: warning: symbol 'hwI2CReadData' was not declared. Should it be static?
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
-Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/sm750fb/ddk750_hwi2c.c |  6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/i740fb.c | 35 ++++++-----------------------------
+ 1 file changed, 6 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_hwi2c.c b/drivers/staging/sm750fb/ddk750_hwi2c.c
-index 84dfb6f..7826376 100644
---- a/drivers/staging/sm750fb/ddk750_hwi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_hwi2c.c
-@@ -60,7 +60,7 @@ void hwI2CClose(void)
- }
+diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
+index a2b4204..452e116 100644
+--- a/drivers/video/fbdev/i740fb.c
++++ b/drivers/video/fbdev/i740fb.c
+@@ -27,24 +27,15 @@
+ #include <linux/console.h>
+ #include <video/vga.h>
+ 
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+-
+ #include "i740_reg.h"
+ 
+ static char *mode_option;
+-
+-#ifdef CONFIG_MTRR
+ static int mtrr = 1;
+-#endif
+ 
+ struct i740fb_par {
+ 	unsigned char __iomem *regs;
+ 	bool has_sgram;
+-#ifdef CONFIG_MTRR
+-	int mtrr_reg;
+-#endif
++	int wc_cookie;
+ 	bool ddc_registered;
+ 	struct i2c_adapter ddc_adapter;
+ 	struct i2c_algo_bit_data ddc_algo;
+@@ -1040,7 +1031,7 @@ static int i740fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+ 		goto err_request_regions;
+ 	}
+ 
+-	info->screen_base = pci_ioremap_bar(dev, 0);
++	info->screen_base = pci_ioremap_wc_bar(dev, 0);
+ 	if (!info->screen_base) {
+ 		dev_err(info->device, "error remapping base\n");
+ 		ret = -ENOMEM;
+@@ -1144,13 +1135,9 @@ static int i740fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+ 
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+ 	pci_set_drvdata(dev, info);
+-#ifdef CONFIG_MTRR
+-	if (mtrr) {
+-		par->mtrr_reg = -1;
+-		par->mtrr_reg = mtrr_add(info->fix.smem_start,
+-				info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
+-	}
+-#endif
++	if (mtrr)
++		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++						  info->fix.smem_len);
+ 	return 0;
+ 
+ err_reg_framebuffer:
+@@ -1177,13 +1164,7 @@ static void i740fb_remove(struct pci_dev *dev)
+ 
+ 	if (info) {
+ 		struct i740fb_par *par = info->par;
+-
+-#ifdef CONFIG_MTRR
+-		if (par->mtrr_reg >= 0) {
+-			mtrr_del(par->mtrr_reg, 0, 0);
+-			par->mtrr_reg = -1;
+-		}
+-#endif
++		arch_phys_wc_del(par->wc_cookie);
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
+ 		if (par->ddc_registered)
+@@ -1287,10 +1268,8 @@ static int  __init i740fb_setup(char *options)
+ 	while ((opt = strsep(&options, ",")) != NULL) {
+ 		if (!*opt)
+ 			continue;
+-#ifdef CONFIG_MTRR
+ 		else if (!strncmp(opt, "mtrr:", 5))
+ 			mtrr = simple_strtoul(opt + 5, NULL, 0);
+-#endif
+ 		else
+ 			mode_option = opt;
+ 	}
+@@ -1327,7 +1306,5 @@ MODULE_DESCRIPTION("fbdev driver for Intel740");
+ module_param(mode_option, charp, 0444);
+ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
+ 
+-#ifdef CONFIG_MTRR
+ module_param(mtrr, int, 0444);
+ MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
+-#endif
+-- 
+2.3.2.209.gd67f9d5.dirty
 
-
--long hwI2CWaitTXDone(void)
-+static long hwI2CWaitTXDone(void)
- {
-     unsigned int timeout;
-
-@@ -90,7 +90,7 @@ long hwI2CWaitTXDone(void)
-  *  Return Value:
-  *      Total number of bytes those are actually written.
-  */
--unsigned int hwI2CWriteData(
-+static unsigned int hwI2CWriteData(
-     unsigned char deviceAddress,
-     unsigned int length,
-     unsigned char *pBuffer
-@@ -157,7 +157,7 @@ unsigned int hwI2CWriteData(
-  *  Return Value:
-  *      Total number of actual bytes read from the slave device
-  */
--unsigned int hwI2CReadData(
-+static unsigned int hwI2CReadData(
-     unsigned char deviceAddress,
-     unsigned int length,
-     unsigned char *pBuffer
---
-2.3.2

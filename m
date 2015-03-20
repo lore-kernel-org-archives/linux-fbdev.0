@@ -1,57 +1,155 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Tue, 31 Mar 2015 18:27:08 +0000
-Subject: [PATCHv6 02/10] fbdev: ssd1307fb: Allocate page aligned video memory.
-Message-Id: <1427826436-21783-3-git-send-email-niederp@physik.uni-kl.de>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:05 +0000
+Subject: [PATCH v1 15/47] [media] media: ivtv: use __arch_phys_wc_add()
+Message-Id: <1426893517-2511-16-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Andy Walls <awalls@md.metrocast.net>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Stefan Bader <stefan.bader@canonical.com>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, toshi.kani@hp.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, ivtv-devel@ivtvdriver.org, linux-media@vger.kernel.org, xen-devel@lists.xensource.com
 
-Currently the videomemory is allocated by kmalloc, making it a memory
-region that is not necessarily page aligend. This leads to problems
-upon mmap call, where the video memory's address gets aligned to the
-next page boundary. The result is that the userspace program that issued
-the mmap call is not able to access the video memory from the start to
-the next page boundary.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-This patch changes the allocation of the video memory to use
-__get_free_pages() in order to obtain memory that is aligned
-to page boundaries.
+Sadly this driver requires a bit of work in order
+to use ioremap_wc() on the range currently used
+for MTRR write-combining. We'd need to ensure two
+ioremap() calls are done. Annotate this.
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Andy Walls <awalls@md.metrocast.net>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: venkatesh.pallipadi@intel.com
+Cc: Stefan Bader <stefan.bader@canonical.com>
+Cc: konrad.wilk@oracle.com
+Cc: ville.syrjala@linux.intel.com
+Cc: david.vrabel@citrix.com
+Cc: jbeulich@suse.com
+Cc: toshi.kani@hp.com
+Cc: Roger Pau Monn=C3=A9 <roger.pau@citrix.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: ivtv-devel@ivtvdriver.org
+Cc: linux-media@vger.kernel.org
+Cc: xen-devel@lists.xensource.com
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/media/pci/ivtv/ivtvfb.c | 51 +++++++++++--------------------------=
+----
+ 1 file changed, 14 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvf=
 b.c
-index 61e0ce8..8d34c56 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -489,7 +489,8 @@ static int ssd1307fb_probe(struct i2c_client *client,
+index 9ff1230..ceefa6f 100644
+--- a/drivers/media/pci/ivtv/ivtvfb.c
++++ b/drivers/media/pci/ivtv/ivtvfb.c
+@@ -44,10 +44,6 @@
+ #include <linux/ivtvfb.h>
+ #include <linux/slab.h>
 =20
- 	vmem_size =3D par->width * par->height / 8;
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+-
+ #include "ivtv-driver.h"
+ #include "ivtv-cards.h"
+ #include "ivtv-i2c.h"
+@@ -155,12 +151,11 @@ struct osd_info {
+ 	/* Buffer size */
+ 	u32 video_buffer_size;
 =20
--	vmem =3D devm_kzalloc(&client->dev, vmem_size, GFP_KERNEL);
-+	vmem =3D (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
-+					get_order(vmem_size));
- 	if (!vmem) {
- 		dev_err(&client->dev, "Couldn't allocate graphical memory.\n");
- 		ret =3D -ENOMEM;
-@@ -573,6 +574,7 @@ static int ssd1307fb_remove(struct i2c_client *client)
- 	if (par->ops->remove)
- 		par->ops->remove(par);
- 	fb_deferred_io_cleanup(info);
-+	__free_pages(__va(info->fix.smem_start), get_order(info->fix.smem_len));
- 	framebuffer_release(info);
+-#ifdef CONFIG_MTRR
+ 	/* video_base rounded down as required by hardware MTRRs */
+ 	unsigned long fb_start_aligned_physaddr;
+ 	/* video_base rounded up as required by hardware MTRRs */
+ 	unsigned long fb_end_aligned_physaddr;
+-#endif
++	int wc_cookie;
 =20
- 	return 0;
+ 	/* Store the buffer offset */
+ 	int set_osd_coords_x;
+@@ -1099,6 +1094,8 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
+ static int ivtvfb_init_io(struct ivtv *itv)
+ {
+ 	struct osd_info *oi =3D itv->osd_info;
++	/* Find the largest power of two that maps the whole buffer */
++	int size_shift =3D 31;
+=20
+ 	mutex_lock(&itv->serialize_lock);
+ 	if (ivtv_init_on_first_open(itv)) {
+@@ -1132,29 +1129,16 @@ static int ivtvfb_init_io(struct ivtv *itv)
+ 			oi->video_pbase, oi->video_vbase,
+ 			oi->video_buffer_size / 1024);
+=20
+-#ifdef CONFIG_MTRR
+-	{
+-		/* Find the largest power of two that maps the whole buffer */
+-		int size_shift =3D 31;
+-
+-		while (!(oi->video_buffer_size & (1 << size_shift))) {
+-			size_shift--;
+-		}
+-		size_shift++;
+-		oi->fb_start_aligned_physaddr =3D oi->video_pbase & ~((1 << size_shift) =
+- 1);
+-		oi->fb_end_aligned_physaddr =3D oi->video_pbase + oi->video_buffer_size;
+-		oi->fb_end_aligned_physaddr +=3D (1 << size_shift) - 1;
+-		oi->fb_end_aligned_physaddr &=3D ~((1 << size_shift) - 1);
+-		if (mtrr_add(oi->fb_start_aligned_physaddr,
+-			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr,
+-			     MTRR_TYPE_WRCOMB, 1) < 0) {
+-			IVTVFB_INFO("disabled mttr\n");
+-			oi->fb_start_aligned_physaddr =3D 0;
+-			oi->fb_end_aligned_physaddr =3D 0;
+-		}
+-	}
+-#endif
+-
++	while (!(oi->video_buffer_size & (1 << size_shift)))
++		size_shift--;
++	size_shift++;
++	oi->fb_start_aligned_physaddr =3D oi->video_pbase & ~((1 << size_shift) -=
+ 1);
++	oi->fb_end_aligned_physaddr =3D oi->video_pbase + oi->video_buffer_size;
++	oi->fb_end_aligned_physaddr +=3D (1 << size_shift) - 1;
++	oi->fb_end_aligned_physaddr &=3D ~((1 << size_shift) - 1);
++	oi->wc_cookie =3D __arch_phys_wc_add(oi->fb_start_aligned_physaddr,
++					   oi->fb_end_aligned_physaddr -
++					   oi->fb_start_aligned_physaddr);
+ 	/* Blank the entire osd. */
+ 	memset_io(oi->video_vbase, 0, oi->video_buffer_size);
+=20
+@@ -1172,14 +1156,7 @@ static void ivtvfb_release_buffers (struct ivtv *itv)
+=20
+ 	/* Release pseudo palette */
+ 	kfree(oi->ivtvfb_info.pseudo_palette);
+-
+-#ifdef CONFIG_MTRR
+-	if (oi->fb_end_aligned_physaddr) {
+-		mtrr_del(-1, oi->fb_start_aligned_physaddr,
+-			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr);
+-	}
+-#endif
+-
++	arch_phys_wc_del(oi->wc_cookie);
+ 	kfree(oi);
+ 	itv->osd_info =3D NULL;
+ }
 --=20
-2.3.0
+2.3.2.209.gd67f9d5.dirty
 

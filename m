@@ -1,113 +1,110 @@
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Wed, 18 Mar 2015 08:57:24 +0000
-Subject: [PATCH RESEND 3/5] staging: sm750fb: Remove unused function
-Message-Id: <1426669046-29935-3-git-send-email-lstoakes@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:06 +0000
+Subject: [PATCH v1 16/47] fusion: use __arch_phys_wc_add()
+Message-Id: <1426893517-2511-17-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426669046-29935-1-git-send-email-lstoakes@gmail.com>
-In-Reply-To: <1426669046-29935-1-git-send-email-lstoakes@gmail.com>
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Nagalakshmi Nandigama <nagalakshmi.nandigama@avagotech.com>, Praveen Krishnamoorthy <praveen.krishnamoorthy@avagotech.com>, Sreekanth Reddy <sreekanth.reddy@avagotech.com>, Abhijit Mahajan <abhijit.mahajan@avagotech.com>, Antonino Daplas <adaplas@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, MPT-FusionLinux.pdl@avagotech.com, linux-scsi@vger.kernel.org
 
-This patch removes the unused hw712_fillrect function. This patch fixes
-the following sparse warning:-
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-drivers/staging/sm750fb/sm750_accel.c:95:5: warning: symbol 'hw712_fillrect' was not declared. Should it be static?
+If and when this gets enabled the driver should address
+using ioremap_wc() on the same area, that could require
+a bit of work as it would mean a split with two ioremap'd
+areas. Annotate this.
 
-Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Nagalakshmi Nandigama <nagalakshmi.nandigama@avagotech.com>
+Cc: Praveen Krishnamoorthy <praveen.krishnamoorthy@avagotech.com>
+Cc: Sreekanth Reddy <sreekanth.reddy@avagotech.com>
+Cc: Abhijit Mahajan <abhijit.mahajan@avagotech.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: MPT-FusionLinux.pdl@avagotech.com
+Cc: linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/sm750fb/sm750_accel.c | 78 -----------------------------------
- 1 file changed, 78 deletions(-)
+ drivers/message/fusion/mptbase.c | 19 ++++---------------
+ drivers/message/fusion/mptbase.h |  2 +-
+ 2 files changed, 5 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 6521c3b..c5a3726 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -89,84 +89,6 @@ void hw_set2dformat(struct lynx_accel * accel,int fmt)
- 	write_dpr(accel,DE_STRETCH_FORMAT,reg);
- }
+diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
+index 187f836..c7b1a55 100644
+--- a/drivers/message/fusion/mptbase.c
++++ b/drivers/message/fusion/mptbase.c
+@@ -59,10 +59,6 @@
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>		/* needed for in_interrupt() proto */
+ #include <linux/dma-mapping.h>
+-#include <asm/io.h>
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+ #include <linux/kthread.h>
+ #include <scsi/scsi_host.h>
+ 
+@@ -2820,11 +2816,8 @@ mpt_adapter_dispose(MPT_ADAPTER *ioc)
+ 	pci_disable_device(ioc->pcidev);
+ 	pci_release_selected_regions(ioc->pcidev, ioc->bars);
+ 
+-#if defined(CONFIG_MTRR) && 0
+-	if (ioc->mtrr_reg > 0) {
+-		mtrr_del(ioc->mtrr_reg, 0, 0);
+-		dprintk(ioc, printk(MYIOC_s_INFO_FMT "MTRR region de-registered\n", ioc->name));
+-	}
++#if 0
++	__arch_phys_wc_del(ioc->wc_cookie);
+ #endif
+ 
+ 	/*  Zap the adapter lookup ptr!  */
+@@ -4512,17 +4505,13 @@ PrimeIocFifos(MPT_ADAPTER *ioc)
+ 
+ 		ioc->req_frames_low_dma = (u32) (alloc_dma & 0xFFFFFFFF);
+ 
+-#if defined(CONFIG_MTRR) && 0
++#if 0
+ 		/*
+ 		 *  Enable Write Combining MTRR for IOC's memory region.
+ 		 *  (at least as much as we can; "size and base must be
+ 		 *  multiples of 4 kiB"
+ 		 */
+-		ioc->mtrr_reg = mtrr_add(ioc->req_frames_dma,
+-					 sz,
+-					 MTRR_TYPE_WRCOMB, 1);
+-		dprintk(ioc, printk(MYIOC_s_DEBUG_FMT "MTRR region registered (base:size=%08x:%x)\n",
+-				ioc->name, ioc->req_frames_dma, sz));
++		ioc->wc_cookie = arch_phys_wc_add(ioc->req_frames_dma, sz);
+ #endif
+ 
+ 		for (i = 0; i < ioc->req_depth; i++) {
+diff --git a/drivers/message/fusion/mptbase.h b/drivers/message/fusion/mptbase.h
+index 8f14090..f0bff11 100644
+--- a/drivers/message/fusion/mptbase.h
++++ b/drivers/message/fusion/mptbase.h
+@@ -671,7 +671,7 @@ typedef struct _MPT_ADAPTER
+ 	u8			*HostPageBuffer; /* SAS - host page buffer support */
+ 	u32			HostPageBuffer_sz;
+ 	dma_addr_t		HostPageBuffer_dma;
+-	int			 mtrr_reg;
++	int			wc_cookie;
+ 	struct pci_dev		*pcidev;	/* struct pci_dev pointer */
+ 	int			bars;		/* bitmask of BAR's that must be configured */
+ 	int			msi_enable;
+-- 
+2.3.2.209.gd67f9d5.dirty
 
--/* seems sm712 RectFill command is broken,so need use BitBlt to
-- * replace it. */
--
--int hw712_fillrect(struct lynx_accel * accel,
--				u32 base,u32 pitch,u32 Bpp,
--				u32 x,u32 y,u32 width,u32 height,
--				u32 color,u32 rop)
--{
--	u32 deCtrl;
--	if(accel->de_wait() != 0)
--	{
--		/* int time wait and always busy,seems hardware
--		 * got something error */
--		pr_debug("%s:De engine always bussy\n",__func__);
--		return -1;
--	}
--	/* 24bpp 2d acceleration still not work,we already support 2d on
--	 * both 8/16/32 bpp now, so there is no harm if we disable 2d on
--	 * 24bpp for current stage. */
--#if 0
--	if(Bpp = 3){
--		width *= 3;
--		x *= 3;
--		write_dpr(accel,DE_PITCH,
--			FIELD_VALUE(0,DE_PITCH,DESTINATION,pitch)|
--			FIELD_VALUE(0,DE_PITCH,SOURCE,pitch));//dpr10
--	}
--	else
--#endif
--	{
--		write_dpr(accel,DE_PITCH,
--			FIELD_VALUE(0,DE_PITCH,DESTINATION,pitch/Bpp)|
--			FIELD_VALUE(0,DE_PITCH,SOURCE,pitch/Bpp));//dpr10
--
--	}
--
--	write_dpr(accel,DE_FOREGROUND,color);//DPR14
--	write_dpr(accel,DE_MONO_PATTERN_HIGH,~0);//DPR34
--	write_dpr(accel,DE_MONO_PATTERN_LOW,~0);//DPR38
--
--	write_dpr(accel,DE_WINDOW_SOURCE_BASE,base);//dpr44
--	write_dpr(accel,DE_WINDOW_DESTINATION_BASE,base);//dpr40
--
--
--	write_dpr(accel,DE_WINDOW_WIDTH,
--			FIELD_VALUE(0,DE_WINDOW_WIDTH,DESTINATION,pitch/Bpp)|
--			FIELD_VALUE(0,DE_WINDOW_WIDTH,SOURCE,pitch/Bpp));//dpr3c
--
--
--	write_dpr(accel,DE_DESTINATION,
--			FIELD_SET(0,DE_DESTINATION,WRAP,DISABLE)|
--			FIELD_VALUE(0,DE_DESTINATION,X,x)|
--			FIELD_VALUE(0,DE_DESTINATION,Y,y));//dpr4
--
--	write_dpr(accel,DE_DIMENSION,
--			FIELD_VALUE(0,DE_DIMENSION,X,width)|
--			FIELD_VALUE(0,DE_DIMENSION,Y_ET,height));//dpr8
--
--	deCtrl -		FIELD_SET(0,DE_CONTROL,STATUS,START)|
--		FIELD_SET(0,DE_CONTROL,COMMAND,BITBLT)|
--		FIELD_SET(0,DE_CONTROL,ROP2_SOURCE,PATTERN)|
--		FIELD_SET(0,DE_CONTROL,ROP_SELECT,ROP2)|
--		FIELD_VALUE(0,DE_CONTROL,ROP,rop);//dpr0xc
--#if 0
--		/* dump registers */
--		int i;
--		inf_msg("x,y,w,h = %d,%d,%d,%d\n",x,y,width,height);
--		for(i=0x04;i<=0x44;i+=4){
--			inf_msg("dpr%02x = %08x\n",i,read_dpr(accel,i));
--		}
--		inf_msg("deCtrl = %08x\n",deCtrl);
--#endif
--
--	write_dpr(accel,DE_CONTROL,deCtrl);
--	return 0;
--}
--
- int hw_fillrect(struct lynx_accel * accel,
- 				u32 base,u32 pitch,u32 Bpp,
- 				u32 x,u32 y,u32 width,u32 height,
---
-2.3.2

@@ -1,57 +1,110 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Tue, 03 Mar 2015 09:40:46 +0000
-Subject: Re: [PATCHv2 10/10] fbdev: ssd1307fb: Turn off display on driver unload.
-Message-Id: <20150303094046.GD4911@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="F8dlzb82+Fcn6AgP"
+From: Amitoj Kaur Chawla <amitoj1606@gmail.com>
+Date: Fri, 20 Mar 2015 18:53:05 +0000
+Subject: [PATCH] sm750fb: Fix indentation, spacing and switch-case
+Message-Id: <20150320184105.GA19710@amitoj-Inspiron-3542>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1425248883-25367-1-git-send-email-niederp@physik.uni-kl.de>
- <1425248883-25367-11-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1425248883-25367-11-git-send-email-niederp@physik.uni-kl.de>
-To: Thomas =?iso-8859-1?Q?Niederpr=FCm?= <niederp@physik.uni-kl.de>
-Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
+Fix the spacing problems with correct indentation and correct use of
+braces and spacing in switch-case statements.
 
---F8dlzb82+Fcn6AgP
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Amitoj Kaur Chawla <amitoj1606@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c | 63 +++++++++++++++++------------------
+ 1 file changed, 31 insertions(+), 32 deletions(-)
 
-On Sun, Mar 01, 2015 at 11:28:03PM +0100, Thomas Niederpr=FCm wrote:
-> This patch turns off the display when the driver is unloaded.
->=20
-> Signed-off-by: Thomas Niederpr=FCm <niederp@physik.uni-kl.de>
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 1e6b474..de56302 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -46,53 +46,52 @@ inline unsigned int twoToPowerOfx(unsigned long x)
+ 
+ inline unsigned int calcPLL(pll_value_t *pPLL)
+ {
+-    return (pPLL->inputFreq * pPLL->M / pPLL->N / twoToPowerOfx(pPLL->OD) / twoToPowerOfx(pPLL->POD));
++	return (pPLL->inputFreq * pPLL->M / pPLL->N / twoToPowerOfx(pPLL->OD) / twoToPowerOfx(pPLL->POD));
+ }
+ 
+ unsigned int getPllValue(clock_type_t clockType, pll_value_t *pPLL)
+ {
+-    unsigned int ulPllReg = 0;
+-
+-    pPLL->inputFreq = DEFAULT_INPUT_CLOCK;
+-    pPLL->clockType = clockType;
+-
+-    switch (clockType)
+-    {
+-        case MXCLK_PLL:
+-            ulPllReg = PEEK32(MXCLK_PLL_CTRL);
+-            break;
+-        case PRIMARY_PLL:
+-            ulPllReg = PEEK32(PANEL_PLL_CTRL);
+-            break;
+-        case SECONDARY_PLL:
+-            ulPllReg = PEEK32(CRT_PLL_CTRL);
+-            break;
+-        case VGA0_PLL:
+-            ulPllReg = PEEK32(VGA_PLL0_CTRL);
+-            break;
+-        case VGA1_PLL:
+-            ulPllReg = PEEK32(VGA_PLL1_CTRL);
+-            break;
+-    }
++	unsigned int ulPllReg = 0;
++
++	pPLL->inputFreq = DEFAULT_INPUT_CLOCK;
++	pPLL->clockType = clockType;
++
++	switch (clockType) {
++	case MXCLK_PLL:
++		ulPllReg = PEEK32(MXCLK_PLL_CTRL);
++		break;
++	case PRIMARY_PLL:
++		ulPllReg = PEEK32(PANEL_PLL_CTRL);
++		break;
++	case SECONDARY_PLL:
++		ulPllReg = PEEK32(CRT_PLL_CTRL);
++		break;
++	case VGA0_PLL:
++		ulPllReg = PEEK32(VGA_PLL0_CTRL);
++		break;
++	case VGA1_PLL:
++		ulPllReg = PEEK32(VGA_PLL1_CTRL);
++		break;
++	}
+ 
+-    pPLL->M = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, M);
+-    pPLL->N = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, N);
+-    pPLL->OD = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, OD);
+-    pPLL->POD = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, POD);
++	pPLL->M = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, M);
++	pPLL->N = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, N);
++	pPLL->OD = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, OD);
++	pPLL->POD = FIELD_GET(ulPllReg, PANEL_PLL_CTRL, POD);
+ 
+-    return calcPLL(pPLL);
++	return calcPLL(pPLL);
+ }
+ 
+ 
+ unsigned int getChipClock(void)
+ {
+-    pll_value_t pll;
++	pll_value_t pll;
+ #if 1
+-	if(getChipType() = SM750LE)
++	if (getChipType() = SM750LE)
+ 		return MHz(130);
+ #endif
+ 
+-    return getPllValue(MXCLK_PLL, &pll);
++	return getPllValue(MXCLK_PLL, &pll);
+ }
+ 
+ 
+-- 
+1.9.1
 
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---F8dlzb82+Fcn6AgP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIbBAEBAgAGBQJU9YGeAAoJEBx+YmzsjxAg4xcP9AhD/C16EsMloeHBFU0IXXQf
-46PMjwEJI83hbd0a3KHJIshVgCPAbGWzoJbPA1lBgz5rLNj3eq3Rtlvdzfb/TTc9
-KbZlXU5XZIgGmLckA+gCrY3J0lvVXeEbVQgJPzykqF6KvbX9crszSGv+JShf6XtU
-5d3kdSyxcwLy/ATVb4B12/fgiXE8u4ak91akUFpSAY1Sr/ng3hA31YVi8SnoQq2x
-vmNu/SxELY9uksQwWZRdZQLLtAXaHtPhOSEMeRBtuH3DsHql/2HPTFZbdshlhppZ
-VO90UfaCoc9E7N09qJq5it3kJX247ag3QzvVOj9ADYLF7i+AgbC7sHTn0buFneQj
-rPVr6Xiek0vs2v5hGRMpOtrvF41IzXQDVjRbahsv7Kbjs9otrmWCpPuEZXvQnDTS
-1tSEzJkmZ2LPo+h6/5j+TN+9j/yW2Z5857TU4XjfWCXcWwgkqPr0RHOHV9shff1t
-r0T1mgiSv1BF4BBN2T5+qTOHD6bARf77L8dO/suwWm3um4ABNB7rELCQphM2nrrd
-J2GLkIiWucQxAzzUn/9CX1sRp4Dysb88eTpfAQUdvxJfPhxhYdzp51/b4YfT5f0x
-ASYiLpiKirKPRrnpvAI90jeGVCS3Ph6pfoZVqBcEmClOVYgjqUhV5CVl70n+QFy8
-RSef21fA9uoxVwajywI=
-=HJX9
------END PGP SIGNATURE-----
-
---F8dlzb82+Fcn6AgP--

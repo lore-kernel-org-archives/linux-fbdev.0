@@ -1,67 +1,205 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 10 Mar 2015 12:47:39 +0000
-Subject: Re: [patch] fbdev: pm3fb: cleanup some confusing indenting
-Message-Id: <54FEE7EB.8070402@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Q56R8VaCa90KBVVU90lFe8bTCnGfXwaxJ"
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:28 +0000
+Subject: [PATCH v1 38/47] video: fbdev: kyrofb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
+Message-Id: <1426893517-2511-39-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---Q56R8VaCa90KBVVU90lFe8bTCnGfXwaxJ
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On 25/02/15 15:25, Dan Carpenter wrote:
-> This if statement should be pushed out one tab to line up with the rest=
-=2E
->=20
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->=20
-> diff --git a/drivers/video/fbdev/pm3fb.c b/drivers/video/fbdev/pm3fb.c
-> index 4bf3273..77b99ed 100644
-> --- a/drivers/video/fbdev/pm3fb.c
-> +++ b/drivers/video/fbdev/pm3fb.c
-> @@ -1479,9 +1479,9 @@ static void pm3fb_remove(struct pci_dev *dev)
->  		fb_dealloc_cmap(&info->cmap);
-> =20
->  #ifdef CONFIG_MTRR
-> -	if (par->mtrr_handle >=3D 0)
-> -		mtrr_del(par->mtrr_handle, info->fix.smem_start,
-> -			 info->fix.smem_len);
-> +		if (par->mtrr_handle >=3D 0)
-> +			mtrr_del(par->mtrr_handle, info->fix.smem_start,
-> +				 info->fix.smem_len);
->  #endif /* CONFIG_MTRR */
->  		iounmap(info->screen_base);
->  		release_mem_region(fix->smem_start, fix->smem_len);
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
-Thanks, queued for 4.1.
+There are a few motivations for this:
 
- Tomi
+a) Take advantage of PAT when available
 
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
 
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
 
---Q56R8VaCa90KBVVU90lFe8bTCnGfXwaxJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+@ mtrr_found @
+expression index, base, size;
+@@
 
-iQIcBAEBAgAGBQJU/ufrAAoJEPo9qoy8lh71lOAP/R0LVa4/t1snu2LwuqwBGCS/
-ooht8QJT8qL+CGbUW/Zmkd8XVo08VHjphenmDKhVXEcBC5awkiDB0Djfj+JR+lMd
-XwCGKsD2p8mTECwsBR5kPnFuqMJ5SOHpYc/74f44JXj9pLbz/ahKHPYP4jtDNhQh
-pD+fiZ21EdMCpyW4iNTVANh93dZPJYIahOqW7zrwETFhp8mtLqz/mtdvxcdqlTcS
-auG+PciFcCO4wjHr/vDlTw1Nghv3onRap7ftUvS1C7ps1u04PF4PvQnek4DQXg7b
-zqs6As/zlb7FIHp+x1wPd0PMR8rCWccc10Q8TlEgQOIrSg1FeV8HMzeVWnuPJvCy
-GFoGA4k1J0KdV2PSo+wlxHWy/yBougqEeTqxG5bT8ilR4RpKcG/X5ZKddN0tuuYr
-M5xJh2jjQRXBqJxa4hNihZRemVMZp03douKiHOMSj/lxqOKAtqHh6B+pUx9hlWPr
-mLDNLb5K2aYObFTKzOuqPjvw9DeGJSZO0FGsPR72bNTl+hDKClxCuQNpxn1a1wGH
-MrCy5KEaHLsjURmwABPjXq0k1Us0cmlSGXHkBPL9m+dhrt7Ea5NISiWdq+Jbeggg
-U2wtz2Sdpc2rTfu/rrQMd8sChYojoOhoQ7luCDJ2CP1wuDIWc+NO4ySZgWo9Hmyn
-VnZM9n6Ut2pAFPNgsn1Q
-=z6TZ
------END PGP SIGNATURE-----
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
 
---Q56R8VaCa90KBVVU90lFe8bTCnGfXwaxJ--
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+---
+ drivers/video/fbdev/kyro/fbdev.c | 33 +++++++++++----------------------
+ include/video/kyro.h             |  4 +---
+ 2 files changed, 12 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
+index 65041e1..5bb0153 100644
+--- a/drivers/video/fbdev/kyro/fbdev.c
++++ b/drivers/video/fbdev/kyro/fbdev.c
+@@ -22,9 +22,6 @@
+ #include <linux/pci.h>
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+ 
+ #include <video/kyro.h>
+ 
+@@ -84,9 +81,7 @@ static device_info_t deviceInfo;
+ static char *mode_option = NULL;
+ static int nopan = 0;
+ static int nowrap = 1;
+-#ifdef CONFIG_MTRR
+ static int nomtrr = 0;
+-#endif
+ 
+ /* PCI driver prototypes */
+ static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
+@@ -570,10 +565,8 @@ static int __init kyrofb_setup(char *options)
+ 			nopan = 1;
+ 		} else if (strcmp(this_opt, "nowrap") = 0) {
+ 			nowrap = 1;
+-#ifdef CONFIG_MTRR
+ 		} else if (strcmp(this_opt, "nomtrr") = 0) {
+ 			nomtrr = 1;
+-#endif
+ 		} else {
+ 			mode_option = this_opt;
+ 		}
+@@ -691,17 +684,16 @@ static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	currentpar->regbase = deviceInfo.pSTGReg  		ioremap_nocache(kyro_fix.mmio_start, kyro_fix.mmio_len);
++	if (!currentpar->regbase)
++		goto out_free_fb;
+ 
+-	info->screen_base = ioremap_nocache(kyro_fix.smem_start,
+-					    kyro_fix.smem_len);
++	info->screen_base = pci_ioremap_wc_bar(pdev, 0);
++	if (!info->screen_base)
++		goto out_unmap_regs;
+ 
+-#ifdef CONFIG_MTRR
+ 	if (!nomtrr)
+-		currentpar->mtrr_handle -			mtrr_add(kyro_fix.smem_start,
+-				 kyro_fix.smem_len,
+-				 MTRR_TYPE_WRCOMB, 1);
+-#endif
++		currentpar->wc_cookie = arch_phys_wc_add(kyro_fix.smem_start,
++							 kyro_fix.smem_len);
+ 
+ 	kyro_fix.ypanstep	= nopan ? 0 : 1;
+ 	kyro_fix.ywrapstep	= nowrap ? 0 : 1;
+@@ -745,8 +737,10 @@ static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	return 0;
+ 
+ out_unmap:
+-	iounmap(currentpar->regbase);
+ 	iounmap(info->screen_base);
++out_unmap_regs:
++	iounmap(currentpar->regbase);
++out_free_fb:
+ 	framebuffer_release(info);
+ 
+ 	return -EINVAL;
+@@ -770,12 +764,7 @@ static void kyrofb_remove(struct pci_dev *pdev)
+ 	iounmap(info->screen_base);
+ 	iounmap(par->regbase);
+ 
+-#ifdef CONFIG_MTRR
+-	if (par->mtrr_handle)
+-		mtrr_del(par->mtrr_handle,
+-			 info->fix.smem_start,
+-			 info->fix.smem_len);
+-#endif
++	arch_phys_wc_del(par->wc_cookie);
+ 
+ 	unregister_framebuffer(info);
+ 	framebuffer_release(info);
+diff --git a/include/video/kyro.h b/include/video/kyro.h
+index c563968..b958c2e 100644
+--- a/include/video/kyro.h
++++ b/include/video/kyro.h
+@@ -35,9 +35,7 @@ struct kyrofb_info {
+ 	/* Useful to hold depth here for Linux */
+ 	u8 PIXDEPTH;
+ 
+-#ifdef CONFIG_MTRR
+-	int mtrr_handle;
+-#endif
++	int wc_cookie;
+ };
+ 
+ extern int kyro_dev_init(void);
+-- 
+2.3.2.209.gd67f9d5.dirty
+

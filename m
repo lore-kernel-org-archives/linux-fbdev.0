@@ -1,7 +1,7 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:17 +0000
-Subject: [PATCH v1 27/47] video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
-Message-Id: <1426893517-2511-28-git-send-email-mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:29 +0000
+Subject: [PATCH v1 39/47] video: fbdev: pm2fb: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1426893517-2511-40-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
@@ -13,6 +13,7 @@ Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, x
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
+This driver uses the same area for MTRR as for the ioremap().
 Convert the driver from using the x86 specific MTRR code to
 the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
 will avoid MTRR if write-combining is available, in order to
@@ -97,81 +98,103 @@ Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/gbefb.c | 26 +++++++-------------------
- 1 file changed, 7 insertions(+), 19 deletions(-)
+ drivers/video/fbdev/pm2fb.c | 31 +++++--------------------------
+ 1 file changed, 5 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
-index f48ea7e..ef81215 100644
---- a/drivers/video/fbdev/gbefb.c
-+++ b/drivers/video/fbdev/gbefb.c
-@@ -22,9 +22,6 @@
- #include <linux/module.h>
- #include <linux/io.h>
- 
--#ifdef CONFIG_X86
+diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
+index 3b85b64..aa8d288 100644
+--- a/drivers/video/fbdev/pm2fb.c
++++ b/drivers/video/fbdev/pm2fb.c
+@@ -38,10 +38,6 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+-#ifdef CONFIG_MTRR
 -#include <asm/mtrr.h>
 -#endif
- #ifdef CONFIG_MIPS
- #include <asm/addrspace.h>
- #endif
-@@ -1176,8 +1173,8 @@ static int gbefb_probe(struct platform_device *p_dev)
+-
+ #include <video/permedia2.h>
+ #include <video/cvisionppc.h>
  
- 	if (gbe_mem_phys) {
- 		/* memory was allocated at boot time */
--		gbe_mem = devm_ioremap_nocache(&p_dev->dev, gbe_mem_phys,
--					       gbe_mem_size);
-+		gbe_mem = devm_ioremap_wc(&p_dev->dev, gbe_mem_phys,
-+					  gbe_mem_size);
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
- 			ret = -ENOMEM;
-@@ -1188,8 +1185,8 @@ static int gbefb_probe(struct platform_device *p_dev)
- 	} else {
- 		/* try to allocate memory with the classical allocator
- 		 * this has high chance to fail on low memory machines */
--		gbe_mem = dma_alloc_coherent(NULL, gbe_mem_size, &gbe_dma_addr,
--					     GFP_KERNEL);
-+		gbe_mem = dma_alloc_writecombine(NULL, gbe_mem_size,
-+						 &gbe_dma_addr, GFP_KERNEL);
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't allocate framebuffer memory\n");
- 			ret = -ENOMEM;
-@@ -1199,10 +1196,7 @@ static int gbefb_probe(struct platform_device *p_dev)
- 		gbe_mem_phys = (unsigned long) gbe_dma_addr;
+@@ -81,10 +77,7 @@ static char *mode_option;
+ static bool lowhsync;
+ static bool lowvsync;
+ static bool noaccel;
+-/* mtrr option */
+-#ifdef CONFIG_MTRR
+ static bool nomtrr;
+-#endif
+ 
+ /*
+  * The hardware state of the graphics card that isn't part of the
+@@ -100,7 +93,7 @@ struct pm2fb_par
+ 	u32		mem_control;	/* MemControl reg at probe */
+ 	u32		boot_address;	/* BootAddress reg at probe */
+ 	u32		palette[16];
+-	int		mtrr_handle;
++	int		wc_cookie;
+ };
+ 
+ /*
+@@ -1637,21 +1630,16 @@ static int pm2fb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 		goto err_exit_mmio;
+ 	}
+ 	info->screen_base -		ioremap_nocache(pm2fb_fix.smem_start, pm2fb_fix.smem_len);
++		ioremap_wc(pm2fb_fix.smem_start, pm2fb_fix.smem_len);
+ 	if (!info->screen_base) {
+ 		printk(KERN_WARNING "pm2fb: Can't ioremap smem area.\n");
+ 		release_mem_region(pm2fb_fix.smem_start, pm2fb_fix.smem_len);
+ 		goto err_exit_mmio;
  	}
  
--#ifdef CONFIG_X86
--	info->wc_cookie = mtrr_add(gbe_mem_phys, gbe_mem_size,
--				   MTRR_TYPE_WRCOMB, 1);
--#endif
-+	info->wc_cookie = arch_phys_wc_add(gbe_mem_phys, gbe_mem_size);
- 
- 	/* map framebuffer memory into tiles table */
- 	for (i = 0; i < (gbe_mem_size >> TILE_SHIFT); i++)
-@@ -1242,10 +1236,7 @@ static int gbefb_probe(struct platform_device *p_dev)
- 	return 0;
- 
- out_gbe_unmap:
 -#ifdef CONFIG_MTRR
--	if (info->wc_cookie >= 0)
--		mtrr_del(info->wc_cookie, 0, 0);
+-	default_par->mtrr_handle = -1;
+ 	if (!nomtrr)
+-		default_par->mtrr_handle -			mtrr_add(pm2fb_fix.smem_start,
+-				 pm2fb_fix.smem_len,
+-				 MTRR_TYPE_WRCOMB, 1);
 -#endif
-+	arch_phys_wc_del(info->wc_cookie);
- 	if (gbe_dma_addr)
- 		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
- out_tiles_free:
-@@ -1265,10 +1256,7 @@ static int gbefb_remove(struct platform_device* p_dev)
++		default_par->wc_cookie = arch_phys_wc_add(pm2fb_fix.smem_start,
++							  pm2fb_fix.smem_len);
+ 
+ 	info->fbops		= &pm2fb_ops;
+ 	info->fix		= pm2fb_fix;
+@@ -1733,12 +1721,7 @@ static void pm2fb_remove(struct pci_dev *pdev)
+ 	struct pm2fb_par *par = info->par;
  
  	unregister_framebuffer(info);
- 	gbe_turn_off();
+-
 -#ifdef CONFIG_MTRR
--	if (info->wc_cookie >= 0)
--		mtrr_del(info->wc_cookie, 0, 0);
+-	if (par->mtrr_handle >= 0)
+-		mtrr_del(par->mtrr_handle, info->fix.smem_start,
+-			 info->fix.smem_len);
+-#endif /* CONFIG_MTRR */
++	arch_phys_wc_del(par->wc_cookie);
+ 	iounmap(info->screen_base);
+ 	release_mem_region(fix->smem_start, fix->smem_len);
+ 	iounmap(par->v_regs);
+@@ -1791,10 +1774,8 @@ static int __init pm2fb_setup(char *options)
+ 			lowvsync = 1;
+ 		else if (!strncmp(this_opt, "hwcursor=", 9))
+ 			hwcursor = simple_strtoul(this_opt + 9, NULL, 0);
+-#ifdef CONFIG_MTRR
+ 		else if (!strncmp(this_opt, "nomtrr", 6))
+ 			nomtrr = 1;
 -#endif
-+	arch_phys_wc_del(info->wc_cookie);
- 	if (gbe_dma_addr)
- 		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
- 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
+ 		else if (!strncmp(this_opt, "noaccel", 7))
+ 			noaccel = 1;
+ 		else
+@@ -1847,10 +1828,8 @@ MODULE_PARM_DESC(noaccel, "Disable acceleration");
+ module_param(hwcursor, int, 0644);
+ MODULE_PARM_DESC(hwcursor, "Enable hardware cursor "
+ 			"(1=enable, 0=disable, default=1)");
+-#ifdef CONFIG_MTRR
+ module_param(nomtrr, bool, 0);
+ MODULE_PARM_DESC(nomtrr, "Disable MTRR support (0 or 1=disabled) (default=0)");
+-#endif
+ 
+ MODULE_AUTHOR("Jim Hague <jim.hague@acm.org>");
+ MODULE_DESCRIPTION("Permedia2 framebuffer device driver");
 -- 
 2.3.2.209.gd67f9d5.dirty
 

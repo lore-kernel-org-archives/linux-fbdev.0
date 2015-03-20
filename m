@@ -1,112 +1,138 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 20 Mar 2015 15:21:15 +0000
+From: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
+Date: Fri, 20 Mar 2015 17:19:57 +0000
 Subject: Re: [PATCH] omapdss: extend pm notifier to handle hibernation
-Message-Id: <550C3AEB.1090802@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="wh6MqPi5ftN3vwKhJMjIp8MQxptEn5d1s"
+Message-Id: <550C56BD.9000600@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1424883836-9119-1-git-send-email-grygorii.strashko@linaro.org> <550C108E.3020907@ti.com> <550C3545.8060702@linaro.org>
-In-Reply-To: <550C3545.8060702@linaro.org>
-To: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
+References: <1424883836-9119-1-git-send-email-grygorii.strashko@linaro.org> <550C108E.3020907@ti.com> <550C3545.8060702@linaro.org> <550C3AEB.1090802@ti.com>
+In-Reply-To: <550C3AEB.1090802@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, nm@ti.com, sumit.semwal@linaro.org, linux-omap@vger.kernel.org, kishon@ti.com, linux-fbdev@vger.kernel.org
 
---wh6MqPi5ftN3vwKhJMjIp8MQxptEn5d1s
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-
-On 20/03/15 16:57, Grygorii.Strashko@linaro.org wrote:
-> Hi Tomi,
->=20
-> On 03/20/2015 02:20 PM, Tomi Valkeinen wrote:
->> On 25/02/15 19:03, grygorii.strashko@linaro.org wrote:
->>> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+On 03/20/2015 05:21 PM, Tomi Valkeinen wrote:
+> On 20/03/15 16:57, Grygorii.Strashko@linaro.org wrote:
+>> On 03/20/2015 02:20 PM, Tomi Valkeinen wrote:
+>>> On 25/02/15 19:03, grygorii.strashko@linaro.org wrote:
+>>>> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+>>>>
+>>>> Add handling of missed events in omap_dss_pm_notif which are
+>>>> needed to support hibernation (suspend to disk).
+>>>>
+>>>> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+>>>> ---
+>>>>    drivers/video/fbdev/omap2/dss/core.c | 4 ++++
+>>>>    1 file changed, 4 insertions(+)
+>>>>
+>>>> diff --git a/drivers/video/fbdev/omap2/dss/core.c b/drivers/video/fbdev/omap2/dss/core.c
+>>>> index 6b74f73..e60976a 100644
+>>>> --- a/drivers/video/fbdev/omap2/dss/core.c
+>>>> +++ b/drivers/video/fbdev/omap2/dss/core.c
+>>>> @@ -178,11 +178,15 @@ static int omap_dss_pm_notif(struct notifier_block *b, unsigned long v, void *d)
+>>>>    	DSSDBG("pm notif %lu\n", v);
+>>>>    
+>>>>    	switch (v) {
+>>>> +	case PM_HIBERNATION_PREPARE:
+>>>>    	case PM_SUSPEND_PREPARE:
+>>>> +	case PM_RESTORE_PREPARE:
+>>>>    		DSSDBG("suspending displays\n");
+>>>>    		return dss_suspend_all_devices();
+>>>>    
+>>>>    	case PM_POST_SUSPEND:
+>>>> +	case PM_POST_HIBERNATION:
+>>>> +	case PM_POST_RESTORE:
+>>>>    		DSSDBG("resuming displays\n");
+>>>>    		return dss_resume_all_devices();
+>>>>    
 >>>
->>> Add handling of missed events in omap_dss_pm_notif which are
->>> needed to support hibernation (suspend to disk).
->>>
->>> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
->>> ---
->>>   drivers/video/fbdev/omap2/dss/core.c | 4 ++++
->>>   1 file changed, 4 insertions(+)
->>>
->>> diff --git a/drivers/video/fbdev/omap2/dss/core.c b/drivers/video/fbd=
-ev/omap2/dss/core.c
->>> index 6b74f73..e60976a 100644
->>> --- a/drivers/video/fbdev/omap2/dss/core.c
->>> +++ b/drivers/video/fbdev/omap2/dss/core.c
->>> @@ -178,11 +178,15 @@ static int omap_dss_pm_notif(struct notifier_bl=
-ock *b, unsigned long v, void *d)
->>>   	DSSDBG("pm notif %lu\n", v);
->>>  =20
->>>   	switch (v) {
->>> +	case PM_HIBERNATION_PREPARE:
->>>   	case PM_SUSPEND_PREPARE:
->>> +	case PM_RESTORE_PREPARE:
->>>   		DSSDBG("suspending displays\n");
->>>   		return dss_suspend_all_devices();
->>>  =20
->>>   	case PM_POST_SUSPEND:
->>> +	case PM_POST_HIBERNATION:
->>> +	case PM_POST_RESTORE:
->>>   		DSSDBG("resuming displays\n");
->>>   		return dss_resume_all_devices();
->>>  =20
+>>> Why suspend displays when PM_RESTORE_PREPARE happens? Why resume when
+>>> PM_POST_RESTORE happens?
 >>
->> Why suspend displays when PM_RESTORE_PREPARE happens? Why resume when
->> PM_POST_RESTORE happens?
->=20
-> We have following sequence when system is restored from hibernation:
-> - original kernel booted;
-> - late_initcall_sync(software_resume);
->   - pm_notifier_call_chain(PM_RESTORE_PREPARE);
->   - freeze_processes
->   - check & read hibernation image
->   - suspend all devices (.freeze())
->   - jump to stored kernel
->   - restore devices
->   ...
->=20
-> So, all devices should be in frozen/suspended state when we will jump t=
-o stored kernel
-> (device's state should be the same as before creating hib image).
->=20
-> Without this patch I can see a lot of log messages like below:
+>> We have following sequence when system is restored from hibernation:
+>> - original kernel booted;
+>> - late_initcall_sync(software_resume);
+>>    - pm_notifier_call_chain(PM_RESTORE_PREPARE);
+>>    - freeze_processes
+>>    - check & read hibernation image
+>>    - suspend all devices (.freeze())
+>>    - jump to stored kernel
+>>    - restore devices
+>>    ...
+>>
+>> So, all devices should be in frozen/suspended state when we will jump to stored kernel
+>> (device's state should be the same as before creating hib image).
+>>
+>> Without this patch I can see a lot of log messages like below:
+> 
+> Yes, I am sure a fix is needed for hibernation. But I still don't quite
+> understand PM_RESTORE_PREPARE and PM_POST_RESTORE.
+> 
+> When we enter hibernation, there's only PM_HIBERNATION_PREPARE?
 
-Yes, I am sure a fix is needed for hibernation. But I still don't quite
-understand PM_RESTORE_PREPARE and PM_POST_RESTORE.
+No. There is always PM_POST_HIBERNATION:
+    - original Kernel in case of failure
+    - restored Kernel on success
 
-When we enter hibernation, there's only PM_HIBERNATION_PREPARE?
+> 
+> When waking from hibernation, there's first PM_RESTORE_PREPARE, where we
+> need to disable displays that were enabled during boot. Then either
+> PM_POST_HIBERNATION if all went well, or PM_POST_RESTORE if there was an
+> error, and in both cases we want to enable the displays?
 
-When waking from hibernation, there's first PM_RESTORE_PREPARE, where we
-need to disable displays that were enabled during boot. Then either
-PM_POST_HIBERNATION if all went well, or PM_POST_RESTORE if there was an
-error, and in both cases we want to enable the displays?
+Yes.
 
- Tomi
+==
+int hibernate(void)
+	error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+...
+	error = hibernation_snapshot(hibernation_mode = HIBERNATION_PLATFORM);
+		^^^ restored kernel will start from here
+
+	if (error || freezer_test_done)
+		goto Free_bitmaps;
+
+	if (in_suspend) {
+...
+
+		pr_debug("PM: writing image.\n");
+		error = swsusp_write(flags);
+		swsusp_free();
+		if (!error)
+			power_down();
+		in_suspend = 0;
+		pm_restore_gfp_mask();
+		^^ this part will be executed by Kernel requested Hibernation
+
+	} else {
+		pr_debug("PM: Image restored successfully.\n");
+		^^ this part will be executed by Kernel restored from Hibernation
+	}
+
+...
+	pm_notifier_call_chain(PM_POST_HIBERNATION);
+^^^ Both Kernels will be notified here:
+    - original Kernel in case of failure
+    - restored Kernel on success
+    
+    
 
 
+==
+static int software_resume(void)
+	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
+	error = swsusp_read(&flags);
+	swsusp_close(FMODE_READ);
+	if (!error)
+		hibernation_restore(flags & SF_PLATFORM_MODE);
+                ^^^ if ok we will never return from this function
 
---wh6MqPi5ftN3vwKhJMjIp8MQxptEn5d1s
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+	printk(KERN_ERR "PM: Failed to load hibernation image, recovering.\n");
+	pm_notifier_call_chain(PM_POST_RESTORE);
+^^^
+   if fail - just continue work as usual
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVDDrrAAoJEPo9qoy8lh71Y9IP/3MY65KIKCWnEq3J+6t7NknI
-QB1D7pMO3MF5MMKMY95WD2mZxEqOr0X8aJGcugQp0snKDx7xGTE+6QrsIw2rn/9y
-G0f5sVF4N2KUocU0YlFs+3E7SJQCwYuB/nnbBRhQHaqSsncXI801E+CuuSp9skrp
-1WuFBFIj1/FREGMulYCTNJeFuJ3wiE3Y/U/+d8rpK/4jfOTuFpBp9Xtdg1Xxvyei
-dNOuT3eSRzwWWv/+qJHJPsCzG7Aiz9Ae8zkcp4felKHBlv7iIz248kAi46Xw2X0G
-JfhBi7v0/GmCwzmUWzk31lYsWbqQgJjh4h0GYdgpjdji1Flmb9rbVrRlOU+UJRnu
-scEvC9A0jms86P4Giz6razXboh7AeBw4FkTneFcheYoTWrcVg8Oq72U6V/HtlcjU
-1RsSIjfzb73XNfCS/5LxscGtVQobN3HS2WdexGdOLPcOpIwGdZZSksU3RYmyV0qV
-ZrC1Cq8hJ+09VrHHX147wkzwy86EK/MOR/G5NY+4Qk2gYL1Iq2XdfJExGQ8Nx8OQ
-1rceEA2aJeSs6SQ0WOTd0EELFS/SguRgBMdFCa/Nq6vw5/zZeqxmzekA1OwW9hE1
-7Bp9+FmMInfnMzftTbLuSyK4WxjbL+UXbqjaRCIhhMePE+UTERsw3YXDauaWVTep
-EPo4+Cv5PRQ3gg1EaI72
-=pd1m
------END PGP SIGNATURE-----
-
---wh6MqPi5ftN3vwKhJMjIp8MQxptEn5d1s--
+-- 
+regards,
+-grygorii

@@ -1,175 +1,122 @@
-From: Michel von Czettritz <michel.von.czettritz@gmail.com>
-Date: Thu, 26 Mar 2015 22:25:08 +0000
-Subject: [PATCH v2 03/12] staging: sm750: move '{' to previous line
-Message-Id: <2e0b269c5e1ec52c7990e40c838080658f015d9f.1427406762.git.michel.von.czettritz@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:08 +0000
+Subject: [PATCH v1 18/47] vidoe: fbdev: vesafb: add missing mtrr_del() for added MTRR
+Message-Id: <1426893517-2511-19-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Fix checkpatch.pl error:
-"ERROR: that open brace { should be on the previous line"
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
+The MTRR added was never being deleted.
+
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/sm750fb/sm750.c | 50 +++++++++++++----------------------------
- 1 file changed, 16 insertions(+), 34 deletions(-)
+ drivers/video/fbdev/vesafb.c | 30 ++++++++++++++++++++++++------
+ 1 file changed, 24 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index e98eefc..bc2986d 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -154,8 +154,7 @@ static int lynxfb_ops_cursor(struct fb_info* info, struct fb_cursor* fbcursor)
+diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
+index 191156b..a2261d0 100644
+--- a/drivers/video/fbdev/vesafb.c
++++ b/drivers/video/fbdev/vesafb.c
+@@ -29,6 +29,10 @@
+ 
+ /* --------------------------------------------------------------------- */
+ 
++struct vesafb_par {
++	int wc_cookie;
++};
++
+ static struct fb_var_screeninfo vesafb_defined = {
+ 	.activate	= FB_ACTIVATE_NOW,
+ 	.height		= -1,
+@@ -175,7 +179,16 @@ static int vesafb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 
+ static void vesafb_destroy(struct fb_info *info)
+ {
++#ifdef CONFIG_MTRR
++	struct vesafb_par *par = info->par;
++#endif
++
+ 	fb_dealloc_cmap(&info->cmap);
++
++#ifdef CONFIG_MTRR
++	if (par->wc_cookie >= 0)
++		mtrr_del(par->wc_cookie, 0, 0);
++#endif
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
+ 	release_mem_region(info->apertures->ranges[0].base, info->apertures->ranges[0].size);
+@@ -228,6 +241,7 @@ static int vesafb_setup(char *options)
+ static int vesafb_probe(struct platform_device *dev)
+ {
+ 	struct fb_info *info;
++	struct vesafb_par *par;
+ 	int i, err;
+ 	unsigned int size_vmode;
+ 	unsigned int size_remap;
+@@ -297,8 +311,8 @@ static int vesafb_probe(struct platform_device *dev)
+ 		return -ENOMEM;
  	}
+ 	platform_set_drvdata(dev, info);
+-	info->pseudo_palette = info->par;
+-	info->par = NULL;
++	info->pseudo_palette = NULL;
++	par = info->par;
  
+ 	/* set vesafb aperture size for generic probing */
+ 	info->apertures = alloc_apertures(1);
+@@ -407,17 +421,17 @@ static int vesafb_probe(struct platform_device *dev)
+ 	if (mtrr = 3) {
+ #ifdef CONFIG_MTRR
+ 		unsigned int temp_size = size_total;
+-		int rc;
  
--	if(fbcursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE))
--	{
-+	if(fbcursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
- 		cursor->setData(cursor,
- 				fbcursor->rop,
- 				fbcursor->image.data,
-@@ -255,13 +254,10 @@ static void lynxfb_ops_imageblit(struct fb_info*info, const struct fb_image* ima
+ 		/* Find the largest power-of-two */
+ 		temp_size = roundup_pow_of_two(temp_size);
  
- 	if(image->depth = 1){
- 		if(info->fix.visual = FB_VISUAL_TRUECOLOR ||
--		   info->fix.visual = FB_VISUAL_DIRECTCOLOR)
--		{
-+				info->fix.visual = FB_VISUAL_DIRECTCOLOR) {
- 			fgcol = ((u32*)info->pseudo_palette)[image->fg_color];
- 			bgcol = ((u32*)info->pseudo_palette)[image->bg_color];
--		}
--		else
--		{
-+		} else {
- 			fgcol = image->fg_color;
- 			bgcol = image->bg_color;
- 		}
-@@ -630,8 +626,7 @@ static int lynxfb_ops_setcolreg(unsigned regno, unsigned red,
- 	if(info->var.grayscale)
- 		red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
- 
--	if(var->bits_per_pixel = 8 && info->fix.visual = FB_VISUAL_PSEUDOCOLOR)
--	{
-+	if(var->bits_per_pixel = 8 && info->fix.visual = FB_VISUAL_PSEUDOCOLOR) {
- 		red >>= 8;
- 		green >>= 8;
- 		blue >>= 8;
-@@ -640,13 +635,11 @@ static int lynxfb_ops_setcolreg(unsigned regno, unsigned red,
- 	}
- 
- 
--	if(info->fix.visual = FB_VISUAL_TRUECOLOR && regno < 256 )
--	{
-+	if(info->fix.visual = FB_VISUAL_TRUECOLOR && regno < 256 ) {
- 		u32 val;
- 		if(var->bits_per_pixel = 16 ||
- 		   var->bits_per_pixel = 32 ||
--		   var->bits_per_pixel = 24)
--		{
-+		   var->bits_per_pixel = 24) {
- 			val = chan_to_field(red, &var->red);
- 			val |= chan_to_field(green, &var->green);
- 			val |= chan_to_field(blue, &var->blue);
-@@ -709,8 +702,7 @@ static int sm750fb_set_drv(struct lynxfb_par * par)
- 	output->clear = hw_sm750_output_clear;
- 	/* chip specific phase */
- 	share->accel.de_wait = (share->revid = SM750LE_REVISION_ID)?hw_sm750le_deWait: hw_sm750_deWait;
--	switch (spec_share->state.dataflow)
--	{
-+	switch (spec_share->state.dataflow) {
- 	case sm750_simul_pri:
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_primary;
-@@ -794,8 +786,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info, int index)
- 	};
- 
- 
--	static const char * fixId[2]-	{
-+	static const char * fixId[2] = {
- 		"sm750_fb1", "sm750_fb2",
- 	};
- 
-@@ -935,8 +926,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info, int index)
- 	pr_info("fix->mmio_start = %lx\n", fix->mmio_start);
- 	fix->mmio_len = share->vidreg_size;
- 	pr_info("fix->mmio_len = %x\n", fix->mmio_len);
--	switch(var->bits_per_pixel)
--	{
-+	switch(var->bits_per_pixel) {
- 	case 8:
- 		fix->visual = FB_VISUAL_PSEUDOCOLOR;
- 		break;
-@@ -1028,8 +1018,7 @@ static void sm750fb_setup(struct lynx_share * share, char * src)
- 			g_hwcursor &= ~0x2;
- 		else if(!strncmp(opt, "nohwc", strlen("nohwc")))
- 			g_hwcursor = 0;
--		else
--		{
-+		else {
- 			if(!g_fbmode[0]){
- 				g_fbmode[0] = opt;
- 				pr_info("find fbmode0 : %s\n", g_fbmode[0]);
-@@ -1042,8 +1031,7 @@ static void sm750fb_setup(struct lynx_share * share, char * src)
- 		}
- 	}
- #ifdef CAP_EXPANSION
--	if(getExpRes(exp_res, &spec_share->state.xLCD, &spec_share->state.yLCD))
--	{
-+	if(getExpRes(exp_res, &spec_share->state.xLCD, &spec_share->state.yLCD)) {
- 		/* seems exp_res is not valid*/
- 		spec_share->state.xLCD = spec_share->state.yLCD = 0;
- 	}
-@@ -1051,8 +1039,7 @@ static void sm750fb_setup(struct lynx_share * share, char * src)
- 
- NO_PARAM:
- 	if(share->revid != SM750LE_REVISION_ID){
--		if(share->dual)
--		{
-+		if(share->dual) {
- 			if(swap)
- 				spec_share->state.dataflow = sm750_dual_swap;
- 			else
-@@ -1168,16 +1155,13 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
- 	fbidx = 0;
- ALLOC_FB:
- 	info[fbidx] = framebuffer_alloc(sizeof(struct lynxfb_par), &pdev->dev);
--	if(!info[fbidx])
--	{
-+	if(!info[fbidx]) {
- 		pr_err("Could not allocate framebuffer #%d.\n", fbidx);
- 		if(fbidx = 0)
- 			goto err_info0_alloc;
- 		else
- 			goto err_info1_alloc;
--	}
--	else
--	{
-+	} else {
- 		struct lynxfb_par * par;
- 		int errno;
- 		pr_info("framebuffer #%d alloc okay\n", fbidx);
-@@ -1296,8 +1280,7 @@ static int __init lynxfb_setup(char * options)
- 		strsep() updates @options to pointer after the first found token
- 		it also returns the pointer ahead the token.
- 		*/
--	while((opt = strsep(&options, ":"))!=NULL)
--	{
-+	while((opt = strsep(&options, ":"))!=NULL) {
- 		/* options that mean for any lynx chips are configured here */
- 		if(!strncmp(opt, "noaccel", strlen("noaccel")))
- 			g_noaccel = 1;
-@@ -1307,8 +1290,7 @@ static int __init lynxfb_setup(char * options)
+ 		/* Try and find a power of two to add */
+ 		do {
+-			rc = mtrr_add(vesafb_fix.smem_start, temp_size,
+-				      MTRR_TYPE_WRCOMB, 1);
++			par->wc_cookie = mtrr_add(vesafb_fix.smem_start,
++						  temp_size,
++						  MTRR_TYPE_WRCOMB, 1);
+ 			temp_size >>= 1;
+-		} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
++		} while (temp_size >= PAGE_SIZE && par->wc_cookie = -EINVAL);
  #endif
- 		else if(!strncmp(opt, "dual", strlen("dual")))
- 			g_dualview = 1;
--		else
--		{
-+		else {
- 			strcat(tmp, opt);
- 			tmp += strlen(opt);
- 			if(options != NULL)
+ 		info->screen_base = ioremap_wc(vesafb_fix.smem_start, vesafb_fix.smem_len);
+ 	} else {
+@@ -462,6 +476,10 @@ static int vesafb_probe(struct platform_device *dev)
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+ 	return 0;
+ err:
++#ifdef CONFIG_MTRR
++	if (par->wc_cookie >= 0)
++		mtrr_del(par->wc_cookie, 0, 0);
++#endif
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
+ 	framebuffer_release(info);
 -- 
-2.3.3
+2.3.2.209.gd67f9d5.dirty
 

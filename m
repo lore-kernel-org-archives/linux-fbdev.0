@@ -1,48 +1,61 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Mon, 09 Mar 2015 07:47:04 +0000
-Subject: [PATCH v2 2/4] staging: sm750fb: remove pragma optimize
-Message-Id: <1425886506-8643-2-git-send-email-sudipm.mukherjee@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:17:58 +0000
+Subject: [PATCH v1 08/47] video: fbdev: atyfb: clarify ioremap() base and length used
+Message-Id: <1426893517-2511-9-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425886506-8643-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1425886506-8643-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-remove use of #pragma optimize which will usually be ignored by the
-compiler.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+This has no functional changes, it just adjusts
+the ioremap() call for the framebuffer to use
+the same values we later use for the framebuffer,
+this will make it easier to review the next change.
+
+The size of the framebuffer varies but since this is
+for PCI we *know* this defaults to 0x800000.
+atyfb_setup_generic() is *only* used on PCI probe.
+
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
+ drivers/video/fbdev/aty/atyfb_base.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-v2: same as v1
-
- drivers/staging/sm750fb/ddk750_swi2c.c | 3 ---
- 1 file changed, 3 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-index b53407b..cae6b9b 100644
---- a/drivers/staging/sm750fb/ddk750_swi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-@@ -217,8 +217,6 @@ static unsigned char swI2CReadSDA(void)
-         return 0;
- }
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 16936bb..8025624 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3489,7 +3489,9 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
  
--#pragma optimize( "", off )
--
- /*
-  *  This function sends ACK signal
-  */
-@@ -356,7 +354,6 @@ unsigned char swI2CReadByte(unsigned char ack)
- 
-     return data;
- }
--#pragma optimize( "", on )
- 
- /*
-  * This function initializes GPIO port for SW I2C communication.
+ 	/* Map in frame buffer */
+ 	info->fix.smem_start = addr;
+-	info->screen_base = ioremap(addr, 0x800000);
++	info->fix.smem_len = 0x800000;
++
++	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
+ 	if (info->screen_base = NULL) {
+ 		ret = -ENOMEM;
+ 		goto atyfb_setup_generic_fail;
 -- 
-1.8.1.2
+2.3.2.209.gd67f9d5.dirty
 

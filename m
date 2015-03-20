@@ -1,39 +1,80 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Sat, 28 Mar 2015 07:54:43 +0000
-Subject: Re: [PATCH v2 0/3] add cursor blink interval terminal escape sequence
-Message-Id: <20150328075443.GD5248@xo-6d-61-c0.localdomain>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:17:54 +0000
+Subject: [PATCH v1 04/47] pci: add pci_ioremap_wc_bar()
+Message-Id: <1426893517-2511-5-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
- <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
- <20150225094946.GA24627@amd>
- <alpine.LNX.2.11.1502252319330.276@localhost>
- <20150226220243.GC9935@amd>
- <alpine.LNX.2.11.1502271905580.4212@localhost>
- <alpine.LNX.2.11.1502271911380.4248@localhost>
- <20150325111949.GA24230@kroah.com>
- <alpine.DEB.2.11.1503261341260.2164@local>
-In-Reply-To: <alpine.DEB.2.11.1503261341260.2164@local>
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Scot Doyle <lkml14-enLWO88E2pdl57MIdRCFDg@public.gmane.org>
-Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Thu 2015-03-26 13:51:04, Scot Doyle wrote:
-> v2: Add documentation to console_codes man page (man-pages repo)
-> 
-> This patch series adds an escape sequence to specify the current console's
-> cursor blink interval. The default interval is set to fbcon's currently 
-> hardcoded 200 msecs.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Actually... Greg, can you import console_codes.4 into kernel tree somehow?
+This lets drivers take advanate of PAT when available. This
+should help with the transition of converting video drivers over
+to ioremap_wc() to help with the goal of eventually using
+_PAGE_CACHE_UC over _PAGE_CACHE_UC_MINUS on x86 on
+ioremap_nocache() (de33c442e)
 
-This will bring documentation for a bunch of currently undocumented kernel
-interfaces into the kernel tree... where it belongs.
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+---
+ drivers/pci/pci.c   | 14 ++++++++++++++
+ include/linux/pci.h |  1 +
+ 2 files changed, 15 insertions(+)
 
-Thanks,
-								Pavel
-
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 81f06e8..6afd507 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -137,6 +137,20 @@ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar)
+ 				     pci_resource_len(pdev, bar));
+ }
+ EXPORT_SYMBOL_GPL(pci_ioremap_bar);
++
++void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar)
++{
++	/*
++	 * Make sure the BAR is actually a memory resource, not an IO resource
++	 */
++	if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM)) {
++		WARN_ON(1);
++		return NULL;
++	}
++	return ioremap_wc(pci_resource_start(pdev, bar),
++			  pci_resource_len(pdev, bar));
++}
++EXPORT_SYMBOL_GPL(pci_ioremap_wc_bar);
+ #endif
+ 
+ #define PCI_FIND_CAP_TTL	48
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 211e9da..c235b09 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1667,6 +1667,7 @@ static inline void pci_mmcfg_late_init(void) { }
+ int pci_ext_cfg_avail(void);
+ 
+ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar);
++void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar);
+ 
+ #ifdef CONFIG_PCI_IOV
+ int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.3.2.209.gd67f9d5.dirty
+

@@ -1,7 +1,7 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:09 +0000
-Subject: [PATCH v1 19/47] video: fbdev: vesafb: use arch_phys_wc_add()
-Message-Id: <1426893517-2511-20-git-send-email-mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:25 +0000
+Subject: [PATCH v1 35/47] video: fbdev: aty: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1426893517-2511-36-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
@@ -13,14 +13,11 @@ Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, x
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-This driver uses the same area for MTRR as for the ioremap_wc(), if
-anything it just uses a smaller size in case MTRR reservation fails.
-ioremap_wc() API is already used to take advantage of architecture
-write-combining when available.
-
 Convert the driver from using the x86 specific MTRR code to
 the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available.
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
 There are a few motivations for this:
 
@@ -100,86 +97,109 @@ Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/vesafb.c | 29 ++++++++---------------------
- 1 file changed, 8 insertions(+), 21 deletions(-)
+ drivers/video/fbdev/aty/aty128fb.c | 36 ++++++------------------------------
+ 1 file changed, 6 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-index a2261d0..5bc94d3 100644
---- a/drivers/video/fbdev/vesafb.c
-+++ b/drivers/video/fbdev/vesafb.c
-@@ -19,10 +19,9 @@
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/screen_info.h>
-+#include <linux/io.h>
+diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
+index aedf2fb..f41955b 100644
+--- a/drivers/video/fbdev/aty/aty128fb.c
++++ b/drivers/video/fbdev/aty/aty128fb.c
+@@ -80,10 +80,6 @@
+ #include <asm/btext.h>
+ #endif /* CONFIG_BOOTX_TEXT */
  
- #include <video/vga.h>
--#include <asm/io.h>
--#include <asm/mtrr.h>
- 
- #define dac_reg	(0x3c8)
- #define dac_val	(0x3c9)
-@@ -179,16 +178,10 @@ static int vesafb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 
- static void vesafb_destroy(struct fb_info *info)
- {
 -#ifdef CONFIG_MTRR
- 	struct vesafb_par *par = info->par;
+-#include <asm/mtrr.h>
 -#endif
+-
+ #include <video/aty128.h>
  
- 	fb_dealloc_cmap(&info->cmap);
+ /* Debug flag */
+@@ -399,10 +395,7 @@ static int default_cmode = CMODE_8;
+ 
+ static int default_crt_on = 0;
+ static int default_lcd_on = 1;
 -
 -#ifdef CONFIG_MTRR
--	if (par->wc_cookie >= 0)
--		mtrr_del(par->wc_cookie, 0, 0);
+ static bool mtrr = true;
 -#endif
-+	arch_phys_wc_del(par->wc_cookie);
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
- 	release_mem_region(info->apertures->ranges[0].base, info->apertures->ranges[0].size);
-@@ -419,7 +412,6 @@ static int vesafb_probe(struct platform_device *dev)
- 	request_region(0x3c0, 32, "vesafb");
  
- 	if (mtrr = 3) {
+ #ifdef CONFIG_FB_ATY128_BACKLIGHT
+ #ifdef CONFIG_PMAC_BACKLIGHT
+@@ -456,9 +449,7 @@ struct aty128fb_par {
+ 	u32 vram_size;                      /* onboard video ram   */
+ 	int chip_gen;
+ 	const struct aty128_meminfo *mem;   /* onboard mem info    */
 -#ifdef CONFIG_MTRR
- 		unsigned int temp_size = size_total;
- 
- 		/* Find the largest power-of-two */
-@@ -427,18 +419,16 @@ static int vesafb_probe(struct platform_device *dev)
- 
- 		/* Try and find a power of two to add */
- 		do {
--			par->wc_cookie = mtrr_add(vesafb_fix.smem_start,
--						  temp_size,
--						  MTRR_TYPE_WRCOMB, 1);
-+			par->wc_cookie +				arch_phys_wc_add(vesafb_fix.smem_start,
-+						 temp_size);
- 			temp_size >>= 1;
--		} while (temp_size >= PAGE_SIZE && par->wc_cookie = -EINVAL);
+-	struct { int vram; int vram_valid; } mtrr;
 -#endif
-+		} while (temp_size >= PAGE_SIZE && par->wc_cookie < 0);
-+
- 		info->screen_base = ioremap_wc(vesafb_fix.smem_start, vesafb_fix.smem_len);
- 	} else {
++	int wc_cookie;
+ 	int blitter_may_be_busy;
+ 	int fifo_slots;                 /* free slots in FIFO (64 max) */
+ 
+@@ -1725,12 +1716,10 @@ static int aty128fb_setup(char *options)
+ #endif
+ 			continue;
+ 		}
 -#ifdef CONFIG_MTRR
- 		if (mtrr && mtrr != 3)
- 			WARN_ONCE(1, "Only MTRR_TYPE_WRCOMB (3) make sense\n");
+ 		if(!strncmp(this_opt, "nomtrr", 6)) {
+ 			mtrr = 0;
+ 			continue;
+ 		}
 -#endif
- 		info->screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
- 	}
+ #ifdef CONFIG_PPC_PMAC
+ 		/* vmode and cmode deprecated */
+ 		if (!strncmp(this_opt, "vmode:", 6)) {
+@@ -2133,7 +2122,7 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	par->vram_size = aty_ld_le32(CNFG_MEMSIZE) & 0x03FFFFFF;
  
-@@ -476,10 +466,7 @@ static int vesafb_probe(struct platform_device *dev)
- 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+ 	/* Virtualize the framebuffer */
+-	info->screen_base = ioremap(fb_addr, par->vram_size);
++	info->screen_base = ioremap_wc(fb_addr, par->vram_size);
+ 	if (!info->screen_base)
+ 		goto err_unmap_out;
+ 
+@@ -2170,15 +2159,9 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (!aty128_init(pdev, ent))
+ 		goto err_out;
+ 
+-#ifdef CONFIG_MTRR
+-	if (mtrr) {
+-		par->mtrr.vram = mtrr_add(info->fix.smem_start,
+-				par->vram_size, MTRR_TYPE_WRCOMB, 1);
+-		par->mtrr.vram_valid = 1;
+-		/* let there be speed */
+-		printk(KERN_INFO "aty128fb: Rage128 MTRR set to ON\n");
+-	}
+-#endif /* CONFIG_MTRR */
++	if (mtrr)
++		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++						  par->vram_size);
  	return 0;
- err:
+ 
+ err_out:
+@@ -2212,11 +2195,7 @@ static void aty128_remove(struct pci_dev *pdev)
+ 	aty128_bl_exit(info->bl_dev);
+ #endif
+ 
 -#ifdef CONFIG_MTRR
--	if (par->wc_cookie >= 0)
--		mtrr_del(par->wc_cookie, 0, 0);
--#endif
+-	if (par->mtrr.vram_valid)
+-		mtrr_del(par->mtrr.vram, info->fix.smem_start,
+-			 par->vram_size);
+-#endif /* CONFIG_MTRR */
 +	arch_phys_wc_del(par->wc_cookie);
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
- 	framebuffer_release(info);
+ 	iounmap(par->regbase);
+ 	iounmap(info->screen_base);
+ 
+@@ -2625,8 +2604,5 @@ MODULE_DESCRIPTION("FBDev driver for ATI Rage128 / Pro cards");
+ MODULE_LICENSE("GPL");
+ module_param(mode_option, charp, 0);
+ MODULE_PARM_DESC(mode_option, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
+-#ifdef CONFIG_MTRR
+ module_param_named(nomtrr, mtrr, invbool, 0);
+ MODULE_PARM_DESC(nomtrr, "bool: Disable MTRR support (0 or 1=disabled) (default=0)");
+-#endif
+-
 -- 
 2.3.2.209.gd67f9d5.dirty
 

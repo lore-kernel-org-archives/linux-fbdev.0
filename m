@@ -1,118 +1,189 @@
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Fri, 20 Mar 2015 15:22:14 +0000
-Subject: [PATCH RESEND 2 4/5] staging: sm750fb: Fix __iomem pointer types
-Message-Id: <1426864935-29350-4-git-send-email-lstoakes@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 20 Mar 2015 23:18:14 +0000
+Subject: [PATCH v1 24/47] video: fbdev: arkfb: use arch_phys_wc_add() and pci_iomap_wc()
+Message-Id: <1426893517-2511-25-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
-In-Reply-To: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
+References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
+To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch annotates pointers as referring to I/O mapped memory where they ought
-to be, removes now unnecessary ugly casts, eliminates an incorrect deref on I/O
-mapped memory by using iowrite16 instead, and updates the pointer arithmetic
-accordingly to take into account that the pointers are now byte-sized. This
-fixes the following sparse warnings:-
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-drivers/staging/sm750fb/sm750_cursor.c:113:19: warning: cast removes address space of expression
-drivers/staging/sm750fb/sm750_cursor.c:204:19: warning: cast removes address space of expression
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
-Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
+ drivers/video/fbdev/arkfb.c | 36 +++++-------------------------------
+ 1 file changed, 5 insertions(+), 31 deletions(-)
 
- drivers/staging/sm750fb/sm750_cursor.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+index b305a1e..6a317de 100644
+--- a/drivers/video/fbdev/arkfb.c
++++ b/drivers/video/fbdev/arkfb.c
+@@ -26,13 +26,9 @@
+ #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
+ #include <video/vga.h>
+ 
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+-
+ struct arkfb_info {
+ 	int mclk_freq;
+-	int mtrr_reg;
++	int wc_cookie;
+ 
+ 	struct dac_info *dac;
+ 	struct vgastate state;
+@@ -102,10 +98,6 @@ static const struct svga_timing_regs ark_timing_regs     = {
+ 
+ static char *mode_option = "640x480-8@60";
+ 
+-#ifdef CONFIG_MTRR
+-static int mtrr = 1;
+-#endif
+-
+ MODULE_AUTHOR("(c) 2007 Ondrej Zajicek <santiago@crfreenet.org>");
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("fbdev driver for ARK 2000PV");
+@@ -115,11 +107,6 @@ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
+ module_param_named(mode, mode_option, charp, 0444);
+ MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
+ 
+-#ifdef CONFIG_MTRR
+-module_param(mtrr, int, 0444);
+-MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
+-#endif
+-
+ static int threshold = 4;
+ 
+ module_param(threshold, int, 0644);
+@@ -1002,7 +989,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	info->fix.smem_len = pci_resource_len(dev, 0);
+ 
+ 	/* Map physical IO memory address into kernel space */
+-	info->screen_base = pci_iomap(dev, 0, 0);
++	info->screen_base = pci_iomap_wc(dev, 0, 0);
+ 	if (! info->screen_base) {
+ 		rc = -ENOMEM;
+ 		dev_err(info->device, "iomap for framebuffer failed\n");
+@@ -1057,14 +1044,8 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 
+ 	/* Record a reference to the driver data */
+ 	pci_set_drvdata(dev, info);
+-
+-#ifdef CONFIG_MTRR
+-	if (mtrr) {
+-		par->mtrr_reg = -1;
+-		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
+-	}
+-#endif
+-
++	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++					  info->fix.smem_len);
+ 	return 0;
+ 
+ 	/* Error handling */
+@@ -1092,14 +1073,7 @@ static void ark_pci_remove(struct pci_dev *dev)
+ 
+ 	if (info) {
+ 		struct arkfb_info *par = info->par;
+-
+-#ifdef CONFIG_MTRR
+-		if (par->mtrr_reg >= 0) {
+-			mtrr_del(par->mtrr_reg, 0, 0);
+-			par->mtrr_reg = -1;
+-		}
+-#endif
+-
++		arch_phys_wc_del(par->wc_cookie);
+ 		dac_release(par->dac);
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
+-- 
+2.3.2.209.gd67f9d5.dirty
 
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 6cceef1..c2ff3bd 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -98,7 +98,7 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
- 	int i,j,count,pitch,offset;
- 	u8 color,mask,opr;
- 	u16 data;
--	u16 * pbuffer,*pstart;
-+	void __iomem *pbuffer, *pstart;
-
- 	/*  in byte*/
- 	pitch = cursor->w >> 3;
-@@ -106,11 +106,11 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
- 	/* in byte	*/
- 	count = pitch * cursor->h;
-
--	/* in ushort */
--	offset = cursor->maxW * 2 / 8 / 2;
-+	/* in byte */
-+	offset = cursor->maxW * 2 / 8;
-
- 	data = 0;
--	pstart = (u16 *)cursor->vstart;
-+	pstart = cursor->vstart;
- 	pbuffer = pstart;
-
- /*
-@@ -161,7 +161,7 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
- 			}
- 		}
- #endif
--		*pbuffer = data;
-+		iowrite16(data, pbuffer);
-
- 		/* assume pitch is 1,2,4,8,...*/
- #if 0
-@@ -174,7 +174,7 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
- 			pstart += offset;
- 			pbuffer = pstart;
- 		}else{
--			pbuffer++;
-+			pbuffer += sizeof(u16);
- 		}
-
- 	}
-@@ -189,7 +189,7 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
- 	int i,j,count,pitch,offset;
- 	u8 color, mask;
- 	u16 data;
--	u16 * pbuffer,*pstart;
-+	void __iomem *pbuffer, *pstart;
-
- 	/*  in byte*/
- 	pitch = cursor->w >> 3;
-@@ -197,11 +197,11 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
- 	/* in byte	*/
- 	count = pitch * cursor->h;
-
--	/* in ushort */
--	offset = cursor->maxW * 2 / 8 / 2;
-+	/* in byte */
-+	offset = cursor->maxW * 2 / 8;
-
- 	data = 0;
--	pstart = (u16 *)cursor->vstart;
-+	pstart = cursor->vstart;
- 	pbuffer = pstart;
-
- 	for(i=0;i<count;i++)
-@@ -234,7 +234,7 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
- 				data |= ((color & (1<<j))?1:2)<<(j*2);
- 		}
- #endif
--		*pbuffer = data;
-+		iowrite16(data, pbuffer);
-
- 		/* assume pitch is 1,2,4,8,...*/
- 		if(!(i&(pitch-1)))
-@@ -244,7 +244,7 @@ void hw_cursor_setData2(struct lynx_cursor * cursor,
- 			pstart += offset;
- 			pbuffer = pstart;
- 		}else{
--			pbuffer++;
-+			pbuffer += sizeof(u16);
- 		}
-
- 	}
---
-2.3.2

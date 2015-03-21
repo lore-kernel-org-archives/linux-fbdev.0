@@ -1,225 +1,141 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:12 +0000
-Subject: [PATCH v1 22/47] staging: sm750fb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1426893517-2511-23-git-send-email-mcgrof@do-not-panic.com>
+From: =?UTF-8?B?Tm9yYWxmIFRyw7hubmVz?= <noralf@tronnes.org>
+Date: Sat, 21 Mar 2015 18:23:00 +0000
+Subject: Re: [RFC 0/7] staging: fbtft: minimize coupling to the fbdev subsystem
+Message-Id: <550DB704.4000909@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1425293669-15754-1-git-send-email-noralf@tronnes.org>
+In-Reply-To: <1425293669-15754-1-git-send-email-noralf@tronnes.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, noralf@tronnes.org
+Cc: driverdev-devel@linuxdriverproject.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-The same area used for ioremap() is used for the MTRR area.
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
+Den 02.03.2015 11:54, skrev Noralf Trønnes:
+> Hi,
+>
+> This patchset introduces a new API to minimize the coupling to the
+> fbdev graphics subsystem. There have been calls to deprecate fbdev and
+> new fbdev drivers are discouraged.
+> Currently the FBTFT drivers are tightly coupled to fbdev through the
+> fbtft module and the fbtft_par structure.
+>
+> What is FBTFT?
+> FBTFT is a framework for writing drivers for MIPI DCS/DBI [1] like controllers.
+> These controllers have the following characteristics:
+> - Onchip graphics RAM that is scanned out to the display panel.
+> - Registers to set operational parameters and write pixel data
+> - SPI, I2C and/or parallel interface
+>
+> To provide better layering and provide opportunity for reuse,
+> I propose the following layers:
+>
+> +-----------------------------+
+> |          fbdev              |
+> +-----------------------------+
+> |          fbtft              |
+> +-------------------------+---+
+> |      Display driver     |   |
+> +---+---------------------+   |
+> |   |     lcdctrl             |
+> |   +-------------------------+
+> |         lcdreg              |
+> +-----------------------------+
+> |  Interface (SPI, parallel)  |
+> +-----------------------------+
+>
+> lcdreg
+> ------
+> This layer deals with the various LCD controller interface
+> implementations (SPI, Intel 8080, I2C). It provides a simple interface
+> for reading and writing to the LCD controller register.
+> Especially the SPI interface has several modes and variations that
+> makes it rather complex.
+>
+> lcdreg can be reused by drivers that drive these same controllers in
+> digital RGB interface mode (MIPI DPI). Even when the parallel RGB
+> interface is used for pixeldata, the controller some times has to be
+> configured. This is usually done through a SPI interface.
+>
+> lcdctrl
+> -------
+> Layer providing an abstraction of the LCD controller and it's
+> principal funtions:
+> - Poweron initialization
+> - Set display rotation
+> - Set pixel format
+> - Display blanking
+> - Update grahics RAM
+>
+> This decouples the controller implementation from the graphics subsystem,
+> and prepares for a possible future move to DRM or other grahics subsystems.
+> The controller specific functionality is kept in library modules.
+>
+> fbtft
+> -----
+> The fbtft module gets some helper functions in fbtft-lcdctrl to map
+> the lcdtrl functions into the fbtft_par structure.
+> Later when all the drivers have been converted, large parts of the
+> fbtft module can be removed.
+>
+>
+> The I2C implementation of lcdreg is used in this proposal, because of
+> it's simplicity. This is to keep focus on the architectural design.
+> Implementations for SPI and the Intel 8080 bus interface exists.
+>
+> Display or Controller driver?
+> Currently FBTFT has drivers for each controller it supports.
+> Each driver has a default controller setup which often matches many
+> displays, but no all (fbtftops.init_display()). A different init
+> sequence (register values and delays) can be passed in using
+> platform_data or as a DT property.
+> I made a post to the DT mailinglist [2] about setting an init sequence
+> from the Device Tree, but didn't get any replies. Based on an earlier
+> post and comments I've read, it's looks like init sequence in DT is
+> not going to happen. That's why this proposal shifts to having display
+> drivers, with controller specific code in library modules.
+>
+> Device Tree questions
+> - What about Device Tree property names that are used by all drivers
+>    (initialized, format, rotation)? Should they be prefixed in any way?
+> - Device Tree compatible string. If a driver supports both SPI and I2C,
+>    can the same compatible string be used for both busses (ada-ssd1306fb)?
+>    I have seen examples where the bus is added as a postfix (-i2c).
+>    And which one is preferred: 'ada-ssd1306' or 'ada-ssd1306fb'?
+>
+> Why RFC?
+> I did this because of some uncertainties I have with this proposal:
+> 1. This changes almost the entire FBTFT stack. Would it be better to
+>     just move directly to DRM? DRM is the preferred way to write graphics
+>     drivers now, but fbdev is really a perfect match for FBTFT.
+>     And DRM doesn't have deferred io support AFAICT.
+> 2. The change from controller centric drivers to display drivers is
+>     that correct?
+>     This will deprecate all of the current controller drivers.
+>
+> So any help in pinning down the path for moving FBTFT forward is appreciated.
+>
+>
+> [1]: MIPI Alliance Display Interface Specifications:
+>       MIPI DCS - Display Command Set
+>       MIPI DBI - Display Bus Interface
+>       MIPI DPI - Display Pixel Interface
+>       http://mipi.org/specifications/display-interface
+> [2]: http://article.gmane.org/gmane.linux.drivers.devicetree/109103
+>
 
-There are a few motivations for this:
+Hi,
 
-a) Take advantage of PAT when available
+I didn't get any comments to my questions in this cover letter,
+so I'm bumping it.
+The fbdev mailinglist is included this time, as I'm hoping to receive
+comments about a future move of fbtft into fbdev.
 
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
+I have also started writing code for drm/kms integration
+of this patchset, too see what that look's like.
 
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
 
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
----
- drivers/staging/sm750fb/sm750.c    | 34 ++++------------------------------
- drivers/staging/sm750fb/sm750.h    |  3 ---
- drivers/staging/sm750fb/sm750_hw.c |  3 +--
- 3 files changed, 5 insertions(+), 35 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index aa0888c..ea59471 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -16,9 +16,6 @@
- #include<linux/vmalloc.h>
- #include<linux/pagemap.h>
- #include <linux/console.h>
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
- #include <asm/fb.h>
- #include "sm750.h"
- #include "sm750_hw.h"
-@@ -47,9 +44,7 @@ typedef int (*PROC_SPEC_INITHW)(struct lynx_share*,struct pci_dev*);
- /* common var for all device */
- static int g_hwcursor = 1;
- static int g_noaccel = 0;
--#ifdef CONFIG_MTRR
- static int g_nomtrr  = 0;
--#endif
- static const char * g_fbmode[] = {NULL,NULL};
- static const char * g_def_fbmode = "800x600-16@60";
- static char * g_settings = NULL;
-@@ -1102,11 +1097,8 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
- 
- 	pr_info("share->revid = %02x\n",share->revid);
- 	share->pdev = pdev;
--#ifdef CONFIG_MTRR
- 	share->mtrr_off = g_nomtrr;
- 	share->mtrr.vram = 0;
--	share->mtrr.vram_added = 0;
--#endif
- 	share->accel_off = g_noaccel;
- 	share->dual = g_dualview;
- 	spin_lock_init(&share->slock);
-@@ -1134,22 +1126,9 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
- 		goto err_map;
- 	}
- 
--#ifdef CONFIG_MTRR
--	if(!share->mtrr_off){
--		pr_info("enable mtrr\n");
--		share->mtrr.vram = mtrr_add(share->vidmem_start,
--				share->vidmem_size,
--				MTRR_TYPE_WRCOMB,1);
--
--		if(share->mtrr.vram < 0){
--			/* don't block driver with the failure of MTRR */
--			pr_err("Unable to setup MTRR.\n");
--		}else{
--			share->mtrr.vram_added = 1;
--			pr_info("MTRR added succesfully\n");
--		}
--	}
--#endif
-+	if (!share->mtrr_off)
-+		share->mtrr.vram = arch_phys_wc_add(share->vidmem_start,
-+						    share->vidmem_size);
- 
- 	memset(share->pvMem,0,share->vidmem_size);
- 
-@@ -1250,10 +1229,7 @@ static void __exit lynxfb_pci_remove(struct pci_dev * pdev)
- 		/* release frame buffer*/
- 		framebuffer_release(info);
- 	}
--#ifdef CONFIG_MTRR
--	if(share->mtrr.vram_added)
--		mtrr_del(share->mtrr.vram,share->vidmem_start,share->vidmem_size);
--#endif
-+	arch_phys_wc_del(share->mtrr.vram);
- 	//	pci_release_regions(pdev);
- 
- 	iounmap(share->pvReg);
-@@ -1297,10 +1273,8 @@ static int __init lynxfb_setup(char * options)
- 		/* options that mean for any lynx chips are configured here */
- 		if(!strncmp(opt,"noaccel",strlen("noaccel")))
- 			g_noaccel = 1;
--#ifdef CONFIG_MTRR
- 		else if(!strncmp(opt,"nomtrr",strlen("nomtrr")))
- 			g_nomtrr = 1;
--#endif
- 		else if(!strncmp(opt,"dual",strlen("dual")))
- 			g_dualview = 1;
- 		else
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 0847d2b..5528912 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -51,13 +51,10 @@ struct lynx_share{
- 	struct lynx_accel accel;
- 	int accel_off;
- 	int dual;
--#ifdef CONFIG_MTRR
- 		int mtrr_off;
- 		struct{
- 			int vram;
--			int vram_added;
- 		}mtrr;
--#endif
- 	/* all smi graphic adaptor got below attributes */
- 	unsigned long vidmem_start;
- 	unsigned long vidreg_start;
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index c44a50b..203a0a1 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -85,8 +85,7 @@ int hw_sm750_map(struct lynx_share* share,struct pci_dev* pdev)
- 	}
- #endif
- 
--	share->pvMem = ioremap(share->vidmem_start,
--							share->vidmem_size);
-+	share->pvMem = ioremap_wc(share->vidmem_start, share->vidmem_size);
- 
- 	if(!share->pvMem){
- 		pr_err("Map video memory failed\n");
--- 
-2.3.2.209.gd67f9d5.dirty
+Regards,
+Noralf Trønnes
 

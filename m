@@ -1,37 +1,19 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Mon, 02 Mar 2015 21:03:49 +0000
-Subject: Re: [PATCH] OMAP: DSS: DPI: disable vt-switch on suspend/resume.
-Message-Id: <20150302210349.GE13270@amd>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Sun, 22 Mar 2015 23:07:18 +0000
+Subject: [PATCH 0/13] staging: sm750: reformat sm750.c
+Message-Id: <20150322230718.GA16751@x230-arch.club.entropia.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150225203708.0eb2fa96@notabene.brown>
- <54ED9DF8.8030105@ti.com>
- <20150226092646.7e20df30@notabene.brown>
-In-Reply-To: <20150226092646.7e20df30@notabene.brown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: NeilBrown <neilb@suse.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, GTA04 owners <gta04-owner@goldelico.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: linux-fbdev@vger.kernel.org
 
-Hi!
+As suggested by Dan Carpenter, I've rewritten my patch as a series of smaller patches.
 
-> > Looking at the drivers/tty/vt/vt_ioctl.c, it sounds to me that we should
-> > always do pm_set_vt_switch(0), as omapdss restores everything just fine
-> > on resume. Although it makes me wonder how it works if there are two
-> > display controllers, one needing the switch and the other not...
-> 
-> I wondered that too.  It would seem to make more sense for
-> pm_set_vt_switch(0) to be the default, that drivers which need the textmode
-> switch should call (1).  But I suspect there are "historical reasons" for the
-> current situation.
+Dan's Mail: http://marc.info/?l=kernel-janitors&m2679651624193&w=2
 
-Well... historically, we did not have drivers for graphics cards --
-kernel did not know how to handle it, only X knew. For cards that do
-not have kernel driver, only X one, we need to switch vts.
+Patches 1-12 only reformat code. Patch 13 changes the code, by moving assignments out of if conditions.
 
-For cards that have proper driver, we should be able to survive
-without VT switch.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The module builds, but as I don't own a sm750 card, I can't test it.
+
+

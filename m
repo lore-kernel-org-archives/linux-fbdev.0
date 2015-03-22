@@ -1,39 +1,45 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Tue, 31 Mar 2015 18:27:14 +0000
-Subject: [PATCHv6 08/10] fbdev: ssd1307fb: Turn off display on driver unload.
-Message-Id: <1427826436-21783-9-git-send-email-niederp@physik.uni-kl.de>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Sun, 22 Mar 2015 23:13:06 +0000
+Subject: [PATCH 06/13] staging: sm750: newline before { in function decl.
+Message-Id: <20150322231306.GA17183@x230-arch.club.entropia.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-This patch turns off the display when the driver is unloaded.
+This patch fixes checkpatch.pl error:
+"ERROR: open brace '{' following function declarations go on the next line"
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/staging/sm750fb/sm750.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index 85eeda0..5f3d5a8 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -620,6 +620,8 @@ static int ssd1307fb_remove(struct i2c_client *client)
- 	struct fb_info *info =3D i2c_get_clientdata(client);
- 	struct ssd1307fb_par *par =3D info->par;
-=20
-+	ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
-+
- 	unregister_framebuffer(info);
- 	if (par->device_info->need_pwm) {
- 		pwm_disable(par->pwm);
---=20
-2.3.0
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index ad0c663..a0a8db7 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -58,7 +58,8 @@ static char *g_option = NULL;
+ 
+ /* if not use spin_lock,system will die if user load driver
+  * and immediatly unload driver frequently (dual)*/
+-static inline void myspin_lock(spinlock_t *sl) {
++static inline void myspin_lock(spinlock_t *sl)
++{
+ 	struct lynx_share *share;
+ 	share = container_of(sl, struct lynx_share, slock);
+ 	if (share->dual) {
+@@ -66,7 +67,8 @@ static inline void myspin_lock(spinlock_t *sl) {
+ 	}
+ }
+ 
+-static inline void myspin_unlock(spinlock_t *sl) {
++static inline void myspin_unlock(spinlock_t *sl)
++{
+ 	struct lynx_share *share;
+ 	share = container_of(sl, struct lynx_share, slock);
+ 	if (share->dual) {
+-- 
+2.3.3
 

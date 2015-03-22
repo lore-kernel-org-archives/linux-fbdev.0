@@ -1,79 +1,69 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Mon, 09 Mar 2015 22:22:02 +0000
-Subject: [PATCHv3 00/10] fbdev: ssd1307fb: Cleanup and add support for SSD1305
-Message-Id: <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sun, 22 Mar 2015 19:59:40 +0000
+Subject: [PATCH 1/5] [resend 2] gxt4500: enable on non-PPC architectures
+Message-Id: <1427054384-26501-1-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-This patch series is the result of making the ssd1307fb driver work with
-a Newhaven OLED display using the Solomon SSD1305 controller. To achieve
-this the intialization code for the SSD1306 and the SSD1307 is merged
-and based on DT configuration to reflect the various possible wirings
-of the SSD130X controller (04/10). Based on these changes it is straight
-forward to add support for the SSD1305 controller (06/10).
+These chips can be present at least on x86 too - Fire GL2 AGP has GXT6000P but
+this driver is currently limited to PPC.
+Enable it for all architectures and add chip configuration for little-endian.
 
-While working on the driver I realized that it was not possible to
-correctly mmap the video memory from userspace since the address handed
-to the userspace app is a virtual one where it should be a physical one.
-Patch 01/10 fixes this. Furthermore the memory reserved by kzalloc is
-not page aligned while the address handed to userspace is aligned to the
-next page frame. This problem is fixed by using vmalloc in 02/10.
+Tested on x86 with Fire GL2 AGP.
 
-Furthermore module parameters are added to set the bits per pixel
-and the delay for the deferred io update. It makes sense to set
-the bits per pixel for the video memory to 8 bits since there is
-only very poor userspace support for 1 bit framebuffers.
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+---
+ drivers/video/fbdev/Kconfig   |    5 +++--
+ drivers/video/fbdev/gxt4500.c |    7 +++++++
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-Also sysfs handles are added to make the contrast settings and dim
-mode setting available in userspace.
-
-changes since v1 (thanks to Maxime for the feedback):
-- dedicated patch for fixing smem_start address
-- remove page reserve upon vmalloc
-- remove return value check upon display turn-off at module unload
-- use a module parameter refreshrate rather than delaydivider
-- allocate fbdefio dynamically
-- use sysfs_create_groups to create sysfs entries
-- remove contrast, vhcom and dclk properties from DT since they are
-  not part of hw description. The contrast module parameter was added
-  to set contrast at load time. vhcom and dclk stays at it's default
-  values for now.
-- add new DT properties to in tree users of ssd130X
-- rebased to apply on top of linux-next
-
-changes since v2 (thanks to Maxime again):
-- free memory allocated by vmalloc on driver unload
-- set default values in the init code to the ones of the existing ssd1307
-  init code
-- added two ACKs (Maxime Ripard)
-
-Thomas Niederpr=C3=BCm (10):
-  fbdev: ssd1307fb: fix memory address smem_start.
-  fbdev: ssd1307fb: Use vmalloc to allocate video memory.
-  of: Add Solomon Systech vendor prefix.
-  fbdev: ssd1307fb: Unify init code and obtain hw specific bits from DT
-  ARM: mxs: fix in tree users of ssd1306
-  fbdev: ssd1307fb: Add support for SSD1305
-  fbdev: ssd1307fb: Add module parameter to set refresh rate of the
-    display
-  fbdev: ssd1307fb: Add module parameter bitsperpixel.
-  fbdev: ssd1307fb: Add sysfs handles to expose contrast and dim setting
-    to userspace.
-  fbdev: ssd1307fb: Turn off display on driver unload.
-
- .../devicetree/bindings/vendor-prefixes.txt        |   1 +
- .../devicetree/bindings/video/ssd1307fb.txt        |  23 +-
- arch/arm/boot/dts/imx28-cfa10036.dts               |   4 +
- drivers/video/fbdev/ssd1307fb.c                    | 355 +++++++++++++++--=
-----
- 4 files changed, 286 insertions(+), 97 deletions(-)
-
---=20
-2.3.0
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index b3dd417..1caa12c 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2132,7 +2132,7 @@ config FB_UDL
+ 
+ config FB_IBM_GXT4500
+ 	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
+-	depends on FB && PPC
++	depends on FB
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -2140,7 +2140,8 @@ config FB_IBM_GXT4500
+ 	  Say Y here to enable support for the IBM GXT4000P/6000P and
+ 	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
+ 	  found on some IBM System P (pSeries) machines. This driver
+-	  doesn't use Geometry Engine GT1000.
++	  doesn't use Geometry Engine GT1000. This driver also supports
++	  AGP Fire GL2/3/4 cards on x86.
+ 
+ config FB_PS3
+ 	tristate "PS3 GPU framebuffer driver"
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 135d78a..1bf9894 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -670,8 +670,15 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	pci_set_drvdata(pdev, info);
+ 
++#ifdef __BIG_ENDIAN
+ 	/* Set byte-swapping for DFA aperture for all pixel sizes */
+ 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
++#else /* __LITTLE_ENDIAN */
++	/* not sure what this means but fgl23 driver does that */
++	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x2300);
++/*	pci_write_config_dword(pdev, CFG_ENDIAN0 + 4, 0x400000);*/
++	pci_write_config_dword(pdev, CFG_ENDIAN0 + 8, 0x98530000);
++#endif
+ 
+ 	info->fbops = &gxt4500_ops;
+ 	info->flags = FBINFO_FLAG_DEFAULT;
+-- 
+Ondrej Zary
 

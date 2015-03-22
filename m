@@ -1,52 +1,65 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Mon, 09 Mar 2015 08:53:01 +0000
-Subject: Re: [PATCH v2 3/4] staging: sm750fb: correctly define SM750LE_REVISION_ID
-Message-Id: <20150309084101.GB9059@sudip-PC>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Sun, 22 Mar 2015 23:14:17 +0000
+Subject: [PATCH 10/13] staging: sm750: blank line after declaration
+Message-Id: <20150322231416.GA17270@x230-arch.club.entropia.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425886506-8643-1-git-send-email-sudipm.mukherjee@gmail.com>
- <1425886506-8643-3-git-send-email-sudipm.mukherjee@gmail.com>
- <CA+V-a8sNsxzz38K5KOn7WyDPDR=2bCNpg+53ULQn3qcTPCvcqw@mail.gmail.com>
-In-Reply-To: <CA+V-a8sNsxzz38K5KOn7WyDPDR=2bCNpg+53ULQn3qcTPCvcqw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LFBDEV <linux-fbdev@vger.kernel.org>, OSUOSL Drivers <devel@driverdev.osuosl.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Mar 09, 2015 at 07:47:40AM +0000, Lad, Prabhakar wrote:
-> On Mon, Mar 9, 2015 at 7:35 AM, Sudip Mukherjee
-> <sudipm.mukherjee@gmail.com> wrote:
-> > check if it is already defined before defining SM750LE_REVISION_ID
-> > again and at the same time mention correct data type.
-> >
-> > Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
-> > ---
-> >
-> > v2: removed the redundant cast in sm750_hw.c
-> >
-> >  drivers/staging/sm750fb/ddk750_chip.h | 4 +++-
-> >  drivers/staging/sm750fb/sm750_hw.c    | 2 +-
-> >  2 files changed, 4 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
-> > index 1c78875..d761b72 100644
-> > --- a/drivers/staging/sm750fb/ddk750_chip.h
-> > +++ b/drivers/staging/sm750fb/ddk750_chip.h
-> > @@ -1,7 +1,9 @@
-> >  #ifndef DDK750_CHIP_H__
-> >  #define DDK750_CHIP_H__
-> >  #define DEFAULT_INPUT_CLOCK 14318181 /* Default reference clock */
-> > -#define SM750LE_REVISION_ID (char)0xfe
-> > +#ifndef SM750LE_REVISION_ID
-> > +#define SM750LE_REVISION_ID ((unsigned char)0xfe)
-> 
-> BTW who is defining this somewhere else ?
-it is defined in ddk750_chip.h which is again being used by ddk750_chip.c .
+This patch fixes "WARNING: Missing a blank line after declaration"
+checkpatch.pl warnings.
 
+Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-regards
-sudip
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 90dc801..870bf6f 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -61,6 +61,7 @@ static char *g_option = NULL;
+ static inline void myspin_lock(spinlock_t *sl)
+ {
+ 	struct lynx_share *share;
++	
+ 	share = container_of(sl, struct lynx_share, slock);
+ 	if (share->dual)
+ 		spin_lock(sl);
+@@ -69,6 +70,7 @@ static inline void myspin_lock(spinlock_t *sl)
+ static inline void myspin_unlock(spinlock_t *sl)
+ {
+ 	struct lynx_share *share;
++	
+ 	share = container_of(sl, struct lynx_share, slock);
+ 	if (share->dual)
+ 		spin_unlock(sl);
+@@ -172,6 +174,7 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 	if (fbcursor->set & FB_CUR_SETCMAP) {
+ 		/* get the 16bit color of kernel means */
+ 		u16 fg, bg;
++		
+ 		fg = ((info->cmap.red[fbcursor->image.fg_color] & 0xf800))|
+ 			((info->cmap.green[fbcursor->image.fg_color] & 0xfc00) >> 5)|
+ 			((info->cmap.blue[fbcursor->image.fg_color] & 0xf800) >> 11);
+@@ -650,6 +653,7 @@ static int lynxfb_ops_setcolreg(unsigned regno, unsigned red,
+ 
+ 	if (info->fix.visual = FB_VISUAL_TRUECOLOR && regno < 256) {
+ 		u32 val;
++		
+ 		if (var->bits_per_pixel = 16 ||
+ 				var->bits_per_pixel = 32 ||
+ 				var->bits_per_pixel = 24) {
+@@ -1187,6 +1191,7 @@ ALLOC_FB:
+ 	} else {
+ 		struct lynxfb_par *par;
+ 		int errno;
++		
+ 		pr_info("framebuffer #%d alloc okay\n", fbidx);
+ 		share->fbinfo[fbidx] = info[fbidx];
+ 		par = info[fbidx]->par;
+-- 
+2.3.3
 
-> 
-> Cheers,
-> --Prabhakar Lad

@@ -1,10 +1,10 @@
 From: Ondrej Zary <linux@rainbow-software.org>
-Date: Tue, 03 Mar 2015 20:56:01 +0000
+Date: Sun, 22 Mar 2015 19:55:45 +0000
 Subject: [PATCH 2/4] [resend] tridentfb: Fix set_lwidth on TGUI9440 and CYBER9320
-Message-Id: <1425416163-10700-2-git-send-email-linux@rainbow-software.org>
+Message-Id: <1427054147-26158-2-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
+References: <1427054147-26158-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1427054147-26158-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

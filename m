@@ -1,106 +1,175 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Mon, 09 Mar 2015 22:22:10 +0000
-Subject: [PATCHv3 08/10] fbdev: ssd1307fb: Add module parameter bitsperpixel.
-Message-Id: <1425939732-18386-9-git-send-email-niederp@physik.uni-kl.de>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Sun, 22 Mar 2015 23:11:44 +0000
+Subject: [PATCH 03/13] staging: sm750: move '{' to previous line
+Message-Id: <20150322231144.GA17103@x230-arch.club.entropia.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-This patch adds a module parameter 'bitsperpixel' to adjust the colordepth
-of the framebuffer. All values >1 will result in memory map of the requested
-color depth. However only the MSB of each pixel will be sent to the device.
-The framebuffer identifies itself as a grayscale display with the specified
-depth.
+Fix checkpatch.pl error:
+"ERROR: that open brace { should be on the previous line"
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 50 +++++++++++++----------------------------
+ 1 file changed, 16 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index 7c8e627..3cf4da1 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -44,6 +44,10 @@
- #define	SSD1307FB_SET_VCOMH		0xdb
-=20
- #define REFRASHRATE 1
-+#define BITSPERPIXEL 1
-+
-+static u_int bitsperpixel =3D BITSPERPIXEL;
-+module_param(bitsperpixel, uint, 0);
-=20
- static u_int refreshrate =3D REFRASHRATE;
- module_param(refreshrate, uint, 0);
-@@ -99,7 +103,8 @@ static struct fb_fix_screeninfo ssd1307fb_fix =3D {
- };
-=20
- static struct fb_var_screeninfo ssd1307fb_var =3D {
--	.bits_per_pixel	=3D 1,
-+	.bits_per_pixel	=3D BITSPERPIXEL,
-+	.grayscale =3D 1,
- };
-=20
- static struct ssd1307fb_array *ssd1307fb_alloc_array(u32 len, u8 type)
-@@ -194,10 +199,11 @@ static void ssd1307fb_update_display(struct ssd1307fb=
-_par *par)
- 			array->data[array_idx] =3D 0;
- 			for (k =3D 0; k < 8; k++) {
- 				u32 page_length =3D par->width * i;
--				u32 index =3D page_length + (par->width * k + j) / 8;
-+				u32 index =3D page_length * bitsperpixel + (par->width * k + j) * bits=
-perpixel / 8;
- 				u8 byte =3D *(vmem + index);
--				u8 bit =3D byte & (1 << (j % 8));
--				bit =3D bit >> (j % 8);
-+				u8 bit =3D byte & (((1 << (bitsperpixel))-1) << (j % 8/bitsperpixel));
-+
-+				bit =3D (bit >> (j % 8/bitsperpixel)) >> (bitsperpixel-1);
- 				array->data[array_idx] |=3D bit << k;
- 			}
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 83c81d2..24e7b68 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -171,8 +171,7 @@ static int lynxfb_ops_cursor(struct fb_info* info, struct fb_cursor* fbcursor)
+ 	}
+ 
+ 
+-	if(fbcursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE))
+-	{
++	if(fbcursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
+ 		cursor->setData(cursor,
+ 				fbcursor->rop,
+ 				fbcursor->image.data,
+@@ -258,13 +257,10 @@ static void lynxfb_ops_imageblit(struct fb_info*info, const struct fb_image* ima
+ 
+ 	if(image->depth = 1){
+ 		if(info->fix.visual = FB_VISUAL_TRUECOLOR ||
+-				info->fix.visual = FB_VISUAL_DIRECTCOLOR)
+-		{
++				info->fix.visual = FB_VISUAL_DIRECTCOLOR) {
+ 			fgcol = ((u32*)info->pseudo_palette)[image->fg_color];
+ 			bgcol = ((u32*)info->pseudo_palette)[image->bg_color];
+-		}
+-		else
+-		{
++		} else {
+ 			fgcol = image->fg_color;
+ 			bgcol = image->bg_color;
  		}
-@@ -536,7 +542,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 	par->dclk_div =3D par->device_info->default_dclk_div;
- 	par->dclk_frq =3D par->device_info->default_dclk_frq;
-=20
--	vmem_size =3D par->width * par->height / 8;
-+	vmem_size =3D par->width * par->height * bitsperpixel / 8;
-=20
- 	vmem =3D vzalloc(vmem_size);
- 	if (!vmem) {
-@@ -557,20 +563,21 @@ static int ssd1307fb_probe(struct i2c_client *client,
-=20
- 	info->fbops =3D &ssd1307fb_ops;
- 	info->fix =3D ssd1307fb_fix;
--	info->fix.line_length =3D par->width / 8;
-+	info->fix.line_length =3D par->width * bitsperpixel / 8;
- 	info->fbdefio =3D ssd1307fb_defio;
-=20
- 	info->var =3D ssd1307fb_var;
-+	info->var.bits_per_pixel =3D bitsperpixel;
- 	info->var.xres =3D par->width;
- 	info->var.xres_virtual =3D par->width;
- 	info->var.yres =3D par->height;
- 	info->var.yres_virtual =3D par->height;
-=20
--	info->var.red.length =3D 1;
-+	info->var.red.length =3D bitsperpixel;
- 	info->var.red.offset =3D 0;
--	info->var.green.length =3D 1;
-+	info->var.green.length =3D bitsperpixel;
- 	info->var.green.offset =3D 0;
--	info->var.blue.length =3D 1;
-+	info->var.blue.length =3D bitsperpixel;
- 	info->var.blue.offset =3D 0;
-=20
- 	info->screen_base =3D (u8 __force __iomem *)vmem;
---=20
-2.3.0
+@@ -626,8 +622,7 @@ static int lynxfb_ops_setcolreg(unsigned regno, unsigned red,
+ 	if(info->var.grayscale)
+ 		red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
+ 
+-	if(var->bits_per_pixel = 8 && info->fix.visual = FB_VISUAL_PSEUDOCOLOR)
+-	{
++	if(var->bits_per_pixel = 8 && info->fix.visual = FB_VISUAL_PSEUDOCOLOR) {
+ 		red >>= 8;
+ 		green >>= 8;
+ 		blue >>= 8;
+@@ -636,13 +631,11 @@ static int lynxfb_ops_setcolreg(unsigned regno, unsigned red,
+ 	}
+ 
+ 
+-	if(info->fix.visual = FB_VISUAL_TRUECOLOR && regno < 256 )
+-	{
++	if(info->fix.visual = FB_VISUAL_TRUECOLOR && regno < 256 ) {
+ 		u32 val;
+ 		if(var->bits_per_pixel = 16 ||
+ 				var->bits_per_pixel = 32 ||
+-				var->bits_per_pixel = 24)
+-		{
++				var->bits_per_pixel = 24) {
+ 			val = chan_to_field(red, &var->red);
+ 			val |= chan_to_field(green, &var->green);
+ 			val |= chan_to_field(blue, &var->blue);
+@@ -705,8 +698,7 @@ static int sm750fb_set_drv(struct lynxfb_par * par)
+ 	output->clear = hw_sm750_output_clear;
+ 	/* chip specific phase */
+ 	share->accel.de_wait = (share->revid = SM750LE_REVISION_ID)?hw_sm750le_deWait: hw_sm750_deWait;
+-	switch (spec_share->state.dataflow)
+-	{
++	switch (spec_share->state.dataflow) {
+ 	case sm750_simul_pri:
+ 		output->paths = sm750_pnc;
+ 		crtc->channel = sm750_primary;
+@@ -790,8 +782,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info, int index)
+ 	};
+ 
+ 
+-	static const char * fixId[2]-	{
++	static const char * fixId[2] = {
+ 		"sm750_fb1", "sm750_fb2",
+ 	};
+ 
+@@ -931,8 +922,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info, int index)
+ 	pr_info("fix->mmio_start = %lx\n", fix->mmio_start);
+ 	fix->mmio_len = share->vidreg_size;
+ 	pr_info("fix->mmio_len = %x\n", fix->mmio_len);
+-	switch(var->bits_per_pixel)
+-	{
++	switch(var->bits_per_pixel) {
+ 	case 8:
+ 		fix->visual = FB_VISUAL_PSEUDOCOLOR;
+ 		break;
+@@ -1024,8 +1014,7 @@ static void sm750fb_setup(struct lynx_share * share, char * src)
+ 			g_hwcursor &= ~0x2;
+ 		else if(!strncmp(opt, "nohwc", strlen("nohwc")))
+ 			g_hwcursor = 0;
+-		else
+-		{
++		else {
+ 			if(!g_fbmode[0]){
+ 				g_fbmode[0] = opt;
+ 				pr_info("find fbmode0 : %s\n", g_fbmode[0]);
+@@ -1038,8 +1027,7 @@ static void sm750fb_setup(struct lynx_share * share, char * src)
+ 		}
+ 	}
+ #ifdef CAP_EXPANSION
+-	if(getExpRes(exp_res, &spec_share->state.xLCD, &spec_share->state.yLCD))
+-	{
++	if(getExpRes(exp_res, &spec_share->state.xLCD, &spec_share->state.yLCD)) {
+ 		/* seems exp_res is not valid*/
+ 		spec_share->state.xLCD = spec_share->state.yLCD = 0;
+ 	}
+@@ -1047,8 +1035,7 @@ static void sm750fb_setup(struct lynx_share * share, char * src)
+ 
+ NO_PARAM:
+ 	if(share->revid != SM750LE_REVISION_ID){
+-		if(share->dual)
+-		{
++		if(share->dual) {
+ 			if(swap)
+ 				spec_share->state.dataflow = sm750_dual_swap;
+ 			else
+@@ -1164,16 +1151,13 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
+ 	fbidx = 0;
+ ALLOC_FB:
+ 	info[fbidx] = framebuffer_alloc(sizeof(struct lynxfb_par), &pdev->dev);
+-	if(!info[fbidx])
+-	{
++	if(!info[fbidx]) {
+ 		pr_err("Could not allocate framebuffer #%d.\n", fbidx);
+ 		if(fbidx = 0)
+ 			goto err_info0_alloc;
+ 		else
+ 			goto err_info1_alloc;
+-	}
+-	else
+-	{
++	} else {
+ 		struct lynxfb_par * par;
+ 		int errno;
+ 		pr_info("framebuffer #%d alloc okay\n", fbidx);
+@@ -1292,8 +1276,7 @@ static int __init lynxfb_setup(char * options)
+ 		strsep() updates @options to pointer after the first found token
+ 		it also returns the pointer ahead the token.
+ 		*/
+-	while((opt = strsep(&options, ":"))!=NULL)
+-	{
++	while((opt = strsep(&options, ":"))!=NULL) {
+ 		/* options that mean for any lynx chips are configured here */
+ 		if(!strncmp(opt, "noaccel", strlen("noaccel")))
+ 			g_noaccel = 1;
+@@ -1303,8 +1286,7 @@ static int __init lynxfb_setup(char * options)
+ #endif
+ 		else if(!strncmp(opt, "dual", strlen("dual")))
+ 			g_dualview = 1;
+-		else
+-		{
++		else {
+ 			strcat(tmp, opt);
+ 			tmp += strlen(opt);
+ 			if(options != NULL)
+-- 
+2.3.3
 

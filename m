@@ -1,10 +1,10 @@
 From: Ondrej Zary <linux@rainbow-software.org>
-Date: Tue, 03 Mar 2015 20:56:02 +0000
+Date: Sun, 22 Mar 2015 19:55:46 +0000
 Subject: [PATCH 3/4] [resend] fb_ddc: Allow I2C adapters without SCL read capability
-Message-Id: <1425416163-10700-3-git-send-email-linux@rainbow-software.org>
+Message-Id: <1427054147-26158-3-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
+References: <1427054147-26158-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1427054147-26158-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

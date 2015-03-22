@@ -1,8 +1,10 @@
 From: Ondrej Zary <linux@rainbow-software.org>
-Date: Tue, 03 Mar 2015 20:56:00 +0000
+Date: Sun, 22 Mar 2015 19:55:44 +0000
 Subject: [PATCH 1/4] [resend] tridentfb: fix hang on Blade3D with CONFIG_CC_OPTIMIZE_FOR_SIZE
-Message-Id: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
+Message-Id: <1427054147-26158-1-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

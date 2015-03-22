@@ -1,43 +1,46 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 10 Mar 2015 08:57:39 +0000
-Subject: [PATCH v3 5/5] staging: sm750fb: fix build failure
-Message-Id: <1425977139-25285-5-git-send-email-sudipm.mukherjee@gmail.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sun, 22 Mar 2015 19:59:42 +0000
+Subject: [PATCH 3/5] [resend 2] gxt4500: fix color order
+Message-Id: <1427054384-26501-3-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1427054384-26501-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1427054384-26501-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-for powerpc-allyesconfig build failed with an error of g_option
-undeclared. we will get this error on all architecture if MODULE is
-not defined. fixed the declaration of g_option.
+The color order in truecolor modes is wrong. This does not affect console but
+is visible e.g. in X11 which has wrong colors.
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Swap blue and red colors to fix the problem.
+Fixes https://forums.gentoo.org/viewtopic-t-692740-start-0.html
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
+ drivers/video/fbdev/gxt4500.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-v3: new entry in the series, it was not there till v2.
-
- drivers/staging/sm750fb/sm750.c | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 476dc5c..8c260ee 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -54,9 +54,7 @@ static const char * g_fbmode[] = {NULL,NULL};
- static const char * g_def_fbmode = "800x600-16@60";
- static char * g_settings = NULL;
- static int g_dualview = 0;
--#ifdef MODULE
- static char * g_option = NULL;
--#endif
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 1f2fd5b..442b07c 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -347,11 +347,12 @@ static void gxt4500_unpack_pixfmt(struct fb_var_screeninfo *var,
+ 		break;
+ 	}
+ 	if (pixfmt != DFA_PIX_8BIT) {
+-		var->green.offset = var->red.length;
+-		var->blue.offset = var->green.offset + var->green.length;
++		var->blue.offset = 0;
++		var->green.offset = var->blue.length;
++		var->red.offset = var->green.offset + var->green.length;
+ 		if (var->transp.length)
+ 			var->transp.offset -				var->blue.offset + var->blue.length;
++				var->red.offset + var->red.length;
+ 	}
+ }
  
- /* if not use spin_lock,system will die if user load driver
-  * and immediatly unload driver frequently (dual)*/
 -- 
-1.8.1.2
+Ondrej Zary
 

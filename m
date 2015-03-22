@@ -1,10 +1,10 @@
 From: Ondrej Zary <linux@rainbow-software.org>
-Date: Tue, 03 Mar 2015 20:56:03 +0000
+Date: Sun, 22 Mar 2015 19:55:47 +0000
 Subject: [PATCH 4/4] [resend] tridentfb: Add DDC support
-Message-Id: <1425416163-10700-4-git-send-email-linux@rainbow-software.org>
+Message-Id: <1427054147-26158-4-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1425416163-10700-1-git-send-email-linux@rainbow-software.org>
+References: <1427054147-26158-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1427054147-26158-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,10 +22,10 @@ Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
  2 files changed, 196 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 4916c97..08a7a04 100644
+index b3dd417..7b096bc 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
-@@ -1682,6 +1682,15 @@ config FB_TRIDENT
+@@ -1680,6 +1680,15 @@ config FB_TRIDENT
  	  To compile this driver as a module, choose M here: the
  	  module will be called tridentfb.
  

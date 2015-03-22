@@ -1,31 +1,55 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sun, 08 Mar 2015 17:43:47 +0000
-Subject: Re: [PATCH 3/4] staging: sm750fb: correctly define SM750LE_REVISION_ID
-Message-Id: <20150308173147.GA15272@sudip-PC>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Sun, 22 Mar 2015 23:15:16 +0000
+Subject: [PATCH 13/13] staging: sm750: move assignment out of if cond
+Message-Id: <20150322231516.GA17336@x230-arch.club.entropia.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425817886-14387-1-git-send-email-sudipm.mukherjee@gmail.com>
- <1425817886-14387-3-git-send-email-sudipm.mukherjee@gmail.com>
- <54FC4797.6040704@gmail.com>
-In-Reply-To: <54FC4797.6040704@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Giedrius =?utf-8?Q?Statkevi=C4=8Dius?= <giedrius.statkevicius@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-T24gU3VuLCBNYXIgMDgsIDIwMTUgYXQgMDI6NTk6MDNQTSArMDIwMCwgR2llZHJpdXMgU3RhdGtl
-dmnEjWl1cyB3cm90ZToKPiBPbiAyMDE1LjAzLjA4IDE0OjMxLCBTdWRpcCBNdWtoZXJqZWUgd3Jv
-dGU6Cj4gPiAtI2RlZmluZSBTTTc1MExFX1JFVklTSU9OX0lEIChjaGFyKTB4ZmUKPiA+ICsjaWZu
-ZGVmIFNNNzUwTEVfUkVWSVNJT05fSUQKPiA+ICsjZGVmaW5lIFNNNzUwTEVfUkVWSVNJT05fSUQg
-KCh1bnNpZ25lZCBjaGFyKTB4ZmUpCj4gPiArI2VuZGlmCj4gCj4gRG8geW91IG5lZWQgdGhlc2Ug
-cGFyYW50aGVzZXM/IEFsc28sIHlvdSBjYW4gbm93IHRoZW4gZml4IHVwIHRoaXMgbGluZQo+IHRv
-byB0byBhdm9pZCBhIHJlZHVuZGFudCBjYXN0IGluIHRoZSBzYW1lIHBhdGNoOgo+IHNtNzUwX2h3
-LmM6IGlmKHNoYXJlLT5yZXZpZCA9ICh1bnNpZ25lZCBjaGFyKVNNNzUwTEVfUkVWSVNJT05fSUQp
-ewpnb29kIGlkZWEsIHRoYW5rcy4KdGhhdCBleHRyYSBwYXJlbnRoZXNlcyBpcyBmb3IgY2hlY2tw
-YXRjaCB3YXJuaW5nIG9mIGNvbXBsZXggbWFjcm8gdmFsdWUuCgppIHdpbGwgYmV0dGVyIHNlbmQg
-YSB2MiBvZiB0aGUgd2hvbGUgc2VyaWVzIGFmdGVyIGNoZWNraW5nIHRoYXQgcmVzb3VyY2Vfc2l6
-ZV90LgoKcmVnYXJkcwpzdWRpcAo+IAo+IAo+IC0tIAo+IFRoYW5rcywKPiBHaWVkcml1cwotLQpU
-byB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUg
-bGludXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5r
-ZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcv
-bWFqb3Jkb21vLWluZm8uaHRtbA==
+This patch moves the assignments from the if conditions to the line before the condition.
+The 3 occurrence are return values and the checks for errors.
+
+Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index c250882..a4a7fed 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -474,7 +474,8 @@ static int lynxfb_resume(struct pci_dev *pdev)
+ 
+ 	console_lock();
+ 
+-	if ((ret = pci_set_power_state(pdev, PCI_D0)) != 0) {
++	ret = pci_set_power_state(pdev, PCI_D0);
++	if (ret != 0) {
+ 		pr_err("error:%d occured in pci_set_power_state\n", ret);
+ 		return ret;
+ 	}
+@@ -482,7 +483,8 @@ static int lynxfb_resume(struct pci_dev *pdev)
+ 
+ 	if (pdev->dev.power.power_state.event != PM_EVENT_FREEZE) {
+ 		pci_restore_state(pdev);
+-		if ((ret = pci_enable_device(pdev)) != 0) {
++		ret = pci_enable_device(pdev);
++		if (ret != 0) {
+ 			pr_err("error:%d occured in pci_enable_device\n", ret);
+ 			return ret;
+ 		}
+@@ -971,7 +973,8 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 			info->cmap.red, info->cmap.green, info->cmap.blue,
+ 			info->cmap.transp);
+ 
+-	if ((ret = fb_alloc_cmap(&info->cmap, 256, 0)) < 0) {
++	ret = fb_alloc_cmap(&info->cmap, 256, 0);
++	if (ret < 0) {
+ 		pr_err("Could not allcate memory for cmap.\n");
+ 		goto exit;
+ 	}
+-- 
+2.3.3
+

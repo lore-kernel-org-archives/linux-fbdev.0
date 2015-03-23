@@ -1,77 +1,28 @@
-From: Lorenzo Stoakes <lstoakes@gmail.com>
-Date: Fri, 20 Mar 2015 15:22:11 +0000
-Subject: [PATCH RESEND 2 1/5] staging: sm750fb: Use memset_io instead of memset
-Message-Id: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 23 Mar 2015 10:53:23 +0000
+Subject: Re: [PATCH RESEND 2 1/5] staging: sm750fb: Use memset_io instead of memset
+Message-Id: <20150323105323.GA10964@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
+In-Reply-To: <1426864935-29350-1-git-send-email-lstoakes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Lorenzo Stoakes <lstoakes@gmail.com>
+To: Lorenzo Stoakes <lstoakes@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch takes into account that cursor->vstart, crtc->vScreen and
-share->pvMem are pointers to memory-mapped I/O and thus we should use memset_io
-to make this explicit. In addition, some architectures require special treatment
-of memory-mapped I/O so the previous code could actually break without this
-change.
-
-This fixes the following sparse warnings:-
-
-drivers/staging/sm750fb/sm750.c:489:17: warning: incorrect type in argument 1 (different address spaces)
-drivers/staging/sm750fb/sm750.c:490:17: warning: incorrect type in argument 1 (different address spaces)
-drivers/staging/sm750fb/sm750.c:501:17: warning: incorrect type in argument 1 (different address spaces)
-drivers/staging/sm750fb/sm750.c:502:17: warning: incorrect type in argument 1 (different address spaces)
-drivers/staging/sm750fb/sm750.c:833:5: warning: incorrect type in argument 1 (different address spaces)
-drivers/staging/sm750fb/sm750.c:1154:9: warning: incorrect type in argument 1 (different address spaces)
-
-Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+Sorry I wasn't clear on this before.  Please, stop putting RESEND in the
+subject.  That's only for if you think we are screwing up or ignoring
+you.  Just put v2, and put what changed under the --- cut off.
 ---
- drivers/staging/sm750fb/sm750.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+v2: changed the commit message
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index aa0888c..3e36b6a 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -486,8 +486,8 @@ static int lynxfb_resume(struct pci_dev* pdev)
- 		par = info->par;
- 		crtc = &par->crtc;
- 		cursor = &crtc->cursor;
--		memset(cursor->vstart, 0x0, cursor->size);
--		memset(crtc->vScreen,0x0,crtc->vidmem_size);
-+		memset_io(cursor->vstart, 0x0, cursor->size);
-+		memset_io(crtc->vScreen, 0x0, crtc->vidmem_size);
- 		lynxfb_ops_set_par(info);
- 		fb_set_suspend(info, 0);
- 	}
-@@ -498,8 +498,8 @@ static int lynxfb_resume(struct pci_dev* pdev)
- 		par = info->par;
- 		crtc = &par->crtc;
- 		cursor = &crtc->cursor;
--		memset(cursor->vstart, 0x0, cursor->size);
--		memset(crtc->vScreen,0x0,crtc->vidmem_size);
-+		memset_io(cursor->vstart, 0x0, cursor->size);
-+		memset_io(crtc->vScreen, 0x0, crtc->vidmem_size);
- 		lynxfb_ops_set_par(info);
- 		fb_set_suspend(info, 0);
- 	}
-@@ -830,7 +830,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info,int index)
+https://www.google.com/#q=how+to+send+a+v2+patch
 
+Otherwise this set looks ok.  Thanks!
 
-     crtc->cursor.share = share;
--    memset(crtc->cursor.vstart, 0, crtc->cursor.size);
-+	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
-     if(!g_hwcursor){
-         lynxfb_ops.fb_cursor = NULL;
-         crtc->cursor.disable(&crtc->cursor);
-@@ -1151,7 +1151,7 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
- 	}
- #endif
+Reviewed-by: Dan Carpenter <dan.carpenter@oracle.com>
 
--	memset(share->pvMem,0,share->vidmem_size);
-+	memset_io(share->pvMem, 0, share->vidmem_size);
+regards,
+dan carpenter
 
- 	pr_info("sm%3x mmio address = %p\n",share->devid,share->pvReg);
-
---
-2.3.2

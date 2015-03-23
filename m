@@ -1,80 +1,30 @@
-From: Amitoj Kaur Chawla <amitoj1606@gmail.com>
-Date: Fri, 20 Mar 2015 14:36:56 +0000
-Subject: [PATCH] sm750fb: Fix C99 comment and if-else braces
-Message-Id: <20150320142455.GA17954@amitoj-Inspiron-3542>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Mon, 23 Mar 2015 12:48:53 +0000
+Subject: Re: [PATCH] sm750fb: Fix C99 comment and if-else braces
+Message-Id: <20150323124800.GA8151@sudip-PC>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20150320142455.GA17954@amitoj-Inspiron-3542>
+In-Reply-To: <20150320142455.GA17954@amitoj-Inspiron-3542>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Amitoj Kaur Chawla <amitoj1606@gmail.com>
+Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-The edits have been made to fix C99 Comment and properly indent
-the if-else statements with the braces.
+On Fri, Mar 20, 2015 at 07:54:56PM +0530, Amitoj Kaur Chawla wrote:
+> The edits have been made to fix C99 Comment and properly indent
+> the if-else statements with the braces.
+i think you are doing multiple types of changes in one patch.
+better to send it in a series of two, one for the C99 and the other
+for the if-else. and there are few more places in that file where C99
+is used, any reason why you have chosen only one?
 
-Also, to use tabs instead of spaces.
+scripts/checkpatch.pl --strict -f drivers/staging/sm750fb/ddk750_chip.c | grep C99 | wc -l
+6
 
-Signed-off-by: Amitoj Kaur Chawla <amitoj1606@gmail.com>
----
- drivers/staging/sm750fb/ddk750_chip.c | 35 ++++++++++++++---------------------
- 1 file changed, 14 insertions(+), 21 deletions(-)
+and, your patch is not applying, please refresh your patch
+against staging-testing.
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 33add64..1e6b474 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -17,38 +17,31 @@ logical_chip_type_t getChipType(void)
- 	char physicalRev;
- 	logical_chip_type_t chip;
- 
--	physicalID = devId750;//either 0x718 or 0x750
-+	physicalID = devId750; /* either 0x718 or 0x750 */
- 	physicalRev = revId750;
- 
--    if (physicalID = 0x718)
--    {
--        chip = SM718;
--    }
--    else if (physicalID = 0x750)
--    {
--        chip = SM750;
-+	if (physicalID = 0x718) {
-+		chip = SM718;
-+	} else if (physicalID = 0x750) {
-+		chip = SM750;
- 		/* SM750 and SM750LE are different in their revision ID only. */
--		if (physicalRev = SM750LE_REVISION_ID){
-+		if (physicalRev = SM750LE_REVISION_ID)
- 			chip = SM750LE;
--		}
--    }
--    else
--    {
--        chip = SM_UNKNOWN;
--    }
-+	} else {
-+		chip = SM_UNKNOWN;
-+	}
- 
- 	return chip;
- }
- 
--
- inline unsigned int twoToPowerOfx(unsigned long x)
- {
--    unsigned long i;
--    unsigned long result = 1;
-+	unsigned long i;
-+	unsigned long result = 1;
- 
--    for (i=1; i<=x; i++)
--        result *= 2;
--    return result;
-+	for (i = 1; i <= x; i++)
-+		result *= 2;
-+	return result;
- }
- 
- inline unsigned int calcPLL(pll_value_t *pPLL)
--- 
-1.9.1
-
+regards
+sudip
+> 

@@ -1,40 +1,37 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Tue, 24 Mar 2015 21:23:52 +0000
-Subject: [PATCHv5 05/11] ARM: mxs: fix in tree users of ssd1306
-Message-Id: <1427232238-21099-6-git-send-email-niederp@physik.uni-kl.de>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 24 Mar 2015 10:52:50 +0000
+Subject: [PATCH resend] staging: sm7xxfb: add MODULE_DEVICE_TABLE
+Message-Id: <1427194344-4239-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-This patch updates the in tree-users of the SSD1306 controller for using
-the newly introduced DT properties.
+add MODULE_DEVICE_TABLE to support hot-plugging.
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- arch/arm/boot/dts/imx28-cfa10036.dts | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28=
--cfa10036.dts
-index b04b6b8..570aa33 100644
---- a/arch/arm/boot/dts/imx28-cfa10036.dts
-+++ b/arch/arm/boot/dts/imx28-cfa10036.dts
-@@ -99,6 +99,9 @@
- 					solomon,height =3D <32>;
- 					solomon,width =3D <128>;
- 					solomon,page-offset =3D <0>;
-+					solomon,com-lrremap;
-+					solomon,com-invdir;
-+					solomon,com-offset =3D <32>;
- 				};
- 			};
-=20
---=20
-2.3.0
+resending as discussed with Greg K-H
+
+ drivers/staging/sm7xxfb/sm7xxfb.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index abdb021..5b3e614 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -922,6 +922,8 @@ static const struct pci_device_id smtcfb_pci_table[] = {
+ 	{0,}
+ };
+ 
++MODULE_DEVICE_TABLE(pci, smtcfb_pci_table);
++
+ static void smtcfb_pci_remove(struct pci_dev *pdev)
+ {
+ 	struct smtcfb_info *sfb;
+-- 
+1.8.1.2
 

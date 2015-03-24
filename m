@@ -1,88 +1,62 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Tue, 24 Mar 2015 21:23:54 +0000
-Subject: [PATCHv5 07/11] fbdev: ssd1307fb: Add a module parameter to set the refresh rate
-Message-Id: <1427232238-21099-8-git-send-email-niederp@physik.uni-kl.de>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Tue, 24 Mar 2015 21:54:23 +0000
+Subject: Re: [PATCHv5 07/11] fbdev: ssd1307fb: Add a module parameter to set the refresh rate
+Message-Id: <20150324215423.GB23664@lukather>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="ftEhullJWpWg/VHq"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
  <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+ <1427232238-21099-8-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1427232238-21099-8-git-send-email-niederp@physik.uni-kl.de>
+To: Thomas =?iso-8859-1?Q?Niederpr=FCm?= <niederp@physik.uni-kl.de>
+Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+
+--ftEhullJWpWg/VHq
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-This patch adds the module parameter "refreshrate" to set delay for the
-deferred io. The refresh rate is given in units of Hertz. The default
-refresh rate is 1 Hz. The refresh rate set through the newly introduced
-parameter applies to all instances of the driver and for now it is not
-possible to change it individually.
+On Tue, Mar 24, 2015 at 10:23:54PM +0100, Thomas Niederpr=FCm wrote:
+> This patch adds the module parameter "refreshrate" to set delay for the
+> deferred io. The refresh rate is given in units of Hertz. The default
+> refresh rate is 1 Hz. The refresh rate set through the newly introduced
+> parameter applies to all instances of the driver and for now it is not
+> possible to change it individually.
+>=20
+> Signed-off-by: Thomas Niederpr=FCm <niederp@physik.uni-kl.de>
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
----
- drivers/video/fbdev/ssd1307fb.c | 23 +++++++++++++++++------
- 1 file changed, 17 insertions(+), 6 deletions(-)
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index 284c527..b38973e 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -38,6 +38,11 @@
- #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
- #define	SSD1307FB_SET_VCOMH		0xdb
-=20
-+#define REFRESHRATE 1
-+
-+static u_int refreshrate =3D REFRESHRATE;
-+module_param(refreshrate, uint, 0);
-+
- struct ssd1307fb_par;
-=20
- struct ssd1307fb_deviceinfo {
-@@ -263,11 +268,6 @@ static void ssd1307fb_deferred_io(struct fb_info *info,
- 	ssd1307fb_update_display(info->par);
- }
-=20
--static struct fb_deferred_io ssd1307fb_defio =3D {
--	.delay		=3D HZ,
--	.deferred_io	=3D ssd1307fb_deferred_io,
--};
--
- static int ssd1307fb_init(struct ssd1307fb_par *par)
- {
- 	int ret;
-@@ -471,6 +471,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
- {
- 	struct fb_info *info;
- 	struct device_node *node =3D client->dev.of_node;
-+	struct fb_deferred_io *ssd1307fb_defio;
- 	u32 vmem_size;
- 	struct ssd1307fb_par *par;
- 	u8 *vmem;
-@@ -541,10 +542,20 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 		goto fb_alloc_error;
- 	}
-=20
-+	ssd1307fb_defio =3D devm_kzalloc(&client->dev, sizeof(struct fb_deferred_=
-io), GFP_KERNEL);
-+	if (!ssd1307fb_defio) {
-+		dev_err(&client->dev, "Couldn't allocate deferred io.\n");
-+		ret =3D -ENOMEM;
-+		goto fb_alloc_error;
-+	}
-+
-+	ssd1307fb_defio->delay =3D HZ / refreshrate;
-+	ssd1307fb_defio->deferred_io =3D ssd1307fb_deferred_io;
-+
- 	info->fbops =3D &ssd1307fb_ops;
- 	info->fix =3D ssd1307fb_fix;
- 	info->fix.line_length =3D par->width / 8;
--	info->fbdefio =3D &ssd1307fb_defio;
-+	info->fbdefio =3D ssd1307fb_defio;
-=20
- 	info->var =3D ssd1307fb_var;
- 	info->var.xres =3D par->width;
+Thanks!
+Maxime
+
 --=20
-2.3.0
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
 
+--ftEhullJWpWg/VHq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVEd0PAAoJEBx+YmzsjxAgagwP/iEfhDCBFiVJZPcMw+QXccwT
+Y3u08OTi1norXjL3SdOugMyN1TQrkndrMo7NY0fFlAWZ4LaBXexlNEbteyuXCSJe
+HheG069Lone9R4jWtSG9j6RKyATvYagqUoyP0wbjC/xmWv5sNsiJoPJNBZc+GrYA
+KYP0wU992Es2hYQkGGOtjvvGv5R8d0gGTYSsKJeaZsJ6dahl1+woPxLgsIF52zJW
+8zhfRAcN7gnhWdvaDOmKefYR2qLd2g9vMp+nPm2Ty33FBEfycZ15occRYsxQAIuD
+REqRbvizjNNwErOT2TkswIvY3Qaa1sRAUMtPu0ccy1SRXmG9mNa9rVHsOckCOgGi
+pY+MoLRfe3J1qkcsVwABOfrqztB0s2VL1WYI3FpYvp8wXbZ+T24MEJuktsyfCa8c
+i7oYrU/yjhx1rFdMTQYmQZa7oUdUMziuV5clRUoRHvNKKRVlhkhxnJJAJrTK7V6w
+AmiBuIeqN0j8o4hkCZdkmGtqkXqKhDhARGZsuhN7kjrO2qSYgNIO5YsboXmaO1Ri
+9W9kuDPgsT7EKTy2w/5LHkX/ZmEG4MnRvdcf03nedAlLP7ckg10Etn1ma73EHMIS
+MQ8LHXOj3L8rmz4vJtnHuNPYOVfGM5TjreZmg3V7jcUKxn0sIc4D4BJAbCO1NXB1
+0jyCRJiz5D2FeFCMwEFd
+=ytnd
+-----END PGP SIGNATURE-----
+
+--ftEhullJWpWg/VHq--

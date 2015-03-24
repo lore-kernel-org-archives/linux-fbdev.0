@@ -1,107 +1,88 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 09 Mar 2015 09:40:50 +0000
-Subject: Re: [PATCH v11 4/6] devicetree: Add new SKY81452 backlight binding
-Message-Id: <20150309094050.GO3427@x1>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Tue, 24 Mar 2015 21:23:54 +0000
+Subject: [PATCHv5 07/11] fbdev: ssd1307fb: Add a module parameter to set the refresh rate
+Message-Id: <1427232238-21099-8-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
- <1425019346-4559-5-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1425019346-4559-5-git-send-email-jack.yoo@skyworksinc.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: gyungoh@gmail.com
-Cc: sameo@linux.intel.com, robh+dt@kernel.org, jg1.han@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org, broonie@kernel.org, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, treding@nvidia.com, p.zabel@pengutronix.de, arno@natisbad.org, kuninori.morimoto.gx@renesas.com
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-Applied, thanks.
+This patch adds the module parameter "refreshrate" to set delay for the
+deferred io. The refresh rate is given in units of Hertz. The default
+refresh rate is 1 Hz. The refresh rate set through the newly introduced
+parameter applies to all instances of the driver and for now it is not
+possible to change it individually.
 
-On Fri, 27 Feb 2015, gyungoh@gmail.com wrote:
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+---
+ drivers/video/fbdev/ssd1307fb.c | 23 +++++++++++++++++------
+ 1 file changed, 17 insertions(+), 6 deletions(-)
 
-> From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
->=20
-> Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> Acked-by: Bryan Wu <cooloney@gmail.com>
-> ---
-> Changes v11:
-> Renamed 'skyworks,en-channels' property to led-sources.
-> Removed unused property 'skyworks,ovp-level'.
->=20
-> Changes v10:
-> Nothing
->=20
-> Changes v9:
-> Nothing
->=20
-> Changes v8:
-> Renamed property names for backlight with vendor prefix
-> Modified gpio-enable property to generic property for GPIO
-> Made up the example for backlight DT
->=20
-> Changes v7:
-> Nothing
->=20
-> Changes v6:
-> Nothing
->=20
-> Changes v5:
-> Nothing
->=20
-> Changes v4:
-> Nothing
->=20
-> Changes v3:
-> Nothing
->=20
-> Changes v2:
-> Added reg attribute for I2C slave address
->=20
->  .../video/backlight/sky81452-backlight.txt         | 29 ++++++++++++++++=
-++++++
->  1 file changed, 29 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/backlight/sky=
-81452-backlight.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/video/backlight/sky81452-b=
-acklight.txt b/Documentation/devicetree/bindings/video/backlight/sky81452-b=
-acklight.txt
-> new file mode 100644
-> index 0000000..8bf2940
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/backlight/sky81452-backligh=
-t.txt
-> @@ -0,0 +1,29 @@
-> +SKY81452-backlight bindings
-> +
-> +Required properties:
-> +- compatible		: Must be "skyworks,sky81452-backlight"
-> +
-> +Optional properties:
-> +- name			: Name of backlight device. Default is 'lcd-backlight'.
-> +- gpios			: GPIO to use to EN pin.
-> +			See Documentation/devicetree/bindings/gpio/gpio.txt
-> +- led-sources		: List of enabled channels from 0 to 5.
-> +			See Documentation/devicetree/bindings/leds/common.txt
-> +- skyworks,ignore-pwm	: Ignore both PWM input
-> +- skyworks,dpwm-mode	: Enable DPWM dimming mode, otherwise Analog dimmin=
-g.
-> +- skyworks,phase-shift	: Enable phase shift mode
-> +- skyworks,short-detection-threshold-volt
-> +			: It should be one of 4, 5, 6 and 7V.
-> +- skyworks,current-limit-mA
-> +			: It should be 2300mA or 2750mA.
-> +
-> +Example:
-> +
-> +	backlight {
-> +		compatible =3D "skyworks,sky81452-backlight";
-> +		name =3D "pwm-backlight";
-> +		led-sources =3D <0 1 2 5>;
-> +		skyworks,ignore-pwm;
-> +		skyworks,phase-shift;
-> +		skyworks,current-limit-mA =3D <2300>;
-> +	};
-
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index 284c527..b38973e 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -38,6 +38,11 @@
+ #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
+ #define	SSD1307FB_SET_VCOMH		0xdb
+=20
++#define REFRESHRATE 1
++
++static u_int refreshrate =3D REFRESHRATE;
++module_param(refreshrate, uint, 0);
++
+ struct ssd1307fb_par;
+=20
+ struct ssd1307fb_deviceinfo {
+@@ -263,11 +268,6 @@ static void ssd1307fb_deferred_io(struct fb_info *info,
+ 	ssd1307fb_update_display(info->par);
+ }
+=20
+-static struct fb_deferred_io ssd1307fb_defio =3D {
+-	.delay		=3D HZ,
+-	.deferred_io	=3D ssd1307fb_deferred_io,
+-};
+-
+ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ {
+ 	int ret;
+@@ -471,6 +471,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ {
+ 	struct fb_info *info;
+ 	struct device_node *node =3D client->dev.of_node;
++	struct fb_deferred_io *ssd1307fb_defio;
+ 	u32 vmem_size;
+ 	struct ssd1307fb_par *par;
+ 	u8 *vmem;
+@@ -541,10 +542,20 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 		goto fb_alloc_error;
+ 	}
+=20
++	ssd1307fb_defio =3D devm_kzalloc(&client->dev, sizeof(struct fb_deferred_=
+io), GFP_KERNEL);
++	if (!ssd1307fb_defio) {
++		dev_err(&client->dev, "Couldn't allocate deferred io.\n");
++		ret =3D -ENOMEM;
++		goto fb_alloc_error;
++	}
++
++	ssd1307fb_defio->delay =3D HZ / refreshrate;
++	ssd1307fb_defio->deferred_io =3D ssd1307fb_deferred_io;
++
+ 	info->fbops =3D &ssd1307fb_ops;
+ 	info->fix =3D ssd1307fb_fix;
+ 	info->fix.line_length =3D par->width / 8;
+-	info->fbdefio =3D &ssd1307fb_defio;
++	info->fbdefio =3D ssd1307fb_defio;
+=20
+ 	info->var =3D ssd1307fb_var;
+ 	info->var.xres =3D par->width;
 --=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.3.0
+

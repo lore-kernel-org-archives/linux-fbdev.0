@@ -1,47 +1,70 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 22 Mar 2015 19:55:45 +0000
-Subject: [PATCH 2/4] [resend] tridentfb: Fix set_lwidth on TGUI9440 and CYBER9320
-Message-Id: <1427054147-26158-2-git-send-email-linux@rainbow-software.org>
+From: Ragavendra Nagraj <ragavendra.bn@gmail.com>
+Date: Tue, 24 Mar 2015 04:51:54 +0000
+Subject: [PATCH] staging: sm750fb: Fixed C99 comments warnings
+Message-Id: <20150324045154.GA12298@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1427054147-26158-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1427054147-26158-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-According to X.Org driver, chips older than TGUI9660 have only 1 width bit
-in AddColReg. Touching the 2nd one causes I2C/DDC to fail on TGUI9440.
+This patch fixes the C99-style "// ..." comments warnings identified by the
+checkpath.pl script for the entire ddk750_chip.c file by using the
+appropriate C89 "/* ... */" style comments accordingly.
 
-Set only 1 bit of width in AddColReg on TGUI9440 and CYBER9320.
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Ragavendra Nagraj <ragavendra.bn@gmail.com>
 ---
- drivers/video/fbdev/tridentfb.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/staging/sm750fb/ddk750_chip.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 7429713..01b43e9 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -673,8 +673,14 @@ static int get_nativex(struct tridentfb_par *par)
- static inline void set_lwidth(struct tridentfb_par *par, int width)
- {
- 	write3X4(par, VGA_CRTC_OFFSET, width & 0xFF);
--	write3X4(par, AddColReg,
--		 (read3X4(par, AddColReg) & 0xCF) | ((width & 0x300) >> 4));
-+	/* chips older than TGUI9660 have only 1 width bit in AddColReg */
-+	/* touching the other one breaks I2C/DDC */
-+	if (par->chip_id = TGUI9440 || par->chip_id = CYBER9320)
-+		write3X4(par, AddColReg,
-+		     (read3X4(par, AddColReg) & 0xEF) | ((width & 0x100) >> 4));
-+	else
-+		write3X4(par, AddColReg,
-+		     (read3X4(par, AddColReg) & 0xCF) | ((width & 0x300) >> 4));
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 02f9326..1fb00a4 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -17,7 +17,7 @@ logical_chip_type_t getChipType(void)
+ 	char physicalRev;
+ 	logical_chip_type_t chip;
+ 
+-	physicalID = devId750;//either 0x718 or 0x750
++	physicalID = devId750;/*either 0x718 or 0x750*/
+ 	physicalRev = revId750;
+ 
+ 	if (physicalID = 0x718)
+@@ -264,7 +264,7 @@ int ddk750_initHw(initchip_param_t * pInitParam)
+ 
+ 	unsigned int ulReg;
+ #if 0
+-	//move the code to map regiter function.
++	/*move the code to map regiter function.*/
+ 	if(getChipType() = SM718){
+ 		/* turn on big endian bit*/
+ 		ulReg = PEEK32(0x74);
+@@ -501,7 +501,7 @@ unsigned int calcPllValue(unsigned int request_orig,pll_value_t *pll)
+ 		}
+ 	}
+ 
+-	//printk("Finally:  pll->n[%lu],m[%lu],od[%lu],pod[%lu]\n",pll->N,pll->M,pll->OD,pll->POD);
++	/*printk("Finally:  pll->n[%lu],m[%lu],od[%lu],pod[%lu]\n",pll->N,pll->M,pll->OD,pll->POD);*/
+ 	return ret;
  }
  
- /* For resolutions smaller than FP resolution stretch */
+@@ -597,13 +597,13 @@ pll_value_t *pPLL           /* Structure to hold the value to be set in PLL */
+ 	}
+ 
+     /* Restore input frequency from Khz to hz unit */
+-//    pPLL->inputFreq *= 1000;
++/*    pPLL->inputFreq *= 1000;*/
+ 	ulRequestClk *= 1000;
+ 	pPLL->inputFreq = DEFAULT_INPUT_CLOCK; /* Default reference clock */
+ 
+     /* Output debug information */
+-	//DDKDEBUGPRINT((DISPLAY_LEVEL, "calcPllValue: Requested Frequency = %d\n", ulRequestClk));
+-	//DDKDEBUGPRINT((DISPLAY_LEVEL, "calcPllValue: Input CLK = %dHz, M=%d, N=%d, OD=%d, POD=%d\n", pPLL->inputFreq, pPLL->M, pPLL->N, pPLL->OD, pPLL->POD));
++	/*DDKDEBUGPRINT((DISPLAY_LEVEL, "calcPllValue: Requested Frequency = %d\n", ulRequestClk));*/
++	/*DDKDEBUGPRINT((DISPLAY_LEVEL, "calcPllValue: Input CLK = %dHz, M=%d, N=%d, OD=%d, POD=%d\n", pPLL->inputFreq, pPLL->M, pPLL->N, pPLL->OD, pPLL->POD));*/
+ 
+     /* Return actual frequency that the PLL can set */
+ 	ret = calcPLL(pPLL);
 -- 
-Ondrej Zary
+1.7.10.4
 

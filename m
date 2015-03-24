@@ -1,24 +1,59 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 10 Mar 2015 20:13:07 +0000
-Subject: Re: [PATCH 0/6] staging: sm750fb: fixed all build warnings
-Message-Id: <20150310201307.GA1315@kroah.com>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Tue, 24 Mar 2015 21:23:58 +0000
+Subject: [PATCHv5 11/11] fbdev: ssd1307fb: Add blank mode
+Message-Id: <1427232238-21099-12-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426007817-1884-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1426007817-1884-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-On Tue, Mar 10, 2015 at 10:46:51PM +0530, Sudip Mukherjee wrote:
-> Hi Greg,
-> all the build warnings have been taken care of in this series.
-> some of the patches will generate a few checkpatch warning and for some I tried
-> to address few of the chcekpatch warnings while modifying them.
+This patch adds ssd1307fb_blank() to make the framebuffer capable
+of blanking.
 
-Don't mix what you do in a single patch please.
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+---
+ drivers/video/fbdev/ssd1307fb.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-thanks,
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index 061cc95..9101b27 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -238,6 +238,18 @@ static ssize_t ssd1307fb_write(struct fb_info *info, c=
+onst char __user *buf,
+ 	return count;
+ }
+=20
++static int ssd1307fb_blank(int blank_mode, struct fb_info *info)
++{
++	struct ssd1307fb_par *par =3D info->par;
++	int ret;
++
++	if (blank_mode !=3D FB_BLANK_UNBLANK)
++		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
++	else
++		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
++	return ret;
++}
++
+ static void ssd1307fb_fillrect(struct fb_info *info, const struct fb_fillr=
+ect *rect)
+ {
+ 	struct ssd1307fb_par *par =3D info->par;
+@@ -263,6 +275,7 @@ static struct fb_ops ssd1307fb_ops =3D {
+ 	.owner		=3D THIS_MODULE,
+ 	.fb_read	=3D fb_sys_read,
+ 	.fb_write	=3D ssd1307fb_write,
++	.fb_blank	=3D ssd1307fb_blank,
+ 	.fb_fillrect	=3D ssd1307fb_fillrect,
+ 	.fb_copyarea	=3D ssd1307fb_copyarea,
+ 	.fb_imageblit	=3D ssd1307fb_imageblit,
+--=20
+2.3.0
 
-greg k-h

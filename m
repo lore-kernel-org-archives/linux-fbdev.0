@@ -1,71 +1,95 @@
-From: Adam Richter <adamrichter4@gmail.com>
-Date: Tue, 10 Mar 2015 22:11:58 +0000
-Subject: Fwd: [PATCH] fbdev: udl: fix oops on USB unplug due to missing get_vblank_counter function
-Message-Id: <CAGn-TgiZAbeXNO_fsKT0fMDTd7K0oZEFJvq4dGbKtqG=hWck7w@mail.gmail.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="f46d0442678e77a4c20510f67055"
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Tue, 24 Mar 2015 21:23:47 +0000
+Subject: [PATCHv5 00/11] Cleanup and add support for SSD1305
+Message-Id: <1427232238-21099-1-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
---f46d0442678e77a4c20510f67055
-Content-Type: text/plain; charset=UTF-8
+Hi,
 
-[This is a third submission of a message that vger first bounched from
-my Yahoo account, and then
-from gmail when I failed to disable HTML formatting.  I apologize if
-it is a duplicate or triplicate. -Adam]
+this patch series is the result of making the ssd1307fb driver work with
+a Newhaven OLED display using the Solomon SSD1305 controller. To achieve
+this the intialization code for the SSD1306 and the SSD1307 is merged
+and based on DT configuration to reflect the various possible wirings
+of the SSD130X controller (04/11). Based on these changes it is straight
+forward to add support for the SSD1305 controller (06/11).
 
-Hello, Bernie.
+While working on the driver I realized that it was not possible to
+correctly mmap the video memory from userspace since the address handed
+to the userspace app is a logical one where it should be a physical one.
+Patch 01/10 fixes this. Furthermore the memory reserved by kzalloc is
+not page aligned while the address handed to userspace is aligned to the
+next page frame. This problem is fixed by using __get_free_pages() in 02/11.
 
-In Linux-4.0-rc3, the DisplayLink driver gets a kernel memory fault when its
-USB device is unplugged, specifically when vblank_disable_and_save in
-linux-4.0-rc3/drivers/gpu/drm/drm_irq.c attempts to call the NULL function
-pointer dev->driver_get_vblank_counter.
+Furthermore a module parameter is added to set the delay for the
+deferred io update (07/11). Also the backlight class is implemented to make
+the contrast setting available in userspace (10/11).
 
-linux-4.0-rc3/Documentation/DocBook/drm.tmpl says of that field, "Otherwise
-drivers can use the drm_vblank_count helper function to handle this
-operation."  Trying that seems to have eliminated the oops when I unplug the
-device, although I do see these lines in the console log at device driver
-initialization time that I think are probably fine, but which I should
-mention in case the indicate that I did the wrong the thing:
+changes since v1 (thanks to Maxime for the feedback):
+- dedicated patch for fixing smem_start address
+- remove page reserve upon vmalloc
+- remove return value check upon display turn-off at module unload
+- use a module parameter refreshrate rather than delaydivider
+- allocate fbdefio dynamically
+- use sysfs_create_groups to create sysfs entries
+- remove contrast, vhcom and dclk properties from DT since they are
+  not part of hw description. The contrast module parameter was added
+  to set contrast at load time. vhcom and dclk stays at it's default
+  values for now.
+- add new DT properties to in tree users of ssd130X
+- rebased to apply on top of linux-next
 
-[drm] Supports vblank timestamp caching Rev 2 (21.10.2013).
-[drm] No driver support for vblank timestamp query.
+changes since v2 (thanks to Maxime again):
+- free memory allocated by vmalloc on driver unload
+- set default values in the init code to the ones of the existing ssd1307
+  init code
+- added two ACKs (Maxime Ripard)
 
-If that doesn't look like a problem to you, then I suggest you apply the
-patch, appended below and also included as an attachment, and push the
-change upstream.  The patch just adds one line that appears in six other
-framebuffer drivers to initialize the driver_get_vblank_counter drm_driver
-function.
+changes since v3:
+- use backlight class rather than dedicated sysfs files to set the=20
+  contrast (Thanks to Tomi Valkeinen)
+- remove [PATCHv3 08/10] fbdev: ssd1307fb: Add module parameter bitsperpixel
+- add new patch to blank the display (unreviewed)
+- allocate video memory through __get_free_pages() rather than vmalloc
+  (Thanks to Geert Uytterhoeven)
+- minor rewordings of the commit messages
+
+changes since v4 (thanks to Maxime):
+- added two ACKs (Maxime Ripard)
+- fixed typo: s/REFRASHRATE/REFRESHRATE
+- updated the documentation to make clear the unit of com-offset
+- move addition of the module parameter contrast to a separate patch (09/11)
+- fix indentation errors
+- get rid of device_id in the device_info struct
 
 
-Thank you for maintaining the USB DisplayLink driver, and thanks for your
-attention to this.
+Thomas Niederpr=C3=BCm (11):
+  fbdev: ssd1307fb: fix memory address smem_start.
+  fbdev: ssd1307fb: Allocate page aligned video memory.
+  of: Add Solomon Systech vendor prefix.
+  fbdev: ssd1307fb: Unify init code and obtain hw specific bits from DT
+  ARM: mxs: fix in tree users of ssd1306
+  fbdev: ssd1307fb: Add support for SSD1305
+  fbdev: ssd1307fb: Add a module parameter to set the refresh rate
+  fbdev: ssd1307fb: Turn off display on driver unload.
+  fbdev: ssd1307fb: Add module parameter to set the initial contrast
+  fbdev: ssd1307fb: add backlight controls for setting the contrast
+  fbdev: ssd1307fb: Add blank mode
 
-Adam Richter
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ .../devicetree/bindings/video/ssd1307fb.txt        |  23 +-
+ arch/arm/boot/dts/imx28-cfa10036.dts               |   3 +
+ drivers/video/fbdev/Kconfig                        |   1 +
+ drivers/video/fbdev/ssd1307fb.c                    | 310 +++++++++++++++--=
+----
+ 5 files changed, 250 insertions(+), 88 deletions(-)
 
---- drivers/gpu/drm/udl/udl_drv.c.orig    2015-03-09 22:10:14.292335527 -0700
-+++ drivers/gpu/drm/udl/udl_drv.c    2015-03-09 22:22:14.148342842 -0700
-@@ -41,6 +41,7 @@ static struct drm_driver driver = {
-     .load = udl_driver_load,
-     .unload = udl_driver_unload,
-     .set_busid = udl_driver_set_busid,
-+    .get_vblank_counter = drm_vblank_count,
+--=20
+2.3.0
 
-     /* gem hooks */
-     .gem_free_object = udl_gem_free_object,
-
---f46d0442678e77a4c20510f67055
-Content-Type: text/plain; charset=US-ASCII; name="displaylink.diff"
-Content-Disposition: attachment; filename="displaylink.diff"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_i73uo0yb0
-
-LS0tIGRyaXZlcnMvZ3B1L2RybS91ZGwvdWRsX2Rydi5jLm9yaWcJMjAxNS0wMy0wOSAyMjoxMDox
-NC4yOTIzMzU1MjcgLTA3MDAKKysrIGRyaXZlcnMvZ3B1L2RybS91ZGwvdWRsX2Rydi5jCTIwMTUt
-MDMtMDkgMjI6MjI6MTQuMTQ4MzQyODQyIC0wNzAwCkBAIC00MSw2ICs0MSw3IEBAIHN0YXRpYyBz
-dHJ1Y3QgZHJtX2RyaXZlciBkcml2ZXIgPSB7CiAJLmxvYWQgPSB1ZGxfZHJpdmVyX2xvYWQsCiAJ
-LnVubG9hZCA9IHVkbF9kcml2ZXJfdW5sb2FkLAogCS5zZXRfYnVzaWQgPSB1ZGxfZHJpdmVyX3Nl
-dF9idXNpZCwKKwkuZ2V0X3ZibGFua19jb3VudGVyID0gZHJtX3ZibGFua19jb3VudCwKIAogCS8q
-IGdlbSBob29rcyAqLwogCS5nZW1fZnJlZV9vYmplY3QgPSB1ZGxfZ2VtX2ZyZWVfb2JqZWN0LAo=
---f46d0442678e77a4c20510f67055--

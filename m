@@ -1,39 +1,36 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Mon, 16 Mar 2015 17:11:56 +0000
-Subject: [PATCHv4 08/10] fbdev: ssd1307fb: Turn off display on driver unload.
-Message-Id: <1426525918-12745-9-git-send-email-niederp@physik.uni-kl.de>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 24 Mar 2015 04:50:37 +0000
+Subject: [PATCH 2/2] staging: sm7xxfb: add MODULE_DEVICE_TABLE
+Message-Id: <1427172609-4318-2-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
+References: <1427172609-4318-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1427172609-4318-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-This patch turns off the display when the driver is unloaded.
+add MODULE_DEVICE_TABLE to support hot-plugging.
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/ssd1307fb.c | 2 ++
+ drivers/staging/sm7xxfb/sm7xxfb.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index 8a8d305..0d851f1 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -628,6 +628,8 @@ static int ssd1307fb_remove(struct i2c_client *client)
- 	struct fb_info *info =3D i2c_get_clientdata(client);
- 	struct ssd1307fb_par *par =3D info->par;
-=20
-+	ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 6e9b2aa..15509a6 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -922,6 +922,8 @@ static const struct pci_device_id smtcfb_pci_table[] = {
+ 	{0,}
+ };
+ 
++MODULE_DEVICE_TABLE(pci, smtcfb_pci_table);
 +
- 	unregister_framebuffer(info);
- 	if (par->device_info->device_id =3D DEVID_SSD1307) {
- 		pwm_disable(par->pwm);
---=20
-2.3.0
+ static void smtcfb_pci_remove(struct pci_dev *pdev)
+ {
+ 	struct smtcfb_info *sfb;
+-- 
+1.8.1.2
 

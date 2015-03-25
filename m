@@ -1,18 +1,23 @@
-From: Scot Doyle <lkml14@scotdoyle.com>
-Date: Sat, 14 Mar 2015 17:48:13 +0000
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Wed, 25 Mar 2015 11:19:49 +0000
 Subject: Re: [PATCH 1/2] vt: add cursor blink interval escape sequence
-Message-Id: <alpine.DEB.2.11.1503141728120.1887@local>
+Message-Id: <20150325111949.GA24230@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain> <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain> <20150225094946.GA24627@amd> <alpine.LNX.2.11.1502252319330.276@localhost> <20150226220243.GC9935@amd> <alpine.LNX.2.11.1502271905580.4212@localhost>
+References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
+ <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
+ <20150225094946.GA24627@amd>
+ <alpine.LNX.2.11.1502252319330.276@localhost>
+ <20150226220243.GC9935@amd>
+ <alpine.LNX.2.11.1502271905580.4212@localhost>
  <alpine.LNX.2.11.1502271911380.4248@localhost>
 In-Reply-To: <alpine.LNX.2.11.1502271911380.4248@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Cc: Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Scot Doyle <lkml14@scotdoyle.com>
+Cc: Jiri Slaby <jslaby@suse.cz>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Michael Kerrisk <mtk.manpages@gmail.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-api@vger.kernel.org, linux-man@vger.kernel.org
 
-On Fri, 27 Feb 2015, Scot Doyle wrote:
+On Fri, Feb 27, 2015 at 07:13:48PM +0000, Scot Doyle wrote:
 > Add an escape sequence to specify the current console's cursor blink
 > interval. The interval is specified as a number of milliseconds until
 > the next cursor display state toggle, from 50 to 65535. /proc/loadavg
@@ -24,9 +29,6 @@ On Fri, 27 Feb 2015, Scot Doyle wrote:
 > 
 > Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
 > Acked-by: Pavel Machek <pavel@ucw.cz>
-
-Hi Greg, sorry about your backlog. Is it too soon for a ping?
-
 > ---
 >  drivers/tty/vt/vt.c            | 9 +++++++++
 >  include/linux/console_struct.h | 1 +
@@ -49,35 +51,10 @@ Hi Greg, sorry about your backlog. Is it too soon for a ping?
 >  			set_console(last_console);
 >  			break;
 > +		case 16: /* set cursor blink duration in msec */
-> +			if (vc->vc_npar >= 1 && vc->vc_par[1] >= 50 &&
-> +					vc->vc_par[1] <= USHRT_MAX)
-> +				vc->vc_cur_blink_ms = vc->vc_par[1];
-> +			else
-> +				vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
-> +			break;
->  	}
->  }
->  
-> @@ -1717,6 +1725,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
->  
->  	vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
->  	vc->vc_bell_duration = DEFAULT_BELL_DURATION;
-> +	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
->  
->  	gotoxy(vc, 0, 0);
->  	save_cur(vc);
-> diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-> index e859c98..e329ee2 100644
-> --- a/include/linux/console_struct.h
-> +++ b/include/linux/console_struct.h
-> @@ -104,6 +104,7 @@ struct vc_data {
->  	unsigned int    vc_resize_user;         /* resize request from user */
->  	unsigned int	vc_bell_pitch;		/* Console bell pitch */
->  	unsigned int	vc_bell_duration;	/* Console bell duration */
-> +	unsigned short	vc_cur_blink_ms;	/* Cursor blink duration */
->  	struct vc_data **vc_display_fg;		/* [!] Ptr to var holding fg console for this display */
->  	struct uni_pagedir *vc_uni_pagedir;
->  	struct uni_pagedir **vc_uni_pagedir_loc; /* [!] Location of uni_pagedir variable for this console */
-> -- 
-> 2.3.0
-> 
+
+Where is this now documented?  Is this a "standard" ASCII command
+somewhere?  Adding new userspace apis have to be documented properly.
+
+Without that, I can't take this series, sorry.
+
+greg k-h

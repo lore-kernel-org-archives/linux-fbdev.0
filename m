@@ -1,7 +1,7 @@
 From: Archit Taneja <architt@codeaurora.org>
-Date: Fri, 13 Mar 2015 11:12:06 +0000
+Date: Wed, 25 Mar 2015 08:29:54 +0000
 Subject: Re: [RFC 1/6] drm: Add top level Kconfig option for DRM fbdev emulation
-Message-Id: <5502C336.2060206@codeaurora.org>
+Message-Id: <55126F32.90404@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1425980493-27533-1-git-send-email-architt@codeaurora.org>
  <1425980493-27533-2-git-send-email-architt@codeaurora.org>
@@ -14,10 +14,10 @@ In-Reply-To: <20150313090651.GZ3800@phenom.ffwll.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: treding@nvidia.com, p.zabel@pengutronix.de, benjamin.gaignard@linaro.org, daniel@ffwll.ch
-Cc: linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com
+To: robdclark@gmail.com, airlied@linux.ie, treding@nvidia.com, p.zabel@pengutronix.de, benjamin.gaignard@linaro.org, dri-devel@lists.freedesktop.org, daniel@ffwll.ch
+Cc: linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, linux-kernel@vger.kernel.org
 
-
+Hi,
 
 On 03/13/2015 02:36 PM, Daniel Vetter wrote:
 > On Fri, Mar 13, 2015 at 11:55:07AM +0530, Archit Taneja wrote:
@@ -114,9 +114,32 @@ On 03/13/2015 02:36 PM, Daniel Vetter wrote:
 > situation with fbdev. They're not full-blown fbdev drivers and can be
 > useful fully without fbdev.
 >
-> What do you think?
 
-This looks good! I'll give it a try.
+I was trying this out. Removing 'linux/fb.h' and replacing stub fb funcs 
+won't really work because struct declarations(like fb_info) also get 
+removed.
+
+I considered placing '#if IS_ENABLED(CONFIG_FB)' within linux/fb.h 
+itself, but that seemed a bit too intrusive.
+
+This is what I'm currently doing:
+
+- Some funcs, like framebufer_alloc/release, alloc_cmap/dealloc_cmap 
+would actually benefit if we have drm fb helpers for them. They are used 
+in exactly the same manner by all the drivers.
+
+- For the rest of the functions that are sparsely used, I was 
+considering making very simple drm_fb_* wrapper functions. Something like:
+
+void drm_fb_helper_deferred_io_init(struct drm_fb_helper *helper)
+{
+	if (helper->fbdev)
+		fb_deferred_io_init(helper->fbdev);
+}
+
+We could have all fb calls called within drm_fb_helper.c, creating 
+drm_fb_helper_* stub functions would then be an easier task. What do you 
+think?
 
 Archit
 

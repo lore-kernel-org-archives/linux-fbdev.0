@@ -1,214 +1,154 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Date: Wed, 25 Mar 2015 20:07:43 +0000
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Thu, 26 Mar 2015 03:00:55 +0000
 Subject: Re: [PATCH v1 05/47] pci: add pci_iomap_wc() variants
-Message-Id: <20150325200743.GP25884@l.oracle.com>
+Message-Id: <20150326030054.GA5622@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
  <1426893517-2511-6-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-6-git-send-email-mcgrof@do-not-panic.com>
+ <CAErSpo5LfgTM879jmt58yLrXD6e7spsaX1wNDcc2ppU9JrMXOg@mail.gmail.com>
+In-Reply-To: <CAErSpo5LfgTM879jmt58yLrXD6e7spsaX1wNDcc2ppU9JrMXOg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Cc: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Stefan Bader <stefan.bader@canonical.com>, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, toshi.kani@hp.com, Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>, xen-devel@lists.xensource.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bjorn Helgaas <bhelgaas@google.com>, Arnd Bergmann <arndatarndb.de@suse.de>, Linus Walleij <linus.walleijatlinaro.org@suse.de>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Julia Lawall <julia.lawall@lip6.fr>, Peter Senna Tschudin <peter.senna@gmail.com>
+Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, Andy Lutomirski <luto@amacapital.net>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, jgross@suse.com, Jan Beulich <JBeulich@suse.com>, Borislav Petkov <bp@suse.de>, Suresh Siddha <suresh.b.siddha@intel.com>, venkatesh.pallipadi@intel.com, Dave Airlie <airlied@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org, "x86@kernel.org" <x86@kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Stefan Bader <stefan.bader@canonical.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, David Vrabel <david.vrabel@citrix.com>, Toshi Kani <toshi.kani@hp.com>, Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>, Benjamin Poirier <bpoirier@suse.de>, linux-pci@vger.kernel.org
 
-On Fri, Mar 20, 2015 at 04:17:55PM -0700, Luis R. Rodriguez wrote:
-> From: "Luis R. Rodriguez" <mcgrof@suse.com>
->=20
-> This allows drivers to take advantage of write-combining
-> when possible. Ideally we'd have pci_read_bases() just
-> peg an IORESOURCE_WC flag for us but where exactly
-> video devices memory lie varies *largely* and at times things
-> are mixed with MMIO registers, sometimes we can address
-> the changes in drivers, other times the change requires
-> intrusive changes.
->=20
-> Although there is also arch_phys_wc_add() that makes use of
-> architecture specific write-combinging alternatives (MTRR on
+On Mon, Mar 23, 2015 at 12:20:47PM -0500, Bjorn Helgaas wrote:
+> Hi Luis,
+> 
+> This seems OK to me, 
 
-combinging?
+Great.
 
-> x86 when a system does not have PAT) we void polluting
-> pci_iomap() space with it and force drivers and subsystems
-> that want to use it to be explicit.
->=20
-> There are a few motivations for this:
->=20
-> a) Take advantage of PAT when available
->=20
-> b) Help bury MTRR code away, MTRR is architecture specific and on
->    x86 its replaced by PAT
->=20
-> c) Help with the goal of eventually using _PAGE_CACHE_UC over
->    _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
->=20
-> Cc: Andy Lutomirski <luto@amacapital.net>
-> Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-> Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Juergen Gross <jgross@suse.com>
-> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Cc: Dave Airlie <airlied@redhat.com>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: Antonino Daplas <adaplas@gmail.com>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Michael S. Tsirkin <mst@redhat.com>
-> Cc: venkatesh.pallipadi@intel.com
-> Cc: Stefan Bader <stefan.bader@canonical.com>
-> Cc: konrad.wilk@oracle.com
-> Cc: ville.syrjala@linux.intel.com
-> Cc: david.vrabel@citrix.com
-> Cc: jbeulich@suse.com
-> Cc: toshi.kani@hp.com
-> Cc: Roger Pau Monn=E9 <roger.pau@citrix.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: xen-devel@lists.xensource.com
-> Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-> ---
->  include/asm-generic/pci_iomap.h | 14 ++++++++++
->  lib/pci_iomap.c                 | 61 +++++++++++++++++++++++++++++++++++=
-++++++
->  2 files changed, 75 insertions(+)
->=20
-> diff --git a/include/asm-generic/pci_iomap.h b/include/asm-generic/pci_io=
-map.h
-> index 7389c87..b1e17fc 100644
-> --- a/include/asm-generic/pci_iomap.h
-> +++ b/include/asm-generic/pci_iomap.h
-> @@ -15,9 +15,13 @@ struct pci_dev;
->  #ifdef CONFIG_PCI
->  /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
->  extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned lo=
-ng max);
-> +extern void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned=
- long max);
->  extern void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
->  				     unsigned long offset,
->  				     unsigned long maxlen);
-> +extern void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
-> +					unsigned long offset,
-> +					unsigned long maxlen);
->  /* Create a virtual mapping cookie for a port on a given PCI device.
->   * Do not call this directly, it exists to make it easier for architectu=
-res
->   * to override */
-> @@ -34,12 +38,22 @@ static inline void __iomem *pci_iomap(struct pci_dev =
-*dev, int bar, unsigned lon
->  	return NULL;
->  }
-> =20
-> +static inline void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, u=
-nsigned long max)
-> +{
-> +	return NULL;
-> +}
->  static inline void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
->  					    unsigned long offset,
->  					    unsigned long maxlen)
->  {
->  	return NULL;
->  }
-> +static inline void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int =
-bar,
-> +					       unsigned long offset,
-> +					       unsigned long maxlen)
-> +{
-> +	return NULL;
-> +}
->  #endif
-> =20
->  #endif /* __ASM_GENERIC_IO_H */
-> diff --git a/lib/pci_iomap.c b/lib/pci_iomap.c
-> index bcce5f1..30b65ae 100644
-> --- a/lib/pci_iomap.c
-> +++ b/lib/pci_iomap.c
-> @@ -52,6 +52,46 @@ void __iomem *pci_iomap_range(struct pci_dev *dev,
->  EXPORT_SYMBOL(pci_iomap_range);
-> =20
->  /**
-> + * pci_iomap_wc_range - create a virtual WC mapping cookie for a PCI BAR
-> + * @dev: PCI device that owns the BAR
-> + * @bar: BAR number
-> + * @offset: map memory at the given offset in BAR
-> + * @maxlen: max length of the memory to map
-> + *
-> + * Using this function you will get a __iomem address to your device BAR.
-> + * You can access it using ioread*() and iowrite*(). These functions hide
-> + * the details if this is a MMIO or PIO address space and will just do w=
-hat
-> + * you expect from them in the correct way. When possible write combining
-> + * is used.
-> + *
-> + * @maxlen specifies the maximum length to map. If you want to get acces=
-s to
-> + * the complete BAR from offset to the end, pass %0 here.
+> but I'm curious about a few things.
+> 
+> On Fri, Mar 20, 2015 at 6:17 PM, Luis R. Rodriguez
+> <mcgrof@do-not-panic.com> wrote:
+> > From: "Luis R. Rodriguez" <mcgrof@suse.com>
+> >
+> > This allows drivers to take advantage of write-combining
+> > when possible. Ideally we'd have pci_read_bases() just
+> > peg an IORESOURCE_WC flag for us
+> 
+> We do set IORESOURCE_PREFETCH.  Do you mean something different?
 
-s/%0/0 ? Or is that some special syntax?
+I did not think we had a WC IORESOURCE flag. Are you saying that we can use
+IORESOURCE_PREFETCH for that purpose? If so then great.  As I read a PCI BAR
+can have PCI_BASE_ADDRESS_MEM_PREFETCH and when that's the case we peg
+IORESOURCE_PREFETCH. That seems to be what I want indeed. Questions below.
 
-> + * */
-> +void __iomem *pci_iomap_wc_range(struct pci_dev *dev,
-> +				 int bar,
-> +				 unsigned long offset,
-> +				 unsigned long maxlen)
-> +{
-> +	resource_size_t start =3D pci_resource_start(dev, bar);
-> +	resource_size_t len =3D pci_resource_len(dev, bar);
-> +	unsigned long flags =3D pci_resource_flags(dev, bar);
-> +
-> +	if (len <=3D offset || !start)
-> +		return NULL;
-> +	len -=3D offset;
-> +	start +=3D offset;
-> +	if (maxlen && len > maxlen)
-> +		len =3D maxlen;
-> +	if (flags & IORESOURCE_IO)
-> +		return __pci_ioport_map(dev, start, len);
-> +	if (flags & IORESOURCE_MEM)
-> +		return ioremap_wc(start, len);
-> +	/* What? */
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL_GPL(pci_iomap_wc_range);
-> +
-> +/**
->   * pci_iomap - create a virtual mapping cookie for a PCI BAR
->   * @dev: PCI device that owns the BAR
->   * @bar: BAR number
-> @@ -70,4 +110,25 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar,=
- unsigned long maxlen)
->  	return pci_iomap_range(dev, bar, 0, maxlen);
->  }
->  EXPORT_SYMBOL(pci_iomap);
-> +
-> +/**
-> + * pci_iomap_wc - create a virtual WC mapping cookie for a PCI BAR
-> + * @dev: PCI device that owns the BAR
-> + * @bar: BAR number
-> + * @maxlen: length of the memory to map
-> + *
-> + * Using this function you will get a __iomem address to your device BAR.
-> + * You can access it using ioread*() and iowrite*(). These functions hide
-> + * the details if this is a MMIO or PIO address space and will just do w=
-hat
-> + * you expect from them in the correct way. When possible write combining
-> + * is used.
-> + *
-> + * @maxlen specifies the maximum length to map. If you want to get acces=
-s to
-> + * the complete BAR without checking for its length first, pass %0 here.
-> + * */
-> +void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long m=
-axlen)
-> +{
-> +	return pci_iomap_wc_range(dev, bar, 0, maxlen);
-> +}
-> +EXPORT_SYMBOL_GPL(pci_iomap_wc);
->  #endif /* CONFIG_PCI */
-> --=20
-> 2.3.2.209.gd67f9d5.dirty
->=20
+> >  but where exactly
+> > video devices memory lie varies *largely* and at times things
+> > are mixed with MMIO registers, sometimes we can address
+> > the changes in drivers, other times the change requires
+> > intrusive changes.
+> 
+> What does a video device address have to do with this?  I do see that
+> if a BAR maps only a frame buffer, the device might be able to mark it
+> prefetchable, while if the BAR mapped both a frame buffer and some
+> registers, it might not be able to make it prefetchable.  But that
+> doesn't seem like it depends on the *address*.
+
+I meant the offsets for each of those, either registers or framebuffer,
+and that typically they are mixed (primarily on older devices), so indeed your
+summary of the problem is what I meant. Let's remember that we are trying to
+take advantage of PAT here when available and avoid MTRR in that case, do we
+know that the same PCI BARs that have always historically used MTRRs had
+IORESOURCE_PREFETCH set, is that a fair assumption ? I realize they are
+different things -- but its precisely why I ask.
+
+> pci_iomap_range() already makes a cacheable mapping if
+> IORESOURCE_CACHEABLE; I'm guessing that you would like it to
+> automatically use WC if the BAR if IORESOURCE_PREFETCH, e.g.,
+> 
+>   if (flags & IORESOURCE_CACHEABLE)
+>     return ioremap(start, len);
+>   if (flags & IORESOURCE_PREFETCH)
+>     return ioremap_wc(start, len);
+>   return ioremap_nocache(start, len);
+
+Indeed, that's exactly what I think we should strive towards.
+
+> Is there a reason not to do that?
+
+This depends on the exact defintion of IORESOURCE_PREFETCH and
+PCI_BASE_ADDRESS_MEM_PREFETCH and how they are used all over and
+accross *all devices*. This didn't look promising for starters:
+
+include/uapi/linux/pci_regs.h:#define  PCI_BASE_ADDRESS_MEM_PREFETCH    0x08    /* prefetchable? */
+
+PCI_BASE_ADDRESS_MEM_PREFETCH seems to be BAR specific, so a few questions:
+
+1) Can we rest assured for instance that if we check for
+PCI_BASE_ADDRESS_MEM_PREFETCH and if set that it will *only* be set on a full
+PCI BAR if the full PCI BAR does want WC? If not this can regress
+functionality. That seems risky. It however would not be risky if we used
+another API that did look for IORESOURCE_PREFETCH and if so use ioremap_wc() --
+that way only drivers we know that do use the full PCI bar would use this API.
+There's a bit of a problem with this though:
+
+2) Do we know that if a *full PCI BAR* is used for WC that
+PCI_BASE_ADDRESS_MEM_PREFETCH *was* definitely set for the PCI BAR? If so then
+the API usage would be restricted only to devices that we know *do* adhere to
+this. That reduces the possible uses for older drivers and can create
+regressions if used loosely without verification... but..
+
+3) If from now on we get folks to commit to uset PCI_BASE_ADDRESS_MEM_PREFETCH
+for full PCI BARs that do want WC perhaps newer devices / drivers will use
+this very consistently ? Can we bank on that and is it worth it ?
+
+4) If a PCI BAR *does not* have PCI_BASE_ADDRESS_MEM_PREFETCH do we know it
+must not never want WC ?
+
+If we don't have certainty on any of the above I'm afraid we can't do much
+right now but perhaps we can push towards better use of PCI_BASE_ADDRESS_MEM_PREFETCH
+and hope folks will only use this for the full PCI BAR only if WC is desired.
+
+Thoughts?
+
+> > Although there is also arch_phys_wc_add() that makes use of
+> > architecture specific write-combinging alternatives (MTRR on
+> > x86 when a system does not have PAT) we void polluting
+> > pci_iomap() space with it and force drivers and subsystems
+> > that want to use it to be explicit.
+> >
+> > There are a few motivations for this:
+> >
+> > a) Take advantage of PAT when available
+> >
+> > b) Help bury MTRR code away, MTRR is architecture specific and on
+> >    x86 its replaced by PAT
+> >
+> > c) Help with the goal of eventually using _PAGE_CACHE_UC over
+> >    _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
+> > ...
+> 
+> > +void __iomem *pci_iomap_wc_range(struct pci_dev *dev,
+> > +                                int bar,
+> > +                                unsigned long offset,
+> > +                                unsigned long maxlen)
+> > +{
+> > +       resource_size_t start = pci_resource_start(dev, bar);
+> > +       resource_size_t len = pci_resource_len(dev, bar);
+> > +       unsigned long flags = pci_resource_flags(dev, bar);
+> > +
+> > +       if (len <= offset || !start)
+> > +               return NULL;
+> > +       len -= offset;
+> > +       start += offset;
+> > +       if (maxlen && len > maxlen)
+> > +               len = maxlen;
+> > +       if (flags & IORESOURCE_IO)
+> > +               return __pci_ioport_map(dev, start, len);
+> > +       if (flags & IORESOURCE_MEM)
+> 
+> Should we log a note in dmesg if the BAR is *not* IORESOURCE_PREFETCH?
+>  I know the driver might know it's safe even if the device didn't mark
+> the BAR as prefetchable, but it does seem like an easy way for a
+> driver to shoot itself in the foot.
+
+You tell me. I would fear this may not be consistent and we'd end up
+having bug reports open for something that has historically been a
+non-issue. The above questions can help us gauge the risk of this.
+
+  Luis

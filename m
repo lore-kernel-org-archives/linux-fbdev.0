@@ -1,69 +1,93 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 22 Mar 2015 19:59:40 +0000
-Subject: [PATCH 1/5] [resend 2] gxt4500: enable on non-PPC architectures
-Message-Id: <1427054384-26501-1-git-send-email-linux@rainbow-software.org>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Thu, 26 Mar 2015 22:26:37 +0000
+Subject: [PATCH v2 09/12] staging: sm750: blank line after declaration
+Message-Id: <624153b59166fb9ee199d45a9ac5d57b56622592.1427406762.git.michel.von.czettritz@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-These chips can be present at least on x86 too - Fire GL2 AGP has GXT6000P but
-this driver is currently limited to PPC.
-Enable it for all architectures and add chip configuration for little-endian.
+This patch fixes "WARNING: Missing a blank line after declaration"
+checkpatch.pl warnings.
 
-Tested on x86 with Fire GL2 AGP.
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
 ---
- drivers/video/fbdev/Kconfig   |    5 +++--
- drivers/video/fbdev/gxt4500.c |    7 +++++++
- 2 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index b3dd417..1caa12c 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2132,7 +2132,7 @@ config FB_UDL
+v2: fix ident
+---
+ drivers/staging/sm750fb/sm750.c | 22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 6887926..c72d9d6 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -156,6 +156,7 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 	if (fbcursor->set & FB_CUR_SETCMAP) {
+ 		/* get the 16bit color of kernel means */
+ 		u16 fg, bg;
++
+ 		fg = ((info->cmap.red[fbcursor->image.fg_color] & 0xf800))|
+ 		      ((info->cmap.green[fbcursor->image.fg_color] & 0xfc00) >> 5)|
+ 		      ((info->cmap.blue[fbcursor->image.fg_color] & 0xf800) >> 11);
+@@ -269,7 +270,7 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
  
- config FB_IBM_GXT4500
- 	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
--	depends on FB && PPC
-+	depends on FB
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -2140,7 +2140,8 @@ config FB_IBM_GXT4500
- 	  Say Y here to enable support for the IBM GXT4000P/6000P and
- 	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
- 	  found on some IBM System P (pSeries) machines. This driver
--	  doesn't use Geometry Engine GT1000.
-+	  doesn't use Geometry Engine GT1000. This driver also supports
-+	  AGP Fire GL2/3/4 cards on x86.
+ 	if (image->depth = 1) {
+ 		if (info->fix.visual = FB_VISUAL_TRUECOLOR ||
+-				info->fix.visual = FB_VISUAL_DIRECTCOLOR) {
++		    info->fix.visual = FB_VISUAL_DIRECTCOLOR) {
+ 			fgcol = ((u32*)info->pseudo_palette)[image->fg_color];
+ 			bgcol = ((u32*)info->pseudo_palette)[image->bg_color];
+ 		} else {
+@@ -620,9 +621,12 @@ exit:
+ }
  
- config FB_PS3
- 	tristate "PS3 GPU framebuffer driver"
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 135d78a..1bf9894 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -670,8 +670,15 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  
- 	pci_set_drvdata(pdev, info);
+-static int lynxfb_ops_setcolreg(unsigned regno, unsigned red,
+-				unsigned green, unsigned blue,
+-				unsigned transp, struct fb_info *info)
++static int lynxfb_ops_setcolreg(unsigned regno,
++				unsigned red,
++				unsigned green,
++				unsigned blue,
++				unsigned transp,
++				struct fb_info *info)
+ {
+ 	struct lynxfb_par *par;
+ 	struct lynxfb_crtc *crtc;
+@@ -654,9 +658,10 @@ static int lynxfb_ops_setcolreg(unsigned regno, unsigned red,
  
-+#ifdef __BIG_ENDIAN
- 	/* Set byte-swapping for DFA aperture for all pixel sizes */
- 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
-+#else /* __LITTLE_ENDIAN */
-+	/* not sure what this means but fgl23 driver does that */
-+	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x2300);
-+/*	pci_write_config_dword(pdev, CFG_ENDIAN0 + 4, 0x400000);*/
-+	pci_write_config_dword(pdev, CFG_ENDIAN0 + 8, 0x98530000);
-+#endif
- 
- 	info->fbops = &gxt4500_ops;
- 	info->flags = FBINFO_FLAG_DEFAULT;
+ 	if (info->fix.visual = FB_VISUAL_TRUECOLOR && regno < 256) {
+ 		u32 val;
++
+ 		if (var->bits_per_pixel = 16 ||
+-		   var->bits_per_pixel = 32 ||
+-		   var->bits_per_pixel = 24) {
++		    var->bits_per_pixel = 32 ||
++		    var->bits_per_pixel = 24) {
+ 			val = chan_to_field(red, &var->red);
+ 			val |= chan_to_field(green, &var->green);
+ 			val |= chan_to_field(blue, &var->blue);
+@@ -1189,6 +1194,7 @@ ALLOC_FB:
+ 	} else {
+ 		struct lynxfb_par *par;
+ 		int errno;
++
+ 		pr_info("framebuffer #%d alloc okay\n", fbidx);
+ 		share->fbinfo[fbidx] = info[fbidx];
+ 		par = info[fbidx]->par;
+@@ -1208,8 +1214,8 @@ ALLOC_FB:
+ 		errno = register_framebuffer(info[fbidx]);
+ 		if (errno < 0) {
+ 			pr_err("Failed to register fb_info #%d. err %d\n",
+-				fbidx,
+-				errno);
++			       fbidx,
++			       errno);
+ 			if (fbidx = 0)
+ 				goto err_register0;
+ 			else
 -- 
-Ondrej Zary
+2.3.3
 

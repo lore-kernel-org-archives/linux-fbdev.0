@@ -1,56 +1,45 @@
-From: Harald Geyer <harald@ccbib.org>
-Date: Thu, 12 Mar 2015 13:43:17 +0000
-Subject: Re: [PATCHv2] framebuffer: don't link fb_devio into kernel image unconditionally
-Message-Id: <E1YW3OP-000183-PZ@stardust.g4.wien.funkfeuer.at>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Thu, 26 Mar 2015 22:27:09 +0000
+Subject: [PATCH v2 11/12] staging: sm750: fix whitspace for cast to pointer
+Message-Id: <e393a67898500ef8668228e98a2ad4e1f21c4ade.1427406762.git.michel.von.czettritz@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-CONFIG_FB_DEFERRED_IO is defined as bool while CONFIG_FB is defined as
-tristate. Currently fb_defio.o is linked into the kernel image even if
-CONFIG_FB=m.
+This patch fixes the checkpatch.pl warning:
+'ERROR: "(foo*)" should be "(foo *)"'
 
-I fix this by updating the Makefile to link fb_defio.o into fb.o and thus
-go into one place with the other core framebuffer code.
-
-Signed-off-by: Harald Geyer <harald@ccbib.org>
+Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
 ---
-changes since v1:
-remove MODULE_LICENSE("GPL"); line from fb_defio.c
+ drivers/staging/sm750fb/sm750.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
- drivers/video/fbdev/core/Makefile   |    2 +-
- drivers/video/fbdev/core/fb_defio.c |    2 --
- 2 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-index 67f28e2..23d86a8 100644
---- a/drivers/video/fbdev/core/Makefile
-+++ b/drivers/video/fbdev/core/Makefile
-@@ -3,6 +3,7 @@ obj-$(CONFIG_FB_CMDLINE)          += fb_cmdline.o
- obj-$(CONFIG_FB)                  += fb.o
- fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
-                                      modedb.o fbcvt.o
-+fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
- fb-objs                           := $(fb-y)
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index ff2b26b..d363f55 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -202,7 +202,7 @@ static void lynxfb_ops_fillrect(struct fb_info *info,
+ 	pitch = info->fix.line_length;
+ 	Bpp = info->var.bits_per_pixel >> 3;
  
- obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
-@@ -14,4 +15,3 @@ obj-$(CONFIG_FB_SYS_IMAGEBLIT) += sysimgblt.o
- obj-$(CONFIG_FB_SYS_FOPS)      += fb_sys_fops.o
- obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
- obj-$(CONFIG_FB_DDC)           += fb_ddc.o
--obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
-diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-index 900aa4e..2082c37 100644
---- a/drivers/video/fbdev/core/fb_defio.c
-+++ b/drivers/video/fbdev/core/fb_defio.c
-@@ -241,5 +241,3 @@ void fb_deferred_io_cleanup(struct fb_info *info)
- 	mutex_destroy(&fbdefio->lock);
- }
- EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
--
--MODULE_LICENSE("GPL");
+-	color = (Bpp = 1)?region->color:((u32*)info->pseudo_palette)[region->color];
++	color = (Bpp = 1)?region->color:((u32 *)info->pseudo_palette)[region->color];
+ 	rop = (region->rop != ROP_COPY) ? HW_ROP2_XOR:HW_ROP2_COPY;
+ 
+ 	/*
+@@ -271,8 +271,8 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 	if (image->depth = 1) {
+ 		if (info->fix.visual = FB_VISUAL_TRUECOLOR ||
+ 		    info->fix.visual = FB_VISUAL_DIRECTCOLOR) {
+-			fgcol = ((u32*)info->pseudo_palette)[image->fg_color];
+-			bgcol = ((u32*)info->pseudo_palette)[image->bg_color];
++			fgcol = ((u32 *)info->pseudo_palette)[image->fg_color];
++			bgcol = ((u32 *)info->pseudo_palette)[image->bg_color];
+ 		} else {
+ 			fgcol = image->fg_color;
+ 			bgcol = image->bg_color;
 -- 
-1.7.2.5
+2.3.3
 

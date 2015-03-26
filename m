@@ -1,558 +1,652 @@
-From: Davor Joja <davorjoja@logicbricks.com>
-Date: Wed, 11 Mar 2015 15:27:02 +0000
-Subject: [PATCH 01/10] fbdev: Xylon framebuffer driver
-Message-Id: <d2623c0f-69f0-4ca8-ae48-a1e0b13c2568@mail.xylon.local>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Thu, 26 Mar 2015 22:25:22 +0000
+Subject: [PATCH v2 04/12] staging: sm750: fix whitespace around braces
+Message-Id: <e9dfbb627e86bde96caf24f1429c99204edc335c.1427406762.git.michel.von.czettritz@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
-In-Reply-To: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, geert@linux-m68k.org
-Cc: Davor Joja <davorjoja@logicbricks.com>
+To: linux-fbdev@vger.kernel.org
 
-Driver registration and OF binding.
+Fix multiple similar checkpatch.pl errors:
 
-Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
+- "ERROR: space required before the open parenthesis '('"
+- "ERROR: space required before the open brace '{'"
+- "ERROR: space prohibited after that open parenthesis '('"
+- "ERROR: space prohibited before that close parenthesis ')'"
+
+Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
 ---
- drivers/video/fbdev/xylon/xylonfb_main.c | 528 +++++++++++++++++++++++++++++++
- 1 file changed, 528 insertions(+)
- create mode 100644 drivers/video/fbdev/xylon/xylonfb_main.c
+ drivers/staging/sm750fb/sm750.c | 194 ++++++++++++++++++++--------------------
+ 1 file changed, 97 insertions(+), 97 deletions(-)
 
-diff --git a/drivers/video/fbdev/xylon/xylonfb_main.c b/drivers/video/fbdev/xylon/xylonfb_main.c
-new file mode 100644
-index 0000000..3313da5
---- /dev/null
-+++ b/drivers/video/fbdev/xylon/xylonfb_main.c
-@@ -0,0 +1,528 @@
-+/*
-+ * Xylon logiCVC frame buffer Open Firmware driver
-+ *
-+ * Copyright (C) 2015 Xylon d.o.o.
-+ * Author: Davor Joja <davor.joja@logicbricks.com>
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
-+#include <linux/platform_device.h>
-+#include <video/of_display_timing.h>
-+#include <video/of_videomode.h>
-+#include <video/videomode.h>
-+
-+#include "xylonfb_core.h"
-+#include "logicvc.h"
-+
-+static void xylonfb_init_ctrl(struct device_node *dn, enum display_flags flags,
-+			      u32 *ctrl)
-+{
-+	u32 ctrl_reg = (LOGICVC_CTRL_HSYNC | LOGICVC_CTRL_VSYNC |
-+			LOGICVC_CTRL_DATA_ENABLE);
-+
-+	XYLONFB_DBG(INFO, "%s", __func__);
-+
-+	if (of_property_read_bool(dn, "hsync-active-low") ||
-+	    (flags & DISPLAY_FLAGS_HSYNC_LOW))
-+		ctrl_reg |= LOGICVC_CTRL_HSYNC_INVERT;
-+	if (of_property_read_bool(dn, "vsync-active-low") ||
-+	    (flags & DISPLAY_FLAGS_VSYNC_LOW))
-+		ctrl_reg |= LOGICVC_CTRL_VSYNC_INVERT;
-+	if (of_property_read_bool(dn, "data-enable-active-low") ||
-+	    (flags & DISPLAY_FLAGS_DE_LOW))
-+		ctrl_reg |= LOGICVC_CTRL_DATA_ENABLE_INVERT;
-+	if (of_property_read_bool(dn, "pixel-data-invert"))
-+		ctrl_reg |= LOGICVC_CTRL_PIXEL_DATA_INVERT;
-+	if (of_property_read_bool(dn, "pixel-data-output-trigger-high") ||
-+	    (flags & DISPLAY_FLAGS_PIXDATA_POSEDGE))
-+		ctrl_reg |= LOGICVC_CTRL_PIXEL_DATA_TRIGGER_INVERT;
-+
-+	*ctrl = ctrl_reg;
-+}
-+
-+static int xylonfb_layer_set_format(struct xylonfb_layer_fix_data *fd,
-+				    struct device *dev)
-+{
-+	XYLONFB_DBG(INFO, "%s", __func__);
-+
-+	switch (fd->type) {
-+	case LOGICVC_LAYER_ALPHA:
-+		fd->format = XYLONFB_FORMAT_A8;
-+		break;
-+
-+	case LOGICVC_LAYER_RGB:
-+		switch (fd->bpp) {
-+		case 8:
-+			switch (fd->transparency) {
-+			case LOGICVC_ALPHA_CLUT_16BPP:
-+				fd->format = XYLONFB_FORMAT_C8;
-+				fd->format_clut = XYLONFB_FORMAT_CLUT_ARGB6565;
-+				break;
-+			case LOGICVC_ALPHA_CLUT_32BPP:
-+				fd->format = XYLONFB_FORMAT_C8;
-+				fd->format_clut = XYLONFB_FORMAT_CLUT_ARGB8888;
-+				break;
-+			case LOGICVC_ALPHA_LAYER:
-+				fd->format = XYLONFB_FORMAT_RGB332;
-+				break;
-+			default:
-+				return -EINVAL;
-+			}
-+			break;
-+		case 16:
-+			if (fd->transparency != LOGICVC_ALPHA_LAYER)
-+				return -EINVAL;
-+
-+			fd->format = XYLONFB_FORMAT_RGB565;
-+			break;
-+		case 32:
-+			switch (fd->transparency) {
-+			case LOGICVC_ALPHA_LAYER:
-+				fd->format = XYLONFB_FORMAT_XRGB8888;
-+				break;
-+			case LOGICVC_ALPHA_PIXEL:
-+				fd->format = XYLONFB_FORMAT_ARGB8888;
-+				break;
-+			default:
-+				return -EINVAL;
-+			}
-+			break;
-+		}
-+		break;
-+
-+	case LOGICVC_LAYER_YUV:
-+		switch (fd->bpp) {
-+		case 8:
-+			if (fd->transparency != LOGICVC_ALPHA_CLUT_32BPP)
-+				return -EINVAL;
-+
-+			fd->format = XYLONFB_FORMAT_C8;
-+			fd->format_clut = XYLONFB_FORMAT_CLUT_AYUV8888;
-+			break;
-+		case 16:
-+			if (fd->transparency != LOGICVC_ALPHA_LAYER)
-+				return -EINVAL;
-+
-+			fd->format = XYLONFB_FORMAT_YUYV;
-+			break;
-+		case 32:
-+			if (fd->transparency != LOGICVC_ALPHA_PIXEL)
-+				return -EINVAL;
-+
-+			fd->format = XYLONFB_FORMAT_AYUV;
-+			break;
-+		}
-+		break;
-+
-+	default:
-+		dev_err(dev, "unsupported layer type\n");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int xylonfb_parse_layer_info(struct device_node *parent_dn,
-+				    struct xylonfb_data *data, int id)
-+{
-+	struct device *dev = &data->pdev->dev;
-+	struct device_node *dn;
-+	struct xylonfb_layer_fix_data *fd;
-+	int ret;
-+	char layer_name[10];
-+	const char *string;
-+
-+	XYLONFB_DBG(INFO, "%s", __func__);
-+
-+	snprintf(layer_name, sizeof(layer_name), "layer_%d", id);
-+	dn = of_get_child_by_name(parent_dn, layer_name);
-+	if (!dn)
-+		return 0;
-+
-+	data->layers++;
-+
-+	fd = devm_kzalloc(&data->pdev->dev,
-+			  sizeof(struct xylonfb_layer_fix_data), GFP_KERNEL);
-+	if (!fd) {
-+		dev_err(dev, "failed allocate layer fix data (%d)\n", id);
-+		return -ENOMEM;
-+	}
-+
-+	data->fd[id] = fd;
-+
-+	fd->id = id;
-+
-+	ret = of_property_read_u32(dn, "address", &fd->address);
-+	if (ret && (ret != -EINVAL)) {
-+		dev_err(dev, "failed get address\n");
-+		return ret;
-+	}
-+	ret = of_property_read_u32_index(dn, "address", 1, &fd->address_range);
-+
-+	ret = of_property_read_u32(dn, "buffer-offset", &fd->buffer_offset);
-+	if (ret && (ret != -EINVAL)) {
-+		dev_err(dev, "failed get buffer-offset\n");
-+		return ret;
-+	}
-+
-+	ret = of_property_read_u32(dn, "bits-per-pixel", &fd->bpp);
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index bc2986d..6d148a5 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -39,9 +39,9 @@ int smi_indent = 0;
+  * #endif
+  */
+ 
+-typedef void (*PROC_SPEC_SETUP)(struct lynx_share*,char *);
+-typedef int (*PROC_SPEC_MAP)(struct lynx_share*,struct pci_dev*);
+-typedef int (*PROC_SPEC_INITHW)(struct lynx_share*,struct pci_dev*);
++typedef void (*PROC_SPEC_SETUP)(struct lynx_share*, char *);
++typedef int (*PROC_SPEC_MAP)(struct lynx_share*, struct pci_dev*);
++typedef int (*PROC_SPEC_INITHW)(struct lynx_share*, struct pci_dev*);
+ 
+ 
+ /* common var for all device */
+@@ -123,23 +123,23 @@ static int lynxfb_ops_cursor(struct fb_info* info, struct fb_cursor* fbcursor)
+ 	crtc = &par->crtc;
+ 	cursor = &crtc->cursor;
+ 
+-	if(fbcursor->image.width > cursor->maxW ||
++	if (fbcursor->image.width > cursor->maxW ||
+ 	   fbcursor->image.height > cursor->maxH ||
+-	   fbcursor->image.depth > 1){
++	   fbcursor->image.depth > 1) {
+ 		return -ENXIO;
+ 	}
+ 
+ 	cursor->disable(cursor);
+-	if(fbcursor->set & FB_CUR_SETSIZE){
++	if (fbcursor->set & FB_CUR_SETSIZE) {
+ 		cursor->setSize(cursor, fbcursor->image.width, fbcursor->image.height);
+ 	}
+ 
+-	if(fbcursor->set & FB_CUR_SETPOS){
++	if (fbcursor->set & FB_CUR_SETPOS) {
+ 		cursor->setPos(cursor, fbcursor->image.dx - info->var.xoffset,
+ 			       fbcursor->image.dy - info->var.yoffset);
+ 	}
+ 
+-	if(fbcursor->set & FB_CUR_SETCMAP){
++	if (fbcursor->set & FB_CUR_SETCMAP) {
+ 		/* get the 16bit color of kernel means */
+ 		u16 fg, bg;
+ 		fg = ((info->cmap.red[fbcursor->image.fg_color] & 0xf800))|
+@@ -154,14 +154,14 @@ static int lynxfb_ops_cursor(struct fb_info* info, struct fb_cursor* fbcursor)
+ 	}
+ 
+ 
+-	if(fbcursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
++	if (fbcursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
+ 		cursor->setData(cursor,
+ 				fbcursor->rop,
+ 				fbcursor->image.data,
+ 				fbcursor->mask);
+ 	}
+ 
+-	if(fbcursor->enable){
++	if (fbcursor->enable) {
+ 		cursor->enable(cursor);
+ 	}
+ 
+@@ -175,7 +175,7 @@ static void lynxfb_ops_fillrect(struct fb_info* info, const struct fb_fillrect*
+ 	unsigned int base, pitch, Bpp, rop;
+ 	u32 color;
+ 
+-	if(info->state != FBINFO_STATE_RUNNING){
++	if (info->state != FBINFO_STATE_RUNNING) {
+ 		return;
+ 	}
+ 
+@@ -189,7 +189,7 @@ static void lynxfb_ops_fillrect(struct fb_info* info, const struct fb_fillrect*
+ 	Bpp = info->var.bits_per_pixel >> 3;
+ 
+ 	color = (Bpp = 1)?region->color:((u32*)info->pseudo_palette)[region->color];
+-	rop = ( region->rop != ROP_COPY ) ? HW_ROP2_XOR:HW_ROP2_COPY;
++	rop = (region->rop != ROP_COPY) ? HW_ROP2_XOR:HW_ROP2_COPY;
+ 
+ 	/*
+ 	 * If not use spin_lock,system will die if user load driver
+@@ -252,8 +252,8 @@ static void lynxfb_ops_imageblit(struct fb_info*info, const struct fb_image* ima
+ 	pitch = info->fix.line_length;
+ 	Bpp = info->var.bits_per_pixel >> 3;
+ 
+-	if(image->depth = 1){
+-		if(info->fix.visual = FB_VISUAL_TRUECOLOR ||
++	if (image->depth = 1) {
++		if (info->fix.visual = FB_VISUAL_TRUECOLOR ||
+ 				info->fix.visual = FB_VISUAL_DIRECTCOLOR) {
+ 			fgcol = ((u32*)info->pseudo_palette)[image->fg_color];
+ 			bgcol = ((u32*)info->pseudo_palette)[image->bg_color];
+@@ -290,7 +290,7 @@ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
+ 	int ret;
+ 
+ 
+-	if(!info)
++	if (!info)
+ 		return -EINVAL;
+ 
+ 	ret = 0;
+@@ -312,7 +312,7 @@ static int lynxfb_ops_set_par(struct fb_info * info)
+ 	int ret;
+ 	unsigned int line_length;
+ 
+-	if(!info)
++	if (!info)
+ 		return -EINVAL;
+ 
+ 	ret = 0;
+@@ -333,7 +333,7 @@ static int lynxfb_ops_set_par(struct fb_info * info)
+ 	 * and these data should be set before setcolreg routine
+ 	 * */
+ 
+-	switch(var->bits_per_pixel){
++	switch (var->bits_per_pixel) {
+ 	case 8:
+ 		fix->visual = FB_VISUAL_PSEUDOCOLOR;
+ 		var->red.offset = 0;
+@@ -373,12 +373,12 @@ static int lynxfb_ops_set_par(struct fb_info * info)
+ 	var->height = var->width = -1;
+ 	var->accel_flags = 0;/*FB_ACCELF_TEXT;*/
+ 
+-	if(ret){
 +	if (ret) {
-+		dev_err(dev, "failed get bits-per-pixel\n");
-+		return ret;
-+	}
-+	switch (fd->bpp) {
-+	case 8:
-+	case 16:
-+	case 32:
-+		break;
-+	default:
-+		dev_err(dev, "invalid bits-per-pixel value\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = of_property_read_string(dn, "type", &string);
-+	if (ret) {
-+		dev_err(dev, "failed get type\n");
-+		return ret;
-+	}
-+	if (!strcmp(string, "alpha")) {
-+		fd->type = LOGICVC_LAYER_ALPHA;
-+	} else if (!strcmp(string, "rgb")) {
-+		fd->type = LOGICVC_LAYER_RGB;
-+	} else if (!strcmp(string, "yuv")) {
-+		fd->type = LOGICVC_LAYER_YUV;
-+	} else {
-+		dev_err(dev, "unsupported layer type\n");
-+		return -EINVAL;
-+	}
-+
-+	if (fd->type != LOGICVC_LAYER_ALPHA) {
-+		ret = of_property_read_string(dn, "transparency", &string);
-+		if (ret) {
-+			dev_err(dev, "failed get transparency\n");
-+			return ret;
-+		}
-+		if (!strcmp(string, "clut16")) {
-+			fd->transparency = LOGICVC_ALPHA_CLUT_16BPP;
-+		} else if (!strcmp(string, "clut32")) {
-+			fd->transparency = LOGICVC_ALPHA_CLUT_32BPP;
-+		} else if (!strcmp(string, "layer")) {
-+			fd->transparency = LOGICVC_ALPHA_LAYER;
-+		} else if (!strcmp(string, "pixel")) {
-+			fd->transparency = LOGICVC_ALPHA_PIXEL;
+ 		pr_err("pixel bpp format not satisfied\n.");
+ 		return ret;
+ 	}
+ 	ret = crtc->proc_setMode(crtc, var, fix);
+-	if(!ret)
++	if (!ret)
+ 		ret = output->proc_setMode(output, var, fix);
+ 	return ret;
+ }
+@@ -460,21 +460,21 @@ static int lynxfb_resume(struct pci_dev* pdev)
+ 
+ 	console_lock();
+ 
+-	if((ret = pci_set_power_state(pdev, PCI_D0)) != 0){
++	if ((ret = pci_set_power_state(pdev, PCI_D0)) != 0) {
+ 		pr_err("error:%d occured in pci_set_power_state\n", ret);
+ 		return ret;
+ 	}
+ 
+ 
+-	if(pdev->dev.power.power_state.event != PM_EVENT_FREEZE){
++	if (pdev->dev.power.power_state.event != PM_EVENT_FREEZE) {
+ 		pci_restore_state(pdev);
+-		if ((ret = pci_enable_device(pdev)) != 0){
++		if ((ret = pci_enable_device(pdev)) != 0) {
+ 			pr_err("error:%d occured in pci_enable_device\n", ret);
+ 			return ret;
+ 		}
+ 		pci_set_master(pdev);
+ 	}
+-	if(share->resume)
++	if (share->resume)
+ 		(*share->resume)(share);
+ 
+ 	hw_sm750_inithw(share, pdev);
+@@ -482,7 +482,7 @@ static int lynxfb_resume(struct pci_dev* pdev)
+ 
+ 	info = share->fbinfo[0];
+ 
+-	if(info){
++	if (info) {
+ 		par = info->par;
+ 		crtc = &par->crtc;
+ 		cursor = &crtc->cursor;
+@@ -494,7 +494,7 @@ static int lynxfb_resume(struct pci_dev* pdev)
+ 
+ 	info = share->fbinfo[1];
+ 
+-	if(info){
++	if (info) {
+ 		par = info->par;
+ 		crtc = &par->crtc;
+ 		cursor = &crtc->cursor;
+@@ -532,7 +532,7 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo* var, struct fb_info* i
+ 		 var->bits_per_pixel);
+ 
+ 
+-	switch(var->bits_per_pixel){
++	switch (var->bits_per_pixel) {
+ 	case 8:
+ 	case 16:
+ 	case 24: /* support 24 bpp for only lynx712/722/720 */
+@@ -544,7 +544,7 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo* var, struct fb_info* i
+ 		goto exit;
+ 	}
+ 
+-	switch(var->bits_per_pixel){
++	switch (var->bits_per_pixel) {
+ 	case 8:
+ 		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+ 		var->red.offset = 0;
+@@ -590,13 +590,13 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo* var, struct fb_info* i
+ 
+ 	request = PADDING(crtc->line_pad, request);
+ 	request = request * var->yres_virtual;
+-	if(crtc->vidmem_size < request){
++	if (crtc->vidmem_size < request) {
+ 		pr_err("not enough video memory for mode\n");
+ 		return -ENOMEM;
+ 	}
+ 
+ 	ret = output->proc_checkMode(output, var);
+-	if(!ret)
++	if (!ret)
+ 		ret = crtc->proc_checkMode(crtc, var);
+ exit:
+ 	return ret;
+@@ -618,15 +618,15 @@ static int lynxfb_ops_setcolreg(unsigned regno, unsigned red,
+ 	ret = 0;
+ 
+ 	//pr_debug("regno=%d,red=%d,green=%d,blue=%d\n",regno,red,green,blue);
+-	if(regno > 256){
++	if (regno > 256) {
+ 		pr_err("regno = %d\n", regno);
+ 		return -EINVAL;
+ 	}
+ 
+-	if(info->var.grayscale)
++	if (info->var.grayscale)
+ 		red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
+ 
+-	if(var->bits_per_pixel = 8 && info->fix.visual = FB_VISUAL_PSEUDOCOLOR) {
++	if (var->bits_per_pixel = 8 && info->fix.visual = FB_VISUAL_PSEUDOCOLOR) {
+ 		red >>= 8;
+ 		green >>= 8;
+ 		blue >>= 8;
+@@ -635,9 +635,9 @@ static int lynxfb_ops_setcolreg(unsigned regno, unsigned red,
+ 	}
+ 
+ 
+-	if(info->fix.visual = FB_VISUAL_TRUECOLOR && regno < 256 ) {
++	if (info->fix.visual = FB_VISUAL_TRUECOLOR && regno < 256) {
+ 		u32 val;
+-		if(var->bits_per_pixel = 16 ||
++		if (var->bits_per_pixel = 16 ||
+ 		   var->bits_per_pixel = 32 ||
+ 		   var->bits_per_pixel = 24) {
+ 			val = chan_to_field(red, &var->red);
+@@ -717,12 +717,12 @@ static int sm750fb_set_drv(struct lynxfb_par * par)
+ 		crtc->vScreen = share->pvMem;
+ 		break;
+ 	case sm750_dual_normal:
+-		if(par->index = 0){
++		if (par->index = 0) {
+ 			output->paths = sm750_panel;
+ 			crtc->channel = sm750_primary;
+ 			crtc->oScreen = 0;
+ 			crtc->vScreen = share->pvMem;
+-		}else{
 +		} else {
-+			dev_err(dev, "unsupported layer transparency\n");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (of_property_read_bool(dn, "component-swap"))
-+		fd->component_swap = true;
-+
-+	fd->width = data->pixel_stride;
-+
-+	ret = xylonfb_layer_set_format(fd, dev);
-+	if (ret) {
-+		dev_err(dev, "failed set layer format\n");
-+		return ret;
-+	}
-+
-+	of_node_put(dn);
-+
-+	return id + 1;
-+}
-+
-+static int xylon_parse_hw_info(struct device_node *dn,
-+			       struct xylonfb_data *data)
-+{
-+	struct device *dev = &data->pdev->dev;
-+	int ret;
-+	const char *string;
-+
-+	XYLONFB_DBG(INFO, "%s", __func__);
-+
-+	ret = of_property_read_u32(dn, "background-layer-bits-per-pixel",
-+				   &data->bg_layer_bpp);
-+	if (ret && (ret != -EINVAL)) {
-+		dev_err(dev, "failed get bg-layer-bits-per-pixel\n");
-+		return ret;
-+	} else if (ret = 0) {
-+		data->flags |= XYLONFB_FLAGS_BACKGROUND_LAYER;
-+
-+		ret = of_property_read_string(dn, "background-layer-type",
-+					      &string);
-+		if (ret) {
-+			dev_err(dev, "failed get bg-layer-type\n");
-+			return ret;
-+		}
-+		if (!strcmp(string, "rgb")) {
-+			data->flags |= XYLONFB_FLAGS_BACKGROUND_LAYER_RGB;
-+		} else if (!strcmp(string, "yuv")) {
-+			data->flags |= XYLONFB_FLAGS_BACKGROUND_LAYER_YUV;
+ 			output->paths = sm750_crt;
+ 			crtc->channel = sm750_secondary;
+ 			/* not consider of padding stuffs for oScreen,need fix*/
+@@ -731,12 +731,12 @@ static int sm750fb_set_drv(struct lynxfb_par * par)
+ 		}
+ 		break;
+ 	case sm750_dual_swap:
+-		if(par->index = 0){
++		if (par->index = 0) {
+ 			output->paths = sm750_panel;
+ 			crtc->channel = sm750_secondary;
+ 			crtc->oScreen = 0;
+ 			crtc->vScreen = share->pvMem;
+-		}else{
 +		} else {
-+			dev_err(dev, "unsupported bg layer type\n");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (of_property_read_bool(dn, "display-interface-itu656"))
-+		data->flags |= XYLONFB_FLAGS_DISPLAY_INTERFACE_ITU656;
-+
-+	if (of_property_read_bool(dn, "readable-regs"))
-+		data->flags |= XYLONFB_FLAGS_READABLE_REGS;
-+	else
-+		dev_warn(dev, "logicvc registers not readable\n");
-+
-+	if (of_property_read_bool(dn, "size-position"))
-+		data->flags |= XYLONFB_FLAGS_SIZE_POSITION;
-+	else
-+		dev_warn(dev, "logicvc size-position disabled\n");
-+
-+	ret = of_property_read_u32(dn, "pixel-stride", &data->pixel_stride);
-+	if (ret) {
-+		dev_err(dev, "failed get pixel-stride\n");
-+		return ret;
-+	}
-+
-+	ret = of_property_read_u32(dn, "power-delay", &data->pwr_delay);
-+	if (ret && (ret != -EINVAL)) {
-+		dev_err(dev, "failed get power-delay\n");
-+		return ret;
-+	}
-+
-+	ret = of_property_read_u32(dn, "signal-delay", &data->sig_delay);
-+	if (ret && (ret != -EINVAL)) {
-+		dev_err(dev, "failed get signal\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id logicvc_of_match[] = {
-+	{ .compatible = "xylon,logicvc-3.00.a" },
-+	{ .compatible = "xylon,logicvc-4.00.a" },
-+	{/* end of table */}
-+};
-+
-+static int xylonfb_get_logicvc_configuration(struct xylonfb_data *data)
-+{
-+	struct device *dev = &data->pdev->dev;
-+	struct device_node *dn = data->device;
-+	const struct of_device_id *match;
-+	struct videomode vm;
-+	int i, ret;
-+
-+	XYLONFB_DBG(INFO, "%s", __func__);
-+
-+	match = of_match_node(logicvc_of_match, dn);
-+	if (!match) {
-+		dev_err(dev, "failed match logicvc\n");
-+		return -ENODEV;
-+	}
-+
-+	ret = of_address_to_resource(dn, 0, &data->resource_mem);
-+	if (ret) {
-+		dev_err(dev, "failed get mem resource\n");
-+		return ret;
-+	}
-+	data->irq = of_irq_to_resource(dn, 0, &data->resource_irq);
-+	if (data->irq = 0) {
-+		dev_err(dev, "failed get irq resource\n");
-+		return ret;
-+	}
-+
-+	ret = xylon_parse_hw_info(dn, data);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < LOGICVC_MAX_LAYERS; i++) {
-+		ret = xylonfb_parse_layer_info(dn, data, i);
-+		if (ret < 0)
-+			return ret;
-+		if (ret = 0)
-+			break;
-+	}
-+
-+	if (data->flags & XYLONFB_FLAGS_BACKGROUND_LAYER &&
-+	    data->layers = LOGICVC_MAX_LAYERS) {
-+		data->flags &= ~XYLONFB_FLAGS_BACKGROUND_LAYER;
-+		data->layers--;
-+		if (data->console_layer = data->layers)
-+			data->console_layer--;
-+
-+		dev_warn(dev, "invalid last layer configuration\n");
-+	}
-+
-+	memset(&vm, 0, sizeof(vm));
-+
-+	if (data->vm.name[0] = 0) {
-+		ret = of_get_videomode(dn, &vm, OF_USE_NATIVE_MODE);
-+		if (!ret) {
-+			fb_videomode_from_videomode(&vm, &data->vm.vmode);
-+
-+			sprintf(data->vm.name, "%dx%d",
-+				data->vm.vmode.xres, data->vm.vmode.yres);
-+
-+			data->flags |= XYLONFB_FLAGS_VMODE_CUSTOM;
-+		}
-+	}
-+
-+	xylonfb_init_ctrl(dn, vm.flags, &data->vm.ctrl);
-+
-+	return 0;
-+}
-+
-+static int xylonfb_get_driver_configuration(struct xylonfb_data *data)
-+{
-+	struct device *dev = &data->pdev->dev;
-+	struct device_node *dn = data->pdev->dev.of_node;
-+	int ret;
-+	const char *string;
-+
-+	XYLONFB_DBG(INFO, "%s", __func__);
-+
-+	data->device = of_parse_phandle(dn, "device", 0);
-+	if (!data->device) {
-+		dev_err(dev, "failed get device\n");
-+		return -ENODEV;
-+	}
-+
-+	data->pixel_clock = of_parse_phandle(dn, "clocks", 0);
-+
-+	ret = of_property_read_u32(dn, "console-layer", &data->console_layer);
-+	if (ret && (ret != -EINVAL)) {
-+			dev_err(dev, "failed get console-layer\n");
-+			return ret;
+ 			output->paths = sm750_crt;
+ 			crtc->channel = sm750_primary;
+ 			/* not consider of padding stuffs for oScreen,need fix*/
+@@ -826,14 +826,14 @@ static int lynxfb_set_fbinfo(struct fb_info* info, int index)
+ 
+ 	crtc->cursor.share = share;
+ 		memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
+-	if(!g_hwcursor){
++	if (!g_hwcursor) {
+ 		lynxfb_ops.fb_cursor = NULL;
+ 		crtc->cursor.disable(&crtc->cursor);
+ 	}
+ 
+ 
+ 	/* set info->fbops, must be set before fb_find_mode */
+-	if(!share->accel_off){
++	if (!share->accel_off) {
+ 		/* use 2d acceleration */
+ 		lynxfb_ops.fb_fillrect = lynxfb_ops_fillrect;
+ 		lynxfb_ops.fb_copyarea = lynxfb_ops_copyarea;
+@@ -841,34 +841,34 @@ static int lynxfb_set_fbinfo(struct fb_info* info, int index)
+ 	}
+ 	info->fbops = &lynxfb_ops;
+ 
+-	if(!g_fbmode[index]){
++	if (!g_fbmode[index]) {
+ 		g_fbmode[index] = g_def_fbmode;
+-		if(index)
++		if (index)
+ 			g_fbmode[index] = g_fbmode[0];
+ 	}
+ 
+ 
+-	for(i=0;i<3;i++){
++	for (i=0;i<3;i++) {
+ 
+ 		ret = fb_find_mode(var, info, g_fbmode[index],
+ 				   pdb[i], cdb[i], NULL, 8);
+ 
+-		if(ret = 1){
++		if (ret = 1) {
+ 			pr_info("success! use specified mode:%s in %s\n",
+ 				g_fbmode[index],
+ 				mdb_desc[i]);
+ 			break;
+-		}else if(ret = 2){
++		} else if (ret = 2) {
+ 			pr_warn("use specified mode:%s in %s,with an ignored refresh rate\n",
+ 				g_fbmode[index],
+ 				mdb_desc[i]);
+ 			break;
+-		}else if(ret = 3){
++		} else if (ret = 3) {
+ 			pr_warn("wanna use default mode\n");
+ 			//			break;
+-		}else if(ret = 4){
++		} else if (ret = 4) {
+ 			pr_warn("fall back to any valid mode\n");
+-		}else{
++		} else {
+ 			pr_warn("ret = %d,fb_find_mode failed,with %s\n", ret, mdb_desc[i]);
+ 		}
+ 	}
+@@ -926,7 +926,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info, int index)
+ 	pr_info("fix->mmio_start = %lx\n", fix->mmio_start);
+ 	fix->mmio_len = share->vidreg_size;
+ 	pr_info("fix->mmio_len = %x\n", fix->mmio_len);
+-	switch(var->bits_per_pixel) {
++	switch (var->bits_per_pixel) {
+ 	case 8:
+ 		fix->visual = FB_VISUAL_PSEUDOCOLOR;
+ 		break;
+@@ -946,7 +946,7 @@ static int lynxfb_set_fbinfo(struct fb_info* info, int index)
+ 		 info->cmap.red, info->cmap.green, info->cmap.blue,
+ 		 info->cmap.transp);
+ 
+-	if((ret = fb_alloc_cmap(&info->cmap, 256, 0)) < 0){
++	if ((ret = fb_alloc_cmap(&info->cmap, 256, 0)) < 0) {
+ 		pr_err("Could not allcate memory for cmap.\n");
+ 		goto exit;
+ 	}
+@@ -989,68 +989,68 @@ static void sm750fb_setup(struct lynx_share * share, char * src)
+ 	/*defaultly turn g_hwcursor on for both view */
+ 	g_hwcursor = 3;
+ 
+-	if(!src || !*src){
++	if (!src || !*src) {
+ 		pr_warn("no specific g_option.\n");
+ 		goto NO_PARAM;
+ 	}
+ 
+-	while((opt = strsep(&src, ":")) != NULL && *opt != 0){
++	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
+ 		pr_err("opt=%s\n", opt);
+ 		pr_err("src=%s\n", src);
+ 
+-		if(!strncmp(opt, "swap", strlen("swap")))
++		if (!strncmp(opt, "swap", strlen("swap")))
+ 			swap = 1;
+-		else if(!strncmp(opt, "nocrt", strlen("nocrt")))
++		else if (!strncmp(opt, "nocrt", strlen("nocrt")))
+ 			spec_share->state.nocrt = 1;
+-		else if(!strncmp(opt, "36bit", strlen("36bit")))
++		else if (!strncmp(opt, "36bit", strlen("36bit")))
+ 			spec_share->state.pnltype = sm750_doubleTFT;
+-		else if(!strncmp(opt, "18bit", strlen("18bit")))
++		else if (!strncmp(opt, "18bit", strlen("18bit")))
+ 			spec_share->state.pnltype = sm750_dualTFT;
+-		else if(!strncmp(opt, "24bit", strlen("24bit")))
++		else if (!strncmp(opt, "24bit", strlen("24bit")))
+ 			spec_share->state.pnltype = sm750_24TFT;
+ #ifdef CAP_EXPANSION
+-		else if(!strncmp(opt, "exp:", strlen("exp:")))
++		else if (!strncmp(opt, "exp:", strlen("exp:")))
+ 			exp_res = opt + strlen("exp:");
+ #endif
+-		else if(!strncmp(opt, "nohwc0", strlen("nohwc0")))
++		else if (!strncmp(opt, "nohwc0", strlen("nohwc0")))
+ 			g_hwcursor &= ~0x1;
+-		else if(!strncmp(opt, "nohwc1", strlen("nohwc1")))
++		else if (!strncmp(opt, "nohwc1", strlen("nohwc1")))
+ 			g_hwcursor &= ~0x2;
+-		else if(!strncmp(opt, "nohwc", strlen("nohwc")))
++		else if (!strncmp(opt, "nohwc", strlen("nohwc")))
+ 			g_hwcursor = 0;
+ 		else {
+-			if(!g_fbmode[0]){
++			if (!g_fbmode[0]) {
+ 				g_fbmode[0] = opt;
+ 				pr_info("find fbmode0 : %s\n", g_fbmode[0]);
+-			}else if(!g_fbmode[1]){
++			} else if (!g_fbmode[1]) {
+ 				g_fbmode[1] = opt;
+ 				pr_info("find fbmode1 : %s\n", g_fbmode[1]);
+-			}else{
++			} else {
+ 				pr_warn("How many view you wann set?\n");
+ 			}
+ 		}
+ 	}
+ #ifdef CAP_EXPANSION
+-	if(getExpRes(exp_res, &spec_share->state.xLCD, &spec_share->state.yLCD)) {
++	if (getExpRes(exp_res, &spec_share->state.xLCD, &spec_share->state.yLCD)) {
+ 		/* seems exp_res is not valid*/
+ 		spec_share->state.xLCD = spec_share->state.yLCD = 0;
+ 	}
+ #endif
+ 
+ NO_PARAM:
+-	if(share->revid != SM750LE_REVISION_ID){
+-		if(share->dual) {
+-			if(swap)
++	if (share->revid != SM750LE_REVISION_ID) {
++		if (share->dual) {
++			if (swap)
+ 				spec_share->state.dataflow = sm750_dual_swap;
+ 			else
+ 				spec_share->state.dataflow = sm750_dual_normal;
+-		}else{
+-			if(swap)
++		} else {
++			if (swap)
+ 				spec_share->state.dataflow = sm750_simul_sec;
+ 			else
+ 				spec_share->state.dataflow = sm750_simul_pri;
+ 		}
+-	}else{
 +	} else {
-+		data->flags |= XYLONFB_FLAGS_CHECK_CONSOLE_LAYER;
-+	}
-+
-+	if (of_property_read_bool(dn, "vsync-irq"))
-+		data->flags |= XYLONFB_FLAGS_VSYNC_IRQ;
-+
-+	ret = of_property_read_string(dn, "video-mode", &string);
-+	if (ret && (ret != -EINVAL)) {
-+		dev_err(dev, "failed get video-mode\n");
-+		return ret;
-+	} else if (ret = 0) {
-+		strcpy(data->vm.name, string);
-+		return 0;
-+	}
-+
-+	return 0;
-+}
-+
-+static int xylonfb_probe(struct platform_device *pdev)
-+{
-+	struct xylonfb_data *data;
-+	int ret;
-+
-+	XYLONFB_DBG(INFO, "%s", __func__);
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(struct xylonfb_data),
-+			     GFP_KERNEL);
-+	if (!data) {
-+		dev_err(&pdev->dev, "failed allocate init data\n");
-+		return -ENOMEM;
-+	}
-+
-+	data->pdev = pdev;
-+
-+	ret = xylonfb_get_driver_configuration(data);
-+	if (ret)
-+		goto xylonfb_probe_error;
-+
-+	ret = xylonfb_get_logicvc_configuration(data);
-+	if (ret)
-+		goto xylonfb_probe_error;
-+
-+	ret = xylonfb_init_core(data);
-+
-+xylonfb_probe_error:
-+	return ret;
-+}
-+
-+static int xylonfb_remove(struct platform_device *pdev)
-+{
-+	XYLONFB_DBG(INFO, "%s", __func__);
-+
-+	return xylonfb_deinit_core(pdev);
-+}
-+
-+static const struct of_device_id xylonfb_of_match[] = {
-+	{ .compatible = "xylon,fb-3.00.a" },
-+	{/* end of table */},
-+};
-+MODULE_DEVICE_TABLE(of, xylonfb_of_match);
-+
-+static struct platform_driver xylonfb_driver = {
-+	.probe = xylonfb_probe,
-+	.remove = xylonfb_remove,
-+	.driver = {
-+		.owner = THIS_MODULE,
-+		.name = XYLONFB_DEVICE_NAME,
-+		.of_match_table = xylonfb_of_match,
-+	},
-+};
-+
-+static int xylonfb_get_params(char *options)
-+{
-+	char *this_opt;
-+
-+	XYLONFB_DBG(INFO, "%s", __func__);
-+
-+	if (!options || !*options)
-+		return 0;
-+
-+	while ((this_opt = strsep(&options, ",")) != NULL) {
-+		if (!*this_opt)
-+			continue;
-+		xylonfb_mode_option = this_opt;
-+	}
-+	return 0;
-+}
-+
-+static int xylonfb_init(void)
-+{
-+	char *option = NULL;
-+	/*
-+	 *  Kernel boot options (in 'video=xxxfb:<options>' format)
-+	 */
-+	if (fb_get_options(XYLONFB_DRIVER_NAME, &option))
-+		return -ENODEV;
-+	/* Set internal module parameters */
-+	xylonfb_get_params(option);
-+
-+	if (platform_driver_register(&xylonfb_driver)) {
-+		pr_err("failed %s driver registration\n", XYLONFB_DRIVER_NAME);
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
-+static void __exit xylonfb_exit(void)
-+{
-+	platform_driver_unregister(&xylonfb_driver);
-+}
-+
-+module_init(xylonfb_init);
-+module_exit(xylonfb_exit);
-+
-+MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION(XYLONFB_DRIVER_DESCRIPTION);
-+MODULE_VERSION(XYLONFB_DRIVER_VERSION);
+ 		/* SM750LE only have one crt channel */
+ 		spec_share->state.dataflow = sm750_simul_sec;
+ 		/* sm750le do not have complex attributes*/
+@@ -1070,7 +1070,7 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
+ 
+ 
+ 	/* enable device */
+-	if(pci_enable_device(pdev)){
++	if (pci_enable_device(pdev)) {
+ 		pr_err("can not enable device.\n");
+ 		goto err_enable;
+ 	}
+@@ -1080,13 +1080,13 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
+ 	spec_offset = offsetof(struct sm750_share, share);
+ 
+ 	spec_share = kzalloc(sizeof(*spec_share), GFP_KERNEL);
+-	if(!spec_share){
++	if (!spec_share) {
+ 		pr_err("Could not allocate memory for share.\n");
+ 		goto err_share;
+ 	}
+ 
+ 	/* setting share structure */
+-	share = (struct lynx_share * )(&(spec_share->share));
++	share = (struct lynx_share *)(&(spec_share->share));
+ 	share->fbinfo[0] = share->fbinfo[1] = NULL;
+ 	share->devid = pdev->device;
+ 	share->revid = pdev->revision;
+@@ -1102,7 +1102,7 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
+ 	share->dual = g_dualview;
+ 	spin_lock_init(&share->slock);
+ 
+-	if(!share->accel_off){
++	if (!share->accel_off) {
+ 		/* hook deInit and 2d routines, notes that below hw_xxx
+ 		 * routine can work on most of lynx chips
+ 		 * if some chip need specific function,please hook it in smXXX_set_drv
+@@ -1112,7 +1112,7 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
+ 		share->accel.de_copyarea = hw_copyarea;
+ 		share->accel.de_imageblit = hw_imageblit;
+ 		pr_info("enable 2d acceleration\n");
+-	}else{
++	} else {
+ 		pr_info("disable 2d acceleration\n");
+ 	}
+ 
+@@ -1120,22 +1120,22 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
+ 	sm750fb_setup(share, g_settings);
+ 
+ 	/* call chip specific mmap routine */
+-	if(hw_sm750_map(share, pdev)){
++	if (hw_sm750_map(share, pdev)) {
+ 		pr_err("Memory map failed\n");
+ 		goto err_map;
+ 	}
+ 
+ #ifdef CONFIG_MTRR
+-	if(!share->mtrr_off){
++	if (!share->mtrr_off) {
+ 		pr_info("enable mtrr\n");
+ 		share->mtrr.vram = mtrr_add(share->vidmem_start,
+ 					    share->vidmem_size,
+ 					    MTRR_TYPE_WRCOMB, 1);
+ 
+-		if(share->mtrr.vram < 0){
++		if (share->mtrr.vram < 0) {
+ 			/* don't block driver with the failure of MTRR */
+ 			pr_err("Unable to setup MTRR.\n");
+-		}else{
++		} else {
+ 			share->mtrr.vram_added = 1;
+ 			pr_info("MTRR added succesfully\n");
+ 		}
+@@ -1155,9 +1155,9 @@ static int lynxfb_pci_probe(struct pci_dev * pdev,
+ 	fbidx = 0;
+ ALLOC_FB:
+ 	info[fbidx] = framebuffer_alloc(sizeof(struct lynxfb_par), &pdev->dev);
+-	if(!info[fbidx]) {
++	if (!info[fbidx]) {
+ 		pr_err("Could not allocate framebuffer #%d.\n", fbidx);
+-		if(fbidx = 0)
++		if (fbidx = 0)
+ 			goto err_info0_alloc;
+ 		else
+ 			goto err_info1_alloc;
+@@ -1170,9 +1170,9 @@ ALLOC_FB:
+ 		par->share = share;
+ 
+ 		/* set fb_info structure */
+-		if(lynxfb_set_fbinfo(info[fbidx], fbidx)){
++		if (lynxfb_set_fbinfo(info[fbidx], fbidx)) {
+ 			pr_err("Failed to initial fb_info #%d.\n", fbidx);
+-			if(fbidx = 0)
++			if (fbidx = 0)
+ 				goto err_info0_set;
+ 			else
+ 				goto err_info1_set;
+@@ -1183,7 +1183,7 @@ ALLOC_FB:
+ 		errno = register_framebuffer(info[fbidx]);
+ 		if (errno < 0) {
+ 			pr_err("Failed to register fb_info #%d. err %d\n", fbidx, errno);
+-			if(fbidx = 0)
++			if (fbidx = 0)
+ 				goto err_register0;
+ 			else
+ 				goto err_register1;
+@@ -1193,7 +1193,7 @@ ALLOC_FB:
+ 
+ 	/* no dual view by far */
+ 	fbidx++;
+-	if(share->dual && fbidx < 2)
++	if (share->dual && fbidx < 2)
+ 		goto ALLOC_FB;
+ 
+ 	return 0;
+@@ -1225,9 +1225,9 @@ static void __exit lynxfb_pci_remove(struct pci_dev * pdev)
+ 	cnt = 2;
+ 	share = pci_get_drvdata(pdev);
+ 
+-	while(cnt-- > 0){
++	while (cnt-- > 0) {
+ 		info = share->fbinfo[cnt];
+-		if(!info)
++		if (!info)
+ 			continue;
+ 		par = info->par;
+ 
+@@ -1239,7 +1239,7 @@ static void __exit lynxfb_pci_remove(struct pci_dev * pdev)
+ 		framebuffer_release(info);
+ 	}
+ #ifdef CONFIG_MTRR
+-	if(share->mtrr.vram_added)
++	if (share->mtrr.vram_added)
+ 		mtrr_del(share->mtrr.vram, share->vidmem_start, share->vidmem_size);
+ #endif
+ 	//	pci_release_regions(pdev);
+@@ -1258,7 +1258,7 @@ static int __init lynxfb_setup(char * options)
+ 	char * opt,*tmp;
+ 
+ 
+-	if(!options || !*options){
++	if (!options || !*options) {
+ 		pr_warn("no options.\n");
+ 		return 0;
+ 	}
+@@ -1267,7 +1267,7 @@ static int __init lynxfb_setup(char * options)
+ 
+ 	len = strlen(options) + 1;
+ 	g_settings = kzalloc(len, GFP_KERNEL);
+-	if(!g_settings)
++	if (!g_settings)
+ 		return -ENOMEM;
+ 
+ 	tmp = g_settings;
+@@ -1280,20 +1280,20 @@ static int __init lynxfb_setup(char * options)
+ 		strsep() updates @options to pointer after the first found token
+ 		it also returns the pointer ahead the token.
+ 		*/
+-	while((opt = strsep(&options, ":"))!=NULL) {
++	while ((opt = strsep(&options, ":"))!=NULL) {
+ 		/* options that mean for any lynx chips are configured here */
+-		if(!strncmp(opt, "noaccel", strlen("noaccel")))
++		if (!strncmp(opt, "noaccel", strlen("noaccel")))
+ 			g_noaccel = 1;
+ #ifdef CONFIG_MTRR
+-		else if(!strncmp(opt, "nomtrr", strlen("nomtrr")))
++		else if (!strncmp(opt, "nomtrr", strlen("nomtrr")))
+ 			g_nomtrr = 1;
+ #endif
+-		else if(!strncmp(opt, "dual", strlen("dual")))
++		else if (!strncmp(opt, "dual", strlen("dual")))
+ 			g_dualview = 1;
+ 		else {
+ 			strcat(tmp, opt);
+ 			tmp += strlen(opt);
+-			if(options != NULL)
++			if (options != NULL)
+ 				*tmp++ = ':';
+ 			else
+ 				*tmp++ = 0;
+@@ -1332,7 +1332,7 @@ static int __init lynxfb_init(void)
+ #ifdef MODULE
+ 	option = g_option;
+ #else
+-	if(fb_get_options("sm750fb", &option))
++	if (fb_get_options("sm750fb", &option))
+ 		return -ENODEV;
+ #endif
+ 
 -- 
-1.9.1
+2.3.3
 

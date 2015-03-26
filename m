@@ -1,37 +1,79 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 13 Mar 2015 10:12:51 +0000
-Subject: Re: related to frame buffer rotation to 180 degree
-Message-Id: <CAMuHMdX99CNGOufLmJTEbENRGq=tj0+5rBo823V=oyVvMKNHgA@mail.gmail.com>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Thu, 26 Mar 2015 13:54:39 +0000
+Subject: [PATCH v2 1/3] vt: add cursor blink interval escape sequence
+Message-Id: <alpine.DEB.2.11.1503261352200.2411@local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5502A2A9.4080204@deltaembedded.in>
-In-Reply-To: <5502A2A9.4080204@deltaembedded.in>
+References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain> <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain> <20150225094946.GA24627@amd> <alpine.LNX.2.11.1502252319330.276@localhost> <20150226220243.GC9935@amd> <alpine.LNX.2.11.1502271905580.4212@localhost>
+ <alpine.LNX.2.11.1502271911380.4248@localhost> <20150325111949.GA24230@kroah.com> <alpine.DEB.2.11.1503261341260.2164@local>
+In-Reply-To: <alpine.DEB.2.11.1503261341260.2164@local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Fri, Mar 13, 2015 at 9:41 AM, Jaymin Dabhi
-<jaymin.dabhi@deltaembedded.in> wrote:
-> I using i/MX6Q processor with Linux Kernel 3.0.35 version with 3.5 inch RGB
-> type ORTUSTECH LCD display.
->
-> I want to rotate my LCD screen to 180 degree from current position.
-> I tried out to pass digits by use of echo to fb0 and fbcon in
-> /sys/class/graphics/fb0 and fbcon but still nothing happen, I can do mirror
-> my display but not rotate.
+Add an escape sequence to specify the current console's cursor blink
+interval. The interval is specified as a number of milliseconds until
+the next cursor display state toggle, from 50 to 65535. /proc/loadavg
+did not show a difference with a one msec interval, but the lower
+bound is set to 50 msecs since slower hardware wasn't tested.
 
-You do have FRAMEBUFFER_CONSOLE_ROTATION=y in your .config?
+Store the interval in the vc_data structure for later access by fbcon,
+initializing the value to fbcon's current hardcoded value of 200 msecs.
 
-Note that rotation is only done for text console output.
-Graphical applications have to take care of rotation theirselves.
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+ drivers/tty/vt/vt.c            | 9 +++++++++
+ include/linux/console_struct.h | 1 +
+ 2 files changed, 10 insertions(+)
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 6e00572..ab1f173 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -135,6 +135,7 @@ const struct consw *conswitchp;
+  */
+ #define DEFAULT_BELL_PITCH	750
+ #define DEFAULT_BELL_DURATION	(HZ/8)
++#define DEFAULT_CURSOR_BLINK_MS	200
+ 
+ struct vc vc_cons [MAX_NR_CONSOLES];
+ 
+@@ -1590,6 +1591,13 @@ static void setterm_command(struct vc_data *vc)
+ 		case 15: /* activate the previous console */
+ 			set_console(last_console);
+ 			break;
++		case 16: /* set cursor blink duration in msec */
++			if (vc->vc_npar >= 1 && vc->vc_par[1] >= 50 &&
++					vc->vc_par[1] <= USHRT_MAX)
++				vc->vc_cur_blink_ms = vc->vc_par[1];
++			else
++				vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
++			break;
+ 	}
+ }
+ 
+@@ -1717,6 +1725,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
+ 
+ 	vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
+ 	vc->vc_bell_duration = DEFAULT_BELL_DURATION;
++	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
+ 
+ 	gotoxy(vc, 0, 0);
+ 	save_cur(vc);
+diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
+index e859c98..e329ee2 100644
+--- a/include/linux/console_struct.h
++++ b/include/linux/console_struct.h
+@@ -104,6 +104,7 @@ struct vc_data {
+ 	unsigned int    vc_resize_user;         /* resize request from user */
+ 	unsigned int	vc_bell_pitch;		/* Console bell pitch */
+ 	unsigned int	vc_bell_duration;	/* Console bell duration */
++	unsigned short	vc_cur_blink_ms;	/* Cursor blink duration */
+ 	struct vc_data **vc_display_fg;		/* [!] Ptr to var holding fg console for this display */
+ 	struct uni_pagedir *vc_uni_pagedir;
+ 	struct uni_pagedir **vc_uni_pagedir_loc; /* [!] Location of uni_pagedir variable for this console */
+-- 
+2.1.0
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

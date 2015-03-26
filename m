@@ -1,171 +1,276 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:23 +0000
-Subject: [PATCH v1 33/47] video: fbdev: savagefb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1426893517-2511-34-git-send-email-mcgrof@do-not-panic.com>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Thu, 26 Mar 2015 22:26:23 +0000
+Subject: [PATCH v2 08/12] staging: sm750: 80 characters per line
+Message-Id: <b370d95b76f3ebf7a24f91eb44cacb81358ed282.1427406762.git.michel.von.czettritz@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+This patch inserts line breaks to make lines fit into 80 characters and increase readability.
 
-This driver uses the same area for MTRR as for the ioremap().
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
 ---
- drivers/video/fbdev/savage/savagefb.h        |  4 +---
- drivers/video/fbdev/savage/savagefb_driver.c | 17 +++--------------
- 2 files changed, 4 insertions(+), 17 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 110 ++++++++++++++++++++++++++--------------
+ 1 file changed, 72 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/video/fbdev/savage/savagefb.h b/drivers/video/fbdev/savage/savagefb.h
-index 8ff4ab1..aba04af 100644
---- a/drivers/video/fbdev/savage/savagefb.h
-+++ b/drivers/video/fbdev/savage/savagefb.h
-@@ -213,9 +213,7 @@ struct savagefb_par {
- 		void   __iomem *vbase;
- 		u32    pbase;
- 		u32    len;
--#ifdef CONFIG_MTRR
--		int    mtrr;
--#endif
-+		int    wc_cookie;
- 	} video;
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index e4cf08c..6887926 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -60,54 +60,66 @@ static char *g_option = NULL;
+ static const struct fb_videomode lynx750_ext[] = {
+ 	/*	1024x600-60 VESA	[1.71:1] */
+ 	{NULL,  60, 1024, 600, 20423, 144,  40, 18, 1, 104, 3,
+-	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
  
- 	struct {
-diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
-index 4dbf45f..6c77ab0 100644
---- a/drivers/video/fbdev/savage/savagefb_driver.c
-+++ b/drivers/video/fbdev/savage/savagefb_driver.c
-@@ -57,10 +57,6 @@
- #include <asm/irq.h>
- #include <asm/pgtable.h>
+ 	/*	1024x600-70 VESA */
+ 	{NULL,  70, 1024, 600, 17211, 152,  48, 21, 1, 104, 3,
+-	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
  
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- #include "savagefb.h"
+ 	/*	1024x600-75 VESA */
+ 	{NULL,  75, 1024, 600, 15822, 160,  56, 23, 1, 104, 3,
+-	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
+ 
+ 	/*	1024x600-85 VESA */
+ 	{NULL,  85, 1024, 600, 13730, 168,  56, 26, 1, 112, 3,
+-	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
+ 
+ 	/*	720x480	*/
+ 	{NULL, 60,  720,  480,  37427, 88,   16, 13, 1,   72,  3,
+-	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
+ 
+ 	/*	1280x720		[1.78:1]	*/
+ 	{NULL, 60,  1280,  720,  13426, 162, 86, 22, 1,  136, 3,
+-	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
+ 
+ 	/*	1280x768@60 */
+ 	{NULL, 60, 1280, 768, 12579, 192, 64, 20, 3, 128, 7,
+-	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,FB_VMODE_NONINTERLACED},
++	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
+ 
+ 	{NULL, 60, 1360, 768, 11804, 208, 64, 23, 1, 144, 3,
+ 	 FB_SYNC_HOR_HIGH_ACT|FB_VMODE_NONINTERLACED},
+ 
+ 	/*	1360 x 768	[1.77083:1]	*/
+ 	{NULL,  60, 1360, 768, 11804, 208,  64, 23, 1, 144, 3,
+-	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
+ 
+ 	/*	1368 x 768      [1.78:1]	*/
+ 	{NULL, 60,  1368,  768,  11647, 216, 72, 23, 1,  144, 3,
+-	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
+ 
+ 	/*	1440 x 900		[16:10]	*/
+ 	{NULL, 60, 1440, 900, 9392, 232, 80, 28, 1, 152, 3,
+-	 FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
+ 
+ 	/*	1440x960		[15:10]	*/
+ 	{NULL, 60, 1440, 960, 8733, 240, 88, 30, 1, 152, 3,
+-	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
+ 
+ 	/*	1920x1080	[16:9]	*/
+ 	{NULL, 60, 1920, 1080, 6734, 148, 88, 41, 1, 44, 3,
+-	 FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED},
++	 FB_SYNC_VERT_HIGH_ACT,
++	 FB_VMODE_NONINTERLACED},
+ };
  
  
-@@ -1775,7 +1771,7 @@ static int savage_map_video(struct fb_info *info, int video_len)
+@@ -132,12 +144,14 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
  
- 	par->video.pbase = pci_resource_start(par->pcidev, resource);
- 	par->video.len   = video_len;
--	par->video.vbase = ioremap(par->video.pbase, par->video.len);
-+	par->video.vbase = ioremap_wc(par->video.pbase, par->video.len);
+ 	cursor->disable(cursor);
+ 	if (fbcursor->set & FB_CUR_SETSIZE)
+-		cursor->setSize(cursor, fbcursor->image.width, fbcursor->image.height);
++		cursor->setSize(cursor,
++				fbcursor->image.width,
++				fbcursor->image.height);
  
- 	if (!par->video.vbase) {
- 		printk("savagefb: unable to map screen memory\n");
-@@ -1787,11 +1783,7 @@ static int savage_map_video(struct fb_info *info, int video_len)
- 	info->fix.smem_start = par->video.pbase;
- 	info->fix.smem_len   = par->video.len - par->cob_size;
- 	info->screen_base    = par->video.vbase;
--
--#ifdef CONFIG_MTRR
--	par->video.mtrr = mtrr_add(par->video.pbase, video_len,
--				   MTRR_TYPE_WRCOMB, 1);
--#endif
-+	par->video.wc_cookie = arch_phys_wc_add(par->video.pbase, video_len);
+-	if (fbcursor->set & FB_CUR_SETPOS) {
+-		cursor->setPos(cursor, fbcursor->image.dx - info->var.xoffset,
++	if (fbcursor->set & FB_CUR_SETPOS)
++		cursor->setPos(cursor,
++			       fbcursor->image.dx - info->var.xoffset,
+ 			       fbcursor->image.dy - info->var.yoffset);
+-	}
  
- 	/* Clear framebuffer, it's all white in memory after boot */
- 	memset_io(par->video.vbase, 0, par->video.len);
-@@ -1806,10 +1798,7 @@ static void savage_unmap_video(struct fb_info *info)
- 	DBG("savage_unmap_video");
+ 	if (fbcursor->set & FB_CUR_SETCMAP) {
+ 		/* get the 16bit color of kernel means */
+@@ -167,7 +181,8 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 	return 0;
+ }
  
- 	if (par->video.vbase) {
--#ifdef CONFIG_MTRR
--		mtrr_del(par->video.mtrr, par->video.pbase, par->video.len);
--#endif
--
-+		arch_phys_wc_del(par->video.wc_cookie);
- 		iounmap(par->video.vbase);
- 		par->video.vbase = NULL;
- 		info->screen_base = NULL;
+-static void lynxfb_ops_fillrect(struct fb_info *info, const struct fb_fillrect *region)
++static void lynxfb_ops_fillrect(struct fb_info *info,
++				const struct fb_fillrect *region)
+ {
+ 	struct lynxfb_par *par;
+ 	struct lynx_share *share;
+@@ -205,7 +220,8 @@ static void lynxfb_ops_fillrect(struct fb_info *info, const struct fb_fillrect *
+ 		spin_unlock(&share->slock);
+ }
+ 
+-static void lynxfb_ops_copyarea(struct fb_info *info, const struct fb_copyarea *region)
++static void lynxfb_ops_copyarea(struct fb_info *info,
++				const struct fb_copyarea *region)
+ {
+ 	struct lynxfb_par *par;
+ 	struct lynx_share *share;
+@@ -235,7 +251,8 @@ static void lynxfb_ops_copyarea(struct fb_info *info, const struct fb_copyarea *
+ 		spin_unlock(&share->slock);
+ }
+ 
+-static void lynxfb_ops_imageblit(struct fb_info *info, const struct fb_image *image)
++static void lynxfb_ops_imageblit(struct fb_info *info,
++				 const struct fb_image *image)
+ {
+ 	unsigned int base, pitch, Bpp;
+ 	unsigned int fgcol, bgcol;
+@@ -381,7 +398,8 @@ static int lynxfb_ops_set_par(struct fb_info *info)
+ 	return ret;
+ }
+ 
+-static inline unsigned int chan_to_field(unsigned int chan, struct fb_bitfield *bf)
++static inline unsigned int chan_to_field(unsigned int chan,
++					 struct fb_bitfield *bf)
+ {
+ 	chan &= 0xffff;
+ 	chan >>= 16 - bf->length;
+@@ -508,7 +526,8 @@ static int lynxfb_resume(struct pci_dev *pdev)
+ }
+ #endif
+ 
+-static int lynxfb_ops_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
++static int lynxfb_ops_check_var(struct fb_var_screeninfo *var,
++				struct fb_info *info)
+ {
+ 	struct lynxfb_par *par;
+ 	struct lynxfb_crtc *crtc;
+@@ -582,7 +601,7 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo *var, struct fb_info *i
+ 	var->height = var->width = -1;
+ 	var->accel_flags = 0;/* FB_ACCELF_TEXT; */
+ 
+-	/* check if current fb's video memory big enought to hold the onscreen */
++	/* check if current fb's video memory big enought to hold the onscreen*/
+ 	request = var->xres_virtual * (var->bits_per_pixel >> 3);
+ 	/* defaulty crtc->channel go with par->index */
+ 
+@@ -623,7 +642,8 @@ static int lynxfb_ops_setcolreg(unsigned regno, unsigned red,
+ 	if (info->var.grayscale)
+ 		red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
+ 
+-	if (var->bits_per_pixel = 8 && info->fix.visual = FB_VISUAL_PSEUDOCOLOR) {
++	if (var->bits_per_pixel = 8 &&
++	    info->fix.visual = FB_VISUAL_PSEUDOCOLOR) {
+ 		red >>= 8;
+ 		green >>= 8;
+ 		blue >>= 8;
+@@ -865,22 +885,30 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 		} else if (ret = 4) {
+ 			pr_warn("fall back to any valid mode\n");
+ 		} else {
+-			pr_warn("ret = %d,fb_find_mode failed,with %s\n", ret, mdb_desc[i]);
++			pr_warn("ret = %d,fb_find_mode failed,with %s\n",
++				ret,
++				mdb_desc[i]);
+ 		}
+ 	}
+ 
+ 	/* some member of info->var had been set by fb_find_mode */
+ 
+ 	pr_info("Member of info->var is :\n\
+-			xres=%d\n\
+-			yres=%d\n\
+-			xres_virtual=%d\n\
+-			yres_virtual=%d\n\
+-			xoffset=%d\n\
+-			yoffset=%d\n\
+-			bits_per_pixel=%d\n \
+-			...\n", var->xres, var->yres, var->xres_virtual, var->yres_virtual,
+-			var->xoffset, var->yoffset, var->bits_per_pixel);
++		xres=%d\n\
++		yres=%d\n\
++		xres_virtual=%d\n\
++		yres_virtual=%d\n\
++		xoffset=%d\n\
++		yoffset=%d\n\
++		bits_per_pixel=%d\n \
++		...\n",
++		var->xres,
++		var->yres,
++		var->xres_virtual,
++		var->yres_virtual,
++		var->xoffset,
++		var->yoffset,
++		var->bits_per_pixel);
+ 
+ 	/* set par */
+ 	par->info = info;
+@@ -1026,7 +1054,9 @@ static void sm750fb_setup(struct lynx_share *share, char *src)
+ 		}
+ 	}
+ #ifdef CAP_EXPANSION
+-	if (getExpRes(exp_res, &spec_share->state.xLCD, &spec_share->state.yLCD)) {
++	if (getExpRes(exp_res,
++		      &spec_share->state.xLCD,
++		      &spec_share->state.yLCD)) {
+ 		/* seems exp_res is not valid */
+ 		spec_share->state.xLCD = spec_share->state.yLCD = 0;
+ 	}
+@@ -1100,8 +1130,8 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 	if (!share->accel_off) {
+ 		/* hook deInit and 2d routines, notes that below hw_xxx
+ 		 * routine can work on most of lynx chips
+-		 * if some chip need specific function,please hook it in smXXX_set_drv
+-		 * routine */
++		 * if some chip need specific function,
++		 * please hook it in smXXX_set_drv routine */
+ 		share->accel.de_init = hw_de_init;
+ 		share->accel.de_fillrect = hw_fillrect;
+ 		share->accel.de_copyarea = hw_copyarea;
+@@ -1177,7 +1207,9 @@ ALLOC_FB:
+ 		pr_info("Ready to register framebuffer #%d.\n", fbidx);
+ 		errno = register_framebuffer(info[fbidx]);
+ 		if (errno < 0) {
+-			pr_err("Failed to register fb_info #%d. err %d\n", fbidx, errno);
++			pr_err("Failed to register fb_info #%d. err %d\n",
++				fbidx,
++				errno);
+ 			if (fbidx = 0)
+ 				goto err_register0;
+ 			else
+@@ -1235,7 +1267,9 @@ static void __exit lynxfb_pci_remove(struct pci_dev *pdev)
+ 	}
+ #ifdef CONFIG_MTRR
+ 	if (share->mtrr.vram_added)
+-		mtrr_del(share->mtrr.vram, share->vidmem_start, share->vidmem_size);
++		mtrr_del(share->mtrr.vram,
++			 share->vidmem_start,
++			 share->vidmem_size);
+ #endif
+ 
+ 	iounmap(share->pvReg);
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.3.3
 

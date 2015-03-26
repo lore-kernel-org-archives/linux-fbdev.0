@@ -1,103 +1,75 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Mon, 16 Mar 2015 14:20:39 +0000
-Subject: Re: [PATCH] staging:sm750fb:Fixed no space and indent warnings
-Message-Id: <20150316140839.GA12140@sudip-PC>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Thu, 26 Mar 2015 13:56:38 +0000
+Subject: [PATCH v2 2/3] fbcon: use the cursor blink interval provided by vt
+Message-Id: <alpine.DEB.2.11.1503261354550.2411@local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150316002109.GA6640@localhost.localdomain>
-In-Reply-To: <20150316002109.GA6640@localhost.localdomain>
+References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain> <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain> <20150225094946.GA24627@amd> <alpine.LNX.2.11.1502252319330.276@localhost> <20150226220243.GC9935@amd> <alpine.LNX.2.11.1502271905580.4212@localhost>
+ <alpine.LNX.2.11.1502271911380.4248@localhost> <20150325111949.GA24230@kroah.com> <alpine.DEB.2.11.1503261341260.2164@local>
+In-Reply-To: <alpine.DEB.2.11.1503261341260.2164@local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ragavendra Nagraj <ragavendra.bn@gmail.com>
-Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Sun, Mar 15, 2015 at 05:21:09PM -0700, Ragavendra Nagraj wrote:
-the convention to write the subject is :
-staging: sm750fb: your subject line
-this is for all drivers, if you see the mails in lkml you will see
-that almost everyone follows the same convention.
+vt now provides a cursor blink interval via vc_data. Use this
+interval instead of the currently hardcoded 200 msecs. Store it in
+fbcon_ops to avoid locking the console in cursor_timer_handler().
 
-> 
-> Signed-off-by: Ragavendra Nagraj <ragavendra.bn@gmail.com>
-> ---
-<snip>
->  
->  unsigned int getPllValue(clock_type_t clockType, pll_value_t *pPLL)
->  {
-> -    unsigned int ulPllReg = 0;
-> -
-> -    pPLL->inputFreq = DEFAULT_INPUT_CLOCK;
-> -    pPLL->clockType = clockType;
-> -
-> -    switch (clockType)
-> -    {
-> -        case MXCLK_PLL:
-> -            ulPllReg = PEEK32(MXCLK_PLL_CTRL);
-> -            break;
-<snip>
-> +
-> +	switch (clockType)
-> +	{
-> +	case MXCLK_PLL:
-> +		ulPllReg = PEEK32(MXCLK_PLL_CTRL);
-> +		break;
-you changed the switch-case indention here in this function. but you
-have not changed the switch-case indention in the function
-setMemoryClock() or in setMasterClock() later in your patch.
-but again changed the indention in the function ddk750_getVMSize().
-any reason? was that intentional?
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+ drivers/video/console/fbcon.c | 10 +++++-----
+ drivers/video/console/fbcon.h |  1 +
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-> +	case PRIMARY_PLL:
-<snip>
-> -
-> -        /* Master Clock Control: MXCLK_PLL */
-> -        POKE32(MXCLK_PLL_CTRL, formatPllReg(&pll));
-> -    }
-> +	if (frequency != 0)
-> +		{
-an extra tab came here.	
-> +		/*
-<snip>		   
->  #ifdef VALIDATION_CHIP
-> -                        if (OD > 2)
-> -                            POD = 2;
-> -                        else
-> -                            POD = OD;
-> +			if (OD > 2)
-> +				POD = 2;
-> +			else
-> +				POD = OD;
->  #endif
->  
-> -                        pPLL->POD = POD;
-> -                    }
-> -                }
-> -            }
-> -        }
-> -    }
-> +			pPLL->POD = POD;
-> +			}
-> +		}
-> +		}
-	     ^^^^^^^
-problem with indention with this code block.
-and also in some places in your patch you changed the indention of opening brace
-of the for loop.
-the code was:
-for ( ; ; )
-{
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index b972106..05b1d1a 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -402,7 +402,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 
+ 	queue_work(system_power_efficient_wq, &info->queue);
+-	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
++	mod_timer(&ops->cursor_timer, jiffies + ops->cur_blink_jiffies);
+ }
+ 
+ static void fbcon_add_cursor_timer(struct fb_info *info)
+@@ -417,7 +417,7 @@ static void fbcon_add_cursor_timer(struct fb_info *info)
+ 
+ 		init_timer(&ops->cursor_timer);
+ 		ops->cursor_timer.function = cursor_timer_handler;
+-		ops->cursor_timer.expires = jiffies + HZ / 5;
++		ops->cursor_timer.expires = jiffies + ops->cur_blink_jiffies;
+ 		ops->cursor_timer.data = (unsigned long ) info;
+ 		add_timer(&ops->cursor_timer);
+ 		ops->flags |= FBCON_FLAGS_CURSOR_TIMER;
+@@ -1309,9 +1309,9 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
+ 	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
+ 		return;
+ 
+-	if (vc->vc_cursor_type & 0x10)
+-		fbcon_del_cursor_timer(info);
+-	else
++	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
++	fbcon_del_cursor_timer(info);
++	if (!(vc->vc_cursor_type & 0x10))
+ 		fbcon_add_cursor_timer(info);
+ 
+ 	ops->cursor_flash = (mode = CM_ERASE) ? 0 : 1;
+diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+index 6bd2e0c..7aaa4ea 100644
+--- a/drivers/video/console/fbcon.h
++++ b/drivers/video/console/fbcon.h
+@@ -70,6 +70,7 @@ struct fbcon_ops {
+ 	struct fb_cursor cursor_state;
+ 	struct display *p;
+         int    currcon;	                /* Current VC. */
++	int    cur_blink_jiffies;
+ 	int    cursor_flash;
+ 	int    cursor_reset;
+ 	int    blank_state;
+-- 
+2.1.0
 
-you are making it: 
-for ( ; ; )
-	{
-
-well, ultimately that opening brace of switch-case, for loops and if
-will go to the previous line, so i think this extra indention will not
-hurt, but I am not sure. Dan Carpenter or Joe Perches or Greg can say
-if this extra indention is acceptable.
-But the indention problem marked just above this will not be accepted.
-
-regards
-sudip
-
-> +	}

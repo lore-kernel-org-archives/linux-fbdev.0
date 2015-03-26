@@ -1,32 +1,69 @@
-From: David Miller <davem@redhat.com>
-Date: Thu, 12 Mar 2015 19:27:20 +0000
-Subject: Re: [PATCH 7/8] isdn: replace CONFIG_8xx by CONFIG_PPC_8xx
-Message-Id: <20150312.152720.2248943963968220981.davem@redhat.com>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Thu, 26 Mar 2015 22:25:50 +0000
+Subject: [PATCH v2 06/12] staging: sm750: no braces for single stmt if blocks
+Message-Id: <9b7d1ab21e735024fec2d2586fb1e0550eaa6369.1427406762.git.michel.von.czettritz@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150312152409.E7B5C1A2422@localhost.localdomain>
-In-Reply-To: <20150312152409.E7B5C1A2422@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: christophe.leroy@c-s.fr
-Cc: isdn@linux-pingi.de, linux-serial@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, user-mode-linux-user@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
+To: linux-fbdev@vger.kernel.org
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Thu, 12 Mar 2015 16:24:09 +0100 (CET)
+This patches fixes checkpatch.pl warning:
+"WARNING: braces {} are not necessary for single statement blocks"
 
-> Two config options exist to define powerpc MPC8xx:
-> * CONFIG_PPC_8xx
-> * CONFIG_8xx
-> In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
-> communication co-processor
-> 
-> arch/powerpc/platforms/Kconfig.cputype has contained the following
-> comment about CONFIG_8xx item for some years:
-> "# this is temp to handle compat with arch=ppc"
-> 
-> It looks like not many places still have that old CONFIG_8xx used,
-> so it is likely to be a good time to get rid of it completely ?
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
-Acked-by: David S. Miller <davem@davemloft.net>
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index d9a94d7..5d3ee44 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -131,9 +131,8 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 	}
+ 
+ 	cursor->disable(cursor);
+-	if (fbcursor->set & FB_CUR_SETSIZE) {
++	if (fbcursor->set & FB_CUR_SETSIZE)
+ 		cursor->setSize(cursor, fbcursor->image.width, fbcursor->image.height);
+-	}
+ 
+ 	if (fbcursor->set & FB_CUR_SETPOS) {
+ 		cursor->setPos(cursor, fbcursor->image.dx - info->var.xoffset,
+@@ -162,9 +161,8 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 				fbcursor->mask);
+ 	}
+ 
+-	if (fbcursor->enable) {
++	if (fbcursor->enable)
+ 		cursor->enable(cursor);
+-	}
+ 
+ 	return 0;
+ }
+@@ -176,9 +174,8 @@ static void lynxfb_ops_fillrect(struct fb_info *info, const struct fb_fillrect *
+ 	unsigned int base, pitch, Bpp, rop;
+ 	u32 color;
+ 
+-	if (info->state != FBINFO_STATE_RUNNING) {
++	if (info->state != FBINFO_STATE_RUNNING)
+ 		return;
+-	}
+ 
+ 	par = info->par;
+ 	share = par->share;
+@@ -487,8 +484,8 @@ static int lynxfb_resume(struct pci_dev *pdev)
+ 		par = info->par;
+ 		crtc = &par->crtc;
+ 		cursor = &crtc->cursor;
+-		memset_io(cursor->vstart, 0x0, cursor->size);
+-		memset_io(crtc->vScreen, 0x0, crtc->vidmem_size);
++		memset(cursor->vstart, 0x0, cursor->size);
++		memset(crtc->vScreen, 0x0, crtc->vidmem_size);
+ 		lynxfb_ops_set_par(info);
+ 		fb_set_suspend(info, 0);
+ 	}
+-- 
+2.3.3
+

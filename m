@@ -1,75 +1,169 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 09 Mar 2015 09:41:01 +0000
-Subject: Re: [PATCH v11 5/6] devicetree: Add vendor prefix for Skyworks Solutions, Inc.
-Message-Id: <20150309094101.GP3427@x1>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Date: Fri, 27 Mar 2015 16:08:08 +0000
+Subject: [RFT PATCHv2] drm/exynos: Enable DP clock to fix display on Exynos5250 and other
+Message-Id: <1427472488-21454-1-git-send-email-k.kozlowski@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425019346-4559-1-git-send-email-jack.yoo@skyworksinc.com>
- <1425019346-4559-6-git-send-email-jack.yoo@skyworksinc.com>
-In-Reply-To: <1425019346-4559-6-git-send-email-jack.yoo@skyworksinc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: gyungoh@gmail.com
-Cc: sameo@linux.intel.com, robh+dt@kernel.org, jg1.han@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, trivial@kernel.org, broonie@kernel.org, florian.vaussard@epfl.ch, andrew@lunn.ch, antonynpavlov@gmail.com, hytszk@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jack.yoo@skyworksinc.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, treding@nvidia.com, p.zabel@pengutronix.de, arno@natisbad.org, kuninori.morimoto.gx@renesas.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jg1.han@samsung.com>, Inki Dae <inki.dae@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David Airlie <airlied@linux.ie>, Kukjin Kim <kgene@kernel.org>, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Andrzej Hajda <a.hajda@samsung.com>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 
-Applied, thanks.
+After adding display power domain for Exynos5250 in commit
+2d2c9a8d0a4f ("ARM: dts: add display power domain for exynos5250") the
+display on Chromebook Snow and others stopped working after boot.
 
-On Fri, 27 Feb 2015, gyungoh@gmail.com wrote:
+The reason for this suggested Andrzej Hajda: the DP clock was disabled.
+This clock is required by Display Port and is enabled by bootloader.
+However when FIMD driver probing was deferred, the display power domain
+was turned off. This effectively reset the value of DP clock enable
+register.
 
-> From: Gyungoh Yoo <jack.yoo@skyworksinc.com>
->=20
-> Signed-off-by: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-> ---
-> Changes v11:
-> Nothing
->=20
-> Changes v10:
-> Nothing
->=20
-> Changes v9:
-> Nothing
->=20
-> Changes v8:
-> Nothing
->=20
-> Changes v7:
-> Nothing
->=20
-> Changes v6:
-> Nothing
->=20
-> Changes v5:
-> Nothing
->=20
-> Changes v4:
-> Nothing
->=20
-> Changes v3:
-> Nothing
->=20
-> Changes v2:
-> Added vendor prefix for Skyworks Solutions, Inc.
->=20
->  Documentation/devicetree/bindings/vendor-prefixes.txt | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Docu=
-mentation/devicetree/bindings/vendor-prefixes.txt
-> index 389ca13..c4fe9cc 100644
-> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
-> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
-> @@ -165,6 +165,7 @@ sii	Seiko Instruments, Inc.
->  silergy	Silergy Corp.
->  sirf	SiRF Technology, Inc.
->  sitronix	Sitronix Technology Corporation
-> +skyworks	Skyworks Solutions, Inc.
->  smsc	Standard Microsystems Corporation
->  snps	Synopsys, Inc.
->  solidrun	SolidRun
+When exynos-dp is later probed, the clock is not enabled and display is
+not properly configured:
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+exynos-dp 145b0000.dp-controller: Timeout of video streamclk ok
+exynos-dp 145b0000.dp-controller: unable to config video
+
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Reported-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+Fixes: 2d2c9a8d0a4f ("ARM: dts: add display power domain for exynos5250")
+Cc: <stable@vger.kernel.org>
+
+---
+
+This should fix issue reported by Javier [1][2].
+
+Tested on Chromebook Snow (Exynos 5250). More testing would be great,
+especially on other Exynos 5xxx products.
+
+[1] http://thread.gmane.org/gmane.linux.kernel.samsung-soc/43889
+[2] http://thread.gmane.org/gmane.linux.ports.arm.kernel/400290
+
+Changes since v1:
+1. Added missing exynos_drm_fimd.h.
+---
+ drivers/gpu/drm/exynos/exynos_dp_core.c  | 10 ++++++++++
+ drivers/gpu/drm/exynos/exynos_drm_fimd.c | 19 +++++++++++++++++++
+ drivers/gpu/drm/exynos/exynos_drm_fimd.h | 15 +++++++++++++++
+ include/video/samsung_fimd.h             |  6 ++++++
+ 4 files changed, 50 insertions(+)
+ create mode 100644 drivers/gpu/drm/exynos/exynos_drm_fimd.h
+
+diff --git a/drivers/gpu/drm/exynos/exynos_dp_core.c b/drivers/gpu/drm/exynos/exynos_dp_core.c
+index bf17a60b40ed..1dbfba58f909 100644
+--- a/drivers/gpu/drm/exynos/exynos_dp_core.c
++++ b/drivers/gpu/drm/exynos/exynos_dp_core.c
+@@ -32,10 +32,16 @@
+ #include <drm/bridge/ptn3460.h>
+ 
+ #include "exynos_dp_core.h"
++#include "exynos_drm_fimd.h"
+ 
+ #define ctx_from_connector(c)	container_of(c, struct exynos_dp_device, \
+ 					connector)
+ 
++static inline struct exynos_drm_crtc *dp_to_crtc(struct exynos_dp_device *dp)
++{
++	return to_exynos_crtc(dp->encoder->crtc);
++}
++
+ static inline struct exynos_dp_device *
+ display_to_dp(struct exynos_drm_display *d)
+ {
+@@ -1070,6 +1076,8 @@ static void exynos_dp_poweron(struct exynos_dp_device *dp)
+ 		}
+ 	}
+ 
++	fimd_dp_clock_enable(dp_to_crtc(dp), true);
++
+ 	clk_prepare_enable(dp->clock);
+ 	exynos_dp_phy_init(dp);
+ 	exynos_dp_init_dp(dp);
+@@ -1094,6 +1102,8 @@ static void exynos_dp_poweroff(struct exynos_dp_device *dp)
+ 	exynos_dp_phy_exit(dp);
+ 	clk_disable_unprepare(dp->clock);
+ 
++	fimd_dp_clock_enable(dp_to_crtc(dp), false);
++
+ 	if (dp->panel) {
+ 		if (drm_panel_unprepare(dp->panel))
+ 			DRM_ERROR("failed to turnoff the panel\n");
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_fimd.c b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+index c300e22da8ac..bdf0818dc8f5 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_fimd.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+@@ -32,6 +32,7 @@
+ #include "exynos_drm_fbdev.h"
+ #include "exynos_drm_crtc.h"
+ #include "exynos_drm_iommu.h"
++#include "exynos_drm_fimd.h"
+ 
+ /*
+  * FIMD stands for Fully Interactive Mobile Display and
+@@ -1231,6 +1232,24 @@ static int fimd_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++void fimd_dp_clock_enable(struct exynos_drm_crtc *crtc, bool enable)
++{
++	struct fimd_context *ctx = crtc->ctx;
++	u32 val;
++
++	/*
++	 * Only Exynos 5250, 5260, 5410 and 542x requires enabling DP/MIE
++	 * clock. On these SoCs the bootloader may enable it but any
++	 * power domain off/on will reset it to disable state.
++	 */
++	if (ctx->driver_data != &exynos5_fimd_driver_data)
++		return;
++
++	val = enable ? DP_MIE_CLK_DP_ENABLE : DP_MIE_CLK_DISABLE;
++	writel(DP_MIE_CLK_DP_ENABLE, ctx->regs + DP_MIE_CLKCON);
++}
++EXPORT_SYMBOL_GPL(fimd_dp_clock_enable);
++
+ struct platform_driver fimd_driver = {
+ 	.probe		= fimd_probe,
+ 	.remove		= fimd_remove,
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_fimd.h b/drivers/gpu/drm/exynos/exynos_drm_fimd.h
+new file mode 100644
+index 000000000000..b4fcaa568456
+--- /dev/null
++++ b/drivers/gpu/drm/exynos/exynos_drm_fimd.h
+@@ -0,0 +1,15 @@
++/*
++ * Copyright (c) 2015 Samsung Electronics Co., Ltd.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#ifndef _EXYNOS_DRM_FIMD_H_
++#define _EXYNOS_DRM_FIMD_H_
++
++extern void fimd_dp_clock_enable(struct exynos_drm_crtc *crtc, bool enable);
++
++#endif /* _EXYNOS_DRM_FIMD_H_ */
+diff --git a/include/video/samsung_fimd.h b/include/video/samsung_fimd.h
+index a20e4a3a8b15..847a0a2b399c 100644
+--- a/include/video/samsung_fimd.h
++++ b/include/video/samsung_fimd.h
+@@ -436,6 +436,12 @@
+ #define BLENDCON_NEW_8BIT_ALPHA_VALUE		(1 << 0)
+ #define BLENDCON_NEW_4BIT_ALPHA_VALUE		(0 << 0)
+ 
++/* Display port clock control */
++#define DP_MIE_CLKCON				0x27c
++#define DP_MIE_CLK_DISABLE			0x0
++#define DP_MIE_CLK_DP_ENABLE			0x2
++#define DP_MIE_CLK_MIE_ENABLE			0x3
++
+ /* Notes on per-window bpp settings
+  *
+  * Value	Win0	 Win1	  Win2	   Win3	    Win 4
+-- 
+1.9.1
+

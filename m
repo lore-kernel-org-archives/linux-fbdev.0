@@ -1,7 +1,7 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Date: Fri, 27 Mar 2015 08:37:04 +0000
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Fri, 27 Mar 2015 19:38:13 +0000
 Subject: Re: [PATCH v1 09/47] vidoe: fbdev: atyfb: remove and fix MTRR MMIO "hole" work around
-Message-Id: <20150327083703.GB22926@sci.fi>
+Message-Id: <20150327193813.GH5622@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
  <1426893517-2511-10-git-send-email-mcgrof@do-not-panic.com>
@@ -10,7 +10,8 @@ In-Reply-To: <20150321091514.GA22926@sci.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Bjorn Helgaas <bhelgaas@google.com>, "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, Andy Lutomirski <luto@amacapital.net>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
 On Sat, Mar 21, 2015 at 11:15:14AM +0200, Ville Syrj=E4l=E4 wrote:
 > On Fri, Mar 20, 2015 at 04:17:59PM -0700, Luis R. Rodriguez wrote:
@@ -33,88 +34,38 @@ On Sat, Mar 21, 2015 at 11:15:14AM +0200, Ville Syrj=E4l=E4 wrote:
 >=20
 > MTRRs need power of two size, so how is this supposed to work?
 
-Still waiting for an answer...
+As per mtrr_add_page() [0] the base and size are just supposed to be in uni=
+ts
+of 4 KiB, although the practice is to use powers of 2 in *some* drivers this
+is not standardized and by no means recorded as a requirement. Obviously
+powers of 2 will work too and you'd end up neatly aligned as well. mtrr_add=
+()
+will use mtrr_check() to verify the the same requirement. Furthermore,
+as per my commit log message:
 
->=20
-> > -		if (par->mtrr_aper >=3D 0 && !par->aux_start) {
-> > -			/* Make a hole for mmio. */
-> > -			par->mtrr_reg =3D mtrr_add(par->res_start + 0x800000 -
-> > -						 GUI_RESERVE, GUI_RESERVE,
-> > -						 MTRR_TYPE_UNCACHABLE, 1);
-> > -			if (par->mtrr_reg < 0) {
-> > -				mtrr_del(par->mtrr_aper, 0, 0);
-> > -				par->mtrr_aper =3D -1;
-> > -			}
-> > -		}
-> >  	}
-> >  #endif
-> > =20
-> > @@ -2776,10 +2765,6 @@ aty_init_exit:
-> >  	par->pll_ops->set_pll(info, &par->saved_pll);
-> > =20
-> >  #ifdef CONFIG_MTRR
-> > -	if (par->mtrr_reg >=3D 0) {
-> > -		mtrr_del(par->mtrr_reg, 0, 0);
-> > -		par->mtrr_reg =3D -1;
-> > -	}
-> >  	if (par->mtrr_aper >=3D 0) {
-> >  		mtrr_del(par->mtrr_aper, 0, 0);
-> >  		par->mtrr_aper =3D -1;
-> > @@ -3466,7 +3451,7 @@ static int atyfb_setup_generic(struct pci_dev *pd=
-ev, struct fb_info *info,
-> >  	}
-> > =20
-> >  	info->fix.mmio_start =3D raddr;
-> > -	par->ati_regbase =3D ioremap(info->fix.mmio_start, 0x1000);
-> > +	par->ati_regbase =3D ioremap_nocache(info->fix.mmio_start, 0x1000);
-> >  	if (par->ati_regbase =3D NULL)
-> >  		return -ENOMEM;
-> > =20
-> > @@ -3491,6 +3476,8 @@ static int atyfb_setup_generic(struct pci_dev *pd=
-ev, struct fb_info *info,
-> >  	info->fix.smem_start =3D addr;
-> >  	info->fix.smem_len =3D 0x800000;
-> > =20
-> > +	aty_fudge_framebuffer_len(info);
-> > +
-> >  	info->screen_base =3D ioremap(info->fix.smem_start, info->fix.smem_le=
-n);
-> >  	if (info->screen_base =3D NULL) {
-> >  		ret =3D -ENOMEM;
-> > @@ -3563,6 +3550,7 @@ static int atyfb_pci_probe(struct pci_dev *pdev,
-> >  		return -ENOMEM;
-> >  	}
-> >  	par =3D info->par;
-> > +	par->bus_type =3D PCI;
-> >  	info->fix =3D atyfb_fix;
-> >  	info->device =3D &pdev->dev;
-> >  	par->pci_id =3D pdev->device;
-> > @@ -3732,10 +3720,6 @@ static void atyfb_remove(struct fb_info *info)
-> >  #endif
-> > =20
-> >  #ifdef CONFIG_MTRR
-> > -	if (par->mtrr_reg >=3D 0) {
-> > -		mtrr_del(par->mtrr_reg, 0, 0);
-> > -		par->mtrr_reg =3D -1;
-> > -	}
-> >  	if (par->mtrr_aper >=3D 0) {
-> >  		mtrr_del(par->mtrr_aper, 0, 0);
-> >  		par->mtrr_aper =3D -1;
-> > --=20
-> > 2.3.2.209.gd67f9d5.dirty
-> >=20
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-fbdev" =
-in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
-> --=20
-> Ville Syrj=E4l=E4
-> syrjala@sci.fi
-> http://www.sci.fi/~syrjala/
+---
+    The last thing we do must do to remain sane is ensure we
+    use the info->fix.smem_start and info->fix.smem_len for
+    the framebuffer MTRR as we know that is always well adjusted.
+    The *one* concern here would be if the MTRR is not in units
+    of 4K __but__ we already know that in the PCI case this cannot
+    happen, in the shared space setting the MTRR would be up to
+    0x7ff000 and assuming a 4K page:
+   =20
+    ; 0x7ff000 / 0x1000
+        2047
+   =20
+    Also, internally when MTRR is used mtrr_add() will use mtrr_check()
+    and that should splat a warning when the MTRR base and size are
+    not compatible with what is expected for MTRR usage.
+---
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+If any of this is too risky we can use the __arch_phys_wc_add() (or as
+Andy suggested perhaps use set_page_* stuff, although I am still evaluating
+this) but I did this change to show the effort required for a change when
+the registers / framebuffer is on the same PCI BAR but at different offsets.
+
+[0] scripts/kernel-doc -man -function mtrr_add_page arch/x86/kernel/cpu/mtr=
+r/main.c | nroff -man | less
+
+  Luis

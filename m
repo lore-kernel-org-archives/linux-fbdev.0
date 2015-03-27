@@ -1,86 +1,80 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Date: Fri, 27 Mar 2015 21:56:55 +0000
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Fri, 27 Mar 2015 22:02:10 +0000
 Subject: Re: [PATCH v1 09/47] vidoe: fbdev: atyfb: remove and fix MTRR MMIO "hole" work around
-Message-Id: <20150327215655.GA29933@sci.fi>
+Message-Id: <CALCETrWW9WrE_4x6SctQQBe=zXp1yMQ1i=qtsACTnHV0_Ku2iQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
  <1426893517-2511-10-git-send-email-mcgrof@do-not-panic.com>
- <20150321091514.GA22926@sci.fi>
- <20150327193813.GH5622@wotan.suse.de>
+ <20150321091514.GA22926@sci.fi> <20150327193813.GH5622@wotan.suse.de>
  <CALCETrVfC8aGKuPvaqv3edBADnKKvgDRiKbDvaaOr-HLB7jijg@mail.gmail.com>
- <20150327195759.GK5622@wotan.suse.de>
-In-Reply-To: <20150327195759.GK5622@wotan.suse.de>
+ <20150327195759.GK5622@wotan.suse.de> <20150327215655.GA29933@sci.fi>
+In-Reply-To: <20150327215655.GA29933@sci.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: "Luis R. Rodriguez" <mcgrof@suse.com>
-Cc: Andy Lutomirski <luto@amacapital.net>, Bjorn Helgaas <bhelgaas@google.com>, "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Juergen Gross <jgross@suse.com>, Jan Beulich <JBeulich@suse.com>, Borislav Petkov <bp@suse.de>, Suresh Siddha <suresh.b.siddha@intel.com>, venkatesh.pallipadi@intel.com, Dave Airlie <airlied@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, X86 ML <x86@kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, "Luis R. Rodriguez" <mcgrof@suse.com>, Andy Lutomirski <luto@amacapital.net>, Bjorn Helgaas <bhelgaas@google.com>, "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Juergen Gross <jgross@suse.com>, Jan Beulich <JBeulich@suse.com>, Borislav Petkov <bp@suse.de>, Suresh Siddha <suresh.b.siddha@intel.com>, venkatesh.pallipadi@intel.com, Dave Airlie <airlied@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, X86 ML <x86@kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Fri, Mar 27, 2015 at 08:57:59PM +0100, Luis R. Rodriguez wrote:
-> On Fri, Mar 27, 2015 at 12:43:55PM -0700, Andy Lutomirski wrote:
-> > On Fri, Mar 27, 2015 at 12:38 PM, Luis R. Rodriguez <mcgrof@suse.com> w=
-rote:
-> > > On Sat, Mar 21, 2015 at 11:15:14AM +0200, Ville Syrj=E4l=E4 wrote:
-> > >> On Fri, Mar 20, 2015 at 04:17:59PM -0700, Luis R. Rodriguez wrote:
-> > >> > diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/=
-fbdev/aty/atyfb_base.c
-> > >> > index 8025624..8875e56 100644
-> > >> > --- a/drivers/video/fbdev/aty/atyfb_base.c
-> > >> > +++ b/drivers/video/fbdev/aty/atyfb_base.c
-> > >> > @@ -2630,21 +2630,10 @@ static int aty_init(struct fb_info *info)
-> > >> >
-> > >> >  #ifdef CONFIG_MTRR
-> > >> >     par->mtrr_aper =3D -1;
-> > >> > -   par->mtrr_reg =3D -1;
-> > >> >     if (!nomtrr) {
-> > >> > -           /* Cover the whole resource. */
-> > >> > -           par->mtrr_aper =3D mtrr_add(par->res_start, par->res_s=
-ize,
-> > >> > +           par->mtrr_aper =3D mtrr_add(info->fix.smem_start,
-> > >> > +                                     info->fix.smem_len,
-> > >> >                                       MTRR_TYPE_WRCOMB, 1);
-> > >>
-> > >> MTRRs need power of two size, so how is this supposed to work?
-> > >
-> > > As per mtrr_add_page() [0] the base and size are just supposed to be =
-in units
-> > > of 4 KiB, although the practice is to use powers of 2 in *some* drive=
-rs this
-> > > is not standardized and by no means recorded as a requirement. Obviou=
-sly
-> > > powers of 2 will work too and you'd end up neatly aligned as well. mt=
-rr_add()
-> > > will use mtrr_check() to verify the the same requirement. Furthermore,
-> > > as per my commit log message:
-> >=20
-> > Whatever the code may or may not do, the x86 architecture uses
-> > power-of-two MTRR sizes.  So I'm confused.
->=20
-> There should be no confusion, I simply did not know that *was* the
-> requirement for x86, if that is the case we should add a check for that
-> and perhaps generalize a helper that does the power of two helper changes,
-> the cleanest I found was the vesafb driver solution.
->=20
-> Thoughts?
-
-The vesafb solution is bad since you'll only end up covering only
-the first 4MB of the framebuffer instead of the almost 8MB you want.
-Which in practice will mean throwing away half the VRAM since you really
-don't want the massive performance hit from accessing it as UC. And that
-would mean giving up decent display resolutions as well :(
-
-And the other option of trying to cover the remainder with multiple ever
-smaller MTRRs doesn't work either since you'll run out of MTRRs very
-quickly.
-
-This is precisely why I used the hole method in atyfb in the first
-place.
-
-I don't really like the idea of any new mtrr code not supporting that
-use case, especially as these things tend to be present in older machines
-where PAT isn't an option.
-
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+T24gRnJpLCBNYXIgMjcsIDIwMTUgYXQgMjo1NiBQTSwgVmlsbGUgU3lyasOkbMOkIDxzeXJqYWxh
+QHNjaS5maT4gd3JvdGU6Cj4gT24gRnJpLCBNYXIgMjcsIDIwMTUgYXQgMDg6NTc6NTlQTSArMDEw
+MCwgTHVpcyBSLiBSb2RyaWd1ZXogd3JvdGU6Cj4+IE9uIEZyaSwgTWFyIDI3LCAyMDE1IGF0IDEy
+OjQzOjU1UE0gLTA3MDAsIEFuZHkgTHV0b21pcnNraSB3cm90ZToKPj4gPiBPbiBGcmksIE1hciAy
+NywgMjAxNSBhdCAxMjozOCBQTSwgTHVpcyBSLiBSb2RyaWd1ZXogPG1jZ3JvZkBzdXNlLmNvbT4g
+d3JvdGU6Cj4+ID4gPiBPbiBTYXQsIE1hciAyMSwgMjAxNSBhdCAxMToxNToxNEFNICswMjAwLCBW
+aWxsZSBTeXJqw6Rsw6Qgd3JvdGU6Cj4+ID4gPj4gT24gRnJpLCBNYXIgMjAsIDIwMTUgYXQgMDQ6
+MTc6NTlQTSAtMDcwMCwgTHVpcyBSLiBSb2RyaWd1ZXogd3JvdGU6Cj4+ID4gPj4gPiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9hdHkvYXR5ZmJfYmFzZS5jIGIvZHJpdmVycy92aWRl
+by9mYmRldi9hdHkvYXR5ZmJfYmFzZS5jCj4+ID4gPj4gPiBpbmRleCA4MDI1NjI0Li44ODc1ZTU2
+IDEwMDY0NAo+PiA+ID4+ID4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9hdHkvYXR5ZmJfYmFz
+ZS5jCj4+ID4gPj4gPiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2F0eS9hdHlmYl9iYXNlLmMK
+Pj4gPiA+PiA+IEBAIC0yNjMwLDIxICsyNjMwLDEwIEBAIHN0YXRpYyBpbnQgYXR5X2luaXQoc3Ry
+dWN0IGZiX2luZm8gKmluZm8pCj4+ID4gPj4gPgo+PiA+ID4+ID4gICNpZmRlZiBDT05GSUdfTVRS
+Ugo+PiA+ID4+ID4gICAgIHBhci0+bXRycl9hcGVyID0gLTE7Cj4+ID4gPj4gPiAtICAgcGFyLT5t
+dHJyX3JlZyA9IC0xOwo+PiA+ID4+ID4gICAgIGlmICghbm9tdHJyKSB7Cj4+ID4gPj4gPiAtICAg
+ICAgICAgICAvKiBDb3ZlciB0aGUgd2hvbGUgcmVzb3VyY2UuICovCj4+ID4gPj4gPiAtICAgICAg
+ICAgICBwYXItPm10cnJfYXBlciA9IG10cnJfYWRkKHBhci0+cmVzX3N0YXJ0LCBwYXItPnJlc19z
+aXplLAo+PiA+ID4+ID4gKyAgICAgICAgICAgcGFyLT5tdHJyX2FwZXIgPSBtdHJyX2FkZChpbmZv
+LT5maXguc21lbV9zdGFydCwKPj4gPiA+PiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgaW5mby0+Zml4LnNtZW1fbGVuLAo+PiA+ID4+ID4gICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICBNVFJSX1RZUEVfV1JDT01CLCAxKTsKPj4gPiA+Pgo+PiA+ID4+
+IE1UUlJzIG5lZWQgcG93ZXIgb2YgdHdvIHNpemUsIHNvIGhvdyBpcyB0aGlzIHN1cHBvc2VkIHRv
+IHdvcms/Cj4+ID4gPgo+PiA+ID4gQXMgcGVyIG10cnJfYWRkX3BhZ2UoKSBbMF0gdGhlIGJhc2Ug
+YW5kIHNpemUgYXJlIGp1c3Qgc3VwcG9zZWQgdG8gYmUgaW4gdW5pdHMKPj4gPiA+IG9mIDQgS2lC
+LCBhbHRob3VnaCB0aGUgcHJhY3RpY2UgaXMgdG8gdXNlIHBvd2VycyBvZiAyIGluICpzb21lKiBk
+cml2ZXJzIHRoaXMKPj4gPiA+IGlzIG5vdCBzdGFuZGFyZGl6ZWQgYW5kIGJ5IG5vIG1lYW5zIHJl
+Y29yZGVkIGFzIGEgcmVxdWlyZW1lbnQuIE9idmlvdXNseQo+PiA+ID4gcG93ZXJzIG9mIDIgd2ls
+bCB3b3JrIHRvbyBhbmQgeW91J2QgZW5kIHVwIG5lYXRseSBhbGlnbmVkIGFzIHdlbGwuIG10cnJf
+YWRkKCkKPj4gPiA+IHdpbGwgdXNlIG10cnJfY2hlY2soKSB0byB2ZXJpZnkgdGhlIHRoZSBzYW1l
+IHJlcXVpcmVtZW50LiBGdXJ0aGVybW9yZSwKPj4gPiA+IGFzIHBlciBteSBjb21taXQgbG9nIG1l
+c3NhZ2U6Cj4+ID4KPj4gPiBXaGF0ZXZlciB0aGUgY29kZSBtYXkgb3IgbWF5IG5vdCBkbywgdGhl
+IHg4NiBhcmNoaXRlY3R1cmUgdXNlcwo+PiA+IHBvd2VyLW9mLXR3byBNVFJSIHNpemVzLiAgU28g
+SSdtIGNvbmZ1c2VkLgo+Pgo+PiBUaGVyZSBzaG91bGQgYmUgbm8gY29uZnVzaW9uLCBJIHNpbXBs
+eSBkaWQgbm90IGtub3cgdGhhdCAqd2FzKiB0aGUKPj4gcmVxdWlyZW1lbnQgZm9yIHg4NiwgaWYg
+dGhhdCBpcyB0aGUgY2FzZSB3ZSBzaG91bGQgYWRkIGEgY2hlY2sgZm9yIHRoYXQKPj4gYW5kIHBl
+cmhhcHMgZ2VuZXJhbGl6ZSBhIGhlbHBlciB0aGF0IGRvZXMgdGhlIHBvd2VyIG9mIHR3byBoZWxw
+ZXIgY2hhbmdlcywKPj4gdGhlIGNsZWFuZXN0IEkgZm91bmQgd2FzIHRoZSB2ZXNhZmIgZHJpdmVy
+IHNvbHV0aW9uLgo+Pgo+PiBUaG91Z2h0cz8KPgo+IFRoZSB2ZXNhZmIgc29sdXRpb24gaXMgYmFk
+IHNpbmNlIHlvdSdsbCBvbmx5IGVuZCB1cCBjb3ZlcmluZyBvbmx5Cj4gdGhlIGZpcnN0IDRNQiBv
+ZiB0aGUgZnJhbWVidWZmZXIgaW5zdGVhZCBvZiB0aGUgYWxtb3N0IDhNQiB5b3Ugd2FudC4KPiBX
+aGljaCBpbiBwcmFjdGljZSB3aWxsIG1lYW4gdGhyb3dpbmcgYXdheSBoYWxmIHRoZSBWUkFNIHNp
+bmNlIHlvdSByZWFsbHkKPiBkb24ndCB3YW50IHRoZSBtYXNzaXZlIHBlcmZvcm1hbmNlIGhpdCBm
+cm9tIGFjY2Vzc2luZyBpdCBhcyBVQy4gQW5kIHRoYXQKPiB3b3VsZCBtZWFuIGdpdmluZyB1cCBk
+ZWNlbnQgZGlzcGxheSByZXNvbHV0aW9ucyBhcyB3ZWxsIDooCj4KPiBBbmQgdGhlIG90aGVyIG9w
+dGlvbiBvZiB0cnlpbmcgdG8gY292ZXIgdGhlIHJlbWFpbmRlciB3aXRoIG11bHRpcGxlIGV2ZXIK
+PiBzbWFsbGVyIE1UUlJzIGRvZXNuJ3Qgd29yayBlaXRoZXIgc2luY2UgeW91J2xsIHJ1biBvdXQg
+b2YgTVRSUnMgdmVyeQo+IHF1aWNrbHkuCj4KPiBUaGlzIGlzIHByZWNpc2VseSB3aHkgSSB1c2Vk
+IHRoZSBob2xlIG1ldGhvZCBpbiBhdHlmYiBpbiB0aGUgZmlyc3QKPiBwbGFjZS4KPgo+IEkgZG9u
+J3QgcmVhbGx5IGxpa2UgdGhlIGlkZWEgb2YgYW55IG5ldyBtdHJyIGNvZGUgbm90IHN1cHBvcnRp
+bmcgdGhhdAo+IHVzZSBjYXNlLCBlc3BlY2lhbGx5IGFzIHRoZXNlIHRoaW5ncyB0ZW5kIHRvIGJl
+IHByZXNlbnQgaW4gb2xkZXIgbWFjaGluZXMKPiB3aGVyZSBQQVQgaXNuJ3QgYW4gb3B0aW9uLgoK
+QWNjb3JkaW5nIHRvIHRoZSBJbnRlbCBTRE0sIHZvbHVtZSAzLCBzZWN0aW9uIDExLjUuMi4xLCB0
+YWJsZSAxMS02LApub24tUEFUIENQVXMgdGhhdCBoYXZlIGEgV0MgTVRSUiwgUENEID0gMSwgYW5k
+IFBXVCA9IDEgKGFrYSBVQykgaGF2ZQphbiBlZmZlY3RpdmUgbWVtb3J5IHR5cGUgb2YgVUMuICBI
+ZW5jZSBteSBzdWdnZXN0aW9uIHRvIGFkZAppb3JlbWFwX3g4Nl91YyBhbmQvb3Igc2V0X21lbW9y
+eV94ODZfdWMgdG8gcHVuY2ggYSBVQyBob2xlIGluIGFuCm90aGVyd2lzZSBXQyBNVFJSLWNvdmVy
+ZWQgcmVnaW9uLgoKaW9yZW1hcF9ub2NhY2hlIGlzIFVDLSAoZXZlbiBvbiBub24tUEFUIHVubGVz
+cyBJIG1pc3VuZGVyc3Rvb2QgaG93CnRoaXMgc3R1ZmYgd29ya3MpLCBzbyBpb3JlbWFwX25vY2Fj
+aGUgYnkgaXRzZWxmIGlzbid0IGdvb2QgZW5vdWdoLgoKLS1BbmR5Ci0tClRvIHVuc3Vic2NyaWJl
+IGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIg
+aW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9y
+ZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5m
+by5odG1s

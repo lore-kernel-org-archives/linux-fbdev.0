@@ -1,61 +1,60 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:17:58 +0000
-Subject: [PATCH v1 08/47] video: fbdev: atyfb: clarify ioremap() base and length used
-Message-Id: <1426893517-2511-9-git-send-email-mcgrof@do-not-panic.com>
+From: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Date: Fri, 27 Mar 2015 18:42:48 +0000
+Subject: [PATCH v3 06/11] staging: sm750: no braces for single stmt if blocks
+Message-Id: <18b0d0362209fa2607d3bea2f642a0ec68feb98a.1427481390.git.michel.von.czettritz@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+This patches fixes checkpatch.pl warning:
+"WARNING: braces {} are not necessary for single statement blocks"
 
-This has no functional changes, it just adjusts
-the ioremap() call for the framebuffer to use
-the same values we later use for the framebuffer,
-this will make it easier to review the next change.
-
-The size of the framebuffer varies but since this is
-for PCI we *know* this defaults to 0x800000.
-atyfb_setup_generic() is *only* used on PCI probe.
-
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
 ---
- drivers/video/fbdev/aty/atyfb_base.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+v3: fix wrong merging
+---
+ drivers/staging/sm750fb/sm750.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 16936bb..8025624 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -3489,7 +3489,9 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index d9a94d7..786679d 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -131,9 +131,8 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 	}
  
- 	/* Map in frame buffer */
- 	info->fix.smem_start = addr;
--	info->screen_base = ioremap(addr, 0x800000);
-+	info->fix.smem_len = 0x800000;
-+
-+	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
- 	if (info->screen_base = NULL) {
- 		ret = -ENOMEM;
- 		goto atyfb_setup_generic_fail;
+ 	cursor->disable(cursor);
+-	if (fbcursor->set & FB_CUR_SETSIZE) {
++	if (fbcursor->set & FB_CUR_SETSIZE)
+ 		cursor->setSize(cursor, fbcursor->image.width, fbcursor->image.height);
+-	}
+ 
+ 	if (fbcursor->set & FB_CUR_SETPOS) {
+ 		cursor->setPos(cursor, fbcursor->image.dx - info->var.xoffset,
+@@ -162,9 +161,8 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 				fbcursor->mask);
+ 	}
+ 
+-	if (fbcursor->enable) {
++	if (fbcursor->enable)
+ 		cursor->enable(cursor);
+-	}
+ 
+ 	return 0;
+ }
+@@ -176,9 +174,8 @@ static void lynxfb_ops_fillrect(struct fb_info *info, const struct fb_fillrect *
+ 	unsigned int base, pitch, Bpp, rop;
+ 	u32 color;
+ 
+-	if (info->state != FBINFO_STATE_RUNNING) {
++	if (info->state != FBINFO_STATE_RUNNING)
+ 		return;
+-	}
+ 
+ 	par = info->par;
+ 	share = par->share;
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.3.3
 

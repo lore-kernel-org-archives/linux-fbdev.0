@@ -1,79 +1,64 @@
-From: Scot Doyle <lkml14@scotdoyle.com>
-Date: Thu, 26 Mar 2015 13:54:39 +0000
-Subject: [PATCH v2 1/3] vt: add cursor blink interval escape sequence
-Message-Id: <alpine.DEB.2.11.1503261352200.2411@local>
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Sat, 28 Mar 2015 00:35:03 +0000
+Subject: Re: [PATCH v2 1/3] vt: add cursor blink interval escape sequence
+Message-Id: <20150328003503.GB27135@vapier>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="4SFOXa2GPu3tIq4H"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain> <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain> <20150225094946.GA24627@amd> <alpine.LNX.2.11.1502252319330.276@localhost> <20150226220243.GC9935@amd> <alpine.LNX.2.11.1502271905580.4212@localhost>
- <alpine.LNX.2.11.1502271911380.4248@localhost> <20150325111949.GA24230@kroah.com> <alpine.DEB.2.11.1503261341260.2164@local>
-In-Reply-To: <alpine.DEB.2.11.1503261341260.2164@local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Cc: Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
+ <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
+ <20150225094946.GA24627@amd>
+ <alpine.LNX.2.11.1502252319330.276@localhost>
+ <20150226220243.GC9935@amd>
+ <alpine.LNX.2.11.1502271905580.4212@localhost>
+ <alpine.LNX.2.11.1502271911380.4248@localhost>
+ <20150325111949.GA24230@kroah.com>
+ <alpine.DEB.2.11.1503261341260.2164@local>
+ <alpine.DEB.2.11.1503261352200.2411@local>
+In-Reply-To: <alpine.DEB.2.11.1503261352200.2411@local>
+To: Scot Doyle <lkml14@scotdoyle.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Kerrisk <mtk.manpages@gmail.com>, Jiri Slaby <jslaby@suse.cz>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-man@vger.kernel.org, linux-api@vger.kernel.org
 
-Add an escape sequence to specify the current console's cursor blink
-interval. The interval is specified as a number of milliseconds until
-the next cursor display state toggle, from 50 to 65535. /proc/loadavg
-did not show a difference with a one msec interval, but the lower
-bound is set to 50 msecs since slower hardware wasn't tested.
 
-Store the interval in the vc_data structure for later access by fbcon,
-initializing the value to fbcon's current hardcoded value of 200 msecs.
+--4SFOXa2GPu3tIq4H
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
- drivers/tty/vt/vt.c            | 9 +++++++++
- include/linux/console_struct.h | 1 +
- 2 files changed, 10 insertions(+)
+On 26 Mar 2015 13:54, Scot Doyle wrote:
+> Add an escape sequence to specify the current console's cursor blink
+> interval. The interval is specified as a number of milliseconds until
+> the next cursor display state toggle, from 50 to 65535. /proc/loadavg
+> did not show a difference with a one msec interval, but the lower
+> bound is set to 50 msecs since slower hardware wasn't tested.
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 6e00572..ab1f173 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -135,6 +135,7 @@ const struct consw *conswitchp;
-  */
- #define DEFAULT_BELL_PITCH	750
- #define DEFAULT_BELL_DURATION	(HZ/8)
-+#define DEFAULT_CURSOR_BLINK_MS	200
- 
- struct vc vc_cons [MAX_NR_CONSOLES];
- 
-@@ -1590,6 +1591,13 @@ static void setterm_command(struct vc_data *vc)
- 		case 15: /* activate the previous console */
- 			set_console(last_console);
- 			break;
-+		case 16: /* set cursor blink duration in msec */
-+			if (vc->vc_npar >= 1 && vc->vc_par[1] >= 50 &&
-+					vc->vc_par[1] <= USHRT_MAX)
-+				vc->vc_cur_blink_ms = vc->vc_par[1];
-+			else
-+				vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
-+			break;
- 	}
- }
- 
-@@ -1717,6 +1725,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
- 
- 	vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
- 	vc->vc_bell_duration = DEFAULT_BELL_DURATION;
-+	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
- 
- 	gotoxy(vc, 0, 0);
- 	save_cur(vc);
-diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-index e859c98..e329ee2 100644
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -104,6 +104,7 @@ struct vc_data {
- 	unsigned int    vc_resize_user;         /* resize request from user */
- 	unsigned int	vc_bell_pitch;		/* Console bell pitch */
- 	unsigned int	vc_bell_duration;	/* Console bell duration */
-+	unsigned short	vc_cur_blink_ms;	/* Cursor blink duration */
- 	struct vc_data **vc_display_fg;		/* [!] Ptr to var holding fg console for this display */
- 	struct uni_pagedir *vc_uni_pagedir;
- 	struct uni_pagedir **vc_uni_pagedir_loc; /* [!] Location of uni_pagedir variable for this console */
--- 
-2.1.0
+if they want to be crazy, why not let them ?  it's not like we generally pr=
+event=20
+the user from destroying their machine.  i.e. just require the value to be =
+> 0=20
+(unless you want to let 0 disable things).
+-mike
 
+--4SFOXa2GPu3tIq4H
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVFfc3AAoJEEFjO5/oN/WBHCoP/jO8/MZ5+A4hCgPNMX23x0ZR
+G9UlQ+tbWPQOVpHmVQW80CS+CMp0Wf7xbybZuU5XLt4Z+e41GR4SO4AeiMUjSwTM
+pr7w8xq66Q+PYk4hn3rImjsVVCSaERLMRVqvwm6cE4APXXitPrQX3zWCmUOy6O9M
+7kKl0UZK5yAh8Oo8teW8OTKlb3GSeSnsEn9glXuqUJ/Md7Wkprh/okyClm5oBF9D
+LveiSK8xMAogir6sWcg5dZTRz76oEzjSKRPRqo0eSYHfX5qETdkUaPrIAj5y0jsU
+EnYwjluMnxsY6GhmNsSUl1EuwR9EKheM5L18a5ntYJJiuC4e9SuIJz7xGLXM1lBV
+Vsz9/PefqsT6vcIbJDxK+AWLPTp7/kVlvxVpeJlGe0NuWVnFSTNGnMh588TrJQch
+JXLwU1Os89w8K5KgVR82EXYmCp6JTm8d+wop+vBn3Bqpe2tAJ+BLz77ESIa9SF37
+VyYXh4XsjBT3PbH7x6OHB8v+AurxhhAY+fSTQt3FjJFzloqkNeKkTP3G6B3H9Hiy
+APbCTEo4lWbROhCf87O+oNgMt0L9s2F5QHuhPJr94CWoNG1SrMJ0qp1PNIe0NAXB
+yo48/y+WeI7dTZHO6NVq7fFc9XPXIYFxS4mXvNCuoEEZQpFg6zejCITP7WJ+DcrI
+AnzBfH5q2eWiFI5LrClD
+=L86v
+-----END PGP SIGNATURE-----
+
+--4SFOXa2GPu3tIq4H--

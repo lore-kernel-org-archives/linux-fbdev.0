@@ -1,45 +1,57 @@
-From: Michel von Czettritz <michel.von.czettritz@gmail.com>
-Date: Sun, 22 Mar 2015 23:13:06 +0000
-Subject: [PATCH 06/13] staging: sm750: newline before { in function decl.
-Message-Id: <20150322231306.GA17183@x230-arch.club.entropia.de>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Sat, 28 Mar 2015 09:15:40 +0000
+Subject: [PATCH 1/2] staging: sm7xxfb: reserve PCI resource
+Message-Id: <1427533421-9751-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-This patch fixes checkpatch.pl error:
-"ERROR: open brace '{' following function declarations go on the next line"
+before starting to access any address inside the PCI region we should
+reserve the resource and release the resource when the module exits.
 
-Signed-off-by: Michel von Czettritz <michel.von.czettritz@gmail.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/staging/sm750fb/sm750.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/staging/sm7xxfb/sm7xxfb.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index ad0c663..a0a8db7 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -58,7 +58,8 @@ static char *g_option = NULL;
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 5b3e614..149286e 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -776,6 +776,12 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 	if (err)
+ 		return err;
  
- /* if not use spin_lock,system will die if user load driver
-  * and immediatly unload driver frequently (dual)*/
--static inline void myspin_lock(spinlock_t *sl) {
-+static inline void myspin_lock(spinlock_t *sl)
-+{
- 	struct lynx_share *share;
- 	share = container_of(sl, struct lynx_share, slock);
- 	if (share->dual) {
-@@ -66,7 +67,8 @@ static inline void myspin_lock(spinlock_t *sl) {
- 	}
++	err = pci_request_region(pdev, 0, "sm7xxfb");
++	if (err < 0) {
++		dev_err(&pdev->dev, "cannot reserve framebuffer region\n");
++		goto failed_regions;
++	}
++
+ 	sprintf(smtcfb_fix.id, "sm%Xfb", ent->device);
+ 
+ 	sfb = smtc_alloc_fb_info(pdev);
+@@ -905,6 +911,9 @@ failed_fb:
+ 	smtc_free_fb_info(sfb);
+ 
+ failed_free:
++	pci_release_region(pdev, 0);
++
++failed_regions:
+ 	pci_disable_device(pdev);
+ 
+ 	return err;
+@@ -933,6 +942,7 @@ static void smtcfb_pci_remove(struct pci_dev *pdev)
+ 	smtc_unmap_mmio(sfb);
+ 	unregister_framebuffer(&sfb->fb);
+ 	smtc_free_fb_info(sfb);
++	pci_release_region(pdev, 0);
  }
  
--static inline void myspin_unlock(spinlock_t *sl) {
-+static inline void myspin_unlock(spinlock_t *sl)
-+{
- 	struct lynx_share *share;
- 	share = container_of(sl, struct lynx_share, slock);
- 	if (share->dual) {
+ #ifdef CONFIG_PM
 -- 
-2.3.3
+1.8.1.2
 

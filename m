@@ -1,12 +1,9 @@
-From: Mike Frysinger <vapier@gentoo.org>
-Date: Sat, 28 Mar 2015 00:35:03 +0000
+From: Pavel Machek <pavel@ucw.cz>
+Date: Sat, 28 Mar 2015 07:50:21 +0000
 Subject: Re: [PATCH v2 1/3] vt: add cursor blink interval escape sequence
-Message-Id: <20150328003503.GB27135@vapier>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="4SFOXa2GPu3tIq4H"
+Message-Id: <20150328075021.GB5248@xo-6d-61-c0.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
- <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
+References: <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
  <20150225094946.GA24627@amd>
  <alpine.LNX.2.11.1502252319330.276@localhost>
  <20150226220243.GC9935@amd>
@@ -15,50 +12,30 @@ References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
  <20150325111949.GA24230@kroah.com>
  <alpine.DEB.2.11.1503261341260.2164@local>
  <alpine.DEB.2.11.1503261352200.2411@local>
-In-Reply-To: <alpine.DEB.2.11.1503261352200.2411@local>
-To: Scot Doyle <lkml14@scotdoyle.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Kerrisk <mtk.manpages@gmail.com>, Jiri Slaby <jslaby@suse.cz>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-man@vger.kernel.org, linux-api@vger.kernel.org
+ <20150328003503.GB27135@vapier>
+In-Reply-To: <20150328003503.GB27135@vapier>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Scot Doyle <lkml14-enLWO88E2pdl57MIdRCFDg@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+
+On Fri 2015-03-27 20:35:03, Mike Frysinger wrote:
+> On 26 Mar 2015 13:54, Scot Doyle wrote:
+> > Add an escape sequence to specify the current console's cursor blink
+> > interval. The interval is specified as a number of milliseconds until
+> > the next cursor display state toggle, from 50 to 65535. /proc/loadavg
+> > did not show a difference with a one msec interval, but the lower
+> > bound is set to 50 msecs since slower hardware wasn't tested.
+> 
+> if they want to be crazy, why not let them ?  it's not like we generally prevent 
+> the user from destroying their machine.  i.e. just require the value to be > 0 
+> (unless you want to let 0 disable things).
+
+Because anyone with access to console can do this, and we only allow root
+users to destroy the machine.
+									Pavel
 
 
---4SFOXa2GPu3tIq4H
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On 26 Mar 2015 13:54, Scot Doyle wrote:
-> Add an escape sequence to specify the current console's cursor blink
-> interval. The interval is specified as a number of milliseconds until
-> the next cursor display state toggle, from 50 to 65535. /proc/loadavg
-> did not show a difference with a one msec interval, but the lower
-> bound is set to 50 msecs since slower hardware wasn't tested.
-
-if they want to be crazy, why not let them ?  it's not like we generally pr=
-event=20
-the user from destroying their machine.  i.e. just require the value to be =
-> 0=20
-(unless you want to let 0 disable things).
--mike
-
---4SFOXa2GPu3tIq4H
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVFfc3AAoJEEFjO5/oN/WBHCoP/jO8/MZ5+A4hCgPNMX23x0ZR
-G9UlQ+tbWPQOVpHmVQW80CS+CMp0Wf7xbybZuU5XLt4Z+e41GR4SO4AeiMUjSwTM
-pr7w8xq66Q+PYk4hn3rImjsVVCSaERLMRVqvwm6cE4APXXitPrQX3zWCmUOy6O9M
-7kKl0UZK5yAh8Oo8teW8OTKlb3GSeSnsEn9glXuqUJ/Md7Wkprh/okyClm5oBF9D
-LveiSK8xMAogir6sWcg5dZTRz76oEzjSKRPRqo0eSYHfX5qETdkUaPrIAj5y0jsU
-EnYwjluMnxsY6GhmNsSUl1EuwR9EKheM5L18a5ntYJJiuC4e9SuIJz7xGLXM1lBV
-Vsz9/PefqsT6vcIbJDxK+AWLPTp7/kVlvxVpeJlGe0NuWVnFSTNGnMh588TrJQch
-JXLwU1Os89w8K5KgVR82EXYmCp6JTm8d+wop+vBn3Bqpe2tAJ+BLz77ESIa9SF37
-VyYXh4XsjBT3PbH7x6OHB8v+AurxhhAY+fSTQt3FjJFzloqkNeKkTP3G6B3H9Hiy
-APbCTEo4lWbROhCf87O+oNgMt0L9s2F5QHuhPJr94CWoNG1SrMJ0qp1PNIe0NAXB
-yo48/y+WeI7dTZHO6NVq7fFc9XPXIYFxS4mXvNCuoEEZQpFg6zejCITP7WJ+DcrI
-AnzBfH5q2eWiFI5LrClD
-=L86v
------END PGP SIGNATURE-----
-
---4SFOXa2GPu3tIq4H--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

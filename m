@@ -1,177 +1,38 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 10 Mar 2015 08:57:38 +0000
-Subject: [PATCH v3 4/5] staging: sm750fb: fix undeclared function
-Message-Id: <1425977139-25285-4-git-send-email-sudipm.mukherjee@gmail.com>
+From: "Michael S. Tsirkin" <mst@redhat.com>
+Date: Sun, 29 Mar 2015 13:42:38 +0000
+Subject: [PATCH 70/86] fbdev/gxt4500: use uapi/linux/pci_ids.h directly
+Message-Id: <1427635734-24786-71-git-send-email-mst@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1425977139-25285-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1427635734-24786-1-git-send-email-mst@redhat.com>
+In-Reply-To: <1427635734-24786-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Rob Clark <robdclark@gmail.com>, Jingoo Han <jg1.han@samsung.com>, linux-fbdev@vger.kernel.org
 
-kbuild test robot reported that for microblaze-allyesconfig
-chan_to_field() and lynxfb_ops_set_par() were not defined. These two
-functions were defined under CONFIG_PM, so for any archtecture if
-CONFIG_PM is not defined we will have this error.
+Header moved from linux/pci_ids.h to uapi/linux/pci_ids.h,
+use the new header directly so we can drop
+the wrapper in include/linux/pci_ids.h.
 
-while moving the lynxfb_suspend() function some very obvious
-checkpatch errors, like space after comma, space after if, space
-before opening brace, were taken care of.
-
-Reported-by: kbuild test robot <fengguang.wu@intel.com>
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
+ drivers/video/fbdev/gxt4500.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-v3: no change
-v2: some extra spaces in the comments were removed.
-
- drivers/staging/sm750fb/sm750.c | 110 +++++++++++++++++++---------------------
- 1 file changed, 53 insertions(+), 57 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 753869e..476dc5c 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -303,62 +303,6 @@ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
-     return ret;
- }
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 135d78a..2415d3d 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -10,7 +10,7 @@
+ #include <linux/fb.h>
+ #include <linux/console.h>
+ #include <linux/pci.h>
+-#include <linux/pci_ids.h>
++#include <uapi/linux/pci_ids.h>
+ #include <linux/delay.h>
+ #include <linux/string.h>
  
--
--
--
--#ifdef CONFIG_PM
--static int lynxfb_suspend(struct pci_dev * pdev,pm_message_t mesg)
--{
--	struct fb_info * info;
--	struct lynx_share * share;
--	int ret;
--	
--
--	if(mesg.event = pdev->dev.power.power_state.event)
--		return 0;
--
--	ret = 0;
--	share = pci_get_drvdata(pdev);
--	switch (mesg.event) {
--	case PM_EVENT_FREEZE:
--	case PM_EVENT_PRETHAW:
--		pdev->dev.power.power_state = mesg;
--		return 0;
--	}
--
--	console_lock();
--	if (mesg.event & PM_EVENT_SLEEP) {
--		info = share->fbinfo[0];
--		if(info)
--			fb_set_suspend(info, 1);/* 1 means do suspend*/
--
--		info = share->fbinfo[1];
--		if(info)
--			fb_set_suspend(info, 1);/* 1 means do suspend*/
--
--		ret = pci_save_state(pdev);
--		if(ret){
--			pr_err("error:%d occured in pci_save_state\n",ret);
--			return ret;
--		}
--
--		/* set chip to sleep mode	*/
--		if(share->suspend)
--			(*share->suspend)(share);
--
--		pci_disable_device(pdev);
--		ret = pci_set_power_state(pdev,pci_choose_state(pdev,mesg));
--		if(ret){
--			pr_err("error:%d occured in pci_set_power_state\n",ret);
--			return ret;
--		}
--	}
--
--	pdev->dev.power.power_state = mesg;
--	console_unlock();
--	return ret;
--}
--
- static int lynxfb_ops_set_par(struct fb_info * info)
- {
- 	struct lynxfb_par * par;
-@@ -369,7 +313,6 @@ static int lynxfb_ops_set_par(struct fb_info * info)
- 	struct fb_fix_screeninfo * fix;
- 	int ret;
- 	unsigned int line_length;
--	
- 
- 	if(!info)
- 		return -EINVAL;
-@@ -441,6 +384,7 @@ static int lynxfb_ops_set_par(struct fb_info * info)
- 		ret = output->proc_setMode(output,var,fix);
- 	return ret;
- }
-+
- static inline unsigned int chan_to_field(unsigned int chan,struct fb_bitfield * bf)
- {
- 	chan &= 0xffff;
-@@ -448,6 +392,58 @@ static inline unsigned int chan_to_field(unsigned int chan,struct fb_bitfield *
- 	return chan << bf->offset;
- }
- 
-+#ifdef CONFIG_PM
-+static int lynxfb_suspend(struct pci_dev *pdev, pm_message_t mesg)
-+{
-+	struct fb_info *info;
-+	struct lynx_share *share;
-+	int ret;
-+
-+	if (mesg.event = pdev->dev.power.power_state.event)
-+		return 0;
-+
-+	ret = 0;
-+	share = pci_get_drvdata(pdev);
-+	switch (mesg.event) {
-+	case PM_EVENT_FREEZE:
-+	case PM_EVENT_PRETHAW:
-+		pdev->dev.power.power_state = mesg;
-+		return 0;
-+	}
-+
-+	console_lock();
-+	if (mesg.event & PM_EVENT_SLEEP) {
-+		info = share->fbinfo[0];
-+		if (info)
-+			/* 1 means do suspend*/
-+			fb_set_suspend(info, 1);
-+		info = share->fbinfo[1];
-+		if (info)
-+			/* 1 means do suspend*/
-+			fb_set_suspend(info, 1);
-+
-+		ret = pci_save_state(pdev);
-+		if (ret) {
-+			pr_err("error:%d occurred in pci_save_state\n", ret);
-+			return ret;
-+		}
-+
-+		/* set chip to sleep mode*/
-+		if (share->suspend)
-+			(*share->suspend)(share);
-+
-+		pci_disable_device(pdev);
-+		ret = pci_set_power_state(pdev, pci_choose_state(pdev, mesg));
-+		if (ret) {
-+			pr_err("error:%d occurred in pci_set_power_state\n", ret);
-+			return ret;
-+		}
-+	}
-+
-+	pdev->dev.power.power_state = mesg;
-+	console_unlock();
-+	return ret;
-+}
- 
- static int lynxfb_resume(struct pci_dev* pdev)
- {
 -- 
-1.8.1.2
+MST
 

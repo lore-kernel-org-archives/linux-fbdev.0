@@ -1,201 +1,108 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:18:30 +0000
-Subject: [PATCH v1 40/47] video: fbdev: pm3fb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1426893517-2511-41-git-send-email-mcgrof@do-not-panic.com>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Tue, 31 Mar 2015 18:27:06 +0000
+Subject: [PATCHv6 00/10] Cleanup and add support for SSD1305
+Message-Id: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Hi,
 
-This driver uses the same area for MTRR as for the ioremap().
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
+this patch series is the result of making the ssd1307fb driver work with
+a Newhaven OLED display using the Solomon SSD1305 controller. To achieve
+this the intialization code for the SSD1306 and the SSD1307 is merged
+and based on DT configuration to reflect the various possible wirings
+of the SSD130X controller (04/10). Based on these changes it is straight
+forward to add support for the SSD1305 controller (06/10).
 
-There are a few motivations for this:
+While working on the driver I realized that it was not possible to
+correctly mmap the video memory from userspace since the address handed
+to the userspace app is a logical one where it should be a physical one.
+Patch 01/10 fixes this. Furthermore the memory reserved by kzalloc is
+not page aligned while the address handed to userspace is aligned to the
+next page frame. This problem is fixed by using __get_free_pages() in 02/10.
 
-a) Take advantage of PAT when available
+Furthermore a module parameter is added to set the delay for the
+deferred io update (07/10). Also the backlight class is implemented to make
+the contrast setting available in userspace (09/10).
 
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
+changes since v1 (thanks to Maxime for the feedback):
+- dedicated patch for fixing smem_start address
+- remove page reserve upon vmalloc
+- remove return value check upon display turn-off at module unload
+- use a module parameter refreshrate rather than delaydivider
+- allocate fbdefio dynamically
+- use sysfs_create_groups to create sysfs entries
+- remove contrast, vhcom and dclk properties from DT since they are
+  not part of hw description. The contrast module parameter was added
+  to set contrast at load time. vhcom and dclk stays at it's default
+  values for now.
+- add new DT properties to in tree users of ssd130X
+- rebased to apply on top of linux-next
 
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (de33c442e)
+changes since v2 (thanks to Maxime again):
+- free memory allocated by vmalloc on driver unload
+- set default values in the init code to the ones of the existing ssd1307
+  init code
+- added two ACKs (Maxime Ripard)
 
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
+changes since v3:
+- use backlight class rather than dedicated sysfs files to set the=20
+  contrast (Thanks to Tomi Valkeinen)
+- remove [PATCHv3 08/10] fbdev: ssd1307fb: Add module parameter bitsperpixel
+- add new patch to blank the display (unreviewed)
+- allocate video memory through __get_free_pages() rather than vmalloc
+  (Thanks to Geert Uytterhoeven)
+- minor rewordings of the commit messages
 
-@ mtrr_found @
-expression index, base, size;
-@@
+changes since v4 (thanks to Maxime):
+- added two ACKs (Maxime Ripard)
+- fixed typo: s/REFRASHRATE/REFRESHRATE
+- updated the documentation to make clear the unit of com-offset
+- move addition of the module parameter contrast to a separate patch (09/11)
+- fix indentation errors
+- get rid of device_id in the device_info struct
 
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
+changes since v5:
+- remove [PATCHv5 09/11] fbdev: ssd1307fb: Add module parameter to set
+  the initial contrast
+- remove unnecessary variable initialization in the deviceinfo struct as
+  pointed out by Maxime
+- make the variable dclk_div hold the actual divider rather than the
+  corresponding bit value
+- remove ret variable in ssd1307fb_blank() (thanks to Olliver Schinagl)
+- fixed bit mask for com_invdir as indicated by Olliver
+- change initialization of the charge pump as suggested by Olliver
+- change the default value for prechargep2 to 0x2 (thanks to Olliver)
+- change DT property name "com-sequential" to "com-seq"
+- added one ACK (Maxime Ripard)
+- added Tested-by Olliver Schinagl
 
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
+Thomas Niederpr=C3=BCm (10):
+  fbdev: ssd1307fb: fix memory address smem_start.
+  fbdev: ssd1307fb: Allocate page aligned video memory.
+  of: Add Solomon Systech vendor prefix.
+  fbdev: ssd1307fb: Unify init code and obtain hw specific bits from DT
+  ARM: mxs: fix in tree users of ssd1306
+  fbdev: ssd1307fb: Add support for SSD1305
+  fbdev: ssd1307fb: Add a module parameter to set the refresh rate
+  fbdev: ssd1307fb: Turn off display on driver unload.
+  fbdev: ssd1307fb: add backlight controls for setting the contrast
+  fbdev: ssd1307fb: Add blank mode
 
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ .../devicetree/bindings/video/ssd1307fb.txt        |  23 +-
+ arch/arm/boot/dts/imx28-cfa10036.dts               |   3 +
+ drivers/video/fbdev/Kconfig                        |   1 +
+ drivers/video/fbdev/ssd1307fb.c                    | 288 +++++++++++++++--=
+----
+ 5 files changed, 234 insertions(+), 82 deletions(-)
 
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
----
- drivers/video/fbdev/pm3fb.c | 30 ++++++------------------------
- 1 file changed, 6 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/video/fbdev/pm3fb.c b/drivers/video/fbdev/pm3fb.c
-index 77b99ed..6ff5077 100644
---- a/drivers/video/fbdev/pm3fb.c
-+++ b/drivers/video/fbdev/pm3fb.c
-@@ -32,9 +32,6 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/pci.h>
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
- 
- #include <video/pm3fb.h>
- 
-@@ -58,11 +55,7 @@
- static int hwcursor = 1;
- static char *mode_option;
- static bool noaccel;
--
--/* mtrr option */
--#ifdef CONFIG_MTRR
- static bool nomtrr;
--#endif
- 
- /*
-  * This structure defines the hardware state of the graphics card. Normally
-@@ -76,7 +69,7 @@ struct pm3_par {
- 	u32		video;		/* video flags before blanking */
- 	u32		base;		/* screen base in 128 bits unit */
- 	u32		palette[16];
--	int		mtrr_handle;
-+	int		wc_cookie;
- };
- 
- /*
-@@ -1374,8 +1367,8 @@ static int pm3fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
- 		printk(KERN_WARNING "pm3fb: Can't reserve smem.\n");
- 		goto err_exit_mmio;
- 	}
--	info->screen_base -		ioremap_nocache(pm3fb_fix.smem_start, pm3fb_fix.smem_len);
-+	info->screen_base = ioremap_wc(pm3fb_fix.smem_start,
-+				       pm3fb_fix.smem_len);
- 	if (!info->screen_base) {
- 		printk(KERN_WARNING "pm3fb: Can't ioremap smem area.\n");
- 		release_mem_region(pm3fb_fix.smem_start, pm3fb_fix.smem_len);
-@@ -1383,12 +1376,9 @@ static int pm3fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
- 	}
- 	info->screen_size = pm3fb_fix.smem_len;
- 
--#ifdef CONFIG_MTRR
- 	if (!nomtrr)
--		par->mtrr_handle = mtrr_add(pm3fb_fix.smem_start,
--						pm3fb_fix.smem_len,
--						MTRR_TYPE_WRCOMB, 1);
--#endif
-+		par->wc_cookie = arch_phys_wc_add(pm3fb_fix.smem_start,
-+						  pm3fb_fix.smem_len);
- 	info->fbops = &pm3fb_ops;
- 
- 	par->video = PM3_READ_REG(par, PM3VideoControl);
-@@ -1478,11 +1468,7 @@ static void pm3fb_remove(struct pci_dev *dev)
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
- 
--#ifdef CONFIG_MTRR
--		if (par->mtrr_handle >= 0)
--			mtrr_del(par->mtrr_handle, info->fix.smem_start,
--				 info->fix.smem_len);
--#endif /* CONFIG_MTRR */
-+		arch_phys_wc_del(par->wc_cookie);
- 		iounmap(info->screen_base);
- 		release_mem_region(fix->smem_start, fix->smem_len);
- 		iounmap(par->v_regs);
-@@ -1533,10 +1519,8 @@ static int __init pm3fb_setup(char *options)
- 			noaccel = 1;
- 		else if (!strncmp(this_opt, "hwcursor=", 9))
- 			hwcursor = simple_strtoul(this_opt + 9, NULL, 0);
--#ifdef CONFIG_MTRR
- 		else if (!strncmp(this_opt, "nomtrr", 6))
- 			nomtrr = 1;
--#endif
- 		else
- 			mode_option = this_opt;
- 	}
-@@ -1577,10 +1561,8 @@ MODULE_PARM_DESC(noaccel, "Disable acceleration");
- module_param(hwcursor, int, 0644);
- MODULE_PARM_DESC(hwcursor, "Enable hardware cursor "
- 			"(1=enable, 0=disable, default=1)");
--#ifdef CONFIG_MTRR
- module_param(nomtrr, bool, 0);
- MODULE_PARM_DESC(nomtrr, "Disable MTRR support (0 or 1=disabled) (default=0)");
--#endif
- 
- MODULE_DESCRIPTION("Permedia3 framebuffer device driver");
- MODULE_LICENSE("GPL");
--- 
-2.3.2.209.gd67f9d5.dirty
+--=20
+2.3.0
 

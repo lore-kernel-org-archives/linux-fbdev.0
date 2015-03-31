@@ -1,222 +1,439 @@
-From: Davor Joja <davorjoja@logicbricks.com>
-Date: Wed, 11 Mar 2015 15:27:06 +0000
-Subject: [PATCH 05/10] fbdev: xylon: logiCVC IP core definitions
-Message-Id: <6f76e4ca-652d-4bea-b358-236747f628f3@mail.xylon.local>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Tue, 31 Mar 2015 18:27:10 +0000
+Subject: [PATCHv6 04/10] fbdev: ssd1307fb: Unify init code and obtain hw specific bits from DT
+Message-Id: <1427826436-21783-5-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
-In-Reply-To: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, geert@linux-m68k.org
-Cc: Davor Joja <davorjoja@logicbricks.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-Driver hw parameters and definitions for logiCVC IP core.
+The 130X controllers are very similar from the configuration point of view.
+The configuration registers for the SSD1305/6/7 are bit identical (except t=
+he
+the VHCOM register and the the default values for clock setup register). Th=
+is
+patch unifies the init code of the controller and adds hardware specific
+properties to DT that are needed to correctly initialize the device.
 
-Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
+The SSD130X can be wired to the OLED panel in various ways. Even for the
+same controller this wiring can differ from one display module to another
+and can not be probed by software. The added DT properties reflect these
+hardware decisions of the display module manufacturer.
+The 'com-sequential', 'com-lrremap' and 'com-invdir' values define different
+possibilities for the COM signals pin configuration and readout direction
+of the video memory. The 'segment-no-remap' allows the inversion of the
+memory-to-pin mapping ultimately inverting the order of the controllers
+output pins. The 'prechargepX' values need to be adapted according to the
+capacitance of the OLEDs pixel cells.
+
+So far these hardware specific bits are hard coded in the init code, making
+the driver usable only for one certain wiring of the controller. This patch
+makes the driver usable with all possible hardware setups, given a valid hw
+description in DT. If these values are not set in DT the default values,
+as they are set in the ssd1307 init code right now, are used. This implies
+that without the corresponding DT property "segment-no-remap" the segment
+remap of the ssd130X controller gets activated. Even though this is not the
+default behaviour according to the datasheet it maintains backward
+compatibility with older DTBs.
+
+Note that the SSD1306 does not seem to be using the configuration written to
+the registers at all. Therefore this patch does not try to maintain these
+values without changes in DT. For reference an example is added to the DT
+bindings documentation that reproduces the configuration that is set in the
+current init code.
+
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+Tested-by: Olliver Schinagl <o.schinagl@ultimaker.com>
 ---
- drivers/video/fbdev/xylon/logicvc.h | 192 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 192 insertions(+)
- create mode 100644 drivers/video/fbdev/xylon/logicvc.h
+ .../devicetree/bindings/video/ssd1307fb.txt        |  21 +++
+ drivers/video/fbdev/ssd1307fb.c                    | 177 ++++++++++++-----=
+----
+ 2 files changed, 125 insertions(+), 73 deletions(-)
 
-diff --git a/drivers/video/fbdev/xylon/logicvc.h b/drivers/video/fbdev/xylon/logicvc.h
-new file mode 100644
-index 0000000..7c1266e
---- /dev/null
-+++ b/drivers/video/fbdev/xylon/logicvc.h
-@@ -0,0 +1,192 @@
-+/*
-+ * Xylon logiCVC IP core parameters
-+ *
-+ * Copyright (C) 2015 Xylon d.o.o.
-+ * Author: Davor Joja <davor.joja@logicbricks.com>
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
+diff --git a/Documentation/devicetree/bindings/video/ssd1307fb.txt b/Docume=
+ntation/devicetree/bindings/video/ssd1307fb.txt
+index 7a12542..635efa3 100644
+--- a/Documentation/devicetree/bindings/video/ssd1307fb.txt
++++ b/Documentation/devicetree/bindings/video/ssd1307fb.txt
+@@ -15,6 +15,16 @@ Required properties:
+=20
+ Optional properties:
+   - reset-active-low: Is the reset gpio is active on physical low?
++  - solomon,segment-no-remap: Display needs normal (non-inverted) data col=
+umn
++                              to segment mapping
++  - solomon,com-seq: Display uses sequential COM pin configuration
++  - solomon,com-lrremap: Display uses left-right COM pin remap
++  - solomon,com-invdir: Display uses inverted COM pin scan direction
++  - solomon,com-offset: Number of the COM pin wired to the first display l=
+ine
++  - solomon,prechargep1: Length of deselect period (phase 1) in clock cycl=
+es.
++  - solomon,prechargep2: Length of precharge period (phase 2) in clock cyc=
+les.
++                         This needs to be the higher, the higher the capac=
+itance
++                         of the OLED's pixels is
+=20
+ [0]: Documentation/devicetree/bindings/pwm/pwm.txt
+=20
+@@ -26,3 +36,14 @@ ssd1307: oled@3c {
+         reset-gpios =3D <&gpio2 7>;
+         reset-active-low;
+ };
 +
-+#ifndef __LOGICVC_H__
-+#define __LOGICVC_H__
++ssd1306: oled@3c {
++        compatible =3D "solomon,ssd1306fb-i2c";
++        reg =3D <0x3c>;
++        pwms =3D <&pwm 4 3000>;
++        reset-gpios =3D <&gpio2 7>;
++        reset-active-low;
++        solomon,com-lrremap;
++        solomon,com-invdir;
++        solomon,com-offset =3D <32>;
++};
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index 8d34c56..8667c77 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -40,20 +40,34 @@
+=20
+ struct ssd1307fb_par;
+=20
+-struct ssd1307fb_ops {
+-	int (*init)(struct ssd1307fb_par *);
+-	int (*remove)(struct ssd1307fb_par *);
++struct ssd1307fb_deviceinfo {
++	u32 default_vcomh;
++	u32 default_dclk_div;
++	u32 default_dclk_frq;
++	int need_pwm;
++	int need_chargepump;
+ };
+=20
+ struct ssd1307fb_par {
++	u32 com_invdir;
++	u32 com_lrremap;
++	u32 com_offset;
++	u32 com_seq;
++	u32 contrast;
++	u32 dclk_div;
++	u32 dclk_frq;
++	struct ssd1307fb_deviceinfo *device_info;
+ 	struct i2c_client *client;
+ 	u32 height;
+ 	struct fb_info *info;
+-	struct ssd1307fb_ops *ops;
+ 	u32 page_offset;
++	u32 prechargep1;
++	u32 prechargep2;
+ 	struct pwm_device *pwm;
+ 	u32 pwm_period;
+ 	int reset;
++	u32 seg_remap;
++	u32 vcomh;
+ 	u32 width;
+ };
+=20
+@@ -254,69 +268,46 @@ static struct fb_deferred_io ssd1307fb_defio =3D {
+ 	.deferred_io	=3D ssd1307fb_deferred_io,
+ };
+=20
+-static int ssd1307fb_ssd1307_init(struct ssd1307fb_par *par)
++static int ssd1307fb_init(struct ssd1307fb_par *par)
+ {
+ 	int ret;
++	u32 precharge, dclk, com_invdir, compins;
+=20
+-	par->pwm =3D pwm_get(&par->client->dev, NULL);
+-	if (IS_ERR(par->pwm)) {
+-		dev_err(&par->client->dev, "Could not get PWM from device tree!\n");
+-		return PTR_ERR(par->pwm);
+-	}
+-
+-	par->pwm_period =3D pwm_get_period(par->pwm);
+-	/* Enable the PWM */
+-	pwm_config(par->pwm, par->pwm_period / 2, par->pwm_period);
+-	pwm_enable(par->pwm);
+-
+-	dev_dbg(&par->client->dev, "Using PWM%d with a %dns period.\n",
+-		par->pwm->pwm, par->pwm_period);
+-
+-	/* Map column 127 of the OLED to segment 0 */
+-	ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_SEG_REMAP_ON);
+-	if (ret < 0)
+-		return ret;
+-
+-	/* Turn on the display */
+-	ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
+-	if (ret < 0)
+-		return ret;
+-
+-	return 0;
+-}
++	if (par->device_info->need_pwm) {
++		par->pwm =3D pwm_get(&par->client->dev, NULL);
++		if (IS_ERR(par->pwm)) {
++			dev_err(&par->client->dev, "Could not get PWM from device tree!\n");
++			return PTR_ERR(par->pwm);
++		}
+=20
+-static int ssd1307fb_ssd1307_remove(struct ssd1307fb_par *par)
+-{
+-	pwm_disable(par->pwm);
+-	pwm_put(par->pwm);
+-	return 0;
+-}
++		par->pwm_period =3D pwm_get_period(par->pwm);
++		/* Enable the PWM */
++		pwm_config(par->pwm, par->pwm_period / 2, par->pwm_period);
++		pwm_enable(par->pwm);
+=20
+-static struct ssd1307fb_ops ssd1307fb_ssd1307_ops =3D {
+-	.init	=3D ssd1307fb_ssd1307_init,
+-	.remove	=3D ssd1307fb_ssd1307_remove,
+-};
+-
+-static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
+-{
+-	int ret;
++		dev_dbg(&par->client->dev, "Using PWM%d with a %dns period.\n",
++			par->pwm->pwm, par->pwm_period);
++	};
+=20
+ 	/* Set initial contrast */
+ 	ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_CONTRAST);
+ 	if (ret < 0)
+ 		return ret;
+=20
+-	ret =3D ssd1307fb_write_cmd(par->client, 0x7f);
+-	if (ret < 0)
+-		return ret;
+-
+-	/* Set COM direction */
+-	ret =3D ssd1307fb_write_cmd(par->client, 0xc8);
++	ret =3D ssd1307fb_write_cmd(par->client, par->contrast);
+ 	if (ret < 0)
+ 		return ret;
+=20
+ 	/* Set segment re-map */
+-	ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_SEG_REMAP_ON);
++	if (par->seg_remap) {
++		ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_SEG_REMAP_ON);
++		if (ret < 0)
++			return ret;
++	};
 +
-+/*
-+ * All logiCVC registers are only 32-bit accessible.
-+ * All logiCVC registers are aligned to 8 byte boundary.
-+ */
-+#define LOGICVC_REG_STRIDE		8
-+#define LOGICVC_HSYNC_FRONT_PORCH_ROFF	(0  * LOGICVC_REG_STRIDE)
-+#define LOGICVC_HSYNC_ROFF		(1  * LOGICVC_REG_STRIDE)
-+#define LOGICVC_HSYNC_BACK_PORCH_ROFF	(2  * LOGICVC_REG_STRIDE)
-+#define LOGICVC_HRES_ROFF		(3  * LOGICVC_REG_STRIDE)
-+#define LOGICVC_VSYNC_FRONT_PORCH_ROFF	(4  * LOGICVC_REG_STRIDE)
-+#define LOGICVC_VSYNC_ROFF		(5  * LOGICVC_REG_STRIDE)
-+#define LOGICVC_VSYNC_BACK_PORCH_ROFF	(6  * LOGICVC_REG_STRIDE)
-+#define LOGICVC_VRES_ROFF		(7  * LOGICVC_REG_STRIDE)
-+#define LOGICVC_CTRL_ROFF		(8  * LOGICVC_REG_STRIDE)
-+#define LOGICVC_DTYPE_ROFF		(9  * LOGICVC_REG_STRIDE)
-+#define LOGICVC_BACKGROUND_COLOR_ROFF	(10 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_CLUT_SELECT_ROFF	(12 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_INT_STAT_ROFF		(13 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_INT_MASK_ROFF		(14 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_POWER_CTRL_ROFF		(15 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_IP_VERSION_ROFF		(31 * LOGICVC_REG_STRIDE)
-+/* Version 3.x */
-+#define LOGICVC_VBUFF_SELECT_ROFF	(11 * LOGICVC_REG_STRIDE)
-+
-+/*
-+ * logiCVC layer registers offsets (common for each layer)
-+ * Last possible logiCVC layer (No.4) implements only "Layer memory address"
-+ * and "Layer control" registers.
-+ */
-+/* Version 3.x */
-+#define LOGICVC_LAYER_HOFF_ROFF		(0 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_LAYER_VOFF_ROFF		(1 * LOGICVC_REG_STRIDE)
-+/* Version 4.x */
-+#define LOGICVC_LAYER_ADDR_ROFF		(0 * LOGICVC_REG_STRIDE)
-+/* Common */
-+#define LOGICVC_LAYER_HPOS_ROFF		(2 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_LAYER_VPOS_ROFF		(3 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_LAYER_HSIZE_ROFF	(4 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_LAYER_VSIZE_ROFF	(5 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_LAYER_ALPHA_ROFF	(6 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_LAYER_CTRL_ROFF		(7 * LOGICVC_REG_STRIDE)
-+#define LOGICVC_LAYER_TRANSP_COLOR_ROFF	(8 * LOGICVC_REG_STRIDE)
-+
-+/* logiCVC interrupt bits */
-+#define LOGICVC_INT_L0_UPDATED		(1 << 0)
-+#define LOGICVC_INT_L1_UPDATED		(1 << 1)
-+#define LOGICVC_INT_L2_UPDATED		(1 << 2)
-+#define LOGICVC_INT_L3_UPDATED		(1 << 3)
-+#define LOGICVC_INT_L4_UPDATED		(1 << 4)
-+#define LOGICVC_INT_V_SYNC		(1 << 5)
-+#define LOGICVC_INT_E_VIDEO_VALID	(1 << 6)
-+#define LOGICVC_INT_FIFO_UNDERRUN	(1 << 7)
-+#define LOGICVC_INT_L0_CLUT_SW		(1 << 8)
-+#define LOGICVC_INT_L1_CLUT_SW		(1 << 9)
-+#define LOGICVC_INT_L2_CLUT_SW		(1 << 10)
-+#define LOGICVC_INT_L3_CLUT_SW		(1 << 11)
-+#define LOGICVC_INT_L4_CLUT_SW		(1 << 12)
-+
-+/* logiCVC layer base offsets */
-+#define LOGICVC_LAYER_OFFSET		0x80
-+#define LOGICVC_LAYER_BASE_OFFSET	0x100
-+#define LOGICVC_LAYER_BASE_END		0x338
-+#define LOGICVC_LAYER_0_OFFSET		(0 * LOGICVC_LAYER_OFFSET)
-+#define LOGICVC_LAYER_1_OFFSET		(1 * LOGICVC_LAYER_OFFSET)
-+#define LOGICVC_LAYER_2_OFFSET		(2 * LOGICVC_LAYER_OFFSET)
-+#define LOGICVC_LAYER_3_OFFSET		(3 * LOGICVC_LAYER_OFFSET)
-+#define LOGICVC_LAYER_4_OFFSET		(4 * LOGICVC_LAYER_OFFSET)
-+
-+/* logiCVC layer CLUT base offsets */
-+#define LOGICVC_CLUT_OFFSET		0x800
-+#define LOGICVC_CLUT_BASE_OFFSET	0x1000
-+#define LOGICVC_CLUT_L0_CLUT_0_OFFSET	(0 * LOGICVC_CLUT_OFFSET)
-+#define LOGICVC_CLUT_L0_CLUT_1_OFFSET	(1 * LOGICVC_CLUT_OFFSET)
-+#define LOGICVC_CLUT_L1_CLUT_0_OFFSET	(2 * LOGICVC_CLUT_OFFSET)
-+#define LOGICVC_CLUT_L1_CLUT_1_OFFSET	(3 * LOGICVC_CLUT_OFFSET)
-+#define LOGICVC_CLUT_L2_CLUT_0_OFFSET	(4 * LOGICVC_CLUT_OFFSET)
-+#define LOGICVC_CLUT_L2_CLUT_1_OFFSET	(5 * LOGICVC_CLUT_OFFSET)
-+#define LOGICVC_CLUT_L3_CLUT_0_OFFSET	(6 * LOGICVC_CLUT_OFFSET)
-+#define LOGICVC_CLUT_L3_CLUT_1_OFFSET	(7 * LOGICVC_CLUT_OFFSET)
-+#define LOGICVC_CLUT_L4_CLUT_0_OFFSET	(8 * LOGICVC_CLUT_OFFSET)
-+#define LOGICVC_CLUT_L4_CLUT_1_OFFSET	(9 * LOGICVC_CLUT_OFFSET)
-+#define LOGICVC_CLUT_REGISTER_SIZE	8
-+#define LOGICVC_CLUT_0_INDEX_OFFSET	2
-+#define LOGICVC_CLUT_1_INDEX_OFFSET	1
-+
-+/* logiCVC registers range */
-+#define LOGICVC_REGISTERS_RANGE		0x6000
-+#define LOGICVC_LAYER_REGISTERS_RANGE	0x80
-+
-+/* logiCVC control register bits */
-+#define LOGICVC_CTRL_HSYNC			(1 << 0)
-+#define LOGICVC_CTRL_HSYNC_INVERT		(1 << 1)
-+#define LOGICVC_CTRL_VSYNC			(1 << 2)
-+#define LOGICVC_CTRL_VSYNC_INVERT		(1 << 3)
-+#define LOGICVC_CTRL_DATA_ENABLE		(1 << 4)
-+#define LOGICVC_CTRL_DATA_ENABLE_INVERT		(1 << 5)
-+#define LOGICVC_CTRL_PIXEL_DATA_INVERT		(1 << 7)
-+#define LOGICVC_CTRL_PIXEL_DATA_TRIGGER_INVERT	(1 << 8)
-+#define LOGICVC_CTRL_DISABLE_LAYER_UPDATE	(1 << 9)
-+
-+/* logiCVC layer control register bits */
-+#define LOGICVC_LAYER_CTRL_ENABLE			(1 << 0)
-+#define LOGICVC_LAYER_CTRL_COLOR_TRANSPARENCY_DISABLE	(1 << 1)
-+#define LOGICVC_LAYER_CTRL_EXTERNAL_BUFFER_SWITCH	(1 << 2)
-+#define LOGICVC_LAYER_CTRL_INTERLACE		(1 << 3)
-+#define LOGICVC_LAYER_CTRL_PIXEL_FORMAT_ABGR	(1 << 4)
-+
-+/* logiCVC register initial values */
-+#define LOGICVC_DTYPE_REG_INIT	0
-+
-+/* logiCVC display power signals */
-+#define LOGICVC_EN_BLIGHT_MSK	(1 << 0)
-+#define LOGICVC_EN_VDD_MSK	(1 << 1)
-+#define LOGICVC_EN_VEE_MSK	(1 << 2)
-+#define LOGICVC_V_EN_MSK	(1 << 3)
-+
-+/* logiCVC various definitions */
-+#define LOGICVC_MAJOR_REVISION_SHIFT	11
-+#define LOGICVC_MAJOR_REVISION_MASK	0x3F
-+#define LOGICVC_MINOR_REVISION_SHIFT	5
-+#define LOGICVC_MINOR_REVISION_MASK	0x3F
-+#define LOGICVC_PATCH_LEVEL_MASK	0x1F
-+
-+#define LOGICVC_MAX_LAYER_BUFFERS	3
-+#define LOGICVC_MIN_XRES		64
-+#define LOGICVC_MIN_VRES		1
-+#define LOGICVC_MAX_XRES		2048
-+#define LOGICVC_MAX_VRES		2048
-+#define LOGICVC_CLUT_SIZE		256
-+
-+#define LOGICVC_COEFF_Y_R		29900
-+#define LOGICVC_COEFF_Y_G		58700
-+#define LOGICVC_COEFF_Y_B		11400
-+#define LOGICVC_COEFF_Y			0
-+#define LOGICVC_COEFF_U			12800000
-+#define LOGICVC_COEFF_V			12800000
-+#define LOGICVC_COEFF_U_R		16868
-+#define LOGICVC_COEFF_U_G		33107
-+#define LOGICVC_COEFF_U_B		49970
-+#define LOGICVC_COEFF_V_R		49980
-+#define LOGICVC_COEFF_V_G		41850
-+#define LOGICVC_COEFF_V_B		8128
-+#define LOGICVC_COEFF_ITU656_Y		1600000
-+#define LOGICVC_COEFF_ITU656_U_R	17258
-+#define LOGICVC_COEFF_ITU656_U_G	33881
-+#define LOGICVC_COEFF_ITU656_U_B	51140
-+#define LOGICVC_COEFF_ITU656_V_R	51138
-+#define LOGICVC_COEFF_ITU656_V_G	42820
-+#define LOGICVC_COEFF_ITU656_V_B	8316
-+#define LOGICVC_YUV_NORM		100000
-+#define LOGICVC_COEFF_R_U		1402524
-+#define LOGICVC_COEFF_R			179000000
-+#define LOGICVC_COEFF_G_U		714403
-+#define LOGICVC_COEFF_G_V		344340
-+#define LOGICVC_COEFF_G			135000000
-+#define LOGICVC_COEFF_B_V		1773049
-+#define LOGICVC_COEFF_B			226000000
-+#define LOGICVC_RGB_NORM		1000000
-+
-+enum xylonfb_layer_type {
-+	LOGICVC_LAYER_RGB,
-+	LOGICVC_LAYER_YUV,
-+	LOGICVC_LAYER_ALPHA
++	/* Set COM direction */
++	com_invdir =3D 0xc0 | (par->com_invdir & 0x1) << 3;
++	ret =3D ssd1307fb_write_cmd(par->client,  com_invdir);
+ 	if (ret < 0)
+ 		return ret;
+=20
+@@ -334,7 +325,7 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par =
+*par)
+ 	if (ret < 0)
+ 		return ret;
+=20
+-	ret =3D ssd1307fb_write_cmd(par->client, 0x20);
++	ret =3D ssd1307fb_write_cmd(par->client, par->com_offset);
+ 	if (ret < 0)
+ 		return ret;
+=20
+@@ -343,7 +334,8 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par =
+*par)
+ 	if (ret < 0)
+ 		return ret;
+=20
+-	ret =3D ssd1307fb_write_cmd(par->client, 0xf0);
++	dclk =3D ((par->dclk_div - 1) & 0xf) | (par->dclk_frq & 0xf) << 4;
++	ret =3D ssd1307fb_write_cmd(par->client, dclk);
+ 	if (ret < 0)
+ 		return ret;
+=20
+@@ -352,7 +344,8 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par =
+*par)
+ 	if (ret < 0)
+ 		return ret;
+=20
+-	ret =3D ssd1307fb_write_cmd(par->client, 0x22);
++	precharge =3D (par->prechargep1 & 0xf) | (par->prechargep2 & 0xf) << 4;
++	ret =3D ssd1307fb_write_cmd(par->client, precharge);
+ 	if (ret < 0)
+ 		return ret;
+=20
+@@ -361,7 +354,9 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par =
+*par)
+ 	if (ret < 0)
+ 		return ret;
+=20
+-	ret =3D ssd1307fb_write_cmd(par->client, 0x22);
++	compins =3D 0x02 | (!par->com_seq & 0x1) << 4
++				   | (par->com_lrremap & 0x1) << 5;
++	ret =3D ssd1307fb_write_cmd(par->client, compins);
+ 	if (ret < 0)
+ 		return ret;
+=20
+@@ -370,7 +365,7 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par =
+*par)
+ 	if (ret < 0)
+ 		return ret;
+=20
+-	ret =3D ssd1307fb_write_cmd(par->client, 0x49);
++	ret =3D ssd1307fb_write_cmd(par->client, par->vcomh);
+ 	if (ret < 0)
+ 		return ret;
+=20
+@@ -379,7 +374,8 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par =
+*par)
+ 	if (ret < 0)
+ 		return ret;
+=20
+-	ret =3D ssd1307fb_write_cmd(par->client, 0x14);
++	ret =3D ssd1307fb_write_cmd(par->client,
++		(par->device_info->need_chargepump & 0x1 << 2) & 0x14);
+ 	if (ret < 0)
+ 		return ret;
+=20
+@@ -393,6 +389,7 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par =
+*par)
+ 	if (ret < 0)
+ 		return ret;
+=20
++	/* Set column range */
+ 	ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COL_RANGE);
+ 	if (ret < 0)
+ 		return ret;
+@@ -405,6 +402,7 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par =
+*par)
+ 	if (ret < 0)
+ 		return ret;
+=20
++	/* Set page range */
+ 	ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PAGE_RANGE);
+ 	if (ret < 0)
+ 		return ret;
+@@ -426,18 +424,28 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_pa=
+r *par)
+ 	return 0;
+ }
+=20
+-static struct ssd1307fb_ops ssd1307fb_ssd1306_ops =3D {
+-	.init	=3D ssd1307fb_ssd1306_init,
++static struct ssd1307fb_deviceinfo ssd1307fb_ssd1306_deviceinfo =3D {
++	.default_vcomh =3D 0x20,
++	.default_dclk_div =3D 1,
++	.default_dclk_frq =3D 8,
++	.need_chargepump =3D 1,
 +};
 +
-+enum xylonfb_alpha_type {
-+	LOGICVC_ALPHA_LAYER,
-+	LOGICVC_ALPHA_PIXEL,
-+	LOGICVC_ALPHA_CLUT_16BPP,
-+	LOGICVC_ALPHA_CLUT_32BPP
-+};
++static struct ssd1307fb_deviceinfo ssd1307fb_ssd1307_deviceinfo =3D {
++	.default_vcomh =3D 0x20,
++	.default_dclk_div =3D 2,
++	.default_dclk_frq =3D 12,
++	.need_pwm =3D 1,
+ };
+=20
+ static const struct of_device_id ssd1307fb_of_match[] =3D {
+ 	{
+ 		.compatible =3D "solomon,ssd1306fb-i2c",
+-		.data =3D (void *)&ssd1307fb_ssd1306_ops,
++		.data =3D (void *)&ssd1307fb_ssd1306_deviceinfo,
+ 	},
+ 	{
+ 		.compatible =3D "solomon,ssd1307fb-i2c",
+-		.data =3D (void *)&ssd1307fb_ssd1307_ops,
++		.data =3D (void *)&ssd1307fb_ssd1307_deviceinfo,
+ 	},
+ 	{},
+ };
+@@ -468,8 +476,8 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 	par->info =3D info;
+ 	par->client =3D client;
+=20
+-	par->ops =3D (struct ssd1307fb_ops *)of_match_device(ssd1307fb_of_match,
+-							   &client->dev)->data;
++	par->device_info =3D (struct ssd1307fb_deviceinfo *)of_match_device(
++			ssd1307fb_of_match, &client->dev)->data;
+=20
+ 	par->reset =3D of_get_named_gpio(client->dev.of_node,
+ 					 "reset-gpios", 0);
+@@ -487,6 +495,27 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 	if (of_property_read_u32(node, "solomon,page-offset", &par->page_offset))
+ 		par->page_offset =3D 1;
+=20
++	if (of_property_read_u32(node, "solomon,com-offset", &par->com_offset))
++		par->com_offset =3D 0;
 +
-+#endif /* __LOGICVC_H__ */
--- 
-1.9.1
++	if (of_property_read_u32(node, "solomon,prechargep1", &par->prechargep1))
++		par->prechargep1 =3D 2;
++
++	if (of_property_read_u32(node, "solomon,prechargep2", &par->prechargep2))
++		par->prechargep2 =3D 2;
++
++	par->seg_remap =3D !of_property_read_bool(node, "solomon,segment-no-remap=
+");
++	par->com_seq =3D of_property_read_bool(node, "solomon,com-seq");
++	par->com_lrremap =3D of_property_read_bool(node, "solomon,com-lrremap");
++	par->com_invdir =3D of_property_read_bool(node, "solomon,com-invdir");
++
++	par->contrast =3D 127;
++	par->vcomh =3D par->device_info->default_vcomh;
++
++	/* Setup display timing */
++	par->dclk_div =3D par->device_info->default_dclk_div;
++	par->dclk_frq =3D par->device_info->default_dclk_frq;
++
+ 	vmem_size =3D par->width * par->height / 8;
+=20
+ 	vmem =3D (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
+@@ -539,11 +568,9 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 	gpio_set_value(par->reset, 1);
+ 	udelay(4);
+=20
+-	if (par->ops->init) {
+-		ret =3D par->ops->init(par);
+-		if (ret)
+-			goto reset_oled_error;
+-	}
++	ret =3D ssd1307fb_init(par);
++	if (ret)
++		goto reset_oled_error;
+=20
+ 	ret =3D register_framebuffer(info);
+ 	if (ret) {
+@@ -556,8 +583,10 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 	return 0;
+=20
+ panel_init_error:
+-	if (par->ops->remove)
+-		par->ops->remove(par);
++	if (par->device_info->need_pwm) {
++		pwm_disable(par->pwm);
++		pwm_put(par->pwm);
++	};
+ reset_oled_error:
+ 	fb_deferred_io_cleanup(info);
+ fb_alloc_error:
+@@ -571,8 +600,10 @@ static int ssd1307fb_remove(struct i2c_client *client)
+ 	struct ssd1307fb_par *par =3D info->par;
+=20
+ 	unregister_framebuffer(info);
+-	if (par->ops->remove)
+-		par->ops->remove(par);
++	if (par->device_info->need_pwm) {
++		pwm_disable(par->pwm);
++		pwm_put(par->pwm);
++	};
+ 	fb_deferred_io_cleanup(info);
+ 	__free_pages(__va(info->fix.smem_start), get_order(info->fix.smem_len));
+ 	framebuffer_release(info);
+--=20
+2.3.0
 

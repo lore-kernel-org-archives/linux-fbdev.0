@@ -1,116 +1,79 @@
-From: Davor Joja <davorjoja@logicbricks.com>
-Date: Wed, 11 Mar 2015 15:27:08 +0000
-Subject: [PATCH 07/10] uapi: linux: Xylon framebuffer driver header file
-Message-Id: <475f3ca4-2c0a-4c98-96bf-2831b5396966@mail.xylon.local>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Tue, 31 Mar 2015 18:27:12 +0000
+Subject: [PATCHv6 06/10] fbdev: ssd1307fb: Add support for SSD1305
+Message-Id: <1427826436-21783-7-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
-In-Reply-To: <1426087631-9952-1-git-send-email-davorjoja@logicbricks.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, geert@linux-m68k.org
-Cc: Davor Joja <davorjoja@logicbricks.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-Driver header file containing structures and IOCTLs for user space
-applications to be able to use advanced logiCVC hw functionality.
+This patch adds support for the SSD1305 OLED controller.
 
-Signed-off-by: Davor Joja <davorjoja@logicbricks.com>
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
 ---
- include/uapi/linux/xylonfb.h | 85 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 85 insertions(+)
- create mode 100644 include/uapi/linux/xylonfb.h
+ Documentation/devicetree/bindings/video/ssd1307fb.txt |  2 +-
+ drivers/video/fbdev/ssd1307fb.c                       | 11 +++++++++++
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/include/uapi/linux/xylonfb.h b/include/uapi/linux/xylonfb.h
-new file mode 100644
-index 0000000..662c02f
---- /dev/null
-+++ b/include/uapi/linux/xylonfb.h
-@@ -0,0 +1,85 @@
-+/*
-+ * Xylon logiCVC frame buffer driver IOCTL parameters
-+ *
-+ * Copyright (C) 2015 Xylon d.o.o.
-+ * Author: Davor Joja <davor.joja@logicbricks.com>
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#ifndef __XYLONFB_H__
-+#define __XYLONFB_H__
-+
-+#include <linux/types.h>
-+
-+struct xylonfb_hw_access {
-+	__u32 offset;
-+	__u32 value;
-+	bool set;
+diff --git a/Documentation/devicetree/bindings/video/ssd1307fb.txt b/Docume=
+ntation/devicetree/bindings/video/ssd1307fb.txt
+index 635efa3..d1be78d 100644
+--- a/Documentation/devicetree/bindings/video/ssd1307fb.txt
++++ b/Documentation/devicetree/bindings/video/ssd1307fb.txt
+@@ -2,7 +2,7 @@
+=20
+ Required properties:
+   - compatible: Should be "solomon,<chip>fb-<bus>". The only supported bus=
+ for
+-    now is i2c, and the supported chips are ssd1306 and ssd1307.
++    now is i2c, and the supported chips are ssd1305, ssd1306 and ssd1307.
+   - reg: Should contain address of the controller on the I2C bus. Most lik=
+ely
+          0x3c or 0x3d
+   - pwm: Should contain the pwm to use according to the OF device tree PWM
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index 8667c77..f685d24 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -424,6 +424,12 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ 	return 0;
+ }
+=20
++static struct ssd1307fb_deviceinfo ssd1307fb_ssd1305_deviceinfo =3D {
++	.default_vcomh =3D 0x34,
++	.default_dclk_div =3D 1,
++	.default_dclk_frq =3D 7,
 +};
 +
-+/* Used only with logiCVC 3.x */
-+struct xylonfb_layer_buffer {
-+	__u8 id;
-+	bool set;
-+};
-+
-+struct xylonfb_layer_color {
-+	__u32 raw_rgb;
-+	__u8 use_raw;
-+	__u8 r;
-+	__u8 g;
-+	__u8 b;
-+	bool set;
-+};
-+
-+struct xylonfb_layer_geometry {
-+	__u16 x;
-+	__u16 y;
-+	__u16 width;
-+	__u16 height;
-+	__u16 x_offset;
-+	__u16 y_offset;
-+	bool set;
-+};
-+
-+struct xylonfb_layer_transparency {
-+	__u8 alpha;
-+	bool set;
-+};
-+
-+/* Xylon FB IOCTL's */
-+#define XYLONFB_IOW(num, dtype)		_IOW('x', num, dtype)
-+#define XYLONFB_IOR(num, dtype)		_IOR('x', num, dtype)
-+#define XYLONFB_IOWR(num, dtype)	_IOWR('x', num, dtype)
-+#define XYLONFB_IO(num)			_IO('x', num)
-+
-+#define XYLONFB_VSYNC_CTRL		XYLONFB_IOR(30, bool)
-+#define XYLONFB_LAYER_IDX		XYLONFB_IOR(31, unsigned int)
-+#define XYLONFB_LAYER_ALPHA		\
-+	XYLONFB_IOR(32, struct xylonfb_layer_transparency)
-+#define XYLONFB_LAYER_COLOR_TRANSP_CTRL	XYLONFB_IOW(33, bool)
-+#define XYLONFB_LAYER_COLOR_TRANSP \
-+	XYLONFB_IOR(34, struct xylonfb_layer_color)
-+#define XYLONFB_LAYER_GEOMETRY \
-+	XYLONFB_IOR(35, struct xylonfb_layer_geometry)
-+#define XYLONFB_LAYER_BUFFER \
-+	XYLONFB_IOR(36, struct xylonfb_layer_buffer)
-+#define XYLONFB_LAYER_BUFFER_OFFSET	XYLONFB_IOR(37, unsigned int)
-+#define XYLONFB_BACKGROUND_COLOR \
-+	XYLONFB_IOR(38, struct xylonfb_layer_color)
-+#define XYLONFB_LAYER_EXT_BUFF_SWITCH	XYLONFB_IOW(39, bool)
-+#define XYLONFB_HW_ACCESS \
-+	XYLONFB_IOR(40, struct xylonfb_hw_access)
-+#define XYLONFB_IP_CORE_VERSION		XYLONFB_IOR(41, __u32)
-+#define XYLONFB_WAIT_EDID		XYLONFB_IOW(42, unsigned int)
-+#define XYLONFB_GET_EDID		XYLONFB_IOR(43, char)
-+
-+#endif /* __XYLONFB_H__ */
--- 
-1.9.1
+ static struct ssd1307fb_deviceinfo ssd1307fb_ssd1306_deviceinfo =3D {
+ 	.default_vcomh =3D 0x20,
+ 	.default_dclk_div =3D 1,
+@@ -440,6 +446,10 @@ static struct ssd1307fb_deviceinfo ssd1307fb_ssd1307_d=
+eviceinfo =3D {
+=20
+ static const struct of_device_id ssd1307fb_of_match[] =3D {
+ 	{
++		.compatible =3D "solomon,ssd1305fb-i2c",
++		.data =3D (void *)&ssd1307fb_ssd1305_deviceinfo,
++	},
++	{
+ 		.compatible =3D "solomon,ssd1306fb-i2c",
+ 		.data =3D (void *)&ssd1307fb_ssd1306_deviceinfo,
+ 	},
+@@ -612,6 +622,7 @@ static int ssd1307fb_remove(struct i2c_client *client)
+ }
+=20
+ static const struct i2c_device_id ssd1307fb_i2c_id[] =3D {
++	{ "ssd1305fb", 0 },
+ 	{ "ssd1306fb", 0 },
+ 	{ "ssd1307fb", 0 },
+ 	{ }
+--=20
+2.3.0
 

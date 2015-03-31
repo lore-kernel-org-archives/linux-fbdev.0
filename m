@@ -1,83 +1,57 @@
 From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Mon, 16 Mar 2015 17:11:48 +0000
-Subject: [PATCHv4 00/10] Cleanup and add support for SSD1305
-Message-Id: <1426525918-12745-1-git-send-email-niederp@physik.uni-kl.de>
+Date: Tue, 31 Mar 2015 18:27:16 +0000
+Subject: [PATCHv6 10/10] fbdev: ssd1307fb: Add blank mode
+Message-Id: <1427826436-21783-11-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
 Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-This patch series is the result of making the ssd1307fb driver work with
-a Newhaven OLED display using the Solomon SSD1305 controller. To achieve
-this the intialization code for the SSD1306 and the SSD1307 is merged
-and based on DT configuration to reflect the various possible wirings
-of the SSD130X controller (04/10). Based on these changes it is straight
-forward to add support for the SSD1305 controller (06/10).
+This patch adds ssd1307fb_blank() to make the framebuffer capable
+of blanking.
 
-While working on the driver I realized that it was not possible to
-correctly mmap the video memory from userspace since the address handed
-to the userspace app is a logical one where it should be a physical one.
-Patch 01/10 fixes this. Furthermore the memory reserved by kzalloc is
-not page aligned while the address handed to userspace is aligned to the
-next page frame. This problem is fixed by using __get_free_pages() in 02/10.
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+---
+ drivers/video/fbdev/ssd1307fb.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Furthermore a module parameter is added to set the delay for the
-deferred io update (07/10). Also the backlight class is implemented to make
-the contrast setting available in userspace (09/10).
-
-changes since v1 (thanks to Maxime for the feedback):
-- dedicated patch for fixing smem_start address
-- remove page reserve upon vmalloc
-- remove return value check upon display turn-off at module unload
-- use a module parameter refreshrate rather than delaydivider
-- allocate fbdefio dynamically
-- use sysfs_create_groups to create sysfs entries
-- remove contrast, vhcom and dclk properties from DT since they are
-  not part of hw description. The contrast module parameter was added
-  to set contrast at load time. vhcom and dclk stays at it's default
-  values for now.
-- add new DT properties to in tree users of ssd130X
-- rebased to apply on top of linux-next
-
-changes since v2 (thanks to Maxime again):
-- free memory allocated by vmalloc on driver unload
-- set default values in the init code to the ones of the existing ssd1307
-  init code
-- added two ACKs (Maxime Ripard)
-
-changes since v3:
-- use backlight class rather than dedicated sysfs files to set the=20
-  contrast (Thanks to Tomi Valkeinen)
-- remove [PATCHv3 08/10] fbdev: ssd1307fb: Add module parameter bitsperpixel
-- add new patch to blank the display (unreviewed)
-- allocate video memory through __get_free_pages() rather than vmalloc
-  (Thanks to Geert Uytterhoeven)
-- minor rewordings of the commit messages
-
-Thomas Niederpr=C3=BCm (10):
-  fbdev: ssd1307fb: fix memory address smem_start.
-  fbdev: ssd1307fb: Allocate page aligned video memory.
-  of: Add Solomon Systech vendor prefix.
-  fbdev: ssd1307fb: Unify init code and obtain hw specific bits from DT
-  ARM: mxs: fix in tree users of ssd1306
-  fbdev: ssd1307fb: Add support for SSD1305
-  fbdev: ssd1307fb: Add a module parameter to set the refresh rate
-  fbdev: ssd1307fb: Turn off display on driver unload.
-  fbdev: ssd1307fb: add backlight controls for setting the contrast
-  fbdev: ssd1307fb: Add blank mode
-
- .../devicetree/bindings/vendor-prefixes.txt        |   1 +
- .../devicetree/bindings/video/ssd1307fb.txt        |  23 +-
- arch/arm/boot/dts/imx28-cfa10036.dts               |   3 +
- drivers/video/fbdev/Kconfig                        |   1 +
- drivers/video/fbdev/ssd1307fb.c                    | 310 +++++++++++++++--=
-----
- 5 files changed, 250 insertions(+), 88 deletions(-)
-
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index 77efed7..8fc224c 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -235,6 +235,16 @@ static ssize_t ssd1307fb_write(struct fb_info *info, c=
+onst char __user *buf,
+ 	return count;
+ }
+=20
++static int ssd1307fb_blank(int blank_mode, struct fb_info *info)
++{
++	struct ssd1307fb_par *par =3D info->par;
++
++	if (blank_mode !=3D FB_BLANK_UNBLANK)
++		return ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
++	else
++		return ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
++}
++
+ static void ssd1307fb_fillrect(struct fb_info *info, const struct fb_fillr=
+ect *rect)
+ {
+ 	struct ssd1307fb_par *par =3D info->par;
+@@ -260,6 +270,7 @@ static struct fb_ops ssd1307fb_ops =3D {
+ 	.owner		=3D THIS_MODULE,
+ 	.fb_read	=3D fb_sys_read,
+ 	.fb_write	=3D ssd1307fb_write,
++	.fb_blank	=3D ssd1307fb_blank,
+ 	.fb_fillrect	=3D ssd1307fb_fillrect,
+ 	.fb_copyarea	=3D ssd1307fb_copyarea,
+ 	.fb_imageblit	=3D ssd1307fb_imageblit,
 --=20
 2.3.0
 

@@ -1,230 +1,150 @@
-From: Liu Ying <Ying.Liu@freescale.com>
-Date: Thu, 19 Mar 2015 06:07:37 +0000
-Subject: [PATCH v3] video: mxsfb: Make sure axi clock is enabled when accessing registers
-Message-Id: <1426745257-6110-1-git-send-email-Ying.Liu@freescale.com>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Tue, 31 Mar 2015 18:27:15 +0000
+Subject: [PATCHv6 09/10] fbdev: ssd1307fb: add backlight controls for setting the contrast
+Message-Id: <1427826436-21783-10-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Peter Chen <peter.chen@freescale.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Fabio Estevam <fabio.estevam@freescale.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-The LCDIF engines embedded in i.MX6sl and i.MX6sx SoCs need the axi clock
-as the engine's system clock.  The clock should be enabled when accessing
-LCDIF registers, otherwise the kernel would hang up.  We should also keep
-the clock enabled when the engine is being active to scan out frames from
-memory.  This patch makes sure the axi clock is enabled when accessing
-registers so that the kernel hang up issue can be fixed.
+The backlight class is used to create userspace handles for
+setting the OLED contrast.
 
-Reported-by: Peter Chen <peter.chen@freescale.com>
-Tested-by: Peter Chen <peter.chen@freescale.com>
-Cc: <stable@vger.kernel.org> # 3.19+
-Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
-v2->v3:
-* To address Tomi's comment, improve the commit message only.
+ drivers/video/fbdev/Kconfig     |  1 +
+ drivers/video/fbdev/ssd1307fb.c | 58 +++++++++++++++++++++++++++++++++++++=
+++++
+ 2 files changed, 59 insertions(+)
 
-v1->v2:
-* Add 'Tested-by: Peter Chen <peter.chen@freescale.com>' tag.
-* Add 'Cc: <stable@vger.kernel.org> # 3.19+' tag.
-
- drivers/video/fbdev/mxsfb.c | 70 ++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 56 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
-index f8ac4a4..a8cf3b2 100644
---- a/drivers/video/fbdev/mxsfb.c
-+++ b/drivers/video/fbdev/mxsfb.c
-@@ -316,6 +316,18 @@ static int mxsfb_check_var(struct fb_var_screeninfo *var,
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index b3dd417..da70bae 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2478,6 +2478,7 @@ config FB_SSD1307
+ 	select FB_SYS_IMAGEBLIT
+ 	select FB_DEFERRED_IO
+ 	select PWM
++	select FB_BACKLIGHT
+ 	help
+ 	  This driver implements support for the Solomon SSD1307
+ 	  OLED controller over I2C.
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index 5f3d5a8..77efed7 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -7,6 +7,7 @@
+  */
+=20
+ #include <linux/module.h>
++#include <linux/backlight.h>
+ #include <linux/kernel.h>
+ #include <linux/i2c.h>
+ #include <linux/fb.h>
+@@ -38,6 +39,8 @@
+ #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
+ #define	SSD1307FB_SET_VCOMH		0xdb
+=20
++#define MAX_CONTRAST 255
++
+ #define REFRESHRATE 1
+=20
+ static u_int refreshrate =3D REFRESHRATE;
+@@ -424,6 +427,43 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
  	return 0;
  }
- 
-+static inline void mxsfb_enable_axi_clk(struct mxsfb_info *host)
+=20
++static int ssd1307fb_update_bl(struct backlight_device *bdev)
 +{
-+	if (host->clk_axi)
-+		clk_prepare_enable(host->clk_axi);
++	struct ssd1307fb_par *par =3D bl_get_data(bdev);
++	int ret;
++	int brightness =3D bdev->props.brightness;
++
++	par->contrast =3D brightness;
++
++	ret =3D ssd1307fb_write_cmd(par->client, SSD1307FB_CONTRAST);
++	if (ret < 0)
++		return ret;
++	ret =3D ssd1307fb_write_cmd(par->client, par->contrast);
++	if (ret < 0)
++		return ret;
++	return 0;
 +}
 +
-+static inline void mxsfb_disable_axi_clk(struct mxsfb_info *host)
++static int ssd1307fb_get_brightness(struct backlight_device *bdev)
 +{
-+	if (host->clk_axi)
-+		clk_disable_unprepare(host->clk_axi);
++	struct ssd1307fb_par *par =3D bl_get_data(bdev);
++
++	return par->contrast;
 +}
 +
- static void mxsfb_enable_controller(struct fb_info *fb_info)
++static int ssd1307fb_check_fb(struct backlight_device *bdev,
++				   struct fb_info *info)
++{
++	return (info->bl_dev =3D bdev);
++}
++
++static const struct backlight_ops ssd1307fb_bl_ops =3D {
++	.options	=3D BL_CORE_SUSPENDRESUME,
++	.update_status	=3D ssd1307fb_update_bl,
++	.get_brightness	=3D ssd1307fb_get_brightness,
++	.check_fb	=3D ssd1307fb_check_fb,
++};
++
+ static struct ssd1307fb_deviceinfo ssd1307fb_ssd1305_deviceinfo =3D {
+ 	.default_vcomh =3D 0x34,
+ 	.default_dclk_div =3D 1,
+@@ -464,6 +504,8 @@ MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
+ static int ssd1307fb_probe(struct i2c_client *client,
+ 			   const struct i2c_device_id *id)
  {
- 	struct mxsfb_info *host = to_imxfb_host(fb_info);
-@@ -333,14 +345,13 @@ static void mxsfb_enable_controller(struct fb_info *fb_info)
- 		}
++	struct backlight_device *bl;
++	char bl_name[12];
+ 	struct fb_info *info;
+ 	struct device_node *node =3D client->dev.of_node;
+ 	struct fb_deferred_io *ssd1307fb_defio;
+@@ -599,10 +641,24 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 		goto panel_init_error;
  	}
- 
--	if (host->clk_axi)
--		clk_prepare_enable(host->clk_axi);
--
- 	if (host->clk_disp_axi)
- 		clk_prepare_enable(host->clk_disp_axi);
- 	clk_prepare_enable(host->clk);
- 	clk_set_rate(host->clk, PICOS2KHZ(fb_info->var.pixclock) * 1000U);
- 
-+	mxsfb_enable_axi_clk(host);
+=20
++	snprintf(bl_name, sizeof(bl_name), "ssd1307fb%d", info->node);
++	bl =3D backlight_device_register(bl_name, &client->dev, par,
++				       &ssd1307fb_bl_ops, NULL);
++	bl->props.brightness =3D par->contrast;
++	bl->props.max_brightness =3D MAX_CONTRAST;
++	info->bl_dev =3D bl;
 +
- 	/* if it was disabled, re-enable the mode again */
- 	writel(CTRL_DOTCLK_MODE, host->base + LCDC_CTRL + REG_SET);
- 
-@@ -380,11 +391,11 @@ static void mxsfb_disable_controller(struct fb_info *fb_info)
- 	reg = readl(host->base + LCDC_VDCTRL4);
- 	writel(reg & ~VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4);
- 
-+	mxsfb_disable_axi_clk(host);
-+
- 	clk_disable_unprepare(host->clk);
- 	if (host->clk_disp_axi)
- 		clk_disable_unprepare(host->clk_disp_axi);
--	if (host->clk_axi)
--		clk_disable_unprepare(host->clk_axi);
- 
- 	host->enabled = 0;
- 
-@@ -421,6 +432,8 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- 		mxsfb_disable_controller(fb_info);
- 	}
- 
-+	mxsfb_enable_axi_clk(host);
-+
- 	/* clear the FIFOs */
- 	writel(CTRL1_FIFO_CLEAR, host->base + LCDC_CTRL1 + REG_SET);
- 
-@@ -438,6 +451,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- 		ctrl |= CTRL_SET_WORD_LENGTH(3);
- 		switch (host->ld_intf_width) {
- 		case STMLCDIF_8BIT:
-+			mxsfb_disable_axi_clk(host);
- 			dev_err(&host->pdev->dev,
- 					"Unsupported LCD bus width mapping\n");
- 			return -EINVAL;
-@@ -451,6 +465,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- 		writel(CTRL1_SET_BYTE_PACKAGING(0x7), host->base + LCDC_CTRL1);
- 		break;
- 	default:
-+		mxsfb_disable_axi_clk(host);
- 		dev_err(&host->pdev->dev, "Unhandled color depth of %u\n",
- 				fb_info->var.bits_per_pixel);
- 		return -EINVAL;
-@@ -504,6 +519,8 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- 			fb_info->fix.line_length * fb_info->var.yoffset,
- 			host->base + host->devdata->next_buf);
- 
-+	mxsfb_disable_axi_clk(host);
-+
- 	if (reenable)
- 		mxsfb_enable_controller(fb_info);
- 
-@@ -582,10 +599,16 @@ static int mxsfb_pan_display(struct fb_var_screeninfo *var,
- 
- 	offset = fb_info->fix.line_length * var->yoffset;
- 
-+	if (!host->enabled)
-+		mxsfb_enable_axi_clk(host);
-+
- 	/* update on next VSYNC */
- 	writel(fb_info->fix.smem_start + offset,
- 			host->base + host->devdata->next_buf);
- 
-+	if (!host->enabled)
-+		mxsfb_disable_axi_clk(host);
-+
++	if (IS_ERR(bl)) {
++		dev_err(&client->dev, "unable to register backlight device: %ld\n",
++			PTR_ERR(bl));
++		goto bl_init_error;
++	}
+ 	dev_info(&client->dev, "fb%d: %s framebuffer device registered, using %d =
+bytes of video memory\n", info->node, info->fix.id, vmem_size);
+=20
  	return 0;
- }
- 
-@@ -608,13 +631,17 @@ static int mxsfb_restore_mode(struct mxsfb_info *host,
- 	unsigned line_count;
- 	unsigned period;
- 	unsigned long pa, fbsize;
--	int bits_per_pixel, ofs;
-+	int bits_per_pixel, ofs, ret = 0;
- 	u32 transfer_count, vdctrl0, vdctrl2, vdctrl3, vdctrl4, ctrl;
- 
-+	mxsfb_enable_axi_clk(host);
+=20
++bl_init_error:
++	unregister_framebuffer(info);
+ panel_init_error:
+ 	if (par->device_info->need_pwm) {
+ 		pwm_disable(par->pwm);
+@@ -622,6 +678,8 @@ static int ssd1307fb_remove(struct i2c_client *client)
+=20
+ 	ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
+=20
++	backlight_device_unregister(info->bl_dev);
 +
- 	/* Only restore the mode when the controller is running */
- 	ctrl = readl(host->base + LCDC_CTRL);
--	if (!(ctrl & CTRL_RUN))
--		return -EINVAL;
-+	if (!(ctrl & CTRL_RUN)) {
-+		ret = -EINVAL;
-+		goto err;
-+	}
- 
- 	vdctrl0 = readl(host->base + LCDC_VDCTRL0);
- 	vdctrl2 = readl(host->base + LCDC_VDCTRL2);
-@@ -635,7 +662,8 @@ static int mxsfb_restore_mode(struct mxsfb_info *host,
- 		break;
- 	case 1:
- 	default:
--		return -EINVAL;
-+		ret = -EINVAL;
-+		goto err;
- 	}
- 
- 	fb_info->var.bits_per_pixel = bits_per_pixel;
-@@ -673,10 +701,14 @@ static int mxsfb_restore_mode(struct mxsfb_info *host,
- 
- 	pa = readl(host->base + host->devdata->cur_buf);
- 	fbsize = fb_info->fix.line_length * vmode->yres;
--	if (pa < fb_info->fix.smem_start)
--		return -EINVAL;
--	if (pa + fbsize > fb_info->fix.smem_start + fb_info->fix.smem_len)
--		return -EINVAL;
-+	if (pa < fb_info->fix.smem_start) {
-+		ret = -EINVAL;
-+		goto err;
-+	}
-+	if (pa + fbsize > fb_info->fix.smem_start + fb_info->fix.smem_len) {
-+		ret = -EINVAL;
-+		goto err;
-+	}
- 	ofs = pa - fb_info->fix.smem_start;
- 	if (ofs) {
- 		memmove(fb_info->screen_base, fb_info->screen_base + ofs, fbsize);
-@@ -689,7 +721,11 @@ static int mxsfb_restore_mode(struct mxsfb_info *host,
- 	clk_prepare_enable(host->clk);
- 	host->enabled = 1;
- 
--	return 0;
-+err:
-+	if (ret)
-+		mxsfb_disable_axi_clk(host);
-+
-+	return ret;
- }
- 
- static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host,
-@@ -915,7 +951,9 @@ static int mxsfb_probe(struct platform_device *pdev)
- 	}
- 
- 	if (!host->enabled) {
-+		mxsfb_enable_axi_clk(host);
- 		writel(0, host->base + LCDC_CTRL);
-+		mxsfb_disable_axi_clk(host);
- 		mxsfb_set_par(fb_info);
- 		mxsfb_enable_controller(fb_info);
- 	}
-@@ -954,11 +992,15 @@ static void mxsfb_shutdown(struct platform_device *pdev)
- 	struct fb_info *fb_info = platform_get_drvdata(pdev);
- 	struct mxsfb_info *host = to_imxfb_host(fb_info);
- 
-+	mxsfb_enable_axi_clk(host);
-+
- 	/*
- 	 * Force stop the LCD controller as keeping it running during reboot
- 	 * might interfere with the BootROM's boot mode pads sampling.
- 	 */
- 	writel(CTRL_RUN, host->base + LCDC_CTRL + REG_CLR);
-+
-+	mxsfb_disable_axi_clk(host);
- }
- 
- static struct platform_driver mxsfb_driver = {
--- 
-2.1.0
+ 	unregister_framebuffer(info);
+ 	if (par->device_info->need_pwm) {
+ 		pwm_disable(par->pwm);
+--=20
+2.3.0
 

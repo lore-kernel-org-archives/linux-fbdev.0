@@ -1,65 +1,43 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 20 Mar 2015 23:17:51 +0000
-Subject: [PATCH v1 01/47] x86: mtrr: annotate mtrr_type_lookup() is only implemented on generic_mtrr_ops
-Message-Id: <1426893517-2511-2-git-send-email-mcgrof@do-not-panic.com>
+From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Date: Tue, 31 Mar 2015 18:27:07 +0000
+Subject: [PATCHv6 01/10] fbdev: ssd1307fb: fix memory address smem_start.
+Message-Id: <1427826436-21783-2-git-send-email-niederp@physik.uni-kl.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
+ <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Hansen <dave.hansen@linux.intel.com>, Stefan Bader <stefan.bader@canonical.com>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, toshi.kani@hp.com, bhelgaas@google.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, xen-devel@lists.xensource.com
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+the smem_start pointer of the framebuffer info struct needs to hold the
+physical address rather than the logical address. Right now the logical
+address returned by kmalloc is stored. This patch converts this address
+to a physical address and thus fixes a driver crash on mmaping the
+framebuffer memory due to an access to the wrong memory address.
 
-There area few users of mtrr_type_lookup(), including PAT.
-Note that PAT can be in theory enabled without MTRR fully
-kicking in, such is the case with Xen.
-
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: venkatesh.pallipadi@intel.com
-Cc: Stefan Bader <stefan.bader@canonical.com>
-Cc: konrad.wilk@oracle.com
-Cc: ville.syrjala@linux.intel.com
-Cc: david.vrabel@citrix.com
-Cc: jbeulich@suse.com
-Cc: toshi.kani@hp.com
-Cc: bhelgaas@google.com
-Cc: Roger Pau Monn=C3=A9 <roger.pau@citrix.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: xen-devel@lists.xensource.com
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
- arch/x86/kernel/cpu/mtrr/generic.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/ssd1307fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/=
-generic.c
-index 7d74f7b..09c82de 100644
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -230,6 +230,8 @@ u8 mtrr_type_lookup(u64 start, u64 end)
- 	int repeat;
- 	u64 partial_end;
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
+b.c
+index f7ed6d9..61e0ce8 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -515,7 +515,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 	info->var.blue.offset =3D 0;
 =20
-+	/* XXX: Currently only implemented on generic_mtrr_ops */
-+
- 	type =3D __mtrr_type_lookup(start, end, &partial_end, &repeat);
+ 	info->screen_base =3D (u8 __force __iomem *)vmem;
+-	info->fix.smem_start =3D (unsigned long)vmem;
++	info->fix.smem_start =3D __pa(vmem);
+ 	info->fix.smem_len =3D vmem_size;
 =20
- 	/*
+ 	fb_deferred_io_init(info);
 --=20
-2.3.2.209.gd67f9d5.dirty
+2.3.0
 

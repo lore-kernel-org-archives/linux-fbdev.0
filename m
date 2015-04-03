@@ -1,198 +1,232 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:21:39 +0000
-Subject: [PATCH v3 1/4] pci: add pci_iomap_wc() variants
-Message-Id: <1429647702-17315-2-git-send-email-mcgrof@do-not-panic.com>
+From: Liu Ying <Ying.Liu@freescale.com>
+Date: Fri, 03 Apr 2015 04:51:05 +0000
+Subject: [PATCH v4] video: mxsfb: Make sure axi clock is enabled when accessing registers
+Message-Id: <1428036665-14454-1-git-send-email-Ying.Liu@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429647702-17315-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1429647702-17315-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: cocci@systeme.lip6.fr
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: Peter Chen <peter.chen@freescale.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Fabio Estevam <fabio.estevam@freescale.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+The LCDIF engines embedded in i.MX6sl and i.MX6sx SoCs need the axi clock
+as the engine's system clock.  The clock should be enabled when accessing
+LCDIF registers, otherwise the kernel would hang up.  We should also keep
+the clock enabled when the engine is being active to scan out frames from
+memory.  This patch makes sure the axi clock is enabled when accessing
+registers so that the kernel hang up issue can be fixed.
 
-This allows drivers to take advantage of write-combining
-when possible. Ideally we'd have pci_read_bases() just
-peg an IORESOURCE_WC flag for us but where exactly
-video devices memory lie varies *largely* and at times things
-are mixed with MMIO registers, sometimes we can address
-the changes in drivers, other times the change requires
-intrusive changes.
-
-Although there is also arch_phys_wc_add() that makes use of
-architecture specific write-combining alternatives (MTRR on
-x86 when a system does not have PAT) we void polluting
-pci_iomap() space with it and force drivers and subsystems
-that want to use it to be explicit.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
-
-Cc: Toshi Kani <toshi.kani@hp.com>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Michael S. Tsirkin <mst@redhat.com>
-Cc: venkatesh.pallipadi@intel.com
-Cc: Stefan Bader <stefan.bader@canonical.com>
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Davidlohr Bueso <dbueso@suse.de>
-Cc: konrad.wilk@oracle.com
-Cc: ville.syrjala@linux.intel.com
-Cc: david.vrabel@citrix.com
-Cc: jbeulich@suse.com
-Cc: Roger Pau Monné <roger.pau@citrix.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: xen-devel@lists.xensource.com
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Reported-by: Peter Chen <peter.chen@freescale.com>
+Tested-by: Peter Chen <peter.chen@freescale.com>
+Cc: <stable@vger.kernel.org> # 3.19+
+Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
 ---
- include/asm-generic/pci_iomap.h | 14 ++++++++++
- lib/pci_iomap.c                 | 61 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 75 insertions(+)
+v3->v4:
+* To address Tomi's comment, enable/disable the axi clock in
+  mxsfb_pan_display() directly instead of checking the host->enabled flag.
 
-diff --git a/include/asm-generic/pci_iomap.h b/include/asm-generic/pci_iomap.h
-index 7389c87..b1e17fc 100644
---- a/include/asm-generic/pci_iomap.h
-+++ b/include/asm-generic/pci_iomap.h
-@@ -15,9 +15,13 @@ struct pci_dev;
- #ifdef CONFIG_PCI
- /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
- extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max);
-+extern void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max);
- extern void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
- 				     unsigned long offset,
- 				     unsigned long maxlen);
-+extern void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
-+					unsigned long offset,
-+					unsigned long maxlen);
- /* Create a virtual mapping cookie for a port on a given PCI device.
-  * Do not call this directly, it exists to make it easier for architectures
-  * to override */
-@@ -34,12 +38,22 @@ static inline void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned lon
- 	return NULL;
+v2->v3:
+* To address Tomi's comment, improve the commit message only.
+
+v1->v2:
+* Add 'Tested-by: Peter Chen <peter.chen@freescale.com>' tag.
+* Add 'Cc: <stable@vger.kernel.org> # 3.19+' tag.
+
+ drivers/video/fbdev/mxsfb.c | 68 +++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 54 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
+index f8ac4a4..0f64165 100644
+--- a/drivers/video/fbdev/mxsfb.c
++++ b/drivers/video/fbdev/mxsfb.c
+@@ -316,6 +316,18 @@ static int mxsfb_check_var(struct fb_var_screeninfo *var,
+ 	return 0;
  }
  
-+static inline void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max)
++static inline void mxsfb_enable_axi_clk(struct mxsfb_info *host)
 +{
-+	return NULL;
++	if (host->clk_axi)
++		clk_prepare_enable(host->clk_axi);
 +}
- static inline void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
- 					    unsigned long offset,
- 					    unsigned long maxlen)
++
++static inline void mxsfb_disable_axi_clk(struct mxsfb_info *host)
++{
++	if (host->clk_axi)
++		clk_disable_unprepare(host->clk_axi);
++}
++
+ static void mxsfb_enable_controller(struct fb_info *fb_info)
  {
- 	return NULL;
- }
-+static inline void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
-+					       unsigned long offset,
-+					       unsigned long maxlen)
-+{
-+	return NULL;
-+}
- #endif
+ 	struct mxsfb_info *host = to_imxfb_host(fb_info);
+@@ -333,14 +345,13 @@ static void mxsfb_enable_controller(struct fb_info *fb_info)
+ 		}
+ 	}
  
- #endif /* __ASM_GENERIC_IO_H */
-diff --git a/lib/pci_iomap.c b/lib/pci_iomap.c
-index bcce5f1..30b65ae 100644
---- a/lib/pci_iomap.c
-+++ b/lib/pci_iomap.c
-@@ -52,6 +52,46 @@ void __iomem *pci_iomap_range(struct pci_dev *dev,
- EXPORT_SYMBOL(pci_iomap_range);
+-	if (host->clk_axi)
+-		clk_prepare_enable(host->clk_axi);
+-
+ 	if (host->clk_disp_axi)
+ 		clk_prepare_enable(host->clk_disp_axi);
+ 	clk_prepare_enable(host->clk);
+ 	clk_set_rate(host->clk, PICOS2KHZ(fb_info->var.pixclock) * 1000U);
  
- /**
-+ * pci_iomap_wc_range - create a virtual WC mapping cookie for a PCI BAR
-+ * @dev: PCI device that owns the BAR
-+ * @bar: BAR number
-+ * @offset: map memory at the given offset in BAR
-+ * @maxlen: max length of the memory to map
-+ *
-+ * Using this function you will get a __iomem address to your device BAR.
-+ * You can access it using ioread*() and iowrite*(). These functions hide
-+ * the details if this is a MMIO or PIO address space and will just do what
-+ * you expect from them in the correct way. When possible write combining
-+ * is used.
-+ *
-+ * @maxlen specifies the maximum length to map. If you want to get access to
-+ * the complete BAR from offset to the end, pass %0 here.
-+ * */
-+void __iomem *pci_iomap_wc_range(struct pci_dev *dev,
-+				 int bar,
-+				 unsigned long offset,
-+				 unsigned long maxlen)
-+{
-+	resource_size_t start = pci_resource_start(dev, bar);
-+	resource_size_t len = pci_resource_len(dev, bar);
-+	unsigned long flags = pci_resource_flags(dev, bar);
++	mxsfb_enable_axi_clk(host);
 +
-+	if (len <= offset || !start)
-+		return NULL;
-+	len -= offset;
-+	start += offset;
-+	if (maxlen && len > maxlen)
-+		len = maxlen;
-+	if (flags & IORESOURCE_IO)
-+		return __pci_ioport_map(dev, start, len);
-+	if (flags & IORESOURCE_MEM)
-+		return ioremap_wc(start, len);
-+	/* What? */
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(pci_iomap_wc_range);
+ 	/* if it was disabled, re-enable the mode again */
+ 	writel(CTRL_DOTCLK_MODE, host->base + LCDC_CTRL + REG_SET);
+ 
+@@ -380,11 +391,11 @@ static void mxsfb_disable_controller(struct fb_info *fb_info)
+ 	reg = readl(host->base + LCDC_VDCTRL4);
+ 	writel(reg & ~VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4);
+ 
++	mxsfb_disable_axi_clk(host);
 +
-+/**
-  * pci_iomap - create a virtual mapping cookie for a PCI BAR
-  * @dev: PCI device that owns the BAR
-  * @bar: BAR number
-@@ -70,4 +110,25 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
- 	return pci_iomap_range(dev, bar, 0, maxlen);
+ 	clk_disable_unprepare(host->clk);
+ 	if (host->clk_disp_axi)
+ 		clk_disable_unprepare(host->clk_disp_axi);
+-	if (host->clk_axi)
+-		clk_disable_unprepare(host->clk_axi);
+ 
+ 	host->enabled = 0;
+ 
+@@ -421,6 +432,8 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+ 		mxsfb_disable_controller(fb_info);
+ 	}
+ 
++	mxsfb_enable_axi_clk(host);
++
+ 	/* clear the FIFOs */
+ 	writel(CTRL1_FIFO_CLEAR, host->base + LCDC_CTRL1 + REG_SET);
+ 
+@@ -438,6 +451,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+ 		ctrl |= CTRL_SET_WORD_LENGTH(3);
+ 		switch (host->ld_intf_width) {
+ 		case STMLCDIF_8BIT:
++			mxsfb_disable_axi_clk(host);
+ 			dev_err(&host->pdev->dev,
+ 					"Unsupported LCD bus width mapping\n");
+ 			return -EINVAL;
+@@ -451,6 +465,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+ 		writel(CTRL1_SET_BYTE_PACKAGING(0x7), host->base + LCDC_CTRL1);
+ 		break;
+ 	default:
++		mxsfb_disable_axi_clk(host);
+ 		dev_err(&host->pdev->dev, "Unhandled color depth of %u\n",
+ 				fb_info->var.bits_per_pixel);
+ 		return -EINVAL;
+@@ -504,6 +519,8 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+ 			fb_info->fix.line_length * fb_info->var.yoffset,
+ 			host->base + host->devdata->next_buf);
+ 
++	mxsfb_disable_axi_clk(host);
++
+ 	if (reenable)
+ 		mxsfb_enable_controller(fb_info);
+ 
+@@ -582,10 +599,14 @@ static int mxsfb_pan_display(struct fb_var_screeninfo *var,
+ 
+ 	offset = fb_info->fix.line_length * var->yoffset;
+ 
++	mxsfb_enable_axi_clk(host);
++
+ 	/* update on next VSYNC */
+ 	writel(fb_info->fix.smem_start + offset,
+ 			host->base + host->devdata->next_buf);
+ 
++	mxsfb_disable_axi_clk(host);
++
+ 	return 0;
  }
- EXPORT_SYMBOL(pci_iomap);
+ 
+@@ -608,13 +629,17 @@ static int mxsfb_restore_mode(struct mxsfb_info *host,
+ 	unsigned line_count;
+ 	unsigned period;
+ 	unsigned long pa, fbsize;
+-	int bits_per_pixel, ofs;
++	int bits_per_pixel, ofs, ret = 0;
+ 	u32 transfer_count, vdctrl0, vdctrl2, vdctrl3, vdctrl4, ctrl;
+ 
++	mxsfb_enable_axi_clk(host);
 +
-+/**
-+ * pci_iomap_wc - create a virtual WC mapping cookie for a PCI BAR
-+ * @dev: PCI device that owns the BAR
-+ * @bar: BAR number
-+ * @maxlen: length of the memory to map
-+ *
-+ * Using this function you will get a __iomem address to your device BAR.
-+ * You can access it using ioread*() and iowrite*(). These functions hide
-+ * the details if this is a MMIO or PIO address space and will just do what
-+ * you expect from them in the correct way. When possible write combining
-+ * is used.
-+ *
-+ * @maxlen specifies the maximum length to map. If you want to get access to
-+ * the complete BAR without checking for its length first, pass %0 here.
-+ * */
-+void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long maxlen)
-+{
-+	return pci_iomap_wc_range(dev, bar, 0, maxlen);
-+}
-+EXPORT_SYMBOL_GPL(pci_iomap_wc);
- #endif /* CONFIG_PCI */
+ 	/* Only restore the mode when the controller is running */
+ 	ctrl = readl(host->base + LCDC_CTRL);
+-	if (!(ctrl & CTRL_RUN))
+-		return -EINVAL;
++	if (!(ctrl & CTRL_RUN)) {
++		ret = -EINVAL;
++		goto err;
++	}
+ 
+ 	vdctrl0 = readl(host->base + LCDC_VDCTRL0);
+ 	vdctrl2 = readl(host->base + LCDC_VDCTRL2);
+@@ -635,7 +660,8 @@ static int mxsfb_restore_mode(struct mxsfb_info *host,
+ 		break;
+ 	case 1:
+ 	default:
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	fb_info->var.bits_per_pixel = bits_per_pixel;
+@@ -673,10 +699,14 @@ static int mxsfb_restore_mode(struct mxsfb_info *host,
+ 
+ 	pa = readl(host->base + host->devdata->cur_buf);
+ 	fbsize = fb_info->fix.line_length * vmode->yres;
+-	if (pa < fb_info->fix.smem_start)
+-		return -EINVAL;
+-	if (pa + fbsize > fb_info->fix.smem_start + fb_info->fix.smem_len)
+-		return -EINVAL;
++	if (pa < fb_info->fix.smem_start) {
++		ret = -EINVAL;
++		goto err;
++	}
++	if (pa + fbsize > fb_info->fix.smem_start + fb_info->fix.smem_len) {
++		ret = -EINVAL;
++		goto err;
++	}
+ 	ofs = pa - fb_info->fix.smem_start;
+ 	if (ofs) {
+ 		memmove(fb_info->screen_base, fb_info->screen_base + ofs, fbsize);
+@@ -689,7 +719,11 @@ static int mxsfb_restore_mode(struct mxsfb_info *host,
+ 	clk_prepare_enable(host->clk);
+ 	host->enabled = 1;
+ 
+-	return 0;
++err:
++	if (ret)
++		mxsfb_disable_axi_clk(host);
++
++	return ret;
+ }
+ 
+ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host,
+@@ -915,7 +949,9 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	if (!host->enabled) {
++		mxsfb_enable_axi_clk(host);
+ 		writel(0, host->base + LCDC_CTRL);
++		mxsfb_disable_axi_clk(host);
+ 		mxsfb_set_par(fb_info);
+ 		mxsfb_enable_controller(fb_info);
+ 	}
+@@ -954,11 +990,15 @@ static void mxsfb_shutdown(struct platform_device *pdev)
+ 	struct fb_info *fb_info = platform_get_drvdata(pdev);
+ 	struct mxsfb_info *host = to_imxfb_host(fb_info);
+ 
++	mxsfb_enable_axi_clk(host);
++
+ 	/*
+ 	 * Force stop the LCD controller as keeping it running during reboot
+ 	 * might interfere with the BootROM's boot mode pads sampling.
+ 	 */
+ 	writel(CTRL_RUN, host->base + LCDC_CTRL + REG_CLR);
++
++	mxsfb_disable_axi_clk(host);
+ }
+ 
+ static struct platform_driver mxsfb_driver = {
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.1.0
 

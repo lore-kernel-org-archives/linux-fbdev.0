@@ -1,92 +1,82 @@
-From: Doug Ledford <dledford@redhat.com>
-Date: Wed, 22 Apr 2015 20:58:59 +0000
-Subject: Re: ioremap_uc() followed by set_memory_wc() - burrying MTRR
-Message-Id: <1429736339.121496.25.camel@redhat.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-VQA/gkYPziMV8v3lRRct"
+From: Amitoj Kaur Chawla <amitoj1606@gmail.com>
+Date: Sun, 05 Apr 2015 01:53:47 +0000
+Subject: [PATCH] Staging: sm750fb: Remove extra parentheses around right bit shift operation
+Message-Id: <20150405014147.GA9738@amitoj-Inspiron-3542>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CALCETrV0B7rp08-VYjp5=1CWJp7=xTUTBYo3uGxX317RxAQT+w@mail.gmail.com>
-	 <20150421224601.GY5622@wotan.suse.de>
-	 <20150421225732.GA17356@obsidianresearch.com>
-	 <20150421233907.GA5622@wotan.suse.de>
-	 <20150422053939.GA29609@obsidianresearch.com>
-	 <20150422152328.GB5622@wotan.suse.de>
-	 <20150422161755.GA19500@obsidianresearch.com>
-	 <1429728791.121496.10.camel@redhat.com>
-	 <20150422204637.GA29491@obsidianresearch.com>
-In-Reply-To: <20150422204637.GA29491@obsidianresearch.com>
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Cc: "Luis R. Rodriguez" <mcgrof@suse.com>, Andy Lutomirski <luto@amacapital.net>, mike.marciniszyn@intel.com, infinipath@intel.com, linux-rdma@vger.kernel.org, awalls@md.metrocast.net, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Ville Syrj?l? <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-media@vger.kernel.org, X86 ML <x86@kernel.org>, mcgrof@do-not-panic.com
-
-
---=-VQA/gkYPziMV8v3lRRct
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2015-04-22 at 14:46 -0600, Jason Gunthorpe wrote:
-> On Wed, Apr 22, 2015 at 02:53:11PM -0400, Doug Ledford wrote:
->=20
-> > To be precise, the split is that ipath powers the old HTX bus cards tha=
-t
-> > only work in AMD systems, qib is all PCI-e cards.  I still have a few
-> > HTX cards, but I no longer have any systems with HTX slots, so we
-> > haven't even used this driver in testing for 3 or 4 years now.  And
-> > these are all old SDR cards, where the performance numbers were 800MB/s
-> > with WC enabled, 50MB/s without it.
->=20
-> Wow, I doubt any HTX systems are still in any kind of use.
->=20
-> It would be a nice clean up to drop the PPC support out of this driver
-> too. PPC never had HTX.
-
-commit f6d60848baf9f4015c76c665791875ed623cd5b7
-Author: Ralph Campbell <ralph.campbell@qlogic.com>
-Date:   Thu May 6 17:03:19 2010 -0700
-
-    IB/ipath: Remove support for QLogic PCIe QLE devices
-   =20
-    The ib_qib driver is taking over support for QLogic PCIe QLE
-devices,
-    so remove support for them from ib_ipath.  The ib_ipath driver now
-    supports only the obsolete QLogic Hyper-Transport IB host channel
-    adapter (model QHT7140).
-   =20
-    Signed-off-by: Ralph Campbell <ralph.campbell@qlogic.com>
-    Signed-off-by: Roland Dreier <rolandd@cisco.com>
-
-There you go.  It's been HTX only since 2010, and those cards were
-already old then.  I think we should seriously consider deprecating and
-then removing the driver.
-
-
---=20
-Doug Ledford <dledford@redhat.com>
-              GPG KeyID: 0E572FDD
-
-
-
---=-VQA/gkYPziMV8v3lRRct
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Removes extra parentheses around bitwise right shift operation.
 
-iQIcBAABAgAGBQJVOAuTAAoJELgmozMOVy/d0LEQAMVVAGuJLGbahwXf7hHSTkRy
-vEh/Pckd/ASMkXvSEaROZvUhuwAv59q5HnDcvf2+SOgFjf8D1M2gaCXRYB1Y+rEW
-yfNK0wmubEDLw0wj8oh163X2/pzFtePJmYSVL486IMxkRrqSUllx+suvyOBStYu+
-CUOMnwmef+KDMfvoNAoGAIyaz7OxBXGr9p4DZyHCu3FFU8QmHXpDOJ3HLiPIuylD
-xdXrO1WeJ+eGYJJ9qzb+TSFjRsaXGkLXybE4B4PTm7wOFMDFvHftDaHBhk3D21u7
-Icl0752jfUkXepELkmuj3j3TEWYNl/rjeAORP96T42cMmHSFapJuOYvdO6pMv7pE
-78/evMJhFC/JLqbdzUbE5b6yMVEE6MKeH0lAvA/n+aGVURVD1yH5sG/iQk5m74+C
-b4tlA2+vjjs4O6yFQnSrGCsPljaULe0TB/mgw9JVqI3e5Xf8tQzradTKSYw4MAYL
-1Wf958c8eeTc0GEM/TJXFQJ5EX92uFgTrd1l/IWUVrGTMgvWvHITZ5ISGefMSLpk
-/7M8hypKpXMaft22ljoAwoGrsChtGgc0k/h8/MQGkkAF9VLOiga635euFM9fESbd
-l8WaVigHkWFco9O5gtBhlwObNCI1h9+2CXdGbDVmVlhcDFYbWFKoEx3IuqgL/A1q
-cVkb0VlPI2SN5qomWpBc
-=wa3i
------END PGP SIGNATURE-----
+The issue was detected using the following coccinelle script.
+@@
+expression e, e1;
+constant c;
+@@
 
---=-VQA/gkYPziMV8v3lRRct--
+e -(e1
++e1
+<<
+-c);
++c;
+
+@@
+identifier i;
+constant c;
+type t;
+expression e;
+@@
+
+t i -(e
++e
+<<
+-c);
++c;
+
+@@
+expression e, e1;
+identifier f;
+constant c;
+@@
+
+e1 = f(...,
+-(e
++e
+<<
+-c)
++c
+,...);
+
+
+Signed-off-by: Amitoj Kaur Chawla <amitoj1606@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 4074375..626b841 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -737,7 +737,7 @@ static int sm750fb_set_drv(struct lynxfb_par * par)
+                 output->paths = sm750_crt;
+                 crtc->channel = sm750_secondary;
+                 /* not consider of padding stuffs for oScreen,need fix*/
+-                crtc->oScreen = (share->vidmem_size >> 1);
++                crtc->oScreen = share->vidmem_size >> 1;
+                 crtc->vScreen = share->pvMem + crtc->oScreen;
+             }
+             break;
+@@ -751,7 +751,7 @@ static int sm750fb_set_drv(struct lynxfb_par * par)
+                 output->paths = sm750_crt;
+                 crtc->channel = sm750_primary;
+                 /* not consider of padding stuffs for oScreen,need fix*/
+-                crtc->oScreen = (share->vidmem_size >> 1);
++                crtc->oScreen = share->vidmem_size >> 1;
+                 crtc->vScreen = share->pvMem + crtc->oScreen;
+             }
+             break;
+-- 
+1.9.1
 

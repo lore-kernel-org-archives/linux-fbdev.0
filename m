@@ -1,108 +1,75 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Sat, 04 Apr 2015 12:38:42 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 07 Apr 2015 13:25:08 +0000
 Subject: Re: [PATCH] fbdev: sh_mobile_lcdc: Fix destruction of uninitialized mutex
-Message-Id: <2002454.H2W6EZgUvI@avalon>
+Message-Id: <5523DAB4.5060301@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="lPhe14haAswflRiwOFEfeMUr03CtfSp6j"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1428065428-25473-1-git-send-email-geert+renesas@glider.be>
 In-Reply-To: <1428065428-25473-1-git-send-email-geert+renesas@glider.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Geert,
+--lPhe14haAswflRiwOFEfeMUr03CtfSp6j
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Thank you for the patch.
-
-On Friday 03 April 2015 14:50:28 Geert Uytterhoeven wrote:
+On 03/04/15 15:50, Geert Uytterhoeven wrote:
 > If sh_mobile_lcdc_probe() fails after the allocation of driver-private
 > data, but before the initialization of all channels, a warning will be
 > printed due to the destruction of an uninitialized mutex:
-> 
->     WARNING: CPU: 0 PID: 1 at kernel/locking/mutex-debug.c:116
-> mutex_destroy+0x5c/0x7c() DEBUG_LOCKS_WARN_ON(mutex_is_locked(lock))
+>=20
+>     WARNING: CPU: 0 PID: 1 at kernel/locking/mutex-debug.c:116 mutex_de=
+stroy+0x5c/0x7c()
+>     DEBUG_LOCKS_WARN_ON(mutex_is_locked(lock))
 >     ...
 >     Backtrace:
 >     ...
->     [<c00425b4>] (mutex_destroy) from [<c01d5858>]
-> (sh_mobile_lcdc_remove+0x1bc/0x230) r4:df6a4800 r3:00000000
->     [<c01d569c>] (sh_mobile_lcdc_remove) from [<c01d6620>]
-> (sh_mobile_lcdc_probe+0xd54/0xe28)
-> 
-> Move the initialization of the mutexes from sh_mobile_lcdc_channel_init()
-> to immediately after the allocation of driver-private data to fix this.
-> 
+>     [<c00425b4>] (mutex_destroy) from [<c01d5858>] (sh_mobile_lcdc_remo=
+ve+0x1bc/0x230)
+>      r4:df6a4800 r3:00000000
+>     [<c01d569c>] (sh_mobile_lcdc_remove) from [<c01d6620>] (sh_mobile_l=
+cdc_probe+0xd54/0xe28)
+>=20
+> Move the initialization of the mutexes from sh_mobile_lcdc_channel_init=
+()
+> to immediately after the allocation of driver-private data to fix this.=
+
+>=20
 > Note that the interrupt number is moved to a new variable "irq", so we
 > can reuse the existing variable "i" for iterating over the channels.
-> 
+>=20
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
-Tomi, could you please pick this up ?
-
 > ---
 >  drivers/video/fbdev/sh_mobile_lcdcfb.c | 13 +++++++------
 >  1 file changed, 7 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> b/drivers/video/fbdev/sh_mobile_lcdcfb.c index
-> d3013cd9f9769663..97141da154c663b8 100644
-> --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> @@ -2605,7 +2605,6 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan
-> *ch) unsigned int max_size;
->  	unsigned int i;
-> 
-> -	mutex_init(&ch->open_lock);
->  	ch->notify = sh_mobile_lcdc_display_notify;
-> 
->  	/* Validate the format. */
-> @@ -2704,7 +2703,7 @@ static int sh_mobile_lcdc_probe(struct platform_device
-> *pdev) struct resource *res;
->  	int num_channels;
->  	int error;
-> -	int i;
-> +	int irq, i;
-> 
->  	if (!pdata) {
->  		dev_err(&pdev->dev, "no platform data defined\n");
-> @@ -2712,8 +2711,8 @@ static int sh_mobile_lcdc_probe(struct platform_device
-> *pdev) }
-> 
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	i = platform_get_irq(pdev, 0);
-> -	if (!res || i < 0) {
-> +	irq = platform_get_irq(pdev, 0);
-> +	if (!res || irq < 0) {
->  		dev_err(&pdev->dev, "cannot get platform resources\n");
->  		return -ENOENT;
->  	}
-> @@ -2726,16 +2725,18 @@ static int sh_mobile_lcdc_probe(struct
-> platform_device *pdev)
-> 
->  	priv->dev = &pdev->dev;
->  	priv->meram_dev = pdata->meram_dev;
-> +	for (i = 0; i < ARRAY_SIZE(priv->ch); i++)
-> +		mutex_init(&priv->ch[i].open_lock);
->  	platform_set_drvdata(pdev, priv);
-> 
-> -	error = request_irq(i, sh_mobile_lcdc_irq, 0,
-> +	error = request_irq(irq, sh_mobile_lcdc_irq, 0,
->  			    dev_name(&pdev->dev), priv);
->  	if (error) {
->  		dev_err(&pdev->dev, "unable to request irq\n");
->  		goto err1;
->  	}
-> 
-> -	priv->irq = i;
-> +	priv->irq = irq;
->  	atomic_set(&priv->hw_usecnt, -1);
-> 
->  	for (i = 0, num_channels = 0; i < ARRAY_SIZE(pdata->ch); i++) {
 
--- 
-Regards,
+Thanks, queued for 4.1.
 
-Laurent Pinchart
+ Tomi
 
+
+
+--lPhe14haAswflRiwOFEfeMUr03CtfSp6j
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJVI9q3AAoJEPo9qoy8lh71EhYQAIPWzPBJWnEezoVnoBw/hUIf
+UJWybMn3+9H5BppVLWPNao6ATtqO1f+R1ARPmCDpbX5tR9QbjugBsF0kSS0XqJDa
+oVoUBqXaCq8AzDx0jm8XL20fsyHJginPq0GhEvxVHhbqMxM9WwuK67/IY2hRv1MF
+EkDXQUyq47vWNJhsNyJYxoLLnDZoG2hhKjjJM+CmWovFfcODU75gVEkKKmogigQR
+mXC7zAjdi6O4i7OH1YB3sm0r5WcX+souUgpdlEmeTPjeaZdQTIwg7+HPsmrkMxaR
+LPsfFi0HumON3ICx3wvh85jUEHAduekTCt91ab5vDiFpZrpUbXmYOt67T8f0whGj
+a9bqkMbIh7vPGH9XfZyQ4kNI2wZcrJAbpwwJDLtXZLbYYDP/Kp8gdt7ZQO5T0rMO
+kxTmJzTqRnz8EBCKEtzH013io/+53DKxqT33JCdz6po3RdGVIFxG9WjRbUEqzhpg
+Hme+TrIdY08jxnljWNyaYECgTNmAjRGNSlySCdUNKPeYFKSozWfeLXREzn/Jiz1L
+advKO8Dm1PUtl7XLopLRilZNSOXWL/5xWBMGBea7qeN5LU9Qdgvb4XeUWWH8/82w
+TNU01uhdCn7ZIMc44vCqn+1U8/L37pw7gG8P+YzfX670KhOg/gpPxw1a18Ievy71
+wCu3Lx1heanUs6np2EGJ
+=9RtR
+-----END PGP SIGNATURE-----
+
+--lPhe14haAswflRiwOFEfeMUr03CtfSp6j--

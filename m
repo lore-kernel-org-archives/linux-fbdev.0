@@ -1,178 +1,121 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Wed, 15 Apr 2015 22:15:17 +0000
+From: Andy Walls <awalls@md.metrocast.net>
+Date: Wed, 15 Apr 2015 22:38:51 +0000
 Subject: Re: ioremap_uc() followed by set_memory_wc() - burrying MTRR
-Message-Id: <20150415221517.GF5622@wotan.suse.de>
+Message-Id: <1429137531.1899.28.camel@palomino.walls.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CALCETrV0B7rp08-VYjp5=1CWJp7=xTUTBYo3uGxX317RxAQT+w@mail.gmail.com>
-In-Reply-To: <CALCETrV0B7rp08-VYjp5=1CWJp7=xTUTBYo3uGxX317RxAQT+w@mail.gmail.com>
+References: <20150410171750.GA5622@wotan.suse.de>
+	 <CALCETrUG=RiG8S9Gpiqm_0CxvxurxLTNKyuyPoFNX46EAauA+g@mail.gmail.com>
+	 <CAB=NE6XgNgu7i2OiDxFVJLWiEjbjBY17-dV7L3yi2+yzgMhEbw@mail.gmail.com>
+	 <1428695379.6646.69.camel@misato.fc.hp.com>
+	 <20150410210538.GB5622@wotan.suse.de>
+	 <1428699490.21794.5.camel@misato.fc.hp.com>
+	 <CALCETrUP688aNjckygqO=AXXrNYvLQX6F0=b5fjmsCqqZU78+Q@mail.gmail.com>
+	 <20150411012938.GC5622@wotan.suse.de>
+	 <CALCETrXd19C6pARde3pv-4pt-i52APtw5xs20itwROPq9VmCfg@mail.gmail.com>
+	 <20150413174938.GE5622@wotan.suse.de>
+In-Reply-To: <20150413174938.GE5622@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, linux-media@vger.kernel.org
-Cc: linux-rdma@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Andy Walls <awalls@md.metrocast.net>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, X86 ML <x86@kernel.org>
+To: "Luis R. Rodriguez" <mcgrof@suse.com>
+Cc: Andy Lutomirski <luto@amacapital.net>, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, dave.hansen@linux.intel.com, plagnioj@jcrosoft.com, tglx@linutronix.de, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, x86@kernel.org
 
-On Wed, Apr 15, 2015 at 01:42:47PM -0700, Andy Lutomirski wrote:
-> On Mon, Apr 13, 2015 at 10:49 AM, Luis R. Rodriguez <mcgrof@suse.com> wrote:
+Hi All,
+
+On Mon, 2015-04-13 at 19:49 +0200, Luis R. Rodriguez wrote:
+[snip]
+>  I only saw a few drivers using overlapping ioremap*()
+> calls though on my MTRR review and they are all old devices so likely mostly
+> used on non-PAT systems, but there might be other corner cases elsewhere.
 > 
-> > c) ivtv: the driver does not have the PCI space mapped out separately, and
-> > in fact it actually does not do the math for the framebuffer, instead it lets
-> > the device's own CPU do that and assume where its at, see
-> > ivtvfb_get_framebuffer() and CX2341X_OSD_GET_FRAMEBUFFER, it has a get
-> > but not a setter. Its not clear if the firmware would make a split easy.
-> > We'd need ioremap_ucminus() here too and __arch_phys_wc_add().
-> >
+> Lets recap, as I see it we have a few options with all this in mind on our
+> quest to bury MTRR (and later make strong UC default):
 > 
-> IMO this should be conceptually easy to split.  Once we get the
-> framebuffer address, just unmap it (or don't prematurely map it) and
-> then ioremap the thing.
-
-The driver has split code for handling framebuffer devices, the framebuffer
-base address will also vary depending on the type of device it has, for
-some its on the encoder, for others its on the decoder. We'd have to account
-for the removal of the framebuffer on either of those regions, and would also
-need some vetting that the driver doesn't use areas beyond that for MMIO.
-Using the trick you suggest though we could overlap ioremap calls and if that
-truly works on PAT and non-PAT adding a new ioremap_wc() could do the trick,
-I'd appreciate a Tested-by or Acked-by to be done with this. Mauro, any chance
-we can get a tested-by of ivtvfb for both non-PAT and PAT systems with this:
-
-diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
-index 9ff1230..1838738 100644
---- a/drivers/media/pci/ivtv/ivtvfb.c
-+++ b/drivers/media/pci/ivtv/ivtvfb.c
-@@ -44,10 +44,6 @@
- #include <linux/ivtvfb.h>
- #include <linux/slab.h>
- 
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- #include "ivtv-driver.h"
- #include "ivtv-cards.h"
- #include "ivtv-i2c.h"
-@@ -155,12 +151,11 @@ struct osd_info {
- 	/* Buffer size */
- 	u32 video_buffer_size;
- 
--#ifdef CONFIG_MTRR
- 	/* video_base rounded down as required by hardware MTRRs */
- 	unsigned long fb_start_aligned_physaddr;
- 	/* video_base rounded up as required by hardware MTRRs */
- 	unsigned long fb_end_aligned_physaddr;
--#endif
-+	int wc_cookie;
- 
- 	/* Store the buffer offset */
- 	int set_osd_coords_x;
-@@ -1099,6 +1094,8 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
- static int ivtvfb_init_io(struct ivtv *itv)
- {
- 	struct osd_info *oi = itv->osd_info;
-+	/* Find the largest power of two that maps the whole buffer */
-+	int size_shift = 31;
- 
- 	mutex_lock(&itv->serialize_lock);
- 	if (ivtv_init_on_first_open(itv)) {
-@@ -1120,7 +1117,7 @@ static int ivtvfb_init_io(struct ivtv *itv)
- 	oi->video_buffer_size = 1704960;
- 
- 	oi->video_pbase = itv->base_addr + IVTV_DECODER_OFFSET + oi->video_rbase;
--	oi->video_vbase = itv->dec_mem + oi->video_rbase;
-+	oi->video_vbase = ioremap_wc(oi->video_pbase, oi->video_buffer_size);
- 
- 	if (!oi->video_vbase) {
- 		IVTVFB_ERR("abort, video memory 0x%x @ 0x%lx isn't mapped!\n",
-@@ -1132,29 +1129,16 @@ static int ivtvfb_init_io(struct ivtv *itv)
- 			oi->video_pbase, oi->video_vbase,
- 			oi->video_buffer_size / 1024);
- 
--#ifdef CONFIG_MTRR
--	{
--		/* Find the largest power of two that maps the whole buffer */
--		int size_shift = 31;
--
--		while (!(oi->video_buffer_size & (1 << size_shift))) {
--			size_shift--;
--		}
--		size_shift++;
--		oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
--		oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
--		oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
--		oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
--		if (mtrr_add(oi->fb_start_aligned_physaddr,
--			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr,
--			     MTRR_TYPE_WRCOMB, 1) < 0) {
--			IVTVFB_INFO("disabled mttr\n");
--			oi->fb_start_aligned_physaddr = 0;
--			oi->fb_end_aligned_physaddr = 0;
--		}
--	}
--#endif
--
-+	while (!(oi->video_buffer_size & (1 << size_shift)))
-+		size_shift--;
-+	size_shift++;
-+	oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
-+	oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
-+	oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
-+	oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
-+	oi->wc_cookie = arch_phys_wc_add(oi->fb_start_aligned_physaddr,
-+					 oi->fb_end_aligned_physaddr -
-+					 oi->fb_start_aligned_physaddr);
- 	/* Blank the entire osd. */
- 	memset_io(oi->video_vbase, 0, oi->video_buffer_size);
- 
-@@ -1172,14 +1156,8 @@ static void ivtvfb_release_buffers (struct ivtv *itv)
- 
- 	/* Release pseudo palette */
- 	kfree(oi->ivtvfb_info.pseudo_palette);
--
--#ifdef CONFIG_MTRR
--	if (oi->fb_end_aligned_physaddr) {
--		mtrr_del(-1, oi->fb_start_aligned_physaddr,
--			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr);
--	}
--#endif
--
-+	iounmap(oi->video_vbase);
-+	arch_phys_wc_del(oi->wc_cookie);
- 	kfree(oi);
- 	itv->osd_info = NULL;
- }
-
+> 1) Let drivers do their own get_vm_area() calls as you note and handle the
+>    cut and splicing of ioremap areas
 > 
-> > From the beginning it seems only framebuffer devices used MTRR/WC, lately it
-> > seems infiniband drivers also find good use for for it for PIO TX buffers to
-> > blast some sort of data, in the future I would not be surprised if other
-> > devices found use for it.
+> 2) Provide an API to split and splice ioremap ranges
 > 
-> IMO the Infiniband maintainers should fix their code.  Especially in
-> the server space, there aren't that many MTRRs to go around.  I wrote
-> arch_phys_wc_add in the first place because my server *ran out of
-> MTRRs*.
+> 3) Try to avoid these types of situations and let drivers simply try to
+>    work towards a proper clean non-overlapping different ioremap() ranges
 > 
-> Hey, IB people: can you fix your drivers to use arch_phys_wc_add
-> (which is permitted to be a no-op) along with ioremap_wc?  Your users
-> will thank you.
-
-Provided the above ivtv driver changes are OK this would be the *last* and only
-driver required to be changed.
-
-> > It may be true that the existing drivers that
-> > requires the above type of work are corner cases -- but I wouldn't hold my
-> > breath for that. The ivtv device is a good example of the worst type of
-> > situations and these days. So perhap __arch_phys_wc_add() and a
-> > ioremap_ucminus() might be something more than transient unless hardware folks
-> > get a good memo or already know how to just Do The Right Thing (TM).
+> Let me know if you think of others but please keep in mind the UC- to strong
+> UC converstion we want to do later as well. We have ruled out using
+> set_memor_wc() now.
 > 
-> I disagree.  We should try to NACK any new code that can't function
-> without MTRRs.
+> I prefer option 3), its technically possible but only for *new* drivers
+> and we'd need either some hard work to split the ioremap() areas or provide
+> a a set of *transient* APIs as I had originally proposed to phase / hope for
+> final transition. There are 3 drivers to address:
 > 
-> (Plus, ARM is growing in popularity in the server space, and ARM quite
-> sensibly doesn't have MTRRs.)
+> [snip]
 
-Great, happy with this, but we need to address the last few drivers and their
-exisitng code then.
+Just some background for folks:
+The ivtv driver supports cards that perform Standard Definition PAL,
+NTSC, and SECAM TV capture + hardware MPEG-2 encoding and MPEG-2
+decoding + TV output.
 
- Luis
+Of the supported cards only *one* card type, the PVR-350 based on the
+CX23415 chip, can perform the MPEG-2 or YUV video decoding and output,
+with an OSD overlay.  PVR-350's are legacy PCI cards that have been end
+of life since 2088 or earlier.  Despite that, there are still used units
+available on Amazon and eBay.
+
+The ivtvfb driver module is an *optional* companion driver module that
+provides a framebuffer interface for the user to output an X display, FB
+console, or whatever to a standard definition analog PAL, NTSC, or SECAM
+TV or VCR.  It does this by co-opting the OSD overlay of the video
+decoding output engine and having it take up the whole screen.
+
+
+ 
+> c) ivtv: the driver does not have the PCI space mapped out separately, and
+> in fact it actually does not do the math for the framebuffer, instead it lets
+> the device's own CPU do that and assume where its at, see
+> ivtvfb_get_framebuffer() and CX2341X_OSD_GET_FRAMEBUFFER, it has a get
+> but not a setter. Its not clear if the firmware would make a split easy.
+
+The CX2341[56]'s firmware + hardware machine are notorious for bugs and
+being hard to work with.  It would be difficult to determine with any
+certainty that the firmware returned predictable OSD framebuffer
+addresses from one user's system to the next.
+
+
+> We'd need ioremap_ucminus() here too and __arch_phys_wc_add().
+
+Yes.
+
+As a driver writer/maintainer, IMO the name ioremap_ucminus() is jargon,
+without a clear meaning from the name, and maybe too x86 PAT specific?
+The pat.txt file under Documentation didn't explain what UC- meant; I
+had to go searching old LKML emails to understand it was a unchached
+region that could be overridden with write combine regions.
+
+To me names along, these lines would be better:
+   ioremap_nocache_weak(), or
+   ioremap_nocache_mutable(), or
+   ioremap_nocache()  (with ioremap_nocache_strong() or something for
+the UC version)
+
+
+> From the beginning it seems only framebuffer devices used MTRR/WC,
+[snip]
+>  The ivtv device is a good example of the worst type of
+> situations and these days. So perhap __arch_phys_wc_add() and a
+> ioremap_ucminus() might be something more than transient unless hardware folks
+> get a good memo or already know how to just Do The Right Thing (TM).
+
+Just to reiterate a subtle point, use of the ivtvfb is *optional*.  A
+user may or may not load it.  When the user does load the ivtvfb driver,
+the ivtv driver has already been initialized and may have functions of
+the card already in use by userspace.
+
+Hopefully no one is trying to use the OSD as framebuffer and the video
+decoder/output engine for video display at the same time.  But the video
+decoder/output device nodes may already be open for performing ioctl()
+functions so unmapping the decoder IO space out from under them, when
+loading the ivtvfb driver module, might not be a good thing. 
+
+Regards,
+Andy
+

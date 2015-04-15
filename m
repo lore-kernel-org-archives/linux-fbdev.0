@@ -1,71 +1,61 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Wed, 15 Apr 2015 23:58:16 +0000
+From: Andy Walls <awalls@md.metrocast.net>
+Date: Wed, 15 Apr 2015 23:59:47 +0000
 Subject: Re: ioremap_uc() followed by set_memory_wc() - burrying MTRR
-Message-Id: <20150415235816.GG5622@wotan.suse.de>
+Message-Id: <1429142387.1899.57.camel@palomino.walls.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CALCETrUG=RiG8S9Gpiqm_0CxvxurxLTNKyuyPoFNX46EAauA+g@mail.gmail.com>
- <CAB=NE6XgNgu7i2OiDxFVJLWiEjbjBY17-dV7L3yi2+yzgMhEbw@mail.gmail.com>
- <1428695379.6646.69.camel@misato.fc.hp.com>
- <20150410210538.GB5622@wotan.suse.de>
- <1428699490.21794.5.camel@misato.fc.hp.com>
- <CALCETrUP688aNjckygqO=AXXrNYvLQX6F0=b5fjmsCqqZU78+Q@mail.gmail.com>
- <20150411012938.GC5622@wotan.suse.de>
- <CALCETrXd19C6pARde3pv-4pt-i52APtw5xs20itwROPq9VmCfg@mail.gmail.com>
- <20150413174938.GE5622@wotan.suse.de>
- <1429137531.1899.28.camel@palomino.walls.org>
-In-Reply-To: <1429137531.1899.28.camel@palomino.walls.org>
+References: <20150410171750.GA5622@wotan.suse.de>
+	 <CALCETrUG=RiG8S9Gpiqm_0CxvxurxLTNKyuyPoFNX46EAauA+g@mail.gmail.com>
+	 <CAB=NE6XgNgu7i2OiDxFVJLWiEjbjBY17-dV7L3yi2+yzgMhEbw@mail.gmail.com>
+	 <1428695379.6646.69.camel@misato.fc.hp.com>
+	 <20150410210538.GB5622@wotan.suse.de>
+	 <1428699490.21794.5.camel@misato.fc.hp.com>
+	 <CALCETrUP688aNjckygqO=AXXrNYvLQX6F0=b5fjmsCqqZU78+Q@mail.gmail.com>
+	 <20150411012938.GC5622@wotan.suse.de>
+	 <CALCETrXd19C6pARde3pv-4pt-i52APtw5xs20itwROPq9VmCfg@mail.gmail.com>
+	 <20150413174938.GE5622@wotan.suse.de>
+	 <1429137531.1899.28.camel@palomino.walls.org>
+	 <CALCETrUFtEMYh8i00ke0f939=17bAQxMDOBZMn_3yk3Nz1AnFA@mail.gmail.com>
+In-Reply-To: <CALCETrUFtEMYh8i00ke0f939=17bAQxMDOBZMn_3yk3Nz1AnFA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Walls <awalls@md.metrocast.net>, Hyong-Youb Kim <hykim@myri.com>, netdev@vger.kernel.org
-Cc: Andy Lutomirski <luto@amacapital.net>, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, dave.hansen@linux.intel.com, plagnioj@jcrosoft.com, tglx@linutronix.de, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, x86@kernel.org
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-media@vger.kernel.org, X86 ML <x86@kernel.org>
 
-Hey Andy, thanks for your review,  adding Hyong-Youb Kim for  review of the
-full range ioremap_wc() idea below.
+On Wed, 2015-04-15 at 16:42 -0700, Andy Lutomirski wrote:
+> On Wed, Apr 15, 2015 at 3:38 PM, Andy Walls <awalls@md.metrocast.net> wrote:
 
-On Wed, Apr 15, 2015 at 06:38:51PM -0400, Andy Walls wrote:
-> Hi All,
+> >
 > 
-> On Mon, 2015-04-13 at 19:49 +0200, Luis R. Rodriguez wrote:
-> > From the beginning it seems only framebuffer devices used MTRR/WC,
-> [snip]
-> >  The ivtv device is a good example of the worst type of
-> > situations and these days. So perhap __arch_phys_wc_add() and a
-> > ioremap_ucminus() might be something more than transient unless hardware folks
-> > get a good memo or already know how to just Do The Right Thing (TM).
+> IMO the right solution would be to avoid ioremapping the whole bar at
+> startup.  Instead ioremap pieces once the driver learns what they are.
+> This wouldn't have any of these problems -- you'd ioremap() register
+> regions and you'd ioremap_wc() the framebuffer once you find it.  If
+> there are regions of unknown purpose, just don't map them all.
 > 
-> Just to reiterate a subtle point, use of the ivtvfb is *optional*.  A
-> user may or may not load it.  When the user does load the ivtvfb driver,
-> the ivtv driver has already been initialized and may have functions of
-> the card already in use by userspace.
+> Would this be feasible?
 
-I suspected this and its why I note that a rewrite to address a clean
-split with separate ioremap seems rather difficult in this case.
+Feasible? Maybe.
 
-> Hopefully no one is trying to use the OSD as framebuffer and the video
-> decoder/output engine for video display at the same time. 
+Worth the time and effort for end-of-life, convential PCI hardware so I
+can have an optimally performing X display on a Standard Def Analog TV
+screen?   Nope. I don't have that level of nostalgia.
 
-Worst case concern I have also is the implications of having overlapping
-ioremap() calls (as proposed in my last reply) for different memory types
-and having the different virtual memory addresse used by different parts
-of the driver. Its not clear to me what the hardware implications of this
-are.
 
->  But the video
-> decoder/output device nodes may already be open for performing ioctl()
-> functions so unmapping the decoder IO space out from under them, when
-> loading the ivtvfb driver module, might not be a good thing. 
+We sort of know where some things are in the MMIO space due to
+experimentation and past efforts examining the firmware binary.
 
-Using overlapping ioremap() calls with different memory types would address
-this concern provided hardware won't barf both on the device and CPU. Hardware
-folks could provide feedback or an ivtvfb user could test the patch supplied
-on both non-PAT and PAT systems. Even so, who knows,  this might work on some
-systems while not on others, only hardware folks would know.
+Documentation/video4linux/cx2341x/fw-*.txt documents some things.  The
+driver code actually codifies a little bit more knowledge.
 
-An alternative... is to just ioremap_wc() the entire region, including
-MMIO registers for these old devices. I see one ethernet driver that does
-this, myri10ge, and am curious how and why they ended up deciding this
-and if they have run into any issues. I wonder if this is a reasonable
-comrpomise for these 2 remaining corner cases.
+The driver code for doing transfers between host and card is complex and
+fragile with some streams that use DMA, other streams that use PIO,
+digging VBI data straight out of card memory, and scatter-gather being
+broken on newer firmwares.  Playing around with ioremapping will be hard
+to get right and likely cause something in the code to break for the
+primary use case of the ivtv supported cards. 
 
-  Luis
+Regards,
+Andy
+
+

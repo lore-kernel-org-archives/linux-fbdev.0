@@ -1,61 +1,53 @@
 From: Andy Walls <awalls@md.metrocast.net>
-Date: Wed, 15 Apr 2015 23:59:47 +0000
+Date: Thu, 16 Apr 2015 00:33:18 +0000
 Subject: Re: ioremap_uc() followed by set_memory_wc() - burrying MTRR
-Message-Id: <1429142387.1899.57.camel@palomino.walls.org>
+Message-Id: <1429144398.1899.73.camel@palomino.walls.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150410171750.GA5622@wotan.suse.de>
-	 <CALCETrUG=RiG8S9Gpiqm_0CxvxurxLTNKyuyPoFNX46EAauA+g@mail.gmail.com>
-	 <CAB=NE6XgNgu7i2OiDxFVJLWiEjbjBY17-dV7L3yi2+yzgMhEbw@mail.gmail.com>
-	 <1428695379.6646.69.camel@misato.fc.hp.com>
-	 <20150410210538.GB5622@wotan.suse.de>
-	 <1428699490.21794.5.camel@misato.fc.hp.com>
-	 <CALCETrUP688aNjckygqO=AXXrNYvLQX6F0=b5fjmsCqqZU78+Q@mail.gmail.com>
-	 <20150411012938.GC5622@wotan.suse.de>
-	 <CALCETrXd19C6pARde3pv-4pt-i52APtw5xs20itwROPq9VmCfg@mail.gmail.com>
-	 <20150413174938.GE5622@wotan.suse.de>
-	 <1429137531.1899.28.camel@palomino.walls.org>
-	 <CALCETrUFtEMYh8i00ke0f939=17bAQxMDOBZMn_3yk3Nz1AnFA@mail.gmail.com>
-In-Reply-To: <CALCETrUFtEMYh8i00ke0f939=17bAQxMDOBZMn_3yk3Nz1AnFA@mail.gmail.com>
+References: <CALCETrV0B7rp08-VYjp5=1CWJp7=xTUTBYo3uGxX317RxAQT+w@mail.gmail.com>
+	 <1429138212.1899.34.camel@palomino.walls.org>
+	 <CALCETrU9FEoXgWxV+XXwRdKTxUxYj7CD3ropnFb4Pq1cMkucaQ@mail.gmail.com>
+In-Reply-To: <CALCETrU9FEoXgWxV+XXwRdKTxUxYj7CD3ropnFb4Pq1cMkucaQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andy Lutomirski <luto@amacapital.net>
-Cc: "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-media@vger.kernel.org, X86 ML <x86@kernel.org>
+Cc: "Luis R. Rodriguez" <mcgrof@suse.com>, linux-rdma@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-media@vger.kernel.org, X86 ML <x86@kernel.org>
 
-On Wed, 2015-04-15 at 16:42 -0700, Andy Lutomirski wrote:
-> On Wed, Apr 15, 2015 at 3:38 PM, Andy Walls <awalls@md.metrocast.net> wrote:
-
+On Wed, 2015-04-15 at 16:52 -0700, Andy Lutomirski wrote:
+> On Wed, Apr 15, 2015 at 3:50 PM, Andy Walls <awalls@md.metrocast.net> wrote:
+> > On Wed, 2015-04-15 at 13:42 -0700, Andy Lutomirski wrote:
+> >> On Mon, Apr 13, 2015 at 10:49 AM, Luis R. Rodriguez <mcgrof@suse.com> wrote:
+> >>
+> >> > c) ivtv: the driver does not have the PCI space mapped out separately, and
+> >> > in fact it actually does not do the math for the framebuffer, instead it lets
+> >> > the device's own CPU do that and assume where its at, see
+> >> > ivtvfb_get_framebuffer() and CX2341X_OSD_GET_FRAMEBUFFER, it has a get
+> >> > but not a setter. Its not clear if the firmware would make a split easy.
+> >> > We'd need ioremap_ucminus() here too and __arch_phys_wc_add().
+> >> >
+> >>
+> >> IMO this should be conceptually easy to split.  Once we get the
+> >> framebuffer address, just unmap it (or don't prematurely map it) and
+> >> then ioremap the thing.
 > >
+> > Not so easy.  The main ivtv driver has already set up the PCI device and
+> > done the mapping for the MPEG-2 decoder/video output engine.  The video
+> > decoder/output device nodes might already be open by user space calling
+> > into the main driver, before the ivtvfb module is even loaded.
 > 
-> IMO the right solution would be to avoid ioremapping the whole bar at
-> startup.  Instead ioremap pieces once the driver learns what they are.
-> This wouldn't have any of these problems -- you'd ioremap() register
-> regions and you'd ioremap_wc() the framebuffer once you find it.  If
-> there are regions of unknown purpose, just don't map them all.
-> 
-> Would this be feasible?
+> Surely the MPEG-2 decoder/video engine won't overlap the framebuffer,
+> though.  Am I missing something?
 
-Feasible? Maybe.
+ivtvfb is stealing the decoders' OSD for use as a framebuffer.
+The decoder video output memory doesn't overlap the decoder OSD memory,
+but there is a functional overlap.  ivtv driver video output device
+nodes can manipulate the OSD that ivtvfb is stealing.
 
-Worth the time and effort for end-of-life, convential PCI hardware so I
-can have an optimally performing X display on a Standard Def Analog TV
-screen?   Nope. I don't have that level of nostalgia.
+It would be a dumb thing for the user to want to use ivtvfb, and to also
+manipulate the OSD via the video output device nodes at the same time,
+for anything other than setting up the TV video standard.  However the
+current ivtv driver code doesn't prevent the OSD from being manipulated
+by the video output device nodes when ivtvfb is in use.
 
-
-We sort of know where some things are in the MMIO space due to
-experimentation and past efforts examining the firmware binary.
-
-Documentation/video4linux/cx2341x/fw-*.txt documents some things.  The
-driver code actually codifies a little bit more knowledge.
-
-The driver code for doing transfers between host and card is complex and
-fragile with some streams that use DMA, other streams that use PIO,
-digging VBI data straight out of card memory, and scatter-gather being
-broken on newer firmwares.  Playing around with ioremapping will be hard
-to get right and likely cause something in the code to break for the
-primary use case of the ivtv supported cards. 
-
-Regards,
-Andy
-
+-Andy
 

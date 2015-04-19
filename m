@@ -1,50 +1,27 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Fri, 24 Apr 2015 07:42:04 +0000
-Subject: Re: what's the difference between smem_start and mmio_start?
-Message-Id: <20150424073004.GE3489@sudip-PC>
+From: =?UTF-8?Q?Paolo_Niccol=C3=B2_Giubelli?=  <paoloniccolo.giubelli@gmail.com>
+Date: Sun, 19 Apr 2015 17:39:14 +0000
+Subject: Question abouf FB actual size
+Message-Id: <CAFAVkqVPVG_h+Kwq-KjdivMWh+2WthJdJvQqRcf1m-qjHTpX1A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CADvLq87aq7m-xuf6XbOq7rDDjLORwiW-5O0qd5tfm+_H_xd05w@mail.gmail.com>
-In-Reply-To: <CADvLq87aq7m-xuf6XbOq7rDDjLORwiW-5O0qd5tfm+_H_xd05w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Sat, Apr 18, 2015 at 03:46:48PM +0800, z f wrote:
-> what's the difference between smem_start member and mmio_start member
-> in struct fb_fix_screeninfo?
+Hello world!
+I'm developing a simple city simulator in C, and I'd like to draw the
+city map on the framebuffer (it's just for debugging purposes).
 
-let me try, but I am not sure that I am fully correct.
-smem_start gives you the starting address where your framebuffer memory
-starts. mmio_start will give you the memory address from where you can
-access memory mapped io ports.
-I dont think that all the hardware will follow the same location rules.
+There's something wrong with the math, because i have a 1366x768x32
+FB, but my finfo.line_length (finfo is obtained via
+FBIOGET_FSCREENINFO) is 5504 bytes. Well, 5504/4 (4 is 4 bytes per
+pixel) is 1376 that is 10 pixels more than 1366.
 
-like, if you consider the driver that I have in staging/sm7xxfb,
-the memory map is like:
+Actually if I draw a full line using 5504 bytes everything is ok, if I
+use 1366*4 I don't reach the edge of the monitor.
 
-________________________________  0MB
-|				|	
-|  display memory		|
-|				|
-|				|
-|_______________________________| 4MB
-|				|
-|_______________________________| 5MB
-|				|
-| memory mapped io port  	|
-|				|
-|_______________________________|
+I'm using memset on a memory mapped /dev/fb0 file.
 
-so here I have:
+Is there something wrong or am I missing something?
 
-smem_start = pci_resource_start (pdev, 0);
-mmio_start = smem_start + 4MB
-
-but if you see the radeon driver you will see thay have
-smem_start = pci_resource_start (pdev, 0);
-and
-mmio_start = pci_resource_start (pdev, 2);
-
-regards
-sudip
+Thank you in advance.

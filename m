@@ -1,220 +1,140 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Mon, 27 Apr 2015 23:55:42 +0000
-Subject: [PATCH v2 05/17] video: backlight: add new locomo backlight driver
-Message-Id: <1430178954-11138-6-git-send-email-dbaryshkov@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 20 Apr 2015 12:39:25 +0000
+Subject: [GIT PULL] fbdev changes for 4.1
+Message-Id: <5534F37D.5000609@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="9rujAAmu0pEDVqdFP4phMEoU5n1aPvtLS"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Add new simple backlight driver - it cares only about PWM/frontlight
-part of LoCoMo, it does not touch TFT settings and does not export TFT
-power control.
+--9rujAAmu0pEDVqdFP4phMEoU5n1aPvtLS
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- drivers/video/backlight/Kconfig     |   6 +-
- drivers/video/backlight/Makefile    |   2 +-
- drivers/video/backlight/locomo_bl.c | 153 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 157 insertions(+), 4 deletions(-)
- create mode 100644 drivers/video/backlight/locomo_bl.c
+Hi Linus,
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 2d9923a..6c093e2 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -217,12 +217,12 @@ config BACKLIGHT_LM3533
- 	  levels.
- 
- config BACKLIGHT_LOCOMO
--	tristate "Sharp LOCOMO LCD/Backlight Driver"
--	depends on SHARP_LOCOMO
-+	tristate "Sharp LOCOMO Backlight Driver"
-+	depends on MFD_LOCOMO
- 	default y
- 	help
- 	  If you have a Sharp Zaurus SL-5500 (Collie) or SL-5600 (Poodle) say y to
--	  enable the LCD/backlight driver.
-+	  enable the backlight driver.
- 
- config BACKLIGHT_OMAP1
- 	tristate "OMAP1 PWL-based LCD Backlight"
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index d67073f..2de73d2 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -39,7 +39,7 @@ obj-$(CONFIG_BACKLIGHT_IPAQ_MICRO)	+= ipaq_micro_bl.o
- obj-$(CONFIG_BACKLIGHT_LM3533)		+= lm3533_bl.o
- obj-$(CONFIG_BACKLIGHT_LM3630A)		+= lm3630a_bl.o
- obj-$(CONFIG_BACKLIGHT_LM3639)		+= lm3639_bl.o
--obj-$(CONFIG_BACKLIGHT_LOCOMO)		+= locomolcd.o
-+obj-$(CONFIG_BACKLIGHT_LOCOMO)		+= locomo_bl.o
- obj-$(CONFIG_BACKLIGHT_LP855X)		+= lp855x_bl.o
- obj-$(CONFIG_BACKLIGHT_LP8788)		+= lp8788_bl.o
- obj-$(CONFIG_BACKLIGHT_LV5207LP)	+= lv5207lp.o
-diff --git a/drivers/video/backlight/locomo_bl.c b/drivers/video/backlight/locomo_bl.c
-new file mode 100644
-index 0000000..cc60022
---- /dev/null
-+++ b/drivers/video/backlight/locomo_bl.c
-@@ -0,0 +1,153 @@
-+/*
-+ * Backlight control code for Sharp Zaurus SL-5500
-+ *
-+ * Copyright 2005 John Lenz <lenz@cs.wisc.edu>
-+ * Maintainer: Pavel Machek <pavel@ucw.cz> (unless John wants to :-)
-+ * GPL v2
-+ *
-+ * This driver assumes single CPU. That's okay, because collie is
-+ * slightly old hardware, and no one is going to retrofit second CPU to
-+ * old PDA.
-+ */
-+
-+#include <linux/backlight.h>
-+#include <linux/delay.h>
-+#include <linux/fb.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/mfd/locomo.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+
-+struct locomo_bl {
-+	struct regmap *regmap;
-+	int current_intensity;
-+	struct gpio_desc *fl_vr;
-+};
-+
-+static const struct {
-+	u16 duty, bpwf;
-+	bool vr;
-+} locomo_bl_pwm[] = {
-+	{ 0, 161, false },
-+	{ 117, 161, false },
-+	{ 163, 148, false },
-+	{ 194, 161, false },
-+	{ 194, 161, true },
-+};
-+
-+static int locomo_bl_set_intensity(struct backlight_device *bd)
-+{
-+	int intensity = bd->props.brightness;
-+	struct locomo_bl *bl = dev_get_drvdata(&bd->dev);
-+
-+	if (bd->props.power != FB_BLANK_UNBLANK)
-+		intensity = 0;
-+	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
-+		intensity = 0;
-+	if (bd->props.state & BL_CORE_SUSPENDED)
-+		intensity = 0;
-+
-+	gpiod_set_value(bl->fl_vr, locomo_bl_pwm[intensity].vr);
-+
-+	regmap_write(bl->regmap, LOCOMO_ALS, locomo_bl_pwm[intensity].bpwf);
-+	usleep_range(100, 200);
-+	regmap_write(bl->regmap, LOCOMO_ALD, locomo_bl_pwm[intensity].duty);
-+	usleep_range(100, 200);
-+	regmap_write(bl->regmap, LOCOMO_ALS, locomo_bl_pwm[intensity].bpwf |
-+			LOCOMO_ALS_EN);
-+
-+	bl->current_intensity = intensity;
-+	if (bd->props.state & BL_CORE_SUSPENDED)
-+		regmap_write(bl->regmap, LOCOMO_ALS, 0x00);
-+
-+	return 0;
-+}
-+
-+static int locomo_bl_get_intensity(struct backlight_device *bd)
-+{
-+	struct locomo_bl *bl = dev_get_drvdata(&bd->dev);
-+
-+	return bl->current_intensity;
-+}
-+
-+static const struct backlight_ops locomo_bl_ops = {
-+	.options	= BL_CORE_SUSPENDRESUME,
-+	.get_brightness = locomo_bl_get_intensity,
-+	.update_status  = locomo_bl_set_intensity,
-+};
-+
-+static int locomo_bl_probe(struct platform_device *dev)
-+{
-+	struct backlight_properties props;
-+	struct locomo_bl *bl;
-+	struct backlight_device *locomo_bl_device;
-+
-+	bl = devm_kmalloc(&dev->dev, sizeof(struct locomo_bl), GFP_KERNEL);
-+	if (!bl)
-+		return -ENOMEM;
-+
-+	bl->regmap = dev_get_regmap(dev->dev.parent, NULL);
-+	if (!bl->regmap)
-+		return -ENODEV;
-+
-+	bl->fl_vr = devm_gpiod_get(&dev->dev, "flvr", GPIOD_OUT_LOW);
-+	if (IS_ERR(bl->fl_vr))
-+		return PTR_ERR(bl->fl_vr);
-+
-+	regmap_write(bl->regmap, LOCOMO_ALS, 0);
-+	regmap_write(bl->regmap, LOCOMO_ALD, 0);
-+
-+	memset(&props, 0, sizeof(struct backlight_properties));
-+	props.type = BACKLIGHT_RAW;
-+	props.max_brightness = ARRAY_SIZE(locomo_bl_pwm) - 1;
-+	props.brightness = props.max_brightness / 2;
-+	locomo_bl_device = devm_backlight_device_register(&dev->dev,
-+						"locomo-bl",
-+						&dev->dev, bl,
-+						&locomo_bl_ops, &props);
-+
-+	if (IS_ERR(locomo_bl_device))
-+		return PTR_ERR(locomo_bl_device);
-+
-+	platform_set_drvdata(dev, locomo_bl_device);
-+
-+	/* Set up frontlight so that screen is readable */
-+	backlight_update_status(locomo_bl_device);
-+
-+	return 0;
-+}
-+
-+static void locomo_bl_shutdown(struct platform_device *dev)
-+{
-+	struct backlight_device *locomo_bl_device = platform_get_drvdata(dev);
-+
-+	locomo_bl_device->props.brightness = 0;
-+	locomo_bl_device->props.power = 0;
-+	locomo_bl_set_intensity(locomo_bl_device);
-+}
-+
-+static int locomo_bl_remove(struct platform_device *dev)
-+{
-+	locomo_bl_shutdown(dev);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver locomo_bl_driver = {
-+	.driver = {
-+		.name	= "locomo-backlight",
-+	},
-+	.probe	= locomo_bl_probe,
-+	.remove	= locomo_bl_remove,
-+	/* Turn off bl on power off/reboot */
-+	.shutdown = locomo_bl_shutdown,
-+};
-+
-+module_platform_driver(locomo_bl_driver);
-+
-+MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>");
-+MODULE_AUTHOR("Pavel Machek <pavel@ucw.cz>");
-+MODULE_DESCRIPTION("LoCoMo Backlight driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:locomo-backlight");
--- 
-2.1.4
+Please pull fbdev changes for 4.1.
 
+ Tomi
+
+The following changes since commit c517d838eb7d07bbe9507871fab3931deccff5=
+39:
+
+  Linux 4.0-rc1 (2015-02-22 18:21:14 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-4.1
+
+for you to fetch changes up to 6b75b54c841a18ef114704aa5cf2cdf43487b0ae:
+
+  Merge omapdss topic branch for fbdev 4.1 (2015-04-20 12:09:31 +0300)
+
+----------------------------------------------------------------
+fbdev changes for v4.1
+
+* Small fixes and improvements to various fbdev drivers
+
+----------------------------------------------------------------
+Dan Carpenter (1):
+      fbdev: pm3fb: cleanup some confusing indenting
+
+Geert Uytterhoeven (1):
+      fbdev: sh_mobile_lcdc: Fix destruction of uninitialized mutex
+
+Grygorii Strashko (1):
+      omapdss: extend pm notifier to handle hibernation
+
+Javier Martinez Canillas (1):
+      OMAPDSS: Correct video ports description file path in DT binding do=
+c
+
+Lad, Prabhakar (1):
+      fbdev: via/via_clock: fix sparse warning
+
+Laurent Pinchart (1):
+      video: fbdev: sh_mobile_lcdcfb: Fix ROP3 sysfs attribute parsing
+
+Nicholas Mc Guire (2):
+      video: fbdev: use msecs_to_jiffies for time conversions
+      hyperv: hyperv_fb: match wait_for_completion_timeout return type
+
+Sanjeev Sharma (1):
+      video: fbdev: make of_device_id array const
+
+Sudip Mukherjee (1):
+      fbdev: sm501fb: use memset_io
+
+Tomi Valkeinen (15):
+      OMAPDSS: fix AM43xx minimum pixel clock divider
+      OMAPDSS: HDMI5: Increase DDC SDA-HOLD time
+      OMAPDSS: fix paddr check for TILER addresses
+      OMAPDSS: TFP410: fix input sync signals
+      OMAPDSS: DISPC: remove OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES
+      OMAPDSS: DISPC: explicit handling for sync and de levels
+      OMAPDSS: change signal_level & signal_edge enum values
+      OMAPDSS: DISPC: change sync_pclk_edge default value
+      OMAPDSS: DISPC: fix div by zero issue in overlay scaling
+      OMAPDSS: DISPC: lock access to DISPC_CONTROL & DISPC_CONFIG
+      OMAPDSS: setup default fifo thresholds
+      OMAPDSS: Add support for MFLAG
+      OMAPDSS: workaround for MFLAG + NV12 issue
+      OMAPDSS: disable VT switch
+      Merge omapdss topic branch for fbdev 4.1
+
+ .../devicetree/bindings/video/ti,omap-dss.txt      |   4 +-
+ drivers/gpu/drm/omapdrm/omap_connector.c           |   2 +-
+ drivers/video/fbdev/hyperv_fb.c                    |   6 +-
+ drivers/video/fbdev/imxfb.c                        |   2 +-
+ .../video/fbdev/omap2/displays-new/connector-dvi.c |   2 +-
+ .../fbdev/omap2/displays-new/encoder-tfp410.c      |  11 ++
+ .../omap2/displays-new/panel-lgphilips-lb035q02.c  |   2 +-
+ .../omap2/displays-new/panel-sharp-ls037v7dw01.c   |   2 +-
+ .../omap2/displays-new/panel-sony-acx565akm.c      |   2 +-
+ .../omap2/displays-new/panel-tpo-td028ttec1.c      |   2 +-
+ .../omap2/displays-new/panel-tpo-td043mtea1.c      |   2 +-
+ drivers/video/fbdev/omap2/dss/core.c               |   4 +
+ drivers/video/fbdev/omap2/dss/dispc.c              | 147 +++++++++++++++=
+++++--
+ drivers/video/fbdev/omap2/dss/display.c            |   2 +-
+ drivers/video/fbdev/omap2/dss/dsi.c                |   2 +-
+ drivers/video/fbdev/omap2/dss/dss.c                |   3 +
+ drivers/video/fbdev/omap2/dss/dss_features.c       |   2 +-
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c         |   2 +-
+ drivers/video/fbdev/omap2/dss/rfbi.c               |   2 +-
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c     |   4 +-
+ drivers/video/fbdev/pm3fb.c                        |   6 +-
+ drivers/video/fbdev/pxafb.c                        |   6 +-
+ drivers/video/fbdev/sh_mobile_lcdcfb.c             |  15 ++-
+ drivers/video/fbdev/sm501fb.c                      |   2 +-
+ drivers/video/fbdev/via/via_clock.c                |   2 +-
+ include/video/omapdss.h                            |   7 +-
+ 26 files changed, 193 insertions(+), 50 deletions(-)
+
+
+--9rujAAmu0pEDVqdFP4phMEoU5n1aPvtLS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJVNPOcAAoJEPo9qoy8lh7129cP/0sWeWInlt1oohXYp5JYjb0A
+Mdr2ouI3vCDbjcpUFIbBEbbyPlAEJ5V5TjXDygwmUht7xSlpH5iyd0ixT3WAOZwf
+Va3qx91bQ3nAw3yPDaWpwFcuFbowm1hl+bWujLUrWQ+KROb78sBHiB6v1RJEIU3l
+zZgRAj11pouo69Dl0GBq1DLtzJ/Enld0FStriyG8YoAXFpDkCRpnEeu/O0FLBsQ1
+8R18lJm7y7WvFzSHNP+I6IiBa+sIvakZR+uiRDvsxvhHMh0Nld4J1Y4ckeWeHrHZ
+l6Vxvc6Ef3wWWPEqhYF4FrxSaUx27Lr7e/71l0q0vl0h3Y1arYX9d0bEuk3Fh2C/
+RZGNYtn8CuzWMBET5isiycncSME6UoHY5lsLQhGqPPCAVGcGV5ggLHG2U4qw4/8B
+2v1lUJxtmYYKOM0hA0udlcF3Zl31pIF61k+uhT2N8kalJzHzJy6Wemr8xCYJPFa3
+9sMWSW7VWyInYonFWzo64ESbsVP5Oxm5f7MwWoReNCqe/mkRYAv5CtB3lJ/Nl4b4
+UEb7yBvIWcmTsXDcnR4xEMbgvCEyswKBoheaMgkEK1nXSbyk9kPufdUk+Pl87SGO
+MDGehyGb5iwotynzrefqEfCwnUskIfc2BZJKPUlHyJOrwrJJexq4HX/jQSJTcN5+
+JULXqdDxgF57k9iIUKCQ
+=peyt
+-----END PGP SIGNATURE-----
+
+--9rujAAmu0pEDVqdFP4phMEoU5n1aPvtLS--

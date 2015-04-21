@@ -1,85 +1,85 @@
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Tue, 21 Apr 2015 17:35:53 +0000
+Date: Tue, 21 Apr 2015 22:02:19 +0000
 Subject: Re: ioremap_uc() followed by set_memory_wc() - burrying MTRR
-Message-Id: <20150421173553.GM5622@wotan.suse.de>
+Message-Id: <20150421220219.GX5622@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150410210538.GB5622@wotan.suse.de>
+References: <1428695379.6646.69.camel@misato.fc.hp.com>
+ <20150410210538.GB5622@wotan.suse.de>
  <1428699490.21794.5.camel@misato.fc.hp.com>
  <CALCETrUP688aNjckygqO=AXXrNYvLQX6F0=b5fjmsCqqZU78+Q@mail.gmail.com>
  <20150411012938.GC5622@wotan.suse.de>
  <CALCETrXd19C6pARde3pv-4pt-i52APtw5xs20itwROPq9VmCfg@mail.gmail.com>
  <20150413174938.GE5622@wotan.suse.de>
  <1429137531.1899.28.camel@palomino.walls.org>
- <CALCETrUFtEMYh8i00ke0f939=17bAQxMDOBZMn_3yk3Nz1AnFA@mail.gmail.com>
- <1429142387.1899.57.camel@palomino.walls.org>
- <CALCETrWRjGYqcYPNizrbiVFwFHhrLf=8NTTCLVZh7Q6MgAWj=Q@mail.gmail.com>
-In-Reply-To: <CALCETrWRjGYqcYPNizrbiVFwFHhrLf=8NTTCLVZh7Q6MgAWj=Q@mail.gmail.com>
+ <20150415235816.GG5622@wotan.suse.de>
+ <1429146457.1899.99.camel@palomino.walls.org>
+In-Reply-To: <1429146457.1899.99.camel@palomino.walls.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: Andy Walls <awalls@md.metrocast.net>, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-media@vger.kernel.org, X86 ML <x86@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mcgrof@do-not-panic.com
+To: Andy Walls <awalls@md.metrocast.net>
+Cc: Hyong-Youb Kim <hykim@myri.com>, netdev@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, dave.hansen@linux.intel.com, plagnioj@jcrosoft.com, tglx@linutronix.de, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, x86@kernel.org
 
-On Wed, Apr 15, 2015 at 05:58:14PM -0700, Andy Lutomirski wrote:
-> On Wed, Apr 15, 2015 at 4:59 PM, Andy Walls <awalls@md.metrocast.net> wrote:
-> > On Wed, 2015-04-15 at 16:42 -0700, Andy Lutomirski wrote:
-> >> On Wed, Apr 15, 2015 at 3:38 PM, Andy Walls <awalls@md.metrocast.net> wrote:
-> >
-> >> >
-> >>
-> >> IMO the right solution would be to avoid ioremapping the whole bar at
-> >> startup.  Instead ioremap pieces once the driver learns what they are.
-> >> This wouldn't have any of these problems -- you'd ioremap() register
-> >> regions and you'd ioremap_wc() the framebuffer once you find it.  If
-> >> there are regions of unknown purpose, just don't map them all.
-> >>
-> >> Would this be feasible?
-> >
-> > Feasible? Maybe.
-> >
-> > Worth the time and effort for end-of-life, convential PCI hardware so I
-> > can have an optimally performing X display on a Standard Def Analog TV
-> > screen?   Nope. I don't have that level of nostalgia.
-> >
+On Wed, Apr 15, 2015 at 09:07:37PM -0400, Andy Walls wrote:
+> On Thu, 2015-04-16 at 01:58 +0200, Luis R. Rodriguez wrote:
+> > Hey Andy, thanks for your review,  adding Hyong-Youb Kim for  review of the
+> > full range ioremap_wc() idea below.
+> > 
+> > On Wed, Apr 15, 2015 at 06:38:51PM -0400, Andy Walls wrote:
+> > > Hi All,
+> > > 
+> > > On Mon, 2015-04-13 at 19:49 +0200, Luis R. Rodriguez wrote:
+> > > > From the beginning it seems only framebuffer devices used MTRR/WC,
+> > > [snip]
+> > > >  The ivtv device is a good example of the worst type of
+> > > > situations and these days. So perhap __arch_phys_wc_add() and a
+> > > > ioremap_ucminus() might be something more than transient unless hardware folks
+> > > > get a good memo or already know how to just Do The Right Thing (TM).
+> > > 
+> > > Just to reiterate a subtle point, use of the ivtvfb is *optional*.  A
+> > > user may or may not load it.  When the user does load the ivtvfb driver,
+> > > the ivtv driver has already been initialized and may have functions of
+> > > the card already in use by userspace.
+> > 
+> > I suspected this and its why I note that a rewrite to address a clean
+> > split with separate ioremap seems rather difficult in this case.
+> > 
+> > > Hopefully no one is trying to use the OSD as framebuffer and the video
+> > > decoder/output engine for video display at the same time. 
+> > 
+> > Worst case concern I have also is the implications of having overlapping
+> > ioremap() calls (as proposed in my last reply) for different memory types
+> > and having the different virtual memory addresse used by different parts
+> > of the driver. Its not clear to me what the hardware implications of this
+> > are.
+> > 
+> > >  But the video
+> > > decoder/output device nodes may already be open for performing ioctl()
+> > > functions so unmapping the decoder IO space out from under them, when
+> > > loading the ivtvfb driver module, might not be a good thing. 
+> > 
+> > Using overlapping ioremap() calls with different memory types would address
+> > this concern provided hardware won't barf both on the device and CPU. Hardware
+> > folks could provide feedback or an ivtvfb user could test the patch supplied
+> > on both non-PAT and PAT systems. Even so, who knows,  this might work on some
+> > systems while not on others, only hardware folks would know.
 > 
-> The point is actually to let us unexport or delete mtrr_add.  We can
-> either severely regress performance on ivtv on PAT-capable hardware if
-> we naively switch it to arch_phys_wc_add or we can do something else.
-> The something else remains to be determined.
+> The CX2341[56] firmware+hardware has a track record for being really
+> picky about sytem hardware.  It's primary symptoms are for the DMA
+> engine or Mailbox protocol to get hung up.  So yeah, it could barf
+> easily on some users.
+> 
+> > An alternative... is to just ioremap_wc() the entire region, including
+> > MMIO registers for these old devices.
+> 
+> That's my thought; as long as implementing PCI write then read can force
+> writes to be posted and that setting that many pages as WC doesn't cause
+> some sort of PAT resource exhaustion. (I know very little about PAT).
 
-Back to square one: I can't come up with anything not too instrusive
-or that dotes not requires substantial amount of work as an alternative to
-removing MTRR completely right now (with the long term goal of also
-making strong UC default) and its because of 2 device drivers:
+So upon review that strategy won't work well unless we implemnt some
+sort of of hack on the driver. That's also quite a bit of work.
 
-  * ivtv: firmware API is poo and device is legacy, no one cares
-  * ipath: driver needs a clean split and work is considerable,
-    maintainers have not been responsive, do they care?
-
-What do we want to do with these drivers? Let us be straight shooters,
-if we are serious about having a performance regression on the drivers
-for the sake of removing MTRR why not just seriously discuss removal
-of these drivers. This way we can remain sane, upkeep a policy to
-never even consider overlapping ioremap*() calls, and have a clean
-expected strategy we can expect for new drivers.
-
-I'm going to split up my patches now into 4 series:
-
-1) things which are straight forward in converting drivers over
-   to arch_phys_wc_add() and ioremap_wc(). These are subsystem
-   wide though, so just a heads up, my hope is that each subsystem
-   maintainer can take their own series unless someone else is
-   comfortable in taking this in for x86
-
-2) a few helpers in the like of ioremap_wc() needed for other drivers.
-   These are straight forward but since they depend on x86 / core
-   helpers it would be nice for them to go I guess through x86 folks.
-   What maintainer is up to take these?
-
-3) MTRR run time changes
-
-4) corner cases - TBD - lets discuss here what we want to do with
-   ivtv and ipath. I will however remove fusion's mtrr code use
-   as its all commented out.
+Andy, can we live without MTRR support on this driver for future kernels? This
+would only leave ipath as the only offending driver.
 
   Luis

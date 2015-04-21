@@ -1,191 +1,108 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Mon, 27 Apr 2015 23:55:39 +0000
-Subject: [PATCH v2 02/17] leds: port locomo leds driver to new locomo core
-Message-Id: <1430178954-11138-3-git-send-email-dbaryshkov@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:37:55 +0000
+Subject: [PATCH v3 2/3] IB/qib: use arch_phys_wc_add()
+Message-Id: <1429648676-17755-3-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+References: <1429648676-17755-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429648676-17755-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: cocci@systeme.lip6.fr
 
-Adapt locomo leds driver to new locomo core setup.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+This driver already makes use of ioremap_wc() on PIO buffers,
+so convert it to use arch_phys_wc_add().
+
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Cc: Mike Marciniszyn <mike.marciniszyn@intel.com>
+Cc: Roland Dreier <roland@purestorage.com>
+Cc: Sean Hefty <sean.hefty@intel.com>
+Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+Cc: Dennis Dalessandro <dennis.dalessandro@intel.com>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: Stefan Bader <stefan.bader@canonical.com>
+Cc: konrad.wilk@oracle.com
+Cc: ville.syrjala@linux.intel.com
+Cc: david.vrabel@citrix.com
+Cc: jbeulich@suse.com
+Cc: Roger Pau Monn=C3=A9 <roger.pau@citrix.com>
+Cc: infinipath@intel.com
+Cc: linux-rdma@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: xen-devel@lists.xensource.com
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/leds/Kconfig       |   1 -
- drivers/leds/leds-locomo.c | 119 +++++++++++++++++++++++----------------------
- 2 files changed, 61 insertions(+), 59 deletions(-)
+ drivers/infiniband/hw/qib/qib_wc_x86_64.c | 31 ++++-----------------------=
+----
+ 1 file changed, 4 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 966b960..4b4650b 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -79,7 +79,6 @@ config LEDS_LM3642
- config LEDS_LOCOMO
- 	tristate "LED Support for Locomo device"
- 	depends on LEDS_CLASS
--	depends on SHARP_LOCOMO
- 	help
- 	  This option enables support for the LEDs on Sharp Locomo.
- 	  Zaurus models SL-5500 and SL-5600.
-diff --git a/drivers/leds/leds-locomo.c b/drivers/leds/leds-locomo.c
-index 80ba048..7fde812 100644
---- a/drivers/leds/leds-locomo.c
-+++ b/drivers/leds/leds-locomo.c
-@@ -9,89 +9,92 @@
+diff --git a/drivers/infiniband/hw/qib/qib_wc_x86_64.c b/drivers/infiniband=
+/hw/qib/qib_wc_x86_64.c
+index fe0850a..6d61ef9 100644
+--- a/drivers/infiniband/hw/qib/qib_wc_x86_64.c
++++ b/drivers/infiniband/hw/qib/qib_wc_x86_64.c
+@@ -116,21 +116,9 @@ int qib_enable_wc(struct qib_devdata *dd)
+ 	}
+=20
+ 	if (!ret) {
+-		int cookie;
+-
+-		cookie =3D mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 1);
+-		if (cookie < 0) {
+-			{
+-				qib_devinfo(dd->pcidev,
+-					 "mtrr_add()  WC for PIO bufs failed (%d)\n",
+-					 cookie);
+-				ret =3D -EINVAL;
+-			}
+-		} else {
+-			dd->wc_cookie =3D cookie;
+-			dd->wc_base =3D (unsigned long) pioaddr;
+-			dd->wc_len =3D (unsigned long) piolen;
+-		}
++		dd->wc_cookie =3D arch_phys_wc_add(pioaddr, piolen);
++		if (dd->wc_cookie < 0)
++			ret =3D -EINVAL;
+ 	}
+=20
+ 	return ret;
+@@ -142,18 +130,7 @@ int qib_enable_wc(struct qib_devdata *dd)
   */
- 
- #include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/module.h>
--#include <linux/device.h>
- #include <linux/leds.h>
--
--#include <mach/hardware.h>
--#include <asm/hardware/locomo.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/mfd/locomo.h>
-+
-+struct locomo_led {
-+	struct led_classdev led;
-+	struct regmap *regmap;
-+	unsigned int reg;
-+};
- 
- static void locomoled_brightness_set(struct led_classdev *led_cdev,
--				enum led_brightness value, int offset)
-+				enum led_brightness value)
+ void qib_disable_wc(struct qib_devdata *dd)
  {
--	struct locomo_dev *locomo_dev = LOCOMO_DEV(led_cdev->dev->parent);
--	unsigned long flags;
-+	struct locomo_led *led = container_of(led_cdev, struct locomo_led, led);
- 
--	local_irq_save(flags);
--	if (value)
--		locomo_writel(LOCOMO_LPT_TOFH, locomo_dev->mapbase + offset);
--	else
--		locomo_writel(LOCOMO_LPT_TOFL, locomo_dev->mapbase + offset);
--	local_irq_restore(flags);
-+	regmap_write(led->regmap, led->reg,
-+			value ? LOCOMO_LPT_TOFH : LOCOMO_LPT_TOFL);
+-	if (dd->wc_cookie) {
+-		int r;
+-
+-		r =3D mtrr_del(dd->wc_cookie, dd->wc_base,
+-			     dd->wc_len);
+-		if (r < 0)
+-			qib_devinfo(dd->pcidev,
+-				 "mtrr_del(%lx, %lx, %lx) failed: %d\n",
+-				 dd->wc_cookie, dd->wc_base,
+-				 dd->wc_len, r);
+-		dd->wc_cookie =3D 0; /* even on failure */
+-	}
++	arch_phys_wc_del(dd->wc_cookie);
  }
- 
--static void locomoled_brightness_set0(struct led_classdev *led_cdev,
--				enum led_brightness value)
-+static int locomo_led_register(
-+		struct device *dev,
-+		struct locomo_led *led,
-+		const char *name,
-+		const char *trigger,
-+		struct regmap *regmap,
-+		unsigned int reg)
- {
--	locomoled_brightness_set(led_cdev, value, LOCOMO_LPT0);
-+	led->led.name = name;
-+	led->led.flags = LED_CORE_SUSPENDRESUME;
-+	led->led.default_trigger = trigger;
-+	led->led.brightness_set = locomoled_brightness_set;
-+	led->regmap = regmap;
-+	led->reg = reg;
-+
-+	return devm_led_classdev_register(dev, &led->led);
- }
- 
--static void locomoled_brightness_set1(struct led_classdev *led_cdev,
--				enum led_brightness value)
--{
--	locomoled_brightness_set(led_cdev, value, LOCOMO_LPT1);
--}
--
--static struct led_classdev locomo_led0 = {
--	.name			= "locomo:amber:charge",
--	.default_trigger	= "main-battery-charging",
--	.brightness_set		= locomoled_brightness_set0,
--};
--
--static struct led_classdev locomo_led1 = {
--	.name			= "locomo:green:mail",
--	.default_trigger	= "nand-disk",
--	.brightness_set		= locomoled_brightness_set1,
--};
--
--static int locomoled_probe(struct locomo_dev *ldev)
-+static int locomoled_probe(struct platform_device *pdev)
- {
- 	int ret;
--
--	ret = led_classdev_register(&ldev->dev, &locomo_led0);
-+	struct locomo_led *leds;
-+	struct regmap *regmap;
-+
-+	leds = devm_kzalloc(&pdev->dev, 2 * sizeof(*leds), GFP_KERNEL);
-+	if (!leds)
-+		return -ENOMEM;
-+
-+	regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!regmap)
-+		return -ENODEV;
-+
-+	ret = locomo_led_register(
-+			&pdev->dev,
-+			leds,
-+			"locomo:amber:charge",
-+			"main-battery-charging",
-+			regmap,
-+			LOCOMO_LPT0);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = led_classdev_register(&ldev->dev, &locomo_led1);
-+	ret = locomo_led_register(
-+			&pdev->dev,
-+			leds + 1,
-+			"locomo:green:mail",
-+			"mmc0",
-+			regmap,
-+			LOCOMO_LPT1);
- 	if (ret < 0)
--		led_classdev_unregister(&locomo_led0);
--
--	return ret;
--}
-+		return ret;
- 
--static int locomoled_remove(struct locomo_dev *dev)
--{
--	led_classdev_unregister(&locomo_led0);
--	led_classdev_unregister(&locomo_led1);
- 	return 0;
- }
- 
--static struct locomo_driver locomoled_driver = {
--	.drv = {
--		.name = "locomoled"
-+static struct platform_driver locomoled_driver = {
-+	.driver = {
-+		.name = "locomo-led"
- 	},
--	.devid	= LOCOMO_DEVID_LED,
- 	.probe	= locomoled_probe,
--	.remove	= locomoled_remove,
- };
- 
--static int __init locomoled_init(void)
--{
--	return locomo_driver_register(&locomoled_driver);
--}
--module_init(locomoled_init);
-+module_platform_driver(locomoled_driver);
- 
- MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>");
- MODULE_DESCRIPTION("Locomo LED driver");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:locomo-led");
--- 
-2.1.4
+=20
+ /**
+--=20
+2.3.2.209.gd67f9d5.dirty
 

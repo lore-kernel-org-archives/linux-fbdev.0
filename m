@@ -1,10 +1,10 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:26:06 +0000
-Subject: [PATCH v3 2/6] x86: document WC MTRR effects on PAT / non-PAT pages
-Message-Id: <1429647970-17479-3-git-send-email-mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:21:39 +0000
+Subject: [PATCH v3 1/4] pci: add pci_iomap_wc() variants
+Message-Id: <1429647702-17315-2-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429647970-17479-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1429647970-17479-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1429647702-17315-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647702-17315-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -12,21 +12,34 @@ To: cocci@systeme.lip6.fr
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-As part of the effort to phase out MTRR use document
-write-combining MTRR effects on pages with different
-non-PAT page attributes flags and different PAT entry
-values. Extend arch_phys_wc_add() documentation to
-clarify power of two sizes / boundary requirements as
-we phase out mtrr_add() use.
+This allows drivers to take advantage of write-combining
+when possible. Ideally we'd have pci_read_bases() just
+peg an IORESOURCE_WC flag for us but where exactly
+video devices memory lie varies *largely* and at times things
+are mixed with MMIO registers, sometimes we can address
+the changes in drivers, other times the change requires
+intrusive changes.
 
-Lastly hint towards ioremap_uc() for corner cases on
-device drivers working with devices with mixed regions
-where MTRR size requirements would otherwise not
-enable write-combining effective memory types.
+Although there is also arch_phys_wc_add() that makes use of
+architecture specific write-combining alternatives (MTRR on
+x86 when a system does not have PAT) we void polluting
+pci_iomap() space with it and force drivers and subsystems
+that want to use it to be explicit.
+
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
 
 Cc: Toshi Kani <toshi.kani@hp.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
 Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -34,120 +47,152 @@ Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Juergen Gross <jgross@suse.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Dave Airlie <airlied@redhat.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Antonino Daplas <adaplas@gmail.com>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: venkatesh.pallipadi@intel.com
+Cc: Stefan Bader <stefan.bader@canonical.com>
 Cc: Ville Syrjälä <syrjala@sci.fi>
 Cc: Mel Gorman <mgorman@suse.de>
 Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Borislav Petkov <bp@suse.de>
 Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: konrad.wilk@oracle.com
+Cc: ville.syrjala@linux.intel.com
+Cc: david.vrabel@citrix.com
+Cc: jbeulich@suse.com
+Cc: Roger Pau Monné <roger.pau@citrix.com>
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
+Cc: xen-devel@lists.xensource.com
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- Documentation/x86/mtrr.txt      | 18 +++++++++++++++---
- Documentation/x86/pat.txt       | 40 +++++++++++++++++++++++++++++++++++++++-
- arch/x86/kernel/cpu/mtrr/main.c |  3 +++
- 3 files changed, 57 insertions(+), 4 deletions(-)
+ include/asm-generic/pci_iomap.h | 14 ++++++++++
+ lib/pci_iomap.c                 | 61 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 75 insertions(+)
 
-diff --git a/Documentation/x86/mtrr.txt b/Documentation/x86/mtrr.txt
-index cc071dc..a111a6c 100644
---- a/Documentation/x86/mtrr.txt
-+++ b/Documentation/x86/mtrr.txt
-@@ -1,7 +1,19 @@
- MTRR (Memory Type Range Register) control
--3 Jun 1999
--Richard Gooch
--<rgooch@atnf.csiro.au>
-+
-+Richard Gooch <rgooch@atnf.csiro.au> - 3 Jun 1999
-+Luis R. Rodriguez <mcgrof@do-not-panic.com> - April 9, 2015
-+
-+=======================================+Phasing MTRR use
-+
-+MTRR use is replaced on modern x86 hardware with PAT. Over time the only type
-+of effective MTRR that is expected to be supported will be for write-combining.
-+As MTRR use is phased out device drivers should use arch_phys_wc_add() to make
-+MTRR effective on non-PAT systems while a no-op on PAT enabled systems.
-+
-+For details refer to Documentation/x86/pat.txt.
-+
-+======================================= 
-   On Intel P6 family processors (Pentium Pro, Pentium II and later)
-   the Memory Type Range Registers (MTRRs) may be used to control
-diff --git a/Documentation/x86/pat.txt b/Documentation/x86/pat.txt
-index cf08c9f..2c27d20 100644
---- a/Documentation/x86/pat.txt
-+++ b/Documentation/x86/pat.txt
-@@ -34,6 +34,8 @@ ioremap                |    --    |    UC-     |       UC-        |
-                        |          |            |                  |
- ioremap_cache          |    --    |    WB      |       WB         |
-                        |          |            |                  |
-+ioremap_uc             |    --    |    UC      |       UC         |
-+                       |          |            |                  |
- ioremap_nocache        |    --    |    UC-     |       UC-        |
-                        |          |            |                  |
- ioremap_wc             |    --    |    --      |       WC         |
-@@ -102,7 +104,43 @@ wants to export a RAM region, it has to do set_memory_uc() or set_memory_wc()
- as step 0 above and also track the usage of those pages and use set_memory_wb()
- before the page is freed to free pool.
+diff --git a/include/asm-generic/pci_iomap.h b/include/asm-generic/pci_iomap.h
+index 7389c87..b1e17fc 100644
+--- a/include/asm-generic/pci_iomap.h
++++ b/include/asm-generic/pci_iomap.h
+@@ -15,9 +15,13 @@ struct pci_dev;
+ #ifdef CONFIG_PCI
+ /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
+ extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max);
++extern void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max);
+ extern void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
+ 				     unsigned long offset,
+ 				     unsigned long maxlen);
++extern void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
++					unsigned long offset,
++					unsigned long maxlen);
+ /* Create a virtual mapping cookie for a port on a given PCI device.
+  * Do not call this directly, it exists to make it easier for architectures
+  * to override */
+@@ -34,12 +38,22 @@ static inline void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned lon
+ 	return NULL;
+ }
  
--
-+MTRR effects on PAT / non-PAT systems
-+-------------------------------------
-+
-+The following table provides the effects of using write-combining MTRRs when
-+using ioremap*() calls on x86 for both non-PAT and PAT systems. Ideally
-+mtrr_add() usage will be phased in favor of arch_phys_wc_add() which will
-+be a no-op on PAT enabled systems. The region over which a arch_phys_wc_add()
-+is made should already have be ioremap'd with write-combining page attributes
-+or PAT entries, this can be done by using ioremap_wc() / or respective helpers.
-+Devices which combine areas of IO memory desired to remain uncachable with
-+areas where write-combining is desirable and are restricted by the size
-+requirements of MTRRs should consider splitting up their IO memory space
-+cleanly with ioremap_uc() and ioremap_wc() followed by an arch_phys_wc_add()
-+encompassing both regions. Such use is nevertheless heavily discouraged as
-+the effective memory type is considered implementation defined. This strategy
-+should only be used as last resort on devices with size-contrained regions
-+where otherwise MTRR write-combining would not be effective.
-+
-+Note that you cannot use set_memory_wc() to override / whitelist IO remapped
-+memory space mapped with ioremap*() calls, set_memory_wc() can only be used
-+on RAM.
-+
-+----------------------------------------------------------------------
-+MTRR Non-PAT   PAT    Linux ioremap value        Effective memory type
-+----------------------------------------------------------------------
-+                                                  Non-PAT |  PAT
-+     PAT
-+     |PCD
-+     ||PWT
-+     |||
-+WC   000      WB      _PAGE_CACHE_MODE_WB            WC   |   WC
-+WC   001      WC      _PAGE_CACHE_MODE_WC            WC*  |   WC
-+WC   010      UC-     _PAGE_CACHE_MODE_UC_MINUS      WC*  |   UC
-+WC   011      UC      _PAGE_CACHE_MODE_UC            UC   |   UC
-+----------------------------------------------------------------------
-+
-+(*) denotes implementation defined and is discouraged
++static inline void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max)
++{
++	return NULL;
++}
+ static inline void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
+ 					    unsigned long offset,
+ 					    unsigned long maxlen)
+ {
+ 	return NULL;
+ }
++static inline void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
++					       unsigned long offset,
++					       unsigned long maxlen)
++{
++	return NULL;
++}
+ #endif
  
- Notes:
+ #endif /* __ASM_GENERIC_IO_H */
+diff --git a/lib/pci_iomap.c b/lib/pci_iomap.c
+index bcce5f1..30b65ae 100644
+--- a/lib/pci_iomap.c
++++ b/lib/pci_iomap.c
+@@ -52,6 +52,46 @@ void __iomem *pci_iomap_range(struct pci_dev *dev,
+ EXPORT_SYMBOL(pci_iomap_range);
  
-diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-index ea5f363..12abdbe 100644
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -538,6 +538,9 @@ EXPORT_SYMBOL(mtrr_del);
-  * attempts to add a WC MTRR covering size bytes starting at base and
-  * logs an error if this fails.
-  *
-+ * The caller should expect to need to provide a power of two size on an
-+ * equivalent power of two boundary.
+ /**
++ * pci_iomap_wc_range - create a virtual WC mapping cookie for a PCI BAR
++ * @dev: PCI device that owns the BAR
++ * @bar: BAR number
++ * @offset: map memory at the given offset in BAR
++ * @maxlen: max length of the memory to map
 + *
-  * Drivers must store the return value to pass to mtrr_del_wc_if_needed,
-  * but drivers should not try to interpret that return value.
-  */
++ * Using this function you will get a __iomem address to your device BAR.
++ * You can access it using ioread*() and iowrite*(). These functions hide
++ * the details if this is a MMIO or PIO address space and will just do what
++ * you expect from them in the correct way. When possible write combining
++ * is used.
++ *
++ * @maxlen specifies the maximum length to map. If you want to get access to
++ * the complete BAR from offset to the end, pass %0 here.
++ * */
++void __iomem *pci_iomap_wc_range(struct pci_dev *dev,
++				 int bar,
++				 unsigned long offset,
++				 unsigned long maxlen)
++{
++	resource_size_t start = pci_resource_start(dev, bar);
++	resource_size_t len = pci_resource_len(dev, bar);
++	unsigned long flags = pci_resource_flags(dev, bar);
++
++	if (len <= offset || !start)
++		return NULL;
++	len -= offset;
++	start += offset;
++	if (maxlen && len > maxlen)
++		len = maxlen;
++	if (flags & IORESOURCE_IO)
++		return __pci_ioport_map(dev, start, len);
++	if (flags & IORESOURCE_MEM)
++		return ioremap_wc(start, len);
++	/* What? */
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(pci_iomap_wc_range);
++
++/**
+  * pci_iomap - create a virtual mapping cookie for a PCI BAR
+  * @dev: PCI device that owns the BAR
+  * @bar: BAR number
+@@ -70,4 +110,25 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
+ 	return pci_iomap_range(dev, bar, 0, maxlen);
+ }
+ EXPORT_SYMBOL(pci_iomap);
++
++/**
++ * pci_iomap_wc - create a virtual WC mapping cookie for a PCI BAR
++ * @dev: PCI device that owns the BAR
++ * @bar: BAR number
++ * @maxlen: length of the memory to map
++ *
++ * Using this function you will get a __iomem address to your device BAR.
++ * You can access it using ioread*() and iowrite*(). These functions hide
++ * the details if this is a MMIO or PIO address space and will just do what
++ * you expect from them in the correct way. When possible write combining
++ * is used.
++ *
++ * @maxlen specifies the maximum length to map. If you want to get access to
++ * the complete BAR without checking for its length first, pass %0 here.
++ * */
++void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long maxlen)
++{
++	return pci_iomap_wc_range(dev, bar, 0, maxlen);
++}
++EXPORT_SYMBOL_GPL(pci_iomap_wc);
+ #endif /* CONFIG_PCI */
 -- 
 2.3.2.209.gd67f9d5.dirty
 

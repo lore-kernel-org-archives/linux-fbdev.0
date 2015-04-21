@@ -1,38 +1,55 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 30 Apr 2015 21:46:38 +0000
-Subject: Re: [PATCH v4 2/5] lib: devres: add pcim_iomap_wc() variants
-Message-Id: <20150430214638.GE7888@google.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 21:50:34 +0000
+Subject: [PATCH v4 1/2] IB/qib: add acounting for MTRR
+Message-Id: <1429653035-19424-2-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
- <1430343372-687-3-git-send-email-mcgrof@do-not-panic.com>
- <20150430162647.GD7888@google.com>
- <20150430172723.GU5622@wotan.suse.de>
-In-Reply-To: <20150430172723.GU5622@wotan.suse.de>
+References: <1429653035-19424-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429653035-19424-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Luis R. Rodriguez" <mcgrof@suse.com>
-Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, mst@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, airlied@linux.ie, daniel.vetter@intel.com, linux-fbdev@vger.kernel.org, luto@amacapital.net, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, venkatesh.pallipadi@intel.com, Stefan Bader <stefan.bader@canonical.com>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>, xen-devel@lists.xensource.com, linux-pci@vger.kernel.org
+To: cocci@systeme.lip6.fr
 
-On Thu, Apr 30, 2015 at 07:27:23PM +0200, Luis R. Rodriguez wrote:
-> On Thu, Apr 30, 2015 at 11:26:47AM -0500, Bjorn Helgaas wrote:
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-> > I don't see users of either pcim_iomap_wc() or pcim_iomap_wc_regions() so
-> > far.  Did I miss them, or do you just expect them in the near future?
-> 
-> The later, and also I hate seeing folks later add code under EXPORT_SYMBOL()
-> rather than EXPORT_SYMBOL_GPL() so I figure I'd rather do it first. It happened
-> recently in my v1 series, someone beat me to a write-combining export symbol
-> and changed it to EXPORT_SYMBOL(). Feel free to drop this though but I hope
-> no one out there then tries to just add an EXPORT_SYMBOL() later for this...
+There is no good reason not to, we eventually delete it as well.
 
-Why do you want them to be EXPORT_SYMBOL_GPL?  I would expect them to be
-exported the same way pcim_iomap(), pcim_iomap_regions(), and ioremap_wc()
-are exported, i.e., with EXPORT_SYMBOL.
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Mike Marciniszyn <infinipath@intel.com>
+Cc: Roland Dreier <roland@kernel.org>
+Cc: Sean Hefty <sean.hefty@intel.com>
+Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+Cc: linux-rdma@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+---
+ drivers/infiniband/hw/qib/qib_wc_x86_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Per Documentation/DocBook/kernel-hacking.tmpl, EXPORT_SYMBOL_GPL "implies
-that the function is considered an internal implementation issue, and not
-really an interface."  I don't think these are internal implementation
-issues.
+diff --git a/drivers/infiniband/hw/qib/qib_wc_x86_64.c b/drivers/infiniband/hw/qib/qib_wc_x86_64.c
+index 81b225f..fe0850a 100644
+--- a/drivers/infiniband/hw/qib/qib_wc_x86_64.c
++++ b/drivers/infiniband/hw/qib/qib_wc_x86_64.c
+@@ -118,7 +118,7 @@ int qib_enable_wc(struct qib_devdata *dd)
+ 	if (!ret) {
+ 		int cookie;
+ 
+-		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 0);
++		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 1);
+ 		if (cookie < 0) {
+ 			{
+ 				qib_devinfo(dd->pcidev,
+-- 
+2.3.2.209.gd67f9d5.dirty
 
-Bjorn

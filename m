@@ -1,136 +1,180 @@
-From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Date: Wed, 22 Apr 2015 23:04:13 +0000
-Subject: [PATCHv3 4/4] usb: ohci-platform: Use devm_of_phy_get_by_index
-Message-Id: <1429743853-10254-5-git-send-email-arun.ramamurthy@broadcom.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:16:24 +0000
+Subject: [PATCH v3 03/17] video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
+Message-Id: <1429647398-16983-4-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
-In-Reply-To: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
+References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: cocci@systeme.lip6.fr
 
-Getting phys by index instead of phy names so that we do
-not have to create a naming scheme when multiple phys are present
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Reviewed-by: Ray Jui <rjui@broadcom.com>
-Reviewed-by: Scott Branden <sbranden@broadcom.com>
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
+
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Masanari Iida <standby24x7@gmail.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/usb/host/ohci-platform.c | 69 ++++++++++++++--------------------------
- 1 file changed, 24 insertions(+), 45 deletions(-)
+ drivers/video/fbdev/gbefb.c | 26 +++++++-------------------
+ 1 file changed, 7 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/usb/host/ohci-platform.c b/drivers/usb/host/ohci-platform.c
-index 185ceee..c2669f18 100644
---- a/drivers/usb/host/ohci-platform.c
-+++ b/drivers/usb/host/ohci-platform.c
-@@ -57,15 +57,13 @@ static int ohci_platform_power_on(struct platform_device *dev)
+diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
+index f48ea7e..ef81215 100644
+--- a/drivers/video/fbdev/gbefb.c
++++ b/drivers/video/fbdev/gbefb.c
+@@ -22,9 +22,6 @@
+ #include <linux/module.h>
+ #include <linux/io.h>
+ 
+-#ifdef CONFIG_X86
+-#include <asm/mtrr.h>
+-#endif
+ #ifdef CONFIG_MIPS
+ #include <asm/addrspace.h>
+ #endif
+@@ -1176,8 +1173,8 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 
+ 	if (gbe_mem_phys) {
+ 		/* memory was allocated at boot time */
+-		gbe_mem = devm_ioremap_nocache(&p_dev->dev, gbe_mem_phys,
+-					       gbe_mem_size);
++		gbe_mem = devm_ioremap_wc(&p_dev->dev, gbe_mem_phys,
++					  gbe_mem_size);
+ 		if (!gbe_mem) {
+ 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
+ 			ret = -ENOMEM;
+@@ -1188,8 +1185,8 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 	} else {
+ 		/* try to allocate memory with the classical allocator
+ 		 * this has high chance to fail on low memory machines */
+-		gbe_mem = dma_alloc_coherent(NULL, gbe_mem_size, &gbe_dma_addr,
+-					     GFP_KERNEL);
++		gbe_mem = dma_alloc_writecombine(NULL, gbe_mem_size,
++						 &gbe_dma_addr, GFP_KERNEL);
+ 		if (!gbe_mem) {
+ 			printk(KERN_ERR "gbefb: couldn't allocate framebuffer memory\n");
+ 			ret = -ENOMEM;
+@@ -1199,10 +1196,7 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 		gbe_mem_phys = (unsigned long) gbe_dma_addr;
  	}
  
- 	for (phy_num = 0; phy_num < priv->num_phys; phy_num++) {
--		if (priv->phys[phy_num]) {
--			ret = phy_init(priv->phys[phy_num]);
--			if (ret)
--				goto err_exit_phy;
--			ret = phy_power_on(priv->phys[phy_num]);
--			if (ret) {
--				phy_exit(priv->phys[phy_num]);
--				goto err_exit_phy;
--			}
-+		ret = phy_init(priv->phys[phy_num]);
-+		if (ret)
-+			goto err_exit_phy;
-+		ret = phy_power_on(priv->phys[phy_num]);
-+		if (ret) {
-+			phy_exit(priv->phys[phy_num]);
-+			goto err_exit_phy;
- 		}
- 	}
+-#ifdef CONFIG_X86
+-	info->wc_cookie = mtrr_add(gbe_mem_phys, gbe_mem_size,
+-				   MTRR_TYPE_WRCOMB, 1);
+-#endif
++	info->wc_cookie = arch_phys_wc_add(gbe_mem_phys, gbe_mem_size);
  
-@@ -73,10 +71,8 @@ static int ohci_platform_power_on(struct platform_device *dev)
+ 	/* map framebuffer memory into tiles table */
+ 	for (i = 0; i < (gbe_mem_size >> TILE_SHIFT); i++)
+@@ -1242,10 +1236,7 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 	return 0;
  
- err_exit_phy:
- 	while (--phy_num >= 0) {
--		if (priv->phys[phy_num]) {
--			phy_power_off(priv->phys[phy_num]);
--			phy_exit(priv->phys[phy_num]);
--		}
-+		phy_power_off(priv->phys[phy_num]);
-+		phy_exit(priv->phys[phy_num]);
- 	}
- err_disable_clks:
- 	while (--clk >= 0)
-@@ -92,10 +88,8 @@ static void ohci_platform_power_off(struct platform_device *dev)
- 	int clk, phy_num;
+ out_gbe_unmap:
+-#ifdef CONFIG_MTRR
+-	if (info->wc_cookie >= 0)
+-		mtrr_del(info->wc_cookie, 0, 0);
+-#endif
++	arch_phys_wc_del(info->wc_cookie);
+ 	if (gbe_dma_addr)
+ 		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
+ out_tiles_free:
+@@ -1265,10 +1256,7 @@ static int gbefb_remove(struct platform_device* p_dev)
  
- 	for (phy_num = 0; phy_num < priv->num_phys; phy_num++) {
--		if (priv->phys[phy_num]) {
--			phy_power_off(priv->phys[phy_num]);
--			phy_exit(priv->phys[phy_num]);
--		}
-+		phy_power_off(priv->phys[phy_num]);
-+		phy_exit(priv->phys[phy_num]);
- 	}
- 
- 	for (clk = OHCI_MAX_CLKS - 1; clk >= 0; clk--)
-@@ -123,7 +117,6 @@ static int ohci_platform_probe(struct platform_device *dev)
- 	struct usb_ohci_pdata *pdata = dev_get_platdata(&dev->dev);
- 	struct ohci_platform_priv *priv;
- 	struct ohci_hcd *ohci;
--	const char *phy_name;
- 	int err, irq, phy_num, clk = 0;
- 
- 	if (usb_disabled())
-@@ -174,36 +167,22 @@ static int ohci_platform_probe(struct platform_device *dev)
- 
- 		priv->num_phys = of_count_phandle_with_args(dev->dev.of_node,
- 				"phys", "#phy-cells");
--		priv->num_phys = priv->num_phys > 0 ? priv->num_phys : 1;
- 
--		priv->phys = devm_kcalloc(&dev->dev, priv->num_phys,
--				sizeof(struct phy *), GFP_KERNEL);
--		if (!priv->phys)
--			return -ENOMEM;
-+		if (priv->num_phys > 0) {
-+			priv->phys = devm_kcalloc(&dev->dev, priv->num_phys,
-+					    sizeof(struct phy *), GFP_KERNEL);
-+			if (!priv->phys)
-+				return -ENOMEM;
-+		} else
-+			priv->num_phys = 0;
- 
- 		for (phy_num = 0; phy_num < priv->num_phys; phy_num++) {
--				err = of_property_read_string_index(
--						dev->dev.of_node,
--						"phy-names", phy_num,
--						&phy_name);
--
--				if (err < 0) {
--					if (priv->num_phys > 1) {
--						dev_err(&dev->dev, "phy-names not provided");
--						goto err_put_hcd;
--					} else
--						phy_name = "usb";
--				}
--
--				priv->phys[phy_num] = devm_phy_get(&dev->dev,
--						phy_name);
--				if (IS_ERR(priv->phys[phy_num])) {
--					err = PTR_ERR(priv->phys[phy_num]);
--					if ((priv->num_phys > 1) ||
--					    (err = -EPROBE_DEFER))
--						goto err_put_hcd;
--					priv->phys[phy_num] = NULL;
--				}
-+			priv->phys[phy_num] = devm_of_phy_get_by_index(
-+					&dev->dev, dev->dev.of_node, phy_num);
-+			if (IS_ERR(priv->phys[phy_num])) {
-+				err = PTR_ERR(priv->phys[phy_num]);
-+				goto err_put_hcd;
-+			}
- 		}
- 
- 		for (clk = 0; clk < OHCI_MAX_CLKS; clk++) {
+ 	unregister_framebuffer(info);
+ 	gbe_turn_off();
+-#ifdef CONFIG_MTRR
+-	if (info->wc_cookie >= 0)
+-		mtrr_del(info->wc_cookie, 0, 0);
+-#endif
++	arch_phys_wc_del(info->wc_cookie);
+ 	if (gbe_dma_addr)
+ 		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
+ 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
 -- 
-2.3.4
+2.3.2.209.gd67f9d5.dirty
 

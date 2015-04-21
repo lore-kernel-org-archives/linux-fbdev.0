@@ -1,42 +1,67 @@
-From: =?ISO-8859-2?Q?Giedrius_Statkevi=E8ius?=  <giedrius.statkevicius@gmail.com>
-Date: Sat, 04 Apr 2015 19:31:26 +0000
-Subject: Re: [PATCH] staging: sm7xxfb: Fix sparse warning
-Message-Id: <alpine.LNX.2.03.1504042230330.9041@localhost.localdomain>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:16:21 +0000
+Subject: [PATCH v3 00/17] framebuffer: simple conversions to arch_phys_wc_add()
+Message-Id: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150404165120.GA3111@Caladan>
-In-Reply-To: <20150404165120.GA3111@Caladan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nickolaus Woodruff <nickolauswoodruff@gmail.com>
-Cc: sudipmmukherjee@gmail.com, teddywang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: cocci@systeme.lip6.fr
 
-On Sat, 4 Apr 2015, Nickolaus Woodruff wrote:
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-> This patch fixes the following sparse warning in sm7xx.h:
-> 
-> drivers/staging/sm7xxfb/sm7xx.h:122:17: warning: symbol 'vgamode'
-> was not declared. Should it be static?
-> 
-> Signed-off-by: Nickolaus Woodruff <nickolauswoodruff@gmail.com>
-> ---
->  drivers/staging/sm7xxfb/sm7xx.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
-> index 7cc1896..c5d6253 100644
-> --- a/drivers/staging/sm7xxfb/sm7xx.h
-> +++ b/drivers/staging/sm7xxfb/sm7xx.h
-> @@ -119,7 +119,7 @@ struct ModeInit {
->  /**********************************************************************
->  			 SM712 Mode table.
->   **********************************************************************/
-> -struct ModeInit vgamode[] = {
-> +static struct ModeInit vgamode[] = {
+This series addresses simple changes to framebuffer drivers to use
+arch_phys_wc_add() and ioremap_wc() as well as fixing gbefb to add
+missing mtrr_del() calls. These changes are pretty straight forward.
 
-Someone already fixed this:
-https://git.kernel.org/cgit/linux/kernel/git/gregkh/staging.git/tree/drivers/staging/sm7xxfb/sm7xx.h?h=staging-testing#n122
-Please work against staging-testing branch of the staging tree.
+Luis R. Rodriguez (17):
+  video: fbdev: radeonfb: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: gbefb: add missing mtrr_del() calls
+  video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
+  video: fbdev: intelfb: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: matrox: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: neofb: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: nvidia: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: savagefb: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: sisfb: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: aty: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: i810: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: pm2fb: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: pm3fb: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: rivafb: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: tdfxfb: use arch_phys_wc_add() and ioremap_wc()
+  video: fbdev: atmel_lcdfb: use ioremap_wc() for framebuffer
+  video: fbdev: geode gxfb: use ioremap_wc() for framebuffer
 
-Su pagarba / Regards,
-Giedrius
+ drivers/video/fbdev/atmel_lcdfb.c            |  3 +-
+ drivers/video/fbdev/aty/aty128fb.c           | 36 ++++--------------------
+ drivers/video/fbdev/aty/radeon_base.c        | 29 ++++----------------
+ drivers/video/fbdev/aty/radeonfb.h           |  2 +-
+ drivers/video/fbdev/gbefb.c                  | 18 ++++++------
+ drivers/video/fbdev/geode/gxfb_core.c        |  3 +-
+ drivers/video/fbdev/i810/i810.h              |  3 +-
+ drivers/video/fbdev/i810/i810_main.c         | 11 +++++---
+ drivers/video/fbdev/i810/i810_main.h         | 26 ------------------
+ drivers/video/fbdev/intelfb/intelfb.h        |  4 +--
+ drivers/video/fbdev/intelfb/intelfbdrv.c     | 38 +++-----------------------
+ drivers/video/fbdev/matrox/matroxfb_base.c   | 36 +++++++++---------------
+ drivers/video/fbdev/matrox/matroxfb_base.h   | 27 +-----------------
+ drivers/video/fbdev/neofb.c                  | 26 +++++-------------
+ drivers/video/fbdev/nvidia/nv_type.h         |  7 +----
+ drivers/video/fbdev/nvidia/nvidia.c          | 37 ++++---------------------
+ drivers/video/fbdev/pm2fb.c                  | 31 ++++-----------------
+ drivers/video/fbdev/pm3fb.c                  | 30 ++++----------------
+ drivers/video/fbdev/riva/fbdev.c             | 39 +++++---------------------
+ drivers/video/fbdev/riva/rivafb.h            |  4 +--
+ drivers/video/fbdev/savage/savagefb.h        |  4 +--
+ drivers/video/fbdev/savage/savagefb_driver.c | 17 ++----------
+ drivers/video/fbdev/sis/sis.h                |  2 +-
+ drivers/video/fbdev/sis/sis_main.c           | 27 ++++--------------
+ drivers/video/fbdev/tdfxfb.c                 | 41 ++++------------------------
+ include/video/neomagic.h                     |  5 +---
+ include/video/tdfx.h                         |  2 +-
+ 27 files changed, 104 insertions(+), 404 deletions(-)
+
+-- 
+2.3.2.209.gd67f9d5.dirty
+

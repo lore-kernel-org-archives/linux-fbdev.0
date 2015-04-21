@@ -1,351 +1,190 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Mon, 27 Apr 2015 23:55:43 +0000
-Subject: [PATCH v2 06/17] video: lcd: add LoCoMo LCD driver
-Message-Id: <1430178954-11138-7-git-send-email-dbaryshkov@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:40:50 +0000
+Subject: [PATCH v3 3/3] video: fbdev: vesafb: use arch_phys_wc_add()
+Message-Id: <1429648850-17902-4-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1430178954-11138-1-git-send-email-dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+References: <1429648850-17902-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429648850-17902-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org
+To: cocci@systeme.lip6.fr
 
-LoCoMo has some special handling for TFT screens attached to Collie and
-Poodle. Implement that as a separate driver.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+This driver uses the same area for MTRR as for the ioremap_wc(), if
+anything it just uses a smaller size in case MTRR reservation fails.
+ioremap_wc() API is already used to take advantage of architecture
+write-combining when available.
+
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available.
+
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/backlight/Kconfig      |  10 ++
- drivers/video/backlight/Makefile     |   1 +
- drivers/video/backlight/locomo_lcd.c | 285 +++++++++++++++++++++++++++++++++++
- 3 files changed, 296 insertions(+)
- create mode 100644 drivers/video/backlight/locomo_lcd.c
+ drivers/video/fbdev/vesafb.c | 29 ++++++++---------------------
+ 1 file changed, 8 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 6c093e2..b2f995c 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -48,6 +48,16 @@ config LCD_LMS283GF05
- 	  SPI driver for Samsung LMS283GF05. This provides basic support
- 	  for powering the LCD up/down through a sysfs interface.
+diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
+index a2261d0..5bc94d3 100644
+--- a/drivers/video/fbdev/vesafb.c
++++ b/drivers/video/fbdev/vesafb.c
+@@ -19,10 +19,9 @@
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/screen_info.h>
++#include <linux/io.h>
  
-+config LCD_LOCOMO
-+	tristate "Sharp LOCOMO LCD Driver"
-+	depends on MFD_LOCOMO
-+	select IIO
-+	help
-+	  If you have a Sharp Zaurus SL-5500 (Collie) or SL-5600 (Poodle) say y to
-+	  enable the LCD driver.  The panel starts up in power
-+	  off state, so you need this driver in order to see any
-+	  output.
-+
- config LCD_LTV350QV
- 	tristate "Samsung LTV350QV LCD Panel"
- 	depends on SPI_MASTER
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 2de73d2..686cf1a 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_LCD_L4F00242T03)		+= l4f00242t03.o
- obj-$(CONFIG_LCD_LD9040)		+= ld9040.o
- obj-$(CONFIG_LCD_LMS283GF05)		+= lms283gf05.o
- obj-$(CONFIG_LCD_LMS501KF03)		+= lms501kf03.o
-+obj-$(CONFIG_LCD_LOCOMO)		+= locomo_lcd.o
- obj-$(CONFIG_LCD_LTV350QV)		+= ltv350qv.o
- obj-$(CONFIG_LCD_PLATFORM)		+= platform_lcd.o
- obj-$(CONFIG_LCD_S6E63M0)		+= s6e63m0.o
-diff --git a/drivers/video/backlight/locomo_lcd.c b/drivers/video/backlight/locomo_lcd.c
-new file mode 100644
-index 0000000..dc316cb
---- /dev/null
-+++ b/drivers/video/backlight/locomo_lcd.c
-@@ -0,0 +1,285 @@
-+/*
-+ * Backlight control code for Sharp Zaurus SL-5500
-+ *
-+ * Copyright 2005 John Lenz <lenz@cs.wisc.edu>
-+ * Maintainer: Pavel Machek <pavel@ucw.cz> (unless John wants to :-)
-+ * GPL v2
-+ *
-+ * This driver assumes single CPU. That's okay, because collie is
-+ * slightly old hardware, and no one is going to retrofit second CPU to
-+ * old PDA.
-+ */
-+
-+#include <linux/delay.h>
-+#include <linux/fb.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/iio/consumer.h>
-+#include <linux/lcd.h>
-+#include <linux/mfd/locomo.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+
-+struct locomo_lcd {
-+	struct regmap *regmap;
-+	struct platform_device *dev;
-+	struct locomo_lcd_platform_data *data;
-+	int power;
-+	struct iio_channel *comadj;
-+	struct gpio_desc *vsha, *vshd, *vee, *mod;
-+};
-+
-+static void locomo_lcd_on(struct locomo_lcd *lcd)
-+{
-+	gpiod_set_value(lcd->vsha, 1);
-+	usleep_range(2000, 3000);
-+
-+	gpiod_set_value(lcd->vshd, 1);
-+	usleep_range(2000, 3000);
-+
-+	iio_write_channel_raw(lcd->comadj, lcd->data->comadj);
-+	usleep_range(5000, 6000);
-+
-+	gpiod_set_value(lcd->vee, 1);
-+	usleep_range(10000, 11000);
-+
-+	/* TFTCRST | CPSOUT=0 | CPSEN */
-+	regmap_write(lcd->regmap, LOCOMO_TC, 0x01);
-+
-+	/* Set CPSD */
-+	regmap_write(lcd->regmap, LOCOMO_CPSD, 6);
-+
-+	/* TFTCRST | CPSOUT=0 | CPSEN */
-+	regmap_write(lcd->regmap, LOCOMO_TC, 0x04 | 0x01);
-+	usleep_range(10000, 11000);
-+
-+	gpiod_set_value(lcd->mod, 1);
-+}
-+
-+static void locomo_lcd_off(struct locomo_lcd *lcd)
-+{
-+	/* TFTCRST=1 | CPSOUT=1 | CPSEN = 0 */
-+	regmap_write(lcd->regmap, LOCOMO_TC, 0x06);
-+	usleep_range(1000, 2000);
-+
-+	gpiod_set_value(lcd->vsha, 0);
-+	msleep(110);
-+
-+	gpiod_set_value(lcd->vee, 0);
-+	msleep(700);
-+
-+	iio_write_channel_raw(lcd->comadj, 0);
-+	usleep_range(5000, 6000);
-+
-+	/* TFTCRST=0 | CPSOUT=0 | CPSEN = 0 */
-+	regmap_write(lcd->regmap, LOCOMO_TC, 0);
-+	gpiod_set_value(lcd->mod, 0);
-+	gpiod_set_value(lcd->vshd, 0);
-+}
-+
-+static void locomo_lcd_program_adsync(struct locomo_lcd *lcd)
-+{
-+	regmap_write(lcd->regmap, LOCOMO_ASD,
-+			6 + 8 + 320 + 30 - 10);
-+	regmap_update_bits(lcd->regmap, LOCOMO_ASD,
-+		0x8000,
-+		0x8000);
-+
-+	regmap_write(lcd->regmap, LOCOMO_HSD,
-+			6 + 8 + 320 + 30 - 10 - 128 + 4);
-+	regmap_update_bits(lcd->regmap, LOCOMO_HSD,
-+		0x8000,
-+		0x8000);
-+
-+	regmap_write(lcd->regmap, LOCOMO_HSC, 128 / 8);
-+
-+	/* XON */
-+	regmap_write(lcd->regmap, LOCOMO_TADC, 0x80);
-+	usleep_range(1000, 1100);
-+
-+	/* CLK9MEN */
-+	regmap_update_bits(lcd->regmap, LOCOMO_TADC,
-+		0x10,
-+		0x10);
-+	usleep_range(100, 200);
-+}
-+
-+static void locomo_lcd_disable_adsync(struct locomo_lcd *lcd)
-+{
-+	/* ADSTART */
-+	regmap_write(lcd->regmap, LOCOMO_ASD, 0x00);
-+
-+	/* 18MHz clock off*/
-+	regmap_write(lcd->regmap, LOCOMO_TADC, 0x00);
-+}
-+
-+int locomo_lcd_set_power(struct lcd_device *ldev, int power)
-+{
-+	struct locomo_lcd *lcd = lcd_get_data(ldev);
-+
-+	dev_dbg(&ldev->dev, "LCD power %d (is %d)\n", power, lcd->power);
-+
-+	if (!power && lcd->power)
-+		locomo_lcd_on(lcd);
-+
-+	if (power && !lcd->power)
-+		locomo_lcd_off(lcd);
-+
-+	lcd->power = power;
-+
-+	return 0;
-+}
-+
-+static int locomo_lcd_get_power(struct lcd_device *ldev)
-+{
-+	struct locomo_lcd *lcd = lcd_get_data(ldev);
-+
-+	return lcd->power;
-+}
-+
-+static struct lcd_ops locomo_lcd_ops = {
-+	.set_power = locomo_lcd_set_power,
-+	.get_power = locomo_lcd_get_power,
-+};
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int locomo_lcd_suspend(struct device *dev)
-+{
-+	struct lcd_device *ldev = dev_get_drvdata(dev);
-+	struct locomo_lcd *lcd = lcd_get_data(ldev);
-+
-+	locomo_lcd_off(lcd);
-+
-+	locomo_lcd_disable_adsync(lcd);
-+
-+	return 0;
-+}
-+
-+static int locomo_lcd_resume(struct device *dev)
-+{
-+	struct lcd_device *ldev = dev_get_drvdata(dev);
-+	struct locomo_lcd *lcd = lcd_get_data(ldev);
-+
-+	locomo_lcd_program_adsync(lcd);
-+
-+	if (!lcd->power)
-+		locomo_lcd_on(lcd);
-+
-+	return 0;
-+}
-+
-+static SIMPLE_DEV_PM_OPS(locomo_lcd_pm, locomo_lcd_suspend, locomo_lcd_resume);
-+#define LOCOMOLCD_PM	(&locomo_lcd_pm)
-+#else
-+#define LOCOMOLCD_PM	NULL
-+#endif
-+
-+static int locomo_lcd_probe(struct platform_device *dev)
-+{
-+	struct lcd_device *lcd_dev;
-+	struct locomo_lcd *lcd;
-+	int rc;
-+
-+	lcd = devm_kmalloc(&dev->dev, sizeof(struct locomo_lcd), GFP_KERNEL);
-+	if (!lcd)
-+		return -ENOMEM;
-+
-+	lcd->dev = dev;
-+	lcd->power = FB_BLANK_NORMAL;
-+
-+	lcd->regmap = dev_get_regmap(dev->dev.parent, NULL);
-+	if (!lcd->regmap)
-+		return -ENODEV;
-+
-+	lcd->data = dev_get_platdata(&dev->dev);
-+	if (!lcd->data)
-+		return -EINVAL;
-+
-+	lcd->vsha = devm_gpiod_get(&dev->dev, "VSHA", GPIOD_OUT_LOW);
-+	if (IS_ERR(lcd->vsha))
-+		return PTR_ERR(lcd->vsha);
-+
-+	lcd->vshd = devm_gpiod_get(&dev->dev, "VSHD", GPIOD_OUT_LOW);
-+	if (IS_ERR(lcd->vshd))
-+		return PTR_ERR(lcd->vshd);
-+
-+	lcd->vee = devm_gpiod_get(&dev->dev, "Vee", GPIOD_OUT_LOW);
-+	if (IS_ERR(lcd->vee))
-+		return PTR_ERR(lcd->vee);
-+
-+	lcd->mod = devm_gpiod_get(&dev->dev, "MOD", GPIOD_OUT_LOW);
-+	if (IS_ERR(lcd->mod))
-+		return PTR_ERR(lcd->mod);
-+
-+	lcd->comadj = iio_channel_get(&dev->dev, "comadj");
-+	if (IS_ERR(lcd->comadj)) {
-+		rc = PTR_ERR(lcd->comadj);
-+		if (rc = -ENODEV)
-+			rc = -EPROBE_DEFER;
-+
-+		return rc;
-+	}
-+
-+	locomo_lcd_program_adsync(lcd);
-+
-+	lcd_dev = devm_lcd_device_register(&dev->dev, "locomo", &dev->dev, lcd,
-+			&locomo_lcd_ops);
-+	if (IS_ERR(lcd_dev)) {
-+		rc = PTR_ERR(lcd_dev);
-+		goto err;
-+	}
-+
-+	platform_set_drvdata(dev, lcd_dev);
-+
-+	lcd_set_power(lcd_dev, FB_BLANK_UNBLANK);
-+
-+	return 0;
-+
-+err:
-+	locomo_lcd_disable_adsync(lcd);
-+	iio_channel_release(lcd->comadj);
-+
-+	return rc;
-+}
-+
-+static int locomo_lcd_remove(struct platform_device *dev)
-+{
-+	struct lcd_device *ldev = platform_get_drvdata(dev);
-+	struct locomo_lcd *lcd = lcd_get_data(ldev);
-+
-+	locomo_lcd_off(lcd);
-+
-+	locomo_lcd_disable_adsync(lcd);
-+
-+	iio_channel_release(lcd->comadj);
-+
-+	return 0;
-+}
-+
-+static void locomo_lcd_shutdown(struct platform_device *dev)
-+{
-+	struct lcd_device *ldev = platform_get_drvdata(dev);
-+	struct locomo_lcd *lcd = lcd_get_data(ldev);
-+
-+	locomo_lcd_off(lcd);
-+
-+	locomo_lcd_disable_adsync(lcd);
-+}
-+
-+static struct platform_driver locomo_lcd_driver = {
-+	.driver = {
-+		.name	= "locomo-lcd",
-+		.pm	= LOCOMOLCD_PM,
-+	},
-+	.probe	= locomo_lcd_probe,
-+	.remove	= locomo_lcd_remove,
-+	.shutdown = locomo_lcd_shutdown,
-+};
-+
-+module_platform_driver(locomo_lcd_driver);
-+
-+MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>");
-+MODULE_AUTHOR("Pavel Machek <pavel@ucw.cz>");
-+MODULE_DESCRIPTION("LoCoMo LCD driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:locomo-lcd");
+ #include <video/vga.h>
+-#include <asm/io.h>
+-#include <asm/mtrr.h>
+ 
+ #define dac_reg	(0x3c8)
+ #define dac_val	(0x3c9)
+@@ -179,16 +178,10 @@ static int vesafb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 
+ static void vesafb_destroy(struct fb_info *info)
+ {
+-#ifdef CONFIG_MTRR
+ 	struct vesafb_par *par = info->par;
+-#endif
+ 
+ 	fb_dealloc_cmap(&info->cmap);
+-
+-#ifdef CONFIG_MTRR
+-	if (par->wc_cookie >= 0)
+-		mtrr_del(par->wc_cookie, 0, 0);
+-#endif
++	arch_phys_wc_del(par->wc_cookie);
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
+ 	release_mem_region(info->apertures->ranges[0].base, info->apertures->ranges[0].size);
+@@ -419,7 +412,6 @@ static int vesafb_probe(struct platform_device *dev)
+ 	request_region(0x3c0, 32, "vesafb");
+ 
+ 	if (mtrr = 3) {
+-#ifdef CONFIG_MTRR
+ 		unsigned int temp_size = size_total;
+ 
+ 		/* Find the largest power-of-two */
+@@ -427,18 +419,16 @@ static int vesafb_probe(struct platform_device *dev)
+ 
+ 		/* Try and find a power of two to add */
+ 		do {
+-			par->wc_cookie = mtrr_add(vesafb_fix.smem_start,
+-						  temp_size,
+-						  MTRR_TYPE_WRCOMB, 1);
++			par->wc_cookie +				arch_phys_wc_add(vesafb_fix.smem_start,
++						 temp_size);
+ 			temp_size >>= 1;
+-		} while (temp_size >= PAGE_SIZE && par->wc_cookie = -EINVAL);
+-#endif
++		} while (temp_size >= PAGE_SIZE && par->wc_cookie < 0);
++
+ 		info->screen_base = ioremap_wc(vesafb_fix.smem_start, vesafb_fix.smem_len);
+ 	} else {
+-#ifdef CONFIG_MTRR
+ 		if (mtrr && mtrr != 3)
+ 			WARN_ONCE(1, "Only MTRR_TYPE_WRCOMB (3) make sense\n");
+-#endif
+ 		info->screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
+ 	}
+ 
+@@ -476,10 +466,7 @@ static int vesafb_probe(struct platform_device *dev)
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+ 	return 0;
+ err:
+-#ifdef CONFIG_MTRR
+-	if (par->wc_cookie >= 0)
+-		mtrr_del(par->wc_cookie, 0, 0);
+-#endif
++	arch_phys_wc_del(par->wc_cookie);
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
+ 	framebuffer_release(info);
 -- 
-2.1.4
+2.3.2.209.gd67f9d5.dirty
 

@@ -1,222 +1,153 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:16:28 +0000
-Subject: [PATCH v3 07/17] video: fbdev: nvidia: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1429647398-16983-8-git-send-email-mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:26:06 +0000
+Subject: [PATCH v3 2/6] x86: document WC MTRR effects on PAT / non-PAT pages
+Message-Id: <1429647970-17479-3-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1429647970-17479-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647970-17479-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: cocci@systeme.lip6.fr
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-This driver uses the same area for MTRR and ioremap().
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
+As part of the effort to phase out MTRR use document
+write-combining MTRR effects on pages with different
+non-PAT page attributes flags and different PAT entry
+values. Extend arch_phys_wc_add() documentation to
+clarify power of two sizes / boundary requirements as
+we phase out mtrr_add() use.
 
-There are a few motivations for this:
+Lastly hint towards ioremap_uc() for corner cases on
+device drivers working with devices with mixed regions
+where MTRR size requirements would otherwise not
+enable write-combining effective memory types.
 
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Juergen Gross <jgross@suse.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Davidlohr Bueso <dbueso@suse.de>
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/nvidia/nv_type.h |  7 +------
- drivers/video/fbdev/nvidia/nvidia.c  | 37 ++++++------------------------------
- 2 files changed, 7 insertions(+), 37 deletions(-)
+ Documentation/x86/mtrr.txt      | 18 +++++++++++++++---
+ Documentation/x86/pat.txt       | 40 +++++++++++++++++++++++++++++++++++++++-
+ arch/x86/kernel/cpu/mtrr/main.c |  3 +++
+ 3 files changed, 57 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/nvidia/nv_type.h b/drivers/video/fbdev/nvidia/nv_type.h
-index c03f7f5..6ff321a 100644
---- a/drivers/video/fbdev/nvidia/nv_type.h
-+++ b/drivers/video/fbdev/nvidia/nv_type.h
-@@ -148,12 +148,7 @@ struct nvidia_par {
- 	u32 forceCRTC;
- 	u32 open_count;
- 	u8 DDCBase;
--#ifdef CONFIG_MTRR
--	struct {
--		int vram;
--		int vram_valid;
--	} mtrr;
--#endif
-+	int wc_cookie;
- 	struct nvidia_i2c_chan chan[3];
+diff --git a/Documentation/x86/mtrr.txt b/Documentation/x86/mtrr.txt
+index cc071dc..a111a6c 100644
+--- a/Documentation/x86/mtrr.txt
++++ b/Documentation/x86/mtrr.txt
+@@ -1,7 +1,19 @@
+ MTRR (Memory Type Range Register) control
+-3 Jun 1999
+-Richard Gooch
+-<rgooch@atnf.csiro.au>
++
++Richard Gooch <rgooch@atnf.csiro.au> - 3 Jun 1999
++Luis R. Rodriguez <mcgrof@do-not-panic.com> - April 9, 2015
++
++=======================================+Phasing MTRR use
++
++MTRR use is replaced on modern x86 hardware with PAT. Over time the only type
++of effective MTRR that is expected to be supported will be for write-combining.
++As MTRR use is phased out device drivers should use arch_phys_wc_add() to make
++MTRR effective on non-PAT systems while a no-op on PAT enabled systems.
++
++For details refer to Documentation/x86/pat.txt.
++
++======================================= 
+   On Intel P6 family processors (Pentium Pro, Pentium II and later)
+   the Memory Type Range Registers (MTRRs) may be used to control
+diff --git a/Documentation/x86/pat.txt b/Documentation/x86/pat.txt
+index cf08c9f..2c27d20 100644
+--- a/Documentation/x86/pat.txt
++++ b/Documentation/x86/pat.txt
+@@ -34,6 +34,8 @@ ioremap                |    --    |    UC-     |       UC-        |
+                        |          |            |                  |
+ ioremap_cache          |    --    |    WB      |       WB         |
+                        |          |            |                  |
++ioremap_uc             |    --    |    UC      |       UC         |
++                       |          |            |                  |
+ ioremap_nocache        |    --    |    UC-     |       UC-        |
+                        |          |            |                  |
+ ioremap_wc             |    --    |    --      |       WC         |
+@@ -102,7 +104,43 @@ wants to export a RAM region, it has to do set_memory_uc() or set_memory_wc()
+ as step 0 above and also track the usage of those pages and use set_memory_wb()
+ before the page is freed to free pool.
  
- 	volatile u32 __iomem *REGS;
-diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
-index 4273c6e..ce7dab7 100644
---- a/drivers/video/fbdev/nvidia/nvidia.c
-+++ b/drivers/video/fbdev/nvidia/nvidia.c
-@@ -21,9 +21,6 @@
- #include <linux/pci.h>
- #include <linux/console.h>
- #include <linux/backlight.h>
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
- #ifdef CONFIG_BOOTX_TEXT
- #include <asm/btext.h>
- #endif
-@@ -76,9 +73,7 @@ static int paneltweak = 0;
- static int vram = 0;
- static int bpp = 8;
- static int reverse_i2c;
--#ifdef CONFIG_MTRR
- static bool nomtrr = false;
--#endif
- #ifdef CONFIG_PMAC_BACKLIGHT
- static int backlight = 1;
- #else
-@@ -1361,7 +1356,8 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
- 	par->ScratchBufferStart = par->FbUsableSize - par->ScratchBufferSize;
- 	par->CursorStart = par->FbUsableSize + (32 * 1024);
- 
--	info->screen_base = ioremap(nvidiafb_fix.smem_start, par->FbMapSize);
-+	info->screen_base = ioremap_wc(nvidiafb_fix.smem_start,
-+				       par->FbMapSize);
- 	info->screen_size = par->FbUsableSize;
- 	nvidiafb_fix.smem_len = par->RamAmountKBytes * 1024;
- 
-@@ -1372,20 +1368,9 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
- 
- 	par->FbStart = info->screen_base;
- 
--#ifdef CONFIG_MTRR
--	if (!nomtrr) {
--		par->mtrr.vram = mtrr_add(nvidiafb_fix.smem_start,
--					  par->RamAmountKBytes * 1024,
--					  MTRR_TYPE_WRCOMB, 1);
--		if (par->mtrr.vram < 0) {
--			printk(KERN_ERR PFX "unable to setup MTRR\n");
--		} else {
--			par->mtrr.vram_valid = 1;
--			/* let there be speed */
--			printk(KERN_INFO PFX "MTRR set to ON\n");
--		}
--	}
--#endif				/* CONFIG_MTRR */
-+	if (!nomtrr)
-+		par->wc_cookie = arch_phys_wc_add(nvidiafb_fix.smem_start,
-+						  par->RamAmountKBytes * 1024);
- 
- 	info->fbops = &nvidia_fb_ops;
- 	info->fix = nvidiafb_fix;
-@@ -1443,13 +1428,7 @@ static void nvidiafb_remove(struct pci_dev *pd)
- 	unregister_framebuffer(info);
- 
- 	nvidia_bl_exit(par);
 -
--#ifdef CONFIG_MTRR
--	if (par->mtrr.vram_valid)
--		mtrr_del(par->mtrr.vram, info->fix.smem_start,
--			 info->fix.smem_len);
--#endif				/* CONFIG_MTRR */
--
-+	arch_phys_wc_del(par->wc_cookie);
- 	iounmap(info->screen_base);
- 	fb_destroy_modedb(info->monspecs.modedb);
- 	nvidia_delete_i2c_busses(par);
-@@ -1501,10 +1480,8 @@ static int nvidiafb_setup(char *options)
- 			vram = simple_strtoul(this_opt+5, NULL, 0);
- 		} else if (!strncmp(this_opt, "backlight:", 10)) {
- 			backlight = simple_strtoul(this_opt+10, NULL, 0);
--#ifdef CONFIG_MTRR
- 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
- 			nomtrr = true;
--#endif
- 		} else if (!strncmp(this_opt, "fpdither:", 9)) {
- 			fpdither = simple_strtol(this_opt+9, NULL, 0);
- 		} else if (!strncmp(this_opt, "bpp:", 4)) {
-@@ -1592,11 +1569,9 @@ MODULE_PARM_DESC(bpp, "pixel width in bits"
- 		 "(default=8)");
- module_param(reverse_i2c, int, 0);
- MODULE_PARM_DESC(reverse_i2c, "reverse port assignment of the i2c bus");
--#ifdef CONFIG_MTRR
- module_param(nomtrr, bool, false);
- MODULE_PARM_DESC(nomtrr, "Disables MTRR support (0 or 1=disabled) "
- 		 "(default=0)");
--#endif
++MTRR effects on PAT / non-PAT systems
++-------------------------------------
++
++The following table provides the effects of using write-combining MTRRs when
++using ioremap*() calls on x86 for both non-PAT and PAT systems. Ideally
++mtrr_add() usage will be phased in favor of arch_phys_wc_add() which will
++be a no-op on PAT enabled systems. The region over which a arch_phys_wc_add()
++is made should already have be ioremap'd with write-combining page attributes
++or PAT entries, this can be done by using ioremap_wc() / or respective helpers.
++Devices which combine areas of IO memory desired to remain uncachable with
++areas where write-combining is desirable and are restricted by the size
++requirements of MTRRs should consider splitting up their IO memory space
++cleanly with ioremap_uc() and ioremap_wc() followed by an arch_phys_wc_add()
++encompassing both regions. Such use is nevertheless heavily discouraged as
++the effective memory type is considered implementation defined. This strategy
++should only be used as last resort on devices with size-contrained regions
++where otherwise MTRR write-combining would not be effective.
++
++Note that you cannot use set_memory_wc() to override / whitelist IO remapped
++memory space mapped with ioremap*() calls, set_memory_wc() can only be used
++on RAM.
++
++----------------------------------------------------------------------
++MTRR Non-PAT   PAT    Linux ioremap value        Effective memory type
++----------------------------------------------------------------------
++                                                  Non-PAT |  PAT
++     PAT
++     |PCD
++     ||PWT
++     |||
++WC   000      WB      _PAGE_CACHE_MODE_WB            WC   |   WC
++WC   001      WC      _PAGE_CACHE_MODE_WC            WC*  |   WC
++WC   010      UC-     _PAGE_CACHE_MODE_UC_MINUS      WC*  |   UC
++WC   011      UC      _PAGE_CACHE_MODE_UC            UC   |   UC
++----------------------------------------------------------------------
++
++(*) denotes implementation defined and is discouraged
  
- MODULE_AUTHOR("Antonino Daplas");
- MODULE_DESCRIPTION("Framebuffer driver for nVidia graphics chipset");
+ Notes:
+ 
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index ea5f363..12abdbe 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -538,6 +538,9 @@ EXPORT_SYMBOL(mtrr_del);
+  * attempts to add a WC MTRR covering size bytes starting at base and
+  * logs an error if this fails.
+  *
++ * The caller should expect to need to provide a power of two size on an
++ * equivalent power of two boundary.
++ *
+  * Drivers must store the return value to pass to mtrr_del_wc_if_needed,
+  * but drivers should not try to interpret that return value.
+  */
 -- 
 2.3.2.209.gd67f9d5.dirty
 

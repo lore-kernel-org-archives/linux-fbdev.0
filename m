@@ -1,60 +1,34 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Tue, 21 Apr 2015 22:46:01 +0000
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Date: Tue, 21 Apr 2015 22:57:32 +0000
 Subject: Re: ioremap_uc() followed by set_memory_wc() - burrying MTRR
-Message-Id: <20150421224601.GY5622@wotan.suse.de>
+Message-Id: <20150421225732.GA17356@obsidianresearch.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CALCETrV0B7rp08-VYjp5=1CWJp7=xTUTBYo3uGxX317RxAQT+w@mail.gmail.com>
-In-Reply-To: <CALCETrV0B7rp08-VYjp5=1CWJp7=xTUTBYo3uGxX317RxAQT+w@mail.gmail.com>
+ <20150421224601.GY5622@wotan.suse.de>
+In-Reply-To: <20150421224601.GY5622@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>, jgunthorpe@obsidianresearch.com, mike.marciniszyn@intel.com, infinipath@intel.com, linux-rdma@vger.kernel.org, awalls@md.metrocast.net
-Cc: Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-media@vger.kernel.org, X86 ML <x86@kernel.org>, mcgrof@do-not-panic.com
+To: "Luis R. Rodriguez" <mcgrof@suse.com>
+Cc: Andy Lutomirski <luto@amacapital.net>, mike.marciniszyn@intel.com, infinipath@intel.com, linux-rdma@vger.kernel.org, awalls@md.metrocast.net, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-media@vger.kernel.org, X86 ML <x86@kernel.org>, mcgrof@do-not-panic.com
 
-On Wed, Apr 15, 2015 at 01:42:47PM -0700, Andy Lutomirski wrote:
-> On Mon, Apr 13, 2015 at 10:49 AM, Luis R. Rodriguez <mcgrof@suse.com> wrote:
-> 
-> > c) ivtv: the driver does not have the PCI space mapped out separately, and
-> > in fact it actually does not do the math for the framebuffer, instead it lets
-> > the device's own CPU do that and assume where its at, see
-> > ivtvfb_get_framebuffer() and CX2341X_OSD_GET_FRAMEBUFFER, it has a get
-> > but not a setter. Its not clear if the firmware would make a split easy.
-> > We'd need ioremap_ucminus() here too and __arch_phys_wc_add().
-> >
-> 
-> IMO this should be conceptually easy to split.  Once we get the
-> framebuffer address, just unmap it (or don't prematurely map it) and
-> then ioremap the thing.
+On Wed, Apr 22, 2015 at 12:46:01AM +0200, Luis R. Rodriguez wrote:
 
-Side note to ipath driver folks: as reviewed with Andy Walls, the
-ivtv driver cannot easily be ported to use PAT so we are evaluating
-simply removing write-combing from that driver on future kernels.
+> are talking about annotating the qib driver as "known to be broken without PAT"
+> and since the ipath driver needs considerable work to be ported to
+> use PAT (the
 
-> 
-> > From the beginning it seems only framebuffer devices used MTRR/WC, lately it
-> > seems infiniband drivers also find good use for for it for PIO TX buffers to
-> > blast some sort of data, in the future I would not be surprised if other
-> > devices found use for it.
-> 
-> IMO the Infiniband maintainers should fix their code.  Especially in
-> the server space, there aren't that many MTRRs to go around.  I wrote
-> arch_phys_wc_add in the first place because my server *ran out of
-> MTRRs*.
-> 
-> Hey, IB people: can you fix your drivers to use arch_phys_wc_add
-> (which is permitted to be a no-op) along with ioremap_wc?  Your users
+This only seems to be true for one of the chips that driver supports,
+not all possibilities.
 
-ipath driver maintainers:
+> userspace register is just one area) I wanted to review if we can just remove
+> MTRR use on the ipath driver and annotate write-combining with PAT as a TODO
+> item.
 
-The ipath driver is one of two drivers left to convert over to
-arch_phys_wc_add(). MTRR use is being deprecated, and its use is actually
-highly discouraged now that we have proper PAT implemenation on Linux. Since we
-are talking about annotating the qib driver as "known to be broken without PAT"
-and since the ipath driver needs considerable work to be ported to use PAT (the
-userspace register is just one area) I wanted to review if we can just remove
-MTRR use on the ipath driver and annotate write-combining with PAT as a TODO
-item.
+AFAIK, dropping MTRR support will completely break the performance to
+the point the driver is unusable. If we drop MTRR we may as well
+remove the driver.
 
-This would help a lot in our journey to bury MTRR use.
+Mike, do you think the time is right to just remove the iPath driver?
 
-  Luis
+Jason

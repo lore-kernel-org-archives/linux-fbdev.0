@@ -1,116 +1,176 @@
-From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Date: Wed, 22 Apr 2015 23:14:38 +0000
-Subject: [PATCH v3 2/3] Phy: DT binding documentation for Broadcom Cygnus USB PHY driver
-Message-Id: <1429744479-10410-3-git-send-email-arun.ramamurthy@broadcom.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:42:51 +0000
+Subject: [PATCH v3] mtrr: avoid ifdef'ery with phys_wc_to_mtrr_index()
+Message-Id: <1429648971-18007-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429744479-10410-1-git-send-email-arun.ramamurthy@broadcom.com>
-In-Reply-To: <1429744479-10410-1-git-send-email-arun.ramamurthy-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Gabriel FERNANDEZ <gabriel.fernandez-qxv4g6HH51o@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dmitry Torokhov <dtor-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Anatol Pomazau <anatol-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Jonathan Richardson <jonathar-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, Arun Ramamurthy <arun.ramamurthy-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: cocci@systeme.lip6.fr
 
-Broadcom's Cygnus chip has a USB 2.0 host controller connected to
-three separate phys. One of the phs (port 2) is also connectd to
-a usb 2.0 device controller
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Reviewed-by: Ray Jui <rjui@broadcom.com>
-Reviewed-by: Scott Branden <sbranden@broadcom.com>
+There is only one user but since we're going to bury
+MTRR next out of access to drivers expose this last
+piece of API to drivers in a general fashion only
+needing io.h for access to helpers.
+
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Thierry Reding <treding@nvidia.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Abhilash Kesavan <a.kesavan@samsung.com>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: Cristian Stoica <cristian.stoica@freescale.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: x86@kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- .../bindings/phy/brcm,cygnus-usb-phy.txt           | 69 ++++++++++++++++++++++
- include/dt-bindings/phy/phy.h                      |  2 +
- 2 files changed, 71 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
+ arch/x86/include/asm/io.h       |  3 +++
+ arch/x86/include/asm/mtrr.h     |  5 -----
+ arch/x86/kernel/cpu/mtrr/main.c |  6 +++---
+ drivers/gpu/drm/drm_ioctl.c     | 14 +-------------
+ include/linux/io.h              |  6 ++++++
+ 5 files changed, 13 insertions(+), 21 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt b/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
-new file mode 100644
-index 0000000..ec62044
---- /dev/null
-+++ b/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
-@@ -0,0 +1,69 @@
-+BROADCOM CYGNUS USB PHY
-+
-+Required Properties:
-+	- compatible:  brcm,cygnus-usb-phy
-+	- reg : usbphy_regs - Base address of phy registers
-+			usb2h_idm_regs - Base address of host idm registers
-+			usb2d_idm_regs - Base address of device idm registers
-+	- phy-cells - must be 1 for each port declared. The node
-+		      that uses the phy must provide either PHY_CONFIG_DEVICE for device
-+		      or PHY_CONFIG_HOST for host
-+
-+NOTE: port 0 and port 1 are host only and port 2 can be configured for host or
-+device.
-+
-+Example of phy :
-+	usbphy0: usbphy@0x0301c000 {
-+		compatible = "brcm,cygnus-usb-phy";
-+		reg = <0x0301c000 0x2000>,
-+		      <0x18115000 0x1000>,
-+		      <0x18111000 0x1000>;
-+		status = "okay";
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		usbphy0_0: usbphy0@0 {
-+			#phy-cells = <1>;
-+			reg = <0>;
-+			status = "okay";
-+			phy-supply = <&vbus_p0>;
-+		};
-+
-+		usbphy0_1: usbphy0@1 {
-+			#phy-cells = <1>;
-+			reg = <1>;
-+			status = "okay";
-+		};
-+
-+		usbphy0_2: usbphy0@2 {
-+			#phy-cells = <1>;
-+			reg = <2>;
-+			status = "okay";
-+			phy-supply = <&vbus_p2>;
-+		};
-+	};
-+
-+Example of node using the phy:
-+
-+	/* This nodes declares all three ports as host */
-+
-+	ehci0: usb@0x18048000 {
-+		compatible = "generic-ehci";
-+		reg = <0x18048000 0x100>;
-+		interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
-+		phys = <&usbphy0_0 PHY_CONFIG_HOST &usbphy0_1 PHY_CONFIG_HOST &usbphy0_2 PHY_CONFIG_HOST>;
-+		status = "okay";
-+	};
-+
-+	/*
-+	 * This node declares port 2 phy
-+	 * and configures it for device
-+	 */
-+
-+	usbd_udc_dwc1: usbd_udc_dwc@0x1804c000 {
-+		compatible = "iproc-udc";
-+		reg = <0x1804c000 0x2000>;
-+		interrupts = <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>;
-+		phys = <&usbphy0_2 PHY_CONFIG_DEVICE>;
-+		phy-names = "usb";
-+	};
-diff --git a/include/dt-bindings/phy/phy.h b/include/dt-bindings/phy/phy.h
-index 6c90193..3f6b1ac 100644
---- a/include/dt-bindings/phy/phy.h
-+++ b/include/dt-bindings/phy/phy.h
-@@ -15,5 +15,7 @@
- #define PHY_TYPE_PCIE		2
- #define PHY_TYPE_USB2		3
- #define PHY_TYPE_USB3		4
-+#define PHY_CONFIG_HOST		1
-+#define PHY_CONFIG_DEVICE	0
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index 4afc05f..a2b9740 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -339,6 +339,9 @@ extern bool xen_biovec_phys_mergeable(const struct bio_vec *vec1,
+ #define IO_SPACE_LIMIT 0xffff
  
- #endif /* _DT_BINDINGS_PHY */
+ #ifdef CONFIG_MTRR
++extern int __must_check arch_phys_wc_index(int handle);
++#define arch_phys_wc_index arch_phys_wc_index
++
+ extern int __must_check arch_phys_wc_add(unsigned long base,
+ 					 unsigned long size);
+ extern void arch_phys_wc_del(int handle);
+diff --git a/arch/x86/include/asm/mtrr.h b/arch/x86/include/asm/mtrr.h
+index da8dff1..27e3dc0 100644
+--- a/arch/x86/include/asm/mtrr.h
++++ b/arch/x86/include/asm/mtrr.h
+@@ -48,7 +48,6 @@ extern void mtrr_aps_init(void);
+ extern void mtrr_bp_restore(void);
+ extern int mtrr_trim_uncached_memory(unsigned long end_pfn);
+ extern int amd_special_default_mtrr(void);
+-extern int phys_wc_to_mtrr_index(int handle);
+ #  else
+ static inline u8 mtrr_type_lookup(u64 addr, u64 end, u8 *uniform)
+ {
+@@ -85,10 +84,6 @@ static inline int mtrr_trim_uncached_memory(unsigned long end_pfn)
+ static inline void mtrr_centaur_report_mcr(int mcr, u32 lo, u32 hi)
+ {
+ }
+-static inline int phys_wc_to_mtrr_index(int handle)
+-{
+-	return -1;
+-}
+ 
+ #define mtrr_ap_init() do {} while (0)
+ #define mtrr_bp_init() do {} while (0)
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 12abdbe..d8c106c 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -580,7 +580,7 @@ void arch_phys_wc_del(int handle)
+ EXPORT_SYMBOL(arch_phys_wc_del);
+ 
+ /*
+- * phys_wc_to_mtrr_index - translates arch_phys_wc_add's return value
++ * arch_phys_wc_index - translates arch_phys_wc_add's return value
+  * @handle: Return value from arch_phys_wc_add
+  *
+  * This will turn the return value from arch_phys_wc_add into an mtrr
+@@ -590,14 +590,14 @@ EXPORT_SYMBOL(arch_phys_wc_del);
+  * in printk line.  Alas there is an illegitimate use in some ancient
+  * drm ioctls.
+  */
+-int phys_wc_to_mtrr_index(int handle)
++int arch_phys_wc_index(int handle)
+ {
+ 	if (handle < MTRR_TO_PHYS_WC_OFFSET)
+ 		return -1;
+ 	else
+ 		return handle - MTRR_TO_PHYS_WC_OFFSET;
+ }
+-EXPORT_SYMBOL_GPL(phys_wc_to_mtrr_index);
++EXPORT_SYMBOL_GPL(arch_phys_wc_index);
+ 
+ /*
+  * HACK ALERT!
+diff --git a/drivers/gpu/drm/drm_ioctl.c b/drivers/gpu/drm/drm_ioctl.c
+index 266dcd6..0a95782 100644
+--- a/drivers/gpu/drm/drm_ioctl.c
++++ b/drivers/gpu/drm/drm_ioctl.c
+@@ -36,9 +36,6 @@
+ 
+ #include <linux/pci.h>
+ #include <linux/export.h>
+-#ifdef CONFIG_X86
+-#include <asm/mtrr.h>
+-#endif
+ 
+ static int drm_version(struct drm_device *dev, void *data,
+ 		       struct drm_file *file_priv);
+@@ -197,16 +194,7 @@ static int drm_getmap(struct drm_device *dev, void *data,
+ 	map->type = r_list->map->type;
+ 	map->flags = r_list->map->flags;
+ 	map->handle = (void *)(unsigned long) r_list->user_token;
+-
+-#ifdef CONFIG_X86
+-	/*
+-	 * There appears to be exactly one user of the mtrr index: dritest.
+-	 * It's easy enough to keep it working on non-PAT systems.
+-	 */
+-	map->mtrr = phys_wc_to_mtrr_index(r_list->map->mtrr);
+-#else
+-	map->mtrr = -1;
+-#endif
++	map->mtrr = arch_phys_wc_index(r_list->map->mtrr);
+ 
+ 	mutex_unlock(&dev->struct_mutex);
+ 
+diff --git a/include/linux/io.h b/include/linux/io.h
+index 986f2bf..6e29acf 100644
+--- a/include/linux/io.h
++++ b/include/linux/io.h
+@@ -111,6 +111,12 @@ static inline void arch_phys_wc_del(int handle)
+ }
+ 
+ #define arch_phys_wc_add arch_phys_wc_add
++#ifndef arch_phys_wc_index
++static inline int arch_phys_wc_index(int handle)
++{
++	return -1;
++}
++#define arch_phys_wc_index arch_phys_wc_index
+ #endif
+ 
+ #endif /* _LINUX_IO_H */
 -- 
-2.3.4
+2.3.2.209.gd67f9d5.dirty
 

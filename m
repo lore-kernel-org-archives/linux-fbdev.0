@@ -1,7 +1,7 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:16:24 +0000
-Subject: [PATCH v3 03/17] video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
-Message-Id: <1429647398-16983-4-git-send-email-mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:16:23 +0000
+Subject: [PATCH v3 02/17] video: fbdev: gbefb: add missing mtrr_del() calls
+Message-Id: <1429647398-16983-3-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
 In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
@@ -12,78 +12,8 @@ To: cocci@systeme.lip6.fr
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
+This driver never removed the MTRRs. Fix that.
 
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Juergen Gross <jgross@suse.com>
 Cc: Jingoo Han <jg1.han@samsung.com>
@@ -100,78 +30,50 @@ Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/gbefb.c | 26 +++++++-------------------
- 1 file changed, 7 insertions(+), 19 deletions(-)
+ drivers/video/fbdev/gbefb.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
-index f48ea7e..ef81215 100644
+index 6d9ef39..f48ea7e 100644
 --- a/drivers/video/fbdev/gbefb.c
 +++ b/drivers/video/fbdev/gbefb.c
-@@ -22,9 +22,6 @@
- #include <linux/module.h>
- #include <linux/io.h>
+@@ -38,6 +38,7 @@ static struct sgi_gbe *gbe;
+ struct gbefb_par {
+ 	struct fb_var_screeninfo var;
+ 	struct gbe_timing_info timing;
++	int wc_cookie;
+ 	int valid;
+ };
  
--#ifdef CONFIG_X86
--#include <asm/mtrr.h>
--#endif
- #ifdef CONFIG_MIPS
- #include <asm/addrspace.h>
- #endif
-@@ -1176,8 +1173,8 @@ static int gbefb_probe(struct platform_device *p_dev)
- 
- 	if (gbe_mem_phys) {
- 		/* memory was allocated at boot time */
--		gbe_mem = devm_ioremap_nocache(&p_dev->dev, gbe_mem_phys,
--					       gbe_mem_size);
-+		gbe_mem = devm_ioremap_wc(&p_dev->dev, gbe_mem_phys,
-+					  gbe_mem_size);
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
- 			ret = -ENOMEM;
-@@ -1188,8 +1185,8 @@ static int gbefb_probe(struct platform_device *p_dev)
- 	} else {
- 		/* try to allocate memory with the classical allocator
- 		 * this has high chance to fail on low memory machines */
--		gbe_mem = dma_alloc_coherent(NULL, gbe_mem_size, &gbe_dma_addr,
--					     GFP_KERNEL);
-+		gbe_mem = dma_alloc_writecombine(NULL, gbe_mem_size,
-+						 &gbe_dma_addr, GFP_KERNEL);
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't allocate framebuffer memory\n");
- 			ret = -ENOMEM;
-@@ -1199,10 +1196,7 @@ static int gbefb_probe(struct platform_device *p_dev)
- 		gbe_mem_phys = (unsigned long) gbe_dma_addr;
+@@ -1199,7 +1200,8 @@ static int gbefb_probe(struct platform_device *p_dev)
  	}
  
--#ifdef CONFIG_X86
--	info->wc_cookie = mtrr_add(gbe_mem_phys, gbe_mem_size,
--				   MTRR_TYPE_WRCOMB, 1);
--#endif
-+	info->wc_cookie = arch_phys_wc_add(gbe_mem_phys, gbe_mem_size);
+ #ifdef CONFIG_X86
+-	mtrr_add(gbe_mem_phys, gbe_mem_size, MTRR_TYPE_WRCOMB, 1);
++	info->wc_cookie = mtrr_add(gbe_mem_phys, gbe_mem_size,
++				   MTRR_TYPE_WRCOMB, 1);
+ #endif
  
  	/* map framebuffer memory into tiles table */
- 	for (i = 0; i < (gbe_mem_size >> TILE_SHIFT); i++)
-@@ -1242,10 +1236,7 @@ static int gbefb_probe(struct platform_device *p_dev)
+@@ -1240,6 +1242,10 @@ static int gbefb_probe(struct platform_device *p_dev)
  	return 0;
  
  out_gbe_unmap:
--#ifdef CONFIG_MTRR
--	if (info->wc_cookie >= 0)
--		mtrr_del(info->wc_cookie, 0, 0);
--#endif
-+	arch_phys_wc_del(info->wc_cookie);
++#ifdef CONFIG_MTRR
++	if (info->wc_cookie >= 0)
++		mtrr_del(info->wc_cookie, 0, 0);
++#endif
  	if (gbe_dma_addr)
  		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
  out_tiles_free:
-@@ -1265,10 +1256,7 @@ static int gbefb_remove(struct platform_device* p_dev)
+@@ -1259,6 +1265,10 @@ static int gbefb_remove(struct platform_device* p_dev)
  
  	unregister_framebuffer(info);
  	gbe_turn_off();
--#ifdef CONFIG_MTRR
--	if (info->wc_cookie >= 0)
--		mtrr_del(info->wc_cookie, 0, 0);
--#endif
-+	arch_phys_wc_del(info->wc_cookie);
++#ifdef CONFIG_MTRR
++	if (info->wc_cookie >= 0)
++		mtrr_del(info->wc_cookie, 0, 0);
++#endif
  	if (gbe_dma_addr)
  		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
  	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),

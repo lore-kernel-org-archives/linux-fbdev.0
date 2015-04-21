@@ -1,10 +1,10 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:20:32 +0000
-Subject: [PATCH v3 2/4] video: fbdev: i740fb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
-Message-Id: <1429647634-17169-3-git-send-email-mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:16:27 +0000
+Subject: [PATCH v3 06/17] video: fbdev: neofb: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1429647398-16983-7-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429647634-17169-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1429647634-17169-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -84,11 +84,10 @@ expression base, size;
 +info->screen_base = ioremap_wc(base, size);
 
 Generated-by: Coccinelle SmPL
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Benoit Taine <benoit.taine@lip6.fr>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -97,105 +96,95 @@ Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Dave Airlie <airlied@redhat.com>
 Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/i740fb.c | 35 ++++++-----------------------------
- 1 file changed, 6 insertions(+), 29 deletions(-)
+ drivers/video/fbdev/neofb.c | 26 +++++++-------------------
+ include/video/neomagic.h    |  5 +----
+ 2 files changed, 8 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
-index a2b4204..452e116 100644
---- a/drivers/video/fbdev/i740fb.c
-+++ b/drivers/video/fbdev/i740fb.c
-@@ -27,24 +27,15 @@
- #include <linux/console.h>
- #include <video/vga.h>
- 
+diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
+index 44f99a6..db023a9 100644
+--- a/drivers/video/fbdev/neofb.c
++++ b/drivers/video/fbdev/neofb.c
+@@ -71,11 +71,6 @@
+ #include <asm/io.h>
+ #include <asm/irq.h>
+ #include <asm/pgtable.h>
+-
 -#ifdef CONFIG_MTRR
 -#include <asm/mtrr.h>
 -#endif
 -
- #include "i740_reg.h"
+ #include <video/vga.h>
+ #include <video/neomagic.h>
  
- static char *mode_option;
--
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
+@@ -1710,6 +1705,7 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
+ 			 int video_len)
+ {
+ 	//unsigned long addr;
++	struct neofb_par *par = info->par;
  
- struct i740fb_par {
- 	unsigned char __iomem *regs;
- 	bool has_sgram;
--#ifdef CONFIG_MTRR
--	int mtrr_reg;
--#endif
-+	int wc_cookie;
- 	bool ddc_registered;
- 	struct i2c_adapter ddc_adapter;
- 	struct i2c_algo_bit_data ddc_algo;
-@@ -1040,7 +1031,7 @@ static int i740fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
- 		goto err_request_regions;
+ 	DBG("neo_map_video");
+ 
+@@ -1723,7 +1719,7 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
  	}
  
--	info->screen_base = pci_ioremap_bar(dev, 0);
-+	info->screen_base = pci_ioremap_wc_bar(dev, 0);
+ 	info->screen_base -	    ioremap(info->fix.smem_start, info->fix.smem_len);
++	    ioremap_wc(info->fix.smem_start, info->fix.smem_len);
  	if (!info->screen_base) {
- 		dev_err(info->device, "error remapping base\n");
- 		ret = -ENOMEM;
-@@ -1144,13 +1135,9 @@ static int i740fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+ 		printk("neofb: unable to map screen memory\n");
+ 		release_mem_region(info->fix.smem_start,
+@@ -1733,11 +1729,8 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
+ 		printk(KERN_INFO "neofb: mapped framebuffer at %p\n",
+ 		       info->screen_base);
  
- 	fb_info(info, "%s frame buffer device\n", info->fix.id);
- 	pci_set_drvdata(dev, info);
 -#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start,
--				info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
+-	((struct neofb_par *)(info->par))->mtrr -		mtrr_add(info->fix.smem_start, pci_resource_len(dev, 0),
+-				MTRR_TYPE_WRCOMB, 1);
+-#endif
++	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++					  pci_resource_len(dev, 0));
+ 
+ 	/* Clear framebuffer, it's all white in memory after boot */
+ 	memset_io(info->screen_base, 0, info->fix.smem_len);
+@@ -1754,16 +1747,11 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
+ 
+ static void neo_unmap_video(struct fb_info *info)
+ {
+-	DBG("neo_unmap_video");
++	struct neofb_par *par = info->par;
+ 
+-#ifdef CONFIG_MTRR
+-	{
+-		struct neofb_par *par = info->par;
++	DBG("neo_unmap_video");
+ 
+-		mtrr_del(par->mtrr, info->fix.smem_start,
+-			 info->fix.smem_len);
 -	}
 -#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
- 	return 0;
++	arch_phys_wc_del(par->wc_cookie);
+ 	iounmap(info->screen_base);
+ 	info->screen_base = NULL;
  
- err_reg_framebuffer:
-@@ -1177,13 +1164,7 @@ static void i740fb_remove(struct pci_dev *dev)
- 
- 	if (info) {
- 		struct i740fb_par *par = info->par;
+diff --git a/include/video/neomagic.h b/include/video/neomagic.h
+index bc5013e..91e225a 100644
+--- a/include/video/neomagic.h
++++ b/include/video/neomagic.h
+@@ -159,10 +159,7 @@ struct neofb_par {
+ 	unsigned char VCLK3NumeratorHigh;
+ 	unsigned char VCLK3Denominator;
+ 	unsigned char VerticalExt;
 -
 -#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
+-	int mtrr;
 -#endif
-+		arch_phys_wc_del(par->wc_cookie);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
- 		if (par->ddc_registered)
-@@ -1287,10 +1268,8 @@ static int  __init i740fb_setup(char *options)
- 	while ((opt = strsep(&options, ",")) != NULL) {
- 		if (!*opt)
- 			continue;
--#ifdef CONFIG_MTRR
- 		else if (!strncmp(opt, "mtrr:", 5))
- 			mtrr = simple_strtoul(opt + 5, NULL, 0);
--#endif
- 		else
- 			mode_option = opt;
- 	}
-@@ -1327,7 +1306,5 @@ MODULE_DESCRIPTION("fbdev driver for Intel740");
- module_param(mode_option, charp, 0444);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- 
--#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
++	int wc_cookie;
+ 	u8 __iomem *mmio_vbase;
+ 	u8 cursorOff;
+ 	u8 *cursorPad;		/* Must die !! */
 -- 
 2.3.2.209.gd67f9d5.dirty
 

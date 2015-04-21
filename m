@@ -1,197 +1,208 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Wed, 29 Apr 2015 21:44:25 +0000
-Subject: [PATCH v4 6/8] ivtv: use arch_phys_wc_add() and require PAT disabled
-Message-Id: <1430343867-1001-7-git-send-email-mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:16:22 +0000
+Subject: [PATCH v3 01/17] video: fbdev: radeonfb: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1429647398-16983-2-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430343867-1001-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1430343867-1001-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, bp@suse.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, daniel.vetter@intel.com, airlied@linux.ie
-Cc: dledford@redhat.com, awalls@md.metrocast.net, syrjala@sci.fi, luto@amacapital.net, mst@redhat.com, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Suresh Siddha <sbsiddha@gmail.com>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Antonino Daplas <adaplas@gmail.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, Stefan Bader <stefan.bader@canonical.com>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, toshi.kani@hp.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, linux-fbdev@vger.kernel.org, ivtv-devel@ivtvdriver.org, linux-media@vger.kernel.org, xen-devel@lists.xensource.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cocci@systeme.lip6.fr
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-We are burrying direct access to MTRR code support on
-x86 in order to take advantage of PAT. In the future we
-also want to make the default behaviour of ioremap_nocache()
-to use strong UC, use of mtrr_add() on those systems
-would make write-combining void.
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
-In order to help both enable us to later make strong
-UC default and in order to phase out direct MTRR access
-code port the driver over to arch_phys_wc_add() and
-annotate that the device driver requires systems to
-boot with PAT disabled, with the nopat kernel parameter.
+There are a few motivations for this:
 
-This is a worthy comprmise given that the hardware is
-really rare these days, and perhaps only some lost souls
-in some third world country are expected to be using this
-feature of the device driver.
+a) Take advantage of PAT when available
 
-Acked-by: Andy Walls <awalls@md.metrocast.net>
-Cc: Andy Walls <awalls@md.metrocast.net>
-Cc: Doug Ledford <dledford@redhat.com>
-Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
-Cc: Andy Lutomirski <luto@amacapital.net>
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Juergen Gross <jgross@suse.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Dave Airlie <airlied@redhat.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Michael S. Tsirkin <mst@redhat.com>
-Cc: Stefan Bader <stefan.bader@canonical.com>
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Davidlohr Bueso <dbueso@suse.de>
-Cc: konrad.wilk@oracle.com
-Cc: ville.syrjala@linux.intel.com
-Cc: david.vrabel@citrix.com
-Cc: jbeulich@suse.com
-Cc: toshi.kani@hp.com
-Cc: Roger Pau Monné <roger.pau@citrix.com>
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Cc: ivtv-devel@ivtvdriver.org
-Cc: linux-media@vger.kernel.org
-Cc: xen-devel@lists.xensource.com
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/media/pci/ivtv/Kconfig  |  3 +++
- drivers/media/pci/ivtv/ivtvfb.c | 58 ++++++++++++++++-------------------------
- 2 files changed, 26 insertions(+), 35 deletions(-)
+ drivers/video/fbdev/aty/radeon_base.c | 29 ++++++-----------------------
+ drivers/video/fbdev/aty/radeonfb.h    |  2 +-
+ 2 files changed, 7 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/media/pci/ivtv/Kconfig b/drivers/media/pci/ivtv/Kconfig
-index dd6ee57e..b2a7f88 100644
---- a/drivers/media/pci/ivtv/Kconfig
-+++ b/drivers/media/pci/ivtv/Kconfig
-@@ -57,5 +57,8 @@ config VIDEO_FB_IVTV
- 	  This is used in the Hauppauge PVR-350 card. There is a driver
- 	  homepage at <http://www.ivtvdriver.org>.
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 01237c8..2bdb070 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -85,10 +85,6 @@
  
-+	  If you have this hardware you will need to boot with PAT disabled
-+	  on your x86 systems, use the nopat kernel parameter.
-+
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called ivtvfb.
-diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
-index 9ff1230..7685ae3 100644
---- a/drivers/media/pci/ivtv/ivtvfb.c
-+++ b/drivers/media/pci/ivtv/ivtvfb.c
-@@ -44,8 +44,8 @@
- #include <linux/ivtvfb.h>
- #include <linux/slab.h>
+ #endif /* CONFIG_PPC */
  
 -#ifdef CONFIG_MTRR
 -#include <asm/mtrr.h>
-+#ifdef CONFIG_X86_64
-+#include <asm/pat.h>
- #endif
- 
- #include "ivtv-driver.h"
-@@ -155,12 +155,11 @@ struct osd_info {
- 	/* Buffer size */
- 	u32 video_buffer_size;
- 
--#ifdef CONFIG_MTRR
- 	/* video_base rounded down as required by hardware MTRRs */
- 	unsigned long fb_start_aligned_physaddr;
- 	/* video_base rounded up as required by hardware MTRRs */
- 	unsigned long fb_end_aligned_physaddr;
--#endif
-+	int wc_cookie;
- 
- 	/* Store the buffer offset */
- 	int set_osd_coords_x;
-@@ -1099,6 +1098,8 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
- static int ivtvfb_init_io(struct ivtv *itv)
- {
- 	struct osd_info *oi = itv->osd_info;
-+	/* Find the largest power of two that maps the whole buffer */
-+	int size_shift = 31;
- 
- 	mutex_lock(&itv->serialize_lock);
- 	if (ivtv_init_on_first_open(itv)) {
-@@ -1132,29 +1133,16 @@ static int ivtvfb_init_io(struct ivtv *itv)
- 			oi->video_pbase, oi->video_vbase,
- 			oi->video_buffer_size / 1024);
- 
--#ifdef CONFIG_MTRR
--	{
--		/* Find the largest power of two that maps the whole buffer */
--		int size_shift = 31;
--
--		while (!(oi->video_buffer_size & (1 << size_shift))) {
--			size_shift--;
--		}
--		size_shift++;
--		oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
--		oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
--		oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
--		oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
--		if (mtrr_add(oi->fb_start_aligned_physaddr,
--			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr,
--			     MTRR_TYPE_WRCOMB, 1) < 0) {
--			IVTVFB_INFO("disabled mttr\n");
--			oi->fb_start_aligned_physaddr = 0;
--			oi->fb_end_aligned_physaddr = 0;
--		}
--	}
 -#endif
 -
-+	while (!(oi->video_buffer_size & (1 << size_shift)))
-+		size_shift--;
-+	size_shift++;
-+	oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
-+	oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
-+	oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
-+	oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
-+	oi->wc_cookie = arch_phys_wc_add(oi->fb_start_aligned_physaddr,
-+					 oi->fb_end_aligned_physaddr -
-+					 oi->fb_start_aligned_physaddr);
- 	/* Blank the entire osd. */
- 	memset_io(oi->video_vbase, 0, oi->video_buffer_size);
+ #include <video/radeon.h>
+ #include <linux/radeonfb.h>
  
-@@ -1172,14 +1160,7 @@ static void ivtvfb_release_buffers (struct ivtv *itv)
+@@ -271,9 +267,7 @@ static bool mirror = 0;
+ static int panel_yres = 0;
+ static bool force_dfp = 0;
+ static bool force_measure_pll = 0;
+-#ifdef CONFIG_MTRR
+ static bool nomtrr = 0;
+-#endif
+ static bool force_sleep;
+ static bool ignore_devlist;
+ #ifdef CONFIG_PMAC_BACKLIGHT
+@@ -2260,8 +2254,8 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	rinfo->mapped_vram = min_t(unsigned long, MAX_MAPPED_VRAM, rinfo->video_ram);
  
- 	/* Release pseudo palette */
- 	kfree(oi->ivtvfb_info.pseudo_palette);
+ 	do {
+-		rinfo->fb_base = ioremap (rinfo->fb_base_phys,
+-					  rinfo->mapped_vram);
++		rinfo->fb_base = ioremap_wc(rinfo->fb_base_phys,
++					    rinfo->mapped_vram);
+ 	} while (rinfo->fb_base = NULL &&
+ 		 ((rinfo->mapped_vram /= 2) >= MIN_MAPPED_VRAM));
+ 
+@@ -2359,11 +2353,9 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 		goto err_unmap_fb;
+ 	}
+ 
+-#ifdef CONFIG_MTRR
+-	rinfo->mtrr_hdl = nomtrr ? -1 : mtrr_add(rinfo->fb_base_phys,
+-						 rinfo->video_ram,
+-						 MTRR_TYPE_WRCOMB, 1);
+-#endif
++	if (!nomtrr)
++		rinfo->wc_cookie = arch_phys_wc_add(rinfo->fb_base_phys,
++						    rinfo->video_ram);
+ 
+ 	if (backlight)
+ 		radeonfb_bl_init(rinfo);
+@@ -2428,12 +2420,7 @@ static void radeonfb_pci_unregister(struct pci_dev *pdev)
+  #endif
+ 
+ 	del_timer_sync(&rinfo->lvds_timer);
 -
 -#ifdef CONFIG_MTRR
--	if (oi->fb_end_aligned_physaddr) {
--		mtrr_del(-1, oi->fb_start_aligned_physaddr,
--			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr);
--	}
+-	if (rinfo->mtrr_hdl >= 0)
+-		mtrr_del(rinfo->mtrr_hdl, 0, 0);
 -#endif
 -
-+	arch_phys_wc_del(oi->wc_cookie);
- 	kfree(oi);
- 	itv->osd_info = NULL;
- }
-@@ -1284,6 +1265,13 @@ static int __init ivtvfb_init(void)
- 	int registered = 0;
- 	int err;
++	arch_phys_wc_del(rinfo->wc_cookie);
+         unregister_framebuffer(info);
  
-+#ifdef CONFIG_X86_64
-+	if (WARN(pat_enabled(),
-+		 "ivtvfb needs PAT disabled, boot with nopat kernel parameter\n")) {
-+		return EINVAL;
-+	}
-+#endif
-+
- 	if (ivtvfb_card_id < -1 || ivtvfb_card_id >= IVTV_MAX_CARDS) {
- 		printk(KERN_ERR "ivtvfb:  ivtvfb_card_id parameter is out of range (valid range: -1 - %d)\n",
- 		     IVTV_MAX_CARDS - 1);
+         radeonfb_bl_exit(rinfo);
+@@ -2489,10 +2476,8 @@ static int __init radeonfb_setup (char *options)
+ 			panel_yres = simple_strtoul((this_opt+11), NULL, 0);
+ 		} else if (!strncmp(this_opt, "backlight:", 10)) {
+ 			backlight = simple_strtoul(this_opt+10, NULL, 0);
+-#ifdef CONFIG_MTRR
+ 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
+ 			nomtrr = 1;
+-#endif
+ 		} else if (!strncmp(this_opt, "nomodeset", 9)) {
+ 			nomodeset = 1;
+ 		} else if (!strncmp(this_opt, "force_measure_pll", 17)) {
+@@ -2552,10 +2537,8 @@ module_param(monitor_layout, charp, 0);
+ MODULE_PARM_DESC(monitor_layout, "Specify monitor mapping (like XFree86)");
+ module_param(force_measure_pll, bool, 0);
+ MODULE_PARM_DESC(force_measure_pll, "Force measurement of PLL (debug)");
+-#ifdef CONFIG_MTRR
+ module_param(nomtrr, bool, 0);
+ MODULE_PARM_DESC(nomtrr, "bool: disable use of MTRR registers");
+-#endif
+ module_param(panel_yres, int, 0);
+ MODULE_PARM_DESC(panel_yres, "int: set panel yres");
+ module_param(mode_option, charp, 0);
+diff --git a/drivers/video/fbdev/aty/radeonfb.h b/drivers/video/fbdev/aty/radeonfb.h
+index 039def4..5bc1944 100644
+--- a/drivers/video/fbdev/aty/radeonfb.h
++++ b/drivers/video/fbdev/aty/radeonfb.h
+@@ -340,7 +340,7 @@ struct radeonfb_info {
+ 
+ 	struct pll_info		pll;
+ 
+-	int			mtrr_hdl;
++	int			wc_cookie;
+ 
+ 	u32			save_regs[100];
+ 	int			asleep;
 -- 
 2.3.2.209.gd67f9d5.dirty
 

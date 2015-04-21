@@ -1,8 +1,10 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:12:03 +0000
+Date: Tue, 21 Apr 2015 20:13:50 +0000
 Subject: [PATCH v3] staging: sm750fb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1429647123-16777-1-git-send-email-mcgrof@do-not-panic.com>
+Message-Id: <1429647230-16870-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1429647123-16777-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647123-16777-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

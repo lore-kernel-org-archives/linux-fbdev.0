@@ -1,67 +1,68 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Thu, 23 Apr 2015 13:50:17 +0000
-Subject: [PATCH 2/2] staging: sm7xxfb: remove unused functions
-Message-Id: <1429796297-11750-2-git-send-email-sudipm.mukherjee@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:16:38 +0000
+Subject: [PATCH v3 17/17] video: fbdev: geode gxfb: use ioremap_wc() for framebuffer
+Message-Id: <1429647398-16983-18-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429796297-11750-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1429796297-11750-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: cocci@systeme.lip6.fr
 
-removed the smtc_alloc_fb_info() and smtc_free_fb_info() functions which
-were not used anymore.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+The driver doesn't use mtrr_add() or arch_phys_wc_add() but
+since we know the framebuffer is isolated already on an
+ioremap() we can take advantage of write combining for
+performance where possible.
+
+In this case there are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-geode@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/sm7xxfb/sm7xxfb.c | 32 --------------------------------
- 1 file changed, 32 deletions(-)
+ drivers/video/fbdev/geode/gxfb_core.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index 27f339f..5db26f1 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -675,38 +675,6 @@ static struct fb_ops smtcfb_ops = {
- };
+diff --git a/drivers/video/fbdev/geode/gxfb_core.c b/drivers/video/fbdev/geode/gxfb_core.c
+index 124d7c7..ec9fc9a 100644
+--- a/drivers/video/fbdev/geode/gxfb_core.c
++++ b/drivers/video/fbdev/geode/gxfb_core.c
+@@ -263,7 +263,8 @@ static int gxfb_map_video_memory(struct fb_info *info, struct pci_dev *dev)
  
- /*
-- * alloc struct smtcfb_info and assign default values
-- */
--static struct smtcfb_info *smtc_alloc_fb_info(struct pci_dev *pdev)
--{
--	struct smtcfb_info *sfb;
--
--	sfb = kzalloc(sizeof(*sfb), GFP_KERNEL);
--
--	if (!sfb)
--		return NULL;
--
--	sfb->pdev = pdev;
--
--	sfb->fb->flags          = FBINFO_FLAG_DEFAULT;
--	sfb->fb->fbops          = &smtcfb_ops;
--	sfb->fb->fix            = smtcfb_fix;
--	sfb->fb->var            = smtcfb_var;
--	sfb->fb->pseudo_palette = sfb->colreg;
--	sfb->fb->par            = sfb;
--
--	return sfb;
--}
--
--/*
-- * free struct smtcfb_info
-- */
--static void smtc_free_fb_info(struct smtcfb_info *sfb)
--{
--	kfree(sfb);
--}
--
--/*
-  * Unmap in the memory mapped IO registers
-  */
+ 	info->fix.smem_start = pci_resource_start(dev, 0);
+ 	info->fix.smem_len = vram ? vram : gx_frame_buffer_size();
+-	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
++	info->screen_base = ioremap_wc(info->fix.smem_start,
++				       info->fix.smem_len);
+ 	if (!info->screen_base)
+ 		return -ENOMEM;
  
 -- 
-1.8.1.2
+2.3.2.209.gd67f9d5.dirty
 

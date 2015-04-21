@@ -1,23 +1,21 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Wed, 29 Apr 2015 21:44:11 +0000
-Subject: [PATCH v4 6/6] video: fbdev: atyfb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1430343851-967-7-git-send-email-mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:12:03 +0000
+Subject: [PATCH v3] staging: sm750fb: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1429647123-16777-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430343851-967-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1430343851-967-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, bp@suse.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, daniel.vetter@intel.com, airlied@linux.ie
-Cc: dledford@redhat.com, awalls@md.metrocast.net, syrjala@sci.fi, luto@amacapital.net, mst@redhat.com, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Rob Clark <robdclark@gmail.com>, Mathias Krause <minipli@googlemail.com>, Andrzej Hajda <a.hajda@samsung.com>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cocci@systeme.lip6.fr
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-This driver uses strong UC for the MMIO region, and ioremap_wc()
-for the framebuffer to whitelist for the WC MTRR what can changed
-to WC. On PAT systems we don't need the MTRR call so just use
-arch_phys_wc_add() there, this lets us remove all those ifdefs.
-Lets also be consistent and use ioremap_wc() for ATARI as well.
+The same area used for ioremap() is used for the MTRR area.
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
 There are a few motivations for this:
 
@@ -85,7 +83,9 @@ expression base, size;
 +info->screen_base = ioremap_wc(base, size);
 
 Generated-by: Coccinelle SmPL
-Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -96,141 +96,135 @@ Cc: Dave Airlie <airlied@redhat.com>
 Cc: Antonino Daplas <adaplas@gmail.com>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Mathias Krause <minipli@googlemail.com>
-Cc: Andrzej Hajda <a.hajda@samsung.com>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: devel@driverdev.osuosl.org
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/aty/atyfb.h      |  4 +---
- drivers/video/fbdev/aty/atyfb_base.c | 37 +++++++-----------------------------
- 2 files changed, 8 insertions(+), 33 deletions(-)
+ drivers/staging/sm750fb/sm750.c    | 36 ++++--------------------------------
+ drivers/staging/sm750fb/sm750.h    |  3 ---
+ drivers/staging/sm750fb/sm750_hw.c |  3 +--
+ 3 files changed, 5 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/atyfb.h b/drivers/video/fbdev/aty/atyfb.h
-index 89ec439..63c4842 100644
---- a/drivers/video/fbdev/aty/atyfb.h
-+++ b/drivers/video/fbdev/aty/atyfb.h
-@@ -182,9 +182,7 @@ struct atyfb_par {
- 	unsigned long irq_flags;
- 	unsigned int irq;
- 	spinlock_t int_lock;
--#ifdef CONFIG_MTRR
--	int mtrr_aper;
--#endif
-+	int wc_cookie;
- 	u32 mem_cntl;
- 	struct crtc saved_crtc;
- 	union aty_pll saved_pll;
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 546f5af..b75c974 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -98,9 +98,6 @@
- #ifdef CONFIG_PMAC_BACKLIGHT
- #include <asm/backlight.h>
- #endif
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 3c7ea95..cf57e3e 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -16,9 +16,6 @@
+ #include<linux/vmalloc.h>
+ #include<linux/pagemap.h>
+ #include <linux/console.h>
 -#ifdef CONFIG_MTRR
 -#include <asm/mtrr.h>
 -#endif
- 
- /*
-  * Debug flags.
-@@ -303,9 +300,6 @@ static struct fb_ops atyfb_ops = {
- };
- 
- static bool noaccel;
+ #include <asm/fb.h>
+ #include "sm750.h"
+ #include "sm750_hw.h"
+@@ -47,9 +44,7 @@ typedef int (*PROC_SPEC_INITHW)(struct lynx_share*, struct pci_dev*);
+ /* common var for all device */
+ static int g_hwcursor = 1;
+ static int g_noaccel;
 -#ifdef CONFIG_MTRR
--static bool nomtrr;
+ static int g_nomtrr;
 -#endif
- static int vram;
- static int pll;
- static int mclk;
-@@ -2628,17 +2622,13 @@ static int aty_init(struct fb_info *info)
- 		aty_st_le32(BUS_CNTL, aty_ld_le32(BUS_CNTL, par) |
- 			    BUS_APER_REG_DIS, par);
+ static const char *g_fbmode[] = {NULL, NULL};
+ static const char *g_def_fbmode = "800x600-16@60";
+ static char *g_settings = NULL;
+@@ -1126,11 +1121,8 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 
+ 	pr_info("share->revid = %02x\n", share->revid);
+ 	share->pdev = pdev;
+-#ifdef CONFIG_MTRR
+ 	share->mtrr_off = g_nomtrr;
+ 	share->mtrr.vram = 0;
+-	share->mtrr.vram_added = 0;
+-#endif
+ 	share->accel_off = g_noaccel;
+ 	share->dual = g_dualview;
+ 	spin_lock_init(&share->slock);
+@@ -1158,22 +1150,9 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 		goto err_map;
+ 	}
  
 -#ifdef CONFIG_MTRR
--	par->mtrr_aper = -1;
--	if (!nomtrr) {
-+	if (!nomtrr)
- 		/*
- 		 * Only the ioremap_wc()'d area will get WC here
- 		 * since ioremap_uc() was used on the entire PCI BAR.
- 		 */
--		par->mtrr_aper = mtrr_add(par->res_start, par->res_size,
--					  MTRR_TYPE_WRCOMB, 1);
+-	if (!share->mtrr_off) {
+-		pr_info("enable mtrr\n");
+-		share->mtrr.vram = mtrr_add(share->vidmem_start,
+-					    share->vidmem_size,
+-					    MTRR_TYPE_WRCOMB, 1);
+-
+-		if (share->mtrr.vram < 0) {
+-			/* don't block driver with the failure of MTRR */
+-			pr_err("Unable to setup MTRR.\n");
+-		} else {
+-			share->mtrr.vram_added = 1;
+-			pr_info("MTRR added succesfully\n");
+-		}
 -	}
 -#endif
-+		par->wc_cookie = arch_phys_wc_add(par->res_start,
-+						  par->res_size);
++	if (!share->mtrr_off)
++		share->mtrr.vram = arch_phys_wc_add(share->vidmem_start,
++						    share->vidmem_size);
  
- 	info->fbops = &atyfb_ops;
- 	info->pseudo_palette = par->pseudo_palette;
-@@ -2766,13 +2756,8 @@ aty_init_exit:
- 	/* restore video mode */
- 	aty_set_crtc(par, &par->saved_crtc);
- 	par->pll_ops->set_pll(info, &par->saved_pll);
-+	arch_phys_wc_del(par->wc_cookie);
+ 	memset_io(share->pvMem, 0, share->vidmem_size);
  
+@@ -1274,12 +1253,7 @@ static void __exit lynxfb_pci_remove(struct pci_dev *pdev)
+ 		/* release frame buffer */
+ 		framebuffer_release(info);
+ 	}
 -#ifdef CONFIG_MTRR
--	if (par->mtrr_aper >= 0) {
--		mtrr_del(par->mtrr_aper, 0, 0);
--		par->mtrr_aper = -1;
--	}
+-	if (share->mtrr.vram_added)
+-		mtrr_del(share->mtrr.vram,
+-			 share->vidmem_start,
+-			 share->vidmem_size);
 -#endif
- 	return ret;
- }
++	arch_phys_wc_del(share->mtrr.vram);
  
-@@ -3660,7 +3645,8 @@ static int __init atyfb_atari_probe(void)
- 		 * Map the video memory (physical address given)
- 		 * to somewhere in the kernel address space.
- 		 */
--		info->screen_base = ioremap(phys_vmembase[m64_num], phys_size[m64_num]);
-+		info->screen_base = ioremap_wc(phys_vmembase[m64_num],
-+					       phys_size[m64_num]);
- 		info->fix.smem_start = (unsigned long)info->screen_base; /* Fake! */
- 		par->ati_regbase = ioremap(phys_guiregbase[m64_num], 0x10000) +
- 						0xFC00ul;
-@@ -3726,13 +3712,8 @@ static void atyfb_remove(struct fb_info *info)
- 	if (M64_HAS(MOBIL_BUS))
- 		aty_bl_exit(info->bl_dev);
+ 	iounmap(share->pvReg);
+ 	iounmap(share->pvMem);
+@@ -1321,10 +1295,8 @@ static int __init lynxfb_setup(char *options)
+ 		/* options that mean for any lynx chips are configured here */
+ 		if (!strncmp(opt, "noaccel", strlen("noaccel")))
+ 			g_noaccel = 1;
+-#ifdef CONFIG_MTRR
+ 		else if (!strncmp(opt, "nomtrr", strlen("nomtrr")))
+ 			g_nomtrr = 1;
+-#endif
+ 		else if (!strncmp(opt, "dual", strlen("dual")))
+ 			g_dualview = 1;
+ 		else {
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 0847d2b..5528912 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -51,13 +51,10 @@ struct lynx_share{
+ 	struct lynx_accel accel;
+ 	int accel_off;
+ 	int dual;
+-#ifdef CONFIG_MTRR
+ 		int mtrr_off;
+ 		struct{
+ 			int vram;
+-			int vram_added;
+ 		}mtrr;
+-#endif
+ 	/* all smi graphic adaptor got below attributes */
+ 	unsigned long vidmem_start;
+ 	unsigned long vidreg_start;
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 9f0d06d..4b77eb1 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -85,8 +85,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
+ 	}
  #endif
-+	arch_phys_wc_del(par->wc_cookie);
  
--#ifdef CONFIG_MTRR
--	if (par->mtrr_aper >= 0) {
--		mtrr_del(par->mtrr_aper, 0, 0);
--		par->mtrr_aper = -1;
--	}
--#endif
- #ifndef __sparc__
- 	if (par->ati_regbase)
- 		iounmap(par->ati_regbase);
-@@ -3848,10 +3829,8 @@ static int __init atyfb_setup(char *options)
- 	while ((this_opt = strsep(&options, ",")) != NULL) {
- 		if (!strncmp(this_opt, "noaccel", 7)) {
- 			noaccel = 1;
--#ifdef CONFIG_MTRR
- 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
- 			nomtrr = 1;
--#endif
- 		} else if (!strncmp(this_opt, "vram:", 5))
- 			vram = simple_strtoul(this_opt + 5, NULL, 0);
- 		else if (!strncmp(this_opt, "pll:", 4))
-@@ -4021,7 +4000,5 @@ module_param(comp_sync, int, 0);
- MODULE_PARM_DESC(comp_sync, "Set composite sync signal to low (0) or high (1)");
- module_param(mode, charp, 0);
- MODULE_PARM_DESC(mode, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
--#ifdef CONFIG_MTRR
- module_param(nomtrr, bool, 0);
- MODULE_PARM_DESC(nomtrr, "bool: disable use of MTRR registers");
--#endif
+-	share->pvMem = ioremap(share->vidmem_start,
+-							share->vidmem_size);
++	share->pvMem = ioremap_wc(share->vidmem_start, share->vidmem_size);
+ 
+ 	if(!share->pvMem){
+ 		pr_err("Map video memory failed\n");
 -- 
 2.3.2.209.gd67f9d5.dirty
 

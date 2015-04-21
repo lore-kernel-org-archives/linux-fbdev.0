@@ -1,15 +1,14 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Wed, 29 Apr 2015 21:36:12 +0000
-Subject: [PATCH v4 5/5] video: fbdev: vt8623fb: use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1430343372-687-6-git-send-email-mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:16:30 +0000
+Subject: [PATCH v3 09/17] video: fbdev: sisfb: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1429647398-16983-10-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bhelgaas@google.com, mst@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, airlied@linux.ie, daniel.vetter@intel.com
-Cc: linux-fbdev@vger.kernel.org, luto@amacapital.net, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Rob Clark <robdclark@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Jingoo Han <jg1.han@samsung.com>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>
+To: cocci@systeme.lip6.fr
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
@@ -86,10 +85,9 @@ expression base, size;
 +info->screen_base = ioremap_wc(base, size);
 
 Generated-by: Coccinelle SmPL
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -98,97 +96,105 @@ Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Dave Airlie <airlied@redhat.com>
 Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/vt8623fb.c | 31 ++++++-------------------------
- 1 file changed, 6 insertions(+), 25 deletions(-)
+ drivers/video/fbdev/sis/sis.h      |  2 +-
+ drivers/video/fbdev/sis/sis_main.c | 27 ++++++---------------------
+ 2 files changed, 7 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index ea7f056..60f24828 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
-@@ -26,13 +26,9 @@
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
+diff --git a/drivers/video/fbdev/sis/sis.h b/drivers/video/fbdev/sis/sis.h
+index 1987f1b7..ea1d1c9 100644
+--- a/drivers/video/fbdev/sis/sis.h
++++ b/drivers/video/fbdev/sis/sis.h
+@@ -458,7 +458,7 @@ struct sis_video_info {
  
+ 	unsigned char	*bios_abase;
+ 
+-	int		mtrr;
++	int		wc_cookie;
+ 
+ 	u32		sisfb_mem;
+ 
+diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
+index fcf610e..e923038 100644
+--- a/drivers/video/fbdev/sis/sis_main.c
++++ b/drivers/video/fbdev/sis/sis_main.c
+@@ -53,9 +53,6 @@
+ #include <linux/types.h>
+ #include <linux/uaccess.h>
+ #include <asm/io.h>
 -#ifdef CONFIG_MTRR
 -#include <asm/mtrr.h>
 -#endif
+ 
+ #include "sis.h"
+ #include "sis_main.h"
+@@ -4130,13 +4127,13 @@ static void sisfb_post_map_vram(struct sis_video_info *ivideo,
+ 	if (*mapsize < (min << 20))
+ 		return;
+ 
+-	ivideo->video_vbase = ioremap(ivideo->video_base, (*mapsize));
++	ivideo->video_vbase = ioremap_wc(ivideo->video_base, (*mapsize));
+ 
+ 	if(!ivideo->video_vbase) {
+ 		printk(KERN_ERR
+ 			"sisfb: Unable to map maximum video RAM for size detection\n");
+ 		(*mapsize) >>= 1;
+-		while((!(ivideo->video_vbase = ioremap(ivideo->video_base, (*mapsize))))) {
++		while((!(ivideo->video_vbase = ioremap_wc(ivideo->video_base, (*mapsize))))) {
+ 			(*mapsize) >>= 1;
+ 			if((*mapsize) < (min << 20))
+ 				break;
+@@ -6186,7 +6183,7 @@ static int sisfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto error_2;
+ 	}
+ 
+-	ivideo->video_vbase = ioremap(ivideo->video_base, ivideo->video_size);
++	ivideo->video_vbase = ioremap_wc(ivideo->video_base, ivideo->video_size);
+ 	ivideo->SiS_Pr.VideoMemoryAddress = ivideo->video_vbase;
+ 	if(!ivideo->video_vbase) {
+ 		printk(KERN_ERR "sisfb: Fatal error: Unable to map framebuffer memory\n");
+@@ -6254,8 +6251,6 @@ error_3:	vfree(ivideo->bios_abase);
+ 	ivideo->SiS_Pr.VideoMemoryAddress += ivideo->video_offset;
+ 	ivideo->SiS_Pr.VideoMemorySize = ivideo->sisfb_mem;
+ 
+-	ivideo->mtrr = -1;
 -
- struct vt8623fb_info {
- 	char __iomem *mmio_base;
--	int mtrr_reg;
-+	int wc_cookie;
- 	struct vgastate state;
- 	struct mutex open_lock;
- 	unsigned int ref_count;
-@@ -99,10 +95,7 @@ static struct svga_timing_regs vt8623_timing_regs     = {
- /* Module parameters */
+ 	ivideo->vbflags = 0;
+ 	ivideo->lcddefmodeidx = DEFAULT_LCDMODE;
+ 	ivideo->tvdefmodeidx  = DEFAULT_TVMODE;
+@@ -6443,14 +6438,8 @@ error_3:	vfree(ivideo->bios_abase);
  
- static char *mode_option = "640x480-8@60";
--
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
- 
- MODULE_AUTHOR("(c) 2006 Ondrej Zajicek <santiago@crfreenet.org>");
- MODULE_LICENSE("GPL");
-@@ -112,11 +105,8 @@ module_param(mode_option, charp, 0644);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0);
- MODULE_PARM_DESC(mode, "Default video mode e.g. '648x480-8@60' (deprecated)");
--
--#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
- 
- 
- /* ------------------------------------------------------------------------- */
-@@ -710,7 +700,7 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.mmio_len = pci_resource_len(dev, 1);
- 
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -781,12 +771,9 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
+ 		printk(KERN_DEBUG "sisfb: Initial vbflags 0x%x\n", (int)ivideo->vbflags);
  
 -#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
- 
- 	return 0;
- 
-@@ -816,13 +803,7 @@ static void vt8623_pci_remove(struct pci_dev *dev)
- 	if (info) {
- 		struct vt8623fb_info *par = info->par;
- 
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
+-		ivideo->mtrr = mtrr_add(ivideo->video_base, ivideo->video_size,
+-					MTRR_TYPE_WRCOMB, 1);
+-		if(ivideo->mtrr < 0) {
+-			printk(KERN_DEBUG "sisfb: Failed to add MTRRs\n");
 -		}
 -#endif
 -
-+		arch_phys_wc_del(par->wc_cookie);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
++		ivideo->wc_cookie = arch_phys_wc_add(ivideo->video_base,
++						     ivideo->video_size);
+ 		if(register_framebuffer(sis_fb_info) < 0) {
+ 			printk(KERN_ERR "sisfb: Fatal error: Failed to register framebuffer\n");
+ 			ret = -EINVAL;
+@@ -6507,11 +6496,7 @@ static void sisfb_remove(struct pci_dev *pdev)
  
+ 	pci_dev_put(ivideo->nbridge);
+ 
+-#ifdef CONFIG_MTRR
+-	/* Release MTRR region */
+-	if(ivideo->mtrr >= 0)
+-		mtrr_del(ivideo->mtrr, ivideo->video_base, ivideo->video_size);
+-#endif
++	arch_phys_wc_del(ivideo->wc_cookie);
+ 
+ 	/* If device was disabled when starting, disable
+ 	 * it when quitting.
 -- 
 2.3.2.209.gd67f9d5.dirty
 

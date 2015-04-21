@@ -1,18 +1,18 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Wed, 29 Apr 2015 21:36:10 +0000
-Subject: [PATCH v4 3/5] video: fbdev: arkfb: use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1430343372-687-4-git-send-email-mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:16:28 +0000
+Subject: [PATCH v3 07/17] video: fbdev: nvidia: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1429647398-16983-8-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bhelgaas@google.com, mst@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, airlied@linux.ie, daniel.vetter@intel.com
-Cc: linux-fbdev@vger.kernel.org, luto@amacapital.net, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>
+To: cocci@systeme.lip6.fr
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
+This driver uses the same area for MTRR and ioremap().
 Convert the driver from using the x86 specific MTRR code to
 the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
 will avoid MTRR if write-combining is available, in order to
@@ -85,9 +85,9 @@ expression base, size;
 +info->screen_base = ioremap_wc(base, size);
 
 Generated-by: Coccinelle SmPL
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -95,100 +95,128 @@ Cc: Juergen Gross <jgross@suse.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/arkfb.c | 36 +++++-------------------------------
- 1 file changed, 5 insertions(+), 31 deletions(-)
+ drivers/video/fbdev/nvidia/nv_type.h |  7 +------
+ drivers/video/fbdev/nvidia/nvidia.c  | 37 ++++++------------------------------
+ 2 files changed, 7 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index b305a1e..6a317de 100644
---- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -26,13 +26,9 @@
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
+diff --git a/drivers/video/fbdev/nvidia/nv_type.h b/drivers/video/fbdev/nvidia/nv_type.h
+index c03f7f5..6ff321a 100644
+--- a/drivers/video/fbdev/nvidia/nv_type.h
++++ b/drivers/video/fbdev/nvidia/nv_type.h
+@@ -148,12 +148,7 @@ struct nvidia_par {
+ 	u32 forceCRTC;
+ 	u32 open_count;
+ 	u8 DDCBase;
+-#ifdef CONFIG_MTRR
+-	struct {
+-		int vram;
+-		int vram_valid;
+-	} mtrr;
+-#endif
++	int wc_cookie;
+ 	struct nvidia_i2c_chan chan[3];
  
+ 	volatile u32 __iomem *REGS;
+diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
+index 4273c6e..ce7dab7 100644
+--- a/drivers/video/fbdev/nvidia/nvidia.c
++++ b/drivers/video/fbdev/nvidia/nvidia.c
+@@ -21,9 +21,6 @@
+ #include <linux/pci.h>
+ #include <linux/console.h>
+ #include <linux/backlight.h>
 -#ifdef CONFIG_MTRR
 -#include <asm/mtrr.h>
 -#endif
--
- struct arkfb_info {
- 	int mclk_freq;
--	int mtrr_reg;
-+	int wc_cookie;
- 
- 	struct dac_info *dac;
- 	struct vgastate state;
-@@ -102,10 +98,6 @@ static const struct svga_timing_regs ark_timing_regs     = {
- 
- static char *mode_option = "640x480-8@60";
- 
+ #ifdef CONFIG_BOOTX_TEXT
+ #include <asm/btext.h>
+ #endif
+@@ -76,9 +73,7 @@ static int paneltweak = 0;
+ static int vram = 0;
+ static int bpp = 8;
+ static int reverse_i2c;
 -#ifdef CONFIG_MTRR
--static int mtrr = 1;
+ static bool nomtrr = false;
 -#endif
--
- MODULE_AUTHOR("(c) 2007 Ondrej Zajicek <santiago@crfreenet.org>");
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("fbdev driver for ARK 2000PV");
-@@ -115,11 +107,6 @@ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0444);
- MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ static int backlight = 1;
+ #else
+@@ -1361,7 +1356,8 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
+ 	par->ScratchBufferStart = par->FbUsableSize - par->ScratchBufferSize;
+ 	par->CursorStart = par->FbUsableSize + (32 * 1024);
+ 
+-	info->screen_base = ioremap(nvidiafb_fix.smem_start, par->FbMapSize);
++	info->screen_base = ioremap_wc(nvidiafb_fix.smem_start,
++				       par->FbMapSize);
+ 	info->screen_size = par->FbUsableSize;
+ 	nvidiafb_fix.smem_len = par->RamAmountKBytes * 1024;
+ 
+@@ -1372,20 +1368,9 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
+ 
+ 	par->FbStart = info->screen_base;
  
 -#ifdef CONFIG_MTRR
--module_param(mtrr, int, 0444);
--MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
--
- static int threshold = 4;
- 
- module_param(threshold, int, 0644);
-@@ -1002,7 +989,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.smem_len = pci_resource_len(dev, 0);
- 
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -1057,14 +1044,8 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
--
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
--
-+	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+					  info->fix.smem_len);
- 	return 0;
- 
- 	/* Error handling */
-@@ -1092,14 +1073,7 @@ static void ark_pci_remove(struct pci_dev *dev)
- 
- 	if (info) {
- 		struct arkfb_info *par = info->par;
--
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
+-	if (!nomtrr) {
+-		par->mtrr.vram = mtrr_add(nvidiafb_fix.smem_start,
+-					  par->RamAmountKBytes * 1024,
+-					  MTRR_TYPE_WRCOMB, 1);
+-		if (par->mtrr.vram < 0) {
+-			printk(KERN_ERR PFX "unable to setup MTRR\n");
+-		} else {
+-			par->mtrr.vram_valid = 1;
+-			/* let there be speed */
+-			printk(KERN_INFO PFX "MTRR set to ON\n");
 -		}
--#endif
+-	}
+-#endif				/* CONFIG_MTRR */
++	if (!nomtrr)
++		par->wc_cookie = arch_phys_wc_add(nvidiafb_fix.smem_start,
++						  par->RamAmountKBytes * 1024);
+ 
+ 	info->fbops = &nvidia_fb_ops;
+ 	info->fix = nvidiafb_fix;
+@@ -1443,13 +1428,7 @@ static void nvidiafb_remove(struct pci_dev *pd)
+ 	unregister_framebuffer(info);
+ 
+ 	nvidia_bl_exit(par);
 -
-+		arch_phys_wc_del(par->wc_cookie);
- 		dac_release(par->dac);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
+-#ifdef CONFIG_MTRR
+-	if (par->mtrr.vram_valid)
+-		mtrr_del(par->mtrr.vram, info->fix.smem_start,
+-			 info->fix.smem_len);
+-#endif				/* CONFIG_MTRR */
+-
++	arch_phys_wc_del(par->wc_cookie);
+ 	iounmap(info->screen_base);
+ 	fb_destroy_modedb(info->monspecs.modedb);
+ 	nvidia_delete_i2c_busses(par);
+@@ -1501,10 +1480,8 @@ static int nvidiafb_setup(char *options)
+ 			vram = simple_strtoul(this_opt+5, NULL, 0);
+ 		} else if (!strncmp(this_opt, "backlight:", 10)) {
+ 			backlight = simple_strtoul(this_opt+10, NULL, 0);
+-#ifdef CONFIG_MTRR
+ 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
+ 			nomtrr = true;
+-#endif
+ 		} else if (!strncmp(this_opt, "fpdither:", 9)) {
+ 			fpdither = simple_strtol(this_opt+9, NULL, 0);
+ 		} else if (!strncmp(this_opt, "bpp:", 4)) {
+@@ -1592,11 +1569,9 @@ MODULE_PARM_DESC(bpp, "pixel width in bits"
+ 		 "(default=8)");
+ module_param(reverse_i2c, int, 0);
+ MODULE_PARM_DESC(reverse_i2c, "reverse port assignment of the i2c bus");
+-#ifdef CONFIG_MTRR
+ module_param(nomtrr, bool, false);
+ MODULE_PARM_DESC(nomtrr, "Disables MTRR support (0 or 1=disabled) "
+ 		 "(default=0)");
+-#endif
+ 
+ MODULE_AUTHOR("Antonino Daplas");
+ MODULE_DESCRIPTION("Framebuffer driver for nVidia graphics chipset");
 -- 
 2.3.2.209.gd67f9d5.dirty
 

@@ -1,124 +1,65 @@
-From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Date: Wed, 22 Apr 2015 23:04:11 +0000
-Subject: [PATCHv3 2/4] phy: core: Add devm_of_phy_get_by_index to phy-core
-Message-Id: <1429743853-10254-3-git-send-email-arun.ramamurthy@broadcom.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:20:34 +0000
+Subject: [PATCH v3 4/4] video: fbdev: gxt4500: use pci_ioremap_wc_bar() for framebuffer
+Message-Id: <1429647634-17169-5-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
-In-Reply-To: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
+References: <1429647634-17169-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647634-17169-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: cocci@systeme.lip6.fr
 
-Some generic drivers, such as ehci, may use multiple phys and for such
-drivers referencing phy(s) by name(s) does not make sense. Instead of
-inventing new naming schemes and using custom code to iterate through them,
-such drivers are better of using nameless phy bindings and using this newly
-introduced API to iterate through them.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Reviewed-by: Ray Jui <rjui@broadcom.com>
-Reviewed-by: Scott Branden <sbranden@broadcom.com>
+The driver doesn't use mtrr_add() or arch_phys_wc_add() but
+since we know the framebuffer is isolated already on an
+ioremap() we can take advantage of write combining for
+performance where possible.
+
+In this case there are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- Documentation/phy.txt   |  7 ++++++-
- drivers/phy/phy-core.c  | 32 ++++++++++++++++++++++++++++++++
- include/linux/phy/phy.h |  8 ++++++++
- 3 files changed, 46 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/gxt4500.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/phy.txt b/Documentation/phy.txt
-index 371361c..b388c5a 100644
---- a/Documentation/phy.txt
-+++ b/Documentation/phy.txt
-@@ -76,6 +76,8 @@ struct phy *phy_get(struct device *dev, const char *string);
- struct phy *phy_optional_get(struct device *dev, const char *string);
- struct phy *devm_phy_get(struct device *dev, const char *string);
- struct phy *devm_phy_optional_get(struct device *dev, const char *string);
-+struct phy *devm_of_phy_get_by_index(struct device *dev, struct device_node *np,
-+				     int index);
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 135d78a..f19133a 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -662,7 +662,7 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  
- phy_get, phy_optional_get, devm_phy_get and devm_phy_optional_get can
- be used to get the PHY. In the case of dt boot, the string arguments
-@@ -86,7 +88,10 @@ successful PHY get. On driver detach, release function is invoked on
- the the devres data and devres data is freed. phy_optional_get and
- devm_phy_optional_get should be used when the phy is optional. These
- two functions will never return -ENODEV, but instead returns NULL when
--the phy cannot be found.
-+the phy cannot be found.Some generic drivers, such as ehci, may use multiple
-+phys and for such drivers referencing phy(s) by name(s) does not make sense. In
-+this case, devm_of_phy_get_by_index can be used to get a phy reference based on
-+the index.
- 
- It should be noted that NULL is a valid phy reference. All phy
- consumer calls on the NULL phy become NOPs. That is the release calls,
-diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
-index 3791838..964a84d 100644
---- a/drivers/phy/phy-core.c
-+++ b/drivers/phy/phy-core.c
-@@ -623,6 +623,38 @@ struct phy *devm_of_phy_get(struct device *dev, struct device_node *np,
- EXPORT_SYMBOL_GPL(devm_of_phy_get);
- 
- /**
-+ * devm_of_phy_get_by_index() - lookup and obtain a reference to a phy by index.
-+ * @dev: device that requests this phy
-+ * @np: node containing the phy
-+ * @index: index of the phy
-+ *
-+ * Gets the phy using _of_phy_get(), and associates a device with it using
-+ * devres. On driver detach, release function is invoked on the devres data,
-+ * then, devres data is freed.
-+ *
-+ */
-+struct phy *devm_of_phy_get_by_index(struct device *dev, struct device_node *np,
-+				     int index)
-+{
-+	struct phy **ptr, *phy;
-+
-+	ptr = devres_alloc(devm_phy_release, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return ERR_PTR(-ENOMEM);
-+
-+	phy = _of_phy_get(np, index);
-+	if (!IS_ERR(phy)) {
-+		*ptr = phy;
-+		devres_add(dev, ptr);
-+	} else {
-+		devres_free(ptr);
-+	}
-+
-+	return phy;
-+}
-+EXPORT_SYMBOL_GPL(devm_of_phy_get_by_index);
-+
-+/**
-  * phy_create() - create a new phy
-  * @dev: device that is creating the new phy
-  * @node: device node of the phy
-diff --git a/include/linux/phy/phy.h b/include/linux/phy/phy.h
-index a0197fa..978d5af 100644
---- a/include/linux/phy/phy.h
-+++ b/include/linux/phy/phy.h
-@@ -133,6 +133,8 @@ struct phy *devm_phy_get(struct device *dev, const char *string);
- struct phy *devm_phy_optional_get(struct device *dev, const char *string);
- struct phy *devm_of_phy_get(struct device *dev, struct device_node *np,
- 			    const char *con_id);
-+struct phy *devm_of_phy_get_by_index(struct device *dev, struct device_node *np,
-+				     int index);
- void phy_put(struct phy *phy);
- void devm_phy_put(struct device *dev, struct phy *phy);
- struct phy *of_phy_get(struct device_node *np, const char *con_id);
-@@ -261,6 +263,12 @@ static inline struct phy *devm_of_phy_get(struct device *dev,
- 	return ERR_PTR(-ENOSYS);
- }
- 
-+struct phy *devm_of_phy_get_by_index(struct device *dev, struct device_node *np,
-+				     int index);
-+{
-+	return ERR_PTR(-ENOSYS);
-+}
-+
- static inline void phy_put(struct phy *phy)
- {
- }
+ 	info->fix.smem_start = fb_phys;
+ 	info->fix.smem_len = pci_resource_len(pdev, 1);
+-	info->screen_base = pci_ioremap_bar(pdev, 1);
++	info->screen_base = pci_ioremap_wc_bar(pdev, 1);
+ 	if (!info->screen_base) {
+ 		dev_err(&pdev->dev, "gxt4500: cannot map framebuffer\n");
+ 		goto err_unmap_regs;
 -- 
-2.3.4
+2.3.2.209.gd67f9d5.dirty
 

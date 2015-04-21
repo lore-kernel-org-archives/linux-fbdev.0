@@ -1,23 +1,25 @@
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Date: Tue, 21 Apr 2015 20:57:16 +0000
-Subject: Re: [PATCH v3 2/3] IB/qib: use arch_phys_wc_add()
-Message-Id: <20150421205716.GA474@obsidianresearch.com>
+From: "Marciniszyn, Mike" <mike.marciniszyn@intel.com>
+Date: Tue, 21 Apr 2015 20:59:41 +0000
+Subject: RE: [PATCH v3 2/3] IB/qib: use arch_phys_wc_add()
+Message-Id: <32E1700B9017364D9B60AED9960492BC256FB8E2@fmsmsx120.amr.corp.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1429648676-17755-1-git-send-email-mcgrof@do-not-panic.com>
  <1429648676-17755-3-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1429648676-17755-3-git-send-email-mcgrof@do-not-panic.com>
+ <20150421205716.GA474@obsidianresearch.com>
+In-Reply-To: <20150421205716.GA474@obsidianresearch.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cocci@systeme.lip6.fr
 
-On Tue, Apr 21, 2015 at 01:37:55PM -0700, Luis R. Rodriguez wrote:
-> From: "Luis R. Rodriguez" <mcgrof@suse.com>
+> > This driver already makes use of ioremap_wc() on PIO buffers, so
+> > convert it to use arch_phys_wc_add().
 > 
-> This driver already makes use of ioremap_wc() on PIO buffers,
-> so convert it to use arch_phys_wc_add().
+> This is probably OK, but I think you should also remove the qib_wc_pat module
+> parameter.
+> 
+> Jason
 
-This is probably OK, but I think you should also remove the qib_wc_pat
-module parameter.
+Revise based on Jason's request and I will do some testing.
 
-Jason
+Mike

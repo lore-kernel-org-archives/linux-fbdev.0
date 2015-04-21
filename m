@@ -1,39 +1,219 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 22 Apr 2015 13:22:58 +0000
-Subject: [PATCH 2/5] OMAPDSS: HDMI5: Set valid sample order
-Message-Id: <134b187ace26d0a604d097966c797f961612f7cf.1429705991.git.jsarha@ti.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:16:32 +0000
+Subject: [PATCH v3 11/17] video: fbdev: i810: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1429647398-16983-12-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1429705991.git.jsarha@ti.com>
-In-Reply-To: <cover.1429705991.git.jsarha@ti.com>
+References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, misael.lopez@ti.com, Jyri Sarha <jsarha@ti.com>
+To: cocci@systeme.lip6.fr
 
-From: Misael Lopez Cruz <misael.lopez@ti.com>
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-As per TRM, HDMI_WP_AUDIO_CFG[2] LEFT_BEFORE = 0 is reserved,
-so it must always be set to 1 (the first sample is the left).
+The same area used for MTRR is used for the ioremap() area.
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
-Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi5_core.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/i810/i810.h      |  3 +--
+ drivers/video/fbdev/i810/i810_main.c | 11 +++++++----
+ drivers/video/fbdev/i810/i810_main.h | 26 --------------------------
+ 3 files changed, 8 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-index a3cfe3d..7a80beb 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
-@@ -870,6 +870,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 	audio_format.samples_per_word = HDMI_AUDIO_ONEWORD_TWOSAMPLES;
- 	audio_format.sample_size = HDMI_AUDIO_SAMPLE_16BITS;
- 	audio_format.justification = HDMI_AUDIO_JUSTIFY_LEFT;
-+	audio_format.sample_order = HDMI_AUDIO_SAMPLE_LEFT_FIRST;
+diff --git a/drivers/video/fbdev/i810/i810.h b/drivers/video/fbdev/i810/i810.h
+index 1414b73..7b1c002 100644
+--- a/drivers/video/fbdev/i810/i810.h
++++ b/drivers/video/fbdev/i810/i810.h
+@@ -199,7 +199,6 @@
+ #define HAS_FONTCACHE               8 
  
- 	/* only LPCM atm */
- 	audio_format.type = HDMI_AUDIO_TYPE_LPCM;
+ /* driver flags */
+-#define HAS_MTRR                    1
+ #define HAS_ACCELERATION            2
+ #define ALWAYS_SYNC                 4
+ #define LOCKUP                      8
+@@ -281,7 +280,7 @@ struct i810fb_par {
+ 	u32 ovract;
+ 	u32 cur_state;
+ 	u32 ddc_num;
+-	int mtrr_reg;
++	int wc_cookie;
+ 	u16 bltcntl;
+ 	u8 interlace;
+ };
+diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
+index bb674e4..025b882 100644
+--- a/drivers/video/fbdev/i810/i810_main.c
++++ b/drivers/video/fbdev/i810/i810_main.c
+@@ -41,6 +41,7 @@
+ #include <linux/resource.h>
+ #include <linux/unistd.h>
+ #include <linux/console.h>
++#include <linux/io.h>
+ 
+ #include <asm/io.h>
+ #include <asm/div64.h>
+@@ -1816,7 +1817,9 @@ static void i810_init_device(struct i810fb_par *par)
+ 	u8 reg;
+ 	u8 __iomem *mmio = par->mmio_start_virtual;
+ 
+-	if (mtrr) set_mtrr(par);
++	if (mtrr)
++		par->wc_cookie= arch_phys_wc_add((u32) par->aperture.physical,
++						 par->aperture.size);
+ 
+ 	i810_init_cursor(par);
+ 
+@@ -1865,8 +1868,8 @@ static int i810_allocate_pci_resource(struct i810fb_par *par,
+ 	}
+ 	par->res_flags |= FRAMEBUFFER_REQ;
+ 
+-	par->aperture.virtual = ioremap_nocache(par->aperture.physical, 
+-					par->aperture.size);
++	par->aperture.virtual = ioremap_wc(par->aperture.physical,
++					   par->aperture.size);
+ 	if (!par->aperture.virtual) {
+ 		printk("i810fb_init: cannot remap framebuffer region\n");
+ 		return -ENODEV;
+@@ -2096,7 +2099,7 @@ static void i810fb_release_resource(struct fb_info *info,
+ 				    struct i810fb_par *par)
+ {
+ 	struct gtt_data *gtt = &par->i810_gtt;
+-	unset_mtrr(par);
++	arch_phys_wc_del(par->wc_cookie);
+ 
+ 	i810_delete_i2c_busses(par);
+ 
+diff --git a/drivers/video/fbdev/i810/i810_main.h b/drivers/video/fbdev/i810/i810_main.h
+index a25afaa..7bfaaad 100644
+--- a/drivers/video/fbdev/i810/i810_main.h
++++ b/drivers/video/fbdev/i810/i810_main.h
+@@ -60,32 +60,6 @@ static inline void flush_cache(void)
+ #define flush_cache() do { } while(0)
+ #endif 
+ 
+-#ifdef CONFIG_MTRR
+-
+-#include <asm/mtrr.h>
+-
+-static inline void set_mtrr(struct i810fb_par *par)
+-{
+-	par->mtrr_reg = mtrr_add((u32) par->aperture.physical, 
+-		 par->aperture.size, MTRR_TYPE_WRCOMB, 1);
+-	if (par->mtrr_reg < 0) {
+-		printk(KERN_ERR "set_mtrr: unable to set MTRR\n");
+-		return;
+-	}
+-	par->dev_flags |= HAS_MTRR;
+-}
+-static inline void unset_mtrr(struct i810fb_par *par)
+-{
+-  	if (par->dev_flags & HAS_MTRR) 
+-  		mtrr_del(par->mtrr_reg, (u32) par->aperture.physical, 
+-			 par->aperture.size); 
+-}
+-#else
+-#define set_mtrr(x) printk("set_mtrr: MTRR is disabled in the kernel\n")
+-
+-#define unset_mtrr(x) do { } while (0)
+-#endif /* CONFIG_MTRR */
+-
+ #ifdef CONFIG_FB_I810_GTF
+ #define IS_DVT (0)
+ #else
 -- 
-1.9.1
+2.3.2.209.gd67f9d5.dirty
 

@@ -1,85 +1,72 @@
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Tue, 21 Apr 2015 23:14:56 +0000
+Date: Tue, 21 Apr 2015 23:39:07 +0000
 Subject: Re: ioremap_uc() followed by set_memory_wc() - burrying MTRR
-Message-Id: <20150421231456.GZ5622@wotan.suse.de>
+Message-Id: <20150421233907.GA5622@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150411012938.GC5622@wotan.suse.de>
- <CALCETrXd19C6pARde3pv-4pt-i52APtw5xs20itwROPq9VmCfg@mail.gmail.com>
- <20150413174938.GE5622@wotan.suse.de>
- <1429137531.1899.28.camel@palomino.walls.org>
- <20150415235816.GG5622@wotan.suse.de>
- <1429146457.1899.99.camel@palomino.walls.org>
- <20150421220219.GX5622@wotan.suse.de>
- <CAB=NE6UFOi_CYbrgYGCfU3Uki30iGdPPL2+V5RLYww=NS7G0GA@mail.gmail.com>
- <CALCETrXMJNvd0zTjgyM6GF=xm7aL-K2ERX-A0p=46msh54AA7g@mail.gmail.com>
- <5536d47a.95968c0a.1d12.ffffbf85@mx.google.com>
-In-Reply-To: <5536d47a.95968c0a.1d12.ffffbf85@mx.google.com>
+References: <CALCETrV0B7rp08-VYjp5=1CWJp7=xTUTBYo3uGxX317RxAQT+w@mail.gmail.com>
+ <20150421224601.GY5622@wotan.suse.de>
+ <20150421225732.GA17356@obsidianresearch.com>
+In-Reply-To: <20150421225732.GA17356@obsidianresearch.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Walls <andy@silverblocksystems.net>
-Cc: Andy Lutomirski <luto@amacapital.net>, Hyong-Youb Kim <hykim@myri.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, infinipath@intel.com, jgunthorpe@obsidianresearch.com, mike.marciniszyn@intel.com, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, linux-fbdev <linux-fbdev@vger.kernel.org>, linux-media@vger.kernel.org, X86ML@suse.de
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Cc: Andy Lutomirski <luto@amacapital.net>, mike.marciniszyn@intel.com, infinipath@intel.com, linux-rdma@vger.kernel.org, awalls@md.metrocast.net, Toshi Kani <toshi.kani@hp.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Roland Dreier <roland@purestorage.com>, Juergen Gross <jgross@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Borislav Petkov <bp@suse.de>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Thomas Gleixner <tglx@linutronix.de>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-media@vger.kernel.org, X86 ML <x86@kernel.org>, mcgrof@do-not-panic.com
 
-On Tue, Apr 21, 2015 at 06:51:26PM -0400, Andy Walls wrote:
-> Sorry for the top post; mobile work email account.
+On Tue, Apr 21, 2015 at 04:57:32PM -0600, Jason Gunthorpe wrote:
+> On Wed, Apr 22, 2015 at 12:46:01AM +0200, Luis R. Rodriguez wrote:
 > 
-> Luis,
+> > are talking about annotating the qib driver as "known to be broken without PAT"
+> > and since the ipath driver needs considerable work to be ported to
+> > use PAT (the
 > 
-> You do the changes to remove MTTR and point me to your dev repo and branch.
-> Also point me to the new functions/primitives I'll need.
+> This only seems to be true for one of the chips that driver supports,
+> not all possibilities.
+> 
+> > userspace register is just one area) I wanted to review if we can just remove
+> > MTRR use on the ipath driver and annotate write-combining with PAT as a TODO
+> > item.
+> 
+> AFAIK, dropping MTRR support will completely break the performance to
+> the point the driver is unusable. If we drop MTRR we may as well
+> remove the driver.
 
-There is nothing new actually needed for ivtv, unless of course
-the ivtv driver is bounded to use a large MTRR that includes
-the non-framebuffer region, if so then the ioremap_uc() would
-be needed, and you can just cherry pick that patch:
+To be clear, the arch_phys_wc_add() API will be a no-op when PAT is
+enabled on a system. Although some folks think PAT is new, its not,
+its just that our implementation on Linux lacked a bit of push, recent
+changes however make PAT support complete and that means now we'll have
+PAT enabled on systems that likely didn't before on recent kernels.
 
-https://marc.info/?l=linux-kernel&m2964809110516&w=1
+There are other important motivations to use PAT:
 
-I'll bounce that patch to you as well. Might help reading this
-patch too:
+ * Xen won't work with MTRR, having a unified PAT enabled kernel
+   will ensure that when Xen is used write-combinging will take
+   effect
 
-https://marc.info/?l=linux-kernel&m2964809710517&w=1
+ * Long term we want to make strong UC the default to ioremap() on
+   x86, right now its not, its UC-, we need to convert all drivers
+   that want write-combining over to use ioremap_wc() for their
+   specific area, and it must not overlap. There are issues with
+   using mtrr_add() on regions marked as UC-, since its the default
+   this  means that mtrr_add() use on ioramp'd areas on PAT systems
+   will actually make write-combining *void*. Refer to this table
+   for combinatorial effects for non-PAT / PAT of wc MTRR:
 
-If your write-combining area is not restricted by size constraints
-so that it also include the non-framebuffer areas then you can just
-do a simple conversion of the driver to use ioremap_wc() on the
-framebuffer followed by arch_phys_wc_add().
+   https://marc.info/?l=linux-kernel&m2964809710517&w=1
 
-An example driver that required changes to split this with size
-contraints is atyfb, here are the changes for it:
+So as the train of PAT enablement moves forward it means systems
+that have PAT enabled now might not have write-combining effective.
+In order to get the best of both worlds, non-PAT and PAT systems
+we must design drivers cleanly for the non-writecombining and
+write-combining areas. This mean using ioremap_nocache() for MMIO
+and ioremap_wc() *only* for the desired, write-combining area,
+followed by arch_phys_wc_add().
 
-https://marc.info/?l=linux-kernel&m2964818810539&w=1
-https://marc.info/?l=linux-kernel&m2964813610531&w=1
-https://marc.info/?l=linux-kernel&m2964811010524&w=1
-https://marc.info/?l=linux-kernel&m2964814810532&w=1
+> Mike, do you think the time is right to just remove the iPath driver?
 
-If you are not constrained by MTRR's limitation on size then
-a simple trivial driver conversion is sufficient. For example:
-
-https://marc.info/?l=linux-kernel&m2964744610286&w=1
-
-I should also note that we are strivoing to also not use overlapping ioremap()
-calls as we want to avoid that mess. Overlapping iroemap() calls with different
-types could in theory work but its best we just design clean drivers and avoid
-this.
-
-As per Andy Lutomirski, what we'd need done on ivtv likely is
-for it to ioremap() for an initial bring up of the device, then
-infer the framebuffer offset, and only when that is being used
-then iounmap and then ioremap() again split areas on the driver,
-one with ioremap.
-
-> I'll do the changes to add write-combining back into ivtv and ivtvfb, test
-> them with my hardware and push them to my linuxtv.org git repo.
-
-Great! The above sounded like a complexity you did not wish to
-take on, but if you're up for the change, that'd be awesome!
-
-> I know there is at least one English speaking user in India using ivtv with
-> old PVR hardware, and probably folks in less developed places also using it.
-
-If the above is too much work for that few amount of users I'd hope
-we can just have them use older kernels, for the sake of sane APIs and
-clean driver architecture.
+With PAT now being default the driver effectively won't work
+with write-combining on modern kernels. Even if systems are old
+they likely had PAT support, when upgrading kernels PAT will work
+but write-combing won't on ipath.
 
   Luis

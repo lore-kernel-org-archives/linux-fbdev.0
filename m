@@ -1,450 +1,219 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Thu, 23 Apr 2015 13:50:16 +0000
-Subject: [PATCH 1/2] staging: sm7xxfb: use framebuffer_alloc and release
-Message-Id: <1429796297-11750-1-git-send-email-sudipm.mukherjee@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 21 Apr 2015 20:16:35 +0000
+Subject: [PATCH v3 14/17] video: fbdev: rivafb: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <1429647398-16983-15-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: cocci@systeme.lip6.fr
 
-use the standard framebuffer_alloc() and framebuffer_release() instead
-of custom defined function. for making that change we had to change a
-member of the private structure from a variable to pointer and had to
-touch almost all places of the file. since fb was changed into a pointer
-so all instance of "sfb->fb." has been changed into "sfb->fb->".
-now we will get build warning about smtc_alloc_fb_info() and
-smtc_free_fb_info() to be unused which will be removed in the next
-patch of the series.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+This driver uses the same area for MTRR as for the ioremap().
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
+
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
+ drivers/video/fbdev/riva/fbdev.c  | 39 +++++++--------------------------------
+ drivers/video/fbdev/riva/rivafb.h |  4 +---
+ 2 files changed, 8 insertions(+), 35 deletions(-)
 
-tested on hardware.
-
- drivers/staging/sm7xxfb/sm7xxfb.c | 208 ++++++++++++++++++++------------------
- 1 file changed, 110 insertions(+), 98 deletions(-)
-
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index 77f51a0..27f339f 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -39,7 +39,7 @@
- */
- struct smtcfb_info {
- 	struct pci_dev *pdev;
--	struct fb_info fb;
-+	struct fb_info *fb;
- 	u16 chip_id;
- 	u8  chip_rev_id;
+diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riva/fbdev.c
+index 294a809..f1ad274 100644
+--- a/drivers/video/fbdev/riva/fbdev.c
++++ b/drivers/video/fbdev/riva/fbdev.c
+@@ -41,9 +41,6 @@
+ #include <linux/pci.h>
+ #include <linux/backlight.h>
+ #include <linux/bitrev.h>
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ #include <asm/machdep.h>
+ #include <asm/backlight.h>
+@@ -204,9 +201,7 @@ MODULE_DEVICE_TABLE(pci, rivafb_pci_tbl);
+ static int flatpanel = -1; /* Autodetect later */
+ static int forceCRTC = -1;
+ static bool noaccel  = 0;
+-#ifdef CONFIG_MTRR
+ static bool nomtrr = 0;
+-#endif
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ static int backlight = 1;
+ #else
+@@ -2010,28 +2005,18 @@ static int rivafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
  
-@@ -249,19 +249,20 @@ static int smtc_setcolreg(unsigned regno, unsigned red, unsigned green,
- 	if (regno > 255)
- 		return 1;
- 
--	switch (sfb->fb.fix.visual) {
-+	switch (sfb->fb->fix.visual) {
- 	case FB_VISUAL_DIRECTCOLOR:
- 	case FB_VISUAL_TRUECOLOR:
- 		/*
- 		 * 16/32 bit true-colour, use pseudo-palette for 16 base color
- 		 */
- 		if (regno < 16) {
--			if (sfb->fb.var.bits_per_pixel = 16) {
--				u32 *pal = sfb->fb.pseudo_palette;
-+			if (sfb->fb->var.bits_per_pixel = 16) {
-+				u32 *pal = sfb->fb->pseudo_palette;
- 
--				val = chan_to_field(red, &sfb->fb.var.red);
--				val |= chan_to_field(green, &sfb->fb.var.green);
--				val |= chan_to_field(blue, &sfb->fb.var.blue);
-+				val = chan_to_field(red, &sfb->fb->var.red);
-+				val |= chan_to_field(green,
-+						     &sfb->fb->var.green);
-+				val |= chan_to_field(blue, &sfb->fb->var.blue);
- #ifdef __BIG_ENDIAN
- 				pal[regno]  				    ((red & 0xf800) >> 8) |
-@@ -272,11 +273,12 @@ static int smtc_setcolreg(unsigned regno, unsigned red, unsigned green,
- 				pal[regno] = val;
- #endif
- 			} else {
--				u32 *pal = sfb->fb.pseudo_palette;
-+				u32 *pal = sfb->fb->pseudo_palette;
- 
--				val = chan_to_field(red, &sfb->fb.var.red);
--				val |= chan_to_field(green, &sfb->fb.var.green);
--				val |= chan_to_field(blue, &sfb->fb.var.blue);
-+				val = chan_to_field(red, &sfb->fb->var.red);
-+				val |= chan_to_field(green,
-+						     &sfb->fb->var.green);
-+				val |= chan_to_field(blue, &sfb->fb->var.blue);
- #ifdef __BIG_ENDIAN
- 				val  				    (val & 0xff00ff00 >> 8) |
-@@ -472,13 +474,13 @@ static void sm7xx_set_timing(struct smtcfb_info *sfb)
- 	u32 m_nscreenstride;
- 
- 	dev_dbg(&sfb->pdev->dev,
--		"sfb->width=%d sfb->height=%d sfb->fb.var.bits_per_pixel=%d sfb->hz=%d\n",
--		sfb->width, sfb->height, sfb->fb.var.bits_per_pixel, sfb->hz);
-+		"sfb->width=%d sfb->height=%d sfb->fb->var.bits_per_pixel=%d sfb->hz=%d\n",
-+		sfb->width, sfb->height, sfb->fb->var.bits_per_pixel, sfb->hz);
- 
- 	for (j = 0; j < numvgamodes; j++) {
- 		if (vgamode[j].mmsizex = sfb->width &&
- 		    vgamode[j].mmsizey = sfb->height &&
--		    vgamode[j].bpp = sfb->fb.var.bits_per_pixel &&
-+		    vgamode[j].bpp = sfb->fb->var.bits_per_pixel &&
- 		    vgamode[j].hz = sfb->hz) {
- 			dev_dbg(&sfb->pdev->dev,
- 				"vgamode[j].mmsizex=%d vgamode[j].mmSizeY=%d vgamode[j].bpp=%d vgamode[j].hz=%d\n",
-@@ -551,8 +553,8 @@ static void sm7xx_set_timing(struct smtcfb_info *sfb)
- 
- 	/* set data width */
- 	m_nscreenstride -		(sfb->width * sfb->fb.var.bits_per_pixel) / 64;
--	switch (sfb->fb.var.bits_per_pixel) {
-+		(sfb->width * sfb->fb->var.bits_per_pixel) / 64;
-+	switch (sfb->fb->var.bits_per_pixel) {
- 	case 8:
- 		writel(0x0, sfb->vp_regs + 0x0);
- 		break;
-@@ -583,52 +585,52 @@ static void smtc_set_timing(struct smtcfb_info *sfb)
- 
- static void smtcfb_setmode(struct smtcfb_info *sfb)
- {
--	switch (sfb->fb.var.bits_per_pixel) {
-+	switch (sfb->fb->var.bits_per_pixel) {
- 	case 32:
--		sfb->fb.fix.visual       = FB_VISUAL_TRUECOLOR;
--		sfb->fb.fix.line_length  = sfb->fb.var.xres * 4;
--		sfb->fb.var.red.length   = 8;
--		sfb->fb.var.green.length = 8;
--		sfb->fb.var.blue.length  = 8;
--		sfb->fb.var.red.offset   = 16;
--		sfb->fb.var.green.offset = 8;
--		sfb->fb.var.blue.offset  = 0;
-+		sfb->fb->fix.visual       = FB_VISUAL_TRUECOLOR;
-+		sfb->fb->fix.line_length  = sfb->fb->var.xres * 4;
-+		sfb->fb->var.red.length   = 8;
-+		sfb->fb->var.green.length = 8;
-+		sfb->fb->var.blue.length  = 8;
-+		sfb->fb->var.red.offset   = 16;
-+		sfb->fb->var.green.offset = 8;
-+		sfb->fb->var.blue.offset  = 0;
- 		break;
- 	case 24:
--		sfb->fb.fix.visual       = FB_VISUAL_TRUECOLOR;
--		sfb->fb.fix.line_length  = sfb->fb.var.xres * 3;
--		sfb->fb.var.red.length   = 8;
--		sfb->fb.var.green.length = 8;
--		sfb->fb.var.blue.length  = 8;
--		sfb->fb.var.red.offset   = 16;
--		sfb->fb.var.green.offset = 8;
--		sfb->fb.var.blue.offset  = 0;
-+		sfb->fb->fix.visual       = FB_VISUAL_TRUECOLOR;
-+		sfb->fb->fix.line_length  = sfb->fb->var.xres * 3;
-+		sfb->fb->var.red.length   = 8;
-+		sfb->fb->var.green.length = 8;
-+		sfb->fb->var.blue.length  = 8;
-+		sfb->fb->var.red.offset   = 16;
-+		sfb->fb->var.green.offset = 8;
-+		sfb->fb->var.blue.offset  = 0;
- 		break;
- 	case 8:
--		sfb->fb.fix.visual       = FB_VISUAL_PSEUDOCOLOR;
--		sfb->fb.fix.line_length  = sfb->fb.var.xres;
--		sfb->fb.var.red.length   = 3;
--		sfb->fb.var.green.length = 3;
--		sfb->fb.var.blue.length  = 2;
--		sfb->fb.var.red.offset   = 5;
--		sfb->fb.var.green.offset = 2;
--		sfb->fb.var.blue.offset  = 0;
-+		sfb->fb->fix.visual       = FB_VISUAL_PSEUDOCOLOR;
-+		sfb->fb->fix.line_length  = sfb->fb->var.xres;
-+		sfb->fb->var.red.length   = 3;
-+		sfb->fb->var.green.length = 3;
-+		sfb->fb->var.blue.length  = 2;
-+		sfb->fb->var.red.offset   = 5;
-+		sfb->fb->var.green.offset = 2;
-+		sfb->fb->var.blue.offset  = 0;
- 		break;
- 	case 16:
- 	default:
--		sfb->fb.fix.visual       = FB_VISUAL_TRUECOLOR;
--		sfb->fb.fix.line_length  = sfb->fb.var.xres * 2;
--		sfb->fb.var.red.length   = 5;
--		sfb->fb.var.green.length = 6;
--		sfb->fb.var.blue.length  = 5;
--		sfb->fb.var.red.offset   = 11;
--		sfb->fb.var.green.offset = 5;
--		sfb->fb.var.blue.offset  = 0;
-+		sfb->fb->fix.visual       = FB_VISUAL_TRUECOLOR;
-+		sfb->fb->fix.line_length  = sfb->fb->var.xres * 2;
-+		sfb->fb->var.red.length   = 5;
-+		sfb->fb->var.green.length = 6;
-+		sfb->fb->var.blue.length  = 5;
-+		sfb->fb->var.red.offset   = 11;
-+		sfb->fb->var.green.offset = 5;
-+		sfb->fb->var.blue.offset  = 0;
- 		break;
+ 	rivafb_fix.smem_len = riva_get_memlen(default_par) * 1024;
+ 	default_par->dclk_max = riva_get_maxdclk(default_par) * 1000;
+-	info->screen_base = ioremap(rivafb_fix.smem_start,
+-				    rivafb_fix.smem_len);
++	info->screen_base = ioremap_wc(rivafb_fix.smem_start,
++				       rivafb_fix.smem_len);
+ 	if (!info->screen_base) {
+ 		printk(KERN_ERR PFX "cannot ioremap FB base\n");
+ 		ret = -EIO;
+ 		goto err_iounmap_pramin;
  	}
  
--	sfb->width  = sfb->fb.var.xres;
--	sfb->height = sfb->fb.var.yres;
-+	sfb->width  = sfb->fb->var.xres;
-+	sfb->height = sfb->fb->var.yres;
- 	sfb->hz = 60;
- 	smtc_set_timing(sfb);
- }
-@@ -686,12 +688,12 @@ static struct smtcfb_info *smtc_alloc_fb_info(struct pci_dev *pdev)
+-#ifdef CONFIG_MTRR
+-	if (!nomtrr) {
+-		default_par->mtrr.vram = mtrr_add(rivafb_fix.smem_start,
+-					   	  rivafb_fix.smem_len,
+-					    	  MTRR_TYPE_WRCOMB, 1);
+-		if (default_par->mtrr.vram < 0) {
+-			printk(KERN_ERR PFX "unable to setup MTRR\n");
+-		} else {
+-			default_par->mtrr.vram_valid = 1;
+-			/* let there be speed */
+-			printk(KERN_INFO PFX "RIVA MTRR set to ON\n");
+-		}
+-	}
+-#endif /* CONFIG_MTRR */
++	if (!nomtrr)
++		default_par->wc_cookie +			arch_phys_wc_add(rivafb_fix.smem_start,
++					 rivafb_fix.smem_len);
  
- 	sfb->pdev = pdev;
+ 	info->fbops = &riva_fb_ops;
+ 	info->fix = rivafb_fix;
+@@ -2105,13 +2090,7 @@ static void rivafb_remove(struct pci_dev *pd)
+ 	unregister_framebuffer(info);
  
--	sfb->fb.flags          = FBINFO_FLAG_DEFAULT;
--	sfb->fb.fbops          = &smtcfb_ops;
--	sfb->fb.fix            = smtcfb_fix;
--	sfb->fb.var            = smtcfb_var;
--	sfb->fb.pseudo_palette = sfb->colreg;
--	sfb->fb.par            = sfb;
-+	sfb->fb->flags          = FBINFO_FLAG_DEFAULT;
-+	sfb->fb->fbops          = &smtcfb_ops;
-+	sfb->fb->fix            = smtcfb_fix;
-+	sfb->fb->var            = smtcfb_var;
-+	sfb->fb->pseudo_palette = sfb->colreg;
-+	sfb->fb->par            = sfb;
- 
- 	return sfb;
- }
-@@ -721,20 +723,20 @@ static void smtc_unmap_mmio(struct smtcfb_info *sfb)
- static int smtc_map_smem(struct smtcfb_info *sfb,
- 			 struct pci_dev *pdev, u_long smem_len)
- {
--	sfb->fb.fix.smem_start = pci_resource_start(pdev, 0);
-+	sfb->fb->fix.smem_start = pci_resource_start(pdev, 0);
- 
- #ifdef __BIG_ENDIAN
--	if (sfb->fb.var.bits_per_pixel = 32)
--		sfb->fb.fix.smem_start += 0x800000;
-+	if (sfb->fb->var.bits_per_pixel = 32)
-+		sfb->fb->fix.smem_start += 0x800000;
- #endif
- 
--	sfb->fb.fix.smem_len = smem_len;
-+	sfb->fb->fix.smem_len = smem_len;
- 
--	sfb->fb.screen_base = sfb->lfb;
-+	sfb->fb->screen_base = sfb->lfb;
- 
--	if (!sfb->fb.screen_base) {
-+	if (!sfb->fb->screen_base) {
- 		dev_err(&pdev->dev,
--			"%s: unable to map screen memory\n", sfb->fb.fix.id);
-+			"%s: unable to map screen memory\n", sfb->fb->fix.id);
- 		return -ENOMEM;
- 	}
- 
-@@ -747,9 +749,9 @@ static int smtc_map_smem(struct smtcfb_info *sfb,
-  */
- static void smtc_unmap_smem(struct smtcfb_info *sfb)
- {
--	if (sfb && sfb->fb.screen_base) {
--		iounmap(sfb->fb.screen_base);
--		sfb->fb.screen_base = NULL;
-+	if (sfb && sfb->fb->screen_base) {
-+		iounmap(sfb->fb->screen_base);
-+		sfb->fb->screen_base = NULL;
- 	}
- }
- 
-@@ -766,6 +768,7 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
- 			    const struct pci_device_id *ent)
- {
- 	struct smtcfb_info *sfb;
-+	struct fb_info *info;
- 	u_long smem_size = 0x00800000;	/* default 8MB */
- 	int err;
- 	unsigned long mmio_base;
-@@ -784,14 +787,23 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
- 
- 	sprintf(smtcfb_fix.id, "sm%Xfb", ent->device);
- 
--	sfb = smtc_alloc_fb_info(pdev);
+ 	riva_bl_exit(info);
 -
--	if (!sfb) {
-+	info = framebuffer_alloc(sizeof(*sfb), &pdev->dev);
-+	if (!info) {
-+		dev_err(&pdev->dev, "framebuffer_alloc failed\n");
- 		err = -ENOMEM;
- 		goto failed_free;
- 	}
+-#ifdef CONFIG_MTRR
+-	if (par->mtrr.vram_valid)
+-		mtrr_del(par->mtrr.vram, info->fix.smem_start,
+-			 info->fix.smem_len);
+-#endif /* CONFIG_MTRR */
+-
++	arch_phys_wc_del(par->wc_cookie);
+ 	iounmap(par->ctrl_base);
+ 	iounmap(info->screen_base);
+ 	if (par->riva.Architecture = NV_ARCH_03)
+@@ -2150,10 +2129,8 @@ static int rivafb_setup(char *options)
+ 			flatpanel = 1;
+ 		} else if (!strncmp(this_opt, "backlight:", 10)) {
+ 			backlight = simple_strtoul(this_opt+10, NULL, 0);
+-#ifdef CONFIG_MTRR
+ 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
+ 			nomtrr = 1;
+-#endif
+ 		} else if (!strncmp(this_opt, "strictmode", 10)) {
+ 			strictmode = 1;
+ 		} else if (!strncmp(this_opt, "noaccel", 7)) {
+@@ -2209,10 +2186,8 @@ module_param(flatpanel, int, 0);
+ MODULE_PARM_DESC(flatpanel, "Enables experimental flat panel support for some chipsets. (0 or 1=enabled) (default=0)");
+ module_param(forceCRTC, int, 0);
+ MODULE_PARM_DESC(forceCRTC, "Forces usage of a particular CRTC in case autodetection fails. (0 or 1) (default=autodetect)");
+-#ifdef CONFIG_MTRR
+ module_param(nomtrr, bool, 0);
+ MODULE_PARM_DESC(nomtrr, "Disables MTRR support (0 or 1=disabled) (default=0)");
+-#endif
+ module_param(strictmode, bool, 0);
+ MODULE_PARM_DESC(strictmode, "Only use video modes from EDID");
  
-+	sfb = info->par;
-+	sfb->fb = info;
- 	sfb->chip_id = ent->device;
-+	sfb->pdev = pdev;
-+	info->flags = FBINFO_FLAG_DEFAULT;
-+	info->fbops = &smtcfb_ops;
-+	info->fix = smtcfb_fix;
-+	info->var = smtcfb_var;
-+	info->pseudo_palette = sfb->colreg;
-+	info->par = sfb;
+diff --git a/drivers/video/fbdev/riva/rivafb.h b/drivers/video/fbdev/riva/rivafb.h
+index d9f107b..61fd37c 100644
+--- a/drivers/video/fbdev/riva/rivafb.h
++++ b/drivers/video/fbdev/riva/rivafb.h
+@@ -61,9 +61,7 @@ struct riva_par {
+ 	int FlatPanel;
+ 	struct pci_dev *pdev;
+ 	int cursor_reset;
+-#ifdef CONFIG_MTRR
+-	struct { int vram; int vram_valid; } mtrr;
+-#endif
++	int wc_cookie;
+ 	struct riva_i2c_chan chan[3];
+ };
  
- 	pci_set_drvdata(pdev, sfb);
- 
-@@ -799,19 +811,19 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
- 
- 	/* get mode parameter from smtc_scr_info */
- 	if (smtc_scr_info.lfb_width != 0) {
--		sfb->fb.var.xres = smtc_scr_info.lfb_width;
--		sfb->fb.var.yres = smtc_scr_info.lfb_height;
--		sfb->fb.var.bits_per_pixel = smtc_scr_info.lfb_depth;
-+		sfb->fb->var.xres = smtc_scr_info.lfb_width;
-+		sfb->fb->var.yres = smtc_scr_info.lfb_height;
-+		sfb->fb->var.bits_per_pixel = smtc_scr_info.lfb_depth;
- 	} else {
- 		/* default resolution 1024x600 16bit mode */
--		sfb->fb.var.xres = SCREEN_X_RES;
--		sfb->fb.var.yres = SCREEN_Y_RES;
--		sfb->fb.var.bits_per_pixel = SCREEN_BPP;
-+		sfb->fb->var.xres = SCREEN_X_RES;
-+		sfb->fb->var.yres = SCREEN_Y_RES;
-+		sfb->fb->var.bits_per_pixel = SCREEN_BPP;
- 	}
- 
- #ifdef __BIG_ENDIAN
--	if (sfb->fb.var.bits_per_pixel = 24)
--		sfb->fb.var.bits_per_pixel = (smtc_scr_info.lfb_depth = 32);
-+	if (sfb->fb->var.bits_per_pixel = 24)
-+		sfb->fb->var.bits_per_pixel = (smtc_scr_info.lfb_depth = 32);
- #endif
- 	/* Map address and memory detection */
- 	mmio_base = pci_resource_start(pdev, 0);
-@@ -820,8 +832,8 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
- 	switch (sfb->chip_id) {
- 	case 0x710:
- 	case 0x712:
--		sfb->fb.fix.mmio_start = mmio_base + 0x00400000;
--		sfb->fb.fix.mmio_len = 0x00400000;
-+		sfb->fb->fix.mmio_start = mmio_base + 0x00400000;
-+		sfb->fb->fix.mmio_len = 0x00400000;
- 		smem_size = SM712_VIDEOMEMORYSIZE;
- #ifdef __BIG_ENDIAN
- 		sfb->lfb = ioremap(mmio_base, 0x00c00000);
-@@ -833,7 +845,7 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
- 		sfb->dp_regs = sfb->lfb + 0x00408000;
- 		sfb->vp_regs = sfb->lfb + 0x0040c000;
- #ifdef __BIG_ENDIAN
--		if (sfb->fb.var.bits_per_pixel = 32) {
-+		if (sfb->fb->var.bits_per_pixel = 32) {
- 			sfb->lfb += 0x800000;
- 			dev_info(&pdev->dev, "sfb->lfb=%p", sfb->lfb);
- 		}
-@@ -841,7 +853,7 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
- 		if (!smtc_regbaseaddress) {
- 			dev_err(&pdev->dev,
- 				"%s: unable to map memory mapped IO!",
--				sfb->fb.fix.id);
-+				sfb->fb->fix.id);
- 			err = -ENOMEM;
- 			goto failed_fb;
- 		}
-@@ -854,13 +866,13 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
- 		smtc_seqw(0x17, 0x20);
- 		/* enable word swap */
- #ifdef __BIG_ENDIAN
--		if (sfb->fb.var.bits_per_pixel = 32)
-+		if (sfb->fb->var.bits_per_pixel = 32)
- 			smtc_seqw(0x17, 0x30);
- #endif
- 		break;
- 	case 0x720:
--		sfb->fb.fix.mmio_start = mmio_base;
--		sfb->fb.fix.mmio_len = 0x00200000;
-+		sfb->fb->fix.mmio_start = mmio_base;
-+		sfb->fb->fix.mmio_len = 0x00200000;
- 		smem_size = SM722_VIDEOMEMORYSIZE;
- 		sfb->dp_regs = ioremap(mmio_base, 0x00a00000);
- 		sfb->lfb = sfb->dp_regs + 0x00200000;
-@@ -880,25 +892,25 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
- 	}
- 
- 	/* can support 32 bpp */
--	if (15 = sfb->fb.var.bits_per_pixel)
--		sfb->fb.var.bits_per_pixel = 16;
-+	if (15 = sfb->fb->var.bits_per_pixel)
-+		sfb->fb->var.bits_per_pixel = 16;
- 
--	sfb->fb.var.xres_virtual = sfb->fb.var.xres;
--	sfb->fb.var.yres_virtual = sfb->fb.var.yres;
-+	sfb->fb->var.xres_virtual = sfb->fb->var.xres;
-+	sfb->fb->var.yres_virtual = sfb->fb->var.yres;
- 	err = smtc_map_smem(sfb, pdev, smem_size);
- 	if (err)
- 		goto failed;
- 
- 	smtcfb_setmode(sfb);
- 
--	err = register_framebuffer(&sfb->fb);
-+	err = register_framebuffer(info);
- 	if (err < 0)
- 		goto failed;
- 
- 	dev_info(&pdev->dev,
- 		 "Silicon Motion SM%X Rev%X primary display mode %dx%d-%d Init Complete.",
--		 sfb->chip_id, sfb->chip_rev_id, sfb->fb.var.xres,
--		 sfb->fb.var.yres, sfb->fb.var.bits_per_pixel);
-+		 sfb->chip_id, sfb->chip_rev_id, sfb->fb->var.xres,
-+		 sfb->fb->var.yres, sfb->fb->var.bits_per_pixel);
- 
- 	return 0;
- 
-@@ -908,7 +920,7 @@ failed:
- 	smtc_unmap_smem(sfb);
- 	smtc_unmap_mmio(sfb);
- failed_fb:
--	smtc_free_fb_info(sfb);
-+	framebuffer_release(info);
- 
- failed_free:
- 	pci_release_region(pdev, 0);
-@@ -940,8 +952,8 @@ static void smtcfb_pci_remove(struct pci_dev *pdev)
- 	sfb = pci_get_drvdata(pdev);
- 	smtc_unmap_smem(sfb);
- 	smtc_unmap_mmio(sfb);
--	unregister_framebuffer(&sfb->fb);
--	smtc_free_fb_info(sfb);
-+	unregister_framebuffer(sfb->fb);
-+	framebuffer_release(sfb->fb);
- 	pci_release_region(pdev, 0);
- 	pci_disable_device(pdev);
- }
-@@ -961,7 +973,7 @@ static int smtcfb_pci_suspend(struct device *device)
- 	smtc_seqw(0x69, (smtc_seqr(0x69) & 0xf7));
- 
- 	console_lock();
--	fb_set_suspend(&sfb->fb, 1);
-+	fb_set_suspend(sfb->fb, 1);
- 	console_unlock();
- 
- 	/* additionally turn off all function blocks including internal PLLs */
-@@ -989,7 +1001,7 @@ static int smtcfb_pci_resume(struct device *device)
- 		/* enable PCI burst */
- 		smtc_seqw(0x17, 0x20);
- #ifdef __BIG_ENDIAN
--		if (sfb->fb.var.bits_per_pixel = 32)
-+		if (sfb->fb->var.bits_per_pixel = 32)
- 			smtc_seqw(0x17, 0x30);
- #endif
- 		break;
-@@ -1006,7 +1018,7 @@ static int smtcfb_pci_resume(struct device *device)
- 	smtcfb_setmode(sfb);
- 
- 	console_lock();
--	fb_set_suspend(&sfb->fb, 0);
-+	fb_set_suspend(sfb->fb, 0);
- 	console_unlock();
- 
- 	return 0;
 -- 
-1.8.1.2
+2.3.2.209.gd67f9d5.dirty
 

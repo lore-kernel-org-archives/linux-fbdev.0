@@ -1,28 +1,42 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:40:47 +0000
-Subject: [PATCH v3 0/3] vesafb: remove theoretical MTRR uses
-Message-Id: <1429648850-17902-1-git-send-email-mcgrof@do-not-panic.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 22 Apr 2015 13:22:59 +0000
+Subject: [PATCH 3/5] OMAPDSS: HDMI5: Fix AUDICONF3 bitfield offsets
+Message-Id: <5f42c5eb8dda56f4351f3e1292841243ee38e3dc.1429705991.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1429705991.git.jsarha@ti.com>
+In-Reply-To: <cover.1429705991.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cocci@systeme.lip6.fr
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, misael.lopez@ti.com, Jyri Sarha <jsarha@ti.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+From: Misael Lopez Cruz <misael.lopez@ti.com>
 
-The vesafb has some theoretical uses of MTRR, in practice only
-write-combining is used and since PAT replaces MTRR and MTRR's
-use should be phased lets just remove such old theoretical uses
-of MTRR.
+Downmix inhibit in HDMI_CORE_FC_AUDICONF3 register is in
+bit 4 while CEA861_AUDIO_INFOFRAME_DB5_DM_INH sets bit 7.
 
-Luis R. Rodriguez (3):
-  video: fbdev: vesafb: only support MTRR_TYPE_WRCOMB
-  video: fbdev: vesafb: add missing mtrr_del() for added MTRR
-  video: fbdev: vesafb: use arch_phys_wc_add()
+Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
- drivers/video/fbdev/vesafb.c | 77 +++++++++++++++-----------------------------
- 1 file changed, 26 insertions(+), 51 deletions(-)
-
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+index 7a80beb..c3286bd 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+@@ -790,7 +790,9 @@ static void hdmi5_core_audio_infoframe_cfg(struct hdmi_core_data *core,
+ 
+ 	hdmi_write_reg(base, HDMI_CORE_FC_AUDICONF1, info_aud->db2_sf_ss);
+ 	hdmi_write_reg(base, HDMI_CORE_FC_AUDICONF2, info_aud->db4_ca);
+-	hdmi_write_reg(base, HDMI_CORE_FC_AUDICONF3, info_aud->db5_dminh_lsv);
++	hdmi_write_reg(base, HDMI_CORE_FC_AUDICONF3,
++	  (info_aud->db5_dminh_lsv & CEA861_AUDIO_INFOFRAME_DB5_DM_INH) >> 3 |
++	  (info_aud->db5_dminh_lsv & CEA861_AUDIO_INFOFRAME_DB5_LSV));
+ }
+ 
+ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
 -- 
-2.3.2.209.gd67f9d5.dirty
+1.9.1
 

@@ -1,91 +1,76 @@
-From: Doug Ledford <dledford@redhat.com>
-Date: Wed, 22 Apr 2015 16:57:18 +0000
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Wed, 22 Apr 2015 17:37:28 +0000
 Subject: Re: [PATCH v4 2/2] IB/qib: use arch_phys_wc_add()
-Message-Id: <1429721838.45956.142.camel@redhat.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-6K3VQHVtfiGWyIVCnpTZ"
+Message-Id: <20150422173728.GJ5622@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1429653035-19424-1-git-send-email-mcgrof@do-not-panic.com>
-	 <1429653035-19424-3-git-send-email-mcgrof@do-not-panic.com>
-	 <1429710878.45956.94.camel@redhat.com>
-	 <20150422153348.GD5622@wotan.suse.de>
-In-Reply-To: <20150422153348.GD5622-B4tOwbsTzaBolqkO4TVVkw@public.gmane.org>
-To: "Luis R. Rodriguez" <mcgrof-IBi9RG/b67k@public.gmane.org>
-Cc: "Luis R. Rodriguez" <mcgrof-3uybbJdB1yH774rrrx3eTA@public.gmane.org>, infinipath-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, roland-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sean.hefty-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hal.rosenstock-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, luto-kltTT9wpgjJwATOyAt5JVQ@public.gmane.org, mst-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cocci-/FJkirnvOdkvYVN+rsErww@public.gmane.org, Toshi Kani <toshi.kani-VXdhtT5mjnY@public.gmane.org>, Rickard Strandqvist <rickard_strandqvist-IW2WV5XWFqGZkjO+N0TKoMugMpMbD5Xr@public.gmane.org>, Mike Marciniszyn <mike.marciniszyn-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Roland Dreier <roland-BHEL68pLQRGGvPXPguhicg@public.gmane.org>, Dennis Dalessandro <dennis.dalessandro-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Suresh Siddha <sbsiddha-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-X9Un+BFzKDI@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Juergen Gross <jgross-IBi9RG/b67k@public.gmane.org>, Daniel Vetter <daniel.vetter-/w4YWyX8dFk@public.gmane.org>, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Antonino Daplas <adaplas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>Dave
-
-
---=-6K3VQHVtfiGWyIVCnpTZ
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2015-04-22 at 17:33 +0200, Luis R. Rodriguez wrote:
-> On Wed, Apr 22, 2015 at 09:54:38AM -0400, Doug Ledford wrote:
-> > On Tue, 2015-04-21 at 14:50 -0700, Luis R. Rodriguez wrote:
-> >=20
-> > This:
-> > > +	/* MTRR was used if this is non-zero */
-> > > +	if (!dd->wc_cookie)
-> > >  		vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
-> >=20
-> > And this:
-> > > +		dd->wc_cookie =3D arch_phys_wc_add(pioaddr, piolen);
-> > > +		if (dd->wc_cookie < 0)
-> > > +			ret =3D -EINVAL;
-> >=20
-> > don't agree on what wc_cookie will be on error.
->=20
-> Can you elaborate? The one below is the one that starts things,
-> and arch_phys_wc_add() will return 0 on PAT systems. For non-PAT
-> systems it will return a number > 0 *iff* a valid MTRR was added.
-> It will return negative onloy on error then.
->=20
-> The change above is meant to replace a check put in place to see
-> if PAT was enabled. The way we replace this is to ensure that
-> arch_phys_wc_add() returned 0.
->=20
-> If you disagree it'd be great if you can elaborate why.
-
-Maybe I'm missing something, but in qib_enable_wc() you store the return
-from arch_phys_wc_add into wc_cookie.  That return is negative, so you
-return from qib_enable_wc() to qib_init_one(), they see the ret value,
-they print out a warning about bad performance, then they clear the
-return value and continue with device initialization.
-
-In all of this though, wc_cookie is never cleared and so it still has
-the error condition in it.  Then, much later at run time, you call
-mmap_piobufs() and you check the contents of wc_cookie, and if it's
-non-0 (which is still will be), you do the wrong thing, right?  And what
-about at shutdown when you call qib_disable_wc() and your cookie still
-has an error code in it as well?
-
---=20
-Doug Ledford <dledford@redhat.com>
-              GPG KeyID: 0E572FDD
-
-
-
---=-6K3VQHVtfiGWyIVCnpTZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+ <1429653035-19424-3-git-send-email-mcgrof@do-not-panic.com>
+ <1429710878.45956.94.camel@redhat.com>
+ <20150422153348.GD5622@wotan.suse.de>
+ <1429721838.45956.142.camel@redhat.com>
+In-Reply-To: <1429721838.45956.142.camel@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Doug Ledford <dledford@redhat.com>
+Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, infinipath@intel.com, roland@kernel.org, sean.hefty@intel.com, hal.rosenstock@gmail.com, linux-rdma@vger.kernel.org, luto@amacapital.net, mst@redhat.com, linux-kernel@vger.kernel.org, cocci@systeme.lip6.fr, Toshi Kani <toshi.kani@hp.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Dennis Dalessandro <dennis.dalessandro@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>Dave
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+On Wed, Apr 22, 2015 at 12:57:18PM -0400, Doug Ledford wrote:
+> On Wed, 2015-04-22 at 17:33 +0200, Luis R. Rodriguez wrote:
+> > On Wed, Apr 22, 2015 at 09:54:38AM -0400, Doug Ledford wrote:
+> > > On Tue, 2015-04-21 at 14:50 -0700, Luis R. Rodriguez wrote:
+> > > 
+> > > This:
+> > > > +	/* MTRR was used if this is non-zero */
+> > > > +	if (!dd->wc_cookie)
+> > > >  		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+> > > 
+> > > And this:
+> > > > +		dd->wc_cookie = arch_phys_wc_add(pioaddr, piolen);
+> > > > +		if (dd->wc_cookie < 0)
+> > > > +			ret = -EINVAL;
+> > > 
+> > > don't agree on what wc_cookie will be on error.
+> > 
+> > Can you elaborate? The one below is the one that starts things,
+> > and arch_phys_wc_add() will return 0 on PAT systems. For non-PAT
+> > systems it will return a number > 0 *iff* a valid MTRR was added.
+> > It will return negative onloy on error then.
+> > 
+> > The change above is meant to replace a check put in place to see
+> > if PAT was enabled. The way we replace this is to ensure that
+> > arch_phys_wc_add() returned 0.
+> > 
+> > If you disagree it'd be great if you can elaborate why.
+> 
+> Maybe I'm missing something, but in qib_enable_wc() you store the return
+> from arch_phys_wc_add into wc_cookie.  That return is negative,
 
-iQIcBAABAgAGBQJVN9LuAAoJELgmozMOVy/d3pcQAK6Mz/ourl/oMCPKVwftAKjY
-OAwAkmc42nP6olCGP9SJ1tN0W5yTHMjBuE/JVfvR/Uq2YwIudMC5odtUBnX9vZ1M
-JGtlJq2jaXxLAa1jRZMQvbEPpjyDjx0WojbALgyNwrkbxewrmBUSeapKAy9wZWNC
-5uLxDppwIBrux4XITUCMjVuLsxq8Rl8MViLGvGXskJyDieDe3y515F1gcWr/x3ie
-jToi83vFHffdo7w32pkIcbXN+//RZdC3ErUviANjQcY/eT/8CYeMp5M607JuMZPW
-Mv479q09+U3lL9/hVyU/z6QpCQyJqcPy7uTtbLAhmBSYZOw5UBR8O1KnQ47+gobI
-btbFj3i6H/eBdBybxVi4EIjcffAkIyLmBrxukFIX51FTjmM2QUldMuyK8foQjXVF
-dyowAsiCK1pZlQrZXvS1e6fQiIWc4ZccDXs8IiuljhHqmYLCwQvQGa+aoLUnyXp9
-ks5EabrE4ERqQuyEp+aYnJQTv/ovtFbzm3hqdCGKKSuYK7IF+N5k+rBZGeqOu8RR
-9iisGRhnbT168Jv583zZNaD+CAOami3sVSJULbEXhmOX+YGMKwqsX6DdZNXQYouq
-J2YzG5hhHbXzF3SzDt371afOkxJV832fTJ+ngECv655ZmSNo9hyPkrEI4+ZY/kqD
-Rznz5ZOwFtkqF5A5Ivk1
-=CIyr
------END PGP SIGNATURE-----
+If and only if the system was non-PAT and mtrr_add() failed.
 
---=-6K3VQHVtfiGWyIVCnpTZ--
+>  so you
+> return from qib_enable_wc() to qib_init_one(), they see the ret value,
+> they print out a warning about bad performance, then they clear the
+> return value and continue with device initialization.
+> 
+> In all of this though, wc_cookie is never cleared and so it still has
+> the error condition in it.  Then, much later at run time, you call
+> mmap_piobufs() and you check the contents of wc_cookie, and if it's
+> non-0 (which is still will be), you do the wrong thing, right?
 
+Originally the code had it to run pgprot_writecombine() if PAT was going to be
+used. After the code changes we check for !cookie which will be true when
+cookie is 0 only. In case the cookie was an error, that is if mtrr_add()
+failed, then this code would not run because (!negative) is false. The goal was
+to trigger a run if the cookie was 0, which can only happen if PAT was enabled.
+
+Please let me know, I'd like to get this right too.
+
+> And what
+> about at shutdown when you call qib_disable_wc() and your cookie still
+> has an error code in it as well?
+
+Well fortunately arch_phys_wc_del(negative) and arch_phys_wc_del(0) will be
+a no-op. Its what helps us remove so much clutter.
+
+ Luis

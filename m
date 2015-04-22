@@ -1,86 +1,116 @@
-From: =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Date: Mon, 09 Mar 2015 22:22:09 +0000
-Subject: [PATCHv3 07/10] fbdev: ssd1307fb: Add module parameter to set refresh rate of the display
-Message-Id: <1425939732-18386-8-git-send-email-niederp@physik.uni-kl.de>
+From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Date: Wed, 22 Apr 2015 23:14:38 +0000
+Subject: [PATCH v3 2/3] Phy: DT binding documentation for Broadcom Cygnus USB PHY driver
+Message-Id: <1429744479-10410-3-git-send-email-arun.ramamurthy@broadcom.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1425939732-18386-1-git-send-email-niederp@physik.uni-kl.de>
+References: <1429744479-10410-1-git-send-email-arun.ramamurthy@broadcom.com>
+In-Reply-To: <1429744479-10410-1-git-send-email-arun.ramamurthy-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Gabriel FERNANDEZ <gabriel.fernandez-qxv4g6HH51o@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dmitry Torokhov <dtor-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Anatol Pomazau <anatol-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Jonathan Richardson <jonathar-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, Arun Ramamurthy <arun.ramamurthy-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 
-This patch adds the module parameter "refreshrate" to set delay for the
-deferred io. The refresh rate is given in units of Hertz. The default
-refresh rate is 1 Hz.
+Broadcom's Cygnus chip has a USB 2.0 host controller connected to
+three separate phys. One of the phs (port 2) is also connectd to
+a usb 2.0 device controller
 
-Signed-off-by: Thomas Niederpr=C3=BCm <niederp@physik.uni-kl.de>
+Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Reviewed-by: Ray Jui <rjui@broadcom.com>
+Reviewed-by: Scott Branden <sbranden@broadcom.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 23 +++++++++++++++++------
- 1 file changed, 17 insertions(+), 6 deletions(-)
+ .../bindings/phy/brcm,cygnus-usb-phy.txt           | 69 ++++++++++++++++++++++
+ include/dt-bindings/phy/phy.h                      |  2 +
+ 2 files changed, 71 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index 08720be..7c8e627 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -43,6 +43,11 @@
- #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
- #define	SSD1307FB_SET_VCOMH		0xdb
-=20
-+#define REFRASHRATE 1
+diff --git a/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt b/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
+new file mode 100644
+index 0000000..ec62044
+--- /dev/null
++++ b/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
+@@ -0,0 +1,69 @@
++BROADCOM CYGNUS USB PHY
 +
-+static u_int refreshrate =3D REFRASHRATE;
-+module_param(refreshrate, uint, 0);
++Required Properties:
++	- compatible:  brcm,cygnus-usb-phy
++	- reg : usbphy_regs - Base address of phy registers
++			usb2h_idm_regs - Base address of host idm registers
++			usb2d_idm_regs - Base address of device idm registers
++	- phy-cells - must be 1 for each port declared. The node
++		      that uses the phy must provide either PHY_CONFIG_DEVICE for device
++		      or PHY_CONFIG_HOST for host
 +
- static u_int contrast =3D 128;
- module_param(contrast, uint, S_IRUGO);
-=20
-@@ -270,11 +275,6 @@ static void ssd1307fb_deferred_io(struct fb_info *info,
- 	ssd1307fb_update_display(info->par);
- }
-=20
--static struct fb_deferred_io ssd1307fb_defio =3D {
--	.delay		=3D HZ,
--	.deferred_io	=3D ssd1307fb_deferred_io,
--};
--
- static int ssd1307fb_init(struct ssd1307fb_par *par)
- {
- 	int ret;
-@@ -475,6 +475,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
- {
- 	struct fb_info *info;
- 	struct device_node *node =3D client->dev.of_node;
-+	struct fb_deferred_io *ssd1307fb_defio;
- 	u32 vmem_size;
- 	struct ssd1307fb_par *par;
- 	u8 *vmem;
-@@ -544,10 +545,20 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 		goto fb_alloc_error;
- 	}
-=20
-+	ssd1307fb_defio =3D devm_kzalloc(&client->dev, sizeof(struct fb_deferred_=
-io), GFP_KERNEL);
-+	if (!ssd1307fb_defio) {
-+		dev_err(&client->dev, "Couldn't allocate deferred io.\n");
-+		ret =3D -ENOMEM;
-+		goto fb_alloc_error;
-+	}
++NOTE: port 0 and port 1 are host only and port 2 can be configured for host or
++device.
 +
-+	ssd1307fb_defio->delay =3D HZ / refreshrate;
-+	ssd1307fb_defio->deferred_io =3D ssd1307fb_deferred_io;
++Example of phy :
++	usbphy0: usbphy@0x0301c000 {
++		compatible = "brcm,cygnus-usb-phy";
++		reg = <0x0301c000 0x2000>,
++		      <0x18115000 0x1000>,
++		      <0x18111000 0x1000>;
++		status = "okay";
 +
- 	info->fbops =3D &ssd1307fb_ops;
- 	info->fix =3D ssd1307fb_fix;
- 	info->fix.line_length =3D par->width / 8;
--	info->fbdefio =3D &ssd1307fb_defio;
-+	info->fbdefio =3D ssd1307fb_defio;
-=20
- 	info->var =3D ssd1307fb_var;
- 	info->var.xres =3D par->width;
---=20
-2.3.0
++		#address-cells = <1>;
++		#size-cells = <0>;
++		usbphy0_0: usbphy0@0 {
++			#phy-cells = <1>;
++			reg = <0>;
++			status = "okay";
++			phy-supply = <&vbus_p0>;
++		};
++
++		usbphy0_1: usbphy0@1 {
++			#phy-cells = <1>;
++			reg = <1>;
++			status = "okay";
++		};
++
++		usbphy0_2: usbphy0@2 {
++			#phy-cells = <1>;
++			reg = <2>;
++			status = "okay";
++			phy-supply = <&vbus_p2>;
++		};
++	};
++
++Example of node using the phy:
++
++	/* This nodes declares all three ports as host */
++
++	ehci0: usb@0x18048000 {
++		compatible = "generic-ehci";
++		reg = <0x18048000 0x100>;
++		interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
++		phys = <&usbphy0_0 PHY_CONFIG_HOST &usbphy0_1 PHY_CONFIG_HOST &usbphy0_2 PHY_CONFIG_HOST>;
++		status = "okay";
++	};
++
++	/*
++	 * This node declares port 2 phy
++	 * and configures it for device
++	 */
++
++	usbd_udc_dwc1: usbd_udc_dwc@0x1804c000 {
++		compatible = "iproc-udc";
++		reg = <0x1804c000 0x2000>;
++		interrupts = <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>;
++		phys = <&usbphy0_2 PHY_CONFIG_DEVICE>;
++		phy-names = "usb";
++	};
+diff --git a/include/dt-bindings/phy/phy.h b/include/dt-bindings/phy/phy.h
+index 6c90193..3f6b1ac 100644
+--- a/include/dt-bindings/phy/phy.h
++++ b/include/dt-bindings/phy/phy.h
+@@ -15,5 +15,7 @@
+ #define PHY_TYPE_PCIE		2
+ #define PHY_TYPE_USB2		3
+ #define PHY_TYPE_USB3		4
++#define PHY_CONFIG_HOST		1
++#define PHY_CONFIG_DEVICE	0
+ 
+ #endif /* _DT_BINDINGS_PHY */
+-- 
+2.3.4
 

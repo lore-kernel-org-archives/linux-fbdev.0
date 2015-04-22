@@ -1,229 +1,137 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 30 Apr 2015 20:25:20 +0000
-Subject: [PATCH v5 6/6] IB/ipath: use arch_phys_wc_add() and require PAT disabled
-Message-Id: <1430425520-22275-7-git-send-email-mcgrof@do-not-panic.com>
+From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Date: Wed, 22 Apr 2015 23:04:12 +0000
+Subject: [PATCHv3 3/4] usb: ehci-platform: Use devm_of_phy_get_by_index
+Message-Id: <1429743853-10254-4-git-send-email-arun.ramamurthy@broadcom.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430425520-22275-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1430425520-22275-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
+In-Reply-To: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: bp@suse.de, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, daniel.vetter@intel.com, airlied@linux.ie
-Cc: dledford@redhat.com, awalls@md.metrocast.net, syrjala@sci.fi, luto@amacapital.net, mst@redhat.com, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Linus Torvalds <torvalds@linux-foundation.org>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Antonino Daplas <adaplas@gmail.com>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, Stefan Bader <stefan.>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Getting phys by index instead of phy names so that we do
+not have to create a naming scheme when multiple phys
+are present
 
-We are burrying direct access to MTRR code support on
-x86 in order to take advantage of PAT. In the future we
-also want to make the default behaviour of ioremap_nocache()
-to use strong UC, use of mtrr_add() on those systems
-would make write-combining void.
-
-In order to help both enable us to later make strong
-UC default and in order to phase out direct MTRR access
-code port the driver over to arch_phys_wc_add() and
-annotate that the device driver requires systems to
-boot with PAT disabled, with the nopat kernel parameter.
-
-This is a worthy compromise given that the ipath device
-driver powers the old HTX bus cards that only work in
-AMD systems, while the newer IB/qib device driver
-powers all PCI-e cards. The ipath device driver is
-obsolete, hardware hard to find and because of this
-this its a reasonable compromise to make to require
-users of ipath to boot with nopat.
-
-Acked-by: Doug Ledford <dledford@redhat.com>
-Cc: Doug Ledford <dledford@redhat.com>
-Cc: Andy Walls <awalls@md.metrocast.net>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
-Cc: Sean Hefty <sean.hefty@intel.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Mike Marciniszyn <mike.marciniszyn@intel.com>
-Cc: Roland Dreier <roland@purestorage.com>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Davidlohr Bueso <dbueso@suse.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Michael S. Tsirkin <mst@redhat.com>
-Cc: Stefan Bader <stefan.bader@canonical.com>
-Cc: konrad.wilk@oracle.com
-Cc: ville.syrjala@linux.intel.com
-Cc: david.vrabel@citrix.com
-Cc: jbeulich@suse.com
-Cc: toshi.kani@hp.com
-Cc: Roger Pau Monné <roger.pau@citrix.com>
-Cc: infinipath@intel.com
-Cc: linux-rdma@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: xen-devel@lists.xensource.com
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Reviewed-by: Ray Jui <rjui@broadcom.com>
+Reviewed-by: Scott Branden <sbranden@broadcom.com>
 ---
- drivers/infiniband/hw/ipath/Kconfig           |  3 ++
- drivers/infiniband/hw/ipath/ipath_driver.c    | 18 +++++++----
- drivers/infiniband/hw/ipath/ipath_kernel.h    |  4 +--
- drivers/infiniband/hw/ipath/ipath_wc_x86_64.c | 43 ++++++---------------------
- 4 files changed, 26 insertions(+), 42 deletions(-)
+ drivers/usb/host/ehci-platform.c | 69 ++++++++++++++--------------------------
+ 1 file changed, 24 insertions(+), 45 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ipath/Kconfig b/drivers/infiniband/hw/ipath/Kconfig
-index 1d9bb11..8fe54ff 100644
---- a/drivers/infiniband/hw/ipath/Kconfig
-+++ b/drivers/infiniband/hw/ipath/Kconfig
-@@ -9,3 +9,6 @@ config INFINIBAND_IPATH
- 	as IP-over-InfiniBand as well as with userspace applications
- 	(in conjunction with InfiniBand userspace access).
- 	For QLogic PCIe QLE based cards, use the QIB driver instead.
-+
-+	If you have this hardware you will need to boot with PAT disabled
-+	on your x86-64 systems, use the nopat kernel parameter.
-diff --git a/drivers/infiniband/hw/ipath/ipath_driver.c b/drivers/infiniband/hw/ipath/ipath_driver.c
-index bd0caed..441cfe5 100644
---- a/drivers/infiniband/hw/ipath/ipath_driver.c
-+++ b/drivers/infiniband/hw/ipath/ipath_driver.c
-@@ -42,6 +42,9 @@
- #include <linux/bitmap.h>
- #include <linux/slab.h>
- #include <linux/module.h>
-+#ifdef CONFIG_X86_64
-+#include <asm/pat.h>
-+#endif
- 
- #include "ipath_kernel.h"
- #include "ipath_verbs.h"
-@@ -395,6 +398,14 @@ static int ipath_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	unsigned long long addr;
- 	u32 bar0 = 0, bar1 = 0;
- 
-+#ifdef CONFIG_X86_64
-+	if (WARN(pat_enabled(),
-+		 "ipath needs PAT disabled, boot with nopat kernel parameter\n")) {
-+		ret = EINVAL;
-+		goto bail;
-+	}
-+#endif
-+
- 	dd = ipath_alloc_devdata(pdev);
- 	if (IS_ERR(dd)) {
- 		ret = PTR_ERR(dd);
-@@ -542,6 +553,7 @@ static int ipath_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	dd->ipath_kregbase = __ioremap(addr, len,
- 		(_PAGE_NO_CACHE|_PAGE_WRITETHRU));
- #else
-+	/* XXX: split this properly to enable on PAT */
- 	dd->ipath_kregbase = ioremap_nocache(addr, len);
- #endif
- 
-@@ -587,12 +599,8 @@ static int ipath_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	ret = ipath_enable_wc(dd);
- 
--	if (ret) {
--		ipath_dev_err(dd, "Write combining not enabled "
--			      "(err %d): performance may be poor\n",
--			      -ret);
-+	if (ret)
- 		ret = 0;
--	}
- 
- 	ipath_verify_pioperf(dd);
- 
-diff --git a/drivers/infiniband/hw/ipath/ipath_kernel.h b/drivers/infiniband/hw/ipath/ipath_kernel.h
-index e08db70..f0f9471 100644
---- a/drivers/infiniband/hw/ipath/ipath_kernel.h
-+++ b/drivers/infiniband/hw/ipath/ipath_kernel.h
-@@ -463,9 +463,7 @@ struct ipath_devdata {
- 	/* offset in HT config space of slave/primary interface block */
- 	u8 ipath_ht_slave_off;
- 	/* for write combining settings */
--	unsigned long ipath_wc_cookie;
--	unsigned long ipath_wc_base;
--	unsigned long ipath_wc_len;
-+	int wc_cookie;
- 	/* ref count for each pkey */
- 	atomic_t ipath_pkeyrefs[4];
- 	/* shadow copy of struct page *'s for exp tid pages */
-diff --git a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
-index 70c1f3a..7b6e4c8 100644
---- a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
-+++ b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
-@@ -37,7 +37,6 @@
-  */
- 
- #include <linux/pci.h>
--#include <asm/mtrr.h>
- #include <asm/processor.h>
- 
- #include "ipath_kernel.h"
-@@ -122,27 +121,14 @@ int ipath_enable_wc(struct ipath_devdata *dd)
+diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
+index d8a75a5..145bf19 100644
+--- a/drivers/usb/host/ehci-platform.c
++++ b/drivers/usb/host/ehci-platform.c
+@@ -88,15 +88,13 @@ static int ehci_platform_power_on(struct platform_device *dev)
  	}
  
- 	if (!ret) {
--		int cookie;
--		ipath_cdbg(VERBOSE, "Setting mtrr for chip to WC "
--			   "(addr %llx, len=0x%llx)\n",
--			   (unsigned long long) pioaddr,
--			   (unsigned long long) piolen);
--		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 1);
--		if (cookie < 0) {
--			{
--				dev_info(&dd->pcidev->dev,
--					 "mtrr_add()  WC for PIO bufs "
--					 "failed (%d)\n",
--					 cookie);
--				ret = -EINVAL;
+ 	for (phy_num = 0; phy_num < priv->num_phys; phy_num++) {
+-		if (priv->phys[phy_num]) {
+-			ret = phy_init(priv->phys[phy_num]);
+-			if (ret)
+-				goto err_exit_phy;
+-			ret = phy_power_on(priv->phys[phy_num]);
+-			if (ret) {
+-				phy_exit(priv->phys[phy_num]);
+-				goto err_exit_phy;
 -			}
--		} else {
--			ipath_cdbg(VERBOSE, "Set mtrr for chip to WC, "
--				   "cookie is %d\n", cookie);
--			dd->ipath_wc_cookie = cookie;
--			dd->ipath_wc_base = (unsigned long) pioaddr;
--			dd->ipath_wc_len = (unsigned long) piolen;
--		}
-+		dd->wc_cookie = arch_phys_wc_add(pioaddr, piolen);
-+		if (dd->wc_cookie < 0) {
-+			ipath_dev_err(dd, "Seting mtrr failed on PIO buffers\n");
-+			ret = -ENODEV;
-+		} else if (dd->wc_cookie = 0)
-+			ipath_cdbg(VERBOSE, "Set mtrr for chip to WC not needed\n");
-+		else
-+			ipath_cdbg(VERBOSE, "Set mtrr for chip to WC\n");
++		ret = phy_init(priv->phys[phy_num]);
++		if (ret)
++			goto err_exit_phy;
++		ret = phy_power_on(priv->phys[phy_num]);
++		if (ret) {
++			phy_exit(priv->phys[phy_num]);
++			goto err_exit_phy;
+ 		}
  	}
  
- 	return ret;
-@@ -154,16 +140,5 @@ int ipath_enable_wc(struct ipath_devdata *dd)
-  */
- void ipath_disable_wc(struct ipath_devdata *dd)
- {
--	if (dd->ipath_wc_cookie) {
--		int r;
--		ipath_cdbg(VERBOSE, "undoing WCCOMB on pio buffers\n");
--		r = mtrr_del(dd->ipath_wc_cookie, dd->ipath_wc_base,
--			     dd->ipath_wc_len);
--		if (r < 0)
--			dev_info(&dd->pcidev->dev,
--				 "mtrr_del(%lx, %lx, %lx) failed: %d\n",
--				 dd->ipath_wc_cookie, dd->ipath_wc_base,
--				 dd->ipath_wc_len, r);
--		dd->ipath_wc_cookie = 0; /* even on failure */
--	}
-+	arch_phys_wc_del(dd->wc_cookie);
- }
+@@ -104,10 +102,8 @@ static int ehci_platform_power_on(struct platform_device *dev)
+ 
+ err_exit_phy:
+ 	while (--phy_num >= 0) {
+-		if (priv->phys[phy_num]) {
+-			phy_power_off(priv->phys[phy_num]);
+-			phy_exit(priv->phys[phy_num]);
+-		}
++		phy_power_off(priv->phys[phy_num]);
++		phy_exit(priv->phys[phy_num]);
+ 	}
+ err_disable_clks:
+ 	while (--clk >= 0)
+@@ -123,10 +119,8 @@ static void ehci_platform_power_off(struct platform_device *dev)
+ 	int clk, phy_num;
+ 
+ 	for (phy_num = 0; phy_num < priv->num_phys; phy_num++) {
+-		if (priv->phys[phy_num]) {
+-			phy_power_off(priv->phys[phy_num]);
+-			phy_exit(priv->phys[phy_num]);
+-		}
++		phy_power_off(priv->phys[phy_num]);
++		phy_exit(priv->phys[phy_num]);
+ 	}
+ 
+ 	for (clk = EHCI_MAX_CLKS - 1; clk >= 0; clk--)
+@@ -154,7 +148,6 @@ static int ehci_platform_probe(struct platform_device *dev)
+ 	struct usb_ehci_pdata *pdata = dev_get_platdata(&dev->dev);
+ 	struct ehci_platform_priv *priv;
+ 	struct ehci_hcd *ehci;
+-	const char *phy_name;
+ 	int err, irq, phy_num, clk = 0;
+ 
+ 	if (usb_disabled())
+@@ -204,36 +197,22 @@ static int ehci_platform_probe(struct platform_device *dev)
+ 
+ 		priv->num_phys = of_count_phandle_with_args(dev->dev.of_node,
+ 				"phys", "#phy-cells");
+-		priv->num_phys = priv->num_phys > 0 ? priv->num_phys : 1;
+ 
+-		priv->phys = devm_kcalloc(&dev->dev, priv->num_phys,
+-				sizeof(struct phy *), GFP_KERNEL);
+-		if (!priv->phys)
+-			return -ENOMEM;
++		if (priv->num_phys > 0) {
++			priv->phys = devm_kcalloc(&dev->dev, priv->num_phys,
++					    sizeof(struct phy *), GFP_KERNEL);
++			if (!priv->phys)
++				return -ENOMEM;
++		} else
++			priv->num_phys = 0;
+ 
+ 		for (phy_num = 0; phy_num < priv->num_phys; phy_num++) {
+-				err = of_property_read_string_index(
+-						dev->dev.of_node,
+-						"phy-names", phy_num,
+-						&phy_name);
+-
+-				if (err < 0) {
+-					if (priv->num_phys > 1) {
+-						dev_err(&dev->dev, "phy-names not provided");
+-						goto err_put_hcd;
+-					} else
+-						phy_name = "usb";
+-				}
+-
+-				priv->phys[phy_num] = devm_phy_get(&dev->dev,
+-						phy_name);
+-				if (IS_ERR(priv->phys[phy_num])) {
+-					err = PTR_ERR(priv->phys[phy_num]);
+-					if ((priv->num_phys > 1) ||
+-					    (err = -EPROBE_DEFER))
+-						goto err_put_hcd;
+-					priv->phys[phy_num] = NULL;
+-				}
++			priv->phys[phy_num] = devm_of_phy_get_by_index(
++					&dev->dev, dev->dev.of_node, phy_num);
++			if (IS_ERR(priv->phys[phy_num])) {
++				err = PTR_ERR(priv->phys[phy_num]);
++					goto err_put_hcd;
++			}
+ 		}
+ 
+ 		for (clk = 0; clk < EHCI_MAX_CLKS; clk++) {
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.3.4
 

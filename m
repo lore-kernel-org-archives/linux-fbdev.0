@@ -1,75 +1,45 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 07 Apr 2015 13:25:08 +0000
-Subject: Re: [PATCH] fbdev: sh_mobile_lcdc: Fix destruction of uninitialized mutex
-Message-Id: <5523DAB4.5060301@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="lPhe14haAswflRiwOFEfeMUr03CtfSp6j"
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 22 Apr 2015 13:23:01 +0000
+Subject: [PATCH 5/5] ASoC: omap-hdmi-audio: Fix invalid combination of DM_INH and CA
+Message-Id: <79f95cefe5f69f90698520adab90ce83b8539bf8.1429705991.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1428065428-25473-1-git-send-email-geert+renesas@glider.be>
-In-Reply-To: <1428065428-25473-1-git-send-email-geert+renesas@glider.be>
-To: linux-fbdev@vger.kernel.org
+References: <cover.1429705991.git.jsarha@ti.com>
+In-Reply-To: <cover.1429705991.git.jsarha@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, misael.lopez@ti.com, Jyri Sarha <jsarha@ti.com>
 
---lPhe14haAswflRiwOFEfeMUr03CtfSp6j
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+From: Misael Lopez Cruz <misael.lopez@ti.com>
 
-On 03/04/15 15:50, Geert Uytterhoeven wrote:
-> If sh_mobile_lcdc_probe() fails after the allocation of driver-private
-> data, but before the initialization of all channels, a warning will be
-> printed due to the destruction of an uninitialized mutex:
->=20
->     WARNING: CPU: 0 PID: 1 at kernel/locking/mutex-debug.c:116 mutex_de=
-stroy+0x5c/0x7c()
->     DEBUG_LOCKS_WARN_ON(mutex_is_locked(lock))
->     ...
->     Backtrace:
->     ...
->     [<c00425b4>] (mutex_destroy) from [<c01d5858>] (sh_mobile_lcdc_remo=
-ve+0x1bc/0x230)
->      r4:df6a4800 r3:00000000
->     [<c01d569c>] (sh_mobile_lcdc_remove) from [<c01d6620>] (sh_mobile_l=
-cdc_probe+0xd54/0xe28)
->=20
-> Move the initialization of the mutexes from sh_mobile_lcdc_channel_init=
-()
-> to immediately after the allocation of driver-private data to fix this.=
+DM_INH = 1 (stereo downmix prohibited) and CA = 0x00 (Channel
+Allocation: FR, FL) is an invalid combination according to the
+HDMI Compliance Test 7.31 "Audio InfoFrame".
 
->=20
-> Note that the interrupt number is moved to a new variable "irq", so we
-> can reuse the existing variable "i" for iterating over the channels.
->=20
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/video/fbdev/sh_mobile_lcdcfb.c | 13 +++++++------
->  1 file changed, 7 insertions(+), 6 deletions(-)
+Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ sound/soc/omap/omap-hdmi-audio.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Thanks, queued for 4.1.
+diff --git a/sound/soc/omap/omap-hdmi-audio.c b/sound/soc/omap/omap-hdmi-audio.c
+index 8df303f..aeef25c 100644
+--- a/sound/soc/omap/omap-hdmi-audio.c
++++ b/sound/soc/omap/omap-hdmi-audio.c
+@@ -217,7 +217,11 @@ static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
+ 	else
+ 		cea->db4_ca = 0x13;
+ 
+-	cea->db5_dminh_lsv = CEA861_AUDIO_INFOFRAME_DB5_DM_INH_PROHIBITED;
++	if (cea->db4_ca = 0x00)
++		cea->db5_dminh_lsv = CEA861_AUDIO_INFOFRAME_DB5_DM_INH_PERMITTED;
++	else
++		cea->db5_dminh_lsv = CEA861_AUDIO_INFOFRAME_DB5_DM_INH_PROHIBITED;
++
+ 	/* the expression is trivial but makes clear what we are doing */
+ 	cea->db5_dminh_lsv |= (0 & CEA861_AUDIO_INFOFRAME_DB5_LSV);
+ 
+-- 
+1.9.1
 
- Tomi
-
-
-
---lPhe14haAswflRiwOFEfeMUr03CtfSp6j
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJVI9q3AAoJEPo9qoy8lh71EhYQAIPWzPBJWnEezoVnoBw/hUIf
-UJWybMn3+9H5BppVLWPNao6ATtqO1f+R1ARPmCDpbX5tR9QbjugBsF0kSS0XqJDa
-oVoUBqXaCq8AzDx0jm8XL20fsyHJginPq0GhEvxVHhbqMxM9WwuK67/IY2hRv1MF
-EkDXQUyq47vWNJhsNyJYxoLLnDZoG2hhKjjJM+CmWovFfcODU75gVEkKKmogigQR
-mXC7zAjdi6O4i7OH1YB3sm0r5WcX+souUgpdlEmeTPjeaZdQTIwg7+HPsmrkMxaR
-LPsfFi0HumON3ICx3wvh85jUEHAduekTCt91ab5vDiFpZrpUbXmYOt67T8f0whGj
-a9bqkMbIh7vPGH9XfZyQ4kNI2wZcrJAbpwwJDLtXZLbYYDP/Kp8gdt7ZQO5T0rMO
-kxTmJzTqRnz8EBCKEtzH013io/+53DKxqT33JCdz6po3RdGVIFxG9WjRbUEqzhpg
-Hme+TrIdY08jxnljWNyaYECgTNmAjRGNSlySCdUNKPeYFKSozWfeLXREzn/Jiz1L
-advKO8Dm1PUtl7XLopLRilZNSOXWL/5xWBMGBea7qeN5LU9Qdgvb4XeUWWH8/82w
-TNU01uhdCn7ZIMc44vCqn+1U8/L37pw7gG8P+YzfX670KhOg/gpPxw1a18Ievy71
-wCu3Lx1heanUs6np2EGJ
-=9RtR
------END PGP SIGNATURE-----
-
---lPhe14haAswflRiwOFEfeMUr03CtfSp6j--

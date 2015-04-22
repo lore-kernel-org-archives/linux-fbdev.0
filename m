@@ -1,65 +1,69 @@
-From: Charles Rose <charles.rose.linux@gmail.com>
-Date: Fri, 24 Apr 2015 15:10:56 +0000
-Subject: [PATCH v2 2/2] staging: sm750fb: cleanup indentation
-Message-Id: <1429888256-18890-1-git-send-email-charles.rose.linux@gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 22 Apr 2015 13:23:00 +0000
+Subject: [PATCH 4/5] ASoC: omap-hdmi-audio: Force channel allocation only for OMAP4
+Message-Id: <24329adf0076ff2ac004817a602c12db2ccc477d.1429705991.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429887612-15285-1-git-send-email-charles.rose.linux@gmail.com>
-In-Reply-To: <1429887612-15285-1-git-send-email-charles.rose.linux@gmail.com>
+References: <cover.1429705991.git.jsarha@ti.com>
+In-Reply-To: <cover.1429705991.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Cc: charles.rose.linux@gmail.com
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, misael.lopez@ti.com, Jyri Sarha <jsarha@ti.com>
 
-This patch fixes indentation errors/warnings reported by checkpatch.pl.
+From: Misael Lopez Cruz <misael.lopez@ti.com>
 
-Signed-off-by: Charles Rose <charles.rose.linux@gmail.com>
+There is a constraint in the OMAP4 HDMI IP that requires to use
+the 8-channel code when transmitting more than two channels.
+
+The constraint doesn't apply for OMAP5 so don't force the channel
+allocation in the sound driver as it can be done specifically for
+OMAP4 later in the hdmi4 core.
+
+Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/staging/sm750fb/ddk750_mode.c | 24 ++++++++++++++++--------
- 1 file changed, 16 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi4_core.c | 7 +++++++
+ sound/soc/omap/omap-hdmi-audio.c           | 6 ++----
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index 8e7b9d4..eac5712 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -44,21 +44,29 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
- 	/* Set bit 29:27 of display control register for the right clock */
- 	/* Note that SM750LE only need to supported 7 resoluitons. */
- 	if (x = 800 && y = 600)
--    	dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
-+		dispControl = FIELD_SET(dispControl,
-+					CRT_DISPLAY_CTRL, CLK, PLL41);
- 	else if (x = 1024 && y = 768)
--    	dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL65);
-+		dispControl = FIELD_SET(dispControl,
-+					CRT_DISPLAY_CTRL, CLK, PLL65);
- 	else if (x = 1152 && y = 864)
--    	dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL80);
-+		dispControl = FIELD_SET(dispControl,
-+					CRT_DISPLAY_CTRL, CLK, PLL80);
- 	else if (x = 1280 && y = 768)
--    	dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL80);
-+		dispControl = FIELD_SET(dispControl,
-+					CRT_DISPLAY_CTRL, CLK, PLL80);
- 	else if (x = 1280 && y = 720)
--    	dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL74);
-+		dispControl = FIELD_SET(dispControl,
-+					CRT_DISPLAY_CTRL, CLK, PLL74);
- 	else if (x = 1280 && y = 960)
--    	dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL108);
-+		dispControl = FIELD_SET(dispControl,
-+					CRT_DISPLAY_CTRL, CLK, PLL108);
- 	else if (x = 1280 && y = 1024)
--    	dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL108);
-+		dispControl = FIELD_SET(dispControl,
-+					CRT_DISPLAY_CTRL, CLK, PLL108);
- 	else /* default to VGA clock */
--    	dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL25);
-+		dispControl = FIELD_SET(dispControl,
-+					CRT_DISPLAY_CTRL, CLK, PLL25);
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+index 2b8bd22..fa72e73 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
+@@ -654,6 +654,13 @@ static void hdmi_core_audio_infoframe_cfg(struct hdmi_core_data *core,
+ 	hdmi_write_reg(av_base, HDMI_CORE_AV_AUD_DBYTE(2), info_aud->db3);
+ 	sum += info_aud->db3;
  
- 	/* Set bit 25:24 of display controller */
-     dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CRTSELECT, CRT);
++	/*
++	 * The OMAP HDMI IP requires to use the 8-channel channel code when
++	 * transmitting more than two channels.
++	 */
++	if (info_aud->db4_ca != 0x00)
++		info_aud->db4_ca = 0x13;
++
+ 	hdmi_write_reg(av_base, HDMI_CORE_AV_AUD_DBYTE(3), info_aud->db4_ca);
+ 	sum += info_aud->db4_ca;
+ 
+diff --git a/sound/soc/omap/omap-hdmi-audio.c b/sound/soc/omap/omap-hdmi-audio.c
+index 4775da4..8df303f 100644
+--- a/sound/soc/omap/omap-hdmi-audio.c
++++ b/sound/soc/omap/omap-hdmi-audio.c
+@@ -210,12 +210,10 @@ static int hdmi_dai_hw_params(struct snd_pcm_substream *substream,
+ 
+ 	cea->db3 = 0; /* not used, all zeros */
+ 
+-	/*
+-	 * The OMAP HDMI IP requires to use the 8-channel channel code when
+-	 * transmitting more than two channels.
+-	 */
+ 	if (params_channels(params) = 2)
+ 		cea->db4_ca = 0x0;
++	else if (params_channels(params) = 6)
++		cea->db4_ca = 0xb;
+ 	else
+ 		cea->db4_ca = 0x13;
+ 
 -- 
-2.1.0
+1.9.1
 

@@ -1,190 +1,39 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:16:27 +0000
-Subject: [PATCH v3 06/17] video: fbdev: neofb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1429647398-16983-7-git-send-email-mcgrof@do-not-panic.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 22 Apr 2015 13:22:58 +0000
+Subject: [PATCH 2/5] OMAPDSS: HDMI5: Set valid sample order
+Message-Id: <134b187ace26d0a604d097966c797f961612f7cf.1429705991.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+References: <cover.1429705991.git.jsarha@ti.com>
+In-Reply-To: <cover.1429705991.git.jsarha@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cocci@systeme.lip6.fr
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, misael.lopez@ti.com, Jyri Sarha <jsarha@ti.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+From: Misael Lopez Cruz <misael.lopez@ti.com>
 
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
+As per TRM, HDMI_WP_AUDIO_CFG[2] LEFT_BEFORE = 0 is reserved,
+so it must always be set to 1 (the first sample is the left).
 
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/video/fbdev/neofb.c | 26 +++++++-------------------
- include/video/neomagic.h    |  5 +----
- 2 files changed, 8 insertions(+), 23 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi5_core.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
-index 44f99a6..db023a9 100644
---- a/drivers/video/fbdev/neofb.c
-+++ b/drivers/video/fbdev/neofb.c
-@@ -71,11 +71,6 @@
- #include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/pgtable.h>
--
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- #include <video/vga.h>
- #include <video/neomagic.h>
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+index a3cfe3d..7a80beb 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5_core.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5_core.c
+@@ -870,6 +870,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 	audio_format.samples_per_word = HDMI_AUDIO_ONEWORD_TWOSAMPLES;
+ 	audio_format.sample_size = HDMI_AUDIO_SAMPLE_16BITS;
+ 	audio_format.justification = HDMI_AUDIO_JUSTIFY_LEFT;
++	audio_format.sample_order = HDMI_AUDIO_SAMPLE_LEFT_FIRST;
  
-@@ -1710,6 +1705,7 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
- 			 int video_len)
- {
- 	//unsigned long addr;
-+	struct neofb_par *par = info->par;
- 
- 	DBG("neo_map_video");
- 
-@@ -1723,7 +1719,7 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
- 	}
- 
- 	info->screen_base -	    ioremap(info->fix.smem_start, info->fix.smem_len);
-+	    ioremap_wc(info->fix.smem_start, info->fix.smem_len);
- 	if (!info->screen_base) {
- 		printk("neofb: unable to map screen memory\n");
- 		release_mem_region(info->fix.smem_start,
-@@ -1733,11 +1729,8 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
- 		printk(KERN_INFO "neofb: mapped framebuffer at %p\n",
- 		       info->screen_base);
- 
--#ifdef CONFIG_MTRR
--	((struct neofb_par *)(info->par))->mtrr -		mtrr_add(info->fix.smem_start, pci_resource_len(dev, 0),
--				MTRR_TYPE_WRCOMB, 1);
--#endif
-+	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+					  pci_resource_len(dev, 0));
- 
- 	/* Clear framebuffer, it's all white in memory after boot */
- 	memset_io(info->screen_base, 0, info->fix.smem_len);
-@@ -1754,16 +1747,11 @@ static int neo_map_video(struct fb_info *info, struct pci_dev *dev,
- 
- static void neo_unmap_video(struct fb_info *info)
- {
--	DBG("neo_unmap_video");
-+	struct neofb_par *par = info->par;
- 
--#ifdef CONFIG_MTRR
--	{
--		struct neofb_par *par = info->par;
-+	DBG("neo_unmap_video");
- 
--		mtrr_del(par->mtrr, info->fix.smem_start,
--			 info->fix.smem_len);
--	}
--#endif
-+	arch_phys_wc_del(par->wc_cookie);
- 	iounmap(info->screen_base);
- 	info->screen_base = NULL;
- 
-diff --git a/include/video/neomagic.h b/include/video/neomagic.h
-index bc5013e..91e225a 100644
---- a/include/video/neomagic.h
-+++ b/include/video/neomagic.h
-@@ -159,10 +159,7 @@ struct neofb_par {
- 	unsigned char VCLK3NumeratorHigh;
- 	unsigned char VCLK3Denominator;
- 	unsigned char VerticalExt;
--
--#ifdef CONFIG_MTRR
--	int mtrr;
--#endif
-+	int wc_cookie;
- 	u8 __iomem *mmio_vbase;
- 	u8 cursorOff;
- 	u8 *cursorPad;		/* Must die !! */
+ 	/* only LPCM atm */
+ 	audio_format.type = HDMI_AUDIO_TYPE_LPCM;
 -- 
-2.3.2.209.gd67f9d5.dirty
+1.9.1
 

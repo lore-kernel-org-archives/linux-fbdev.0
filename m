@@ -1,44 +1,80 @@
-From: Rob Herring <robherring2@gmail.com>
-Date: Wed, 01 Apr 2015 20:33:16 +0000
-Subject: Re: [PATCHv6 03/10] of: Add Solomon Systech vendor prefix.
-Message-Id: <CAL_Jsq+OTsvLkOn1oR_JYnb=UdyW3LFQ5wwqFU0-L6J_f1gi7Q@mail.gmail.com>
+From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Date: Wed, 22 Apr 2015 23:14:37 +0000
+Subject: [PATCH v3 1/3] phy: phy-core: allow specifying supply at port level
+Message-Id: <1429744479-10410-2-git-send-email-arun.ramamurthy@broadcom.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de> <1427826436-21783-4-git-send-email-niederp@physik.uni-kl.de>
-In-Reply-To: <1427826436-21783-4-git-send-email-niederp@physik.uni-kl.de>
+References: <1429744479-10410-1-git-send-email-arun.ramamurthy@broadcom.com>
+In-Reply-To: <1429744479-10410-1-git-send-email-arun.ramamurthy@broadcom.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?UTF-8?Q?Thomas_Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, Rob Herring <robh+dt@kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Kishon Vijay Abraham I <kishon@ti.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Gabriel FERNANDEZ <gabriel.fernandez@st.com>, Jason Cooper <jason@lakedaemon.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Dmitry Torokhov <dtor@google.com>, Anatol Pomazau <anatol@google.com>, Jonathan Richardson <jonathar@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Dmitry Torokhov <dtor@chromium.org>, Arun Ramamurthy <arun.ramamurthy@broadcom.com>
 
-On Tue, Mar 31, 2015 at 1:27 PM, Thomas Niederprüm
-<niederp@physik.uni-kl.de> wrote:
-> This patch adds the solomon prefix for Solomon Systech Limited.
->
-> Signed-off-by: Thomas Niederprüm <niederp@physik.uni-kl.de>
+From: Dmitry Torokhov <dtor@chromium.org>
 
-In the future, please copy devicetree list.
+Multi-port phys may have per port power supplies. Let's change phy
+core to look for supply at the port level when multiple ports are
+specified. To keep compatibility with the existing device tree board
+descriptions for single-port phys we will continue looking up the
+power supply at the parent node level
 
-Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
+Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Reviewed-by: Ray Jui <rjui@broadcom.com>
+Reviewed-by: Scott Branden <sbranden@broadcom.com>
+---
+ drivers/phy/phy-core.c | 23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
 
+diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
+index 3791838..c7aa297 100644
+--- a/drivers/phy/phy-core.c
++++ b/drivers/phy/phy-core.c
+@@ -651,16 +651,6 @@ struct phy *phy_create(struct device *dev, struct device_node *node,
+ 		goto free_phy;
+ 	}
+ 
+-	/* phy-supply */
+-	phy->pwr = regulator_get_optional(dev, "phy");
+-	if (IS_ERR(phy->pwr)) {
+-		if (PTR_ERR(phy->pwr) = -EPROBE_DEFER) {
+-			ret = -EPROBE_DEFER;
+-			goto free_ida;
+-		}
+-		phy->pwr = NULL;
+-	}
+-
+ 	device_initialize(&phy->dev);
+ 	mutex_init(&phy->mutex);
+ 
+@@ -674,6 +664,16 @@ struct phy *phy_create(struct device *dev, struct device_node *node,
+ 	if (ret)
+ 		goto put_dev;
+ 
++	/* phy-supply */
++	phy->pwr = regulator_get_optional(&phy->dev, "phy");
++	if (IS_ERR(phy->pwr)) {
++		ret = PTR_ERR(phy->pwr);
++		if (ret = -EPROBE_DEFER)
++			goto put_dev;
++
++		phy->pwr = NULL;
++	}
++
+ 	ret = device_add(&phy->dev);
+ 	if (ret)
+ 		goto put_dev;
+@@ -689,9 +689,6 @@ put_dev:
+ 	put_device(&phy->dev);  /* calls phy_release() which frees resources */
+ 	return ERR_PTR(ret);
+ 
+-free_ida:
+-	ida_simple_remove(&phy_ida, phy->id);
+-
+ free_phy:
+ 	kfree(phy);
+ 	return ERR_PTR(ret);
+-- 
+2.3.4
 
-> ---
->  Documentation/devicetree/bindings/vendor-prefixes.txt | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
-> index d3f4809..933c8f5 100644
-> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
-> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
-> @@ -169,6 +169,7 @@ sitronix    Sitronix Technology Corporation
->  smsc   Standard Microsystems Corporation
->  snps   Synopsys, Inc.
->  solidrun       SolidRun
-> +solomon        Solomon Systech Limited
->  sony   Sony Corporation
->  spansion       Spansion Inc.
->  sprd   Spreadtrum Communications Inc.
-> --
-> 2.3.0
->

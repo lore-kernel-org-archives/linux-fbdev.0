@@ -1,29 +1,131 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Mon, 27 Apr 2015 23:55:37 +0000
-Subject: [PATCH v2 00/17] new locomo driver set
-Message-Id: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+From: Charles Rose <charles.rose.linux@gmail.com>
+Date: Fri, 24 Apr 2015 15:00:11 +0000
+Subject: [PATCH v2 1/2] staging: sm750fb: cleanup white space
+Message-Id: <1429887612-15285-1-git-send-email-charles.rose.linux@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Cc: charles.rose.linux@gmail.com
 
-Sharp Zaurus SL-5500 and SL-5600 use special companion Gate Array.
-With this patchset I tried to modernise and restructure the LoCoMo drivers.
+This patch fixes "space prohibited" errors reported by checkpatch.pl
 
-* Use platform bus and mfd core code
-* Use GPIO API instead of custom locomo GPIO code
-* Use irqdomains to manage IRQs
-* Split mixed locomolcd driver to lcd and backlight parts
-* Implement IRQ handling in GPIO driver
-* Implement SPI driver used as a host for mmc_spi device to control SD cards
+Signed-off-by: Charles Rose <charles.rose.linux@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c  | 12 ++++++------
+ drivers/staging/sm750fb/ddk750_mode.c  |  2 +-
+ drivers/staging/sm750fb/ddk750_power.c |  8 ++++----
+ drivers/staging/sm750fb/sm750_accel.c  |  2 +-
+ drivers/staging/sm750fb/sm750_help.h   |  2 +-
+ 5 files changed, 13 insertions(+), 13 deletions(-)
 
-V1 was submitted about a half of a year ago. Major changes:
-* Use gpiod_* in most of places
-* Use regmap for accessing registers instead of manual RMW cycles
-* Split dac driver from core module to i2c bus and separate IIO driver
-* Replaced mdelay() calls with usleep_range or msleep where it was suitable
-* Rewrote SPI driver to use core transfer_one() interface
-
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 7b28328..60ae39a 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -268,7 +268,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ #endif
+ 
+ 
+-	if (pInitParam->powerMode != 0 )
++	if (pInitParam->powerMode != 0)
+ 		pInitParam->powerMode = 0;
+ 	setPowerMode(pInitParam->powerMode);
+ 
+@@ -285,7 +285,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ 		ulReg = FIELD_SET(ulReg, VGA_CONFIGURATION, MODE, GRAPHIC);
+ 		POKE32(VGA_CONFIGURATION, ulReg);
+ 	} else {
+-#if defined(__i386__) || defined( __x86_64__)
++#if defined(__i386__) || defined(__x86_64__)
+ 		/* set graphic mode via IO method */
+ 		outb_p(0x88, 0x3d4);
+ 		outb_p(0x06, 0x3d5);
+@@ -382,7 +382,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ 
+ unsigned int absDiff(unsigned int a, unsigned int b)
+ {
+-	if ( a > b )
++	if (a > b)
+ 		return(a - b);
+ 	else
+ 		return(b - a);
+@@ -606,9 +606,9 @@ unsigned int formatPllReg(pll_value_t *pPLL)
+        On returning a 32 bit number, the value can be applied to any PLL in the calling function.
+     */
+ 	ulPllReg -	FIELD_SET(  0, PANEL_PLL_CTRL, BYPASS, OFF)
+-	| FIELD_SET(  0, PANEL_PLL_CTRL, POWER,  ON)
+-	| FIELD_SET(  0, PANEL_PLL_CTRL, INPUT,  OSC)
++	FIELD_SET(0, PANEL_PLL_CTRL, BYPASS, OFF)
++	| FIELD_SET(0, PANEL_PLL_CTRL, POWER,  ON)
++	| FIELD_SET(0, PANEL_PLL_CTRL, INPUT,  OSC)
+ #ifndef VALIDATION_CHIP
+ 	| FIELD_VALUE(0, PANEL_PLL_CTRL, POD,    pPLL->POD)
+ #endif
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 2e418fb..8e7b9d4 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -43,7 +43,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
+ 
+ 	/* Set bit 29:27 of display control register for the right clock */
+ 	/* Note that SM750LE only need to supported 7 resoluitons. */
+-	if ( x = 800 && y = 600 )
++	if (x = 800 && y = 600)
+     	dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
+ 	else if (x = 1024 && y = 768)
+     	dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL65);
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index cbb9767..0e3c028 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -59,17 +59,17 @@ void setPowerMode(unsigned int powerMode)
+     {
+         control_value  #ifdef VALIDATION_CHIP
+-            FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, OFF) |
++		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, OFF) |
+ #endif
+-            FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
++		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT, OFF);
+     }
+     else
+     {
+         control_value  #ifdef VALIDATION_CHIP
+-            FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, ON) |
++		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, ON) |
+ #endif
+-            FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  ON);
++		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT, ON);
+     }
+ 
+     /* Program new power mode. */
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index c5a3726..e308646 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -364,7 +364,7 @@ int hw_imageblit(struct lynx_accel *accel,
+        Note that input pitch is BYTE value, but the 2D Pitch register uses
+        pixel values. Need Byte to pixel convertion.
+     */
+-	if(bytePerPixel = 3 ){
++	if (bytePerPixel = 3) {
+ 		dx *= 3;
+ 		width *= 3;
+ 		startBit *= 3;
+diff --git a/drivers/staging/sm750fb/sm750_help.h b/drivers/staging/sm750fb/sm750_help.h
+index e0128d2..cdac9e2 100644
+--- a/drivers/staging/sm750fb/sm750_help.h
++++ b/drivers/staging/sm750fb/sm750_help.h
+@@ -57,7 +57,7 @@
+ 
+ #define FIELD_CLEAR(reg, field) \
+ ( \
+-    ~ _F_MASK(reg ## _ ## field) \
++	~_F_MASK(reg ## _ ## field) \
+ )
+ 
+ 
+-- 
+2.1.0
 

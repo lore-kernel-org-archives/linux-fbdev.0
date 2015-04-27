@@ -1,137 +1,127 @@
-From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Date: Wed, 22 Apr 2015 23:04:12 +0000
-Subject: [PATCHv3 3/4] usb: ehci-platform: Use devm_of_phy_get_by_index
-Message-Id: <1429743853-10254-4-git-send-email-arun.ramamurthy@broadcom.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Mon, 27 Apr 2015 23:55:50 +0000
+Subject: [PATCH v2 13/17] ASoC: pxa: poodle: make use of new locomo GPIO interface
+Message-Id: <1430178954-11138-14-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
-In-Reply-To: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
+References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-Getting phys by index instead of phy names so that we do
-not have to create a naming scheme when multiple phys
-are present
+Since LoCoMo driver has been converted to provide proper gpiolib
+interface, make poodle ASoC platform driver use gpiolib API.
 
-Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Reviewed-by: Ray Jui <rjui@broadcom.com>
-Reviewed-by: Scott Branden <sbranden@broadcom.com>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Acked-by: Mark Brown <broonie@kernel.org>
 ---
- drivers/usb/host/ehci-platform.c | 69 ++++++++++++++--------------------------
- 1 file changed, 24 insertions(+), 45 deletions(-)
+ sound/soc/pxa/poodle.c | 52 +++++++++++++++++++-------------------------------
+ 1 file changed, 20 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/usb/host/ehci-platform.c b/drivers/usb/host/ehci-platform.c
-index d8a75a5..145bf19 100644
---- a/drivers/usb/host/ehci-platform.c
-+++ b/drivers/usb/host/ehci-platform.c
-@@ -88,15 +88,13 @@ static int ehci_platform_power_on(struct platform_device *dev)
- 	}
+diff --git a/sound/soc/pxa/poodle.c b/sound/soc/pxa/poodle.c
+index 0fce8c4..c5b7c5e 100644
+--- a/sound/soc/pxa/poodle.c
++++ b/sound/soc/pxa/poodle.c
+@@ -20,15 +20,11 @@
+ #include <linux/i2c.h>
+ #include <linux/interrupt.h>
+ #include <linux/platform_device.h>
++#include <linux/gpio/consumer.h>
+ #include <sound/core.h>
+ #include <sound/pcm.h>
+ #include <sound/soc.h>
  
- 	for (phy_num = 0; phy_num < priv->num_phys; phy_num++) {
--		if (priv->phys[phy_num]) {
--			ret = phy_init(priv->phys[phy_num]);
--			if (ret)
--				goto err_exit_phy;
--			ret = phy_power_on(priv->phys[phy_num]);
--			if (ret) {
--				phy_exit(priv->phys[phy_num]);
--				goto err_exit_phy;
--			}
-+		ret = phy_init(priv->phys[phy_num]);
-+		if (ret)
-+			goto err_exit_phy;
-+		ret = phy_power_on(priv->phys[phy_num]);
-+		if (ret) {
-+			phy_exit(priv->phys[phy_num]);
-+			goto err_exit_phy;
- 		}
- 	}
- 
-@@ -104,10 +102,8 @@ static int ehci_platform_power_on(struct platform_device *dev)
- 
- err_exit_phy:
- 	while (--phy_num >= 0) {
--		if (priv->phys[phy_num]) {
--			phy_power_off(priv->phys[phy_num]);
--			phy_exit(priv->phys[phy_num]);
--		}
-+		phy_power_off(priv->phys[phy_num]);
-+		phy_exit(priv->phys[phy_num]);
- 	}
- err_disable_clks:
- 	while (--clk >= 0)
-@@ -123,10 +119,8 @@ static void ehci_platform_power_off(struct platform_device *dev)
- 	int clk, phy_num;
- 
- 	for (phy_num = 0; phy_num < priv->num_phys; phy_num++) {
--		if (priv->phys[phy_num]) {
--			phy_power_off(priv->phys[phy_num]);
--			phy_exit(priv->phys[phy_num]);
--		}
-+		phy_power_off(priv->phys[phy_num]);
-+		phy_exit(priv->phys[phy_num]);
- 	}
- 
- 	for (clk = EHCI_MAX_CLKS - 1; clk >= 0; clk--)
-@@ -154,7 +148,6 @@ static int ehci_platform_probe(struct platform_device *dev)
- 	struct usb_ehci_pdata *pdata = dev_get_platdata(&dev->dev);
- 	struct ehci_platform_priv *priv;
- 	struct ehci_hcd *ehci;
--	const char *phy_name;
- 	int err, irq, phy_num, clk = 0;
- 
- 	if (usb_disabled())
-@@ -204,36 +197,22 @@ static int ehci_platform_probe(struct platform_device *dev)
- 
- 		priv->num_phys = of_count_phandle_with_args(dev->dev.of_node,
- 				"phys", "#phy-cells");
--		priv->num_phys = priv->num_phys > 0 ? priv->num_phys : 1;
- 
--		priv->phys = devm_kcalloc(&dev->dev, priv->num_phys,
--				sizeof(struct phy *), GFP_KERNEL);
--		if (!priv->phys)
--			return -ENOMEM;
-+		if (priv->num_phys > 0) {
-+			priv->phys = devm_kcalloc(&dev->dev, priv->num_phys,
-+					    sizeof(struct phy *), GFP_KERNEL);
-+			if (!priv->phys)
-+				return -ENOMEM;
-+		} else
-+			priv->num_phys = 0;
- 
- 		for (phy_num = 0; phy_num < priv->num_phys; phy_num++) {
--				err = of_property_read_string_index(
--						dev->dev.of_node,
--						"phy-names", phy_num,
--						&phy_name);
+-#include <asm/mach-types.h>
+-#include <asm/hardware/locomo.h>
+-#include <mach/poodle.h>
+-#include <mach/audio.h>
 -
--				if (err < 0) {
--					if (priv->num_phys > 1) {
--						dev_err(&dev->dev, "phy-names not provided");
--						goto err_put_hcd;
--					} else
--						phy_name = "usb";
--				}
--
--				priv->phys[phy_num] = devm_phy_get(&dev->dev,
--						phy_name);
--				if (IS_ERR(priv->phys[phy_num])) {
--					err = PTR_ERR(priv->phys[phy_num]);
--					if ((priv->num_phys > 1) ||
--					    (err = -EPROBE_DEFER))
--						goto err_put_hcd;
--					priv->phys[phy_num] = NULL;
--				}
-+			priv->phys[phy_num] = devm_of_phy_get_by_index(
-+					&dev->dev, dev->dev.of_node, phy_num);
-+			if (IS_ERR(priv->phys[phy_num])) {
-+				err = PTR_ERR(priv->phys[phy_num]);
-+					goto err_put_hcd;
-+			}
- 		}
+ #include "../codecs/wm8731.h"
+ #include "pxa2xx-i2s.h"
  
- 		for (clk = 0; clk < EHCI_MAX_CLKS; clk++) {
+@@ -42,22 +38,18 @@
+ 
+ static int poodle_jack_func;
+ static int poodle_spk_func;
++static struct gpio_desc *poodle_mute_l, *poodle_mute_r, *poodle_amp_on;
+ 
+ static void poodle_ext_control(struct snd_soc_dapm_context *dapm)
+ {
+ 	/* set up jack connection */
+ 	if (poodle_jack_func = POODLE_HP) {
+-		/* set = unmute headphone */
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_L, 1);
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_R, 1);
++		gpiod_set_value(poodle_mute_l, 0);
++		gpiod_set_value(poodle_mute_r, 0);
+ 		snd_soc_dapm_enable_pin(dapm, "Headphone Jack");
+ 	} else {
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_L, 0);
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_R, 0);
++		gpiod_set_value(poodle_mute_l, 1);
++		gpiod_set_value(poodle_mute_r, 1);
+ 		snd_soc_dapm_disable_pin(dapm, "Headphone Jack");
+ 	}
+ 
+@@ -84,11 +76,8 @@ static int poodle_startup(struct snd_pcm_substream *substream)
+ /* we need to unmute the HP at shutdown as the mute burns power on poodle */
+ static void poodle_shutdown(struct snd_pcm_substream *substream)
+ {
+-	/* set = unmute headphone */
+-	locomo_gpio_write(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_L, 1);
+-	locomo_gpio_write(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_R, 1);
++	gpiod_set_value(poodle_mute_l, 0);
++	gpiod_set_value(poodle_mute_r, 0);
+ }
+ 
+ static int poodle_hw_params(struct snd_pcm_substream *substream,
+@@ -178,12 +167,7 @@ static int poodle_set_spk(struct snd_kcontrol *kcontrol,
+ static int poodle_amp_event(struct snd_soc_dapm_widget *w,
+ 	struct snd_kcontrol *k, int event)
+ {
+-	if (SND_SOC_DAPM_EVENT_ON(event))
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_AMP_ON, 0);
+-	else
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_AMP_ON, 1);
++	gpiod_set_value(poodle_amp_on, (SND_SOC_DAPM_EVENT_ON(event)));
+ 
+ 	return 0;
+ }
+@@ -268,13 +252,17 @@ static int poodle_probe(struct platform_device *pdev)
+ 	struct snd_soc_card *card = &poodle;
+ 	int ret;
+ 
+-	locomo_gpio_set_dir(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_AMP_ON, 0);
+-	/* should we mute HP at startup - burning power ?*/
+-	locomo_gpio_set_dir(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_L, 0);
+-	locomo_gpio_set_dir(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_R, 0);
++	poodle_mute_l = devm_gpiod_get(&pdev->dev, "mute-l", GPIOD_OUT_HIGH);
++	if (IS_ERR(poodle_mute_l))
++		return PTR_ERR(poodle_mute_l);
++
++	poodle_mute_r = devm_gpiod_get(&pdev->dev, "mute-r", GPIOD_OUT_HIGH);
++	if (IS_ERR(poodle_mute_r))
++		return PTR_ERR(poodle_mute_l);
++
++	poodle_amp_on = devm_gpiod_get(&pdev->dev, "amp-on", GPIOD_OUT_LOW);
++	if (IS_ERR(poodle_amp_on))
++		return PTR_ERR(poodle_amp_on);
+ 
+ 	card->dev = &pdev->dev;
+ 
 -- 
-2.3.4
+2.1.4
 

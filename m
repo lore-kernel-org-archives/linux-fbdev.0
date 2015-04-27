@@ -1,86 +1,198 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Wed, 29 Apr 2015 11:27:19 +0000
-Subject: Re: [PATCH v2 09/17] spi: add locomo SPI driver
-Message-Id: <20150429112719.GK22845@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ZocEfSc9YMy2wkfC"
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Mon, 27 Apr 2015 16:43:14 +0000
+Subject: [PATCH v2] ivtv: use arch_phys_wc_add() and require PAT disabled
+Message-Id: <1430152994-17051-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
- <1430178954-11138-10-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1430178954-11138-10-git-send-email-dbaryshkov@gmail.com>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: andy@silverblocksystems.net, awalls@md.metrocast.net, linux-media@vger.kernel.org
+Cc: luto@amacapital.net, mst@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, Stefan Bader <stefan.bader@canonical.com>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, toshi.kani@hp.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, ivtv-devel@ivtvdriver.org, xen-devel@lists.xensource.com
 
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
---ZocEfSc9YMy2wkfC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+We are burrying direct access to MTRR code support on
+x86 in order to take advantage of PAT. In the future we
+also want to make the default behaviour of ioremap_nocache()
+to use strong UC, use of mtrr_add() on those systems
+would make write-combining void.
 
-On Tue, Apr 28, 2015 at 02:55:46AM +0300, Dmitry Eremin-Solenikov wrote:
+In order to help both enable us to later make strong
+UC default and in order to phase out direct MTRR access
+code port the driver over to arch_phys_wc_add() and
+annotate that the device driver requires systems to
+boot with PAT disabled, with the nopat kernel parameter.
 
-> +static int locomospi_reg_open(struct locomospi_dev *spidev)
-> +{
+This is a worthy comprmise given that the hardware is
+really rare these days, and perhaps only some lost souls
+in some third world country are expected to be using this
+feature of the device driver.
 
-> +static int locomospi_reg_release(struct locomospi_dev *spidev)
-> +{
+Cc: Andy Walls <awalls@md.metrocast.net>
+Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: Stefan Bader <stefan.bader@canonical.com>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: konrad.wilk@oracle.com
+Cc: ville.syrjala@linux.intel.com
+Cc: david.vrabel@citrix.com
+Cc: jbeulich@suse.com
+Cc: toshi.kani@hp.com
+Cc: Roger Pau Monné <roger.pau@citrix.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: ivtv-devel@ivtvdriver.org
+Cc: linux-media@vger.kernel.org
+Cc: xen-devel@lists.xensource.com
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+---
 
-These are a bit weird - as far as I can tell they're just doing some
-init done on probe and release?  I think I'd expect to see them either
-inlined there or done as part of the PM operations too (including
-runtime ones).
+This v2 moves the PAT bail out error check on to ivtvfb_init()
+as per Andy's request. It also removes some comment about TODO
+items for PAT.
 
-> +	for (j = 0; j < wait; j++) {
-> +		regmap_read(spidev->regmap, LOCOMO_SPIST, &r);
-> +		if (r & LOCOMO_SPI_RFW)
-> +			break;
-> +	}
-> +	if (j == wait)
-> +		dev_err(&spi->dev, "rfw timeout\n");
+ drivers/media/pci/ivtv/Kconfig  |  3 +++
+ drivers/media/pci/ivtv/ivtvfb.c | 58 ++++++++++++++++-------------------------
+ 2 files changed, 26 insertions(+), 35 deletions(-)
 
-But we don't return an error if we time out?
+diff --git a/drivers/media/pci/ivtv/Kconfig b/drivers/media/pci/ivtv/Kconfig
+index dd6ee57e..b2a7f88 100644
+--- a/drivers/media/pci/ivtv/Kconfig
++++ b/drivers/media/pci/ivtv/Kconfig
+@@ -57,5 +57,8 @@ config VIDEO_FB_IVTV
+ 	  This is used in the Hauppauge PVR-350 card. There is a driver
+ 	  homepage at <http://www.ivtvdriver.org>.
+ 
++	  If you have this hardware you will need to boot with PAT disabled
++	  on your x86 systems, use the nopat kernel parameter.
++
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called ivtvfb.
+diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
+index 9ff1230..8761e3e 100644
+--- a/drivers/media/pci/ivtv/ivtvfb.c
++++ b/drivers/media/pci/ivtv/ivtvfb.c
+@@ -44,8 +44,8 @@
+ #include <linux/ivtvfb.h>
+ #include <linux/slab.h>
+ 
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
++#ifdef CONFIG_X86_64
++#include <asm/pat.h>
+ #endif
+ 
+ #include "ivtv-driver.h"
+@@ -155,12 +155,11 @@ struct osd_info {
+ 	/* Buffer size */
+ 	u32 video_buffer_size;
+ 
+-#ifdef CONFIG_MTRR
+ 	/* video_base rounded down as required by hardware MTRRs */
+ 	unsigned long fb_start_aligned_physaddr;
+ 	/* video_base rounded up as required by hardware MTRRs */
+ 	unsigned long fb_end_aligned_physaddr;
+-#endif
++	int wc_cookie;
+ 
+ 	/* Store the buffer offset */
+ 	int set_osd_coords_x;
+@@ -1099,6 +1098,8 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
+ static int ivtvfb_init_io(struct ivtv *itv)
+ {
+ 	struct osd_info *oi = itv->osd_info;
++	/* Find the largest power of two that maps the whole buffer */
++	int size_shift = 31;
+ 
+ 	mutex_lock(&itv->serialize_lock);
+ 	if (ivtv_init_on_first_open(itv)) {
+@@ -1132,29 +1133,16 @@ static int ivtvfb_init_io(struct ivtv *itv)
+ 			oi->video_pbase, oi->video_vbase,
+ 			oi->video_buffer_size / 1024);
+ 
+-#ifdef CONFIG_MTRR
+-	{
+-		/* Find the largest power of two that maps the whole buffer */
+-		int size_shift = 31;
+-
+-		while (!(oi->video_buffer_size & (1 << size_shift))) {
+-			size_shift--;
+-		}
+-		size_shift++;
+-		oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
+-		oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
+-		oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
+-		oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
+-		if (mtrr_add(oi->fb_start_aligned_physaddr,
+-			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr,
+-			     MTRR_TYPE_WRCOMB, 1) < 0) {
+-			IVTVFB_INFO("disabled mttr\n");
+-			oi->fb_start_aligned_physaddr = 0;
+-			oi->fb_end_aligned_physaddr = 0;
+-		}
+-	}
+-#endif
+-
++	while (!(oi->video_buffer_size & (1 << size_shift)))
++		size_shift--;
++	size_shift++;
++	oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
++	oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
++	oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
++	oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
++	oi->wc_cookie = arch_phys_wc_add(oi->fb_start_aligned_physaddr,
++					 oi->fb_end_aligned_physaddr -
++					 oi->fb_start_aligned_physaddr);
+ 	/* Blank the entire osd. */
+ 	memset_io(oi->video_vbase, 0, oi->video_buffer_size);
+ 
+@@ -1172,14 +1160,7 @@ static void ivtvfb_release_buffers (struct ivtv *itv)
+ 
+ 	/* Release pseudo palette */
+ 	kfree(oi->ivtvfb_info.pseudo_palette);
+-
+-#ifdef CONFIG_MTRR
+-	if (oi->fb_end_aligned_physaddr) {
+-		mtrr_del(-1, oi->fb_start_aligned_physaddr,
+-			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr);
+-	}
+-#endif
+-
++	arch_phys_wc_del(oi->wc_cookie);
+ 	kfree(oi);
+ 	itv->osd_info = NULL;
+ }
+@@ -1284,6 +1265,13 @@ static int __init ivtvfb_init(void)
+ 	int registered = 0;
+ 	int err;
+ 
++#ifdef CONFIG_X86_64
++	if (WARN(pat_enabled,
++		 "ivtvfb needs PAT disabled, boot with nopat kernel parameter\n")) {
++		return EINVAL;
++	}
++#endif
++
+ 	if (ivtvfb_card_id < -1 || ivtvfb_card_id >= IVTV_MAX_CARDS) {
+ 		printk(KERN_ERR "ivtvfb:  ivtvfb_card_id parameter is out of range (valid range: -1 - %d)\n",
+ 		     IVTV_MAX_CARDS - 1);
+-- 
+2.3.2.209.gd67f9d5.dirty
 
-> +static int locomo_spi_setup_transfer(struct spi_device *spi,
-> +		struct spi_transfer *t)
-> +{
-> +	struct locomospi_dev *spidev;
-> +	u32 hz = 0;
-> +
-> +	if (t)
-> +		hz = t->speed_hz;
-> +	if (!hz)
-> +		hz = spi->max_speed_hz;
-
-The core will set a speed on every transfer for you.
-
-> +	if (!tx && !rx && t->len)
-> +		return -EINVAL;
-
-Put this in the core if it's needed.
-
-> +static int locomo_spi_remove(struct platform_device *pdev)
-> +{
-> +	struct spi_master *master = platform_get_drvdata(pdev);
-> +	struct locomospi_dev *spidev = spi_master_get_devdata(master);
-> +
-> +	return locomospi_reg_release(spidev);
-
-We're doing this release before we free the master which is potentially
-racy - but do we even need to do it at all?
-
---ZocEfSc9YMy2wkfC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVQMAWAAoJECTWi3JdVIfQMFAH/3nUrvEBcxp8jyhAVn5jjqJu
-pplMhi3HD0iiwiHljAMoUDBtIyi/5kCOMOV9H5wR9A5sUbHf/7LXAPABZ3QwfZIq
-pK8OIRHvPpfTqsn2GESDUEXsxrs0QrAekLdCAEscyVbqrTihQVZebSBQGTSvFdxu
-r/CoSnAFP5lk8GAMI5l19FMqv7UKPRalLweTLdg64L5Q7zLHSe1n0PamnXyE110r
-dz8YwL3bD4PML52wBsZhwrYJRQArpP5fCr3HAqo2G+445NFstSptTT9CLsflcq9o
-V3vryHNdYxOY10ugsfdd/NOBhnucEuuEYiZ9IrtFQzhykmC6B/t+tcliLDT7I7U=
-=zqXc
------END PGP SIGNATURE-----
-
---ZocEfSc9YMy2wkfC--

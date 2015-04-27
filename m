@@ -1,207 +1,416 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:16:31 +0000
-Subject: [PATCH v3 10/17] video: fbdev: aty: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1429647398-16983-11-git-send-email-mcgrof@do-not-panic.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Mon, 27 Apr 2015 23:55:48 +0000
+Subject: [PATCH v2 11/17] ARM: sa1100: make collie use new locomo drivers
+Message-Id: <1430178954-11138-12-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cocci@systeme.lip6.fr
+To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Switch collie to new mfd-based locomo driver. Update platform data and
+add necessary spi, i2c and regulator devices.
 
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- drivers/video/fbdev/aty/aty128fb.c | 36 ++++++------------------------------
- 1 file changed, 6 insertions(+), 30 deletions(-)
+ arch/arm/mach-sa1100/Kconfig               |   1 -
+ arch/arm/mach-sa1100/collie.c              | 213 ++++++++++++++++++++++-------
+ arch/arm/mach-sa1100/include/mach/collie.h |  25 +++-
+ 3 files changed, 187 insertions(+), 52 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index 0156954..c42ce2f 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -80,10 +80,6 @@
- #include <asm/btext.h>
- #endif /* CONFIG_BOOTX_TEXT */
+diff --git a/arch/arm/mach-sa1100/Kconfig b/arch/arm/mach-sa1100/Kconfig
+index c6f6ed1..37af126 100644
+--- a/arch/arm/mach-sa1100/Kconfig
++++ b/arch/arm/mach-sa1100/Kconfig
+@@ -48,7 +48,6 @@ endchoice
+ config SA1100_COLLIE
+ 	bool "Sharp Zaurus SL5500"
+ 	# FIXME: select ARM_SA11x0_CPUFREQ
+-	select SHARP_LOCOMO
+ 	select SHARP_PARAM
+ 	select SHARP_SCOOP
+ 	help
+diff --git a/arch/arm/mach-sa1100/collie.c b/arch/arm/mach-sa1100/collie.c
+index 3cc2b71..b6dda7a 100644
+--- a/arch/arm/mach-sa1100/collie.c
++++ b/arch/arm/mach-sa1100/collie.c
+@@ -24,13 +24,21 @@
+ #include <linux/platform_data/sa11x0-serial.h>
+ #include <linux/platform_device.h>
+ #include <linux/mfd/ucb1x00.h>
++#include <linux/mfd/locomo.h>
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
+ #include <linux/timer.h>
+ #include <linux/gpio_keys.h>
+ #include <linux/input.h>
++#include <linux/i2c.h>
+ #include <linux/gpio.h>
+ #include <linux/power/gpio-charger.h>
++#include <linux/gpio/machine.h>
++#include <linux/iio/machine.h>
++#include <linux/mmc/host.h>
++#include <linux/regulator/fixed.h>
++#include <linux/regulator/machine.h>
++#include <linux/spi/mmc_spi.h>
  
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
+ #include <video/sa1100fb.h>
+ 
+@@ -47,7 +55,6 @@
+ 
+ #include <asm/hardware/scoop.h>
+ #include <asm/mach/sharpsl_param.h>
+-#include <asm/hardware/locomo.h>
+ #include <linux/platform_data/mfd-mcp-sa11x0.h>
+ #include <mach/irqs.h>
+ 
+@@ -151,36 +158,54 @@ static struct platform_device collie_power_device = {
+ 	.dev.platform_data	= &collie_power_data,
+ };
+ 
+-#ifdef CONFIG_SHARP_LOCOMO
+ /*
+  * low-level UART features.
+  */
+-struct platform_device collie_locomo_device;
++static struct gpio collie_uart_gpio[] = {
++	{ COLLIE_GPIO_CTS, GPIOF_IN, "CTS" },
++	{ COLLIE_GPIO_RTS, GPIOF_OUT_INIT_LOW, "RTS" },
++	{ COLLIE_GPIO_DTR, GPIOF_OUT_INIT_LOW, "DTR" },
++	{ COLLIE_GPIO_DSR, GPIOF_IN, "DSR" },
++};
++
++static bool collie_uart_gpio_ok;
+ 
+ static void collie_uart_set_mctrl(struct uart_port *port, u_int mctrl)
+ {
+-	if (mctrl & TIOCM_RTS)
+-		locomo_gpio_write(&collie_locomo_device.dev, LOCOMO_GPIO_RTS, 0);
+-	else
+-		locomo_gpio_write(&collie_locomo_device.dev, LOCOMO_GPIO_RTS, 1);
 -
- #include <video/aty128.h>
+-	if (mctrl & TIOCM_DTR)
+-		locomo_gpio_write(&collie_locomo_device.dev, LOCOMO_GPIO_DTR, 0);
+-	else
+-		locomo_gpio_write(&collie_locomo_device.dev, LOCOMO_GPIO_DTR, 1);
++	if (!collie_uart_gpio_ok) {
++		int rc = gpio_request_array(collie_uart_gpio,
++				ARRAY_SIZE(collie_uart_gpio));
++		if (rc)
++			pr_err("collie_uart_set_mctrl: gpio request %d\n", rc);
++		else
++			collie_uart_gpio_ok = true;
++	}
++
++	if (collie_uart_gpio_ok) {
++		gpio_set_value(COLLIE_GPIO_RTS, !(mctrl & TIOCM_RTS));
++		gpio_set_value(COLLIE_GPIO_DTR, !(mctrl & TIOCM_DTR));
++	}
+ }
  
- /* Debug flag */
-@@ -399,10 +395,7 @@ static int default_cmode = CMODE_8;
+ static u_int collie_uart_get_mctrl(struct uart_port *port)
+ {
+ 	int ret = TIOCM_CD;
+-	unsigned int r;
  
- static int default_crt_on = 0;
- static int default_lcd_on = 1;
+-	r = locomo_gpio_read_output(&collie_locomo_device.dev, LOCOMO_GPIO_CTS & LOCOMO_GPIO_DSR);
+-	if (r = -ENODEV)
++	if (!collie_uart_gpio_ok) {
++		int rc = gpio_request_array(collie_uart_gpio,
++				ARRAY_SIZE(collie_uart_gpio));
++		if (rc)
++			pr_err("collie_uart_get_mctrl: gpio request %d\n", rc);
++		else
++			collie_uart_gpio_ok = true;
++	}
++
++	if (!collie_uart_gpio_ok)
+ 		return ret;
+-	if (r & LOCOMO_GPIO_CTS)
++
++	if (gpio_get_value(COLLIE_GPIO_CTS))
+ 		ret |= TIOCM_CTS;
+-	if (r & LOCOMO_GPIO_DSR)
++	if (gpio_get_value(COLLIE_GPIO_DSR))
+ 		ret |= TIOCM_DSR;
+ 
+ 	return ret;
+@@ -191,33 +216,35 @@ static struct sa1100_port_fns collie_port_fns __initdata = {
+ 	.get_mctrl	= collie_uart_get_mctrl,
+ };
+ 
+-static int collie_uart_probe(struct locomo_dev *dev)
+-{
+-	return 0;
+-}
 -
--#ifdef CONFIG_MTRR
- static bool mtrr = true;
--#endif
+-static int collie_uart_remove(struct locomo_dev *dev)
+-{
+-	return 0;
+-}
++static struct regulator_consumer_supply collie_amp_on_consumer_supplies[] = {
++	REGULATOR_SUPPLY("VCC", "1-004e"),
++};
  
- #ifdef CONFIG_FB_ATY128_BACKLIGHT
- #ifdef CONFIG_PMAC_BACKLIGHT
-@@ -456,9 +449,7 @@ struct aty128fb_par {
- 	u32 vram_size;                      /* onboard video ram   */
- 	int chip_gen;
- 	const struct aty128_meminfo *mem;   /* onboard mem info    */
--#ifdef CONFIG_MTRR
--	struct { int vram; int vram_valid; } mtrr;
--#endif
-+	int wc_cookie;
- 	int blitter_may_be_busy;
- 	int fifo_slots;                 /* free slots in FIFO (64 max) */
+-static struct locomo_driver collie_uart_driver = {
+-	.drv = {
+-		.name = "collie_uart",
++static struct regulator_init_data collie_amp_on_init_data = {
++	.constraints	= {
++		.name	= "AMP_ON",
++		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
+ 	},
+-	.devid	= LOCOMO_DEVID_UART,
+-	.probe	= collie_uart_probe,
+-	.remove	= collie_uart_remove,
++	.consumer_supplies = collie_amp_on_consumer_supplies,
++	.num_consumer_supplies = ARRAY_SIZE(collie_amp_on_consumer_supplies),
+ };
  
-@@ -1725,12 +1716,10 @@ static int aty128fb_setup(char *options)
+-static int __init collie_uart_init(void)
+-{
+-	return locomo_driver_register(&collie_uart_driver);
+-}
+-device_initcall(collie_uart_init);
+-
+-#endif
++static struct fixed_voltage_config collie_amp_on_data = {
++	.supply_name	= "amp_on",
++	.microvolts	= 3300000,
++	.gpio		= COLLIE_GPIO_AMP2_ON,
++	.startup_delay	= 5,
++	.enable_high	= 1,
++	.init_data	= &collie_amp_on_init_data,
++};
+ 
++static struct platform_device collie_amp_on_device = {
++	.name		= "reg-fixed-voltage",
++	.id		= -1,
++	.dev = {
++		.platform_data	= &collie_amp_on_data,
++	},
++};
+ 
+ static struct resource locomo_resources[] = {
+ 	[0] = DEFINE_RES_MEM(0x40000000, SZ_8K),
+@@ -225,14 +252,15 @@ static struct resource locomo_resources[] = {
+ };
+ 
+ static struct locomo_platform_data locomo_info = {
+-	.irq_base	= IRQ_BOARD_START,
++	.gpio_base = COLLIE_LOCOMO_GPIO_BASE,
++	.comadj	          = 128,
+ };
+ 
+-struct platform_device collie_locomo_device = {
++static struct platform_device collie_locomo_device = {
+ 	.name		= "locomo",
+ 	.id		= 0,
+ 	.dev		= {
+-		.platform_data	= &locomo_info,
++		.platform_data  = &locomo_info,
+ 	},
+ 	.num_resources	= ARRAY_SIZE(locomo_resources),
+ 	.resource	= locomo_resources,
+@@ -270,7 +298,55 @@ static struct platform_device collie_gpio_keys_device = {
+ 	},
+ };
+ 
++static int collie_mmc_init(struct device *dev,
++		irqreturn_t (*isr)(int, void*), void *mmc)
++{
++	int ret;
++
++	ret = gpio_request(COLLIE_GPIO_CARD_POWER, "MMC power");
++	if (!ret)
++		ret = gpio_direction_output(COLLIE_GPIO_CARD_POWER, 0);
++	if (ret)
++		gpio_free(COLLIE_GPIO_CARD_POWER);
++	return ret;
++}
++
++static void collie_mmc_exit(struct device *dev, void *mmc)
++{
++	gpio_free(COLLIE_GPIO_CARD_POWER);
++}
++
++static void collie_mmc_setpower(struct device *dev, unsigned int mask)
++{
++	gpio_set_value(COLLIE_GPIO_CARD_POWER, !!mask);
++}
++
++static struct mmc_spi_platform_data collie_mmc_data = {
++	.init		= collie_mmc_init,
++	.exit		= collie_mmc_exit,
++	.setpower	= collie_mmc_setpower,
++	.detect_delay	= 200,
++	.powerup_msecs  = 200,
++	.ocr_mask	= MMC_VDD_32_33 | MMC_VDD_33_34,
++	.flags		= MMC_SPI_USE_CD_GPIO | MMC_SPI_USE_RO_GPIO,
++	.cd_gpio	= COLLIE_GPIO_CARD_DETECT,
++	.ro_gpio	= COLLIE_GPIO_CARD_RO,
++	.caps2		= MMC_CAP2_RO_ACTIVE_HIGH,
++};
++
++static struct spi_board_info collie_spi_board_info[] __initdata = {
++	{
++		.modalias	= "mmc_spi",
++		.platform_data	= &collie_mmc_data,
++		.max_speed_hz	= 25000000,
++		.bus_num	= 0,
++		.chip_select	= 0,
++		.mode		= SPI_MODE_0,
++	},
++};
++
+ static struct platform_device *devices[] __initdata = {
++	&collie_amp_on_device,
+ 	&collie_locomo_device,
+ 	&colliescoop_device,
+ 	&collie_power_device,
+@@ -347,10 +423,39 @@ static struct sa1100fb_mach_info collie_lcd_info = {
+ 
+ 	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
+ 	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
++};
+ 
+-#ifdef CONFIG_BACKLIGHT_LOCOMO
+-	.lcd_power	= locomolcd_power
+-#endif
++static struct iio_map locomo_iio_map[] = {
++	{
++		.consumer_dev_name = "locomo-lcd.0",
++		.consumer_channel = "comadj",
++		.adc_channel_label = "CH0",
++	},
++	{ }
++};
++
++static struct i2c_board_info locomo_i2c_devs[] __initdata = {
++	{
++		I2C_BOARD_INFO("m62332", 0x4e),
++		.platform_data = locomo_iio_map,
++	},
++};
++
++static struct gpiod_lookup_table collie_bl_gpios_table = {
++	.dev_id = "locomo-backlight.0",
++	.table = {
++		GPIO_LOOKUP("locomo-gpio", 9, "flvr", GPIO_ACTIVE_HIGH),
++		{ },
++	},
++}, collie_lcd_gpios_table = {
++	.dev_id = "locomo-lcd.0",
++	.table = {
++		GPIO_LOOKUP("locomo-gpio", 4, "VSHA", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("locomo-gpio", 5, "VSHD", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("locomo-gpio", 6, "Vee", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("locomo-gpio", 7, "MOD", GPIO_ACTIVE_HIGH),
++		{ },
++	},
+ };
+ 
+ static void __init collie_init(void)
+@@ -381,11 +486,19 @@ static void __init collie_init(void)
+ 
+ 	GPSR |= _COLLIE_GPIO_UCB1x00_RESET;
+ 
++	sharpsl_save_param();
++
+ 	sa11x0_ppc_configure_mcp();
+ 
+ 
+ 	platform_scoop_config = &collie_pcmcia_config;
+ 
++	if (sharpsl_param.comadj != -1)
++		locomo_info.comadj = sharpsl_param.comadj;
++
++	gpiod_add_lookup_table(&collie_bl_gpios_table);
++	gpiod_add_lookup_table(&collie_lcd_gpios_table);
++
+ 	ret = platform_add_devices(devices, ARRAY_SIZE(devices));
+ 	if (ret) {
+ 		printk(KERN_WARNING "collie: Unable to register LoCoMo device\n");
+@@ -397,7 +510,13 @@ static void __init collie_init(void)
+ 	sa11x0_register_mcp(&collie_mcp_data);
+ 	sa11x0_register_irda(&collie_ir_data);
+ 
+-	sharpsl_save_param();
++	i2c_register_board_info(1,
++			locomo_i2c_devs, ARRAY_SIZE(locomo_i2c_devs));
++
++	spi_register_board_info(collie_spi_board_info,
++			ARRAY_SIZE(collie_spi_board_info));
++
++	regulator_has_full_constraints();
+ }
+ 
+ static struct map_desc collie_io_desc[] __initdata = {
+@@ -419,9 +538,7 @@ static void __init collie_map_io(void)
+ 	sa1100_map_io();
+ 	iotable_init(collie_io_desc, ARRAY_SIZE(collie_io_desc));
+ 
+-#ifdef CONFIG_SHARP_LOCOMO
+ 	sa1100_register_uart_fns(&collie_port_fns);
+-#endif
+ 	sa1100_register_uart(0, 3);
+ 	sa1100_register_uart(1, 1);
+ }
+diff --git a/arch/arm/mach-sa1100/include/mach/collie.h b/arch/arm/mach-sa1100/include/mach/collie.h
+index b478ca1..a66319a 100644
+--- a/arch/arm/mach-sa1100/include/mach/collie.h
++++ b/arch/arm/mach-sa1100/include/mach/collie.h
+@@ -24,12 +24,12 @@ extern void locomolcd_power(int on);
+ #define COLLIE_SCP_MUTE_L	SCOOP_GPCR_PA14
+ #define COLLIE_SCP_MUTE_R	SCOOP_GPCR_PA15
+ #define COLLIE_SCP_5VON		SCOOP_GPCR_PA16
+-#define COLLIE_SCP_AMP_ON	SCOOP_GPCR_PA17
++#define COLLIE_GPIO_AMP2_ON	(COLLIE_SCOOP_GPIO_BASE + 6)
+ #define COLLIE_GPIO_VPEN	(COLLIE_SCOOP_GPIO_BASE + 7)
+ #define COLLIE_SCP_LB_VOL_CHG	SCOOP_GPCR_PA19
+ 
+ #define COLLIE_SCOOP_IO_DIR	(COLLIE_SCP_MUTE_L | COLLIE_SCP_MUTE_R | \
+-				COLLIE_SCP_5VON | COLLIE_SCP_AMP_ON | \
++				COLLIE_SCP_5VON | \
+ 				COLLIE_SCP_LB_VOL_CHG)
+ #define COLLIE_SCOOP_IO_OUT	(COLLIE_SCP_MUTE_L | COLLIE_SCP_MUTE_R)
+ 
+@@ -81,7 +81,7 @@ extern void locomolcd_power(int on);
+ #define COLLIE_TC35143_GPIO_TBL_CHK     UCB_IO_1
+ #define COLLIE_TC35143_GPIO_VPEN_ON     UCB_IO_2
+ #define COLLIE_GPIO_IR_ON		(COLLIE_TC35143_GPIO_BASE + 3)
+-#define COLLIE_TC35143_GPIO_AMP_ON      UCB_IO_4
++#define COLLIE_GPIO_AMP1_ON		(COLLIE_TC35143_GPIO_BASE + 4)
+ #define COLLIE_TC35143_GPIO_VERSION1    UCB_IO_5
+ #define COLLIE_TC35143_GPIO_FS8KLPF     UCB_IO_5
+ #define COLLIE_TC35143_GPIO_BUZZER_BIAS UCB_IO_6
+@@ -92,4 +92,23 @@ extern void locomolcd_power(int on);
+ #define COLLIE_TC35143_GPIO_OUT		(UCB_IO_1 | UCB_IO_3 | UCB_IO_4 \
+ 						| UCB_IO_6)
+ 
++/* GPIOs on LoCoMo GA */
++#define COLLIE_LOCOMO_GPIO_BASE		(GPIO_MAX + 23)
++#define COLLIE_GPIO_RTS			(COLLIE_LOCOMO_GPIO_BASE + 0)
++#define COLLIE_GPIO_CTS			(COLLIE_LOCOMO_GPIO_BASE + 1)
++#define COLLIE_GPIO_DSR			(COLLIE_LOCOMO_GPIO_BASE + 2)
++#define COLLIE_GPIO_DTR			(COLLIE_LOCOMO_GPIO_BASE + 3)
++#define COLLIE_GPIO_LCD_VSHA_ON		(COLLIE_LOCOMO_GPIO_BASE + 4)
++#define COLLIE_GPIO_LCD_VSHD_ON		(COLLIE_LOCOMO_GPIO_BASE + 5)
++#define COLLIE_GPIO_LCD_VEE_ON		(COLLIE_LOCOMO_GPIO_BASE + 6)
++#define COLLIE_GPIO_LCD_MOD		(COLLIE_LOCOMO_GPIO_BASE + 7)
++#define COLLIE_LOCOMO_GPIO_DAC_ON	LOCOMO_GPIO(8)
++#define COLLIE_GPIO_FL_VR		(COLLIE_LOCOMO_GPIO_BASE + 9)
++#define COLLIE_LOCOMO_GPIO_DAC_SDATA	LOCOMO_GPIO(10)
++#define COLLIE_LOCOMO_GPIO_DAC_SCK	LOCOMO_GPIO(11)
++#define COLLIE_LOCOMO_GPIO_DAC_SLOAD	LOCOMO_GPIO(12)
++#define COLLIE_GPIO_CARD_DETECT		(COLLIE_LOCOMO_GPIO_BASE + 13)
++#define COLLIE_GPIO_CARD_RO		(COLLIE_LOCOMO_GPIO_BASE + 14)
++#define COLLIE_GPIO_CARD_POWER		(COLLIE_LOCOMO_GPIO_BASE + 15)
++
  #endif
- 			continue;
- 		}
--#ifdef CONFIG_MTRR
- 		if(!strncmp(this_opt, "nomtrr", 6)) {
- 			mtrr = 0;
- 			continue;
- 		}
--#endif
- #ifdef CONFIG_PPC_PMAC
- 		/* vmode and cmode deprecated */
- 		if (!strncmp(this_opt, "vmode:", 6)) {
-@@ -2133,7 +2122,7 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	par->vram_size = aty_ld_le32(CNFG_MEMSIZE) & 0x03FFFFFF;
- 
- 	/* Virtualize the framebuffer */
--	info->screen_base = ioremap(fb_addr, par->vram_size);
-+	info->screen_base = ioremap_wc(fb_addr, par->vram_size);
- 	if (!info->screen_base)
- 		goto err_unmap_out;
- 
-@@ -2170,15 +2159,9 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (!aty128_init(pdev, ent))
- 		goto err_out;
- 
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr.vram = mtrr_add(info->fix.smem_start,
--				par->vram_size, MTRR_TYPE_WRCOMB, 1);
--		par->mtrr.vram_valid = 1;
--		/* let there be speed */
--		printk(KERN_INFO "aty128fb: Rage128 MTRR set to ON\n");
--	}
--#endif /* CONFIG_MTRR */
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  par->vram_size);
- 	return 0;
- 
- err_out:
-@@ -2212,11 +2195,7 @@ static void aty128_remove(struct pci_dev *pdev)
- 	aty128_bl_exit(info->bl_dev);
- #endif
- 
--#ifdef CONFIG_MTRR
--	if (par->mtrr.vram_valid)
--		mtrr_del(par->mtrr.vram, info->fix.smem_start,
--			 par->vram_size);
--#endif /* CONFIG_MTRR */
-+	arch_phys_wc_del(par->wc_cookie);
- 	iounmap(par->regbase);
- 	iounmap(info->screen_base);
- 
-@@ -2625,8 +2604,5 @@ MODULE_DESCRIPTION("FBDev driver for ATI Rage128 / Pro cards");
- MODULE_LICENSE("GPL");
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
--#ifdef CONFIG_MTRR
- module_param_named(nomtrr, mtrr, invbool, 0);
- MODULE_PARM_DESC(nomtrr, "bool: Disable MTRR support (0 or 1=disabled) (default=0)");
--#endif
--
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.1.4
 

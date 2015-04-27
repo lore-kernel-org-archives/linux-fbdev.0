@@ -1,85 +1,429 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Fri, 03 Apr 2015 01:08:59 +0000
-Subject: Re: [PATCH v1 02/47] x86: mtrr: generalize run time disabling of MTRR
-Message-Id: <20150403010859.GB5622@wotan.suse.de>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Mon, 27 Apr 2015 23:55:46 +0000
+Subject: [PATCH v2 09/17] spi: add locomo SPI driver
+Message-Id: <1430178954-11138-10-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1426893517-2511-1-git-send-email-mcgrof@do-not-panic.com>
- <1426893517-2511-3-git-send-email-mcgrof@do-not-panic.com>
- <1427488817.31093.54.camel@misato.fc.hp.com>
- <20150327235630.GR5622@wotan.suse.de>
- <20150402214912.GZ5622@wotan.suse.de>
- <1428018736.31093.102.camel@misato.fc.hp.com>
-In-Reply-To: <1428018736.31093.102.camel@misato.fc.hp.com>
+References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Toshi Kani <toshi.kani@hp.com>
-Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, luto@amacapital.net, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, jgross@suse.com, JBeulich@suse.com, bp@suse.de, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com, airlied@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, xen-devel@lists.xenproject.org, Ingo Molnar <mingo@elte.hu>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Hansen <dave.hansen@linux.intel.com>, Stefan Bader <stefan.bader@canonical.com>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, bhelgaas@google.com, Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>, xen-devel@lists.xensource.com
+To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-On Thu, Apr 02, 2015 at 05:52:16PM -0600, Toshi Kani wrote:
-> On Thu, 2015-04-02 at 23:49 +0200, Luis R. Rodriguez wrote:
-> > On Sat, Mar 28, 2015 at 12:56:30AM +0100, Luis R. Rodriguez wrote:
-> > > On Fri, Mar 27, 2015 at 02:40:17PM -0600, Toshi Kani wrote:
-> > > > On Fri, 2015-03-20 at 16:17 -0700, Luis R. Rodriguez wrote:
-> > > >  :
-> > > > > @@ -734,6 +742,7 @@ void __init mtrr_bp_init(void)
-> > > > >  	}
-> > > > >  
-> > > > >  	if (mtrr_if) {
-> > > > > +		mtrr_enabled = true;
-> > > > >  		set_num_var_ranges();
-> > > > >  		init_table();
-> > > > >  		if (use_intel()) {
-> > > >                         get_mtrr_state();
-> > > > 
-> > > > After setting mtrr_enabled to true, get_mtrr_state() reads
-> > > > MSR_MTRRdefType and sets 'mtrr_state.enabled', which also indicates if
-> > > > MTRRs are enabled or not on the system.  So, potentially, we could have
-> > > > a case that mtrr_enabled is set to true, but mtrr_state.enabled is set
-> > > > to disabled when MTRRs are disabled by BIOS.
-> > > 
-> > > Thanks for the review, in this case then we should update mtrr_enabled to false.
-> > > 
-> > > > ps.
-> > > > I recently cleaned up this part of the MTRR code in the patch below,
-> > > > which is currently available in the -mm & -next trees.
-> > > > https://lkml.org/lkml/2015/3/24/1063
-> > > 
-> > > Great I will rebase and work with that and try to address this
-> > > consideration you have raised.
-> > 
-> > OK I'll mesh in this change as well in my next respin:
-> > 
-> > diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-> > index a83f27a..ecf7cb9 100644
-> > --- a/arch/x86/kernel/cpu/mtrr/generic.c
-> > +++ b/arch/x86/kernel/cpu/mtrr/generic.c
-> > @@ -438,7 +438,7 @@ static void __init print_mtrr_state(void)
-> >  }
-> >  
-> >  /* Grab all of the MTRR state for this CPU into *state */
-> > -void __init get_mtrr_state(void)
-> > +bool __init get_mtrr_state(void)
-> >  {
-> >  	struct mtrr_var_range *vrs;
-> >  	unsigned long flags;
-> > @@ -482,6 +482,8 @@ void __init get_mtrr_state(void)
-> >  
-> >  	post_set();
-> >  	local_irq_restore(flags);
-> > +
-> > +	return !!mtrr_state.enabled;
-> 
-> This should be:
-> 	return mtrr_state.enabled & MTRR_STATE_MTRR_ENABLED;
-> 
-> because the MTRR_STATE_MTRR_FIXED_ENABLED flag is ignored when the
-> MTRR_STATE_MTRR_ENABLED flag is clear.
+LoCoMo chip has a built-in simple SPI controller. On Sharp SL-5500 PDDAs
+it is connected to external MMC slot.
 
-Thanks, I've used
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ drivers/spi/Kconfig      |  10 ++
+ drivers/spi/Makefile     |   1 +
+ drivers/spi/spi-locomo.c | 363 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 374 insertions(+)
+ create mode 100644 drivers/spi/spi-locomo.c
 
-	return !!(mtrr_state.enabled & MTRR_STATE_MTRR_ENABLED);
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 198f96b..c9e3176 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -258,6 +258,16 @@ config SPI_LM70_LLP
+ 	  which interfaces to an LM70 temperature sensor using
+ 	  a parallel port.
+ 
++config SPI_LOCOMO
++	tristate "Locomo SPI master"
++	depends on MFD_LOCOMO
++	help
++	  This enables using the SPI controller as present in the LoCoMo
++	  chips. It is probably only useful on the Sharp SL-5x00 PDA family.
++
++	  On SL-5500 and SL-5000 devices this controller is used for
++	  MMC/SD cards.
++
+ config SPI_MPC52xx
+ 	tristate "Freescale MPC52xx SPI (non-PSC) controller support"
+ 	depends on PPC_MPC52xx
+diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
+index d8cbf65..623c463 100644
+--- a/drivers/spi/Makefile
++++ b/drivers/spi/Makefile
+@@ -44,6 +44,7 @@ obj-$(CONFIG_SPI_GPIO)			+= spi-gpio.o
+ obj-$(CONFIG_SPI_IMG_SPFI)		+= spi-img-spfi.o
+ obj-$(CONFIG_SPI_IMX)			+= spi-imx.o
+ obj-$(CONFIG_SPI_LM70_LLP)		+= spi-lm70llp.o
++obj-$(CONFIG_SPI_LOCOMO)		+= spi-locomo.o
+ obj-$(CONFIG_SPI_MESON_SPIFC)		+= spi-meson-spifc.o
+ obj-$(CONFIG_SPI_MPC512x_PSC)		+= spi-mpc512x-psc.o
+ obj-$(CONFIG_SPI_MPC52xx_PSC)		+= spi-mpc52xx-psc.o
+diff --git a/drivers/spi/spi-locomo.c b/drivers/spi/spi-locomo.c
+new file mode 100644
+index 0000000..71b36fd
+--- /dev/null
++++ b/drivers/spi/spi-locomo.c
+@@ -0,0 +1,363 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++#include <linux/delay.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/regmap.h>
++#include <linux/spi/spi.h>
++#include <linux/mfd/locomo.h>
++
++struct locomospi_dev {
++	struct regmap *regmap;
++
++	int clock_base;
++	int clock_div;
++	unsigned nsecs;
++
++	unsigned int save_ct;
++	unsigned int save_md;
++};
++
++static int locomospi_reg_open(struct locomospi_dev *spidev)
++{
++	regmap_write(spidev->regmap, LOCOMO_SPIMD,
++			LOCOMO_SPIMD_MSB1ST | LOCOMO_SPIMD_DOSTAT |
++			LOCOMO_SPIMD_RCPOL | LOCOMO_SPIMD_TCPOL |
++			(spidev->clock_base << 3) | spidev->clock_div);
++
++	regmap_update_bits(spidev->regmap, LOCOMO_SPIMD,
++			LOCOMO_SPIMD_XON,
++			LOCOMO_SPIMD_XON);
++	regmap_update_bits(spidev->regmap, LOCOMO_SPIMD,
++			LOCOMO_SPIMD_XEN,
++			LOCOMO_SPIMD_XEN);
++
++	regmap_write(spidev->regmap, LOCOMO_SPICT, LOCOMO_SPICT_CS);
++	regmap_update_bits(spidev->regmap, LOCOMO_SPICT,
++			LOCOMO_SPICT_CEN | LOCOMO_SPICT_RXUEN |
++				LOCOMO_SPICT_ALIGNEN,
++			LOCOMO_SPICT_CEN | LOCOMO_SPICT_RXUEN |
++				LOCOMO_SPICT_ALIGNEN);
++
++	usleep_range(200, 300);
++
++	regmap_update_bits(spidev->regmap, LOCOMO_SPICT, LOCOMO_SPICT_CS, 0);
++
++	return 0;
++}
++
++static int locomospi_reg_release(struct locomospi_dev *spidev)
++{
++	regmap_update_bits(spidev->regmap, LOCOMO_SPICT, LOCOMO_SPICT_CEN, 0);
++	regmap_update_bits(spidev->regmap, LOCOMO_SPIMD, LOCOMO_SPIMD_XEN, 0);
++	regmap_update_bits(spidev->regmap, LOCOMO_SPIMD, LOCOMO_SPIMD_XON, 0);
++	regmap_update_bits(spidev->regmap, LOCOMO_SPICT,
++			LOCOMO_SPIMD_XEN,
++			LOCOMO_SPIMD_XEN);
++
++	return 0;
++}
++
++
++static void locomospi_chipselect(struct spi_device *spi, bool enable)
++{
++	struct locomospi_dev *spidev;
++
++	dev_dbg(&spi->dev, "SPI cs: %s\n", enable ? "enable" : "disable");
++
++	spidev = spi_master_get_devdata(spi->master);
++
++	regmap_update_bits(spidev->regmap, LOCOMO_SPICT, LOCOMO_SPICT_CS,
++			enable ? LOCOMO_SPICT_CS : 0);
++}
++
++static u32 locomospi_txrx_word(struct spi_device *spi,
++		unsigned nsecs,
++		u32 word)
++{
++	struct locomospi_dev *spidev;
++	int wait;
++	int j;
++	unsigned int rx;
++	unsigned int r;
++
++	spidev = spi_master_get_devdata(spi->master);
++
++	if (spidev->clock_div = DIV_64)
++		wait = 0x10000;
++	else
++		wait = 8;
++
++	for (j = 0; j < wait; j++) {
++		regmap_read(spidev->regmap, LOCOMO_SPIST, &r);
++		if (r & LOCOMO_SPI_RFW)
++			break;
++	}
++	if (j = wait)
++		dev_err(&spi->dev, "rfw timeout\n");
++
++	regmap_write(spidev->regmap, LOCOMO_SPITD, word);
++	ndelay(nsecs);
++
++	for (j = 0; j < wait; j++) {
++		regmap_read(spidev->regmap, LOCOMO_SPIST, &r);
++		if (r & LOCOMO_SPI_RFR)
++			break;
++	}
++	if (j = wait)
++		dev_err(&spi->dev, "rfr timeout\n");
++
++	regmap_read(spidev->regmap, LOCOMO_SPIRD, &rx);
++	ndelay(nsecs);
++
++	dev_dbg(&spi->dev, "SPI txrx: %02x/%02x\n", word, rx);
++
++	return rx;
++}
++
++static void locomo_spi_set_speed(struct locomospi_dev *spidev, u32 hz)
++{
++	spidev->nsecs = (1000000000/2) / hz;
++
++	if (hz >= 24576000) {
++		spidev->clock_base = CLOCK_25MHZ;
++		spidev->clock_div = DIV_1;
++	} else if (hz >= 22579200) {
++		spidev->clock_base = CLOCK_22MHZ;
++		spidev->clock_div = DIV_1;
++	} else if (hz >= 18432000) {
++		spidev->clock_base = CLOCK_18MHZ;
++		spidev->clock_div = DIV_1;
++	} else if (hz >= 12288000) {
++		spidev->clock_base = CLOCK_25MHZ;
++		spidev->clock_div = DIV_2;
++	} else if (hz >= 11289600) {
++		spidev->clock_base = CLOCK_22MHZ;
++		spidev->clock_div = DIV_2;
++	} else if (hz >= 9216000) {
++		spidev->clock_base = CLOCK_18MHZ;
++		spidev->clock_div = DIV_2;
++	} else if (hz >= 6144000) {
++		spidev->clock_base = CLOCK_25MHZ;
++		spidev->clock_div = DIV_4;
++	} else if (hz >= 5644800) {
++		spidev->clock_base = CLOCK_22MHZ;
++		spidev->clock_div = DIV_4;
++	} else if (hz >= 4608000) {
++		spidev->clock_base = CLOCK_18MHZ;
++		spidev->clock_div = DIV_4;
++	} else if (hz >= 3072000) {
++		spidev->clock_base = CLOCK_25MHZ;
++		spidev->clock_div = DIV_8;
++	} else if (hz >= 2822400) {
++		spidev->clock_base = CLOCK_22MHZ;
++		spidev->clock_div = DIV_8;
++	} else if (hz >= 2304000) {
++		spidev->clock_base = CLOCK_18MHZ;
++		spidev->clock_div = DIV_8;
++	} else if (hz >= 384000) {
++		spidev->clock_base = CLOCK_25MHZ;
++		spidev->clock_div = DIV_64;
++	} else if (hz >= 352800) {
++		spidev->clock_base = CLOCK_22MHZ;
++		spidev->clock_div = DIV_64;
++	} else {		/* set to 288 Khz */
++		spidev->clock_base = CLOCK_18MHZ;
++		spidev->clock_div = DIV_64;
++	}
++
++	regmap_update_bits(spidev->regmap, LOCOMO_SPIMD,
++			LOCOMO_SPIMD_XSEL | LOCOMO_SPIMD_CLKSEL |
++				LOCOMO_SPIMD_XEN,
++			0);
++	regmap_update_bits(spidev->regmap, LOCOMO_SPIMD,
++			LOCOMO_SPIMD_XSEL | LOCOMO_SPIMD_CLKSEL |
++				LOCOMO_SPIMD_XEN,
++			spidev->clock_div | (spidev->clock_base << 3) |
++				LOCOMO_SPIMD_XEN);
++
++	usleep_range(300, 400);
++}
++
++static int locomo_spi_setup_transfer(struct spi_device *spi,
++		struct spi_transfer *t)
++{
++	struct locomospi_dev *spidev;
++	u32 hz = 0;
++
++	if (t)
++		hz = t->speed_hz;
++	if (!hz)
++		hz = spi->max_speed_hz;
++
++	spidev = spi_master_get_devdata(spi->master);
++
++	regmap_update_bits(spidev->regmap, LOCOMO_SPIMD,
++			LOCOMO_SPIMD_XON,
++			hz ? LOCOMO_SPIMD_XON : 0);
++
++	if (hz != 0)
++		locomo_spi_set_speed(spidev, hz);
++
++	return 0;
++}
++
++static int locomospi_transfer_one(struct spi_master *master,
++		struct spi_device *spi,
++		struct spi_transfer *t)
++{
++	struct locomospi_dev *spidev = spi_master_get_devdata(spi->master);
++	int rc;
++	unsigned count;
++	const u8 *tx = t->tx_buf;
++	u8 *rx = t->rx_buf;
++
++	if (!tx && !rx && t->len)
++		return -EINVAL;
++
++	rc = locomo_spi_setup_transfer(spi, t);
++	if (rc < 0)
++		return rc;
++
++	if (!t->len)
++		return 0;
++
++	for (count = t->len; likely(count > 0); count--) {
++		u8 word = 0;
++
++		if (tx)
++			word = *tx++;
++		word = locomospi_txrx_word(spi, spidev->nsecs, word);
++
++		if (rx)
++			*rx++ = word;
++	}
++
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEP
++static int locomo_spi_suspend(struct device *dev)
++{
++	struct spi_master *master = dev_get_drvdata(dev);
++	struct locomospi_dev *spidev = spi_master_get_devdata(master);
++	int ret;
++
++	/* Stop the queue running */
++	ret = spi_master_suspend(master);
++	if (ret) {
++		dev_warn(dev, "cannot suspend master\n");
++		return ret;
++	}
++
++	regmap_read(spidev->regmap, LOCOMO_SPICT, &spidev->save_ct);
++	regmap_write(spidev->regmap, LOCOMO_SPICT, LOCOMO_SPICT_CS);
++	regmap_read(spidev->regmap, LOCOMO_SPIMD, &spidev->save_ct);
++	regmap_write(spidev->regmap, LOCOMO_SPIMD, 0x3c14);
++
++
++	return 0;
++}
++
++static int locomo_spi_resume(struct device *dev)
++{
++	struct spi_master *master = dev_get_drvdata(dev);
++	struct locomospi_dev *spidev = spi_master_get_devdata(master);
++	int ret;
++
++	regmap_write(spidev->regmap, LOCOMO_SPICT, spidev->save_ct);
++	regmap_write(spidev->regmap, LOCOMO_SPIMD, spidev->save_md);
++
++	/* Start the queue running */
++	ret = spi_master_resume(master);
++	if (ret)
++		dev_err(dev, "problem starting queue (%d)\n", ret);
++
++	return ret;
++}
++
++static SIMPLE_DEV_PM_OPS(locomo_spi_pm_ops,
++		locomo_spi_suspend, locomo_spi_resume);
++
++#define LOCOMO_SPI_PM_OPS	(&locomo_spi_pm_ops)
++#else
++#define LOCOMO_SPI_PM_OPS	NULL
++#endif
++
++static int locomo_spi_probe(struct platform_device *pdev)
++{
++	struct spi_master *master;
++	struct locomospi_dev *spidev;
++	int ret = -ENODEV;
++
++	master = spi_alloc_master(&pdev->dev, sizeof(struct locomospi_dev));
++	if (!master)
++		return -ENOMEM;
++
++	master->bus_num = 0;
++	master->mode_bits = SPI_CPOL | SPI_CPHA | SPI_CS_HIGH;
++	master->bits_per_word_mask = SPI_BPW_RANGE_MASK(8, 8);
++	master->max_speed_hz = 24576000;
++	master->num_chipselect = 1;
++	master->set_cs = locomospi_chipselect;
++	master->transfer_one = locomospi_transfer_one;
++
++	spidev = spi_master_get_devdata(master);
++
++	spidev->regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	if (!spidev->regmap)
++		goto out_put;
++
++	spidev->clock_div = DIV_64;
++	spidev->clock_base = CLOCK_18MHZ;
++
++	platform_set_drvdata(pdev, master);
++
++	ret = locomospi_reg_open(spidev);
++	if (ret < 0)
++		goto out_put;
++
++	ret = devm_spi_register_master(&pdev->dev, master);
++	if (ret) {
++		dev_err(&pdev->dev, "bitbang start failed with %d\n", ret);
++		goto out_put;
++	}
++
++	return 0;
++
++out_put:
++	spi_master_put(master);
++	return ret;
++}
++
++static int locomo_spi_remove(struct platform_device *pdev)
++{
++	struct spi_master *master = platform_get_drvdata(pdev);
++	struct locomospi_dev *spidev = spi_master_get_devdata(master);
++
++	return locomospi_reg_release(spidev);
++}
++
++static struct platform_driver locomo_spi_driver = {
++	.probe = locomo_spi_probe,
++	.remove = locomo_spi_remove,
++	.driver = {
++		.name = "locomo-spi",
++		.pm = LOCOMO_SPI_PM_OPS,
++	},
++};
++module_platform_driver(locomo_spi_driver);
++
++MODULE_AUTHOR("Thomas Kunze thommy@tabao.de");
++MODULE_DESCRIPTION("LoCoMo SPI driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:locomo-spi");
+-- 
+2.1.4
 
-Amended.
-
-  Luis

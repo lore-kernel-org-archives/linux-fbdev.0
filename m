@@ -1,120 +1,182 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Thu, 30 Apr 2015 20:20:44 +0000
-Subject: Re: [PATCH v3] staging: sm750fb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <20150430202044.GC22039@kroah.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Mon, 27 Apr 2015 23:55:51 +0000
+Subject: [PATCH v2 14/17] ARM: pxa: poodle: use new LoCoMo driver
+Message-Id: <1430178954-11138-15-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429647230-16870-1-git-send-email-mcgrof@do-not-panic.com>
- <CAB=NE6Vb-u05VZhm5KDnwxqYeDuJjhd89=mFmGJkofSg2y2rnw@mail.gmail.com>
-In-Reply-To: <CAB=NE6Vb-u05VZhm5KDnwxqYeDuJjhd89=mFmGJkofSg2y2rnw@mail.gmail.com>
+References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Luis R. Rodriguez" <mcgrof@suse.com>
-Cc: arnaud.patard@rtp-net.org, aaro.koskinen@iki.fi, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, Andy Lutomirski <luto@amacapital.net>, "cocci@systeme.lip6.fr" <cocci@systeme.lip6.fr>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-On Thu, Apr 30, 2015 at 10:38:27AM -0700, Luis R. Rodriguez wrote:
-> On Tue, Apr 21, 2015 at 1:13 PM, Luis R. Rodriguez
-> <mcgrof@do-not-panic.com> wrote:
-> > From: "Luis R. Rodriguez" <mcgrof@suse.com>
-> >
-> > The same area used for ioremap() is used for the MTRR area.
-> > Convert the driver from using the x86 specific MTRR code to
-> > the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-> > will avoid MTRR if write-combining is available, in order to
-> > take advantage of that also ensure the ioremap'd area is requested
-> > as write-combining.
-> >
-> > There are a few motivations for this:
-> >
-> > a) Take advantage of PAT when available
-> >
-> > b) Help bury MTRR code away, MTRR is architecture specific and on
-> >    x86 its replaced by PAT
-> >
-> > c) Help with the goal of eventually using _PAGE_CACHE_UC over
-> >    _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-> >    de33c442e titled "x86 PAT: fix performance drop for glx,
-> >    use UC minus for ioremap(), ioremap_nocache() and
-> >    pci_mmap_page_range()")
-> >
-> > The conversion done is expressed by the following Coccinelle
-> > SmPL patch, it additionally required manual intervention to
-> > address all the #ifdery and removal of redundant things which
-> > arch_phys_wc_add() already addresses such as verbose message
-> > about when MTRR fails and doing nothing when we didn't get
-> > an MTRR.
-> >
-> > @ mtrr_found @
-> > expression index, base, size;
-> > @@
-> >
-> > -index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-> > +index = arch_phys_wc_add(base, size);
-> >
-> > @ mtrr_rm depends on mtrr_found @
-> > expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-> > @@
-> >
-> > -mtrr_del(index, base, size);
-> > +arch_phys_wc_del(index);
-> >
-> > @ mtrr_rm_zero_arg depends on mtrr_found @
-> > expression mtrr_found.index;
-> > @@
-> >
-> > -mtrr_del(index, 0, 0);
-> > +arch_phys_wc_del(index);
-> >
-> > @ mtrr_rm_fb_info depends on mtrr_found @
-> > struct fb_info *info;
-> > expression mtrr_found.index;
-> > @@
-> >
-> > -mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-> > +arch_phys_wc_del(index);
-> >
-> > @ ioremap_replace_nocache depends on mtrr_found @
-> > struct fb_info *info;
-> > expression base, size;
-> > @@
-> >
-> > -info->screen_base = ioremap_nocache(base, size);
-> > +info->screen_base = ioremap_wc(base, size);
-> >
-> > @ ioremap_replace_default depends on mtrr_found @
-> > struct fb_info *info;
-> > expression base, size;
-> > @@
-> >
-> > -info->screen_base = ioremap(base, size);
-> > +info->screen_base = ioremap_wc(base, size);
-> >
-> > Generated-by: Coccinelle SmPL
-> > Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-> > Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Cc: Suresh Siddha <sbsiddha@gmail.com>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Juergen Gross <jgross@suse.com>
-> > Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> > Cc: Andy Lutomirski <luto@amacapital.net>
-> > Cc: Dave Airlie <airlied@redhat.com>
-> > Cc: Antonino Daplas <adaplas@gmail.com>
-> > Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > Cc: devel@driverdev.osuosl.org
-> > Cc: linux-fbdev@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-> 
-> Hey folks, just a follow up. Can this be considered to be merged?
-> 
->  Luis
+Convert poodle to use new mfd-based LoCoMo driver.
 
-I'm just starting to get to staging tree patches after the -rc1 window
-was over.  Give me a week or so, they are at the bottom of my list.
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/arm/mach-pxa/Kconfig               |  1 -
+ arch/arm/mach-pxa/include/mach/poodle.h | 16 ++++++---
+ arch/arm/mach-pxa/poodle.c              | 58 ++++++++++++++++++++++++++++++---
+ 3 files changed, 65 insertions(+), 10 deletions(-)
 
-thanks,
+diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
+index 8896e71..a2756b0 100644
+--- a/arch/arm/mach-pxa/Kconfig
++++ b/arch/arm/mach-pxa/Kconfig
+@@ -481,7 +481,6 @@ config MACH_POODLE
+ 	bool "Enable Sharp SL-5600 (Poodle) Support"
+ 	depends on PXA_SHARPSL
+ 	select PXA25x
+-	select SHARP_LOCOMO
+ 
+ config MACH_CORGI
+ 	bool "Enable Sharp SL-C700 (Corgi) Support"
+diff --git a/arch/arm/mach-pxa/include/mach/poodle.h b/arch/arm/mach-pxa/include/mach/poodle.h
+index b56b193..dd4afae 100644
+--- a/arch/arm/mach-pxa/include/mach/poodle.h
++++ b/arch/arm/mach-pxa/include/mach/poodle.h
+@@ -81,11 +81,17 @@
+ #define POODLE_GPIO_L_LCLK	(POODLE_SCOOP_GPIO_BASE + 10)
+ #define POODLE_GPIO_HS_OUT	(POODLE_SCOOP_GPIO_BASE + 11)
+ 
+-#define POODLE_LOCOMO_GPIO_AMP_ON      LOCOMO_GPIO(8)
+-#define POODLE_LOCOMO_GPIO_MUTE_L      LOCOMO_GPIO(10)
+-#define POODLE_LOCOMO_GPIO_MUTE_R      LOCOMO_GPIO(11)
+-#define POODLE_LOCOMO_GPIO_232VCC_ON   LOCOMO_GPIO(12)
+-#define POODLE_LOCOMO_GPIO_JK_B        LOCOMO_GPIO(13)
++#define POODLE_LOCOMO_GPIO_BASE	(PXA_NR_BUILTIN_GPIO + 12)
++#define POODLE_GPIO_LCD_VSHA_ON	(POODLE_LOCOMO_GPIO_BASE + 4)
++#define POODLE_GPIO_LCD_VSHD_ON	(POODLE_LOCOMO_GPIO_BASE + 5)
++#define POODLE_GPIO_LCD_VEE_ON	(POODLE_LOCOMO_GPIO_BASE + 6)
++#define POODLE_GPIO_LCD_MOD	(POODLE_LOCOMO_GPIO_BASE + 7)
++#define POODLE_GPIO_AMP_ON	(POODLE_LOCOMO_GPIO_BASE + 8)
++#define POODLE_GPIO_FL_VR	(POODLE_LOCOMO_GPIO_BASE + 9)
++#define POODLE_GPIO_MUTE_L	(POODLE_LOCOMO_GPIO_BASE + 10)
++#define POODLE_GPIO_MUTE_R	(POODLE_LOCOMO_GPIO_BASE + 11)
++#define POODLE_GPIO_232VCC_ON	(POODLE_LOCOMO_GPIO_BASE + 12)
++#define POODLE_GPIO_JK_B	(POODLE_LOCOMO_GPIO_BASE + 13)
+ 
+ #define POODLE_NR_IRQS		(IRQ_BOARD_START + 4)	/* 4 for LoCoMo */
+ 
+diff --git a/arch/arm/mach-pxa/poodle.c b/arch/arm/mach-pxa/poodle.c
+index 195b112..a61e4b8 100644
+--- a/arch/arm/mach-pxa/poodle.c
++++ b/arch/arm/mach-pxa/poodle.c
+@@ -23,6 +23,7 @@
+ #include <linux/delay.h>
+ #include <linux/mtd/physmap.h>
+ #include <linux/gpio.h>
++#include <linux/gpio/machine.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c/pxa-i2c.h>
+ #include <linux/regulator/machine.h>
+@@ -31,6 +32,8 @@
+ #include <linux/spi/pxa2xx_spi.h>
+ #include <linux/mtd/sharpsl.h>
+ #include <linux/memblock.h>
++#include <linux/iio/machine.h>
++#include <linux/mfd/locomo.h>
+ 
+ #include <mach/hardware.h>
+ #include <asm/mach-types.h>
+@@ -49,7 +52,6 @@
+ #include <linux/platform_data/video-pxafb.h>
+ 
+ #include <asm/hardware/scoop.h>
+-#include <asm/hardware/locomo.h>
+ #include <asm/mach/sharpsl_param.h>
+ 
+ #include "generic.h"
+@@ -179,7 +181,8 @@ static struct resource locomo_resources[] = {
+ };
+ 
+ static struct locomo_platform_data locomo_info = {
+-	.irq_base	= IRQ_BOARD_START,
++	.gpio_base	  = POODLE_LOCOMO_GPIO_BASE,
++	.comadj	          = 118,
+ };
+ 
+ struct platform_device poodle_locomo_device = {
+@@ -192,8 +195,6 @@ struct platform_device poodle_locomo_device = {
+ 	},
+ };
+ 
+-EXPORT_SYMBOL(poodle_locomo_device);
+-
+ #if defined(CONFIG_SPI_PXA2XX) || defined(CONFIG_SPI_PXA2XX_MODULE)
+ static struct pxa2xx_spi_master poodle_spi_info = {
+ 	.num_chipselect	= 1,
+@@ -424,6 +425,47 @@ static struct i2c_board_info __initdata poodle_i2c_devices[] = {
+ 	{ I2C_BOARD_INFO("wm8731", 0x1b) },
+ };
+ 
++static struct iio_map locomo_iio_map[] = {
++	{
++		.consumer_dev_name = "locomo-lcd.0",
++		.consumer_channel = "comadj",
++		.adc_channel_label = "CH0",
++	},
++	{ }
++};
++
++static struct i2c_board_info locomo_i2c_devs[] __initdata = {
++	{
++		I2C_BOARD_INFO("m62332", 0x4e),
++		.platform_data = locomo_iio_map,
++	},
++};
++
++static struct gpiod_lookup_table poodle_audio_gpios_table = {
++	.dev_id = "poodle-audio",
++	.table = {
++		GPIO_LOOKUP("locomo-gpio", 10, "mute-l", GPIO_ACTIVE_LOW),
++		GPIO_LOOKUP("locomo-gpio", 11, "mute-r", GPIO_ACTIVE_LOW),
++		GPIO_LOOKUP("locomo-gpio", 8, "amp-on", GPIO_ACTIVE_LOW),
++		{ },
++	},
++}, poodle_bl_gpios_table = {
++	.dev_id = "locomo-backlight.0",
++	.table = {
++		GPIO_LOOKUP("locomo-gpio", 9, "flvr", GPIO_ACTIVE_HIGH),
++		{ },
++	},
++}, poodle_lcd_gpios_table = {
++	.dev_id = "locomo-lcd.0",
++	.table = {
++		GPIO_LOOKUP("locomo-gpio", 4, "VSHA", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("locomo-gpio", 5, "VSHD", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("locomo-gpio", 6, "Vee", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("locomo-gpio", 7, "MOD", GPIO_ACTIVE_HIGH),
++		{ },
++	},
++};
++
+ static void poodle_poweroff(void)
+ {
+ 	pxa_restart(REBOOT_HARD, NULL);
+@@ -445,6 +487,13 @@ static void __init poodle_init(void)
+ 
+ 	platform_scoop_config = &poodle_pcmcia_config;
+ 
++	if (sharpsl_param.comadj != -1)
++		locomo_info.comadj = sharpsl_param.comadj;
++
++	gpiod_add_lookup_table(&poodle_audio_gpios_table);
++	gpiod_add_lookup_table(&poodle_bl_gpios_table);
++	gpiod_add_lookup_table(&poodle_lcd_gpios_table);
++
+ 	ret = platform_add_devices(devices, ARRAY_SIZE(devices));
+ 	if (ret)
+ 		pr_warn("poodle: Unable to register LoCoMo device\n");
+@@ -455,6 +504,7 @@ static void __init poodle_init(void)
+ 	pxa_set_ficp_info(&poodle_ficp_platform_data);
+ 	pxa_set_i2c_info(NULL);
+ 	i2c_register_board_info(0, ARRAY_AND_SIZE(poodle_i2c_devices));
++	i2c_register_board_info(1, ARRAY_AND_SIZE(locomo_i2c_devs));
+ 	poodle_init_spi();
+ 	regulator_has_full_constraints();
+ }
+-- 
+2.1.4
 
-greg k-h

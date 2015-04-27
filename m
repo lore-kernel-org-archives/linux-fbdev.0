@@ -1,206 +1,212 @@
-From: Andy Walls <andy@silverblocksystems.net>
-Date: Mon, 27 Apr 2015 17:31:39 +0000
-Subject: Re: [PATCH v2] ivtv: use arch_phys_wc_add() and require PAT disabled
-Message-Id: <1430155899.2724.0.camel@localhost>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Mon, 27 Apr 2015 23:55:45 +0000
+Subject: [PATCH v2 08/17] gpio: locomo: implement per-pin irq handling
+Message-Id: <1430178954-11138-9-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430152994-17051-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1430152994-17051-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Cc: awalls@md.metrocast.net, linux-media@vger.kernel.org, luto@amacapital.net, mst@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, Stefan Bader <stefan.bader@canonical.com>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, toshi.kani@hp.com, Roger Pau =?ISO-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>, ivtv-devel@ivtvdriver.org, xen-devel@lists.xensource.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-On Mon, 2015-04-27 at 09:43 -0700, Luis R. Rodriguez wrote:
-> From: "Luis R. Rodriguez" <mcgrof@suse.com>
-> 
-> We are burrying direct access to MTRR code support on
-> x86 in order to take advantage of PAT. In the future we
-> also want to make the default behaviour of ioremap_nocache()
-> to use strong UC, use of mtrr_add() on those systems
-> would make write-combining void.
-> 
-> In order to help both enable us to later make strong
-> UC default and in order to phase out direct MTRR access
-> code port the driver over to arch_phys_wc_add() and
-> annotate that the device driver requires systems to
-> boot with PAT disabled, with the nopat kernel parameter.
-> 
-> This is a worthy comprmise given that the hardware is
-> really rare these days, and perhaps only some lost souls
-> in some third world country are expected to be using this
-> feature of the device driver.
-> 
-> Cc: Andy Walls <awalls@md.metrocast.net>
+LoCoMo has a possibility to generate per-GPIO edge irqs. Support for
+that was there in old locomo driver, got 'cleaned up' during old driver
+IRQ cascading cleanup and is now reimplemented. It is expected that
+SL-5500 (collie) will use locomo gpio irqs for mmc detection irq.
 
-Acked-by: Andy Walls <awalls@md.metrocast.net>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ drivers/gpio/Kconfig       |   1 +
+ drivers/gpio/gpio-locomo.c | 120 ++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 120 insertions(+), 1 deletion(-)
 
-Regards,
-Andy
-
-> Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
-> Cc: Andy Lutomirski <luto@amacapital.net>
-> Cc: Suresh Siddha <sbsiddha@gmail.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Juergen Gross <jgross@suse.com>
-> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Cc: Dave Airlie <airlied@redhat.com>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: Antonino Daplas <adaplas@gmail.com>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Michael S. Tsirkin <mst@redhat.com>
-> Cc: Stefan Bader <stefan.bader@canonical.com>
-> Cc: Ville Syrjälä <syrjala@sci.fi>
-> Cc: Mel Gorman <mgorman@suse.de>
-> Cc: Vlastimil Babka <vbabka@suse.cz>
-> Cc: Borislav Petkov <bp@suse.de>
-> Cc: Davidlohr Bueso <dbueso@suse.de>
-> Cc: konrad.wilk@oracle.com
-> Cc: ville.syrjala@linux.intel.com
-> Cc: david.vrabel@citrix.com
-> Cc: jbeulich@suse.com
-> Cc: toshi.kani@hp.com
-> Cc: Roger Pau Monné <roger.pau@citrix.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: ivtv-devel@ivtvdriver.org
-> Cc: linux-media@vger.kernel.org
-> Cc: xen-devel@lists.xensource.com
-> Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-> ---
-> 
-> This v2 moves the PAT bail out error check on to ivtvfb_init()
-> as per Andy's request. It also removes some comment about TODO
-> items for PAT.
-> 
->  drivers/media/pci/ivtv/Kconfig  |  3 +++
->  drivers/media/pci/ivtv/ivtvfb.c | 58 ++++++++++++++++-------------------------
->  2 files changed, 26 insertions(+), 35 deletions(-)
-> 
-> diff --git a/drivers/media/pci/ivtv/Kconfig b/drivers/media/pci/ivtv/Kconfig
-> index dd6ee57e..b2a7f88 100644
-> --- a/drivers/media/pci/ivtv/Kconfig
-> +++ b/drivers/media/pci/ivtv/Kconfig
-> @@ -57,5 +57,8 @@ config VIDEO_FB_IVTV
->  	  This is used in the Hauppauge PVR-350 card. There is a driver
->  	  homepage at <http://www.ivtvdriver.org>.
->  
-> +	  If you have this hardware you will need to boot with PAT disabled
-> +	  on your x86 systems, use the nopat kernel parameter.
-> +
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called ivtvfb.
-> diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
-> index 9ff1230..8761e3e 100644
-> --- a/drivers/media/pci/ivtv/ivtvfb.c
-> +++ b/drivers/media/pci/ivtv/ivtvfb.c
-> @@ -44,8 +44,8 @@
->  #include <linux/ivtvfb.h>
->  #include <linux/slab.h>
->  
-> -#ifdef CONFIG_MTRR
-> -#include <asm/mtrr.h>
-> +#ifdef CONFIG_X86_64
-> +#include <asm/pat.h>
->  #endif
->  
->  #include "ivtv-driver.h"
-> @@ -155,12 +155,11 @@ struct osd_info {
->  	/* Buffer size */
->  	u32 video_buffer_size;
->  
-> -#ifdef CONFIG_MTRR
->  	/* video_base rounded down as required by hardware MTRRs */
->  	unsigned long fb_start_aligned_physaddr;
->  	/* video_base rounded up as required by hardware MTRRs */
->  	unsigned long fb_end_aligned_physaddr;
-> -#endif
-> +	int wc_cookie;
->  
->  	/* Store the buffer offset */
->  	int set_osd_coords_x;
-> @@ -1099,6 +1098,8 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
->  static int ivtvfb_init_io(struct ivtv *itv)
->  {
->  	struct osd_info *oi = itv->osd_info;
-> +	/* Find the largest power of two that maps the whole buffer */
-> +	int size_shift = 31;
->  
->  	mutex_lock(&itv->serialize_lock);
->  	if (ivtv_init_on_first_open(itv)) {
-> @@ -1132,29 +1133,16 @@ static int ivtvfb_init_io(struct ivtv *itv)
->  			oi->video_pbase, oi->video_vbase,
->  			oi->video_buffer_size / 1024);
->  
-> -#ifdef CONFIG_MTRR
-> -	{
-> -		/* Find the largest power of two that maps the whole buffer */
-> -		int size_shift = 31;
-> -
-> -		while (!(oi->video_buffer_size & (1 << size_shift))) {
-> -			size_shift--;
-> -		}
-> -		size_shift++;
-> -		oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
-> -		oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
-> -		oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
-> -		oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
-> -		if (mtrr_add(oi->fb_start_aligned_physaddr,
-> -			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr,
-> -			     MTRR_TYPE_WRCOMB, 1) < 0) {
-> -			IVTVFB_INFO("disabled mttr\n");
-> -			oi->fb_start_aligned_physaddr = 0;
-> -			oi->fb_end_aligned_physaddr = 0;
-> -		}
-> -	}
-> -#endif
-> -
-> +	while (!(oi->video_buffer_size & (1 << size_shift)))
-> +		size_shift--;
-> +	size_shift++;
-> +	oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
-> +	oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
-> +	oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
-> +	oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
-> +	oi->wc_cookie = arch_phys_wc_add(oi->fb_start_aligned_physaddr,
-> +					 oi->fb_end_aligned_physaddr -
-> +					 oi->fb_start_aligned_physaddr);
->  	/* Blank the entire osd. */
->  	memset_io(oi->video_vbase, 0, oi->video_buffer_size);
->  
-> @@ -1172,14 +1160,7 @@ static void ivtvfb_release_buffers (struct ivtv *itv)
->  
->  	/* Release pseudo palette */
->  	kfree(oi->ivtvfb_info.pseudo_palette);
-> -
-> -#ifdef CONFIG_MTRR
-> -	if (oi->fb_end_aligned_physaddr) {
-> -		mtrr_del(-1, oi->fb_start_aligned_physaddr,
-> -			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr);
-> -	}
-> -#endif
-> -
-> +	arch_phys_wc_del(oi->wc_cookie);
->  	kfree(oi);
->  	itv->osd_info = NULL;
->  }
-> @@ -1284,6 +1265,13 @@ static int __init ivtvfb_init(void)
->  	int registered = 0;
->  	int err;
->  
-> +#ifdef CONFIG_X86_64
-> +	if (WARN(pat_enabled,
-> +		 "ivtvfb needs PAT disabled, boot with nopat kernel parameter\n")) {
-> +		return EINVAL;
-> +	}
-> +#endif
-> +
->  	if (ivtvfb_card_id < -1 || ivtvfb_card_id >= IVTV_MAX_CARDS) {
->  		printk(KERN_ERR "ivtvfb:  ivtvfb_card_id parameter is out of range (valid range: -1 - %d)\n",
->  		     IVTV_MAX_CARDS - 1);
-
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 4542684..6b77614 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -737,6 +737,7 @@ config GPIO_KEMPLD
+ config GPIO_LOCOMO
+ 	bool "Sharp LoCoMo GPIO support"
+ 	depends on MFD_LOCOMO
++	select GPIOLIB_IRQCHIP
+ 	help
+ 	  Select this to support GPIO pins on Sharp LoCoMo Grid Array found
+ 	  in Sharp Zaurus collie and poodle models.
+diff --git a/drivers/gpio/gpio-locomo.c b/drivers/gpio/gpio-locomo.c
+index dd9a1ca..d8e5880 100644
+--- a/drivers/gpio/gpio-locomo.c
++++ b/drivers/gpio/gpio-locomo.c
+@@ -16,13 +16,15 @@
+ #include <linux/slab.h>
+ #include <linux/bitops.h>
+ #include <linux/err.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/driver.h>
+ #include <linux/io.h>
++#include <linux/irq.h>
+ #include <linux/regmap.h>
+ #include <linux/mfd/locomo.h>
+ 
+ struct locomo_gpio {
+ 	struct regmap *regmap;
++	int irq;
+ 
+ 	struct gpio_chip gpio;
+ 
+@@ -79,6 +81,99 @@ static int locomo_gpio_direction_output(struct gpio_chip *chip,
+ 	return 0;
+ }
+ 
++static void
++locomo_gpio_irq_handler(unsigned int irq, struct irq_desc *desc)
++{
++	struct gpio_chip *chip = irq_get_handler_data(irq);
++	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
++	struct irq_chip *irqchip = irq_desc_get_chip(desc);
++	unsigned int gir;
++	unsigned int gpd;
++	unsigned int req;
++
++	chained_irq_enter(irqchip, desc);
++
++	while (1) {
++		regmap_read(lg->regmap, LOCOMO_GIR, &gir);
++		regmap_read(lg->regmap, LOCOMO_GPD, &gpd);
++		req = gir & gpd;
++
++		if (!req)
++			break;
++
++		generic_handle_irq(irq_find_mapping(lg->gpio.irqdomain,
++					ffs(req) - 1));
++	}
++
++	chained_irq_exit(irqchip, desc);
++}
++
++static void locomo_gpio_ack_irq(struct irq_data *d)
++{
++	struct gpio_chip *chip = irq_data_get_irq_chip_data(d);
++	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
++	unsigned int mask = BIT(d->hwirq);
++
++	regmap_update_bits(lg->regmap, LOCOMO_GWE, mask, mask);
++	regmap_update_bits(lg->regmap, LOCOMO_GIS, mask, 0);
++	regmap_update_bits(lg->regmap, LOCOMO_GWE, mask, 0);
++}
++
++static void locomo_gpio_mask_irq(struct irq_data *d)
++{
++	struct gpio_chip *chip = irq_data_get_irq_chip_data(d);
++	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
++	unsigned int mask = BIT(d->hwirq);
++
++	regmap_update_bits(lg->regmap, LOCOMO_GIE, mask, 0);
++}
++
++static void locomo_gpio_unmask_irq(struct irq_data *d)
++{
++	struct gpio_chip *chip = irq_data_get_irq_chip_data(d);
++	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
++	unsigned int mask = BIT(d->hwirq);
++
++	regmap_update_bits(lg->regmap, LOCOMO_GIE, mask, mask);
++}
++
++static int locomo_gpio_type_irq(struct irq_data *d, unsigned int type)
++{
++	struct gpio_chip *chip = irq_data_get_irq_chip_data(d);
++	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
++	unsigned int mask;
++
++	mask = BIT(d->hwirq);
++
++	if (type = IRQ_TYPE_PROBE) {
++		if ((lg->rising_edge | lg->falling_edge) & mask)
++			return 0;
++		type = IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING;
++	}
++
++	if (type & IRQ_TYPE_EDGE_RISING)
++		lg->rising_edge |= mask;
++	else
++		lg->rising_edge &= ~mask;
++	if (type & IRQ_TYPE_EDGE_FALLING)
++		lg->falling_edge |= mask;
++	else
++		lg->falling_edge &= ~mask;
++
++	regmap_write(lg->regmap, LOCOMO_GRIE, lg->rising_edge);
++	regmap_write(lg->regmap, LOCOMO_GFIE, lg->falling_edge);
++
++	return 0;
++}
++
++static struct irq_chip locomo_gpio_irq_chip = {
++	.name		= "LOCOMO-g",
++	.irq_ack	= locomo_gpio_ack_irq,
++	.irq_mask	= locomo_gpio_mask_irq,
++	.irq_unmask	= locomo_gpio_unmask_irq,
++	.irq_set_type	= locomo_gpio_type_irq,
++};
++
+ #ifdef CONFIG_PM_SLEEP
+ static int locomo_gpio_suspend(struct device *dev)
+ {
+@@ -119,6 +214,10 @@ static int locomo_gpio_probe(struct platform_device *pdev)
+ 	if (!lg)
+ 		return -ENOMEM;
+ 
++	lg->irq = platform_get_irq(pdev, 0);
++	if (lg->irq < 0)
++		return -ENXIO;
++
+ 	lg->regmap = dev_get_regmap(pdev->dev.parent, NULL);
+ 	if (!lg->regmap)
+ 		return -EINVAL;
+@@ -130,6 +229,7 @@ static int locomo_gpio_probe(struct platform_device *pdev)
+ 	regmap_write(lg->regmap, LOCOMO_GPD, 0x00);
+ 	regmap_write(lg->regmap, LOCOMO_GIE, 0x00);
+ 
++	lg->gpio.dev = &pdev->dev;
+ 	lg->gpio.base = pdata ? pdata->gpio_base : -1;
+ 	lg->gpio.label = "locomo-gpio";
+ 	lg->gpio.ngpio = 16;
+@@ -142,7 +242,22 @@ static int locomo_gpio_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	ret = gpiochip_irqchip_add(&lg->gpio, &locomo_gpio_irq_chip, 0,
++				   handle_level_irq, IRQ_TYPE_NONE);
++	if (ret) {
++		dev_err(&pdev->dev, "Failed to add irq chip\n");
++		goto err_rm_gpiochip;
++	}
++
++	gpiochip_set_chained_irqchip(&lg->gpio, &locomo_gpio_irq_chip, lg->irq,
++				     locomo_gpio_irq_handler);
++
+ 	return 0;
++
++err_rm_gpiochip:
++	gpiochip_remove(&lg->gpio);
++
++	return ret;
+ }
+ 
+ static int locomo_gpio_remove(struct platform_device *pdev)
+@@ -151,6 +266,9 @@ static int locomo_gpio_remove(struct platform_device *pdev)
+ 
+ 	gpiochip_remove(&lg->gpio);
+ 
++	irq_set_chained_handler(lg->irq, NULL);
++	irq_set_handler_data(lg->irq, NULL);
++
+ 	return 0;
+ }
+ 
+-- 
+2.1.4
 

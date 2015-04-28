@@ -1,58 +1,31 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Tue, 28 Apr 2015 13:48:49 +0000
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Date: Tue, 28 Apr 2015 15:28:53 +0000
 Subject: Re: simple framebuffer slower by factor of 20, on socfpga (arm) platform
-Message-Id: <20150428134848.GC12732@n2100.arm.linux.org.uk>
+Message-Id: <alpine.LFD.2.11.1504281127200.1582@knanqh.ubzr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150407121247.GA29497@amd>
- <CAMuHMdXWRx7bKWhQuWH05CbPTXPy5imCUcW1xUf2E8f7BtF9NQ@mail.gmail.com>
- <20150409110634.GA27407@amd>
- <552660C7.4020805@ti.com>
- <552663C2.70308@ti.com>
- <55277650.8070607@codeaurora.org>
- <20150424132923.GA11729@amd>
- <553A47D3.2070107@ti.com>
- <CAMuHMdV+-VcZD5TMswUjwW0fk=-76oYimeKJ_P9QC5Md4De-JA@mail.gmail.com>
-In-Reply-To: <CAMuHMdV+-VcZD5TMswUjwW0fk=-76oYimeKJ_P9QC5Md4De-JA@mail.gmail.com>
+References: <20150407121247.GA29497@amd> <CAMuHMdXWRx7bKWhQuWH05CbPTXPy5imCUcW1xUf2E8f7BtF9NQ@mail.gmail.com> <20150409110634.GA27407@amd> <552660C7.4020805@ti.com> <552663C2.70308@ti.com> <55277650.8070607@codeaurora.org> <20150424132923.GA11729@amd>
+ <553A47D3.2070107@ti.com> <CAMuHMdV+-VcZD5TMswUjwW0fk=-76oYimeKJ_P9QC5Md4De-JA@mail.gmail.com> <20150428134848.GC12732@n2100.arm.linux.org.uk>
+In-Reply-To: <20150428134848.GC12732-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Pavel Machek <pavel@ucw.cz>, Archit Taneja <architt@codeaurora.org>, Marek Vasut <marek.vasut@gmail.com>, kernel list <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinh.linux@gmail.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Rob Clark <robdclark@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Alexander Shiyan <shc_work@mail.ru>, H Hartley Sweeten <hsweeten@visionengravers.com>
+To: Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Cc: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Vasut <marek.vasut-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dinh Nguyen <dinh.linux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alexander Shiyan <shc_work-JGs/UdohzUI@public.gmane.org>, H Hartley Sweeten <hsweeten-3FF4nKcrg1dE2c76skzGb0EOCMrvLtNR@public.gmane.org>
 
-On Fri, Apr 24, 2015 at 03:46:56PM +0200, Geert Uytterhoeven wrote:
-> On Fri, Apr 24, 2015 at 3:40 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> > On 24/04/15 16:29, Pavel Machek wrote:
-> >> On Fri 2015-04-10 12:35:52, Archit Taneja wrote:
-> >>>> That said, if the fb is in RAM, and is only written by the CPU, I think
-> >>>> a normal memcpy() for fb_memcpy_fromfb() should be fine...
-> >>>
-> >>> I didn't test for performance regressions when I posted this patch.
-> >>>
-> >>> A look at _memcpy_fromio in arch/arm/kernel/io.c shows that readb() is used
-> >>> all the time, even when the source and destination addresses are aligned for
-> >>> larger reads to be possible. Other archs seem to use readl() or readq() when
-> >>> they can. Maybe that makes memcpy_fromio slower than the implementation of
-> >>> memcpy on arm?
-> >>
-> >> Ok, can you prepare a patch for me to try? Or should we just revert
-> >> the original commit?
-> >
-> > The old way worked fine, afaik, so maybe we can revert. But still, isn't
-> > it more correct to use memcpy_fromio? It's (possibly) io memory we have
-> > here.
+On Tue, 28 Apr 2015, Russell King - ARM Linux wrote:
+
+> On Fri, Apr 24, 2015 at 03:46:56PM +0200, Geert Uytterhoeven wrote:
+> > So please optimize ARM's _memcpy_fromio(), _memcpy_toio(), and _memset_io().
+> > That will benefit other drivers on ARM, too.
 > 
-> Yes it is.
+> That's not going to happen.
 > 
-> So please optimize ARM's _memcpy_fromio(), _memcpy_toio(), and _memset_io().
-> That will benefit other drivers on ARM, too.
+> I've had a patch which does that, but people are concerned that it changes
+> the behaviour of the functions by changing the access size, which could
+> cause regressions.  It seems people are far too worried about that to even
+> consider trying. :(
 
-That's not going to happen.
+What about making the optimized implementation available via kconfig?
 
-I've had a patch which does that, but people are concerned that it changes
-the behaviour of the functions by changing the access size, which could
-cause regressions.  It seems people are far too worried about that to even
-consider trying. :(
 
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+Nicolas

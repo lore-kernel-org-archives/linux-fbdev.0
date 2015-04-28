@@ -1,7 +1,7 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Sun, 26 Apr 2015 19:31:46 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Tue, 28 Apr 2015 13:48:49 +0000
 Subject: Re: simple framebuffer slower by factor of 20, on socfpga (arm) platform
-Message-Id: <20150426193146.GA4539@amd>
+Message-Id: <20150428134848.GC12732@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20150407121247.GA29497@amd>
  <CAMuHMdXWRx7bKWhQuWH05CbPTXPy5imCUcW1xUf2E8f7BtF9NQ@mail.gmail.com>
@@ -16,10 +16,10 @@ In-Reply-To: <CAMuHMdV+-VcZD5TMswUjwW0fk=-76oYimeKJ_P9QC5Md4De-JA@mail.gmail.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Russell King <rmk@arm.linux.org.uk>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Archit Taneja <architt@codeaurora.org>, Marek Vasut <marek.vasut@gmail.com>, kernel list <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinh.linux@gmail.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Rob Clark <robdclark@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Alexander Shiyan <shc_work@mail.ru>, Russell King <linux@arm.linux.org.uk>, H Hartley Sweeten <hsweeten@visionengravers.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Pavel Machek <pavel@ucw.cz>, Archit Taneja <architt@codeaurora.org>, Marek Vasut <marek.vasut@gmail.com>, kernel list <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinh.linux@gmail.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Rob Clark <robdclark@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Alexander Shiyan <shc_work@mail.ru>, H Hartley Sweeten <hsweeten@visionengravers.com>
 
-On Fri 2015-04-24 15:46:56, Geert Uytterhoeven wrote:
+On Fri, Apr 24, 2015 at 03:46:56PM +0200, Geert Uytterhoeven wrote:
 > On Fri, Apr 24, 2015 at 3:40 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
 > > On 24/04/15 16:29, Pavel Machek wrote:
 > >> On Fri 2015-04-10 12:35:52, Archit Taneja wrote:
@@ -46,45 +46,13 @@ On Fri 2015-04-24 15:46:56, Geert Uytterhoeven wrote:
 > So please optimize ARM's _memcpy_fromio(), _memcpy_toio(), and _memset_io().
 > That will benefit other drivers on ARM, too.
 
-No, sorry. Yes, I could "optimize" memcpy_toio... just by sticking
-memcpy there, as for example asm-generic/io.h suggests.
+That's not going to happen.
 
-Maybe it would break something. Maybe not, but potential for that
-clearly is there... since this is very seldom used function. Or do you
-know drivers that would benefit from this?
+I've had a patch which does that, but people are concerned that it changes
+the behaviour of the functions by changing the access size, which could
+cause regressions.  It seems people are far too worried about that to even
+consider trying. :(
 
-void _memcpy_toio(volatile void __iomem *to, const void *from, size_t count)
-{
-        const unsigned char *f = from;
-	while (count) {
-	      count--;
-	      writeb(*f, to);
-	      f++;
-	      to++;
- 	}
-}
-
-We have a regression, we have a patch that causes the
-regression. Right fix at this point is to revert a "cleanup" that
-causes this, not try to "optimize" otherwise unused piece of code.
-
-commit 981409b25e2a99409b26daa67293ca1cfd5ea0a0
-Author: Archit Taneja <archit@ti.com>
-Date:   Fri Nov 16 14:46:04 2012 +0530
-
-    fbdev: arm has __raw I/O accessors, use them in fb.h
-
-    This removes the sparse warnings on arm platforms:
-
-    warning: cast removes address space of expression
-
-Signed-off-by: Archit Taneja <archit@ti.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: H Hartley Sweeten <hsweeten at visionengravers.com>
-Cc: Alexander Shiyan <shc_work@mail.ru>
-Cc: Russell King <linux@arm.linux.org.uk>
-
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.

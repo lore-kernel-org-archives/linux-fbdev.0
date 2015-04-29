@@ -1,140 +1,69 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 20 Apr 2015 12:39:25 +0000
-Subject: [GIT PULL] fbdev changes for 4.1
-Message-Id: <5534F37D.5000609@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="9rujAAmu0pEDVqdFP4phMEoU5n1aPvtLS"
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Wed, 29 Apr 2015 21:44:09 +0000
+Subject: [PATCH v4 4/6] video: fbdev: atyfb: clarify ioremap() base and length used
+Message-Id: <1430343851-967-5-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <1430343851-967-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1430343851-967-1-git-send-email-mcgrof@do-not-panic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, bp@suse.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, daniel.vetter@intel.com, airlied@linux.ie
+Cc: dledford@redhat.com, awalls@md.metrocast.net, syrjala@sci.fi, luto@amacapital.net, mst@redhat.com, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Rob Clark <robdclark@gmail.com>, Mathias Krause <minipli@googlemail.com>, Andrzej Hajda <a.hajda@samsung.com>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, linux-fbdev@vger.kernel.org
 
---9rujAAmu0pEDVqdFP4phMEoU5n1aPvtLS
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Hi Linus,
+This has no functional changes, it just adjusts
+the ioremap() call for the framebuffer to use
+the same values we later use for the framebuffer,
+this will make it easier to review the next change.
 
-Please pull fbdev changes for 4.1.
+The size of the framebuffer varies but since this is
+for PCI we *know* this defaults to 0x800000.
+atyfb_setup_generic() is *only* used on PCI probe.
 
- Tomi
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Mathias Krause <minipli@googlemail.com>
+Cc: Andrzej Hajda <a.hajda@samsung.com>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+---
+ drivers/video/fbdev/aty/atyfb_base.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-The following changes since commit c517d838eb7d07bbe9507871fab3931deccff5=
-39:
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 16936bb..8025624 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3489,7 +3489,9 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
+ 
+ 	/* Map in frame buffer */
+ 	info->fix.smem_start = addr;
+-	info->screen_base = ioremap(addr, 0x800000);
++	info->fix.smem_len = 0x800000;
++
++	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
+ 	if (info->screen_base = NULL) {
+ 		ret = -ENOMEM;
+ 		goto atyfb_setup_generic_fail;
+-- 
+2.3.2.209.gd67f9d5.dirty
 
-  Linux 4.0-rc1 (2015-02-22 18:21:14 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-4.1
-
-for you to fetch changes up to 6b75b54c841a18ef114704aa5cf2cdf43487b0ae:
-
-  Merge omapdss topic branch for fbdev 4.1 (2015-04-20 12:09:31 +0300)
-
-----------------------------------------------------------------
-fbdev changes for v4.1
-
-* Small fixes and improvements to various fbdev drivers
-
-----------------------------------------------------------------
-Dan Carpenter (1):
-      fbdev: pm3fb: cleanup some confusing indenting
-
-Geert Uytterhoeven (1):
-      fbdev: sh_mobile_lcdc: Fix destruction of uninitialized mutex
-
-Grygorii Strashko (1):
-      omapdss: extend pm notifier to handle hibernation
-
-Javier Martinez Canillas (1):
-      OMAPDSS: Correct video ports description file path in DT binding do=
-c
-
-Lad, Prabhakar (1):
-      fbdev: via/via_clock: fix sparse warning
-
-Laurent Pinchart (1):
-      video: fbdev: sh_mobile_lcdcfb: Fix ROP3 sysfs attribute parsing
-
-Nicholas Mc Guire (2):
-      video: fbdev: use msecs_to_jiffies for time conversions
-      hyperv: hyperv_fb: match wait_for_completion_timeout return type
-
-Sanjeev Sharma (1):
-      video: fbdev: make of_device_id array const
-
-Sudip Mukherjee (1):
-      fbdev: sm501fb: use memset_io
-
-Tomi Valkeinen (15):
-      OMAPDSS: fix AM43xx minimum pixel clock divider
-      OMAPDSS: HDMI5: Increase DDC SDA-HOLD time
-      OMAPDSS: fix paddr check for TILER addresses
-      OMAPDSS: TFP410: fix input sync signals
-      OMAPDSS: DISPC: remove OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES
-      OMAPDSS: DISPC: explicit handling for sync and de levels
-      OMAPDSS: change signal_level & signal_edge enum values
-      OMAPDSS: DISPC: change sync_pclk_edge default value
-      OMAPDSS: DISPC: fix div by zero issue in overlay scaling
-      OMAPDSS: DISPC: lock access to DISPC_CONTROL & DISPC_CONFIG
-      OMAPDSS: setup default fifo thresholds
-      OMAPDSS: Add support for MFLAG
-      OMAPDSS: workaround for MFLAG + NV12 issue
-      OMAPDSS: disable VT switch
-      Merge omapdss topic branch for fbdev 4.1
-
- .../devicetree/bindings/video/ti,omap-dss.txt      |   4 +-
- drivers/gpu/drm/omapdrm/omap_connector.c           |   2 +-
- drivers/video/fbdev/hyperv_fb.c                    |   6 +-
- drivers/video/fbdev/imxfb.c                        |   2 +-
- .../video/fbdev/omap2/displays-new/connector-dvi.c |   2 +-
- .../fbdev/omap2/displays-new/encoder-tfp410.c      |  11 ++
- .../omap2/displays-new/panel-lgphilips-lb035q02.c  |   2 +-
- .../omap2/displays-new/panel-sharp-ls037v7dw01.c   |   2 +-
- .../omap2/displays-new/panel-sony-acx565akm.c      |   2 +-
- .../omap2/displays-new/panel-tpo-td028ttec1.c      |   2 +-
- .../omap2/displays-new/panel-tpo-td043mtea1.c      |   2 +-
- drivers/video/fbdev/omap2/dss/core.c               |   4 +
- drivers/video/fbdev/omap2/dss/dispc.c              | 147 +++++++++++++++=
-++++--
- drivers/video/fbdev/omap2/dss/display.c            |   2 +-
- drivers/video/fbdev/omap2/dss/dsi.c                |   2 +-
- drivers/video/fbdev/omap2/dss/dss.c                |   3 +
- drivers/video/fbdev/omap2/dss/dss_features.c       |   2 +-
- drivers/video/fbdev/omap2/dss/hdmi5_core.c         |   2 +-
- drivers/video/fbdev/omap2/dss/rfbi.c               |   2 +-
- drivers/video/fbdev/omap2/omapfb/omapfb-main.c     |   4 +-
- drivers/video/fbdev/pm3fb.c                        |   6 +-
- drivers/video/fbdev/pxafb.c                        |   6 +-
- drivers/video/fbdev/sh_mobile_lcdcfb.c             |  15 ++-
- drivers/video/fbdev/sm501fb.c                      |   2 +-
- drivers/video/fbdev/via/via_clock.c                |   2 +-
- include/video/omapdss.h                            |   7 +-
- 26 files changed, 193 insertions(+), 50 deletions(-)
-
-
---9rujAAmu0pEDVqdFP4phMEoU5n1aPvtLS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJVNPOcAAoJEPo9qoy8lh7129cP/0sWeWInlt1oohXYp5JYjb0A
-Mdr2ouI3vCDbjcpUFIbBEbbyPlAEJ5V5TjXDygwmUht7xSlpH5iyd0ixT3WAOZwf
-Va3qx91bQ3nAw3yPDaWpwFcuFbowm1hl+bWujLUrWQ+KROb78sBHiB6v1RJEIU3l
-zZgRAj11pouo69Dl0GBq1DLtzJ/Enld0FStriyG8YoAXFpDkCRpnEeu/O0FLBsQ1
-8R18lJm7y7WvFzSHNP+I6IiBa+sIvakZR+uiRDvsxvhHMh0Nld4J1Y4ckeWeHrHZ
-l6Vxvc6Ef3wWWPEqhYF4FrxSaUx27Lr7e/71l0q0vl0h3Y1arYX9d0bEuk3Fh2C/
-RZGNYtn8CuzWMBET5isiycncSME6UoHY5lsLQhGqPPCAVGcGV5ggLHG2U4qw4/8B
-2v1lUJxtmYYKOM0hA0udlcF3Zl31pIF61k+uhT2N8kalJzHzJy6Wemr8xCYJPFa3
-9sMWSW7VWyInYonFWzo64ESbsVP5Oxm5f7MwWoReNCqe/mkRYAv5CtB3lJ/Nl4b4
-UEb7yBvIWcmTsXDcnR4xEMbgvCEyswKBoheaMgkEK1nXSbyk9kPufdUk+Pl87SGO
-MDGehyGb5iwotynzrefqEfCwnUskIfc2BZJKPUlHyJOrwrJJexq4HX/jQSJTcN5+
-JULXqdDxgF57k9iIUKCQ
-=peyt
------END PGP SIGNATURE-----
-
---9rujAAmu0pEDVqdFP4phMEoU5n1aPvtLS--

@@ -1,55 +1,93 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 22 Apr 2015 13:22:57 +0000
-Subject: [PATCH 1/5] OMAPDSS: HDMI4: Set correct CC for 8-channels layout
-Message-Id: <9929c18e983efaa6fc66b4c56e701530fd93968f.1429705991.git.jsarha@ti.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Wed, 29 Apr 2015 21:44:08 +0000
+Subject: [PATCH v4 3/6] video: fbdev: atyfb: move framebuffer length fudging to helper
+Message-Id: <1430343851-967-4-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1429705991.git.jsarha@ti.com>
-In-Reply-To: <cover.1429705991.git.jsarha@ti.com>
+References: <1430343851-967-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1430343851-967-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, broonie@kernel.org, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, misael.lopez@ti.com, Jyri Sarha <jsarha@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, bp@suse.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, daniel.vetter@intel.com, airlied@linux.ie
+Cc: dledford@redhat.com, awalls@md.metrocast.net, syrjala@sci.fi, luto@amacapital.net, mst@redhat.com, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Rob Clark <robdclark@gmail.com>, Mathias Krause <minipli@googlemail.com>, Andrzej Hajda <a.hajda@samsung.com>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, linux-fbdev@vger.kernel.org
 
-From: Misael Lopez Cruz <misael.lopez@ti.com>
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-OMAP4 HDMI IP uses the 8-channel layout with 8-channel speaker
-allocation mask when transmitting more than two channels.  But
-the channel count field (CC) of the Audio InfoFrame's DB1 is
-not updated for 8-channels.
+The size of the framebuffer to be used needs to
+be fudged to account for the different type of
+devices that are out there. This captures what
+is required to do well, we'll resuse this later.
 
-As per HDMI Compliance Test 7.31 "Audio InfoFrame", CC = 7 is
-required for 8-channels CA masks (0x13 and 0x1F).
+This has no functional changes.
 
-Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Mathias Krause <minipli@googlemail.com>
+Cc: Andrzej Hajda <a.hajda@samsung.com>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/omap2/dss/hdmi4_core.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/aty/atyfb_base.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-index 7eafea5..2b8bd22 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi4_core.c
-@@ -795,7 +795,9 @@ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 8789e48..16936bb 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -427,6 +427,20 @@ static struct {
+ #endif /* CONFIG_FB_ATY_CT */
+ };
+ 
++/*
++ * Last page of 8 MB (4 MB on ISA) aperture is MMIO,
++ * unless the auxiliary register aperture is used.
++ */
++static void aty_fudge_framebuffer_len(struct fb_info *info)
++{
++	struct atyfb_par *par = (struct atyfb_par *) info->par;
++
++	if (!par->aux_start &&
++	    (info->fix.smem_len = 0x800000 ||
++	     (par->bus_type = ISA && info->fix.smem_len = 0x400000)))
++		info->fix.smem_len -= GUI_RESERVE;
++}
++
+ static int correct_chipset(struct atyfb_par *par)
+ {
+ 	u8 rev;
+@@ -2603,14 +2617,7 @@ static int aty_init(struct fb_info *info)
+ 	if (par->pll_ops->resume_pll)
+ 		par->pll_ops->resume_pll(info, &par->pll);
+ 
+-	/*
+-	 * Last page of 8 MB (4 MB on ISA) aperture is MMIO,
+-	 * unless the auxiliary register aperture is used.
+-	 */
+-	if (!par->aux_start &&
+-	    (info->fix.smem_len = 0x800000 ||
+-	     (par->bus_type = ISA && info->fix.smem_len = 0x400000)))
+-		info->fix.smem_len -= GUI_RESERVE;
++	aty_fudge_framebuffer_len(info);
  
  	/*
- 	 * the HDMI IP needs to enable four stereo channels when transmitting
--	 * more than 2 audio channels
-+	 * more than 2 audio channels.  Similarly, the channel count in the
-+	 * Audio InfoFrame has to match the sample_present bits (some channels
-+	 * are padded with zeroes)
- 	 */
- 	if (channel_count = 2) {
- 		audio_format.stereo_channels = HDMI_AUDIO_STEREO_ONECHANNEL;
-@@ -807,6 +809,7 @@ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 				HDMI_AUDIO_I2S_SD1_EN | HDMI_AUDIO_I2S_SD2_EN |
- 				HDMI_AUDIO_I2S_SD3_EN;
- 		acore.layout = HDMI_AUDIO_LAYOUT_8CH;
-+		audio->cea->db1_ct_cc = 7;
- 	}
- 
- 	acore.en_spdif = false;
+ 	 * Disable register access through the linear aperture
 -- 
-1.9.1
+2.3.2.209.gd67f9d5.dirty
 

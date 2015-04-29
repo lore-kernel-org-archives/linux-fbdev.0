@@ -1,45 +1,58 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Tue, 28 Apr 2015 19:35:12 +0000
-Subject: Re: [PATCH v2 14/17] ARM: pxa: poodle: use new LoCoMo driver
-Message-Id: <87a8xsjbbj.fsf@belgarion.home>
+From: Huacai Chen <chenhc@lemote.com>
+Date: Wed, 29 Apr 2015 02:14:46 +0000
+Subject: [PATCH V3] staging: sm750: Fix lynxfb_ops_imageblit() if image->depth != 1
+Message-Id: <1430273686-21682-1-git-send-email-chenhc@lemote.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
-	<1430178954-11138-15-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1430178954-11138-15-git-send-email-dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> (Dmitry
-	Eremin-Solenikov's message of "Tue, 28 Apr 2015 02:55:51 +0300")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org
+To: linux-fbdev@vger.kernel.org
 
-Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> writes:
+If image->depth != 1, lynxfb_ops_imageblit() should fallback to call
+cfb_imageblit(), not return directly. Otherwise it can't display the
+boot logo.
 
-> -#define POODLE_LOCOMO_GPIO_AMP_ON      LOCOMO_GPIO(8)
-> -#define POODLE_LOCOMO_GPIO_MUTE_L      LOCOMO_GPIO(10)
-> -#define POODLE_LOCOMO_GPIO_MUTE_R      LOCOMO_GPIO(11)
-> -#define POODLE_LOCOMO_GPIO_232VCC_ON   LOCOMO_GPIO(12)
-> -#define POODLE_LOCOMO_GPIO_JK_B        LOCOMO_GPIO(13)
-> +#define POODLE_LOCOMO_GPIO_BASE	(PXA_NR_BUILTIN_GPIO + 12)
-I missed that in the v1 serie : why twelve ?
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Signed-off-by: Huacai Chen <chenhc@lemote.com>
+---
+ V2: Coding style ajustment.
+ V3: Add TODO comments.
 
-> +#define POODLE_GPIO_LCD_VSHA_ON	(POODLE_LOCOMO_GPIO_BASE + 4)
-> +#define POODLE_GPIO_LCD_VSHD_ON	(POODLE_LOCOMO_GPIO_BASE + 5)
-> +#define POODLE_GPIO_LCD_VEE_ON	(POODLE_LOCOMO_GPIO_BASE + 6)
-> +#define POODLE_GPIO_LCD_MOD	(POODLE_LOCOMO_GPIO_BASE + 7)
-> +#define POODLE_GPIO_AMP_ON	(POODLE_LOCOMO_GPIO_BASE + 8)
-> +#define POODLE_GPIO_FL_VR	(POODLE_LOCOMO_GPIO_BASE + 9)
-> +#define POODLE_GPIO_MUTE_L	(POODLE_LOCOMO_GPIO_BASE + 10)
-> +#define POODLE_GPIO_MUTE_R	(POODLE_LOCOMO_GPIO_BASE + 11)
-> +#define POODLE_GPIO_232VCC_ON	(POODLE_LOCOMO_GPIO_BASE + 12)
-> +#define POODLE_GPIO_JK_B	(POODLE_LOCOMO_GPIO_BASE + 13)
-Why not keep the LOCOMO_GPIO() defines, and redevice LOCOMO_GPIO(x) to
-(POODLE_LOCOMO_GPIO_BASE + (x)) ?
+ drivers/staging/sm750fb/TODO    |    1 +
+ drivers/staging/sm750fb/sm750.c |    3 +++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-No comments on the remaining part, as long as it's tested, you know me by now
-...
-
-Cheers.
-
+diff --git a/drivers/staging/sm750fb/TODO b/drivers/staging/sm750fb/TODO
+index bc16172..f8698498 100644
+--- a/drivers/staging/sm750fb/TODO
++++ b/drivers/staging/sm750fb/TODO
+@@ -2,6 +2,7 @@ TODO:
+ - lots of clechpatch cleanup
+ - use kernel coding style
+ - refine the code and remove unused code
++- Implement hardware acceleration for imageblit if image->depth > 1
+ - check on hardware effects of removal of USE_HW_I2C and USE_DVICHIP (these two
+ 	are supposed to be sample code which is given here if someone wants to
+ 	use those functionalities)
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 3c7ea95..6f78de3 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -279,7 +279,10 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 		}
+ 		goto _do_work;
+ 	}
++	/* TODO: Implement hardware acceleration for image->depth > 1 */
++	cfb_imageblit(info, image);
+ 	return;
++
+ _do_work:
+ 	/*
+ 	 * If not use spin_lock, system will die if user load driver
 -- 
-Robert
+1.7.7.3
+
+
+
+

@@ -1,92 +1,207 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:26:07 +0000
-Subject: [PATCH v3 3/6] video: fbdev: atyfb: move framebuffer length fudging to helper
-Message-Id: <1429647970-17479-4-git-send-email-mcgrof@do-not-panic.com>
+Date: Wed, 29 Apr 2015 21:36:11 +0000
+Subject: [PATCH v4 4/5] video: fbdev: s3fb: use arch_phys_wc_add() and pci_iomap_wc()
+Message-Id: <1430343372-687-5-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429647970-17479-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1429647970-17479-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: cocci@systeme.lip6.fr
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: bhelgaas@google.com, mst@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, airlied@linux.ie, daniel.vetter@intel.com
+Cc: linux-fbdev@vger.kernel.org, luto@amacapital.net, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Jingoo Han <jg1.han@samsung.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-The size of the framebuffer to be used needs to
-be fudged to account for the different type of
-devices that are out there. This captures what
-is required to do well, we'll resuse this later.
+This driver uses the same area for MTRR as for the ioremap().
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
-This has no functional changes.
+There are a few motivations for this:
 
-Cc: Toshi Kani <toshi.kani@hp.com>
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Dave Airlie <airlied@redhat.com>
 Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Mathias Krause <minipli@googlemail.com>
-Cc: Andrzej Hajda <a.hajda@samsung.com>
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Davidlohr Bueso <dbueso@suse.de>
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/aty/atyfb_base.c | 23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/s3fb.c | 35 ++++++-----------------------------
+ 1 file changed, 6 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 8789e48..16936bb 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -427,6 +427,20 @@ static struct {
- #endif /* CONFIG_FB_ATY_CT */
- };
+diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
+index f0ae61a..13b1090 100644
+--- a/drivers/video/fbdev/s3fb.c
++++ b/drivers/video/fbdev/s3fb.c
+@@ -28,13 +28,9 @@
+ #include <linux/i2c.h>
+ #include <linux/i2c-algo-bit.h>
  
-+/*
-+ * Last page of 8 MB (4 MB on ISA) aperture is MMIO,
-+ * unless the auxiliary register aperture is used.
-+ */
-+static void aty_fudge_framebuffer_len(struct fb_info *info)
-+{
-+	struct atyfb_par *par = (struct atyfb_par *) info->par;
-+
-+	if (!par->aux_start &&
-+	    (info->fix.smem_len = 0x800000 ||
-+	     (par->bus_type = ISA && info->fix.smem_len = 0x400000)))
-+		info->fix.smem_len -= GUI_RESERVE;
-+}
-+
- static int correct_chipset(struct atyfb_par *par)
- {
- 	u8 rev;
-@@ -2603,14 +2617,7 @@ static int aty_init(struct fb_info *info)
- 	if (par->pll_ops->resume_pll)
- 		par->pll_ops->resume_pll(info, &par->pll);
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+-
+ struct s3fb_info {
+ 	int chip, rev, mclk_freq;
+-	int mtrr_reg;
++	int wc_cookie;
+ 	struct vgastate state;
+ 	struct mutex open_lock;
+ 	unsigned int ref_count;
+@@ -154,11 +150,7 @@ static const struct svga_timing_regs s3_timing_regs     = {
  
--	/*
--	 * Last page of 8 MB (4 MB on ISA) aperture is MMIO,
--	 * unless the auxiliary register aperture is used.
--	 */
--	if (!par->aux_start &&
--	    (info->fix.smem_len = 0x800000 ||
--	     (par->bus_type = ISA && info->fix.smem_len = 0x400000)))
--		info->fix.smem_len -= GUI_RESERVE;
-+	aty_fudge_framebuffer_len(info);
  
- 	/*
- 	 * Disable register access through the linear aperture
+ static char *mode_option;
+-
+-#ifdef CONFIG_MTRR
+ static int mtrr = 1;
+-#endif
+-
+ static int fasttext = 1;
+ 
+ 
+@@ -170,11 +162,8 @@ module_param(mode_option, charp, 0444);
+ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
+ module_param_named(mode, mode_option, charp, 0444);
+ MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
+-
+-#ifdef CONFIG_MTRR
+ module_param(mtrr, int, 0444);
+ MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
+-#endif
+ 
+ module_param(fasttext, int, 0644);
+ MODULE_PARM_DESC(fasttext, "Enable S3 fast text mode (1=enable, 0=disable, default=1)");
+@@ -1168,7 +1157,7 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	info->fix.smem_len = pci_resource_len(dev, 0);
+ 
+ 	/* Map physical IO memory address into kernel space */
+-	info->screen_base = pci_iomap(dev, 0, 0);
++	info->screen_base = pci_iomap_wc(dev, 0, 0);
+ 	if (! info->screen_base) {
+ 		rc = -ENOMEM;
+ 		dev_err(info->device, "iomap for framebuffer failed\n");
+@@ -1365,12 +1354,9 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	/* Record a reference to the driver data */
+ 	pci_set_drvdata(dev, info);
+ 
+-#ifdef CONFIG_MTRR
+-	if (mtrr) {
+-		par->mtrr_reg = -1;
+-		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
+-	}
+-#endif
++	if (mtrr)
++		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++						  info->fix.smem_len);
+ 
+ 	return 0;
+ 
+@@ -1405,14 +1391,7 @@ static void s3_pci_remove(struct pci_dev *dev)
+ 
+ 	if (info) {
+ 		par = info->par;
+-
+-#ifdef CONFIG_MTRR
+-		if (par->mtrr_reg >= 0) {
+-			mtrr_del(par->mtrr_reg, 0, 0);
+-			par->mtrr_reg = -1;
+-		}
+-#endif
+-
++		arch_phys_wc_del(par->wc_cookie);
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
+ 
+@@ -1551,10 +1530,8 @@ static int  __init s3fb_setup(char *options)
+ 
+ 		if (!*opt)
+ 			continue;
+-#ifdef CONFIG_MTRR
+ 		else if (!strncmp(opt, "mtrr:", 5))
+ 			mtrr = simple_strtoul(opt + 5, NULL, 0);
+-#endif
+ 		else if (!strncmp(opt, "fasttext:", 9))
+ 			fasttext = simple_strtoul(opt + 9, NULL, 0);
+ 		else
 -- 
 2.3.2.209.gd67f9d5.dirty
 

@@ -1,237 +1,194 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Mon, 27 Apr 2015 23:55:44 +0000
-Subject: [PATCH v2 07/17] gpio: port LoCoMo gpio support from old driver
-Message-Id: <1430178954-11138-8-git-send-email-dbaryshkov@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Wed, 29 Apr 2015 21:36:10 +0000
+Subject: [PATCH v4 3/5] video: fbdev: arkfb: use arch_phys_wc_add() and pci_iomap_wc()
+Message-Id: <1430343372-687-4-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+References: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+To: bhelgaas@google.com, mst@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, airlied@linux.ie, daniel.vetter@intel.com
+Cc: linux-fbdev@vger.kernel.org, luto@amacapital.net, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>
 
-Add gpiolib driver for gpio pins placed on the LoCoMo GA.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
+
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/gpio/Kconfig       |  12 ++++
- drivers/gpio/Makefile      |   1 +
- drivers/gpio/gpio-locomo.c | 170 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 183 insertions(+)
- create mode 100644 drivers/gpio/gpio-locomo.c
+ drivers/video/fbdev/arkfb.c | 36 +++++-------------------------------
+ 1 file changed, 5 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index caefe80..4542684 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -734,6 +734,18 @@ config GPIO_KEMPLD
- 	  This driver can also be built as a module. If so, the module will be
- 	  called gpio-kempld.
+diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+index b305a1e..6a317de 100644
+--- a/drivers/video/fbdev/arkfb.c
++++ b/drivers/video/fbdev/arkfb.c
+@@ -26,13 +26,9 @@
+ #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
+ #include <video/vga.h>
  
-+config GPIO_LOCOMO
-+	bool "Sharp LoCoMo GPIO support"
-+	depends on MFD_LOCOMO
-+	help
-+	  Select this to support GPIO pins on Sharp LoCoMo Grid Array found
-+	  in Sharp Zaurus collie and poodle models.
-+
-+	  Sat Yes if you have such PDA, say No otherwise.
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called gpio-locomo.
-+
- config GPIO_LP3943
- 	tristate "TI/National Semiconductor LP3943 GPIO expander"
- 	depends on MFD_LP3943
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index f71bb97..98655ae 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -42,6 +42,7 @@ obj-$(CONFIG_GPIO_JANZ_TTL)	+= gpio-janz-ttl.o
- obj-$(CONFIG_GPIO_KEMPLD)	+= gpio-kempld.o
- obj-$(CONFIG_ARCH_KS8695)	+= gpio-ks8695.o
- obj-$(CONFIG_GPIO_INTEL_MID)	+= gpio-intel-mid.o
-+obj-$(CONFIG_GPIO_LOCOMO)	+= gpio-locomo.o
- obj-$(CONFIG_GPIO_LOONGSON)	+= gpio-loongson.o
- obj-$(CONFIG_GPIO_LP3943)	+= gpio-lp3943.o
- obj-$(CONFIG_ARCH_LPC32XX)	+= gpio-lpc32xx.o
-diff --git a/drivers/gpio/gpio-locomo.c b/drivers/gpio/gpio-locomo.c
-new file mode 100644
-index 0000000..dd9a1ca
---- /dev/null
-+++ b/drivers/gpio/gpio-locomo.c
-@@ -0,0 +1,170 @@
-+/*
-+ * Sharp LoCoMo support for GPIO
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This file contains all generic LoCoMo support.
-+ *
-+ * All initialization functions provided here are intended to be called
-+ * from machine specific code with proper arguments when required.
-+ */
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/bitops.h>
-+#include <linux/err.h>
-+#include <linux/gpio.h>
-+#include <linux/io.h>
-+#include <linux/regmap.h>
-+#include <linux/mfd/locomo.h>
-+
-+struct locomo_gpio {
-+	struct regmap *regmap;
-+
-+	struct gpio_chip gpio;
-+
-+	u16 rising_edge;
-+	u16 falling_edge;
-+
-+	unsigned int save_gpo;
-+	unsigned int save_gpe;
-+};
-+
-+static int locomo_gpio_get(struct gpio_chip *chip,
-+		unsigned offset)
-+{
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+	unsigned int gpl;
-+
-+	regmap_read(lg->regmap, LOCOMO_GPL, &gpl);
-+
-+	return gpl & BIT(offset);
-+}
-+
-+static void locomo_gpio_set(struct gpio_chip *chip,
-+		unsigned offset, int value)
-+{
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+
-+	regmap_update_bits(lg->regmap, LOCOMO_GPO,
-+			BIT(offset),
-+			value ? BIT(offset) : 0);
-+}
-+
-+static int locomo_gpio_direction_input(struct gpio_chip *chip,
-+			unsigned offset)
-+{
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+
-+	regmap_update_bits(lg->regmap, LOCOMO_GPD, BIT(offset), BIT(offset));
-+	regmap_update_bits(lg->regmap, LOCOMO_GPE, BIT(offset), BIT(offset));
-+
-+	return 0;
-+}
-+
-+static int locomo_gpio_direction_output(struct gpio_chip *chip,
-+			unsigned offset, int value)
-+{
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+
-+	regmap_update_bits(lg->regmap, LOCOMO_GPO,
-+			BIT(offset),
-+			value ? BIT(offset) : 0);
-+	regmap_update_bits(lg->regmap, LOCOMO_GPD, BIT(offset), 0);
-+	regmap_update_bits(lg->regmap, LOCOMO_GPE, BIT(offset), 0);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int locomo_gpio_suspend(struct device *dev)
-+{
-+	struct locomo_gpio *lg = dev_get_drvdata(dev);
-+
-+	regmap_read(lg->regmap, LOCOMO_GPO, &lg->save_gpo);
-+	regmap_write(lg->regmap, LOCOMO_GPO, 0x00);
-+	regmap_read(lg->regmap, LOCOMO_GPE, &lg->save_gpe);
-+	regmap_write(lg->regmap, LOCOMO_GPE, 0x00);
-+
-+	return 0;
-+}
-+
-+static int locomo_gpio_resume(struct device *dev)
-+{
-+	struct locomo_gpio *lg = dev_get_drvdata(dev);
-+
-+	regmap_write(lg->regmap, LOCOMO_GPO, lg->save_gpo);
-+	regmap_write(lg->regmap, LOCOMO_GPE, lg->save_gpe);
-+
-+	return 0;
-+}
-+static SIMPLE_DEV_PM_OPS(locomo_gpio_pm,
-+		locomo_gpio_suspend, locomo_gpio_resume);
-+#define LOCOMO_GPIO_PM	(&locomo_gpio_pm)
-+#else
-+#define LOCOMO_GPIO_PM	NULL
-+#endif
-+
-+static int locomo_gpio_probe(struct platform_device *pdev)
-+{
-+	struct locomo_gpio *lg;
-+	int ret;
-+	struct locomo_gpio_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+
-+	lg = devm_kzalloc(&pdev->dev, sizeof(struct locomo_gpio),
-+			GFP_KERNEL);
-+	if (!lg)
-+		return -ENOMEM;
-+
-+	lg->regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!lg->regmap)
-+		return -EINVAL;
-+
-+	platform_set_drvdata(pdev, lg);
-+
-+	regmap_write(lg->regmap, LOCOMO_GPO, 0x00);
-+	regmap_write(lg->regmap, LOCOMO_GPE, 0x00);
-+	regmap_write(lg->regmap, LOCOMO_GPD, 0x00);
-+	regmap_write(lg->regmap, LOCOMO_GIE, 0x00);
-+
-+	lg->gpio.base = pdata ? pdata->gpio_base : -1;
-+	lg->gpio.label = "locomo-gpio";
-+	lg->gpio.ngpio = 16;
-+	lg->gpio.set = locomo_gpio_set;
-+	lg->gpio.get = locomo_gpio_get;
-+	lg->gpio.direction_input = locomo_gpio_direction_input;
-+	lg->gpio.direction_output = locomo_gpio_direction_output;
-+
-+	ret = gpiochip_add(&lg->gpio);
-+	if (ret)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int locomo_gpio_remove(struct platform_device *pdev)
-+{
-+	struct locomo_gpio *lg = platform_get_drvdata(pdev);
-+
-+	gpiochip_remove(&lg->gpio);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver locomo_gpio_driver = {
-+	.probe		= locomo_gpio_probe,
-+	.remove		= locomo_gpio_remove,
-+	.driver		= {
-+		.name	= "locomo-gpio",
-+		.pm	= LOCOMO_GPIO_PM,
-+	},
-+};
-+module_platform_driver(locomo_gpio_driver);
-+
-+MODULE_DESCRIPTION("Sharp LoCoMo GPIO driver");
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>");
-+MODULE_ALIAS("platform:locomo-gpio");
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+-
+ struct arkfb_info {
+ 	int mclk_freq;
+-	int mtrr_reg;
++	int wc_cookie;
+ 
+ 	struct dac_info *dac;
+ 	struct vgastate state;
+@@ -102,10 +98,6 @@ static const struct svga_timing_regs ark_timing_regs     = {
+ 
+ static char *mode_option = "640x480-8@60";
+ 
+-#ifdef CONFIG_MTRR
+-static int mtrr = 1;
+-#endif
+-
+ MODULE_AUTHOR("(c) 2007 Ondrej Zajicek <santiago@crfreenet.org>");
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("fbdev driver for ARK 2000PV");
+@@ -115,11 +107,6 @@ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
+ module_param_named(mode, mode_option, charp, 0444);
+ MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
+ 
+-#ifdef CONFIG_MTRR
+-module_param(mtrr, int, 0444);
+-MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
+-#endif
+-
+ static int threshold = 4;
+ 
+ module_param(threshold, int, 0644);
+@@ -1002,7 +989,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	info->fix.smem_len = pci_resource_len(dev, 0);
+ 
+ 	/* Map physical IO memory address into kernel space */
+-	info->screen_base = pci_iomap(dev, 0, 0);
++	info->screen_base = pci_iomap_wc(dev, 0, 0);
+ 	if (! info->screen_base) {
+ 		rc = -ENOMEM;
+ 		dev_err(info->device, "iomap for framebuffer failed\n");
+@@ -1057,14 +1044,8 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 
+ 	/* Record a reference to the driver data */
+ 	pci_set_drvdata(dev, info);
+-
+-#ifdef CONFIG_MTRR
+-	if (mtrr) {
+-		par->mtrr_reg = -1;
+-		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
+-	}
+-#endif
+-
++	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++					  info->fix.smem_len);
+ 	return 0;
+ 
+ 	/* Error handling */
+@@ -1092,14 +1073,7 @@ static void ark_pci_remove(struct pci_dev *dev)
+ 
+ 	if (info) {
+ 		struct arkfb_info *par = info->par;
+-
+-#ifdef CONFIG_MTRR
+-		if (par->mtrr_reg >= 0) {
+-			mtrr_del(par->mtrr_reg, 0, 0);
+-			par->mtrr_reg = -1;
+-		}
+-#endif
+-
++		arch_phys_wc_del(par->wc_cookie);
+ 		dac_release(par->dac);
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
 -- 
-2.1.4
+2.3.2.209.gd67f9d5.dirty
 

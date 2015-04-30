@@ -1,84 +1,217 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Mon, 27 Apr 2015 23:55:41 +0000
-Subject: [PATCH v2 04/17] input: locomokbd: provide an Alt-SysRQ combination
-Message-Id: <1430178954-11138-5-git-send-email-dbaryshkov@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 30 Apr 2015 17:36:04 +0000
+Subject: [PATCH v5 1/5] pci: add pci_iomap_wc() variants
+Message-Id: <1430415364-19679-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1430178954-11138-1-git-send-email-dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: bhelgaas@google.com, mst@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, airlied@linux.ie, daniel.vetter@intel.com
+Cc: linux-fbdev@vger.kernel.org, luto@amacapital.net, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, venkatesh.pallipadi@intel.com, Stefan Bader <stefan.bader@canonical.com>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, xen-devel@lists.xensource.com
 
-It is usefull sometimes to have an Alt-SysRQ combo on the keyboard to be
-able to trigger sysrq functions directly. Add an option providing sysrq
-mapping for Contact-Home keys.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+This allows drivers to take advantage of write-combining
+when possible. The PCI specification does not allow for us
+to automatically identify a memory region which needs
+write-combining so drivers have to identify these areas
+on their own. There is IORESOURCE_PREFETCH but as clarified
+by Michael and confirmed later by Bjorn, PCI prefetch bit
+merely means bridges can combine writes and prefetch reads.
+Prefetch does not affect ordering rules and does not allow
+writes to be collapsed [0]. WC is stronger, it allows collapsing
+and changes ordering rules. WC can also hurt latency as small
+writes are buffered. Because of all this drivers needs to
+know what they are doing, we can't set a write-combining
+preference flag in the pci core automatically for drivers.
+
+Lastly although there is also arch_phys_wc_add() this makes
+use of architecture specific write-combining *hacks* and
+the only one currently defined and used is MTRR for x86.
+MTRRs are legacy, limited in number, have restrictive size
+constraints, and are known to interact pooly with the BIOS.
+MTRRs should only really be considered on old video framebuffer
+drivers. If we made ioremap_wc() and similar calls start
+automatically adding MTRRs, then performance will vary wildly
+with the order of driver loading because we'll run out of MTRRs
+part-way through bootup.
+
+There are a few motivations for phasing out of MTRR and
+helping driver change over to use write-combining with PAT:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+[0] https://lkml.org/lkml/2015/4/21/714
+
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: venkatesh.pallipadi@intel.com
+Cc: Stefan Bader <stefan.bader@canonical.com>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: konrad.wilk@oracle.com
+Cc: ville.syrjala@linux.intel.com
+Cc: david.vrabel@citrix.com
+Cc: jbeulich@suse.com
+Cc: Roger Pau Monné <roger.pau@citrix.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: xen-devel@lists.xensource.com
+Cc: linux-pci@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/input/keyboard/Kconfig     |  7 +++++++
- drivers/input/keyboard/locomokbd.c | 14 +++++++++++---
- 2 files changed, 18 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
-index 0a3d875..eb8b11b 100644
---- a/drivers/input/keyboard/Kconfig
-+++ b/drivers/input/keyboard/Kconfig
-@@ -343,6 +343,13 @@ config KEYBOARD_LOCOMO
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called locomokbd.
+This v5 makes the code return NULL for IORESOURCE_IO and fixes the commit
+log to clarify the conclusions reached for MTRR and our review of
+IORESOURCE_PREFETCH.
+
+ include/asm-generic/pci_iomap.h | 14 ++++++++++
+ lib/pci_iomap.c                 | 61 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 75 insertions(+)
+
+diff --git a/include/asm-generic/pci_iomap.h b/include/asm-generic/pci_iomap.h
+index 7389c87..b1e17fc 100644
+--- a/include/asm-generic/pci_iomap.h
++++ b/include/asm-generic/pci_iomap.h
+@@ -15,9 +15,13 @@ struct pci_dev;
+ #ifdef CONFIG_PCI
+ /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
+ extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max);
++extern void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max);
+ extern void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
+ 				     unsigned long offset,
+ 				     unsigned long maxlen);
++extern void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
++					unsigned long offset,
++					unsigned long maxlen);
+ /* Create a virtual mapping cookie for a port on a given PCI device.
+  * Do not call this directly, it exists to make it easier for architectures
+  * to override */
+@@ -34,12 +38,22 @@ static inline void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned lon
+ 	return NULL;
+ }
  
-+config KEYBOARD_LOCOMO_SYSRQ
-+	bool "Provide SysRQ key on LoCoMo keyboard"
-+	depends on KEYBOARD_LOCOMO
-+	help
-+	  Say Y here to be able to use Contact-Home as Alt-Sysrq combo.
-+	  Say N if you want to use them as usual keys.
++static inline void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max)
++{
++	return NULL;
++}
+ static inline void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
+ 					    unsigned long offset,
+ 					    unsigned long maxlen)
+ {
+ 	return NULL;
+ }
++static inline void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
++					       unsigned long offset,
++					       unsigned long maxlen)
++{
++	return NULL;
++}
+ #endif
+ 
+ #endif /* __ASM_GENERIC_IO_H */
+diff --git a/lib/pci_iomap.c b/lib/pci_iomap.c
+index bcce5f1..9604dcb 100644
+--- a/lib/pci_iomap.c
++++ b/lib/pci_iomap.c
+@@ -52,6 +52,46 @@ void __iomem *pci_iomap_range(struct pci_dev *dev,
+ EXPORT_SYMBOL(pci_iomap_range);
+ 
+ /**
++ * pci_iomap_wc_range - create a virtual WC mapping cookie for a PCI BAR
++ * @dev: PCI device that owns the BAR
++ * @bar: BAR number
++ * @offset: map memory at the given offset in BAR
++ * @maxlen: max length of the memory to map
++ *
++ * Using this function you will get a __iomem address to your device BAR.
++ * You can access it using ioread*() and iowrite*(). These functions hide
++ * the details if this is a MMIO or PIO address space and will just do what
++ * you expect from them in the correct way. When possible write combining
++ * is used.
++ *
++ * @maxlen specifies the maximum length to map. If you want to get access to
++ * the complete BAR from offset to the end, pass %0 here.
++ * */
++void __iomem *pci_iomap_wc_range(struct pci_dev *dev,
++				 int bar,
++				 unsigned long offset,
++				 unsigned long maxlen)
++{
++	resource_size_t start = pci_resource_start(dev, bar);
++	resource_size_t len = pci_resource_len(dev, bar);
++	unsigned long flags = pci_resource_flags(dev, bar);
 +
- config KEYBOARD_LPC32XX
- 	tristate "LPC32XX matrix key scanner support"
- 	depends on ARCH_LPC32XX && OF
-diff --git a/drivers/input/keyboard/locomokbd.c b/drivers/input/keyboard/locomokbd.c
-index eed0a94..eb8dbe2 100644
---- a/drivers/input/keyboard/locomokbd.c
-+++ b/drivers/input/keyboard/locomokbd.c
-@@ -40,6 +40,14 @@
- #define KEY_CONTACT		KEY_F18
- #define KEY_CENTER		KEY_F15
- 
-+#ifdef CONFIG_KEYBOARD_LOCOMOKBD_SYSRQ
-+#define LOCOMO_KEY_CONTACT	KEY_LEFTALT
-+#define LOCOMO_KEY_HOME		KEY_SYSRQ
-+#else
-+#define LOCOMO_KEY_CONTACT	KEY_CONTACT
-+#define LOCOMO_KEY_HOME		KEY_HOME
-+#endif
++	if (len <= offset || !start)
++		return NULL;
++	len -= offset;
++	start += offset;
++	if (maxlen && len > maxlen)
++		len = maxlen;
++	if (flags & IORESOURCE_IO)
++		return NULL;
++	if (flags & IORESOURCE_MEM)
++		return ioremap_wc(start, len);
++	/* What? */
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(pci_iomap_wc_range);
 +
- #define KB_ROWS			16
- #define KB_COLS			8
- #define LOCOMOKBD_NUMKEYS	(KB_ROWS * KB_COLS)
-@@ -48,7 +56,7 @@
- static const unsigned char
- locomokbd_keycode[LOCOMOKBD_NUMKEYS] = {
- 	0, KEY_ESC, KEY_ACTIVITY, 0, 0, 0, 0, 0, 0, 0,				/* 0 - 9 */
--	0, 0, 0, 0, 0, 0, 0, KEY_MENU, 0, KEY_CONTACT,				/* 10 - 19 */
-+	0, 0, 0, 0, 0, 0, 0, KEY_MENU, 0, LOCOMO_KEY_CONTACT,			/* 10 - 19 */
- 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,						/* 20 - 29 */
- 	0, 0, 0, KEY_CENTER, 0, KEY_MAIL, 0, 0, 0, 0,				/* 30 - 39 */
- 	0, 0, 0, 0, 0, 0, 0, 0, 0, KEY_RIGHT,					/* 40 - 49 */
-@@ -280,9 +288,9 @@ static int locomokbd_probe(struct platform_device *dev)
- 			sizeof(locomokbd->keycode));
- 
- 	if (machine_is_collie())
--		locomokbd->keycode[18] = KEY_HOME;
-+		locomokbd->keycode[18] = LOCOMO_KEY_HOME;
- 	else
--		locomokbd->keycode[3] = KEY_HOME;
-+		locomokbd->keycode[3] = LOCOMO_KEY_HOME;
- 
- 	for (i = 0; i < LOCOMOKBD_NUMKEYS; i++)
- 		input_set_capability(input_dev, EV_KEY, locomokbd->keycode[i]);
++/**
+  * pci_iomap - create a virtual mapping cookie for a PCI BAR
+  * @dev: PCI device that owns the BAR
+  * @bar: BAR number
+@@ -70,4 +110,25 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
+ 	return pci_iomap_range(dev, bar, 0, maxlen);
+ }
+ EXPORT_SYMBOL(pci_iomap);
++
++/**
++ * pci_iomap_wc - create a virtual WC mapping cookie for a PCI BAR
++ * @dev: PCI device that owns the BAR
++ * @bar: BAR number
++ * @maxlen: length of the memory to map
++ *
++ * Using this function you will get a __iomem address to your device BAR.
++ * You can access it using ioread*() and iowrite*(). These functions hide
++ * the details if this is a MMIO or PIO address space and will just do what
++ * you expect from them in the correct way. When possible write combining
++ * is used.
++ *
++ * @maxlen specifies the maximum length to map. If you want to get access to
++ * the complete BAR without checking for its length first, pass %0 here.
++ * */
++void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long maxlen)
++{
++	return pci_iomap_wc_range(dev, bar, 0, maxlen);
++}
++EXPORT_SYMBOL_GPL(pci_iomap_wc);
+ #endif /* CONFIG_PCI */
 -- 
-2.1.4
+2.3.2.209.gd67f9d5.dirty
 

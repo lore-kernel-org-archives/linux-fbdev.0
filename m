@@ -1,55 +1,197 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:37:54 +0000
-Subject: [PATCH v3 1/3] IB/qib: add acounting for MTRR
-Message-Id: <1429648676-17755-2-git-send-email-mcgrof@do-not-panic.com>
+Date: Thu, 30 Apr 2015 20:25:18 +0000
+Subject: [PATCH v5 4/6] ivtv: use arch_phys_wc_add() and require PAT disabled
+Message-Id: <1430425520-22275-5-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429648676-17755-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1429648676-17755-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1430425520-22275-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1430425520-22275-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cocci@systeme.lip6.fr
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: bp@suse.de, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, daniel.vetter@intel.com, airlied@linux.ie
+Cc: dledford@redhat.com, awalls@md.metrocast.net, syrjala@sci.fi, luto@amacapital.net, mst@redhat.com, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Suresh Siddha <sbsiddha@gmail.com>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Antonino Daplas <adaplas@gmail.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, Stefan Bader <stefan.bader@canonical.com>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, toshi.kani@hp.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, linux-fbdev@vger.kernel.org, ivtv-devel@ivtvdriver.org, linux-media@vger.kernel.org, xen-devel@lists.xensource.com
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-There is no good reason not to, we eventually delete it as well.
+We are burrying direct access to MTRR code support on
+x86 in order to take advantage of PAT. In the future we
+also want to make the default behaviour of ioremap_nocache()
+to use strong UC, use of mtrr_add() on those systems
+would make write-combining void.
 
-Cc: Toshi Kani <toshi.kani@hp.com>
+In order to help both enable us to later make strong
+UC default and in order to phase out direct MTRR access
+code port the driver over to arch_phys_wc_add() and
+annotate that the device driver requires systems to
+boot with PAT disabled, with the nopat kernel parameter.
+
+This is a worthy comprmise given that the hardware is
+really rare these days, and perhaps only some lost souls
+in some third world country are expected to be using this
+feature of the device driver.
+
+Acked-by: Andy Walls <awalls@md.metrocast.net>
+Cc: Andy Walls <awalls@md.metrocast.net>
+Cc: Doug Ledford <dledford@redhat.com>
+Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Juergen Gross <jgross@suse.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Dave Airlie <airlied@redhat.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Antonino Daplas <adaplas@gmail.com>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Mike Marciniszyn <infinipath@intel.com>
-Cc: Roland Dreier <roland@kernel.org>
-Cc: Sean Hefty <sean.hefty@intel.com>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
-Cc: linux-rdma@vger.kernel.org
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: Stefan Bader <stefan.bader@canonical.com>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: konrad.wilk@oracle.com
+Cc: ville.syrjala@linux.intel.com
+Cc: david.vrabel@citrix.com
+Cc: jbeulich@suse.com
+Cc: toshi.kani@hp.com
+Cc: Roger Pau Monné <roger.pau@citrix.com>
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
+Cc: ivtv-devel@ivtvdriver.org
+Cc: linux-media@vger.kernel.org
+Cc: xen-devel@lists.xensource.com
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/infiniband/hw/qib/qib_wc_x86_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/media/pci/ivtv/Kconfig  |  3 +++
+ drivers/media/pci/ivtv/ivtvfb.c | 58 ++++++++++++++++-------------------------
+ 2 files changed, 26 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/infiniband/hw/qib/qib_wc_x86_64.c b/drivers/infiniband/hw/qib/qib_wc_x86_64.c
-index 81b225f..fe0850a 100644
---- a/drivers/infiniband/hw/qib/qib_wc_x86_64.c
-+++ b/drivers/infiniband/hw/qib/qib_wc_x86_64.c
-@@ -118,7 +118,7 @@ int qib_enable_wc(struct qib_devdata *dd)
- 	if (!ret) {
- 		int cookie;
+diff --git a/drivers/media/pci/ivtv/Kconfig b/drivers/media/pci/ivtv/Kconfig
+index dd6ee57e..b2a7f88 100644
+--- a/drivers/media/pci/ivtv/Kconfig
++++ b/drivers/media/pci/ivtv/Kconfig
+@@ -57,5 +57,8 @@ config VIDEO_FB_IVTV
+ 	  This is used in the Hauppauge PVR-350 card. There is a driver
+ 	  homepage at <http://www.ivtvdriver.org>.
  
--		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 0);
-+		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 1);
- 		if (cookie < 0) {
- 			{
- 				qib_devinfo(dd->pcidev,
++	  If you have this hardware you will need to boot with PAT disabled
++	  on your x86 systems, use the nopat kernel parameter.
++
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called ivtvfb.
+diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
+index 9ff1230..7685ae3 100644
+--- a/drivers/media/pci/ivtv/ivtvfb.c
++++ b/drivers/media/pci/ivtv/ivtvfb.c
+@@ -44,8 +44,8 @@
+ #include <linux/ivtvfb.h>
+ #include <linux/slab.h>
+ 
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
++#ifdef CONFIG_X86_64
++#include <asm/pat.h>
+ #endif
+ 
+ #include "ivtv-driver.h"
+@@ -155,12 +155,11 @@ struct osd_info {
+ 	/* Buffer size */
+ 	u32 video_buffer_size;
+ 
+-#ifdef CONFIG_MTRR
+ 	/* video_base rounded down as required by hardware MTRRs */
+ 	unsigned long fb_start_aligned_physaddr;
+ 	/* video_base rounded up as required by hardware MTRRs */
+ 	unsigned long fb_end_aligned_physaddr;
+-#endif
++	int wc_cookie;
+ 
+ 	/* Store the buffer offset */
+ 	int set_osd_coords_x;
+@@ -1099,6 +1098,8 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
+ static int ivtvfb_init_io(struct ivtv *itv)
+ {
+ 	struct osd_info *oi = itv->osd_info;
++	/* Find the largest power of two that maps the whole buffer */
++	int size_shift = 31;
+ 
+ 	mutex_lock(&itv->serialize_lock);
+ 	if (ivtv_init_on_first_open(itv)) {
+@@ -1132,29 +1133,16 @@ static int ivtvfb_init_io(struct ivtv *itv)
+ 			oi->video_pbase, oi->video_vbase,
+ 			oi->video_buffer_size / 1024);
+ 
+-#ifdef CONFIG_MTRR
+-	{
+-		/* Find the largest power of two that maps the whole buffer */
+-		int size_shift = 31;
+-
+-		while (!(oi->video_buffer_size & (1 << size_shift))) {
+-			size_shift--;
+-		}
+-		size_shift++;
+-		oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
+-		oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
+-		oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
+-		oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
+-		if (mtrr_add(oi->fb_start_aligned_physaddr,
+-			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr,
+-			     MTRR_TYPE_WRCOMB, 1) < 0) {
+-			IVTVFB_INFO("disabled mttr\n");
+-			oi->fb_start_aligned_physaddr = 0;
+-			oi->fb_end_aligned_physaddr = 0;
+-		}
+-	}
+-#endif
+-
++	while (!(oi->video_buffer_size & (1 << size_shift)))
++		size_shift--;
++	size_shift++;
++	oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
++	oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
++	oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
++	oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
++	oi->wc_cookie = arch_phys_wc_add(oi->fb_start_aligned_physaddr,
++					 oi->fb_end_aligned_physaddr -
++					 oi->fb_start_aligned_physaddr);
+ 	/* Blank the entire osd. */
+ 	memset_io(oi->video_vbase, 0, oi->video_buffer_size);
+ 
+@@ -1172,14 +1160,7 @@ static void ivtvfb_release_buffers (struct ivtv *itv)
+ 
+ 	/* Release pseudo palette */
+ 	kfree(oi->ivtvfb_info.pseudo_palette);
+-
+-#ifdef CONFIG_MTRR
+-	if (oi->fb_end_aligned_physaddr) {
+-		mtrr_del(-1, oi->fb_start_aligned_physaddr,
+-			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr);
+-	}
+-#endif
+-
++	arch_phys_wc_del(oi->wc_cookie);
+ 	kfree(oi);
+ 	itv->osd_info = NULL;
+ }
+@@ -1284,6 +1265,13 @@ static int __init ivtvfb_init(void)
+ 	int registered = 0;
+ 	int err;
+ 
++#ifdef CONFIG_X86_64
++	if (WARN(pat_enabled(),
++		 "ivtvfb needs PAT disabled, boot with nopat kernel parameter\n")) {
++		return EINVAL;
++	}
++#endif
++
+ 	if (ivtvfb_card_id < -1 || ivtvfb_card_id >= IVTV_MAX_CARDS) {
+ 		printk(KERN_ERR "ivtvfb:  ivtvfb_card_id parameter is out of range (valid range: -1 - %d)\n",
+ 		     IVTV_MAX_CARDS - 1);
 -- 
 2.3.2.209.gd67f9d5.dirty
 

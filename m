@@ -1,168 +1,82 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Wed, 29 Apr 2015 21:36:09 +0000
-Subject: [PATCH v4 2/5] lib: devres: add pcim_iomap_wc() variants
-Message-Id: <1430343372-687-3-git-send-email-mcgrof@do-not-panic.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Thu, 30 Apr 2015 16:26:47 +0000
+Subject: Re: [PATCH v4 2/5] lib: devres: add pcim_iomap_wc() variants
+Message-Id: <20150430162647.GD7888@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
+ <1430343372-687-3-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1430343372-687-3-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: bhelgaas@google.com, mst@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, airlied@linux.ie, daniel.vetter@intel.com
-Cc: linux-fbdev@vger.kernel.org, luto@amacapital.net, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, venkatesh.pallipadi@intel.com, Stefan Bader <stefan.bader@canonical.com>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, xen-devel@lists.xensource.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Cc: mst@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, airlied@linux.ie, daniel.vetter@intel.com, linux-fbdev@vger.kernel.org, luto@amacapital.net, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, venkatesh.pallipadi@intel.com, Stefan Bader <stefan.bader@canonical.com>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>, xen-devel@lists.xensource.com, linux-pci@vger.kernel.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+[+cc linux-pci]
 
-Now that we have pci_iomap_wc() add the respective devres helpers.
+Hi Luis,
 
-Cc: Toshi Kani <toshi.kani@hp.com>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Michael S. Tsirkin <mst@redhat.com>
-Cc: venkatesh.pallipadi@intel.com
-Cc: Stefan Bader <stefan.bader@canonical.com>
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Davidlohr Bueso <dbueso@suse.de>
-Cc: konrad.wilk@oracle.com
-Cc: ville.syrjala@linux.intel.com
-Cc: david.vrabel@citrix.com
-Cc: jbeulich@suse.com
-Cc: Roger Pau Monné <roger.pau@citrix.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: xen-devel@lists.xensource.com
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
----
- include/linux/pci.h |  2 ++
- lib/devres.c        | 78 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 80 insertions(+)
+On Wed, Apr 29, 2015 at 02:36:09PM -0700, Luis R. Rodriguez wrote:
+> From: "Luis R. Rodriguez" <mcgrof@suse.com>
+> 
+> Now that we have pci_iomap_wc() add the respective devres helpers.
 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 490ca41..cb317c4 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1619,9 +1619,11 @@ static inline void pci_dev_specific_enable_acs(struct pci_dev *dev) { }
- #endif
- 
- void __iomem *pcim_iomap(struct pci_dev *pdev, int bar, unsigned long maxlen);
-+void __iomem *pcim_iomap_wc(struct pci_dev *pdev, int bar, unsigned long maxlen);
- void pcim_iounmap(struct pci_dev *pdev, void __iomem *addr);
- void __iomem * const *pcim_iomap_table(struct pci_dev *pdev);
- int pcim_iomap_regions(struct pci_dev *pdev, int mask, const char *name);
-+int pcim_iomap_wc_regions(struct pci_dev *pdev, int mask, const char *name);
- int pcim_iomap_regions_request_all(struct pci_dev *pdev, int mask,
- 				   const char *name);
- void pcim_iounmap_regions(struct pci_dev *pdev, int mask);
-diff --git a/lib/devres.c b/lib/devres.c
-index fbe2aac..d59a2b9 100644
---- a/lib/devres.c
-+++ b/lib/devres.c
-@@ -304,6 +304,30 @@ void __iomem *pcim_iomap(struct pci_dev *pdev, int bar, unsigned long maxlen)
- EXPORT_SYMBOL(pcim_iomap);
- 
- /**
-+ * pcim_iomap_wc - Managed pcim_iomap_wc()
-+ * @pdev: PCI device to iomap for
-+ * @bar: BAR to iomap
-+ * @maxlen: Maximum length of iomap
-+ *
-+ * Managed pci_iomap_wc().  Map is automatically unmapped on driver
-+ * detach.
-+ */
-+void __iomem *pcim_iomap_wc(struct pci_dev *pdev, int bar, unsigned long maxlen)
-+{
-+	void __iomem **tbl;
-+
-+	BUG_ON(bar >= PCIM_IOMAP_MAX);
-+
-+	tbl = (void __iomem **)pcim_iomap_table(pdev);
-+	if (!tbl || tbl[bar])	/* duplicate mappings not allowed */
-+		return NULL;
-+
-+	tbl[bar] = pci_iomap_wc(pdev, bar, maxlen);
-+	return tbl[bar];
-+}
-+EXPORT_SYMBOL_GPL(pcim_iomap_wc);
-+
-+/**
-  * pcim_iounmap - Managed pci_iounmap()
-  * @pdev: PCI device to iounmap for
-  * @addr: Address to unmap
-@@ -383,6 +407,60 @@ int pcim_iomap_regions(struct pci_dev *pdev, int mask, const char *name)
- EXPORT_SYMBOL(pcim_iomap_regions);
- 
- /**
-+ * pcim_iomap_wc_regions - Request and iomap PCI BARs with write-combining
-+ * @pdev: PCI device to map IO resources for
-+ * @mask: Mask of BARs to request and iomap
-+ * @name: Name used when requesting regions
-+ *
-+ * Request and iomap regions specified by @mask with a preference for
-+ * write-combining.
-+ */
-+int pcim_iomap_wc_regions(struct pci_dev *pdev, int mask, const char *name)
-+{
-+	void __iomem * const *iomap;
-+	int i, rc;
-+
-+	iomap = pcim_iomap_table(pdev);
-+	if (!iomap)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-+		unsigned long len;
-+
-+		if (!(mask & (1 << i)))
-+			continue;
-+
-+		rc = -EINVAL;
-+		len = pci_resource_len(pdev, i);
-+		if (!len)
-+			goto err_inval;
-+
-+		rc = pci_request_region(pdev, i, name);
-+		if (rc)
-+			goto err_inval;
-+
-+		rc = -ENOMEM;
-+		if (!pcim_iomap_wc(pdev, i, 0))
-+			goto err_region;
-+	}
-+
-+	return 0;
-+
-+ err_region:
-+	pci_release_region(pdev, i);
-+ err_inval:
-+	while (--i >= 0) {
-+		if (!(mask & (1 << i)))
-+			continue;
-+		pcim_iounmap(pdev, iomap[i]);
-+		pci_release_region(pdev, i);
-+	}
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(pcim_iomap_wc_regions);
-+
-+/**
-  * pcim_iomap_regions_request_all - Request all BARs and iomap specified ones
-  * @pdev: PCI device to map IO resources for
-  * @mask: Mask of BARs to iomap
--- 
-2.3.2.209.gd67f9d5.dirty
+I guess I'm still confused about the relationship between pci_iomap_wc()
+and arch_phys_wc_add().
 
+Do you expect every caller of pcim_iomap_wc() to also call
+arch_phys_wc_add()?
+
+If so, I'm not sure how pcim_iomap_wc() fits into the picture.  A driver
+can call both pcim_iomap_wc() and arch_phys_wc_add(), but the driver
+doesn't explicitly do the unmap, so where would the arch_phys_wc_del()
+happen?
+
+If not, how does a driver know whether it should call arch_phys_wc_add()?
+
+> ...
+>  /**
+> + * pcim_iomap_wc_regions - Request and iomap PCI BARs with write-combining
+> + * @pdev: PCI device to map IO resources for
+> + * @mask: Mask of BARs to request and iomap
+> + * @name: Name used when requesting regions
+> + *
+> + * Request and iomap regions specified by @mask with a preference for
+> + * write-combining.
+> + */
+> +int pcim_iomap_wc_regions(struct pci_dev *pdev, int mask, const char *name)
+> +{
+> +	void __iomem * const *iomap;
+> +	int i, rc;
+> +
+> +	iomap = pcim_iomap_table(pdev);
+> +	if (!iomap)
+> +		return -ENOMEM;
+> +
+> +	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+> +		unsigned long len;
+> +
+> +		if (!(mask & (1 << i)))
+> +			continue;
+> +
+> +		rc = -EINVAL;
+> +		len = pci_resource_len(pdev, i);
+> +		if (!len)
+> +			goto err_inval;
+> +
+> +		rc = pci_request_region(pdev, i, name);
+> +		if (rc)
+> +			goto err_inval;
+> +
+> +		rc = -ENOMEM;
+> +		if (!pcim_iomap_wc(pdev, i, 0))
+> +			goto err_region;
+
+Is there a user for this?  Are there really devices where *all* the BARs
+can be mapped with WC?  Are there enough of them to make it worth adding
+this?
+
+I don't see users of either pcim_iomap_wc() or pcim_iomap_wc_regions() so
+far.  Did I miss them, or do you just expect them in the near future?
+
+Bjorn

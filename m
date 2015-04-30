@@ -1,41 +1,50 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Wed, 22 Apr 2015 18:38:24 +0000
-Subject: [PATCH v5 2/2] IB/qib: use arch_phys_wc_add()
-Message-Id: <1429727904-5812-1-git-send-email-mcgrof@do-not-panic.com>
+Date: Thu, 30 Apr 2015 20:25:20 +0000
+Subject: [PATCH v5 6/6] IB/ipath: use arch_phys_wc_add() and require PAT disabled
+Message-Id: <1430425520-22275-7-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1430425520-22275-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1430425520-22275-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: infinipath-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, roland-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sean.hefty-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hal.rosenstock-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dledford-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: luto-kltTT9wpgjJwATOyAt5JVQ@public.gmane.org, mst-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Luis R. Rodriguez" <mcgrof-IBi9RG/b67k@public.gmane.org>, Toshi Kani <toshi.kani-VXdhtT5mjnY@public.gmane.org>, Rickard Strandqvist <rickard_strandqvist-IW2WV5XWFqGZkjO+N0TKoMugMpMbD5Xr@public.gmane.org>, Mike Marciniszyn <mike.marciniszyn-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Roland Dreier <roland-BHEL68pLQRGGvPXPguhicg@public.gmane.org>, Dennis Dalessandro <dennis.dalessandro-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Suresh Siddha <sbsiddha-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-X9Un+BFzKDI@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Juergen Gross <jgross-IBi9RG/b67k@public.gmane.org>, Daniel Vetter <daniel.vetter-/w4YWyX8dFk@public.gmane.org>, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Antonino Daplas <adaplas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Dave Hansen <dave.hansen-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Stefan Bader <stefan.bader-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org>, konrad.wilk-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org, ville.syrjala@l
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: bp@suse.de, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, daniel.vetter@intel.com, airlied@linux.ie
+Cc: dledford@redhat.com, awalls@md.metrocast.net, syrjala@sci.fi, luto@amacapital.net, mst@redhat.com, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Linus Torvalds <torvalds@linux-foundation.org>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Antonino Daplas <adaplas@gmail.com>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, Stefan Bader <stefan.>
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-This driver already makes use of ioremap_wc() on PIO buffers,
-so convert it to use arch_phys_wc_add().
+We are burrying direct access to MTRR code support on
+x86 in order to take advantage of PAT. In the future we
+also want to make the default behaviour of ioremap_nocache()
+to use strong UC, use of mtrr_add() on those systems
+would make write-combining void.
 
-The qib driver uses a mmap() special case for when PAT is
-not used, this behaviour used to be determined with a
-module parameter but since we have been asked to just
-remove that module parameter this checks for the WC cookie,
-if not set we can assume PAT was used. If its set we do
-what we used to do for the mmap for when MTRR was enabled.
+In order to help both enable us to later make strong
+UC default and in order to phase out direct MTRR access
+code port the driver over to arch_phys_wc_add() and
+annotate that the device driver requires systems to
+boot with PAT disabled, with the nopat kernel parameter.
 
-The removal of the module parameter is OK given that Andy
-notes that even if users of module parameter are still around
-it will not prevent loading of the module on recent kernels.
+This is a worthy compromise given that the ipath device
+driver powers the old HTX bus cards that only work in
+AMD systems, while the newer IB/qib device driver
+powers all PCI-e cards. The ipath device driver is
+obsolete, hardware hard to find and because of this
+this its a reasonable compromise to make to require
+users of ipath to boot with nopat.
 
+Acked-by: Doug Ledford <dledford@redhat.com>
 Cc: Doug Ledford <dledford@redhat.com>
-Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Andy Walls <awalls@md.metrocast.net>
+Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+Cc: Sean Hefty <sean.hefty@intel.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
 Cc: Mike Marciniszyn <mike.marciniszyn@intel.com>
 Cc: Roland Dreier <roland@purestorage.com>
-Cc: Sean Hefty <sean.hefty@intel.com>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
-Cc: Dennis Dalessandro <dennis.dalessandro@intel.com>
 Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Juergen Gross <jgross@suse.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
@@ -44,6 +53,11 @@ Cc: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Antonino Daplas <adaplas@gmail.com>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Davidlohr Bueso <dbueso@suse.de>
 Cc: Dave Hansen <dave.hansen@linux.intel.com>
 Cc: Arnd Bergmann <arnd@arndb.de>
 Cc: Michael S. Tsirkin <mst@redhat.com>
@@ -52,7 +66,8 @@ Cc: konrad.wilk@oracle.com
 Cc: ville.syrjala@linux.intel.com
 Cc: david.vrabel@citrix.com
 Cc: jbeulich@suse.com
-Cc: Roger Pau Monn=C3=A9 <roger.pau@citrix.com>
+Cc: toshi.kani@hp.com
+Cc: Roger Pau Monné <roger.pau@citrix.com>
 Cc: infinipath@intel.com
 Cc: linux-rdma@vger.kernel.org
 Cc: linux-fbdev@vger.kernel.org
@@ -60,262 +75,155 @@ Cc: linux-kernel@vger.kernel.org
 Cc: xen-devel@lists.xensource.com
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
+ drivers/infiniband/hw/ipath/Kconfig           |  3 ++
+ drivers/infiniband/hw/ipath/ipath_driver.c    | 18 +++++++----
+ drivers/infiniband/hw/ipath/ipath_kernel.h    |  4 +--
+ drivers/infiniband/hw/ipath/ipath_wc_x86_64.c | 43 ++++++---------------------
+ 4 files changed, 26 insertions(+), 42 deletions(-)
 
-This v5 changes the comment to make it clear when the mmap code
-will be true as requested by Doug. This patch still depends on
-the v4 1/2 qib patch which enables accounting for the mtrr_add()
-call. I won't be resending that one.
-
- drivers/infiniband/hw/qib/qib.h           |  1 -
- drivers/infiniband/hw/qib/qib_file_ops.c  |  3 ++-
- drivers/infiniband/hw/qib/qib_iba6120.c   |  8 +++---
- drivers/infiniband/hw/qib/qib_iba7220.c   |  8 +++---
- drivers/infiniband/hw/qib/qib_iba7322.c   | 41 +++++++++++++++------------=
-----
- drivers/infiniband/hw/qib/qib_init.c      | 26 ++++++--------------
- drivers/infiniband/hw/qib/qib_wc_x86_64.c | 31 +++--------------------
- 7 files changed, 39 insertions(+), 79 deletions(-)
-
-diff --git a/drivers/infiniband/hw/qib/qib.h b/drivers/infiniband/hw/qib/qi=
-b.h
-index ffd48bf..ba5173e2 100644
---- a/drivers/infiniband/hw/qib/qib.h
-+++ b/drivers/infiniband/hw/qib/qib.h
-@@ -1136,7 +1136,6 @@ extern struct qib_devdata *qib_lookup(int unit);
- extern u32 qib_cpulist_count;
- extern unsigned long *qib_cpulist;
-=20
--extern unsigned qib_wc_pat;
- extern unsigned qib_cc_table_size;
- int qib_init(struct qib_devdata *, int);
- int init_chip_wc_pat(struct qib_devdata *dd, u32);
-diff --git a/drivers/infiniband/hw/qib/qib_file_ops.c b/drivers/infiniband/=
-hw/qib/qib_file_ops.c
-index 9ea6c44..7258818 100644
---- a/drivers/infiniband/hw/qib/qib_file_ops.c
-+++ b/drivers/infiniband/hw/qib/qib_file_ops.c
-@@ -835,7 +835,8 @@ static int mmap_piobufs(struct vm_area_struct *vma,
- 	vma->vm_flags &=3D ~VM_MAYREAD;
- 	vma->vm_flags |=3D VM_DONTCOPY | VM_DONTEXPAND;
-=20
--	if (qib_wc_pat)
-+	/* We used PAT if wc_cookie =3D 0 */
-+	if (!dd->wc_cookie)
- 		vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
-=20
- 	ret =3D io_remap_pfn_range(vma, vma->vm_start, phys >> PAGE_SHIFT,
-diff --git a/drivers/infiniband/hw/qib/qib_iba6120.c b/drivers/infiniband/h=
-w/qib/qib_iba6120.c
-index 0d2ba59..4b927809 100644
---- a/drivers/infiniband/hw/qib/qib_iba6120.c
-+++ b/drivers/infiniband/hw/qib/qib_iba6120.c
-@@ -3315,11 +3315,9 @@ static int init_6120_variables(struct qib_devdata *d=
-d)
- 	qib_6120_config_ctxts(dd);
- 	qib_set_ctxtcnt(dd);
-=20
--	if (qib_wc_pat) {
--		ret =3D init_chip_wc_pat(dd, 0);
--		if (ret)
--			goto bail;
--	}
-+	ret =3D init_chip_wc_pat(dd, 0);
-+	if (ret)
-+		goto bail;
- 	set_6120_baseaddrs(dd); /* set chip access pointers now */
-=20
- 	ret =3D 0;
-diff --git a/drivers/infiniband/hw/qib/qib_iba7220.c b/drivers/infiniband/h=
-w/qib/qib_iba7220.c
-index 22affda..00b2af2 100644
---- a/drivers/infiniband/hw/qib/qib_iba7220.c
-+++ b/drivers/infiniband/hw/qib/qib_iba7220.c
-@@ -4126,11 +4126,9 @@ static int qib_init_7220_variables(struct qib_devdat=
-a *dd)
- 	qib_7220_config_ctxts(dd);
- 	qib_set_ctxtcnt(dd);  /* needed for PAT setup */
-=20
--	if (qib_wc_pat) {
--		ret =3D init_chip_wc_pat(dd, 0);
--		if (ret)
--			goto bail;
--	}
-+	ret =3D init_chip_wc_pat(dd, 0);
-+	if (ret)
-+		goto bail;
- 	set_7220_baseaddrs(dd); /* set chip access pointers now */
-=20
- 	ret =3D 0;
-diff --git a/drivers/infiniband/hw/qib/qib_iba7322.c b/drivers/infiniband/h=
-w/qib/qib_iba7322.c
-index ef97b71..f32b462 100644
---- a/drivers/infiniband/hw/qib/qib_iba7322.c
-+++ b/drivers/infiniband/hw/qib/qib_iba7322.c
-@@ -6429,6 +6429,7 @@ static int qib_init_7322_variables(struct qib_devdata=
- *dd)
- 	unsigned features, pidx, sbufcnt;
- 	int ret, mtu;
- 	u32 sbufs, updthresh;
-+	resource_size_t vl15off;
-=20
- 	/* pport structs are contiguous, allocated after devdata */
- 	ppd =3D (struct qib_pportdata *)(dd + 1);
-@@ -6677,29 +6678,27 @@ static int qib_init_7322_variables(struct qib_devda=
-ta *dd)
- 	qib_7322_config_ctxts(dd);
- 	qib_set_ctxtcnt(dd);
-=20
--	if (qib_wc_pat) {
--		resource_size_t vl15off;
--		/*
--		 * We do not set WC on the VL15 buffers to avoid
--		 * a rare problem with unaligned writes from
--		 * interrupt-flushed store buffers, so we need
--		 * to map those separately here.  We can't solve
--		 * this for the rarely used mtrr case.
--		 */
--		ret =3D init_chip_wc_pat(dd, 0);
--		if (ret)
--			goto bail;
-+	/*
-+	 * We do not set WC on the VL15 buffers to avoid
-+	 * a rare problem with unaligned writes from
-+	 * interrupt-flushed store buffers, so we need
-+	 * to map those separately here.  We can't solve
-+	 * this for the rarely used mtrr case.
-+	 */
-+	ret =3D init_chip_wc_pat(dd, 0);
-+	if (ret)
-+		goto bail;
-=20
--		/* vl15 buffers start just after the 4k buffers */
--		vl15off =3D dd->physaddr + (dd->piobufbase >> 32) +
--			dd->piobcnt4k * dd->align4k;
--		dd->piovl15base	=3D ioremap_nocache(vl15off,
--						  NUM_VL15_BUFS * dd->align4k);
--		if (!dd->piovl15base) {
--			ret =3D -ENOMEM;
--			goto bail;
--		}
-+	/* vl15 buffers start just after the 4k buffers */
-+	vl15off =3D dd->physaddr + (dd->piobufbase >> 32) +
-+		  dd->piobcnt4k * dd->align4k;
-+	dd->piovl15base	=3D ioremap_nocache(vl15off,
-+					  NUM_VL15_BUFS * dd->align4k);
-+	if (!dd->piovl15base) {
-+		ret =3D -ENOMEM;
-+		goto bail;
- 	}
+diff --git a/drivers/infiniband/hw/ipath/Kconfig b/drivers/infiniband/hw/ipath/Kconfig
+index 1d9bb11..8fe54ff 100644
+--- a/drivers/infiniband/hw/ipath/Kconfig
++++ b/drivers/infiniband/hw/ipath/Kconfig
+@@ -9,3 +9,6 @@ config INFINIBAND_IPATH
+ 	as IP-over-InfiniBand as well as with userspace applications
+ 	(in conjunction with InfiniBand userspace access).
+ 	For QLogic PCIe QLE based cards, use the QIB driver instead.
 +
- 	qib_7322_set_baseaddrs(dd); /* set chip access pointers now */
-=20
- 	ret =3D 0;
-diff --git a/drivers/infiniband/hw/qib/qib_init.c b/drivers/infiniband/hw/q=
-ib/qib_init.c
-index 2ee3695..7e00470 100644
---- a/drivers/infiniband/hw/qib/qib_init.c
-+++ b/drivers/infiniband/hw/qib/qib_init.c
-@@ -91,15 +91,6 @@ MODULE_PARM_DESC(krcvqs, "number of kernel receive queue=
-s per IB port");
- unsigned qib_cc_table_size;
- module_param_named(cc_table_size, qib_cc_table_size, uint, S_IRUGO);
- MODULE_PARM_DESC(cc_table_size, "Congestion control table entries 0 (CCA d=
-isabled - default), min =3D 128, max =3D 1984");
--/*
-- * qib_wc_pat parameter:
-- *      0 is WC via MTRR
-- *      1 is WC via PAT
-- *      If PAT initialization fails, code reverts back to MTRR
-- */
--unsigned qib_wc_pat =3D 1; /* default (1) is to use PAT, not MTRR */
--module_param_named(wc_pat, qib_wc_pat, uint, S_IRUGO);
--MODULE_PARM_DESC(wc_pat, "enable write-combining via PAT mechanism");
-=20
- static void verify_interrupt(unsigned long);
-=20
-@@ -1377,8 +1368,7 @@ static void cleanup_device_data(struct qib_devdata *d=
-d)
- 		spin_unlock(&dd->pport[pidx].cc_shadow_lock);
++	If you have this hardware you will need to boot with PAT disabled
++	on your x86-64 systems, use the nopat kernel parameter.
+diff --git a/drivers/infiniband/hw/ipath/ipath_driver.c b/drivers/infiniband/hw/ipath/ipath_driver.c
+index bd0caed..441cfe5 100644
+--- a/drivers/infiniband/hw/ipath/ipath_driver.c
++++ b/drivers/infiniband/hw/ipath/ipath_driver.c
+@@ -42,6 +42,9 @@
+ #include <linux/bitmap.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
++#ifdef CONFIG_X86_64
++#include <asm/pat.h>
++#endif
+ 
+ #include "ipath_kernel.h"
+ #include "ipath_verbs.h"
+@@ -395,6 +398,14 @@ static int ipath_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	unsigned long long addr;
+ 	u32 bar0 = 0, bar1 = 0;
+ 
++#ifdef CONFIG_X86_64
++	if (WARN(pat_enabled(),
++		 "ipath needs PAT disabled, boot with nopat kernel parameter\n")) {
++		ret = EINVAL;
++		goto bail;
++	}
++#endif
++
+ 	dd = ipath_alloc_devdata(pdev);
+ 	if (IS_ERR(dd)) {
+ 		ret = PTR_ERR(dd);
+@@ -542,6 +553,7 @@ static int ipath_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	dd->ipath_kregbase = __ioremap(addr, len,
+ 		(_PAGE_NO_CACHE|_PAGE_WRITETHRU));
+ #else
++	/* XXX: split this properly to enable on PAT */
+ 	dd->ipath_kregbase = ioremap_nocache(addr, len);
+ #endif
+ 
+@@ -587,12 +599,8 @@ static int ipath_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	ret = ipath_enable_wc(dd);
+ 
+-	if (ret) {
+-		ipath_dev_err(dd, "Write combining not enabled "
+-			      "(err %d): performance may be poor\n",
+-			      -ret);
++	if (ret)
+ 		ret = 0;
+-	}
+ 
+ 	ipath_verify_pioperf(dd);
+ 
+diff --git a/drivers/infiniband/hw/ipath/ipath_kernel.h b/drivers/infiniband/hw/ipath/ipath_kernel.h
+index e08db70..f0f9471 100644
+--- a/drivers/infiniband/hw/ipath/ipath_kernel.h
++++ b/drivers/infiniband/hw/ipath/ipath_kernel.h
+@@ -463,9 +463,7 @@ struct ipath_devdata {
+ 	/* offset in HT config space of slave/primary interface block */
+ 	u8 ipath_ht_slave_off;
+ 	/* for write combining settings */
+-	unsigned long ipath_wc_cookie;
+-	unsigned long ipath_wc_base;
+-	unsigned long ipath_wc_len;
++	int wc_cookie;
+ 	/* ref count for each pkey */
+ 	atomic_t ipath_pkeyrefs[4];
+ 	/* shadow copy of struct page *'s for exp tid pages */
+diff --git a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
+index 70c1f3a..7b6e4c8 100644
+--- a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
++++ b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
+@@ -37,7 +37,6 @@
+  */
+ 
+ #include <linux/pci.h>
+-#include <asm/mtrr.h>
+ #include <asm/processor.h>
+ 
+ #include "ipath_kernel.h"
+@@ -122,27 +121,14 @@ int ipath_enable_wc(struct ipath_devdata *dd)
  	}
-=20
--	if (!qib_wc_pat)
--		qib_disable_wc(dd);
-+	qib_disable_wc(dd);
-=20
- 	if (dd->pioavailregs_dma) {
- 		dma_free_coherent(&dd->pcidev->dev, PAGE_SIZE,
-@@ -1547,14 +1537,12 @@ static int qib_init_one(struct pci_dev *pdev, const=
- struct pci_device_id *ent)
- 		goto bail;
- 	}
-=20
--	if (!qib_wc_pat) {
--		ret =3D qib_enable_wc(dd);
--		if (ret) {
--			qib_dev_err(dd,
--				"Write combining not enabled (err %d): performance may be poor\n",
--				-ret);
--			ret =3D 0;
--		}
-+	ret =3D qib_enable_wc(dd);
-+	if (ret) {
-+		qib_dev_err(dd,
-+			"Write combining not enabled (err %d): performance may be poor\n",
-+			-ret);
-+		ret =3D 0;
- 	}
-=20
- 	qib_verify_pioperf(dd);
-diff --git a/drivers/infiniband/hw/qib/qib_wc_x86_64.c b/drivers/infiniband=
-/hw/qib/qib_wc_x86_64.c
-index fe0850a..6d61ef9 100644
---- a/drivers/infiniband/hw/qib/qib_wc_x86_64.c
-+++ b/drivers/infiniband/hw/qib/qib_wc_x86_64.c
-@@ -116,21 +116,9 @@ int qib_enable_wc(struct qib_devdata *dd)
- 	}
-=20
+ 
  	if (!ret) {
 -		int cookie;
--
--		cookie =3D mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 1);
+-		ipath_cdbg(VERBOSE, "Setting mtrr for chip to WC "
+-			   "(addr %llx, len=0x%llx)\n",
+-			   (unsigned long long) pioaddr,
+-			   (unsigned long long) piolen);
+-		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 1);
 -		if (cookie < 0) {
 -			{
--				qib_devinfo(dd->pcidev,
--					 "mtrr_add()  WC for PIO bufs failed (%d)\n",
+-				dev_info(&dd->pcidev->dev,
+-					 "mtrr_add()  WC for PIO bufs "
+-					 "failed (%d)\n",
 -					 cookie);
--				ret =3D -EINVAL;
+-				ret = -EINVAL;
 -			}
 -		} else {
--			dd->wc_cookie =3D cookie;
--			dd->wc_base =3D (unsigned long) pioaddr;
--			dd->wc_len =3D (unsigned long) piolen;
+-			ipath_cdbg(VERBOSE, "Set mtrr for chip to WC, "
+-				   "cookie is %d\n", cookie);
+-			dd->ipath_wc_cookie = cookie;
+-			dd->ipath_wc_base = (unsigned long) pioaddr;
+-			dd->ipath_wc_len = (unsigned long) piolen;
 -		}
-+		dd->wc_cookie =3D arch_phys_wc_add(pioaddr, piolen);
-+		if (dd->wc_cookie < 0)
-+			ret =3D -EINVAL;
++		dd->wc_cookie = arch_phys_wc_add(pioaddr, piolen);
++		if (dd->wc_cookie < 0) {
++			ipath_dev_err(dd, "Seting mtrr failed on PIO buffers\n");
++			ret = -ENODEV;
++		} else if (dd->wc_cookie = 0)
++			ipath_cdbg(VERBOSE, "Set mtrr for chip to WC not needed\n");
++		else
++			ipath_cdbg(VERBOSE, "Set mtrr for chip to WC\n");
  	}
-=20
+ 
  	return ret;
-@@ -142,18 +130,7 @@ int qib_enable_wc(struct qib_devdata *dd)
+@@ -154,16 +140,5 @@ int ipath_enable_wc(struct ipath_devdata *dd)
   */
- void qib_disable_wc(struct qib_devdata *dd)
+ void ipath_disable_wc(struct ipath_devdata *dd)
  {
--	if (dd->wc_cookie) {
+-	if (dd->ipath_wc_cookie) {
 -		int r;
--
--		r =3D mtrr_del(dd->wc_cookie, dd->wc_base,
--			     dd->wc_len);
+-		ipath_cdbg(VERBOSE, "undoing WCCOMB on pio buffers\n");
+-		r = mtrr_del(dd->ipath_wc_cookie, dd->ipath_wc_base,
+-			     dd->ipath_wc_len);
 -		if (r < 0)
--			qib_devinfo(dd->pcidev,
+-			dev_info(&dd->pcidev->dev,
 -				 "mtrr_del(%lx, %lx, %lx) failed: %d\n",
--				 dd->wc_cookie, dd->wc_base,
--				 dd->wc_len, r);
--		dd->wc_cookie =3D 0; /* even on failure */
+-				 dd->ipath_wc_cookie, dd->ipath_wc_base,
+-				 dd->ipath_wc_len, r);
+-		dd->ipath_wc_cookie = 0; /* even on failure */
 -	}
 +	arch_phys_wc_del(dd->wc_cookie);
  }
-=20
- /**
---=20
+-- 
 2.3.2.209.gd67f9d5.dirty
 

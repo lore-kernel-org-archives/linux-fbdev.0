@@ -1,143 +1,51 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Tue, 12 May 2015 21:13:01 +0000
-Subject: Re: [PATCH v2 03/17] input: convert LoCoMo keyboard driver to use new locomo core
-Message-Id: <20150512211301.GF20725@dtor-ws>
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Fri, 01 May 2015 00:20:04 +0000
+Subject: Re: [PATCH v4 2/5] lib: devres: add pcim_iomap_wc() variants
+Message-Id: <20150501002004.GA5622@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
- <1430178954-11138-4-git-send-email-dbaryshkov@gmail.com>
- <20150512202106.GE20725@dtor-ws>
- <CALT56yOjiBWHH3Uuo82Hqh8Va8V_KCUaaLL7RFtPUjWmfOFbGA@mail.gmail.com>
-In-Reply-To: <CALT56yOjiBWHH3Uuo82Hqh8Va8V_KCUaaLL7RFtPUjWmfOFbGA@mail.gmail.com>
+References: <1430343372-687-1-git-send-email-mcgrof@do-not-panic.com>
+ <1430343372-687-3-git-send-email-mcgrof@do-not-panic.com>
+ <20150430162647.GD7888@google.com>
+ <20150430172723.GU5622@wotan.suse.de>
+ <20150430214638.GE7888@google.com>
+In-Reply-To: <20150430214638.GE7888@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-i2c@vger.kernel.org, linux-input <linux-input@vger.kernel.org>, linux-leds <linux-leds@vger.kernel.org>, linux-spi <linux-spi@vger.kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, mst@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, airlied@linux.ie, daniel.vetter@intel.com, linux-fbdev@vger.kernel.org, luto@amacapital.net, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, venkatesh.pallipadi@intel.com, Stefan Bader <stefan.bader@canonical.com>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>, xen-devel@lists.xensource.com, linux-pci@vger.kernel.org
 
-On Wed, May 13, 2015 at 12:01:23AM +0300, Dmitry Eremin-Solenikov wrote:
-> Hello,
+On Thu, Apr 30, 2015 at 04:46:38PM -0500, Bjorn Helgaas wrote:
+> On Thu, Apr 30, 2015 at 07:27:23PM +0200, Luis R. Rodriguez wrote:
+> > On Thu, Apr 30, 2015 at 11:26:47AM -0500, Bjorn Helgaas wrote:
 > 
-> 2015-05-12 23:21 GMT+03:00 Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> > Hi Dmitry,
-> >
-> > On Tue, Apr 28, 2015 at 02:55:40AM +0300, Dmitry Eremin-Solenikov wrote:
-> >> As LoCoMo is switching to new device model, adapt keyboard driver to
-> >> support new locomo core driver.
-> >>
-> >> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> >> ---
+> > > I don't see users of either pcim_iomap_wc() or pcim_iomap_wc_regions() so
+> > > far.  Did I miss them, or do you just expect them in the near future?
+> > 
+> > The later, and also I hate seeing folks later add code under EXPORT_SYMBOL()
+> > rather than EXPORT_SYMBOL_GPL() so I figure I'd rather do it first. It happened
+> > recently in my v1 series, someone beat me to a write-combining export symbol
+> > and changed it to EXPORT_SYMBOL(). Feel free to drop this though but I hope
+> > no one out there then tries to just add an EXPORT_SYMBOL() later for this...
 > 
-> Thanks for the review.
-> 
-> >>  /* helper functions for reading the keyboard matrix */
-> >> -static inline void locomokbd_charge_all(unsigned long membase)
-> >> +static inline void locomokbd_charge_all(struct locomokbd *locomokbd)
-> >>  {
-> >> -     locomo_writel(0x00FF, membase + LOCOMO_KSC);
-> >> +     regmap_write(locomokbd->regmap, LOCOMO_KSC, 0x00ff);
-> >>  }
-> >>
-> >> -static inline void locomokbd_activate_all(unsigned long membase)
-> >> +static inline void locomokbd_activate_all(struct locomokbd *locomokbd)
-> >
-> > Drop "inline"s from the .c file please.
-> 
-> Why?
+> Why do you want them to be EXPORT_SYMBOL_GPL?  I would expect them to be
+> exported the same way pcim_iomap(), pcim_iomap_regions(), and ioremap_wc()
+> are exported, i.e., with EXPORT_SYMBOL.
+>> 
+> Per Documentation/DocBook/kernel-hacking.tmpl, EXPORT_SYMBOL_GPL "implies
+> that the function is considered an internal implementation issue, and not
+> really an interface."  I don't think these are internal implementation
+> issues.
 
-Because compiler usually knows better whether a function should be
-inlined or not as it keeps track of available registers, so leave the
-decision to it.
+What Documentation/DocBook/kernel-hacking.tmpl states over EXPORT_SYMBOL_GPL()
+is old and in no way reflects current trends and reality. For instance, some
+folks believe that if some code has EXPORT_SYMBOL() declared that they can use
+it on proprietary modules. This is terribly incorrect, quite a few developers
+do not in any way stand by this as a "needed" clarification on their code [0].
+I'm one of them, but to be even more clear on this I simply *always* use
+EXPORT_SYMBOL_GPL() to remove any possible doubt over this on any symbols
+that I export. Heck, even tons of driver library code uses EXPORT_SYMBOL_GPL().
 
-> 
-> >
-> >>  {
-> >> -     unsigned long r;
-> >> -
-> >> -     locomo_writel(0, membase + LOCOMO_KSC);
-> >> -     r = locomo_readl(membase + LOCOMO_KIC);
-> >> -     r &= 0xFEFF;
-> >> -     locomo_writel(r, membase + LOCOMO_KIC);
-> >> +     regmap_write(locomokbd->regmap, LOCOMO_KSC, 0);
-> >> +     regmap_update_bits(locomokbd->regmap, LOCOMO_KIC, 0x100, 0);
-> >>  }
-> >>
-> 
-> [skipped]
-> 
-> >> @@ -291,16 +275,30 @@ static int locomokbd_probe(struct locomo_dev *dev)
-> >>
-> >>       input_set_drvdata(input_dev, locomokbd);
-> >>
-> >> -     memcpy(locomokbd->keycode, locomokbd_keycode, sizeof(locomokbd->keycode));
-> >> +     memcpy(locomokbd->keycode,
-> >> +                     locomokbd_keycode,
-> >> +                     sizeof(locomokbd->keycode));
-> >> +
-> >> +     if (machine_is_collie())
-> >> +             locomokbd->keycode[18] = KEY_HOME;
-> >> +     else
-> >> +             locomokbd->keycode[3] = KEY_HOME;
-> >
-> > This seems like a new addition. Ideally keymap twiddling shoudl be done
-> > from userspace.
-> 
-> This fixes a hardware issue. Home key is wired differently on two
-> devices using this driver.
-> I'd prefer to have such setting in board file or in DTS in future,
-> however that looks like an
-> overkill. What would be your suggestion?
+[0] https://lkml.org/lkml/2012/4/20/402
 
-I am OK with doing this in driver, just as a separate patch please.
-
-> 
-> >>       /* attempt to get the interrupt */
-> >> -     err = request_irq(dev->irq[0], locomokbd_interrupt, 0, "locomokbd", locomokbd);
-> >> +     err = request_irq(locomokbd->irq, locomokbd_interrupt, 0,
-> >> +                     "locomokbd", locomokbd);
-> >
-> > devm_request_irq()?
-> >
-> [skipped]
-> 
-> >> -static int locomokbd_remove(struct locomo_dev *dev)
-> >> +static int locomokbd_remove(struct platform_device *dev)
-> >>  {
-> >> -     struct locomokbd *locomokbd = locomo_get_drvdata(dev);
-> >> +     struct locomokbd *locomokbd = platform_get_drvdata(dev);
-> >>
-> >> -     free_irq(dev->irq[0], locomokbd);
-> >> +     free_irq(locomokbd->irq, locomokbd);
-> >
-> > Is not needed with devm.
-> 
-> Not quite. There will be a possibility for the IRQ to happen after deleting
-> a timer in locomokbd_remove() and before freeing the IRQ through the devres
-> core. Oops.
-
-Right, but if you make sure that device does not generate interrupts in
-probe() until open() is called and do the same in close(), then it
-should be OK.
-
-> 
-> >
-> >>
-> >>       del_timer_sync(&locomokbd->timer);
-> >
-> > Should likely to go into close().
-> 
-> Hmm. I will rethink this part, thank you.
-> 
-> >> +
-> >> +#ifdef CONFIG_PM_SLEEP
-> >> +static int locomokbd_suspend(struct device *dev)
-> >
-> > Mark as __maybe_unused instead of giarding with CONFIG_PM_SLEEP.
-> 
-> Fine, however I thought that #ifdef's here are a typical pattern.
-
-It is up to subsystems, __maybe_unused provides better compile coverage.
-
-Thanks.
-
--- 
-Dmitry
+  Luis

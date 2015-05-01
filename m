@@ -1,80 +1,86 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Tue, 12 May 2015 19:28:38 +0000
-Subject: Re: [PATCH v2 10/17] i2c: add locomo i2c driver
-Message-Id: <20150512192837.GF4449@schokonusskuchen.bad>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="65ImJOski3p8EhYV"
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Date: Fri, 01 May 2015 09:14:55 +0000
+Subject: Re: [RFT PATCH] drm/exynos: Enable DP clock to fix display on Exynos5250 and other
+Message-Id: <CAJKOXPfFYs2nob5tKi2WgihV05SNPg9aHCE6PU_eivTYkkpzBg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
- <1430178954-11138-11-git-send-email-dbaryshkov@gmail.com>
- <20150512192413.GE4449@schokonusskuchen.bad>
- <CALT56yNHvJ1Swj2pp2JrBaJBensSP703JXQKfvivFrJOYf85QA@mail.gmail.com>
-In-Reply-To: <CALT56yNHvJ1Swj2pp2JrBaJBensSP703JXQKfvivFrJOYf85QA@mail.gmail.com>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-i2c@vger.kernel.org, linux-input <linux-input@vger.kernel.org>, linux-leds <linux-leds@vger.kernel.org>, linux-spi <linux-spi@vger.kern>
+References: <1427471856-20918-1-git-send-email-k.kozlowski@samsung.com>
+ <7h8udau9he.fsf@deeprootsystems.com>
+ <CAJKOXPc6Epy_L+djManggcaYLaOrQ_c2S0=_GgU=dikuY1UU0g@mail.gmail.com>
+ <7h8ud9pqmm.fsf@deeprootsystems.com>
+ <CAOesGMiHbcVK+BjiidPphGuoETyUroXtKgKqcVEgdSBiZQ+GmQ@mail.gmail.com>
+ <55425AFB.8020904@collabora.co.uk>
+ <CAOesGMiA7DCGCg2xgLwu_r_rRYKUjpw2HUePCW5Q9ewU61WbdA@mail.gmail.com>
+In-Reply-To: <CAOesGMiA7DCGCg2xgLwu_r_rRYKUjpw2HUePCW5Q9ewU61WbdA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Olof Johansson <olof@lixom.net>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, DRI mailing list <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andrzej Hajda <a.hajda@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, stable <stable@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 
+2015-05-01 1:50 GMT+09:00 Olof Johansson <olof@lixom.net>:
+> On Thu, Apr 30, 2015 at 9:40 AM, Javier Martinez Canillas
+> <javier.martinez@collabora.co.uk> wrote:
+>> Hello Olof,
+>>
+>> On 04/30/2015 05:57 PM, Olof Johansson wrote:
+>>> On Thu, Apr 30, 2015 at 8:44 AM, Kevin Hilman <khilman@kernel.org> wrote:
+>>>> Krzysztof Kozlowski <k.kozlowski@samsung.com> writes:
+>>>>>>>
+>>>>>>> This should fix issue reported by Javier [1][2].
+>>>>>>>
+>>>>>>> Tested on Chromebook Snow (Exynos 5250). More testing would be great,
+>>>>>>> especially on other Exynos 5xxx products.
+>>>>>>
+>>>>>> I hoped to try this on my exynos5 boards, but it doesn't seem to apply
+>>>>>> to linux-next or to Linus' master branch.
+>>>>>>
+>>>>>> Are there some other dependencies here?
+>>>>>
+>>>>> It is already applied:
+>>>>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id363c7cccf64128087002b0779986ad16aff6dc
+>>>>
+>>>> Er, yup.  That would explain it. ;)
+>>>>
+>>>> Sorry for the noise,
+>>>
+>>> Well, noise or not, Exynos is still broken in mainline and was broken
+>>> on -next for so long in different ways that bisecting it is a futile
+>>> exercise in frustration.
+>>>
+>>> It doesn't seem to show up with a trivial boot using only ramdisk, but
+>>> when booting a real distro from disk, it certainly does.
+>>>
+>>> For example:
+>>>
+>>> http://arm-soc.lixom.net/bootlogs/mainline/v4.1-rc1-56-g3d99e3f/pi-arm-exynos_defconfig.html
+>>>
+>>> Disabling CONFIG_DRM makes it boot reliably.
+>>>
+>>> Arndale doesn't show it for me, but it also doesn't have working graphics.
+>>>
+>>
+>> Both Exynos5250 and Exynos5420 had similar issues and $subject is the fix
+>> for 5250 while 5420 is fixed by my "ARM: dts: Make DP a consumer of DISP1
+>> power domain on Exynos5420" patch that was posted a long time ago. I have
+>> pinged Kukjin several times about this patch and he said that he will pick
+>> it this weekend [0].
+>>
+>> It is indeed very frustrating how many Exynos patches seems to be falling
+>> through the crack, even important fixes like these ones that allow boards
+>> to boot again.
+>>
+>> Kevin suggested that Krzysztof could collect and queue patches [1] to help
+>> Kukjin and start acting as a co-maintatiner which I think it's a very good
+>> idea and Krzysztof already did for some patches during the 4.1 cycle.
 
---65ImJOski3p8EhYV
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, I did. It turned quite well, most of the patches I collected were
+pulled :) .
 
-On Tue, May 12, 2015 at 10:27:07PM +0300, Dmitry Eremin-Solenikov wrote:
-> 2015-05-12 22:24 GMT+03:00 Wolfram Sang <wsa@the-dreams.de>:
-> > On Tue, Apr 28, 2015 at 02:55:47AM +0300, Dmitry Eremin-Solenikov wrote:
-> >> LoCoMo chip contains a tiny i2c controller destined to control
-> >> M62332 DAC. Provide a separate I2C driver for this cell.
-> >>
-> >> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> >
-> > Thanks for the submission!
-> >
-> >> +#include <linux/kernel.h>
-> >> +#include <linux/module.h>
-> >> +#include <linux/platform_device.h>
-> >> +#include <linux/regmap.h>
-> >> +#include <linux/slab.h>
-> >> +#include <linux/mfd/locomo.h>
-> >> +
-> >> +#include <linux/i2c.h>
-> >> +#include <linux/i2c-algo-bit.h>
-> >
-> > To avoid duplicates, I prefer the includes to be sorted. No need to
-> > resend because of that, though.
-> >
-> > Kudos for brushing up old code! Do you want the drivers go via the
-> > subsystem trees? Or is there a dependency so it should go in via some
-> > other tree in one go?
->=20
-> There is a header dependency -- <linux/mfd/locomo.h> is a new header.
-> I'd prefer for these patches to go in via one of MFD, arm-soc or ARM trees
-> as a whole series (if that would be ok with respective maintainers).
+> Yes, that's a much needed improvement. I suggest starting out by
+> collecting critical fixes like these, and we'd be happy to merge them
+> directly if going through Kukjin will add latency.
+>
+> Krzysztof, if you can, make sure you get a PGP key setup and start
+> collecting signatures from kernel developers.
 
-Fine with me.
-
-Reviewed-by: Wolfram Sang <wsa@the-dreams.de>
-
-
---65ImJOski3p8EhYV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIbBAEBAgAGBQJVUlRlAAoJEBQN5MwUoCm2ej0P+IIGAwD/rcSrFWlH3MXKff0v
-qacZgD25svWNP+S4hrW42/x4lksQmhegWBUj10lhQ1UlVoY6JwByMQRUGz3rsf5J
-j6/L6Edo8IXopbrWmtXjG4YiFMAIAmRWFV7LP2dcfP/3MXOWtAlzGnLsyA2hpUk0
-dDSET2fTSuBxYW0C5jKk2yaE6mF14jebYBV83MuzG7bHBklQwdoXu2rk19XPE+Yw
-p/SB7Yk5luWIVtekfGDRdEeDac8Z7nf3ZuJdOCpXcaPLZoCeFoPxSgDLE2vjsIME
-EEBFJu2F+dF0oVdvPsIflhCeu1o6ba7iOLB3f4rpNMJZw4UsxphvT7uoSYCwwhH+
-naU47orc6X9a4yG50wxla/3nRAcrc6rPu5rUhFCNrUWibAzZJix8iMl2OHPEazHC
-i8X7QC0RLXdrSHw1YWgIdYsUDtqtWoF5gGkEnCkkxw4fGQYCaJzmJfsoxIii/+ol
-HgZlMN+Xwr5l0zykm0T4sfgnNdRriAQwAGv+f3i+6hT3uTj9iDzjY5AWNjE50l8H
-zSTGhNkNByPVare/obIT273YmA4pldZJ/xOin5fAtSsgTBraBzb6+NOi5pqkJCkb
-Wdvj4Dd+V+GcKQYYIaA1K/pJ06m4Pr1aZ7a8DOiE/aMBJ6nrKeY5k5ZcBMKx4wfm
-HjbVrK3h4R/rQE5p9I0=
-=2XV8
------END PGP SIGNATURE-----
-
---65ImJOski3p8EhYV--
+Sure, I'll start right away!

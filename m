@@ -1,86 +1,23 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Fri, 01 May 2015 09:14:55 +0000
-Subject: Re: [RFT PATCH] drm/exynos: Enable DP clock to fix display on Exynos5250 and other
-Message-Id: <CAJKOXPfFYs2nob5tKi2WgihV05SNPg9aHCE6PU_eivTYkkpzBg@mail.gmail.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Sun, 03 May 2015 19:35:45 +0000
+Subject: Re: [PATCH v2 2/2] staging: sm750fb: cleanup indentation
+Message-Id: <20150503193545.GA13104@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1427471856-20918-1-git-send-email-k.kozlowski@samsung.com>
- <7h8udau9he.fsf@deeprootsystems.com>
- <CAJKOXPc6Epy_L+djManggcaYLaOrQ_c2S0=_GgU=dikuY1UU0g@mail.gmail.com>
- <7h8ud9pqmm.fsf@deeprootsystems.com>
- <CAOesGMiHbcVK+BjiidPphGuoETyUroXtKgKqcVEgdSBiZQ+GmQ@mail.gmail.com>
- <55425AFB.8020904@collabora.co.uk>
- <CAOesGMiA7DCGCg2xgLwu_r_rRYKUjpw2HUePCW5Q9ewU61WbdA@mail.gmail.com>
-In-Reply-To: <CAOesGMiA7DCGCg2xgLwu_r_rRYKUjpw2HUePCW5Q9ewU61WbdA@mail.gmail.com>
+References: <1429887612-15285-1-git-send-email-charles.rose.linux@gmail.com>
+ <1429888256-18890-1-git-send-email-charles.rose.linux@gmail.com>
+In-Reply-To: <1429888256-18890-1-git-send-email-charles.rose.linux@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Olof Johansson <olof@lixom.net>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, DRI mailing list <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andrzej Hajda <a.hajda@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, stable <stable@vger.kernel.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Charles Rose <charles.rose.linux@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-2015-05-01 1:50 GMT+09:00 Olof Johansson <olof@lixom.net>:
-> On Thu, Apr 30, 2015 at 9:40 AM, Javier Martinez Canillas
-> <javier.martinez@collabora.co.uk> wrote:
->> Hello Olof,
->>
->> On 04/30/2015 05:57 PM, Olof Johansson wrote:
->>> On Thu, Apr 30, 2015 at 8:44 AM, Kevin Hilman <khilman@kernel.org> wrote:
->>>> Krzysztof Kozlowski <k.kozlowski@samsung.com> writes:
->>>>>>>
->>>>>>> This should fix issue reported by Javier [1][2].
->>>>>>>
->>>>>>> Tested on Chromebook Snow (Exynos 5250). More testing would be great,
->>>>>>> especially on other Exynos 5xxx products.
->>>>>>
->>>>>> I hoped to try this on my exynos5 boards, but it doesn't seem to apply
->>>>>> to linux-next or to Linus' master branch.
->>>>>>
->>>>>> Are there some other dependencies here?
->>>>>
->>>>> It is already applied:
->>>>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id363c7cccf64128087002b0779986ad16aff6dc
->>>>
->>>> Er, yup.  That would explain it. ;)
->>>>
->>>> Sorry for the noise,
->>>
->>> Well, noise or not, Exynos is still broken in mainline and was broken
->>> on -next for so long in different ways that bisecting it is a futile
->>> exercise in frustration.
->>>
->>> It doesn't seem to show up with a trivial boot using only ramdisk, but
->>> when booting a real distro from disk, it certainly does.
->>>
->>> For example:
->>>
->>> http://arm-soc.lixom.net/bootlogs/mainline/v4.1-rc1-56-g3d99e3f/pi-arm-exynos_defconfig.html
->>>
->>> Disabling CONFIG_DRM makes it boot reliably.
->>>
->>> Arndale doesn't show it for me, but it also doesn't have working graphics.
->>>
->>
->> Both Exynos5250 and Exynos5420 had similar issues and $subject is the fix
->> for 5250 while 5420 is fixed by my "ARM: dts: Make DP a consumer of DISP1
->> power domain on Exynos5420" patch that was posted a long time ago. I have
->> pinged Kukjin several times about this patch and he said that he will pick
->> it this weekend [0].
->>
->> It is indeed very frustrating how many Exynos patches seems to be falling
->> through the crack, even important fixes like these ones that allow boards
->> to boot again.
->>
->> Kevin suggested that Krzysztof could collect and queue patches [1] to help
->> Kukjin and start acting as a co-maintatiner which I think it's a very good
->> idea and Krzysztof already did for some patches during the 4.1 cycle.
+On Fri, Apr 24, 2015 at 11:10:56AM -0400, Charles Rose wrote:
+> This patch fixes indentation errors/warnings reported by checkpatch.pl.
+> 
+> Signed-off-by: Charles Rose <charles.rose.linux@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_mode.c | 24 ++++++++++++++++--------
+>  1 file changed, 16 insertions(+), 8 deletions(-)
 
-Yes, I did. It turned quite well, most of the patches I collected were
-pulled :) .
-
-> Yes, that's a much needed improvement. I suggest starting out by
-> collecting critical fixes like these, and we'd be happy to merge them
-> directly if going through Kukjin will add latency.
->
-> Krzysztof, if you can, make sure you get a PGP key setup and start
-> collecting signatures from kernel developers.
-
-Sure, I'll start right away!
+Does not apply to my tree :(

@@ -1,77 +1,86 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Date: Wed, 20 May 2015 07:05:40 +0000
-Subject: Re: [PATCH] video: exynos: fix modular build
-Message-Id: <1432105540.21715.26.camel@x220>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Sun, 03 May 2015 19:25:47 +0000
+Subject: Re: [PATCH] staging: sm750fb: Cleaning up a few return statements
+Message-Id: <20150503192547.GA24078@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2708563.ADEZz3igC5@wuerfel>
-In-Reply-To: <2708563.ADEZz3igC5@wuerfel>
+References: <20150417204416.GA18202@rosebud>
+In-Reply-To: <20150417204416.GA18202@rosebud>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Tue, 2015-05-19 at 14:17 +0200, Arnd Bergmann wrote:
-> Finally, the EXYNOS_VIDEO option is turned into tristate as well
-> for good measure, as all framebuffer drivers should be configurable
-> as modules.
-
-EXYNOS_MIPI_DSI and EXYNOS_LCD_S6E8AX0 are made tristate too. And that
-is, I think, what counts. See below.
-
-For anyone wondering how these two drivers can be made modular with only
-a few tweaks to the build system: that is because exynos_mipi_dsi.c and
-s6e8ax0.c already contain module specific boilerplate. They probably
-already contained that boilerplate when they were added three years ago.
-(Perhaps the changelog should mention this.)
-
-> --- a/drivers/video/fbdev/exynos/Kconfig
-> +++ b/drivers/video/fbdev/exynos/Kconfig
-
->  menuconfig EXYNOS_VIDEO
-> -	bool "Exynos Video driver support"
-> +	tristate "Exynos Video driver support"
->  	depends on ARCH_S5PV210 || ARCH_EXYNOS
->  	help
->  	  This enables support for EXYNOS Video device.
-
-I have tested this only lightly but I do think this hunk is not needed.
-Because basically all that this entry does is making EXYNOS_MIPI_DSI and
-EXYNOS_LCD_S6E8AX0 available. And that works just as well if it's a
-bool. Correct?
-
->  config EXYNOS_MIPI_DSI
-> -	bool "EXYNOS MIPI DSI driver support."
-> +	tristate "EXYNOS MIPI DSI driver support."
->  	select GENERIC_PHY
->  	help
->  	  This enables support for MIPI-DSI device.
+On Fri, Apr 17, 2015 at 04:44:16PM -0400, Julian Gindi wrote:
+> Signed-off-by: Julian Gindi <juliangindi@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_chip.c | 4 +---
+>  drivers/staging/sm750fb/sm750.c       | 6 +-----
+>  drivers/staging/sm750fb/sm750_hw.c    | 5 +----
+>  3 files changed, 3 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+> index 7b28328..ac88623 100644
+> --- a/drivers/staging/sm750fb/ddk750_chip.c
+> +++ b/drivers/staging/sm750fb/ddk750_chip.c
+> @@ -499,7 +499,6 @@ pll_value_t *pPLL           /* Structure to hold the value to be set in PLL */
+>  {
+>  	unsigned int M, N, OD, POD = 0, diff, pllClk, odPower, podPower;
+>  	unsigned int bestDiff = 0xffffffff; /* biggest 32 bit unsigned number */
+> -	unsigned int ret;
+>      /* Init PLL structure to know states */
+>  	pPLL->M = 0;
+>  	pPLL->N = 0;
+> @@ -589,8 +588,7 @@ pll_value_t *pPLL           /* Structure to hold the value to be set in PLL */
+>  	//DDKDEBUGPRINT((DISPLAY_LEVEL, "calcPllValue: Input CLK = %dHz, M=%d, N=%d, OD=%d, POD=%d\n", pPLL->inputFreq, pPLL->M, pPLL->N, pPLL->OD, pPLL->POD));
 >  
->  config EXYNOS_LCD_S6E8AX0
-> -	bool "S6E8AX0 MIPI AMOLED LCD Driver"
-> +	tristate "S6E8AX0 MIPI AMOLED LCD Driver"
->  	depends on EXYNOS_MIPI_DSI && BACKLIGHT_CLASS_DEVICE
->  	depends on (LCD_CLASS_DEVICE = y)
->  	default n
+>      /* Return actual frequency that the PLL can set */
+> -	ret = calcPLL(pPLL);
+> -	return ret;
+> +	return calcPLL(pPLL);
+>  }
+>  
+>  
+> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+> index 3c7ea95..e05bb64 100644
+> --- a/drivers/staging/sm750fb/sm750.c
+> +++ b/drivers/staging/sm750fb/sm750.c
+> @@ -303,8 +303,6 @@ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
+>  {
+>  	struct lynxfb_par *par;
+>  	struct lynxfb_crtc *crtc;
+> -	int ret;
+> -
+>  
+>  	if (!info)
+>  		return -EINVAL;
+> @@ -312,9 +310,7 @@ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
+>  	ret = 0;
+>  	par = info->par;
+>  	crtc = &par->crtc;
+> -	ret = crtc->proc_panDisplay(crtc, var, info);
+> -
+> -	return ret;
+> +	return crtc->proc_panDisplay(crtc, var, info);
+>  }
+>  
+>  static int lynxfb_ops_set_par(struct fb_info *info)
+> diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+> index 9f0d06d..8f2432d 100644
+> --- a/drivers/staging/sm750fb/sm750_hw.c
+> +++ b/drivers/staging/sm750fb/sm750_hw.c
+> @@ -203,10 +203,7 @@ int hw_sm750_inithw(struct lynx_share* share, struct pci_dev * pdev)
+>  
+>  resource_size_t hw_sm750_getVMSize(struct lynx_share * share)
+>  {
+> -	resource_size_t ret;
+> -	
+> -	ret = ddk750_getVMSize();
+> -	return ret;
+> +	return ddk750_getVMSize();
+>  }
+>  
+>  
+> -- 
+> 1.9.1
 
-> --- a/drivers/video/fbdev/exynos/Makefile
-> +++ b/drivers/video/fbdev/exynos/Makefile
-
-> -obj-$(CONFIG_EXYNOS_MIPI_DSI)		+= exynos_mipi_dsi.o exynos_mipi_dsi_common.o \
-> -				     	exynos_mipi_dsi_lowlevel.o
-> +obj-$(CONFIG_EXYNOS_MIPI_DSI)		+= exynos-mipi-dsi-mod.o
-> +
-> +exynos-mipi-dsi-mod-objs		+= exynos_mipi_dsi.o exynos_mipi_dsi_common.o \
-> +					   exynos_mipi_dsi_lowlevel.o
-
-I don't speak Makefilese fluently, so I have to ask. Is the -mod
-extension needed because a module built from multiple files can't have a
-name that matches the name of one of its .c files (minus the .c
-extension, of course)?
-
->  obj-$(CONFIG_EXYNOS_LCD_S6E8AX0)	+= s6e8ax0.o
-
-Thanks,
-
-
-Paul Bolle
-
+This breaks the build, showing that you never even tested it :(

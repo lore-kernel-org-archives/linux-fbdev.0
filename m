@@ -1,208 +1,47 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Wed, 20 May 2015 23:08:12 +0000
-Subject: [PATCH v6 3/4] video: fbdev: s3fb: use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1432163293-20965-4-git-send-email-mcgrof@do-not-panic.com>
+From: "Dr. Christopher Harrison" <acarranzav@munichiclayo.gob.pe>
+Date: Tue, 05 May 2015 10:18:22 +0000
+Subject: Von Dr. Christopher Harrison (Bitte antworten)
+Message-Id: <382328877.11507.1430821102003.JavaMail.zimbra@munichiclayo.gob.pe>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432163293-20965-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1432163293-20965-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: bhelgaas@google.com
-Cc: tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-This driver uses the same area for MTRR as for the ioremap().
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
+Lieber Freund,
 
-There are a few motivations for this:
 
-a) Take advantage of PAT when available
+Wie geht es dir heute? Ich hoffe, in Ordnung, ich bin Dr. Christopher Harrison von NothWest London, England. Ich arbeite für Zweig Lloyds Bank London. Ich schreibe Ihnen aus meinem Büro, das aus einem großen immense Vorteil für uns beide sein wird. In meiner Abteilung, dass die Co-Trainer (Großregion London), entdeckte ich eine verlassene Summe von £ 16,5 Millionen Pfund (Sechzehn Millionen fünfhunderttausend Pfund und Pfund Sterling) in einem Konto, das Sie mit einem unserer ausländischen Kunden Späte Herr Ron Bramlage gehört , ein Amerikaner, der in Kansas Staaten lebt, die ein Opfer von einem Hubschrauberabsturz im vergangenen Jahr 8. Juni 2012, in Florida Sumpf ihn und Familienmitglieder zu töten war. Ron war 45 Jahre alt. Auch in der Chopper zum Zeitpunkt des Absturzes war seine Frau Rebecca, 43, und die Kinder des Paares - Brandon, 15; Boston, 13; Beau, 11; und 8-jährige Roxanne - wurden getötet. Der Pilot war auch tot.
 
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
 
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
+Ich suche Ihre Partnerschaft und Zusammenarbeit zur Durchführung dieser Transaktion zusammen, weil der Lloyds Bank schließt einige ihrer Zweigstellen und den Zweig, wo dieser Fonds hinterlegt ist unter denen geschlossen werden, so dass ich möchte, dass wir diesen Fonds zu bekommen, bevor ihre Verschluss. Ich habe Sie kontaktiert, weil ich glaube, Sie werden nicht weglaufen mit eigenen Aktien dieses Fonds, wenn es Ihrem Konto eingeht, und die gemeinsame Nutzung Quote von 60% für mich und 40% für Ihre Zusammenarbeit. Für Sie die Lloyds Bank, um sicherzustellen, Schließen Niederlassungen besuchen Sie diese Seite:
 
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
 
-@ mtrr_found @
-expression index, base, size;
-@@
+https://uk.news.yahoo.com/lloyds-bank-more-200-branches-close-181000783--finance.html#4KVKdTh
 
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
 
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
+Aufgrund der Sensibilität der Transaktion und die Vertraulichkeit hier, jetzt unsere Bank hat für keine der Verwandten warten zu kommen-up für die Behauptung, aber niemand hat in der Suche die Verwandten für eine lange Zeit jetzt getan, dass ich persönlich nicht erfolgreich waren . Mein lieber Freund, ich suche Ihre Zustimmung an Sie als nächsten Angehörigen / Will Begünstigter des Verstorbenen zu präsentieren, so dass die Erlöse aus diesem Konto bei £ 16,5 Millionen Pfund an Sie gezahlt werden bewertet.
 
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
 
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
+Das wird für mich ausgezahlt oder geteilt in diese Prozentsätze, 60% und 40% zu Ihnen, ich habe alle notwendigen rechtlichen Dokumente, die wir verwendet werden, um diese Behauptung wir machen gesichert. Alles was ich brauche ist es, in Ihrem Namen zu den Dokumenten füllen und legalisiert es in den Hof und die Lloyds Bank hier, um Ihnen zu beweisen, als berechtigten Empfänger, ist Alles, was ich jetzt brauche Ihre ehrliche Zusammenarbeit, Verschwiegenheit und Vertrauen, damit wir sehen, diese Transaktion durch. Ich garantiere Ihnen, dass dies unter einer legitimen Anordnung, die Sie von einem Verstoß gegen das Gesetz hier in England und in Ihrem Land zu schützen wird ausgeführt.
 
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
 
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
+Bitte, bitte senden Sie mir die folgenden: wir haben 7 Tage, um es zu durchlaufen, das ist sehr, sehr URGENT PLEASE.
 
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
 
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
+1. Vollständiger Name: ......................
+2. Ihre Telefonnummer: .................
+3. Ihre Kontaktadresse: ..................
+4. Alter / Geschlecht: ...................
+5. Kern Job / Beruf: ..............
 
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
 
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
+Bitte beantworten Sie meine E-Mail hier: harrisondr.christoph_office@yahoo.co.uk
 
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
 
-Generated-by: Coccinelle SmPL
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
----
- drivers/video/fbdev/s3fb.c | 35 ++++++-----------------------------
- 1 file changed, 6 insertions(+), 29 deletions(-)
+Ich habe euch in Kontakt gebracht, zu glauben, dass Sie nicht weglaufen mit eigenen Aktien dieses Fonds, wenn es Ihrem Konto kommt, hoffe ich, können Sie auf diese vertrauen? Wie Sie wissen, diese Transaktion beinhalten sehr viel Geld. Bitte Standard freundlich zeigen Sie Ihr Interesse, indem sie mich mit Ihren Angaben wie oben, so kann ich Ihnen mehr Informationen darüber, wie die Bank gehen, um diesen Fonds zu Ihnen innerhalb von 5 Bankarbeitstagen übertragen bekommen zu erbringen. Endeavour zu antworten, dass sie nicht länger auf mich gewartet. Ok, mein lieber Freund?
 
-diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
-index f0ae61a..13b1090 100644
---- a/drivers/video/fbdev/s3fb.c
-+++ b/drivers/video/fbdev/s3fb.c
-@@ -28,13 +28,9 @@
- #include <linux/i2c.h>
- #include <linux/i2c-algo-bit.h>
- 
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- struct s3fb_info {
- 	int chip, rev, mclk_freq;
--	int mtrr_reg;
-+	int wc_cookie;
- 	struct vgastate state;
- 	struct mutex open_lock;
- 	unsigned int ref_count;
-@@ -154,11 +150,7 @@ static const struct svga_timing_regs s3_timing_regs     = {
- 
- 
- static char *mode_option;
--
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
--
- static int fasttext = 1;
- 
- 
-@@ -170,11 +162,8 @@ module_param(mode_option, charp, 0444);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0444);
- MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
--
--#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
- 
- module_param(fasttext, int, 0644);
- MODULE_PARM_DESC(fasttext, "Enable S3 fast text mode (1=enable, 0=disable, default=1)");
-@@ -1168,7 +1157,7 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.smem_len = pci_resource_len(dev, 0);
- 
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -1365,12 +1354,9 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
- 
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
- 
- 	return 0;
- 
-@@ -1405,14 +1391,7 @@ static void s3_pci_remove(struct pci_dev *dev)
- 
- 	if (info) {
- 		par = info->par;
--
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
--#endif
--
-+		arch_phys_wc_del(par->wc_cookie);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
- 
-@@ -1551,10 +1530,8 @@ static int  __init s3fb_setup(char *options)
- 
- 		if (!*opt)
- 			continue;
--#ifdef CONFIG_MTRR
- 		else if (!strncmp(opt, "mtrr:", 5))
- 			mtrr = simple_strtoul(opt + 5, NULL, 0);
--#endif
- 		else if (!strncmp(opt, "fasttext:", 9))
- 			fasttext = simple_strtoul(opt + 9, NULL, 0);
- 		else
--- 
-2.3.2.209.gd67f9d5.dirty
 
+Freundliche Grüße,
+Dr. Christopher Harrison

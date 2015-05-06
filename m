@@ -1,39 +1,102 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Sat, 30 May 2015 00:32:56 +0000
-Subject: Re: [PATCH v4 3/17] video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
-Message-Id: <20150530003256.GG23057@wotan.suse.de>
+From: Heiko Schocher <hs@denx.de>
+Date: Wed, 06 May 2015 07:09:05 +0000
+Subject: [RFC PATCH] video/logo: introduce new system state for checking if logos are freed
+Message-Id: <1430896145-8887-1-git-send-email-hs@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432859434-17821-1-git-send-email-mcgrof@do-not-panic.com>
- <1432859434-17821-3-git-send-email-mcgrof@do-not-panic.com>
- <20150529064144.GA22749@gmail.com>
-In-Reply-To: <20150529064144.GA22749@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ingo Molnar <mingo@kernel.org>, tomi.valkeinen@ti.com, Dave Airlie <airlied@redhat.com>
-Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Masanari Iida <standby24x7@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Andy Lutomirski <luto@amacapital.net>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: linux-kernel@vger.kernel.org
+Cc: Heiko Schocher <hs@denx.de>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Fri, May 29, 2015 at 08:41:44AM +0200, Ingo Molnar wrote:
-> 
-> * Luis R. Rodriguez <mcgrof@do-not-panic.com> wrote:
-> 
-> > +		gbe_mem = devm_ioremap_wc(&p_dev->dev, gbe_mem_phys,
-> > +					  gbe_mem_size);
-> 
-> > +		gbe_mem = dma_alloc_writecombine(NULL, gbe_mem_size,
-> > +						 &gbe_dma_addr, GFP_KERNEL);
-> 
-> > +	par->wc_cookie = arch_phys_wc_add(gbe_mem_phys, gbe_mem_size);
-> 
-> > +	arch_phys_wc_del(par->wc_cookie);
-> 
-> > +	arch_phys_wc_del(par->wc_cookie);
-> 
-> Could we _please_ rename dma_*_writecombine() to dma_*_wc(), so that the naming is 
-> coherent across the various APIs?
+commit 92b004d1aa9f ("video/logo: prevent use of logos after they have been freed")
 
-Sure, OK done. Will send once this series is merged and visible on linux-next.
-But who's tree should this go through? Since it depends on this series which
-goes through Tomi's tree should it go through there?
+added a late_initcall function to mark the logos as freed. In reality
+the logos are freed later, and fbdev probe may be ran between this
+late_initcall and the freeing of the logos. In that case the logos
+would not be drawn. To prevent this introduced a new system_state
+SYSTEM_FREEING_MEM and set this state before freeing memory. This
+state could be checked now in fb_find_logo(). This system state
+is maybe useful on other places too.
 
- Luis
+Signed-off-by: Heiko Schocher <hs@denx.de>
+
+---
+Found this issue on an imx6 based board with a display which needs
+a spi initialization. With 3.18.2 I see a perfect logo, but with
+current ml, bootlogo is missing, because drm gets probed before
+spi display, which leads in drm probing is deferred until the
+spi display is probed. After that drm is probed again ... but
+this is too late for showing the bootlogo.
+With this patch, bootlogo is drawn again. I am not sure, if it
+is so easy to add a new system state ... but we should have a
+possibility to detect if initdata is freed or not. this is maybe
+also for other modules interesting. Maybe we add a
+kernel_initdata_freed()
+function instead of a new system state?
+
+ drivers/video/logo/logo.c | 15 ++++-----------
+ include/linux/kernel.h    |  1 +
+ init/main.c               |  1 +
+ 3 files changed, 6 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
+index 10fbfd8..d798a9f 100644
+--- a/drivers/video/logo/logo.c
++++ b/drivers/video/logo/logo.c
+@@ -26,16 +26,6 @@ MODULE_PARM_DESC(nologo, "Disables startup logo");
+  * Use late_init to mark the logos as freed to prevent any further use.
+  */
+ 
+-static bool logos_freed;
+-
+-static int __init fb_logo_late_init(void)
+-{
+-	logos_freed = true;
+-	return 0;
+-}
+-
+-late_initcall(fb_logo_late_init);
+-
+ /* logo's are marked __initdata. Use __init_refok to tell
+  * modpost that it is intended that this function uses data
+  * marked __initdata.
+@@ -44,7 +34,10 @@ const struct linux_logo * __init_refok fb_find_logo(int depth)
+ {
+ 	const struct linux_logo *logo = NULL;
+ 
+-	if (nologo || logos_freed)
++	if (system_state >= SYSTEM_FREEING_MEM)
++		return NULL;
++
++	if (nologo)
+ 		return NULL;
+ 
+ 	if (depth >= 1) {
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 3a5b48e..e5875bf 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -462,6 +462,7 @@ extern bool early_boot_irqs_disabled;
+ /* Values used for system_state */
+ extern enum system_states {
+ 	SYSTEM_BOOTING,
++	SYSTEM_FREEING_MEM,
+ 	SYSTEM_RUNNING,
+ 	SYSTEM_HALT,
+ 	SYSTEM_POWER_OFF,
+diff --git a/init/main.c b/init/main.c
+index 2115055..4965ed0 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -931,6 +931,7 @@ static int __ref kernel_init(void *unused)
+ 	kernel_init_freeable();
+ 	/* need to finish all async __init code before freeing the memory */
+ 	async_synchronize_full();
++	system_state = SYSTEM_FREEING_MEM;
+ 	free_initmem();
+ 	mark_rodata_ro();
+ 	system_state = SYSTEM_RUNNING;
+-- 
+2.1.0
+

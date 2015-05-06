@@ -1,80 +1,28 @@
-From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Date: Mon, 25 May 2015 22:36:08 +0000
-Subject: [PATCH v4 1/3] phy: phy-core: allow specifying supply at port level
-Message-Id: <1432593370-14457-2-git-send-email-arun.ramamurthy@broadcom.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 06 May 2015 14:22:20 +0000
+Subject: Re: [PATCH v2 17/17] ARM: drop old LoCoMo driver
+Message-Id: <CACRpkda=7OmKOLJWtgANRTjfmor68d54P_C_AEY5inowAW616w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432593370-14457-1-git-send-email-arun.ramamurthy@broadcom.com>
-In-Reply-To: <1432593370-14457-1-git-send-email-arun.ramamurthy@broadcom.com>
+References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+	<1430178954-11138-18-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1430178954-11138-18-git-send-email-dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Dmitry Torokhov <dtor@google.com>, Anatol Pomazau <anatol@google.com>, Jonathan Richardson <jonathar@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Dmitry Torokhov <dtor@chromium.org>, Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Input <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-leds-u79uwXL29TaqPxH82wqD4g@public.gmane.org
 
-From: Dmitry Torokhov <dtor@chromium.org>
+On Tue, Apr 28, 2015 at 1:55 AM, Dmitry Eremin-Solenikov
+<dbaryshkov@gmail.com> wrote:
 
-Multi-port phys may have per port power supplies. Let's change phy
-core to look for supply at the port level when multiple ports are
-specified. To keep compatibility with the existing device tree board
-descriptions for single-port phys we will continue looking up the
-power supply at the parent node level
+> As there are no in-kernel users of old locomo driver, drop all
+> alltogether. Remove Kconfig entry, driver and header.
+>
+> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 
-Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
-Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Reviewed-by: Ray Jui <rjui@broadcom.com>
-Reviewed-by: Scott Branden <sbranden@broadcom.com>
----
- drivers/phy/phy-core.c | 23 ++++++++++-------------
- 1 file changed, 10 insertions(+), 13 deletions(-)
+Good riddance.
 
-diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
-index 3791838..c7aa297 100644
---- a/drivers/phy/phy-core.c
-+++ b/drivers/phy/phy-core.c
-@@ -651,16 +651,6 @@ struct phy *phy_create(struct device *dev, struct device_node *node,
- 		goto free_phy;
- 	}
- 
--	/* phy-supply */
--	phy->pwr = regulator_get_optional(dev, "phy");
--	if (IS_ERR(phy->pwr)) {
--		if (PTR_ERR(phy->pwr) = -EPROBE_DEFER) {
--			ret = -EPROBE_DEFER;
--			goto free_ida;
--		}
--		phy->pwr = NULL;
--	}
--
- 	device_initialize(&phy->dev);
- 	mutex_init(&phy->mutex);
- 
-@@ -674,6 +664,16 @@ struct phy *phy_create(struct device *dev, struct device_node *node,
- 	if (ret)
- 		goto put_dev;
- 
-+	/* phy-supply */
-+	phy->pwr = regulator_get_optional(&phy->dev, "phy");
-+	if (IS_ERR(phy->pwr)) {
-+		ret = PTR_ERR(phy->pwr);
-+		if (ret = -EPROBE_DEFER)
-+			goto put_dev;
-+
-+		phy->pwr = NULL;
-+	}
-+
- 	ret = device_add(&phy->dev);
- 	if (ret)
- 		goto put_dev;
-@@ -689,9 +689,6 @@ put_dev:
- 	put_device(&phy->dev);  /* calls phy_release() which frees resources */
- 	return ERR_PTR(ret);
- 
--free_ida:
--	ida_simple_remove(&phy_ida, phy->id);
--
- free_phy:
- 	kfree(phy);
- 	return ERR_PTR(ret);
--- 
-2.3.4
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
+Yours,
+Linus Walleij

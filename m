@@ -1,45 +1,27 @@
-From: Fabian Frederick <fabf@skynet.be>
-Date: Mon, 18 May 2015 17:43:21 +0000
-Subject: [PATCH 1/1 linux-next] video/console: use swap() in newport_bmove()
-Message-Id: <1431971001-18967-1-git-send-email-fabf@skynet.be>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 06 May 2015 14:19:14 +0000
+Subject: Re: [PATCH v2 13/17] ASoC: pxa: poodle: make use of new locomo GPIO interface
+Message-Id: <CACRpkdYDRA-qtotEqniqd6m=HetBgtX5r7gJoc9x4oA9mp9i8w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+	<1430178954-11138-14-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1430178954-11138-14-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, linux-leds@vger.kernel.or
 
-Use kernel.h macro definition.
+On Tue, Apr 28, 2015 at 1:55 AM, Dmitry Eremin-Solenikov
+<dbaryshkov@gmail.com> wrote:
 
-Signed-off-by: Fabian Frederick <fabf@skynet.be>
----
- drivers/video/console/newport_con.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+> Since LoCoMo driver has been converted to provide proper gpiolib
+> interface, make poodle ASoC platform driver use gpiolib API.
+>
+> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> Acked-by: Mark Brown <broonie@kernel.org>
 
-diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
-index a6ab929..bb4e962 100644
---- a/drivers/video/console/newport_con.c
-+++ b/drivers/video/console/newport_con.c
-@@ -687,7 +687,7 @@ static int newport_scroll(struct vc_data *vc, int t, int b, int dir,
- static void newport_bmove(struct vc_data *vc, int sy, int sx, int dy,
- 			  int dx, int h, int w)
- {
--	short xs, ys, xe, ye, xoffs, yoffs, tmp;
-+	short xs, ys, xe, ye, xoffs, yoffs;
- 
- 	xs = sx << 3;
- 	xe = ((sx + w) << 3) - 1;
-@@ -701,9 +701,7 @@ static void newport_bmove(struct vc_data *vc, int sy, int sx, int dy,
- 	yoffs = (dy - sy) << 4;
- 	if (xoffs > 0) {
- 		/* move to the right, exchange starting points */
--		tmp = xe;
--		xe = xs;
--		xs = tmp;
-+		swap(xe, xs);
- 	}
- 	newport_wait(npregs);
- 	npregs->set.drawmode0 = (NPORT_DMODE0_S2S | NPORT_DMODE0_BLOCK |
--- 
-2.4.0
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
+Yours,
+Linus Walleij

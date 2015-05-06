@@ -1,72 +1,117 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 29 May 2015 06:07:27 +0000
-Subject: Re: [PATCH] fbdev: omap2: improve usage of gpiod API
-Message-Id: <5568021F.8000706@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="cxKfNEMCKDBLMjxpKingOc40isanCIpLq"
+From: Charles Rose <charles.rose.linux@gmail.com>
+Date: Wed, 06 May 2015 03:07:43 +0000
+Subject: [PATCH v3 1/2] staging: sm750fb: cleanup white space
+Message-Id: <1430881664-13727-1-git-send-email-charles.rose.linux@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432800315-25972-1-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1432800315-25972-1-git-send-email-u.kleine-koenig@pengutronix.de>
-To: =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= <u.kleine-koenig@pengutronix.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, kernel@pengutronix.de
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Cc: charles.rose.linux@gmail.com
 
---cxKfNEMCKDBLMjxpKingOc40isanCIpLq
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+This patch fixes "space prohibited" errors reported by checkpatch.pl.
 
+Signed-off-by: Charles Rose <charles.rose.linux@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c  | 12 ++++++------
+ drivers/staging/sm750fb/ddk750_power.c |  8 ++++----
+ drivers/staging/sm750fb/sm750_accel.c  |  2 +-
+ drivers/staging/sm750fb/sm750_help.h   |  2 +-
+ 4 files changed, 12 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 7b28328..60ae39a 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -268,7 +268,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ #endif
+ 
+ 
+-	if (pInitParam->powerMode != 0 )
++	if (pInitParam->powerMode != 0)
+ 		pInitParam->powerMode = 0;
+ 	setPowerMode(pInitParam->powerMode);
+ 
+@@ -285,7 +285,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ 		ulReg = FIELD_SET(ulReg, VGA_CONFIGURATION, MODE, GRAPHIC);
+ 		POKE32(VGA_CONFIGURATION, ulReg);
+ 	} else {
+-#if defined(__i386__) || defined( __x86_64__)
++#if defined(__i386__) || defined(__x86_64__)
+ 		/* set graphic mode via IO method */
+ 		outb_p(0x88, 0x3d4);
+ 		outb_p(0x06, 0x3d5);
+@@ -382,7 +382,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ 
+ unsigned int absDiff(unsigned int a, unsigned int b)
+ {
+-	if ( a > b )
++	if (a > b)
+ 		return(a - b);
+ 	else
+ 		return(b - a);
+@@ -606,9 +606,9 @@ unsigned int formatPllReg(pll_value_t *pPLL)
+        On returning a 32 bit number, the value can be applied to any PLL in the calling function.
+     */
+ 	ulPllReg -	FIELD_SET(  0, PANEL_PLL_CTRL, BYPASS, OFF)
+-	| FIELD_SET(  0, PANEL_PLL_CTRL, POWER,  ON)
+-	| FIELD_SET(  0, PANEL_PLL_CTRL, INPUT,  OSC)
++	FIELD_SET(0, PANEL_PLL_CTRL, BYPASS, OFF)
++	| FIELD_SET(0, PANEL_PLL_CTRL, POWER,  ON)
++	| FIELD_SET(0, PANEL_PLL_CTRL, INPUT,  OSC)
+ #ifndef VALIDATION_CHIP
+ 	| FIELD_VALUE(0, PANEL_PLL_CTRL, POD,    pPLL->POD)
+ #endif
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index cbb9767..0e3c028 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -59,17 +59,17 @@ void setPowerMode(unsigned int powerMode)
+     {
+         control_value  #ifdef VALIDATION_CHIP
+-            FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, OFF) |
++		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, OFF) |
+ #endif
+-            FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
++		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT, OFF);
+     }
+     else
+     {
+         control_value  #ifdef VALIDATION_CHIP
+-            FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, ON) |
++		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, ON) |
+ #endif
+-            FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  ON);
++		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT, ON);
+     }
+ 
+     /* Program new power mode. */
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index c5a3726..e308646 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -364,7 +364,7 @@ int hw_imageblit(struct lynx_accel *accel,
+        Note that input pitch is BYTE value, but the 2D Pitch register uses
+        pixel values. Need Byte to pixel convertion.
+     */
+-	if(bytePerPixel = 3 ){
++	if (bytePerPixel = 3) {
+ 		dx *= 3;
+ 		width *= 3;
+ 		startBit *= 3;
+diff --git a/drivers/staging/sm750fb/sm750_help.h b/drivers/staging/sm750fb/sm750_help.h
+index e0128d2..cdac9e2 100644
+--- a/drivers/staging/sm750fb/sm750_help.h
++++ b/drivers/staging/sm750fb/sm750_help.h
+@@ -57,7 +57,7 @@
+ 
+ #define FIELD_CLEAR(reg, field) \
+ ( \
+-    ~ _F_MASK(reg ## _ ## field) \
++	~_F_MASK(reg ## _ ## field) \
+ )
+ 
+ 
+-- 
+2.1.0
 
-On 28/05/15 11:05, Uwe Kleine-K=C3=B6nig wrote:
-> Since 39b2bbe3d715 (gpio: add flags argument to gpiod_get*() functions)=
-
-> which appeared in v3.17-rc1, the gpiod_get* functions take an additiona=
-l
-> parameter that allows to specify direction and initial value for output=
-=2E
->=20
-> Also make use of gpiod_get*_optional where applicable.
->=20
-> Apart from simplification of the affected drivers this is another step
-> towards making the flags argument to gpiod_get*() mandatory.
->=20
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-> ---
->  drivers/video/fbdev/omap2/displays-new/encoder-opa362.c     | 12 +++--=
--------
->  drivers/video/fbdev/omap2/displays-new/panel-dpi.c          | 13 +++--=
---------
->  .../fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c     |  7 +++--=
---
->  .../fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c      |  9 ++---=
-----
->  4 files changed, 11 insertions(+), 30 deletions(-)
-
-Thanks, this cleans up nicely those optional cases. Queued for 4.2.
-
- Tomi
-
-
---cxKfNEMCKDBLMjxpKingOc40isanCIpLq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVaAIfAAoJEPo9qoy8lh71BJsP/RSbRNqLAC89Dd/qliqe+qOn
-CKA7jiDXwgcoIhYvtfH0mR7pcJQ/WeB3tD/BaqwrRKQ8KD/H00eFFQj70z8/5TD0
-U/FT770fjJ2thVN/xHWS1vwg5bAjE9cMmT0hLMKH1wo/iYkIxQn1YGjSk4fVvdBI
-8Oxw4pq6iqdJw0fc6yDv6KSB1WgSEKmJpcg/x49LdXnBWDUsa7d+R80L1KQ9i9NE
-4CJRDpE6OVaGO0cxGgTgZpeLVxBbOQNMmodsRjyD6O8fn4XVtkjzTl0fh/LDjeBj
-liDcimgmFmuLiIZ5R6DrxFQKtmWKpCUPrbVsS92uL6YCDhyndfygzFUPBJWEw2Rr
-62vU0xYGFL/301/AHr9LEcVAWXE947kZ04CSOofaM1kRpMPKYGT14/O+tcmMy8N5
-ANEOcD1eh8t3qOczIXj/TulUMDm7tEFrNfovHl9T+H1WXCu0kYXjo70tulR2YJIj
-Hub/2y+TuV5fXDc9ScyeyCrRV4UvHjj7M/JY7KikRj4HsVnURdmylTSMu1lhAIGS
-QSzvjze+PG2U26W3GLQJ1JCJPJNZciDGKa5TAYH7VkmM8FNz5Se/ONrMcpHSJeZd
-sBwqEpRMfWkCGzg9hjvb7kEWEwA/OD6S4y61jS14TB9zFqRga4PlqcUi6ASLjg4d
-adzxdHOxWlxx9BlJpyKZ
-=nCME
------END PGP SIGNATURE-----
-
---cxKfNEMCKDBLMjxpKingOc40isanCIpLq--

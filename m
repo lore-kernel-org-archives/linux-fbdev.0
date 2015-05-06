@@ -1,119 +1,39 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Tue, 05 May 2015 00:14:04 +0000
-Subject: Re: [PATCH v3] staging: sm750fb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <20150505001404.GD5622@wotan.suse.de>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 06 May 2015 14:20:19 +0000
+Subject: Re: [PATCH v2 14/17] ARM: pxa: poodle: use new LoCoMo driver
+Message-Id: <CACRpkda65fOP_xkCKb+nbzDU+bQ8oV9LtOL88RiemHeyLJdOXQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429647123-16777-1-git-send-email-mcgrof@do-not-panic.com>
- <20150503192459.GA19486@kroah.com>
-In-Reply-To: <20150503192459.GA19486@kroah.com>
+References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+	<1430178954-11138-15-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1430178954-11138-15-git-send-email-dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, devel@driverdev.osuosl.org, luto@amacapital.net, cocci@systeme.lip6.fr, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Input <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-leds-u79uwXL29TaqPxH82wqD4g@public.gmane.org
 
-On Sun, May 03, 2015 at 09:24:59PM +0200, Greg KH wrote:
-> On Tue, Apr 21, 2015 at 01:12:03PM -0700, Luis R. Rodriguez wrote:
-> > From: "Luis R. Rodriguez" <mcgrof@suse.com>
-> > 
-> > The same area used for ioremap() is used for the MTRR area.
-> > Convert the driver from using the x86 specific MTRR code to
-> > the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-> > will avoid MTRR if write-combining is available, in order to
-> > take advantage of that also ensure the ioremap'd area is requested
-> > as write-combining.
-> > 
-> > There are a few motivations for this:
-> > 
-> > a) Take advantage of PAT when available
-> > 
-> > b) Help bury MTRR code away, MTRR is architecture specific and on
-> >    x86 its replaced by PAT
-> > 
-> > c) Help with the goal of eventually using _PAGE_CACHE_UC over
-> >    _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-> >    de33c442e titled "x86 PAT: fix performance drop for glx,
-> >    use UC minus for ioremap(), ioremap_nocache() and
-> >    pci_mmap_page_range()")
-> > 
-> > The conversion done is expressed by the following Coccinelle
-> > SmPL patch, it additionally required manual intervention to
-> > address all the #ifdery and removal of redundant things which
-> > arch_phys_wc_add() already addresses such as verbose message
-> > about when MTRR fails and doing nothing when we didn't get
-> > an MTRR.
-> > 
-> > @ mtrr_found @
-> > expression index, base, size;
-> > @@
-> > 
-> > -index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-> > +index = arch_phys_wc_add(base, size);
-> > 
-> > @ mtrr_rm depends on mtrr_found @
-> > expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-> > @@
-> > 
-> > -mtrr_del(index, base, size);
-> > +arch_phys_wc_del(index);
-> > 
-> > @ mtrr_rm_zero_arg depends on mtrr_found @
-> > expression mtrr_found.index;
-> > @@
-> > 
-> > -mtrr_del(index, 0, 0);
-> > +arch_phys_wc_del(index);
-> > 
-> > @ mtrr_rm_fb_info depends on mtrr_found @
-> > struct fb_info *info;
-> > expression mtrr_found.index;
-> > @@
-> > 
-> > -mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-> > +arch_phys_wc_del(index);
-> > 
-> > @ ioremap_replace_nocache depends on mtrr_found @
-> > struct fb_info *info;
-> > expression base, size;
-> > @@
-> > 
-> > -info->screen_base = ioremap_nocache(base, size);
-> > +info->screen_base = ioremap_wc(base, size);
-> > 
-> > @ ioremap_replace_default depends on mtrr_found @
-> > struct fb_info *info;
-> > expression base, size;
-> > @@
-> > 
-> > -info->screen_base = ioremap(base, size);
-> > +info->screen_base = ioremap_wc(base, size);
-> > 
-> > Generated-by: Coccinelle SmPL
-> > Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-> > Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Cc: Suresh Siddha <sbsiddha@gmail.com>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Juergen Gross <jgross@suse.com>
-> > Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> > Cc: Andy Lutomirski <luto@amacapital.net>
-> > Cc: Dave Airlie <airlied@redhat.com>
-> > Cc: Antonino Daplas <adaplas@gmail.com>
-> > Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > Cc: devel@driverdev.osuosl.org
-> > Cc: linux-fbdev@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-> > ---
-> >  drivers/staging/sm750fb/sm750.c    | 36 ++++--------------------------------
-> >  drivers/staging/sm750fb/sm750.h    |  3 ---
-> >  drivers/staging/sm750fb/sm750_hw.c |  3 +--
-> >  3 files changed, 5 insertions(+), 37 deletions(-)
-> 
-> This doesn't apply to my staging-next branch :(
+On Tue, Apr 28, 2015 at 1:55 AM, Dmitry Eremin-Solenikov
+<dbaryshkov@gmail.com> wrote:
 
-OK I'll resend a v4 now.
+> Convert poodle to use new mfd-based LoCoMo driver.
+>
+> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 
-  Luis
+This:
+
+> +static struct gpiod_lookup_table poodle_audio_gpios_table = {
+> +       .dev_id = "poodle-audio",
+> +       .table = {
+> +               GPIO_LOOKUP("locomo-gpio", 10, "mute-l", GPIO_ACTIVE_LOW),
+> +               GPIO_LOOKUP("locomo-gpio", 11, "mute-r", GPIO_ACTIVE_LOW),
+> +               GPIO_LOOKUP("locomo-gpio", 8, "amp-on", GPIO_ACTIVE_LOW),
+> +               { },
+> +       },
+> +},
+
+Is very nice to see.
+
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+
+Yours,
+Linus Walleij

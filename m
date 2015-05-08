@@ -1,58 +1,21 @@
-From: Huacai Chen <chenhc@lemote.com>
-Date: Fri, 08 May 2015 09:04:28 +0000
-Subject: [PATCH V3 RESEND] staging: sm750: Fix lynxfb_ops_imageblit() if image->depth != 1
-Message-Id: <1431075868-15746-1-git-send-email-chenhc@lemote.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Fri, 08 May 2015 09:55:54 +0000
+Subject: Re: [PATCH V3 RESEND] staging: sm750: Fix lynxfb_ops_imageblit() if image->depth != 1
+Message-Id: <20150508094354.GA9253@sudip-PC>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1431075868-15746-1-git-send-email-chenhc@lemote.com>
+In-Reply-To: <1431075868-15746-1-git-send-email-chenhc@lemote.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-If image->depth != 1, lynxfb_ops_imageblit() should fallback to call
-cfb_imageblit(), not return directly. Otherwise it can't display the
-boot logo.
+On Fri, May 08, 2015 at 05:04:28PM +0800, Huacai Chen wrote:
+> If image->depth != 1, lynxfb_ops_imageblit() should fallback to call
+> cfb_imageblit(), not return directly. Otherwise it can't display the
+> boot logo.
 
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-Acked-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Signed-off-by: Huacai Chen <chenhc@lemote.com>
----
- V2: Coding style ajustment.
- V3: Add TODO comments.
+why resending? 
 
- drivers/staging/sm750fb/TODO    |    1 +
- drivers/staging/sm750fb/sm750.c |    3 +++
- 2 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/TODO b/drivers/staging/sm750fb/TODO
-index bc16172..f8698498 100644
---- a/drivers/staging/sm750fb/TODO
-+++ b/drivers/staging/sm750fb/TODO
-@@ -2,6 +2,7 @@ TODO:
- - lots of clechpatch cleanup
- - use kernel coding style
- - refine the code and remove unused code
-+- Implement hardware acceleration for imageblit if image->depth > 1
- - check on hardware effects of removal of USE_HW_I2C and USE_DVICHIP (these two
- 	are supposed to be sample code which is given here if someone wants to
- 	use those functionalities)
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 3c7ea95..6f78de3 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -279,7 +279,10 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
- 		}
- 		goto _do_work;
- 	}
-+	/* TODO: Implement hardware acceleration for image->depth > 1 */
-+	cfb_imageblit(info, image);
- 	return;
-+
- _do_work:
- 	/*
- 	 * If not use spin_lock, system will die if user load driver
--- 
-1.7.7.3
-
-
-
-
+regards
+sudip

@@ -1,67 +1,58 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Tue, 12 May 2015 08:52:53 +0000
-Subject: Re: simple framebuffer slower by factor of 20, on socfpga (arm) platform
-Message-Id: <20150512085253.GA4606@amd>
+From: Huacai Chen <chenhc@lemote.com>
+Date: Fri, 08 May 2015 09:04:28 +0000
+Subject: [PATCH V3 RESEND] staging: sm750: Fix lynxfb_ops_imageblit() if image->depth != 1
+Message-Id: <1431075868-15746-1-git-send-email-chenhc@lemote.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150409110634.GA27407@amd>
- <552660C7.4020805@ti.com>
- <552663C2.70308@ti.com>
- <55277650.8070607@codeaurora.org>
- <20150424132923.GA11729@amd>
- <553A47D3.2070107@ti.com>
- <CAMuHMdV+-VcZD5TMswUjwW0fk=-76oYimeKJ_P9QC5Md4De-JA@mail.gmail.com>
- <20150428134848.GC12732@n2100.arm.linux.org.uk>
- <alpine.LFD.2.11.1504281127200.1582@knanqh.ubzr>
- <20150506104504.GM2067@n2100.arm.linux.org.uk>
-In-Reply-To: <20150506104504.GM2067@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Archit Taneja <architt@codeaurora.org>, Marek Vasut <marek.vasut@gmail.com>, kernel list <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinh.linux@gmail.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Rob Clark <robdclark@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Alexander Shiyan <shc_work@mail.ru>, H Hartley Sweeten <hsweeten@visionengravers.com>
+To: linux-fbdev@vger.kernel.org
 
-On Wed 2015-05-06 11:45:04, Russell King - ARM Linux wrote:
-> On Tue, Apr 28, 2015 at 11:28:53AM -0400, Nicolas Pitre wrote:
-> > On Tue, 28 Apr 2015, Russell King - ARM Linux wrote:
-> > 
-> > > On Fri, Apr 24, 2015 at 03:46:56PM +0200, Geert Uytterhoeven wrote:
-> > > > So please optimize ARM's _memcpy_fromio(), _memcpy_toio(), and _memset_io().
-> > > > That will benefit other drivers on ARM, too.
-> > > 
-> > > That's not going to happen.
-> > > 
-> > > I've had a patch which does that, but people are concerned that it changes
-> > > the behaviour of the functions by changing the access size, which could
-> > > cause regressions.  It seems people are far too worried about that to even
-> > > consider trying. :(
-> > 
-> > What about making the optimized implementation available via kconfig?
-> 
-> I'd prefer not to.  My personal feeling is to put the patch in and just be
-> done with it - these functions are supposed to be used on IO areas which
-> don't care about access size (in other words, are memory-like rather than
-> being register-like.)  Here's the rather old patch:
-> 
-> From: Russell King <rmk+kernel@arm.linux.org.uk>
-> Subject: [PATCH] ARM: optimize memset_io()/memcpy_fromio()/memcpy_toio()
-> 
-> If we are building for a LE platform, and we haven't overriden the
-> MMIO ops, then we can optimize the mem*io operations using the
-> standard string functions.
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+If image->depth != 1, lynxfb_ops_imageblit() should fallback to call
+cfb_imageblit(), not return directly. Otherwise it can't display the
+boot logo.
 
-Tested-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>
+Acked-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Signed-off-by: Huacai Chen <chenhc@lemote.com>
+---
+ V2: Coding style ajustment.
+ V3: Add TODO comments.
 
-Works for me, framebuffer performance is back in "too fast to measure"
-range.
+ drivers/staging/sm750fb/TODO    |    1 +
+ drivers/staging/sm750fb/sm750.c |    3 +++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-When this is merged, should 981409b25e2a99409b26daa67293ca1cfd5ea0a0
-be reverted in -stable?
-
-Thanks,
-									Pavel
+diff --git a/drivers/staging/sm750fb/TODO b/drivers/staging/sm750fb/TODO
+index bc16172..f8698498 100644
+--- a/drivers/staging/sm750fb/TODO
++++ b/drivers/staging/sm750fb/TODO
+@@ -2,6 +2,7 @@ TODO:
+ - lots of clechpatch cleanup
+ - use kernel coding style
+ - refine the code and remove unused code
++- Implement hardware acceleration for imageblit if image->depth > 1
+ - check on hardware effects of removal of USE_HW_I2C and USE_DVICHIP (these two
+ 	are supposed to be sample code which is given here if someone wants to
+ 	use those functionalities)
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 3c7ea95..6f78de3 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -279,7 +279,10 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 		}
+ 		goto _do_work;
+ 	}
++	/* TODO: Implement hardware acceleration for image->depth > 1 */
++	cfb_imageblit(info, image);
+ 	return;
++
+ _do_work:
+ 	/*
+ 	 * If not use spin_lock, system will die if user load driver
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.7.3
+
+
+
+

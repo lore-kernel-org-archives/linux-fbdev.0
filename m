@@ -1,57 +1,38 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Wed, 20 May 2015 21:06:15 +0000
-Subject: Re: [PATCH v3 1/4] pci: add pci_ioremap_wc_bar()
-Message-Id: <CAB=NE6UCdw9F-NRCm_mHuW133xBJbEgdadBy6Vt+D4awvuC-tQ@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Sun, 10 May 2015 13:32:14 +0000
+Subject: Re: [PATCH v2 0/3] add cursor blink interval terminal escape sequence
+Message-Id: <20150510133214.GA32575@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1429647634-17169-1-git-send-email-mcgrof@do-not-panic.com>
- <1429647634-17169-2-git-send-email-mcgrof@do-not-panic.com> <20150520210234.GD32152@google.com>
-In-Reply-To: <20150520210234.GD32152@google.com>
+References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
+ <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
+ <20150225094946.GA24627@amd>
+ <alpine.LNX.2.11.1502252319330.276@localhost>
+ <20150226220243.GC9935@amd>
+ <alpine.LNX.2.11.1502271905580.4212@localhost>
+ <alpine.LNX.2.11.1502271911380.4248@localhost>
+ <20150325111949.GA24230@kroah.com>
+ <alpine.DEB.2.11.1503261341260.2164@local>
+ <20150328075443.GD5248@xo-6d-61-c0.localdomain>
+In-Reply-To: <20150328075443.GD5248@xo-6d-61-c0.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Andy Lutomirski <luto@amacapital.net>, "cocci@systeme.lip6.fr" <cocci@systeme.lip6.fr>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Scot Doyle <lkml14@scotdoyle.com>, Michael Kerrisk <mtk.manpages@gmail.com>, Jiri Slaby <jslaby@suse.cz>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-man@vger.kernel.org, linux-api@vger.kernel.org
 
-On Wed, May 20, 2015 at 2:02 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> On Tue, Apr 21, 2015 at 01:20:31PM -0700, Luis R. Rodriguez wrote:
->> From: "Luis R. Rodriguez" <mcgrof@suse.com>
->>
->> This lets drivers take advantage of PAT when available. This
->> should help with the transition of converting video drivers over
->> to ioremap_wc() to help with the goal of eventually using
->> _PAGE_CACHE_UC over _PAGE_CACHE_UC_MINUS on x86 on
->> ioremap_nocache() (de33c442e titled "x86 PAT: fix performance
->> drop for glx, use UC minus for ioremap(), ioremap_nocache() and
->> pci_mmap_page_range()")
->>
->> Cc: Toshi Kani <toshi.kani@hp.com>
->> Cc: Bjorn Helgaas <bhelgaas@google.com>
->> Cc: Suresh Siddha <sbsiddha@gmail.com>
->> Cc: Ingo Molnar <mingo@elte.hu>
->> Cc: Thomas Gleixner <tglx@linutronix.de>
->> Cc: Juergen Gross <jgross@suse.com>
->> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
->> Cc: Andy Lutomirski <luto@amacapital.net>
->> Cc: Dave Airlie <airlied@redhat.com>
->> Cc: Antonino Daplas <adaplas@gmail.com>
->> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
->> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> Cc: Ville Syrjälä <syrjala@sci.fi>
->> Cc: Mel Gorman <mgorman@suse.de>
->> Cc: Vlastimil Babka <vbabka@suse.cz>
->> Cc: Borislav Petkov <bp@suse.de>
->> Cc: Davidlohr Bueso <dbueso@suse.de>
->> Cc: linux-fbdev@vger.kernel.org
->> Cc: linux-kernel@vger.kernel.org
->> Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
->
-> I don't have any objection to this, and I can apply the follow-on patches
-> as well, given the appropriate acks and prerequisite patches (ioremap_wc()
-> implementation).
+On Sat, Mar 28, 2015 at 08:54:43AM +0100, Pavel Machek wrote:
+> On Thu 2015-03-26 13:51:04, Scot Doyle wrote:
+> > v2: Add documentation to console_codes man page (man-pages repo)
+> > 
+> > This patch series adds an escape sequence to specify the current console's
+> > cursor blink interval. The default interval is set to fbcon's currently 
+> > hardcoded 200 msecs.
+> 
+> Actually... Greg, can you import console_codes.4 into kernel tree somehow?
 
-OK great, ioremap_wc() has been upstream for a long time. So I'll wait
-for Tomi's review of the fbdev changes. Once I get those I can resend
-in a series bundled together with the other pending pci / fbdev
-changes we just discussed to make things clear.
+Is that file part of the manpages project?  If so, it's fine where it
+is, otherwise feel free to send a patch.
 
- Luis
+thanks,
+
+greg k-h

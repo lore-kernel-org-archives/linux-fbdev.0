@@ -1,41 +1,49 @@
-From: Andrey Wagin <avagin@gmail.com>
-Date: Wed, 27 May 2015 11:07:42 +0000
-Subject: Re: [PATCH 2/2] fbcon: use the cursor blink interval provided by vt
-Message-Id: <CANaxB-yzY2ne84PWLHH8guJpZHDpiok4iaJtgN+kVgdiGv-ndA@mail.gmail.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Mon, 11 May 2015 13:56:53 +0000
+Subject: Re: [PATCHv3 0/4] add devm_of_phy_get_by_index and update platform drivers
+Message-Id: <5550B255.3040404@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
-	<alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
-	<20150225094946.GA24627@amd>
-	<alpine.LNX.2.11.1502252319330.276@localhost>
-	<20150226220243.GC9935@amd>
-	<alpine.LNX.2.11.1502271905580.4212@localhost>
-	<alpine.LNX.2.11.1502271914040.4248@localhost>
-	<CANaxB-zX4GkExeCzwgYZVDVZE47DHOCnRiYe86difk4fRMK=9A@mail.gmail.com>
-	<alpine.DEB.2.11.1505270737270.6667@local>
-In-Reply-To: <alpine.DEB.2.11.1505270737270.6667@local>
+References: <Pine.LNX.4.44L0.1504231031170.1529-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1504231031170.1529-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Scot Doyle <lkml14-enLWO88E2pdl57MIdRCFDg@public.gmane.org>
-Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel@lists.infradead.org
 
-2015-05-27 10:52 GMT+03:00 Scot Doyle <lkml14@scotdoyle.com>:
-> On Wed, 27 May 2015, Andrey Wagin wrote:
-> ...
->> I regularly execute criu tests on linux-next. For this, I use virtual
->> machine from the digitalocean clould. The current version of
->> linux-next hangs after a few seconds. I use git bisect to find the
->> commit where the problem is appeaed. And it looks like the problem is
->> in this patch.
-> ...
->> Thanks,
->> Andrew
->
-> Perhaps this pending patch will help:
-> http://marc.info/?l=linux-kernel&m3219509918969&w=2
+Hi,
 
-Yes, it helps. Thanks.
+On Thursday 23 April 2015 08:01 PM, Alan Stern wrote:
+> On Wed, 22 Apr 2015, Arun Ramamurthy wrote:
 >
-> Thanks,
-> Scot
+>> This patch set adds a new API to get phy by index when multiple
+>> phys are present. This patch is based on discussion with Arnd Bergmann
+>> about dt bindings for multiple phys.
+>>
+>> History:
+>> v1:
+>>      - Removed null pointers on Dmitry's suggestion
+>>      - Improved documentation in commit messages
+>>      - Exported new phy api
+>> v2:
+>>      - EHCI and OHCI platform Kconfigs select Generic Phy
+>>        to fix build errors in certain configs.
+>> v3:
+>>      - Made GENERIC_PHY an invisible option so
+>>      that other configs can select it
+>>      - Added stubs for devm_of_phy_get_by_index
+>>      - Reformated code
+>>
+>> Arun Ramamurthy (4):
+>>    phy: phy-core: Make GENERIC_PHY an invisible option
+>>    phy: core: Add devm_of_phy_get_by_index to phy-core
+>>    usb: ehci-platform: Use devm_of_phy_get_by_index
+>>    usb: ohci-platform: Use devm_of_phy_get_by_index
 >
+> For patches 3 and 4:
+>
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+
+merged this to linux-phy.
+
+Thanks
+Kishon

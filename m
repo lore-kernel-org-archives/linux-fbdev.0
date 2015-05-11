@@ -1,53 +1,570 @@
-From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
-Date: Mon, 25 May 2015 22:36:07 +0000
-Subject: [PATCH v4 0/3] USB PHY driver for Broadcom's Cygnus chipset
-Message-Id: <1432593370-14457-1-git-send-email-arun.ramamurthy@broadcom.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Mon, 11 May 2015 14:49:13 +0000
+Subject: Re: [PATCH v3 3/3] phy: cygnus-usbphy: Add Broadcom Cygnus USB phy driver
+Message-Id: <5550BE99.40702@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1429744479-10410-1-git-send-email-arun.ramamurthy@broadcom.com> <1429744479-10410-4-git-send-email-arun.ramamurthy@broadcom.com>
+In-Reply-To: <1429744479-10410-4-git-send-email-arun.ramamurthy@broadcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Dmitry Torokhov <dtor@google.com>, Anatol Pomazau <anatol@google.com>, Jonathan Richardson <jonathar@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+To: Arun Ramamurthy <arun.ramamurthy@broadcom.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Gabriel FERNANDEZ <gabriel.fernandez@st.com>, Jason Cooper <jason@lakedaemon.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Dmitry Torokhov <dtor@google.com>, Anatol Pomazau <anatol@google.com>, Jonathan Richardson <jonathar@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Dmitry Torokhov <dtor@chromium.org>
 
-This patchset adds the USB phy driver and documentation 
-for Broadom's Cygnus chipset. The phy is configurable from device tree
-and is capable of both device and host functions. It also provides
-a clock and reset to the host controller
+Hi,
 
-History:
-v1:
-    - Included Dmitry Torokhov's patch that addresed Kishon Vijay Abraham's 
-    comments on multiple phy model
-    - Inlucded Dmitry Torokhov's patch to use phy regulator
-    - Addressed Arnd Bergmann's comments on usage of this phy driver by
-    ehci-platform and ohci-platform driver in a separate patchset. 
-v2:
-    - Addressed Kishon's comments on documentation and function names
-    - Dmitry Addressed Kishon's comments on per port phy regulators
-v3:
-    - Addressed Kishon's comments on error code in phy driver and multi level
-    if else statements
-    - Corrected documentation to use defines for constants
-    - Corrected commit log for phy regulator patch
-v4:
-    - Refactored define for constants in dt
-    - Removed reduant code in driver
+On Thursday 23 April 2015 04:44 AM, Arun Ramamurthy wrote:
+> This driver adds support for USB 2.0 host and device phy for
+> Broadcom's Cygnus chipset. The host controller is connected to
+> three separate phys and one of the phys (port 2) is connected to
+> the device controller
+>
+> Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+> Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
+> Reviewed-by: Ray Jui <rjui@broadcom.com>
+> Reviewed-by: Scott Branden <sbranden@broadcom.com>
+> ---
+>   drivers/phy/Kconfig              |  12 +
+>   drivers/phy/Makefile             |   1 +
+>   drivers/phy/phy-bcm-cygnus-usb.c | 504 +++++++++++++++++++++++++++++++++++++++
+>   3 files changed, 517 insertions(+)
+>   create mode 100644 drivers/phy/phy-bcm-cygnus-usb.c
+>
+> diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
+> index 2962de2..0aa62dc 100644
+> --- a/drivers/phy/Kconfig
+> +++ b/drivers/phy/Kconfig
+> @@ -291,4 +291,16 @@ config PHY_QCOM_UFS
+>   	help
+>   	  Support for UFS PHY on QCOM chipsets.
+>
+> +config PHY_BCM_CYGNUS_USB
+> +	tristate "Broadcom Cygnus USB PHY support"
+> +	depends on OF
+> +	depends on ARCH_BCM_CYGNUS || COMPILE_TEST
+> +	select GENERIC_PHY
+> +	default ARCH_BCM_CYGNUS
+> +	help
+> +	  Enable this to support the USB PHY in Broadcom's Cygnus chip.
+> +	  The phys are capable of supporting host mode for all ports
+> +	  and device mode for port 2. The host or device configuration is
+> +	  read from the device tree.
+> +
+>   endmenu
+> diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
+> index f080e1b..47a37fa 100644
+> --- a/drivers/phy/Makefile
+> +++ b/drivers/phy/Makefile
+> @@ -6,6 +6,7 @@ obj-$(CONFIG_GENERIC_PHY)		+= phy-core.o
+>   obj-$(CONFIG_PHY_BERLIN_USB)		+= phy-berlin-usb.o
+>   obj-$(CONFIG_PHY_BERLIN_SATA)		+= phy-berlin-sata.o
+>   obj-$(CONFIG_ARMADA375_USBCLUSTER_PHY)	+= phy-armada375-usb2.o
+> +obj-$(CONFIG_PHY_BCM_CYGNUS_USB)	+= phy-bcm-cygnus-usb.o
+>   obj-$(CONFIG_BCM_KONA_USB2_PHY)		+= phy-bcm-kona-usb2.o
+>   obj-$(CONFIG_PHY_EXYNOS_DP_VIDEO)	+= phy-exynos-dp-video.o
+>   obj-$(CONFIG_PHY_EXYNOS_MIPI_VIDEO)	+= phy-exynos-mipi-video.o
+> diff --git a/drivers/phy/phy-bcm-cygnus-usb.c b/drivers/phy/phy-bcm-cygnus-usb.c
+> new file mode 100644
+> index 0000000..e718404
+> --- /dev/null
+> +++ b/drivers/phy/phy-bcm-cygnus-usb.c
+> @@ -0,0 +1,504 @@
+> +/*
+> + * Copyright (C) 2015 Broadcom Corporation
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License as
+> + * published by the Free Software Foundation version 2.
+> + *
+> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+> + * kind, whether express or implied; without even the implied warranty
+> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/io.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/phy/phy.h>
+> +#include <linux/delay.h>
+> +
+> +#define CDRU_USBPHY_CLK_RST_SEL_OFFSET			0x11b4
+> +#define CDRU_USBPHY2_HOST_DEV_SEL_OFFSET		0x11b8
+> +#define CDRU_SPARE_REG_0_OFFSET				0x1238
+> +#define CRMU_USB_PHY_AON_CTRL_OFFSET			0x00028
+> +#define CDRU_USB_DEV_SUSPEND_RESUME_CTRL_OFFSET		0x1210
+> +#define CDRU_USBPHY_P0_STATUS_OFFSET			0x11D0
+> +#define CDRU_USBPHY_P1_STATUS_OFFSET			0x11E8
+> +#define CDRU_USBPHY_P2_STATUS_OFFSET			0x1200
+> +#define CDRU_USBPHY_USBPHY_ILDO_ON_FLAG			1
+> +#define CDRU_USBPHY_USBPHY_PLL_LOCK			0
+> +#define CDRU_USB_DEV_SUSPEND_RESUME_CTRL_DISABLE	0
+> +#define PHY2_DEV_HOST_CTRL_SEL_HOST			1
+> +
+> +#define CRMU_USBPHY_P0_AFE_CORERDY_VDDC			1
+> +#define CRMU_USBPHY_P0_RESETB				2
+> +#define CRMU_USBPHY_P1_AFE_CORERDY_VDDC			9
+> +#define CRMU_USBPHY_P1_RESETB				10
+> +#define CRMU_USBPHY_P2_AFE_CORERDY_VDDC			17
+> +#define CRMU_USBPHY_P2_RESETB				18
+> +
+> +#define USB2_IDM_IDM_IO_CONTROL_DIRECT_OFFSET		0x0408
+> +#define USB2_IDM_IDM_IO_CONTROL_DIRECT__clk_enable	0
+> +#define USB2_IDM_IDM_RESET_CONTROL_OFFSET		0x0800
+> +#define USB2_IDM_IDM_RESET_CONTROL__RESET		0
+> +
+> +#define PLL_LOCK_RETRY_COUNT	1000
+> +#define MAX_PHY_PORTS		3
+> +
+> +static int power_bit[] = {CRMU_USBPHY_P0_AFE_CORERDY_VDDC,
+> +				CRMU_USBPHY_P1_AFE_CORERDY_VDDC,
+> +				CRMU_USBPHY_P2_AFE_CORERDY_VDDC};
+> +static int reset_bit[] = {CRMU_USBPHY_P0_RESETB,
+> +				CRMU_USBPHY_P1_RESETB,
+> +				CRMU_USBPHY_P2_RESETB};
+> +static int status_reg[] = {CDRU_USBPHY_P0_STATUS_OFFSET,
+> +				CDRU_USBPHY_P1_STATUS_OFFSET,
+> +				CDRU_USBPHY_P2_STATUS_OFFSET};
+> +
+> +struct bcm_phy_instance;
+> +
+> +struct bcm_phy_driver {
+> +	void __iomem *usbphy_regs;
+> +	void __iomem *usb2h_idm_regs;
+> +	void __iomem *usb2d_idm_regs;
+> +	struct bcm_phy_instance *ports[MAX_PHY_PORTS];
+> +	spinlock_t lock;
+> +	bool idm_host_enabled;
+> +};
+> +
+> +struct bcm_phy_instance {
+> +	struct bcm_phy_driver *driver;
+> +	struct phy *generic_phy;
+> +	int port_no;
+> +	bool host_mode; /* true - Host, false - device */
+> +	bool power;
+> +};
+> +
+> +static inline int bcm_phy_cdru_usbphy_status_wait(u32 usb_reg, int reg_bit,
+> +					  struct bcm_phy_driver *phy_driver)
+> +{
+> +	/* Wait for the PLL lock status */
+> +	int retry = PLL_LOCK_RETRY_COUNT;
+> +	u32 reg_val;
+> +
+> +	do {
+> +		udelay(1);
+> +		reg_val = readl(phy_driver->usbphy_regs +
+> +				usb_reg);
+> +		if (reg_val & (1 << reg_bit))
+> +			return 0;
+> +	} while (--retry > 0);
+> +
+> +	return -EBUSY;
+> +
+> +}
+> +
+> +static struct phy *bcm_usb_phy_xlate(struct device *dev,
+> +				     struct of_phandle_args *args)
+> +{
+> +	struct bcm_phy_driver *phy_driver = dev_get_drvdata(dev);
+> +	struct bcm_phy_instance *port = NULL;
+> +	int i;
+> +
+> +	if (!phy_driver)
+> +		return ERR_PTR(-ENODEV);
+> +
+> +	if (WARN_ON(args->args_count != 1))
+> +		return ERR_PTR(-ENODEV);
+> +
+> +	if (WARN_ON(args->args[0] < 0 || args->args[0] > 1))
+> +		return ERR_PTR(-ENODEV);
+> +
+> +	for (i = 0; i < ARRAY_SIZE(phy_driver->ports); i++) {
+> +		struct bcm_phy_instance *p = phy_driver->ports[i];
+> +
+> +		if (p && p->generic_phy->dev.of_node = args->np) {
+> +			port = p;
+> +			break;
+> +		}
+> +	}
+> +
+> +	if (!port) {
+> +		dev_err(dev, "Failed to locate phy %s\n", args->np->name);
+> +		return ERR_PTR(-EINVAL);
+> +	}
+> +
+> +	port->host_mode = args->args[0];
+> +
+> +	return port->generic_phy;
+> +}
+> +
+> +static int bcm_phy_init(struct phy *generic_phy)
+> +{
+> +	struct bcm_phy_instance *port = phy_get_drvdata(generic_phy);
+> +	struct bcm_phy_driver *phy_driver = port->driver;
+> +	unsigned long flags;
+> +	u32 reg_val;
+> +
+> +	spin_lock_irqsave(&phy_driver->lock, flags);
+> +
+> +	/*
+> +	 * Only PORT 2 is capable of being device and host
+> +	 * Default setting is device, check if it is set to host.
+> +	 */
+> +	if (port->port_no != 2) {
 
-Arun Ramamurthy (3):
-  phy: phy-core: allow specifying supply at port level
-  Phy: DT binding documentation for Broadcom Cygnus USB PHY driver
-  phy: cygnus-usbphy: Add Broadcom Cygnus USB phy driver
+can be a goto here with a label in the end.
+> +		spin_unlock_irqrestore(&phy_driver->lock, flags);
+> +		return 0;
+> +	}
+> +
+> +	if (port->host_mode) {
+> +		writel(PHY2_DEV_HOST_CTRL_SEL_HOST,
+> +			phy_driver->usbphy_regs +
+> +			CDRU_USBPHY2_HOST_DEV_SEL_OFFSET);
+> +	} else {
+> +		/*
+> +		 * Disable suspend/resume signals to device controller
+> +		 * when a port is in device mode.
+> +		 */
+> +		reg_val = readl(phy_driver->usbphy_regs +
+> +			      CDRU_USB_DEV_SUSPEND_RESUME_CTRL_OFFSET);
+> +		reg_val |> +			1 << CDRU_USB_DEV_SUSPEND_RESUME_CTRL_DISABLE;
+> +		writel(reg_val, phy_driver->usbphy_regs +
+> +		       CDRU_USB_DEV_SUSPEND_RESUME_CTRL_OFFSET);
+> +	}
+> +
+> +
+^^spurious blank line.
+> +	spin_unlock_irqrestore(&phy_driver->lock, flags);
+> +	return 0;
+> +}
+> +
+> +static int bcm_phy_shutdown(struct phy *generic_phy)
+> +{
+> +	struct bcm_phy_instance *port = phy_get_drvdata(generic_phy);
+> +	struct bcm_phy_driver *phy_driver = port->driver;
+> +	unsigned long flags;
+> +	int i;
+> +	u32 reg_val, powered_on_phy;
+> +	bool power_off_flag = true;
+> +
+> +	spin_lock_irqsave(&phy_driver->lock, flags);
+> +
+> +	/* power down the phy */
+> +	reg_val = readl(phy_driver->usbphy_regs +
+> +			CRMU_USB_PHY_AON_CTRL_OFFSET);
+> +	reg_val &= ~(1 << power_bit[port->port_no]);
+> +	reg_val &= ~(1 << reset_bit[port->port_no]);
+> +	writel(reg_val, phy_driver->usbphy_regs +
+> +		CRMU_USB_PHY_AON_CTRL_OFFSET);
+> +	port->power = false;
+> +
+> +	/*
+> +	 * If a port is configured to device and it is being shutdown,
+> +	 * turn off the clocks to the usb device controller.
+> +	 */
+> +	if (port->port_no = 2 && !port->host_mode) {
+> +		reg_val = readl(phy_driver->usb2d_idm_regs +
+> +				USB2_IDM_IDM_IO_CONTROL_DIRECT_OFFSET);
+> +		reg_val &= ~(1 << USB2_IDM_IDM_IO_CONTROL_DIRECT__clk_enable);
 
- .../bindings/phy/brcm,cygnus-usb-phy.txt           |  69 +++
- drivers/phy/Kconfig                                |  12 +
- drivers/phy/Makefile                               |   1 +
- drivers/phy/phy-bcm-cygnus-usb.c                   | 499 +++++++++++++++++++++
- drivers/phy/phy-core.c                             |  23 +-
- include/dt-bindings/phy/phy.h                      |   2 +
- 6 files changed, 593 insertions(+), 13 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
- create mode 100644 drivers/phy/phy-bcm-cygnus-usb.c
+please avoid using camel case..
+> +		writel(reg_val, phy_driver->usb2d_idm_regs +
+> +				USB2_IDM_IDM_IO_CONTROL_DIRECT_OFFSET);
+> +
+> +		reg_val = readl(phy_driver->usb2d_idm_regs +
+> +				 USB2_IDM_IDM_RESET_CONTROL_OFFSET);
+> +		reg_val |= 1 << USB2_IDM_IDM_RESET_CONTROL__RESET;
+> +		writel(reg_val, phy_driver->usb2d_idm_regs +
+> +				USB2_IDM_IDM_RESET_CONTROL_OFFSET);
+> +
+> +		spin_unlock_irqrestore(&phy_driver->lock, flags);
+> +		return 0;
+> +	}
+> +
+> +	/*
+> +	 * If the phy being shutdown provides clock and reset to
+> +	 * the host controller, change it do a different powered on phy
+> +	 * If all phys are powered off, shut of the host controller
+> +	 */
+> +	reg_val = readl(phy_driver->usbphy_regs +
+> +			CDRU_USBPHY_CLK_RST_SEL_OFFSET);
+> +	powered_on_phy = reg_val;
 
--- 
-2.3.4
+The above statement is useless.
+> +	if (reg_val = port->port_no) {
+> +		for (i = 0; i < ARRAY_SIZE(phy_driver->ports); i++) {
+> +			if (phy_driver->ports[i] &&
+> +			    phy_driver->ports[i]->power &&
+> +			    phy_driver->ports[i]->host_mode) {
+> +				power_off_flag = false;
+> +				powered_on_phy = i;
+> +				break;
+> +			}
+> +		}
+> +	}
+> +
+> +	if (power_off_flag) {
+> +		/*
+> +		 * Put the host controller into reset state and
+> +		 * disable clock.
+> +		 */
+> +		reg_val = readl(phy_driver->usb2h_idm_regs +
+> +			USB2_IDM_IDM_IO_CONTROL_DIRECT_OFFSET);
+> +		reg_val &> +		  ~(1 << USB2_IDM_IDM_IO_CONTROL_DIRECT__clk_enable);
+> +		writel(reg_val, phy_driver->usb2h_idm_regs +
+> +				USB2_IDM_IDM_IO_CONTROL_DIRECT_OFFSET);
+> +
+> +		reg_val = readl(phy_driver->usb2h_idm_regs +
+> +				 USB2_IDM_IDM_RESET_CONTROL_OFFSET);
+> +		reg_val |= (1 << USB2_IDM_IDM_RESET_CONTROL__RESET);
+> +		writel(reg_val, phy_driver->usb2h_idm_regs +
+> +				USB2_IDM_IDM_RESET_CONTROL_OFFSET);
+> +		phy_driver->idm_host_enabled = 0;
+> +	} else {
+> +		writel(powered_on_phy, phy_driver->usbphy_regs +
+> +			   CDRU_USBPHY_CLK_RST_SEL_OFFSET);
+> +	}
+> +
+> +	spin_unlock_irqrestore(&phy_driver->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +static int bcm_phy_poweron(struct phy *generic_phy)
+> +{
+> +	struct bcm_phy_instance *port = phy_get_drvdata(generic_phy);
+> +	struct bcm_phy_driver *phy_driver = port->driver;
+> +	unsigned long flags;
+> +	int ret;
+> +	u32 reg_val;
+> +	bool clock_reset_flag = true;
+> +
+> +	spin_lock_irqsave(&phy_driver->lock, flags);
+> +
+> +	/* Bring the AFE block out of reset to start powering up the PHY */
+> +	reg_val = readl(phy_driver->usbphy_regs + CRMU_USB_PHY_AON_CTRL_OFFSET);
+> +	reg_val |= 1 << power_bit[port->port_no];
+> +	writel(reg_val, phy_driver->usbphy_regs + CRMU_USB_PHY_AON_CTRL_OFFSET);
+> +
+> +	/* Check for power on and PLL lock */
+> +	ret = bcm_phy_cdru_usbphy_status_wait(status_reg[port->port_no],
+> +		   CDRU_USBPHY_USBPHY_ILDO_ON_FLAG, phy_driver);
+> +	if (ret < 0) {
+> +		dev_err(&generic_phy->dev,
+> +			"Timed out waiting for USBPHY_ILDO_ON_FLAG on port %d",
+> +			port->port_no);
+> +		goto err_shutdown;
+> +	}
+> +	ret = bcm_phy_cdru_usbphy_status_wait(status_reg[port->port_no],
+> +		CDRU_USBPHY_USBPHY_PLL_LOCK, phy_driver);
+> +	if (ret < 0) {
+> +		dev_err(&generic_phy->dev,
+> +			"Timed out waiting for USBPHY_PLL_LOCK on port %d",
+> +			port->port_no);
+> +		goto err_shutdown;
+> +	}
+> +	port->power = true;
+> +
+> +	/* Check if the port 2 is configured for device */
+> +	if (port->port_no = 2 && !port->host_mode) {
+> +		/*
+> +		 * Enable clock to USB device and get the USB device
+> +		 * out of reset.
+> +		 */
+> +		reg_val = readl(phy_driver->usb2d_idm_regs +
+> +				USB2_IDM_IDM_IO_CONTROL_DIRECT_OFFSET);
+> +		reg_val |= 1 << USB2_IDM_IDM_IO_CONTROL_DIRECT__clk_enable;
+> +		writel(reg_val, phy_driver->usb2d_idm_regs +
+> +				USB2_IDM_IDM_IO_CONTROL_DIRECT_OFFSET);
+> +
+> +		reg_val = readl(phy_driver->usb2d_idm_regs +
+> +				USB2_IDM_IDM_RESET_CONTROL_OFFSET);
+> +		reg_val &= ~(1 << USB2_IDM_IDM_RESET_CONTROL__RESET);
+> +		writel(reg_val, phy_driver->usb2d_idm_regs +
+> +				USB2_IDM_IDM_RESET_CONTROL_OFFSET);
+> +
+> +	} else {
+> +		reg_val = readl(phy_driver->usbphy_regs +
+> +				CDRU_USBPHY_CLK_RST_SEL_OFFSET);
+> +
+> +		/*
+> +		 * Check if the phy that is configured to provide clock
+> +		 * and reset is powered on.
+> +		 */
+> +		if (reg_val >= 0 && reg_val < ARRAY_SIZE(phy_driver->ports))
+> +			if (phy_driver->ports[reg_val])
+> +				if (phy_driver->ports[reg_val]->power)
+> +					clock_reset_flag = false;
+> +
+> +		/* if not set the current phy */
+> +		if (clock_reset_flag) {
+> +			reg_val = port->port_no;
+> +			writel(reg_val, phy_driver->usbphy_regs +
+> +			       CDRU_USBPHY_CLK_RST_SEL_OFFSET);
+> +		}
+> +	}
+> +
+> +	if (!phy_driver->idm_host_enabled) {
+> +		/* Enable clock to USB and get the USB out of reset */
+> +		reg_val = readl(phy_driver->usb2h_idm_regs +
+> +				USB2_IDM_IDM_IO_CONTROL_DIRECT_OFFSET);
+> +		reg_val |= 1 << USB2_IDM_IDM_IO_CONTROL_DIRECT__clk_enable;
+> +		writel(reg_val, phy_driver->usb2h_idm_regs +
+> +				USB2_IDM_IDM_IO_CONTROL_DIRECT_OFFSET);
+> +
+> +		reg_val = readl(phy_driver->usb2h_idm_regs +
+> +				USB2_IDM_IDM_RESET_CONTROL_OFFSET);
+> +		reg_val &= ~(1 << USB2_IDM_IDM_RESET_CONTROL__RESET);
+> +		writel(reg_val, phy_driver->usb2h_idm_regs +
+> +				USB2_IDM_IDM_RESET_CONTROL_OFFSET);
+> +		phy_driver->idm_host_enabled = true;
+> +	}
+> +
+> +	spin_unlock_irqrestore(&phy_driver->lock, flags);
+> +	return 0;
+> +
+> +err_shutdown:
+> +	spin_unlock_irqrestore(&phy_driver->lock, flags);
+> +	bcm_phy_shutdown(generic_phy);
 
+Instead of calling the phy_shutdown, you can just power off the PHY.
+> +	return ret;
+> +}
+> +
+> +static struct phy_ops ops = {
+> +	.init		= bcm_phy_init,
+> +	.power_on	= bcm_phy_poweron,
+> +	.power_off	= bcm_phy_shutdown,
+> +};
+> +
+> +static const struct of_device_id bcm_phy_dt_ids[] = {
+> +	{ .compatible = "brcm,cygnus-usb-phy", },
+> +	{ }
+> +};
+> +
+> +static int bcm_phy_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct bcm_phy_driver *phy_driver;
+> +	struct phy_provider *phy_provider;
+> +	struct device_node *child;
+> +	struct resource *res;
+> +	int error;
+> +	u32 reg_val;
+> +
+> +	phy_driver = devm_kzalloc(dev, sizeof(struct bcm_phy_driver),
+> +				  GFP_KERNEL);
+> +	if (!phy_driver)
+> +		return -ENOMEM;
+> +
+> +	spin_lock_init(&phy_driver->lock);
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	if (!res) {
+> +		dev_err(&pdev->dev, "missing memory resource usbphy_regs\n");
+> +		return -EINVAL;
+> +	}
+> +	phy_driver->usbphy_regs = devm_ioremap_nocache(dev, res->start,
+> +						resource_size(res));
+> +	if (!phy_driver->usbphy_regs) {
+> +		dev_err(dev, "Failed to remap usbphy_regs\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+> +	if (!res) {
+> +		dev_err(&pdev->dev, "missing memory resource ubs2h_idm_regs\n");
+> +		return -EINVAL;
+> +	}
+> +	phy_driver->usb2h_idm_regs = devm_ioremap_nocache(dev, res->start,
+> +						  resource_size(res));
+> +	if (!phy_driver->usb2h_idm_regs) {
+> +		dev_err(dev, "Failed to remap usb2h_idm_regs\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
+> +	if (!res) {
+> +		dev_err(&pdev->dev, "missing memory resource ubs2d_idm_regs\n");
+> +		return -EINVAL;
+> +	}
+> +	phy_driver->usb2d_idm_regs = devm_ioremap_nocache(dev, res->start,
+> +						   resource_size(res));
+> +	if (!phy_driver->usb2d_idm_regs) {
+> +		dev_err(dev, "Failed to remap usb2d_idm_regs\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	dev_set_drvdata(dev, phy_driver);
+> +
+> +	phy_driver->idm_host_enabled = false;
+> +
+> +	/* Shut down all ports. They can be powered up as required */
+> +	reg_val = readl(phy_driver->usbphy_regs +
+> +			CRMU_USB_PHY_AON_CTRL_OFFSET);
+> +	reg_val &= ~(1 << CRMU_USBPHY_P0_AFE_CORERDY_VDDC);
+> +	reg_val &= ~(1 << CRMU_USBPHY_P0_RESETB);
+> +	reg_val &= ~(1 << CRMU_USBPHY_P1_AFE_CORERDY_VDDC);
+> +	reg_val &= ~(1 << CRMU_USBPHY_P1_RESETB);
+> +	reg_val &= ~(1 << CRMU_USBPHY_P2_AFE_CORERDY_VDDC);
+> +	reg_val &= ~(1 << CRMU_USBPHY_P2_RESETB);
+> +	writel(reg_val, phy_driver->usbphy_regs +
+> +		CRMU_USB_PHY_AON_CTRL_OFFSET);
+> +
+> +	for_each_available_child_of_node(dev->of_node, child) {
+> +		struct bcm_phy_instance *port;
+> +		u32 port_no;
+> +
+> +		if (of_property_read_u32(child, "reg", &port_no)) {
+> +			dev_err(dev, "missing reg property in node %s\n",
+> +				child->name);
+> +			return -EINVAL;
+> +		}
+> +
+> +		if (port_no >= ARRAY_SIZE(phy_driver->ports)) {
+> +			dev_err(dev, "invalid reg in node %s: %u\n",
+> +				child->name, port_no);
+> +			return -EINVAL;
+> +		}
+> +
+> +		port = devm_kzalloc(dev, sizeof(*port), GFP_KERNEL);
+> +		if (!port)
+> +			return -ENOMEM;
+> +
+> +		port->generic_phy = devm_phy_create(dev, child, &ops);
+> +		if (IS_ERR(port->generic_phy)) {
+> +			error = PTR_ERR(port->generic_phy);
+> +			dev_err(dev, "Failed to create phy %u: %d",
+> +				port_no, error);
+> +			return error;
+> +		}
+> +
+> +		port->port_no = port_no;
+> +		port->driver = phy_driver;
+> +		phy_set_drvdata(port->generic_phy, port);
+> +
+> +		phy_driver->ports[port_no] = port;
+> +	}
+> +
+> +	phy_provider = devm_of_phy_provider_register(dev, bcm_usb_phy_xlate);
+> +	if (IS_ERR(phy_provider)) {
+> +		error = PTR_ERR(phy_provider);
+> +		dev_err(dev, "Failed to register as phy provider: %d\n",
+> +			error);
+> +		return error;
+> +	}
+> +
+> +	dev_set_drvdata(pdev, phy_driver);
+
+dev_set_drvdata is being done multiple times.
+
+Please also run checkpatch and fix all the errors and warnings before posting 
+the next version.
+
+Thanks
+Kishon

@@ -1,57 +1,124 @@
-From: Huacai Chen <chenhc@lemote.com>
-Date: Mon, 11 May 2015 03:08:22 +0000
-Subject: [PATCH V4] staging: sm750: Fix lynxfb_ops_imageblit() if image->depth != 1
-Message-Id: <1431313702-14975-1-git-send-email-chenhc@lemote.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Mon, 11 May 2015 15:21:57 +0000
+Subject: Re: [PATCHv3 2/4] phy: core: Add devm_of_phy_get_by_index to phy-core
+Message-Id: <5550C645.6090106@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
+ <1429743853-10254-3-git-send-email-arun.ramamurthy@broadcom.com>
+In-Reply-To: <1429743853-10254-3-git-send-email-arun.ramamurthy@broadcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-If image->depth != 1, lynxfb_ops_imageblit() should fallback to call
-cfb_imageblit(), not return directly. Otherwise it can't display the
-boot logo.
+Hi,
 
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-Acked-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Signed-off-by: Huacai Chen <chenhc@lemote.com>
----
- V2: Coding style ajustment.
- V3: Add TODO comments.
- V4: Rebase on latest code.
+On Thursday 23 April 2015 04:34 AM, Arun Ramamurthy wrote:
+> Some generic drivers, such as ehci, may use multiple phys and for such
+> drivers referencing phy(s) by name(s) does not make sense. Instead of
+> inventing new naming schemes and using custom code to iterate through them,
+> such drivers are better of using nameless phy bindings and using this newly
+> introduced API to iterate through them.
+>
+> Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+> Reviewed-by: Ray Jui <rjui@broadcom.com>
+> Reviewed-by: Scott Branden <sbranden@broadcom.com>
+> ---
+>   Documentation/phy.txt   |  7 ++++++-
+>   drivers/phy/phy-core.c  | 32 ++++++++++++++++++++++++++++++++
+>   include/linux/phy/phy.h |  8 ++++++++
+>   3 files changed, 46 insertions(+), 1 deletion(-)
+>
+> diff --git a/Documentation/phy.txt b/Documentation/phy.txt
+> index 371361c..b388c5a 100644
+> --- a/Documentation/phy.txt
+> +++ b/Documentation/phy.txt
+> @@ -76,6 +76,8 @@ struct phy *phy_get(struct device *dev, const char *string);
+>   struct phy *phy_optional_get(struct device *dev, const char *string);
+>   struct phy *devm_phy_get(struct device *dev, const char *string);
+>   struct phy *devm_phy_optional_get(struct device *dev, const char *string);
+> +struct phy *devm_of_phy_get_by_index(struct device *dev, struct device_node *np,
+> +				     int index);
+>
+>   phy_get, phy_optional_get, devm_phy_get and devm_phy_optional_get can
+>   be used to get the PHY. In the case of dt boot, the string arguments
+> @@ -86,7 +88,10 @@ successful PHY get. On driver detach, release function is invoked on
+>   the the devres data and devres data is freed. phy_optional_get and
+>   devm_phy_optional_get should be used when the phy is optional. These
+>   two functions will never return -ENODEV, but instead returns NULL when
+> -the phy cannot be found.
+> +the phy cannot be found.Some generic drivers, such as ehci, may use multiple
+> +phys and for such drivers referencing phy(s) by name(s) does not make sense. In
+> +this case, devm_of_phy_get_by_index can be used to get a phy reference based on
+> +the index.
+>
+>   It should be noted that NULL is a valid phy reference. All phy
+>   consumer calls on the NULL phy become NOPs. That is the release calls,
+> diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
+> index 3791838..964a84d 100644
+> --- a/drivers/phy/phy-core.c
+> +++ b/drivers/phy/phy-core.c
+> @@ -623,6 +623,38 @@ struct phy *devm_of_phy_get(struct device *dev, struct device_node *np,
+>   EXPORT_SYMBOL_GPL(devm_of_phy_get);
+>
+>   /**
+> + * devm_of_phy_get_by_index() - lookup and obtain a reference to a phy by index.
+> + * @dev: device that requests this phy
+> + * @np: node containing the phy
+> + * @index: index of the phy
+> + *
+> + * Gets the phy using _of_phy_get(), and associates a device with it using
+> + * devres. On driver detach, release function is invoked on the devres data,
+> + * then, devres data is freed.
+> + *
+> + */
+> +struct phy *devm_of_phy_get_by_index(struct device *dev, struct device_node *np,
+> +				     int index)
+> +{
+> +	struct phy **ptr, *phy;
+> +
+> +	ptr = devres_alloc(devm_phy_release, sizeof(*ptr), GFP_KERNEL);
+> +	if (!ptr)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	phy = _of_phy_get(np, index);
+> +	if (!IS_ERR(phy)) {
+> +		*ptr = phy;
+> +		devres_add(dev, ptr);
+> +	} else {
+> +		devres_free(ptr);
+> +	}
+> +
+> +	return phy;
+> +}
+> +EXPORT_SYMBOL_GPL(devm_of_phy_get_by_index);
+> +
+> +/**
+>    * phy_create() - create a new phy
+>    * @dev: device that is creating the new phy
+>    * @node: device node of the phy
+> diff --git a/include/linux/phy/phy.h b/include/linux/phy/phy.h
+> index a0197fa..978d5af 100644
+> --- a/include/linux/phy/phy.h
+> +++ b/include/linux/phy/phy.h
+> @@ -133,6 +133,8 @@ struct phy *devm_phy_get(struct device *dev, const char *string);
+>   struct phy *devm_phy_optional_get(struct device *dev, const char *string);
+>   struct phy *devm_of_phy_get(struct device *dev, struct device_node *np,
+>   			    const char *con_id);
+> +struct phy *devm_of_phy_get_by_index(struct device *dev, struct device_node *np,
+> +				     int index);
+>   void phy_put(struct phy *phy);
+>   void devm_phy_put(struct device *dev, struct phy *phy);
+>   struct phy *of_phy_get(struct device_node *np, const char *con_id);
+> @@ -261,6 +263,12 @@ static inline struct phy *devm_of_phy_get(struct device *dev,
+>   	return ERR_PTR(-ENOSYS);
+>   }
+>
+> +struct phy *devm_of_phy_get_by_index(struct device *dev, struct device_node *np,
+> +				     int index);
 
- drivers/staging/sm750fb/TODO    |    1 +
- drivers/staging/sm750fb/sm750.c |    3 +++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+Fixed the compilation error because of the ';' in the end and merged it to 
+linux-phy.
 
-diff --git a/drivers/staging/sm750fb/TODO b/drivers/staging/sm750fb/TODO
-index bc16172..f8698498 100644
---- a/drivers/staging/sm750fb/TODO
-+++ b/drivers/staging/sm750fb/TODO
-@@ -2,6 +2,7 @@ TODO:
- - lots of checkpatch cleanup
- - use kernel coding style
- - refine the code and remove unused code
-+- Implement hardware acceleration for imageblit if image->depth > 1
- - check on hardware effects of removal of USE_HW_I2C and USE_DVICHIP (these two
- 	are supposed to be sample code which is given here if someone wants to
- 	use those functionalities)
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 3c7ea95..6f78de3 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -279,7 +279,10 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
- 		}
- 		goto _do_work;
- 	}
-+	/* TODO: Implement hardware acceleration for image->depth > 1 */
-+	cfb_imageblit(info, image);
- 	return;
-+
- _do_work:
- 	/*
- 	 * If not use spin_lock, system will die if user load driver
--- 
-1.7.7.3
-
-
+Thanks
+Kishon

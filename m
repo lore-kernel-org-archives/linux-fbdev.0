@@ -1,157 +1,120 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Fri, 29 May 2015 19:24:17 +0000
-Subject: Re: [PATCH v6 1/4] pci: add pci_iomap_wc() variants
-Message-Id: <CAB=NE6X7ewg9TEJz+CWLq_PbxHYER3TEnUQ-nV87wDz6x3QjLA@mail.gmail.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Mon, 11 May 2015 14:23:04 +0000
+Subject: Re: [PATCH v3 2/3] Phy: DT binding documentation for Broadcom Cygnus USB PHY driver
+Message-Id: <5550B878.7060608@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432163293-20965-1-git-send-email-mcgrof@do-not-panic.com>
- <1432163293-20965-2-git-send-email-mcgrof@do-not-panic.com>
- <20150521223321.GG32152@google.com> <20150522002341.GM23057@wotan.suse.de>
- <20150526174008.GN32152@google.com> <20150527200402.GS23057@wotan.suse.de>
- <CAB=NE6Xyd-THK2385W7VfS358PSJfkfHRnjoZRJWP_LFrzOWJA@mail.gmail.com> <5567FFB6.5050108@ti.com>
-In-Reply-To: <5567FFB6.5050108@ti.com>
+References: <1429744479-10410-1-git-send-email-arun.ramamurthy@broadcom.com> <1429744479-10410-3-git-send-email-arun.ramamurthy@broadcom.com>
+In-Reply-To: <1429744479-10410-3-git-send-email-arun.ramamurthy@broadcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>, Juergen Gross <jgross@suse.com>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>, Ingo Molnar <mingo@elte.hu>, X86 ML <x86@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Dave Airlie <airlied@linux.ie>, linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Stefan Bader <stefan.bader@canonical.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, David Vrabel <david.vrabel@citrix.com>, Jan Beulich <jbeulich@suse.com>, =?UTF-8?Q?Roger_Pau_Monn=C3=A9?= <roger.pau@citrix.com>
+To: Arun Ramamurthy <arun.ramamurthy@broadcom.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Gabriel FERNANDEZ <gabriel.fernandez@st.com>, Jason Cooper <jason@lakedaemon.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Dmitry Torokhov <dtor@google.com>, Anatol Pomazau <anatol@google.com>, Jonathan Richardson <jonathar@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, bcm-kernel-feedback-list@broadcom.com
 
-On Thu, May 28, 2015 at 10:57 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+Hi,
+
+On Thursday 23 April 2015 04:44 AM, Arun Ramamurthy wrote:
+> Broadcom's Cygnus chip has a USB 2.0 host controller connected to
+> three separate phys. One of the phs (port 2) is also connectd to
+> a usb 2.0 device controller
 >
+> Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+> Reviewed-by: Ray Jui <rjui@broadcom.com>
+> Reviewed-by: Scott Branden <sbranden@broadcom.com>
+> ---
+>   .../bindings/phy/brcm,cygnus-usb-phy.txt           | 69 ++++++++++++++++++++++
+>   include/dt-bindings/phy/phy.h                      |  2 +
+>   2 files changed, 71 insertions(+)
+>   create mode 100644 Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
 >
-> On 29/05/15 03:36, Luis R. Rodriguez wrote:
->> On Wed, May 27, 2015 at 1:04 PM, Luis R. Rodriguez <mcgrof@suse.com> wrote:
->>> On Tue, May 26, 2015 at 12:40:08PM -0500, Bjorn Helgaas wrote:
->>>> On Fri, May 22, 2015 at 02:23:41AM +0200, Luis R. Rodriguez wrote:
->>>>> On Thu, May 21, 2015 at 05:33:21PM -0500, Bjorn Helgaas wrote:
->>>>>>
->>>>>> I tentatively put this (and the rest of the series) on a pci/resource
->>>>>> branch.  I'm hoping you'll propose some clarification about
->>>>>> EXPORT_SYMBOL_GPL().
->>>>>
->>>>> EXPORT_SYMBOL_GPL() also serves to ensure only GPL modules can
->>>>> only run that code. So for instance although we have "Dual BSD/GPL"
->>>>> tags for modules pure "BSD" tags do not exist for module tags and
->>>>> cannot run EXPORT_SYMBOL_GPL() code [0]. Also there is some folks
->>>>> who do believe tha at run time all kernel modules are GPL [1] [2].
->>>>> And to be precise even though the FSF may claim a list of licenses
->>>>> are GPL-compatible we cannot rely on this list alone for our own
->>>>> goals and if folks want to use our EXPORT_SYMBOL_GPL()s they must
->>>>> discuss this on lkml [2].
->>>>
->>>> By "propose some clarification," I meant that I hoped you would propose a
->>>> patch to Documentation/ that would give maintainers some guidance.
->>>
->>> I *really really* would hate to do so but only because you insist, I'll look
->>> into this...
->>
->> OK done. Please let me know if there is anything else I can do to
->> help. Also as per review with Tomi, the framebuffer maintainer, he
->> would prefer for only the required symbols to go through your tree.
->> We'd then wait for the next merge window for them to perculate to
->> Linus' tree and once there I'd send him a pull request for the
->> framebuffer device driver changes alone. So this does mean we'll have
->> no users of the symbols for a full release, but again, this is as per
->> Tomi's preference. This strategy is also the preference then for the
->> pci_iomap_wc() series as well. With that in mind, perhaps the lib
->> patch can go in as we'd have no users but we do have a few future
->> possible expected users.
->
-> I don't have any issue with fbdev changes going through other trees, but
-> I'd rather do that only if there are good reasons to go that way.
+> diff --git a/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt b/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
+> new file mode 100644
+> index 0000000..ec62044
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
+> @@ -0,0 +1,69 @@
+> +BROADCOM CYGNUS USB PHY
+> +
+> +Required Properties:
+> +	- compatible:  brcm,cygnus-usb-phy
+> +	- reg : usbphy_regs - Base address of phy registers
+> +			usb2h_idm_regs - Base address of host idm registers
+> +			usb2d_idm_regs - Base address of device idm registers
+> +	- phy-cells - must be 1 for each port declared. The node
+> +		      that uses the phy must provide either PHY_CONFIG_DEVICE for device
+> +		      or PHY_CONFIG_HOST for host
+> +
+> +NOTE: port 0 and port 1 are host only and port 2 can be configured for host or
+> +device.
+> +
+> +Example of phy :
+> +	usbphy0: usbphy@0x0301c000 {
+> +		compatible = "brcm,cygnus-usb-phy";
+> +		reg = <0x0301c000 0x2000>,
+> +		      <0x18115000 0x1000>,
+> +		      <0x18111000 0x1000>;
+> +		status = "okay";
+> +
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		usbphy0_0: usbphy0@0 {
+> +			#phy-cells = <1>;
+> +			reg = <0>;
+> +			status = "okay";
+> +			phy-supply = <&vbus_p0>;
+> +		};
+> +
+> +		usbphy0_1: usbphy0@1 {
+> +			#phy-cells = <1>;
+> +			reg = <1>;
+> +			status = "okay";
+> +		};
+> +
+> +		usbphy0_2: usbphy0@2 {
+> +			#phy-cells = <1>;
+> +			reg = <2>;
+> +			status = "okay";
+> +			phy-supply = <&vbus_p2>;
+> +		};
+> +	};
+> +
+> +Example of node using the phy:
+> +
+> +	/* This nodes declares all three ports as host */
+> +
+> +	ehci0: usb@0x18048000 {
+> +		compatible = "generic-ehci";
+> +		reg = <0x18048000 0x100>;
+> +		interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
+> +		phys = <&usbphy0_0 PHY_CONFIG_HOST &usbphy0_1 PHY_CONFIG_HOST &usbphy0_2 PHY_CONFIG_HOST>;
+> +		status = "okay";
+> +	};
+> +
+> +	/*
+> +	 * This node declares port 2 phy
+> +	 * and configures it for device
+> +	 */
+> +
+> +	usbd_udc_dwc1: usbd_udc_dwc@0x1804c000 {
+> +		compatible = "iproc-udc";
+> +		reg = <0x1804c000 0x2000>;
+> +		interrupts = <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>;
+> +		phys = <&usbphy0_2 PHY_CONFIG_DEVICE>;
+> +		phy-names = "usb";
+> +	};
+> diff --git a/include/dt-bindings/phy/phy.h b/include/dt-bindings/phy/phy.h
+> index 6c90193..3f6b1ac 100644
+> --- a/include/dt-bindings/phy/phy.h
+> +++ b/include/dt-bindings/phy/phy.h
+> @@ -15,5 +15,7 @@
+>   #define PHY_TYPE_PCIE		2
+>   #define PHY_TYPE_USB2		3
+>   #define PHY_TYPE_USB3		4
+> +#define PHY_CONFIG_HOST		1
+> +#define PHY_CONFIG_DEVICE	0
 
-OK, either way I prefer to go with maintainer's preferences. Most
-changes are for framebuffer drivers as that's where MTRR is used most
-these days.
+'0' and '1' are already defined for "PHY_NONE" and "PHY_TYPE_SATA". Is this for 
+USB2 or for USB3?
 
-> These changes to fbdev drivers look like cleanups, so they are not
-> critical, right?
-
-I'll let you make the call, I'll just provide information to you. I
-trust your judgement and what you prefer.
-
-This and other series which change use of MTRR to arch_phys enable use
-of PAT when available, we want to bury out MTRR from further usage so
-all these arch_phys changes will help with that. MTRR, although
-supported, should be seen as a first step temporary architectural
-evolution to what PAT became. There are known architectural issue with
-MTRR, let me list the issues for you to review and consider and
-evaluate:
-
-  * MTRR acts on physical addresses and requires power-of-two
-alignment, on both the base used and size, this limits the flexibility
-of MTRR use
-  * MTRR is known to be unreliable, it can at times not work even on
-modern systems
-  * MTRRs are limited, if using a large number of devices MTRRs will
-run out fast, its why Andy ended up adding the arch_phys APIs
-  * PAT has been available for quite a long time, since Pentium III
-(circa 1999) and newer, but having PAT enabled does not restrict use
-of MTRR and because of this some systems may end up then combining
-MTRR and PAT. I do not believe this wasn't an original highly expected
-wide use situation, it technically should work to combine both but
-there might be issues with interactions between both, exactly what
-issues can exist or have existed remains quite unclear as MTRR in and
-of itself has been known to be unreliable anyway. If possible its best
-to just be binary about this and only use MTRR if and only if
-necessary because of the other issues known with MTRR.
-
-With all these changes being merged the only use case for MTRR then
-would be through the arch_phys APIs, which would just enable use of
-MTRR when PAT is not available or a system / driver is known to
-require MTRR -- those systems are expected to low numbered, in the end
-after all these series Linux will will end up with only two device
-drivers which will require MTRR to be enabled always:
-
-  * ipath: this device driver is old, powers the old HTX bus cards
-that only work in AMD systems, while the newer IB/qib device driver
-powers all PCI-e cards. The ipath device driver is obsolete, hardware
-hard to find. In fact the maintainers of this driver have recently
-even seriously discussed removing the driver from upstream altogether.
-  * ivtv: the hardware is really rare these days, its expected only
-some lost souls in some third world country are expected to be using
-the feature which requires MTRR. The way this driver uses MTRR is also
-quite questionable, but still has been present in the driver for a
-long time.
-
-These two device drivers can get PAT disabled by just using the kernel
-parameter to disable PAT upon boot. The kernel log will tell them what
-to do exactly.
-
-Another use case for still using MTRR are cases where PAT is known to
-have errata. We actually want to learn about those users who have
-issues with PAT though. Last I heard about this was that the required
-errata folks are aware of can be worked around by having PAT entry 0
-and entry 4 both map to WB. hpa / andy might be able to elaborate if
-needed, but we might even be able to preemptively already deal with
-the errata issues for users.
-
-Now let me explain the gains with all these changes being merged:
-
-  * Although there are known PAT errata, we want to learn about those
-issues and fix the issues
-  * We have a long term goal to change the default behavior of
-ioremap_nocache() and pci_mmap_page_range() to use PAT strong UC,
-right now we cannot do this, but after all drivers are converted (all
-these series I've been posting) we expect to be able to make the
-change. Making a change to strong UC on these two calls can only
-happen after a period of time of having Linux bake with all these
-changes merged and in place. How many kernels we will want Linux baked
-with all these transformations to arch_phys before making a change to
-ioremap_nocache() and pci_mmap_page_range() is up to x86 folks. There
-are other gains possible with this but I welcome others to chime in
-here with what gains we can expect from this
-  * Xen lacks support for MTRR upstream, but has full PAT support.
-These changes will help enable use of the devices which exclusively
-used MTRR to work on Xen with write combining moving forward
-
-> Does delaying the fbdev changes until the dependencies are in prevent some other development?
-
-Just the later work on putting the nail on the MTRR coffin, and
-delaying the change of default  ioremap_nocache() and
-pci_mmap_page_range() from UC- to strong UC. We ideally should want a
-few kernel release with all the fbdev changes in place, not sure how
-many we'd want, but the sooner we get folks testing kernels with that
-the sooner we'd be able to evaluate doing a flip form UC- to strong
-UC.
-
- Luis
+Thanks
+Kishon

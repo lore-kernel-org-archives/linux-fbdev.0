@@ -1,207 +1,117 @@
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-Date: Wed, 06 May 2015 15:05:24 +0000
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 12 May 2015 15:35:41 +0000
 Subject: Re: [PATCH v2 02/17] leds: port locomo leds driver to new locomo core
-Message-Id: <554A2DB4.3020000@samsung.com>
+Message-Id: <CALT56yNJWapNw1XLrzfbUDUz1LF_BB9DfF94H6GhbnBUEP80_w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
- <1430178954-11138-3-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1430178954-11138-3-git-send-email-dbaryshkov@gmail.com>
+	<1430178954-11138-3-git-send-email-dbaryshkov@gmail.com>
+	<554A2DB4.3020000@samsung.com>
+In-Reply-To: <554A2DB4.3020000@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-pr
+To: Jacek Anaszewski <j.anaszewski@samsung.com>
+Cc: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-i2c@vger.kernel.org, linux-input <linux-input@vger.kernel.org>, linux-leds <linux-leds@vger.kernel.or>
 
-On 04/28/2015 01:55 AM, Dmitry Eremin-Solenikov wrote:
-> Adapt locomo leds driver to new locomo core setup.
+2015-05-06 18:05 GMT+03:00 Jacek Anaszewski <j.anaszewski@samsung.com>:
+> On 04/28/2015 01:55 AM, Dmitry Eremin-Solenikov wrote:
+>>
+>> Adapt locomo leds driver to new locomo core setup.
+>>
+>> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>> ---
+>>   drivers/leds/Kconfig       |   1 -
+>>   drivers/leds/leds-locomo.c | 119
+>> +++++++++++++++++++++++----------------------
+>>   2 files changed, 61 insertions(+), 59 deletions(-)
+>>
+>> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+>> index 966b960..4b4650b 100644
+>> --- a/drivers/leds/Kconfig
+>> +++ b/drivers/leds/Kconfig
+>> @@ -79,7 +79,6 @@ config LEDS_LM3642
+>>   config LEDS_LOCOMO
+>>         tristate "LED Support for Locomo device"
+>>         depends on LEDS_CLASS
+>> -       depends on SHARP_LOCOMO
 >
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> ---
->   drivers/leds/Kconfig       |   1 -
->   drivers/leds/leds-locomo.c | 119 +++++++++++++++++++++++----------------------
->   2 files changed, 61 insertions(+), 59 deletions(-)
 >
-> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-> index 966b960..4b4650b 100644
-> --- a/drivers/leds/Kconfig
-> +++ b/drivers/leds/Kconfig
-> @@ -79,7 +79,6 @@ config LEDS_LM3642
->   config LEDS_LOCOMO
->   	tristate "LED Support for Locomo device"
->   	depends on LEDS_CLASS
-> -	depends on SHARP_LOCOMO
+> Why do you remove this dependency?
 
-Why do you remove this dependency?
-
->   	help
->   	  This option enables support for the LEDs on Sharp Locomo.
->   	  Zaurus models SL-5500 and SL-5600.
-> diff --git a/drivers/leds/leds-locomo.c b/drivers/leds/leds-locomo.c
-> index 80ba048..7fde812 100644
-> --- a/drivers/leds/leds-locomo.c
-> +++ b/drivers/leds/leds-locomo.c
-> @@ -9,89 +9,92 @@
->    */
->
->   #include <linux/kernel.h>
-> -#include <linux/init.h>
-> -#include <linux/module.h>
-> -#include <linux/device.h>
->   #include <linux/leds.h>
-> -
-> -#include <mach/hardware.h>
-> -#include <asm/hardware/locomo.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regmap.h>
-> +#include <linux/mfd/locomo.h>
-
-Please keep alphabetical order.
-
-> +
-> +struct locomo_led {
-> +	struct led_classdev led;
-> +	struct regmap *regmap;
-> +	unsigned int reg;
-> +};
->
->   static void locomoled_brightness_set(struct led_classdev *led_cdev,
-> -				enum led_brightness value, int offset)
-> +				enum led_brightness value)
->   {
-> -	struct locomo_dev *locomo_dev = LOCOMO_DEV(led_cdev->dev->parent);
-> -	unsigned long flags;
-> +	struct locomo_led *led = container_of(led_cdev, struct locomo_led, led);
->
-> -	local_irq_save(flags);
-> -	if (value)
-> -		locomo_writel(LOCOMO_LPT_TOFH, locomo_dev->mapbase + offset);
-> -	else
-> -		locomo_writel(LOCOMO_LPT_TOFL, locomo_dev->mapbase + offset);
-> -	local_irq_restore(flags);
-> +	regmap_write(led->regmap, led->reg,
-> +			value ? LOCOMO_LPT_TOFH : LOCOMO_LPT_TOFL);
->   }
-
-Please use work queue for setting brightness. This is required for the
-driver to be compatible with led triggers. You can refer to the
-existing LED drivers on how to implement this.
+Because SHARP_LOCOMO is a Kconfig symbol for the old driver. New driver
+uses MFD_LOCOMO Kconfig entry. Also the driver now uses generic platform
+device and regmap interfaces, so there is no direct dependency on main
+LoCoMo driver. And the policy (IIRC) was not to have such dependencies.
 
 >
-> -static void locomoled_brightness_set0(struct led_classdev *led_cdev,
-> -				enum led_brightness value)
-> +static int locomo_led_register(
-> +		struct device *dev,
-> +		struct locomo_led *led,
-> +		const char *name,
-> +		const char *trigger,
-> +		struct regmap *regmap,
-> +		unsigned int reg)
->   {
-> -	locomoled_brightness_set(led_cdev, value, LOCOMO_LPT0);
-> +	led->led.name = name;
-> +	led->led.flags = LED_CORE_SUSPENDRESUME;
-> +	led->led.default_trigger = trigger;
-> +	led->led.brightness_set = locomoled_brightness_set;
-> +	led->regmap = regmap;
-> +	led->reg = reg;
-> +
-> +	return devm_led_classdev_register(dev, &led->led);
->   }
+>>         help
+>>           This option enables support for the LEDs on Sharp Locomo.
+>>           Zaurus models SL-5500 and SL-5600.
+>> diff --git a/drivers/leds/leds-locomo.c b/drivers/leds/leds-locomo.c
+>> index 80ba048..7fde812 100644
+>> --- a/drivers/leds/leds-locomo.c
+>> +++ b/drivers/leds/leds-locomo.c
+>> @@ -9,89 +9,92 @@
+>>    */
+>>
+>>   #include <linux/kernel.h>
+>> -#include <linux/init.h>
+>> -#include <linux/module.h>
+>> -#include <linux/device.h>
+>>   #include <linux/leds.h>
+>> -
+>> -#include <mach/hardware.h>
+>> -#include <asm/hardware/locomo.h>
+>> +#include <linux/module.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/regmap.h>
+>> +#include <linux/mfd/locomo.h>
 >
-> -static void locomoled_brightness_set1(struct led_classdev *led_cdev,
-> -				enum led_brightness value)
-> -{
-> -	locomoled_brightness_set(led_cdev, value, LOCOMO_LPT1);
-> -}
-> -
-> -static struct led_classdev locomo_led0 = {
-> -	.name			= "locomo:amber:charge",
-> -	.default_trigger	= "main-battery-charging",
-> -	.brightness_set		= locomoled_brightness_set0,
-> -};
-> -
-> -static struct led_classdev locomo_led1 = {
-> -	.name			= "locomo:green:mail",
-> -	.default_trigger	= "nand-disk",
-> -	.brightness_set		= locomoled_brightness_set1,
-> -};
-> -
-> -static int locomoled_probe(struct locomo_dev *ldev)
-> +static int locomoled_probe(struct platform_device *pdev)
->   {
->   	int ret;
-> -
-> -	ret = led_classdev_register(&ldev->dev, &locomo_led0);
-> +	struct locomo_led *leds;
-> +	struct regmap *regmap;
-> +
-> +	leds = devm_kzalloc(&pdev->dev, 2 * sizeof(*leds), GFP_KERNEL);
-> +	if (!leds)
-> +		return -ENOMEM;
-> +
-> +	regmap = dev_get_regmap(pdev->dev.parent, NULL);
-> +	if (!regmap)
-> +		return -ENODEV;
-> +
-> +	ret = locomo_led_register(
-> +			&pdev->dev,
-> +			leds,
-> +			"locomo:amber:charge",
-> +			"main-battery-charging",
-> +			regmap,
-> +			LOCOMO_LPT0);
->   	if (ret < 0)
->   		return ret;
 >
-> -	ret = led_classdev_register(&ldev->dev, &locomo_led1);
-> +	ret = locomo_led_register(
-> +			&pdev->dev,
-> +			leds + 1,
-> +			"locomo:green:mail",
-> +			"mmc0",
-> +			regmap,
-> +			LOCOMO_LPT1);
->   	if (ret < 0)
-> -		led_classdev_unregister(&locomo_led0);
-> -
-> -	return ret;
-> -}
-> +		return ret;
->
-> -static int locomoled_remove(struct locomo_dev *dev)
-> -{
-> -	led_classdev_unregister(&locomo_led0);
-> -	led_classdev_unregister(&locomo_led1);
->   	return 0;
->   }
->
-> -static struct locomo_driver locomoled_driver = {
-> -	.drv = {
-> -		.name = "locomoled"
-> +static struct platform_driver locomoled_driver = {
-> +	.driver = {
-> +		.name = "locomo-led"
->   	},
-> -	.devid	= LOCOMO_DEVID_LED,
->   	.probe	= locomoled_probe,
-> -	.remove	= locomoled_remove,
->   };
->
-> -static int __init locomoled_init(void)
-> -{
-> -	return locomo_driver_register(&locomoled_driver);
-> -}
-> -module_init(locomoled_init);
-> +module_platform_driver(locomoled_driver);
->
->   MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>");
->   MODULE_DESCRIPTION("Locomo LED driver");
->   MODULE_LICENSE("GPL");
-> +MODULE_ALIAS("platform:locomo-led");
->
+> Please keep alphabetical order.
 
+Ack
+
+>
+>> +
+>> +struct locomo_led {
+>> +       struct led_classdev led;
+>> +       struct regmap *regmap;
+>> +       unsigned int reg;
+>> +};
+>>
+>>   static void locomoled_brightness_set(struct led_classdev *led_cdev,
+>> -                               enum led_brightness value, int offset)
+>> +                               enum led_brightness value)
+>>   {
+>> -       struct locomo_dev *locomo_dev = LOCOMO_DEV(led_cdev->dev->parent);
+>> -       unsigned long flags;
+>> +       struct locomo_led *led = container_of(led_cdev, struct locomo_led,
+>> led);
+>>
+>> -       local_irq_save(flags);
+>> -       if (value)
+>> -               locomo_writel(LOCOMO_LPT_TOFH, locomo_dev->mapbase +
+>> offset);
+>> -       else
+>> -               locomo_writel(LOCOMO_LPT_TOFL, locomo_dev->mapbase +
+>> offset);
+>> -       local_irq_restore(flags);
+>> +       regmap_write(led->regmap, led->reg,
+>> +                       value ? LOCOMO_LPT_TOFH : LOCOMO_LPT_TOFL);
+>>   }
+>
+>
+> Please use work queue for setting brightness. This is required for the
+> driver to be compatible with led triggers. You can refer to the
+> existing LED drivers on how to implement this.
+
+Hmm. Why? The regmap here uses MMIO access, so it is atomic operation
+and doesn't need to be wrapped into work queue, does it?
+
+
+[skipped]
 
 -- 
-Best Regards,
-Jacek Anaszewski
+With best wishes
+Dmitry

@@ -1,38 +1,68 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sun, 10 May 2015 13:32:14 +0000
-Subject: Re: [PATCH v2 0/3] add cursor blink interval terminal escape sequence
-Message-Id: <20150510133214.GA32575@kroah.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Tue, 12 May 2015 19:24:13 +0000
+Subject: Re: [PATCH v2 10/17] i2c: add locomo i2c driver
+Message-Id: <20150512192413.GE4449@schokonusskuchen.bad>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="WBsA/oQW3eTA3LlM"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
- <alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
- <20150225094946.GA24627@amd>
- <alpine.LNX.2.11.1502252319330.276@localhost>
- <20150226220243.GC9935@amd>
- <alpine.LNX.2.11.1502271905580.4212@localhost>
- <alpine.LNX.2.11.1502271911380.4248@localhost>
- <20150325111949.GA24230@kroah.com>
- <alpine.DEB.2.11.1503261341260.2164@local>
- <20150328075443.GD5248@xo-6d-61-c0.localdomain>
-In-Reply-To: <20150328075443.GD5248@xo-6d-61-c0.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Scot Doyle <lkml14@scotdoyle.com>, Michael Kerrisk <mtk.manpages@gmail.com>, Jiri Slaby <jslaby@suse.cz>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-man@vger.kernel.org, linux-api@vger.kernel.org
+References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
+ <1430178954-11138-11-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1430178954-11138-11-git-send-email-dbaryshkov@gmail.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-On Sat, Mar 28, 2015 at 08:54:43AM +0100, Pavel Machek wrote:
-> On Thu 2015-03-26 13:51:04, Scot Doyle wrote:
-> > v2: Add documentation to console_codes man page (man-pages repo)
-> > 
-> > This patch series adds an escape sequence to specify the current console's
-> > cursor blink interval. The default interval is set to fbcon's currently 
-> > hardcoded 200 msecs.
-> 
-> Actually... Greg, can you import console_codes.4 into kernel tree somehow?
 
-Is that file part of the manpages project?  If so, it's fine where it
-is, otherwise feel free to send a patch.
+--WBsA/oQW3eTA3LlM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
+On Tue, Apr 28, 2015 at 02:55:47AM +0300, Dmitry Eremin-Solenikov wrote:
+> LoCoMo chip contains a tiny i2c controller destined to control
+> M62332 DAC. Provide a separate I2C driver for this cell.
+>=20
+> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 
-greg k-h
+Thanks for the submission!
+
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +#include <linux/slab.h>
+> +#include <linux/mfd/locomo.h>
+> +
+> +#include <linux/i2c.h>
+> +#include <linux/i2c-algo-bit.h>
+
+To avoid duplicates, I prefer the includes to be sorted. No need to
+resend because of that, though.
+
+Kudos for brushing up old code! Do you want the drivers go via the
+subsystem trees? Or is there a dependency so it should go in via some
+other tree in one go?
+
+
+--WBsA/oQW3eTA3LlM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJVUlNdAAoJEBQN5MwUoCm2RBAP/3YILVpXkyvZZVX0QJlKN1DI
+Vvfli1Bm956MZwfV7ORSoWzthYmRSgsCZ/Q0i+97Y8M2sIpNWWQI00fFm6viiaf0
+zlDq8JZFeAyDQG6BIfsOeWqnIY0RSVoZ5a11PFGnge+knkn1Zj/HADMYZKwWfPgx
+qH/HXrPeZ79ewHzXmGPEmkGUBbtJYZi2VVprlYy85HY6yYPZ36/fS9tPNpCMz1vH
+9uXzpyY1DqGjqoi0pTR7+PhlRpBWsXB75B35A8hvfujPDAMFaCkVkFzD/OzW25ac
+Cu/NCRum6bCkVb6l5oz13sClc/5+OWUePH887TKgrZO4CFNH9jschbgqTb3utDLG
+CnvXRzXBI+XCH35szRZpgWm2DZvbUZXCEvEyVHU39eiCpKL6qh9VKsqwMtHldirf
+tDKKYW5Yo4io2QNedMbsBRFl60bajLBYxtmZhiTZKj8BBmaFa+Hi8rb+hdL5j0yV
+Kl8VrW6zlJhAbYzNahRdQJ786JkJX6acr8J2Itx8vlMx7PDIdyhRFqJQa1Z636Hl
+93sXW55dZtkOcrj+iHiT6047Az4AhzLr+WP8B8fxC4v0rC/1FXVdqjADduhu5LKU
+i/TwixNqO32RV0pPjx1bQbZS1pmgk6nuIIsj9jue07wD64+F1xJcKfMZtrTZd3zL
+4jm4gFJaJQ2D9kc0D7gd
+=PJWG
+-----END PGP SIGNATURE-----
+
+--WBsA/oQW3eTA3LlM--

@@ -1,27 +1,50 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 27 May 2015 08:29:48 +0000
-Subject: Re: [PATCH] staging: sm750fb: remove duplicate from fb_videomode
-Message-Id: <20150527082948.GP11588@mwanda>
+From: Axel Lin <axel.lin@ingics.com>
+Date: Sat, 16 May 2015 14:08:10 +0000
+Subject: [PATCH] backlight: pwm_bl: Simplify usage of devm_gpiod_get_optional
+Message-Id: <1431785290.6638.1.camel@ingics.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150526152239.GA21887@x230-arch.club.entropia.de>
-In-Reply-To: <20150526152239.GA21887@x230-arch.club.entropia.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <acourbot@nvidia.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>
 
-On Wed, May 27, 2015 at 11:59:21AM +0530, Sudip Mukherjee wrote:
-> On Tue, May 26, 2015 at 05:22:39PM +0200, Michel von Czettritz wrote:
-> > As suggested by Sudip this patch removes the redundant 1360x768@60
-> > option from the fb_videomode struct array.
-> this can be in the comments but should not be there in the commit message.
-> 
+Since 39b2bbe3d715 (gpio: add flags argument to gpiod_get*() functions),
+the gpiod_get* functions take an additional parameter that allows to
+specify direction and initial value for output.
+Simplify the usage of devm_gpiod_get_optional accordingly.
 
-No no.  It's fine.
+Signed-off-by: Axel Lin <axel.lin@ingics.com>
+---
+ drivers/video/backlight/pwm_bl.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-I sometimes give credit in the permanent log or in the meta comments
-depending on how much credit/blame is deserved.  :P
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 3a145a6..57cb9ec 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -241,7 +241,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->dev = &pdev->dev;
+ 	pb->enabled = false;
+ 
+-	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable");
++	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
++						  GPIOD_OUT_HIGH);
+ 	if (IS_ERR(pb->enable_gpio)) {
+ 		ret = PTR_ERR(pb->enable_gpio);
+ 		goto err_alloc;
+@@ -263,9 +264,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+ 	}
+ 
+-	if (pb->enable_gpio)
+-		gpiod_direction_output(pb->enable_gpio, 1);
+-
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
+ 		ret = PTR_ERR(pb->power_supply);
+-- 
+2.1.0
 
-regards,
-dan carpenter
+
 

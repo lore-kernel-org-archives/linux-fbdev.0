@@ -1,7 +1,7 @@
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Sun, 17 May 2015 16:27:47 +0000
-Subject: [PATCH v3 07/17] gpio: port LoCoMo gpio support from old driver
-Message-Id: <1431880077-26321-8-git-send-email-dbaryshkov@gmail.com>
+Date: Sun, 17 May 2015 16:27:56 +0000
+Subject: [PATCH v3 16/17] video: backlight: drop old locomo bl/lcd driver
+Message-Id: <1431880077-26321-17-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
 In-Reply-To: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
@@ -11,228 +11,276 @@ Content-Transfer-Encoding: 7bit
 To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
 Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-Add gpiolib driver for gpio pins placed on the LoCoMo GA.
+Old locomolcd driver is now completely obsolete by new locomo_bl and
+locomo_lcd drivers, so let's drop it.
 
 Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/gpio/Kconfig       |  12 ++++
- drivers/gpio/Makefile      |   1 +
- drivers/gpio/gpio-locomo.c | 170 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 183 insertions(+)
- create mode 100644 drivers/gpio/gpio-locomo.c
+ drivers/video/backlight/locomolcd.c | 255 ------------------------------------
+ 1 file changed, 255 deletions(-)
+ delete mode 100644 drivers/video/backlight/locomolcd.c
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index caefe80..4542684 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -734,6 +734,18 @@ config GPIO_KEMPLD
- 	  This driver can also be built as a module. If so, the module will be
- 	  called gpio-kempld.
- 
-+config GPIO_LOCOMO
-+	bool "Sharp LoCoMo GPIO support"
-+	depends on MFD_LOCOMO
-+	help
-+	  Select this to support GPIO pins on Sharp LoCoMo Grid Array found
-+	  in Sharp Zaurus collie and poodle models.
-+
-+	  Sat Yes if you have such PDA, say No otherwise.
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called gpio-locomo.
-+
- config GPIO_LP3943
- 	tristate "TI/National Semiconductor LP3943 GPIO expander"
- 	depends on MFD_LP3943
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index f71bb97..98655ae 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -42,6 +42,7 @@ obj-$(CONFIG_GPIO_JANZ_TTL)	+= gpio-janz-ttl.o
- obj-$(CONFIG_GPIO_KEMPLD)	+= gpio-kempld.o
- obj-$(CONFIG_ARCH_KS8695)	+= gpio-ks8695.o
- obj-$(CONFIG_GPIO_INTEL_MID)	+= gpio-intel-mid.o
-+obj-$(CONFIG_GPIO_LOCOMO)	+= gpio-locomo.o
- obj-$(CONFIG_GPIO_LOONGSON)	+= gpio-loongson.o
- obj-$(CONFIG_GPIO_LP3943)	+= gpio-lp3943.o
- obj-$(CONFIG_ARCH_LPC32XX)	+= gpio-lpc32xx.o
-diff --git a/drivers/gpio/gpio-locomo.c b/drivers/gpio/gpio-locomo.c
-new file mode 100644
-index 0000000..dd9a1ca
---- /dev/null
-+++ b/drivers/gpio/gpio-locomo.c
-@@ -0,0 +1,170 @@
-+/*
-+ * Sharp LoCoMo support for GPIO
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This file contains all generic LoCoMo support.
-+ *
-+ * All initialization functions provided here are intended to be called
-+ * from machine specific code with proper arguments when required.
-+ */
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/bitops.h>
-+#include <linux/err.h>
-+#include <linux/gpio.h>
-+#include <linux/io.h>
-+#include <linux/regmap.h>
-+#include <linux/mfd/locomo.h>
-+
-+struct locomo_gpio {
-+	struct regmap *regmap;
-+
-+	struct gpio_chip gpio;
-+
-+	u16 rising_edge;
-+	u16 falling_edge;
-+
-+	unsigned int save_gpo;
-+	unsigned int save_gpe;
-+};
-+
-+static int locomo_gpio_get(struct gpio_chip *chip,
-+		unsigned offset)
-+{
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+	unsigned int gpl;
-+
-+	regmap_read(lg->regmap, LOCOMO_GPL, &gpl);
-+
-+	return gpl & BIT(offset);
-+}
-+
-+static void locomo_gpio_set(struct gpio_chip *chip,
-+		unsigned offset, int value)
-+{
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+
-+	regmap_update_bits(lg->regmap, LOCOMO_GPO,
-+			BIT(offset),
-+			value ? BIT(offset) : 0);
-+}
-+
-+static int locomo_gpio_direction_input(struct gpio_chip *chip,
-+			unsigned offset)
-+{
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+
-+	regmap_update_bits(lg->regmap, LOCOMO_GPD, BIT(offset), BIT(offset));
-+	regmap_update_bits(lg->regmap, LOCOMO_GPE, BIT(offset), BIT(offset));
-+
-+	return 0;
-+}
-+
-+static int locomo_gpio_direction_output(struct gpio_chip *chip,
-+			unsigned offset, int value)
-+{
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+
-+	regmap_update_bits(lg->regmap, LOCOMO_GPO,
-+			BIT(offset),
-+			value ? BIT(offset) : 0);
-+	regmap_update_bits(lg->regmap, LOCOMO_GPD, BIT(offset), 0);
-+	regmap_update_bits(lg->regmap, LOCOMO_GPE, BIT(offset), 0);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int locomo_gpio_suspend(struct device *dev)
-+{
-+	struct locomo_gpio *lg = dev_get_drvdata(dev);
-+
-+	regmap_read(lg->regmap, LOCOMO_GPO, &lg->save_gpo);
-+	regmap_write(lg->regmap, LOCOMO_GPO, 0x00);
-+	regmap_read(lg->regmap, LOCOMO_GPE, &lg->save_gpe);
-+	regmap_write(lg->regmap, LOCOMO_GPE, 0x00);
-+
-+	return 0;
-+}
-+
-+static int locomo_gpio_resume(struct device *dev)
-+{
-+	struct locomo_gpio *lg = dev_get_drvdata(dev);
-+
-+	regmap_write(lg->regmap, LOCOMO_GPO, lg->save_gpo);
-+	regmap_write(lg->regmap, LOCOMO_GPE, lg->save_gpe);
-+
-+	return 0;
-+}
-+static SIMPLE_DEV_PM_OPS(locomo_gpio_pm,
-+		locomo_gpio_suspend, locomo_gpio_resume);
-+#define LOCOMO_GPIO_PM	(&locomo_gpio_pm)
-+#else
-+#define LOCOMO_GPIO_PM	NULL
-+#endif
-+
-+static int locomo_gpio_probe(struct platform_device *pdev)
-+{
-+	struct locomo_gpio *lg;
-+	int ret;
-+	struct locomo_gpio_platform_data *pdata = dev_get_platdata(&pdev->dev);
-+
-+	lg = devm_kzalloc(&pdev->dev, sizeof(struct locomo_gpio),
-+			GFP_KERNEL);
-+	if (!lg)
-+		return -ENOMEM;
-+
-+	lg->regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!lg->regmap)
-+		return -EINVAL;
-+
-+	platform_set_drvdata(pdev, lg);
-+
-+	regmap_write(lg->regmap, LOCOMO_GPO, 0x00);
-+	regmap_write(lg->regmap, LOCOMO_GPE, 0x00);
-+	regmap_write(lg->regmap, LOCOMO_GPD, 0x00);
-+	regmap_write(lg->regmap, LOCOMO_GIE, 0x00);
-+
-+	lg->gpio.base = pdata ? pdata->gpio_base : -1;
-+	lg->gpio.label = "locomo-gpio";
-+	lg->gpio.ngpio = 16;
-+	lg->gpio.set = locomo_gpio_set;
-+	lg->gpio.get = locomo_gpio_get;
-+	lg->gpio.direction_input = locomo_gpio_direction_input;
-+	lg->gpio.direction_output = locomo_gpio_direction_output;
-+
-+	ret = gpiochip_add(&lg->gpio);
-+	if (ret)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int locomo_gpio_remove(struct platform_device *pdev)
-+{
-+	struct locomo_gpio *lg = platform_get_drvdata(pdev);
-+
-+	gpiochip_remove(&lg->gpio);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver locomo_gpio_driver = {
-+	.probe		= locomo_gpio_probe,
-+	.remove		= locomo_gpio_remove,
-+	.driver		= {
-+		.name	= "locomo-gpio",
-+		.pm	= LOCOMO_GPIO_PM,
-+	},
-+};
-+module_platform_driver(locomo_gpio_driver);
-+
-+MODULE_DESCRIPTION("Sharp LoCoMo GPIO driver");
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>");
-+MODULE_ALIAS("platform:locomo-gpio");
+diff --git a/drivers/video/backlight/locomolcd.c b/drivers/video/backlight/locomolcd.c
+deleted file mode 100644
+index 6c3ec42..0000000
+--- a/drivers/video/backlight/locomolcd.c
++++ /dev/null
+@@ -1,255 +0,0 @@
+-/*
+- * Backlight control code for Sharp Zaurus SL-5500
+- *
+- * Copyright 2005 John Lenz <lenz@cs.wisc.edu>
+- * Maintainer: Pavel Machek <pavel@ucw.cz> (unless John wants to :-)
+- * GPL v2
+- *
+- * This driver assumes single CPU. That's okay, because collie is
+- * slightly old hardware, and no one is going to retrofit second CPU to
+- * old PDA.
+- */
+-
+-/* LCD power functions */
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/delay.h>
+-#include <linux/device.h>
+-#include <linux/interrupt.h>
+-#include <linux/fb.h>
+-#include <linux/backlight.h>
+-
+-#include <asm/hardware/locomo.h>
+-#include <asm/irq.h>
+-#include <asm/mach/sharpsl_param.h>
+-#include <asm/mach-types.h>
+-
+-#include "../../../arch/arm/mach-sa1100/generic.h"
+-
+-static struct backlight_device *locomolcd_bl_device;
+-static struct locomo_dev *locomolcd_dev;
+-static unsigned long locomolcd_flags;
+-#define LOCOMOLCD_SUSPENDED     0x01
+-
+-static void locomolcd_on(int comadj)
+-{
+-	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHA_ON, 0);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHA_ON, 1);
+-	mdelay(2);
+-
+-	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHD_ON, 0);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHD_ON, 1);
+-	mdelay(2);
+-
+-	locomo_m62332_senddata(locomolcd_dev, comadj, 0);
+-	mdelay(5);
+-
+-	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VEE_ON, 0);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VEE_ON, 1);
+-	mdelay(10);
+-
+-	/* TFTCRST | CPSOUT=0 | CPSEN */
+-	locomo_writel(0x01, locomolcd_dev->mapbase + LOCOMO_TC);
+-
+-	/* Set CPSD */
+-	locomo_writel(6, locomolcd_dev->mapbase + LOCOMO_CPSD);
+-
+-	/* TFTCRST | CPSOUT=0 | CPSEN */
+-	locomo_writel((0x04 | 0x01), locomolcd_dev->mapbase + LOCOMO_TC);
+-	mdelay(10);
+-
+-	locomo_gpio_set_dir(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_MOD, 0);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_MOD, 1);
+-}
+-
+-static void locomolcd_off(int comadj)
+-{
+-	/* TFTCRST=1 | CPSOUT=1 | CPSEN = 0 */
+-	locomo_writel(0x06, locomolcd_dev->mapbase + LOCOMO_TC);
+-	mdelay(1);
+-
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHA_ON, 0);
+-	mdelay(110);
+-
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VEE_ON, 0);
+-	mdelay(700);
+-
+-	/* TFTCRST=0 | CPSOUT=0 | CPSEN = 0 */
+-	locomo_writel(0, locomolcd_dev->mapbase + LOCOMO_TC);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_MOD, 0);
+-	locomo_gpio_write(locomolcd_dev->dev.parent, LOCOMO_GPIO_LCD_VSHD_ON, 0);
+-}
+-
+-void locomolcd_power(int on)
+-{
+-	int comadj = sharpsl_param.comadj;
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-
+-	if (!locomolcd_dev) {
+-		local_irq_restore(flags);
+-		return;
+-	}
+-
+-	/* read comadj */
+-	if (comadj = -1 && machine_is_collie())
+-		comadj = 128;
+-	if (comadj = -1 && machine_is_poodle())
+-		comadj = 118;
+-
+-	if (on)
+-		locomolcd_on(comadj);
+-	else
+-		locomolcd_off(comadj);
+-
+-	local_irq_restore(flags);
+-}
+-EXPORT_SYMBOL(locomolcd_power);
+-
+-static int current_intensity;
+-
+-static int locomolcd_set_intensity(struct backlight_device *bd)
+-{
+-	int intensity = bd->props.brightness;
+-
+-	if (bd->props.power != FB_BLANK_UNBLANK)
+-		intensity = 0;
+-	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
+-		intensity = 0;
+-	if (locomolcd_flags & LOCOMOLCD_SUSPENDED)
+-		intensity = 0;
+-
+-	switch (intensity) {
+-	/*
+-	 * AC and non-AC are handled differently,
+-	 * but produce same results in sharp code?
+-	 */
+-	case 0:
+-		locomo_frontlight_set(locomolcd_dev, 0, 0, 161);
+-		break;
+-	case 1:
+-		locomo_frontlight_set(locomolcd_dev, 117, 0, 161);
+-		break;
+-	case 2:
+-		locomo_frontlight_set(locomolcd_dev, 163, 0, 148);
+-		break;
+-	case 3:
+-		locomo_frontlight_set(locomolcd_dev, 194, 0, 161);
+-		break;
+-	case 4:
+-		locomo_frontlight_set(locomolcd_dev, 194, 1, 161);
+-		break;
+-	default:
+-		return -ENODEV;
+-	}
+-	current_intensity = intensity;
+-	return 0;
+-}
+-
+-static int locomolcd_get_intensity(struct backlight_device *bd)
+-{
+-	return current_intensity;
+-}
+-
+-static const struct backlight_ops locomobl_data = {
+-	.get_brightness = locomolcd_get_intensity,
+-	.update_status  = locomolcd_set_intensity,
+-};
+-
+-#ifdef CONFIG_PM_SLEEP
+-static int locomolcd_suspend(struct device *dev)
+-{
+-	locomolcd_flags |= LOCOMOLCD_SUSPENDED;
+-	locomolcd_set_intensity(locomolcd_bl_device);
+-	return 0;
+-}
+-
+-static int locomolcd_resume(struct device *dev)
+-{
+-	locomolcd_flags &= ~LOCOMOLCD_SUSPENDED;
+-	locomolcd_set_intensity(locomolcd_bl_device);
+-	return 0;
+-}
+-#endif
+-
+-static SIMPLE_DEV_PM_OPS(locomolcd_pm_ops, locomolcd_suspend, locomolcd_resume);
+-
+-static int locomolcd_probe(struct locomo_dev *ldev)
+-{
+-	struct backlight_properties props;
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-	locomolcd_dev = ldev;
+-
+-	locomo_gpio_set_dir(ldev->dev.parent, LOCOMO_GPIO_FL_VR, 0);
+-
+-	/*
+-	 * the poodle_lcd_power function is called for the first time
+-	 * from fs_initcall, which is before locomo is activated.
+-	 * We need to recall poodle_lcd_power here
+-	 */
+-	if (machine_is_poodle())
+-		locomolcd_power(1);
+-
+-	local_irq_restore(flags);
+-
+-	memset(&props, 0, sizeof(struct backlight_properties));
+-	props.type = BACKLIGHT_RAW;
+-	props.max_brightness = 4;
+-	locomolcd_bl_device = backlight_device_register("locomo-bl",
+-							&ldev->dev, NULL,
+-							&locomobl_data, &props);
+-
+-	if (IS_ERR(locomolcd_bl_device))
+-		return PTR_ERR(locomolcd_bl_device);
+-
+-	/* Set up frontlight so that screen is readable */
+-	locomolcd_bl_device->props.brightness = 2;
+-	locomolcd_set_intensity(locomolcd_bl_device);
+-
+-	return 0;
+-}
+-
+-static int locomolcd_remove(struct locomo_dev *dev)
+-{
+-	unsigned long flags;
+-
+-	locomolcd_bl_device->props.brightness = 0;
+-	locomolcd_bl_device->props.power = 0;
+-	locomolcd_set_intensity(locomolcd_bl_device);
+-
+-	backlight_device_unregister(locomolcd_bl_device);
+-	local_irq_save(flags);
+-	locomolcd_dev = NULL;
+-	local_irq_restore(flags);
+-	return 0;
+-}
+-
+-static struct locomo_driver poodle_lcd_driver = {
+-	.drv = {
+-		.name	= "locomo-backlight",
+-		.pm	= &locomolcd_pm_ops,
+-	},
+-	.devid	= LOCOMO_DEVID_BACKLIGHT,
+-	.probe	= locomolcd_probe,
+-	.remove	= locomolcd_remove,
+-};
+-
+-static int __init locomolcd_init(void)
+-{
+-	return locomo_driver_register(&poodle_lcd_driver);
+-}
+-
+-static void __exit locomolcd_exit(void)
+-{
+-	locomo_driver_unregister(&poodle_lcd_driver);
+-}
+-
+-module_init(locomolcd_init);
+-module_exit(locomolcd_exit);
+-
+-MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>, Pavel Machek <pavel@ucw.cz>");
+-MODULE_DESCRIPTION("Collie LCD driver");
+-MODULE_LICENSE("GPL");
 -- 
 2.1.4
 

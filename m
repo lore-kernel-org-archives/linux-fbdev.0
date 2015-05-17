@@ -1,45 +1,61 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 05 May 2015 08:27:54 +0000
-Subject: Re: [PATCH 1/4] video: backlight: da9052: Constify platform_device_id
-Message-Id: <20150505082754.GU4047@x1>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Sun, 17 May 2015 16:27:44 +0000
+Subject: [PATCH v3 04/17] input: make LoCoMo keyboard driver support both poodle and collie
+Message-Id: <1431880077-26321-5-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430494721-30793-1-git-send-email-k.kozlowski.k@gmail.com>
-In-Reply-To: <1430494721-30793-1-git-send-email-k.kozlowski.k@gmail.com>
+References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1431880077-26321-1-git-send-email-dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org
 
-On Sat, 02 May 2015, Krzysztof Kozlowski wrote:
+Keyboards on collie and poodle differ only in wiring of 'Home' key.
+Instead of complicating the driver with platform data, just check for
+the machine for the time being. This will be converted to DTS property
+sometime in the future.
 
-> The platform_device_id is not modified by the driver and core uses it as
-> const.
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-> ---
->  drivers/video/backlight/da9052_bl.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ drivers/input/keyboard/locomokbd.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-Applied, thanks.
+diff --git a/drivers/input/keyboard/locomokbd.c b/drivers/input/keyboard/locomokbd.c
+index 1657bc0..b422608 100644
+--- a/drivers/input/keyboard/locomokbd.c
++++ b/drivers/input/keyboard/locomokbd.c
+@@ -33,6 +33,9 @@
+ #include <linux/slab.h>
+ #include <linux/mfd/locomo.h>
+ 
++/* There is one minor difference between mappings on poodle and collie */
++#include <asm/mach-types.h>
++
+ #define KEY_ACTIVITY		KEY_F16
+ #define KEY_CONTACT		KEY_F18
+ #define KEY_CENTER		KEY_F15
+@@ -45,7 +48,7 @@
+ static const unsigned char
+ locomokbd_keycode[LOCOMOKBD_NUMKEYS] = {
+ 	0, KEY_ESC, KEY_ACTIVITY, 0, 0, 0, 0, 0, 0, 0,				/* 0 - 9 */
+-	0, 0, 0, 0, 0, 0, 0, KEY_MENU, KEY_HOME, KEY_CONTACT,			/* 10 - 19 */
++	0, 0, 0, 0, 0, 0, 0, KEY_MENU, 0, KEY_CONTACT,				/* 10 - 19 */
+ 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,						/* 20 - 29 */
+ 	0, 0, 0, KEY_CENTER, 0, KEY_MAIL, 0, 0, 0, 0,				/* 30 - 39 */
+ 	0, 0, 0, 0, 0, 0, 0, 0, 0, KEY_RIGHT,					/* 40 - 49 */
+@@ -278,6 +281,11 @@ static int locomokbd_probe(struct platform_device *dev)
+ 			locomokbd_keycode,
+ 			sizeof(locomokbd->keycode));
+ 
++	if (machine_is_collie())
++		locomokbd->keycode[18] = KEY_HOME;
++	else
++		locomokbd->keycode[3] = KEY_HOME;
++
+ 	for (i = 0; i < LOCOMOKBD_NUMKEYS; i++)
+ 		input_set_capability(input_dev, EV_KEY, locomokbd->keycode[i]);
+ 	input_set_capability(input_dev, EV_PWR, KEY_SUSPEND);
+-- 
+2.1.4
 
-> diff --git a/drivers/video/backlight/da9052_bl.c b/drivers/video/backligh=
-t/da9052_bl.c
-> index b1943e7735a1..fd2be417aa64 100644
-> --- a/drivers/video/backlight/da9052_bl.c
-> +++ b/drivers/video/backlight/da9052_bl.c
-> @@ -152,7 +152,7 @@ static int da9052_backlight_remove(struct platform_de=
-vice *pdev)
->  	return 0;
->  }
-> =20
-> -static struct platform_device_id da9052_wled_ids[] =3D {
-> +static const struct platform_device_id da9052_wled_ids[] =3D {
->  	{
->  		.name		=3D "da9052-wled1",
->  		.driver_data	=3D DA9052_TYPE_WLED1,
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

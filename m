@@ -1,120 +1,351 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Wed, 27 May 2015 12:39:40 +0000
-Subject: Re: [PATCH] fbcon: Avoid deleting a timer in IRQ context
-Message-Id: <20150527123938.GA11999@ulmo.nvidia.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="bg08WKrSYDhXBjb5"
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Sun, 17 May 2015 16:27:46 +0000
+Subject: [PATCH v3 06/17] video: lcd: add LoCoMo LCD driver
+Message-Id: <1431880077-26321-7-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432195083-25005-1-git-send-email-thierry.reding@gmail.com>
-In-Reply-To: <1432195083-25005-1-git-send-email-thierry.reding@gmail.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Kevin Hilman <khilman@kernel.org>, Scot Doyle <lkml14@scotdoyle.com>, Daniel Stone <daniel@fooishbar.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
+LoCoMo has some special handling for TFT screens attached to Collie and
+Poodle. Implement that as a separate driver.
 
---bg08WKrSYDhXBjb5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ drivers/video/backlight/Kconfig      |  10 ++
+ drivers/video/backlight/Makefile     |   1 +
+ drivers/video/backlight/locomo_lcd.c | 285 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 296 insertions(+)
+ create mode 100644 drivers/video/backlight/locomo_lcd.c
 
-On Thu, May 21, 2015 at 09:58:03AM +0200, Thierry Reding wrote:
-> From: Thierry Reding <treding@nvidia.com>
->=20
-> Commit 27a4c827c34a ("fbcon: use the cursor blink interval provided by
-> vt") unconditionally removes the cursor blink timer. Unfortunately that
-> wreaks havoc under some circumstances. An easily reproducible way is to
-> use both the framebuffer console and a debug serial port as the console
-> output for kernel messages (e.g. "console=3DttyS0 console=3Dtty1" on the
-> kernel command-line. Upon boot this triggers a warning from within the
-> del_timer_sync() function because it is called from IRQ context:
->=20
-> 	[    5.070096] ------------[ cut here ]------------
-> 	[    5.070110] WARNING: CPU: 0 PID: 0 at ../kernel/time/timer.c:1098 del=
-_timer_sync+0x4c/0x54()
-> 	[    5.070115] Modules linked in:
-> 	[    5.070120] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.1.0-rc4-next-=
-20150519 #1
-> 	[    5.070123] Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
-> 	[    5.070142] [] (unwind_backtrace) from [] (show_stack+0x10/0x14)
-> 	[    5.070156] [] (show_stack) from [] (dump_stack+0x70/0xbc)
-> 	[    5.070164] [] (dump_stack) from [] (warn_slowpath_common+0x74/0xb0)
-> 	[    5.070169] [] (warn_slowpath_common) from [] (warn_slowpath_null+0x1=
-c/0x24)
-> 	[    5.070174] [] (warn_slowpath_null) from [] (del_timer_sync+0x4c/0x54)
-> 	[    5.070183] [] (del_timer_sync) from [] (fbcon_del_cursor_timer+0x2c/=
-0x40)
-> 	[    5.070190] [] (fbcon_del_cursor_timer) from [] (fbcon_cursor+0x9c/0x=
-180)
-> 	[    5.070198] [] (fbcon_cursor) from [] (hide_cursor+0x30/0x98)
-> 	[    5.070204] [] (hide_cursor) from [] (vt_console_print+0x2a8/0x340)
-> 	[    5.070212] [] (vt_console_print) from [] (call_console_drivers.const=
-prop.23+0xc8/0xec)
-> 	[    5.070218] [] (call_console_drivers.constprop.23) from [] (console_u=
-nlock+0x498/0x4f0)
-> 	[    5.070223] [] (console_unlock) from [] (vprintk_emit+0x1f0/0x508)
-> 	[    5.070228] [] (vprintk_emit) from [] (vprintk_default+0x24/0x2c)
-> 	[    5.070234] [] (vprintk_default) from [] (printk+0x70/0x88)
->=20
-> After which the system starts spewing all kinds of weird and seemingly
-> unrelated error messages.
->=20
-> This commit fixes this by restoring the condition under which the call
-> to fbcon_del_cursor_timer() happens.
->=20
-> Reported-by: Daniel Stone <daniel@fooishbar.org>
-> Reported-by: Kevin Hilman <khilman@kernel.org>
-> Tested-by: Kevin Hilman <khilman@linaro.org>
-> Tested-by: Scot Doyle <lkml14@scotdoyle.com>
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
-> ---
->  drivers/video/console/fbcon.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 6c093e2..b2f995c 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -48,6 +48,16 @@ config LCD_LMS283GF05
+ 	  SPI driver for Samsung LMS283GF05. This provides basic support
+ 	  for powering the LCD up/down through a sysfs interface.
+ 
++config LCD_LOCOMO
++	tristate "Sharp LOCOMO LCD Driver"
++	depends on MFD_LOCOMO
++	select IIO
++	help
++	  If you have a Sharp Zaurus SL-5500 (Collie) or SL-5600 (Poodle) say y to
++	  enable the LCD driver.  The panel starts up in power
++	  off state, so you need this driver in order to see any
++	  output.
++
+ config LCD_LTV350QV
+ 	tristate "Samsung LTV350QV LCD Panel"
+ 	depends on SPI_MASTER
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 2de73d2..686cf1a 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_LCD_L4F00242T03)		+= l4f00242t03.o
+ obj-$(CONFIG_LCD_LD9040)		+= ld9040.o
+ obj-$(CONFIG_LCD_LMS283GF05)		+= lms283gf05.o
+ obj-$(CONFIG_LCD_LMS501KF03)		+= lms501kf03.o
++obj-$(CONFIG_LCD_LOCOMO)		+= locomo_lcd.o
+ obj-$(CONFIG_LCD_LTV350QV)		+= ltv350qv.o
+ obj-$(CONFIG_LCD_PLATFORM)		+= platform_lcd.o
+ obj-$(CONFIG_LCD_S6E63M0)		+= s6e63m0.o
+diff --git a/drivers/video/backlight/locomo_lcd.c b/drivers/video/backlight/locomo_lcd.c
+new file mode 100644
+index 0000000..dc316cb
+--- /dev/null
++++ b/drivers/video/backlight/locomo_lcd.c
+@@ -0,0 +1,285 @@
++/*
++ * Backlight control code for Sharp Zaurus SL-5500
++ *
++ * Copyright 2005 John Lenz <lenz@cs.wisc.edu>
++ * Maintainer: Pavel Machek <pavel@ucw.cz> (unless John wants to :-)
++ * GPL v2
++ *
++ * This driver assumes single CPU. That's okay, because collie is
++ * slightly old hardware, and no one is going to retrofit second CPU to
++ * old PDA.
++ */
++
++#include <linux/delay.h>
++#include <linux/fb.h>
++#include <linux/gpio/consumer.h>
++#include <linux/iio/consumer.h>
++#include <linux/lcd.h>
++#include <linux/mfd/locomo.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/regmap.h>
++
++struct locomo_lcd {
++	struct regmap *regmap;
++	struct platform_device *dev;
++	struct locomo_lcd_platform_data *data;
++	int power;
++	struct iio_channel *comadj;
++	struct gpio_desc *vsha, *vshd, *vee, *mod;
++};
++
++static void locomo_lcd_on(struct locomo_lcd *lcd)
++{
++	gpiod_set_value(lcd->vsha, 1);
++	usleep_range(2000, 3000);
++
++	gpiod_set_value(lcd->vshd, 1);
++	usleep_range(2000, 3000);
++
++	iio_write_channel_raw(lcd->comadj, lcd->data->comadj);
++	usleep_range(5000, 6000);
++
++	gpiod_set_value(lcd->vee, 1);
++	usleep_range(10000, 11000);
++
++	/* TFTCRST | CPSOUT=0 | CPSEN */
++	regmap_write(lcd->regmap, LOCOMO_TC, 0x01);
++
++	/* Set CPSD */
++	regmap_write(lcd->regmap, LOCOMO_CPSD, 6);
++
++	/* TFTCRST | CPSOUT=0 | CPSEN */
++	regmap_write(lcd->regmap, LOCOMO_TC, 0x04 | 0x01);
++	usleep_range(10000, 11000);
++
++	gpiod_set_value(lcd->mod, 1);
++}
++
++static void locomo_lcd_off(struct locomo_lcd *lcd)
++{
++	/* TFTCRST=1 | CPSOUT=1 | CPSEN = 0 */
++	regmap_write(lcd->regmap, LOCOMO_TC, 0x06);
++	usleep_range(1000, 2000);
++
++	gpiod_set_value(lcd->vsha, 0);
++	msleep(110);
++
++	gpiod_set_value(lcd->vee, 0);
++	msleep(700);
++
++	iio_write_channel_raw(lcd->comadj, 0);
++	usleep_range(5000, 6000);
++
++	/* TFTCRST=0 | CPSOUT=0 | CPSEN = 0 */
++	regmap_write(lcd->regmap, LOCOMO_TC, 0);
++	gpiod_set_value(lcd->mod, 0);
++	gpiod_set_value(lcd->vshd, 0);
++}
++
++static void locomo_lcd_program_adsync(struct locomo_lcd *lcd)
++{
++	regmap_write(lcd->regmap, LOCOMO_ASD,
++			6 + 8 + 320 + 30 - 10);
++	regmap_update_bits(lcd->regmap, LOCOMO_ASD,
++		0x8000,
++		0x8000);
++
++	regmap_write(lcd->regmap, LOCOMO_HSD,
++			6 + 8 + 320 + 30 - 10 - 128 + 4);
++	regmap_update_bits(lcd->regmap, LOCOMO_HSD,
++		0x8000,
++		0x8000);
++
++	regmap_write(lcd->regmap, LOCOMO_HSC, 128 / 8);
++
++	/* XON */
++	regmap_write(lcd->regmap, LOCOMO_TADC, 0x80);
++	usleep_range(1000, 1100);
++
++	/* CLK9MEN */
++	regmap_update_bits(lcd->regmap, LOCOMO_TADC,
++		0x10,
++		0x10);
++	usleep_range(100, 200);
++}
++
++static void locomo_lcd_disable_adsync(struct locomo_lcd *lcd)
++{
++	/* ADSTART */
++	regmap_write(lcd->regmap, LOCOMO_ASD, 0x00);
++
++	/* 18MHz clock off*/
++	regmap_write(lcd->regmap, LOCOMO_TADC, 0x00);
++}
++
++int locomo_lcd_set_power(struct lcd_device *ldev, int power)
++{
++	struct locomo_lcd *lcd = lcd_get_data(ldev);
++
++	dev_dbg(&ldev->dev, "LCD power %d (is %d)\n", power, lcd->power);
++
++	if (!power && lcd->power)
++		locomo_lcd_on(lcd);
++
++	if (power && !lcd->power)
++		locomo_lcd_off(lcd);
++
++	lcd->power = power;
++
++	return 0;
++}
++
++static int locomo_lcd_get_power(struct lcd_device *ldev)
++{
++	struct locomo_lcd *lcd = lcd_get_data(ldev);
++
++	return lcd->power;
++}
++
++static struct lcd_ops locomo_lcd_ops = {
++	.set_power = locomo_lcd_set_power,
++	.get_power = locomo_lcd_get_power,
++};
++
++#ifdef CONFIG_PM_SLEEP
++static int locomo_lcd_suspend(struct device *dev)
++{
++	struct lcd_device *ldev = dev_get_drvdata(dev);
++	struct locomo_lcd *lcd = lcd_get_data(ldev);
++
++	locomo_lcd_off(lcd);
++
++	locomo_lcd_disable_adsync(lcd);
++
++	return 0;
++}
++
++static int locomo_lcd_resume(struct device *dev)
++{
++	struct lcd_device *ldev = dev_get_drvdata(dev);
++	struct locomo_lcd *lcd = lcd_get_data(ldev);
++
++	locomo_lcd_program_adsync(lcd);
++
++	if (!lcd->power)
++		locomo_lcd_on(lcd);
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(locomo_lcd_pm, locomo_lcd_suspend, locomo_lcd_resume);
++#define LOCOMOLCD_PM	(&locomo_lcd_pm)
++#else
++#define LOCOMOLCD_PM	NULL
++#endif
++
++static int locomo_lcd_probe(struct platform_device *dev)
++{
++	struct lcd_device *lcd_dev;
++	struct locomo_lcd *lcd;
++	int rc;
++
++	lcd = devm_kmalloc(&dev->dev, sizeof(struct locomo_lcd), GFP_KERNEL);
++	if (!lcd)
++		return -ENOMEM;
++
++	lcd->dev = dev;
++	lcd->power = FB_BLANK_NORMAL;
++
++	lcd->regmap = dev_get_regmap(dev->dev.parent, NULL);
++	if (!lcd->regmap)
++		return -ENODEV;
++
++	lcd->data = dev_get_platdata(&dev->dev);
++	if (!lcd->data)
++		return -EINVAL;
++
++	lcd->vsha = devm_gpiod_get(&dev->dev, "VSHA", GPIOD_OUT_LOW);
++	if (IS_ERR(lcd->vsha))
++		return PTR_ERR(lcd->vsha);
++
++	lcd->vshd = devm_gpiod_get(&dev->dev, "VSHD", GPIOD_OUT_LOW);
++	if (IS_ERR(lcd->vshd))
++		return PTR_ERR(lcd->vshd);
++
++	lcd->vee = devm_gpiod_get(&dev->dev, "Vee", GPIOD_OUT_LOW);
++	if (IS_ERR(lcd->vee))
++		return PTR_ERR(lcd->vee);
++
++	lcd->mod = devm_gpiod_get(&dev->dev, "MOD", GPIOD_OUT_LOW);
++	if (IS_ERR(lcd->mod))
++		return PTR_ERR(lcd->mod);
++
++	lcd->comadj = iio_channel_get(&dev->dev, "comadj");
++	if (IS_ERR(lcd->comadj)) {
++		rc = PTR_ERR(lcd->comadj);
++		if (rc = -ENODEV)
++			rc = -EPROBE_DEFER;
++
++		return rc;
++	}
++
++	locomo_lcd_program_adsync(lcd);
++
++	lcd_dev = devm_lcd_device_register(&dev->dev, "locomo", &dev->dev, lcd,
++			&locomo_lcd_ops);
++	if (IS_ERR(lcd_dev)) {
++		rc = PTR_ERR(lcd_dev);
++		goto err;
++	}
++
++	platform_set_drvdata(dev, lcd_dev);
++
++	lcd_set_power(lcd_dev, FB_BLANK_UNBLANK);
++
++	return 0;
++
++err:
++	locomo_lcd_disable_adsync(lcd);
++	iio_channel_release(lcd->comadj);
++
++	return rc;
++}
++
++static int locomo_lcd_remove(struct platform_device *dev)
++{
++	struct lcd_device *ldev = platform_get_drvdata(dev);
++	struct locomo_lcd *lcd = lcd_get_data(ldev);
++
++	locomo_lcd_off(lcd);
++
++	locomo_lcd_disable_adsync(lcd);
++
++	iio_channel_release(lcd->comadj);
++
++	return 0;
++}
++
++static void locomo_lcd_shutdown(struct platform_device *dev)
++{
++	struct lcd_device *ldev = platform_get_drvdata(dev);
++	struct locomo_lcd *lcd = lcd_get_data(ldev);
++
++	locomo_lcd_off(lcd);
++
++	locomo_lcd_disable_adsync(lcd);
++}
++
++static struct platform_driver locomo_lcd_driver = {
++	.driver = {
++		.name	= "locomo-lcd",
++		.pm	= LOCOMOLCD_PM,
++	},
++	.probe	= locomo_lcd_probe,
++	.remove	= locomo_lcd_remove,
++	.shutdown = locomo_lcd_shutdown,
++};
++
++module_platform_driver(locomo_lcd_driver);
++
++MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>");
++MODULE_AUTHOR("Pavel Machek <pavel@ucw.cz>");
++MODULE_DESCRIPTION("LoCoMo LCD driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:locomo-lcd");
+-- 
+2.1.4
 
-Ping? This is an important fix, can we get this into linux-next sometime
-soon?
-
-Thierry
-
->=20
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-> index 05b1d1a71ef9..658c34bb9076 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -1310,8 +1310,9 @@ static void fbcon_cursor(struct vc_data *vc, int mo=
-de)
->  		return;
-> =20
->  	ops->cur_blink_jiffies =3D msecs_to_jiffies(vc->vc_cur_blink_ms);
-> -	fbcon_del_cursor_timer(info);
-> -	if (!(vc->vc_cursor_type & 0x10))
-> +	if (vc->vc_cursor_type & 0x10)
-> +		fbcon_del_cursor_timer(info);
-> +	else
->  		fbcon_add_cursor_timer(info);
-> =20
->  	ops->cursor_flash =3D (mode =3D=3D CM_ERASE) ? 0 : 1;
-> --=20
-> 2.4.1
->=20
-
---bg08WKrSYDhXBjb5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJVZbsDAAoJEN0jrNd/PrOhuioP/10TJHbBvKNVHYzePa2Wb1oP
-G0LXQGjlmnj1gJim3LnQ7bpXEG3YFXrbUkzHFfBXh3zZ5aMzeGyZDJQ1W3jsSI1M
-+HlvwxPUn2eb00+DxyzVxSLx7WixFmQAL76Pw06QBEbdH/JT1ewqEdl8NsPEK0Gm
-hflZ/aDnq2w7oWQ/DXXIjQ2PIosTccy9LMM5lYpsxnLkmvxxvQBmaxg9iU49/Y5g
-cKM/BUeBV0iQAmAW8hO5ar/elEDY33DKY0s/y0Zo3n5DaGWwdvRx4wcuJryyGgES
-tBPymj13Bx23Ox3GWLqNb1t44mmZL6zX29JqsVHaJnefDq+SkSypF8f2JccTrNxl
-DwL+M0V7KeQeQAVSfuJPM76H1joFX0bgnVdFcCqxLycVvjwcMhL9/ewBe+wKoz59
-W51ZmMKlLpIjdYnNtJLk0uQ6uSSHGDHNd+zfgKw5Qkh8y5x89KEF+pcElyVVzXB9
-R3zSNpPl3r8UpZCRbvOo9mkBP222kZq2CuWqa/iwJhzF+Sj3P4jrs36tNJkHw2Zl
-gf8/0XhpnKRNaMRFNsg5lNvnNikgEmnC0saR6oFxdKiR34bdJSHjEn0SuMn5Y3Qe
-hHPfWHstQDuGZtFBIahAralv8LfDhdkTBGbrtuJI+js7APVbLr7s0VR2z7/mZ6xV
-45bjZgb5Ijbd4qrlVdfE
-=LY63
------END PGP SIGNATURE-----
-
---bg08WKrSYDhXBjb5--

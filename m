@@ -1,214 +1,238 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sun, 31 May 2015 01:01:49 +0000
-Subject: [RFC 17/24] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvram_write_
-Message-Id: <20150531010136.589779023@telegraphics.com.au>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Sun, 17 May 2015 16:27:47 +0000
+Subject: [PATCH v3 07/17] gpio: port LoCoMo gpio support from old driver
+Message-Id: <1431880077-26321-8-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150531010132.289674310@telegraphics.com.au>
+References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-Make use of arch_nvram_ops in device drivers so that the nvram_*
-function exports can be removed.
+Add gpiolib driver for gpio pins placed on the LoCoMo GA.
 
-Since they are no longer global symbols, rename the PPC32 nvram_* functions
-appropriately.
-
-Add the missing CONFIG_NVRAM test to imsttfb to avoid a build failure.
-
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- arch/powerpc/kernel/setup_32.c             |    8 ++++----
- drivers/char/generic_nvram.c               |    4 ++--
- drivers/video/fbdev/controlfb.c            |    4 ++--
- drivers/video/fbdev/imsttfb.c              |    7 +++----
- drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
- drivers/video/fbdev/platinumfb.c           |    4 ++--
- drivers/video/fbdev/valkyriefb.c           |    4 ++--
- 7 files changed, 16 insertions(+), 17 deletions(-)
+ drivers/gpio/Kconfig       |  12 ++++
+ drivers/gpio/Makefile      |   1 +
+ drivers/gpio/gpio-locomo.c | 170 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 183 insertions(+)
+ create mode 100644 drivers/gpio/gpio-locomo.c
 
-Index: linux/arch/powerpc/kernel/setup_32.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-=
-05-31 11:01:17.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-05-31 11:01:19.000000000 +1000
-@@ -170,20 +170,18 @@ __setup("l3cr=3D", ppc_setup_l3cr);
-=20
- #ifdef CONFIG_GENERIC_NVRAM
-=20
--unsigned char nvram_read_byte(int addr)
-+static unsigned char ppc_nvram_read_byte(int addr)
- {
- 	if (ppc_md.nvram_read_val)
- 		return ppc_md.nvram_read_val(addr);
- 	return 0xff;
- }
--EXPORT_SYMBOL(nvram_read_byte);
-=20
--void nvram_write_byte(unsigned char val, int addr)
-+static void ppc_nvram_write_byte(unsigned char val, int addr)
- {
- 	if (ppc_md.nvram_write_val)
- 		ppc_md.nvram_write_val(addr, val);
- }
--EXPORT_SYMBOL(nvram_write_byte);
-=20
- static ssize_t ppc_nvram_get_size(void)
- {
-@@ -200,6 +198,8 @@ static long ppc_nvram_sync(void)
- }
-=20
- const struct nvram_ops arch_nvram_ops =3D {
-+	.read_byte      =3D ppc_nvram_read_byte,
-+	.write_byte     =3D ppc_nvram_write_byte,
- 	.get_size       =3D ppc_nvram_get_size,
- 	.sync           =3D ppc_nvram_sync,
- };
-Index: linux/drivers/char/generic_nvram.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/char/generic_nvram.c	2015-05=
--31 11:01:17.000000000 +1000
-+++ linux/drivers/char/generic_nvram.c	2015-05-31 11:01:19.000000000 +1000
-@@ -64,7 +64,7 @@ static ssize_t read_nvram(struct file *f
- 	if (*ppos >=3D nvram_len)
- 		return 0;
- 	for (i =3D *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
--		if (__put_user(nvram_read_byte(i), p))
-+		if (__put_user(arch_nvram_ops.read_byte(i), p))
- 			return -EFAULT;
- 	*ppos =3D i;
- 	return p - buf;
-@@ -84,7 +84,7 @@ static ssize_t write_nvram(struct file *
- 	for (i =3D *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
- 		if (__get_user(c, p))
- 			return -EFAULT;
--		nvram_write_byte(c, i);
-+		arch_nvram_ops.write_byte(c, i);
- 	}
- 	*ppos =3D i;
- 	return p - buf;
-Index: linux/drivers/video/fbdev/controlfb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/controlfb.c	2015=
--05-31 11:00:59.000000000 +1000
-+++ linux/drivers/video/fbdev/controlfb.c	2015-05-31 11:01:19.000000000 +10=
-00
-@@ -415,7 +415,7 @@ static int __init init_control(struct fb
- 	/* Try to pick a video mode out of NVRAM if we have one. */
- #ifdef CONFIG_NVRAM
- 	if (default_cmode =3D CMODE_NVRAM) {
--		cmode =3D nvram_read_byte(NV_CMODE);
-+		cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- 		if(cmode < CMODE_8 || cmode > CMODE_32)
- 			cmode =3D CMODE_8;
- 	} else
-@@ -423,7 +423,7 @@ static int __init init_control(struct fb
- 		cmode=DEfault_cmode;
- #ifdef CONFIG_NVRAM
- 	if (default_vmode =3D VMODE_NVRAM) {
--		vmode =3D nvram_read_byte(NV_VMODE);
-+		vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 		if (vmode < 1 || vmode > VMODE_MAX ||
- 		    control_mac_modes[vmode - 1].m[full] < cmode) {
- 			sense =3D read_control_sense(p);
-Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/matrox/matroxfb_=
-base.c	2015-05-31 11:01:13.000000000 +1000
-+++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-05-31 11:01:19.00=
-0000000 +1000
-@@ -1888,7 +1888,7 @@ static int initMatrox2(struct matrox_fb_
- 			default_vmode =3D VMODE_640_480_60;
- #ifdef CONFIG_NVRAM
- 		if (default_cmode =3D CMODE_NVRAM)
--			default_cmode =3D nvram_read_byte(NV_CMODE);
-+			default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- #endif
- 		if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
- 			default_cmode =3D CMODE_8;
-Index: linux/drivers/video/fbdev/platinumfb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/platinumfb.c	201=
-5-05-31 11:00:59.000000000 +1000
-+++ linux/drivers/video/fbdev/platinumfb.c	2015-05-31 11:01:19.000000000 +1=
-000
-@@ -349,7 +349,7 @@ static int platinum_init_fb(struct fb_in
- 	printk(KERN_INFO "platinumfb: Monitor sense value =3D 0x%x, ", sense);
- 	if (default_vmode =3D VMODE_NVRAM) {
- #ifdef CONFIG_NVRAM
--		default_vmode =3D nvram_read_byte(NV_VMODE);
-+		default_vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 		if (default_vmode <=3D 0 || default_vmode > VMODE_MAX ||
- 		    !platinum_reg_init[default_vmode-1])
- #endif
-@@ -362,7 +362,7 @@ static int platinum_init_fb(struct fb_in
- 		default_vmode =3D VMODE_640_480_60;
- #ifdef CONFIG_NVRAM
- 	if (default_cmode =3D CMODE_NVRAM)
--		default_cmode =3D nvram_read_byte(NV_CMODE);
-+		default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- #endif
- 	if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
- 		default_cmode =3D CMODE_8;
-Index: linux/drivers/video/fbdev/valkyriefb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/valkyriefb.c	201=
-5-05-31 11:00:59.000000000 +1000
-+++ linux/drivers/video/fbdev/valkyriefb.c	2015-05-31 11:01:19.000000000 +1=
-000
-@@ -287,7 +287,7 @@ static void __init valkyrie_choose_mode(
- 	/* Try to pick a video mode out of NVRAM if we have one. */
- #if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
- 	if (default_vmode =3D VMODE_NVRAM) {
--		default_vmode =3D nvram_read_byte(NV_VMODE);
-+		default_vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 		if (default_vmode <=3D 0
- 		 || default_vmode > VMODE_MAX
- 		 || !valkyrie_reg_init[default_vmode - 1])
-@@ -300,7 +300,7 @@ static void __init valkyrie_choose_mode(
- 		default_vmode =3D VMODE_640_480_67;
- #if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
- 	if (default_cmode =3D CMODE_NVRAM)
--		default_cmode =3D nvram_read_byte(NV_CMODE);
-+		default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- #endif
-=20
- 	/*
-Index: linux/drivers/video/fbdev/imsttfb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-0=
-5-31 11:00:59.000000000 +1000
-+++ linux/drivers/video/fbdev/imsttfb.c	2015-05-31 11:01:19.000000000 +1000
-@@ -328,7 +328,6 @@ enum {
- 	TVP =3D 1
- };
-=20
--#define USE_NV_MODES		1
- #define INIT_BPP		8
- #define INIT_XRES		640
- #define INIT_YRES		480
-@@ -1391,17 +1390,17 @@ static void init_imstt(struct fb_info *i
- 		}
- 	}
-=20
--#if USE_NV_MODES && defined(CONFIG_PPC32)
-+#if defined(CONFIG_NVRAM) && defined(CONFIG_PPC32)
- 	{
- 		int vmode =3D init_vmode, cmode =3D init_cmode;
-=20
- 		if (vmode =3D -1) {
--			vmode =3D nvram_read_byte(NV_VMODE);
-+			vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 			if (vmode <=3D 0 || vmode > VMODE_MAX)
- 				vmode =3D VMODE_640_480_67;
- 		}
- 		if (cmode =3D -1) {
--			cmode =3D nvram_read_byte(NV_CMODE);
-+			cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- 			if (cmode < CMODE_8 || cmode > CMODE_32)
- 				cmode =3D CMODE_8;
- 		}
-
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index caefe80..4542684 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -734,6 +734,18 @@ config GPIO_KEMPLD
+ 	  This driver can also be built as a module. If so, the module will be
+ 	  called gpio-kempld.
+ 
++config GPIO_LOCOMO
++	bool "Sharp LoCoMo GPIO support"
++	depends on MFD_LOCOMO
++	help
++	  Select this to support GPIO pins on Sharp LoCoMo Grid Array found
++	  in Sharp Zaurus collie and poodle models.
++
++	  Sat Yes if you have such PDA, say No otherwise.
++
++	  This driver can also be built as a module. If so, the module will be
++	  called gpio-locomo.
++
+ config GPIO_LP3943
+ 	tristate "TI/National Semiconductor LP3943 GPIO expander"
+ 	depends on MFD_LP3943
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index f71bb97..98655ae 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -42,6 +42,7 @@ obj-$(CONFIG_GPIO_JANZ_TTL)	+= gpio-janz-ttl.o
+ obj-$(CONFIG_GPIO_KEMPLD)	+= gpio-kempld.o
+ obj-$(CONFIG_ARCH_KS8695)	+= gpio-ks8695.o
+ obj-$(CONFIG_GPIO_INTEL_MID)	+= gpio-intel-mid.o
++obj-$(CONFIG_GPIO_LOCOMO)	+= gpio-locomo.o
+ obj-$(CONFIG_GPIO_LOONGSON)	+= gpio-loongson.o
+ obj-$(CONFIG_GPIO_LP3943)	+= gpio-lp3943.o
+ obj-$(CONFIG_ARCH_LPC32XX)	+= gpio-lpc32xx.o
+diff --git a/drivers/gpio/gpio-locomo.c b/drivers/gpio/gpio-locomo.c
+new file mode 100644
+index 0000000..dd9a1ca
+--- /dev/null
++++ b/drivers/gpio/gpio-locomo.c
+@@ -0,0 +1,170 @@
++/*
++ * Sharp LoCoMo support for GPIO
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This file contains all generic LoCoMo support.
++ *
++ * All initialization functions provided here are intended to be called
++ * from machine specific code with proper arguments when required.
++ */
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <linux/bitops.h>
++#include <linux/err.h>
++#include <linux/gpio.h>
++#include <linux/io.h>
++#include <linux/regmap.h>
++#include <linux/mfd/locomo.h>
++
++struct locomo_gpio {
++	struct regmap *regmap;
++
++	struct gpio_chip gpio;
++
++	u16 rising_edge;
++	u16 falling_edge;
++
++	unsigned int save_gpo;
++	unsigned int save_gpe;
++};
++
++static int locomo_gpio_get(struct gpio_chip *chip,
++		unsigned offset)
++{
++	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
++	unsigned int gpl;
++
++	regmap_read(lg->regmap, LOCOMO_GPL, &gpl);
++
++	return gpl & BIT(offset);
++}
++
++static void locomo_gpio_set(struct gpio_chip *chip,
++		unsigned offset, int value)
++{
++	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
++
++	regmap_update_bits(lg->regmap, LOCOMO_GPO,
++			BIT(offset),
++			value ? BIT(offset) : 0);
++}
++
++static int locomo_gpio_direction_input(struct gpio_chip *chip,
++			unsigned offset)
++{
++	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
++
++	regmap_update_bits(lg->regmap, LOCOMO_GPD, BIT(offset), BIT(offset));
++	regmap_update_bits(lg->regmap, LOCOMO_GPE, BIT(offset), BIT(offset));
++
++	return 0;
++}
++
++static int locomo_gpio_direction_output(struct gpio_chip *chip,
++			unsigned offset, int value)
++{
++	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
++
++	regmap_update_bits(lg->regmap, LOCOMO_GPO,
++			BIT(offset),
++			value ? BIT(offset) : 0);
++	regmap_update_bits(lg->regmap, LOCOMO_GPD, BIT(offset), 0);
++	regmap_update_bits(lg->regmap, LOCOMO_GPE, BIT(offset), 0);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEP
++static int locomo_gpio_suspend(struct device *dev)
++{
++	struct locomo_gpio *lg = dev_get_drvdata(dev);
++
++	regmap_read(lg->regmap, LOCOMO_GPO, &lg->save_gpo);
++	regmap_write(lg->regmap, LOCOMO_GPO, 0x00);
++	regmap_read(lg->regmap, LOCOMO_GPE, &lg->save_gpe);
++	regmap_write(lg->regmap, LOCOMO_GPE, 0x00);
++
++	return 0;
++}
++
++static int locomo_gpio_resume(struct device *dev)
++{
++	struct locomo_gpio *lg = dev_get_drvdata(dev);
++
++	regmap_write(lg->regmap, LOCOMO_GPO, lg->save_gpo);
++	regmap_write(lg->regmap, LOCOMO_GPE, lg->save_gpe);
++
++	return 0;
++}
++static SIMPLE_DEV_PM_OPS(locomo_gpio_pm,
++		locomo_gpio_suspend, locomo_gpio_resume);
++#define LOCOMO_GPIO_PM	(&locomo_gpio_pm)
++#else
++#define LOCOMO_GPIO_PM	NULL
++#endif
++
++static int locomo_gpio_probe(struct platform_device *pdev)
++{
++	struct locomo_gpio *lg;
++	int ret;
++	struct locomo_gpio_platform_data *pdata = dev_get_platdata(&pdev->dev);
++
++	lg = devm_kzalloc(&pdev->dev, sizeof(struct locomo_gpio),
++			GFP_KERNEL);
++	if (!lg)
++		return -ENOMEM;
++
++	lg->regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	if (!lg->regmap)
++		return -EINVAL;
++
++	platform_set_drvdata(pdev, lg);
++
++	regmap_write(lg->regmap, LOCOMO_GPO, 0x00);
++	regmap_write(lg->regmap, LOCOMO_GPE, 0x00);
++	regmap_write(lg->regmap, LOCOMO_GPD, 0x00);
++	regmap_write(lg->regmap, LOCOMO_GIE, 0x00);
++
++	lg->gpio.base = pdata ? pdata->gpio_base : -1;
++	lg->gpio.label = "locomo-gpio";
++	lg->gpio.ngpio = 16;
++	lg->gpio.set = locomo_gpio_set;
++	lg->gpio.get = locomo_gpio_get;
++	lg->gpio.direction_input = locomo_gpio_direction_input;
++	lg->gpio.direction_output = locomo_gpio_direction_output;
++
++	ret = gpiochip_add(&lg->gpio);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static int locomo_gpio_remove(struct platform_device *pdev)
++{
++	struct locomo_gpio *lg = platform_get_drvdata(pdev);
++
++	gpiochip_remove(&lg->gpio);
++
++	return 0;
++}
++
++static struct platform_driver locomo_gpio_driver = {
++	.probe		= locomo_gpio_probe,
++	.remove		= locomo_gpio_remove,
++	.driver		= {
++		.name	= "locomo-gpio",
++		.pm	= LOCOMO_GPIO_PM,
++	},
++};
++module_platform_driver(locomo_gpio_driver);
++
++MODULE_DESCRIPTION("Sharp LoCoMo GPIO driver");
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("John Lenz <lenz@cs.wisc.edu>");
++MODULE_ALIAS("platform:locomo-gpio");
+-- 
+2.1.4
 

@@ -1,128 +1,204 @@
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Sun, 17 May 2015 16:27:53 +0000
-Subject: [PATCH v3 13/17] ASoC: pxa: poodle: make use of new locomo GPIO interface
-Message-Id: <1431880077-26321-14-git-send-email-dbaryshkov@gmail.com>
+Date: Sun, 17 May 2015 16:27:50 +0000
+Subject: [PATCH v3 10/17] i2c: add locomo i2c driver
+Message-Id: <1431880077-26321-11-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1431880077-26321-1-git-send-email-dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+In-Reply-To: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org
+To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-Since LoCoMo driver has been converted to provide proper gpiolib
-interface, make poodle ASoC platform driver use gpiolib API.
+LoCoMo chip contains a tiny i2c controller destined to control
+M62332 DAC. Provide a separate I2C driver for this cell.
 
+Reviewed-by: Wolfram Sang <wsa@the-dreams.de>
 Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Acked-by: Mark Brown <broonie@kernel.org>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- sound/soc/pxa/poodle.c | 52 +++++++++++++++++++-------------------------------
- 1 file changed, 20 insertions(+), 32 deletions(-)
+ drivers/i2c/busses/Kconfig      |  12 ++++
+ drivers/i2c/busses/Makefile     |   1 +
+ drivers/i2c/busses/i2c-locomo.c | 135 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 148 insertions(+)
+ create mode 100644 drivers/i2c/busses/i2c-locomo.c
 
-diff --git a/sound/soc/pxa/poodle.c b/sound/soc/pxa/poodle.c
-index 0fce8c4..c5b7c5e 100644
---- a/sound/soc/pxa/poodle.c
-+++ b/sound/soc/pxa/poodle.c
-@@ -20,15 +20,11 @@
- #include <linux/i2c.h>
- #include <linux/interrupt.h>
- #include <linux/platform_device.h>
-+#include <linux/gpio/consumer.h>
- #include <sound/core.h>
- #include <sound/pcm.h>
- #include <sound/soc.h>
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index 2255af2..114d9da 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -602,6 +602,18 @@ config I2C_KEMPLD
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called i2c-kempld.
  
--#include <asm/mach-types.h>
--#include <asm/hardware/locomo.h>
--#include <mach/poodle.h>
--#include <mach/audio.h>
--
- #include "../codecs/wm8731.h"
- #include "pxa2xx-i2s.h"
- 
-@@ -42,22 +38,18 @@
- 
- static int poodle_jack_func;
- static int poodle_spk_func;
-+static struct gpio_desc *poodle_mute_l, *poodle_mute_r, *poodle_amp_on;
- 
- static void poodle_ext_control(struct snd_soc_dapm_context *dapm)
- {
- 	/* set up jack connection */
- 	if (poodle_jack_func = POODLE_HP) {
--		/* set = unmute headphone */
--		locomo_gpio_write(&poodle_locomo_device.dev,
--			POODLE_LOCOMO_GPIO_MUTE_L, 1);
--		locomo_gpio_write(&poodle_locomo_device.dev,
--			POODLE_LOCOMO_GPIO_MUTE_R, 1);
-+		gpiod_set_value(poodle_mute_l, 0);
-+		gpiod_set_value(poodle_mute_r, 0);
- 		snd_soc_dapm_enable_pin(dapm, "Headphone Jack");
- 	} else {
--		locomo_gpio_write(&poodle_locomo_device.dev,
--			POODLE_LOCOMO_GPIO_MUTE_L, 0);
--		locomo_gpio_write(&poodle_locomo_device.dev,
--			POODLE_LOCOMO_GPIO_MUTE_R, 0);
-+		gpiod_set_value(poodle_mute_l, 1);
-+		gpiod_set_value(poodle_mute_r, 1);
- 		snd_soc_dapm_disable_pin(dapm, "Headphone Jack");
- 	}
- 
-@@ -84,11 +76,8 @@ static int poodle_startup(struct snd_pcm_substream *substream)
- /* we need to unmute the HP at shutdown as the mute burns power on poodle */
- static void poodle_shutdown(struct snd_pcm_substream *substream)
- {
--	/* set = unmute headphone */
--	locomo_gpio_write(&poodle_locomo_device.dev,
--		POODLE_LOCOMO_GPIO_MUTE_L, 1);
--	locomo_gpio_write(&poodle_locomo_device.dev,
--		POODLE_LOCOMO_GPIO_MUTE_R, 1);
-+	gpiod_set_value(poodle_mute_l, 0);
-+	gpiod_set_value(poodle_mute_r, 0);
- }
- 
- static int poodle_hw_params(struct snd_pcm_substream *substream,
-@@ -178,12 +167,7 @@ static int poodle_set_spk(struct snd_kcontrol *kcontrol,
- static int poodle_amp_event(struct snd_soc_dapm_widget *w,
- 	struct snd_kcontrol *k, int event)
- {
--	if (SND_SOC_DAPM_EVENT_ON(event))
--		locomo_gpio_write(&poodle_locomo_device.dev,
--			POODLE_LOCOMO_GPIO_AMP_ON, 0);
--	else
--		locomo_gpio_write(&poodle_locomo_device.dev,
--			POODLE_LOCOMO_GPIO_AMP_ON, 1);
-+	gpiod_set_value(poodle_amp_on, (SND_SOC_DAPM_EVENT_ON(event)));
- 
- 	return 0;
- }
-@@ -268,13 +252,17 @@ static int poodle_probe(struct platform_device *pdev)
- 	struct snd_soc_card *card = &poodle;
- 	int ret;
- 
--	locomo_gpio_set_dir(&poodle_locomo_device.dev,
--		POODLE_LOCOMO_GPIO_AMP_ON, 0);
--	/* should we mute HP at startup - burning power ?*/
--	locomo_gpio_set_dir(&poodle_locomo_device.dev,
--		POODLE_LOCOMO_GPIO_MUTE_L, 0);
--	locomo_gpio_set_dir(&poodle_locomo_device.dev,
--		POODLE_LOCOMO_GPIO_MUTE_R, 0);
-+	poodle_mute_l = devm_gpiod_get(&pdev->dev, "mute-l", GPIOD_OUT_HIGH);
-+	if (IS_ERR(poodle_mute_l))
-+		return PTR_ERR(poodle_mute_l);
++config I2C_LOCOMO
++	tristate "I2C bus support for LoCoMo chips"
++	depends on MFD_LOCOMO
++	select I2C_ALGOBIT
++	help
++	  Say yes if you will run the kernel on Sharp SL-5x00 family of devices.
 +
-+	poodle_mute_r = devm_gpiod_get(&pdev->dev, "mute-r", GPIOD_OUT_HIGH);
-+	if (IS_ERR(poodle_mute_r))
-+		return PTR_ERR(poodle_mute_l);
++	  If you don't know what to do here, say N.
 +
-+	poodle_amp_on = devm_gpiod_get(&pdev->dev, "amp-on", GPIOD_OUT_LOW);
-+	if (IS_ERR(poodle_amp_on))
-+		return PTR_ERR(poodle_amp_on);
- 
- 	card->dev = &pdev->dev;
- 
++	  This driver can also be built as a module.  If so, the module
++	  will be called i2c-locomo.
++
+ config I2C_MESON
+ 	tristate "Amlogic Meson I2C controller"
+ 	depends on ARCH_MESON
+diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+index cdf941d..e09dcf6 100644
+--- a/drivers/i2c/busses/Makefile
++++ b/drivers/i2c/busses/Makefile
+@@ -58,6 +58,7 @@ obj-$(CONFIG_I2C_IMX)		+= i2c-imx.o
+ obj-$(CONFIG_I2C_IOP3XX)	+= i2c-iop3xx.o
+ obj-$(CONFIG_I2C_JZ4780)	+= i2c-jz4780.o
+ obj-$(CONFIG_I2C_KEMPLD)	+= i2c-kempld.o
++obj-$(CONFIG_I2C_LOCOMO)	+= i2c-locomo.o
+ obj-$(CONFIG_I2C_MESON)		+= i2c-meson.o
+ obj-$(CONFIG_I2C_MPC)		+= i2c-mpc.o
+ obj-$(CONFIG_I2C_MV64XXX)	+= i2c-mv64xxx.o
+diff --git a/drivers/i2c/busses/i2c-locomo.c b/drivers/i2c/busses/i2c-locomo.c
+new file mode 100644
+index 0000000..d520513
+--- /dev/null
++++ b/drivers/i2c/busses/i2c-locomo.c
+@@ -0,0 +1,135 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/i2c.h>
++#include <linux/i2c-algo-bit.h>
++#include <linux/kernel.h>
++#include <linux/mfd/locomo.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/regmap.h>
++#include <linux/slab.h>
++
++struct locomo_i2c {
++	struct regmap		*regmap;
++	struct i2c_adapter	 adap;
++	struct i2c_algo_bit_data bit;
++};
++
++static void locomo_i2c_setsda(void *data, int state)
++{
++	struct locomo_i2c *li2c = data;
++
++	regmap_update_bits(li2c->regmap, LOCOMO_DAC,
++			LOCOMO_DAC_SDAOEB,
++			state ? LOCOMO_DAC_SDAOEB : 0);
++}
++
++static void locomo_i2c_setscl(void *data, int state)
++{
++	struct locomo_i2c *li2c = data;
++
++	regmap_update_bits(li2c->regmap, LOCOMO_DAC,
++			LOCOMO_DAC_SCLOEB,
++			state ? LOCOMO_DAC_SCLOEB : 0);
++}
++
++static int locomo_i2c_getsda(void *data)
++{
++	struct locomo_i2c *li2c = data;
++	unsigned int r;
++
++	regmap_read(li2c->regmap, LOCOMO_DAC, &r);
++
++	return !!(r & LOCOMO_DAC_SDA);
++}
++
++static int locomo_i2c_probe(struct platform_device *dev)
++{
++	struct locomo_i2c *li2c;
++	int ret;
++
++	li2c = devm_kzalloc(&dev->dev, sizeof(struct locomo_i2c), GFP_KERNEL);
++	if (li2c = NULL)
++		return -ENOMEM;
++
++	li2c->regmap = dev_get_regmap(dev->dev.parent, NULL);
++	if (!li2c->regmap)
++		return -ENODEV;
++
++	li2c->adap.owner = THIS_MODULE;
++	li2c->adap.dev.parent = &dev->dev;
++	li2c->adap.dev.of_node = dev->dev.of_node;
++	li2c->adap.algo_data = &li2c->bit;
++	li2c->adap.nr = 1; /* On poodle, 0 is pxa internal bus */
++
++	strlcpy(li2c->adap.name, "LoCoMo I2C", sizeof(li2c->adap.name));
++
++	li2c->bit.data = li2c;
++	li2c->bit.setsda = locomo_i2c_setsda;
++	li2c->bit.setscl = locomo_i2c_setscl;
++	li2c->bit.getsda = locomo_i2c_getsda;
++	li2c->bit.udelay = 6;
++	li2c->bit.timeout = HZ;
++
++	ret = i2c_bit_add_numbered_bus(&li2c->adap);
++	if (ret)
++		return ret;
++
++	platform_set_drvdata(dev, li2c);
++
++	return 0;
++}
++
++static int locomo_i2c_remove(struct platform_device *dev)
++{
++	struct locomo_i2c *li2c = platform_get_drvdata(dev);
++
++	i2c_del_adapter(&li2c->adap);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEP
++static int locomo_i2c_suspend(struct device *dev)
++{
++	struct locomo_i2c *li2c = dev_get_drvdata(dev);
++
++	regmap_write(li2c->regmap, LOCOMO_DAC, 0x00);
++
++	return 0;
++}
++
++static int locomo_i2c_resume(struct device *dev)
++{
++	struct locomo_i2c *li2c = dev_get_drvdata(dev);
++
++	regmap_write(li2c->regmap, LOCOMO_DAC,
++			LOCOMO_DAC_SDAOEB | LOCOMO_DAC_SCLOEB);
++
++	return 0;
++}
++static SIMPLE_DEV_PM_OPS(locomo_i2c_pm, locomo_i2c_suspend, locomo_i2c_resume);
++#define LOCOMO_I2C_PM	(&locomo_i2c_pm)
++#else
++#define LOCOMO_I2C_PM	NULL
++#endif
++
++
++static struct platform_driver locomo_i2c_driver = {
++	.driver		= {
++		.name	= "locomo-i2c",
++		.pm	= LOCOMO_I2C_PM,
++	},
++	.probe		= locomo_i2c_probe,
++	.remove		= locomo_i2c_remove,
++};
++
++module_platform_driver(locomo_i2c_driver);
++
++MODULE_DESCRIPTION("LoCoMo i2c bus driver");
++MODULE_AUTHOR("Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:locomo-i2c");
 -- 
 2.1.4
 

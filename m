@@ -1,27 +1,53 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 06 May 2015 14:19:14 +0000
-Subject: Re: [PATCH v2 13/17] ASoC: pxa: poodle: make use of new locomo GPIO interface
-Message-Id: <CACRpkdYDRA-qtotEqniqd6m=HetBgtX5r7gJoc9x4oA9mp9i8w@mail.gmail.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Sun, 17 May 2015 16:27:52 +0000
+Subject: [PATCH v3 12/17] ARM: sa1100: don't preallocate IRQ space for locomo
+Message-Id: <1431880077-26321-13-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430178954-11138-1-git-send-email-dbaryshkov@gmail.com>
-	<1430178954-11138-14-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1430178954-11138-14-git-send-email-dbaryshkov@gmail.com>
+References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, linux-leds@vger.kernel.or
+To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-On Tue, Apr 28, 2015 at 1:55 AM, Dmitry Eremin-Solenikov
-<dbaryshkov@gmail.com> wrote:
+As new locomo driver properly supports SPARSE_IRQ, stop playing with
+NR_IRQS on sa1100 (locomo was the last chip requiring NR_IRQ tricks).
 
-> Since LoCoMo driver has been converted to provide proper gpiolib
-> interface, make poodle ASoC platform driver use gpiolib API.
->
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> Acked-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/arm/mach-sa1100/include/mach/irqs.h | 19 ++-----------------
+ 1 file changed, 2 insertions(+), 17 deletions(-)
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+diff --git a/arch/arm/mach-sa1100/include/mach/irqs.h b/arch/arm/mach-sa1100/include/mach/irqs.h
+index 734e30e..b4b9608 100644
+--- a/arch/arm/mach-sa1100/include/mach/irqs.h
++++ b/arch/arm/mach-sa1100/include/mach/irqs.h
+@@ -79,22 +79,7 @@
+ #define IRQ_BOARD_START		61
+ #define IRQ_BOARD_END		77
+ 
+-/*
+- * Figure out the MAX IRQ number.
+- *
+- * Neponset, SA1111 and UCB1x00 are sparse IRQ aware, so can dynamically
+- * allocate their IRQs above NR_IRQS.
+- *
+- * LoCoMo has 4 additional IRQs, but is not sparse IRQ aware, and so has
+- * to be included in the NR_IRQS calculation.
+- */
+-#ifdef CONFIG_SHARP_LOCOMO
+-#define NR_IRQS_LOCOMO		4
+-#else
+-#define NR_IRQS_LOCOMO		0
+-#endif
+-
+ #ifndef NR_IRQS
+-#define NR_IRQS (IRQ_BOARD_START + NR_IRQS_LOCOMO)
++#define NR_IRQS IRQ_BOARD_START
+ #endif
+-#define SA1100_NR_IRQS (IRQ_BOARD_START + NR_IRQS_LOCOMO)
++#define SA1100_NR_IRQS IRQ_BOARD_START
+-- 
+2.1.4
 
-Yours,
-Linus Walleij

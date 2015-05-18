@@ -1,33 +1,54 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 28 May 2015 07:35:24 +0000
-Subject: Re: distorted text
-Message-Id: <CAMuHMdUJ+EqkJ9g2PYNgyoOw+8EcemQhkQFO4+waSsYPcsV2XQ@mail.gmail.com>
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Mon, 18 May 2015 21:06:02 +0000
+Subject: [PATCH] backlight: pwm: make use of 3rd argument to devm_gpiod_get_optional
+Message-Id: <1431983162-21494-1-git-send-email-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <555C660B.2080808@xsilon.com>
-In-Reply-To: <555C660B.2080808@xsilon.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-On Wed, May 20, 2015 at 6:03 PM, Simon Vincent <simon.vincent@xsilon.com> wrote:
-> I have done some testing and the display works correctly with clear text on
-> Linux v4.0 but is distorted/corrupted on v4.1-rc1. (These are tagged
-> releases from https://github.com/torvalds/linux).
->
-> I have had a look at the changes but I can't find anything that might cause
-> the problem although I don't know much about this part of Linux.
-> Any ideas?
+Since 39b2bbe3d715 (gpio: add flags argument to gpiod_get*() functions)
+which appeared in v3.17-rc1, the gpiod_get* functions take an additional
+parameter that allows to specify direction and initial value for output.
 
-Can you please try to bisect the problem?
+This allows to drop the explicit setting of direction.
 
-Gr{oetje,eeting}s,
+Furthermore this is one caller less that stops us making the 3rd
+argument mandatory.
 
-                        Geert
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+---
+ drivers/video/backlight/pwm_bl.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm=
+_bl.c
+index 3a145a643e0d..57cb9ec8be43 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -241,7 +241,8 @@ static int pwm_backlight_probe(struct platform_device *=
+pdev)
+ 	pb->dev =3D &pdev->dev;
+ 	pb->enabled =3D false;
+=20
+-	pb->enable_gpio =3D devm_gpiod_get_optional(&pdev->dev, "enable");
++	pb->enable_gpio =3D devm_gpiod_get_optional(&pdev->dev, "enable",
++						  GPIOD_OUT_HIGH);
+ 	if (IS_ERR(pb->enable_gpio)) {
+ 		ret =3D PTR_ERR(pb->enable_gpio);
+ 		goto err_alloc;
+@@ -263,9 +264,6 @@ static int pwm_backlight_probe(struct platform_device *=
+pdev)
+ 		pb->enable_gpio =3D gpio_to_desc(data->enable_gpio);
+ 	}
+=20
+-	if (pb->enable_gpio)
+-		gpiod_direction_output(pb->enable_gpio, 1);
+-
+ 	pb->power_supply =3D devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
+ 		ret =3D PTR_ERR(pb->power_supply);
+--=20
+2.1.4
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

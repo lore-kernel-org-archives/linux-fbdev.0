@@ -1,204 +1,45 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Sun, 17 May 2015 16:27:50 +0000
-Subject: [PATCH v3 10/17] i2c: add locomo i2c driver
-Message-Id: <1431880077-26321-11-git-send-email-dbaryshkov@gmail.com>
+From: Fabian Frederick <fabf@skynet.be>
+Date: Mon, 18 May 2015 17:43:21 +0000
+Subject: [PATCH 1/1 linux-next] video/console: use swap() in newport_bmove()
+Message-Id: <1431971001-18967-1-git-send-email-fabf@skynet.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+To: linux-kernel@vger.kernel.org
+Cc: Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-LoCoMo chip contains a tiny i2c controller destined to control
-M62332 DAC. Provide a separate I2C driver for this cell.
+Use kernel.h macro definition.
 
-Reviewed-by: Wolfram Sang <wsa@the-dreams.de>
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Fabian Frederick <fabf@skynet.be>
 ---
- drivers/i2c/busses/Kconfig      |  12 ++++
- drivers/i2c/busses/Makefile     |   1 +
- drivers/i2c/busses/i2c-locomo.c | 135 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 148 insertions(+)
- create mode 100644 drivers/i2c/busses/i2c-locomo.c
+ drivers/video/console/newport_con.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index 2255af2..114d9da 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -602,6 +602,18 @@ config I2C_KEMPLD
- 	  This driver can also be built as a module. If so, the module
- 	  will be called i2c-kempld.
+diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
+index a6ab929..bb4e962 100644
+--- a/drivers/video/console/newport_con.c
++++ b/drivers/video/console/newport_con.c
+@@ -687,7 +687,7 @@ static int newport_scroll(struct vc_data *vc, int t, int b, int dir,
+ static void newport_bmove(struct vc_data *vc, int sy, int sx, int dy,
+ 			  int dx, int h, int w)
+ {
+-	short xs, ys, xe, ye, xoffs, yoffs, tmp;
++	short xs, ys, xe, ye, xoffs, yoffs;
  
-+config I2C_LOCOMO
-+	tristate "I2C bus support for LoCoMo chips"
-+	depends on MFD_LOCOMO
-+	select I2C_ALGOBIT
-+	help
-+	  Say yes if you will run the kernel on Sharp SL-5x00 family of devices.
-+
-+	  If you don't know what to do here, say N.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called i2c-locomo.
-+
- config I2C_MESON
- 	tristate "Amlogic Meson I2C controller"
- 	depends on ARCH_MESON
-diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
-index cdf941d..e09dcf6 100644
---- a/drivers/i2c/busses/Makefile
-+++ b/drivers/i2c/busses/Makefile
-@@ -58,6 +58,7 @@ obj-$(CONFIG_I2C_IMX)		+= i2c-imx.o
- obj-$(CONFIG_I2C_IOP3XX)	+= i2c-iop3xx.o
- obj-$(CONFIG_I2C_JZ4780)	+= i2c-jz4780.o
- obj-$(CONFIG_I2C_KEMPLD)	+= i2c-kempld.o
-+obj-$(CONFIG_I2C_LOCOMO)	+= i2c-locomo.o
- obj-$(CONFIG_I2C_MESON)		+= i2c-meson.o
- obj-$(CONFIG_I2C_MPC)		+= i2c-mpc.o
- obj-$(CONFIG_I2C_MV64XXX)	+= i2c-mv64xxx.o
-diff --git a/drivers/i2c/busses/i2c-locomo.c b/drivers/i2c/busses/i2c-locomo.c
-new file mode 100644
-index 0000000..d520513
---- /dev/null
-+++ b/drivers/i2c/busses/i2c-locomo.c
-@@ -0,0 +1,135 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#include <linux/i2c.h>
-+#include <linux/i2c-algo-bit.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/locomo.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+
-+struct locomo_i2c {
-+	struct regmap		*regmap;
-+	struct i2c_adapter	 adap;
-+	struct i2c_algo_bit_data bit;
-+};
-+
-+static void locomo_i2c_setsda(void *data, int state)
-+{
-+	struct locomo_i2c *li2c = data;
-+
-+	regmap_update_bits(li2c->regmap, LOCOMO_DAC,
-+			LOCOMO_DAC_SDAOEB,
-+			state ? LOCOMO_DAC_SDAOEB : 0);
-+}
-+
-+static void locomo_i2c_setscl(void *data, int state)
-+{
-+	struct locomo_i2c *li2c = data;
-+
-+	regmap_update_bits(li2c->regmap, LOCOMO_DAC,
-+			LOCOMO_DAC_SCLOEB,
-+			state ? LOCOMO_DAC_SCLOEB : 0);
-+}
-+
-+static int locomo_i2c_getsda(void *data)
-+{
-+	struct locomo_i2c *li2c = data;
-+	unsigned int r;
-+
-+	regmap_read(li2c->regmap, LOCOMO_DAC, &r);
-+
-+	return !!(r & LOCOMO_DAC_SDA);
-+}
-+
-+static int locomo_i2c_probe(struct platform_device *dev)
-+{
-+	struct locomo_i2c *li2c;
-+	int ret;
-+
-+	li2c = devm_kzalloc(&dev->dev, sizeof(struct locomo_i2c), GFP_KERNEL);
-+	if (li2c = NULL)
-+		return -ENOMEM;
-+
-+	li2c->regmap = dev_get_regmap(dev->dev.parent, NULL);
-+	if (!li2c->regmap)
-+		return -ENODEV;
-+
-+	li2c->adap.owner = THIS_MODULE;
-+	li2c->adap.dev.parent = &dev->dev;
-+	li2c->adap.dev.of_node = dev->dev.of_node;
-+	li2c->adap.algo_data = &li2c->bit;
-+	li2c->adap.nr = 1; /* On poodle, 0 is pxa internal bus */
-+
-+	strlcpy(li2c->adap.name, "LoCoMo I2C", sizeof(li2c->adap.name));
-+
-+	li2c->bit.data = li2c;
-+	li2c->bit.setsda = locomo_i2c_setsda;
-+	li2c->bit.setscl = locomo_i2c_setscl;
-+	li2c->bit.getsda = locomo_i2c_getsda;
-+	li2c->bit.udelay = 6;
-+	li2c->bit.timeout = HZ;
-+
-+	ret = i2c_bit_add_numbered_bus(&li2c->adap);
-+	if (ret)
-+		return ret;
-+
-+	platform_set_drvdata(dev, li2c);
-+
-+	return 0;
-+}
-+
-+static int locomo_i2c_remove(struct platform_device *dev)
-+{
-+	struct locomo_i2c *li2c = platform_get_drvdata(dev);
-+
-+	i2c_del_adapter(&li2c->adap);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int locomo_i2c_suspend(struct device *dev)
-+{
-+	struct locomo_i2c *li2c = dev_get_drvdata(dev);
-+
-+	regmap_write(li2c->regmap, LOCOMO_DAC, 0x00);
-+
-+	return 0;
-+}
-+
-+static int locomo_i2c_resume(struct device *dev)
-+{
-+	struct locomo_i2c *li2c = dev_get_drvdata(dev);
-+
-+	regmap_write(li2c->regmap, LOCOMO_DAC,
-+			LOCOMO_DAC_SDAOEB | LOCOMO_DAC_SCLOEB);
-+
-+	return 0;
-+}
-+static SIMPLE_DEV_PM_OPS(locomo_i2c_pm, locomo_i2c_suspend, locomo_i2c_resume);
-+#define LOCOMO_I2C_PM	(&locomo_i2c_pm)
-+#else
-+#define LOCOMO_I2C_PM	NULL
-+#endif
-+
-+
-+static struct platform_driver locomo_i2c_driver = {
-+	.driver		= {
-+		.name	= "locomo-i2c",
-+		.pm	= LOCOMO_I2C_PM,
-+	},
-+	.probe		= locomo_i2c_probe,
-+	.remove		= locomo_i2c_remove,
-+};
-+
-+module_platform_driver(locomo_i2c_driver);
-+
-+MODULE_DESCRIPTION("LoCoMo i2c bus driver");
-+MODULE_AUTHOR("Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:locomo-i2c");
+ 	xs = sx << 3;
+ 	xe = ((sx + w) << 3) - 1;
+@@ -701,9 +701,7 @@ static void newport_bmove(struct vc_data *vc, int sy, int sx, int dy,
+ 	yoffs = (dy - sy) << 4;
+ 	if (xoffs > 0) {
+ 		/* move to the right, exchange starting points */
+-		tmp = xe;
+-		xe = xs;
+-		xs = tmp;
++		swap(xe, xs);
+ 	}
+ 	newport_wait(npregs);
+ 	npregs->set.drawmode0 = (NPORT_DMODE0_S2S | NPORT_DMODE0_BLOCK |
 -- 
-2.1.4
+2.4.0
 

@@ -1,30 +1,34 @@
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-Date: Mon, 18 May 2015 08:37:51 +0000
-Subject: Re: [PATCH v3 02/17] leds: port locomo leds driver to new locomo core
-Message-Id: <5559A4DF.3010101@samsung.com>
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Tue, 19 May 2015 17:53:10 +0000
+Subject: Re: [PATCH v3 0/4] pci: add and use pci_ioremap_wc_bar()
+Message-Id: <20150519175310.GH23057@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
- <1431880077-26321-3-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1431880077-26321-3-git-send-email-dbaryshkov@gmail.com>
+References: <1429647634-17169-1-git-send-email-mcgrof@do-not-panic.com>
+ <CAB=NE6VYvd-Au58QRJprCquuvJkY9NYe1x8FmbW7qAhVrVE=QQ@mail.gmail.com>
+In-Reply-To: <CAB=NE6VYvd-Au58QRJprCquuvJkY9NYe1x8FmbW7qAhVrVE=QQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+To: cocci@systeme.lip6.fr
 
-Hi Dmitry,
+On Wed, Apr 29, 2015 at 02:08:47PM -0700, Luis R. Rodriguez wrote:
+> On Tue, Apr 21, 2015 at 1:20 PM, Luis R. Rodriguez
+> <mcgrof@do-not-panic.com> wrote:
+> > From: "Luis R. Rodriguez" <mcgrof@suse.com>
+> >
+> > This series adds pci_ioremap_wc_bar() and makes use of it
+> > on a few framebuffer device drivers.
+> >
+> > Luis R. Rodriguez (4):
+> >   pci: add pci_ioremap_wc_bar()
+> >   video: fbdev: i740fb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
+> >   video: fbdev: kyrofb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
+> >   video: fbdev: gxt4500: use pci_ioremap_wc_bar() for framebuffer
+> 
+> Bjorn,
+> 
+> any feedback on this series?
 
-On 05/17/2015 06:27 PM, Dmitry Eremin-Solenikov wrote:
-> Adapt locomo leds driver to new locomo core setup.
->
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> ---
->   drivers/leds/Kconfig       |   2 +-
->   drivers/leds/leds-locomo.c | 117 +++++++++++++++++++++++----------------------
->   2 files changed, 61 insertions(+), 58 deletions(-)
+Hey Bjorn, any feedback on this series ?
 
-Acked-by: Jacek Anaszewski <j.anaszewski@samsung.com>
-
--- 
-Best Regards,
-Jacek Anaszewski
+  Luis

@@ -1,25 +1,34 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Wed, 27 May 2015 03:03:36 +0000
-Subject: Re: [PATCHv6 05/10] ARM: mxs: fix in tree users of ssd1306
-Message-Id: <20150527030335.GA16165@dragon>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Tue, 19 May 2015 11:21:34 +0000
+Subject: Re: [PATCH v3 01/17] mfd: add new driver for Sharp LoCoMo
+Message-Id: <20150519112134.GD2067@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de>
- <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
- <1427826436-21783-6-git-send-email-niederp@physik.uni-kl.de>
- <554B44A7.1090007@ti.com>
- <20150507112759.GC3162@dragon>
- <20150508133138.GS11057@lukather>
- <55641BE7.4090605@ti.com>
-In-Reply-To: <55641BE7.4090605@ti.com>
+References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
+ <1431880077-26321-2-git-send-email-dbaryshkov@gmail.com>
+ <20150519103828.GU22418@x1>
+In-Reply-To: <20150519103828.GU22418@x1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Maxime Ripard <maxime.ripard@free-electrons.com>, Thomas =?iso-8859-1?Q?Niederpr=FCm?= <niederp@physik.uni-kl.de>, Sascha Hauer <kernel@pengutronix.de>, plagnioj@jcrosoft.com, robh+dt@kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org
 
-On Tue, May 26, 2015 at 10:08:23AM +0300, Tomi Valkeinen wrote:
-> So should I take this via fbdev tree with the rest of the patches? If
-> so, I want an ack from a relevant dts maintainer. get_maintainers.pl
-> gives Shawn as the first contact for imx28-cfa10036.dts.
+On Tue, May 19, 2015 at 11:38:28AM +0100, Lee Jones wrote:
+> On Sun, 17 May 2015, Dmitry Eremin-Solenikov wrote:
+> > +static void locomo_mask_irq(struct irq_data *d)
+> > +{
+> > +	struct locomo *ldev = irq_data_get_irq_chip_data(d);
+> > +	unsigned int mask = 0x0010 << d->hwirq;
+> 
+> This also needs defining.
+> 
+> Why not
+>   BIT(d->hwirq + 1)
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+I think your maths is off...
+
+0x0010 << d->hwirq != BIT(d->hwirq + 1)
+
+-- 
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.

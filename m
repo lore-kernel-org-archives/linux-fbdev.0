@@ -1,34 +1,52 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Tue, 19 May 2015 11:21:34 +0000
+From: Lee Jones <lee.jones@linaro.org>
+Date: Tue, 19 May 2015 12:33:14 +0000
 Subject: Re: [PATCH v3 01/17] mfd: add new driver for Sharp LoCoMo
-Message-Id: <20150519112134.GD2067@n2100.arm.linux.org.uk>
+Message-Id: <20150519123314.GA3627@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
  <1431880077-26321-2-git-send-email-dbaryshkov@gmail.com>
  <20150519103828.GU22418@x1>
-In-Reply-To: <20150519103828.GU22418@x1>
+ <20150519112134.GD2067@n2100.arm.linux.org.uk>
+In-Reply-To: <20150519112134.GD2067@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrea Adami <andrea.adami-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-On Tue, May 19, 2015 at 11:38:28AM +0100, Lee Jones wrote:
-> On Sun, 17 May 2015, Dmitry Eremin-Solenikov wrote:
-> > +static void locomo_mask_irq(struct irq_data *d)
-> > +{
-> > +	struct locomo *ldev = irq_data_get_irq_chip_data(d);
-> > +	unsigned int mask = 0x0010 << d->hwirq;
-> 
-> This also needs defining.
-> 
-> Why not
->   BIT(d->hwirq + 1)
+On Tue, 19 May 2015, Russell King - ARM Linux wrote:
 
-I think your maths is off...
+> On Tue, May 19, 2015 at 11:38:28AM +0100, Lee Jones wrote:
+> > On Sun, 17 May 2015, Dmitry Eremin-Solenikov wrote:
+> > > +static void locomo_mask_irq(struct irq_data *d)
+> > > +{
+> > > +	struct locomo *ldev =3D irq_data_get_irq_chip_data(d);
+> > > +	unsigned int mask =3D 0x0010 << d->hwirq;
+> >=20
+> > This also needs defining.
+> >=20
+> > Why not
+> >   BIT(d->hwirq + 1)
+>=20
+> I think your maths is off...
+>=20
+> 0x0010 << d->hwirq !=3D BIT(d->hwirq + 1)
 
-0x0010 << d->hwirq != BIT(d->hwirq + 1)
+Ah, that's hex.  I was blinded by the 1's and 0's.  Doh!
 
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+Thanks Russell.
+
+---
+
+Why not
+  BIT(d->hwirq + 4)
+
+... with an explanation as to why you're skipping the first 4 bits?
+
+/me hopes that maths is right now. :)
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

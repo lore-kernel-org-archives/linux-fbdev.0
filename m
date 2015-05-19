@@ -1,57 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 04 May 2015 10:52:21 +0000
-Subject: Re: [PATCHv2,RESEND] framebuffer: don't link fb_devio into kernel image unconditionally
-Message-Id: <55474F65.2050000@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="IPEX4O5H5RBt1Mogv25VACpXiRj2cK1LL"
+From: Kevin Hilman <khilman@kernel.org>
+Date: Tue, 19 May 2015 21:15:41 +0000
+Subject: Re: [PATCH v2 2/3] fbcon: use the cursor blink interval provided by vt
+Message-Id: <CAMAWPa-6ZbE5cDkEZq0XpYa2pHcnf3qweSSVHAXhfhUAUCbKcA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
+	<alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
+	<20150225094946.GA24627@amd>
+	<alpine.LNX.2.11.1502252319330.276@localhost>
+	<20150226220243.GC9935@amd>
+	<alpine.LNX.2.11.1502271905580.4212@localhost>
+	<alpine.LNX.2.11.1502271911380.4248@localhost>
+	<20150325111949.GA24230@kroah.com>
+	<alpine.DEB.2.11.1503261341260.2164@local>
+	<alpine.DEB.2.11.1503261354550.2411@local>
+In-Reply-To: <alpine.DEB.2.11.1503261354550.2411@local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Scot Doyle <lkml14-enLWO88E2pdl57MIdRCFDg@public.gmane.org>
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tyler Baker <tyler.baker-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Daniel Stone <daniel-rLtY4a/8tF1rovVCs/uTlw@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
 
---IPEX4O5H5RBt1Mogv25VACpXiRj2cK1LL
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+On Thu, Mar 26, 2015 at 6:56 AM, Scot Doyle <lkml14@scotdoyle.com> wrote:
+> vt now provides a cursor blink interval via vc_data. Use this
+> interval instead of the currently hardcoded 200 msecs. Store it in
+> fbcon_ops to avoid locking the console in cursor_timer_handler().
+>
+> Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-On 28/04/15 14:17, Harald Geyer wrote:
-> CONFIG_FB_DEFERRED_IO is defined as bool while CONFIG_FB is defined as
-> tristate. Currently fb_defio.o is linked into the kernel image even if
-> CONFIG_FB=3Dm.
->=20
-> I fix this by updating the Makefile to link fb_defio.o into fb.o and th=
-us
-> go into one place with the other core framebuffer code.
->=20
-> Signed-off-by: Harald Geyer <harald@ccbib.org>
-> ---
-> Resending as I didn't get any reply in six weeks.
->=20
+This patch hit next-20150519 in the form of commit 27a4c827c34a
+(fbcon: use the cursor blink interval provided by vt) and has caused
+boot failure on a handful of ARM platforms when booting a MMC root
+filesystem.  This error was spotted by the kernelci.org bot on
+exynos5800-peach-pi[1] and Thierry and Daniel (Cc'd) have seen it on
+some tegra platforms too.
 
-Thanks, queuing for 4.2 fbdev.
+Thierry spotted this commit as a potential cause, and both Daniel and
+I have reverted and boot tested on exynos5 and tegra respectively and
+the boot panics disappear.
 
- Tomi
+Kevin
 
-
-
---IPEX4O5H5RBt1Mogv25VACpXiRj2cK1LL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJVR09lAAoJEPo9qoy8lh71tIIP/0dHYJWDmMk2UDkT2EBW7M35
-vtD042I7em+aLl/weahZqHvf8ai4l5rRcfT+1ZYOicRrk8k/UNgksUCNKTiePMu1
-if8qsh1jvt/ZFE8851U4BNHJtvnCyH8idY+9obdoZWA//2cbgabJBlnayeqARL5Q
-Xu+huOkLV2w+9GLGNM3H+Az5Z1+qNcmy3/cC9VIjEfqla/5j8VuYDjQ6xrXR1T+3
-xTrPAeqm3c0Vf2JrydBIK8R1DMOX6b5pivFx4m18im06h2QP/skzJDtym3jfGvLl
-ocDCCXXMfe5+Wcl6tDnz9wq5q2z+INWD3uimgSEgxrfUzR5NtUk4V2q9RO0npSXL
-yzgfJ0Xrg/wRLwksTyFQTAsRT0FlBlDhQg+PyLykPi5QZ+GBo51IS0PJUrN9bQb0
-NrcwVoZYWaETfTzh5FWn0+/NlDutNAX5Og4CVL2Huc8RpRmqwAbKecaIOmQJiLAZ
-FeGDvi2p7hsX2FCUxSF02YwPYilSPBc7T0s78jFDU59tXKgDDP8ZPLYwKbcSQdEL
-dCTX0OUYNryxH/lX+Lk7GoxyjoFKO/drvO2s3IUVJb9G7GjkHGpRIMrENreneJQi
-g0e6pKadr0PgXUqHAVo76A63/G5Y1MO9znSQIOwbjwNjlDsZjb3dPC8QzuU7LdIL
-31N/o/APTu3aSygE8fv4
-=JAUV
------END PGP SIGNATURE-----
-
---IPEX4O5H5RBt1Mogv25VACpXiRj2cK1LL--
+[1] http://storage.kernelci.org/next/next-20150519/arm-exynos_defconfig/lab-khilman/boot-exynos5800-peach-pi_rootfs:mmc.html

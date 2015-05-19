@@ -1,173 +1,108 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 21 Apr 2015 20:16:29 +0000
-Subject: [PATCH v3 08/17] video: fbdev: savagefb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1429647398-16983-9-git-send-email-mcgrof@do-not-panic.com>
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Tue, 19 May 2015 17:58:02 +0000
+Subject: Re: [Cocci] [PATCH v3 00/17] framebuffer: simple conversions to arch_phys_wc_add()
+Message-Id: <20150519175802.GJ23057@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1429647398-16983-1-git-send-email-mcgrof@do-not-panic.com>
+ <CAB=NE6WhVUa-seXOWeY+ELY5v=Rt_6DBfr==GKjP7AH3CTWJAQ@mail.gmail.com>
+ <55474AFE.5040605@ti.com>
+ <CALCETrVdAG1NFA_dYHhOyCbwKR3msHZaaVs0MZMkW33_Sw=Kqg@mail.gmail.com>
+ <20150514142645.GU23057@wotan.suse.de>
+In-Reply-To: <20150514142645.GU23057@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: cocci@systeme.lip6.fr
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+On Thu, May 14, 2015 at 04:26:45PM +0200, Luis R. Rodriguez wrote:
+> On Tue, May 05, 2015 at 06:47:31AM -0700, Andy Lutomirski wrote:
+> > On Mon, May 4, 2015 at 3:33 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> =
+wrote:
+> > > On 29/04/15 22:18, Luis R. Rodriguez wrote:
+> > >> On Tue, Apr 21, 2015 at 1:16 PM, Luis R. Rodriguez
+> > >> <mcgrof@do-not-panic.com> wrote:
+> > >>> From: "Luis R. Rodriguez" <mcgrof@suse.com>
+> > >>>
+> > >>> This series addresses simple changes to framebuffer drivers to use
+> > >>> arch_phys_wc_add() and ioremap_wc() as well as fixing gbefb to add
+> > >>> missing mtrr_del() calls. These changes are pretty straight forward.
+> > >>>
+> > >>> Luis R. Rodriguez (17):
+> > >>>   video: fbdev: radeonfb: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: gbefb: add missing mtrr_del() calls
+> > >>>   video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
+> > >>>   video: fbdev: intelfb: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: matrox: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: neofb: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: nvidia: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: savagefb: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: sisfb: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: aty: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: i810: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: pm2fb: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: pm3fb: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: rivafb: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: tdfxfb: use arch_phys_wc_add() and ioremap_wc()
+> > >>>   video: fbdev: atmel_lcdfb: use ioremap_wc() for framebuffer
+> > >>>   video: fbdev: geode gxfb: use ioremap_wc() for framebuffer
+> > >>
+> > >> Hey folks, these are all pretty straight forward, can anyone take th=
+em?
+> > >
+> > > I can take these to fbdev tree. Unfortunately I'm not familiar with x=
+86
+> > > nor mtrr, so I can't really say much about the patches themselves.
+> > >
+> >=20
+> > I'm on vacation and there's no way I'll be able to usefully review
+> > these in the next two weeks.  I can describe what's going on in case
+> > it helps:
+> >=20
+> > On x86 there are two ways to get a write-combining MMIO mapping.  The
+> > sane way is ioremap_wc, and the ridiculous way is mtrr_add.
+> > ioremap_wc does exactly what it appears to do, whereas mtrr_add acts
+> > on physical addresses, requires power-of-two alignment, and is
+> > unreliable.
+> >=20
+> > On all recent hardware, ioremap_wc works, and mtrr_add is problematic
+> > on all hardware even if it often works.  The silly thing is that
+> > mtrr_add pokes at the registers it uses even on hardware with working
+> > ioremap_wc.  This causes problems (those resources are a very limited
+> > resource).
+> >=20
+> > The solution I came up with a couple years ago is a new API
+> > arch_phys_wc_add.  It is a hint that a physical address range should
+> > be write-combining.  On hardware with working ioremap_wc, it's a
+> > no-op.  On x86 hardware without working ioremap_wc, it just calls
+> > mtrr_add.
+> >=20
+> > The upshot is that changing mtrr_add with a WC type to
+> > arch_phys_wc_add is OK as long as the driver also uses ioremap_wc or
+> > similar _wc APIs.  Once everything has been converted, we can unexport
+> > mtrr_add, which will have all kinds of benefits.
+>=20
+> Tomi,
+>=20
+> Any chance you can consider this series again? I realize you say you are
+> not familiar with MTRR but given its prevalence use on framebuffer device
+> drivers and since you are a framebuffer subsystem maintainer I think its
+> perhaps fair to ask one of you become familiar with this stuff, or ask
+> questions if there are any. If its of any help this patch which adds
+> ioremap_uc() already got merged and the logic to phase MTRR is described
+> there too:
+>=20
+> https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/commit/?=
+id=E4b6be33c28923d8cde53023e0888b1c5d1a9027
+>=20
+> That patch won't even be needed on this series, this series happens to be
+> straight forward: if you just ioremap_nocache() once and use mtrr_add()
+> then conver over to ioremap_wc() and use arch_phys_wc_add(). If it already
+> used ioremap_wc() just convert over from mtrr_add() to arch_phys_wc_add()
+>=20
+> Not sure if you will get an Acked-by by x86 folks on this series as they
+> are busy, but I'm adding bp and hpa just in case.
 
-This driver uses the same area for MTRR as for the ioremap().
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
+Hey folks please let me know how I can be of any help with this. Not sure
+what else I can do here to help further.
 
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
----
- drivers/video/fbdev/savage/savagefb.h        |  4 +---
- drivers/video/fbdev/savage/savagefb_driver.c | 17 +++--------------
- 2 files changed, 4 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/video/fbdev/savage/savagefb.h b/drivers/video/fbdev/savage/savagefb.h
-index 8ff4ab1..aba04af 100644
---- a/drivers/video/fbdev/savage/savagefb.h
-+++ b/drivers/video/fbdev/savage/savagefb.h
-@@ -213,9 +213,7 @@ struct savagefb_par {
- 		void   __iomem *vbase;
- 		u32    pbase;
- 		u32    len;
--#ifdef CONFIG_MTRR
--		int    mtrr;
--#endif
-+		int    wc_cookie;
- 	} video;
- 
- 	struct {
-diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
-index 4dbf45f..6c77ab0 100644
---- a/drivers/video/fbdev/savage/savagefb_driver.c
-+++ b/drivers/video/fbdev/savage/savagefb_driver.c
-@@ -57,10 +57,6 @@
- #include <asm/irq.h>
- #include <asm/pgtable.h>
- 
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- #include "savagefb.h"
- 
- 
-@@ -1775,7 +1771,7 @@ static int savage_map_video(struct fb_info *info, int video_len)
- 
- 	par->video.pbase = pci_resource_start(par->pcidev, resource);
- 	par->video.len   = video_len;
--	par->video.vbase = ioremap(par->video.pbase, par->video.len);
-+	par->video.vbase = ioremap_wc(par->video.pbase, par->video.len);
- 
- 	if (!par->video.vbase) {
- 		printk("savagefb: unable to map screen memory\n");
-@@ -1787,11 +1783,7 @@ static int savage_map_video(struct fb_info *info, int video_len)
- 	info->fix.smem_start = par->video.pbase;
- 	info->fix.smem_len   = par->video.len - par->cob_size;
- 	info->screen_base    = par->video.vbase;
--
--#ifdef CONFIG_MTRR
--	par->video.mtrr = mtrr_add(par->video.pbase, video_len,
--				   MTRR_TYPE_WRCOMB, 1);
--#endif
-+	par->video.wc_cookie = arch_phys_wc_add(par->video.pbase, video_len);
- 
- 	/* Clear framebuffer, it's all white in memory after boot */
- 	memset_io(par->video.vbase, 0, par->video.len);
-@@ -1806,10 +1798,7 @@ static void savage_unmap_video(struct fb_info *info)
- 	DBG("savage_unmap_video");
- 
- 	if (par->video.vbase) {
--#ifdef CONFIG_MTRR
--		mtrr_del(par->video.mtrr, par->video.pbase, par->video.len);
--#endif
--
-+		arch_phys_wc_del(par->video.wc_cookie);
- 		iounmap(par->video.vbase);
- 		par->video.vbase = NULL;
- 		info->screen_base = NULL;
--- 
-2.3.2.209.gd67f9d5.dirty
-
+  Luis

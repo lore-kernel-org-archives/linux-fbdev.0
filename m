@@ -1,15 +1,15 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 29 May 2015 22:07:16 +0000
-Subject: [PATCH v5 3/17] video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
-Message-Id: <1432937236-9327-2-git-send-email-mcgrof@do-not-panic.com>
+Date: Wed, 20 May 2015 23:08:11 +0000
+Subject: [PATCH v6 2/4] video: fbdev: arkfb: use arch_phys_wc_add() and pci_iomap_wc()
+Message-Id: <1432163293-20965-3-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432937236-9327-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1432937236-9327-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1432163293-20965-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1432163293-20965-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Masanari Iida <standby24x7@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Andy Lutomirski <luto@amacapital.net>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: bhelgaas@google.com
+Cc: tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
@@ -85,13 +85,14 @@ expression base, size;
 +info->screen_base = ioremap_wc(base, size);
 
 Generated-by: Coccinelle SmPL
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Masanari Iida <standby24x7@gmail.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Dave Airlie <airlied@redhat.com>
 Cc: Antonino Daplas <adaplas@gmail.com>
@@ -99,89 +100,96 @@ Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/gbefb.c | 30 +++++++++---------------------
- 1 file changed, 9 insertions(+), 21 deletions(-)
+ drivers/video/fbdev/arkfb.c | 36 +++++-------------------------------
+ 1 file changed, 5 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
-index 4e54faa06..b63d55f 100644
---- a/drivers/video/fbdev/gbefb.c
-+++ b/drivers/video/fbdev/gbefb.c
-@@ -22,9 +22,6 @@
- #include <linux/module.h>
- #include <linux/io.h>
+diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+index b305a1e..6a317de 100644
+--- a/drivers/video/fbdev/arkfb.c
++++ b/drivers/video/fbdev/arkfb.c
+@@ -26,13 +26,9 @@
+ #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
+ #include <video/vga.h>
  
--#ifdef CONFIG_X86
+-#ifdef CONFIG_MTRR
 -#include <asm/mtrr.h>
 -#endif
- #ifdef CONFIG_MIPS
- #include <asm/addrspace.h>
- #endif
-@@ -1176,8 +1173,8 @@ static int gbefb_probe(struct platform_device *p_dev)
+-
+ struct arkfb_info {
+ 	int mclk_freq;
+-	int mtrr_reg;
++	int wc_cookie;
  
- 	if (gbe_mem_phys) {
- 		/* memory was allocated at boot time */
--		gbe_mem = devm_ioremap_nocache(&p_dev->dev, gbe_mem_phys,
--					       gbe_mem_size);
-+		gbe_mem = devm_ioremap_wc(&p_dev->dev, gbe_mem_phys,
-+					  gbe_mem_size);
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
- 			ret = -ENOMEM;
-@@ -1188,8 +1185,8 @@ static int gbefb_probe(struct platform_device *p_dev)
- 	} else {
- 		/* try to allocate memory with the classical allocator
- 		 * this has high chance to fail on low memory machines */
--		gbe_mem = dma_alloc_coherent(NULL, gbe_mem_size, &gbe_dma_addr,
--					     GFP_KERNEL);
-+		gbe_mem = dma_alloc_writecombine(NULL, gbe_mem_size,
-+						 &gbe_dma_addr, GFP_KERNEL);
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't allocate framebuffer memory\n");
- 			ret = -ENOMEM;
-@@ -1200,10 +1197,7 @@ static int gbefb_probe(struct platform_device *p_dev)
- 	}
+ 	struct dac_info *dac;
+ 	struct vgastate state;
+@@ -102,10 +98,6 @@ static const struct svga_timing_regs ark_timing_regs     = {
  
- 	par = info->par;
--#ifdef CONFIG_X86
--	par->wc_cookie = mtrr_add(gbe_mem_phys, gbe_mem_size,
--				   MTRR_TYPE_WRCOMB, 1);
+ static char *mode_option = "640x480-8@60";
+ 
+-#ifdef CONFIG_MTRR
+-static int mtrr = 1;
 -#endif
-+	par->wc_cookie = arch_phys_wc_add(gbe_mem_phys, gbe_mem_size);
+-
+ MODULE_AUTHOR("(c) 2007 Ondrej Zajicek <santiago@crfreenet.org>");
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("fbdev driver for ARK 2000PV");
+@@ -115,11 +107,6 @@ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
+ module_param_named(mode, mode_option, charp, 0444);
+ MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
  
- 	/* map framebuffer memory into tiles table */
- 	for (i = 0; i < (gbe_mem_size >> TILE_SHIFT); i++)
-@@ -1242,12 +1236,9 @@ static int gbefb_probe(struct platform_device *p_dev)
+-#ifdef CONFIG_MTRR
+-module_param(mtrr, int, 0444);
+-MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
+-#endif
+-
+ static int threshold = 4;
+ 
+ module_param(threshold, int, 0644);
+@@ -1002,7 +989,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	info->fix.smem_len = pci_resource_len(dev, 0);
+ 
+ 	/* Map physical IO memory address into kernel space */
+-	info->screen_base = pci_iomap(dev, 0, 0);
++	info->screen_base = pci_iomap_wc(dev, 0, 0);
+ 	if (! info->screen_base) {
+ 		rc = -ENOMEM;
+ 		dev_err(info->device, "iomap for framebuffer failed\n");
+@@ -1057,14 +1044,8 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 
+ 	/* Record a reference to the driver data */
+ 	pci_set_drvdata(dev, info);
+-
+-#ifdef CONFIG_MTRR
+-	if (mtrr) {
+-		par->mtrr_reg = -1;
+-		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
+-	}
+-#endif
+-
++	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++					  info->fix.smem_len);
  	return 0;
  
- out_gbe_unmap:
--#ifdef CONFIG_MTRR
--	if (par->wc_cookie >= 0)
--		mtrr_del(par->wc_cookie, 0, 0);
--#endif
-+	arch_phys_wc_del(par->wc_cookie);
- 	if (gbe_dma_addr)
--		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
-+		dma_free_writecombine(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
- out_tiles_free:
- 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
- 			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
-@@ -1266,12 +1257,9 @@ static int gbefb_remove(struct platform_device* p_dev)
+ 	/* Error handling */
+@@ -1092,14 +1073,7 @@ static void ark_pci_remove(struct pci_dev *dev)
  
- 	unregister_framebuffer(info);
- 	gbe_turn_off();
+ 	if (info) {
+ 		struct arkfb_info *par = info->par;
+-
 -#ifdef CONFIG_MTRR
--	if (par->wc_cookie >= 0)
--		mtrr_del(par->wc_cookie, 0, 0);
+-		if (par->mtrr_reg >= 0) {
+-			mtrr_del(par->mtrr_reg, 0, 0);
+-			par->mtrr_reg = -1;
+-		}
 -#endif
-+	arch_phys_wc_del(par->wc_cookie);
- 	if (gbe_dma_addr)
--		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
-+		dma_free_writecombine(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
- 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
- 			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
- 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
+-
++		arch_phys_wc_del(par->wc_cookie);
+ 		dac_release(par->dac);
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
 -- 
 2.3.2.209.gd67f9d5.dirty
 

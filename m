@@ -1,31 +1,21 @@
-From: "Jingoo Han" <jingoohan1@gmail.com>
-Date: Wed, 20 May 2015 12:26:45 +0000
-Subject: Re: [PATCH v3 06/17] video: lcd: add LoCoMo LCD driver
-Message-Id: <000001d092f8$42fc9aa0$c8f5cfe0$@com>
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Wed, 20 May 2015 19:53:33 +0000
+Subject: Re: [PATCH v4 6/6] video: fbdev: atyfb: use arch_phys_wc_add() and ioremap_wc()
+Message-Id: <20150520195333.GZ23057@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1431880077-26321-7-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1431880077-26321-7-git-send-email-dbaryshkov@gmail.com>
+References: <1430343851-967-1-git-send-email-mcgrof@do-not-panic.com>
+ <1430343851-967-7-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1430343851-967-7-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Dmitry Eremin-Solenikov' <dbaryshkov@gmail.com>, 'Lee Jones' <lee.jones@linaro.org>
-Cc: 'Russell King' <linux@arm.linux.org.uk>, 'Daniel Mack' <zonque@gmail.com>, 'Robert Jarzmik' <robert.jarzmik@free.fr>, 'Linus Walleij' <linus.walleij@linaro.org>, 'Alexandre Courbot' <acourbot@nvidia.com>, 'Wolfram Sang' <wsa@the-dreams.de>, 'Dmitry Torokhov' <dmitry.torokhov@gmail.com>, 'Bryan Wu' <cooloney@gmail.com>, 'Richard Purdie' <rpurdie@rpsys.net>, 'Samuel Ortiz' <sameo@linux.intel.com>, 'Mark Brown' <broonie@linaro.org>, 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Liam Girdwood' <liam.r.girdwood@linux.intel.com>, 'Andrea Adami' <andrea.adami@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-gpiol@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, bp@suse.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, daniel.vetter@intel.com, airlied@linux.ie, dledford@redhat.com, awalls@md.metrocast.net, syrjala@sci.fi, luto@amacapital.net, mst@redhat.com, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Rob Clark <robdclark@gmail.com>, Mathias Krause <minipli@googlemail.com>, Andrzej Hajda <a.hajda@samsung.com>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, linux-fbdev@vger.kernel.org
 
-> LoCoMo has some special handling for TFT screens attached to Collie and
-> Poodle. Implement that as a separate driver.
->
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Tomi,
 
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
+the new required ioremap_uc() which was added in the initial patch set here is
+now merged on linux-next but I just noticed a small issue with this atyfb
+specific patch, I'll fix that and respin and send to you as v5.
 
-Best regards,
-Jingoo Han
-
-> ---
->  drivers/video/backlight/Kconfig      |  10 ++
->  drivers/video/backlight/Makefile     |   1 +
->  drivers/video/backlight/locomo_lcd.c | 285 +++++++++++++++++++++++++++++++++++
->  3 files changed, 296 insertions(+)
->  create mode 100644 drivers/video/backlight/locomo_lcd.c
-
-
+ Luis

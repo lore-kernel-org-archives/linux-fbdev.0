@@ -1,48 +1,25 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 19 May 2015 23:41:12 +0000
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Wed, 20 May 2015 00:36:24 +0000
 Subject: Re: [PATCH v2 2/3] fbcon: use the cursor blink interval provided by vt
-Message-Id: <20150519234112.GA25218@kroah.com>
+Message-Id: <alpine.DEB.2.11.1505200022510.1617@local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150226220243.GC9935@amd>
- <alpine.LNX.2.11.1502271905580.4212@localhost>
- <alpine.LNX.2.11.1502271911380.4248@localhost>
- <20150325111949.GA24230@kroah.com>
- <alpine.DEB.2.11.1503261341260.2164@local>
- <alpine.DEB.2.11.1503261354550.2411@local>
- <CAMAWPa-6ZbE5cDkEZq0XpYa2pHcnf3qweSSVHAXhfhUAUCbKcA@mail.gmail.com>
- <20150519214011.GA27047@ulmo.nvidia.com>
- <CAMAWPa88E2pfViKLXjxWHuT4ZkVhzYt_BsXGePzc-70ZrEmJFA@mail.gmail.com>
+References: <alpine.LNX.2.11.1502252319330.276@localhost> <20150226220243.GC9935@amd> <alpine.LNX.2.11.1502271905580.4212@localhost> <alpine.LNX.2.11.1502271911380.4248@localhost> <20150325111949.GA24230@kroah.com> <alpine.DEB.2.11.1503261341260.2164@local>
+ <alpine.DEB.2.11.1503261354550.2411@local> <CAMAWPa-6ZbE5cDkEZq0XpYa2pHcnf3qweSSVHAXhfhUAUCbKcA@mail.gmail.com> <20150519214011.GA27047@ulmo.nvidia.com> <CAMAWPa88E2pfViKLXjxWHuT4ZkVhzYt_BsXGePzc-70ZrEmJFA@mail.gmail.com>
  <20150519215228.GA27163@ulmo.nvidia.com>
 In-Reply-To: <20150519215228.GA27163@ulmo.nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Scot Doyle <lkml14@scotdoyle.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Michael Kerrisk <mtk.manpages@gmail.com>, Jiri Slaby <jslaby@suse.cz>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, lkml <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org, linux-man@vger.kernel.org, linux-api@vger.kernel.org, Tyler Baker <tyler.baker@linaro.org>, Olof Johansson <olof@lixom.net>, Daniel Stone <daniel@fooishbar.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: Kevin Hilman <khilman@kernel.org>, Scot Doyle <lkml14@scotdoyle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Michael Kerrisk <mtk.manpages@gmail.com>, Jiri Slaby <jslaby@suse.cz>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, lkml <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org, linux-man@vger.kernel.org, linux-api@vger.kernel.org, Tyler Baker <tyler.baker@linaro.org>, Olof Johansson <olof@lixom.net>, Daniel Stone <daniel@fooishbar.org>, Arnd Bergmann <arnd@arndb.de>
 
-On Tue, May 19, 2015 at 11:52:29PM +0200, Thierry Reding wrote:
+On Tue, 19 May 2015, Thierry Reding wrote:
 > On Tue, May 19, 2015 at 02:45:19PM -0700, Kevin Hilman wrote:
 > > On Tue, May 19, 2015 at 2:40 PM, Thierry Reding
 > > <thierry.reding@gmail.com> wrote:
-> > > On Tue, May 19, 2015 at 02:15:41PM -0700, Kevin Hilman wrote:
-> > >> On Thu, Mar 26, 2015 at 6:56 AM, Scot Doyle <lkml14@scotdoyle.com> wrote:
-> > >> > vt now provides a cursor blink interval via vc_data. Use this
-> > >> > interval instead of the currently hardcoded 200 msecs. Store it in
-> > >> > fbcon_ops to avoid locking the console in cursor_timer_handler().
-> > >> >
-> > >> > Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
-> > >> > Acked-by: Pavel Machek <pavel@ucw.cz>
-> > >>
-> > >> This patch hit next-20150519 in the form of commit 27a4c827c34a
-> > >> (fbcon: use the cursor blink interval provided by vt) and has caused
-> > >> boot failure on a handful of ARM platforms when booting a MMC root
-> > >> filesystem.  This error was spotted by the kernelci.org bot on
-> > >> exynos5800-peach-pi[1] and Thierry and Daniel (Cc'd) have seen it on
-> > >> some tegra platforms too.
-> > >>
-> > >> Thierry spotted this commit as a potential cause, and both Daniel and
-> > >> I have reverted and boot tested on exynos5 and tegra respectively and
-> > >> the boot panics disappear.
+
+...
+
 > > >
 > > > FWIW, if I apply the below on top of next-20150519 things seem to be
 > > > back to normal as well:
@@ -75,10 +52,15 @@ On Tue, May 19, 2015 at 11:52:29PM +0200, Thierry Reding wrote:
 > Greg, feel free to squash this in if everybody agrees this is good to
 > go. If you prefer a patch on top let me know and I'll come up with a
 > proper commit message.
+> 
+> Thierry
 
-Please send a real patch and I'll apply it on top, as I can't rebase my
-public tree.
+Hi all, sorry for the trouble.
 
-thanks,
+The timer delete was to prevent blink stutter when updating the interval. 
+Since the stutter isn't so noticable when changing from the default 200ms, 
+and since most people seem to prefer leaving the fbcon code alone if 
+possible, I agree with Thierry's approach.
 
-greg k-h
+Tested-by: Scot Doyle <lkml14@scotdoyle.com>
+

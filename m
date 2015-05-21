@@ -1,30 +1,75 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 06 May 2015 07:38:32 +0000
-Subject: Re: [PATCH v3 2/2] staging: sm750fb: cleanup indentation
-Message-Id: <20150506072632.GA28279@sudip-PC>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Thu, 21 May 2015 07:58:03 +0000
+Subject: [PATCH] fbcon: Avoid deleting a timer in IRQ context
+Message-Id: <1432195083-25005-1-git-send-email-thierry.reding@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430881664-13727-1-git-send-email-charles.rose.linux@gmail.com>
- <1430881664-13727-2-git-send-email-charles.rose.linux@gmail.com>
- <20150506070621.GU14154@mwanda>
-In-Reply-To: <20150506070621.GU14154@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Charles Rose <charles.rose.linux@gmail.com>, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Scot Doyle <lkml14@scotdoyle.com>, Daniel Stone <daniel@fooishbar.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2015 at 10:06:21AM +0300, Dan Carpenter wrote:
-> Looks good.
+From: Thierry Reding <treding@nvidia.com>
 
-but its applying to linux-next and not applying to staging-testing.
-There are a few patches which Greg applied to staging-testing before the
-merge-window but they were not applied to staging-next. I guess he has
-been busy.
+Commit 27a4c827c34a ("fbcon: use the cursor blink interval provided by
+vt") unconditionally removes the cursor blink timer. Unfortunately that
+wreaks havoc under some circumstances. An easily reproducible way is to
+use both the framebuffer console and a debug serial port as the console
+output for kernel messages (e.g. "console=ttyS0 console=tty1" on the
+kernel command-line. Upon boot this triggers a warning from within the
+del_timer_sync() function because it is called from IRQ context:
 
-regards
-sudip
+	[    5.070096] ------------[ cut here ]------------
+	[    5.070110] WARNING: CPU: 0 PID: 0 at ../kernel/time/timer.c:1098 del_timer_sync+0x4c/0x54()
+	[    5.070115] Modules linked in:
+	[    5.070120] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.1.0-rc4-next-20150519 #1
+	[    5.070123] Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
+	[    5.070142] [] (unwind_backtrace) from [] (show_stack+0x10/0x14)
+	[    5.070156] [] (show_stack) from [] (dump_stack+0x70/0xbc)
+	[    5.070164] [] (dump_stack) from [] (warn_slowpath_common+0x74/0xb0)
+	[    5.070169] [] (warn_slowpath_common) from [] (warn_slowpath_null+0x1c/0x24)
+	[    5.070174] [] (warn_slowpath_null) from [] (del_timer_sync+0x4c/0x54)
+	[    5.070183] [] (del_timer_sync) from [] (fbcon_del_cursor_timer+0x2c/0x40)
+	[    5.070190] [] (fbcon_del_cursor_timer) from [] (fbcon_cursor+0x9c/0x180)
+	[    5.070198] [] (fbcon_cursor) from [] (hide_cursor+0x30/0x98)
+	[    5.070204] [] (hide_cursor) from [] (vt_console_print+0x2a8/0x340)
+	[    5.070212] [] (vt_console_print) from [] (call_console_drivers.constprop.23+0xc8/0xec)
+	[    5.070218] [] (call_console_drivers.constprop.23) from [] (console_unlock+0x498/0x4f0)
+	[    5.070223] [] (console_unlock) from [] (vprintk_emit+0x1f0/0x508)
+	[    5.070228] [] (vprintk_emit) from [] (vprintk_default+0x24/0x2c)
+	[    5.070234] [] (vprintk_default) from [] (printk+0x70/0x88)
 
-> 
-> regards,
-> dan carpenter
-> 
+After which the system starts spewing all kinds of weird and seemingly
+unrelated error messages.
+
+This commit fixes this by restoring the condition under which the call
+to fbcon_del_cursor_timer() happens.
+
+Reported-by: Daniel Stone <daniel@fooishbar.org>
+Reported-by: Kevin Hilman <khilman@kernel.org>
+Tested-by: Kevin Hilman <khilman@linaro.org>
+Tested-by: Scot Doyle <lkml14@scotdoyle.com>
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ drivers/video/console/fbcon.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 05b1d1a71ef9..658c34bb9076 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1310,8 +1310,9 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
+ 		return;
+ 
+ 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+-	fbcon_del_cursor_timer(info);
+-	if (!(vc->vc_cursor_type & 0x10))
++	if (vc->vc_cursor_type & 0x10)
++		fbcon_del_cursor_timer(info);
++	else
+ 		fbcon_add_cursor_timer(info);
+ 
+ 	ops->cursor_flash = (mode = CM_ERASE) ? 0 : 1;
+-- 
+2.4.1
+

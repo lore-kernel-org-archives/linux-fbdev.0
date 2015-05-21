@@ -1,153 +1,103 @@
 From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 21 May 2015 22:26:55 +0000
+Date: Thu, 21 May 2015 22:33:21 +0000
 Subject: Re: [PATCH v6 1/4] pci: add pci_iomap_wc() variants
-Message-Id: <20150521222655.GF32152@google.com>
+Message-Id: <20150521223321.GG32152@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1432163293-20965-1-git-send-email-mcgrof@do-not-panic.com>
  <1432163293-20965-2-git-send-email-mcgrof@do-not-panic.com>
 In-Reply-To: <1432163293-20965-2-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
 Cc: tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, venkatesh.pallipadi@intel.com, Stefan Bader <stefan.bader@canonical.com>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>
 
 On Wed, May 20, 2015 at 04:08:10PM -0700, Luis R. Rodriguez wrote:
-> ...
-> --- a/lib/pci_iomap.c
-> +++ b/lib/pci_iomap.c
-> @@ -52,6 +52,46 @@ void __iomem *pci_iomap_range(struct pci_dev *dev,
->  EXPORT_SYMBOL(pci_iomap_range);
-> =20
->  /**
-> + * pci_iomap_wc_range - create a virtual WC mapping cookie for a PCI BAR
-> + * @dev: PCI device that owns the BAR
-> + * @bar: BAR number
-> + * @offset: map memory at the given offset in BAR
-> + * @maxlen: max length of the memory to map
-> + *
-> + * Using this function you will get a __iomem address to your device BAR.
-> + * You can access it using ioread*() and iowrite*(). These functions hide
-> + * the details if this is a MMIO or PIO address space and will just do w=
-hat
-> + * you expect from them in the correct way. When possible write combining
-> + * is used.
-> + *
-> + * @maxlen specifies the maximum length to map. If you want to get acces=
-s to
-> + * the complete BAR from offset to the end, pass %0 here.
-> + * */
-> +void __iomem *pci_iomap_wc_range(struct pci_dev *dev,
-> +				 int bar,
-> +				 unsigned long offset,
-> +				 unsigned long maxlen)
-> +{
-> +	resource_size_t start =3D pci_resource_start(dev, bar);
-> +	resource_size_t len =3D pci_resource_len(dev, bar);
-> +	unsigned long flags =3D pci_resource_flags(dev, bar);
-> +
-> +	if (len <=3D offset || !start)
-> +		return NULL;
-> +	len -=3D offset;
-> +	start +=3D offset;
-> +	if (maxlen && len > maxlen)
-> +		len =3D maxlen;
-> +	if (flags & IORESOURCE_IO)
-> +		return NULL;
-> +	if (flags & IORESOURCE_MEM)
-> +		return ioremap_wc(start, len);
-> +	/* What? */
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL_GPL(pci_iomap_wc_range);
-> +
-> +/**
->   * pci_iomap - create a virtual mapping cookie for a PCI BAR
->   * @dev: PCI device that owns the BAR
->   * @bar: BAR number
-> @@ -70,4 +110,25 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar,=
- unsigned long maxlen)
->  	return pci_iomap_range(dev, bar, 0, maxlen);
->  }
->  EXPORT_SYMBOL(pci_iomap);
-> +
-> +/**
-> + * pci_iomap_wc - create a virtual WC mapping cookie for a PCI BAR
-> + * @dev: PCI device that owns the BAR
-> + * @bar: BAR number
-> + * @maxlen: length of the memory to map
-> + *
-> + * Using this function you will get a __iomem address to your device BAR.
-> + * You can access it using ioread*() and iowrite*(). These functions hide
-> + * the details if this is a MMIO or PIO address space and will just do w=
-hat
-> + * you expect from them in the correct way. When possible write combining
-> + * is used.
-> + *
-> + * @maxlen specifies the maximum length to map. If you want to get acces=
-s to
-> + * the complete BAR without checking for its length first, pass %0 here.
-> + * */
-> +void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long m=
-axlen)
-> +{
-> +	return pci_iomap_wc_range(dev, bar, 0, maxlen);
-> +}
-> +EXPORT_SYMBOL_GPL(pci_iomap_wc);
+> From: "Luis R. Rodriguez" <mcgrof@suse.com>
+> 
+> This allows drivers to take advantage of write-combining
+> when possible. The PCI specification does not allow for us
+> to automatically identify a memory region which needs
+> write-combining so drivers have to identify these areas
+> on their own. There is IORESOURCE_PREFETCH but as clarified
+> by Michael and confirmed later by Bjorn, PCI prefetch bit
+> merely means bridges can combine writes and prefetch reads.
+> Prefetch does not affect ordering rules and does not allow
+> writes to be collapsed [0]. WC is stronger, it allows collapsing
+> and changes ordering rules. WC can also hurt latency as small
+> writes are buffered. Because of all this drivers needs to
+> know what they are doing, we can't set a write-combining
+> preference flag in the pci core automatically for drivers.
+> 
+> Lastly although there is also arch_phys_wc_add() this makes
+> use of architecture specific write-combining *hacks* and
+> the only one currently defined and used is MTRR for x86.
+> MTRRs are legacy, limited in number, have restrictive size
+> constraints, and are known to interact pooly with the BIOS.
+> MTRRs should only really be considered on old video framebuffer
+> drivers. If we made ioremap_wc() and similar calls start
+> automatically adding MTRRs, then performance will vary wildly
+> with the order of driver loading because we'll run out of MTRRs
+> part-way through bootup.
+> 
+> There are a few motivations for phasing out of MTRR and
+> helping driver change over to use write-combining with PAT:
+> 
+> a) Take advantage of PAT when available
+> 
+> b) Help bury MTRR code away, MTRR is architecture specific and on
+>    x86 its replaced by PAT
+> 
+> c) Help with the goal of eventually using _PAGE_CACHE_UC over
+>    _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+>    de33c442e titled "x86 PAT: fix performance drop for glx,
+>    use UC minus for ioremap(), ioremap_nocache() and
+>    pci_mmap_page_range()")
+> 
+> [0] https://lkml.org/lkml/2015/4/21/714
 
-Huh.  So you let me talk about marking the unused pcim_iomap_wc()
-EXPORT_SYMBOL_GPL(), but didn't remind me that you also proposed to mark
-the symbol you really care about, the one you already have a use for, as
-EXPORT_SYMBOL_GPL().  Sigh.
+I tentatively put this (and the rest of the series) on a pci/resource
+branch.  I'm hoping you'll propose some clarification about
+EXPORT_SYMBOL_GPL().
 
-In my opinion, if we're going to use EXPORT_SYMBOL_GPL() at all, we should
-use it consistently and based on technical considerations.  I base this on
-statements like the following:
+In the meantime, I tried to make the changelog a bit more concise, as
+below.  Let me know if I omitted something essential.  We still have URLs
+for the discussion for the fine points.
 
-  - "[EXPORT_SYMBOL_GPL()] implies that the function is considered an
-    internal implementation issue, and not really an interface." [Rusty
-    Russell, 1]
+commit 75387ae87b7aebc2a5b447f4d1b8b17a23c15b08
+Author: Luis R. Rodriguez <mcgrof@suse.com>
+Date:   Wed May 20 16:08:10 2015 -0700
 
-  - "... using the xxx_GPL() version to show that it's an internal
-    interface ..." [Linus Torvalds, 2]
-
-  - "Anything exported via EXPORT_SYMBOL_GPL() is considered by the author
-    to be so fundamental to the kernel that using it would be impossible
-    without creating a derivative work." [Matthew Garrett, 3]
-
-  - "Linus's initial point for [_GPL symbols] has been so diluted by random
-    lobby groups asking for every symbol to be _GPL that they are becoming
-    effectively pointless now." [Dave Airlie, 4]
-
-Existing interfaces like these are exported with EXPORT_SYMBOL():
-
-  ioremap()
-  ioremap_wc()
-  ioremap_prot()
-  pci_iomap()
-  pci_map_rom()
-
-I would argue that pci_iomap_wc() is similar in spirit and is no more an
-internal implementation issue than they are, and should be exported
-similarly.
-
-So my *advice* is to use EXPORT_SYMBOL() in this case, because that's a
-choice you can defend on technical grounds.  I think it's hard to argue
-that pci_iomap_wc() is so fundamental or unique to Linux that a caller
-would automatically be a derivative work.
-
-Will I still merge it as EXPORT_SYMBOL_GPL()?  Maybe.  I don't feel *good*
-about it because the only explanation I can give is "the author wanted it
-that way," and that's unsatisfying.  But I did already ack it (before I
-noticed the _GPL() issue), and I won't try to retract that and prevent
-somebody else from merging it.  And maybe your proposal to clarify the
-kernel-hacking.tmpl language will convince me.
-
-Bjorn
-
-[1] http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?=
-id=B6c17ea4eff3
-[2] http://lkml.kernel.org/r/Pine.LNX.4.64.0510050742550.31407@g5.osdl.org
-[3] http://mjg59.dreamwidth.org/31357.html
-[4] http://lkml.kernel.org/r/CAPM=3D9tzsT+nah2P-qZ8iKW=3DaTZJzYgm18mMWyy2-R=
-VkoOSwyjg@mail.gmail.com
+    PCI: Add pci_iomap_wc() variants
+    
+    PCI BARs tell us whether prefetching is safe, but they don't say anything
+    about write combining (WC).  WC changes ordering rules and allows writes to
+    be collapsed, so it's not safe in general to use it on a prefetchable
+    region.
+    
+    Add pci_iomap_wc() and pci_iomap_wc_range() so drivers can take advantage
+    of write combining when they know it's safe.
+    
+    On architectures that don't fully support WC, e.g., x86 without PAT,
+    drivers for legacy framebuffers may get some of the benefit by using
+    arch_phys_wc_add() in addition to pci_iomap_wc().  But arch_phys_wc_add()
+    is unreliable and should be avoided in general.  On x86, it uses MTRRs,
+    which are limited in number and size, so the results will vary based on
+    driver loading order.
+    
+    The goals of adding pci_iomap_wc() are to:
+    
+      - Give drivers an architecture-independent way to use WC so they can stop
+        using interfaces like mtrr_add() (on x86, pci_iomap_wc() uses PAT when
+        available)
+    
+      - Move toward using _PAGE_CACHE_MODE_UC, not _PAGE_CACHE_MODE_UC_MINUS,
+        on x86 on ioremap_nocache() (see de33c442ed2a ("x86 PAT: fix
+        performance drop for glx, use UC minus for ioremap(), ioremap_nocache()
+        and pci_mmap_page_range()")
+    
+    [bhelgaas: changelog]
+    Link: http://lkml.kernel.org/r/1426893517-2511-6-git-send-email-mcgrof@do-not-panic.com
+    Original-posting: http://lkml.kernel.org/r/1432163293-20965-1-git-send-email-mcgrof@do-not-panic.com
+    Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>

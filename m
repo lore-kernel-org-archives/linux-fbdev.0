@@ -1,17 +1,21 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 22 May 2015 13:24:30 +0000
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Fri, 22 May 2015 14:32:05 +0000
 Subject: Re: [PATCH v2 2/3] fbcon: use the cursor blink interval provided by vt
-Message-Id: <2820529.TShzski8m6@wuerfel>
+Message-Id: <20150522143205.GA6508@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1503261354550.2411@local> <3661627.JqpS87pBks@wuerfel> <20150522114957.GF16507@ulmo>
+References: <alpine.DEB.2.11.1503261354550.2411@local>
+ <20150522020031.GA3516@kroah.com>
+ <20150522100002.GB16507@ulmo>
+ <3661627.JqpS87pBks@wuerfel>
+ <20150522114957.GF16507@ulmo>
 In-Reply-To: <20150522114957.GF16507@ulmo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Scot Doyle <lkml14-enLWO88E2pdl57MIdRCFDg@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tyler Baker <tyler.baker-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Daniel Stone <daniel-rLtY4a/8tF1rovVCs/uTlw@public.gmane.org>
+Cc: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Scot Doyle <lkml14-enLWO88E2pdl57MIdRCFDg@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tyler Baker <tyler.baker-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Daniel Stone <daniel-rLtY4a/8tF1rovVCs/uTlw@public.gmane.org>
 
-On Friday 22 May 2015 13:49:58 Thierry Reding wrote:
+On Fri, May 22, 2015 at 01:49:58PM +0200, Thierry Reding wrote:
 > On Fri, May 22, 2015 at 12:33:42PM +0200, Arnd Bergmann wrote:
 > > On Friday 22 May 2015 12:00:03 Thierry Reding wrote:
 > > > 
@@ -35,10 +39,13 @@ On Friday 22 May 2015 13:49:58 Thierry Reding wrote:
 > know of a better way to do it. Replying to an email from the MUA will
 > at least do that automatically.
 
-You can have a line starting with 8<------ (the scissors  symbol) after
-your reply, and then paste the patch below.
+Reply from the MUA and then just put the patch in the email body.  If
+you have a good MUA it should be trivial to do[1]
 
-I usually use 'git show --format=email | xclip' to copy the patch into
-the X clipboard and paste it into the email window from there.
+thanks,
 
-	Arnd
+greg k-h
+
+1) mutt drops you to your editor, and then you can just read in the
+   patch file directly to that buffer.
+

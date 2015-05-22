@@ -1,45 +1,39 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 05 May 2015 08:28:35 +0000
-Subject: Re: [PATCH 4/4] video: fbdev: s3c-fb: Constify platform_device_id
-Message-Id: <20150505082835.GX4047@x1>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 22 May 2015 14:22:16 +0000
+Subject: [PATCH] video: omap/h3: fix tps65010 dependency
+Message-Id: <4416278.oVFvT3Eyqf@wuerfel>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430494721-30793-1-git-send-email-k.kozlowski.k@gmail.com>
- <1430494721-30793-4-git-send-email-k.kozlowski.k@gmail.com>
-In-Reply-To: <1430494721-30793-4-git-send-email-k.kozlowski.k@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Sat, 02 May 2015, Krzysztof Kozlowski wrote:
+The h3 LCD driver fails to link when tps65010 is configured
+as a loadable module:
 
-> The platform_device_id is not modified by the driver and core uses it as
-> const.
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-> ---
->  drivers/video/fbdev/s3c-fb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+drivers/built-in.o: In function `h3_panel_disable':
+debugfs.c:(.text+0x206ac): undefined reference to `tps65010_set_gpio_out_value'
+debugfs.c:(.text+0x206cc): undefined reference to `tps65010_set_gpio_out_value'
+drivers/built-in.o: In function `h3_panel_enable':
+debugfs.c:(.text+0x206e0): undefined reference to `tps65010_set_gpio_out_value'
+debugfs.c:(.text+0x20704): undefined reference to `tps65010_set_gpio_out_value'
 
-Applied, thanks.
+This clarifies the dependency so we can only select it if
+the dependnecy is built-in.
 
-> diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
-> index 7e3a05fc47aa..f72dd12456f9 100644
-> --- a/drivers/video/fbdev/s3c-fb.c
-> +++ b/drivers/video/fbdev/s3c-fb.c
-> @@ -1938,7 +1938,7 @@ static struct s3c_fb_driverdata s3c_fb_data_s3c2443=
- =3D {
->  	},
->  };
-> =20
-> -static struct platform_device_id s3c_fb_driver_ids[] =3D {
-> +static const struct platform_device_id s3c_fb_driver_ids[] =3D {
->  	{
->  		.name		=3D "s3c-fb",
->  		.driver_data	=3D (unsigned long)&s3c_fb_data_64xx,
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+diff --git a/drivers/video/fbdev/omap/Kconfig b/drivers/video/fbdev/omap/Kconfig
+index 18c4cb0d5690..29d250da8a3e 100644
+--- a/drivers/video/fbdev/omap/Kconfig
++++ b/drivers/video/fbdev/omap/Kconfig
+@@ -42,7 +42,7 @@ config FB_OMAP_LCD_MIPID
+ config FB_OMAP_LCD_H3
+ 	bool "TPS65010 LCD controller on OMAP-H3"
+ 	depends on MACH_OMAP_H3
+-	depends on TPS65010
++	depends on TPS65010=y
+ 	default y
+ 	help
+ 	  Say Y here if you want to have support for the LCD on the
+

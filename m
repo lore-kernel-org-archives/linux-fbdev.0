@@ -1,50 +1,41 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 26 May 2015 07:41:57 +0000
-Subject: Re: [RFC PATCH] video/logo: introduce new system state for checking if logos are freed
-Message-Id: <CAMuHMdWrxkH17dbhzgqAAhtqJSg5WRLOmvdeupvLB-1cKE7ybg@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Sat, 23 May 2015 17:32:35 +0000
+Subject: [patch] fbdev: ssd1307fb: potential ERR_PTR dereference
+Message-Id: <20150523173235.GA31595@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430896145-8887-1-git-send-email-hs@denx.de>
-	<5562B9CE.7050807@ti.com>
-	<5563EEF9.3080901@denx.de>
-	<556418A9.8010603@ti.com>
-	<55641E1E.9010607@denx.de>
-	<CAMuHMdWc=vsdmjxmQdSRYkQ-t_Rmn-LoTp1Jn0wgp++rEStcxw@mail.gmail.com>
-	<55642243.5000205@denx.de>
-In-Reply-To: <55642243.5000205@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: hs@denx.de
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: linux-fbdev@vger.kernel.org
 
-Hi Heiko,
+The error handling got shifted down a few lines from where it was
+supposed to be for some reason.
 
-On Tue, May 26, 2015 at 9:35 AM, Heiko Schocher <hs@denx.de> wrote:
-> Am 26.05.2015 09:25, schrieb Geert Uytterhoeven:
->>
->> On Tue, May 26, 2015 at 9:17 AM, Heiko Schocher <hs@denx.de> wrote:
->>>
->>> 4) draw only one logo even on multicores ... why must every core draw
->>> a logo? Currently each core draws the logo, and on a system with more
->>> than 4 cores, I think this looks not really good ...
->>
->>
->> I don't think each core draws a logo. They're all drawn from
->> fbcon_switch().
->
-> Hmm... I have here an imx6dl based system, and it draws two logos when
-> booting...
+Fixes: a14a7ba8cb0f ('fbdev: ssd1307fb: add backlight controls for setting the contrast')
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-It draw one logo _for_ each cpu core, but each logo is not drawn _by_ each
-cpu core.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 8fc224c..9c28a77 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -655,15 +655,16 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 	snprintf(bl_name, sizeof(bl_name), "ssd1307fb%d", info->node);
+ 	bl = backlight_device_register(bl_name, &client->dev, par,
+ 				       &ssd1307fb_bl_ops, NULL);
+-	bl->props.brightness = par->contrast;
+-	bl->props.max_brightness = MAX_CONTRAST;
+-	info->bl_dev = bl;
+-
+ 	if (IS_ERR(bl)) {
+ 		dev_err(&client->dev, "unable to register backlight device: %ld\n",
+ 			PTR_ERR(bl));
+ 		goto bl_init_error;
+ 	}
++
++	bl->props.brightness = par->contrast;
++	bl->props.max_brightness = MAX_CONTRAST;
++	info->bl_dev = bl;
++
+ 	dev_info(&client->dev, "fb%d: %s framebuffer device registered, using %d bytes of video memory\n", info->node, info->fix.id, vmem_size);
+ 
+ 	return 0;

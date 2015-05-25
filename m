@@ -1,44 +1,116 @@
-From: Kevin Hilman <khilman@kernel.org>
-Date: Tue, 19 May 2015 21:15:41 +0000
-Subject: Re: [PATCH v2 2/3] fbcon: use the cursor blink interval provided by vt
-Message-Id: <CAMAWPa-6ZbE5cDkEZq0XpYa2pHcnf3qweSSVHAXhfhUAUCbKcA@mail.gmail.com>
+From: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Date: Mon, 25 May 2015 22:36:09 +0000
+Subject: [PATCH v4 2/3] Phy: DT binding documentation for Broadcom Cygnus USB PHY driver
+Message-Id: <1432593370-14457-3-git-send-email-arun.ramamurthy@broadcom.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1501262034380.1945@localhost.localdomain>
-	<alpine.DEB.2.11.1501262040380.2052@localhost.localdomain>
-	<20150225094946.GA24627@amd>
-	<alpine.LNX.2.11.1502252319330.276@localhost>
-	<20150226220243.GC9935@amd>
-	<alpine.LNX.2.11.1502271905580.4212@localhost>
-	<alpine.LNX.2.11.1502271911380.4248@localhost>
-	<20150325111949.GA24230@kroah.com>
-	<alpine.DEB.2.11.1503261341260.2164@local>
-	<alpine.DEB.2.11.1503261354550.2411@local>
-In-Reply-To: <alpine.DEB.2.11.1503261354550.2411@local>
+References: <1432593370-14457-1-git-send-email-arun.ramamurthy@broadcom.com>
+In-Reply-To: <1432593370-14457-1-git-send-email-arun.ramamurthy-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Scot Doyle <lkml14-enLWO88E2pdl57MIdRCFDg@public.gmane.org>
-Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Michael Kerrisk <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jiri Slaby <jslaby-AlSwsSmVLrQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tyler Baker <tyler.baker-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Daniel Stone <daniel-rLtY4a/8tF1rovVCs/uTlw@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dmitry Torokhov <dtor-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Anatol Pomazau <anatol-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Jonathan Richardson <jonathar-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, Arun Ramamurthy <arun.ramamurthy-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 
-On Thu, Mar 26, 2015 at 6:56 AM, Scot Doyle <lkml14@scotdoyle.com> wrote:
-> vt now provides a cursor blink interval via vc_data. Use this
-> interval instead of the currently hardcoded 200 msecs. Store it in
-> fbcon_ops to avoid locking the console in cursor_timer_handler().
->
-> Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+Broadcom's Cygnus chip has a USB 2.0 host controller connected to
+three separate phys. One of the phs (port 2) is also connectd to
+a usb 2.0 device controller
 
-This patch hit next-20150519 in the form of commit 27a4c827c34a
-(fbcon: use the cursor blink interval provided by vt) and has caused
-boot failure on a handful of ARM platforms when booting a MMC root
-filesystem.  This error was spotted by the kernelci.org bot on
-exynos5800-peach-pi[1] and Thierry and Daniel (Cc'd) have seen it on
-some tegra platforms too.
+Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Reviewed-by: Ray Jui <rjui@broadcom.com>
+Reviewed-by: Scott Branden <sbranden@broadcom.com>
+---
+ .../bindings/phy/brcm,cygnus-usb-phy.txt           | 69 ++++++++++++++++++++++
+ include/dt-bindings/phy/phy.h                      |  2 +
+ 2 files changed, 71 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
 
-Thierry spotted this commit as a potential cause, and both Daniel and
-I have reverted and boot tested on exynos5 and tegra respectively and
-the boot panics disappear.
+diff --git a/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt b/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
+new file mode 100644
+index 0000000..ec62044
+--- /dev/null
++++ b/Documentation/devicetree/bindings/phy/brcm,cygnus-usb-phy.txt
+@@ -0,0 +1,69 @@
++BROADCOM CYGNUS USB PHY
++
++Required Properties:
++	- compatible:  brcm,cygnus-usb-phy
++	- reg : usbphy_regs - Base address of phy registers
++			usb2h_idm_regs - Base address of host idm registers
++			usb2d_idm_regs - Base address of device idm registers
++	- phy-cells - must be 1 for each port declared. The node
++		      that uses the phy must provide either PHY_CONFIG_DEVICE for device
++		      or PHY_CONFIG_HOST for host
++
++NOTE: port 0 and port 1 are host only and port 2 can be configured for host or
++device.
++
++Example of phy :
++	usbphy0: usbphy@0x0301c000 {
++		compatible = "brcm,cygnus-usb-phy";
++		reg = <0x0301c000 0x2000>,
++		      <0x18115000 0x1000>,
++		      <0x18111000 0x1000>;
++		status = "okay";
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		usbphy0_0: usbphy0@0 {
++			#phy-cells = <1>;
++			reg = <0>;
++			status = "okay";
++			phy-supply = <&vbus_p0>;
++		};
++
++		usbphy0_1: usbphy0@1 {
++			#phy-cells = <1>;
++			reg = <1>;
++			status = "okay";
++		};
++
++		usbphy0_2: usbphy0@2 {
++			#phy-cells = <1>;
++			reg = <2>;
++			status = "okay";
++			phy-supply = <&vbus_p2>;
++		};
++	};
++
++Example of node using the phy:
++
++	/* This nodes declares all three ports as host */
++
++	ehci0: usb@0x18048000 {
++		compatible = "generic-ehci";
++		reg = <0x18048000 0x100>;
++		interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
++		phys = <&usbphy0_0 PHY_CONFIG_HOST &usbphy0_1 PHY_CONFIG_HOST &usbphy0_2 PHY_CONFIG_HOST>;
++		status = "okay";
++	};
++
++	/*
++	 * This node declares port 2 phy
++	 * and configures it for device
++	 */
++
++	usbd_udc_dwc1: usbd_udc_dwc@0x1804c000 {
++		compatible = "iproc-udc";
++		reg = <0x1804c000 0x2000>;
++		interrupts = <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>;
++		phys = <&usbphy0_2 PHY_CONFIG_DEVICE>;
++		phy-names = "usb";
++	};
+diff --git a/include/dt-bindings/phy/phy.h b/include/dt-bindings/phy/phy.h
+index 6c90193..a5babbc 100644
+--- a/include/dt-bindings/phy/phy.h
++++ b/include/dt-bindings/phy/phy.h
+@@ -15,5 +15,7 @@
+ #define PHY_TYPE_PCIE		2
+ #define PHY_TYPE_USB2		3
+ #define PHY_TYPE_USB3		4
++#define PHY_USB2_CONFIG_HOST	0
++#define PHY_USB2_CONFIG_DEVICE	1
+ 
+ #endif /* _DT_BINDINGS_PHY */
+-- 
+2.3.4
 
-Kevin
-
-[1] http://storage.kernelci.org/next/next-20150519/arm-exynos_defconfig/lab-khilman/boot-exynos5800-peach-pi_rootfs:mmc.html

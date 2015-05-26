@@ -1,36 +1,34 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 26 May 2015 07:23:18 +0000
+Date: Tue, 26 May 2015 07:25:57 +0000
 Subject: Re: [RFC PATCH] video/logo: introduce new system state for checking if logos are freed
-Message-Id: <CAMuHMdWe6nLBaOvjB4wW=AmigU3ib8-wdCycre9G9o5RPwB=mg@mail.gmail.com>
+Message-Id: <CAMuHMdWc=vsdmjxmQdSRYkQ-t_Rmn-LoTp1Jn0wgp++rEStcxw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1430896145-8887-1-git-send-email-hs@denx.de>
 	<5562B9CE.7050807@ti.com>
 	<5563EEF9.3080901@denx.de>
 	<556418A9.8010603@ti.com>
-	<CAMuHMdWHP6i15Z2qZJBEW9uz7kh1_ET5N1VbOKoMw1EC7F3O0g@mail.gmail.com>
-	<55641D89.5020103@ti.com>
-In-Reply-To: <55641D89.5020103@ti.com>
+	<55641E1E.9010607@denx.de>
+In-Reply-To: <55641E1E.9010607@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: hs@denx.de, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: hs@denx.de
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-Hi Tomi,
+On Tue, May 26, 2015 at 9:17 AM, Heiko Schocher <hs@denx.de> wrote:
+> 4) draw only one logo even on multicores ... why must every core draw
+> a logo? Currently each core draws the logo, and on a system with more
+> than 4 cores, I think this looks not really good ...
 
-On Tue, May 26, 2015 at 9:15 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->> 3) Draw the logos from an initcall on all frame buffers that exist at that
->>    point in time. Yes, this will destroy (part of) the content that's
->>    currently shown.
->
-> Isn't that almost the same as now? The problem is that the fb probes are
-> deferred to a very late stage, so we would not have the fbs when the
-> suggested initcall would be called.
+I don't think each core draws a logo. They're all drawn from fbcon_switch().
 
-Currently it's drawn from fbcon_switch().
+> Hmm... I do not really have a lot experience in this area ... but why
+> is the logo only drawed when booting? Is there nothing like a "redraw"
+> of it?
 
-Some drivers draw it independently from the fbcon code
-(au1200fb_drv_probe() and mmpfb_probe()).
+When do you want to redraw it? On VC switch (it's drawn on the first call
+only, hence it disappears if you switch VC and back)?
+Until when should it be redrawn?
 
 Gr{oetje,eeting}s,
 

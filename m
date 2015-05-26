@@ -1,98 +1,70 @@
 From: Heiko Schocher <hs@denx.de>
-Date: Tue, 26 May 2015 07:29:54 +0000
+Date: Tue, 26 May 2015 07:35:31 +0000
 Subject: Re: [RFC PATCH] video/logo: introduce new system state for checking if logos are freed
-Message-Id: <556420F2.7020909@denx.de>
+Message-Id: <55642243.5000205@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430896145-8887-1-git-send-email-hs@denx.de>	<5562B9CE.7050807@ti.com>	<5563EEF9.3080901@denx.de>	<556418A9.8010603@ti.com> <CAMuHMdWHP6i15Z2qZJBEW9uz7kh1_ET5N1VbOKoMw1EC7F3O0g@mail.gmail.com> <55641D89.5020103@ti.com>
-In-Reply-To: <55641D89.5020103@ti.com>
+References: <1430896145-8887-1-git-send-email-hs@denx.de> <5562B9CE.7050807@ti.com> <5563EEF9.3080901@denx.de> <556418A9.8010603@ti.com> <55641E1E.9010607@denx.de> <CAMuHMdWc=vsdmjxmQdSRYkQ-t_Rmn-LoTp1Jn0wgp++rEStcxw@mail.gmail.com>
+In-Reply-To: <CAMuHMdWc=vsdmjxmQdSRYkQ-t_Rmn-LoTp1Jn0wgp++rEStcxw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-Hello Tomi, Geert,
+Hello Geert,
 
-Am 26.05.2015 09:15, schrieb Tomi Valkeinen:
+Am 26.05.2015 09:25, schrieb Geert Uytterhoeven:
+> On Tue, May 26, 2015 at 9:17 AM, Heiko Schocher <hs@denx.de> wrote:
+>> 4) draw only one logo even on multicores ... why must every core draw
+>> a logo? Currently each core draws the logo, and on a system with more
+>> than 4 cores, I think this looks not really good ...
 >
->
-> On 26/05/15 10:08, Geert Uytterhoeven wrote:
->> On Tue, May 26, 2015 at 8:54 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->>> On 26/05/15 06:56, Heiko Schocher wrote:
->>>>> Without locking, the initmem may be freed while fb_find_logo() is
->>>>> running.
->>
->> Or afterwards. Drivers may keep the pointer around indefinitely.
->>
->>>> Yes, you are right, that must be added ... but has such a change a
->>>> chance to go in mainline?
->>>
->>> I don't know. To be honest, this whole thing feels a bit like hackery. I
->>> think initdata should only be accessed from initcalls, never asynchronously.
->>>
->>>> BTW: Could this not be currently a problem on multicore systems?
->>>> If lets say core 2 just draws the logo, another core 1 calls
->>>> fb_logo_late_init() and later core 1 free_initmem(), while the core 2
->>>> still draws it?
->>>
->>> Yes, I think so...
->>
->> I don't think that can happen. All initcalls should complete before initmem
->> is freed.
->
-> Ah, true, the question was only about the initcalls. I was answering to
-> what actually can happen with the logo code as a whole.
->
-> The whole problem started when I fixed an issue where the logos were
-> accessed from a workqueue. I don't remember the details, but I think drm
-> always (?) sets up some console stuff via workthread. In that case we
-> could have the workthread accessing the logos, while initmem is being freed.
->
->>> So, maybe it would be better to not even try to go forward with the
->>> current approach. Two approaches come to my mind:
->>>
->>> 1) Keep the logos in the memory, and don't even try to free them. I
->>> don't know many bytes they are in total, though.
->>
->> m68k/allmodconfig:
->>
->> $ size drivers/video/logo/logo*o
->>     text   data    bss    dec    hex filename
->>       24   6961      0   6985   1b49 drivers/video/logo/logo_linux_clut224.o
->>       24    800      0    824    338 drivers/video/logo/logo_linux_mono.o
->>       24   3200      0   3224    c98 drivers/video/logo/logo_linux_vga16.o
->>       24   6955      0   6979   1b43 drivers/video/logo/logo_mac_clut224.o
->>      161      4      2    167     a7 drivers/video/logo/logo.o
->>
->> Not that bad... Custom logos may be larger, though.
->
-> I wonder how much a simple RLE would cut down the sizes...
->
->>> 2) Make a copy of the logos to a kmalloced area at some early boot
->>> stage. Then manually free the logos at some point (after the first
->>> access to the logos? after a certain time (urgh...)?).
->>
->> 3) Draw the logos from an initcall on all frame buffers that exist at that
->>     point in time. Yes, this will destroy (part of) the content that's
->>     currently shown.
->
-> Isn't that almost the same as now? The problem is that the fb probes are
-> deferred to a very late stage, so we would not have the fbs when the
-> suggested initcall would be called.
+> I don't think each core draws a logo. They're all drawn from fbcon_switch().
 
-Yes, exactly, this is my problem. DRM gets probed early and returns with
-EPROBE_DEFER, as the display needs a spi init sequence, but spi is not
-running yet ... later, when spi is up, DRM probes again, and all is
-fine, but the logo is not drawn, as fb_logo_late_init() is called before,
-which prevents drawing the logo.
+Hmm... I have here an imx6dl based system, and it draws two logos when booting...
+I can prevent this two logos, if I do:
 
-We maybe could call fb_logo_late_init() directly from init/main.c
-before calling free_initmem() ? But here again the question, could
-it be possible that another core just draws the logo?
-Or does async_synchronize_full() helps us here?
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 0705d88..e907ab9 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -664,8 +672,7 @@ int fb_show_logo(struct fb_info *info, int rotate)
+  {
+         int y;
+
+-       y = fb_show_logo_line(info, rotate, fb_logo.logo, 0,
+-                             num_online_cpus());
++       y = fb_show_logo_line(info, rotate, fb_logo.logo, 0, 1);
+         y = fb_show_extra_logos(info, y, rotate);
+
+         return y;
+
+>> Hmm... I do not really have a lot experience in this area ... but why
+>> is the logo only drawed when booting? Is there nothing like a "redraw"
+>> of it?
+>
+> When do you want to redraw it? On VC switch (it's drawn on the first call
+> only, hence it disappears if you switch VC and back)?
+> Until when should it be redrawn?
+
+I don;t know, it was just a question ... If this is not possible, we
+do not need to cover such a case, good!
 
 bye,
 Heiko
+>
+> Gr{oetje,eeting}s,
+>
+>                          Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                  -- Linus Torvalds
+>
+
 -- 
 DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany

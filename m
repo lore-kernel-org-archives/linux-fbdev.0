@@ -1,87 +1,101 @@
-From: Andrey Wagin <avagin@gmail.com>
-Date: Wed, 27 May 2015 11:19:03 +0000
+From: Tomeu Vizoso <tomeu.vizoso@gmail.com>
+Date: Wed, 27 May 2015 12:10:02 +0000
 Subject: Re: [PATCH] fbcon: Avoid deleting a timer in IRQ context
-Message-Id: <CANaxB-w4ejA-8ytWSL5m+af_KrSrNkqJGxpw9F5Ek8Ergu-sHw@mail.gmail.com>
+Message-Id: <CAAObsKB8B2R3PTpYX8B3o4n19mk=oLtisALkb0o-y5M6QL213w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432195083-25005-1-git-send-email-thierry.reding@gmail.com>
-In-Reply-To: <1432195083-25005-1-git-send-email-thierry.reding@gmail.com>
+References: <1432195083-25005-1-git-send-email-thierry.reding@gmail.com> <CANaxB-w4ejA-8ytWSL5m+af_KrSrNkqJGxpw9F5Ek8Ergu-sHw@mail.gmail.com>
+In-Reply-To: <CANaxB-w4ejA-8ytWSL5m+af_KrSrNkqJGxpw9F5Ek8Ergu-sHw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, Scot Doyle <lkml14@scotdoyle.com>, Daniel Stone <daniel@fooishbar.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Andrey Wagin <avagin@gmail.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, Scot Doyle <lkml14@scotdoyle.com>, Daniel Stone <daniel@fooishbar.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-2015-05-21 10:58 GMT+03:00 Thierry Reding <thierry.reding@gmail.com>:
-> From: Thierry Reding <treding@nvidia.com>
+On 27 May 2015 at 13:19, Andrey Wagin <avagin@gmail.com> wrote:
+> 2015-05-21 10:58 GMT+03:00 Thierry Reding <thierry.reding@gmail.com>:
+>> From: Thierry Reding <treding@nvidia.com>
+>>
+>> Commit 27a4c827c34a ("fbcon: use the cursor blink interval provided by
+>> vt") unconditionally removes the cursor blink timer. Unfortunately that
+>> wreaks havoc under some circumstances. An easily reproducible way is to
+>> use both the framebuffer console and a debug serial port as the console
+>> output for kernel messages (e.g. "console=ttyS0 console=tty1" on the
+>> kernel command-line. Upon boot this triggers a warning from within the
+>> del_timer_sync() function because it is called from IRQ context:
+>>
+>>         [    5.070096] ------------[ cut here ]------------
+>>         [    5.070110] WARNING: CPU: 0 PID: 0 at ../kernel/time/timer.c:1098 del_timer_sync+0x4c/0x54()
+>>         [    5.070115] Modules linked in:
+>>         [    5.070120] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.1.0-rc4-next-20150519 #1
+>>         [    5.070123] Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
+>>         [    5.070142] [] (unwind_backtrace) from [] (show_stack+0x10/0x14)
+>>         [    5.070156] [] (show_stack) from [] (dump_stack+0x70/0xbc)
+>>         [    5.070164] [] (dump_stack) from [] (warn_slowpath_common+0x74/0xb0)
+>>         [    5.070169] [] (warn_slowpath_common) from [] (warn_slowpath_null+0x1c/0x24)
+>>         [    5.070174] [] (warn_slowpath_null) from [] (del_timer_sync+0x4c/0x54)
+>>         [    5.070183] [] (del_timer_sync) from [] (fbcon_del_cursor_timer+0x2c/0x40)
+>>         [    5.070190] [] (fbcon_del_cursor_timer) from [] (fbcon_cursor+0x9c/0x180)
+>>         [    5.070198] [] (fbcon_cursor) from [] (hide_cursor+0x30/0x98)
+>>         [    5.070204] [] (hide_cursor) from [] (vt_console_print+0x2a8/0x340)
+>>         [    5.070212] [] (vt_console_print) from [] (call_console_drivers.constprop.23+0xc8/0xec)
+>>         [    5.070218] [] (call_console_drivers.constprop.23) from [] (console_unlock+0x498/0x4f0)
+>>         [    5.070223] [] (console_unlock) from [] (vprintk_emit+0x1f0/0x508)
+>>         [    5.070228] [] (vprintk_emit) from [] (vprintk_default+0x24/0x2c)
+>>         [    5.070234] [] (vprintk_default) from [] (printk+0x70/0x88)
+>>
+>> After which the system starts spewing all kinds of weird and seemingly
+>> unrelated error messages.
+>>
+>> This commit fixes this by restoring the condition under which the call
+>> to fbcon_del_cursor_timer() happens.
 >
-> Commit 27a4c827c34a ("fbcon: use the cursor blink interval provided by
-> vt") unconditionally removes the cursor blink timer. Unfortunately that
-> wreaks havoc under some circumstances. An easily reproducible way is to
-> use both the framebuffer console and a debug serial port as the console
-> output for kernel messages (e.g. "console=ttyS0 console=tty1" on the
-> kernel command-line. Upon boot this triggers a warning from within the
-> del_timer_sync() function because it is called from IRQ context:
+> Tested-by: Andrew Vagin <avagin@virtuozzo.com>
 >
->         [    5.070096] ------------[ cut here ]------------
->         [    5.070110] WARNING: CPU: 0 PID: 0 at ../kernel/time/timer.c:1098 del_timer_sync+0x4c/0x54()
->         [    5.070115] Modules linked in:
->         [    5.070120] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.1.0-rc4-next-20150519 #1
->         [    5.070123] Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
->         [    5.070142] [] (unwind_backtrace) from [] (show_stack+0x10/0x14)
->         [    5.070156] [] (show_stack) from [] (dump_stack+0x70/0xbc)
->         [    5.070164] [] (dump_stack) from [] (warn_slowpath_common+0x74/0xb0)
->         [    5.070169] [] (warn_slowpath_common) from [] (warn_slowpath_null+0x1c/0x24)
->         [    5.070174] [] (warn_slowpath_null) from [] (del_timer_sync+0x4c/0x54)
->         [    5.070183] [] (del_timer_sync) from [] (fbcon_del_cursor_timer+0x2c/0x40)
->         [    5.070190] [] (fbcon_del_cursor_timer) from [] (fbcon_cursor+0x9c/0x180)
->         [    5.070198] [] (fbcon_cursor) from [] (hide_cursor+0x30/0x98)
->         [    5.070204] [] (hide_cursor) from [] (vt_console_print+0x2a8/0x340)
->         [    5.070212] [] (vt_console_print) from [] (call_console_drivers.constprop.23+0xc8/0xec)
->         [    5.070218] [] (call_console_drivers.constprop.23) from [] (console_unlock+0x498/0x4f0)
->         [    5.070223] [] (console_unlock) from [] (vprintk_emit+0x1f0/0x508)
->         [    5.070228] [] (vprintk_emit) from [] (vprintk_default+0x24/0x2c)
->         [    5.070234] [] (vprintk_default) from [] (printk+0x70/0x88)
->
-> After which the system starts spewing all kinds of weird and seemingly
-> unrelated error messages.
->
-> This commit fixes this by restoring the condition under which the call
-> to fbcon_del_cursor_timer() happens.
+> It would be good to push this patch into linux-next asap. Without this
+> patch I can't execute tests on linux-next. Thanks.
 
-Tested-by: Andrew Vagin <avagin@virtuozzo.com>
+Tested-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 
-It would be good to push this patch into linux-next asap. Without this
-patch I can't execute tests on linux-next. Thanks.
+Same here, please apply.
 
->
-> Reported-by: Daniel Stone <daniel@fooishbar.org>
-> Reported-by: Kevin Hilman <khilman@kernel.org>
-> Tested-by: Kevin Hilman <khilman@linaro.org>
-> Tested-by: Scot Doyle <lkml14@scotdoyle.com>
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
-> ---
->  drivers/video/console/fbcon.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-> index 05b1d1a71ef9..658c34bb9076 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -1310,8 +1310,9 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
->                 return;
->
->         ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
-> -       fbcon_del_cursor_timer(info);
-> -       if (!(vc->vc_cursor_type & 0x10))
-> +       if (vc->vc_cursor_type & 0x10)
-> +               fbcon_del_cursor_timer(info);
-> +       else
->                 fbcon_add_cursor_timer(info);
->
->         ops->cursor_flash = (mode = CM_ERASE) ? 0 : 1;
-> --
-> 2.4.1
->
+Thanks,
+
+Tomeu
+
+>>
+>> Reported-by: Daniel Stone <daniel@fooishbar.org>
+>> Reported-by: Kevin Hilman <khilman@kernel.org>
+>> Tested-by: Kevin Hilman <khilman@linaro.org>
+>> Tested-by: Scot Doyle <lkml14@scotdoyle.com>
+>> Signed-off-by: Thierry Reding <treding@nvidia.com>
+>> ---
+>>  drivers/video/console/fbcon.c | 5 +++--
+>>  1 file changed, 3 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+>> index 05b1d1a71ef9..658c34bb9076 100644
+>> --- a/drivers/video/console/fbcon.c
+>> +++ b/drivers/video/console/fbcon.c
+>> @@ -1310,8 +1310,9 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
+>>                 return;
+>>
+>>         ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+>> -       fbcon_del_cursor_timer(info);
+>> -       if (!(vc->vc_cursor_type & 0x10))
+>> +       if (vc->vc_cursor_type & 0x10)
+>> +               fbcon_del_cursor_timer(info);
+>> +       else
+>>                 fbcon_add_cursor_timer(info);
+>>
+>>         ops->cursor_flash = (mode = CM_ERASE) ? 0 : 1;
+>> --
+>> 2.4.1
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org

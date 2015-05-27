@@ -1,203 +1,133 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Sun, 17 May 2015 16:27:48 +0000
-Subject: [PATCH v3 08/17] gpio: locomo: implement per-pin irq handling
-Message-Id: <1431880077-26321-9-git-send-email-dbaryshkov@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 May 2015 10:15:30 +0000
+Subject: Re: [PATCHv6 00/10] Cleanup and add support for SSD1305
+Message-Id: <55659942.9060400@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="jShgjoGoeg6iWivn5d1Tdxnhmr1WiMQAX"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+References: <1423261694-5939-1-git-send-email-niederp@physik.uni-kl.de> <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
+In-Reply-To: <1427826436-21783-1-git-send-email-niederp@physik.uni-kl.de>
+To: =?UTF-8?B?VGhvbWFzIE5pZWRlcnByw7xt?= <niederp@physik.uni-kl.de>, plagnioj@jcrosoft.com, maxime.ripard@free-electrons.com, kernel@pengutronix.de, shawn.guo@linaro.org, robh+dt@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-LoCoMo has a possibility to generate per-GPIO edge irqs. Support for
-that was there in old locomo driver, got 'cleaned up' during old driver
-IRQ cascading cleanup and is now reimplemented. It is expected that
-SL-5500 (collie) will use locomo gpio irqs for mmc detection irq.
+--jShgjoGoeg6iWivn5d1Tdxnhmr1WiMQAX
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
----
- drivers/gpio/Kconfig       |   1 +
- drivers/gpio/gpio-locomo.c | 117 ++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 117 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 4542684..6b77614 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -737,6 +737,7 @@ config GPIO_KEMPLD
- config GPIO_LOCOMO
- 	bool "Sharp LoCoMo GPIO support"
- 	depends on MFD_LOCOMO
-+	select GPIOLIB_IRQCHIP
- 	help
- 	  Select this to support GPIO pins on Sharp LoCoMo Grid Array found
- 	  in Sharp Zaurus collie and poodle models.
-diff --git a/drivers/gpio/gpio-locomo.c b/drivers/gpio/gpio-locomo.c
-index dd9a1ca..75dbf6b 100644
---- a/drivers/gpio/gpio-locomo.c
-+++ b/drivers/gpio/gpio-locomo.c
-@@ -16,13 +16,15 @@
- #include <linux/slab.h>
- #include <linux/bitops.h>
- #include <linux/err.h>
--#include <linux/gpio.h>
-+#include <linux/gpio/driver.h>
- #include <linux/io.h>
-+#include <linux/irq.h>
- #include <linux/regmap.h>
- #include <linux/mfd/locomo.h>
- 
- struct locomo_gpio {
- 	struct regmap *regmap;
-+	int irq;
- 
- 	struct gpio_chip gpio;
- 
-@@ -79,6 +81,99 @@ static int locomo_gpio_direction_output(struct gpio_chip *chip,
- 	return 0;
- }
- 
-+static void
-+locomo_gpio_irq_handler(unsigned int irq, struct irq_desc *desc)
-+{
-+	struct gpio_chip *chip = irq_get_handler_data(irq);
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+	struct irq_chip *irqchip = irq_desc_get_chip(desc);
-+	unsigned int gir;
-+	unsigned int gpd;
-+	unsigned int req;
-+
-+	chained_irq_enter(irqchip, desc);
-+
-+	while (1) {
-+		regmap_read(lg->regmap, LOCOMO_GIR, &gir);
-+		regmap_read(lg->regmap, LOCOMO_GPD, &gpd);
-+		req = gir & gpd;
-+
-+		if (!req)
-+			break;
-+
-+		generic_handle_irq(irq_find_mapping(lg->gpio.irqdomain,
-+					ffs(req) - 1));
-+	}
-+
-+	chained_irq_exit(irqchip, desc);
-+}
-+
-+static void locomo_gpio_ack_irq(struct irq_data *d)
-+{
-+	struct gpio_chip *chip = irq_data_get_irq_chip_data(d);
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+	unsigned int mask = BIT(d->hwirq);
-+
-+	regmap_update_bits(lg->regmap, LOCOMO_GWE, mask, mask);
-+	regmap_update_bits(lg->regmap, LOCOMO_GIS, mask, 0);
-+	regmap_update_bits(lg->regmap, LOCOMO_GWE, mask, 0);
-+}
-+
-+static void locomo_gpio_mask_irq(struct irq_data *d)
-+{
-+	struct gpio_chip *chip = irq_data_get_irq_chip_data(d);
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+	unsigned int mask = BIT(d->hwirq);
-+
-+	regmap_update_bits(lg->regmap, LOCOMO_GIE, mask, 0);
-+}
-+
-+static void locomo_gpio_unmask_irq(struct irq_data *d)
-+{
-+	struct gpio_chip *chip = irq_data_get_irq_chip_data(d);
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+	unsigned int mask = BIT(d->hwirq);
-+
-+	regmap_update_bits(lg->regmap, LOCOMO_GIE, mask, mask);
-+}
-+
-+static int locomo_gpio_type_irq(struct irq_data *d, unsigned int type)
-+{
-+	struct gpio_chip *chip = irq_data_get_irq_chip_data(d);
-+	struct locomo_gpio *lg = container_of(chip, struct locomo_gpio, gpio);
-+	unsigned int mask;
-+
-+	mask = BIT(d->hwirq);
-+
-+	if (type = IRQ_TYPE_PROBE) {
-+		if ((lg->rising_edge | lg->falling_edge) & mask)
-+			return 0;
-+		type = IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING;
-+	}
-+
-+	if (type & IRQ_TYPE_EDGE_RISING)
-+		lg->rising_edge |= mask;
-+	else
-+		lg->rising_edge &= ~mask;
-+	if (type & IRQ_TYPE_EDGE_FALLING)
-+		lg->falling_edge |= mask;
-+	else
-+		lg->falling_edge &= ~mask;
-+
-+	regmap_write(lg->regmap, LOCOMO_GRIE, lg->rising_edge);
-+	regmap_write(lg->regmap, LOCOMO_GFIE, lg->falling_edge);
-+
-+	return 0;
-+}
-+
-+static struct irq_chip locomo_gpio_irq_chip = {
-+	.name		= "locomo-GPIO",
-+	.irq_ack	= locomo_gpio_ack_irq,
-+	.irq_mask	= locomo_gpio_mask_irq,
-+	.irq_unmask	= locomo_gpio_unmask_irq,
-+	.irq_set_type	= locomo_gpio_type_irq,
-+};
-+
- #ifdef CONFIG_PM_SLEEP
- static int locomo_gpio_suspend(struct device *dev)
- {
-@@ -119,6 +214,10 @@ static int locomo_gpio_probe(struct platform_device *pdev)
- 	if (!lg)
- 		return -ENOMEM;
- 
-+	lg->irq = platform_get_irq(pdev, 0);
-+	if (lg->irq < 0)
-+		return -ENXIO;
-+
- 	lg->regmap = dev_get_regmap(pdev->dev.parent, NULL);
- 	if (!lg->regmap)
- 		return -EINVAL;
-@@ -130,6 +229,7 @@ static int locomo_gpio_probe(struct platform_device *pdev)
- 	regmap_write(lg->regmap, LOCOMO_GPD, 0x00);
- 	regmap_write(lg->regmap, LOCOMO_GIE, 0x00);
- 
-+	lg->gpio.dev = &pdev->dev;
- 	lg->gpio.base = pdata ? pdata->gpio_base : -1;
- 	lg->gpio.label = "locomo-gpio";
- 	lg->gpio.ngpio = 16;
-@@ -142,7 +242,22 @@ static int locomo_gpio_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
-+	ret = gpiochip_irqchip_add(&lg->gpio, &locomo_gpio_irq_chip, 0,
-+				   handle_level_irq, IRQ_TYPE_NONE);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to add irq chip\n");
-+		goto err_rm_gpiochip;
-+	}
-+
-+	gpiochip_set_chained_irqchip(&lg->gpio, &locomo_gpio_irq_chip, lg->irq,
-+				     locomo_gpio_irq_handler);
-+
- 	return 0;
-+
-+err_rm_gpiochip:
-+	gpiochip_remove(&lg->gpio);
-+
-+	return ret;
- }
- 
- static int locomo_gpio_remove(struct platform_device *pdev)
--- 
-2.1.4
 
+On 31/03/15 21:27, Thomas Niederpr=C3=BCm wrote:
+> Hi,
+>=20
+> this patch series is the result of making the ssd1307fb driver work wit=
+h
+> a Newhaven OLED display using the Solomon SSD1305 controller. To achiev=
+e
+> this the intialization code for the SSD1306 and the SSD1307 is merged
+> and based on DT configuration to reflect the various possible wirings
+> of the SSD130X controller (04/10). Based on these changes it is straigh=
+t
+> forward to add support for the SSD1305 controller (06/10).
+>=20
+> While working on the driver I realized that it was not possible to
+> correctly mmap the video memory from userspace since the address handed=
+
+> to the userspace app is a logical one where it should be a physical one=
+=2E
+> Patch 01/10 fixes this. Furthermore the memory reserved by kzalloc is
+> not page aligned while the address handed to userspace is aligned to th=
+e
+> next page frame. This problem is fixed by using __get_free_pages() in 0=
+2/10.
+>=20
+> Furthermore a module parameter is added to set the delay for the
+> deferred io update (07/10). Also the backlight class is implemented to =
+make
+> the contrast setting available in userspace (09/10).
+>=20
+> changes since v1 (thanks to Maxime for the feedback):
+> - dedicated patch for fixing smem_start address
+> - remove page reserve upon vmalloc
+> - remove return value check upon display turn-off at module unload
+> - use a module parameter refreshrate rather than delaydivider
+> - allocate fbdefio dynamically
+> - use sysfs_create_groups to create sysfs entries
+> - remove contrast, vhcom and dclk properties from DT since they are
+>   not part of hw description. The contrast module parameter was added
+>   to set contrast at load time. vhcom and dclk stays at it's default
+>   values for now.
+> - add new DT properties to in tree users of ssd130X
+> - rebased to apply on top of linux-next
+>=20
+> changes since v2 (thanks to Maxime again):
+> - free memory allocated by vmalloc on driver unload
+> - set default values in the init code to the ones of the existing ssd13=
+07
+>   init code
+> - added two ACKs (Maxime Ripard)
+>=20
+> changes since v3:
+> - use backlight class rather than dedicated sysfs files to set the=20
+>   contrast (Thanks to Tomi Valkeinen)
+> - remove [PATCHv3 08/10] fbdev: ssd1307fb: Add module parameter bitsper=
+pixel
+> - add new patch to blank the display (unreviewed)
+> - allocate video memory through __get_free_pages() rather than vmalloc
+>   (Thanks to Geert Uytterhoeven)
+> - minor rewordings of the commit messages
+>=20
+> changes since v4 (thanks to Maxime):
+> - added two ACKs (Maxime Ripard)
+> - fixed typo: s/REFRASHRATE/REFRESHRATE
+> - updated the documentation to make clear the unit of com-offset
+> - move addition of the module parameter contrast to a separate patch (0=
+9/11)
+> - fix indentation errors
+> - get rid of device_id in the device_info struct
+>=20
+> changes since v5:
+> - remove [PATCHv5 09/11] fbdev: ssd1307fb: Add module parameter to set
+>   the initial contrast
+> - remove unnecessary variable initialization in the deviceinfo struct a=
+s
+>   pointed out by Maxime
+> - make the variable dclk_div hold the actual divider rather than the
+>   corresponding bit value
+> - remove ret variable in ssd1307fb_blank() (thanks to Olliver Schinagl)=
+
+> - fixed bit mask for com_invdir as indicated by Olliver
+> - change initialization of the charge pump as suggested by Olliver
+> - change the default value for prechargep2 to 0x2 (thanks to Olliver)
+> - change DT property name "com-sequential" to "com-seq"
+> - added one ACK (Maxime Ripard)
+> - added Tested-by Olliver Schinagl
+
+I have queued this version for 4.2, with all the acks.
+
+ Tomi
+
+
+--jShgjoGoeg6iWivn5d1Tdxnhmr1WiMQAX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVZZlCAAoJEPo9qoy8lh71wc0P/A1AxsQpNPBrCbQwWBttI884
+7prSSqZIs0Hicr5lM6jWdSKS1qbhg73Vf77aWKHWoqYITtwFVc7ub+hw/KSPdkJL
+oqAOLO183hkqMGCIfMzWqDFBdyEQ2m/0Hi3zkV6gmHYfjxtzHOgH1+hPkQyw3EPD
+71XACzLO/xs2Ain9W8LqySt6+3VJUZZ+IAiduFGuDU80KzObckwkm+BRs6uTOh4y
+Qqhb7QMuSIrabS8Tg9J3V9fcf5PyiGeK1UUNEp2mY/+7l8rxo7C/kQmxcOavQ4TO
+yW1/4fQroqLnoECLphymLsd9oou1nZc/fNPNzJCpbLL3tI2bNWDE9nAXamq62egr
+Qg391Tx04LksTdwp1dywrqC9y79nJLjgCJjoXbn3ndg4hGmNaQCtuI0eXi39fRHa
+K34PZnffKdzqODdW0vO7J1jho2PKHjBXwGppb8MnITCNrCIWM7lydzgh3sN9h5lV
+78MA4wE+NPtyUy1il3WMnMfynJIyexb9Rbpf8mDpVVHKo/31/E7aKxbYxisySpjG
+ozwBpBEnTTT/LtvjuepVF8uRDwAACtT8qkKghqMtflyhZGfz5llcw7sRFFQtG2xT
+858QF19A77RiKCE7Ur0r1JsvE3SJPPXyFB2RsYb94BAxi3MNEXriFvQCJ7KQHqT7
+RnSm8/ihJ8dwW5a2D6sJ
+=5p7t
+-----END PGP SIGNATURE-----
+
+--jShgjoGoeg6iWivn5d1Tdxnhmr1WiMQAX--

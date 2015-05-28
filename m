@@ -1,82 +1,133 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 25 May 2015 05:43:38 +0000
-Subject: Re: [PATCH] video: omap/h3: fix tps65010 dependency
-Message-Id: <5562B68A.6030608@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="NwOFECEr9NMCrtWTs1u7xkh5vPs5XnQMA"
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Thu, 28 May 2015 08:05:15 +0000
+Subject: [PATCH] fbdev: omap2: improve usage of gpiod API
+Message-Id: <1432800315-25972-1-git-send-email-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4416278.oVFvT3Eyqf@wuerfel>
-In-Reply-To: <4416278.oVFvT3Eyqf@wuerfel>
-To: linux-arm-kernel@lists.infradead.org
-
---NwOFECEr9NMCrtWTs1u7xkh5vPs5XnQMA
-Content-Type: text/plain; charset=windows-1252
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, kernel@pengutronix.de
 
+Since 39b2bbe3d715 (gpio: add flags argument to gpiod_get*() functions)
+which appeared in v3.17-rc1, the gpiod_get* functions take an additional
+parameter that allows to specify direction and initial value for output.
 
+Also make use of gpiod_get*_optional where applicable.
 
-On 22/05/15 17:22, Arnd Bergmann wrote:
-> The h3 LCD driver fails to link when tps65010 is configured
-> as a loadable module:
->=20
-> drivers/built-in.o: In function `h3_panel_disable':
-> debugfs.c:(.text+0x206ac): undefined reference to `tps65010_set_gpio_ou=
-t_value'
-> debugfs.c:(.text+0x206cc): undefined reference to `tps65010_set_gpio_ou=
-t_value'
-> drivers/built-in.o: In function `h3_panel_enable':
-> debugfs.c:(.text+0x206e0): undefined reference to `tps65010_set_gpio_ou=
-t_value'
-> debugfs.c:(.text+0x20704): undefined reference to `tps65010_set_gpio_ou=
-t_value'
->=20
-> This clarifies the dependency so we can only select it if
-> the dependnecy is built-in.
->=20
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->=20
-> diff --git a/drivers/video/fbdev/omap/Kconfig b/drivers/video/fbdev/oma=
-p/Kconfig
-> index 18c4cb0d5690..29d250da8a3e 100644
-> --- a/drivers/video/fbdev/omap/Kconfig
-> +++ b/drivers/video/fbdev/omap/Kconfig
-> @@ -42,7 +42,7 @@ config FB_OMAP_LCD_MIPID
->  config FB_OMAP_LCD_H3
->  	bool "TPS65010 LCD controller on OMAP-H3"
->  	depends on MACH_OMAP_H3
-> -	depends on TPS65010
-> +	depends on TPS65010=3Dy
->  	default y
->  	help
->  	  Say Y here if you want to have support for the LCD on the
->=20
+Apart from simplification of the affected drivers this is another step
+towards making the flags argument to gpiod_get*() mandatory.
 
-Thanks, queued for 4.2.
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+---
+ drivers/video/fbdev/omap2/displays-new/encoder-opa362.c     | 12 +++------=
+---
+ drivers/video/fbdev/omap2/displays-new/panel-dpi.c          | 13 +++------=
+----
+ .../fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c     |  7 +++----
+ .../fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c      |  9 ++-------
+ 4 files changed, 11 insertions(+), 30 deletions(-)
 
- Tomi
+diff --git a/drivers/video/fbdev/omap2/displays-new/encoder-opa362.c b/driv=
+ers/video/fbdev/omap2/displays-new/encoder-opa362.c
+index 84a6b3367124..a14d993f719d 100644
+--- a/drivers/video/fbdev/omap2/displays-new/encoder-opa362.c
++++ b/drivers/video/fbdev/omap2/displays-new/encoder-opa362.c
+@@ -201,15 +201,9 @@ static int opa362_probe(struct platform_device *pdev)
+=20
+ 	platform_set_drvdata(pdev, ddata);
+=20
+-	gpio =3D devm_gpiod_get(&pdev->dev, "enable");
+-	if (IS_ERR(gpio)) {
+-		if (PTR_ERR(gpio) !=3D -ENOENT)
+-			return PTR_ERR(gpio);
+-
+-		gpio =3D NULL;
+-	} else {
+-		gpiod_direction_output(gpio, 0);
+-	}
++	gpio =3D devm_gpiod_get_optional(&pdev->dev, "enable", GPIOD_OUT_LOW);
++	if (IS_ERR(gpio))
++		return PTR_ERR(gpio);
+=20
+ 	ddata->enable_gpio =3D gpio;
+=20
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-dpi.c b/drivers/v=
+ideo/fbdev/omap2/displays-new/panel-dpi.c
+index eb8fd8140ad0..f7be3489f744 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-dpi.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-dpi.c
+@@ -209,16 +209,9 @@ static int panel_dpi_probe_of(struct platform_device *=
+pdev)
+ 	struct videomode vm;
+ 	struct gpio_desc *gpio;
+=20
+-	gpio =3D devm_gpiod_get(&pdev->dev, "enable");
+-
+-	if (IS_ERR(gpio)) {
+-		if (PTR_ERR(gpio) !=3D -ENOENT)
+-			return PTR_ERR(gpio);
+-		else
+-			gpio =3D NULL;
+-	} else {
+-		gpiod_direction_output(gpio, 0);
+-	}
++	gpio =3D devm_gpiod_get_optional(&pdev->dev, "enable", GPIOD_OUT_LOW);
++	if (IS_ERR(gpio))
++		return PTR_ERR(gpio);
+=20
+ 	ddata->enable_gpio =3D gpio;
+=20
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q0=
+2.c b/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c
+index 9974a37a11af..6a1b6a89a928 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-lgphilips-lb035q02.c
+@@ -285,15 +285,14 @@ static int lb035q02_probe_of(struct spi_device *spi)
+ 	struct omap_dss_device *in;
+ 	struct gpio_desc *gpio;
+=20
+-	gpio =3D devm_gpiod_get(&spi->dev, "enable");
++	gpio =3D devm_gpiod_get(&spi->dev, "enable", GPIOD_OUT_LOW);
+ 	if (IS_ERR(gpio)) {
+ 		dev_err(&spi->dev, "failed to parse enable gpio\n");
+ 		return PTR_ERR(gpio);
+-	} else {
+-		gpiod_direction_output(gpio, 0);
+-		ddata->enable_gpio =3D gpio;
+ 	}
+=20
++	ddata->enable_gpio =3D gpio;
++
+ 	ddata->backlight_gpio =3D -ENOENT;
+=20
+ 	in =3D omapdss_of_find_source_for_first_ep(node);
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01=
+.c b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
+index eae263702964..abfd1f6e3327 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-sharp-ls037v7dw01.c
+@@ -268,17 +268,12 @@ static  int sharp_ls_get_gpio_of(struct device *dev, =
+int index, int val,
+ 	const char *desc, struct gpio_desc **gpiod)
+ {
+ 	struct gpio_desc *gd;
+-	int r;
+=20
+ 	*gpiod =3D NULL;
+=20
+-	gd =3D devm_gpiod_get_index(dev, desc, index);
++	gd =3D devm_gpiod_get_index(dev, desc, index, GPIOD_OUT_LOW);
+ 	if (IS_ERR(gd))
+-		return PTR_ERR(gd) =3D -ENOENT ? 0 : PTR_ERR(gd);
+-
+-	r =3D gpiod_direction_output(gd, val);
+-	if (r)
+-		return r;
++		return PTR_ERR(gd);
+=20
+ 	*gpiod =3D gd;
+ 	return 0;
+--=20
+2.1.4
 
-
---NwOFECEr9NMCrtWTs1u7xkh5vPs5XnQMA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVYraKAAoJEPo9qoy8lh71sTIQALGpHFezDm0ldTpuhy1fIMe1
-AcrtAWJqX/fGSkS8wwdBiMsKoR8T8DgGVRJFEDjAu+qK3nx9hfACCCoOnPn5AG5V
-Zf1On+Lxf/T7gzBk4S9X5YI25sPUbVQuWwbensmgLRGFG4xlCYTc3XTD0dJq2Gz9
-am1xBWY/gCioo6ATXz8mZddoKLveuSu3R7dEnpvH4TGp5EFBD8Cpm7t2AeXhoMyd
-TD6SdGlaj07J6qbnMNmqS/G6+GbSOhQBnE/yAd7FcMMqXFjxTD3+lAAQ7HRFQi0u
-YR9tMgC9auIi6nZULcXiOxlIxMPZEjGGT9fe2fMDA/ypSj7q2xE7n6+mca6aR0xN
-r07QLJp/k3nqLndOnprWLyBX/olNYHQz5L0yiqvEk1EZ7K2EQ5QBC73GWrZMEQUQ
-SXCKlop0CPypnp4wG+R3/dBQB5F8ckGvSU5VPVyKI+qqfdBYbBMZUvaiO+Z0oHkf
-+Jtl9upLT/jqZmWCGQsjXJY7qKCsdLrTHFWkdQQfrXHRuaWJJJDHNN/wSMRaAQ0J
-nEjtW5bFK651dUegD1Y3vqgh1apiwMvK1JyDbe0Ky0GymA//Wx5+TZEv9p1Mbfgl
-iZAkZkQhCaoUILl3oXdMq3t6H0F8zt4+Z0Hvr+VDlhav7xpZOop+gLI6bcf81iRE
-ZE0kYaxHDN1Hpic3rAuQ
-=plML
------END PGP SIGNATURE-----
-
---NwOFECEr9NMCrtWTs1u7xkh5vPs5XnQMA--

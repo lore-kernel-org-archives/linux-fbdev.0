@@ -1,7 +1,7 @@
-From: Maxime Coquelin <maxime.coquelin@st.com>
-Date: Fri, 29 May 2015 12:59:45 +0000
+From: Tejun Heo <tj@kernel.org>
+Date: Fri, 29 May 2015 13:09:39 +0000
 Subject: Re: [PATCHv3 1/4] phy: phy-core: Make GENERIC_PHY an invisible option
-Message-Id: <556862C1.3080602@st.com>
+Message-Id: <20150529130939.GG27479@htj.duckdns.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
  <1429743853-10254-2-git-send-email-arun.ramamurthy@broadcom.com>
@@ -12,30 +12,26 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Kishon, Arun,
-
-On 05/29/2015 02:37 PM, Kishon Vijay Abraham I wrote:
+On Fri, May 29, 2015 at 06:07:18PM +0530, Kishon Vijay Abraham I wrote:
 > Tejun, Maxime, Sylwester, Kyungmin
->
+> 
 > On Thursday 23 April 2015 04:34 AM, Arun Ramamurthy wrote:
->> Most of the phy providers use "select" to enable GENERIC_PHY. Since 
->> select
->> is only recommended when the config is not visible, GENERIC_PHY is 
->> changed
->> an invisible option. To maintain consistency, all phy providers are 
->> changed
->> to "select" GENERIC_PHY and all non-phy drivers use "depends on" when 
->> the
->> phy framework is explicity required. USB_MUSB_OMAP2PLUS has a cyclic
->> dependency, so it is left as "select".
->>
->> Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
->
+> >Most of the phy providers use "select" to enable GENERIC_PHY. Since select
+> >is only recommended when the config is not visible, GENERIC_PHY is changed
+> >an invisible option. To maintain consistency, all phy providers are changed
+> >to "select" GENERIC_PHY and all non-phy drivers use "depends on" when the
+> >phy framework is explicity required. USB_MUSB_OMAP2PLUS has a cyclic
+> >dependency, so it is left as "select".
+> >
+> >Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+> 
 > Need your ACK for this patch.
->
 
-For the STi part, you can add my:
-Acked-by: Maxime Coquelin <maxime.coquelin@st.com>
+For ATA part,
 
-Regards,
-Maxime
+ Acked-by: Tejun Heo <tj@kernel.org>
+
+Thanks.
+
+-- 
+tejun

@@ -1,67 +1,181 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Thu, 14 May 2015 07:25:09 +0000
-Subject: Re: [PATCH] backlight/lp855x: Don't clear level on suspend/blank
-Message-Id: <20150514072509.GC20358@x1>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 29 May 2015 00:30:34 +0000
+Subject: [PATCH v4 3/17] video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
+Message-Id: <1432859434-17821-3-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1431376325-25741-1-git-send-email-seanpaul@chromium.org>
-In-Reply-To: <1431376325-25741-1-git-send-email-seanpaul@chromium.org>
+References: <1432859434-17821-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1432859434-17821-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Masanari Iida <standby24x7@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Andy Lutomirski <luto@amacapital.net>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-On Mon, 11 May 2015, Sean Paul wrote:
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-> Don't clear the backlight level when we're going into suspend or
-> blanking. Instead, just temporarily set the level to 0 so we retain
-> the value when we resume.
->=20
-> Reported-by: Benson Leung <bleung@chromium.org>
-> Tested-by: Stephen Barber <smbarber@chromium.org>
-> Signed-off-by: Sean Paul <seanpaul@chromium.org>
-> ---
->  drivers/video/backlight/lp855x_bl.c | 18 ++++++------------
->  1 file changed, 6 insertions(+), 12 deletions(-)
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
-Applied with Acks, thanks.
+There are a few motivations for this:
 
-> diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backligh=
-t/lp855x_bl.c
-> index 08ae72f..74daf7c 100644
-> --- a/drivers/video/backlight/lp855x_bl.c
-> +++ b/drivers/video/backlight/lp855x_bl.c
-> @@ -257,21 +257,15 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int =
-br, int max_br)
->  static int lp855x_bl_update_status(struct backlight_device *bl)
->  {
->  	struct lp855x *lp =3D bl_get_data(bl);
-> +	int brightness =3D bl->props.brightness;
-> =20
->  	if (bl->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
-> -		bl->props.brightness =3D 0;
-> +		brightness =3D 0;
-> =20
-> -	if (lp->mode =3D PWM_BASED) {
-> -		int br =3D bl->props.brightness;
-> -		int max_br =3D bl->props.max_brightness;
-> -
-> -		lp855x_pwm_ctrl(lp, br, max_br);
-> -
-> -	} else if (lp->mode =3D REGISTER_BASED) {
-> -		u8 val =3D bl->props.brightness;
-> -
-> -		lp855x_write_byte(lp, lp->cfg->reg_brightness, val);
-> -	}
-> +	if (lp->mode =3D PWM_BASED)
-> +		lp855x_pwm_ctrl(lp, brightness, bl->props.max_brightness);
-> +	else if (lp->mode =3D REGISTER_BASED)
-> +		lp855x_write_byte(lp, lp->cfg->reg_brightness, (u8)brightness);
-> =20
->  	return 0;
->  }
+a) Take advantage of PAT when available
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Masanari Iida <standby24x7@gmail.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+---
+ drivers/video/fbdev/gbefb.c | 26 +++++++-------------------
+ 1 file changed, 7 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
+index 4e54faa06..d2601808 100644
+--- a/drivers/video/fbdev/gbefb.c
++++ b/drivers/video/fbdev/gbefb.c
+@@ -22,9 +22,6 @@
+ #include <linux/module.h>
+ #include <linux/io.h>
+ 
+-#ifdef CONFIG_X86
+-#include <asm/mtrr.h>
+-#endif
+ #ifdef CONFIG_MIPS
+ #include <asm/addrspace.h>
+ #endif
+@@ -1176,8 +1173,8 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 
+ 	if (gbe_mem_phys) {
+ 		/* memory was allocated at boot time */
+-		gbe_mem = devm_ioremap_nocache(&p_dev->dev, gbe_mem_phys,
+-					       gbe_mem_size);
++		gbe_mem = devm_ioremap_wc(&p_dev->dev, gbe_mem_phys,
++					  gbe_mem_size);
+ 		if (!gbe_mem) {
+ 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
+ 			ret = -ENOMEM;
+@@ -1188,8 +1185,8 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 	} else {
+ 		/* try to allocate memory with the classical allocator
+ 		 * this has high chance to fail on low memory machines */
+-		gbe_mem = dma_alloc_coherent(NULL, gbe_mem_size, &gbe_dma_addr,
+-					     GFP_KERNEL);
++		gbe_mem = dma_alloc_writecombine(NULL, gbe_mem_size,
++						 &gbe_dma_addr, GFP_KERNEL);
+ 		if (!gbe_mem) {
+ 			printk(KERN_ERR "gbefb: couldn't allocate framebuffer memory\n");
+ 			ret = -ENOMEM;
+@@ -1200,10 +1197,7 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 	}
+ 
+ 	par = info->par;
+-#ifdef CONFIG_X86
+-	par->wc_cookie = mtrr_add(gbe_mem_phys, gbe_mem_size,
+-				   MTRR_TYPE_WRCOMB, 1);
+-#endif
++	par->wc_cookie = arch_phys_wc_add(gbe_mem_phys, gbe_mem_size);
+ 
+ 	/* map framebuffer memory into tiles table */
+ 	for (i = 0; i < (gbe_mem_size >> TILE_SHIFT); i++)
+@@ -1242,10 +1236,7 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 	return 0;
+ 
+ out_gbe_unmap:
+-#ifdef CONFIG_MTRR
+-	if (par->wc_cookie >= 0)
+-		mtrr_del(par->wc_cookie, 0, 0);
+-#endif
++	arch_phys_wc_del(par->wc_cookie);
+ 	if (gbe_dma_addr)
+ 		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
+ out_tiles_free:
+@@ -1266,10 +1257,7 @@ static int gbefb_remove(struct platform_device* p_dev)
+ 
+ 	unregister_framebuffer(info);
+ 	gbe_turn_off();
+-#ifdef CONFIG_MTRR
+-	if (par->wc_cookie >= 0)
+-		mtrr_del(par->wc_cookie, 0, 0);
+-#endif
++	arch_phys_wc_del(par->wc_cookie);
+ 	if (gbe_dma_addr)
+ 		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
+ 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
+-- 
+2.3.2.209.gd67f9d5.dirty
+

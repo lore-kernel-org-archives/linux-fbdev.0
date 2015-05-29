@@ -1,107 +1,187 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Sun, 17 May 2015 16:27:40 +0000
-Subject: [PATCH v3 00/17] new LoCoMo driver set
-Message-Id: <1431880077-26321-1-git-send-email-dbaryshkov@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 29 May 2015 22:07:16 +0000
+Subject: [PATCH v5 3/17] video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
+Message-Id: <1432937236-9327-2-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1432937236-9327-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1432937236-9327-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Wolfram Sang <wsa@the-dreams.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Andrea Adami <andrea.adami@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+To: tomi.valkeinen@ti.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Masanari Iida <standby24x7@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Andy Lutomirski <luto@amacapital.net>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-Sharp Zaurus SL-5500 and SL-5600 use special companion Gate Array.
-With this patchset I tried to modernise and restructure the LoCoMo drivers.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-* Use platform bus and mfd core code
-* Use GPIO API instead of custom locomo GPIO code
-* Use irqdomains to manage IRQs
-* Split mixed locomolcd driver to lcd and backlight parts
-* Implement IRQ handling in GPIO driver
-* Implement SPI driver used as a host for mmc_spi device to control SD cards
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
 
-Changes since V2:
-* Implemented most of review findings (lots of small changes)
-* Added comments where the review feedback was ignored
+There are a few motivations for this:
 
-The following changes since commit b787f68c36d49bb1d9236f403813641efa74a031:
+a) Take advantage of PAT when available
 
-  Linux 4.1-rc1 (2015-04-26 17:59:10 -0700)
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
 
-are available in the git repository at:
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
 
-  git://git.infradead.org/users/dbaryshkov/zaurus.git locomo-v3
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
 
-for you to fetch changes up to c7405f110836863287c505650ac2133fecabea7b:
+@ mtrr_found @
+expression index, base, size;
+@@
 
-  ARM: drop old LoCoMo driver (2015-05-17 19:23:20 +0300)
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
 
-----------------------------------------------------------------
-Dmitry Eremin-Solenikov (17):
-      mfd: add new driver for Sharp LoCoMo
-      leds: port locomo leds driver to new locomo core
-      input: convert LoCoMo keyboard driver to use new locomo core
-      input: make LoCoMo keyboard driver support both poodle and collie
-      video: backlight: add new locomo backlight driver
-      video: lcd: add LoCoMo LCD driver
-      gpio: port LoCoMo gpio support from old driver
-      gpio: locomo: implement per-pin irq handling
-      spi: add locomo SPI driver
-      i2c: add locomo i2c driver
-      ARM: sa1100: make collie use new locomo drivers
-      ARM: sa1100: don't preallocate IRQ space for locomo
-      ASoC: pxa: poodle: make use of new locomo GPIO interface
-      ARM: pxa: poodle: use new LoCoMo driver
-      ARM: pxa: poodle: don't preallocate IRQ space for locomo
-      video: backlight: drop old locomo bl/lcd driver
-      ARM: drop old LoCoMo driver
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
 
- arch/arm/common/Kconfig                    |   3 -
- arch/arm/common/Makefile                   |   1 -
- arch/arm/common/locomo.c                   | 914 -----------------------------
- arch/arm/include/asm/hardware/locomo.h     | 221 -------
- arch/arm/mach-pxa/Kconfig                  |   1 -
- arch/arm/mach-pxa/include/mach/poodle.h    |   8 +-
- arch/arm/mach-pxa/poodle.c                 |  58 +-
- arch/arm/mach-sa1100/Kconfig               |   1 -
- arch/arm/mach-sa1100/collie.c              | 213 +++++--
- arch/arm/mach-sa1100/include/mach/collie.h |  16 +-
- arch/arm/mach-sa1100/include/mach/irqs.h   |  19 +-
- drivers/gpio/Kconfig                       |  13 +
- drivers/gpio/Makefile                      |   1 +
- drivers/gpio/gpio-locomo.c                 | 285 +++++++++
- drivers/i2c/busses/Kconfig                 |  12 +
- drivers/i2c/busses/Makefile                |   1 +
- drivers/i2c/busses/i2c-locomo.c            | 135 +++++
- drivers/input/keyboard/Kconfig             |   2 +-
- drivers/input/keyboard/locomokbd.c         | 264 ++++-----
- drivers/leds/Kconfig                       |   2 +-
- drivers/leds/leds-locomo.c                 | 117 ++--
- drivers/mfd/Kconfig                        |  10 +
- drivers/mfd/Makefile                       |   1 +
- drivers/mfd/locomo.c                       | 346 +++++++++++
- drivers/spi/Kconfig                        |  10 +
- drivers/spi/Makefile                       |   1 +
- drivers/spi/spi-locomo.c                   | 332 +++++++++++
- drivers/video/backlight/Kconfig            |  16 +-
- drivers/video/backlight/Makefile           |   3 +-
- drivers/video/backlight/locomo_bl.c        | 153 +++++
- drivers/video/backlight/locomo_lcd.c       | 285 +++++++++
- drivers/video/backlight/locomolcd.c        | 255 --------
- include/linux/mfd/locomo.h                 | 167 ++++++
- sound/soc/pxa/poodle.c                     |  52 +-
- 34 files changed, 2216 insertions(+), 1702 deletions(-)
- delete mode 100644 arch/arm/common/locomo.c
- delete mode 100644 arch/arm/include/asm/hardware/locomo.h
- create mode 100644 drivers/gpio/gpio-locomo.c
- create mode 100644 drivers/i2c/busses/i2c-locomo.c
- create mode 100644 drivers/mfd/locomo.c
- create mode 100644 drivers/spi/spi-locomo.c
- create mode 100644 drivers/video/backlight/locomo_bl.c
- create mode 100644 drivers/video/backlight/locomo_lcd.c
- delete mode 100644 drivers/video/backlight/locomolcd.c
- create mode 100644 include/linux/mfd/locomo.h
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
 
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Masanari Iida <standby24x7@gmail.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+---
+ drivers/video/fbdev/gbefb.c | 30 +++++++++---------------------
+ 1 file changed, 9 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
+index 4e54faa06..b63d55f 100644
+--- a/drivers/video/fbdev/gbefb.c
++++ b/drivers/video/fbdev/gbefb.c
+@@ -22,9 +22,6 @@
+ #include <linux/module.h>
+ #include <linux/io.h>
+ 
+-#ifdef CONFIG_X86
+-#include <asm/mtrr.h>
+-#endif
+ #ifdef CONFIG_MIPS
+ #include <asm/addrspace.h>
+ #endif
+@@ -1176,8 +1173,8 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 
+ 	if (gbe_mem_phys) {
+ 		/* memory was allocated at boot time */
+-		gbe_mem = devm_ioremap_nocache(&p_dev->dev, gbe_mem_phys,
+-					       gbe_mem_size);
++		gbe_mem = devm_ioremap_wc(&p_dev->dev, gbe_mem_phys,
++					  gbe_mem_size);
+ 		if (!gbe_mem) {
+ 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
+ 			ret = -ENOMEM;
+@@ -1188,8 +1185,8 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 	} else {
+ 		/* try to allocate memory with the classical allocator
+ 		 * this has high chance to fail on low memory machines */
+-		gbe_mem = dma_alloc_coherent(NULL, gbe_mem_size, &gbe_dma_addr,
+-					     GFP_KERNEL);
++		gbe_mem = dma_alloc_writecombine(NULL, gbe_mem_size,
++						 &gbe_dma_addr, GFP_KERNEL);
+ 		if (!gbe_mem) {
+ 			printk(KERN_ERR "gbefb: couldn't allocate framebuffer memory\n");
+ 			ret = -ENOMEM;
+@@ -1200,10 +1197,7 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 	}
+ 
+ 	par = info->par;
+-#ifdef CONFIG_X86
+-	par->wc_cookie = mtrr_add(gbe_mem_phys, gbe_mem_size,
+-				   MTRR_TYPE_WRCOMB, 1);
+-#endif
++	par->wc_cookie = arch_phys_wc_add(gbe_mem_phys, gbe_mem_size);
+ 
+ 	/* map framebuffer memory into tiles table */
+ 	for (i = 0; i < (gbe_mem_size >> TILE_SHIFT); i++)
+@@ -1242,12 +1236,9 @@ static int gbefb_probe(struct platform_device *p_dev)
+ 	return 0;
+ 
+ out_gbe_unmap:
+-#ifdef CONFIG_MTRR
+-	if (par->wc_cookie >= 0)
+-		mtrr_del(par->wc_cookie, 0, 0);
+-#endif
++	arch_phys_wc_del(par->wc_cookie);
+ 	if (gbe_dma_addr)
+-		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
++		dma_free_writecombine(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
+ out_tiles_free:
+ 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
+ 			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
+@@ -1266,12 +1257,9 @@ static int gbefb_remove(struct platform_device* p_dev)
+ 
+ 	unregister_framebuffer(info);
+ 	gbe_turn_off();
+-#ifdef CONFIG_MTRR
+-	if (par->wc_cookie >= 0)
+-		mtrr_del(par->wc_cookie, 0, 0);
+-#endif
++	arch_phys_wc_del(par->wc_cookie);
+ 	if (gbe_dma_addr)
+-		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
++		dma_free_writecombine(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
+ 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
+ 			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
+ 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
 -- 
-With best wishes
-Dmitry
+2.3.2.209.gd67f9d5.dirty
 

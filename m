@@ -1,195 +1,92 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Wed, 20 May 2015 23:08:13 +0000
-Subject: [PATCH v6 4/4] video: fbdev: vt8623fb: use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1432163293-20965-5-git-send-email-mcgrof@do-not-panic.com>
+Date: Fri, 29 May 2015 22:07:15 +0000
+Subject: [PATCH v5 0/17] framebuffer: simple conversions to arch_phys_wc_add()
+Message-Id: <1432937236-9327-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432163293-20965-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1432163293-20965-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bhelgaas@google.com
-Cc: tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, Rob Clark <robdclark@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Jingoo Han <jg1.han@samsung.com>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-This driver uses the same area for MTRR as for the ioremap().
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
+Tomi,
 
-There are a few motivations for this:
+this v5 series goes with the patch 3/17 titled "video: fbdev: gbefb:
+use arch_phys_wc_add() and devm_ioremap_wc()" with a change from
+dma_free_coherent() to dma_free_writecombine() for the area now allocated
+with dma_alloc_writecombine(). The remaining patches remain the same.
 
-a) Take advantage of PAT when available
+As for the pull request all I did was reset my tree to yours, and
+then reset it to the same old commit 36520841a443d5ee966f9632c417fcc8a25e07e3,
+then applied the new series. The only delta from the v4 seires is the
+patch 3/17. The new branch changes from simple-arch_phys-20150528 to
+simple-arch_phys-20150529. Pull request below for your convenience.
 
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
+Luis R. Rodriguez (1):
+  video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
 
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
+ drivers/video/fbdev/gbefb.c | 30 +++++++++---------------------
+ 1 file changed, 9 insertions(+), 21 deletions(-)
 
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
+The following changes since commit 36520841a443d5ee966f9632c417fcc8a25e07e3:
 
-@ mtrr_found @
-expression index, base, size;
-@@
+  video/console: use swap() in newport_bmove() (2015-05-27 12:54:49 +0300)
 
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
+are available in the git repository at:
 
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
+  https://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/linux-framebuffer.git simple-arch_phys-20150529
 
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
+for you to fetch changes up to d8328b5f2175f1ae2f9dc4db6140af67c9196989:
 
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
+  video: fbdev: geode gxfb: use ioremap_wc() for framebuffer (2015-05-29 14:57:49 -0700)
 
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
+----------------------------------------------------------------
+Luis R. Rodriguez (17):
+      video: fbdev: radeonfb: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: gbefb: add missing mtrr_del() calls
+      video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
+      video: fbdev: intelfb: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: matrox: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: neofb: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: nvidia: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: savagefb: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: sisfb: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: aty: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: i810: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: pm2fb: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: pm3fb: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: rivafb: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: tdfxfb: use arch_phys_wc_add() and ioremap_wc()
+      video: fbdev: atmel_lcdfb: use ioremap_wc() for framebuffer
+      video: fbdev: geode gxfb: use ioremap_wc() for framebuffer
 
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
----
- drivers/video/fbdev/vt8623fb.c | 31 ++++++-------------------------
- 1 file changed, 6 insertions(+), 25 deletions(-)
-
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index ea7f056..60f24828 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
-@@ -26,13 +26,9 @@
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
- 
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- struct vt8623fb_info {
- 	char __iomem *mmio_base;
--	int mtrr_reg;
-+	int wc_cookie;
- 	struct vgastate state;
- 	struct mutex open_lock;
- 	unsigned int ref_count;
-@@ -99,10 +95,7 @@ static struct svga_timing_regs vt8623_timing_regs     = {
- /* Module parameters */
- 
- static char *mode_option = "640x480-8@60";
--
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
- 
- MODULE_AUTHOR("(c) 2006 Ondrej Zajicek <santiago@crfreenet.org>");
- MODULE_LICENSE("GPL");
-@@ -112,11 +105,8 @@ module_param(mode_option, charp, 0644);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0);
- MODULE_PARM_DESC(mode, "Default video mode e.g. '648x480-8@60' (deprecated)");
--
--#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
- 
- 
- /* ------------------------------------------------------------------------- */
-@@ -710,7 +700,7 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.mmio_len = pci_resource_len(dev, 1);
- 
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -781,12 +771,9 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
- 
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
- 
- 	return 0;
- 
-@@ -816,13 +803,7 @@ static void vt8623_pci_remove(struct pci_dev *dev)
- 	if (info) {
- 		struct vt8623fb_info *par = info->par;
- 
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
--#endif
--
-+		arch_phys_wc_del(par->wc_cookie);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
- 
--- 
-2.3.2.209.gd67f9d5.dirty
-
+ drivers/video/fbdev/atmel_lcdfb.c            |  3 +-
+ drivers/video/fbdev/aty/aty128fb.c           | 36 ++++--------------------
+ drivers/video/fbdev/aty/radeon_base.c        | 29 ++++----------------
+ drivers/video/fbdev/aty/radeonfb.h           |  2 +-
+ drivers/video/fbdev/gbefb.c                  | 25 ++++++++---------
+ drivers/video/fbdev/geode/gxfb_core.c        |  3 +-
+ drivers/video/fbdev/i810/i810.h              |  3 +-
+ drivers/video/fbdev/i810/i810_main.c         | 11 +++++---
+ drivers/video/fbdev/i810/i810_main.h         | 26 ------------------
+ drivers/video/fbdev/intelfb/intelfb.h        |  4 +--
+ drivers/video/fbdev/intelfb/intelfbdrv.c     | 38 +++-----------------------
+ drivers/video/fbdev/matrox/matroxfb_base.c   | 36 +++++++++---------------
+ drivers/video/fbdev/matrox/matroxfb_base.h   | 27 +-----------------
+ drivers/video/fbdev/neofb.c                  | 26 +++++-------------
+ drivers/video/fbdev/nvidia/nv_type.h         |  7 +----
+ drivers/video/fbdev/nvidia/nvidia.c          | 37 ++++---------------------
+ drivers/video/fbdev/pm2fb.c                  | 31 ++++-----------------
+ drivers/video/fbdev/pm3fb.c                  | 30 ++++----------------
+ drivers/video/fbdev/riva/fbdev.c             | 39 +++++---------------------
+ drivers/video/fbdev/riva/rivafb.h            |  4 +--
+ drivers/video/fbdev/savage/savagefb.h        |  4 +--
+ drivers/video/fbdev/savage/savagefb_driver.c | 17 ++----------
+ drivers/video/fbdev/sis/sis.h                |  2 +-
+ drivers/video/fbdev/sis/sis_main.c           | 27 ++++--------------
+ drivers/video/fbdev/tdfxfb.c                 | 41 ++++------------------------
+ include/video/neomagic.h                     |  5 +---
+ include/video/tdfx.h                         |  2 +-
+ 27 files changed, 108 insertions(+), 407 deletions(-)

@@ -1,121 +1,41 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Fri, 29 May 2015 12:49:18 +0000
+From: Maxime Coquelin <maxime.coquelin@st.com>
+Date: Fri, 29 May 2015 12:59:45 +0000
 Subject: Re: [PATCHv3 1/4] phy: phy-core: Make GENERIC_PHY an invisible option
-Message-Id: <55685D7E.9000700@ti.com>
+Message-Id: <556862C1.3080602@st.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1429743853-10254-1-git-send-email-arun.ramamurthy@broadcom.com>
  <1429743853-10254-2-git-send-email-arun.ramamurthy@broadcom.com>
-In-Reply-To: <1429743853-10254-2-git-send-email-arun.ramamurthy@broadcom.com>
+ <55685D7E.9000700@ti.com>
+In-Reply-To: <55685D7E.9000700@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Tejun, Maxime, Sylwester, Kyungmin
+Hi Kishon, Arun,
 
-On Thursday 23 April 2015 04:34 AM, Arun Ramamurthy wrote:
-> Most of the phy providers use "select" to enable GENERIC_PHY. Since select
-> is only recommended when the config is not visible, GENERIC_PHY is changed
-> an invisible option. To maintain consistency, all phy providers are changed
-> to "select" GENERIC_PHY and all non-phy drivers use "depends on" when the
-> phy framework is explicity required. USB_MUSB_OMAP2PLUS has a cyclic
-> dependency, so it is left as "select".
+On 05/29/2015 02:37 PM, Kishon Vijay Abraham I wrote:
+> Tejun, Maxime, Sylwester, Kyungmin
 >
-> Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+> On Thursday 23 April 2015 04:34 AM, Arun Ramamurthy wrote:
+>> Most of the phy providers use "select" to enable GENERIC_PHY. Since 
+>> select
+>> is only recommended when the config is not visible, GENERIC_PHY is 
+>> changed
+>> an invisible option. To maintain consistency, all phy providers are 
+>> changed
+>> to "select" GENERIC_PHY and all non-phy drivers use "depends on" when 
+>> the
+>> phy framework is explicity required. USB_MUSB_OMAP2PLUS has a cyclic
+>> dependency, so it is left as "select".
+>>
+>> Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+>
+> Need your ACK for this patch.
+>
 
-Need your ACK for this patch.
+For the STi part, you can add my:
+Acked-by: Maxime Coquelin <maxime.coquelin@st.com>
 
-Thanks
-Kishon
-
-> ---
->   drivers/ata/Kconfig                       | 1 -
->   drivers/media/platform/exynos4-is/Kconfig | 2 +-
->   drivers/phy/Kconfig                       | 4 ++--
->   drivers/usb/host/Kconfig                  | 4 ++--
->   drivers/video/fbdev/exynos/Kconfig        | 2 +-
->   5 files changed, 6 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-> index 5f60155..6d2e881 100644
-> --- a/drivers/ata/Kconfig
-> +++ b/drivers/ata/Kconfig
-> @@ -301,7 +301,6 @@ config SATA_MV
->   	tristate "Marvell SATA support"
->   	depends on PCI || ARCH_DOVE || ARCH_MV78XX0 || \
->   		   ARCH_MVEBU || ARCH_ORION5X || COMPILE_TEST
-> -	select GENERIC_PHY
->   	help
->   	  This option enables support for the Marvell Serial ATA family.
->   	  Currently supports 88SX[56]0[48][01] PCI(-X) chips,
-> diff --git a/drivers/media/platform/exynos4-is/Kconfig b/drivers/media/platform/exynos4-is/Kconfig
-> index b7b2e47..b6f3eaa 100644
-> --- a/drivers/media/platform/exynos4-is/Kconfig
-> +++ b/drivers/media/platform/exynos4-is/Kconfig
-> @@ -31,7 +31,7 @@ config VIDEO_S5P_FIMC
->   config VIDEO_S5P_MIPI_CSIS
->   	tristate "S5P/EXYNOS MIPI-CSI2 receiver (MIPI-CSIS) driver"
->   	depends on REGULATOR
-> -	select GENERIC_PHY
-> +	depends on GENERIC_PHY
->   	help
->   	  This is a V4L2 driver for Samsung S5P and EXYNOS4 SoC MIPI-CSI2
->   	  receiver (MIPI-CSIS) devices.
-> diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
-> index 2962de2..edecdb1 100644
-> --- a/drivers/phy/Kconfig
-> +++ b/drivers/phy/Kconfig
-> @@ -5,7 +5,7 @@
->   menu "PHY Subsystem"
->
->   config GENERIC_PHY
-> -	bool "PHY Core"
-> +	bool
->   	help
->   	  Generic PHY support.
->
-> @@ -72,7 +72,7 @@ config PHY_MIPHY365X
->   config PHY_RCAR_GEN2
->   	tristate "Renesas R-Car generation 2 USB PHY driver"
->   	depends on ARCH_SHMOBILE
-> -	depends on GENERIC_PHY
-> +	select GENERIC_PHY
->   	help
->   	  Support for USB PHY found on Renesas R-Car generation 2 SoCs.
->
-> diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-> index 5ad60e4..e2197e2 100644
-> --- a/drivers/usb/host/Kconfig
-> +++ b/drivers/usb/host/Kconfig
-> @@ -182,7 +182,7 @@ config USB_EHCI_HCD_SPEAR
->   config USB_EHCI_HCD_STI
->   	tristate "Support for ST STiHxxx on-chip EHCI USB controller"
->   	depends on ARCH_STI && OF
-> -	select GENERIC_PHY
-> +	depends on GENERIC_PHY
->   	select USB_EHCI_HCD_PLATFORM
->   	help
->   	  Enable support for the on-chip EHCI controller found on
-> @@ -409,7 +409,7 @@ config USB_OHCI_HCD_SPEAR
->   config USB_OHCI_HCD_STI
->   	tristate "Support for ST STiHxxx on-chip OHCI USB controller"
->   	depends on ARCH_STI && OF
-> -	select GENERIC_PHY
-> +	depends on GENERIC_PHY
->   	select USB_OHCI_HCD_PLATFORM
->   	help
->   	  Enable support for the on-chip OHCI controller found on
-> diff --git a/drivers/video/fbdev/exynos/Kconfig b/drivers/video/fbdev/exynos/Kconfig
-> index 1f16b46..6c53894 100644
-> --- a/drivers/video/fbdev/exynos/Kconfig
-> +++ b/drivers/video/fbdev/exynos/Kconfig
-> @@ -16,7 +16,7 @@ if EXYNOS_VIDEO
->
->   config EXYNOS_MIPI_DSI
->   	bool "EXYNOS MIPI DSI driver support."
-> -	select GENERIC_PHY
-> +	depends on GENERIC_PHY
->   	help
->   	  This enables support for MIPI-DSI device.
->
->
+Regards,
+Maxime

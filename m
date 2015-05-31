@@ -1,47 +1,82 @@
-From: "Dr. Christopher Harrison" <acarranzav@munichiclayo.gob.pe>
-Date: Tue, 05 May 2015 10:18:22 +0000
-Subject: Von Dr. Christopher Harrison (Bitte antworten)
-Message-Id: <382328877.11507.1430821102003.JavaMail.zimbra@munichiclayo.gob.pe>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sun, 31 May 2015 01:01:45 +0000
+Subject: [RFC 13/24] powerpc: Cleanup nvram includes
+Message-Id: <20150531010135.589206045@telegraphics.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20150531010132.289674310@telegraphics.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+
+The nvram_read_byte() and nvram_write_byte() definitions in asm/nvram.h
+duplicate those in linux/nvram.h. Get rid of the former to prepare for
+adoption of struct arch_nvram_ops (which is defined in linux/nvram.h for
+general use).
+
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+
+---
+ arch/powerpc/include/asm/nvram.h           |    3 ---
+ arch/powerpc/kernel/setup_32.c             |    1 +
+ drivers/char/generic_nvram.c               |    4 +++-
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+
+Index: linux/arch/powerpc/include/asm/nvram.h
+=================================--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-05-31 11:00:59.000000000 +1000
++++ linux/arch/powerpc/include/asm/nvram.h	2015-05-31 11:01:13.000000000 +1000
+@@ -101,7 +101,4 @@ extern int nvram_write_os_partition(stru
+ /* Determine NVRAM size */
+ extern ssize_t nvram_get_size(void);
+ 
+-/* Normal access to NVRAM */
+-extern unsigned char nvram_read_byte(int i);
+-extern void nvram_write_byte(unsigned char c, int i);
+ #endif /* _ASM_POWERPC_NVRAM_H */
+Index: linux/arch/powerpc/kernel/setup_32.c
+=================================--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-05-31 11:00:59.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-05-31 11:01:13.000000000 +1000
+@@ -16,6 +16,7 @@
+ #include <linux/cpu.h>
+ #include <linux/console.h>
+ #include <linux/memblock.h>
++#include <linux/nvram.h>
+ 
+ #include <asm/io.h>
+ #include <asm/prom.h>
+Index: linux/drivers/char/generic_nvram.c
+=================================--- linux.orig/drivers/char/generic_nvram.c	2015-05-31 11:00:59.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-05-31 11:01:13.000000000 +1000
+@@ -20,9 +20,11 @@
+ #include <linux/fcntl.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
++#include <linux/nvram.h>
+ #include <asm/uaccess.h>
+-#include <asm/nvram.h>
++
+ #ifdef CONFIG_PPC_PMAC
++#include <asm/nvram.h>
+ #include <asm/machdep.h>
+ #endif
+ 
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-05-31 11:00:59.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-05-31 11:01:13.000000000 +1000
+@@ -111,12 +111,12 @@
+ #include "matroxfb_g450.h"
+ #include <linux/matroxfb.h>
+ #include <linux/interrupt.h>
++#include <linux/nvram.h>
+ #include <linux/slab.h>
+ #include <linux/uaccess.h>
+ 
+ #ifdef CONFIG_PPC_PMAC
+ #include <asm/machdep.h>
+-unsigned char nvram_read_byte(int);
+ static int default_vmode = VMODE_NVRAM;
+ static int default_cmode = CMODE_NVRAM;
+ #endif
 
 
-Lieber Freund,
-
-
-Wie geht es dir heute? Ich hoffe, in Ordnung, ich bin Dr. Christopher Harrison von NothWest London, England. Ich arbeite für Zweig Lloyds Bank London. Ich schreibe Ihnen aus meinem Büro, das aus einem großen immense Vorteil für uns beide sein wird. In meiner Abteilung, dass die Co-Trainer (Großregion London), entdeckte ich eine verlassene Summe von £ 16,5 Millionen Pfund (Sechzehn Millionen fünfhunderttausend Pfund und Pfund Sterling) in einem Konto, das Sie mit einem unserer ausländischen Kunden Späte Herr Ron Bramlage gehört , ein Amerikaner, der in Kansas Staaten lebt, die ein Opfer von einem Hubschrauberabsturz im vergangenen Jahr 8. Juni 2012, in Florida Sumpf ihn und Familienmitglieder zu töten war. Ron war 45 Jahre alt. Auch in der Chopper zum Zeitpunkt des Absturzes war seine Frau Rebecca, 43, und die Kinder des Paares - Brandon, 15; Boston, 13; Beau, 11; und 8-jährige Roxanne - wurden getötet. Der Pilot war auch tot.
-
-
-Ich suche Ihre Partnerschaft und Zusammenarbeit zur Durchführung dieser Transaktion zusammen, weil der Lloyds Bank schließt einige ihrer Zweigstellen und den Zweig, wo dieser Fonds hinterlegt ist unter denen geschlossen werden, so dass ich möchte, dass wir diesen Fonds zu bekommen, bevor ihre Verschluss. Ich habe Sie kontaktiert, weil ich glaube, Sie werden nicht weglaufen mit eigenen Aktien dieses Fonds, wenn es Ihrem Konto eingeht, und die gemeinsame Nutzung Quote von 60% für mich und 40% für Ihre Zusammenarbeit. Für Sie die Lloyds Bank, um sicherzustellen, Schließen Niederlassungen besuchen Sie diese Seite:
-
-
-https://uk.news.yahoo.com/lloyds-bank-more-200-branches-close-181000783--finance.html#4KVKdTh
-
-
-Aufgrund der Sensibilität der Transaktion und die Vertraulichkeit hier, jetzt unsere Bank hat für keine der Verwandten warten zu kommen-up für die Behauptung, aber niemand hat in der Suche die Verwandten für eine lange Zeit jetzt getan, dass ich persönlich nicht erfolgreich waren . Mein lieber Freund, ich suche Ihre Zustimmung an Sie als nächsten Angehörigen / Will Begünstigter des Verstorbenen zu präsentieren, so dass die Erlöse aus diesem Konto bei £ 16,5 Millionen Pfund an Sie gezahlt werden bewertet.
-
-
-Das wird für mich ausgezahlt oder geteilt in diese Prozentsätze, 60% und 40% zu Ihnen, ich habe alle notwendigen rechtlichen Dokumente, die wir verwendet werden, um diese Behauptung wir machen gesichert. Alles was ich brauche ist es, in Ihrem Namen zu den Dokumenten füllen und legalisiert es in den Hof und die Lloyds Bank hier, um Ihnen zu beweisen, als berechtigten Empfänger, ist Alles, was ich jetzt brauche Ihre ehrliche Zusammenarbeit, Verschwiegenheit und Vertrauen, damit wir sehen, diese Transaktion durch. Ich garantiere Ihnen, dass dies unter einer legitimen Anordnung, die Sie von einem Verstoß gegen das Gesetz hier in England und in Ihrem Land zu schützen wird ausgeführt.
-
-
-Bitte, bitte senden Sie mir die folgenden: wir haben 7 Tage, um es zu durchlaufen, das ist sehr, sehr URGENT PLEASE.
-
-
-1. Vollständiger Name: ......................
-2. Ihre Telefonnummer: .................
-3. Ihre Kontaktadresse: ..................
-4. Alter / Geschlecht: ...................
-5. Kern Job / Beruf: ..............
-
-
-Bitte beantworten Sie meine E-Mail hier: harrisondr.christoph_office@yahoo.co.uk
-
-
-Ich habe euch in Kontakt gebracht, zu glauben, dass Sie nicht weglaufen mit eigenen Aktien dieses Fonds, wenn es Ihrem Konto kommt, hoffe ich, können Sie auf diese vertrauen? Wie Sie wissen, diese Transaktion beinhalten sehr viel Geld. Bitte Standard freundlich zeigen Sie Ihr Interesse, indem sie mich mit Ihren Angaben wie oben, so kann ich Ihnen mehr Informationen darüber, wie die Bank gehen, um diesen Fonds zu Ihnen innerhalb von 5 Bankarbeitstagen übertragen bekommen zu erbringen. Endeavour zu antworten, dass sie nicht länger auf mich gewartet. Ok, mein lieber Freund?
-
-
-Freundliche Grüße,
-Dr. Christopher Harrison

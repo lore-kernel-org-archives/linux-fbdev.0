@@ -1,230 +1,214 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 14 May 2015 14:07:55 +0000
-Subject: [PATCH v5] staging: sm750fb: use arch_phys_wc_add() and ioremap_wc()
-Message-Id: <1431612475-2922-1-git-send-email-mcgrof@do-not-panic.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sun, 31 May 2015 01:01:49 +0000
+Subject: [RFC 17/24] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvram_write_
+Message-Id: <20150531010136.589779023@telegraphics.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20150531010132.289674310@telegraphics.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cocci@systeme.lip6.fr
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Make use of arch_nvram_ops in device drivers so that the nvram_*
+function exports can be removed.
 
-The same area used for ioremap() is used for the MTRR area.
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
+Since they are no longer global symbols, rename the PPC32 nvram_* functions
+appropriately.
 
-There are a few motivations for this:
+Add the missing CONFIG_NVRAM test to imsttfb to avoid a build failure.
 
-a) Take advantage of PAT when available
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devel@driverdev.osuosl.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/sm750fb/sm750.c    | 36 ++++--------------------------------
- drivers/staging/sm750fb/sm750.h    |  3 ---
- drivers/staging/sm750fb/sm750_hw.c |  3 +--
- 3 files changed, 5 insertions(+), 37 deletions(-)
+ arch/powerpc/kernel/setup_32.c             |    8 ++++----
+ drivers/char/generic_nvram.c               |    4 ++--
+ drivers/video/fbdev/controlfb.c            |    4 ++--
+ drivers/video/fbdev/imsttfb.c              |    7 +++----
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ drivers/video/fbdev/platinumfb.c           |    4 ++--
+ drivers/video/fbdev/valkyriefb.c           |    4 ++--
+ 7 files changed, 16 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 5529905..97fe04a 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -16,9 +16,6 @@
- #include<linux/vmalloc.h>
- #include<linux/pagemap.h>
- #include <linux/console.h>
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
- #include <asm/fb.h>
- #include "sm750.h"
- #include "sm750_hw.h"
-@@ -47,9 +44,7 @@ typedef int (*PROC_SPEC_INITHW)(struct lynx_share*, struct pci_dev*);
- /* common var for all device */
- static int g_hwcursor = 1;
- static int g_noaccel;
--#ifdef CONFIG_MTRR
- static int g_nomtrr;
--#endif
- static const char *g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "800x600-16@60";
- static char *g_settings = NULL;
-@@ -1126,11 +1121,8 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
- 
- 	pr_info("share->revid = %02x\n", share->revid);
- 	share->pdev = pdev;
--#ifdef CONFIG_MTRR
- 	share->mtrr_off = g_nomtrr;
- 	share->mtrr.vram = 0;
--	share->mtrr.vram_added = 0;
--#endif
- 	share->accel_off = g_noaccel;
- 	share->dual = g_dualview;
- 	spin_lock_init(&share->slock);
-@@ -1158,22 +1150,9 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
- 		goto err_map;
+Index: linux/arch/powerpc/kernel/setup_32.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-=
+05-31 11:01:17.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-05-31 11:01:19.000000000 +1000
+@@ -170,20 +170,18 @@ __setup("l3cr=3D", ppc_setup_l3cr);
+=20
+ #ifdef CONFIG_GENERIC_NVRAM
+=20
+-unsigned char nvram_read_byte(int addr)
++static unsigned char ppc_nvram_read_byte(int addr)
+ {
+ 	if (ppc_md.nvram_read_val)
+ 		return ppc_md.nvram_read_val(addr);
+ 	return 0xff;
+ }
+-EXPORT_SYMBOL(nvram_read_byte);
+=20
+-void nvram_write_byte(unsigned char val, int addr)
++static void ppc_nvram_write_byte(unsigned char val, int addr)
+ {
+ 	if (ppc_md.nvram_write_val)
+ 		ppc_md.nvram_write_val(addr, val);
+ }
+-EXPORT_SYMBOL(nvram_write_byte);
+=20
+ static ssize_t ppc_nvram_get_size(void)
+ {
+@@ -200,6 +198,8 @@ static long ppc_nvram_sync(void)
+ }
+=20
+ const struct nvram_ops arch_nvram_ops =3D {
++	.read_byte      =3D ppc_nvram_read_byte,
++	.write_byte     =3D ppc_nvram_write_byte,
+ 	.get_size       =3D ppc_nvram_get_size,
+ 	.sync           =3D ppc_nvram_sync,
+ };
+Index: linux/drivers/char/generic_nvram.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/char/generic_nvram.c	2015-05=
+-31 11:01:17.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-05-31 11:01:19.000000000 +1000
+@@ -64,7 +64,7 @@ static ssize_t read_nvram(struct file *f
+ 	if (*ppos >=3D nvram_len)
+ 		return 0;
+ 	for (i =3D *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
+-		if (__put_user(nvram_read_byte(i), p))
++		if (__put_user(arch_nvram_ops.read_byte(i), p))
+ 			return -EFAULT;
+ 	*ppos =3D i;
+ 	return p - buf;
+@@ -84,7 +84,7 @@ static ssize_t write_nvram(struct file *
+ 	for (i =3D *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
+ 		if (__get_user(c, p))
+ 			return -EFAULT;
+-		nvram_write_byte(c, i);
++		arch_nvram_ops.write_byte(c, i);
  	}
- 
--#ifdef CONFIG_MTRR
--	if (!share->mtrr_off) {
--		pr_info("enable mtrr\n");
--		share->mtrr.vram = mtrr_add(share->vidmem_start,
--					    share->vidmem_size,
--					    MTRR_TYPE_WRCOMB, 1);
--
--		if (share->mtrr.vram < 0) {
--			/* don't block driver with the failure of MTRR */
--			pr_err("Unable to setup MTRR.\n");
--		} else {
--			share->mtrr.vram_added = 1;
--			pr_info("MTRR added successfully\n");
--		}
--	}
--#endif
-+	if (!share->mtrr_off)
-+		share->mtrr.vram = arch_phys_wc_add(share->vidmem_start,
-+						    share->vidmem_size);
- 
- 	memset_io(share->pvMem, 0, share->vidmem_size);
- 
-@@ -1274,12 +1253,7 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
- 		/* release frame buffer */
- 		framebuffer_release(info);
- 	}
--#ifdef CONFIG_MTRR
--	if (share->mtrr.vram_added)
--		mtrr_del(share->mtrr.vram,
--			 share->vidmem_start,
--			 share->vidmem_size);
--#endif
-+	arch_phys_wc_del(share->mtrr.vram);
- 
- 	iounmap(share->pvReg);
- 	iounmap(share->pvMem);
-@@ -1321,10 +1295,8 @@ static int __init lynxfb_setup(char *options)
- 		/* options that mean for any lynx chips are configured here */
- 		if (!strncmp(opt, "noaccel", strlen("noaccel")))
- 			g_noaccel = 1;
--#ifdef CONFIG_MTRR
- 		else if (!strncmp(opt, "nomtrr", strlen("nomtrr")))
- 			g_nomtrr = 1;
--#endif
- 		else if (!strncmp(opt, "dual", strlen("dual")))
- 			g_dualview = 1;
- 		else {
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 0847d2b..5528912 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -51,13 +51,10 @@ struct lynx_share{
- 	struct lynx_accel accel;
- 	int accel_off;
- 	int dual;
--#ifdef CONFIG_MTRR
- 		int mtrr_off;
- 		struct{
- 			int vram;
--			int vram_added;
- 		}mtrr;
--#endif
- 	/* all smi graphic adaptor got below attributes */
- 	unsigned long vidmem_start;
- 	unsigned long vidreg_start;
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 9f0d06d..4b77eb1 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -85,8 +85,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
- 	}
+ 	*ppos =3D i;
+ 	return p - buf;
+Index: linux/drivers/video/fbdev/controlfb.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/controlfb.c	2015=
+-05-31 11:00:59.000000000 +1000
++++ linux/drivers/video/fbdev/controlfb.c	2015-05-31 11:01:19.000000000 +10=
+00
+@@ -415,7 +415,7 @@ static int __init init_control(struct fb
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+ #ifdef CONFIG_NVRAM
+ 	if (default_cmode =3D CMODE_NVRAM) {
+-		cmode =3D nvram_read_byte(NV_CMODE);
++		cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
+ 		if(cmode < CMODE_8 || cmode > CMODE_32)
+ 			cmode =3D CMODE_8;
+ 	} else
+@@ -423,7 +423,7 @@ static int __init init_control(struct fb
+ 		cmode=DEfault_cmode;
+ #ifdef CONFIG_NVRAM
+ 	if (default_vmode =3D VMODE_NVRAM) {
+-		vmode =3D nvram_read_byte(NV_VMODE);
++		vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (vmode < 1 || vmode > VMODE_MAX ||
+ 		    control_mac_modes[vmode - 1].m[full] < cmode) {
+ 			sense =3D read_control_sense(p);
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/matrox/matroxfb_=
+base.c	2015-05-31 11:01:13.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-05-31 11:01:19.00=
+0000000 +1000
+@@ -1888,7 +1888,7 @@ static int initMatrox2(struct matrox_fb_
+ 			default_vmode =3D VMODE_640_480_60;
+ #ifdef CONFIG_NVRAM
+ 		if (default_cmode =3D CMODE_NVRAM)
+-			default_cmode =3D nvram_read_byte(NV_CMODE);
++			default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
  #endif
- 
--	share->pvMem = ioremap(share->vidmem_start,
--							share->vidmem_size);
-+	share->pvMem = ioremap_wc(share->vidmem_start, share->vidmem_size);
- 
- 	if(!share->pvMem){
- 		pr_err("Map video memory failed\n");
--- 
-2.3.2.209.gd67f9d5.dirty
+ 		if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 			default_cmode =3D CMODE_8;
+Index: linux/drivers/video/fbdev/platinumfb.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/platinumfb.c	201=
+5-05-31 11:00:59.000000000 +1000
++++ linux/drivers/video/fbdev/platinumfb.c	2015-05-31 11:01:19.000000000 +1=
+000
+@@ -349,7 +349,7 @@ static int platinum_init_fb(struct fb_in
+ 	printk(KERN_INFO "platinumfb: Monitor sense value =3D 0x%x, ", sense);
+ 	if (default_vmode =3D VMODE_NVRAM) {
+ #ifdef CONFIG_NVRAM
+-		default_vmode =3D nvram_read_byte(NV_VMODE);
++		default_vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (default_vmode <=3D 0 || default_vmode > VMODE_MAX ||
+ 		    !platinum_reg_init[default_vmode-1])
+ #endif
+@@ -362,7 +362,7 @@ static int platinum_init_fb(struct fb_in
+ 		default_vmode =3D VMODE_640_480_60;
+ #ifdef CONFIG_NVRAM
+ 	if (default_cmode =3D CMODE_NVRAM)
+-		default_cmode =3D nvram_read_byte(NV_CMODE);
++		default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+ 	if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 		default_cmode =3D CMODE_8;
+Index: linux/drivers/video/fbdev/valkyriefb.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/valkyriefb.c	201=
+5-05-31 11:00:59.000000000 +1000
++++ linux/drivers/video/fbdev/valkyriefb.c	2015-05-31 11:01:19.000000000 +1=
+000
+@@ -287,7 +287,7 @@ static void __init valkyrie_choose_mode(
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+ #if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
+ 	if (default_vmode =3D VMODE_NVRAM) {
+-		default_vmode =3D nvram_read_byte(NV_VMODE);
++		default_vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (default_vmode <=3D 0
+ 		 || default_vmode > VMODE_MAX
+ 		 || !valkyrie_reg_init[default_vmode - 1])
+@@ -300,7 +300,7 @@ static void __init valkyrie_choose_mode(
+ 		default_vmode =3D VMODE_640_480_67;
+ #if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
+ 	if (default_cmode =3D CMODE_NVRAM)
+-		default_cmode =3D nvram_read_byte(NV_CMODE);
++		default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+=20
+ 	/*
+Index: linux/drivers/video/fbdev/imsttfb.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-0=
+5-31 11:00:59.000000000 +1000
++++ linux/drivers/video/fbdev/imsttfb.c	2015-05-31 11:01:19.000000000 +1000
+@@ -328,7 +328,6 @@ enum {
+ 	TVP =3D 1
+ };
+=20
+-#define USE_NV_MODES		1
+ #define INIT_BPP		8
+ #define INIT_XRES		640
+ #define INIT_YRES		480
+@@ -1391,17 +1390,17 @@ static void init_imstt(struct fb_info *i
+ 		}
+ 	}
+=20
+-#if USE_NV_MODES && defined(CONFIG_PPC32)
++#if defined(CONFIG_NVRAM) && defined(CONFIG_PPC32)
+ 	{
+ 		int vmode =3D init_vmode, cmode =3D init_cmode;
+=20
+ 		if (vmode =3D -1) {
+-			vmode =3D nvram_read_byte(NV_VMODE);
++			vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
+ 			if (vmode <=3D 0 || vmode > VMODE_MAX)
+ 				vmode =3D VMODE_640_480_67;
+ 		}
+ 		if (cmode =3D -1) {
+-			cmode =3D nvram_read_byte(NV_CMODE);
++			cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
+ 			if (cmode < CMODE_8 || cmode > CMODE_32)
+ 				cmode =3D CMODE_8;
+ 		}
+
 

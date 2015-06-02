@@ -1,60 +1,47 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 16 Jun 2015 14:36:41 +0000
-Subject: Re: [PATCH 0/7] OMAPDSS: use components (fix probing problems)
-Message-Id: <358618591.Y41I6t5qpX@avalon>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 02 Jun 2015 06:48:15 +0000
+Subject: Re: [PATCH 12/12] Staging: sm750fb: Insert spaces after commas in three files.
+Message-Id: <20150602064806.GF6382@sudip-PC>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1433134873-9869-1-git-send-email-isaac.a.travers@gmail.com>
+ <1433134873-9869-13-git-send-email-isaac.a.travers@gmail.com>
+In-Reply-To: <1433134873-9869-13-git-send-email-isaac.a.travers@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Isaac Assegai <isaac.a.travers@gmail.com>
+Cc: gregkh@linuxfoundation.org, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-Hi Tomi,
-
-Thank for the patches.
-
-On Tuesday 16 June 2015 13:16:22 Tomi Valkeinen wrote:
-> Hi,
+On Sun, May 31, 2015 at 10:01:13PM -0700, Isaac Assegai wrote:
+> Insert Spaces after commas to rectify the following checkpatch
+> errors in ddk750_mode.c, sm750_accel.c and sm750_help.h:
+> ERROR: space required after that ','
 > 
-> I noticed that on some platforms omapdss did not probe successfully. Some
-> resource was not available yet, but omapdss did not manage to handle
-> deferred probing. The reason was the use of platform_driver_probe() in
-> combination with how the omapdss module handles the drivers.
+> Signed-off-by: Isaac Assegai <isaac.a.travers@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_mode.c | 46 +++++++++++++++++------------------
+>  drivers/staging/sm750fb/sm750_accel.c |  2 +-
+>  drivers/staging/sm750fb/sm750_help.h  |  2 +-
+>  3 files changed, 25 insertions(+), 25 deletions(-)
 > 
-> To fix this properly, the component system felt fine for the job, and it
-> seems to work nicely.
-> 
->  Tomi
-> 
-> Tomi Valkeinen (7):
->   OMAPDSS: move 'dss_initialized' to dss driver
->   OMAPDSS: refactor dss probe function
->   OMAPDSS: fix dss_init_ports error handling
->   OMAPDSS: remove uses of __init/__exit
->   OMAPDSS: reorder uninit calls
->   OMAPDSS: componentize omapdss
->   OMAPDSS: simplify submodule reg/unreg code
+> diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+> index 4e252fb..a054747 100644
+> --- a/drivers/staging/sm750fb/ddk750_mode.c
+> +++ b/drivers/staging/sm750fb/ddk750_mode.c
+> @@ -101,29 +101,29 @@ static int programModeRegisters(mode_parameter_t * pModeParam, pll_value_t * pll
+>              | FIELD_VALUE(0, CRT_VERTICAL_SYNC, START, pModeParam->vertical_sync_start - 1));
+>  
+>  
+> -		ulTmpValue = FIELD_VALUE(0, CRT_DISPLAY_CTRL,VSYNC_PHASE, pModeParam->vertical_sync_polarity)|
+> +		ulTmpValue = FIELD_VALUE(0, CRT_DISPLAY_CTRL, VSYNC_PHASE, pModeParam->vertical_sync_polarity)|
+>  					  FIELD_VALUE(0, CRT_DISPLAY_CTRL, HSYNC_PHASE, pModeParam->horizontal_sync_polarity)|
+> -					  FIELD_SET(0, CRT_DISPLAY_CTRL, TIMING,ENABLE)|
+> -					  FIELD_SET(0,CRT_DISPLAY_CTRL,PLANE,ENABLE);
+> +					  FIELD_SET(0, CRT_DISPLAY_CTRL, TIMING, ENABLE)|
+> +					  FIELD_SET(0, CRT_DISPLAY_CTRL, PLANE, ENABLE);
+I am getting confused now.
+This part you have modified in patch 10/12 and i just replied that
+you have missed two modifications.
 
-I've quickly reviewed the whole series and it looks good to me.
-
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
->  drivers/video/fbdev/omap2/dss/core.c  |  80 ++++--------
->  drivers/video/fbdev/omap2/dss/dispc.c |  42 +++++--
->  drivers/video/fbdev/omap2/dss/dpi.c   |  36 ++++--
->  drivers/video/fbdev/omap2/dss/dsi.c   |  27 +++-
->  drivers/video/fbdev/omap2/dss/dss.c   | 223 ++++++++++++++++++++-----------
->  drivers/video/fbdev/omap2/dss/dss.h   |  32 ++---
->  drivers/video/fbdev/omap2/dss/hdmi4.c |  28 ++++-
->  drivers/video/fbdev/omap2/dss/hdmi5.c |  28 ++++-
->  drivers/video/fbdev/omap2/dss/rfbi.c  |  32 ++++-
->  drivers/video/fbdev/omap2/dss/sdi.c   |  35 ++++--
->  drivers/video/fbdev/omap2/dss/venc.c  |  31 +++--
->  11 files changed, 396 insertions(+), 198 deletions(-)
-
--- 
-Regards,
-
-Laurent Pinchart
-
+regards
+sudip

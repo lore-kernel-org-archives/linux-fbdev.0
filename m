@@ -1,58 +1,53 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Jun 2015 12:54:35 +0000
-Subject: [PATCH 11/11] OMAPDSS: HDMI: wait for framedone when stopping video
-Message-Id: <1434545675-477-12-git-send-email-tomi.valkeinen@ti.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 02 Jun 2015 06:37:50 +0000
+Subject: Re: [PATCH 03/12] Staging: sm750fb: sm750.h: Insert spaces after commas.
+Message-Id: <20150602062550.GD6382@sudip-PC>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1433134873-9869-1-git-send-email-isaac.a.travers@gmail.com>
+ <1433134873-9869-4-git-send-email-isaac.a.travers@gmail.com>
+In-Reply-To: <1433134873-9869-4-git-send-email-isaac.a.travers@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Isaac Assegai <isaac.a.travers@gmail.com>
+Cc: gregkh@linuxfoundation.org, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-At the moment when HDMI video output is stopped, we just clear the
-enable bit and return. While it's unclear if this can cause any issues,
-I think it's still better to wait for FRAMEDONE interrupt after clearing
-the enable bit so that we're sure the HDMI IP has finished.
+On Sun, May 31, 2015 at 10:01:04PM -0700, Isaac Assegai wrote:
+> Insert Spaces after commas to rectify the
+> following checkpatch errors in sm750.h:
+> ERROR: space required after that ','
+> 
+> Signed-off-by: Isaac Assegai <isaac.a.travers@gmail.com>
+> ---
+>  drivers/staging/sm750fb/sm750.h | 35 ++++++++++++++++++-----------------
+>  1 file changed, 18 insertions(+), 17 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+> index 5528912..5f86077 100644
+> --- a/drivers/staging/sm750fb/sm750.h
+> +++ b/drivers/staging/sm750fb/sm750.h
+> @@ -12,7 +12,7 @@
+>  #define MB(x) ((x)<<20)
+>  #define MHZ(x) ((x) * 1000000)
+>  /* align should be 2,4,8,16 */
+> -#define PADDING(align,data) (((data)+(align)-1)&(~((align) -1)))
+> +#define PADDING(align, data) (((data)+(align)-1)&(~((align) -1)))
+>  extern int smi_indent;
+>  
+>  
+> @@ -27,15 +27,16 @@ struct lynx_accel{
+>  
+>  
+> -	int (*de_imageblit)(struct lynx_accel *,const char *,u32,u32,u32,
+> -						u32,u32,u32,u32,u32,u32,u32,u32,u32);
+> +	int (*de_imageblit)(struct lynx_accel *, const char *, u32, u32, u32, u32, 
+										^^^^^
+oops, trailing whitespace errors :(
+> +							       u32, u32, u32, u32, 
+										^^^^^
+here also
+please test your patch with checkpatch before sending
 
-As we don't have any ready-made irq handling for HDMI, and this only
-needs to be done when disabling the HDMI output, this patch implements a
-simple loop with sleep, polling the FRAMEDONE bit.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/hdmi_wp.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
-
-diff --git a/drivers/video/fbdev/omap2/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-index c15377e242cc..7c544bc56fb5 100644
---- a/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-+++ b/drivers/video/fbdev/omap2/dss/hdmi_wp.c
-@@ -110,7 +110,23 @@ int hdmi_wp_video_start(struct hdmi_wp_data *wp)
- 
- void hdmi_wp_video_stop(struct hdmi_wp_data *wp)
- {
-+	int i;
-+
-+	hdmi_write_reg(wp->base, HDMI_WP_IRQSTATUS, HDMI_IRQ_VIDEO_FRAME_DONE);
-+
- 	REG_FLD_MOD(wp->base, HDMI_WP_VIDEO_CFG, false, 31, 31);
-+
-+	for (i = 0; i < 50; ++i) {
-+		u32 v;
-+
-+		msleep(20);
-+
-+		v = hdmi_read_reg(wp->base, HDMI_WP_IRQSTATUS_RAW);
-+		if (v & HDMI_IRQ_VIDEO_FRAME_DONE)
-+			return;
-+	}
-+
-+	DSSERR("no HDMI FRAMEDONE when disabling output\n");
- }
- 
- void hdmi_wp_video_config_format(struct hdmi_wp_data *wp,
--- 
-2.1.4
+regards
+sudip
 

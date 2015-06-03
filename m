@@ -1,131 +1,65 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 04 Jun 2015 16:44:46 +0000
-Subject: [PATCH v4 1/3] video: fbdev: vesafb: only support MTRR_TYPE_WRCOMB
-Message-Id: <1433436288-16792-2-git-send-email-mcgrof@do-not-panic.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 03 Jun 2015 09:42:42 +0000
+Subject: Re: [PATCH v5 0/17] framebuffer: simple conversions to arch_phys_wc_add()
+Message-Id: <556ECC12.7050603@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="1RqJGiELOALE4XgAQrdXp2I7hG8I4wR9w"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1433436288-16792-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1433436288-16792-1-git-send-email-mcgrof@do-not-panic.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: plagnioj@jcrosoft.com, bp@suse.de, hpa@zytor.com, linux-fbdev@vger.kernel.org, luto@amacapital.net, toshi.kani@hp.com, sbsiddha@gmail.com, mingo@elte.hu, tglx@linutronix.de, jgross@suse.com, daniel.vetter@ffwll.ch, airlied@redhat.com, adaplas@gmail.com, robdclark@gmail.com, jg1.han@samsung.com, wsa@the-dreams.de, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Linus Torvalds <torvalds@linux-foundation.org>
+References: <1432937236-9327-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1432937236-9327-1-git-send-email-mcgrof@do-not-panic.com>
+To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+--1RqJGiELOALE4XgAQrdXp2I7hG8I4wR9w
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-No other video driver uses MTRR types except for MTRR_TYPE_WRCOMB,
-the other MTRR types were implemented and supported here but with
-no real good reason. The ioremap() APIs are architecture agnostic and
-at least on x86 PAT is a new design that extends MTRRs and
-can replace it in a much cleaner way, where so long as the
-proper ioremap_wc() or variant API is used the right thing will
-be done behind the scenes. This is the only driver left using the
-other MTRR types -- and since there is no good reason for it now
-rip them out.
 
-Cc: Toshi Kani <toshi.kani@hp.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
----
- drivers/video/fbdev/vesafb.c | 62 ++++++++++++--------------------------------
- 1 file changed, 16 insertions(+), 46 deletions(-)
 
-diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-index d79a0ac..191156b 100644
---- a/drivers/video/fbdev/vesafb.c
-+++ b/drivers/video/fbdev/vesafb.c
-@@ -404,60 +404,30 @@ static int vesafb_probe(struct platform_device *dev)
- 	 * region already (FIXME) */
- 	request_region(0x3c0, 32, "vesafb");
- 
-+	if (mtrr = 3) {
- #ifdef CONFIG_MTRR
--	if (mtrr) {
- 		unsigned int temp_size = size_total;
--		unsigned int type = 0;
-+		int rc;
- 
--		switch (mtrr) {
--		case 1:
--			type = MTRR_TYPE_UNCACHABLE;
--			break;
--		case 2:
--			type = MTRR_TYPE_WRBACK;
--			break;
--		case 3:
--			type = MTRR_TYPE_WRCOMB;
--			break;
--		case 4:
--			type = MTRR_TYPE_WRTHROUGH;
--			break;
--		default:
--			type = 0;
--			break;
--		}
--
--		if (type) {
--			int rc;
--
--			/* Find the largest power-of-two */
--			temp_size = roundup_pow_of_two(temp_size);
-+		/* Find the largest power-of-two */
-+		temp_size = roundup_pow_of_two(temp_size);
- 
--			/* Try and find a power of two to add */
--			do {
--				rc = mtrr_add(vesafb_fix.smem_start, temp_size,
--					      type, 1);
--				temp_size >>= 1;
--			} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
--		}
--	}
-+		/* Try and find a power of two to add */
-+		do {
-+			rc = mtrr_add(vesafb_fix.smem_start, temp_size,
-+				      MTRR_TYPE_WRCOMB, 1);
-+			temp_size >>= 1;
-+		} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
- #endif
--	
--	switch (mtrr) {
--	case 1: /* uncachable */
--		info->screen_base = ioremap_nocache(vesafb_fix.smem_start, vesafb_fix.smem_len);
--		break;
--	case 2: /* write-back */
--		info->screen_base = ioremap_cache(vesafb_fix.smem_start, vesafb_fix.smem_len);
--		break;
--	case 3: /* write-combining */
- 		info->screen_base = ioremap_wc(vesafb_fix.smem_start, vesafb_fix.smem_len);
--		break;
--	case 4: /* write-through */
--	default:
-+	} else {
-+#ifdef CONFIG_MTRR
-+		if (mtrr && mtrr != 3)
-+			WARN_ONCE(1, "Only MTRR_TYPE_WRCOMB (3) make sense\n");
-+#endif
- 		info->screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
--		break;
- 	}
-+
- 	if (!info->screen_base) {
- 		printk(KERN_ERR
- 		       "vesafb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
--- 
-2.3.2.209.gd67f9d5.dirty
+On 30/05/15 01:07, Luis R. Rodriguez wrote:
+> From: "Luis R. Rodriguez" <mcgrof@suse.com>
+>=20
+> Tomi,
+>=20
+> this v5 series goes with the patch 3/17 titled "video: fbdev: gbefb:
+> use arch_phys_wc_add() and devm_ioremap_wc()" with a change from
+> dma_free_coherent() to dma_free_writecombine() for the area now allocat=
+ed
+> with dma_alloc_writecombine(). The remaining patches remain the same.
+>=20
+> As for the pull request all I did was reset my tree to yours, and
+> then reset it to the same old commit 36520841a443d5ee966f9632c417fcc8a2=
+5e07e3,
+> then applied the new series. The only delta from the v4 seires is the
+> patch 3/17. The new branch changes from simple-arch_phys-20150528 to
+> simple-arch_phys-20150529. Pull request below for your convenience.
 
+Thanks, I've picked up the v5 of the patch 3.
+
+ Tomi
+
+
+--1RqJGiELOALE4XgAQrdXp2I7hG8I4wR9w
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVbswSAAoJEPo9qoy8lh71L3QP/RC75R8iDFPLLGdS4qZitehl
+ZuoR/FCztHXi9rw6JlWTlRqC7ej6F/lHX1M0hDaKyi+1u01tArK4dvbiwzZ6KxVV
+VOXT69bNDBIp+Eyi/8km+7CKjodwE5rZVAsfDVVPliLu2d3vzCj7dB/yBJxyUH3W
+IoC/z1X755bgM+QSzDt3WiM4mduvh4uS68W53c2Y5lrzggKcHpQzcZuZWYAeLf29
+ez+zIH/i7UnAUu9ivsrKoN91uqnsvDaJMOCkzt9cI/d0i4PoocHuxRpdHOQBfa6N
+iXXKcGiblQoR1Qiq/mvntP6MdpaLhzQlbFMm9UPDclwtD2HOigc/4kvRW/72Q43p
+0lh7R2hACCrIWpNYUwTg0Zn2uxWNWX4nsoQQAqw7SH3bgcEwjMc+XGHShIZwLvTE
+yfgC1FbPslHAi0fpRHQbwWfLIHZ4Yd15s5mvUvk/lF3M5HOSWwjCcqmSd8nAG4id
+LqcCyEFOad/rJ3eZ3bu2Em3jKUPaXuxGpPLV1H/MpV3dEZbc9RSElDqygVLj+9ix
+LtGuouZ9NoifJxxVD28somQZLtZXUe1+FzBtOiiw9nwUKftlNLkhSusMkgtiQcLF
+EurW8HSvQ7pXKxb9CG2VXRyS+NtOfbMFgBWXxVbI4v1k7zf+qGjWRP6aJI5Bg2Av
+ixxBq1mojNERR0SRHuPM
+=Ok8p
+-----END PGP SIGNATURE-----
+
+--1RqJGiELOALE4XgAQrdXp2I7hG8I4wR9w--

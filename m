@@ -1,48 +1,131 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 16 Jun 2015 13:54:05 +0000
-Subject: [PATCH 2/8] staging: sm7xxfb: remove numvgamodes
-Message-Id: <1434462131-15191-2-git-send-email-sudipm.mukherjee@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 04 Jun 2015 16:44:46 +0000
+Subject: [PATCH v4 1/3] video: fbdev: vesafb: only support MTRR_TYPE_WRCOMB
+Message-Id: <1433436288-16792-2-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434462131-15191-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1434462131-15191-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1433436288-16792-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1433436288-16792-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: tomi.valkeinen@ti.com
+Cc: plagnioj@jcrosoft.com, bp@suse.de, hpa@zytor.com, linux-fbdev@vger.kernel.org, luto@amacapital.net, toshi.kani@hp.com, sbsiddha@gmail.com, mingo@elte.hu, tglx@linutronix.de, jgross@suse.com, daniel.vetter@ffwll.ch, airlied@redhat.com, adaplas@gmail.com, robdclark@gmail.com, jg1.han@samsung.com, wsa@the-dreams.de, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Linus Torvalds <torvalds@linux-foundation.org>
 
-numvgamodes was only used in one place, so remove the #define
-and use its defined value.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+No other video driver uses MTRR types except for MTRR_TYPE_WRCOMB,
+the other MTRR types were implemented and supported here but with
+no real good reason. The ioremap() APIs are architecture agnostic and
+at least on x86 PAT is a new design that extends MTRRs and
+can replace it in a much cleaner way, where so long as the
+proper ioremap_wc() or variant API is used the right thing will
+be done behind the scenes. This is the only driver left using the
+other MTRR types -- and since there is no good reason for it now
+rip them out.
+
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/sm7xxfb/sm7xx.h   | 2 --
- drivers/staging/sm7xxfb/sm7xxfb.c | 2 +-
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ drivers/video/fbdev/vesafb.c | 62 ++++++++++++--------------------------------
+ 1 file changed, 16 insertions(+), 46 deletions(-)
 
-diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
-index c5d6253..4dabda4 100644
---- a/drivers/staging/sm7xxfb/sm7xx.h
-+++ b/drivers/staging/sm7xxfb/sm7xx.h
-@@ -775,5 +775,3 @@ static struct ModeInit vgamode[] = {
- 	  },
- 	 },
- };
--
--#define numvgamodes		ARRAY_SIZE(vgamode)
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index 4d9b69d..5667fbf 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -477,7 +477,7 @@ static void sm7xx_set_timing(struct smtcfb_info *sfb)
- 		"sfb->width=%d sfb->height=%d sfb->fb->var.bits_per_pixel=%d sfb->hz=%d\n",
- 		sfb->width, sfb->height, sfb->fb->var.bits_per_pixel, sfb->hz);
+diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
+index d79a0ac..191156b 100644
+--- a/drivers/video/fbdev/vesafb.c
++++ b/drivers/video/fbdev/vesafb.c
+@@ -404,60 +404,30 @@ static int vesafb_probe(struct platform_device *dev)
+ 	 * region already (FIXME) */
+ 	request_region(0x3c0, 32, "vesafb");
  
--	for (j = 0; j < numvgamodes; j++) {
-+	for (j = 0; j < ARRAY_SIZE(vgamode); j++) {
- 		if (vgamode[j].mmsizex = sfb->width &&
- 		    vgamode[j].mmsizey = sfb->height &&
- 		    vgamode[j].bpp = sfb->fb->var.bits_per_pixel &&
++	if (mtrr = 3) {
+ #ifdef CONFIG_MTRR
+-	if (mtrr) {
+ 		unsigned int temp_size = size_total;
+-		unsigned int type = 0;
++		int rc;
+ 
+-		switch (mtrr) {
+-		case 1:
+-			type = MTRR_TYPE_UNCACHABLE;
+-			break;
+-		case 2:
+-			type = MTRR_TYPE_WRBACK;
+-			break;
+-		case 3:
+-			type = MTRR_TYPE_WRCOMB;
+-			break;
+-		case 4:
+-			type = MTRR_TYPE_WRTHROUGH;
+-			break;
+-		default:
+-			type = 0;
+-			break;
+-		}
+-
+-		if (type) {
+-			int rc;
+-
+-			/* Find the largest power-of-two */
+-			temp_size = roundup_pow_of_two(temp_size);
++		/* Find the largest power-of-two */
++		temp_size = roundup_pow_of_two(temp_size);
+ 
+-			/* Try and find a power of two to add */
+-			do {
+-				rc = mtrr_add(vesafb_fix.smem_start, temp_size,
+-					      type, 1);
+-				temp_size >>= 1;
+-			} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
+-		}
+-	}
++		/* Try and find a power of two to add */
++		do {
++			rc = mtrr_add(vesafb_fix.smem_start, temp_size,
++				      MTRR_TYPE_WRCOMB, 1);
++			temp_size >>= 1;
++		} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
+ #endif
+-	
+-	switch (mtrr) {
+-	case 1: /* uncachable */
+-		info->screen_base = ioremap_nocache(vesafb_fix.smem_start, vesafb_fix.smem_len);
+-		break;
+-	case 2: /* write-back */
+-		info->screen_base = ioremap_cache(vesafb_fix.smem_start, vesafb_fix.smem_len);
+-		break;
+-	case 3: /* write-combining */
+ 		info->screen_base = ioremap_wc(vesafb_fix.smem_start, vesafb_fix.smem_len);
+-		break;
+-	case 4: /* write-through */
+-	default:
++	} else {
++#ifdef CONFIG_MTRR
++		if (mtrr && mtrr != 3)
++			WARN_ONCE(1, "Only MTRR_TYPE_WRCOMB (3) make sense\n");
++#endif
+ 		info->screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
+-		break;
+ 	}
++
+ 	if (!info->screen_base) {
+ 		printk(KERN_ERR
+ 		       "vesafb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
 -- 
-1.8.1.2
+2.3.2.209.gd67f9d5.dirty
 

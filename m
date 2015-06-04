@@ -1,93 +1,39 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Wed, 24 Jun 2015 16:25:03 +0000
-Subject: [PATCH v3 02/19] staging: sm750fb: remove spacing after open parenthesis
-Message-Id: <1435163120-3253-2-git-send-email-juston.h.li@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 04 Jun 2015 16:44:45 +0000
+Subject: [PATCH v4 0/3] vesafb: remove theoretical MTRR uses
+Message-Id: <1433436288-16792-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
-In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
-Cc: Juston Li <juston.h.li@gmail.com>
+To: tomi.valkeinen@ti.com
+Cc: plagnioj@jcrosoft.com, bp@suse.de, hpa@zytor.com, linux-fbdev@vger.kernel.org, luto@amacapital.net, toshi.kani@hp.com, sbsiddha@gmail.com, mingo@elte.hu, tglx@linutronix.de, jgross@suse.com, daniel.vetter@ffwll.ch, airlied@redhat.com, adaplas@gmail.com, robdclark@gmail.com, jg1.han@samsung.com, wsa@the-dreams.de, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-fixes checkpatch.pl warning:
-ERROR: space prohibited after that open parenthesis '('
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Juston Li <juston.h.li@gmail.com>
----
- drivers/staging/sm750fb/ddk750_chip.c  | 6 +++---
- drivers/staging/sm750fb/ddk750_mode.c  | 2 +-
- drivers/staging/sm750fb/ddk750_power.c | 8 ++++----
- drivers/staging/sm750fb/sm750_help.h   | 2 +-
- 4 files changed, 9 insertions(+), 9 deletions(-)
+Tomi,
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index f4975d2..1069a2d 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -599,9 +599,9 @@ unsigned int formatPllReg(pll_value_t *pPLL)
-        On returning a 32 bit number, the value can be applied to any PLL in the calling function.
-     */
- 	ulPllReg -	FIELD_SET(  0, PANEL_PLL_CTRL, BYPASS, OFF)
--	| FIELD_SET(  0, PANEL_PLL_CTRL, POWER,  ON)
--	| FIELD_SET(  0, PANEL_PLL_CTRL, INPUT,  OSC)
-+	FIELD_SET(0, PANEL_PLL_CTRL, BYPASS, OFF)
-+	| FIELD_SET(0, PANEL_PLL_CTRL, POWER,  ON)
-+	| FIELD_SET(0, PANEL_PLL_CTRL, INPUT,  OSC)
- #ifndef VALIDATION_CHIP
- 	| FIELD_VALUE(0, PANEL_PLL_CTRL, POD,    pPLL->POD)
- #endif
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index 1f93d07..31424b2 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -43,7 +43,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
- 
- 	/* Set bit 29:27 of display control register for the right clock */
- 	/* Note that SM750LE only need to supported 7 resoluitons. */
--	if ( x = 800 && y = 600 )
-+	if (x = 800 && y = 600 )
- 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
- 	else if (x = 1024 && y = 768)
- 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL65);
-diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index b7a108b..44b8eb1 100644
---- a/drivers/staging/sm750fb/ddk750_power.c
-+++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -59,17 +59,17 @@ void setPowerMode(unsigned int powerMode)
- 	{
- 		control_value  #ifdef VALIDATION_CHIP
--		FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, OFF) |
-+		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, OFF) |
- #endif
--		FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
-+		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
- 	}
- 	else
- 	{
- 		control_value  #ifdef VALIDATION_CHIP
--		FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, ON) |
-+		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, ON) |
- #endif
--		FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  ON);
-+		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT,  ON);
- 	}
- 
- 	/* Program new power mode. */
-diff --git a/drivers/staging/sm750fb/sm750_help.h b/drivers/staging/sm750fb/sm750_help.h
-index 8ba4f8d..ac0744e 100644
---- a/drivers/staging/sm750fb/sm750_help.h
-+++ b/drivers/staging/sm750fb/sm750_help.h
-@@ -43,7 +43,7 @@
- 
- #define FIELD_CLEAR(reg, field) \
- ( \
--	~ _F_MASK(reg ## _ ## field) \
-+	~_F_MASK(reg ## _ ## field) \
- )
- 
- /* Field Macros */
+This v4 fixes the issue of the use of the old use of
+info->par for the pseudo_palette and our need to extend
+it for the MTRR cookie by extending our proposed new
+struct vesafb_par with the pseudo_palette and later
+pointing info->pseudo_palette to it. This also means
+we can simplify the allocation of the info when calling
+framebuffer_alloc() by now just passing the size of our
+struct vesafb_par.
+
+Patch 1 is unmodified from v3 series, patch 2 does the
+fixes mentioned above, and patch 3 might have small
+changes to account for contextual changes.
+
+Luis R. Rodriguez (3):
+  video: fbdev: vesafb: only support MTRR_TYPE_WRCOMB
+  video: fbdev: vesafb: add missing mtrr_del() for added MTRR
+  video: fbdev: vesafb: use arch_phys_wc_add()
+
+ drivers/video/fbdev/vesafb.c | 80 ++++++++++++++++----------------------------
+ 1 file changed, 28 insertions(+), 52 deletions(-)
+
 -- 
-2.4.4
+2.3.2.209.gd67f9d5.dirty
 

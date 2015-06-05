@@ -1,63 +1,35 @@
-From: "Dighe, Niranjan (N.)" <ndighe@visteon.com>
-Date: Tue, 16 Jun 2015 05:05:47 +0000
-Subject: [PATCH 2/2] Staging: sm750fb: correct spacing between lines of code
-Message-Id: <20150616050524.GA2677@siberianhusky>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 05 Jun 2015 21:12:14 +0000
+Subject: Re: [Y2038] [PATCH] fbdev: radeon: Remove 'struct timeval' usage
+Message-Id: <119465383.9W9klrlRVh@wuerfel>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAB__kknUjU1vdERZQQCxD95idobKN6M-eQZP1jH77tTS3MxhGA@mail.gmail.com>
+In-Reply-To: <CAB__kknUjU1vdERZQQCxD95idobKN6M-eQZP1jH77tTS3MxhGA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "sudipm.mukherjee@gmail.com" <sudipm.mukherjee@gmail.com>, "teddy.wang@siliconmotion.com" <teddy.wang@siliconmotion.com>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: y2038@lists.linaro.org
+Cc: Tina Ruchandani <ruchandani.tina@gmail.com>, Dave Airlie <airlied@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, LKML <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-From: Niranjan Dighe <ndighe@visteon.com>
+On Friday 05 June 2015 00:55:05 Tina Ruchandani wrote:
+> >>> +     hz = 1000000/delta;
+> >
+> > This needs to be on of the do_div family.
+> >
+> > Dave.
+> 
+> Hi Dave,
+> I build-tested the patch for both 32-bit and 64-bit x86. If my
+> understanding is correct, since the divisor is 64-bit here, the
+> compiler will do "if (delta > 1000000) hz = 0; else hz > 1000000/(s32)delta" automatically?
+> In general, is this a good thumb-rule to follow - use do_div if the
+> dividend is 64-bit, and normal divide operator if only the divisor is
+> 64-bit?
+> 
 
-This patch corrects line spacing by removing and adding newline
-characters wherever necessary
+I got a build error on 32-bit arm now. There is already a check
+for an overflow of 10 seconds in there (10 million microseconds),
+so it is safe to do the easiest fix is to cast that microsecond
+value to a u32.
 
-Signed-off-by: Niranjan Dighe <ndighe@visteon.com>
----
- drivers/staging/sm750fb/ddk750_dvi.h |    8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.h b/drivers/staging/sm750fb/ddk750_dvi.h
-index c8d31f3..83bbd6d 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.h
-+++ b/drivers/staging/sm750fb/ddk750_dvi.h
-@@ -14,6 +14,7 @@ typedef long (*PFN_DVICTRL_INIT)(
- 	unsigned char continuousSyncEnable,
- 	unsigned char pllFilterEnable,
- 	unsigned char pllFilterValue);
-+
- typedef void (*PFN_DVICTRL_RESETCHIP)(void);
- typedef char* (*PFN_DVICTRL_GETCHIPSTRING)(void);
- typedef unsigned short (*PFN_DVICTRL_GETVENDORID)(void);
-@@ -24,8 +25,6 @@ typedef unsigned char (*PFN_DVICTRL_ISCONNECTED)(void);
- typedef unsigned char (*PFN_DVICTRL_CHECKINTERRUPT)(void);
- typedef void (*PFN_DVICTRL_CLEARINTERRUPT)(void);
- 
--
--
- /* Structure to hold all the function pointer to the DVI Controller. */
- typedef struct _dvi_ctrl_device_t
- {
-@@ -40,9 +39,8 @@ typedef struct _dvi_ctrl_device_t
- 	PFN_DVICTRL_CHECKINTERRUPT	pfnCheckInterrupt;
- 	PFN_DVICTRL_CLEARINTERRUPT	pfnClearInterrupt;
- } dvi_ctrl_device_t;
--#define DVI_CTRL_SII164
--
- 
-+#define DVI_CTRL_SII164
- 
- /* dvi functions prototype */
- int dviInit(
-@@ -61,7 +59,5 @@ int dviInit(
- unsigned short dviGetVendorID(void);
- unsigned short dviGetDeviceID(void);
- 
--
--
- #endif
- 
--- 
-1.7.9.5
+	Arnd

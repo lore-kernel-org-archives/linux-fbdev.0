@@ -1,88 +1,73 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Mon, 29 Jun 2015 17:55:35 +0000
-Subject: [PATCH v4 18/19] staging: sm750fb: remove unnecessary braces
-Message-Id: <1435600536-13135-18-git-send-email-juston.h.li@gmail.com>
+From: Alexey Klimov <klimov.linux@gmail.com>
+Date: Sun, 07 Jun 2015 23:02:47 +0000
+Subject: [PATCH] fbdev: udlfb: remove unneeded initialization in few places
+Message-Id: <1433718167.8234.4.camel@mtux>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
-In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
-Cc: Juston Li <juston.h.li@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-Fixes checkpatch.pl warning:
-WARNING: braces {} are not necessary for single statement blocks
+Small minor cleanup.
+This patch removes unneeded initializations of variables
+in few places in different functions and one empty line.
 
-Signed-off-by: Juston Li <juston.h.li@gmail.com>
+Signed-off-by: Alexey Klimov <klimov.linux@gmail.com>
 ---
- drivers/staging/sm750fb/sm750_accel.c | 9 +++------
- drivers/staging/sm750fb/sm750_hw.c    | 6 ++----
- 2 files changed, 5 insertions(+), 10 deletions(-)
+ drivers/video/fbdev/udlfb.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index f7a617e..291a47b 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -259,9 +259,8 @@ unsigned int rop2)   /* ROP value */
- 	FIELD_VALUE(0, DE_WINDOW_WIDTH, DESTINATION, (dPitch/Bpp)) |
- 	FIELD_VALUE(0, DE_WINDOW_WIDTH, SOURCE,      (sPitch/Bpp))); /* dpr3c */
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index ff2b873..e9c2f7b 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -279,7 +279,7 @@ static int dlfb_set_video_mode(struct dlfb_data *dev,
+ {
+ 	char *buf;
+ 	char *wrptr;
+-	int retval = 0;
++	int retval;
+ 	int writesize;
+ 	struct urb *urb;
  
--	if (accel->de_wait() != 0) {
-+	if (accel->de_wait() != 0)
- 		return -1;
--	}
+@@ -1505,8 +1505,7 @@ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dev,
+ 	char *desc;
+ 	char *buf;
+ 	char *desc_end;
+-
+-	int total_len = 0;
++	int total_len;
  
- 	{
+ 	buf = kzalloc(MAX_VENDOR_DESCRIPTOR_SIZE, GFP_KERNEL);
+ 	if (!buf)
+@@ -1582,7 +1581,7 @@ static int dlfb_usb_probe(struct usb_interface *interface,
+ 			const struct usb_device_id *id)
+ {
+ 	struct usb_device *usbdev;
+-	struct dlfb_data *dev = NULL;
++	struct dlfb_data *dev;
+ 	int retval = -ENOMEM;
  
-@@ -332,9 +331,8 @@ int hw_imageblit(struct lynx_accel *accel,
- 	ul4BytesPerScan = ulBytesPerScan & ~3;
- 	ulBytesRemain = ulBytesPerScan & 3;
- 
--	if (accel->de_wait() != 0) {
-+	if (accel->de_wait() != 0)
- 		return -1;
--	}
- 
- 	/* 2D Source Base.
- 	 Use 0 for HOST Blt.
-@@ -402,9 +400,8 @@ int hw_imageblit(struct lynx_accel *accel,
- 	/* Write MONO data (line by line) to 2D Engine data port */
- 	for (i = 0; i < height; i++) {
- 		/* For each line, send the data in chunks of 4 bytes */
--		for (j = 0; j < (ul4BytesPerScan/4); j++) {
-+		for (j = 0; j < (ul4BytesPerScan/4); j++)
- 			write_dpPort(accel, *(unsigned int *)(pSrcbuf + (j * 4)));
--		}
- 
- 		if (ulBytesRemain) {
- 			memcpy(ajRemain, pSrcbuf+ul4BytesPerScan, ulBytesRemain);
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 20a8d3b..97a0f63 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -187,9 +187,8 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
+ 	/* usb initialization */
+@@ -1665,7 +1664,6 @@ static void dlfb_init_framebuffer_work(struct work_struct *work)
+ 	/* allocates framebuffer driver structure, not framebuffer memory */
+ 	info = framebuffer_alloc(0, dev->gdev);
+ 	if (!info) {
+-		retval = -ENOMEM;
+ 		pr_err("framebuffer_alloc failed\n");
+ 		goto error;
  	}
+@@ -1912,7 +1910,7 @@ static int dlfb_alloc_urb_list(struct dlfb_data *dev, int count, size_t size)
  
- 	/* init 2d engine */
--	if (!share->accel_off) {
-+	if (!share->accel_off)
- 		hw_sm750_initAccel(share);
--	}
- 
- 	return 0;
- }
-@@ -536,9 +535,8 @@ int hw_sm750_setBLANK(struct lynxfb_output* output, int blank)
- 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(PEEK32(CRT_DISPLAY_CTRL), CRT_DISPLAY_CTRL, BLANK, crtdb));
- 	}
- 
--	if (output->paths & sm750_panel) {
-+	if (output->paths & sm750_panel)
- 		POKE32(PANEL_DISPLAY_CTRL, FIELD_VALUE(PEEK32(PANEL_DISPLAY_CTRL), PANEL_DISPLAY_CTRL, DATA, pps));
--	}
- 
- 	return 0;
- }
+ static struct urb *dlfb_get_urb(struct dlfb_data *dev)
+ {
+-	int ret = 0;
++	int ret;
+ 	struct list_head *entry;
+ 	struct urb_node *unode;
+ 	struct urb *urb = NULL;
 -- 
-2.4.4
+2.1.4
+
+
 

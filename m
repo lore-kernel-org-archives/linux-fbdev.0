@@ -1,56 +1,39 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 03 Jun 2015 13:42:10 +0000
-Subject: Re: [PATCH 2/4] video: fbdev: imxfb: Constify platform_device_id
-Message-Id: <20150603134210.GC12304@x1>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 08 Jun 2015 22:30:53 +0000
+Subject: [PATCH] fbdev: omap2: remove potential format string leak
+Message-Id: <20150608223053.GA28939@www.outflux.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1430494721-30793-1-git-send-email-k.kozlowski.k@gmail.com>
- <1430494721-30793-2-git-send-email-k.kozlowski.k@gmail.com>
- <20150505082807.GV4047@x1> <556EE743.5030405@ti.com>
- <20150603115050.GB12304@x1> <556EEABD.6020902@ti.com>
-In-Reply-To: <556EEABD.6020902@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Kees Cook <keescook@chromium.org>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Wed, 03 Jun 2015, Tomi Valkeinen wrote:
-> On 03/06/15 14:50, Lee Jones wrote:
-> > On Wed, 03 Jun 2015, Tomi Valkeinen wrote:
-> >=20
-> >> Hi Lee,
-> >>
-> >> On 05/05/15 11:28, Lee Jones wrote:
-> >>> On Sat, 02 May 2015, Krzysztof Kozlowski wrote:
-> >>>
-> >>>> The platform_device_id is not modified by the driver and core uses i=
-t as
-> >>>> const.
-> >>>>
-> >>>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-> >>>> ---
-> >>>>  drivers/video/fbdev/imxfb.c | 2 +-
-> >>>>  1 file changed, 1 insertion(+), 1 deletion(-)
-> >>>
-> >>> Applied, thanks.
-> >>
-> >> You applied the fbdev changes in this series also, not only the
-> >> backlight changes?
-> >=20
-> > Ah, yes I did.  I assumed they were all due for Backlight.
-> >=20
-> > Would you like me to un-apply the non-Backlight patches?
->=20
-> If you can easily remove them, yes.
->=20
-> But chances for conflict are quite minimal, so if you already have a
-> pile of commits on top of these, it's fine if they go via backlight tree.
+Since kobject_init_and_add takes a format string, make sure that the
+passed in name cannot be accidentally parsed.
 
-I can easily remove them, no problem.
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ drivers/video/fbdev/omap2/dss/display-sysfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Consider them unapplied.
+diff --git a/drivers/video/fbdev/omap2/dss/display-sysfs.c b/drivers/video/fbdev/omap2/dss/display-sysfs.c
+index 12186557a9d4..6ad0991f8259 100644
+--- a/drivers/video/fbdev/omap2/dss/display-sysfs.c
++++ b/drivers/video/fbdev/omap2/dss/display-sysfs.c
+@@ -324,7 +324,7 @@ int display_init_sysfs(struct platform_device *pdev)
+ 
+ 	for_each_dss_dev(dssdev) {
+ 		r = kobject_init_and_add(&dssdev->kobj, &display_ktype,
+-			&pdev->dev.kobj, dssdev->alias);
++			&pdev->dev.kobj, "%s", dssdev->alias);
+ 		if (r) {
+ 			DSSERR("failed to create sysfs files\n");
+ 			omap_dss_put_device(dssdev);
+-- 
+1.9.1
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+
+-- 
+Kees Cook
+Chrome OS Security

@@ -1,79 +1,30 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Jun 2015 12:54:29 +0000
-Subject: [PATCH 05/11] OMAPDSS: DISPC: fix row_inc for OMAP3
-Message-Id: <1434545675-477-6-git-send-email-tomi.valkeinen@ti.com>
+From: "Practice Trinity (NHS SOUTH SEFTON CCG)" <trinitypractice@nhs.net>
+Date: Mon, 08 Jun 2015 11:09:39 +0000
+Subject: RE:
+Message-Id: <20150608110945.3B19E458125@nhs-pd1e-esg108.ad1.nhs.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
+References: <132D0DB4B968F242BE373429794F35C22559D38329@NHS-PCLI-MBC011.AD1.NHS.NET>
+In-Reply-To: <132D0DB4B968F242BE373429794F35C22559D38329@NHS-PCLI-MBC011.AD1.NHS.NET>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: "Practice Trinity (NHS SOUTH SEFTON CCG)" <trinitypractice@nhs.net>
 
-pixel_inc and row_inc work differently on OMAP2/3 and OMAP4+ DSS. On
-OMAP2/3 DSS, the pixel_inc is _not_ added by the HW at the end of the
-line, after the last pixel, whereas on OMAP4+ it is.
 
-The driver currently works for OMAP4+, but does not handle OMAP2/3
-correctly, which leads to tilted image when row_inc is used.
 
-This patch adds a flag to DISPC driver so that the pixel_inc is added
-when required.
+$1.5 C.A.D for you email ( leonh2800@gmail.com )  for info
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/dispc.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+********************************************************************************************************************
 
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index ddce8fcfc5c1..4488d9367bd3 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -95,6 +95,9 @@ struct dispc_features {
- 	bool mstandby_workaround:1;
- 
- 	bool set_max_preload:1;
-+
-+	/* PIXEL_INC is not added to the last pixel of a line */
-+	bool last_pixel_inc_missing:1;
- };
- 
- #define DISPC_MAX_NR_FIFOS 5
-@@ -2692,6 +2695,9 @@ static int dispc_ovl_setup_common(enum omap_plane plane,
- 		dispc_ovl_set_ba1_uv(plane, p_uv_addr + offset1);
- 	}
- 
-+	if (dispc.feat->last_pixel_inc_missing)
-+		row_inc += pix_inc - 1;
-+
- 	dispc_ovl_set_row_inc(plane, row_inc);
- 	dispc_ovl_set_pix_inc(plane, pix_inc);
- 
-@@ -3769,6 +3775,7 @@ static const struct dispc_features omap24xx_dispc_feats __initconst = {
- 	.num_fifos		=	3,
- 	.no_framedone_tv	=	true,
- 	.set_max_preload	=	false,
-+	.last_pixel_inc_missing	=	true,
- };
- 
- static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
-@@ -3789,6 +3796,7 @@ static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
- 	.num_fifos		=	3,
- 	.no_framedone_tv	=	true,
- 	.set_max_preload	=	false,
-+	.last_pixel_inc_missing	=	true,
- };
- 
- static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
-@@ -3809,6 +3817,7 @@ static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
- 	.num_fifos		=	3,
- 	.no_framedone_tv	=	true,
- 	.set_max_preload	=	false,
-+	.last_pixel_inc_missing	=	true,
- };
- 
- static const struct dispc_features omap44xx_dispc_feats __initconst = {
--- 
-2.1.4
+This message may contain confidential information. If you are not the intended recipient please inform the
+sender that you have received the message in error before deleting it.
+Please do not disclose, copy or distribute information in this e-mail or take any action in reliance on its contents:
+to do so is strictly prohibited and may be unlawful.
 
+Thank you for your co-operation.
+
+NHSmail is the secure email and directory service available for all NHS staff in England and Scotland
+NHSmail is approved for exchanging patient data and other sensitive information with NHSmail and GSi recipients
+NHSmail provides an email address for your career in the NHS and can be accessed anywhere
+
+********************************************************************************************************************

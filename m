@@ -1,87 +1,37 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Fri, 12 Jun 2015 13:19:50 +0000
-Subject: Re: [PATCH 1/2] backlight: pwm: don't call legacy pwm request for device defined in dt
-Message-Id: <20150612131948.GA2392@ulmo.nvidia.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="dDRMvlgZJXvWKvBx"
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Tue, 09 Jun 2015 13:04:26 +0000
+Subject: [PATCH] drivers/video/fbdev/sis/sis_main.c: avoid repeated strlen() calls
+Message-Id: <1433855066-20260-1-git-send-email-linux@rasmusvillemoes.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1413035186-11771-1-git-send-email-vladimir_zapolskiy@mentor.com>
- <1413035186-11771-2-git-send-email-vladimir_zapolskiy@mentor.com>
- <20150612113114.GK19400@ulmo.nvidia.com>
- <557AD755.5050409@mentor.com>
-In-Reply-To: <557AD755.5050409@mentor.com>
-To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Cc: linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>, Bryan Wu <cooloney@gmail.com>, Lee Jones <lee.jones@linaro.org>, stable@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thomas Winischhofer <thomas@winischhofer.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+gcc is not smart enough to realize that strlen(strbuf1) cannot be
+changed by the loop body, so it is forced to recompute it, at least in
+the branch containing the assignment. Avoid this by using an
+equivalent stopping condition.
 
---dDRMvlgZJXvWKvBx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+ drivers/video/fbdev/sis/sis_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Fri, Jun 12, 2015 at 03:57:57PM +0300, Vladimir Zapolskiy wrote:
-> Hi Thierry,
->=20
-> On 12.06.2015 14:31, Thierry Reding wrote:
-> > On Sat, Oct 11, 2014 at 04:46:25PM +0300, Vladimir Zapolskiy wrote:
-> >> Platform PWM backlight data provided by board's device tree should be
-> >> complete enough to successfully request a pwm device using pwm_get() A=
-PI.
-> >>
-> >> Based on initial implementation done by Dmitry Eremin-Solenikov.
-> >>
-> >> Reported-by: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
-> >> Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-> >> Cc: Thierry Reding <thierry.reding@gmail.com>
-> >> Cc: Jingoo Han <jg1.han@samsung.com>
-> >> Cc: Bryan Wu <cooloney@gmail.com>
-> >> Cc: Lee Jones <lee.jones@linaro.org>
-> >> ---
-> >>  drivers/video/backlight/pwm_bl.c |   14 +++++++-------
-> >>  1 file changed, 7 insertions(+), 7 deletions(-)
-> >=20
-> > This fell off my radar, but I think it's good. I used to have a local
-> > patch somewhere that solved the same problem by initializing the pwm_id
-> > field of platform_pwm_backlight_data to -1 in pwm_backlight_parse_dt(),
-> > but I like this variant better because it's more explicit and doesn't
-> > even attempt to request using the legacy API (which will inevitably fail
-> > in the DT case anyway).
-> >=20
-> > Vladimir, do you think you'd have the time to rebase this patch on top
-> > of something recent and perhaps extend the commit message with some of
-> > the arguments that you brought forth in this thread? Specifically it'd
-> > be useful to mention that this enforces the DT binding and fixes a real
-> > bug where the legacy path would try to request a PWM that's not
-> > necessarily the right one.
->=20
-> sure, no problem, I'll find time to rebase on top of Lee's
-> backlight/for-backlight-next and resend the change this weekend.
->=20
-> Thank you for reviewing :)
+diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
+index fcf610edf217..ea95f8bf3922 100644
+--- a/drivers/video/fbdev/sis/sis_main.c
++++ b/drivers/video/fbdev/sis/sis_main.c
+@@ -172,7 +172,7 @@ static void sisfb_search_mode(char *name, bool quiet)
+ 
+ 	if(strlen(name) <= 19) {
+ 		strcpy(strbuf1, name);
+-		for(i = 0; i < strlen(strbuf1); i++) {
++		for(i = 0; strbuf1[i]; i++) {
+ 			if(strbuf1[i] < '0' || strbuf1[i] > '9') strbuf1[i] = ' ';
+ 		}
+ 
+-- 
+2.1.3
 
-I'll be away for two weeks, but feel free to add my:
-
-Acked-by: Thierry Reding <thierry.reding@gmail.com>
-
---dDRMvlgZJXvWKvBx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJVetxxAAoJEN0jrNd/PrOhZvUP/RncY+Lre8RowOLMiYzKbOpE
-/4YSZ0Xn/WxK8Gyzumdu7K/1L9r8qSLJkqycV0/e59a+wF971cj5zyltEysH02vU
-QvwbRIVd/nWJgWFj5EV+EC41ROe+9uwU0X0nFMKBYAZl0UeWIf/wHLwXWL/BUIbG
-gjYfbcYIbTzKubiZoLps43WuKbHDxP9h9Q/LATiQLP1DGgpVpyVsamDoIeSfBteQ
-5DcKlCNA6TVCmjXxH0rgeXZY6euUbQt9vJyt3mfgZXFKbete7IyAnZyVFs+7+Mbo
-y+W5C9d5Yx5YAIPfLCyLFbm8JRt8WmyH4zSoD3nmgmDGP+r8/odsGNiSqWNG217R
-2h+WVvsiL8W1LYknfd/+3aSbEfJJc9r3uW42QinuHkSr/ABzGwLKF3oljM5/jF9g
-RoetvACT0t23MqLOnC2yjSnm7ILAX59K6mfsdJYpiudZ5WBZjACBq1NcmAXN13Qt
-MqrOYtnlhvrcJzrXnbT6/9pisNmVh0B0U8qRx25WObcz+ICBQs37VFF2rHNj9eqk
-GYAyoWn3soahltQhMvslEX61/4MlzT0tXWwLxa3OngfZ52Rvvf/UqNUa5yZ0GBAg
-C4J9qPkUbwbYa10VuS94hLkk9aTA8EZb42adpCTlqPD3a35OdpU23Jcu9QqcQVWW
-te80UcUu7mChowR7L2Br
-=V57g
------END PGP SIGNATURE-----
-
---dDRMvlgZJXvWKvBx--

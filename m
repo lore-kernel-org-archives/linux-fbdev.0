@@ -1,48 +1,11 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 17 Jun 2015 11:36:41 +0000
-Subject: [PATCH v2 2/9] staging: sm7xxfb: remove numvgamodes
-Message-Id: <1434540288-8289-3-git-send-email-sudipm.mukherjee@gmail.com>
+From: "Klientskie bazi tel +79133913837 Yznaite podrobnee!!!"  <linux-fbdev@vger.kerne
+Date: Wed, 10 Jun 2015 12:53:44 +0000
+Subject: Klientskie bazi tel +79133913837 Yznaite podrobnee!!!
+Message-Id: <3EC487CF85517FCC10155CE19534E8A9@vger.kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434540288-8289-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1434540288-8289-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-numvgamodes was only used in one place, so remove the #define
-and use its defined value.
-
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
- drivers/staging/sm7xxfb/sm7xx.h   | 2 --
- drivers/staging/sm7xxfb/sm7xxfb.c | 2 +-
- 2 files changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
-index c5d6253..4dabda4 100644
---- a/drivers/staging/sm7xxfb/sm7xx.h
-+++ b/drivers/staging/sm7xxfb/sm7xx.h
-@@ -775,5 +775,3 @@ static struct ModeInit vgamode[] = {
- 	  },
- 	 },
- };
--
--#define numvgamodes		ARRAY_SIZE(vgamode)
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index 4d9b69d..5667fbf 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -477,7 +477,7 @@ static void sm7xx_set_timing(struct smtcfb_info *sfb)
- 		"sfb->width=%d sfb->height=%d sfb->fb->var.bits_per_pixel=%d sfb->hz=%d\n",
- 		sfb->width, sfb->height, sfb->fb->var.bits_per_pixel, sfb->hz);
- 
--	for (j = 0; j < numvgamodes; j++) {
-+	for (j = 0; j < ARRAY_SIZE(vgamode); j++) {
- 		if (vgamode[j].mmsizex = sfb->width &&
- 		    vgamode[j].mmsizey = sfb->height &&
- 		    vgamode[j].bpp = sfb->fb->var.bits_per_pixel &&
--- 
-1.8.1.2
-
+Klientskie bazi tel +79133913837 Yznaite podrobnee!!!

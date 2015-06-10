@@ -1,33 +1,66 @@
-From: Alexander Holler <holler@ahsoftware.de>
-Date: Mon, 08 Jun 2015 18:18:40 +0000
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 10 Jun 2015 07:30:32 +0000
 Subject: Re: [PATCH 00/21] On-demand device registration
-Message-Id: <5575DC80.4040608@ahsoftware.de>
+Message-Id: <CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com> <CAL_Jsq+EWLEJhRudTGAwYsOg4tX2-pGhygeQGHae9RL8rBpMiA@mail.gmail.com> <556F5C24.1030101@linaro.org> <5570B783.1050808@ahsoftware.de> <557589D9.1050008@melag.de> <5575DB8D.50000@ahsoftware.de>
-In-Reply-To: <5575DB8D.50000@ahsoftware.de>
+References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
+ <CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>
+ <CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>
+In-Reply-To: <CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Enrico Weigelt, metux IT consult" <weigelt@melag.de>, "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: Rob Herring <robherring2@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, =?UTF-8?B?U3TDqXBoYW5lIE1hcmNoZXNpbg==?= <stephane.marchesin@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dan Williams <dan.j.williams@intel.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dmaengine@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, linux-clk@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, dmaengine@vger.kernel.org, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, linux-clk@vger.kernel.org, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, Grant Likely <grant.likely@linaro.org>, Alexander Holler <holler@ahsoftware.de>, Dan Williams <dan.j.williams@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.o>
 
-Am 08.06.2015 um 20:14 schrieb Alexander Holler:
-> Am 08.06.2015 um 14:26 schrieb Enrico Weigelt, metux IT consult:
->> Am 04.06.2015 um 22:39 schrieb Alexander Holler:
->>
->>  > As it seems to have been forgotten or overread, I've mentioned in my
->>> series of patches last year that, with a few changes, it's possible to
->>> let the algorithm I've used (dfs) to spit out all drivers which can be
->>> initialized in parallel.
->>
->> Unfortunately, I've missed that ... could you please resend you patches?
->> Boot time reduction is one of the topics on my 2do in several weeks.
+On Tue, Jun 2, 2015 at 12:14 PM, Tomeu Vizoso
+<tomeu.vizoso@collabora.com> wrote:
+> On 2 June 2015 at 10:48, Linus Walleij <linus.walleij@linaro.org> wrote:
+
+>> This is what systemd is doing in userspace for starting services:
+>> ask for your dependencies and wait for them if they are not
+>> there. So drivers ask for resources and wait for them. It also
+>> needs to be abstract, so for example we need to be able to
+>> hang on regulator_get() until the driver is up and providing that
+>> regulator, and as long as everything is in slowpath it should
+>> be OK. (And vice versa mutatis mutandis for clk, gpio, pin
+>> control, interrupts (!) and DMA channels for example.)
 >
-> https://lkml.org/lkml/2014/5/12/452
->
+> I understood above that you propose probing devices in order, but now
+> you mention that resource getters would block until the dependency is
+> fulfilled which confuses me because if we are probing in order then
+> all dependencies would be fulfilled before the device in question gets
+> probed.
 
-And don't forget patch 10/9 which fixed a bug in my previous patch 
-series and which alos was the reason for the large difference in boot 
-times with and without deps:
+Sorry, the problem space is a bit convoluted so the answers
+get a bit convoluted. Maybe I'm thinking aloud and altering the course
+of my thoughts as I type...
 
-https://lkml.org/lkml/2014/5/13/567
+I guess there can be explicit dependencies for resources like this
+patch does, but another way would be for all resource fetch functions
+to be instrumented, so that you do not block until you try to take
+a resource that is not yet there, e.g.:
+
+regulator_get(...) -> not available, so:
+- identify target regulator provider - this will need instrumentation
+- probe it
+
+It then turns out the regulator driver is on the i2c bus, so we
+need to probe the i2c driver:
+- identify target i2c host for the regulator driver - this will need
+  instrumentation
+- probe the i2c host driver
+
+i2c host comes out, probes the regulator driver, regulator driver
+probes and then the regulator_get() call returns.
+
+This requires instrumentation on anything providing a resource
+to another driver like those I mentioned and a lot of overhead
+infrastructure, but I think it's the right approach. However I don't
+know if I would ever be able to pull that off myself, I know talk
+is cheap and I should show the code instead.
+
+Deepest respect for your efforts!
+
+Yours,
+Linus Walleij

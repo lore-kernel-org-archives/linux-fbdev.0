@@ -1,82 +1,56 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sun, 14 Jun 2015 07:46:20 +0000
-Subject: [RFC v2 13/24] powerpc: Cleanup nvram includes
-Message-Id: <20150614074610.545107014@telegraphics.com.au>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 11 Jun 2015 20:19:53 +0000
+Subject: [PATCH v7 2/3] IB/ipath: add counting for MTRR
+Message-Id: <1434053994-2196-3-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150614074607.242676098@telegraphics.com.au>
+References: <1434053994-2196-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1434053994-2196-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: bp@suse.de
+Cc: mchehab@osg.samsung.com, tomi.valkeinen@ti.com, bhelgaas@google.com, luto@amacapital.net, linux-media@vger.kernel.org, linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Roland Dreier <roland@kernel.org>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock <hal.rosenstock@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, infinipath@intel.com, linux-fbdev@vger.kernel.org
 
-The nvram_read_byte() and nvram_write_byte() definitions in asm/nvram.h
-duplicate those in linux/nvram.h. Get rid of the former to prepare for
-adoption of struct arch_nvram_ops (which is defined in linux/nvram.h for
-general use).
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+There is no good reason not to, we eventually delete it as well.
 
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Roland Dreier <roland@kernel.org>
+Cc: Sean Hefty <sean.hefty@intel.com>
+Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: infinipath@intel.com
+Cc: linux-rdma@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- arch/powerpc/include/asm/nvram.h           |    3 ---
- arch/powerpc/kernel/setup_32.c             |    1 +
- drivers/char/generic_nvram.c               |    4 +++-
- drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/infiniband/hw/ipath/ipath_wc_x86_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux/arch/powerpc/include/asm/nvram.h
-=================================--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-06-14 17:45:34.000000000 +1000
-+++ linux/arch/powerpc/include/asm/nvram.h	2015-06-14 17:45:49.000000000 +1000
-@@ -101,7 +101,4 @@ extern int nvram_write_os_partition(stru
- /* Determine NVRAM size */
- extern ssize_t nvram_get_size(void);
- 
--/* Normal access to NVRAM */
--extern unsigned char nvram_read_byte(int i);
--extern void nvram_write_byte(unsigned char c, int i);
- #endif /* _ASM_POWERPC_NVRAM_H */
-Index: linux/arch/powerpc/kernel/setup_32.c
-=================================--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-06-14 17:45:34.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-06-14 17:45:49.000000000 +1000
-@@ -16,6 +16,7 @@
- #include <linux/cpu.h>
- #include <linux/console.h>
- #include <linux/memblock.h>
-+#include <linux/nvram.h>
- 
- #include <asm/io.h>
- #include <asm/prom.h>
-Index: linux/drivers/char/generic_nvram.c
-=================================--- linux.orig/drivers/char/generic_nvram.c	2015-06-14 17:45:34.000000000 +1000
-+++ linux/drivers/char/generic_nvram.c	2015-06-14 17:45:49.000000000 +1000
-@@ -20,9 +20,11 @@
- #include <linux/fcntl.h>
- #include <linux/init.h>
- #include <linux/mutex.h>
-+#include <linux/nvram.h>
- #include <asm/uaccess.h>
--#include <asm/nvram.h>
-+
- #ifdef CONFIG_PPC_PMAC
-+#include <asm/nvram.h>
- #include <asm/machdep.h>
- #endif
- 
-Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
-=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-14 17:45:34.000000000 +1000
-+++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-14 17:45:49.000000000 +1000
-@@ -111,12 +111,12 @@
- #include "matroxfb_g450.h"
- #include <linux/matroxfb.h>
- #include <linux/interrupt.h>
-+#include <linux/nvram.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
- 
- #ifdef CONFIG_PPC_PMAC
- #include <asm/machdep.h>
--unsigned char nvram_read_byte(int);
- static int default_vmode = VMODE_NVRAM;
- static int default_cmode = CMODE_NVRAM;
- #endif
-
+diff --git a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
+index 4ad0b93..70c1f3a 100644
+--- a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
++++ b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
+@@ -127,7 +127,7 @@ int ipath_enable_wc(struct ipath_devdata *dd)
+ 			   "(addr %llx, len=0x%llx)\n",
+ 			   (unsigned long long) pioaddr,
+ 			   (unsigned long long) piolen);
+-		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 0);
++		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 1);
+ 		if (cookie < 0) {
+ 			{
+ 				dev_info(&dd->pcidev->dev,
+-- 
+2.3.2.209.gd67f9d5.dirty
 

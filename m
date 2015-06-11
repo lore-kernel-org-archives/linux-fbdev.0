@@ -1,56 +1,65 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 11 Jun 2015 17:50:01 +0000
-Subject: [PATCH v6 2/3] IB/ipath: add counting for MTRR
-Message-Id: <1434045002-31575-3-git-send-email-mcgrof@do-not-panic.com>
+From: Borislav Petkov <bp@suse.de>
+Date: Thu, 11 Jun 2015 19:54:24 +0000
+Subject: Re: [PATCH v6 2/3] IB/ipath: add counting for MTRR
+Message-Id: <20150611195424.GG30391@pd.tnic>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1434045002-31575-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1434045002-31575-1-git-send-email-mcgrof@do-not-panic.com>
+ <1434045002-31575-3-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1434045002-31575-3-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bp@suse.de
-Cc: mchehab@osg.samsung.com, tomi.valkeinen@ti.com, bhelgaas@google.com, luto@amacapital.net, linux-media@vger.kernel.org, linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Roland Dreier <roland@kernel.org>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock <hal.rosenstock@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, infinipath@intel.com, linux-fbdev@vger.kernel.org
+To: Doug Ledford <dledford@redhat.com>
+Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, mchehab@osg.samsung.com, tomi.valkeinen@ti.com, bhelgaas@google.com, luto@amacapital.net, linux-media@vger.kernel.org, linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Roland Dreier <roland@kernel.org>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock <hal.rosenstock@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, infinipath@intel.com, linux-fbdev@vger.kernel.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+On Thu, Jun 11, 2015 at 10:50:01AM -0700, Luis R. Rodriguez wrote:
+> From: "Luis R. Rodriguez" <mcgrof@suse.com>
+> 
+> There is no good reason not to, we eventually delete it as well.
+> 
+> Cc: Toshi Kani <toshi.kani@hp.com>
+> Cc: Roland Dreier <roland@kernel.org>
+> Cc: Sean Hefty <sean.hefty@intel.com>
+> Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+> Cc: Suresh Siddha <sbsiddha@gmail.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Juergen Gross <jgross@suse.com>
+> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Cc: Andy Lutomirski <luto@amacapital.net>
+> Cc: Dave Airlie <airlied@redhat.com>
+> Cc: Antonino Daplas <adaplas@gmail.com>
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: infinipath@intel.com
+> Cc: linux-rdma@vger.kernel.org
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+> ---
+>  drivers/infiniband/hw/ipath/ipath_wc_x86_64.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
+> index 4ad0b93..70c1f3a 100644
+> --- a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
+> +++ b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
+> @@ -127,7 +127,7 @@ int ipath_enable_wc(struct ipath_devdata *dd)
+>  			   "(addr %llx, len=0x%llx)\n",
+>  			   (unsigned long long) pioaddr,
+>  			   (unsigned long long) piolen);
+> -		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 0);
+> +		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 1);
+>  		if (cookie < 0) {
+>  			{
+>  				dev_info(&dd->pcidev->dev,
+> --
 
-There is no good reason not to, we eventually delete it as well.
+Doug, ack?
 
-Cc: Toshi Kani <toshi.kani@hp.com>
-Cc: Roland Dreier <roland@kernel.org>
-Cc: Sean Hefty <sean.hefty@intel.com>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: infinipath@intel.com
-Cc: linux-rdma@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
----
- drivers/infiniband/hw/ipath/ipath_wc_x86_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
-index 4ad0b93..70c1f3a 100644
---- a/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
-+++ b/drivers/infiniband/hw/ipath/ipath_wc_x86_64.c
-@@ -127,7 +127,7 @@ int ipath_enable_wc(struct ipath_devdata *dd)
- 			   "(addr %llx, len=0x%llx)\n",
- 			   (unsigned long long) pioaddr,
- 			   (unsigned long long) piolen);
--		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 0);
-+		cookie = mtrr_add(pioaddr, piolen, MTRR_TYPE_WRCOMB, 1);
- 		if (cookie < 0) {
- 			{
- 				dev_info(&dd->pcidev->dev,
 -- 
-2.3.2.209.gd67f9d5.dirty
+Regards/Gruss,
+    Boris.
 
+ECO tip #101: Trim your mails when you reply.
+--

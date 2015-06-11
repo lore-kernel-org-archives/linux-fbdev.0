@@ -1,15 +1,15 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 09 Jun 2015 00:20:21 +0000
+Date: Thu, 11 Jun 2015 17:50:01 +0000
 Subject: [PATCH v6 2/3] IB/ipath: add counting for MTRR
-Message-Id: <1433809222-28261-3-git-send-email-mcgrof@do-not-panic.com>
+Message-Id: <1434045002-31575-3-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1433809222-28261-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1433809222-28261-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1434045002-31575-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1434045002-31575-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: mchehab@osg.samsung.com, bp@suse.de
-Cc: tomi.valkeinen@ti.com, bhelgaas@google.com, linux-media@vger.kernel.org, linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Roland Dreier <roland@kernel.org>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock <hal.rosenstock@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Andy Lutomirski <luto@amacapital.net>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, infinipath@intel.com, linux-fbdev@vger.kernel.org
+To: bp@suse.de
+Cc: mchehab@osg.samsung.com, tomi.valkeinen@ti.com, bhelgaas@google.com, luto@amacapital.net, linux-media@vger.kernel.org, linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Roland Dreier <roland@kernel.org>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock <hal.rosenstock@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, infinipath@intel.com, linux-fbdev@vger.kernel.org
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 

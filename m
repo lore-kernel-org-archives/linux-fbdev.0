@@ -1,15 +1,15 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Tue, 09 Jun 2015 00:20:22 +0000
+Date: Thu, 11 Jun 2015 17:50:02 +0000
 Subject: [PATCH v6 3/3] IB/ipath: use arch_phys_wc_add() and require PAT disabled
-Message-Id: <1433809222-28261-4-git-send-email-mcgrof@do-not-panic.com>
+Message-Id: <1434045002-31575-4-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1433809222-28261-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1433809222-28261-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1434045002-31575-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1434045002-31575-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: mchehab@osg.samsung.com, bp@suse.de
-Cc: tomi.valkeinen@ti.com, bhelgaas@google.com, linux-media@vger.kernel.org, linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Doug Ledford <dledford@redhat.com>, Andy Walls <awalls@md.metrocast.net>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Andy Lutomirski <luto@amacapital.net>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Stefan Bader <stefan.bader@canonical.com>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, toshi.kani@hp.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, infinipath@intel.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com
+To: bp@suse.de
+Cc: mchehab@osg.samsung.com, tomi.valkeinen@ti.com, bhelgaas@google.com, luto@amacapital.net, linux-media@vger.kernel.org, linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Doug Ledford <dledford@redhat.com>, Andy Walls <awalls@md.metrocast.net>, Hal Rosenstock <hal.rosenstock@gmail.com>, Sean Hefty <sean.hefty@intel.com>, Suresh Siddha <sbsiddha@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Roland Dreier <roland@purestorage.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Stefan Bader <stefan.bader@canonical.com>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, toshi.kani@hp.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, infinipath@intel.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 

@@ -1,46 +1,67 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 26 Jun 2015 22:04:18 +0000
-Subject: Re: [PATCH v7 5/9] PCI: Add pci_iomap_wc() variants
-Message-Id: <1435356258.26815.13.camel@kernel.crashing.org>
+From: Heiko Schocher <hs@denx.de>
+Date: Thu, 11 Jun 2015 13:13:13 +0000
+Subject: [PATCH] video: sm501fb: fixing static checker warning
+Message-Id: <1434028393-32224-1-git-send-email-hs@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
-	 <1435189081.3790.24.camel@kernel.crashing.org>
-	 <4985EFDD773FCB459EF7915D2A3621ADC02F10@nice.asicdesigners.com>
-	 <6806026.xb91q6Ad7G@wuerfel>
-	 <4985EFDD773FCB459EF7915D2A3621ADC031F8@nice.asicdesigners.com>
-	 <1435272718.3822.7.camel@kernel.crashing.org>
-	 <20150626193158.GJ3005@wotan.suse.de>
-In-Reply-To: <20150626193158.GJ3005@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Luis R. Rodriguez" <mcgrof@suse.com>
-Cc: Casey Leedom <leedom@chelsio.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Toshi Kani <toshi.kani@hp.com>, Andy Lutomirski <luto@amacapital.net>, Juergen Gross <jgross@suse.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>, Stefan Bader <stefan.bader@canonical.com>, ville.syrjala@linux.intel.com, David Vrabel <david.vrabel@citrix.com>, Jan Beulich <jbeulich@suse.com>, Roger Pau =?ISO-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Heiko Schocher <hs-ynQEQJNshbs@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rasmus Villemoes <linux-qQsb+v5E8BnlAoU/VqSP6n9LOBIZ5rWg@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
 
-On Fri, 2015-06-26 at 21:31 +0200, Luis R. Rodriguez wrote:
-> > Yeah either, we need to fix our relaxed implementation (patch
-> > welcome :-)
-> 
-> Yikes, so although powerpc has useful heuristics to automatically
-> enable WC the default write ops have been nullifying its effects?
+Dan Carpenter reported the static checker warning:
 
-The heuristic is for userspace mapping which don't use the kernel
-accessors. To cut a long story short, this was all done back in the day
-to speed up X.org which doesn't use fancy accessors with barriers to
-access the framebuffer (neither does the kernel fbdev layer).
+drivers/video/fbdev/sm501fb.c:1958 sm501fb_probe()
+warn: strcpy() 'cp' of unknown size might be too large for 'fb_mode'
 
-> Shouldn't this have been blatantly obvious in performance benchmarks
-> and expectations? 
+Fix it, as the SM501 datasheet says the SM501 can "200 MHz
+DAC support 1280x1024 resolution", which would result in a
+too long mode string for current fb_mode var.
 
-> If not a change should give considerable performance
-> gains... If the WC was nullified on powerpc then the experience and
-> value of the heuristics have less value and even if they are going
-> to be only considered for userspace mmap() it should be taken with
-> a bit grain of salt it seems.
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Heiko Schocher <hs@denx.de>
+---
 
-It wasn't nullified for the main user at the time, the fb. And I
-mentioned an IB adapter or two for which the code had been hand tuned.
+ drivers/video/fbdev/sm501fb.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-Cheers,
-Ben.
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index 9e74e8f..ea50df3 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -43,7 +43,9 @@
+ 
+ #include "edid.h"
+ 
+-static char *fb_mode = "640x480-16@60";
++static char *fb_default_mode = "640x480-16@60";
++static char fb_mode[20];
++static char *fb_mode_cmdline;
+ static unsigned long default_bpp = 16;
+ 
+ static struct fb_videomode sm501_default_mode = {
+@@ -1963,6 +1965,12 @@ static int sm501fb_probe(struct platform_device *pdev)
+ 				if (info->edid_data)
+ 					found = 1;
+ 			}
++		} else {
++			if (fb_mode_cmdline)
++				strncpy(fb_mode, fb_mode_cmdline,
++					sizeof(fb_mode) - 1);
++			else
++				strcpy(fb_mode, fb_default_mode);
+ 		}
+ #endif
+ 		if (!found) {
+@@ -2230,7 +2238,7 @@ static struct platform_driver sm501fb_driver = {
+ 
+ module_platform_driver(sm501fb_driver);
+ 
+-module_param_named(mode, fb_mode, charp, 0);
++module_param_named(mode, fb_mode_cmdline, charp, 0);
+ MODULE_PARM_DESC(mode,
+ 	"Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
+ module_param_named(bpp, default_bpp, ulong, 0);
+-- 
+2.1.0
 

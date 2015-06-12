@@ -1,37 +1,53 @@
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Date: Tue, 09 Jun 2015 13:04:26 +0000
-Subject: [PATCH] drivers/video/fbdev/sis/sis_main.c: avoid repeated strlen() calls
-Message-Id: <1433855066-20260-1-git-send-email-linux@rasmusvillemoes.dk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 12 Jun 2015 09:36:22 +0000
+Subject: Re: [PATCH] drivers/video/fbdev/sis/sis_main.c: avoid repeated strlen() calls
+Message-Id: <557AA816.4060102@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="JFl2GQwRmQrR5M1h1xSgpq8v9tQXknHbi"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thomas Winischhofer <thomas@winischhofer.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1433855066-20260-1-git-send-email-linux@rasmusvillemoes.dk>
+In-Reply-To: <1433855066-20260-1-git-send-email-linux@rasmusvillemoes.dk>
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>, Thomas Winischhofer <thomas@winischhofer.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-gcc is not smart enough to realize that strlen(strbuf1) cannot be
-changed by the loop body, so it is forced to recompute it, at least in
-the branch containing the assignment. Avoid this by using an
-equivalent stopping condition.
+--JFl2GQwRmQrR5M1h1xSgpq8v9tQXknHbi
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
----
- drivers/video/fbdev/sis/sis_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index fcf610edf217..ea95f8bf3922 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -172,7 +172,7 @@ static void sisfb_search_mode(char *name, bool quiet)
- 
- 	if(strlen(name) <= 19) {
- 		strcpy(strbuf1, name);
--		for(i = 0; i < strlen(strbuf1); i++) {
-+		for(i = 0; strbuf1[i]; i++) {
- 			if(strbuf1[i] < '0' || strbuf1[i] > '9') strbuf1[i] = ' ';
- 		}
- 
--- 
-2.1.3
 
+On 09/06/15 16:04, Rasmus Villemoes wrote:
+> gcc is not smart enough to realize that strlen(strbuf1) cannot be
+> changed by the loop body, so it is forced to recompute it, at least in
+> the branch containing the assignment. Avoid this by using an
+> equivalent stopping condition.
+
+Does it matter? Is sisfb calling sisfb_search_mode thousands of times?
+
+ Tomi
+
+
+--JFl2GQwRmQrR5M1h1xSgpq8v9tQXknHbi
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVeqgWAAoJEPo9qoy8lh71iM4QAImCpTXHO6ndRWVtWLaGpDGA
+jzZs3hEEFDcaLHNDznNVgIubM/AcBZLvPbyg7qnuawd3OivEU4jXjZzpoqWuqh7G
+w6/DI3ZSzpatw0nAnTwFaQvnm+fLzpyKM2X+Emvoe68d6PZxx6GRkdTxpznDETkA
+RKAyKq7La2p1ptST9CgG6DXo6Bd03ZE5uynhrVzsHE0VMtr+j1JJbb4yDWdXj0j8
+xeQDFq1c7OyskKj++09LpfPQEujQPx7pjNiXONNk5fSmRtSWBJiG09HQbQVggK4f
+4LwzGOZuuV7PhQ+nFVRFoZN2CFtM+keCn94ydxIr9nPCZuOCp7vvEWwNm0o5A7+A
+whgs/ipoDuV+ZwJQo/F6l01JCbso2basAH9M65aY8n2w4ij8LzORgwok9/pmsu/F
+8wJ0OSqLioYyTHdMtTG2dMn0yfq1BHevSDJnJ7Wfm/9DnXgzigVdQMzZQSXFqLk5
+cdnvtBkS2M19eMWo9wIVwxusDA6J2nh53hWWHqTpdSH0dCkrIIo1ZtV37SUeuCPQ
+pXdCD1dPbi3KHnFbyZUjoOcI1JonJtGs4EnAOVdZqohh8CreF7wRAEpvvc5FuiVZ
+5lUxyByoboZE3+/Tm/VpkyVOzePDZUM6reNPRJc32F41+lkTPsGnCPQTLIxKgjmP
+3bw8iWs5WkYjvw/a3HUU
+=Vm1S
+-----END PGP SIGNATURE-----
+
+--JFl2GQwRmQrR5M1h1xSgpq8v9tQXknHbi--

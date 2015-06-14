@@ -1,33 +1,118 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 25 Jun 2015 15:51:57 +0000
-Subject: Re: [PATCH v8 6/9] lib: devres: add pcim_iomap_wc() variants
-Message-Id: <CAB=NE6X35Bw8PEs9b7rwtMakTkHXFr4rmsBPBFEfK-0oT83T6A@mail.gmail.com>
+From: "Dighe, Niranjan (N.)" <ndighe@visteon.com>
+Date: Sun, 14 Jun 2015 17:17:43 +0000
+Subject: [PATCH] Staging: sm750fb: Fix checkpatch.pl warnings
+Message-Id: <20150614171728.GA5800@codebox>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
- <1435195342-26879-7-git-send-email-mcgrof@do-not-panic.com> <20150625154031.GB4898@pd.tnic>
-In-Reply-To: <20150625154031.GB4898@pd.tnic>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Borislav Petkov <bp@suse.de>
-Cc: Ingo Molnar <mingo@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Bjorn Helgaas <bhelgaas@google.com>, Andy Lutomirski <luto@amacapital.net>, Andrew Morton <akpm@linux-foundation.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "Michael S. Tsirkin" <mst@redhat.com>, Toshi Kani <toshi.kani@hp.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, Stefan Bader <stefan.bader@canonical.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, David Vrabel <david.vrabel@citrix.com>, Jan Beulich <jbeulich@suse.com>, =?UTF-8?Q?Roger_Pau_Monn=C3=A9?= <roger.pau@citrix.com>
+To: "sudipm.mukherjee@gmail.com" <sudipm.mukherjee@gmail.com>, "teddy.wang@siliconmotion.com" <teddy.wang@siliconmotion.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Thu, Jun 25, 2015 at 8:40 AM, Borislav Petkov <bp@suse.de> wrote:
-> On Wed, Jun 24, 2015 at 06:22:19PM -0700, Luis R. Rodriguez wrote:
->> From: "Luis R. Rodriguez" <mcgrof@suse.com>
->>
->> Now that we have pci_iomap_wc() add the respective
->> devres helpers. These go unexported for now but
->> note that should they later be exported this
->> must go with EXPORT_SYMBOL_GPL().
->
-> Do I see it correctly, those are not used in this patchset?
+From: Niranjan Dighe <ndighe@visteon.com>
 
-That's correct. It was a preemptive implementation of devres pci wc APIs.
+This patch removes spaces at the start of the line and replaces it
+by tabs
 
-> If so, then let's keep this patch in the bag and pick it up only when
-> those functions have users.
+Signed-off-by: Niranjan Dighe <ndighe@visteon.com>
 
-OK!
-
- Luis
+diff --git a/drivers/staging/sm750fb/ddk750_dvi.h b/drivers/staging/sm750fb/ddk750_dvi.h
+index 50bcec2..cbd87c1 100644
+--- a/drivers/staging/sm750fb/ddk750_dvi.h
++++ b/drivers/staging/sm750fb/ddk750_dvi.h
+@@ -4,16 +4,18 @@
+ /* dvi chip stuffs structros */
+ 
+ typedef long (*PFN_DVICTRL_INIT)(
+-    unsigned char edgeSelect,
+-    unsigned char busSelect,
+-    unsigned char dualEdgeClkSelect,
+-    unsigned char hsyncEnable,
+-    unsigned char vsyncEnable,
+-    unsigned char deskewEnable,
+-    unsigned char deskewSetting,
+-    unsigned char continuousSyncEnable,
+-    unsigned char pllFilterEnable,
+-    unsigned char pllFilterValue);
++	unsigned char edgeSelect,
++	unsigned char busSelect,
++	unsigned char dualEdgeClkSelect,
++	unsigned char hsyncEnable,
++	unsigned char vsyncEnable,
++	unsigned char deskewEnable,
++	unsigned char deskewSetting,
++	unsigned char continuousSyncEnable,
++	unsigned char pllFilterEnable,
++	unsigned char pllFilterValue
++);
++
+ typedef void (*PFN_DVICTRL_RESETCHIP)(void);
+ typedef char* (*PFN_DVICTRL_GETCHIPSTRING)(void);
+ typedef unsigned short (*PFN_DVICTRL_GETVENDORID)(void);
+@@ -24,44 +26,39 @@ typedef unsigned char (*PFN_DVICTRL_ISCONNECTED)(void);
+ typedef unsigned char (*PFN_DVICTRL_CHECKINTERRUPT)(void);
+ typedef void (*PFN_DVICTRL_CLEARINTERRUPT)(void);
+ 
+-
+-
+ /* Structure to hold all the function pointer to the DVI Controller. */
+ typedef struct _dvi_ctrl_device_t
+ {
+-    PFN_DVICTRL_INIT                pfnInit;
+-    PFN_DVICTRL_RESETCHIP           pfnResetChip;
+-    PFN_DVICTRL_GETCHIPSTRING       pfnGetChipString;
+-    PFN_DVICTRL_GETVENDORID         pfnGetVendorId;
+-    PFN_DVICTRL_GETDEVICEID         pfnGetDeviceId;
+-    PFN_DVICTRL_SETPOWER            pfnSetPower;
+-    PFN_DVICTRL_HOTPLUGDETECTION    pfnEnableHotPlugDetection;
+-    PFN_DVICTRL_ISCONNECTED         pfnIsConnected;
+-    PFN_DVICTRL_CHECKINTERRUPT      pfnCheckInterrupt;
+-    PFN_DVICTRL_CLEARINTERRUPT      pfnClearInterrupt;
++	PFN_DVICTRL_INIT		pfnInit;
++	PFN_DVICTRL_RESETCHIP		pfnResetChip;
++	PFN_DVICTRL_GETCHIPSTRING	pfnGetChipString;
++	PFN_DVICTRL_GETVENDORID		pfnGetVendorId;
++	PFN_DVICTRL_GETDEVICEID		pfnGetDeviceId;
++	PFN_DVICTRL_SETPOWER		pfnSetPower;
++	PFN_DVICTRL_HOTPLUGDETECTION	pfnEnableHotPlugDetection;
++	PFN_DVICTRL_ISCONNECTED		pfnIsConnected;
++	PFN_DVICTRL_CHECKINTERRUPT	pfnCheckInterrupt;
++	PFN_DVICTRL_CLEARINTERRUPT	pfnClearInterrupt;
+ } dvi_ctrl_device_t;
+-#define DVI_CTRL_SII164
+-
+ 
++#define DVI_CTRL_SII164
+ 
+ /* dvi functions prototype */
+ int dviInit(
+-    unsigned char edgeSelect,
+-    unsigned char busSelect,
+-    unsigned char dualEdgeClkSelect,
+-    unsigned char hsyncEnable,
+-    unsigned char vsyncEnable,
+-    unsigned char deskewEnable,
+-    unsigned char deskewSetting,
+-    unsigned char continuousSyncEnable,
+-    unsigned char pllFilterEnable,
+-    unsigned char pllFilterValue
++	unsigned char edgeSelect,
++	unsigned char busSelect,
++	unsigned char dualEdgeClkSelect,
++	unsigned char hsyncEnable,
++	unsigned char vsyncEnable,
++	unsigned char deskewEnable,
++	unsigned char deskewSetting,
++	unsigned char continuousSyncEnable,
++	unsigned char pllFilterEnable,
++	unsigned char pllFilterValue
+ );
+ 
+ unsigned short dviGetVendorID(void);
+ unsigned short dviGetDeviceID(void);
+ 
+-
+-
+ #endif
+ 
+-- 
+1.9.1

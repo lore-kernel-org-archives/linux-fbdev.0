@@ -1,39 +1,214 @@
-From: "Gujulan Elango, Hari Prasath (H.)" <hgujulan@visteon.com>
-Date: Wed, 24 Jun 2015 16:51:21 +0000
-Subject: [PATCHv2] staging: sm750fb: remove redundant __func__ in debug statement
-Message-Id: <20150624165120.GA4935@krrish>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sun, 14 Jun 2015 07:46:24 +0000
+Subject: [RFC v2 17/24] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvram_wri
+Message-Id: <20150614074611.564687158@telegraphics.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20150614074607.242676098@telegraphics.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-From: Hari Prasath Gujulan Elango <hgujulan@visteon.com>
+Make use of arch_nvram_ops in device drivers so that the nvram_*
+function exports can be removed.
 
-This patch removes the redundant __func__ from dynamic debug prints as
-the pr_xxx set of functions can be dynamically controlled to include
-function name.Also fix a typo in debug statement.
+Since they are no longer global symbols, rename the PPC32 nvram_* functions
+appropriately.
 
-Signed-off-by: Hari Prasath Gujulan Elango <hgujulan@visteon.com>
+Add the missing CONFIG_NVRAM test to imsttfb to avoid a build failure.
+
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+
 ---
-	v2:Address Dan Carpenter's review comments to fold them as a
-singl patch rather than sending these two changes as separate patches.
----
- drivers/staging/sm750fb/sm750_accel.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/setup_32.c             |    8 ++++----
+ drivers/char/generic_nvram.c               |    4 ++--
+ drivers/video/fbdev/controlfb.c            |    4 ++--
+ drivers/video/fbdev/imsttfb.c              |    7 +++----
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ drivers/video/fbdev/platinumfb.c           |    4 ++--
+ drivers/video/fbdev/valkyriefb.c           |    4 ++--
+ 7 files changed, 16 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 6eee4cd..8ea3a61 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -100,7 +100,7 @@ int hw_fillrect(struct lynx_accel *accel,
- 	{
- 		/* int time wait and always busy,seems hardware
- 		 * got something error */
--		pr_debug("%s:De engine always bussy\n", __func__);
-+		pr_debug("De engine always busy\n");
- 		return -1;
+Index: linux/arch/powerpc/kernel/setup_32.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-=
+06-14 17:45:53.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-06-14 17:45:54.000000000 +1000
+@@ -170,20 +170,18 @@ __setup("l3cr=3D", ppc_setup_l3cr);
+=20
+ #ifdef CONFIG_GENERIC_NVRAM
+=20
+-unsigned char nvram_read_byte(int addr)
++static unsigned char ppc_nvram_read_byte(int addr)
+ {
+ 	if (ppc_md.nvram_read_val)
+ 		return ppc_md.nvram_read_val(addr);
+ 	return 0xff;
+ }
+-EXPORT_SYMBOL(nvram_read_byte);
+=20
+-void nvram_write_byte(unsigned char val, int addr)
++static void ppc_nvram_write_byte(unsigned char val, int addr)
+ {
+ 	if (ppc_md.nvram_write_val)
+ 		ppc_md.nvram_write_val(addr, val);
+ }
+-EXPORT_SYMBOL(nvram_write_byte);
+=20
+ static ssize_t ppc_nvram_get_size(void)
+ {
+@@ -200,6 +198,8 @@ static long ppc_nvram_sync(void)
+ }
+=20
+ const struct nvram_ops arch_nvram_ops =3D {
++	.read_byte      =3D ppc_nvram_read_byte,
++	.write_byte     =3D ppc_nvram_write_byte,
+ 	.get_size       =3D ppc_nvram_get_size,
+ 	.sync           =3D ppc_nvram_sync,
+ };
+Index: linux/drivers/char/generic_nvram.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/char/generic_nvram.c	2015-06=
+-14 17:45:53.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-06-14 17:45:54.000000000 +1000
+@@ -64,7 +64,7 @@ static ssize_t read_nvram(struct file *f
+ 	if (*ppos >=3D nvram_len)
+ 		return 0;
+ 	for (i =3D *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
+-		if (__put_user(nvram_read_byte(i), p))
++		if (__put_user(arch_nvram_ops.read_byte(i), p))
+ 			return -EFAULT;
+ 	*ppos =3D i;
+ 	return p - buf;
+@@ -84,7 +84,7 @@ static ssize_t write_nvram(struct file *
+ 	for (i =3D *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
+ 		if (__get_user(c, p))
+ 			return -EFAULT;
+-		nvram_write_byte(c, i);
++		arch_nvram_ops.write_byte(c, i);
  	}
- 
--- 
-1.9.1
+ 	*ppos =3D i;
+ 	return p - buf;
+Index: linux/drivers/video/fbdev/controlfb.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/controlfb.c	2015=
+-06-14 17:45:34.000000000 +1000
++++ linux/drivers/video/fbdev/controlfb.c	2015-06-14 17:45:54.000000000 +10=
+00
+@@ -415,7 +415,7 @@ static int __init init_control(struct fb
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+ #ifdef CONFIG_NVRAM
+ 	if (default_cmode =3D CMODE_NVRAM) {
+-		cmode =3D nvram_read_byte(NV_CMODE);
++		cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
+ 		if(cmode < CMODE_8 || cmode > CMODE_32)
+ 			cmode =3D CMODE_8;
+ 	} else
+@@ -423,7 +423,7 @@ static int __init init_control(struct fb
+ 		cmode=DEfault_cmode;
+ #ifdef CONFIG_NVRAM
+ 	if (default_vmode =3D VMODE_NVRAM) {
+-		vmode =3D nvram_read_byte(NV_VMODE);
++		vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (vmode < 1 || vmode > VMODE_MAX ||
+ 		    control_mac_modes[vmode - 1].m[full] < cmode) {
+ 			sense =3D read_control_sense(p);
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/matrox/matroxfb_=
+base.c	2015-06-14 17:45:49.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-14 17:45:54.00=
+0000000 +1000
+@@ -1888,7 +1888,7 @@ static int initMatrox2(struct matrox_fb_
+ 			default_vmode =3D VMODE_640_480_60;
+ #ifdef CONFIG_NVRAM
+ 		if (default_cmode =3D CMODE_NVRAM)
+-			default_cmode =3D nvram_read_byte(NV_CMODE);
++			default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+ 		if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 			default_cmode =3D CMODE_8;
+Index: linux/drivers/video/fbdev/platinumfb.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/platinumfb.c	201=
+5-06-14 17:45:34.000000000 +1000
++++ linux/drivers/video/fbdev/platinumfb.c	2015-06-14 17:45:54.000000000 +1=
+000
+@@ -349,7 +349,7 @@ static int platinum_init_fb(struct fb_in
+ 	printk(KERN_INFO "platinumfb: Monitor sense value =3D 0x%x, ", sense);
+ 	if (default_vmode =3D VMODE_NVRAM) {
+ #ifdef CONFIG_NVRAM
+-		default_vmode =3D nvram_read_byte(NV_VMODE);
++		default_vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (default_vmode <=3D 0 || default_vmode > VMODE_MAX ||
+ 		    !platinum_reg_init[default_vmode-1])
+ #endif
+@@ -362,7 +362,7 @@ static int platinum_init_fb(struct fb_in
+ 		default_vmode =3D VMODE_640_480_60;
+ #ifdef CONFIG_NVRAM
+ 	if (default_cmode =3D CMODE_NVRAM)
+-		default_cmode =3D nvram_read_byte(NV_CMODE);
++		default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+ 	if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 		default_cmode =3D CMODE_8;
+Index: linux/drivers/video/fbdev/valkyriefb.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/valkyriefb.c	201=
+5-06-14 17:45:34.000000000 +1000
++++ linux/drivers/video/fbdev/valkyriefb.c	2015-06-14 17:45:54.000000000 +1=
+000
+@@ -287,7 +287,7 @@ static void __init valkyrie_choose_mode(
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+ #if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
+ 	if (default_vmode =3D VMODE_NVRAM) {
+-		default_vmode =3D nvram_read_byte(NV_VMODE);
++		default_vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (default_vmode <=3D 0
+ 		 || default_vmode > VMODE_MAX
+ 		 || !valkyrie_reg_init[default_vmode - 1])
+@@ -300,7 +300,7 @@ static void __init valkyrie_choose_mode(
+ 		default_vmode =3D VMODE_640_480_67;
+ #if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
+ 	if (default_cmode =3D CMODE_NVRAM)
+-		default_cmode =3D nvram_read_byte(NV_CMODE);
++		default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+=20
+ 	/*
+Index: linux/drivers/video/fbdev/imsttfb.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-0=
+6-14 17:45:34.000000000 +1000
++++ linux/drivers/video/fbdev/imsttfb.c	2015-06-14 17:45:54.000000000 +1000
+@@ -328,7 +328,6 @@ enum {
+ 	TVP =3D 1
+ };
+=20
+-#define USE_NV_MODES		1
+ #define INIT_BPP		8
+ #define INIT_XRES		640
+ #define INIT_YRES		480
+@@ -1391,17 +1390,17 @@ static void init_imstt(struct fb_info *i
+ 		}
+ 	}
+=20
+-#if USE_NV_MODES && defined(CONFIG_PPC32)
++#if defined(CONFIG_NVRAM) && defined(CONFIG_PPC32)
+ 	{
+ 		int vmode =3D init_vmode, cmode =3D init_cmode;
+=20
+ 		if (vmode =3D -1) {
+-			vmode =3D nvram_read_byte(NV_VMODE);
++			vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
+ 			if (vmode <=3D 0 || vmode > VMODE_MAX)
+ 				vmode =3D VMODE_640_480_67;
+ 		}
+ 		if (cmode =3D -1) {
+-			cmode =3D nvram_read_byte(NV_CMODE);
++			cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
+ 			if (cmode < CMODE_8 || cmode > CMODE_32)
+ 				cmode =3D CMODE_8;
+ 		}
+
+

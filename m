@@ -1,218 +1,82 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 17 Jun 2015 11:36:45 +0000
-Subject: [PATCH v2 6/9] staging: sm7xxfb: reduce indention
-Message-Id: <1434540288-8289-7-git-send-email-sudipm.mukherjee@gmail.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sun, 14 Jun 2015 07:46:20 +0000
+Subject: [RFC v2 13/24] powerpc: Cleanup nvram includes
+Message-Id: <20150614074610.545107014@telegraphics.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434540288-8289-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1434540288-8289-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <20150614074607.242676098@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-reduce code indention keeping the logic same.
+The nvram_read_byte() and nvram_write_byte() definitions in asm/nvram.h
+duplicate those in linux/nvram.h. Get rid of the former to prepare for
+adoption of struct arch_nvram_ops (which is defined in linux/nvram.h for
+general use).
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+
 ---
- drivers/staging/sm7xxfb/sm7xxfb.c | 173 ++++++++++++++++++--------------------
- 1 file changed, 82 insertions(+), 91 deletions(-)
+ arch/powerpc/include/asm/nvram.h           |    3 ---
+ arch/powerpc/kernel/setup_32.c             |    1 +
+ drivers/char/generic_nvram.c               |    4 +++-
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index 6bdcd5b..1e60d36 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -255,37 +255,33 @@ static int smtc_setcolreg(unsigned regno, unsigned red, unsigned green,
- 		/*
- 		 * 16/32 bit true-colour, use pseudo-palette for 16 base color
- 		 */
--		if (regno < 16) {
--			if (sfb->fb->var.bits_per_pixel = 16) {
--				u32 *pal = sfb->fb->pseudo_palette;
--
--				val = chan_to_field(red, &sfb->fb->var.red);
--				val |= chan_to_field(green,
--						     &sfb->fb->var.green);
--				val |= chan_to_field(blue, &sfb->fb->var.blue);
-+		if (regno >= 16)
-+			break;
-+		if (sfb->fb->var.bits_per_pixel = 16) {
-+			u32 *pal = sfb->fb->pseudo_palette;
+Index: linux/arch/powerpc/include/asm/nvram.h
+=================================--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-06-14 17:45:34.000000000 +1000
++++ linux/arch/powerpc/include/asm/nvram.h	2015-06-14 17:45:49.000000000 +1000
+@@ -101,7 +101,4 @@ extern int nvram_write_os_partition(stru
+ /* Determine NVRAM size */
+ extern ssize_t nvram_get_size(void);
+ 
+-/* Normal access to NVRAM */
+-extern unsigned char nvram_read_byte(int i);
+-extern void nvram_write_byte(unsigned char c, int i);
+ #endif /* _ASM_POWERPC_NVRAM_H */
+Index: linux/arch/powerpc/kernel/setup_32.c
+=================================--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-06-14 17:45:34.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-06-14 17:45:49.000000000 +1000
+@@ -16,6 +16,7 @@
+ #include <linux/cpu.h>
+ #include <linux/console.h>
+ #include <linux/memblock.h>
++#include <linux/nvram.h>
+ 
+ #include <asm/io.h>
+ #include <asm/prom.h>
+Index: linux/drivers/char/generic_nvram.c
+=================================--- linux.orig/drivers/char/generic_nvram.c	2015-06-14 17:45:34.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-06-14 17:45:49.000000000 +1000
+@@ -20,9 +20,11 @@
+ #include <linux/fcntl.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
++#include <linux/nvram.h>
+ #include <asm/uaccess.h>
+-#include <asm/nvram.h>
 +
-+			val = chan_to_field(red, &sfb->fb->var.red);
-+			val |= chan_to_field(green, &sfb->fb->var.green);
-+			val |= chan_to_field(blue, &sfb->fb->var.blue);
- #ifdef __BIG_ENDIAN
--				pal[regno] -				    ((red & 0xf800) >> 8) |
--				    ((green & 0xe000) >> 13) |
--				    ((green & 0x1c00) << 3) |
--				    ((blue & 0xf800) >> 3);
-+			pal[regno] = ((red & 0xf800) >> 8) |
-+				     ((green & 0xe000) >> 13) |
-+				     ((green & 0x1c00) << 3) |
-+				     ((blue & 0xf800) >> 3);
- #else
--				pal[regno] = val;
-+			pal[regno] = val;
+ #ifdef CONFIG_PPC_PMAC
++#include <asm/nvram.h>
+ #include <asm/machdep.h>
  #endif
--			} else {
--				u32 *pal = sfb->fb->pseudo_palette;
-+		} else {
-+			u32 *pal = sfb->fb->pseudo_palette;
  
--				val = chan_to_field(red, &sfb->fb->var.red);
--				val |= chan_to_field(green,
--						     &sfb->fb->var.green);
--				val |= chan_to_field(blue, &sfb->fb->var.blue);
-+			val = chan_to_field(red, &sfb->fb->var.red);
-+			val |= chan_to_field(green, &sfb->fb->var.green);
-+			val |= chan_to_field(blue, &sfb->fb->var.blue);
- #ifdef __BIG_ENDIAN
--				val -				    (val & 0xff00ff00 >> 8) |
--				    (val & 0x00ff00ff << 8);
-+			val = (val & 0xff00ff00 >> 8) |
-+			      (val & 0x00ff00ff << 8);
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-14 17:45:34.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-14 17:45:49.000000000 +1000
+@@ -111,12 +111,12 @@
+ #include "matroxfb_g450.h"
+ #include <linux/matroxfb.h>
+ #include <linux/interrupt.h>
++#include <linux/nvram.h>
+ #include <linux/slab.h>
+ #include <linux/uaccess.h>
+ 
+ #ifdef CONFIG_PPC_PMAC
+ #include <asm/machdep.h>
+-unsigned char nvram_read_byte(int);
+ static int default_vmode = VMODE_NVRAM;
+ static int default_cmode = CMODE_NVRAM;
  #endif
--				pal[regno] = val;
--			}
-+			pal[regno] = val;
- 		}
- 		break;
- 
-@@ -476,72 +472,67 @@ static void sm7xx_set_timing(struct smtcfb_info *sfb)
- 		sfb->width, sfb->height, sfb->fb->var.bits_per_pixel, sfb->hz);
- 
- 	for (j = 0; j < ARRAY_SIZE(vgamode); j++) {
--		if (vgamode[j].mmsizex = sfb->width &&
--		    vgamode[j].mmsizey = sfb->height &&
--		    vgamode[j].bpp = sfb->fb->var.bits_per_pixel &&
--		    vgamode[j].hz = sfb->hz) {
--			dev_dbg(&sfb->pdev->dev,
--				"vgamode[j].mmsizex=%d vgamode[j].mmSizeY=%d vgamode[j].bpp=%d vgamode[j].hz=%d\n",
--				vgamode[j].mmsizex, vgamode[j].mmsizey,
--				vgamode[j].bpp, vgamode[j].hz);
--
--			dev_dbg(&sfb->pdev->dev, "vgamode index=%d\n", j);
--
--			smtc_mmiowb(0x0, 0x3c6);
--
--			smtc_seqw(0, 0x1);
--
--			smtc_mmiowb(vgamode[j].init_misc, 0x3c2);
--
--			/* init SEQ register SR00 - SR04 */
--			for (i = 0; i < SIZE_SR00_SR04; i++)
--				smtc_seqw(i, vgamode[j].init_sr00_sr04[i]);
--
--			/* init SEQ register SR10 - SR24 */
--			for (i = 0; i < SIZE_SR10_SR24; i++)
--				smtc_seqw(i + 0x10,
--					  vgamode[j].init_sr10_sr24[i]);
--
--			/* init SEQ register SR30 - SR75 */
--			for (i = 0; i < SIZE_SR30_SR75; i++)
--				if ((i + 0x30) != 0x62 &&
--				    (i + 0x30) != 0x6a &&
--				    (i + 0x30) != 0x6b)
--					smtc_seqw(i + 0x30,
--						  vgamode[j].init_sr30_sr75[i]);
--
--			/* init SEQ register SR80 - SR93 */
--			for (i = 0; i < SIZE_SR80_SR93; i++)
--				smtc_seqw(i + 0x80,
--					  vgamode[j].init_sr80_sr93[i]);
--
--			/* init SEQ register SRA0 - SRAF */
--			for (i = 0; i < SIZE_SRA0_SRAF; i++)
--				smtc_seqw(i + 0xa0,
--					  vgamode[j].init_sra0_sraf[i]);
--
--			/* init Graphic register GR00 - GR08 */
--			for (i = 0; i < SIZE_GR00_GR08; i++)
--				smtc_grphw(i, vgamode[j].init_gr00_gr08[i]);
--
--			/* init Attribute register AR00 - AR14 */
--			for (i = 0; i < SIZE_AR00_AR14; i++)
--				smtc_attrw(i, vgamode[j].init_ar00_ar14[i]);
--
--			/* init CRTC register CR00 - CR18 */
--			for (i = 0; i < SIZE_CR00_CR18; i++)
--				smtc_crtcw(i, vgamode[j].init_cr00_cr18[i]);
--
--			/* init CRTC register CR30 - CR4D */
--			for (i = 0; i < SIZE_CR30_CR4D; i++)
--				smtc_crtcw(i + 0x30,
--					   vgamode[j].init_cr30_cr4d[i]);
--
--			/* init CRTC register CR90 - CRA7 */
--			for (i = 0; i < SIZE_CR90_CRA7; i++)
--				smtc_crtcw(i + 0x90,
--					   vgamode[j].init_cr90_cra7[i]);
--		}
-+		if (vgamode[j].mmsizex != sfb->width ||
-+		    vgamode[j].mmsizey != sfb->height ||
-+		    vgamode[j].bpp != sfb->fb->var.bits_per_pixel ||
-+		    vgamode[j].hz != sfb->hz)
-+			continue;
-+
-+		dev_dbg(&sfb->pdev->dev,
-+			"vgamode[j].mmsizex=%d vgamode[j].mmSizeY=%d vgamode[j].bpp=%d vgamode[j].hz=%d\n",
-+			vgamode[j].mmsizex, vgamode[j].mmsizey,
-+			vgamode[j].bpp, vgamode[j].hz);
-+
-+		dev_dbg(&sfb->pdev->dev, "vgamode index=%d\n", j);
-+
-+		smtc_mmiowb(0x0, 0x3c6);
-+
-+		smtc_seqw(0, 0x1);
-+
-+		smtc_mmiowb(vgamode[j].init_misc, 0x3c2);
-+
-+		/* init SEQ register SR00 - SR04 */
-+		for (i = 0; i < SIZE_SR00_SR04; i++)
-+			smtc_seqw(i, vgamode[j].init_sr00_sr04[i]);
-+
-+		/* init SEQ register SR10 - SR24 */
-+		for (i = 0; i < SIZE_SR10_SR24; i++)
-+			smtc_seqw(i + 0x10, vgamode[j].init_sr10_sr24[i]);
-+
-+		/* init SEQ register SR30 - SR75 */
-+		for (i = 0; i < SIZE_SR30_SR75; i++)
-+			if ((i + 0x30) != 0x62 && (i + 0x30) != 0x6a &&
-+			    (i + 0x30) != 0x6b)
-+				smtc_seqw(i + 0x30,
-+					  vgamode[j].init_sr30_sr75[i]);
-+
-+		/* init SEQ register SR80 - SR93 */
-+		for (i = 0; i < SIZE_SR80_SR93; i++)
-+			smtc_seqw(i + 0x80, vgamode[j].init_sr80_sr93[i]);
-+
-+		/* init SEQ register SRA0 - SRAF */
-+		for (i = 0; i < SIZE_SRA0_SRAF; i++)
-+			smtc_seqw(i + 0xa0, vgamode[j].init_sra0_sraf[i]);
-+
-+		/* init Graphic register GR00 - GR08 */
-+		for (i = 0; i < SIZE_GR00_GR08; i++)
-+			smtc_grphw(i, vgamode[j].init_gr00_gr08[i]);
-+
-+		/* init Attribute register AR00 - AR14 */
-+		for (i = 0; i < SIZE_AR00_AR14; i++)
-+			smtc_attrw(i, vgamode[j].init_ar00_ar14[i]);
-+
-+		/* init CRTC register CR00 - CR18 */
-+		for (i = 0; i < SIZE_CR00_CR18; i++)
-+			smtc_crtcw(i, vgamode[j].init_cr00_cr18[i]);
-+
-+		/* init CRTC register CR30 - CR4D */
-+		for (i = 0; i < SIZE_CR30_CR4D; i++)
-+			smtc_crtcw(i + 0x30, vgamode[j].init_cr30_cr4d[i]);
-+
-+		/* init CRTC register CR90 - CRA7 */
-+		for (i = 0; i < SIZE_CR90_CRA7; i++)
-+			smtc_crtcw(i + 0x90, vgamode[j].init_cr90_cra7[i]);
- 	}
- 	smtc_mmiowb(0x67, 0x3c2);
- 
--- 
-1.8.1.2
+
 

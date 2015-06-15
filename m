@@ -1,106 +1,110 @@
-From: Alexander Holler <holler@ahsoftware.de>
-Date: Sat, 13 Jun 2015 18:27:21 +0000
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 15 Jun 2015 08:58:05 +0000
 Subject: Re: [PATCH 00/21] On-demand device registration
-Message-Id: <557C7609.30400@ahsoftware.de>
+Message-Id: <CACRpkdaVZmq_w_qgEgTP5oqfH3K1+80O7z7o7CJx-dhivUGhDQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>	<CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>	<CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>	<CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>	<5577F533.1060007@ahsoftware.de>	<CACRpkdYF5K7ckGbgvZc6qRzGFJTQ4WqXdu_7Tcqczn2LkFbn3A@mail.gmail.com>	<5579602F.1070801@ahsoftware.de>	<CACRpkdaZgBR5rHwrEYqcm5K4w3y8MXG8a0k=Y+oQY+jukHfuyw@mail.gmail.com>	<5579B9E8.9040609@ahsoftware.de>
- <CACRpkdbDSS0yw=q_cR17Bvg+kgTfU3Vcd2gSjx1p4V-CzOZ_SA@mail.gmail.com>
- <557AC040.40803@ahsoftware.de> <557AC437.9000607@ahsoftware.de>
-In-Reply-To: <557AC437.9000607@ahsoftware.de>
+References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
+	<CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>
+	<CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>
+	<CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>
+	<5577F533.1060007@ahsoftware.de>
+	<CACRpkdYF5K7ckGbgvZc6qRzGFJTQ4WqXdu_7Tcqczn2LkFbn3A@mail.gmail.com>
+	<5579602F.1070801@ahsoftware.de>
+	<CACRpkdaZgBR5rHwrEYqcm5K4w3y8MXG8a0k=Y+oQY+jukHfuyw@mail.gmail.com>
+	<5579B9E8.9040609@ahsoftware.de>
+	<CACRpkdbDSS0yw=q_cR17Bvg+kgTfU3Vcd2gSjx1p4V-CzOZ_SA@mail.gmail.com>
+	<557AC040.40803@ahsoftware.de>
+	<557AC437.9000607@ahsoftware.de>
+	<557C7609.30400@ahsoftware.de>
+In-Reply-To: <557C7609.30400-SXC+2es9fhnfWeYVQQPykw@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, dmaengine@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, DRM PANEL DRIVERS <dri-devel@lists.freedesktop.org>, Grant Likely <grant.likely@linaro.org>, Dan Williams <dan.j.williams@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-usb@vger.kernel.org, linux-i2c@vger.kernel.org
+To: Alexander Holler <holler-SXC+2es9fhnfWeYVQQPykw@public.gmane.org>
+Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DRM PANEL DRIVERS <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, dmaengine-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>"linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linu>
 
-Am 12.06.2015 um 13:36 schrieb Alexander Holler:
-> Am 12.06.2015 um 13:19 schrieb Alexander Holler:
->> Am 12.06.2015 um 09:25 schrieb Linus Walleij:
->>> On Thu, Jun 11, 2015 at 6:40 PM, Alexander Holler
->>> <holler@ahsoftware.de> wrote:
->>>> Am 11.06.2015 um 14:30 schrieb Linus Walleij:
->>>
->>>>> Certainly it is possible to create deadlocks in this scenario, but the
->>>>> scope is not to create an ubreakable system.
->>>>
->>>> IAnd what happens if you run into a deadlock? Do you print "you've
->>>> lost, try
->>>> changing your kernel config" in some output hidden by a
->>>> splash-screen? ;)
->>>
->>> Sorry it sounds like a blanket argument, the fact that there are
->>> mutexes in the kernel makes it possible to deadlock, it doesn't
->>> mean we don't use mutexes. Some programming problems are
->>> just like such.
->>
->> I'm not talking about specific deadlocks through mutexes. I'm talking
->> about what happens when driver A needs driver B which needs driver A.
->> How do you recognise and handle that with your instrumented on-demand
->> device initialization? Such a circular dependency might happen by just
->> adding a new fucntion call or by changing the kernel configuration. And
->> with the on-demand stuff, the possibility that the developer introducing
->> this new (maybe optional) call will never hit such a circular dependency
->> is high. So you will end up with a never ending stream of problem
->> reports whenever someone introduced such a circular dependecy without
->> having noticed it.
->>
->> And to come back to specific deadlocks, if you are extending function
->> calls from something former simple to something which might initialize a
->> whole bunch of drivers, needing maybe seconds, I wouldn't say this is a
->> blanket argument, but a real thread.
+On Sat, Jun 13, 2015 at 8:27 PM, Alexander Holler <holler@ahsoftware.de> wrote:
+
+> And because you've said that "problem space is a bit convoluted" and I
+> disagree, here's a summary from my point of view:
 >
-> Keep in mind, that the possibility that a function call ends up with
-> initializing a whole bunch of other drivers, is not determined
-> statically, but depends on the configuration and runtime behaviour of
-> the actual system the on-demand stuff actually happens.
->
-> E.g. if driver A is faster one system that driver B, the whole bunch of
-> drivers might become initialized by a call in driver A. But if driver B
-> was faster on the developers system (or the system is configured to
-> first init driver B), than the whole bunch of drivers might have become
-> initialized by driver B on the developers system. Thus he never might
-> have hit a possible problem when the whole bunch of drivers got
-> initialized in driver A.
->
-> That means it isn't always a good idea to create dynamic systems (like
-> on-demand device initialization), because it's very hard to foresee and
-> correctly handle their runtime behaviour.
+> 1. All the necessary information (dependencies between drivers) already
+> exists at compile time. The set of dependencies between drivers might become
+> smaller by configuration, but will not become larger. So there should be NO
+> need to collect them at runtime, e.g. by instrumenting function calls.
 
-And because you've said that "problem space is a bit convoluted" and I 
-disagree, here's a summary from my point of view:
+I think you arrived at the core of the crux here.
 
-1. All the necessary information (dependencies between drivers) already 
-exists at compile time. The set of dependencies between drivers might 
-become smaller by configuration, but will not become larger. So there 
-should be NO need to collect them at runtime, e.g. by instrumenting 
-function calls. I've described the problems I see with that above. I've 
-choosen DT as source of dependencies because it offers an easy 
-accessible and almost complete set of dependencies. I just had to add 
-some type information to the dtb in order to identify the dependencies 
-(phandles). But other ways to collect the dependencies would work too. 
-Even the most simple way to add a static list of dependencies to each 
-driver (which later on might be automated by some more clever stuff than 
-adding them manually) would do the trick.
+When we look up a resource provided from another driver, e.g. from
+regulator_get(), clk_get(), pinctrl_get(), gpiod_get() etc - the dependency
+is resolved by looking in a cross-reference table for either a struct device*
+pointer or a string, an index, or both or all three. Examples:
 
-2. The problem to sort a set of nodes (drivers) with dependencies is 
-solved since a long time and almost any developers uses it regularly in 
-form of make. And everyone who used make -jN knows that the possible 
-parallel initialization of drivers I've talked about, is already solved too.
+struct regulator *regulator_get(struct device *dev, const char *id);
+struct clk *clk_get(struct device *dev, const char *id);
+struct gpio_desc *__must_check __gpiod_get(struct device *dev,
+                                         const char *con_id,
+                                         enum gpiod_flags flags);
+(...)
 
-3. In order to initialize the drivers in some specific order, their 
-initcalls must be identified. I've offered a possible solution to that 
-without much changes, but many other, even better ways, are possible 
-too. It just depends on how much you want to change and on how much of 
-these changes you will be able to feed into mainline kernel (which 
-depends on your connections/relations inside the core kernel crew). E.g. 
-instead of still just relying on one-dimensional arrays with (anonymous) 
-pointers to initcalls, a multidimensional array of initcalls and 
-drivername (and maybe more information) might be thinkable.
+(*_index() variants exist on some of the resource retrieveal
+functions.)
 
-4. x86/amd64/ACPI-people, so most longtime and core kernel maintainers 
-obviously don't have much interest until you've solved 1. in a way they 
-can use too. So the necessary changes for 2. or 3. will have a big 
-hurdle to take if 1. isn't solved usable for them too.
+struct device * is the device requesting the resource, con_id
+is the string name of the resource on the provider side. This is all
+solved by looking in cross reference tables. ONE way of resolving
+that cross reference is to look into the device tree or the ACPI table.
+But for the board file case, this is resolved at runtime by the cross
+reference table, registered with calls such as gpiod_add_lookup_table().
 
->> Alexander Holler
+It is true that in the theoretical sense, all of this exist at compile time
+especially if you can parse something like a device tree and
+figure out what struct device * nodes will correspond to the struct
+device_node:s in it. For ACPI I guess a similar procedure is viable.
 
+Problem: this requires the kernel compile to know exactly *which* device tree
+or ACPI table it is going to boot on. The expressed goal of device tree
+and ACPI is to have *ONE* kernel booting several device trees.
+Here your approach stops short: you are suggesting instrumenting
+the kernel at compile time to one single device tree or ACPI table.
+But we never know really what device tree or ACPI table will be used.
+This just cannot be done at compile time for that reason alone.
+
+Example: in boot case (A) the regulator may be provided by regulator
+"foo" driver on an i2c bus. But in boot case (B) the very same regulator
+may be provided by regulator "bar" on an SPI bus. These are very
+real usecases, for example for drivers/net/ethernet/smsc/smsc911x.c,
+will get regulators from the most diverse places depending on what
+device tree is used.
+
+For board files, it is neither possible in theory: you need to compile the
+code to figure out the struct device * provider, and/or the string name
+of the providing device (.name field in struct device for the provider)
+to resolve dependencies at compile time.
+
+For the board file case, resolving dependencies at compile time will
+require a quite complex two-stage rocket: compile the code to
+get resources out, then recompile with known resources.
+
+I guess your suggested approach then need to introduce a special
+build tool to order the initcalls accordingly.
+
+Again this will fall short if you don't know at compile time exactly
+*which* board file will be executed.
+
+So the only practical way to solve this at compile time is to predict
+an initcall ordering sequence for all possible boot paths, compile in
+all of them, and choose the right one at boot. But the number of boot
+paths is equal to the number of device trees / ACPI tables or
+board files supported, and that space is uncontrolled and ordered
+infinite.
+
+Basically I think the root problem with your approach is that you
+assume we know what hardware we will boot on at compile time. We
+discarded that development path years ago. We have no clue, this
+is resolved at runtime. Alas, people still create super-optimized
+systems using exactly this knowledge, but it is not our main target
+here, it is a special optimization case.
+
+Yours,
+Linus Walleij

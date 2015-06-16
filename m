@@ -1,36 +1,48 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Sat, 27 Jun 2015 01:16:08 +0000
-Subject: Re: [Xen-devel] [PATCH v7 5/9] PCI: Add pci_iomap_wc() variants
-Message-Id: <CAB=NE6XrpUYBnu05NL2+Te2e5Kmc39DQWptRWRDMfGD9ygOWKw@mail.gmail.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 16 Jun 2015 13:54:05 +0000
+Subject: [PATCH 2/8] staging: sm7xxfb: remove numvgamodes
+Message-Id: <1434462131-15191-2-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
- <1435189081.3790.24.camel@kernel.crashing.org> <4985EFDD773FCB459EF7915D2A3621ADC02F10@nice.asicdesigners.com>
- <6806026.xb91q6Ad7G@wuerfel> <4985EFDD773FCB459EF7915D2A3621ADC031F8@nice.asicdesigners.com>
- <1435272718.3822.7.camel@kernel.crashing.org> <20150626193158.GJ3005@wotan.suse.de>
- <1435356258.26815.13.camel@kernel.crashing.org> <CAB=NE6XwczF6FYXV=RHyK=7ikVk_tGp+h9ouWPyORNENq4+=Kw@mail.gmail.com>
- <1435362871.26815.24.camel@kernel.crashing.org>
-In-Reply-To: <1435362871.26815.24.camel@kernel.crashing.org>
+References: <1434462131-15191-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1434462131-15191-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Russell King <linux@arm.linux.org.uk>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "Michael S. Tsirkin" <mst@redhat.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, Jan Beulich <jbeulich@suse.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Arnd Bergmann <arnd@arndb.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Ingo Molnar <mingo@elte.hu>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Casey Leedom <leedom@chelsio.com>, Antonino Daplas <adaplas@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Stefan Bader <stefan.bader@canonical.com>, Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Toshi Kani <toshi.kani@hp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@amacapital.net>, David Vrabel <david.vrabel@citrix.com>, "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>, =?UTF-8?Q?Roger_Pau_Monn=C3=A9?= <roger.pau@citrix.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-On Fri, Jun 26, 2015 at 4:54 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Fri, 2015-06-26 at 15:41 -0700, Luis R. Rodriguez wrote:
->
->> > It wasn't nullified for the main user at the time, the fb. And I
->> > mentioned an IB adapter or two for which the code had been hand
->> tuned.
->>
->> This still means there could be some affected drivers when used on
->> powerpc, no?
->
-> Yes. In fact what about things like ARM who also have barriers in their
-> writel() ? Won't they also break WC ?
+numvgamodes was only used in one place, so remove the #define
+and use its defined value.
 
-Not sure if they have that write-combine notion on their CPUs /
-interconnects. Russel, Stefano, does ARM have write-combining ?
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+---
+ drivers/staging/sm7xxfb/sm7xx.h   | 2 --
+ drivers/staging/sm7xxfb/sm7xxfb.c | 2 +-
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
- Luis
+diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
+index c5d6253..4dabda4 100644
+--- a/drivers/staging/sm7xxfb/sm7xx.h
++++ b/drivers/staging/sm7xxfb/sm7xx.h
+@@ -775,5 +775,3 @@ static struct ModeInit vgamode[] = {
+ 	  },
+ 	 },
+ };
+-
+-#define numvgamodes		ARRAY_SIZE(vgamode)
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 4d9b69d..5667fbf 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -477,7 +477,7 @@ static void sm7xx_set_timing(struct smtcfb_info *sfb)
+ 		"sfb->width=%d sfb->height=%d sfb->fb->var.bits_per_pixel=%d sfb->hz=%d\n",
+ 		sfb->width, sfb->height, sfb->fb->var.bits_per_pixel, sfb->hz);
+ 
+-	for (j = 0; j < numvgamodes; j++) {
++	for (j = 0; j < ARRAY_SIZE(vgamode); j++) {
+ 		if (vgamode[j].mmsizex = sfb->width &&
+ 		    vgamode[j].mmsizey = sfb->height &&
+ 		    vgamode[j].bpp = sfb->fb->var.bits_per_pixel &&
+-- 
+1.8.1.2
+

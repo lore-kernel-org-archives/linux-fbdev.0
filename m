@@ -1,76 +1,34 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Mon, 29 Jun 2015 17:55:25 +0000
-Subject: [PATCH v4 08/19] staging: sm750fb: add space after enum definition
-Message-Id: <1435600536-13135-8-git-send-email-juston.h.li@gmail.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 16 Jun 2015 13:54:04 +0000
+Subject: [PATCH 1/8] staging: sm7xxfb: declare struct as const
+Message-Id: <1434462131-15191-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
-In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
-Cc: Juston Li <juston.h.li@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-Fixes checkpatch.pl warning:
-WARNING: missing space after enum definition
+The vesa_mode_table is not to be modified, so declare it as const.
 
-Signed-off-by: Juston Li <juston.h.li@gmail.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/staging/sm750fb/ddk750_display.h | 2 +-
- drivers/staging/sm750fb/sm750_hw.h       | 8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/staging/sm7xxfb/sm7xxfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
-index 018a661..a7f50cc 100644
---- a/drivers/staging/sm750fb/ddk750_display.h
-+++ b/drivers/staging/sm750fb/ddk750_display.h
-@@ -129,7 +129,7 @@ typedef enum _disp_output_t
- }
- disp_output_t;
- #else
--typedef enum _disp_output_t{
-+typedef enum _disp_output_t {
- 	do_LCD1_PRI = PNL_2_PRI|PRI_TP_ON|PNL_SEQ_ON|DAC_ON,
- 	do_LCD1_SEC = PNL_2_SEC|SEC_TP_ON|PNL_SEQ_ON|DAC_ON,
- #if 0
-diff --git a/drivers/staging/sm750fb/sm750_hw.h b/drivers/staging/sm750fb/sm750_hw.h
-index adc61edf..af2db7c 100644
---- a/drivers/staging/sm750fb/sm750_hw.h
-+++ b/drivers/staging/sm750fb/sm750_hw.h
-@@ -9,7 +9,7 @@
- #endif
- 
- 
--enum sm750_pnltype{
-+enum sm750_pnltype {
- 
- 	sm750_24TFT = 0,/* 24bit tft */
- 
-@@ -19,7 +19,7 @@ enum sm750_pnltype{
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 5db26f1..4d9b69d 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -94,7 +94,7 @@ struct vesa_mode {
+ 	u16  lfb_depth;
  };
  
- /* vga channel is not concerned  */
--enum sm750_dataflow{
-+enum sm750_dataflow {
- 	sm750_simul_pri,/* primary => all head */
- 
- 	sm750_simul_sec,/* secondary => all head */
-@@ -30,13 +30,13 @@ enum sm750_dataflow{
- };
- 
- 
--enum sm750_channel{
-+enum sm750_channel {
- 	sm750_primary = 0,
- 	/* enum value equal to the register filed data */
- 	sm750_secondary = 1,
- };
- 
--enum sm750_path{
-+enum sm750_path {
- 	sm750_panel = 1,
- 	sm750_crt = 2,
- 	sm750_pnc = 3,/* panel and crt */
+-static struct vesa_mode vesa_mode_table[] = {
++static const struct vesa_mode vesa_mode_table[] = {
+ 	{"0x301", 640,  480,  8},
+ 	{"0x303", 800,  600,  8},
+ 	{"0x305", 1024, 768,  8},
 -- 
-2.4.4
+1.8.1.2
 

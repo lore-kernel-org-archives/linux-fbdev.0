@@ -1,195 +1,712 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 25 Jun 2015 01:22:22 +0000
-Subject: [PATCH v8 9/9] video: fbdev: vt8623fb: use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1435195342-26879-10-git-send-email-mcgrof@do-not-panic.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 16 Jun 2015 10:16:28 +0000
+Subject: [PATCH 6/7] OMAPDSS: componentize omapdss
+Message-Id: <1434449789-13812-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bp@suse.de
-Cc: mingo@kernel.org, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Rob Clark <robdclark@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Jingoo Han <jg1.han@samsung.com>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: linux-arm-kernel@lists.infradead.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+omapdss kernel module contains drivers for multiple devices, one for
+each DSS submodule. The probing we have at the moment is a mess, and
+doesn't give us proper deferred probing nor ensure that all the devices
+are probed before omapfb/omapdrm start using omapdss.
 
-This driver uses the same area for MTRR as for the ioremap().
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
+This patch solves the mess by using the component system for DSS
+submodules.
 
-There are a few motivations for this:
+The changes to all DSS submodules (dispc, dpi, dsi, hdmi4/5, rfbi, sdi,
+venc) are the same: probe & remove functions are changed to bind &
+unbind, and new probe & remove functions are added which call
+component_add/del.
 
-a) Take advantage of PAT when available
+The dss_core driver (dss.c) acts as a component master. Adding and
+matching the components is simple: all dss device's child devices are
+added as components.
 
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
+However, we do have some dependencies between the drivers. The order in
+which they should be probed is reflected by the list in core.c
+(dss_output_drv_reg_funcs). The drivers are registered in that order,
+which causes the components to be added in that order, which makes the
+components to be bound in that order. This feels a bit fragile, and we
+probably should improve the code to manage binds in random order.
+However, for now, this works fine.
 
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/vt8623fb.c | 31 ++++++-------------------------
- 1 file changed, 6 insertions(+), 25 deletions(-)
+ drivers/video/fbdev/omap2/dss/dispc.c | 28 ++++++++++++++---
+ drivers/video/fbdev/omap2/dss/dpi.c   | 26 ++++++++++++---
+ drivers/video/fbdev/omap2/dss/dsi.c   | 25 ++++++++++++---
+ drivers/video/fbdev/omap2/dss/dss.c   | 59 ++++++++++++++++++++++++++++++++---
+ drivers/video/fbdev/omap2/dss/hdmi4.c | 26 ++++++++++++---
+ drivers/video/fbdev/omap2/dss/hdmi5.c | 26 ++++++++++++---
+ drivers/video/fbdev/omap2/dss/rfbi.c  | 28 ++++++++++++++---
+ drivers/video/fbdev/omap2/dss/sdi.c   | 27 +++++++++++++---
+ drivers/video/fbdev/omap2/dss/venc.c  | 27 +++++++++++++---
+ 9 files changed, 234 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index ea7f056..60f24828 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
-@@ -26,13 +26,9 @@
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index e3417af63451..c8e34163211a 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -39,6 +39,7 @@
+ #include <linux/mfd/syscon.h>
+ #include <linux/regmap.h>
+ #include <linux/of.h>
++#include <linux/component.h>
  
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- struct vt8623fb_info {
- 	char __iomem *mmio_base;
--	int mtrr_reg;
-+	int wc_cookie;
- 	struct vgastate state;
- 	struct mutex open_lock;
- 	unsigned int ref_count;
-@@ -99,10 +95,7 @@ static struct svga_timing_regs vt8623_timing_regs     = {
- /* Module parameters */
+ #include <video/omapdss.h>
  
- static char *mode_option = "640x480-8@60";
--
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
+@@ -3882,8 +3883,9 @@ void dispc_free_irq(void *dev_id)
+ EXPORT_SYMBOL(dispc_free_irq);
  
- MODULE_AUTHOR("(c) 2006 Ondrej Zajicek <santiago@crfreenet.org>");
- MODULE_LICENSE("GPL");
-@@ -112,11 +105,8 @@ module_param(mode_option, charp, 0644);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0);
- MODULE_PARM_DESC(mode, "Default video mode e.g. '648x480-8@60' (deprecated)");
--
--#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
+ /* DISPC HW IP initialisation */
+-static int omap_dispchw_probe(struct platform_device *pdev)
++static int dispc_bind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	u32 rev;
+ 	int r = 0;
+ 	struct resource *dispc_mem;
+@@ -3955,12 +3957,27 @@ err_runtime_get:
+ 	return r;
+ }
  
+-static int omap_dispchw_remove(struct platform_device *pdev)
++static void dispc_unbind(struct device *dev, struct device *master,
++			       void *data)
+ {
+-	pm_runtime_disable(&pdev->dev);
++	pm_runtime_disable(dev);
  
- /* ------------------------------------------------------------------------- */
-@@ -710,7 +700,7 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.mmio_len = pci_resource_len(dev, 1);
+ 	dss_uninit_overlay_managers();
++}
++
++static const struct component_ops dispc_component_ops = {
++	.bind	= dispc_bind,
++	.unbind	= dispc_unbind,
++};
  
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -781,12 +771,9 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
++static int dispc_probe(struct platform_device *pdev)
++{
++	return component_add(&pdev->dev, &dispc_component_ops);
++}
++
++static int dispc_remove(struct platform_device *pdev)
++{
++	component_del(&pdev->dev, &dispc_component_ops);
+ 	return 0;
+ }
  
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
+@@ -4013,7 +4030,8 @@ static const struct of_device_id dispc_of_match[] = {
+ };
+ 
+ static struct platform_driver omap_dispchw_driver = {
+-	.remove         = omap_dispchw_remove,
++	.probe		= dispc_probe,
++	.remove         = dispc_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_dispc",
+ 		.pm	= &dispc_pm_ops,
+@@ -4024,7 +4042,7 @@ static struct platform_driver omap_dispchw_driver = {
+ 
+ int __init dispc_init_platform_driver(void)
+ {
+-	return platform_driver_probe(&omap_dispchw_driver, omap_dispchw_probe);
++	return platform_driver_register(&omap_dispchw_driver);
+ }
+ 
+ void dispc_uninit_platform_driver(void)
+diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
+index a06e7558280f..fb45b6432968 100644
+--- a/drivers/video/fbdev/omap2/dss/dpi.c
++++ b/drivers/video/fbdev/omap2/dss/dpi.c
+@@ -32,6 +32,7 @@
+ #include <linux/string.h>
+ #include <linux/of.h>
+ #include <linux/clk.h>
++#include <linux/component.h>
+ 
+ #include <video/omapdss.h>
+ 
+@@ -783,8 +784,9 @@ static void dpi_uninit_output_port(struct device_node *port)
+ 	omapdss_unregister_output(out);
+ }
+ 
+-static int omap_dpi_probe(struct platform_device *pdev)
++static int dpi_bind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct dpi_data *dpi;
+ 
+ 	dpi = devm_kzalloc(&pdev->dev, sizeof(*dpi), GFP_KERNEL);
+@@ -802,16 +804,32 @@ static int omap_dpi_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int omap_dpi_remove(struct platform_device *pdev)
++static void dpi_unbind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
++
+ 	dpi_uninit_output(pdev);
++}
++
++static const struct component_ops dpi_component_ops = {
++	.bind	= dpi_bind,
++	.unbind	= dpi_unbind,
++};
+ 
++static int dpi_probe(struct platform_device *pdev)
++{
++	return component_add(&pdev->dev, &dpi_component_ops);
++}
++
++static int dpi_remove(struct platform_device *pdev)
++{
++	component_del(&pdev->dev, &dpi_component_ops);
+ 	return 0;
+ }
+ 
+ static struct platform_driver omap_dpi_driver = {
+-	.probe		= omap_dpi_probe,
+-	.remove         = omap_dpi_remove,
++	.probe		= dpi_probe,
++	.remove		= dpi_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_dpi",
+ 		.suppress_bind_attrs = true,
+diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
+index c4c27c09c62f..b3606def5b7b 100644
+--- a/drivers/video/fbdev/omap2/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/dss/dsi.c
+@@ -40,6 +40,7 @@
+ #include <linux/pm_runtime.h>
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
++#include <linux/component.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/mipi_display.h>
+@@ -5274,8 +5275,9 @@ static int dsi_init_pll_data(struct platform_device *dsidev)
+ }
+ 
+ /* DSI1 HW IP initialisation */
+-static int omap_dsihw_probe(struct platform_device *dsidev)
++static int dsi_bind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *dsidev = to_platform_device(dev);
+ 	u32 rev;
+ 	int r, i;
+ 	struct dsi_data *dsi;
+@@ -5484,8 +5486,9 @@ err_runtime_get:
+ 	return r;
+ }
+ 
+-static int omap_dsihw_remove(struct platform_device *dsidev)
++static void dsi_unbind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *dsidev = to_platform_device(dev);
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 
+ 	of_platform_depopulate(&dsidev->dev);
+@@ -5502,7 +5505,21 @@ static int omap_dsihw_remove(struct platform_device *dsidev)
+ 		regulator_disable(dsi->vdds_dsi_reg);
+ 		dsi->vdds_dsi_enabled = false;
+ 	}
++}
++
++static const struct component_ops dsi_component_ops = {
++	.bind	= dsi_bind,
++	.unbind	= dsi_unbind,
++};
+ 
++static int dsi_probe(struct platform_device *pdev)
++{
++	return component_add(&pdev->dev, &dsi_component_ops);
++}
++
++static int dsi_remove(struct platform_device *pdev)
++{
++	component_del(&pdev->dev, &dsi_component_ops);
+ 	return 0;
+ }
+ 
+@@ -5569,8 +5586,8 @@ static const struct of_device_id dsi_of_match[] = {
+ };
+ 
+ static struct platform_driver omap_dsihw_driver = {
+-	.probe		= omap_dsihw_probe,
+-	.remove         = omap_dsihw_remove,
++	.probe		= dsi_probe,
++	.remove		= dsi_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_dsi",
+ 		.pm	= &dsi_pm_ops,
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 3397cbf484b0..612b093831d5 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -39,6 +39,7 @@
+ #include <linux/of.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/suspend.h>
++#include <linux/component.h>
+ 
+ #include <video/omapdss.h>
+ 
+@@ -1088,8 +1089,9 @@ static int dss_video_pll_probe(struct platform_device *pdev)
+ }
+ 
+ /* DSS HW IP initialisation */
+-static int omap_dsshw_probe(struct platform_device *pdev)
++static int dss_bind(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct resource *dss_mem;
+ 	u32 rev;
+ 	int r;
+@@ -1159,6 +1161,10 @@ static int omap_dsshw_probe(struct platform_device *pdev)
+ 
+ 	dss_runtime_put();
+ 
++	r = component_bind_all(&pdev->dev, NULL);
++	if (r)
++		goto err_component;
++
+ 	dss_debugfs_create_file("dss", dss_dump_regs);
+ 
+ 	pm_set_vt_switch(0);
+@@ -1167,6 +1173,7 @@ static int omap_dsshw_probe(struct platform_device *pdev)
  
  	return 0;
  
-@@ -816,13 +803,7 @@ static void vt8623_pci_remove(struct pci_dev *dev)
- 	if (info) {
- 		struct vt8623fb_info *par = info->par;
++err_component:
+ err_runtime_get:
+ 	pm_runtime_disable(&pdev->dev);
+ 	dss_uninit_ports(pdev);
+@@ -1182,10 +1189,14 @@ err_setup_clocks:
+ 	return r;
+ }
  
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
--#endif
+-static int omap_dsshw_remove(struct platform_device *pdev)
++static void dss_unbind(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
++
+ 	dss_initialized = false;
+ 
++	component_unbind_all(&pdev->dev, NULL);
++
+ 	if (dss.video1_pll)
+ 		dss_video_pll_uninit(dss.video1_pll);
+ 
+@@ -1197,7 +1208,46 @@ static int omap_dsshw_remove(struct platform_device *pdev)
+ 	pm_runtime_disable(&pdev->dev);
+ 
+ 	dss_put_clocks();
++}
++
++static const struct component_master_ops dss_component_ops = {
++	.bind = dss_bind,
++	.unbind = dss_unbind,
++};
+ 
++static int dss_component_compare(struct device *dev, void *data)
++{
++	struct device *child = data;
++	return dev = child;
++}
++
++static int dss_add_child_component(struct device *dev, void *data)
++{
++	struct component_match **match = data;
++
++	component_match_add(dev->parent, match, dss_component_compare, dev);
++
++	return 0;
++}
++
++static int dss_probe(struct platform_device *pdev)
++{
++	struct component_match *match = NULL;
++	int r;
++
++	/* add all the child devices as components */
++	device_for_each_child(&pdev->dev, &match, dss_add_child_component);
++
++	r = component_master_add_with_match(&pdev->dev, &dss_component_ops, match);
++	if (r)
++		return r;
++
++	return 0;
++}
++
++static int dss_remove(struct platform_device *pdev)
++{
++	component_master_del(&pdev->dev, &dss_component_ops);
+ 	return 0;
+ }
+ 
+@@ -1243,7 +1293,8 @@ static const struct of_device_id dss_of_match[] = {
+ MODULE_DEVICE_TABLE(of, dss_of_match);
+ 
+ static struct platform_driver omap_dsshw_driver = {
+-	.remove         = omap_dsshw_remove,
++	.probe		= dss_probe,
++	.remove		= dss_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_dss",
+ 		.pm	= &dss_pm_ops,
+@@ -1254,7 +1305,7 @@ static struct platform_driver omap_dsshw_driver = {
+ 
+ int __init dss_init_platform_driver(void)
+ {
+-	return platform_driver_probe(&omap_dsshw_driver, omap_dsshw_probe);
++	return platform_driver_register(&omap_dsshw_driver);
+ }
+ 
+ void dss_uninit_platform_driver(void)
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 31deebbc32dc..d35312d69025 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -32,6 +32,7 @@
+ #include <linux/clk.h>
+ #include <linux/gpio.h>
+ #include <linux/regulator/consumer.h>
++#include <linux/component.h>
+ #include <video/omapdss.h>
+ #include <sound/omap-hdmi-audio.h>
+ 
+@@ -646,8 +647,9 @@ static int hdmi_audio_register(struct device *dev)
+ }
+ 
+ /* HDMI HW IP initialisation */
+-static int omapdss_hdmihw_probe(struct platform_device *pdev)
++static int hdmi4_bind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	int r;
+ 	int irq;
+ 
+@@ -713,8 +715,10 @@ err:
+ 	return r;
+ }
+ 
+-static int omapdss_hdmihw_remove(struct platform_device *pdev)
++static void hdmi4_unbind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
++
+ 	if (hdmi.audio_pdev)
+ 		platform_device_unregister(hdmi.audio_pdev);
+ 
+@@ -723,7 +727,21 @@ static int omapdss_hdmihw_remove(struct platform_device *pdev)
+ 	hdmi_pll_uninit(&hdmi.pll);
+ 
+ 	pm_runtime_disable(&pdev->dev);
++}
++
++static const struct component_ops hdmi4_component_ops = {
++	.bind	= hdmi4_bind,
++	.unbind	= hdmi4_unbind,
++};
+ 
++static int hdmi4_probe(struct platform_device *pdev)
++{
++	return component_add(&pdev->dev, &hdmi4_component_ops);
++}
++
++static int hdmi4_remove(struct platform_device *pdev)
++{
++	component_del(&pdev->dev, &hdmi4_component_ops);
+ 	return 0;
+ }
+ 
+@@ -756,8 +774,8 @@ static const struct of_device_id hdmi_of_match[] = {
+ };
+ 
+ static struct platform_driver omapdss_hdmihw_driver = {
+-	.probe		= omapdss_hdmihw_probe,
+-	.remove         = omapdss_hdmihw_remove,
++	.probe		= hdmi4_probe,
++	.remove		= hdmi4_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_hdmi",
+ 		.pm	= &hdmi_pm_ops,
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index a57f5e8f9aea..7f875788edbc 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -37,6 +37,7 @@
+ #include <linux/clk.h>
+ #include <linux/gpio.h>
+ #include <linux/regulator/consumer.h>
++#include <linux/component.h>
+ #include <video/omapdss.h>
+ #include <sound/omap-hdmi-audio.h>
+ 
+@@ -681,8 +682,9 @@ static int hdmi_audio_register(struct device *dev)
+ }
+ 
+ /* HDMI HW IP initialisation */
+-static int omapdss_hdmihw_probe(struct platform_device *pdev)
++static int hdmi5_bind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	int r;
+ 	int irq;
+ 
+@@ -748,8 +750,10 @@ err:
+ 	return r;
+ }
+ 
+-static int omapdss_hdmihw_remove(struct platform_device *pdev)
++static void hdmi5_unbind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
++
+ 	if (hdmi.audio_pdev)
+ 		platform_device_unregister(hdmi.audio_pdev);
+ 
+@@ -758,7 +762,21 @@ static int omapdss_hdmihw_remove(struct platform_device *pdev)
+ 	hdmi_pll_uninit(&hdmi.pll);
+ 
+ 	pm_runtime_disable(&pdev->dev);
++}
++
++static const struct component_ops hdmi5_component_ops = {
++	.bind	= hdmi5_bind,
++	.unbind	= hdmi5_unbind,
++};
+ 
++static int hdmi5_probe(struct platform_device *pdev)
++{
++	return component_add(&pdev->dev, &hdmi5_component_ops);
++}
++
++static int hdmi5_remove(struct platform_device *pdev)
++{
++	component_del(&pdev->dev, &hdmi5_component_ops);
+ 	return 0;
+ }
+ 
+@@ -792,8 +810,8 @@ static const struct of_device_id hdmi_of_match[] = {
+ };
+ 
+ static struct platform_driver omapdss_hdmihw_driver = {
+-	.probe		= omapdss_hdmihw_probe,
+-	.remove         = omapdss_hdmihw_remove,
++	.probe		= hdmi5_probe,
++	.remove		= hdmi5_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_hdmi5",
+ 		.pm	= &hdmi_pm_ops,
+diff --git a/drivers/video/fbdev/omap2/dss/rfbi.c b/drivers/video/fbdev/omap2/dss/rfbi.c
+index 8ec810bce0b6..1525a494d057 100644
+--- a/drivers/video/fbdev/omap2/dss/rfbi.c
++++ b/drivers/video/fbdev/omap2/dss/rfbi.c
+@@ -36,6 +36,7 @@
+ #include <linux/semaphore.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
++#include <linux/component.h>
+ 
+ #include <video/omapdss.h>
+ #include "dss.h"
+@@ -946,8 +947,9 @@ static void rfbi_uninit_output(struct platform_device *pdev)
+ }
+ 
+ /* RFBI HW IP initialisation */
+-static int omap_rfbihw_probe(struct platform_device *pdev)
++static int rfbi_bind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	u32 rev;
+ 	struct resource *rfbi_mem;
+ 	struct clk *clk;
+@@ -1005,8 +1007,10 @@ err_runtime_get:
+ 	return r;
+ }
+ 
+-static int omap_rfbihw_remove(struct platform_device *pdev)
++static void rfbi_unbind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
++
+ 	rfbi_uninit_output(pdev);
+ 
+ 	pm_runtime_disable(&pdev->dev);
+@@ -1014,6 +1018,22 @@ static int omap_rfbihw_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct component_ops rfbi_component_ops = {
++	.bind	= rfbi_bind,
++	.unbind	= rfbi_unbind,
++};
++
++static int rfbi_probe(struct platform_device *pdev)
++{
++	return component_add(&pdev->dev, &rfbi_component_ops);
++}
++
++static int rfbi_remove(struct platform_device *pdev)
++{
++	component_del(&pdev->dev, &rfbi_component_ops);
++	return 0;
++}
++
+ static int rfbi_runtime_suspend(struct device *dev)
+ {
+ 	dispc_runtime_put();
+@@ -1038,8 +1058,8 @@ static const struct dev_pm_ops rfbi_pm_ops = {
+ };
+ 
+ static struct platform_driver omap_rfbihw_driver = {
+-	.probe		= omap_rfbihw_probe,
+-	.remove         = omap_rfbihw_remove,
++	.probe		= rfbi_probe,
++	.remove         = rfbi_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_rfbi",
+ 		.pm	= &rfbi_pm_ops,
+diff --git a/drivers/video/fbdev/omap2/dss/sdi.c b/drivers/video/fbdev/omap2/dss/sdi.c
+index a873118f1e0e..5843580a1deb 100644
+--- a/drivers/video/fbdev/omap2/dss/sdi.c
++++ b/drivers/video/fbdev/omap2/dss/sdi.c
+@@ -27,6 +27,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/string.h>
+ #include <linux/of.h>
++#include <linux/component.h>
+ 
+ #include <video/omapdss.h>
+ #include "dss.h"
+@@ -357,8 +358,10 @@ static void sdi_uninit_output(struct platform_device *pdev)
+ 	omapdss_unregister_output(out);
+ }
+ 
+-static int omap_sdi_probe(struct platform_device *pdev)
++static int sdi_bind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
++
+ 	sdi.pdev = pdev;
+ 
+ 	sdi_init_output(pdev);
+@@ -366,16 +369,32 @@ static int omap_sdi_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int omap_sdi_remove(struct platform_device *pdev)
++static void sdi_unbind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
++
+ 	sdi_uninit_output(pdev);
++}
++
++static const struct component_ops sdi_component_ops = {
++	.bind	= sdi_bind,
++	.unbind	= sdi_unbind,
++};
+ 
++static int sdi_probe(struct platform_device *pdev)
++{
++	return component_add(&pdev->dev, &sdi_component_ops);
++}
++
++static int sdi_remove(struct platform_device *pdev)
++{
++	component_del(&pdev->dev, &sdi_component_ops);
+ 	return 0;
+ }
+ 
+ static struct platform_driver omap_sdi_driver = {
+-	.probe		= omap_sdi_probe,
+-	.remove         = omap_sdi_remove,
++	.probe		= sdi_probe,
++	.remove         = sdi_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_sdi",
+ 		.suppress_bind_attrs = true,
+diff --git a/drivers/video/fbdev/omap2/dss/venc.c b/drivers/video/fbdev/omap2/dss/venc.c
+index e7fad0e19d43..99ca268c1cdd 100644
+--- a/drivers/video/fbdev/omap2/dss/venc.c
++++ b/drivers/video/fbdev/omap2/dss/venc.c
+@@ -35,6 +35,7 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/of.h>
++#include <linux/component.h>
+ 
+ #include <video/omapdss.h>
+ 
+@@ -852,8 +853,9 @@ err:
+ }
+ 
+ /* VENC HW IP initialisation */
+-static int omap_venchw_probe(struct platform_device *pdev)
++static int venc_bind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	u8 rev_id;
+ 	struct resource *venc_mem;
+ 	int r;
+@@ -912,12 +914,28 @@ err_runtime_get:
+ 	return r;
+ }
+ 
+-static int omap_venchw_remove(struct platform_device *pdev)
++static void venc_unbind(struct device *dev, struct device *master, void *data)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
++
+ 	venc_uninit_output(pdev);
+ 
+ 	pm_runtime_disable(&pdev->dev);
++}
+ 
++static const struct component_ops venc_component_ops = {
++	.bind	= venc_bind,
++	.unbind	= venc_unbind,
++};
++
++static int venc_probe(struct platform_device *pdev)
++{
++	return component_add(&pdev->dev, &venc_component_ops);
++}
++
++static int venc_remove(struct platform_device *pdev)
++{
++	component_del(&pdev->dev, &venc_component_ops);
+ 	return 0;
+ }
+ 
+@@ -950,7 +968,6 @@ static const struct dev_pm_ops venc_pm_ops = {
+ 	.runtime_resume = venc_runtime_resume,
+ };
+ 
 -
-+		arch_phys_wc_del(par->wc_cookie);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
+ static const struct of_device_id venc_of_match[] = {
+ 	{ .compatible = "ti,omap2-venc", },
+ 	{ .compatible = "ti,omap3-venc", },
+@@ -959,8 +976,8 @@ static const struct of_device_id venc_of_match[] = {
+ };
  
+ static struct platform_driver omap_venchw_driver = {
+-	.probe		= omap_venchw_probe,
+-	.remove         = omap_venchw_remove,
++	.probe		= venc_probe,
++	.remove		= venc_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_venc",
+ 		.pm	= &venc_pm_ops,
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.1.4
 

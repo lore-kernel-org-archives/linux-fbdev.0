@@ -1,90 +1,105 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 19 Jun 2015 22:08:24 +0000
-Subject: [PATCH v7 1/9] pci: add pci_ioremap_wc_bar()
-Message-Id: <1434751712-24333-2-git-send-email-mcgrof@do-not-panic.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 16 Jun 2015 10:16:23 +0000
+Subject: [PATCH 1/7] OMAPDSS: move 'dss_initialized' to dss driver
+Message-Id: <1434449789-13812-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: arnd@arndb.de
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, linux-fbdev@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Toshi Kani <toshi.kani@hp.com>, Bjorn Helgaas <bhelgaas@google.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Andy Lutomirski <luto@amacapital.net>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+We have a flag, 'dss_initialized', which tells omapfb and omapdrm if
+omapdss is available. At the moment it can be set even if the dss
+submodules are not all ready, in case something gets deferred.
 
-This lets drivers take advantage of PAT when available. This
-should help with the transition of converting video drivers over
-to ioremap_wc() to help with the goal of eventually using
-_PAGE_CACHE_UC over _PAGE_CACHE_UC_MINUS on x86 on
-ioremap_nocache() (de33c442e titled "x86 PAT: fix performance
-drop for glx, use UC minus for ioremap(), ioremap_nocache() and
-pci_mmap_page_range()")
+Move the flag to dss_core driver so that it'll signal the availability
+of the dss drivers move accurately.
 
-Cc: Toshi Kani <toshi.kani@hp.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Davidlohr Bueso <dbueso@suse.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+For now, it'll signal that dss_core is ready, which is not quite correct
+but still better than previously.  The following patches will add
+component system to omapdss, and after those patches 'dss_initialized'
+will signal that all the submodules are ready.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/pci/pci.c   | 14 ++++++++++++++
- include/linux/pci.h |  1 +
- 2 files changed, 15 insertions(+)
+ drivers/video/fbdev/omap2/dss/core.c | 10 ----------
+ drivers/video/fbdev/omap2/dss/dss.c  | 12 ++++++++++++
+ 2 files changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 0008c95..fdae37b 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -138,6 +138,20 @@ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar)
- 	return ioremap_nocache(res->start, resource_size(res));
+diff --git a/drivers/video/fbdev/omap2/dss/core.c b/drivers/video/fbdev/omap2/dss/core.c
+index 16751755d433..57b6a5296c87 100644
+--- a/drivers/video/fbdev/omap2/dss/core.c
++++ b/drivers/video/fbdev/omap2/dss/core.c
+@@ -50,8 +50,6 @@ static char *def_disp_name;
+ module_param_named(def_disp, def_disp_name, charp, 0);
+ MODULE_PARM_DESC(def_disp, "default display name");
+ 
+-static bool dss_initialized;
+-
+ const char *omapdss_get_default_display_name(void)
+ {
+ 	return core.default_display_name;
+@@ -65,12 +63,6 @@ enum omapdss_version omapdss_get_version(void)
  }
- EXPORT_SYMBOL_GPL(pci_ioremap_bar);
+ EXPORT_SYMBOL(omapdss_get_version);
+ 
+-bool omapdss_is_initialized(void)
+-{
+-	return dss_initialized;
+-}
+-EXPORT_SYMBOL(omapdss_is_initialized);
+-
+ struct platform_device *dss_get_core_pdev(void)
+ {
+ 	return core.pdev;
+@@ -333,8 +325,6 @@ static int __init omap_dss_init(void)
+ 			dss_output_drv_loaded[i] = true;
+ 	}
+ 
+-	dss_initialized = true;
+-
+ 	return 0;
+ 
+ err_dispc:
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 7f978b6a34e8..35601ab232e3 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -111,6 +111,14 @@ static const char * const dss_generic_clk_source_names[] = {
+ 	[OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DSI]	= "DSI_PLL2_HSDIV_DSI",
+ };
+ 
++static bool dss_initialized;
 +
-+void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar)
++bool omapdss_is_initialized(void)
 +{
-+	/*
-+	 * Make sure the BAR is actually a memory resource, not an IO resource
-+	 */
-+	if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM)) {
-+		WARN_ON(1);
-+		return NULL;
-+	}
-+	return ioremap_wc(pci_resource_start(pdev, bar),
-+			  pci_resource_len(pdev, bar));
++	return dss_initialized;
 +}
-+EXPORT_SYMBOL_GPL(pci_ioremap_wc_bar);
- #endif
++EXPORT_SYMBOL(omapdss_is_initialized);
++
+ static inline void dss_write_reg(const struct dss_reg idx, u32 val)
+ {
+ 	__raw_writel(val, dss.base + idx.idx);
+@@ -1141,6 +1149,8 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
  
- #define PCI_FIND_CAP_TTL	48
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index c0dd4ab..1193975 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1657,6 +1657,7 @@ static inline void pci_mmcfg_late_init(void) { }
- int pci_ext_cfg_avail(void);
+ 	pm_set_vt_switch(0);
  
- void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar);
-+void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar);
++	dss_initialized = true;
++
+ 	return 0;
  
- #ifdef CONFIG_PCI_IOV
- int pci_iov_virtfn_bus(struct pci_dev *dev, int id);
+ err_pll_init:
+@@ -1158,6 +1168,8 @@ err_setup_clocks:
+ 
+ static int __exit omap_dsshw_remove(struct platform_device *pdev)
+ {
++	dss_initialized = false;
++
+ 	if (dss.video1_pll)
+ 		dss_video_pll_uninit(dss.video1_pll);
+ 
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.1.4
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

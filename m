@@ -1,46 +1,63 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 28 Jun 2015 12:07:34 +0000
-Subject: Re: [PATCH v2] backlight: lp8788: Deletion of a check before backlight_device_unregister()
-Message-Id: <558FE386.7060704@users.sourceforge.net>
+From: "Dighe, Niranjan (N.)" <ndighe@visteon.com>
+Date: Tue, 16 Jun 2015 05:05:47 +0000
+Subject: [PATCH 2/2] Staging: sm750fb: correct spacing between lines of code
+Message-Id: <20150616050524.GA2677@siberianhusky>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54720DEB.4060109@users.sourceforge.net> <20141124101006.GD4241@x1> <5473736F.8070705@users.sourceforge.net>
-In-Reply-To: <5473736F.8070705@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Bryan Wu <cooloney@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: "sudipm.mukherjee@gmail.com" <sudipm.mukherjee@gmail.com>, "teddy.wang@siliconmotion.com" <teddy.wang@siliconmotion.com>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> 
-> The backlight_device_unregister() function tests whether its argument is NULL
-> and then returns immediately. Thus the test around the call is not needed.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  drivers/video/backlight/lp8788_bl.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backlight/lp8788_bl.c
-> index d6c4f6a..24a055c 100644
-> --- a/drivers/video/backlight/lp8788_bl.c
-> +++ b/drivers/video/backlight/lp8788_bl.c
-> @@ -221,8 +221,7 @@ static void lp8788_backlight_unregister(struct lp8788_bl *bl)
->  {
->  	struct backlight_device *bl_dev = bl->bl_dev;
->  
-> -	if (bl_dev)
-> -		backlight_device_unregister(bl_dev);
-> +	backlight_device_unregister(bl_dev);
->  }
->  
->  static ssize_t lp8788_get_bl_ctl_mode(struct device *dev,
-> 
+From: Niranjan Dighe <ndighe@visteon.com>
 
-Would you like to integrate this update suggestion
-into another source code repository?
+This patch corrects line spacing by removing and adding newline
+characters wherever necessary
 
-Regards,
-Markus
+Signed-off-by: Niranjan Dighe <ndighe@visteon.com>
+---
+ drivers/staging/sm750fb/ddk750_dvi.h |    8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_dvi.h b/drivers/staging/sm750fb/ddk750_dvi.h
+index c8d31f3..83bbd6d 100644
+--- a/drivers/staging/sm750fb/ddk750_dvi.h
++++ b/drivers/staging/sm750fb/ddk750_dvi.h
+@@ -14,6 +14,7 @@ typedef long (*PFN_DVICTRL_INIT)(
+ 	unsigned char continuousSyncEnable,
+ 	unsigned char pllFilterEnable,
+ 	unsigned char pllFilterValue);
++
+ typedef void (*PFN_DVICTRL_RESETCHIP)(void);
+ typedef char* (*PFN_DVICTRL_GETCHIPSTRING)(void);
+ typedef unsigned short (*PFN_DVICTRL_GETVENDORID)(void);
+@@ -24,8 +25,6 @@ typedef unsigned char (*PFN_DVICTRL_ISCONNECTED)(void);
+ typedef unsigned char (*PFN_DVICTRL_CHECKINTERRUPT)(void);
+ typedef void (*PFN_DVICTRL_CLEARINTERRUPT)(void);
+ 
+-
+-
+ /* Structure to hold all the function pointer to the DVI Controller. */
+ typedef struct _dvi_ctrl_device_t
+ {
+@@ -40,9 +39,8 @@ typedef struct _dvi_ctrl_device_t
+ 	PFN_DVICTRL_CHECKINTERRUPT	pfnCheckInterrupt;
+ 	PFN_DVICTRL_CLEARINTERRUPT	pfnClearInterrupt;
+ } dvi_ctrl_device_t;
+-#define DVI_CTRL_SII164
+-
+ 
++#define DVI_CTRL_SII164
+ 
+ /* dvi functions prototype */
+ int dviInit(
+@@ -61,7 +59,5 @@ int dviInit(
+ unsigned short dviGetVendorID(void);
+ unsigned short dviGetDeviceID(void);
+ 
+-
+-
+ #endif
+ 
+-- 
+1.7.9.5

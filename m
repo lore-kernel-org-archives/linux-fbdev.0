@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 16 Jun 2015 10:16:29 +0000
-Subject: [PATCH 7/7] OMAPDSS: simplify submodule reg/unreg code
-Message-Id: <1434449789-13812-8-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 16 Jun 2015 10:16:25 +0000
+Subject: [PATCH 3/7] OMAPDSS: fix dss_init_ports error handling
+Message-Id: <1434449789-13812-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
@@ -10,113 +10,51 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Now that we are using components in omapdss, there's no need for
-separate handling of dss and dispc driver init. Thus we can move the dss
-and dispc init and unit func pointers to the lists we use for the other
-dss submodules.
+The return value of dss_init_ports() is not handled at all, causing
+crashes later if the call failed.
 
-We can now also handle errors returned by the registration functions
-properly: if registering a driver fails, we can stop processing and
-return the error.
+This patch adds the error handling, and we also move the call to a
+slightly earlier place to make bailing out easier.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/core.c | 46 ++++++++++++------------------------
- 1 file changed, 15 insertions(+), 31 deletions(-)
+ drivers/video/fbdev/omap2/dss/dss.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/core.c b/drivers/video/fbdev/omap2/dss/core.c
-index 5c64515de818..54eeb507f9b3 100644
---- a/drivers/video/fbdev/omap2/dss/core.c
-+++ b/drivers/video/fbdev/omap2/dss/core.c
-@@ -245,6 +245,8 @@ static struct platform_driver omap_dss_driver = {
- 
- /* INIT */
- static int (*dss_output_drv_reg_funcs[])(void) __initdata = {
-+	dss_init_platform_driver,
-+	dispc_init_platform_driver,
- #ifdef CONFIG_OMAP2_DSS_DSI
- 	dsi_init_platform_driver,
- #endif
-@@ -268,7 +270,7 @@ static int (*dss_output_drv_reg_funcs[])(void) __initdata = {
- #endif
- };
- 
--static void (*dss_output_drv_unreg_funcs[])(void) __exitdata = {
-+static void (*dss_output_drv_unreg_funcs[])(void) = {
- #ifdef CONFIG_OMAP5_DSS_HDMI
- 	hdmi5_uninit_platform_driver,
- #endif
-@@ -290,10 +292,10 @@ static void (*dss_output_drv_unreg_funcs[])(void) __exitdata = {
- #ifdef CONFIG_OMAP2_DSS_DSI
- 	dsi_uninit_platform_driver,
- #endif
-+	dispc_uninit_platform_driver,
-+	dss_uninit_platform_driver,
- };
- 
--static bool dss_output_drv_loaded[ARRAY_SIZE(dss_output_drv_reg_funcs)];
--
- static int __init omap_dss_init(void)
- {
- 	int r;
-@@ -303,33 +305,20 @@ static int __init omap_dss_init(void)
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 1ce47441efe3..28e6ff053b47 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -1125,6 +1125,10 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
  	if (r)
- 		return r;
+ 		goto err_pll_init;
  
--	r = dss_init_platform_driver();
--	if (r) {
--		DSSERR("Failed to initialize DSS platform driver\n");
--		goto err_dss;
--	}
--
--	r = dispc_init_platform_driver();
--	if (r) {
--		DSSERR("Failed to initialize dispc platform driver\n");
--		goto err_dispc;
--	}
--
--	/*
--	 * It's ok if the output-driver register fails. It happens, for example,
--	 * when there is no output-device (e.g. SDI for OMAP4).
--	 */
- 	for (i = 0; i < ARRAY_SIZE(dss_output_drv_reg_funcs); ++i) {
- 		r = dss_output_drv_reg_funcs[i]();
--		if (r = 0)
--			dss_output_drv_loaded[i] = true;
-+		if (r)
-+			goto err_reg;
- 	}
- 
- 	return 0;
- 
--err_dispc:
--	dss_uninit_platform_driver();
--err_dss:
-+err_reg:
-+	for (i = ARRAY_SIZE(dss_output_drv_reg_funcs) - i;
-+			i < ARRAY_SIZE(dss_output_drv_reg_funcs);
-+			++i)
-+		dss_output_drv_unreg_funcs[i]();
++	r = dss_init_ports(pdev);
++	if (r)
++		goto err_init_ports;
 +
- 	platform_driver_unregister(&omap_dss_driver);
+ 	pm_runtime_enable(&pdev->dev);
  
- 	return r;
-@@ -339,13 +328,8 @@ static void __exit omap_dss_exit(void)
- {
- 	int i;
+ 	r = dss_runtime_get();
+@@ -1149,8 +1153,6 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
+ 	dss.lcd_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
+ 	dss.lcd_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
  
--	for (i = 0; i < ARRAY_SIZE(dss_output_drv_unreg_funcs); ++i) {
--		if (dss_output_drv_loaded[i])
--			dss_output_drv_unreg_funcs[i]();
--	}
+-	dss_init_ports(pdev);
 -
--	dispc_uninit_platform_driver();
--	dss_uninit_platform_driver();
-+	for (i = 0; i < ARRAY_SIZE(dss_output_drv_unreg_funcs); ++i)
-+		dss_output_drv_unreg_funcs[i]();
+ 	rev = dss_read_reg(DSS_REVISION);
+ 	printk(KERN_INFO "OMAP DSS rev %d.%d\n",
+ 			FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
+@@ -1167,7 +1169,8 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
  
- 	platform_driver_unregister(&omap_dss_driver);
- }
+ err_runtime_get:
+ 	pm_runtime_disable(&pdev->dev);
+-
++	dss_uninit_ports(pdev);
++err_init_ports:
+ 	if (dss.video1_pll)
+ 		dss_video_pll_uninit(dss.video1_pll);
+ 
 -- 
 2.1.4
 

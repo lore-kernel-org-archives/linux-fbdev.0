@@ -1,197 +1,47 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 11 Jun 2015 17:50:00 +0000
-Subject: [PATCH v6 1/3] ivtv: use arch_phys_wc_add() and require PAT disabled
-Message-Id: <1434045002-31575-2-git-send-email-mcgrof@do-not-panic.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 16 Jun 2015 10:16:22 +0000
+Subject: [PATCH 0/7] OMAPDSS: use components (fix probing problems)
+Message-Id: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434045002-31575-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1434045002-31575-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: bp@suse.de
-Cc: mchehab@osg.samsung.com, tomi.valkeinen@ti.com, bhelgaas@google.com, luto@amacapital.net, linux-media@vger.kernel.org, linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Andy Walls <awalls@md.metrocast.net>, Doug Ledford <dledford@redhat.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Stefan Bader <stefan.bader@canonical.com>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>, konrad.wilk@oracle.com, ville.syrjala@linux.intel.com, david.vrabel@citrix.com, jbeulich@suse.com, toshi.kani@hp.com, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, linux-fbdev@vger.kernel.org, ivtv-devel@ivtvdriver.org, xen-devel@lists.xensource.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Hi,
 
-We are burrying direct access to MTRR code support on
-x86 in order to take advantage of PAT. In the future we
-also want to make the default behaviour of ioremap_nocache()
-to use strong UC, use of mtrr_add() on those systems
-would make write-combining void.
+I noticed that on some platforms omapdss did not probe successfully. Some
+resource was not available yet, but omapdss did not manage to handle deferred
+probing. The reason was the use of platform_driver_probe() in combination with
+how the omapdss module handles the drivers.
 
-In order to help both enable us to later make strong
-UC default and in order to phase out direct MTRR access
-code port the driver over to arch_phys_wc_add() and
-annotate that the device driver requires systems to
-boot with PAT disabled, with the nopat kernel parameter.
+To fix this properly, the component system felt fine for the job, and it seems
+to work nicely.
 
-This is a worthy comprmise given that the hardware is
-really rare these days, and perhaps only some lost souls
-in some third world country are expected to be using this
-feature of the device driver.
+ Tomi
 
-Acked-by: Andy Walls <awalls@md.metrocast.net>
-Cc: Andy Walls <awalls@md.metrocast.net>
-Cc: Doug Ledford <dledford@redhat.com>
-Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Michael S. Tsirkin <mst@redhat.com>
-Cc: Stefan Bader <stefan.bader@canonical.com>
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Davidlohr Bueso <dbueso@suse.de>
-Cc: konrad.wilk@oracle.com
-Cc: ville.syrjala@linux.intel.com
-Cc: david.vrabel@citrix.com
-Cc: jbeulich@suse.com
-Cc: toshi.kani@hp.com
-Cc: Roger Pau Monné <roger.pau@citrix.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: ivtv-devel@ivtvdriver.org
-Cc: linux-media@vger.kernel.org
-Cc: xen-devel@lists.xensource.com
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
----
- drivers/media/pci/ivtv/Kconfig  |  3 +++
- drivers/media/pci/ivtv/ivtvfb.c | 58 ++++++++++++++++-------------------------
- 2 files changed, 26 insertions(+), 35 deletions(-)
+Tomi Valkeinen (7):
+  OMAPDSS: move 'dss_initialized' to dss driver
+  OMAPDSS: refactor dss probe function
+  OMAPDSS: fix dss_init_ports error handling
+  OMAPDSS: remove uses of __init/__exit
+  OMAPDSS: reorder uninit calls
+  OMAPDSS: componentize omapdss
+  OMAPDSS: simplify submodule reg/unreg code
 
-diff --git a/drivers/media/pci/ivtv/Kconfig b/drivers/media/pci/ivtv/Kconfig
-index dd6ee57e..b2a7f88 100644
---- a/drivers/media/pci/ivtv/Kconfig
-+++ b/drivers/media/pci/ivtv/Kconfig
-@@ -57,5 +57,8 @@ config VIDEO_FB_IVTV
- 	  This is used in the Hauppauge PVR-350 card. There is a driver
- 	  homepage at <http://www.ivtvdriver.org>.
- 
-+	  If you have this hardware you will need to boot with PAT disabled
-+	  on your x86 systems, use the nopat kernel parameter.
-+
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called ivtvfb.
-diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
-index 9ff1230..7685ae3 100644
---- a/drivers/media/pci/ivtv/ivtvfb.c
-+++ b/drivers/media/pci/ivtv/ivtvfb.c
-@@ -44,8 +44,8 @@
- #include <linux/ivtvfb.h>
- #include <linux/slab.h>
- 
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
-+#ifdef CONFIG_X86_64
-+#include <asm/pat.h>
- #endif
- 
- #include "ivtv-driver.h"
-@@ -155,12 +155,11 @@ struct osd_info {
- 	/* Buffer size */
- 	u32 video_buffer_size;
- 
--#ifdef CONFIG_MTRR
- 	/* video_base rounded down as required by hardware MTRRs */
- 	unsigned long fb_start_aligned_physaddr;
- 	/* video_base rounded up as required by hardware MTRRs */
- 	unsigned long fb_end_aligned_physaddr;
--#endif
-+	int wc_cookie;
- 
- 	/* Store the buffer offset */
- 	int set_osd_coords_x;
-@@ -1099,6 +1098,8 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
- static int ivtvfb_init_io(struct ivtv *itv)
- {
- 	struct osd_info *oi = itv->osd_info;
-+	/* Find the largest power of two that maps the whole buffer */
-+	int size_shift = 31;
- 
- 	mutex_lock(&itv->serialize_lock);
- 	if (ivtv_init_on_first_open(itv)) {
-@@ -1132,29 +1133,16 @@ static int ivtvfb_init_io(struct ivtv *itv)
- 			oi->video_pbase, oi->video_vbase,
- 			oi->video_buffer_size / 1024);
- 
--#ifdef CONFIG_MTRR
--	{
--		/* Find the largest power of two that maps the whole buffer */
--		int size_shift = 31;
--
--		while (!(oi->video_buffer_size & (1 << size_shift))) {
--			size_shift--;
--		}
--		size_shift++;
--		oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
--		oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
--		oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
--		oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
--		if (mtrr_add(oi->fb_start_aligned_physaddr,
--			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr,
--			     MTRR_TYPE_WRCOMB, 1) < 0) {
--			IVTVFB_INFO("disabled mttr\n");
--			oi->fb_start_aligned_physaddr = 0;
--			oi->fb_end_aligned_physaddr = 0;
--		}
--	}
--#endif
--
-+	while (!(oi->video_buffer_size & (1 << size_shift)))
-+		size_shift--;
-+	size_shift++;
-+	oi->fb_start_aligned_physaddr = oi->video_pbase & ~((1 << size_shift) - 1);
-+	oi->fb_end_aligned_physaddr = oi->video_pbase + oi->video_buffer_size;
-+	oi->fb_end_aligned_physaddr += (1 << size_shift) - 1;
-+	oi->fb_end_aligned_physaddr &= ~((1 << size_shift) - 1);
-+	oi->wc_cookie = arch_phys_wc_add(oi->fb_start_aligned_physaddr,
-+					 oi->fb_end_aligned_physaddr -
-+					 oi->fb_start_aligned_physaddr);
- 	/* Blank the entire osd. */
- 	memset_io(oi->video_vbase, 0, oi->video_buffer_size);
- 
-@@ -1172,14 +1160,7 @@ static void ivtvfb_release_buffers (struct ivtv *itv)
- 
- 	/* Release pseudo palette */
- 	kfree(oi->ivtvfb_info.pseudo_palette);
--
--#ifdef CONFIG_MTRR
--	if (oi->fb_end_aligned_physaddr) {
--		mtrr_del(-1, oi->fb_start_aligned_physaddr,
--			oi->fb_end_aligned_physaddr - oi->fb_start_aligned_physaddr);
--	}
--#endif
--
-+	arch_phys_wc_del(oi->wc_cookie);
- 	kfree(oi);
- 	itv->osd_info = NULL;
- }
-@@ -1284,6 +1265,13 @@ static int __init ivtvfb_init(void)
- 	int registered = 0;
- 	int err;
- 
-+#ifdef CONFIG_X86_64
-+	if (WARN(pat_enabled(),
-+		 "ivtvfb needs PAT disabled, boot with nopat kernel parameter\n")) {
-+		return EINVAL;
-+	}
-+#endif
-+
- 	if (ivtvfb_card_id < -1 || ivtvfb_card_id >= IVTV_MAX_CARDS) {
- 		printk(KERN_ERR "ivtvfb:  ivtvfb_card_id parameter is out of range (valid range: -1 - %d)\n",
- 		     IVTV_MAX_CARDS - 1);
+ drivers/video/fbdev/omap2/dss/core.c  |  80 ++++--------
+ drivers/video/fbdev/omap2/dss/dispc.c |  42 +++++--
+ drivers/video/fbdev/omap2/dss/dpi.c   |  36 ++++--
+ drivers/video/fbdev/omap2/dss/dsi.c   |  27 +++-
+ drivers/video/fbdev/omap2/dss/dss.c   | 223 +++++++++++++++++++++++-----------
+ drivers/video/fbdev/omap2/dss/dss.h   |  32 ++---
+ drivers/video/fbdev/omap2/dss/hdmi4.c |  28 ++++-
+ drivers/video/fbdev/omap2/dss/hdmi5.c |  28 ++++-
+ drivers/video/fbdev/omap2/dss/rfbi.c  |  32 ++++-
+ drivers/video/fbdev/omap2/dss/sdi.c   |  35 ++++--
+ drivers/video/fbdev/omap2/dss/venc.c  |  31 +++--
+ 11 files changed, 396 insertions(+), 198 deletions(-)
+
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.1.4
 

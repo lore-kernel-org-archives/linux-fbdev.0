@@ -1,83 +1,75 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 16 Jun 2015 07:15:38 +0000
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Tue, 16 Jun 2015 19:05:04 +0000
 Subject: Re: [Cocci] [PATCH v3 0/4] pci: add and use pci_ioremap_wc_bar()
-Message-Id: <557FCD1A.4020105@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="otT2tklbgu0iFtpxBthlgG33tIc49awuh"
+Message-Id: <20150616190504.GH11147@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAB=NE6UsMMoPhkKof+VN7ZUCd81VxrwP9nqHDUj5Lr3DJLm3bA@mail.gmail.com>
-In-Reply-To: <CAB=NE6UsMMoPhkKof+VN7ZUCd81VxrwP9nqHDUj5Lr3DJLm3bA@mail.gmail.com>
-To: linux-fbdev@vger.kernel.org
+References: <1429647634-17169-1-git-send-email-mcgrof@do-not-panic.com>
+ <CAB=NE6VYvd-Au58QRJprCquuvJkY9NYe1x8FmbW7qAhVrVE=QQ@mail.gmail.com>
+ <20150519175310.GH23057@wotan.suse.de>
+ <CAB=NE6UsMMoPhkKof+VN7ZUCd81VxrwP9nqHDUj5Lr3DJLm3bA@mail.gmail.com>
+ <CAB=NE6UdW2d6zO1hYbTnPcoZWt8+Yg5KdWE_bdqAuR_ysey_+A@mail.gmail.com>
+ <557FCD1A.4020105@ti.com>
+In-Reply-To: <557FCD1A.4020105@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cocci@systeme.lip6.fr
 
---otT2tklbgu0iFtpxBthlgG33tIc49awuh
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jun 16, 2015 at 10:15:38AM +0300, Tomi Valkeinen wrote:
+> On 22/05/15 00:23, Luis R. Rodriguez wrote:
+> > On Wed, May 20, 2015 at 1:54 PM, Luis R. Rodriguez <mcgrof@suse.com> wrote:
+> >> On Tue, May 19, 2015 at 10:53 AM, Luis R. Rodriguez <mcgrof@suse.com> wrote:
+> >>> On Wed, Apr 29, 2015 at 02:08:47PM -0700, Luis R. Rodriguez wrote:
+> >>>> On Tue, Apr 21, 2015 at 1:20 PM, Luis R. Rodriguez
+> >>>> <mcgrof@do-not-panic.com> wrote:
+> >>>>> From: "Luis R. Rodriguez" <mcgrof@suse.com>
+> >>>>>
+> >>>>> This series adds pci_ioremap_wc_bar() and makes use of it
+> >>>>> on a few framebuffer device drivers.
+> >>>>>
+> >>>>> Luis R. Rodriguez (4):
+> >>>>>   pci: add pci_ioremap_wc_bar()
+> >>>>>   video: fbdev: i740fb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
+> >>>>>   video: fbdev: kyrofb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
+> >>>>>   video: fbdev: gxt4500: use pci_ioremap_wc_bar() for framebuffer
+> >>>>
+> >>>> Bjorn,
+> >>>>
+> >>>> any feedback on this series?
+> >>>
+> >>> Hey Bjorn, any feedback on this series ?
+> >>
+> >> I meant this series. Also Tomi, do I get your Acks for these as well?
+> >> Since they depend on pci parts do you mind if we route them through
+> >> the PCI tree? I'll poke you soon about another similar type of patch
+> >> which has dependencies on another development tree.
+> > 
+> > Bjorn, Tomi, please let me know if this series is OK, if so I'll
+> > resubmit rebased onto Bjorn's pci tree.
+> 
+> For the fbdev patches:
+> 
+> Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+Thanks Tomi,
 
+there are two fbdev series that depend on PCI symbols I am introducing, this
+series and the pci_iomap_wc() series [0]. You've now provided Acks for the fbdev
+part of both series.
 
-On 22/05/15 00:23, Luis R. Rodriguez wrote:
-> On Wed, May 20, 2015 at 1:54 PM, Luis R. Rodriguez <mcgrof@suse.com> wr=
-ote:
->> On Tue, May 19, 2015 at 10:53 AM, Luis R. Rodriguez <mcgrof@suse.com> =
-wrote:
->>> On Wed, Apr 29, 2015 at 02:08:47PM -0700, Luis R. Rodriguez wrote:
->>>> On Tue, Apr 21, 2015 at 1:20 PM, Luis R. Rodriguez
->>>> <mcgrof@do-not-panic.com> wrote:
->>>>> From: "Luis R. Rodriguez" <mcgrof@suse.com>
->>>>>
->>>>> This series adds pci_ioremap_wc_bar() and makes use of it
->>>>> on a few framebuffer device drivers.
->>>>>
->>>>> Luis R. Rodriguez (4):
->>>>>   pci: add pci_ioremap_wc_bar()
->>>>>   video: fbdev: i740fb: use arch_phys_wc_add() and pci_ioremap_wc_b=
-ar()
->>>>>   video: fbdev: kyrofb: use arch_phys_wc_add() and pci_ioremap_wc_b=
-ar()
->>>>>   video: fbdev: gxt4500: use pci_ioremap_wc_bar() for framebuffer
->>>>
->>>> Bjorn,
->>>>
->>>> any feedback on this series?
->>>
->>> Hey Bjorn, any feedback on this series ?
->>
->> I meant this series. Also Tomi, do I get your Acks for these as well?
->> Since they depend on pci parts do you mind if we route them through
->> the PCI tree? I'll poke you soon about another similar type of patch
->> which has dependencies on another development tree.
->=20
-> Bjorn, Tomi, please let me know if this series is OK, if so I'll
-> resubmit rebased onto Bjorn's pci tree.
+Can the fbdev parts go through Bjorn's tree? We last discussed if the series
+was important to be fully merged or not by v4.2 and I recentlty provided a
+long winded review of the entire series to help maintainers pick and choose
+and decide [1].
 
-For the fbdev patches:
+Based on this can the fbdev patches from both of these series go through Bjorn's tree?
+Another alternative that seems to be practiced for situations like this is for
+most of the merge window to trickle in and then towards the end send dependent
+API changes such as this one, but I think that would then have to go through
+your tree and since I realize you are busy I am not sure if this would work
+well to get this in, in time for v4.2.
 
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+[0] http://lkml.kernel.org/r/1430415364-19679-1-git-send-email-mcgrof@do-not-panic.com
+[1] http://lkml.kernel.org/r/CAB=NE6UgtdSoBsA=8+ueYRAZHDnWUSmQAoHhAaefqudBrSY7Zw@mail.gmail.com
 
- Tomi
-
-
---otT2tklbgu0iFtpxBthlgG33tIc49awuh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVf80aAAoJEPo9qoy8lh71zIUP/2qZKSUjzGHpBsXM4Ttro8/Q
-gGJF/4qOXkwASYXd6yd7XeimHXMFy3n9wyIvvB9HLR/+LV0fj3iZZD9ji/du+VpJ
-1BlQvH2HSGqVFYHHetco7Rs3dgct7IvNlwojGj5X3BdLSOPkvHi5No4HGLrC5LS2
-7rt5AGRetImpJsSRleYPQ5RNcN+3Q8V4tyhcDWRxYFqdz70yVp3TVM9DQ5KqfdHG
-AZulU8LN4fjPn300HQN27+V6Q8DK9sUTekuHefHCp6V2sLxEeyW2WobxZTFUUrRK
-bJNgjs868L0OXlUuSH7DwtUuOQx0cy82kIbCWUAn+b4NwcUs2VRbqOb+BzY9Ti+a
-DnYuAppE5k3AY5s37kxoJBHhE2uFnWQuvvZtkYerWVcHzFL3abalyjmYwkQxqhD8
-pSMZhRI14vJdsMKLvpAjPXaoXr6vFv8CjXfmgkZyu3yNaEVVcQXe8OdX08JvDDNm
-9OQQIjc85toWD6HgYFRvL1zVUpMTzzwfjJ4NVlGc32fJg/XjElcr/YuoZQUQyUjs
-tTSTZWFUvCnHGqQ5JpFy0iJdHnzWjY7e+lxSe9kmLHp7iY2+lwhfI7C1EjkNiTo+
-AFfhL5kptkOQ7xDZHzxqsfEthM3oBvH9nVxpQMM4XYok8O2MkqUaSFYMirDZoZfH
-ukWrQBkI00S0m0HhF5Gh
-=QysA
------END PGP SIGNATURE-----
-
---otT2tklbgu0iFtpxBthlgG33tIc49awuh--
+ Luis

@@ -1,34 +1,59 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 16 Jun 2015 13:54:04 +0000
-Subject: [PATCH 1/8] staging: sm7xxfb: declare struct as const
-Message-Id: <1434462131-15191-1-git-send-email-sudipm.mukherjee@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 17 Jun 2015 12:54:33 +0000
+Subject: [PATCH 09/11] OMAPDSS: DISPC: scaler debug print
+Message-Id: <1434545675-477-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The vesa_mode_table is not to be modified, so declare it as const.
+Improve the DISPC debug print for scaling.
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/staging/sm7xxfb/sm7xxfb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/dispc.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index 5db26f1..4d9b69d 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -94,7 +94,7 @@ struct vesa_mode {
- 	u16  lfb_depth;
- };
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index 646d94a71a79..f8c9115cdb4b 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -2418,6 +2418,9 @@ static int dispc_ovl_calc_scaling_44xx(unsigned long pclk, unsigned long lclk,
+ 	return 0;
+ }
  
--static struct vesa_mode vesa_mode_table[] = {
-+static const struct vesa_mode vesa_mode_table[] = {
- 	{"0x301", 640,  480,  8},
- 	{"0x303", 800,  600,  8},
- 	{"0x305", 1024, 768,  8},
++#define DIV_FRAC(dividend, divisor) \
++	((dividend) * 100 / (divisor) - ((dividend) / (divisor) * 100))
++
+ static int dispc_ovl_calc_scaling(unsigned long pclk, unsigned long lclk,
+ 		enum omap_overlay_caps caps,
+ 		const struct omap_video_timings *mgr_timings,
+@@ -2477,8 +2480,19 @@ static int dispc_ovl_calc_scaling(unsigned long pclk, unsigned long lclk,
+ 	if (ret)
+ 		return ret;
+ 
+-	DSSDBG("required core clk rate = %lu Hz\n", core_clk);
+-	DSSDBG("current core clk rate = %lu Hz\n", dispc_core_clk_rate());
++	DSSDBG("%dx%d -> %dx%d (%d.%02d x %d.%02d), decim %dx%d %dx%d (%d.%02d x %d.%02d), taps %d, req clk %lu, cur clk %lu\n",
++		width, height,
++		out_width, out_height,
++		out_width / width, DIV_FRAC(out_width, width),
++		out_height / height, DIV_FRAC(out_height, height),
++
++		decim_x, decim_y,
++		width / decim_x, height / decim_y,
++		out_width / (width / decim_x), DIV_FRAC(out_width, width / decim_x),
++		out_height / (height / decim_y), DIV_FRAC(out_height, height / decim_y),
++
++		*five_taps ? 5 : 3,
++		core_clk, dispc_core_clk_rate());
+ 
+ 	if (!core_clk || core_clk > dispc_core_clk_rate()) {
+ 		DSSERR("failed to set up scaling, "
 -- 
-1.8.1.2
+2.1.4
 

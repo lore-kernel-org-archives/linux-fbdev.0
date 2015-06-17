@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Jun 2015 12:54:25 +0000
-Subject: [PATCH 01/11] OMAPDSS: DISPC: work-around for errata i631
-Message-Id: <1434545675-477-2-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 17 Jun 2015 12:54:32 +0000
+Subject: [PATCH 08/11] OMAPDSS: DISPC: do only y decimation on OMAP3
+Message-Id: <1434545675-477-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,51 +11,58 @@ Content-Transfer-Encoding: 7bit
 To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Errata i631 description:
+The current driver does both x and y decimation on OMAP3 DSS. Testing
+shows that x decimation rarely works, leading to underflows.
 
-"When in YUV4:2:0 format in 1D burst, the DISPC DMA skips lines when
-fetching Chroma sampling."
+The exact reason for this is unclear, as the underflows seem to happen
+even with low pixel clock rates, and I would presume that if the DSS can
+manage a display with 140MHz pixel clock, it could manage x decimation
+with factor 2 with a low pixel clock (~30MHz).
 
-Workaround:
+So it is possible that there is a problem somewhere else, in memory
+management, or DSS DMA, or similar. I have not found anything that would
+help this.
 
-"If YUV4:2:0-1D burst is required: Set
-DISPC_VIDp_ATTRIBUTES[22]DOUBLESTRIDE to 0x0 and
-DISPC_VIDp_ATTRIBUTES[13:12]ROTATION to 0x1 or 0x3"
-
-The description is somewhat confusing, but testing has shown that DSS
-fetches extra rows from memory when using NV12 format in 1D mode. If the
-memory after the framebuffer is inaccessible, this leads to OCP errors.
-
-The driver always uses DOUBLESTRIDE=0 when using 1D mode, so we only
-need to handle the ROTATION part.
-
-The issue exist on all OMAP4 and OMAP5 based DSS IPs.
+So, to fix the downscaling scaling, this patch removes x decimation for
+OMAP3. This will limit some of the more demanding downscaling scenarios,
+but one could argue that using DSS to downscale such a large amount is
+insane in the first place, as the produced image is rather bad quality.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dispc.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/video/fbdev/omap2/dss/dispc.c | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index f4fc77d9d3bf..a074d8b70591 100644
+index 0bdb587cb48c..646d94a71a79 100644
 --- a/drivers/video/fbdev/omap2/dss/dispc.c
 +++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -1741,6 +1741,15 @@ static void dispc_ovl_set_rotation_attrs(enum omap_plane plane, u8 rotation,
- 			row_repeat = false;
- 	}
+@@ -2300,7 +2300,6 @@ static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
+ {
+ 	int error;
+ 	u16 in_width, in_height;
+-	int min_factor = min(*decim_x, *decim_y);
+ 	const int maxsinglelinewidth  			dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
  
-+	/*
-+	 * OMAP4/5 Errata i631:
-+	 * NV12 in 1D mode must use ROTATION=1. Otherwise DSS will fetch extra
-+	 * rows beyond the framebuffer, which may cause OCP error.
-+	 */
-+	if (color_mode = OMAP_DSS_COLOR_NV12 &&
-+			rotation_type != OMAP_DSS_ROT_TILER)
-+		vidrot = 1;
-+
- 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), vidrot, 13, 12);
- 	if (dss_has_feature(FEAT_ROWREPEATENABLE))
- 		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane),
+@@ -2349,16 +2348,8 @@ again:
+ 			}
+ 		}
+ 
+-		if (error) {
+-			if (*decim_x = *decim_y) {
+-				*decim_x = min_factor;
+-				++*decim_y;
+-			} else {
+-				swap(*decim_x, *decim_y);
+-				if (*decim_x < *decim_y)
+-					++*decim_x;
+-			}
+-		}
++		if (error)
++			++*decim_y;
+ 	} while (*decim_x <= *x_predecim && *decim_y <= *y_predecim && error);
+ 
+ 	if (error) {
 -- 
 2.1.4
 

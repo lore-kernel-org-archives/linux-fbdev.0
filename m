@@ -1,54 +1,41 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 17 Jun 2015 11:36:43 +0000
-Subject: [PATCH v2 4/9] staging: sm7xxfb: no space after cast
-Message-Id: <1434540288-8289-5-git-send-email-sudipm.mukherjee@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 17 Jun 2015 12:54:34 +0000
+Subject: [PATCH 10/11] OMAPDSS: HDMI4: fix error handling
+Message-Id: <1434545675-477-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434540288-8289-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1434540288-8289-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-fixes the checkpatch warning about using space after typecast.
+Error handling in hdmi_power_on_full() is not correct, and could leave
+resources unfreed.
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Fix this by arranging the error labels correctly.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/staging/sm7xxfb/sm7xxfb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/omap2/dss/hdmi4.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index f18fef9..c832399 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -336,7 +336,7 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf, size_t
- 	if (!buffer)
- 		return -ENOMEM;
- 
--	src = (u32 __iomem *) (info->screen_base + p);
-+	src = (u32 __iomem *)(info->screen_base + p);
- 
- 	if (info->fbops->fb_sync)
- 		info->fbops->fb_sync(info);
-@@ -422,7 +422,7 @@ smtcfb_write(struct fb_info *info, const char __user *buf, size_t count,
- 	if (!buffer)
- 		return -ENOMEM;
- 
--	dst = (u32 __iomem *) (info->screen_base + p);
-+	dst = (u32 __iomem *)(info->screen_base + p);
- 
- 	if (info->fbops->fb_sync)
- 		info->fbops->fb_sync(info);
-@@ -568,7 +568,7 @@ static void sm7xx_set_timing(struct smtcfb_info *sfb)
- 		writel(0x00030000, sfb->vp_regs + 0x0);
- 		break;
- 	}
--	writel((u32) (((m_nscreenstride + 2) << 16) | m_nscreenstride),
-+	writel((u32)(((m_nscreenstride + 2) << 16) | m_nscreenstride),
- 	       sfb->vp_regs + 0x10);
- }
- 
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 916d47978f41..e1345abd41bb 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -229,9 +229,9 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
+ err_mgr_enable:
+ 	hdmi_wp_video_stop(&hdmi.wp);
+ err_vid_enable:
+-err_phy_cfg:
+ 	hdmi_wp_set_phy_pwr(&hdmi.wp, HDMI_PHYPWRCMD_OFF);
+ err_phy_pwr:
++err_phy_cfg:
+ err_pll_cfg:
+ 	dss_pll_disable(&hdmi.pll.pll);
+ err_pll_enable:
 -- 
-1.8.1.2
+2.1.4
 

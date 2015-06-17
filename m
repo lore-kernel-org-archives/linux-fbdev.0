@@ -1,34 +1,48 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 19 Jun 2015 21:18:04 +0000
-Subject: Re: [PATCH v6 1/4] pci: add pci_iomap_wc() variants
-Message-Id: <CAErSpo7CNH1WpgqJCEU8EtxiFNp_PiQ3cBwnKiWQpUaD-fd4YA@mail.gmail.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Wed, 17 Jun 2015 11:36:39 +0000
+Subject: [PATCH v2 0/9] fix sm7xxfb
+Message-Id: <1434540288-8289-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432163293-20965-1-git-send-email-mcgrof@do-not-panic.com>
- <1432163293-20965-2-git-send-email-mcgrof@do-not-panic.com>
- <20150521223321.GG32152@google.com> <20150522002341.GM23057@wotan.suse.de>
- <20150526174008.GN32152@google.com> <20150527200402.GS23057@wotan.suse.de>
- <CAB=NE6Xyd-THK2385W7VfS358PSJfkfHRnjoZRJWP_LFrzOWJA@mail.gmail.com>
- <CAB=NE6Ut4QNmumYJku=At9QC==kAMzFZP-ANHWd3EWKY-tKHBA@mail.gmail.com>
- <CAErSpo4sHA-f83X1nW2QdLT9GdubFXCQ7UEJmSfFc5GBjj8FSA@mail.gmail.com> <CAB=NE6Vx97T2PhYnqANopvqn1Qptv4DO8deb9=Lqe9iQQx04Kg@mail.gmail.com>
-In-Reply-To: <CAB=NE6Vx97T2PhYnqANopvqn1Qptv4DO8deb9=Lqe9iQQx04Kg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@elte.hu>, Toshi Kani <toshi.kani@hp.com>, Christoph Hellwig <hch@infradead.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Airlie <airlied@linux.ie>, linux-fbdev <linux-fbdev@vger.kernel.org>, Andy Lutomirski <luto@amacapital.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, "Michael S. Tsirkin" <mst@redhat.com>, venkatesh.pallipadi@intel.com, Stefan Bader <stefan.bader@canonical.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, David Vrabel <david.vrabel@citrix.com>, Jan Beulich <jbeulich@suse.com>, =?UTF-8?Q?Roger_Pau_Monn=C3=A9?= <roger.pau@citrix.com>, David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-On Fri, Jun 19, 2015 at 4:06 PM, Luis R. Rodriguez
-<mcgrof@do-not-panic.com> wrote:
+fixing the few remaining issues of sm7xxfb before sending the patch to
+remove it from staging.
+Also attempted to setup a tree and all the patches of this series are
+available there for you.
 
-> I hope to have provided a bit of new information to help you
-> reconsider this series to go through you but since you seem to be fine
-> for this to go through another tree and since I failed to notice that
-> I should also get Arnd's Ack I am in hopes this might be able to go
-> through Arnd's tree if not through you. Please let me know, in case I
-> have to resubmit to Arnd.
 
-If you want to have Arnd merge it, that's fine with me.
+The following changes since commit f0feeaff9c60bfb3dbadf09da15d70cf35700f29:
 
-Bjorn
---
-To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+  staging: wilc1000: remove unwanted code (2015-06-16 19:23:25 -0700)
+
+are available in the git repository at:
+
+  git://git.vectorindia.net/staging staging-testing
+
+for you to fetch changes up to e1acca34e255e7ed0c93d1a66dc06bda2000a1b0:
+
+  staging: sm7xxfb: fix camelcase (2015-06-17 16:32:00 +0530)
+
+----------------------------------------------------------------
+Sudip Mukherjee (9):
+      staging: sm7xxfb: declare struct as const
+      staging: sm7xxfb: remove numvgamodes
+      staging: sm7xxfb: add newline
+      staging: sm7xxfb: no space after cast
+      staging: sm7xxfb: fix alignment
+      staging: sm7xxfb: reduce indention
+      staging: sm7xxfb: move mode table
+      staging: sm7xxfb: fix indention
+      staging: sm7xxfb: fix camelcase
+
+ drivers/staging/sm7xxfb/sm7xx.h   | 664 +----------------------------
+ drivers/staging/sm7xxfb/sm7xxfb.c | 872 +++++++++++++++++++++++++++++++++-----
+ 2 files changed, 761 insertions(+), 775 deletions(-)
+
+-- 
+1.8.1.2
+

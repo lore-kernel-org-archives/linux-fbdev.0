@@ -1,41 +1,46 @@
 From: "Gujulan Elango, Hari Prasath (H.)" <hgujulan@visteon.com>
-Date: Tue, 23 Jun 2015 13:05:06 +0000
-Subject: Re: [PATCH] staging: sm750fb: remove unused variables
-Message-Id: <AM3PR06MB1297B255392202530D7729EBCFA00@AM3PR06MB1297.eurprd06.prod.outlook.com>
+Date: Thu, 18 Jun 2015 12:56:54 +0000
+Subject: [PATCH] staging: sm750fb: convert pr_err to pr_info
+Message-Id: <20150618125052.GA21893@IND12F0122>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150622072017.GA32220@IND12F0122>
-In-Reply-To: <20150622072017.GA32220@IND12F0122>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+From: Hari Prasath Gujulan Elango <hgujulan@visteon.com>
 
+This patch modifies few debug prints from pr_err() to pr_info() as they
+fall under that category.
 
-On Tuesday 23 June 2015 02:16 PM, Dan Carpenter wrote:
-> On Mon, Jun 22, 2015 at 07:26:25AM +0000, Gujulan Elango, Hari Prasath (H.) wrote:
->> @@ -122,7 +121,7 @@ void setChipClock(unsigned int frequency)
->>  		* Sometime, the chip cannot set up the exact clock required by User.
->>  		* Return value from calcPllValue() gives the actual possible clock.
->>  		*/
->> -		ulActualMxClk = calcPllValue(frequency, &pll);
->> +		calcPllValue(frequency, &pll);
-> 
-> Should we get rid of calcPllValue() as well?  I guess I would prefer to
-> leave the warnings until someone has the answer to this.
-> 
-> Warnings are good because they show where the bugs are.  It's not always
-> the right thing to silence them.
-> 
-> regards,
-> dan carpenter
-> 
-> 
+Signed-off-by: Hari Prasath Gujulan Elango <hgujulan@visteon.com>
+---
+ drivers/staging/sm750fb/sm750.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Okay.Let us drop this patch and leave the warning as it is. Sudip,I saw
-your e-mail on the same topic. Thank you both for reviewing.
-
-
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 6b642d7..3f30bc0 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -338,7 +338,7 @@ static int lynxfb_ops_set_par(struct fb_info *info)
+ 	line_length = var->xres_virtual * var->bits_per_pixel / 8;
+ 	line_length = PADDING(crtc->line_pad, line_length);
+ 	fix->line_length = line_length;
+-	pr_err("fix->line_length = %d\n", fix->line_length);
++	pr_info("fix->line_length = %d\n", fix->line_length);
+ 
+ 	/* var->red,green,blue,transp are need to be set by driver
+ 	 * and these data should be set before setcolreg routine
+@@ -1021,8 +1021,8 @@ static void sm750fb_setup(struct lynx_share *share, char *src)
+ 	}
+ 
+ 	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
+-		pr_err("opt=%s\n", opt);
+-		pr_err("src=%s\n", src);
++		pr_info("opt=%s\n", opt);
++		pr_info("src=%s\n", src);
+ 
+ 		if (!strncmp(opt, "swap", strlen("swap")))
+ 			swap = 1;
 -- 
-thanks & regards,
-Hari Prasath
+1.9.1

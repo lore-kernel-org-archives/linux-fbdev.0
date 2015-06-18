@@ -1,36 +1,42 @@
-From: Dave Chinner <david@fromorbit.com>
-Date: Thu, 04 Jun 2015 23:00:15 +0000
-Subject: Re: linux-next: Tree for Jun 4 (radeonfb && xfs)
-Message-Id: <20150604230015.GX24666@dastard>
+From: Marcin Chojnacki <marcinch7@gmail.com>
+Date: Thu, 18 Jun 2015 13:01:52 +0000
+Subject: [PATCH] fbdev: remove unnecessary memset in vfb
+Message-Id: <1434632512-128161-1-git-send-email-marcinch7@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150604231545.506332b5@canb.auug.org.au>
-	<5570A3C6.6050509@infradead.org>
-In-Reply-To: <5570A3C6.6050509@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com, linux-next@vger.kernel.org
+To: plagnioj@jcrosoft.com
+Cc: tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Marcin Chojnacki <marcinch7@gmail.com>
 
-On Thu, Jun 04, 2015 at 12:15:18PM -0700, Randy Dunlap wrote:
-> On 06/04/15 06:15, Stephen Rothwell wrote:
-> > Hi all,
-> > 
-> > Changes since 20150603:
-> > 
-> 
-> 
-> on i386:
-> 
-> fs/built-in.o: In function `xfs_ifree_cluster':
-> xfs_inode.c:(.text+0x1c491a): undefined reference to `__umoddi3'
-> 
-> drivers/built-in.o: In function `radeonfb_pci_register':
-> radeon_base.c:(.text+0x72fe0): undefined reference to `__divdi3'
+In vfb_probe memory is allocated using rvmalloc which automatically
+sets the allocated memory to zero. This patch removes the second
+unnecessary memset in vfb_probe.
 
-Fix should be in today's linux-next tree.
+Signed-off-by: Marcin Chojnacki <marcinch7@gmail.com>
+---
+ drivers/video/fbdev/vfb.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
--Dave
+diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
+index 70a897b..b2d38b7 100644
+--- a/drivers/video/fbdev/vfb.c
++++ b/drivers/video/fbdev/vfb.c
+@@ -490,14 +490,6 @@ static int vfb_probe(struct platform_device *dev)
+ 	if (!(videomemory = rvmalloc(videomemorysize)))
+ 		return retval;
+ 
+-	/*
+-	 * VFB must clear memory to prevent kernel info
+-	 * leakage into userspace
+-	 * VGA-based drivers MUST NOT clear memory if
+-	 * they want to be able to take over vgacon
+-	 */
+-	memset(videomemory, 0, videomemorysize);
+-
+ 	info = framebuffer_alloc(sizeof(u32) * 256, &dev->dev);
+ 	if (!info)
+ 		goto err;
 -- 
-Dave Chinner
-david@fromorbit.com
+2.1.4
+

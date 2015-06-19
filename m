@@ -1,445 +1,205 @@
-From: Greg Donald <gdonald@gmail.com>
-Date: Thu, 18 Jun 2015 20:06:56 +0000
-Subject: [PATCH] drivers: staging: sm750fb: Fix "'foo * bar' should be 'foo *bar'" errors
-Message-Id: <1434658016-25751-1-git-send-email-gdonald@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 19 Jun 2015 22:08:25 +0000
+Subject: [PATCH v7 2/9] video: fbdev: i740fb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
+Message-Id: <1434751712-24333-3-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Cc: Greg Donald <gdonald@gmail.com>
+To: arnd@arndb.de
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, linux-fbdev@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Jingoo Han <jg1.han@samsung.com>, Bjorn Helgaas <bhelgaas@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Rob Clark <robdclark@gmail.com>, Benoit Taine <benoit.taine@lip6.fr>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Andy Lutomirski <luto@amacapital.net>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Fix checkpatch.pl "'foo * bar' should be 'foo *bar'" errors
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Greg Donald <gdonald@gmail.com>
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
+
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Benoit Taine <benoit.taine@lip6.fr>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.c  |  2 +-
- drivers/staging/sm750fb/ddk750_help.c  |  4 ++--
- drivers/staging/sm750fb/ddk750_help.h  |  2 +-
- drivers/staging/sm750fb/ddk750_mode.c  |  4 ++--
- drivers/staging/sm750fb/sm750.c        |  2 +-
- drivers/staging/sm750fb/sm750.h        | 26 +++++++++++++-------------
- drivers/staging/sm750fb/sm750_accel.c  | 16 ++++++++--------
- drivers/staging/sm750fb/sm750_accel.h  |  8 ++++----
- drivers/staging/sm750fb/sm750_cursor.c | 14 +++++++-------
- drivers/staging/sm750fb/sm750_cursor.h | 14 +++++++-------
- drivers/staging/sm750fb/sm750_hw.c     | 18 +++++++++---------
- 11 files changed, 55 insertions(+), 55 deletions(-)
+ drivers/video/fbdev/i740fb.c | 35 ++++++-----------------------------
+ 1 file changed, 6 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 981736f..f4975d2 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -433,7 +433,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
- 	unsigned int RN, quo, rem, fl_quo;
- 	unsigned int input, request;
- 	unsigned int tmpClock, ret;
--	pllcalparam * xparm;
-+	pllcalparam *xparm;
+diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
+index a2b4204..452e116 100644
+--- a/drivers/video/fbdev/i740fb.c
++++ b/drivers/video/fbdev/i740fb.c
+@@ -27,24 +27,15 @@
+ #include <linux/console.h>
+ #include <video/vga.h>
  
- #if 1
- 	if (getChipType() = SM750LE) {
-diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
-index 96c18eb..1adcafc 100644
---- a/drivers/staging/sm750fb/ddk750_help.c
-+++ b/drivers/staging/sm750fb/ddk750_help.c
-@@ -1,11 +1,11 @@
- #include "ddk750_help.h"
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+-
+ #include "i740_reg.h"
  
--void __iomem * mmio750 = NULL;
-+void __iomem *mmio750 = NULL;
- char revId750 = 0;
- unsigned short devId750 = 0;
+ static char *mode_option;
+-
+-#ifdef CONFIG_MTRR
+ static int mtrr = 1;
+-#endif
  
- /* after driver mapped io registers, use this function first */
--void ddk750_set_mmio(void __iomem * addr, unsigned short devId, char revId)
-+void ddk750_set_mmio(void __iomem *addr, unsigned short devId, char revId)
- {
- 	mmio750 = addr;
- 	devId750 = devId;
-diff --git a/drivers/staging/sm750fb/ddk750_help.h b/drivers/staging/sm750fb/ddk750_help.h
-index f99f907..4285b05 100644
---- a/drivers/staging/sm750fb/ddk750_help.h
-+++ b/drivers/staging/sm750fb/ddk750_help.h
-@@ -19,7 +19,7 @@
- #define POKE32(addr, data) writel(data, addr + mmio750)
- #endif
+ struct i740fb_par {
+ 	unsigned char __iomem *regs;
+ 	bool has_sgram;
+-#ifdef CONFIG_MTRR
+-	int mtrr_reg;
+-#endif
++	int wc_cookie;
+ 	bool ddc_registered;
+ 	struct i2c_adapter ddc_adapter;
+ 	struct i2c_algo_bit_data ddc_algo;
+@@ -1040,7 +1031,7 @@ static int i740fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+ 		goto err_request_regions;
+ 	}
  
--extern void __iomem * mmio750;
-+extern void __iomem *mmio750;
- extern char revId750;
- extern unsigned short devId750;
- #else
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index a054747..74313ff 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -75,7 +75,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
+-	info->screen_base = pci_ioremap_bar(dev, 0);
++	info->screen_base = pci_ioremap_wc_bar(dev, 0);
+ 	if (!info->screen_base) {
+ 		dev_err(info->device, "error remapping base\n");
+ 		ret = -ENOMEM;
+@@ -1144,13 +1135,9 @@ static int i740fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
  
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+ 	pci_set_drvdata(dev, info);
+-#ifdef CONFIG_MTRR
+-	if (mtrr) {
+-		par->mtrr_reg = -1;
+-		par->mtrr_reg = mtrr_add(info->fix.smem_start,
+-				info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
+-	}
+-#endif
++	if (mtrr)
++		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++						  info->fix.smem_len);
+ 	return 0;
  
- /* only timing related registers will be  programed */
--static int programModeRegisters(mode_parameter_t * pModeParam, pll_value_t * pll)
-+static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
- {
- 	int ret = 0;
- 	int cnt = 0;
-@@ -185,7 +185,7 @@ static int programModeRegisters(mode_parameter_t * pModeParam, pll_value_t * pll
- 	return ret;
- }
+ err_reg_framebuffer:
+@@ -1177,13 +1164,7 @@ static void i740fb_remove(struct pci_dev *dev)
  
--int ddk750_setModeTiming(mode_parameter_t * parm, clock_type_t clock)
-+int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock)
- {
- 	pll_value_t pll;
- 	unsigned int uiActualPixelClk;
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 6b642d7..8c35302 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -1087,7 +1087,7 @@ NO_PARAM:
- }
+ 	if (info) {
+ 		struct i740fb_par *par = info->par;
+-
+-#ifdef CONFIG_MTRR
+-		if (par->mtrr_reg >= 0) {
+-			mtrr_del(par->mtrr_reg, 0, 0);
+-			par->mtrr_reg = -1;
+-		}
+-#endif
++		arch_phys_wc_del(par->wc_cookie);
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
+ 		if (par->ddc_registered)
+@@ -1287,10 +1268,8 @@ static int  __init i740fb_setup(char *options)
+ 	while ((opt = strsep(&options, ",")) != NULL) {
+ 		if (!*opt)
+ 			continue;
+-#ifdef CONFIG_MTRR
+ 		else if (!strncmp(opt, "mtrr:", 5))
+ 			mtrr = simple_strtoul(opt + 5, NULL, 0);
+-#endif
+ 		else
+ 			mode_option = opt;
+ 	}
+@@ -1327,7 +1306,5 @@ MODULE_DESCRIPTION("fbdev driver for Intel740");
+ module_param(mode_option, charp, 0444);
+ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
  
- static int lynxfb_pci_probe(struct pci_dev *pdev,
--			    const struct pci_device_id * ent)
-+			    const struct pci_device_id *ent)
- {
- 	struct fb_info *info[] = {NULL, NULL};
- 	struct lynx_share *share = NULL;
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 273882f..cc80580 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -45,8 +45,8 @@ struct lynx_share{
- 	/* common members */
- 	u16 devid;
- 	u8 revid;
--	struct pci_dev * pdev;
--	struct fb_info * fbinfo[2];
-+	struct pci_dev *pdev;
-+	struct fb_info *fbinfo[2];
- 	struct lynx_accel accel;
- 	int accel_off;
- 	int dual;
-@@ -59,8 +59,8 @@ struct lynx_share{
- 	unsigned long vidreg_start;
- 	__u32 vidmem_size;
- 	__u32 vidreg_size;
--	void __iomem * pvReg;
--	unsigned char __iomem * pvMem;
-+	void __iomem *pvReg;
-+	unsigned char __iomem *pvMem;
- 	/* locks*/
- 	spinlock_t slock;
- 	/* function pointers */
-@@ -77,12 +77,12 @@ struct lynx_cursor{
- 	int maxW;
- 	int maxH;
- 	/* base virtual address and offset  of cursor image */
--	char __iomem * vstart;
-+	char __iomem *vstart;
- 	int offset;
- 	/* mmio addr of hw cursor */
- 	volatile char __iomem * mmio;
- 	/* the lynx_share of this adaptor */
--	struct lynx_share * share;
-+	struct lynx_share *share;
- 	/* proc_routines */
- 	void (*enable)(struct lynx_cursor *);
- 	void (*disable)(struct lynx_cursor *);
-@@ -93,8 +93,8 @@ struct lynx_cursor{
- };
- 
- struct lynxfb_crtc{
--	unsigned char __iomem * vCursor; /* virtual address of cursor */
--	unsigned char __iomem * vScreen; /* virtual address of on_screen */
-+	unsigned char __iomem *vCursor; /* virtual address of cursor */
-+	unsigned char __iomem *vScreen; /* virtual address of on_screen */
- 	int oCursor; /* cursor address offset in vidmem */
- 	int oScreen; /* onscreen address offset in vidmem */
- 	int channel;/* which channel this crtc stands for*/
-@@ -106,7 +106,7 @@ struct lynxfb_crtc{
- 	u16 ypanstep;
- 	u16 ywrapstep;
- 
--	void * priv;
-+	void *priv;
- 
- 	int(*proc_setMode)(struct lynxfb_crtc*,
- 						struct fb_var_screeninfo*,
-@@ -132,13 +132,13 @@ struct lynxfb_output{
- 		paths=3:means output for both panel and crt paths
- 	*/
- 
--	int * channel;
-+	int *channel;
- 	/* 	which channel these outputs linked with,for sm750:
- 		*channel=0 means primary channel
- 		*channel=1 means secondary channel
- 		output->channel => &crtc->channel
- 	*/
--	void * priv;
-+	void *priv;
- 
- 	int(*proc_setMode)(struct lynxfb_output*,
- 						struct fb_var_screeninfo*,
-@@ -155,8 +155,8 @@ struct lynxfb_par{
- 	unsigned int pseudo_palette[256];
- 	struct lynxfb_crtc crtc;
- 	struct lynxfb_output output;
--	struct fb_info * info;
--	struct lynx_share * share;
-+	struct fb_info *info;
-+	struct lynx_share *share;
- };
- 
- #ifndef offsetof
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index a2baffd..6eee4cd 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -18,22 +18,22 @@
- #include "sm750.h"
- #include "sm750_accel.h"
- #include "sm750_help.h"
--static inline void write_dpr(struct lynx_accel * accel, int offset, u32 regValue)
-+static inline void write_dpr(struct lynx_accel *accel, int offset, u32 regValue)
- {
- 	writel(regValue, accel->dprBase + offset);
- }
- 
--static inline u32 read_dpr(struct lynx_accel * accel, int offset)
-+static inline u32 read_dpr(struct lynx_accel *accel, int offset)
- {
- 	return readl(accel->dprBase + offset);
- }
- 
--static inline void write_dpPort(struct lynx_accel * accel, u32 data)
-+static inline void write_dpPort(struct lynx_accel *accel, u32 data)
- {
- 	writel(data, accel->dpPortBase);
- }
- 
--void hw_de_init(struct lynx_accel * accel)
-+void hw_de_init(struct lynx_accel *accel)
- {
- 	/* setup 2d engine registers */
- 	u32 reg, clr;
-@@ -79,7 +79,7 @@ void hw_de_init(struct lynx_accel * accel)
-  * but if you need dual framebuffer driver,need call set2dformat
-  * every time you use 2d function */
- 
--void hw_set2dformat(struct lynx_accel * accel, int fmt)
-+void hw_set2dformat(struct lynx_accel *accel, int fmt)
- {
- 	u32 reg;
- 	
-@@ -89,7 +89,7 @@ void hw_set2dformat(struct lynx_accel * accel, int fmt)
- 	write_dpr(accel, DE_STRETCH_FORMAT, reg);
- }
- 
--int hw_fillrect(struct lynx_accel * accel,
-+int hw_fillrect(struct lynx_accel *accel,
- 				u32 base, u32 pitch, u32 Bpp,
- 				u32 x, u32 y, u32 width, u32 height,
- 				u32 color, u32 rop)
-@@ -137,7 +137,7 @@ int hw_fillrect(struct lynx_accel * accel,
- }
- 
- int hw_copyarea(
--struct lynx_accel * accel,
-+struct lynx_accel *accel,
- unsigned int sBase,  /* Address of source: offset in frame buffer */
- unsigned int sPitch, /* Pitch value of source surface in BYTE */
- unsigned int sx,
-@@ -303,7 +303,7 @@ unsigned int rop2)   /* ROP value */
-     return 0;
- }
- 
--static unsigned int deGetTransparency(struct lynx_accel * accel)
-+static unsigned int deGetTransparency(struct lynx_accel *accel)
- {
-     unsigned int de_ctrl;
- 
-diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
-index 57e20fb..d3d256c 100644
---- a/drivers/staging/sm750fb/sm750_accel.h
-+++ b/drivers/staging/sm750fb/sm750_accel.h
-@@ -234,17 +234,17 @@
- #define BOTTOM_TO_TOP 1
- #define RIGHT_TO_LEFT 1
- 
--void hw_set2dformat(struct lynx_accel * accel, int fmt);
-+void hw_set2dformat(struct lynx_accel *accel, int fmt);
- 
--void hw_de_init(struct lynx_accel * accel);
-+void hw_de_init(struct lynx_accel *accel);
- 
--int hw_fillrect(struct lynx_accel * accel,
-+int hw_fillrect(struct lynx_accel *accel,
- 				u32 base, u32 pitch, u32 Bpp,
- 				u32 x, u32 y, u32 width, u32 height,
- 				u32 color, u32 rop);
- 
- int hw_copyarea(
--struct lynx_accel * accel,
-+struct lynx_accel *accel,
- unsigned int sBase,  /* Address of source: offset in frame buffer */
- unsigned int sPitch, /* Pitch value of source surface in BYTE */
- unsigned int sx,
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index cb37ea3..405e24b 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -58,7 +58,7 @@ writel((data), cursor->mmio + (addr))
- 
- 
- /* hw_cursor_xxx works for voyager,718 and 750 */
--void hw_cursor_enable(struct lynx_cursor * cursor)
-+void hw_cursor_enable(struct lynx_cursor *cursor)
- {
- 	u32 reg;
- 	reg = FIELD_VALUE(0, HWC_ADDRESS, ADDRESS, cursor->offset)|
-@@ -66,18 +66,18 @@ void hw_cursor_enable(struct lynx_cursor * cursor)
- 			FIELD_SET(0, HWC_ADDRESS, ENABLE, ENABLE);
- 	POKE32(HWC_ADDRESS, reg);
- }
--void hw_cursor_disable(struct lynx_cursor * cursor)
-+void hw_cursor_disable(struct lynx_cursor *cursor)
- {
- 	POKE32(HWC_ADDRESS, 0);
- }
- 
--void hw_cursor_setSize(struct lynx_cursor * cursor,
-+void hw_cursor_setSize(struct lynx_cursor *cursor,
- 						int w, int h)
- {
- 	cursor->w = w;
- 	cursor->h = h;
- }
--void hw_cursor_setPos(struct lynx_cursor * cursor,
-+void hw_cursor_setPos(struct lynx_cursor *cursor,
- 						int x, int y)
- {
- 	u32 reg;
-@@ -85,14 +85,14 @@ void hw_cursor_setPos(struct lynx_cursor * cursor,
- 			FIELD_VALUE(0, HWC_LOCATION, X, x);
- 	POKE32(HWC_LOCATION, reg);
- }
--void hw_cursor_setColor(struct lynx_cursor * cursor,
-+void hw_cursor_setColor(struct lynx_cursor *cursor,
- 						u32 fg, u32 bg)
- {
- 	POKE32(HWC_COLOR_12, (fg<<16)|(bg&0xffff));
- 	POKE32(HWC_COLOR_3, 0xffe0);
- }
- 
--void hw_cursor_setData(struct lynx_cursor * cursor,
-+void hw_cursor_setData(struct lynx_cursor *cursor,
- 			u16 rop, const u8* pcol, const u8* pmsk)
- {
- 	int i, j, count, pitch, offset;
-@@ -183,7 +183,7 @@ void hw_cursor_setData(struct lynx_cursor * cursor,
- }
- 
- 
--void hw_cursor_setData2(struct lynx_cursor * cursor,
-+void hw_cursor_setData2(struct lynx_cursor *cursor,
- 			u16 rop, const u8* pcol, const u8* pmsk)
- {
- 	int i, j, count, pitch, offset;
-diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
-index be58868..e1716a6 100644
---- a/drivers/staging/sm750fb/sm750_cursor.h
-+++ b/drivers/staging/sm750fb/sm750_cursor.h
-@@ -2,16 +2,16 @@
- #define LYNX_CURSOR_H__
- 
- /* hw_cursor_xxx works for voyager,718 and 750 */
--void hw_cursor_enable(struct lynx_cursor * cursor);
--void hw_cursor_disable(struct lynx_cursor * cursor);
--void hw_cursor_setSize(struct lynx_cursor * cursor,
-+void hw_cursor_enable(struct lynx_cursor *cursor);
-+void hw_cursor_disable(struct lynx_cursor *cursor);
-+void hw_cursor_setSize(struct lynx_cursor *cursor,
- 						int w, int h);
--void hw_cursor_setPos(struct lynx_cursor * cursor,
-+void hw_cursor_setPos(struct lynx_cursor *cursor,
- 						int x, int y);
--void hw_cursor_setColor(struct lynx_cursor * cursor,
-+void hw_cursor_setColor(struct lynx_cursor *cursor,
- 						u32 fg, u32 bg);
--void hw_cursor_setData(struct lynx_cursor * cursor,
-+void hw_cursor_setData(struct lynx_cursor *cursor,
- 			u16 rop, const u8* data, const u8* mask);
--void hw_cursor_setData2(struct lynx_cursor * cursor,
-+void hw_cursor_setData2(struct lynx_cursor *cursor,
- 			u16 rop, const u8* data, const u8* mask);
- #endif
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index e70961e..84381bc 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -27,7 +27,7 @@
- int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
- {
- 	int ret;
--	struct sm750_share * spec_share;
-+	struct sm750_share *spec_share;
- 	
- 
- 	spec_share = container_of(share, struct sm750_share, share);
-@@ -100,10 +100,10 @@ exit:
- 
- 
- 
--int hw_sm750_inithw(struct lynx_share* share, struct pci_dev * pdev)
-+int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
- {
--	struct sm750_share * spec_share;
--	struct init_status * parm;
-+	struct sm750_share *spec_share;
-+	struct init_status *parm;
- 	
- 	spec_share = container_of(share, struct sm750_share, share);
- 	parm = &spec_share->state.initParm;
-@@ -199,7 +199,7 @@ int hw_sm750_inithw(struct lynx_share* share, struct pci_dev * pdev)
- }
- 
- 
--resource_size_t hw_sm750_getVMSize(struct lynx_share * share)
-+resource_size_t hw_sm750_getVMSize(struct lynx_share *share)
- {
- 	resource_size_t ret;
- 	
-@@ -265,7 +265,7 @@ void hw_sm750_output_clear(struct lynxfb_output* output)
- 
- int hw_sm750_crtc_checkMode(struct lynxfb_crtc* crtc, struct fb_var_screeninfo* var)
- {
--	struct lynx_share * share;
-+	struct lynx_share *share;
- 	
- 
- 	share = container_of(crtc, struct lynxfb_par, crtc)->share;
-@@ -300,8 +300,8 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc* crtc,
- 	u32 reg;
- 	mode_parameter_t modparm;
- 	clock_type_t clock;
--	struct lynx_share * share;
--	struct lynxfb_par * par;
-+	struct lynx_share *share;
-+	struct lynxfb_par *par;
- 
- 	
- 	ret = 0;
-@@ -549,7 +549,7 @@ int hw_sm750_setBLANK(struct lynxfb_output* output, int blank)
- }
- 
- 
--void hw_sm750_initAccel(struct lynx_share * share)
-+void hw_sm750_initAccel(struct lynx_share *share)
- {
- 	u32 reg;
- 	enable2DEngine(1);
+-#ifdef CONFIG_MTRR
+ module_param(mtrr, int, 0444);
+ MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
+-#endif
 -- 
-1.9.1
+2.3.2.209.gd67f9d5.dirty
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

@@ -1,50 +1,41 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 17 Jun 2015 11:36:48 +0000
-Subject: [PATCH v2 9/9] staging: sm7xxfb: fix camelcase
-Message-Id: <1434540288-8289-10-git-send-email-sudipm.mukherjee@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 19 Jun 2015 14:51:32 +0000
+Subject: Re: [PATCH v2 9/9] staging: sm7xxfb: fix camelcase
+Message-Id: <20150619145132.GV28762@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1434540288-8289-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1434540288-8289-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <1434540288-8289-10-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1434540288-8289-10-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, Joe Perches <joe@perches.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Fix the checkpatch warning about CamelCase.
+On Wed, Jun 17, 2015 at 04:54:48PM +0530, Sudip Mukherjee wrote:
+> Fix the checkpatch warning about CamelCase.
+> 
+> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> ---
+>  drivers/staging/sm7xxfb/sm7xx.h   | 2 +-
+>  drivers/staging/sm7xxfb/sm7xxfb.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
+> index fc28429..4bed094 100644
+> --- a/drivers/staging/sm7xxfb/sm7xx.h
+> +++ b/drivers/staging/sm7xxfb/sm7xx.h
+> @@ -98,7 +98,7 @@ static inline unsigned int smtc_seqr(int reg)
+>  /* The next structure holds all information relevant for a specific video mode.
+>   */
+>  
+> -struct ModeInit {
+> +struct modeinit {
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
- drivers/staging/sm7xxfb/sm7xx.h   | 2 +-
- drivers/staging/sm7xxfb/sm7xxfb.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+struct mode_init is easier to read.
 
-diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
-index fc28429..4bed094 100644
---- a/drivers/staging/sm7xxfb/sm7xx.h
-+++ b/drivers/staging/sm7xxfb/sm7xx.h
-@@ -98,7 +98,7 @@ static inline unsigned int smtc_seqr(int reg)
- /* The next structure holds all information relevant for a specific video mode.
-  */
- 
--struct ModeInit {
-+struct modeinit {
- 	int mmsizex;
- 	int mmsizey;
- 	int bpp;
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index 24688a3..b906305 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -114,7 +114,7 @@ static const struct vesa_mode vesa_mode_table[] = {
- /**********************************************************************
- 			 SM712 Mode table.
-  **********************************************************************/
--static const struct ModeInit vgamode[] = {
-+static const struct modeinit vgamode[] = {
- 	{
- 		/*  mode#0: 640 x 480  16Bpp  60Hz */
- 		640, 480, 16, 60,
--- 
-1.8.1.2
+regards,
+dan carpenter
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

@@ -1,118 +1,78 @@
-From: Anatoly Stepanov <drivengroove@gmail.com>
-Date: Sun, 28 Jun 2015 23:43:58 +0000
-Subject: [PATCH 05/11] staging: sm750fb: fix indentation of pointer operator
-Message-Id: <1435535044-22042-6-git-send-email-drivengroove@gmail.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Sat, 20 Jun 2015 18:36:42 +0000
+Subject: [PATCH 08/19] staging: sm750fb: add space after enum definition
+Message-Id: <1434825413-4994-8-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
+fixes checkpatch.pl warning:
+WARNING: missing space after enum definition
 
-
-Fix indentation of pointer operator '*' according to checkpatch.pl message:
-"ERROR: 'foo* bar' should be 'foo *bar' "
-
-Signed-off-by: Anatoly Stepanov <drivengroove@gmail.com>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/staging/sm750fb/sm750_hw.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ drivers/staging/sm750fb/ddk750_display.h | 2 +-
+ drivers/staging/sm750fb/sm750_hw.h       | 8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 0e98cd3..4f4ec93 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -24,7 +24,7 @@
- #include "ddk750.h"
- #include "sm750_accel.h"
- 
--int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
-+int hw_sm750_map(struct lynx_share *share, struct pci_dev *pdev)
- {
- 	int ret;
- 	struct sm750_share *spec_share;
-@@ -209,15 +209,15 @@ resource_size_t hw_sm750_getVMSize(struct lynx_share *share)
- 
- 
- 
--int hw_sm750_output_checkMode(struct lynxfb_output* output, struct fb_var_screeninfo* var)
-+int hw_sm750_output_checkMode(struct lynxfb_output *output, struct fb_var_screeninfo *var)
- {
- 
- 	return 0;
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+index 018a661..a7f50cc 100644
+--- a/drivers/staging/sm750fb/ddk750_display.h
++++ b/drivers/staging/sm750fb/ddk750_display.h
+@@ -129,7 +129,7 @@ typedef enum _disp_output_t
  }
+ disp_output_t;
+ #else
+-typedef enum _disp_output_t{
++typedef enum _disp_output_t {
+ 	do_LCD1_PRI = PNL_2_PRI|PRI_TP_ON|PNL_SEQ_ON|DAC_ON,
+ 	do_LCD1_SEC = PNL_2_SEC|SEC_TP_ON|PNL_SEQ_ON|DAC_ON,
+ #if 0
+diff --git a/drivers/staging/sm750fb/sm750_hw.h b/drivers/staging/sm750fb/sm750_hw.h
+index adc61edf..af2db7c 100644
+--- a/drivers/staging/sm750fb/sm750_hw.h
++++ b/drivers/staging/sm750fb/sm750_hw.h
+@@ -9,7 +9,7 @@
+ #endif
  
  
--int hw_sm750_output_setMode(struct lynxfb_output* output,
--									struct fb_var_screeninfo* var, struct fb_fix_screeninfo* fix)
-+int hw_sm750_output_setMode(struct lynxfb_output *output,
-+									struct fb_var_screeninfo *var, struct fb_fix_screeninfo *fix)
- {
- 	int ret;
- 	disp_output_t dispSet;
-@@ -257,13 +257,13 @@ int hw_sm750_output_setMode(struct lynxfb_output* output,
- 	return ret;
- }
+-enum sm750_pnltype{
++enum sm750_pnltype {
  
--void hw_sm750_output_clear(struct lynxfb_output* output)
-+void hw_sm750_output_clear(struct lynxfb_output *output)
- {
+ 	sm750_24TFT = 0,/* 24bit tft */
  
- 	return;
- }
+@@ -19,7 +19,7 @@ enum sm750_pnltype{
+ };
  
--int hw_sm750_crtc_checkMode(struct lynxfb_crtc* crtc, struct fb_var_screeninfo* var)
-+int hw_sm750_crtc_checkMode(struct lynxfb_crtc *crtc, struct fb_var_screeninfo *var)
- {
- 	struct lynx_share *share;
+ /* vga channel is not concerned  */
+-enum sm750_dataflow{
++enum sm750_dataflow {
+ 	sm750_simul_pri,/* primary => all head */
  
-@@ -292,9 +292,9 @@ int hw_sm750_crtc_checkMode(struct lynxfb_crtc* crtc, struct fb_var_screeninfo*
- /*
- 	set the controller's mode for @crtc charged with @var and @fix parameters
- */
--int hw_sm750_crtc_setMode(struct lynxfb_crtc* crtc,
--								struct fb_var_screeninfo* var,
--								struct fb_fix_screeninfo* fix)
-+int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
-+								struct fb_var_screeninfo *var,
-+								struct fb_fix_screeninfo *fix)
- {
- 	int ret, fmt;
- 	u32 reg;
-@@ -412,13 +412,13 @@ exit:
- 	return ret;
- }
+ 	sm750_simul_sec,/* secondary => all head */
+@@ -30,13 +30,13 @@ enum sm750_dataflow{
+ };
  
--void hw_sm750_crtc_clear(struct lynxfb_crtc* crtc)
-+void hw_sm750_crtc_clear(struct lynxfb_crtc *crtc)
- {
  
- 	return;
- }
+-enum sm750_channel{
++enum sm750_channel {
+ 	sm750_primary = 0,
+ 	/* enum value equal to the register filed data */
+ 	sm750_secondary = 1,
+ };
  
--int hw_sm750_setColReg(struct lynxfb_crtc* crtc, ushort index,
-+int hw_sm750_setColReg(struct lynxfb_crtc *crtc, ushort index,
- 								ushort red, ushort green, ushort blue)
- {
- 	static unsigned int add[]={PANEL_PALETTE_RAM, CRT_PALETTE_RAM};
-@@ -426,7 +426,7 @@ int hw_sm750_setColReg(struct lynxfb_crtc* crtc, ushort index,
- 	return 0;
- }
- 
--int hw_sm750le_setBLANK(struct lynxfb_output * output, int blank) {
-+int hw_sm750le_setBLANK(struct lynxfb_output *output, int blank) {
- 	int dpms, crtdb;
- 
- 	switch (blank)
-@@ -480,7 +480,7 @@ int hw_sm750le_setBLANK(struct lynxfb_output * output, int blank) {
- 	return 0;
- }
- 
--int hw_sm750_setBLANK(struct lynxfb_output* output, int blank)
-+int hw_sm750_setBLANK(struct lynxfb_output *output, int blank)
- {
- 	unsigned int dpms, pps, crtdb;
- 
+-enum sm750_path{
++enum sm750_path {
+ 	sm750_panel = 1,
+ 	sm750_crt = 2,
+ 	sm750_pnc = 3,/* panel and crt */
 -- 
-2.1.0
+2.4.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

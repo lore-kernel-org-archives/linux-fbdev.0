@@ -1,65 +1,126 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Wed, 24 Jun 2015 16:25:04 +0000
-Subject: [PATCH v3 03/19] staging: sm750fb: remove space before close parenthesis
-Message-Id: <1435163120-3253-3-git-send-email-juston.h.li@gmail.com>
+Date: Sat, 20 Jun 2015 08:48:35 +0000
+Subject: [PATCH 4/4] staging: sm750fb: add missing blank line after declarations
+Message-Id: <1434790115-21683-4-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
-In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+References: <CAFow2F83JesFGDeEPbcUsMHSuXjeYocZDWyjMfUON02hf3HbCg@mail.gmail.com>
+In-Reply-To: <CAFow2F83JesFGDeEPbcUsMHSuXjeYocZDWyjMfUON02hf3HbCg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 Cc: Juston Li <juston.h.li@gmail.com>
 
-fixes checkpatch.pl error:
-ERROR: space prohibited before that close parenthesis ')'
+fixes checkpatch.pl WARNING: Missing a blank line after declarations
 
 Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.c | 2 +-
- drivers/staging/sm750fb/ddk750_mode.c | 2 +-
- drivers/staging/sm750fb/sm750_accel.c | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/staging/sm750fb/ddk750_chip.c    | 1 +
+ drivers/staging/sm750fb/ddk750_display.c | 2 ++
+ drivers/staging/sm750fb/ddk750_dvi.c     | 1 +
+ drivers/staging/sm750fb/ddk750_mode.c    | 3 +++
+ drivers/staging/sm750fb/ddk750_power.c   | 1 +
+ drivers/staging/sm750fb/ddk750_sii164.c  | 1 +
+ 6 files changed, 9 insertions(+)
 
 diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 1069a2d..fb1c533 100644
+index d7435d7..5e6798e 100644
 --- a/drivers/staging/sm750fb/ddk750_chip.c
 +++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -268,7 +268,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
- #endif
+@@ -474,6 +474,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
+ 			M += (fl_quo*X % 10000) > 5000?1:0;
+ 			if (M < 256 && M > 0) {
+ 				unsigned int diff;
++
+ 				tmpClock = pll->inputFreq * M / N / X;
+ 				diff = absDiff(tmpClock, request_orig);
+ 				if (diff < miniDiff) {
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index 90c5c9e..70e7f10 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -121,6 +121,7 @@ static void setDisplayControl(int ctrl, int dispState)
+ static void waitNextVerticalSync(int ctrl, int delay)
+ {
+ 	unsigned int status;
++
+ 	if (!ctrl) {
+ 		/* primary controller */
  
- 
--	if (pInitParam->powerMode != 0 )
-+	if (pInitParam->powerMode != 0)
- 		pInitParam->powerMode = 0;
- 	setPowerMode(pInitParam->powerMode);
- 
+@@ -210,6 +211,7 @@ static void swPanelPowerSequence(int disp, int delay)
+ void ddk750_setLogicalDispOut(disp_output_t output)
+ {
+ 	unsigned int reg;
++
+ 	if (output & PNL_2_USAGE) {
+ 		/* set panel path controller select */
+ 		reg = PEEK32(PANEL_DISPLAY_CTRL);
+diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
+index a18bb4c..a7a2351 100644
+--- a/drivers/staging/sm750fb/ddk750_dvi.c
++++ b/drivers/staging/sm750fb/ddk750_dvi.c
+@@ -43,6 +43,7 @@ int dviInit(
+ 			)
+ {
+ 	dvi_ctrl_device_t *pCurrentDviCtrl;
++
+ 	pCurrentDviCtrl = g_dcftSupportedDviController;
+ 	if (pCurrentDviCtrl->pfnInit != NULL) {
+ 		return pCurrentDviCtrl->pfnInit(edgeSelect, busSelect, dualEdgeClkSelect, hsyncEnable,
 diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index 31424b2..4ee9ceb 100644
+index 9d10446..2399b17 100644
 --- a/drivers/staging/sm750fb/ddk750_mode.c
 +++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -43,7 +43,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
+@@ -80,6 +80,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ 	int ret = 0;
+ 	int cnt = 0;
+ 	unsigned int ulTmpValue, ulReg;
++
+ 	if (pll->clockType = SECONDARY_PLL) {
+ 		/* programe secondary pixel clock */
+ 		POKE32(CRT_PLL_CTRL, formatPllReg(pll));
+@@ -120,6 +121,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
  
- 	/* Set bit 29:27 of display control register for the right clock */
- 	/* Note that SM750LE only need to supported 7 resoluitons. */
--	if (x = 800 && y = 600 )
-+	if (x = 800 && y = 600)
- 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
- 	else if (x = 1024 && y = 768)
- 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL65);
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 668258c..ed82813 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -363,7 +363,7 @@ int hw_imageblit(struct lynx_accel *accel,
-        Note that input pitch is BYTE value, but the 2D Pitch register uses
-        pixel values. Need Byte to pixel conversion.
-     */
--	if(bytePerPixel = 3 ){
-+	if(bytePerPixel = 3){
- 		dx *= 3;
- 		width *= 3;
- 		startBit *= 3;
+ 	} else if (pll->clockType = PRIMARY_PLL) {
+ 		unsigned int ulReservedBits;
++
+ 		POKE32(PANEL_PLL_CTRL, formatPllReg(pll));
+ 
+ 		POKE32(PANEL_HORIZONTAL_TOTAL,
+@@ -184,6 +186,7 @@ int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock)
+ {
+ 	pll_value_t pll;
+ 	unsigned int uiActualPixelClk;
++
+ 	pll.inputFreq = DEFAULT_INPUT_CLOCK;
+ 	pll.clockType = clock;
+ 
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index c545c2d..c8c51be 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -5,6 +5,7 @@
+ void ddk750_setDPMS(DPMS_t state)
+ {
+ 	unsigned int value;
++
+ 	if (getChipType() = SM750LE) {
+ 		value = PEEK32(CRT_DISPLAY_CTRL);
+ 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
+index 3c55df1..e476584 100644
+--- a/drivers/staging/sm750fb/ddk750_sii164.c
++++ b/drivers/staging/sm750fb/ddk750_sii164.c
+@@ -334,6 +334,7 @@ static void sii164SelectHotPlugDetectionMode(sii164_hot_plug_mode_t hotPlugMode)
+ void sii164EnableHotPlugDetection(unsigned char enableHotPlug)
+ {
+ 	unsigned char detectReg;
++
+ 	detectReg = i2cReadReg(SII164_I2C_ADDRESS, SII164_DETECT);
+ 
+ 	/* Depending on each DVI controller, need to enable the hot plug based on each
 -- 
 2.4.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

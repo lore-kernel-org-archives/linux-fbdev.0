@@ -1,17 +1,17 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Mon, 29 Jun 2015 17:55:19 +0000
-Subject: [PATCH v4 02/19] staging: sm750fb: remove spacing after open parenthesis
-Message-Id: <1435600536-13135-2-git-send-email-juston.h.li@gmail.com>
+Date: Sat, 20 Jun 2015 18:36:36 +0000
+Subject: [PATCH 02/19] staging: sm750fb: remove spacing after open parenthesis
+Message-Id: <1434825413-4994-2-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
-In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Juston Li <juston.h.li@gmail.com>
 
-Fixes checkpatch.pl warning:
+fixes checkpatch.pl warning:
 ERROR: space prohibited after that open parenthesis '('
 
 Signed-off-by: Juston Li <juston.h.li@gmail.com>
@@ -19,7 +19,8 @@ Signed-off-by: Juston Li <juston.h.li@gmail.com>
  drivers/staging/sm750fb/ddk750_chip.c  | 6 +++---
  drivers/staging/sm750fb/ddk750_mode.c  | 2 +-
  drivers/staging/sm750fb/ddk750_power.c | 8 ++++----
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/staging/sm750fb/sm750_help.h   | 2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
 index f4975d2..1069a2d 100644
@@ -74,6 +75,21 @@ index b7a108b..44b8eb1 100644
  	}
  
  	/* Program new power mode. */
+diff --git a/drivers/staging/sm750fb/sm750_help.h b/drivers/staging/sm750fb/sm750_help.h
+index 8ba4f8d..ac0744e 100644
+--- a/drivers/staging/sm750fb/sm750_help.h
++++ b/drivers/staging/sm750fb/sm750_help.h
+@@ -43,7 +43,7 @@
+ 
+ #define FIELD_CLEAR(reg, field) \
+ ( \
+-	~ _F_MASK(reg ## _ ## field) \
++	~_F_MASK(reg ## _ ## field) \
+ )
+ 
+ /* Field Macros */
 -- 
 2.4.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

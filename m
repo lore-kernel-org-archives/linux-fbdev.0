@@ -1,14 +1,14 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Mon, 29 Jun 2015 17:55:33 +0000
-Subject: [PATCH v4 16/19] staging: sm750fb: fix brace placement
-Message-Id: <1435600536-13135-16-git-send-email-juston.h.li@gmail.com>
+Date: Sat, 20 Jun 2015 18:36:50 +0000
+Subject: [PATCH 16/19] staging: sm750fb: fix brace placement
+Message-Id: <1434825413-4994-16-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
-In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Juston Li <juston.h.li@gmail.com>
 
 Fix brace placement errors caught by checkpatch.pl
@@ -17,21 +17,21 @@ ERROR: that open brace { should be on the previous line
 Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
  drivers/staging/sm750fb/ddk750_chip.h    | 12 +++----
- drivers/staging/sm750fb/ddk750_display.c | 56 ++++++++++----------------------
+ drivers/staging/sm750fb/ddk750_display.c | 54 ++++++++++----------------------
  drivers/staging/sm750fb/ddk750_display.h |  3 +-
  drivers/staging/sm750fb/ddk750_dvi.c     |  6 ++--
  drivers/staging/sm750fb/ddk750_dvi.h     |  3 +-
  drivers/staging/sm750fb/ddk750_hwi2c.c   |  6 ++--
  drivers/staging/sm750fb/ddk750_mode.c    | 13 +++-----
  drivers/staging/sm750fb/ddk750_mode.h    |  6 ++--
- drivers/staging/sm750fb/ddk750_power.c   | 27 +++++----------
+ drivers/staging/sm750fb/ddk750_power.c   | 27 +++++-----------
  drivers/staging/sm750fb/ddk750_power.h   |  3 +-
- drivers/staging/sm750fb/ddk750_sii164.c  | 16 +++------
+ drivers/staging/sm750fb/ddk750_sii164.c  | 16 +++-------
  drivers/staging/sm750fb/ddk750_sii164.h  |  3 +-
- drivers/staging/sm750fb/sm750_accel.c    | 45 ++++++++-----------------
- drivers/staging/sm750fb/sm750_cursor.c   | 23 +++++--------
- drivers/staging/sm750fb/sm750_hw.c       | 27 ++++++---------
- 15 files changed, 82 insertions(+), 167 deletions(-)
+ drivers/staging/sm750fb/sm750_accel.c    | 45 +++++++++-----------------
+ drivers/staging/sm750fb/sm750_cursor.c   | 23 ++++++--------
+ drivers/staging/sm750fb/sm750_hw.c       | 27 ++++++----------
+ 15 files changed, 81 insertions(+), 166 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
 index 4e030e8..6ff0436 100644
@@ -78,7 +78,7 @@ index 4e030e8..6ff0436 100644
  	unsigned short chipClock;    /**
  				      * Speed of main chip clock in MHz unit
 diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
-index 4a3cb86..a64ea32 100644
+index 4a3cb86..bd2be7f 100644
 --- a/drivers/staging/sm750fb/ddk750_display.c
 +++ b/drivers/staging/sm750fb/ddk750_display.c
 @@ -15,12 +15,10 @@ static void setDisplayControl(int ctrl, int dispState)
@@ -119,11 +119,10 @@ index 4a3cb86..a64ea32 100644
  		}
  
 -	}
--	/* Set the secondary display control */
+ 	/* Set the secondary display control */
 -	else
 -	{
 +	} else {
-+		/* Set the secondary display control */
  		ulDisplayCtrlReg = PEEK32(CRT_DISPLAY_CTRL);
  
 -		if (dispState)
@@ -802,3 +801,5 @@ index d397382..20a8d3b 100644
 -- 
 2.4.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

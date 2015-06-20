@@ -1,30 +1,68 @@
-From: "Practice Trinity (NHS SOUTH SEFTON CCG)" <trinitypractice@nhs.net>
-Date: Mon, 08 Jun 2015 11:09:39 +0000
-Subject: RE:
-Message-Id: <20150608110945.3B19E458125@nhs-pd1e-esg108.ad1.nhs.net>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Sat, 20 Jun 2015 18:36:51 +0000
+Subject: [PATCH 17/19] staging: sm750fb: move while to follow do close brace
+Message-Id: <1434825413-4994-17-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <132D0DB4B968F242BE373429794F35C22559D38329@NHS-PCLI-MBC011.AD1.NHS.NET>
-In-Reply-To: <132D0DB4B968F242BE373429794F35C22559D38329@NHS-PCLI-MBC011.AD1.NHS.NET>
+References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Practice Trinity (NHS SOUTH SEFTON CCG)" <trinitypractice@nhs.net>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
+fixes checkpatch.pl error:
+ERROR: while should follow close brace '}'
 
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_display.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-$1.5 C.A.D for you email ( leonh2800@gmail.com )  for info
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index bd2be7f..90c5c9e 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -139,16 +139,14 @@ static void waitNextVerticalSync(int ctrl, int delay)
+ 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
+ 						   SYSTEM_CTRL,
+ 						   PANEL_VSYNC);
+-			}
+-			while (status = SYSTEM_CTRL_PANEL_VSYNC_ACTIVE);
++			} while (status = SYSTEM_CTRL_PANEL_VSYNC_ACTIVE);
+ 
+ 			/* Wait for start of vsync. */
+ 			do {
+ 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
+ 						   SYSTEM_CTRL,
+ 						   PANEL_VSYNC);
+-			}
+-			while (status = SYSTEM_CTRL_PANEL_VSYNC_INACTIVE);
++			} while (status = SYSTEM_CTRL_PANEL_VSYNC_INACTIVE);
+ 		}
+ 
+ 	} else {
+@@ -168,16 +166,14 @@ static void waitNextVerticalSync(int ctrl, int delay)
+ 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
+ 								   SYSTEM_CTRL,
+ 								   CRT_VSYNC);
+-			}
+-			while (status = SYSTEM_CTRL_CRT_VSYNC_ACTIVE);
++			} while (status = SYSTEM_CTRL_CRT_VSYNC_ACTIVE);
+ 
+ 			/* Wait for start of vsync. */
+ 			do {
+ 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
+ 								   SYSTEM_CTRL,
+ 								   CRT_VSYNC);
+-			}
+-			while (status = SYSTEM_CTRL_CRT_VSYNC_INACTIVE);
++			} while (status = SYSTEM_CTRL_CRT_VSYNC_INACTIVE);
+ 		}
+ 	}
+ }
+-- 
+2.4.4
 
-********************************************************************************************************************
-
-This message may contain confidential information. If you are not the intended recipient please inform the
-sender that you have received the message in error before deleting it.
-Please do not disclose, copy or distribute information in this e-mail or take any action in reliance on its contents:
-to do so is strictly prohibited and may be unlawful.
-
-Thank you for your co-operation.
-
-NHSmail is the secure email and directory service available for all NHS staff in England and Scotland
-NHSmail is approved for exchanging patient data and other sensitive information with NHSmail and GSi recipients
-NHSmail provides an email address for your career in the NHS and can be accessed anywhere
-
-********************************************************************************************************************
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

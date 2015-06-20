@@ -1,14 +1,14 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Wed, 24 Jun 2015 16:25:07 +0000
-Subject: [PATCH v3 06/19] staging: sm750fb: add space before open brace
-Message-Id: <1435163120-3253-6-git-send-email-juston.h.li@gmail.com>
+Date: Sat, 20 Jun 2015 18:36:40 +0000
+Subject: [PATCH 06/19] staging: sm750fb: add space before open brace
+Message-Id: <1434825413-4994-6-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
-In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Juston Li <juston.h.li@gmail.com>
 
 fixes checkpatch.pl error:
@@ -454,3 +454,5 @@ index 5abac9b..4dfc6e6 100644
 -- 
 2.4.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

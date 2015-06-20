@@ -1,107 +1,70 @@
-From: Anatoly Stepanov <drivengroove@gmail.com>
-Date: Sun, 28 Jun 2015 23:43:59 +0000
-Subject: [PATCH 06/11] staging: sm750fb: put open brace on the previous line
-Message-Id: <1435535044-22042-7-git-send-email-drivengroove@gmail.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Sat, 20 Jun 2015 18:36:49 +0000
+Subject: [PATCH 15/19] staging: sm750fb: remove unnecessary whitespace
+Message-Id: <1434825413-4994-15-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
+fixes checkpatch.pl warning:
+WARNING: unnecessary whitespace before a quoted newline
 
-
-Fix open braces according to checkpatch.pl message:
-"ERROR: that open brace { should be on the previous line"
-
-Signed-off-by: Anatoly Stepanov <drivengroove@gmail.com>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/staging/sm750fb/sm750_hw.c | 24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+ drivers/staging/sm750fb/sm750.c    | 2 +-
+ drivers/staging/sm750fb/sm750_hw.c | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 8e201f1..1ff14b2 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -967,7 +967,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 	var->accel_flags = 0;
+ 	var->vmode = FB_VMODE_NONINTERLACED;
+ 
+-	pr_debug("#1 show info->cmap : \nstart=%d,len=%d,red=%p,green=%p,blue=%p,transp=%p\n",
++	pr_debug("#1 show info->cmap :\nstart=%d,len=%d,red=%p,green=%p,blue=%p,transp=%p\n",
+ 		 info->cmap.start, info->cmap.len,
+ 		 info->cmap.red, info->cmap.green, info->cmap.blue,
+ 		 info->cmap.transp);
 diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 4f4ec93..4dded62 100644
+index 3b8107c..d397382 100644
 --- a/drivers/staging/sm750fb/sm750_hw.c
 +++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -44,8 +44,7 @@ int hw_sm750_map(struct lynx_share *share, struct pci_dev *pdev)
- 	 * successfully
- 	 * */
- 
--	if ((ret = pci_request_region(pdev, 1, "sm750fb")))
--	{
-+	if ((ret = pci_request_region(pdev, 1, "sm750fb"))) {
- 		pr_err("Can not request PCI regions.\n");
- 		goto exit;
+@@ -253,7 +253,7 @@ int hw_sm750_output_setMode(struct lynxfb_output* output,
+ 		POKE32(DISPLAY_CONTROL_750LE, reg);
  	}
-@@ -78,8 +77,7 @@ int hw_sm750_map(struct lynx_share *share, struct pci_dev *pdev)
  
- 	/* reserve the vidmem space of smi adaptor */
- #if 0
--	if ((ret = pci_request_region(pdev, 0, _moduleName_)))
--	{
-+	if ((ret = pci_request_region(pdev, 0, _moduleName_))) {
- 		pr_err("Can not request PCI regions.\n");
- 		goto exit;
- 	}
-@@ -130,8 +128,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
- 	ddk750_initDVIDisp();
+-	pr_info("ddk setlogicdispout done \n");
++	pr_info("ddk setlogicdispout done\n");
+ 	return ret;
+ }
+ 
+@@ -493,14 +493,14 @@ int hw_sm750_setBLANK(struct lynxfb_output* output, int blank)
+ #else
+ 		case VESA_NO_BLANKING:
  #endif
- 
--	if (getChipType() != SM750LE)
--	{
-+	if (getChipType() != SM750LE) {
- 		/* does user need CRT ?*/
- 		if (spec_share->state.nocrt) {
- 			POKE32(MISC_CTRL,
-@@ -177,8 +174,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
- 	/* Customer may NOT use CH7301 DVI chip, which has to be
- 	   initialized differently.
- 	*/
--	if (swI2CReadReg(0xec, 0x4a) = 0x95)
--	{
-+	if (swI2CReadReg(0xec, 0x4a) = 0x95) {
- 		/* The following register values for CH7301 are from
- 		   Chrontel app note and our experiment.
- 		*/
-@@ -429,8 +425,7 @@ int hw_sm750_setColReg(struct lynxfb_crtc *crtc, ushort index,
- int hw_sm750le_setBLANK(struct lynxfb_output *output, int blank) {
- 	int dpms, crtdb;
- 
--	switch (blank)
--	{
-+	switch (blank) {
+-			pr_info("flag = FB_BLANK_UNBLANK \n");
++			pr_info("flag = FB_BLANK_UNBLANK\n");
+ 			dpms = SYSTEM_CTRL_DPMS_VPHP;
+ 			pps = PANEL_DISPLAY_CTRL_DATA_ENABLE;
+ 			crtdb = CRT_DISPLAY_CTRL_BLANK_OFF;
+ 			break;
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 10)
- 		case FB_BLANK_UNBLANK:
- #else
-@@ -486,8 +481,7 @@ int hw_sm750_setBLANK(struct lynxfb_output *output, int blank)
- 
- 	dpms = pps = crtdb = 0;
- 
--	switch (blank)
--	{
-+	switch (blank) {
- #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 10)
- 		case FB_BLANK_UNBLANK:
- #else
-@@ -585,8 +579,7 @@ int hw_sm750le_deWait(void)
- 		unsigned int dwVal = PEEK32(DE_STATE2);
- 		if ((FIELD_GET(dwVal, DE_STATE2, DE_STATUS) = DE_STATE2_DE_STATUS_IDLE) &&
- 			(FIELD_GET(dwVal, DE_STATE2, DE_FIFO)  = DE_STATE2_DE_FIFO_EMPTY) &&
--			(FIELD_GET(dwVal, DE_STATE2, DE_MEM_FIFO) = DE_STATE2_DE_MEM_FIFO_EMPTY))
--		{
-+			(FIELD_GET(dwVal, DE_STATE2, DE_MEM_FIFO) = DE_STATE2_DE_MEM_FIFO_EMPTY)) {
- 			return 0;
- 		}
- 	}
-@@ -602,8 +595,7 @@ int hw_sm750_deWait(void)
- 		unsigned int dwVal = PEEK32(SYSTEM_CTRL);
- 		if ((FIELD_GET(dwVal, SYSTEM_CTRL, DE_STATUS) = SYSTEM_CTRL_DE_STATUS_IDLE) &&
- 			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_FIFO)  = SYSTEM_CTRL_DE_FIFO_EMPTY) &&
--			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_MEM_FIFO) = SYSTEM_CTRL_DE_MEM_FIFO_EMPTY))
--		{
-+			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_MEM_FIFO) = SYSTEM_CTRL_DE_MEM_FIFO_EMPTY)) {
- 			return 0;
- 		}
- 	}
+ 		case FB_BLANK_NORMAL:
+-			pr_info("flag = FB_BLANK_NORMAL \n");
++			pr_info("flag = FB_BLANK_NORMAL\n");
+ 			dpms = SYSTEM_CTRL_DPMS_VPHP;
+ 			pps = PANEL_DISPLAY_CTRL_DATA_DISABLE;
+ 			crtdb = CRT_DISPLAY_CTRL_BLANK_ON;
 -- 
-2.1.0
+2.4.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

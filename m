@@ -1,7 +1,7 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Sat, 20 Jun 2015 18:36:50 +0000
-Subject: [PATCH 16/19] staging: sm750fb: fix brace placement
-Message-Id: <1434825413-4994-16-git-send-email-juston.h.li@gmail.com>
+Date: Sat, 20 Jun 2015 18:36:38 +0000
+Subject: [PATCH 04/19] staging: sm750fb: add space before open parenthesis
+Message-Id: <1434825413-4994-4-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
 In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
@@ -11,793 +11,578 @@ Content-Transfer-Encoding: 7bit
 To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Juston Li <juston.h.li@gmail.com>
 
-Fix brace placement errors caught by checkpatch.pl
-ERROR: that open brace { should be on the previous line
+fixes checkpatch.pl error:
+ERROR: space required before the open parenthesis '('
 
 Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.h    | 12 +++----
- drivers/staging/sm750fb/ddk750_display.c | 54 ++++++++++----------------------
- drivers/staging/sm750fb/ddk750_display.h |  3 +-
- drivers/staging/sm750fb/ddk750_dvi.c     |  6 ++--
- drivers/staging/sm750fb/ddk750_dvi.h     |  3 +-
- drivers/staging/sm750fb/ddk750_hwi2c.c   |  6 ++--
- drivers/staging/sm750fb/ddk750_mode.c    | 13 +++-----
- drivers/staging/sm750fb/ddk750_mode.h    |  6 ++--
- drivers/staging/sm750fb/ddk750_power.c   | 27 +++++-----------
- drivers/staging/sm750fb/ddk750_power.h   |  3 +-
- drivers/staging/sm750fb/ddk750_sii164.c  | 16 +++-------
- drivers/staging/sm750fb/ddk750_sii164.h  |  3 +-
- drivers/staging/sm750fb/sm750_accel.c    | 45 +++++++++-----------------
- drivers/staging/sm750fb/sm750_cursor.c   | 23 ++++++--------
- drivers/staging/sm750fb/sm750_hw.c       | 27 ++++++----------
- 15 files changed, 81 insertions(+), 166 deletions(-)
+ drivers/staging/sm750fb/ddk750_display.c | 20 +++++------
+ drivers/staging/sm750fb/ddk750_dvi.c     |  2 +-
+ drivers/staging/sm750fb/ddk750_help.c    |  2 +-
+ drivers/staging/sm750fb/ddk750_mode.c    | 12 +++----
+ drivers/staging/sm750fb/ddk750_power.c   |  6 ++--
+ drivers/staging/sm750fb/sm750_accel.c    |  8 ++---
+ drivers/staging/sm750fb/sm750_cursor.c   | 32 ++++++++---------
+ drivers/staging/sm750fb/sm750_help.h     |  2 +-
+ drivers/staging/sm750fb/sm750_hw.c       | 62 ++++++++++++++++----------------
+ 9 files changed, 73 insertions(+), 73 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
-index 4e030e8..6ff0436 100644
---- a/drivers/staging/sm750fb/ddk750_chip.h
-+++ b/drivers/staging/sm750fb/ddk750_chip.h
-@@ -8,8 +8,7 @@
- #include <linux/io.h>
- 
- /* This is all the chips recognized by this library */
--typedef enum _logical_chip_type_t
--{
-+typedef enum _logical_chip_type_t {
- 	SM_UNKNOWN,
- 	SM718,
- 	SM750,
-@@ -18,8 +17,7 @@ typedef enum _logical_chip_type_t
- logical_chip_type_t;
- 
- 
--typedef enum _clock_type_t
--{
-+typedef enum _clock_type_t {
- 	MXCLK_PLL,
- 	PRIMARY_PLL,
- 	SECONDARY_PLL,
-@@ -28,8 +26,7 @@ typedef enum _clock_type_t
- }
- clock_type_t;
- 
--typedef struct _pll_value_t
--{
-+typedef struct _pll_value_t {
- 	clock_type_t clockType;
- 	unsigned long inputFreq; /* Input clock frequency to the PLL */
- 
-@@ -42,8 +39,7 @@ typedef struct _pll_value_t
- pll_value_t;
- 
- /* input struct to initChipParam() function */
--typedef struct _initchip_param_t
--{
-+typedef struct _initchip_param_t {
- 	unsigned short powerMode;    /* Use power mode 0 or 1 */
- 	unsigned short chipClock;    /**
- 				      * Speed of main chip clock in MHz unit
 diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
-index 4a3cb86..bd2be7f 100644
+index 1c4049f..973dec3 100644
 --- a/drivers/staging/sm750fb/ddk750_display.c
 +++ b/drivers/staging/sm750fb/ddk750_display.c
-@@ -15,12 +15,10 @@ static void setDisplayControl(int ctrl, int dispState)
- 	cnt = 0;
- 
- 	/* Set the primary display control */
--	if (!ctrl)
--	{
-+	if (!ctrl) {
- 		ulDisplayCtrlReg = PEEK32(PANEL_DISPLAY_CTRL);
- 		/* Turn on/off the Panel display control */
--		if (dispState)
--		{
-+		if (dispState) {
- 			/* Timing should be enabled first before enabling the plane
- 			 * because changing at the same time does not guarantee that
- 			 * the plane will also enabled or disabled.
-@@ -45,16 +43,13 @@ static void setDisplayControl(int ctrl, int dispState)
- 			 * until a few delay. Need to write
- 			 * and read it a couple times
- 			 */
--			do
--			{
-+			do {
+@@ -49,7 +49,7 @@ static void setDisplayControl(int ctrl, int dispState)
+ 			{
  				cnt++;
  				POKE32(PANEL_DISPLAY_CTRL, ulDisplayCtrlReg);
- 			} while ((PEEK32(PANEL_DISPLAY_CTRL) & ~ulReservedBits) ! 					(ulDisplayCtrlReg & ~ulReservedBits));
+-			} while((PEEK32(PANEL_DISPLAY_CTRL) & ~ulReservedBits) !+			} while ((PEEK32(PANEL_DISPLAY_CTRL) & ~ulReservedBits) ! 					(ulDisplayCtrlReg & ~ulReservedBits));
  			printk("Set Panel Plane enbit:after tried %d times\n", cnt);
--		}
--		else
--		{
-+		} else {
- 			/* When turning off, there is no rule on the programming
- 			 * sequence since whenever the clock is off, then it does not
- 			 * matter whether the plane is enabled or disabled.
-@@ -71,14 +66,11 @@ static void setDisplayControl(int ctrl, int dispState)
- 			POKE32(PANEL_DISPLAY_CTRL, ulDisplayCtrlReg);
  		}
- 
--	}
- 	/* Set the secondary display control */
--	else
--	{
-+	} else {
- 		ulDisplayCtrlReg = PEEK32(CRT_DISPLAY_CTRL);
- 
--		if (dispState)
--		{
-+		if (dispState) {
- 			/* Timing should be enabled first before enabling the plane because changing at the
- 			   same time does not guarantee that the plane will also enabled or disabled.
- 			   */
-@@ -100,16 +92,13 @@ static void setDisplayControl(int ctrl, int dispState)
- 				FIELD_SET(0, CRT_DISPLAY_CTRL, RESERVED_3_MASK, ENABLE) |
- 				FIELD_SET(0, CRT_DISPLAY_CTRL, RESERVED_4_MASK, ENABLE);
- 
--			do
--			{
-+			do {
+@@ -104,7 +104,7 @@ static void setDisplayControl(int ctrl, int dispState)
+ 			{
  				cnt++;
  				POKE32(CRT_DISPLAY_CTRL, ulDisplayCtrlReg);
- 			} while ((PEEK32(CRT_DISPLAY_CTRL) & ~ulReservedBits) ! 					(ulDisplayCtrlReg & ~ulReservedBits));
+-			} while((PEEK32(CRT_DISPLAY_CTRL) & ~ulReservedBits) !+			} while ((PEEK32(CRT_DISPLAY_CTRL) & ~ulReservedBits) ! 					(ulDisplayCtrlReg & ~ulReservedBits));
  				printk("Set Crt Plane enbit:after tried %d times\n", cnt);
--		}
--		else
--		{
-+		} else {
- 			/* When turning off, there is no rule on the programming
- 			 * sequence since whenever the clock is off, then it does not
- 			 * matter whether the plane is enabled or disabled.
-@@ -140,16 +129,13 @@ static void waitNextVerticalSync(int ctrl, int delay)
- 		if ((FIELD_GET(PEEK32(PANEL_PLL_CTRL), PANEL_PLL_CTRL, POWER) =
- 			 PANEL_PLL_CTRL_POWER_OFF) ||
- 			(FIELD_GET(PEEK32(PANEL_DISPLAY_CTRL), PANEL_DISPLAY_CTRL, TIMING) =
--			 PANEL_DISPLAY_CTRL_TIMING_DISABLE))
--		{
-+			 PANEL_DISPLAY_CTRL_TIMING_DISABLE)) {
- 			return;
  		}
+@@ -132,7 +132,7 @@ static void setDisplayControl(int ctrl, int dispState)
+ static void waitNextVerticalSync(int ctrl, int delay)
+ {
+ 	unsigned int status;
+-	if(!ctrl){
++	if (!ctrl){
+ 		/* primary controller */
  
--		while (delay-- > 0)
--		{
-+		while (delay-- > 0) {
- 			/* Wait for end of vsync. */
--			do
--			{
-+			do {
- 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
- 						   SYSTEM_CTRL,
- 						   PANEL_VSYNC);
-@@ -157,8 +143,7 @@ static void waitNextVerticalSync(int ctrl, int delay)
- 			while (status = SYSTEM_CTRL_PANEL_VSYNC_ACTIVE);
- 
- 			/* Wait for start of vsync. */
--			do
--			{
-+			do {
- 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
- 						   SYSTEM_CTRL,
- 						   PANEL_VSYNC);
-@@ -173,16 +158,13 @@ static void waitNextVerticalSync(int ctrl, int delay)
- 		if ((FIELD_GET(PEEK32(CRT_PLL_CTRL), CRT_PLL_CTRL, POWER) =
- 			 CRT_PLL_CTRL_POWER_OFF) ||
- 			(FIELD_GET(PEEK32(CRT_DISPLAY_CTRL), CRT_DISPLAY_CTRL, TIMING) =
--			 CRT_DISPLAY_CTRL_TIMING_DISABLE))
--		{
-+			 CRT_DISPLAY_CTRL_TIMING_DISABLE)) {
- 			return;
- 		}
- 
--		while (delay-- > 0)
--		{
-+		while (delay-- > 0) {
- 			/* Wait for end of vsync. */
--			do
--			{
-+			do {
- 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
- 								   SYSTEM_CTRL,
- 								   CRT_VSYNC);
-@@ -190,8 +172,7 @@ static void waitNextVerticalSync(int ctrl, int delay)
- 			while (status = SYSTEM_CTRL_CRT_VSYNC_ACTIVE);
- 
- 			/* Wait for start of vsync. */
--			do
--			{
-+			do {
- 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
- 								   SYSTEM_CTRL,
- 								   CRT_VSYNC);
-@@ -293,8 +274,7 @@ int ddk750_initDVIDisp(void)
- 		     1,  /* Enable continuous Sync */
- 		     1,  /* Enable PLL Filter */
- 		     4   /* Use the recommended value for PLL Filter value */
--		     ) != 0) && (dviGetVendorID() != 0x0000) && (dviGetDeviceID() != 0x0000))
--	{
-+		     ) != 0) && (dviGetVendorID() != 0x0000) && (dviGetDeviceID() != 0x0000)) {
- 		return (-1);
+ 		/* Do not wait when the Primary PLL is off or display control is already off.
+@@ -233,14 +233,14 @@ static void swPanelPowerSequence(int disp, int delay)
+ void ddk750_setLogicalDispOut(disp_output_t output)
+ {
+ 	unsigned int reg;
+-	if(output & PNL_2_USAGE){
++	if (output & PNL_2_USAGE){
+ 		/* set panel path controller select */
+ 		reg = PEEK32(PANEL_DISPLAY_CTRL);
+ 		reg = FIELD_VALUE(reg, PANEL_DISPLAY_CTRL, SELECT, (output & PNL_2_MASK)>>PNL_2_OFFSET);
+ 		POKE32(PANEL_DISPLAY_CTRL, reg);
  	}
  
-diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
-index afdf201..abccf84 100644
---- a/drivers/staging/sm750fb/ddk750_display.h
-+++ b/drivers/staging/sm750fb/ddk750_display.h
-@@ -86,8 +86,7 @@
- 	CRT means crt path DSUB
- */
- #if 0
--typedef enum _disp_output_t
--{
-+typedef enum _disp_output_t {
- 	NO_DISPLAY = DPMS_OFF,
+-	if(output & CRT_2_USAGE){
++	if (output & CRT_2_USAGE){
+ 		/* set crt path controller select */
+ 		reg = PEEK32(CRT_DISPLAY_CTRL);
+ 		reg = FIELD_VALUE(reg, CRT_DISPLAY_CTRL, SELECT, (output & CRT_2_MASK)>>CRT_2_OFFSET);
+@@ -250,25 +250,25 @@ void ddk750_setLogicalDispOut(disp_output_t output)
  
- 	LCD1_PRI = PNL_2_PRI|PRI_TP_ON|PNL_SEQ_ON|DPMS_OFF|DAC_ON,
+ 	}
+ 
+-	if(output & PRI_TP_USAGE){
++	if (output & PRI_TP_USAGE){
+ 		/* set primary timing and plane en_bit */
+ 		setDisplayControl(0, (output&PRI_TP_MASK)>>PRI_TP_OFFSET);
+ 	}
+ 
+-	if(output & SEC_TP_USAGE){
++	if (output & SEC_TP_USAGE){
+ 		/* set secondary timing and plane en_bit*/
+ 		setDisplayControl(1, (output&SEC_TP_MASK)>>SEC_TP_OFFSET);
+ 	}
+ 
+-	if(output & PNL_SEQ_USAGE){
++	if (output & PNL_SEQ_USAGE){
+ 		/* set  panel sequence */
+ 		swPanelPowerSequence((output&PNL_SEQ_MASK)>>PNL_SEQ_OFFSET, 4);
+ 	}
+ 
+-	if(output & DAC_USAGE)
++	if (output & DAC_USAGE)
+ 		setDAC((output & DAC_MASK)>>DAC_OFFSET);
+ 
+-	if(output & DPMS_USAGE)
++	if (output & DPMS_USAGE)
+ 		ddk750_setDPMS((output & DPMS_MASK) >> DPMS_OFFSET);
+ }
+ 
 diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index c42db85..a18bb4c 100644
+index 35866fa..4c64436 100644
 --- a/drivers/staging/sm750fb/ddk750_dvi.c
 +++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -9,8 +9,7 @@
- /* This global variable contains all the supported driver and its corresponding
-    function API. Please set the function pointer to NULL whenever the function
-    is not supported. */
--static dvi_ctrl_device_t g_dcftSupportedDviController[] -{
-+static dvi_ctrl_device_t g_dcftSupportedDviController[] = {
- #ifdef DVI_CTRL_SII164
- 	{
- 		.pfnInit = sii164InitChip,
-@@ -45,8 +44,7 @@ int dviInit(
+@@ -45,7 +45,7 @@ int dviInit(
  {
  	dvi_ctrl_device_t *pCurrentDviCtrl;
  	pCurrentDviCtrl = g_dcftSupportedDviController;
--	if (pCurrentDviCtrl->pfnInit != NULL)
--	{
-+	if (pCurrentDviCtrl->pfnInit != NULL) {
+-	if(pCurrentDviCtrl->pfnInit != NULL)
++	if (pCurrentDviCtrl->pfnInit != NULL)
+ 	{
  		return pCurrentDviCtrl->pfnInit(edgeSelect, busSelect, dualEdgeClkSelect, hsyncEnable,
  						vsyncEnable, deskewEnable, deskewSetting, continuousSyncEnable,
- 						pllFilterEnable, pllFilterValue);
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.h b/drivers/staging/sm750fb/ddk750_dvi.h
-index 83bbd6d..e1d4c9a 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.h
-+++ b/drivers/staging/sm750fb/ddk750_dvi.h
-@@ -26,8 +26,7 @@ typedef unsigned char (*PFN_DVICTRL_CHECKINTERRUPT)(void);
- typedef void (*PFN_DVICTRL_CLEARINTERRUPT)(void);
- 
- /* Structure to hold all the function pointer to the DVI Controller. */
--typedef struct _dvi_ctrl_device_t
--{
-+typedef struct _dvi_ctrl_device_t {
- 	PFN_DVICTRL_INIT		pfnInit;
- 	PFN_DVICTRL_RESETCHIP		pfnResetChip;
- 	PFN_DVICTRL_GETCHIPSTRING	pfnGetChipString;
-diff --git a/drivers/staging/sm750fb/ddk750_hwi2c.c b/drivers/staging/sm750fb/ddk750_hwi2c.c
-index 7f3b1f9..5ddac43 100644
---- a/drivers/staging/sm750fb/ddk750_hwi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_hwi2c.c
-@@ -106,8 +106,7 @@ static unsigned int hwI2CWriteData(
- 	 * Note:
- 	 *      Only 16 byte can be accessed per i2c start instruction.
- 	 */
--	do
--	{
-+	do {
- 		/* Reset I2C by writing 0 to I2C_RESET register to clear the previous status. */
- 		POKE32(I2C_RESET, 0);
- 
-@@ -173,8 +172,7 @@ static unsigned int hwI2CReadData(
- 	 * Note:
- 	 *      Only 16 byte can be accessed per i2c start instruction.
- 	 */
--	do
--	{
-+	do {
- 		/* Reset I2C by writing 0 to I2C_RESET register to clear all the status. */
- 		POKE32(I2C_RESET, 0);
+diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
+index 1adcafc..93ed958 100644
+--- a/drivers/staging/sm750fb/ddk750_help.c
++++ b/drivers/staging/sm750fb/ddk750_help.c
+@@ -10,7 +10,7 @@ void ddk750_set_mmio(void __iomem *addr, unsigned short devId, char revId)
+ 	mmio750 = addr;
+ 	devId750 = devId;
+ 	revId750 = revId;
+-	if(revId = 0xfe)
++	if (revId = 0xfe)
+ 		printk("found sm750le\n");
+ }
  
 diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index 3d8b06d..9d10446 100644
+index 4ee9ceb..cfe528c 100644
 --- a/drivers/staging/sm750fb/ddk750_mode.c
 +++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -80,8 +80,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+@@ -80,7 +80,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
  	int ret = 0;
  	int cnt = 0;
  	unsigned int ulTmpValue, ulReg;
--	if (pll->clockType = SECONDARY_PLL)
--	{
-+	if (pll->clockType = SECONDARY_PLL) {
+-	if(pll->clockType = SECONDARY_PLL)
++	if (pll->clockType = SECONDARY_PLL)
+ 	{
  		/* programe secondary pixel clock */
  		POKE32(CRT_PLL_CTRL, formatPllReg(pll));
- 		POKE32(CRT_HORIZONTAL_TOTAL,
-@@ -119,9 +118,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
- 			 POKE32(CRT_DISPLAY_CTRL, ulTmpValue|ulReg);
+@@ -107,7 +107,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ 					  FIELD_SET(0, CRT_DISPLAY_CTRL, PLANE, ENABLE);
+ 
+ 
+-		if(getChipType() = SM750LE){
++		if (getChipType() = SM750LE){
+ 			displayControlAdjust_SM750LE(pModeParam, ulTmpValue);
+ 		}else{
+ 			ulReg = PEEK32(CRT_DISPLAY_CTRL)
+@@ -120,7 +120,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
  		}
  
--	}
--	else if (pll->clockType = PRIMARY_PLL)
--	{
-+	} else if (pll->clockType = PRIMARY_PLL) {
+ 	}
+-	else if(pll->clockType = PRIMARY_PLL)
++	else if (pll->clockType = PRIMARY_PLL)
+ 	{
  		unsigned int ulReservedBits;
  		POKE32(PANEL_PLL_CTRL, formatPllReg(pll));
- 
-@@ -170,16 +167,14 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+@@ -170,10 +170,10 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
  
  		POKE32(PANEL_DISPLAY_CTRL, ulTmpValue|ulReg);
  #if 1
--		while ((PEEK32(PANEL_DISPLAY_CTRL) & ~ulReservedBits) != (ulTmpValue|ulReg))
--		{
-+		while ((PEEK32(PANEL_DISPLAY_CTRL) & ~ulReservedBits) != (ulTmpValue|ulReg)) {
+-		while((PEEK32(PANEL_DISPLAY_CTRL) & ~ulReservedBits) != (ulTmpValue|ulReg))
++		while ((PEEK32(PANEL_DISPLAY_CTRL) & ~ulReservedBits) != (ulTmpValue|ulReg))
+ 		{
  			cnt++;
- 			if (cnt > 1000)
+-			if(cnt > 1000)
++			if (cnt > 1000)
  				break;
  			POKE32(PANEL_DISPLAY_CTRL, ulTmpValue|ulReg);
  		}
- #endif
--	}
--	else {
-+	} else {
- 		ret = -1;
- 	}
- 	return ret;
-diff --git a/drivers/staging/sm750fb/ddk750_mode.h b/drivers/staging/sm750fb/ddk750_mode.h
-index 3548d67..e846dc2 100644
---- a/drivers/staging/sm750fb/ddk750_mode.h
-+++ b/drivers/staging/sm750fb/ddk750_mode.h
-@@ -3,16 +3,14 @@
+@@ -193,7 +193,7 @@ int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock)
+ 	pll.clockType = clock;
  
- #include "ddk750_chip.h"
- 
--typedef enum _spolarity_t
--{
-+typedef enum _spolarity_t {
- 	POS = 0, /* positive */
- 	NEG, /* negative */
- }
- spolarity_t;
- 
- 
--typedef struct _mode_parameter_t
--{
-+typedef struct _mode_parameter_t {
- 	/* Horizontal timing. */
- 	unsigned long horizontal_total;
- 	unsigned long horizontal_display_end;
+ 	uiActualPixelClk = calcPllValue(parm->pixel_clock, &pll);
+-	if(getChipType() = SM750LE){
++	if (getChipType() = SM750LE){
+ 		/* set graphic mode via IO method */
+ 		outb_p(0x88, 0x3d4);
+ 		outb_p(0x06, 0x3d5);
 diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index 28d4402..c545c2d 100644
+index 44b8eb1..a2d9ee6 100644
 --- a/drivers/staging/sm750fb/ddk750_power.c
 +++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -36,8 +36,7 @@ void setPowerMode(unsigned int powerMode)
- 	if (getChipType() = SM750LE)
+@@ -5,7 +5,7 @@
+ void ddk750_setDPMS(DPMS_t state)
+ {
+ 	unsigned int value;
+-	if(getChipType() = SM750LE){
++	if (getChipType() = SM750LE){
+ 		value = PEEK32(CRT_DISPLAY_CTRL);
+ 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
+ 	}else{
+@@ -17,7 +17,7 @@ void ddk750_setDPMS(DPMS_t state)
+ 
+ unsigned int getPowerMode(void)
+ {
+-	if(getChipType() = SM750LE)
++	if (getChipType() = SM750LE)
+ 		return 0;
+ 	return (FIELD_GET(PEEK32(POWER_MODE_CTRL), POWER_MODE_CTRL, MODE));
+ }
+@@ -33,7 +33,7 @@ void setPowerMode(unsigned int powerMode)
+ 
+ 	control_value = PEEK32(POWER_MODE_CTRL);
+ 
+-	if(getChipType() = SM750LE)
++	if (getChipType() = SM750LE)
  		return;
  
--	switch (powerMode)
--	{
-+	switch (powerMode) {
- 	case POWER_MODE_CTRL_MODE_MODE0:
- 		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE, MODE0);
- 		break;
-@@ -55,16 +54,13 @@ void setPowerMode(unsigned int powerMode)
- 	}
- 
- 	/* Set up other fields in Power Control Register */
--	if (powerMode = POWER_MODE_CTRL_MODE_SLEEP)
--	{
-+	if (powerMode = POWER_MODE_CTRL_MODE_SLEEP) {
- 		control_value  #ifdef VALIDATION_CHIP
- 		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, OFF) |
- #endif
- 		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
--	}
--	else
--	{
-+	} else {
- 		control_value  #ifdef VALIDATION_CHIP
- 		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, ON) |
-@@ -84,8 +80,7 @@ void setCurrentGate(unsigned int gate)
- 	/* Get current power mode. */
- 	mode = getPowerMode();
- 
--	switch (mode)
--	{
-+	switch (mode) {
- 	case POWER_MODE_CTRL_MODE_MODE0:
- 		gate_reg = MODE0_GATE;
- 		break;
-@@ -111,13 +106,10 @@ void enable2DEngine(unsigned int enable)
- 	uint32_t gate;
- 
- 	gate = PEEK32(CURRENT_GATE);
--	if (enable)
--	{
-+	if (enable) {
- 		gate = FIELD_SET(gate, CURRENT_GATE, DE,  ON);
- 		gate = FIELD_SET(gate, CURRENT_GATE, CSC, ON);
--	}
--	else
--	{
-+	} else {
- 		gate = FIELD_SET(gate, CURRENT_GATE, DE,  OFF);
- 		gate = FIELD_SET(gate, CURRENT_GATE, CSC, OFF);
- 	}
-@@ -135,8 +127,7 @@ void enableZVPort(unsigned int enable)
- 
- 	/* Enable ZV Port Gate */
- 	gate = PEEK32(CURRENT_GATE);
--	if (enable)
--	{
-+	if (enable) {
- 		gate = FIELD_SET(gate, CURRENT_GATE, ZVPORT, ON);
- #if 1
- 		/* Using Software I2C */
-@@ -145,9 +136,7 @@ void enableZVPort(unsigned int enable)
- 		/* Using Hardware I2C */
- 		gate = FIELD_SET(gate, CURRENT_GATE, I2C,    ON);
- #endif
--	}
--	else
--	{
-+	} else {
- 		/* Disable ZV Port Gate. There is no way to know whether the GPIO pins are being used
- 		 or not. Therefore, do not disable the GPIO gate. */
- 		gate = FIELD_SET(gate, CURRENT_GATE, ZVPORT, OFF);
-diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
-index a20d438..b7cf6b2 100644
---- a/drivers/staging/sm750fb/ddk750_power.h
-+++ b/drivers/staging/sm750fb/ddk750_power.h
-@@ -1,8 +1,7 @@
- #ifndef DDK750_POWER_H__
- #define DDK750_POWER_H__
- 
--typedef enum _DPMS_t
--{
-+typedef enum _DPMS_t {
- 	crtDPMS_ON = 0x0,
- 	crtDPMS_STANDBY = 0x1,
- 	crtDPMS_SUSPEND = 0x2,
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index 7f58fbe..a5153be 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.c
-+++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -136,8 +136,7 @@ long sii164InitChip(
- #endif
- 
- 	/* Check if SII164 Chip exists */
--	if ((sii164GetVendorID() = SII164_VENDOR_ID) && (sii164GetDeviceID() = SII164_DEVICE_ID))
--	{
-+	if ((sii164GetVendorID() = SII164_VENDOR_ID) && (sii164GetDeviceID() = SII164_DEVICE_ID)) {
- 		/*
- 		 *  Initialize SII164 controller chip.
- 		 */
-@@ -183,8 +182,7 @@ long sii164InitChip(
- 		else
- 			config = SII164_DESKEW_ENABLE;
- 
--		switch (deskewSetting)
--		{
-+		switch (deskewSetting) {
- 		case 0:
- 			config |= SII164_DESKEW_1_STEP;
- 			break;
-@@ -286,15 +284,12 @@ void sii164SetPower(
- 	unsigned char config;
- 
- 	config = i2cReadReg(SII164_I2C_ADDRESS, SII164_CONFIGURATION);
--	if (powerUp = 1)
--	{
-+	if (powerUp = 1) {
- 		/* Power up the chip */
- 		config &= ~SII164_CONFIGURATION_POWER_MASK;
- 		config |= SII164_CONFIGURATION_POWER_NORMAL;
- 		i2cWriteReg(SII164_I2C_ADDRESS, SII164_CONFIGURATION, config);
--	}
--	else
--	{
-+	} else {
- 		/* Power down the chip */
- 		config &= ~SII164_CONFIGURATION_POWER_MASK;
- 		config |= SII164_CONFIGURATION_POWER_DOWN;
-@@ -314,8 +309,7 @@ static void sii164SelectHotPlugDetectionMode(
- 	unsigned char detectReg;
- 
- 	detectReg = i2cReadReg(SII164_I2C_ADDRESS, SII164_DETECT) & ~SII164_DETECT_MONITOR_SENSE_OUTPUT_FLAG;
--	switch (hotPlugMode)
--	{
-+	switch (hotPlugMode) {
- 	case SII164_HOTPLUG_DISABLE:
- 		detectReg |= SII164_DETECT_MONITOR_SENSE_OUTPUT_HIGH;
- 		break;
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
-index 0996a32..f2610c9 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.h
-+++ b/drivers/staging/sm750fb/ddk750_sii164.h
-@@ -4,8 +4,7 @@
- #define USE_DVICHIP
- 
- /* Hot Plug detection mode structure */
--typedef enum _sii164_hot_plug_mode_t
--{
-+typedef enum _sii164_hot_plug_mode_t {
- 	SII164_HOTPLUG_DISABLE = 0,         /* Disable Hot Plug output bit (always high). */
- 	SII164_HOTPLUG_USE_MDI,             /* Use Monitor Detect Interrupt bit. */
- 	SII164_HOTPLUG_USE_RSEN,            /* Use Receiver Sense detect bit. */
+ 	switch (powerMode)
 diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 866bb99..f7a617e 100644
+index ed82813..3c61103 100644
 --- a/drivers/staging/sm750fb/sm750_accel.c
 +++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -96,8 +96,7 @@ int hw_fillrect(struct lynx_accel *accel,
+@@ -96,7 +96,7 @@ int hw_fillrect(struct lynx_accel *accel,
  {
  	u32 deCtrl;
  
--	if (accel->de_wait() != 0)
--	{
-+	if (accel->de_wait() != 0) {
+-	if(accel->de_wait() != 0)
++	if (accel->de_wait() != 0)
+ 	{
  		/* int time wait and always busy,seems hardware
  		 * got something error */
- 		pr_debug("%s:De engine always bussy\n", __func__);
-@@ -159,11 +158,9 @@ unsigned int rop2)   /* ROP value */
- 	de_ctrl = 0;
- 
- 	/* If source and destination are the same surface, need to check for overlay cases */
--	if (sBase = dBase && sPitch = dPitch)
--	{
-+	if (sBase = dBase && sPitch = dPitch) {
- 		/* Determine direction of operation */
--		if (sy < dy)
--		{
-+		if (sy < dy) {
- 			/* +----------+
- 			   |S         |
- 			   |   +----------+
-@@ -174,9 +171,7 @@ unsigned int rop2)   /* ROP value */
- 			   +----------+ */
- 
- 			nDirection = BOTTOM_TO_TOP;
--		}
--		else if (sy > dy)
--		{
-+		} else if (sy > dy) {
- 			/* +----------+
- 			   |D         |
- 			   |   +----------+
-@@ -187,13 +182,10 @@ unsigned int rop2)   /* ROP value */
- 			   +----------+ */
- 
- 			nDirection = TOP_TO_BOTTOM;
--		}
--		else
--		{
-+		} else {
- 			/* sy = dy */
- 
--			if (sx <= dx)
--			{
-+			if (sx <= dx) {
- 				/* +------+---+------+
- 				   |S     |   |     D|
- 				   |      |   |      |
-@@ -202,9 +194,7 @@ unsigned int rop2)   /* ROP value */
- 				   +------+---+------+ */
- 
- 				nDirection = RIGHT_TO_LEFT;
--			}
--			else
--			{
-+			} else {
- 			/* sx > dx */
- 
- 				/* +------+---+------+
-@@ -219,8 +209,7 @@ unsigned int rop2)   /* ROP value */
- 		}
- 	}
- 
--	if ((nDirection = BOTTOM_TO_TOP) || (nDirection = RIGHT_TO_LEFT))
--	{
-+	if ((nDirection = BOTTOM_TO_TOP) || (nDirection = RIGHT_TO_LEFT)) {
- 		sx += width - 1;
- 		sy += height - 1;
- 		dx += width - 1;
-@@ -255,8 +244,7 @@ unsigned int rop2)   /* ROP value */
- 		write_dpr(accel, DE_PITCH,
- 				FIELD_VALUE(0, DE_PITCH, DESTINATION, dPitch) |
- 				FIELD_VALUE(0, DE_PITCH, SOURCE,      sPitch)); /* dpr10 */
--	}
--	else
-+	} else
- #endif
- 	{
- 		write_dpr(accel, DE_PITCH,
-@@ -344,8 +332,7 @@ int hw_imageblit(struct lynx_accel *accel,
+@@ -248,7 +248,7 @@ unsigned int rop2)   /* ROP value */
+        Note that input pitch is BYTE value, but the 2D Pitch register uses
+        pixel values. Need Byte to pixel conversion.
+     */
+-	if(Bpp = 3){
++	if (Bpp = 3){
+ 			sx *= 3;
+ 			dx *= 3;
+ 			width *= 3;
+@@ -344,7 +344,7 @@ int hw_imageblit(struct lynx_accel *accel,
  	ul4BytesPerScan = ulBytesPerScan & ~3;
  	ulBytesRemain = ulBytesPerScan & 3;
  
--	if (accel->de_wait() != 0)
--	{
-+	if (accel->de_wait() != 0) {
+-	if(accel->de_wait() != 0)
++	if (accel->de_wait() != 0)
+ 	{
  		return -1;
  	}
- 
-@@ -371,8 +358,7 @@ int hw_imageblit(struct lynx_accel *accel,
- 				FIELD_VALUE(0, DE_PITCH, DESTINATION, dPitch) |
- 				FIELD_VALUE(0, DE_PITCH, SOURCE,      dPitch)); /* dpr10 */
- 
--	}
--	else
-+	} else
- #endif
- 	{
- 		write_dpr(accel, DE_PITCH,
-@@ -414,16 +400,13 @@ int hw_imageblit(struct lynx_accel *accel,
- 	write_dpr(accel, DE_CONTROL, de_ctrl | deGetTransparency(accel));
- 
- 	/* Write MONO data (line by line) to 2D Engine data port */
--	for (i = 0; i < height; i++)
--	{
-+	for (i = 0; i < height; i++) {
- 		/* For each line, send the data in chunks of 4 bytes */
--		for (j = 0; j < (ul4BytesPerScan/4); j++)
--		{
-+		for (j = 0; j < (ul4BytesPerScan/4); j++) {
- 			write_dpPort(accel, *(unsigned int *)(pSrcbuf + (j * 4)));
- 		}
- 
--		if (ulBytesRemain)
--		{
-+		if (ulBytesRemain) {
- 			memcpy(ajRemain, pSrcbuf+ul4BytesPerScan, ulBytesRemain);
- 			write_dpPort(accel, *(unsigned int *)ajRemain);
- 		}
+@@ -363,7 +363,7 @@ int hw_imageblit(struct lynx_accel *accel,
+        Note that input pitch is BYTE value, but the 2D Pitch register uses
+        pixel values. Need Byte to pixel conversion.
+     */
+-	if(bytePerPixel = 3){
++	if (bytePerPixel = 3){
+ 		dx *= 3;
+ 		width *= 3;
+ 		startBit *= 3;
 diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 4ed7ca2..ab61fe6 100644
+index 405e24b..95cfb8f 100644
 --- a/drivers/staging/sm750fb/sm750_cursor.c
 +++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -122,8 +122,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+@@ -122,7 +122,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
  		odd=0;
  */
  
--	for (i = 0; i < count; i++)
--	{
-+	for (i = 0; i < count; i++) {
+-	for(i=0;i<count;i++)
++	for (i=0;i<count;i++)
+ 	{
  		color = *pcol++;
  		mask = *pmsk++;
- 		data = 0;
-@@ -137,11 +136,10 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+@@ -132,15 +132,15 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 		 * but method 2 shows no lag
+ 		 * and method 1 seems a bit wrong*/
+ #if 0
+-		if(rop = ROP_XOR)
++		if (rop = ROP_XOR)
+ 			opr = mask ^ color;
  		else
  			opr = mask & color;
  
--		for (j = 0; j < 8; j++)
--		{
-+		for (j = 0; j < 8; j++) {
+-		for(j=0;j<8;j++)
++		for (j=0;j<8;j++)
+ 		{
  
--			if (opr & (0x80 >> j))
--			{	/* use fg color,id = 2 */
-+			if (opr & (0x80 >> j)) {
-+				/* use fg color,id = 2 */
+-			if(opr & (0x80 >> j))
++			if (opr & (0x80 >> j))
+ 			{	/* use fg color,id = 2 */
  				data |= 2 << (j*2);
- 			} else {
- 				/* use bg color,id = 1 */
-@@ -204,8 +202,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 			}else{
+@@ -149,9 +149,9 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 			}
+ 		}
+ #else
+-		for(j=0;j<8;j++){
+-			if(mask & (0x80>>j)){
+-				if(rop = ROP_XOR)
++		for (j=0;j<8;j++){
++			if (mask & (0x80>>j)){
++				if (rop = ROP_XOR)
+ 					opr = mask ^ color;
+ 				else
+ 					opr = mask & color;
+@@ -165,9 +165,9 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 
+ 		/* assume pitch is 1,2,4,8,...*/
+ #if 0
+-		if(!((i+1)&(pitch-1)))   /* below line equal to is line */
++		if (!((i+1)&(pitch-1)))   /* below line equal to is line */
+ #else
+-		if((i+1) % pitch = 0)
++		if ((i+1) % pitch = 0)
+ #endif
+ 		{
+ 			/* need a return */
+@@ -204,7 +204,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
  	pstart = cursor->vstart;
  	pbuffer = pstart;
  
--	for (i = 0; i < count; i++)
--	{
-+	for (i = 0; i < count; i++) {
+-	for(i=0;i<count;i++)
++	for (i=0;i<count;i++)
+ 	{
  		color = *pcol++;
  		mask = *pmsk++;
- 		data = 0;
-@@ -217,11 +214,10 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+@@ -212,15 +212,15 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 
+ 		/* either method below works well, but method 2 shows no lag */
+ #if 0
+-		if(rop = ROP_XOR)
++		if (rop = ROP_XOR)
+ 			opr = mask ^ color;
  		else
  			opr = mask & color;
  
--		for (j = 0; j < 8; j++)
--		{
-+		for (j = 0; j < 8; j++) {
+-		for(j=0;j<8;j++)
++		for (j=0;j<8;j++)
+ 		{
  
--			if (opr & (0x80 >> j))
--			{	/* use fg color,id = 2 */
-+			if (opr & (0x80 >> j)) {
-+				/* use fg color,id = 2 */
+-			if(opr & (0x80 >> j))
++			if (opr & (0x80 >> j))
+ 			{	/* use fg color,id = 2 */
  				data |= 2 << (j*2);
- 			} else {
- 				/* use bg color,id = 1 */
-@@ -237,8 +233,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 			}else{
+@@ -229,15 +229,15 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 			}
+ 		}
+ #else
+-		for(j=0;j<8;j++){
+-			if(mask & (1<<j))
++		for (j=0;j<8;j++){
++			if (mask & (1<<j))
+ 				data |= ((color & (1<<j))?1:2)<<(j*2);
+ 		}
+ #endif
  		iowrite16(data, pbuffer);
  
  		/* assume pitch is 1,2,4,8,...*/
--		if (!(i&(pitch-1)))
--		{
-+		if (!(i&(pitch-1))) {
+-		if(!(i&(pitch-1)))
++		if (!(i&(pitch-1)))
+ 		{
  			/* need a return */
  			pstart += offset;
- 			pbuffer = pstart;
+diff --git a/drivers/staging/sm750fb/sm750_help.h b/drivers/staging/sm750fb/sm750_help.h
+index ac0744e..493af3a 100644
+--- a/drivers/staging/sm750fb/sm750_help.h
++++ b/drivers/staging/sm750fb/sm750_help.h
+@@ -73,7 +73,7 @@
+ 
+ static inline unsigned int absDiff(unsigned int a, unsigned int b)
+ {
+-	if(a<b)
++	if (a<b)
+ 		return b-a;
+ 	else
+ 		return a-b;
 diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index d397382..20a8d3b 100644
+index 28db9c7..5abac9b 100644
 --- a/drivers/staging/sm750fb/sm750_hw.c
 +++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -44,8 +44,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
+@@ -44,7 +44,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
  	 * successfully
  	 * */
  
--	if ((ret = pci_request_region(pdev, 1, "sm750fb")))
--	{
-+	if ((ret = pci_request_region(pdev, 1, "sm750fb"))) {
+-	if((ret = pci_request_region(pdev, 1, "sm750fb")))
++	if ((ret = pci_request_region(pdev, 1, "sm750fb")))
+ 	{
  		pr_err("Can not request PCI regions.\n");
  		goto exit;
- 	}
-@@ -78,8 +77,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
+@@ -52,7 +52,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
+ 
+ 	/* now map mmio and vidmem*/
+ 	share->pvReg = ioremap_nocache(share->vidreg_start, share->vidreg_size);
+-	if(!share->pvReg){
++	if (!share->pvReg){
+ 		pr_err("mmio failed\n");
+ 		ret = -EFAULT;
+ 		goto exit;
+@@ -78,7 +78,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
  
  	/* reserve the vidmem space of smi adaptor */
  #if 0
--	if ((ret = pci_request_region(pdev, 0, _moduleName_)))
--	{
-+	if ((ret = pci_request_region(pdev, 0, _moduleName_))) {
+-	if((ret = pci_request_region(pdev, 0, _moduleName_)))
++	if ((ret = pci_request_region(pdev, 0, _moduleName_)))
+ 	{
  		pr_err("Can not request PCI regions.\n");
  		goto exit;
+@@ -87,7 +87,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
+ 
+ 	share->pvMem = ioremap_wc(share->vidmem_start, share->vidmem_size);
+ 
+-	if(!share->pvMem){
++	if (!share->pvMem){
+ 		pr_err("Map video memory failed\n");
+ 		ret = -EFAULT;
+ 		goto exit;
+@@ -107,19 +107,19 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
+ 	
+ 	spec_share = container_of(share, struct sm750_share, share);
+ 	parm = &spec_share->state.initParm;
+-	if(parm->chip_clk = 0)
++	if (parm->chip_clk = 0)
+ 		parm->chip_clk = (getChipType() = SM750LE)?
+ 						DEFAULT_SM750LE_CHIP_CLOCK :
+ 						DEFAULT_SM750_CHIP_CLOCK;
+ 
+-	if(parm->mem_clk = 0)
++	if (parm->mem_clk = 0)
+ 		parm->mem_clk = parm->chip_clk;
+-	if(parm->master_clk = 0)
++	if (parm->master_clk = 0)
+ 		parm->master_clk = parm->chip_clk/3;
+ 
+ 	ddk750_initHw((initchip_param_t *)&spec_share->state.initParm);
+ 	/* for sm718,open pci burst */
+-	if(share->devid = 0x718){
++	if (share->devid = 0x718){
+ 		POKE32(SYSTEM_CTRL,
+ 				FIELD_SET(PEEK32(SYSTEM_CTRL), SYSTEM_CTRL, PCI_BURST, ON));
  	}
-@@ -130,8 +128,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
+@@ -130,10 +130,10 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
  	ddk750_initDVIDisp();
  #endif
  
--	if (getChipType() != SM750LE)
--	{
-+	if (getChipType() != SM750LE) {
+-	if(getChipType() != SM750LE)
++	if (getChipType() != SM750LE)
+ 	{
  		/* does user need CRT ?*/
- 		if (spec_share->state.nocrt) {
+-		if(spec_share->state.nocrt){
++		if (spec_share->state.nocrt){
  			POKE32(MISC_CTRL,
-@@ -177,8 +174,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
- 		/* Customer may NOT use CH7301 DVI chip, which has to be
- 		   initialized differently.
- 		 */
--		if (swI2CReadReg(0xec, 0x4a) = 0x95)
--		{
-+		if (swI2CReadReg(0xec, 0x4a) = 0x95) {
- 			/* The following register values for CH7301 are from
- 			   Chrontel app note and our experiment.
- 			 */
-@@ -426,11 +422,11 @@ int hw_sm750_setColReg(struct lynxfb_crtc* crtc, ushort index,
- 	return 0;
- }
+ 					FIELD_SET(PEEK32(MISC_CTRL),
+ 					MISC_CTRL,
+@@ -191,7 +191,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
+ 	}
  
--int hw_sm750le_setBLANK(struct lynxfb_output * output, int blank) {
-+int hw_sm750le_setBLANK(struct lynxfb_output * output, int blank)
-+{
+ 	/* init 2d engine */
+-	if(!share->accel_off){
++	if (!share->accel_off){
+ 		hw_sm750_initAccel(share);
+ 	}
+ 
+@@ -228,19 +228,19 @@ int hw_sm750_output_setMode(struct lynxfb_output* output,
+ 	channel = *output->channel;
+ 
+ 
+-	if(getChipType() != SM750LE){
+-		if(channel = sm750_primary){
++	if (getChipType() != SM750LE){
++		if (channel = sm750_primary){
+ 			pr_info("primary channel\n");
+-			if(output->paths & sm750_panel)
++			if (output->paths & sm750_panel)
+ 				dispSet |= do_LCD1_PRI;
+-			if(output->paths & sm750_crt)
++			if (output->paths & sm750_crt)
+ 				dispSet |= do_CRT_PRI;
+ 
+ 		}else{
+ 			pr_info("secondary channel\n");
+-			if(output->paths & sm750_panel)
++			if (output->paths & sm750_panel)
+ 				dispSet |= do_LCD1_SEC;
+-			if(output->paths & sm750_crt)
++			if (output->paths & sm750_crt)
+ 				dispSet |= do_CRT_SEC;
+ 
+ 		}
+@@ -308,9 +308,9 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc* crtc,
+ 	par = container_of(crtc, struct lynxfb_par, crtc);
+ 	share = par->share;
+ #if 1
+-	if(!share->accel_off){
++	if (!share->accel_off){
+ 		/* set 2d engine pixel format according to mode bpp */
+-		switch(var->bits_per_pixel){
++		switch (var->bits_per_pixel){
+ 			case 8:
+ 				fmt = 0;
+ 				break;
+@@ -341,19 +341,19 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc* crtc,
+ 	modparm.vertical_total = var->yres + var->upper_margin + var->lower_margin + var->vsync_len;
+ 
+ 	/* choose pll */
+-	if(crtc->channel != sm750_secondary)
++	if (crtc->channel != sm750_secondary)
+ 		clock = PRIMARY_PLL;
+ 	else
+ 		clock = SECONDARY_PLL;
+ 
+ 	pr_debug("Request pixel clock = %lu\n", modparm.pixel_clock);
+ 	ret = ddk750_setModeTiming(&modparm, clock);
+-	if(ret){
++	if (ret){
+ 		pr_err("Set mode timing failed\n");
+ 		goto exit;
+ 	}
+ 
+-	if(crtc->channel != sm750_secondary){
++	if (crtc->channel != sm750_secondary){
+ 		/* set pitch, offset ,width,start address ,etc... */
+ 		POKE32(PANEL_FB_ADDRESS,
+ 			FIELD_SET(0, PANEL_FB_ADDRESS, STATUS, CURRENT)|
+@@ -429,7 +429,7 @@ int hw_sm750_setColReg(struct lynxfb_crtc* crtc, ushort index,
+ int hw_sm750le_setBLANK(struct lynxfb_output * output, int blank){
  	int dpms, crtdb;
- 
--	switch (blank)
--	{
-+	switch (blank) {
+ 	
+-	switch(blank)
++	switch (blank)
+ 	{
  #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 10)
  		case FB_BLANK_UNBLANK:
- #else
-@@ -486,8 +482,7 @@ int hw_sm750_setBLANK(struct lynxfb_output* output, int blank)
+@@ -473,7 +473,7 @@ int hw_sm750le_setBLANK(struct lynxfb_output * output, int blank){
+ 			return -EINVAL;
+ 	}
  
- 	dpms = pps = crtdb = 0;
+-	if(output->paths & sm750_crt){
++	if (output->paths & sm750_crt){
+ 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(PEEK32(CRT_DISPLAY_CTRL), CRT_DISPLAY_CTRL, DPMS, dpms));
+ 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(PEEK32(CRT_DISPLAY_CTRL), CRT_DISPLAY_CTRL, BLANK, crtdb));
+ 	}
+@@ -535,13 +535,13 @@ int hw_sm750_setBLANK(struct lynxfb_output* output, int blank)
+ 			break;
+ 	}
  
--	switch (blank)
--	{
-+	switch (blank) {
- #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 10)
- 		case FB_BLANK_UNBLANK:
- #else
-@@ -585,8 +580,7 @@ int hw_sm750le_deWait(void)
+-	if(output->paths & sm750_crt){
++	if (output->paths & sm750_crt){
+ 
+ 		POKE32(SYSTEM_CTRL, FIELD_VALUE(PEEK32(SYSTEM_CTRL), SYSTEM_CTRL, DPMS, dpms));
+ 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(PEEK32(CRT_DISPLAY_CTRL), CRT_DISPLAY_CTRL, BLANK, crtdb));
+ 	}
+ 
+-	if(output->paths & sm750_panel){
++	if (output->paths & sm750_panel){
+ 		POKE32(PANEL_DISPLAY_CTRL, FIELD_VALUE(PEEK32(PANEL_DISPLAY_CTRL), PANEL_DISPLAY_CTRL, DATA, pps));
+ 	}
+ 
+@@ -554,7 +554,7 @@ void hw_sm750_initAccel(struct lynx_share *share)
+ 	u32 reg;
+ 	enable2DEngine(1);
+ 
+-	if(getChipType() = SM750LE){
++	if (getChipType() = SM750LE){
+ 		reg = PEEK32(DE_STATE1);
+ 		reg = FIELD_SET(reg, DE_STATE1, DE_ABORT, ON);
+ 		POKE32(DE_STATE1, reg);
+@@ -581,9 +581,9 @@ void hw_sm750_initAccel(struct lynx_share *share)
+ int hw_sm750le_deWait(void)
+ {
+ 	int i=0x10000000;
+-	while(i--){
++	while (i--){
  		unsigned int dwVal = PEEK32(DE_STATE2);
- 		if ((FIELD_GET(dwVal, DE_STATE2, DE_STATUS) = DE_STATE2_DE_STATUS_IDLE) &&
+-		if((FIELD_GET(dwVal, DE_STATE2, DE_STATUS) = DE_STATE2_DE_STATUS_IDLE) &&
++		if ((FIELD_GET(dwVal, DE_STATE2, DE_STATUS) = DE_STATE2_DE_STATUS_IDLE) &&
  			(FIELD_GET(dwVal, DE_STATE2, DE_FIFO)  = DE_STATE2_DE_FIFO_EMPTY) &&
--			(FIELD_GET(dwVal, DE_STATE2, DE_MEM_FIFO) = DE_STATE2_DE_MEM_FIFO_EMPTY))
--		{
-+			(FIELD_GET(dwVal, DE_STATE2, DE_MEM_FIFO) = DE_STATE2_DE_MEM_FIFO_EMPTY)) {
- 			return 0;
- 		}
- 	}
-@@ -602,8 +596,7 @@ int hw_sm750_deWait(void)
+ 			(FIELD_GET(dwVal, DE_STATE2, DE_MEM_FIFO) = DE_STATE2_DE_MEM_FIFO_EMPTY))
+ 		{
+@@ -598,9 +598,9 @@ int hw_sm750le_deWait(void)
+ int hw_sm750_deWait(void)
+ {
+ 	int i=0x10000000;
+-	while(i--){
++	while (i--){
  		unsigned int dwVal = PEEK32(SYSTEM_CTRL);
- 		if ((FIELD_GET(dwVal, SYSTEM_CTRL, DE_STATUS) = SYSTEM_CTRL_DE_STATUS_IDLE) &&
+-		if((FIELD_GET(dwVal, SYSTEM_CTRL, DE_STATUS) = SYSTEM_CTRL_DE_STATUS_IDLE) &&
++		if ((FIELD_GET(dwVal, SYSTEM_CTRL, DE_STATUS) = SYSTEM_CTRL_DE_STATUS_IDLE) &&
  			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_FIFO)  = SYSTEM_CTRL_DE_FIFO_EMPTY) &&
--			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_MEM_FIFO) = SYSTEM_CTRL_DE_MEM_FIFO_EMPTY))
--		{
-+			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_MEM_FIFO) = SYSTEM_CTRL_DE_MEM_FIFO_EMPTY)) {
- 			return 0;
- 		}
- 	}
+ 			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_MEM_FIFO) = SYSTEM_CTRL_DE_MEM_FIFO_EMPTY))
+ 		{
 -- 
 2.4.4
 

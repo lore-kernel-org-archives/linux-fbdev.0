@@ -1,48 +1,67 @@
-From: Anatoly Stepanov <drivengroove@gmail.com>
-Date: Sun, 28 Jun 2015 23:44:02 +0000
-Subject: [PATCH 09/11] staging: sm750fb: remove assignment from if condition
-Message-Id: <1435535044-22042-10-git-send-email-drivengroove@gmail.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Sat, 20 Jun 2015 18:36:37 +0000
+Subject: [PATCH 03/19] staging: sm750fb: remove space before close parenthesis
+Message-Id: <1434825413-4994-3-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
+fixes checkpatch.pl error:
+ERROR: space prohibited before that close parenthesis ')'
 
-
-Remove assignment from if condition according to checkpatch.pl message:
-"ERROR: do not use assignment in if condition"
-
-Signed-off-by: Anatoly Stepanov <drivengroove@gmail.com>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/staging/sm750fb/sm750_hw.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/staging/sm750fb/ddk750_chip.c | 2 +-
+ drivers/staging/sm750fb/ddk750_mode.c | 2 +-
+ drivers/staging/sm750fb/sm750_accel.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 3093c25..987da9e 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -43,8 +43,8 @@ int hw_sm750_map(struct lynx_share *share, struct pci_dev *pdev)
- 	 * in lynxfb_remove, or memory will not be mapped again
- 	 * successfully
- 	 * */
--
--	if ((ret = pci_request_region(pdev, 1, "sm750fb"))) {
-+	ret = pci_request_region(pdev, 1, "sm750fb");
-+	if (ret) {
- 		pr_err("Can not request PCI regions.\n");
- 		goto exit;
- 	}
-@@ -77,7 +77,8 @@ int hw_sm750_map(struct lynx_share *share, struct pci_dev *pdev)
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 1069a2d..fb1c533 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -268,7 +268,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ #endif
  
- 	/* reserve the vidmem space of smi adaptor */
- #if 0
--	if ((ret = pci_request_region(pdev, 0, _moduleName_))) {
-+	ret = pci_request_region(pdev, 0, _moduleName_);
-+	if (ret) {
- 		pr_err("Can not request PCI regions.\n");
- 		goto exit;
- 	}
+ 
+-	if (pInitParam->powerMode != 0 )
++	if (pInitParam->powerMode != 0)
+ 		pInitParam->powerMode = 0;
+ 	setPowerMode(pInitParam->powerMode);
+ 
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 31424b2..4ee9ceb 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -43,7 +43,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
+ 
+ 	/* Set bit 29:27 of display control register for the right clock */
+ 	/* Note that SM750LE only need to supported 7 resoluitons. */
+-	if (x = 800 && y = 600 )
++	if (x = 800 && y = 600)
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
+ 	else if (x = 1024 && y = 768)
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL65);
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 668258c..ed82813 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -363,7 +363,7 @@ int hw_imageblit(struct lynx_accel *accel,
+        Note that input pitch is BYTE value, but the 2D Pitch register uses
+        pixel values. Need Byte to pixel conversion.
+     */
+-	if(bytePerPixel = 3 ){
++	if(bytePerPixel = 3){
+ 		dx *= 3;
+ 		width *= 3;
+ 		startBit *= 3;
 -- 
-2.1.0
+2.4.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

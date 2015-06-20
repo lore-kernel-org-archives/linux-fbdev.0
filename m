@@ -1,39 +1,58 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 04 Jun 2015 16:44:45 +0000
-Subject: [PATCH v4 0/3] vesafb: remove theoretical MTRR uses
-Message-Id: <1433436288-16792-1-git-send-email-mcgrof@do-not-panic.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Sat, 20 Jun 2015 18:36:39 +0000
+Subject: [PATCH 05/19] staging: sm750fb: remove space between function name and parenthesis
+Message-Id: <1434825413-4994-5-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: plagnioj@jcrosoft.com, bp@suse.de, hpa@zytor.com, linux-fbdev@vger.kernel.org, luto@amacapital.net, toshi.kani@hp.com, sbsiddha@gmail.com, mingo@elte.hu, tglx@linutronix.de, jgross@suse.com, daniel.vetter@ffwll.ch, airlied@redhat.com, adaplas@gmail.com, robdclark@gmail.com, jg1.han@samsung.com, wsa@the-dreams.de, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+fixes checkpatch.pl warning:
+WARNING: space prohibited between function name and open parenthesis '('
 
-Tomi,
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
+---
+ drivers/staging/sm750fb/sm750_accel.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-This v4 fixes the issue of the use of the old use of
-info->par for the pseudo_palette and our need to extend
-it for the MTRR cookie by extending our proposed new
-struct vesafb_par with the pseudo_palette and later
-pointing info->pseudo_palette to it. This also means
-we can simplify the allocation of the info when calling
-framebuffer_alloc() by now just passing the size of our
-struct vesafb_par.
-
-Patch 1 is unmodified from v3 series, patch 2 does the
-fixes mentioned above, and patch 3 might have small
-changes to account for contextual changes.
-
-Luis R. Rodriguez (3):
-  video: fbdev: vesafb: only support MTRR_TYPE_WRCOMB
-  video: fbdev: vesafb: add missing mtrr_del() for added MTRR
-  video: fbdev: vesafb: use arch_phys_wc_add()
-
- drivers/video/fbdev/vesafb.c | 80 ++++++++++++++++----------------------------
- 1 file changed, 28 insertions(+), 52 deletions(-)
-
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 3c61103..bb96ea5 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -278,11 +278,11 @@ unsigned int rop2)   /* ROP value */
+ 	{
+ 
+ 	write_dpr(accel, DE_SOURCE,
+-		  FIELD_SET  (0, DE_SOURCE, WRAP, DISABLE) |
++		  FIELD_SET(0, DE_SOURCE, WRAP, DISABLE) |
+ 		  FIELD_VALUE(0, DE_SOURCE, X_K1, sx)   |
+ 		  FIELD_VALUE(0, DE_SOURCE, Y_K2, sy)); /* dpr0 */
+ 	write_dpr(accel, DE_DESTINATION,
+-		  FIELD_SET  (0, DE_DESTINATION, WRAP, DISABLE) |
++		  FIELD_SET(0, DE_DESTINATION, WRAP, DISABLE) |
+ 		  FIELD_VALUE(0, DE_DESTINATION, X,    dx)  |
+ 		  FIELD_VALUE(0, DE_DESTINATION, Y,    dy)); /* dpr04 */
+ 	write_dpr(accel, DE_DIMENSION,
+@@ -390,11 +390,11 @@ int hw_imageblit(struct lynx_accel *accel,
+ 	 /* Note: For 2D Source in Host Write, only X_K1_MONO field is needed, and Y_K2 field is not used.
+ 	    For mono bitmap, use startBit for X_K1. */
+ 	write_dpr(accel, DE_SOURCE,
+-		  FIELD_SET  (0, DE_SOURCE, WRAP, DISABLE)       |
++		  FIELD_SET(0, DE_SOURCE, WRAP, DISABLE)       |
+ 		  FIELD_VALUE(0, DE_SOURCE, X_K1_MONO, startBit)); /* dpr00 */
+ 
+ 	write_dpr(accel, DE_DESTINATION,
+-		  FIELD_SET  (0, DE_DESTINATION, WRAP, DISABLE) |
++		  FIELD_SET(0, DE_DESTINATION, WRAP, DISABLE) |
+ 		  FIELD_VALUE(0, DE_DESTINATION, X,    dx)    |
+ 		  FIELD_VALUE(0, DE_DESTINATION, Y,    dy)); /* dpr04 */
+ 
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.4.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

@@ -1,35 +1,77 @@
-From: Borislav Petkov <bp@suse.de>
-Date: Thu, 25 Jun 2015 20:48:08 +0000
-Subject: Re: [PATCH v5 0/3] atyfb: address MTRR corner case
-Message-Id: <20150625204808.GD4898@pd.tnic>
+From: "Gujulan Elango, Hari Prasath (H.)" <hgujulan@visteon.com>
+Date: Mon, 22 Jun 2015 07:26:25 +0000
+Subject: [PATCH] staging: sm750fb: remove unused variables
+Message-Id: <20150622072017.GA32220@IND12F0122>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435196060-27350-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1435196060-27350-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Cc: akpm@linux-foundation.org, mingo@elte.hu, syrjala@sci.fi, ville.syrjala@linux.intel.com, luto@amacapital.net, tomi.valkeinen@ti.com, mst@redhat.com, benh@kernel.crashing.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-pci@vger.kernel.org, airlied@redhat.com, "Luis R. Rodriguez" <mcgrof@suse.com>
+To: linux-fbdev@vger.kernel.org
 
-On Wed, Jun 24, 2015 at 06:34:17PM -0700, Luis R. Rodriguez wrote:
-> Luis R. Rodriguez (3):
->   video: fbdev: atyfb: clarify ioremap() base and length used
->   video: fbdev: atyfb: replace MTRR UC hole with strong UC
->   video: fbdev: atyfb: use arch_phys_wc_add() and ioremap_wc()
-> 
->  drivers/video/fbdev/aty/atyfb.h      |  5 +--
->  drivers/video/fbdev/aty/atyfb_base.c | 74 +++++++++++-------------------------
->  2 files changed, 24 insertions(+), 55 deletions(-)
+From: Hari Prasath Gujulan Elango <hgujulan@visteon.com>
 
-Took those too along with
+This patch removes unused variables as reported by cppcheck
 
-"[PATCH] video: fbdev: atyfb: move framebuffer length fudging to helper"
+Signed-off-by: Hari Prasath Gujulan Elango <hgujulan@visteon.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c   | 3 +--
+ drivers/staging/sm750fb/ddk750_mode.c   | 3 +--
+ drivers/staging/sm750fb/ddk750_sii164.c | 3 +--
+ 3 files changed, 3 insertions(+), 6 deletions(-)
 
-which was missing here.
-
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index f4975d2..e8ac6e6 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -103,7 +103,6 @@ unsigned int getChipClock(void)
+ void setChipClock(unsigned int frequency)
+ {
+ 	pll_value_t pll;
+-	unsigned int ulActualMxClk;
+ #if 1
+ 	/* Cheok_0509: For SM750LE, the chip clock is fixed. Nothing to set. */
+ 	if (getChipType() = SM750LE)
+@@ -122,7 +121,7 @@ void setChipClock(unsigned int frequency)
+ 		* Sometime, the chip cannot set up the exact clock required by User.
+ 		* Return value from calcPllValue() gives the actual possible clock.
+ 		*/
+-		ulActualMxClk = calcPllValue(frequency, &pll);
++		calcPllValue(frequency, &pll);
+ 
+ 		/* Master Clock Control: MXCLK_PLL */
+ 		POKE32(MXCLK_PLL_CTRL, formatPllReg(&pll));
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 74313ff..e67e1e9 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -188,11 +188,10 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock)
+ {
+ 	pll_value_t pll;
+-	unsigned int uiActualPixelClk;
+ 	pll.inputFreq = DEFAULT_INPUT_CLOCK;
+ 	pll.clockType = clock;
+ 
+-	uiActualPixelClk = calcPllValue(parm->pixel_clock, &pll);
++	calcPllValue(parm->pixel_clock, &pll);
+ 	if(getChipType() = SM750LE){
+ 		/* set graphic mode via IO method */
+ 		outb_p(0x88, 0x3d4);
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
+index b6395b8..2ac3470 100644
+--- a/drivers/staging/sm750fb/ddk750_sii164.c
++++ b/drivers/staging/sm750fb/ddk750_sii164.c
+@@ -345,8 +345,7 @@ void sii164EnableHotPlugDetection(
+     unsigned char enableHotPlug
+ )
+ {
+-    unsigned char detectReg;
+-    detectReg = i2cReadReg(SII164_I2C_ADDRESS, SII164_DETECT);
++    i2cReadReg(SII164_I2C_ADDRESS, SII164_DETECT);
+ 
+     /* Depending on each DVI controller, need to enable the hot plug based on each
+        individual chip design. */
 -- 
-Regards/Gruss,
-    Boris.
-
-ECO tip #101: Trim your mails when you reply.
+1.9.1
 --
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

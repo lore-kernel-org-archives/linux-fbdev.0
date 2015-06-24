@@ -1,197 +1,93 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 19 Jun 2015 22:08:30 +0000
-Subject: [PATCH v7 7/9] video: fbdev: arkfb: use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1434751712-24333-8-git-send-email-mcgrof@do-not-panic.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 24 Jun 2015 16:25:03 +0000
+Subject: [PATCH v3 02/19] staging: sm750fb: remove spacing after open parenthesis
+Message-Id: <1435163120-3253-2-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
+References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: arnd@arndb.de
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, linux-fbdev@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Andy Lutomirski <luto@amacapital.net>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+Cc: Juston Li <juston.h.li@gmail.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+fixes checkpatch.pl warning:
+ERROR: space prohibited after that open parenthesis '('
 
-Convert the driver from using the x86 specific MTRR code to
-the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
-will avoid MTRR if write-combining is available, in order to
-take advantage of that also ensure the ioremap'd area is requested
-as write-combining.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available
-
-b) Help bury MTRR code away, MTRR is architecture specific and on
-   x86 its replaced by PAT
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the #ifdery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message
-about when MTRR fails and doing nothing when we didn't get
-an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Generated-by: Coccinelle SmPL
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/video/fbdev/arkfb.c | 36 +++++-------------------------------
- 1 file changed, 5 insertions(+), 31 deletions(-)
+ drivers/staging/sm750fb/ddk750_chip.c  | 6 +++---
+ drivers/staging/sm750fb/ddk750_mode.c  | 2 +-
+ drivers/staging/sm750fb/ddk750_power.c | 8 ++++----
+ drivers/staging/sm750fb/sm750_help.h   | 2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index b305a1e..6a317de 100644
---- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -26,13 +26,9 @@
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index f4975d2..1069a2d 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -599,9 +599,9 @@ unsigned int formatPllReg(pll_value_t *pPLL)
+        On returning a 32 bit number, the value can be applied to any PLL in the calling function.
+     */
+ 	ulPllReg -	FIELD_SET(  0, PANEL_PLL_CTRL, BYPASS, OFF)
+-	| FIELD_SET(  0, PANEL_PLL_CTRL, POWER,  ON)
+-	| FIELD_SET(  0, PANEL_PLL_CTRL, INPUT,  OSC)
++	FIELD_SET(0, PANEL_PLL_CTRL, BYPASS, OFF)
++	| FIELD_SET(0, PANEL_PLL_CTRL, POWER,  ON)
++	| FIELD_SET(0, PANEL_PLL_CTRL, INPUT,  OSC)
+ #ifndef VALIDATION_CHIP
+ 	| FIELD_VALUE(0, PANEL_PLL_CTRL, POD,    pPLL->POD)
+ #endif
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 1f93d07..31424b2 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -43,7 +43,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
  
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- struct arkfb_info {
- 	int mclk_freq;
--	int mtrr_reg;
-+	int wc_cookie;
+ 	/* Set bit 29:27 of display control register for the right clock */
+ 	/* Note that SM750LE only need to supported 7 resoluitons. */
+-	if ( x = 800 && y = 600 )
++	if (x = 800 && y = 600 )
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
+ 	else if (x = 1024 && y = 768)
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL65);
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index b7a108b..44b8eb1 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -59,17 +59,17 @@ void setPowerMode(unsigned int powerMode)
+ 	{
+ 		control_value  #ifdef VALIDATION_CHIP
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, OFF) |
++		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, OFF) |
+ #endif
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
++		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
+ 	}
+ 	else
+ 	{
+ 		control_value  #ifdef VALIDATION_CHIP
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, ON) |
++		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, ON) |
+ #endif
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  ON);
++		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT,  ON);
+ 	}
  
- 	struct dac_info *dac;
- 	struct vgastate state;
-@@ -102,10 +98,6 @@ static const struct svga_timing_regs ark_timing_regs     = {
+ 	/* Program new power mode. */
+diff --git a/drivers/staging/sm750fb/sm750_help.h b/drivers/staging/sm750fb/sm750_help.h
+index 8ba4f8d..ac0744e 100644
+--- a/drivers/staging/sm750fb/sm750_help.h
++++ b/drivers/staging/sm750fb/sm750_help.h
+@@ -43,7 +43,7 @@
  
- static char *mode_option = "640x480-8@60";
+ #define FIELD_CLEAR(reg, field) \
+ ( \
+-	~ _F_MASK(reg ## _ ## field) \
++	~_F_MASK(reg ## _ ## field) \
+ )
  
--#ifdef CONFIG_MTRR
--static int mtrr = 1;
--#endif
--
- MODULE_AUTHOR("(c) 2007 Ondrej Zajicek <santiago@crfreenet.org>");
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("fbdev driver for ARK 2000PV");
-@@ -115,11 +107,6 @@ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0444);
- MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
- 
--#ifdef CONFIG_MTRR
--module_param(mtrr, int, 0444);
--MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
--
- static int threshold = 4;
- 
- module_param(threshold, int, 0644);
-@@ -1002,7 +989,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.smem_len = pci_resource_len(dev, 0);
- 
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -1057,14 +1044,8 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
--
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
--
-+	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+					  info->fix.smem_len);
- 	return 0;
- 
- 	/* Error handling */
-@@ -1092,14 +1073,7 @@ static void ark_pci_remove(struct pci_dev *dev)
- 
- 	if (info) {
- 		struct arkfb_info *par = info->par;
--
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
--#endif
--
-+		arch_phys_wc_del(par->wc_cookie);
- 		dac_release(par->dac);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
+ /* Field Macros */
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.4.4
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

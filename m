@@ -1,171 +1,65 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Sat, 20 Jun 2015 18:36:48 +0000
-Subject: [PATCH 14/19] staging: sm750fb: remove trailing whitespace
-Message-Id: <1434825413-4994-14-git-send-email-juston.h.li@gmail.com>
+Date: Wed, 24 Jun 2015 16:25:04 +0000
+Subject: [PATCH v3 03/19] staging: sm750fb: remove space before close parenthesis
+Message-Id: <1435163120-3253-3-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
-In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
 Cc: Juston Li <juston.h.li@gmail.com>
 
 fixes checkpatch.pl error:
-ERROR: trailing whitespace
+ERROR: space prohibited before that close parenthesis ')'
 
 Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_dvi.c  |  2 +-
- drivers/staging/sm750fb/sm750_accel.c |  4 ++--
- drivers/staging/sm750fb/sm750_hw.c    | 24 ++++++++++++------------
- 3 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/staging/sm750fb/ddk750_chip.c | 2 +-
+ drivers/staging/sm750fb/ddk750_mode.c | 2 +-
+ drivers/staging/sm750fb/sm750_accel.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index 4c64436..c42db85 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.c
-+++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -1,4 +1,4 @@
--#define USE_DVICHIP 
-+#define USE_DVICHIP
- #ifdef USE_DVICHIP
- #include "ddk750_help.h"
- #include "ddk750_reg.h"
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 1069a2d..fb1c533 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -268,7 +268,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ #endif
+ 
+ 
+-	if (pInitParam->powerMode != 0 )
++	if (pInitParam->powerMode != 0)
+ 		pInitParam->powerMode = 0;
+ 	setPowerMode(pInitParam->powerMode);
+ 
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 31424b2..4ee9ceb 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -43,7 +43,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
+ 
+ 	/* Set bit 29:27 of display control register for the right clock */
+ 	/* Note that SM750LE only need to supported 7 resoluitons. */
+-	if (x = 800 && y = 600 )
++	if (x = 800 && y = 600)
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
+ 	else if (x = 1024 && y = 768)
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL65);
 diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 2ea447e..866bb99 100644
+index 668258c..ed82813 100644
 --- a/drivers/staging/sm750fb/sm750_accel.c
 +++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -37,7 +37,7 @@ void hw_de_init(struct lynx_accel *accel)
- {
- 	/* setup 2d engine registers */
- 	u32 reg, clr;
--	
-+
- 	write_dpr(accel, DE_MASKS, 0xFFFFFFFF);
- 
- 	/* dpr1c */
-@@ -82,7 +82,7 @@ void hw_de_init(struct lynx_accel *accel)
- void hw_set2dformat(struct lynx_accel *accel, int fmt)
- {
- 	u32 reg;
--	
-+
- 	/* fmt=0,1,2 for 8,16,32,bpp on sm718/750/502 */
- 	reg = read_dpr(accel, DE_STRETCH_FORMAT);
- 	reg = FIELD_VALUE(reg, DE_STRETCH_FORMAT, PIXEL_FORMAT, fmt);
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 4941e2a..3b8107c 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -28,7 +28,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
- {
- 	int ret;
- 	struct sm750_share *spec_share;
--	
-+
- 
- 	spec_share = container_of(share, struct sm750_share, share);
- 	ret = 0;
-@@ -60,7 +60,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
- 		pr_info("mmio virtual addr = %p\n", share->pvReg);
- 	}
- 
--	
-+
- 	share->accel.dprBase = share->pvReg + DE_BASE_ADDR_TYPE1;
- 	share->accel.dpPortBase = share->pvReg + DE_PORT_ADDR_TYPE1;
- 
-@@ -104,7 +104,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
- {
- 	struct sm750_share *spec_share;
- 	struct init_status *parm;
--	
-+
- 	spec_share = container_of(share, struct sm750_share, share);
- 	parm = &spec_share->state.initParm;
- 	if (parm->chip_clk = 0)
-@@ -202,7 +202,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
- resource_size_t hw_sm750_getVMSize(struct lynx_share *share)
- {
- 	resource_size_t ret;
--	
-+
- 	ret = ddk750_getVMSize();
- 	return ret;
- }
-@@ -211,7 +211,7 @@ resource_size_t hw_sm750_getVMSize(struct lynx_share *share)
- 
- int hw_sm750_output_checkMode(struct lynxfb_output* output, struct fb_var_screeninfo* var)
- {
--	
-+
- 	return 0;
- }
- 
-@@ -222,7 +222,7 @@ int hw_sm750_output_setMode(struct lynxfb_output* output,
- 	int ret;
- 	disp_output_t dispSet;
- 	int channel;
--	
-+
- 	ret = 0;
- 	dispSet = 0;
- 	channel = *output->channel;
-@@ -259,14 +259,14 @@ int hw_sm750_output_setMode(struct lynxfb_output* output,
- 
- void hw_sm750_output_clear(struct lynxfb_output* output)
- {
--	
-+
- 	return;
- }
- 
- int hw_sm750_crtc_checkMode(struct lynxfb_crtc* crtc, struct fb_var_screeninfo* var)
- {
- 	struct lynx_share *share;
--	
-+
- 
- 	share = container_of(crtc, struct lynxfb_par, crtc)->share;
- 
-@@ -303,7 +303,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc* crtc,
- 	struct lynx_share *share;
- 	struct lynxfb_par *par;
- 
--	
-+
- 	ret = 0;
- 	par = container_of(crtc, struct lynxfb_par, crtc);
- 	share = par->share;
-@@ -414,7 +414,7 @@ exit:
- 
- void hw_sm750_crtc_clear(struct lynxfb_crtc* crtc)
- {
--	
-+
- 	return;
- }
- 
-@@ -428,7 +428,7 @@ int hw_sm750_setColReg(struct lynxfb_crtc* crtc, ushort index,
- 
- int hw_sm750le_setBLANK(struct lynxfb_output * output, int blank) {
- 	int dpms, crtdb;
--	
-+
- 	switch (blank)
- 	{
- #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 10)
-@@ -483,7 +483,7 @@ int hw_sm750le_setBLANK(struct lynxfb_output * output, int blank) {
- int hw_sm750_setBLANK(struct lynxfb_output* output, int blank)
- {
- 	unsigned int dpms, pps, crtdb;
--	
-+
- 	dpms = pps = crtdb = 0;
- 
- 	switch (blank)
+@@ -363,7 +363,7 @@ int hw_imageblit(struct lynx_accel *accel,
+        Note that input pitch is BYTE value, but the 2D Pitch register uses
+        pixel values. Need Byte to pixel conversion.
+     */
+-	if(bytePerPixel = 3 ){
++	if(bytePerPixel = 3){
+ 		dx *= 3;
+ 		width *= 3;
+ 		startBit *= 3;
 -- 
 2.4.4
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

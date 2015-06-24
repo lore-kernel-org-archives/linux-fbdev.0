@@ -1,51 +1,76 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Wed, 24 Jun 2015 16:20:23 +0000
-Subject: [PATCH v3 00/19] staging: sm750fb: checkpatch.pl fixes
-Message-Id: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+Date: Wed, 24 Jun 2015 16:25:09 +0000
+Subject: [PATCH v3 08/19] staging: sm750fb: add space after enum definition
+Message-Id: <1435163120-3253-8-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, teddy.wang@siliconmotion.com, Greg KH <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+Cc: Juston Li <juston.h.li@gmail.com>
 
-This patch set includes 19 patches fixing indentation, spacing, brace placement
-and missing blank lines from checkpatch.pl warnings/errors in staging/sm750fb.
+fixes checkpatch.pl warning:
+WARNING: missing space after enum definition
 
-Regards
-Juston
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_display.h | 2 +-
+ drivers/staging/sm750fb/sm750_hw.h       | 8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
--------------
-Changes since v2:
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+index 018a661..a7f50cc 100644
+--- a/drivers/staging/sm750fb/ddk750_display.h
++++ b/drivers/staging/sm750fb/ddk750_display.h
+@@ -129,7 +129,7 @@ typedef enum _disp_output_t
+ }
+ disp_output_t;
+ #else
+-typedef enum _disp_output_t{
++typedef enum _disp_output_t {
+ 	do_LCD1_PRI = PNL_2_PRI|PRI_TP_ON|PNL_SEQ_ON|DAC_ON,
+ 	do_LCD1_SEC = PNL_2_SEC|SEC_TP_ON|PNL_SEQ_ON|DAC_ON,
+ #if 0
+diff --git a/drivers/staging/sm750fb/sm750_hw.h b/drivers/staging/sm750fb/sm750_hw.h
+index adc61edf..af2db7c 100644
+--- a/drivers/staging/sm750fb/sm750_hw.h
++++ b/drivers/staging/sm750fb/sm750_hw.h
+@@ -9,7 +9,7 @@
+ #endif
+ 
+ 
+-enum sm750_pnltype{
++enum sm750_pnltype {
+ 
+ 	sm750_24TFT = 0,/* 24bit tft */
+ 
+@@ -19,7 +19,7 @@ enum sm750_pnltype{
+ };
+ 
+ /* vga channel is not concerned  */
+-enum sm750_dataflow{
++enum sm750_dataflow {
+ 	sm750_simul_pri,/* primary => all head */
+ 
+ 	sm750_simul_sec,/* secondary => all head */
+@@ -30,13 +30,13 @@ enum sm750_dataflow{
+ };
+ 
+ 
+-enum sm750_channel{
++enum sm750_channel {
+ 	sm750_primary = 0,
+ 	/* enum value equal to the register filed data */
+ 	sm750_secondary = 1,
+ };
+ 
+-enum sm750_path{
++enum sm750_path {
+ 	sm750_panel = 1,
+ 	sm750_crt = 2,
+ 	sm750_pnc = 3,/* panel and crt */
+-- 
+2.4.4
 
- * Fix Subject
- * Don't rearrange lines in PATCH 01
- * Split up spacing fixes patch by checkpatch errors into 14 patches
- * Split up brace fixes patch by checkpatch errors in 3 patches
-
--------------
-Diffstat
- drivers/staging/sm750fb/ddk750_chip.c    |  15 +-
- drivers/staging/sm750fb/ddk750_chip.h    |  12 +-
- drivers/staging/sm750fb/ddk750_display.c | 168 +++++----
- drivers/staging/sm750fb/ddk750_display.h |  11 +-
- drivers/staging/sm750fb/ddk750_dvi.c     |  75 ++--
- drivers/staging/sm750fb/ddk750_dvi.h     |   3 +-
- drivers/staging/sm750fb/ddk750_help.c    |   2 +-
- drivers/staging/sm750fb/ddk750_help.h    |   4 +-
- drivers/staging/sm750fb/ddk750_hwi2c.c   | 244 ++++++-------
- drivers/staging/sm750fb/ddk750_mode.c    | 164 ++++-----
- drivers/staging/sm750fb/ddk750_mode.h    |  52 +--
- drivers/staging/sm750fb/ddk750_power.c   | 254 +++++++-------
- drivers/staging/sm750fb/ddk750_power.h   |  11 +-
- drivers/staging/sm750fb/ddk750_reg.h     |  18 +-
- drivers/staging/sm750fb/ddk750_sii164.c  | 389 +++++++++++----------
- drivers/staging/sm750fb/ddk750_sii164.h  |  31 +-
- drivers/staging/sm750fb/sm750.c          |   2 +-
- drivers/staging/sm750fb/sm750.h          |  56 +--
- drivers/staging/sm750fb/sm750_accel.c    | 379 ++++++++++----------
- drivers/staging/sm750fb/sm750_accel.h    |   4 +-
- drivers/staging/sm750fb/sm750_cursor.c   |  51 +--
- drivers/staging/sm750fb/sm750_help.h     |  28 +-
- drivers/staging/sm750fb/sm750_hw.c       | 218 ++++++------
- drivers/staging/sm750fb/sm750_hw.h       |  42 +--
- 24 files changed, 1154 insertions(+), 1079 deletions(-)

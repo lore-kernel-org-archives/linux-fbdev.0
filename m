@@ -1,70 +1,60 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 16 Jun 2015 13:54:08 +0000
-Subject: [PATCH 5/8] staging: sm7xxfb: fix alignment
-Message-Id: <1434462131-15191-5-git-send-email-sudipm.mukherjee@gmail.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 24 Jun 2015 16:25:11 +0000
+Subject: [PATCH v3 10/19] staging: sm750fb: add space after return type
+Message-Id: <1435163120-3253-10-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434462131-15191-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1434462131-15191-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+Cc: Juston Li <juston.h.li@gmail.com>
 
-Fix the alignment.
+fixes checkpatch.pl warning:
+WARNING: missing space after return type
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/staging/sm7xxfb/sm7xxfb.c | 17 +++++++----------
- 1 file changed, 7 insertions(+), 10 deletions(-)
+ drivers/staging/sm750fb/sm750.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index c832399..6bdcd5b 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -302,8 +302,8 @@ static int smtc_setcolreg(unsigned regno, unsigned red, unsigned green,
- }
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 124921e..320908bc 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -108,12 +108,12 @@ struct lynxfb_crtc {
  
- #ifdef __BIG_ENDIAN
--static ssize_t smtcfb_read(struct fb_info *info, char __user *buf, size_t
--				count, loff_t *ppos)
-+static ssize_t smtcfb_read(struct fb_info *info, char __user *buf,
-+			   size_t count, loff_t *ppos)
- {
- 	unsigned long p = *ppos;
+ 	void *priv;
  
-@@ -346,9 +346,8 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf, size_t
- 		dst = buffer;
- 		for (i = c >> 2; i--;) {
- 			*dst = fb_readl(src++);
--			*dst -			    (*dst & 0xff00ff00 >> 8) |
--			    (*dst & 0x00ff00ff << 8);
-+			*dst = (*dst & 0xff00ff00 >> 8) |
-+			       (*dst & 0x00ff00ff << 8);
- 			dst++;
- 		}
- 		if (c & 3) {
-@@ -381,9 +380,8 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf, size_t
- 	return (err) ? err : cnt;
- }
+-	int(*proc_setMode)(struct lynxfb_crtc*,
++	int (*proc_setMode)(struct lynxfb_crtc*,
+ 						struct fb_var_screeninfo*,
+ 						struct fb_fix_screeninfo*);
  
--static ssize_t
--smtcfb_write(struct fb_info *info, const char __user *buf, size_t count,
--	     loff_t *ppos)
-+static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
-+			    size_t count, loff_t *ppos)
- {
- 	unsigned long p = *ppos;
+-	int(*proc_checkMode)(struct lynxfb_crtc*, struct fb_var_screeninfo*);
+-	int(*proc_setColReg)(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
++	int (*proc_checkMode)(struct lynxfb_crtc*, struct fb_var_screeninfo*);
++	int (*proc_setColReg)(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
+ 	void (*clear)(struct lynxfb_crtc*);
+         /* pan display */
+ 	int (*proc_panDisplay)(struct lynxfb_crtc *,
+@@ -140,12 +140,12 @@ struct lynxfb_output {
+ 	*/
+ 	void *priv;
  
-@@ -552,8 +550,7 @@ static void sm7xx_set_timing(struct smtcfb_info *sfb)
- 	writel(0x0, sfb->vp_regs + 0x40);
+-	int(*proc_setMode)(struct lynxfb_output*,
++	int (*proc_setMode)(struct lynxfb_output*,
+ 						struct fb_var_screeninfo*,
+ 						struct fb_fix_screeninfo*);
  
- 	/* set data width */
--	m_nscreenstride -		(sfb->width * sfb->fb->var.bits_per_pixel) / 64;
-+	m_nscreenstride = (sfb->width * sfb->fb->var.bits_per_pixel) / 64;
- 	switch (sfb->fb->var.bits_per_pixel) {
- 	case 8:
- 		writel(0x0, sfb->vp_regs + 0x0);
+-	int(*proc_checkMode)(struct lynxfb_output*, struct fb_var_screeninfo*);
+-	int(*proc_setBLANK)(struct lynxfb_output*, int);
++	int (*proc_checkMode)(struct lynxfb_output*, struct fb_var_screeninfo*);
++	int (*proc_setBLANK)(struct lynxfb_output*, int);
+ 	void  (*clear)(struct lynxfb_output*);
+ };
+ 
 -- 
-1.8.1.2
+2.4.4
 

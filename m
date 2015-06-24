@@ -1,72 +1,106 @@
-From: Toshi Kani <toshi.kani@hp.com>
-Date: Fri, 12 Jun 2015 16:42:45 +0000
-Subject: Re: RIP MTRR - status update for upcoming v4.2
-Message-Id: <1434127365.11808.85.camel@misato.fc.hp.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 24 Jun 2015 16:25:12 +0000
+Subject: [PATCH v3 11/19] staging: sm750fb: consistent spacing around operators
+Message-Id: <1435163120-3253-11-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAB=NE6UgtdSoBsA=8+ueYRAZHDnWUSmQAoHhAaefqudBrSY7Zw@mail.gmail.com>
-	 <1434064996.11808.64.camel@misato.fc.hp.com>
-	 <20150612005221.GD23057@wotan.suse.de>
-In-Reply-To: <20150612005221.GD23057@wotan.suse.de>
+References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Luis R. Rodriguez" <mcgrof@suse.com>
-Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Borislav Petkov <bp@suse.de>, Bjorn Helgaas <bhelgaas@google.com>, Jej B <James.Bottomley@hansenpartnership.com>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Andy Lutomirski <luto@amacapital.net>, X86 ML <x86@kernel.org>, Juergen Gross <jgross@suse.com>, Dave Airlie <airlied@redhat.com>, xen-devel@lists.xenproject.org, Julia Lawall <julia.lawall@lip6.fr>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+Cc: Juston Li <juston.h.li@gmail.com>
 
-On Fri, 2015-06-12 at 02:52 +0200, Luis R. Rodriguez wrote:
-> On Thu, Jun 11, 2015 at 05:23:16PM -0600, Toshi Kani wrote:
-> > On Thu, 2015-06-11 at 13:36 -0700, Luis R. Rodriguez wrote:
-> >  :
-> > > Pending RIP MTRR patches
-> > > ==========
-> > > 
-> > > There are a few pending series so I wanted to provide a status update
-> > > on those series.
-> > > 
-> > > mtrr: bury MTRR - unexport mtrr_add() and mtrr_del()
-> > > 
-> > > This is the nail on the MTRR coffin, it will prevent future direct
-> > > access to MTRR code. This will not be posted until all of the below
-> > > patches are in and merged. A possible next step here might be to
-> > > consider separating PAT code from MTRR code and making PAT a first
-> > > class citizen, enabling distributions to disable MTRR code in the
-> > > future. I thought this was possible but for some reason I recently
-> > > thought that there was one possible issue to make this happen. I
-> > > suppose we won't know unless we try, unless of course someone already
-> > > knows, Toshi?
-> > 
-> > There are two usages on MTRRs:
-> >  1) MTRR entries set by firmware
-> >  2) MTRR entries set by OS drivers
-> > 
-> > We can obsolete 2), but we have no control over 1).  As UEFI firmwares
-> > also set this up, this usage will continue to stay.  So, we should not
-> > get rid of the MTRR code that looks up the MTRR entries, while we have
-> > no need to modify them.
-> > 
-> > Such MTRR entries provide safe guard to /dev/mem, which allows
-> > privileged user to access a range that may require UC mapping while
-> > the /dev/mem driver blindly maps it with WB.  MTRRs converts WB to UC in
-> > such a case.
-> > 
-> > UEFI memory table has memory attribute, which describes cache types
-> > supported in physical memory ranges.  However, this information gets
-> > lost when it it is converted to e820 table.
-> 
-> Is there no way to modify CPU capability bits upon boot and kick UEFI
-> to re-evaluate ? In such UEFI cases what happens for instance when
-> Xen is used which does not support MTRR?
+fixes checkpatch.pl error:
+ERROR: need consistent spacing around ''
 
-EFI GetMemoryMap() is a boot service, and won't be available after
-ExitBootServices() is called.  But we should be able to keep the
-attribute information copied into some table if necessary.
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c    | 4 ++--
+ drivers/staging/sm750fb/ddk750_display.h | 4 ++--
+ drivers/staging/sm750fb/sm750.h          | 2 +-
+ drivers/staging/sm750fb/sm750_hw.c       | 4 ++--
+ 4 files changed, 7 insertions(+), 7 deletions(-)
 
-Xen provides virtual firmware on their guests, right?  If this firmware
-does not set up MTRRs today, then I do not think it needs to set up for
-UEFI, either.  Assuming the guest physical address is virtualized, it
-does not have to carry the same platform attribute & restriction.
-
-Thanks,
--Toshi
-
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index fb1c533..633201e 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -464,7 +464,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
+ 		RN = N * request;
+ 		quo = RN / input;
+ 		rem = RN % input;/* rem always small than 14318181 */
+-		fl_quo = (rem * 10000 /input);
++		fl_quo = (rem * 10000 / input);
+ 
+ 		for (d = xcnt - 1; d >= 0; d--) {
+ 			X = xparm[d].value;
+@@ -474,7 +474,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
+ 			M += (fl_quo*X % 10000)>5000?1:0;
+ 			if (M < 256 && M > 0) {
+ 				unsigned int diff;
+-				tmpClock = pll->inputFreq *M / N / X;
++				tmpClock = pll->inputFreq * M / N / X;
+ 				diff = absDiff(tmpClock, request_orig);
+ 				if (diff < miniDiff) {
+ 					pll->M = M;
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+index a7f50cc..afdf201 100644
+--- a/drivers/staging/sm750fb/ddk750_display.h
++++ b/drivers/staging/sm750fb/ddk750_display.h
+@@ -46,7 +46,7 @@
+ 	0: both off
+ */
+ #define SEC_TP_OFFSET 5
+-#define SEC_TP_MASK (1<< SEC_TP_OFFSET)
++#define SEC_TP_MASK (1 << SEC_TP_OFFSET)
+ #define SEC_TP_USAGE (SEC_TP_MASK << 16)
+ #define SEC_TP_ON  ((0x1 << SEC_TP_OFFSET)|SEC_TP_USAGE)
+ #define SEC_TP_OFF ((0x0 << SEC_TP_OFFSET)|SEC_TP_USAGE)
+@@ -67,7 +67,7 @@
+ #define DAC_OFFSET 7
+ #define DAC_MASK (1 << DAC_OFFSET)
+ #define DAC_USAGE (DAC_MASK << 16)
+-#define DAC_ON ((0x0<< DAC_OFFSET)|DAC_USAGE)
++#define DAC_ON ((0x0 << DAC_OFFSET)|DAC_USAGE)
+ #define DAC_OFF ((0x1 << DAC_OFFSET)|DAC_USAGE)
+ 
+ /* DPMS only affect D-SUB head
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 320908bc..b0ff0b5 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -10,7 +10,7 @@
+ #define MB(x) ((x)<<20)
+ #define MHZ(x) ((x) * 1000000)
+ /* align should be 2,4,8,16 */
+-#define PADDING(align, data) (((data)+(align)-1)&(~((align) -1)))
++#define PADDING(align, data) (((data)+(align)-1)&(~((align) - 1)))
+ extern int smi_indent;
+ 
+ 
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index a43f936..7a5d522 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -330,7 +330,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc* crtc,
+ 	modparm.pixel_clock = ps_to_hz(var->pixclock);
+ 	modparm.vertical_sync_polarity = (var->sync & FB_SYNC_HOR_HIGH_ACT) ? POS:NEG;
+ 	modparm.horizontal_sync_polarity = (var->sync & FB_SYNC_VERT_HIGH_ACT) ? POS:NEG;
+-	modparm.clock_phase_polarity = (var->sync& FB_SYNC_COMP_HIGH_ACT) ? POS:NEG;
++	modparm.clock_phase_polarity = (var->sync & FB_SYNC_COMP_HIGH_ACT) ? POS:NEG;
+ 	modparm.horizontal_display_end = var->xres;
+ 	modparm.horizontal_sync_width = var->hsync_len;
+ 	modparm.horizontal_sync_start = var->xres + var->right_margin;
+@@ -369,7 +369,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc* crtc,
+ 			FIELD_VALUE(0, PANEL_FB_WIDTH, OFFSET, fix->line_length));
+ 
+ 		POKE32(PANEL_WINDOW_WIDTH,
+-			FIELD_VALUE(0, PANEL_WINDOW_WIDTH, WIDTH, var->xres -1)|
++			FIELD_VALUE(0, PANEL_WINDOW_WIDTH, WIDTH, var->xres - 1)|
+ 			FIELD_VALUE(0, PANEL_WINDOW_WIDTH, X, var->xoffset));
+ 
+ 		POKE32(PANEL_WINDOW_HEIGHT,
+-- 
+2.4.4
 

@@ -1,17 +1,17 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Mon, 29 Jun 2015 17:55:31 +0000
-Subject: [PATCH v4 14/19] staging: sm750fb: remove trailing whitespace
-Message-Id: <1435600536-13135-14-git-send-email-juston.h.li@gmail.com>
+Date: Wed, 24 Jun 2015 16:25:15 +0000
+Subject: [PATCH v3 14/19] staging: sm750fb: remove trailing whitespace
+Message-Id: <1435163120-3253-14-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
-In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
 Cc: Juston Li <juston.h.li@gmail.com>
 
-Fixes checkpatch.pl error:
+fixes checkpatch.pl error:
 ERROR: trailing whitespace
 
 Signed-off-by: Juston Li <juston.h.li@gmail.com>

@@ -1,114 +1,197 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Mon, 29 Jun 2015 17:55:26 +0000
-Subject: [PATCH v4 09/19] staging: sm750fb: add space after struct definition
-Message-Id: <1435600536-13135-9-git-send-email-juston.h.li@gmail.com>
+Date: Wed, 24 Jun 2015 16:25:08 +0000
+Subject: [PATCH v3 07/19] staging: sm750fb: add space after close brace
+Message-Id: <1435163120-3253-7-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
-In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
 Cc: Juston Li <juston.h.li@gmail.com>
 
-Fixes checkpatch.pl warning:
-WARNING: missing space after struct definition
+fixes checkpatch.pl error:
+ERROR: space required after that close brace '}'
 
 Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/staging/sm750fb/sm750.h    | 12 ++++++------
- drivers/staging/sm750fb/sm750_hw.h |  6 +++---
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/staging/sm750fb/ddk750_display.c |  2 +-
+ drivers/staging/sm750fb/ddk750_mode.c    |  2 +-
+ drivers/staging/sm750fb/ddk750_power.c   |  2 +-
+ drivers/staging/sm750fb/sm750.h          |  2 +-
+ drivers/staging/sm750fb/sm750_cursor.c   |  8 ++++----
+ drivers/staging/sm750fb/sm750_hw.c       | 16 ++++++++--------
+ 6 files changed, 16 insertions(+), 16 deletions(-)
 
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index c7171a4..4a3cb86 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -166,7 +166,7 @@ static void waitNextVerticalSync(int ctrl, int delay)
+ 			while (status = SYSTEM_CTRL_PANEL_VSYNC_INACTIVE);
+ 		}
+ 
+-	}else {
++	} else {
+ 
+ 		/* Do not wait when the Primary PLL is off or display control is already off.
+ 			   This will prevent the software to wait forever. */
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index efc1fab..3d8b06d 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -109,7 +109,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ 
+ 		if (getChipType() = SM750LE) {
+ 			displayControlAdjust_SM750LE(pModeParam, ulTmpValue);
+-		}else {
++		} else {
+ 			ulReg = PEEK32(CRT_DISPLAY_CTRL)
+ 					& FIELD_CLEAR(CRT_DISPLAY_CTRL, VSYNC_PHASE)
+ 					& FIELD_CLEAR(CRT_DISPLAY_CTRL, HSYNC_PHASE)
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index e2c0bb3..5f697b8 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -8,7 +8,7 @@ void ddk750_setDPMS(DPMS_t state)
+ 	if (getChipType() = SM750LE) {
+ 		value = PEEK32(CRT_DISPLAY_CTRL);
+ 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
+-	}else {
++	} else {
+ 		value = PEEK32(SYSTEM_CTRL);
+ 		value= FIELD_VALUE(value, SYSTEM_CTRL, DPMS, state);
+ 		POKE32(SYSTEM_CTRL, value);
 diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 8ac5410..9989ff6 100644
+index bf894cc..3785afc 100644
 --- a/drivers/staging/sm750fb/sm750.h
 +++ b/drivers/staging/sm750fb/sm750.h
-@@ -14,7 +14,7 @@
- extern int smi_indent;
+@@ -53,7 +53,7 @@ struct lynx_share{
+ 		int mtrr_off;
+ 		struct{
+ 			int vram;
+-		}mtrr;
++		} mtrr;
+ 	/* all smi graphic adaptor got below attributes */
+ 	unsigned long vidmem_start;
+ 	unsigned long vidreg_start;
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 3a21af9..2fcec32 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -143,7 +143,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 			if (opr & (0x80 >> j))
+ 			{	/* use fg color,id = 2 */
+ 				data |= 2 << (j*2);
+-			}else {
++			} else {
+ 				/* use bg color,id = 1 */
+ 				data |= 1 << (j*2);
+ 			}
+@@ -173,7 +173,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 			/* need a return */
+ 			pstart += offset;
+ 			pbuffer = pstart;
+-		}else {
++		} else {
+ 			pbuffer += sizeof(u16);
+ 		}
  
+@@ -223,7 +223,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 			if (opr & (0x80 >> j))
+ 			{	/* use fg color,id = 2 */
+ 				data |= 2 << (j*2);
+-			}else {
++			} else {
+ 				/* use bg color,id = 1 */
+ 				data |= 1 << (j*2);
+ 			}
+@@ -242,7 +242,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 			/* need a return */
+ 			pstart += offset;
+ 			pbuffer = pstart;
+-		}else {
++		} else {
+ 			pbuffer += sizeof(u16);
+ 		}
  
--struct lynx_accel{
-+struct lynx_accel {
- 	/* base virtual address of DPR registers */
- 	volatile unsigned char __iomem * dprBase;
- 	/* base virtual address of de data port */
-@@ -41,7 +41,7 @@ struct lynx_accel{
- /* lynx_share stands for a presentation of two frame buffer
-    that use one smi adaptor , it is similar to a basic class of C++
- */
--struct lynx_share{
-+struct lynx_share {
- 	/* common members */
- 	u16 devid;
- 	u8 revid;
-@@ -68,7 +68,7 @@ struct lynx_share{
- 	void (*resume)(struct lynx_share*);
- };
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 4dfc6e6..a43f936 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -56,7 +56,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
+ 		pr_err("mmio failed\n");
+ 		ret = -EFAULT;
+ 		goto exit;
+-	}else {
++	} else {
+ 		pr_info("mmio virtual addr = %p\n", share->pvReg);
+ 	}
  
--struct lynx_cursor{
-+struct lynx_cursor {
- 	/* cursor width ,height and size */
- 	int w;
- 	int h;
-@@ -92,7 +92,7 @@ struct lynx_cursor{
- 	void (*setData)(struct lynx_cursor *, u16, const u8*, const u8*);
- };
+@@ -91,7 +91,7 @@ int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev)
+ 		pr_err("Map video memory failed\n");
+ 		ret = -EFAULT;
+ 		goto exit;
+-	}else {
++	} else {
+ 		pr_info("video memory vaddr = %p\n", share->pvMem);
+ 	}
+ exit:
+@@ -143,7 +143,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
+ 					FIELD_SET(PEEK32(SYSTEM_CTRL),
+ 					SYSTEM_CTRL,
+ 					DPMS, VNHN));
+-		}else {
++		} else {
+ 			POKE32(MISC_CTRL,
+ 					FIELD_SET(PEEK32(MISC_CTRL),
+ 					MISC_CTRL,
+@@ -166,7 +166,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
+ 							spec_share->state.pnltype));
+ 			break;
+ 		}
+-	}else {
++	} else {
+ 		/* for 750LE ,no DVI chip initilization makes Monitor no signal */
+ 		/* Set up GPIO for software I2C to program DVI chip in the
+ 		   Xilinx SP605 board, in order to have video signal.
+@@ -236,7 +236,7 @@ int hw_sm750_output_setMode(struct lynxfb_output* output,
+ 			if (output->paths & sm750_crt)
+ 				dispSet |= do_CRT_PRI;
  
--struct lynxfb_crtc{
-+struct lynxfb_crtc {
- 	unsigned char __iomem *vCursor; /* virtual address of cursor */
- 	unsigned char __iomem *vScreen; /* virtual address of on_screen */
- 	int oCursor; /* cursor address offset in vidmem */
-@@ -123,7 +123,7 @@ struct lynxfb_crtc{
- 	struct lynx_cursor cursor;
- };
+-		}else {
++		} else {
+ 			pr_info("secondary channel\n");
+ 			if (output->paths & sm750_panel)
+ 				dispSet |= do_LCD1_SEC;
+@@ -245,7 +245,7 @@ int hw_sm750_output_setMode(struct lynxfb_output* output,
  
--struct lynxfb_output{
-+struct lynxfb_output {
- 	int dpms;
- 	int paths;
- 	/* which paths(s) this output stands for,for sm750:
-@@ -149,7 +149,7 @@ struct lynxfb_output{
- 	void  (*clear)(struct lynxfb_output*);
- };
+ 		}
+ 		ddk750_setLogicalDispOut(dispSet);
+-	}else {
++	} else {
+ 		/* just open DISPLAY_CONTROL_750LE register bit 3:0*/
+ 		u32 reg;
+ 		reg = PEEK32(DISPLAY_CONTROL_750LE);
+@@ -389,7 +389,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc* crtc,
+ 			PANEL_DISPLAY_CTRL, FORMAT,
+ 			(var->bits_per_pixel >> 4)
+ 			));
+-	}else {
++	} else {
+ 		/* not implemented now */
+ 		POKE32(CRT_FB_ADDRESS, crtc->oScreen);
+ 		reg = var->xres * (var->bits_per_pixel >> 3);
+@@ -563,7 +563,7 @@ void hw_sm750_initAccel(struct lynx_share *share)
+ 		reg = FIELD_SET(reg, DE_STATE1, DE_ABORT, OFF);
+ 		POKE32(DE_STATE1, reg);
  
--struct lynxfb_par{
-+struct lynxfb_par {
- 	/* either 0 or 1 for dual head adaptor,0 is the older one registered */
- 	int index;
- 	unsigned int pseudo_palette[256];
-diff --git a/drivers/staging/sm750fb/sm750_hw.h b/drivers/staging/sm750fb/sm750_hw.h
-index af2db7c..ef0a16f 100644
---- a/drivers/staging/sm750fb/sm750_hw.h
-+++ b/drivers/staging/sm750fb/sm750_hw.h
-@@ -42,7 +42,7 @@ enum sm750_path {
- 	sm750_pnc = 3,/* panel and crt */
- };
- 
--struct init_status{
-+struct init_status {
- 	ushort powerMode;
- 	/* below three clocks are in unit of MHZ*/
- 	ushort chip_clk;
-@@ -52,7 +52,7 @@ struct init_status{
- 	ushort resetMemory;
- };
- 
--struct sm750_state{
-+struct sm750_state {
- 	struct init_status initParm;
- 	enum sm750_pnltype pnltype;
- 	enum sm750_dataflow dataflow;
-@@ -66,7 +66,7 @@ struct sm750_state{
-    in C++
-  */
- 
--struct sm750_share{
-+struct sm750_share {
- 	/* it's better to put lynx_share struct to the first place of sm750_share */
- 	struct lynx_share share;
- 	struct sm750_state state;
+-	}else {
++	} else {
+ 		/* engine reset */
+ 		reg = PEEK32(SYSTEM_CTRL);
+ 	    reg = FIELD_SET(reg, SYSTEM_CTRL, DE_ABORT, ON);
 -- 
 2.4.4
 

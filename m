@@ -1,53 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Jun 2015 12:03:35 +0000
-Subject: [PATCH] OMAPDSS: fix probing if rfbi device is enabled
-Message-Id: <1435665815-27911-1-git-send-email-tomi.valkeinen@ti.com>
+From: "Gujulan Elango, Hari Prasath (H.)" <hgujulan@visteon.com>
+Date: Wed, 24 Jun 2015 16:51:21 +0000
+Subject: [PATCHv2] staging: sm750fb: remove redundant __func__ in debug statement
+Message-Id: <20150624165120.GA4935@krrish>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-After the commit 736e60ddc215b85e73bbf7da26e1cde84cc9500f ("OMAPDSS:
-componentize omapdss") the dss core device will wait until all the
-subdevices have been successfully probed. However, we don't have a
-working driver for RFBI, so if RFBI device exists, omapdss will never
-get probed.
+From: Hari Prasath Gujulan Elango <hgujulan@visteon.com>
 
-All the .dtsi files set RFBI as disabled, except am4372.dtsi. This
-causes omapdss probe to not finish on AM4 devices.
+This patch removes the redundant __func__ from dynamic debug prints as
+the pr_xxx set of functions can be dynamically controlled to include
+function name.Also fix a typo in debug statement.
 
-This patch makes omapdss driver skip adding rfbi device as a
-subcomponent, solving the issue.
-
-This should be reverted when we have a working RFBI driver.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Reported-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Hari Prasath Gujulan Elango <hgujulan@visteon.com>
 ---
- drivers/video/fbdev/omap2/dss/dss.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+	v2:Address Dan Carpenter's review comments to fold them as a
+singl patch rather than sending these two changes as separate patches.
+---
+ drivers/staging/sm750fb/sm750_accel.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-index 612b093831d5..9200a8668b49 100644
---- a/drivers/video/fbdev/omap2/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/dss/dss.c
-@@ -1225,6 +1225,15 @@ static int dss_add_child_component(struct device *dev, void *data)
- {
- 	struct component_match **match = data;
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 6eee4cd..8ea3a61 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -100,7 +100,7 @@ int hw_fillrect(struct lynx_accel *accel,
+ 	{
+ 		/* int time wait and always busy,seems hardware
+ 		 * got something error */
+-		pr_debug("%s:De engine always bussy\n", __func__);
++		pr_debug("De engine always busy\n");
+ 		return -1;
+ 	}
  
-+	/*
-+	 * HACK
-+	 * We don't have a working driver for rfbi, so skip it here always.
-+	 * Otherwise dss will never get probed successfully, as it will wait
-+	 * for rfbi to get probed.
-+	 */
-+	if (strstr(dev_name(dev), "rfbi"))
-+		return 0;
-+
- 	component_match_add(dev->parent, match, dss_component_compare, dev);
- 
- 	return 0;
 -- 
-2.1.4
-
+1.9.1

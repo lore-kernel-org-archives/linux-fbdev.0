@@ -1,35 +1,66 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 05 Jun 2015 21:12:14 +0000
-Subject: Re: [Y2038] [PATCH] fbdev: radeon: Remove 'struct timeval' usage
-Message-Id: <119465383.9W9klrlRVh@wuerfel>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 24 Jun 2015 16:25:18 +0000
+Subject: [PATCH v3 17/19] staging: sm750fb: move while statement to follow do close brace
+Message-Id: <1435163120-3253-17-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAB__kknUjU1vdERZQQCxD95idobKN6M-eQZP1jH77tTS3MxhGA@mail.gmail.com>
-In-Reply-To: <CAB__kknUjU1vdERZQQCxD95idobKN6M-eQZP1jH77tTS3MxhGA@mail.gmail.com>
+References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: y2038@lists.linaro.org
-Cc: Tina Ruchandani <ruchandani.tina@gmail.com>, Dave Airlie <airlied@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, LKML <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+Cc: Juston Li <juston.h.li@gmail.com>
 
-On Friday 05 June 2015 00:55:05 Tina Ruchandani wrote:
-> >>> +     hz = 1000000/delta;
-> >
-> > This needs to be on of the do_div family.
-> >
-> > Dave.
-> 
-> Hi Dave,
-> I build-tested the patch for both 32-bit and 64-bit x86. If my
-> understanding is correct, since the divisor is 64-bit here, the
-> compiler will do "if (delta > 1000000) hz = 0; else hz > 1000000/(s32)delta" automatically?
-> In general, is this a good thumb-rule to follow - use do_div if the
-> dividend is 64-bit, and normal divide operator if only the divisor is
-> 64-bit?
-> 
+fixes checkpatch.pl error:
+ERROR: while should follow close brace '}'
 
-I got a build error on 32-bit arm now. There is already a check
-for an overflow of 10 seconds in there (10 million microseconds),
-so it is safe to do the easiest fix is to cast that microsecond
-value to a u32.
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_display.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-	Arnd
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index bd2be7f..90c5c9e 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -139,16 +139,14 @@ static void waitNextVerticalSync(int ctrl, int delay)
+ 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
+ 						   SYSTEM_CTRL,
+ 						   PANEL_VSYNC);
+-			}
+-			while (status = SYSTEM_CTRL_PANEL_VSYNC_ACTIVE);
++			} while (status = SYSTEM_CTRL_PANEL_VSYNC_ACTIVE);
+ 
+ 			/* Wait for start of vsync. */
+ 			do {
+ 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
+ 						   SYSTEM_CTRL,
+ 						   PANEL_VSYNC);
+-			}
+-			while (status = SYSTEM_CTRL_PANEL_VSYNC_INACTIVE);
++			} while (status = SYSTEM_CTRL_PANEL_VSYNC_INACTIVE);
+ 		}
+ 
+ 	} else {
+@@ -168,16 +166,14 @@ static void waitNextVerticalSync(int ctrl, int delay)
+ 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
+ 								   SYSTEM_CTRL,
+ 								   CRT_VSYNC);
+-			}
+-			while (status = SYSTEM_CTRL_CRT_VSYNC_ACTIVE);
++			} while (status = SYSTEM_CTRL_CRT_VSYNC_ACTIVE);
+ 
+ 			/* Wait for start of vsync. */
+ 			do {
+ 				status = FIELD_GET(PEEK32(SYSTEM_CTRL),
+ 								   SYSTEM_CTRL,
+ 								   CRT_VSYNC);
+-			}
+-			while (status = SYSTEM_CTRL_CRT_VSYNC_INACTIVE);
++			} while (status = SYSTEM_CTRL_CRT_VSYNC_INACTIVE);
+ 		}
+ 	}
+ }
+-- 
+2.4.4
+

@@ -1,199 +1,89 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Sat, 20 Jun 2015 18:36:46 +0000
-Subject: [PATCH 12/19] staging: sm750fb: add spaces around operators
-Message-Id: <1434825413-4994-12-git-send-email-juston.h.li@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 25 Jun 2015 01:22:14 +0000
+Subject: [PATCH v8 1/9] pci: add pci_ioremap_wc_bar()
+Message-Id: <1435195342-26879-2-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
-In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+References: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Juston Li <juston.h.li@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: bp@suse.de
+Cc: mingo@kernel.org, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>
 
-fixes checkpath.pl error:
-ERROR: spaces required around that ''
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Juston Li <juston.h.li@gmail.com>
+This lets drivers take advantage of PAT when available. This
+should help with the transition of converting video drivers over
+to ioremap_wc() to help with the goal of eventually using
+_PAGE_CACHE_UC over _PAGE_CACHE_UC_MINUS on x86 on
+ioremap_nocache() (de33c442e titled "x86 PAT: fix performance
+drop for glx, use UC minus for ioremap(), ioremap_nocache() and
+pci_mmap_page_range()")
+
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.c  |  2 +-
- drivers/staging/sm750fb/ddk750_power.c |  2 +-
- drivers/staging/sm750fb/sm750.h        |  2 +-
- drivers/staging/sm750fb/sm750_accel.c  |  4 ++--
- drivers/staging/sm750fb/sm750_cursor.c | 12 ++++++------
- drivers/staging/sm750fb/sm750_help.h   |  2 +-
- drivers/staging/sm750fb/sm750_hw.c     |  8 ++++----
- 7 files changed, 16 insertions(+), 16 deletions(-)
+ drivers/pci/pci.c   | 14 ++++++++++++++
+ include/linux/pci.h |  1 +
+ 2 files changed, 15 insertions(+)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 633201e..d7435d7 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -471,7 +471,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
- 			M = quo*X;
- 			M += fl_quo * X / 10000;
- 			/* round step */
--			M += (fl_quo*X % 10000)>5000?1:0;
-+			M += (fl_quo*X % 10000) > 5000?1:0;
- 			if (M < 256 && M > 0) {
- 				unsigned int diff;
- 				tmpClock = pll->inputFreq * M / N / X;
-diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index 5f697b8..28d4402 100644
---- a/drivers/staging/sm750fb/ddk750_power.c
-+++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -10,7 +10,7 @@ void ddk750_setDPMS(DPMS_t state)
- 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
- 	} else {
- 		value = PEEK32(SYSTEM_CTRL);
--		value= FIELD_VALUE(value, SYSTEM_CTRL, DPMS, state);
-+		value = FIELD_VALUE(value, SYSTEM_CTRL, DPMS, state);
- 		POKE32(SYSTEM_CTRL, value);
- 	}
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 0008c95..fdae37b 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -138,6 +138,20 @@ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar)
+ 	return ioremap_nocache(res->start, resource_size(res));
  }
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index b0ff0b5..4f56dcb 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -172,7 +172,7 @@ struct lynxfb_par {
+ EXPORT_SYMBOL_GPL(pci_ioremap_bar);
++
++void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar)
++{
++	/*
++	 * Make sure the BAR is actually a memory resource, not an IO resource
++	 */
++	if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM)) {
++		WARN_ON(1);
++		return NULL;
++	}
++	return ioremap_wc(pci_resource_start(pdev, bar),
++			  pci_resource_len(pdev, bar));
++}
++EXPORT_SYMBOL_GPL(pci_ioremap_wc_bar);
+ #endif
  
- static inline unsigned long ps_to_hz(unsigned int psvalue)
- {
--	unsigned long long numerator00*1000*1000*1000ULL;
-+	unsigned long long numerator = 1000*1000*1000*1000ULL;
- 	/* 10^12 / picosecond period gives frequency in Hz */
- 	do_div(numerator, psvalue);
- 	return (unsigned long)numerator;
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 25dc15b..2ea447e 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -414,10 +414,10 @@ int hw_imageblit(struct lynx_accel *accel,
- 	write_dpr(accel, DE_CONTROL, de_ctrl | deGetTransparency(accel));
+ #define PCI_FIND_CAP_TTL	48
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index c0dd4ab..1193975 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1657,6 +1657,7 @@ static inline void pci_mmcfg_late_init(void) { }
+ int pci_ext_cfg_avail(void);
  
- 	/* Write MONO data (line by line) to 2D Engine data port */
--	for (i=0; i<height; i++)
-+	for (i = 0; i < height; i++)
- 	{
- 		/* For each line, send the data in chunks of 4 bytes */
--		for (j=0; j<(ul4BytesPerScan/4); j++)
-+		for (j = 0; j < (ul4BytesPerScan/4); j++)
- 		{
- 			write_dpPort(accel, *(unsigned int *)(pSrcbuf + (j * 4)));
- 		}
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 2fcec32..9dabac1 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -122,7 +122,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
- 		odd=0;
- */
+ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar);
++void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar);
  
--	for (i=0;i<count;i++)
-+	for (i = 0;i < count;i++)
- 	{
- 		color = *pcol++;
- 		mask = *pmsk++;
-@@ -137,7 +137,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
- 		else
- 			opr = mask & color;
- 
--		for (j=0;j<8;j++)
-+		for (j = 0;j < 8;j++)
- 		{
- 
- 			if (opr & (0x80 >> j))
-@@ -149,7 +149,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
- 			}
- 		}
- #else
--		for (j=0;j<8;j++) {
-+		for (j = 0;j < 8;j++) {
- 			if (mask & (0x80>>j)) {
- 				if (rop = ROP_XOR)
- 					opr = mask ^ color;
-@@ -204,7 +204,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
- 	pstart = cursor->vstart;
- 	pbuffer = pstart;
- 
--	for (i=0;i<count;i++)
-+	for (i = 0;i < count;i++)
- 	{
- 		color = *pcol++;
- 		mask = *pmsk++;
-@@ -217,7 +217,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
- 		else
- 			opr = mask & color;
- 
--		for (j=0;j<8;j++)
-+		for (j = 0;j < 8;j++)
- 		{
- 
- 			if (opr & (0x80 >> j))
-@@ -229,7 +229,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
- 			}
- 		}
- #else
--		for (j=0;j<8;j++) {
-+		for (j = 0;j < 8;j++) {
- 			if (mask & (1<<j))
- 				data |= ((color & (1<<j))?1:2)<<(j*2);
- 		}
-diff --git a/drivers/staging/sm750fb/sm750_help.h b/drivers/staging/sm750fb/sm750_help.h
-index 493af3a..e7d74e6 100644
---- a/drivers/staging/sm750fb/sm750_help.h
-+++ b/drivers/staging/sm750fb/sm750_help.h
-@@ -73,7 +73,7 @@
- 
- static inline unsigned int absDiff(unsigned int a, unsigned int b)
- {
--	if (a<b)
-+	if (a < b)
- 		return b-a;
- 	else
- 		return a-b;
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 7a5d522..4941e2a 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -108,7 +108,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
- 	spec_share = container_of(share, struct sm750_share, share);
- 	parm = &spec_share->state.initParm;
- 	if (parm->chip_clk = 0)
--		parm->chip_clk = (getChipType() = SM750LE)?
-+		parm->chip_clk = (getChipType() = SM750LE) ?
- 						DEFAULT_SM750LE_CHIP_CLOCK :
- 						DEFAULT_SM750_CHIP_CLOCK;
- 
-@@ -421,7 +421,7 @@ void hw_sm750_crtc_clear(struct lynxfb_crtc* crtc)
- int hw_sm750_setColReg(struct lynxfb_crtc* crtc, ushort index,
- 								ushort red, ushort green, ushort blue)
- {
--	static unsigned int add[]={PANEL_PALETTE_RAM, CRT_PALETTE_RAM};
-+	static unsigned int add[] = {PANEL_PALETTE_RAM, CRT_PALETTE_RAM};
- 	POKE32(add[crtc->channel] + index*4, (red<<16)|(green<<8)|blue);
- 	return 0;
- }
-@@ -580,7 +580,7 @@ void hw_sm750_initAccel(struct lynx_share *share)
- 
- int hw_sm750le_deWait(void)
- {
--	int i=0x10000000;
-+	int i = 0x10000000;
- 	while (i--) {
- 		unsigned int dwVal = PEEK32(DE_STATE2);
- 		if ((FIELD_GET(dwVal, DE_STATE2, DE_STATUS) = DE_STATE2_DE_STATUS_IDLE) &&
-@@ -597,7 +597,7 @@ int hw_sm750le_deWait(void)
- 
- int hw_sm750_deWait(void)
- {
--	int i=0x10000000;
-+	int i = 0x10000000;
- 	while (i--) {
- 		unsigned int dwVal = PEEK32(SYSTEM_CTRL);
- 		if ((FIELD_GET(dwVal, SYSTEM_CTRL, DE_STATUS) = SYSTEM_CTRL_DE_STATUS_IDLE) &&
+ #ifdef CONFIG_PCI_IOV
+ int pci_iov_virtfn_bus(struct pci_dev *dev, int id);
 -- 
-2.4.4
+2.3.2.209.gd67f9d5.dirty
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

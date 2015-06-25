@@ -1,193 +1,195 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 16 Jun 2015 10:16:24 +0000
-Subject: [PATCH 2/7] OMAPDSS: refactor dss probe function
-Message-Id: <1434449789-13812-3-git-send-email-tomi.valkeinen@ti.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 25 Jun 2015 01:22:22 +0000
+Subject: [PATCH v8 9/9] video: fbdev: vt8623fb: use arch_phys_wc_add() and pci_iomap_wc()
+Message-Id: <1435195342-26879-10-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1434449789-13812-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: bp@suse.de
+Cc: mingo@kernel.org, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Rob Clark <robdclark@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Jingoo Han <jg1.han@samsung.com>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-Refactor dss probe function by extracting the setup for video plls into
-a separate function. The call to this function is also moved to a
-slightly earlier phase, so that in error case we can bail out more
-easily.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+This driver uses the same area for MTRR as for the ioremap().
+Convert the driver from using the x86 specific MTRR code to
+the architecture agnostic arch_phys_wc_add(). arch_phys_wc_add()
+will avoid MTRR if write-combining is available, in order to
+take advantage of that also ensure the ioremap'd area is requested
+as write-combining.
+
+There are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help bury MTRR code away, MTRR is architecture specific and on
+   x86 its replaced by PAT
+
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+The conversion done is expressed by the following Coccinelle
+SmPL patch, it additionally required manual intervention to
+address all the #ifdery and removal of redundant things which
+arch_phys_wc_add() already addresses such as verbose message
+about when MTRR fails and doing nothing when we didn't get
+an MTRR.
+
+@ mtrr_found @
+expression index, base, size;
+@@
+
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
+
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
+
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Generated-by: Coccinelle SmPL
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/video/fbdev/omap2/dss/dss.c | 125 ++++++++++++++++++++----------------
- 1 file changed, 69 insertions(+), 56 deletions(-)
+ drivers/video/fbdev/vt8623fb.c | 31 ++++++-------------------------
+ 1 file changed, 6 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-index 35601ab232e3..1ce47441efe3 100644
---- a/drivers/video/fbdev/omap2/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/dss/dss.c
-@@ -1026,14 +1026,73 @@ static void __exit dss_uninit_ports(struct platform_device *pdev)
- 	} while ((port = omapdss_of_get_next_port(parent, port)) != NULL);
- }
+diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
+index ea7f056..60f24828 100644
+--- a/drivers/video/fbdev/vt8623fb.c
++++ b/drivers/video/fbdev/vt8623fb.c
+@@ -26,13 +26,9 @@
+ #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
+ #include <video/vga.h>
  
-+static int dss_video_pll_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct regulator *pll_regulator;
-+	int r;
-+
-+	if (!np)
-+		return 0;
-+
-+	if (of_property_read_bool(np, "syscon-pll-ctrl")) {
-+		dss.syscon_pll_ctrl = syscon_regmap_lookup_by_phandle(np,
-+			"syscon-pll-ctrl");
-+		if (IS_ERR(dss.syscon_pll_ctrl)) {
-+			dev_err(&pdev->dev,
-+				"failed to get syscon-pll-ctrl regmap\n");
-+			return PTR_ERR(dss.syscon_pll_ctrl);
-+		}
-+
-+		if (of_property_read_u32_index(np, "syscon-pll-ctrl", 1,
-+				&dss.syscon_pll_ctrl_offset)) {
-+			dev_err(&pdev->dev,
-+				"failed to get syscon-pll-ctrl offset\n");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	pll_regulator = devm_regulator_get(&pdev->dev, "vdda_video");
-+	if (IS_ERR(pll_regulator)) {
-+		r = PTR_ERR(pll_regulator);
-+
-+		switch (r) {
-+		case -ENOENT:
-+			pll_regulator = NULL;
-+			break;
-+
-+		case -EPROBE_DEFER:
-+			return -EPROBE_DEFER;
-+
-+		default:
-+			DSSERR("can't get DPLL VDDA regulator\n");
-+			return r;
-+		}
-+	}
-+
-+	if (of_property_match_string(np, "reg-names", "pll1") >= 0) {
-+		dss.video1_pll = dss_video_pll_init(pdev, 0, pll_regulator);
-+		if (IS_ERR(dss.video1_pll))
-+			return PTR_ERR(dss.video1_pll);
-+	}
-+
-+	if (of_property_match_string(np, "reg-names", "pll2") >= 0) {
-+		dss.video2_pll = dss_video_pll_init(pdev, 1, pll_regulator);
-+		if (IS_ERR(dss.video2_pll)) {
-+			dss_video_pll_uninit(dss.video1_pll);
-+			return PTR_ERR(dss.video2_pll);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- /* DSS HW IP initialisation */
- static int __init omap_dsshw_probe(struct platform_device *pdev)
- {
- 	struct resource *dss_mem;
--	struct device_node *np = pdev->dev.of_node;
- 	u32 rev;
- 	int r;
--	struct regulator *pll_regulator;
- 
- 	dss.pdev = pdev;
- 
-@@ -1062,6 +1121,10 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
- 	if (r)
- 		goto err_setup_clocks;
- 
-+	r = dss_video_pll_probe(pdev);
-+	if (r)
-+		goto err_pll_init;
-+
- 	pm_runtime_enable(&pdev->dev);
- 
- 	r = dss_runtime_get();
-@@ -1088,57 +1151,6 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
- 
- 	dss_init_ports(pdev);
- 
--	if (np && of_property_read_bool(np, "syscon-pll-ctrl")) {
--		dss.syscon_pll_ctrl = syscon_regmap_lookup_by_phandle(np,
--			"syscon-pll-ctrl");
--		if (IS_ERR(dss.syscon_pll_ctrl)) {
--			dev_err(&pdev->dev,
--				"failed to get syscon-pll-ctrl regmap\n");
--			return PTR_ERR(dss.syscon_pll_ctrl);
--		}
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
 -
--		if (of_property_read_u32_index(np, "syscon-pll-ctrl", 1,
--				&dss.syscon_pll_ctrl_offset)) {
--			dev_err(&pdev->dev,
--				"failed to get syscon-pll-ctrl offset\n");
--			return -EINVAL;
--		}
+ struct vt8623fb_info {
+ 	char __iomem *mmio_base;
+-	int mtrr_reg;
++	int wc_cookie;
+ 	struct vgastate state;
+ 	struct mutex open_lock;
+ 	unsigned int ref_count;
+@@ -99,10 +95,7 @@ static struct svga_timing_regs vt8623_timing_regs     = {
+ /* Module parameters */
+ 
+ static char *mode_option = "640x480-8@60";
+-
+-#ifdef CONFIG_MTRR
+ static int mtrr = 1;
+-#endif
+ 
+ MODULE_AUTHOR("(c) 2006 Ondrej Zajicek <santiago@crfreenet.org>");
+ MODULE_LICENSE("GPL");
+@@ -112,11 +105,8 @@ module_param(mode_option, charp, 0644);
+ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
+ module_param_named(mode, mode_option, charp, 0);
+ MODULE_PARM_DESC(mode, "Default video mode e.g. '648x480-8@60' (deprecated)");
+-
+-#ifdef CONFIG_MTRR
+ module_param(mtrr, int, 0444);
+ MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
+-#endif
+ 
+ 
+ /* ------------------------------------------------------------------------- */
+@@ -710,7 +700,7 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	info->fix.mmio_len = pci_resource_len(dev, 1);
+ 
+ 	/* Map physical IO memory address into kernel space */
+-	info->screen_base = pci_iomap(dev, 0, 0);
++	info->screen_base = pci_iomap_wc(dev, 0, 0);
+ 	if (! info->screen_base) {
+ 		rc = -ENOMEM;
+ 		dev_err(info->device, "iomap for framebuffer failed\n");
+@@ -781,12 +771,9 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	/* Record a reference to the driver data */
+ 	pci_set_drvdata(dev, info);
+ 
+-#ifdef CONFIG_MTRR
+-	if (mtrr) {
+-		par->mtrr_reg = -1;
+-		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
 -	}
--
--	pll_regulator = devm_regulator_get(&pdev->dev, "vdda_video");
--	if (IS_ERR(pll_regulator)) {
--		r = PTR_ERR(pll_regulator);
--
--		switch (r) {
--		case -ENOENT:
--			pll_regulator = NULL;
--			break;
--
--		case -EPROBE_DEFER:
--			return -EPROBE_DEFER;
--
--		default:
--			DSSERR("can't get DPLL VDDA regulator\n");
--			return r;
--		}
--	}
--
--	if (of_property_match_string(np, "reg-names", "pll1") >= 0) {
--		dss.video1_pll = dss_video_pll_init(pdev, 0, pll_regulator);
--		if (IS_ERR(dss.video1_pll)) {
--			r = PTR_ERR(dss.video1_pll);
--			goto err_pll_init;
--		}
--	}
--
--	if (of_property_match_string(np, "reg-names", "pll2") >= 0) {
--		dss.video2_pll = dss_video_pll_init(pdev, 1, pll_regulator);
--		if (IS_ERR(dss.video2_pll)) {
--			r = PTR_ERR(dss.video2_pll);
--			goto err_pll_init;
--		}
--	}
--
- 	rev = dss_read_reg(DSS_REVISION);
- 	printk(KERN_INFO "OMAP DSS rev %d.%d\n",
- 			FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
-@@ -1153,14 +1165,15 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
+-#endif
++	if (mtrr)
++		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++						  info->fix.smem_len);
  
  	return 0;
  
--err_pll_init:
-+err_runtime_get:
-+	pm_runtime_disable(&pdev->dev);
-+
- 	if (dss.video1_pll)
- 		dss_video_pll_uninit(dss.video1_pll);
+@@ -816,13 +803,7 @@ static void vt8623_pci_remove(struct pci_dev *dev)
+ 	if (info) {
+ 		struct vt8623fb_info *par = info->par;
  
- 	if (dss.video2_pll)
- 		dss_video_pll_uninit(dss.video2_pll);
--err_runtime_get:
--	pm_runtime_disable(&pdev->dev);
-+err_pll_init:
- err_setup_clocks:
- 	dss_put_clocks();
- 	return r;
+-#ifdef CONFIG_MTRR
+-		if (par->mtrr_reg >= 0) {
+-			mtrr_del(par->mtrr_reg, 0, 0);
+-			par->mtrr_reg = -1;
+-		}
+-#endif
+-
++		arch_phys_wc_del(par->wc_cookie);
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
+ 
 -- 
-2.1.4
+2.3.2.209.gd67f9d5.dirty
 

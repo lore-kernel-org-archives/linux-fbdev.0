@@ -1,116 +1,67 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Sat, 20 Jun 2015 18:36:43 +0000
-Subject: [PATCH 09/19] staging: sm750fb: add space after struct definition
-Message-Id: <1434825413-4994-9-git-send-email-juston.h.li@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 25 Jun 2015 01:22:17 +0000
+Subject: [PATCH v8 4/9] video: fbdev: gxt4500: use pci_ioremap_wc_bar() for framebuffer
+Message-Id: <1435195342-26879-5-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
-In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+References: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Juston Li <juston.h.li@gmail.com>
+To: bp@suse.de
+Cc: mingo@kernel.org, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-fixes checkpatch.pl warning:
-WARNING: missing space after struct definition
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Juston Li <juston.h.li@gmail.com>
+The driver doesn't use mtrr_add() or arch_phys_wc_add() but
+since we know the framebuffer is isolated already on an
+ioremap() we can take advantage of write combining for
+performance where possible.
+
+In this case there are a few motivations for this:
+
+a) Take advantage of PAT when available
+
+b) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
+
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
 ---
- drivers/staging/sm750fb/sm750.h    | 12 ++++++------
- drivers/staging/sm750fb/sm750_hw.h |  6 +++---
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/gxt4500.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 3785afc..124921e 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -14,7 +14,7 @@
- extern int smi_indent;
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 135d78a..f19133a 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -662,7 +662,7 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  
- 
--struct lynx_accel{
-+struct lynx_accel {
- 	/* base virtual address of DPR registers */
- 	volatile unsigned char __iomem * dprBase;
- 	/* base virtual address of de data port */
-@@ -41,7 +41,7 @@ struct lynx_accel{
- /* lynx_share stands for a presentation of two frame buffer
-    that use one smi adaptor , it is similar to a basic class of C++
- */
--struct lynx_share{
-+struct lynx_share {
- 	/* common members */
- 	u16 devid;
- 	u8 revid;
-@@ -68,7 +68,7 @@ struct lynx_share{
- 	void (*resume)(struct lynx_share*);
- };
- 
--struct lynx_cursor{
-+struct lynx_cursor {
- 	/* cursor width ,height and size */
- 	int w;
- 	int h;
-@@ -92,7 +92,7 @@ struct lynx_cursor{
- 	void (*setData)(struct lynx_cursor *, u16, const u8*, const u8*);
- };
- 
--struct lynxfb_crtc{
-+struct lynxfb_crtc {
- 	unsigned char __iomem *vCursor; /* virtual address of cursor */
- 	unsigned char __iomem *vScreen; /* virtual address of on_screen */
- 	int oCursor; /* cursor address offset in vidmem */
-@@ -123,7 +123,7 @@ struct lynxfb_crtc{
- 	struct lynx_cursor cursor;
- };
- 
--struct lynxfb_output{
-+struct lynxfb_output {
- 	int dpms;
- 	int paths;
- 	/* which paths(s) this output stands for,for sm750:
-@@ -149,7 +149,7 @@ struct lynxfb_output{
- 	void  (*clear)(struct lynxfb_output*);
- };
- 
--struct lynxfb_par{
-+struct lynxfb_par {
- 	/* either 0 or 1 for dual head adaptor,0 is the older one registered */
- 	int index;
- 	unsigned int pseudo_palette[256];
-diff --git a/drivers/staging/sm750fb/sm750_hw.h b/drivers/staging/sm750fb/sm750_hw.h
-index af2db7c..ef0a16f 100644
---- a/drivers/staging/sm750fb/sm750_hw.h
-+++ b/drivers/staging/sm750fb/sm750_hw.h
-@@ -42,7 +42,7 @@ enum sm750_path {
- 	sm750_pnc = 3,/* panel and crt */
- };
- 
--struct init_status{
-+struct init_status {
- 	ushort powerMode;
- 	/* below three clocks are in unit of MHZ*/
- 	ushort chip_clk;
-@@ -52,7 +52,7 @@ struct init_status{
- 	ushort resetMemory;
- };
- 
--struct sm750_state{
-+struct sm750_state {
- 	struct init_status initParm;
- 	enum sm750_pnltype pnltype;
- 	enum sm750_dataflow dataflow;
-@@ -66,7 +66,7 @@ struct sm750_state{
-    in C++
-  */
- 
--struct sm750_share{
-+struct sm750_share {
- 	/* it's better to put lynx_share struct to the first place of sm750_share */
- 	struct lynx_share share;
- 	struct sm750_state state;
+ 	info->fix.smem_start = fb_phys;
+ 	info->fix.smem_len = pci_resource_len(pdev, 1);
+-	info->screen_base = pci_ioremap_bar(pdev, 1);
++	info->screen_base = pci_ioremap_wc_bar(pdev, 1);
+ 	if (!info->screen_base) {
+ 		dev_err(&pdev->dev, "gxt4500: cannot map framebuffer\n");
+ 		goto err_unmap_regs;
 -- 
-2.4.4
+2.3.2.209.gd67f9d5.dirty
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

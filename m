@@ -1,68 +1,62 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 25 Jun 2015 00:52:01 +0000
-Subject: Re: [PATCH v7 5/9] PCI: Add pci_iomap_wc() variants
-Message-Id: <1435193521.3790.26.camel@kernel.crashing.org>
+From: Casey Leedom <leedom@chelsio.com>
+Date: Thu, 25 Jun 2015 15:01:56 +0000
+Subject: RE: [PATCH v7 5/9] PCI: Add pci_iomap_wc() variants
+Message-Id: <4985EFDD773FCB459EF7915D2A3621ADC02F10@nice.asicdesigners.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
 	 <1434751712-24333-6-git-send-email-mcgrof@do-not-panic.com>
 	 <1435099343.3996.13.camel@kernel.crashing.org>
 	 <20150624163821.GF11147@wotan.suse.de>
 	 <1435183509.3790.14.camel@kernel.crashing.org>
-	 <CAB=NE6X0ySW=1udE3LCbo_eCjMfdrOMrceGsPvBZbDW+N-pLTw@mail.gmail.com>
-	 <1435189081.3790.24.camel@kernel.crashing.org>
-	 <20150625000803.GH11147@wotan.suse.de>
-In-Reply-To: <20150625000803.GH11147@wotan.suse.de>
+	 <CAB=NE6X0ySW=1udE3LCbo_eCjMfdrOMrceGsPvBZbDW+N-pLTw@mail.gmail.com>,<1435189081.3790.24.camel@kernel.crashing.org>
+In-Reply-To: <1435189081.3790.24.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Luis R. Rodriguez" <mcgrof@suse.com>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Toshi Kani <toshi.kani@hp.com>, Andy Lutomirski <luto@amacapital.net>, Juergen Gross <jgross@suse.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Arnd Bergmann <arnd@arndb.de>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, venkatesh.pallipadi@intel.com, Stefan Bader <stefan.bader@canonical.com>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, David Vrabel <david.vrabel@citrix.com>, Jan Beulich <jbeulich@suse.com>, Roger Pau =?ISO-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Toshi Kani <toshi.kani@hp.com>, Andy Lutomirski <luto@amacapital.net>, Juergen Gross <jgross@suse.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Arnd Bergmann <arnd@arndb.de>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>, Stefan Bader <stefan.bader@canonical.com>, =?iso-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Borislav Petkov <bp@suse.de>, Davidlohr Bueso <dbueso@suse.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, =?iso-8859-1?Q?Ville_Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, David Vrabel <david.vrabel@citrix.com>, Jan Beulich <jbeulich@suse.com>, =?iso-8859-1?Q?Roger_Pau_Monn=E9?= <roger.pau@citrix.com>
 
-On Thu, 2015-06-25 at 02:08 +0200, Luis R. Rodriguez wrote:
-> 
-> OK thanks I'll proceed with these patches then.
-> 
-> > As for user mappings,
-> 
-> Which APIs were you considering in this regard BTW?
+/ From: Benjamin Herrenschmidt [benh@kernel.crashing.org]
+| Sent: Wednesday, June 24, 2015 4:38 PM
+| 
+| It is to be noted that on powerpc at least, writel() and co will never
+| combine due to the memory barriers in them. Only "normal" stores (or
+\ __raw_writel) will.
 
-mmap of the generic /sys/bus/pci/.../resource*
+/ From: Benjamin Herrenschmidt [benh@kernel.crashing.org]
+| Sent: Wednesday, June 24, 2015 5:52 PM
+| 
+| Right, and as I mentioned, on some archs like powerpc (and possibly
+\ more), writel() and co contains an implicit mb()
 
-> > maybe the right thing to do is to let us do what we do by
-> > default with a quirk that can set a flag in pci_dev to disable that
-> > behaviour (maybe on a per BAR basis ?).
-> 
-> That might mean it could restrict userspace WC to require devices
-> to have WC parts on a full PCI BAR. Although this is restrictive
-> having reviewed most WC uses in the kernel I'd think this would be
-> a fair compromise to make, but again, if things are still murky
-> perhaps best we kiss this idea good bye for now and hope for it
-> to come in on future buses or ammendments (if that's even possible?).
-> 
-> > I think the common case is that WC works.
-> 
-> If WC does not I will note one hack which migh be worth mentioning --
-> just for
-> the record, this was devised as a shortcoming of a device where they
-> failed to
-> split things properly and that *without* WC performance suffered quite
-> a bit so
-> they made one full PCI BAR WC and as a work around this:
-> 
-> http://lkml.kernel.org/r/20150416041837.GA5712@hykim-PC
-> 
-> That is for registers that needed it:
-> 
-> write; wmb;
-> 
-> Then if they wanted to wait till the NIC has seen the write, they did:
-> 
-> write; wmb; read;
-> 
+  Hhmmm, interesting.  I definitely hadn't known that.  In our network
+drivers we explicitly manage all of our own memory barrier semantics.
+(wmb() between writes to DMA Queues and writes to Device Registers
+informing hardware of new data available to be DMA'ed, etc.)  And we
+do have code to take advantage of Write Combining Mappings using
+writeq().  It looks like this is implemented eventually as out_be64()
+in arch/powerpc/include/asm/io.h for PPC-BE:
 
-Right, and as I mentioned, on some archs like powerpc (and possibly
-more), writel() and co contains an implicit mb()
+#define DEF_MMIO_OUT_D(name, size, insn)                                \
+static inline void name(volatile u##size __iomem *addr, u##size val)    \
+{                                                                       \
+        __asm__ __volatile__("sync;"#insn"%U0%X0 %1,%0"                 \
+                : "=m" (*addr) : "r" (val) : "memory");                 \
+        IO_SET_SYNC_FLAG();                                             \
+}
 
->   Luis--
+DEF_MMIO_OUT_D(out_be64, 64, std);
 
+  So, if understand your notes and the source correctly, all of
+our code to do register reads/writes are getting SYNC instructions,
+as are the 64-bit writeq()s we're attempting to use for our Write
+Combining code on PowerPC.  Hhmmm indeed ...
 
+  Is there a reference I can read on this so I can understand
+when and where we can use the __raw_*() APIs?  Can these
+Raw Read/Write operations be reordered with respect to
+each other or are the use of the various flavors of SYNC
+instructions just to maintain order between Cached Memory
+Accesses and I/O Instructions?
+
+Casey

@@ -1,52 +1,81 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Mon, 01 Jun 2015 15:57:11 +0000
-Subject: Re: [PATCH v4 3/17] video: fbdev: gbefb: use arch_phys_wc_add() and devm_ioremap_wc()
-Message-Id: <CAB=NE6VsYf8iZ7o=jFnbrQOL01irVREa_NiEs8meVFSsuiXPFw@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 25 Jun 2015 01:22:13 +0000
+Subject: [PATCH v8 0/9] pci: add pci_iomap_wc() and pci_ioremap_wc_bar()
+Message-Id: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1432859434-17821-1-git-send-email-mcgrof@do-not-panic.com>
- <1432859434-17821-3-git-send-email-mcgrof@do-not-panic.com>
- <20150529064144.GA22749@gmail.com> <20150530003256.GG23057@wotan.suse.de> <20150601085332.GA14549@gmail.com>
-In-Reply-To: <20150601085332.GA14549@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Airlie <airlied@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Jingoo Han <jg1.han@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Masanari Iida <standby24x7@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Andy Lutomirski <luto@amacapital.net>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: bp@suse.de
+Cc: mingo@kernel.org, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On Mon, Jun 1, 2015 at 1:53 AM, Ingo Molnar <mingo@kernel.org> wrote:
->
-> * Luis R. Rodriguez <mcgrof@suse.com> wrote:
->
->> On Fri, May 29, 2015 at 08:41:44AM +0200, Ingo Molnar wrote:
->> >
->> > * Luis R. Rodriguez <mcgrof@do-not-panic.com> wrote:
->> >
->> > > +         gbe_mem = devm_ioremap_wc(&p_dev->dev, gbe_mem_phys,
->> > > +                                   gbe_mem_size);
->> >
->> > > +         gbe_mem = dma_alloc_writecombine(NULL, gbe_mem_size,
->> > > +                                          &gbe_dma_addr, GFP_KERNEL);
->> >
->> > > + par->wc_cookie = arch_phys_wc_add(gbe_mem_phys, gbe_mem_size);
->> >
->> > > + arch_phys_wc_del(par->wc_cookie);
->> >
->> > > + arch_phys_wc_del(par->wc_cookie);
->> >
->> > Could we _please_ rename dma_*_writecombine() to dma_*_wc(), so that the naming is
->> > coherent across the various APIs?
->>
->> Sure, OK done. Will send once this series is merged and visible on linux-next.
->> But who's tree should this go through? Since it depends on this series which
->> goes through Tomi's tree should it go through there?
->
-> So we could do the rename near the end of the merge window, when all the patches
-> have drained from maintainer trees into Linus's tree.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-OK.
+Boris,
 
-> Mind keeping it in your tree until then?
+This patchset is part of the long haul of series that addresses removal of
+direct use of MTRR and transforms drivers over to use PAT interfaces when
+available [0]. Other than this series there is only one more pending series for
+that effort, the other one being the atyfb device driver specific changes which
+no one has replied to for over one month and I'll soon repost and hope that
+Andrew might pick up. The patches in this series were originally split in two
+series but I've combined them now given all Acks have been collected and they
+are all related. Tomi has provided his Acked-by for all device driver changes.
+Bjorn had originally reviewed this series and was comfortable with all the code
+except for the use of EXPORT_SYMBOL_GPL() despite new clarifications of how we
+can use this for new symbols and our preference for it on new PAT interfaces
+[1], despite this Bjorn has clarified he's comfortable with this going in
+through another maintainer and in particular Arnd [2]. The v7 series was posted
+addressing Arnd, Arnd provided his Acked-by for all PCI and devres changes but
+noted he's on parental leave and not taking any patches for arm-soc or
+asm-generic until he's back at work in around 3 months from now [2] so he
+suggested to see if I could find another maintainer to have these go through.
 
-You got it.
+This v8 goes unmodified, except for the devres commit, since those routines
+are not yet used by any device driver for now I've just skipped exporting
+the symbols but did note that if they will be it must be exported with
+EXPORT_SYMBOL_GPL(). Once we have a driver need them upstream we can export
+these.
 
- Luis
+Although I had test compiled this before just to be safe I went ahead and
+successfully test-compiled this set with allmodconfig, specially since I've now
+removed the exports for the devres routines.  Please let me know if these might
+be able to go through you or if there are any questions. I will note the recent
+discussion with Benjamin over the v7 series concluded that the ideas we both
+were alluding to, on automating instead the WC effects for devices seems a bit
+too idealistic for PCI / PCIE for now, but perhaps we should at least consider
+this in the future for userspace mmap() calls [4].
+
+[0] http://lkml.kernel.org/r/CAB=NE6UgtdSoBsA=8+ueYRAZHDnWUSmQAoHhAaefqudBrSY7Zw@mail.gmail.com
+[1] http://lkml.kernel.org/r/CAErSpo4sHA-f83X1nW2QdLT9GdubFXCQ7UEJmSfFc5GBjj8FSA@mail.gmail.com
+[2] http://lkml.kernel.org/r/CAErSpo7CNH1WpgqJCEU8EtxiFNp_PiQ3cBwnKiWQpUaD-fd4YA@mail.gmail.com
+[3] http://lkml.kernel.org/r/1435193521.3790.26.camel@kernel.crashing.org
+
+Luis R. Rodriguez (9):
+  pci: add pci_ioremap_wc_bar()
+  video: fbdev: i740fb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
+  video: fbdev: kyrofb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
+  video: fbdev: gxt4500: use pci_ioremap_wc_bar() for framebuffer
+  PCI: Add pci_iomap_wc() variants
+  lib: devres: add pcim_iomap_wc() variants
+  video: fbdev: arkfb: use arch_phys_wc_add() and pci_iomap_wc()
+  video: fbdev: s3fb: use arch_phys_wc_add() and pci_iomap_wc()
+  video: fbdev: vt8623fb: use arch_phys_wc_add() and pci_iomap_wc()
+
+ drivers/pci/pci.c                | 14 ++++++++
+ drivers/video/fbdev/arkfb.c      | 36 +++----------------
+ drivers/video/fbdev/gxt4500.c    |  2 +-
+ drivers/video/fbdev/i740fb.c     | 35 ++++--------------
+ drivers/video/fbdev/kyro/fbdev.c | 33 ++++++-----------
+ drivers/video/fbdev/s3fb.c       | 35 ++++--------------
+ drivers/video/fbdev/vt8623fb.c   | 31 ++++------------
+ include/asm-generic/pci_iomap.h  | 14 ++++++++
+ include/linux/pci.h              |  3 ++
+ include/video/kyro.h             |  4 +--
+ lib/devres.c                     | 76 ++++++++++++++++++++++++++++++++++++++++
+ lib/pci_iomap.c                  | 61 ++++++++++++++++++++++++++++++++
+ 12 files changed, 204 insertions(+), 140 deletions(-)
+
+-- 
+2.3.2.209.gd67f9d5.dirty
+

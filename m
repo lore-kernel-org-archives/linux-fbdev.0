@@ -1,62 +1,33 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 08 Jun 2015 21:21:57 +0000
-Subject: Re: [PATCH -next] fbdev: radeon: Avoid 64 bit divide
-Message-Id: <1433798517.4526.170.camel@kernel.crashing.org>
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Thu, 25 Jun 2015 00:58:17 +0000
+Subject: Re: [Xen-devel] [PATCH v7 5/9] PCI: Add pci_iomap_wc() variants
+Message-Id: <CAB=NE6VTHL1pGVMAkThx07wHNEPAGToJg5Ns_YEd6U1edb8__g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1433527521-5384-1-git-send-email-linux@roeck-us.net>
-	 <1433534917.4526.105.camel@kernel.crashing.org>
-	 <5572053A.6060903@roeck-us.net>
-In-Reply-To: <5572053A.6060903@roeck-us.net>
+References: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
+ <1434751712-24333-6-git-send-email-mcgrof@do-not-panic.com>
+ <1435099343.3996.13.camel@kernel.crashing.org> <20150624163821.GF11147@wotan.suse.de>
+ <1435183509.3790.14.camel@kernel.crashing.org> <CAB=NE6X0ySW=1udE3LCbo_eCjMfdrOMrceGsPvBZbDW+N-pLTw@mail.gmail.com>
+ <1435189081.3790.24.camel@kernel.crashing.org> <20150625000803.GH11147@wotan.suse.de>
+ <1435193521.3790.26.camel@kernel.crashing.org>
+In-Reply-To: <1435193521.3790.26.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Tina Ruchandani <ruchandani.tina@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "Michael S. Tsirkin" <mst@redhat.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, Dave Hansen <dave.hansen@linux.intel.com>, Jan Beulich <jbeulich@suse.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Arnd Bergmann <arnd@arndb.de>, Davidlohr Bueso <dbueso@suse.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mel Gorman <mgorman@suse.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Ingo Molnar <mingo@elte.hu>, Borislav Petkov <bp@suse.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Antonino Daplas <adaplas@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Stefan Bader <stefan.bader@canonical.com>, Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Juergen Gross <jgross@suse.com>, Toshi Kani <toshi.kani@hp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@amacapital.net>, David Vrabel <david.vrabel@citrix.com>, venkatesh.pallipadi@intel.com, =?UTF-8?Q?Roger_Pau_Monn=C3=A9?= <roger.pau@citrix.com>
 
-On Fri, 2015-06-05 at 13:23 -0700, Guenter Roeck wrote:
-> On 06/05/2015 01:08 PM, Benjamin Herrenschmidt wrote:
-> > On Fri, 2015-06-05 at 11:05 -0700, Guenter Roeck wrote:
-> >> A 64 bit divide causes build failures with 32 bit builds, such as
-> >>
-> >> ERROR: "__divdi3" [drivers/video/fbdev/aty/radeonfb.ko] undefined!
-> >>
-> >> or
-> >>
-> >> drivers/built-in.o: In function `radeon_probe_pll_params':
-> >> radeon_base.c:(.text+0x16608b): undefined reference to `__divdi3'
-> >
-> > What about using do_div() instead ?
-> >
-> 
-> delta is known to be <= 10*1000000, so I figured that would have been overkill.
-> But, sure, at the end it is the same. Want me to resubmit ?
+On Wed, Jun 24, 2015 at 5:52 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Thu, 2015-06-25 at 02:08 +0200, Luis R. Rodriguez wrote:
+>>
+>> OK thanks I'll proceed with these patches then.
+>>
+>> > As for user mappings,
+>>
+>> Which APIs were you considering in this regard BTW?
+>
+> mmap of the generic /sys/bus/pci/.../resource*
 
-Don't bother.
+Like? Got a demo patch in mind ? :)
 
-> Guenter
-> 
-> >> Fixes: ce8f4069dce8 ("fbdev: radeon: Remove 'struct timeval' usage")
-> >> Cc: Tina Ruchandani <ruchandani.tina@gmail.com>
-> >> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> >> ---
-> >>   drivers/video/fbdev/aty/radeon_base.c | 2 +-
-> >>   1 file changed, 1 insertion(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-> >> index b3612e30d74f..374e47532035 100644
-> >> --- a/drivers/video/fbdev/aty/radeon_base.c
-> >> +++ b/drivers/video/fbdev/aty/radeon_base.c
-> >> @@ -492,7 +492,7 @@ static int radeon_probe_pll_params(struct radeonfb_info *rinfo)
-> >>   	/* Return -1 if more than 10 seconds have elapsed */
-> >>   	if (delta > (10*1000000))
-> >>   		return -1;
-> >> -	hz = 1000000/delta;
-> >> +	hz = 1000000 / (int)delta;
-> >>
-> >>   	hTotal = ((INREG(CRTC_H_TOTAL_DISP) & 0x1ff) + 1) * 8;
-> >>   	vTotal = ((INREG(CRTC_V_TOTAL_DISP) & 0x3ff) + 1);
-> >
-> >
-> >
-
-
+ Luis

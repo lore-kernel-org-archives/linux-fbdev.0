@@ -1,7 +1,7 @@
-From: Borislav Petkov <bp@suse.de>
-Date: Thu, 25 Jun 2015 20:47:03 +0000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 26 Jun 2015 02:12:06 +0000
 Subject: Re: [PATCH v8 0/9] pci: add pci_iomap_wc() and pci_ioremap_wc_bar()
-Message-Id: <20150625204703.GC4898@pd.tnic>
+Message-Id: <1435284726.3822.28.camel@kernel.crashing.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
 In-Reply-To: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
@@ -9,39 +9,36 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Cc: mingo@kernel.org, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>
+Cc: bp@suse.de, mingo@kernel.org, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On Wed, Jun 24, 2015 at 06:22:13PM -0700, Luis R. Rodriguez wrote:
-> Luis R. Rodriguez (9):
->   pci: add pci_ioremap_wc_bar()
->   video: fbdev: i740fb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
->   video: fbdev: kyrofb: use arch_phys_wc_add() and pci_ioremap_wc_bar()
->   video: fbdev: gxt4500: use pci_ioremap_wc_bar() for framebuffer
->   PCI: Add pci_iomap_wc() variants
->   lib: devres: add pcim_iomap_wc() variants
->   video: fbdev: arkfb: use arch_phys_wc_add() and pci_iomap_wc()
->   video: fbdev: s3fb: use arch_phys_wc_add() and pci_iomap_wc()
->   video: fbdev: vt8623fb: use arch_phys_wc_add() and pci_iomap_wc()
-> 
->  drivers/pci/pci.c                | 14 ++++++++
->  drivers/video/fbdev/arkfb.c      | 36 +++----------------
->  drivers/video/fbdev/gxt4500.c    |  2 +-
->  drivers/video/fbdev/i740fb.c     | 35 ++++--------------
->  drivers/video/fbdev/kyro/fbdev.c | 33 ++++++-----------
->  drivers/video/fbdev/s3fb.c       | 35 ++++--------------
->  drivers/video/fbdev/vt8623fb.c   | 31 ++++------------
->  include/asm-generic/pci_iomap.h  | 14 ++++++++
->  include/linux/pci.h              |  3 ++
->  include/video/kyro.h             |  4 +--
->  lib/devres.c                     | 76 ++++++++++++++++++++++++++++++++++++++++
->  lib/pci_iomap.c                  | 61 ++++++++++++++++++++++++++++++++
->  12 files changed, 204 insertions(+), 140 deletions(-)
+On Wed, 2015-06-24 at 18:22 -0700, Luis R. Rodriguez wrote:
+> Although I had test compiled this before just to be safe I went ahead and
+> successfully test-compiled this set with allmodconfig, specially since I've now
+> removed the exports for the devres routines.  Please let me know if these might
+> be able to go through you or if there are any questions. I will note the recent
+> discussion with Benjamin over the v7 series concluded that the ideas we both
+> were alluding to, on automating instead the WC effects for devices seems a bit
+> too idealistic for PCI / PCIE for now, but perhaps we should at least consider
+> this in the future for userspace mmap() calls [4].
 
-Took those, modulo the devres one.
+So I've been trying to figure out how to make this practically work for us (powerpc).
 
--- 
-Regards/Gruss,
-    Boris.
+writel() will never write combine for us, it uses too heavy barriers.
 
-ECO tip #101: Trim your mails when you reply.
---
+writel_relaxed() today is identical to writel() but we can change it.
+
+The problem is that switching to G=0 mappings (which is what provides us with write
+combining) also architecturally enables prefetch and speculative loads... and again
+architecturally (the implementations may differ), kills the effect of the lightweight
+io barrier eieio which we would have to use in readl_relaxed() and writel_relaxed()
+to provide their normal semantics.
+
+So it boils down to: Can we modify the documentation of readl_relaxed() and writel_relaxed()
+to define them as being even further relaxed when using a "wc" mapping ?
+
+Otherwise, the only way out I see for us on powerpc is to bias massively writel_relaxed()
+against real_relaxed() by putting heavy barriers around the load in the latter so we can
+keep them completely out of the former and still enable wc.
+
+Ben.
+

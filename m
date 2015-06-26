@@ -1,37 +1,101 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Fri, 26 Jun 2015 19:31:58 +0000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 26 Jun 2015 22:00:48 +0000
 Subject: Re: [PATCH v7 5/9] PCI: Add pci_iomap_wc() variants
-Message-Id: <20150626193158.GJ3005@wotan.suse.de>
+Message-Id: <1435356048.26815.9.camel@kernel.crashing.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
- <1435189081.3790.24.camel@kernel.crashing.org>
- <4985EFDD773FCB459EF7915D2A3621ADC02F10@nice.asicdesigners.com>
- <6806026.xb91q6Ad7G@wuerfel>
- <4985EFDD773FCB459EF7915D2A3621ADC031F8@nice.asicdesigners.com>
- <1435272718.3822.7.camel@kernel.crashing.org>
-In-Reply-To: <1435272718.3822.7.camel@kernel.crashing.org>
+	 <1435189081.3790.24.camel@kernel.crashing.org>
+	 <4985EFDD773FCB459EF7915D2A3621ADC02F10@nice.asicdesigners.com>
+	 ,<6806026.xb91q6Ad7G@wuerfel>
+	 <4985EFDD773FCB459EF7915D2A3621ADC031F8@nice.asicdesigners.com>
+	 ,<1435284123.3822.24.camel@kernel.crashing.org>
+	 <4985EFDD773FCB459EF7915D2A3621ADC03621@nice.asicdesigners.com>
+In-Reply-To: <4985EFDD773FCB459EF7915D2A3621ADC03621@nice.asicdesigners.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Casey Leedom <leedom@chelsio.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Toshi Kani <toshi.kani@hp.com>, Andy Lutomirski <luto@amacapital.net>, Juergen Gross <jgross@suse.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>, Stefan Bader <stefan.bader@canonical.com>, ville.syrjala@linux.intel.com, David Vrabel <david.vrabel@citrix.com>, Jan Beulich <jbeulich@suse.com>, Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Casey Leedom <leedom@chelsio.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, "Luis R. Rodriguez" <mcgrof@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Toshi Kani <toshi.kani@hp.com>, Andy Lutomirski <luto@amacapital.net>, Juergen Gross <jgross@suse.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>, Stefan Bader <stefan.bader@canonical.com>, "ville.syrjala@linux.intel.com" <ville.syrjala@linux.intel.com>, David Vrabel <david.vrabel@citrix.com>, Jan Beulich <jbeulich@suse.com>, Roger Pau =?ISO-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>
 
-On Fri, Jun 26, 2015 at 08:51:58AM +1000, Benjamin Herrenschmidt wrote:
+On Fri, 2015-06-26 at 16:24 +0000, Casey Leedom wrote:
+>   Thanks for looking into this Ben.  As it stands now, it seems as
+> if Write Combined mappings simply aren't supported and/or all
+> driver writers trying to utilize Write Combined mappings have to
+> "hand roll" their own solutions which really isn't supportable.
+>=20
+>   One thing that might be considered is simply to treat the desire
+> to utilize the Write Combining hardware as a separate issue and
+> develop writel_wc(), writeq_wc(), etc.  Those could be defined
+> as legal only for Write Combined Mappings and would "do the
+> right thing" for each architecture. =20
+
+The question then is what is "the right thing". In the powerpc case,
+we'll have a non-garded mapping, which means we also get no ordering
+between load and stores.
+
+> The initial implementations
+> could simply be writel(), writeq(), etc. till each architecture'si
+> ssues were investigated and understood.
+>=20
+>   Additionally, it would be very useful to have some sort of
+> predicate which could be used to determine if an architecture
+> supported Write Combining.  Our drivers would use this to
+> eliminate a wasteful attempt to use write combining on those
+> architectures where it didn't work.
+>=20
+> Casey
+>=20
+> ________________________________________
+> From: Benjamin Herrenschmidt [benh@kernel.crashing.org]
+> Sent: Thursday, June 25, 2015 7:02 PM
+> To: Casey Leedom
+> Cc: Arnd Bergmann; Luis R. Rodriguez; Michael S. Tsirkin; Bjorn Helgaas; =
+Toshi Kani; Andy Lutomirski; Juergen Gross; Tomi Valkeinen; linux-pci@vger.=
+kernel.org; linux-kernel@vger.kernel.org; xen-devel@lists.xensource.com; li=
+nux-fbdev; Suresh Siddha; Ingo Molnar; Thomas Gleixner; Daniel Vetter; Dave=
+ Airlie; Antonino Daplas; Jean-Christophe Plagniol-Villard; Dave Hansen; ve=
+nkatesh.pallipadi@intel.com; Stefan Bader; ville.syrjala@linux.intel.com; D=
+avid Vrabel; Jan Beulich; Roger Pau Monn=C3=A9
+> Subject: Re: [PATCH v7 5/9] PCI: Add pci_iomap_wc() variants
+>=20
 > On Thu, 2015-06-25 at 21:40 +0000, Casey Leedom wrote:
-> > Hhmmm, so what do PowerPC Drivers do when they want to take
-> > advantage of Write Combining?  Do their own Endian Swizzling
-> > with the __raw_*() APIs?
-> 
-> Yeah either, we need to fix our relaxed implementation (patch
-> welcome :-)
+> >
+> > Ah, thanks.  I see now that the __raw_*() APIs don't do any of the
+> > Endian Swizzling.  Unfortunately the *_relaxed() APIs on PowerPC
+> > are just defined as the normal *() routines.  From
+> > arch/powerpc/include/asm/io.h:
+> >
+> >     /*
+> >      * We don't do relaxed operations yet, at least not with this
+> > semantic
+> >      */
+>=20
+> Yes so I was looking at this but there are some difficulties.
+> Architecturally, even with I=3D1 G=3D1 mappings (normal ioremap), we have=
+ no
+> guarantee of ordering of load vs. store unless I misunderstood
+> something. I think all current implementations provide some of that but
+> without barriers in the accessors, we aren't architecturally correct.
+>=20
+> However, having those barriers will cause issues with G=3D0 (write
+> combine). It's unclear whether eieio() will provide the required
+> ordering for I=3D1 G=3D0 mappings and it will probably break write combin=
+e.
+>=20
+> I'm looking into it with our HW guys and will try to come up with a
+> solution for power, but it doesn't help that our memory model conflates
+> write combining with other relaxations and that all our barriers also
+> prevent write combine.
+>=20
+> Maybe we can bias the relaxed accessors toward write, by having no
+> barriers in it, and putting extra ones in reads.
+>=20
+> Cheers,
+> Ben.
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Yikes, so although powerpc has useful heuristics to automatically
-enable WC the default write ops have been nullifying its effects?
-Shouldn't this have been blatantly obvious in performance benchmarks
-and expectations? If not a change should give considerable performance
-gains... If the WC was nullified on powerpc then the experience and
-value of the heuristics have less value and even if they are going
-to be only considered for userspace mmap() it should be taken with
-a bit grain of salt it seems.
 
-  Luis

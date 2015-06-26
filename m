@@ -1,42 +1,50 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 25 Jun 2015 01:12:44 +0000
+Date: Fri, 26 Jun 2015 23:54:31 +0000
 Subject: Re: [Xen-devel] [PATCH v7 5/9] PCI: Add pci_iomap_wc() variants
-Message-Id: <1435194764.3790.33.camel@kernel.crashing.org>
+Message-Id: <1435362871.26815.24.camel@kernel.crashing.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
-	 <1434751712-24333-6-git-send-email-mcgrof@do-not-panic.com>
-	 <1435099343.3996.13.camel@kernel.crashing.org>
-	 <20150624163821.GF11147@wotan.suse.de>
-	 <1435183509.3790.14.camel@kernel.crashing.org>
-	 <CAB=NE6X0ySW=1udE3LCbo_eCjMfdrOMrceGsPvBZbDW+N-pLTw@mail.gmail.com>
 	 <1435189081.3790.24.camel@kernel.crashing.org>
-	 <20150625000803.GH11147@wotan.suse.de>
-	 <1435193521.3790.26.camel@kernel.crashing.org>
-	 <CAB=NE6VTHL1pGVMAkThx07wHNEPAGToJg5Ns_YEd6U1edb8__g@mail.gmail.com>
-In-Reply-To: <CAB=NE6VTHL1pGVMAkThx07wHNEPAGToJg5Ns_YEd6U1edb8__g@mail.gmail.com>
+	 <4985EFDD773FCB459EF7915D2A3621ADC02F10@nice.asicdesigners.com>
+	 <6806026.xb91q6Ad7G@wuerfel>
+	 <4985EFDD773FCB459EF7915D2A3621ADC031F8@nice.asicdesigners.com>
+	 <1435272718.3822.7.camel@kernel.crashing.org>
+	 <20150626193158.GJ3005@wotan.suse.de>
+	 <1435356258.26815.13.camel@kernel.crashing.org>
+	 <CAB=NE6XwczF6FYXV=RHyK=7ikVk_tGp+h9ouWPyORNENq4+=Kw@mail.gmail.com>
+In-Reply-To: <CAB=NE6XwczF6FYXV=RHyK=7ikVk_tGp+h9ouWPyORNENq4+=Kw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Luis R. Rodriguez" <mcgrof@suse.com>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "Michael S. Tsirkin" <mst@redhat.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Dave Hansen <dave.hansen@linux.intel.com>, Jan Beulich <jbeulich@suse.com>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Arnd Bergmann <arnd@arndb.de>, Davidlohr Bueso <dbueso@suse.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mel Gorman <mgorman@suse.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Ingo Molnar <mingo@elte.hu>, Borislav Petkov <bp@suse.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Antonino Daplas <adaplas@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Stefan Bader <stefan.bader@canonical.com>, Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Juergen Gross <jgross@suse.com>, Toshi Kani <toshi.kani@hp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@amacapital.net>, David Vrabel <david.vrabel@citrix.com>, venkatesh.pallipadi@intel.com, Roger Pau =?ISO-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Dave Airlie <airlied@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>, Andy Lutomirski <luto@amacapital.net>, Bjorn Helgaas <bhelgaas@google.com>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Antonino Daplas <adaplas@gmail.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Roger Pau =?ISO-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, ville.syrjala@linux.intel.com, "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, David Vrabel <david.vrabel@citrix.com>, Casey Leedom <leedom@chelsio.com>, Juergen Gross <jgross@suse.com>, Toshi Kani <toshi.kani@hp.com>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Stefan Bader <stefan.bader@canonical.com>, Arnd Bergmann <arnd@arndb.de>, Jan Beulich <jbeulich@suse.com>
 
-On Wed, 2015-06-24 at 17:58 -0700, Luis R. Rodriguez wrote:
-> On Wed, Jun 24, 2015 at 5:52 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > On Thu, 2015-06-25 at 02:08 +0200, Luis R. Rodriguez wrote:
-> >>
-> >> OK thanks I'll proceed with these patches then.
-> >>
-> >> > As for user mappings,
-> >>
-> >> Which APIs were you considering in this regard BTW?
-> >
-> > mmap of the generic /sys/bus/pci/.../resource*
+On Fri, 2015-06-26 at 15:41 -0700, Luis R. Rodriguez wrote:
+
+> > It wasn't nullified for the main user at the time, the fb. And I
+> > mentioned an IB adapter or two for which the code had been hand
+> tuned.
 > 
-> Like? Got a demo patch in mind ? :)
+> This still means there could be some affected drivers when used on
+> powerpc, no?
 
-Nope. I was just thinking out loud. Today I have yet to see a problem
-with what we do so ...
+Yes. In fact what about things like ARM who also have barriers in their
+writel() ? Won't they also break WC ?
+
+I'm trying to work with the architect and designers here to figure out
+exactly where we stand and what we can do. As spelled out by our
+architecture, things don't look great, because basically, we only have
+attribute bit (garded) which when not set implies both WC and out of
+order (& prefetch), and unclear barrier semantics in that case as well.
+
+I *think* we might be able to settle with something along the lines of
+"writel_relaxed() will allow combine on a WC mapping" but how I'm going
+to get there is TBD.
+
+It would be interesting to clarify the semantics of using the relaxed
+accessors in combination with WC anyway. I wouldn't mind if the
+definition involved also relaxing general ordering :-) It would
+definitely make my life easier.
 
 Cheers,
 Ben.

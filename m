@@ -1,90 +1,84 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Sat, 20 Jun 2015 18:36:52 +0000
-Subject: [PATCH 18/19] staging: sm750fb: remove unnecessary braces
-Message-Id: <1434825413-4994-18-git-send-email-juston.h.li@gmail.com>
+From: Anatoly Stepanov <drivengroove@gmail.com>
+Date: Sun, 28 Jun 2015 23:44:04 +0000
+Subject: [PATCH 11/11] staging: sm750fb: add required spaces around C operators
+Message-Id: <1435535044-22042-12-git-send-email-drivengroove@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
-In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Juston Li <juston.h.li@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-fixes checkpatch.pl warning:
-WARNING: braces {} are not necessary for single statement blocks
 
-Signed-off-by: Juston Li <juston.h.li@gmail.com>
+
+Add spaces according to checkpatch.pl messages:
+"ERROR: spaces required around that '=' (ctx:VxV)"
+"ERROR: need consistent spacing around '-' (ctx:WxV)"
+"ERROR: spaces required around that '?' (ctx:VxE)"
+"ERROR: need consistent spacing around '&' (ctx:VxW)"
+
+Signed-off-by: Anatoly Stepanov <drivengroove@gmail.com>
 ---
- drivers/staging/sm750fb/sm750_accel.c | 9 +++------
- drivers/staging/sm750fb/sm750_hw.c    | 6 ++----
- 2 files changed, 5 insertions(+), 10 deletions(-)
+ drivers/staging/sm750fb/sm750_hw.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index f7a617e..291a47b 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -259,9 +259,8 @@ unsigned int rop2)   /* ROP value */
- 	FIELD_VALUE(0, DE_WINDOW_WIDTH, DESTINATION, (dPitch/Bpp)) |
- 	FIELD_VALUE(0, DE_WINDOW_WIDTH, SOURCE,      (sPitch/Bpp))); /* dpr3c */
- 
--	if (accel->de_wait() != 0) {
-+	if (accel->de_wait() != 0)
- 		return -1;
--	}
- 
- 	{
- 
-@@ -332,9 +331,8 @@ int hw_imageblit(struct lynx_accel *accel,
- 	ul4BytesPerScan = ulBytesPerScan & ~3;
- 	ulBytesRemain = ulBytesPerScan & 3;
- 
--	if (accel->de_wait() != 0) {
-+	if (accel->de_wait() != 0)
- 		return -1;
--	}
- 
- 	/* 2D Source Base.
- 	 Use 0 for HOST Blt.
-@@ -402,9 +400,8 @@ int hw_imageblit(struct lynx_accel *accel,
- 	/* Write MONO data (line by line) to 2D Engine data port */
- 	for (i = 0; i < height; i++) {
- 		/* For each line, send the data in chunks of 4 bytes */
--		for (j = 0; j < (ul4BytesPerScan/4); j++) {
-+		for (j = 0; j < (ul4BytesPerScan/4); j++)
- 			write_dpPort(accel, *(unsigned int *)(pSrcbuf + (j * 4)));
--		}
- 
- 		if (ulBytesRemain) {
- 			memcpy(ajRemain, pSrcbuf+ul4BytesPerScan, ulBytesRemain);
 diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 20a8d3b..97a0f63 100644
+index a4f0cd0..359165d 100644
 --- a/drivers/staging/sm750fb/sm750_hw.c
 +++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -187,9 +187,8 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
- 	}
+@@ -107,7 +107,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
+ 	spec_share = container_of(share, struct sm750_share, share);
+ 	parm = &spec_share->state.initParm;
+ 	if (parm->chip_clk = 0)
+-		parm->chip_clk = (getChipType() = SM750LE)?
++		parm->chip_clk = (getChipType() = SM750LE) ?
+ 						DEFAULT_SM750LE_CHIP_CLOCK :
+ 						DEFAULT_SM750_CHIP_CLOCK;
  
- 	/* init 2d engine */
--	if (!share->accel_off) {
-+	if (!share->accel_off)
- 		hw_sm750_initAccel(share);
--	}
+@@ -327,7 +327,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
+ 	modparm.pixel_clock = ps_to_hz(var->pixclock);
+ 	modparm.vertical_sync_polarity = (var->sync & FB_SYNC_HOR_HIGH_ACT) ? POS:NEG;
+ 	modparm.horizontal_sync_polarity = (var->sync & FB_SYNC_VERT_HIGH_ACT) ? POS:NEG;
+-	modparm.clock_phase_polarity = (var->sync& FB_SYNC_COMP_HIGH_ACT) ? POS:NEG;
++	modparm.clock_phase_polarity = (var->sync & FB_SYNC_COMP_HIGH_ACT) ? POS:NEG;
+ 	modparm.horizontal_display_end = var->xres;
+ 	modparm.horizontal_sync_width = var->hsync_len;
+ 	modparm.horizontal_sync_start = var->xres + var->right_margin;
+@@ -366,7 +366,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
+ 			FIELD_VALUE(0, PANEL_FB_WIDTH, OFFSET, fix->line_length));
  
+ 		POKE32(PANEL_WINDOW_WIDTH,
+-			FIELD_VALUE(0, PANEL_WINDOW_WIDTH, WIDTH, var->xres -1)|
++			FIELD_VALUE(0, PANEL_WINDOW_WIDTH, WIDTH, var->xres - 1)|
+ 			FIELD_VALUE(0, PANEL_WINDOW_WIDTH, X, var->xoffset));
+ 
+ 		POKE32(PANEL_WINDOW_HEIGHT,
+@@ -418,7 +418,7 @@ void hw_sm750_crtc_clear(struct lynxfb_crtc *crtc)
+ int hw_sm750_setColReg(struct lynxfb_crtc *crtc, ushort index,
+ 								ushort red, ushort green, ushort blue)
+ {
+-	static unsigned int add[]={PANEL_PALETTE_RAM, CRT_PALETTE_RAM};
++	static unsigned int add[] = {PANEL_PALETTE_RAM, CRT_PALETTE_RAM};
+ 	POKE32(add[crtc->channel] + index*4, (red<<16)|(green<<8)|blue);
  	return 0;
  }
-@@ -536,9 +535,8 @@ int hw_sm750_setBLANK(struct lynxfb_output* output, int blank)
- 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(PEEK32(CRT_DISPLAY_CTRL), CRT_DISPLAY_CTRL, BLANK, crtdb));
- 	}
+@@ -576,7 +576,7 @@ void hw_sm750_initAccel(struct lynx_share *share)
  
--	if (output->paths & sm750_panel) {
-+	if (output->paths & sm750_panel)
- 		POKE32(PANEL_DISPLAY_CTRL, FIELD_VALUE(PEEK32(PANEL_DISPLAY_CTRL), PANEL_DISPLAY_CTRL, DATA, pps));
--	}
+ int hw_sm750le_deWait(void)
+ {
+-	int i=0x10000000;
++	int i = 0x10000000;
+ 	while (i--) {
+ 		unsigned int dwVal = PEEK32(DE_STATE2);
+ 		if ((FIELD_GET(dwVal, DE_STATE2, DE_STATUS) = DE_STATE2_DE_STATUS_IDLE) &&
+@@ -592,7 +592,7 @@ int hw_sm750le_deWait(void)
  
- 	return 0;
- }
+ int hw_sm750_deWait(void)
+ {
+-	int i=0x10000000;
++	int i = 0x10000000;
+ 	while (i--) {
+ 		unsigned int dwVal = PEEK32(SYSTEM_CTRL);
+ 		if ((FIELD_GET(dwVal, SYSTEM_CTRL, DE_STATUS) = SYSTEM_CTRL_DE_STATUS_IDLE) &&
 -- 
-2.4.4
+2.1.0
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

@@ -1,84 +1,46 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Jun 2015 12:54:26 +0000
-Subject: [PATCH 02/11] OMAPDSS: DISPC: fix predecimation for YUV modes
-Message-Id: <1434545675-477-3-git-send-email-tomi.valkeinen@ti.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 28 Jun 2015 12:07:34 +0000
+Subject: Re: [PATCH v2] backlight: lp8788: Deletion of a check before backlight_device_unregister()
+Message-Id: <558FE386.7060704@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
+References: <530C5E18.1020800@users.sourceforge.net> <alpine.DEB.2.10.1402251014170.2080@hadrien> <530CD2C4.4050903@users.sourceforge.net> <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54720DEB.4060109@users.sourceforge.net> <20141124101006.GD4241@x1> <5473736F.8070705@users.sourceforge.net>
+In-Reply-To: <5473736F.8070705@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Lee Jones <lee.jones@linaro.org>, Bryan Wu <cooloney@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-DISPC needs even input buffer width for YUV modes. The DISPC driver
-doesn't check this at the moment (although omapdrm does), but worse,
-when DISPC driver does x predecimation the result may be uneven. This
-causes sometimes sync losts, underflows, or just visual errors.
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> 
+> The backlight_device_unregister() function tests whether its argument is NULL
+> and then returns immediately. Thus the test around the call is not needed.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+>  drivers/video/backlight/lp8788_bl.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backlight/lp8788_bl.c
+> index d6c4f6a..24a055c 100644
+> --- a/drivers/video/backlight/lp8788_bl.c
+> +++ b/drivers/video/backlight/lp8788_bl.c
+> @@ -221,8 +221,7 @@ static void lp8788_backlight_unregister(struct lp8788_bl *bl)
+>  {
+>  	struct backlight_device *bl_dev = bl->bl_dev;
+>  
+> -	if (bl_dev)
+> -		backlight_device_unregister(bl_dev);
+> +	backlight_device_unregister(bl_dev);
+>  }
+>  
+>  static ssize_t lp8788_get_bl_ctl_mode(struct device *dev,
+> 
 
-This patch makes DISPC driver return an error if the user gives uneven
-input width for a YUV buffer. It also makes the input width even in case
-of predecimation.
+Would you like to integrate this update suggestion
+into another source code repository?
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/dispc.c | 36 +++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
-
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index a074d8b70591..db60aa98f661 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -2542,6 +2542,21 @@ static int dispc_ovl_setup_common(enum omap_plane plane,
- 	if (paddr = 0 && rotation_type != OMAP_DSS_ROT_TILER)
- 		return -EINVAL;
- 
-+	switch (color_mode) {
-+	case OMAP_DSS_COLOR_YUV2:
-+	case OMAP_DSS_COLOR_UYVY:
-+	case OMAP_DSS_COLOR_NV12:
-+		if (in_width & 1) {
-+			DSSERR("input width %d is not even for YUV format\n",
-+				in_width);
-+			return -EINVAL;
-+		}
-+		break;
-+
-+	default:
-+		break;
-+	}
-+
- 	out_width = out_width = 0 ? width : out_width;
- 	out_height = out_height = 0 ? height : out_height;
- 
-@@ -2572,6 +2587,27 @@ static int dispc_ovl_setup_common(enum omap_plane plane,
- 	in_width = in_width / x_predecim;
- 	in_height = in_height / y_predecim;
- 
-+	if (x_predecim > 1 || y_predecim > 1)
-+		DSSDBG("predecimation %d x %x, new input size %d x %d\n",
-+			x_predecim, y_predecim, in_width, in_height);
-+
-+	switch (color_mode) {
-+	case OMAP_DSS_COLOR_YUV2:
-+	case OMAP_DSS_COLOR_UYVY:
-+	case OMAP_DSS_COLOR_NV12:
-+		if (in_width & 1) {
-+			DSSDBG("predecimated input width is not even for YUV format\n");
-+			DSSDBG("adjusting input width %d -> %d\n",
-+				in_width, in_width & ~1);
-+
-+			in_width &= ~1;
-+		}
-+		break;
-+
-+	default:
-+		break;
-+	}
-+
- 	if (color_mode = OMAP_DSS_COLOR_YUV2 ||
- 			color_mode = OMAP_DSS_COLOR_UYVY ||
- 			color_mode = OMAP_DSS_COLOR_NV12)
--- 
-2.1.4
-
+Regards,
+Markus

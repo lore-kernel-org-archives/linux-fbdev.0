@@ -1,58 +1,82 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Jun 2015 12:54:28 +0000
-Subject: [PATCH 04/11] OMAPDSS: DISPC: add check for scaling limits
-Message-Id: <1434545675-477-5-git-send-email-tomi.valkeinen@ti.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sun, 28 Jun 2015 01:42:11 +0000
+Subject: [RFC v3 12/24] powerpc: Cleanup nvram includes
+Message-Id: <20150628014202.632605096@telegraphics.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
+References: <20150628014159.732792697@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-On OMAP3/AM43xx some scaling factors cause underflows/synclosts. After
-studying this, I found that sometimes the driver uses three-tap scaling
-with downscaling factor smaller than x0.5. This causes issues, as x0.5
-is the limit for three-tap scaling.
+The nvram_read_byte() and nvram_write_byte() definitions in asm/nvram.h
+duplicate those in linux/nvram.h. Get rid of the former to prepare for
+adoption of struct arch_nvram_ops (which is defined in linux/nvram.h for
+general use).
 
-The driver has FEAT_PARAM_DOWNSCALE parameter, but that seems to be for
-five-tap scaling, which allows scaling down to x0.25.
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
-This patch adds checks for both horizontal and vertical scaling. For
-horizontal the HW always uses 5 taps, so the limit is x0.25.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dispc.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ arch/powerpc/include/asm/nvram.h           |    3 ---
+ arch/powerpc/kernel/setup_32.c             |    1 +
+ drivers/char/generic_nvram.c               |    4 +++-
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index cc61513afdb4..ddce8fcfc5c1 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -2326,6 +2326,21 @@ again:
- 		error = (error || in_width > maxsinglelinewidth * 2 ||
- 			(in_width > maxsinglelinewidth && *five_taps) ||
- 			!*core_clk || *core_clk > dispc_core_clk_rate());
+Index: linux/arch/powerpc/include/asm/nvram.h
+=================================--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-06-28 11:41:27.000000000 +1000
++++ linux/arch/powerpc/include/asm/nvram.h	2015-06-28 11:41:41.000000000 +1000
+@@ -101,7 +101,4 @@ extern int nvram_write_os_partition(stru
+ /* Determine NVRAM size */
+ extern ssize_t nvram_get_size(void);
+ 
+-/* Normal access to NVRAM */
+-extern unsigned char nvram_read_byte(int i);
+-extern void nvram_write_byte(unsigned char c, int i);
+ #endif /* _ASM_POWERPC_NVRAM_H */
+Index: linux/arch/powerpc/kernel/setup_32.c
+=================================--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:41.000000000 +1000
+@@ -16,6 +16,7 @@
+ #include <linux/cpu.h>
+ #include <linux/console.h>
+ #include <linux/memblock.h>
++#include <linux/nvram.h>
+ 
+ #include <asm/io.h>
+ #include <asm/prom.h>
+Index: linux/drivers/char/generic_nvram.c
+=================================--- linux.orig/drivers/char/generic_nvram.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-06-28 11:41:41.000000000 +1000
+@@ -20,9 +20,11 @@
+ #include <linux/fcntl.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
++#include <linux/nvram.h>
+ #include <asm/uaccess.h>
+-#include <asm/nvram.h>
 +
-+		if (!error) {
-+			/* verify that we're inside the limits of scaler */
-+			if (in_width / 4 > out_width)
-+					error = 1;
-+
-+			if (*five_taps) {
-+				if (in_height / 4 > out_height)
-+					error = 1;
-+			} else {
-+				if (in_height / 2 > out_height)
-+					error = 1;
-+			}
-+		}
-+
- 		if (error) {
- 			if (*decim_x = *decim_y) {
- 				*decim_x = min_factor;
--- 
-2.1.4
+ #ifdef CONFIG_PPC_PMAC
++#include <asm/nvram.h>
+ #include <asm/machdep.h>
+ #endif
+ 
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-28 11:41:41.000000000 +1000
+@@ -111,12 +111,12 @@
+ #include "matroxfb_g450.h"
+ #include <linux/matroxfb.h>
+ #include <linux/interrupt.h>
++#include <linux/nvram.h>
+ #include <linux/slab.h>
+ #include <linux/uaccess.h>
+ 
+ #ifdef CONFIG_PPC_PMAC
+ #include <asm/machdep.h>
+-unsigned char nvram_read_byte(int);
+ static int default_vmode = VMODE_NVRAM;
+ static int default_cmode = CMODE_NVRAM;
+ #endif
+
 

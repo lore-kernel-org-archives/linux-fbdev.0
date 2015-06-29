@@ -1,59 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Jun 2015 12:54:33 +0000
-Subject: [PATCH 09/11] OMAPDSS: DISPC: scaler debug print
-Message-Id: <1434545675-477-10-git-send-email-tomi.valkeinen@ti.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Mon, 29 Jun 2015 17:55:27 +0000
+Subject: [PATCH v4 10/19] staging: sm750fb: add space after return type
+Message-Id: <1435600536-13135-10-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
+References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+Cc: Juston Li <juston.h.li@gmail.com>
 
-Improve the DISPC debug print for scaling.
+Fixes checkpatch.pl warning:
+WARNING: missing space after return type
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/video/fbdev/omap2/dss/dispc.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ drivers/staging/sm750fb/sm750.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index 646d94a71a79..f8c9115cdb4b 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -2418,6 +2418,9 @@ static int dispc_ovl_calc_scaling_44xx(unsigned long pclk, unsigned long lclk,
- 	return 0;
- }
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 9989ff6..2d04c0f 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -108,12 +108,12 @@ struct lynxfb_crtc {
  
-+#define DIV_FRAC(dividend, divisor) \
-+	((dividend) * 100 / (divisor) - ((dividend) / (divisor) * 100))
-+
- static int dispc_ovl_calc_scaling(unsigned long pclk, unsigned long lclk,
- 		enum omap_overlay_caps caps,
- 		const struct omap_video_timings *mgr_timings,
-@@ -2477,8 +2480,19 @@ static int dispc_ovl_calc_scaling(unsigned long pclk, unsigned long lclk,
- 	if (ret)
- 		return ret;
+ 	void *priv;
  
--	DSSDBG("required core clk rate = %lu Hz\n", core_clk);
--	DSSDBG("current core clk rate = %lu Hz\n", dispc_core_clk_rate());
-+	DSSDBG("%dx%d -> %dx%d (%d.%02d x %d.%02d), decim %dx%d %dx%d (%d.%02d x %d.%02d), taps %d, req clk %lu, cur clk %lu\n",
-+		width, height,
-+		out_width, out_height,
-+		out_width / width, DIV_FRAC(out_width, width),
-+		out_height / height, DIV_FRAC(out_height, height),
-+
-+		decim_x, decim_y,
-+		width / decim_x, height / decim_y,
-+		out_width / (width / decim_x), DIV_FRAC(out_width, width / decim_x),
-+		out_height / (height / decim_y), DIV_FRAC(out_height, height / decim_y),
-+
-+		*five_taps ? 5 : 3,
-+		core_clk, dispc_core_clk_rate());
+-	int(*proc_setMode)(struct lynxfb_crtc*,
++	int (*proc_setMode)(struct lynxfb_crtc*,
+ 						struct fb_var_screeninfo*,
+ 						struct fb_fix_screeninfo*);
  
- 	if (!core_clk || core_clk > dispc_core_clk_rate()) {
- 		DSSERR("failed to set up scaling, "
+-	int(*proc_checkMode)(struct lynxfb_crtc*, struct fb_var_screeninfo*);
+-	int(*proc_setColReg)(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
++	int (*proc_checkMode)(struct lynxfb_crtc*, struct fb_var_screeninfo*);
++	int (*proc_setColReg)(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
+ 	void (*clear)(struct lynxfb_crtc*);
+ 	/* pan display */
+ 	int (*proc_panDisplay)(struct lynxfb_crtc *,
+@@ -140,12 +140,12 @@ struct lynxfb_output {
+ 	*/
+ 	void *priv;
+ 
+-	int(*proc_setMode)(struct lynxfb_output*,
++	int (*proc_setMode)(struct lynxfb_output*,
+ 						struct fb_var_screeninfo*,
+ 						struct fb_fix_screeninfo*);
+ 
+-	int(*proc_checkMode)(struct lynxfb_output*, struct fb_var_screeninfo*);
+-	int(*proc_setBLANK)(struct lynxfb_output*, int);
++	int (*proc_checkMode)(struct lynxfb_output*, struct fb_var_screeninfo*);
++	int (*proc_setBLANK)(struct lynxfb_output*, int);
+ 	void  (*clear)(struct lynxfb_output*);
+ };
+ 
 -- 
-2.1.4
+2.4.4
 

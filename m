@@ -1,114 +1,96 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Wed, 24 Jun 2015 16:25:10 +0000
-Subject: [PATCH v3 09/19] staging: sm750fb: add space after struct definition
-Message-Id: <1435163120-3253-9-git-send-email-juston.h.li@gmail.com>
+Date: Mon, 29 Jun 2015 17:55:30 +0000
+Subject: [PATCH v4 13/19] staging: sm750fb: add space after semicolon
+Message-Id: <1435600536-13135-13-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
-In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
 Cc: Juston Li <juston.h.li@gmail.com>
 
-fixes checkpatch.pl warning:
-WARNING: missing space after struct definition
+Fixes checkpatch.pl error:
+ERROR: space required after that ';'
 
 Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/staging/sm750fb/sm750.h    | 12 ++++++------
- drivers/staging/sm750fb/sm750_hw.h |  6 +++---
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/staging/sm750fb/sm750.h        |  2 +-
+ drivers/staging/sm750fb/sm750_cursor.c | 12 ++++++------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 3785afc..124921e 100644
+index d6916fd..9b101a9 100644
 --- a/drivers/staging/sm750fb/sm750.h
 +++ b/drivers/staging/sm750fb/sm750.h
-@@ -14,7 +14,7 @@
- extern int smi_indent;
+@@ -168,7 +168,7 @@ struct lynxfb_par {
+ 			({ \
+ 			unsigned long long hz = 1000*1000*1000*1000ULL;	\
+ 			do_div(hz, ps);	\
+-			(unsigned long)hz;})
++			(unsigned long)hz; })
  
- 
--struct lynx_accel{
-+struct lynx_accel {
- 	/* base virtual address of DPR registers */
- 	volatile unsigned char __iomem * dprBase;
- 	/* base virtual address of de data port */
-@@ -41,7 +41,7 @@ struct lynx_accel{
- /* lynx_share stands for a presentation of two frame buffer
-    that use one smi adaptor , it is similar to a basic class of C++
+ static inline unsigned long ps_to_hz(unsigned int psvalue)
+ {
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 9dabac1..4ed7ca2 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -122,7 +122,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 		odd=0;
  */
--struct lynx_share{
-+struct lynx_share {
- 	/* common members */
- 	u16 devid;
- 	u8 revid;
-@@ -68,7 +68,7 @@ struct lynx_share{
- 	void (*resume)(struct lynx_share*);
- };
  
--struct lynx_cursor{
-+struct lynx_cursor {
- 	/* cursor width ,height and size */
- 	int w;
- 	int h;
-@@ -92,7 +92,7 @@ struct lynx_cursor{
- 	void (*setData)(struct lynx_cursor *, u16, const u8*, const u8*);
- };
+-	for (i = 0;i < count;i++)
++	for (i = 0; i < count; i++)
+ 	{
+ 		color = *pcol++;
+ 		mask = *pmsk++;
+@@ -137,7 +137,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 		else
+ 			opr = mask & color;
  
--struct lynxfb_crtc{
-+struct lynxfb_crtc {
- 	unsigned char __iomem *vCursor; /* virtual address of cursor */
- 	unsigned char __iomem *vScreen; /* virtual address of on_screen */
- 	int oCursor; /* cursor address offset in vidmem */
-@@ -123,7 +123,7 @@ struct lynxfb_crtc{
- 	struct lynx_cursor cursor;
- };
+-		for (j = 0;j < 8;j++)
++		for (j = 0; j < 8; j++)
+ 		{
  
--struct lynxfb_output{
-+struct lynxfb_output {
- 	int dpms;
- 	int paths;
- 	/* which paths(s) this output stands for,for sm750:
-@@ -149,7 +149,7 @@ struct lynxfb_output{
- 	void  (*clear)(struct lynxfb_output*);
- };
+ 			if (opr & (0x80 >> j))
+@@ -149,7 +149,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 			}
+ 		}
+ #else
+-		for (j = 0;j < 8;j++) {
++		for (j = 0; j < 8; j++) {
+ 			if (mask & (0x80>>j)) {
+ 				if (rop = ROP_XOR)
+ 					opr = mask ^ color;
+@@ -204,7 +204,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 	pstart = cursor->vstart;
+ 	pbuffer = pstart;
  
--struct lynxfb_par{
-+struct lynxfb_par {
- 	/* either 0 or 1 for dual head adaptor,0 is the older one registered */
- 	int index;
- 	unsigned int pseudo_palette[256];
-diff --git a/drivers/staging/sm750fb/sm750_hw.h b/drivers/staging/sm750fb/sm750_hw.h
-index af2db7c..ef0a16f 100644
---- a/drivers/staging/sm750fb/sm750_hw.h
-+++ b/drivers/staging/sm750fb/sm750_hw.h
-@@ -42,7 +42,7 @@ enum sm750_path {
- 	sm750_pnc = 3,/* panel and crt */
- };
+-	for (i = 0;i < count;i++)
++	for (i = 0; i < count; i++)
+ 	{
+ 		color = *pcol++;
+ 		mask = *pmsk++;
+@@ -217,7 +217,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 		else
+ 			opr = mask & color;
  
--struct init_status{
-+struct init_status {
- 	ushort powerMode;
- 	/* below three clocks are in unit of MHZ*/
- 	ushort chip_clk;
-@@ -52,7 +52,7 @@ struct init_status{
- 	ushort resetMemory;
- };
+-		for (j = 0;j < 8;j++)
++		for (j = 0; j < 8; j++)
+ 		{
  
--struct sm750_state{
-+struct sm750_state {
- 	struct init_status initParm;
- 	enum sm750_pnltype pnltype;
- 	enum sm750_dataflow dataflow;
-@@ -66,7 +66,7 @@ struct sm750_state{
-    in C++
-  */
- 
--struct sm750_share{
-+struct sm750_share {
- 	/* it's better to put lynx_share struct to the first place of sm750_share */
- 	struct lynx_share share;
- 	struct sm750_state state;
+ 			if (opr & (0x80 >> j))
+@@ -229,7 +229,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 			}
+ 		}
+ #else
+-		for (j = 0;j < 8;j++) {
++		for (j = 0; j < 8; j++) {
+ 			if (mask & (1<<j))
+ 				data |= ((color & (1<<j))?1:2)<<(j*2);
+ 		}
 -- 
 2.4.4
 

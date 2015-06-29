@@ -1,82 +1,79 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sun, 28 Jun 2015 01:42:11 +0000
-Subject: [RFC v3 12/24] powerpc: Cleanup nvram includes
-Message-Id: <20150628014202.632605096@telegraphics.com.au>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Mon, 29 Jun 2015 17:55:19 +0000
+Subject: [PATCH v4 02/19] staging: sm750fb: remove spacing after open parenthesis
+Message-Id: <1435600536-13135-2-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150628014159.732792697@telegraphics.com.au>
+References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+Cc: Juston Li <juston.h.li@gmail.com>
 
-The nvram_read_byte() and nvram_write_byte() definitions in asm/nvram.h
-duplicate those in linux/nvram.h. Get rid of the former to prepare for
-adoption of struct arch_nvram_ops (which is defined in linux/nvram.h for
-general use).
+Fixes checkpatch.pl warning:
+ERROR: space prohibited after that open parenthesis '('
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- arch/powerpc/include/asm/nvram.h           |    3 ---
- arch/powerpc/kernel/setup_32.c             |    1 +
- drivers/char/generic_nvram.c               |    4 +++-
- drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/staging/sm750fb/ddk750_chip.c  | 6 +++---
+ drivers/staging/sm750fb/ddk750_mode.c  | 2 +-
+ drivers/staging/sm750fb/ddk750_power.c | 8 ++++----
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-Index: linux/arch/powerpc/include/asm/nvram.h
-=================================--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-06-28 11:41:27.000000000 +1000
-+++ linux/arch/powerpc/include/asm/nvram.h	2015-06-28 11:41:41.000000000 +1000
-@@ -101,7 +101,4 @@ extern int nvram_write_os_partition(stru
- /* Determine NVRAM size */
- extern ssize_t nvram_get_size(void);
- 
--/* Normal access to NVRAM */
--extern unsigned char nvram_read_byte(int i);
--extern void nvram_write_byte(unsigned char c, int i);
- #endif /* _ASM_POWERPC_NVRAM_H */
-Index: linux/arch/powerpc/kernel/setup_32.c
-=================================--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:27.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:41.000000000 +1000
-@@ -16,6 +16,7 @@
- #include <linux/cpu.h>
- #include <linux/console.h>
- #include <linux/memblock.h>
-+#include <linux/nvram.h>
- 
- #include <asm/io.h>
- #include <asm/prom.h>
-Index: linux/drivers/char/generic_nvram.c
-=================================--- linux.orig/drivers/char/generic_nvram.c	2015-06-28 11:41:27.000000000 +1000
-+++ linux/drivers/char/generic_nvram.c	2015-06-28 11:41:41.000000000 +1000
-@@ -20,9 +20,11 @@
- #include <linux/fcntl.h>
- #include <linux/init.h>
- #include <linux/mutex.h>
-+#include <linux/nvram.h>
- #include <asm/uaccess.h>
--#include <asm/nvram.h>
-+
- #ifdef CONFIG_PPC_PMAC
-+#include <asm/nvram.h>
- #include <asm/machdep.h>
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index f4975d2..1069a2d 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -599,9 +599,9 @@ unsigned int formatPllReg(pll_value_t *pPLL)
+        On returning a 32 bit number, the value can be applied to any PLL in the calling function.
+     */
+ 	ulPllReg -	FIELD_SET(  0, PANEL_PLL_CTRL, BYPASS, OFF)
+-	| FIELD_SET(  0, PANEL_PLL_CTRL, POWER,  ON)
+-	| FIELD_SET(  0, PANEL_PLL_CTRL, INPUT,  OSC)
++	FIELD_SET(0, PANEL_PLL_CTRL, BYPASS, OFF)
++	| FIELD_SET(0, PANEL_PLL_CTRL, POWER,  ON)
++	| FIELD_SET(0, PANEL_PLL_CTRL, INPUT,  OSC)
+ #ifndef VALIDATION_CHIP
+ 	| FIELD_VALUE(0, PANEL_PLL_CTRL, POD,    pPLL->POD)
  #endif
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 1f93d07..31424b2 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -43,7 +43,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
  
-Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
-=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-28 11:41:27.000000000 +1000
-+++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-28 11:41:41.000000000 +1000
-@@ -111,12 +111,12 @@
- #include "matroxfb_g450.h"
- #include <linux/matroxfb.h>
- #include <linux/interrupt.h>
-+#include <linux/nvram.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
- 
- #ifdef CONFIG_PPC_PMAC
- #include <asm/machdep.h>
--unsigned char nvram_read_byte(int);
- static int default_vmode = VMODE_NVRAM;
- static int default_cmode = CMODE_NVRAM;
+ 	/* Set bit 29:27 of display control register for the right clock */
+ 	/* Note that SM750LE only need to supported 7 resoluitons. */
+-	if ( x = 800 && y = 600 )
++	if (x = 800 && y = 600 )
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
+ 	else if (x = 1024 && y = 768)
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL65);
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index b7a108b..44b8eb1 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -59,17 +59,17 @@ void setPowerMode(unsigned int powerMode)
+ 	{
+ 		control_value  #ifdef VALIDATION_CHIP
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, OFF) |
++		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, OFF) |
  #endif
-
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
++		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
+ 	}
+ 	else
+ 	{
+ 		control_value  #ifdef VALIDATION_CHIP
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, ON) |
++		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, ON) |
+ #endif
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  ON);
++		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT,  ON);
+ 	}
+ 
+ 	/* Program new power mode. */
+-- 
+2.4.4
 

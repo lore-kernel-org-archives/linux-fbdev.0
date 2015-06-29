@@ -1,58 +1,56 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Jun 2015 12:54:30 +0000
-Subject: [PATCH 06/11] OMAPDSS: DISPC: fix 64 bit issue in 5-tap
-Message-Id: <1434545675-477-7-git-send-email-tomi.valkeinen@ti.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Mon, 29 Jun 2015 17:55:22 +0000
+Subject: [PATCH v4 05/19] staging: sm750fb: remove space between function name and parenthesis
+Message-Id: <1435600536-13135-5-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1434545675-477-1-git-send-email-tomi.valkeinen@ti.com>
+References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+Cc: Juston Li <juston.h.li@gmail.com>
 
-The DISPC driver uses 64 bit arithmetic to calculate the required clock
-rate for scaling. The code does not seem to work correctly, and instead
-calculates with 32 bit numbers, giving wrong result.
+Fixes checkpatch.pl warning:
+WARNING: space prohibited between function name and open parenthesis '('
 
-Fix the code by typecasting values to u64 first, so that the
-calculations do happen in 64 bits.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/video/fbdev/omap2/dss/dispc.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/staging/sm750fb/sm750_accel.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index 4488d9367bd3..2db1c986e989 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -2166,7 +2166,7 @@ static unsigned long calc_core_clk_five_taps(unsigned long pclk,
- 	if (height > out_height) {
- 		unsigned int ppl = mgr_timings->x_res;
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 3c61103..bb96ea5 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -278,11 +278,11 @@ unsigned int rop2)   /* ROP value */
+ 	{
  
--		tmp = pclk * height * out_width;
-+		tmp = (u64)pclk * height * out_width;
- 		do_div(tmp, 2 * out_height * ppl);
- 		core_clk = tmp;
+ 	write_dpr(accel, DE_SOURCE,
+-		  FIELD_SET  (0, DE_SOURCE, WRAP, DISABLE) |
++		  FIELD_SET(0, DE_SOURCE, WRAP, DISABLE) |
+ 		  FIELD_VALUE(0, DE_SOURCE, X_K1, sx)   |
+ 		  FIELD_VALUE(0, DE_SOURCE, Y_K2, sy)); /* dpr0 */
+ 	write_dpr(accel, DE_DESTINATION,
+-		  FIELD_SET  (0, DE_DESTINATION, WRAP, DISABLE) |
++		  FIELD_SET(0, DE_DESTINATION, WRAP, DISABLE) |
+ 		  FIELD_VALUE(0, DE_DESTINATION, X,    dx)  |
+ 		  FIELD_VALUE(0, DE_DESTINATION, Y,    dy)); /* dpr04 */
+ 	write_dpr(accel, DE_DIMENSION,
+@@ -390,11 +390,11 @@ int hw_imageblit(struct lynx_accel *accel,
+ 	 /* Note: For 2D Source in Host Write, only X_K1_MONO field is needed, and Y_K2 field is not used.
+ 	    For mono bitmap, use startBit for X_K1. */
+ 	write_dpr(accel, DE_SOURCE,
+-		  FIELD_SET  (0, DE_SOURCE, WRAP, DISABLE)       |
++		  FIELD_SET(0, DE_SOURCE, WRAP, DISABLE)       |
+ 		  FIELD_VALUE(0, DE_SOURCE, X_K1_MONO, startBit)); /* dpr00 */
  
-@@ -2174,14 +2174,14 @@ static unsigned long calc_core_clk_five_taps(unsigned long pclk,
- 			if (ppl = out_width)
- 				return 0;
- 
--			tmp = pclk * (height - 2 * out_height) * out_width;
-+			tmp = (u64)pclk * (height - 2 * out_height) * out_width;
- 			do_div(tmp, 2 * out_height * (ppl - out_width));
- 			core_clk = max_t(u32, core_clk, tmp);
- 		}
- 	}
- 
- 	if (width > out_width) {
--		tmp = pclk * width;
-+		tmp = (u64)pclk * width;
- 		do_div(tmp, out_width);
- 		core_clk = max_t(u32, core_clk, tmp);
+ 	write_dpr(accel, DE_DESTINATION,
+-		  FIELD_SET  (0, DE_DESTINATION, WRAP, DISABLE) |
++		  FIELD_SET(0, DE_DESTINATION, WRAP, DISABLE) |
+ 		  FIELD_VALUE(0, DE_DESTINATION, X,    dx)    |
+ 		  FIELD_VALUE(0, DE_DESTINATION, Y,    dy)); /* dpr04 */
  
 -- 
-2.1.4
+2.4.4
 

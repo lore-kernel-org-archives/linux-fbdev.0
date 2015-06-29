@@ -1,84 +1,65 @@
-From: Anatoly Stepanov <drivengroove@gmail.com>
-Date: Sun, 28 Jun 2015 23:44:04 +0000
-Subject: [PATCH 11/11] staging: sm750fb: add required spaces around C operators
-Message-Id: <1435535044-22042-12-git-send-email-drivengroove@gmail.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Mon, 29 Jun 2015 17:55:20 +0000
+Subject: [PATCH v4 03/19] staging: sm750fb: remove space before close parenthesis
+Message-Id: <1435600536-13135-3-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+Cc: Juston Li <juston.h.li@gmail.com>
 
+Fixes checkpatch.pl error:
+ERROR: space prohibited before that close parenthesis ')'
 
-
-Add spaces according to checkpatch.pl messages:
-"ERROR: spaces required around that '=' (ctx:VxV)"
-"ERROR: need consistent spacing around '-' (ctx:WxV)"
-"ERROR: spaces required around that '?' (ctx:VxE)"
-"ERROR: need consistent spacing around '&' (ctx:VxW)"
-
-Signed-off-by: Anatoly Stepanov <drivengroove@gmail.com>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/staging/sm750fb/sm750_hw.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/staging/sm750fb/ddk750_chip.c | 2 +-
+ drivers/staging/sm750fb/ddk750_mode.c | 2 +-
+ drivers/staging/sm750fb/sm750_accel.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index a4f0cd0..359165d 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -107,7 +107,7 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
- 	spec_share = container_of(share, struct sm750_share, share);
- 	parm = &spec_share->state.initParm;
- 	if (parm->chip_clk = 0)
--		parm->chip_clk = (getChipType() = SM750LE)?
-+		parm->chip_clk = (getChipType() = SM750LE) ?
- 						DEFAULT_SM750LE_CHIP_CLOCK :
- 						DEFAULT_SM750_CHIP_CLOCK;
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 1069a2d..fb1c533 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -268,7 +268,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ #endif
  
-@@ -327,7 +327,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
- 	modparm.pixel_clock = ps_to_hz(var->pixclock);
- 	modparm.vertical_sync_polarity = (var->sync & FB_SYNC_HOR_HIGH_ACT) ? POS:NEG;
- 	modparm.horizontal_sync_polarity = (var->sync & FB_SYNC_VERT_HIGH_ACT) ? POS:NEG;
--	modparm.clock_phase_polarity = (var->sync& FB_SYNC_COMP_HIGH_ACT) ? POS:NEG;
-+	modparm.clock_phase_polarity = (var->sync & FB_SYNC_COMP_HIGH_ACT) ? POS:NEG;
- 	modparm.horizontal_display_end = var->xres;
- 	modparm.horizontal_sync_width = var->hsync_len;
- 	modparm.horizontal_sync_start = var->xres + var->right_margin;
-@@ -366,7 +366,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
- 			FIELD_VALUE(0, PANEL_FB_WIDTH, OFFSET, fix->line_length));
  
- 		POKE32(PANEL_WINDOW_WIDTH,
--			FIELD_VALUE(0, PANEL_WINDOW_WIDTH, WIDTH, var->xres -1)|
-+			FIELD_VALUE(0, PANEL_WINDOW_WIDTH, WIDTH, var->xres - 1)|
- 			FIELD_VALUE(0, PANEL_WINDOW_WIDTH, X, var->xoffset));
+-	if (pInitParam->powerMode != 0 )
++	if (pInitParam->powerMode != 0)
+ 		pInitParam->powerMode = 0;
+ 	setPowerMode(pInitParam->powerMode);
  
- 		POKE32(PANEL_WINDOW_HEIGHT,
-@@ -418,7 +418,7 @@ void hw_sm750_crtc_clear(struct lynxfb_crtc *crtc)
- int hw_sm750_setColReg(struct lynxfb_crtc *crtc, ushort index,
- 								ushort red, ushort green, ushort blue)
- {
--	static unsigned int add[]={PANEL_PALETTE_RAM, CRT_PALETTE_RAM};
-+	static unsigned int add[] = {PANEL_PALETTE_RAM, CRT_PALETTE_RAM};
- 	POKE32(add[crtc->channel] + index*4, (red<<16)|(green<<8)|blue);
- 	return 0;
- }
-@@ -576,7 +576,7 @@ void hw_sm750_initAccel(struct lynx_share *share)
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 31424b2..4ee9ceb 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -43,7 +43,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
  
- int hw_sm750le_deWait(void)
- {
--	int i=0x10000000;
-+	int i = 0x10000000;
- 	while (i--) {
- 		unsigned int dwVal = PEEK32(DE_STATE2);
- 		if ((FIELD_GET(dwVal, DE_STATE2, DE_STATUS) = DE_STATE2_DE_STATUS_IDLE) &&
-@@ -592,7 +592,7 @@ int hw_sm750le_deWait(void)
- 
- int hw_sm750_deWait(void)
- {
--	int i=0x10000000;
-+	int i = 0x10000000;
- 	while (i--) {
- 		unsigned int dwVal = PEEK32(SYSTEM_CTRL);
- 		if ((FIELD_GET(dwVal, SYSTEM_CTRL, DE_STATUS) = SYSTEM_CTRL_DE_STATUS_IDLE) &&
+ 	/* Set bit 29:27 of display control register for the right clock */
+ 	/* Note that SM750LE only need to supported 7 resoluitons. */
+-	if (x = 800 && y = 600 )
++	if (x = 800 && y = 600)
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
+ 	else if (x = 1024 && y = 768)
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL65);
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 668258c..ed82813 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -363,7 +363,7 @@ int hw_imageblit(struct lynx_accel *accel,
+        Note that input pitch is BYTE value, but the 2D Pitch register uses
+        pixel values. Need Byte to pixel conversion.
+     */
+-	if(bytePerPixel = 3 ){
++	if(bytePerPixel = 3){
+ 		dx *= 3;
+ 		width *= 3;
+ 		startBit *= 3;
 -- 
-2.1.0
+2.4.4
 

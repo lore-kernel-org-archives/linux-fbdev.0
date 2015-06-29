@@ -1,17 +1,17 @@
 From: Juston Li <juston.h.li@gmail.com>
-Date: Sat, 20 Jun 2015 18:36:42 +0000
-Subject: [PATCH 08/19] staging: sm750fb: add space after enum definition
-Message-Id: <1434825413-4994-8-git-send-email-juston.h.li@gmail.com>
+Date: Mon, 29 Jun 2015 17:55:25 +0000
+Subject: [PATCH v4 08/19] staging: sm750fb: add space after enum definition
+Message-Id: <1435600536-13135-8-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
-In-Reply-To: <CAFow2F-rzu4Jywjo3JngEYDYMtuSRzS3pUFhwb5XLTWjRjmTJw@mail.gmail.com>
+References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+In-Reply-To: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
 Cc: Juston Li <juston.h.li@gmail.com>
 
-fixes checkpatch.pl warning:
+Fixes checkpatch.pl warning:
 WARNING: missing space after enum definition
 
 Signed-off-by: Juston Li <juston.h.li@gmail.com>
@@ -74,5 +74,3 @@ index adc61edf..af2db7c 100644
 -- 
 2.4.4
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in

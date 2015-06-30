@@ -1,210 +1,237 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Wed, 24 Jun 2015 16:25:20 +0000
-Subject: [PATCH v3 19/19] staging: sm750fb: add missing blank line after declarations
-Message-Id: <1435163120-3253-19-git-send-email-juston.h.li@gmail.com>
+From: "K. Y. Srinivasan" <kys@microsoft.com>
+Date: Tue, 30 Jun 2015 21:12:05 +0000
+Subject: [PATCH 1/2] drivers:hv: Modify hv_vmbus to search for all MMIO ranges available.
+Message-Id: <1435703702-23525-1-git-send-email-kys@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
-In-Reply-To: <CAFow2F8Vgh93P5wmvDKcLCkiO2KkXQ14M1DXLhyeD6WTcH2RHg@mail.gmail.com>
+References: <1435703668-23486-1-git-send-email-kys@microsoft.com>
+In-Reply-To: <1435703668-23486-1-git-send-email-kys@microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
-Cc: Juston Li <juston.h.li@gmail.com>
+To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, devel@linuxdriverproject.org, olaf@aepfle.de, apw@canonical.com, vkuznets@redhat.com, jasowang@redhat.com, hdegoede@redhat.com, linux-fbdev@vger.kernel.org, haiyangz@microsoft.com
+Cc: "jakeo@microsoft.com" <jakeo@microsoft.com>, "K. Y. Srinivasan" <kys@microsoft.com>
 
-fixes checkpatch.pl:
-WARNING: Missing a blank line after declarations
+From: jakeo@microsoft.com <jakeo@microsoft.com>
 
-Signed-off-by: Juston Li <juston.h.li@gmail.com>
+This patch changes the logic in hv_vmbus to record all of the ranges in the
+VM's firmware (BIOS or UEFI) that offer regions of memory-mapped I/O space for
+use by paravirtual front-end drivers.  The old logic just found one range
+above 4GB and called it good.  This logic will find any ranges above 1MB.
+
+It would have been possible with this patch to just use existing resource
+allocation functions, rather than keep track of the entire set of Hyper-V
+related MMIO regions in VMBus.  This strategy, however, is not sufficient
+when the resource allocator needs to be aware of the constraints of a
+Hyper-V virtual machine, which is what happens in the next patch in the series.
+So this first patch exists to show the first steps in reworking the MMIO
+allocation paths for Hyper-V front-end drivers.
+
+Signed-off-by: Jake Oshins <jakeo@microsoft.com>
+Signed-off-by: K. Y. Srinivasan <kys@microsoft.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.c    | 1 +
- drivers/staging/sm750fb/ddk750_display.c | 2 ++
- drivers/staging/sm750fb/ddk750_dvi.c     | 1 +
- drivers/staging/sm750fb/ddk750_mode.c    | 3 +++
- drivers/staging/sm750fb/ddk750_power.c   | 1 +
- drivers/staging/sm750fb/ddk750_sii164.c  | 1 +
- drivers/staging/sm750fb/sm750_accel.c    | 1 +
- drivers/staging/sm750fb/sm750_cursor.c   | 2 ++
- drivers/staging/sm750fb/sm750_hw.c       | 7 +++++++
- 9 files changed, 19 insertions(+)
+ drivers/hv/vmbus_drv.c          |  116 ++++++++++++++++++++++++++++++---------
+ drivers/video/fbdev/hyperv_fb.c |    2 +-
+ include/linux/hyperv.h          |    2 +-
+ 3 files changed, 92 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index d7435d7..5e6798e 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -474,6 +474,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
- 			M += (fl_quo*X % 10000) > 5000?1:0;
- 			if (M < 256 && M > 0) {
- 				unsigned int diff;
-+
- 				tmpClock = pll->inputFreq * M / N / X;
- 				diff = absDiff(tmpClock, request_orig);
- 				if (diff < miniDiff) {
-diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
-index 90c5c9e..70e7f10 100644
---- a/drivers/staging/sm750fb/ddk750_display.c
-+++ b/drivers/staging/sm750fb/ddk750_display.c
-@@ -121,6 +121,7 @@ static void setDisplayControl(int ctrl, int dispState)
- static void waitNextVerticalSync(int ctrl, int delay)
- {
- 	unsigned int status;
-+
- 	if (!ctrl) {
- 		/* primary controller */
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index b6114cc..21bb287 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -102,10 +102,7 @@ static struct notifier_block hyperv_panic_block = {
+ 	.notifier_call = hyperv_panic_event,
+ };
  
-@@ -210,6 +211,7 @@ static void swPanelPowerSequence(int disp, int delay)
- void ddk750_setLogicalDispOut(disp_output_t output)
- {
- 	unsigned int reg;
-+
- 	if (output & PNL_2_USAGE) {
- 		/* set panel path controller select */
- 		reg = PEEK32(PANEL_DISPLAY_CTRL);
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index a18bb4c..a7a2351 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.c
-+++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -43,6 +43,7 @@ int dviInit(
- 			)
- {
- 	dvi_ctrl_device_t *pCurrentDviCtrl;
-+
- 	pCurrentDviCtrl = g_dcftSupportedDviController;
- 	if (pCurrentDviCtrl->pfnInit != NULL) {
- 		return pCurrentDviCtrl->pfnInit(edgeSelect, busSelect, dualEdgeClkSelect, hsyncEnable,
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index 9d10446..2399b17 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -80,6 +80,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
- 	int ret = 0;
- 	int cnt = 0;
- 	unsigned int ulTmpValue, ulReg;
-+
- 	if (pll->clockType = SECONDARY_PLL) {
- 		/* programe secondary pixel clock */
- 		POKE32(CRT_PLL_CTRL, formatPllReg(pll));
-@@ -120,6 +121,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+-struct resource hyperv_mmio = {
+-	.name  = "hyperv mmio",
+-	.flags = IORESOURCE_MEM,
+-};
++struct resource *hyperv_mmio;
+ EXPORT_SYMBOL_GPL(hyperv_mmio);
  
- 	} else if (pll->clockType = PRIMARY_PLL) {
- 		unsigned int ulReservedBits;
-+
- 		POKE32(PANEL_PLL_CTRL, formatPllReg(pll));
+ static int vmbus_exists(void)
+@@ -1013,30 +1010,105 @@ void vmbus_device_unregister(struct hv_device *device_obj)
  
- 		POKE32(PANEL_HORIZONTAL_TOTAL,
-@@ -184,6 +186,7 @@ int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock)
- {
- 	pll_value_t pll;
- 	unsigned int uiActualPixelClk;
-+
- 	pll.inputFreq = DEFAULT_INPUT_CLOCK;
- 	pll.clockType = clock;
  
-diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index c545c2d..c8c51be 100644
---- a/drivers/staging/sm750fb/ddk750_power.c
-+++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -5,6 +5,7 @@
- void ddk750_setDPMS(DPMS_t state)
+ /*
+- * VMBUS is an acpi enumerated device. Get the the information we
++ * VMBUS is an acpi enumerated device. Get the information we
+  * need from DSDT.
+  */
+-
++#define VTPM_BASE_ADDRESS 0xfed40000
+ static acpi_status vmbus_walk_resources(struct acpi_resource *res, void *ctx)
  {
- 	unsigned int value;
++	resource_size_t start = 0;
++	resource_size_t end = 0;
++	struct resource *new_res;
++	struct resource **old_res = &hyperv_mmio;
++	struct resource **prev_res = NULL;
 +
- 	if (getChipType() = SM750LE) {
- 		value = PEEK32(CRT_DISPLAY_CTRL);
- 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index a5153be..0bdf3db 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.c
-+++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -340,6 +340,7 @@ void sii164EnableHotPlugDetection(
- )
- {
- 	unsigned char detectReg;
+ 	switch (res->type) {
+ 	case ACPI_RESOURCE_TYPE_IRQ:
+ 		irq = res->data.irq.interrupts[0];
++		return AE_OK;
 +
- 	detectReg = i2cReadReg(SII164_I2C_ADDRESS, SII164_DETECT);
++	/*
++	 * "Address" descriptors are for bus windows. Ignore
++	 * "memory" descriptors, which are for registers on
++	 * devices.
++	 */
++	case ACPI_RESOURCE_TYPE_ADDRESS32:
++		start = res->data.address32.address.minimum;
++		end = res->data.address32.address.maximum;
+ 		break;
  
- 	/* Depending on each DVI controller, need to enable the hot plug based on each
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 291a47b..b75ffbd 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -152,6 +152,7 @@ unsigned int rop2)   /* ROP value */
- {
- 	unsigned int nDirection, de_ctrl;
- 	int opSign;
+ 	case ACPI_RESOURCE_TYPE_ADDRESS64:
+-		hyperv_mmio.start = res->data.address64.address.minimum;
+-		hyperv_mmio.end = res->data.address64.address.maximum;
++		start = res->data.address64.address.minimum;
++		end = res->data.address64.address.maximum;
+ 		break;
 +
- 	nDirection = LEFT_TO_RIGHT;
- 	/* Direction of ROP2 operation: 1 = Left to Right, (-1) = Right to Left */
- 	opSign = 1;
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index ab61fe6..2400c6c 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -61,6 +61,7 @@ writel((data), cursor->mmio + (addr))
- void hw_cursor_enable(struct lynx_cursor *cursor)
- {
- 	u32 reg;
++	default:
++		/* Unused resource type */
++		return AE_OK;
 +
- 	reg = FIELD_VALUE(0, HWC_ADDRESS, ADDRESS, cursor->offset)|
- 			FIELD_SET(0, HWC_ADDRESS, EXT, LOCAL)|
- 			FIELD_SET(0, HWC_ADDRESS, ENABLE, ENABLE);
-@@ -81,6 +82,7 @@ void hw_cursor_setPos(struct lynx_cursor *cursor,
- 						int x, int y)
- {
- 	u32 reg;
+ 	}
++	/*
++	 * Ignore ranges that are below 1MB, as they're not
++	 * necessary or useful here.
++	 */
++	if (end < 0x100000)
++		return AE_OK;
 +
- 	reg = FIELD_VALUE(0, HWC_LOCATION, Y, y)|
- 			FIELD_VALUE(0, HWC_LOCATION, X, x);
- 	POKE32(HWC_LOCATION, reg);
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 97a0f63..10f15b5 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -243,6 +243,7 @@ int hw_sm750_output_setMode(struct lynxfb_output* output,
- 	} else {
- 		/* just open DISPLAY_CONTROL_750LE register bit 3:0*/
- 		u32 reg;
++	new_res = kzalloc(sizeof(*new_res), GFP_ATOMIC);
++	if (!new_res)
++		return AE_NO_MEMORY;
 +
- 		reg = PEEK32(DISPLAY_CONTROL_750LE);
- 		reg |= 0xf;
- 		POKE32(DISPLAY_CONTROL_750LE, reg);
-@@ -417,6 +418,7 @@ int hw_sm750_setColReg(struct lynxfb_crtc* crtc, ushort index,
- 								ushort red, ushort green, ushort blue)
- {
- 	static unsigned int add[] = {PANEL_PALETTE_RAM, CRT_PALETTE_RAM};
++	/* If this range overlaps the virtual TPM, truncate it. */
++	if (end > VTPM_BASE_ADDRESS && start < VTPM_BASE_ADDRESS)
++		end = VTPM_BASE_ADDRESS;
 +
- 	POKE32(add[crtc->channel] + index*4, (red<<16)|(green<<8)|blue);
- 	return 0;
++	new_res->name = "hyperv mmio";
++	new_res->flags = IORESOURCE_MEM;
++	new_res->start = start;
++	new_res->end = end;
++
++	do {
++		if (!*old_res) {
++			*old_res = new_res;
++			break;
++		}
++
++		if ((*old_res)->end < new_res->start) {
++			new_res->sibling = *old_res;
++			if (prev_res)
++				(*prev_res)->sibling = new_res;
++			*old_res = new_res;
++			break;
++		}
++
++		prev_res = old_res;
++		old_res = &(*old_res)->sibling;
++
++	} while (1);
+ 
+ 	return AE_OK;
  }
-@@ -545,6 +547,7 @@ int hw_sm750_setBLANK(struct lynxfb_output* output, int blank)
- void hw_sm750_initAccel(struct lynx_share *share)
- {
- 	u32 reg;
-+
- 	enable2DEngine(1);
  
- 	if (getChipType() = SM750LE) {
-@@ -574,8 +577,10 @@ void hw_sm750_initAccel(struct lynx_share *share)
- int hw_sm750le_deWait(void)
++static int vmbus_acpi_remove(struct acpi_device *device)
++{
++	struct resource *cur_res;
++	struct resource *next_res;
++
++	if (hyperv_mmio) {
++		for (cur_res = hyperv_mmio; cur_res; cur_res = next_res) {
++			next_res = cur_res->sibling;
++			kfree(cur_res);
++		}
++	}
++
++	return 0;
++}
++
+ static int vmbus_acpi_add(struct acpi_device *device)
  {
- 	int i = 0x10000000;
-+
- 	while (i--) {
- 		unsigned int dwVal = PEEK32(DE_STATE2);
-+
- 		if ((FIELD_GET(dwVal, DE_STATE2, DE_STATUS) = DE_STATE2_DE_STATUS_IDLE) &&
- 			(FIELD_GET(dwVal, DE_STATE2, DE_FIFO)  = DE_STATE2_DE_FIFO_EMPTY) &&
- 			(FIELD_GET(dwVal, DE_STATE2, DE_MEM_FIFO) = DE_STATE2_DE_MEM_FIFO_EMPTY)) {
-@@ -590,8 +595,10 @@ int hw_sm750le_deWait(void)
- int hw_sm750_deWait(void)
- {
- 	int i = 0x10000000;
-+
- 	while (i--) {
- 		unsigned int dwVal = PEEK32(SYSTEM_CTRL);
-+
- 		if ((FIELD_GET(dwVal, SYSTEM_CTRL, DE_STATUS) = SYSTEM_CTRL_DE_STATUS_IDLE) &&
- 			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_FIFO)  = SYSTEM_CTRL_DE_FIFO_EMPTY) &&
- 			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_MEM_FIFO) = SYSTEM_CTRL_DE_MEM_FIFO_EMPTY)) {
+ 	acpi_status result;
+ 	int ret_val = -ENODEV;
++	struct acpi_device *ancestor;
+ 
+ 	hv_acpi_dev = device;
+ 
+@@ -1046,35 +1118,27 @@ static int vmbus_acpi_add(struct acpi_device *device)
+ 	if (ACPI_FAILURE(result))
+ 		goto acpi_walk_err;
+ 	/*
+-	 * The parent of the vmbus acpi device (Gen2 firmware) is the VMOD that
+-	 * has the mmio ranges. Get that.
++	 * Some ancestor of the vmbus acpi device (Gen1 or Gen2
++	 * firmware) is the VMOD that has the mmio ranges. Get that.
+ 	 */
+-	if (device->parent) {
+-		result = acpi_walk_resources(device->parent->handle,
+-					METHOD_NAME__CRS,
+-					vmbus_walk_resources, NULL);
++	for (ancestor = device->parent; ancestor; ancestor = ancestor->parent) {
++		result = acpi_walk_resources(ancestor->handle, METHOD_NAME__CRS,
++					     vmbus_walk_resources, NULL);
+ 
+ 		if (ACPI_FAILURE(result))
+-			goto acpi_walk_err;
+-		if (hyperv_mmio.start && hyperv_mmio.end)
+-			request_resource(&iomem_resource, &hyperv_mmio);
++			continue;
++		if (hyperv_mmio)
++			break;
+ 	}
+ 	ret_val = 0;
+ 
+ acpi_walk_err:
+ 	complete(&probe_event);
++	if (ret_val)
++		vmbus_acpi_remove(device);
+ 	return ret_val;
+ }
+ 
+-static int vmbus_acpi_remove(struct acpi_device *device)
+-{
+-	int ret = 0;
+-
+-	if (hyperv_mmio.start && hyperv_mmio.end)
+-		ret = release_resource(&hyperv_mmio);
+-	return ret;
+-}
+-
+ static const struct acpi_device_id vmbus_acpi_device_ids[] = {
+ 	{"VMBUS", 0},
+ 	{"VMBus", 0},
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 807ee22..b54ee1c 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -688,7 +688,7 @@ static int hvfb_getmem(struct fb_info *info)
+ 	par->mem.name = KBUILD_MODNAME;
+ 	par->mem.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+ 	if (gen2vm) {
+-		ret = allocate_resource(&hyperv_mmio, &par->mem,
++		ret = allocate_resource(hyperv_mmio, &par->mem,
+ 					screen_fb_size,
+ 					0, -1,
+ 					screen_fb_size,
+diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
+index 30d3a1f..217e14b 100644
+--- a/include/linux/hyperv.h
++++ b/include/linux/hyperv.h
+@@ -1233,7 +1233,7 @@ extern bool vmbus_prep_negotiate_resp(struct icmsg_hdr *,
+ 
+ void hv_process_channel_removal(struct vmbus_channel *channel, u32 relid);
+ 
+-extern struct resource hyperv_mmio;
++extern struct resource *hyperv_mmio;
+ 
+ /*
+  * Negotiated version with the Host.
 -- 
-2.4.4
+1.7.4.1
 

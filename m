@@ -1,67 +1,53 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 25 Jun 2015 01:22:17 +0000
-Subject: [PATCH v8 4/9] video: fbdev: gxt4500: use pci_ioremap_wc_bar() for framebuffer
-Message-Id: <1435195342-26879-5-git-send-email-mcgrof@do-not-panic.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 30 Jun 2015 12:03:35 +0000
+Subject: [PATCH] OMAPDSS: fix probing if rfbi device is enabled
+Message-Id: <1435665815-27911-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bp@suse.de
-Cc: mingo@kernel.org, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: linux-fbdev@vger.kernel.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+After the commit 736e60ddc215b85e73bbf7da26e1cde84cc9500f ("OMAPDSS:
+componentize omapdss") the dss core device will wait until all the
+subdevices have been successfully probed. However, we don't have a
+working driver for RFBI, so if RFBI device exists, omapdss will never
+get probed.
 
-The driver doesn't use mtrr_add() or arch_phys_wc_add() but
-since we know the framebuffer is isolated already on an
-ioremap() we can take advantage of write combining for
-performance where possible.
+All the .dtsi files set RFBI as disabled, except am4372.dtsi. This
+causes omapdss probe to not finish on AM4 devices.
 
-In this case there are a few motivations for this:
+This patch makes omapdss driver skip adding rfbi device as a
+subcomponent, solving the issue.
 
-a) Take advantage of PAT when available
+This should be reverted when we have a working RFBI driver.
 
-b) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
-
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reported-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/video/fbdev/gxt4500.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/dss.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 135d78a..f19133a 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -662,7 +662,7 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 612b093831d5..9200a8668b49 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
+@@ -1225,6 +1225,15 @@ static int dss_add_child_component(struct device *dev, void *data)
+ {
+ 	struct component_match **match = data;
  
- 	info->fix.smem_start = fb_phys;
- 	info->fix.smem_len = pci_resource_len(pdev, 1);
--	info->screen_base = pci_ioremap_bar(pdev, 1);
-+	info->screen_base = pci_ioremap_wc_bar(pdev, 1);
- 	if (!info->screen_base) {
- 		dev_err(&pdev->dev, "gxt4500: cannot map framebuffer\n");
- 		goto err_unmap_regs;
++	/*
++	 * HACK
++	 * We don't have a working driver for rfbi, so skip it here always.
++	 * Otherwise dss will never get probed successfully, as it will wait
++	 * for rfbi to get probed.
++	 */
++	if (strstr(dev_name(dev), "rfbi"))
++		return 0;
++
+ 	component_match_add(dev->parent, match, dss_component_compare, dev);
+ 
+ 	return 0;
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.1.4
 

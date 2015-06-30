@@ -1,75 +1,169 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 16 Jun 2015 07:07:21 +0000
-Subject: Re: [PATCH] fbdev: propagate result of fb_videomode_from_videomode()
-Message-Id: <557FCB29.3000006@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="tE38rcbpRJlF7TBufPqlxxfbPg57lwEnO"
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 30 Jun 2015 07:10:19 +0000
+Subject: Re: [RFC 1/6] drm: Add top level Kconfig option for DRM fbdev emulation
+Message-Id: <CAKMK7uESo7hF1h2PbcteLOUqiubXv0c7nqR=etOp6gH8=+EDjQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434117559-32130-1-git-send-email-vladimir.murzin@arm.com>
-In-Reply-To: <1434117559-32130-1-git-send-email-vladimir.murzin@arm.com>
-To: linux-fbdev@vger.kernel.org
+References: <20150310094756.GE3800@phenom.ffwll.local>
+ <54FEBEF1.5000103@codeaurora.org>
+ <20150310100547.GG3800@phenom.ffwll.local>
+ <54FEC5F1.90208@codeaurora.org>
+ <20150310121702.GO3800@phenom.ffwll.local>
+ <54FFFAEE.3020301@codeaurora.org>
+ <20150311151731.GJ3800@phenom.ffwll.local>
+ <550282C3.10903@codeaurora.org>
+ <20150313090651.GZ3800@phenom.ffwll.local>
+ <55126F32.90404@codeaurora.org>
+ <20150325092111.GT1349@phenom.ffwll.local>
+In-Reply-To: <20150325092111.GT1349@phenom.ffwll.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Archit Taneja <architt@codeaurora.org>, "Clark, Rob" <robdclark@gmail.com>, Dave Airlie <airlied@linux.ie>, Thierry Reding <treding@nvidia.com>, Philipp Zabel <p.zabel@pengutronix.de>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Jani Nikula <jani.nikula@linux.intel.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---tE38rcbpRJlF7TBufPqlxxfbPg57lwEnO
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Any updates on this or too much distractions? I really think doing
+this would be awesome for the drm subsystem, instead of reinventing
+this wheel for each driver.
+-Daniel
+
+On Wed, Mar 25, 2015 at 10:21 AM, Daniel Vetter <daniel@ffwll.ch> wrote:
+> On Wed, Mar 25, 2015 at 01:47:54PM +0530, Archit Taneja wrote:
+>> Hi,
+>>
+>> On 03/13/2015 02:36 PM, Daniel Vetter wrote:
+>> >On Fri, Mar 13, 2015 at 11:55:07AM +0530, Archit Taneja wrote:
+>> >>
+>> >>
+>> >>On 03/11/2015 08:47 PM, Daniel Vetter wrote:
+>> >>>On Wed, Mar 11, 2015 at 01:51:02PM +0530, Archit Taneja wrote:
+>> >>>>
+>> >>>>
+>> >>>>On 03/10/2015 05:47 PM, Daniel Vetter wrote:
+>> >>>>>On Tue, Mar 10, 2015 at 03:52:41PM +0530, Archit Taneja wrote:
+>> >>>>>>On 03/10/2015 03:35 PM, Daniel Vetter wrote:
+>> >>>>>>>On Tue, Mar 10, 2015 at 03:22:49PM +0530, Archit Taneja wrote:
+>> >>>>>>>>On 03/10/2015 03:17 PM, Daniel Vetter wrote:
+>> >>>>>>>>>On Tue, Mar 10, 2015 at 03:11:28PM +0530, Archit Taneja wrote:
+>> >>>>>>>>>>diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+>> >>>>>>>>>>index 151a050..38f83a0 100644
+>> >>>>>>>>>>--- a/drivers/gpu/drm/Kconfig
+>> >>>>>>>>>>+++ b/drivers/gpu/drm/Kconfig
+>> >>>>>>>>>>@@ -40,6 +40,24 @@ config DRM_KMS_FB_HELPER
+>> >>>>>>>>>>    help
+>> >>>>>>>>>>      FBDEV helpers for KMS drivers.
+>> >>>>>>>>>>
+>> >>>>>>>>>>+config DRM_FBDEV_EMULATION
+>> >>>>>>>>>>+   bool "Enable legacy fbdev support for your modesetting driver"
+>> >>>>>>>>>>+   depends on DRM
+>> >>>>>>>>>>+   select DRM_KMS_HELPER
+>> >>>>>>>>>>+   select DRM_KMS_FB_HELPER
+>> >>>>>>>>>>+   select FB_SYS_FILLRECT
+>> >>>>>>>>>>+   select FB_SYS_COPYAREA
+>> >>>>>>>>>>+   select FB_SYS_IMAGEBLIT
+>> >>>>>>>>>>+   select FB_SYS_FOPS
+>> >>>>>>>>>>+   select FB_CFB_FILLRECT
+>> >>>>>>>>>>+   select FB_CFB_COPYAREA
+>> >>>>>>>>>>+   select FB_CFB_IMAGEBLIT
+>> >>>>>>>>>>+   default y
+>> >>>>>>>>>>+   help
+>> >>>>>>>>>>+     Choose this option if you have a need for the legacy fbdev
+>> >>>>>>>>>>+     support. Note that this support also provide the linux console
+>> >>>>>>>>>>+     support on top of your modesetting driver.
+>> >>>>>>>>>
+>> >>>>>>>>>Maybe clarify that for linux console support you also need
+>> >>>>>>>>>CONFIG_FRAMEBUFFER_CONSOLE? fbdev alone isn't enough.
+>> >>>>>>>>
+>> >>>>>>>>DRM_KMS_FB_HELPER selects that for us, right?
+>> >>>>>>>
+>> >>>>>>>Hm right I've missed that. Reminds me that you need one more patch at the
+>> >>>>>>>end to remove all the various select DRM_KMS_FB_HELPER from all drm
+>> >>>>>>>drivers. Otherwise this knob here won't work by default if you e.g. select
+>> >>>>>>>radeon. In general we can't mix explicit options with menu entries with a
+>> >>>>>>>select.
+>> >>>>>>
+>> >>>>>>I was trying that out. Removing DRM_KMS_FB_HELPER and having
+>> >>>>>>DRM_FBDEV_EMULATION disabled breaks drivers which use FB stuff internally in
+>> >>>>>>their respective xyz_fbdev.c files.
+>> >>>>>
+>> >>>>>But with the stubbed out functions that should work, right? Why doesn't
+>> >>>>>it?
+>> >>>>
+>> >>>>There are still calls to functions from fb core like fb_set_suspend and
+>> >>>>register_framebuffer which aren't covered by the drm fb helper functions.
+>> >>>
+>> >>>Hm, sounds like we need another patch to stub out fb_set_suspend when
+>> >>>fbdev isn't enabled. Is there anything else?
+>> >>
+>> >>There are a handful of fb core functions which are called by drm drivers:
+>> >>
+>> >>fb_alloc_cmap/fb_dealloc_cmap
+>> >>
+>> >>fb_sys_read/fb_sys_write
+>> >>
+>> >>register_framebuffer/unregister_framebuffer/unlink_framebuffer/
+>> >>remove_conflicting_framebuffers
+>> >>
+>> >>fb_set_suspend
+>> >>
+>> >>fb_deferred_io_init/fb_deferred_io_cleanup
+>> >>
+>> >>framebuffer_alloc/framebuffer_release
+>> >
+>> >Hm yeah that's somewhat annoying indeed. What about the following:
+>> >1. We move all the #include <linux/fb.h> from drivers into drm_fb_helper.h
+>> >
+>> >2. Then we add stubs for these functions in drm_fb_helper.h, like this
+>> >
+>> >#if defined(CONFIG_FB)
+>> >#include <linux/fb.h>
+>> >#else
+>> >
+>> >/* static inline stubs for all the fb stuff used by kms drivers */
+>> >#endif
+>> >
+>> >Imo this makes sense since kms drivers really have a bit a special
+>> >situation with fbdev. They're not full-blown fbdev drivers and can be
+>> >useful fully without fbdev.
+>> >
+>>
+>> I was trying this out. Removing 'linux/fb.h' and replacing stub fb funcs
+>> won't really work because struct declarations(like fb_info) also get
+>> removed.
+>>
+>> I considered placing '#if IS_ENABLED(CONFIG_FB)' within linux/fb.h itself,
+>> but that seemed a bit too intrusive.
+>>
+>> This is what I'm currently doing:
+>>
+>> - Some funcs, like framebufer_alloc/release, alloc_cmap/dealloc_cmap would
+>> actually benefit if we have drm fb helpers for them. They are used in
+>> exactly the same manner by all the drivers.
+>>
+>> - For the rest of the functions that are sparsely used, I was considering
+>> making very simple drm_fb_* wrapper functions. Something like:
+>>
+>> void drm_fb_helper_deferred_io_init(struct drm_fb_helper *helper)
+>> {
+>>       if (helper->fbdev)
+>>               fb_deferred_io_init(helper->fbdev);
+>> }
+>>
+>> We could have all fb calls called within drm_fb_helper.c, creating
+>> drm_fb_helper_* stub functions would then be an easier task. What do you
+>> think?
+>
+> That's actually an option I considered, but I hoped we could do it with
+> less work. If this indeed works and you can create the patch that would be
+> awesome.
+>
+> Thanks, Daniel
+> --
+> Daniel Vetter
+> Software Engineer, Intel Corporation
+> http://blog.ffwll.ch
 
 
 
-On 12/06/15 16:59, Vladimir Murzin wrote:
-> fb_videomode_from_videomode() may fail, but of_get_fb_videomode()
-> silently covers this fact. Instead, trow the error code to the
-> caller.
->=20
-> Signed-off-by: Vladimir Murzin <vladimir.murzin@arm.com>
-> ---
->  drivers/video/fbdev/core/fbmon.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/cor=
-e/fbmon.c
-> index 01ef1b9..d787533 100644
-> --- a/drivers/video/fbdev/core/fbmon.c
-> +++ b/drivers/video/fbdev/core/fbmon.c
-> @@ -1475,7 +1475,9 @@ int of_get_fb_videomode(struct device_node *np, s=
-truct fb_videomode *fb,
->  	if (ret)
->  		return ret;
-> =20
-> -	fb_videomode_from_videomode(&vm, fb);
-> +	ret =3D fb_videomode_from_videomode(&vm, fb);
-> +	if (ret)
-> +		return ret;
-> =20
->  	pr_debug("%s: got %dx%d display mode from %s\n",
->  		of_node_full_name(np), vm.hactive, vm.vactive, np->name);
->=20
-
-Thanks, queued for 4.2.
-
- Tomi
-
-
---tE38rcbpRJlF7TBufPqlxxfbPg57lwEnO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVf8spAAoJEPo9qoy8lh7187wQAJGzY4MHgX+REz4vNELr3CwX
-E1fMQICU3PFxtjzBAmghOSW+y3vpaOgWBkWCdGsLn1kVdLVIfQCblJxM+DYEnrvP
-zaydXPhJdAnKjK30WETlZKhULKt2UcQMeBh8zGeyIceoRr5/trtErwj8QIPVgSit
-Ta+AZcY4M7s96OvqohcRZQuL6y15fZCvl+uqVBy1AdKM5u/CLdkB5ebytMfzeiF9
-ePwEOMK9WpVflK6KFi11f5BxXd3ggkDiv8zv7xJGloPKTMDtghcPpYUd28++rDHy
-VXjKbwGC6Ml+VR7IF63SGsxBDGwi/MhHXhMTqHSb201KHJpXla3a20hhSdxLxKmL
-tQtSTL91KeUctnpf9iLG46ZGlYBqP1bsj9/Hd5MhasAN85laeys6H5C8uSPyOEet
-jFiig6UnxV3+Svt7Kgfer/KBtsow9yW9gaH5aVq54F3NdNXMA6gV3TH5pYJqD4/3
-8fsTIoS5Mrz0/omb+V8JVxvg76NH3/pW9UiD6406d5DNX7yVkWVwJGDF9ba5n11a
-+SrxACYPBXk3TbTsP8nS1U4Apnzhz5Ysb1ScVmKanr8gzXChJK/rnKwdzIJwDJE5
-nlpG7ZWPFeKR+sI5AkYj6j6O+0m+bZoj+onZfguN/bPU3feSYWBe7Oj1V9VvyrFS
-qKGGyePwJmMC/aVxEYdr
-=dMlT
------END PGP SIGNATURE-----
-
---tE38rcbpRJlF7TBufPqlxxfbPg57lwEnO--
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

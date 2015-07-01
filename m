@@ -1,54 +1,52 @@
-From: Andrew Cooper <andrew.cooper3@citrix.com>
-Date: Tue, 28 Jul 2015 21:12:21 +0000
-Subject: Re: [Xen-devel] [PATCH 0/8] Use correctly the Xen memory terminologies in Linux
-Message-Id: <55B7F035.6010201@citrix.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Date: Wed, 01 Jul 2015 09:40:58 +0000
+Subject: [PATCH v2 03/12] string: Introduce strends()
+Message-Id: <1435743667-11987-4-git-send-email-tomeu.vizoso@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
- <55B7EECD.8050605@zytor.com>
-In-Reply-To: <55B7EECD.8050605@zytor.com>
+References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: "H. Peter Anvin" <hpa@zytor.com>, Julien Grall <julien.grall@citrix.com>, xen-devel@lists.xenproject.org
-Cc: linux-fbdev@vger.kernel.org, x86@kernel.org, netdev@vger.kernel.org, Jiri Slaby <jslaby@suse.com>, Thomas Gleixner <tglx@linutronix.de>, Russell King <linux@arm.linux.org.uk>, linux-scsi@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, stefano.stabellini@eu.citrix.com, Ingo Molnar <mingo@redhat.com>, linux-input@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, ian.campbell@citrix.com, "James E.J. Bottomley" <JBottomley@odin.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Wei Liu <wei.liu2@citrix.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, David Vrabel <david.vrabel@citrix.com>, linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, =?windows-1
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org
 
-On 28/07/15 22:06, H. Peter Anvin wrote:
-> On 07/28/2015 08:02 AM, Julien Grall wrote:
->> Hi all,
->>
->> This patch series aims to use the memory terminologies described in
->> include/linux/mm.h [1] for Linux xen code.
->>
->> Linux is using mistakenly MFN when GFN is meant, I suspect this is becau=
-se the
->> first support of Xen was for PV. This has brought some misimplementation
->> of memory helpers on ARM and make the developper confused about the expe=
-cted
->> behavior.
->>
->> For instance, with pfn_to_mfn, we expect to get a MFN based on the name.
->> Although, if we look at the implementation on x86, it's returning a GFN.
->> Most of the callers are also using it this way.
->>
->> The first 2 patches of this series is ARM related in order to remove
->> PV specific helpers which should not be used and fixing the implementati=
-on of
->> pfn_to_mfn.
->>
->> The rest of the series is here rename most of the usage in the common co=
-de
->> of MFN to GFN. I also took the opportunity to replace most of the call to
->> pfn_to_gfn in the common code by page_to_gfn avoid construction such
->> as pfn_to_gfn(page_to_pfn(...).
->>
->> Note the one xen-blkfront will be dropped by 64K series [2], I can inclu=
-de it
->> if necessary.
->>
-> Can we actually get some documentation for Xen before starting to change
-> names around?
+To avoid duplicating code in upcoming patches that will check for
+postfixes in strings, add strends().
 
-http://xenbits.xen.org/gitweb/?p=3Dxen.git;a=3Dcommitdiff;h=E758ed14f390342=
-513405dd766e874934573e6cb
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+---
 
-~Andrew
+Changes in v2:
+- Move strends to string.h
+
+ include/linux/string.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/include/linux/string.h b/include/linux/string.h
+index d5dfe3e..4244363 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -146,6 +146,19 @@ static inline bool strstarts(const char *str, const char *prefix)
+ 	return strncmp(str, prefix, strlen(prefix)) = 0;
+ }
+ 
++/**
++ * strends - does @str end with @postfix?
++ * @str: string to examine
++ * @postfix: postfix to look for
++ */
++static inline bool strends(const char *str, const char *postfix)
++{
++	if (strlen(str) < strlen(postfix))
++		return false;
++
++	return strcmp(str + strlen(str) - strlen(postfix), postfix) = 0;
++}
++
+ size_t memweight(const void *ptr, size_t bytes);
+ void memzero_explicit(void *s, size_t count);
+ 
+-- 
+2.4.1
+

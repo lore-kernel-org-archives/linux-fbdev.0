@@ -1,44 +1,71 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Date: Tue, 28 Jul 2015 13:19:46 +0000
-Subject: [PATCH v2 15/22] backlight: Probe backlight devices on demand
-Message-Id: <1438089593-7696-16-git-send-email-tomeu.vizoso@collabora.com>
+Date: Wed, 01 Jul 2015 09:41:05 +0000
+Subject: [PATCH v2 10/12] pwm: register dependency parser for firmware nodes
+Message-Id: <1435743667-11987-11-git-send-email-tomeu.vizoso@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1438089593-7696-1-git-send-email-tomeu.vizoso@collabora.com>
-In-Reply-To: <1438089593-7696-1-git-send-email-tomeu.vizoso@collabora.com>
+References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-acpi@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jingoohan1@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Lee Jones <lee.jones@linaro.org>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org
 
-When looking up a backlight device through its firmware node, probe it
-if it hasn't already.
-
-The goal is to reduce deferred probes to a minimum, as it makes it very
-cumbersome to find out why a device failed to probe, and can introduce
-very big delays in when a critical device is probed.
+So others can find out what depends on pwm controllers, as specified
+in bindings/pwm/pwm.txt.
 
 Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 ---
 
 Changes in v2: None
 
- drivers/video/backlight/backlight.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/pwm/core.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index bddc8b17a4d8..f7151d916435 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -559,6 +559,8 @@ struct backlight_device *of_find_backlight_by_node(struct device_node *node)
- {
- 	struct device *dev;
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index 3a7769f..81b4fc0 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -917,11 +917,39 @@ static const struct file_operations pwm_debugfs_ops = {
+ 	.release = seq_release,
+ };
  
-+	fwnode_ensure_device(&node->fwnode);
++static void pwm_get_dependencies(struct fwnode_handle *fwnode,
++				 struct list_head *deps)
++{
++	struct device_node *np;
++	struct of_phandle_args pspec;
++	int count, i, ret;
 +
- 	dev = class_find_device(backlight_class, NULL, node, of_parent_match);
++	np = to_of_node(fwnode);
++	if (!np)
++		return;
++
++	count = of_count_phandle_with_args(np, "pwms",
++					   "#pwm-cells");
++	for (i = 0; i < count; i++) {
++		ret = of_parse_phandle_with_args(np, "pwms",
++						 "#pwm-cells", i,
++						 &pspec);
++		if (ret || !pspec.np)
++			continue;
++
++		fwnode_add_dependency(&pspec.np->fwnode, deps);
++
++		of_node_put(pspec.np);
++	}
++}
++
+ static int __init pwm_debugfs_init(void)
+ {
+ 	debugfs_create_file("pwm", S_IFREG | S_IRUGO, NULL, NULL,
+ 			    &pwm_debugfs_ops);
  
- 	return dev ? to_backlight_device(dev) : NULL;
++	fwnode_add_dependency_parser(pwm_get_dependencies);
++
+ 	return 0;
+ }
+ 
 -- 
-2.4.3
+2.4.1
 

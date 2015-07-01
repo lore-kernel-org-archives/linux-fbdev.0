@@ -1,154 +1,68 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 20 Jul 2015 15:32:07 +0000
-Subject: [PATCH v2 10/10] pwm: rockchip: add support for atomic update
-Message-Id: <1437406327-6207-11-git-send-email-boris.brezillon@free-electrons.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 01 Jul 2015 08:06:12 +0000
+Subject: Re: [PATCH v2] backlight: lp8788: Deletion of a check before backlight_device_unregister()
+Message-Id: <20150701080612.GG3210@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+References: <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net>
+ <54720DEB.4060109@users.sourceforge.net>
+ <20141124101006.GD4241@x1>
+ <5473736F.8070705@users.sourceforge.net>
+ <558FE386.7060704@users.sourceforge.net>
+In-Reply-To: <558FE386.7060704@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: Bryan Wu <cooloney@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-Implement the ->apply() function to add support for atomic update.
+On Sun, 28 Jun 2015, SF Markus Elfring wrote:
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
----
- drivers/pwm/pwm-rockchip.c | 53 +++++++++++++++++++++++++---------------------
- 1 file changed, 29 insertions(+), 24 deletions(-)
+> > From: Markus Elfring <elfring@users.sourceforge.net>
+> >=20
+> > The backlight_device_unregister() function tests whether its argument i=
+s NULL
+> > and then returns immediately. Thus the test around the call is not need=
+ed.
+> >=20
+> > This issue was detected by using the Coccinelle software.
+> >=20
+> > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> > ---
+> >  drivers/video/backlight/lp8788_bl.c | 3 +--
+> >  1 file changed, 1 insertion(+), 2 deletions(-)
+> >=20
+> > diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backli=
+ght/lp8788_bl.c
+> > index d6c4f6a..24a055c 100644
+> > --- a/drivers/video/backlight/lp8788_bl.c
+> > +++ b/drivers/video/backlight/lp8788_bl.c
+> > @@ -221,8 +221,7 @@ static void lp8788_backlight_unregister(struct lp87=
+88_bl *bl)
+> >  {
+> >  	struct backlight_device *bl_dev =3D bl->bl_dev;
+> > =20
+> > -	if (bl_dev)
+> > -		backlight_device_unregister(bl_dev);
+> > +	backlight_device_unregister(bl_dev);
+> >  }
+> > =20
+> >  static ssize_t lp8788_get_bl_ctl_mode(struct device *dev,
+> >=20
+>=20
+> Would you like to integrate this update suggestion
+> into another source code repository?
 
-diff --git a/drivers/pwm/pwm-rockchip.c b/drivers/pwm/pwm-rockchip.c
-index 6eab25c..48b814d 100644
---- a/drivers/pwm/pwm-rockchip.c
-+++ b/drivers/pwm/pwm-rockchip.c
-@@ -50,7 +50,8 @@ struct rockchip_pwm_data {
- 	const struct pwm_ops *ops;
- 
- 	void (*set_enable)(struct pwm_chip *chip,
--			   struct pwm_device *pwm, bool enable);
-+			   struct pwm_device *pwm, bool enable,
-+			   enum pwm_polarity polarity);
- 	void (*reset_state)(struct pwm_chip *chip, struct pwm_device *pwm);
- };
- 
-@@ -60,7 +61,8 @@ static inline struct rockchip_pwm_chip *to_rockchip_pwm_chip(struct pwm_chip *c)
- }
- 
- static void rockchip_pwm_set_enable_v1(struct pwm_chip *chip,
--				       struct pwm_device *pwm, bool enable)
-+				       struct pwm_device *pwm, bool enable,
-+				       enum pwm_polarity polarity)
- {
- 	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
- 	u32 enable_conf = PWM_CTRL_OUTPUT_EN | PWM_CTRL_TIMER_EN;
-@@ -89,14 +91,15 @@ static void rockchip_pwm_reset_state_v1(struct pwm_chip *chip,
- }
- 
- static void rockchip_pwm_set_enable_v2(struct pwm_chip *chip,
--				       struct pwm_device *pwm, bool enable)
-+				       struct pwm_device *pwm, bool enable,
-+				       enum pwm_polarity polarity)
- {
- 	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
- 	u32 enable_conf = PWM_OUTPUT_LEFT | PWM_LP_DISABLE | PWM_ENABLE |
- 			  PWM_CONTINUOUS;
- 	u32 val;
- 
--	if (pwm_get_polarity(pwm) = PWM_POLARITY_INVERSED)
-+	if (polarity = PWM_POLARITY_INVERSED)
- 		enable_conf |= PWM_DUTY_NEGATIVE | PWM_INACTIVE_POSITIVE;
- 	else
- 		enable_conf |= PWM_DUTY_POSITIVE | PWM_INACTIVE_NEGATIVE;
-@@ -165,7 +168,6 @@ static int rockchip_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
- 	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
- 	unsigned long period, duty;
- 	u64 clk_rate, div;
--	int ret;
- 
- 	clk_rate = clk_get_rate(pc->clk);
- 
-@@ -182,15 +184,8 @@ static int rockchip_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
- 	do_div(div, pc->data->prescaler * NSEC_PER_SEC);
- 	duty = div;
- 
--	ret = clk_enable(pc->clk);
--	if (ret)
--		return ret;
--
- 	writel(period, pc->base + pc->data->regs.period);
- 	writel(duty, pc->base + pc->data->regs.duty);
--	writel(0, pc->base + pc->data->regs.cntr);
--
--	clk_disable(pc->clk);
- 
- 	return 0;
- }
-@@ -208,43 +203,53 @@ static int rockchip_pwm_set_polarity(struct pwm_chip *chip,
- 	return 0;
- }
- 
--static int rockchip_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
-+static int rockchip_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
-+			      const struct pwm_state *state)
- {
- 	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
-+	bool enabled = pwm_is_enabled(pwm);
- 	int ret;
- 
- 	ret = clk_enable(pc->clk);
- 	if (ret)
- 		return ret;
- 
--	pc->data->set_enable(chip, pwm, true);
-+	if (state->polarity != pwm_get_polarity(pwm) && enabled) {
-+		pc->data->set_enable(chip, pwm, false, state->polarity);
-+		enabled = false;
-+	}
- 
--	return 0;
--}
-+	ret = rockchip_pwm_config(chip, pwm, state->duty_cycle, state->period);
-+	if (ret) {
-+		if (enabled != pwm_is_enabled(pwm))
-+			pc->data->set_enable(chip, pwm, !enabled,
-+					     state->polarity);
- 
--static void rockchip_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
--{
--	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
-+		goto out;
-+	}
- 
--	pc->data->set_enable(chip, pwm, false);
-+	if (state->enabled != enabled)
-+		pc->data->set_enable(chip, pwm, state->enabled,
-+				     state->polarity);
- 
-+out:
- 	clk_disable(pc->clk);
-+
-+	return ret;
- }
- 
- static const struct pwm_ops rockchip_pwm_ops_v1 = {
- 	.reset_state = rockchip_pwm_reset_state,
- 	.config = rockchip_pwm_config,
--	.enable = rockchip_pwm_enable,
--	.disable = rockchip_pwm_disable,
-+	.apply = rockchip_pwm_apply,
- 	.owner = THIS_MODULE,
- };
- 
- static const struct pwm_ops rockchip_pwm_ops_v2 = {
- 	.reset_state = rockchip_pwm_reset_state,
- 	.config = rockchip_pwm_config,
-+	.apply = rockchip_pwm_apply,
- 	.set_polarity = rockchip_pwm_set_polarity,
--	.enable = rockchip_pwm_enable,
--	.disable = rockchip_pwm_disable,
- 	.owner = THIS_MODULE,
- };
- 
--- 
-1.9.1
+If this patch has not received any attention in some time, it's
+possible that it may have slipped through the gaps.  Please
+re-submit the set.
 
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

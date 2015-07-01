@@ -1,60 +1,44 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 02 Jul 2015 13:01:41 +0000
-Subject: Re: [RFC PATCH 16/15] pwm: add informations about polarity, duty cycle and period to debugfs
-Message-Id: <20150702150141.5018a791@bbrezillon>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 01 Jul 2015 10:30:34 +0000
+Subject: [PATCH v3] video-lp8788: Delete a check before backlight_device_unregister()
+Message-Id: <5593C14A.8020700@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
- <3365087.n2eEES60JK@diego>
-In-Reply-To: <3365087.n2eEES60JK@diego>
+References: <alpine.DEB.2.10.1402251840450.7035@hadrien> <530CF8FF.8080600@users.sourceforge.net> <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6> <530DD06F.4090703@users.sourceforge.net> <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6> <5317A59D.4@users.sourceforge.net> <54720DEB.4060109@users.sourceforge.net> <20141124101006.GD4241@x1> <5473736F.8070705@users.sourceforge.net> <558FE386.7060704@users.sourceforge.net> <20150701080612.GG3210@x1>
+In-Reply-To: <20150701080612.GG3210@x1>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-On Wed, 01 Jul 2015 23:50:46 +0200
-Heiko St=C3=BCbner <heiko@sntech.de> wrote:
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 1 Jul 2015 12:08:31 +0200
 
-> The pwm-states make it possible to also output the polarity, duty cycle
-> and period information in the debugfs pwm summary-outout.
-> This makes it easier to gather overview information about pwms without
-> needing to walk through the sysfs attributes of every pwm.
->=20
-> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-> ---
-> might be nice to have too ;-)
+The backlight_device_unregister() function tests whether its argument
+is NULL and then returns immediately.
+Thus the test around the call is not needed.
 
-Yes.
+This issue was detected by using the Coccinelle software.
 
->=20
->  drivers/pwm/core.c | 11 ++++++++++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-> index 6dafd8e..79037a2 100644
-> --- a/drivers/pwm/core.c
-> +++ b/drivers/pwm/core.c
-> @@ -951,9 +951,18 @@ static void pwm_dbg_show(struct pwm_chip *chip, stru=
-ct seq_file *s)
->  		if (test_bit(PWMF_REQUESTED, &pwm->flags))
->  			seq_puts(s, " requested");
-> =20
-> -		if (pwm_is_enabled(pwm))
-> +		if (pwm_is_enabled(pwm)) {
->  			seq_puts(s, " enabled");
-> =20
-> +			seq_printf(s, " period:%uns",
-> +				   pwm_get_period(pwm));
-> +			seq_printf(s, " duty:%uns",
-> +				   pwm_get_duty_cycle(pwm));
-> +			seq_printf(s, " polarity:%s",
-> +				   pwm_get_polarity(pwm) ? "inverse"
-> +							 : "normal");
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/video/backlight/lp8788_bl.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-I would print those values even if the PWM is not enabled.
+diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backlight/lp8788_bl.c
+index e418d5b..5d583d7 100644
+--- a/drivers/video/backlight/lp8788_bl.c
++++ b/drivers/video/backlight/lp8788_bl.c
+@@ -221,8 +221,7 @@ static void lp8788_backlight_unregister(struct lp8788_bl *bl)
+ {
+ 	struct backlight_device *bl_dev = bl->bl_dev;
+ 
+-	if (bl_dev)
+-		backlight_device_unregister(bl_dev);
++	backlight_device_unregister(bl_dev);
+ }
+ 
+ static ssize_t lp8788_get_bl_ctl_mode(struct device *dev,
+-- 
+2.4.5
 
-
-
---=20
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com

@@ -1,84 +1,86 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 02 Jul 2015 07:43:19 +0000
-Subject: Re: [RFC PATCH 13/15] pwm: rockchip: add support for atomic update
-Message-Id: <20150702094319.11794da8@bbrezillon>
+Date: Wed, 01 Jul 2015 08:21:46 +0000
+Subject: [RFC PATCH 00/15] pwm: add support for atomic update
+Message-Id: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
- <1435738921-25027-14-git-send-email-boris.brezillon@free-electrons.com>
- <1709826.dVqTms8REP@diego>
-In-Reply-To: <1709826.dVqTms8REP@diego>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Heiko,
+Hello Thierry,
 
-On Wed, 01 Jul 2015 23:48:31 +0200
-Heiko St=C3=BCbner <heiko@sntech.de> wrote:
+This series adds support for atomic PWM update, or ITO, the capability
+to update all the parameters of a PWM device (enabled/disabled, period,
+duty and polarity) in one go.
 
-> Hi Boris,
->=20
->=20
-> Am Mittwoch, 1. Juli 2015, 10:21:59 schrieb Boris Brezillon:
-> > Implement the ->apply() function to add support for atomic update.
-> >=20
-> > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > ---
-> > @@ -110,6 +113,26 @@ static void rockchip_pwm_set_enable_v2(struct pwm_=
-chip
-> > *chip, writel_relaxed(val, pc->base + pc->data->regs.ctrl);
-> >  }
-> >=20
-> > +static void rockchip_pwm_init_v2(struct pwm_chip *chip, struct pwm_dev=
-ice
-> > *pwm) +{
-> > +	struct rockchip_pwm_chip *pc =3D to_rockchip_pwm_chip(chip);
-> > +	u32 enable_conf =3D PWM_OUTPUT_LEFT | PWM_LP_DISABLE | PWM_ENABLE |
-> > +			  PWM_CONTINUOUS;
-> > +	u32 val;
-> > +
-> > +	val =3D readl(pc->base + pc->data->regs.ctrl);
-> > +
-> > +	if ((val & enable_conf) !=3D enable_conf)
-> > +		return;
-> > +
-> > +	pwm->state.enabled =3D true;
-> > +
-> > +	enable_conf =3D PWM_DUTY_NEGATIVE | PWM_INACTIVE_POSITIVE;
-> > +
-> > +	if ((val & enable_conf) =3D enable_conf)
-> > +		pwm->state.polarity =3D PWM_POLARITY_INVERSED;
->=20
-> the inactive setting does not affect the polarity of the running pwm, onl=
-y what=20
-> to do when it gets turned off. Also PWM_DUTY_NEGATIVE is the "0" value fo=
-r the=20
-> bit so also is bad to compare against (and results in wrong readings). So=
- I=20
-> would suggest changing this like
+This implementation is still experimental, and I may have missed some key
+aspect, so any feedback are welcome.
 
-Indeed
+Also note that I haven't protected the state update with any locking.
+That's because the existing config does not protect against concurrent
+access to a requested PWM device (see the pwm_config implementation).
+I guess the PWM framework assume the user will implement the proper locking
+scheme if it has to concurrently access the device.
 
->=20
-> -       enable_conf =3D PWM_DUTY_NEGATIVE | PWM_INACTIVE_POSITIVE;
-> +       enable_conf =3D PWM_DUTY_POSITIVE;
-> =20
-> -       if ((val & enable_conf) =3D enable_conf)
-> +       if ((val & enable_conf) !=3D enable_conf)
+The 5 first patches prepare the addition of the pwm_state concept, which
+will be used to allow atomic updates.
+The following patches introduce the pwm_state struct, initial state
+retrieval and atomic update concepts.
 
-Or just:
+Patches 12 and 13 are showing how one can implement the initial state
+retrieval and atomic update features in a PWM driver (in this specific
+case I implemented it in the rockchip driver).
 
-	if(val & PWM_DUTY_POSITIVE)
-
-
-Thanks for the fix.
+The last 2 patches are making use of those changes to improve the
+pwm-regulator driver (initializing the regulator state based on the
+initial PWM state).
 
 Best Regards,
 
 Boris
 
---=20
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Boris Brezillon (15):
+  pwm: add the pwm_is_enabled() helper
+  pwm: fix pwm_get_period and pwm_get_duty_cycle prototypes
+  pwm: add pwm_get_polarity helper function
+  pwm: make use of pwm_get_xxx helpers where appropriate
+  pwm: introduce default period and polarity concepts
+  pwm: define a new pwm_state struct
+  pwm: move the enabled/disabled info to pwm_state struct
+  backlight: pwm_bl: remove useless call to pwm_set_period
+  pwm: declare a default PWM state
+  pwm: add the PWM initial state retrieval infra
+  pwm: add the core infrastructure to allow atomic update
+  pwm: rockchip: add initial state retrieval
+  pwm: rockchip: add support for atomic update
+  regulator: pwm: implement ->enable(), ->disable() and ->is_enabled
+    methods
+  regulator: pwm: properly initialize the ->state field
+
+ drivers/leds/leds-pwm.c              |   2 +-
+ drivers/pwm/core.c                   | 136 ++++++++++++++++++++++++++++++-----
+ drivers/pwm/pwm-atmel-tcb.c          |   2 +-
+ drivers/pwm/pwm-atmel.c              |   6 +-
+ drivers/pwm/pwm-bcm-kona.c           |   7 +-
+ drivers/pwm/pwm-ep93xx.c             |   4 +-
+ drivers/pwm/pwm-imx.c                |   5 +-
+ drivers/pwm/pwm-mxs.c                |   4 +-
+ drivers/pwm/pwm-pxa.c                |   2 +-
+ drivers/pwm/pwm-renesas-tpu.c        |   2 +-
+ drivers/pwm/pwm-rockchip.c           | 122 ++++++++++++++++++++++++-------
+ drivers/pwm/pwm-sun4i.c              |   3 +-
+ drivers/pwm/pwm-tegra.c              |   6 +-
+ drivers/pwm/pwm-tiecap.c             |  10 +--
+ drivers/pwm/pwm-tiehrpwm.c           |   6 +-
+ drivers/pwm/sysfs.c                  |  13 ++--
+ drivers/regulator/pwm-regulator.c    |  60 ++++++++++++++--
+ drivers/video/backlight/lm3630a_bl.c |   4 +-
+ drivers/video/backlight/pwm_bl.c     |   6 +-
+ drivers/video/fbdev/ssd1307fb.c      |   2 +-
+ include/linux/pwm.h                  |  82 ++++++++++++++++++---
+ 21 files changed, 380 insertions(+), 104 deletions(-)
+
+-- 
+1.9.1
+

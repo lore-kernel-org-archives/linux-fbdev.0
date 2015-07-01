@@ -1,90 +1,69 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Date: Wed, 01 Jul 2015 09:40:59 +0000
-Subject: [PATCH v2 04/12] gpio: register dependency parser for firmware nodes
-Message-Id: <1435743667-11987-5-git-send-email-tomeu.vizoso@collabora.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Wed, 01 Jul 2015 08:21:55 +0000
+Subject: [RFC PATCH 09/15] pwm: declare a default PWM state
+Message-Id: <1435738921-25027-10-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
-In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+References: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org, Alexandre Courbot <gnurou@gmail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-So the GPIO subsystem can be queried about the dependencies of nodes
-that consume GPIOs, as specified in bindings/gpio/gpio.txt.
+Prepare the addition of the PWM initial state retrieval by adding a default
+state where all the parameters retrieved from DT, platform data or
+statically forced by the hardware will be stored.
+Once done we will be able to store the initial state in the ->state field
+without risking to loose the default parameters.
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Update the pwm_set/get_default_xxx helpers accordingly.
+
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
+ include/linux/pwm.h | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Changes in v2: None
-
- drivers/gpio/gpiolib.c | 54 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 54 insertions(+)
-
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index bf4bd1d..6a3e83f 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -2388,4 +2388,58 @@ static int __init gpiolib_debugfs_init(void)
- }
- subsys_initcall(gpiolib_debugfs_init);
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index fd3e0f0..0f36a06 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -94,6 +94,7 @@ struct pwm_device {
+ 	void			*chip_data;
  
-+static void gpio_get_dependencies(struct fwnode_handle *fwnode,
-+				  struct list_head *deps)
-+{
-+	struct device_node *np;
-+	struct property *pp;
-+	struct of_phandle_args pspec;
-+	int count, i, ret;
-+
-+	np = to_of_node(fwnode);
-+	if (!np)
-+		return;
-+
-+	for_each_property_of_node(np, pp) {
-+		if (strcmp(pp->name, "gpio") &&
-+		    strcmp(pp->name, "gpios") &&
-+		    !strends(pp->name, "-gpios") &&
-+		    !strends(pp->name, "-gpio"))
-+			continue;
-+
-+		count = of_count_phandle_with_args(np, pp->name,
-+						   "#gpio-cells");
-+		for (i = 0; i < count; i++) {
-+			ret = of_parse_phandle_with_args(np, pp->name,
-+							 "#gpio-cells", i,
-+							 &pspec);
-+			if (ret || !pspec.np)
-+				continue;
-+
-+			fwnode_add_dependency(&pspec.np->fwnode, deps);
-+
-+			of_node_put(pspec.np);
-+		}
-+	}
-+
-+	for (i = 0;; i++) {
-+		ret = of_parse_phandle_with_fixed_args(np, "gpio-ranges", 3,
-+						       i, &pspec);
-+		if (ret)
-+			break;
-+
-+		fwnode_add_dependency(&pspec.np->fwnode, deps);
-+
-+		of_node_put(pspec.np);
-+	}
-+}
-+
-+static int __init gpiolib_init(void)
-+{
-+	fwnode_add_dependency_parser(gpio_get_dependencies);
-+
-+	return 0;
-+}
-+device_initcall(gpiolib_init);
-+
- #endif	/* DEBUG_FS */
+ 	struct pwm_state	state;
++	struct pwm_state	default_state;
+ };
+ 
+ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
+@@ -109,7 +110,8 @@ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
+ 
+ static inline void pwm_set_default_period(struct pwm_device *pwm, unsigned int period)
+ {
+-	pwm_set_period(pwm, period);
++	if (pwm)
++		pwm->default_state.period = period;
+ }
+ 
+ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
+@@ -119,7 +121,7 @@ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
+ 
+ static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
+ {
+-	return pwm_get_period(pwm);
++	return pwm ? pwm->default_state.period : 0;
+ }
+ 
+ static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
+@@ -140,7 +142,8 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
+ 
+ static inline void pwm_set_default_polarity(struct pwm_device *pwm, enum pwm_polarity polarity)
+ {
+-	pwm_set_polarity(pwm, polarity);
++	if (pwm)
++		pwm->default_state.polarity = polarity;
+ }
+ 
+ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
 -- 
-2.4.1
+1.9.1
 

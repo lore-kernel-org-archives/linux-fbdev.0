@@ -1,60 +1,192 @@
-From: Wei Liu <wei.liu2@citrix.com>
-Date: Wed, 29 Jul 2015 11:39:01 +0000
-Subject: Re: [Xen-devel] [PATCH 4/8] xen: Use the correctly the Xen memory terminologies
-Message-Id: <20150729113901.GB7962@zion.uk.xensource.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Date: Wed, 01 Jul 2015 09:40:57 +0000
+Subject: [PATCH v2 02/12] device: property: find dependencies of a firmware node
+Message-Id: <1435743667-11987-3-git-send-email-tomeu.vizoso@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
- <1438095769-2560-5-git-send-email-julien.grall@citrix.com>
- <20150729101323.GW5111@zion.uk.xensource.com> <55B8BA9A.8000502@citrix.com>
-In-Reply-To: <55B8BA9A.8000502@citrix.com>
+References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org
 
-On Wed, Jul 29, 2015 at 12:35:54PM +0100, Julien Grall wrote:
-> Hi Wei,
-> 
-> On 29/07/15 11:13, Wei Liu wrote:
-> > On Tue, Jul 28, 2015 at 04:02:45PM +0100, Julien Grall wrote:
-> > [...]
-> >> diff --git a/drivers/net/xen-netback/netback.c b/drivers/net/xen-netback/netback.c
-> >> index 7d50711..3b7b7c3 100644
-> >> --- a/drivers/net/xen-netback/netback.c
-> >> +++ b/drivers/net/xen-netback/netback.c
-> >> @@ -314,7 +314,7 @@ static void xenvif_gop_frag_copy(struct xenvif_queue *queue, struct sk_buff *skb
-> >>  		} else {
-> >>  			copy_gop->source.domid = DOMID_SELF;
-> >>  			copy_gop->source.u.gmfn > >> -				virt_to_mfn(page_address(page));
-> >> +				virt_to_gfn(page_address(page));
-> >>  		}
-> >>  		copy_gop->source.offset = offset;
-> >>  
-> >> @@ -1284,7 +1284,7 @@ static void xenvif_tx_build_gops(struct xenvif_queue *queue,
-> >>  		queue->tx_copy_ops[*copy_ops].source.offset = txreq.offset;
-> >>  
-> >>  		queue->tx_copy_ops[*copy_ops].dest.u.gmfn > >> -			virt_to_mfn(skb->data);
-> >> +			virt_to_gfn(skb->data);
-> >>  		queue->tx_copy_ops[*copy_ops].dest.domid = DOMID_SELF;
-> >>  		queue->tx_copy_ops[*copy_ops].dest.offset > >>  			offset_in_page(skb->data);
-> > 
-> > Reviewed-by: Wei Liu <wei.liu2@citrix.com>
-> > 
-> > One possible improvement is to change gmfn in copy_gop to gfn as well.
-> > But that's outside of netback code.
-> 
-> The structure gnttab_copy is part of the hypervisor interface. Is it
-> fine to differ on the naming between Xen and Linux?
-> 
-> Or maybe we could do the change in the public headers in Xen repo too.
-> Is it fine to do field renaming in public headers?
-> 
+Adds API that allows callers to find out what other firmware nodes a
+node depends on.
 
-Oh well. Never mind then. I mistook that structure as internal to Linux.
+Implementors of bindings documentation can register callbacks that
+return the dependencies of a node.
 
-Wei.
+Dependency information can be used to change the order in which devices
+are probed, or to print a warning when a device node is going to be
+probed without all its dependencies fulfilled.
 
-> Regards,
-> 
-> -- 
-> Julien Grall
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+---
+
+Changes in v2:
+- Allow bindings implementations register a function instead of using
+  class callbacks, as not only subsystems implement firmware bindings.
+
+ drivers/base/property.c  | 91 ++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fwnode.h   |  5 +++
+ include/linux/property.h | 12 +++++++
+ 3 files changed, 108 insertions(+)
+
+diff --git a/drivers/base/property.c b/drivers/base/property.c
+index 8ead1ba..9d38ede 100644
+--- a/drivers/base/property.c
++++ b/drivers/base/property.c
+@@ -19,7 +19,13 @@
+ #include <linux/platform_device.h>
+ #include <linux/property.h>
+ 
++struct dependency_parser {
++	struct list_head parser;
++	void (*func)(struct fwnode_handle *fwnode, struct list_head *deps);
++};
++
+ static bool fwnode_match_enable = false;
++static LIST_HEAD(dependency_parsers);
+ 
+ /**
+  * device_add_property_set - Add a collection of properties to a device object.
+@@ -553,6 +559,27 @@ bool device_dma_is_coherent(struct device *dev)
+ EXPORT_SYMBOL_GPL(device_dma_is_coherent);
+ 
+ /**
++ * fwnode_add_dependency - add firmware node to the passed dependency list
++ * @fwnode: Firmware node to add to dependency list
++ * @list: Dependency list to add the fwnode to
++ */
++void fwnode_add_dependency(struct fwnode_handle *fwnode,
++			   struct list_head *list)
++{
++	struct fwnode_dependency *dep;
++
++	dep = kzalloc(sizeof(*dep), GFP_KERNEL);
++	if (!dep)
++		return;
++
++	INIT_LIST_HEAD(&dep->dependency);
++	dep->fwnode = fwnode;
++
++	list_add_tail(&dep->dependency, list);
++}
++EXPORT_SYMBOL_GPL(fwnode_add_dependency);
++
++/**
+  * fwnode_get_parent - return the parent node of a device node
+  * @fwnode: Device node to find the parent node of
+  */
+@@ -600,6 +627,70 @@ bool fwnode_is_compatible(struct fwnode_handle *fwnode, const char *compatible)
+ EXPORT_SYMBOL_GPL(fwnode_is_compatible);
+ 
+ /**
++ * fwnode_add_dependency_parser - register dependency parser
++ * @func: Function that will be called to find out dependencies of a node
++ *
++ * Registers a callback that will be called when collecting the dependencies
++ * of a firmware node. The callback should inspect the properties of the node
++ * and call fwnode_add_dependency() for each dependency it recognizes, from
++ * the bindings documentation.
++ */
++void fwnode_add_dependency_parser(
++	void (*func)(struct fwnode_handle *fwnode, struct list_head *deps))
++{
++	struct dependency_parser *parser;
++
++	parser = kzalloc(sizeof(*parser), GFP_KERNEL);
++	if (!parser)
++		return;
++
++	INIT_LIST_HEAD(&parser->parser);
++	parser->func = func;
++
++	list_add_tail(&parser->parser, &dependency_parsers);
++}
++EXPORT_SYMBOL_GPL(fwnode_add_dependency_parser);
++
++/**
++ * fwnode_remove_dependency_parser - unregister dependency parser
++ * @func: Function that was to be called to find out dependencies of a node
++ */
++void fwnode_remove_dependency_parser(
++	void (*func)(struct fwnode_handle *fwnode, struct list_head *deps))
++{
++	struct dependency_parser *parser, *tmp;
++
++	list_for_each_entry_safe(parser, tmp, &dependency_parsers, parser) {
++		if (parser->func = func) {
++			list_del(&parser->parser);
++			kfree(parser);
++			return;
++		}
++	}
++}
++EXPORT_SYMBOL_GPL(fwnode_remove_dependency_parser);
++
++/**
++ * fwnode_get_dependencies - find out what dependencies a firmware node has
++ * @fwnode: firmware node to find its dependencies
++ * @deps: list of struct fwnode_dependency in which dependencies will be placed
++ */
++void fwnode_get_dependencies(struct fwnode_handle *fwnode,
++			     struct list_head *deps)
++{
++	struct dependency_parser *parser;
++	struct fwnode_handle *child;
++
++	list_for_each_entry(parser, &dependency_parsers, parser)
++		parser->func(fwnode, deps);
++
++	/* Some device nodes will have dependencies in non-device sub-nodes */
++	fwnode_for_each_child_node(fwnode, child)
++		if (!fwnode_property_present(child, "compatible"))
++			fwnode_get_dependencies(child, deps);
++}
++
++/**
+  * fwnode_driver_match_device - Tell if a driver matches a device.
+  * @drv: the device_driver structure to test
+  * @dev: the device structure to match against
+diff --git a/include/linux/fwnode.h b/include/linux/fwnode.h
+index 0408545..68ab558 100644
+--- a/include/linux/fwnode.h
++++ b/include/linux/fwnode.h
+@@ -24,4 +24,9 @@ struct fwnode_handle {
+ 	struct fwnode_handle *secondary;
+ };
+ 
++struct fwnode_dependency {
++	struct fwnode_handle *fwnode;
++	struct list_head dependency;
++};
++
+ #endif
+diff --git a/include/linux/property.h b/include/linux/property.h
+index 4e453c4..b8b86ea 100644
+--- a/include/linux/property.h
++++ b/include/linux/property.h
+@@ -86,6 +86,18 @@ bool fwnode_is_compatible(struct fwnode_handle *fwnode, const char *compatible);
+ bool fwnode_driver_match_device(struct device *dev,
+ 				const struct device_driver *drv);
+ 
++void fwnode_add_dependency(struct fwnode_handle *fwnode,
++			   struct list_head *list);
++
++void fwnode_add_dependency_parser(
++	void (*func)(struct fwnode_handle *fwnode, struct list_head *deps));
++
++void fwnode_remove_dependency_parser(
++	void (*func)(struct fwnode_handle *fwnode, struct list_head *deps));
++
++void fwnode_get_dependencies(struct fwnode_handle *fwnode,
++			     struct list_head *list);
++
+ unsigned int device_get_child_node_count(struct device *dev);
+ 
+ static inline bool device_property_read_bool(struct device *dev,
+-- 
+2.4.1
+

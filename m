@@ -1,41 +1,78 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Date: Thu, 30 Jul 2015 16:18:35 +0000
-Subject: [PATCH 10/27] backlight: tosa: Export I2C module alias information
-Message-Id: <1438273132-20926-11-git-send-email-javier@osg.samsung.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Date: Wed, 01 Jul 2015 09:41:00 +0000
+Subject: [PATCH v2 05/12] gpu: host1x: register dependency parser for firmware nodes
+Message-Id: <1435743667-11987-6-git-send-email-tomeu.vizoso@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
-In-Reply-To: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
+References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org, linux-tegra@vger.kernel.org
 
-The I2C core always reports the MODALIAS uevent as "i2c:<client name"
-regardless if the driver was matched using the I2C id_table or the
-of_match_table. So the driver needs to export the I2C table and this
-be built into the module or udev won't have the necessary information
-to auto load the correct module when the device is added.
+So others can find out dependencies of host1x clients, as specified in
+bindings/gpu/nvidia,tegra20-host1x.txt.
 
-Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
-
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 ---
 
- drivers/video/backlight/tosa_bl.c | 1 +
- 1 file changed, 1 insertion(+)
+Changes in v2: None
 
-diff --git a/drivers/video/backlight/tosa_bl.c b/drivers/video/backlight/tosa_bl.c
-index 3ad676558c80..83742d806391 100644
---- a/drivers/video/backlight/tosa_bl.c
-+++ b/drivers/video/backlight/tosa_bl.c
-@@ -158,6 +158,7 @@ static const struct i2c_device_id tosa_bl_id[] = {
- 	{ "tosa-bl", 0 },
- 	{ },
+ drivers/gpu/host1x/dev.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/drivers/gpu/host1x/dev.c b/drivers/gpu/host1x/dev.c
+index 53d3d1d..5bb10b8 100644
+--- a/drivers/gpu/host1x/dev.c
++++ b/drivers/gpu/host1x/dev.c
+@@ -212,6 +212,29 @@ static struct platform_driver tegra_host1x_driver = {
+ 	.remove = host1x_remove,
  };
-+MODULE_DEVICE_TABLE(i2c, tosa_bl_id);
  
- static struct i2c_driver tosa_bl_driver = {
- 	.driver = {
++static void add_dependency(struct fwnode_handle *fwnode,
++			   const char *property,
++			   struct list_head *deps)
++{
++	struct device_node *np;
++
++	np = of_parse_phandle(to_of_node(fwnode), property, 0);
++	if (!np)
++		return;
++
++	fwnode_add_dependency(&np->fwnode, deps);
++}
++
++static void host1x_get_dependencies(struct fwnode_handle *fwnode,
++				    struct list_head *deps)
++{
++	add_dependency(fwnode, "nvidia,dpaux", deps);
++	add_dependency(fwnode, "nvidia,panel", deps);
++	add_dependency(fwnode, "nvidia,ddc-i2c-bus", deps);
++	add_dependency(fwnode, "nvidia,hpd-gpio", deps);
++	add_dependency(fwnode, "ddc-i2c-bus", deps);
++}
++
+ static int __init tegra_host1x_init(void)
+ {
+ 	int err;
+@@ -228,6 +251,8 @@ static int __init tegra_host1x_init(void)
+ 	if (err < 0)
+ 		goto unregister_host1x;
+ 
++	fwnode_add_dependency_parser(host1x_get_dependencies);
++
+ 	return 0;
+ 
+ unregister_host1x:
+@@ -240,6 +265,7 @@ module_init(tegra_host1x_init);
+ 
+ static void __exit tegra_host1x_exit(void)
+ {
++	fwnode_remove_dependency_parser(host1x_get_dependencies);
+ 	platform_driver_unregister(&tegra_mipi_driver);
+ 	platform_driver_unregister(&tegra_host1x_driver);
+ 	bus_unregister(&host1x_bus_type);
 -- 
-2.4.3
+2.4.1
 

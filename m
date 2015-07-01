@@ -1,99 +1,62 @@
-From: Manfred Schlaegl <manfred.schlaegl@gmx.at>
-Date: Wed, 15 Jul 2015 15:51:27 +0000
-Subject: [RFC PATCH 2/2] gpu: ipu-v3: use clock and de polarity from videomode
-Message-Id: <55A6817F.4000205@gmx.at>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Date: Wed, 01 Jul 2015 09:41:01 +0000
+Subject: [PATCH v2 06/12] backlight: Document consumers of backlight nodes
+Message-Id: <1435743667-11987-7-git-send-email-tomeu.vizoso@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <55A67FDB.8010602@gmx.at>
-In-Reply-To: <55A67FDB.8010602@gmx.at>
+References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Airlie <airlied@linux.ie>, Philipp Zabel <p.zabel@pengutronix.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Steve Longerbeam <slongerbeam@gmail.com>, Deepak Das <deepak_das@mentor.com>, Jiada Wang <jiada_wang@mentor.com>, linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>
 
-This patch depends on "drm: add support for for clk and de polarity".
-Since "drm: add support for for clk and de polarity", clock and data
-polarity set in devicetree are passed correctly through drm_display_mode
-to videomode flags used by ipuv3.
-Removes custom configuration flags for clock and de polarities and use
-polarity flags from given videomode.
-Keeps compatibility to current settings and device tree descriptions,
-by setting data enable polarity to high, if not explicitly set to low by
-flags.
+Add a small note that makes explicit that properties named 'backlight'
+contain phandles to backlight nodes.
 
-display-timings                 resulting polarity of pixel clock
-                                past    now
-pixelclk-active unset           0       0
-pixelclk-active = 0             0       0
-pixelclk-active = 1             0       1       <--- corrected
+This is needed so that we can automatically extract dependencies on
+backlight devices by assuming that a property with that name contains a
+phandle to such a device.
 
-display-timings                 resulting polarity of data enable
-                                past    now
-de-active unset                 1       1
-de-active = 0                   1       0       <--- corrected
-de-active = 1                   1       1
-
-Tested on Freescale i.MX53(parallel) and i.MX6(LVDS).
-
-Signed-off-by: Manfred Schlaegl <manfred.schlaegl@gmx.at>
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 ---
- drivers/gpu/drm/imx/ipuv3-crtc.c | 2 --
- drivers/gpu/ipu-v3/ipu-di.c      | 4 ++--
- include/video/imx-ipu-v3.h       | 2 --
- 3 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/gpu/drm/imx/ipuv3-crtc.c b/drivers/gpu/drm/imx/ipuv3-crtc.c
-index 7bc8301..6813271 100644
---- a/drivers/gpu/drm/imx/ipuv3-crtc.c
-+++ b/drivers/gpu/drm/imx/ipuv3-crtc.c
-@@ -172,8 +172,6 @@ static int ipu_crtc_mode_set(struct drm_crtc *crtc,
- 	else
- 		sig_cfg.clkflags = 0;
- 
--	sig_cfg.enable_pol = 1;
--	sig_cfg.clk_pol = 0;
- 	sig_cfg.bus_format = ipu_crtc->bus_format;
- 	sig_cfg.v_to_h_sync = 0;
- 	sig_cfg.hsync_pin = ipu_crtc->di_hsync_pin;
-diff --git a/drivers/gpu/ipu-v3/ipu-di.c b/drivers/gpu/ipu-v3/ipu-di.c
-index 2970c6b..0b1a7d2 100644
---- a/drivers/gpu/ipu-v3/ipu-di.c
-+++ b/drivers/gpu/ipu-v3/ipu-di.c
-@@ -621,7 +621,7 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
- 		}
- 	}
- 
--	if (sig->clk_pol)
-+	if (sig->mode.flags & DISPLAY_FLAGS_PIXDATA_POSEDGE)
- 		di_gen |= DI_GEN_POLARITY_DISP_CLK;
- 
- 	ipu_di_write(di, di_gen, DI_GENERAL);
-@@ -632,7 +632,7 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
- 	reg = ipu_di_read(di, DI_POL);
- 	reg &= ~(DI_POL_DRDY_DATA_POLARITY | DI_POL_DRDY_POLARITY_15);
- 
--	if (sig->enable_pol)
-+	if (!(sig->mode.flags & DISPLAY_FLAGS_DE_LOW))
- 		reg |= DI_POL_DRDY_POLARITY_15;
- 	if (sig->data_pol)
- 		reg |= DI_POL_DRDY_DATA_POLARITY;
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index 85dedca..4178fa2 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -34,8 +34,6 @@ enum ipuv3_type {
-  */
- struct ipu_di_signal_cfg {
- 	unsigned data_pol:1;	/* true = inverted */
--	unsigned clk_pol:1;	/* true = rising edge */
--	unsigned enable_pol:1;
- 
- 	struct videomode mode;
- 
+Changes in v2:
+- Document that consumers of backlight devices can use the 'backlight'
+  property to hold a phandle to the backlight device.
+
+ .../bindings/video/backlight/backlight.txt         | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/backlight.txt
+
+diff --git a/Documentation/devicetree/bindings/video/backlight/backlight.txt b/Documentation/devicetree/bindings/video/backlight/backlight.txt
+new file mode 100644
+index 0000000..309949d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/backlight/backlight.txt
+@@ -0,0 +1,22 @@
++Specifying backlight information for devices
++======================
++
++Backlight user nodes
++--------------------
++
++Nodes such as display panels that refer to backlight devices can do so by simply having a property named 'backlight' that contains a phandle to a backlight node.
++
++Example:
++
++	backlight: backlight {
++		compatible = "gpio-backlight";
++		gpios = <&gpio3 4 GPIO_ACTIVE_HIGH>;
++	};
++
++	[...]
++
++	panel: panel {
++		compatible = "cptt,claa101wb01";
++
++		backlight = <&backlight>;
++	};
 -- 
-2.1.4
-
-
-
-
+2.4.1
 

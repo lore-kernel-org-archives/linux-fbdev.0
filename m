@@ -1,56 +1,63 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 15 Jul 2015 08:41:46 +0000
-Subject: [PATCH v2 2/2] staging: sm7xxfb: usr fb_read and fb_write
-Message-Id: <1436948986-29664-2-git-send-email-sudipm.mukherjee@gmail.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Date: Wed, 01 Jul 2015 09:41:02 +0000
+Subject: [PATCH v2 07/12] backlight: register dependency parser for firmware nodes
+Message-Id: <1435743667-11987-8-git-send-email-tomeu.vizoso@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436948986-29664-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1436948986-29664-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-Now since the Big-Endian and Little-Endian based calculations are moved
-into a macro we can make fb_read() and fb_write() common for both
-Little-Endian and Big-Endian.
+So others can find out what depends on backlight devices, as specified
+in bindings/video/backlight/backlight.txt.
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 ---
- drivers/staging/sm7xxfb/sm7xxfb.c | 4 ----
- 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
-index 106465c..07c2199 100644
---- a/drivers/staging/sm7xxfb/sm7xxfb.c
-+++ b/drivers/staging/sm7xxfb/sm7xxfb.c
-@@ -946,7 +946,6 @@ static int smtc_setcolreg(unsigned regno, unsigned red, unsigned green,
+Changes in v2: None
+
+ drivers/video/backlight/backlight.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index bddc8b1..ab8f5e7 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -566,8 +566,22 @@ struct backlight_device *of_find_backlight_by_node(struct device_node *node)
+ EXPORT_SYMBOL(of_find_backlight_by_node);
+ #endif
+ 
++static void backlight_get_dependencies(struct fwnode_handle *fwnode,
++					  struct list_head *deps)
++{
++	struct device_node *np;
++
++	np = of_parse_phandle(to_of_node(fwnode), "backlight", 0);
++	if (!np)
++		return;
++
++	fwnode_add_dependency(&np->fwnode, deps);
++}
++
+ static void __exit backlight_class_exit(void)
+ {
++	fwnode_remove_dependency_parser(backlight_get_dependencies);
++
+ 	class_destroy(backlight_class);
+ }
+ 
+@@ -586,6 +600,8 @@ static int __init backlight_class_init(void)
+ 	mutex_init(&backlight_dev_list_mutex);
+ 	BLOCKING_INIT_NOTIFIER_HEAD(&backlight_notifier);
+ 
++	fwnode_add_dependency_parser(backlight_get_dependencies);
++
  	return 0;
  }
  
--#ifdef __BIG_ENDIAN
- static ssize_t smtcfb_read(struct fb_info *info, char __user *buf,
- 			   size_t count, loff_t *ppos)
- {
-@@ -1107,7 +1106,6 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
- 
- 	return (cnt) ? cnt : err;
- }
--#endif	/* ! __BIG_ENDIAN */
- 
- static void sm7xx_set_timing(struct smtcfb_info *sfb)
- {
-@@ -1303,10 +1301,8 @@ static struct fb_ops smtcfb_ops = {
- 	.fb_fillrect  = cfb_fillrect,
- 	.fb_imageblit = cfb_imageblit,
- 	.fb_copyarea  = cfb_copyarea,
--#ifdef __BIG_ENDIAN
- 	.fb_read      = smtcfb_read,
- 	.fb_write     = smtcfb_write,
--#endif
- };
- 
- /*
 -- 
-1.8.1.2
+2.4.1
 

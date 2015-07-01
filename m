@@ -1,76 +1,22 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Wed, 15 Jul 2015 04:14:37 +0000
-Subject: [PATCH v5 08/19] staging: sm750fb: add space after enum definition
-Message-Id: <1436933688-5408-8-git-send-email-juston.h.li@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 01 Jul 2015 08:00:43 +0000
+Subject: Re: [PATCH 1/2] drivers:hv: Modify hv_vmbus to search for all MMIO ranges available.
+Message-Id: <20150701080043.GV28762@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
-In-Reply-To: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
+References: <1435703668-23486-1-git-send-email-kys@microsoft.com>
+ <1435703702-23525-1-git-send-email-kys@microsoft.com>
+In-Reply-To: <1435703702-23525-1-git-send-email-kys@microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Juston Li <juston.h.li@gmail.com>
+To: "K. Y. Srinivasan" <kys@microsoft.com>
+Cc: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, devel@linuxdriverproject.org, olaf@aepfle.de, apw@canonical.com, vkuznets@redhat.com, jasowang@redhat.com, hdegoede@redhat.com, linux-fbdev@vger.kernel.org, haiyangz@microsoft.com, "jakeo@microsoft.com" <jakeo@microsoft.com>
 
-Fixes checkpatch.pl warning:
-WARNING: missing space after enum definition
+On Tue, Jun 30, 2015 at 03:35:01PM -0700, K. Y. Srinivasan wrote:
+> From: jakeo@microsoft.com <jakeo@microsoft.com>
 
-Signed-off-by: Juston Li <juston.h.li@gmail.com>
----
- drivers/staging/sm750fb/ddk750_display.h | 2 +-
- drivers/staging/sm750fb/sm750_hw.h       | 8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+Jake, fix your git config.
 
-diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
-index 018a661..a7f50cc 100644
---- a/drivers/staging/sm750fb/ddk750_display.h
-+++ b/drivers/staging/sm750fb/ddk750_display.h
-@@ -129,7 +129,7 @@ typedef enum _disp_output_t
- }
- disp_output_t;
- #else
--typedef enum _disp_output_t{
-+typedef enum _disp_output_t {
- 	do_LCD1_PRI = PNL_2_PRI|PRI_TP_ON|PNL_SEQ_ON|DAC_ON,
- 	do_LCD1_SEC = PNL_2_SEC|SEC_TP_ON|PNL_SEQ_ON|DAC_ON,
- #if 0
-diff --git a/drivers/staging/sm750fb/sm750_hw.h b/drivers/staging/sm750fb/sm750_hw.h
-index adc61edf..af2db7c 100644
---- a/drivers/staging/sm750fb/sm750_hw.h
-+++ b/drivers/staging/sm750fb/sm750_hw.h
-@@ -9,7 +9,7 @@
- #endif
- 
- 
--enum sm750_pnltype{
-+enum sm750_pnltype {
- 
- 	sm750_24TFT = 0,/* 24bit tft */
- 
-@@ -19,7 +19,7 @@ enum sm750_pnltype{
- };
- 
- /* vga channel is not concerned  */
--enum sm750_dataflow{
-+enum sm750_dataflow {
- 	sm750_simul_pri,/* primary => all head */
- 
- 	sm750_simul_sec,/* secondary => all head */
-@@ -30,13 +30,13 @@ enum sm750_dataflow{
- };
- 
- 
--enum sm750_channel{
-+enum sm750_channel {
- 	sm750_primary = 0,
- 	/* enum value equal to the register filed data */
- 	sm750_secondary = 1,
- };
- 
--enum sm750_path{
-+enum sm750_path {
- 	sm750_panel = 1,
- 	sm750_crt = 2,
- 	sm750_pnc = 3,/* panel and crt */
--- 
-2.4.5
+regards,
+dan carpenter
 

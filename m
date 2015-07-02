@@ -1,29 +1,25 @@
-From: Julien Grall <julien.grall@citrix.com>
-Date: Wed, 29 Jul 2015 11:02:50 +0000
-Subject: Re: [PATCH 0/8] Use correctly the Xen memory terminologies in Linux
-Message-Id: <55B8B2DA.8090900@citrix.com>
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Thu, 02 Jul 2015 23:23:26 +0000
+Subject: Re: [PATCH v5 1/3] video: fbdev: atyfb: clarify ioremap() base and length used
+Message-Id: <CAB=NE6Uac5x4+fr9d7OymaKS9nG=Da3h+qW7Ni0o0XGOSagEdg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
-In-Reply-To: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
+References: <1435196060-27350-1-git-send-email-mcgrof@do-not-panic.com>
+ <1435196060-27350-2-git-send-email-mcgrof@do-not-panic.com>
+ <20150625230437.GA4362@sci.fi> <CAB=NE6V0HGCkpYFghUyyk=+St-494Y8e9PEakF9F7cEB8vpKvA@mail.gmail.com>
+ <20150625231103.GB4362@sci.fi> <20150626010927.GI3005@wotan.suse.de> <20150626073028.GA14776@pd.tnic>
+In-Reply-To: <20150626073028.GA14776@pd.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: xen-devel@lists.xenproject.org
-Cc: ian.campbell@citrix.com, stefano.stabellini@eu.citrix.com, linux-kernel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, David Vrabel <david.vrabel@citrix.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, "James E.J. Bottomley" <JBottomley@odin.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jiri Slaby <jslaby@suse.com>, Juergen Gross <jgross@suse.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, =?UTF-8?B?Um9nZXIgUGF1IE1vbm7DqQ==?= <roger.pau@citrix.com>, Russell King <linux@arm.linux.org.uk>T
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Borislav Petkov <bp@suse.de>
+Cc: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, Andy Lutomirski <luto@amacapital.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "Michael S. Tsirkin" <mst@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Dave Airlie <airlied@redhat.com>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Rob Clark <robdclark@gmail.com>, Mathias Krause <minipli@googlemail.com>, Andrzej Hajda <a.hajda@samsung.com>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>
 
-On 28/07/15 16:02, Julien Grall wrote:
-> Hi all,
->=20
-> This patch series aims to use the memory terminologies described in
-> include/linux/mm.h [1] for Linux xen code.
+On Fri, Jun 26, 2015 at 12:30 AM, Borislav Petkov <bp@suse.de> wrote:
+> On Fri, Jun 26, 2015 at 03:09:27AM +0200, Luis R. Rodriguez wrote:
+>> Sure, mind this as a follow up patch if its too late?
+>
+> No need, you can send me an updated one - I'll replace it.
 
-I mistakenly wrote the wrong include here. It should be include/xen/mm.h
-from the Xen tree:
+Will do!
 
-http://xenbits.xen.org/gitweb/?p=3Dxen.git;a=3Dcommitdiff;h=E758ed14f390342=
-513405dd766e874934573e6cb
-
-Regards,
-
---=20
-Julien Grall
+  Luis

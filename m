@@ -1,58 +1,68 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Thu, 02 Jul 2015 18:49:04 +0000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 02 Jul 2015 22:26:27 +0000
 Subject: Re: [PATCH v7 5/9] PCI: Add pci_iomap_wc() variants
-Message-Id: <20150702184904.GA7021@wotan.suse.de>
+Message-Id: <1435875987.1475.73.camel@kernel.crashing.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1434751712-24333-1-git-send-email-mcgrof@do-not-panic.com>
- <1435189081.3790.24.camel@kernel.crashing.org>
- <4985EFDD773FCB459EF7915D2A3621ADC02F10@nice.asicdesigners.com>
- <6806026.xb91q6Ad7G@wuerfel>
- <4985EFDD773FCB459EF7915D2A3621ADC031F8@nice.asicdesigners.com>
- <1435284123.3822.24.camel@kernel.crashing.org>
- <4985EFDD773FCB459EF7915D2A3621ADC03621@nice.asicdesigners.com>
- <1435356048.26815.9.camel@kernel.crashing.org>
-In-Reply-To: <1435356048.26815.9.camel@kernel.crashing.org>
+	 <1435189081.3790.24.camel@kernel.crashing.org>
+	 <4985EFDD773FCB459EF7915D2A3621ADC02F10@nice.asicdesigners.com>
+	 <6806026.xb91q6Ad7G@wuerfel>
+	 <4985EFDD773FCB459EF7915D2A3621ADC031F8@nice.asicdesigners.com>
+	 <1435284123.3822.24.camel@kernel.crashing.org>
+	 <4985EFDD773FCB459EF7915D2A3621ADC03621@nice.asicdesigners.com>
+	 <1435356048.26815.9.camel@kernel.crashing.org>
+	 <20150702184904.GA7021@wotan.suse.de>
+In-Reply-To: <20150702184904.GA7021@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Casey Leedom <leedom@chelsio.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Toshi Kani <toshi.kani@hp.com>, Andy Lutomirski <luto@amacapital.net>, Juergen Gross <jgross@suse.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>, Stefan Bader <stefan.bader@canonical.com>, "ville.syrjala@linux.intel.com" <ville.syrjala@linux.intel.com>, David Vrabel <david.vrabel@citrix.com>, Jan Beulich <jbeulich@suse.com>, Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>
+To: "Luis R. Rodriguez" <mcgrof@suse.com>
+Cc: Casey Leedom <leedom@chelsio.com>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Toshi Kani <toshi.kani@hp.com>, Andy Lutomirski <luto@amacapital.net>, Juergen Gross <jgross@suse.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Suresh Siddha <sbsiddha@gmail.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Hansen <dave.hansen@linux.intel.com>, "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>, Stefan Bader <stefan.bader@canonical.com>, "ville.syrjala@linux.intel.com" <ville.syrjala@linux.intel.com>, David Vrabel <david.vrabel@citrix.com>, Jan Beulich <jbeulich@suse.com>, Roger Pau =?ISO-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>
 
-On Sat, Jun 27, 2015 at 08:00:48AM +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2015-06-26 at 16:24 +0000, Casey Leedom wrote:
-> >   Thanks for looking into this Ben.  As it stands now, it seems as
-> > if Write Combined mappings simply aren't supported and/or all
-> > driver writers trying to utilize Write Combined mappings have to
-> > "hand roll" their own solutions which really isn't supportable.
-> > 
-> >   One thing that might be considered is simply to treat the desire
-> > to utilize the Write Combining hardware as a separate issue and
-> > develop writel_wc(), writeq_wc(), etc.
+On Thu, 2015-07-02 at 20:49 +0200, Luis R. Rodriguez wrote:
+> > The question then is what is "the right thing". In the powerpc case,
+> > we'll have a non-garded mapping, which means we also get no ordering
+> > between load and stores.
+> 
+> I don't follow, you *ordering* between load and stores for WC? We should
+> not need that for WC, its why WC is used for only very specific things
+> such as framebuffer and PIO (which BTw I still don't quite get all this
+> use case for infiniband to be honest, and I will note I do see some
+> proprietary hardware extensions like bursts but nothing covering all
+> this in a general doc, I think I think it all just has to do that this
+> is a hardware hack in reality, which we sell as a feature).
 
-That seems rather sloppy and cumbersome, its best to just provide the
-infrastructure for initial mapping for an area and let the hardware do it for
-you. With the current design drivers would just use regular read/write on all
-areas and the only thing that will set them apart will be the mapping.  With
-what you propose we'd end up having to shift a whole bunch of reads/writes for
-just the purpose of adding WC to an area that didn't have wc before. That's
-a waste of code and time.
+Well, that's the problem, the semantics that we provide to drivers
+aren't well defined.
 
-> > Those could be defined
-> > as legal only for Write Combined Mappings and would "do the
-> > right thing" for each architecture.  
+The words "write combine" themselves only specify that writes to subsequent
+addresses can be combined into larger transactions. That's in itself is already
+quite vague (are their boundaries, limits ? some can depend on bus type, etc...)
+though in practice is probably sufficient.
 
-Yuck.
+However, overloading a _wc mapping with additional memory model differences
+such as loss of ordering between load and stores, etc... is not an obvious
+thing to do. I agree it would make *my* life easier if we did it since this
+is precisely the semantics provided by a "G=0" mapping on ppc, but we need
+to agree and *document* it, otherwise bad things will happen eventually.
 
-> The question then is what is "the right thing". In the powerpc case,
-> we'll have a non-garded mapping, which means we also get no ordering
-> between load and stores.
+We also need to document in that case which barriers can be used to explicitly
+enforce the ordering on such a mapping and which barriers can be used to break
+write combine (they don't necessarily have to be the same).
 
-I don't follow, you *ordering* between load and stores for WC? We should
-not need that for WC, its why WC is used for only very specific things
-such as framebuffer and PIO (which BTw I still don't quite get all this
-use case for infiniband to be honest, and I will note I do see some
-proprietary hardware extensions like bursts but nothing covering all
-this in a general doc, I think I think it all just has to do that this
-is a hardware hack in reality, which we sell as a feature).
+We also need to document which accessors will actually provide the write combine
+"feature" of a _wc mapping. For example while writel() will do it on Intel, it
+will not on ppc and I wouldn't be surprised if a bunch of other archs fall in
+the same bucket as ppc (basically anything that has barriers in their writel
+implementation to order vs. DMA etc...).
 
-  Luis
+So we might need to explicitly document that writel_relaxed() needs to be used.
+
+Finally what are the precise guaranteed semantics of writeX/readX,
+writeX_relaxed/readX_relaxed and __raw_ (everything else) on a _wc mapping, what
+do we mandate and document, what do we leave to be implementation dependent ?
+
+Cheers,
+Ben.
+
+

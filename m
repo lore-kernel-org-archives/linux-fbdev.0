@@ -1,136 +1,173 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 10 Jul 2015 00:28:16 +0000
-Subject: [PATCH v1] x86/mm, asm-generic: Add IOMMU ioremap_uc() variant default
-Message-Id: <1436488096-3165-1-git-send-email-mcgrof@do-not-panic.com>
+From: =?UTF-8?q?Urs=20F=C3=A4ssler?= <urs.fassler@bytesatwork.ch>
+Date: Fri, 03 Jul 2015 08:38:14 +0000
+Subject: [PATCH 1/3] video/logo: use list of logos to find logo
+Message-Id: <1435912696-17546-2-git-send-email-urs.fassler@bytesatwork.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1435912696-17546-1-git-send-email-urs.fassler@bytesatwork.ch>
+In-Reply-To: <1435912696-17546-1-git-send-email-urs.fassler@bytesatwork.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: mingo@kernel.org
-Cc: bp@suse.de, arnd@arndb.de, dan.j.williams@intel.com, hch@lst.de, luto@amacapital.net, hpa@zytor.com, tglx@linutronix.de, geert@linux-m68k.org, ralf@linux-mips.org, hmh@hmh.eng.br, ross.zwisler@linux.intel.com, akpm@linux-foundation.org, jgross@suse.com, benh@kernel.crashing.org, mpe@ellerman.id.au, tj@kernel.org, x86@kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, stefan.bader@canonical.com, linux-mm@kvack.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, oliver.staebler@bytesatwork.ch, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, urs.fassler@bytesatwork.ch
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Refactoring of fb_find_logo: declare list of logos explicit and loop over
+it to find a match.
 
-We currently have no safe way of currently defining architecture
-agnostic IOMMU ioremap_*() variants. The trend is for folks to
-*assume* that ioremap_nocache() should be the default everywhere
-and then add this mapping on each architectures -- this is not
-correct today for a variety of reasons.
-
-We have two options:
-
-1) Sit and wait for every architecture in Linux to get a
-   an ioremap_*() variant defined before including it upstream
-
-2) Gather consensus on a safe architecture agnostic ioremap_*()
-   default
-
-Approach 1) introduces development latencies, and since 2) will take
-time and work on clarifying semantics the only remaining sensible
-thing to do to avoid issues is returning NULL on ioremap_*()
-variants.
-
-In order for this to work we must have all architectures declare
-their own ioremap_*() variants as defined. This will take some work,
-do this for ioremp_uc() to set the example as its only currently
-implemented on x86. Document all this.
-
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Signed-off-by: Urs F=C3=A4ssler <urs.fassler@bytesatwork.ch>
 ---
+ drivers/video/logo/logo.c | 109 ++++++++++++++++++++++++++----------------=
+----
+ 1 file changed, 62 insertions(+), 47 deletions(-)
 
-Ingo,
-
-I only provide implementation support for ioremap_uc() as the other ioremap_*()
-variants are well defined all over the kernel for other architectures already.
-Dan Williams is also providing declarations for them through another series [0]
-This patch does not depend on that series, that patch series does not address
-this specific issue.  With this patch in place now things won't fail to compile
-if ioremap_uc() is used in the kernel on architectures lacking an ioremap_uc()
-implementaiton and makes such calls simply fail. In the very near future there
-is only one expected driver to use this, the atyfb framebuffer device drivers,
-the series for which I've been respinning for a while now and it seems we
-finally have settled on something with. In the future folks may want to
-preemptively declare or annotate some regions already with ioremap_uc() ---
-this would allow an easier transition in the future on x86 of the default
-ioremap_nocache() and ioremap() behaviour to flip from PAT UC- to UC.  But
-before people go out willy-nilly using ioremap_uc() all over though they should
-at least take care to go and define all other architecture's own ioremap_uc()
-implementation mappings. It would seem productive to have a broad discussion
-about this objective alone with other architecture folks.
-
-This patch would just fix compilation issues for future users of ioremap_uc()
-and tries to prevent futher batched patches from folks adding
-ioremap_nocache() for ioremap_uc() on other architectures. What implementation
-is used for ioremap_uc() on each architecture requires review and careful
-thought.
-
-[0] http://lkml.kernel.org/r/20150622082427.35954.73529.stgit@dwillia2-desk3.jf.intel.com
-
- arch/x86/include/asm/io.h |  2 ++
- include/asm-generic/io.h  | 30 +++++++++++++++++++++++++++++-
- 2 files changed, 31 insertions(+), 1 deletion(-)
-
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index cc9c61bc1abe..7cfc085b6879 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -180,6 +180,8 @@ static inline unsigned int isa_virt_to_bus(volatile void *address)
-  */
- extern void __iomem *ioremap_nocache(resource_size_t offset, unsigned long size);
- extern void __iomem *ioremap_uc(resource_size_t offset, unsigned long size);
-+#define ioremap_uc ioremap_uc
-+
- extern void __iomem *ioremap_cache(resource_size_t offset, unsigned long size);
- extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size,
- 				unsigned long prot_val);
-diff --git a/include/asm-generic/io.h b/include/asm-generic/io.h
-index f56094cfdeff..eed3bbe88c8a 100644
---- a/include/asm-generic/io.h
-+++ b/include/asm-generic/io.h
-@@ -736,6 +736,35 @@ static inline void *phys_to_virt(unsigned long address)
- }
+diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
+index 10fbfd8..d0a44db 100644
+--- a/drivers/video/logo/logo.c
++++ b/drivers/video/logo/logo.c
+@@ -36,82 +36,97 @@ static int __init fb_logo_late_init(void)
+=20
+ late_initcall(fb_logo_late_init);
+=20
+-/* logo's are marked __initdata. Use __init_refok to tell
+- * modpost that it is intended that this function uses data
+- * marked __initdata.
+- */
+-const struct linux_logo * __init_refok fb_find_logo(int depth)
+-{
+-	const struct linux_logo *logo =3D NULL;
+=20
+-	if (nologo || logos_freed)
+-		return NULL;
+-
+-	if (depth >=3D 1) {
++static const struct linux_logo *logos[] __initconst =3D {
+ #ifdef CONFIG_LOGO_LINUX_MONO
+-		/* Generic Linux logo */
+-		logo =3D &logo_linux_mono;
++	/* Generic Linux logo */
++	&logo_linux_mono,
  #endif
- 
-+/**
-+ * DOC: ioremap() and ioremap_*() variants
-+ *
-+ * If you have an IOMMU your architecture is expected to have both ioremap()
-+ * and iounmap() implemented otherwise the asm-generic helpers will provide a
-+ * direct mapping.
-+ *
-+ * There are ioremap_*() call variants, if you have no IOMMU we naturally will
-+ * default to direct mapping for all of them, you can override these defaults.
-+ * If you have an IOMMU you are highly encouraged to provide your own
-+ * ioremap variant implementation as there currently is no safe architecture
-+ * agnostic default. To avoid possible improper behaviour default asm-generic
-+ * ioremap_*() variants all return NULL when an IOMMU is available. If you've
-+ * defined your own ioremap_*() variant you must then declare your own
-+ * ioremap_*() variant as defined to itself to avoid the default NULL return.
-+ */
+ #ifdef CONFIG_LOGO_SUPERH_MONO
+-		/* SuperH Linux logo */
+-		logo =3D &logo_superh_mono;
++	/* SuperH Linux logo */
++	&logo_superh_mono,
+ #endif
+-	}
+-=09
+-	if (depth >=3D 4) {
+ #ifdef CONFIG_LOGO_LINUX_VGA16
+-		/* Generic Linux logo */
+-		logo =3D &logo_linux_vga16;
++	/* Generic Linux logo */
++	&logo_linux_vga16,
+ #endif
+ #ifdef CONFIG_LOGO_BLACKFIN_VGA16
+-		/* Blackfin processor logo */
+-		logo =3D &logo_blackfin_vga16;
++	/* Blackfin processor logo */
++	&logo_blackfin_vga16,
+ #endif
+ #ifdef CONFIG_LOGO_SUPERH_VGA16
+-		/* SuperH Linux logo */
+-		logo =3D &logo_superh_vga16;
++	/* SuperH Linux logo */
++	&logo_superh_vga16,
+ #endif
+-	}
+-=09
+-	if (depth >=3D 8) {
+ #ifdef CONFIG_LOGO_LINUX_CLUT224
+-		/* Generic Linux logo */
+-		logo =3D &logo_linux_clut224;
++	/* Generic Linux logo */
++	&logo_linux_clut224,
+ #endif
+ #ifdef CONFIG_LOGO_BLACKFIN_CLUT224
+-		/* Blackfin Linux logo */
+-		logo =3D &logo_blackfin_clut224;
++	/* Blackfin Linux logo */
++	&logo_blackfin_clut224,
+ #endif
+ #ifdef CONFIG_LOGO_DEC_CLUT224
+-		/* DEC Linux logo on MIPS/MIPS64 or ALPHA */
+-		logo =3D &logo_dec_clut224;
++	/* DEC Linux logo on MIPS/MIPS64 or ALPHA */
++	&logo_dec_clut224,
+ #endif
+-#ifdef CONFIG_LOGO_MAC_CLUT224
+-		/* Macintosh Linux logo on m68k */
+-		if (MACH_IS_MAC)
+-			logo =3D &logo_mac_clut224;
++#if defined(CONFIG_LOGO_MAC_CLUT224) && MACH_IS_MAC
++	/* Macintosh Linux logo on m68k */
++	&logo_mac_clut224,
+ #endif
+ #ifdef CONFIG_LOGO_PARISC_CLUT224
+-		/* PA-RISC Linux logo */
+-		logo =3D &logo_parisc_clut224;
++	/* PA-RISC Linux logo */
++	&logo_parisc_clut224,
+ #endif
+ #ifdef CONFIG_LOGO_SGI_CLUT224
+-		/* SGI Linux logo on MIPS/MIPS64 */
+-		logo =3D &logo_sgi_clut224;
++	/* SGI Linux logo on MIPS/MIPS64 */
++	&logo_sgi_clut224,
+ #endif
+ #ifdef CONFIG_LOGO_SUN_CLUT224
+-		/* Sun Linux logo */
+-		logo =3D &logo_sun_clut224;
++	/* Sun Linux logo */
++	&logo_sun_clut224,
+ #endif
+ #ifdef CONFIG_LOGO_SUPERH_CLUT224
+-		/* SuperH Linux logo */
+-		logo =3D &logo_superh_clut224;
++	/* SuperH Linux logo */
++	&logo_superh_clut224,
+ #endif
+ #ifdef CONFIG_LOGO_M32R_CLUT224
+-		/* M32R Linux logo */
+-		logo =3D &logo_m32r_clut224;
++	/* M32R Linux logo */
++	&logo_m32r_clut224,
+ #endif
++	NULL
++};
 +
-+#ifdef CONFIG_MMU
-+
-+#ifndef ioremap_uc
-+#define ioremap_uc ioremap_uc
-+static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
++static bool type_depth_compatible(int type, int depth)
 +{
-+	return NULL;
++	switch (type) {
++	case LINUX_LOGO_MONO:
++		return depth >=3D 1;
++	case LINUX_LOGO_VGA16:
++		return depth >=3D 4;
++	case LINUX_LOGO_CLUT224:
++		return depth >=3D 8;
++	default:
++		return false;
+ 	}
 +}
-+#endif
 +
-+#else /* !CONFIG_MMU */
++/* logo's are marked __initdata. Use __init_refok to tell
++ * modpost that it is intended that this function uses data
++ * marked __initdata.
++ */
++const struct linux_logo * __init_refok fb_find_logo(int depth)
++{
++	const struct linux_logo *logo =3D NULL;
++	const struct linux_logo **logos_itr;
 +
- /*
-  * Change "struct page" to physical address.
-  *
-@@ -743,7 +772,6 @@ static inline void *phys_to_virt(unsigned long address)
-  * you'll need to provide your own definitions.
-  */
- 
--#ifndef CONFIG_MMU
- #ifndef ioremap
- #define ioremap ioremap
- static inline void __iomem *ioremap(phys_addr_t offset, size_t size)
--- 
-2.3.2.209.gd67f9d5.dirty
++	if (nologo || logos_freed)
++		return NULL;
++
++	for (logos_itr =3D logos; *logos_itr !=3D NULL; logos_itr++)
++		if (type_depth_compatible((*logos_itr)->type, depth))
++			logo =3D *logos_itr;
++
+ 	return logo;
+ }
+ EXPORT_SYMBOL_GPL(fb_find_logo);
+--=20
+2.1.4
 

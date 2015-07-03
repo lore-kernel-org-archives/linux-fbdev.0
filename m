@@ -1,14 +1,14 @@
 From: =?UTF-8?q?Urs=20F=C3=A4ssler?= <urs.fassler@bytesatwork.ch>
-Date: Tue, 07 Jul 2015 14:24:12 +0000
-Subject: [PATCH 2/2] fbdev: use largest logo if possible
-Message-Id: <1436279052-17237-3-git-send-email-urs.fassler@bytesatwork.ch>
+Date: Fri, 03 Jul 2015 08:38:16 +0000
+Subject: [PATCH 3/3] fbdev: use largest logo if possible
+Message-Id: <1435912696-17546-4-git-send-email-urs.fassler@bytesatwork.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436279052-17237-1-git-send-email-urs.fassler@bytesatwork.ch>
-In-Reply-To: <1436279052-17237-1-git-send-email-urs.fassler@bytesatwork.ch>
+References: <1435912696-17546-1-git-send-email-urs.fassler@bytesatwork.ch>
+In-Reply-To: <1435912696-17546-1-git-send-email-urs.fassler@bytesatwork.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, oliver.staebler@bytesatwork.ch, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, urs.fassler@bytesatwork.ch, geert@linux-m68k.org
+To: daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, oliver.staebler@bytesatwork.ch, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, urs.fassler@bytesatwork.ch
 
 If CONFIG_FB_LOGO_LARGEST is set, fbdev uses the largest boot logo to
 display.

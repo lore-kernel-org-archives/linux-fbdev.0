@@ -1,69 +1,179 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Thu, 09 Jul 2015 17:25:07 +0000
-Subject: Re: [PATCH v5 1/3] video: fbdev: atyfb: clarify ioremap() base and length used
-Message-Id: <20150709172507.GD7021@wotan.suse.de>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 07 Jul 2015 08:26:36 +0000
+Subject: [PATCH 4/5] staging: sm7xxfb: define new macros
+Message-Id: <1436256877-10754-5-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435196060-27350-1-git-send-email-mcgrof@do-not-panic.com>
- <1435196060-27350-2-git-send-email-mcgrof@do-not-panic.com>
- <20150625230437.GA4362@sci.fi>
- <CAB=NE6V0HGCkpYFghUyyk=+St-494Y8e9PEakF9F7cEB8vpKvA@mail.gmail.com>
- <20150625231103.GB4362@sci.fi>
- <20150626010927.GI3005@wotan.suse.de>
- <20150626073028.GA14776@pd.tnic>
- <CAB=NE6Uac5x4+fr9d7OymaKS9nG=Da3h+qW7Ni0o0XGOSagEdg@mail.gmail.com>
- <CAB=NE6UKnhx0PoJp_wHeZMnXxHLsd8snzu2bOj=VWde=Bo-hVg@mail.gmail.com>
- <20150708083849.GB13710@sci.fi>
-In-Reply-To: <20150708083849.GB13710@sci.fi>
+References: <1436256877-10754-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1436256877-10754-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Borislav Petkov <bp@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, Andy Lutomirski <luto@amacapital.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "Michael S. Tsirkin" <mst@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Dave Airlie <airlied@redhat.com>, Toshi Kani <toshi.kani@hp.com>, Suresh Siddha <sbsiddha@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Juergen Gross <jgross@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Antonino Daplas <adaplas@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Rob Clark <robdclark@gmail.com>, Mathias Krause <minipli@googlemail.com>, Andrzej Hajda <a.hajda@samsung.com>, Mel Gorman <mgorman@suse.de>, Vlastimil Babka <vbabka@suse.cz>, Davidlohr Bueso <dbueso@suse.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Dan Carpenter <dan.carpenter@oracle.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-On Wed, Jul 08, 2015 at 11:38:49AM +0300, Ville Syrj=E4l=E4 wrote:
-> On Tue, Jul 07, 2015 at 05:24:57PM -0700, Luis R. Rodriguez wrote:
-> > On Thu, Jul 2, 2015 at 4:23 PM, Luis R. Rodriguez <mcgrof@suse.com> wro=
-te:
-> > > On Fri, Jun 26, 2015 at 12:30 AM, Borislav Petkov <bp@suse.de> wrote:
-> > >> On Fri, Jun 26, 2015 at 03:09:27AM +0200, Luis R. Rodriguez wrote:
-> > >>> Sure, mind this as a follow up patch if its too late?
-> > >>
-> > >> No need, you can send me an updated one - I'll replace it.
-> > >
-> > > Will do!
-> >=20
-> > OK the commend I'm adding:
-> >=20
-> > @@ -3489,6 +3489,15 @@ static int atyfb_setup_generic(struct pci_dev
-> > *pdev, struct fb_info *info,
-> >=20
-> >         /* Map in frame buffer */
-> >         info->fix.smem_start =3D addr;
-> > +
-> > +       /*
-> > +        * The framebuffer is not always 8 MiB that's just the size of =
-the
-> > +        * PCI BAR, this is later corrected for use with write-combining
-> > +        * helpers with aty_fudge_framebuffer_len() which will adjust t=
-he
-> > +        * framebuffer accordingly depending on the device.
->=20
-> That somehow gives me the impression that aty_fudge_framebuffer_len()
-> changes smem_len to match the framebuffer size, which it does
-> not.
->=20
-> Dunno, maybe something like this?
-> /*
->  * The framebuffer is not always 8 MiB that's just the size of the
->  * PCI BAR. We temporarily abuse smem_len here to store the size
->  * of the BAR. aty_init() will later correct it to match the actual
->  * framebuffer size.
->  *
->  * On devices that don't have the auxiliary register aperture, the
->  * registers are housed at the top end of the framebuffer PCI BAR.
->  * aty_fudge_framebuffer_len() is used to reduce smem_len to not
->  * overlap with the registers.
->  */
+Define and use some new macros to work with different situations
+based on little-endian and big-endian.
 
-Thanks Ville, I used that. Will send out a v6 series.
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+---
+ drivers/staging/sm7xxfb/sm7xx.h   | 19 ++++++++++++++++
+ drivers/staging/sm7xxfb/sm7xxfb.c | 48 ++++++++-------------------------------
+ 2 files changed, 29 insertions(+), 38 deletions(-)
 
- Luis
+diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
+index 31a21bd..6905177 100644
+--- a/drivers/staging/sm7xxfb/sm7xx.h
++++ b/drivers/staging/sm7xxfb/sm7xx.h
+@@ -95,3 +95,22 @@ struct modeinit {
+ 	unsigned char init_cr30_cr4d[SIZE_CR30_CR4D];
+ 	unsigned char init_cr90_cra7[SIZE_CR90_CRA7];
+ };
++
++#ifdef __BIG_ENDIAN
++#define pal_rgb(r, g, b, val)	(((r & 0xf800) >> 8) | \
++				((g & 0xe000) >> 13) | \
++				((g & 0x1c00) << 3) | \
++				((b & 0xf800) >> 3))
++#define big_addr		0x800000
++#define mmio_addr		0x00800000
++#define seqw17			smtc_seqw(0x17, 0x30)
++#define big_pixel_depth(p, d)	{if (p = 24) {p = 32; d = 32; } }
++#define big_swap(p)		((p & 0xff00ff00 >> 8) | (p & 0x00ff00ff << 8))
++#else
++#define pal_rgb(r, g, b, val)	val
++#define big_addr		0
++#define mmio_addr		0x00c00000
++#define seqw17
++#define big_pixel_depth(p, d)
++#define big_swap(p)		p
++#endif
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 4dc9d5f..252f110a 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -923,25 +923,14 @@ static int smtc_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 			val = chan_to_field(red, &sfb->fb->var.red);
+ 			val |= chan_to_field(green, &sfb->fb->var.green);
+ 			val |= chan_to_field(blue, &sfb->fb->var.blue);
+-#ifdef __BIG_ENDIAN
+-			pal[regno] = ((red & 0xf800) >> 8) |
+-				     ((green & 0xe000) >> 13) |
+-				     ((green & 0x1c00) << 3) |
+-				     ((blue & 0xf800) >> 3);
+-#else
+-			pal[regno] = val;
+-#endif
++			pal[regno] = pal_rgb(red, green, blue, val);
+ 		} else {
+ 			u32 *pal = sfb->fb->pseudo_palette;
+ 
+ 			val = chan_to_field(red, &sfb->fb->var.red);
+ 			val |= chan_to_field(green, &sfb->fb->var.green);
+ 			val |= chan_to_field(blue, &sfb->fb->var.blue);
+-#ifdef __BIG_ENDIAN
+-			val = (val & 0xff00ff00 >> 8) |
+-			      (val & 0x00ff00ff << 8);
+-#endif
+-			pal[regno] = val;
++			pal[regno] = big_swap(val);
+ 		}
+ 		break;
+ 
+@@ -1002,8 +991,7 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf,
+ 		dst = buffer;
+ 		for (i = c >> 2; i--;) {
+ 			*dst = fb_readl(src++);
+-			*dst = (*dst & 0xff00ff00 >> 8) |
+-			       (*dst & 0x00ff00ff << 8);
++			*dst = big_swap(*dst);
+ 			dst++;
+ 		}
+ 		if (c & 3) {
+@@ -1091,8 +1079,7 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
+ 		}
+ 
+ 		for (i = c >> 2; i--;) {
+-			fb_writel((*src & 0xff00ff00 >> 8) |
+-				  (*src & 0x00ff00ff << 8), dst++);
++			fb_writel(big_swap(*src), dst++);
+ 			src++;
+ 		}
+ 		if (c & 3) {
+@@ -1341,10 +1328,8 @@ static int smtc_map_smem(struct smtcfb_info *sfb,
+ {
+ 	sfb->fb->fix.smem_start = pci_resource_start(pdev, 0);
+ 
+-#ifdef __BIG_ENDIAN
+ 	if (sfb->fb->var.bits_per_pixel = 32)
+-		sfb->fb->fix.smem_start += 0x800000;
+-#endif
++		sfb->fb->fix.smem_start += big_addr;
+ 
+ 	sfb->fb->fix.smem_len = smem_len;
+ 
+@@ -1437,10 +1422,7 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 		sfb->fb->var.bits_per_pixel = SCREEN_BPP;
+ 	}
+ 
+-#ifdef __BIG_ENDIAN
+-	if (sfb->fb->var.bits_per_pixel = 24)
+-		sfb->fb->var.bits_per_pixel = (smtc_scr_info.lfb_depth = 32);
+-#endif
++	big_pixel_depth(sfb->fb->var.bits_per_pixel, smtc_scr_info.lfb_depth);
+ 	/* Map address and memory detection */
+ 	mmio_base = pci_resource_start(pdev, 0);
+ 	pci_read_config_byte(pdev, PCI_REVISION_ID, &sfb->chip_rev_id);
+@@ -1451,11 +1433,7 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 		sfb->fb->fix.mmio_start = mmio_base + 0x00400000;
+ 		sfb->fb->fix.mmio_len = 0x00400000;
+ 		smem_size = SM712_VIDEOMEMORYSIZE;
+-#ifdef __BIG_ENDIAN
+-		sfb->lfb = ioremap(mmio_base, 0x00c00000);
+-#else
+-		sfb->lfb = ioremap(mmio_base, 0x00800000);
+-#endif
++		sfb->lfb = ioremap(mmio_base, mmio_addr);
+ 		if (!sfb->lfb) {
+ 			dev_err(&pdev->dev,
+ 				"%s: unable to map memory mapped IO!\n",
+@@ -1468,12 +1446,10 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 		    sfb->lfb + 0x00700000);
+ 		sfb->dp_regs = sfb->lfb + 0x00408000;
+ 		sfb->vp_regs = sfb->lfb + 0x0040c000;
+-#ifdef __BIG_ENDIAN
+ 		if (sfb->fb->var.bits_per_pixel = 32) {
+-			sfb->lfb += 0x800000;
++			sfb->lfb += big_addr;
+ 			dev_info(&pdev->dev, "sfb->lfb=%p\n", sfb->lfb);
+ 		}
+-#endif
+ 
+ 		/* set MCLK = 14.31818 * (0x16 / 0x2) */
+ 		smtc_seqw(0x6a, 0x16);
+@@ -1482,10 +1458,8 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 		/* enable PCI burst */
+ 		smtc_seqw(0x17, 0x20);
+ 		/* enable word swap */
+-#ifdef __BIG_ENDIAN
+ 		if (sfb->fb->var.bits_per_pixel = 32)
+-			smtc_seqw(0x17, 0x30);
+-#endif
++			seqw17;
+ 		break;
+ 	case 0x720:
+ 		sfb->fb->fix.mmio_start = mmio_base;
+@@ -1617,10 +1591,8 @@ static int smtcfb_pci_resume(struct device *device)
+ 		smtc_seqw(0x62, 0x3e);
+ 		/* enable PCI burst */
+ 		smtc_seqw(0x17, 0x20);
+-#ifdef __BIG_ENDIAN
+ 		if (sfb->fb->var.bits_per_pixel = 32)
+-			smtc_seqw(0x17, 0x30);
+-#endif
++			seqw17;
+ 		break;
+ 	case 0x720:
+ 		smtc_seqw(0x62, 0xff);
+-- 
+1.8.1.2
+

@@ -1,64 +1,45 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Fri, 17 Jul 2015 00:06:22 +0000
-Subject: Re: [PATCH v2 01/12] device: property: delay device-driver matches
-Message-Id: <20150717000622.GH1602@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="CNfT9TXqV7nd4cfk"
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 07 Jul 2015 08:26:35 +0000
+Subject: [PATCH 3/5] staging: sm7xxfb: use kernel commandline
+Message-Id: <1436256877-10754-4-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
- <1435743667-11987-2-git-send-email-tomeu.vizoso@collabora.com>
- <20150716202312.GD11162@sirena.org.uk>
- <CAJZ5v0gMx=DA0f8i9wdMvkYTyOhr0WKh-T6L7rjcxeaAjNMW3g@mail.gmail.com>
-In-Reply-To: <CAJZ5v0gMx=DA0f8i9wdMvkYTyOhr0WKh-T6L7rjcxeaAjNMW3g@mail.gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-gpio@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-pwm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <1436256877-10754-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1436256877-10754-1-git-send-email-sudipm.mukherjee@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Dan Carpenter <dan.carpenter@oracle.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
+We were only using the kernel commandline to set the mode if this driver
+is builtin, but when it is built as a module we were not having any way
+to set the mode. Start using commandline even if it is built as a
+module.
 
---CNfT9TXqV7nd4cfk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+---
+ drivers/staging/sm7xxfb/sm7xxfb.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-On Fri, Jul 17, 2015 at 01:41:16AM +0200, Rafael J. Wysocki wrote:
-> On Thu, Jul 16, 2015 at 10:23 PM, Mark Brown <broonie@kernel.org> wrote:
-> > On Wed, Jul 01, 2015 at 11:40:56AM +0200, Tomeu Vizoso wrote:
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 8fb62af..4dc9d5f 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -1660,14 +1660,12 @@ static struct pci_driver smtcfb_driver = {
+ 
+ static int __init sm712fb_init(void)
+ {
+-#ifndef MODULE
+ 	char *option = NULL;
+ 
+ 	if (fb_get_options("sm712fb", &option))
+ 		return -ENODEV;
+ 	if (option && *option)
+ 		mode_option = option;
+-#endif
+ 	sm7xx_vga_setup(mode_option);
+ 
+ 	return pci_register_driver(&smtcfb_driver);
+-- 
+1.8.1.2
 
-> > I have to say I'm still not 100% clear that special casing platform
-> > devices makes sense here - I can see that platform devices are usually
-> > the first devices to instantiate but there are other kinds of devices
-> > and it's not obvious what the benefit of specifically picking out
-> > platform devices as opposed to just deferring all devices is.
-
-> Some existing devices cannot be deferred without redesigning things quite a bit.
-
-OK, that should go in the changelog then - right now it's just a bit
-obtuse why we're doing this (and as you say it's a bit awkward).  Now
-you mention this I'm thinking that some of the affected devices might be
-platform devices on some systems, IOMMUs spring to mind for example...
-they're one of the main bits of the system I'm aware of that still rely
-on probe ordering and they do tend to be platform devices.
-
-> What I was talking about, though, was to use an opt-in mechanism for
-> that which could be set for all platform devices, for example, by
-> default, but it might be set for other bus types too if that's useful.
-
-Sure, I got that and do agree with you that a mechanism like you suggest
-would be good.  I just wasn't clear why we were targetting platform
-devices in the first place.
-
---CNfT9TXqV7nd4cfk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVqEb6AAoJECTWi3JdVIfQ6igH/1lfzgngw+QMPD3PzShllj57
-i/HPqcOa7NFybef7ZM2t00i3/PCAPOhg2EsaPaV34euzZ57FZX0DvS89+1K1q3sw
-h+u95jS4c8GMJnO9gAnQZ1u5S6OM40j/livOl/HaVb0qUSIFwEeRHbJfW3uJ/wZf
-3phgAXmVjPQRqJS054a/CGEyU2lwZW+4enxtBs49TbY1EHE8TbQIG9EM5kqAu23I
-t4Y5+RDaft1SNXacAjjc0cwYIFY9xh5UnYDLDhNc1mabklu9selE0PKhgS8PUkl5
-X+D87P00jPDUd99qbILBZhRqIw+72BKECQ/ddJCQXIW2u0pjJc1W81iYl/LF2bw=
-=w0V2
------END PGP SIGNATURE-----
-
---CNfT9TXqV7nd4cfk--

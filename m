@@ -1,54 +1,35 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Mon, 20 Jul 2015 07:52:09 +0000
-Subject: Re: [RFC PATCH 03/15] pwm: add pwm_get_polarity helper function
-Message-Id: <20150720075209.GD29614@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="KdquIMZPjGJQvRdI"
+From: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Date: Tue, 07 Jul 2015 13:00:47 +0000
+Subject: [PATCH RESEND] video: fbdev: s3c-fb: Constify platform_device_id
+Message-Id: <1436274047-3274-1-git-send-email-k.kozlowski.k@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
- <1435738921-25027-4-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1435738921-25027-4-git-send-email-boris.brezillon@free-electrons.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jingoohan1@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
+The platform_device_id is not modified by the driver and core uses it as
+const.
 
---KdquIMZPjGJQvRdI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+---
+ drivers/video/fbdev/s3c-fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Wed, Jul 01, 2015 at 10:21:49AM +0200, Boris Brezillon wrote:
-> Some drivers are directly accessing the ->polarity field in pwm_device.
-> Add an helper to retrieve the current polarity so that we can easily move
-> this field elsewhere (required to support atomic update).
->=20
-> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> ---
->  include/linux/pwm.h | 5 +++++
->  1 file changed, 5 insertions(+)
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index 7e3a05fc47aa..f72dd12456f9 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -1938,7 +1938,7 @@ static struct s3c_fb_driverdata s3c_fb_data_s3c2443 = {
+ 	},
+ };
+ 
+-static struct platform_device_id s3c_fb_driver_ids[] = {
++static const struct platform_device_id s3c_fb_driver_ids[] = {
+ 	{
+ 		.name		= "s3c-fb",
+ 		.driver_data	= (unsigned long)&s3c_fb_data_64xx,
+-- 
+2.1.4
 
-Applied thanks.
-
-Thierry
-
---KdquIMZPjGJQvRdI
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJVrKioAAoJEN0jrNd/PrOhanIP/0BUxXg7th6WFzZDcnlGFzp+
-cq7cOP9ic2jyzUUPGaXTqB3k0pSnXooubXMlgWkDynsLPDzaj2qD2b3uH9iLN9dy
-fJhZtU2RpCoWw5271/z0pC4auHNV6YvbxTquMngXC/zaF18UPSwr7tyGapMDVQOA
-HH0D75i8z3Qfib/xoxYFP2lzomOny/LAO2vlSnNzku5lYpbBy2ZgCdDfSsqW4Wbi
-20g9cYhMeuQSQdqas0MguM2WiSmked6dZXvSS1tu4q1XKBjLoIf7A6aXjfcbdVKZ
-8aSRbIcC9nS1/X1zc9qf0BfS0SRAz8YGM/1rQ3YIrm/NqGaty4fZucEwQ38CXZJL
-3HaPyocmMJ361gclukbsGcG0Cz7mVbnK6uCr4DFZuKuLhN2QENrbQL52kOGR3nP1
-XLcUBxDt8Hc9tuj3HQ5xMmcu1Fva+tmjCGHonsqfjfRlROERo9u+gDZJrAO6lgtM
-aXWBDHPPvqraaNz97cJHAshkC/I7wkDrVosRiBtoMnejAo/4ZYVoFjH4ygun3uCA
-k0uS/uYPbwzmFSpGGLHy6eQ/3f11V7VuNIuNEWGmzXdogwAXckHdtXvNoTe8dR5L
-ooa6viN7Xx5m71MRMFNWqNBP4bSVYWr+ckUJIXcuSpV+3ncDX6/9oB4dApzJUeYn
-xorful0JUkCfX6icbT0i
-=OtfN
------END PGP SIGNATURE-----
-
---KdquIMZPjGJQvRdI--

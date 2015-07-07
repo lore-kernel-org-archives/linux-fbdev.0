@@ -1,36 +1,83 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 26 Jul 2015 21:26:19 +0000
-Subject: [PATCH 2/5] gxt4500: fix 16bpp 565 mode
-Message-Id: <1437945982-3021-3-git-send-email-linux@rainbow-software.org>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 07 Jul 2015 08:26:33 +0000
+Subject: [PATCH 1/5] staging: sm7xxfb: remove unused macros
+Message-Id: <1436256877-10754-2-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1437945982-3021-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1437945982-3021-1-git-send-email-linux@rainbow-software.org>
+References: <1436256877-10754-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1436256877-10754-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Dan Carpenter <dan.carpenter@oracle.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-Fix wrong colors in 16bpp 565 mode.
+These macros were only defined but not used anywhere.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/gxt4500.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm7xxfb/sm7xx.h | 20 --------------------
+ 1 file changed, 20 deletions(-)
 
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 1bf9894..1f2fd5b 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -525,7 +525,7 @@ static int gxt4500_setcolreg(unsigned int reg, unsigned int red,
- 		u32 val = reg;
- 		switch (par->pixfmt) {
- 		case DFA_PIX_16BIT_565:
--			val |= (reg << 11) | (reg << 6);
-+			val |= (reg << 11) | (reg << 5);
- 			break;
- 		case DFA_PIX_16BIT_1555:
- 			val |= (reg << 10) | (reg << 5);
+diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
+index 4bed094..31a21bd 100644
+--- a/drivers/staging/sm7xxfb/sm7xx.h
++++ b/drivers/staging/sm7xxfb/sm7xx.h
+@@ -13,8 +13,6 @@
+  *  more details.
+  */
+ 
+-#define NR_PALETTE        256
+-
+ #define FB_ACCEL_SMI_LYNX 88
+ 
+ #define SCREEN_X_RES      1024
+@@ -31,12 +29,8 @@
+ 
+ extern void __iomem *smtc_regbaseaddress;
+ #define smtc_mmiowb(dat, reg)	writeb(dat, smtc_regbaseaddress + reg)
+-#define smtc_mmioww(dat, reg)	writew(dat, smtc_regbaseaddress + reg)
+-#define smtc_mmiowl(dat, reg)	writel(dat, smtc_regbaseaddress + reg)
+ 
+ #define smtc_mmiorb(reg)	readb(smtc_regbaseaddress + reg)
+-#define smtc_mmiorw(reg)	readw(smtc_regbaseaddress + reg)
+-#define smtc_mmiorl(reg)	readl(smtc_regbaseaddress + reg)
+ 
+ #define SIZE_SR00_SR04      (0x04 - 0x00 + 1)
+ #define SIZE_SR10_SR24      (0x24 - 0x10 + 1)
+@@ -48,8 +42,6 @@ extern void __iomem *smtc_regbaseaddress;
+ #define SIZE_CR00_CR18      (0x18 - 0x00 + 1)
+ #define SIZE_CR30_CR4D      (0x4D - 0x30 + 1)
+ #define SIZE_CR90_CRA7      (0xA7 - 0x90 + 1)
+-#define SIZE_VPR		(0x6C + 1)
+-#define SIZE_DPR		(0x44 + 1)
+ 
+ static inline void smtc_crtcw(int reg, int val)
+ {
+@@ -57,24 +49,12 @@ static inline void smtc_crtcw(int reg, int val)
+ 	smtc_mmiowb(val, 0x3d5);
+ }
+ 
+-static inline unsigned int smtc_crtcr(int reg)
+-{
+-	smtc_mmiowb(reg, 0x3d4);
+-	return smtc_mmiorb(0x3d5);
+-}
+-
+ static inline void smtc_grphw(int reg, int val)
+ {
+ 	smtc_mmiowb(reg, 0x3ce);
+ 	smtc_mmiowb(val, 0x3cf);
+ }
+ 
+-static inline unsigned int smtc_grphr(int reg)
+-{
+-	smtc_mmiowb(reg, 0x3ce);
+-	return smtc_mmiorb(0x3cf);
+-}
+-
+ static inline void smtc_attrw(int reg, int val)
+ {
+ 	smtc_mmiorb(0x3da);
 -- 
-Ondrej Zary
+1.8.1.2
 

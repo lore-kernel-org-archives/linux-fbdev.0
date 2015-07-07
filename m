@@ -1,84 +1,53 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Thu, 16 Jul 2015 23:04:09 +0000
-Subject: Re: [alsa-devel] [PATCH v2 11/12] ASoC: tegra: register dependency parser for firmware nodes
-Message-Id: <20150716230409.GG1602@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="gvF4niNJ+uBMJnEh"
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Date: Tue, 07 Jul 2015 16:15:09 +0000
+Subject: Re: [PATCH v8 0/9] pci: add pci_iomap_wc() and pci_ioremap_wc_bar()
+Message-Id: <20150707161509.GS7021@wotan.suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
- <1435743667-11987-12-git-send-email-tomeu.vizoso@collabora.com>
- <20150701173802.GW11162@sirena.org.uk>
- <CAAObsKDsEuDS46rW9CMuviDEDV-OVXe5q-kiWmw0D_n2D3Tf5A@mail.gmail.com>
- <20150713154254.GH11162@sirena.org.uk>
- <CAAObsKAVY7-QpcRyT4juc2RyB+vqibvzKO7wFCT2VsL9R8bzPw@mail.gmail.com>
- <20150714110713.GT11162@sirena.org.uk>
- <CAAObsKAHviKKTrEBhuge-KQ115p-kOf69miNnmpR+7knOeg+qg@mail.gmail.com>
-In-Reply-To: <CAAObsKAHviKKTrEBhuge-KQ115p-kOf69miNnmpR+7knOeg+qg@mail.gmail.com>
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, alsa-devel@alsa-project.org, Stephen Warren <swarren@wwwdotorg.org>, Takashi Iwai <tiwai@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liam Girdwood <lgirdwood@gmail.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-gpio@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Linux PWM List <linux-pwm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>
+References: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
+ <1435284726.3822.28.camel@kernel.crashing.org>
+In-Reply-To: <1435284726.3822.28.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, bp@suse.de, mingo@kernel.org, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com
 
+On Fri, Jun 26, 2015 at 12:12:06PM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2015-06-24 at 18:22 -0700, Luis R. Rodriguez wrote:
+> > Although I had test compiled this before just to be safe I went ahead and
+> > successfully test-compiled this set with allmodconfig, specially since I've now
+> > removed the exports for the devres routines.  Please let me know if these might
+> > be able to go through you or if there are any questions. I will note the recent
+> > discussion with Benjamin over the v7 series concluded that the ideas we both
+> > were alluding to, on automating instead the WC effects for devices seems a bit
+> > too idealistic for PCI / PCIE for now, but perhaps we should at least consider
+> > this in the future for userspace mmap() calls [4].
+> 
+> So I've been trying to figure out how to make this practically work for us (powerpc).
+> 
+> writel() will never write combine for us, it uses too heavy barriers.
+> 
+> writel_relaxed() today is identical to writel() but we can change it.
+> 
+> The problem is that switching to G=0 mappings (which is what provides us with write
+> combining) also architecturally enables prefetch and speculative loads... and again
+> architecturally (the implementations may differ), kills the effect of the lightweight
+> io barrier eieio which we would have to use in readl_relaxed() and writel_relaxed()
+> to provide their normal semantics.
+> 
+> So it boils down to: Can we modify the documentation of readl_relaxed() and writel_relaxed()
+> to define them as being even further relaxed when using a "wc" mapping ?
+>
+> Otherwise, the only way out I see for us on powerpc is to bias massively writel_relaxed()
+> against real_relaxed() by putting heavy barriers around the load in the latter so we can
+> keep them completely out of the former and still enable wc.
 
---gvF4niNJ+uBMJnEh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Depends if you semantically then also are implicating its use for the ioremap_wc()
+area and if we've ensured we've visited all other possibilities to avoid this. Instead
+of replying here though it seems we have a large general ioremap() semantic discussion
+ongoing on another thread which is far ahead of this one and more generalized. Mind
+following up there, seems the party is there:
 
-On Tue, Jul 14, 2015 at 02:47:04PM +0200, Tomeu Vizoso wrote:
-> On 14 July 2015 at 13:07, Mark Brown <broonie@kernel.org> wrote:
+http://lkml.kernel.org/r/20150707160703.GR7021@wotan.suse.de
 
-> > I'm not sure how I can be clearer here...  you're replacing something
-> > that is currently pure data with open coding in each device.  That seems
-> > like a step back in terms of ease of use.
-
-> I could understand that if snd_soc_dai_link had a field with the
-> property name, and the core called of_parse_phandle on it, but
-> currently what I'm duplicating is:
-
->     tegra_max98090_dai.cpu_of_node = of_parse_phandle(np,
->             "nvidia,i2s-controller", 0);
-
-> with:
-
->     add_dependency(fwnode, "nvidia,i2s-controller", deps);
-
-> Admittedly, we could add a cpu_fw_property field to snd_soc_dai_link
-> and have the core call of_parse_phandle itself.
-
-Yes, we could - that's really what should be happening here.  The other
-bit of this is that we're doing it twice which isn't success.
-
-> But even then, the core doesn't know about a device's snd_soc_dai_link
-> until probe() is called and then it's too late for the purposes of
-> this series.
-
-That's not a good reason to encourage bad patterns in drivers.  At the
-very least the drivers should be able to pass the same struct into both
-places, having to open code the same thing in two places is going to be
-error prone.
-
-> That's why I mentioned devm_probe, as it would add a common way to
-> specify the data needed to acquire resources in each driver, which
-> could be made available before probe() is called.
-
-That does avoid the duplication.  However there are issues with the
-interface for enumerable buses, it doesn't solve the problem where
-embedded systems need you to power up the device manually prior to the
-device actually enumerating.  If we're doing early resource acquisition
-we probably want to solve that too.
-
---gvF4niNJ+uBMJnEh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVqDhpAAoJECTWi3JdVIfQ0EcH/1fH3N1Z4hr24sux74G4zKsC
-226sv+YaCN1XJp+07CR6SX4FE6HgYtkP2FQ+DX469pB4ITIg15cQW4XAZBQOUG3Q
-ZH5tzEU5b+pbcBsGGKII6CBwRRrWDwU0lDzNcSxdIhCbwIN0z1BIEQVlrnpnzFz9
-IBsrOFjlxCKDfxHat20DG1A1jysmzL/qEIpmmuNFU8uDT9OTV0Qx0XTDjp4XKkz4
-ZHv23T/xwtgo12y+fDfv+6fn9vbClThG8b+SZP7By/0qJ1JYGUEe6wG5WtBNYEo0
-4FbOWTGDwVnKLbo1ksYK9DVkcPiJwDbTcCoxHHRdF53Ixz1xrjRCaRKkliC+AcM=
-=j1su
------END PGP SIGNATURE-----
-
---gvF4niNJ+uBMJnEh--
+ Luis

@@ -1,58 +1,36 @@
-From: Manfred Schlaegl <manfred.schlaegl@gmx.at>
-Date: Wed, 15 Jul 2015 15:44:27 +0000
-Subject: [RFC PATCH 0/2] drm: add support for for clk and de polarity & gpu: ipu-v3: use clock and de polarit
-Message-Id: <55A67FDB.8010602@gmx.at>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 07 Jul 2015 08:26:32 +0000
+Subject: [PATCH 0/5] staging: sm7xxfb: few changes
+Message-Id: <1436256877-10754-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manfred Schlaegl <manfred.schlaegl-hfTNJOUbDMh54TAoqtyWWQ@public.gmane.org>, Steve Longerbeam <slongerbeam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Deepak Das <deepak_das-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>, Jiada Wang <jiada_wang-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Dan Carpenter <dan.carpenter@oracle.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-Hello!
+Few more changes in sm7xxfb, and hopefully the last changes before I
+send the patch to move it to drivers/video/fbdev.
 
-These patches address a problem we ran into using parallel displays
-with Freescale i.MX53 and i.MX6 SoC's.
-In short: We wanted to change the clock signal polarity by using
-display-timing in the devicetree description, but the output signal stayed
-unchanged.
-
-Parallel displays may have different polarities for clock and data enable
-signals. (Clock polarity is also a topic on LVDS displays). This is the
-reason why there are some properties in devicetree display-timing [1]
-called
- * pixelclk-active .. pixel clock polarity
- * de-active .. data enable pulse polarity
-
-This properties are correctly represented in struct display_timings [2]
-and struct videomode [3] by using enum display_flags [3].
-But when it comes to struct drm_display_mode [4] there are no
-representations for this.
-The properties are "lost in conversion" and never reach imx drm. (or 
-other drm drivers).
-
-Changing this would be especially important for embedded devices where
-parallel(RGB) and LVDS displays are still widely used and drm already
-plays an important role.
-
-Following two patches will
- 1. Introduce representation of clock and data enable polarities
-     in struct drm_display_mode analog to hsync/vsync signals.
-   * "drm: add support for for clk and de polarity"
- 2. Implicitly enable usage of the newly introduced flags in 
-     imx drm (with respect to devicetree compatibility.)
-   * "gpu: ipu-v3: use clock and de polarity from videomode"
-
-I'm aware that introducing new flags in struct drm_display_mode affects
-user space too and therefore has to be considered carefully.
-As I'm not really deep in drm user space your suggestions are very
-welcome.
-
-best regards,
-manfred
+Has been tested with:
+1) fbtest available at https://git.kernel.org/cgit/linux/kernel/git/geert/fbtest.git/
+2) read and write tested on Little-Endian system
 
 
-[1] Documentation/devicetree/bindings/video/display-timing.txt
-[2] include/video/display_timing.h
-[3] include/video/videomode.h
-[4] include/drm/drm_modes.h
+regards
+sudip
+
+Sudip Mukherjee (5):
+  staging: sm7xxfb: remove unused macros
+  staging: sm7xxfb: fix error handling
+  staging: sm7xxfb: use kernel commandline
+  staging: sm7xxfb: define new macros
+  staging: sm7xxfb: usr fb_read and fb_write
+
+ drivers/staging/sm7xxfb/sm7xx.h   | 39 +++++++++++-----------
+ drivers/staging/sm7xxfb/sm7xxfb.c | 69 ++++++++++-----------------------------
+ 2 files changed, 37 insertions(+), 71 deletions(-)
+
+-- 
+1.8.1.2
+

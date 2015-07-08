@@ -1,226 +1,297 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Wed, 15 Jul 2015 04:14:35 +0000
-Subject: [PATCH v5 06/19] staging: sm750fb: add space before open brace
-Message-Id: <1436933688-5408-6-git-send-email-juston.h.li@gmail.com>
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+Date: Wed, 08 Jul 2015 02:33:26 +0000
+Subject: [RESEND] powerpc/diu: adjust DIU initialization entry
+Message-Id: <1436322806-8537-1-git-send-email-dongsheng.wang@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
-In-Reply-To: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Juston Li <juston.h.li@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-Fixes checkpatch.pl error:
-ERROR: space required before the open brace '{'
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-Signed-off-by: Juston Li <juston.h.li@gmail.com>
+Move fsl_diu_init into diu probe function, because it should be
+initialized when system get diu device tree node, not always do
+initialization.
+
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 ---
- drivers/staging/sm750fb/ddk750_display.c | 14 +++++++-------
- drivers/staging/sm750fb/ddk750_mode.c    |  8 ++++----
- drivers/staging/sm750fb/ddk750_power.c   |  4 ++--
- drivers/staging/sm750fb/sm750_accel.c    |  6 +++---
- drivers/staging/sm750fb/sm750_cursor.c   | 14 +++++++-------
- 5 files changed, 23 insertions(+), 23 deletions(-)
+Changes:
+Rebase original patch for upstream because fsl-diu-fb.c has moved to fbdev dir.
 
-diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
-index 973dec3..c7171a4 100644
---- a/drivers/staging/sm750fb/ddk750_display.c
-+++ b/drivers/staging/sm750fb/ddk750_display.c
-@@ -132,7 +132,7 @@ static void setDisplayControl(int ctrl, int dispState)
- static void waitNextVerticalSync(int ctrl, int delay)
+This patch is a long time ago, there is no feedback in powerpc maillist,
+and the Patchwork state has been modified for the changes requested, I
+don't know why. So I resend this patch to linux-fbdev@vger.kernel.org.
+
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index 7fa2e6f..164e22e 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -1680,6 +1680,105 @@ static ssize_t show_monitor(struct device *device,
+ 	return 0;
+ }
+ 
++#ifndef MODULE
++static int __init fsl_diu_setup(char *options)
++{
++	char *opt;
++	unsigned long val;
++
++	if (!options || !*options)
++		return 0;
++
++	while ((opt = strsep(&options, ",")) != NULL) {
++		if (!*opt)
++			continue;
++		if (!strncmp(opt, "monitor=", 8)) {
++			monitor_port = fsl_diu_name_to_port(opt + 8);
++		} else if (!strncmp(opt, "bpp=", 4)) {
++			if (!kstrtoul(opt + 4, 10, &val))
++				default_bpp = val;
++		} else {
++			fb_mode = opt;
++		}
++	}
++
++	return 0;
++}
++#endif
++
++static int fsl_diu_perpare(void)
++{
++#ifdef CONFIG_NOT_COHERENT_CACHE
++	struct device_node *np;
++	const u32 *prop;
++#endif
++#ifndef MODULE
++	char *option;
++
++	/*
++	 * For kernel boot options (in 'video=xxxfb:<options>' format)
++	 */
++	if (fb_get_options("fslfb", &option))
++		return -ENODEV;
++	fsl_diu_setup(option);
++#else
++	monitor_port = fsl_diu_name_to_port(monitor_string);
++#endif
++	pr_info("Freescale Display Interface Unit (DIU) framebuffer driver\n");
++
++	if (!diu_ops.set_pixel_clock) {
++		pr_info("%s: Board not support DIU. Can't dispaly video.\n",
++			__func__);
++		return -ENODEV;
++	}
++
++#ifdef CONFIG_NOT_COHERENT_CACHE
++	np = of_find_node_by_type(NULL, "cpu");
++	if (!np) {
++		pr_err("fsl-diu-fb: can't find 'cpu' device node\n");
++		return -ENODEV;
++	}
++
++	prop = of_get_property(np, "d-cache-size", NULL);
++	if (!prop) {
++		pr_err("fsl-diu-fb: missing 'd-cache-size'\n");
++		of_node_put(np);
++		return -ENODEV;
++	}
++
++	/*
++	 * Freescale PLRU requires 13/8 times the cache size to do a proper
++	 * displacement flush
++	 */
++	coherence_data_size = be32_to_cpup(prop) * 13;
++	coherence_data_size /= 8;
++
++	pr_debug("fsl-diu-fb: coherence data size is %zu bytes\n",
++		 coherence_data_size);
++
++	prop = of_get_property(np, "d-cache-line-size", NULL);
++	if (!prop) {
++		pr_err("fsl-diu-fb: missing 'd-cache-line-size'\n");
++		of_node_put(np);
++		return -ENODEV;
++	}
++	d_cache_line_size = be32_to_cpup(prop);
++
++	pr_debug("fsl-diu-fb: cache lines size is %u bytes\n",
++		 d_cache_line_size);
++
++	of_node_put(np);
++	coherence_data = vmalloc(coherence_data_size);
++	if (!coherence_data) {
++		pr_err("fsl-diu-fb: could not allocate coherence data\n");
++		pr_err("coherence_data_size=%zu)\n", coherence_data_size);
++		return -ENOMEM;
++	}
++
++#endif
++	return 0;
++}
++
+ static int fsl_diu_probe(struct platform_device *pdev)
  {
- 	unsigned int status;
--	if (!ctrl){
-+	if (!ctrl) {
- 		/* primary controller */
+ 	struct device_node *np = pdev->dev.of_node;
+@@ -1690,10 +1789,16 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 	unsigned int i;
+ 	int ret;
  
- 		/* Do not wait when the Primary PLL is off or display control is already off.
-@@ -166,7 +166,7 @@ static void waitNextVerticalSync(int ctrl, int delay)
- 			while (status = SYSTEM_CTRL_PANEL_VSYNC_INACTIVE);
- 		}
++	ret = fsl_diu_perpare();
++	if (ret)
++		goto out_perpare;
++
+ 	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
+ 				   &dma_addr, GFP_DMA | __GFP_ZERO);
+-	if (!data)
+-		return -ENOMEM;
++	if (!data) {
++		ret = -ENOMEM;
++		goto out_perpare;
++	}
+ 	data->dma_addr = dma_addr;
  
--	}else{
-+	}else {
+ 	/*
+@@ -1819,6 +1924,11 @@ error:
  
- 		/* Do not wait when the Primary PLL is off or display control is already off.
- 			   This will prevent the software to wait forever. */
-@@ -233,14 +233,14 @@ static void swPanelPowerSequence(int disp, int delay)
- void ddk750_setLogicalDispOut(disp_output_t output)
- {
- 	unsigned int reg;
--	if (output & PNL_2_USAGE){
-+	if (output & PNL_2_USAGE) {
- 		/* set panel path controller select */
- 		reg = PEEK32(PANEL_DISPLAY_CTRL);
- 		reg = FIELD_VALUE(reg, PANEL_DISPLAY_CTRL, SELECT, (output & PNL_2_MASK)>>PNL_2_OFFSET);
- 		POKE32(PANEL_DISPLAY_CTRL, reg);
- 	}
+ 	iounmap(data->diu_reg);
  
--	if (output & CRT_2_USAGE){
-+	if (output & CRT_2_USAGE) {
- 		/* set crt path controller select */
- 		reg = PEEK32(CRT_DISPLAY_CTRL);
- 		reg = FIELD_VALUE(reg, CRT_DISPLAY_CTRL, SELECT, (output & CRT_2_MASK)>>CRT_2_OFFSET);
-@@ -250,17 +250,17 @@ void ddk750_setLogicalDispOut(disp_output_t output)
- 
- 	}
- 
--	if (output & PRI_TP_USAGE){
-+	if (output & PRI_TP_USAGE) {
- 		/* set primary timing and plane en_bit */
- 		setDisplayControl(0, (output&PRI_TP_MASK)>>PRI_TP_OFFSET);
- 	}
- 
--	if (output & SEC_TP_USAGE){
-+	if (output & SEC_TP_USAGE) {
- 		/* set secondary timing and plane en_bit*/
- 		setDisplayControl(1, (output&SEC_TP_MASK)>>SEC_TP_OFFSET);
- 	}
- 
--	if (output & PNL_SEQ_USAGE){
-+	if (output & PNL_SEQ_USAGE) {
- 		/* set  panel sequence */
- 		swPanelPowerSequence((output&PNL_SEQ_MASK)>>PNL_SEQ_OFFSET, 4);
- 	}
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index cfe528c..efc1fab 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -107,9 +107,9 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
- 					  FIELD_SET(0, CRT_DISPLAY_CTRL, PLANE, ENABLE);
- 
- 
--		if (getChipType() = SM750LE){
-+		if (getChipType() = SM750LE) {
- 			displayControlAdjust_SM750LE(pModeParam, ulTmpValue);
--		}else{
-+		}else {
- 			ulReg = PEEK32(CRT_DISPLAY_CTRL)
- 					& FIELD_CLEAR(CRT_DISPLAY_CTRL, VSYNC_PHASE)
- 					& FIELD_CLEAR(CRT_DISPLAY_CTRL, HSYNC_PHASE)
-@@ -179,7 +179,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
- 		}
- #endif
- 	}
--	else{
-+	else {
- 		ret = -1;
- 	}
++out_perpare:
++#if defined(CONFIG_NOT_COHERENT_CACHE)
++	if (coherence_data)
++		vfree(coherence_data);
++#endif
  	return ret;
-@@ -193,7 +193,7 @@ int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock)
- 	pll.clockType = clock;
+ }
  
- 	uiActualPixelClk = calcPllValue(parm->pixel_clock, &pll);
--	if (getChipType() = SM750LE){
-+	if (getChipType() = SM750LE) {
- 		/* set graphic mode via IO method */
- 		outb_p(0x88, 0x3d4);
- 		outb_p(0x06, 0x3d5);
-diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index a2d9ee6..e2c0bb3 100644
---- a/drivers/staging/sm750fb/ddk750_power.c
-+++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -5,10 +5,10 @@
- void ddk750_setDPMS(DPMS_t state)
+@@ -1837,34 +1947,12 @@ static int fsl_diu_remove(struct platform_device *pdev)
+ 
+ 	iounmap(data->diu_reg);
+ 
++#if defined(CONFIG_NOT_COHERENT_CACHE)
++	vfree(coherence_data);
++#endif
+ 	return 0;
+ }
+ 
+-#ifndef MODULE
+-static int __init fsl_diu_setup(char *options)
+-{
+-	char *opt;
+-	unsigned long val;
+-
+-	if (!options || !*options)
+-		return 0;
+-
+-	while ((opt = strsep(&options, ",")) != NULL) {
+-		if (!*opt)
+-			continue;
+-		if (!strncmp(opt, "monitor=", 8)) {
+-			monitor_port = fsl_diu_name_to_port(opt + 8);
+-		} else if (!strncmp(opt, "bpp=", 4)) {
+-			if (!kstrtoul(opt + 4, 10, &val))
+-				default_bpp = val;
+-		} else
+-			fb_mode = opt;
+-	}
+-
+-	return 0;
+-}
+-#endif
+-
+ static struct of_device_id fsl_diu_match[] = {
+ #ifdef CONFIG_PPC_MPC512x
+ 	{
+@@ -1891,88 +1979,12 @@ static struct platform_driver fsl_diu_driver = {
+ 
+ static int __init fsl_diu_init(void)
  {
- 	unsigned int value;
--	if (getChipType() = SM750LE){
-+	if (getChipType() = SM750LE) {
- 		value = PEEK32(CRT_DISPLAY_CTRL);
- 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
--	}else{
-+	}else {
- 		value = PEEK32(SYSTEM_CTRL);
- 		value= FIELD_VALUE(value, SYSTEM_CTRL, DPMS, state);
- 		POKE32(SYSTEM_CTRL, value);
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 982cf1e..afe73e8 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -248,7 +248,7 @@ unsigned int rop2)   /* ROP value */
-        Note that input pitch is BYTE value, but the 2D Pitch register uses
-        pixel values. Need Byte to pixel conversion.
-     */
--	if (Bpp = 3){
-+	if (Bpp = 3) {
- 			sx *= 3;
- 			dx *= 3;
- 			width *= 3;
-@@ -271,7 +271,7 @@ unsigned int rop2)   /* ROP value */
- 	FIELD_VALUE(0, DE_WINDOW_WIDTH, DESTINATION, (dPitch/Bpp)) |
- 	FIELD_VALUE(0, DE_WINDOW_WIDTH, SOURCE,      (sPitch/Bpp))); /* dpr3c */
+-#ifdef CONFIG_NOT_COHERENT_CACHE
+-	struct device_node *np;
+-	const u32 *prop;
+-#endif
+-	int ret;
+-#ifndef MODULE
+-	char *option;
+-
+-	/*
+-	 * For kernel boot options (in 'video=xxxfb:<options>' format)
+-	 */
+-	if (fb_get_options("fslfb", &option))
+-		return -ENODEV;
+-	fsl_diu_setup(option);
+-#else
+-	monitor_port = fsl_diu_name_to_port(monitor_string);
+-#endif
+-	pr_info("Freescale Display Interface Unit (DIU) framebuffer driver\n");
+-
+-#ifdef CONFIG_NOT_COHERENT_CACHE
+-	np = of_find_node_by_type(NULL, "cpu");
+-	if (!np) {
+-		pr_err("fsl-diu-fb: can't find 'cpu' device node\n");
+-		return -ENODEV;
+-	}
+-
+-	prop = of_get_property(np, "d-cache-size", NULL);
+-	if (prop = NULL) {
+-		pr_err("fsl-diu-fb: missing 'd-cache-size' property' "
+-		       "in 'cpu' node\n");
+-		of_node_put(np);
+-		return -ENODEV;
+-	}
+-
+-	/*
+-	 * Freescale PLRU requires 13/8 times the cache size to do a proper
+-	 * displacement flush
+-	 */
+-	coherence_data_size = be32_to_cpup(prop) * 13;
+-	coherence_data_size /= 8;
+-
+-	pr_debug("fsl-diu-fb: coherence data size is %zu bytes\n",
+-		 coherence_data_size);
+-
+-	prop = of_get_property(np, "d-cache-line-size", NULL);
+-	if (prop = NULL) {
+-		pr_err("fsl-diu-fb: missing 'd-cache-line-size' property' "
+-		       "in 'cpu' node\n");
+-		of_node_put(np);
+-		return -ENODEV;
+-	}
+-	d_cache_line_size = be32_to_cpup(prop);
+-
+-	pr_debug("fsl-diu-fb: cache lines size is %u bytes\n",
+-		 d_cache_line_size);
+-
+-	of_node_put(np);
+-	coherence_data = vmalloc(coherence_data_size);
+-	if (!coherence_data) {
+-		pr_err("fsl-diu-fb: could not allocate coherence data "
+-		       "(size=%zu)\n", coherence_data_size);
+-		return -ENOMEM;
+-	}
+-
+-#endif
+-
+-	ret = platform_driver_register(&fsl_diu_driver);
+-	if (ret) {
+-		pr_err("fsl-diu-fb: failed to register platform driver\n");
+-#if defined(CONFIG_NOT_COHERENT_CACHE)
+-		vfree(coherence_data);
+-#endif
+-	}
+-	return ret;
++	return platform_driver_register(&fsl_diu_driver);
+ }
  
--	if (accel->de_wait() != 0){
-+	if (accel->de_wait() != 0) {
- 		return -1;
- 	}
+ static void __exit fsl_diu_exit(void)
+ {
+ 	platform_driver_unregister(&fsl_diu_driver);
+-#if defined(CONFIG_NOT_COHERENT_CACHE)
+-	vfree(coherence_data);
+-#endif
+ }
  
-@@ -363,7 +363,7 @@ int hw_imageblit(struct lynx_accel *accel,
-        Note that input pitch is BYTE value, but the 2D Pitch register uses
-        pixel values. Need Byte to pixel conversion.
-     */
--	if (bytePerPixel = 3){
-+	if (bytePerPixel = 3) {
- 		dx *= 3;
- 		width *= 3;
- 		startBit *= 3;
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 95cfb8f..3a21af9 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -143,14 +143,14 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
- 			if (opr & (0x80 >> j))
- 			{	/* use fg color,id = 2 */
- 				data |= 2 << (j*2);
--			}else{
-+			}else {
- 				/* use bg color,id = 1 */
- 				data |= 1 << (j*2);
- 			}
- 		}
- #else
--		for (j=0;j<8;j++){
--			if (mask & (0x80>>j)){
-+		for (j=0;j<8;j++) {
-+			if (mask & (0x80>>j)) {
- 				if (rop = ROP_XOR)
- 					opr = mask ^ color;
- 				else
-@@ -173,7 +173,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
- 			/* need a return */
- 			pstart += offset;
- 			pbuffer = pstart;
--		}else{
-+		}else {
- 			pbuffer += sizeof(u16);
- 		}
- 
-@@ -223,13 +223,13 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
- 			if (opr & (0x80 >> j))
- 			{	/* use fg color,id = 2 */
- 				data |= 2 << (j*2);
--			}else{
-+			}else {
- 				/* use bg color,id = 1 */
- 				data |= 1 << (j*2);
- 			}
- 		}
- #else
--		for (j=0;j<8;j++){
-+		for (j=0;j<8;j++) {
- 			if (mask & (1<<j))
- 				data |= ((color & (1<<j))?1:2)<<(j*2);
- 		}
-@@ -242,7 +242,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
- 			/* need a return */
- 			pstart += offset;
- 			pbuffer = pstart;
--		}else{
-+		}else {
- 			pbuffer += sizeof(u16);
- 		}
- 
+ module_init(fsl_diu_init);
 -- 
-2.4.5
+2.1.0.27.g96db324
 

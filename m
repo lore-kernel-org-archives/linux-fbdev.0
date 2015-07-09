@@ -1,7 +1,7 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 09 Jul 2015 01:54:19 +0000
-Subject: [PATCH v9 8/8] drivers/video/fbdev/vt8623fb: Use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1436406859-1280-9-git-send-email-mcgrof@do-not-panic.com>
+Date: Thu, 09 Jul 2015 01:54:17 +0000
+Subject: [PATCH v9 6/8] drivers/video/fbdev/arkfb.c: Use arch_phys_wc_add() and pci_iomap_wc()
+Message-Id: <1436406859-1280-7-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1436406859-1280-1-git-send-email-mcgrof@do-not-panic.com>
 In-Reply-To: <1436406859-1280-1-git-send-email-mcgrof@do-not-panic.com>
@@ -9,16 +9,14 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: mingo@kernel.org
-Cc: bp@suse.de, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Antonino Daplas <adaplas@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Juergen Gross <jgross@suse.com>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: bp@suse.de, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Antonino Daplas <adaplas@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Juergen Gross <jgross@suse.com>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-This driver uses the same area for MTRR as for the ioremap().
-
 Convert the driver from using the x86-specific MTRR code to the
 architecture-agnostic arch_phys_wc_add(). It will avoid MTRRs if
-write-combining is available. In order to take advantage of that
-also ensure the ioremapped area is requested as write-combining.
+write-combining is available. In order to take advantage of that also
+ensure the ioremapped area is requested as write-combining.
 
 There are a few motivations for this:
 
@@ -94,30 +92,29 @@ Cc: benh@kernel.crashing.org
 Cc: bhelgaas@google.com
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Dave Airlie <airlied@redhat.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: H. Peter Anvin <hpa@zytor.com>
 Cc: Ingo Molnar <mingo@kernel.org>
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
 Cc: Juergen Gross <jgross@suse.com>
 Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-pci@vger.kernel.org
 Cc: mst@redhat.com
-Cc: Rob Clark <robdclark@gmail.com>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: toshi.kani@hp.com
-Link: http://lkml.kernel.org/r/1435195342-26879-10-git-send-email-mcgrof@do-not-panic.com
+Link: http://lkml.kernel.org/r/1435195342-26879-8-git-send-email-mcgrof@do-not-panic.com
 Signed-off-by: Borislav Petkov <bp@suse.de>
 ---
- drivers/video/fbdev/vt8623fb.c | 31 ++++++-------------------------
- 1 file changed, 6 insertions(+), 25 deletions(-)
+ drivers/video/fbdev/arkfb.c | 36 +++++-------------------------------
+ 1 file changed, 5 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index 8bac309c24b9..dd0f18e42d3e 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
+diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+index b305a1e7cc76..6a317de7082c 100644
+--- a/drivers/video/fbdev/arkfb.c
++++ b/drivers/video/fbdev/arkfb.c
 @@ -26,13 +26,9 @@
  #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
  #include <video/vga.h>
@@ -126,38 +123,38 @@ index 8bac309c24b9..dd0f18e42d3e 100644
 -#include <asm/mtrr.h>
 -#endif
 -
- struct vt8623fb_info {
- 	char __iomem *mmio_base;
+ struct arkfb_info {
+ 	int mclk_freq;
 -	int mtrr_reg;
 +	int wc_cookie;
+ 
+ 	struct dac_info *dac;
  	struct vgastate state;
- 	struct mutex open_lock;
- 	unsigned int ref_count;
-@@ -99,10 +95,7 @@ static struct svga_timing_regs vt8623_timing_regs     = {
- /* Module parameters */
+@@ -102,10 +98,6 @@ static const struct svga_timing_regs ark_timing_regs     = {
  
  static char *mode_option = "640x480-8@60";
--
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
  
- MODULE_AUTHOR("(c) 2006 Ondrej Zajicek <santiago@crfreenet.org>");
+-#ifdef CONFIG_MTRR
+-static int mtrr = 1;
+-#endif
+-
+ MODULE_AUTHOR("(c) 2007 Ondrej Zajicek <santiago@crfreenet.org>");
  MODULE_LICENSE("GPL");
-@@ -112,11 +105,8 @@ module_param(mode_option, charp, 0644);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0);
- MODULE_PARM_DESC(mode, "Default video mode e.g. '648x480-8@60' (deprecated)");
--
+ MODULE_DESCRIPTION("fbdev driver for ARK 2000PV");
+@@ -115,11 +107,6 @@ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
+ module_param_named(mode, mode_option, charp, 0444);
+ MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
+ 
 -#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
+-module_param(mtrr, int, 0444);
+-MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
 -#endif
+-
+ static int threshold = 4;
  
- 
- /* ------------------------------------------------------------------------- */
-@@ -710,7 +700,7 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.mmio_len = pci_resource_len(dev, 1);
+ module_param(threshold, int, 0644);
+@@ -1002,7 +989,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	info->fix.smem_len = pci_resource_len(dev, 0);
  
  	/* Map physical IO memory address into kernel space */
 -	info->screen_base = pci_iomap(dev, 0, 0);
@@ -165,26 +162,28 @@ index 8bac309c24b9..dd0f18e42d3e 100644
  	if (! info->screen_base) {
  		rc = -ENOMEM;
  		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -781,12 +771,9 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+@@ -1057,14 +1044,8 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 
  	/* Record a reference to the driver data */
  	pci_set_drvdata(dev, info);
- 
+-
 -#ifdef CONFIG_MTRR
 -	if (mtrr) {
 -		par->mtrr_reg = -1;
 -		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
 -	}
 -#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
- 
+-
++	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++					  info->fix.smem_len);
  	return 0;
  
-@@ -816,13 +803,7 @@ static void vt8623_pci_remove(struct pci_dev *dev)
- 	if (info) {
- 		struct vt8623fb_info *par = info->par;
+ 	/* Error handling */
+@@ -1092,14 +1073,7 @@ static void ark_pci_remove(struct pci_dev *dev)
  
+ 	if (info) {
+ 		struct arkfb_info *par = info->par;
+-
 -#ifdef CONFIG_MTRR
 -		if (par->mtrr_reg >= 0) {
 -			mtrr_del(par->mtrr_reg, 0, 0);
@@ -193,9 +192,9 @@ index 8bac309c24b9..dd0f18e42d3e 100644
 -#endif
 -
 +		arch_phys_wc_del(par->wc_cookie);
+ 		dac_release(par->dac);
  		unregister_framebuffer(info);
  		fb_dealloc_cmap(&info->cmap);
- 
 -- 
 2.3.2.209.gd67f9d5.dirty
 

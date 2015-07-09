@@ -1,236 +1,211 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 20 Jul 2015 15:31:58 +0000
-Subject: [PATCH v2 01/10] pwm: introduce default period and polarity concepts
-Message-Id: <1437406327-6207-2-git-send-email-boris.brezillon@free-electrons.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 09 Jul 2015 01:54:16 +0000
+Subject: [PATCH v9 5/8] PCI: Add pci_iomap_wc() variants
+Message-Id: <1436406859-1280-6-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+References: <1436406859-1280-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1436406859-1280-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: mingo@kernel.org
+Cc: linux-fbdev@vger.kernel.org, benh@kernel.crashing.org, mst@redhat.com, linux-pci@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Dave Hansen <dave.hansen@linux.intel.com>, jbeulich@suse.com, "H. Peter Anvin" <hpa@zytor.com>, linux-arch@vger.kernel.org, xen-devel@lists.xensource.com, arnd@arndb.de, Davidlohr Bueso <dbueso@suse.de>, tomi.valkeinen@ti.com, Mel Gorman <mgorman@suse.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, bp@suse.de, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Antonino Daplas <adaplas@gmail.com>, "Luis R. Rodriguez" <mcgrof@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Stefan Bader <stefan.bader@canonical.com>, Suresh Siddha <sbsiddha@gmail.com>, bhelgaas@google.com, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Juergen Gross <jgross@suse.com>, toshi.
 
-When requested by a user, the PWM is assigned a default period and polarity
-extracted from the DT, the platform data or statically set by the driver.
-Those default values are currently stored in the period and polarity
-fields of the pwm_device struct, but they will be stored somewhere else
-once we have introduced the architecture allowing for hardware state
-retrieval.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-The pwm_set_default_polarity and pwm_set_default_period should only be
-used by PWM drivers or the PWM core infrastructure to specify the
-default period and polarity values.
+PCI BARs tell us whether prefetching is safe, but they don't say
+anything about write combining (WC). WC changes ordering rules and
+allows writes to be collapsed, so it's not safe in general to use it on
+a prefetchable region.
 
-PWM users might call the pwm_get_default_period to query the default
-period value. There is currently no helper to query the default
-polarity, but it might be added later on if there is a need for it.
+Add pci_iomap_wc() and pci_iomap_wc_range() so drivers can take advantage
+of write combining when they know it's safe.
 
-This patch also modifies all the places where the default helpers should
-be used in place of the standard ones.
+On architectures that don't fully support WC, e.g., x86 without PAT,
+drivers for legacy framebuffers may get some of the benefit by using
+arch_phys_wc_add() in addition to pci_iomap_wc().  But arch_phys_wc_add()
+is unreliable and should be avoided in general.  On x86, it uses MTRRs,
+which are limited in number and size, so the results will vary based on
+driver loading order.
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+The goals of adding pci_iomap_wc() are to:
+
+- Give drivers an architecture-independent way to use WC so they can stop
+  using interfaces like mtrr_add() (on x86, pci_iomap_wc() uses
+  PAT when available).
+
+- Move toward using _PAGE_CACHE_MODE_UC, not _PAGE_CACHE_MODE_UC_MINUS,
+  on x86 on ioremap_nocache() (see de33c442ed2a ("x86 PAT: fix
+  performance drop for glx, use UC minus for ioremap(), ioremap_nocache()
+  and pci_mmap_page_range()").
+
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: benh@kernel.crashing.org
+Cc: bhelgaas@google.com
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: david.vrabel@citrix.com
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: jbeulich@suse.com
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: konrad.wilk@oracle.com
+Cc: linux-arch@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-pci@vger.kernel.org
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Roger Pau Monné <roger.pau@citrix.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Stefan Bader <stefan.bader@canonical.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: venkatesh.pallipadi@intel.com
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Link: http://lkml.kernel.org/r/1426893517-2511-6-git-send-email-mcgrof@do-not-panic.com
+Link: http://lkml.kernel.org/r/1435195342-26879-6-git-send-email-mcgrof@do-not-panic.com
+[ Move IORESOURCE_IO check up, space out statements for better readability. ]
+Signed-off-by: Borislav Petkov <bp@suse.de>
 ---
- drivers/leds/leds-pwm.c              |  2 +-
- drivers/pwm/core.c                   | 14 +++++++-------
- drivers/pwm/pwm-pxa.c                |  2 +-
- drivers/pwm/pwm-sun4i.c              |  3 ++-
- drivers/regulator/pwm-regulator.c    |  2 +-
- drivers/video/backlight/lm3630a_bl.c |  4 ++--
- drivers/video/backlight/pwm_bl.c     |  2 +-
- drivers/video/fbdev/ssd1307fb.c      |  2 +-
- include/linux/pwm.h                  | 17 +++++++++++++++++
- 9 files changed, 33 insertions(+), 15 deletions(-)
+ include/asm-generic/pci_iomap.h | 14 +++++++++
+ lib/pci_iomap.c                 | 66 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 80 insertions(+)
 
-diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
-index 1d07e3e..2c564d1 100644
---- a/drivers/leds/leds-pwm.c
-+++ b/drivers/leds/leds-pwm.c
-@@ -125,7 +125,7 @@ static int led_pwm_add(struct device *dev, struct led_pwm_priv *priv,
- 	if (led_data->can_sleep)
- 		INIT_WORK(&led_data->work, led_pwm_work);
- 
--	led_data->period = pwm_get_period(led_data->pwm);
-+	led_data->period = pwm_get_default_period(led_data->pwm);
- 	if (!led_data->period && (led->pwm_period_ns > 0))
- 		led_data->period = led->pwm_period_ns;
- 
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index f7c11d2..7ffad2b 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -146,12 +146,12 @@ of_pwm_xlate_with_flags(struct pwm_chip *pc, const struct of_phandle_args *args)
- 	if (IS_ERR(pwm))
- 		return pwm;
- 
--	pwm_set_period(pwm, args->args[1]);
-+	pwm_set_default_period(pwm, args->args[1]);
- 
- 	if (args->args[2] & PWM_POLARITY_INVERTED)
--		pwm_set_polarity(pwm, PWM_POLARITY_INVERSED);
-+		pwm_set_default_polarity(pwm, PWM_POLARITY_INVERSED);
- 	else
--		pwm_set_polarity(pwm, PWM_POLARITY_NORMAL);
-+		pwm_set_default_polarity(pwm, PWM_POLARITY_NORMAL);
- 
- 	return pwm;
- }
-@@ -172,7 +172,7 @@ of_pwm_simple_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
- 	if (IS_ERR(pwm))
- 		return pwm;
- 
--	pwm_set_period(pwm, args->args[1]);
-+	pwm_set_default_period(pwm, args->args[1]);
- 
- 	return pwm;
- }
-@@ -262,7 +262,7 @@ int pwmchip_add_with_polarity(struct pwm_chip *chip,
- 		pwm->chip = chip;
- 		pwm->pwm = chip->base + i;
- 		pwm->hwpwm = i;
--		pwm->polarity = polarity;
-+		pwm_set_default_polarity(pwm, polarity);
- 
- 		radix_tree_insert(&pwm_tree, pwm->pwm, pwm);
- 	}
-@@ -704,8 +704,8 @@ struct pwm_device *pwm_get(struct device *dev, const char *con_id)
- 	if (IS_ERR(pwm))
- 		goto out;
- 
--	pwm_set_period(pwm, chosen->period);
--	pwm_set_polarity(pwm, chosen->polarity);
-+	pwm_set_default_period(pwm, chosen->period);
-+	pwm_set_default_polarity(pwm, chosen->polarity);
- 
- out:
- 	mutex_unlock(&pwm_lookup_lock);
-diff --git a/drivers/pwm/pwm-pxa.c b/drivers/pwm/pwm-pxa.c
-index cb2f702..65b80aa 100644
---- a/drivers/pwm/pwm-pxa.c
-+++ b/drivers/pwm/pwm-pxa.c
-@@ -160,7 +160,7 @@ pxa_pwm_of_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
- 	if (IS_ERR(pwm))
- 		return pwm;
- 
--	pwm_set_period(pwm, args->args[0]);
-+	pwm_set_default_period(pwm, args->args[0]);
- 
- 	return pwm;
- }
-diff --git a/drivers/pwm/pwm-sun4i.c b/drivers/pwm/pwm-sun4i.c
-index cd9dde5..a364fb7 100644
---- a/drivers/pwm/pwm-sun4i.c
-+++ b/drivers/pwm/pwm-sun4i.c
-@@ -333,7 +333,8 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
- 	val = sun4i_pwm_readl(pwm, PWM_CTRL_REG);
- 	for (i = 0; i < pwm->chip.npwm; i++)
- 		if (!(val & BIT_CH(PWM_ACT_STATE, i)))
--			pwm->chip.pwms[i].polarity = PWM_POLARITY_INVERSED;
-+			pwm_set_default_polarity(&pwm->chip.pwms[i],
-+						 PWM_POLARITY_INVERSED);
- 	clk_disable_unprepare(pwm->clk);
- 
- 	return 0;
-diff --git a/drivers/regulator/pwm-regulator.c b/drivers/regulator/pwm-regulator.c
-index ffa9612..12b4d9d 100644
---- a/drivers/regulator/pwm-regulator.c
-+++ b/drivers/regulator/pwm-regulator.c
-@@ -46,7 +46,7 @@ static int pwm_regulator_set_voltage_sel(struct regulator_dev *rdev,
- 	int dutycycle;
- 	int ret;
- 
--	pwm_reg_period = pwm_get_period(drvdata->pwm);
-+	pwm_reg_period = pwm_get_default_period(drvdata->pwm);
- 
- 	dutycycle = (pwm_reg_period *
- 		    drvdata->duty_cycle_table[selector].dutycycle) / 100;
-diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index 35fe482..449ebc3 100644
---- a/drivers/video/backlight/lm3630a_bl.c
-+++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -162,7 +162,7 @@ static int lm3630a_intr_config(struct lm3630a_chip *pchip)
- 
- static void lm3630a_pwm_ctrl(struct lm3630a_chip *pchip, int br, int br_max)
- {
--	unsigned int period = pwm_get_period(pchip->pwmd);
-+	unsigned int period = pwm_get_default_period(pchip->pwmd);
- 	unsigned int duty = br * period / br_max;
- 
- 	pwm_config(pchip->pwmd, duty, period);
-@@ -425,7 +425,7 @@ static int lm3630a_probe(struct i2c_client *client,
- 			return PTR_ERR(pchip->pwmd);
- 		}
- 	}
--	pchip->pwmd->period = pdata->pwm_period;
-+	pwm_set_default_period(pchip->pwmd, pdata->pwm_period);
- 
- 	/* interrupt enable  : irq 0 is not allowed */
- 	pchip->irq = client->irq;
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index eff379b..ae498c1 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -294,7 +294,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	 * set the period from platform data if it has not already been set
- 	 * via the PWM lookup table.
- 	 */
--	pb->period = pwm_get_period(pb->pwm);
-+	pb->period = pwm_get_default_period(pb->pwm);
- 	if (!pb->period && (data->pwm_period_ns > 0)) {
- 		pb->period = data->pwm_period_ns;
- 		pwm_set_period(pb->pwm, data->pwm_period_ns);
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 3e153c0..6949626 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -294,7 +294,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 			return PTR_ERR(par->pwm);
- 		}
- 
--		par->pwm_period = pwm_get_period(par->pwm);
-+		par->pwm_period = pwm_get_default_period(par->pwm);
- 		/* Enable the PWM */
- 		pwm_config(par->pwm, par->pwm_period / 2, par->pwm_period);
- 		pwm_enable(par->pwm);
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 6f286df..ba4b7ed 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -103,11 +103,22 @@ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
- 		pwm->period = period;
+diff --git a/include/asm-generic/pci_iomap.h b/include/asm-generic/pci_iomap.h
+index 7389c87116a0..b1e17fcee2d0 100644
+--- a/include/asm-generic/pci_iomap.h
++++ b/include/asm-generic/pci_iomap.h
+@@ -15,9 +15,13 @@ struct pci_dev;
+ #ifdef CONFIG_PCI
+ /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
+ extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max);
++extern void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max);
+ extern void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
+ 				     unsigned long offset,
+ 				     unsigned long maxlen);
++extern void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
++					unsigned long offset,
++					unsigned long maxlen);
+ /* Create a virtual mapping cookie for a port on a given PCI device.
+  * Do not call this directly, it exists to make it easier for architectures
+  * to override */
+@@ -34,12 +38,22 @@ static inline void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned lon
+ 	return NULL;
  }
  
-+static inline void pwm_set_default_period(struct pwm_device *pwm,
-+					  unsigned int period)
++static inline void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max)
 +{
-+	pwm_set_period(pwm, period);
++	return NULL;
 +}
-+
- static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
+ static inline void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
+ 					    unsigned long offset,
+ 					    unsigned long maxlen)
  {
- 	return pwm ? pwm->period : 0;
+ 	return NULL;
  }
- 
-+static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
++static inline void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
++					       unsigned long offset,
++					       unsigned long maxlen)
 +{
-+	return pwm_get_period(pwm);
++	return NULL;
 +}
-+
- static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
- {
- 	if (pwm)
-@@ -124,6 +135,12 @@ static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
-  */
- int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
+ #endif
  
-+static inline void pwm_set_default_polarity(struct pwm_device *pwm,
-+					    enum pwm_polarity polarity)
+ #endif /* __ASM_GENERIC_IO_H */
+diff --git a/lib/pci_iomap.c b/lib/pci_iomap.c
+index bcce5f149310..5f5d24d1d53f 100644
+--- a/lib/pci_iomap.c
++++ b/lib/pci_iomap.c
+@@ -52,6 +52,51 @@ void __iomem *pci_iomap_range(struct pci_dev *dev,
+ EXPORT_SYMBOL(pci_iomap_range);
+ 
+ /**
++ * pci_iomap_wc_range - create a virtual WC mapping cookie for a PCI BAR
++ * @dev: PCI device that owns the BAR
++ * @bar: BAR number
++ * @offset: map memory at the given offset in BAR
++ * @maxlen: max length of the memory to map
++ *
++ * Using this function you will get a __iomem address to your device BAR.
++ * You can access it using ioread*() and iowrite*(). These functions hide
++ * the details if this is a MMIO or PIO address space and will just do what
++ * you expect from them in the correct way. When possible write combining
++ * is used.
++ *
++ * @maxlen specifies the maximum length to map. If you want to get access to
++ * the complete BAR from offset to the end, pass %0 here.
++ * */
++void __iomem *pci_iomap_wc_range(struct pci_dev *dev,
++				 int bar,
++				 unsigned long offset,
++				 unsigned long maxlen)
 +{
-+	pwm_set_polarity(pwm, polarity);
-+}
++	resource_size_t start = pci_resource_start(dev, bar);
++	resource_size_t len = pci_resource_len(dev, bar);
++	unsigned long flags = pci_resource_flags(dev, bar);
 +
- static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
- {
- 	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
++
++	if (flags & IORESOURCE_IO)
++		return NULL;
++
++	if (len <= offset || !start)
++		return NULL;
++
++	len -= offset;
++	start += offset;
++	if (maxlen && len > maxlen)
++		len = maxlen;
++
++	if (flags & IORESOURCE_MEM)
++		return ioremap_wc(start, len);
++
++	/* What? */
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(pci_iomap_wc_range);
++
++/**
+  * pci_iomap - create a virtual mapping cookie for a PCI BAR
+  * @dev: PCI device that owns the BAR
+  * @bar: BAR number
+@@ -70,4 +115,25 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
+ 	return pci_iomap_range(dev, bar, 0, maxlen);
+ }
+ EXPORT_SYMBOL(pci_iomap);
++
++/**
++ * pci_iomap_wc - create a virtual WC mapping cookie for a PCI BAR
++ * @dev: PCI device that owns the BAR
++ * @bar: BAR number
++ * @maxlen: length of the memory to map
++ *
++ * Using this function you will get a __iomem address to your device BAR.
++ * You can access it using ioread*() and iowrite*(). These functions hide
++ * the details if this is a MMIO or PIO address space and will just do what
++ * you expect from them in the correct way. When possible write combining
++ * is used.
++ *
++ * @maxlen specifies the maximum length to map. If you want to get access to
++ * the complete BAR without checking for its length first, pass %0 here.
++ * */
++void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long maxlen)
++{
++	return pci_iomap_wc_range(dev, bar, 0, maxlen);
++}
++EXPORT_SYMBOL_GPL(pci_iomap_wc);
+ #endif /* CONFIG_PCI */
 -- 
-1.9.1
+2.3.2.209.gd67f9d5.dirty
 

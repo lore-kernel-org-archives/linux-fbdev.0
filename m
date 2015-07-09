@@ -1,83 +1,74 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 07 Jul 2015 08:26:33 +0000
-Subject: [PATCH 1/5] staging: sm7xxfb: remove unused macros
-Message-Id: <1436256877-10754-2-git-send-email-sudipm.mukherjee@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 09 Jul 2015 01:54:15 +0000
+Subject: [PATCH v9 4/8] drivers/video/fbdev/gxt4500: Use pci_ioremap_wc_bar() to map framebuffer
+Message-Id: <1436406859-1280-5-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436256877-10754-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1436256877-10754-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1436406859-1280-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1436406859-1280-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Dan Carpenter <dan.carpenter@oracle.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: mingo@kernel.org
+Cc: bp@suse.de, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Antonino Daplas <adaplas@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Juergen Gross <jgross@suse.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
 
-These macros were only defined but not used anywhere.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+The driver doesn't use mtrr_add() or arch_phys_wc_add() but since we
+know the framebuffer is isolated already on an ioremap() we can take
+advantage of write combining for performance where possible.
+
+In this case there are a few motivations for this:
+
+a) Take advantage of PAT when available.
+
+b) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()").
+
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: benh@kernel.crashing.org
+Cc: bhelgaas@google.com
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-pci@vger.kernel.org
+Cc: mst@redhat.com
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: toshi.kani@hp.com
+Link: http://lkml.kernel.org/r/1435195342-26879-5-git-send-email-mcgrof@do-not-panic.com
+Signed-off-by: Borislav Petkov <bp@suse.de>
 ---
- drivers/staging/sm7xxfb/sm7xx.h | 20 --------------------
- 1 file changed, 20 deletions(-)
+ drivers/video/fbdev/gxt4500.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
-index 4bed094..31a21bd 100644
---- a/drivers/staging/sm7xxfb/sm7xx.h
-+++ b/drivers/staging/sm7xxfb/sm7xx.h
-@@ -13,8 +13,6 @@
-  *  more details.
-  */
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 135d78a02588..f19133a80e8c 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -662,7 +662,7 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  
--#define NR_PALETTE        256
--
- #define FB_ACCEL_SMI_LYNX 88
- 
- #define SCREEN_X_RES      1024
-@@ -31,12 +29,8 @@
- 
- extern void __iomem *smtc_regbaseaddress;
- #define smtc_mmiowb(dat, reg)	writeb(dat, smtc_regbaseaddress + reg)
--#define smtc_mmioww(dat, reg)	writew(dat, smtc_regbaseaddress + reg)
--#define smtc_mmiowl(dat, reg)	writel(dat, smtc_regbaseaddress + reg)
- 
- #define smtc_mmiorb(reg)	readb(smtc_regbaseaddress + reg)
--#define smtc_mmiorw(reg)	readw(smtc_regbaseaddress + reg)
--#define smtc_mmiorl(reg)	readl(smtc_regbaseaddress + reg)
- 
- #define SIZE_SR00_SR04      (0x04 - 0x00 + 1)
- #define SIZE_SR10_SR24      (0x24 - 0x10 + 1)
-@@ -48,8 +42,6 @@ extern void __iomem *smtc_regbaseaddress;
- #define SIZE_CR00_CR18      (0x18 - 0x00 + 1)
- #define SIZE_CR30_CR4D      (0x4D - 0x30 + 1)
- #define SIZE_CR90_CRA7      (0xA7 - 0x90 + 1)
--#define SIZE_VPR		(0x6C + 1)
--#define SIZE_DPR		(0x44 + 1)
- 
- static inline void smtc_crtcw(int reg, int val)
- {
-@@ -57,24 +49,12 @@ static inline void smtc_crtcw(int reg, int val)
- 	smtc_mmiowb(val, 0x3d5);
- }
- 
--static inline unsigned int smtc_crtcr(int reg)
--{
--	smtc_mmiowb(reg, 0x3d4);
--	return smtc_mmiorb(0x3d5);
--}
--
- static inline void smtc_grphw(int reg, int val)
- {
- 	smtc_mmiowb(reg, 0x3ce);
- 	smtc_mmiowb(val, 0x3cf);
- }
- 
--static inline unsigned int smtc_grphr(int reg)
--{
--	smtc_mmiowb(reg, 0x3ce);
--	return smtc_mmiorb(0x3cf);
--}
--
- static inline void smtc_attrw(int reg, int val)
- {
- 	smtc_mmiorb(0x3da);
+ 	info->fix.smem_start = fb_phys;
+ 	info->fix.smem_len = pci_resource_len(pdev, 1);
+-	info->screen_base = pci_ioremap_bar(pdev, 1);
++	info->screen_base = pci_ioremap_wc_bar(pdev, 1);
+ 	if (!info->screen_base) {
+ 		dev_err(&pdev->dev, "gxt4500: cannot map framebuffer\n");
+ 		goto err_unmap_regs;
 -- 
-1.8.1.2
+2.3.2.209.gd67f9d5.dirty
 

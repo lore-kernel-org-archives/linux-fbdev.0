@@ -1,68 +1,77 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 01 Jul 2015 08:06:12 +0000
-Subject: Re: [PATCH v2] backlight: lp8788: Deletion of a check before backlight_device_unregister()
-Message-Id: <20150701080612.GG3210@x1>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 10 Jul 2015 01:24:56 +0000
+Subject: [PATCH v6 1/4] drivers/video/fbdev/atyfb: Carve out framebuffer length fudging into a helper
+Message-Id: <1436491499-3289-2-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.10.1402251840450.7035@hadrien>
- <530CF8FF.8080600@users.sourceforge.net>
- <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
- <530DD06F.4090703@users.sourceforge.net>
- <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net>
- <54720DEB.4060109@users.sourceforge.net>
- <20141124101006.GD4241@x1>
- <5473736F.8070705@users.sourceforge.net>
- <558FE386.7060704@users.sourceforge.net>
-In-Reply-To: <558FE386.7060704@users.sourceforge.net>
+References: <1436491499-3289-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1436491499-3289-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: Bryan Wu <cooloney@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: mingo@kernel.org
+Cc: bp@suse.de, tomi.valkeinen@ti.com, airlied@redhat.com, arnd@arndb.de, dan.j.williams@intel.com, hch@lst.de, luto@amacapital.net, hpa@zytor.com, tglx@linutronix.de, geert@linux-m68k.org, ralf@linux-mips.org, hmh@hmh.eng.br, ross.zwisler@linux.intel.com, akpm@linux-foundation.org, jgross@suse.com, benh@kernel.crashing.org, mpe@ellerman.id.au, tj@kernel.org, x86@kernel.org, mst@redhat.com, toshi.kani@hp.com, stefan.bader@canonical.com, syrjala@sci.fi, ville.syrjala@linux.intel.com, linux-pci@vger.kernel.org, linux-mm@kvack.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Mathias Krause <minipli@googlemail.com>
 
-On Sun, 28 Jun 2015, SF Markus Elfring wrote:
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-> > From: Markus Elfring <elfring@users.sourceforge.net>
-> >=20
-> > The backlight_device_unregister() function tests whether its argument i=
-s NULL
-> > and then returns immediately. Thus the test around the call is not need=
-ed.
-> >=20
-> > This issue was detected by using the Coccinelle software.
-> >=20
-> > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> > ---
-> >  drivers/video/backlight/lp8788_bl.c | 3 +--
-> >  1 file changed, 1 insertion(+), 2 deletions(-)
-> >=20
-> > diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backli=
-ght/lp8788_bl.c
-> > index d6c4f6a..24a055c 100644
-> > --- a/drivers/video/backlight/lp8788_bl.c
-> > +++ b/drivers/video/backlight/lp8788_bl.c
-> > @@ -221,8 +221,7 @@ static void lp8788_backlight_unregister(struct lp87=
-88_bl *bl)
-> >  {
-> >  	struct backlight_device *bl_dev =3D bl->bl_dev;
-> > =20
-> > -	if (bl_dev)
-> > -		backlight_device_unregister(bl_dev);
-> > +	backlight_device_unregister(bl_dev);
-> >  }
-> > =20
-> >  static ssize_t lp8788_get_bl_ctl_mode(struct device *dev,
-> >=20
->=20
-> Would you like to integrate this update suggestion
-> into another source code repository?
+The size of the framebuffer to be used needs to be fudged to account for
+the different type of devices that are out there. This captures what is
+required to do well, we'll reuse this later.
 
-If this patch has not received any attention in some time, it's
-possible that it may have slipped through the gaps.  Please
-re-submit the set.
+This has no functional changes.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Mathias Krause <minipli@googlemail.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Link: http://lkml.kernel.org/r/1435251019-32421-1-git-send-email-mcgrof@do-not-panic.com
+Signed-off-by: Borislav Petkov <bp@suse.de>
+---
+ drivers/video/fbdev/aty/atyfb_base.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 8789e487b96e..16936bb1f865 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -427,6 +427,20 @@ static struct {
+ #endif /* CONFIG_FB_ATY_CT */
+ };
+ 
++/*
++ * Last page of 8 MB (4 MB on ISA) aperture is MMIO,
++ * unless the auxiliary register aperture is used.
++ */
++static void aty_fudge_framebuffer_len(struct fb_info *info)
++{
++	struct atyfb_par *par = (struct atyfb_par *) info->par;
++
++	if (!par->aux_start &&
++	    (info->fix.smem_len = 0x800000 ||
++	     (par->bus_type = ISA && info->fix.smem_len = 0x400000)))
++		info->fix.smem_len -= GUI_RESERVE;
++}
++
+ static int correct_chipset(struct atyfb_par *par)
+ {
+ 	u8 rev;
+@@ -2603,14 +2617,7 @@ static int aty_init(struct fb_info *info)
+ 	if (par->pll_ops->resume_pll)
+ 		par->pll_ops->resume_pll(info, &par->pll);
+ 
+-	/*
+-	 * Last page of 8 MB (4 MB on ISA) aperture is MMIO,
+-	 * unless the auxiliary register aperture is used.
+-	 */
+-	if (!par->aux_start &&
+-	    (info->fix.smem_len = 0x800000 ||
+-	     (par->bus_type = ISA && info->fix.smem_len = 0x400000)))
+-		info->fix.smem_len -= GUI_RESERVE;
++	aty_fudge_framebuffer_len(info);
+ 
+ 	/*
+ 	 * Disable register access through the linear aperture
+-- 
+2.3.2.209.gd67f9d5.dirty
+

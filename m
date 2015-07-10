@@ -1,75 +1,136 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 22 Jul 2015 13:43:48 +0000
-Subject: Re: [PATCH v9 0/8] pci: add pci_iomap_wc() and pci_ioremap_wc_bar()
-Message-Id: <20150722134348.GA10966@google.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 10 Jul 2015 00:28:16 +0000
+Subject: [PATCH v1] x86/mm, asm-generic: Add IOMMU ioremap_uc() variant default
+Message-Id: <1436488096-3165-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436406859-1280-1-git-send-email-mcgrof@do-not-panic.com>
- <20150717202923.GC30479@wotan.suse.de>
- <20150721085252.GA15861@gmail.com>
- <20150721132157.GE16841@google.com>
- <20150722083844.GA14626@gmail.com>
-In-Reply-To: <20150722083844.GA14626@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ingo Molnar <mingo@kernel.org>
-Cc: "Luis R. Rodriguez" <mcgrof@suse.com>, "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, bp@suse.de, arnd@arndb.de, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org
+To: mingo@kernel.org
+Cc: bp@suse.de, arnd@arndb.de, dan.j.williams@intel.com, hch@lst.de, luto@amacapital.net, hpa@zytor.com, tglx@linutronix.de, geert@linux-m68k.org, ralf@linux-mips.org, hmh@hmh.eng.br, ross.zwisler@linux.intel.com, akpm@linux-foundation.org, jgross@suse.com, benh@kernel.crashing.org, mpe@ellerman.id.au, tj@kernel.org, x86@kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, stefan.bader@canonical.com, linux-mm@kvack.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Hi Ingo,
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On Wed, Jul 22, 2015 at 10:38:45AM +0200, Ingo Molnar wrote:
-> 
-> * Bjorn Helgaas <bhelgaas@google.com> wrote:
-> 
-> > > > > Let me know if these are OK or if there are any questions.
-> > > > > 
-> > > > > [0] http://lkml.kernel.org/r/20150625204703.GC4898@pd.tnic
-> > > > > [1] http://lkml.kernel.org/r/20150707095012.GQ7021@wotan.suse.de
-> > > > 
-> > > > Ingo,
-> > > > 
-> > > > Just a friendly reminder. Let me know if there are any issues or questions.
-> > > 
-> > > It would be nice to get an Acked-by from Bjorn for the PCI API bits.
-> > 
-> > I think the actual code of pci_ioremap_wc() and pci_ioremap_wc_bar() is fine 
-> > (although I might have named it pci_ioremap_bar_wc() for consistency).
-> > 
-> > I declined to merge or ack them myself because they're obvious extensions of 
-> > pci_ioremap() and pci_ioremap_bar(), and I would prefer that they be exported 
-> > the same way, i.e., with EXPORT_SYMBOL(), not EXPORT_SYMBOL_GPL().
-> 
-> Huh? AFAICS pci_ioremap_bar() has been a _GPL export for a long time:
-> ...
-> (ioremap_wc() is EXPORT_SYMBOL() mostly by accident, it's the odd one out.)
+We currently have no safe way of currently defining architecture
+agnostic IOMMU ioremap_*() variants. The trend is for folks to
+*assume* that ioremap_nocache() should be the default everywhere
+and then add this mapping on each architectures -- this is not
+correct today for a variety of reasons.
 
-You're right, I was mistaken about pci_ioremap_bar().  But I'm not
-convinced yet that ioremap_wc() is the odd one out.  All the interfaces I
-found, with the exception of ioremap_uc() on x86 and pci_ioremap_bar(), are
-EXPORT_SYMBOL(), even the _wc and _wt flavors.
+We have two options:
 
-> Also, FWIIW: I personally got essentially zero feedback and help from proprietary 
-> binary kernel module vendors in the past couple of years as x86 maintainer, 
-> despite a fair chunk of kernel crashes reported on distro kernels occuring in 
-> them...
-> 
-> Based on that very negative experience, when we introduce something as complex and 
-> as critical as new caching APIs, the last thing I want is to have obscure bugs in 
-> binary modules I cannot fix in any reasonable fashion. So even if the parent APIs 
-> of new APIs weren't already _GPL exports (as in this case), I'd export them as 
-> _GPL in this case.
-> 
-> > I think using EXPORT_SYMBOL_GPL to express individual political aims rather than 
-> > as a hint about what might be derived work makes us look like zealots, and 
-> > that's not my style.
-> 
-> As far as I'm concerned it's a pure technological choice: I don't want to export 
-> certain types of hard to fix and critical functionality to drivers that I cannot 
-> then fix.
+1) Sit and wait for every architecture in Linux to get a
+   an ioremap_*() variant defined before including it upstream
 
-That's a good argument that I hadn't heard before (or possibly it was there
-and I missed it).  It would be stronger still if we could change the parent
-APIs similarly.  If a proprietary driver can't use pci_ioremap_wc() because
-it's exported _GPL, it's trivial to use ioremap_wc() directly.
+2) Gather consensus on a safe architecture agnostic ioremap_*()
+   default
 
-Bjorn
+Approach 1) introduces development latencies, and since 2) will take
+time and work on clarifying semantics the only remaining sensible
+thing to do to avoid issues is returning NULL on ioremap_*()
+variants.
+
+In order for this to work we must have all architectures declare
+their own ioremap_*() variants as defined. This will take some work,
+do this for ioremp_uc() to set the example as its only currently
+implemented on x86. Document all this.
+
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+---
+
+Ingo,
+
+I only provide implementation support for ioremap_uc() as the other ioremap_*()
+variants are well defined all over the kernel for other architectures already.
+Dan Williams is also providing declarations for them through another series [0]
+This patch does not depend on that series, that patch series does not address
+this specific issue.  With this patch in place now things won't fail to compile
+if ioremap_uc() is used in the kernel on architectures lacking an ioremap_uc()
+implementaiton and makes such calls simply fail. In the very near future there
+is only one expected driver to use this, the atyfb framebuffer device drivers,
+the series for which I've been respinning for a while now and it seems we
+finally have settled on something with. In the future folks may want to
+preemptively declare or annotate some regions already with ioremap_uc() ---
+this would allow an easier transition in the future on x86 of the default
+ioremap_nocache() and ioremap() behaviour to flip from PAT UC- to UC.  But
+before people go out willy-nilly using ioremap_uc() all over though they should
+at least take care to go and define all other architecture's own ioremap_uc()
+implementation mappings. It would seem productive to have a broad discussion
+about this objective alone with other architecture folks.
+
+This patch would just fix compilation issues for future users of ioremap_uc()
+and tries to prevent futher batched patches from folks adding
+ioremap_nocache() for ioremap_uc() on other architectures. What implementation
+is used for ioremap_uc() on each architecture requires review and careful
+thought.
+
+[0] http://lkml.kernel.org/r/20150622082427.35954.73529.stgit@dwillia2-desk3.jf.intel.com
+
+ arch/x86/include/asm/io.h |  2 ++
+ include/asm-generic/io.h  | 30 +++++++++++++++++++++++++++++-
+ 2 files changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index cc9c61bc1abe..7cfc085b6879 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -180,6 +180,8 @@ static inline unsigned int isa_virt_to_bus(volatile void *address)
+  */
+ extern void __iomem *ioremap_nocache(resource_size_t offset, unsigned long size);
+ extern void __iomem *ioremap_uc(resource_size_t offset, unsigned long size);
++#define ioremap_uc ioremap_uc
++
+ extern void __iomem *ioremap_cache(resource_size_t offset, unsigned long size);
+ extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size,
+ 				unsigned long prot_val);
+diff --git a/include/asm-generic/io.h b/include/asm-generic/io.h
+index f56094cfdeff..eed3bbe88c8a 100644
+--- a/include/asm-generic/io.h
++++ b/include/asm-generic/io.h
+@@ -736,6 +736,35 @@ static inline void *phys_to_virt(unsigned long address)
+ }
+ #endif
+ 
++/**
++ * DOC: ioremap() and ioremap_*() variants
++ *
++ * If you have an IOMMU your architecture is expected to have both ioremap()
++ * and iounmap() implemented otherwise the asm-generic helpers will provide a
++ * direct mapping.
++ *
++ * There are ioremap_*() call variants, if you have no IOMMU we naturally will
++ * default to direct mapping for all of them, you can override these defaults.
++ * If you have an IOMMU you are highly encouraged to provide your own
++ * ioremap variant implementation as there currently is no safe architecture
++ * agnostic default. To avoid possible improper behaviour default asm-generic
++ * ioremap_*() variants all return NULL when an IOMMU is available. If you've
++ * defined your own ioremap_*() variant you must then declare your own
++ * ioremap_*() variant as defined to itself to avoid the default NULL return.
++ */
++
++#ifdef CONFIG_MMU
++
++#ifndef ioremap_uc
++#define ioremap_uc ioremap_uc
++static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
++{
++	return NULL;
++}
++#endif
++
++#else /* !CONFIG_MMU */
++
+ /*
+  * Change "struct page" to physical address.
+  *
+@@ -743,7 +772,6 @@ static inline void *phys_to_virt(unsigned long address)
+  * you'll need to provide your own definitions.
+  */
+ 
+-#ifndef CONFIG_MMU
+ #ifndef ioremap
+ #define ioremap ioremap
+ static inline void __iomem *ioremap(phys_addr_t offset, size_t size)
+-- 
+2.3.2.209.gd67f9d5.dirty
+

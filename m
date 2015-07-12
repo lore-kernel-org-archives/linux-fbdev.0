@@ -1,41 +1,82 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Fri, 10 Jul 2015 06:37:29 +0000
-Subject: [PATCH 1/2] video: fbdev: Drop owner assignment from i2c_driver
-Message-Id: <1436510250-5633-2-git-send-email-k.kozlowski@samsung.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sun, 12 Jul 2015 10:25:40 +0000
+Subject: [RFC v4 13/25] powerpc: Cleanup nvram includes
+Message-Id: <20150712102530.535908496@telegraphics.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436510250-5633-1-git-send-email-k.kozlowski@samsung.com>
-In-Reply-To: <1436510250-5633-1-git-send-email-k.kozlowski@samsung.com>
+References: <20150712102527.356151908@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-i2c_driver does not need to set an owner because i2c_register_driver()
-will set it.
+The nvram_read_byte() and nvram_write_byte() definitions in asm/nvram.h
+duplicate those in linux/nvram.h. Get rid of the former to prepare for
+adoption of struct arch_nvram_ops (which is defined in linux/nvram.h for
+general use).
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
+ arch/powerpc/include/asm/nvram.h           |    3 ---
+ arch/powerpc/kernel/setup_32.c             |    1 +
+ drivers/char/generic_nvram.c               |    4 +++-
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-The coccinelle script which generated the patch was sent here:
-http://www.spinics.net/lists/kernel/msg2029903.html
----
- drivers/video/fbdev/ssd1307fb.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 3e153c06131a..b6edd28b267f 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -719,7 +719,6 @@ static struct i2c_driver ssd1307fb_driver = {
- 	.driver = {
- 		.name = "ssd1307fb",
- 		.of_match_table = ssd1307fb_of_match,
--		.owner = THIS_MODULE,
- 	},
- };
+Index: linux/arch/powerpc/include/asm/nvram.h
+=================================--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-07-12 20:24:53.000000000 +1000
++++ linux/arch/powerpc/include/asm/nvram.h	2015-07-12 20:25:08.000000000 +1000
+@@ -101,7 +101,4 @@ extern int nvram_write_os_partition(stru
+ /* Determine NVRAM size */
+ extern ssize_t nvram_get_size(void);
  
--- 
-1.9.1
+-/* Normal access to NVRAM */
+-extern unsigned char nvram_read_byte(int i);
+-extern void nvram_write_byte(unsigned char c, int i);
+ #endif /* _ASM_POWERPC_NVRAM_H */
+Index: linux/arch/powerpc/kernel/setup_32.c
+=================================--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-07-12 20:24:53.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-07-12 20:25:08.000000000 +1000
+@@ -16,6 +16,7 @@
+ #include <linux/cpu.h>
+ #include <linux/console.h>
+ #include <linux/memblock.h>
++#include <linux/nvram.h>
+ 
+ #include <asm/io.h>
+ #include <asm/prom.h>
+Index: linux/drivers/char/generic_nvram.c
+=================================--- linux.orig/drivers/char/generic_nvram.c	2015-07-12 20:24:53.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-07-12 20:25:08.000000000 +1000
+@@ -20,9 +20,11 @@
+ #include <linux/fcntl.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
++#include <linux/nvram.h>
+ #include <asm/uaccess.h>
+-#include <asm/nvram.h>
++
+ #ifdef CONFIG_PPC_PMAC
++#include <asm/nvram.h>
+ #include <asm/machdep.h>
+ #endif
+ 
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-12 20:24:53.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-12 20:25:08.000000000 +1000
+@@ -111,12 +111,12 @@
+ #include "matroxfb_g450.h"
+ #include <linux/matroxfb.h>
+ #include <linux/interrupt.h>
++#include <linux/nvram.h>
+ #include <linux/slab.h>
+ #include <linux/uaccess.h>
+ 
+ #ifdef CONFIG_PPC_PMAC
+ #include <asm/machdep.h>
+-unsigned char nvram_read_byte(int);
+ static int default_vmode = VMODE_NVRAM;
+ static int default_cmode = CMODE_NVRAM;
+ #endif
+
 

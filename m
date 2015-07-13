@@ -1,138 +1,87 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Mon, 20 Jul 2015 10:01:05 +0000
-Subject: Re: [RFC PATCH 08/15] backlight: pwm_bl: remove useless call to pwm_set_period
-Message-Id: <20150720100104.GV29614@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="D2rVImvqWGvKULsk"
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Mon, 13 Jul 2015 09:40:04 +0000
+Subject: Re: [PATCH] pwm-backlight: Avoid backlight flicker when probed from DT
+Message-Id: <1436780404.3540.15.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
- <1435738921-25027-9-git-send-email-boris.brezillon@free-electrons.com>
- <20150720081559.GI29614@ulmo> <20150720102143.05949ca2@bbrezillon>
- <20150720083648.GK29614@ulmo> <20150720105003.29b5813a@bbrezillon>
- <20150720091003.GN29614@ulmo> <20150720115704.0c64d070@bbrezillon>
-In-Reply-To: <20150720115704.0c64d070@bbrezillon>
-To: linux-arm-kernel@lists.infradead.org
+References: <1434126377-22545-1-git-send-email-p.zabel@pengutronix.de>
+In-Reply-To: <1434126377-22545-1-git-send-email-p.zabel@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Ajay Kumar <ajaykumar.rs@samsung.com>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de
+
+Hi,
+
+Am Freitag, den 12.06.2015, 18:26 +0200 schrieb Philipp Zabel:
+> If the driver is probed from the device tree, and there is a phandle
+> property set on it, and the enable GPIO is already configured as output,
+> and the backlight is currently disabled, keep it disabled.
+> If all these conditions are met, assume there will be some other driver
+> that can enable the backlight at the appropriate time.
+> 
+> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> ---
+> I have seen the thread at https://lkml.org/lkml/2014/7/31/259, but I'm not
+> sure if it has come to a resolution. This is what I think could be useful
+> to keep the current default behaviour of enabling the backlight while at the
+> same time allowing to keep it disabled if we are absolutely certain that the
+> backlight is currently off, and we think there is some other driver that will
+> control it:
+
+do you have any comments on this? Would the conditions mentioned above
+be sufficient for your use cases?
+
+best regards
+Philipp
+
+> ---
+>  drivers/video/backlight/pwm_bl.c | 19 +++++++++++++++++--
+>  1 file changed, 17 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+> index 6897f1c..dcb6bfb 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -199,6 +199,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+>  	struct backlight_properties props;
+>  	struct backlight_device *bl;
+>  	struct pwm_bl_data *pb;
+> +	int initial_blank = FB_BLANK_UNBLANK;
+>  	int ret;
+>  
+>  	if (!data) {
+> @@ -263,8 +264,21 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+>  		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+>  	}
+>  
+> -	if (pb->enable_gpio)
+> -		gpiod_direction_output(pb->enable_gpio, 1);
+> +	if (pb->enable_gpio) {
+> +		/*
+> +		 * If the driver is probed from the device tree and there is a
+> +		 * phandle link pointing to the backlight node, it is safe to
+> +		 * assume that another driver will enable the backlight at the
+> +		 * appropriate time. Therefore, if it is disabled, keep it so.
+> +		 */
+> +		if (of_find_property(pdev->dev.of_node, "phandle", NULL) &&
+> +		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
+> +		    gpiod_get_value(pb->enable_gpio) = 0) {
+> +			initial_blank = FB_BLANK_POWERDOWN;
+> +		} else {
+> +			gpiod_direction_output(pb->enable_gpio, 1);
+> +		}
+> +	}
+>  
+>  	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+>  	if (IS_ERR(pb->power_supply)) {
+> @@ -323,6 +337,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	bl->props.brightness = data->dft_brightness;
+> +	bl->props.power = initial_blank;
+>  	backlight_update_status(bl);
+>  
+>  	platform_set_drvdata(pdev, bl);
 
 
---D2rVImvqWGvKULsk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Jul 20, 2015 at 11:57:04AM +0200, Boris Brezillon wrote:
-> On Mon, 20 Jul 2015 11:10:04 +0200
-> Thierry Reding <thierry.reding@gmail.com> wrote:
->=20
-> > On Mon, Jul 20, 2015 at 10:50:03AM +0200, Boris Brezillon wrote:
-> > > On Mon, 20 Jul 2015 10:36:50 +0200
-> > > Thierry Reding <thierry.reding@gmail.com> wrote:
-> > >=20
-> > > > On Mon, Jul 20, 2015 at 10:21:43AM +0200, Boris Brezillon wrote:
-> > > > > On Mon, 20 Jul 2015 10:16:00 +0200
-> > > > > Thierry Reding <thierry.reding@gmail.com> wrote:
-> > > > >=20
-> > > > > > On Wed, Jul 01, 2015 at 10:21:54AM +0200, Boris Brezillon wrote:
-> > > > > > > The PWM period will be set when calling pwm_config. Remove th=
-is useless
-> > > > > > > call to pwm_set_period, which might mess up with the initial =
-PWM state
-> > > > > > > once we have added proper support for PWM init state retrieva=
-l.
-> > > > > > >=20
-> > > > > > > Signed-off-by: Boris Brezillon <boris.brezillon@free-electron=
-s.com>
-> > > > > > > ---
-> > > > > > >  drivers/video/backlight/pwm_bl.c | 4 +---
-> > > > > > >  1 file changed, 1 insertion(+), 3 deletions(-)
-> > > > > > >=20
-> > > > > > > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video=
-/backlight/pwm_bl.c
-> > > > > > > index ae498c1..fe5597c 100644
-> > > > > > > --- a/drivers/video/backlight/pwm_bl.c
-> > > > > > > +++ b/drivers/video/backlight/pwm_bl.c
-> > > > > > > @@ -295,10 +295,8 @@ static int pwm_backlight_probe(struct pl=
-atform_device *pdev)
-> > > > > > >  	 * via the PWM lookup table.
-> > > > > > >  	 */
-> > > > > > >  	pb->period =3D pwm_get_default_period(pb->pwm);
-> > > > > > > -	if (!pb->period && (data->pwm_period_ns > 0)) {
-> > > > > > > +	if (!pb->period && (data->pwm_period_ns > 0))
-> > > > > > >  		pb->period =3D data->pwm_period_ns;
-> > > > > > > -		pwm_set_period(pb->pwm, data->pwm_period_ns);
-> > > > > > > -	}
-> > > > > > > =20
-> > > > > > >  	pb->lth_brightness =3D data->lth_brightness * (pb->period /=
- pb->scale);
-> > > > > >=20
-> > > > > > As far as I remember this line is there in order to pass in a p=
-eriod if
-> > > > > > the backlight driver is initialized from board setup files. In =
-such a
-> > > > > > case there won't be an period associated with the PWM channel i=
-n the
-> > > > > > first place.
-> > > > > >=20
-> > > > > > I think even with the introduction of a default period, we'd be=
- missing
-> > > > > > out on the board setup case because there is no standard place =
-where it
-> > > > > > is being set, so it must come from the platform data.
-> > > > >=20
-> > > > > AFAICT, we don't need to explicitly set the period when probing t=
-he
-> > > > > backlight device, because it will be set next time we call
-> > > > > pwm_config(), and since we're passing pb->period when calling
-> > > > > pwm_config() everything should be fine.
-> > > >=20
-> > > > Calling pwm_set_period() is still good for consistency. Consider for
-> > > > example what happens if after the driver were to call pwm_get_perio=
-d().
-> > > > It would return some more or less random value (likely 0 or whateve=
-r it
-> > > > had been set to by an earlier user).
-> > >=20
-> > > Yes, that's true in general, but in this specific driver
-> > > pwm_get_period() is never called, and the driver only relies on the
-> > > pb->period value.
-> >=20
-> > Perhaps that's something that should change. If the PWM core has all
-> > this infrastructure there should be no need for the backlight driver to
-> > keep it's own copy of that variable.
->=20
-> Yes, probably. In any case, I don't think we want PWM users to be able
-> to mess up with the current or default PWM state, that's why I was
-> planning on making the pwm_set_default_xxx helpers private to PWM
-> drivers and core infrastructure.
->=20
-> Also note that if we keep this assignment it should at least be changed
-> to a pwm_set_default_period() so that it does not override the current
-> PWM state.
-
-I think we should be able to live without the assignment. Perhaps when
-replacing it, add a comment saying that this is for very legacy cases
-only and that PWM lookup tables are the right way to fix this.
-
-Thierry
-
---D2rVImvqWGvKULsk
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJVrMbgAAoJEN0jrNd/PrOhjjAP/0gTVNmlxd/yjMQxjxIro6o8
-li6sl878OgUFC4F0tXOxq+oBwIN8clXa9lvCr4xtuiSW0WMOGBLKFNXTjTyYMYUw
-AM7e7RhJfHhNVur/5jk/C8y5xIEAQwa5/a8eh2hMJlmJvaNYBnpNzYx709LGKt03
-1v1jAR0YyDTDTtbKlaPYSPmqnuPi+y64qYSMxcZEYRkrMGRLKiaCqjjfVaWq3ES3
-jcnUQB6MW/aPcEuLt6v2hLNie6AipSdLrm8D4VIvVWX0Rj9ZTXPYznDQnOxwQc0w
-TeiVheHQTye1baviSk+epx3Uyi/6ZbSlH1kkO7lzYGL2/VomaBwYeLOVx/ZITVR9
-aOyfMSTcsnml8NNS6H+S7hZ20FAFO/sncRo3Xad+5c3n72jsoqyjMdwz2fHezqFY
-Cs5ugfMfdAX50WiIHmSJ8GAbSQjAV9e7OfKY37c/Sveep+NPH9tegpsEu8MWTmfh
-NpGapzwlBaY9C139pjrDlBwnXj2gI3qTpCRIf1zhYHgAb5j6n+4qku4N99HHUWd8
-ODJtAdPK6ahqllGGgGHWbJkSAsNT0l/v08/rOYrclvnMMiGK15qPYNz/CH32VHsr
-n/qWgDTT8RNoQJAbZkrJkZ2qihVyjloDuCzL0YjW3yEBM7CLI2GUyTxhPrSrzGsG
-HtKcDulDxwQv3UdHG2rY
-=4wcV
------END PGP SIGNATURE-----
-
---D2rVImvqWGvKULsk--

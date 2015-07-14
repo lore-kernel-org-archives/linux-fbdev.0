@@ -1,41 +1,178 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Thu, 16 Jul 2015 06:01:41 +0000
-Subject: Re: [RFC v4 17/25] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvram
-Message-Id: <alpine.LNX.2.00.1507161530270.19651@nippy.intranet>
+From: Vinay Simha BN <simhavcs@gmail.com>
+Date: Tue, 14 Jul 2015 06:58:11 +0000
+Subject: [PATCH] staging: sm750fb: coding style fixes
+Message-Id: <1436856371-4570-1-git-send-email-simhavcs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150712102527.356151908@telegraphics.com.au>  <20150712102531.505897278@telegraphics.com.au>  <alpine.LNX.2.00.1507141725480.851@nippy.intranet> <1436874720.3948.252.camel@kernel.crashing.org>
- <alpine.LNX.2.00.1507151200510.2862@nippy.intranet>
-In-Reply-To: <alpine.LNX.2.00.1507151200510.2862@nippy.intranet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
+kernel coding style fixes for below messages from
+scripts/checkpatch.pl
 
-On Wed, 15 Jul 2015, I wrote:
+WARNING: line over 80 character
+WARNING: Possible unnecessary 'out of memory' message
+WARNING: unnecessary whitespace before a quoted newline
+WARNING: Avoid line continuations in quoted strings
+ERROR: "foo * bar" should be "foo *bar"
+ERROR: do not initialise globals to 0 or NULL
 
-> On Tue, 14 Jul 2015, Benjamin Herrenschmidt wrote:
-> 
-> > Maybe we should have a dedicated accessor for "mac_xpram" ...
-> 
-> ... I can see how to implement XPRAM for matroxfb and imsttfb 
+Signed-off-by: Vinay Simha BN <simhavcs@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 49 ++++++++++++++++++++++++-----------------
+ 1 file changed, 29 insertions(+), 20 deletions(-)
 
-I'll have to retract that. The video mode and color mode settings used by 
-the PowerMac framebuffer drivers don't exist in the PRAM portion of NVRAM.
-
-Addresses 0x140F and 0x1410 are found in the partition reserved by Apple 
-for "Name Registry properties", according to Designing PCI Cards and 
-Drivers for Power Macintosh Computers. There is no equivalent on m68k 
-Macs, AFAIK.
-
-This is NVRAM partition 2 on my beige g3, which begins at 0x1400. I'm not 
-sure that this is true on New World PowerMacs, and I suspect that the 
-framebuffer drivers should be calling pmac_get_partition() to determine 
-the offset of the beginning of the Name Registry partition.
-
-The arch_nvram_ops methods don't deal with structures like partitions. 
-They treat the entire 8 KiB as unstructured, because that's how /dev/nvram 
-treats it.
-
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 6b642d7..12214f7 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -24,7 +24,7 @@
+ 
+ #include "modedb.h"
+ 
+-int smi_indent = 0;
++int smi_indent;
+ 
+ 
+ /*
+@@ -47,9 +47,9 @@ static int g_noaccel;
+ static int g_nomtrr;
+ static const char *g_fbmode[] = {NULL, NULL};
+ static const char *g_def_fbmode = "800x600-16@60";
+-static char *g_settings = NULL;
++static char *g_settings;
+ static int g_dualview;
+-static char *g_option = NULL;
++static char *g_option;
+ 
+ 
+ static const struct fb_videomode lynx750_ext[] = {
+@@ -150,12 +150,16 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 		u16 fg, bg;
+ 
+ 		fg = ((info->cmap.red[fbcursor->image.fg_color] & 0xf800))|
+-		      ((info->cmap.green[fbcursor->image.fg_color] & 0xfc00) >> 5)|
+-		      ((info->cmap.blue[fbcursor->image.fg_color] & 0xf800) >> 11);
++		      ((info->cmap.green[fbcursor->image.fg_color]
++			 & 0xfc00) >> 5)|
++		      ((info->cmap.blue[fbcursor->image.fg_color]
++			& 0xf800) >> 11);
+ 
+ 		bg = ((info->cmap.red[fbcursor->image.bg_color] & 0xf800))|
+-		      ((info->cmap.green[fbcursor->image.bg_color] & 0xfc00) >> 5)|
+-		      ((info->cmap.blue[fbcursor->image.bg_color] & 0xf800) >> 11);
++		      ((info->cmap.green[fbcursor->image.bg_color] &
++			0xfc00) >> 5)|
++		      ((info->cmap.blue[fbcursor->image.bg_color] &
++			0xf800) >> 11);
+ 
+ 		cursor->setColor(cursor, fg, bg);
+ 	}
+@@ -194,7 +198,8 @@ static void lynxfb_ops_fillrect(struct fb_info *info,
+ 	pitch = info->fix.line_length;
+ 	Bpp = info->var.bits_per_pixel >> 3;
+ 
+-	color = (Bpp = 1)?region->color:((u32 *)info->pseudo_palette)[region->color];
++	color = (Bpp = 1) ?
++	region->color : ((u32 *)info->pseudo_palette)[region->color];
+ 	rop = (region->rop != ROP_COPY) ? HW_ROP2_XOR:HW_ROP2_COPY;
+ 
+ 	/*
+@@ -445,7 +450,8 @@ static int lynxfb_suspend(struct pci_dev *pdev, pm_message_t mesg)
+ 		pci_disable_device(pdev);
+ 		ret = pci_set_power_state(pdev, pci_choose_state(pdev, mesg));
+ 		if (ret) {
+-			pr_err("error:%d occurred in pci_set_power_state\n", ret);
++			pr_err("error:%d occurred in
++				pci_set_power_state\n", ret);
+ 			return ret;
+ 		}
+ 	}
+@@ -699,7 +705,8 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
+ 	output = &par->output;
+ 	crtc = &par->crtc;
+ 
+-	crtc->vidmem_size = (share->dual)?share->vidmem_size>>1:share->vidmem_size;
++	crtc->vidmem_size = (share->dual) ?
++		share->vidmem_size>>1 : share->vidmem_size;
+ 	/* setup crtc and output member */
+ 	spec_share->hwCursor = g_hwcursor;
+ 
+@@ -716,10 +723,12 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
+ 	output->proc_setMode = hw_sm750_output_setMode;
+ 	output->proc_checkMode = hw_sm750_output_checkMode;
+ 
+-	output->proc_setBLANK = (share->revid = SM750LE_REVISION_ID)?hw_sm750le_setBLANK:hw_sm750_setBLANK;
++	output->proc_setBLANK = (share->revid = SM750LE_REVISION_ID) ?
++				hw_sm750le_setBLANK : hw_sm750_setBLANK;
+ 	output->clear = hw_sm750_output_clear;
+ 	/* chip specific phase */
+-	share->accel.de_wait = (share->revid = SM750LE_REVISION_ID)?hw_sm750le_deWait : hw_sm750_deWait;
++	share->accel.de_wait = (share->revid = SM750LE_REVISION_ID) ?
++				hw_sm750le_deWait : hw_sm750_deWait;
+ 	switch (spec_share->state.dataflow) {
+ 	case sm750_simul_pri:
+ 		output->paths = sm750_pnc;
+@@ -743,7 +752,8 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
+ 		} else {
+ 			output->paths = sm750_crt;
+ 			crtc->channel = sm750_secondary;
+-			/* not consider of padding stuffs for oScreen,need fix */
++			/* not consider of padding stuffs
++			 for oScreen,need fix */
+ 			crtc->oScreen = (share->vidmem_size >> 1);
+ 			crtc->vScreen = share->pvMem + crtc->oScreen;
+ 		}
+@@ -757,7 +767,8 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
+ 		} else {
+ 			output->paths = sm750_crt;
+ 			crtc->channel = sm750_primary;
+-			/* not consider of padding stuffs for oScreen,need fix */
++			/* not consider of padding stuffs
++			for oScreen,need fix */
+ 			crtc->oScreen = (share->vidmem_size >> 1);
+ 			crtc->vScreen = share->pvMem + crtc->oScreen;
+ 		}
+@@ -895,7 +906,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 
+ 	/* some member of info->var had been set by fb_find_mode */
+ 
+-	pr_info("Member of info->var is :\n\
++	pr_info("Member of info->var is :\n
+ 		xres=%d\n\
+ 		yres=%d\n\
+ 		xres_virtual=%d\n\
+@@ -967,7 +978,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 	var->accel_flags = 0;
+ 	var->vmode = FB_VMODE_NONINTERLACED;
+ 
+-	pr_debug("#1 show info->cmap : \nstart=%d,len=%d,red=%p,green=%p,blue=%p,transp=%p\n",
++	pr_debug("#1 show info->cmap :\nstart=%d,len=%d,red=%p,green=%p,blue=%p,transp=%p\n",
+ 		 info->cmap.start, info->cmap.len,
+ 		 info->cmap.red, info->cmap.green, info->cmap.blue,
+ 		 info->cmap.transp);
+@@ -1087,7 +1098,7 @@ NO_PARAM:
+ }
+ 
+ static int lynxfb_pci_probe(struct pci_dev *pdev,
+-			    const struct pci_device_id * ent)
++			    const struct pci_device_id *ent)
+ {
+ 	struct fb_info *info[] = {NULL, NULL};
+ 	struct lynx_share *share = NULL;
+@@ -1108,10 +1119,8 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 	spec_offset = offsetof(struct sm750_share, share);
+ 
+ 	spec_share = kzalloc(sizeof(*spec_share), GFP_KERNEL);
+-	if (!spec_share) {
+-		pr_err("Could not allocate memory for share.\n");
++	if (!spec_share)
+ 		goto err_share;
+-	}
+ 
+ 	/* setting share structure */
+ 	share = (struct lynx_share *)(&(spec_share->share));
 -- 
+2.1.2
+

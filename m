@@ -1,114 +1,40 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 01 Jul 2015 12:19:12 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Tue, 14 Jul 2015 10:50:19 +0000
 Subject: Re: [RFC PATCH 14/15] regulator: pwm: implement ->enable(), ->disable() and ->is_enabled methods
-Message-Id: <20150701141912.52f995a5@bbrezillon>
+Message-Id: <20150714105019.GR11162@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="+k3B0vOyg/ewl1oH"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
- <3495901.qMzLCVWCDl@diego> <20150701140531.2041b05c@bbrezillon>
- <3530235.H11CYEfk28@diego>
-In-Reply-To: <3530235.H11CYEfk28@diego>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+ <1435738921-25027-15-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1435738921-25027-15-git-send-email-boris.brezillon@free-electrons.com>
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, 01 Jul 2015 14:08:18 +0200
-Heiko Stübner <heiko@sntech.de> wrote:
 
-> Am Mittwoch, 1. Juli 2015, 14:05:31 schrieb Boris Brezillon:
-> > Hi Heiko,
-> > 
-> > On Wed, 01 Jul 2015 13:58:09 +0200
-> > 
-> > Heiko Stübner <heiko@sntech.de> wrote:
-> > > Am Mittwoch, 1. Juli 2015, 10:22:00 schrieb Boris Brezillon:
-> > > > Implement the ->enable(), ->disable() and ->is_enabled methods and
-> > > > remove
-> > > > the PWM call in ->set_voltage_sel().
-> > > > This is particularly important for critical regulators tagged as
-> > > > always-on,
-> > > > because not claiming the PWM (and its dependencies) might lead to
-> > > > unpredictable behavior (like a system hang because the PWM clk is only
-> > > > claimed when the PWM device is enabled).
-> > > > 
-> > > > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > > > ---
-> > > > 
-> > > >  drivers/regulator/pwm-regulator.c | 32 ++++++++++++++++++++++++++------
-> > > >  1 file changed, 26 insertions(+), 6 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/regulator/pwm-regulator.c
-> > > > b/drivers/regulator/pwm-regulator.c index 12b4d9d..8159518 100644
-> > > > --- a/drivers/regulator/pwm-regulator.c
-> > > > +++ b/drivers/regulator/pwm-regulator.c
-> > > > @@ -59,12 +59,6 @@ static int pwm_regulator_set_voltage_sel(struct
-> > > > regulator_dev *rdev,
-> > > > 
-> > > >  	drvdata->state = selector;
-> > > > 
-> > > > -	ret = pwm_enable(drvdata->pwm);
-> > > > -	if (ret) {
-> > > > -		dev_err(&rdev->dev, "Failed to enable PWM\n");
-> > > > -		return ret;
-> > > > -	}
-> > > > -
-> > > > 
-> > > >  	return 0;
-> > > >  
-> > > >  }
-> > > > 
-> > > > @@ -79,11 +73,37 @@ static int pwm_regulator_list_voltage(struct
-> > > > regulator_dev *rdev, return drvdata->duty_cycle_table[selector].uV;
-> > > > 
-> > > >  }
-> > > > 
-> > > > +static int pwm_regulator_enable(struct regulator_dev *dev)
-> > > > +{
-> > > > +	struct pwm_regulator_data *drvdata = rdev_get_drvdata(dev);
-> > > > +
-> > > > +	return pwm_enable(drvdata->pwm);
-> > > > +}
-> > > > +
-> > > > +static int pwm_regulator_disable(struct regulator_dev *dev)
-> > > > +{
-> > > > +	struct pwm_regulator_data *drvdata = rdev_get_drvdata(dev);
-> > > > +
-> > > > +	pwm_disable(drvdata->pwm);
-> > > > +
-> > > > +	return 0;
-> > > > +}
-> > > > +
-> > > > +static int pwm_regulator_is_enabled(struct regulator_dev *dev)
-> > > > +{
-> > > > +       struct pwm_regulator_data *drvdata = rdev_get_drvdata(dev);
-> > > > +
-> > > > +       return pwm_is_enabled(drvdata->pwm);
-> > > > +}
-> > > 
-> > > nit: indentation is wrong in pwm_regulator_is_enabled (spaces instead of
-> > > tabs)
-> > Yep, I noticed checkpatch warnings/errors before sending the patch, but
-> > since this is just an RFC I decided to fix them for the next version ;-)
-> 
-> ok, so I'll just skip over any more style issues for now. Making my way 
-> through your series and trying it on my veyron right now :-)
+--+k3B0vOyg/ewl1oH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Also note that I haven't tested the series on a real board (just compile
-tested) because I don't have the board with me right now, but I wanted
-to post the RFC early so that we can discuss the concepts.
+On Wed, Jul 01, 2015 at 10:22:00AM +0200, Boris Brezillon wrote:
+> Implement the ->enable(), ->disable() and ->is_enabled methods and remove
+> the PWM call in ->set_voltage_sel().
 
-Anyway, any feedback on the implementation (including bug reports) is
-welcome.
+This doesn't apply, please check and resend.
 
-This is the version I actually tested on the veyron board:
+--+k3B0vOyg/ewl1oH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-https://github.com/bbrezillon/linux-rk/tree/rk-3.14
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Best Regards,
+iQEcBAEBCAAGBQJVpOlrAAoJECTWi3JdVIfQDTMH/AtQ50vnAugEewxCHd4ABmx6
+AWC8HTnnr+NYfQRCNdLLEgrv8TP2Q7uBFJAR92gnzBnvQOHtXLSbK6VRYtN0Libk
+DYqnJ/pCSzBSJW6goi7uKc6LjVclpjLdO9PGY7ZL1YIt3vH5eJyenvxQMnnjMiNQ
+hoPkN7o9tWWDpMJU5Qg/1azA99i98WhTH31VAg79UmzNLrvXmKOxeo9q/hGo1Wve
+48EfVl+lLyX7b7lEXPeBk3EXGzLFNBHeTld3bl4RNu/ME6y1Qv7lo3FVOPhiOAbm
+PQ7veL5IqSTgixX/zbc5os0y0XSeLP3hG5FZGAVVZQg3kEQjvScN1hSEzCvExms=
+=fS+L
+-----END PGP SIGNATURE-----
 
-Boris
-
--- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+--+k3B0vOyg/ewl1oH--

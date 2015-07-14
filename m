@@ -1,35 +1,66 @@
-From: =?UTF-8?q?Urs=20F=C3=A4ssler?= <urs.fassler@bytesatwork.ch>
-Date: Fri, 03 Jul 2015 08:38:13 +0000
-Subject: [PATCH 0/3] video/logo: add option to return largest logo for a given resolution
-Message-Id: <1435912696-17546-1-git-send-email-urs.fassler@bytesatwork.ch>
+From: Vinay Simha BN <simhavcs@gmail.com>
+Date: Tue, 14 Jul 2015 13:57:28 +0000
+Subject: [PATCH] staging: sm750fb: coding style global ERROR fixes
+Message-Id: <1436881528-9977-1-git-send-email-simhavcs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, oliver.staebler@bytesatwork.ch, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, urs.fassler@bytesatwork.ch
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Vinay Simha BN <simhavcs@gmail.com>
 
-With this patches, the largest boot logo for a given display resolution is =
-used.
-We need that functionality since it is common that a product has variants w=
-hich
-differ only minimal in the hardware. Thus, we have the same kernel binary b=
-ut
-different device trees for different hardware / displays.
-This patches allow use to show a full screen boot logo for every hardware
-variant.
+kernel coding style fixes for below messages from
+scripts/checkpatch.pl
 
-Urs F=C3=A4ssler (3):
-  video/logo: use list of logos to find logo
-  logo: add option to return largest logo for a given resolution
-  fbdev: use largest logo if possible
+ERROR: do not initialise globals to 0 or NULL
 
- drivers/video/fbdev/core/fbmem.c |  21 ++++--
- drivers/video/logo/Kconfig       |   7 ++
- drivers/video/logo/logo.c        | 146 ++++++++++++++++++++++++++---------=
-----
- include/linux/linux_logo.h       |   4 ++
- 4 files changed, 124 insertions(+), 54 deletions(-)
+Signed-off-by: Vinay Simha BN <simhavcs@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_help.c | 6 +++---
+ drivers/staging/sm750fb/sm750.c       | 6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
---=20
-2.1.4
+diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
+index 1adcafc..f027df5 100644
+--- a/drivers/staging/sm750fb/ddk750_help.c
++++ b/drivers/staging/sm750fb/ddk750_help.c
+@@ -1,8 +1,8 @@
+ #include "ddk750_help.h"
+ 
+-void __iomem *mmio750 = NULL;
+-char revId750 = 0;
+-unsigned short devId750 = 0;
++void __iomem *mmio750;
++char revId750;
++unsigned short devId750;
+ 
+ /* after driver mapped io registers, use this function first */
+ void ddk750_set_mmio(void __iomem *addr, unsigned short devId, char revId)
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 8e201f1..4d165ca 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -24,7 +24,7 @@
+ 
+ #include "modedb.h"
+ 
+-int smi_indent = 0;
++int smi_indent;
+ 
+ 
+ /*
+@@ -47,9 +47,9 @@ static int g_noaccel;
+ static int g_nomtrr;
+ static const char *g_fbmode[] = {NULL, NULL};
+ static const char *g_def_fbmode = "800x600-16@60";
+-static char *g_settings = NULL;
++static char *g_settings;
+ static int g_dualview;
+-static char *g_option = NULL;
++static char *g_option;
+ 
+ 
+ static const struct fb_videomode lynx750_ext[] = {
+-- 
+2.1.2
 

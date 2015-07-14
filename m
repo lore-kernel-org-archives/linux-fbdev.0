@@ -1,39 +1,49 @@
 From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sun, 12 Jul 2015 10:25:44 +0000
-Subject: [RFC v4 17/25] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvram_wri
-Message-Id: <20150712102531.505897278@telegraphics.com.au>
+Date: Tue, 14 Jul 2015 07:58:10 +0000
+Subject: Re: [RFC v4 17/25] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvram
+Message-Id: <alpine.LNX.2.00.1507141725480.851@nippy.intranet>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150712102527.356151908@telegraphics.com.au>
+References: <20150712102527.356151908@telegraphics.com.au> <20150712102531.505897278@telegraphics.com.au>
+In-Reply-To: <20150712102531.505897278@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-Make use of arch_nvram_ops in device drivers so that the nvram_*
-function exports can be removed.
 
-Since they are no longer global symbols, rename the PPC32 nvram_* functions
-appropriately.
+Make use of arch_nvram_ops in device drivers so that the nvram_* function=20
+exports can be removed.
+
+Since they are no longer global symbols, rename the PPC32 nvram_*=20
+functions appropriately.
 
 Add the missing CONFIG_NVRAM test to imsttfb to avoid a build failure.
 
+Add a CONFIG_PPC32 test to matroxfb because PPC64 doesn't implement the=20
+read_byte() method.
+
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+
+---
+
+Changed since v4:
+- Added CONFIG_PPC32 test to matroxfb.
 
 ---
  arch/powerpc/kernel/setup_32.c             |    8 ++++----
  drivers/char/generic_nvram.c               |    4 ++--
  drivers/video/fbdev/controlfb.c            |    4 ++--
  drivers/video/fbdev/imsttfb.c              |    7 +++----
- drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ drivers/video/fbdev/matrox/matroxfb_base.c |    4 ++--
  drivers/video/fbdev/platinumfb.c           |    4 ++--
  drivers/video/fbdev/valkyriefb.c           |    4 ++--
- 7 files changed, 16 insertions(+), 17 deletions(-)
+ 7 files changed, 17 insertions(+), 18 deletions(-)
 
 Index: linux/arch/powerpc/kernel/setup_32.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-=
-07-12 20:25:11.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-07-12 20:25:13.000000000 +1000
+07-13 21:33:01.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-07-13 21:33:02.000000000 +1000
 @@ -170,20 +170,18 @@ __setup("l3cr=3D", ppc_setup_l3cr);
 =20
  #ifdef CONFIG_GENERIC_NVRAM
@@ -69,8 +79,8 @@ Index: linux/arch/powerpc/kernel/setup_32.c
 Index: linux/drivers/char/generic_nvram.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/char/generic_nvram.c	2015-07=
--12 20:25:11.000000000 +1000
-+++ linux/drivers/char/generic_nvram.c	2015-07-12 20:25:13.000000000 +1000
+-13 21:33:01.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-07-13 21:33:02.000000000 +1000
 @@ -64,7 +64,7 @@ static ssize_t read_nvram(struct file *f
  	if (*ppos >=3D nvram_len)
  		return 0;
@@ -92,8 +102,8 @@ Index: linux/drivers/char/generic_nvram.c
 Index: linux/drivers/video/fbdev/controlfb.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/controlfb.c	2015=
--07-12 20:24:53.000000000 +1000
-+++ linux/drivers/video/fbdev/controlfb.c	2015-07-12 20:25:13.000000000 +10=
+-07-13 21:32:43.000000000 +1000
++++ linux/drivers/video/fbdev/controlfb.c	2015-07-13 21:33:02.000000000 +10=
 00
 @@ -415,7 +415,7 @@ static int __init init_control(struct fb
  	/* Try to pick a video mode out of NVRAM if we have one. */
@@ -116,12 +126,15 @@ Index: linux/drivers/video/fbdev/controlfb.c
 Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/matrox/matroxfb_=
-base.c	2015-07-12 20:25:08.000000000 +1000
-+++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-12 20:25:13.00=
+base.c	2015-07-13 21:32:57.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-13 21:33:02.00=
 0000000 +1000
-@@ -1888,7 +1888,7 @@ static int initMatrox2(struct matrox_fb_
+@@ -1886,9 +1886,9 @@ static int initMatrox2(struct matrox_fb_
+ 		struct fb_var_screeninfo var;
+ 		if (default_vmode <=3D 0 || default_vmode > VMODE_MAX)
  			default_vmode =3D VMODE_640_480_60;
- #ifdef CONFIG_NVRAM
+-#ifdef CONFIG_NVRAM
++#if defined(CONFIG_NVRAM) && defined(CONFIG_PPC32)
  		if (default_cmode =3D CMODE_NVRAM)
 -			default_cmode =3D nvram_read_byte(NV_CMODE);
 +			default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
@@ -131,8 +144,8 @@ base.c	2015-07-12 20:25:08.000000000 +1000
 Index: linux/drivers/video/fbdev/platinumfb.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/platinumfb.c	201=
-5-07-12 20:24:53.000000000 +1000
-+++ linux/drivers/video/fbdev/platinumfb.c	2015-07-12 20:25:13.000000000 +1=
+5-07-13 21:32:43.000000000 +1000
++++ linux/drivers/video/fbdev/platinumfb.c	2015-07-13 21:33:02.000000000 +1=
 000
 @@ -349,7 +349,7 @@ static int platinum_init_fb(struct fb_in
  	printk(KERN_INFO "platinumfb: Monitor sense value =3D 0x%x, ", sense);
@@ -155,8 +168,8 @@ Index: linux/drivers/video/fbdev/platinumfb.c
 Index: linux/drivers/video/fbdev/valkyriefb.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/valkyriefb.c	201=
-5-07-12 20:24:53.000000000 +1000
-+++ linux/drivers/video/fbdev/valkyriefb.c	2015-07-12 20:25:13.000000000 +1=
+5-07-13 21:32:43.000000000 +1000
++++ linux/drivers/video/fbdev/valkyriefb.c	2015-07-13 21:33:02.000000000 +1=
 000
 @@ -287,7 +287,7 @@ static void __init valkyrie_choose_mode(
  	/* Try to pick a video mode out of NVRAM if we have one. */
@@ -179,8 +192,8 @@ Index: linux/drivers/video/fbdev/valkyriefb.c
 Index: linux/drivers/video/fbdev/imsttfb.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-0=
-7-12 20:24:53.000000000 +1000
-+++ linux/drivers/video/fbdev/imsttfb.c	2015-07-12 20:25:13.000000000 +1000
+7-13 21:32:43.000000000 +1000
++++ linux/drivers/video/fbdev/imsttfb.c	2015-07-13 21:33:02.000000000 +1000
 @@ -328,7 +328,6 @@ enum {
  	TVP =3D 1
  };
@@ -210,5 +223,4 @@ Index: linux/drivers/video/fbdev/imsttfb.c
  			if (cmode < CMODE_8 || cmode > CMODE_32)
  				cmode =3D CMODE_8;
  		}
-
 

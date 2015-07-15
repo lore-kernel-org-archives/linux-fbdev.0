@@ -1,71 +1,76 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Date: Wed, 01 Jul 2015 09:41:05 +0000
-Subject: [PATCH v2 10/12] pwm: register dependency parser for firmware nodes
-Message-Id: <1435743667-11987-11-git-send-email-tomeu.vizoso@collabora.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 15 Jul 2015 04:14:37 +0000
+Subject: [PATCH v5 08/19] staging: sm750fb: add space after enum definition
+Message-Id: <1436933688-5408-8-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
-In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+References: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
+In-Reply-To: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
-So others can find out what depends on pwm controllers, as specified
-in bindings/pwm/pwm.txt.
+Fixes checkpatch.pl warning:
+WARNING: missing space after enum definition
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
+ drivers/staging/sm750fb/ddk750_display.h | 2 +-
+ drivers/staging/sm750fb/sm750_hw.h       | 8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Changes in v2: None
-
- drivers/pwm/core.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
-
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index 3a7769f..81b4fc0 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -917,11 +917,39 @@ static const struct file_operations pwm_debugfs_ops = {
- 	.release = seq_release,
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+index 018a661..a7f50cc 100644
+--- a/drivers/staging/sm750fb/ddk750_display.h
++++ b/drivers/staging/sm750fb/ddk750_display.h
+@@ -129,7 +129,7 @@ typedef enum _disp_output_t
+ }
+ disp_output_t;
+ #else
+-typedef enum _disp_output_t{
++typedef enum _disp_output_t {
+ 	do_LCD1_PRI = PNL_2_PRI|PRI_TP_ON|PNL_SEQ_ON|DAC_ON,
+ 	do_LCD1_SEC = PNL_2_SEC|SEC_TP_ON|PNL_SEQ_ON|DAC_ON,
+ #if 0
+diff --git a/drivers/staging/sm750fb/sm750_hw.h b/drivers/staging/sm750fb/sm750_hw.h
+index adc61edf..af2db7c 100644
+--- a/drivers/staging/sm750fb/sm750_hw.h
++++ b/drivers/staging/sm750fb/sm750_hw.h
+@@ -9,7 +9,7 @@
+ #endif
+ 
+ 
+-enum sm750_pnltype{
++enum sm750_pnltype {
+ 
+ 	sm750_24TFT = 0,/* 24bit tft */
+ 
+@@ -19,7 +19,7 @@ enum sm750_pnltype{
  };
  
-+static void pwm_get_dependencies(struct fwnode_handle *fwnode,
-+				 struct list_head *deps)
-+{
-+	struct device_node *np;
-+	struct of_phandle_args pspec;
-+	int count, i, ret;
-+
-+	np = to_of_node(fwnode);
-+	if (!np)
-+		return;
-+
-+	count = of_count_phandle_with_args(np, "pwms",
-+					   "#pwm-cells");
-+	for (i = 0; i < count; i++) {
-+		ret = of_parse_phandle_with_args(np, "pwms",
-+						 "#pwm-cells", i,
-+						 &pspec);
-+		if (ret || !pspec.np)
-+			continue;
-+
-+		fwnode_add_dependency(&pspec.np->fwnode, deps);
-+
-+		of_node_put(pspec.np);
-+	}
-+}
-+
- static int __init pwm_debugfs_init(void)
- {
- 	debugfs_create_file("pwm", S_IFREG | S_IRUGO, NULL, NULL,
- 			    &pwm_debugfs_ops);
+ /* vga channel is not concerned  */
+-enum sm750_dataflow{
++enum sm750_dataflow {
+ 	sm750_simul_pri,/* primary => all head */
  
-+	fwnode_add_dependency_parser(pwm_get_dependencies);
-+
- 	return 0;
- }
+ 	sm750_simul_sec,/* secondary => all head */
+@@ -30,13 +30,13 @@ enum sm750_dataflow{
+ };
  
+ 
+-enum sm750_channel{
++enum sm750_channel {
+ 	sm750_primary = 0,
+ 	/* enum value equal to the register filed data */
+ 	sm750_secondary = 1,
+ };
+ 
+-enum sm750_path{
++enum sm750_path {
+ 	sm750_panel = 1,
+ 	sm750_crt = 2,
+ 	sm750_pnc = 3,/* panel and crt */
 -- 
-2.4.1
+2.4.5
 

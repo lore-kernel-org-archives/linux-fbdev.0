@@ -1,77 +1,96 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 10 Jul 2015 01:24:56 +0000
-Subject: [PATCH v6 1/4] drivers/video/fbdev/atyfb: Carve out framebuffer length fudging into a helper
-Message-Id: <1436491499-3289-2-git-send-email-mcgrof@do-not-panic.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 15 Jul 2015 04:14:42 +0000
+Subject: [PATCH v5 13/19] staging: sm750fb: add space after semicolon
+Message-Id: <1436933688-5408-13-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436491499-3289-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1436491499-3289-1-git-send-email-mcgrof@do-not-panic.com>
+References: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
+In-Reply-To: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: mingo@kernel.org
-Cc: bp@suse.de, tomi.valkeinen@ti.com, airlied@redhat.com, arnd@arndb.de, dan.j.williams@intel.com, hch@lst.de, luto@amacapital.net, hpa@zytor.com, tglx@linutronix.de, geert@linux-m68k.org, ralf@linux-mips.org, hmh@hmh.eng.br, ross.zwisler@linux.intel.com, akpm@linux-foundation.org, jgross@suse.com, benh@kernel.crashing.org, mpe@ellerman.id.au, tj@kernel.org, x86@kernel.org, mst@redhat.com, toshi.kani@hp.com, stefan.bader@canonical.com, syrjala@sci.fi, ville.syrjala@linux.intel.com, linux-pci@vger.kernel.org, linux-mm@kvack.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Mathias Krause <minipli@googlemail.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Fixes checkpatch.pl error:
+ERROR: space required after that ';'
 
-The size of the framebuffer to be used needs to be fudged to account for
-the different type of devices that are out there. This captures what is
-required to do well, we'll reuse this later.
-
-This has no functional changes.
-
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Mathias Krause <minipli@googlemail.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Link: http://lkml.kernel.org/r/1435251019-32421-1-git-send-email-mcgrof@do-not-panic.com
-Signed-off-by: Borislav Petkov <bp@suse.de>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/video/fbdev/aty/atyfb_base.c | 23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+ drivers/staging/sm750fb/sm750.h        |  2 +-
+ drivers/staging/sm750fb/sm750_cursor.c | 12 ++++++------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 8789e487b96e..16936bb1f865 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -427,6 +427,20 @@ static struct {
- #endif /* CONFIG_FB_ATY_CT */
- };
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index d6916fd..9b101a9 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -168,7 +168,7 @@ struct lynxfb_par {
+ 			({ \
+ 			unsigned long long hz = 1000*1000*1000*1000ULL;	\
+ 			do_div(hz, ps);	\
+-			(unsigned long)hz;})
++			(unsigned long)hz; })
  
-+/*
-+ * Last page of 8 MB (4 MB on ISA) aperture is MMIO,
-+ * unless the auxiliary register aperture is used.
-+ */
-+static void aty_fudge_framebuffer_len(struct fb_info *info)
-+{
-+	struct atyfb_par *par = (struct atyfb_par *) info->par;
-+
-+	if (!par->aux_start &&
-+	    (info->fix.smem_len = 0x800000 ||
-+	     (par->bus_type = ISA && info->fix.smem_len = 0x400000)))
-+		info->fix.smem_len -= GUI_RESERVE;
-+}
-+
- static int correct_chipset(struct atyfb_par *par)
+ static inline unsigned long ps_to_hz(unsigned int psvalue)
  {
- 	u8 rev;
-@@ -2603,14 +2617,7 @@ static int aty_init(struct fb_info *info)
- 	if (par->pll_ops->resume_pll)
- 		par->pll_ops->resume_pll(info, &par->pll);
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 9dabac1..4ed7ca2 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -122,7 +122,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 		odd=0;
+ */
  
--	/*
--	 * Last page of 8 MB (4 MB on ISA) aperture is MMIO,
--	 * unless the auxiliary register aperture is used.
--	 */
--	if (!par->aux_start &&
--	    (info->fix.smem_len = 0x800000 ||
--	     (par->bus_type = ISA && info->fix.smem_len = 0x400000)))
--		info->fix.smem_len -= GUI_RESERVE;
-+	aty_fudge_framebuffer_len(info);
+-	for (i = 0;i < count;i++)
++	for (i = 0; i < count; i++)
+ 	{
+ 		color = *pcol++;
+ 		mask = *pmsk++;
+@@ -137,7 +137,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 		else
+ 			opr = mask & color;
  
- 	/*
- 	 * Disable register access through the linear aperture
+-		for (j = 0;j < 8;j++)
++		for (j = 0; j < 8; j++)
+ 		{
+ 
+ 			if (opr & (0x80 >> j))
+@@ -149,7 +149,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 			}
+ 		}
+ #else
+-		for (j = 0;j < 8;j++) {
++		for (j = 0; j < 8; j++) {
+ 			if (mask & (0x80>>j)) {
+ 				if (rop = ROP_XOR)
+ 					opr = mask ^ color;
+@@ -204,7 +204,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 	pstart = cursor->vstart;
+ 	pbuffer = pstart;
+ 
+-	for (i = 0;i < count;i++)
++	for (i = 0; i < count; i++)
+ 	{
+ 		color = *pcol++;
+ 		mask = *pmsk++;
+@@ -217,7 +217,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 		else
+ 			opr = mask & color;
+ 
+-		for (j = 0;j < 8;j++)
++		for (j = 0; j < 8; j++)
+ 		{
+ 
+ 			if (opr & (0x80 >> j))
+@@ -229,7 +229,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 			}
+ 		}
+ #else
+-		for (j = 0;j < 8;j++) {
++		for (j = 0; j < 8; j++) {
+ 			if (mask & (1<<j))
+ 				data |= ((color & (1<<j))?1:2)<<(j*2);
+ 		}
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.4.5
 

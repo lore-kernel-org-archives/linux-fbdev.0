@@ -1,70 +1,180 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Date: Wed, 01 Jul 2015 09:40:55 +0000
-Subject: [PATCH v2 0/12] Discover and probe dependencies
-Message-Id: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Wed, 15 Jul 2015 08:41:45 +0000
+Subject: [PATCH v2 1/2] staging: sm7xxfb: define new macros
+Message-Id: <1436948986-29664-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Mark Brown <broonie@kernel.org>, linux-acpi@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-pwm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Alan Stern <stern@rowland.harvard.edu>, Linus Walleij <linus.walleij@linaro.org>, Kumar Gala <galak@codeaurora.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Jingoo Han <jingoohan1@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Pawel Moll <pawel.moll@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Le
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-Hi,
+Define and use some new macros to work with different situations
+based on little-endian and big-endian.
 
-this is version 2 of a series that probes devices in dependency order so
-as to avoid deferred probes. While deferred probing is a powerful
-solution that makes sure that you eventually get a working system at the
-end of the boot, can make it very time consuming to find out why a
-device didn't probe and can also introduce big delays in when a device
-actually probes by sending it to the end of the deferred queue.
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+---
 
-So far I have only tested on a Tegra124 Chromebook.
+v2: fixed empty macro
 
-Thanks,
+ drivers/staging/sm7xxfb/sm7xx.h   | 19 ++++++++++++++++
+ drivers/staging/sm7xxfb/sm7xxfb.c | 48 ++++++++-------------------------------
+ 2 files changed, 29 insertions(+), 38 deletions(-)
 
-Tomeu
-
-Changes in v2:
-- Instead of delaying all probes until late_initcall, only delay matches
-  of platform devices that have a firmware node attached.
-- Allow bindings implementations register a function instead of using
-  class callbacks, as not only subsystems implement firmware bindings.
-- Move strends to string.h
-- Document that consumers of backlight devices can use the 'backlight'
-  property to hold a phandle to the backlight device.
-- Allocate the list of dependencies and pass it to the function that
-  fills it.
-
-Tomeu Vizoso (12):
-  device: property: delay device-driver matches
-  device: property: find dependencies of a firmware node
-  string: Introduce strends()
-  gpio: register dependency parser for firmware nodes
-  gpu: host1x: register dependency parser for firmware nodes
-  backlight: Document consumers of backlight nodes
-  backlight: register dependency parser for firmware nodes
-  USB: EHCI: register dependency parser for firmware nodes
-  regulator: register dependency parser for firmware nodes
-  pwm: register dependency parser for firmware nodes
-  ASoC: tegra: register dependency parser for firmware nodes
-  driver-core: probe dependencies before probing
-
- .../bindings/video/backlight/backlight.txt         |  22 ++++
- drivers/base/dd.c                                  | 139 +++++++++++++++++++++
- drivers/base/property.c                            | 120 ++++++++++++++++++
- drivers/gpio/gpiolib.c                             |  54 ++++++++
- drivers/gpu/host1x/dev.c                           |  26 ++++
- drivers/pwm/core.c                                 |  28 +++++
- drivers/regulator/core.c                           |  27 ++++
- drivers/usb/host/ehci-tegra.c                      |  16 +++
- drivers/video/backlight/backlight.c                |  16 +++
- include/linux/fwnode.h                             |   5 +
- include/linux/property.h                           |  12 ++
- include/linux/string.h                             |  13 ++
- sound/soc/tegra/tegra_max98090.c                   |  42 ++++++-
- 13 files changed, 519 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/backlight.txt
-
+diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/staging/sm7xxfb/sm7xx.h
+index 31a21bd..de134b0 100644
+--- a/drivers/staging/sm7xxfb/sm7xx.h
++++ b/drivers/staging/sm7xxfb/sm7xx.h
+@@ -95,3 +95,22 @@ struct modeinit {
+ 	unsigned char init_cr30_cr4d[SIZE_CR30_CR4D];
+ 	unsigned char init_cr90_cra7[SIZE_CR90_CRA7];
+ };
++
++#ifdef __BIG_ENDIAN
++#define pal_rgb(r, g, b, val)	(((r & 0xf800) >> 8) | \
++				((g & 0xe000) >> 13) | \
++				((g & 0x1c00) << 3) | \
++				((b & 0xf800) >> 3))
++#define big_addr		0x800000
++#define mmio_addr		0x00800000
++#define seqw17()		smtc_seqw(0x17, 0x30)
++#define big_pixel_depth(p, d)	{if (p = 24) {p = 32; d = 32; } }
++#define big_swap(p)		((p & 0xff00ff00 >> 8) | (p & 0x00ff00ff << 8))
++#else
++#define pal_rgb(r, g, b, val)	val
++#define big_addr		0
++#define mmio_addr		0x00c00000
++#define seqw17()		do { } while (0)
++#define big_pixel_depth(p, d)	do { } while (0)
++#define big_swap(p)		p
++#endif
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/staging/sm7xxfb/sm7xxfb.c
+index 4dc9d5f..106465c 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/staging/sm7xxfb/sm7xxfb.c
+@@ -923,25 +923,14 @@ static int smtc_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 			val = chan_to_field(red, &sfb->fb->var.red);
+ 			val |= chan_to_field(green, &sfb->fb->var.green);
+ 			val |= chan_to_field(blue, &sfb->fb->var.blue);
+-#ifdef __BIG_ENDIAN
+-			pal[regno] = ((red & 0xf800) >> 8) |
+-				     ((green & 0xe000) >> 13) |
+-				     ((green & 0x1c00) << 3) |
+-				     ((blue & 0xf800) >> 3);
+-#else
+-			pal[regno] = val;
+-#endif
++			pal[regno] = pal_rgb(red, green, blue, val);
+ 		} else {
+ 			u32 *pal = sfb->fb->pseudo_palette;
+ 
+ 			val = chan_to_field(red, &sfb->fb->var.red);
+ 			val |= chan_to_field(green, &sfb->fb->var.green);
+ 			val |= chan_to_field(blue, &sfb->fb->var.blue);
+-#ifdef __BIG_ENDIAN
+-			val = (val & 0xff00ff00 >> 8) |
+-			      (val & 0x00ff00ff << 8);
+-#endif
+-			pal[regno] = val;
++			pal[regno] = big_swap(val);
+ 		}
+ 		break;
+ 
+@@ -1002,8 +991,7 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf,
+ 		dst = buffer;
+ 		for (i = c >> 2; i--;) {
+ 			*dst = fb_readl(src++);
+-			*dst = (*dst & 0xff00ff00 >> 8) |
+-			       (*dst & 0x00ff00ff << 8);
++			*dst = big_swap(*dst);
+ 			dst++;
+ 		}
+ 		if (c & 3) {
+@@ -1091,8 +1079,7 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
+ 		}
+ 
+ 		for (i = c >> 2; i--;) {
+-			fb_writel((*src & 0xff00ff00 >> 8) |
+-				  (*src & 0x00ff00ff << 8), dst++);
++			fb_writel(big_swap(*src), dst++);
+ 			src++;
+ 		}
+ 		if (c & 3) {
+@@ -1341,10 +1328,8 @@ static int smtc_map_smem(struct smtcfb_info *sfb,
+ {
+ 	sfb->fb->fix.smem_start = pci_resource_start(pdev, 0);
+ 
+-#ifdef __BIG_ENDIAN
+ 	if (sfb->fb->var.bits_per_pixel = 32)
+-		sfb->fb->fix.smem_start += 0x800000;
+-#endif
++		sfb->fb->fix.smem_start += big_addr;
+ 
+ 	sfb->fb->fix.smem_len = smem_len;
+ 
+@@ -1437,10 +1422,7 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 		sfb->fb->var.bits_per_pixel = SCREEN_BPP;
+ 	}
+ 
+-#ifdef __BIG_ENDIAN
+-	if (sfb->fb->var.bits_per_pixel = 24)
+-		sfb->fb->var.bits_per_pixel = (smtc_scr_info.lfb_depth = 32);
+-#endif
++	big_pixel_depth(sfb->fb->var.bits_per_pixel, smtc_scr_info.lfb_depth);
+ 	/* Map address and memory detection */
+ 	mmio_base = pci_resource_start(pdev, 0);
+ 	pci_read_config_byte(pdev, PCI_REVISION_ID, &sfb->chip_rev_id);
+@@ -1451,11 +1433,7 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 		sfb->fb->fix.mmio_start = mmio_base + 0x00400000;
+ 		sfb->fb->fix.mmio_len = 0x00400000;
+ 		smem_size = SM712_VIDEOMEMORYSIZE;
+-#ifdef __BIG_ENDIAN
+-		sfb->lfb = ioremap(mmio_base, 0x00c00000);
+-#else
+-		sfb->lfb = ioremap(mmio_base, 0x00800000);
+-#endif
++		sfb->lfb = ioremap(mmio_base, mmio_addr);
+ 		if (!sfb->lfb) {
+ 			dev_err(&pdev->dev,
+ 				"%s: unable to map memory mapped IO!\n",
+@@ -1468,12 +1446,10 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 		    sfb->lfb + 0x00700000);
+ 		sfb->dp_regs = sfb->lfb + 0x00408000;
+ 		sfb->vp_regs = sfb->lfb + 0x0040c000;
+-#ifdef __BIG_ENDIAN
+ 		if (sfb->fb->var.bits_per_pixel = 32) {
+-			sfb->lfb += 0x800000;
++			sfb->lfb += big_addr;
+ 			dev_info(&pdev->dev, "sfb->lfb=%p\n", sfb->lfb);
+ 		}
+-#endif
+ 
+ 		/* set MCLK = 14.31818 * (0x16 / 0x2) */
+ 		smtc_seqw(0x6a, 0x16);
+@@ -1482,10 +1458,8 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 		/* enable PCI burst */
+ 		smtc_seqw(0x17, 0x20);
+ 		/* enable word swap */
+-#ifdef __BIG_ENDIAN
+ 		if (sfb->fb->var.bits_per_pixel = 32)
+-			smtc_seqw(0x17, 0x30);
+-#endif
++			seqw17();
+ 		break;
+ 	case 0x720:
+ 		sfb->fb->fix.mmio_start = mmio_base;
+@@ -1617,10 +1591,8 @@ static int smtcfb_pci_resume(struct device *device)
+ 		smtc_seqw(0x62, 0x3e);
+ 		/* enable PCI burst */
+ 		smtc_seqw(0x17, 0x20);
+-#ifdef __BIG_ENDIAN
+ 		if (sfb->fb->var.bits_per_pixel = 32)
+-			smtc_seqw(0x17, 0x30);
+-#endif
++			seqw17();
+ 		break;
+ 	case 0x720:
+ 		smtc_seqw(0x62, 0xff);
 -- 
-2.4.1
+1.8.1.2
 

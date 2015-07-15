@@ -1,71 +1,120 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 26 Jul 2015 21:26:18 +0000
-Subject: [PATCH 1/5] gxt4500: enable on non-PPC architectures
-Message-Id: <1437945982-3021-2-git-send-email-linux@rainbow-software.org>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 15 Jul 2015 04:14:36 +0000
+Subject: [PATCH v5 07/19] staging: sm750fb: add space after close brace
+Message-Id: <1436933688-5408-7-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1437945982-3021-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1437945982-3021-1-git-send-email-linux@rainbow-software.org>
+References: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
+In-Reply-To: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
-These chips can be present at least on x86 too - Fire GL2 AGP has GXT6000P but
-this driver is currently limited to PPC.
-Enable it for all architectures and add chip configuration for little-endian.
+Fixes checkpatch.pl error:
+ERROR: space required after that close brace '}'
 
-Tested on x86 with Fire GL2 AGP.
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
- drivers/video/fbdev/Kconfig   |    5 +++--
- drivers/video/fbdev/gxt4500.c |    7 +++++++
- 2 files changed, 10 insertions(+), 2 deletions(-)
+ drivers/staging/sm750fb/ddk750_display.c | 2 +-
+ drivers/staging/sm750fb/ddk750_mode.c    | 2 +-
+ drivers/staging/sm750fb/ddk750_power.c   | 2 +-
+ drivers/staging/sm750fb/sm750.h          | 2 +-
+ drivers/staging/sm750fb/sm750_cursor.c   | 8 ++++----
+ 5 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 2d98de5..78335bd 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2132,7 +2132,7 @@ config FB_UDL
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index c7171a4..4a3cb86 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -166,7 +166,7 @@ static void waitNextVerticalSync(int ctrl, int delay)
+ 			while (status = SYSTEM_CTRL_PANEL_VSYNC_INACTIVE);
+ 		}
  
- config FB_IBM_GXT4500
- 	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
--	depends on FB && PPC
-+	depends on FB
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -2140,7 +2140,8 @@ config FB_IBM_GXT4500
- 	  Say Y here to enable support for the IBM GXT4000P/6000P and
- 	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
- 	  found on some IBM System P (pSeries) machines. This driver
--	  doesn't use Geometry Engine GT1000.
-+	  doesn't use Geometry Engine GT1000. This driver also supports
-+	  AGP Fire GL2/3/4 cards on x86.
+-	}else {
++	} else {
  
- config FB_PS3
- 	tristate "PS3 GPU framebuffer driver"
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 135d78a..1bf9894 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -670,8 +670,15 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		/* Do not wait when the Primary PLL is off or display control is already off.
+ 			   This will prevent the software to wait forever. */
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index efc1fab..3d8b06d 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -109,7 +109,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
  
- 	pci_set_drvdata(pdev, info);
+ 		if (getChipType() = SM750LE) {
+ 			displayControlAdjust_SM750LE(pModeParam, ulTmpValue);
+-		}else {
++		} else {
+ 			ulReg = PEEK32(CRT_DISPLAY_CTRL)
+ 					& FIELD_CLEAR(CRT_DISPLAY_CTRL, VSYNC_PHASE)
+ 					& FIELD_CLEAR(CRT_DISPLAY_CTRL, HSYNC_PHASE)
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index e2c0bb3..5f697b8 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -8,7 +8,7 @@ void ddk750_setDPMS(DPMS_t state)
+ 	if (getChipType() = SM750LE) {
+ 		value = PEEK32(CRT_DISPLAY_CTRL);
+ 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
+-	}else {
++	} else {
+ 		value = PEEK32(SYSTEM_CTRL);
+ 		value= FIELD_VALUE(value, SYSTEM_CTRL, DPMS, state);
+ 		POKE32(SYSTEM_CTRL, value);
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 71e9a7a..8ac5410 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -53,7 +53,7 @@ struct lynx_share{
+ 		int mtrr_off;
+ 		struct{
+ 			int vram;
+-		}mtrr;
++		} mtrr;
+ 	/* all smi graphic adaptor got below attributes */
+ 	unsigned long vidmem_start;
+ 	unsigned long vidreg_start;
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 3a21af9..2fcec32 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -143,7 +143,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 			if (opr & (0x80 >> j))
+ 			{	/* use fg color,id = 2 */
+ 				data |= 2 << (j*2);
+-			}else {
++			} else {
+ 				/* use bg color,id = 1 */
+ 				data |= 1 << (j*2);
+ 			}
+@@ -173,7 +173,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 			/* need a return */
+ 			pstart += offset;
+ 			pbuffer = pstart;
+-		}else {
++		} else {
+ 			pbuffer += sizeof(u16);
+ 		}
  
-+#ifdef __BIG_ENDIAN
- 	/* Set byte-swapping for DFA aperture for all pixel sizes */
- 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
-+#else /* __LITTLE_ENDIAN */
-+	/* not sure what this means but fgl23 driver does that */
-+	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x2300);
-+/*	pci_write_config_dword(pdev, CFG_ENDIAN0 + 4, 0x400000);*/
-+	pci_write_config_dword(pdev, CFG_ENDIAN0 + 8, 0x98530000);
-+#endif
+@@ -223,7 +223,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 			if (opr & (0x80 >> j))
+ 			{	/* use fg color,id = 2 */
+ 				data |= 2 << (j*2);
+-			}else {
++			} else {
+ 				/* use bg color,id = 1 */
+ 				data |= 1 << (j*2);
+ 			}
+@@ -242,7 +242,7 @@ void hw_cursor_setData2(struct lynx_cursor *cursor,
+ 			/* need a return */
+ 			pstart += offset;
+ 			pbuffer = pstart;
+-		}else {
++		} else {
+ 			pbuffer += sizeof(u16);
+ 		}
  
- 	info->fbops = &gxt4500_ops;
- 	info->flags = FBINFO_FLAG_DEFAULT;
 -- 
-Ondrej Zary
+2.4.5
 

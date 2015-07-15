@@ -1,78 +1,79 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Date: Wed, 01 Jul 2015 09:41:00 +0000
-Subject: [PATCH v2 05/12] gpu: host1x: register dependency parser for firmware nodes
-Message-Id: <1435743667-11987-6-git-send-email-tomeu.vizoso@collabora.com>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 15 Jul 2015 04:14:31 +0000
+Subject: [PATCH v5 02/19] staging: sm750fb: remove spacing after open parenthesis
+Message-Id: <1436933688-5408-2-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
-In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+References: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
+In-Reply-To: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org, linux-tegra@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
-So others can find out dependencies of host1x clients, as specified in
-bindings/gpu/nvidia,tegra20-host1x.txt.
+Fixes checkpatch.pl warning:
+ERROR: space prohibited after that open parenthesis '('
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
+ drivers/staging/sm750fb/ddk750_chip.c  | 6 +++---
+ drivers/staging/sm750fb/ddk750_mode.c  | 2 +-
+ drivers/staging/sm750fb/ddk750_power.c | 8 ++++----
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-Changes in v2: None
-
- drivers/gpu/host1x/dev.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
-
-diff --git a/drivers/gpu/host1x/dev.c b/drivers/gpu/host1x/dev.c
-index 53d3d1d..5bb10b8 100644
---- a/drivers/gpu/host1x/dev.c
-+++ b/drivers/gpu/host1x/dev.c
-@@ -212,6 +212,29 @@ static struct platform_driver tegra_host1x_driver = {
- 	.remove = host1x_remove,
- };
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index f4975d2..1069a2d 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -599,9 +599,9 @@ unsigned int formatPllReg(pll_value_t *pPLL)
+        On returning a 32 bit number, the value can be applied to any PLL in the calling function.
+     */
+ 	ulPllReg -	FIELD_SET(  0, PANEL_PLL_CTRL, BYPASS, OFF)
+-	| FIELD_SET(  0, PANEL_PLL_CTRL, POWER,  ON)
+-	| FIELD_SET(  0, PANEL_PLL_CTRL, INPUT,  OSC)
++	FIELD_SET(0, PANEL_PLL_CTRL, BYPASS, OFF)
++	| FIELD_SET(0, PANEL_PLL_CTRL, POWER,  ON)
++	| FIELD_SET(0, PANEL_PLL_CTRL, INPUT,  OSC)
+ #ifndef VALIDATION_CHIP
+ 	| FIELD_VALUE(0, PANEL_PLL_CTRL, POD,    pPLL->POD)
+ #endif
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 1f93d07..31424b2 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -43,7 +43,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
  
-+static void add_dependency(struct fwnode_handle *fwnode,
-+			   const char *property,
-+			   struct list_head *deps)
-+{
-+	struct device_node *np;
-+
-+	np = of_parse_phandle(to_of_node(fwnode), property, 0);
-+	if (!np)
-+		return;
-+
-+	fwnode_add_dependency(&np->fwnode, deps);
-+}
-+
-+static void host1x_get_dependencies(struct fwnode_handle *fwnode,
-+				    struct list_head *deps)
-+{
-+	add_dependency(fwnode, "nvidia,dpaux", deps);
-+	add_dependency(fwnode, "nvidia,panel", deps);
-+	add_dependency(fwnode, "nvidia,ddc-i2c-bus", deps);
-+	add_dependency(fwnode, "nvidia,hpd-gpio", deps);
-+	add_dependency(fwnode, "ddc-i2c-bus", deps);
-+}
-+
- static int __init tegra_host1x_init(void)
- {
- 	int err;
-@@ -228,6 +251,8 @@ static int __init tegra_host1x_init(void)
- 	if (err < 0)
- 		goto unregister_host1x;
+ 	/* Set bit 29:27 of display control register for the right clock */
+ 	/* Note that SM750LE only need to supported 7 resoluitons. */
+-	if ( x = 800 && y = 600 )
++	if (x = 800 && y = 600 )
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
+ 	else if (x = 1024 && y = 768)
+ 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL65);
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index b7a108b..44b8eb1 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -59,17 +59,17 @@ void setPowerMode(unsigned int powerMode)
+ 	{
+ 		control_value  #ifdef VALIDATION_CHIP
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, OFF) |
++		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, OFF) |
+ #endif
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
++		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT,  OFF);
+ 	}
+ 	else
+ 	{
+ 		control_value  #ifdef VALIDATION_CHIP
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, 336CLK, ON) |
++		FIELD_SET(control_value, POWER_MODE_CTRL, 336CLK, ON) |
+ #endif
+-		FIELD_SET(  control_value, POWER_MODE_CTRL, OSC_INPUT,  ON);
++		FIELD_SET(control_value, POWER_MODE_CTRL, OSC_INPUT,  ON);
+ 	}
  
-+	fwnode_add_dependency_parser(host1x_get_dependencies);
-+
- 	return 0;
- 
- unregister_host1x:
-@@ -240,6 +265,7 @@ module_init(tegra_host1x_init);
- 
- static void __exit tegra_host1x_exit(void)
- {
-+	fwnode_remove_dependency_parser(host1x_get_dependencies);
- 	platform_driver_unregister(&tegra_mipi_driver);
- 	platform_driver_unregister(&tegra_host1x_driver);
- 	bus_unregister(&host1x_bus_type);
+ 	/* Program new power mode. */
 -- 
-2.4.1
+2.4.5
 

@@ -1,57 +1,26 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Wed, 15 Jul 2015 04:10:42 +0000
-Subject: [PATCH v5 00/19] staging: sm750fb: checkpatch.pl fixes
-Message-Id: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Wed, 15 Jul 2015 01:30:51 +0000
+Subject: Re: [PATCH v4 01/19] staging: sm750fb: use tabs for indentation
+Message-Id: <20150715013051.GA15700@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
+ <1435600536-13135-1-git-send-email-juston.h.li@gmail.com>
+In-Reply-To: <1435600536-13135-1-git-send-email-juston.h.li@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, teddy.wang@siliconmotion.com, Greg KH <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Juston Li <juston.h.li@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
 
-This patch set includes 19 patches fixing indentation, spacing, brace placement
-and missing blank lines from checkpatch.pl warnings/errors in staging/sm750fb.
+On Mon, Jun 29, 2015 at 10:55:18AM -0700, Juston Li wrote:
+> Replace spaces with tabs for indentation to fix the checkpatch.pl error
+> ERROR: code indent should use tabs where possible
+> WARNING: please, no spaces at the start of a line
 
-Regards
-Juston
+Due to other patches that came in before yours, that are now in my tree,
+this patch doesn't apply.  Can you please rebase it against my
+staging-testing branch of staging.git and resend?
 
--------------
-Changes since v4:
- * Rebase to current staging-testing
+thanks,
 
-Changes since v3:
- * Fix comment placement 16/19
- * Rebase to current staging-testing
-
-Changes since v2:
-
- * Fix Subject
- * Don't rearrange lines in 01/19
- * Split up spacing fixes patch by checkpatch errors into 14 patches
- * Split up brace fixes patch by checkpatch errors in 3 patches
-
--------------
-Diffstat:
- drivers/staging/sm750fb/ddk750_chip.c    |  15 +-
- drivers/staging/sm750fb/ddk750_chip.h    |  12 +-
- drivers/staging/sm750fb/ddk750_display.c | 170 ++++-----
- drivers/staging/sm750fb/ddk750_display.h |  11 +-
- drivers/staging/sm750fb/ddk750_dvi.c     |  75 ++--
- drivers/staging/sm750fb/ddk750_help.c    |   2 +-
- drivers/staging/sm750fb/ddk750_help.h    |   4 +-
- drivers/staging/sm750fb/ddk750_hwi2c.c   | 244 +++++++------
- drivers/staging/sm750fb/ddk750_mode.c    | 164 +++++----
- drivers/staging/sm750fb/ddk750_mode.h    |  52 ++-
- drivers/staging/sm750fb/ddk750_power.c   | 254 +++++++-------
- drivers/staging/sm750fb/ddk750_power.h   |  11 +-
- drivers/staging/sm750fb/ddk750_reg.h     |  18 +-
- drivers/staging/sm750fb/ddk750_sii164.c  | 389 ++++++++++-----------
- drivers/staging/sm750fb/ddk750_sii164.h  |  31 +-
- drivers/staging/sm750fb/sm750.c          |   2 +-
- drivers/staging/sm750fb/sm750.h          |  58 +--
- drivers/staging/sm750fb/sm750_accel.c    | 379 ++++++++++----------
- drivers/staging/sm750fb/sm750_accel.h    |   4 +-
- drivers/staging/sm750fb/sm750_cursor.c   |  51 ++-
- drivers/staging/sm750fb/sm750_help.h     |  28 +-
- drivers/staging/sm750fb/sm750_hw.c       |  19 +-
- drivers/staging/sm750fb/sm750_hw.h       |  42 +--
- 23 files changed, 984 insertions(+), 1051 deletions(-)
+greg k-h

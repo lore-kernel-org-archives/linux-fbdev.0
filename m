@@ -1,22 +1,60 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 01 Jul 2015 08:00:43 +0000
-Subject: Re: [PATCH 1/2] drivers:hv: Modify hv_vmbus to search for all MMIO ranges available.
-Message-Id: <20150701080043.GV28762@mwanda>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 15 Jul 2015 04:14:39 +0000
+Subject: [PATCH v5 10/19] staging: sm750fb: add space after return type
+Message-Id: <1436933688-5408-10-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435703668-23486-1-git-send-email-kys@microsoft.com>
- <1435703702-23525-1-git-send-email-kys@microsoft.com>
-In-Reply-To: <1435703702-23525-1-git-send-email-kys@microsoft.com>
+References: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
+In-Reply-To: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "K. Y. Srinivasan" <kys@microsoft.com>
-Cc: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, devel@linuxdriverproject.org, olaf@aepfle.de, apw@canonical.com, vkuznets@redhat.com, jasowang@redhat.com, hdegoede@redhat.com, linux-fbdev@vger.kernel.org, haiyangz@microsoft.com, "jakeo@microsoft.com" <jakeo@microsoft.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
-On Tue, Jun 30, 2015 at 03:35:01PM -0700, K. Y. Srinivasan wrote:
-> From: jakeo@microsoft.com <jakeo@microsoft.com>
+Fixes checkpatch.pl warning:
+WARNING: missing space after return type
 
-Jake, fix your git config.
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-regards,
-dan carpenter
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 9989ff6..2d04c0f 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -108,12 +108,12 @@ struct lynxfb_crtc {
+ 
+ 	void *priv;
+ 
+-	int(*proc_setMode)(struct lynxfb_crtc*,
++	int (*proc_setMode)(struct lynxfb_crtc*,
+ 						struct fb_var_screeninfo*,
+ 						struct fb_fix_screeninfo*);
+ 
+-	int(*proc_checkMode)(struct lynxfb_crtc*, struct fb_var_screeninfo*);
+-	int(*proc_setColReg)(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
++	int (*proc_checkMode)(struct lynxfb_crtc*, struct fb_var_screeninfo*);
++	int (*proc_setColReg)(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
+ 	void (*clear)(struct lynxfb_crtc*);
+ 	/* pan display */
+ 	int (*proc_panDisplay)(struct lynxfb_crtc *,
+@@ -140,12 +140,12 @@ struct lynxfb_output {
+ 	*/
+ 	void *priv;
+ 
+-	int(*proc_setMode)(struct lynxfb_output*,
++	int (*proc_setMode)(struct lynxfb_output*,
+ 						struct fb_var_screeninfo*,
+ 						struct fb_fix_screeninfo*);
+ 
+-	int(*proc_checkMode)(struct lynxfb_output*, struct fb_var_screeninfo*);
+-	int(*proc_setBLANK)(struct lynxfb_output*, int);
++	int (*proc_checkMode)(struct lynxfb_output*, struct fb_var_screeninfo*);
++	int (*proc_setBLANK)(struct lynxfb_output*, int);
+ 	void  (*clear)(struct lynxfb_output*);
+ };
+ 
+-- 
+2.4.5
 

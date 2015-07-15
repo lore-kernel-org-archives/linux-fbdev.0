@@ -1,82 +1,88 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sat, 25 Jul 2015 07:46:12 +0000
-Subject: [RFC v5 13/26] powerpc: Cleanup nvram includes
-Message-Id: <20150725074602.693328813@telegraphics.com.au>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 15 Jul 2015 04:14:47 +0000
+Subject: [PATCH v5 18/19] staging: sm750fb: remove unnecessary braces
+Message-Id: <1436933688-5408-18-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150725074559.543547894@telegraphics.com.au>
+References: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
+In-Reply-To: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
-The nvram_read_byte() and nvram_write_byte() definitions in asm/nvram.h
-duplicate those in linux/nvram.h. Get rid of the former to prepare for
-adoption of struct arch_nvram_ops (which is defined in linux/nvram.h for
-general use).
+Fixes checkpatch.pl warning:
+WARNING: braces {} are not necessary for single statement blocks
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
+ drivers/staging/sm750fb/sm750_accel.c | 9 +++------
+ drivers/staging/sm750fb/sm750_hw.c    | 6 ++----
+ 2 files changed, 5 insertions(+), 10 deletions(-)
 
-Changes since v4:
-- Fix possible git bisect build failure with CONFIG_PPC_PMAC=n.
-
----
- arch/powerpc/include/asm/nvram.h           |    3 ---
- arch/powerpc/kernel/setup_32.c             |    1 +
- drivers/char/generic_nvram.c               |    1 +
- drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
- 4 files changed, 3 insertions(+), 4 deletions(-)
-
-Index: linux/arch/powerpc/include/asm/nvram.h
-=================================--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-07-25 17:42:34.000000000 +1000
-+++ linux/arch/powerpc/include/asm/nvram.h	2015-07-25 17:45:38.000000000 +1000
-@@ -101,7 +101,4 @@ extern int nvram_write_os_partition(stru
- /* Determine NVRAM size */
- extern ssize_t nvram_get_size(void);
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 23be0f7..0f563a9 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -259,9 +259,8 @@ unsigned int rop2)   /* ROP value */
+ 	FIELD_VALUE(0, DE_WINDOW_WIDTH, DESTINATION, (dPitch/Bpp)) |
+ 	FIELD_VALUE(0, DE_WINDOW_WIDTH, SOURCE,      (sPitch/Bpp))); /* dpr3c */
  
--/* Normal access to NVRAM */
--extern unsigned char nvram_read_byte(int i);
--extern void nvram_write_byte(unsigned char c, int i);
- #endif /* _ASM_POWERPC_NVRAM_H */
-Index: linux/arch/powerpc/kernel/setup_32.c
-=================================--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-07-25 17:42:34.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-07-25 17:45:38.000000000 +1000
-@@ -16,6 +16,7 @@
- #include <linux/cpu.h>
- #include <linux/console.h>
- #include <linux/memblock.h>
-+#include <linux/nvram.h>
+-	if (accel->de_wait() != 0) {
++	if (accel->de_wait() != 0)
+ 		return -1;
+-	}
  
- #include <asm/io.h>
- #include <asm/prom.h>
-Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
-=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-25 17:42:34.000000000 +1000
-+++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-25 17:45:38.000000000 +1000
-@@ -111,12 +111,12 @@
- #include "matroxfb_g450.h"
- #include <linux/matroxfb.h>
- #include <linux/interrupt.h>
-+#include <linux/nvram.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
+ 	{
  
- #ifdef CONFIG_PPC_PMAC
- #include <asm/machdep.h>
--unsigned char nvram_read_byte(int);
- static int default_vmode = VMODE_NVRAM;
- static int default_cmode = CMODE_NVRAM;
- #endif
-Index: linux/drivers/char/generic_nvram.c
-=================================--- linux.orig/drivers/char/generic_nvram.c	2015-07-25 17:42:34.000000000 +1000
-+++ linux/drivers/char/generic_nvram.c	2015-07-25 17:45:38.000000000 +1000
-@@ -20,6 +20,7 @@
- #include <linux/fcntl.h>
- #include <linux/init.h>
- #include <linux/mutex.h>
-+#include <linux/nvram.h>
- #include <asm/uaccess.h>
- #include <asm/nvram.h>
- #ifdef CONFIG_PPC_PMAC
-
+@@ -332,9 +331,8 @@ int hw_imageblit(struct lynx_accel *accel,
+ 	ul4BytesPerScan = ulBytesPerScan & ~3;
+ 	ulBytesRemain = ulBytesPerScan & 3;
+ 
+-	if (accel->de_wait() != 0) {
++	if (accel->de_wait() != 0)
+ 		return -1;
+-	}
+ 
+ 	/* 2D Source Base.
+ 	 Use 0 for HOST Blt.
+@@ -402,9 +400,8 @@ int hw_imageblit(struct lynx_accel *accel,
+ 	/* Write MONO data (line by line) to 2D Engine data port */
+ 	for (i = 0; i < height; i++) {
+ 		/* For each line, send the data in chunks of 4 bytes */
+-		for (j = 0; j < (ul4BytesPerScan/4); j++) {
++		for (j = 0; j < (ul4BytesPerScan/4); j++)
+ 			write_dpPort(accel, *(unsigned int *)(pSrcbuf + (j * 4)));
+-		}
+ 
+ 		if (ulBytesRemain) {
+ 			memcpy(ajRemain, pSrcbuf+ul4BytesPerScan, ulBytesRemain);
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index fb9c631..d1d6ae7 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -188,9 +188,8 @@ int hw_sm750_inithw(struct lynx_share *share, struct pci_dev *pdev)
+ 	}
+ 
+ 	/* init 2d engine */
+-	if (!share->accel_off) {
++	if (!share->accel_off)
+ 		hw_sm750_initAccel(share);
+-	}
+ 
+ 	return 0;
+ }
+@@ -537,9 +536,8 @@ int hw_sm750_setBLANK(struct lynxfb_output *output, int blank)
+ 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(PEEK32(CRT_DISPLAY_CTRL), CRT_DISPLAY_CTRL, BLANK, crtdb));
+ 	}
+ 
+-	if (output->paths & sm750_panel) {
++	if (output->paths & sm750_panel)
+ 		POKE32(PANEL_DISPLAY_CTRL, FIELD_VALUE(PEEK32(PANEL_DISPLAY_CTRL), PANEL_DISPLAY_CTRL, DATA, pps));
+-	}
+ 
+ 	return 0;
+ }
+-- 
+2.4.5
 

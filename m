@@ -1,204 +1,210 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sat, 25 Jul 2015 07:46:17 +0000
-Subject: [RFC v5 18/26] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvram_wri
-Message-Id: <20150725074603.913344361@telegraphics.com.au>
+From: Juston Li <juston.h.li@gmail.com>
+Date: Wed, 15 Jul 2015 04:14:48 +0000
+Subject: [PATCH v5 19/19] staging: sm750fb: add missing blank line after declarations
+Message-Id: <1436933688-5408-19-git-send-email-juston.h.li@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150725074559.543547894@telegraphics.com.au>
+References: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
+In-Reply-To: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Juston Li <juston.h.li@gmail.com>
 
-Make use of arch_nvram_ops in device drivers so that the nvram_* function
-exports can be removed.
+Fixes checkpatch.pl
+WARNING: Missing a blank line after declarations
 
-Since they are no longer global symbols, rename the PPC32 nvram_* functions
-appropriately.
-
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-
+Signed-off-by: Juston Li <juston.h.li@gmail.com>
 ---
+ drivers/staging/sm750fb/ddk750_chip.c    | 1 +
+ drivers/staging/sm750fb/ddk750_display.c | 2 ++
+ drivers/staging/sm750fb/ddk750_dvi.c     | 1 +
+ drivers/staging/sm750fb/ddk750_mode.c    | 3 +++
+ drivers/staging/sm750fb/ddk750_power.c   | 1 +
+ drivers/staging/sm750fb/ddk750_sii164.c  | 1 +
+ drivers/staging/sm750fb/sm750_accel.c    | 1 +
+ drivers/staging/sm750fb/sm750_cursor.c   | 2 ++
+ drivers/staging/sm750fb/sm750_hw.c       | 7 +++++++
+ 9 files changed, 19 insertions(+)
 
-Changed since v4:
-- Split off the CONFIG_PPC32, CONFIG_PPC_PMAC and CONFIG_NVRAM tests into
-a separate patch.
-
----
- arch/powerpc/kernel/setup_32.c             |    8 ++++----
- drivers/char/generic_nvram.c               |    4 ++--
- drivers/video/fbdev/controlfb.c            |    4 ++--
- drivers/video/fbdev/imsttfb.c              |    4 ++--
- drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
- drivers/video/fbdev/platinumfb.c           |    4 ++--
- drivers/video/fbdev/valkyriefb.c           |    4 ++--
- 7 files changed, 15 insertions(+), 15 deletions(-)
-
-Index: linux/arch/powerpc/kernel/setup_32.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-=
-07-25 17:45:42.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-07-25 17:45:45.000000000 +1000
-@@ -170,20 +170,18 @@ __setup("l3cr=3D", ppc_setup_l3cr);
-=20
- #ifdef CONFIG_GENERIC_NVRAM
-=20
--unsigned char nvram_read_byte(int addr)
-+static unsigned char ppc_nvram_read_byte(int addr)
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index d7435d7..5e6798e 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -474,6 +474,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
+ 			M += (fl_quo*X % 10000) > 5000?1:0;
+ 			if (M < 256 && M > 0) {
+ 				unsigned int diff;
++
+ 				tmpClock = pll->inputFreq * M / N / X;
+ 				diff = absDiff(tmpClock, request_orig);
+ 				if (diff < miniDiff) {
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index abd6283..8348113 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -121,6 +121,7 @@ static void setDisplayControl(int ctrl, int dispState)
+ static void waitNextVerticalSync(int ctrl, int delay)
  {
- 	if (ppc_md.nvram_read_val)
- 		return ppc_md.nvram_read_val(addr);
- 	return 0xff;
- }
--EXPORT_SYMBOL(nvram_read_byte);
-=20
--void nvram_write_byte(unsigned char val, int addr)
-+static void ppc_nvram_write_byte(unsigned char val, int addr)
+ 	unsigned int status;
++
+ 	if (!ctrl) {
+ 		/* primary controller */
+ 
+@@ -210,6 +211,7 @@ static void swPanelPowerSequence(int disp, int delay)
+ void ddk750_setLogicalDispOut(disp_output_t output)
  {
- 	if (ppc_md.nvram_write_val)
- 		ppc_md.nvram_write_val(addr, val);
- }
--EXPORT_SYMBOL(nvram_write_byte);
-=20
- static ssize_t ppc_nvram_get_size(void)
+ 	unsigned int reg;
++
+ 	if (output & PNL_2_USAGE) {
+ 		/* set panel path controller select */
+ 		reg = PEEK32(PANEL_DISPLAY_CTRL);
+diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
+index a18bb4c..a7a2351 100644
+--- a/drivers/staging/sm750fb/ddk750_dvi.c
++++ b/drivers/staging/sm750fb/ddk750_dvi.c
+@@ -43,6 +43,7 @@ int dviInit(
+ 			)
  {
-@@ -200,6 +198,8 @@ static long ppc_nvram_sync(void)
+ 	dvi_ctrl_device_t *pCurrentDviCtrl;
++
+ 	pCurrentDviCtrl = g_dcftSupportedDviController;
+ 	if (pCurrentDviCtrl->pfnInit != NULL) {
+ 		return pCurrentDviCtrl->pfnInit(edgeSelect, busSelect, dualEdgeClkSelect, hsyncEnable,
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 9d10446..2399b17 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -80,6 +80,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ 	int ret = 0;
+ 	int cnt = 0;
+ 	unsigned int ulTmpValue, ulReg;
++
+ 	if (pll->clockType = SECONDARY_PLL) {
+ 		/* programe secondary pixel clock */
+ 		POKE32(CRT_PLL_CTRL, formatPllReg(pll));
+@@ -120,6 +121,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ 
+ 	} else if (pll->clockType = PRIMARY_PLL) {
+ 		unsigned int ulReservedBits;
++
+ 		POKE32(PANEL_PLL_CTRL, formatPllReg(pll));
+ 
+ 		POKE32(PANEL_HORIZONTAL_TOTAL,
+@@ -184,6 +186,7 @@ int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock)
+ {
+ 	pll_value_t pll;
+ 	unsigned int uiActualPixelClk;
++
+ 	pll.inputFreq = DEFAULT_INPUT_CLOCK;
+ 	pll.clockType = clock;
+ 
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index c545c2d..c8c51be 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -5,6 +5,7 @@
+ void ddk750_setDPMS(DPMS_t state)
+ {
+ 	unsigned int value;
++
+ 	if (getChipType() = SM750LE) {
+ 		value = PEEK32(CRT_DISPLAY_CTRL);
+ 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
+index a5153be..0bdf3db 100644
+--- a/drivers/staging/sm750fb/ddk750_sii164.c
++++ b/drivers/staging/sm750fb/ddk750_sii164.c
+@@ -340,6 +340,7 @@ void sii164EnableHotPlugDetection(
+ )
+ {
+ 	unsigned char detectReg;
++
+ 	detectReg = i2cReadReg(SII164_I2C_ADDRESS, SII164_DETECT);
+ 
+ 	/* Depending on each DVI controller, need to enable the hot plug based on each
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 0f563a9..1dd06a2 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -152,6 +152,7 @@ unsigned int rop2)   /* ROP value */
+ {
+ 	unsigned int nDirection, de_ctrl;
+ 	int opSign;
++
+ 	nDirection = LEFT_TO_RIGHT;
+ 	/* Direction of ROP2 operation: 1 = Left to Right, (-1) = Right to Left */
+ 	opSign = 1;
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index ab61fe6..2400c6c 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -61,6 +61,7 @@ writel((data), cursor->mmio + (addr))
+ void hw_cursor_enable(struct lynx_cursor *cursor)
+ {
+ 	u32 reg;
++
+ 	reg = FIELD_VALUE(0, HWC_ADDRESS, ADDRESS, cursor->offset)|
+ 			FIELD_SET(0, HWC_ADDRESS, EXT, LOCAL)|
+ 			FIELD_SET(0, HWC_ADDRESS, ENABLE, ENABLE);
+@@ -81,6 +82,7 @@ void hw_cursor_setPos(struct lynx_cursor *cursor,
+ 						int x, int y)
+ {
+ 	u32 reg;
++
+ 	reg = FIELD_VALUE(0, HWC_LOCATION, Y, y)|
+ 			FIELD_VALUE(0, HWC_LOCATION, X, x);
+ 	POKE32(HWC_LOCATION, reg);
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index d1d6ae7..7317ba9 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -244,6 +244,7 @@ int hw_sm750_output_setMode(struct lynxfb_output *output,
+ 	} else {
+ 		/* just open DISPLAY_CONTROL_750LE register bit 3:0*/
+ 		u32 reg;
++
+ 		reg = PEEK32(DISPLAY_CONTROL_750LE);
+ 		reg |= 0xf;
+ 		POKE32(DISPLAY_CONTROL_750LE, reg);
+@@ -418,6 +419,7 @@ int hw_sm750_setColReg(struct lynxfb_crtc *crtc, ushort index,
+ 								ushort red, ushort green, ushort blue)
+ {
+ 	static unsigned int add[] = {PANEL_PALETTE_RAM, CRT_PALETTE_RAM};
++
+ 	POKE32(add[crtc->channel] + index*4, (red<<16)|(green<<8)|blue);
+ 	return 0;
  }
-=20
- const struct nvram_ops arch_nvram_ops =3D {
-+	.read_byte      =3D ppc_nvram_read_byte,
-+	.write_byte     =3D ppc_nvram_write_byte,
- 	.get_size       =3D ppc_nvram_get_size,
- 	.sync           =3D ppc_nvram_sync,
- };
-Index: linux/drivers/char/generic_nvram.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/char/generic_nvram.c	2015-07=
--25 17:45:42.000000000 +1000
-+++ linux/drivers/char/generic_nvram.c	2015-07-25 17:45:45.000000000 +1000
-@@ -63,7 +63,7 @@ static ssize_t read_nvram(struct file *f
- 	if (*ppos >=3D nvram_len)
- 		return 0;
- 	for (i =3D *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
--		if (__put_user(nvram_read_byte(i), p))
-+		if (__put_user(arch_nvram_ops.read_byte(i), p))
- 			return -EFAULT;
- 	*ppos =3D i;
- 	return p - buf;
-@@ -83,7 +83,7 @@ static ssize_t write_nvram(struct file *
- 	for (i =3D *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
- 		if (__get_user(c, p))
- 			return -EFAULT;
--		nvram_write_byte(c, i);
-+		arch_nvram_ops.write_byte(c, i);
- 	}
- 	*ppos =3D i;
- 	return p - buf;
-Index: linux/drivers/video/fbdev/controlfb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/controlfb.c	2015=
--07-25 17:42:34.000000000 +1000
-+++ linux/drivers/video/fbdev/controlfb.c	2015-07-25 17:45:45.000000000 +10=
-00
-@@ -415,7 +415,7 @@ static int __init init_control(struct fb
- 	/* Try to pick a video mode out of NVRAM if we have one. */
- #ifdef CONFIG_NVRAM
- 	if (default_cmode =3D CMODE_NVRAM) {
--		cmode =3D nvram_read_byte(NV_CMODE);
-+		cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- 		if(cmode < CMODE_8 || cmode > CMODE_32)
- 			cmode =3D CMODE_8;
- 	} else
-@@ -423,7 +423,7 @@ static int __init init_control(struct fb
- 		cmode=DEfault_cmode;
- #ifdef CONFIG_NVRAM
- 	if (default_vmode =3D VMODE_NVRAM) {
--		vmode =3D nvram_read_byte(NV_VMODE);
-+		vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 		if (vmode < 1 || vmode > VMODE_MAX ||
- 		    control_mac_modes[vmode - 1].m[full] < cmode) {
- 			sense =3D read_control_sense(p);
-Index: linux/drivers/video/fbdev/imsttfb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-0=
-7-25 17:45:44.000000000 +1000
-+++ linux/drivers/video/fbdev/imsttfb.c	2015-07-25 17:45:45.000000000 +1000
-@@ -1393,12 +1393,12 @@ static void init_imstt(struct fb_info *i
- 		int vmode =3D init_vmode, cmode =3D init_cmode;
-=20
- 		if (vmode =3D -1) {
--			vmode =3D nvram_read_byte(NV_VMODE);
-+			vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 			if (vmode <=3D 0 || vmode > VMODE_MAX)
- 				vmode =3D VMODE_640_480_67;
- 		}
- 		if (cmode =3D -1) {
--			cmode =3D nvram_read_byte(NV_CMODE);
-+			cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- 			if (cmode < CMODE_8 || cmode > CMODE_32)
- 				cmode =3D CMODE_8;
- 		}
-Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/matrox/matroxfb_=
-base.c	2015-07-25 17:45:44.000000000 +1000
-+++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-25 17:45:45.00=
-0000000 +1000
-@@ -1878,7 +1878,7 @@ static int initMatrox2(struct matrox_fb_
- 			default_vmode =3D VMODE_640_480_60;
- #if defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
- 		if (default_cmode =3D CMODE_NVRAM)
--			default_cmode =3D nvram_read_byte(NV_CMODE);
-+			default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- #endif
- 		if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
- 			default_cmode =3D CMODE_8;
-Index: linux/drivers/video/fbdev/platinumfb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/platinumfb.c	201=
-5-07-25 17:42:34.000000000 +1000
-+++ linux/drivers/video/fbdev/platinumfb.c	2015-07-25 17:45:45.000000000 +1=
-000
-@@ -349,7 +349,7 @@ static int platinum_init_fb(struct fb_in
- 	printk(KERN_INFO "platinumfb: Monitor sense value =3D 0x%x, ", sense);
- 	if (default_vmode =3D VMODE_NVRAM) {
- #ifdef CONFIG_NVRAM
--		default_vmode =3D nvram_read_byte(NV_VMODE);
-+		default_vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 		if (default_vmode <=3D 0 || default_vmode > VMODE_MAX ||
- 		    !platinum_reg_init[default_vmode-1])
- #endif
-@@ -362,7 +362,7 @@ static int platinum_init_fb(struct fb_in
- 		default_vmode =3D VMODE_640_480_60;
- #ifdef CONFIG_NVRAM
- 	if (default_cmode =3D CMODE_NVRAM)
--		default_cmode =3D nvram_read_byte(NV_CMODE);
-+		default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- #endif
- 	if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
- 		default_cmode =3D CMODE_8;
-Index: linux/drivers/video/fbdev/valkyriefb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/valkyriefb.c	201=
-5-07-25 17:45:44.000000000 +1000
-+++ linux/drivers/video/fbdev/valkyriefb.c	2015-07-25 17:45:45.000000000 +1=
-000
-@@ -285,7 +285,7 @@ static void __init valkyrie_choose_mode(
- 	/* Try to pick a video mode out of NVRAM if we have one. */
- #if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
- 	if (default_vmode =3D VMODE_NVRAM) {
--		default_vmode =3D nvram_read_byte(NV_VMODE);
-+		default_vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 		if (default_vmode <=3D 0
- 		 || default_vmode > VMODE_MAX
- 		 || !valkyrie_reg_init[default_vmode - 1])
-@@ -298,7 +298,7 @@ static void __init valkyrie_choose_mode(
- 		default_vmode =3D VMODE_640_480_67;
- #if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
- 	if (default_cmode =3D CMODE_NVRAM)
--		default_cmode =3D nvram_read_byte(NV_CMODE);
-+		default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- #endif
-=20
- 	/*
-
+@@ -546,6 +548,7 @@ int hw_sm750_setBLANK(struct lynxfb_output *output, int blank)
+ void hw_sm750_initAccel(struct lynx_share *share)
+ {
+ 	u32 reg;
++
+ 	enable2DEngine(1);
+ 
+ 	if (getChipType() = SM750LE) {
+@@ -575,8 +578,10 @@ void hw_sm750_initAccel(struct lynx_share *share)
+ int hw_sm750le_deWait(void)
+ {
+ 	int i = 0x10000000;
++
+ 	while (i--) {
+ 		unsigned int dwVal = PEEK32(DE_STATE2);
++
+ 		if ((FIELD_GET(dwVal, DE_STATE2, DE_STATUS) = DE_STATE2_DE_STATUS_IDLE) &&
+ 			(FIELD_GET(dwVal, DE_STATE2, DE_FIFO)  = DE_STATE2_DE_FIFO_EMPTY) &&
+ 			(FIELD_GET(dwVal, DE_STATE2, DE_MEM_FIFO) = DE_STATE2_DE_MEM_FIFO_EMPTY)) {
+@@ -591,8 +596,10 @@ int hw_sm750le_deWait(void)
+ int hw_sm750_deWait(void)
+ {
+ 	int i = 0x10000000;
++
+ 	while (i--) {
+ 		unsigned int dwVal = PEEK32(SYSTEM_CTRL);
++
+ 		if ((FIELD_GET(dwVal, SYSTEM_CTRL, DE_STATUS) = SYSTEM_CTRL_DE_STATUS_IDLE) &&
+ 			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_FIFO)  = SYSTEM_CTRL_DE_FIFO_EMPTY) &&
+ 			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_MEM_FIFO) = SYSTEM_CTRL_DE_MEM_FIFO_EMPTY)) {
+-- 
+2.4.5
 

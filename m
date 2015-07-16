@@ -1,72 +1,44 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Date: Wed, 01 Jul 2015 09:41:04 +0000
-Subject: [PATCH v2 09/12] regulator: register dependency parser for firmware nodes
-Message-Id: <1435743667-11987-10-git-send-email-tomeu.vizoso@collabora.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Thu, 16 Jul 2015 21:38:23 +0000
+Subject: Re: [PATCH v2 09/12] regulator: register dependency parser for firmware nodes
+Message-Id: <20150716213823.GF1602@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="AH+kv8CCoFf6qPuz"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
-In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, Liam Girdwood <lgirdwood@gmail.com>, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org
+ <1435743667-11987-10-git-send-email-tomeu.vizoso@collabora.com>
+In-Reply-To: <1435743667-11987-10-git-send-email-tomeu.vizoso@collabora.com>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-pwm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, Liam Girdwood <lgirdwood@gmail.com>
 
-So others can find out what depends on regulators, as specified
-in bindings/regulator/regulator.txt.
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
----
+--AH+kv8CCoFf6qPuz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Changes in v2: None
+On Wed, Jul 01, 2015 at 11:41:04AM +0200, Tomeu Vizoso wrote:
+> So others can find out what depends on regulators, as specified
+> in bindings/regulator/regulator.txt.
 
- drivers/regulator/core.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+Reviewed-by: Mark Brown <broonie@kernel.org>
 
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index c9f7201..535cad0 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -4112,6 +4112,31 @@ static const struct file_operations regulator_summary_fops = {
- #endif
- };
- 
-+static void regulator_get_dependencies(struct fwnode_handle *fwnode,
-+				       struct list_head *deps)
-+{
-+	struct device_node *np;
-+	struct property *pp;
-+	struct device_node *dep;
-+
-+	np = to_of_node(fwnode);
-+	if (!np)
-+		return;
-+
-+	for_each_property_of_node(np, pp) {
-+		if (!strends(pp->name, "-supply"))
-+			continue;
-+
-+		dep = of_parse_phandle(np, pp->name, 0);
-+		if (!dep)
-+			continue;
-+
-+		fwnode_add_dependency(&dep->fwnode, deps);
-+
-+		of_node_put(dep);
-+	}
-+}
-+
- static int __init regulator_init(void)
- {
- 	int ret;
-@@ -4130,6 +4155,8 @@ static int __init regulator_init(void)
- 
- 	regulator_dummy_init();
- 
-+	fwnode_add_dependency_parser(regulator_get_dependencies);
-+
- 	return ret;
- }
- 
--- 
-2.4.1
+=66rom a regulator point of view.
 
+--AH+kv8CCoFf6qPuz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVqCROAAoJECTWi3JdVIfQ+AwH/04Bu5SZtx2282qv6iBescZI
+U/Yb79sUSK+1iDsmHnzCBj1PzWhv+HA2OO7bDXFxr16NrQWy2f8Dth/O+UszLXR6
+b8ij8CKmEF+H4AVYO0rRl2w5bdZl6G9L5Q3gmUI/xlB8GDzZ4h4qeftkXHUhZBi0
+8EROjAqfZbyfHycme3lPO0+lJ+iNCihGEHYGEqEuNruCjNSCmNrZnCDL3LclEjId
+ppJtILExl9QYqIiprBxWvtT2DYUXXDsNA9ADOq80kpuSsShPXgNwmhDjYG4sofLs
+nDRRUWDhL4eOOsS68mLjHLN0MfParQccjJOu1KRp2+7I1Jgg4tAC+ddRCJq35BA=
+=8p4T
+-----END PGP SIGNATURE-----
+
+--AH+kv8CCoFf6qPuz--

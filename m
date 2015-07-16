@@ -1,120 +1,48 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Date: Fri, 10 Jul 2015 11:39:48 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Thu, 16 Jul 2015 20:23:12 +0000
 Subject: Re: [PATCH v2 01/12] device: property: delay device-driver matches
-Message-Id: <CAAObsKA_B38EaS4uNaFUmpQ+Kr0Jq3CqAegLpYX=vr9e6nNgBw@mail.gmail.com>
+Message-Id: <20150716202312.GD11162@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="ec3vSN46Jxtc8xEl"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
  <1435743667-11987-2-git-send-email-tomeu.vizoso@collabora.com>
- <17310138.6IxCgARibq@vostro.rjw.lan>
-In-Reply-To: <17310138.6IxCgARibq@vostro.rjw.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-gpio@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, Linux PWM List <linux-pwm@vger.kernel.org>
+In-Reply-To: <1435743667-11987-2-git-send-email-tomeu.vizoso@collabora.com>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-pwm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 2 July 2015 at 01:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, July 01, 2015 11:40:56 AM Tomeu Vizoso wrote:
->> Delay matches of platform devices until late_initcall, when we are sure
->> that all built-in drivers have been registered already. This is needed
->> to prevent deferred probes because of some dependencies' drivers not
->> having registered yet.
->>
->> This reduces the total amount of work that the kernel does during boot
->> because it won't try to match devices to drivers when built-in drivers
->> are still registering but also reduces some parallelism, so total boot
->> time might slightly increase or decrease depending on the platform and
->> kernel configuration.
->>
->> This change will make make possible to prevent any deferred probes once
->> devices are probed in dependency order.
->>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->> ---
->>
->> Changes in v2:
->> - Instead of delaying all probes until late_initcall, only delay matches
->>   of platform devices that have a firmware node attached.
->>
->>  drivers/base/property.c | 29 +++++++++++++++++++++++++++++
->>  1 file changed, 29 insertions(+)
->>
->> diff --git a/drivers/base/property.c b/drivers/base/property.c
->> index 8528eb9..8ead1ba 100644
->> --- a/drivers/base/property.c
->> +++ b/drivers/base/property.c
->> @@ -16,8 +16,11 @@
->>  #include <linux/of.h>
->>  #include <linux/of_address.h>
->>  #include <linux/of_device.h>
->> +#include <linux/platform_device.h>
->>  #include <linux/property.h>
->>
->> +static bool fwnode_match_enable = false;
->> +
->>  /**
->>   * device_add_property_set - Add a collection of properties to a device object.
->>   * @dev: Device to add properties to.
->> @@ -604,6 +607,15 @@ EXPORT_SYMBOL_GPL(fwnode_is_compatible);
->>  bool fwnode_driver_match_device(struct device *dev,
->>                               const struct device_driver *drv)
->>  {
->> +     /*
->> +      * Delay matches of platform devices until late_initcall, when we are
->> +      * sure that all built-in drivers have been registered already. This
->> +      * is needed to prevent deferred probes because of some drivers
->> +      * not having registered yet.
->> +      */
->> +     if(dev->bus = &platform_bus_type && !fwnode_match_enable)
->> +             return false;
->
-> I'm not particularly enthusiastic about referring to specific bus types in
-> generic code like that.
 
-Agreed.
+--ec3vSN46Jxtc8xEl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> What about having a special version of fwnode_driver_match_device() specifically
-> for the platform bus type that will do the check?
+On Wed, Jul 01, 2015 at 11:40:56AM +0200, Tomeu Vizoso wrote:
 
-Have moved all this code to base/platform.c instead, as I don't see
-any reason to have it in property.c.
+> Delay matches of platform devices until late_initcall, when we are sure
+> that all built-in drivers have been registered already. This is needed
+> to prevent deferred probes because of some dependencies' drivers not
+> having registered yet.
 
-Thanks,
+I have to say I'm still not 100% clear that special casing platform
+devices makes sense here - I can see that platform devices are usually
+the first devices to instantiate but there are other kinds of devices
+and it's not obvious what the benefit of specifically picking out
+platform devices as opposed to just deferring all devices is.
 
-Tomeu
+--ec3vSN46Jxtc8xEl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
->> +
->>       if (is_of_node(dev->fwnode))
->>               return of_driver_match_device(dev, drv);
->>       else if (is_acpi_node(dev->fwnode))
->> @@ -612,3 +624,20 @@ bool fwnode_driver_match_device(struct device *dev,
->>       return false;
->>  }
->>  EXPORT_SYMBOL_GPL(fwnode_driver_match_device);
->> +
->> +static int __device_attach(struct device *dev, void *data)
->> +{
->> +     device_initial_probe(dev);
->> +
->> +     return 0;
->> +}
->> +
->> +static int fwnode_match_initcall(void)
->> +{
->> +     fwnode_match_enable = true;
->> +
->> +     bus_for_each_dev(&platform_bus_type, NULL, NULL, __device_attach);
->> +
->> +     return 0;
->> +}
->> +late_initcall(fwnode_match_initcall);
->>
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVqBKvAAoJECTWi3JdVIfQlTsH/RXV9XfaZAGK0pNr9p/kND/R
+uXvreuA2aWGY2yegWXN1tE6pZoLjM18lOibs3dQes0xY7JmZ3QgWwDq46ZdT8wCD
+mXlcO6E5d5QFKWa2bRcaXn02uROZmSH7X/XDk4hPVw1mh/sSxvYrj6Y0Ro0n/7Q6
+RRbg1kCfVPmuBJl10kMhwC9XalK5q2g4U2xC76edvSu2kRe2TXB/J89iq9LKg+Li
+LqQr20pwmwu6oIhI5YQPNa+bXNDEq5gdbq/j3hK5RRF9iXUbsuSdRDAQxTM8+5ri
+/qHqGpBhW3umrDgLMBfp36F+aWy+gk1rwUFBwOB5VyG426LWzgdc7AIGPwT7i+I=
+=OTlG
+-----END PGP SIGNATURE-----
+
+--ec3vSN46Jxtc8xEl--

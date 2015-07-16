@@ -1,24 +1,79 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 10 Jul 2015 07:03:29 +0000
-Subject: Re: [PATCH] Staging: sm750fb: ddk750_dvi.h: Fix brace coding style issue
-Message-Id: <20150710070329.GT4341@mwanda>
+From: antoine <antoine.blin@lip6.fr>
+Date: Thu, 16 Jul 2015 15:55:54 +0000
+Subject: [PATCH] coding style: Fix 1 error and 5 warnings
+Message-Id: <1437062154-29181-1-git-send-email-antoine.blin@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436445922-5218-1-git-send-email-anders.fridlund@gmail.com>
- <20150710053332.GA21349@sudip-PC>
- <CAOcrEa6gTQCwovGEGw-pF-LECfr-nFaWJ=A42+qKA6e+yr=0UA@mail.gmail.com>
-In-Reply-To: <CAOcrEa6gTQCwovGEGw-pF-LECfr-nFaWJ=A42+qKA6e+yr=0UA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Anders Fridlund <anders.fridlund@gmail.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, devel@driverdev.osuosl.org, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, teddy.wang@siliconmotion.com, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Fri, Jul 10, 2015 at 08:56:05AM +0200, Anders Fridlund wrote:
-> Sorry, for that. Do I need to re-submit the patch(es), or should I
-> only change it for future patches?
+This is a patch to the ddk750_power.c file that fixes up five "line over 80
+characters" warnings and one "return is not a function, parentheses are not
+required" error found by the checkpatch.pl script.
 
-For future patches.
+Signed-off-by: Antoine BLIN <antoine.blin@lip6.fr>
+---
+ drivers/staging/sm750fb/ddk750_power.c | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
-regards,
-dan carpenter
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index c8c51be..42961ea 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -8,7 +8,8 @@ void ddk750_setDPMS(DPMS_t state)
+ 
+ 	if (getChipType() = SM750LE) {
+ 		value = PEEK32(CRT_DISPLAY_CTRL);
+-		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
++		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL,
++		DPMS, state));
+ 	} else {
+ 		value = PEEK32(SYSTEM_CTRL);
+ 		value = FIELD_VALUE(value, SYSTEM_CTRL, DPMS, state);
+@@ -20,7 +21,7 @@ unsigned int getPowerMode(void)
+ {
+ 	if (getChipType() = SM750LE)
+ 		return 0;
+-	return (FIELD_GET(PEEK32(POWER_MODE_CTRL), POWER_MODE_CTRL, MODE));
++	return FIELD_GET(PEEK32(POWER_MODE_CTRL), POWER_MODE_CTRL, MODE);
+ }
+ 
+ 
+@@ -39,15 +40,18 @@ void setPowerMode(unsigned int powerMode)
+ 
+ 	switch (powerMode) {
+ 	case POWER_MODE_CTRL_MODE_MODE0:
+-		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE, MODE0);
++		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE,
++				MODE0);
+ 		break;
+ 
+ 	case POWER_MODE_CTRL_MODE_MODE1:
+-		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE, MODE1);
++		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE,
++				MODE1);
+ 		break;
+ 
+ 	case POWER_MODE_CTRL_MODE_SLEEP:
+-		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE, SLEEP);
++		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE,
++				SLEEP);
+ 		break;
+ 
+ 	default:
+@@ -138,8 +142,9 @@ void enableZVPort(unsigned int enable)
+ 		gate = FIELD_SET(gate, CURRENT_GATE, I2C,    ON);
+ #endif
+ 	} else {
+-		/* Disable ZV Port Gate. There is no way to know whether the GPIO pins are being used
+-		 or not. Therefore, do not disable the GPIO gate. */
++		/* Disable ZV Port Gate. There is no way to know whether the
++		GPIO pins are being used or not. Therefore, do not disable the
++		GPIO gate. */
+ 		gate = FIELD_SET(gate, CURRENT_GATE, ZVPORT, OFF);
+ 	}
+ 
+-- 
+2.4.5
 

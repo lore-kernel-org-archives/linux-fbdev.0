@@ -1,22 +1,35 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Mon, 27 Jul 2015 04:53:13 +0000
-Subject: Re: [PATCH v2 1/3] staging: sm7xxfb: move sm712fb out of staging
-Message-Id: <20150727045303.GE3985@sudip-pc>
+From: Antoine BLIN <antoine.blin@lip6.fr>
+Date: Fri, 17 Jul 2015 13:04:33 +0000
+Subject: [PATCH 1/2] staging: sm750fb: ddk750_power.c: Remove optionnal parentheses.
+Message-Id: <1437138274-23146-1-git-send-email-antoine.blin@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1437192539-14150-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1437192539-14150-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Antoine BLIN <antoine.blin@lip6.fr>
 
-On Sat, Jul 18, 2015 at 09:38:57AM +0530, Sudip Mukherjee wrote:
-> Now since all cleanups are done and the code is ready to be merged lets
-> move it out of staging into fbdev location.
-Hi Tomi,
+Fix up "return is not a function, parentheses are not required" error found by
+the checkpatch.pl script.
 
-A gentle ping
+Signed-off-by: Antoine BLIN <antoine.blin@lip6.fr>
+---
+ drivers/staging/sm750fb/ddk750_power.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-regards
-sudip
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index c8c51be..3c04447 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -20,7 +20,7 @@ unsigned int getPowerMode(void)
+ {
+ 	if (getChipType() = SM750LE)
+ 		return 0;
+-	return (FIELD_GET(PEEK32(POWER_MODE_CTRL), POWER_MODE_CTRL, MODE));
++	return FIELD_GET(PEEK32(POWER_MODE_CTRL), POWER_MODE_CTRL, MODE);
+ }
+ 
+ 
+-- 
+2.4.5
+

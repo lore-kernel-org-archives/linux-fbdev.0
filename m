@@ -1,58 +1,40 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 20 Jul 2015 15:31:57 +0000
-Subject: [PATCH v2 00/10] pwm: add support for atomic update
-Message-Id: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Mon, 20 Jul 2015 17:19:50 +0000
+Subject: Re: [PATCH v2 00/10] pwm: add support for atomic update
+Message-Id: <20150720171950.GE11162@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="OwxNnBplxDBmy6FV"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+References: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Hello Thierry,
 
-This series adds support for atomic PWM update, or IOW, the capability
-to update all the parameters of a PWM device (enabled/disabled, period,
-duty and polarity) in one go.
+--OwxNnBplxDBmy6FV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Best Regards,
+On Mon, Jul 20, 2015 at 05:31:57PM +0200, Boris Brezillon wrote:
 
-Boris
+> - dropped pwm-regulator patches (should be submitted separately)
 
-Changes since v1:
-- dropped applied patches
-- squashed Heiko's fixes into the rockchip driver changes
-- made a few cosmetic changes
-- added kerneldoc comments
-- added Heiko's patch to display more information in debugfs
-- dropped pwm-regulator patches (should be submitted separately)
+I think the second patch needs to go in with this series doesn't it?  It
+was just the enable one that was good to go immediately IIRC.
 
-Boris Brezillon (9):
-  pwm: introduce default period and polarity concepts
-  pwm: define a new pwm_state struct
-  pwm: move the enabled/disabled info to pwm_state struct
-  backlight: pwm_bl: remove useless call to pwm_set_period
-  pwm: declare a default PWM state
-  pwm: add the PWM initial state retrieval infra
-  pwm: add the core infrastructure to allow atomic update
-  pwm: rockchip: add initial state retrieval
-  pwm: rockchip: add support for atomic update
+--OwxNnBplxDBmy6FV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Heiko St=C3=BCbner (1):
-  pwm: add information about polarity, duty cycle and period to debugfs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
- drivers/leds/leds-pwm.c              |   2 +-
- drivers/pwm/core.c                   | 169 +++++++++++++++++++++++++++++++=
-----
- drivers/pwm/pwm-pxa.c                |   2 +-
- drivers/pwm/pwm-rockchip.c           | 119 +++++++++++++++++++-----
- drivers/pwm/pwm-sun4i.c              |   3 +-
- drivers/regulator/pwm-regulator.c    |   2 +-
- drivers/video/backlight/lm3630a_bl.c |   4 +-
- drivers/video/backlight/pwm_bl.c     |  10 ++-
- drivers/video/fbdev/ssd1307fb.c      |   2 +-
- include/linux/pwm.h                  |  86 +++++++++++++++---
- 10 files changed, 336 insertions(+), 63 deletions(-)
+iQEcBAEBCAAGBQJVrS22AAoJECTWi3JdVIfQ3u4H/1DaEVJrIoD2zH3HSOGhfiRF
+bonfEXpacF+zm5pnN91kk06bGts2+xrKBPErT72C4awUlxb+wP4KilkJpBUKjdro
+/BKsfcs/OnNuxB1Yv1XL0ZH49fFDIMdauDnNR4L/wCA047dYKlrKTCAghkPQLEbY
+9VTLq6uIoCEMk5LRdGzX6rX31/638uqLH409BTAMUgsDKDk2Wg1HRgm3PHtvLDwS
+BYxO/eiAhTAvz+UirukwM3SzJ7BCVS0eSi6t9ftNeMB+rP6tS8xdYXiHhfueEGJE
+jfiI9A9hDfv405HOImy/uP9gnqQ1udwaZPU+/GBN6+wQweyvObDWEO3IkahJDcc=
+=S7l4
+-----END PGP SIGNATURE-----
 
---=20
-1.9.1
-
+--OwxNnBplxDBmy6FV--

@@ -1,59 +1,44 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Fri, 17 Jul 2015 13:33:20 +0000
-Subject: [PATCH 3/3] MAINTAINERS: update maintainers list
-Message-Id: <1437139280-7375-3-git-send-email-sudipm.mukherjee@gmail.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 20 Jul 2015 15:32:05 +0000
+Subject: [PATCH v2 08/10] pwm: add information about polarity, duty cycle and period to debugfs
+Message-Id: <1437406327-6207-9-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1437139280-7375-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1437139280-7375-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, devel@driverdev.osuosl.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Now since sm712fb has moved out of staging update the maintainers list
-accordingly.
+From: Heiko St=C3=BCbner <heiko@sntech.de>
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+The pwm-states make it possible to also output the polarity, duty cycle
+and period information in the debugfs pwm summary-outout.
+This makes it easier to gather overview information about pwms without
+needing to walk through the sysfs attributes of every pwm.
+
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
 ---
- MAINTAINERS | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ drivers/pwm/core.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8133cef..2c77c30 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9301,6 +9301,15 @@ S:	Maintained
- F:	drivers/media/i2c/ov2659.c
- F:	include/media/ov2659.h
- 
-+SILICON MOTION SM712 FRAME BUFFER DRIVER
-+M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-+M:	Teddy Wang <teddy.wang@siliconmotion.com>
-+M:	Sudip Mukherjee <sudip@vectorindia.org>
-+L:	linux-fbdev@vger.kernel.org
-+S:	Maintained
-+F:	drivers/video/fbdev/sm712*
-+F:	Documentation/fb/sm712fb.txt
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index 4fe4703..9fc8338 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -986,6 +986,11 @@ static void pwm_dbg_show(struct pwm_chip *chip, struct=
+ seq_file *s)
+ 		if (pwm_is_enabled(pwm))
+ 			seq_puts(s, " enabled");
+=20
++		seq_printf(s, " period:%uns", pwm_get_period(pwm));
++		seq_printf(s, " duty:%uns", pwm_get_duty_cycle(pwm));
++		seq_printf(s, " polarity:%s", pwm_get_polarity(pwm) ? "inverse"
++								    : "normal");
 +
- SIS 190 ETHERNET DRIVER
- M:	Francois Romieu <romieu@fr.zoreil.com>
- L:	netdev@vger.kernel.org
-@@ -9721,14 +9730,6 @@ L:	linux-wireless@vger.kernel.org
- S:	Maintained
- F:	drivers/staging/rtl8723au/
- 
--STAGING - SILICON MOTION SM7XX FRAME BUFFER DRIVER
--M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
--M:	Teddy Wang <teddy.wang@siliconmotion.com>
--M:	Sudip Mukherjee <sudip@vectorindia.org>
--L:	linux-fbdev@vger.kernel.org
--S:	Maintained
--F:	drivers/staging/sm7xxfb/
--
- STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER
- M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
- M:	Teddy Wang <teddy.wang@siliconmotion.com>
--- 
-1.8.1.2
+ 		seq_puts(s, "\n");
+ 	}
+ }
+--=20
+1.9.1
 

@@ -1,83 +1,58 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Thu, 30 Jul 2015 17:22:53 +0000
-Subject: [PATCH v2] pwm-backlight: Avoid backlight flicker when probed from DT
-Message-Id: <1438276973-20920-1-git-send-email-p.zabel@pengutronix.de>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 20 Jul 2015 15:31:57 +0000
+Subject: [PATCH v2 00/10] pwm: add support for atomic update
+Message-Id: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Ajay Kumar <ajaykumar.rs@samsung.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de, Philipp Zabel <p.zabel@pengutronix.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-If the driver is probed from the device tree, and there is a phandle
-property set on it, and the enable GPIO is already configured as output,
-and the backlight is currently disabled, keep it disabled.
-If all these conditions are met, assume there will be some other driver
-that can enable the backlight at the appropriate time.
+Hello Thierry,
 
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
----
+This series adds support for atomic PWM update, or IOW, the capability
+to update all the parameters of a PWM device (enabled/disabled, period,
+duty and polarity) in one go.
+
+Best Regards,
+
+Boris
+
 Changes since v1:
- - Also check if the regulator is enabled. If the power supply is disabled,
-   and a phandle points to it, the backlight should stay powered down.
----
- drivers/video/backlight/pwm_bl.c | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+- dropped applied patches
+- squashed Heiko's fixes into the rockchip driver changes
+- made a few cosmetic changes
+- added kerneldoc comments
+- added Heiko's patch to display more information in debugfs
+- dropped pwm-regulator patches (should be submitted separately)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index eff379b..31afd6d 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -199,6 +199,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	struct backlight_properties props;
- 	struct backlight_device *bl;
- 	struct pwm_bl_data *pb;
-+	int initial_blank = FB_BLANK_UNBLANK;
-+	bool phandle;
- 	int ret;
- 
- 	if (!data) {
-@@ -264,12 +266,32 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
- 	}
- 
-+	phandle = of_find_property(pdev->dev.of_node, "phandle", NULL) != NULL;
-+
-+	if (pb->enable_gpio) {
-+		/*
-+		 * If the driver is probed from the device tree and there is a
-+		 * phandle link pointing to the backlight node, it is safe to
-+		 * assume that another driver will enable the backlight at the
-+		 * appropriate time. Therefore, if it is disabled, keep it so.
-+		 */
-+		if (phandle &&
-+		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
-+		    gpiod_get_value(pb->enable_gpio) = 0)
-+			initial_blank = FB_BLANK_POWERDOWN;
-+		else
-+			gpiod_direction_output(pb->enable_gpio, 1);
-+	}
-+
- 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
- 	if (IS_ERR(pb->power_supply)) {
- 		ret = PTR_ERR(pb->power_supply);
- 		goto err_alloc;
- 	}
- 
-+	if (phandle && !regulator_is_enabled(pb->power_supply))
-+		initial_blank = FB_BLANK_POWERDOWN;
-+
- 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
- 	if (IS_ERR(pb->pwm)) {
- 		ret = PTR_ERR(pb->pwm);
-@@ -321,6 +343,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	}
- 
- 	bl->props.brightness = data->dft_brightness;
-+	bl->props.power = initial_blank;
- 	backlight_update_status(bl);
- 
- 	platform_set_drvdata(pdev, bl);
--- 
-2.1.4
+Boris Brezillon (9):
+  pwm: introduce default period and polarity concepts
+  pwm: define a new pwm_state struct
+  pwm: move the enabled/disabled info to pwm_state struct
+  backlight: pwm_bl: remove useless call to pwm_set_period
+  pwm: declare a default PWM state
+  pwm: add the PWM initial state retrieval infra
+  pwm: add the core infrastructure to allow atomic update
+  pwm: rockchip: add initial state retrieval
+  pwm: rockchip: add support for atomic update
+
+Heiko St=C3=BCbner (1):
+  pwm: add information about polarity, duty cycle and period to debugfs
+
+ drivers/leds/leds-pwm.c              |   2 +-
+ drivers/pwm/core.c                   | 169 +++++++++++++++++++++++++++++++=
+----
+ drivers/pwm/pwm-pxa.c                |   2 +-
+ drivers/pwm/pwm-rockchip.c           | 119 +++++++++++++++++++-----
+ drivers/pwm/pwm-sun4i.c              |   3 +-
+ drivers/regulator/pwm-regulator.c    |   2 +-
+ drivers/video/backlight/lm3630a_bl.c |   4 +-
+ drivers/video/backlight/pwm_bl.c     |  10 ++-
+ drivers/video/fbdev/ssd1307fb.c      |   2 +-
+ include/linux/pwm.h                  |  86 +++++++++++++++---
+ 10 files changed, 336 insertions(+), 63 deletions(-)
+
+--=20
+1.9.1
 

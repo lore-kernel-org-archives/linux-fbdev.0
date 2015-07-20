@@ -1,89 +1,82 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 01 Jul 2015 08:21:53 +0000
-Subject: [RFC PATCH 07/15] pwm: move the enabled/disabled info to pwm_state struct
-Message-Id: <1435738921-25027-8-git-send-email-boris.brezillon@free-electrons.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 20 Jul 2015 08:11:04 +0000
+Subject: Re: [RFC PATCH 07/15] pwm: move the enabled/disabled info to pwm_state struct
+Message-Id: <20150720081103.GH29614@ulmo>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="/Gk0KcsbyUMelFU1"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1435738921-25027-8-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1435738921-25027-8-git-send-email-boris.brezillon@free-electrons.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Prepare the transition to PWM atomic update by moving the enabled/disabled
-state into the pwm_state struct. This way we can easily update the whole
-PWM state by copying the new state in the ->state field.
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
----
- drivers/pwm/core.c  | 15 ++++++++++++---
- include/linux/pwm.h |  6 +++---
- 2 files changed, 15 insertions(+), 6 deletions(-)
+--/Gk0KcsbyUMelFU1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index a6bc8e6..3e830ce 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -474,8 +474,15 @@ EXPORT_SYMBOL_GPL(pwm_set_polarity);
-  */
- int pwm_enable(struct pwm_device *pwm)
- {
--	if (pwm && !test_and_set_bit(PWMF_ENABLED, &pwm->flags))
--		return pwm->chip->ops->enable(pwm->chip, pwm);
-+	if (pwm && !pwm_is_enabled(pwm)) {
-+		int err;
-+
-+		err = pwm->chip->ops->enable(pwm->chip, pwm);
-+		if (!err)
-+			pwm->state.enabled = true;
-+
-+		return err;
-+	}
- 
- 	return pwm ? 0 : -EINVAL;
- }
-@@ -487,8 +494,10 @@ EXPORT_SYMBOL_GPL(pwm_enable);
-  */
- void pwm_disable(struct pwm_device *pwm)
- {
--	if (pwm && test_and_clear_bit(PWMF_ENABLED, &pwm->flags))
-+	if (pwm && pwm_is_enabled(pwm)) {
- 		pwm->chip->ops->disable(pwm->chip, pwm);
-+		pwm->state.enabled = false;
-+	}
- }
- EXPORT_SYMBOL_GPL(pwm_disable);
- 
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index bed7234..fd3e0f0 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -75,14 +75,14 @@ enum pwm_polarity {
- 
- enum {
- 	PWMF_REQUESTED = 1 << 0,
--	PWMF_ENABLED = 1 << 1,
--	PWMF_EXPORTED = 1 << 2,
-+	PWMF_EXPORTED = 1 << 1,
- };
- 
- struct pwm_state {
- 	unsigned int		period; 	/* in nanoseconds */
- 	unsigned int		duty_cycle;	/* in nanoseconds */
- 	enum pwm_polarity	polarity;
-+	bool			enabled;
- };
- 
- struct pwm_device {
-@@ -98,7 +98,7 @@ struct pwm_device {
- 
- static inline bool pwm_is_enabled(const struct pwm_device *pwm)
- {
--	return test_bit(PWMF_ENABLED, &pwm->flags);
-+	return pwm->state.enabled;
- }
- 
- static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
--- 
-1.9.1
+On Wed, Jul 01, 2015 at 10:21:53AM +0200, Boris Brezillon wrote:
+> Prepare the transition to PWM atomic update by moving the enabled/disabled
+> state into the pwm_state struct. This way we can easily update the whole
+> PWM state by copying the new state in the ->state field.
+>=20
+> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+> ---
+>  drivers/pwm/core.c  | 15 ++++++++++++---
+>  include/linux/pwm.h |  6 +++---
+>  2 files changed, 15 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+> index a6bc8e6..3e830ce 100644
+> --- a/drivers/pwm/core.c
+> +++ b/drivers/pwm/core.c
+> @@ -474,8 +474,15 @@ EXPORT_SYMBOL_GPL(pwm_set_polarity);
+>   */
+>  int pwm_enable(struct pwm_device *pwm)
+>  {
+> -	if (pwm && !test_and_set_bit(PWMF_ENABLED, &pwm->flags))
+> -		return pwm->chip->ops->enable(pwm->chip, pwm);
+> +	if (pwm && !pwm_is_enabled(pwm)) {
+> +		int err;
+> +
+> +		err =3D pwm->chip->ops->enable(pwm->chip, pwm);
+> +		if (!err)
+> +			pwm->state.enabled =3D true;
+> +
+> +		return err;
+> +	}
 
+Technically there's now a race between the pwm_is_enabled() and
+pwm->state.enabled =3D true; statements, but as discussed in the cover
+letter I think that's fine because of the assumptions about concurrent
+usage of PWMs.
+
+The most important check (PWMF_REQUESTED) is still atomic, so it is
+still up to drivers to properly lock concurrent access to a PWM device
+and the core will make sure that a device can only be requested once.
+
+Thierry
+
+--/Gk0KcsbyUMelFU1
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJVrK0XAAoJEN0jrNd/PrOhtJ0QAKfchwwZ++kZeNCOUmVeq7Q8
++AbRc98I3rKtpiNn2tj//I3wvdWi6df82vplkChh/5VlLEtijdgWQysiFh2U8Rak
+jJBLUS2Wevlqjj6SFED995VeRucOc91WkHVaCaxQxQdJ7xmTxkTyphr+lJ4y+sKE
+EJ8H+ey2zzSWUw7Ginh/y3xcvQwNYD+nZk5PDSsP1e5cNSAwoMzStHTTkkaAGmdQ
+kvo7F04jYz0w/o4RuvTBRWPDwN3FQfH0p13G0WUSdcSnvHcgrqGIGz67QOTnnRJQ
+Wu/bPqdJkE3SVNp2zyXbfEFYMzrSaTdtAyDlKQgYqQ1ElwwS5pEBdJtS2G8DGUrS
+S+5M0MLcojNvUKWQnFdyJpFqptLP56YC5aIEo9EEvH+FWVRqZTVMeTrKh46f8c5m
+Hhe76C4+AjcOkp2q5og8ezrmjN+fJOTpV0OlpMM7cksPtuHe9vjFeJfWJD/Yg24Y
+3j5KU+qnVfFH+cZSACgwldnBqSowFa61aQXv7D4dj8FhNXq8cdnwHy1u1rl7LzG5
+/0ps4M3pGPh8OmzuoGy4nTqP0bXK4b1t9kuZw+RCdjPHG1C1VGW3g8K0fuACTrlb
+AvjsqmDhwUP93Puv4hx6NIvHyPHkpfCMEy73jf8P7QKj1UVblrCnnqX1Gelt/R9C
+YD1evsDZbXTZ11DbGak5
+=XZMw
+-----END PGP SIGNATURE-----
+
+--/Gk0KcsbyUMelFU1--

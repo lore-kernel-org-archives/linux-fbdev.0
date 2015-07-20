@@ -1,82 +1,69 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sun, 12 Jul 2015 10:25:40 +0000
-Subject: [RFC v4 13/25] powerpc: Cleanup nvram includes
-Message-Id: <20150712102530.535908496@telegraphics.com.au>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 20 Jul 2015 15:32:02 +0000
+Subject: [PATCH v2 05/10] pwm: declare a default PWM state
+Message-Id: <1437406327-6207-6-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150712102527.356151908@telegraphics.com.au>
+References: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-The nvram_read_byte() and nvram_write_byte() definitions in asm/nvram.h
-duplicate those in linux/nvram.h. Get rid of the former to prepare for
-adoption of struct arch_nvram_ops (which is defined in linux/nvram.h for
-general use).
+Prepare the addition of the PWM initial state retrieval by adding a default
+state where all the parameters retrieved from DT, platform data or
+statically forced by the hardware will be stored.
+Once done we will be able to store the initial state in the ->state field
+without risking to loose the default parameters.
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Update the pwm_set/get_default_xxx helpers accordingly.
 
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- arch/powerpc/include/asm/nvram.h           |    3 ---
- arch/powerpc/kernel/setup_32.c             |    1 +
- drivers/char/generic_nvram.c               |    4 +++-
- drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ include/linux/pwm.h | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Index: linux/arch/powerpc/include/asm/nvram.h
-=================================--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-07-12 20:24:53.000000000 +1000
-+++ linux/arch/powerpc/include/asm/nvram.h	2015-07-12 20:25:08.000000000 +1000
-@@ -101,7 +101,4 @@ extern int nvram_write_os_partition(stru
- /* Determine NVRAM size */
- extern ssize_t nvram_get_size(void);
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index f4bc034..1e6e9d1 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -101,6 +101,7 @@ struct pwm_device {
+ 	void			*chip_data;
  
--/* Normal access to NVRAM */
--extern unsigned char nvram_read_byte(int i);
--extern void nvram_write_byte(unsigned char c, int i);
- #endif /* _ASM_POWERPC_NVRAM_H */
-Index: linux/arch/powerpc/kernel/setup_32.c
-=================================--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-07-12 20:24:53.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-07-12 20:25:08.000000000 +1000
-@@ -16,6 +16,7 @@
- #include <linux/cpu.h>
- #include <linux/console.h>
- #include <linux/memblock.h>
-+#include <linux/nvram.h>
+ 	struct pwm_state	state;
++	struct pwm_state	default_state;
+ };
  
- #include <asm/io.h>
- #include <asm/prom.h>
-Index: linux/drivers/char/generic_nvram.c
-=================================--- linux.orig/drivers/char/generic_nvram.c	2015-07-12 20:24:53.000000000 +1000
-+++ linux/drivers/char/generic_nvram.c	2015-07-12 20:25:08.000000000 +1000
-@@ -20,9 +20,11 @@
- #include <linux/fcntl.h>
- #include <linux/init.h>
- #include <linux/mutex.h>
-+#include <linux/nvram.h>
- #include <asm/uaccess.h>
--#include <asm/nvram.h>
-+
- #ifdef CONFIG_PPC_PMAC
-+#include <asm/nvram.h>
- #include <asm/machdep.h>
- #endif
+ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
+@@ -117,7 +118,8 @@ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
+ static inline void pwm_set_default_period(struct pwm_device *pwm,
+ 					  unsigned int period)
+ {
+-	pwm_set_period(pwm, period);
++	if (pwm)
++		pwm->default_state.period = period;
+ }
  
-Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
-=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-12 20:24:53.000000000 +1000
-+++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-12 20:25:08.000000000 +1000
-@@ -111,12 +111,12 @@
- #include "matroxfb_g450.h"
- #include <linux/matroxfb.h>
- #include <linux/interrupt.h>
-+#include <linux/nvram.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
+ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
+@@ -127,7 +129,7 @@ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
  
- #ifdef CONFIG_PPC_PMAC
- #include <asm/machdep.h>
--unsigned char nvram_read_byte(int);
- static int default_vmode = VMODE_NVRAM;
- static int default_cmode = CMODE_NVRAM;
- #endif
-
+ static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
+ {
+-	return pwm_get_period(pwm);
++	return pwm ? pwm->default_state.period : 0;
+ }
+ 
+ static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
+@@ -149,7 +151,8 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
+ static inline void pwm_set_default_polarity(struct pwm_device *pwm,
+ 					    enum pwm_polarity polarity)
+ {
+-	pwm_set_polarity(pwm, polarity);
++	if (pwm)
++		pwm->default_state.polarity = polarity;
+ }
+ 
+ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+-- 
+1.9.1
 

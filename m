@@ -1,88 +1,126 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 10 Jul 2015 01:24:57 +0000
-Subject: [PATCH v6 2/4] drivers/video/fbdev/atyfb: Clarify ioremap() base and length used
-Message-Id: <1436491499-3289-3-git-send-email-mcgrof@do-not-panic.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 20 Jul 2015 15:31:59 +0000
+Subject: [PATCH v2 02/10] pwm: define a new pwm_state struct
+Message-Id: <1437406327-6207-3-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436491499-3289-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1436491499-3289-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: mingo@kernel.org
-Cc: bp@suse.de, tomi.valkeinen@ti.com, airlied@redhat.com, arnd@arndb.de, dan.j.williams@intel.com, hch@lst.de, luto@amacapital.net, hpa@zytor.com, tglx@linutronix.de, geert@linux-m68k.org, ralf@linux-mips.org, hmh@hmh.eng.br, ross.zwisler@linux.intel.com, akpm@linux-foundation.org, jgross@suse.com, benh@kernel.crashing.org, mpe@ellerman.id.au, tj@kernel.org, x86@kernel.org, mst@redhat.com, toshi.kani@hp.com, stefan.bader@canonical.com, syrjala@sci.fi, ville.syrjala@linux.intel.com, linux-pci@vger.kernel.org, linux-mm@kvack.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Andrzej Hajda <a.hajda@samsung.com>, Antonino Daplas <adaplas@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Davidlohr Bueso <dbueso@suse.de>, Ingo Molnar <mingo@elte.hu>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Linus Torvalds <torvalds@linux-foundation.org>, Mathias Krause <minipli@googlemail.com>, Mel Gorman <mgorman@suse.de>, Rob Clark <robdclark@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Vlastimil Babka <vbabka@suse.cz>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+The PWM state, represented by its period, duty_cycle and polarity,
+is currently directly stored in the PWM device.
+Declare a pwm_state structure embedding those field so that we can later
+use this struct to atomically update all the PWM parameters at once.
 
-Adjust the ioremap() call for the framebuffer to use the same values we
-later use for the framebuffer. This will make it easier to review the
-next change.
-
-The size of the framebuffer varies but since this is for PCI we *know*
-this defaults to 0x800000. atyfb_setup_generic() is *only* used on PCI
-probe.
-
-No functional change.
-
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-Cc: airlied@redhat.com
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrzej Hajda <a.hajda@samsung.com>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: benh@kernel.crashing.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Davidlohr Bueso <dbueso@suse.de>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-pci@vger.kernel.org
-Cc: Mathias Krause <minipli@googlemail.com>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: mst@redhat.com
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: syrjala@sci.fi
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Toshi Kani <toshi.kani@hp.com>
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Signed-off-by: Borislav Petkov <bp@suse.de>
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/video/fbdev/aty/atyfb_base.c | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ drivers/pwm/core.c  |  6 +++---
+ include/linux/pwm.h | 26 ++++++++++++++++++--------
+ 2 files changed, 21 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 16936bb1f865..513e58df9d3f 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -3489,7 +3489,21 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index 7ffad2b..a6bc8e6 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -431,8 +431,8 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
+ 	if (err)
+ 		return err;
  
- 	/* Map in frame buffer */
- 	info->fix.smem_start = addr;
--	info->screen_base = ioremap(addr, 0x800000);
+-	pwm->duty_cycle = duty_ns;
+-	pwm->period = period_ns;
++	pwm->state.duty_cycle = duty_ns;
++	pwm->state.period = period_ns;
+ 
+ 	return 0;
+ }
+@@ -462,7 +462,7 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity)
+ 	if (err)
+ 		return err;
+ 
+-	pwm->polarity = polarity;
++	pwm->state.polarity = polarity;
+ 
+ 	return 0;
+ }
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index ba4b7ed..fafed26 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -79,6 +79,18 @@ enum {
+ 	PWMF_EXPORTED = 1 << 2,
+ };
+ 
++/**
++ * struct pwm_state - state of a PWM channel
++ * @period: PWM period (in nanoseconds)
++ * @duty_cycle: PWM duty cycle (in nanoseconds)
++ * @polarity: PWM polarity
++ */
++struct pwm_state {
++	unsigned int period;
++	unsigned int duty_cycle;
++	enum pwm_polarity polarity;
++};
 +
-+	/*
-+	 * The framebuffer is not always 8 MiB that's just the size of the
-+	 * PCI BAR. We temporarily abuse smem_len here to store the size
-+	 * of the BAR. aty_init() will later correct it to match the actual
-+	 * framebuffer size.
-+	 *
-+	 * On devices that don't have the auxiliary register aperture, the
-+	 * registers are housed at the top end of the framebuffer PCI BAR.
-+	 * aty_fudge_framebuffer_len() is used to reduce smem_len to not
-+	 * overlap with the registers.
-+	 */
-+	info->fix.smem_len = 0x800000;
-+
-+	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
- 	if (info->screen_base = NULL) {
- 		ret = -ENOMEM;
- 		goto atyfb_setup_generic_fail;
+ struct pwm_device {
+ 	const char		*label;
+ 	unsigned long		flags;
+@@ -87,9 +99,7 @@ struct pwm_device {
+ 	struct pwm_chip		*chip;
+ 	void			*chip_data;
+ 
+-	unsigned int		period; 	/* in nanoseconds */
+-	unsigned int		duty_cycle;	/* in nanoseconds */
+-	enum pwm_polarity	polarity;
++	struct pwm_state	state;
+ };
+ 
+ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
+@@ -100,7 +110,7 @@ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
+ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
+ {
+ 	if (pwm)
+-		pwm->period = period;
++		pwm->state.period = period;
+ }
+ 
+ static inline void pwm_set_default_period(struct pwm_device *pwm,
+@@ -111,7 +121,7 @@ static inline void pwm_set_default_period(struct pwm_device *pwm,
+ 
+ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
+ {
+-	return pwm ? pwm->period : 0;
++	return pwm ? pwm->state.period : 0;
+ }
+ 
+ static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
+@@ -122,12 +132,12 @@ static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
+ static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
+ {
+ 	if (pwm)
+-		pwm->duty_cycle = duty;
++		pwm->state.duty_cycle = duty;
+ }
+ 
+ static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
+ {
+-	return pwm ? pwm->duty_cycle : 0;
++	return pwm ? pwm->state.duty_cycle : 0;
+ }
+ 
+ /*
+@@ -143,7 +153,7 @@ static inline void pwm_set_default_polarity(struct pwm_device *pwm,
+ 
+ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+ {
+-	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
++	return pwm ? pwm->state.polarity : PWM_POLARITY_NORMAL;
+ }
+ 
+ /**
 -- 
-2.3.2.209.gd67f9d5.dirty
+1.9.1
 

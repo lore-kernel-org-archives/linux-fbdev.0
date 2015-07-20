@@ -1,102 +1,290 @@
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Thu, 30 Jul 2015 16:55:19 +0000
-Subject: [PATCH v3 18/24] fbdev: switch from ioremap_wt to memremap
-Message-Id: <20150730165519.33962.40536.stgit@dwillia2-desk3.amr.corp.intel.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 20 Jul 2015 15:32:04 +0000
+Subject: [PATCH v2 07/10] pwm: add the core infrastructure to allow atomic update
+Message-Id: <1437406327-6207-8-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150730165155.33962.64121.stgit@dwillia2-desk3.amr.corp.intel.com>
-In-Reply-To: <20150730165155.33962.64121.stgit@dwillia2-desk3.amr.corp.intel.com>
+References: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tglx@linutronix.de, mingo@kernel.org, hpa@zytor.com
-Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org, toshi.kani@hp.com, linux-nvdimm@lists.01.org, mcgrof@suse.com, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, rmk+kernel@arm.linux.org.uk, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, hch@lst.de, linux-arm-kernel@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
 
-In preparation for deprecating ioremap_wt() convert its usage in
-drivers/video/fbdev to memremap.
+Add an ->apply() method to the pwm_ops struct to allow PWM drivers to
+implement atomic update.
+This method will be preferred over the ->enable(), ->disable() and
+->config() methods if available.
 
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Add the pwm_get_state(), pwm_get_default_state() and pwm_apply_state()
+functions for PWM users to be able to use the atomic update feature.
+
+Note that the pwm_apply_state() does not guarantee the atomicity of the
+update operation, it all depends on the availability and implementation
+of the ->apply() method.
+
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/video/fbdev/amifb.c |    5 +++--
- drivers/video/fbdev/atafb.c |    5 +++--
- drivers/video/fbdev/hpfb.c  |    6 +++---
- 3 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/pwm/core.c  | 142 +++++++++++++++++++++++++++++++++++++++++++++++-----
+ include/linux/pwm.h |  28 +++++++++++
+ 2 files changed, 158 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/fbdev/amifb.c b/drivers/video/fbdev/amifb.c
-index 1d702e13aaff..0cde451046d0 100644
---- a/drivers/video/fbdev/amifb.c
-+++ b/drivers/video/fbdev/amifb.c
-@@ -52,6 +52,7 @@
- #include <linux/ioport.h>
- #include <linux/platform_device.h>
- #include <linux/uaccess.h>
-+#include <linux/io.h>
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index 236a8cf..4fe4703 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -46,6 +46,12 @@ static struct pwm_device *pwm_to_device(unsigned int pwm)
+ 	return radix_tree_lookup(&pwm_tree, pwm);
+ }
  
- #include <asm/irq.h>
- #include <asm/amigahw.h>
-@@ -3705,8 +3706,8 @@ default_chipset:
- 	 * access the videomem with writethrough cache
- 	 */
- 	info->fix.smem_start = (u_long)ZTWO_PADDR(videomemory);
--	videomemory = (u_long)ioremap_wt(info->fix.smem_start,
--					 info->fix.smem_len);
-+	videomemory = (u_long)memremap(info->fix.smem_start, info->fix.smem_len,
-+			MEMREMAP_WT);
- 	if (!videomemory) {
- 		dev_warn(&pdev->dev,
- 			 "Unable to map videomem cached writethrough\n");
-diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-index d6ce613e12ad..5615e8c31ea2 100644
---- a/drivers/video/fbdev/atafb.c
-+++ b/drivers/video/fbdev/atafb.c
-@@ -55,12 +55,12 @@
- #include <linux/delay.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
-+#include <linux/io.h>
++static void pwm_set_state(struct pwm_device *pwm,
++			  const struct pwm_state *state)
++{
++	pwm->state = *state;
++}
++
+ static int alloc_pwms(int pwm, unsigned int count)
+ {
+ 	unsigned int from = 0;
+@@ -222,6 +228,19 @@ void *pwm_get_chip_data(struct pwm_device *pwm)
+ }
+ EXPORT_SYMBOL_GPL(pwm_get_chip_data);
  
- #include <asm/setup.h>
- #include <linux/uaccess.h>
- #include <asm/pgtable.h>
- #include <asm/irq.h>
--#include <asm/io.h>
++static bool pwm_ops_check(const struct pwm_ops *ops)
++{
++	/* driver supports legacy, non-atomic operation */
++	if (ops->config && ops->enable && ops->disable)
++		return true;
++
++	/* driver supports atomic operation */
++	if (ops->apply)
++		return true;
++
++	return false;
++}
++
+ /**
+  * pwmchip_add_with_polarity() - register a new PWM chip
+  * @chip: the PWM chip to add
+@@ -238,8 +257,10 @@ int pwmchip_add_with_polarity(struct pwm_chip *chip,
+ 	unsigned int i;
+ 	int ret;
  
- #include <asm/atarihw.h>
- #include <asm/atariints.h>
-@@ -3185,7 +3185,8 @@ int __init atafb_init(void)
- 		/* Map the video memory (physical address given) to somewhere
- 		 * in the kernel address space.
- 		 */
--		external_screen_base = ioremap_wt(external_addr, external_len);
-+		external_screen_base = memremap(external_addr, external_len,
-+				MEMREMAP_WT);
- 		if (external_vgaiobase)
- 			external_vgaiobase  			  (unsigned long)ioremap(external_vgaiobase, 0x10000);
-diff --git a/drivers/video/fbdev/hpfb.c b/drivers/video/fbdev/hpfb.c
-index 9476d196f510..d08c320b06fc 100644
---- a/drivers/video/fbdev/hpfb.c
-+++ b/drivers/video/fbdev/hpfb.c
-@@ -14,8 +14,8 @@
- #include <linux/init.h>
- #include <linux/fb.h>
- #include <linux/dio.h>
-+#include <linux/io.h>
+-	if (!chip || !chip->dev || !chip->ops || !chip->ops->config ||
+-	    !chip->ops->enable || !chip->ops->disable || !chip->npwm)
++	if (!chip || !chip->dev || !chip->ops || !chip->npwm)
++		return -EINVAL;
++
++	if (!pwm_ops_check(chip->ops))
+ 		return -EINVAL;
  
--#include <asm/io.h>
- #include <asm/uaccess.h>
+ 	mutex_lock(&pwm_lock);
+@@ -430,7 +451,19 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
+ 	if (!pwm || duty_ns < 0 || period_ns <= 0 || duty_ns > period_ns)
+ 		return -EINVAL;
  
- static struct fb_info fb_info = {
-@@ -241,8 +241,8 @@ static int hpfb_init_one(unsigned long phys_base, unsigned long virt_base)
- 	fb_info.fix.line_length = fb_width;
- 	fb_height = (in_8(fb_regs + HPFB_FBHMSB) << 8) | in_8(fb_regs + HPFB_FBHLSB);
- 	fb_info.fix.smem_len = fb_width * fb_height;
--	fb_start = (unsigned long)ioremap_wt(fb_info.fix.smem_start,
--					     fb_info.fix.smem_len);
-+	fb_start = (unsigned long) memremap(fb_info.fix.smem_start,
-+					     fb_info.fix.smem_len, MEMREMAP_WT);
- 	hpfb_defined.xres = (in_8(fb_regs + HPFB_DWMSB) << 8) | in_8(fb_regs + HPFB_DWLSB);
- 	hpfb_defined.yres = (in_8(fb_regs + HPFB_DHMSB) << 8) | in_8(fb_regs + HPFB_DHLSB);
- 	hpfb_defined.xres_virtual = hpfb_defined.xres;
+-	err = pwm->chip->ops->config(pwm->chip, pwm, duty_ns, period_ns);
++	if (pwm->chip->ops->apply) {
++		struct pwm_state state;
++
++		pwm_get_state(pwm, &state);
++		state.period = period_ns;
++		state.duty_cycle = duty_ns;
++
++		err = pwm->chip->ops->apply(pwm->chip, pwm, &state);
++	} else {
++		err = pwm->chip->ops->config(pwm->chip, pwm, duty_ns,
++					     period_ns);
++	}
++
+ 	if (err)
+ 		return err;
+ 
+@@ -455,6 +488,18 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity)
+ 	if (!pwm || !pwm->chip->ops)
+ 		return -EINVAL;
+ 
++	if (pwm->chip->ops->apply) {
++		struct pwm_state state;
++
++		pwm_get_state(pwm, &state);
++		state.polarity = polarity;
++		err = pwm->chip->ops->apply(pwm->chip, pwm, &state);
++		if (!err)
++			pwm->state.polarity = polarity;
++
++		return err;
++	}
++
+ 	if (!pwm->chip->ops->set_polarity)
+ 		return -ENOSYS;
+ 
+@@ -477,17 +522,29 @@ EXPORT_SYMBOL_GPL(pwm_set_polarity);
+  */
+ int pwm_enable(struct pwm_device *pwm)
+ {
+-	if (pwm && !pwm_is_enabled(pwm)) {
+-		int err;
++	int err;
+ 
+-		err = pwm->chip->ops->enable(pwm->chip, pwm);
+-		if (!err)
+-			pwm->state.enabled = true;
++	if (!pwm)
++		return -EINVAL;
+ 
+-		return err;
++	if (pwm_is_enabled(pwm))
++		return 0;
++
++	if (pwm->chip->ops->apply) {
++		struct pwm_state state;
++
++		pwm_get_state(pwm, &state);
++		state.enabled = true;
++
++		err = pwm->chip->ops->apply(pwm->chip, pwm, &state);
++	} else {
++		err = pwm->chip->ops->enable(pwm->chip, pwm);
+ 	}
+ 
+-	return pwm ? 0 : -EINVAL;
++	if (!err)
++		pwm->state.enabled = true;
++
++	return err;
+ }
+ EXPORT_SYMBOL_GPL(pwm_enable);
+ 
+@@ -497,13 +554,74 @@ EXPORT_SYMBOL_GPL(pwm_enable);
+  */
+ void pwm_disable(struct pwm_device *pwm)
+ {
+-	if (pwm && pwm_is_enabled(pwm)) {
++	if (!pwm || !pwm_is_enabled(pwm))
++		return;
++
++	if (pwm->chip->ops->apply) {
++		struct pwm_state state;
++
++		pwm_get_state(pwm, &state);
++		state.enabled = false;
++
++		pwm->chip->ops->apply(pwm->chip, pwm, &state);
++	} else {
+ 		pwm->chip->ops->disable(pwm->chip, pwm);
+-		pwm->state.enabled = false;
+ 	}
++
++	pwm->state.enabled = false;
+ }
+ EXPORT_SYMBOL_GPL(pwm_disable);
+ 
++/**
++ * pwm_apply_state() - atomically apply a new state to a PWM device
++ * @pwm: PWM device
++ * @state: new state to apply
++ */
++int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *state)
++{
++	int err = 0;
++
++	if (!pwm)
++		return -EINVAL;
++
++	if (!memcmp(state, &pwm->state, sizeof(*state)))
++		return 0;
++
++	if (pwm->chip->ops->apply) {
++		err = pwm->chip->ops->apply(pwm->chip, pwm, state);
++		if (!err)
++			pwm_set_state(pwm, state);
++	} else {
++		/*
++		 * FIXME: restore the initial state in case of error.
++		 */
++		if (state->polarity != pwm->state.polarity) {
++			pwm_disable(pwm);
++			err = pwm_set_polarity(pwm, state->polarity);
++			if (err)
++				goto out;
++		}
++
++		if (state->period != pwm->state.period ||
++		    state->duty_cycle != pwm->state.duty_cycle) {
++			err = pwm_config(pwm, state->period, state->duty_cycle);
++			if (err)
++				goto out;
++		}
++
++		if (state->enabled != pwm->state.enabled) {
++			if (state->enabled)
++				err = pwm_enable(pwm);
++			else
++				pwm_disable(pwm);
++		}
++	}
++
++out:
++	return err;
++}
++EXPORT_SYMBOL_GPL(pwm_apply_state);
++
+ static struct pwm_chip *of_node_to_pwmchip(struct device_node *np)
+ {
+ 	struct pwm_chip *chip;
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index df78211..25f7bd1 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -160,6 +160,30 @@ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+ 	return pwm ? pwm->state.polarity : PWM_POLARITY_NORMAL;
+ }
+ 
++int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *state);
++
++/**
++ * pwm_get_state() - retrieve the current PWM state
++ * @pwm: PWM device
++ * @state: state to fill with the current PWM state
++ */
++static inline void pwm_get_state(struct pwm_device *pwm,
++				 struct pwm_state *state)
++{
++	*state = pwm->state;
++}
++
++/**
++ * pwm_get_default_state() - retrieve the default PWM state
++ * @pwm: PWM device
++ * @state: state to fill with the default PWM state
++ */
++static inline void pwm_get_default_state(struct pwm_device *pwm,
++					 struct pwm_state *state)
++{
++	*state = pwm->default_state;
++}
++
+ /**
+  * struct pwm_ops - PWM controller operations
+  * @request: optional hook for requesting a PWM
+@@ -168,6 +192,7 @@ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+  * @set_polarity: configure the polarity of this PWM
+  * @enable: enable PWM output toggling
+  * @disable: disable PWM output toggling
++ * @apply: atomically apply a new PWM config
+  * @reset_state: reset the current PWM state (pwm->state) to the actual
+  *		 hardware state. This function is only called once per
+  *		 PWM device when the PWM chip is registered.
+@@ -189,6 +214,9 @@ struct pwm_ops {
+ 					  struct pwm_device *pwm);
+ 	void			(*disable)(struct pwm_chip *chip,
+ 					   struct pwm_device *pwm);
++	int			(*apply)(struct pwm_chip *chip,
++					 struct pwm_device *pwm,
++					 const struct pwm_state *state);
+ 	void			(*reset_state)(struct pwm_chip *chip,
+ 					       struct pwm_device *pwm);
+ #ifdef CONFIG_DEBUG_FS
+-- 
+1.9.1
 

@@ -1,68 +1,96 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Date: Wed, 01 Jul 2015 09:41:03 +0000
-Subject: [PATCH v2 08/12] USB: EHCI: register dependency parser for firmware nodes
-Message-Id: <1435743667-11987-9-git-send-email-tomeu.vizoso@collabora.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 20 Jul 2015 15:32:00 +0000
+Subject: [PATCH v2 03/10] pwm: move the enabled/disabled info to pwm_state struct
+Message-Id: <1437406327-6207-4-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
-In-Reply-To: <1435743667-11987-1-git-send-email-tomeu.vizoso@collabora.com>
+References: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-gpio@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Alan Stern <stern@rowland.harvard.edu>, Alexandre Courbot <gnurou@gmail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-So others can find out whether a firmware node depends on a phy as
-specified in bindings/usb/nvidia,tegra20-ehci.txt.
+Prepare the transition to PWM atomic update by moving the enabled/disabled
+state into the pwm_state struct. This way we can easily update the whole
+PWM state by copying the new state in the ->state field.
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
+ drivers/pwm/core.c  | 15 ++++++++++++---
+ include/linux/pwm.h |  7 ++++---
+ 2 files changed, 16 insertions(+), 6 deletions(-)
 
-Changes in v2: None
-
- drivers/usb/host/ehci-tegra.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
-
-diff --git a/drivers/usb/host/ehci-tegra.c b/drivers/usb/host/ehci-tegra.c
-index 4031b37..3665eaa 100644
---- a/drivers/usb/host/ehci-tegra.c
-+++ b/drivers/usb/host/ehci-tegra.c
-@@ -589,6 +589,18 @@ static const struct ehci_driver_overrides tegra_overrides __initconst = {
- 	.reset			= tegra_ehci_reset,
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index a6bc8e6..3e830ce 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -474,8 +474,15 @@ EXPORT_SYMBOL_GPL(pwm_set_polarity);
+  */
+ int pwm_enable(struct pwm_device *pwm)
+ {
+-	if (pwm && !test_and_set_bit(PWMF_ENABLED, &pwm->flags))
+-		return pwm->chip->ops->enable(pwm->chip, pwm);
++	if (pwm && !pwm_is_enabled(pwm)) {
++		int err;
++
++		err = pwm->chip->ops->enable(pwm->chip, pwm);
++		if (!err)
++			pwm->state.enabled = true;
++
++		return err;
++	}
+ 
+ 	return pwm ? 0 : -EINVAL;
+ }
+@@ -487,8 +494,10 @@ EXPORT_SYMBOL_GPL(pwm_enable);
+  */
+ void pwm_disable(struct pwm_device *pwm)
+ {
+-	if (pwm && test_and_clear_bit(PWMF_ENABLED, &pwm->flags))
++	if (pwm && pwm_is_enabled(pwm)) {
+ 		pwm->chip->ops->disable(pwm->chip, pwm);
++		pwm->state.enabled = false;
++	}
+ }
+ EXPORT_SYMBOL_GPL(pwm_disable);
+ 
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index fafed26..f4bc034 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -75,8 +75,7 @@ enum pwm_polarity {
+ 
+ enum {
+ 	PWMF_REQUESTED = 1 << 0,
+-	PWMF_ENABLED = 1 << 1,
+-	PWMF_EXPORTED = 1 << 2,
++	PWMF_EXPORTED = 1 << 1,
  };
  
-+static void tegra_ehci_get_dependencies(struct fwnode_handle *fwnode,
-+					struct list_head *deps)
-+{
-+	struct device_node *np;
-+
-+	np = of_parse_phandle(to_of_node(fwnode), "nvidia,phy", 0);
-+	if (!np)
-+		return;
-+
-+	fwnode_add_dependency(&np->fwnode, deps);
-+}
-+
- static int __init ehci_tegra_init(void)
- {
- 	if (usb_disabled())
-@@ -611,6 +623,8 @@ static int __init ehci_tegra_init(void)
- 	tegra_ehci_hc_driver.unmap_urb_for_dma = tegra_ehci_unmap_urb_for_dma;
- 	tegra_ehci_hc_driver.hub_control = tegra_ehci_hub_control;
+ /**
+@@ -84,11 +83,13 @@ enum {
+  * @period: PWM period (in nanoseconds)
+  * @duty_cycle: PWM duty cycle (in nanoseconds)
+  * @polarity: PWM polarity
++ * @enabled: PWM enabled status
+  */
+ struct pwm_state {
+ 	unsigned int period;
+ 	unsigned int duty_cycle;
+ 	enum pwm_polarity polarity;
++	bool enabled;
+ };
  
-+	fwnode_add_dependency_parser(tegra_ehci_get_dependencies);
-+
- 	return platform_driver_register(&tegra_ehci_driver);
- }
- module_init(ehci_tegra_init);
-@@ -618,6 +632,8 @@ module_init(ehci_tegra_init);
- static void __exit ehci_tegra_cleanup(void)
- {
- 	platform_driver_unregister(&tegra_ehci_driver);
-+
-+	fwnode_remove_dependency_parser(tegra_ehci_get_dependencies);
- }
- module_exit(ehci_tegra_cleanup);
+ struct pwm_device {
+@@ -104,7 +105,7 @@ struct pwm_device {
  
+ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
+ {
+-	return test_bit(PWMF_ENABLED, &pwm->flags);
++	return pwm->state.enabled;
+ }
+ 
+ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
 -- 
-2.4.1
+1.9.1
 

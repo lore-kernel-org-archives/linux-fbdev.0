@@ -1,190 +1,236 @@
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Thu, 30 Jul 2015 16:53:39 +0000
-Subject: [PATCH v3 00/24] replace ioremap_{cache|wt} with memremap
-Message-Id: <20150730165155.33962.64121.stgit@dwillia2-desk3.amr.corp.intel.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 20 Jul 2015 15:31:58 +0000
+Subject: [PATCH v2 01/10] pwm: introduce default period and polarity concepts
+Message-Id: <1437406327-6207-2-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tglx@linutronix.de, mingo@kernel.org, hpa@zytor.com
-Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Lv Zheng <lv.zheng@intel.com>, Daniel Vetter <daniel.vetter@intel.com>, Benjamin Romer <benjamin.romer@unisys.com>, hch@lst.de, linux-arch@vger.kernel.org, linux-nvdimm@lists.01.org, Joerg Roedel <joro@8bytes.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Bob Moore <robert.moore@intel.com>, Mike Waychison <mikew@google.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, rmk+kernel@arm.linux.org.uk, Ross Zwisler <ross.zwisler@linux.intel.com>, David Kershner <david.kershner@unisys.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, mcgrof@suse.com, Len Brown <lenb@kernel.org>, Joerg Roedel <jroedel@suse.de>, Arnd Bergmann <arnd@arndb.de>, intel-gfx@lists.freedesktop.org, Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infra
+To: linux-arm-kernel@lists.infradead.org
 
-Changes since v2 [1]:
+When requested by a user, the PWM is assigned a default period and polarity
+extracted from the DT, the platform data or statically set by the driver.
+Those default values are currently stored in the period and polarity
+fields of the pwm_device struct, but they will be stored somewhere else
+once we have introduced the architecture allowing for hardware state
+retrieval.
 
-1/ Move arch_memremap() and arch_memunmap() out of line (Christoph)
+The pwm_set_default_polarity and pwm_set_default_period should only be
+used by PWM drivers or the PWM core infrastructure to specify the
+default period and polarity values.
 
-2/ Convert region_is_ram() to region_intersects() and define an enum for
-   its 3 return values. (Luis)
+PWM users might call the pwm_get_default_period to query the default
+period value. There is currently no helper to query the default
+polarity, but it might be added later on if there is a need for it.
 
-3/ Fix gma500 and i915 to explicitly use cached mappings and clean up
-   the __iomem usage. (Daniel)
+This patch also modifies all the places where the default helpers should
+be used in place of the standard ones.
 
-4/ Kill unused ioremap aliases (ioremap_cached() and
-   ioremap_fullcache()) (Christoph)
-
-5/ Clarify some change logs and documentation (Luis, Christoph, and
-   Ross)
-
-6/ Add a unified CONFIG_MMU=n implementation with __weak symbols. (Luis)
-
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
-While developing the pmem driver we noticed that the __iomem annotation
-on the return value from ioremap_cache() was being mishandled by several
-callers.  We also observed that all of the call sites expected to be
-able to treat the return value from ioremap_cache() as normal
-(non-__iomem) pointer to memory.
+ drivers/leds/leds-pwm.c              |  2 +-
+ drivers/pwm/core.c                   | 14 +++++++-------
+ drivers/pwm/pwm-pxa.c                |  2 +-
+ drivers/pwm/pwm-sun4i.c              |  3 ++-
+ drivers/regulator/pwm-regulator.c    |  2 +-
+ drivers/video/backlight/lm3630a_bl.c |  4 ++--
+ drivers/video/backlight/pwm_bl.c     |  2 +-
+ drivers/video/fbdev/ssd1307fb.c      |  2 +-
+ include/linux/pwm.h                  | 17 +++++++++++++++++
+ 9 files changed, 33 insertions(+), 15 deletions(-)
 
-This patchset takes the opportunity to clean up the above confusion as
-well as a few issues with the ioremap_{cache|wt} interface, including:
+diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
+index 1d07e3e..2c564d1 100644
+--- a/drivers/leds/leds-pwm.c
++++ b/drivers/leds/leds-pwm.c
+@@ -125,7 +125,7 @@ static int led_pwm_add(struct device *dev, struct led_pwm_priv *priv,
+ 	if (led_data->can_sleep)
+ 		INIT_WORK(&led_data->work, led_pwm_work);
+ 
+-	led_data->period = pwm_get_period(led_data->pwm);
++	led_data->period = pwm_get_default_period(led_data->pwm);
+ 	if (!led_data->period && (led->pwm_period_ns > 0))
+ 		led_data->period = led->pwm_period_ns;
+ 
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index f7c11d2..7ffad2b 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -146,12 +146,12 @@ of_pwm_xlate_with_flags(struct pwm_chip *pc, const struct of_phandle_args *args)
+ 	if (IS_ERR(pwm))
+ 		return pwm;
+ 
+-	pwm_set_period(pwm, args->args[1]);
++	pwm_set_default_period(pwm, args->args[1]);
+ 
+ 	if (args->args[2] & PWM_POLARITY_INVERTED)
+-		pwm_set_polarity(pwm, PWM_POLARITY_INVERSED);
++		pwm_set_default_polarity(pwm, PWM_POLARITY_INVERSED);
+ 	else
+-		pwm_set_polarity(pwm, PWM_POLARITY_NORMAL);
++		pwm_set_default_polarity(pwm, PWM_POLARITY_NORMAL);
+ 
+ 	return pwm;
+ }
+@@ -172,7 +172,7 @@ of_pwm_simple_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
+ 	if (IS_ERR(pwm))
+ 		return pwm;
+ 
+-	pwm_set_period(pwm, args->args[1]);
++	pwm_set_default_period(pwm, args->args[1]);
+ 
+ 	return pwm;
+ }
+@@ -262,7 +262,7 @@ int pwmchip_add_with_polarity(struct pwm_chip *chip,
+ 		pwm->chip = chip;
+ 		pwm->pwm = chip->base + i;
+ 		pwm->hwpwm = i;
+-		pwm->polarity = polarity;
++		pwm_set_default_polarity(pwm, polarity);
+ 
+ 		radix_tree_insert(&pwm_tree, pwm->pwm, pwm);
+ 	}
+@@ -704,8 +704,8 @@ struct pwm_device *pwm_get(struct device *dev, const char *con_id)
+ 	if (IS_ERR(pwm))
+ 		goto out;
+ 
+-	pwm_set_period(pwm, chosen->period);
+-	pwm_set_polarity(pwm, chosen->polarity);
++	pwm_set_default_period(pwm, chosen->period);
++	pwm_set_default_polarity(pwm, chosen->polarity);
+ 
+ out:
+ 	mutex_unlock(&pwm_lookup_lock);
+diff --git a/drivers/pwm/pwm-pxa.c b/drivers/pwm/pwm-pxa.c
+index cb2f702..65b80aa 100644
+--- a/drivers/pwm/pwm-pxa.c
++++ b/drivers/pwm/pwm-pxa.c
+@@ -160,7 +160,7 @@ pxa_pwm_of_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
+ 	if (IS_ERR(pwm))
+ 		return pwm;
+ 
+-	pwm_set_period(pwm, args->args[0]);
++	pwm_set_default_period(pwm, args->args[0]);
+ 
+ 	return pwm;
+ }
+diff --git a/drivers/pwm/pwm-sun4i.c b/drivers/pwm/pwm-sun4i.c
+index cd9dde5..a364fb7 100644
+--- a/drivers/pwm/pwm-sun4i.c
++++ b/drivers/pwm/pwm-sun4i.c
+@@ -333,7 +333,8 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
+ 	val = sun4i_pwm_readl(pwm, PWM_CTRL_REG);
+ 	for (i = 0; i < pwm->chip.npwm; i++)
+ 		if (!(val & BIT_CH(PWM_ACT_STATE, i)))
+-			pwm->chip.pwms[i].polarity = PWM_POLARITY_INVERSED;
++			pwm_set_default_polarity(&pwm->chip.pwms[i],
++						 PWM_POLARITY_INVERSED);
+ 	clk_disable_unprepare(pwm->clk);
+ 
+ 	return 0;
+diff --git a/drivers/regulator/pwm-regulator.c b/drivers/regulator/pwm-regulator.c
+index ffa9612..12b4d9d 100644
+--- a/drivers/regulator/pwm-regulator.c
++++ b/drivers/regulator/pwm-regulator.c
+@@ -46,7 +46,7 @@ static int pwm_regulator_set_voltage_sel(struct regulator_dev *rdev,
+ 	int dutycycle;
+ 	int ret;
+ 
+-	pwm_reg_period = pwm_get_period(drvdata->pwm);
++	pwm_reg_period = pwm_get_default_period(drvdata->pwm);
+ 
+ 	dutycycle = (pwm_reg_period *
+ 		    drvdata->duty_cycle_table[selector].dutycycle) / 100;
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 35fe482..449ebc3 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -162,7 +162,7 @@ static int lm3630a_intr_config(struct lm3630a_chip *pchip)
+ 
+ static void lm3630a_pwm_ctrl(struct lm3630a_chip *pchip, int br, int br_max)
+ {
+-	unsigned int period = pwm_get_period(pchip->pwmd);
++	unsigned int period = pwm_get_default_period(pchip->pwmd);
+ 	unsigned int duty = br * period / br_max;
+ 
+ 	pwm_config(pchip->pwmd, duty, period);
+@@ -425,7 +425,7 @@ static int lm3630a_probe(struct i2c_client *client,
+ 			return PTR_ERR(pchip->pwmd);
+ 		}
+ 	}
+-	pchip->pwmd->period = pdata->pwm_period;
++	pwm_set_default_period(pchip->pwmd, pdata->pwm_period);
+ 
+ 	/* interrupt enable  : irq 0 is not allowed */
+ 	pchip->irq = client->irq;
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index eff379b..ae498c1 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -294,7 +294,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	 * set the period from platform data if it has not already been set
+ 	 * via the PWM lookup table.
+ 	 */
+-	pb->period = pwm_get_period(pb->pwm);
++	pb->period = pwm_get_default_period(pb->pwm);
+ 	if (!pb->period && (data->pwm_period_ns > 0)) {
+ 		pb->period = data->pwm_period_ns;
+ 		pwm_set_period(pb->pwm, data->pwm_period_ns);
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 3e153c0..6949626 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -294,7 +294,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ 			return PTR_ERR(par->pwm);
+ 		}
+ 
+-		par->pwm_period = pwm_get_period(par->pwm);
++		par->pwm_period = pwm_get_default_period(par->pwm);
+ 		/* Enable the PWM */
+ 		pwm_config(par->pwm, par->pwm_period / 2, par->pwm_period);
+ 		pwm_enable(par->pwm);
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index 6f286df..ba4b7ed 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -103,11 +103,22 @@ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
+ 		pwm->period = period;
+ }
+ 
++static inline void pwm_set_default_period(struct pwm_device *pwm,
++					  unsigned int period)
++{
++	pwm_set_period(pwm, period);
++}
++
+ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
+ {
+ 	return pwm ? pwm->period : 0;
+ }
+ 
++static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
++{
++	return pwm_get_period(pwm);
++}
++
+ static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
+ {
+ 	if (pwm)
+@@ -124,6 +135,12 @@ static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
+  */
+ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
+ 
++static inline void pwm_set_default_polarity(struct pwm_device *pwm,
++					    enum pwm_polarity polarity)
++{
++	pwm_set_polarity(pwm, polarity);
++}
++
+ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+ {
+ 	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
+-- 
+1.9.1
 
-1/ Eliminating the possibility of function prototypes differing between
-   architectures by defining a central memremap() prototype that takes
-   flags to determine the mapping type.
-
-2/ Returning NULL rather than falling back silently to a different
-   mapping-type.  This allows drivers to be stricter about the
-   mapping-type fallbacks that are permissible.
-
-[1]: http://marc.info/?l=linux-arch&m3779222217405&w=2
-
----
-
-Dan Williams (24):
-      mm: enhance region_is_ram() to region_intersects()
-      arch, drivers: don't include <asm/io.h> directly, use <linux/io.h> instead
-      cleanup IORESOURCE_CACHEABLE vs ioremap()
-      intel_iommu: fix leaked ioremap mapping
-      arch: introduce memremap()
-      arm: switch from ioremap_cache to memremap
-      x86: switch from ioremap_cache to memremap
-      gma500: switch from acpi_os_ioremap to memremap
-      i915: switch from acpi_os_ioremap to memremap
-      acpi: switch from ioremap_cache to memremap
-      toshiba laptop: replace ioremap_cache with ioremap
-      memconsole: fix __iomem mishandling, switch to memremap
-      visorbus: switch from ioremap_cache to memremap
-      intel-iommu: switch from ioremap_cache to memremap
-      libnvdimm, pmem: push call to ioremap_cache out of line
-      pxa2xx-flash: switch from ioremap_cache to memremap
-      sfi: switch from ioremap_cache to memremap
-      fbdev: switch from ioremap_wt to memremap
-      pmem: switch from ioremap_wt to memremap
-      arch: kill ioremap_cached()
-      arch: kill ioremap_fullcache()
-      arch: remove ioremap_cache, replace with arch_memremap
-      arch: remove ioremap_wt, optionally replace with arch_memremap
-      pmem: convert to generic memremap
-
-
- Documentation/x86/pat.txt                      |    6 +
- arch/arc/include/asm/io.h                      |    1 
- arch/arm/Kconfig                               |    1 
- arch/arm/include/asm/io.h                      |    7 --
- arch/arm/include/asm/xen/page.h                |    4 -
- arch/arm/mach-clps711x/board-cdb89712.c        |    2 
- arch/arm/mach-shmobile/pm-rcar.c               |    2 
- arch/arm/mm/ioremap.c                          |   18 +++-
- arch/arm/mm/mmu.c                              |    2 
- arch/arm/mm/nommu.c                            |   11 ++
- arch/arm64/Kconfig                             |    1 
- arch/arm64/include/asm/acpi.h                  |   11 --
- arch/arm64/include/asm/dmi.h                   |    8 +-
- arch/arm64/include/asm/io.h                    |    2 
- arch/arm64/kernel/efi.c                        |    9 +-
- arch/arm64/kernel/smp_spin_table.c             |   19 ++--
- arch/arm64/mm/ioremap.c                        |   20 ++--
- arch/avr32/include/asm/io.h                    |    1 
- arch/frv/include/asm/io.h                      |   12 ---
- arch/ia64/Kconfig                              |    1 
- arch/ia64/include/asm/io.h                     |    5 -
- arch/ia64/kernel/cyclone.c                     |    2 
- arch/ia64/mm/ioremap.c                         |   16 +++
- arch/m32r/include/asm/io.h                     |    1 
- arch/m68k/Kconfig                              |    1 
- arch/m68k/include/asm/io_mm.h                  |   12 ---
- arch/m68k/include/asm/io_no.h                  |   11 --
- arch/m68k/include/asm/raw_io.h                 |    1 
- arch/m68k/mm/kmap.c                            |   17 +++-
- arch/m68k/mm/sun3kmap.c                        |    6 +
- arch/metag/include/asm/io.h                    |    6 -
- arch/microblaze/include/asm/io.h               |    2 
- arch/mn10300/include/asm/io.h                  |    1 
- arch/nios2/include/asm/io.h                    |    1 
- arch/powerpc/kernel/pci_of_scan.c              |    2 
- arch/s390/include/asm/io.h                     |    1 
- arch/sh/Kconfig                                |    1 
- arch/sh/include/asm/io.h                       |    6 -
- arch/sh/mm/ioremap.c                           |   15 +++
- arch/sparc/include/asm/io_32.h                 |    1 
- arch/sparc/include/asm/io_64.h                 |    1 
- arch/sparc/kernel/pci.c                        |    3 -
- arch/tile/include/asm/io.h                     |    2 
- arch/unicore32/include/asm/io.h                |    4 -
- arch/unicore32/mm/ioremap.c                    |    8 --
- arch/x86/Kconfig                               |    1 
- arch/x86/include/asm/efi.h                     |    3 -
- arch/x86/include/asm/io.h                      |   11 --
- arch/x86/kernel/crash_dump_64.c                |    6 +
- arch/x86/kernel/kdebugfs.c                     |    8 +-
- arch/x86/kernel/ksysfs.c                       |   28 +++---
- arch/x86/mm/ioremap.c                          |   59 +++++++------
- arch/xtensa/include/asm/io.h                   |   11 --
- drivers/acpi/apei/einj.c                       |    9 +-
- drivers/acpi/apei/erst.c                       |    6 +
- drivers/acpi/nvs.c                             |    6 +
- drivers/acpi/osl.c                             |   70 ++++-----------
- drivers/char/toshiba.c                         |    2 
- drivers/firmware/google/memconsole.c           |    7 +-
- drivers/gpu/drm/gma500/opregion.c              |    8 +-
- drivers/gpu/drm/gma500/psb_drv.h               |    2 
- drivers/gpu/drm/gma500/psb_lid.c               |    8 +-
- drivers/gpu/drm/i915/i915_debugfs.c            |    2 
- drivers/gpu/drm/i915/i915_drv.h                |   12 +--
- drivers/gpu/drm/i915/intel_bios.c              |    7 +-
- drivers/gpu/drm/i915/intel_opregion.c          |   87 +++++++++----------
- drivers/gpu/drm/i915/intel_panel.c             |    2 
- drivers/iommu/intel-iommu.c                    |   10 +-
- drivers/iommu/intel_irq_remapping.c            |    4 +
- drivers/isdn/icn/icn.h                         |    2 
- drivers/mtd/devices/slram.c                    |    2 
- drivers/mtd/maps/pxa2xx-flash.c                |    4 -
- drivers/mtd/nand/diskonchip.c                  |    2 
- drivers/mtd/onenand/generic.c                  |    2 
- drivers/nvdimm/Kconfig                         |    2 
- drivers/pci/probe.c                            |    3 -
- drivers/pnp/manager.c                          |    2 
- drivers/scsi/aic94xx/aic94xx_init.c            |    7 --
- drivers/scsi/arcmsr/arcmsr_hba.c               |    5 -
- drivers/scsi/mvsas/mv_init.c                   |   15 +--
- drivers/scsi/sun3x_esp.c                       |    2 
- drivers/sfi/sfi_core.c                         |    4 -
- drivers/staging/comedi/drivers/ii_pci20kc.c    |    1 
- drivers/staging/unisys/visorbus/visorchannel.c |   16 ++-
- drivers/staging/unisys/visorbus/visorchipset.c |   17 ++--
- drivers/tty/serial/8250/8250_core.c            |    2 
- drivers/video/fbdev/Kconfig                    |    2 
- drivers/video/fbdev/amifb.c                    |    5 +
- drivers/video/fbdev/atafb.c                    |    5 +
- drivers/video/fbdev/hpfb.c                     |    6 +
- drivers/video/fbdev/ocfb.c                     |    1 
- drivers/video/fbdev/s1d13xxxfb.c               |    3 -
- drivers/video/fbdev/stifb.c                    |    1 
- include/acpi/acpi_io.h                         |    6 -
- include/asm-generic/io.h                       |    8 --
- include/asm-generic/iomap.h                    |    4 -
- include/linux/io-mapping.h                     |    2 
- include/linux/io.h                             |   11 ++
- include/linux/mm.h                             |    9 ++
- include/linux/mtd/map.h                        |    2 
- include/linux/pmem.h                           |   26 +++---
- include/video/vga.h                            |    2 
- kernel/Makefile                                |    2 
- kernel/memremap.c                              |  110 ++++++++++++++++++++++++
- kernel/resource.c                              |   61 ++++++++-----
- lib/Kconfig                                    |    5 +
- lib/devres.c                                   |   13 +--
- lib/pci_iomap.c                                |    7 --
- tools/testing/nvdimm/Kbuild                    |    4 -
- tools/testing/nvdimm/test/iomap.c              |   34 +++++--
- 110 files changed, 553 insertions(+), 497 deletions(-)
- create mode 100644 kernel/memremap.c

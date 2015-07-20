@@ -1,45 +1,46 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Date: Fri, 03 Jul 2015 08:43:22 +0000
-Subject: [PATCH] pwm: add informations about polarity, duty cycle and period to debugfs
-Message-Id: <2415780.vdSYHqsCOV@diego>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 20 Jul 2015 15:32:01 +0000
+Subject: [PATCH v2 04/10] backlight: pwm_bl: remove useless call to pwm_set_period
+Message-Id: <1437406327-6207-5-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
- <3365087.n2eEES60JK@diego> <20150702150141.5018a791@bbrezillon>
-In-Reply-To: <20150702150141.5018a791@bbrezillon>
+References: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1437406327-6207-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-The pwm-states make it possible to also output the polarity, duty cycle
-and period information in the debugfs pwm summary-outout.
-This makes it easier to gather overview information about pwms without
-needing to walk through the sysfs attributes of every pwm.
+The PWM period will be set when calling pwm_config. Remove this useless
+call to pwm_set_period, which might mess up with the initial PWM state
+once we have added proper support for PWM init state retrieval.
 
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
-now values are printed independent of the enable status :-)
+ drivers/video/backlight/pwm_bl.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
- drivers/pwm/core.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index 6dafd8e..4360ebb 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -954,6 +954,11 @@ static void pwm_dbg_show(struct pwm_chip *chip, struct seq_file *s)
- 		if (pwm_is_enabled(pwm))
- 			seq_puts(s, " enabled");
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index ae498c1..71944f8 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -293,12 +293,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	 * period, parsed from the DT, in the PWM device. For the non-DT case,
+ 	 * set the period from platform data if it has not already been set
+ 	 * via the PWM lookup table.
++	 * FIXME: This assignment should be dropped as soon as all the boards
++	 * have moved to the PWM lookup table approach. The same goes for the
++	 * pb->period field which should be replaced by
++	 * pwm_get_default_period() calls.
+ 	 */
+ 	pb->period = pwm_get_default_period(pb->pwm);
+-	if (!pb->period && (data->pwm_period_ns > 0)) {
++	if (!pb->period && (data->pwm_period_ns > 0))
+ 		pb->period = data->pwm_period_ns;
+-		pwm_set_period(pb->pwm, data->pwm_period_ns);
+-	}
  
-+		seq_printf(s, " period:%uns", pwm_get_period(pwm));
-+		seq_printf(s, " duty:%uns", pwm_get_duty_cycle(pwm));
-+		seq_printf(s, " polarity:%s", pwm_get_polarity(pwm) ? "inverse"
-+								    : "normal");
-+
- 		seq_puts(s, "\n");
- 	}
- }
+ 	pb->lth_brightness = data->lth_brightness * (pb->period / pb->scale);
+ 
 -- 
-2.1.4
-
+1.9.1
 

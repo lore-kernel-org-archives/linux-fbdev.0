@@ -1,101 +1,110 @@
-From: Manfred Schlaegl <manfred.schlaegl@gmx.at>
-Date: Wed, 15 Jul 2015 15:50:18 +0000
-Subject: [RFC PATCH 1/2] drm: add support for for clk and de polarity
-Message-Id: <55A6813A.8090706@gmx.at>
+From: Vinay Simha BN <simhavcs@gmail.com>
+Date: Tue, 21 Jul 2015 07:52:01 +0000
+Subject: [PATCH 2/2] sm750fb: coding style fixes lines over 80 chars - v2
+Message-Id: <1437464402-18451-2-git-send-email-simhavcs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <55A67FDB.8010602@gmx.at>
-In-Reply-To: <55A67FDB.8010602-RbZlAiThDcE@public.gmane.org>
+References: <1437461084-17565-1-git-send-email-simhavcs@gmail.com>
+ <1437464402-18451-1-git-send-email-simhavcs@gmail.com>
+In-Reply-To: <1437464402-18451-1-git-send-email-simhavcs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manfred Schlaegl <manfred.schlaegl-hfTNJOUbDMh54TAoqtyWWQ@public.gmane.org>, Steve Longerbeam <slongerbeam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Deepak Das <deepak_das-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>, Jiada Wang <jiada_wang-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Vinay Simha BN <simhavcs@gmail.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "open list:STAGING - SILICON MOTION SM750
+	FRAME BUFFER DRIVER" <linux-fbdev@vger.kernel.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, open list <linux-kernel@vger.kernel.org>
 
-To get full support for parallel and LVDS displays with drm:
-Add representation for clock and data enable polarity in drm_display_mode
-flags (similar to HSYNC/VSYNC polarity) and update conversion functions
-from/to videomode accordingly.
-
-This is especially important for embedded devices where parallel(RGB) and
-LVDS displays are still widely used and drm already plays an important
-role.
-
-Tested on Freescale i.MX53(parallel) and i.MX6(LVDS).
-
-Background:
-There was the ability to set polarity of clock and data enable signals
-in devicetree(display-timing), struct display_timing and struct videomode,
-but there was no representation for this in struct drm_display_mode.
-Example on Freescale i.MX53/i.MX6 SoC's:
- * A parallel display using different clock polarity is set up using
-   display-timing in devicetree
- * ipuv3 parallel outputs clock with wrong polarity
-
-Signed-off-by: Manfred Schlaegl <manfred.schlaegl@gmx.at>
 ---
- drivers/gpu/drm/drm_modes.c | 16 ++++++++++++++++
- include/uapi/drm/drm_mode.h |  5 +++++
- 2 files changed, 21 insertions(+)
+ drivers/staging/sm750fb/sm750_accel.h | 30 ++++++++++++++++++++----------
+ drivers/staging/sm750fb/sm750_help.h  | 23 +----------------------
+ 2 files changed, 21 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index cd74a09..dbb28b7 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -605,6 +605,14 @@ void drm_display_mode_from_videomode(const struct videomode *vm,
- 		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
- 	else if (vm->flags & DISPLAY_FLAGS_VSYNC_LOW)
- 		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
-+	if (vm->flags & DISPLAY_FLAGS_DE_HIGH)
-+		dmode->flags |= DRM_MODE_FLAG_PDE;
-+	else if (vm->flags & DISPLAY_FLAGS_DE_LOW)
-+		dmode->flags |= DRM_MODE_FLAG_NDE;
-+	if (vm->flags & DISPLAY_FLAGS_PIXDATA_POSEDGE)
-+		dmode->flags |= DRM_MODE_FLAG_PPIXDATA;
-+	else if (vm->flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
-+		dmode->flags |= DRM_MODE_FLAG_NPIXDATA;
- 	if (vm->flags & DISPLAY_FLAGS_INTERLACED)
- 		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
- 	if (vm->flags & DISPLAY_FLAGS_DOUBLESCAN)
-@@ -646,6 +654,14 @@ void drm_display_mode_to_videomode(const struct drm_display_mode *dmode,
- 		vm->flags |= DISPLAY_FLAGS_VSYNC_HIGH;
- 	else if (dmode->flags & DRM_MODE_FLAG_NVSYNC)
- 		vm->flags |= DISPLAY_FLAGS_VSYNC_LOW;
-+	if (dmode->flags & DRM_MODE_FLAG_PDE)
-+		vm->flags |= DISPLAY_FLAGS_DE_HIGH;
-+	else if (dmode->flags & DRM_MODE_FLAG_NDE)
-+		vm->flags |= DISPLAY_FLAGS_DE_LOW;
-+	if (dmode->flags & DRM_MODE_FLAG_PPIXDATA)
-+		vm->flags |= DISPLAY_FLAGS_PIXDATA_POSEDGE;
-+	else if (dmode->flags & DRM_MODE_FLAG_NPIXDATA)
-+		vm->flags |= DISPLAY_FLAGS_PIXDATA_NEGEDGE;
- 	if (dmode->flags & DRM_MODE_FLAG_INTERLACE)
- 		vm->flags |= DISPLAY_FLAGS_INTERLACED;
- 	if (dmode->flags & DRM_MODE_FLAG_DBLSCAN)
-diff --git a/include/uapi/drm/drm_mode.h b/include/uapi/drm/drm_mode.h
-index 359107a..cb4912b 100644
---- a/include/uapi/drm/drm_mode.h
-+++ b/include/uapi/drm/drm_mode.h
-@@ -72,6 +72,11 @@
- #define  DRM_MODE_FLAG_3D_L_DEPTH_GFX_GFX_DEPTH	(6<<14)
- #define  DRM_MODE_FLAG_3D_TOP_AND_BOTTOM	(7<<14)
- #define  DRM_MODE_FLAG_3D_SIDE_BY_SIDE_HALF	(8<<14)
-+/* flags for display data enable and clock polarity */
-+#define DRM_MODE_FLAG_PDE			(1<<19)
-+#define DRM_MODE_FLAG_NDE			(1<<20)
-+#define DRM_MODE_FLAG_PPIXDATA			(1<<21)
-+#define DRM_MODE_FLAG_NPIXDATA			(1<<22)
+diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
+index da067a0..c56fa99 100644
+--- a/drivers/staging/sm750fb/sm750_accel.h
++++ b/drivers/staging/sm750fb/sm750_accel.h
+@@ -259,12 +259,18 @@ unsigned int height, /* width and height of rectangle in pixel value */
+ unsigned int rop2);
  
+ int hw_imageblit(struct lynx_accel *accel,
+-		 const char *pSrcbuf, /* pointer to start of source
+-					buffer in system memory */
+-		 u32 srcDelta, /* Pitch value (in bytes) of the source buffer,
+-				+ive means top down and -ive mean button up */
+-		 u32 startBit, /* Mono data can start at any bit in a byte,
+-				 this value should be 0 to 7 */
++		 const char *pSrcbuf,  /*
++					* pointer to start of source
++					* buffer in system memory
++					*/
++		 u32 srcDelta, /*
++				* Pitch value (in bytes) of the source buffer,
++				* +ive means top down and -ive mean button up
++				*/
++		 u32 startBit, /*
++				* Mono data can start at any bit in a byte,
++				* this value should be 0 to 7
++				*/
+ 		 u32 dBase, /* Address of destination: offset in frame buffer */
+ 		 u32 dPitch,   /* Pitch value of destination surface in BYTE */
+ 		 u32 bytePerPixel,      /* Color depth of destination surface */
+@@ -272,9 +278,13 @@ int hw_imageblit(struct lynx_accel *accel,
+ 		 u32 dy,       /* Starting coordinate of destination surface */
+ 		 u32 width,
+ 		 u32 height,   /* width and height of rectange in pixel value */
+-		 u32 fColor,   /* Foreground color (corresponding to a 1 in the
+-				 monochrome data */
+-		 u32 bColor,   /* Background color (corresponding to a 0 in the
+-				 monochrome data */
++		 u32 fColor,   /*
++				* Foreground color (corresponding to a 1 in the
++				* monochrome data
++				*/
++		 u32 bColor,   /*
++				* Background color (corresponding to a 0 in the
++				* monochrome data
++				*/
+ 		 u32 rop2);
+ #endif
+diff --git a/drivers/staging/sm750fb/sm750_help.h b/drivers/staging/sm750fb/sm750_help.h
+index 43d700b..c9378e2 100644
+--- a/drivers/staging/sm750fb/sm750_help.h
++++ b/drivers/staging/sm750fb/sm750_help.h
+@@ -1,7 +1,7 @@
+ #ifndef LYNX_HELP_H__
+ #define LYNX_HELP_H__
  
- /* DPMS flags */
+-/*  FIELD MACROS */
++/* FIELD MACROS */
+ #define _LSB(f)             (0 ? f)
+ #define _MSB(f)             (1 ? f)
+ #define _COUNT(f)           (_MSB(f) - _LSB(f) + 1)
+@@ -46,27 +46,6 @@
+ 	~ _F_MASK(reg ## _ ## field) \
+ )
+ 
+-/* Field Macros */
+-#define FIELD_START(field)              (0 ? field)
+-#define FIELD_END(field)                (1 ? field)
+-#define FIELD_SIZE(field)               (1 + FIELD_END(field) - \
+-						FIELD_START(field))
+-#define FIELD_MASK(field)               (((1 << (FIELD_SIZE(field)-1)) \
+-					| ((1 << (FIELD_SIZE(field)-1)) - 1)) \
+-					<< FIELD_START(field))
+-#define FIELD_NORMALIZE(reg, field)     (((reg) & FIELD_MASK(field)) >> \
+-					FIELD_START(field))
+-#define FIELD_DENORMALIZE(field, value) (((value) << FIELD_START(field)) & \
+-					 FIELD_MASK(field))
+-
+-#define FIELD_INIT(reg, field, value)   FIELD_DENORMALIZE(reg ## _ ## field, \
+-					  reg ## _ ## field ## _ ## value)
+-#define FIELD_INIT_VAL(reg, field, value) \
+-	(FIELD_DENORMALIZE(reg ## _ ## field, value))
+-#define FIELD_VAL_SET(x, r, f, v)       x = x & ~FIELD_MASK(r ## _ ## f) \
+-					| FIELD_DENORMALIZE(r ## _ ## f, \
+-					 r ## _ ## f ## _ ## v)
+-
+ #define RGB(r, g, b) \
+ ( \
+ 	(unsigned long) (((r) << 16) | ((g) << 8) | (b)) \
 -- 
-2.1.4
-
-
-
-
-
-
-
-
-
+2.1.2
 

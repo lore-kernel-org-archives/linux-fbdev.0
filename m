@@ -1,17 +1,17 @@
-From: Rob Clark <robdclark@gmail.com>
-Date: Fri, 24 Jul 2015 13:10:21 +0000
+From: Rob Herring <robherring2@gmail.com>
+Date: Fri, 24 Jul 2015 15:29:03 +0000
 Subject: Re: [PATCH] backlight: pm8941-wled: Add default-brightness property
-Message-Id: <CAF6AEGsJdLYzCA_=M8hf1XfhRxFAaY6VFdSBRP+y56uKsnQHiA@mail.gmail.com>
+Message-Id: <CAL_JsqKxdF5sj=edURFLDCk1OyCJR-w6+STL4r3zM6+be3tjhg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1437681127-15760-1-git-send-email-bjorn.andersson@sonymobile.com>
-In-Reply-To: <1437681127-15760-1-git-send-email-bjorn.andersson-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
+In-Reply-To: <1437681127-15760-1-git-send-email-bjorn.andersson@sonymobile.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Andersson <bjorn.andersson-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Rob Clark <robdclark@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>
 
-On Thu, Jul 23, 2015 at 3:52 PM, Bjorn Andersson
+On Thu, Jul 23, 2015 at 2:52 PM, Bjorn Andersson
 <bjorn.andersson@sonymobile.com> wrote:
 > Add the possibility of specifying the default brightness in DT.
 >
@@ -21,6 +21,19 @@ On Thu, Jul 23, 2015 at 3:52 PM, Bjorn Andersson
 > This depends on the patch moving pm8941-wled to backlight [1]. The dt property
 > is used by several other backlight drivers, so I considered this to be a
 > "common" property and it's hence not prefixed with "qcom,".
+
+Well, we have "default-brightness" and "default-brightness-level" used
+by 1 driver each. But default-brightness-level is much more commonly
+used (in dts files) since it is in the pwm backlight binding, so we
+should go with it. I'd like to see this moved to a common backlight
+doc.
+
+Really, I think all the backlight documentation should be merged with
+LEDs docs. Things like "default-on" are common. But I won't ask to do
+that here.
+
+Rob
+
 >
 > [1] https://lkml.org/lkml/2015/7/21/906
 >
@@ -50,20 +63,7 @@ On Thu, Jul 23, 2015 at 3:52 PM, Bjorn Andersson
 >         struct regmap *regmap;
 > +       u32 val = 0;
 >         int rc;
-
-as discussed on IRC, it would be better if the default read back the
-current settings (so-as to inherit bootloader splash smoothly..
-drm/msm supports a memory-region phandle, for example, so it can take
-over the bootloader splash-screen as stolen-mem)
-
-and it would I think be useful to have a comment in the bindings file
-explaining that you *should* use the default-brightness property to
-set a sane default if bootloader isn't putting up a splash, and you
-should *not* use the property if it is..
-
-BR,
--R
-
+>
 >         regmap = dev_get_regmap(pdev->dev.parent, NULL);
 > @@ -395,8 +396,11 @@ static int pm8941_wled_probe(struct platform_device *pdev)
 >         if (rc)

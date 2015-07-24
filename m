@@ -1,100 +1,168 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Mon, 20 Jul 2015 10:04:51 +0000
-Subject: Re: [RFC PATCH 11/15] pwm: add the core infrastructure to allow atomic update
-Message-Id: <20150720100451.GW29614@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="UTjKcilERHWBCdCp"
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Fri, 24 Jul 2015 13:31:28 +0000
+Subject: [PATCH] ARM/fb: ep93xx: switch framebuffer to use modedb only
+Message-Id: <1437744688-29915-1-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435738921-25027-1-git-send-email-boris.brezillon@free-electrons.com>
- <1435738921-25027-12-git-send-email-boris.brezillon@free-electrons.com>
- <20150720085939.GL29614@ulmo> <20150720114827.2e5d52a5@bbrezillon>
-In-Reply-To: <20150720114827.2e5d52a5@bbrezillon>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
+All the EP93xx boards exclusively use modedb to look up video
+modes from the command line. Root out the parametrization of
+custom video modes from the platform data and board files
+and simplify the driver.
 
---UTjKcilERHWBCdCp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+J-C/Tomi: please ACK this if you're OK with it so I can take
+it through the ARM SoC tree.
+---
+ arch/arm/mach-ep93xx/edb93xx.c             |  2 --
+ arch/arm/mach-ep93xx/simone.c              |  2 --
+ arch/arm/mach-ep93xx/snappercl15.c         |  2 --
+ arch/arm/mach-ep93xx/vision_ep9307.c       |  2 --
+ drivers/video/fbdev/ep93xx-fb.c            | 30 ++++--------------------------
+ include/linux/platform_data/video-ep93xx.h |  8 --------
+ 6 files changed, 4 insertions(+), 42 deletions(-)
 
-On Mon, Jul 20, 2015 at 11:48:27AM +0200, Boris Brezillon wrote:
-> On Mon, 20 Jul 2015 10:59:40 +0200 Thierry Reding <thierry.reding@gmail.c=
-om> wrote:
-> > On Wed, Jul 01, 2015 at 10:21:57AM +0200, Boris Brezillon wrote:
-[...]
-> > > +int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *=
-state)
-> > > +{
-> > > +	int err =3D 0;
-> > > +
-> > > +	if (!pwm)
-> > > +		return -EINVAL;
-> > > +
-> > > +	if (!memcmp(state, &pwm->state, sizeof(*state)))
-> > > +		return 0;
-> > > +
-> > > +	if (pwm->chip->ops->apply) {
-> > > +		err =3D pwm->chip->ops->apply(pwm->chip, pwm, state);
-> > > +		if (!err)
-> > > +			pwm->state =3D *state;
-> >=20
-> > Maybe we want pwm_set_state() for this?
->=20
-> I'm not opposed to the addition of the pwm_set_state() function as long
-> as it's a private one: I don't want to let PMW drivers or users mess up
-> with the current PWM state.
+diff --git a/arch/arm/mach-ep93xx/edb93xx.c b/arch/arm/mach-ep93xx/edb93xx.c
+index 27b14ae92c7e..ad92d9f7e4df 100644
+--- a/arch/arm/mach-ep93xx/edb93xx.c
++++ b/arch/arm/mach-ep93xx/edb93xx.c
+@@ -205,8 +205,6 @@ static void __init edb93xx_register_pwm(void)
+  * EDB93xx framebuffer
+  *************************************************************************/
+ static struct ep93xxfb_mach_info __initdata edb93xxfb_info = {
+-	.num_modes	= EP93XXFB_USE_MODEDB,
+-	.bpp		= 16,
+ 	.flags		= 0,
+ };
+ 
+diff --git a/arch/arm/mach-ep93xx/simone.c b/arch/arm/mach-ep93xx/simone.c
+index d0938a219443..7bb540c421ee 100644
+--- a/arch/arm/mach-ep93xx/simone.c
++++ b/arch/arm/mach-ep93xx/simone.c
+@@ -40,8 +40,6 @@ static struct ep93xx_eth_data __initdata simone_eth_data = {
+ };
+ 
+ static struct ep93xxfb_mach_info __initdata simone_fb_info = {
+-	.num_modes	= EP93XXFB_USE_MODEDB,
+-	.bpp		= 16,
+ 	.flags		= EP93XXFB_USE_SDCSN0 | EP93XXFB_PCLK_FALLING,
+ };
+ 
+diff --git a/arch/arm/mach-ep93xx/snappercl15.c b/arch/arm/mach-ep93xx/snappercl15.c
+index aa86f86638dd..c4904264256a 100644
+--- a/arch/arm/mach-ep93xx/snappercl15.c
++++ b/arch/arm/mach-ep93xx/snappercl15.c
+@@ -144,8 +144,6 @@ static struct i2c_board_info __initdata snappercl15_i2c_data[] = {
+ };
+ 
+ static struct ep93xxfb_mach_info __initdata snappercl15_fb_info = {
+-	.num_modes		= EP93XXFB_USE_MODEDB,
+-	.bpp			= 16,
+ };
+ 
+ static struct platform_device snappercl15_audio_device = {
+diff --git a/arch/arm/mach-ep93xx/vision_ep9307.c b/arch/arm/mach-ep93xx/vision_ep9307.c
+index ff22a6a6e2bf..5cced5988498 100644
+--- a/arch/arm/mach-ep93xx/vision_ep9307.c
++++ b/arch/arm/mach-ep93xx/vision_ep9307.c
+@@ -106,8 +106,6 @@ static void vision_lcd_blank(int blank_mode, struct fb_info *info)
+ }
+ 
+ static struct ep93xxfb_mach_info ep93xxfb_info __initdata = {
+-	.num_modes	= EP93XXFB_USE_MODEDB,
+-	.bpp		= 16,
+ 	.flags		= EP93XXFB_USE_SDCSN0 | EP93XXFB_PCLK_FALLING,
+ 	.setup		= vision_lcd_setup,
+ 	.teardown	= vision_lcd_teardown,
+diff --git a/drivers/video/fbdev/ep93xx-fb.c b/drivers/video/fbdev/ep93xx-fb.c
+index 7ec251cc9c03..5b1081030cbb 100644
+--- a/drivers/video/fbdev/ep93xx-fb.c
++++ b/drivers/video/fbdev/ep93xx-fb.c
+@@ -419,36 +419,15 @@ static struct fb_ops ep93xxfb_ops = {
+ 	.fb_mmap	= ep93xxfb_mmap,
+ };
+ 
+-static int ep93xxfb_calc_fbsize(struct ep93xxfb_mach_info *mach_info)
+-{
+-	int i, fb_size = 0;
+-
+-	if (mach_info->num_modes = EP93XXFB_USE_MODEDB) {
+-		fb_size = EP93XXFB_MAX_XRES * EP93XXFB_MAX_YRES *
+-			mach_info->bpp / 8;
+-	} else {
+-		for (i = 0; i < mach_info->num_modes; i++) {
+-			const struct fb_videomode *mode;
+-			int size;
+-
+-			mode = &mach_info->modes[i];
+-			size = mode->xres * mode->yres * mach_info->bpp / 8;
+-			if (size > fb_size)
+-				fb_size = size;
+-		}
+-	}
+-
+-	return fb_size;
+-}
+-
+ static int ep93xxfb_alloc_videomem(struct fb_info *info)
+ {
+-	struct ep93xx_fbi *fbi = info->par;
+ 	char __iomem *virt_addr;
+ 	dma_addr_t phys_addr;
+ 	unsigned int fb_size;
+ 
+-	fb_size = ep93xxfb_calc_fbsize(fbi->mach_info);
++	/* Maximum 16bpp -> used memory is maximum x*y*2 bytes */
++	fb_size = EP93XXFB_MAX_XRES * EP93XXFB_MAX_YRES * 2;
++
+ 	virt_addr = dma_alloc_writecombine(info->dev, fb_size,
+ 					   &phys_addr, GFP_KERNEL);
+ 	if (!virt_addr)
+@@ -550,8 +529,7 @@ static int ep93xxfb_probe(struct platform_device *pdev)
+ 
+ 	fb_get_options("ep93xx-fb", &video_mode);
+ 	err = fb_find_mode(&info->var, info, video_mode,
+-			   fbi->mach_info->modes, fbi->mach_info->num_modes,
+-			   fbi->mach_info->default_mode, fbi->mach_info->bpp);
++			   NULL, 0, NULL, 16);
+ 	if (err = 0) {
+ 		dev_err(info->dev, "No suitable video mode found\n");
+ 		err = -EINVAL;
+diff --git a/include/linux/platform_data/video-ep93xx.h b/include/linux/platform_data/video-ep93xx.h
+index 92fc2b2232e7..699ac4109366 100644
+--- a/include/linux/platform_data/video-ep93xx.h
++++ b/include/linux/platform_data/video-ep93xx.h
+@@ -2,11 +2,8 @@
+ #define __VIDEO_EP93XX_H
+ 
+ struct platform_device;
+-struct fb_videomode;
+ struct fb_info;
+ 
+-#define EP93XXFB_USE_MODEDB		0
+-
+ /* VideoAttributes flags */
+ #define EP93XXFB_STATE_MACHINE_ENABLE	(1 << 0)
+ #define EP93XXFB_PIXEL_CLOCK_ENABLE	(1 << 1)
+@@ -38,12 +35,7 @@ struct fb_info;
+ 					 EP93XXFB_PIXEL_DATA_ENABLE)
+ 
+ struct ep93xxfb_mach_info {
+-	unsigned int			num_modes;
+-	const struct fb_videomode	*modes;
+-	const struct fb_videomode	*default_mode;
+-	int				bpp;
+ 	unsigned int			flags;
+-
+ 	int	(*setup)(struct platform_device *pdev);
+ 	void	(*teardown)(struct platform_device *pdev);
+ 	void	(*blank)(int blank_mode, struct fb_info *info);
+-- 
+2.4.3
 
-Yeah, it could be a static function in core.c. What I want to avoid is
-having to change a bunch of code if ever state assignment becomes
-something other than merely copying a structure.
-
-[...]
-> > > diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-> > > index b47244a..7e99679 100644
-> > > --- a/include/linux/pwm.h
-> > > +++ b/include/linux/pwm.h
-> > > @@ -151,6 +151,29 @@ static inline enum pwm_polarity pwm_get_polarity=
-(const struct pwm_device *pwm)
-> > >  	return pwm ? pwm->state.polarity : PWM_POLARITY_NORMAL;
-> > >  }
-> > > =20
-> > > +/*
-> > > + * pwm_apply_state - apply a new state to the PWM device
-> > > + */
-> > > +int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *=
-state);
-> >=20
-> > If you add kerneldoc, please add it properly. It should start with /**
-> > and you need to list at least the parameters and return value.
->=20
-> Yes, I'll fix that.
-> BTW, I remember that you were expecting another name for this function
-> (pwm_update IIRC).
-
-I don't mind the pwm_apply_state() name very much. It's pretty accurate
-with regards to what it does.
-
-Thierry
-
---UTjKcilERHWBCdCp
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJVrMfCAAoJEN0jrNd/PrOhplEP/38xJM/nYyT1+LWqxsnNyxRe
-oRc/XLOaMHzNqZoYwKeJtoqsr4LaB1kcPVF2M5W1Wqih0z/jABGYHE4jJun+mJK9
-67iMb2GI9QtBjJee1DgX+K6SPJNA5OjGHpOMS3YdcvY03/1OsvLqZMK0wJAxw7Wc
-Jguplm7Cm7CeDN7kJ+xE3bhe5fNCQa4OSPnSCubBzjdi9+N6yrE+FLXXqBrGYRR3
-y05BRt8YG1I/Mc0OPhIywLYfz3rbcYlOBJRMOma4iNHWTi0XSi9LVNxwndu8IgFM
-L5tHTBuGaQ12naGcZJRrCWYYHfECVYyN15FXzwiFi0n92JEwueL6IyFJIdDBuuOn
-xUVUmnByb+b9pkI8579r6m4bEB07/yzoC1WW4qsLyvAKoKNJo7q/Y1ax1c6KDan3
-SadAgM8J0G5pCliaI5Ff0bk++EaGedBM7kxht+61YHqReFiz5KnHmU1CmTNdxrDn
-ZUEcQUyMdn/+Rr571j/b68iAt9TukMBrhKDon2C4geQdNFFdiPKXsPaP6TCqx+qX
-MiBUu66wlnFZMNYFMAQzGFXC5nIkskrCSr1nHWrneZ9pqt0dvxTPCi/jduwqunu4
-rKKro9Y3G4u2AcjgV0K0ygLBGMeS3pa1UzqSw0abKAUr4MDXmotMACzV3dd9rsiP
-N3iABoGYaLAxNiu6zwy6
-=UNA8
------END PGP SIGNATURE-----
-
---UTjKcilERHWBCdCp--

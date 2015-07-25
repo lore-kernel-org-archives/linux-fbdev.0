@@ -1,68 +1,82 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 03 Jul 2015 08:16:23 +0000
-Subject: [GIT PULL] fbdev fixes for 4.2
-Message-Id: <559644D7.4000109@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="RiTjTTSR14D65vbRj3M11Sm1rU4EUEegr"
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sat, 25 Jul 2015 07:46:12 +0000
+Subject: [RFC v5 13/26] powerpc: Cleanup nvram includes
+Message-Id: <20150725074602.693328813@telegraphics.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20150725074559.543547894@telegraphics.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
---RiTjTTSR14D65vbRj3M11Sm1rU4EUEegr
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+The nvram_read_byte() and nvram_write_byte() definitions in asm/nvram.h
+duplicate those in linux/nvram.h. Get rid of the former to prepare for
+adoption of struct arch_nvram_ops (which is defined in linux/nvram.h for
+general use).
 
-Hi Linus,
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
-The following changes since commit f778dad38a54ca5207d024b5ebe0e6d71b8bad=
-83:
+---
 
-  Merge omapdss scaling fixes (2015-06-22 14:56:01 +0300)
+Changes since v4:
+- Fix possible git bisect build failure with CONFIG_PPC_PMAC=n.
 
-are available in the git repository at:
+---
+ arch/powerpc/include/asm/nvram.h           |    3 ---
+ arch/powerpc/kernel/setup_32.c             |    1 +
+ drivers/char/generic_nvram.c               |    1 +
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ 4 files changed, 3 insertions(+), 4 deletions(-)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-4.2
+Index: linux/arch/powerpc/include/asm/nvram.h
+=================================--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-07-25 17:42:34.000000000 +1000
++++ linux/arch/powerpc/include/asm/nvram.h	2015-07-25 17:45:38.000000000 +1000
+@@ -101,7 +101,4 @@ extern int nvram_write_os_partition(stru
+ /* Determine NVRAM size */
+ extern ssize_t nvram_get_size(void);
+ 
+-/* Normal access to NVRAM */
+-extern unsigned char nvram_read_byte(int i);
+-extern void nvram_write_byte(unsigned char c, int i);
+ #endif /* _ASM_POWERPC_NVRAM_H */
+Index: linux/arch/powerpc/kernel/setup_32.c
+=================================--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-07-25 17:42:34.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-07-25 17:45:38.000000000 +1000
+@@ -16,6 +16,7 @@
+ #include <linux/cpu.h>
+ #include <linux/console.h>
+ #include <linux/memblock.h>
++#include <linux/nvram.h>
+ 
+ #include <asm/io.h>
+ #include <asm/prom.h>
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-25 17:42:34.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-25 17:45:38.000000000 +1000
+@@ -111,12 +111,12 @@
+ #include "matroxfb_g450.h"
+ #include <linux/matroxfb.h>
+ #include <linux/interrupt.h>
++#include <linux/nvram.h>
+ #include <linux/slab.h>
+ #include <linux/uaccess.h>
+ 
+ #ifdef CONFIG_PPC_PMAC
+ #include <asm/machdep.h>
+-unsigned char nvram_read_byte(int);
+ static int default_vmode = VMODE_NVRAM;
+ static int default_cmode = CMODE_NVRAM;
+ #endif
+Index: linux/drivers/char/generic_nvram.c
+=================================--- linux.orig/drivers/char/generic_nvram.c	2015-07-25 17:42:34.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-07-25 17:45:38.000000000 +1000
+@@ -20,6 +20,7 @@
+ #include <linux/fcntl.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
++#include <linux/nvram.h>
+ #include <asm/uaccess.h>
+ #include <asm/nvram.h>
+ #ifdef CONFIG_PPC_PMAC
 
-for you to fetch changes up to 0438ec90b17963662ef619b71c77c5c135b07014:
 
-  OMAPDSS: fix probing if rfbi device is enabled (2015-07-02 15:20:10 +03=
-00)
-
-----------------------------------------------------------------
-fbdev fixes for 4.2
-
-* Fix display regression on TI AM4xxx boards
-
-----------------------------------------------------------------
-Tomi Valkeinen (1):
-      OMAPDSS: fix probing if rfbi device is enabled
-
- drivers/video/fbdev/omap2/dss/dss.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-
---RiTjTTSR14D65vbRj3M11Sm1rU4EUEegr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVlkTXAAoJEPo9qoy8lh71lQkP/0HgduuF0pQCzDqsbWF9DuXG
-Uw6OEU/d+rjOS2RQC7xkJ1yRm1rzWRmsALC/WHxy4WOZNsZrvi1qAdYfRJ72suIm
-N8uqG1Qt54prXWbnhSBTlmmu7TpxFlqVmKplIRDFupO89K6n4ndjrBvj+uxMRiYh
-kLQo8TSRkgQ1CQ8fiWdwi4WNPTLj5Kl/D2cIezJvB+Zo8/GHNcPh79amOR0uL3Sm
-QfjZ2p8tuPqUFnFd4TimLVOdzy7Ljv41FS6JGU/qa4ioog9Um83242HVwFyFPVZs
-HpGyZHx+szbNnZY4MMCO0zvnXaCMx3tzvkP6Xo9HwTVz3LlISA5MpInEZJKaozxD
-bx1R563E68Cq1L3b6VUGWGbCBiIT34K2+Oo2Ttb3Jp+1UVkMGtEg7kOKhtUpaxc9
-tzKKmnkQCtjbZRNbCsOBqjU18PBU4l5T9Tcl4IBQWMWnXu+EwfNJKcP0yEOHYhpv
-ajIJ7+qz5vhBGeAYok9sA7NlBfX2gHVDDlmKF1A3QX+Tohof/HDYCmOLByolrpQJ
-nozSxoV18huK//D/zz1QVrHKVLy3oETJJfLEvA2Ij4QgzEJZJN+bYEwaW6oUVv8o
-lQavuq0Xf6pWSgE8NWfmANZIV8mhS9fTphzh9nq/hufnv2dA4Q7Mt2yL9O8mYJ0v
-tWrrvwn3AwY1N1v5WMv2
-=69OE
------END PGP SIGNATURE-----
-
---RiTjTTSR14D65vbRj3M11Sm1rU4EUEegr--

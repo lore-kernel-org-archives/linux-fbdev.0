@@ -1,59 +1,63 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sat, 18 Jul 2015 04:20:59 +0000
-Subject: [PATCH v2 3/3] MAINTAINERS: update maintainers list
-Message-Id: <1437192539-14150-3-git-send-email-sudipm.mukherjee@gmail.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sun, 26 Jul 2015 21:26:21 +0000
+Subject: [PATCH 4/5] gxt4500: Use write-combining for framebuffer
+Message-Id: <1437945982-3021-5-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1437192539-14150-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1437192539-14150-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1437945982-3021-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1437945982-3021-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, devel@driverdev.osuosl.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-Now since sm712fb has moved out of staging update the maintainers list
-accordingly.
+Use write-combining for framebuffer to greatly improve performance on x86.
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- MAINTAINERS | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/gxt4500.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8133cef..2c77c30 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9301,6 +9301,15 @@ S:	Maintained
- F:	drivers/media/i2c/ov2659.c
- F:	include/media/ov2659.h
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 442b07c..e0d1550 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -142,7 +142,7 @@ static const unsigned char watfmt[] = {
  
-+SILICON MOTION SM712 FRAME BUFFER DRIVER
-+M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-+M:	Teddy Wang <teddy.wang@siliconmotion.com>
-+M:	Sudip Mukherjee <sudip@vectorindia.org>
-+L:	linux-fbdev@vger.kernel.org
-+S:	Maintained
-+F:	drivers/video/fbdev/sm712*
-+F:	Documentation/fb/sm712fb.txt
-+
- SIS 190 ETHERNET DRIVER
- M:	Francois Romieu <romieu@fr.zoreil.com>
- L:	netdev@vger.kernel.org
-@@ -9721,14 +9730,6 @@ L:	linux-wireless@vger.kernel.org
- S:	Maintained
- F:	drivers/staging/rtl8723au/
- 
--STAGING - SILICON MOTION SM7XX FRAME BUFFER DRIVER
--M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
--M:	Teddy Wang <teddy.wang@siliconmotion.com>
--M:	Sudip Mukherjee <sudip@vectorindia.org>
--L:	linux-fbdev@vger.kernel.org
--S:	Maintained
--F:	drivers/staging/sm7xxfb/
+ struct gxt4500_par {
+ 	void __iomem *regs;
 -
- STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER
- M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
- M:	Teddy Wang <teddy.wang@siliconmotion.com>
++	int wc_cookie;
+ 	int pixfmt;		/* pixel format, see DFA_PIX_* values */
+ 
+ 	/* PLL parameters */
+@@ -663,7 +663,7 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	info->fix.smem_start = fb_phys;
+ 	info->fix.smem_len = pci_resource_len(pdev, 1);
+-	info->screen_base = pci_ioremap_bar(pdev, 1);
++	info->screen_base = ioremap_wc(fb_phys, info->fix.smem_len);
+ 	if (!info->screen_base) {
+ 		dev_err(&pdev->dev, "gxt4500: cannot map framebuffer\n");
+ 		goto err_unmap_regs;
+@@ -671,6 +671,9 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	pci_set_drvdata(pdev, info);
+ 
++	par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++					  info->fix.smem_len);
++
+ #ifdef __BIG_ENDIAN
+ 	/* Set byte-swapping for DFA aperture for all pixel sizes */
+ 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
+@@ -735,6 +738,7 @@ static void gxt4500_remove(struct pci_dev *pdev)
+ 		return;
+ 	par = info->par;
+ 	unregister_framebuffer(info);
++	arch_phys_wc_del(par->wc_cookie);
+ 	fb_dealloc_cmap(&info->cmap);
+ 	iounmap(par->regs);
+ 	iounmap(info->screen_base);
 -- 
-1.8.1.2
+Ondrej Zary
 

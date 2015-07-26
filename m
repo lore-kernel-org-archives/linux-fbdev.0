@@ -1,26 +1,46 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Wed, 15 Jul 2015 01:30:51 +0000
-Subject: Re: [PATCH v4 01/19] staging: sm750fb: use tabs for indentation
-Message-Id: <20150715013051.GA15700@kroah.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sun, 26 Jul 2015 21:26:20 +0000
+Subject: [PATCH 3/5] gxt4500: fix color order
+Message-Id: <1437945982-3021-4-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F-+fT0iRmFd+H_X-1gBmvCsgehxXeyr7A8Zk9TtfD0aBA@mail.gmail.com>
- <1435600536-13135-1-git-send-email-juston.h.li@gmail.com>
-In-Reply-To: <1435600536-13135-1-git-send-email-juston.h.li@gmail.com>
+References: <1437945982-3021-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1437945982-3021-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Juston Li <juston.h.li@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Mon, Jun 29, 2015 at 10:55:18AM -0700, Juston Li wrote:
-> Replace spaces with tabs for indentation to fix the checkpatch.pl error
-> ERROR: code indent should use tabs where possible
-> WARNING: please, no spaces at the start of a line
+The color order in truecolor modes is wrong. This does not affect console but
+is visible e.g. in X11 which has wrong colors.
 
-Due to other patches that came in before yours, that are now in my tree,
-this patch doesn't apply.  Can you please rebase it against my
-staging-testing branch of staging.git and resend?
+Swap blue and red colors to fix the problem.
+Fixes https://forums.gentoo.org/viewtopic-t-692740-start-0.html
 
-thanks,
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+---
+ drivers/video/fbdev/gxt4500.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-greg k-h
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 1f2fd5b..442b07c 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -347,11 +347,12 @@ static void gxt4500_unpack_pixfmt(struct fb_var_screeninfo *var,
+ 		break;
+ 	}
+ 	if (pixfmt != DFA_PIX_8BIT) {
+-		var->green.offset = var->red.length;
+-		var->blue.offset = var->green.offset + var->green.length;
++		var->blue.offset = 0;
++		var->green.offset = var->blue.length;
++		var->red.offset = var->green.offset + var->green.length;
+ 		if (var->transp.length)
+ 			var->transp.offset -				var->blue.offset + var->blue.length;
++				var->red.offset + var->red.length;
+ 	}
+ }
+ 
+-- 
+Ondrej Zary
+

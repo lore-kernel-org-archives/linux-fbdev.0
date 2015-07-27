@@ -1,53 +1,44 @@
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-Date: Tue, 07 Jul 2015 16:15:09 +0000
-Subject: Re: [PATCH v8 0/9] pci: add pci_iomap_wc() and pci_ioremap_wc_bar()
-Message-Id: <20150707161509.GS7021@wotan.suse.de>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 27 Jul 2015 15:41:41 +0000
+Subject: [PATCH] video: fbdev: atmel: fix warning for const return value
+Message-Id: <1438011701-18423-1-git-send-email-robh@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1435195342-26879-1-git-send-email-mcgrof@do-not-panic.com>
- <1435284726.3822.28.camel@kernel.crashing.org>
-In-Reply-To: <1435284726.3822.28.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>, bp@suse.de, mingo@kernel.org, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-On Fri, Jun 26, 2015 at 12:12:06PM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2015-06-24 at 18:22 -0700, Luis R. Rodriguez wrote:
-> > Although I had test compiled this before just to be safe I went ahead and
-> > successfully test-compiled this set with allmodconfig, specially since I've now
-> > removed the exports for the devres routines.  Please let me know if these might
-> > be able to go through you or if there are any questions. I will note the recent
-> > discussion with Benjamin over the v7 series concluded that the ideas we both
-> > were alluding to, on automating instead the WC effects for devices seems a bit
-> > too idealistic for PCI / PCIE for now, but perhaps we should at least consider
-> > this in the future for userspace mmap() calls [4].
-> 
-> So I've been trying to figure out how to make this practically work for us (powerpc).
-> 
-> writel() will never write combine for us, it uses too heavy barriers.
-> 
-> writel_relaxed() today is identical to writel() but we can change it.
-> 
-> The problem is that switching to G=0 mappings (which is what provides us with write
-> combining) also architecturally enables prefetch and speculative loads... and again
-> architecturally (the implementations may differ), kills the effect of the lightweight
-> io barrier eieio which we would have to use in readl_relaxed() and writel_relaxed()
-> to provide their normal semantics.
-> 
-> So it boils down to: Can we modify the documentation of readl_relaxed() and writel_relaxed()
-> to define them as being even further relaxed when using a "wc" mapping ?
->
-> Otherwise, the only way out I see for us on powerpc is to bias massively writel_relaxed()
-> against real_relaxed() by putting heavy barriers around the load in the latter so we can
-> keep them completely out of the former and still enable wc.
+A const on a return value is meaningless and generates a warning on some
+versions of gcc:
 
-Depends if you semantically then also are implicating its use for the ioremap_wc()
-area and if we've ensured we've visited all other possibilities to avoid this. Instead
-of replying here though it seems we have a large general ioremap() semantic discussion
-ongoing on another thread which is far ahead of this one and more generalized. Mind
-following up there, seems the party is there:
+drivers/video/fbdev/atmel_lcdfb.c:1003: warning: type qualifiers ignored on function return type
 
-http://lkml.kernel.org/r/20150707160703.GR7021@wotan.suse.de
+This was found on 0-day with avr32 builds with CONFIG_OF enabled, but
+it doesn't seem to generate warnings for other arches.
 
- Luis
+Reported-by: Fengguang Wu <fengguang.wu@intel.com>
+Signed-off-by: Rob Herring <robh@kernel.org>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/atmel_lcdfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
+index abadc49..66f4b70 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -999,7 +999,7 @@ static const char *atmel_lcdfb_wiring_modes[] = {
+ 	[ATMEL_LCDC_WIRING_RGB]	= "RGB",
+ };
+ 
+-const int atmel_lcdfb_get_of_wiring_modes(struct device_node *np)
++int atmel_lcdfb_get_of_wiring_modes(struct device_node *np)
+ {
+ 	const char *mode;
+ 	int err, i;
+-- 
+2.1.0
+

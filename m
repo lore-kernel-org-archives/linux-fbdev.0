@@ -1,71 +1,91 @@
-From: Antoine BLIN <antoine.blin@lip6.fr>
-Date: Fri, 17 Jul 2015 13:04:34 +0000
-Subject: [PATCH 2/2] staging: sm750fb: ddk750_power.c: Split lines over 80 characters.
-Message-Id: <1437138274-23146-2-git-send-email-antoine.blin@lip6.fr>
+From: Julien Grall <julien.grall@citrix.com>
+Date: Tue, 28 Jul 2015 15:02:47 +0000
+Subject: [PATCH 6/8] video/xen-fbfront: Further s/MFN/GFN clean-up
+Message-Id: <1438095769-2560-7-git-send-email-julien.grall@citrix.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1437138274-23146-1-git-send-email-antoine.blin@lip6.fr>
-In-Reply-To: <1437138274-23146-1-git-send-email-antoine.blin@lip6.fr>
+References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
+In-Reply-To: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com
-Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Antoine BLIN <antoine.blin@lip6.fr>
+To: xen-devel@lists.xenproject.org
+Cc: ian.campbell@citrix.com, stefano.stabellini@eu.citrix.com, linux-kernel@vger.kernel.org, Julien Grall <julien.grall@citrix.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, David Vrabel <david.vrabel@citrix.com>, linux-fbdev@vger.kernel.org
 
-Fix up "line over 80 characters" warning found by the checkpatch.pl script.
+The PV driver xen-fbfront is only dealing with GFN and not MFN. Rename
+all the occurence of MFN to GFN.
 
-Signed-off-by: Antoine BLIN <antoine.blin@lip6.fr>
+Also take the opportunity to replace to usage of pfn_to_gfn by
+page_to_pfn.
+
+Signed-off-by: Julien Grall <julien.grall@citrix.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: David Vrabel <david.vrabel@citrix.com>
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/staging/sm750fb/ddk750_power.c | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/xen-fbfront.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index 3c04447..e580dab 100644
---- a/drivers/staging/sm750fb/ddk750_power.c
-+++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -8,7 +8,8 @@ void ddk750_setDPMS(DPMS_t state)
+diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
+index 25e3cce..3112168 100644
+--- a/drivers/video/fbdev/xen-fbfront.c
++++ b/drivers/video/fbdev/xen-fbfront.c
+@@ -46,7 +46,7 @@ struct xenfb_info {
+ 	int			nr_pages;
+ 	int			irq;
+ 	struct xenfb_page	*page;
+-	unsigned long 		*mfns;
++	unsigned long 		*gfns;
+ 	int			update_wanted; /* XENFB_TYPE_UPDATE wanted */
+ 	int			feature_resize; /* XENFB_TYPE_RESIZE ok */
+ 	struct xenfb_resize	resize;		/* protected by resize_lock */
+@@ -402,8 +402,8 @@ static int xenfb_probe(struct xenbus_device *dev,
  
- 	if (getChipType() = SM750LE) {
- 		value = PEEK32(CRT_DISPLAY_CTRL);
--		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
-+		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL,
-+						     DPMS, state));
- 	} else {
- 		value = PEEK32(SYSTEM_CTRL);
- 		value = FIELD_VALUE(value, SYSTEM_CTRL, DPMS, state);
-@@ -39,15 +40,18 @@ void setPowerMode(unsigned int powerMode)
+ 	info->nr_pages = (fb_size + PAGE_SIZE - 1) >> PAGE_SHIFT;
  
- 	switch (powerMode) {
- 	case POWER_MODE_CTRL_MODE_MODE0:
--		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE, MODE0);
-+		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE,
-+					  MODE0);
- 		break;
+-	info->mfns = vmalloc(sizeof(unsigned long) * info->nr_pages);
+-	if (!info->mfns)
++	info->gfns = vmalloc(sizeof(unsigned long) * info->nr_pages);
++	if (!info->gfns)
+ 		goto error_nomem;
  
- 	case POWER_MODE_CTRL_MODE_MODE1:
--		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE, MODE1);
-+		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE,
-+					  MODE1);
- 		break;
- 
- 	case POWER_MODE_CTRL_MODE_SLEEP:
--		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE, SLEEP);
-+		control_value = FIELD_SET(control_value, POWER_MODE_CTRL, MODE,
-+					  SLEEP);
- 		break;
- 
- 	default:
-@@ -138,8 +142,9 @@ void enableZVPort(unsigned int enable)
- 		gate = FIELD_SET(gate, CURRENT_GATE, I2C,    ON);
- #endif
- 	} else {
--		/* Disable ZV Port Gate. There is no way to know whether the GPIO pins are being used
--		 or not. Therefore, do not disable the GPIO gate. */
-+		/* Disable ZV Port Gate. There is no way to know whether the
-+		GPIO pins are being used or not. Therefore, do not disable the
-+		GPIO gate. */
- 		gate = FIELD_SET(gate, CURRENT_GATE, ZVPORT, OFF);
+ 	/* set up shared page */
+@@ -530,29 +530,29 @@ static int xenfb_remove(struct xenbus_device *dev)
+ 		framebuffer_release(info->fb_info);
  	}
+ 	free_page((unsigned long)info->page);
+-	vfree(info->mfns);
++	vfree(info->gfns);
+ 	vfree(info->fb);
+ 	kfree(info);
  
+ 	return 0;
+ }
+ 
+-static unsigned long vmalloc_to_mfn(void *address)
++static unsigned long vmalloc_to_gfn(void *address)
+ {
+-	return pfn_to_gfn(vmalloc_to_pfn(address));
++	return page_to_gfn(vmalloc_to_page(address));
+ }
+ 
+ static void xenfb_init_shared_page(struct xenfb_info *info,
+ 				   struct fb_info *fb_info)
+ {
+ 	int i;
+-	int epd = PAGE_SIZE / sizeof(info->mfns[0]);
++	int epd = PAGE_SIZE / sizeof(info->gfns[0]);
+ 
+ 	for (i = 0; i < info->nr_pages; i++)
+-		info->mfns[i] = vmalloc_to_mfn(info->fb + i * PAGE_SIZE);
++		info->gfns[i] = vmalloc_to_gfn(info->fb + i * PAGE_SIZE);
+ 
+ 	for (i = 0; i * epd < info->nr_pages; i++)
+-		info->page->pd[i] = vmalloc_to_mfn(&info->mfns[i * epd]);
++		info->page->pd[i] = vmalloc_to_gfn(&info->gfns[i * epd]);
+ 
+ 	info->page->width = fb_info->var.xres;
+ 	info->page->height = fb_info->var.yres;
 -- 
-2.4.5
+2.1.4
 

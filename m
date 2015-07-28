@@ -1,40 +1,44 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Fri, 10 Jul 2015 06:37:28 +0000
-Subject: [PATCH] Drop owner assignment from i2c_driver (and platform left-overs)
-Message-Id: <1436510250-5633-1-git-send-email-k.kozlowski@samsung.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Date: Tue, 28 Jul 2015 13:19:46 +0000
+Subject: [PATCH v2 15/22] backlight: Probe backlight devices on demand
+Message-Id: <1438089593-7696-16-git-send-email-tomeu.vizoso@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1438089593-7696-1-git-send-email-tomeu.vizoso@collabora.com>
+In-Reply-To: <1438089593-7696-1-git-send-email-tomeu.vizoso@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: linux-kernel@vger.kernel.org
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-acpi@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jingoohan1@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Lee Jones <lee.jones@linaro.org>
 
-Hi,
+When looking up a backlight device through its firmware node, probe it
+if it hasn't already.
 
+The goal is to reduce deferred probes to a minimum, as it makes it very
+cumbersome to find out why a device failed to probe, and can introduce
+very big delays in when a critical device is probed.
 
-The i2c drivers also do not have to set 'owner' field because
-i2c_register_driver() will do it instead.
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+---
 
-'owner' is removed from i2c drivers, which I was able to compile
-with allyesconfig (arm, arm64, i386, x86_64, ppc64).
-Only compile-tested.
+Changes in v2: None
 
-The coccinelle script which generated the patch was sent here:
-http://www.spinics.net/lists/kernel/msg2029903.html
+ drivers/video/backlight/backlight.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-
-Best regards,
-Krzysztof
-
-
-Krzysztof Kozlowski (2):
-  video: fbdev: Drop owner assignment from i2c_driver
-  video: fbdev: Drop owner assignment from platform_driver
-
- drivers/video/fbdev/omap2/displays-new/encoder-opa362.c | 1 -
- drivers/video/fbdev/ssd1307fb.c                         | 1 -
- 2 files changed, 2 deletions(-)
-
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index bddc8b17a4d8..f7151d916435 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -559,6 +559,8 @@ struct backlight_device *of_find_backlight_by_node(struct device_node *node)
+ {
+ 	struct device *dev;
+ 
++	fwnode_ensure_device(&node->fwnode);
++
+ 	dev = class_find_device(backlight_class, NULL, node, of_parent_match);
+ 
+ 	return dev ? to_backlight_device(dev) : NULL;
 -- 
-1.9.1
+2.4.3
 

@@ -1,7 +1,7 @@
-From: David Vrabel <david.vrabel@citrix.com>
-Date: Tue, 28 Jul 2015 17:16:02 +0000
-Subject: Re: [Xen-devel] [PATCH 4/8] xen: Use the correctly the Xen memory terminologies
-Message-Id: <55B7B8D2.5060107@citrix.com>
+From: "Chris (Christopher) Brand" <chris.brand@broadcom.com>
+Date: Tue, 28 Jul 2015 19:39:57 +0000
+Subject: RE: [Xen-devel] [PATCH 4/8] xen: Use the correctly the Xen memory terminologies
+Message-Id: <4EE5B48738DDED408878C97C8E050A8B1D7DDBB5@SJEXCHMB05.corp.ad.broadcom.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
  <1438095769-2560-5-git-send-email-julien.grall@citrix.com>
@@ -11,36 +11,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 28/07/15 16:02, Julien Grall wrote:
-> Based on include/xen/mm.h [1], Linux is mistakenly using MFN when GFN
-> is meant, I suspect this is because the first support for Xen was for
-> PV. This brough some misimplementation of helpers on ARM and make the
-> developper confused the expected behavior.
-
-For the benefit of other subsystem maintainers, this is a purely
-mechanical change in Xen-specific terminology.  It doesn't need reviews
-or acks from non-Xen people (IMO).
-
-> For instance, with pfn_to_mfn, we expect to get an MFN based on the name.
-> Although, if we look at the implementation on x86, it's returning a GFN.
-> 
-> For clarity and avoid new confusion, replace any reference of mfn into
-> gnf in any helpers used by PV drivers.
-> 
-> Take also the opportunity to simplify simple construction such
-> as pfn_to_mfn(page_to_pfn(page)) into page_to_gfn. More complex clean up
-> will come in follow-up patches.
-> 
-> I think it may be possible to do further clean up in the x86 code to
-> ensure that helpers returning machine address (such as virt_address) is
-> not used by no auto-translated guests. I will let x86 xen expert doing
-> it.
-
-Reviewed-by: David Vrabel <david.vrabel@citrix.com>
-
-It looks a bit odd to use GFN in some of the PV code where the
-hypervisor API uses MFN but overall I think using the correct
-terminology where possible is best.  But I'd like to have Boris's or
-Konrad's opinion on this.
-
-David
+PiBCYXNlZCBvbiBpbmNsdWRlL3hlbi9tbS5oIFsxXSwgTGludXggaXMgbWlzdGFrZW5seSB1c2lu
+ZyBNRk4gd2hlbiBHRk4gaXMgbWVhbnQsDQo+IEkgc3VzcGVjdCB0aGlzIGlzIGJlY2F1c2UgdGhl
+IGZpcnN0IHN1cHBvcnQgZm9yIFhlbiB3YXMgZm9yIFBWLiBUaGlzIGJyb3VnaCBzb21lDQpUeXBv
+IDogImJyb3VnaHQiDQpQZXJoYXBzICJyZXN1bHRlZCBpbiIgd291bGQgYmUgYmV0dGVyID8NCg0K
+PiBtaXNpbXBsZW1lbnRhdGlvbiBvZiBoZWxwZXJzIG9uIEFSTSBhbmQgbWFrZSB0aGUgZGV2ZWxv
+cHBlciBjb25mdXNlZCB0aGUgZXhwZWN0ZWQgYmVoYXZpb3IuDQpUeXBvOiAiZGV2ZWxvcGVyIi4N
+CkknZCBhbHNvIHN1Z2dlc3QgIi4uLmFuZCBjb25mdXNlZCBkZXZlbG9wZXJzIGFib3V0IHRoZS4u
+LiIuDQoNClsuLi5dDQoNCj4gRm9yIGNsYXJpdHkgYW5kIGF2b2lkIG5ldyBjb25mdXNpb24sIHJl
+cGxhY2UgYW55IHJlZmVyZW5jZSBvZiBtZm4gaW50byBnbmYgaW4gYW55IGhlbHBlcnMgdXNlZCBi
+eSBQViBkcml2ZXJzLg0KVHlwbyA6ICJnZm4iDQpJJ2Qgc3VnZ2VzdCAiLi4ucmVwbGFjZSBhbnkg
+cmVmZXJlbmNlIHRvIG1mbiB3aXRoIGdmbi4uLiINCg0KWy4uLl0NCg0KQ2hyaXMNCg0K

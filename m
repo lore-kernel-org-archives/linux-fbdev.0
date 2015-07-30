@@ -1,74 +1,70 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 09 Jul 2015 01:54:15 +0000
-Subject: [PATCH v9 4/8] drivers/video/fbdev/gxt4500: Use pci_ioremap_wc_bar() to map framebuffer
-Message-Id: <1436406859-1280-5-git-send-email-mcgrof@do-not-panic.com>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Date: Thu, 30 Jul 2015 16:18:52 +0000
+Subject: [PATCH 27/27] i2c: (RFC, don't apply) report OF style modalias when probing using DT
+Message-Id: <1438273132-20926-28-git-send-email-javier@osg.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436406859-1280-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1436406859-1280-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
+In-Reply-To: <1438273132-20926-1-git-send-email-javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: mingo@kernel.org
-Cc: bp@suse.de, arnd@arndb.de, bhelgaas@google.com, luto@amacapital.net, akpm@linux-foundation.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, mst@redhat.com, toshi.kani@hp.com, linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, benh@kernel.crashing.org, "Luis R. Rodriguez" <mcgrof@suse.com>, Antonino Daplas <adaplas@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Juergen Gross <jgross@suse.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mauro Carvalho Chehab <mchehab-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, Liam Girdwood <lgird>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+An I2C driver that supports both OF and legacy platforms, will have
+both a OF and I2C ID table. This means that when built as a module,
+the aliases will be filled from both tables but currently always an
+alias of the form i2c:<deviceId> is reported, e.g:
 
-The driver doesn't use mtrr_add() or arch_phys_wc_add() but since we
-know the framebuffer is isolated already on an ioremap() we can take
-advantage of write combining for performance where possible.
+$ cat /sys/class/i2c-adapter/i2c-8/8-004b/modalias
+i2c:maxtouch
 
-In this case there are a few motivations for this:
+So if a device is probed by matching its compatible string, udev can
+get a MODALIAS uevent env var that doesn't match with one of the valid
+aliases so the module won't be auto-loaded.
 
-a) Take advantage of PAT when available.
+This patch changes the I2C core to report a OF related MODALIAS uevent
+(of:N*T*C) env var instead so the module can be auto-loaded and also
+report the correct alias using sysfs:
 
-b) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()").
+$ cat /sys/class/i2c-adapter/i2c-8/8-004b/modalias
+of:NtrackpadT<NULL>Catmel,maxtouch
 
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: benh@kernel.crashing.org
-Cc: bhelgaas@google.com
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-pci@vger.kernel.org
-Cc: mst@redhat.com
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: toshi.kani@hp.com
-Link: http://lkml.kernel.org/r/1435195342-26879-5-git-send-email-mcgrof@do-not-panic.com
-Signed-off-by: Borislav Petkov <bp@suse.de>
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+
+
+
 ---
- drivers/video/fbdev/gxt4500.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 135d78a02588..f19133a80e8c 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -662,7 +662,7 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ drivers/i2c/i2c-core.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index 92dddfeb3f39..c0668c2ed9da 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -489,6 +489,10 @@ static int i2c_device_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 	struct i2c_client	*client = to_i2c_client(dev);
+ 	int rc;
  
- 	info->fix.smem_start = fb_phys;
- 	info->fix.smem_len = pci_resource_len(pdev, 1);
--	info->screen_base = pci_ioremap_bar(pdev, 1);
-+	info->screen_base = pci_ioremap_wc_bar(pdev, 1);
- 	if (!info->screen_base) {
- 		dev_err(&pdev->dev, "gxt4500: cannot map framebuffer\n");
- 		goto err_unmap_regs;
++	rc = of_device_uevent_modalias(dev, env);
++	if (rc != -ENODEV)
++		return rc;
++
+ 	rc = acpi_device_uevent_modalias(dev, env);
+ 	if (rc != -ENODEV)
+ 		return rc;
+@@ -726,6 +730,10 @@ show_modalias(struct device *dev, struct device_attribute *attr, char *buf)
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	int len;
+ 
++	len = of_device_get_modalias(dev, buf, PAGE_SIZE - 1);
++	if (len != -ENODEV)
++		return len;
++
+ 	len = acpi_device_modalias(dev, buf, PAGE_SIZE -1);
+ 	if (len != -ENODEV)
+ 		return len;
 -- 
-2.3.2.209.gd67f9d5.dirty
+2.4.3
 

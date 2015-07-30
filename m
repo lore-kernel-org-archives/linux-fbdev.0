@@ -1,210 +1,102 @@
-From: Juston Li <juston.h.li@gmail.com>
-Date: Wed, 15 Jul 2015 04:14:48 +0000
-Subject: [PATCH v5 19/19] staging: sm750fb: add missing blank line after declarations
-Message-Id: <1436933688-5408-19-git-send-email-juston.h.li@gmail.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Thu, 30 Jul 2015 16:55:19 +0000
+Subject: [PATCH v3 18/24] fbdev: switch from ioremap_wt to memremap
+Message-Id: <20150730165519.33962.40536.stgit@dwillia2-desk3.amr.corp.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
-In-Reply-To: <CAFow2F9-0W4VRjLHmXZuv2vCwyGYRDatbCOrmg5o-AY0-nb-dw@mail.gmail.com>
+References: <20150730165155.33962.64121.stgit@dwillia2-desk3.amr.corp.intel.com>
+In-Reply-To: <20150730165155.33962.64121.stgit@dwillia2-desk3.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Juston Li <juston.h.li@gmail.com>
+To: tglx@linutronix.de, mingo@kernel.org, hpa@zytor.com
+Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org, toshi.kani@hp.com, linux-nvdimm@lists.01.org, mcgrof@suse.com, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, rmk+kernel@arm.linux.org.uk, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, hch@lst.de, linux-arm-kernel@lists.infradead.org
 
-Fixes checkpatch.pl
-WARNING: Missing a blank line after declarations
+In preparation for deprecating ioremap_wt() convert its usage in
+drivers/video/fbdev to memremap.
 
-Signed-off-by: Juston Li <juston.h.li@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.c    | 1 +
- drivers/staging/sm750fb/ddk750_display.c | 2 ++
- drivers/staging/sm750fb/ddk750_dvi.c     | 1 +
- drivers/staging/sm750fb/ddk750_mode.c    | 3 +++
- drivers/staging/sm750fb/ddk750_power.c   | 1 +
- drivers/staging/sm750fb/ddk750_sii164.c  | 1 +
- drivers/staging/sm750fb/sm750_accel.c    | 1 +
- drivers/staging/sm750fb/sm750_cursor.c   | 2 ++
- drivers/staging/sm750fb/sm750_hw.c       | 7 +++++++
- 9 files changed, 19 insertions(+)
+ drivers/video/fbdev/amifb.c |    5 +++--
+ drivers/video/fbdev/atafb.c |    5 +++--
+ drivers/video/fbdev/hpfb.c  |    6 +++---
+ 3 files changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index d7435d7..5e6798e 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -474,6 +474,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
- 			M += (fl_quo*X % 10000) > 5000?1:0;
- 			if (M < 256 && M > 0) {
- 				unsigned int diff;
-+
- 				tmpClock = pll->inputFreq * M / N / X;
- 				diff = absDiff(tmpClock, request_orig);
- 				if (diff < miniDiff) {
-diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
-index abd6283..8348113 100644
---- a/drivers/staging/sm750fb/ddk750_display.c
-+++ b/drivers/staging/sm750fb/ddk750_display.c
-@@ -121,6 +121,7 @@ static void setDisplayControl(int ctrl, int dispState)
- static void waitNextVerticalSync(int ctrl, int delay)
- {
- 	unsigned int status;
-+
- 	if (!ctrl) {
- 		/* primary controller */
+diff --git a/drivers/video/fbdev/amifb.c b/drivers/video/fbdev/amifb.c
+index 1d702e13aaff..0cde451046d0 100644
+--- a/drivers/video/fbdev/amifb.c
++++ b/drivers/video/fbdev/amifb.c
+@@ -52,6 +52,7 @@
+ #include <linux/ioport.h>
+ #include <linux/platform_device.h>
+ #include <linux/uaccess.h>
++#include <linux/io.h>
  
-@@ -210,6 +211,7 @@ static void swPanelPowerSequence(int disp, int delay)
- void ddk750_setLogicalDispOut(disp_output_t output)
- {
- 	unsigned int reg;
-+
- 	if (output & PNL_2_USAGE) {
- 		/* set panel path controller select */
- 		reg = PEEK32(PANEL_DISPLAY_CTRL);
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index a18bb4c..a7a2351 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.c
-+++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -43,6 +43,7 @@ int dviInit(
- 			)
- {
- 	dvi_ctrl_device_t *pCurrentDviCtrl;
-+
- 	pCurrentDviCtrl = g_dcftSupportedDviController;
- 	if (pCurrentDviCtrl->pfnInit != NULL) {
- 		return pCurrentDviCtrl->pfnInit(edgeSelect, busSelect, dualEdgeClkSelect, hsyncEnable,
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index 9d10446..2399b17 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -80,6 +80,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
- 	int ret = 0;
- 	int cnt = 0;
- 	unsigned int ulTmpValue, ulReg;
-+
- 	if (pll->clockType = SECONDARY_PLL) {
- 		/* programe secondary pixel clock */
- 		POKE32(CRT_PLL_CTRL, formatPllReg(pll));
-@@ -120,6 +121,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ #include <asm/irq.h>
+ #include <asm/amigahw.h>
+@@ -3705,8 +3706,8 @@ default_chipset:
+ 	 * access the videomem with writethrough cache
+ 	 */
+ 	info->fix.smem_start = (u_long)ZTWO_PADDR(videomemory);
+-	videomemory = (u_long)ioremap_wt(info->fix.smem_start,
+-					 info->fix.smem_len);
++	videomemory = (u_long)memremap(info->fix.smem_start, info->fix.smem_len,
++			MEMREMAP_WT);
+ 	if (!videomemory) {
+ 		dev_warn(&pdev->dev,
+ 			 "Unable to map videomem cached writethrough\n");
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index d6ce613e12ad..5615e8c31ea2 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -55,12 +55,12 @@
+ #include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
++#include <linux/io.h>
  
- 	} else if (pll->clockType = PRIMARY_PLL) {
- 		unsigned int ulReservedBits;
-+
- 		POKE32(PANEL_PLL_CTRL, formatPllReg(pll));
+ #include <asm/setup.h>
+ #include <linux/uaccess.h>
+ #include <asm/pgtable.h>
+ #include <asm/irq.h>
+-#include <asm/io.h>
  
- 		POKE32(PANEL_HORIZONTAL_TOTAL,
-@@ -184,6 +186,7 @@ int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock)
- {
- 	pll_value_t pll;
- 	unsigned int uiActualPixelClk;
-+
- 	pll.inputFreq = DEFAULT_INPUT_CLOCK;
- 	pll.clockType = clock;
+ #include <asm/atarihw.h>
+ #include <asm/atariints.h>
+@@ -3185,7 +3185,8 @@ int __init atafb_init(void)
+ 		/* Map the video memory (physical address given) to somewhere
+ 		 * in the kernel address space.
+ 		 */
+-		external_screen_base = ioremap_wt(external_addr, external_len);
++		external_screen_base = memremap(external_addr, external_len,
++				MEMREMAP_WT);
+ 		if (external_vgaiobase)
+ 			external_vgaiobase  			  (unsigned long)ioremap(external_vgaiobase, 0x10000);
+diff --git a/drivers/video/fbdev/hpfb.c b/drivers/video/fbdev/hpfb.c
+index 9476d196f510..d08c320b06fc 100644
+--- a/drivers/video/fbdev/hpfb.c
++++ b/drivers/video/fbdev/hpfb.c
+@@ -14,8 +14,8 @@
+ #include <linux/init.h>
+ #include <linux/fb.h>
+ #include <linux/dio.h>
++#include <linux/io.h>
  
-diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index c545c2d..c8c51be 100644
---- a/drivers/staging/sm750fb/ddk750_power.c
-+++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -5,6 +5,7 @@
- void ddk750_setDPMS(DPMS_t state)
- {
- 	unsigned int value;
-+
- 	if (getChipType() = SM750LE) {
- 		value = PEEK32(CRT_DISPLAY_CTRL);
- 		POKE32(CRT_DISPLAY_CTRL, FIELD_VALUE(value, CRT_DISPLAY_CTRL, DPMS, state));
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index a5153be..0bdf3db 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.c
-+++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -340,6 +340,7 @@ void sii164EnableHotPlugDetection(
- )
- {
- 	unsigned char detectReg;
-+
- 	detectReg = i2cReadReg(SII164_I2C_ADDRESS, SII164_DETECT);
+-#include <asm/io.h>
+ #include <asm/uaccess.h>
  
- 	/* Depending on each DVI controller, need to enable the hot plug based on each
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 0f563a9..1dd06a2 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -152,6 +152,7 @@ unsigned int rop2)   /* ROP value */
- {
- 	unsigned int nDirection, de_ctrl;
- 	int opSign;
-+
- 	nDirection = LEFT_TO_RIGHT;
- 	/* Direction of ROP2 operation: 1 = Left to Right, (-1) = Right to Left */
- 	opSign = 1;
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index ab61fe6..2400c6c 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -61,6 +61,7 @@ writel((data), cursor->mmio + (addr))
- void hw_cursor_enable(struct lynx_cursor *cursor)
- {
- 	u32 reg;
-+
- 	reg = FIELD_VALUE(0, HWC_ADDRESS, ADDRESS, cursor->offset)|
- 			FIELD_SET(0, HWC_ADDRESS, EXT, LOCAL)|
- 			FIELD_SET(0, HWC_ADDRESS, ENABLE, ENABLE);
-@@ -81,6 +82,7 @@ void hw_cursor_setPos(struct lynx_cursor *cursor,
- 						int x, int y)
- {
- 	u32 reg;
-+
- 	reg = FIELD_VALUE(0, HWC_LOCATION, Y, y)|
- 			FIELD_VALUE(0, HWC_LOCATION, X, x);
- 	POKE32(HWC_LOCATION, reg);
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index d1d6ae7..7317ba9 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -244,6 +244,7 @@ int hw_sm750_output_setMode(struct lynxfb_output *output,
- 	} else {
- 		/* just open DISPLAY_CONTROL_750LE register bit 3:0*/
- 		u32 reg;
-+
- 		reg = PEEK32(DISPLAY_CONTROL_750LE);
- 		reg |= 0xf;
- 		POKE32(DISPLAY_CONTROL_750LE, reg);
-@@ -418,6 +419,7 @@ int hw_sm750_setColReg(struct lynxfb_crtc *crtc, ushort index,
- 								ushort red, ushort green, ushort blue)
- {
- 	static unsigned int add[] = {PANEL_PALETTE_RAM, CRT_PALETTE_RAM};
-+
- 	POKE32(add[crtc->channel] + index*4, (red<<16)|(green<<8)|blue);
- 	return 0;
- }
-@@ -546,6 +548,7 @@ int hw_sm750_setBLANK(struct lynxfb_output *output, int blank)
- void hw_sm750_initAccel(struct lynx_share *share)
- {
- 	u32 reg;
-+
- 	enable2DEngine(1);
- 
- 	if (getChipType() = SM750LE) {
-@@ -575,8 +578,10 @@ void hw_sm750_initAccel(struct lynx_share *share)
- int hw_sm750le_deWait(void)
- {
- 	int i = 0x10000000;
-+
- 	while (i--) {
- 		unsigned int dwVal = PEEK32(DE_STATE2);
-+
- 		if ((FIELD_GET(dwVal, DE_STATE2, DE_STATUS) = DE_STATE2_DE_STATUS_IDLE) &&
- 			(FIELD_GET(dwVal, DE_STATE2, DE_FIFO)  = DE_STATE2_DE_FIFO_EMPTY) &&
- 			(FIELD_GET(dwVal, DE_STATE2, DE_MEM_FIFO) = DE_STATE2_DE_MEM_FIFO_EMPTY)) {
-@@ -591,8 +596,10 @@ int hw_sm750le_deWait(void)
- int hw_sm750_deWait(void)
- {
- 	int i = 0x10000000;
-+
- 	while (i--) {
- 		unsigned int dwVal = PEEK32(SYSTEM_CTRL);
-+
- 		if ((FIELD_GET(dwVal, SYSTEM_CTRL, DE_STATUS) = SYSTEM_CTRL_DE_STATUS_IDLE) &&
- 			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_FIFO)  = SYSTEM_CTRL_DE_FIFO_EMPTY) &&
- 			(FIELD_GET(dwVal, SYSTEM_CTRL, DE_MEM_FIFO) = SYSTEM_CTRL_DE_MEM_FIFO_EMPTY)) {
--- 
-2.4.5
+ static struct fb_info fb_info = {
+@@ -241,8 +241,8 @@ static int hpfb_init_one(unsigned long phys_base, unsigned long virt_base)
+ 	fb_info.fix.line_length = fb_width;
+ 	fb_height = (in_8(fb_regs + HPFB_FBHMSB) << 8) | in_8(fb_regs + HPFB_FBHLSB);
+ 	fb_info.fix.smem_len = fb_width * fb_height;
+-	fb_start = (unsigned long)ioremap_wt(fb_info.fix.smem_start,
+-					     fb_info.fix.smem_len);
++	fb_start = (unsigned long) memremap(fb_info.fix.smem_start,
++					     fb_info.fix.smem_len, MEMREMAP_WT);
+ 	hpfb_defined.xres = (in_8(fb_regs + HPFB_DWMSB) << 8) | in_8(fb_regs + HPFB_DWLSB);
+ 	hpfb_defined.yres = (in_8(fb_regs + HPFB_DHMSB) << 8) | in_8(fb_regs + HPFB_DHLSB);
+ 	hpfb_defined.xres_virtual = hpfb_defined.xres;
 

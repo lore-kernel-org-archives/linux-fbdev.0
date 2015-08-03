@@ -1,100 +1,145 @@
-From: Rob Clark <robdclark@gmail.com>
-Date: Tue, 25 Aug 2015 19:24:08 +0000
-Subject: Re: [PATCH 4/4] fbdev: Debug knob to register without holding console_lock
-Message-Id: <CAF6AEGu54g+5Q0ZQXeMd7HLHkGWPw+sdo-FZ4qVS=9nB6nLwtw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Mon, 03 Aug 2015 03:18:14 +0000
+Subject: [PATCH 1/7] cpufreq: remove redundant CPUFREQ_INCOMPATIBLE notifier event
+Message-Id: <406f55ac8030043f0349b084878c9b8d04f7ad86.1438571116.git.viresh.kumar@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440510314-8633-1-git-send-email-daniel.vetter@ffwll.ch>
- <1440510314-8633-4-git-send-email-daniel.vetter@ffwll.ch>
-In-Reply-To: <1440510314-8633-4-git-send-email-daniel.vetter@ffwll.ch>
+References: <cover.1438571116.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1438571116.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jonathan Corbet <corbet@lwn.net>, Len Brown <lenb@kernel.org>, "open list:ACPI" <linux-acpi@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Nicholas Mc Guire <hofrat@osadl.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Wolfram Sang <wsa@the-dreams.de>
 
-On Tue, Aug 25, 2015 at 9:45 AM, Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
-> When the usual fbcon legacy options are enabled we have
-> ->register_framebuffer
->   ->fb notifier chain calls into fbcon
->     ->fbcon sets up console on new fbi
->       ->fbi->set_par
->         ->drm_fb_helper_set_par exercises full kms api
->
-> And because of locking inversion hilarity all of register_framebuffer
-> is done with the console lock held. Which means that the first time on
-> driver load we exercise _all_ the kms code (all probe paths and
-> modeset paths for everything connected) is under the console lock.
-> That means if anything goes belly-up in that big pile of code nothing
-> ever reaches logfiles (and the machine is dead).
->
-> Usual tactic to debug that is to temporarily remove those console_lock
-> calls to be able to capture backtraces. I'm fed up writing this patch
-> and recompiling kernels. Hence this patch here to add an unsafe,
-> kernel-taining option to do this at runtime.
->
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+What's being done from CPUFREQ_INCOMPATIBLE, can also be done with
+CPUFREQ_ADJUST. There is nothing special with CPUFREQ_INCOMPATIBLE
+notifier.
 
-This one was causing me some problems, if I tried to enable
-lockless_register_fb.  It *looks* like it should work, so I'm not
-quite sure what the deal is.  But I'm 110% fan of getting something
-like this working, because console_lock is pretty much the bane of kms
-developer's existence..
+Kill CPUFREQ_INCOMPATIBLE and fix its usage sites.
 
-I'll have to debug further on a system where I can see more than the
-bottom three lines of the second to last backtrace..
+This also updates the numbering of notifier events to remove holes.
 
-BR,
--R
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ Documentation/cpu-freq/core.txt       | 7 ++-----
+ drivers/acpi/processor_perflib.c      | 2 +-
+ drivers/cpufreq/cpufreq.c             | 4 ----
+ drivers/cpufreq/ppc_cbe_cpufreq_pmi.c | 4 ++--
+ drivers/video/fbdev/pxafb.c           | 1 -
+ drivers/video/fbdev/sa1100fb.c        | 1 -
+ include/linux/cpufreq.h               | 9 ++++-----
+ 7 files changed, 9 insertions(+), 19 deletions(-)
 
-> ---
->  drivers/video/fbdev/core/fbmem.c | 14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> index 0705d8883ede..4e73b6f6b1c0 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -1608,6 +1608,11 @@ static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
->         return 0;
->  }
->
-> +static bool lockless_register_fb;
-> +module_param_named_unsafe(lockless_register_fb, lockless_register_fb, bool, 0400);
-> +MODULE_PARM_DESC(lockless_register_fb,
-> +       "Lockless framebuffer registration for debugging [default=off]");
-> +
->  static int do_register_framebuffer(struct fb_info *fb_info)
->  {
->         int i, ret;
-> @@ -1675,15 +1680,18 @@ static int do_register_framebuffer(struct fb_info *fb_info)
->         registered_fb[i] = fb_info;
->
->         event.info = fb_info;
-> -       console_lock();
-> +       if (!lockless_register_fb)
-> +               console_lock();
->         if (!lock_fb_info(fb_info)) {
-> -               console_unlock();
-> +               if (!lockless_register_fb)
-> +                       console_unlock();
->                 return -ENODEV;
->         }
->
->         fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
->         unlock_fb_info(fb_info);
-> -       console_unlock();
-> +       if (!lockless_register_fb)
-> +               console_unlock();
->         return 0;
->  }
->
-> --
-> 1.8.3.1
->
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> http://lists.freedesktop.org/mailman/listinfo/dri-devel
+diff --git a/Documentation/cpu-freq/core.txt b/Documentation/cpu-freq/core.txt
+index 70933eadc308..ba78e7c2a069 100644
+--- a/Documentation/cpu-freq/core.txt
++++ b/Documentation/cpu-freq/core.txt
+@@ -55,16 +55,13 @@ transition notifiers.
+ ----------------------------
+ 
+ These are notified when a new policy is intended to be set. Each
+-CPUFreq policy notifier is called three times for a policy transition:
++CPUFreq policy notifier is called twice for a policy transition:
+ 
+ 1.) During CPUFREQ_ADJUST all CPUFreq notifiers may change the limit if
+     they see a need for this - may it be thermal considerations or
+     hardware limitations.
+ 
+-2.) During CPUFREQ_INCOMPATIBLE only changes may be done in order to avoid
+-    hardware failure.
+-
+-3.) And during CPUFREQ_NOTIFY all notifiers are informed of the new policy
++2.) And during CPUFREQ_NOTIFY all notifiers are informed of the new policy
+    - if two hardware drivers failed to agree on a new policy before this
+    stage, the incompatible hardware shall be shut down, and the user
+    informed of this.
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index 47af702bb6a2..bb01dea39fdc 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -83,7 +83,7 @@ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
+ 	if (ignore_ppc)
+ 		return 0;
+ 
+-	if (event != CPUFREQ_INCOMPATIBLE)
++	if (event != CPUFREQ_ADJUST)
+ 		return 0;
+ 
+ 	mutex_lock(&performance_mutex);
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 76a26609d96b..293f47b814bf 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2206,10 +2206,6 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 			CPUFREQ_ADJUST, new_policy);
+ 
+-	/* adjust if necessary - hardware incompatibility*/
+-	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+-			CPUFREQ_INCOMPATIBLE, new_policy);
+-
+ 	/*
+ 	 * verify the cpu speed can be set within this limit, which might be
+ 	 * different to the first one
+diff --git a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
+index d29e8da396a0..7969f7690498 100644
+--- a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
++++ b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
+@@ -97,8 +97,8 @@ static int pmi_notifier(struct notifier_block *nb,
+ 	struct cpufreq_frequency_table *cbe_freqs;
+ 	u8 node;
+ 
+-	/* Should this really be called for CPUFREQ_ADJUST, CPUFREQ_INCOMPATIBLE
+-	 * and CPUFREQ_NOTIFY policy events?)
++	/* Should this really be called for CPUFREQ_ADJUST and CPUFREQ_NOTIFY
++	 * policy events?)
+ 	 */
+ 	if (event = CPUFREQ_START)
+ 		return 0;
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index 7245611ec963..94813af97f09 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -1668,7 +1668,6 @@ pxafb_freq_policy(struct notifier_block *nb, unsigned long val, void *data)
+ 
+ 	switch (val) {
+ 	case CPUFREQ_ADJUST:
+-	case CPUFREQ_INCOMPATIBLE:
+ 		pr_debug("min dma period: %d ps, "
+ 			"new clock %d kHz\n", pxafb_display_dma_period(var),
+ 			policy->max);
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index 89dd7e02197f..dcf774c15889 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -1042,7 +1042,6 @@ sa1100fb_freq_policy(struct notifier_block *nb, unsigned long val,
+ 
+ 	switch (val) {
+ 	case CPUFREQ_ADJUST:
+-	case CPUFREQ_INCOMPATIBLE:
+ 		dev_dbg(fbi->dev, "min dma period: %d ps, "
+ 			"new clock %d kHz\n", sa1100fb_min_dma_period(fbi),
+ 			policy->max);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index bde1e567b3a9..bedcc90c0757 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -369,11 +369,10 @@ static inline void cpufreq_resume(void) {}
+ 
+ /* Policy Notifiers  */
+ #define CPUFREQ_ADJUST			(0)
+-#define CPUFREQ_INCOMPATIBLE		(1)
+-#define CPUFREQ_NOTIFY			(2)
+-#define CPUFREQ_START			(3)
+-#define CPUFREQ_CREATE_POLICY		(4)
+-#define CPUFREQ_REMOVE_POLICY		(5)
++#define CPUFREQ_NOTIFY			(1)
++#define CPUFREQ_START			(2)
++#define CPUFREQ_CREATE_POLICY		(3)
++#define CPUFREQ_REMOVE_POLICY		(4)
+ 
+ #ifdef CONFIG_CPU_FREQ
+ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
+-- 
+2.4.0
+

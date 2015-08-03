@@ -1,68 +1,57 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 07 Aug 2015 10:38:23 +0000
-Subject: Re: [PATCH 1/2] OMAPDSS: dss-of: Fix node refcount leak in omapdss_of_get_next_port()
-Message-Id: <55C48A9F.2080505@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="oPsRF1kXvUX0Fq5TNeGxB5ABbt1KUALEG"
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Mon, 03 Aug 2015 20:15:34 +0000
+Subject: [PATCH] video: fbdev: pxa3xx_gcu: prepare the clocks
+Message-Id: <1438632934-29506-1-git-send-email-robert.jarzmik@free.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2641bae47b15795f2a697e69c72ad1b7424d2178.1438885638.git.jsarha@ti.com>
-In-Reply-To: <2641bae47b15795f2a697e69c72ad1b7424d2178.1438885638.git.jsarha@ti.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>
 
---oPsRF1kXvUX0Fq5TNeGxB5ABbt1KUALEG
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+The clocks need to be prepared before being enabled. Without it a
+warning appears in the drivers probe path :
 
+WARNING: CPU: 0 PID: 1 at drivers/clk/clk.c:707 clk_core_enable+0x84/0xa0()
+Modules linked in:
+CPU: 0 PID: 1 Comm: swapper Not tainted 4.2.0-rc3-cm-x300+ #804
+Hardware name: CM-X300 module
+[<c000ed50>] (unwind_backtrace) from [<c000ce08>] (show_stack+0x10/0x14)
+[<c000ce08>] (show_stack) from [<c0017eb4>] (warn_slowpath_common+0x7c/0xb4)
+[<c0017eb4>] (warn_slowpath_common) from [<c0017f88>] (warn_slowpath_null+0x1c/0x24)
+[<c0017f88>] (warn_slowpath_null) from [<c02d30dc>] (clk_core_enable+0x84/0xa0)
+[<c02d30dc>] (clk_core_enable) from [<c02d3118>] (clk_enable+0x20/0x34)
+[<c02d3118>] (clk_enable) from [<c0200dfc>] (pxa3xx_gcu_probe+0x148/0x338)
+[<c0200dfc>] (pxa3xx_gcu_probe) from
+[<c022eccc>] (platform_drv_probe+0x30/0x94)
 
+Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+---
+ drivers/video/fbdev/pxa3xx-gcu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-On 06/08/15 21:41, Jyri Sarha wrote:
-> Signed-off-by: Jyri Sarha <jsarha@ti.com>
+diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
+index 86bd457d039d..50bce45e7f3d 100644
+--- a/drivers/video/fbdev/pxa3xx-gcu.c
++++ b/drivers/video/fbdev/pxa3xx-gcu.c
+@@ -653,7 +653,7 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
+ 		goto err_free_dma;
+ 	}
+ 
+-	ret = clk_enable(priv->clk);
++	ret = clk_prepare_enable(priv->clk);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to enable clock\n");
+ 		goto err_misc_deregister;
+@@ -685,7 +685,7 @@ err_misc_deregister:
+ 	misc_deregister(&priv->misc_dev);
+ 
+ err_disable_clk:
+-	clk_disable(priv->clk);
++	clk_disable_unprepare(priv->clk);
+ 
+ 	return ret;
+ }
+-- 
+2.1.4
 
-Please always fill in the patch description. In simplest cases it may be
-the same as in the subject.
-
-> ---
->  drivers/video/fbdev/omap2/dss/dss-of.c | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/video/fbdev/omap2/dss/dss-of.c b/drivers/video/fbd=
-ev/omap2/dss/dss-of.c
-> index 928ee63..ab6ef16 100644
-> --- a/drivers/video/fbdev/omap2/dss/dss-of.c
-> +++ b/drivers/video/fbdev/omap2/dss/dss-of.c
-> @@ -60,6 +60,7 @@ omapdss_of_get_next_port(const struct device_node *pa=
-rent,
->  			}
->  			prev =3D port;
->  		} while (of_node_cmp(port->name, "port") !=3D 0);
-> +		of_node_put(ports);
-
-I think a blank line is needed above of_node_put().
-
- Tomi
-
-
---oPsRF1kXvUX0Fq5TNeGxB5ABbt1KUALEG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVxIqfAAoJEPo9qoy8lh71UVcP/2uAgLcxx04d/+2FomWcJ47G
-8Enz17SbahQD51uxpn0fe3KZrurDiRJpYTcw08Syom9FK9lB3Aew8j81SQKfIwOD
-VvdgOelDsXEH19FVo7XnoHw4MsRfAGcxrIJExpchh8uib2hD0mDTAEwEn3sXtRNe
-cJry484HyYcXBQq+T2e5vsO1w5y3BYxjx0v/Q1Tln9paaUvc/V1rQv5tYBBivrhj
-uFd23g1d0q+21WCACYDW70P9iEZV2Qviztg6rLCrgvAtv5pFM9xJIT+2gMxj97Qe
-c/XR4k8vgWwxcDX751pMyWMSedm3ug9Lgw5GqK6egJj8WoVoD+F2UtABwOlLCSV5
-RL9qtdd1l5fdxuSOqeDkmlEMGplV1BPm/UwsSJYKO1rOV8cTcT9A3jmHulniiD5o
-purqlx6tVDURMrrfn6xfiWHb9g3dKWrEHB5Zk118RPekTQ0znsoH8Ti1uHE1tYO1
-9a8b/vtjrC8VGnzLAqxz0krqgDyma6MLrP5ZLua9HG21bJF/ULe98xO8fG8NBiI2
-Dngj371gE9qvLEW1rVsRdAqn4VQ4iaHcg2ceDNLOH+Macte2AJfEm+zRT82lZqqa
-ud0j6wkPIcPT+9STCeUmODAb2a7rvKCOJDfUx6f+twfPTwRgZQUmFnlPH+BZ2Dgi
-HKOH7+OQCmVPY8IN1ByA
-=UB8w
------END PGP SIGNATURE-----
-
---oPsRF1kXvUX0Fq5TNeGxB5ABbt1KUALEG--

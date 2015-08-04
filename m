@@ -1,59 +1,42 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 10 Aug 2015 09:33:34 +0000
-Subject: Re: [PATCH] ARM/fb: ep93xx: switch framebuffer to use modedb only
-Message-Id: <55C86FEE.6090502@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Vjsar9OrkTMmnKE6gLJb3S32c89cBUq4l"
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Tue, 04 Aug 2015 12:33:32 +0000
+Subject: [PATCH] fbcon: unconditionally initialize cursor blink interval
+Message-Id: <alpine.DEB.2.11.1508041215100.1151@local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1437744688-29915-1-git-send-email-linus.walleij@linaro.org>
-In-Reply-To: <1437744688-29915-1-git-send-email-linus.walleij@linaro.org>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---Vjsar9OrkTMmnKE6gLJb3S32c89cBUq4l
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+A sun7i-a20-olinuxino-micro fails to boot when kernel parameter
+vt.global_cursor_default=0. The value is copied to vc->vc_deccm
+causing the initialization of ops->cur_blink_jiffies to be skipped.
+Unconditionally initialize it.
 
+Reported-and-tested-by: Jonathan Liu <net147@gmail.com>
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+---
+ drivers/video/console/fbcon.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 658c34b..1aaf893 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1306,10 +1306,11 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
+ 	int y;
+  	int c = scr_readw((u16 *) vc->vc_pos);
+ 
++	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
++
+ 	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
+ 		return;
+ 
+-	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+ 	if (vc->vc_cursor_type & 0x10)
+ 		fbcon_del_cursor_timer(info);
+ 	else
+-- 
+2.1.4
 
-On 24/07/15 16:31, Linus Walleij wrote:
-> All the EP93xx boards exclusively use modedb to look up video
-> modes from the command line. Root out the parametrization of
-> custom video modes from the platform data and board files
-> and simplify the driver.
->=20
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
-> J-C/Tomi: please ACK this if you're OK with it so I can take
-> it through the ARM SoC tree.
-
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-
- Tomi
-
-
---Vjsar9OrkTMmnKE6gLJb3S32c89cBUq4l
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVyG/uAAoJEPo9qoy8lh714LUQAIjQ5PtllkAGkPfKpgMgsydX
-3ZJOc3cdjUjW/HMn8UoNeHX3mhXUbbmVTmMYp+9H5UzLpz8jkexwppX3PZjk37rv
-loKyeZifVSisNLJvob3eKMGtPUVmBJPys7CihJ+29MHL8KfiYOw/bOeBQgPTKn10
-btDNhTfQafcJY3B06CXPokfdgiPnXdROhEtUnhdiwkpXmiPf0WL5t2M+di872smv
-P6iGNqjSmnIc3H+lBBNHQf2ZSxAyC4bH4HmohbHIaTPE/7IdQ1tEgaFrIqDpLkO0
-LduxApqSxvgDald7IRdZr9HzhGu1dQaefIx0GeUeX4RysgAlGugJjUN7evkPMkWF
-/hV6LA74LIXrbATKfeADjnzQ47Zk5cD49v2lTadhe1zRU0P9YYnE//7TD4J4lGjJ
-fa6gV4T7jcVKe16TDr9gBIijie9dzqtJXB+25i4O3rF59fzOngzddepmJiBF756H
-Ixclx3LpNxRYfzi0vHl0hc+7td4GKzcsBCYp3zw5s1iwSbu6L60Cj2JFlRDPGg9K
-F3S00ymNAPsJpXTvdXOMgdCkoUnwOPQjV5db/EIh4YJxrsggiBI/v9BuNzhiFVGz
-BZja0bjFj/s38WkVZ7UnP9Zb1GvkvTLLUj/cQeO+NnrkZ57tFlWupnpeiWWPGN7T
-/CqenRp0pCXZB0EhuRgo
-=5qQm
------END PGP SIGNATURE-----
-
---Vjsar9OrkTMmnKE6gLJb3S32c89cBUq4l--

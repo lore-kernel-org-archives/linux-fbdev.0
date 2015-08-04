@@ -1,69 +1,135 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 25 Aug 2015 13:00:10 +0000
-Subject: Re: [PATCH 2/3] backlight: add led-backlight driver
-Message-Id: <55DC66DA.5030000@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="PKn9cOg9kAwbQikwc5vMj8PrpjTPxSLLB"
+From: Julien Grall <julien.grall@citrix.com>
+Date: Tue, 04 Aug 2015 18:12:44 +0000
+Subject: [PATCH v2 0/8] Use correctly the Xen memory terminologies in Linux
+Message-Id: <1438711972-18752-1-git-send-email-julien.grall@citrix.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440502442-19531-1-git-send-email-tomi.valkeinen@ti.com> <1440502442-19531-3-git-send-email-tomi.valkeinen@ti.com> <20150825123952.GA18009@lunn.ch>
-In-Reply-To: <20150825123952.GA18009@lunn.ch>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
-
---PKn9cOg9kAwbQikwc5vMj8PrpjTPxSLLB
-Content-Type: text/plain; charset=windows-1252
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: xen-devel@lists.xenproject.org
+Cc: linux-fbdev@vger.kernel.org, x86@kernel.org, netdev@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Jiri Slaby <jslaby@suse.com>, Thomas Gleixner <tglx@linutronix.de>, Russell King <linux@arm.linux.org.uk>, linux-scsi@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, stefano.stabellini@eu.citrix.com, Ingo Molnar <mingo@redhat.com>, linux-input@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, ian.campbell@citrix.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, "James E.J. Bottomley" <JBottomley@odin.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Wei Liu <wei.liu2@citrix.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, Julien Grall <julien.grall@citrix.com>, David Vrabel <david.v>
 
+Hi all,
 
+This patch series aims to use the memory terminologies described in
+include/xen/mm.h [1] for Linux xen code.
 
-On 25/08/15 15:39, Andrew Lunn wrote:
-> On Tue, Aug 25, 2015 at 02:34:01PM +0300, Tomi Valkeinen wrote:
->> This patch adds a led-backlight driver (led_bl), which is similar to
->> pwm_bl except the driver uses a LED class driver to adjust the
->> brightness in the HW.
->=20
-> Shouldn't this be sending an event to drivers/leds/trigger/kedtrig-back=
-light.c
->
-> Calling led_set_brightness() from outside of drivers/leds is pretty
-> much unheard of. It is normal to have a trigger to do this. So why not
-> use the exiting backlight trigger?
+Linux is using mistakenly MFN when GFN is meant, I suspect this is because =
+the
+first support of Xen was for PV. This has brought some misimplementation
+of memory helpers on ARM and make the developper confused about the expected
+behavior.
 
-ledtrig-backlight.c is based on fbdev, and I want the backlight to work
-also with DRM. And I want the backlight device to be a proper backlight
-device, i.e. something I can pass data to from the DT.
+For instance, with pfn_to_mfn, we expect to get a MFN based on the name.
+Although, if we look at the implementation on x86, it's returning a GFN.
+Most of the callers are also using it this way.
 
-So, I could create a new trigger, say, "bldev" trigger, which would
-create a backlight device. But then I could not pass any info to it via D=
-T.
+The first 2 patches of this series is ARM related in order to remove
+PV specific helpers which should not be used and fixing the implementation =
+of
+pfn_to_mfn.
 
-This patch was the only working solution I could figure out, but I don't
-have much experience with leds, so I might be missing something.
+The rest of the series is here rename most of the usage in the common code
+of MFN to GFN. I also took the opportunity to replace most of the call to
+pfn_to_gfn in the common code by page_to_gfn avoid construction such
+as pfn_to_gfn(page_to_pfn(...).
 
- Tomi
+Note the one xen-blkfront will be dropped by 64K series [2], I can include =
+it
+if necessary.
 
+Major changes in v2:
+    - Use bfn rather than dfn for the DMA address
+    - Re-introduced pfn_to_mfn for PV guests only
+    - Typoes
 
---PKn9cOg9kAwbQikwc5vMj8PrpjTPxSLLB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+For all the changes see in each patch.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+This series is based on linus's branch. A branch with all the patches
+can be found here:
+    git://xenbits.xen.org/people/julieng/linux-arm.git branch page-renaming=
+-v2
 
-iQIcBAEBCAAGBQJV3GbaAAoJEPo9qoy8lh71eZ4P/01NJGiImirIqpFPh+2EbTig
-w2tvj2GBvmZTObJ06zObIEAsNz5PnpwrD89bCnOV7cQG73maBzTx2OzPlcpv56fA
-8tnG+gKUtZ2cTn12EhR1RZXmj9S5I4gIU2B2sw7ZROC0Qe/hgcWK8rbMWi2JQ611
-pQJ1Mi6tHJXQ+wC9mzIuB7o6TgOeXvJjBwp21HATpPFSiLlPBJFPbyRCNKWdXdh4
-mL1DSxgAO40hvJ95R7nC1qA9woRReo5bnn1YR23C9QFwlWFN0itoyELDihYnrOyS
-NT7DzjdL4+0q24ZjrpvUL0bgvf+ivN2RetSOcbpiZ0/d7Z2FOcds+24JILnKid0i
-YvMWPxO6Xg7oIIJ0QKej52AUXV+WGIMSa9nnuuJK1fVq37S5+rEKO6imppawXZ7G
-VI7r2SiVhOOtGvWVMptYswrhVN0rEYRCf7KynOHh9ttkt3kuscgizu5zqPv5zt9Y
-Qxy0qV4hExkk36BhieJM0504T5y2LVx9cZAjKt0X2ftdjSUksWWNtx7HhCIajZEB
-QHIODd57MtoaC36ssU3Y2MjnvQwILcvc2A7DQBCqWb5IsBanloEklJPAWW+TqAmW
-E7pUMtETiLYmgX865kuGlwXDz+ZRCCKT5DmWg9JS3fSBa+O4vqzf8vbH1ZqYlxMT
-PYKWzfYYGXPn20vU3ImJ
-=VWOW
------END PGP SIGNATURE-----
+It was been boot tested on ARM64 and only built for x86 and ARM32.
+I would be happy if someone can give a try on x86 as I don't have a x86
+box setup with Xen.
 
---PKn9cOg9kAwbQikwc5vMj8PrpjTPxSLLB--
+Sincerely yours,
+
+[1] http://xenbits.xen.org/gitweb/?p=3Dxen.git;a=3Dcommitdiff;h=E758ed14f39=
+0342513405dd766e874934573e6cb
+[2] https://lkml.org/lkml/2015/7/9/628
+
+Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Cc: David Vrabel <david.vrabel@citrix.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ian Campbell <ian.campbell@citrix.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "James E.J. Bottomley" <JBottomley@odin.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Jiri Slaby <jslaby@suse.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: linux-api@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-input@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-scsi@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Cc: "Roger Pau Monn=C3=A9" <roger.pau@citrix.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Wei Liu <wei.liu2@citrix.com>
+Cc: x86@kernel.org
+
+Julien Grall (8):
+  arm/xen: Remove helpers which are PV specific
+  xen: Make clear that swiotlb and biomerge are dealing with DMA address
+  arm/xen: implement correctly pfn_to_mfn
+  xen: Use the correctly the Xen memory terminologies
+  xen/tmem: Use page_to_gfn rather than pfn_to_gfn
+  video/xen-fbfront: Further s/MFN/GFN clean-up
+  hvc/xen: Further s/MFN/GFN clean-up
+  xen/privcmd: Further s/MFN/GFN/ clean-up
+
+ arch/arm/include/asm/xen/page.h         | 44 ++++++++++++++++-------------=
+----
+ arch/arm/xen/enlighten.c                | 18 +++++++-------
+ arch/arm/xen/mm.c                       |  4 +--
+ arch/x86/include/asm/xen/page.h         | 37 +++++++++++++++++++++------
+ arch/x86/xen/mmu.c                      | 32 ++++++++++++------------
+ arch/x86/xen/smp.c                      |  2 +-
+ drivers/block/xen-blkfront.c            |  6 ++---
+ drivers/input/misc/xen-kbdfront.c       |  4 +--
+ drivers/net/xen-netback/netback.c       |  4 +--
+ drivers/net/xen-netfront.c              |  8 +++---
+ drivers/scsi/xen-scsifront.c            |  8 +++---
+ drivers/tty/hvc/hvc_xen.c               | 18 ++++++--------
+ drivers/video/fbdev/xen-fbfront.c       | 20 +++++++--------
+ drivers/xen/balloon.c                   |  2 +-
+ drivers/xen/biomerge.c                  |  6 ++---
+ drivers/xen/events/events_base.c        |  2 +-
+ drivers/xen/events/events_fifo.c        |  4 +--
+ drivers/xen/gntalloc.c                  |  3 ++-
+ drivers/xen/manage.c                    |  2 +-
+ drivers/xen/privcmd.c                   | 44 ++++++++++++++++-------------=
+----
+ drivers/xen/swiotlb-xen.c               | 16 ++++++------
+ drivers/xen/tmem.c                      | 21 ++++++----------
+ drivers/xen/xenbus/xenbus_client.c      |  2 +-
+ drivers/xen/xenbus/xenbus_dev_backend.c |  2 +-
+ drivers/xen/xenbus/xenbus_probe.c       |  8 +++---
+ drivers/xen/xlate_mmu.c                 | 18 +++++++-------
+ include/uapi/xen/privcmd.h              |  4 +++
+ include/xen/page.h                      |  4 +--
+ include/xen/xen-ops.h                   | 10 ++++----
+ 29 files changed, 183 insertions(+), 170 deletions(-)
+
+--=20
+2.1.4
+

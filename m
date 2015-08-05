@@ -1,24 +1,60 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sun, 30 Aug 2015 07:15:00 +0000
-Subject: Re: [PATCH] staging: sm750fb: fix improper typedef usage
-Message-Id: <20150830070300.GA2896@fool>
+From: Julien Grall <julien.grall@citrix.com>
+Date: Wed, 05 Aug 2015 12:33:32 +0000
+Subject: Re: [Xen-devel] [PATCH v2 4/8] xen: Use the correctly the Xen memory terminologies
+Message-Id: <55C2029C.9030705@citrix.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150819022745.GA5960@brian_archtop.Home>
-In-Reply-To: <20150819022745.GA5960@brian_archtop.Home>
+References: <1438711972-18752-1-git-send-email-julien.grall@citrix.com>
+ <1438711972-18752-5-git-send-email-julien.grall@citrix.com>
+ <55C147DD.7000600@oracle.com> <55C1EA95.5060504@citrix.com>
+ <55C1FF54.8060409@oracle.com>
+In-Reply-To: <55C1FF54.8060409@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Sat, Aug 29, 2015 at 05:58:50PM -0400, Brian Stottler wrote:
-> On Thu, Aug 27, 2015 at 05:41:42PM +0530, Sudip Mukherjee wrote:
-> > I think you need to update your tree. This patch will not apply due to
-> > changes already done in some of the files.
+On 05/08/15 13:19, Boris Ostrovsky wrote:
+> On 08/05/2015 06:51 AM, Julien Grall wrote:
+>>
+>>>> diff --git a/drivers/video/fbdev/xen-fbfront.c
+>>>> b/drivers/video/fbdev/xen-fbfront.c
+>>>> index 09dc447..25e3cce 100644
+>>>> --- a/drivers/video/fbdev/xen-fbfront.c
+>>>> +++ b/drivers/video/fbdev/xen-fbfront.c
+>>>> @@ -539,7 +539,7 @@ static int xenfb_remove(struct xenbus_device *dev)
+>>>>      static unsigned long vmalloc_to_mfn(void *address)
+>>>>    {
+>>>> -    return pfn_to_mfn(vmalloc_to_pfn(address));
+>>>> +    return pfn_to_gfn(vmalloc_to_pfn(address));
+>>>>    }
+>>> Are you sure? This will return vmalloc_to_pfn(address)).
+>> I guess you mean vmalloc_to_mfn will return vmalloc_to_pfn?
+>>
+>> If so, it will be only the case on auto-translated case (because pfn =
+>> gfn). In the case of PV, the mfn will be returned.
 > 
-> My mistake, thanks for the heads up. I will resubmit my corrected patch as soon
-> as possible. Just to clarify, the tree in question is torvalds/linux.git,
-> correct?
-No, use Greg's staging-testing tree.
+> How will mfn be returned on PV when pfn_to_gfn() is an identity function?
+> 
+> static inline unsigned long pfn_to_gfn(unsigned long pfn)
+>  {
+>      return pfn;
+>  }
 
-regards
-sudip
+The identity function is only for ARM guest which are always
+auto-translated (arch/arm/include/asm/xen/page.h).
+
+The x86 version contains a check if the guest is auto-translated or not
+(arch/x86/include/asm/xen/page.):
+
+static inline unsigned long pfn_to_gfn(unsigned long pfn)
+{
+        if (xen_feature(XENFEAT_auto_translated_physmap))
+                return pfn;
+        else
+                return pfn_to_mfn(pfn);
+}
+
+Regards,
+
+-- 
+Julien Grall

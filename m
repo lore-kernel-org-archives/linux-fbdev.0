@@ -1,46 +1,55 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Mon, 24 Aug 2015 20:15:15 +0000
-Subject: [PATCH 3/5] [resend] gxt4500: fix color order
-Message-Id: <1440447317-32604-4-git-send-email-linux@rainbow-software.org>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 06 Aug 2015 19:53:03 +0000
+Subject: Re: [Xen-devel] RIP MTRR - status update for upcoming v4.2
+Message-Id: <CAB=NE6W3=SFTqabeD6gq7JCqFZ7+SBZh7Xa=RteO_8-3P7fbdw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440447317-32604-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1440447317-32604-1-git-send-email-linux@rainbow-software.org>
+References: <CAB=NE6UgtdSoBsA=8+ueYRAZHDnWUSmQAoHhAaefqudBrSY7Zw@mail.gmail.com>
+ <1434064996.11808.64.camel@misato.fc.hp.com> <557AAD910200007800084014@mail.emea.novell.com>
+ <1434128306.11808.97.camel@misato.fc.hp.com>
+In-Reply-To: <1434128306.11808.97.camel@misato.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Toshi Kani <toshi.kani@hp.com>
+Cc: Jan Beulich <JBeulich@suse.com>, Andy Lutomirski <luto@amacapital.net>, Bjorn Helgaas <bhelgaas@google.com>, Jej B <James.Bottomley@hansenpartnership.com>, X86 ML <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, Julia Lawall <julia.lawall@lip6.fr>, xen-devel@lists.xenproject.org, Dave Airlie <airlied@redhat.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, Juergen Gross <JGross@suse.com>, Borislav Petkov <bp@suse.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 
-The color order in truecolor modes is wrong. This does not affect console but
-is visible e.g. in X11 which has wrong colors.
+On Fri, Jun 12, 2015 at 9:58 AM, Toshi Kani <toshi.kani@hp.com> wrote:
+> On Fri, 2015-06-12 at 08:59 +0100, Jan Beulich wrote:
+>> >>> On 12.06.15 at 01:23, <toshi.kani@hp.com> wrote:
+>> > There are two usages on MTRRs:
+>> >  1) MTRR entries set by firmware
+>> >  2) MTRR entries set by OS drivers
+>> >
+>> > We can obsolete 2), but we have no control over 1).  As UEFI firmwares
+>> > also set this up, this usage will continue to stay.  So, we should not
+>> > get rid of the MTRR code that looks up the MTRR entries, while we have
+>> > no need to modify them.
+>> >
+>> > Such MTRR entries provide safe guard to /dev/mem, which allows
+>> > privileged user to access a range that may require UC mapping while
+>> > the /dev/mem driver blindly maps it with WB.  MTRRs converts WB to UC in
+>> > such a case.
+>>
+>> But it wouldn't be impossible to simply read the MTRRs upon boot,
+>> store the information, disable MTRRs, and correctly use PAT to
+>> achieve the same effect (i.e. the "blindly maps" part of course
+>> would need fixing).
+>
+> It could be done, but I do not see much benefit of doing it.  One of the
+> reasons platform vendors set MTRRs is so that a system won't hit a
+> machine check when an OS bug leads an access with a wrong cache type.
+>
+> A machine check is hard to analyze and can be seen as a hardware issue by
+> customers.  Emulating MTRRs with PAT won't protect from such a bug.
 
-Swap blue and red colors to fix the problem.
-Fixes https://forums.gentoo.org/viewtopic-t-692740-start-0.html
+That's seems like a fair and valid concern. This could only happen if
+the OS would have code that would use MTRR, in the case of Linux we'll
+soon be able to vet that this cannot happen. For those type of OSes...
+could it be possible to negotiate or hint to the platform through an
+attribute somehow that the OS has such capability to not use MTRR?
+Then, only if this bit is set, the platform could then avoid such MTRR
+settings, and if we have issues you can throw rocks at us.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
----
- drivers/video/fbdev/gxt4500.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+Could this also be used to prevent SMIs with MTRRs?
 
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index 1f2fd5b..442b07c 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -347,11 +347,12 @@ static void gxt4500_unpack_pixfmt(struct fb_var_screeninfo *var,
- 		break;
- 	}
- 	if (pixfmt != DFA_PIX_8BIT) {
--		var->green.offset = var->red.length;
--		var->blue.offset = var->green.offset + var->green.length;
-+		var->blue.offset = 0;
-+		var->green.offset = var->blue.length;
-+		var->red.offset = var->green.offset + var->green.length;
- 		if (var->transp.length)
- 			var->transp.offset -				var->blue.offset + var->blue.length;
-+				var->red.offset + var->red.length;
- 	}
- }
- 
--- 
-Ondrej Zary
-
+ Luis

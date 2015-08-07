@@ -1,82 +1,163 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sun, 23 Aug 2015 10:41:41 +0000
-Subject: [RFC v6 12/25] powerpc: Cleanup nvram includes
-Message-Id: <20150823104132.547457820@telegraphics.com.au>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Fri, 07 Aug 2015 13:13:13 +0000
+Subject: [PATCH RESEND 1/3] staging: sm7xxfb: merge sm712fb with fbdev
+Message-Id: <1438952475-22151-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150823104129.517600532@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, devel@driverdev.osuosl.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-The nvram_read_byte() and nvram_write_byte() definitions in asm/nvram.h
-duplicate those in linux/nvram.h. Get rid of the former to prepare for
-adoption of struct arch_nvram_ops (which is defined in linux/nvram.h for
-general use).
+Now since all cleanups are done and the code is ready to be merged lets
+move it out of staging into fbdev location.
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
 
-Changes since v4:
-- Fix possible git bisect build failure with CONFIG_PPC_PMAC=n.
+Hi Greg,
+Resending the patch series as discussed with you. Patch generated
+with -M, thought it will be easy for you to review.
 
----
- arch/powerpc/include/asm/nvram.h           |    3 ---
- arch/powerpc/kernel/setup_32.c             |    1 +
- drivers/char/generic_nvram.c               |    1 +
- drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
- 4 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/staging/Kconfig                                    |  2 --
+ drivers/staging/Makefile                                   |  1 -
+ drivers/staging/sm7xxfb/Kconfig                            | 13 -------------
+ drivers/staging/sm7xxfb/Makefile                           |  1 -
+ drivers/staging/sm7xxfb/TODO                               | 12 ------------
+ drivers/video/fbdev/Kconfig                                | 14 ++++++++++++++
+ drivers/video/fbdev/Makefile                               |  1 +
+ drivers/{staging/sm7xxfb/sm7xx.h => video/fbdev/sm712.h}   |  0
+ .../{staging/sm7xxfb/sm7xxfb.c => video/fbdev/sm712fb.c}   |  2 +-
+ 9 files changed, 16 insertions(+), 30 deletions(-)
+ delete mode 100644 drivers/staging/sm7xxfb/Kconfig
+ delete mode 100644 drivers/staging/sm7xxfb/Makefile
+ delete mode 100644 drivers/staging/sm7xxfb/TODO
+ rename drivers/{staging/sm7xxfb/sm7xx.h => video/fbdev/sm712.h} (100%)
+ rename drivers/{staging/sm7xxfb/sm7xxfb.c => video/fbdev/sm712fb.c} (99%)
 
-Index: linux/arch/powerpc/include/asm/nvram.h
-=================================--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-08-23 20:40:53.000000000 +1000
-+++ linux/arch/powerpc/include/asm/nvram.h	2015-08-23 20:41:07.000000000 +1000
-@@ -101,7 +101,4 @@ extern int nvram_write_os_partition(stru
- /* Determine NVRAM size */
- extern ssize_t nvram_get_size(void);
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index 4f0b12d..39c5df6 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -56,8 +56,6 @@ source "drivers/staging/vt6656/Kconfig"
  
--/* Normal access to NVRAM */
--extern unsigned char nvram_read_byte(int i);
--extern void nvram_write_byte(unsigned char c, int i);
- #endif /* _ASM_POWERPC_NVRAM_H */
-Index: linux/arch/powerpc/kernel/setup_32.c
-=================================--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-08-23 20:40:53.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-08-23 20:41:07.000000000 +1000
-@@ -16,6 +16,7 @@
- #include <linux/cpu.h>
- #include <linux/console.h>
- #include <linux/memblock.h>
-+#include <linux/nvram.h>
+ source "drivers/staging/iio/Kconfig"
  
- #include <asm/io.h>
- #include <asm/prom.h>
-Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
-=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-08-23 20:40:53.000000000 +1000
-+++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-08-23 20:41:07.000000000 +1000
-@@ -111,12 +111,12 @@
- #include "matroxfb_g450.h"
- #include <linux/matroxfb.h>
- #include <linux/interrupt.h>
-+#include <linux/nvram.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
+-source "drivers/staging/sm7xxfb/Kconfig"
+-
+ source "drivers/staging/sm750fb/Kconfig"
  
- #ifdef CONFIG_PPC_PMAC
- #include <asm/machdep.h>
--unsigned char nvram_read_byte(int);
- static int default_vmode = VMODE_NVRAM;
- static int default_cmode = CMODE_NVRAM;
+ source "drivers/staging/xgifb/Kconfig"
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index 37149ca..018093d 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -22,7 +22,6 @@ obj-$(CONFIG_VT6655)		+= vt6655/
+ obj-$(CONFIG_VT6656)		+= vt6656/
+ obj-$(CONFIG_VME_BUS)		+= vme/
+ obj-$(CONFIG_IIO)		+= iio/
+-obj-$(CONFIG_FB_SM7XX)		+= sm7xxfb/
+ obj-$(CONFIG_FB_SM750)		+= sm750fb/
+ obj-$(CONFIG_FB_XGI)		+= xgifb/
+ obj-$(CONFIG_USB_EMXX)		+= emxx_udc/
+diff --git a/drivers/staging/sm7xxfb/Kconfig b/drivers/staging/sm7xxfb/Kconfig
+deleted file mode 100644
+index e2922ae..0000000
+--- a/drivers/staging/sm7xxfb/Kconfig
++++ /dev/null
+@@ -1,13 +0,0 @@
+-config FB_SM7XX
+-	tristate "Silicon Motion SM7XX framebuffer support"
+-	depends on FB && PCI
+-	select FB_CFB_FILLRECT
+-	select FB_CFB_COPYAREA
+-	select FB_CFB_IMAGEBLIT
+-	help
+-	  Frame buffer driver for the Silicon Motion SM710, SM712, SM721
+-	  and SM722 chips.
+-
+-	  This driver is also available as a module. The module will be
+-	  called sm7xxfb. If you want to compile it as a module, say M
+-	  here and read <file:Documentation/kbuild/modules.txt>.
+diff --git a/drivers/staging/sm7xxfb/Makefile b/drivers/staging/sm7xxfb/Makefile
+deleted file mode 100644
+index 48f471c..0000000
+--- a/drivers/staging/sm7xxfb/Makefile
++++ /dev/null
+@@ -1 +0,0 @@
+-obj-$(CONFIG_FB_SM7XX) += sm7xxfb.o
+diff --git a/drivers/staging/sm7xxfb/TODO b/drivers/staging/sm7xxfb/TODO
+deleted file mode 100644
+index 7cb0b24..0000000
+--- a/drivers/staging/sm7xxfb/TODO
++++ /dev/null
+@@ -1,12 +0,0 @@
+-TODO:
+-- Dual head support
+-- 2D acceleration support
+-- use kernel coding style
+-- refine the code and remove unused code
+-- move it to drivers/video/fbdev/sm7xxfb.c
+-
+-Please send any patches to
+-	Greg Kroah-Hartman <greg@kroah.com>
+-	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+-	Teddy Wang <teddy.wang@siliconmotion.com>
+-	Sudip Mukherjee <sudip@vectorindia.org>
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 2d98de5..2307909 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2475,3 +2475,17 @@ config FB_SSD1307
+ 	help
+ 	  This driver implements support for the Solomon SSD1307
+ 	  OLED controller over I2C.
++
++config FB_SM712
++	tristate "Silicon Motion SM712 framebuffer support"
++	depends on FB && PCI
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	help
++	  Frame buffer driver for the Silicon Motion SM710, SM712, SM721
++	  and SM722 chips.
++
++	  This driver is also available as a module. The module will be
++	  called sm712fb. If you want to compile it as a module, say M
++	  here and read <file:Documentation/kbuild/modules.txt>.
+diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
+index cecea50..50ed1b4 100644
+--- a/drivers/video/fbdev/Makefile
++++ b/drivers/video/fbdev/Makefile
+@@ -131,6 +131,7 @@ obj-$(CONFIG_FB_JZ4740)		  += jz4740_fb.o
+ obj-$(CONFIG_FB_PUV3_UNIGFX)      += fb-puv3.o
+ obj-$(CONFIG_FB_HYPERV)		  += hyperv_fb.o
+ obj-$(CONFIG_FB_OPENCORES)	  += ocfb.o
++obj-$(CONFIG_FB_SM712)		  += sm712fb.o
+ 
+ # Platform or fallback drivers go here
+ obj-$(CONFIG_FB_UVESA)            += uvesafb.o
+diff --git a/drivers/staging/sm7xxfb/sm7xx.h b/drivers/video/fbdev/sm712.h
+similarity index 100%
+rename from drivers/staging/sm7xxfb/sm7xx.h
+rename to drivers/video/fbdev/sm712.h
+diff --git a/drivers/staging/sm7xxfb/sm7xxfb.c b/drivers/video/fbdev/sm712fb.c
+similarity index 99%
+rename from drivers/staging/sm7xxfb/sm7xxfb.c
+rename to drivers/video/fbdev/sm712fb.c
+index 07c2199..629bfa2 100644
+--- a/drivers/staging/sm7xxfb/sm7xxfb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -32,7 +32,7 @@
+ #include <linux/pm.h>
  #endif
-Index: linux/drivers/char/generic_nvram.c
-=================================--- linux.orig/drivers/char/generic_nvram.c	2015-08-23 20:40:53.000000000 +1000
-+++ linux/drivers/char/generic_nvram.c	2015-08-23 20:41:07.000000000 +1000
-@@ -20,6 +20,7 @@
- #include <linux/fcntl.h>
- #include <linux/init.h>
- #include <linux/mutex.h>
-+#include <linux/nvram.h>
- #include <asm/uaccess.h>
- #include <asm/nvram.h>
- #ifdef CONFIG_PPC_PMAC
-
+ 
+-#include "sm7xx.h"
++#include "sm712.h"
+ 
+ /*
+ * Private structure
+-- 
+1.9.1
 

@@ -1,49 +1,33 @@
-From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-Date: Thu, 06 Aug 2015 14:20:09 +0000
-Subject: Re: [Xen-devel] [PATCH v2 4/8] xen: Use the correctly the Xen memory terminologies
-Message-Id: <alpine.DEB.2.02.1508061520010.11337@kaball.uk.xensource.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 07 Aug 2015 11:04:28 +0000
+Subject: [PATCH v2 0/2] OMAPDSS: Fix of-node refcount issues
+Message-Id: <cover.1438945255.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1438711972-18752-1-git-send-email-julien.grall@citrix.com>
- <1438711972-18752-5-git-send-email-julien.grall@citrix.com>
- <55C33E4E.4050704@citrix.com>
- <alpine.DEB.2.02.1508061205190.11337@kaball.uk.xensource.com>
- <55C34250.3040801@citrix.com>
-In-Reply-To: <55C34250.3040801@citrix.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Thu, 6 Aug 2015, Julien Grall wrote:
-> On 06/08/15 12:06, Stefano Stabellini wrote:
-> > On Thu, 6 Aug 2015, Julien Grall wrote:
-> >> Hi,
-> >>
-> >>
-> >> On 04/08/15 19:12, Julien Grall wrote:
-> >>> diff --git a/include/xen/page.h b/include/xen/page.h
-> >>> index c5ed20b..e7e1425 100644
-> >>> --- a/include/xen/page.h
-> >>> +++ b/include/xen/page.h
-> >>> @@ -3,9 +3,9 @@
-> >>>  
-> >>>  #include <asm/xen/page.h>
-> >>>  
-> >>> -static inline unsigned long page_to_mfn(struct page *page)
-> >>> +static inline unsigned long page_to_gfn(struct page *page)
-> >>>  {
-> >>> -	return pfn_to_mfn(page_to_pfn(page));
-> >>> +	return pfn_to_gfn(page_to_pfn(page));
-> >>>  }
-> >>
-> >> I've just noticed that there is a function gfn_to_page used for KVM.
-> >>
-> >> Maybe I should rename page_to_gfn to xen_page_to_gfn to avoid confusion
-> >> with KVM one?
-> > 
-> > Yeah, prepending xen would help to avoid namespace pollution.
-> 
-> Will do. May I keep your Reviewed-by for this mechanical change?
+Changes since the first version:
+- Fix commit descriptions and subject according to Tomi's comments
 
-Yes
+I found couple of refcounting issues related to OMAP DSS of-node
+handling. Second patch should fix the "ERROR: Bad of_node_put() on
+/encoder@0/ports/port@1" -problem.
+
+In the long run it would make sense start using of_graph_*() functions
+in OMAP DSS too. However the semantics of of_graph_*() functions are
+quite different from omapdss_of_*() counterparts. So it better to just
+fix these bugs first.
+
+Jyri Sarha (2):
+  OMAPDSS: Fix node refcount leak in omapdss_of_get_next_port()
+  OMAPDSS: Fix omap_dss_find_output_by_port_node() port refcount
+    decrement
+
+ drivers/video/fbdev/omap2/dss/dss-of.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+-- 
+1.9.1
 

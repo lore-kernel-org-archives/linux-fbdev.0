@@ -1,211 +1,160 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Mon, 24 Aug 2015 19:13:27 +0000
-Subject: [PATCH v4 05/11] PCI: Add pci_iomap_wc() variants
-Message-Id: <1440443613-13696-6-git-send-email-mcgrof@do-not-panic.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Fri, 07 Aug 2015 12:16:04 +0000
+Subject: [PATCH 3/5] staging: sm750fb: fix multiline comment
+Message-Id: <1438949046-18765-3-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1438949046-18765-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1438949046-18765-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: mingo@kernel.org
-Cc: linux-fbdev@vger.kernel.org, mst@redhat.com, airlied@linux.ie, benh@kernel.crashing.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Dave Hansen <dave.hansen@linux.intel.com>, jbeulich@suse.com, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org, xen-devel@lists.xensource.com, Antonino Daplas <adaplas@gmail.com>, Davidlohr Bueso <dbueso@suse.de>, vinod.koul@intel.com, x86@kernel.org, tomi.valkeinen@ti.com, Mel Gorman <mgorman@suse.de>, linux-pci@vger.kernel.org, Dave Airlie <airlied@redhat.com>, bp@suse.de, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Arnd Bergmann <arnd@arndb.de>, "Luis R. Rodriguez" <mcgrof@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Stefan Bader <stefan.bader@canonical.com>, daniel.vetter@ffwll.ch, Suresh Siddha <sbsiddha@gmail.com>, bhelgaas@google.com, dan.j.williams@i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Multiline comments are edited to be in the kernel coding style.
 
-PCI BARs tell us whether prefetching is safe, but they don't say
-anything about write combining (WC). WC changes ordering rules and
-allows writes to be collapsed, so it's not safe in general to use it on
-a prefetchable region.
-
-Add pci_iomap_wc() and pci_iomap_wc_range() so drivers can take advantage
-of write combining when they know it's safe.
-
-On architectures that don't fully support WC, e.g., x86 without PAT,
-drivers for legacy framebuffers may get some of the benefit by using
-arch_phys_wc_add() in addition to pci_iomap_wc().  But arch_phys_wc_add()
-is unreliable and should be avoided in general.  On x86, it uses MTRRs,
-which are limited in number and size, so the results will vary based on
-driver loading order.
-
-The goals of adding pci_iomap_wc() are to:
-
-- Give drivers an architecture-independent way to use WC so they can stop
-  using interfaces like mtrr_add() (on x86, pci_iomap_wc() uses
-  PAT when available).
-
-- Move toward using _PAGE_CACHE_MODE_UC, not _PAGE_CACHE_MODE_UC_MINUS,
-  on x86 on ioremap_nocache() (see de33c442ed2a ("x86 PAT: fix
-  performance drop for glx, use UC minus for ioremap(), ioremap_nocache()
-  and pci_mmap_page_range()").
-
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: benh@kernel.crashing.org
-Cc: bhelgaas@google.com
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Davidlohr Bueso <dbueso@suse.de>
-Cc: david.vrabel@citrix.com
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: jbeulich@suse.com
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: konrad.wilk@oracle.com
-Cc: linux-arch@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-pci@vger.kernel.org
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Roger Pau Monné <roger.pau@citrix.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Stefan Bader <stefan.bader@canonical.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Toshi Kani <toshi.kani@hp.com>
-Cc: venkatesh.pallipadi@intel.com
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Link: http://lkml.kernel.org/r/1426893517-2511-6-git-send-email-mcgrof@do-not-panic.com
-Link: http://lkml.kernel.org/r/1435195342-26879-6-git-send-email-mcgrof@do-not-panic.com
-[ Move IORESOURCE_IO check up, space out statements for better readability. ]
-Signed-off-by: Borislav Petkov <bp@suse.de>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- include/asm-generic/pci_iomap.h | 14 +++++++++
- lib/pci_iomap.c                 | 66 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 80 insertions(+)
+ drivers/staging/sm750fb/sm750.c | 63 +++++++++++++++++++++++++----------------
+ 1 file changed, 39 insertions(+), 24 deletions(-)
 
-diff --git a/include/asm-generic/pci_iomap.h b/include/asm-generic/pci_iomap.h
-index 7389c87116a0..b1e17fcee2d0 100644
---- a/include/asm-generic/pci_iomap.h
-+++ b/include/asm-generic/pci_iomap.h
-@@ -15,9 +15,13 @@ struct pci_dev;
- #ifdef CONFIG_PCI
- /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
- extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max);
-+extern void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max);
- extern void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
- 				     unsigned long offset,
- 				     unsigned long maxlen);
-+extern void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
-+					unsigned long offset,
-+					unsigned long maxlen);
- /* Create a virtual mapping cookie for a port on a given PCI device.
-  * Do not call this directly, it exists to make it easier for architectures
-  * to override */
-@@ -34,12 +38,22 @@ static inline void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned lon
- 	return NULL;
- }
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index c16b293..fa2183d 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -182,8 +182,10 @@ static void lynxfb_ops_fillrect(struct fb_info *info,
+ 	par = info->par;
+ 	share = par->share;
  
-+static inline void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max)
-+{
-+	return NULL;
-+}
- static inline void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
- 					    unsigned long offset,
- 					    unsigned long maxlen)
- {
- 	return NULL;
- }
-+static inline void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
-+					       unsigned long offset,
-+					       unsigned long maxlen)
-+{
-+	return NULL;
-+}
- #endif
+-	/* each time 2d function begin to work,below three variable always need
+-	 * be set, seems we can put them together in some place  */
++	/*
++	 * each time 2d function begin to work,below three variable always need
++	 * be set, seems we can put them together in some place
++	 */
+ 	base = par->crtc.oScreen;
+ 	pitch = info->fix.line_length;
+ 	Bpp = info->var.bits_per_pixel >> 3;
+@@ -218,8 +220,10 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
+ 	par = info->par;
+ 	share = par->share;
  
- #endif /* __ASM_GENERIC_IO_H */
-diff --git a/lib/pci_iomap.c b/lib/pci_iomap.c
-index e1930dbab2da..c10fba461454 100644
---- a/lib/pci_iomap.c
-+++ b/lib/pci_iomap.c
-@@ -49,6 +49,51 @@ void __iomem *pci_iomap_range(struct pci_dev *dev,
- EXPORT_SYMBOL(pci_iomap_range);
+-	/* each time 2d function begin to work,below three variable always need
+-	 * be set, seems we can put them together in some place  */
++	/*
++	 * each time 2d function begin to work,below three variable always need
++	 * be set, seems we can put them together in some place
++	 */
+ 	base = par->crtc.oScreen;
+ 	pitch = info->fix.line_length;
+ 	Bpp = info->var.bits_per_pixel >> 3;
+@@ -249,8 +253,10 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
  
- /**
-+ * pci_iomap_wc_range - create a virtual WC mapping cookie for a PCI BAR
-+ * @dev: PCI device that owns the BAR
-+ * @bar: BAR number
-+ * @offset: map memory at the given offset in BAR
-+ * @maxlen: max length of the memory to map
-+ *
-+ * Using this function you will get a __iomem address to your device BAR.
-+ * You can access it using ioread*() and iowrite*(). These functions hide
-+ * the details if this is a MMIO or PIO address space and will just do what
-+ * you expect from them in the correct way. When possible write combining
-+ * is used.
-+ *
-+ * @maxlen specifies the maximum length to map. If you want to get access to
-+ * the complete BAR from offset to the end, pass %0 here.
-+ * */
-+void __iomem *pci_iomap_wc_range(struct pci_dev *dev,
-+				 int bar,
-+				 unsigned long offset,
-+				 unsigned long maxlen)
-+{
-+	resource_size_t start = pci_resource_start(dev, bar);
-+	resource_size_t len = pci_resource_len(dev, bar);
-+	unsigned long flags = pci_resource_flags(dev, bar);
-+
-+
-+	if (flags & IORESOURCE_IO)
-+		return NULL;
-+
-+	if (len <= offset || !start)
-+		return NULL;
-+
-+	len -= offset;
-+	start += offset;
-+	if (maxlen && len > maxlen)
-+		len = maxlen;
-+
-+	if (flags & IORESOURCE_MEM)
-+		return ioremap_wc(start, len);
-+
-+	/* What? */
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(pci_iomap_wc_range);
-+
-+/**
-  * pci_iomap - create a virtual mapping cookie for a PCI BAR
-  * @dev: PCI device that owns the BAR
-  * @bar: BAR number
-@@ -67,4 +112,25 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
- 	return pci_iomap_range(dev, bar, 0, maxlen);
- }
- EXPORT_SYMBOL(pci_iomap);
-+
-+/**
-+ * pci_iomap_wc - create a virtual WC mapping cookie for a PCI BAR
-+ * @dev: PCI device that owns the BAR
-+ * @bar: BAR number
-+ * @maxlen: length of the memory to map
-+ *
-+ * Using this function you will get a __iomem address to your device BAR.
-+ * You can access it using ioread*() and iowrite*(). These functions hide
-+ * the details if this is a MMIO or PIO address space and will just do what
-+ * you expect from them in the correct way. When possible write combining
-+ * is used.
-+ *
-+ * @maxlen specifies the maximum length to map. If you want to get access to
-+ * the complete BAR without checking for its length first, pass %0 here.
-+ * */
-+void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long maxlen)
-+{
-+	return pci_iomap_wc_range(dev, bar, 0, maxlen);
-+}
-+EXPORT_SYMBOL_GPL(pci_iomap_wc);
- #endif /* CONFIG_PCI */
+ 	par = info->par;
+ 	share = par->share;
+-	/* each time 2d function begin to work,below three variable always need
+-	 * be set, seems we can put them together in some place  */
++	/*
++	 * each time 2d function begin to work,below three variable always need
++	 * be set, seems we can put them together in some place
++	 */
+ 	base = par->crtc.oScreen;
+ 	pitch = info->fix.line_length;
+ 	Bpp = info->var.bits_per_pixel >> 3;
+@@ -334,9 +340,10 @@ static int lynxfb_ops_set_par(struct fb_info *info)
+ 	fix->line_length = line_length;
+ 	pr_info("fix->line_length = %d\n", fix->line_length);
+ 
+-	/* var->red,green,blue,transp are need to be set by driver
++	/*
++	 * var->red,green,blue,transp are need to be set by driver
+ 	 * and these data should be set before setcolreg routine
+-	 * */
++	 */
+ 
+ 	switch (var->bits_per_pixel) {
+ 	case 8:
+@@ -811,8 +818,10 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 	sm750fb_set_drv(par);
+ 	lynxfb_ops.fb_pan_display = lynxfb_ops_pan_display;
+ 
+-	/* set current cursor variable and proc pointer,
+-	 * must be set after crtc member initialized */
++	/*
++	 * set current cursor variable and proc pointer,
++	 * must be set after crtc member initialized
++	 */
+ 	crtc->cursor.offset = crtc->oScreen + crtc->vidmem_size - 1024;
+ 	crtc->cursor.mmio = share->pvReg + 0x800f0 + (int)crtc->channel * 0x140;
+ 
+@@ -920,12 +929,13 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 
+ 	fix->smem_start = crtc->oScreen + share->vidmem_start;
+ 	pr_info("fix->smem_start = %lx\n", fix->smem_start);
+-	/* according to mmap experiment from user space application,
++	/*
++	 * according to mmap experiment from user space application,
+ 	 * fix->mmio_len should not larger than virtual size
+ 	 * (xres_virtual x yres_virtual x ByPP)
+ 	 * Below line maybe buggy when user mmap fb dev node and write
+ 	 * data into the bound over virtual size
+-	 * */
++	 */
+ 	fix->smem_len = crtc->vidmem_size;
+ 	pr_info("fix->smem_len = %x\n", fix->smem_len);
+ 	info->screen_size = fix->smem_len;
+@@ -1083,8 +1093,10 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 		goto err_enable;
+ 	}
+ 
+-	/* though offset of share in sm750_share is 0,
+-	 * we use this marcro as the same */
++	/*
++	 * though offset of share in sm750_share is 0,
++	 * we use this marcro as the same
++	 */
+ 	spec_offset = offsetof(struct sm750_share, share);
+ 
+ 	spec_share = kzalloc(sizeof(*spec_share), GFP_KERNEL);
+@@ -1108,10 +1120,12 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 	spin_lock_init(&share->slock);
+ 
+ 	if (!share->accel_off) {
+-		/* hook deInit and 2d routines, notes that below hw_xxx
++		/*
++		 * hook deInit and 2d routines, notes that below hw_xxx
+ 		 * routine can work on most of lynx chips
+ 		 * if some chip need specific function,
+-		 * please hook it in smXXX_set_drv routine */
++		 * please hook it in smXXX_set_drv routine
++		 */
+ 		share->accel.de_init = hw_de_init;
+ 		share->accel.de_fillrect = hw_fillrect;
+ 		share->accel.de_copyarea = hw_copyarea;
+@@ -1262,14 +1276,15 @@ static int __init lynxfb_setup(char *options)
+ 
+ 	tmp = g_settings;
+ 
+-	/*	Notes:
+-		char * strsep(char **s,const char * ct);
+-		@s: the string to be searched
+-		@ct :the characters to search for
+-
+-		strsep() updates @options to pointer after the first found token
+-		it also returns the pointer ahead the token.
+-		*/
++	/*
++	 * Notes:
++	 * char * strsep(char **s,const char * ct);
++	 * @s: the string to be searched
++	 * @ct :the characters to search for
++	 *
++	 * strsep() updates @options to pointer after the first found token
++	 * it also returns the pointer ahead the token.
++	 */
+ 	while ((opt = strsep(&options, ":")) != NULL) {
+ 		/* options that mean for any lynx chips are configured here */
+ 		if (!strncmp(opt, "noaccel", strlen("noaccel")))
 -- 
-2.4.3
+1.9.1
 

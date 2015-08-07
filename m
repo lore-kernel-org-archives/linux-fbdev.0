@@ -1,120 +1,146 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Fri, 07 Aug 2015 12:16:03 +0000
-Subject: [PATCH 2/5] staging: sm750fb: space around operator
-Message-Id: <1438949046-18765-2-git-send-email-sudipm.mukherjee@gmail.com>
+From: Julien Grall <julien.grall@citrix.com>
+Date: Fri, 07 Aug 2015 16:34:33 +0000
+Subject: [PATCH v3 0/9] Use correctly the Xen memory terminologies
+Message-Id: <1438965282-19103-1-git-send-email-julien.grall@citrix.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1438949046-18765-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1438949046-18765-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: xen-devel@lists.xenproject.org
+Cc: linux-fbdev@vger.kernel.org, x86@kernel.org, netdev@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Jiri Slaby <jslaby@suse.com>, Thomas Gleixner <tglx@linutronix.de>, Russell King <linux@arm.linux.org.uk>, linux-scsi@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, stefano.stabellini@eu.citrix.com, Ingo Molnar <mingo@redhat.com>, linux-input@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, ian.campbell@citrix.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, "James E.J. Bottomley" <JBottomley@odin.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Wei Liu <wei.liu2@citrix.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, Julien Grall <julien.grall@citrix.com>, David Vrabel <david.v>
 
-Kernel coding style says to have a space around the operators.
+Hi all,
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
+This patch series aims to use the memory terminologies described in
+include/xen/mm.h [1] for Linux xen code.
 
-This patch will generate checkpatch warning about longline in 2 places,
-those were not fixed to keep the readability. Will fix them later.
-The warnings were already there, this patch has not introduced them.
+The differences from v2 is minor but I resent it because my 64K series depe=
+nds
+on this series.
 
- drivers/staging/sm750fb/sm750.c | 30 +++++++++++++++++-------------
- 1 file changed, 17 insertions(+), 13 deletions(-)
+Linux is using mistakenly MFN when GFN is meant, I suspect this is because =
+the
+first support of Xen was for PV. This has brought some misimplementation
+of memory helpers on ARM and make the developper confused about the expected
+behavior.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 8990ff4..c16b293 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -144,12 +144,12 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
- 		/* get the 16bit color of kernel means */
- 		u16 fg, bg;
- 
--		fg = ((info->cmap.red[fbcursor->image.fg_color] & 0xf800))|
--		      ((info->cmap.green[fbcursor->image.fg_color] & 0xfc00) >> 5)|
-+		fg = ((info->cmap.red[fbcursor->image.fg_color] & 0xf800)) |
-+		      ((info->cmap.green[fbcursor->image.fg_color] & 0xfc00) >> 5) |
- 		      ((info->cmap.blue[fbcursor->image.fg_color] & 0xf800) >> 11);
- 
--		bg = ((info->cmap.red[fbcursor->image.bg_color] & 0xf800))|
--		      ((info->cmap.green[fbcursor->image.bg_color] & 0xfc00) >> 5)|
-+		bg = ((info->cmap.red[fbcursor->image.bg_color] & 0xf800)) |
-+		      ((info->cmap.green[fbcursor->image.bg_color] & 0xfc00) >> 5) |
- 		      ((info->cmap.blue[fbcursor->image.bg_color] & 0xf800) >> 11);
- 
- 		cursor->setColor(cursor, fg, bg);
-@@ -188,8 +188,9 @@ static void lynxfb_ops_fillrect(struct fb_info *info,
- 	pitch = info->fix.line_length;
- 	Bpp = info->var.bits_per_pixel >> 3;
- 
--	color = (Bpp = 1)?region->color:((u32 *)info->pseudo_palette)[region->color];
--	rop = (region->rop != ROP_COPY) ? HW_ROP2_XOR:HW_ROP2_COPY;
-+	color = (Bpp = 1) ? region->color :
-+		((u32 *)info->pseudo_palette)[region->color];
-+	rop = (region->rop != ROP_COPY) ? HW_ROP2_XOR : HW_ROP2_COPY;
- 
- 	/*
- 	 * If not use spin_lock,system will die if user load driver
-@@ -278,7 +279,7 @@ _do_work:
- 		spin_lock(&share->slock);
- 
- 	share->accel.de_imageblit(&share->accel,
--				  image->data, image->width>>3, 0,
-+				  image->data, image->width >> 3, 0,
- 				  base, pitch, Bpp,
- 				  image->dx, image->dy,
- 				  image->width, image->height,
-@@ -684,7 +685,8 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 	output = &par->output;
- 	crtc = &par->crtc;
- 
--	crtc->vidmem_size = (share->dual)?share->vidmem_size>>1:share->vidmem_size;
-+	crtc->vidmem_size = (share->dual) ? share->vidmem_size >> 1 :
-+			     share->vidmem_size;
- 	/* setup crtc and output member */
- 	spec_share->hwCursor = g_hwcursor;
- 
-@@ -701,10 +703,12 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 	output->proc_setMode = hw_sm750_output_setMode;
- 	output->proc_checkMode = hw_sm750_output_checkMode;
- 
--	output->proc_setBLANK = (share->revid = SM750LE_REVISION_ID)?hw_sm750le_setBLANK:hw_sm750_setBLANK;
-+	output->proc_setBLANK = (share->revid = SM750LE_REVISION_ID) ?
-+				 hw_sm750le_setBLANK : hw_sm750_setBLANK;
- 	output->clear = hw_sm750_output_clear;
- 	/* chip specific phase */
--	share->accel.de_wait = (share->revid = SM750LE_REVISION_ID)?hw_sm750le_deWait : hw_sm750_deWait;
-+	share->accel.de_wait = (share->revid = SM750LE_REVISION_ID) ?
-+				hw_sm750le_deWait : hw_sm750_deWait;
- 	switch (spec_share->state.dataflow) {
- 	case sm750_simul_pri:
- 		output->paths = sm750_pnc;
-@@ -814,7 +818,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 
- 	pr_info("crtc->cursor.mmio = %p\n", crtc->cursor.mmio);
- 	crtc->cursor.maxH = crtc->cursor.maxW = 64;
--	crtc->cursor.size = crtc->cursor.maxH*crtc->cursor.maxW*2/8;
-+	crtc->cursor.size = crtc->cursor.maxH * crtc->cursor.maxW * 2 / 8;
- 	crtc->cursor.disable = hw_cursor_disable;
- 	crtc->cursor.enable = hw_cursor_enable;
- 	crtc->cursor.setColor = hw_cursor_setColor;
-@@ -896,13 +900,13 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 
- 	/* set info */
- 	line_length = PADDING(crtc->line_pad,
--			      (var->xres_virtual * var->bits_per_pixel/8));
-+			      (var->xres_virtual * var->bits_per_pixel / 8));
- 
- 	info->pseudo_palette = &par->pseudo_palette[0];
- 	info->screen_base = crtc->vScreen;
- 	pr_debug("screen_base vaddr = %p\n", info->screen_base);
- 	info->screen_size = line_length * var->yres_virtual;
--	info->flags = FBINFO_FLAG_DEFAULT|0;
-+	info->flags = FBINFO_FLAG_DEFAULT | 0;
- 
- 	/* set info->fix */
- 	fix->type = FB_TYPE_PACKED_PIXELS;
--- 
-1.9.1
+For instance, with pfn_to_mfn, we expect to get a MFN based on the name.
+Although, if we look at the implementation on x86, it's returning a GFN.
+Most of the callers are also using it this way.
+
+The first 2 patches of this series is ARM related in order to remove
+PV specific helpers which should not be used and fixing the implementation =
+of
+pfn_to_mfn.
+
+The rest of the series is here rename most of the usage in the common code
+of MFN to GFN. I also took the opportunity to replace most of the call to
+pfn_to_gfn in the common code by page_to_gfn avoid construction such
+as pfn_to_gfn(page_to_pfn(...).
+
+Note the one xen-blkfront will be dropped by 64K series [2], I can include
+here if necessary.
+
+Major changes in v3:
+    - More typoes
+    - Rename page_to_gfn to xen_page_to_gfn to avoid confusing with the
+    KVM function gfn_to_page
+
+Major changes in v2:
+    - Use bfn rather than dfn for the DMA address
+    - Re-introduced pfn_to_mfn for PV guests only
+    - Typoes
+
+For all the changes see in each patch.
+
+This series is based on xentip for-linus-4.3 branch. A branch with all the
+patches can be found here:
+    git://xenbits.xen.org/people/julieng/linux-arm.git branch page-renaming=
+-v3
+
+It has been boot tested on ARM64 and ARM32 and only built for x86.
+I would be happy if someone can give a try on x86 as I don't have a x86
+box setup with Xen.
+
+Sincerely yours,
+
+[1] http://xenbits.xen.org/gitweb/?p=3Dxen.git;a=3Dcommitdiff;h=E758ed14f39=
+0342513405dd766e874934573e6cb
+[2] https://lkml.org/lkml/2015/7/9/628
+
+Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Cc: David Vrabel <david.vrabel@citrix.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ian Campbell <ian.campbell@citrix.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "James E.J. Bottomley" <JBottomley@odin.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Jiri Slaby <jslaby@suse.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: linux-api@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-input@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-scsi@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Cc: "Roger Pau Monn=C3=A9" <roger.pau@citrix.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Wei Liu <wei.liu2@citrix.com>
+Cc: x86@kernel.org
+
+
+
+Julien Grall (9):
+  arm/xen: Remove helpers which are PV specific
+  xen: Make clear that swiotlb and biomerge are dealing with DMA address
+  arm/xen: implement correctly pfn_to_mfn
+  xen: Use correctly the Xen memory terminologies
+  xen/tmem: Use xen_page_to_gfn rather than pfn_to_gfn
+  video/xen-fbfront: Further s/MFN/GFN clean-up
+  hvc/xen: Further s/MFN/GFN clean-up
+  xen/privcmd: Further s/MFN/GFN/ clean-up
+  xen/xenbus: Rename the variable xen_store_mfn to xen_store_gfn
+
+ arch/arm/include/asm/xen/page.h         | 44 ++++++++++++++++-------------=
+----
+ arch/arm/xen/enlighten.c                | 18 +++++++-------
+ arch/arm/xen/mm.c                       |  4 +--
+ arch/x86/include/asm/xen/page.h         | 35 +++++++++++++++++++++-----
+ arch/x86/xen/mmu.c                      | 32 ++++++++++++------------
+ arch/x86/xen/smp.c                      |  2 +-
+ drivers/block/xen-blkfront.c            |  6 ++---
+ drivers/input/misc/xen-kbdfront.c       |  4 +--
+ drivers/net/xen-netback/netback.c       |  4 +--
+ drivers/net/xen-netfront.c              | 12 +++++----
+ drivers/scsi/xen-scsifront.c            | 10 ++++----
+ drivers/tty/hvc/hvc_xen.c               | 18 ++++++--------
+ drivers/video/fbdev/xen-fbfront.c       | 20 +++++++--------
+ drivers/xen/balloon.c                   |  2 +-
+ drivers/xen/biomerge.c                  |  6 ++---
+ drivers/xen/events/events_base.c        |  2 +-
+ drivers/xen/events/events_fifo.c        |  4 +--
+ drivers/xen/gntalloc.c                  |  3 ++-
+ drivers/xen/manage.c                    |  2 +-
+ drivers/xen/privcmd.c                   | 44 ++++++++++++++++-------------=
+----
+ drivers/xen/swiotlb-xen.c               | 16 ++++++------
+ drivers/xen/tmem.c                      | 21 ++++++----------
+ drivers/xen/xenbus/xenbus_client.c      |  2 +-
+ drivers/xen/xenbus/xenbus_dev_backend.c |  2 +-
+ drivers/xen/xenbus/xenbus_probe.c       | 16 ++++++------
+ drivers/xen/xlate_mmu.c                 | 18 +++++++-------
+ include/uapi/xen/privcmd.h              |  4 +++
+ include/xen/page.h                      |  4 +--
+ include/xen/xen-ops.h                   | 10 ++++----
+ 29 files changed, 191 insertions(+), 174 deletions(-)
+
+--=20
+2.1.4
 

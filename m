@@ -1,201 +1,227 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Mon, 24 Aug 2015 19:13:30 +0000
-Subject: [PATCH v4 08/11] drivers/video/fbdev/vt8623fb: Use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1440443613-13696-9-git-send-email-mcgrof@do-not-panic.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Fri, 07 Aug 2015 12:16:02 +0000
+Subject: [PATCH 1/5] staging: sm750fb: remove multiple blank line
+Message-Id: <1438949046-18765-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: mingo@kernel.org
-Cc: bp@suse.de, bhelgaas@google.com, tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, vinod.koul@intel.com, dan.j.williams@intel.com, toshi.kani@hp.com, benh@kernel.crashing.org, mst@redhat.com, akpm@linux-foundation.org, daniel.vetter@ffwll.ch, konrad.wilk@oracle.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, Antonino Daplas <adaplas@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Dave Airlie <airlied@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Juergen Gross <jgross@suse.com>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Rob Clark <robdclark@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Multiple blank lines are not kernel coding style and so checkpatch
+complains. Remove them.
 
-This driver uses the same area for MTRR as for the ioremap().
-
-Convert the driver from using the x86-specific MTRR code to the
-architecture-agnostic arch_phys_wc_add(). It will avoid MTRRs if
-write-combining is available. In order to take advantage of that
-also ensure the ioremapped area is requested as write-combining.
-
-There are a few motivations for this:
-
-a) Take advantage of PAT when available.
-
-b) Help bury MTRR code away, MTRR is architecture-specific and on
-   x86 it is being replaced by PAT.
-
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()").
-
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the ifdeffery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message about
-when MTRR fails and doing nothing when we didn't get an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: benh@kernel.crashing.org
-Cc: bhelgaas@google.com
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-pci@vger.kernel.org
-Cc: mst@redhat.com
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: toshi.kani@hp.com
-Link: http://lkml.kernel.org/r/1435195342-26879-10-git-send-email-mcgrof@do-not-panic.com
-Signed-off-by: Borislav Petkov <bp@suse.de>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
 ---
- drivers/video/fbdev/vt8623fb.c | 31 ++++++-------------------------
- 1 file changed, 6 insertions(+), 25 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 26 --------------------------
+ 1 file changed, 26 deletions(-)
 
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index 8bac309c24b9..dd0f18e42d3e 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
-@@ -26,13 +26,9 @@
- #include <linux/console.h> /* Why should fb driver call console functions? because console_lock() */
- #include <video/vga.h>
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index c7ab818..8990ff4 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -26,7 +26,6 @@
  
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
+ int smi_indent;
+ 
 -
- struct vt8623fb_info {
- 	char __iomem *mmio_base;
--	int mtrr_reg;
-+	int wc_cookie;
- 	struct vgastate state;
- 	struct mutex open_lock;
- 	unsigned int ref_count;
-@@ -99,10 +95,7 @@ static struct svga_timing_regs vt8623_timing_regs     = {
- /* Module parameters */
+ /*
+  * #ifdef __BIG_ENDIAN
+  * ssize_t lynxfb_ops_write(struct fb_info *info, const char __user *buf,
+@@ -40,7 +39,6 @@ typedef void (*PROC_SPEC_SETUP)(struct lynx_share*, char *);
+ typedef int (*PROC_SPEC_MAP)(struct lynx_share*, struct pci_dev*);
+ typedef int (*PROC_SPEC_INITHW)(struct lynx_share*, struct pci_dev*);
  
- static char *mode_option = "640x480-8@60";
 -
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
+ /* common var for all device */
+ static int g_hwcursor = 1;
+ static int g_noaccel;
+@@ -51,7 +49,6 @@ static char *g_settings;
+ static int g_dualview;
+ static char *g_option;
  
- MODULE_AUTHOR("(c) 2006 Ondrej Zajicek <santiago@crfreenet.org>");
- MODULE_LICENSE("GPL");
-@@ -112,11 +105,8 @@ module_param(mode_option, charp, 0644);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0);
- MODULE_PARM_DESC(mode, "Default video mode e.g. '648x480-8@60' (deprecated)");
 -
--#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
+ static const struct fb_videomode lynx750_ext[] = {
+ 	/*	1024x600-60 VESA	[1.71:1] */
+ 	{NULL,  60, 1024, 600, 20423, 144,  40, 18, 1, 104, 3,
+@@ -115,8 +112,6 @@ static const struct fb_videomode lynx750_ext[] = {
+ };
  
  
- /* ------------------------------------------------------------------------- */
-@@ -710,7 +700,7 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.mmio_len = pci_resource_len(dev, 1);
+-
+-
+ /* no hardware cursor supported under version 2.6.10, kernel bug */
+ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ {
+@@ -160,7 +155,6 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 		cursor->setColor(cursor, fg, bg);
+ 	}
  
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -781,12 +771,9 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
+-
+ 	if (fbcursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
+ 		cursor->setData(cursor,
+ 				fbcursor->rop,
+@@ -300,7 +294,6 @@ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
+ 	struct lynxfb_crtc *crtc;
+ 	int ret;
  
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
+-
+ 	if (!info)
+ 		return -EINVAL;
  
- 	return 0;
+@@ -466,7 +459,6 @@ static int lynxfb_resume(struct pci_dev *pdev)
  
-@@ -816,13 +803,7 @@ static void vt8623_pci_remove(struct pci_dev *dev)
+ 	int ret;
+ 
+-
+ 	ret = 0;
+ 	share = pci_get_drvdata(pdev);
+ 
+@@ -478,7 +470,6 @@ static int lynxfb_resume(struct pci_dev *pdev)
+ 		return ret;
+ 	}
+ 
+-
+ 	if (pdev->dev.power.power_state.event != PM_EVENT_FREEZE) {
+ 		pci_restore_state(pdev);
+ 		ret = pci_enable_device(pdev);
+@@ -493,7 +484,6 @@ static int lynxfb_resume(struct pci_dev *pdev)
+ 
+ 	hw_sm750_inithw(share, pdev);
+ 
+-
+ 	info = share->fbinfo[0];
+ 
  	if (info) {
- 		struct vt8623fb_info *par = info->par;
+@@ -518,7 +508,6 @@ static int lynxfb_resume(struct pci_dev *pdev)
+ 		fb_set_suspend(info, 0);
+ 	}
  
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
--#endif
 -
-+		arch_phys_wc_del(par->wc_cookie);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
+ 	console_unlock();
+ 	return ret;
+ }
+@@ -534,7 +523,6 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo *var,
+ 	int ret;
+ 	resource_size_t request;
  
+-
+ 	par = info->par;
+ 	crtc = &par->crtc;
+ 	output = &par->output;
+@@ -546,7 +534,6 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo *var,
+ 		 var->yres,
+ 		 var->bits_per_pixel);
+ 
+-
+ 	switch (var->bits_per_pixel) {
+ 	case 8:
+ 	case 16:
+@@ -617,7 +604,6 @@ exit:
+ 	return ret;
+ }
+ 
+-
+ static int lynxfb_ops_setcolreg(unsigned regno,
+ 				unsigned red,
+ 				unsigned green,
+@@ -652,7 +638,6 @@ static int lynxfb_ops_setcolreg(unsigned regno,
+ 		goto exit;
+ 	}
+ 
+-
+ 	if (info->fix.visual = FB_VISUAL_TRUECOLOR && regno < 256) {
+ 		u32 val;
+ 
+@@ -782,7 +767,6 @@ static struct fb_ops lynxfb_ops = {
+ 	.fb_cursor = lynxfb_ops_cursor,
+ };
+ 
+-
+ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ {
+ 	int i;
+@@ -803,7 +787,6 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 		"kernel HELPERS prepared vesa_modes",
+ 	};
+ 
+-
+ 	static const char *fixId[2] = {
+ 		"sm750_fb1", "sm750_fb2",
+ 	};
+@@ -824,7 +807,6 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 	sm750fb_set_drv(par);
+ 	lynxfb_ops.fb_pan_display = lynxfb_ops_pan_display;
+ 
+-
+ 	/* set current cursor variable and proc pointer,
+ 	 * must be set after crtc member initialized */
+ 	crtc->cursor.offset = crtc->oScreen + crtc->vidmem_size - 1024;
+@@ -841,7 +823,6 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 	crtc->cursor.setData = hw_cursor_setData;
+ 	crtc->cursor.vstart = share->pvMem + crtc->cursor.offset;
+ 
+-
+ 	crtc->cursor.share = share;
+ 		memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
+ 	if (!g_hwcursor) {
+@@ -849,7 +830,6 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 		crtc->cursor.disable(&crtc->cursor);
+ 	}
+ 
+-
+ 	/* set info->fbops, must be set before fb_find_mode */
+ 	if (!share->accel_off) {
+ 		/* use 2d acceleration */
+@@ -865,7 +845,6 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 			g_fbmode[index] = g_fbmode[0];
+ 	}
+ 
+-
+ 	for (i = 0; i < 3; i++) {
+ 
+ 		ret = fb_find_mode(var, info, g_fbmode[index],
+@@ -935,7 +914,6 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 
+ 	strlcpy(fix->id, fixId[index], sizeof(fix->id));
+ 
+-
+ 	fix->smem_start = crtc->oScreen + share->vidmem_start;
+ 	pr_info("fix->smem_start = %lx\n", fix->smem_start);
+ 	/* according to mmap experiment from user space application,
+@@ -998,7 +976,6 @@ static void sm750fb_setup(struct lynx_share *share, char *src)
+ #endif
+ 	int swap;
+ 
+-
+ 	spec_share = container_of(share, struct sm750_share, share);
+ #ifdef CAP_EXPENSIION
+ 	exp_res = NULL;
+@@ -1096,7 +1073,6 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 	size_t spec_offset = 0;
+ 	int fbidx;
+ 
+-
+ 	/* enable device */
+ 	if (pci_enable_device(pdev)) {
+ 		pr_err("can not enable device.\n");
+@@ -1268,7 +1244,6 @@ static int __init lynxfb_setup(char *options)
+ 	int len;
+ 	char *opt, *tmp;
+ 
+-
+ 	if (!options || !*options) {
+ 		pr_warn("no options.\n");
+ 		return 0;
+@@ -1332,7 +1307,6 @@ static struct pci_driver lynxfb_driver = {
+ #endif
+ };
+ 
+-
+ static int __init lynxfb_init(void)
+ {
+ 	char *option;
 -- 
-2.4.3
+1.9.1
 

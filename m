@@ -1,65 +1,84 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 07 Aug 2015 10:49:12 +0000
-Subject: Re: [PATCH 2/2] OMAPDSS: of-dss: omap_dss_find_output_by_port_node() keep port refcount
-Message-Id: <55C48D28.8080905@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="pLoMLUf70oBXxS2A73XWGIVm3t0PKpurR"
+From: Petr Cvek <petr.cvek@tul.cz>
+Date: Sat, 08 Aug 2015 18:20:20 +0000
+Subject: [PATCH v1, TRIVIAL] Fix pxafb nonstd field documentation and add errata info
+Message-Id: <55C64864.6070405@tul.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1f1f0438904af54bcaadd6e1796dad06e7001172.1438885638.git.jsarha@ti.com>
-In-Reply-To: <1f1f0438904af54bcaadd6e1796dad06e7001172.1438885638.git.jsarha@ti.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---pLoMLUf70oBXxS2A73XWGIVm3t0PKpurR
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Fix pxafb nonstd field documentation and add warning comment to Kconfig
+and pxafb.c (errata: YUV420 hangs LCD).
 
-Hi,
+Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
+---
+ Documentation/fb/pxafb.txt  | 8 ++++----
+ drivers/video/fbdev/Kconfig | 5 +++++
+ drivers/video/fbdev/pxafb.c | 4 ++++
+ 3 files changed, 13 insertions(+), 4 deletions(-)
 
-On 06/08/15 21:41, Jyri Sarha wrote:
-> The only user of dss_of_port_get_parent_device() function is
-> omap_dss_find_output_by_port_node() and it assumes the refcount of the
-> port parameter is not decremented by the call.
->=20
+diff --git a/Documentation/fb/pxafb.txt b/Documentation/fb/pxafb.txt
+index d143a0a..dbbf5eb 100644
+--- a/Documentation/fb/pxafb.txt
++++ b/Documentation/fb/pxafb.txt
+@@ -123,12 +123,12 @@ Overlay Support for PXA27x and later LCD controllers
+      framebuffer framework, application has to take care of the offsets
+      and lengths of each component within the framebuffer.
+ 
+-  4. var->nonstd is used to pass starting (x, y) position and color format,
++  4. var->nonstd is used to pass starting (y, x) position and color format,
+      the detailed bit fields are shown below:
+ 
+     31                23  20         10          0
+      +-----------------+---+----------+----------+
+-     |  ... unused ... |FOR|   XPOS   |   YPOS   |
++     |  ... unused ... |FOR|   YPOS   |   XPOS   | (as in OVLxC2 register)
+      +-----------------+---+----------+----------+
+ 
+      FOR  - color format, as defined by OVERLAY_FORMAT_* in pxafb.h
+@@ -136,7 +136,7 @@ Overlay Support for PXA27x and later LCD controllers
+ 	    1 - YUV444 PACKED
+ 	    2 - YUV444 PLANAR
+ 	    3 - YUV422 PLANAR
+-	    4 - YUR420 PLANAR
++	    4 - YUV420 PLANAR
+ 
+-     XPOS - starting horizontal position
+      YPOS - starting vertical position
++     XPOS - starting horizontal position
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 2d98de5..8f485ec 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1893,6 +1893,11 @@ config FB_PXA_OVERLAY
+ 	bool "Support PXA27x/PXA3xx Overlay(s) as framebuffer"
+ 	default n
+ 	depends on FB_PXA && (PXA27x || PXA3xx)
++	---help---
++	  Using the overlay 2 and YUV420 mode on a PXA27x C0 chip revision will
++	  hang the LCD until the next SoC restart (errata E24).
++
++	  If unsure, say N or check /proc/cpuinfo for "CPU revision : 4".
+ 
+ config FB_PXA_SMARTPANEL
+ 	bool "PXA Smartpanel LCD support"
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index 7245611..e573699 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -30,6 +30,10 @@
+  *
+  *   Copyright (C) 2006-2008 Marvell International Ltd.
+  *   All Rights Reserved
++ *
++ * NOTICE
++ * According to PXA27x errata E24 an enable of the overlay 2 in YUV420 mode
++ * on C0 chip revision will hang the LCD until the next SoC reset.
+  */
+ 
+ #include <linux/module.h>
+-- 
+1.7.12.1
 
-The subject of the patch should contain "dss-of", not "of-dss". Although
-for both patches I think it's fine to use plain "OMAPDSS: " prefix. The
-subject should also say "fix" or such.
 
-The description above is kind of "detached". A patch description should
-generally describe something in the lines of what the current behavior
-is, what the problem is, and what the patch does. And the desc should be
-independent of the subject.
-
-This particular case is rather simple, and it's clear that
-dss_of_port_get_parent_device() is not supposed to decrease the refcount
-of the "port" parameter (as that kind of behavior is normally a special
-case). And so it should be enough to say what the issue seen is and that
-you fix the function to not decrement the parameter's refcount.
-
- Tomi
-
-
---pLoMLUf70oBXxS2A73XWGIVm3t0PKpurR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVxI0oAAoJEPo9qoy8lh710DIP/0Jl14KF15QNFhcUJiDqWVwU
-k4msGGto3Tivy0bfFeEkkCvkm5W7TJq6t+Ae8hYHA8SlMwu0Bn+JkbBKjklavPYf
-kXpysVPLOmZp87m9BbJiT4gXPXiT81KL1WZbX++K+lHzX/bsqBVx9gcS725fgK01
-PLYfkbh278bMakMA10A1IIVNo9uu488qAQuLbLSUFp6zSqWBksmh5eZMSRshhtHs
-/XKOXBb3Ea/qciJd3r8FoCIRGLywD2XD6o2NyNrRXJS4FKOqwveQCVqbkSlowwT4
-cCI0KpOGKTWytRFmsnDceNDFf9yxvtu+0eUysAkza9HGYdSQbe1ThkRV13eGfk3I
-gMDDvhYzZzJp6aMzlCZ4NSDR8vn0WT7tf2bb1BfQe41gkG3W7WCmLrHdpCKPhYxd
-+9DUyOjhsdPUlCgMWIIE2uEq35x0NcZWuWWujL2gw7/yBA+xdNrkADqi+/Q6tzVv
-SKaR5HnImE2NpfN+1II17TU1wxF3MDi8wTdsp+uyCkgiZW+/xVnIqB4f142KF26f
-7hEAYYUwxl95J2TVSeE8fUPkY6nEFgKciZt1Qwk1qWH4OatwxtBEKu7cnlqO7luP
-Fhxm3Tk2mvV6YhJgb84cx/s/uHcyd8tZifSvgr+nRBhCfsMOKJACiU6vSK9GPzgK
-iyp+WaeowaH3EhqF9/cF
-=ozE5
------END PGP SIGNATURE-----
-
---pLoMLUf70oBXxS2A73XWGIVm3t0PKpurR--

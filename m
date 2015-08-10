@@ -1,94 +1,79 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Mon, 24 Aug 2015 19:13:23 +0000
-Subject: [PATCH v4 01/11] PCI: Add pci_ioremap_wc_bar()
-Message-Id: <1440443613-13696-2-git-send-email-mcgrof@do-not-panic.com>
+From: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Date: Mon, 10 Aug 2015 20:13:51 +0000
+Subject: [PATCH v2] backlight: pm8941-wled: Add default-brightness property
+Message-Id: <1439237631-11243-1-git-send-email-bjorn.andersson@sonymobile.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: mingo@kernel.org
-Cc: bp@suse.de, bhelgaas@google.com, tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, vinod.koul@intel.com, dan.j.williams@intel.com, toshi.kani@hp.com, benh@kernel.crashing.org, mst@redhat.com, akpm@linux-foundation.org, daniel.vetter@ffwll.ch, konrad.wilk@oracle.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, Antonino Daplas <adaplas@gmail.com>, Dave Airlie <airlied@redhat.com>, Davidlohr Bueso <dbueso@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Juergen Gross <jgross@suse.com>, Mel Gorman <mgorman@suse.de>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Vlastimil Babka <vbabka@suse.cz>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
+Default the brightness to 2048 and add possibility to override this in
+device tree.
 
-This lets drivers take advantage of PAT when available. It should help
-with the transition of converting video drivers over to ioremap_wc()
-to help with the goal of eventually using _PAGE_CACHE_UC over
-_PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache(), see:
-
-  de33c442ed2a ("x86 PAT: fix performance drop for glx, use UC minus for ioremap(),
-		ioremap_nocache() and pci_mmap_page_range()")
-
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: benh@kernel.crashing.org
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Davidlohr Bueso <dbueso@suse.de>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-pci@vger.kernel.org
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: mst@redhat.com
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Toshi Kani <toshi.kani@hp.com>
-Cc: Ville Syrjälä <syrjala@sci.fi>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Link: http://lkml.kernel.org/r/1435195342-26879-2-git-send-email-mcgrof@do-not-panic.com
-Signed-off-by: Borislav Petkov <bp@suse.de>
+Suggested-by: Rob Clark <robdclark@gmail.com>
+Signed-off-by: Bjorn Andersson <bjorn.andersson@sonymobile.com>
 ---
- drivers/pci/pci.c   | 14 ++++++++++++++
- include/linux/pci.h |  1 +
- 2 files changed, 15 insertions(+)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 8037c27beb05..33867b8a4bc9 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -138,6 +138,20 @@ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar)
- 	return ioremap_nocache(res->start, resource_size(res));
- }
- EXPORT_SYMBOL_GPL(pci_ioremap_bar);
+After going back and forth on this one I decided that the best unit of this
+property (which could become a common backlight property) would be to use
+"units of brightness". The value will either come from the boot loader picking
+a value in some way or from a user finding a good value by tweaking sysfs -
+both which will be in "units of brightness".
+
+ Documentation/devicetree/bindings/video/backlight/pm8941-wled.txt | 2 ++
+ drivers/video/backlight/pm8941-wled.c                             | 8 ++++++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/video/backlight/pm8941-wled.txt b/Documentation/devicetree/bindings/video/backlight/pm8941-wled.txt
+index 424f8444a6cd..e5b294dafc58 100644
+--- a/Documentation/devicetree/bindings/video/backlight/pm8941-wled.txt
++++ b/Documentation/devicetree/bindings/video/backlight/pm8941-wled.txt
+@@ -5,6 +5,8 @@ Required properties:
+ - reg: slave address
+ 
+ Optional properties:
++- default-brightness: brightness value on boot, value from: 0-4095
++	default: 2048
+ - label: The name of the backlight device
+ - qcom,cs-out: bool; enable current sink output
+ - qcom,cabc: bool; enable content adaptive backlight control
+diff --git a/drivers/video/backlight/pm8941-wled.c b/drivers/video/backlight/pm8941-wled.c
+index c704c3236034..e1298147bcbb 100644
+--- a/drivers/video/backlight/pm8941-wled.c
++++ b/drivers/video/backlight/pm8941-wled.c
+@@ -17,6 +17,9 @@
+ #include <linux/of_device.h>
+ #include <linux/regmap.h>
+ 
++/* From DT binding */
++#define PM8941_WLED_DEFAULT_BRIGHTNESS		2048
 +
-+void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar)
-+{
-+	/*
-+	 * Make sure the BAR is actually a memory resource, not an IO resource
-+	 */
-+	if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM)) {
-+		WARN_ON(1);
-+		return NULL;
-+	}
-+	return ioremap_wc(pci_resource_start(pdev, bar),
-+			  pci_resource_len(pdev, bar));
-+}
-+EXPORT_SYMBOL_GPL(pci_ioremap_wc_bar);
- #endif
+ #define PM8941_WLED_REG_VAL_BASE		0x40
+ #define  PM8941_WLED_REG_VAL_MAX		0xFFF
  
+@@ -373,6 +376,7 @@ static int pm8941_wled_probe(struct platform_device *pdev)
+ 	struct backlight_device *bl;
+ 	struct pm8941_wled *wled;
+ 	struct regmap *regmap;
++	u32 val;
+ 	int rc;
  
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 88bee285b93d..2b2d7d44c21a 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1701,6 +1701,7 @@ static inline void pci_mmcfg_late_init(void) { }
- int pci_ext_cfg_avail(void);
+ 	regmap = dev_get_regmap(pdev->dev.parent, NULL);
+@@ -395,8 +399,12 @@ static int pm8941_wled_probe(struct platform_device *pdev)
+ 	if (rc)
+ 		return rc;
  
- void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar);
-+void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar);
- 
- #ifdef CONFIG_PCI_IOV
- int pci_iov_virtfn_bus(struct pci_dev *dev, int id);
++	val = PM8941_WLED_DEFAULT_BRIGHTNESS;
++	of_property_read_u32(pdev->dev.of_node, "default-brightness", &val);
++
+ 	memset(&props, 0, sizeof(struct backlight_properties));
+ 	props.type = BACKLIGHT_RAW;
++	props.brightness = val;
+ 	props.max_brightness = PM8941_WLED_REG_VAL_MAX;
+ 	bl = devm_backlight_device_register(&pdev->dev, wled->name,
+ 					    &pdev->dev, wled,
 -- 
-2.4.3
+1.8.2.2
 

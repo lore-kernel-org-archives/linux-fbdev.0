@@ -1,19 +1,33 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Mon, 24 Aug 2015 20:15:12 +0000
-Subject: [PATCH 0/5] [resend] gxt4500: Make usable on x86 and fix some bugs
-Message-Id: <1440447317-32604-1-git-send-email-linux@rainbow-software.org>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Date: Mon, 10 Aug 2015 14:31:54 +0000
+Subject: [PATCH] video: fbdev: atmel_lcdfb: remove useless include
+Message-Id: <1439217114-12317-1-git-send-email-alexandre.belloni@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
+Definitions from linux/platform_data/atmel.h are not used, remove the
+include.
 
-Fire GL2 AGP has GXT6000P and is a x86 card but the gxt4500 driver is
-currently limited to PPC.
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ drivers/video/fbdev/atmel_lcdfb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-This patch series makes the driver work on x86 and fixes some color problems.
-
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
+index abadc490fa1f..a5006788647c 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -19,7 +19,6 @@
+ #include <linux/backlight.h>
+ #include <linux/gfp.h>
+ #include <linux/module.h>
+-#include <linux/platform_data/atmel.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/of_gpio.h>
 -- 
-Ondrej Zary
+2.1.4
+

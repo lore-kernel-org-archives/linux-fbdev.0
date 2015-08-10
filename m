@@ -1,35 +1,30 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 31 Aug 2015 20:24:31 +0000
-Subject: Re: [PATCH] efifb: Add support for 64-bit frame buffer addresses
-Message-Id: <CAMuHMdU146p_vs9bfgV9n_tTkH_545hRb1qsEza=dLO=C-y69A@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 10 Aug 2015 09:03:39 +0000
+Subject: Re: [PATCH] fbdev: select versatile helpers for the integrator
+Message-Id: <CACRpkdYhfnv2qy0sYWPpMx=rHt_DYx-gJ0QKMP8utyq=8tH2jg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440763939-17027-1-git-send-email-matt@codeblueprint.co.uk>
-In-Reply-To: <1440763939-17027-1-git-send-email-matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
+References: <1438090272-26266-1-git-send-email-linus.walleij@linaro.org>
+In-Reply-To: <1438090272-26266-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Cc: Peter Jones <pjones-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pete Hawkins <pete.hawkins-ZTdz3wlHnvg@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, Chad Page <chad.page-ZTdz3wlHnvg@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-On Fri, Aug 28, 2015 at 2:12 PM, Matt Fleming <matt@codeblueprint.co.uk> wrote:
-> --- a/arch/x86/boot/compressed/eboot.c
-> +++ b/arch/x86/boot/compressed/eboot.c
-> @@ -624,7 +624,7 @@ setup_pixel_info(struct screen_info *si, u32 pixels_per_scan_line,
->  static efi_status_t
->  __gop_query32(struct efi_graphics_output_protocol_32 *gop32,
->               struct efi_graphics_output_mode_info **info,
-> -             unsigned long *size, u32 *fb_base)
-> +             unsigned long *size, u64 *fb_base)
+On Tue, Jul 28, 2015 at 3:31 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
 
-phys_addr_t instead of u64?
+> Commit 11c32d7b6274cb0f554943d65bd4a126c4a86dcd
+> "video: move Versatile CLCD helpers" missed the fact
+> that the Integrator/CP is also using the helper, and
+> as a result the platform got only stubs and no graphics.
+> Add this as a default selection to Kconfig so we have
+> graphics again.
+>
+> Fixes: 11c32d7b6274 (video: move Versatile CLCD helpers)
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 
-Gr{oetje,eeting}s,
+Ping on this.
 
-                        Geert
+Shall I take this into ARM SoC instead?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Yours,
+Linus Walleij

@@ -1,40 +1,59 @@
-From: Afzal Mohammed <afzal.mohd.ma@gmail.com>
-Date: Mon, 24 Aug 2015 13:53:48 +0000
-Subject: Re: [RFC] fbdev/riva:change to use generice function to implement reverse_order()
-Message-Id: <20150824134148.GA3394@afzalpc>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 10 Aug 2015 09:33:34 +0000
+Subject: Re: [PATCH] ARM/fb: ep93xx: switch framebuffer to use modedb only
+Message-Id: <55C86FEE.6090502@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Vjsar9OrkTMmnKE6gLJb3S32c89cBUq4l"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <C21B8761-0447-45A6-B833-742E3B4C13DE@gmail.com>
- <55D5B3A9.6040901@ti.com>
- <867D66CD-9A3B-4536-B537-8C065C85E497@gmail.com>
- <55D6C812.6080400@ti.com>
- <4DCC50F3-9B6D-4A3A-9693-E7A7196564A8@gmail.com>
- <55D6DAE5.20304@ti.com>
- <20150822075310.GA2337@afzalpc>
- <F9B74F97-EF3F-4051-B54B-B6CDD2946374@gmail.com>
-In-Reply-To: <F9B74F97-EF3F-4051-B54B-B6CDD2946374@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: yalin wang <yalin.wang2010@gmail.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, adaplas@gmail.com, plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
+References: <1437744688-29915-1-git-send-email-linus.walleij@linaro.org>
+In-Reply-To: <1437744688-29915-1-git-send-email-linus.walleij@linaro.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+--Vjsar9OrkTMmnKE6gLJb3S32c89cBUq4l
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Aug 24, 2015 at 04:31:13PM +0800, yalin wang wrote:
-> 
-> i only submit the bit reverse patch for arm / arm64 arch,
 
-yes, saw later git blaming it on you :)
 
-> > Not for this case, but once measured on ARM, iirc, a 32-bit asm bit
-> > reversal as compared to doing it in C was taking 1 cycle as opposed to
-> > ~225 cycles!, of course writing optimized C could have made it fare
-> > better, but still would reach no-way near asm bit reversal.
+On 24/07/15 16:31, Linus Walleij wrote:
+> All the EP93xx boards exclusively use modedb to look up video
+> modes from the command line. Root out the parametrization of
+> custom video modes from the platform data and board files
+> and simplify the driver.
+>=20
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+> ---
+> J-C/Tomi: please ACK this if you're OK with it so I can take
+> it through the ARM SoC tree.
 
-The above measurement was done not in Linux, rather on a baremetal
-code, but seeing the efficient Kernel C implementation, realized that
-the gain would not be that much, it would be good to know if there are
-measurements for Kernel bitreversal in C & asm (on supported arch)
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Regards
-afzal
+ Tomi
+
+
+--Vjsar9OrkTMmnKE6gLJb3S32c89cBUq4l
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVyG/uAAoJEPo9qoy8lh714LUQAIjQ5PtllkAGkPfKpgMgsydX
+3ZJOc3cdjUjW/HMn8UoNeHX3mhXUbbmVTmMYp+9H5UzLpz8jkexwppX3PZjk37rv
+loKyeZifVSisNLJvob3eKMGtPUVmBJPys7CihJ+29MHL8KfiYOw/bOeBQgPTKn10
+btDNhTfQafcJY3B06CXPokfdgiPnXdROhEtUnhdiwkpXmiPf0WL5t2M+di872smv
+P6iGNqjSmnIc3H+lBBNHQf2ZSxAyC4bH4HmohbHIaTPE/7IdQ1tEgaFrIqDpLkO0
+LduxApqSxvgDald7IRdZr9HzhGu1dQaefIx0GeUeX4RysgAlGugJjUN7evkPMkWF
+/hV6LA74LIXrbATKfeADjnzQ47Zk5cD49v2lTadhe1zRU0P9YYnE//7TD4J4lGjJ
+fa6gV4T7jcVKe16TDr9gBIijie9dzqtJXB+25i4O3rF59fzOngzddepmJiBF756H
+Ixclx3LpNxRYfzi0vHl0hc+7td4GKzcsBCYp3zw5s1iwSbu6L60Cj2JFlRDPGg9K
+F3S00ymNAPsJpXTvdXOMgdCkoUnwOPQjV5db/EIh4YJxrsggiBI/v9BuNzhiFVGz
+BZja0bjFj/s38WkVZ7UnP9Zb1GvkvTLLUj/cQeO+NnrkZ57tFlWupnpeiWWPGN7T
+/CqenRp0pCXZB0EhuRgo
+=5qQm
+-----END PGP SIGNATURE-----
+
+--Vjsar9OrkTMmnKE6gLJb3S32c89cBUq4l--

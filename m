@@ -1,48 +1,52 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 10 Aug 2015 09:38:20 +0000
-Subject: Re: [patch] fbdev: off by one test (harmless)
-Message-Id: <55C8710C.4030304@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ln8DmkV7TOksnWXssCsUu9kq4ogiv0Iu2"
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+Date: Fri, 14 Aug 2015 05:54:09 +0000
+Subject: [PATCH v2] video: fbdev: fsl: Fix the sleep function for FSL DIU module
+Message-Id: <1439531649-46827-1-git-send-email-dongsheng.wang@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20141226172657.GA14762@mwanda>
-In-Reply-To: <20141226172657.GA14762@mwanda>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: timur@tabi.org
+Cc: scottwood@freescale.com, Jason.Jin@freescale.com, linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org, Wang
+ Dongsheng <dongsheng.wang@freescale.com>
 
---ln8DmkV7TOksnWXssCsUu9kq4ogiv0Iu2
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+From: Jason Jin <Jason.Jin@freescale.com>
 
+For deep sleep, the diu module will power off, when wake up
+from the deep sleep, the registers need to be reinitialized.
 
-On 23/07/15 15:39, Dan Carpenter wrote:
-> This was never merged.
+Signed-off-by: Jason Jin <Jason.Jin@freescale.com>
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+*v2*
+Changes:
+- int i -> unsigned int i.
 
-Oops. I'll pick this up now.
+Rmove:
+- struct mfb_info *mfbi;
 
- Tomi
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index 7fa2e6f..b335c1a 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -1628,9 +1628,16 @@ static int fsl_diu_suspend(struct platform_device *ofdev, pm_message_t state)
+ static int fsl_diu_resume(struct platform_device *ofdev)
+ {
+ 	struct fsl_diu_data *data;
++	unsigned int i;
+ 
+ 	data = dev_get_drvdata(&ofdev->dev);
+-	enable_lcdc(data->fsl_diu_info);
++
++	fsl_diu_enable_interrupts(data);
++	update_lcdc(data->fsl_diu_info);
++	for (i = 0; i < NUM_AOIS; i++) {
++		if (data->mfb[i].count)
++			fsl_diu_enable_panel(&data->fsl_diu_info[i]);
++	}
+ 
+ 	return 0;
+ }
+-- 
+2.1.0.27.g96db324
 
-
---ln8DmkV7TOksnWXssCsUu9kq4ogiv0Iu2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVyHEMAAoJEPo9qoy8lh71x9wP/3N59Ouxg/NUcLixt3ARYAtB
-sah/yXmzWSBeRvN02ocfY0r+ioDsRoF/pOw4BWjwO6fxxYYUWdvMW3mPjLIdDJn+
-K9PHTfqo0lByClm5Sumdr7daF7MQ/9GFvRwymdYoel9JhrpIh+RkIG1zxWV6hTkk
-AmhODvTRsktIhOJ5PCT5h1HGtK7Uzja5wolk1vodVEvqFIRqLS5Kqy0sRZMQ5oYx
-ML/ORTjLwX30QBEmzvXKYYvb1392OnOJAMVQdsJ/BMCiPgI3aOQwEbwLzNVQVVvb
-Ie7maIlof2p1mFahe7EKsYq1rZtrk1piReIrhGdaaVJOfPfR3rGb7TYZSJvBSGSQ
-0PnsG24j7Vk0VlCuCuwlR/CsLVj54qLy9AU1qgwX5O8EIa2kS6LLDh5bR0IgjIrR
-Dmv1OAw1PXRMauemaWQkCZ0yTrAa3FJ+r11cfiIry4HrssWGGKkpto9dCfNMCLxS
-5r0JqiMlNn4AB0x/R3ooa3uLlgQHhPLRZflChMMFMUI4uVg65jtiCmBXYmWnXSQ6
-FF2FtLecn4HjVHher5KWtSySxOWqiDgNyRVN34bcP5f0KO5cj8qQWHawD2b/dL1P
-QvT18XuPEbDt1i404yaUG5p1O6mMXOjTYlFv8JAqqzrvvn/CVIWfa0MRvLIq4Zer
-0W17RFlVeUQBz0mIR2dy
-=cv6l
------END PGP SIGNATURE-----
-
---ln8DmkV7TOksnWXssCsUu9kq4ogiv0Iu2--

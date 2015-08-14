@@ -1,52 +1,77 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 11 Aug 2015 07:28:09 +0000
-Subject: Re: [PATCH v2 09/11] fbdev: Allow compile test of GPIO consumers if !GPIOLIB
-Message-Id: <CAMuHMdUjDkH0qqKkp9rC__uWzi8bx+ubd62-AOP5mRE8TokyCw@mail.gmail.com>
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Date: Fri, 14 Aug 2015 05:53:17 +0000
+Subject: RE: [PATCH] video/fsl: Fix the sleep function for FSL DIU module
+Message-Id: <SN1PR0301MB1616D0881B41899B8047267A9D7C0@SN1PR0301MB1616.namprd03.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1438506475-31012-1-git-send-email-geert@linux-m68k.org>
-	<1438506593-31845-1-git-send-email-geert@linux-m68k.org>
-	<55C9A2C3.1060001@ti.com>
-In-Reply-To: <55C9A2C3.1060001@ti.com>
+References: <1395734180-45012-1-git-send-email-dongsheng.wang@freescale.com>
+ <5331A6BA.9030507@tabi.org>
+In-Reply-To: <5331A6BA.9030507@tabi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>
+To: Timur Tabi <timur@tabi.org>
+Cc: Scott Wood <scottwood@freescale.com>, Jin Jason <Jason.Jin@freescale.com>, Li Leo <LeoLi@freescale.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Hi Tomi,
+Hi Tabi,
 
-On Tue, Aug 11, 2015 at 9:22 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 02/08/15 12:09, Geert Uytterhoeven wrote:
->> The GPIO subsystem provides dummy GPIO consumer functions if GPIOLIB is
->> not enabled. Hence drivers that depend on GPIOLIB, but use GPIO consumer
->> functionality only, can still be compiled if GPIOLIB is not enabled.
->>
->> Relax the dependency on GPIOLIB if COMPILE_TEST is enabled, where
->> appropriate.
->>
->> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> -----Original Message-----
+> From: Timur Tabi [mailto:timur@tabi.org]
+> Sent: Tuesday, March 25, 2014 11:55 PM
+> To: Wang Dongsheng-B40534
+> Cc: Wood Scott-B07421; Jin Zhengxiong-R64188; Li Yang-Leo-R58472; linuxppc-
+> dev@lists.ozlabs.org; linux-fbdev@vger.kernel.org
+> Subject: Re: [PATCH] video/fsl: Fix the sleep function for FSL DIU module
+> 
+> On 03/25/2014 02:56 AM, Dongsheng Wang wrote:
+> > From: Jason Jin <Jason.Jin@freescale.com>
+> >
+> > For deep sleep, the diu module will power off, when wake up from the
+> > deep sleep, the registers need to be reinitialized.
+> >
+> > Signed-off-by: Jason Jin <Jason.Jin@freescale.com>
+> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >
+> > diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+> > index e8758b9..7ec780c 100644
+> > --- a/drivers/video/fsl-diu-fb.c
+> > +++ b/drivers/video/fsl-diu-fb.c
+> > @@ -1628,9 +1628,18 @@ static int fsl_diu_suspend(struct platform_device
+> *ofdev, pm_message_t state)
+> >   static int fsl_diu_resume(struct platform_device *ofdev)
+> >   {
+> >   	struct fsl_diu_data *data;
+> > +	struct mfb_info *mfbi;
+> 
+> You don't need this, if ...
+> 
+> > +	int i;
+> >
+> >   	data = dev_get_drvdata(&ofdev->dev);
+> > -	enable_lcdc(data->fsl_diu_info);
+> > +	fsl_diu_enable_interrupts(data);
+> > +	update_lcdc(data->fsl_diu_info);
+> > +
+> > +	for (i = 0; i < NUM_AOIS; i++) {
+> > +		mfbi = &data->mfb[i];
+> > +		if (mfbi->count)
+> 
+> ... you do this:
+> 
+> 		if (data->mfb[i].count)
+> 
+> Also, 'i' should be an 'unsigned int'.
+> 
+> > +			fsl_diu_enable_panel(&data->fsl_diu_info[i]);
+> > +	}
+> >
+> >   	return 0;
+> >   }
+> >
+> 
+> Other than that, this seems okay.
+> 
 
-> Applied to 4.3 fbdev.
+Thanks, send v2 to update this patch.
 
-Thanks!
-
-> I do wonder why this is needed, though... I understand COMPILE_TEST if
-> the dependency in question is difficult/impossible to enable with your
-> kernel config (say, enabling OMAP SoC support with x86 config), but
-> isn't GPIOLIB something that can be trivially enabled in any kernel config?
-
-While there are a few mfd and pinctrl drivers that select GPIOLIB, the
-presence of GPIOLIB is mostly a platform feature. Not all architectures support
-GPIOLIB yet.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Regards,
+-Dongsheng

@@ -1,55 +1,140 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 06 Aug 2015 19:53:03 +0000
-Subject: Re: [Xen-devel] RIP MTRR - status update for upcoming v4.2
-Message-Id: <CAB=NE6W3=SFTqabeD6gq7JCqFZ7+SBZh7Xa=RteO_8-3P7fbdw@mail.gmail.com>
+From: "Shah, Yash (Y.)" <yshah1@visteon.com>
+Date: Fri, 14 Aug 2015 06:06:13 +0000
+Subject: [PATCH] Staging: sm750fb: Fix "foo* bar" should be "foo *bar" errors
+Message-Id: <20150814060512.GA671@ubuntu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAB=NE6UgtdSoBsA=8+ueYRAZHDnWUSmQAoHhAaefqudBrSY7Zw@mail.gmail.com>
- <1434064996.11808.64.camel@misato.fc.hp.com> <557AAD910200007800084014@mail.emea.novell.com>
- <1434128306.11808.97.camel@misato.fc.hp.com>
-In-Reply-To: <1434128306.11808.97.camel@misato.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Toshi Kani <toshi.kani@hp.com>
-Cc: Jan Beulich <JBeulich@suse.com>, Andy Lutomirski <luto@amacapital.net>, Bjorn Helgaas <bhelgaas@google.com>, Jej B <James.Bottomley@hansenpartnership.com>, X86 ML <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, Julia Lawall <julia.lawall@lip6.fr>, xen-devel@lists.xenproject.org, Dave Airlie <airlied@redhat.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, Juergen Gross <JGross@suse.com>, Borislav Petkov <bp@suse.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+To: "sudipm.mukherjee@gmail.com" <sudipm.mukherjee@gmail.com>, "teddy.wang@siliconmotion.com" <teddy.wang@siliconmotion.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Babu, Viswanathan (V.)" <vbabu3@visteon.com>
 
-On Fri, Jun 12, 2015 at 9:58 AM, Toshi Kani <toshi.kani@hp.com> wrote:
-> On Fri, 2015-06-12 at 08:59 +0100, Jan Beulich wrote:
->> >>> On 12.06.15 at 01:23, <toshi.kani@hp.com> wrote:
->> > There are two usages on MTRRs:
->> >  1) MTRR entries set by firmware
->> >  2) MTRR entries set by OS drivers
->> >
->> > We can obsolete 2), but we have no control over 1).  As UEFI firmwares
->> > also set this up, this usage will continue to stay.  So, we should not
->> > get rid of the MTRR code that looks up the MTRR entries, while we have
->> > no need to modify them.
->> >
->> > Such MTRR entries provide safe guard to /dev/mem, which allows
->> > privileged user to access a range that may require UC mapping while
->> > the /dev/mem driver blindly maps it with WB.  MTRRs converts WB to UC in
->> > such a case.
->>
->> But it wouldn't be impossible to simply read the MTRRs upon boot,
->> store the information, disable MTRRs, and correctly use PAT to
->> achieve the same effect (i.e. the "blindly maps" part of course
->> would need fixing).
->
-> It could be done, but I do not see much benefit of doing it.  One of the
-> reasons platform vendors set MTRRs is so that a system won't hit a
-> machine check when an OS bug leads an access with a wrong cache type.
->
-> A machine check is hard to analyze and can be seen as a hardware issue by
-> customers.  Emulating MTRRs with PAT won't protect from such a bug.
+From: Yash Shah <yshah1@visteon.com>
 
-That's seems like a fair and valid concern. This could only happen if
-the OS would have code that would use MTRR, in the case of Linux we'll
-soon be able to vet that this cannot happen. For those type of OSes...
-could it be possible to negotiate or hint to the platform through an
-attribute somehow that the OS has such capability to not use MTRR?
-Then, only if this bit is set, the platform could then avoid such MTRR
-settings, and if we have issues you can throw rocks at us.
+Fix "foo* bar" should be "foo *bar" errors as detected by
+checkpatch.pl
 
-Could this also be used to prevent SMIs with MTRRs?
+Signed-off-by: Yash Shah <yshah1@visteon.com>
+---
+ drivers/staging/sm750fb/sm750.h        | 14 +++++++-------
+ drivers/staging/sm750fb/sm750_cursor.c |  4 ++--
+ drivers/staging/sm750fb/sm750_cursor.h |  4 ++--
+ drivers/staging/sm750fb/sm750_hw.h     |  6 +++---
+ 4 files changed, 14 insertions(+), 14 deletions(-)
 
- Luis
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 9b101a9..5bc4455 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -16,9 +16,9 @@ extern int smi_indent;
+ 
+ struct lynx_accel {
+ 	/* base virtual address of DPR registers */
+-	volatile unsigned char __iomem * dprBase;
++	volatile unsigned char __iomem *dprBase;
+ 	/* base virtual address of de data port */
+-	volatile unsigned char __iomem * dpPortBase;
++	volatile unsigned char __iomem *dpPortBase;
+ 
+ 	/* function fointers */
+ 	void (*de_init)(struct lynx_accel *);
+@@ -64,8 +64,8 @@ struct lynx_share {
+ 	/* locks*/
+ 	spinlock_t slock;
+ 	/* function pointers */
+-	void (*suspend)(struct lynx_share*);
+-	void (*resume)(struct lynx_share*);
++	void (*suspend)(struct lynx_share *);
++	void (*resume)(struct lynx_share *);
+ };
+ 
+ struct lynx_cursor {
+@@ -80,7 +80,7 @@ struct lynx_cursor {
+ 	char __iomem *vstart;
+ 	int offset;
+ 	/* mmio addr of hw cursor */
+-	volatile char __iomem * mmio;
++	volatile char __iomem *mmio;
+ 	/* the lynx_share of this adaptor */
+ 	struct lynx_share *share;
+ 	/* proc_routines */
+@@ -114,7 +114,7 @@ struct lynxfb_crtc {
+ 
+ 	int (*proc_checkMode)(struct lynxfb_crtc*, struct fb_var_screeninfo*);
+ 	int (*proc_setColReg)(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
+-	void (*clear)(struct lynxfb_crtc*);
++	void (*clear)(struct lynxfb_crtc *);
+ 	/* pan display */
+ 	int (*proc_panDisplay)(struct lynxfb_crtc *,
+ 			       const struct fb_var_screeninfo *,
+@@ -146,7 +146,7 @@ struct lynxfb_output {
+ 
+ 	int (*proc_checkMode)(struct lynxfb_output*, struct fb_var_screeninfo*);
+ 	int (*proc_setBLANK)(struct lynxfb_output*, int);
+-	void  (*clear)(struct lynxfb_output*);
++	void  (*clear)(struct lynxfb_output *);
+ };
+ 
+ struct lynxfb_par {
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 2400c6c..a94a4bb 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -95,7 +95,7 @@ void hw_cursor_setColor(struct lynx_cursor *cursor,
+ }
+ 
+ void hw_cursor_setData(struct lynx_cursor *cursor,
+-			u16 rop, const u8* pcol, const u8* pmsk)
++			u16 rop, const u8 *pcol, const u8 *pmsk)
+ {
+ 	int i, j, count, pitch, offset;
+ 	u8 color, mask, opr;
+@@ -184,7 +184,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 
+ 
+ void hw_cursor_setData2(struct lynx_cursor *cursor,
+-			u16 rop, const u8* pcol, const u8* pmsk)
++			u16 rop, const u8 *pcol, const u8 *pmsk)
+ {
+ 	int i, j, count, pitch, offset;
+ 	u8 color, mask;
+diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
+index e1716a6..6c4fc9b 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.h
++++ b/drivers/staging/sm750fb/sm750_cursor.h
+@@ -11,7 +11,7 @@ void hw_cursor_setPos(struct lynx_cursor *cursor,
+ void hw_cursor_setColor(struct lynx_cursor *cursor,
+ 						u32 fg, u32 bg);
+ void hw_cursor_setData(struct lynx_cursor *cursor,
+-			u16 rop, const u8* data, const u8* mask);
++			u16 rop, const u8 *data, const u8 *mask);
+ void hw_cursor_setData2(struct lynx_cursor *cursor,
+-			u16 rop, const u8* data, const u8* mask);
++			u16 rop, const u8 *data, const u8 *mask);
+ #endif
+diff --git a/drivers/staging/sm750fb/sm750_hw.h b/drivers/staging/sm750fb/sm750_hw.h
+index ef0a16f..3781a1a 100644
+--- a/drivers/staging/sm750fb/sm750_hw.h
++++ b/drivers/staging/sm750fb/sm750_hw.h
+@@ -78,7 +78,7 @@ struct sm750_share {
+ 	*/
+ };
+ 
+-int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev);
++int hw_sm750_map(struct lynx_share *share, struct pci_dev *pdev);
+ int hw_sm750_inithw(struct lynx_share*, struct pci_dev *);
+ void hw_sm750_initAccel(struct lynx_share *);
+ int hw_sm750_deWait(void);
+@@ -92,8 +92,8 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc*, struct fb_var_screeninfo*, struct
+ int hw_sm750_setColReg(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
+ int hw_sm750_setBLANK(struct lynxfb_output*, int);
+ int hw_sm750le_setBLANK(struct lynxfb_output*, int);
+-void hw_sm750_crtc_clear(struct lynxfb_crtc*);
+-void hw_sm750_output_clear(struct lynxfb_output*);
++void hw_sm750_crtc_clear(struct lynxfb_crtc *);
++void hw_sm750_output_clear(struct lynxfb_output *);
+ int hw_sm750_pan_display(struct lynxfb_crtc *crtc,
+ 			 const struct fb_var_screeninfo *var,
+ 			 const struct fb_info *info);
+-- 
+1.9.1

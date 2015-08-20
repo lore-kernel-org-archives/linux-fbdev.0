@@ -1,32 +1,74 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Mon, 24 Aug 2015 19:54:21 +0000
-Subject: [patch v2] fbdev: fix snprintf() limit in show_bl_curve()
-Message-Id: <20150824195421.GA12634@mwanda>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 20 Aug 2015 08:07:30 +0000
+Subject: Re: [PATCH] Drop owner assignment from i2c_driver (and platform left-overs)
+Message-Id: <55D58AC2.3010907@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="DJKdPW7ts0P1Vl0GWtx71H0AqrlcgUqQ3"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+References: <1436510250-5633-1-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1436510250-5633-1-git-send-email-k.kozlowski@samsung.com>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The limit should be "PAGE_SIZE - len" instead of PAGE_SIZE.  Also let's
-use scnprintf() because snprintf() returns the number of bytes which
-would have been printed if there were space and scnprintf() returns the
-number of bytes actually printed.
+--DJKdPW7ts0P1Vl0GWtx71H0AqrlcgUqQ3
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-I don't think we are ever going to actually hit this limit in real life.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index 60c3f0a..15755ce 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -485,7 +485,7 @@ static ssize_t show_bl_curve(struct device *device,
- 
- 	mutex_lock(&fb_info->bl_curve_mutex);
- 	for (i = 0; i < FB_BACKLIGHT_LEVELS; i += 8)
--		len += snprintf(&buf[len], PAGE_SIZE, "%8ph\n",
-+		len += scnprintf(&buf[len], PAGE_SIZE - len, "%8ph\n",
- 				fb_info->bl_curve + i);
- 	mutex_unlock(&fb_info->bl_curve_mutex);
- 
+On 10/07/15 09:37, Krzysztof Kozlowski wrote:
+> Hi,
+>=20
+>=20
+> The i2c drivers also do not have to set 'owner' field because
+> i2c_register_driver() will do it instead.
+>=20
+> 'owner' is removed from i2c drivers, which I was able to compile
+> with allyesconfig (arm, arm64, i386, x86_64, ppc64).
+> Only compile-tested.
+>=20
+> The coccinelle script which generated the patch was sent here:
+> http://www.spinics.net/lists/kernel/msg2029903.html
+>=20
+>=20
+> Best regards,
+> Krzysztof
+>=20
+>=20
+> Krzysztof Kozlowski (2):
+>   video: fbdev: Drop owner assignment from i2c_driver
+>   video: fbdev: Drop owner assignment from platform_driver
+>=20
+>  drivers/video/fbdev/omap2/displays-new/encoder-opa362.c | 1 -
+>  drivers/video/fbdev/ssd1307fb.c                         | 1 -
+>  2 files changed, 2 deletions(-)
+>=20
+
+Thanks, queued for 4.3.
+
+ Tomi
+
+
+--DJKdPW7ts0P1Vl0GWtx71H0AqrlcgUqQ3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJV1YrCAAoJEPo9qoy8lh71onkP/iK+mF7DpFBWVx8IgPjmde/l
+8uJjLSIfDSe0uD+5ERorSUn4hRjOAWhwbCMl4+9+PnXhbiVuG96iNuBObtEHkV9E
+Gq+Njrh/ygiUnIHQAA1XTcklwwYYv4jLGXyPMSiHvTtbSd/JLM5dAZi5MGiFOnqK
+nWorak/eFMu9kxOTYxcv9i6JR2o3XCvacbs9/hVwBt4Dsk1u+VMgi4AiCYH2esaZ
+h0C8Hb93jYgcK2lOqNd/KVZWy5FPMEliWQU3Ib/+i/p9/oaVpPI8+XvrWkTGXn4v
+6CjcrRDI6yQcsST0gIz+5a3T8RbXXG3LOTuENtAU34GvGReddJueL/sz/3TyD4lN
+LHTHoxmD1qs73r3McXpjB6ktxei3DujuEMhL/MM/GtUSLfkZQW1dQ43W4sx5qkHr
+Zqdg/y1NKNc99hfwlbhqdPcfEk1GB1gPrchuL034ucv+9hrecZIS9Zyr76Qc9bDS
+nxClcFyaGqdCeG3oTwu9+6882VshMRu2mNpEvUlj3L+LWIX+JyY9aWES7sZ822KB
+hvr7e8rUYmVJde7fOgKg7nGFi9RI+iXv55X7usHfL29z5DKIncaa1HeQEogJCwPe
+ZYr7NQi8ljuLmIdlQ3r5fmfVL/78c00Y0srCvt6Vi39bvdQn1VUHq2NCV6yj1kCC
+TQZbc66DJ9J/EyuasdDK
+=u8Q9
+-----END PGP SIGNATURE-----
+
+--DJKdPW7ts0P1Vl0GWtx71H0AqrlcgUqQ3--

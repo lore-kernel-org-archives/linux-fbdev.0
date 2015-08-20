@@ -1,47 +1,44 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 10 Aug 2015 09:23:21 +0000
-Subject: Re: [PATCH v2 0/2] OMAPDSS: Fix of-node refcount issues
-Message-Id: <55C86D89.4090806@ti.com>
+Date: Thu, 20 Aug 2015 07:51:26 +0000
+Subject: Re: [PATCH] fbdev: radeon: Remove 'struct timeval' usage
+Message-Id: <55D586FE.6070303@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="mwtFIl0SFUmRcUTs1MEPWmj2rnxvH0J1v"
+Content-Type: multipart/mixed; boundary="B5W7iueHufgRfxqFs8hSA8ESu9KTcLFsL"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1438945255.git.jsarha@ti.com>
-In-Reply-To: <cover.1438945255.git.jsarha@ti.com>
-To: linux-fbdev@vger.kernel.org
+References: <20150525040716.GA4448@tinar>
+In-Reply-To: <20150525040716.GA4448@tinar>
+To: Tina Ruchandani <ruchandani.tina@gmail.com>, Arnd Bergmann <arnd@arndb.de>
+Cc: y2038@lists.linaro.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---mwtFIl0SFUmRcUTs1MEPWmj2rnxvH0J1v
+--B5W7iueHufgRfxqFs8hSA8ESu9KTcLFsL
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
+Hi Tina,
 
+On 25/05/15 07:07, Tina Ruchandani wrote:
+> 'struct timeval' uses a 32-bit representation for the
+> seconds field which will overflow in the year 2038 and beyond.
+> This patch replaces the usage of 'struct timeval' with
+> ktime_t which uses a 64-bit time representation and does not
+> suffer from the y2038 problem. This patch is part of a larger
+> effort to remove all instances of 'struct timeval', 'struct
+> timespec', time_t and other 32-bit timekeeping variables
+> from the kernel.
+> The patch also replaces the use of real time (do_gettimeofday)
+> with monotonic time (ktime_get).
+>=20
+> Signed-off-by: Tina Ruchandani <ruchandani.tina@gmail.com>
 
-On 07/08/15 14:04, Jyri Sarha wrote:
-> Changes since the first version:
-> - Fix commit descriptions and subject according to Tomi's comments
->=20
-> I found couple of refcounting issues related to OMAP DSS of-node
-> handling. Second patch should fix the "ERROR: Bad of_node_put() on
-> /encoder@0/ports/port@1" -problem.
->=20
-> In the long run it would make sense start using of_graph_*() functions
-> in OMAP DSS too. However the semantics of of_graph_*() functions are
-> quite different from omapdss_of_*() counterparts. So it better to just
-> fix these bugs first.
->=20
-> Jyri Sarha (2):
->   OMAPDSS: Fix node refcount leak in omapdss_of_get_next_port()
->   OMAPDSS: Fix omap_dss_find_output_by_port_node() port refcount
->     decrement
->=20
->  drivers/video/fbdev/omap2/dss/dss-of.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+I had dropped this from 4.2 as there were issues reported, but forgot to
+write a mail about it...
 
-Thanks, I've picked these up for 4.2 fixes.
+Can you send a updated patch with the issues fixed?
 
  Tomi
 
 
---mwtFIl0SFUmRcUTs1MEPWmj2rnxvH0J1v
+--B5W7iueHufgRfxqFs8hSA8ESu9KTcLFsL
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -49,19 +46,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJVyG2KAAoJEPo9qoy8lh71CqEP/RsX9DDKzzmkc0AkQOUuUvA1
-OjmHneVCFVx95PMcxEylMto6SJu5rnk39GfrmipiM4Gr0OTJapt/eO/PcaOmxIu7
-ZRlKYWFmyDsgvWDjAT9KPVyzN4OClk6wGxL1ffOd7ag8TXd+vdHJMcl5/uC5v7N5
-yR36hRLD0pMp/nyXvoFhAGH+jE1enUnYNSb48kx6i4nPLyvURxMYexh8eD2A74Zl
-u2YgsZEat5mB9jRCW91OQMccQ44LnVtf/i42On2sehJVGGCSc/jzTLeEacn1Khjq
-rAHkAVwswfmvjzOopb2cSm4Xpus721qh/tL8BhpN4ZP7S4IBKou9XDhG4Ck9LWXu
-pTaYwpvClR1hz2L6fW2bgByTs9YIMUZbFuKmAAgbcXhMwIqCHpqftI1Js/1zWYFv
-i2RBIWxVyLfKtZak8yg6ZYVlH4eHWiavMEXb0y24HTlouhX5l7TwSTX9bquTYhFk
-63ie68j9F7stC9D5qeqmH4SaAvX1I2pmpQONo+q01GKQ9Lxe7C7AOXoAiCYcB+ll
-Doeg18EE5pwNlXj/vWijKxWrztf1qWiv7zG/9sDyaH1vtRApgrZVRrkxPGZXa0Ti
-028/yg1KDXgAx54a0BByoNngECV+P5eGm9SnrTECW2jfyCoGXdjEfg3OdECv8fzX
-/P0o8HjLQPxpnH07BEDW
-=feKa
+iQIcBAEBCAAGBQJV1Yb+AAoJEPo9qoy8lh71ZUIP/RZPNykkK1lBNB2322uHYDLw
+TNRdOd7GbVt0gDpLYh5k4vwishcLESDVKAc4SF3VXZyoDmHcuOc5l9sc9VyXMeRp
+gep6NiP81+GOVuGeGm504AFpGaLS4nTLiV+XIk30prkFWrAX3kAFjPTut10qrh2k
+SUj5PiliLMsZeRb7ypV+tCTNI/4yHtzMKf/OfM/eMMqrx+Wf/dR4aofaVMR5Eh1p
+y1sdNBZElRfZk1xVj/zSC0FHvzBRQvGXIHj5+E4IFrOomFBfgc9DjgZv7P7/IiDF
+h8Yvbs2OdWWdJk4QxOokQJYCmzg8xyFsBMbH63Qy9LI8cJn3HgY8eNsTamjDxtCo
+KVE2FrD48o5rJhtqS6ckq4ziPml5WN1wBFOoRBsoEOe9qOil8kgP2Orgvpl8+15R
+/ntsgEVxMY96HqkMx16jWAEuT4tjZ2g6mK76E5hgl6xRXu7gSNWH1XcLa1571X8C
+XFbQ6RlWP70zfD24ttqjOljznUeimvMX+Zju3xMMGAdyx6o4FMyfDBXhuLe3PiRS
+OLNcKetx/Wm5Z+MBMIobOTCOg82NFvidUWf96gp/2RbDXpwr11ffGjvwI5H1yoKx
+ksXNpoacX5ic7Xt47M6G1TwQt26Lnb3WmAWx0Yk5x29TKXNMVqiKfo4V4elVNghZ
+p0vovhOor9EqFzZF4TY1
+=+qRf
 -----END PGP SIGNATURE-----
 
---mwtFIl0SFUmRcUTs1MEPWmj2rnxvH0J1v--
+--B5W7iueHufgRfxqFs8hSA8ESu9KTcLFsL--

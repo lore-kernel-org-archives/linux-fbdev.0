@@ -1,54 +1,33 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 20 Aug 2015 08:07:30 +0000
-Subject: Re: [PATCH] Drop owner assignment from i2c_driver (and platform left-overs)
-Message-Id: <55D58AC2.3010907@ti.com>
+Date: Thu, 20 Aug 2015 07:39:00 +0000
+Subject: Re: [PATCH] fbdev: udlfb: remove unneeded initialization in few places
+Message-Id: <55D58414.9010209@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="DJKdPW7ts0P1Vl0GWtx71H0AqrlcgUqQ3"
+Content-Type: multipart/mixed; boundary="FKKMWK7bWeVvp3LOhgWCFFgOlxRTuQEMC"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436510250-5633-1-git-send-email-k.kozlowski@samsung.com>
-In-Reply-To: <1436510250-5633-1-git-send-email-k.kozlowski@samsung.com>
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
---DJKdPW7ts0P1Vl0GWtx71H0AqrlcgUqQ3
-Content-Type: text/plain; charset=windows-1252
+--FKKMWK7bWeVvp3LOhgWCFFgOlxRTuQEMC
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
 
-
-On 10/07/15 09:37, Krzysztof Kozlowski wrote:
-> Hi,
+On 08/06/15 02:02, Alexey Klimov wrote:
+> Small minor cleanup.
+> This patch removes unneeded initializations of variables
+> in few places in different functions and one empty line.
 >=20
->=20
-> The i2c drivers also do not have to set 'owner' field because
-> i2c_register_driver() will do it instead.
->=20
-> 'owner' is removed from i2c drivers, which I was able to compile
-> with allyesconfig (arm, arm64, i386, x86_64, ppc64).
-> Only compile-tested.
->=20
-> The coccinelle script which generated the patch was sent here:
-> http://www.spinics.net/lists/kernel/msg2029903.html
->=20
->=20
-> Best regards,
-> Krzysztof
->=20
->=20
-> Krzysztof Kozlowski (2):
->   video: fbdev: Drop owner assignment from i2c_driver
->   video: fbdev: Drop owner assignment from platform_driver
->=20
->  drivers/video/fbdev/omap2/displays-new/encoder-opa362.c | 1 -
->  drivers/video/fbdev/ssd1307fb.c                         | 1 -
->  2 files changed, 2 deletions(-)
->=20
+> Signed-off-by: Alexey Klimov <klimov.linux@gmail.com>
+> ---
+>  drivers/video/fbdev/udlfb.c | 10 ++++------
+>  1 file changed, 4 insertions(+), 6 deletions(-)
 
 Thanks, queued for 4.3.
 
  Tomi
 
 
---DJKdPW7ts0P1Vl0GWtx71H0AqrlcgUqQ3
+--FKKMWK7bWeVvp3LOhgWCFFgOlxRTuQEMC
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -56,19 +35,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJV1YrCAAoJEPo9qoy8lh71onkP/iK+mF7DpFBWVx8IgPjmde/l
-8uJjLSIfDSe0uD+5ERorSUn4hRjOAWhwbCMl4+9+PnXhbiVuG96iNuBObtEHkV9E
-Gq+Njrh/ygiUnIHQAA1XTcklwwYYv4jLGXyPMSiHvTtbSd/JLM5dAZi5MGiFOnqK
-nWorak/eFMu9kxOTYxcv9i6JR2o3XCvacbs9/hVwBt4Dsk1u+VMgi4AiCYH2esaZ
-h0C8Hb93jYgcK2lOqNd/KVZWy5FPMEliWQU3Ib/+i/p9/oaVpPI8+XvrWkTGXn4v
-6CjcrRDI6yQcsST0gIz+5a3T8RbXXG3LOTuENtAU34GvGReddJueL/sz/3TyD4lN
-LHTHoxmD1qs73r3McXpjB6ktxei3DujuEMhL/MM/GtUSLfkZQW1dQ43W4sx5qkHr
-Zqdg/y1NKNc99hfwlbhqdPcfEk1GB1gPrchuL034ucv+9hrecZIS9Zyr76Qc9bDS
-nxClcFyaGqdCeG3oTwu9+6882VshMRu2mNpEvUlj3L+LWIX+JyY9aWES7sZ822KB
-hvr7e8rUYmVJde7fOgKg7nGFi9RI+iXv55X7usHfL29z5DKIncaa1HeQEogJCwPe
-ZYr7NQi8ljuLmIdlQ3r5fmfVL/78c00Y0srCvt6Vi39bvdQn1VUHq2NCV6yj1kCC
-TQZbc66DJ9J/EyuasdDK
-=u8Q9
+iQIcBAEBCAAGBQJV1YQUAAoJEPo9qoy8lh71U3YP/jRzOfWXF3iSPrt8zmD0M6Ui
+Q8nDzrGd53+X15aAesbIGMwDw12bZm7M0J+XtF/30W2eW8RkHDa2oSwk2JOvLct7
+dFErutTHIjUfyzzL1lP4u1i5DuO+mr2TLuXgfRaxZK4oMq7ZXOwXItvmSpN8tBA1
+3kXpltcHkT9avV4OH1qa6bqBN682osip3wZojf2bA05kgDFhhWyCCeGHwNKtwrDq
+zMxjkazkrcpce4Z/x53/RV3VNllEL3c01xc5GqYfiGZ4g4KVIHQ0Z54X2+Ic8KvD
+Dz8AQg3OSYliHN9G5TiA2T+QPWpz6IcfgPIUQlwDjDlulgVTx07IihOdXRR+DXna
+cPrC+FjZNeuCYjAImncSXrbyi+DUCKXfk/xrgEz6FJTXCGl2cFS3HAPI4bqqw8sF
+J9W04i4mPilSPaOQEq06CHA8FqKRaWeWcdmcq5tqq7OCy0+mEHWDjBz6iNKZws0Z
+azHjRu4rgDOhB2SDMmDAV+PeAH3Q0vnAbWrD3pkeBixU+WoiEn4rVgqh2kX/RxNY
+7mez/gc7zx/EoGFO8lcIbsaKydYOyQItrkWtVG5Z2qaTU8532XFjTQ1fvIaC6AkR
+eLMTy3QznxdMzsl86XMukloqw0eiOgZh4/xkFAx+eP09ugry9cjcKlkkp6hhrlnx
+O5zPeX9HiWUFRd0Fc86L
+=CpHe
 -----END PGP SIGNATURE-----
 
---DJKdPW7ts0P1Vl0GWtx71H0AqrlcgUqQ3--
+--FKKMWK7bWeVvp3LOhgWCFFgOlxRTuQEMC--

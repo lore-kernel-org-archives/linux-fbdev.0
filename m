@@ -1,70 +1,40 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 11 Aug 2015 13:07:12 +0000
-Subject: [GIT PULL] fbdev fixes for 4.2-rc7
-Message-Id: <55C9F380.9080908@ti.com>
+Date: Thu, 20 Aug 2015 09:07:49 +0000
+Subject: Re: [PATCH 2/2] drivers: video: fbdev: vga: fixed coding style
+Message-Id: <55D598E5.4010209@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="oTalM7FsiSicGs9sostnA0QE6eB9eRB8t"
+Content-Type: multipart/mixed; boundary="QMPgdWFQ5Whq7tWPNcrgPtGvrGXICQJPh"
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1436592450-5388-1-git-send-email-cristian97.ardelean@gmail.com>
+In-Reply-To: <1436592450-5388-1-git-send-email-cristian97.ardelean@gmail.com>
+To: Cristian Ardelean <cristian97.ardelean@gmail.com>, plagnioj@jcrosoft.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---oTalM7FsiSicGs9sostnA0QE6eB9eRB8t
-Content-Type: text/plain; charset=utf-8
+--QMPgdWFQ5Whq7tWPNcrgPtGvrGXICQJPh
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-Hi Linus,
+Hi,
 
-The following changes since commit f7644cbfcdf03528f0f450f3940c4985b2291f=
-49:
+On 11/07/15 08:27, Cristian Ardelean wrote:
+> Fixed most of the coding style issues suggested by checkpatch.pl
+> tool. Mainly converted spaces to tabs. Left remaining errors and
+> warnings up to decision of the developers.
+>=20
+> Signed-off-by: Cristian Ardelean <cristian97.ardelean@gmail.com>
+> ---
+>  drivers/video/fbdev/vga16fb.c |  386 ++++++++++++++++++++-------------=
+--------
+>  1 file changed, 193 insertions(+), 193 deletions(-)
 
-  Linux 4.2-rc6 (2015-08-09 15:54:30 -0400)
+I don't want patches that clean up formatting for random old drivers.
+For drivers that are in active development such patches may make sense,
+but this one is just needless change, possibly causing conflicts.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-4.2
-
-for you to fetch changes up to 2a17d7e80f1df44d6b94c3696d5eda44fe6638a8:
-
-  fbcon: unconditionally initialize cursor blink interval (2015-08-10 17:=
-20:32 +0300)
-
-----------------------------------------------------------------
-fbdev fixes for 4.2
-
-* Fix display regression on Versatile boards
-* Fix OF node refcount bugs on omapdss
-* fix WARN about clock prepare on pxa3xx_gcu
-* Fix mem leak in videomode helpers
-* Fix fbconsole related boot problem on sun7i-a20-olinuxino-micro
-
-----------------------------------------------------------------
-Christian Engelmayer (1):
-      video: Fix possible leak in of_get_videomode()
-
-Jyri Sarha (2):
-      OMAPDSS: Fix node refcount leak in omapdss_of_get_next_port()
-      OMAPDSS: Fix omap_dss_find_output_by_port_node() port refcount decr=
-ement
-
-Linus Walleij (1):
-      fbdev: select versatile helpers for the integrator
-
-Robert Jarzmik (1):
-      video: fbdev: pxa3xx_gcu: prepare the clocks
-
-Scot Doyle (1):
-      fbcon: unconditionally initialize cursor blink interval
-
- drivers/video/console/fbcon.c          | 3 ++-
- drivers/video/fbdev/Kconfig            | 2 +-
- drivers/video/fbdev/omap2/dss/dss-of.c | 4 +++-
- drivers/video/fbdev/pxa3xx-gcu.c       | 4 ++--
- drivers/video/of_videomode.c           | 4 +---
- 5 files changed, 9 insertions(+), 8 deletions(-)
+ Tomi
 
 
---oTalM7FsiSicGs9sostnA0QE6eB9eRB8t
+--QMPgdWFQ5Whq7tWPNcrgPtGvrGXICQJPh
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -72,19 +42,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJVyfOAAAoJEPo9qoy8lh71u9gQAJ/xJQ9UgZsr+RPit1yvZJQL
-w949OxL6pe5b1iIFc1eKNkC29rTXlYxrtojW+AD9yjhSAV33Kw8443eqsjOWLUbL
-B/RoPrCZbLA2UXDpCDIRY/BUGsu09MDuKxxVBCfzNbvmowrrgbfJ+Knh+yoK/iT6
-U/Y/mDw9z712muAHNaphcNea8DF3cAhHUxYcypp6Sgi1qZxPeiZ1LVwJWTweCfnz
-Om/LZNMM2gJ+YFcEUAooUbvmRFMZ+/nXFoFvio8HNht2ueacA/hjQLO/SGKLze2O
-rRD70ue9j4wwG+AmZejT01Nsmd/wbUbJnWH6MMDYYQAQZc5Kbtsdr6yB61HB1qak
-x3VX/6OkNxL+sUTTQU3r0tWF4tbUD++UJ7WXjoL288NvvmvRT4miRtI/AC7RyE8q
-f8fUCSzu7x5DBvXYvQuI5AEy6HNJRQUi0ACY9IdK0/5FcRM8jeQ+NLbQF6wde3iP
-aGTkWBsQ/OxFJJcIPyz77QYf93naNMiRTevOfajHgLj6IN+mjnLl0sM8O+13o//R
-xqerW7uotDseTcg1hu+C//3n1XCzIFkkbO0L/UgkkjWWwk6FkivmEzWev5qwH6VC
-tPM2SjnaLBHjPrPgWLHFyzWDtO3st7V7FynlZxOb+7Wd5v0az955xQSDrXd+X2/6
-F3eAI/5Lw0KJm2Mhi7qj
-=/kBL
+iQIcBAEBCAAGBQJV1ZjlAAoJEPo9qoy8lh71vWEP/1Nnjwga6wyDw0C220ssWAvS
+0PAreqWGSEH5gtahfrTNqnJQNJ61011oYx3ptc9YOjbmKov7Cgu2hLh3CaXkI7Zk
+h/+cJg0+Flb4bdh/rxmJiGRbo6oyUi2Y51mWdqhrmR9UWJW+96w2Ty24RoespXJS
+gwOqh9FUakdm14m2hnOLfSwJvETo2CLXV7WzXbJp1mi47848z27fdT9/zvWFUZKn
+giaP/+zc5/1WY/qJuW832KKDmm67CHi/4Oug9BAPzzAU7AOewm/+Rcm9j1SMt2lJ
+4RCHpsNC+LmGMpBUA5M9N58AMiaMfRwt0kjwlPHYjOnh0u24HDlwpu5s1B96kxOw
+5d4d9BRyyXe1XrmvxJ7Fkn12w/ihK9aMsOhvOmqXpz5Ua/8IzsorlIejaXvWIS4m
+FkE6rjw2pjLDFPTyxw3p+CvfAr2lUL+hjQLmZVAD62Wk7YlE4x8LioVLXIay3Vgh
+3t1W+0mKOwc8vaaFk0dggfwDuDSbJaqb76NyHoVydLlidFy0sr1f5IxY0U9Galrd
+eJMMBeRl40STISPUH84mycSr2FrIqtOwArOXh1YH7vZ2b57Wr8SFeM3emuTNHqMj
+tSYy9pqGMKRSZgOedTZAUiXYfkdCbXo3ttRKKfxfN6Z11qao5Q59sWsTWGBN05/L
+aXQh6YTSFYvEHtjfuUgJ
+=a3ql
 -----END PGP SIGNATURE-----
 
---oTalM7FsiSicGs9sostnA0QE6eB9eRB8t--
+--QMPgdWFQ5Whq7tWPNcrgPtGvrGXICQJPh--

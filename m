@@ -1,140 +1,53 @@
-From: "Shah, Yash (Y.)" <yshah1@visteon.com>
-Date: Fri, 14 Aug 2015 06:06:13 +0000
-Subject: [PATCH] Staging: sm750fb: Fix "foo* bar" should be "foo *bar" errors
-Message-Id: <20150814060512.GA671@ubuntu>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Date: Thu, 20 Aug 2015 07:07:17 +0000
+Subject: [PATCH 04/18] OMAPDSS: panel-sony-acx565akm: Export OF module alias information
+Message-Id: <1440054451-1223-5-git-send-email-javier@osg.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1440054451-1223-1-git-send-email-javier@osg.samsung.com>
+In-Reply-To: <1440054451-1223-1-git-send-email-javier@osg.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "sudipm.mukherjee@gmail.com" <sudipm.mukherjee@gmail.com>, "teddy.wang@siliconmotion.com" <teddy.wang@siliconmotion.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Babu, Viswanathan (V.)" <vbabu3@visteon.com>
+To: linux-kernel@vger.kernel.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org
 
-From: Yash Shah <yshah1@visteon.com>
+The SPI core always reports the MODALIAS uevent as "spi:<modalias>"
+regardless of the mechanism that was used to register the device
+(i.e: OF or board code) and the table that is used later to match
+the driver with the device (i.e: SPI id table or OF match table).
 
-Fix "foo* bar" should be "foo *bar" errors as detected by
-checkpatch.pl
+So drivers needs to export the SPI id table and this be built into
+the module or udev won't have the necessary information to autoload
+the needed driver module when the device is added.
 
-Signed-off-by: Yash Shah <yshah1@visteon.com>
+But this means that OF-only drivers needs to have both OF and SPI id
+tables that have to be kept in sync and also the dev node compatible
+manufacturer prefix is stripped when reporting the MODALIAS. Which can
+lead to issues if two vendors use the same SPI device name for example.
+
+To avoid the above, the SPI core behavior may be changed in the future
+to not require an SPI device table for OF-only drivers and report the
+OF module alias. So, it's better to also export the OF table even when
+is unused now to prevent breaking module loading when the core changes.
+
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
 ---
- drivers/staging/sm750fb/sm750.h        | 14 +++++++-------
- drivers/staging/sm750fb/sm750_cursor.c |  4 ++--
- drivers/staging/sm750fb/sm750_cursor.h |  4 ++--
- drivers/staging/sm750fb/sm750_hw.h     |  6 +++---
- 4 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 9b101a9..5bc4455 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -16,9 +16,9 @@ extern int smi_indent;
- 
- struct lynx_accel {
- 	/* base virtual address of DPR registers */
--	volatile unsigned char __iomem * dprBase;
-+	volatile unsigned char __iomem *dprBase;
- 	/* base virtual address of de data port */
--	volatile unsigned char __iomem * dpPortBase;
-+	volatile unsigned char __iomem *dpPortBase;
- 
- 	/* function fointers */
- 	void (*de_init)(struct lynx_accel *);
-@@ -64,8 +64,8 @@ struct lynx_share {
- 	/* locks*/
- 	spinlock_t slock;
- 	/* function pointers */
--	void (*suspend)(struct lynx_share*);
--	void (*resume)(struct lynx_share*);
-+	void (*suspend)(struct lynx_share *);
-+	void (*resume)(struct lynx_share *);
+ drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
+index 90cbc4c3406c..c581231c74a5 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
+@@ -898,6 +898,7 @@ static const struct of_device_id acx565akm_of_match[] = {
+ 	{ .compatible = "omapdss,sony,acx565akm", },
+ 	{},
  };
++MODULE_DEVICE_TABLE(of, acx565akm_of_match);
  
- struct lynx_cursor {
-@@ -80,7 +80,7 @@ struct lynx_cursor {
- 	char __iomem *vstart;
- 	int offset;
- 	/* mmio addr of hw cursor */
--	volatile char __iomem * mmio;
-+	volatile char __iomem *mmio;
- 	/* the lynx_share of this adaptor */
- 	struct lynx_share *share;
- 	/* proc_routines */
-@@ -114,7 +114,7 @@ struct lynxfb_crtc {
- 
- 	int (*proc_checkMode)(struct lynxfb_crtc*, struct fb_var_screeninfo*);
- 	int (*proc_setColReg)(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
--	void (*clear)(struct lynxfb_crtc*);
-+	void (*clear)(struct lynxfb_crtc *);
- 	/* pan display */
- 	int (*proc_panDisplay)(struct lynxfb_crtc *,
- 			       const struct fb_var_screeninfo *,
-@@ -146,7 +146,7 @@ struct lynxfb_output {
- 
- 	int (*proc_checkMode)(struct lynxfb_output*, struct fb_var_screeninfo*);
- 	int (*proc_setBLANK)(struct lynxfb_output*, int);
--	void  (*clear)(struct lynxfb_output*);
-+	void  (*clear)(struct lynxfb_output *);
- };
- 
- struct lynxfb_par {
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 2400c6c..a94a4bb 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -95,7 +95,7 @@ void hw_cursor_setColor(struct lynx_cursor *cursor,
- }
- 
- void hw_cursor_setData(struct lynx_cursor *cursor,
--			u16 rop, const u8* pcol, const u8* pmsk)
-+			u16 rop, const u8 *pcol, const u8 *pmsk)
- {
- 	int i, j, count, pitch, offset;
- 	u8 color, mask, opr;
-@@ -184,7 +184,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
- 
- 
- void hw_cursor_setData2(struct lynx_cursor *cursor,
--			u16 rop, const u8* pcol, const u8* pmsk)
-+			u16 rop, const u8 *pcol, const u8 *pmsk)
- {
- 	int i, j, count, pitch, offset;
- 	u8 color, mask;
-diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
-index e1716a6..6c4fc9b 100644
---- a/drivers/staging/sm750fb/sm750_cursor.h
-+++ b/drivers/staging/sm750fb/sm750_cursor.h
-@@ -11,7 +11,7 @@ void hw_cursor_setPos(struct lynx_cursor *cursor,
- void hw_cursor_setColor(struct lynx_cursor *cursor,
- 						u32 fg, u32 bg);
- void hw_cursor_setData(struct lynx_cursor *cursor,
--			u16 rop, const u8* data, const u8* mask);
-+			u16 rop, const u8 *data, const u8 *mask);
- void hw_cursor_setData2(struct lynx_cursor *cursor,
--			u16 rop, const u8* data, const u8* mask);
-+			u16 rop, const u8 *data, const u8 *mask);
- #endif
-diff --git a/drivers/staging/sm750fb/sm750_hw.h b/drivers/staging/sm750fb/sm750_hw.h
-index ef0a16f..3781a1a 100644
---- a/drivers/staging/sm750fb/sm750_hw.h
-+++ b/drivers/staging/sm750fb/sm750_hw.h
-@@ -78,7 +78,7 @@ struct sm750_share {
- 	*/
- };
- 
--int hw_sm750_map(struct lynx_share* share, struct pci_dev* pdev);
-+int hw_sm750_map(struct lynx_share *share, struct pci_dev *pdev);
- int hw_sm750_inithw(struct lynx_share*, struct pci_dev *);
- void hw_sm750_initAccel(struct lynx_share *);
- int hw_sm750_deWait(void);
-@@ -92,8 +92,8 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc*, struct fb_var_screeninfo*, struct
- int hw_sm750_setColReg(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
- int hw_sm750_setBLANK(struct lynxfb_output*, int);
- int hw_sm750le_setBLANK(struct lynxfb_output*, int);
--void hw_sm750_crtc_clear(struct lynxfb_crtc*);
--void hw_sm750_output_clear(struct lynxfb_output*);
-+void hw_sm750_crtc_clear(struct lynxfb_crtc *);
-+void hw_sm750_output_clear(struct lynxfb_output *);
- int hw_sm750_pan_display(struct lynxfb_crtc *crtc,
- 			 const struct fb_var_screeninfo *var,
- 			 const struct fb_info *info);
+ static struct spi_driver acx565akm_driver = {
+ 	.driver = {
 -- 
-1.9.1
+2.4.3
+

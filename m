@@ -1,53 +1,59 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Date: Thu, 20 Aug 2015 07:07:17 +0000
-Subject: [PATCH 04/18] OMAPDSS: panel-sony-acx565akm: Export OF module alias information
-Message-Id: <1440054451-1223-5-git-send-email-javier@osg.samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 20 Aug 2015 07:54:31 +0000
+Subject: Re: [PATCH] framebuffer: disable vgacon on microblaze arch
+Message-Id: <55D587B7.6060902@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="7Qum51xDrxStkga8bhU6inKdN9x5NE1cI"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440054451-1223-1-git-send-email-javier@osg.samsung.com>
-In-Reply-To: <1440054451-1223-1-git-send-email-javier@osg.samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>, linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org
+References: <87d20u5dji.fsf@gmail.com>
+In-Reply-To: <87d20u5dji.fsf@gmail.com>
+To: Nicolai Stange <nicstange@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The SPI core always reports the MODALIAS uevent as "spi:<modalias>"
-regardless of the mechanism that was used to register the device
-(i.e: OF or board code) and the table that is used later to match
-the driver with the device (i.e: SPI id table or OF match table).
+--7Qum51xDrxStkga8bhU6inKdN9x5NE1cI
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-So drivers needs to export the SPI id table and this be built into
-the module or udev won't have the necessary information to autoload
-the needed driver module when the device is added.
 
-But this means that OF-only drivers needs to have both OF and SPI id
-tables that have to be kept in sync and also the dev node compatible
-manufacturer prefix is stripped when reporting the MODALIAS. Which can
-lead to issues if two vendors use the same SPI device name for example.
 
-To avoid the above, the SPI core behavior may be changed in the future
-to not require an SPI device table for OF-only drivers and report the
-OF module alias. So, it's better to also export the OF table even when
-is unused now to prevent breaking module loading when the core changes.
+On 17/06/15 22:40, Nicolai Stange wrote:
+> Fix an allmodconfig link failer on microblaze:
+>   drivers/built-in.o: In function `vgacon_save_screen':
+>   drivers/video/console/.tmp_vgacon.o:(.text+0x8fc10):
+>     undefined reference to `screen_info'
+>=20
+> Disable vgacon on microblaze because the symbol
+>   struct screen_info screen_info;
+> is not defined for the microblaze arch.
+>=20
+> Signed-off-by: Nicolai Stange <nicstange@gmail.com>
 
-Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
----
+Thanks, queued for 4.3.
 
- drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c | 1 +
- 1 file changed, 1 insertion(+)
+ Tomi
 
-diff --git a/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
-index 90cbc4c3406c..c581231c74a5 100644
---- a/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
-+++ b/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
-@@ -898,6 +898,7 @@ static const struct of_device_id acx565akm_of_match[] = {
- 	{ .compatible = "omapdss,sony,acx565akm", },
- 	{},
- };
-+MODULE_DEVICE_TABLE(of, acx565akm_of_match);
- 
- static struct spi_driver acx565akm_driver = {
- 	.driver = {
--- 
-2.4.3
 
+--7Qum51xDrxStkga8bhU6inKdN9x5NE1cI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJV1Ye4AAoJEPo9qoy8lh71k3sQAKthM7s6TaCLxM+7QVXtTmtH
+wfxyvNJOcIQY+/T7IV4v7AH4bmKhy3ZWWqSnyBiKJC+SlM+/NKp0PSWeebd7cKjI
+kXOYGk0sHpp8TFkLi3me0i8SjLV/RE4xWTPIjU3E7eZ2P1wTBESp8Dy4IRminWz5
+KO20PrqpsDzTVbSAhHJNh1IzwIIGpZ9xDkLy5XMdS50r97dEMrOAdTxs7KQHqI4/
+qp1BLcokY7klcD5evu4hYFaHgsHf+HKOcxTjCLU4qfR1cIO4wjl9CY2+TwzrRH7H
+bUC23mUhVXy9gbORUUo+B6b8NPp6Z5RNP+I6ju2Vpr6W66ZA09y0BOHLwnzHdtJl
+alfGGKd/eWWtjINmsCQf9Le9bD7HmkqgPzqS2OADXMyKrxbSD/1FrRvQDgos8/GW
+NY8ZVUO+BI4GdKj4Aw060wcjEDzkd/BmLadQpXFqi0hzzCIuEQlJxdvQE1C83YVv
+f5EEECuwwhXwutWKrM8VOg/eukEGYS66ZD5o2EpTxOXfvvCxougxNoaRv84FqXaq
+GKhK21AZszSOcetu6BQwybtoRCNSvV1dk3OBnv+GryGbnK37OZ5YiQFRQU6wQmZm
+yT6rApM7cRDL5F4vX0coAKI0DriQzQh28iCb8Cq0h/S9dWmxl1yN1hinfppvJliB
+Jo5R2J1UBvWWqrA/NrXX
+=Gigy
+-----END PGP SIGNATURE-----
+
+--7Qum51xDrxStkga8bhU6inKdN9x5NE1cI--

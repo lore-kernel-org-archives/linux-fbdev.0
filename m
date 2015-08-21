@@ -1,7 +1,7 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Fri, 21 Aug 2015 09:22:03 +0000
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 21 Aug 2015 09:53:52 +0000
 Subject: Re: [patch] fbdev: fix snprintf() limit in show_bl_curve()
-Message-Id: <1440148923.23472.15.camel@linux.intel.com>
+Message-Id: <20150821095352.GQ5610@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20150821085302.GE25369@mwanda>
 In-Reply-To: <20150821085302.GE25369@mwanda>
@@ -10,33 +10,23 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Fri, 2015-08-21 at 11:53 +0300, Dan Carpenter wrote:
-> The limit should be "PAGE_SIZE - len" instead of PAGE_SIZE.
+On Fri, Aug 21, 2015 at 12:22:03PM +0300, Andy Shevchenko wrote:
+> On Fri, 2015-08-21 at 11:53 +0300, Dan Carpenter wrote:
+> > The limit should be "PAGE_SIZE - len" instead of PAGE_SIZE.
+> > 
+> 
+> Besides that was in the original code, the problem still might happen
+> when FB_BACKLIGHT_LEVELS is set to 171+ since snprintf() returns
+> desired length. I suppose you would change this to check len on each
+> iteration or change to scnprintf() if I get it correct.
 > 
 
-Besides that was in the original code, the problem still might happen
-when FB_BACKLIGHT_LEVELS is set to 171+ since snprintf() returns
-desired length. I suppose you would change this to check len on each
-iteration or change to scnprintf() if I get it correct.
+Yeah, you're right.
 
- 
-> diff --git a/drivers/video/fbdev/core/fbsysfs.c 
-> b/drivers/video/fbdev/core/fbsysfs.c
-> index 60c3f0a..827098d 100644
-> --- a/drivers/video/fbdev/core/fbsysfs.c
-> +++ b/drivers/video/fbdev/core/fbsysfs.c
-> @@ -485,7 +485,7 @@ static ssize_t show_bl_curve(struct device 
-> *device,
->  
->  	mutex_lock(&fb_info->bl_curve_mutex);
->  	for (i = 0; i < FB_BACKLIGHT_LEVELS; i += 8)
-> -		len += snprintf(&buf[len], PAGE_SIZE, "%8ph\n",
-> +		len += snprintf(&buf[len], PAGE_SIZE - len, 
-> "%8ph\n",
->  				fb_info->bl_curve + i);
->  	mutex_unlock(&fb_info->bl_curve_mutex);
->  
+If you pass a negative size to snprintf() it won't overflow, but it will
+print an error.  I will send a v2 and change it to scnprintf().  I don't
+think we will have 171 levels so it's not worth adding the check?
 
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+regards,
+dan carpenter
+

@@ -1,38 +1,41 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 25 Aug 2015 11:33:59 +0000
-Subject: [PATCH 0/3] backlight: led-backlight driver
-Message-Id: <1440502442-19531-1-git-send-email-tomi.valkeinen@ti.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Mon, 24 Aug 2015 19:37:25 +0000
+Subject: [PATCH 1/4] [resend #2] tridentfb: fix hang on Blade3D with CONFIG_CC_OPTIMIZE_FOR_SIZE
+Message-Id: <1440445048-24694-1-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Andrew Lunn <andrew@lunn.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-This series aims to add a led-backlight driver, similar to pwm-backlight, but
-using a LED class device underneath.
+When the kernel is compiled with -Os (CONFIG_CC_OPTIMIZE_FOR_SIZE), tridentfb
+hangs the machine upon load with Blade3D cards unless acceleration is disabled.
 
-LED framework has no support for DT or getting a LED class driver from another
-kernel driver, so I added minimal functionality to led-class.c to get
-led-backlight working.
+This is caused by memcpy() which copies data byte-by-byte (rep movsb) when
+compiled with -Os. The card does not like that - it requires 32-bit access.
 
- Tomi
+Use iowrite_32() instead.
 
-Tomi Valkeinen (3):
-  leds: Add of_led_get() and led_put()
-  backlight: add led-backlight driver
-  devicetree: Add led-backlight binding
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+ drivers/video/fbdev/tridentfb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- .../bindings/video/backlight/led-backlight.txt     |  30 +++
- drivers/leds/led-class.c                           |  75 +++++++
- drivers/video/backlight/Kconfig                    |   7 +
- drivers/video/backlight/Makefile                   |   1 +
- drivers/video/backlight/led_bl.c                   | 226 +++++++++++++++++++++
- include/linux/leds.h                               |   4 +
- 6 files changed, 343 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/led-backlight.txt
- create mode 100644 drivers/video/backlight/led_bl.c
-
+diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
+index 7ed9a22..7429713 100644
+--- a/drivers/video/fbdev/tridentfb.c
++++ b/drivers/video/fbdev/tridentfb.c
+@@ -226,7 +226,7 @@ static void blade_image_blit(struct tridentfb_par *par, const char *data,
+ 	writemmr(par, DST1, point(x, y));
+ 	writemmr(par, DST2, point(x + w - 1, y + h - 1));
+ 
+-	memcpy(par->io_virt + 0x10000, data, 4 * size);
++	iowrite32_rep(par->io_virt + 0x10000, data, size);
+ }
+ 
+ static void blade_copy_rect(struct tridentfb_par *par,
 -- 
-2.1.4
+Ondrej Zary
 

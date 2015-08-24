@@ -1,214 +1,141 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Mon, 24 Aug 2015 19:13:29 +0000
-Subject: [PATCH v4 07/11] drivers/video/fbdev/s3fb: Use arch_phys_wc_add() and pci_iomap_wc()
-Message-Id: <1440443613-13696-8-git-send-email-mcgrof@do-not-panic.com>
+Date: Mon, 24 Aug 2015 19:13:22 +0000
+Subject: [PATCH v4 00/11] x86/dma: RIP MTRR and dma write-combine API rename
+Message-Id: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: mingo@kernel.org
-Cc: bp@suse.de, bhelgaas@google.com, tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, vinod.koul@intel.com, dan.j.williams@intel.com, toshi.kani@hp.com, benh@kernel.crashing.org, mst@redhat.com, akpm@linux-foundation.org, daniel.vetter@ffwll.ch, konrad.wilk@oracle.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, Antonino Daplas <adaplas@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Dave Airlie <airlied@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Juergen Gross <jgross@suse.com>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: bp@suse.de, bhelgaas@google.com, tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, vinod.koul@intel.com, dan.j.williams@intel.com, toshi.kani@hp.com, benh@kernel.crashing.org, mst@redhat.com, akpm@linux-foundation.org, daniel.vetter@ffwll.ch, konrad.wilk@oracle.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-This driver uses the same area for MTRR as for the ioremap().
+Ingo,
 
-Convert the driver from using the x86-specific MTRR code to the
-architecture-agnostic arch_phys_wc_add(). It will avoid MTRRs if
-write-combining is available. In order to take advantage of that
-also ensure the ioremapped area is requested as write-combining.
+This is my pending series of patches for both write-combining and moving
+Linux' use of MTRR into the grave. It combines three set of straggler patch
+series which have been pending integration for a while now. The rename patches
+do not depend in any way with the MTRR patches but I've combined them here as
+they are all pending and relating to write-combining. I explain why integration
+of such patches has been delayed but also provide reasoning for why I believe
+its time to merge them.
 
-There are a few motivations for this:
+1) The DMA API rename for write-combining goes with the old naming convention
+   defines added as suggested by you for any possible stragglers which may come
+   up as this goes through and gets merged. We can remove the old define
+   mappings after a release once this gets sucked in and things settle. These
+   patches have been in Boris tree for a while but I keep having to refresh
+   them as the kernel moves on, the addition of the old mapping should allow
+   us to merge this without any collateral.
 
-a) Take advantage of PAT when available.
+2) The PCI driver changes go with Tomi Valkeinen's Acks as well as
+   Arnd Bergmann's own Acks for the PCI and asm-generic changes. This series
+   was technically acknowledged by Bjorn to be correct and acceptable but his
+   preference was for this to not use EXPORT_SYMBOL_GPL() as not *all*
+   write-combine APIs are using EXPORT_SYMBOL_GPL(). Our goal on x86 though
+   is to not deal with bug reports for new PAT APIs [0] and since its now clear
+   through documentation that its up to the maintainers / developers if they
+   decide to use EXPORT_SYMBOL_GPL() for new *features* [1] I keep that
+   practice in alignment with our own x86 goals to avoid bug reports and
+   issues with proprietary drivers on new PAT interfaces. Bjorn was happy for
+   this to go through someone else's tree, in particular Arnd's. Arnd Acked
+   the series [2] but is unable to take these patches in at this time as he's
+   out on paternal leave so sending these through you with the respective Acks.
+   Boris has been hugely instrumental on helping review all MTRR related 
+   series, these were sitting on his queue for a while, but he's also
+   unavailable now as he's on vacation.
 
-b) Help bury MTRR code away, MTRR is architecture-specific and on
-   x86 it is being replaced by PAT.
+3) Unexporting direct MTRR access. This is last patch, I had posted this first
+   on March 2015 when [3] I originally had meshed up all the MTRR work into one
+   giant series. I ending up splitting up all the work into *over* 12 series.
+   Now that all the work is merged except these few patches I've combined that
+   patch as the last part of this series. I've amended an obituary note for
+   MTRR regarding platform firmware access to MTRR based on recent discussions
+   [4] and updated the documentation to reflect the status quo for Linux.
 
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()").
+All of these patches have been tested by the 0-day bot machine. The only thing
+*new* here is just my obituary amended documentation note for platform firmware
+access to MTRRs on the last patch based hugely on review with Toshi.
 
-The conversion done is expressed by the following Coccinelle
-SmPL patch, it additionally required manual intervention to
-address all the ifdeffery and removal of redundant things which
-arch_phys_wc_add() already addresses such as verbose message about
-when MTRR fails and doing nothing when we didn't get an MTRR.
+[0] http://lkml.kernel.org/r/1424961893.17007.139.camel@misato.fc.hp.com
+[1] https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?idX2ed8d51e2b6cb8a168c94852bca482685c2509
+[2] http://lkml.kernel.org/r/2962702.QXZzP3RbKY@wuerfel
+[3] http://lkml.kernel.org/r/1426893517-2511-48-git-send-email-mcgrof@do-not-panic.com
+[4] http://lkml.kernel.org/r/1438991330.3109.196.camel@hp.com
 
-@ mtrr_found @
-expression index, base, size;
-@@
+Luis R. Rodriguez (11):
+  PCI: Add pci_ioremap_wc_bar()
+  drivers/video/fbdev/i740fb: Use arch_phys_wc_add() and
+    pci_ioremap_wc_bar()
+  drivers/video/fbdev/kyrofb: Use arch_phys_wc_add() and
+    pci_ioremap_wc_bar()
+  drivers/video/fbdev/gxt4500: Use pci_ioremap_wc_bar() to map
+    framebuffer
+  PCI: Add pci_iomap_wc() variants
+  drivers/video/fbdev/arkfb.c: Use arch_phys_wc_add() and pci_iomap_wc()
+  drivers/video/fbdev/s3fb: Use arch_phys_wc_add() and pci_iomap_wc()
+  drivers/video/fbdev/vt8623fb: Use arch_phys_wc_add() and
+    pci_iomap_wc()
+  drivers/dma/iop-adma: Use dma_alloc_writecombine() kernel-style
+  dma: rename dma_*_writecombine() to dma_*_wc()
+  mtrr: bury MTRR - unexport mtrr_add() and mtrr_del()
 
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
+ Documentation/x86/mtrr.txt                | 20 ++++++++--
+ arch/arm/mach-lpc32xx/phy3250.c           | 13 +++---
+ arch/arm/mach-netx/fb.c                   | 14 +++----
+ arch/arm/mach-nspire/clcd.c               | 13 +++---
+ arch/avr32/include/asm/dma-mapping.h      | 20 +++++-----
+ arch/avr32/mm/dma-coherent.c              | 12 +++---
+ arch/metag/include/asm/dma-mapping.h      |  4 +-
+ arch/metag/kernel/dma.c                   |  6 +--
+ arch/x86/kernel/cpu/mtrr/main.c           |  2 -
+ drivers/dma/iop-adma.c                    |  9 +++--
+ drivers/dma/mv_xor.c                      |  4 +-
+ drivers/dma/qcom_bam_dma.c                | 14 +++----
+ drivers/gpu/drm/drm_gem_cma_helper.c      | 13 +++---
+ drivers/gpu/drm/omapdrm/omap_dmm_tiler.c  | 13 +++---
+ drivers/gpu/drm/omapdrm/omap_gem.c        |  8 ++--
+ drivers/gpu/drm/sti/sti_cursor.c          | 13 +++---
+ drivers/gpu/drm/sti/sti_gdp.c             |  3 +-
+ drivers/gpu/drm/sti/sti_hqvdp.c           |  6 +--
+ drivers/gpu/drm/tegra/gem.c               | 11 +++---
+ drivers/gpu/host1x/cdma.c                 |  8 ++--
+ drivers/gpu/host1x/job.c                  | 10 ++---
+ drivers/media/platform/coda/coda-bit.c    | 10 ++---
+ drivers/pci/pci.c                         | 14 +++++++
+ drivers/video/fbdev/acornfb.c             |  4 +-
+ drivers/video/fbdev/amba-clcd-versatile.c | 14 +++----
+ drivers/video/fbdev/amba-clcd.c           |  4 +-
+ drivers/video/fbdev/arkfb.c               | 36 +++--------------
+ drivers/video/fbdev/atmel_lcdfb.c         |  9 +++--
+ drivers/video/fbdev/ep93xx-fb.c           |  9 ++---
+ drivers/video/fbdev/gbefb.c               |  8 ++--
+ drivers/video/fbdev/gxt4500.c             |  2 +-
+ drivers/video/fbdev/i740fb.c              | 35 +++-------------
+ drivers/video/fbdev/imxfb.c               | 12 +++---
+ drivers/video/fbdev/kyro/fbdev.c          | 33 ++++++----------
+ drivers/video/fbdev/mx3fb.c               |  9 ++---
+ drivers/video/fbdev/nuc900fb.c            |  8 ++--
+ drivers/video/fbdev/omap/lcdc.c           | 16 ++++----
+ drivers/video/fbdev/pxa168fb.c            |  8 ++--
+ drivers/video/fbdev/pxafb.c               |  4 +-
+ drivers/video/fbdev/s3c-fb.c              |  7 ++--
+ drivers/video/fbdev/s3c2410fb.c           |  8 ++--
+ drivers/video/fbdev/s3fb.c                | 35 +++-------------
+ drivers/video/fbdev/sa1100fb.c            |  8 ++--
+ drivers/video/fbdev/vt8623fb.c            | 31 +++------------
+ include/asm-generic/pci_iomap.h           | 14 +++++++
+ include/linux/dma-mapping.h               | 16 ++++----
+ include/linux/pci.h                       |  1 +
+ include/video/kyro.h                      |  4 +-
+ lib/pci_iomap.c                           | 66 +++++++++++++++++++++++++++++++
+ sound/arm/pxa2xx-pcm-lib.c                | 20 ++++------
+ sound/soc/fsl/imx-pcm-fiq.c               | 10 ++---
+ sound/soc/nuc900/nuc900-pcm.c             |  6 +--
+ sound/soc/omap/omap-pcm.c                 | 12 ++----
+ 53 files changed, 331 insertions(+), 358 deletions(-)
 
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: benh@kernel.crashing.org
-Cc: bhelgaas@google.com
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-pci@vger.kernel.org
-Cc: mst@redhat.com
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Suresh Siddha <sbsiddha@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: toshi.kani@hp.com
-Link: http://lkml.kernel.org/r/1435195342-26879-9-git-send-email-mcgrof@do-not-panic.com
-Signed-off-by: Borislav Petkov <bp@suse.de>
----
- drivers/video/fbdev/s3fb.c | 35 ++++++-----------------------------
- 1 file changed, 6 insertions(+), 29 deletions(-)
-
-diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
-index f0ae61a37f04..13b109073c63 100644
---- a/drivers/video/fbdev/s3fb.c
-+++ b/drivers/video/fbdev/s3fb.c
-@@ -28,13 +28,9 @@
- #include <linux/i2c.h>
- #include <linux/i2c-algo-bit.h>
- 
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--
- struct s3fb_info {
- 	int chip, rev, mclk_freq;
--	int mtrr_reg;
-+	int wc_cookie;
- 	struct vgastate state;
- 	struct mutex open_lock;
- 	unsigned int ref_count;
-@@ -154,11 +150,7 @@ static const struct svga_timing_regs s3_timing_regs     = {
- 
- 
- static char *mode_option;
--
--#ifdef CONFIG_MTRR
- static int mtrr = 1;
--#endif
--
- static int fasttext = 1;
- 
- 
-@@ -170,11 +162,8 @@ module_param(mode_option, charp, 0444);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
- module_param_named(mode, mode_option, charp, 0444);
- MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
--
--#ifdef CONFIG_MTRR
- module_param(mtrr, int, 0444);
- MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
--#endif
- 
- module_param(fasttext, int, 0644);
- MODULE_PARM_DESC(fasttext, "Enable S3 fast text mode (1=enable, 0=disable, default=1)");
-@@ -1168,7 +1157,7 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	info->fix.smem_len = pci_resource_len(dev, 0);
- 
- 	/* Map physical IO memory address into kernel space */
--	info->screen_base = pci_iomap(dev, 0, 0);
-+	info->screen_base = pci_iomap_wc(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
- 		dev_err(info->device, "iomap for framebuffer failed\n");
-@@ -1365,12 +1354,9 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	/* Record a reference to the driver data */
- 	pci_set_drvdata(dev, info);
- 
--#ifdef CONFIG_MTRR
--	if (mtrr) {
--		par->mtrr_reg = -1;
--		par->mtrr_reg = mtrr_add(info->fix.smem_start, info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
--	}
--#endif
-+	if (mtrr)
-+		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
-+						  info->fix.smem_len);
- 
- 	return 0;
- 
-@@ -1405,14 +1391,7 @@ static void s3_pci_remove(struct pci_dev *dev)
- 
- 	if (info) {
- 		par = info->par;
--
--#ifdef CONFIG_MTRR
--		if (par->mtrr_reg >= 0) {
--			mtrr_del(par->mtrr_reg, 0, 0);
--			par->mtrr_reg = -1;
--		}
--#endif
--
-+		arch_phys_wc_del(par->wc_cookie);
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
- 
-@@ -1551,10 +1530,8 @@ static int  __init s3fb_setup(char *options)
- 
- 		if (!*opt)
- 			continue;
--#ifdef CONFIG_MTRR
- 		else if (!strncmp(opt, "mtrr:", 5))
- 			mtrr = simple_strtoul(opt + 5, NULL, 0);
--#endif
- 		else if (!strncmp(opt, "fasttext:", 9))
- 			fasttext = simple_strtoul(opt + 9, NULL, 0);
- 		else
 -- 
 2.4.3
 

@@ -1,99 +1,55 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 28 Aug 2015 11:35:52 +0000
-Subject: Re: [PATCH 1/2] OMAPDSS: hdmi: Reconfigure and restart audio when display is enabled
-Message-Id: <55E04798.3030905@ti.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Mon, 24 Aug 2015 19:37:27 +0000
+Subject: [PATCH 3/4] [resend #2] fb_ddc: Allow I2C adapters without SCL read capability
+Message-Id: <1440445048-24694-3-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1440594174.git.jsarha@ti.com>
- <44089dc819903c71e1d0ed0c14dd3ab060ed8c68.1440594174.git.jsarha@ti.com>
- <55E039FC.8090707@ti.com>
-In-Reply-To: <55E039FC.8090707@ti.com>
+References: <1440445048-24694-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1440445048-24694-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: liam.r.girdwood@linux.intel.com, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, peter.ujfalusi@ti.com, broonie@kernel.org, linux-omap@vger.kernel.org
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-On 08/28/15 13:37, Tomi Valkeinen wrote:
->
-> On 26/08/15 16:11, Jyri Sarha wrote:
->
->> diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
->> index 7f87578..f352c4b 100644
->> --- a/drivers/video/fbdev/omap2/dss/hdmi5.c
->> +++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
->> @@ -352,6 +352,7 @@ static int read_edid(u8 *buf, int len)
->>   static int hdmi_display_enable(struct omap_dss_device *dssdev)
->>   {
->>   	struct omap_dss_device *out = &hdmi.output;
->> +	unsigned long flags;
->>   	int r = 0;
->>
->>   	DSSDBG("ENTER hdmi_display_enable\n");
->> @@ -370,7 +371,37 @@ static int hdmi_display_enable(struct omap_dss_device *dssdev)
->>   		goto err0;
->>   	}
->>
->> +	if (hdmi.audio_configured) {
->> +		spin_lock_irqsave(&hdmi.audio_playing_lock, flags);
->> +		hdmi_wp_audio_core_req_enable(&hdmi.wp, false);
->> +		hdmi_wp_audio_enable(&hdmi.wp, false);
->> +		if (hdmi.wp_idlemode > 0)
->> +			REG_FLD_MOD(hdmi.wp.base, HDMI_WP_SYSCONFIG,
->> +				    hdmi.wp_idlemode, 3, 2);
->> +		hdmi.wp_idlemode = -1;
->> +		spin_unlock_irqrestore(&hdmi.audio_playing_lock, flags);
->
-> Here I think the audio HW is always disabled already. It has to be,
-> because the whole HDMI IP has been off. So the above should not be needed.
->
->> +
->> +		r = hdmi5_audio_config(&hdmi.core, &hdmi.wp, &hdmi.audio_config,
->> +				       hdmi.cfg.timings.pixelclock);
->> +		if (r) {
->> +			DSSERR("Error restoring audio configuration: %d", r);
->> +			hdmi.audio_abort_cb(&hdmi.pdev->dev);
->> +			hdmi.audio_configured = false;
->> +		}
->> +	}
->> +
->> +	spin_lock_irqsave(&hdmi.audio_playing_lock, flags);
->> +	if (hdmi.audio_configured && hdmi.audio_playing) {
->> +		/* No-idle while playing audio, store the old value */
->> +		hdmi.wp_idlemode >> +			REG_GET(hdmi.wp.base, HDMI_WP_SYSCONFIG, 3, 2);
->> +		REG_FLD_MOD(hdmi.wp.base, HDMI_WP_SYSCONFIG, 1, 3, 2);
->> +
->> +		hdmi_wp_audio_enable(&hdmi.wp, true);
->> +		hdmi_wp_audio_core_req_enable(&hdmi.wp, true);
->> +	}
->>   	hdmi.display_enabled = true;
->> +	spin_unlock_irqrestore(&hdmi.audio_playing_lock, flags);
->
-> Maybe you've looked at the locking carefully, but it's not obvious to
-> me. So is hdmi_audio_start and hdmi_audio_stop the only functions that
-> are called from atomic context? Every other function is protected with
-> the mutex?
->
+i2c-algo-bit allows I2C adapters without SCL read capability to work but
+fb_ddc_read fails to work on them.
 
-The idea is for the spinlock to make audio start, audio stop, and 
-updates to hdmi.display_enabled and hdmi.audio_playing variable atomic.
+Fix fb_ddc_read to work with I2C adapters not capable of reading SCL.
 
-This is needed for the transitions from display enabled state (when 
-audio start/stop commands can be written to HW) to display disabled 
-state (when audio start/stop commands update only the hdmi.audio_playing 
-variable) to always serialize correctly.
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+ drivers/video/fbdev/core/fb_ddc.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-IOW, the idea is to make sure the hdmi.audio_playing variable is always 
-in sync with what is in the HW when hdmi.display_enabled = true.
+diff --git a/drivers/video/fbdev/core/fb_ddc.c b/drivers/video/fbdev/core/fb_ddc.c
+index 94322cc..22c694a 100644
+--- a/drivers/video/fbdev/core/fb_ddc.c
++++ b/drivers/video/fbdev/core/fb_ddc.c
+@@ -69,10 +69,11 @@ unsigned char *fb_ddc_read(struct i2c_adapter *adapter)
+ 		algo_data->setscl(algo_data->data, 1);
+ 		for (j = 0; j < 5; j++) {
+ 			msleep(10);
+-			if (algo_data->getscl(algo_data->data))
++			if (algo_data->getscl &&
++			    algo_data->getscl(algo_data->data))
+ 				break;
+ 		}
+-		if (j = 5)
++		if (algo_data->getscl && j = 5)
+ 			continue;
+ 
+ 		algo_data->setsda(algo_data->data, 0);
+@@ -91,7 +92,8 @@ unsigned char *fb_ddc_read(struct i2c_adapter *adapter)
+ 		algo_data->setscl(algo_data->data, 1);
+ 		for (j = 0; j < 10; j++) {
+ 			msleep(10);
+-			if (algo_data->getscl(algo_data->data))
++			if (algo_data->getscl &&
++			    algo_data->getscl(algo_data->data))
+ 				break;
+ 		}
+ 
+-- 
+Ondrej Zary
 
-For example: when display is turned back on we take the spinlock and we 
-can be sure that the audio start/stop status won't change while we 
-update the HW according to current state and set hdmi.display_enabled to 
-true. After releasing the lock hdmi.display_enabled is true and all 
-audio_start and audio_stop commands write their stuff directly to HW.
-
-In theory, just making hdmi.display_enabled and hdmi.audio_playing 
-atomic-variables and touching them always in correct oreder should be 
-enough, but explaining the mechanism would then be even trickier.
-
-Cheers,
-Jyri

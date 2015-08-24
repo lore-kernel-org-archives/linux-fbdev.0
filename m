@@ -1,176 +1,207 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sun, 23 Aug 2015 10:41:45 +0000
-Subject: [RFC v6 16/25] powerpc, fbdev: Use NV_CMODE and NV_VMODE only when CONFIG_PPC32 and CONFIG_PPC_PMAC 
-Message-Id: <20150823104133.537705533@telegraphics.com.au>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Mon, 24 Aug 2015 19:13:24 +0000
+Subject: [PATCH v4 02/11] drivers/video/fbdev/i740fb: Use arch_phys_wc_add() and pci_ioremap_wc_bar()
+Message-Id: <1440443613-13696-3-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150823104129.517600532@telegraphics.com.au>
+References: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: mingo@kernel.org
+Cc: bp@suse.de, bhelgaas@google.com, tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, vinod.koul@intel.com, dan.j.williams@intel.com, toshi.kani@hp.com, benh@kernel.crashing.org, mst@redhat.com, akpm@linux-foundation.org, daniel.vetter@ffwll.ch, konrad.wilk@oracle.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, Antonino Daplas <adaplas@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Benoit Taine <benoit.taine@lip6.fr>, Dave Airlie <airlied@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Juergen Gross <jgross@suse.com>, Rob Clark <robdclark@gmail.com>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
 
-This patch addresses inconsistencies in Mac framebuffer drivers and their
-use of Kconfig symbols relating to NVRAM, so PPC64 can use CONFIG_NVRAM.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Macintosh framebuffer drivers use default settings for color mode and
-video mode that are found in NVRAM. On PCI Macs, MacOS stores display
-settings in the Name Registry (NR) partition in NVRAM*. On NuBus Macs,
-there is no NR partition and MacOS stores display mode settings in PRAM**.
+Convert the driver from using the x86-specific MTRR code to the
+architecture-agnostic arch_phys_wc_add(). It will avoid MTRR if
+write-combining is available, in order to take advantage of that also
+ensure the ioremapped area is requested as write-combining.
 
-Early model Macs are the ones most likely to benefit from these settings,
-since they are more likely to have one display: a fixed-frequency monitor
-connected to the built-in framebuffer device. Moreover, a single NV_CMODE
-value and a single NV_VMODE value provide for only one display.
+There are a few motivations for this:
 
-The NV_CMODE and NV_VMODE constants are apparently offsets into the NR
-partition for Old World machines and not New World, which also suggests
-that these defaults are not useful on later models.
+a) Take advantage of PAT when available
 
-All this argues for limiting NVRAM support in PowerMac fbdev drivers to
-PPC32 and indeed this is already the case, since CONFIG_NVRAM cannot be
-enabled on PPC64 at present.
+b) Help bury MTRR code away, MTRR is architecture-specific and on
+   x86 it is being replaced by PAT.
 
-For matroxfb, make the CONFIG_PPC32 condition explicit. That way the
-driver won't crash on PPC64 when CONFIG_NVRAM becomes available there.
+c) Help with the goal of eventually using _PAGE_CACHE_UC over
+   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
+   de33c442e titled "x86 PAT: fix performance drop for glx,
+   use UC minus for ioremap(), ioremap_nocache() and
+   pci_mmap_page_range()")
 
-In imsttfb, add the missing CONFIG_NVRAM test to prevent a build failure,
-since PPC64 does not implement nvram_read_byte(). Also add a missing
-machine_is(powermac) check. Change the inconsistent CONFIG_PPC dependency
-and the matching #ifdef tests to CONFIG_PPC_PMAC. Drop unused #includes.
+The conversion done is expressed by the following Coccinelle SmPL
+patch, it additionally required manual intervention to address all the
+ifdeffery and removal of redundant things which arch_phys_wc_add()
+already addresses such as verbose message about when MTRR fails and
+doing nothing when we didn't get an MTRR.
 
-In valkyriefb, for clarity and consistency with the other PowerMac fbdev
-drivers, test for CONFIG_PPC_PMAC instead of !CONFIG_MAC. Remove a
-bogus comment regarding PRAM.
+@ mtrr_found @
+expression index, base, size;
+@@
 
-* See GetPreferredConfiguration and SavePreferredConfiguration in
-"Designing PCI Cards and Drivers for Power Macintosh Computers".
+-index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
++index = arch_phys_wc_add(base, size);
 
-** See SetDefaultMode and GetDefaultMode in "Designing Cards and Drivers
-for the Macintosh Family".
+@ mtrr_rm depends on mtrr_found @
+expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
+@@
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+-mtrr_del(index, base, size);
++arch_phys_wc_del(index);
 
+@ mtrr_rm_zero_arg depends on mtrr_found @
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, 0, 0);
++arch_phys_wc_del(index);
+
+@ mtrr_rm_fb_info depends on mtrr_found @
+struct fb_info *info;
+expression mtrr_found.index;
+@@
+
+-mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
++arch_phys_wc_del(index);
+
+@ ioremap_replace_nocache depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap_nocache(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+@ ioremap_replace_default depends on mtrr_found @
+struct fb_info *info;
+expression base, size;
+@@
+
+-info->screen_base = ioremap(base, size);
++info->screen_base = ioremap_wc(base, size);
+
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: benh@kernel.crashing.org
+Cc: Benoit Taine <benoit.taine@lip6.fr>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-pci@vger.kernel.org
+Cc: mst@redhat.com
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: toshi.kani@hp.com
+Link: http://lkml.kernel.org/r/1435195342-26879-3-git-send-email-mcgrof@do-not-panic.com
+Signed-off-by: Borislav Petkov <bp@suse.de>
 ---
- drivers/video/fbdev/Kconfig                |    2 +-
- drivers/video/fbdev/imsttfb.c              |   13 +++++--------
- drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
- drivers/video/fbdev/valkyriefb.c           |   14 ++++++--------
- 4 files changed, 13 insertions(+), 18 deletions(-)
+ drivers/video/fbdev/i740fb.c | 35 ++++++-----------------------------
+ 1 file changed, 6 insertions(+), 29 deletions(-)
 
-Index: linux/drivers/video/fbdev/Kconfig
-=================================--- linux.orig/drivers/video/fbdev/Kconfig	2015-08-23 20:40:53.000000000 +1000
-+++ linux/drivers/video/fbdev/Kconfig	2015-08-23 20:41:13.000000000 +1000
-@@ -544,7 +544,7 @@ config FB_IMSTT
- 	bool "IMS Twin Turbo display support"
- 	depends on (FB = y) && PCI
- 	select FB_CFB_IMAGEBLIT
--	select FB_MACMODES if PPC
-+	select FB_MACMODES if PPC_PMAC
- 	help
- 	  The IMS Twin Turbo is a PCI-based frame buffer card bundled with
- 	  many Macintosh and compatible computers.
-Index: linux/drivers/video/fbdev/imsttfb.c
-=================================--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-08-23 20:40:53.000000000 +1000
-+++ linux/drivers/video/fbdev/imsttfb.c	2015-08-23 20:41:13.000000000 +1000
-@@ -30,10 +30,8 @@
- #include <asm/io.h>
- #include <linux/uaccess.h>
+diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
+index a2b4204b42bb..452e1163ad02 100644
+--- a/drivers/video/fbdev/i740fb.c
++++ b/drivers/video/fbdev/i740fb.c
+@@ -27,24 +27,15 @@
+ #include <linux/console.h>
+ #include <video/vga.h>
  
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- #include <linux/nvram.h>
--#include <asm/prom.h>
--#include <asm/pci-bridge.h>
- #include "macmodes.h"
- #endif
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+-
+ #include "i740_reg.h"
  
-@@ -328,14 +326,13 @@ enum {
- 	TVP = 1
- };
+ static char *mode_option;
+-
+-#ifdef CONFIG_MTRR
+ static int mtrr = 1;
+-#endif
  
--#define USE_NV_MODES		1
- #define INIT_BPP		8
- #define INIT_XRES		640
- #define INIT_YRES		480
- 
- static int inverse = 0;
- static char fontname[40] __initdata = { 0 };
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- static signed char init_vmode = -1, init_cmode = -1;
- #endif
- 
-@@ -1391,8 +1388,8 @@ static void init_imstt(struct fb_info *i
- 		}
+ struct i740fb_par {
+ 	unsigned char __iomem *regs;
+ 	bool has_sgram;
+-#ifdef CONFIG_MTRR
+-	int mtrr_reg;
+-#endif
++	int wc_cookie;
+ 	bool ddc_registered;
+ 	struct i2c_adapter ddc_adapter;
+ 	struct i2c_algo_bit_data ddc_algo;
+@@ -1040,7 +1031,7 @@ static int i740fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+ 		goto err_request_regions;
  	}
  
--#if USE_NV_MODES && defined(CONFIG_PPC32)
--	{
-+#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
-+	if (machine_is(powermac)) {
- 		int vmode = init_vmode, cmode = init_cmode;
+-	info->screen_base = pci_ioremap_bar(dev, 0);
++	info->screen_base = pci_ioremap_wc_bar(dev, 0);
+ 	if (!info->screen_base) {
+ 		dev_err(info->device, "error remapping base\n");
+ 		ret = -ENOMEM;
+@@ -1144,13 +1135,9 @@ static int i740fb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
  
- 		if (vmode = -1) {
-@@ -1566,7 +1563,7 @@ imsttfb_setup(char *options)
- 			inverse = 1;
- 			fb_invert_cmaps();
- 		}
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- 		else if (!strncmp(this_opt, "vmode:", 6)) {
- 			int vmode = simple_strtoul(this_opt+6, NULL, 0);
- 			if (vmode > 0 && vmode <= VMODE_MAX)
-Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
-=================================--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-08-23 20:41:07.000000000 +1000
-+++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-08-23 20:41:13.000000000 +1000
-@@ -1876,7 +1876,7 @@ static int initMatrox2(struct matrox_fb_
- 		struct fb_var_screeninfo var;
- 		if (default_vmode <= 0 || default_vmode > VMODE_MAX)
- 			default_vmode = VMODE_640_480_60;
--#ifdef CONFIG_NVRAM
-+#if defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
- 		if (default_cmode = CMODE_NVRAM)
- 			default_cmode = nvram_read_byte(NV_CMODE);
- #endif
-Index: linux/drivers/video/fbdev/valkyriefb.c
-=================================--- linux.orig/drivers/video/fbdev/valkyriefb.c	2015-08-23 20:40:53.000000000 +1000
-+++ linux/drivers/video/fbdev/valkyriefb.c	2015-08-23 20:41:13.000000000 +1000
-@@ -65,14 +65,12 @@
- #include "macmodes.h"
- #include "valkyriefb.h"
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+ 	pci_set_drvdata(dev, info);
+-#ifdef CONFIG_MTRR
+-	if (mtrr) {
+-		par->mtrr_reg = -1;
+-		par->mtrr_reg = mtrr_add(info->fix.smem_start,
+-				info->fix.smem_len, MTRR_TYPE_WRCOMB, 1);
+-	}
+-#endif
++	if (mtrr)
++		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
++						  info->fix.smem_len);
+ 	return 0;
  
--#ifdef CONFIG_MAC
--/* We don't yet have functions to read the PRAM... perhaps we can
--   adapt them from the PPC code? */
--static int default_vmode = VMODE_CHOOSE;
--static int default_cmode = CMODE_8;
--#else
-+#ifdef CONFIG_PPC_PMAC
- static int default_vmode = VMODE_NVRAM;
- static int default_cmode = CMODE_NVRAM;
-+#else
-+static int default_vmode = VMODE_CHOOSE;
-+static int default_cmode = CMODE_8;
- #endif
+ err_reg_framebuffer:
+@@ -1177,13 +1164,7 @@ static void i740fb_remove(struct pci_dev *dev)
  
- struct fb_par_valkyrie {
-@@ -285,7 +283,7 @@ static void __init valkyrie_choose_mode(
- 	printk(KERN_INFO "Monitor sense value = 0x%x\n", p->sense);
+ 	if (info) {
+ 		struct i740fb_par *par = info->par;
+-
+-#ifdef CONFIG_MTRR
+-		if (par->mtrr_reg >= 0) {
+-			mtrr_del(par->mtrr_reg, 0, 0);
+-			par->mtrr_reg = -1;
+-		}
+-#endif
++		arch_phys_wc_del(par->wc_cookie);
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
+ 		if (par->ddc_registered)
+@@ -1287,10 +1268,8 @@ static int  __init i740fb_setup(char *options)
+ 	while ((opt = strsep(&options, ",")) != NULL) {
+ 		if (!*opt)
+ 			continue;
+-#ifdef CONFIG_MTRR
+ 		else if (!strncmp(opt, "mtrr:", 5))
+ 			mtrr = simple_strtoul(opt + 5, NULL, 0);
+-#endif
+ 		else
+ 			mode_option = opt;
+ 	}
+@@ -1327,7 +1306,5 @@ MODULE_DESCRIPTION("fbdev driver for Intel740");
+ module_param(mode_option, charp, 0444);
+ MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
  
- 	/* Try to pick a video mode out of NVRAM if we have one. */
--#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
-+#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
- 	if (default_vmode = VMODE_NVRAM) {
- 		default_vmode = nvram_read_byte(NV_VMODE);
- 		if (default_vmode <= 0
-@@ -298,7 +296,7 @@ static void __init valkyrie_choose_mode(
- 		default_vmode = mac_map_monitor_sense(p->sense);
- 	if (!valkyrie_reg_init[default_vmode - 1])
- 		default_vmode = VMODE_640_480_67;
--#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
-+#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
- 	if (default_cmode = CMODE_NVRAM)
- 		default_cmode = nvram_read_byte(NV_CMODE);
- #endif
-
+-#ifdef CONFIG_MTRR
+ module_param(mtrr, int, 0444);
+ MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, default=1)");
+-#endif
+-- 
+2.4.3
 

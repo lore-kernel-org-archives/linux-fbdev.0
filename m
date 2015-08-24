@@ -1,47 +1,32 @@
-From: yalin wang <yalin.wang2010@gmail.com>
-Date: Fri, 21 Aug 2015 05:59:10 +0000
-Subject: [RFC V2] fbdev/riva:change to use generice function to implement reverse_order()
-Message-Id: <1440136750-30990-1-git-send-email-yalin.wang2010@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 24 Aug 2015 19:54:21 +0000
+Subject: [patch v2] fbdev: fix snprintf() limit in show_bl_curve()
+Message-Id: <20150824195421.GA12634@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: yalin wang <yalin.wang2010@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-This change to use swab32(bitrev32()) to implement reverse_order()
-function, have better performance on some platforms.
+The limit should be "PAGE_SIZE - len" instead of PAGE_SIZE.  Also let's
+use scnprintf() because snprintf() returns the number of bytes which
+would have been printed if there were space and scnprintf() returns the
+number of bytes actually printed.
 
-Signed-off-by: yalin wang <yalin.wang2010@gmail.com>
----
- drivers/video/fbdev/riva/fbdev.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+I don't think we are ever going to actually hit this limit in real life.
 
-diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riva/fbdev.c
-index f1ad274..ccf0f82 100644
---- a/drivers/video/fbdev/riva/fbdev.c
-+++ b/drivers/video/fbdev/riva/fbdev.c
-@@ -40,6 +40,7 @@
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <linux/backlight.h>
-+#include <linux/swab.h>
- #include <linux/bitrev.h>
- #ifdef CONFIG_PMAC_BACKLIGHT
- #include <asm/machdep.h>
-@@ -453,11 +454,7 @@ static inline unsigned char MISCin(struct riva_par *par)
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index 60c3f0a..15755ce 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -485,7 +485,7 @@ static ssize_t show_bl_curve(struct device *device,
  
- static inline void reverse_order(u32 *l)
- {
--	u8 *a = (u8 *)l;
--	a[0] = bitrev8(a[0]);
--	a[1] = bitrev8(a[1]);
--	a[2] = bitrev8(a[2]);
--	a[3] = bitrev8(a[3]);
-+	*l = swab32(bitrev32(*l));
- }
+ 	mutex_lock(&fb_info->bl_curve_mutex);
+ 	for (i = 0; i < FB_BACKLIGHT_LEVELS; i += 8)
+-		len += snprintf(&buf[len], PAGE_SIZE, "%8ph\n",
++		len += scnprintf(&buf[len], PAGE_SIZE - len, "%8ph\n",
+ 				fb_info->bl_curve + i);
+ 	mutex_unlock(&fb_info->bl_curve_mutex);
  
- /* ------------------------------------------------------------------------- *
--- 
-1.9.1
-

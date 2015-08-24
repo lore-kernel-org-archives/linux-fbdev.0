@@ -1,47 +1,19 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Fri, 07 Aug 2015 12:16:06 +0000
-Subject: [PATCH 5/5] staging: sm750fb: simplify return
-Message-Id: <1438949046-18765-5-git-send-email-sudipm.mukherjee@gmail.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Mon, 24 Aug 2015 20:15:12 +0000
+Subject: [PATCH 0/5] [resend] gxt4500: Make usable on x86 and fix some bugs
+Message-Id: <1440447317-32604-1-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1438949046-18765-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1438949046-18765-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-Lets return the return value directly instead of using a variable to
-store the result.
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
- drivers/staging/sm750fb/sm750.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+Fire GL2 AGP has GXT6000P and is a x86 card but the gxt4500 driver is
+currently limited to PPC.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index e7fad0f..07f8afd 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -298,17 +298,13 @@ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
- {
- 	struct lynxfb_par *par;
- 	struct lynxfb_crtc *crtc;
--	int ret;
- 
- 	if (!info)
- 		return -EINVAL;
- 
--	ret = 0;
- 	par = info->par;
- 	crtc = &par->crtc;
--	ret = crtc->proc_panDisplay(crtc, var, info);
--
--	return ret;
-+	return crtc->proc_panDisplay(crtc, var, info);
- }
- 
- static int lynxfb_ops_set_par(struct fb_info *info)
+This patch series makes the driver work on x86 and fixes some color problems.
+
 -- 
-1.9.1
-
+Ondrej Zary

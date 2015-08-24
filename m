@@ -1,35 +1,94 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Date: Sun, 30 Aug 2015 21:34:25 +0000
-Subject: [PATCH 2/2] backlight: adp8870: Remove unnecessary MODULE_ALIAS()
-Message-Id: <1440970465-11651-2-git-send-email-javier@osg.samsung.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Mon, 24 Aug 2015 19:13:23 +0000
+Subject: [PATCH v4 01/11] PCI: Add pci_ioremap_wc_bar()
+Message-Id: <1440443613-13696-2-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440970465-11651-1-git-send-email-javier@osg.samsung.com>
-In-Reply-To: <1440970465-11651-1-git-send-email-javier@osg.samsung.com>
+References: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jingoohan1@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: mingo@kernel.org
+Cc: bp@suse.de, bhelgaas@google.com, tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, vinod.koul@intel.com, dan.j.williams@intel.com, toshi.kani@hp.com, benh@kernel.crashing.org, mst@redhat.com, akpm@linux-foundation.org, daniel.vetter@ffwll.ch, konrad.wilk@oracle.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, Antonino Daplas <adaplas@gmail.com>, Dave Airlie <airlied@redhat.com>, Davidlohr Bueso <dbueso@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Juergen Gross <jgross@suse.com>, Mel Gorman <mgorman@suse.de>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Vlastimil Babka <vbabka@suse.cz>
 
-The driver has a I2C device id table that is used to create the modaliases
-and also "adp8870-backlight" is not a supported I2C id, so it's never used.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+This lets drivers take advantage of PAT when available. It should help
+with the transition of converting video drivers over to ioremap_wc()
+to help with the goal of eventually using _PAGE_CACHE_UC over
+_PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache(), see:
 
+  de33c442ed2a ("x86 PAT: fix performance drop for glx, use UC minus for ioremap(),
+		ioremap_nocache() and pci_mmap_page_range()")
+
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: benh@kernel.crashing.org
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-pci@vger.kernel.org
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: mst@redhat.com
+Cc: Suresh Siddha <sbsiddha@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Link: http://lkml.kernel.org/r/1435195342-26879-2-git-send-email-mcgrof@do-not-panic.com
+Signed-off-by: Borislav Petkov <bp@suse.de>
 ---
+ drivers/pci/pci.c   | 14 ++++++++++++++
+ include/linux/pci.h |  1 +
+ 2 files changed, 15 insertions(+)
 
- drivers/video/backlight/adp8870_bl.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
-index 037e43083343..9d738352d7d4 100644
---- a/drivers/video/backlight/adp8870_bl.c
-+++ b/drivers/video/backlight/adp8870_bl.c
-@@ -992,4 +992,3 @@ module_i2c_driver(adp8870_driver);
- MODULE_LICENSE("GPL v2");
- MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
- MODULE_DESCRIPTION("ADP8870 Backlight driver");
--MODULE_ALIAS("i2c:adp8870-backlight");
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 8037c27beb05..33867b8a4bc9 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -138,6 +138,20 @@ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar)
+ 	return ioremap_nocache(res->start, resource_size(res));
+ }
+ EXPORT_SYMBOL_GPL(pci_ioremap_bar);
++
++void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar)
++{
++	/*
++	 * Make sure the BAR is actually a memory resource, not an IO resource
++	 */
++	if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM)) {
++		WARN_ON(1);
++		return NULL;
++	}
++	return ioremap_wc(pci_resource_start(pdev, bar),
++			  pci_resource_len(pdev, bar));
++}
++EXPORT_SYMBOL_GPL(pci_ioremap_wc_bar);
+ #endif
+ 
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 88bee285b93d..2b2d7d44c21a 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1701,6 +1701,7 @@ static inline void pci_mmcfg_late_init(void) { }
+ int pci_ext_cfg_avail(void);
+ 
+ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar);
++void __iomem *pci_ioremap_wc_bar(struct pci_dev *pdev, int bar);
+ 
+ #ifdef CONFIG_PCI_IOV
+ int pci_iov_virtfn_bus(struct pci_dev *dev, int id);
 -- 
 2.4.3
 

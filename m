@@ -1,30 +1,47 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Thu, 06 Aug 2015 18:41:23 +0000
-Subject: [PATCH 0/2] OMAPDSS: Fix of-node refcount issues
-Message-Id: <cover.1438885638.git.jsarha@ti.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Mon, 24 Aug 2015 19:37:26 +0000
+Subject: [PATCH 2/4] [resend #2] tridentfb: Fix set_lwidth on TGUI9440 and CYBER9320
+Message-Id: <1440445048-24694-2-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1440445048-24694-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1440445048-24694-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-I found couple of refcounting issues related to OMAP DSS of-node
-handling. Second patch should fix the "ERROR: Bad of_node_put() on
-/encoder@0/ports/port@1" -problem.
+According to X.Org driver, chips older than TGUI9660 have only 1 width bit
+in AddColReg. Touching the 2nd one causes I2C/DDC to fail on TGUI9440.
 
-In the long run it would make sense start using of_graph_*() functions
-in OMAP DSS too. However the semantics of of_graph_*() functions are
-quite different from omapdss_of_*() counterparts. So it better to just
-fix these bugs first.
+Set only 1 bit of width in AddColReg on TGUI9440 and CYBER9320.
 
-Jyri Sarha (2):
-  OMAPDSS: dss-of: Fix node refcount leak in omapdss_of_get_next_port()
-  OMAPDSS: of-dss: omap_dss_find_output_by_port_node() keep port
-    refcount
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+---
+ drivers/video/fbdev/tridentfb.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
- drivers/video/fbdev/omap2/dss/dss-of.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
+diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
+index 7429713..01b43e9 100644
+--- a/drivers/video/fbdev/tridentfb.c
++++ b/drivers/video/fbdev/tridentfb.c
+@@ -673,8 +673,14 @@ static int get_nativex(struct tridentfb_par *par)
+ static inline void set_lwidth(struct tridentfb_par *par, int width)
+ {
+ 	write3X4(par, VGA_CRTC_OFFSET, width & 0xFF);
+-	write3X4(par, AddColReg,
+-		 (read3X4(par, AddColReg) & 0xCF) | ((width & 0x300) >> 4));
++	/* chips older than TGUI9660 have only 1 width bit in AddColReg */
++	/* touching the other one breaks I2C/DDC */
++	if (par->chip_id = TGUI9440 || par->chip_id = CYBER9320)
++		write3X4(par, AddColReg,
++		     (read3X4(par, AddColReg) & 0xEF) | ((width & 0x100) >> 4));
++	else
++		write3X4(par, AddColReg,
++		     (read3X4(par, AddColReg) & 0xCF) | ((width & 0x300) >> 4));
+ }
+ 
+ /* For resolutions smaller than FP resolution stretch */
 -- 
-1.9.1
+Ondrej Zary
 

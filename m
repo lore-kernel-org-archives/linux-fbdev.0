@@ -1,216 +1,211 @@
 From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Mon, 24 Aug 2015 19:13:25 +0000
-Subject: [PATCH v4 03/11] drivers/video/fbdev/kyrofb: Use arch_phys_wc_add() and pci_ioremap_wc_bar()
-Message-Id: <1440443613-13696-4-git-send-email-mcgrof@do-not-panic.com>
+Date: Mon, 24 Aug 2015 19:13:27 +0000
+Subject: [PATCH v4 05/11] PCI: Add pci_iomap_wc() variants
+Message-Id: <1440443613-13696-6-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
 In-Reply-To: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: mingo@kernel.org
-Cc: bp@suse.de, bhelgaas@google.com, tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, vinod.koul@intel.com, dan.j.williams@intel.com, toshi.kani@hp.com, benh@kernel.crashing.org, mst@redhat.com, akpm@linux-foundation.org, daniel.vetter@ffwll.ch, konrad.wilk@oracle.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, Antonino Daplas <adaplas@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Dave Airlie <airlied@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Juergen Gross <jgross@suse.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Suresh Siddha <sbsiddha@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-fbdev@vger.kernel.org, mst@redhat.com, airlied@linux.ie, benh@kernel.crashing.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Dave Hansen <dave.hansen@linux.intel.com>, jbeulich@suse.com, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org, xen-devel@lists.xensource.com, Antonino Daplas <adaplas@gmail.com>, Davidlohr Bueso <dbueso@suse.de>, vinod.koul@intel.com, x86@kernel.org, tomi.valkeinen@ti.com, Mel Gorman <mgorman@suse.de>, linux-pci@vger.kernel.org, Dave Airlie <airlied@redhat.com>, bp@suse.de, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Arnd Bergmann <arnd@arndb.de>, "Luis R. Rodriguez" <mcgrof@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Stefan Bader <stefan.bader@canonical.com>, daniel.vetter@ffwll.ch, Suresh Siddha <sbsiddha@gmail.com>, bhelgaas@google.com, dan.j.williams@i
 
 From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Convert the driver from using the x86-specific MTRR code to the
-architecture-agnostic arch_phys_wc_add(). It will avoid MTRR if
-write-combining is available, in order to take advantage of that
-also ensure the ioremapped area is requested as write-combining.
+PCI BARs tell us whether prefetching is safe, but they don't say
+anything about write combining (WC). WC changes ordering rules and
+allows writes to be collapsed, so it's not safe in general to use it on
+a prefetchable region.
 
-There are a few motivations for this:
+Add pci_iomap_wc() and pci_iomap_wc_range() so drivers can take advantage
+of write combining when they know it's safe.
 
-a) Take advantage of PAT when available
+On architectures that don't fully support WC, e.g., x86 without PAT,
+drivers for legacy framebuffers may get some of the benefit by using
+arch_phys_wc_add() in addition to pci_iomap_wc().  But arch_phys_wc_add()
+is unreliable and should be avoided in general.  On x86, it uses MTRRs,
+which are limited in number and size, so the results will vary based on
+driver loading order.
 
-b) Help bury MTRR code away, MTRR is architecture-specific and on
-   x86 it is being replaced by PAT.
+The goals of adding pci_iomap_wc() are to:
 
-c) Help with the goal of eventually using _PAGE_CACHE_UC over
-   _PAGE_CACHE_UC_MINUS on x86 on ioremap_nocache() (see commit
-   de33c442e titled "x86 PAT: fix performance drop for glx,
-   use UC minus for ioremap(), ioremap_nocache() and
-   pci_mmap_page_range()")
+- Give drivers an architecture-independent way to use WC so they can stop
+  using interfaces like mtrr_add() (on x86, pci_iomap_wc() uses
+  PAT when available).
 
-The conversion done is expressed by the following Coccinelle SmPL
-patch, it additionally required manual intervention to address all the
-ifdeffery and removal of redundant things which arch_phys_wc_add()
-already addresses such as verbose message about when MTRR fails and
-doing nothing when we didn't get an MTRR.
-
-@ mtrr_found @
-expression index, base, size;
-@@
-
--index = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-+index = arch_phys_wc_add(base, size);
-
-@ mtrr_rm depends on mtrr_found @
-expression mtrr_found.index, mtrr_found.base, mtrr_found.size;
-@@
-
--mtrr_del(index, base, size);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_zero_arg depends on mtrr_found @
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, 0, 0);
-+arch_phys_wc_del(index);
-
-@ mtrr_rm_fb_info depends on mtrr_found @
-struct fb_info *info;
-expression mtrr_found.index;
-@@
-
--mtrr_del(index, info->fix.smem_start, info->fix.smem_len);
-+arch_phys_wc_del(index);
-
-@ ioremap_replace_nocache depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap_nocache(base, size);
-+info->screen_base = ioremap_wc(base, size);
-
-@ ioremap_replace_default depends on mtrr_found @
-struct fb_info *info;
-expression base, size;
-@@
-
--info->screen_base = ioremap(base, size);
-+info->screen_base = ioremap_wc(base, size);
+- Move toward using _PAGE_CACHE_MODE_UC, not _PAGE_CACHE_MODE_UC_MINUS,
+  on x86 on ioremap_nocache() (see de33c442ed2a ("x86 PAT: fix
+  performance drop for glx, use UC minus for ioremap(), ioremap_nocache()
+  and pci_mmap_page_range()").
 
 Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andy Lutomirski <luto@amacapital.net>
 Cc: Antonino Daplas <adaplas@gmail.com>
 Cc: Arnd Bergmann <arnd@arndb.de>
 Cc: benh@kernel.crashing.org
 Cc: bhelgaas@google.com
+Cc: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Dave Airlie <airlied@redhat.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: david.vrabel@citrix.com
 Cc: H. Peter Anvin <hpa@zytor.com>
 Cc: Ingo Molnar <mingo@kernel.org>
+Cc: jbeulich@suse.com
 Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
 Cc: Juergen Gross <jgross@suse.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: konrad.wilk@oracle.com
+Cc: linux-arch@vger.kernel.org
 Cc: linux-fbdev@vger.kernel.org
 Cc: linux-pci@vger.kernel.org
-Cc: mst@redhat.com
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Roger Pau Monné <roger.pau@citrix.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Stefan Bader <stefan.bader@canonical.com>
 Cc: Suresh Siddha <sbsiddha@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: toshi.kani@hp.com
-Link: http://lkml.kernel.org/r/1435195342-26879-4-git-send-email-mcgrof@do-not-panic.com
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Toshi Kani <toshi.kani@hp.com>
+Cc: venkatesh.pallipadi@intel.com
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Link: http://lkml.kernel.org/r/1426893517-2511-6-git-send-email-mcgrof@do-not-panic.com
+Link: http://lkml.kernel.org/r/1435195342-26879-6-git-send-email-mcgrof@do-not-panic.com
+[ Move IORESOURCE_IO check up, space out statements for better readability. ]
 Signed-off-by: Borislav Petkov <bp@suse.de>
 ---
- drivers/video/fbdev/kyro/fbdev.c | 33 +++++++++++----------------------
- include/video/kyro.h             |  4 +---
- 2 files changed, 12 insertions(+), 25 deletions(-)
+ include/asm-generic/pci_iomap.h | 14 +++++++++
+ lib/pci_iomap.c                 | 66 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 80 insertions(+)
 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index 65041e15fd59..5bb01533271e 100644
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -22,9 +22,6 @@
- #include <linux/pci.h>
- #include <asm/io.h>
- #include <linux/uaccess.h>
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
+diff --git a/include/asm-generic/pci_iomap.h b/include/asm-generic/pci_iomap.h
+index 7389c87116a0..b1e17fcee2d0 100644
+--- a/include/asm-generic/pci_iomap.h
++++ b/include/asm-generic/pci_iomap.h
+@@ -15,9 +15,13 @@ struct pci_dev;
+ #ifdef CONFIG_PCI
+ /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
+ extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max);
++extern void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max);
+ extern void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
+ 				     unsigned long offset,
+ 				     unsigned long maxlen);
++extern void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
++					unsigned long offset,
++					unsigned long maxlen);
+ /* Create a virtual mapping cookie for a port on a given PCI device.
+  * Do not call this directly, it exists to make it easier for architectures
+  * to override */
+@@ -34,12 +38,22 @@ static inline void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned lon
+ 	return NULL;
+ }
  
- #include <video/kyro.h>
++static inline void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long max)
++{
++	return NULL;
++}
+ static inline void __iomem *pci_iomap_range(struct pci_dev *dev, int bar,
+ 					    unsigned long offset,
+ 					    unsigned long maxlen)
+ {
+ 	return NULL;
+ }
++static inline void __iomem *pci_iomap_wc_range(struct pci_dev *dev, int bar,
++					       unsigned long offset,
++					       unsigned long maxlen)
++{
++	return NULL;
++}
+ #endif
  
-@@ -84,9 +81,7 @@ static device_info_t deviceInfo;
- static char *mode_option = NULL;
- static int nopan = 0;
- static int nowrap = 1;
--#ifdef CONFIG_MTRR
- static int nomtrr = 0;
--#endif
+ #endif /* __ASM_GENERIC_IO_H */
+diff --git a/lib/pci_iomap.c b/lib/pci_iomap.c
+index e1930dbab2da..c10fba461454 100644
+--- a/lib/pci_iomap.c
++++ b/lib/pci_iomap.c
+@@ -49,6 +49,51 @@ void __iomem *pci_iomap_range(struct pci_dev *dev,
+ EXPORT_SYMBOL(pci_iomap_range);
  
- /* PCI driver prototypes */
- static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
-@@ -570,10 +565,8 @@ static int __init kyrofb_setup(char *options)
- 			nopan = 1;
- 		} else if (strcmp(this_opt, "nowrap") = 0) {
- 			nowrap = 1;
--#ifdef CONFIG_MTRR
- 		} else if (strcmp(this_opt, "nomtrr") = 0) {
- 			nomtrr = 1;
--#endif
- 		} else {
- 			mode_option = this_opt;
- 		}
-@@ -691,17 +684,16 @@ static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	currentpar->regbase = deviceInfo.pSTGReg  		ioremap_nocache(kyro_fix.mmio_start, kyro_fix.mmio_len);
-+	if (!currentpar->regbase)
-+		goto out_free_fb;
- 
--	info->screen_base = ioremap_nocache(kyro_fix.smem_start,
--					    kyro_fix.smem_len);
-+	info->screen_base = pci_ioremap_wc_bar(pdev, 0);
-+	if (!info->screen_base)
-+		goto out_unmap_regs;
- 
--#ifdef CONFIG_MTRR
- 	if (!nomtrr)
--		currentpar->mtrr_handle -			mtrr_add(kyro_fix.smem_start,
--				 kyro_fix.smem_len,
--				 MTRR_TYPE_WRCOMB, 1);
--#endif
-+		currentpar->wc_cookie = arch_phys_wc_add(kyro_fix.smem_start,
-+							 kyro_fix.smem_len);
- 
- 	kyro_fix.ypanstep	= nopan ? 0 : 1;
- 	kyro_fix.ywrapstep	= nowrap ? 0 : 1;
-@@ -745,8 +737,10 @@ static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	return 0;
- 
- out_unmap:
--	iounmap(currentpar->regbase);
- 	iounmap(info->screen_base);
-+out_unmap_regs:
-+	iounmap(currentpar->regbase);
-+out_free_fb:
- 	framebuffer_release(info);
- 
- 	return -EINVAL;
-@@ -770,12 +764,7 @@ static void kyrofb_remove(struct pci_dev *pdev)
- 	iounmap(info->screen_base);
- 	iounmap(par->regbase);
- 
--#ifdef CONFIG_MTRR
--	if (par->mtrr_handle)
--		mtrr_del(par->mtrr_handle,
--			 info->fix.smem_start,
--			 info->fix.smem_len);
--#endif
-+	arch_phys_wc_del(par->wc_cookie);
- 
- 	unregister_framebuffer(info);
- 	framebuffer_release(info);
-diff --git a/include/video/kyro.h b/include/video/kyro.h
-index c563968e926c..b958c2e9c915 100644
---- a/include/video/kyro.h
-+++ b/include/video/kyro.h
-@@ -35,9 +35,7 @@ struct kyrofb_info {
- 	/* Useful to hold depth here for Linux */
- 	u8 PIXDEPTH;
- 
--#ifdef CONFIG_MTRR
--	int mtrr_handle;
--#endif
-+	int wc_cookie;
- };
- 
- extern int kyro_dev_init(void);
+ /**
++ * pci_iomap_wc_range - create a virtual WC mapping cookie for a PCI BAR
++ * @dev: PCI device that owns the BAR
++ * @bar: BAR number
++ * @offset: map memory at the given offset in BAR
++ * @maxlen: max length of the memory to map
++ *
++ * Using this function you will get a __iomem address to your device BAR.
++ * You can access it using ioread*() and iowrite*(). These functions hide
++ * the details if this is a MMIO or PIO address space and will just do what
++ * you expect from them in the correct way. When possible write combining
++ * is used.
++ *
++ * @maxlen specifies the maximum length to map. If you want to get access to
++ * the complete BAR from offset to the end, pass %0 here.
++ * */
++void __iomem *pci_iomap_wc_range(struct pci_dev *dev,
++				 int bar,
++				 unsigned long offset,
++				 unsigned long maxlen)
++{
++	resource_size_t start = pci_resource_start(dev, bar);
++	resource_size_t len = pci_resource_len(dev, bar);
++	unsigned long flags = pci_resource_flags(dev, bar);
++
++
++	if (flags & IORESOURCE_IO)
++		return NULL;
++
++	if (len <= offset || !start)
++		return NULL;
++
++	len -= offset;
++	start += offset;
++	if (maxlen && len > maxlen)
++		len = maxlen;
++
++	if (flags & IORESOURCE_MEM)
++		return ioremap_wc(start, len);
++
++	/* What? */
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(pci_iomap_wc_range);
++
++/**
+  * pci_iomap - create a virtual mapping cookie for a PCI BAR
+  * @dev: PCI device that owns the BAR
+  * @bar: BAR number
+@@ -67,4 +112,25 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
+ 	return pci_iomap_range(dev, bar, 0, maxlen);
+ }
+ EXPORT_SYMBOL(pci_iomap);
++
++/**
++ * pci_iomap_wc - create a virtual WC mapping cookie for a PCI BAR
++ * @dev: PCI device that owns the BAR
++ * @bar: BAR number
++ * @maxlen: length of the memory to map
++ *
++ * Using this function you will get a __iomem address to your device BAR.
++ * You can access it using ioread*() and iowrite*(). These functions hide
++ * the details if this is a MMIO or PIO address space and will just do what
++ * you expect from them in the correct way. When possible write combining
++ * is used.
++ *
++ * @maxlen specifies the maximum length to map. If you want to get access to
++ * the complete BAR without checking for its length first, pass %0 here.
++ * */
++void __iomem *pci_iomap_wc(struct pci_dev *dev, int bar, unsigned long maxlen)
++{
++	return pci_iomap_wc_range(dev, bar, 0, maxlen);
++}
++EXPORT_SYMBOL_GPL(pci_iomap_wc);
+ #endif /* CONFIG_PCI */
 -- 
 2.4.3
 

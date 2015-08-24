@@ -1,64 +1,53 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Fri, 07 Aug 2015 12:16:05 +0000
-Subject: [PATCH 4/5] staging: sm750fb: rearrange code
-Message-Id: <1438949046-18765-4-git-send-email-sudipm.mukherjee@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Mon, 24 Aug 2015 19:13:31 +0000
+Subject: [PATCH v4 09/11] drivers/dma/iop-adma: Use dma_alloc_writecombine() kernel-style
+Message-Id: <1440443613-13696-10-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1438949046-18765-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1438949046-18765-1-git-send-email-sudipm.mukherjee@gmail.com>
+References: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: mingo@kernel.org
+Cc: bp@suse.de, bhelgaas@google.com, tomi.valkeinen@ti.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, luto@amacapital.net, vinod.koul@intel.com, dan.j.williams@intel.com, toshi.kani@hp.com, benh@kernel.crashing.org, mst@redhat.com, akpm@linux-foundation.org, daniel.vetter@ffwll.ch, konrad.wilk@oracle.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, xen-devel@lists.xensource.com, "Luis R. Rodriguez" <mcgrof@suse.com>, dmaengine@vger.kernel.org
 
-Rearrange the code to remove one exit label which also makes the code
-less indented and more readable.
+From: "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+dma_alloc_writecombine()'s call and return value check is tangled in all
+in one call. Untangle both calls according to kernel coding style.
+
+Signed-off-by: Luis R. Rodriguez <mcgrof@suse.com>
+Acked-by: Vinod Koul <vinod.koul@intel.com>
+Cc: Vinod Koul <vinod.koul@intel.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: dmaengine@vger.kernel.org
+Cc: x86@kernel.org
+Link: http://lkml.kernel.org/r/1435258191-543-2-git-send-email-mcgrof@do-not-panic.com
+Signed-off-by: Borislav Petkov <bp@suse.de>
 ---
- drivers/staging/sm750fb/sm750.c | 27 +++++++++++++--------------
- 1 file changed, 13 insertions(+), 14 deletions(-)
+ drivers/dma/iop-adma.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index fa2183d..e7fad0f 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -261,22 +261,21 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
- 	pitch = info->fix.line_length;
- 	Bpp = info->var.bits_per_pixel >> 3;
- 
--	if (image->depth = 1) {
--		if (info->fix.visual = FB_VISUAL_TRUECOLOR ||
--		    info->fix.visual = FB_VISUAL_DIRECTCOLOR) {
--			fgcol = ((u32 *)info->pseudo_palette)[image->fg_color];
--			bgcol = ((u32 *)info->pseudo_palette)[image->bg_color];
--		} else {
--			fgcol = image->fg_color;
--			bgcol = image->bg_color;
--		}
--		goto _do_work;
--	}
- 	/* TODO: Implement hardware acceleration for image->depth > 1 */
--	cfb_imageblit(info, image);
--	return;
-+	if (image->depth != 1) {
-+		cfb_imageblit(info, image);
-+		return;
-+	}
-+
-+	if (info->fix.visual = FB_VISUAL_TRUECOLOR ||
-+	    info->fix.visual = FB_VISUAL_DIRECTCOLOR) {
-+		fgcol = ((u32 *)info->pseudo_palette)[image->fg_color];
-+		bgcol = ((u32 *)info->pseudo_palette)[image->bg_color];
-+	} else {
-+		fgcol = image->fg_color;
-+		bgcol = image->bg_color;
-+	}
- 
--_do_work:
- 	/*
- 	 * If not use spin_lock, system will die if user load driver
- 	 * and immediately unload driver frequently (dual)
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index 998826854fdd..e4f43125e0fb 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -1300,10 +1300,11 @@ static int iop_adma_probe(struct platform_device *pdev)
+ 	 * note: writecombine gives slightly better performance, but
+ 	 * requires that we explicitly flush the writes
+ 	 */
+-	if ((adev->dma_desc_pool_virt = dma_alloc_writecombine(&pdev->dev,
+-					plat_data->pool_size,
+-					&adev->dma_desc_pool,
+-					GFP_KERNEL)) = NULL) {
++	adev->dma_desc_pool_virt = dma_alloc_writecombine(&pdev->dev,
++							  plat_data->pool_size,
++							  &adev->dma_desc_pool,
++							  GFP_KERNEL);
++	if (!adev->dma_desc_pool_virt) {
+ 		ret = -ENOMEM;
+ 		goto err_free_adev;
+ 	}
 -- 
-1.9.1
+2.4.3
 

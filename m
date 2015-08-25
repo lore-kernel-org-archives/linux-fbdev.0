@@ -1,55 +1,44 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Mon, 24 Aug 2015 19:37:27 +0000
-Subject: [PATCH 3/4] [resend #2] fb_ddc: Allow I2C adapters without SCL read capability
-Message-Id: <1440445048-24694-3-git-send-email-linux@rainbow-software.org>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Date: Tue, 25 Aug 2015 06:31:12 +0000
+Subject: [RESEND PATCH 2/7] backlight: tosa: Export I2C module alias information
+Message-Id: <1440484277-32675-3-git-send-email-javier@osg.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440445048-24694-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1440445048-24694-1-git-send-email-linux@rainbow-software.org>
+References: <1440484277-32675-1-git-send-email-javier@osg.samsung.com>
+In-Reply-To: <1440484277-32675-1-git-send-email-javier@osg.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jingoohan1@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Lee Jones <lee.jones@linaro.org>
 
-i2c-algo-bit allows I2C adapters without SCL read capability to work but
-fb_ddc_read fails to work on them.
+The I2C core always reports the MODALIAS uevent as "i2c:<modalias>"
+regardless of the mechanism that was used to register the device
+(i.e: OF or board code) and the table that is used later to match
+the driver with the device (i.e: I2C id table or OF match table).
 
-Fix fb_ddc_read to work with I2C adapters not capable of reading SCL.
+So drivers needs to export the I2C id table and this be built into
+the module or udev won't have the necessary information to autoload
+the needed driver module when the device is added.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+
 ---
- drivers/video/fbdev/core/fb_ddc.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fb_ddc.c b/drivers/video/fbdev/core/fb_ddc.c
-index 94322cc..22c694a 100644
---- a/drivers/video/fbdev/core/fb_ddc.c
-+++ b/drivers/video/fbdev/core/fb_ddc.c
-@@ -69,10 +69,11 @@ unsigned char *fb_ddc_read(struct i2c_adapter *adapter)
- 		algo_data->setscl(algo_data->data, 1);
- 		for (j = 0; j < 5; j++) {
- 			msleep(10);
--			if (algo_data->getscl(algo_data->data))
-+			if (algo_data->getscl &&
-+			    algo_data->getscl(algo_data->data))
- 				break;
- 		}
--		if (j = 5)
-+		if (algo_data->getscl && j = 5)
- 			continue;
+ drivers/video/backlight/tosa_bl.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/video/backlight/tosa_bl.c b/drivers/video/backlight/tosa_bl.c
+index 3ad676558c80..83742d806391 100644
+--- a/drivers/video/backlight/tosa_bl.c
++++ b/drivers/video/backlight/tosa_bl.c
+@@ -158,6 +158,7 @@ static const struct i2c_device_id tosa_bl_id[] = {
+ 	{ "tosa-bl", 0 },
+ 	{ },
+ };
++MODULE_DEVICE_TABLE(i2c, tosa_bl_id);
  
- 		algo_data->setsda(algo_data->data, 0);
-@@ -91,7 +92,8 @@ unsigned char *fb_ddc_read(struct i2c_adapter *adapter)
- 		algo_data->setscl(algo_data->data, 1);
- 		for (j = 0; j < 10; j++) {
- 			msleep(10);
--			if (algo_data->getscl(algo_data->data))
-+			if (algo_data->getscl &&
-+			    algo_data->getscl(algo_data->data))
- 				break;
- 		}
- 
+ static struct i2c_driver tosa_bl_driver = {
+ 	.driver = {
 -- 
-Ondrej Zary
+2.4.3
 

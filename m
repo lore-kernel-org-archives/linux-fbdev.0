@@ -1,63 +1,81 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 10 Aug 2015 14:21:38 +0000
-Subject: Re: [PATCH] fbcon: unconditionally initialize cursor blink interval
-Message-Id: <55C8B372.8060208@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="J4WqUHKUHQnK2iMo1hPvG5q5dUpGMmvSb"
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Tue, 25 Aug 2015 13:45:14 +0000
+Subject: [PATCH 4/4] fbdev: Debug knob to register without holding console_lock
+Message-Id: <1440510314-8633-4-git-send-email-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.11.1508041215100.1151@local> <20150804203250.GA655@amd> <alpine.DEB.2.11.1508101358210.1286@local>
-In-Reply-To: <alpine.DEB.2.11.1508101358210.1286@local>
-To: Scot Doyle <lkml14@scotdoyle.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jonathan Liu <net147@gmail.com>, Pavel Machek <pavel@ucw.cz>, Thierry Reding <thierry.reding@gmail.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1440510314-8633-1-git-send-email-daniel.vetter@ffwll.ch>
+In-Reply-To: <1440510314-8633-1-git-send-email-daniel.vetter@ffwll.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
 
---J4WqUHKUHQnK2iMo1hPvG5q5dUpGMmvSb
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+When the usual fbcon legacy options are enabled we have
+->register_framebuffer
+  ->fb notifier chain calls into fbcon
+    ->fbcon sets up console on new fbi
+      ->fbi->set_par
+        ->drm_fb_helper_set_par exercises full kms api
 
+And because of locking inversion hilarity all of register_framebuffer
+is done with the console lock held. Which means that the first time on
+driver load we exercise _all_ the kms code (all probe paths and
+modeset paths for everything connected) is under the console lock.
+That means if anything goes belly-up in that big pile of code nothing
+ever reaches logfiles (and the machine is dead).
 
+Usual tactic to debug that is to temporarily remove those console_lock
+calls to be able to capture backtraces. I'm fed up writing this patch
+and recompiling kernels. Hence this patch here to add an unsafe,
+kernel-taining option to do this at runtime.
 
-On 10/08/15 17:05, Scot Doyle wrote:
-> On Tue, 4 Aug 2015, Pavel Machek wrote:
->> On Tue 2015-08-04 12:33:32, Scot Doyle wrote:
->>> A sun7i-a20-olinuxino-micro fails to boot when kernel parameter
->>> vt.global_cursor_default=3D0. The value is copied to vc->vc_deccm
->>> causing the initialization of ops->cur_blink_jiffies to be skipped.
->>> Unconditionally initialize it.
->>>
->>> Reported-and-tested-by: Jonathan Liu <net147@gmail.com>
->>> Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
->>
->> Acked-by: Pavel Machek <pavel@ucw.cz>
->>
->=20
-> Tomi, this one should also go in 4.2 fixes.
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
+ drivers/video/fbdev/core/fbmem.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-Thanks, I've queued for 4.2 fixes.
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 0705d8883ede..4e73b6f6b1c0 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1608,6 +1608,11 @@ static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ 	return 0;
+ }
+ 
++static bool lockless_register_fb;
++module_param_named_unsafe(lockless_register_fb, lockless_register_fb, bool, 0400);
++MODULE_PARM_DESC(lockless_register_fb,
++	"Lockless framebuffer registration for debugging [default=off]");
++
+ static int do_register_framebuffer(struct fb_info *fb_info)
+ {
+ 	int i, ret;
+@@ -1675,15 +1680,18 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	registered_fb[i] = fb_info;
+ 
+ 	event.info = fb_info;
+-	console_lock();
++	if (!lockless_register_fb)
++		console_lock();
+ 	if (!lock_fb_info(fb_info)) {
+-		console_unlock();
++		if (!lockless_register_fb)
++			console_unlock();
+ 		return -ENODEV;
+ 	}
+ 
+ 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
+ 	unlock_fb_info(fb_info);
+-	console_unlock();
++	if (!lockless_register_fb)
++		console_unlock();
+ 	return 0;
+ }
+ 
+-- 
+1.8.3.1
 
- Tomi
-
-
---J4WqUHKUHQnK2iMo1hPvG5q5dUpGMmvSb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVyLNyAAoJEPo9qoy8lh71vPcP/3hl1tjCji35wHdrqPtChqBk
-hkxZU+3X/8XcMrlVebRsb1CfUEcCWGawHkuoFgmB+CNFzgErRigquYrnlkDWKvfN
-iF7To5iVwM9SCW02WsupVTuLQaXPVRe2VVrfXWx/sWX1L8W/ga4ZRzHOHXW135qH
-NfUxTNxmu/jo8Kh8x2bcmKnaEfHx2klrZH50UGupjPm33vOO377d3O/Xd0gAhPpl
-CPs2cLyO9weweqYsCFFUyOKE3UccR7+qUndmViNQEcqrMCU8s1MW4zIMKJB5buia
-4sYFb2RJLJ1n47ric4jsvknQL3h/55XBIGcZjJ5rD5JMR3x83FR8hAFQWc5KcYRv
-rjLAnk5xb054z5d18HRTGcAkb2aUeiEyH3vJc4zLH8RdBpgcrsGm3KGWNYY3v04a
-ozwLEhr09Ox6I30odLHeLR8sDiOuhd9bUaupR18f+Z377FppV94/PFU6Vk5x4XSu
-jzDfHHtPHXz4/zMwbP1PAa8bgiBZk+/eAbx47HRhkr7KSHnXZ5HhBFz/AmS22nPQ
-3nU3r2QwhNDcKXXnxaCJ5M4zgY5lGhMgE1xsnGsU6HrO5GdsKMtsjMaGZGb15Vc+
-OaGV99rSm+vupkhA7x5rM+80kVPGlj4AbAUohRJMjFUCJAewc7aOuv7/mx59sWuD
-qRlwr1XMEJn444ulG8MX
-=hQNz
------END PGP SIGNATURE-----
-
---J4WqUHKUHQnK2iMo1hPvG5q5dUpGMmvSb--

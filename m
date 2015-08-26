@@ -1,43 +1,98 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Wed, 26 Aug 2015 17:42:54 +0000
-Subject: Re: [PATCH 0/2] OMAPDSS: Couple of HDMI audio fixes
-Message-Id: <20150826174254.GB28760@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="TRYliJ5NKNqkz5bu"
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Wed, 26 Aug 2015 09:20:42 +0000
+Subject: Re: [PATCH v2] pwm-backlight: Avoid backlight flicker when probed from DT
+Message-Id: <1440580842.3190.26.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1440594174.git.jsarha@ti.com>
-In-Reply-To: <cover.1440594174.git.jsarha@ti.com>
-To: Jyri Sarha <jsarha@ti.com>
-Cc: liam.r.girdwood@linux.intel.com, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, peter.ujfalusi@ti.com, tomi.valkeinen@ti.com, linux-omap@vger.kernel.org
+References: <1438276973-20920-1-git-send-email-p.zabel@pengutronix.de>
+In-Reply-To: <1438276973-20920-1-git-send-email-p.zabel@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>
+Cc: Ajay Kumar <ajaykumar.rs@samsung.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de
+
+Hi Thierry, Jingoo, Lee,
+
+Am Donnerstag, den 30.07.2015, 19:22 +0200 schrieb Philipp Zabel:
+> If the driver is probed from the device tree, and there is a phandle
+> property set on it, and the enable GPIO is already configured as output,
+> and the backlight is currently disabled, keep it disabled.
+> If all these conditions are met, assume there will be some other driver
+> that can enable the backlight at the appropriate time.
+
+do you have any comments on this?
+
+This patch fixes premature backlight illumination issues for DT probed
+devices with enable gpio or regulator without changing the behavior of
+the non-DT case or DT cases where the enable gpio and regulator are kept
+initially enabled or where no other device node points to the backlight
+via phandle.
+
+regards
+Philipp
+
+> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> ---
+> Changes since v1:
+>  - Also check if the regulator is enabled. If the power supply is disabled,
+>    and a phandle points to it, the backlight should stay powered down.
+> ---
+>  drivers/video/backlight/pwm_bl.c | 23 +++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+> 
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+> index eff379b..31afd6d 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -199,6 +199,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+>  	struct backlight_properties props;
+>  	struct backlight_device *bl;
+>  	struct pwm_bl_data *pb;
+> +	int initial_blank = FB_BLANK_UNBLANK;
+> +	bool phandle;
+>  	int ret;
+>  
+>  	if (!data) {
+> @@ -264,12 +266,32 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+>  		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+>  	}
+>  
+> +	phandle = of_find_property(pdev->dev.of_node, "phandle", NULL) != NULL;
+> +
+> +	if (pb->enable_gpio) {
+> +		/*
+> +		 * If the driver is probed from the device tree and there is a
+> +		 * phandle link pointing to the backlight node, it is safe to
+> +		 * assume that another driver will enable the backlight at the
+> +		 * appropriate time. Therefore, if it is disabled, keep it so.
+> +		 */
+> +		if (phandle &&
+> +		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
+> +		    gpiod_get_value(pb->enable_gpio) = 0)
+> +			initial_blank = FB_BLANK_POWERDOWN;
+> +		else
+> +			gpiod_direction_output(pb->enable_gpio, 1);
+> +	}
+> +
+>  	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+>  	if (IS_ERR(pb->power_supply)) {
+>  		ret = PTR_ERR(pb->power_supply);
+>  		goto err_alloc;
+>  	}
+>  
+> +	if (phandle && !regulator_is_enabled(pb->power_supply))
+> +		initial_blank = FB_BLANK_POWERDOWN;
+> +
+>  	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+>  	if (IS_ERR(pb->pwm)) {
+>  		ret = PTR_ERR(pb->pwm);
+> @@ -321,6 +343,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	bl->props.brightness = data->dft_brightness;
+> +	bl->props.power = initial_blank;
+>  	backlight_update_status(bl);
+>  
+>  	platform_set_drvdata(pdev, bl);
 
 
---TRYliJ5NKNqkz5bu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Wed, Aug 26, 2015 at 04:11:38PM +0300, Jyri Sarha wrote:
-
-> The two fixes are totally independent and the video and audio side
-> patches applied separately trough their own trees.
-
-In general if patches aren't related to each other either through code
-overlap or through content it's better to just send them as individual
-changes, that avoids any potential for confusion.
-
---TRYliJ5NKNqkz5bu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJV3fqdAAoJECTWi3JdVIfQxNcIAIHzZws5nLgKZj7ttMs+G0S3
-3B/McybzzK/F6GXoqLJ3e/HWlp3vaR3Is46jB2X/cta1Zm0HOam+sdYKmzAyXtlD
-/mpFdVv3C9buofUPhECy9NPHEgX2TfInKOKRU+8hs8Niytcsjfq5yVBzCL3x2HS8
-NxeTZ39oUR/xH8jUnDIVVl/EJyP2bLd1ZTG43cBJ7nDbn67DlwKcemg1uMCrUHdZ
-ANZ/3z+uTTP56CJIjsfYYA2RSpOceFHTdRGjoyy2z5wELt9oJHp/Aauj2y+ZtdjW
-F5DNmaWuZomFGeSUFA9p100O882idHPx3rl9MHiVreQszPbOXgzCskA35I7cD/M=
-=zdqV
------END PGP SIGNATURE-----
-
---TRYliJ5NKNqkz5bu--

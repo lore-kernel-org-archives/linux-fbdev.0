@@ -1,78 +1,62 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 21 Aug 2015 05:57:09 +0000
-Subject: Re: [PATCH RESEND] video: fbdev: s3c-fb: Constify platform_device_id
-Message-Id: <55D6BDB5.50309@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="HClKCKFgV2OD6xO7DMCUW2DENBhcxoiMQ"
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Wed, 26 Aug 2015 11:32:50 +0000
+Subject: [PATCH -next] drivers/video/fbdev: Add dependencies on !S390
+Message-Id: <1440588770-17774-1-git-send-email-linux@roeck-us.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1436274047-3274-1-git-send-email-k.kozlowski.k@gmail.com> <254E99D1-79CE-4B90-B732-E5A4A1308DC4@gmail.com> <CAJKOXPc=k8r64_LuUGBaoOK87h07_zXUn_LoQ50KWfbk-1u69w@mail.gmail.com> <55D59AE2.7090201@ti.com> <55D682F3.5090800@samsung.com>
-In-Reply-To: <55D682F3.5090800@samsung.com>
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, "Luis R. Rodriguez" <mcgrof@suse.com>, Borislav Petkov <bp@suse.de>, Ingo Molnar <mingo@kernel.org>
 
---HClKCKFgV2OD6xO7DMCUW2DENBhcxoiMQ
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+s390:allmodconfig fails to build with:
 
+ERROR: "pci_iomap_wc" [drivers/video/fbdev/vt8623fb.ko] undefined!
+ERROR: "pci_iomap_wc" [drivers/video/fbdev/s3fb.ko] undefined!
+ERROR: "pci_iomap_wc" [drivers/video/fbdev/arkfb.ko] undefined!
 
+Those functions are currently only available in generic PCI iomap code,
+which is not used on S390.
 
-On 21/08/15 04:46, Krzysztof Kozlowski wrote:
-> On 20.08.2015 18:16, Tomi Valkeinen wrote:
->>
->>
->> On 24/07/15 09:12, Krzysztof Kozlowski wrote:
->>> 2015-07-08 13:34 GMT+09:00 Jingoo Han <jingoohan1@gmail.com>:
->>>>
->>>> On 2015. 7. 7., at PM 10:00, Krzysztof Kozlowski <k.kozlowski.k@gmai=
-l.com> wrote:
->>>>>
->>>>> The platform_device_id is not modified by the driver and core uses =
-it as
->>>>> const.
->>>>>
->>>>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
->>>>
->>>> Acked-by: Jingoo Han <jingoohan1@gmail.com>
->>>>
->>>> Best regards,
->>>> Jingoo Han
->>>
->>> Seems nobody is picking it up, so I merge it through Samsung-SoC tree=
-=2E
->>> If there are any objections please let me know.
->>
->> I can pick this up if you didn't already do that.
->=20
-> Could you? It would be great.
-> Kukjin did not pick it up so it is still waiting for some attention. :)=
+Fixes: 81bdef04d3bc ("drivers/video/fbdev/vt8623fb: Use arch_phys_wc_add() and pci_iomap_wc()")
+Fixes: 4edcd2ab1255 ("drivers/video/fbdev/s3fb: Use arch_phys_wc_add() and pci_iomap_wc()")
+Fixes: c823a48ac47f ("drivers/video/fbdev/arkfb.c: Use arch_phys_wc_add() and pci_iomap_wc()")
+Cc: Luis R. Rodriguez <mcgrof@suse.com>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ drivers/video/fbdev/Kconfig | 3 +++
+ 1 file changed, 3 insertions(+)
 
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 8b1d371b5404..6b1893e5c769 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1442,6 +1442,7 @@ config FB_ATY_BACKLIGHT
+ config FB_S3
+ 	tristate "S3 Trio/Virge support"
+ 	depends on FB && PCI
++	depends on !S390
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -1649,6 +1650,7 @@ config FB_VOODOO1
+ config FB_VT8623
+ 	tristate "VIA VT8623 support"
+ 	depends on FB && PCI
++	depends on !S390
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -1683,6 +1685,7 @@ config FB_TRIDENT
+ config FB_ARK
+ 	tristate "ARK 2000PV support"
+ 	depends on FB && PCI
++	depends on !S390
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-- 
+2.1.4
 
-Ok. I've queued this for 4.3.
-
- Tomi
-
-
---HClKCKFgV2OD6xO7DMCUW2DENBhcxoiMQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJV1r21AAoJEPo9qoy8lh715V8P/1nIcDEHM0w8Le1v59+wkLgk
-GlihMH9YC/ADjjn7bgwVF5eRnLNWaApNsdZy7s8HNyru6bTYgCwP1cFEqDvybFyp
-zy9q9fj+3OR8dOKQxpZTNgqBfF/AP6IXen1jlf63aWRSrUxyvMSfA0mKnKHvvrVm
-P7H85JCK2QBC3mzG8LoGVOtT0y6e3oGMN8LKlnfKUFJdA45vt6klipcy9XHg+rg/
-OHoAWiDnO6nn5vn3soAJ3OdJjnl/9tkYWQxUshQa/qsqUvPgtpNqyXnjdKkHiEFg
-FDRhBCnLkQ92ZkZuxgQCIEO7+HgRMurbA+Jzx6PGVY+rx+VVHmt6oFbq8U85WKoB
-fAFW+wd8gN5NgB40uIIH/lAf5/FkeDKNGYSesLdasaOP8a22wLGjlH/xGDXGXvlY
-Mi558a8II0O7Tl25R5UQQyGzOos1GZ9bugulWSYnUI4Su9Io6mDjYOyaICMclQBb
-gQ9T6nC91GMYk72dcikJhFp5cgIfaak2PE11NmeT2Sl8g0amdzdZEWI6D/vrAMVG
-K7uzjxHXbSwILU5Vw/Patl9UmYHj+Wa+PdUiYQmhf0r4o/XY+rvFgbfvsTcD2zAu
-smyGbmhYxXTOhsyeGpN0IhFZcdExDDuhn5Jo4xjwB6cpyoi81x8ahUcFQ2U9BRUF
-9NmAzOqYQtd9q81zgwxf
-=RYdT
------END PGP SIGNATURE-----
-
---HClKCKFgV2OD6xO7DMCUW2DENBhcxoiMQ--

@@ -1,38 +1,43 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Wed, 26 Aug 2015 13:11:38 +0000
-Subject: [PATCH 0/2] OMAPDSS: Couple of HDMI audio fixes
-Message-Id: <cover.1440594174.git.jsarha@ti.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Wed, 26 Aug 2015 17:42:54 +0000
+Subject: Re: [PATCH 0/2] OMAPDSS: Couple of HDMI audio fixes
+Message-Id: <20150826174254.GB28760@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="TRYliJ5NKNqkz5bu"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, broonie@kernel.org, Jyri Sarha <jsarha@ti.com>
+References: <cover.1440594174.git.jsarha@ti.com>
+In-Reply-To: <cover.1440594174.git.jsarha@ti.com>
+To: Jyri Sarha <jsarha@ti.com>
+Cc: liam.r.girdwood@linux.intel.com, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, peter.ujfalusi@ti.com, tomi.valkeinen@ti.com, linux-omap@vger.kernel.org
 
-The first fix is a hairy one, but I think the locking is fool proof
-now. It is needed because there is no telling in which order user
-space starts an audio and video stream playback. If the audio is
-started first and the video mode is changed when video playback starts
-the audio setup needs to survive display turning off and back on
-again. After this patch the audio streams should survive a
-suspend-resume cycle too.
- 
-The second one is a trivial work-around to a problem in ALSA constraint
-resolver code.
 
-The two fixes are totally independent and the video and audio side
-patches applied separately trough their own trees.
+--TRYliJ5NKNqkz5bu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Jyri Sarha (2):
-  OMAPDSS: hdmi: Reconfigure and restart audio when display is enabled
-  ASoC: omap-hdmi-audio: Set buffer bytes step constraint to 128
+On Wed, Aug 26, 2015 at 04:11:38PM +0300, Jyri Sarha wrote:
 
- drivers/video/fbdev/omap2/dss/hdmi.h  | 10 +++-
- drivers/video/fbdev/omap2/dss/hdmi4.c | 65 ++++++++++++++++++++-----
- drivers/video/fbdev/omap2/dss/hdmi5.c | 89 +++++++++++++++++++++++++++++------
- sound/soc/omap/omap-hdmi-audio.c      | 10 +++-
- 4 files changed, 146 insertions(+), 28 deletions(-)
+> The two fixes are totally independent and the video and audio side
+> patches applied separately trough their own trees.
 
--- 
-1.9.1
+In general if patches aren't related to each other either through code
+overlap or through content it's better to just send them as individual
+changes, that avoids any potential for confusion.
 
+--TRYliJ5NKNqkz5bu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJV3fqdAAoJECTWi3JdVIfQxNcIAIHzZws5nLgKZj7ttMs+G0S3
+3B/McybzzK/F6GXoqLJ3e/HWlp3vaR3Is46jB2X/cta1Zm0HOam+sdYKmzAyXtlD
+/mpFdVv3C9buofUPhECy9NPHEgX2TfInKOKRU+8hs8Niytcsjfq5yVBzCL3x2HS8
+NxeTZ39oUR/xH8jUnDIVVl/EJyP2bLd1ZTG43cBJ7nDbn67DlwKcemg1uMCrUHdZ
+ANZ/3z+uTTP56CJIjsfYYA2RSpOceFHTdRGjoyy2z5wELt9oJHp/Aauj2y+ZtdjW
+F5DNmaWuZomFGeSUFA9p100O882idHPx3rl9MHiVreQszPbOXgzCskA35I7cD/M=
+=zdqV
+-----END PGP SIGNATURE-----
+
+--TRYliJ5NKNqkz5bu--

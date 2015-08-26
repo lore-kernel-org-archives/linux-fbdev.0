@@ -1,51 +1,38 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Date: Thu, 20 Aug 2015 21:50:50 +0000
-Subject: Re: [PATCH 00/18] Export SPI and OF module aliases in missing drivers
-Message-Id: <55D64BBA.7070802@osg.samsung.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Wed, 26 Aug 2015 13:11:38 +0000
+Subject: [PATCH 0/2] OMAPDSS: Couple of HDMI audio fixes
+Message-Id: <cover.1440594174.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440054451-1223-1-git-send-email-javier@osg.samsung.com>
- <20150820211152.GI74600@google.com>
-In-Reply-To: <20150820211152.GI74600@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Brian Norris <computersforpeace@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrzej Hajda <a.hajda@samsung.com>, linux-fbdev@vger.kernel.org, Michael Hennerich <Michael.Hennerich@analog.com>, linux-iio@vger.kernel.org, linux-wireless@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-mtd@lists.infradead.org, Lauro Ramos Venancio <lauro.venancio@openbossa.org>, =?UTF-8?Q?S=c3=b8ren_Andersen?= <san@rosetechnology.dk>, devel@driverdev.osuosl.org, Randy Dunlap <rdunlap@infradead.org>, Masanari Iida <standby24x7@gmail.com>, Jiri Kosina <jkosina@suse.cz>, Devendra Naga <devendra.aaru@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Kyungmin Park <kyungmin.park@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Aloisio Almeida Jr <aloisio.almeida@openbossa.org>, Jonathan Cameron <jic23@kernel.org>, Stephen Warren <swarren@nvidia.com>, =?UTF-8?Q?Urs_F=c3=a4ssler?= <urs.fassler@bytesatwork.ch>, Adrian Hunter <adrian.hunter@intel.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Aya Mahfouz <mahfouz.saif.elyazal@gmail.com>, George McCollister <george.mccollister@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Manfred Schlaegl <manfred.schlaegl@gmx.at>, linux-omap@vger.kernel.org, Hartmut Knaack <knaack.h@gmx.de>, Ulf Hansson <ulf.hansson@linaro.org>, Antonio Borneo <borneo.antonio@gmail.com>, Andrea Galbusera <gizero@gmail.com>, Michael Welling <mwelling@ieee.org>, Fabian Frederick <fabf@skynet.be>, Mark Brown <broonie@kernel.org>, linux-mmc@vger.kernel.org, linux-spi@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, David Woodhouse <dwmw2@infradead.org>, netdev@vger.kernel.org, linux-media@vger.kernel.org, Peter Meerwald <pmeerw@pmeerw.net>
+To: alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: peter.ujfalusi@ti.com, liam.r.girdwood@linux.intel.com, tomi.valkeinen@ti.com, broonie@kernel.org, Jyri Sarha <jsarha@ti.com>
 
-Hello Brian,
-
-On 08/20/2015 11:11 PM, Brian Norris wrote:
-> On Thu, Aug 20, 2015 at 09:07:13AM +0200, Javier Martinez Canillas wrote:
->> Patches #1 and #2 solves a), patches #3 to #8 solves b) and patches
-> 
-> ^^^ I'm dying to know how this sentence ends :)
->
-
-Sigh, I did some last minute restructuring of the cover letter and
-seems I missed a sentence. I meant to said:
-
-"and patches #9 to #17 solves c)."
+The first fix is a hairy one, but I think the locking is fool proof
+now. It is needed because there is no telling in which order user
+space starts an audio and video stream playback. If the audio is
+started first and the video mode is changed when video playback starts
+the audio setup needs to survive display turning off and back on
+again. After this patch the audio streams should survive a
+suspend-resume cycle too.
  
->> Patch #18 changes the logic of spi_uevent() to report an OF modalias if
->> the device was registered using OF. But this patch is included in the
->> series only as an RFC for illustration purposes since changing that
->> without first applying all the other patches in this series, will break
->> module autoloading for the drivers of devices registered using OF but
->> that lacks an of_match_table. I'll repost patch #18 once all the patches
->> in this series have landed.
-> 
-> On a more productive note, the patches I've looked at look good to me.
-> The missing aliases are a problem enough that should be fixed (i.e.,
-> part (b)). I'll leave the SPI framework changes to others to comment on.
->
+The second one is a trivial work-around to a problem in ALSA constraint
+resolver code.
 
-Great, thanks a lot for your feedback.
- 
-> Brian
-> 
+The two fixes are totally independent and the video and audio side
+patches applied separately trough their own trees.
 
-Best regards,
+Jyri Sarha (2):
+  OMAPDSS: hdmi: Reconfigure and restart audio when display is enabled
+  ASoC: omap-hdmi-audio: Set buffer bytes step constraint to 128
+
+ drivers/video/fbdev/omap2/dss/hdmi.h  | 10 +++-
+ drivers/video/fbdev/omap2/dss/hdmi4.c | 65 ++++++++++++++++++++-----
+ drivers/video/fbdev/omap2/dss/hdmi5.c | 89 +++++++++++++++++++++++++++++------
+ sound/soc/omap/omap-hdmi-audio.c      | 10 +++-
+ 4 files changed, 146 insertions(+), 28 deletions(-)
+
 -- 
-Javier Martinez Canillas
-Open Source Group
-Samsung Research America
+1.9.1
+

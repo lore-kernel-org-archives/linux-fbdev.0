@@ -1,61 +1,35 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Sun, 23 Aug 2015 00:11:15 +0000
-Subject: [PATCH 04/11] fbdev: ssd1307fb: fix error return code
-Message-Id: <1440288682-12732-5-git-send-email-Julia.Lawall@lip6.fr>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Date: Sun, 30 Aug 2015 21:34:25 +0000
+Subject: [PATCH 2/2] backlight: adp8870: Remove unnecessary MODULE_ALIAS()
+Message-Id: <1440970465-11651-2-git-send-email-javier@osg.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440288682-12732-1-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1440288682-12732-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <1440970465-11651-1-git-send-email-javier@osg.samsung.com>
+In-Reply-To: <1440970465-11651-1-git-send-email-javier@osg.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: kernel-janitors@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jingoohan1@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Lee Jones <lee.jones@linaro.org>
 
-Propagate error code on failure.  Also changed %ld to %d in dev_err to use
-ret variable rather than putting two calls to PTR_ERR.
+The driver has a I2C device id table that is used to create the modaliases
+and also "adp8870-backlight" is not a supported I2C id, so it's never used.
 
-A simplified version of the semantic match that finds the first problem is as
-follows: (http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-identifier ret; expression e1,e2;
-@@
-(
-if (\(ret < 0\|ret != 0\))
- { ... return ret; }
-|
-ret = 0
-)
-... when != ret = e1
-    when != &ret
-*if(...)
-{
-  ... when != ret = e2
-      when forall
- return ret;
-}
-// </smpl>
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
 
 ---
- drivers/video/fbdev/ssd1307fb.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 3e153c0..1611215 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -656,8 +656,9 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 	bl = backlight_device_register(bl_name, &client->dev, par,
- 				       &ssd1307fb_bl_ops, NULL);
- 	if (IS_ERR(bl)) {
--		dev_err(&client->dev, "unable to register backlight device: %ld\n",
--			PTR_ERR(bl));
-+		ret = PTR_ERR(bl);
-+		dev_err(&client->dev, "unable to register backlight device: %d\n",
-+			ret);
- 		goto bl_init_error;
- 	}
- 
+ drivers/video/backlight/adp8870_bl.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
+index 037e43083343..9d738352d7d4 100644
+--- a/drivers/video/backlight/adp8870_bl.c
++++ b/drivers/video/backlight/adp8870_bl.c
+@@ -992,4 +992,3 @@ module_i2c_driver(adp8870_driver);
+ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
+ MODULE_DESCRIPTION("ADP8870 Backlight driver");
+-MODULE_ALIAS("i2c:adp8870-backlight");
+-- 
+2.4.3
+

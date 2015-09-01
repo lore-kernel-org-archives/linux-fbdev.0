@@ -1,64 +1,52 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Sep 2015 11:07:08 +0000
-Subject: Re: [PATCH 2/4] [resend #2] tridentfb: Fix set_lwidth on TGUI9440 and CYBER9320
-Message-Id: <5603D95C.7030006@ti.com>
+Date: Tue, 01 Sep 2015 10:35:57 +0000
+Subject: Re: [patch v2] fbdev: fix snprintf() limit in show_bl_curve()
+Message-Id: <55E57F8D.6090209@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="6HV4PRL1FSita09fUjID7Aj6S8OAfjASk"
+Content-Type: multipart/mixed; boundary="W7upFCIChVwC4NpDbxtqwkV3x9dutLRfL"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440445048-24694-1-git-send-email-linux@rainbow-software.org>
- <1440445048-24694-2-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1440445048-24694-2-git-send-email-linux@rainbow-software.org>
-To: Ondrej Zary <linux@rainbow-software.org>, Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
---6HV4PRL1FSita09fUjID7Aj6S8OAfjASk
+--W7upFCIChVwC4NpDbxtqwkV3x9dutLRfL
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
 
 
-On 24/08/15 22:37, Ondrej Zary wrote:
-> According to X.Org driver, chips older than TGUI9660 have only 1 width =
-bit
-> in AddColReg. Touching the 2nd one causes I2C/DDC to fail on TGUI9440.
+On 24/08/15 22:54, Dan Carpenter wrote:
+> The limit should be "PAGE_SIZE - len" instead of PAGE_SIZE.  Also let's=
+
+> use scnprintf() because snprintf() returns the number of bytes which
+> would have been printed if there were space and scnprintf() returns the=
+
+> number of bytes actually printed.
 >=20
-> Set only 1 bit of width in AddColReg on TGUI9440 and CYBER9320.
+> I don't think we are ever going to actually hit this limit in real life=
+=2E
 >=20
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> ---
->  drivers/video/fbdev/tridentfb.c |   10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 >=20
-> diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/trid=
-entfb.c
-> index 7429713..01b43e9 100644
-> --- a/drivers/video/fbdev/tridentfb.c
-> +++ b/drivers/video/fbdev/tridentfb.c
-> @@ -673,8 +673,14 @@ static int get_nativex(struct tridentfb_par *par)
->  static inline void set_lwidth(struct tridentfb_par *par, int width)
->  {
->  	write3X4(par, VGA_CRTC_OFFSET, width & 0xFF);
-> -	write3X4(par, AddColReg,
-> -		 (read3X4(par, AddColReg) & 0xCF) | ((width & 0x300) >> 4));
-> +	/* chips older than TGUI9660 have only 1 width bit in AddColReg */
-> +	/* touching the other one breaks I2C/DDC */
-> +	if (par->chip_id =3D=3D TGUI9440 || par->chip_id =3D=3D CYBER9320)
-> +		write3X4(par, AddColReg,
-> +		     (read3X4(par, AddColReg) & 0xEF) | ((width & 0x100) >> 4));
-> +	else
-> +		write3X4(par, AddColReg,
-> +		     (read3X4(par, AddColReg) & 0xCF) | ((width & 0x300) >> 4));
->  }
+> diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/c=
+ore/fbsysfs.c
+> index 60c3f0a..15755ce 100644
+> --- a/drivers/video/fbdev/core/fbsysfs.c
+> +++ b/drivers/video/fbdev/core/fbsysfs.c
+> @@ -485,7 +485,7 @@ static ssize_t show_bl_curve(struct device *device,=
+
 > =20
->  /* For resolutions smaller than FP resolution stretch */
->=20
+>  	mutex_lock(&fb_info->bl_curve_mutex);
+>  	for (i =3D 0; i < FB_BACKLIGHT_LEVELS; i +=3D 8)
+> -		len +=3D snprintf(&buf[len], PAGE_SIZE, "%8ph\n",
+> +		len +=3D scnprintf(&buf[len], PAGE_SIZE - len, "%8ph\n",
+>  				fb_info->bl_curve + i);
+>  	mutex_unlock(&fb_info->bl_curve_mutex);
 
-Thanks, queued for 4.3 fixes.
+Thanks, queued for 4.3.
 
-Tomi
+ Tomi
 
 
---6HV4PRL1FSita09fUjID7Aj6S8OAfjASk
+--W7upFCIChVwC4NpDbxtqwkV3x9dutLRfL
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -66,19 +54,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWA9lcAAoJEPo9qoy8lh71kPoQAKfaNN++IiDegey5PPi4ChZa
-3NqZlobwuYRxLrIsQBDkNXvf1bvOn761hWFZKcdm9Ev+1GrM6Lt7RhMnY1aFZDwr
-uNerLU0rrgBFGR4A6ie9WDLiTjKI1F4aWAWUSQYG0cFkX7rEwRb/flQamZgdIajz
-z5bUD4EYegrAIP5ULAGDKdkZY5WzlTV+EVOOYd8Gp2gr0gMgnC14l/uEpKuv0qlH
-Xhtmkg1/52ivEmekRciPaol9FYCvEcAbKZiFqdgi7riUBdyTz9UBknFhcA9RVif0
-FzVCocxMqN3bd3byq3/llWhAkqTinSpRZqJQBeeGSBQ6Ry8RmKqVqaBT0X4t/6he
-l1OdtBqvVzs0oLD+0f7QgzU29XJAx1E8TdDQLDakPSY8MbyYafjeVZVqAC61WaRl
-hEeERQxGgAOYxe2YZQi4V3JeJVtmcPKhabhxDeWG1nd1HzWVEoxFa/1CIjeyy2Jy
-xfyib5esMSuTHuJaeR7u+iT3c8KDO+F7gm+65VivOin8IlbXHne0t0j3NRXpc+3B
-a6MNRaV7vMNCTizCLZmgjucQu2SygquSwJha3fHaBz4G9uxMaBaZCq51gP9ZH5Tq
-xsaj55f2zEkN/tlsQoaKBCFrXyKrFWS7IAxq/Xn1PuzNVTKUIluFCAyhowgJQ2Pp
-Af+0ObV9I4jkn5fDbSS6
-=cVeI
+iQIcBAEBCAAGBQJV5X+NAAoJEPo9qoy8lh71XE0P/2ZSrxNcpdxCIIbZKxDPRd5p
+M9fryGXcunP0gTeCiG2qDGTwsv+TFuNZr/prN3s7Jnb0J7FTP+yKvb2sZsfFM4sl
+SvZ812s540et0PJFs1KTVS9A2XQ/zA0NgDeL7LZ+h02H4o3M4lOopXmfWOfvqn3O
+o6jWUStUp519HO/NK4W1j/0gtpn9lvqnJ0keRbU+F+p5jwI3HXgOt7swmcr1juFs
+fsZX5BtPrMxlWSGmGW0TWfIAQGGklEHB1n/fgAbBob81sgR+giWy64/2geBfLfXH
+tSjYMvLdfXX+CV4FCyVQh1QeWgdi70m7DTzWByDk2DhlnQbIO6BYOgMhms+ZkZfM
+VWP7VYGRu01FjRxkG0SuPu7eIHpZeAw0bzgJZTYI031Xm0Mp07aTHwHtiATTsJk3
+eF1GN/TuIiZs29OTRr3WIJMsfGqeNxan5scrzRFdLLKRdDdZzeJyXGrT5/zhvfgO
+n6MOHGXtpplADZ17xpyd/GRMuI68KosDg2DwGApnbgdHsddwyaL5DT9997T9h0C/
+SjT8vejEdKC8vs0Woz5MgIaLo275OsHJgL+fIOevu+XATg+Ebxgl/moMweumdn3v
+bwNhTl73ma+qFckKb2MAEFajFJntFk4C2gHEAAVw9hwhXeAECFvgGp23YX/BskeR
+rA6qFK4EMpF77YKhJZUU
+=HZhM
 -----END PGP SIGNATURE-----
 
---6HV4PRL1FSita09fUjID7Aj6S8OAfjASk--
+--W7upFCIChVwC4NpDbxtqwkV3x9dutLRfL--

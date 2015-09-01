@@ -1,62 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Sep 2015 10:07:15 +0000
-Subject: Re: [PATCH v2] video: fbdev: fsl: Fix the sleep function for FSL DIU module
-Message-Id: <5603CB53.6070403@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA"
+From: Matt Fleming <matt@codeblueprint.co.uk>
+Date: Tue, 01 Sep 2015 08:54:26 +0000
+Subject: Re: [PATCH] efifb: Add support for 64-bit frame buffer addresses
+Message-Id: <20150901085426.GC2823@codeblueprint.co.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1439531649-46827-1-git-send-email-dongsheng.wang@freescale.com>
- <55CEB5CB.4060803@tabi.org>
- <SN1PR0301MB1616D30A83E8A5C6FEE6A44A9D430@SN1PR0301MB1616.namprd03.prod.outlook.com>
-In-Reply-To: <SN1PR0301MB1616D30A83E8A5C6FEE6A44A9D430@SN1PR0301MB1616.namprd03.prod.outlook.com>
-To: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>, Jin Jason <Jason.Jin@freescale.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Timur Tabi <timur@tabi.org>
+References: <1440763939-17027-1-git-send-email-matt@codeblueprint.co.uk>
+ <CAMuHMdU146p_vs9bfgV9n_tTkH_545hRb1qsEza=dLO=C-y69A@mail.gmail.com>
+In-Reply-To: <CAMuHMdU146p_vs9bfgV9n_tTkH_545hRb1qsEza=dLO=C-y69A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Peter Jones <pjones@redhat.com>, linux-efi@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Matt Fleming <matt.fleming@intel.com>, Pete Hawkins <pete.hawkins@znyx.com>, Matthew Garrett <mjg59@srcf.ucam.org>, Chad Page <chad.page@znyx.com>
 
---XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+On Mon, 31 Aug, at 10:24:31PM, Geert Uytterhoeven wrote:
+> On Fri, Aug 28, 2015 at 2:12 PM, Matt Fleming <matt@codeblueprint.co.uk> wrote:
+> > --- a/arch/x86/boot/compressed/eboot.c
+> > +++ b/arch/x86/boot/compressed/eboot.c
+> > @@ -624,7 +624,7 @@ setup_pixel_info(struct screen_info *si, u32 pixels_per_scan_line,
+> >  static efi_status_t
+> >  __gop_query32(struct efi_graphics_output_protocol_32 *gop32,
+> >               struct efi_graphics_output_mode_info **info,
+> > -             unsigned long *size, u32 *fb_base)
+> > +             unsigned long *size, u64 *fb_base)
+> 
+> phys_addr_t instead of u64?
 
+I can see why you might think that, but no, phys_addr_t isn't the
+correct data type because your kernel config dictates whether that's
+u32 or u64.
 
+We're interacting with the firmware here and the frame buffer address
+is always u64, for both 32-bit and 64-bit firmware. It's defined that
+way in the UEFI spec.
 
-On 24/09/15 13:02, Wang Dongsheng wrote:
-> Hi Tomi,
->=20
-> Could you apply this patch?
->=20
->>> For deep sleep, the diu module will power off, when wake up from the
->>> deep sleep, the registers need to be reinitialized.
->>>
->>> Signed-off-by: Jason Jin<Jason.Jin@freescale.com>
->>> Signed-off-by: Wang Dongsheng<dongsheng.wang@freescale.com>
->>
->> Acked-by: Timur Tabi <timur@tabi.org>
+It's better to be explicit about these kinds of things, and use u64.
 
-Thanks, queued for 4.3 fixes.
-
- Tomi
-
-
---XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWA8tTAAoJEPo9qoy8lh710kcP/2RtVyXoDsZcRCdvw/W/wXk+
-fwfduxriYyRd4PO8GUmhl9v5m1N2wzjqTUNEus13FexwZyPxZQ/nVYmUx9Ui9nuL
-LncUYtuvpRxJ+QwVbac2qCEZ7EMJnNsmGtdCDz60S8Uej/pXP/SwL6OoSS5Wq+vp
-KwQK3Zk0STxJWceZdUfm/0WyyxglzP4w9oV2Tg3j/dcQLG4KwVmO7d3gKl1We17r
-l+lN61UF0SgBNIKAi2ucVSb5rlARKK/uceoBTiGZ2pHZvObJEPuLJQuwyE9wpJpm
-UcHDedAYQq8unmKLHDScbc/jMQMVoSQsheKAg9G5QI8UIxA8YWfnRwTrj5gxHUDU
-VmRMAHe58WJCFDBTL72D1dSd2XGqs0hg41kqzv27WXysbzQNe/Hx3nATkVpWQ5vy
-bIceWvbg4su5vCTkmD5Enyt2LcJ9eUTIf9Fw3i7mXJmGciU7leysF1XAaJinkmI9
-KJgYzkG2KmkifNadH1vT+iliG/lbkOxJgcQBBNQEjzsDdngej8ZADp6bS+Y+OTVC
-vnXcAm7QvdkH4cJwAYX1vX06LMyK98DwHjQMh5+xWpU80/0G1XEEmgt2x+sOhXCm
-QOfCs/U/vnRwLzkqT9bzEVTZOTwAiH78K7mM4oRStdEB4SndO+lSsu/o/c/MtR9v
-GHe+qZkpZcbbLmWptTQf
-=7LuS
------END PGP SIGNATURE-----
-
---XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA--
+-- 
+Matt Fleming, Intel Open Source Technology Center

@@ -1,52 +1,60 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 08 Sep 2015 11:19:33 +0000
-Subject: [PATCHv2 0/3] backlight: led-backlight driver
-Message-Id: <1441711176-4258-1-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 01 Sep 2015 10:56:32 +0000
+Subject: Re: [PATCH] video: fbdev: Use devm_clk_get
+Message-Id: <55E58460.3050503@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="3aokho5Le1mbxOXmkTVhdR6O7M52DmNbV"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Andrew Lunn <andrew@lunn.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <20150818032840.GA14566@localhost>
+In-Reply-To: <20150818032840.GA14566@localhost>
+To: Vaishali Thakkar <vthakkar1994@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This series aims to add a led-backlight driver, similar to pwm-backlight, but
-using a LED class device underneath.
+--3aokho5Le1mbxOXmkTVhdR6O7M52DmNbV
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-LED framework has no support for DT or getting a LED class driver from another
-kernel driver, so I added minimal functionality to led-class to get
-led-backlight working.
 
-Changes to v1:
-- Split LED OF parts into separate .h and .c files
-- Check for CONFIG_OF and CONFIG_LEDS_CLASS where relevant to leave unused code
-  out.
-- Improved error prints and comments a bit
-- Added put_device() into led_put(), as the device was gotten from
-  class_find_device() which requires a put_device() call.
+
+On 18/08/15 06:28, Vaishali Thakkar wrote:
+> This patch introduces the use of managed resource function
+> devm_clk_get instead of clk_get and removes corresponding calls
+> to clk_put in the probe and remove functions.
+>=20
+> To be compatible with the change various gotos are replaced with
+> direct returns, and unneeded label failed_put_clk is dropped.
+>=20
+> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+> ---
+>  drivers/video/fbdev/pxa168fb.c | 14 ++++----------
+>  1 file changed, 4 insertions(+), 10 deletions(-)
+
+Thanks, queued for 4.3.
 
  Tomi
 
-Tomi Valkeinen (3):
-  leds: Add of_led_get() and led_put()
-  backlight: add led-backlight driver
-  devicetree: Add led-backlight binding
 
- .../bindings/video/backlight/led-backlight.txt     |  30 +++
- drivers/leds/Makefile                              |   6 +-
- drivers/leds/led-class.c                           |  13 +-
- drivers/leds/led-of.c                              |  82 +++++++
- drivers/leds/leds.h                                |   1 +
- drivers/video/backlight/Kconfig                    |   7 +
- drivers/video/backlight/Makefile                   |   1 +
- drivers/video/backlight/led_bl.c                   | 235 +++++++++++++++++++++
- include/linux/leds-of.h                            |  26 +++
- include/linux/leds.h                               |   2 +
- 10 files changed, 401 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/led-backlight.txt
- create mode 100644 drivers/leds/led-of.c
- create mode 100644 drivers/video/backlight/led_bl.c
- create mode 100644 include/linux/leds-of.h
+--3aokho5Le1mbxOXmkTVhdR6O7M52DmNbV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
--- 
-2.1.4
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
+iQIcBAEBCAAGBQJV5YRhAAoJEPo9qoy8lh712EgP/R5rclm6L35n/vo9GbV0xDY9
+0Byyv0bjsKJZlaX68+Wj5PAYsnH/HwDVvaMoxuclEX/KnT+62EIc7/GeGM2QaCXF
+cAJFyxMjO/x6MEkl9RFiDnc9HoSk81m8o2DK3CXNXiN/UJgO6EaJQzASvTf8FmEy
+fCcfJyF1v7alHYcPoRqTnDtvkf77K+sKx9fpOhUPNftB9Za9rLkxsZLmckYiAxsN
+ZRrTverxV85jV+HrYlAzOk2VdDsUliiXZ7ArAJyjMoE3mtskblgbH3jvB/0JYKxQ
+swl/fCCIf/mjaM9eresJ7rKP0lQfiwjJoM01wfFRnfDWLSykpyNslJTXs/m3JVkl
+7sUeZWv/sNRcDudqZDjAqa3W44HuVnt4flJFRSiTStl9PkUvytBS3B0Gy8jTEOD7
+YPDrtlyID4Xg8x++214Z20jHusggZ/d1r/XdjK1nbZBlVuKrrz3+lWFiLJUhNajO
+UHDAYyKYj37JaP80JHYMJUxfHMC5NCI4OWTp0dJY/r83mmlkruV+vW8psFU8PR5i
+ZJROTapL/GI2LtnWODxwnIYS+WLipr1yZTJ7zfEjt1FSpfADc8PD0OHV77EtBPk1
+RWCXuLLxLI1kYErWWA3VbHp9rd+ZcOASK3SQSpHPiF97QNNxCu1fa+z4+8zqQUnn
+XtdWLk8SbuukmkaeBqgk
+=a/eU
+-----END PGP SIGNATURE-----
+
+--3aokho5Le1mbxOXmkTVhdR6O7M52DmNbV--

@@ -1,289 +1,70 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Thu, 24 Sep 2015 22:14:14 +0000
-Subject: [PATCH v2 2/2] tridentfb: Add DDC support
-Message-Id: <1443132854-31786-2-git-send-email-linux@rainbow-software.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 02 Sep 2015 11:25:45 +0000
+Subject: Re: [PATCH] video: fbdev: atmel_lcdfb: remove useless include
+Message-Id: <55E6DCB9.2080204@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="KUplgXDa5OCjEs8pbWXqfHVv1o4NnLftB"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1443132854-31786-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1443132854-31786-1-git-send-email-linux@rainbow-software.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+References: <1439217114-12317-1-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1439217114-12317-1-git-send-email-alexandre.belloni@free-electrons.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Add DDC support for Trident cards.
+--KUplgXDa5OCjEs8pbWXqfHVv1o4NnLftB
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Tested on TGUI9440, TGUI9680, 3DImage 9750, Blade3D 9880 and Blade XP.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
----
- drivers/video/fbdev/Kconfig     |    2 +
- drivers/video/fbdev/tridentfb.c |  182 +++++++++++++++++++++++++++++++++++++--
- 2 files changed, 179 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 8b1d371..5d67226 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1666,6 +1666,8 @@ config FB_TRIDENT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select FB_DDC
-+	select FB_MODE_HELPERS
- 	---help---
- 	  This is the frame buffer device driver for Trident PCI/AGP chipsets.
- 	  Supported chipset families are TGUI 9440/96XX, 3DImage, Blade3D
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 01b43e9..8a5bbc1 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -25,6 +25,9 @@
- #include <video/vga.h>
- #include <video/trident.h>
- 
-+#include <linux/i2c.h>
-+#include <linux/i2c-algo-bit.h>
-+
- struct tridentfb_par {
- 	void __iomem *io_virt;	/* iospace virtual memory address */
- 	u32 pseudo_pal[16];
-@@ -40,6 +43,9 @@ struct tridentfb_par {
- 		(struct tridentfb_par *par, const char*,
- 		 u32, u32, u32, u32, u32, u32);
- 	unsigned char eng_oper;	/* engine operation... */
-+	bool ddc_registered;
-+	struct i2c_adapter ddc_adapter;
-+	struct i2c_algo_bit_data ddc_algo;
- };
- 
- static struct fb_fix_screeninfo tridentfb_fix = {
-@@ -53,7 +59,7 @@ static struct fb_fix_screeninfo tridentfb_fix = {
- /* defaults which are normally overriden by user values */
- 
- /* video mode */
--static char *mode_option = "640x480-8@60";
-+static char *mode_option;
- static int bpp = 8;
- 
- static int noaccel;
-@@ -174,6 +180,121 @@ static inline u32 readmmr(struct tridentfb_par *par, u16 r)
- 	return fb_readl(par->io_virt + r);
- }
- 
-+#define DDC_SDA_TGUI		BIT(0)
-+#define DDC_SCL_TGUI		BIT(1)
-+#define DDC_SCL_DRIVE_TGUI	BIT(2)
-+#define DDC_SDA_DRIVE_TGUI	BIT(3)
-+#define DDC_MASK_TGUI		(DDC_SCL_DRIVE_TGUI | DDC_SDA_DRIVE_TGUI)
-+
-+static void tridentfb_ddc_setscl_tgui(void *data, int val)
-+{
-+	struct tridentfb_par *par = data;
-+	u8 reg = vga_mm_rcrt(par->io_virt, I2C) & DDC_MASK_TGUI;
-+
-+	if (val)
-+		reg &= ~DDC_SCL_DRIVE_TGUI; /* disable drive - don't drive hi */
-+	else
-+		reg |= DDC_SCL_DRIVE_TGUI; /* drive low */
-+
-+	vga_mm_wcrt(par->io_virt, I2C, reg);
-+}
-+
-+static void tridentfb_ddc_setsda_tgui(void *data, int val)
-+{
-+	struct tridentfb_par *par = data;
-+	u8 reg = vga_mm_rcrt(par->io_virt, I2C) & DDC_MASK_TGUI;
-+
-+	if (val)
-+		reg &= ~DDC_SDA_DRIVE_TGUI; /* disable drive - don't drive hi */
-+	else
-+		reg |= DDC_SDA_DRIVE_TGUI; /* drive low */
-+
-+	vga_mm_wcrt(par->io_virt, I2C, reg);
-+}
-+
-+static int tridentfb_ddc_getsda_tgui(void *data)
-+{
-+	struct tridentfb_par *par = data;
-+
-+	return !!(vga_mm_rcrt(par->io_virt, I2C) & DDC_SDA_TGUI);
-+}
-+
-+#define DDC_SDA_IN	BIT(0)
-+#define DDC_SCL_OUT	BIT(1)
-+#define DDC_SDA_OUT	BIT(3)
-+#define DDC_SCL_IN	BIT(6)
-+#define DDC_MASK	(DDC_SCL_OUT | DDC_SDA_OUT)
-+
-+static void tridentfb_ddc_setscl(void *data, int val)
-+{
-+	struct tridentfb_par *par = data;
-+	unsigned char reg;
-+
-+	reg = vga_mm_rcrt(par->io_virt, I2C) & DDC_MASK;
-+	if (val)
-+		reg |= DDC_SCL_OUT;
-+	else
-+		reg &= ~DDC_SCL_OUT;
-+	vga_mm_wcrt(par->io_virt, I2C, reg);
-+}
-+
-+static void tridentfb_ddc_setsda(void *data, int val)
-+{
-+	struct tridentfb_par *par = data;
-+	unsigned char reg;
-+
-+	reg = vga_mm_rcrt(par->io_virt, I2C) & DDC_MASK;
-+	if (!val)
-+		reg |= DDC_SDA_OUT;
-+	else
-+		reg &= ~DDC_SDA_OUT;
-+	vga_mm_wcrt(par->io_virt, I2C, reg);
-+}
-+
-+static int tridentfb_ddc_getscl(void *data)
-+{
-+	struct tridentfb_par *par = data;
-+
-+	return !!(vga_mm_rcrt(par->io_virt, I2C) & DDC_SCL_IN);
-+}
-+
-+static int tridentfb_ddc_getsda(void *data)
-+{
-+	struct tridentfb_par *par = data;
-+
-+	return !!(vga_mm_rcrt(par->io_virt, I2C) & DDC_SDA_IN);
-+}
-+
-+static int tridentfb_setup_ddc_bus(struct fb_info *info)
-+{
-+	struct tridentfb_par *par = info->par;
-+
-+	strlcpy(par->ddc_adapter.name, info->fix.id,
-+		sizeof(par->ddc_adapter.name));
-+	par->ddc_adapter.owner		= THIS_MODULE;
-+	par->ddc_adapter.class		= I2C_CLASS_DDC;
-+	par->ddc_adapter.algo_data	= &par->ddc_algo;
-+	par->ddc_adapter.dev.parent	= info->device;
-+	if (is_oldclock(par->chip_id)) { /* not sure if this check is OK */
-+		par->ddc_algo.setsda	= tridentfb_ddc_setsda_tgui;
-+		par->ddc_algo.setscl	= tridentfb_ddc_setscl_tgui;
-+		par->ddc_algo.getsda	= tridentfb_ddc_getsda_tgui;
-+		/* no getscl */
-+	} else {
-+		par->ddc_algo.setsda	= tridentfb_ddc_setsda;
-+		par->ddc_algo.setscl	= tridentfb_ddc_setscl;
-+		par->ddc_algo.getsda	= tridentfb_ddc_getsda;
-+		par->ddc_algo.getscl	= tridentfb_ddc_getscl;
-+	}
-+	par->ddc_algo.udelay		= 10;
-+	par->ddc_algo.timeout		= 20;
-+	par->ddc_algo.data		= par;
-+
-+	i2c_set_adapdata(&par->ddc_adapter, par);
-+
-+	return i2c_bit_add_bus(&par->ddc_adapter);
-+}
-+
- /*
-  * Blade specific acceleration.
-  */
-@@ -1346,6 +1467,7 @@ static int trident_pci_probe(struct pci_dev *dev,
- 	struct tridentfb_par *default_par;
- 	int chip3D;
- 	int chip_id;
-+	bool found = false;
- 
- 	err = pci_enable_device(dev);
- 	if (err)
-@@ -1499,6 +1621,7 @@ static int trident_pci_probe(struct pci_dev *dev,
- 	info->pixmap.scan_align = 1;
- 	info->pixmap.access_align = 32;
- 	info->pixmap.flags = FB_PIXMAP_SYSTEM;
-+	info->var.bits_per_pixel = 8;
- 
- 	if (default_par->image_blit) {
- 		info->flags |= FBINFO_HWACCEL_IMAGEBLIT;
-@@ -1511,11 +1634,56 @@ static int trident_pci_probe(struct pci_dev *dev,
- 		info->pixmap.scan_align = 1;
- 	}
- 
--	if (!fb_find_mode(&info->var, info,
--			  mode_option, NULL, 0, NULL, bpp)) {
--		err = -EINVAL;
--		goto out_unmap2;
-+	if (tridentfb_setup_ddc_bus(info) = 0) {
-+		u8 *edid = fb_ddc_read(&default_par->ddc_adapter);
-+
-+		default_par->ddc_registered = true;
-+		if (edid) {
-+			fb_edid_to_monspecs(edid, &info->monspecs);
-+			kfree(edid);
-+			if (!info->monspecs.modedb)
-+				dev_err(info->device, "error getting mode database\n");
-+			else {
-+				const struct fb_videomode *m;
-+
-+				fb_videomode_to_modelist(info->monspecs.modedb,
-+						 info->monspecs.modedb_len,
-+						 &info->modelist);
-+				m = fb_find_best_display(&info->monspecs,
-+							 &info->modelist);
-+				if (m) {
-+					fb_videomode_to_var(&info->var, m);
-+					/* fill all other info->var's fields */
-+					if (tridentfb_check_var(&info->var,
-+								info) = 0)
-+						found = true;
-+				}
-+			}
-+		}
- 	}
-+
-+	if (!mode_option && !found)
-+		mode_option = "640x480-8@60";
-+
-+	/* Prepare startup mode */
-+	if (mode_option) {
-+		err = fb_find_mode(&info->var, info, mode_option,
-+				   info->monspecs.modedb,
-+				   info->monspecs.modedb_len,
-+				   NULL, info->var.bits_per_pixel);
-+		if (!err || err = 4) {
-+			err = -EINVAL;
-+			dev_err(info->device, "mode %s not found\n",
-+								mode_option);
-+			fb_destroy_modedb(info->monspecs.modedb);
-+			info->monspecs.modedb = NULL;
-+			goto out_unmap2;
-+		}
-+	}
-+
-+	fb_destroy_modedb(info->monspecs.modedb);
-+	info->monspecs.modedb = NULL;
-+
- 	err = fb_alloc_cmap(&info->cmap, 256, 0);
- 	if (err < 0)
- 		goto out_unmap2;
-@@ -1536,6 +1704,8 @@ static int trident_pci_probe(struct pci_dev *dev,
- 	return 0;
- 
- out_unmap2:
-+	if (default_par->ddc_registered)
-+		i2c_del_adapter(&default_par->ddc_adapter);
- 	kfree(info->pixmap.addr);
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
-@@ -1555,6 +1725,8 @@ static void trident_pci_remove(struct pci_dev *dev)
- 	struct tridentfb_par *par = info->par;
- 
- 	unregister_framebuffer(info);
-+	if (par->ddc_registered)
-+		i2c_del_adapter(&par->ddc_adapter);
- 	iounmap(par->io_virt);
- 	iounmap(info->screen_base);
- 	release_mem_region(tridentfb_fix.smem_start, tridentfb_fix.smem_len);
--- 
-Ondrej Zary
+On 10/08/15 17:31, Alexandre Belloni wrote:
+> Definitions from linux/platform_data/atmel.h are not used, remove the
+> include.
+>=20
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>=
 
+> ---
+>  drivers/video/fbdev/atmel_lcdfb.c | 1 -
+>  1 file changed, 1 deletion(-)
+>=20
+> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/at=
+mel_lcdfb.c
+> index abadc490fa1f..a5006788647c 100644
+> --- a/drivers/video/fbdev/atmel_lcdfb.c
+> +++ b/drivers/video/fbdev/atmel_lcdfb.c
+> @@ -19,7 +19,6 @@
+>  #include <linux/backlight.h>
+>  #include <linux/gfp.h>
+>  #include <linux/module.h>
+> -#include <linux/platform_data/atmel.h>
+>  #include <linux/of.h>
+>  #include <linux/of_device.h>
+>  #include <linux/of_gpio.h>
+
+Thanks, queued for 4.3.
+
+ Tomi
+
+
+--KUplgXDa5OCjEs8pbWXqfHVv1o4NnLftB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJV5ty5AAoJEPo9qoy8lh71JkYQAJroN5DvEprLSTXVytP3bh/m
+QOQRP58XSRRXtXA740qAPdk77MK6prWCtqjm5DdWHZzhylMsXgcUFGZz2CezNac5
+7vJB1h1SdTyER7AsvrGocud8WWApEVgBNpe1iAV6SHOBnVJtd4BN6BRl/oQTt6s9
+z5W8Mc7GQI/IBaokR2gK3oufzR2m5esFXP1pDGlkVJDt+ECVMPXxvwUBvwE6mIrq
+YL7Hg8rB5NfzMT/5b3e/hG8aO7yiUsZdkQ94ARuZRkMsBhk63wP2NKvTpQvYvG2y
+6O98rVErDBkovethFBrWeWJrpoDrgyUeQ67jEhGLGLaS5ePsKY//PF8kKHfcEk7U
+2Bap8FlEKH8ftwBaVYpOLtfTngt7JpLpQYebgmfogHZf4r5lvqOxqf7GT6539iOx
+eaQdN/J5d8bsDcaBzEkIKqCuaOJTo1UWUHzkdanQ4hrusaHLdl249Y1ZwObox+ia
+PmGspeJ5oRB72WNY+lkushNArt8bbcAtQUWRKUVtrjsjZ/db2fLrZ2PoI76LUc2O
+jtYDPFVnyLySOuVDiVPATtFpmGjfS5y9J11+Jg/86jmLpZ/j3CYDppktnfVSLgdM
+Ukt47R0pjStIilSsoEaq47z2KVcKI+IIOsCgKNpPQYnEcDWy00E4RHmhw/376408
++md8wQBW+4/dXySkHEf7
+=S7nn
+-----END PGP SIGNATURE-----
+
+--KUplgXDa5OCjEs8pbWXqfHVv1o4NnLftB--

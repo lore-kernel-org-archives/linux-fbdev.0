@@ -1,81 +1,127 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Sep 2015 10:48:26 +0000
-Subject: Re: [PATCH 28/38] video/omap: remove invalid check
-Message-Id: <5603D4FA.6090902@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="TjcseAN8aoABfW2jeNbP8f6qKS3goarBU"
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Wed, 02 Sep 2015 21:23:25 +0000
+Subject: [PATCH] uvesafb: make scaling configurable on Nvidia cards
+Message-Id: <alpine.LRH.2.02.1509021719170.12073@file01.intranet.prod.int.rdu2.redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442842450-29769-1-git-send-email-a.hajda@samsung.com>
- <1442842450-29769-29-git-send-email-a.hajda@samsung.com>
-In-Reply-To: <1442842450-29769-29-git-send-email-a.hajda@samsung.com>
-To: Andrzej Hajda <a.hajda@samsung.com>, linux-kernel@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+References: <alpine.LRH.2.02.1505161334150.19574@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.1505161334150.19574@file01.intranet.prod.int.rdu2.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Michal Januszewski <spock@gentoo.org>
+Cc: linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org
 
---TjcseAN8aoABfW2jeNbP8f6qKS3goarBU
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-
-
-
-On 21/09/15 16:34, Andrzej Hajda wrote:
-> regno is unsigned so it cannot be negative.
->=20
-> The problem has been detected using proposed semantic patch
-> scripts/coccinelle/tests/unsigned_lesser_than_zero.cocci [1].
->=20
-> [1]: http://permalink.gmane.org/gmane.linux.kernel/2038576
->=20
-> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
-> ---
->  drivers/video/fbdev/omap/omapfb_main.c | 5 -----
->  1 file changed, 5 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbd=
-ev/omap/omapfb_main.c
-> index 1fb3ea3..393ae1b 100644
-> --- a/drivers/video/fbdev/omap/omapfb_main.c
-> +++ b/drivers/video/fbdev/omap/omapfb_main.c
-> @@ -276,11 +276,6 @@ static int _setcolreg(struct fb_info *info, u_int =
-regno, u_int red, u_int green,
->  		if (r !=3D 0)
->  			break;
-> =20
-> -		if (regno < 0) {
-> -			r =3D -EINVAL;
-> -			break;
-> -		}
-> -
->  		if (regno < 16) {
->  			u16 pal;
->  			pal =3D ((red >> (16 - var->red.length)) <<
->=20
-
-Thanks, queued for 4.4.
-
- Tomi
+[ I sent this some times ago, but didn't get any response ]
 
 
---TjcseAN8aoABfW2jeNbP8f6qKS3goarBU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Nvidia cards have a BIOS function 0x4f14 that allows to set flat panel
+scaling. This patch adds a module parameter "scaling" that uses this
+function to set the scaling. By default, the parameter is -1, so that the
+driver doesn't attempt to call the scaling function.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+This patch is useful when using the binary Nvidia graphics driver - in
+that case, the console may be only in text mode or VESA mode. By default,
+the video card does scaling that degrades font quality and changes aspect
+ratio. This patch makes it possible to turn off the scaling and improve
+font quality on the console.
 
-iQIcBAEBCAAGBQJWA9T6AAoJEPo9qoy8lh71ds0P/Ailyi1GRoAfYOl2NTG7fgqm
-8yHXC2YzOl1SR+KXhfqf0h+YauQvtsIKMcIzPLt/0zopfhVuZDGOxD2gayoaVCK7
-SGG5gt0Kn0VXdMd8kawrPRploC+HS4hWj/6MO5sSD6A2DgQvHQxDTrKnrBLuQrH8
-1QS/Km4BwTeb+RsWbb8XNBod2/NUbbxYsf2XoiPfTgCwMGqAM9Im8aViVzCiVyRU
-d/c0HLWKuWvCWGjZli5xxHSKWTMjZ3qgiwgKlNv3Tv5xCnieHxvg2MAsAFxPc+V5
-tlN8FbHPcZQ8J4T0GN/C32lJxaB2KNflsWkW4C38T/RzELtA8NToZDXrMWJ82gQ8
-1vqIoRIZimtA+P60+vY10D3EkUDK4voferNeZSuQiQ1vzuJLFdYnRtVbWNRQ/W1k
-OLiqAX1zADUAic49+dMV+LFysNNMeEWgNgmysYmHX9np40BncH+ycQVp1Pr7J1OV
-aODenft59bTZNwWJctXGUpN3HOgsJO/Pl6aCnJBfz5vXy/EZFm7BWo9303ftI6CF
-lngitJkKEUj7RL8DcBpcOsyQqDrPQbAuEgwiYtzQbaftgwmyhtK2SF08zpH1H4FV
-C1ooA160VsZH67obk+yLG6a9SnVyzoRJpD+N4ThvNDPRLVb8cUVBc9sKSGxqDiJE
-v+/hz5vMfFym/Vw4ZOOv
-=D5eW
------END PGP SIGNATURE-----
+The allowed values depend on VESA BIOS. On my card, the following values
+are allowed:
+-1	- do not change the scaling
+0	- scale to full screen
+1, 2	- don't scale
+3	- scale and preserve aspect ratio
+4	- scale with black border around
 
---TjcseAN8aoABfW2jeNbP8f6qKS3goarBU--
+Example use:
+echo 1 >/sys/module/uvesafb/parameters/scaling; fbset 1280x1024-60 -depth 32 -a
+- this sets unscaled 1280x1024 video mode that has much sharper font than
+  the scaled modes.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+
+Index: linux-4.0.9/drivers/video/fbdev/uvesafb.c
+=================================--- linux-4.0.9.orig/drivers/video/fbdev/uvesafb.c
++++ linux-4.0.9/drivers/video/fbdev/uvesafb.c
+@@ -52,6 +52,7 @@ static u16 maxclk;		/* maximum pixel clo
+ static u16 maxvf;		/* maximum vertical frequency */
+ static u16 maxhf;		/* maximum horizontal frequency */
+ static u16 vbemode;		/* force use of a specific VBE mode */
++static short scaling = -1;
+ static char *mode_option;
+ static u8  dac_width	= 6;
+ 
+@@ -1245,7 +1246,22 @@ static int uvesafb_set_par(struct fb_inf
+ 	task = uvesafb_prep();
+ 	if (!task)
+ 		return -ENOMEM;
++
++	if (scaling > 0) {
++		/*
++		 * We must first reset scaling state with 0. This is workaround
++		 * for some supposed BIOS bug - without this, scaling mode 4
++		 * could not be set.
++		 */
++		uvesafb_reset(task);
++		task->t.regs.eax = 0x4f14;
++		task->t.regs.ebx = 0x0102;
++		task->t.regs.ecx = 0;
++		uvesafb_exec(task);
++	}
++
+ setmode:
++	uvesafb_reset(task);
+ 	task->t.regs.eax = 0x4f02;
+ 	task->t.regs.ebx = mode->mode_id | 0x4000;	/* use LFB */
+ 
+@@ -1296,7 +1312,6 @@ setmode:
+ 			printk(KERN_WARNING "uvesafb: mode switch failed "
+ 				"(eax=0x%x, err=%d). Trying again with "
+ 				"default timings.\n", task->t.regs.eax, err);
+-			uvesafb_reset(task);
+ 			kfree(crtc);
+ 			crtc = NULL;
+ 			info->var.pixclock = 0;
+@@ -1330,6 +1345,14 @@ setmode:
+ 				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+ 	info->fix.line_length = mode->bytes_per_scan_line;
+ 
++	if (scaling >= 0) {
++		uvesafb_reset(task);
++		task->t.regs.eax = 0x4f14;
++		task->t.regs.ebx = 0x0102;
++		task->t.regs.ecx = scaling;
++		uvesafb_exec(task);
++	}
++
+ out:
+ 	kfree(crtc);
+ 	uvesafb_free(task);
+@@ -2019,6 +2042,9 @@ MODULE_PARM_DESC(vbemode,
+ 	"VBE mode number to set, overrides the 'mode' option");
+ module_param_string(v86d, v86d_path, PATH_MAX, 0660);
+ MODULE_PARM_DESC(v86d, "Path to the v86d userspace helper.");
++module_param(scaling, short, 0660);
++MODULE_PARM_DESC(scaling,
++	"Scaling option for nvidia (0 - scaled, 1 - unscaled centered, 2 - unscaled in left corner");
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Michal Januszewski <spock@gentoo.org>");
+Index: linux-4.0.9/Documentation/fb/uvesafb.txt
+=================================--- linux-4.0.9.orig/Documentation/fb/uvesafb.txt
++++ linux-4.0.9/Documentation/fb/uvesafb.txt
+@@ -128,6 +128,14 @@ v86d:path
+         need to use it and have uvesafb built into the kernel, use
+         uvesafb.v86d="path".
+ 
++scaling:n
++	Set scaling on Nvidia cards. Possible values depend on card's BIOS.
++		-1	- do not change the scaling
++		0	- scale to full screen
++		1, 2	- don't scale
++		3	- scale and preserve aspect ratio
++		4	- scale with black border around
++
+ Additionally, the following parameters may be provided.  They all override the
+ EDID-provided values and BIOS defaults.  Refer to your monitor's specs to get
+ the correct values for maxhf, maxvf and maxclk for your hardware.

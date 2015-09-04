@@ -1,20 +1,24 @@
-From: David Howells <dhowells@redhat.com>
-Date: Thu, 10 Sep 2015 11:13:34 +0000
-Subject: Re: [PATCH 11/13] Hide MAX_RAW_MINORS behind #ifdef __KERNEL__
-Message-Id: <18103.1441883614@warthog.procyon.org.uk>
+From: Greg Kroah-Hartman <greg@kroah.com>
+Date: Fri, 04 Sep 2015 01:17:10 +0000
+Subject: Re: [PATCHv2] staging: sm750fb: fix improper typedef usage
+Message-Id: <20150904011710.GA11017@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1441832902-28993-12-git-send-email-palmer@dabbelt.com> <2644177.lVCYzIBfPW@wuerfel> <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
-In-Reply-To: <1441832902-28993-12-git-send-email-palmer@dabbelt.com>
+References: <20150831014253.GB10267@brian_archtop.etown.edu>
+In-Reply-To: <20150831014253.GB10267@brian_archtop.etown.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Palmer Dabbelt <palmer@dabbelt.com>
-Cc: dhowells@redhat.com, arnd@arndb.de, 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Palmer Dabbelt <palmer@dabbelt.com> wrote:
+On Sun, Aug 30, 2015 at 09:42:53PM -0400, Brian Stottler wrote:
+> Fix typedef usage which does not comply with kernel style guidelines.
 
-> I don't think this was ever meant to be exposed to userspace.
+Please do this one typedef at a time to make this easier to be able to
+review.
 
-Then it should be in include/linux/raw.h
+Also, don't keep "_t" at the end of structure and enum names, it doesn't
+make sense anymore, right?
 
-David
+thanks,
+
+greg k-h

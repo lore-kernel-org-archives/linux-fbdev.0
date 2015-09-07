@@ -1,45 +1,115 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 21 Sep 2015 09:33:25 +0000
-Subject: [PATCH v3 08/12] pwm: add information about polarity, duty cycle and period to debugfs
-Message-Id: <1442828009-6241-9-git-send-email-boris.brezillon@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 07 Sep 2015 12:19:12 +0000
+Subject: [GIT PULL] fbdev changes for 4.3
+Message-Id: <55ED80C0.4020800@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="mFUi8iDuiqtg6NI3pfFA1hWqhAfpW2k1F"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+
+--mFUi8iDuiqtg6NI3pfFA1hWqhAfpW2k1F
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
 
-From: Heiko St=C3=BCbner <heiko@sntech.de>
+Hi Linus,
 
-The pwm-states make it possible to also output the polarity, duty cycle
-and period information in the debugfs pwm summary-outout.
-This makes it easier to gather overview information about pwms without
-needing to walk through the sysfs attributes of every pwm.
+Please pull fbdev changes for 4.3. Not much this time.
 
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+
+The following changes since commit 2c6625cd545bdd66acff14f3394865d43920a5=
+c7:
+
+  Linux 4.2-rc7 (2015-08-16 16:34:13 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-4.3
+
+for you to fetch changes up to 57817e619a215588739f3f644986c78b586b541b:
+
+  video: fbdev: atmel_lcdfb: remove useless include (2015-09-02 14:24:51 =
++0300)
+
+----------------------------------------------------------------
+fbdev changes for 4.3
+
+* Minor fixes and cleanups
+
+----------------------------------------------------------------
+Alexandre Belloni (1):
+      video: fbdev: atmel_lcdfb: remove useless include
+
+Alexey Klimov (1):
+      fbdev: udlfb: remove unneeded initialization in few places
+
+Dan Carpenter (1):
+      fbdev: fix snprintf() limit in show_bl_curve()
+
+Geert Uytterhoeven (1):
+      fbdev: Allow compile test of GPIO consumers if !GPIOLIB
+
+Julia Lawall (1):
+      fbdev: ssd1307fb: fix error return code
+
+Krzysztof Kozlowski (3):
+      video: fbdev: Drop owner assignment from i2c_driver
+      video: fbdev: Drop owner assignment from platform_driver
+      video: fbdev: s3c-fb: Constify platform_device_id
+
+Marcin Chojnacki (1):
+      fbdev: remove unnecessary memset in vfb
+
+Nicolai Stange (1):
+      framebuffer: disable vgacon on microblaze arch
+
+Tomi Valkeinen (2):
+      fbdev: fix cea_modes array size
+      video: fbdev: atmel: fix warning for const return value
+
+Vaishali Thakkar (1):
+      video: fbdev: pxa168fb: Use devm_clk_get
+
+ drivers/video/console/Kconfig                           |  2 +-
+ drivers/video/fbdev/Kconfig                             |  2 +-
+ drivers/video/fbdev/atmel_lcdfb.c                       |  3 +--
+ drivers/video/fbdev/core/fbmon.c                        |  4 ++--
+ drivers/video/fbdev/core/fbsysfs.c                      |  2 +-
+ drivers/video/fbdev/core/modedb.c                       |  2 +-
+ drivers/video/fbdev/omap2/displays-new/encoder-opa362.c |  1 -
+ drivers/video/fbdev/pxa168fb.c                          | 14 ++++-------=
 ---
- drivers/pwm/core.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/video/fbdev/s3c-fb.c                            |  2 +-
+ drivers/video/fbdev/ssd1307fb.c                         |  6 +++---
+ drivers/video/fbdev/udlfb.c                             | 10 ++++------
+ drivers/video/fbdev/vfb.c                               | 17 ++++++++---=
+------
+ include/linux/fb.h                                      |  2 +-
+ 13 files changed, 28 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index ff3c662..7eba2f3 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -1018,6 +1018,11 @@ static void pwm_dbg_show(struct pwm_chip *chip, stru=
-ct seq_file *s)
- 		if (pwm_is_enabled(pwm))
- 			seq_puts(s, " enabled");
-=20
-+		seq_printf(s, " period:%uns", pwm_get_period(pwm));
-+		seq_printf(s, " duty:%uns", pwm_get_duty_cycle(pwm));
-+		seq_printf(s, " polarity:%s", pwm_get_polarity(pwm) ? "inverse"
-+								    : "normal");
-+
- 		seq_puts(s, "\n");
- 	}
- }
---=20
-1.9.1
 
+--mFUi8iDuiqtg6NI3pfFA1hWqhAfpW2k1F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJV7YDAAAoJEPo9qoy8lh71xwQQAKzXVcYgwUc5YuhkRZ69xqPU
+OCaveb9SAFU5zoTKpdq/vm3Uc9u8OwQRI2yuO4TOFBg3gkACQkBvBChd9ZEcDH6V
+Jbylb3NhzXBQCl+zd/y10EsxB4So66vlguioOQLQKYNQmK6H6JDCK+xIOcLA+2yC
+5Hd6aKYhFA/NCECDg+x6cuj4osHTyyfCG1mKvE4LNaeODrqpGwzSXa83qSRfcNK8
+KBForeyUUoaeckupUCuIJIXVwIbf8nn1MNgBFOXb+RGN2V4E7kpJB+BaXYPCAtJp
+j3xJU3TO2BnVUB5Lr6dzF2eLE6T7QMQNtPDerOvAUXAejrEG/uJZjk4x8K22cnn/
+X2IgCtqPZXGDRsfQSHrAFrxwaATOPRNE3jTvIOTCKbW4x8RG3qRKvTjjD9EFjUGV
+D7voaUfWAzP8YagP4HWBXijUckj68VAxHmgxTuRQbm83l5qWu0E9BPbEuHyCCk2H
+ivgO0ASoNKab+ZUoYQB2uvL7UjnUtDf2+K45lYDPrcAxeWHW9v4hbGxsMPt2OQAV
+qYk67DX9/ju6IP1p0BRh5CAxnDFloRu+tRoKwcGMpYX0mrGWIBzbhIslFVC9lBMr
+J0g6lXrCEeNXTFp/LHWtP8QcOMzyNU67D7kwSl70RCejfLZPr/F+KYWQocLTe5j6
+TDUJy8Pg2/iQRvFpXQPL
+=lhAr
+-----END PGP SIGNATURE-----
+
+--mFUi8iDuiqtg6NI3pfFA1hWqhAfpW2k1F--

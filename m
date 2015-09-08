@@ -1,60 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 01 Sep 2015 10:56:32 +0000
-Subject: Re: [PATCH] video: fbdev: Use devm_clk_get
-Message-Id: <55E58460.3050503@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="3aokho5Le1mbxOXmkTVhdR6O7M52DmNbV"
+From: Olliver Schinagl <o.schinagl@ultimaker.com>
+Date: Tue, 08 Sep 2015 19:19:50 +0000
+Subject: [PATCH 1/2] fbdev: ssd1307fb: alphabetize headers
+Message-Id: <1441739991-4676-2-git-send-email-o.schinagl@ultimaker.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150818032840.GA14566@localhost>
-In-Reply-To: <20150818032840.GA14566@localhost>
-To: Vaishali Thakkar <vthakkar1994@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1441739991-4676-1-git-send-email-o.schinagl@ultimaker.com>
+In-Reply-To: <1441739991-4676-1-git-send-email-o.schinagl-U3FVU11NWA554TAoqtyWWQ@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Olliver Schinagl <oliver-dxLnbx3+1qmEVqv0pETR8A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp-PRwTpj6vllL6m1q2wEL4bg@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Prabhakar Lad <prabhakar.csengg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
---3aokho5Le1mbxOXmkTVhdR6O7M52DmNbV
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+From: Olliver Schinagl <oliver@schinagl.nl>
 
+This patch sorts the headers on ssd1307fb driver.
 
+Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
+---
+ drivers/video/fbdev/ssd1307fb.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-On 18/08/15 06:28, Vaishali Thakkar wrote:
-> This patch introduces the use of managed resource function
-> devm_clk_get instead of clk_get and removes corresponding calls
-> to clk_put in the probe and remove functions.
->=20
-> To be compatible with the change various gotos are replaced with
-> direct returns, and unneeded label failed_put_clk is dropped.
->=20
-> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
-> ---
->  drivers/video/fbdev/pxa168fb.c | 14 ++++----------
->  1 file changed, 4 insertions(+), 10 deletions(-)
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 3e153c0..339615c 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -6,16 +6,16 @@
+  * Licensed under the GPLv2 or later.
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/backlight.h>
+-#include <linux/kernel.h>
+-#include <linux/i2c.h>
++#include <linux/delay.h>
+ #include <linux/fb.h>
+-#include <linux/uaccess.h>
++#include <linux/i2c.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/of_device.h>
+ #include <linux/of_gpio.h>
+ #include <linux/pwm.h>
+-#include <linux/delay.h>
++#include <linux/uaccess.h>
+ 
+ #define SSD1307FB_DATA			0x40
+ #define SSD1307FB_COMMAND		0x80
+-- 
+2.1.4
 
-Thanks, queued for 4.3.
-
- Tomi
-
-
---3aokho5Le1mbxOXmkTVhdR6O7M52DmNbV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJV5YRhAAoJEPo9qoy8lh712EgP/R5rclm6L35n/vo9GbV0xDY9
-0Byyv0bjsKJZlaX68+Wj5PAYsnH/HwDVvaMoxuclEX/KnT+62EIc7/GeGM2QaCXF
-cAJFyxMjO/x6MEkl9RFiDnc9HoSk81m8o2DK3CXNXiN/UJgO6EaJQzASvTf8FmEy
-fCcfJyF1v7alHYcPoRqTnDtvkf77K+sKx9fpOhUPNftB9Za9rLkxsZLmckYiAxsN
-ZRrTverxV85jV+HrYlAzOk2VdDsUliiXZ7ArAJyjMoE3mtskblgbH3jvB/0JYKxQ
-swl/fCCIf/mjaM9eresJ7rKP0lQfiwjJoM01wfFRnfDWLSykpyNslJTXs/m3JVkl
-7sUeZWv/sNRcDudqZDjAqa3W44HuVnt4flJFRSiTStl9PkUvytBS3B0Gy8jTEOD7
-YPDrtlyID4Xg8x++214Z20jHusggZ/d1r/XdjK1nbZBlVuKrrz3+lWFiLJUhNajO
-UHDAYyKYj37JaP80JHYMJUxfHMC5NCI4OWTp0dJY/r83mmlkruV+vW8psFU8PR5i
-ZJROTapL/GI2LtnWODxwnIYS+WLipr1yZTJ7zfEjt1FSpfADc8PD0OHV77EtBPk1
-RWCXuLLxLI1kYErWWA3VbHp9rd+ZcOASK3SQSpHPiF97QNNxCu1fa+z4+8zqQUnn
-XtdWLk8SbuukmkaeBqgk
-=a/eU
------END PGP SIGNATURE-----
-
---3aokho5Le1mbxOXmkTVhdR6O7M52DmNbV--

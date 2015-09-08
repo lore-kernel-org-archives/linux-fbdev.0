@@ -1,60 +1,60 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 30 Sep 2015 09:31:59 +0000
-Subject: [PATCHv4 0/3] backlight: led-backlight driver
-Message-Id: <1443605522-1118-1-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 08 Sep 2015 11:19:36 +0000
+Subject: [PATCHv2 3/3] devicetree: Add led-backlight binding
+Message-Id: <1441711176-4258-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1441711176-4258-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1441711176-4258-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Andrew Lunn <andrew@lunn.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This series aims to add a led-backlight driver, similar to pwm-backlight, but
-using a LED class device underneath.
+Add DT binding for led-backlight.
 
-LED framework has no support for DT or getting a LED class driver from another
-kernel driver, so I added minimal functionality to led-class to get
-led-backlight working.
-
-Changes to v3:
-- Change a comment to refer to of_led_get()
-
-Changes to v2:
-- power supply is now optional
-- cosmetic changes
-- no-op function for led_put() when !CONFIG_LEDS_CLASS
-
-Changes to v1:
-- Split LED OF parts into separate .h and .c files
-- Check for CONFIG_OF and CONFIG_LEDS_CLASS where relevant to leave unused code
-  out.
-- Improved error prints and comments a bit
-- Added put_device() into led_put(), as the device was gotten from
-  class_find_device() which requires a put_device() call.
-
- Tomi
-
-Tomi Valkeinen (3):
-  leds: Add of_led_get() and led_put()
-  backlight: add led-backlight driver
-  devicetree: Add led-backlight binding
-
- .../bindings/video/backlight/led-backlight.txt     |  30 +++
- drivers/leds/Makefile                              |   6 +-
- drivers/leds/led-class.c                           |  13 +-
- drivers/leds/led-of.c                              |  85 +++++++
- drivers/leds/leds.h                                |   1 +
- drivers/video/backlight/Kconfig                    |   7 +
- drivers/video/backlight/Makefile                   |   1 +
- drivers/video/backlight/led_bl.c                   | 246 +++++++++++++++++++++
- include/linux/leds.h                               |  10 +
- include/linux/of_leds.h                            |  26 +++
- 10 files changed, 423 insertions(+), 2 deletions(-)
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ .../bindings/video/backlight/led-backlight.txt     | 30 ++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/video/backlight/led-backlight.txt
- create mode 100644 drivers/leds/led-of.c
- create mode 100644 drivers/video/backlight/led_bl.c
- create mode 100644 include/linux/of_leds.h
 
+diff --git a/Documentation/devicetree/bindings/video/backlight/led-backlight.txt b/Documentation/devicetree/bindings/video/backlight/led-backlight.txt
+new file mode 100644
+index 000000000000..fb77051ac230
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/backlight/led-backlight.txt
+@@ -0,0 +1,30 @@
++led-backlight bindings
++
++Required properties:
++  - compatible: "led-backlight"
++  - leds: phandle to a led OF node [0]
++  - brightness-levels: Array of distinct LED brightness levels. These
++      are in the range from 0 to 255, passed to the LED class driver.
++  - default-brightness-level: the default brightness level (index into the
++      array defined by the "brightness-levels" property)
++  - power-supply: regulator for supply voltage
++
++Optional properties:
++  - enable-gpios: contains a single GPIO specifier for the GPIO which enables
++                  and disables the backlight (see GPIO binding[1])
++
++[0]: Documentation/devicetree/bindings/leds/common.txt
++[1]: Documentation/devicetree/bindings/gpio/gpio.txt
++
++Example:
++
++	backlight {
++		compatible = "led-backlight";
++		leds = <&backlight_led>;
++
++		brightness-levels = <0 4 8 16 32 64 128 255>;
++		default-brightness-level = <6>;
++
++		power-supply = <&vdd_bl_reg>;
++		enable-gpios = <&gpio 58 0>;
++	};
 -- 
 2.1.4
 

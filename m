@@ -1,127 +1,227 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Wed, 02 Sep 2015 21:23:25 +0000
-Subject: [PATCH] uvesafb: make scaling configurable on Nvidia cards
-Message-Id: <alpine.LRH.2.02.1509021719170.12073@file01.intranet.prod.int.rdu2.redhat.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 08 Sep 2015 11:19:34 +0000
+Subject: [PATCHv2 1/3] leds: Add of_led_get() and led_put()
+Message-Id: <1441711176-4258-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LRH.2.02.1505161334150.19574@file01.intranet.prod.int.rdu2.redhat.com>
-In-Reply-To: <alpine.LRH.2.02.1505161334150.19574@file01.intranet.prod.int.rdu2.redhat.com>
+References: <1441711176-4258-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1441711176-4258-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michal Januszewski <spock@gentoo.org>
-Cc: linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org
+To: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-[ I sent this some times ago, but didn't get any response ]
+This patch adds basic support for a kernel driver to get a LED device.
+This will be used by the led-backlight driver.
 
+Only OF version is implemented for now, and the behavior is similar to
+PWM's of_pwm_get() and pwm_put().
 
-Nvidia cards have a BIOS function 0x4f14 that allows to set flat panel
-scaling. This patch adds a module parameter "scaling" that uses this
-function to set the scaling. By default, the parameter is -1, so that the
-driver doesn't attempt to call the scaling function.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/leds/Makefile    |  6 +++-
+ drivers/leds/led-class.c | 13 +++++++-
+ drivers/leds/led-of.c    | 82 ++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/leds/leds.h      |  1 +
+ include/linux/leds-of.h  | 26 +++++++++++++++
+ include/linux/leds.h     |  2 ++
+ 6 files changed, 128 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/leds/led-of.c
+ create mode 100644 include/linux/leds-of.h
 
-This patch is useful when using the binary Nvidia graphics driver - in
-that case, the console may be only in text mode or VESA mode. By default,
-the video card does scaling that degrades font quality and changes aspect
-ratio. This patch makes it possible to turn off the scaling and improve
-font quality on the console.
-
-The allowed values depend on VESA BIOS. On my card, the following values
-are allowed:
--1	- do not change the scaling
-0	- scale to full screen
-1, 2	- don't scale
-3	- scale and preserve aspect ratio
-4	- scale with black border around
-
-Example use:
-echo 1 >/sys/module/uvesafb/parameters/scaling; fbset 1280x1024-60 -depth 32 -a
-- this sets unscaled 1280x1024 video mode that has much sharper font than
-  the scaled modes.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-
-Index: linux-4.0.9/drivers/video/fbdev/uvesafb.c
-=================================--- linux-4.0.9.orig/drivers/video/fbdev/uvesafb.c
-+++ linux-4.0.9/drivers/video/fbdev/uvesafb.c
-@@ -52,6 +52,7 @@ static u16 maxclk;		/* maximum pixel clo
- static u16 maxvf;		/* maximum vertical frequency */
- static u16 maxhf;		/* maximum horizontal frequency */
- static u16 vbemode;		/* force use of a specific VBE mode */
-+static short scaling = -1;
- static char *mode_option;
- static u8  dac_width	= 6;
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index 8d6a24a2f513..6fd22e411810 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -1,7 +1,11 @@
  
-@@ -1245,7 +1246,22 @@ static int uvesafb_set_par(struct fb_inf
- 	task = uvesafb_prep();
- 	if (!task)
- 		return -ENOMEM;
+ # LED Core
+ obj-$(CONFIG_NEW_LEDS)			+= led-core.o
+-obj-$(CONFIG_LEDS_CLASS)		+= led-class.o
 +
-+	if (scaling > 0) {
-+		/*
-+		 * We must first reset scaling state with 0. This is workaround
-+		 * for some supposed BIOS bug - without this, scaling mode 4
-+		 * could not be set.
-+		 */
-+		uvesafb_reset(task);
-+		task->t.regs.eax = 0x4f14;
-+		task->t.regs.ebx = 0x0102;
-+		task->t.regs.ecx = 0;
-+		uvesafb_exec(task);
++obj-$(CONFIG_LEDS_CLASS)		+= led-class-objs.o
++led-class-objs-y			:= led-class.o
++led-class-objs-$(CONFIG_OF)		+= led-of.o
++
+ obj-$(CONFIG_LEDS_CLASS_FLASH)		+= led-class-flash.o
+ obj-$(CONFIG_LEDS_TRIGGERS)		+= led-triggers.o
+ 
+diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
+index beabfbc6f7cd..1234f9dc3537 100644
+--- a/drivers/leds/led-class.c
++++ b/drivers/leds/led-class.c
+@@ -22,7 +22,7 @@
+ #include <linux/timer.h>
+ #include "leds.h"
+ 
+-static struct class *leds_class;
++struct class *leds_class;
+ 
+ static ssize_t brightness_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+@@ -216,6 +216,17 @@ static int led_resume(struct device *dev)
+ 
+ static SIMPLE_DEV_PM_OPS(leds_class_dev_pm_ops, led_suspend, led_resume);
+ 
++/**
++ * led_put() - release a LED device, reserved with led_get()
++ * @led_cdev: LED device
++ */
++void led_put(struct led_classdev *led_cdev)
++{
++	put_device(led_cdev->dev);
++	module_put(led_cdev->dev->parent->driver->owner);
++}
++EXPORT_SYMBOL_GPL(led_put);
++
+ static int match_name(struct device *dev, const void *data)
+ {
+ 	if (!dev_name(dev))
+diff --git a/drivers/leds/led-of.c b/drivers/leds/led-of.c
+new file mode 100644
+index 000000000000..32631682be07
+--- /dev/null
++++ b/drivers/leds/led-of.c
+@@ -0,0 +1,82 @@
++/*
++ * LED Class Core OF support
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/leds.h>
++#include <linux/of.h>
++#include <linux/leds-of.h>
++#include <linux/module.h>
++
++#include "leds.h"
++
++/* find OF node for the given led_cdev */
++static struct device_node *find_led_of_node(struct led_classdev *led_cdev)
++{
++	struct device *led_dev = led_cdev->dev;
++	struct device_node *child;
++
++	for_each_child_of_node(led_dev->parent->of_node, child) {
++		if (of_property_match_string(child, "label", led_cdev->name) = 0)
++			return child;
 +	}
 +
- setmode:
-+	uvesafb_reset(task);
- 	task->t.regs.eax = 0x4f02;
- 	task->t.regs.ebx = mode->mode_id | 0x4000;	/* use LFB */
- 
-@@ -1296,7 +1312,6 @@ setmode:
- 			printk(KERN_WARNING "uvesafb: mode switch failed "
- 				"(eax=0x%x, err=%d). Trying again with "
- 				"default timings.\n", task->t.regs.eax, err);
--			uvesafb_reset(task);
- 			kfree(crtc);
- 			crtc = NULL;
- 			info->var.pixclock = 0;
-@@ -1330,6 +1345,14 @@ setmode:
- 				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
- 	info->fix.line_length = mode->bytes_per_scan_line;
- 
-+	if (scaling >= 0) {
-+		uvesafb_reset(task);
-+		task->t.regs.eax = 0x4f14;
-+		task->t.regs.ebx = 0x0102;
-+		task->t.regs.ecx = scaling;
-+		uvesafb_exec(task);
++	return NULL;
++}
++
++static int led_match_led_node(struct device *led_dev, const void *data)
++{
++	struct led_classdev *led_cdev = dev_get_drvdata(led_dev);
++	const struct device_node *target_node = data;
++	struct device_node *led_node;
++
++	led_node = find_led_of_node(led_cdev);
++	if (!led_node)
++		return 0;
++
++	of_node_put(led_node);
++
++	return led_node = target_node ? 1 : 0;
++}
++
++/**
++ * of_led_get() - request a LED device via the LED framework
++ * @np: device node to get the LED device from
++ *
++ * Returns the LED device parsed from the phandle specified in the "leds"
++ * property of a device tree node or a negative error-code on failure.
++ *
++ * The caller must use led_put() to release the device after use.
++ */
++struct led_classdev *of_led_get(struct device_node *np)
++{
++	struct device *led_dev;
++	struct led_classdev *led_cdev;
++	struct device_node *led_node;
++
++	led_node = of_parse_phandle(np, "leds", 0);
++	if (!led_node)
++		return ERR_PTR(-ENODEV);
++
++	led_dev = class_find_device(leds_class, NULL, led_node,
++		led_match_led_node);
++
++	of_node_put(led_node);
++
++	if (!led_dev) {
++		pr_err("failed to find led device for node %s, deferring probe\n",
++			of_node_full_name(led_node));
++		return ERR_PTR(-EPROBE_DEFER);
 +	}
 +
- out:
- 	kfree(crtc);
- 	uvesafb_free(task);
-@@ -2019,6 +2042,9 @@ MODULE_PARM_DESC(vbemode,
- 	"VBE mode number to set, overrides the 'mode' option");
- module_param_string(v86d, v86d_path, PATH_MAX, 0660);
- MODULE_PARM_DESC(v86d, "Path to the v86d userspace helper.");
-+module_param(scaling, short, 0660);
-+MODULE_PARM_DESC(scaling,
-+	"Scaling option for nvidia (0 - scaled, 1 - unscaled centered, 2 - unscaled in left corner");
- 
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Michal Januszewski <spock@gentoo.org>");
-Index: linux-4.0.9/Documentation/fb/uvesafb.txt
-=================================--- linux-4.0.9.orig/Documentation/fb/uvesafb.txt
-+++ linux-4.0.9/Documentation/fb/uvesafb.txt
-@@ -128,6 +128,14 @@ v86d:path
-         need to use it and have uvesafb built into the kernel, use
-         uvesafb.v86d="path".
- 
-+scaling:n
-+	Set scaling on Nvidia cards. Possible values depend on card's BIOS.
-+		-1	- do not change the scaling
-+		0	- scale to full screen
-+		1, 2	- don't scale
-+		3	- scale and preserve aspect ratio
-+		4	- scale with black border around
++	led_cdev = dev_get_drvdata(led_dev);
 +
- Additionally, the following parameters may be provided.  They all override the
- EDID-provided values and BIOS defaults.  Refer to your monitor's specs to get
- the correct values for maxhf, maxvf and maxclk for your hardware.
++	if (!try_module_get(led_cdev->dev->parent->driver->owner))
++		return ERR_PTR(-ENODEV);
++
++	return led_cdev;
++}
++EXPORT_SYMBOL_GPL(of_led_get);
+diff --git a/drivers/leds/leds.h b/drivers/leds/leds.h
+index bc89d7ace2c4..ccc3abb417d4 100644
+--- a/drivers/leds/leds.h
++++ b/drivers/leds/leds.h
+@@ -46,6 +46,7 @@ static inline int led_get_brightness(struct led_classdev *led_cdev)
+ 
+ void led_stop_software_blink(struct led_classdev *led_cdev);
+ 
++extern struct class *leds_class;
+ extern struct rw_semaphore leds_list_lock;
+ extern struct list_head leds_list;
+ 
+diff --git a/include/linux/leds-of.h b/include/linux/leds-of.h
+new file mode 100644
+index 000000000000..7e8e64bd9811
+--- /dev/null
++++ b/include/linux/leds-of.h
+@@ -0,0 +1,26 @@
++/*
++ * OF support for leds
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#ifndef __LINUX_LEDS_OF_H_INCLUDED
++#define __LINUX_LEDS_OF_H_INCLUDED
++
++#if IS_ENABLED(CONFIG_OF) && IS_ENABLED(CONFIG_LEDS_CLASS)
++
++extern struct led_classdev *of_led_get(struct device_node *np);
++
++#else
++
++static inline struct led_classdev *of_led_get(struct device_node *np)
++{
++	return -ENODEV;
++}
++
++#endif
++
++#endif /* __LINUX_LEDS_OF_H_INCLUDED */
+diff --git a/include/linux/leds.h b/include/linux/leds.h
+index b122eeafb5dc..0fce71a06d68 100644
+--- a/include/linux/leds.h
++++ b/include/linux/leds.h
+@@ -113,6 +113,8 @@ extern void devm_led_classdev_unregister(struct device *parent,
+ extern void led_classdev_suspend(struct led_classdev *led_cdev);
+ extern void led_classdev_resume(struct led_classdev *led_cdev);
+ 
++extern void led_put(struct led_classdev *led_cdev);
++
+ /**
+  * led_blink_set - set blinking with software fallback
+  * @led_cdev: the LED to start blinking
+-- 
+2.1.4
+

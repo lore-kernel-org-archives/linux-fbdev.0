@@ -1,54 +1,52 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Date: Mon, 07 Sep 2015 12:23:38 +0000
-Subject: [PATCH v4 13/22] backlight: Probe backlight devices on demand
-Message-Id: <1441628627-5143-14-git-send-email-tomeu.vizoso@collabora.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 08 Sep 2015 11:19:33 +0000
+Subject: [PATCHv2 0/3] backlight: led-backlight driver
+Message-Id: <1441711176-4258-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1441628627-5143-1-git-send-email-tomeu.vizoso@collabora.com>
-In-Reply-To: <1441628627-5143-1-git-send-email-tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+To: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-When looking up a backlight device through its OF node, probe it if it
-hasn't already.
+This series aims to add a led-backlight driver, similar to pwm-backlight, but
+using a LED class device underneath.
 
-The goal is to reduce deferred probes to a minimum, as it makes it very
-cumbersome to find out why a device failed to probe, and can introduce
-very big delays in when a critical device is probed.
+LED framework has no support for DT or getting a LED class driver from another
+kernel driver, so I added minimal functionality to led-class to get
+led-backlight working.
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
----
+Changes to v1:
+- Split LED OF parts into separate .h and .c files
+- Check for CONFIG_OF and CONFIG_LEDS_CLASS where relevant to leave unused code
+  out.
+- Improved error prints and comments a bit
+- Added put_device() into led_put(), as the device was gotten from
+  class_find_device() which requires a put_device() call.
 
-Changes in v4: None
-Changes in v3: None
-Changes in v2: None
+ Tomi
 
- drivers/video/backlight/backlight.c | 3 +++
- 1 file changed, 3 insertions(+)
+Tomi Valkeinen (3):
+  leds: Add of_led_get() and led_put()
+  backlight: add led-backlight driver
+  devicetree: Add led-backlight binding
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index bddc8b17a4d8..9bcdc16eacdf 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -16,6 +16,7 @@
- #include <linux/err.h>
- #include <linux/fb.h>
- #include <linux/slab.h>
-+#include <linux/of_device.h>
- 
- #ifdef CONFIG_PMAC_BACKLIGHT
- #include <asm/backlight.h>
-@@ -559,6 +560,8 @@ struct backlight_device *of_find_backlight_by_node(struct device_node *node)
- {
- 	struct device *dev;
- 
-+	of_device_probe(node);
-+
- 	dev = class_find_device(backlight_class, NULL, node, of_parent_match);
- 
- 	return dev ? to_backlight_device(dev) : NULL;
+ .../bindings/video/backlight/led-backlight.txt     |  30 +++
+ drivers/leds/Makefile                              |   6 +-
+ drivers/leds/led-class.c                           |  13 +-
+ drivers/leds/led-of.c                              |  82 +++++++
+ drivers/leds/leds.h                                |   1 +
+ drivers/video/backlight/Kconfig                    |   7 +
+ drivers/video/backlight/Makefile                   |   1 +
+ drivers/video/backlight/led_bl.c                   | 235 +++++++++++++++++++++
+ include/linux/leds-of.h                            |  26 +++
+ include/linux/leds.h                               |   2 +
+ 10 files changed, 401 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/led-backlight.txt
+ create mode 100644 drivers/leds/led-of.c
+ create mode 100644 drivers/video/backlight/led_bl.c
+ create mode 100644 include/linux/leds-of.h
+
 -- 
-2.4.3
+2.1.4
 

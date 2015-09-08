@@ -1,64 +1,40 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Date: Fri, 25 Sep 2015 11:34:29 +0000
-Subject: Re: omapdss: Division by zero in kernel
-Message-Id: <20150925113429.GF27119@pali>
+From: Olliver Schinagl <o.schinagl@ultimaker.com>
+Date: Tue, 08 Sep 2015 19:19:49 +0000
+Subject: [PATCH 0/2] SSD1307fb updates
+Message-Id: <1441739991-4676-1-git-send-email-o.schinagl@ultimaker.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201507241803.42891@pali>
- <CAHnt0GX6442mtZ=J6CS_60TyTeUu==oROcf4Y=upHGSr71X3EA@mail.gmail.com>
- <20150819081139.GB15712@pali>
- <20150917051644.GA6665@amd>
-In-Reply-To: <20150917051644.GA6665@amd>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Peter Teoh <htmldeveloper@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jyri Sarha <jsarha@ti.com>, omap <linux-omap@vger.kernel.org>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>, Nishanth Menon <nm@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Olliver Schinagl <oliver-dxLnbx3+1qmEVqv0pETR8A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp-PRwTpj6vllL6m1q2wEL4bg@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Prabhakar Lad <prabhakar.csengg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Olliver Schinagl <o.schinagl-U3FVU11NWA554TAoqtyWWQ@public.gmane.org>
 
-On Thursday 17 September 2015 07:16:44 Pavel Machek wrote:
->=20
-> > >         if (image->depth =3D 1) {
-> > >                 if (p->fix.visual =3D FB_VISUAL_TRUECOLOR ||
-> > >                     p->fix.visual =3D FB_VISUAL_DIRECTCOLOR) {
-> > >                         fgcolor =3D ((u32*)(p->pseudo_palette))[image=
-->fg_color];
-> > >                         bgcolor =3D ((u32*)(p->pseudo_palette))[image=
-->bg_color];
-> > >                 } else {
-> > >                         fgcolor =3D image->fg_color;
-> > >                         bgcolor =3D image->bg_color;
-> > >                 }
-> > >=20
-> > >                 if (32 % bpp =3D 0 && !start_index && !pitch_index &&
-> > >                     ((width & (32/bpp-1)) =3D 0) &&
-> > >                     bpp >=3D 8 && bpp <=3D 32)
-> > >                         fast_imageblit(image, p, dst1, fgcolor, bgcol=
-or);
-> > >                 else
-> > >                         slow_imageblit(image, p, dst1, fgcolor, bgcol=
-or,
-> > >                                         start_index, pitch_index);
-> > >         } else
-> > >                 color_imageblit(image, p, dst1, start_index, pitch_i
-> > >=20
-> > >=20
-> > > Notice that bpp is not checked for zero, and thus bpp=3D0 is totally
-> > > feasible?   resulting in 32/bpp crashing the kernel?
-> > >=20
-> >=20
-> > Hm... this could really be a problem! But how to patch it? Which branch
-> > should be called (fast_ or slow_ function) if bpp is zero?
-> >=20
-> > And is there some way to force kernel to dump backtrace into dmesg when
-> > division by zero occur?
->=20
-> You can do WARN_ON(bpp=3D1) ... and should probably return in that
-> case.
->=20
-> 								Pavel
+Having a few ssd1309 128x64 OLED displays laying around, I added support for it to the existing 1307fb driver. While doing this I noticed the headers where out of order so I fixed those as well.
 
-Does not make sense to call slow_ function? In that if condition check
-also that bpp is nonzero...
+For this specific display, the following can be used in a i2c node for example.
 
---=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+	ssd1309: oled@3c {
+		compatible = "solomon,ssd1309fb-i2c";
+		pinctrl-names = "default";
+		pinctrl-0 = <&oled_pins>;
+		reg = <0x3c>;
+		reset-gpios = <&pio 8 13 GPIO_ACTIVE_HIGH>;
+		solomon,width = <128>;
+		solomon,height = <64>;
+		solomon,com-invdir;
+		solomon,page-offset = <0>;
+		solomon,prechargep1 = <2>;
+		solomon,prechargep2 = <8>;
+	};
+
+Olliver Schinagl (2):
+  fbdev: ssd1307fb: alphabetize headers
+  fbdev: ssd1307fb: add ssd1309 support
+
+ .../devicetree/bindings/video/ssd1307fb.txt         |  3 ++-
+ drivers/video/fbdev/ssd1307fb.c                     | 21 ++++++++++++++++-----
+ 2 files changed, 18 insertions(+), 6 deletions(-)
+
+-- 
+2.1.4
+

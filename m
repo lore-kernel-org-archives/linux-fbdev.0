@@ -1,79 +1,77 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Sep 2015 11:11:28 +0000
-Subject: Re: [PATCH 0/2] SSD1307fb updates
-Message-Id: <5603DA60.3050402@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="UtHJcEq1hH7QjaIbUDP4IXlmhdC7nX6Gk"
+From: Olliver Schinagl <o.schinagl@ultimaker.com>
+Date: Tue, 08 Sep 2015 19:19:51 +0000
+Subject: [PATCH 2/2] fbdev: ssd1307fb: add ssd1309 support
+Message-Id: <1441739991-4676-3-git-send-email-o.schinagl@ultimaker.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1441739991-4676-1-git-send-email-o.schinagl@ultimaker.com>
 In-Reply-To: <1441739991-4676-1-git-send-email-o.schinagl-U3FVU11NWA554TAoqtyWWQ@public.gmane.org>
-To: Olliver Schinagl <o.schinagl-U3FVU11NWA554TAoqtyWWQ@public.gmane.org>, Olliver Schinagl <oliver-dxLnbx3+1qmEVqv0pETR8A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>
-Cc: =?UTF-8?Q?Thomas_Niederpr=c3=bcm?= <niederp-PRwTpj6vllL6m1q2wEL4bg@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Prabhakar Lad <prabhakar.csengg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Olliver Schinagl <oliver-dxLnbx3+1qmEVqv0pETR8A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, =?UTF-8?q?Thomas=20Niederpr=C3=BCm?= <niederp-PRwTpj6vllL6m1q2wEL4bg@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Prabhakar Lad <prabhakar.csengg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Olliver Schinagl <o.schinagl-U3FVU11NWA554TAoqtyWWQ@public.gmane.org>
 
---UtHJcEq1hH7QjaIbUDP4IXlmhdC7nX6Gk
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+The ssd1307fb driver supports a lot of chips from the ssd130xfb series.
+This patch adds the ssd1309 chip, a 128x64 OLED driver chip. It is very
+similar to the other chips and only has some definitions added to
+support it.
 
+Signed-off-by: Olliver Schinagl <o.schinagl@ultimaker.com>
+---
+ Documentation/devicetree/bindings/video/ssd1307fb.txt |  3 ++-
+ drivers/video/fbdev/ssd1307fb.c                       | 11 +++++++++++
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
+diff --git a/Documentation/devicetree/bindings/video/ssd1307fb.txt b/Documentation/devicetree/bindings/video/ssd1307fb.txt
+index d1be78d..eb31ed4 100644
+--- a/Documentation/devicetree/bindings/video/ssd1307fb.txt
++++ b/Documentation/devicetree/bindings/video/ssd1307fb.txt
+@@ -2,7 +2,8 @@
+ 
+ Required properties:
+   - compatible: Should be "solomon,<chip>fb-<bus>". The only supported bus for
+-    now is i2c, and the supported chips are ssd1305, ssd1306 and ssd1307.
++    now is i2c, and the supported chips are ssd1305, ssd1306, ssd1307 and
++    ssd1309.
+   - reg: Should contain address of the controller on the I2C bus. Most likely
+          0x3c or 0x3d
+   - pwm: Should contain the pwm to use according to the OF device tree PWM
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 339615c..8fc7960 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -495,6 +495,12 @@ static struct ssd1307fb_deviceinfo ssd1307fb_ssd1307_deviceinfo = {
+ 	.need_pwm = 1,
+ };
+ 
++static struct ssd1307fb_deviceinfo ssd1307fb_ssd1309_deviceinfo = {
++	.default_vcomh = 0x34,
++	.default_dclk_div = 1,
++	.default_dclk_frq = 10,
++};
++
+ static const struct of_device_id ssd1307fb_of_match[] = {
+ 	{
+ 		.compatible = "solomon,ssd1305fb-i2c",
+@@ -508,6 +514,10 @@ static const struct of_device_id ssd1307fb_of_match[] = {
+ 		.compatible = "solomon,ssd1307fb-i2c",
+ 		.data = (void *)&ssd1307fb_ssd1307_deviceinfo,
+ 	},
++	{
++		.compatible = "solomon,ssd1309fb-i2c",
++		.data = (void *)&ssd1307fb_ssd1309_deviceinfo,
++	},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
+@@ -708,6 +718,7 @@ static const struct i2c_device_id ssd1307fb_i2c_id[] = {
+ 	{ "ssd1305fb", 0 },
+ 	{ "ssd1306fb", 0 },
+ 	{ "ssd1307fb", 0 },
++	{ "ssd1309fb", 0 },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, ssd1307fb_i2c_id);
+-- 
+2.1.4
 
-On 08/09/15 22:19, Olliver Schinagl wrote:
-> Having a few ssd1309 128x64 OLED displays laying around, I added suppor=
-t for it to the existing 1307fb driver. While doing this I noticed the he=
-aders where out of order so I fixed those as well.
->=20
-> For this specific display, the following can be used in a i2c node for =
-example.
->=20
-> 	ssd1309: oled@3c {
-> 		compatible =3D "solomon,ssd1309fb-i2c";
-> 		pinctrl-names =3D "default";
-> 		pinctrl-0 =3D <&oled_pins>;
-> 		reg =3D <0x3c>;
-> 		reset-gpios =3D <&pio 8 13 GPIO_ACTIVE_HIGH>;
-> 		solomon,width =3D <128>;
-> 		solomon,height =3D <64>;
-> 		solomon,com-invdir;
-> 		solomon,page-offset =3D <0>;
-> 		solomon,prechargep1 =3D <2>;
-> 		solomon,prechargep2 =3D <8>;
-> 	};
->=20
-> Olliver Schinagl (2):
->   fbdev: ssd1307fb: alphabetize headers
->   fbdev: ssd1307fb: add ssd1309 support
->=20
->  .../devicetree/bindings/video/ssd1307fb.txt         |  3 ++-
->  drivers/video/fbdev/ssd1307fb.c                     | 21 +++++++++++++=
-+++-----
->  2 files changed, 18 insertions(+), 6 deletions(-)
->=20
-
-Thanks, queued for 4.4.
-
- Tomi
-
-
---UtHJcEq1hH7QjaIbUDP4IXlmhdC7nX6Gk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWA9pgAAoJEPo9qoy8lh71guUQAJAjnKwhRqlY9ogvX7Bybx1e
-iaXFSOjJckWNC9bWY1c0E+m4Bbsl621ITMmNiQe09pfPmO+fe2RToXoeFVR3Hcqp
-WpuHUjS/tSqE9o/U3/7IiWTe6A26uO8TXdVujpy1qlIqmxbxC9c1osa+NeHNXxi/
-u4/MRRuMnnjdOVyaOAgHhwhD9kleb6IfqVtGKgPwPBnekTAoGofLnHMDk4kjXFUH
-2a0PeXVC8Q3ZZseit9usFbkSOVAV8cSVnPG57kP2nQEUaMdhd4uhMFEA1mr/nGDr
-t2rm1maZ9xtrEjrPTUvgigPMKnDJ0Gc7Yl6eXRSjdM/PymIMuEPYheg5eyaJ68S6
-XPkqAjd5g5VLv3gJ7+bEy8Ur06XKfdzjgCOtdBVNE7RA7Z80lEEHfYTYkUw+91hY
-90wFSznP+30aOOtetCHLbGjJlo+sFzI5naC3RDQn+6qud+rNl8vgUq63gQOXkpWW
-SNPb0apzmeEaoizaotBrJ1mlzHk04/49cmtVbGZQ4jz6geGI0bnHpl7fRorYHQ0W
-DqZP3cl+Y4TGIk3MW9D6W+XeNMtal6VZjR9cgZ6Vefs7yxnaaP/enpS89AX1cLEs
-l1OR5lUTNeW0bHXUkkwwEBbrSLfjAywpV+PEzKwiLQcfOolBLjwVIjSbh0Me5gYG
-VF8fLBY0eYtSGFzjvu62
-=LeeH
------END PGP SIGNATURE-----
-
---UtHJcEq1hH7QjaIbUDP4IXlmhdC7nX6Gk--

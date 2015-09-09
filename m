@@ -1,275 +1,56 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 22 Sep 2015 21:49:25 +0000
-Subject: Re: [PATCH v3 01/12] pwm: introduce default period and polarity concepts
-Message-Id: <20150922214925.GC3442@x1>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Wed, 09 Sep 2015 21:08:18 +0000
+Subject: [PATCH 09/13] Hide bp_type_idx behind #ifdef __KERNEL__
+Message-Id: <1441832902-28993-10-git-send-email-palmer@dabbelt.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
- <1442828009-6241-2-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1442828009-6241-2-git-send-email-boris.brezillon@free-electrons.com>
+References: <2644177.lVCYzIBfPW@wuerfel>
+ <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+In-Reply-To: <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: arnd@arndb.de
+Cc: 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org, Palmer Dabbelt <palmer@dabbelt.com>
 
-On Mon, 21 Sep 2015, Boris Brezillon wrote:
+I'm actually not sure what to do here: if this enum is meant to be
+used by userspace, then it has to be the same regardless of kernel
+configuration.  One option would be to have the kernel expose all the
+values to userspace and then map them internally if
+CONFIG_HAVE_MIXED_BREAKPOINT_REGS isn't set, but that feels like it'd
+be more invasive.
 
-> When requested by a user, the PWM is assigned a default period and polari=
-ty
-> extracted from the DT, the platform data or statically set by the driver.
-> Those default values are currently stored in the period and polarity
-> fields of the pwm_device struct, but they will be stored somewhere else
-> once we have introduced the architecture allowing for hardware state
-> retrieval.
->=20
-> The pwm_set_default_polarity and pwm_set_default_period should only be
-> used by PWM drivers or the PWM core infrastructure to specify the
-> default period and polarity values.
->=20
-> PWM users might call the pwm_get_default_period to query the default
-> period value. There is currently no helper to query the default
-> polarity, but it might be added later on if there is a need for it.
->=20
-> This patch also modifies all the places where the default helpers should
-> be used in place of the standard ones.
->=20
-> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> ---
->  drivers/leds/leds-pwm.c              |  2 +-
->  drivers/pwm/core.c                   | 14 +++++++-------
->  drivers/pwm/pwm-pxa.c                |  2 +-
->  drivers/pwm/pwm-sun4i.c              |  3 ++-
->  drivers/regulator/pwm-regulator.c    |  4 ++--
->  drivers/video/backlight/lm3630a_bl.c |  4 ++--
->  drivers/video/backlight/pwm_bl.c     |  2 +-
+Here I took the simple and fail-fast route to hide all the
+definitions.
 
-Acked-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
+Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
+Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
+---
+ include/uapi/linux/hw_breakpoint.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
->  drivers/video/fbdev/ssd1307fb.c      |  2 +-
->  include/linux/pwm.h                  | 17 +++++++++++++++++
->  9 files changed, 34 insertions(+), 16 deletions(-)
->=20
-> diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
-> index 1d07e3e..2c564d1 100644
-> --- a/drivers/leds/leds-pwm.c
-> +++ b/drivers/leds/leds-pwm.c
-> @@ -125,7 +125,7 @@ static int led_pwm_add(struct device *dev, struct led=
-_pwm_priv *priv,
->  	if (led_data->can_sleep)
->  		INIT_WORK(&led_data->work, led_pwm_work);
-> =20
-> -	led_data->period =3D pwm_get_period(led_data->pwm);
-> +	led_data->period =3D pwm_get_default_period(led_data->pwm);
->  	if (!led_data->period && (led->pwm_period_ns > 0))
->  		led_data->period =3D led->pwm_period_ns;
-> =20
-> diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-> index 3f9df3e..732375d 100644
-> --- a/drivers/pwm/core.c
-> +++ b/drivers/pwm/core.c
-> @@ -146,12 +146,12 @@ of_pwm_xlate_with_flags(struct pwm_chip *pc, const =
-struct of_phandle_args *args)
->  	if (IS_ERR(pwm))
->  		return pwm;
-> =20
-> -	pwm_set_period(pwm, args->args[1]);
-> +	pwm_set_default_period(pwm, args->args[1]);
-> =20
->  	if (args->args[2] & PWM_POLARITY_INVERTED)
-> -		pwm_set_polarity(pwm, PWM_POLARITY_INVERSED);
-> +		pwm_set_default_polarity(pwm, PWM_POLARITY_INVERSED);
->  	else
-> -		pwm_set_polarity(pwm, PWM_POLARITY_NORMAL);
-> +		pwm_set_default_polarity(pwm, PWM_POLARITY_NORMAL);
-> =20
->  	return pwm;
->  }
-> @@ -172,7 +172,7 @@ of_pwm_simple_xlate(struct pwm_chip *pc, const struct=
- of_phandle_args *args)
->  	if (IS_ERR(pwm))
->  		return pwm;
-> =20
-> -	pwm_set_period(pwm, args->args[1]);
-> +	pwm_set_default_period(pwm, args->args[1]);
-> =20
->  	return pwm;
->  }
-> @@ -268,7 +268,7 @@ int pwmchip_add_with_polarity(struct pwm_chip *chip,
->  		pwm->chip =3D chip;
->  		pwm->pwm =3D chip->base + i;
->  		pwm->hwpwm =3D i;
-> -		pwm->polarity =3D polarity;
-> +		pwm_set_default_polarity(pwm, polarity);
-> =20
->  		radix_tree_insert(&pwm_tree, pwm->pwm, pwm);
->  	}
-> @@ -730,8 +730,8 @@ struct pwm_device *pwm_get(struct device *dev, const =
-char *con_id)
->  	if (IS_ERR(pwm))
->  		goto out;
-> =20
-> -	pwm_set_period(pwm, chosen->period);
-> -	pwm_set_polarity(pwm, chosen->polarity);
-> +	pwm_set_default_period(pwm, chosen->period);
-> +	pwm_set_default_polarity(pwm, chosen->polarity);
-> =20
->  out:
->  	mutex_unlock(&pwm_lookup_lock);
-> diff --git a/drivers/pwm/pwm-pxa.c b/drivers/pwm/pwm-pxa.c
-> index cb2f702..65b80aa 100644
-> --- a/drivers/pwm/pwm-pxa.c
-> +++ b/drivers/pwm/pwm-pxa.c
-> @@ -160,7 +160,7 @@ pxa_pwm_of_xlate(struct pwm_chip *pc, const struct of=
-_phandle_args *args)
->  	if (IS_ERR(pwm))
->  		return pwm;
-> =20
-> -	pwm_set_period(pwm, args->args[0]);
-> +	pwm_set_default_period(pwm, args->args[0]);
-> =20
->  	return pwm;
->  }
-> diff --git a/drivers/pwm/pwm-sun4i.c b/drivers/pwm/pwm-sun4i.c
-> index cd9dde5..a364fb7 100644
-> --- a/drivers/pwm/pwm-sun4i.c
-> +++ b/drivers/pwm/pwm-sun4i.c
-> @@ -333,7 +333,8 @@ static int sun4i_pwm_probe(struct platform_device *pd=
-ev)
->  	val =3D sun4i_pwm_readl(pwm, PWM_CTRL_REG);
->  	for (i =3D 0; i < pwm->chip.npwm; i++)
->  		if (!(val & BIT_CH(PWM_ACT_STATE, i)))
-> -			pwm->chip.pwms[i].polarity =3D PWM_POLARITY_INVERSED;
-> +			pwm_set_default_polarity(&pwm->chip.pwms[i],
-> +						 PWM_POLARITY_INVERSED);
->  	clk_disable_unprepare(pwm->clk);
-> =20
->  	return 0;
-> diff --git a/drivers/regulator/pwm-regulator.c b/drivers/regulator/pwm-re=
-gulator.c
-> index fc3166d..cc549b7 100644
-> --- a/drivers/regulator/pwm-regulator.c
-> +++ b/drivers/regulator/pwm-regulator.c
-> @@ -56,7 +56,7 @@ static int pwm_regulator_set_voltage_sel(struct regulat=
-or_dev *rdev,
->  	int dutycycle;
->  	int ret;
-> =20
-> -	pwm_reg_period =3D pwm_get_period(drvdata->pwm);
-> +	pwm_reg_period =3D pwm_get_default_period(drvdata->pwm);
-> =20
->  	dutycycle =3D (pwm_reg_period *
->  		    drvdata->duty_cycle_table[selector].dutycycle) / 100;
-> @@ -114,7 +114,7 @@ static int pwm_regulator_set_voltage(struct regulator=
-_dev *rdev,
->  {
->  	struct pwm_regulator_data *drvdata =3D rdev_get_drvdata(rdev);
->  	unsigned int ramp_delay =3D rdev->constraints->ramp_delay;
-> -	unsigned int period =3D pwm_get_period(drvdata->pwm);
-> +	unsigned int period =3D pwm_get_default_period(drvdata->pwm);
->  	int duty_cycle;
->  	int ret;
-> =20
-> diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlig=
-ht/lm3630a_bl.c
-> index 35fe482..449ebc3 100644
-> --- a/drivers/video/backlight/lm3630a_bl.c
-> +++ b/drivers/video/backlight/lm3630a_bl.c
-> @@ -162,7 +162,7 @@ static int lm3630a_intr_config(struct lm3630a_chip *p=
-chip)
-> =20
->  static void lm3630a_pwm_ctrl(struct lm3630a_chip *pchip, int br, int br_=
-max)
->  {
-> -	unsigned int period =3D pwm_get_period(pchip->pwmd);
-> +	unsigned int period =3D pwm_get_default_period(pchip->pwmd);
->  	unsigned int duty =3D br * period / br_max;
-> =20
->  	pwm_config(pchip->pwmd, duty, period);
-> @@ -425,7 +425,7 @@ static int lm3630a_probe(struct i2c_client *client,
->  			return PTR_ERR(pchip->pwmd);
->  		}
->  	}
-> -	pchip->pwmd->period =3D pdata->pwm_period;
-> +	pwm_set_default_period(pchip->pwmd, pdata->pwm_period);
-> =20
->  	/* interrupt enable  : irq 0 is not allowed */
->  	pchip->irq =3D client->irq;
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
-wm_bl.c
-> index eff379b..ae498c1 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -294,7 +294,7 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	 * set the period from platform data if it has not already been set
->  	 * via the PWM lookup table.
->  	 */
-> -	pb->period =3D pwm_get_period(pb->pwm);
-> +	pb->period =3D pwm_get_default_period(pb->pwm);
->  	if (!pb->period && (data->pwm_period_ns > 0)) {
->  		pb->period =3D data->pwm_period_ns;
->  		pwm_set_period(pb->pwm, data->pwm_period_ns);
-> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd130=
-7fb.c
-> index 93f4c90..ab3daf0 100644
-> --- a/drivers/video/fbdev/ssd1307fb.c
-> +++ b/drivers/video/fbdev/ssd1307fb.c
-> @@ -294,7 +294,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
->  			return PTR_ERR(par->pwm);
->  		}
-> =20
-> -		par->pwm_period =3D pwm_get_period(par->pwm);
-> +		par->pwm_period =3D pwm_get_default_period(par->pwm);
->  		/* Enable the PWM */
->  		pwm_config(par->pwm, par->pwm_period / 2, par->pwm_period);
->  		pwm_enable(par->pwm);
-> diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-> index d681f68..31239a9 100644
-> --- a/include/linux/pwm.h
-> +++ b/include/linux/pwm.h
-> @@ -115,11 +115,22 @@ static inline void pwm_set_period(struct pwm_device=
- *pwm, unsigned int period)
->  		pwm->period =3D period;
->  }
-> =20
-> +static inline void pwm_set_default_period(struct pwm_device *pwm,
-> +					  unsigned int period)
-> +{
-> +	pwm_set_period(pwm, period);
-> +}
-> +
->  static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
->  {
->  	return pwm ? pwm->period : 0;
->  }
-> =20
-> +static inline unsigned int pwm_get_default_period(const struct pwm_devic=
-e *pwm)
-> +{
-> +	return pwm_get_period(pwm);
-> +}
-> +
->  static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned i=
-nt duty)
->  {
->  	if (pwm)
-> @@ -136,6 +147,12 @@ static inline unsigned int pwm_get_duty_cycle(const =
-struct pwm_device *pwm)
->   */
->  int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
-> =20
-> +static inline void pwm_set_default_polarity(struct pwm_device *pwm,
-> +					    enum pwm_polarity polarity)
-> +{
-> +	pwm_set_polarity(pwm, polarity);
-> +}
-> +
->  static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device=
- *pwm)
->  {
->  	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
+diff --git a/include/uapi/linux/hw_breakpoint.h b/include/uapi/linux/hw_breakpoint.h
+index b04000a2296a..2498bfbf56c4 100644
+--- a/include/uapi/linux/hw_breakpoint.h
++++ b/include/uapi/linux/hw_breakpoint.h
+@@ -17,14 +17,16 @@ enum {
+ 	HW_BREAKPOINT_INVALID   = HW_BREAKPOINT_RW | HW_BREAKPOINT_X,
+ };
+ 
++#ifdef __KERNEL__
+ enum bp_type_idx {
+ 	TYPE_INST 	= 0,
+-#ifdef CONFIG_HAVE_MIXED_BREAKPOINTS_REGS
++#if defined(CONFIG_HAVE_MIXED_BREAKPOINTS_REGS)
+ 	TYPE_DATA	= 0,
+ #else
+ 	TYPE_DATA	= 1,
+ #endif
+ 	TYPE_MAX
+ };
++#endif /* __KERNEL__ */
+ 
+ #endif /* _UAPI_LINUX_HW_BREAKPOINT_H */
+-- 
+2.4.6
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

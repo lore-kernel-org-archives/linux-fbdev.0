@@ -1,70 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 02 Sep 2015 11:25:45 +0000
-Subject: Re: [PATCH] video: fbdev: atmel_lcdfb: remove useless include
-Message-Id: <55E6DCB9.2080204@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="KUplgXDa5OCjEs8pbWXqfHVv1o4NnLftB"
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Wed, 09 Sep 2015 21:08:11 +0000
+Subject: [PATCH 02/13] Always expose __SYSCALL(... fork ...)
+Message-Id: <1441832902-28993-3-git-send-email-palmer@dabbelt.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1439217114-12317-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1439217114-12317-1-git-send-email-alexandre.belloni@free-electrons.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <2644177.lVCYzIBfPW@wuerfel>
+ <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+In-Reply-To: <1441832902-28993-1-git-send-email-palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: arnd-r2nGTMty4D4@public.gmane.org
+Cc: 3chas3-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org, mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, jikos-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arch-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-atm-general-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Palmer Dabbelt <palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
 
---KUplgXDa5OCjEs8pbWXqfHVv1o4NnLftB
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+I think this change actually doesn't do anything: __NR_fork was still
+being defined either way, and on my machine fork() in <unistd.h> comes
+from libc.
 
+That said, I don't think there's any way to determine this
+automatically, so this at least quiets the checker.
 
+Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
+Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
+Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
+---
+ include/uapi/asm-generic/unistd.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-On 10/08/15 17:31, Alexandre Belloni wrote:
-> Definitions from linux/platform_data/atmel.h are not used, remove the
-> include.
->=20
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>=
+diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
+index e016bd9b1a04..e027ef7aa01f 100644
+--- a/include/uapi/asm-generic/unistd.h
++++ b/include/uapi/asm-generic/unistd.h
+@@ -865,11 +865,11 @@ __SYSCALL(__NR_uselib, sys_uselib)
+ __SYSCALL(__NR__sysctl, sys_sysctl)
+ 
+ #define __NR_fork 1079
+-#ifdef CONFIG_MMU
++#if !defined(__KERNEL__) || defined(CONFIG_MMU)
+ __SYSCALL(__NR_fork, sys_fork)
+ #else
+ __SYSCALL(__NR_fork, sys_ni_syscall)
+-#endif /* CONFIG_MMU */
++#endif /* !__KERNEL__ || CONFIG_MMU */
+ 
+ #undef __NR_syscalls
+ #define __NR_syscalls (__NR_fork+1)
+-- 
+2.4.6
 
-> ---
->  drivers/video/fbdev/atmel_lcdfb.c | 1 -
->  1 file changed, 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/at=
-mel_lcdfb.c
-> index abadc490fa1f..a5006788647c 100644
-> --- a/drivers/video/fbdev/atmel_lcdfb.c
-> +++ b/drivers/video/fbdev/atmel_lcdfb.c
-> @@ -19,7 +19,6 @@
->  #include <linux/backlight.h>
->  #include <linux/gfp.h>
->  #include <linux/module.h>
-> -#include <linux/platform_data/atmel.h>
->  #include <linux/of.h>
->  #include <linux/of_device.h>
->  #include <linux/of_gpio.h>
-
-Thanks, queued for 4.3.
-
- Tomi
-
-
---KUplgXDa5OCjEs8pbWXqfHVv1o4NnLftB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJV5ty5AAoJEPo9qoy8lh71JkYQAJroN5DvEprLSTXVytP3bh/m
-QOQRP58XSRRXtXA740qAPdk77MK6prWCtqjm5DdWHZzhylMsXgcUFGZz2CezNac5
-7vJB1h1SdTyER7AsvrGocud8WWApEVgBNpe1iAV6SHOBnVJtd4BN6BRl/oQTt6s9
-z5W8Mc7GQI/IBaokR2gK3oufzR2m5esFXP1pDGlkVJDt+ECVMPXxvwUBvwE6mIrq
-YL7Hg8rB5NfzMT/5b3e/hG8aO7yiUsZdkQ94ARuZRkMsBhk63wP2NKvTpQvYvG2y
-6O98rVErDBkovethFBrWeWJrpoDrgyUeQ67jEhGLGLaS5ePsKY//PF8kKHfcEk7U
-2Bap8FlEKH8ftwBaVYpOLtfTngt7JpLpQYebgmfogHZf4r5lvqOxqf7GT6539iOx
-eaQdN/J5d8bsDcaBzEkIKqCuaOJTo1UWUHzkdanQ4hrusaHLdl249Y1ZwObox+ia
-PmGspeJ5oRB72WNY+lkushNArt8bbcAtQUWRKUVtrjsjZ/db2fLrZ2PoI76LUc2O
-jtYDPFVnyLySOuVDiVPATtFpmGjfS5y9J11+Jg/86jmLpZ/j3CYDppktnfVSLgdM
-Ukt47R0pjStIilSsoEaq47z2KVcKI+IIOsCgKNpPQYnEcDWy00E4RHmhw/376408
-+md8wQBW+4/dXySkHEf7
-=S7nn
------END PGP SIGNATURE-----
-
---KUplgXDa5OCjEs8pbWXqfHVv1o4NnLftB--

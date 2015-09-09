@@ -1,56 +1,70 @@
 From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Wed, 09 Sep 2015 21:08:13 +0000
-Subject: [PATCH 04/13] Always expose MAP_UNINITIALIZED to userspace
-Message-Id: <1441832902-28993-5-git-send-email-palmer@dabbelt.com>
+Date: Wed, 09 Sep 2015 21:08:22 +0000
+Subject: [PATCH 13/13] Re-enable and clean up "check_config()" in headers_check.pl
+Message-Id: <1441832902-28993-14-git-send-email-palmer@dabbelt.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <2644177.lVCYzIBfPW@wuerfel>
  <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
-In-Reply-To: <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+In-Reply-To: <1441832902-28993-1-git-send-email-palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: arnd@arndb.de
-Cc: 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org, Palmer Dabbelt <palmer@dabbelt.com>
+To: arnd-r2nGTMty4D4@public.gmane.org
+Cc: 3chas3-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org, mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, jikos-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arch-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-atm-general-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Palmer Dabbelt <palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
 
-This used to be hidden behind CONFIG_MMAP_ALLOW_UNINITIALIZED, so
-userspace wouldn't actually ever see it.  While I could have kept
-hiding it, the man pages seem to indicate that MAP_UNINITIALIZED
-should be visible:
+I recently got bit by a CONFIG_ in userspace bug.  This has apparently
+happened before, but the check got disabled for triggering too much.
+In order to reduce false positives, I added some hueristics to avoid
+detecting comments.
 
-  mmap(2)
-  MAP_UNINITIALIZED (since Linux 2.6.33)
-    Don't clear anonymous pages.  This flag is intended to improve
-    performance on embedded devices.  This flag is honored only if the
-    kernel was configured with the CONFIG_MMAP_ALLOW_UNINITIALIZED
-    option.  Because of the security implications, that option is
-    normally enabled only on embedded devices (i.e., devices where one
-    has complete control of the contents of user memory).
-
-and since the only time it shows up in my /usr/include is in this
-header I believe this should have been visible to userspace (as
-non-zero, which wouldn't do anything when or'd into the flags) all
-along.
+Since these tests all pass, I've now re-enabled them.
 
 Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
 Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
 Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
 ---
- include/uapi/asm-generic/mman-common.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ scripts/headers_check.pl | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/include/uapi/asm-generic/mman-common.h b/include/uapi/asm-generic/mman-common.h
-index ddc3b36f1046..e58d1911ecc6 100644
---- a/include/uapi/asm-generic/mman-common.h
-+++ b/include/uapi/asm-generic/mman-common.h
-@@ -19,7 +19,7 @@
- #define MAP_TYPE	0x0f		/* Mask for type of mapping */
- #define MAP_FIXED	0x10		/* Interpret addr exactly */
- #define MAP_ANONYMOUS	0x20		/* don't use a file */
--#ifdef CONFIG_MMAP_ALLOW_UNINITIALIZED
-+#if !defined(__KERNEL__) || defined(CONFIG_MMAP_ALLOW_UNINITIALIZED)
- # define MAP_UNINITIALIZED 0x4000000	/* For anonymous mmap, memory could be uninitialized */
- #else
- # define MAP_UNINITIALIZED 0x0		/* Don't support this flag */
+diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
+index 62320f93e903..dd413ad9c850 100755
+--- a/scripts/headers_check.pl
++++ b/scripts/headers_check.pl
+@@ -40,7 +40,7 @@ foreach my $file (@files) {
+ 		&check_asm_types();
+ 		&check_sizetypes();
+ 		&check_declarations();
+-		# Dropped for now. Too much noise &check_config();
++		&check_config();
+ 	}
+ 	close $fh;
+ }
+@@ -76,9 +76,24 @@ sub check_declarations
+ 	}
+ }
+ 
++my $check_config_in_multiline_comment = 0;
+ sub check_config
+ {
+-	if ($line =~ m/[^a-zA-Z0-9_]+CONFIG_([a-zA-Z0-9_]+)[^a-zA-Z0-9_]/) {
++	my $nocomments = $line;
++	$nocomments =~ s/\/\*.*\*\///; # Remove ANSI-style comments (/* to */)
++	$nocomments =~ s/\/\/.*//;     # Remove C99-style comments (// to EOL)
++
++	# Check to see if we're within a multiline comment, and if so
++	# just remove the whole line.  I tried matching on '^ * ', but
++	# there's one header that doesn't prepend multi-line comments
++	# with * so that won't work.
++	if ($nocomments =~ m/\/\*/) { $check_config_in_multiline_comment = 1; }
++	if ($nocomments =~ m/\*\//) { $check_config_in_multiline_comment = 0; }
++	if ($check_config_in_multiline_comment = 1) { $nocomments = "" }
++
++	# Check to see if there is something that looks like CONFIG_
++	# inside a userspace-accessible header file and if so, print that out.
++	if ($nocomments =~ m/[^a-zA-Z0-9_]+CONFIG_([a-zA-Z0-9_]+)[^a-zA-Z0-9_]/) {
+ 		printf STDERR "$filename:$lineno: leaks CONFIG_$1 to userspace where it is not valid\n";
+ 	}
+ }
 -- 
 2.4.6
 

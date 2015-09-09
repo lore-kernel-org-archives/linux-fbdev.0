@@ -1,7 +1,7 @@
 From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Wed, 09 Sep 2015 21:08:15 +0000
-Subject: [PATCH 06/13] Hide ep_take_care_of_epollwakeup() behind #ifdef __KERNEL__
-Message-Id: <1441832902-28993-7-git-send-email-palmer@dabbelt.com>
+Date: Wed, 09 Sep 2015 21:08:13 +0000
+Subject: [PATCH 04/13] Always expose MAP_UNINITIALIZED to userspace
+Message-Id: <1441832902-28993-5-git-send-email-palmer@dabbelt.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <2644177.lVCYzIBfPW@wuerfel>
  <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
@@ -12,34 +12,45 @@ Content-Transfer-Encoding: 7bit
 To: arnd@arndb.de
 Cc: 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org, Palmer Dabbelt <palmer@dabbelt.com>
 
-This doesn't make any sense to expose to userspace.
+This used to be hidden behind CONFIG_MMAP_ALLOW_UNINITIALIZED, so
+userspace wouldn't actually ever see it.  While I could have kept
+hiding it, the man pages seem to indicate that MAP_UNINITIALIZED
+should be visible:
+
+  mmap(2)
+  MAP_UNINITIALIZED (since Linux 2.6.33)
+    Don't clear anonymous pages.  This flag is intended to improve
+    performance on embedded devices.  This flag is honored only if the
+    kernel was configured with the CONFIG_MMAP_ALLOW_UNINITIALIZED
+    option.  Because of the security implications, that option is
+    normally enabled only on embedded devices (i.e., devices where one
+    has complete control of the contents of user memory).
+
+and since the only time it shows up in my /usr/include is in this
+header I believe this should have been visible to userspace (as
+non-zero, which wouldn't do anything when or'd into the flags) all
+along.
 
 Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
 Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
 Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
 ---
- include/uapi/linux/eventpoll.h | 3 +++
- 1 file changed, 3 insertions(+)
+ include/uapi/asm-generic/mman-common.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/uapi/linux/eventpoll.h b/include/uapi/linux/eventpoll.h
-index bc81fb2e1f0e..290426bfb0aa 100644
---- a/include/uapi/linux/eventpoll.h
-+++ b/include/uapi/linux/eventpoll.h
-@@ -61,6 +61,7 @@ struct epoll_event {
- 	__u64 data;
- } EPOLL_PACKED;
- 
-+#ifdef __KERNEL__
- #ifdef CONFIG_PM_SLEEP
- static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)
- {
-@@ -73,4 +74,6 @@ static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)
- 	epev->events &= ~EPOLLWAKEUP;
- }
- #endif
-+#endif /*__KERNEL__*/
-+
- #endif /* _UAPI_LINUX_EVENTPOLL_H */
+diff --git a/include/uapi/asm-generic/mman-common.h b/include/uapi/asm-generic/mman-common.h
+index ddc3b36f1046..e58d1911ecc6 100644
+--- a/include/uapi/asm-generic/mman-common.h
++++ b/include/uapi/asm-generic/mman-common.h
+@@ -19,7 +19,7 @@
+ #define MAP_TYPE	0x0f		/* Mask for type of mapping */
+ #define MAP_FIXED	0x10		/* Interpret addr exactly */
+ #define MAP_ANONYMOUS	0x20		/* don't use a file */
+-#ifdef CONFIG_MMAP_ALLOW_UNINITIALIZED
++#if !defined(__KERNEL__) || defined(CONFIG_MMAP_ALLOW_UNINITIALIZED)
+ # define MAP_UNINITIALIZED 0x4000000	/* For anonymous mmap, memory could be uninitialized */
+ #else
+ # define MAP_UNINITIALIZED 0x0		/* Don't support this flag */
 -- 
 2.4.6
 

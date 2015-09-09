@@ -1,82 +1,81 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Sep 2015 11:31:52 +0000
-Subject: Re: [PATCH v2] fbdev: omap2: connector-dvi: use of_get_i2c_adapter_by_node interface
-Message-Id: <5603DF28.1000309@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="VbSATIctgIht5B8FmoH9FG9kGkLTXHKqT"
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Wed, 09 Sep 2015 21:08:09 +0000
+Subject: Re: [PATCH] Remove #ifdef CONFIG_64BIT from all asm-generic/fcntl.h
+Message-Id: <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442322753-32043-1-git-send-email-vladimir_zapolskiy@mentor.com>
-In-Reply-To: <1442322753-32043-1-git-send-email-vladimir_zapolskiy@mentor.com>
-To: linux-fbdev@vger.kernel.org
+References: <2644177.lVCYzIBfPW@wuerfel>
+In-Reply-To: <2644177.lVCYzIBfPW@wuerfel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: arnd@arndb.de
+Cc: 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org
 
---VbSATIctgIht5B8FmoH9FG9kGkLTXHKqT
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+I cut the RISC-V stuff, but I intend to reply to it later.  As you
+said, it's just a different topic.
 
-On 15/09/15 16:12, Vladimir Zapolskiy wrote:
-> This change is needed to properly lock I2C bus driver, which serves DDC=
-=2E
->=20
-> Prior to this change i2c_put_adapter() is misused, which may lead to
-> an overflow over zero of I2C bus driver user counter.
->=20
-> Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-> ---
-> Changes from v1 to v2:
-> - none, v1 is http://lists.infradead.org/pipermail/linux-arm-kernel/201=
-5-July/354990.html
->=20
-> The original series http://lists.infradead.org/pipermail/linux-arm-kern=
-el/2015-July/354982.html
-> is separated to i2c, dri and fbdev parts, at the moment i2c part
-> with new of_get_i2c_adapter_by_node() interface has been applied.
->=20
->  drivers/video/fbdev/omap2/displays-new/connector-dvi.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/omap2/displays-new/connector-dvi.c b/d=
-rivers/video/fbdev/omap2/displays-new/connector-dvi.c
-> index a8ce920..d811e6d 100644
-> --- a/drivers/video/fbdev/omap2/displays-new/connector-dvi.c
-> +++ b/drivers/video/fbdev/omap2/displays-new/connector-dvi.c
-> @@ -294,7 +294,7 @@ static int dvic_probe_of(struct platform_device *pd=
-ev)
-> =20
->  	adapter_node =3D of_parse_phandle(node, "ddc-i2c-bus", 0);
->  	if (adapter_node) {
-> -		adapter =3D of_find_i2c_adapter_by_node(adapter_node);
-> +		adapter =3D of_get_i2c_adapter_by_node(adapter_node);
->  		if (adapter =3D=3D NULL) {
->  			dev_err(&pdev->dev, "failed to parse ddc-i2c-bus\n");
->  			omap_dss_put_device(ddata->in);
->=20
+>>> However, I did see a lot of similar bugs now that you point me to it:
+>>>
+>>> $  grep -r \\\<CONFIG obj-tmp/usr/include/
+>>> obj-tmp/usr/include/asm-generic/fcntl.h:#ifndef CONFIG_64BIT
+>>> obj-tmp/usr/include/asm-generic/mman-common.h:#ifdef CONFIG_MMAP_ALLOW_UNINITIALIZED
+>>> obj-tmp/usr/include/asm-generic/unistd.h:#ifdef CONFIG_MMU
+>>> obj-tmp/usr/include/asm-generic/unistd.h:#endif /* CONFIG_MMU */
+>>> obj-tmp/usr/include/linux/atmdev.h:#ifdef CONFIG_COMPAT
+>>> obj-tmp/usr/include/linux/elfcore.h:#ifdef CONFIG_BINFMT_ELF_FDPIC
+>>> obj-tmp/usr/include/linux/eventpoll.h:#ifdef CONFIG_PM_SLEEP
+>>> obj-tmp/usr/include/linux/fb.h:#ifdef CONFIG_FB_BACKLIGHT
+>>> obj-tmp/usr/include/linux/flat.h:#ifdef CONFIG_BINFMT_SHARED_FLAT
+>>> obj-tmp/usr/include/linux/hw_breakpoint.h:#ifdef CONFIG_HAVE_MIXED_BREAKPOINTS_REGS
+>>> obj-tmp/usr/include/linux/pktcdvd.h:#if defined(CONFIG_CDROM_PKTCDVD_WCACHE)
+>>> obj-tmp/usr/include/linux/raw.h:#define MAX_RAW_MINORS CONFIG_MAX_RAW_DEVS
+>>> obj-tmp/usr/include/asm/ptrace.h:#ifdef CONFIG_CPU_ENDIAN_BE8
+>>>
+>>> These all have the same problem, and we should fix them, as well as
+>>> (probably) adding an automated check to scripts/headers_install.sh.
+>>
+>> Well, I was going to go fix them all and ran a very similar grep, but
+>> I think I got a lot of false-positives.  If I understand correctly,
+>> it's allowed to have CONFIG_* when guarded by __KERNEL__ in
+>> user-visible headers?
+>
+> That is right.
 
-Thanks, queued for 4.3 fixes.
+It turns out there was actually a header checking script
+(scripts/headers_check.pl), and it already had a check for this.  The
+check was just disabled because there was "too much noise".  Rather
+than putting it in headers_install I've just fixed that script.  I'm
+definately lacking in perl powers, so I have no idea if what I've done
+is sane.  Specifically: there's a global variable and a line over 80
+characters, but since there's a bunch of other violations I figure
+it's fine.
 
- Tomi
+>> Now that I've written that, I realize it'd be pretty easy to just use
+>> cpp to drop everything inside __KERNEL__ and then look for CONFIG_*.
+>
+> The lines quoted above are from the output of 'make headers_install',
+> which already drops everything inside of __KERNEL__. A lot of them
+> probably just need to add that #ifdef, or move the portion of the
+> header file to the normal (non-uabi) file.
+>
+>> If you want, I can try to do that, fix what triggers the check, and
+>> re-submit everything together?
+>
+> That would be great, yes.
 
+OK.  I think this has turned into more of a RFC than a PATCH,
+though...  I've just #ifdef'd things for now to reduce the diff size,
+though I think it might be cleaner to move some of them to the
+non-user headers (ep_take_care_of_epollwakeup(), USE_WCACHING,
+MAX_RAW_MINORS).
 
---VbSATIctgIht5B8FmoH9FG9kGkLTXHKqT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+I'm pretty far out of my depth here, so these should all be carefully
+considered, but there's a few that scare me more ("struct
+elf_prstatus", "enum by_type_idx", AT_VECTOR_SIZE_ARCH).  I think
+there's only one actual bug here (MAP_UNINITIALIZED), the rest just
+quiet the checking script.  Each patch has my rationale for what I
+did.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Since this touches a whole lot of stuff, I've added a whole bunch of
+CCs.
 
-iQIcBAEBCAAGBQJWA98oAAoJEPo9qoy8lh71BqIQAJXccqnzgQpX04d2pQ9gV/lr
-9j1LII0tfgqkf75cnmh1TTkx9uMVdVCJ6aOISQZ3vbS+QQUU0oAVAi1AUeZhktlX
-ToeSeIWCKtdmpD5EryzUCUemRaG35AcWJoCqCQLGTqt0xMB2cnAhHZOy1C30MyqN
-4543SejYr5z9o7mKFH2BiuxOumaeLa1RRc+inoN13PVxg1ALEkCKKm9SGKJzfvcR
-tPtoHlQImlNtDAjmwLn8THnSHNTVr0CozB4Q9g4/MSImWftHUM2RC39ih09IeEJD
-LpF511XnlSxgqyLJaQ8JGS4FyMTNZvwpvmQ0xjINi6ihSzFe5eKZJ6Nluidv8Qe+
-XDCk96xu7qtv3QkMG8L3KvIrp3dCbftLa809mpBHWPynNLQbDwvYyb+ZpTN2EBXP
-qwY+OW2I/lVZwq1gA6MtDkl7UQoUshxHymmOHl6ChwAmzvPGPStpoV4ajbCk3HwF
-P2XpfFt0nQqQkiC4GWN1cma6nvIPMfRtscWulyAFX9ROyAcNIhZo+gwqLjGDJHFv
-0C6UbRXih3VBHB+XalvnJRULK8m32PBhHDQGhjLvEEmFEx+k8tBsWvwZMZUVX6ou
-IMFP6DWqUg42nm2Z5TJnUUUoN4SYutu9rumlAAhuDa69Zd/XBTo9ddZUIpInhuGf
-FEF6iTedyb40nc8+9jPz
-=xVIK
------END PGP SIGNATURE-----
-
---VbSATIctgIht5B8FmoH9FG9kGkLTXHKqT--

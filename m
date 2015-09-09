@@ -1,77 +1,56 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 21 Sep 2015 09:33:22 +0000
-Subject: [PATCH v3 05/12] pwm: declare a default PWM state
-Message-Id: <1442828009-6241-6-git-send-email-boris.brezillon@free-electrons.com>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Wed, 09 Sep 2015 21:08:10 +0000
+Subject: [PATCH 01/13] Remove #ifdef CONFIG_64BIT from all asm-generic/fcntl.h
+Message-Id: <1441832902-28993-2-git-send-email-palmer@dabbelt.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
+References: <2644177.lVCYzIBfPW@wuerfel>
+ <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+In-Reply-To: <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: arnd@arndb.de
+Cc: 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org, Palmer Dabbelt <palmer@dabbelt.com>
 
-Prepare the addition of the PWM initial state retrieval by adding a default
-state where all the parameters retrieved from DT, platform data or
-statically forced by the hardware will be stored.
-Once done we will be able to store the initial state in the ->state field
-without risking to loose the default parameters.
+When working on the RISC-V port I noticed that F_SETLK64 was being
+defined on our 64-bit platform, despite our port being so new that
+we've only ever had the 64-bit file ops.  Since there's not compat
+layer for these, this causes fcntl to bail out.
 
-Update the pwm_set/get_default_xxx helpers accordingly.
+It turns out that one of the ways in with F_SETLK64 was being defined
+(there's some more in glibc, but that's a whole different story... :))
+is the result of CONFIG_64BIT showing up in this user-visible header.
+<asm-generic/bitsperlong.h> confirms this isn't sane, so I replaced it
+with a __BITS_PER_LONG check.
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
+Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
+Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
 ---
- include/linux/pwm.h | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ include/uapi/asm-generic/fcntl.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 433a097..f8cc460 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -101,6 +101,7 @@ struct pwm_state {
-  * @chip: PWM chip providing this PWM device
-  * @chip_data: chip-private data associated with the PWM device
-  * @state: curent PWM channel state
-+ * @default_state: default PWM channel state
-  */
- struct pwm_device {
- 	const char *label;
-@@ -111,6 +112,7 @@ struct pwm_device {
- 	void *chip_data;
+diff --git a/include/uapi/asm-generic/fcntl.h b/include/uapi/asm-generic/fcntl.h
+index e063effe0cc1..14a5c8237d84 100644
+--- a/include/uapi/asm-generic/fcntl.h
++++ b/include/uapi/asm-generic/fcntl.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_GENERIC_FCNTL_H
+ #define _ASM_GENERIC_FCNTL_H
  
- 	struct pwm_state state;
-+	struct pwm_state default_state;
- };
++#include <asm/bitsperlong.h>
+ #include <linux/types.h>
  
- static inline bool pwm_is_enabled(const struct pwm_device *pwm)
-@@ -127,7 +129,8 @@ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
- static inline void pwm_set_default_period(struct pwm_device *pwm,
- 					  unsigned int period)
- {
--	pwm_set_period(pwm, period);
-+	if (pwm)
-+		pwm->default_state.period = period;
- }
+ /*
+@@ -115,7 +116,7 @@
+ #define F_GETSIG	11	/* for sockets. */
+ #endif
  
- static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
-@@ -137,7 +140,7 @@ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
- 
- static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
- {
--	return pwm_get_period(pwm);
-+	return pwm ? pwm->default_state.period : 0;
- }
- 
- static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
-@@ -159,7 +162,8 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
- static inline void pwm_set_default_polarity(struct pwm_device *pwm,
- 					    enum pwm_polarity polarity)
- {
--	pwm_set_polarity(pwm, polarity);
-+	if (pwm)
-+		pwm->default_state.polarity = polarity;
- }
- 
- static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+-#ifndef CONFIG_64BIT
++#if (__BITS_PER_LONG = 32)
+ #ifndef F_GETLK64
+ #define F_GETLK64	12	/*  using 'struct flock64' */
+ #define F_SETLK64	13
 -- 
-1.9.1
+2.4.6
 

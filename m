@@ -1,101 +1,55 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 01 Sep 2015 10:39:55 +0000
-Subject: Re: [PATCH 04/11] fbdev: ssd1307fb: fix error return code
-Message-Id: <55E5807B.1020505@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="WQjJdL9WnSuKeIGk6MMGVIcFRFVxTwPSu"
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Wed, 09 Sep 2015 21:08:14 +0000
+Subject: [PATCH 05/13] Hide some of "struct elf_prstatus" behind #ifdef __KERNEL__
+Message-Id: <1441832902-28993-6-git-send-email-palmer@dabbelt.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440288682-12732-1-git-send-email-Julia.Lawall@lip6.fr>
- <1440288682-12732-5-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1440288682-12732-5-git-send-email-Julia.Lawall@lip6.fr>
-To: Julia Lawall <Julia.Lawall@lip6.fr>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <2644177.lVCYzIBfPW@wuerfel>
+ <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+In-Reply-To: <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: arnd@arndb.de
+Cc: 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org, Palmer Dabbelt <palmer@dabbelt.com>
 
---WQjJdL9WnSuKeIGk6MMGVIcFRFVxTwPSu
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+This one scares me: while I can't find any system calls that directly
+take this as an argument, a comment in <linux/ptrace.h>
 
+  "
+   Generic ptrace interface that exports the architecture specific
+   regsets using the corresponding NT_* types (which are also used in
+   the core dump).  Please note that the NT_PRSTATUS note type in a
+   core dump contains a full 'struct elf_prstatus'. But the
+   user_regset for NT_PRSTATUS contains just the elf_gregset_t that is
+   the pr_reg field of 'struct elf_prstatus'. For all the other
+   user_regset flavors, the user_regset layout and the ELF core dump
+   note payload are exactly the same layout.
+  "
 
+seems to indicate that it's possible to see this sometimes.  Since
+this would only be visible to userspace in a somewhat convoluted
+manner, I'm going to try and keep it as it was.
 
-On 23/08/15 03:11, Julia Lawall wrote:
-> Propagate error code on failure.  Also changed %ld to %d in dev_err to =
-use
-> ret variable rather than putting two calls to PTR_ERR.
->=20
-> A simplified version of the semantic match that finds the first problem=
- is as
-> follows: (http://coccinelle.lip6.fr/)
->=20
-> // <smpl>
-> @@
-> identifier ret; expression e1,e2;
-> @@
-> (
-> if (\(ret < 0\|ret !=3D 0\))
->  { ... return ret; }
-> |
-> ret =3D 0
-> )
-> ... when !=3D ret =3D e1
->     when !=3D &ret
-> *if(...)
-> {
->   ... when !=3D ret =3D e2
->       when forall
->  return ret;
-> }
-> // </smpl>
->=20
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
-> ---
->  drivers/video/fbdev/ssd1307fb.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1=
-307fb.c
-> index 3e153c0..1611215 100644
-> --- a/drivers/video/fbdev/ssd1307fb.c
-> +++ b/drivers/video/fbdev/ssd1307fb.c
-> @@ -656,8 +656,9 @@ static int ssd1307fb_probe(struct i2c_client *clien=
-t,
->  	bl =3D backlight_device_register(bl_name, &client->dev, par,
->  				       &ssd1307fb_bl_ops, NULL);
->  	if (IS_ERR(bl)) {
-> -		dev_err(&client->dev, "unable to register backlight device: %ld\n",
-> -			PTR_ERR(bl));
-> +		ret =3D PTR_ERR(bl);
-> +		dev_err(&client->dev, "unable to register backlight device: %d\n",
-> +			ret);
->  		goto bl_init_error;
->  	}
+Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
+Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
+Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
+---
+ include/uapi/linux/elfcore.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks, queued for 4.3.
+diff --git a/include/uapi/linux/elfcore.h b/include/uapi/linux/elfcore.h
+index 569737cfb557..f9320b588937 100644
+--- a/include/uapi/linux/elfcore.h
++++ b/include/uapi/linux/elfcore.h
+@@ -60,7 +60,7 @@ struct elf_prstatus
+ 	long	pr_instr;		/* Current instruction */
+ #endif
+ 	elf_gregset_t pr_reg;	/* GP registers */
+-#ifdef CONFIG_BINFMT_ELF_FDPIC
++#if defined(__KERNEL__) && defined(CONFIG_BINFMT_ELF_FDPIC)
+ 	/* When using FDPIC, the loadmap addresses need to be communicated
+ 	 * to GDB in order for GDB to do the necessary relocations.  The
+ 	 * fields (below) used to communicate this information are placed
+-- 
+2.4.6
 
- Tomi
-
-
---WQjJdL9WnSuKeIGk6MMGVIcFRFVxTwPSu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJV5YB7AAoJEPo9qoy8lh714U4P/ipuS1aXhcDcCZ1RVDE2aJiX
-QD0ndvGgMDILPtp3VcWflI73LpIM+v6fPvSgZt3DYBADm1Rh6ur1Jt4AFVu4LJBF
-hcpzZqqd1+NdVpzETLWJrXBf+wTxD0zjjYuirU0S5KjANgxmajxqwBw02IEtLkuD
-tlEJiZzdPq0YZhim28FD5f+HF9vsafvn5+gRst5kgqMiVuZNqwbYRJtDLCaK933H
-BBRTjLMdRf4KDhj2OYNIO8h17GROQwlPL26CPxf2X+bqXOO4cmVonaRAgdMbrT7D
-3sCTBPbMUL5YjEnKDW/cctHNqWNslcEwohdMPxJoWvKsqGyGqGxwfRgG1OHnjS9n
-8zClGfxOv1BWq6Sc3B1iQMboENcx0tEFl5RVgO+KQdLPAgO48jo9hg/OZm7gB+U6
-ZHwShR+AV272EC9j2s95KgBnbbMBCut7rfx5jcPdsZfOJ0NytoAAbbkmWKYB42qm
-6CIMygCJydte+oar55ZS656525xIsQtIGWsAzNlZnsT4hD/BWVNpqesmyhnfxHHZ
-6t38+9aN9qPTNJYRgGXRMCt05ah0CBo8e/ginniAqGEiDmoqYIbKcHIgWqKfrhfd
-Vp0prTTZZJ6JyICSs66OeNJ+Xzrn6td2D7rINtSRKpqHFSbYcbMuUdlvSUuc7y1l
-qLtn8zzPjgtg696lo5g4
-=9Ed+
------END PGP SIGNATURE-----
-
---WQjJdL9WnSuKeIGk6MMGVIcFRFVxTwPSu--

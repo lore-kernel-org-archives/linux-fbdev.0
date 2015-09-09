@@ -1,40 +1,45 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Mon, 24 Aug 2015 20:15:17 +0000
-Subject: [PATCH 5/5] [resend] gxt4500: enable panning
-Message-Id: <1440447317-32604-6-git-send-email-linux@rainbow-software.org>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Wed, 09 Sep 2015 21:08:21 +0000
+Subject: [PATCH 12/13] Hide AT_VECTOR_SIZE_ARCH behind #ifdef __KERNEL__
+Message-Id: <1441832902-28993-13-git-send-email-palmer@dabbelt.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440447317-32604-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1440447317-32604-1-git-send-email-linux@rainbow-software.org>
+References: <2644177.lVCYzIBfPW@wuerfel>
+ <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+In-Reply-To: <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: arnd@arndb.de
+Cc: 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org, Palmer Dabbelt <palmer@dabbelt.com>
 
-The driver implements pan_display but the corresponding flags are not set.
+I think this actually isn't a good idea, but I can't find anything
+outside of the kernel that's using this so I'm going to hide it.
 
-Add FBINFO_HWACCEL_XPAN and FBINFO_HWACCEL_YPAN to flags to allow HW
-accelerated panning (for fast scrolling).
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
+Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
+Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
 ---
- drivers/video/fbdev/gxt4500.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/include/uapi/asm/auxvec.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index e0d1550..88a3cf6 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -685,7 +685,8 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/arch/x86/include/uapi/asm/auxvec.h b/arch/x86/include/uapi/asm/auxvec.h
+index 77203ac352de..88e5fa6d97e7 100644
+--- a/arch/x86/include/uapi/asm/auxvec.h
++++ b/arch/x86/include/uapi/asm/auxvec.h
+@@ -9,11 +9,13 @@
  #endif
+ #define AT_SYSINFO_EHDR		33
  
- 	info->fbops = &gxt4500_ops;
--	info->flags = FBINFO_FLAG_DEFAULT;
-+	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_HWACCEL_XPAN |
-+					    FBINFO_HWACCEL_YPAN;
++#ifdef __KERNEL__
+ /* entries in ARCH_DLINFO: */
+ #if defined(CONFIG_IA32_EMULATION) || !defined(CONFIG_X86_64)
+ # define AT_VECTOR_SIZE_ARCH 2
+ #else /* else it's non-compat x86-64 */
+ # define AT_VECTOR_SIZE_ARCH 1
+ #endif
++#endif /* __KERNEL__ */
  
- 	err = fb_alloc_cmap(&info->cmap, 256, 0);
- 	if (err) {
+ #endif /* _ASM_X86_AUXVEC_H */
 -- 
-Ondrej Zary
+2.4.6
 

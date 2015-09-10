@@ -1,81 +1,19 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Wed, 09 Sep 2015 21:08:09 +0000
+From: David Howells <dhowells@redhat.com>
+Date: Thu, 10 Sep 2015 11:15:29 +0000
 Subject: Re: [PATCH] Remove #ifdef CONFIG_64BIT from all asm-generic/fcntl.h
-Message-Id: <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+Message-Id: <18147.1441883729@warthog.procyon.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2644177.lVCYzIBfPW@wuerfel>
-In-Reply-To: <2644177.lVCYzIBfPW@wuerfel>
+References: <1441832902-28993-1-git-send-email-palmer@dabbelt.com> <2644177.lVCYzIBfPW@wuerfel>
+In-Reply-To: <1441832902-28993-1-git-send-email-palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: arnd@arndb.de
-Cc: 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org
+To: Palmer Dabbelt <palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
+Cc: dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, 3chas3-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org, mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, jikos-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arch-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-atm-general-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 
-I cut the RISC-V stuff, but I intend to reply to it later.  As you
-said, it's just a different topic.
+Rather than iterating through all the rest of your patches and saying the same
+thing, if there's something in a UAPI header that needs wrapping in __KERNEL__
+to exclude it from userspace's use, then it should be transferred to the
+non-UAPI variant of that header (which should #include the UAPI variant).
 
->>> However, I did see a lot of similar bugs now that you point me to it:
->>>
->>> $  grep -r \\\<CONFIG obj-tmp/usr/include/
->>> obj-tmp/usr/include/asm-generic/fcntl.h:#ifndef CONFIG_64BIT
->>> obj-tmp/usr/include/asm-generic/mman-common.h:#ifdef CONFIG_MMAP_ALLOW_UNINITIALIZED
->>> obj-tmp/usr/include/asm-generic/unistd.h:#ifdef CONFIG_MMU
->>> obj-tmp/usr/include/asm-generic/unistd.h:#endif /* CONFIG_MMU */
->>> obj-tmp/usr/include/linux/atmdev.h:#ifdef CONFIG_COMPAT
->>> obj-tmp/usr/include/linux/elfcore.h:#ifdef CONFIG_BINFMT_ELF_FDPIC
->>> obj-tmp/usr/include/linux/eventpoll.h:#ifdef CONFIG_PM_SLEEP
->>> obj-tmp/usr/include/linux/fb.h:#ifdef CONFIG_FB_BACKLIGHT
->>> obj-tmp/usr/include/linux/flat.h:#ifdef CONFIG_BINFMT_SHARED_FLAT
->>> obj-tmp/usr/include/linux/hw_breakpoint.h:#ifdef CONFIG_HAVE_MIXED_BREAKPOINTS_REGS
->>> obj-tmp/usr/include/linux/pktcdvd.h:#if defined(CONFIG_CDROM_PKTCDVD_WCACHE)
->>> obj-tmp/usr/include/linux/raw.h:#define MAX_RAW_MINORS CONFIG_MAX_RAW_DEVS
->>> obj-tmp/usr/include/asm/ptrace.h:#ifdef CONFIG_CPU_ENDIAN_BE8
->>>
->>> These all have the same problem, and we should fix them, as well as
->>> (probably) adding an automated check to scripts/headers_install.sh.
->>
->> Well, I was going to go fix them all and ran a very similar grep, but
->> I think I got a lot of false-positives.  If I understand correctly,
->> it's allowed to have CONFIG_* when guarded by __KERNEL__ in
->> user-visible headers?
->
-> That is right.
-
-It turns out there was actually a header checking script
-(scripts/headers_check.pl), and it already had a check for this.  The
-check was just disabled because there was "too much noise".  Rather
-than putting it in headers_install I've just fixed that script.  I'm
-definately lacking in perl powers, so I have no idea if what I've done
-is sane.  Specifically: there's a global variable and a line over 80
-characters, but since there's a bunch of other violations I figure
-it's fine.
-
->> Now that I've written that, I realize it'd be pretty easy to just use
->> cpp to drop everything inside __KERNEL__ and then look for CONFIG_*.
->
-> The lines quoted above are from the output of 'make headers_install',
-> which already drops everything inside of __KERNEL__. A lot of them
-> probably just need to add that #ifdef, or move the portion of the
-> header file to the normal (non-uabi) file.
->
->> If you want, I can try to do that, fix what triggers the check, and
->> re-submit everything together?
->
-> That would be great, yes.
-
-OK.  I think this has turned into more of a RFC than a PATCH,
-though...  I've just #ifdef'd things for now to reduce the diff size,
-though I think it might be cleaner to move some of them to the
-non-user headers (ep_take_care_of_epollwakeup(), USE_WCACHING,
-MAX_RAW_MINORS).
-
-I'm pretty far out of my depth here, so these should all be carefully
-considered, but there's a few that scare me more ("struct
-elf_prstatus", "enum by_type_idx", AT_VECTOR_SIZE_ARCH).  I think
-there's only one actual bug here (MAP_UNINITIALIZED), the rest just
-quiet the checking script.  Each patch has my rationale for what I
-did.
-
-Since this touches a whole lot of stuff, I've added a whole bunch of
-CCs.
-
+David

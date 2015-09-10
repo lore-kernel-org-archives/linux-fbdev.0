@@ -1,44 +1,20 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Wed, 09 Sep 2015 21:08:19 +0000
-Subject: [PATCH 10/13] Hide USE_WCACHING behind #ifdef __KERNEL__
-Message-Id: <1441832902-28993-11-git-send-email-palmer@dabbelt.com>
+From: David Howells <dhowells@redhat.com>
+Date: Thu, 10 Sep 2015 11:12:59 +0000
+Subject: Re: [PATCH 10/13] Hide USE_WCACHING behind #ifdef __KERNEL__
+Message-Id: <18082.1441883579@warthog.procyon.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2644177.lVCYzIBfPW@wuerfel>
- <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
-In-Reply-To: <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+References: <1441832902-28993-11-git-send-email-palmer@dabbelt.com> <2644177.lVCYzIBfPW@wuerfel> <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+In-Reply-To: <1441832902-28993-11-git-send-email-palmer@dabbelt.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: arnd@arndb.de
-Cc: 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org, Palmer Dabbelt <palmer@dabbelt.com>
+To: Palmer Dabbelt <palmer@dabbelt.com>
+Cc: dhowells@redhat.com, arnd@arndb.de, 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org
 
-I don't think this was ever intended to be exposed to userspace.
+Palmer Dabbelt <palmer@dabbelt.com> wrote:
 
-Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
-Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
-Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
----
- include/uapi/linux/pktcdvd.h | 2 ++
- 1 file changed, 2 insertions(+)
+> I don't think this was ever intended to be exposed to userspace.
 
-diff --git a/include/uapi/linux/pktcdvd.h b/include/uapi/linux/pktcdvd.h
-index 2640b9d4e243..e2a49bfee74e 100644
---- a/include/uapi/linux/pktcdvd.h
-+++ b/include/uapi/linux/pktcdvd.h
-@@ -33,11 +33,13 @@
-  * able to successfully recover with this option (drive will return good
-  * status as soon as the cdb is validated).
-  */
-+#ifdef __KERNEL__
- #if defined(CONFIG_CDROM_PKTCDVD_WCACHE)
- #define USE_WCACHING		1
- #else
- #define USE_WCACHING		0
- #endif
-+#endif /* __KERNEL__ */
- 
- /*
-  * No user-servicable parts beyond this point ->
--- 
-2.4.6
+Then it should be in include/linux/pktcdvd.h
 
+David

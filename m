@@ -1,61 +1,56 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 30 Sep 2015 09:32:02 +0000
-Subject: [PATCHv4 3/3] devicetree: Add led-backlight binding
-Message-Id: <1443605522-1118-4-git-send-email-tomi.valkeinen@ti.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Fri, 11 Sep 2015 16:10:43 +0000
+Subject: [PATCH] fbdev: put module after running driver callback
+Message-Id: <1441987843-4313-1-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1443605522-1118-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1443605522-1118-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Andrew Lunn <andrew@lunn.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>, devicetree@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, dri-devel@lists.freedesktop.org
 
-Add DT binding for led-backlight.
+Currently, for each open() on an fbdev device, we pin the underlying
+fbdev device and driver module. On close(), we release both. This
+guarantees that the fbdev object stays around until the last FD is
+released (even though it might be unregistered already).
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org
+However, currently we call module_put() *before* calling put_fb_info().
+This has the side-effect that the driver module might be unloaded before
+put_fb_info() calls into fbinfo->fbops->fb_destroy().
+
+Fix this by keeping the module pinned until after we release our fbdev
+reference. Note that register_framebuffer() and unregister_framebuffer()
+are special as we require the driver to unregister device before
+unloading. Hence, they don't need to pin the module. However, all open
+handlers *have to*.
+
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
 ---
- .../bindings/video/backlight/led-backlight.txt     | 30 ++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/led-backlight.txt
+ drivers/video/fbdev/core/fbmem.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/video/backlight/led-backlight.txt b/Documentation/devicetree/bindings/video/backlight/led-backlight.txt
-new file mode 100644
-index 000000000000..d4621d7414bc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/backlight/led-backlight.txt
-@@ -0,0 +1,30 @@
-+led-backlight bindings
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 0705d88..4e78731 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1482,13 +1482,16 @@ __acquires(&info->lock)
+ __releases(&info->lock)
+ {
+ 	struct fb_info * const info = file->private_data;
++	struct module *owner;
+ 
+ 	mutex_lock(&info->lock);
+ 	if (info->fbops->fb_release)
+ 		info->fbops->fb_release(info,1);
+-	module_put(info->fbops->owner);
++	owner = info->fbops->owner;
+ 	mutex_unlock(&info->lock);
 +
-+Required properties:
-+  - compatible: "led-backlight"
-+  - leds: phandle to a led OF node [0]
-+  - brightness-levels: Array of distinct LED brightness levels. These
-+      are in the range from 0 to 255, passed to the LED class driver.
-+  - default-brightness-level: the default brightness level (index into the
-+      array defined by the "brightness-levels" property)
-+
-+Optional properties:
-+  - power-supply: regulator for supply voltage
-+  - enable-gpios: contains a single GPIO specifier for the GPIO which enables
-+                  and disables the backlight (see GPIO binding[1])
-+
-+[0]: Documentation/devicetree/bindings/leds/common.txt
-+[1]: Documentation/devicetree/bindings/gpio/gpio.txt
-+
-+Example:
-+
-+	backlight {
-+		compatible = "led-backlight";
-+		leds = <&backlight_led>;
-+
-+		brightness-levels = <0 4 8 16 32 64 128 255>;
-+		default-brightness-level = <6>;
-+
-+		power-supply = <&vdd_bl_reg>;
-+		enable-gpios = <&gpio 58 0>;
-+	};
+ 	put_fb_info(info);
++	module_put(owner);
+ 	return 0;
+ }
+ 
 -- 
-2.1.4
+2.5.1
 

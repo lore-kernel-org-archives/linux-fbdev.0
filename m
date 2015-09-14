@@ -1,24 +1,25 @@
-From: David Howells <dhowells@redhat.com>
-Date: Thu, 10 Sep 2015 11:18:05 +0000
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Mon, 14 Sep 2015 22:50:12 +0000
 Subject: Re: [PATCH] Remove #ifdef CONFIG_64BIT from all asm-generic/fcntl.h
-Message-Id: <18247.1441883885@warthog.procyon.org.uk>
+Message-Id: <55f74f24.a2eb420a.57553.fffff8c5@mx.google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <18147.1441883729@warthog.procyon.org.uk> <1441832902-28993-1-git-send-email-palmer@dabbelt.com> <2644177.lVCYzIBfPW@wuerfel>
-In-Reply-To: <18147.1441883729-S6HVgzuS8uM4Awkfq6JHfwNdhmdF6hFW@public.gmane.org>
+References: <18247.1441883885@warthog.procyon.org.uk>
+In-Reply-To: <18247.1441883885@warthog.procyon.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Palmer Dabbelt <palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
-Cc: dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, 3chas3-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org, mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, jikos-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arch-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-atm-general-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: dhowells@redhat.com, arnd@arndb.de, 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org
 
-David Howells <dhowells@redhat.com> wrote:
+On Thu, 10 Sep 2015 04:18:05 PDT (-0700), dhowells@redhat.com wrote:
+> David Howells <dhowells@redhat.com> wrote:
+>
+>> Rather than iterating through all the rest of your patches and saying the same
+>> thing, if there's something in a UAPI header that needs wrapping in __KERNEL__
+>> to exclude it from userspace's use, then it should be transferred to the
+>> non-UAPI variant of that header (which should #include the UAPI variant).
+>
+> I should mention that there is the odd case where this is difficult to
+> achieve.  See include/uapi/linux/acct.h for an example...
 
-> Rather than iterating through all the rest of your patches and saying the same
-> thing, if there's something in a UAPI header that needs wrapping in __KERNEL__
-> to exclude it from userspace's use, then it should be transferred to the
-> non-UAPI variant of that header (which should #include the UAPI variant).
-
-I should mention that there is the odd case where this is difficult to
-achieve.  See include/uapi/linux/acct.h for an example...
-
-David
+OK, sorry about that.  I'm submitting a v3 that should fix these
+problems.

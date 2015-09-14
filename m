@@ -1,26 +1,37 @@
-From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Date: Wed, 09 Sep 2015 10:19:02 +0000
-Subject: Re: [PATCH 2/2] fbdev: ssd1307fb: add ssd1309 support
-Message-Id: <CA+V-a8sDHWvQHBtVLgG0q=PfKbTSHZU6FpAxVWtaxnzJti_r0Q@mail.gmail.com>
+From: Anjali Menon <cse.anjalimenon@gmail.com>
+Date: Mon, 14 Sep 2015 10:58:35 +0000
+Subject: [PATCH] staging: sm750fb: Added a space
+Message-Id: <1442228300-5167-1-git-send-email-cse.anjalimenon@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1441739991-4676-1-git-send-email-o.schinagl@ultimaker.com> <1441739991-4676-3-git-send-email-o.schinagl@ultimaker.com>
-In-Reply-To: <1441739991-4676-3-git-send-email-o.schinagl@ultimaker.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Olliver Schinagl <o.schinagl@ultimaker.com>
-Cc: Olliver Schinagl <oliver@schinagl.nl>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, =?UTF-8?Q?Thomas_Niederpr=C3=BCm?= <niederp@physik.uni-kl.de>, Maxime Ripard <maxime.ripard@free-electrons.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, LFBDEV <linux-fbdev@vger.kernel.org>
+To: gregkh@linuxfoundation.org
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Anjali Menon <cse.anjalimenon@gmail.com>
 
-On Tue, Sep 8, 2015 at 8:19 PM, Olliver Schinagl
-<o.schinagl@ultimaker.com> wrote:
-> The ssd1307fb driver supports a lot of chips from the ssd130xfb series.
-> This patch adds the ssd1309 chip, a 128x64 OLED driver chip. It is very
-> similar to the other chips and only has some definitions added to
-> support it.
->
-> Signed-off-by: Olliver Schinagl <o.schinagl@ultimaker.com>
+Added a space to fix the following coding style error detected by
+checkpatch.
 
-Acked-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+ERROR: space required before the open parenthesis '('
 
-Cheers,
---Prabhakar Lad
+Signed-off-by: Anjali Menon <cse.anjalimenon@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_dvi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
+index f5932bb..1eea768 100644
+--- a/drivers/staging/sm750fb/ddk750_dvi.c
++++ b/drivers/staging/sm750fb/ddk750_dvi.c
+@@ -45,7 +45,7 @@ int dviInit(
+ {
+ 	dvi_ctrl_device_t *pCurrentDviCtrl;
+ 	pCurrentDviCtrl = g_dcftSupportedDviController;
+-	if(pCurrentDviCtrl->pfnInit != NULL)
++	if (pCurrentDviCtrl->pfnInit != NULL)
+ 	{
+ 		return pCurrentDviCtrl->pfnInit(edgeSelect, busSelect, dualEdgeClkSelect, hsyncEnable,
+                               vsyncEnable, deskewEnable, deskewSetting, continuousSyncEnable,
+-- 
+1.9.1
+

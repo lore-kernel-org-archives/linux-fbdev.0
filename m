@@ -1,74 +1,43 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 08 Sep 2015 11:23:21 +0000
-Subject: Re: [PATCH 1/3] leds: Add of_led_get() and led_put()
-Message-Id: <55EEC529.4040104@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="o7GPNadffIOTlaTfKhh3tltxp6sIl9dsl"
+From: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+Date: Tue, 15 Sep 2015 13:12:33 +0000
+Subject: [PATCH v2] fbdev: omap2: connector-dvi: use of_get_i2c_adapter_by_node interface
+Message-Id: <1442322753-32043-1-git-send-email-vladimir_zapolskiy@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440502442-19531-1-git-send-email-tomi.valkeinen@ti.com>
- <1440502442-19531-2-git-send-email-tomi.valkeinen@ti.com>
- <20150825121853.GB14871@lunn.ch>
-In-Reply-To: <20150825121853.GB14871@lunn.ch>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---o7GPNadffIOTlaTfKhh3tltxp6sIl9dsl
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+This change is needed to properly lock I2C bus driver, which serves DDC.
 
-Hi Andrew,
+Prior to this change i2c_put_adapter() is misused, which may lead to
+an overflow over zero of I2C bus driver user counter.
 
-On 25/08/15 15:18, Andrew Lunn wrote:
-> On Tue, Aug 25, 2015 at 02:34:00PM +0300, Tomi Valkeinen wrote:
->> This patch adds basic support for a kernel driver to get a LED device.=
+Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+---
+Changes from v1 to v2:
+- none, v1 is http://lists.infradead.org/pipermail/linux-arm-kernel/2015-July/354990.html
 
->> This will be used by the led-backlight driver.
->>
->> Only OF version is implemented for now, and the behavior is similar to=
+The original series http://lists.infradead.org/pipermail/linux-arm-kernel/2015-July/354982.html
+is separated to i2c, dri and fbdev parts, at the moment i2c part
+with new of_get_i2c_adapter_by_node() interface has been applied.
 
->> PWM's of_pwm_get() and pwm_put().
->=20
-> Hi Tomi
->=20
-> Is this the correct way to do it?  I would of expected an xlate
-> function.
+ drivers/video/fbdev/omap2/displays-new/connector-dvi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I just sent v2, but I don't use xlate there.
+diff --git a/drivers/video/fbdev/omap2/displays-new/connector-dvi.c b/drivers/video/fbdev/omap2/displays-new/connector-dvi.c
+index a8ce920..d811e6d 100644
+--- a/drivers/video/fbdev/omap2/displays-new/connector-dvi.c
++++ b/drivers/video/fbdev/omap2/displays-new/connector-dvi.c
+@@ -294,7 +294,7 @@ static int dvic_probe_of(struct platform_device *pdev)
+ 
+ 	adapter_node = of_parse_phandle(node, "ddc-i2c-bus", 0);
+ 	if (adapter_node) {
+-		adapter = of_find_i2c_adapter_by_node(adapter_node);
++		adapter = of_get_i2c_adapter_by_node(adapter_node);
+ 		if (adapter = NULL) {
+ 			dev_err(&pdev->dev, "failed to parse ddc-i2c-bus\n");
+ 			omap_dss_put_device(ddata->in);
+-- 
+2.5.0
 
-If I understand the purpose of xlate (in pwm, for example) correctly,
-xlate is a function in the pwm chip to allow custom bindings for the pwm
-outputs from that pwm chip.
-
-The problem with LEDs is that there's no "LED chip". Each LED is
-modelled as individual device, without a well defined parent. Thus
-there's no place to add such an xlate function.
-
-Do you have any thoughts on what the xlate for LEDs should look like?
-
- Tomi
-
-
---o7GPNadffIOTlaTfKhh3tltxp6sIl9dsl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJV7sUpAAoJEPo9qoy8lh71xyEP/3dtOqRKfgUOirmAUGoDO6Ym
-5y5IM9mg9ASuJNB1qjcdYF+xZiTna1TXj0ukQagIo+7uAg1lA+iOWJxfP8kk8WYf
-Xtp2UmYEOjTkmFmLHLckXe852+VuctQ0CdPxXiGL5KUPG56NfsNBcTLPHVzUK7do
-z9JUAO/iJyC+29hZKPZ+f86HEIhuKS530FgOTQ+1MulQWOVy8ReCJRAD2uQZn7ev
-8Vr13i7hTN6TIilpxWqlmVLudcs7+OVAd0MwBr114p94ZllVMEKSp1wm6RrXhd9z
-Coh5UikqTdvkD0yOYqlBZ/Um1TycOZwOnfyjELBJgLwLPRlBtAvYAM2O2UrTydFN
-9F1u33AQ1NyYR/4atd3jb7HAU8nVIgyQkBNuxuvO5oQZEcQzj8vZK3fBIzYlNJ6M
-8SbJvsj2ysTo/Xcj3Oa1dTXCoqvd2wIgGXVmAAgtvWQXSbyFysvV8Xy9SnGCMoWZ
-3U2VS4jRTRUsBAoAmnc/M6vx2VGswPYeXIE/UAA2G93WyOm0+kv96uoK5kI5mMSY
-PUTjihkpcLaClA+vdsdSr5ZSmZHJHsC18x/yPF8TG2O0/E/gFd8MaFZ92YGCzAVl
-siLrGTDAGHou4B7IbfSb0w3ZAUdQ765MTfpjHUQMnmIyqiqPfyASJxkqEYiQU8i9
-pSe7fmU5U25iQNadw3AR
-=V35e
------END PGP SIGNATURE-----
-
---o7GPNadffIOTlaTfKhh3tltxp6sIl9dsl--

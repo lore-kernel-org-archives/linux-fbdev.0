@@ -1,46 +1,75 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 21 Sep 2015 23:23:38 +0000
-Subject: Re: [PATCH] backlight: pwm: free pwm requested by legacy API on error path
-Message-Id: <20150921232338.GG11284@x1>
+From: YH Huang <yh.huang@mediatek.com>
+Date: Wed, 16 Sep 2015 14:42:36 +0000
+Subject: [PATCH] pwm-backlight: fix the panel power sequence
+Message-Id: <1442414556-32381-1-git-send-email-yh.huang@mediatek.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434292334-22312-1-git-send-email-vladimir_zapolskiy@mentor.com>
-In-Reply-To: <1434292334-22312-1-git-send-email-vladimir_zapolskiy@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Cc: Jingoo Han <jg1.han@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-On Sun, 14 Jun 2015, Vladimir Zapolskiy wrote:
+In order to match the panel power sequence, disable the enable_gpio
+in the probe function. Also, reorder the code in the power_on and
+power_off function to match the timing.
 
-> If pwm is requested by legacy pwm_request() and if the following
-> backlight_device_register() call fails, add pwm_free() clean-up.
->=20
-> Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-> ---
->  drivers/video/backlight/pwm_bl.c | 2 ++
->  1 file changed, 2 insertions(+)
+Signed-off-by: YH Huang <yh.huang@mediatek.com>
+---
+ drivers/video/backlight/pwm_bl.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-Applied, thanks.
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index eff379b..99eca1e 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+ 
++	pwm_enable(pb->pwm);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value(pb->enable_gpio, 1);
+ 
+-	pwm_enable(pb->pwm);
+ 	pb->enabled = true;
+ }
+ 
+@@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (!pb->enabled)
+ 		return;
+ 
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
+-
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value(pb->enable_gpio, 0);
+ 
++	pwm_config(pb->pwm, 0, pb->period);
++	pwm_disable(pb->pwm);
++
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
+ }
+@@ -241,8 +242,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->dev = &pdev->dev;
+ 	pb->enabled = false;
+ 
+-	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
+-						  GPIOD_OUT_HIGH);
++	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable");
+ 	if (IS_ERR(pb->enable_gpio)) {
+ 		ret = PTR_ERR(pb->enable_gpio);
+ 		goto err_alloc;
+@@ -264,6 +264,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+ 	}
+ 
++	if (pb->enable_gpio)
++		gpiod_direction_output(pb->enable_gpio, 0);
++
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
+ 		ret = PTR_ERR(pb->power_supply);
+-- 
+1.7.9.5
 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
-wm_bl.c
-> index 9991cdb..a691247 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -307,6 +307,8 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	if (IS_ERR(bl)) {
->  		dev_err(&pdev->dev, "failed to register backlight\n");
->  		ret =3D PTR_ERR(bl);
-> +		if (pb->legacy)
-> +			pwm_free(pb->pwm);
->  		goto err_alloc;
->  	}
-> =20
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

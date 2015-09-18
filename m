@@ -1,56 +1,47 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 22 Sep 2015 22:12:18 +0000
-Subject: Re: [PATCH v3 04/12] backlight: pwm_bl: remove useless call to pwm_set_period
-Message-Id: <20150922221218.GA9317@x1>
+From: Luis de Bethencourt <luis@debethencourt.com>
+Date: Fri, 18 Sep 2015 18:44:57 +0000
+Subject: [PATCH] omapdss: acx565akm: Fix module autoload for OF platform driver
+Message-Id: <20150918184457.GA32636@goodgumbo.baconseed.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
- <1442828009-6241-5-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1442828009-6241-5-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Mon, 21 Sep 2015, Boris Brezillon wrote:
+This platform driver has a OF device ID table but the OF module
+alias information is not created so module autoloading won't work.
 
-> The PWM period will be set when calling pwm_config. Remove this useless
-> call to pwm_set_period, which might mess up with the initial PWM state
-> once we have added proper support for PWM init state retrieval.
->=20
-> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> ---
->  drivers/video/backlight/pwm_bl.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
+Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
+---
 
-Acked-by: Lee Jones <lee.jones@linaro.org>
+Hello,
 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
-wm_bl.c
-> index ae498c1..71944f8 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -293,12 +293,14 @@ static int pwm_backlight_probe(struct platform_devi=
-ce *pdev)
->  	 * period, parsed from the DT, in the PWM device. For the non-DT case,
->  	 * set the period from platform data if it has not already been set
->  	 * via the PWM lookup table.
-> +	 * FIXME: This assignment should be dropped as soon as all the boards
-> +	 * have moved to the PWM lookup table approach. The same goes for the
-> +	 * pb->period field which should be replaced by
-> +	 * pwm_get_default_period() calls.
->  	 */
->  	pb->period =3D pwm_get_default_period(pb->pwm);
-> -	if (!pb->period && (data->pwm_period_ns > 0)) {
-> +	if (!pb->period && (data->pwm_period_ns > 0))
->  		pb->period =3D data->pwm_period_ns;
-> -		pwm_set_period(pb->pwm, data->pwm_period_ns);
-> -	}
-> =20
->  	pb->lth_brightness =3D data->lth_brightness * (pb->period / pb->scale);
-> =20
+This patch adds the missing MODULE_DEVICE_TABLE() for OF to export
+that information so modules have the correct aliases built-in and
+autoloading works correctly.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+A longer explanation by Javier Canillas can be found here:
+https://lkml.org/lkml/2015/7/30/519
+
+Thanks,
+Luis
+
+ drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
+index 90cbc4c..c581231 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
+@@ -898,6 +898,7 @@ static const struct of_device_id acx565akm_of_match[] = {
+ 	{ .compatible = "omapdss,sony,acx565akm", },
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, acx565akm_of_match);
+ 
+ static struct spi_driver acx565akm_driver = {
+ 	.driver = {
+-- 
+2.4.6
+

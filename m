@@ -1,28 +1,51 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Tue, 15 Sep 2015 13:33:20 +0000
-Subject: Re: [PATCH] staging: sm750fb: Added a space
-Message-Id: <20150915133320.GA19647@kroah.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Fri, 18 Sep 2015 11:28:32 +0000
+Subject: [PATCH] fbdev: broadsheetfb: fix memory leak
+Message-Id: <1442574992-31654-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442228300-5167-1-git-send-email-cse.anjalimenon@gmail.com>
-In-Reply-To: <1442228300-5167-1-git-send-email-cse.anjalimenon@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Anjali Menon <cse.anjalimenon@gmail.com>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, teddy.wang@siliconmotion.com, linux-kernel@vger.kernel.org, sudipm.mukherjee@gmail.com
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-On Mon, Sep 14, 2015 at 04:28:20PM +0530, Anjali Menon wrote:
-> Added a space to fix the following coding style error detected by
-> checkpatch.
-> 
-> ERROR: space required before the open parenthesis '('
-> 
-> Signed-off-by: Anjali Menon <cse.anjalimenon@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750_dvi.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On the error path we have missed releasing the firmware.
 
-This patch doesn't apply to my tree at all, what did you make it
-against?
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+---
+ drivers/video/fbdev/broadsheetfb.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-greg k-h
+diff --git a/drivers/video/fbdev/broadsheetfb.c b/drivers/video/fbdev/broadsheetfb.c
+index 0e5fde1..ac1f41e 100644
+--- a/drivers/video/fbdev/broadsheetfb.c
++++ b/drivers/video/fbdev/broadsheetfb.c
+@@ -752,7 +752,7 @@ static ssize_t broadsheet_loadstore_waveform(struct device *dev,
+ 	if ((fw_entry->size < 8*1024) || (fw_entry->size > 64*1024)) {
+ 		dev_err(dev, "Invalid waveform\n");
+ 		err = -EINVAL;
+-		goto err_failed;
++		goto err_fw;
+ 	}
+ 
+ 	mutex_lock(&(par->io_lock));
+@@ -762,13 +762,15 @@ static ssize_t broadsheet_loadstore_waveform(struct device *dev,
+ 	mutex_unlock(&(par->io_lock));
+ 	if (err < 0) {
+ 		dev_err(dev, "Failed to store broadsheet waveform\n");
+-		goto err_failed;
++		goto err_fw;
+ 	}
+ 
+ 	dev_info(dev, "Stored broadsheet waveform, size %zd\n", fw_entry->size);
+ 
+ 	return len;
+ 
++err_fw:
++	release_firmware(fw_entry);
+ err_failed:
+ 	return err;
+ }
+-- 
+1.9.1
+

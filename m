@@ -1,57 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 11 Sep 2015 13:07:34 +0000
-Subject: [PATCHv3 0/3] backlight: led-backlight driver
-Message-Id: <1441976857-26548-1-git-send-email-tomi.valkeinen@ti.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Fri, 18 Sep 2015 08:17:30 +0000
+Subject: Re: [RFC v4 17/25] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvram
+Message-Id: <alpine.LNX.2.00.1509181635140.13887@nippy.intranet>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20150712102527.356151908@telegraphics.com.au>  <20150712102531.505897278@telegraphics.com.au>  <alpine.LNX.2.00.1507141725480.851@nippy.intranet> <1436874720.3948.252.camel@kernel.crashing.org> <alpine.LNX.2.00.1507151200510.2862@nippy.intranet>
+ <alpine.LNX.2.00.1507161530270.19651@nippy.intranet>
+In-Reply-To: <alpine.LNX.2.00.1507161530270.19651@nippy.intranet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Andrew Lunn <andrew@lunn.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-This series aims to add a led-backlight driver, similar to pwm-backlight, but
-using a LED class device underneath.
 
-LED framework has no support for DT or getting a LED class driver from another
-kernel driver, so I added minimal functionality to led-class to get
-led-backlight working.
+Hi Ben,
 
-Changes to v2:
-- power supply is now optional
-- cosmetic changes
-- no-op function for led_put() when !CONFIG_LEDS_CLASS
+On Thu, 16 Jul 2015, I wrote:
 
-Changes to v1:
-- Split LED OF parts into separate .h and .c files
-- Check for CONFIG_OF and CONFIG_LEDS_CLASS where relevant to leave unused code
-  out.
-- Improved error prints and comments a bit
-- Added put_device() into led_put(), as the device was gotten from
-  class_find_device() which requires a put_device() call.
+> On Wed, 15 Jul 2015, I wrote:
+> 
+> > On Tue, 14 Jul 2015, Benjamin Herrenschmidt wrote:
+> > 
+> > > Maybe we should have a dedicated accessor for "mac_xpram" ...
+> > 
+> ...
+> 
+> The arch_nvram_ops methods don't deal with structures like partitions ...
 
- Tomi
+Instead of the accessor you suggested, perhaps it would be better to add a 
+method like arch_nvram_ops.get_partition, to replace the 
+pmac_get_partition() exported function?
 
-Tomi Valkeinen (3):
-  leds: Add of_led_get() and led_put()
-  backlight: add led-backlight driver
-  devicetree: Add led-backlight binding
+The call sites for pmac_get_partition() are in the implementation of the 
+IOC_NVRAM_GET_OFFSET ioctl that's used with /dev/nvram, and in 
+pmac_xpram_read(). pmac_xpram_write() has no caller and could be removed.
 
- .../bindings/video/backlight/led-backlight.txt     |  30 +++
- drivers/leds/Makefile                              |   6 +-
- drivers/leds/led-class.c                           |  13 +-
- drivers/leds/led-of.c                              |  85 +++++++
- drivers/leds/leds.h                                |   1 +
- drivers/video/backlight/Kconfig                    |   7 +
- drivers/video/backlight/Makefile                   |   1 +
- drivers/video/backlight/led_bl.c                   | 246 +++++++++++++++++++++
- include/linux/leds.h                               |  10 +
- include/linux/of_leds.h                            |  26 +++
- 10 files changed, 423 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/led-backlight.txt
- create mode 100644 drivers/leds/led-of.c
- create mode 100644 drivers/video/backlight/led_bl.c
- create mode 100644 include/linux/of_leds.h
+But this doesn't have much to do with linux-fbdev. I think the old 
+NV_CMODE/NV_VMODE issues*, which this patch avoids, are irrelevant to the 
+problem of nvram module re-use, which is the aim of this patch series.
+
+But if those issues really are relevant then we should move the discussion 
+to the revised patch, that is, [RFC v6 16/25] powerpc, fbdev: Use NV_CMODE 
+and NV_VMODE only when CONFIG_PPC32 and CONFIG_PPC_PMAC and CONFIG_NVRAM.
+
+(There was no response to any patch in RFC v6 from any PowerPC 
+maintainers, which is why I've revived this thread.)
+
+* https://lists.ozlabs.org/pipermail/linuxppc-dev/2001-November/012662.html
 
 -- 
-2.1.4
-

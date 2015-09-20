@@ -1,34 +1,45 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 30 Sep 2015 10:06:08 +0000
-Subject: [PATCH] video: of: fix memory leak
-Message-Id: <1443606848-31510-1-git-send-email-sudipm.mukherjee@gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Sun, 20 Sep 2015 04:20:33 +0000
+Subject: Re: [PATCH 2/2] backlight: adp8870: Remove unnecessary MODULE_ALIAS()
+Message-Id: <20150920042033.GZ3039@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1440970465-11651-1-git-send-email-javier@osg.samsung.com>
+ <1440970465-11651-2-git-send-email-javier@osg.samsung.com>
+In-Reply-To: <1440970465-11651-2-git-send-email-javier@osg.samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jingoo Han <jingoohan1@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-If of_parse_display_timing() fails we are printing an error message and
-jumping to the error path but we missed freeing "dt".
+On Sun, 30 Aug 2015, Javier Martinez Canillas wrote:
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
- drivers/video/of_display_timing.c | 1 +
- 1 file changed, 1 insertion(+)
+> The driver has a I2C device id table that is used to create the modaliases
+> and also "adp8870-backlight" is not a supported I2C id, so it's never use=
+d.
+>=20
+> Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+>=20
+> ---
+>=20
+>  drivers/video/backlight/adp8870_bl.c | 1 -
+>  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-index 32d8275..8a1076b 100644
---- a/drivers/video/of_display_timing.c
-+++ b/drivers/video/of_display_timing.c
-@@ -210,6 +210,7 @@ struct display_timings *of_get_display_timings(struct device_node *np)
- 			 */
- 			pr_err("%s: error in timing %d\n",
- 				of_node_full_name(np), disp->num_timings + 1);
-+			kfree(dt);
- 			goto timingfail;
- 		}
- 
--- 
-1.9.1
+Applied, thanks.
 
+> diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlig=
+ht/adp8870_bl.c
+> index 037e43083343..9d738352d7d4 100644
+> --- a/drivers/video/backlight/adp8870_bl.c
+> +++ b/drivers/video/backlight/adp8870_bl.c
+> @@ -992,4 +992,3 @@ module_i2c_driver(adp8870_driver);
+>  MODULE_LICENSE("GPL v2");
+>  MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
+>  MODULE_DESCRIPTION("ADP8870 Backlight driver");
+> -MODULE_ALIAS("i2c:adp8870-backlight");
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

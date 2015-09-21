@@ -1,64 +1,92 @@
-From: Emil Velikov <emil.l.velikov@gmail.com>
-Date: Wed, 30 Sep 2015 11:59:13 +0000
-Subject: Re: No more new fbdev drivers, please
-Message-Id: <CACvgo53=6ZjxiouystVCf=jgoG9e9JZ0oOv_iMecAz58h4SDyA@mail.gmail.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 21 Sep 2015 09:33:28 +0000
+Subject: [PATCH v3 11/12] regulator: pwm: implement ->enable(), ->disable() and ->is_enabled methods
+Message-Id: <1442828009-6241-12-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5603EC15.9090605@ti.com>
-	<20150924144621.40e26f0a@free-electrons.com>
-	<20150924152312.GV3383@phenom.ffwll.local>
-	<CAMuHMdVAO8Ua4G1DRMxTKxqJaAb4xBTQie-nvOkYJ7sox-YCYw@mail.gmail.com>
-	<CADnq5_NL5p+sRzOvVpr=JnZ-e-vGtDD-69qapQMKawWtfVRnCw@mail.gmail.com>
-	<CAMuHMdX0Jg9RSu9rm2-trtMCDpS16Zy8VLEnmjvW_vWVWvHdVQ@mail.gmail.com>
-	<CANq1E4TN4_NNs32LBcNWeDC2jUtT2TCYHfYeummEC5-TQn7BpA@mail.gmail.com>
-	<CAMuHMdWdyTay2nX5CFPOUQQjVxFTTcZF=sVaNDziTs6GV2DGqQ@mail.gmail.com>
-In-Reply-To: <CAMuHMdWdyTay2nX5CFPOUQQjVxFTTcZF=sVaNDziTs6GV2DGqQ@mail.gmail.com>
+References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: David Herrmann <dh.herrmann@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Arnaud Patard <apatard@mandriva.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dave Airlie <airlied@redhat.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi all,
+Implement the ->enable(), ->disable() and ->is_enabled methods and remove
+the PWM call in ->set_voltage_sel().
+This is particularly important for critical regulators tagged as always-on,
+because not claiming the PWM (and its dependencies) might lead to
+unpredictable behavior (like a system hang because the PWM clk is only
+claimed when the PWM device is enabled).
 
-On 26 September 2015 at 19:46, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi David,
->
-> On Sat, Sep 26, 2015 at 8:13 PM, David Herrmann <dh.herrmann@gmail.com> wrote:
->> On Sat, Sep 26, 2015 at 8:01 PM, Geert Uytterhoeven
->> <geert@linux-m68k.org> wrote:
->>> On Sat, Sep 26, 2015 at 7:07 PM, Alex Deucher <alexdeucher@gmail.com> wrote:
->>>> On Sat, Sep 26, 2015 at 4:28 AM, Geert Uytterhoeven
->>>> <geert@linux-m68k.org> wrote:
->>>>> For the (mailing list) record, can you please provide some explicit pointers
->>>>> to these existing really simple drivers?
->>>>
->>>> See the tilcdc, ast, mgag200, and udl drivers for example.
->>>
->>> Thanks for the list!
->>>
->>> The smallest of these (udl) still counts in at ca. 2800 LoC, while there are
->>> several fbdev drivers that have less than 200 LoC.
->>> Granted, these really small ones support a single fixed video mode only, but
->>> you can write a simple fbdev driver with mode setting in less than 1000 LoC.
->>>
->>> I'm sure DRM can do better?
->>
->> Is counting lines really the level of the discussion to go here?
->
-> LoC is not the most important. But if the smallest DRM driver needs an order
-> of magnitude more LoC than the smallest fbdev driver, I start to wonder.
->
-> E.g. if I want to write a new simple driver for my new shiny hardware, it
-> can make a big difference if I have to write (and test/debug) 800 LoC, or
-> 3000 LoC.
->
-Ftr, the smallest DRM/KMS driver that I could see is the layerscape
-(fsl-dcu) one. It is roughly 1.4k LoC which includes ~300 worth of
-defines, licence headers and build glue. Admittedly not it's not as
-low as 200-800 LoC, but it's an example that they can get smaller, as
-helpers in drm core are added. udl has been written quite some time
-ago and doesn't make use of atomics, etc. the latter of which should
-make things easier/shorter.
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ drivers/regulator/pwm-regulator.c | 35 +++++++++++++++++++++++++++++------
+ 1 file changed, 29 insertions(+), 6 deletions(-)
 
-Regards,
-Emil
+diff --git a/drivers/regulator/pwm-regulator.c b/drivers/regulator/pwm-regulator.c
+index cc549b7..9ffdbd6 100644
+--- a/drivers/regulator/pwm-regulator.c
++++ b/drivers/regulator/pwm-regulator.c
+@@ -69,12 +69,6 @@ static int pwm_regulator_set_voltage_sel(struct regulator_dev *rdev,
+ 
+ 	drvdata->state = selector;
+ 
+-	ret = pwm_enable(drvdata->pwm);
+-	if (ret) {
+-		dev_err(&rdev->dev, "Failed to enable PWM\n");
+-		return ret;
+-	}
+-
+ 	return 0;
+ }
+ 
+@@ -89,6 +83,29 @@ static int pwm_regulator_list_voltage(struct regulator_dev *rdev,
+ 	return drvdata->duty_cycle_table[selector].uV;
+ }
+ 
++static int pwm_regulator_enable(struct regulator_dev *dev)
++{
++	struct pwm_regulator_data *drvdata = rdev_get_drvdata(dev);
++
++	return pwm_enable(drvdata->pwm);
++}
++
++static int pwm_regulator_disable(struct regulator_dev *dev)
++{
++	struct pwm_regulator_data *drvdata = rdev_get_drvdata(dev);
++
++	pwm_disable(drvdata->pwm);
++
++	return 0;
++}
++
++static int pwm_regulator_is_enabled(struct regulator_dev *dev)
++{
++	struct pwm_regulator_data *drvdata = rdev_get_drvdata(dev);
++
++	return pwm_is_enabled(drvdata->pwm);
++}
++
+ /**
+  * Continuous voltage call-backs
+  */
+@@ -144,11 +161,17 @@ static struct regulator_ops pwm_regulator_voltage_table_ops = {
+ 	.get_voltage_sel = pwm_regulator_get_voltage_sel,
+ 	.list_voltage    = pwm_regulator_list_voltage,
+ 	.map_voltage     = regulator_map_voltage_iterate,
++	.enable          = pwm_regulator_enable,
++	.disable         = pwm_regulator_disable,
++	.is_enabled      = pwm_regulator_is_enabled,
+ };
+ 
+ static struct regulator_ops pwm_regulator_voltage_continuous_ops = {
+ 	.get_voltage = pwm_regulator_get_voltage,
+ 	.set_voltage = pwm_regulator_set_voltage,
++	.enable          = pwm_regulator_enable,
++	.disable         = pwm_regulator_disable,
++	.is_enabled      = pwm_regulator_is_enabled,
+ };
+ 
+ static struct regulator_desc pwm_regulator_desc = {
+-- 
+1.9.1
+

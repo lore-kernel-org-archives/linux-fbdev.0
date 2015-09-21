@@ -1,53 +1,154 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Sep 2015 10:54:13 +0000
-Subject: Re: [PATCH] ocfb: remove incorrect __iomem annotation
-Message-Id: <5603D655.1050504@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="RD6xpGI5jmwBcQUs0N3Lfkih8IoQ9elae"
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 21 Sep 2015 09:33:27 +0000
+Subject: [PATCH v3 10/12] pwm: rockchip: add support for atomic update
+Message-Id: <1442828009-6241-11-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---RD6xpGI5jmwBcQUs0N3Lfkih8IoQ9elae
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Implement the ->apply() function to add support for atomic update.
 
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ drivers/pwm/pwm-rockchip.c | 53 +++++++++++++++++++++++++---------------------
+ 1 file changed, 29 insertions(+), 24 deletions(-)
 
+diff --git a/drivers/pwm/pwm-rockchip.c b/drivers/pwm/pwm-rockchip.c
+index 6eab25c..48b814d 100644
+--- a/drivers/pwm/pwm-rockchip.c
++++ b/drivers/pwm/pwm-rockchip.c
+@@ -50,7 +50,8 @@ struct rockchip_pwm_data {
+ 	const struct pwm_ops *ops;
+ 
+ 	void (*set_enable)(struct pwm_chip *chip,
+-			   struct pwm_device *pwm, bool enable);
++			   struct pwm_device *pwm, bool enable,
++			   enum pwm_polarity polarity);
+ 	void (*reset_state)(struct pwm_chip *chip, struct pwm_device *pwm);
+ };
+ 
+@@ -60,7 +61,8 @@ static inline struct rockchip_pwm_chip *to_rockchip_pwm_chip(struct pwm_chip *c)
+ }
+ 
+ static void rockchip_pwm_set_enable_v1(struct pwm_chip *chip,
+-				       struct pwm_device *pwm, bool enable)
++				       struct pwm_device *pwm, bool enable,
++				       enum pwm_polarity polarity)
+ {
+ 	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
+ 	u32 enable_conf = PWM_CTRL_OUTPUT_EN | PWM_CTRL_TIMER_EN;
+@@ -89,14 +91,15 @@ static void rockchip_pwm_reset_state_v1(struct pwm_chip *chip,
+ }
+ 
+ static void rockchip_pwm_set_enable_v2(struct pwm_chip *chip,
+-				       struct pwm_device *pwm, bool enable)
++				       struct pwm_device *pwm, bool enable,
++				       enum pwm_polarity polarity)
+ {
+ 	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
+ 	u32 enable_conf = PWM_OUTPUT_LEFT | PWM_LP_DISABLE | PWM_ENABLE |
+ 			  PWM_CONTINUOUS;
+ 	u32 val;
+ 
+-	if (pwm_get_polarity(pwm) = PWM_POLARITY_INVERSED)
++	if (polarity = PWM_POLARITY_INVERSED)
+ 		enable_conf |= PWM_DUTY_NEGATIVE | PWM_INACTIVE_POSITIVE;
+ 	else
+ 		enable_conf |= PWM_DUTY_POSITIVE | PWM_INACTIVE_NEGATIVE;
+@@ -165,7 +168,6 @@ static int rockchip_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
+ 	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
+ 	unsigned long period, duty;
+ 	u64 clk_rate, div;
+-	int ret;
+ 
+ 	clk_rate = clk_get_rate(pc->clk);
+ 
+@@ -182,15 +184,8 @@ static int rockchip_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
+ 	do_div(div, pc->data->prescaler * NSEC_PER_SEC);
+ 	duty = div;
+ 
+-	ret = clk_enable(pc->clk);
+-	if (ret)
+-		return ret;
+-
+ 	writel(period, pc->base + pc->data->regs.period);
+ 	writel(duty, pc->base + pc->data->regs.duty);
+-	writel(0, pc->base + pc->data->regs.cntr);
+-
+-	clk_disable(pc->clk);
+ 
+ 	return 0;
+ }
+@@ -208,43 +203,53 @@ static int rockchip_pwm_set_polarity(struct pwm_chip *chip,
+ 	return 0;
+ }
+ 
+-static int rockchip_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
++static int rockchip_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
++			      const struct pwm_state *state)
+ {
+ 	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
++	bool enabled = pwm_is_enabled(pwm);
+ 	int ret;
+ 
+ 	ret = clk_enable(pc->clk);
+ 	if (ret)
+ 		return ret;
+ 
+-	pc->data->set_enable(chip, pwm, true);
++	if (state->polarity != pwm_get_polarity(pwm) && enabled) {
++		pc->data->set_enable(chip, pwm, false, state->polarity);
++		enabled = false;
++	}
+ 
+-	return 0;
+-}
++	ret = rockchip_pwm_config(chip, pwm, state->duty_cycle, state->period);
++	if (ret) {
++		if (enabled != pwm_is_enabled(pwm))
++			pc->data->set_enable(chip, pwm, !enabled,
++					     state->polarity);
+ 
+-static void rockchip_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
+-{
+-	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
++		goto out;
++	}
+ 
+-	pc->data->set_enable(chip, pwm, false);
++	if (state->enabled != enabled)
++		pc->data->set_enable(chip, pwm, state->enabled,
++				     state->polarity);
+ 
++out:
+ 	clk_disable(pc->clk);
++
++	return ret;
+ }
+ 
+ static const struct pwm_ops rockchip_pwm_ops_v1 = {
+ 	.reset_state = rockchip_pwm_reset_state,
+ 	.config = rockchip_pwm_config,
+-	.enable = rockchip_pwm_enable,
+-	.disable = rockchip_pwm_disable,
++	.apply = rockchip_pwm_apply,
+ 	.owner = THIS_MODULE,
+ };
+ 
+ static const struct pwm_ops rockchip_pwm_ops_v2 = {
+ 	.reset_state = rockchip_pwm_reset_state,
+ 	.config = rockchip_pwm_config,
++	.apply = rockchip_pwm_apply,
+ 	.set_polarity = rockchip_pwm_set_polarity,
+-	.enable = rockchip_pwm_enable,
+-	.disable = rockchip_pwm_disable,
+ 	.owner = THIS_MODULE,
+ };
+ 
+-- 
+1.9.1
 
-On 17/08/15 11:10, Christoph Hellwig wrote:
-> Make sparse happy:
-
-Well, I think someone will anyway be unhappy:
-
-- memset_io() is used to clear fb_virt.
-
-- fb_virt is assigned to fbdev->info.screen_base.
-
-I don't know if it's better or worse to have the __iomem in ocfb.c...
-
- Tomi
-
-
---RD6xpGI5jmwBcQUs0N3Lfkih8IoQ9elae
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWA9ZVAAoJEPo9qoy8lh71AgMP/3jS+iIU1WemWilUAcK4y5Lt
-hBGcvLViBrbH6RWtBBKNuqFh4GOSYlt+AbYdsSh18EeoGzwB/1e0cPgHeXZ8XaOw
-ynVSgUFSUo+3qeJYl1yzHhppiSXUKA5xxQnfWG+s0YFeLFziIeyzZwxAMaVauLcC
-oJ9rS8CbBdo4WQInDS31SVSnMZ+a1tpHoOqNwYyJbc5RlKpZ+36yTHtTzP8KCuhR
-DArWVJPAx9LGTt5JX4k0HK0hvakQ68elkTps7dtkRbFLVVIsUBleyxUJDCKJK1pP
-57AOas8+TKgr2qXKzhtUaIhQr2x/PpFJqS9omwCxc0dsbD8iI2KNWcZp1wY+PNiQ
-ZZ6g35a6zzMh20gsXC4ZNQiusOM7FHZFnG7FY6JOzT2XtL2z89nN7Irt09wBTXQV
-HX+zNfRbW7RmVBr/+NSa3FMoLQNrQ65KSS0sf7Z0lWKejsx4ZSVr1HOKtSvvxWVy
-rAARiVrJagDfga+KSd5PtdnGxhNokpaSn/iqXepy4DaYBrcXzFSKhkTe9q/YnyF0
-CJ6djPYyK5O7KRQiDR6Tz7UkKs1x+RcO/9NjyxOzfd3VROVdOAEvEd9p0B2DjXcp
-mIfHuHshySvese9wY7C5mkv/jBTB6stwzFs5XqOmPWh9vRJAWnrEzKICoRcSLnyX
-tYkrGvFBTnlQkgLk9glO
-=2Xi4
------END PGP SIGNATURE-----
-
---RD6xpGI5jmwBcQUs0N3Lfkih8IoQ9elae--

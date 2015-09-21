@@ -1,73 +1,72 @@
-From: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Date: Mon, 21 Sep 2015 15:16:20 +0000
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 21 Sep 2015 23:22:25 +0000
 Subject: Re: [PATCH] backlight: pwm: reject legacy pwm request for device defined in dt
-Message-Id: <56001F44.30703@mentor.com>
+Message-Id: <20150921232225.GF11284@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1434292172-22129-1-git-send-email-vladimir_zapolskiy@mentor.com>
 In-Reply-To: <1434292172-22129-1-git-send-email-vladimir_zapolskiy@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Thierry Reding <thierry.reding@gmail.com>
-Cc: Jingoo Han <jg1.han@samsung.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+Cc: Jingoo Han <jg1.han@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Lee, Thierry,
+On Sun, 14 Jun 2015, Vladimir Zapolskiy wrote:
 
-On 14.06.2015 17:29, Vladimir Zapolskiy wrote:
 > Platform PWM backlight data provided by board's device tree should be
 > complete enough to successfully request a pwm device using pwm_get()
 > API. This change fixes a bug, when an arbitrary (first found) PWM is
 > connected to a "pwm-backlight" compatible device, when explicit PWM
 > device reference is not given.
-> 
+>=20
 > Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
 > already describes "pwms" as a required property, instead of blind
 > selection of a potentially wrong PWM reject legacy PWM device
 > registration request, leave legacy API only for non-dt cases.
-> 
+>=20
 > Based on initial implementation done by Dmitry Eremin-Solenikov.
-> 
+>=20
 > Reported-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 > Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
 > Acked-by: Thierry Reding <thierry.reding@gmail.com>
 > ---
 >  drivers/video/backlight/pwm_bl.c | 13 +++++++------
 >  1 file changed, 7 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+
+Applied, thanks.
+
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
+wm_bl.c
 > index 57cb9ec..9991cdb 100644
 > --- a/drivers/video/backlight/pwm_bl.c
 > +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -271,15 +271,16 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+> @@ -271,15 +271,16 @@ static int pwm_backlight_probe(struct platform_devi=
+ce *pdev)
 >  	}
->  
->  	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+> =20
+>  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
 > -	if (IS_ERR(pb->pwm)) {
 > +	if (IS_ERR(pb->pwm) && !pdev->dev.of_node) {
 >  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
->  		pb->legacy = true;
->  		pb->pwm = pwm_request(data->pwm_id, "pwm-backlight");
+>  		pb->legacy =3D true;
+>  		pb->pwm =3D pwm_request(data->pwm_id, "pwm-backlight");
 > -		if (IS_ERR(pb->pwm)) {
 > -			dev_err(&pdev->dev, "unable to request legacy PWM\n");
-> -			ret = PTR_ERR(pb->pwm);
+> -			ret =3D PTR_ERR(pb->pwm);
 > -			goto err_alloc;
 > -		}
 > +	}
 > +
 > +	if (IS_ERR(pb->pwm)) {
 > +		dev_err(&pdev->dev, "unable to request PWM\n");
-> +		ret = PTR_ERR(pb->pwm);
+> +		ret =3D PTR_ERR(pb->pwm);
 > +		goto err_alloc;
 >  	}
->  
+> =20
 >  	dev_dbg(&pdev->dev, "got pwm for backlight\n");
-> 
 
-
-could you please apply this reviewed and acked change?
-
-Thank you in advance.
-
---
-With best wishes,
-Vladimir
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

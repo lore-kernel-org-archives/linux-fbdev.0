@@ -1,61 +1,137 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 11 Sep 2015 13:07:37 +0000
-Subject: [PATCHv3 3/3] devicetree: Add led-backlight binding
-Message-Id: <1441976857-26548-4-git-send-email-tomi.valkeinen@ti.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 21 Sep 2015 09:33:19 +0000
+Subject: [PATCH v3 02/12] pwm: define a new pwm_state struct
+Message-Id: <1442828009-6241-3-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1441976857-26548-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1441976857-26548-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Andrew Lunn <andrew@lunn.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>, devicetree@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Add DT binding for led-backlight.
+The PWM state, represented by its period, duty_cycle and polarity,
+is currently directly stored in the PWM device.
+Declare a pwm_state structure embedding those field so that we can later
+use this struct to atomically update all the PWM parameters at once.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree@vger.kernel.org
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- .../bindings/video/backlight/led-backlight.txt     | 30 ++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/backlight/led-backlight.txt
+ drivers/pwm/core.c  |  6 +++---
+ include/linux/pwm.h | 30 +++++++++++++++++++-----------
+ 2 files changed, 22 insertions(+), 14 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/backlight/led-backlight.txt b/Documentation/devicetree/bindings/video/backlight/led-backlight.txt
-new file mode 100644
-index 000000000000..d4621d7414bc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/backlight/led-backlight.txt
-@@ -0,0 +1,30 @@
-+led-backlight bindings
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index 732375d..09037de 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -446,8 +446,8 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
+ 	if (err)
+ 		return err;
+ 
+-	pwm->duty_cycle = duty_ns;
+-	pwm->period = period_ns;
++	pwm->state.duty_cycle = duty_ns;
++	pwm->state.period = period_ns;
+ 
+ 	return 0;
+ }
+@@ -480,7 +480,7 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity)
+ 	if (err)
+ 		return err;
+ 
+-	pwm->polarity = polarity;
++	pwm->state.polarity = polarity;
+ 
+ 	return 0;
+ }
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index 31239a9..e0e0ed8 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -79,6 +79,18 @@ enum {
+ 	PWMF_EXPORTED = 1 << 2,
+ };
+ 
++/*
++ * struct pwm_state - state of a PWM channel
++ * @period: PWM period (in nanoseconds)
++ * @duty_cycle: PWM duty cycle (in nanoseconds)
++ * @polarity: PWM polarity
++ */
++struct pwm_state {
++	unsigned int period;
++	unsigned int duty_cycle;
++	enum pwm_polarity polarity;
++};
 +
-+Required properties:
-+  - compatible: "led-backlight"
-+  - leds: phandle to a led OF node [0]
-+  - brightness-levels: Array of distinct LED brightness levels. These
-+      are in the range from 0 to 255, passed to the LED class driver.
-+  - default-brightness-level: the default brightness level (index into the
-+      array defined by the "brightness-levels" property)
-+
-+Optional properties:
-+  - power-supply: regulator for supply voltage
-+  - enable-gpios: contains a single GPIO specifier for the GPIO which enables
-+                  and disables the backlight (see GPIO binding[1])
-+
-+[0]: Documentation/devicetree/bindings/leds/common.txt
-+[1]: Documentation/devicetree/bindings/gpio/gpio.txt
-+
-+Example:
-+
-+	backlight {
-+		compatible = "led-backlight";
-+		leds = <&backlight_led>;
-+
-+		brightness-levels = <0 4 8 16 32 64 128 255>;
-+		default-brightness-level = <6>;
-+
-+		power-supply = <&vdd_bl_reg>;
-+		enable-gpios = <&gpio 58 0>;
-+	};
+ /**
+  * struct pwm_device - PWM channel object
+  * @label: name of the PWM device
+@@ -87,9 +99,7 @@ enum {
+  * @pwm: global index of the PWM device
+  * @chip: PWM chip providing this PWM device
+  * @chip_data: chip-private data associated with the PWM device
+- * @period: period of the PWM signal (in nanoseconds)
+- * @duty_cycle: duty cycle of the PWM signal (in nanoseconds)
+- * @polarity: polarity of the PWM signal
++ * @state: curent PWM channel state
+  */
+ struct pwm_device {
+ 	const char *label;
+@@ -99,9 +109,7 @@ struct pwm_device {
+ 	struct pwm_chip *chip;
+ 	void *chip_data;
+ 
+-	unsigned int period;
+-	unsigned int duty_cycle;
+-	enum pwm_polarity polarity;
++	struct pwm_state state;
+ };
+ 
+ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
+@@ -112,7 +120,7 @@ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
+ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
+ {
+ 	if (pwm)
+-		pwm->period = period;
++		pwm->state.period = period;
+ }
+ 
+ static inline void pwm_set_default_period(struct pwm_device *pwm,
+@@ -123,7 +131,7 @@ static inline void pwm_set_default_period(struct pwm_device *pwm,
+ 
+ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
+ {
+-	return pwm ? pwm->period : 0;
++	return pwm ? pwm->state.period : 0;
+ }
+ 
+ static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
+@@ -134,12 +142,12 @@ static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
+ static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
+ {
+ 	if (pwm)
+-		pwm->duty_cycle = duty;
++		pwm->state.duty_cycle = duty;
+ }
+ 
+ static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
+ {
+-	return pwm ? pwm->duty_cycle : 0;
++	return pwm ? pwm->state.duty_cycle : 0;
+ }
+ 
+ /*
+@@ -155,7 +163,7 @@ static inline void pwm_set_default_polarity(struct pwm_device *pwm,
+ 
+ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+ {
+-	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
++	return pwm ? pwm->state.polarity : PWM_POLARITY_NORMAL;
+ }
+ 
+ /**
 -- 
-2.1.4
+1.9.1
 

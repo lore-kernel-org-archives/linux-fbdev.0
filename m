@@ -1,41 +1,60 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Wed, 09 Sep 2015 21:08:12 +0000
-Subject: [PATCH 03/13] Hide COMPAT_ATM_ADDPARTY behind #ifdef __KERNEL__
-Message-Id: <1441832902-28993-4-git-send-email-palmer@dabbelt.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 21 Sep 2015 09:33:23 +0000
+Subject: [PATCH v3 06/12] pwm: add the PWM initial state retrieval infra
+Message-Id: <1442828009-6241-7-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2644177.lVCYzIBfPW@wuerfel>
- <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
-In-Reply-To: <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
+References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: arnd@arndb.de
-Cc: 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org, Palmer Dabbelt <palmer@dabbelt.com>
+To: linux-arm-kernel@lists.infradead.org
 
-This used to just be behind an #ifdef COMPAT_COMPAT, so most of
-userspace wouldn't have seen the definition before.  This change just
-makes the __KERNEL__ part explicit to quiet the header checker.
+Add a ->reset_state() function to the pwm_ops struct to let PWM drivers
+initialize the PWM state attached to a PWM device.
 
-Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
-Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
-Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- include/uapi/linux/atmdev.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pwm/core.c  | 3 +++
+ include/linux/pwm.h | 4 ++++
+ 2 files changed, 7 insertions(+)
 
-diff --git a/include/uapi/linux/atmdev.h b/include/uapi/linux/atmdev.h
-index 93e0ec008ca8..f8b6223165da 100644
---- a/include/uapi/linux/atmdev.h
-+++ b/include/uapi/linux/atmdev.h
-@@ -100,7 +100,7 @@ struct atm_dev_stats {
- 					/* use backend to make new if */
- #define ATM_ADDPARTY  	_IOW('a', ATMIOC_SPECIAL+4,struct atm_iobuf)
-  					/* add party to p2mp call */
--#ifdef CONFIG_COMPAT
-+#if defined(__KERNEL__) && defined(CONFIG_COMPAT)
- /* It actually takes struct sockaddr_atmsvc, not struct atm_iobuf */
- #define COMPAT_ATM_ADDPARTY  	_IOW('a', ATMIOC_SPECIAL+4,struct compat_atm_iobuf)
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index 963238c3..60ad758 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -270,6 +270,9 @@ int pwmchip_add_with_polarity(struct pwm_chip *chip,
+ 		pwm->hwpwm = i;
+ 		pwm_set_default_polarity(pwm, polarity);
+ 
++		if (chip->ops->reset_state)
++			chip->ops->reset_state(chip, pwm);
++
+ 		radix_tree_insert(&pwm_tree, pwm->pwm, pwm);
+ 	}
+ 
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index f8cc460..cddb12b 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -179,6 +179,9 @@ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+  * @set_polarity: configure the polarity of this PWM
+  * @enable: enable PWM output toggling
+  * @disable: disable PWM output toggling
++ * @reset_state: reset the current PWM state (pwm->state) to the actual
++ *		 hardware state. This function is only called once per
++ *		 PWM device when the PWM chip is registered.
+  * @dbg_show: optional routine to show contents in debugfs
+  * @owner: helps prevent removal of modules exporting active PWMs
+  */
+@@ -191,6 +194,7 @@ struct pwm_ops {
+ 			    enum pwm_polarity polarity);
+ 	int (*enable)(struct pwm_chip *chip, struct pwm_device *pwm);
+ 	void (*disable)(struct pwm_chip *chip, struct pwm_device *pwm);
++	void (*reset_state)(struct pwm_chip *chip, struct pwm_device *pwm);
+ #ifdef CONFIG_DEBUG_FS
+ 	void (*dbg_show)(struct pwm_chip *chip, struct seq_file *s);
  #endif
 -- 
-2.4.6
+1.9.1
 

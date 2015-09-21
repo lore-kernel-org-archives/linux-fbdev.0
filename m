@@ -1,91 +1,46 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Sep 2015 11:37:54 +0000
-Subject: Re: [PATCH] omapdss: acx565akm: Fix module autoload for OF platform driver
-Message-Id: <5603E092.6050707@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="PoCi9RvPGAiRHmCN9FVUm9c9vvGSWlUFG"
+From: David Howells <dhowells@redhat.com>
+Date: Mon, 21 Sep 2015 13:42:25 +0000
+Subject: Re: [PATCH 00/38] Fixes related to incorrect usage of unsigned types
+Message-Id: <17571.1442842945@warthog.procyon.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150918184457.GA32636@goodgumbo.baconseed.org>
- <5603CDD1.7030709@ti.com>
-In-Reply-To: <5603CDD1.7030709@ti.com>
-To: Luis de Bethencourt <luis@debethencourt.com>, linux-kernel@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>
+References: <1442842450-29769-1-git-send-email-a.hajda@samsung.com>
+In-Reply-To: <1442842450-29769-1-git-send-email-a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-cachefs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lustre-devel-aLEFhgZF4x6X6Mz3xDxJMA@public.gmane.org
 
---PoCi9RvPGAiRHmCN9FVUm9c9vvGSWlUFG
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Andrzej Hajda <a.hajda@samsung.com> wrote:
 
+> Semantic patch finds comparisons of types:
+>     unsigned < 0
+>     unsigned >= 0
+> The former is always false, the latter is always true.
+> Such comparisons are useless, so theoretically they could be
+> safely removed, but their presence quite often indicates bugs.
 
-On 24/09/15 13:17, Tomi Valkeinen wrote:
->=20
->=20
-> On 18/09/15 21:44, Luis de Bethencourt wrote:
->> This platform driver has a OF device ID table but the OF module
->> alias information is not created so module autoloading won't work.
->>
->> Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
->> ---
->>
->> Hello,
->>
->> This patch adds the missing MODULE_DEVICE_TABLE() for OF to export
->> that information so modules have the correct aliases built-in and
->> autoloading works correctly.
->>
->> A longer explanation by Javier Canillas can be found here:
->> https://lkml.org/lkml/2015/7/30/519
->>
->> Thanks,
->> Luis
->>
->>  drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c | 1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565a=
-km.c b/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
->> index 90cbc4c..c581231 100644
->> --- a/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
->> +++ b/drivers/video/fbdev/omap2/displays-new/panel-sony-acx565akm.c
->> @@ -898,6 +898,7 @@ static const struct of_device_id acx565akm_of_matc=
-h[] =3D {
->>  	{ .compatible =3D "omapdss,sony,acx565akm", },
->>  	{},
->>  };
->> +MODULE_DEVICE_TABLE(of, acx565akm_of_match);
->> =20
->>  static struct spi_driver acx565akm_driver =3D {
->>  	.driver =3D {
->>
->=20
-> Thanks, queued for 4.3 fixes.
+Or someone has left them in because they don't matter and there's the
+possibility that the type being tested might be or become signed under some
+circumstances.  If the comparison is useless, I'd expect the compiler to just
+discard it - for such cases your patch is pointless.
 
-Oh, there was an earlier patch from Javier already posted. So I'll pick
-that one instead.
+If I have, for example:
 
- Tomi
+	unsigned x;
 
+	if (x = 0 || x > 27)
+		give_a_range_error();
 
---PoCi9RvPGAiRHmCN9FVUm9c9vvGSWlUFG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+I will write this as:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+	unsigned x;
 
-iQIcBAEBCAAGBQJWA+CSAAoJEPo9qoy8lh717c4P/iQhxqiGQYv0VEaKmhUzoemU
-qdmP6u2MEiEO8r2QKpUMYIFoHutPyWqX1AmAwNt79ODed3vvhoANwSozZksolR41
-aovQmy8T0li7hNhwgDrcoCZGcTQ5Gd9zJ2GFVQPsYChVFu+UEq9ZfS/yta3i1XSf
-6kRM0OtJch+EFydZ2B6n0Q2ogLFZD9NDCVQdwZIAFmWRM/I6uhuffMlAyMXuQpo9
-QoKSVfq3laqZxHlpr7Wz1ON9SMJVFr3PCM5Tvyxsa9YIOvHgoLUSNflE9OqWb3km
-Rspz3LvwwTW9ZElgInt0h+RNM0dMFXkXJoUvLV9WokW+8DlFYgxrCCtST52iMpuX
-RetRnTp+trruXYeuj5BE3Nejp3slfpi2pJSIZ/3ZJl0PucfxmjDPpKJYEO4v/TK9
-nlD6yrU02LT8xYMohR5/UboOOB4YAigw+zwCc+jt3ZwMeAk0yBjBl5efcxbJKYoC
-XHgYl7G1EKjCBNnDKQnSZ/74MXSamgwZyhpbkng5EV9p3geeEirYj7bIWP+4A0Tw
-2Fk6Nm5Deu8e2dEQAZkjIvy5tXWI111NsWQNGDhDE9thedreWnDwxn+8Zs8clNtn
-KnUqwmq7lySrvYjdyB64B2bhE9zD9rvOwilhVe2LWo+eEdSSdFbq3+Fjx7rRmkI3
-RQmNKxSrdfVTI8k6ClMS
-=DUZg
------END PGP SIGNATURE-----
+	if (x <= 0 || x > 27)
+		give_a_range_error();
 
---PoCi9RvPGAiRHmCN9FVUm9c9vvGSWlUFG--
+because it that gives a way to handle x being changed to signed at some point
+in the future for no cost.  In which case, your changing the <= to an =
+"because the < part of the case is useless" is arguably wrong.
+
+David

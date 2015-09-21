@@ -1,70 +1,45 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Wed, 09 Sep 2015 21:08:22 +0000
-Subject: [PATCH 13/13] Re-enable and clean up "check_config()" in headers_check.pl
-Message-Id: <1441832902-28993-14-git-send-email-palmer@dabbelt.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 21 Sep 2015 09:33:25 +0000
+Subject: [PATCH v3 08/12] pwm: add information about polarity, duty cycle and period to debugfs
+Message-Id: <1442828009-6241-9-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2644177.lVCYzIBfPW@wuerfel>
- <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
-In-Reply-To: <1441832902-28993-1-git-send-email-palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
+References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: arnd-r2nGTMty4D4@public.gmane.org
-Cc: 3chas3-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org, mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, jikos-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arch-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-atm-general-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Palmer Dabbelt <palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-I recently got bit by a CONFIG_ in userspace bug.  This has apparently
-happened before, but the check got disabled for triggering too much.
-In order to reduce false positives, I added some hueristics to avoid
-detecting comments.
+From: Heiko St=C3=BCbner <heiko@sntech.de>
 
-Since these tests all pass, I've now re-enabled them.
+The pwm-states make it possible to also output the polarity, duty cycle
+and period information in the debugfs pwm summary-outout.
+This makes it easier to gather overview information about pwms without
+needing to walk through the sysfs attributes of every pwm.
 
-Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
-Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
-Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- scripts/headers_check.pl | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+ drivers/pwm/core.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
-index 62320f93e903..dd413ad9c850 100755
---- a/scripts/headers_check.pl
-+++ b/scripts/headers_check.pl
-@@ -40,7 +40,7 @@ foreach my $file (@files) {
- 		&check_asm_types();
- 		&check_sizetypes();
- 		&check_declarations();
--		# Dropped for now. Too much noise &check_config();
-+		&check_config();
- 	}
- 	close $fh;
- }
-@@ -76,9 +76,24 @@ sub check_declarations
- 	}
- }
- 
-+my $check_config_in_multiline_comment = 0;
- sub check_config
- {
--	if ($line =~ m/[^a-zA-Z0-9_]+CONFIG_([a-zA-Z0-9_]+)[^a-zA-Z0-9_]/) {
-+	my $nocomments = $line;
-+	$nocomments =~ s/\/\*.*\*\///; # Remove ANSI-style comments (/* to */)
-+	$nocomments =~ s/\/\/.*//;     # Remove C99-style comments (// to EOL)
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index ff3c662..7eba2f3 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -1018,6 +1018,11 @@ static void pwm_dbg_show(struct pwm_chip *chip, stru=
+ct seq_file *s)
+ 		if (pwm_is_enabled(pwm))
+ 			seq_puts(s, " enabled");
+=20
++		seq_printf(s, " period:%uns", pwm_get_period(pwm));
++		seq_printf(s, " duty:%uns", pwm_get_duty_cycle(pwm));
++		seq_printf(s, " polarity:%s", pwm_get_polarity(pwm) ? "inverse"
++								    : "normal");
 +
-+	# Check to see if we're within a multiline comment, and if so
-+	# just remove the whole line.  I tried matching on '^ * ', but
-+	# there's one header that doesn't prepend multi-line comments
-+	# with * so that won't work.
-+	if ($nocomments =~ m/\/\*/) { $check_config_in_multiline_comment = 1; }
-+	if ($nocomments =~ m/\*\//) { $check_config_in_multiline_comment = 0; }
-+	if ($check_config_in_multiline_comment = 1) { $nocomments = "" }
-+
-+	# Check to see if there is something that looks like CONFIG_
-+	# inside a userspace-accessible header file and if so, print that out.
-+	if ($nocomments =~ m/[^a-zA-Z0-9_]+CONFIG_([a-zA-Z0-9_]+)[^a-zA-Z0-9_]/) {
- 		printf STDERR "$filename:$lineno: leaks CONFIG_$1 to userspace where it is not valid\n";
+ 		seq_puts(s, "\n");
  	}
  }
--- 
-2.4.6
+--=20
+1.9.1
 

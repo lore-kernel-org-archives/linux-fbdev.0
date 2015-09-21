@@ -1,63 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 28 Sep 2015 08:08:50 +0000
-Subject: Re: [PATCHv3 1/3] leds: Add of_led_get() and led_put()
-Message-Id: <5608F592.7010008@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="KGrvgXVCDwHBT1GrLca4vtUQ9dSPJ82kd"
+From: Andrzej Hajda <a.hajda@samsung.com>
+Date: Mon, 21 Sep 2015 13:34:00 +0000
+Subject: [PATCH 28/38] video/omap: remove invalid check
+Message-Id: <1442842450-29769-29-git-send-email-a.hajda@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1441976857-26548-1-git-send-email-tomi.valkeinen@ti.com>
- <1441976857-26548-2-git-send-email-tomi.valkeinen@ti.com>
- <55F2DC3C.6090100@samsung.com>
-In-Reply-To: <55F2DC3C.6090100@samsung.com>
-To: Jacek Anaszewski <j.anaszewski@samsung.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>
+References: <1442842450-29769-1-git-send-email-a.hajda@samsung.com>
+In-Reply-To: <1442842450-29769-1-git-send-email-a.hajda@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Andrzej Hajda <a.hajda@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
---KGrvgXVCDwHBT1GrLca4vtUQ9dSPJ82kd
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+regno is unsigned so it cannot be negative.
 
+The problem has been detected using proposed semantic patch
+scripts/coccinelle/tests/unsigned_lesser_than_zero.cocci [1].
 
+[1]: http://permalink.gmane.org/gmane.linux.kernel/2038576
 
-On 11/09/15 16:50, Jacek Anaszewski wrote:
+Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+---
+ drivers/video/fbdev/omap/omapfb_main.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
->> +/**
->> + * led_put() - release a LED device, reserved with led_get()
->=20
-> s/led_get/of_led_get/
->=20
-> or we should add led_get, but since class_find_device, which increments=
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 1fb3ea3..393ae1b 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -276,11 +276,6 @@ static int _setcolreg(struct fb_info *info, u_int regno, u_int red, u_int green,
+ 		if (r != 0)
+ 			break;
+ 
+-		if (regno < 0) {
+-			r = -EINVAL;
+-			break;
+-		}
+-
+ 		if (regno < 16) {
+ 			u16 pal;
+ 			pal = ((red >> (16 - var->red.length)) <<
+-- 
+1.9.1
 
-> device ref count, takes led_node and led_match_led_node, it is tightly
-> coupled tightly with OF. OTOH we could have of_led_put for symmetry,
-> but it would have nothing to do with OF. Amending the comment is the
-> best option here, I think.
-
-I agree. I've changed the comment.
-
- Tomi
-
-
---KGrvgXVCDwHBT1GrLca4vtUQ9dSPJ82kd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWCPWSAAoJEPo9qoy8lh71oUoP/1XL0l+p0RD+vzy2C1sOm9cn
-5GBTYPADKWPvJUx6HYptu4ewyCA9mjJ4Tm7T8vI+PyAZgRV8Sjua0PH0+8pj+98Z
-z150RtWS70QaUw1hUyjupfViFmv+jJwQo1NQ5qWewu9HIz7690ntZZL/9jkuFVEp
-lts8MkSOeuoOtX6EKDw7PhBoSL+N5AqYlEbA0ljQcWSLI6NcVDXIqeeYR14kltk8
-+/1hjIleKx0a4BEmEm7j8WzyS4/PbWIAyBlfoC8Faa0UUOJXl2aDVjuw1wc43hXH
-e48X8EMYzHTedtSZRowRiOzZ3zl81G/k1pAnwrdfKMYvu2MUaevA2PNRsOiXGCkr
-BRcU73KK4N317pIt11hD8aWjujuSw00Wa9gSsSEb+LzXBtER3Add1Lxjg25Rx0f2
-eaST3nLOtubAqUxMOo/QjTElc5XH+ciwzIt2v2n0syIdIlxC9nyC9HdTPSVREcMF
-WAB/RcB4oiNZyDrjCBD4HOMsqxVjSI1MXv3o2THz3/Kvn/tIZz04864BQa4EY3+L
-HE+lcqcypNivdLmfftjqESjmzNql+MKOSVz8w54oef/zO7Q3dIYIFLuopo1Q3CFX
-5O4bOsm3zwQy1oCgVqOncJKrRnNGD02iQ8c/IUhOoVawLVGoGAVnu0zicoMoK3+Y
-hghTqBVD78fELPKDrgsq
-=U2IK
------END PGP SIGNATURE-----
-
---KGrvgXVCDwHBT1GrLca4vtUQ9dSPJ82kd--

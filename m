@@ -1,55 +1,46 @@
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-Date: Wed, 09 Sep 2015 12:40:14 +0000
-Subject: Re: [PATCHv2 1/3] leds: Add of_led_get() and led_put()
-Message-Id: <55F028AE.70407@samsung.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 21 Sep 2015 09:33:21 +0000
+Subject: [PATCH v3 04/12] backlight: pwm_bl: remove useless call to pwm_set_period
+Message-Id: <1442828009-6241-5-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1441711176-4258-1-git-send-email-tomi.valkeinen@ti.com>
- <1441711176-4258-2-git-send-email-tomi.valkeinen@ti.com>
- <55EEE0A1.5070000@samsung.com> <55EEEB04.3090207@samsung.com>
- <55F0230C.9000309@ti.com>
-In-Reply-To: <55F0230C.9000309@ti.com>
+References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>
+To: linux-arm-kernel@lists.infradead.org
 
-On 09/09/2015 02:16 PM, Tomi Valkeinen wrote:
->
->
-> On 08/09/15 17:04, Jacek Anaszewski wrote:
->
->>>> +#endif /* __LINUX_LEDS_OF_H_INCLUDED */
->>>> diff --git a/include/linux/leds.h b/include/linux/leds.h
->>>> index b122eeafb5dc..0fce71a06d68 100644
->>>> --- a/include/linux/leds.h
->>>> +++ b/include/linux/leds.h
->>>> @@ -113,6 +113,8 @@ extern void devm_led_classdev_unregister(struct
->>>> device *parent,
->>>>    extern void led_classdev_suspend(struct led_classdev *led_cdev);
->>>>    extern void led_classdev_resume(struct led_classdev *led_cdev);
->>>>
->>>> +extern void led_put(struct led_classdev *led_cdev);
->>>> +
->>
->> This also needs no-op version.
->
-> Ok, but... I think other already existing functions need no-ops also. If
-> there's a driver that uses of_led_get and led_put, it's sure to use some
-> other led_* functions also.
->
-> So if we want that driver to be compilable when LED support is disabled
-> in the kernel, we need to provide no-ops for all those functions.
->
-> Probably:
->
-> led_set_brightness
-> led_blink_set_oneshot
-> led_blink_set
+The PWM period will be set when calling pwm_config. Remove this useless
+call to pwm_set_period, which might mess up with the initial PWM state
+once we have added proper support for PWM init state retrieval.
 
-That's right. It needs to be addressed soon too. Potentially
-this could show up by breaking randconfig build.
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ drivers/video/backlight/pwm_bl.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index ae498c1..71944f8 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -293,12 +293,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	 * period, parsed from the DT, in the PWM device. For the non-DT case,
+ 	 * set the period from platform data if it has not already been set
+ 	 * via the PWM lookup table.
++	 * FIXME: This assignment should be dropped as soon as all the boards
++	 * have moved to the PWM lookup table approach. The same goes for the
++	 * pb->period field which should be replaced by
++	 * pwm_get_default_period() calls.
+ 	 */
+ 	pb->period = pwm_get_default_period(pb->pwm);
+-	if (!pb->period && (data->pwm_period_ns > 0)) {
++	if (!pb->period && (data->pwm_period_ns > 0))
+ 		pb->period = data->pwm_period_ns;
+-		pwm_set_period(pb->pwm, data->pwm_period_ns);
+-	}
+ 
+ 	pb->lth_brightness = data->lth_brightness * (pb->period / pb->scale);
+ 
 -- 
-Best Regards,
-Jacek Anaszewski
+1.9.1
+

@@ -1,20 +1,65 @@
-From: David Howells <dhowells@redhat.com>
-Date: Thu, 10 Sep 2015 11:12:59 +0000
-Subject: Re: [PATCH 10/13] Hide USE_WCACHING behind #ifdef __KERNEL__
-Message-Id: <18082.1441883579@warthog.procyon.org.uk>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 21 Sep 2015 09:33:17 +0000
+Subject: [PATCH v3 00/12] pwm: add support for atomic update
+Message-Id: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1441832902-28993-11-git-send-email-palmer@dabbelt.com> <2644177.lVCYzIBfPW@wuerfel> <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
-In-Reply-To: <1441832902-28993-11-git-send-email-palmer@dabbelt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Palmer Dabbelt <palmer@dabbelt.com>
-Cc: dhowells@redhat.com, arnd@arndb.de, 3chas3@gmail.com, hpa@zytor.com, mingo@redhat.com, plagnioj@jcrosoft.com, jikos@kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de, tomi.valkeinen@ti.com, x86@kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Palmer Dabbelt <palmer@dabbelt.com> wrote:
+Hello,
 
-> I don't think this was ever intended to be exposed to userspace.
+This series adds support for atomic PWM update, or IOW, the capability
+to update all the parameters of a PWM device (enabled/disabled, period,
+duty and polarity) in one go.
 
-Then it should be in include/linux/pktcdvd.h
+Best Regards,
 
-David
+Boris
+
+Changes since v2:
+- rebased on top of 4.3-rc2
+- reintroduced pwm-regulator patches
+
+Changes since v1:
+- dropped applied patches
+- squashed Heiko's fixes into the rockchip driver changes
+- made a few cosmetic changes
+- added kerneldoc comments
+- added Heiko's patch to display more information in debugfs
+- dropped pwm-regulator patches (should be submitted separately)
+
+Boris Brezillon (11):
+  pwm: introduce default period and polarity concepts
+  pwm: define a new pwm_state struct
+  pwm: move the enabled/disabled info to pwm_state struct
+  backlight: pwm_bl: remove useless call to pwm_set_period
+  pwm: declare a default PWM state
+  pwm: add the PWM initial state retrieval infra
+  pwm: add the core infrastructure to allow atomic update
+  pwm: rockchip: add initial state retrieval
+  pwm: rockchip: add support for atomic update
+  regulator: pwm: implement ->enable(), ->disable() and ->is_enabled
+    methods
+  regulator: pwm: properly initialize the ->state field
+
+Heiko St=C3=BCbner (1):
+  pwm: add information about polarity, duty cycle and period to debugfs
+
+ drivers/leds/leds-pwm.c              |   2 +-
+ drivers/pwm/core.c                   | 169 +++++++++++++++++++++++++++++++=
+----
+ drivers/pwm/pwm-pxa.c                |   2 +-
+ drivers/pwm/pwm-rockchip.c           | 119 +++++++++++++++++++-----
+ drivers/pwm/pwm-sun4i.c              |   3 +-
+ drivers/regulator/pwm-regulator.c    |  65 ++++++++++++--
+ drivers/video/backlight/lm3630a_bl.c |   4 +-
+ drivers/video/backlight/pwm_bl.c     |  10 ++-
+ drivers/video/fbdev/ssd1307fb.c      |   2 +-
+ include/linux/pwm.h                  |  89 +++++++++++++++---
+ 10 files changed, 392 insertions(+), 73 deletions(-)
+
+--=20
+1.9.1
+

@@ -1,62 +1,71 @@
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-Date: Tue, 22 Sep 2015 09:46:58 +0000
-Subject: Re: [PATCH 00/38] Fixes related to incorrect usage of unsigned types
-Message-Id: <56012392.7020807@samsung.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Thu, 24 Sep 2015 22:14:13 +0000
+Subject: [PATCH v2 1/2] fb_ddc: Allow I2C adapters without SCL read capability
+Message-Id: <1443132854-31786-1-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442842450-29769-1-git-send-email-a.hajda@samsung.com>
- <17571.1442842945@warthog.procyon.org.uk> <56011BB9.5030004@samsung.com>
-In-Reply-To: <56011BB9.5030004@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrzej Hajda <a.hajda@samsung.com>
-Cc: David Howells <dhowells@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-kernel@vger.kernel.org, brcm80211-dev-list@broadcom.com, devel@driverdev.osuosl.org, dev@openvswitch.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cachefs@redhat.com, linux-clk@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-media@vger.kernel.org, linux-mips@linux-mips.org, linux-mm@kvack.org, linux-omap@vger.kernel.org, linux-rdma@vger.kernel.org, linux-serial@vger.kernel.org, linux-sh@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, lustre-devel@lists.lustre.org, netdev@vger.kernel.org, rtc-linux@googlegroups.com
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-On 09/22/2015 11:13 AM, Andrzej Hajda wrote:
-> On 09/21/2015 03:42 PM, David Howells wrote:
->> Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org> wrote:
->>
->>> Semantic patch finds comparisons of types:
->>>      unsigned < 0
->>>      unsigned >= 0
->>> The former is always false, the latter is always true.
->>> Such comparisons are useless, so theoretically they could be
->>> safely removed, but their presence quite often indicates bugs.
->>
->> Or someone has left them in because they don't matter and there's the
->> possibility that the type being tested might be or become signed under some
->> circumstances.  If the comparison is useless, I'd expect the compiler to just
->> discard it - for such cases your patch is pointless.
->>
->> If I have, for example:
->>
->> 	unsigned x;
->>
->> 	if (x = 0 || x > 27)
->> 		give_a_range_error();
->>
->> I will write this as:
->>
->> 	unsigned x;
->>
->> 	if (x <= 0 || x > 27)
->> 		give_a_range_error();
->>
->> because it that gives a way to handle x being changed to signed at some point
->> in the future for no cost.  In which case, your changing the <= to an =
->> "because the < part of the case is useless" is arguably wrong.
->
-> This is why I have not checked for such cases - I have skipped checks of type
-> 	unsigned <= 0
-> exactly for the reasons above.
->
-> However I have left two other checks as they seems to me more suspicious - they
-> are always true or false. But as Dmitry and Andrew pointed out Linus have quite
-> strong opinion against removing range checks in such cases as he finds it
-> clearer. I think it applies to patches 29-36. I am not sure about patches 26-28,37.
+i2c-algo-bit allows I2C adapters without SCL read capability to work
+but fb_ddc_read fails to work on them.
 
-Dropped 30/38 and 31/38 from LED tree then.
+Fix fb_ddc_read to work with I2C adapters not capable of reading SCL.
 
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+---
+ drivers/video/fbdev/core/fb_ddc.c |   28 ++++++++++++++++++----------
+ 1 file changed, 18 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fb_ddc.c b/drivers/video/fbdev/core/fb_ddc.c
+index 94322cc..8bf5f2f 100644
+--- a/drivers/video/fbdev/core/fb_ddc.c
++++ b/drivers/video/fbdev/core/fb_ddc.c
+@@ -67,13 +67,17 @@ unsigned char *fb_ddc_read(struct i2c_adapter *adapter)
+ 		msleep(13);
+ 
+ 		algo_data->setscl(algo_data->data, 1);
+-		for (j = 0; j < 5; j++) {
+-			msleep(10);
+-			if (algo_data->getscl(algo_data->data))
+-				break;
++		if (algo_data->getscl) {
++			for (j = 0; j < 5; j++) {
++				msleep(10);
++				if (algo_data->getscl(algo_data->data))
++					break;
++			}
++			if (j = 5)
++				continue;
++		} else {
++			udelay(algo_data->udelay);
+ 		}
+-		if (j = 5)
+-			continue;
+ 
+ 		algo_data->setsda(algo_data->data, 0);
+ 		msleep(15);
+@@ -89,10 +93,14 @@ unsigned char *fb_ddc_read(struct i2c_adapter *adapter)
+ 		msleep(15);
+ 
+ 		algo_data->setscl(algo_data->data, 1);
+-		for (j = 0; j < 10; j++) {
+-			msleep(10);
+-			if (algo_data->getscl(algo_data->data))
+-				break;
++		if (algo_data->getscl) {
++			for (j = 0; j < 10; j++) {
++				msleep(10);
++				if (algo_data->getscl(algo_data->data))
++					break;
++			}
++		} else {
++			udelay(algo_data->udelay);
+ 		}
+ 
+ 		algo_data->setsda(algo_data->data, 1);
 -- 
-Best Regards,
-Jacek Anaszewski
+Ondrej Zary
+

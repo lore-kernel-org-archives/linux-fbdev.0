@@ -1,43 +1,56 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Mon, 21 Sep 2015 21:13:32 +0000
-Subject: Re: [PATCH v3 11/12] regulator: pwm: implement ->enable(), ->disable() and ->is_enabled methods
-Message-Id: <20150921211332.GG30445@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="CDSQlumANh/CoDwR"
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Sat, 26 Sep 2015 08:52:55 +0000
+Subject: [PATCH v2] fbdev: broadsheetfb: fix memory leak
+Message-Id: <1443257530-26848-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
- <1442828009-6241-12-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1442828009-6241-12-git-send-email-boris.brezillon@free-electrons.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
+We have requested the firmware and it was loaded but we missed releasing
+it both on success and error.
 
---CDSQlumANh/CoDwR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+---
 
-On Mon, Sep 21, 2015 at 11:33:28AM +0200, Boris Brezillon wrote:
+v1: relased the firmware only on the error path.
 
-> Implement the ->enable(), ->disable() and ->is_enabled methods and remove
-> the PWM call in ->set_voltage_sel().
+ drivers/video/fbdev/broadsheetfb.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-I'll apply this so it definitely makes it into mainline, I'm happy to
-provide a tag for this so it can be merged into the PWM tree if the rest
-of the series is ready.
+diff --git a/drivers/video/fbdev/broadsheetfb.c b/drivers/video/fbdev/broadsheetfb.c
+index 0e5fde1..9f9a7be 100644
+--- a/drivers/video/fbdev/broadsheetfb.c
++++ b/drivers/video/fbdev/broadsheetfb.c
+@@ -752,7 +752,7 @@ static ssize_t broadsheet_loadstore_waveform(struct device *dev,
+ 	if ((fw_entry->size < 8*1024) || (fw_entry->size > 64*1024)) {
+ 		dev_err(dev, "Invalid waveform\n");
+ 		err = -EINVAL;
+-		goto err_failed;
++		goto err_fw;
+ 	}
+ 
+ 	mutex_lock(&(par->io_lock));
+@@ -762,13 +762,15 @@ static ssize_t broadsheet_loadstore_waveform(struct device *dev,
+ 	mutex_unlock(&(par->io_lock));
+ 	if (err < 0) {
+ 		dev_err(dev, "Failed to store broadsheet waveform\n");
+-		goto err_failed;
++		goto err_fw;
+ 	}
+ 
+ 	dev_info(dev, "Stored broadsheet waveform, size %zd\n", fw_entry->size);
+ 
+-	return len;
++	err = len;
+ 
++err_fw:
++	release_firmware(fw_entry);
+ err_failed:
+ 	return err;
+ }
+-- 
+1.9.1
 
---CDSQlumANh/CoDwR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWAHL8AAoJECTWi3JdVIfQ73wH/j0fbEJX3vPNyXB22VMHCssS
-fBG9/LvW6vJDSHbGQQJZMTImpHST6Lop2bpKZPtB+bbw/QdmXD3hBsX6rDHcbfDH
-ztCO6zya6CEFNjyhPjDe1+PpQ6mJIo2pF3ugcEnL0YYMwIiBnE+5yJ5RNwOokdl+
-iKdwSaQTShgAn0WaMUlAxlapjF4OJZSO1PVpOnTHjaJE9eET0kQcAsnMrQfPyp02
-m+A2Jox/sgsZcQDSmGcfl7mqMDKY+DGqOAZ2R7UFQzGjwXeEwH2FbvhY8k9HLz7o
-RtYY9GeF2A2LUNrzCm75O9lL5nBpRXBSLj6JEms2TBXJ4gAGSGBoNKgffEECD/U=
-=3aFF
------END PGP SIGNATURE-----
-
---CDSQlumANh/CoDwR--

@@ -1,39 +1,29 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sat, 26 Sep 2015 08:28:06 +0000
+Date: Sat, 26 Sep 2015 09:03:17 +0000
 Subject: Re: No more new fbdev drivers, please
-Message-Id: <CAMuHMdVAO8Ua4G1DRMxTKxqJaAb4xBTQie-nvOkYJ7sox-YCYw@mail.gmail.com>
+Message-Id: <CAMuHMdWx1Fpf9FJ1wkc1_qmrhJb-k+MFui5EwsBx_-3jVdam+w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5603EC15.9090605@ti.com>
- <20150924144621.40e26f0a@free-electrons.com>
- <20150924152312.GV3383@phenom.ffwll.local>
-In-Reply-To: <20150924152312.GV3383@phenom.ffwll.local>
+References: <560524E7.4020707@gmail.com>
+In-Reply-To: <560524E7.4020707@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Arnaud Patard <apatard@mandriva.com>, Dave Airlie <airlied@redhat.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Kamil Lulko <kamil.lulko@gmail.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>
 
-Hi Daniel,
-
-On Thu, Sep 24, 2015 at 5:23 PM, Daniel Vetter <daniel@ffwll.ch> wrote:
-> On Thu, Sep 24, 2015 at 02:46:21PM +0200, Thomas Petazzoni wrote:
->> Or are there some plans to make the writing of DRM drivers for very
->> simple/trivial devices a bit simpler?
+On Fri, Sep 25, 2015 at 12:41 PM, Kamil Lulko <kamil.lulko@gmail.com> wrote:
+>> fbdev is (more or less) maintained, but it's a deprecated framework. All
+>> new Linux display drivers should be done on DRM.
 >
-> Since years I'm trying to sell someone on implementing support for
-> drm_simple_outputs which would collapse the crtc->encoder->connector
-> chain into 1 entity. Would be trivial to implement and then trivial to
-> write simple drivers on top of that. And besides that drm already has
-> piles of reallly simple drivers with just one output and one framebuffer.
 >
-> There's no reason not to use drm for gfx drivers at all.
+> What about no-mmu platforms? DRM has a big fat MMU dependency in the
+> kconfig, is there a way to write DRM driver for such devices?
 
-Good to hear that!
+That would indeed be a showstopper...
 
-For the (mailing list) record, can you please provide some explicit pointers
-to these existing really simple drivers?
-
-Thanks!
+I dropped the dependency, and gave it a quick try for m68knommu.
+Seems like DRM currently needs pgprot_writecombine() and pte_wrprotect().
+Probably that can be fixed easily.
 
 Gr{oetje,eeting}s,
 

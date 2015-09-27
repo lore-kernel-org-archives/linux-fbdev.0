@@ -1,76 +1,135 @@
-From: Dave Airlie <airlied@gmail.com>
-Date: Sat, 26 Sep 2015 21:55:46 +0000
+From: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
+Date: Sun, 27 Sep 2015 13:09:48 +0000
 Subject: Re: No more new fbdev drivers, please
-Message-Id: <CAPM=9twQjvrjvgPR4Y6wTZ6yBT+hKv5f0YQk0Uq=pxsMsy4agw@mail.gmail.com>
+Message-Id: <5607EA9C.7040909@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <5603EC15.9090605@ti.com>
-	<20150924144621.40e26f0a@free-electrons.com>
-	<20150924152312.GV3383@phenom.ffwll.local>
-	<CAMuHMdVAO8Ua4G1DRMxTKxqJaAb4xBTQie-nvOkYJ7sox-YCYw@mail.gmail.com>
-	<CADnq5_NL5p+sRzOvVpr=JnZ-e-vGtDD-69qapQMKawWtfVRnCw@mail.gmail.com>
-	<CAMuHMdX0Jg9RSu9rm2-trtMCDpS16Zy8VLEnmjvW_vWVWvHdVQ@mail.gmail.com>
-	<CANq1E4TN4_NNs32LBcNWeDC2jUtT2TCYHfYeummEC5-TQn7BpA@mail.gmail.com>
-	<CAMuHMdWdyTay2nX5CFPOUQQjVxFTTcZF=sVaNDziTs6GV2DGqQ@mail.gmail.com>
-	<CAF6AEGvqFXf8BgDz6dT4EX95La6PgQjj0ZzK2j3aW8_MvqRL1w@mail.gmail.com>
-In-Reply-To: <CAF6AEGvqFXf8BgDz6dT4EX95La6PgQjj0ZzK2j3aW8_MvqRL1w@mail.gmail.com>
+In-Reply-To: <5603EC15.9090605@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Clark <robdclark@gmail.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Arnaud Patard <apatard@mandriva.com>, Dave Airlie <airlied@redhat.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dave Airlie <airlied@redhat.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 27 September 2015 at 06:49, Rob Clark <robdclark@gmail.com> wrote:
-> On Sat, Sep 26, 2015 at 2:46 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> Hi David,
->>
->> On Sat, Sep 26, 2015 at 8:13 PM, David Herrmann <dh.herrmann@gmail.com> wrote:
->>> On Sat, Sep 26, 2015 at 8:01 PM, Geert Uytterhoeven
->>> <geert@linux-m68k.org> wrote:
->>>> On Sat, Sep 26, 2015 at 7:07 PM, Alex Deucher <alexdeucher@gmail.com> wrote:
->>>>> On Sat, Sep 26, 2015 at 4:28 AM, Geert Uytterhoeven
->>>>> <geert@linux-m68k.org> wrote:
->>>>>> For the (mailing list) record, can you please provide some explicit pointers
->>>>>> to these existing really simple drivers?
->>>>>
->>>>> See the tilcdc, ast, mgag200, and udl drivers for example.
->>>>
->>>> Thanks for the list!
->>>>
->>>> The smallest of these (udl) still counts in at ca. 2800 LoC, while there are
->>>> several fbdev drivers that have less than 200 LoC.
->>>> Granted, these really small ones support a single fixed video mode only, but
->>>> you can write a simple fbdev driver with mode setting in less than 1000 LoC.
->>>>
->>>> I'm sure DRM can do better?
->>>
->>> Is counting lines really the level of the discussion to go here?
->>
->> LoC is not the most important. But if the smallest DRM driver needs an order
->> of magnitude more LoC than the smallest fbdev driver, I start to wonder.
+
+Den 24.09.2015 14:27, skrev Tomi Valkeinen:
+> Hi all,
 >
-> I think most of the drm/kms drivers are bigger due to more features..
-> iirc original tilcdc was ~2k loc (compared to ~1.6kloc for da8xx-fb),
-> but it already supported multiple modes, page flipping, vblank
-> notification, etc.  It has grown since then.  Although still probably
-> smaller than downstream da8xx-fb + tda998x hdmi bridge (and re-using
-> the same tda998x bridge code with several other drivers too, compared
-> to downstream solution for the same)..
+> fbdev is (more or less) maintained, but it's a deprecated framework. All
+> new Linux display drivers should be done on DRM.
 >
-> Probably there is room for more helpers for even more restrictive hw.
+> So let's not add any more new fbdev drivers.
+>
+> I will continue to maintain the current fbdev drivers, and I don't mind
+> adding some new features to those current drivers, as long as the amount
+> of code required to add the features stays sensible.
+>
+> I see we have three fbdev drivers in staging: xgifb, fbtft and sm750fb,
+> and the question is what to do with those.
+>
+> xgifb was added in 2010, and is still in staging.
+>
+> fbtft looks like maybe some kind of framework on top of fbdev, with
+> fbtft specific subdrivers... I didn't look at it in detail, but my gut
+> says "never".
 
-My main worry for having helpers for "simple" hw, is that people start
-using them
-to have a minimal 400loc driver, but once they add any feature outside
-the helper
-they have to rewrite their driver to avoid the helpers.
+I have done some work [1] to try and make fbtft look more like the rest
+of the kernel (doc [2]), but that work will result in an almost complete
+rewrite of fbtft. When Tomi showed reluctance to move sm712fb out of
+staging [3], I started to look at DRM to see if I could find my way
+through the myriad of helpers and objects/structs.
 
-Most of the drm driver is boilerplate, we could possibly reduce the boilerplate,
-but I'm not sure it's worth the effort to save somebody a small bit of
-trouble at
-bringup.
+I now have this simplified view of DRM [4]:
 
-loc is a pointless tool for measuring this, a small drm driver will be as simple
-as a small fbdev driver, and will likely provide more features that people need.
+struct tinydrm_device {
+         struct drm_device *base;
+         struct drm_plane plane;
+         struct drm_crtc crtc;
+         struct drm_encoder encoder;
+         struct drm_connector connector;
+         struct drm_fbdev_cma *fbdev_cma;
+         bool enabled;
+         u32 width, height;
+         void *dev_private;
 
-Dave.
+         int (*enable)(struct tinydrm_device *tdev);
+         int (*disable)(struct tinydrm_device *tdev);
+
+         int (*dirty)(struct drm_framebuffer *fb,
+                      struct drm_gem_cma_object *cma_obj,
+                      unsigned flags, unsigned color,
+                      struct drm_clip_rect *clips, unsigned num_clips);
+         /* blank() is missing */
+         /* maybe some modeset() function to set hw rotation */
+};
+
+Currently I'm able to get fbdev framebuffer changes through as dirty()
+calls. Next step is to hook up some of the rewritten fbtft code to
+actually get something on the display.
+
+This is the display controller abstraction I use in the rewritten fbtft:
+
+struct lcdctrl {
+         struct lcdreg *lcdreg;
+         u32 width;
+         u32 height;
+         u32 rotation;
+         bool enabled;
+         struct regulator *power_supply;
+         void *driver_private;
+         u64 flags;
+
+         int (*poweron)(struct lcdctrl *ctrl);
+         void (*poweroff)(struct lcdctrl *ctrl);
+         int (*update)(struct lcdctrl *ctrl, struct lcdctrl_update *update);
+         int (*rotate)(struct lcdctrl *ctrl, u32 rotation);
+         int (*blank)(struct lcdctrl *ctrl, bool blank);
+         bool (*check)(struct lcdctrl *ctrl, u32 value);
+};
+
+So what I would like, is to have a simple struct like this to hide the
+complexity of the graphics subsystem. Leaving the driver with just a
+few lines of code to setup the controller:
+
+static int ada_mipifb_1480_poweron(struct lcdctrl *ctrl)
+{
+         lcdreg_reset(reg);
+         lcdreg_writereg(reg, ILI9340_PWCTRL1, 0x23);
+[...]
+}
+
+static int ada_mipifb_probe(struct spi_device *spi)
+{
+         cfg.width = 240;
+         cfg.height = 320;
+         cfg.addr_mode0 = ILI9340_MADCTL_MX;
+         cfg.addr_mode90 = ILI9340_MADCTL_MV | ILI9340_MADCTL_MY |
+               ILI9340_MADCTL_MX;
+         cfg.addr_mode180 = ILI9340_MADCTL_MY;
+         cfg.addr_mode270 = ILI9340_MADCTL_MV;
+         cfg.bgr = true;
+
+         reg = devm_lcdreg_spi_init(spi, LCDREG_SPI_4WIRE);
+
+         ctrl = devm_mipi_dbi_init(reg, &cfg);
+         ctrl->poweron = ada_mipifb_1480_poweron;
+
+         return devm_lcdctrl_register(ctrl);
+}
+
+
+For me personally it doesn't matter whether these drivers are drm or fbdev.
+fbdev has everything these drivers need, but maybe it's not such a good 
+choice
+for the future.
+
+
+Noralf.
+
+
+[1] https://github.com/notro/linux-staging/commits/next
+[2] 
+https://github.com/notro/linux-staging/blob/next/drivers/staging/fbtft/Documentation/fb/fbtft.txt
+[3] https://lkml.org/lkml/2015/9/1/274
+[4] https://gist.github.com/notro/59e0c064bc512e85e9b2
+

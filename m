@@ -1,67 +1,81 @@
 From: Daniel Vetter <daniel@ffwll.ch>
-Date: Tue, 29 Sep 2015 07:05:08 +0000
+Date: Tue, 29 Sep 2015 07:07:28 +0000
 Subject: Re: No more new fbdev drivers, please
-Message-Id: <20150929070508.GZ3383@phenom.ffwll.local>
+Message-Id: <20150929070728.GA3383@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5603EC15.9090605@ti.com>
- <20150924144621.40e26f0a@free-electrons.com>
- <20150924152312.GV3383@phenom.ffwll.local>
- <CAMuHMdVAO8Ua4G1DRMxTKxqJaAb4xBTQie-nvOkYJ7sox-YCYw@mail.gmail.com>
- <CADnq5_NL5p+sRzOvVpr=JnZ-e-vGtDD-69qapQMKawWtfVRnCw@mail.gmail.com>
- <CAMuHMdX0Jg9RSu9rm2-trtMCDpS16Zy8VLEnmjvW_vWVWvHdVQ@mail.gmail.com>
- <CAF1V4O_9LC9QM_AcE7gaV4hp4jcEe47nzKj=CXxvsnH_L=YRYw@mail.gmail.com>
-In-Reply-To: <CAF1V4O_9LC9QM_AcE7gaV4hp4jcEe47nzKj=CXxvsnH_L=YRYw@mail.gmail.com>
+References: <5603EC15.9090605@ti.com> <5607EA9C.7040909@tronnes.org>
+ <CACvgo50PpEG3CVBQdMuXEg9TG+mY_Kxnp3OOHMdZ-hxr3Mok5Q@mail.gmail.com>
+ <5609C47A.6030809@tronnes.org>
+In-Reply-To: <5609C47A.6030809@tronnes.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bernie Thompson <bernie@plugable.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Arnaud Patard <apatard@mandriva.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dave Airlie <airlied@redhat.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Emil Velikov <emil.l.velikov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-On Mon, Sep 28, 2015 at 01:52:31PM -0700, Bernie Thompson wrote:
-> On Sat, Sep 26, 2015 at 11:01 AM, Geert Uytterhoeven <geert@linux-m68k.org>
->  wrote:
-> > The smallest of these (udl) still counts in at ca. 2800 LoC,
-> 
-> Note udlfb.c, the original fbdev driver that I helped write and that the
-> udl DRM driver was based on, is ~1800 LoC ... so we're actually talking in
-> the ballpark of 2x (rather than 10x) between fbdev and DRM in this case.
-> That said, the complexity difference is probably higher than the LoC
-> difference. I know I personally have struggled in the shift from
-> understanding fbdev to understanding DRM.
+On Tue, Sep 29, 2015 at 12:51:38AM +0200, Noralf Tr=F8nnes wrote:
+>=20
+> Den 27.09.2015 18:08, skrev Emil Velikov:
+> >Hi all,
+> >
+> >On 27 September 2015 at 14:09, Noralf Tr=F8nnes <noralf@tronnes.org> wro=
+te:
+> >>Den 24.09.2015 14:27, skrev Tomi Valkeinen:
+> >>>Hi all,
+> >>>
+> >>>fbdev is (more or less) maintained, but it's a deprecated framework. A=
+ll
+> >>>new Linux display drivers should be done on DRM.
+> >>>
+> >>>So let's not add any more new fbdev drivers.
+> >>>
+> >>>I will continue to maintain the current fbdev drivers, and I don't mind
+> >>>adding some new features to those current drivers, as long as the amou=
+nt
+> >>>of code required to add the features stays sensible.
+> >>>
+> >>>I see we have three fbdev drivers in staging: xgifb, fbtft and sm750fb,
+> >>>and the question is what to do with those.
+> >>>
+> >>>xgifb was added in 2010, and is still in staging.
+> >>>
+> >>>fbtft looks like maybe some kind of framework on top of fbdev, with
+> >>>fbtft specific subdrivers... I didn't look at it in detail, but my gut
+> >>>says "never".
+> >>
+> >>I have done some work [1] to try and make fbtft look more like the rest
+> >>of the kernel (doc [2]), but that work will result in an almost complete
+> >>rewrite of fbtft.
+> > From a very quick skim fbtft looks pretty much like drm/panel. We
+> >presently have 30+ 'simple' dsi panels, plus a bunch of spi ones. Have
+> >you had a look at these ?
+>=20
+> Thanks, that was useful.
+> I can use drm_panel to setup the controller (prepare) and do backlight
+> (enable/disable), but I need a way to send framebuffer changes.
+> I could do this:
+>=20
+> struct tinydrm_panel_funcs {
+>         int (*update)(struct drm_framebuffer *fb,
+>                       struct drm_gem_cma_object *cma_obj,
+>                       unsigned flags, unsigned color,
+>                       struct drm_clip_rect *clips, unsigned num_clips);
+> };
+>=20
+> struct tinydrm_panel {
+>         struct drm_panel panel;
+>         u32 width;
+>         u32 height;
+>         void *dev_private;
+>=20
+>         const struct tinydrm_panel_funcs *funcs;
+> };
 
-udl has a bit of room for improvement, we really should push the worker
-logicy for fbdev emulation into the core drm fbdev helpers using the
-->dirtyfb callback. That should rip out quite a few lines.
-
-The other thing to consider is that drm/udl supports PRIME buffer sharing
-for seamlessly extending your desktop by just plugging in an usb dongle.
-
-> The fact that there's drivers of both types and USB hardware might make udl
-> may be a good driver to use as a base for any additional simplification /
-> helper work. David Airlie and David Herrmann both have this hardware. David
-> Airlie did the port from fbdev to DRM, so he's made it an exemplary
-> driver.  And if anyone needs any hardware which works with udlfb and udl,
-> we're happy to send free hardware to any programmers who are willing to
-> contribute in the form of code or testing:
-> http://plugable.com/projects/plugable-open-source-hardware-samples-program
-
-For example drivers I think it's better to look at the latest drm driver
-merged - those are up-to-date wrt best practices. udl has already
-accumulated a bit of cruft (e.g. still using legacy modeset helpers and
-not the atomic ones).
-
-> More simplification and documentation would be great. In particular, the
-> optimization for the connector+encoder+crtc combination others have
-> mentioned seems like it would be worthwhile.
-
-Atomic helpers already make almost everything optional except for the
-crtc-level enable/disable callbacks and the per-plane atomic_plane_update
-(for buffer flips/panning/rotation/...). So a comibined helper would be
-mostly for cutting down the structure setup/teardown boilerplate. So
-should be fairly easy to implement even for drm beginners (when using one
-of the latest drivers as a template for what needs to be done).
+I'm not sure whether putting the manual-update stuff into drm_panel is a
+good idea - it's transport/bus (spi, dsi, ...) specific. Not sure how to
+best solve that.
 -Daniel
--- 
+--=20
 Daniel Vetter
 Software Engineer, Intel Corporation
 http://blog.ffwll.ch

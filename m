@@ -1,43 +1,60 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Mon, 21 Sep 2015 21:10:53 +0000
-Subject: Re: [PATCH v3 12/12] regulator: pwm: properly initialize the ->state field
-Message-Id: <20150921211053.GF30445@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="GVmdUcABewnKtUm9"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 30 Sep 2015 09:31:59 +0000
+Subject: [PATCHv4 0/3] backlight: led-backlight driver
+Message-Id: <1443605522-1118-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
- <1442828009-6241-13-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1442828009-6241-13-git-send-email-boris.brezillon@free-electrons.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+This series aims to add a led-backlight driver, similar to pwm-backlight, but
+using a LED class device underneath.
 
---GVmdUcABewnKtUm9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+LED framework has no support for DT or getting a LED class driver from another
+kernel driver, so I added minimal functionality to led-class to get
+led-backlight working.
 
-On Mon, Sep 21, 2015 at 11:33:29AM +0200, Boris Brezillon wrote:
-> The ->state field is currently initialized to 0, thus referencing the
-> voltage selector at index 0, which might not reflect the current voltage
-> value.
-> If possible, retrieve the current voltage selector from the PWM state, else
-> return -EINVAL.
+Changes to v3:
+- Change a comment to refer to of_led_get()
 
-Acked-by: Mark Brown <broonie@kernel.org>
+Changes to v2:
+- power supply is now optional
+- cosmetic changes
+- no-op function for led_put() when !CONFIG_LEDS_CLASS
 
---GVmdUcABewnKtUm9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Changes to v1:
+- Split LED OF parts into separate .h and .c files
+- Check for CONFIG_OF and CONFIG_LEDS_CLASS where relevant to leave unused code
+  out.
+- Improved error prints and comments a bit
+- Added put_device() into led_put(), as the device was gotten from
+  class_find_device() which requires a put_device() call.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+ Tomi
 
-iQEcBAEBCAAGBQJWAHJYAAoJECTWi3JdVIfQxPsH/0ivENz0SB+aLAU4UrJXE0ky
-Q1xie9LI6dab8dc6e7rmAOSDhkMJ1DvCyAEqSDqcFvsdxh2gdu2cz9cQ7divIjjP
-XFJwuyHftuGzRWH3a1J9gp8VT/PyEvUUMWXnq2NrKGOZBTetd8WncixWV0ArxkZf
-5BEOf1pkq4FHYD9pwRrhk3qJWPPUjjhCzziUC6o3Q1Mge29gIBAj8KE4VPRI4MCJ
-M6Se8MJy1VcBml1eNoYcsDgwBA+j74sDCLuAb2YrX0naLxHqn1VUVY4V4HwwH4cx
-XrXTdGmq9ke/jjBaKKRc8mXi6H4s3taKy2HNj6clxBH7bQsdoMD1GWgalYYdErE=
-=8m4a
------END PGP SIGNATURE-----
+Tomi Valkeinen (3):
+  leds: Add of_led_get() and led_put()
+  backlight: add led-backlight driver
+  devicetree: Add led-backlight binding
 
---GVmdUcABewnKtUm9--
+ .../bindings/video/backlight/led-backlight.txt     |  30 +++
+ drivers/leds/Makefile                              |   6 +-
+ drivers/leds/led-class.c                           |  13 +-
+ drivers/leds/led-of.c                              |  85 +++++++
+ drivers/leds/leds.h                                |   1 +
+ drivers/video/backlight/Kconfig                    |   7 +
+ drivers/video/backlight/Makefile                   |   1 +
+ drivers/video/backlight/led_bl.c                   | 246 +++++++++++++++++++++
+ include/linux/leds.h                               |  10 +
+ include/linux/of_leds.h                            |  26 +++
+ 10 files changed, 423 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/led-backlight.txt
+ create mode 100644 drivers/leds/led-of.c
+ create mode 100644 drivers/video/backlight/led_bl.c
+ create mode 100644 include/linux/of_leds.h
+
+-- 
+2.1.4
+

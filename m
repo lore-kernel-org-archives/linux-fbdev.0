@@ -1,39 +1,61 @@
-From: Matt Fleming <matt@codeblueprint.co.uk>
-Date: Tue, 01 Sep 2015 08:54:26 +0000
-Subject: Re: [PATCH] efifb: Add support for 64-bit frame buffer addresses
-Message-Id: <20150901085426.GC2823@codeblueprint.co.uk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 30 Sep 2015 09:32:02 +0000
+Subject: [PATCHv4 3/3] devicetree: Add led-backlight binding
+Message-Id: <1443605522-1118-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1440763939-17027-1-git-send-email-matt@codeblueprint.co.uk>
- <CAMuHMdU146p_vs9bfgV9n_tTkH_545hRb1qsEza=dLO=C-y69A@mail.gmail.com>
-In-Reply-To: <CAMuHMdU146p_vs9bfgV9n_tTkH_545hRb1qsEza=dLO=C-y69A@mail.gmail.com>
+References: <1443605522-1118-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1443605522-1118-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Peter Jones <pjones@redhat.com>, linux-efi@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Matt Fleming <matt.fleming@intel.com>, Pete Hawkins <pete.hawkins@znyx.com>, Matthew Garrett <mjg59@srcf.ucam.org>, Chad Page <chad.page@znyx.com>
+To: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Tomi Valkeinen <tomi.valkeinen@ti.com>, devicetree@vger.kernel.org
 
-On Mon, 31 Aug, at 10:24:31PM, Geert Uytterhoeven wrote:
-> On Fri, Aug 28, 2015 at 2:12 PM, Matt Fleming <matt@codeblueprint.co.uk> wrote:
-> > --- a/arch/x86/boot/compressed/eboot.c
-> > +++ b/arch/x86/boot/compressed/eboot.c
-> > @@ -624,7 +624,7 @@ setup_pixel_info(struct screen_info *si, u32 pixels_per_scan_line,
-> >  static efi_status_t
-> >  __gop_query32(struct efi_graphics_output_protocol_32 *gop32,
-> >               struct efi_graphics_output_mode_info **info,
-> > -             unsigned long *size, u32 *fb_base)
-> > +             unsigned long *size, u64 *fb_base)
-> 
-> phys_addr_t instead of u64?
+Add DT binding for led-backlight.
 
-I can see why you might think that, but no, phys_addr_t isn't the
-correct data type because your kernel config dictates whether that's
-u32 or u64.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: devicetree@vger.kernel.org
+---
+ .../bindings/video/backlight/led-backlight.txt     | 30 ++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/backlight/led-backlight.txt
 
-We're interacting with the firmware here and the frame buffer address
-is always u64, for both 32-bit and 64-bit firmware. It's defined that
-way in the UEFI spec.
-
-It's better to be explicit about these kinds of things, and use u64.
-
+diff --git a/Documentation/devicetree/bindings/video/backlight/led-backlight.txt b/Documentation/devicetree/bindings/video/backlight/led-backlight.txt
+new file mode 100644
+index 000000000000..d4621d7414bc
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/backlight/led-backlight.txt
+@@ -0,0 +1,30 @@
++led-backlight bindings
++
++Required properties:
++  - compatible: "led-backlight"
++  - leds: phandle to a led OF node [0]
++  - brightness-levels: Array of distinct LED brightness levels. These
++      are in the range from 0 to 255, passed to the LED class driver.
++  - default-brightness-level: the default brightness level (index into the
++      array defined by the "brightness-levels" property)
++
++Optional properties:
++  - power-supply: regulator for supply voltage
++  - enable-gpios: contains a single GPIO specifier for the GPIO which enables
++                  and disables the backlight (see GPIO binding[1])
++
++[0]: Documentation/devicetree/bindings/leds/common.txt
++[1]: Documentation/devicetree/bindings/gpio/gpio.txt
++
++Example:
++
++	backlight {
++		compatible = "led-backlight";
++		leds = <&backlight_led>;
++
++		brightness-levels = <0 4 8 16 32 64 128 255>;
++		default-brightness-level = <6>;
++
++		power-supply = <&vdd_bl_reg>;
++		enable-gpios = <&gpio 58 0>;
++	};
 -- 
-Matt Fleming, Intel Open Source Technology Center
+2.1.4
+

@@ -1,57 +1,40 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Mon, 12 Oct 2015 20:43:14 +0000
-Subject: [PATCH 1/3] video: omapdss: delete unneeded of_node_put
-Message-Id: <1444682596-3065-2-git-send-email-Julia.Lawall@lip6.fr>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Thu, 01 Oct 2015 21:22:55 +0000
+Subject: [PATCH v2 5/5] gxt4500: enable panning
+Message-Id: <1443734575-12468-6-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444682596-3065-1-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1444682596-3065-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <1443734575-12468-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1443734575-12468-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: kernel-janitors@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Bjorn Helgaas <bhelgaas@google.com>, Jason Cooper <jason@lakedaemon.net>
+To: Paul Mackerras <paulus@samba.org>
+Cc: =Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-Device node iterators perform an of_node_put on each iteration, so putting
-an of_node_put before a continue results in a double put.
+The driver implements pan_display but the corresponding flags are not set.
 
-A simplified version of the semantic match that finds this problem is as
-follows (http://coccinelle.lip6.fr):
+Add FBINFO_HWACCEL_XPAN and FBINFO_HWACCEL_YPAN to flags to allow HW
+accelerated panning (for fast scrolling).
 
-// <smpl>
-@@
-expression root,e;
-local idexpression child;
-iterator i;
-@@
-
- i(..., child, ...) {
-   ... when != of_node_get(child)
-*  of_node_put(child);
-   ...
-*  continue;
-}
-// </smpl>
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- drivers/video/fbdev/omap2/dss/omapdss-boot-init.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/video/fbdev/gxt4500.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
-index 8b6f6d5..136d304 100644
---- a/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
-+++ b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
-@@ -199,10 +199,8 @@ static int __init omapdss_boot_init(void)
- 	omapdss_walk_device(dss, true);
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 31de650..f438546 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -685,7 +685,8 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ #endif
  
- 	for_each_available_child_of_node(dss, child) {
--		if (!of_find_property(child, "compatible", NULL)) {
--			of_node_put(child);
-+		if (!of_find_property(child, "compatible", NULL))
- 			continue;
--		}
+ 	info->fbops = &gxt4500_ops;
+-	info->flags = FBINFO_FLAG_DEFAULT;
++	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_HWACCEL_XPAN |
++					    FBINFO_HWACCEL_YPAN;
  
- 		omapdss_walk_device(child, true);
- 	}
+ 	err = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (err) {
+-- 
+Ondrej Zary
 

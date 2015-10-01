@@ -1,65 +1,80 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Wed, 14 Oct 2015 10:36:48 +0000
-Subject: Re: [PATCH RFC 1/2] dt-bindings: simplefb: Support a list of regulator supply properties
-Message-Id: <20151014103648.GS14956@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="OowMmFE4aK71mEhh"
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Date: Thu, 01 Oct 2015 08:00:22 +0000
+Subject: Re: [PATCH] Revert "backlight: pwm: Handle EPROBE_DEFER while requesting the PWM"
+Message-Id: <560CE816.1060307@atmel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444669458-5588-1-git-send-email-wens@csie.org>
- <1444669458-5588-2-git-send-email-wens@csie.org>
- <20151012171018.GB3659@leverpostej>
- <CAGb2v651=uaHEQK4wpEQywgr311NSbqEvYkpsC5zSHPSFq-HHg@mail.gmail.com>
- <561CADFE.2010609@redhat.com>
-In-Reply-To: <561CADFE.2010609@redhat.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1443295482-18687-1-git-send-email-robert.jarzmik@free.fr>
+ <87bncjemdk.fsf@belgarion.home>
+In-Reply-To: <87bncjemdk.fsf@belgarion.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Robert Jarzmik <robert.jarzmik@free.fr>, Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org, Boris BREZILLON <boris.brezillon@free-electrons.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Le 30/09/2015 21:29, Robert Jarzmik a =E9crit :
+> Robert Jarzmik <robert.jarzmik@free.fr> writes:
+>=20
+>> This reverts commit 68feaca0b13e453aa14ee064c1736202b48b342f.
+>> This commit breaks legacy platforms, for which :
+>>  (a) no pwm table is added (legacy platforms)
+>>  (b) in this case, in pwm_get(), pmw_lookup_list is empty, and therefore
+>>      chosen =3D NULL, and therefore pwm_get() returns NULL, and pwm_get()
+>>      returns -EPROBE_DEFER
+>>  (c) as a consequence, this code is unreachable in pwm_bl.c :
+>>      if (IS_ERR(pb->pwm)) {
+>> 	ret =3D PTR_ERR(pb->pwm);
+>>  	dev_info(&pdev->dev, "%s:%d(): %d\n", __func__, __LINE__, ret);
+>>  	if (ret =3D -EPROBE_DEFER)
+>>  		goto err_alloc;
+>>
+>>  	dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+>>  	pb->legacy =3D true;
+>>  	pb->pwm =3D pwm_request(data->pwm_id, "pwm-backlight");
+>>
+>> As this code is unreachable, all legacy platforms relying on pwm_id are
+>> broken, amongst which pxa have been tested as broken.
+>>
+>> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+> Thierry, would you have a look please ?
+> As I said before, all legacy platform relying on pwm_id are broken. I'd l=
+ike to
+> be sure this lands in the next -rc series.
 
---OowMmFE4aK71mEhh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Well, as I answered on the linux-pwm mailing-list (I was not in copy) here:
+http://article.gmane.org/gmane.linux.pwm/2744
+I wonder if it's not easier to fix the platforms and add the pwm tables...
 
-On Tue, Oct 13, 2015 at 09:08:46AM +0200, Hans de Goede wrote:
-> On 13-10-15 04:22, Chen-Yu Tsai wrote:
-> >On Tue, Oct 13, 2015 at 1:10 AM, Mark Rutland <mark.rutland@arm.com> wrote:
-> >>On Tue, Oct 13, 2015 at 01:04:17AM +0800, Chen-Yu Tsai wrote:
+Otherwise, Boris proposed this fix:
+8<-----------------------------------------------------------
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm=
+_bl.c
+index eff379b..00483d4 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -273,15 +273,15 @@ static int pwm_backlight_probe(struct platform_device=
+ *pdev)
+ 	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
+ 	if (IS_ERR(pb->pwm)) {
+ 		ret =3D PTR_ERR(pb->pwm);
+-		if (ret =3D -EPROBE_DEFER)
+-			goto err_alloc;
+=20
+ 		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+ 		pb->legacy =3D true;
+ 		pb->pwm =3D pwm_request(data->pwm_id, "pwm-backlight");
+ 		if (IS_ERR(pb->pwm)) {
+ 			dev_err(&pdev->dev, "unable to request legacy PWM\n");
+-			ret =3D PTR_ERR(pb->pwm);
++			if (ret !=3D -EPROBE_DEFER)
++				ret =3D PTR_ERR(pb->pwm);
++
+ 			goto err_alloc;
+ 		}
+ 	}
 
-> >>>+- num-supplies : The number of regulators used by the framebuffer.
-> >>>+- vinN-supply : The N-th (from 0) regulator used by the framebuffer.
+which is not tested and may add an extra non-valid error log.
 
-> >>I don't see why you need num-supplies. Why not just try probing
-> >>vin${N}-supply until such a property isn't present in the DT?
-
-> +1 for this.
-
-Even better would be to just enumerate all the properties on the node
-and request anything with a FOO-supply name.  That way we can keep
-using standard regulator bindings that name the supplies after their
-actual names on the device.
-
-> > That's doable. Though I'd add a hard limit on it. Does 16 seem
-> > reasonable?
-
-> I would not add a hard limit to the binding, you can use a fixed array in
-> the code to make the code simpler. I would say 8 should be sufficient, since
-> the limit will only be in the code we can always bump it when we need
-> to.
-
-Or just dynamically allocate the array and resize as needed if it starts
-to get to be a problem.
-
---OowMmFE4aK71mEhh
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWHjBAAAoJECTWi3JdVIfQK/AH/1yPlf11H6nCC5On09TjJ5Ar
-vHQQf90Avaj6fFtPeB23iarIAYHa5xb3J5kn/HPEakh3G1s8lchURSKihGs3aIdK
-B11neQeJ0eJCRwFK3UJH/iUhx6J9EYK3OU/I3G1fwGNuMxjAfrCC4EzEVPiyTBzR
-QabqtJo1MU+Wg8S7BMETD30sx8LUjYWuuRdzuo72r3DZ9s9iVc0OQivKPg1CxYsb
-5+Bsh1U0oz+gDBdk7D8y7jVX7qqK0oZjj9ULLGUsMMwS70nl1m/ZCqSk06yU1sTl
-DsnPDU3ARCrhlSFOqjzo4ksJTeSFxfQdAviu+56Im/O+rA8u0VY5gHzgApkOPDM=
-=TZzQ
------END PGP SIGNATURE-----
-
---OowMmFE4aK71mEhh--
+Bye,
+--=20
+Nicolas Ferre

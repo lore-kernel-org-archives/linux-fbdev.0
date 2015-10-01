@@ -1,48 +1,46 @@
-From: Shailendra Verma <shailendra.v@samung.com>
-Date: Fri, 30 Oct 2015 11:41:45 +0000
-Subject: [PATCH] video:fbdev:core:Calculate the buffer alignment if buffer is not IO mapped.
-Message-Id: <1446204585-23412-1-git-send-email-shailendra.v@samung.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Thu, 01 Oct 2015 21:22:53 +0000
+Subject: [PATCH v2 3/5] gxt4500: fix color order
+Message-Id: <1443734575-12468-4-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1443734575-12468-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1443734575-12468-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, vidushi.koul@samsung.com
+To: Paul Mackerras <paulus@samba.org>
+Cc: =Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-From: Shailendra Verma <Shailendra.v@samsung.com>
+The color order in truecolor modes is wrong. This does not affect console but
+is visible e.g. in X11 which has wrong colors.
 
-Moving the instruction "align = buf->buf_align - 1" just after the
-verification of the buffer if it is IP mapped or not as the buffer
-alignment is not required if it is IO mapped.Thus it will save an
-extra instuction execution when buffer is IO mapped.
+Swap blue and red colors to fix the problem.
+Fixes https://forums.gentoo.org/viewtopic-t-692740-start-0.html
 
-Signed-off-by: Shailendra Verma <Shailendra.v@samsung.com>
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- linux-4.3-rc6/drivers/video/fbdev/core/fbmem.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/gxt4500.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/linux-4.3-rc6/drivers/video/fbdev/core/fbmem.c b/linux-4.3-rc6/drivers/video/fbdev/core/fbmem.c
-index 0705d88..d92ec99 100644
---- a/linux-4.3-rc6/drivers/video/fbdev/core/fbmem.c
-+++ b/linux-4.3-rc6/drivers/video/fbdev/core/fbmem.c
-@@ -157,7 +157,7 @@ EXPORT_SYMBOL(fb_pad_unaligned_buffer);
-  */
- char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size)
- {
--	u32 align = buf->buf_align - 1, offset;
-+	u32 align, offset;
- 	char *addr = buf->addr;
- 
- 	/* If IO mapped, we need to sync before access, no sharing of
-@@ -169,6 +169,8 @@ char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size
- 		return addr;
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 3c481d0..3ceddb8 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -347,11 +347,12 @@ static void gxt4500_unpack_pixfmt(struct fb_var_screeninfo *var,
+ 		break;
  	}
+ 	if (pixfmt != DFA_PIX_8BIT) {
+-		var->green.offset = var->red.length;
+-		var->blue.offset = var->green.offset + var->green.length;
++		var->blue.offset = 0;
++		var->green.offset = var->blue.length;
++		var->red.offset = var->green.offset + var->green.length;
+ 		if (var->transp.length)
+ 			var->transp.offset -				var->blue.offset + var->blue.length;
++				var->red.offset + var->red.length;
+ 	}
+ }
  
-+	align = buf->buf_align - 1;
-+
- 	/* See if we fit in the remaining pixmap space */
- 	offset = buf->offset + align;
- 	offset &= ~align;
 -- 
-1.7.9.5
+Ondrej Zary
 

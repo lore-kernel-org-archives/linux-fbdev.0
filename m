@@ -1,7 +1,7 @@
 From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Thu, 01 Oct 2015 09:06:33 +0000
+Date: Thu, 01 Oct 2015 17:39:46 +0000
 Subject: Re: [PATCH] Revert "backlight: pwm: Handle EPROBE_DEFER while requesting the PWM"
-Message-Id: <877fn7dkkm.fsf@belgarion.home>
+Message-Id: <8737xuebdp.fsf@belgarion.home>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1443295482-18687-1-git-send-email-robert.jarzmik@free.fr>
 	<87bncjemdk.fsf@belgarion.home> <560CE816.1060307@atmel.com>
@@ -45,14 +45,6 @@ Nicolas Ferre <nicolas.ferre@atmel.com> writes:
 like to
 >> be sure this lands in the next -rc series.
 >
-> Well, as I answered on the linux-pwm mailing-list (I was not in copy) her=
-e:
-> http://article.gmane.org/gmane.linux.pwm/2744
-> I wonder if it's not easier to fix the platforms and add the pwm tables...
-No it's not, at least not for a -rc cycle. It's the long term solution you'=
-re
-talking about, not the fix one.
-
 > Otherwise, Boris proposed this fix:
 > 8<-----------------------------------------------------------
 > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
@@ -82,28 +74,17 @@ ce *pdev)
 >  	}
 >
 > which is not tested and may add an extra non-valid error log.
-I can test that, today, it looks an interesting alternative.
+Now it is tested, and it works correctly AFAICS.
 
-If both solutions do work, someone (Boris) can post a patch for this -rc in=
-stead
-of the revert. If no patch is posted, I maintain my Revert, as this patch _=
-does_
-break platforms (omap is broken too AFAICS).
+So could you or Borris post this patch, with :
+Fixes: 68feaca0b13e ("backlight: pwm: Handle EPROBE_DEFER while requesting =
+the PWM")
+Tested-by: Robert Jarzmik <robert.jarzmik@free.fr>
+
+That would be a good replacement for the revert. Maybe stable tree should be
+joined too ...
 
 Cheers.
 
 --=20
 Robert
-
-PS: I have not received http://article.gmane.org/gmane.linux.pwm/2744.
-    Is it my mailer or MUA which is broken, ie. was I in the "To:" of the m=
-ail ?
-
-PPS: Sorry to having forgotten to join you to the revert
-
-PPPS: As long as an other patch is not submitted to fix the issue (other th=
-an
-      the Revert), I NAK the NAK. There is a breakage introduced, and I con=
-sider
-      it a strong enough reason to be maintained for the -rc serie.
-

@@ -1,102 +1,71 @@
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 09 Oct 2015 22:17:02 +0000
-Subject: [PATCH 16/20] fbdev: switch from ioremap_wt to memremap
-Message-Id: <20151009221702.32203.34504.stgit@dwillia2-desk3.jf.intel.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Thu, 01 Oct 2015 21:22:51 +0000
+Subject: [PATCH v2 1/5] gxt4500: enable on non-PPC architectures
+Message-Id: <1443734575-12468-2-git-send-email-linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20151009221537.32203.5867.stgit@dwillia2-desk3.jf.intel.com>
-In-Reply-To: <20151009221537.32203.5867.stgit@dwillia2-desk3.jf.intel.com>
+References: <1443734575-12468-1-git-send-email-linux@rainbow-software.org>
+In-Reply-To: <1443734575-12468-1-git-send-email-linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: =Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-In preparation for deprecating ioremap_wt() convert its usage in
-drivers/video/fbdev to memremap.
+These chips can be present at least on x86 too - Fire GL2 AGP has GXT6000P but
+this driver is currently limited to PPC.
+Enable it for all architectures and add chip configuration for little-endian.
 
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Tested on x86 with Fire GL2 AGP.
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- drivers/video/fbdev/amifb.c |    5 +++--
- drivers/video/fbdev/atafb.c |    5 +++--
- drivers/video/fbdev/hpfb.c  |    6 +++---
- 3 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/video/fbdev/Kconfig   |    5 +++--
+ drivers/video/fbdev/gxt4500.c |    7 +++++++
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/amifb.c b/drivers/video/fbdev/amifb.c
-index 1d702e13aaff..0cde451046d0 100644
---- a/drivers/video/fbdev/amifb.c
-+++ b/drivers/video/fbdev/amifb.c
-@@ -52,6 +52,7 @@
- #include <linux/ioport.h>
- #include <linux/platform_device.h>
- #include <linux/uaccess.h>
-+#include <linux/io.h>
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 8b1d371..10ff920 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2132,7 +2132,7 @@ config FB_UDL
  
- #include <asm/irq.h>
- #include <asm/amigahw.h>
-@@ -3705,8 +3706,8 @@ default_chipset:
- 	 * access the videomem with writethrough cache
- 	 */
- 	info->fix.smem_start = (u_long)ZTWO_PADDR(videomemory);
--	videomemory = (u_long)ioremap_wt(info->fix.smem_start,
--					 info->fix.smem_len);
-+	videomemory = (u_long)memremap(info->fix.smem_start, info->fix.smem_len,
-+			MEMREMAP_WT);
- 	if (!videomemory) {
- 		dev_warn(&pdev->dev,
- 			 "Unable to map videomem cached writethrough\n");
-diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-index d6ce613e12ad..5615e8c31ea2 100644
---- a/drivers/video/fbdev/atafb.c
-+++ b/drivers/video/fbdev/atafb.c
-@@ -55,12 +55,12 @@
- #include <linux/delay.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
-+#include <linux/io.h>
+ config FB_IBM_GXT4500
+ 	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
+-	depends on FB && PPC
++	depends on FB
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -2140,7 +2140,8 @@ config FB_IBM_GXT4500
+ 	  Say Y here to enable support for the IBM GXT4000P/6000P and
+ 	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
+ 	  found on some IBM System P (pSeries) machines. This driver
+-	  doesn't use Geometry Engine GT1000.
++	  doesn't use Geometry Engine GT1000. This driver also supports
++	  AGP Fire GL2/3/4 cards on x86.
  
- #include <asm/setup.h>
- #include <linux/uaccess.h>
- #include <asm/pgtable.h>
- #include <asm/irq.h>
--#include <asm/io.h>
+ config FB_PS3
+ 	tristate "PS3 GPU framebuffer driver"
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index f19133a..ae68696 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -670,8 +670,15 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  
- #include <asm/atarihw.h>
- #include <asm/atariints.h>
-@@ -3185,7 +3185,8 @@ int __init atafb_init(void)
- 		/* Map the video memory (physical address given) to somewhere
- 		 * in the kernel address space.
- 		 */
--		external_screen_base = ioremap_wt(external_addr, external_len);
-+		external_screen_base = memremap(external_addr, external_len,
-+				MEMREMAP_WT);
- 		if (external_vgaiobase)
- 			external_vgaiobase  			  (unsigned long)ioremap(external_vgaiobase, 0x10000);
-diff --git a/drivers/video/fbdev/hpfb.c b/drivers/video/fbdev/hpfb.c
-index 9476d196f510..d08c320b06fc 100644
---- a/drivers/video/fbdev/hpfb.c
-+++ b/drivers/video/fbdev/hpfb.c
-@@ -14,8 +14,8 @@
- #include <linux/init.h>
- #include <linux/fb.h>
- #include <linux/dio.h>
-+#include <linux/io.h>
+ 	pci_set_drvdata(pdev, info);
  
--#include <asm/io.h>
- #include <asm/uaccess.h>
++#ifdef __BIG_ENDIAN
+ 	/* Set byte-swapping for DFA aperture for all pixel sizes */
+ 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
++#else /* __LITTLE_ENDIAN */
++	/* not sure what this means but fgl23 driver does that */
++	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x2300);
++/*	pci_write_config_dword(pdev, CFG_ENDIAN0 + 4, 0x400000);*/
++	pci_write_config_dword(pdev, CFG_ENDIAN0 + 8, 0x98530000);
++#endif
  
- static struct fb_info fb_info = {
-@@ -241,8 +241,8 @@ static int hpfb_init_one(unsigned long phys_base, unsigned long virt_base)
- 	fb_info.fix.line_length = fb_width;
- 	fb_height = (in_8(fb_regs + HPFB_FBHMSB) << 8) | in_8(fb_regs + HPFB_FBHLSB);
- 	fb_info.fix.smem_len = fb_width * fb_height;
--	fb_start = (unsigned long)ioremap_wt(fb_info.fix.smem_start,
--					     fb_info.fix.smem_len);
-+	fb_start = (unsigned long) memremap(fb_info.fix.smem_start,
-+					     fb_info.fix.smem_len, MEMREMAP_WT);
- 	hpfb_defined.xres = (in_8(fb_regs + HPFB_DWMSB) << 8) | in_8(fb_regs + HPFB_DWLSB);
- 	hpfb_defined.yres = (in_8(fb_regs + HPFB_DHMSB) << 8) | in_8(fb_regs + HPFB_DHLSB);
- 	hpfb_defined.xres_virtual = hpfb_defined.xres;
+ 	info->fbops = &gxt4500_ops;
+ 	info->flags = FBINFO_FLAG_DEFAULT;
+-- 
+Ondrej Zary
 

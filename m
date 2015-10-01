@@ -1,199 +1,204 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Date: Fri, 23 Oct 2015 03:50:39 +0000
-Subject: [PATCH v4 2/4] simplefb: Claim and enable regulators
-Message-Id: <1445572241-13259-3-git-send-email-wens@csie.org>
+From: Arnaud Pouliquen <arnaud.pouliquen@st.com>
+Date: Thu, 01 Oct 2015 16:50:17 +0000
+Subject: [PATCH RFC V2 1/5] video: hdmi: add helper function for N and CTS
+Message-Id: <1443718221-5120-2-git-send-email-arnaud.pouliquen@st.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1445572241-13259-1-git-send-email-wens@csie.org>
-In-Reply-To: <1445572241-13259-1-git-send-email-wens@csie.org>
+References: <1443718221-5120-1-git-send-email-arnaud.pouliquen@st.com>
+In-Reply-To: <1443718221-5120-1-git-send-email-arnaud.pouliquen@st.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org
+Cc: moinejf@free.fr, linux-fbdev@vger.kernel.org, linux@arm.linux.org.uk, bcousson@baylibre.com, David Airlie <airlied@linux.ie>, tomi.valkeinen@ti.com, arnaud.pouliquen@st.com, lgirdwood@gmail.com, Jyri Sarha <jsarha@ti.com>, peter.ujfalusi@ti.com, Takashi Iwai <tiwai@suse.de>, tony@atomide.com, broonie@kernel.org, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-This claims and enables regulators listed in the simple framebuffer dt
-node. This is needed so that regulators powering the display pipeline
-and external hardware, described in the device node and known by the
-kernel code, will remain properly enabled.
+Add helper function to compute HDMI CTS and N parameters
+Implementation is based on HDMI 1.4b specification.
 
-Signed-off-by: Chen-Yu Tsai <wens@csie.org>
-Acked-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Arnaud Pouliquen <arnaud.pouliquen@st.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/simplefb.c | 120 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 119 insertions(+), 1 deletion(-)
+ drivers/video/hdmi.c | 147 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/hdmi.h |  12 +++++
+ 2 files changed, 159 insertions(+)
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index 52c5c7e63b52..48ccf6db62a2 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -28,7 +28,10 @@
- #include <linux/platform_device.h>
- #include <linux/clk.h>
- #include <linux/clk-provider.h>
-+#include <linux/of.h>
- #include <linux/of_platform.h>
-+#include <linux/parser.h>
-+#include <linux/regulator/consumer.h>
- 
- static struct fb_fix_screeninfo simplefb_fix = {
- 	.id		= "simple",
-@@ -174,6 +177,10 @@ struct simplefb_par {
- 	int clk_count;
- 	struct clk **clks;
- #endif
-+#if defined CONFIG_OF && defined CONFIG_REGULATOR
-+	u32 regulator_count;
-+	struct regulator **regulators;
-+#endif
- };
- 
- #if defined CONFIG_OF && defined CONFIG_COMMON_CLK
-@@ -269,6 +276,110 @@ static int simplefb_clocks_init(struct simplefb_par *par,
- static void simplefb_clocks_destroy(struct simplefb_par *par) { }
- #endif
- 
-+#if defined CONFIG_OF && defined CONFIG_REGULATOR
+diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+index 1626892..93e2fdf 100644
+--- a/drivers/video/hdmi.c
++++ b/drivers/video/hdmi.c
+@@ -1242,3 +1242,150 @@ int hdmi_infoframe_unpack(union hdmi_infoframe *frame, void *buffer)
+ 	return ret;
+ }
+ EXPORT_SYMBOL(hdmi_infoframe_unpack);
 +
-+#define SUPPLY_SUFFIX "-supply"
-+
-+/*
-+ * Regulator handling code.
-+ *
-+ * Here we handle the num-supplies and vin*-supply properties of our
-+ * "simple-framebuffer" dt node. This is necessary so that we can make sure
-+ * that any regulators needed by the display hardware that the bootloader
-+ * set up for us (and for which it provided a simplefb dt node), stay up,
-+ * for the life of the simplefb driver.
-+ *
-+ * When the driver unloads, we cleanly disable, and then release the
-+ * regulators.
-+ *
-+ * We only complain about errors here, no action is taken as the most likely
-+ * error can only happen due to a mismatch between the bootloader which set
-+ * up simplefb, and the regulator definitions in the device tree. Chances are
-+ * that there are no adverse effects, and if there are, a clean teardown of
-+ * the fb probe will not help us much either. So just complain and carry on,
-+ * and hope that the user actually gets a working fb at the end of things.
++/**
++ * audio clock regeneration (acr) parameters
++ * N and CTS computation are based on HDMI specification 1.4b
 + */
-+static int simplefb_regulators_init(struct simplefb_par *par,
-+	struct platform_device *pdev)
++enum audio_rate {
++	HDMI_AUDIO_N_CTS_32KHZ,
++	HDMI_AUDIO_N_CTS_44_1KHZ,
++	HDMI_AUDIO_N_CTS_48KHZ,
++};
++
++struct hdmi_audio_acr {
++	unsigned long pixel_clk;
++	struct hdmi_audio_n_cts n_cts;
++};
++
++static const struct hdmi_audio_acr hdmi_audio_standard_acr[3][12] = {
++	{ /*32 kHz*/
++		{  25175, {  4576,  28125 } }, /* 25,20/1.001  MHz */
++		{  25200, {  4096,  25200 } }, /* 25.20        MHz */
++		{  27000, {  4096,  27000 } }, /* 27.00        MHz */
++		{  27027, {  4096,  27027 } }, /* 27.00*1.001  MHz */
++		{  54000, {  4096,  54000 } }, /* 54.00        MHz */
++		{  54054, {  4096,  54054 } }, /* 54.00*1.001  MHz */
++		{  74176, { 11648, 310938 } }, /* 74.25/1.001  MHz */
++		{  74250, {  4096,  74250 } }, /* 74.25        MHz */
++		{ 148352, { 11648, 421875 } }, /* 148.50/1.001 MHz */
++		{ 148500, {  4096, 148500 } }, /* 148.50       MHz */
++		{ 296703, {  5824, 421875 } }, /* 297/1.001    MHz */
++		{ 297000, {  3072, 222750 } }, /* 297          MHz */
++	},
++	{ /*44.1 kHz, 88.2 kHz  176.4 kHz*/
++		{  25175, {  7007,  31250 } }, /* 25,20/1.001  MHz */
++		{  25200, {  6272,  28000 } }, /* 25.20        MHz */
++		{  27000, {  6272,  30000 } }, /* 27.00        MHz */
++		{  27027, {  6272,  30030 } }, /* 27.00*1.001  MHz */
++		{  54000, {  6272,  60000 } }, /* 54.00        MHz */
++		{  54054, {  6272,  60060 } }, /* 54.00*1.001  MHz */
++		{  74176, { 17836, 234375 } }, /* 74.25/1.001  MHz */
++		{  74250, {  6272,  82500 } }, /* 74.25        MHz */
++		{ 148352, {  8918, 234375 } }, /* 148.50/1.001 MHz */
++		{ 148500, {  6272, 165000 } }, /* 148.50       MHz */
++		{ 296703, {  4459, 234375 } }, /* 297/1.001    MHz */
++		{ 297000, {  4704, 247500 } }, /* 297          MHz */
++	},
++	{ /*48 kHz, 96 kHz  192 kHz*/
++		{  25175, {  6864,  28125 } }, /* 25,20/1.001  MHz */
++		{  25200, {  6144,  25200 } }, /* 25.20        MHz */
++		{  27000, {  6144,  27000 } }, /* 27.00        MHz */
++		{  27027, {  6144,  27027 } }, /* 27.00*1.001  MHz */
++		{  54000, {  6144,  54000 } }, /* 54.00        MHz */
++		{  54054, {  6144,  54054 } }, /* 54.00*1.001  MHz */
++		{  74176, { 11648, 140625 } }, /* 74.25/1.001  MHz */
++		{  74250, {  6144,  74250 } }, /* 74.25        MHz */
++		{ 148352, {  5824, 140625 } }, /* 148.50/1.001 MHz */
++		{ 148500, {  6144, 148500 } }, /* 148.50       MHz */
++		{ 296703, {  5824, 281250 } }, /* 297/1.001    MHz */
++		{ 297000, {  5120, 247500 } }, /* 297          MHz */
++	}
++};
++
++/**
++ * hdmi_compute_n_cts() - compute N and CTS parameters
++ * @audio_fs: audio frame clock frequency in KHz
++ * @pixel_clk: pixel cloack frequency in kHz
++ * @n_cts: N and CTS parameter returned to user
++ *
++ * Values computed are based on table described in HDMI specification 1.4b
++ *
++ * Returns 0 on success or a negative error code on failure.
++ */
++int hdmi_audio_compute_n_cts(enum hdmi_audio_sample_frequency audio_fs,
++			     unsigned long pixel_clk,
++			     struct hdmi_audio_n_cts *n_cts)
 +{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct property *prop;
-+	struct regulator *regulator;
-+	const char *p;
-+	int count = 0, i = 0, ret;
++	int audio_freq_id, i;
++	int ratio = 1;
++	const struct hdmi_audio_acr  *acr_table;
++	const struct hdmi_audio_n_cts *predef_n_cts = NULL;
 +
-+	if (dev_get_platdata(&pdev->dev) || !np)
-+		return 0;
++	switch (audio_fs) {
++	case HDMI_AUDIO_SAMPLE_FREQUENCY_32000:
++		audio_freq_id = HDMI_AUDIO_N_CTS_32KHZ;
++		n_cts->n = 4096;
++		break;
 +
-+	/* Count the number of regulator supplies */
-+	for_each_property_of_node(np, prop) {
-+		p = strstr(prop->name, SUPPLY_SUFFIX);
-+		if (p && p != prop->name)
-+			count++;
++	case HDMI_AUDIO_SAMPLE_FREQUENCY_44100:
++		audio_freq_id = HDMI_AUDIO_N_CTS_44_1KHZ;
++		n_cts->n = 6272;
++		break;
++
++	case HDMI_AUDIO_SAMPLE_FREQUENCY_48000:
++		audio_freq_id = HDMI_AUDIO_N_CTS_48KHZ;
++		n_cts->n = 6144;
++		break;
++
++	case HDMI_AUDIO_SAMPLE_FREQUENCY_88200:
++		audio_freq_id = HDMI_AUDIO_N_CTS_44_1KHZ;
++		ratio = 2;
++		n_cts->n = 6272 * 2;
++		break;
++
++	case HDMI_AUDIO_SAMPLE_FREQUENCY_96000:
++		audio_freq_id = HDMI_AUDIO_N_CTS_48KHZ;
++		ratio = 2;
++		n_cts->n = 6144 * 2;
++		break;
++
++	case HDMI_AUDIO_SAMPLE_FREQUENCY_176400:
++		audio_freq_id = HDMI_AUDIO_N_CTS_44_1KHZ;
++		ratio = 2;
++		n_cts->n = 6272 * 4;
++		break;
++
++	case HDMI_AUDIO_SAMPLE_FREQUENCY_192000:
++		audio_freq_id = HDMI_AUDIO_N_CTS_48KHZ;
++		ratio = 4;
++		n_cts->n = 6144 * 4;
++		break;
++
++	default:
++		return -EINVAL;
 +	}
 +
-+	if (!count)
-+		return 0;
-+
-+	par->regulators = devm_kcalloc(&pdev->dev, count,
-+				       sizeof(struct regulator *), GFP_KERNEL);
-+	if (!par->regulators)
-+		return -ENOMEM;
-+
-+	/* Get all the regulators */
-+	for_each_property_of_node(np, prop) {
-+		char name[32]; /* 32 is max size of property name */
-+
-+		p = strstr(prop->name, SUPPLY_SUFFIX);
-+		if (!p || p = prop->name)
-+			continue;
-+
-+		strlcpy(name, prop->name,
-+			strlen(prop->name) - strlen(SUPPLY_SUFFIX) + 1);
-+		regulator = devm_regulator_get_optional(&pdev->dev, name);
-+		if (IS_ERR(regulator)) {
-+			if (PTR_ERR(regulator) = -EPROBE_DEFER)
-+				return -EPROBE_DEFER;
-+			dev_err(&pdev->dev, "regulator %s not found: %ld\n",
-+				name, PTR_ERR(regulator));
-+			continue;
++	acr_table = hdmi_audio_standard_acr[audio_freq_id];
++	for (i = 0; i < ARRAY_SIZE(hdmi_audio_standard_acr[0]); i++) {
++		if (pixel_clk = acr_table[i].pixel_clk) {
++			predef_n_cts = &acr_table[i].n_cts;
++			break;
 +		}
-+		par->regulators[i++] = regulator;
 +	}
-+	par->regulator_count = i;
 +
-+	/* Enable all the regulators */
-+	for (i = 0; i < par->regulator_count; i++) {
-+		ret = regulator_enable(par->regulators[i]);
-+		if (ret) {
-+			dev_err(&pdev->dev,
-+				"failed to enable regulator %d: %d\n",
-+				i, ret);
-+			devm_regulator_put(par->regulators[i]);
-+			par->regulators[i] = NULL;
-+		}
++	if (!predef_n_cts) {
++		/*
++		 * predefined frequency not found. Compute CTS using formula:
++		 * CTS = (Ftdms_clk * N) / (128* audio_fs)
++		 */
++		n_cts->cts =  pixel_clk * n_cts->n / (128 * audio_fs);
++	} else {
++		n_cts->n = predef_n_cts->n * ratio;
++		n_cts->cts = predef_n_cts->cts;
 +	}
 +
 +	return 0;
 +}
++EXPORT_SYMBOL(hdmi_audio_compute_n_cts);
 +
-+static void simplefb_regulators_destroy(struct simplefb_par *par)
-+{
-+	int i;
+diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+index e974420..95c2b12 100644
+--- a/include/linux/hdmi.h
++++ b/include/linux/hdmi.h
+@@ -333,4 +333,16 @@ int hdmi_infoframe_unpack(union hdmi_infoframe *frame, void *buffer);
+ void hdmi_infoframe_log(const char *level, struct device *dev,
+ 			union hdmi_infoframe *frame);
+ 
++/**
++ * struct hdmi_audio_n_cts - n and cts parameter for ACR packets
++ */
++struct hdmi_audio_n_cts {
++	unsigned int n;
++	unsigned int cts;
++};
 +
-+	if (!par->regulators)
-+		return;
++int hdmi_audio_compute_n_cts(enum hdmi_audio_sample_frequency audio_fs,
++			     unsigned long pixel_clk,
++			     struct hdmi_audio_n_cts *n_cts);
 +
-+	for (i = 0; i < par->regulator_count; i++)
-+		if (par->regulators[i])
-+			regulator_disable(par->regulators[i]);
-+}
-+#else
-+static int simplefb_regulators_init(struct simplefb_par *par,
-+	struct platform_device *pdev) { return 0; }
-+static void simplefb_regulators_destroy(struct simplefb_par *par) { }
-+#endif
-+
- static int simplefb_probe(struct platform_device *pdev)
- {
- 	int ret;
-@@ -340,6 +451,10 @@ static int simplefb_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		goto error_unmap;
- 
-+	ret = simplefb_regulators_init(par, pdev);
-+	if (ret < 0)
-+		goto error_clocks;
-+
- 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
- 			     info->fix.smem_start, info->fix.smem_len,
- 			     info->screen_base);
-@@ -351,13 +466,15 @@ static int simplefb_probe(struct platform_device *pdev)
- 	ret = register_framebuffer(info);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
--		goto error_clocks;
-+		goto error_regulators;
- 	}
- 
- 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
- 
- 	return 0;
- 
-+error_regulators:
-+	simplefb_regulators_destroy(par);
- error_clocks:
- 	simplefb_clocks_destroy(par);
- error_unmap:
-@@ -373,6 +490,7 @@ static int simplefb_remove(struct platform_device *pdev)
- 	struct simplefb_par *par = info->par;
- 
- 	unregister_framebuffer(info);
-+	simplefb_regulators_destroy(par);
- 	simplefb_clocks_destroy(par);
- 	framebuffer_release(info);
- 
+ #endif /* _DRM_HDMI_H */
 -- 
-2.6.1
+1.9.1
 

@@ -1,63 +1,29 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Date: Fri, 23 Oct 2015 01:31:57 +0000
-Subject: [PATCH v3 1/2] dt-bindings: simplefb: Support regulator supply properties
-Message-Id: <1445563918-1050-2-git-send-email-wens@csie.org>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Sat, 03 Oct 2015 16:11:52 +0000
+Subject: [PATCH 0/2] video: fbdev: pxafb: devicetree conversion
+Message-Id: <1443888714-12362-1-git-send-email-robert.jarzmik@free.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1445563918-1050-1-git-send-email-wens@csie.org>
-In-Reply-To: <1445563918-1050-1-git-send-email-wens@csie.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>
 
-The physical display tied to the framebuffer may have regulators
-providing power to it, such as power for LCDs or interface conversion
-chips.
+This patchset aims at bringing support for the pxa framebuffer driver to a
+devicetree pxa platform.
 
-The number of regulators in use may vary, but the regulator supply
-binding can not be a list. Instead just support any named regulator
-supply properties under the device node. These should be properly
-named to match the device schematics / design. The driver should
-take care to go through them all.
+This was tested on a pxa27x platform, in both a devicetree build and a classic
+platform data one.
 
-Signed-off-by: Chen-Yu Tsai <wens@csie.org>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Mark Brown <broonie@kernel.org>
----
- .../devicetree/bindings/video/simple-framebuffer.txt        | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+Robert Jarzmik (2):
+  video: fbdev: pxafb: loosen the platform data bond
+  video: fbdev: pxafb: initial devicetree conversion
 
-diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-index 4474ef6e0b95..8c9e9f515c87 100644
---- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-+++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-@@ -47,10 +47,14 @@ Required properties:
-   - a8b8g8r8 (32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r).
- 
- Optional properties:
--- clocks : List of clocks used by the framebuffer. Clocks listed here
--           are expected to already be configured correctly. The OS must
--           ensure these clocks are not modified or disabled while the
--           simple framebuffer remains active.
-+- clocks : List of clocks used by the framebuffer.
-+- *-supply : Any number of regulators used by the framebuffer. These should
-+	     be named according to the names in the device's design.
-+
-+  The above resources are expected to already be configured correctly.
-+  The OS must ensure they are not modified or disabled while the simple
-+  framebuffer remains active.
-+
- - display : phandle pointing to the primary display hardware node
- 
- Example:
-@@ -68,6 +72,7 @@ chosen {
- 		stride = <(1600 * 2)>;
- 		format = "r5g6b5";
- 		clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
-+		lcd-supply = <&reg_dc1sw>;
- 		display = <&lcdc0>;
- 	};
- 	stdout-path = "display0";
+ drivers/video/fbdev/Kconfig |   2 +
+ drivers/video/fbdev/pxafb.c | 212 +++++++++++++++++++++++++++++++++++++++-----
+ drivers/video/fbdev/pxafb.h |   2 +
+ 3 files changed, 195 insertions(+), 21 deletions(-)
+
 -- 
-2.6.1
+2.1.4
 

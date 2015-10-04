@@ -1,73 +1,110 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 21 Oct 2015 07:50:49 +0000
-Subject: Re: [PATCH RFC v2 1/2] dt-bindings: simplefb: Support a list of regulator supply properties
-Message-Id: <562743D9.4030809@redhat.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Sun, 04 Oct 2015 10:31:23 +0000
+Subject: [PATCH v2] video: fbdev: add Marvell PXA framebuffer binding
+Message-Id: <1443954683-13126-1-git-send-email-robert.jarzmik@free.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1445407141-16459-1-git-send-email-wens@csie.org>
- <1445407141-16459-2-git-send-email-wens@csie.org>
-In-Reply-To: <1445407141-16459-2-git-send-email-wens@csie.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Philipp Zabel <philipp.zabel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>
 
-Hi,
+Add documentation for the PXA frambuffer devicetree binding.
 
-On 21-10-15 07:59, Chen-Yu Tsai wrote:
-> The physical display tied to the framebuffer may have regulators
-> providing power to it, such as power for LCDs or interface conversion
-> chips.
->
-> The number of regulators in use may vary, but the regulator supply
-> binding can not be a list. Work around this by adding a "num-supplies"
-> property to communicate the number of supplies, and a list of 0 ~ N
-> "vinN-supply" properties for the actual regulator supply.
+Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+---
+Since v1: Philipp's review on the whole binding
+---
+ .../devicetree/bindings/video/marvell,pxafb.txt    | 80 ++++++++++++++++++++++
+ 1 file changed, 80 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/marvell,pxafb.txt
 
-This bit of the commit message is no longer accurate. Other then that
-this patch looks good to me:
+diff --git a/Documentation/devicetree/bindings/video/marvell,pxafb.txt b/Documentation/devicetree/bindings/video/marvell,pxafb.txt
+new file mode 100644
+index 000000000000..4d6bd490680d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/marvell,pxafb.txt
+@@ -0,0 +1,80 @@
++PXA LCDC Framebuffer
++--------------------
++
++Required properties:
++ - compatible :
++	"marvell,pxa2xx-lcdc",
++ - reg : Should contain 1 register ranges(address and length).
++	 Can contain an additional register range(address and length)
++	 for fixed framebuffer memory. Useful for dedicated memories.
++ - interrupts : framebuffer controller interrupt
++
++Required nodes:
++ - clocks: phandle to input clocks.
++ - port: connection to the LCD panel (see video-interfaces.txt)
++	 This nodes must have its properties bus-width and remote-endpoint set.
++	 This should be in the board dts.
++
++Example:
++
++	lcd-controller@40500000 {
++		compatible = "marvell,pxa2xx-lcdc";
++		reg = <0x44000000 0x10000>;
++		interrupts = <17>;
++		clocks = <&clks CLK_LCD>;
++		interrupts = <23>;
++		status = "okay";
++
++		port {
++			lcdc_out: endpoint {
++				remote-endpoint = <&panel_in>;
++				bus-width = <16>;
++			};
++		};
++	};
++
++PXA LCDC Display
++----------------
++Required properties (as per of_videomode_helper):
++ - lcd-type: either "mono-stn", "mono-dstn", "color-stn", "color-dstn",
++		    "color-tft", "smart-panel"
++
++Optional properties (as per of_videomode_helper):
++ - power-supply: power supply regulator to the LCD to power it on or off
++		 (see regulator.txt)
++ - backlight: backlight control (see backlight.txt)
++
++Required nodes:
++ - port: connection to the LCD controller
++ - display-timings: panel timings (see display-timing.txt)
++
++Example:
++	panel {
++		compatible = "toshiba,ltm0305a776";
++		lcd-type = "color-tft";
++
++		power-supply = <&lcd_supply>;
++		backlight = <&lcd_backlight>;
++
++		port {
++			panel_in: endpoint {
++				remote-endpoint = <&lcdc_out>;
++			};
++		};
++
++		display-timings {
++			native-mode = <&timing0>;
++			timing0: 240p {
++				/* 240x320p24 */
++				clock-frequency = <4545000>;
++				hactive = <240>;
++				vactive = <320>;
++				hfront-porch = <4>;
++				hback-porch = <6>;
++				hsync-len = <4>;
++				vback-porch = <5>;
++				vfront-porch = <3>;
++				vsync-len = <2>;
++			};
++		};
++	};
+-- 
+2.1.4
 
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-
-Regards,
-
-Hans
-
-
->
-> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
-> ---
->   .../devicetree/bindings/video/simple-framebuffer.txt        | 13 +++++++++----
->   1 file changed, 9 insertions(+), 4 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-> index 4474ef6e0b95..8c9e9f515c87 100644
-> --- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-> +++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-> @@ -47,10 +47,14 @@ Required properties:
->     - a8b8g8r8 (32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r).
->
->   Optional properties:
-> -- clocks : List of clocks used by the framebuffer. Clocks listed here
-> -           are expected to already be configured correctly. The OS must
-> -           ensure these clocks are not modified or disabled while the
-> -           simple framebuffer remains active.
-> +- clocks : List of clocks used by the framebuffer.
-> +- *-supply : Any number of regulators used by the framebuffer. These should
-> +	     be named according to the names in the device's design.
-> +
-> +  The above resources are expected to already be configured correctly.
-> +  The OS must ensure they are not modified or disabled while the simple
-> +  framebuffer remains active.
-> +
->   - display : phandle pointing to the primary display hardware node
->
->   Example:
-> @@ -68,6 +72,7 @@ chosen {
->   		stride = <(1600 * 2)>;
->   		format = "r5g6b5";
->   		clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
-> +		lcd-supply = <&reg_dc1sw>;
->   		display = <&lcdc0>;
->   	};
->   	stdout-path = "display0";
->

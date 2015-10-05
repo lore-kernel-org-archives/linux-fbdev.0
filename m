@@ -1,50 +1,60 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Thu, 01 Oct 2015 17:39:46 +0000
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 05 Oct 2015 09:35:43 +0000
 Subject: Re: [PATCH] Revert "backlight: pwm: Handle EPROBE_DEFER while requesting the PWM"
-Message-Id: <8737xuebdp.fsf@belgarion.home>
+Message-Id: <20151005093543.GB30219@ulmo>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="uQr8t48UFsdbeI+V"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1443295482-18687-1-git-send-email-robert.jarzmik@free.fr>
-	<87bncjemdk.fsf@belgarion.home> <560CE816.1060307@atmel.com>
-In-Reply-To: <560CE816.1060307@atmel.com> (Nicolas Ferre's message of "Thu, 1
-	Oct 2015 10:00:22 +0200")
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+ <87bncjemdk.fsf@belgarion.home>
+ <560CE816.1060307@atmel.com>
+In-Reply-To: <560CE816.1060307@atmel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Robert Jarzmik <robert.jarzmik@free.fr>, linux-pwm@vger.kernel.org, Boris BREZILLON <boris.brezillon@free-electrons.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+
+--uQr8t48UFsdbeI+V
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-To: Nicolas Ferre <nicolas.ferre@atmel.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>
-Cc: linux-pwm@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Nicolas Ferre <nicolas.ferre@atmel.com> writes:
-
+On Thu, Oct 01, 2015 at 10:00:22AM +0200, Nicolas Ferre wrote:
 > Le 30/09/2015 21:29, Robert Jarzmik a =C3=A9crit :
->> Robert Jarzmik <robert.jarzmik@free.fr> writes:
->>=20
->>> This reverts commit 68feaca0b13e453aa14ee064c1736202b48b342f.
->>> This commit breaks legacy platforms, for which :
->>>  (a) no pwm table is added (legacy platforms)
->>>  (b) in this case, in pwm_get(), pmw_lookup_list is empty, and therefore
->>>      chosen =3D NULL, and therefore pwm_get() returns NULL, and pwm_get=
-()
->>>      returns -EPROBE_DEFER
->>>  (c) as a consequence, this code is unreachable in pwm_bl.c :
->>>      if (IS_ERR(pb->pwm)) {
->>> 	ret =3D PTR_ERR(pb->pwm);
->>>  	dev_info(&pdev->dev, "%s:%d(): %d\n", __func__, __LINE__, ret);
->>>  	if (ret =3D -EPROBE_DEFER)
->>>  		goto err_alloc;
->>>
->>>  	dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
->>>  	pb->legacy =3D true;
->>>  	pb->pwm =3D pwm_request(data->pwm_id, "pwm-backlight");
->>>
->>> As this code is unreachable, all legacy platforms relying on pwm_id are
->>> broken, amongst which pxa have been tested as broken.
->>>
->>> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
->> Thierry, would you have a look please ?
->> As I said before, all legacy platform relying on pwm_id are broken. I'd =
-like to
->> be sure this lands in the next -rc series.
->
+> > Robert Jarzmik <robert.jarzmik@free.fr> writes:
+> >=20
+> >> This reverts commit 68feaca0b13e453aa14ee064c1736202b48b342f.
+> >> This commit breaks legacy platforms, for which :
+> >>  (a) no pwm table is added (legacy platforms)
+> >>  (b) in this case, in pwm_get(), pmw_lookup_list is empty, and therefo=
+re
+> >>      chosen =3D=3D NULL, and therefore pwm_get() returns NULL, and pwm=
+_get()
+> >>      returns -EPROBE_DEFER
+> >>  (c) as a consequence, this code is unreachable in pwm_bl.c :
+> >>      if (IS_ERR(pb->pwm)) {
+> >> 	ret =3D PTR_ERR(pb->pwm);
+> >>  	dev_info(&pdev->dev, "%s:%d(): %d\n", __func__, __LINE__, ret);
+> >>  	if (ret =3D=3D -EPROBE_DEFER)
+> >>  		goto err_alloc;
+> >>
+> >>  	dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+> >>  	pb->legacy =3D true;
+> >>  	pb->pwm =3D pwm_request(data->pwm_id, "pwm-backlight");
+> >>
+> >> As this code is unreachable, all legacy platforms relying on pwm_id are
+> >> broken, amongst which pxa have been tested as broken.
+> >>
+> >> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+> > Thierry, would you have a look please ?
+> > As I said before, all legacy platform relying on pwm_id are broken. I'd=
+ like to
+> > be sure this lands in the next -rc series.
+>=20
+> Well, as I answered on the linux-pwm mailing-list (I was not in copy) her=
+e:
+> http://article.gmane.org/gmane.linux.pwm/2744
+> I wonder if it's not easier to fix the platforms and add the pwm tables...
+>=20
 > Otherwise, Boris proposed this fix:
 > 8<-----------------------------------------------------------
 > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
@@ -57,7 +67,7 @@ ce *pdev)
 >  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
 >  	if (IS_ERR(pb->pwm)) {
 >  		ret =3D PTR_ERR(pb->pwm);
-> -		if (ret =3D -EPROBE_DEFER)
+> -		if (ret =3D=3D -EPROBE_DEFER)
 > -			goto err_alloc;
 > =20
 >  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
@@ -72,19 +82,47 @@ ce *pdev)
 >  			goto err_alloc;
 >  		}
 >  	}
->
+>=20
 > which is not tested and may add an extra non-valid error log.
-Now it is tested, and it works correctly AFAICS.
 
-So could you or Borris post this patch, with :
-Fixes: 68feaca0b13e ("backlight: pwm: Handle EPROBE_DEFER while requesting =
-the PWM")
-Tested-by: Robert Jarzmik <robert.jarzmik@free.fr>
+This is a little risky in my opinion. Not only does it print two error
+messages for non-legacy platforms (that would be another regression if
+you want to be nit-picking), but it is subtly buggy. If you have a
+system with multiple PWM providers, you could end up failing the first
+pwm_get() with -EPROBE_DEFER but then continue to the legacy case, and
+this could succeed because data->pwm_id =3D=3D 0, and that other provider
+could be exporting the PWM with this ID. If I remember correctly this
+was one of the reasons why the offending commit was merged in the first
+place.
 
-That would be a good replacement for the revert. Maybe stable tree should be
-joined too ...
+I'm afraid that fixing up the legacy platforms to use PWM lookup tables
+will be the only proper fix that doesn't risk breaking everyone else. I
+sent out patches to do that for PXA a couple of minutes ago. Looking at
+the history of the pwm-pxa driver it seems like quite a few PXA boards
+must have been broken ever since v3.6 because of the PWM ID assignment
+mismatch, and those should be fixed with the patches I sent as well.
 
-Cheers.
+Thierry
 
---=20
-Robert
+--uQr8t48UFsdbeI+V
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJWEkRsAAoJEN0jrNd/PrOh8pwP/1XUYdGsmkIYDQfyfwM0fjRd
+EqAfnJlU2emKAUlxnOhmDMlEk4UIadTZMX+/0xVlb7NK0zb8kLR9Go6o+tJAlZj6
+XluAV+6Z3zfBPIYNv2nvJqxjyu9wm8uJ6Zlp/B2ENbjCwylsmfLNDXRKQkqEzhcY
+Fk/7wTYsvQBbpIbJY6/MAd+sc4sg7dbhd7B2+TDrlJcgNUnDn3OCXg+gRJJJMuzA
+1GjGAk/ZQhhLRYlZBrhYDxkOmbjNtZ4Q0RAEuAWqU5Bu+kahuU4tIwllv1gUZPU1
+gOQ8FP0nc86YI8SIp4Vw5h/LwLux0Uh4lUn/Qz/nxw4SQ4rbmjEtgFqXzuwXnASH
+kBvwI63lEllnntcYpULzTHjZtjyaNYI9rq2ItGK2WqC23GwkOwo+x+KrBAmoZm2n
+xogH3iHD1dg4/0/swHcDMq0+U7G8AP9CGoeNNMEx+ipUrPUms5RjkQ60kYNVZg6R
+RDfdAVK3H0r17cjdAU1JDsZZQzMktJZXOl4RvOwGy1YHKevTCG2YEgwevrKiFnTG
+jMHVzPicHrke/LWDHF+PpVwXYB0q6ec1MV5CHRKGNhQrC1WcOz7VGbnY59TkU6r8
+CRSBeK3+Gqub0hdYDoqCseua+XrPDbPCuGZK8ksilFOXidh8T8HYAEiLnSABcFF+
+rd8yCmlJ8Ha8bYwqVikZ
+=ZUyI
+-----END PGP SIGNATURE-----
+
+--uQr8t48UFsdbeI+V--

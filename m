@@ -1,71 +1,70 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Thu, 01 Oct 2015 21:22:51 +0000
-Subject: [PATCH v2 1/5] gxt4500: enable on non-PPC architectures
-Message-Id: <1443734575-12468-2-git-send-email-linux@rainbow-software.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Oct 2015 11:14:16 +0000
+Subject: Re: [PATCH] video: of: fix memory leak
+Message-Id: <5614FE88.4030909@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="pPrF4ATq2VJiTSPDn8HlkhTMT78gLf9cC"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1443734575-12468-1-git-send-email-linux@rainbow-software.org>
-In-Reply-To: <1443734575-12468-1-git-send-email-linux@rainbow-software.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: =Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+References: <1443606848-31510-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1443606848-31510-1-git-send-email-sudipm.mukherjee@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-These chips can be present at least on x86 too - Fire GL2 AGP has GXT6000P but
-this driver is currently limited to PPC.
-Enable it for all architectures and add chip configuration for little-endian.
+--pPrF4ATq2VJiTSPDn8HlkhTMT78gLf9cC
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Tested on x86 with Fire GL2 AGP.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
----
- drivers/video/fbdev/Kconfig   |    5 +++--
- drivers/video/fbdev/gxt4500.c |    7 +++++++
- 2 files changed, 10 insertions(+), 2 deletions(-)
+On 30/09/15 12:54, Sudip Mukherjee wrote:
+> If of_parse_display_timing() fails we are printing an error message and=
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 8b1d371..10ff920 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2132,7 +2132,7 @@ config FB_UDL
- 
- config FB_IBM_GXT4500
- 	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
--	depends on FB && PPC
-+	depends on FB
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -2140,7 +2140,8 @@ config FB_IBM_GXT4500
- 	  Say Y here to enable support for the IBM GXT4000P/6000P and
- 	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
- 	  found on some IBM System P (pSeries) machines. This driver
--	  doesn't use Geometry Engine GT1000.
-+	  doesn't use Geometry Engine GT1000. This driver also supports
-+	  AGP Fire GL2/3/4 cards on x86.
- 
- config FB_PS3
- 	tristate "PS3 GPU framebuffer driver"
-diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
-index f19133a..ae68696 100644
---- a/drivers/video/fbdev/gxt4500.c
-+++ b/drivers/video/fbdev/gxt4500.c
-@@ -670,8 +670,15 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	pci_set_drvdata(pdev, info);
- 
-+#ifdef __BIG_ENDIAN
- 	/* Set byte-swapping for DFA aperture for all pixel sizes */
- 	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x333300);
-+#else /* __LITTLE_ENDIAN */
-+	/* not sure what this means but fgl23 driver does that */
-+	pci_write_config_dword(pdev, CFG_ENDIAN0, 0x2300);
-+/*	pci_write_config_dword(pdev, CFG_ENDIAN0 + 4, 0x400000);*/
-+	pci_write_config_dword(pdev, CFG_ENDIAN0 + 8, 0x98530000);
-+#endif
- 
- 	info->fbops = &gxt4500_ops;
- 	info->flags = FBINFO_FLAG_DEFAULT;
--- 
-Ondrej Zary
+> jumping to the error path but we missed freeing "dt".
+>=20
+> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> ---
+>  drivers/video/of_display_timing.c | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_displ=
+ay_timing.c
+> index 32d8275..8a1076b 100644
+> --- a/drivers/video/of_display_timing.c
+> +++ b/drivers/video/of_display_timing.c
+> @@ -210,6 +210,7 @@ struct display_timings *of_get_display_timings(stru=
+ct device_node *np)
+>  			 */
+>  			pr_err("%s: error in timing %d\n",
+>  				of_node_full_name(np), disp->num_timings + 1);
+> +			kfree(dt);
+>  			goto timingfail;
+>  		}
 
+Thanks, queued for 4.3 fixes.
+
+ Tomi
+
+
+--pPrF4ATq2VJiTSPDn8HlkhTMT78gLf9cC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWFP6IAAoJEPo9qoy8lh71TC8QAKU+wUc2zkuY6JrXenLKCpPD
+2kjCjF0BSYiBUVuWRVi10CT4oGSttxulRTvxYcvr4zN8ho37Pj4L+SCtv9aCQ1Wo
+xC6lqPgszLc6PuVZeTXP8dcSvDc+v32uvOiQdiEFT8kKTOXPgpmDn26WL/DmbxmG
+JMI5fjjZFd9D5n6ad87LdxM9mlkXrEkECOiuMIrUEaUBTZHFCddP0P+HT/ZS2nza
+W39qh/AcC7CUK35ks+AUzll1ZdvrJfHwQyTUlx+TYwTxpXxs443plMP85J5BZKhp
+Y/nWrEjWFYWpzmHH7LOL78vQoJpnrFAvGTzBIbPoXB/g3yoym+XIitxMKFQLjyfF
+97zYtSmFxwrJfA8WR6e1P26nJgj7C8EZE8kDwM9bQEcliID9leX8Uk5gsuFrdCAU
+US4WfVhuYsjUCLr+5D9hRh51pDwM04kpKIzzpe7JD8d3Vx8Tn0RXiTv/I5idjF5e
+Jqv7NGHJCGNYQj4+y3VINXYX2bWyHXxtiNFdKeFQD7+K+97lTC/HEYfkWIy70Rqn
+pzN/X6EUsVf8Gu8h2ZwwSIqU/Ciyrzhs9A36ZHwJWYGr4Zw2AlbxKP1nxwAJh4Nh
+dzIflJOSKejOBlnaga1fD7MUAxRaQ6bHUn8tk5JYNtg3gEitZIWTFegHhbwheexn
+nITKGIvBmHO2p5ULrIAL
+=8kqn
+-----END PGP SIGNATURE-----
+
+--pPrF4ATq2VJiTSPDn8HlkhTMT78gLf9cC--

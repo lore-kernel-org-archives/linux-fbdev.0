@@ -1,69 +1,41 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Fri, 30 Oct 2015 10:34:31 +0000
-Subject: Re: [PATCH v2] pwm-backlight: fix the panel power sequence
-Message-Id: <1446201271.3334.22.camel@pengutronix.de>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Fri, 09 Oct 2015 15:08:10 +0000
+Subject: [PATCH] fbcon: initialize blink interval before calling fb_set_par
+Message-Id: <alpine.DEB.2.11.1510091500100.1816@local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444987060-48202-1-git-send-email-yh.huang@mediatek.com>
- <1444988219.3541.3.camel@pengutronix.de>
- <1445526750.27586.8.camel@mtksdaap41>
- <1446133259.3274.52.camel@pengutronix.de>
- <1446190900.17558.16.camel@mtksdaap41>
-In-Reply-To: <1446190900.17558.16.camel@mtksdaap41>
+References: <2505354.BllTl4uaOg@new-mexico> <alpine.DEB.2.11.1510030350110.20774@local> <3998353.WdEhcyQWSK@new-mexico>
+In-Reply-To: <3998353.WdEhcyQWSK@new-mexico>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alistair Popple <alistair@popple.id.au>, Pavel Machek <pavel@ucw.cz>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, airlied@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Am Freitag, den 30.10.2015, 15:41 +0800 schrieb YH Huang:
-> > That won't work if the gpio is still configured as input. How about I
-> > add the GPIOD_ASIS change to my patch you remove that and the above from
-> > yours?
-> 
-> I revise these two lines 
-> if (pb->enable_gpio)
-> 	gpiod_direction_output(pb->enable_gpio, 0);
-> into
-> if (pb->enable_gpio) {
-> 	if(gpiod_get_value(pb->enable_gpio) = 0)
-> 		gpiod_direction_output(pb->enable_gpio, 0);
-> 	else
-> 		gpiod_direction_output(pb->enable_gpio, 1);
-> }
+Since commit 27a4c827c34ac4256a190cc9d24607f953c1c459
+    fbcon: use the cursor blink interval provided by vt
 
-If the GPIO is still configured as an input, the return value of
-gpiod_get_value could be random.
+a PPC64LE kernel fails to boot when fbcon_add_cursor_timer uses an
+uninitialized ops->cur_blink_jiffies. Prevent by initializing
+in fbcon_init before the call to info->fbops->fb_set_par.
 
-> I am not sure what "phandle" is working for.
+Reported-and-tested-by: Alistair Popple <alistair@popple.id.au>
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+---
+ drivers/video/console/fbcon.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-The reasoning is that devices where there is no phandle link pointing to
-the backlight (for example from a simple-panel node), we should keep the
-current default behaviour (enable during probe).
-
-> My change is like your patch but remove the "phandle related" and
-> "gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT".
-> Do we really need these?
-
-See above, I wanted to be careful not to change existing behavior in
-unexpected ways.
-
-> Also, do you think it is right that I do the "pwm_enable(pb->pwm);"
-> before "gpiod_set_value(pb->enable_gpio, 1);" in power on function?
-
-That is unclear to me, because I'm sure that depends on the actual
-constant current LED driver used.
-I suspect EN and PWM pins are completely independent on a lot of them,
-so enabling EN last should be ok to work around the problem that the PWM
-pin state might not be well defined when the PWM is disabled.
-
-For example, the STCS1A datasheet doesn't mention any order for enabling
-EN and PWM. In the LP8545 datasheet, the modes of operation state
-diagram suggests that enabling EN first is the proper way, on the other
-hand the PWM interface characteristics table also lists a startup delay
-for a rising EN edge while PWM is already active.
-
-But I'm not sure that there aren't any LED drivers that somehow have a
-problem with this order.
-
-regards
-Philipp
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 1aaf893..92f3949 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1093,6 +1093,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 		con_copy_unimap(vc, svc);
+ 
+ 	ops = info->fbcon_par;
++	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+ 	p->con_rotate = initial_rotation;
+ 	set_blitting_type(vc, info);
+ 
+-- 
+2.1.4
 

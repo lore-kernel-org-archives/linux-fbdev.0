@@ -1,201 +1,126 @@
-From: Lars Svensson <lars1.svensson@sonymobile.com>
-Date: Wed, 07 Oct 2015 07:20:13 +0000
-Subject: [PATCH v3 2/3] staging: fbtft: use alternate screen pointer
-Message-Id: <1444202414-21271-2-git-send-email-lars1.svensson@sonymobile.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Fri, 09 Oct 2015 22:15:37 +0000
+Subject: [PATCH 00/20] tree-wide convert to memremap()
+Message-Id: <20151009221537.32203.5867.stgit@dwillia2-desk3.jf.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444202414-21271-1-git-send-email-lars1.svensson@sonymobile.com>
-In-Reply-To: <1444202414-21271-1-git-send-email-lars1.svensson@sonymobile.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: thomas.petazzoni@free-electrons.com, noralf@tronnes.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com, Lars Svensson <lars1.svensson@sonymobile.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Jaroslav Kysela <perex@perex.cz>, Lv Zheng <lv.zheng@intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Daniel Vetter <daniel.vetter@intel.com>, linux-arch@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Bob Moore <robert.moore@intel.com>, Mike Waychison <mikew@google.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Ross Zwisler <ross.zwisler@linux.intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Len Brown <lenb@kernel.org>, Jeeja KP <jeeja.kp@intel.com>, Joerg Roedel <jroedel@suse.de>, Arnd Bergmann <arnd@arndb.de>, intel-gfx@lists.freedesktop.org, Mark Brown <broonie@kernel.org>, Borislav Petkov <bp@alien8.de>, Takashi Iwai <tiwai@suse.com>, Thomas
 
-Member screen_base in struct fb_info is declared with __iomem
-qualifier causing sparse warnings when used as a regular ponter.
-To avoid the warnings, instead use alternate non-__iomem pointer,
-screen_buffer, troughout the driver.
+The memremap() api [1] was merged in 4.3 [2] with an initial
+implementation for x86 and a conversion of the pmem driver. Complete the
+conversion for the rest of the kernel.
 
-Signed-off-by: Lars Svensson <lars1.svensson@sonymobile.com>
+Feel free to either ack or directly apply a conversion-patch as I will
+defer the final removal patches until all the conversions have landed.
+
+[1]: https://lwn.net/Articles/653585/
+[2]: commit 92281dee825f arch: introduce memremap()
+
 ---
- drivers/staging/fbtft/fb_agm1264k-fl.c | 2 +-
- drivers/staging/fbtft/fb_pcd8544.c     | 2 +-
- drivers/staging/fbtft/fb_ra8875.c      | 2 +-
- drivers/staging/fbtft/fb_ssd1306.c     | 2 +-
- drivers/staging/fbtft/fb_tls8204.c     | 2 +-
- drivers/staging/fbtft/fb_uc1611.c      | 2 +-
- drivers/staging/fbtft/fb_uc1701.c      | 2 +-
- drivers/staging/fbtft/fb_watterott.c   | 4 ++--
- drivers/staging/fbtft/fbtft-bus.c      | 6 +++---
- drivers/staging/fbtft/fbtft-core.c     | 4 ++--
- 10 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/staging/fbtft/fb_agm1264k-fl.c b/drivers/staging/fbtft/fb_agm1264k-fl.c
-index 94dd49c..5af372b 100644
---- a/drivers/staging/fbtft/fb_agm1264k-fl.c
-+++ b/drivers/staging/fbtft/fb_agm1264k-fl.c
-@@ -273,7 +273,7 @@ construct_line_bitmap(struct fbtft_par *par, u8 *dest, signed short *src,
- 
- static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- {
--	u16 *vmem16 = (u16 *)par->info->screen_base;
-+	u16 *vmem16 = (u16 *)par->info->screen_buffer;
- 	u8 *buf = par->txbuf.buf;
- 	int x, y;
- 	int ret = 0;
-diff --git a/drivers/staging/fbtft/fb_pcd8544.c b/drivers/staging/fbtft/fb_pcd8544.c
-index 15da0ec..27d6681 100644
---- a/drivers/staging/fbtft/fb_pcd8544.c
-+++ b/drivers/staging/fbtft/fb_pcd8544.c
-@@ -122,7 +122,7 @@ static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
- 
- static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- {
--	u16 *vmem16 = (u16 *)par->info->screen_base;
-+	u16 *vmem16 = (u16 *)par->info->screen_buffer;
- 	u8 *buf = par->txbuf.buf;
- 	int x, y, i;
- 	int ret = 0;
-diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
-index 54bc566..e8b2178 100644
---- a/drivers/staging/fbtft/fb_ra8875.c
-+++ b/drivers/staging/fbtft/fb_ra8875.c
-@@ -288,7 +288,7 @@ static int write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
- 		__func__, offset, len);
- 
- 	remain = len / 2;
--	vmem16 = (u16 *)(par->info->screen_base + offset);
-+	vmem16 = (u16 *)(par->info->screen_buffer + offset);
- 	tx_array_size = par->txbuf.len / 2;
- 		txbuf16 = (u16 *)(par->txbuf.buf + 1);
- 		tx_array_size -= 2;
-diff --git a/drivers/staging/fbtft/fb_ssd1306.c b/drivers/staging/fbtft/fb_ssd1306.c
-index 15ee44d..913b0f7 100644
---- a/drivers/staging/fbtft/fb_ssd1306.c
-+++ b/drivers/staging/fbtft/fb_ssd1306.c
-@@ -172,7 +172,7 @@ static int set_gamma(struct fbtft_par *par, unsigned long *curves)
- 
- static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- {
--	u16 *vmem16 = (u16 *)par->info->screen_base;
-+	u16 *vmem16 = (u16 *)par->info->screen_buffer;
- 	u8 *buf = par->txbuf.buf;
- 	int x, y, i;
- 	int ret = 0;
-diff --git a/drivers/staging/fbtft/fb_tls8204.c b/drivers/staging/fbtft/fb_tls8204.c
-index 3253a25..b66dc7f 100644
---- a/drivers/staging/fbtft/fb_tls8204.c
-+++ b/drivers/staging/fbtft/fb_tls8204.c
-@@ -104,7 +104,7 @@ static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
- 
- static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- {
--	u16 *vmem16 = (u16 *)par->info->screen_base;
-+	u16 *vmem16 = (u16 *)par->info->screen_buffer;
- 	int x, y, i;
- 	int ret = 0;
- 
-diff --git a/drivers/staging/fbtft/fb_uc1611.c b/drivers/staging/fbtft/fb_uc1611.c
-index 5cafa50..689a56a 100644
---- a/drivers/staging/fbtft/fb_uc1611.c
-+++ b/drivers/staging/fbtft/fb_uc1611.c
-@@ -229,7 +229,7 @@ static int set_var(struct fbtft_par *par)
- 
- static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- {
--	u8 *vmem8 = (u8 *)(par->info->screen_base);
-+	u8 *vmem8 = (u8 *)(par->info->screen_buffer);
- 	u8 *buf8 = (u8 *)(par->txbuf.buf);
- 	u16 *buf16 = (u16 *)(par->txbuf.buf);
- 	int line_length = par->info->fix.line_length;
-diff --git a/drivers/staging/fbtft/fb_uc1701.c b/drivers/staging/fbtft/fb_uc1701.c
-index 26d669b..96b7298 100644
---- a/drivers/staging/fbtft/fb_uc1701.c
-+++ b/drivers/staging/fbtft/fb_uc1701.c
-@@ -150,7 +150,7 @@ static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
- 
- static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- {
--	u16 *vmem16 = (u16 *)par->info->screen_base;
-+	u16 *vmem16 = (u16 *)par->info->screen_buffer;
- 	u8 *buf = par->txbuf.buf;
- 	int x, y, i;
- 	int ret = 0;
-diff --git a/drivers/staging/fbtft/fb_watterott.c b/drivers/staging/fbtft/fb_watterott.c
-index 8eae6ef..ed88e2d 100644
---- a/drivers/staging/fbtft/fb_watterott.c
-+++ b/drivers/staging/fbtft/fb_watterott.c
-@@ -73,7 +73,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
- static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- {
- 	unsigned start_line, end_line;
--	u16 *vmem16 = (u16 *)(par->info->screen_base + offset);
-+	u16 *vmem16 = (u16 *)(par->info->screen_buffer + offset);
- 	u16 *pos = par->txbuf.buf + 1;
- 	u16 *buf16 = par->txbuf.buf + 10;
- 	int i, j;
-@@ -112,7 +112,7 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- static int write_vmem_8bit(struct fbtft_par *par, size_t offset, size_t len)
- {
- 	unsigned start_line, end_line;
--	u16 *vmem16 = (u16 *)(par->info->screen_base + offset);
-+	u16 *vmem16 = (u16 *)(par->info->screen_buffer + offset);
- 	u16 *pos = par->txbuf.buf + 1;
- 	u8 *buf8 = par->txbuf.buf + 10;
- 	int i, j;
-diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
-index 912c632..f5a36a4 100644
---- a/drivers/staging/fbtft/fbtft-bus.c
-+++ b/drivers/staging/fbtft/fbtft-bus.c
-@@ -142,7 +142,7 @@ int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
- 		__func__, offset, len);
- 
- 	remain = len / 2;
--	vmem16 = (u16 *)(par->info->screen_base + offset);
-+	vmem16 = (u16 *)(par->info->screen_buffer + offset);
- 
- 	if (par->gpio.dc != -1)
- 		gpio_set_value(par->gpio.dc, 1);
-@@ -201,7 +201,7 @@ int fbtft_write_vmem16_bus9(struct fbtft_par *par, size_t offset, size_t len)
- 	}
- 
- 	remain = len;
--	vmem8 = par->info->screen_base + offset;
-+	vmem8 = par->info->screen_buffer + offset;
- 
- 	tx_array_size = par->txbuf.len / 2;
- 
-@@ -245,7 +245,7 @@ int fbtft_write_vmem16_bus16(struct fbtft_par *par, size_t offset, size_t len)
- 	fbtft_par_dbg(DEBUG_WRITE_VMEM, par, "%s(offset=%zu, len=%zu)\n",
- 		__func__, offset, len);
- 
--	vmem16 = (u16 *)(par->info->screen_base + offset);
-+	vmem16 = (u16 *)(par->info->screen_buffer + offset);
- 
- 	if (par->gpio.dc != -1)
- 		gpio_set_value(par->gpio.dc, 1);
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 7f5fa3d..a5fade2 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -779,7 +779,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	if (!info)
- 		goto alloc_fail;
- 
--	info->screen_base = (u8 __force __iomem *)vmem;
-+	info->screen_buffer = vmem;
- 	info->fbops = fbops;
- 	info->fbdefio = fbdefio;
- 
-@@ -919,7 +919,7 @@ EXPORT_SYMBOL(fbtft_framebuffer_alloc);
- void fbtft_framebuffer_release(struct fb_info *info)
- {
- 	fb_deferred_io_cleanup(info);
--	vfree(info->screen_base);
-+	vfree(info->screen_buffer);
- 	framebuffer_release(info);
- }
- EXPORT_SYMBOL(fbtft_framebuffer_release);
--- 
-2.4.2
+Dan Williams (20):
+      x86: introduce arch_memremap()
+      arm: introduce arch_memremap()
+      ia64: introduce arch_memremap()
+      sh: introduce arch_memremap()
+      m68k: introduce arch_memremap()
+      arm: switch from ioremap_cache to memremap
+      x86: switch from ioremap_cache to memremap
+      gma500: switch from acpi_os_ioremap to memremap
+      i915: switch from acpi_os_ioremap to memremap
+      acpi: switch from ioremap_cache to memremap
+      sound, skylake: switch from ioremap_cache to memremap
+      memconsole: fix __iomem mishandling, switch to memremap
+      intel-iommu: switch from ioremap_cache to memremap
+      pxa2xx-flash: switch from ioremap_cache to memremap
+      sfi: switch from ioremap_cache to memremap
+      fbdev: switch from ioremap_wt to memremap
+      arch: kill ioremap_cached()
+      arch: kill ioremap_fullcache()
+      arch: remove ioremap_cache, replace with arch_memremap
+      arch: remove ioremap_wt, optionally replace with arch_memremap
 
+
+ Documentation/x86/pat.txt             |    6 +--
+ arch/arc/include/asm/io.h             |    1 
+ arch/arm/Kconfig                      |    1 
+ arch/arm/include/asm/io.h             |    7 ---
+ arch/arm/include/asm/xen/page.h       |    4 +-
+ arch/arm/mm/ioremap.c                 |   12 ++++-
+ arch/arm/mm/mmu.c                     |    2 -
+ arch/arm/mm/nommu.c                   |   11 +++--
+ arch/arm64/Kconfig                    |    1 
+ arch/arm64/include/asm/acpi.h         |   11 -----
+ arch/arm64/include/asm/dmi.h          |    8 ++--
+ arch/arm64/include/asm/io.h           |    2 -
+ arch/arm64/kernel/efi.c               |    9 ++--
+ arch/arm64/kernel/smp_spin_table.c    |   19 ++++-----
+ arch/arm64/mm/ioremap.c               |   20 +++------
+ arch/avr32/include/asm/io.h           |    1 
+ arch/frv/include/asm/io.h             |   12 -----
+ arch/ia64/Kconfig                     |    1 
+ arch/ia64/include/asm/io.h            |    6 ---
+ arch/ia64/mm/ioremap.c                |   10 +++++
+ arch/m32r/include/asm/io.h            |    1 
+ arch/m68k/Kconfig                     |    1 
+ arch/m68k/include/asm/io_mm.h         |   13 ------
+ arch/m68k/include/asm/io_no.h         |   11 -----
+ arch/m68k/include/asm/raw_io.h        |    1 
+ arch/m68k/mm/kmap.c                   |   17 +++++++-
+ arch/m68k/mm/sun3kmap.c               |    7 +++
+ arch/metag/include/asm/io.h           |    6 ---
+ arch/microblaze/include/asm/io.h      |    2 -
+ arch/mn10300/include/asm/io.h         |    1 
+ arch/nios2/include/asm/io.h           |    1 
+ arch/s390/include/asm/io.h            |    1 
+ arch/sh/Kconfig                       |    1 
+ arch/sh/include/asm/io.h              |    7 ---
+ arch/sh/mm/ioremap.c                  |    9 ++++
+ arch/sparc/include/asm/io_32.h        |    1 
+ arch/sparc/include/asm/io_64.h        |    1 
+ arch/tile/include/asm/io.h            |    2 -
+ arch/unicore32/include/asm/io.h       |    4 --
+ arch/unicore32/mm/ioremap.c           |    8 ----
+ arch/x86/Kconfig                      |    1 
+ arch/x86/include/asm/efi.h            |    3 +
+ arch/x86/include/asm/io.h             |    4 --
+ arch/x86/kernel/crash_dump_64.c       |    6 +--
+ arch/x86/kernel/kdebugfs.c            |    8 ++--
+ arch/x86/kernel/ksysfs.c              |   28 ++++++-------
+ arch/x86/mm/ioremap.c                 |   43 ++++++++-----------
+ arch/xtensa/include/asm/io.h          |   12 -----
+ drivers/acpi/apei/einj.c              |    9 ++--
+ drivers/acpi/apei/erst.c              |    6 +--
+ drivers/acpi/nvs.c                    |    6 +--
+ drivers/acpi/osl.c                    |   70 +++++++++-----------------------
+ drivers/firmware/google/memconsole.c  |    7 ++-
+ drivers/gpu/drm/gma500/opregion.c     |    8 ++--
+ drivers/gpu/drm/gma500/psb_drv.h      |    2 -
+ drivers/gpu/drm/gma500/psb_lid.c      |    8 ++--
+ drivers/gpu/drm/i915/i915_debugfs.c   |    2 -
+ drivers/gpu/drm/i915/i915_drv.h       |   12 +++--
+ drivers/gpu/drm/i915/intel_bios.c     |    7 +--
+ drivers/gpu/drm/i915/intel_opregion.c |   73 ++++++++++++++++-----------------
+ drivers/gpu/drm/i915/intel_panel.c    |    2 -
+ drivers/iommu/intel-iommu.c           |   20 +++++----
+ drivers/iommu/intel_irq_remapping.c   |    8 ++--
+ drivers/mtd/maps/pxa2xx-flash.c       |    6 +--
+ drivers/nvdimm/Kconfig                |    2 -
+ drivers/sfi/sfi_core.c                |    4 +-
+ drivers/video/fbdev/Kconfig           |    2 -
+ drivers/video/fbdev/amifb.c           |    5 +-
+ drivers/video/fbdev/atafb.c           |    5 +-
+ drivers/video/fbdev/hpfb.c            |    6 +--
+ include/acpi/acpi_io.h                |    6 +--
+ include/asm-generic/io.h              |    8 ----
+ include/asm-generic/iomap.h           |    4 --
+ include/linux/io.h                    |    1 
+ kernel/Makefile                       |    2 -
+ kernel/memremap.c                     |   27 +++++-------
+ lib/Kconfig                           |    6 ++-
+ sound/soc/intel/skylake/skl-nhlt.c    |   10 ++---
+ sound/soc/intel/skylake/skl.h         |    6 +--
+ 79 files changed, 284 insertions(+), 400 deletions(-)

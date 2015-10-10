@@ -1,61 +1,55 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Wed, 28 Oct 2015 06:20:38 +0000
-Subject: Re: [PATCH] ARM: dts: sunxi: sun6i-a31s-primo81.dts: add touchscreen axis swapping property
-Message-Id: <20151028062038.GF6114@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="osDK9TLjxFScVI/L"
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Sat, 10 Oct 2015 12:30:50 +0000
+Subject: [PATCH 1/5] backlight: 88pm860x_bl: add missing of_node_put
+Message-Id: <1444480254-14399-2-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20151024205716.GA16644@excalibur.cnev.de>
- <1445720851-2148-1-git-send-email-merker@debian.org>
-In-Reply-To: <1445720851-2148-1-git-send-email-merker@debian.org>
-To: linux-arm-kernel@lists.infradead.org
+References: <1444480254-14399-1-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1444480254-14399-1-git-send-email-Julia.Lawall@lip6.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jingoohan1@gmail.com>
+Cc: kernel-janitors@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Bjorn Helgaas <bhelgaas@google.com>, Jason Cooper <jason@lakedaemon.net>
 
+for_each_child_of_node performs an of_node_get on each iteration, so
+a break out of the loop requires an of_node_put.
 
---osDK9TLjxFScVI/L
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The semantic patch that fixes this problem is as follows
+(http://coccinelle.lip6.fr):
 
-Hi,
+// <smpl>
+@@
+expression root,e;
+local idexpression child;
+iterator name for_each_child_of_node;
+@@
 
-On Sat, Oct 24, 2015 at 11:07:31PM +0200, Karsten Merker wrote:
-> The MSI Primo81 has a display in portrait mode but a touchscreen
-> in landscape mode.  To have both of them use the same coordinate
-> system, the touchscreen-swapped-x-y property has to be set
-> for the touchscreen.
->=20
-> Signed-off-by: Karsten Merker <merker@debian.org>
+ for_each_child_of_node(root, child) {
+   ... when != of_node_put(child)
+       when != e = child
++  of_node_put(child);
+?  break;
+   ...
+}
+... when != child
+// </smpl>
 
-Queued as a fix for 4.4.
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Thanks!
-Maxime
+---
+ drivers/video/backlight/88pm860x_bl.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+diff --git a/drivers/video/backlight/88pm860x_bl.c b/drivers/video/backlight/88pm860x_bl.c
+index 2da5862..6d8dc2c 100644
+--- a/drivers/video/backlight/88pm860x_bl.c
++++ b/drivers/video/backlight/88pm860x_bl.c
+@@ -180,6 +180,7 @@ static int pm860x_backlight_dt_init(struct platform_device *pdev,
+ 			data->iset = PM8606_WLED_CURRENT(iset);
+ 			of_property_read_u32(np, "marvell,88pm860x-pwm",
+ 					     &data->pwm);
++			of_node_put(np);
+ 			break;
+ 		}
+ 	}
 
---osDK9TLjxFScVI/L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJWMGk2AAoJEBx+YmzsjxAgkQAP/3iKQn5PUfeirTeJl6FOrVYb
-aLxoXVi+gsQYPYsu6yecQh14Qfgg5fPja3AvZRPs8lm2s5A/54t1WiKWz8XNXTS7
-a2RhcaDpKm7BOnUtqF9/FDA7SrC8zF448v92Gmcskfrfex+W7p8whuAT0IKILQZ7
-+0p01KAeORg/uC04N+nFDzxE/+YaQKEv9k5oxyFJ6eNqhWsFEKOOWghQVWL5MTeM
-Xcor1I9n9B9TXzAoQEm/pQA+esd2F+mV8RuMeHLnIKNGZqvWHcpbFN658uqp2riz
-vauTSCVSqcf5Hck5R4wBmc5S8y140uDL7bXIjPfyHnR3gSafgmyPOn5rrQyeTA58
-7ptg+nBC6GMxuxXU3gcrFsNhrSpH00LvYsbMHcv76zy6PRTwfiD75y+3PDhxnTbh
-0SHHbf779tLOkNTOjjvfd8O40VQiDIQ3WNDoZEy2tlKN57PO5eYXvSSswvB+Hbt7
-x6G/RkxbYRwngy2zwleqJ4wbMx07zaYvSZCA2zue+b883lDXPUwWYyTJX4D+aTTx
-AhsHALesunMreYXjRuzWHSLitDG6KOzbofmislzL4dIhdFiPwyjqJNMpfkAgixeS
-kUMOvtfh849JNkaO1/wHTc3NvBmPnZqUP7NCyYm7xmkZ2hW9II+hDQ38/Sw/pZy7
-rWNUK5Seg6NiLd5eRaBt
-=+sGV
------END PGP SIGNATURE-----
-
---osDK9TLjxFScVI/L--

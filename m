@@ -1,63 +1,57 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Date: Fri, 23 Oct 2015 03:50:38 +0000
-Subject: [PATCH v4 1/4] dt-bindings: simplefb: Support regulator supply properties
-Message-Id: <1445572241-13259-2-git-send-email-wens@csie.org>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Mon, 12 Oct 2015 20:43:14 +0000
+Subject: [PATCH 1/3] video: omapdss: delete unneeded of_node_put
+Message-Id: <1444682596-3065-2-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1445572241-13259-1-git-send-email-wens@csie.org>
-In-Reply-To: <1445572241-13259-1-git-send-email-wens@csie.org>
+References: <1444682596-3065-1-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1444682596-3065-1-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: kernel-janitors@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Bjorn Helgaas <bhelgaas@google.com>, Jason Cooper <jason@lakedaemon.net>
 
-The physical display tied to the framebuffer may have regulators
-providing power to it, such as power for LCDs or interface conversion
-chips.
+Device node iterators perform an of_node_put on each iteration, so putting
+an of_node_put before a continue results in a double put.
 
-The number of regulators in use may vary, but the regulator supply
-binding can not be a list. Instead just support any named regulator
-supply properties under the device node. These should be properly
-named to match the device schematics / design. The driver should
-take care to go through them all.
+A simplified version of the semantic match that finds this problem is as
+follows (http://coccinelle.lip6.fr):
 
-Signed-off-by: Chen-Yu Tsai <wens@csie.org>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Mark Brown <broonie@kernel.org>
+// <smpl>
+@@
+expression root,e;
+local idexpression child;
+iterator i;
+@@
+
+ i(..., child, ...) {
+   ... when != of_node_get(child)
+*  of_node_put(child);
+   ...
+*  continue;
+}
+// </smpl>
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
 ---
- .../devicetree/bindings/video/simple-framebuffer.txt        | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/omap2/dss/omapdss-boot-init.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-index 4474ef6e0b95..8c9e9f515c87 100644
---- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-+++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-@@ -47,10 +47,14 @@ Required properties:
-   - a8b8g8r8 (32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r).
+diff --git a/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
+index 8b6f6d5..136d304 100644
+--- a/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
++++ b/drivers/video/fbdev/omap2/dss/omapdss-boot-init.c
+@@ -199,10 +199,8 @@ static int __init omapdss_boot_init(void)
+ 	omapdss_walk_device(dss, true);
  
- Optional properties:
--- clocks : List of clocks used by the framebuffer. Clocks listed here
--           are expected to already be configured correctly. The OS must
--           ensure these clocks are not modified or disabled while the
--           simple framebuffer remains active.
-+- clocks : List of clocks used by the framebuffer.
-+- *-supply : Any number of regulators used by the framebuffer. These should
-+	     be named according to the names in the device's design.
-+
-+  The above resources are expected to already be configured correctly.
-+  The OS must ensure they are not modified or disabled while the simple
-+  framebuffer remains active.
-+
- - display : phandle pointing to the primary display hardware node
+ 	for_each_available_child_of_node(dss, child) {
+-		if (!of_find_property(child, "compatible", NULL)) {
+-			of_node_put(child);
++		if (!of_find_property(child, "compatible", NULL))
+ 			continue;
+-		}
  
- Example:
-@@ -68,6 +72,7 @@ chosen {
- 		stride = <(1600 * 2)>;
- 		format = "r5g6b5";
- 		clocks = <&ahb_gates 36>, <&ahb_gates 43>, <&ahb_gates 44>;
-+		lcd-supply = <&reg_dc1sw>;
- 		display = <&lcdc0>;
- 	};
- 	stdout-path = "display0";
--- 
-2.6.1
+ 		omapdss_walk_device(child, true);
+ 	}
 

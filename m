@@ -1,99 +1,108 @@
-From: YH Huang <yh.huang@mediatek.com>
-Date: Thu, 22 Oct 2015 15:29:02 +0000
-Subject: Re: [RESEND PATCH] pwm-backlight: fix the panel power sequence
-Message-Id: <1445527742.27586.18.camel@mtksdaap41>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Tue, 13 Oct 2015 08:42:48 +0000
+Subject: Re: [PATCHv4 3/3] devicetree: Add led-backlight binding
+Message-Id: <20151013084248.GA32409@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444959454-1516-1-git-send-email-yh.huang@mediatek.com>
- <1444984313.3180.6.camel@pengutronix.de>
-In-Reply-To: <1444984313.3180.6.camel@pengutronix.de>
+References: <1443605522-1118-1-git-send-email-tomi.valkeinen@ti.com>
+ <1443605522-1118-4-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1443605522-1118-4-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jacek Anaszewski <j.anaszewski@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, devicetree@vger.kernel.org
 
-On Fri, 2015-10-16 at 10:31 +0200, Lucas Stach wrote:
-> Am Freitag, den 16.10.2015, 09:37 +0800 schrieb YH Huang:
-> > In order to match the panel power sequence, disable the enable_gpio
-> > in the probe function. Also, reorder the code in the power_on and
-> > power_off function to match the timing.
-> > 
-> You aren't specifying which panels power sequence you are matching here.
-> Are you sure you aren't breaking other panels with this patch?
-> 
-> Regards,
-> Lucas
-The panel sequence is:
-When powering on the panel, generate pwm signals fist and then enable it
-to show the backlight.
-When powering off the panel, do it opposite.
-In probe function, we keep the panel status from bootloader and don't
-enable or disable it by default.
+On Wed, 30 Sep 2015, Tomi Valkeinen wrote:
 
-Do these changes break other panels?
+> Add DT binding for led-backlight.
+>=20
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: devicetree@vger.kernel.org
+> ---
+>  .../bindings/video/backlight/led-backlight.txt     | 30 ++++++++++++++++=
+++++++
+>  1 file changed, 30 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/video/backlight/led=
+-backlight.txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/video/backlight/led-backli=
+ght.txt b/Documentation/devicetree/bindings/video/backlight/led-backlight.t=
+xt
+> new file mode 100644
+> index 000000000000..d4621d7414bc
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/video/backlight/led-backlight.txt
+> @@ -0,0 +1,30 @@
+> +led-backlight bindings
 
-Regards,
-YH Huang
+Make this look like a heading, rather than just another binding.
 
+I would expect to see "LED Backlight Bindings" or similar.
 
-> 
-> > Signed-off-by: YH Huang <yh.huang@mediatek.com>
-> > ---
-> >  drivers/video/backlight/pwm_bl.c |   15 +++++++++------
-> >  1 file changed, 9 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> > index eff379b..99eca1e 100644
-> > --- a/drivers/video/backlight/pwm_bl.c
-> > +++ b/drivers/video/backlight/pwm_bl.c
-> > @@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
-> >  	if (err < 0)
-> >  		dev_err(pb->dev, "failed to enable power supply\n");
-> >  
-> > +	pwm_enable(pb->pwm);
-> > +
-> >  	if (pb->enable_gpio)
-> >  		gpiod_set_value(pb->enable_gpio, 1);
-> >  
-> > -	pwm_enable(pb->pwm);
-> >  	pb->enabled = true;
-> >  }
-> >  
-> > @@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
-> >  	if (!pb->enabled)
-> >  		return;
-> >  
-> > -	pwm_config(pb->pwm, 0, pb->period);
-> > -	pwm_disable(pb->pwm);
-> > -
-> >  	if (pb->enable_gpio)
-> >  		gpiod_set_value(pb->enable_gpio, 0);
-> >  
-> > +	pwm_config(pb->pwm, 0, pb->period);
-> > +	pwm_disable(pb->pwm);
-> > +
-> >  	regulator_disable(pb->power_supply);
-> >  	pb->enabled = false;
-> >  }
-> > @@ -241,8 +242,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
-> >  	pb->dev = &pdev->dev;
-> >  	pb->enabled = false;
-> >  
-> > -	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
-> > -						  GPIOD_OUT_HIGH);
-> > +	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable");
-> >  	if (IS_ERR(pb->enable_gpio)) {
-> >  		ret = PTR_ERR(pb->enable_gpio);
-> >  		goto err_alloc;
-> > @@ -264,6 +264,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
-> >  		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
-> >  	}
-> >  
-> > +	if (pb->enable_gpio)
-> > +		gpiod_direction_output(pb->enable_gpio, 0);
-> > +
-> >  	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
-> >  	if (IS_ERR(pb->power_supply)) {
-> >  		ret = PTR_ERR(pb->power_supply);
-> 
+> +Required properties:
+> +  - compatible: "led-backlight"
+> +  - leds: phandle to a led OF node [0]
 
+s/phandle/Phandle/
 
+s/led/LED/
+
+s/[0]/(See: ../leds/common.txt)
+
+> +  - brightness-levels: Array of distinct LED brightness levels. These
+> +      are in the range from 0 to 255, passed to the LED class driver.
+> +  - default-brightness-level: the default brightness level (index into t=
+he
+
+s/the/The/
+
+> +      array defined by the "brightness-levels" property)
+
+Tab this out, so:
+
+- compatible			: "led-backlight"
+- leds				: phandle to a led OF node [0]
+- brightness-levels		: Array of distinct LED brightness levels. These
+				  are in the range from 0 to 255, passed to the LED class driver.
+- default-brightness-level	: the default brightness level (index into the
+				  array defined by the "brightness-levels" property)
+
+Etc.
+
+> +Optional properties:
+> +  - power-supply: regulator for supply voltage
+
+s/regulator/Regulator/
+
+> +  - enable-gpios: contains a single GPIO specifier for the GPIO which en=
+ables
+
+s/contains/Contains/
+
+> +                  and disables the backlight (see GPIO binding[1])
+
+s/[1]/(See: ../gpio/gpio.txt)
+
+> +[0]: Documentation/devicetree/bindings/leds/common.txt
+> +[1]: Documentation/devicetree/bindings/gpio/gpio.txt
+
+Remove these.
+
+> +Example:
+> +
+> +	backlight {
+> +		compatible =3D "led-backlight";
+> +		leds =3D <&backlight_led>;
+> +
+> +		brightness-levels =3D <0 4 8 16 32 64 128 255>;
+> +		default-brightness-level =3D <6>;
+> +
+> +		power-supply =3D <&vdd_bl_reg>;
+> +		enable-gpios =3D <&gpio 58 0>;
+> +	};
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

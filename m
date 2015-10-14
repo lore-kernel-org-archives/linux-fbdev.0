@@ -1,144 +1,81 @@
-From: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Date: Mon, 12 Oct 2015 12:39:46 +0000
-Subject: Re: [PATCH] Revert "backlight: pwm: Handle EPROBE_DEFER while requesting the PWM"
-Message-Id: <561BAA12.9060502@mentor.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Date: Wed, 14 Oct 2015 08:34:00 +0000
+Subject: [GIT PULL] On-demand device probing
+Message-Id: <561E1378.6000906@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1443295482-18687-1-git-send-email-robert.jarzmik@free.fr>
- <87bncjemdk.fsf@belgarion.home> <560CE816.1060307@atmel.com>
- <20151005093543.GB30219@ulmo> <20151005131912.4da38169@bbrezillon>
- <20151005125803.GA30025@ulmo> <20151005153024.3a245b0b@bbrezillon>
-In-Reply-To: <20151005153024.3a245b0b@bbrezillon>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-pwm@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rob Herring <robh+dt@kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=c3=b6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Felipe Balbi <balbi@ti.com>
 
-On 05.10.2015 16:30, Boris Brezillon wrote:
-> On Mon, 5 Oct 2015 14:58:03 +0200
-> Thierry Reding <thierry.reding@gmail.com> wrote:
->=20
->> On Mon, Oct 05, 2015 at 01:19:12PM +0200, Boris Brezillon wrote:
->>> Hi Thierry,
->>>
->>> On Mon, 5 Oct 2015 11:35:43 +0200
->>> Thierry Reding <thierry.reding@gmail.com> wrote:
->>>
->>>> On Thu, Oct 01, 2015 at 10:00:22AM +0200, Nicolas Ferre wrote:
->>>>> Le 30/09/2015 21:29, Robert Jarzmik a =C3=A9crit :
->>>>>> Robert Jarzmik <robert.jarzmik@free.fr> writes:
->>>>>>
->>>>>>> This reverts commit 68feaca0b13e453aa14ee064c1736202b48b342f.
->>>>>>> This commit breaks legacy platforms, for which :
->>>>>>>  (a) no pwm table is added (legacy platforms)
->>>>>>>  (b) in this case, in pwm_get(), pmw_lookup_list is empty, and ther=
-efore
->>>>>>>      chosen =3D NULL, and therefore pwm_get() returns NULL, and pwm=
-_get()
->>>>>>>      returns -EPROBE_DEFER
->>>>>>>  (c) as a consequence, this code is unreachable in pwm_bl.c :
->>>>>>>      if (IS_ERR(pb->pwm)) {
->>>>>>> 	ret =3D PTR_ERR(pb->pwm);
->>>>>>>  	dev_info(&pdev->dev, "%s:%d(): %d\n", __func__, __LINE__, ret);
->>>>>>>  	if (ret =3D -EPROBE_DEFER)
->>>>>>>  		goto err_alloc;
->>>>>>>
->>>>>>>  	dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
->>>>>>>  	pb->legacy =3D true;
->>>>>>>  	pb->pwm =3D pwm_request(data->pwm_id, "pwm-backlight");
->>>>>>>
->>>>>>> As this code is unreachable, all legacy platforms relying on pwm_id=
- are
->>>>>>> broken, amongst which pxa have been tested as broken.
->>>>>>>
->>>>>>> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
->>>>>> Thierry, would you have a look please ?
->>>>>> As I said before, all legacy platform relying on pwm_id are broken. =
-I'd like to
->>>>>> be sure this lands in the next -rc series.
->>>>>
->>>>> Well, as I answered on the linux-pwm mailing-list (I was not in copy)=
- here:
->>>>> http://article.gmane.org/gmane.linux.pwm/2744
->>>>> I wonder if it's not easier to fix the platforms and add the pwm tabl=
-es...
->>>>>
->>>>> Otherwise, Boris proposed this fix:
->>>>> 8<-----------------------------------------------------------
->>>>> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlig=
-ht/pwm_bl.c
->>>>> index eff379b..00483d4 100644
->>>>> --- a/drivers/video/backlight/pwm_bl.c
->>>>> +++ b/drivers/video/backlight/pwm_bl.c
->>>>> @@ -273,15 +273,15 @@ static int pwm_backlight_probe(struct platform_=
-device *pdev)
->>>>>  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
->>>>>  	if (IS_ERR(pb->pwm)) {
->>>>>  		ret =3D PTR_ERR(pb->pwm);
->>>>> -		if (ret =3D -EPROBE_DEFER)
->>>>> -			goto err_alloc;
->>>>> =20
->>>>>  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
->>>>>  		pb->legacy =3D true;
->>>>>  		pb->pwm =3D pwm_request(data->pwm_id, "pwm-backlight");
->>>>>  		if (IS_ERR(pb->pwm)) {
->>>>>  			dev_err(&pdev->dev, "unable to request legacy PWM\n");
->>>>> -			ret =3D PTR_ERR(pb->pwm);
->>>>> +			if (ret !=3D -EPROBE_DEFER)
->>>>> +				ret =3D PTR_ERR(pb->pwm);
->>>>> +
->>>>>  			goto err_alloc;
->>>>>  		}
->>>>>  	}
->>>>>
->>>>> which is not tested and may add an extra non-valid error log.
->>>>
->>>> This is a little risky in my opinion. Not only does it print two error
->>>> messages for non-legacy platforms (that would be another regression if
->>>> you want to be nit-picking), but it is subtly buggy. If you have a
->>>> system with multiple PWM providers, you could end up failing the first
->>>> pwm_get() with -EPROBE_DEFER but then continue to the legacy case, and
->>>> this could succeed because data->pwm_id =3D 0, and that other provider
->>>> could be exporting the PWM with this ID. If I remember correctly this
->>>> was one of the reasons why the offending commit was merged in the first
->>>> place.
->>>
->>> Just for the record, when I proposed this fix to Nicolas, I clearly
->>> stated that this was not the way to go, and that fixing the offending
->>> platforms to use PWM lookup table was the only sane solution, though I
->>> didn't thought about the invalid PWM id case leading to buggy behavior.
->>
->> As chance would have it, this bubbled to the top of my inbox today:
->>
->> 	http://patchwork.ozlabs.org/patch/483993/
->=20
-> AFAICT, this is not valid either. This patch is assuming -EPROBE_DEFER
-> can only be returned in the DT case, which is not the case:=20
+Hi Rob,
 
-FYI at the time I've created and sent the change for review (Oct. 11,
-2014 (!), https://patchwork.ozlabs.org/patch/398849/) there was no any
-known to me intention to handle -EPROBE_DEFER .
+here is the pull request you asked for, with no changes from the version
+that I posted last to the list.
 
-Last week Lee mentioned that the patch does not apply due to added
--EPROBE_DEFER handling, so I've sent today to linux-pwm a rebased
-version of the same change, which hopefully is acceptable, please take a
-look.
+The following changes since commit 6ff33f3902c3b1c5d0db6b1e2c70b6d76fba357f:
 
-> it is also returned if the PWMs were declared with a lookup table=20
-> but the driver is not registered yet (module not loaded, or driver
-> registration taking place after the PWM backlight driver).
->=20
-> If we were about to differentiate the missing PWM definition from
-> the missing driver case, we should do something like this [1].
->=20
-> Best Regards,
->=20
-> Boris
->=20
-> [1]http://code.bulix.org/2oozbq-89125
->=20
->=20
+Linux 4.3-rc1 (2015-09-12 16:35:56 -0700)
 
---
-With best wishes,
-Vladimir
+are available in the git repository at:
+
+git+ssh://git.collabora.co.uk/git/user/tomeu/linux.git
+on-demand-probes-for-next
+
+for you to fetch changes up to 587402133fe433759d2d535e5d92ead87fd7f615:
+
+of/platform: Defer probes of registered devices (2015-10-14 10:08:23 +0200)
+
+----------------------------------------------------------------
+Tomeu Vizoso (20):
+driver core: handle -EPROBE_DEFER from bus_type.match()
+ARM: amba: Move reading of periphid to amba_match()
+of/platform: Point to struct device from device node
+of: add function to allow probing a device from a OF node
+gpio: Probe GPIO drivers on demand
+pinctrl: Probe pinctrl devices on demand
+regulator: core: Probe regulators on demand
+drm: Probe panels on demand
+drm/tegra: Probe dpaux devices on demand
+i2c: core: Probe i2c adapters and devices on demand
+pwm: Probe PWM chip devices on demand
+backlight: Probe backlight devices on demand
+usb: phy: Probe phy devices on demand
+clk: Probe clk providers on demand
+pinctrl: Probe pinctrl devices on demand
+phy: core: Probe phy providers on demand
+dma: of: Probe DMA controllers on demand
+power-supply: Probe power supplies on demand
+driver core: Allow deferring probes until late init
+of/platform: Defer probes of registered devices
+
+drivers/amba/bus.c | 88
+++++++++++++++++++++++++++++++++++++++++++++++------------------------------------------
+drivers/base/Kconfig | 18 ++++++++++++++++++
+drivers/base/dd.c | 30 ++++++++++++++++++++++++++++--
+drivers/clk/clk.c | 3 +++
+drivers/dma/of-dma.c | 3 +++
+drivers/gpio/gpiolib-of.c | 5 +++++
+drivers/gpu/drm/drm_panel.c | 3 +++
+drivers/gpu/drm/tegra/dpaux.c | 3 +++
+drivers/i2c/i2c-core.c | 4 ++++
+drivers/of/device.c | 61
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+drivers/of/platform.c | 30 ++++++++++++++++++------------
+drivers/phy/phy-core.c | 3 +++
+drivers/pinctrl/devicetree.c | 3 +++
+drivers/power/power_supply_core.c | 3 +++
+drivers/pwm/core.c | 3 +++
+drivers/regulator/core.c | 2 ++
+drivers/usb/phy/phy.c | 3 +++
+drivers/video/backlight/backlight.c | 3 +++
+include/linux/device.h | 4 +++-
+include/linux/of.h | 1 +
+include/linux/of_device.h | 3 +++
+21 files changed, 219 insertions(+), 57 deletions(-)
+
+
+Thanks,
+
+Tomeu

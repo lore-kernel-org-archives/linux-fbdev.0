@@ -1,91 +1,98 @@
-From: Christian Gmeiner <christian.gmeiner@gmail.com>
-Date: Thu, 15 Oct 2015 11:51:35 +0000
-Subject: Re: [RESEND PATCH v2] pwm-backlight: Avoid backlight flicker when probed from DT
-Message-Id: <CAH9NwWcthPzs4YHzQrFNhWcFst7k4_YRD1o_0GYWMrAc9DTEDA@mail.gmail.com>
+From: Luis de Bethencourt <luisbg@osg.samsung.com>
+Date: Thu, 15 Oct 2015 12:29:38 +0000
+Subject: [PATCH] OMAPDSS: DISPC: Remove boolean comparisons
+Message-Id: <1444912178-15989-1-git-send-email-luisbg@osg.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444829119-4266-1-git-send-email-p.zabel@pengutronix.de>
-In-Reply-To: <1444829119-4266-1-git-send-email-p.zabel@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, laurent.pinchart@ideasonboard.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Luis de Bethencourt <luisbg@osg.samsung.com>
 
-2015-10-14 15:25 GMT+02:00 Philipp Zabel <p.zabel@pengutronix.de>:
-> If the driver is probed from the device tree, and there is a phandle
-> property set on it, and the enable GPIO is already configured as output,
-> and the backlight is currently disabled, keep it disabled.
-> If all these conditions are met, assume there will be some other driver
-> that can enable the backlight at the appropriate time.
->
-> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> ---
-> Changes since v1:
->  - Also check if the regulator is enabled. If the power supply is disabled,
->    and a phandle points to it, the backlight should stay powered down.
-> ---
->  drivers/video/backlight/pwm_bl.c | 23 +++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
->
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index eff379b..31afd6d 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -199,6 +199,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->         struct backlight_properties props;
->         struct backlight_device *bl;
->         struct pwm_bl_data *pb;
-> +       int initial_blank = FB_BLANK_UNBLANK;
-> +       bool phandle;
->         int ret;
->
->         if (!data) {
-> @@ -264,12 +266,32 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->                 pb->enable_gpio = gpio_to_desc(data->enable_gpio);
->         }
->
-> +       phandle = of_find_property(pdev->dev.of_node, "phandle", NULL) != NULL;
-> +
-> +       if (pb->enable_gpio) {
-> +               /*
-> +                * If the driver is probed from the device tree and there is a
-> +                * phandle link pointing to the backlight node, it is safe to
-> +                * assume that another driver will enable the backlight at the
-> +                * appropriate time. Therefore, if it is disabled, keep it so.
-> +                */
-> +               if (phandle &&
-> +                   gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
-> +                   gpiod_get_value(pb->enable_gpio) = 0)
-> +                       initial_blank = FB_BLANK_POWERDOWN;
-> +               else
-> +                       gpiod_direction_output(pb->enable_gpio, 1);
-> +       }
-> +
->         pb->power_supply = devm_regulator_get(&pdev->dev, "power");
->         if (IS_ERR(pb->power_supply)) {
->                 ret = PTR_ERR(pb->power_supply);
->                 goto err_alloc;
->         }
->
-> +       if (phandle && !regulator_is_enabled(pb->power_supply))
-> +               initial_blank = FB_BLANK_POWERDOWN;
-> +
->         pb->pwm = devm_pwm_get(&pdev->dev, NULL);
->         if (IS_ERR(pb->pwm)) {
->                 ret = PTR_ERR(pb->pwm);
-> @@ -321,6 +343,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->         }
->
->         bl->props.brightness = data->dft_brightness;
-> +       bl->props.power = initial_blank;
->         backlight_update_status(bl);
->
->         platform_set_drvdata(pdev, bl);
-> --
-> 2.6.1
->
+Boolean tests do not need explicit comparison to true or false.
 
-Reviewed-by: Christian Gmeiner <christian.gmeiner@gmail.com>
---
-Christian Gmeiner, MSc
+Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
+---
+ drivers/video/fbdev/omap2/dss/dispc-compat.c | 6 +++---
+ drivers/video/fbdev/omap2/dss/dispc.c        | 6 +++---
+ drivers/video/fbdev/omap2/dss/manager.c      | 2 +-
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-https://soundcloud.com/christian-gmeiner
+diff --git a/drivers/video/fbdev/omap2/dss/dispc-compat.c b/drivers/video/fbdev/omap2/dss/dispc-compat.c
+index 633c461..0918b3b 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc-compat.c
++++ b/drivers/video/fbdev/omap2/dss/dispc-compat.c
+@@ -476,7 +476,7 @@ static void dispc_mgr_disable_lcd_out(enum omap_channel channel)
+ 	int r;
+ 	u32 irq;
+ 
+-	if (dispc_mgr_is_enabled(channel) = false)
++	if (!dispc_mgr_is_enabled(channel))
+ 		return;
+ 
+ 	/*
+@@ -524,7 +524,7 @@ static void dispc_mgr_enable_digit_out(void)
+ 	int r;
+ 	u32 irq_mask;
+ 
+-	if (dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT) = true)
++	if (dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT))
+ 		return;
+ 
+ 	/*
+@@ -562,7 +562,7 @@ static void dispc_mgr_disable_digit_out(void)
+ 	u32 irq_mask;
+ 	int num_irqs;
+ 
+-	if (dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT) = false)
++	if (!dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT))
+ 		return;
+ 
+ 	/*
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index be716c9..43b0367 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -571,7 +571,7 @@ EXPORT_SYMBOL(dispc_mgr_go_busy);
+ 
+ void dispc_mgr_go(enum omap_channel channel)
+ {
+-	WARN_ON(dispc_mgr_is_enabled(channel) = false);
++	WARN_ON(!dispc_mgr_is_enabled(channel));
+ 	WARN_ON(dispc_mgr_go_busy(channel));
+ 
+ 	DSSDBG("GO %s\n", mgr_desc[channel].name);
+@@ -3220,7 +3220,7 @@ void dispc_mgr_set_timings(enum omap_channel channel,
+ 
+ 		DSSDBG("hsync %luHz, vsync %luHz\n", ht, vt);
+ 	} else {
+-		if (t.interlace = true)
++		if (t.interlace)
+ 			t.y_res /= 2;
+ 	}
+ 
+@@ -3237,7 +3237,7 @@ static void dispc_mgr_set_lcd_divisor(enum omap_channel channel, u16 lck_div,
+ 	dispc_write_reg(DISPC_DIVISORo(channel),
+ 			FLD_VAL(lck_div, 23, 16) | FLD_VAL(pck_div, 7, 0));
+ 
+-	if (dss_has_feature(FEAT_CORE_CLK_DIV) = false &&
++	if (!dss_has_feature(FEAT_CORE_CLK_DIV) &&
+ 			channel = OMAP_DSS_CHANNEL_LCD)
+ 		dispc.core_clk_rate = dispc_fclk_rate() / lck_div;
+ }
+diff --git a/drivers/video/fbdev/omap2/dss/manager.c b/drivers/video/fbdev/omap2/dss/manager.c
+index 1aac9b4..08a67f4 100644
+--- a/drivers/video/fbdev/omap2/dss/manager.c
++++ b/drivers/video/fbdev/omap2/dss/manager.c
+@@ -210,7 +210,7 @@ static int dss_mgr_check_lcd_config(struct omap_overlay_manager *mgr,
+ 		return -EINVAL;
+ 
+ 	/* fifohandcheck should be used only with stallmode */
+-	if (stallmode = false && fifohandcheck = true)
++	if (!stallmode && fifohandcheck)
+ 		return -EINVAL;
+ 
+ 	/*
+-- 
+2.5.1
+

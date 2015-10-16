@@ -1,68 +1,77 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 13 Oct 2015 08:15:35 +0000
-Subject: Re: [PATCH 1/5] backlight: 88pm860x_bl: add missing of_node_put
-Message-Id: <20151013081535.GB17172@x1>
+From: YH Huang <yh.huang@mediatek.com>
+Date: Fri, 16 Oct 2015 09:17:40 +0000
+Subject: [PATCH v2] pwm-backlight: fix the panel power sequence
+Message-Id: <1444987060-48202-1-git-send-email-yh.huang@mediatek.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444480254-14399-1-git-send-email-Julia.Lawall@lip6.fr>
- <1444480254-14399-2-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1444480254-14399-2-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Jingoo Han <jingoohan1@gmail.com>, kernel-janitors@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Bjorn Helgaas <bhelgaas@google.com>, Jason Cooper <jason@lakedaemon.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-On Sat, 10 Oct 2015, Julia Lawall wrote:
+In order to match the panel power sequence, disable the enable_gpio
+in the probe function. Also, reorder the code in the power_on and
+power_off function to match the timing.
 
-> for_each_child_of_node performs an of_node_get on each iteration, so
-> a break out of the loop requires an of_node_put.
->=20
-> The semantic patch that fixes this problem is as follows
-> (http://coccinelle.lip6.fr):
->=20
-> // <smpl>
-> @@
-> expression root,e;
-> local idexpression child;
-> iterator name for_each_child_of_node;
-> @@
->=20
->  for_each_child_of_node(root, child) {
->    ... when !=3D of_node_put(child)
->        when !=3D e =3D child
-> +  of_node_put(child);
-> ?  break;
->    ...
-> }
-> ... when !=3D child
-> // </smpl>
->=20
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
-> ---
->  drivers/video/backlight/88pm860x_bl.c |    1 +
->  1 file changed, 1 insertion(+)
+Signed-off-by: YH Huang <yh.huang@mediatek.com>
+---
+Change in v2:
+Fix the build error.
+---
+ drivers/video/backlight/pwm_bl.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-Applied, thanks.
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index eff379b..d8c9c62 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+ 
++	pwm_enable(pb->pwm);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value(pb->enable_gpio, 1);
+ 
+-	pwm_enable(pb->pwm);
+ 	pb->enabled = true;
+ }
+ 
+@@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (!pb->enabled)
+ 		return;
+ 
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
+-
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value(pb->enable_gpio, 0);
+ 
++	pwm_config(pb->pwm, 0, pb->period);
++	pwm_disable(pb->pwm);
++
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
+ }
+@@ -242,7 +243,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->enabled = false;
+ 
+ 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
+-						  GPIOD_OUT_HIGH);
++						  GPIOD_ASIS);
+ 	if (IS_ERR(pb->enable_gpio)) {
+ 		ret = PTR_ERR(pb->enable_gpio);
+ 		goto err_alloc;
+@@ -264,6 +265,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+ 	}
+ 
++	if (pb->enable_gpio)
++		gpiod_direction_output(pb->enable_gpio, 0);
++
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
+ 		ret = PTR_ERR(pb->power_supply);
+-- 
+1.7.9.5
 
-> diff --git a/drivers/video/backlight/88pm860x_bl.c b/drivers/video/backli=
-ght/88pm860x_bl.c
-> index 2da5862..6d8dc2c 100644
-> --- a/drivers/video/backlight/88pm860x_bl.c
-> +++ b/drivers/video/backlight/88pm860x_bl.c
-> @@ -180,6 +180,7 @@ static int pm860x_backlight_dt_init(struct platform_d=
-evice *pdev,
->  			data->iset =3D PM8606_WLED_CURRENT(iset);
->  			of_property_read_u32(np, "marvell,88pm860x-pwm",
->  					     &data->pwm);
-> +			of_node_put(np);
->  			break;
->  		}
->  	}
->=20
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

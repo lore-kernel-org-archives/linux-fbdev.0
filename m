@@ -1,49 +1,75 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 19 Oct 2015 07:59:25 +0000
-Subject: Re: [PATCH RFC 0/2] simplefb: Add regulator handling support
-Message-Id: <5624A2DD.4020101@redhat.com>
+From: YH Huang <yh.huang@mediatek.com>
+Date: Fri, 16 Oct 2015 01:37:34 +0000
+Subject: [RESEND PATCH] pwm-backlight: fix the panel power sequence
+Message-Id: <1444959454-1516-1-git-send-email-yh.huang@mediatek.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444669458-5588-1-git-send-email-wens@csie.org>
- <561CAFE8.9080506@redhat.com> <20151014105556.GT14956@sirena.org.uk>
- <561E3D28.2090901@redhat.com> <20151018195719.GC14956@sirena.org.uk>
-In-Reply-To: <20151018195719.GC14956@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+In order to match the panel power sequence, disable the enable_gpio
+in the probe function. Also, reorder the code in the power_on and
+power_off function to match the timing.
 
-On 18-10-15 21:57, Mark Brown wrote:
-> On Wed, Oct 14, 2015 at 01:31:52PM +0200, Hans de Goede wrote:
->
->> I like your idea in your other mail where you suggest to actually
->> use foo-supply and bar-supply names in the simplefb node, and then have
->> some code simple iterate over all the properties and check for *-supply
->> properties, so that the proper, schematic matching names can be used.
->
->> But surely if we go this way having a helper for this so that others
->> can re-use that likely not entirely trivial code is a good idea ?
->
-> Yeah.  It's trying to come up with a way to do this that is easy to
-> avoid abuse that's tricky.
->
->> One user which comes to mind immediately here is the generic mmc-pwrseq
->> driver.
->
->> I agree that we need to be careful to not use a helper like this too
->> much, but I do believe it will make sense to have it in some rare cases.
->> We can put a big warning in both the header declaring it and above
->> the implementation to use it scarcely.
->
-> I'd rather have something that was visible in the code, not everyone
-> reads the documentation especially not subsystem maintainers reviewing
-> drivers that use APIs they're not familiar with.
+Signed-off-by: YH Huang <yh.huang@mediatek.com>
+---
+ drivers/video/backlight/pwm_bl.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-I'm afraid there is not really a good way to do this though, so a big fat
-warning in the header declaring the function is really the bets we can
-do IMHO.
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index eff379b..99eca1e 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+ 
++	pwm_enable(pb->pwm);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value(pb->enable_gpio, 1);
+ 
+-	pwm_enable(pb->pwm);
+ 	pb->enabled = true;
+ }
+ 
+@@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (!pb->enabled)
+ 		return;
+ 
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
+-
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value(pb->enable_gpio, 0);
+ 
++	pwm_config(pb->pwm, 0, pb->period);
++	pwm_disable(pb->pwm);
++
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
+ }
+@@ -241,8 +242,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->dev = &pdev->dev;
+ 	pb->enabled = false;
+ 
+-	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
+-						  GPIOD_OUT_HIGH);
++	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable");
+ 	if (IS_ERR(pb->enable_gpio)) {
+ 		ret = PTR_ERR(pb->enable_gpio);
+ 		goto err_alloc;
+@@ -264,6 +264,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+ 	}
+ 
++	if (pb->enable_gpio)
++		gpiod_direction_output(pb->enable_gpio, 0);
++
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
+ 		ret = PTR_ERR(pb->power_supply);
+-- 
+1.7.9.5
 
-Regards,
-
-Hans

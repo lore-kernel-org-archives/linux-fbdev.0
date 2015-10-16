@@ -1,77 +1,25 @@
-From: YH Huang <yh.huang@mediatek.com>
-Date: Fri, 16 Oct 2015 09:17:40 +0000
-Subject: [PATCH v2] pwm-backlight: fix the panel power sequence
-Message-Id: <1444987060-48202-1-git-send-email-yh.huang@mediatek.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Fri, 16 Oct 2015 09:36:59 +0000
+Subject: Re: [PATCH v2] pwm-backlight: fix the panel power sequence
+Message-Id: <1444988219.3541.3.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1444987060-48202-1-git-send-email-yh.huang@mediatek.com>
+In-Reply-To: <1444987060-48202-1-git-send-email-yh.huang@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-In order to match the panel power sequence, disable the enable_gpio
-in the probe function. Also, reorder the code in the power_on and
-power_off function to match the timing.
+Am Freitag, den 16.10.2015, 17:17 +0800 schrieb YH Huang:
+> In order to match the panel power sequence, disable the enable_gpio
+> in the probe function. Also, reorder the code in the power_on and
+> power_off function to match the timing.
 
-Signed-off-by: YH Huang <yh.huang@mediatek.com>
----
-Change in v2:
-Fix the build error.
----
- drivers/video/backlight/pwm_bl.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+Could you also have a look at the "pwm-backlight: Avoid backlight
+flicker when probed from DT" patch?
+I think in case of a panel left enabled by the bootloader, your patch
+will disable the backlight for a short time.
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index eff379b..d8c9c62 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
- 	if (err < 0)
- 		dev_err(pb->dev, "failed to enable power supply\n");
- 
-+	pwm_enable(pb->pwm);
-+
- 	if (pb->enable_gpio)
- 		gpiod_set_value(pb->enable_gpio, 1);
- 
--	pwm_enable(pb->pwm);
- 	pb->enabled = true;
- }
- 
-@@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- 	if (!pb->enabled)
- 		return;
- 
--	pwm_config(pb->pwm, 0, pb->period);
--	pwm_disable(pb->pwm);
--
- 	if (pb->enable_gpio)
- 		gpiod_set_value(pb->enable_gpio, 0);
- 
-+	pwm_config(pb->pwm, 0, pb->period);
-+	pwm_disable(pb->pwm);
-+
- 	regulator_disable(pb->power_supply);
- 	pb->enabled = false;
- }
-@@ -242,7 +243,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	pb->enabled = false;
- 
- 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
--						  GPIOD_OUT_HIGH);
-+						  GPIOD_ASIS);
- 	if (IS_ERR(pb->enable_gpio)) {
- 		ret = PTR_ERR(pb->enable_gpio);
- 		goto err_alloc;
-@@ -264,6 +265,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
- 	}
- 
-+	if (pb->enable_gpio)
-+		gpiod_direction_output(pb->enable_gpio, 0);
-+
- 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
- 	if (IS_ERR(pb->power_supply)) {
- 		ret = PTR_ERR(pb->power_supply);
--- 
-1.7.9.5
+best regards
+Philipp
 

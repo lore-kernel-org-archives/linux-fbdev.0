@@ -1,55 +1,65 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Mon, 19 Oct 2015 15:43:24 +0000
+From: Rob Herring <robh+dt@kernel.org>
+Date: Mon, 19 Oct 2015 15:58:25 +0000
 Subject: Re: [GIT PULL] On-demand device probing
-Message-Id: <20151019154324.GN32532@n2100.arm.linux.org.uk>
+Message-Id: <CAL_JsqLwvc1H9kQnWs=mA8P4Mq4izmSSeFU6KRtkExBkzF9ABg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <561E1378.6000906@collabora.com>
- <20151017065750.GA18607@kroah.com>
- <20151018192931.GY14956@sirena.org.uk>
- <20151018193757.GA9147@kroah.com>
- <20151018195330.GB14956@sirena.org.uk>
- <1445247881.53393.146.camel@infradead.org>
+References: <561E1378.6000906@collabora.com> <20151017065750.GA18607@kroah.com>
+ <20151018192931.GY14956@sirena.org.uk> <20151018193757.GA9147@kroah.com>
+ <20151018195330.GB14956@sirena.org.uk> <1445247881.53393.146.camel@infradead.org>
  <CAL_JsqKehmSobpbdeXGo=-1pAbtrhCHovyyCWya_MNOhGCi8CQ@mail.gmail.com>
- <1445258870.53393.173.camel@infradead.org>
- <20151019145048.GI14956@sirena.org.uk>
+ <1445258870.53393.173.camel@infradead.org> <20151019145048.GI14956@sirena.org.uk>
  <1445268580.53393.183.camel@infradead.org>
 In-Reply-To: <1445268580.53393.183.camel@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: David Woodhouse <dwmw2@infradead.org>
-Cc: Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Felipe Balbi <balbi@ti.com>
+Cc: Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Felipe Balbi <balbi@ti.co>
 
-On Mon, Oct 19, 2015 at 04:29:40PM +0100, David Woodhouse wrote:
+On Mon, Oct 19, 2015 at 10:29 AM, David Woodhouse <dwmw2@infradead.org> wrote:
+> On Mon, 2015-10-19 at 15:50 +0100, Mark Brown wrote:
+>> > But the point I'm making is that we are working towards *fixing* that,
+>> > and *not* using DT-specific code in places where we should be using the
+>> > generic APIs.
+>>
+>> What is the plan for fixing things here?  It's not obvious (at least to
+>> me) that we don't want to have the subsystems having knowledge of how
+>> they are bound to a specific firmware which is what you seem to imply
+>> here.
+>
 > I don't know that there *is* a coherent plan here to address it all.
->=20
+>
 > Certainly, we *will* need subsystems to have firmware-specific
 > knowledge in some cases. Take GPIO as an example; ACPI *has* a way to
 > describe GPIO, and properties which reference GPIO pins are intended to
-> work through that =E2=80=94 while in DT, properties which reference GPIO =
-pins
+> work through that — while in DT, properties which reference GPIO pins
 > will have different contents. They'll be compatible at the driver
 > level, in the sense that there's a call to get a given GPIO given the
 > property name, but the subsystems *will* be doing different things
 > behind the scenes.
+>
+> My plan, such as it is, is to go through the leaf-node drivers which
+> almost definitely *should* be firmware-agnostic, and convert those. And
+> then take stock of what we have left, and work out what, if anything,
+> still needs to be done.
 
-It's a bit ironic that you've chosen GPIO as an example there.  The
-"new" GPIO API (the gpiod_* stuff) only has a fwnode way to get the
-gpio descriptor.  There's no of_* method.
+Many cases are already agnostic in the drivers in terms of the *_get()
+functions. Some are DT specific, but probably because those subsystems
+are new and DT only. In any case, I don't think these 1 line changes
+do anything to make doing conversions here harder.
 
-I'd like to use the gpiod_* stuff, but I feel that my options are
-rather limited: either use fwnode_get_named_gpiod() with
-&dev->of_node->fwnode, which seems like a hack by going underneath
-the covers of how fwnode is (partially) implemented with DT, or by
-using of_get_named_gpio() and the converting the gpio number to a
-descriptor via gpio_to_desc().  Both feel very hacky.
+>> It seems like we're going to have to refactor these bits of code when
+>> they get generalised anyway so I'm not sure that the additional cost
+>> here is that big.
+>
+> That's an acceptable answer — "we're adding legacy code here but we
+> know it's going to be refactored anyway". If that's true, all it takes
+> is a note in the commit comment to that effect. That's different from
+> having not thought about it :)
 
-If ACPI already handles GPIOs internally, then I'm left wondering
-why GPIO descriptor stuff went down the fwnode route at all - it
-seems rather pointless in this case, and it seems to make the use
-of the gpiod* interfaces where we _do_ need to use it (DT) harder
-and more hacky.
+Considering at one point we did create a fwnode based API, we did
+think about it. Plus there was little input from ACPI folks as to
+whether the change was even useful for ACPI case. In any case, we're
+talking about adding 1 line.
 
---=20
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+Rob

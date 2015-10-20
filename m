@@ -1,7 +1,7 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 09 Oct 2015 20:48:35 +0000
+Date: Tue, 20 Oct 2015 21:00:04 +0000
 Subject: Re: [PATCH] fbcon: initialize blink interval before calling fb_set_par
-Message-Id: <1444423715.2845.29.camel@kernel.crashing.org>
+Message-Id: <1445374804.3025.16.camel@kernel.crashing.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <2505354.BllTl4uaOg@new-mexico>
 	 <alpine.DEB.2.11.1510030350110.20774@local> <3998353.WdEhcyQWSK@new-mexico>
@@ -21,23 +21,14 @@ On Fri, 2015-10-09 at 15:08 +0000, Scot Doyle wrote:
 > uninitialized ops->cur_blink_jiffies. Prevent by initializing
 > in fbcon_init before the call to info->fbops->fb_set_par.
 
+Any reason that hasn't hit upstream (and stable) yet ? This is pretty
+major...
+
 > Reported-and-tested-by: Alistair Popple <alistair@popple.id.au>
 > Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
-
-Please add
-
-CC: <stable@vger.kernel.org> [v4.2]
-
-This bug will cause any machine using fbcon to occasionally fail
-to boot due to having a timer callback try to mod_timer with
-"jiffies + 0" without an exit condition.
-
-Cheers,
-Ben.
-
 > ---
 >  drivers/video/console/fbcon.c | 1 +
->  1 file changed, 1 insertion(+) 
+>  1 file changed, 1 insertion(+)
 > 
 > diff --git a/drivers/video/console/fbcon.c
 > b/drivers/video/console/fbcon.c

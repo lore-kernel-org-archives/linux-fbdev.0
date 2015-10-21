@@ -1,28 +1,58 @@
-From: Jean-Francois Moine <moinejf@free.fr>
-Date: Wed, 21 Oct 2015 06:15:19 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 21 Oct 2015 08:55:14 +0000
 Subject: Re: [GIT PULL] On-demand device probing
-Message-Id: <20151021081519.13fa548a@OPI2>
+Message-Id: <CAMuHMdWoSdoT1p0e+Bc9ucrykxO7ESLKYHRzackpVjQAs_XaDg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAAObsKChQN4gg91dCWJS_Co_MrYyBrB1J7gxgGo4hsPXNZRp3g@mail.gmail.com>
-	<Pine.LNX.4.44L0.1510201311260.1855-100000@iolanthe.rowland.org>
-	<20151020193528.GE32054@sirena.org.uk>
-	<23698237.227MziouDO@vostro.rjw.lan>
-In-Reply-To: <23698237.227MziouDO@vostro.rjw.lan>
+References: <561E1378.6000906@collabora.com>
+	<4025469.zmyipZqCsP@vostro.rjw.lan>
+	<CAL_JsqJuu5_Osqi+X6M6UeRDZFQB+_8riYDF1gvsGayk5-4SFw@mail.gmail.com>
+	<4903022.NtioyRkmbB@vostro.rjw.lan>
+In-Reply-To: <4903022.NtioyRkmbB@vostro.rjw.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Mark Brown <broonie@kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Michael Turquette <mturquette@baylibre.com>, dri-devel <dri-devel@lists.freedesktop.org>, Liam Girdwood <lgirdwood@gmail.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Frank Rowand <frowand.list@gmail.com>, linux-clk@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Linux PWM List <linux-pwm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Alexandre
+Cc: Rob Herring <robh@kernel.org>, David Woodhouse <dwmw2@infradead.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmai>
 
-Sorry to enter this thread a bit late.
+Hi Rafael,
 
-About the number of probe deferred messages, I proposed a simple patch to
-reduce them:
+On Wed, Oct 21, 2015 at 1:34 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, October 20, 2015 09:15:01 AM Rob Herring wrote:
+>> On Tue, Oct 20, 2015 at 2:56 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > ACPI uses platform devices too.  In fact, ACPI device objects are enumerated as
+>> > platform devices by default now.
+>>
+>> Okay, I should have grepped for that:
+>> drivers/base/platform.c:                ACPI_COMPANION_SET(&pdev->dev, NULL);
+>> drivers/base/platform.c:        len = acpi_device_modalias(dev, buf,
+>> PAGE_SIZE -1);
+>> drivers/base/platform.c:        rc = acpi_device_uevent_modalias(dev, env);
+>> drivers/base/platform.c:        /* Then try ACPI style match */
+>> drivers/base/platform.c:        if (acpi_driver_match_device(dev, drv))
+>>
+>> These are all cases which have DT version as well, so we're not really
+>> all that different here. There's a few more for DT, but that probably
+>> means you have just not hit the problems we have yet. For example,
+>> what happens if you have an interrupt line in which the controller is
+>> probed after the device connected to the interrupt line? That required
+>> resolving irqs in platform_get_irq rather than using static resources
+>> to support deferred probe.
+>
+> We don't have this particular problem, because the IRQ controllers are
+> enumerated in a special way.
 
-	https://lkml.org/lkml/2013/8/20/218
+What does "in a special way" mean? Can you please be more specific?
 
-I was wondering how many messages this patch could save...
+Can you have interrupt controllers that depend on clocks, pin controllers,
+and PM domains?
 
---=20
-Ken ar c'henta=C3=B1	|	      ** Breizh ha Linux atav! **
-Jef		|		http://moinejf.free.fr/
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

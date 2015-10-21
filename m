@@ -1,58 +1,109 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 21 Oct 2015 08:55:14 +0000
+From: Frank Rowand <frowand.list@gmail.com>
+Date: Wed, 21 Oct 2015 15:59:51 +0000
 Subject: Re: [GIT PULL] On-demand device probing
-Message-Id: <CAMuHMdWoSdoT1p0e+Bc9ucrykxO7ESLKYHRzackpVjQAs_XaDg@mail.gmail.com>
+Message-Id: <5627B677.5090109@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <561E1378.6000906@collabora.com>
-	<4025469.zmyipZqCsP@vostro.rjw.lan>
-	<CAL_JsqJuu5_Osqi+X6M6UeRDZFQB+_8riYDF1gvsGayk5-4SFw@mail.gmail.com>
-	<4903022.NtioyRkmbB@vostro.rjw.lan>
-In-Reply-To: <4903022.NtioyRkmbB@vostro.rjw.lan>
+References: <561E1378.6000906@collabora.com> <20151017065750.GA18607@kroah.com> <20151018192931.GY14956@sirena.org.uk> <20151018193757.GA9147@kroah.com> <20151018195330.GB14956@sirena.org.uk> <CAAObsKB2BUZ-smid45wOdAQw6h2yNqCydk+azAFNk69ewHJtZQ@mail.gmail.com>
+In-Reply-To: <CAAObsKB2BUZ-smid45wOdAQw6h2yNqCydk+azAFNk69ewHJtZQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Rob Herring <robh@kernel.org>, David Woodhouse <dwmw2@infradead.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmai>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, =?UTF-8?B?VGVyamUgQmVyZ3N0csO2bQ==?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>J
 
-Hi Rafael,
+On 10/19/2015 5:34 AM, Tomeu Vizoso wrote:
+> On 18 October 2015 at 21:53, Mark Brown <broonie@kernel.org> wrote:
+>> On Sun, Oct 18, 2015 at 12:37:57PM -0700, Greg Kroah-Hartman wrote:
+>>> On Sun, Oct 18, 2015 at 08:29:31PM +0100, Mark Brown wrote:
+>>>> On Fri, Oct 16, 2015 at 11:57:50PM -0700, Greg Kroah-Hartman wrote:
 
-On Wed, Oct 21, 2015 at 1:34 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, October 20, 2015 09:15:01 AM Rob Herring wrote:
->> On Tue, Oct 20, 2015 at 2:56 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > ACPI uses platform devices too.  In fact, ACPI device objects are enumerated as
->> > platform devices by default now.
->>
->> Okay, I should have grepped for that:
->> drivers/base/platform.c:                ACPI_COMPANION_SET(&pdev->dev, NULL);
->> drivers/base/platform.c:        len = acpi_device_modalias(dev, buf,
->> PAGE_SIZE -1);
->> drivers/base/platform.c:        rc = acpi_device_uevent_modalias(dev, env);
->> drivers/base/platform.c:        /* Then try ACPI style match */
->> drivers/base/platform.c:        if (acpi_driver_match_device(dev, drv))
->>
->> These are all cases which have DT version as well, so we're not really
->> all that different here. There's a few more for DT, but that probably
->> means you have just not hit the problems we have yet. For example,
->> what happens if you have an interrupt line in which the controller is
->> probed after the device connected to the interrupt line? That required
->> resolving irqs in platform_get_irq rather than using static resources
->> to support deferred probe.
->
-> We don't have this particular problem, because the IRQ controllers are
-> enumerated in a special way.
+< snip >
 
-What does "in a special way" mean? Can you please be more specific?
+> hope you don't mind I summarize the points taken instead of replying
+> to the individual emails. I tried to address all the concerns that
+> have been raised again in the cover letter, but I guess I did a bad
+> job at explaining myself, so here's another (more in-depth) go at it.
 
-Can you have interrupt controllers that depend on clocks, pin controllers,
-and PM domains?
+< snip >
 
-Gr{oetje,eeting}s,
+> 3) Regarding total boot time, I don't expect this series to make much
+> of a difference because though we would save a lot of matching and
+> querying for resources, that's little time compared with how long we
+> wait for hardware to react during probing. Async probing is more
+> likely to help with drivers that take a long time to probe.
 
-                        Geert
+And then in your reply to Russell's reply to your email you say:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> To be clear, I was saying that this series should NOT affect total
+> boot times much.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+I'm confused.  If I understood correctly, improving boot time was
+the key justification for accepting this patch set.  For example,
+from "[PATCH v7 0/20] On-demand device probing":
+
+   I have a problem with the panel on my Tegra Chromebook taking longer
+   than expected to be ready during boot (St=C3=A9phane Marchesin reported =
+what
+   is basically the same issue in [0]), and have looked into ordered
+   probing as a better way of solving this than moving nodes around in the
+   DT or playing with initcall levels and linking order.
+
+   ...
+
+   With this series I get the kernel to output to the panel in 0.5s,
+   instead of 2.8s.
+
+Alexander Holler reported improved boot times for his patch set
+in August, which is another approach to ordering probes
+(http://article.gmane.org/gmane.linux.drivers.devicetree/133010).
+His results for 5 boards was four booted faster, one slightly
+slower:
+
+   Some numbers (5 boots on each board, without and with ordering drivers),
+   all times are seconds.
+
+   Kirkwood (dockstar, armv5):
+
+   Boot to "Freeing unused kernel memory" (includes mounting the rootfs),
+   unordered:
+   4.456016 3.937801 4.114788 4.114526 3.949480 (average 4.1145222)
+   ordered:
+   3.173054 3.164045 3.141418 3.480679 3.459298 (3.2836988)
+   Time needed to sort (of_init_build_order()):
+   0.003024
+   Time needed to match drivers to the order (without calling them):
+   0.002884
+
+   Beagleboard (rev C4, armv7):
+
+   unordered:
+   6.706024 6.821746 6.696014 6.673675 6.769866 (6.733465)
+   ordered:
+   5.544860 5.514160 5.505859 5.527374 5.496795 (5.5178096)
+   sorting: 0.021209
+   matching: 0.006165
+
+   Beaglebone Black (rev A5, armv7):
+
+   unordered:
+   3.826531 3.825662 3.826648 3.825434 3.825263 (3.8259076)
+   ordered:
+   2.838554 2.838322 2.839459 2.838467 2.838421 (2.8386446)
+   sorting: 0.004769
+   matching: 0.004860
+
+   imx6q (armv7):
+
+   unordered:
+   3.451998 3.418864 3.446952 3.429974 3.440996 (3.4377568)
+   ordered:
+   3.538312 3.549019 3.538105 3.515916 3.555715 (3.5394134)
+   sorting: 0.004622
+   matching: 0.003868
+
+While not as dramatic as your results, they are somewhat supportive.
+What has changed your assessment that the on-demand device probing
+patches will give a big boot performance increase?  Do you have
+new data or analysis?
+
+-Frank

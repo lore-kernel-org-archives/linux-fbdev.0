@@ -1,46 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Date: Tue, 20 Oct 2015 23:35:38 +0000
+From: Jean-Francois Moine <moinejf@free.fr>
+Date: Wed, 21 Oct 2015 06:15:19 +0000
 Subject: Re: [GIT PULL] On-demand device probing
-Message-Id: <23698237.227MziouDO@vostro.rjw.lan>
+Message-Id: <20151021081519.13fa548a@OPI2>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAAObsKChQN4gg91dCWJS_Co_MrYyBrB1J7gxgGo4hsPXNZRp3g@mail.gmail.com> <Pine.LNX.4.44L0.1510201311260.1855-100000@iolanthe.rowland.org> <20151020193528.GE32054@sirena.org.uk>
-In-Reply-To: <20151020193528.GE32054@sirena.org.uk>
+References: <CAAObsKChQN4gg91dCWJS_Co_MrYyBrB1J7gxgGo4hsPXNZRp3g@mail.gmail.com>
+	<Pine.LNX.4.44L0.1510201311260.1855-100000@iolanthe.rowland.org>
+	<20151020193528.GE32054@sirena.org.uk>
+	<23698237.227MziouDO@vostro.rjw.lan>
+In-Reply-To: <23698237.227MziouDO@vostro.rjw.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Rob Herring <robh@kernel.org>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbarys>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Mark Brown <broonie@kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Michael Turquette <mturquette@baylibre.com>, dri-devel <dri-devel@lists.freedesktop.org>, Liam Girdwood <lgirdwood@gmail.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Frank Rowand <frowand.list@gmail.com>, linux-clk@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Linux PWM List <linux-pwm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Alexandre
 
-On Tuesday, October 20, 2015 08:35:28 PM Mark Brown wrote:
-> 
-> --7fVr/IRGAG9sAW4J
-> Content-Type: text/plain; charset=us-ascii
-> Content-Disposition: inline
-> Content-Transfer-Encoding: quoted-printable
-> 
-> On Tue, Oct 20, 2015 at 01:14:46PM -0400, Alan Stern wrote:
-> > On Tue, 20 Oct 2015, Tomeu Vizoso wrote:
-> 
-> > > This iteration of the series would make this quite easy, as
-> > > dependencies are calculated before probes are attempted:
-> 
-> > > https://lkml.org/lkml/2015/6/17/311
-> 
-> > But what Rafael is proposing is quite general; it would apply to _all_
-> > dependencies as opposed to just those present in DT drivers or those 
-> > affecting platform_devices.
-> 
-> We'll still need most of the DT bits that are there at the minute (the
-> ones strewn around the subsystems) AFAICT since it's at the point where
-> we parse the DT and work out what the dependencies are which we probably
-> want to do prior to getting the drivers up and will be different for
-> ACPI.  I think the level of DT dependency here looks a lot larger than
-> it actually is due to the fact that a lot of what's being modified is DT
-> parsing code.
+Sorry to enter this thread a bit late.
 
-Right, something will have to register the dependency, or a "link" between
-devices, with the core once we find out that the dependency is there.
+About the number of probe deferred messages, I proposed a simple patch to
+reduce them:
 
-Thanks,
-Rafael
+	https://lkml.org/lkml/2013/8/20/218
 
+I was wondering how many messages this patch could save...
+
+--=20
+Ken ar c'henta=C3=B1	|	      ** Breizh ha Linux atav! **
+Jef		|		http://moinejf.free.fr/

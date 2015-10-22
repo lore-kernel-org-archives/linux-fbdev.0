@@ -1,50 +1,53 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Date: Wed, 21 Oct 2015 23:39:42 +0000
+Date: Thu, 22 Oct 2015 00:54:33 +0000
 Subject: Re: [GIT PULL] On-demand device probing
-Message-Id: <13395371.QJ0TvhYnx8@vostro.rjw.lan>
+Message-Id: <1757126.NgBN1ISfc9@vostro.rjw.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <561E1378.6000906@collabora.com> <4903022.NtioyRkmbB@vostro.rjw.lan> <CAMuHMdWoSdoT1p0e+Bc9ucrykxO7ESLKYHRzackpVjQAs_XaDg@mail.gmail.com>
-In-Reply-To: <CAMuHMdWoSdoT1p0e+Bc9ucrykxO7ESLKYHRzackpVjQAs_XaDg@mail.gmail.com>
+References: <20151020153612.GB32054@sirena.org.uk> <Pine.LNX.4.44L0.1510201159400.1855-100000@iolanthe.rowland.org> <CAAObsKChQN4gg91dCWJS_Co_MrYyBrB1J7gxgGo4hsPXNZRp3g@mail.gmail.com>
+In-Reply-To: <CAAObsKChQN4gg91dCWJS_Co_MrYyBrB1J7gxgGo4hsPXNZRp3g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Rob Herring <robh@kernel.org>, David Woodhouse <dwmw2@infradead.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gm>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.>
 
-On Wednesday, October 21, 2015 10:55:14 AM Geert Uytterhoeven wrote:
-> Hi Rafael,
-> 
-> On Wed, Oct 21, 2015 at 1:34 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Tuesday, October 20, 2015 09:15:01 AM Rob Herring wrote:
-> >> On Tue, Oct 20, 2015 at 2:56 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > ACPI uses platform devices too.  In fact, ACPI device objects are enumerated as
-> >> > platform devices by default now.
-> >>
-> >> Okay, I should have grepped for that:
-> >> drivers/base/platform.c:                ACPI_COMPANION_SET(&pdev->dev, NULL);
-> >> drivers/base/platform.c:        len = acpi_device_modalias(dev, buf,
-> >> PAGE_SIZE -1);
-> >> drivers/base/platform.c:        rc = acpi_device_uevent_modalias(dev, env);
-> >> drivers/base/platform.c:        /* Then try ACPI style match */
-> >> drivers/base/platform.c:        if (acpi_driver_match_device(dev, drv))
-> >>
-> >> These are all cases which have DT version as well, so we're not really
-> >> all that different here. There's a few more for DT, but that probably
-> >> means you have just not hit the problems we have yet. For example,
-> >> what happens if you have an interrupt line in which the controller is
-> >> probed after the device connected to the interrupt line? That required
-> >> resolving irqs in platform_get_irq rather than using static resources
-> >> to support deferred probe.
+On Tuesday, October 20, 2015 06:21:55 PM Tomeu Vizoso wrote:
+> On 20 October 2015 at 18:04, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Tue, 20 Oct 2015, Mark Brown wrote:
 > >
-> > We don't have this particular problem, because the IRQ controllers are
-> > enumerated in a special way.
+> >> On Tue, Oct 20, 2015 at 10:40:03AM -0400, Alan Stern wrote:
+> >>
+> >> > Furthermore, that applies only to devices that use synchronous suspend.
+> >> > Async suspend is becoming common, and there the only restrictions are
+> >> > parent-child relations plus whatever explicit requirements that drivers
+> >> > impose by calling device_pm_wait_for_dev().
+> >>
+> >> Hrm, this is the first I'd noticed that feature though I see the initial
+> >> commit dates from January.
+> >
+> > Async suspend and device_pm_wait_for_dev() were added in January 2010,
+> > not 2015!
+> >
+> >>  It looks like most of the users are PCs at
+> >> the minute but we should be using it more widely for embedded things,
+> >> there's definitely some cases I'm aware of where it will allow us to
+> >> remove some open coding.
+> >>
+> >> It does seem like we want to be feeding dependency information we
+> >> discover for probing way into the suspend dependencies...
+> >
+> > Rafael has been thinking about a way to do this systematically.
+> > Nothing concrete has emerged yet.
 > 
-> What does "in a special way" mean? Can you please be more specific?
+> This iteration of the series would make this quite easy, as
+> dependencies are calculated before probes are attempted:
 > 
-> Can you have interrupt controllers that depend on clocks, pin controllers,
-> and PM domains?
+> https://lkml.org/lkml/2015/6/17/311
 
-Currently, there's no native way to represent those dependencies in ACPI.
+Well, if you know how to represent "links" between devices, the mechanism
+introduced here doesn't really add much value, because in that case the
+core knows what the dependencies are in the first place and can only
+defer the probes that have to be deferred.
 
 Thanks,
 Rafael

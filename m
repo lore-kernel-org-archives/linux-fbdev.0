@@ -1,53 +1,43 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Date: Wed, 21 Oct 2015 05:58:59 +0000
-Subject: [PATCH RFC v2 0/2] simplefb: Add regulator handling support
-Message-Id: <1445407141-16459-1-git-send-email-wens@csie.org>
+From: Mark Brown <broonie@kernel.org>
+Date: Thu, 22 Oct 2015 16:53:06 +0000
+Subject: Re: [PATCH RFC v2 0/2] simplefb: Add regulator handling support
+Message-Id: <20151022165306.GB8232@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="/w6WUUxYkubDgwa5"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1445407141-16459-1-git-send-email-wens@csie.org>
+In-Reply-To: <1445407141-16459-1-git-send-email-wens@csie.org>
 To: linux-arm-kernel@lists.infradead.org
 
-Hi everyone,
 
-This is v2 of the simplefb regulator support series. This series adds
-regulator claiming and enabling support for simplefb.
+--/w6WUUxYkubDgwa5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sometimes the simplefb display output path consits of external conversion
-chips and/or LCD drivers and backlights. These devices normally have
-GPIOs to turn them on and/or bring them out of reset, and regulators
-supplying power to them.
+On Wed, Oct 21, 2015 at 01:58:59PM +0800, Chen-Yu Tsai wrote:
+> Hi everyone,
+>=20
+> This is v2 of the simplefb regulator support series. This series adds
+> regulator claiming and enabling support for simplefb.
 
-While the kernel does not touch unclaimed GPIOs, the regulator core
-happily disables unused regulators. Thus we need simplefb to claim
-and enable the regulators used throughout the display pipeline.
+This approach seems reasonable
 
-Instead of the unnamed "vinN-supply" properties, v2 supports any named
-regulator supplies under its device node. It will look through its
-properties, and claim any regulators by matching "*-supply", as Mark
-suggested.
+Acked-by: Mark Brown <broonie@kernel.org>
 
-I've not done a generic helper in the regulator core yet, instead doing
-the regulator property handling in the simplefb code for now.
+--/w6WUUxYkubDgwa5
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Patch 1 adds the regulator properties to the DT binding.
+iQEcBAEBCAAGBQJWKRRxAAoJECTWi3JdVIfQcpMH/itm6cjqTgugRBjNYytJ1IjH
+7BdaX8rCLmk+oJW9iZt/PXmW8W9/OO0hDP/Fd+WOqM1adTFWcWm3IkdAenBM6wPJ
+5ADDqqVTnrAxzRttDglO4FnnClbzMFaCZ2UGU1OmTe/PuxOH3kFhAmx+PeFF+FuH
+3PCeA27ItN+l44eIQhJQXFa6MGMA6JmtiTsyBn+qocDJFQisiJxHvuuYmy6X6E9d
+HZlun+Ir3EpaK/4L96H6bgNgc2/74SRHA3via/PMYY3IwpO+wAmg5J8k1McKuhPx
+7BwfeXpvlvbNsmF3PT7HA0vs2Kp0kDAGbF2xYxEvDkMt5jcDCqlkL9YWOmBx8Qo=
+=0/WQ
+-----END PGP SIGNATURE-----
 
-Patch 2 adds code to the simplefb driver to claim and enable regulators.
-
-
-Regards
-ChenYu
-
-
-Chen-Yu Tsai (2):
-  dt-bindings: simplefb: Support a list of regulator supply properties
-  simplefb: Claim and enable regulators
-
- .../bindings/video/simple-framebuffer.txt          |  13 ++-
- drivers/video/fbdev/simplefb.c                     | 122 ++++++++++++++++++++-
- 2 files changed, 130 insertions(+), 5 deletions(-)
-
--- 
-2.6.1
-
+--/w6WUUxYkubDgwa5--

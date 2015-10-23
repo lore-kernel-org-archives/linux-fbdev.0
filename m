@@ -1,73 +1,199 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 08 Oct 2015 09:26:08 +0000
-Subject: Re: [PATCH] radeonfb: Deinline large functions
-Message-Id: <561636B0.1070509@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="l3H1DXc8rL0CO3ehQPELW2tlmrRaNliaa"
+From: Chen-Yu Tsai <wens@csie.org>
+Date: Fri, 23 Oct 2015 03:50:39 +0000
+Subject: [PATCH v4 2/4] simplefb: Claim and enable regulators
+Message-Id: <1445572241-13259-3-git-send-email-wens@csie.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1443031073-7039-1-git-send-email-dvlasenk@redhat.com>
-In-Reply-To: <1443031073-7039-1-git-send-email-dvlasenk@redhat.com>
-To: Denys Vlasenko <dvlasenk@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Richard Purdie <rpurdie@rpsys.net>, Chris Wilson <chris@chris-wilson.co.uk>, David Airlie <airlied@linux.ie>, Alex Deucher <alexdeucher@gmail.com>, Ben Skeggs <bskeggs@redhat.com>, Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <1445572241-13259-1-git-send-email-wens@csie.org>
+In-Reply-To: <1445572241-13259-1-git-send-email-wens@csie.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---l3H1DXc8rL0CO3ehQPELW2tlmrRaNliaa
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+This claims and enables regulators listed in the simple framebuffer dt
+node. This is needed so that regulators powering the display pipeline
+and external hardware, described in the device node and known by the
+kernel code, will remain properly enabled.
 
+Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+Acked-by: Mark Brown <broonie@kernel.org>
+---
+ drivers/video/fbdev/simplefb.c | 120 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 119 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 52c5c7e63b52..48ccf6db62a2 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -28,7 +28,10 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/clk-provider.h>
++#include <linux/of.h>
+ #include <linux/of_platform.h>
++#include <linux/parser.h>
++#include <linux/regulator/consumer.h>
+ 
+ static struct fb_fix_screeninfo simplefb_fix = {
+ 	.id		= "simple",
+@@ -174,6 +177,10 @@ struct simplefb_par {
+ 	int clk_count;
+ 	struct clk **clks;
+ #endif
++#if defined CONFIG_OF && defined CONFIG_REGULATOR
++	u32 regulator_count;
++	struct regulator **regulators;
++#endif
+ };
+ 
+ #if defined CONFIG_OF && defined CONFIG_COMMON_CLK
+@@ -269,6 +276,110 @@ static int simplefb_clocks_init(struct simplefb_par *par,
+ static void simplefb_clocks_destroy(struct simplefb_par *par) { }
+ #endif
+ 
++#if defined CONFIG_OF && defined CONFIG_REGULATOR
++
++#define SUPPLY_SUFFIX "-supply"
++
++/*
++ * Regulator handling code.
++ *
++ * Here we handle the num-supplies and vin*-supply properties of our
++ * "simple-framebuffer" dt node. This is necessary so that we can make sure
++ * that any regulators needed by the display hardware that the bootloader
++ * set up for us (and for which it provided a simplefb dt node), stay up,
++ * for the life of the simplefb driver.
++ *
++ * When the driver unloads, we cleanly disable, and then release the
++ * regulators.
++ *
++ * We only complain about errors here, no action is taken as the most likely
++ * error can only happen due to a mismatch between the bootloader which set
++ * up simplefb, and the regulator definitions in the device tree. Chances are
++ * that there are no adverse effects, and if there are, a clean teardown of
++ * the fb probe will not help us much either. So just complain and carry on,
++ * and hope that the user actually gets a working fb at the end of things.
++ */
++static int simplefb_regulators_init(struct simplefb_par *par,
++	struct platform_device *pdev)
++{
++	struct device_node *np = pdev->dev.of_node;
++	struct property *prop;
++	struct regulator *regulator;
++	const char *p;
++	int count = 0, i = 0, ret;
++
++	if (dev_get_platdata(&pdev->dev) || !np)
++		return 0;
++
++	/* Count the number of regulator supplies */
++	for_each_property_of_node(np, prop) {
++		p = strstr(prop->name, SUPPLY_SUFFIX);
++		if (p && p != prop->name)
++			count++;
++	}
++
++	if (!count)
++		return 0;
++
++	par->regulators = devm_kcalloc(&pdev->dev, count,
++				       sizeof(struct regulator *), GFP_KERNEL);
++	if (!par->regulators)
++		return -ENOMEM;
++
++	/* Get all the regulators */
++	for_each_property_of_node(np, prop) {
++		char name[32]; /* 32 is max size of property name */
++
++		p = strstr(prop->name, SUPPLY_SUFFIX);
++		if (!p || p = prop->name)
++			continue;
++
++		strlcpy(name, prop->name,
++			strlen(prop->name) - strlen(SUPPLY_SUFFIX) + 1);
++		regulator = devm_regulator_get_optional(&pdev->dev, name);
++		if (IS_ERR(regulator)) {
++			if (PTR_ERR(regulator) = -EPROBE_DEFER)
++				return -EPROBE_DEFER;
++			dev_err(&pdev->dev, "regulator %s not found: %ld\n",
++				name, PTR_ERR(regulator));
++			continue;
++		}
++		par->regulators[i++] = regulator;
++	}
++	par->regulator_count = i;
++
++	/* Enable all the regulators */
++	for (i = 0; i < par->regulator_count; i++) {
++		ret = regulator_enable(par->regulators[i]);
++		if (ret) {
++			dev_err(&pdev->dev,
++				"failed to enable regulator %d: %d\n",
++				i, ret);
++			devm_regulator_put(par->regulators[i]);
++			par->regulators[i] = NULL;
++		}
++	}
++
++	return 0;
++}
++
++static void simplefb_regulators_destroy(struct simplefb_par *par)
++{
++	int i;
++
++	if (!par->regulators)
++		return;
++
++	for (i = 0; i < par->regulator_count; i++)
++		if (par->regulators[i])
++			regulator_disable(par->regulators[i]);
++}
++#else
++static int simplefb_regulators_init(struct simplefb_par *par,
++	struct platform_device *pdev) { return 0; }
++static void simplefb_regulators_destroy(struct simplefb_par *par) { }
++#endif
++
+ static int simplefb_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+@@ -340,6 +451,10 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		goto error_unmap;
+ 
++	ret = simplefb_regulators_init(par, pdev);
++	if (ret < 0)
++		goto error_clocks;
++
+ 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
+ 			     info->fix.smem_start, info->fix.smem_len,
+ 			     info->screen_base);
+@@ -351,13 +466,15 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	ret = register_framebuffer(info);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
+-		goto error_clocks;
++		goto error_regulators;
+ 	}
+ 
+ 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
+ 
+ 	return 0;
+ 
++error_regulators:
++	simplefb_regulators_destroy(par);
+ error_clocks:
+ 	simplefb_clocks_destroy(par);
+ error_unmap:
+@@ -373,6 +490,7 @@ static int simplefb_remove(struct platform_device *pdev)
+ 	struct simplefb_par *par = info->par;
+ 
+ 	unregister_framebuffer(info);
++	simplefb_regulators_destroy(par);
+ 	simplefb_clocks_destroy(par);
+ 	framebuffer_release(info);
+ 
+-- 
+2.6.1
 
-On 23/09/15 20:57, Denys Vlasenko wrote:
-> With this .config: http://busybox.net/~vda/kernel_config,
-> after uninlining these functions have sizes and callsite counts
-> as follows:
->=20
-> __OUTPLLP: 61 bytes, 12 callsites
-> __INPLL:   79 bytes, 150 callsites
-> __OUTPLL:  82 bytes, 138 callsites
-> _OUTREGP: 101 bytes, 8 callsites
-> _radeon_msleep:      66 bytes, 18 callsites
-> _radeon_fifo_wait:   83 bytes, 24 callsites
-> _radeon_engine_idle: 92 bytes, 10 callsites
-> radeon_engine_flush: 105 bytes, 2 callsites
-> radeon_pll_errata_after_index_slow: 31 bytes, 11 callsites
-> radeon_pll_errata_after_data_slow:  91 bytes, 9 callsites
->=20
-> radeon_pll_errata_after_FOO functions are split into two parts:
-> the inlined part which checks corresponding rinfo->errata bit,
-> and out-of-line part which performs workaround magic per se.
->=20
-> Reduction in code size is about 49,500 bytes:
->=20
->     text     data      bss       dec     hex filename
-> 85789648 22294616 20627456 128711720 7abfc28 vmlinux.before
-> 85740176 22294680 20627456 128662312 7ab3b28 vmlinux
-
-Thanks, applying for 4.4.
-
- Tomi
-
-
---l3H1DXc8rL0CO3ehQPELW2tlmrRaNliaa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWFjaxAAoJEPo9qoy8lh71/0UP/iN0zDp5jYzObPyLXkJvTIH+
-lgUntfvvrnZt4s3l0wfoG4HwPU9W/PAVaXlvs2Wm99yAKUJoh4qnkKH6AODdEQOI
-AHXJgKKH4/FUy1LuQaKf0uFhQ1pls4y4baosp6uCF/cSVe+sYqO8AC+bQ2Zl/vUa
-dNR49DdT+HHHjUzc6sJvJ2+Th71pF6unGrqwwoiQrVkSjTCRwUrfrZmq7EQQIjVN
-0So770tBnt+Z3MSlWE6ry60cMa5os7SmUFpxK3tqQTEyCK4akN9eTXo2AXLujDao
-q6xiED6M+etVRGpVZ0ei7385h6imKl/vk34TScBcrLzwR+ZgfsL+AW/td7LHRctf
-Rcdrui508PYQiqtGh7IgdVL8Op8V9P1mPhlpuHkllkkzpTL/Cf52FaB7ir9v4fZo
-fiXsFCm9PlCywXGPM/g9AG0wxRUL7RYJ8cvnQN2qo6usuVIodk4fsPMQEkNuwRzW
-VJ9Whnid5Bo/UsLqA7XM8noqPZHy2PGhYZwqe0EZP7HVWHEOort/3YGgSDLUmOA2
-IKXob6Fzpw23AcE7ruew0hnGQ76pIQX6yH61Qi97HPGRFthWKGq/fNXmyUWtQR6A
-SL9IVBWKu7HGJ3szYqlyjjA8RBuQqKfHlvRIOU+aJ5sPwfVeSqySV8Xs58ijw+du
-HRzFXNLuRPwZMpYP1Uvb
-=xFBA
------END PGP SIGNATURE-----
-
---l3H1DXc8rL0CO3ehQPELW2tlmrRaNliaa--

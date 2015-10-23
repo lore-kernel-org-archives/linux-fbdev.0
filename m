@@ -1,135 +1,75 @@
-From: Philipp Zabel <philipp.zabel@gmail.com>
-Date: Sat, 03 Oct 2015 18:05:25 +0000
-Subject: Re: [PATCH] video: fbdev: add Marvell PXA framebuffer binding
-Message-Id: <1443895525.17648.29.camel@gmail.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Date: Fri, 23 Oct 2015 03:50:37 +0000
+Subject: [PATCH v4 0/4] simplefb: Add regulator handling support
+Message-Id: <1445572241-13259-1-git-send-email-wens@csie.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1443888694-12311-1-git-send-email-robert.jarzmik@free.fr>
-	 <CA+gwMceq-+8UX4J7zgMG_DcGYE1RhmiHhKig8i7MVwga53LQRw@mail.gmail.com>
-	 <87fv1rdfxb.fsf@belgarion.home>
-In-Reply-To: <87fv1rdfxb.fsf@belgarion.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Am Samstag, den 03.10.2015, 19:23 +0200 schrieb Robert Jarzmik:
-[...]
-> a/Documentation/devicetree/bindings/video/marvell,pxafb.txt
-> > > b/Documentation/devicetree/bindings/video/marvell,pxafb.txt
-> > > new file mode 100644
-> > > index 000000000000..489055bf3c57
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/video/marvell,pxafb.txt
-> > > @@ -0,0 +1,75 @@
-> > > +PXA LCDC Framebuffer
-> > > +-----------------------------------------------------
-> > > +
-> > > +Required properties:
-> > > +- compatible :
-> > > +       "marvell,pxa2xx-fb",
-> > 
-> > Should be "marvell,pxa2xx-lcd-controller", "marvell,pxa2xx-lcdc" or
-> > something like this.
-> Whichever you see fit.
+Hi everyone,
 
-Personally, I like the lcdc one better, even though it is an arbitrary
-abbreviation of the text found in the manual.
+This is v4 of the simplefb regulator support series. This series adds
+regulator claiming and enabling support for simplefb.
+
+Changes since v4:
+  - Fixed inverted logic when testing the property name.
+  - Fixed regulator supply name string copy length off by 1.
+  - Added real world user, MSI Primo 81 dts patches.
+
+Changes since v3:
+  - Dropped extra "if" which is always true, leftover from v1.
+  - Updated commit message of patch 1
+
+Sometimes the simplefb display output path consits of external conversion
+chips and/or LCD drivers and backlights. These devices normally have
+GPIOs to turn them on and/or bring them out of reset, and regulators
+supplying power to them.
+
+While the kernel does not touch unclaimed GPIOs, the regulator core
+happily disables unused regulators. Thus we need simplefb to claim
+and enable the regulators used throughout the display pipeline.
+
+The binding supports any named regulator supplies under its device
+node. The driver will look through its properties, and claim any
+regulators by matching "*-supply", as Mark suggested.
+
+I've not done a generic helper in the regulator core yet, instead doing
+the regulator property handling in the simplefb code for now.
 
 
-> > > +- reg : Should contain 1 register ranges(address and length).
-> > > +       Can contain an additional register range(address and
-> > > length)
-> > > +       for fixed framebuffer memory. Useful for dedicated
-> > > memories.
-> > > +- interrupts : framebuffer controller interrupt
-> > > +- display: a phandle pointing to the display node
-> > > +
-> > > +Required nodes:
-> > > +- display: a display node is required to initialize the lcd
-> > > panel
-> > > +          This should be in the board dts.
-> > 
-> > I'd prefer to use an of-graph link to a panel node with a proper
-> > compatible value for the panel, instead of this custom display
-> > property.
-> > That way, if somebody ever decides convert the fbdev driver to a
-> > drm
-> > driver, we don't have to change the device tree and can directly
-> > use
-> > drm_panel.
-> Ok, if you give me an example it would be easier for me.
+Patch 1 adds the regulator properties to the DT binding.
 
-Have a look at the of-graph connection between capture interface and
-sensor (QCI and MT9M111) in your example below. The connection between
-LCD controller and panel should look similar:
+Patch 2 adds code to the simplefb driver to claim and enable regulators.
+Hans, I dropped your Reviewed-by tag from this patch.
 
-	pxabus {
-		lcd-controller@40500000 {
-			compatible = "marvell,pxa2xx-lcdc";
-			/* ... */
+Patch 3 adds labels to the simplefb device nodes in sun6i-a31.dtsi
+so we can reference them in the board dts files, like in the next
+patch.
 
-			port {
-				lcdc_out: endpoint {
-					remote-endpoint = <&panel_in>;
+Patch 4 adds a dts file for MSI's Primo 81 tablet.
 
-					bus-width = <16>;
-				};
-			};
-		};
-	};
 
-	panel {
-		compatible = "toshiba,ltm0305a776";
-		lcd-type = "color-tft";
-		power-supply = <&lcd_supply>;
-		backlight = <&lcd_backlight>;
+Regards
+ChenYu
 
-		port {
-			panel_in: endpoint {
-				remote-endpoint = <&lcdc_out>;
-			};
-		};
-	}
+Chen-Yu Tsai (3):
+  dt-bindings: simplefb: Support regulator supply properties
+  simplefb: Claim and enable regulators
+  ARM: dts: sun6i: Add simplefb node labels to reference at board level
 
-The bus-width could be made a property of the lcdc_out endpoint for
-symmetry with the QCI binding, and as documented in
-Documentation/devicetree/bindings/media/video-interfaces.txt
+Karsten Merker (1):
+  ARM: dts: sun6i: Add dts file for MSI Primo81 tablet
 
-If you later bind a drm_panel driver to the panel node, it can look up
-that information (and the timings) just from the compatible string.
+ .../bindings/video/simple-framebuffer.txt          |  13 +-
+ arch/arm/boot/dts/Makefile                         |   1 +
+ arch/arm/boot/dts/sun6i-a31.dtsi                   |   4 +-
+ arch/arm/boot/dts/sun6i-a31s-primo81.dts           | 255 +++++++++++++++++++++
+ drivers/video/fbdev/simplefb.c                     | 120 +++++++++-
+ 5 files changed, 386 insertions(+), 7 deletions(-)
+ create mode 100644 arch/arm/boot/dts/sun6i-a31s-primo81.dts
 
-[...]
-> > > +Optional properties:
-> > > +- lcd-supply: Regulator for LCD supply voltage.
-> > 
-> > How does this differ from the regulator below?
-> Ah yes, good point. In the end I couldn't decide which one was the
-> correct one
-> ... My feeling is that it's the display's one, as hardware wise the
-> power is
-> necessary for the display, not the framebuffer.
+-- 
+2.6.1
 
-Then I'd suggest a power-supply property in the panel node, as is
-already documented for simple panels:
-Documentation/devicetree/bindings/panel/simple-panel.txt
-
-> > > +PXA LCDC Display
-> > > +-----------------------------------------------------
-> > > +Required properties (as per of_videomode_helper):
-> > > + - lcd-type: either "mono-stn", "mono-dstn", "color-stn", "color
-> > > -dstn",
-> > > +                   "color-tft", "smart-panel"
-> > > + - bits-per-pixel: LCD data bus width
-> > 
-> > This is already found in the lcd controller node above.
-> I think the bus-width should be here. It represents the number of
-> data lines
-> between the SoC and the panel.
-
-With the of-graph, it can be argued that this is a property of both
-endpoints of the bus (imagine an 18-bit panel driven by a 16-bit LCD
-controller with some funny wiring).
-
-regards
-Philipp

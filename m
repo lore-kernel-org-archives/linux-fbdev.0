@@ -1,83 +1,56 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Mon, 12 Oct 2015 20:43:13 +0000
-Subject: [PATCH 0/3] delete unneeded of_node_put
-Message-Id: <1444682596-3065-1-git-send-email-Julia.Lawall@lip6.fr>
+From: Chen-Yu Tsai <wens@csie.org>
+Date: Fri, 23 Oct 2015 01:31:56 +0000
+Subject: [PATCH v3 0/2] simplefb: Add regulator handling support
+Message-Id: <1445563918-1050-1-git-send-email-wens@csie.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Device node iterators perform an of_node_put on each iteration, so putting
-an of_node_put before going around to the next iteration results in a
-double put.
+Hi everyone,
 
-The complete semantic patch that fixes this problem is as follows
-(http://coccinelle.lip6.fr):
+This is v3 of the simplefb regulator support series. This series adds
+regulator claiming and enabling support for simplefb.
 
-// <smpl>
-@r exists@
-expression e1,e2;
-local idexpression n;
-iterator name for_each_node_by_name, for_each_node_by_type,
-for_each_compatible_node, for_each_matching_node,
-for_each_matching_node_and_match, for_each_child_of_node,
-for_each_available_child_of_node, for_each_node_with_property;
-iterator i;
-position p1,p2;
-statement S;
-@@
+Changes since v3:
+  - Dropped extra "if" which is always true, leftover from v1.
+  - Updated commit message of patch 1
 
-(
-(
-for_each_node_by_name(n,e1) S
-|
-for_each_node_by_type(n,e1) S
-|
-for_each_compatible_node(n,e1,e2) S
-|
-for_each_matching_node(n,e1) S
-|
-for_each_matching_node_and_match(n,e1,e2) S
-|
-for_each_child_of_node(e1,n) S
-|
-for_each_available_child_of_node(e1,n) S
-|
-for_each_node_with_property(n,e1) S
-)
-&
-i@p1(...) {
-   ... when != of_node_get(n)
-       when any
-   of_node_put@p2(n);
-   ... when any
-}
-)
+Sometimes the simplefb display output path consits of external conversion
+chips and/or LCD drivers and backlights. These devices normally have
+GPIOs to turn them on and/or bring them out of reset, and regulators
+supplying power to them.
 
-@s exists@
-local idexpression r.n;
-statement S;
-position r.p1,r.p2;
-iterator i;
-@@
+While the kernel does not touch unclaimed GPIOs, the regulator core
+happily disables unused regulators. Thus we need simplefb to claim
+and enable the regulators used throughout the display pipeline.
 
- of_node_put@p2(n);
- ... when any
- i@p1(..., n, ...)
- S
+The binding supports any named regulator supplies under its device
+node. The driver will look through its properties, and claim any
+regulators by matching "*-supply", as Mark suggested.
 
-@depends on s@
-local idexpression n;
-position r.p2;
-@@
+I've not done a generic helper in the regulator core yet, instead doing
+the regulator property handling in the simplefb code for now.
 
-- of_node_put@p2(n);
-// </smpl>
 
----
+Patch 1 adds the regulator properties to the DT binding.
 
- arch/arm/mach-exynos/pm_domains.c                 |    8 +++-----
- drivers/soc/qcom/smd.c                            |    4 +---
- drivers/video/fbdev/omap2/dss/omapdss-boot-init.c |    4 +---
- 3 files changed, 5 insertions(+), 11 deletions(-)
+Patch 2 adds code to the simplefb driver to claim and enable regulators.
+
+
+Regards
+ChenYu
+
+
+Chen-Yu Tsai (2):
+  dt-bindings: simplefb: Support regulator supply properties
+  simplefb: Claim and enable regulators
+
+ .../bindings/video/simple-framebuffer.txt          |  13 ++-
+ drivers/video/fbdev/simplefb.c                     | 120 ++++++++++++++++++++-
+ 2 files changed, 128 insertions(+), 5 deletions(-)
+
+-- 
+2.6.1
+

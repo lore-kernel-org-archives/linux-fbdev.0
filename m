@@ -1,49 +1,200 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Wed, 09 Sep 2015 21:08:11 +0000
-Subject: [PATCH 02/13] Always expose __SYSCALL(... fork ...)
-Message-Id: <1441832902-28993-3-git-send-email-palmer@dabbelt.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Date: Fri, 23 Oct 2015 01:31:58 +0000
+Subject: [PATCH v3 2/2] simplefb: Claim and enable regulators
+Message-Id: <1445563918-1050-3-git-send-email-wens@csie.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2644177.lVCYzIBfPW@wuerfel>
- <1441832902-28993-1-git-send-email-palmer@dabbelt.com>
-In-Reply-To: <1441832902-28993-1-git-send-email-palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
+References: <1445563918-1050-1-git-send-email-wens@csie.org>
+In-Reply-To: <1445563918-1050-1-git-send-email-wens@csie.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: arnd-r2nGTMty4D4@public.gmane.org
-Cc: 3chas3-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org, mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, jikos-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arch-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-atm-general-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Palmer Dabbelt <palmer-96lFi9zoCfxBDgjK7y7TUQ@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-I think this change actually doesn't do anything: __NR_fork was still
-being defined either way, and on my machine fork() in <unistd.h> comes
-from libc.
+This claims and enables regulators listed in the simple framebuffer dt
+node. This is needed so that regulators powering the display pipeline
+and external hardware, described in the device node and known by the
+kernel code, will remain properly enabled.
 
-That said, I don't think there's any way to determine this
-automatically, so this at least quiets the checker.
-
-Signed-off-by: Palmer Dabbelt <palmer@dabbelt.com>
-Reviewed-by: Andrew Waterman <waterman@eecs.berkeley.edu>
-Reviewed-by: Albert Ou <aou@eecs.berkeley.edu>
+Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Mark Brown <broonie@kernel.org>
 ---
- include/uapi/asm-generic/unistd.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/simplefb.c | 120 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 119 insertions(+), 1 deletion(-)
 
-diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
-index e016bd9b1a04..e027ef7aa01f 100644
---- a/include/uapi/asm-generic/unistd.h
-+++ b/include/uapi/asm-generic/unistd.h
-@@ -865,11 +865,11 @@ __SYSCALL(__NR_uselib, sys_uselib)
- __SYSCALL(__NR__sysctl, sys_sysctl)
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 52c5c7e63b52..9de34ee15ac0 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -28,7 +28,10 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/clk-provider.h>
++#include <linux/of.h>
+ #include <linux/of_platform.h>
++#include <linux/parser.h>
++#include <linux/regulator/consumer.h>
  
- #define __NR_fork 1079
--#ifdef CONFIG_MMU
-+#if !defined(__KERNEL__) || defined(CONFIG_MMU)
- __SYSCALL(__NR_fork, sys_fork)
- #else
- __SYSCALL(__NR_fork, sys_ni_syscall)
--#endif /* CONFIG_MMU */
-+#endif /* !__KERNEL__ || CONFIG_MMU */
+ static struct fb_fix_screeninfo simplefb_fix = {
+ 	.id		= "simple",
+@@ -174,6 +177,10 @@ struct simplefb_par {
+ 	int clk_count;
+ 	struct clk **clks;
+ #endif
++#if defined CONFIG_OF && defined CONFIG_REGULATOR
++	u32 regulator_count;
++	struct regulator **regulators;
++#endif
+ };
  
- #undef __NR_syscalls
- #define __NR_syscalls (__NR_fork+1)
+ #if defined CONFIG_OF && defined CONFIG_COMMON_CLK
+@@ -269,6 +276,110 @@ static int simplefb_clocks_init(struct simplefb_par *par,
+ static void simplefb_clocks_destroy(struct simplefb_par *par) { }
+ #endif
+ 
++#if defined CONFIG_OF && defined CONFIG_REGULATOR
++
++#define SUPPLY_SUFFIX "-supply"
++
++/*
++ * Regulator handling code.
++ *
++ * Here we handle the num-supplies and vin*-supply properties of our
++ * "simple-framebuffer" dt node. This is necessary so that we can make sure
++ * that any regulators needed by the display hardware that the bootloader
++ * set up for us (and for which it provided a simplefb dt node), stay up,
++ * for the life of the simplefb driver.
++ *
++ * When the driver unloads, we cleanly disable, and then release the
++ * regulators.
++ *
++ * We only complain about errors here, no action is taken as the most likely
++ * error can only happen due to a mismatch between the bootloader which set
++ * up simplefb, and the regulator definitions in the device tree. Chances are
++ * that there are no adverse effects, and if there are, a clean teardown of
++ * the fb probe will not help us much either. So just complain and carry on,
++ * and hope that the user actually gets a working fb at the end of things.
++ */
++static int simplefb_regulators_init(struct simplefb_par *par,
++	struct platform_device *pdev)
++{
++	struct device_node *np = pdev->dev.of_node;
++	struct property *prop;
++	struct regulator *regulator;
++	const char *p;
++	int count = 0, i = 0, ret;
++
++	if (dev_get_platdata(&pdev->dev) || !np)
++		return 0;
++
++	/* Count the number of regulator supplies */
++	for_each_property_of_node(np, prop) {
++		p = strstr(prop->name, SUPPLY_SUFFIX);
++		if (p && p != prop->name)
++			count++;
++	}
++
++	if (!count)
++		return 0;
++
++	par->regulators = devm_kcalloc(&pdev->dev, count,
++				       sizeof(struct regulator *), GFP_KERNEL);
++	if (!par->regulators)
++		return -ENOMEM;
++
++	/* Get all the regulators */
++	for_each_property_of_node(np, prop) {
++		char name[32]; /* 32 is max size of property name */
++
++		p = strstr(prop->name, SUPPLY_SUFFIX);
++		if (p && p != prop->name)
++			continue;
++
++		strlcpy(name, prop->name,
++			strlen(prop->name) - sizeof(SUPPLY_SUFFIX) + 1);
++		regulator = devm_regulator_get_optional(&pdev->dev, name);
++		if (IS_ERR(regulator)) {
++			if (PTR_ERR(regulator) = -EPROBE_DEFER)
++				return -EPROBE_DEFER;
++			dev_err(&pdev->dev, "regulator %s not found: %ld\n",
++				name, PTR_ERR(regulator));
++			continue;
++		}
++		par->regulators[i++] = regulator;
++	}
++	par->regulator_count = i;
++
++	/* Enable all the regulators */
++	for (i = 0; i < par->regulator_count; i++) {
++		ret = regulator_enable(par->regulators[i]);
++		if (ret) {
++			dev_err(&pdev->dev,
++				"failed to enable regulator %d: %d\n",
++				i, ret);
++			devm_regulator_put(par->regulators[i]);
++			par->regulators[i] = NULL;
++		}
++	}
++
++	return 0;
++}
++
++static void simplefb_regulators_destroy(struct simplefb_par *par)
++{
++	int i;
++
++	if (!par->regulators)
++		return;
++
++	for (i = 0; i < par->regulator_count; i++)
++		if (par->regulators[i])
++			regulator_disable(par->regulators[i]);
++}
++#else
++static int simplefb_regulators_init(struct simplefb_par *par,
++	struct platform_device *pdev) { return 0; }
++static void simplefb_regulators_destroy(struct simplefb_par *par) { }
++#endif
++
+ static int simplefb_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+@@ -340,6 +451,10 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		goto error_unmap;
+ 
++	ret = simplefb_regulators_init(par, pdev);
++	if (ret < 0)
++		goto error_clocks;
++
+ 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
+ 			     info->fix.smem_start, info->fix.smem_len,
+ 			     info->screen_base);
+@@ -351,13 +466,15 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	ret = register_framebuffer(info);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
+-		goto error_clocks;
++		goto error_regulators;
+ 	}
+ 
+ 	dev_info(&pdev->dev, "fb%d: simplefb registered!\n", info->node);
+ 
+ 	return 0;
+ 
++error_regulators:
++	simplefb_regulators_destroy(par);
+ error_clocks:
+ 	simplefb_clocks_destroy(par);
+ error_unmap:
+@@ -373,6 +490,7 @@ static int simplefb_remove(struct platform_device *pdev)
+ 	struct simplefb_par *par = info->par;
+ 
+ 	unregister_framebuffer(info);
++	simplefb_regulators_destroy(par);
+ 	simplefb_clocks_destroy(par);
+ 	framebuffer_release(info);
+ 
 -- 
-2.4.6
+2.6.1
 

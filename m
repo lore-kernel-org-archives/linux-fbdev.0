@@ -1,112 +1,75 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 15 Oct 2015 13:10:27 +0000
-Subject: Re: [PATCH] OMAPDSS: DISPC: Remove boolean comparisons
-Message-Id: <3907390.ScJmzH11HD@avalon>
+From: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Date: Mon, 26 Oct 2015 17:45:08 +0000
+Subject: [RESEND PATCH v2] backlight: pm8941-wled: Add default-brightness property
+Message-Id: <1445881508-18025-1-git-send-email-bjorn.andersson@sonymobile.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444912178-15989-1-git-send-email-luisbg@osg.samsung.com>
-In-Reply-To: <1444912178-15989-1-git-send-email-luisbg@osg.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Luis de Bethencourt <luisbg@osg.samsung.com>
-Cc: linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rob Clark <robdclark@gmail.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org
 
-Hi Luis,
+Default the brightness to 2048 and add possibility to override this in
+device tree.
 
-Thank you for the patch.
+Suggested-by: Rob Clark <robdclark@gmail.com>
+Signed-off-by: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+---
 
-On Thursday 15 October 2015 13:29:38 Luis de Bethencourt wrote:
-> Boolean tests do not need explicit comparison to true or false.
-> 
-> Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
+Resend of v2, with updated backlight dt binding location.
 
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+ Documentation/devicetree/bindings/leds/backlight/pm8941-wled.txt | 2 ++
+ drivers/video/backlight/pm8941-wled.c                            | 8 ++++++++
+ 2 files changed, 10 insertions(+)
 
-> ---
->  drivers/video/fbdev/omap2/dss/dispc-compat.c | 6 +++---
->  drivers/video/fbdev/omap2/dss/dispc.c        | 6 +++---
->  drivers/video/fbdev/omap2/dss/manager.c      | 2 +-
->  3 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/omap2/dss/dispc-compat.c
-> b/drivers/video/fbdev/omap2/dss/dispc-compat.c index 633c461..0918b3b
-> 100644
-> --- a/drivers/video/fbdev/omap2/dss/dispc-compat.c
-> +++ b/drivers/video/fbdev/omap2/dss/dispc-compat.c
-> @@ -476,7 +476,7 @@ static void dispc_mgr_disable_lcd_out(enum omap_channel
-> channel) int r;
->  	u32 irq;
-> 
-> -	if (dispc_mgr_is_enabled(channel) = false)
-> +	if (!dispc_mgr_is_enabled(channel))
->  		return;
-> 
->  	/*
-> @@ -524,7 +524,7 @@ static void dispc_mgr_enable_digit_out(void)
->  	int r;
->  	u32 irq_mask;
-> 
-> -	if (dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT) = true)
-> +	if (dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT))
->  		return;
-> 
->  	/*
-> @@ -562,7 +562,7 @@ static void dispc_mgr_disable_digit_out(void)
->  	u32 irq_mask;
->  	int num_irqs;
-> 
-> -	if (dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT) = false)
-> +	if (!dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT))
->  		return;
-> 
->  	/*
-> diff --git a/drivers/video/fbdev/omap2/dss/dispc.c
-> b/drivers/video/fbdev/omap2/dss/dispc.c index be716c9..43b0367 100644
-> --- a/drivers/video/fbdev/omap2/dss/dispc.c
-> +++ b/drivers/video/fbdev/omap2/dss/dispc.c
-> @@ -571,7 +571,7 @@ EXPORT_SYMBOL(dispc_mgr_go_busy);
-> 
->  void dispc_mgr_go(enum omap_channel channel)
->  {
-> -	WARN_ON(dispc_mgr_is_enabled(channel) = false);
-> +	WARN_ON(!dispc_mgr_is_enabled(channel));
->  	WARN_ON(dispc_mgr_go_busy(channel));
-> 
->  	DSSDBG("GO %s\n", mgr_desc[channel].name);
-> @@ -3220,7 +3220,7 @@ void dispc_mgr_set_timings(enum omap_channel channel,
-> 
->  		DSSDBG("hsync %luHz, vsync %luHz\n", ht, vt);
->  	} else {
-> -		if (t.interlace = true)
-> +		if (t.interlace)
->  			t.y_res /= 2;
->  	}
-> 
-> @@ -3237,7 +3237,7 @@ static void dispc_mgr_set_lcd_divisor(enum
-> omap_channel channel, u16 lck_div, dispc_write_reg(DISPC_DIVISORo(channel),
->  			FLD_VAL(lck_div, 23, 16) | FLD_VAL(pck_div, 7, 0));
-> 
-> -	if (dss_has_feature(FEAT_CORE_CLK_DIV) = false &&
-> +	if (!dss_has_feature(FEAT_CORE_CLK_DIV) &&
->  			channel = OMAP_DSS_CHANNEL_LCD)
->  		dispc.core_clk_rate = dispc_fclk_rate() / lck_div;
->  }
-> diff --git a/drivers/video/fbdev/omap2/dss/manager.c
-> b/drivers/video/fbdev/omap2/dss/manager.c index 1aac9b4..08a67f4 100644
-> --- a/drivers/video/fbdev/omap2/dss/manager.c
-> +++ b/drivers/video/fbdev/omap2/dss/manager.c
-> @@ -210,7 +210,7 @@ static int dss_mgr_check_lcd_config(struct
-> omap_overlay_manager *mgr, return -EINVAL;
-> 
->  	/* fifohandcheck should be used only with stallmode */
-> -	if (stallmode = false && fifohandcheck = true)
-> +	if (!stallmode && fifohandcheck)
->  		return -EINVAL;
-> 
->  	/*
-
+diff --git a/Documentation/devicetree/bindings/leds/backlight/pm8941-wled.txt b/Documentation/devicetree/bindings/leds/backlight/pm8941-wled.txt
+index 424f8444a6cd..e5b294dafc58 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/pm8941-wled.txt
++++ b/Documentation/devicetree/bindings/leds/backlight/pm8941-wled.txt
+@@ -5,6 +5,8 @@ Required properties:
+ - reg: slave address
+ 
+ Optional properties:
++- default-brightness: brightness value on boot, value from: 0-4095
++	default: 2048
+ - label: The name of the backlight device
+ - qcom,cs-out: bool; enable current sink output
+ - qcom,cabc: bool; enable content adaptive backlight control
+diff --git a/drivers/video/backlight/pm8941-wled.c b/drivers/video/backlight/pm8941-wled.c
+index c704c3236034..e1298147bcbb 100644
+--- a/drivers/video/backlight/pm8941-wled.c
++++ b/drivers/video/backlight/pm8941-wled.c
+@@ -17,6 +17,9 @@
+ #include <linux/of_device.h>
+ #include <linux/regmap.h>
+ 
++/* From DT binding */
++#define PM8941_WLED_DEFAULT_BRIGHTNESS		2048
++
+ #define PM8941_WLED_REG_VAL_BASE		0x40
+ #define  PM8941_WLED_REG_VAL_MAX		0xFFF
+ 
+@@ -373,6 +376,7 @@ static int pm8941_wled_probe(struct platform_device *pdev)
+ 	struct backlight_device *bl;
+ 	struct pm8941_wled *wled;
+ 	struct regmap *regmap;
++	u32 val;
+ 	int rc;
+ 
+ 	regmap = dev_get_regmap(pdev->dev.parent, NULL);
+@@ -395,8 +399,12 @@ static int pm8941_wled_probe(struct platform_device *pdev)
+ 	if (rc)
+ 		return rc;
+ 
++	val = PM8941_WLED_DEFAULT_BRIGHTNESS;
++	of_property_read_u32(pdev->dev.of_node, "default-brightness", &val);
++
+ 	memset(&props, 0, sizeof(struct backlight_properties));
+ 	props.type = BACKLIGHT_RAW;
++	props.brightness = val;
+ 	props.max_brightness = PM8941_WLED_REG_VAL_MAX;
+ 	bl = devm_backlight_device_register(&pdev->dev, wled->name,
+ 					    &pdev->dev, wled,
 -- 
-Regards,
-
-Laurent Pinchart
+2.4.2
 

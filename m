@@ -1,20 +1,24 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Date: Mon, 26 Oct 2015 12:55:29 +0000
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 26 Oct 2015 23:37:28 +0000
 Subject: Re: [GIT PULL] On-demand device probing
-Message-Id: <CAAObsKAFJ+OKiLR2aMOjf15bd7k89EKsKLpd3ubsPMKeGLkRZw@mail.gmail.com>
+Message-Id: <CAJZ5v0imLPyq8nxZrqvjXopzD=aBUCp+weBPuJ7Emk9=EQBEnw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20151018192931.GY14956@sirena.org.uk> <562A5602.7000208@sonymobile.com>
- <CAL_JsqLNSM=+j2r9HPcbSzsZrgnGEY3=kv21EXxisKwP5+57ag@mail.gmail.com>
- <24100858.2KIS8Y2npV@vostro.rjw.lan> <20151024220648.GR29919@sirena.org.uk>
- <CAJZ5v0hPVu7AL8zBdU4Kb7+MVfYv0mTa43RhnCyyPR+RKDbhLA@mail.gmail.com> <20151026105138.20687.13546@quantum>
+References: <20151018192931.GY14956@sirena.org.uk>
+	<562A5602.7000208@sonymobile.com>
+	<CAL_JsqLNSM=+j2r9HPcbSzsZrgnGEY3=kv21EXxisKwP5+57ag@mail.gmail.com>
+	<24100858.2KIS8Y2npV@vostro.rjw.lan>
+	<20151024220648.GR29919@sirena.org.uk>
+	<CAJZ5v0hPVu7AL8zBdU4Kb7+MVfYv0mTa43RhnCyyPR+RKDbhLA@mail.gmail.com>
+	<20151026105138.20687.13546@quantum>
 In-Reply-To: <20151026105138.20687.13546@quantum>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Michael Turquette <mturquette@baylibre.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tim Bird <tim.bird@sonymobile.com>, "frowand.list@gmail.com" <frowand.list@gmail.com>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshko>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tim Bird <tim.bird@sonymobile.com>, "frowand.list@gmail.com" <frowand.list@gmail.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kern>
 
-On 26 October 2015 at 11:51, Michael Turquette <mturquette@baylibre.com> wrote:
+On Mon, Oct 26, 2015 at 11:51 AM, Michael Turquette
+<mturquette@baylibre.com> wrote:
 > Quoting Rafael J. Wysocki (2015-10-25 06:54:39)
 >> On Sun, Oct 25, 2015 at 12:06 AM, Mark Brown <broonie@kernel.org> wrote:
 >> > On Sat, Oct 24, 2015 at 04:17:12PM +0200, Rafael J. Wysocki wrote:
@@ -42,29 +46,19 @@ On 26 October 2015 at 11:51, Michael Turquette <mturquette@baylibre.com> wrote:
 > link-time then we could optimize link order as well. There are probably
 > lots of optimizations if we only made the effort to understand these
 > dependencies earlier.
->
+
+Do you mean the kernel link time or something else?
+
+At least in some cases the dependency information won't be known at
+that time, so we need a way to record a dependency at the time it
+becomes visible to us anyway.
+
 > Constructing the device/resource dependency graph before the device ever
 > boots sounds interesting to me.
 
-Alexander Holler has been looking at that for some time already.
+That's only practical if you build the kernel for a specific device.
+If you want a generic binary that can work with multiple different
+devices, that graph may very well be different for each of them.
 
-Regards,
-
-Tomeu
-
-> Regards,
-> Mike
->
->>
->> If the dependency could only be discovered at the probe time, the
->> order of things might be changed in response to letting the driver
->> core know about it rather than "just in case", which should be more
->> efficient.
->>
->> Thanks,
->> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Thanks,
+Rafael

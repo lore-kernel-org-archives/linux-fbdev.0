@@ -1,62 +1,94 @@
-From: Alistair Popple <alistair@popple.id.au>
-Date: Fri, 09 Oct 2015 05:31:52 +0000
-Subject: Re: [BUG] RCU stall in cursor_timer_handler
-Message-Id: <3998353.WdEhcyQWSK@new-mexico>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Thu, 29 Oct 2015 15:51:46 +0000
+Subject: [PATCH] pwm-backlight: Avoid backlight flicker when probed from DT
+Message-Id: <1446133906-3076-1-git-send-email-p.zabel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2505354.BllTl4uaOg@new-mexico> <alpine.DEB.2.11.1510030350110.20774@local>
-In-Reply-To: <alpine.DEB.2.11.1510030350110.20774@local>
+References: <1434126377-22545-1-git-send-email-p.zabel@pengutronix.de>
+In-Reply-To: <1434126377-22545-1-git-send-email-p.zabel@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Scot Doyle <lkml14@scotdoyle.com>
-Cc: linux-fbdev@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, plagnioj@jcrosoft.com, linux-kernel@vger.kernel.org, airlied@redhat.com, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Scot,
+If the driver is probed from the device tree, and there is a phandle
+property set on it, and the enable GPIO is already configured as output,
+and the backlight is currently disabled, keep it disabled.
+If all these conditions are met, assume there will be some other driver
+that can enable the backlight at the appropriate time.
 
-On Sat, 3 Oct 2015 05:12:15 Scot Doyle wrote:
-> On Sat, 3 Oct 2015, Alistair Popple wrote:
-> > Hi,
-> > 
-> > We have been intermittently seeing the below RCU stall at boot on a 
-> > PPC64LE 4.2.1 kernel which has been preventing the system from booting.
-> > Further investigation indicates that ops->cur_blink_jiffies is 
-> > potentially being used uninitialised in cursor_timer_handler():
-> > 
-> > static void cursor_timer_handler(unsigned long dev_addr)
-> > {
-> > 	struct fb_info *info = (struct fb_info *) dev_addr;
-> > 	struct fbcon_ops *ops = info->fbcon_par;
-> > 
-> > 	queue_work(system_power_efficient_wq, &info->queue);
-> > 	mod_timer(&ops->cursor_timer, jiffies + ops->cur_blink_jiffies);
-> > }
-> ...
-> 
-> 
-> Hi Alistair, thanks so much for the detailed report. Does this patch 
-> correct the stalls?
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Christian Gmeiner <christian.gmeiner@gmail.com>
+---
+Changes since v2:
+ - Leave GPIO configuration as is (GPIOD_ASIS) when requesting,
+   so we can actually check the initial state.
+---
+ drivers/video/backlight/pwm_bl.c | 25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
 
-Sorry for the delay getting back to you. I have tested this patch and have not 
-observed the stall again after 71 boots of the system (usually the issue would 
-occur every couple of boots), so it seems to have solved the problem as far as 
-I can tell.
-
-Thanks!
-
-Regards,
-
-Alistair
-
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-> index 1aaf893..92f3949 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -1093,6 +1093,7 @@ static void fbcon_init(struct vc_data *vc, int init)
->  		con_copy_unimap(vc, svc);
->  
->  	ops = info->fbcon_par;
-> +	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
->  	p->con_rotate = initial_rotation;
->  	set_blitting_type(vc, info);
->  
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index ae3c6b6..8e9c261 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -199,6 +199,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	struct backlight_properties props;
+ 	struct backlight_device *bl;
+ 	struct pwm_bl_data *pb;
++	int initial_blank = FB_BLANK_UNBLANK;
++	bool phandle;
+ 	int ret;
+ 
+ 	if (!data) {
+@@ -242,7 +244,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->enabled = false;
+ 
+ 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
+-						  GPIOD_OUT_HIGH);
++						  GPIOD_ASIS);
+ 	if (IS_ERR(pb->enable_gpio)) {
+ 		ret = PTR_ERR(pb->enable_gpio);
+ 		goto err_alloc;
+@@ -264,12 +266,32 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+ 	}
+ 
++	phandle = of_find_property(pdev->dev.of_node, "phandle", NULL) != NULL;
++
++	if (pb->enable_gpio) {
++		/*
++		 * If the driver is probed from the device tree and there is a
++		 * phandle link pointing to the backlight node, it is safe to
++		 * assume that another driver will enable the backlight at the
++		 * appropriate time. Therefore, if it is disabled, keep it so.
++		 */
++		if (phandle &&
++		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
++		    gpiod_get_value(pb->enable_gpio) = 0)
++			initial_blank = FB_BLANK_POWERDOWN;
++		else
++			gpiod_direction_output(pb->enable_gpio, 1);
++	}
++
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
+ 		ret = PTR_ERR(pb->power_supply);
+ 		goto err_alloc;
+ 	}
+ 
++	if (phandle && !regulator_is_enabled(pb->power_supply))
++		initial_blank = FB_BLANK_POWERDOWN;
++
+ 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+ 	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) != -EPROBE_DEFER
+ 	    && !pdev->dev.of_node) {
+@@ -320,6 +342,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	bl->props.brightness = data->dft_brightness;
++	bl->props.power = initial_blank;
+ 	backlight_update_status(bl);
+ 
+ 	platform_set_drvdata(pdev, bl);
+-- 
+2.6.1
 

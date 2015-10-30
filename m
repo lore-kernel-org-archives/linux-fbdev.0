@@ -1,81 +1,54 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 05 Oct 2015 12:46:30 +0000
-Subject: Re: [PATCH] backlight: pwm: reject legacy pwm request for device defined in dt
-Message-Id: <20151005124630.GC17172@x1>
+From: Shailendra Verma <shailendra.v@samung.com>
+Date: Fri, 30 Oct 2015 11:49:53 +0000
+Subject: [PATCH] video:fbdev:core:Allocate the memory for video mode after the validation of edid.
+Message-Id: <1446205073-23830-1-git-send-email-shailendra.v@samung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1434292172-22129-1-git-send-email-vladimir_zapolskiy@mentor.com>
- <20150921232225.GF11284@x1>
-In-Reply-To: <20150921232225.GF11284@x1>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Cc: Jingoo Han <jg1.han@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, vidushi.koul@samsung.com
 
-On Tue, 22 Sep 2015, Lee Jones wrote:
+From: Shailendra Verma <shailendra.v@samsung.com>
 
-> On Sun, 14 Jun 2015, Vladimir Zapolskiy wrote:
->=20
-> > Platform PWM backlight data provided by board's device tree should be
-> > complete enough to successfully request a pwm device using pwm_get()
-> > API. This change fixes a bug, when an arbitrary (first found) PWM is
-> > connected to a "pwm-backlight" compatible device, when explicit PWM
-> > device reference is not given.
-> >=20
-> > Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
-> > already describes "pwms" as a required property, instead of blind
-> > selection of a potentially wrong PWM reject legacy PWM device
-> > registration request, leave legacy API only for non-dt cases.
-> >=20
-> > Based on initial implementation done by Dmitry Eremin-Solenikov.
-> >=20
-> > Reported-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> > Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-> > Acked-by: Thierry Reding <thierry.reding@gmail.com>
-> > ---
-> >  drivers/video/backlight/pwm_bl.c | 13 +++++++------
-> >  1 file changed, 7 insertions(+), 6 deletions(-)
->=20
-> Applied, thanks.
+In this function "fb_create_modedb" the memory for video mode is getting
+allocated before the edid validation.If the validation of edid fails
+then we are freeing the allocated memory for the video mode and returning.
+So moving the memory allocation part after the edid validation.There is no
+need to allocate the memory before edid validation check and freeing if
+validation gets failed.
 
-Slight change of plan, as the patch does not apply.
+Signed-off-by: Shailendra Verma <shailendra.v@samsung.com>
+---
+ drivers/video/fbdev/core/fbmon.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Please rebase it on top of the backlight tree and resubmit with my
-Ack.
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index 47c3191..476a5fd 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -620,16 +620,16 @@ static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize,
+ 	int num = 0, i, first = 1;
+ 	int ver, rev;
+ 
+-	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
+-	if (mode = NULL)
+-		return NULL;
+-
+ 	if (edid = NULL || !edid_checksum(edid) ||
+ 	    !edid_check_header(edid)) {
+-		kfree(mode);
+ 		return NULL;
+ 	}
+ 
++	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
++	if (mode = NULL)
++		return NULL;
++
++
+ 	ver = edid[EDID_STRUCT_VERSION];
+ 	rev = edid[EDID_STRUCT_REVISION];
+ 
+-- 
+1.9.1
 
-> > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight=
-/pwm_bl.c
-> > index 57cb9ec..9991cdb 100644
-> > --- a/drivers/video/backlight/pwm_bl.c
-> > +++ b/drivers/video/backlight/pwm_bl.c
-> > @@ -271,15 +271,16 @@ static int pwm_backlight_probe(struct platform_de=
-vice *pdev)
-> >  	}
-> > =20
-> >  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
-> > -	if (IS_ERR(pb->pwm)) {
-> > +	if (IS_ERR(pb->pwm) && !pdev->dev.of_node) {
-> >  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
-> >  		pb->legacy =3D true;
-> >  		pb->pwm =3D pwm_request(data->pwm_id, "pwm-backlight");
-> > -		if (IS_ERR(pb->pwm)) {
-> > -			dev_err(&pdev->dev, "unable to request legacy PWM\n");
-> > -			ret =3D PTR_ERR(pb->pwm);
-> > -			goto err_alloc;
-> > -		}
-> > +	}
-> > +
-> > +	if (IS_ERR(pb->pwm)) {
-> > +		dev_err(&pdev->dev, "unable to request PWM\n");
-> > +		ret =3D PTR_ERR(pb->pwm);
-> > +		goto err_alloc;
-> >  	}
-> > =20
-> >  	dev_dbg(&pdev->dev, "got pwm for backlight\n");
->=20
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

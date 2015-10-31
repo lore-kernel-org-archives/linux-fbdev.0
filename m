@@ -1,31 +1,50 @@
-From: Philipp Zabel <philipp.zabel@gmail.com>
-Date: Sat, 03 Oct 2015 18:05:21 +0000
-Subject: Re: [PATCH 2/2] video: fbdev: pxafb: initial devicetree conversion
-Message-Id: <1443895521.17648.28.camel@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Sat, 31 Oct 2015 20:13:44 +0000
+Subject: Mobility Radeon HD 4530/4570/545v: flicker in 1920x1080
+Message-Id: <20151031201344.GA30459@amd>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1443888714-12362-1-git-send-email-robert.jarzmik@free.fr>
-	 <1443888714-12362-3-git-send-email-robert.jarzmik@free.fr>
-	 <CA+gwMceWchEhPQ0Prs5Ne+D+Fq1uybPkB48tRNWzj=i14TW8Yg@mail.gmail.com>
-	 <87k2r3dgmj.fsf@belgarion.home>
-In-Reply-To: <87k2r3dgmj.fsf@belgarion.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: alexander.deucher@amd.com, christian.koenig@amd.com, dri-devel@lists.freedesktop.org, kernel list <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org
 
-Am Samstag, den 03.10.2015, 19:08 +0200 schrieb Robert Jarzmik:
-> > Thanks a lot for working on this! Out of interest, do you plan to
-> > convert MIOA701 to DT?
-> Actually, I already had. If you take all the pending patches
-> scattered across
-> all the subsystems (around 40 by my last count), then mioa701 is
-> converted, see
-> in [1]. If we take -next tree, I think the count will be closer to 20
-> or so.
+Hi!
 
-This is amazing. I'm looking forward to follow your good example with
-magician and hx4700 once that hits mainline.
+4.3-rc7 kernel, graphics works reasonably well in 1600x1200 mode. But
+my monitor is native 1920x1080, so that mode looks pretty ugly on
+screen. If I go to 1920x1080, I see colored horizontal lines (often
+black) as soon as there's graphics activity.
 
-regards
-Philipp
+pavel@half:~$ xrandr
+Screen 0: minimum 320 x 200, current 1920 x 1080, maximum 8192 x 8192
+VGA-0 connected 1920x1080+0+0 (normal left inverted right x axis y
+axis) 478mm x 268mm
+   1920x1080     60.00*+
+      1600x1200     60.00
+         1680x1050     59.95
+	    1280x1024     75.02    60.02
+	       1440x900      59.89
+	          1024x768      75.08    60.00
+		     800x600       75.00    60.32
+		        640x480       75.00    60.00
+			   720x400       70.08
+ pavel@half:~$ xrandr --output VGA-0 --mode 1600x1200
+ pavel@half:~$ xrandr --output VGA-0 --mode 1920x1080
+ pavel@half:~$ xrandr --output VGA-0 --mode 1600x1200
+			   
+
+This is Acer notebook,
+
+01:00.0 VGA compatible controller: Advanced Micro Devices,
+Inc. [AMD/ATI] RV710/M92 [Mobility Radeon HD 4530/4570/545v]
+
+Ouch, and power consumption seems to be 8W too high. (25W instead of
+17W), I believe it started when I added radeon firmware, but will
+check. It does not go lower even when I switch to text console.
+
+Any ideas?
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

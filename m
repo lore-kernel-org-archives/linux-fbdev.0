@@ -1,28 +1,20 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Tue, 17 Nov 2015 20:46:08 +0000
-Subject: Re: [PATCH] [media] move media platform data to linux/platform_data/media
-Message-Id: <87wptg8icv.fsf@belgarion.home>
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Date: Thu, 05 Nov 2015 01:42:30 +0000
+Subject: RE: [PATCH] video: fbdev: fsl: Split DIU initialization entry
+Message-Id: <SN1PR0301MB161629B946C5B45F1E915E3F9D290@SN1PR0301MB1616.namprd03.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4d99e49726942dc4d6a6ee1debf6665b2b47908b.1447751746.git.mchehab@osg.samsung.com>
-	<20151117103708.GL31303@sirena.org.uk>
-In-Reply-To: <20151117103708.GL31303@sirena.org.uk> (Mark Brown's message of
-	"Tue, 17 Nov 2015 10:37:08 +0000")
+References: <1444709355-8905-1-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1444709355-8905-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
-Cc: Linux Media Mailing List <linux-media@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, "Acked-by: Arnd Bergmann" <arnd@arndb.de>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Ribeiro <drwyrm@gmail.com>, Stefan Schmidt <stefan@openezx.org>, Harald Welte <laforge@openezx.org>, Tomas Cech <sleep_walker@suse.com>, Sergey Lapin <slapin@ossfans.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Philipp Zabel <p.zabel@pengutronix.de>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosof>
+To: linux-fbdev@vger.kernel.org
 
-Mark Brown <broonie@kernel.org> writes:
-
-> On Tue, Nov 17, 2015 at 07:15:59AM -0200, Mauro Carvalho Chehab wrote:
->> Now that media has its own subdirectory inside platform_data,
->> let's move the headers that are already there to such subdir.
->
-> Acked-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
-
-Cheers.
-
--- 
-Robert
+SGkgVGltdXIsDQoNCj4gT24gTW9uLCBPY3QgMTIsIDIwMTUgYXQgMTE6MDkgUE0sIERvbmdzaGVu
+ZyBXYW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0KPiB3cm90ZToNCj4gPiArICAg
+ICAgIHJldCA9IGZzbF9kaXVfcGVycGFyZSgpOw0KPiA+ICsgICAgICAgaWYgKHJldCkNCj4gPiAr
+ICAgICAgICAgICAgICAgZ290byBvdXRfZGl1X3BlcnBhcmU7DQo+IA0KPiBJIHRoaW5rIHlvdSBt
+ZWFuICJwcmVwYXJlIg0KPiANCj4gVGhhbmtzIGZvciBwb3N0aW5nIHRoaXMgcGF0Y2guICBJIHdp
+bGwgdHJ5IHRvIHJldmlldyBpdCBtb3JlIHRob3JvdWdobHkgbGF0ZXIuDQoNCkRvIHlvdSBoYXZl
+IGFueSBvdGhlciBjb21tZW50cyBhYm91dCB0aGlzIHBhdGNoPyBUaGFua3MgZm9yIHlvdXIgcmV2
+aWV3Lg0KDQpSZWdhcmRzLA0KLURvbmdzaGVuZw0K

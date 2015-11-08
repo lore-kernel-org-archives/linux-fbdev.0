@@ -1,23 +1,401 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Sun, 08 Nov 2015 22:16:24 +0000
+From: Julia Lawall <julia.lawall@lip6.fr>
+Date: Sun, 08 Nov 2015 22:24:49 +0000
 Subject: Re: [PATCH] video: constify geode ops structures
-Message-Id: <20151108221624.GP18797@mwanda>
+Message-Id: <alpine.DEB.2.10.1511082220500.2583@hadrien>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1447018493-20631-1-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1447018493-20631-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <1447018493-20631-1-git-send-email-Julia.Lawall@lip6.fr> <20151108221624.GP18797@mwanda>
+In-Reply-To: <20151108221624.GP18797@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, kernel-janitors@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Julia Lawall <Julia.Lawall@lip6.fr>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, kernel-janitors@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Cool.  So, in grsec they use a GCC plugin to make these const
-automatically since they only contain function pointers.  There about
-100 struct types marked as __no_const.  Kees would like to adopt the
-grsec pluggin approach I expect.  Do you have an idea how many structs
-only contain function pointers or how many consts we would have to add
-to get the same effect without the plugin?
+On Mon, 9 Nov 2015, Dan Carpenter wrote:
 
-regards,
-dan carpenter
+> Cool.  So, in grsec they use a GCC plugin to make these const
+> automatically since they only contain function pointers.  There about
+> 100 struct types marked as __no_const.  Kees would like to adopt the
+> grsec pluggin approach I expect.  Do you have an idea how many structs
+> only contain function pointers or how many consts we would have to add
+> to get the same effect without the plugin?
 
+My list has 373 type names.  In the list there are counts for good
+(already const) and bad (not const).  The sum of the bad values is 2467.
+The list is below.
+
+julia
+
+cpuidle_ops: 	good: 0, bad: 1
+xen_pci_frontend_ops: 	good: 0, bad: 1
+pch_dev_ops: 	good: 0, bad: 1
+s3c_ide_platdata: 	good: 0, bad: 1
+bfin_cpu_pm_fns: 	good: 0, bad: 1
+meta_type_ops: 	good: 0, bad: 1
+bnx2x_func_sp_drv_ops: 	good: 0, bad: 1
+hfi1_filter_array: 	good: 0, bad: 1
+ttusbdecfe_config: 	good: 0, bad: 1
+au1k_irda_platform_data: 	good: 0, bad: 1
+dao_rsc_ops: 	good: 0, bad: 1
+mic_hw_intr_ops: 	good: 0, bad: 1
+mic_smpt_ops: 	good: 0, bad: 1
+scpi_ops: 	good: 0, bad: 1
+fmc_operations: 	good: 0, bad: 1
+geode_dc_ops: 	good: 0, bad: 1
+superhyway_ops: 	good: 0, bad: 1
+vsock_transport: 	good: 0, bad: 1
+ti_clk_ll_ops: 	good: 0, bad: 1
+enclosure_component_callbacks: 	good: 0, bad: 1
+dai_rsc_ops: 	good: 0, bad: 1
+cfs_psdev_ops: 	good: 0, bad: 1
+x86_msi_ops: 	good: 0, bad: 1
+intel_sst_ops: 	good: 0, bad: 1
+nf_ct_event_notifier: 	good: 0, bad: 1
+geode_vid_ops: 	good: 0, bad: 1
+menelaus_platform_data: 	good: 0, bad: 1
+mipi_dsim_master_ops: 	good: 0, bad: 1
+in_cache_ops: 	good: 0, bad: 1
+ste_modem_dev_cb: 	good: 0, bad: 1
+kernfs_syscall_ops: 	good: 0, bad: 1
+amixer_rsc_ops: 	good: 0, bad: 1
+nes_cm_ops: 	good: 0, bad: 1
+radio_tea5777_ops: 	good: 0, bad: 1
+x86_cpuinit_ops: 	good: 0, bad: 1
+hpc_ops: 	good: 0, bad: 1
+vexpress_config_bridge_ops: 	good: 0, bad: 1
+x86_platform_ops: 	good: 0, bad: 1
+powercap_zone_ops: 	good: 0, bad: 1
+as102_priv_ops_t: 	good: 0, bad: 1
+lpc32xx_slc_platform_data: 	good: 0, bad: 1
+src_rsc_ops: 	good: 0, bad: 1
+pxafb_layer_ops: 	good: 0, bad: 1
+ds278x_battery_ops: 	good: 0, bad: 1
+hnae_buf_ops: 	good: 0, bad: 1
+mcp_ops: 	good: 0, bad: 1
+nfnl_ct_hook: 	good: 0, bad: 1
+xpc_interface: 	good: 0, bad: 1
+vpbe_device_ops: 	good: 0, bad: 1
+stmp3xxx_wdt_pdata: 	good: 0, bad: 1
+cosm_hw_ops: 	good: 0, bad: 1
+fm10k_iov_ops: 	good: 0, bad: 1
+s3fwrn5_phy_ops: 	good: 0, bad: 1
+tc6387xb_platform_data: 	good: 0, bad: 1
+visorchipset_busdev_responders: 	good: 0, bad: 1
+csio_hw_chip_ops: 	good: 0, bad: 1
+visorchipset_busdev_notifiers: 	good: 0, bad: 1
+concap_device_ops: 	good: 0, bad: 1
+stv6110x_devctl: 	good: 0, bad: 1
+powercap_zone_constraint_ops: 	good: 0, bad: 1
+eg_cache_ops: 	good: 0, bad: 1
+trace_lock_handler: 	good: 0, bad: 1
+gnttab_ops: 	good: 0, bad: 1
+ldlm_valblock_ops: 	good: 0, bad: 1
+rtl_btc_ops: 	good: 0, bad: 1
+max197_platform_data: 	good: 0, bad: 1
+qla_tgt_func_tmpl: 	good: 0, bad: 1
+arm_pmu_platdata: 	good: 0, bad: 1
+amd_sched_backend_ops: 	good: 0, bad: 1
+da903x_chip_ops: 	good: 0, bad: 1
+hnae_ae_ops: 	good: 0, bad: 1
+ds2404_chip_ops: 	good: 0, bad: 1
+cardbus_type: 	good: 0, bad: 1
+sh_mobile_lcdc_sys_bus_ops: 	good: 0, bad: 1
+ieee802154_llsec_ops: 	good: 0, bad: 1
+kvm_mips_callbacks: 	good: 0, bad: 1
+nf_exp_event_notifier: 	good: 0, bad: 1
+usb_mon_operations: 	good: 0, bad: 1
+nlmsvc_binding: 	good: 0, bad: 1
+cleancache_ops: 	good: 0, bad: 1
+bfa_fcs_mod_s: 	good: 0, bad: 1
+dac_ops: 	good: 0, bad: 1
+sst_block_ops: 	good: 0, bad: 1
+lane2_ops: 	good: 0, bad: 1
+llog_operations: 	good: 0, bad: 1
+concap_proto_ops: 	good: 0, bad: 1
+x86_io_apic_ops: 	good: 0, bad: 1
+od_ops: 	good: 0, bad: 1
+omap_mcbsp_ops: 	good: 0, bad: 1
+cpuidle_exynos_data: 	good: 0, bad: 1
+pci_platform_pm_ops: 	good: 0, bad: 1
+lpc32xx_mlc_platform_data: 	good: 0, bad: 1
+dw_spi_dma_ops: 	good: 0, bad: 1
+mmp_overlay_ops: 	good: 0, bad: 1
+iommu_table_group_ops: 	good: 0, bad: 1
+md_cluster_operations: 	good: 0, bad: 1
+cpu_pm_ops: 	good: 0, bad: 1
+mxl111sf_demod_config: 	good: 0, bad: 1
+srcimp_rsc_ops: 	good: 0, bad: 1
+dca_ops: 	good: 0, bad: 1
+mcfqspi_cs_control: 	good: 0, bad: 1
+skl_dsp_fw_ops: 	good: 0, bad: 1
+iser_reg_ops: 	good: 0, bad: 2
+saa7146_use_ops: 	good: 0, bad: 2
+qlcnic_dcb_ops: 	good: 0, bad: 2
+fm10k_mac_ops: 	good: 0, bad: 2
+v3020_chip_ops: 	good: 0, bad: 2
+intel_mid_ops: 	good: 0, bad: 2
+wlcore_ops: 	good: 0, bad: 2
+au1200fb_platdata: 	good: 0, bad: 2
+mxr_layer_ops: 	good: 0, bad: 2
+ocfs2_stack_operations: 	good: 0, bad: 2
+kvm_pmu_ops: 	good: 0, bad: 2
+hdmi_phy_ops: 	good: 0, bad: 2
+rtl_intf_ops: 	good: 0, bad: 2
+mxc_extra_irq: 	good: 0, bad: 2
+hwicap_driver_config: 	good: 0, bad: 2
+dev_power_governor: 	good: 0, bad: 2
+ptlrpc_ctx_ops: 	good: 0, bad: 2
+olpc_ec_driver: 	good: 0, bad: 2
+xpc_arch_operations: 	good: 0, bad: 2
+cal_chipset_ops: 	good: 0, bad: 2
+mal_commac_ops: 	good: 0, bad: 2
+mmc_pwrseq_ops: 	good: 0, bad: 2
+mem_access: 	good: 0, bad: 2
+fd_dma_ops: 	good: 0, bad: 2
+mvumi_instance_template: 	good: 0, bad: 2
+imx_pwm_data: 	good: 0, bad: 2
+nfc_llc_ops: 	good: 0, bad: 2
+amba_pl010_data: 	good: 0, bad: 2
+emitter: 	good: 0, bad: 2
+fc_rport_operations: 	good: 0, bad: 2
+adfs_dir_ops: 	good: 0, bad: 2
+mpt_pci_driver: 	good: 0, bad: 2
+gpio_methods: 	good: 0, bad: 2
+s5p_mfc_hw_cmds: 	good: 0, bad: 2
+bfin_sport_transfer_ops: 	good: 0, bad: 2
+ct_timer_ops: 	good: 0, bad: 2
+cmac_ops: 	good: 0, bad: 2
+vio_driver_ops: 	good: 0, bad: 2
+dummy_timer_ops: 	good: 0, bad: 2
+mdesc_mem_ops: 	good: 0, bad: 2
+uprobe_xol_ops: 	good: 0, bad: 2
+dcon_platform_data: 	good: 0, bad: 2
+vmci_transport_notify_ops: 	good: 0, bad: 2
+w100_tg_info: 	good: 0, bad: 2
+knav_range_ops: 	good: 0, bad: 2
+drm_dp_mst_topology_cbs: 	good: 0, bad: 2
+snd_rawmidi_global_ops: 	good: 0, bad: 2
+s5p_mfc_codec_ops: 	good: 0, bad: 2
+hwbus_ops: 	good: 0, bad: 2
+ufs_qcom_phy_specific_ops: 	good: 0, bad: 2
+nfc_digital_ops: 	good: 0, bad: 2
+alpha_agp_ops: 	good: 0, bad: 2
+ath_ps_ops: 	good: 0, bad: 2
+hmcdrv_ftp_ops: 	good: 0, bad: 2
+spu_context_ops: 	good: 0, bad: 2
+snd_i2c_ops: 	good: 0, bad: 2
+md_ops: 	good: 0, bad: 2
+sunhv_ops: 	good: 0, bad: 2
+uartlite_reg_ops: 	good: 0, bad: 2
+ptlrpc_sec_sops: 	good: 0, bad: 2
+pci_bios_ops: 	good: 0, bad: 2
+microcode_ops: 	good: 0, bad: 2
+s5p_mfc_hw_ops: 	good: 0, bad: 2
+of_pdt_ops: 	good: 0, bad: 2
+wl1271_if_operations: 	good: 0, bad: 2
+otg_fsm_ops: 	good: 0, bad: 2
+nfsd4_callback_ops: 	good: 0, bad: 2
+abx500_ops: 	good: 0, bad: 2
+m48t86_ops: 	good: 0, bad: 2
+ptlrpc_sec_cops: 	good: 0, bad: 2
+mbus_hw_ops: 	good: 0, bad: 2
+fcoe_sysfs_function_template: 	good: 0, bad: 2
+smp_ops: 	good: 1, bad: 1
+pv_time_ops: 	good: 1, bad: 1
+wl1251_if_operations: 	good: 1, bad: 1
+pv_init_ops: 	good: 1, bad: 1
+xfs_nameops: 	good: 1, bad: 1
+ixgbe_mbx_operations: 	good: 1, bad: 1
+dm_space_map: 	good: 0, bad: 3
+at91_pinctrl_mux_ops: 	good: 0, bad: 3
+ipmi_user_hndl: 	good: 0, bad: 3
+brcmf_bus_ops: 	good: 0, bad: 3
+ixgbe_eeprom_operations: 	good: 0, bad: 3
+fsi_stream_handler: 	good: 0, bad: 3
+xgene_mac_ops: 	good: 0, bad: 3
+sbc_ops: 	good: 0, bad: 3
+snd_vx_ops: 	good: 0, bad: 3
+go7007_hpi_ops: 	good: 0, bad: 3
+ixgbe_phy_operations: 	good: 0, bad: 3
+sh_irda_xir_func: 	good: 0, bad: 3
+matrox_switch: 	good: 0, bad: 3
+qlcnic_hardware_ops: 	good: 0, bad: 3
+btrfs_free_space_op: 	good: 0, bad: 3
+snd_compr_ops: 	good: 0, bad: 3
+xgene_port_ops: 	good: 0, bad: 3
+nfsd4_client_tracking_ops: 	good: 0, bad: 3
+samsung_gpio_pm: 	good: 0, bad: 3
+drbg_state_ops: 	good: 0, bad: 3
+nilfs_sc_operations: 	good: 0, bad: 3
+snd_i2c_bit_ops: 	good: 0, bad: 3
+snd_midi_op: 	good: 0, bad: 3
+fatent_operations: 	good: 0, bad: 3
+mwifiex_if_ops: 	good: 0, bad: 3
+pci_port_ops: 	good: 0, bad: 3
+portals_handle_ops: 	good: 0, bad: 3
+logfs_block_ops: 	good: 0, bad: 3
+nfc_hci_ops: 	good: 0, bad: 3
+ace_reg_ops: 	good: 0, bad: 3
+cx2341x_handler_ops: 	good: 0, bad: 3
+conf_printer: 	good: 0, bad: 3
+ui_progress_ops: 	good: 0, bad: 3
+trace_sched_handler: 	good: 0, bad: 3
+perf_error_ops: 	good: 0, bad: 3
+perf_guest_info_callbacks: 	good: 0, bad: 3
+aes_ops: 	good: 0, bad: 3
+xfrm_replay: 	good: 0, bad: 3
+pccard_resource_ops: 	good: 0, bad: 3
+qtree_fmt_operations: 	good: 0, bad: 3
+ui_helpline: 	good: 0, bad: 3
+machine_ops: 	good: 1, bad: 2
+bpf_verifier_ops: 	good: 2, bad: 1
+sn_pcibus_provider: 	good: 0, bad: 4
+sas_function_template: 	good: 0, bad: 4
+cfs_hash_hlist_ops: 	good: 0, bad: 4
+io_pgtable_init_fns: 	good: 0, bad: 4
+rproc_ops: 	good: 0, bad: 4
+fb_tile_ops: 	good: 0, bad: 4
+sst_ops: 	good: 0, bad: 4
+usb_phy_io_ops: 	good: 0, bad: 4
+raw3270_fn: 	good: 0, bad: 4
+radeon_audio_basic_funcs: 	good: 0, bad: 4
+qlcnic_nic_template: 	good: 0, bad: 4
+board_ops: 	good: 0, bad: 4
+irda_platform_data: 	good: 0, bad: 4
+drm_encoder_slave_funcs: 	good: 0, bad: 4
+rchan_callbacks: 	good: 0, bad: 4
+hppa_dma_ops: 	good: 0, bad: 4
+nfcmrvl_if_ops: 	good: 0, bad: 4
+iommu_gather_ops: 	good: 0, bad: 4
+cm_ll_data: 	good: 0, bad: 4
+plat_sci_port_ops: 	good: 0, bad: 4
+sas_domain_function_template: 	good: 0, bad: 4
+ib_dma_mapping_ops: 	good: 0, bad: 4
+psc_ops: 	good: 0, bad: 4
+z8530_irqhandler: 	good: 0, bad: 4
+prm_ll_data: 	good: 0, bad: 4
+ixgbe_mac_operations: 	good: 1, bad: 3
+v4l2_subdev_sensor_ops: 	good: 1, bad: 3
+of_bus: 	good: 1, bad: 3
+e1000_mac_operations: 	good: 3, bad: 1
+mipi_dsi_host_ops: 	good: 3, bad: 1
+rpc_xprt_ops: 	good: 0, bad: 5
+ep93xx_spi_chip_ops: 	good: 0, bad: 5
+item_operations: 	good: 0, bad: 5
+page_ext_operations: 	good: 0, bad: 5
+bcache_ops: 	good: 0, bad: 5
+ocfs2_extent_tree_operations: 	good: 0, bad: 5
+ion_heap_ops: 	good: 0, bad: 5
+svc_xprt_ops: 	good: 0, bad: 5
+clkdm_ops: 	good: 0, bad: 5
+nfc_ops: 	good: 0, bad: 5
+pwrdm_ops: 	good: 0, bad: 5
+megasas_instance_template: 	good: 0, bad: 5
+esp_driver_ops: 	good: 4, bad: 1
+exynos_drm_crtc_ops: 	good: 4, bad: 1
+lu_device_operations: 	good: 4, bad: 1
+e1000_nvm_operations: 	good: 4, bad: 1
+cl_device_operations: 	good: 4, bad: 1
+ins_ops: 	good: 0, bad: 6
+exynos_drm_ipp_ops: 	good: 0, bad: 6
+snd_tea575x_ops: 	good: 0, bad: 6
+intel_dvo_dev_ops: 	good: 0, bad: 6
+cfs_hash_lock_ops: 	good: 0, bad: 6
+hid_ll_driver: 	good: 0, bad: 6
+ftdi_sio_quirk: 	good: 0, bad: 6
+e1000_phy_operations: 	good: 5, bad: 1
+mbox_chan_ops: 	good: 5, bad: 1
+kset_uevent_ops: 	good: 5, bad: 1
+crypt_iv_operations: 	good: 0, bad: 7
+sa1100_port_fns: 	good: 0, bad: 7
+radeon_audio_funcs: 	good: 0, bad: 7
+rsc_ops: 	good: 0, bad: 7
+dma_ops: 	good: 0, bad: 7
+nfc_phy_ops: 	good: 0, bad: 7
+fsnotify_ops: 	good: 6, bad: 1
+cl_lock_operations: 	good: 6, bad: 1
+pcie_host_ops: 	good: 0, bad: 8
+action_ops: 	good: 0, bad: 8
+cpu_user_fns: 	good: 0, bad: 8
+snd_info_entry_ops: 	good: 0, bad: 8
+cfs_hash_ops: 	good: 0, bad: 8
+sparc32_cachetlb_ops: 	good: 5, bad: 3
+virtio_config_ops: 	good: 6, bad: 2
+xfs_item_ops: 	good: 7, bad: 1
+msi_domain_ops: 	good: 0, bad: 9
+plat_lcd_data: 	good: 0, bad: 9
+rtl_hal_ops: 	good: 0, bad: 9
+ttm_bo_driver: 	good: 0, bad: 10
+usbhs_pkt_handle: 	good: 0, bad: 10
+usb_protocol_ops: 	good: 0, bad: 10
+clkops: 	good: 6, bad: 4
+drm_bridge_funcs: 	good: 7, bad: 3
+fence_ops: 	good: 9, bad: 1
+omap_dss_driver: 	good: 0, bad: 11
+dma_buf_ops: 	good: 5, bad: 6
+thermal_zone_of_device_ops: 	good: 7, bad: 4
+mmu_notifier_ops: 	good: 8, bad: 3
+kvm_io_device_ops: 	good: 10, bad: 1
+ttm_backend_func: 	good: 0, bad: 12
+access_method: 	good: 0, bad: 12
+event_trigger_ops: 	good: 0, bad: 12
+stacktrace_ops: 	good: 10, bad: 2
+isp_operations: 	good: 0, bad: 13
+hv_ops: 	good: 11, bad: 2
+ftrace_probe_ops: 	good: 0, bad: 14
+v4l2_m2m_ops: 	good: 2, bad: 12
+thermal_cooling_device_ops: 	good: 7, bad: 7
+plat_smp_ops: 	good: 0, bad: 15
+clk_hw_omap_ops: 	good: 14, bad: 1
+videobuf_queue_ops: 	good: 1, bad: 15
+drm_plane_helper_funcs: 	good: 15, bad: 1
+pccard_operations: 	good: 0, bad: 17
+mii_phy_ops: 	good: 0, bad: 18
+radeon_asic_ring: 	good: 0, bad: 19
+drm_fb_helper_funcs: 	good: 18, bad: 1
+reset_control_ops: 	good: 0, bad: 20
+ide_dma_ops: 	good: 18, bad: 2
+thermal_zone_device_ops: 	good: 0, bad: 21
+drm_framebuffer_funcs: 	good: 15, bad: 6
+drm_plane_funcs: 	good: 18, bad: 4
+lcd_ops: 	good: 0, bad: 24
+intel_uncore_ops: 	good: 0, bad: 24
+export_operations: 	good: 24, bad: 2
+drm_mode_config_funcs: 	good: 25, bad: 2
+header_ops: 	good: 26, bad: 3
+iio_buffer_setup_ops: 	good: 29, bad: 1
+usb_gadget_ops: 	good: 31, bad: 2
+mmc_host_ops: 	good: 21, bad: 13
+drm_crtc_funcs: 	good: 28, bad: 6
+rfkill_ops: 	good: 29, bad: 5
+drm_crtc_helper_funcs: 	good: 30, bad: 4
+usb_ep_ops: 	good: 18, bad: 18
+tty_port_operations: 	good: 33, bad: 4
+configfs_group_operations: 	good: 0, bad: 38
+v4l2_subdev_internal_ops: 	good: 37, bad: 1
+configfs_item_operations: 	good: 0, bad: 44
+platform_suspend_ops: 	good: 41, bad: 4
+snd_ac97_bus_ops: 	good: 0, bad: 49
+pinctrl_ops: 	good: 40, bad: 9
+dentry_operations: 	good: 52, bad: 1
+pci_error_handlers: 	good: 46, bad: 9
+snd_rawmidi_ops: 	good: 0, bad: 68
+drm_connector_helper_funcs: 	good: 50, bad: 18
+drm_encoder_funcs: 	good: 61, bad: 14
+drm_connector_funcs: 	good: 56, bad: 20
+drm_encoder_helper_funcs: 	good: 65, bad: 12
+vb2_ops: 	good: 20, bad: 59
+snd_soc_ops: 	good: 2, bad: 85
+snd_device_ops: 	good: 0, bad: 93
+v4l2_subdev_video_ops: 	good: 81, bad: 32
+pci_ops: 	good: 0, bad: 121
+rtc_class_ops: 	good: 117, bad: 31
+v4l2_ctrl_ops: 	good: 198, bad: 6
+inode_operations: 	good: 209, bad: 5
+snd_soc_dai_ops: 	good: 226, bad: 18
+ethtool_ops: 	good: 239, bad: 11
+regulator_ops: 	good: 15, bad: 237
+snd_pcm_ops: 	good: 7, bad: 278
+clk_ops: 	good: 257, bad: 71
+seq_operations: 	good: 328, bad: 1
+dev_pm_ops: 	good: 337, bad: 19

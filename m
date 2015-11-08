@@ -1,37 +1,36 @@
-From: Ran Shalit <ranshalit@gmail.com>
-Date: Mon, 23 Nov 2015 19:41:12 +0000
-Subject: How to disable timing configuration ?
-Message-Id: <CAJ2oMhLUVf_c4zPX44UrXcmZ2=iDrL-146Ub4OXSXYALVj65qQ@mail.gmail.com>
+From: Othmar Pasteka <pasteka@kabsi.at>
+Date: Sun, 08 Nov 2015 00:43:30 +0000
+Subject: [PATCH 1/2] staging: sm750fb: move opening brace to previous line
+Message-Id: <e426148688caace0a5083b379c1eaab85e424c74.1446942955.git.pasteka@kabsi.at>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, sudip@vectorindia.org, greg@kroah.com
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Othmar Pasteka <pasteka@kabsi.at>
 
-Hello,
+Fixes the checkpatch.pl error:
+ERROR: that open brace { should be on the previous line
 
-I need to configure fbdev to have the following configuration:
+Signed-off-by: Othmar Pasteka <pasteka@kabsi.at>
+---
+ drivers/staging/sm750fb/sm750_cursor.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-mode "240x320-0"
-# D: 0.000 MHz, H: 0.000 kHz, V: 0.000 Hz
-geometry 240 320 240 320 16
-timings 0 0 0 0 0 0 0
-accel false
-rgba 5/11,6/5,5/0,0/0
-endmode
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 3b7ce92..cab891c 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -143,8 +143,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 		iowrite16(data, pbuffer);
+ 
+ 		/* assume pitch is 1,2,4,8,...*/
+-		if ((i+1) % pitch = 0)
+-		{
++		if ((i+1) % pitch = 0) {
+ 			/* need a return */
+ 			pstart += offset;
+ 			pbuffer = pstart;
+-- 
+2.5.3
 
-But on trying to configure the above in /etc/fb.modes I get error
-
-/etc/fb.modes:5: syntax error
-
-I then tried to configure it using fbset, but I can't manage to make
-it show the line
-timings 0 0 0 0 0 0 0
-
-I think the zeros mean that it is configured externally ?
-
-How should I configure fbdev so that it will be resulted in the above
-configuration ?
-
-Thanks,
-Ran

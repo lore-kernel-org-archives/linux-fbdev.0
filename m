@@ -1,87 +1,56 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Date: Fri, 27 Nov 2015 10:18:04 +0000
-Subject: Re: [PATCH v4] pwm-backlight: Avoid backlight flicker when probed from DT
-Message-Id: <5498492.8XSal22i1Y@diego>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nextPart1597955.2rRO27RILh"
+From: Shailendra Verma <shailendra.v@samung.com>
+Date: Mon, 09 Nov 2015 08:15:24 +0000
+Subject: [PATCH] video:fbdev:core:Allocate the memory for video mode after the validation of edid.
+Message-Id: <1447056204-28445-1-git-send-email-shailendra.v@samung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1446483356-14338-1-git-send-email-p.zabel@pengutronix.de>
- <3447562.c3gSANEMio@phil> <20151110173257.GA21727@ulmo>
-In-Reply-To: <20151110173257.GA21727@ulmo>
-To: linux-arm-kernel@lists.infradead.org
-
---nextPart1597955.2rRO27RILh
-Content-Transfer-Encoding: quoted-printable
+References: <1446205073-23830-1-git-send-email-shailendra.v@samung.com>
+In-Reply-To: <1446205073-23830-1-git-send-email-shailendra.v@samung.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, vidushi.koul@samsung.com
 
-Hi Thierry,
+From: Shailendra Verma <shailendra.v@samsung.com>
 
-Am Dienstag, 10. November 2015, 18:32:57 schrieb Thierry Reding:
-> On Tue, Nov 10, 2015 at 03:18:10PM +0100, Heiko Stuebner wrote:
-> > Hi Philipp,
-> >=20
-> > Am Montag, 2. November 2015, 17:55:56 schrieb Philipp Zabel:
-> > > If the driver is probed from the device tree, and there is a phan=
-dle
-> > > property set on it, and the enable GPIO is already configured as =
-output,
-> > > and the backlight is currently disabled, keep it disabled.
-> > > If all these conditions are met, assume there will be some other =
-driver
-> > > that can enable the backlight at the appropriate time.
-> > >=20
-> > > Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> > > Reviewed-by: Christian Gmeiner <christian.gmeiner@gmail.com>
-> >=20
-> > this patch improves the white screen when booting a veyron chromebo=
-ok
-> > a lot. I still see a small white flash, but that can probably come =
-from
-> > the WIP edp driver.
->=20
-> Some panels require a couple of frames before they actually enable. Y=
-ou
-> may want to look at the datasheet of your panel to see if it has some=
+In this function "fb_create_modedb" the memory for video mode is getting
+allocated before the edid validation.If the validation of edid fails
+then we are freeing the allocated memory for the video mode and returning.
+So moving the memory allocation part after the edid validation.There is no
+need to allocate the memory before edid validation check and freeing if
+validation gets failed.
 
-> specific requirement and update the panel driver with that.
->=20
-> From a high-level view the way that this is supposed to work is that
-> your encoder driver (e.g. eDP) "prepares" the panel, then starts send=
-ing
-> frames and finally "enables" the panel. With something like the simpl=
-e
-> panel driver you can influence this by setting the delay.enable field=
- in
-> the panel descriptor.
->=20
-> See struct panel_desc in drivers/gpu/drm/panel/panel-simple.c
+Signed-off-by: Shailendra Verma <shailendra.v@samsung.com>
+---
+ drivers/video/fbdev/core/fbmon.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Thanks for the pointers :-)
-
-Just to follow up a little bit, after moving to Yakir's Analogix-dp dri=
-ver=20
-from=20the chromeos-one I was using till now, that actually works nicely =
-for me=20
-and even the short flash is gone.
-
-
-Heiko
---nextPart1597955.2rRO27RILh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWWC3cAAoJEPOmecmc0R2BLT4IAI9UxE2jpis8B5IIq0UKUYGs
-/v1fTkUZp5qmFLB8ZRXHG9MQJP/Vld9MTX04sM8S7pqi21T8tZrma8bnRchI59eE
-KcLFcqdKAijrLmRfCXh2BV8HGyejE4JlEeSeaE+95i2mmA3Hvu1rkMOmUWeEe6FT
-ffSBT/rOYnhNT60hAzy3aAdoz0940udwBanASy3PKVlbW4mUiV/byOF9QXHDizTi
-weJkRUvNg3WzYeJfLSnKEp7pT5YOqIHQFIIbfocO+6cUWyla83WXPKhuEQZRjDjz
-bkTP5zeEO72QrrjQO+PyjOVVn3wsFklbEQ1NsRoVShdSpagw8/2veiHJs4vWvUk=
-=0gm6
------END PGP SIGNATURE-----
-
---nextPart1597955.2rRO27RILh--
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index 47c3191..476a5fd 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -620,16 +620,16 @@ static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize,
+ 	int num = 0, i, first = 1;
+ 	int ver, rev;
+ 
+-	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
+-	if (mode = NULL)
+-		return NULL;
+-
+ 	if (edid = NULL || !edid_checksum(edid) ||
+ 	    !edid_check_header(edid)) {
+-		kfree(mode);
+ 		return NULL;
+ 	}
+ 
++	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
++	if (mode = NULL)
++		return NULL;
++
++
+ 	ver = edid[EDID_STRUCT_VERSION];
+ 	rev = edid[EDID_STRUCT_REVISION];
+ 
+-- 
+1.9.1
 

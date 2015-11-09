@@ -1,33 +1,46 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Tue, 17 Nov 2015 01:38:15 +0000
-Subject: [PATCH] video: fbdev: rivafb: unlock chip before probiding EDID
-Message-Id: <1447724295-1954-1-git-send-email-dbaryshkov@gmail.com>
+From: Shailendra Verma <shailendra.v@samung.com>
+Date: Mon, 09 Nov 2015 08:18:13 +0000
+Subject: [PATCH] video:fbdev:core:Calculate the size for colormap only after the validation of length for col
+Message-Id: <1447056373-28633-1-git-send-email-shailendra.v@samung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, vidushi.koul@samsung.com, shailendra.v@samsung.com
 
-At least NV3 requires for chip to be unlocked before it is possible to
-access I2C registers. Without it, it is not possible to read EDID.
+From: Shailendra Verma <shailendra.v@samsung.com>
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+While allocating the memory for color map, the memory size for colors
+is being calculated before the validation of length for color map.
+Moved the size calculation part after the validation of color map length.
+
+Signed-off-by: Shailendra Verma <shailendra.v@samsung.com>
 ---
- drivers/video/fbdev/riva/fbdev.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/core/fbcmap.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riva/fbdev.c
-index f1ad274..2ef26ad 100644
---- a/drivers/video/fbdev/riva/fbdev.c
-+++ b/drivers/video/fbdev/riva/fbdev.c
-@@ -1765,6 +1765,7 @@ static int riva_get_EDID_i2c(struct fb_info *info)
- 	int i;
+diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
+index f89245b..45ad567 100644
+--- a/drivers/video/fbdev/core/fbcmap.c
++++ b/drivers/video/fbdev/core/fbcmap.c
+@@ -91,7 +91,7 @@ static const struct fb_cmap default_16_colors = {
  
- 	NVTRACE_ENTER();
-+	par->riva.LockUnlock(&par->riva, 0);
- 	riva_create_i2c_busses(par);
- 	for (i = 0; i < 3; i++) {
- 		if (!par->chan[i].par)
+ int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
+ {
+-	int size = len * sizeof(u16);
++	int size;
+ 	int ret = -ENOMEM;
+ 
+ 	if (cmap->len != len) {
+@@ -99,6 +99,7 @@ int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
+ 		if (!len)
+ 			return 0;
+ 
++		size = len * sizeof(u16);
+ 		cmap->red = kmalloc(size, flags);
+ 		if (!cmap->red)
+ 			goto fail;
 -- 
-2.6.2
+1.9.1
 

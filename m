@@ -1,7 +1,7 @@
 From: Shailendra Verma <shailendra.v@samung.com>
-Date: Mon, 09 Nov 2015 08:15:24 +0000
+Date: Mon, 09 Nov 2015 08:16:48 +0000
 Subject: [PATCH] video:fbdev:core:Allocate the memory for video mode after the validation of edid.
-Message-Id: <1447056204-28445-1-git-send-email-shailendra.v@samung.com>
+Message-Id: <1447056288-28543-1-git-send-email-shailendra.v@samung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1446205073-23830-1-git-send-email-shailendra.v@samung.com>
 In-Reply-To: <1446205073-23830-1-git-send-email-shailendra.v@samung.com>
@@ -9,7 +9,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, vidushi.koul@samsung.com
+Cc: linux-kernel@vger.kernel.org, vidushi.koul@samsung.com, shailendra.v@samsung.com
 
 From: Shailendra Verma <shailendra.v@samsung.com>
 

@@ -1,91 +1,29 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Mon, 02 Nov 2015 16:55:56 +0000
-Subject: [PATCH v4] pwm-backlight: Avoid backlight flicker when probed from DT
-Message-Id: <1446483356-14338-1-git-send-email-p.zabel@pengutronix.de>
+From: Heiko Stuebner <heiko@sntech.de>
+Date: Tue, 10 Nov 2015 14:18:10 +0000
+Subject: Re: [PATCH v4] pwm-backlight: Avoid backlight flicker when probed from DT
+Message-Id: <3447562.c3gSANEMio@phil>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1446483356-14338-1-git-send-email-p.zabel@pengutronix.de>
+In-Reply-To: <1446483356-14338-1-git-send-email-p.zabel@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-If the driver is probed from the device tree, and there is a phandle
-property set on it, and the enable GPIO is already configured as output,
-and the backlight is currently disabled, keep it disabled.
-If all these conditions are met, assume there will be some other driver
-that can enable the backlight at the appropriate time.
+Hi Philipp,
 
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Christian Gmeiner <christian.gmeiner@gmail.com>
----
-Changes since v3:
- - No need to call of_find_property(of_node, "phandle", NULL),
-   just use of_node->phandle.
- - Rebased onto v4.3
----
- drivers/video/backlight/pwm_bl.c | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+Am Montag, 2. November 2015, 17:55:56 schrieb Philipp Zabel:
+> If the driver is probed from the device tree, and there is a phandle
+> property set on it, and the enable GPIO is already configured as output,
+> and the backlight is currently disabled, keep it disabled.
+> If all these conditions are met, assume there will be some other driver
+> that can enable the backlight at the appropriate time.
+> 
+> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> Reviewed-by: Christian Gmeiner <christian.gmeiner@gmail.com>
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index eff379b..65e57da 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -199,6 +199,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	struct backlight_properties props;
- 	struct backlight_device *bl;
- 	struct pwm_bl_data *pb;
-+	phandle phandle = pdev->dev.of_node->phandle;
-+	int initial_blank = FB_BLANK_UNBLANK;
- 	int ret;
- 
- 	if (!data) {
-@@ -242,7 +244,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	pb->enabled = false;
- 
- 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
--						  GPIOD_OUT_HIGH);
-+						  GPIOD_ASIS);
- 	if (IS_ERR(pb->enable_gpio)) {
- 		ret = PTR_ERR(pb->enable_gpio);
- 		goto err_alloc;
-@@ -264,12 +266,30 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
- 	}
- 
-+	if (pb->enable_gpio) {
-+		/*
-+		 * If the driver is probed from the device tree and there is a
-+		 * phandle link pointing to the backlight node, it is safe to
-+		 * assume that another driver will enable the backlight at the
-+		 * appropriate time. Therefore, if it is disabled, keep it so.
-+		 */
-+		if (phandle &&
-+		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
-+		    gpiod_get_value(pb->enable_gpio) = 0)
-+			initial_blank = FB_BLANK_POWERDOWN;
-+		else
-+			gpiod_direction_output(pb->enable_gpio, 1);
-+	}
-+
- 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
- 	if (IS_ERR(pb->power_supply)) {
- 		ret = PTR_ERR(pb->power_supply);
- 		goto err_alloc;
- 	}
- 
-+	if (phandle && !regulator_is_enabled(pb->power_supply))
-+		initial_blank = FB_BLANK_POWERDOWN;
-+
- 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
- 	if (IS_ERR(pb->pwm)) {
- 		ret = PTR_ERR(pb->pwm);
-@@ -321,6 +341,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	}
- 
- 	bl->props.brightness = data->dft_brightness;
-+	bl->props.power = initial_blank;
- 	backlight_update_status(bl);
- 
- 	platform_set_drvdata(pdev, bl);
--- 
-2.6.1
+this patch improves the white screen when booting a veyron chromebook
+a lot. I still see a small white flash, but that can probably come from
+the WIP edp driver.
 
+Tested-by: Heiko Stuebner <heiko@sntech.de>

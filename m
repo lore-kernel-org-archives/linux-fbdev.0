@@ -1,76 +1,29 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 16 Nov 2015 08:56:29 +0000
-Subject: [PATCH v4 06/24] pwm: introduce default period and polarity concepts
-Message-Id: <1447664207-24370-7-git-send-email-boris.brezillon@free-electrons.com>
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Date: Fri, 13 Nov 2015 10:29:06 +0000
+Subject: [PATCH 0/2] Fix omap VENC (PAL/NTSC TV out) operation with omapdrm driver
+Message-Id: <cover.1447410543.git.hns@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: David Airlie <airlied@linux.ie>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, gta04-owner@goldelico.com, notasas@gmail.com, "H. Nikolaus Schaller" <hns@goldelico.com>
 
-When requested by a user, the PWM is assigned a default period and polarity
-extracted from the DT, the platform data or statically set by the driver.
-Those default values are currently stored in the period and polarity
-fields of the pwm_device struct, but they will be stored somewhere else
-once we have introduced the architecture allowing for hardware state
-retrieval.
+This patch set fixes some issues with the OMAP VENC
+when used with the omapdrm driver.
 
-The pwm_set_default_polarity and pwm_set_default_period should only be
-used by PWM drivers or the PWM core infrastructure to specify the
-default period and polarity values.
+Tested on: BeagleBoard XM, GTA04 and OpenPandora
 
-PWM users might call the pwm_get_default_period to query the default
-period value. There is currently no helper to query the default
-polarity, but it might be added later on if there is a need for it.
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-Tested-by: Heiko Stuebner <heiko@sntech.de>
----
- include/linux/pwm.h | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+H. Nikolaus Schaller (2):
+  video:omap2:dss: fix timings for VENC to match what omapdrm expects
+  video:omapdrm: make omapdrm assume the tv-out cable is always
+    connected
 
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index cfc3ed4..8ba57fc 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -118,11 +118,22 @@ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
- 		pwm->period = period;
- }
- 
-+static inline void pwm_set_default_period(struct pwm_device *pwm,
-+					  unsigned int period)
-+{
-+	pwm_set_period(pwm, period);
-+}
-+
- static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
- {
- 	return pwm ? pwm->period : 0;
- }
- 
-+static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
-+{
-+	return pwm_get_period(pwm);
-+}
-+
- static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
- {
- 	if (pwm)
-@@ -139,6 +150,12 @@ static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
-  */
- int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
- 
-+static inline void pwm_set_default_polarity(struct pwm_device *pwm,
-+					    enum pwm_polarity polarity)
-+{
-+	pwm_set_polarity(pwm, polarity);
-+}
-+
- static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
- {
- 	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
+ drivers/gpu/drm/omapdrm/omap_connector.c |  1 +
+ drivers/video/fbdev/omap2/dss/venc.c     | 12 ++++++++++++
+ 2 files changed, 13 insertions(+)
+
 -- 
-2.1.4
+2.5.1
 

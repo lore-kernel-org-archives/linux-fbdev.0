@@ -1,17 +1,17 @@
 From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Date: Fri, 13 Nov 2015 13:31:48 +0000
+Date: Fri, 13 Nov 2015 16:45:26 +0000
 Subject: Re: [PATCH 2/2] video:omapdrm: make omapdrm assume the tv-out cable is always connected
-Message-Id: <2FC3798A-7CE6-4D6E-839B-08826D4511CD@goldelico.com>
+Message-Id: <0A7D0C81-AA10-413C-8546-9873B65FE6CE@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1447410543.git.hns@goldelico.com> <5942ddb7ab4f42f207c6c2b54be31a3d9fe3b912.1447410544.git.hns@goldelico.com> <5645CD79.5040107@ti.com> <3973104.FPbEEICOqe@avalon>
 In-Reply-To: <3973104.FPbEEICOqe@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, David Airlie <airlied@linux.ie>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, gta04-owner@goldelico.com, notasas@gmail.com
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: David Airlie <airlied@linux.ie>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, linux-fbdev@vger.kernel.org, List for communicating with real GTA04 owners <gta04-owner@goldelico.com>, =?windows-1252?Q?Gra=9Evydas_Ignotas?= <notasas@gmail.com>
 
-Hi Laurent and Tomi,
+Here the test results:
 
 Am 13.11.2015 um 13:01 schrieb Laurent Pinchart <laurent.pinchart@ideasonboard.com>:
 
@@ -46,17 +46,9 @@ Am 13.11.2015 um 13:01 schrieb Laurent Pinchart <laurent.pinchart@ideasonboard.c
 >>> 			dssdev->type = OMAP_DISPLAY_TYPE_DSI) {
 >> 
 >> I have no idea why VENC is not working for you when using
->> connector_status_unknown,
-
-I agree that it should...
-
->> but I just tested DPI with
+>> connector_status_unknown, but I just tested DPI with
 >> connector_status_unknown (i.e. changed the above func to return unknown
->> for DPI
-
-Good hint. I can do the same check. Maybe it highlights the real issue.
-
->> ), and it works fine with X and X omap driver. And xrandr
+>> for DPI), and it works fine with X and X omap driver. And xrandr
 >> confirms that the connection status is unknown:
 >> 
 >> # xrandr
@@ -66,38 +58,74 @@ Good hint. I can do the same check. Maybe it highlights the real issue.
 >> axis y axis) 0mm x 0mm
 >>   1920x1200     60.00*+  60.00 +
 
-Which configs, drivers and system are you using for this results?
+A) with this VENC patch:
 
->> 
->> Grep also shows that there are many drivers using
->> connector_status_unknown, so I'm guessing it should work fine...
-> 
-> And beside it's not right to consider VENC as always connected, as it isn't. 
+root@letux:~# xrandr
+Screen 0: minimum 320 x 200, current 720 x 640, maximum 2048 x 2048
+None-1 connected 720x574+0+0 0mm x 0mm
+   720x574i      50.00*+
+None-2 connected 480x640+0+0 0mm x 0mm
+   480x640       65.74*+
+root@letux:~# cat /sys/class/drm/card0-Unknown-*/enabled
+enabled
+enabled
+root@letux:~# cat /sys/class/drm/card0-Unknown-*/status 
+connected
+connected
 
-Hm. Well, the VENC (meaning the D/A converter inside the OMAP3 chip)
-is always connected. But the monitor or cable isn't.
+B) w/o VENC patch (VENC returns returning connector_status_unknown):
 
-> The unknown status is there for a reason, to describe connectors for which we 
-> can't get any status information. The situation is different for DPI, DBI, SDI 
-> and DSI as those are on-board busses that connect to a non-removable panel, so 
-> we can say with a good confidence that the panel is connected (the situation 
-> could be changed with a hammer and a chisel, but that's unlikely to happen, 
-> hence the confidence).
+root@letux:~# xrandr
+Screen 0: minimum 320 x 200, current 480 x 640, maximum 2048 x 2048
+None-1 connected 480x640+0+0 0mm x 0mm
+   480x640       65.74*+
+None-2 unknown connection
+   720x574i      50.00 +
+root@letux:~# cat /sys/class/drm/card0-Unknown-*/enabled
+enabled
+disabled
+root@letux:~# cat /sys/class/drm/card0-Unknown-*/status
+connected
+unknown
 
-Well, it may be that the omapdrm and X11 combination (unfortuantely I don't
-understand either and have not found a good description how they interwork),
- keeps the VENC disabled if the connector is unknown.
+C) with DPI (also) returning connector_status_unknown
 
-And since there is no code to detect that a cable has been connected, there
-might be missing some trigger to enable the interface.
+root@letux:~# xrandr
+Screen 0: minimum 320 x 200, current 720 x 640, maximum 2048 x 2048
+None-1 unknown connection 720x574+0+0 0mm x 0mm
+   720x574i      50.00*+
+None-2 unknown connection 480x640+0+0 0mm x 0mm
+   480x640       65.74*+
+root@letux:~# cat /sys/class/drm/card0-Unknown-*/enabled
+enabled
+enabled
+root@letux:~# cat /sys/class/drm/card0-Unknown-*/status
+unknown
+unknown
+root@letux:~# 
 
-The symptom I see is that the status of this card is "disabled" while the LCD
-panel is "enabled". After doing my proposed patch, both come up "enabled".
+D) VENC patch but DPI returning connector_status_unknown
 
-So my patch appears to be a work around some other still hidden problem.
+rroot@letux:~# xrandr
+Screen 0: minimum 320 x 200, current 720 x 574, maximum 2048 x 2048
+None-1 unknown connection
+   480x640       65.74 +
+None-2 connected 720x574+0+0 0mm x 0mm
+   720x574i      50.00*+oot@letux:~# cat /sys/class/drm/card0-Unknown-*/enabled
+disabled
+enabled
+root@letux:~# cat /sys/class/drm/card0-Unknown-*/status
+unknown
+connected
 
-Any hint from the experts how to debug / find the real issue & solution is welcome.
+In case B) I have no TV out and in case D) I have no LCD.
 
-BR,
+So it looks as if it works if my LCD and VENC report the same
+connection status. And fails if they differ.
+
+Anyone with an explanation or even vague idea where to search
+for the real bug?
+
+BR and thanks,
 Nikolaus
 

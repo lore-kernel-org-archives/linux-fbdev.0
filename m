@@ -1,46 +1,47 @@
-From: YH Huang <yh.huang@mediatek.com>
-Date: Fri, 06 Nov 2015 08:31:30 +0000
-Subject: Re: [PATCH v2] pwm-backlight: fix the panel power sequence
-Message-Id: <1446798690.6203.3.camel@mtksdaap41>
+From: Enric Balletbo i Serra <eballetbo@gmail.com>
+Date: Fri, 13 Nov 2015 12:19:08 +0000
+Subject: [PATCH] backlight: tps65217_bl: Add MODULE_DEVICE_TABLE.
+Message-Id: <1447417148-733-1-git-send-email-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444987060-48202-1-git-send-email-yh.huang@mediatek.com>
- <1444988219.3541.3.camel@pengutronix.de>
- <1445526750.27586.8.camel@mtksdaap41>
- <1446133259.3274.52.camel@pengutronix.de>
- <1446190900.17558.16.camel@mtksdaap41>
- <1446201271.3334.22.camel@pengutronix.de>
- <1446538299.2449.8.camel@mtksdaap41>
- <1446548924.3373.3.camel@pengutronix.de>
- <1446601656.15340.11.camel@mtksdaap41>
- <1446716430.3894.12.camel@pengutronix.de>
-In-Reply-To: <1446716430.3894.12.camel@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Thu, 2015-11-05 at 10:40 +0100, Philipp Zabel wrote:
-> > 
-> > Based on this, could we disable it initially and update in the
-> > backlight_update_status function?
-> > 
-> > Like this,
-> > 
-> > if (pb->enable_gpio) {
-> > 	if (phandle &&
-> > 	    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
-> > 	    gpiod_get_value(pb->enable_gpio) = 1)
-> > 		gpiod_direction_output(pb->enable_gpio, 1);
-> 
-> The gpiod_direction_output call is a no-op, since the direction is
-> already output and the value is already 1.
-> Also, I propose to set initial blanking to FB_BLANK_POWERDOWN in this
-> case, and wait for the panel driver to enable the backlight at the
-> appropriate time.
+The device table is required to load modules based on modaliases.
 
-Thanks your kindly reply.
-Your patch looks good to me.
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+ drivers/video/backlight/tps65217_bl.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Regards,
-YH Huang
+diff --git a/drivers/video/backlight/tps65217_bl.c b/drivers/video/backlight/tps65217_bl.c
+index 61d72bf..37a9731 100644
+--- a/drivers/video/backlight/tps65217_bl.c
++++ b/drivers/video/backlight/tps65217_bl.c
+@@ -320,10 +320,21 @@ static int tps65217_bl_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id tps65217_bl_of_match[] = {
++	{ .compatible = "ti,tps65217-bl", },
++	{ /* sentinel */ },
++};
++MODULE_DEVICE_TABLE(of, tps65217_bl_of_match);
++#endif
++
+ static struct platform_driver tps65217_bl_driver = {
+ 	.probe		= tps65217_bl_probe,
+ 	.driver		= {
+ 		.name	= "tps65217-bl",
++#ifdef CONFIG_OF
++		.of_match_table = tps65217_bl_of_match,
++#endif
+ 	},
+ };
+ 
+-- 
+2.1.0
 

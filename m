@@ -1,8 +1,10 @@
 From: Julian Scheel <julian@jusst.de>
-Date: Thu, 12 Nov 2015 14:07:37 +0000
+Date: Sun, 15 Nov 2015 13:36:43 +0000
 Subject: [PATCH] fbdev: ssd1307fb: Fix chargepump setting
-Message-Id: <1447337257-31232-1-git-send-email-julian@jusst.de>
+Message-Id: <1447594603-3243-1-git-send-email-julian@jusst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1447337257-31232-1-git-send-email-julian@jusst.de>
+In-Reply-To: <1447337257-31232-1-git-send-email-julian@jusst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

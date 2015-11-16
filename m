@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 16 Nov 2015 08:56:24 +0000
-Subject: [PATCH v4 01/24] pwm: rcar: make use of pwm_is_enabled()
-Message-Id: <1447664207-24370-2-git-send-email-boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:34 +0000
+Subject: [PATCH v4 11/24] fbdev: use pwm_get/set_default_xxx() helpers where appropriate
+Message-Id: <1447664207-24370-12-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
@@ -10,32 +10,29 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Commit 5c31252c4a86 ("pwm: Add the pwm_is_enabled() helper") introduced a
-new function to test whether a PWM device is enabled or not without
-manipulating PWM internal fields.
-Hiding this is necessary if we want to smoothly move to the atomic PWM
-config approach without impacting PWM drivers.
-Fix this driver to use pwm_is_enabled() instead of directly accessing the
-->flags field.
+pwm_set/get_default_xxx() helpers have been introduced to differentiate
+the default PWM states (those retrieved through DT, PWM lookup table or
+statically assigned by the driver) and the current ones.
+Make use of those helpers where appropriate.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/pwm/pwm-rcar.c | 2 +-
+ drivers/video/fbdev/ssd1307fb.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/pwm/pwm-rcar.c b/drivers/pwm/pwm-rcar.c
-index 6e99a63..70899c9 100644
---- a/drivers/pwm/pwm-rcar.c
-+++ b/drivers/pwm/pwm-rcar.c
-@@ -157,7 +157,7 @@ static int rcar_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
- 		return div;
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index fa34808..81f4885 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -294,7 +294,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ 			return PTR_ERR(par->pwm);
+ 		}
  
- 	/* Let the core driver set pwm->period if disabled and duty_ns = 0 */
--	if (!test_bit(PWMF_ENABLED, &pwm->flags) && !duty_ns)
-+	if (!pwm_is_enabled(pwm) && !duty_ns)
- 		return 0;
- 
- 	rcar_pwm_update(rp, RCAR_PWMCR_SYNC, RCAR_PWMCR_SYNC, RCAR_PWMCR);
+-		par->pwm_period = pwm_get_period(par->pwm);
++		par->pwm_period = pwm_get_default_period(par->pwm);
+ 		/* Enable the PWM */
+ 		pwm_config(par->pwm, par->pwm_period / 2, par->pwm_period);
+ 		pwm_enable(par->pwm);
 -- 
 2.1.4
 

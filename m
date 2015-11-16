@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 16 Nov 2015 08:56:42 +0000
-Subject: [PATCH v4 19/24] pwm: add the PWM initial state retrieval infra
-Message-Id: <1447664207-24370-20-git-send-email-boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:30 +0000
+Subject: [PATCH v4 07/24] pwm: use pwm_get/set_default_xxx() helpers where appropriate
+Message-Id: <1447664207-24370-8-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
@@ -10,52 +10,97 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Add a ->reset_state() function to the pwm_ops struct to let PWM drivers
-initialize the PWM state attached to a PWM device.
+pwm_set/get_default_xxx() helpers have been introduced to differentiate
+the default PWM states (those retrieved through DT, PWM lookup table or
+statically assigned by the driver) and the current PWM ones.
+Make use of those helpers where appropriate.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 Tested-by: Heiko Stuebner <heiko@sntech.de>
+Reviewed-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 ---
- drivers/pwm/core.c  | 3 +++
- include/linux/pwm.h | 4 ++++
- 2 files changed, 7 insertions(+)
+ drivers/pwm/core.c      | 14 +++++++-------
+ drivers/pwm/pwm-pxa.c   |  2 +-
+ drivers/pwm/pwm-sun4i.c |  3 ++-
+ 3 files changed, 10 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index 6bbda6c..ce8b373 100644
+index d24ca5f..59073a1 100644
 --- a/drivers/pwm/core.c
 +++ b/drivers/pwm/core.c
-@@ -271,6 +271,9 @@ int pwmchip_add_with_polarity(struct pwm_chip *chip,
- 		pwm_set_default_polarity(pwm, polarity);
+@@ -146,12 +146,12 @@ of_pwm_xlate_with_flags(struct pwm_chip *pc, const struct of_phandle_args *args)
+ 	if (IS_ERR(pwm))
+ 		return pwm;
+ 
+-	pwm_set_period(pwm, args->args[1]);
++	pwm_set_default_period(pwm, args->args[1]);
+ 
+ 	if (args->args[2] & PWM_POLARITY_INVERTED)
+-		pwm_set_polarity(pwm, PWM_POLARITY_INVERSED);
++		pwm_set_default_polarity(pwm, PWM_POLARITY_INVERSED);
+ 	else
+-		pwm_set_polarity(pwm, PWM_POLARITY_NORMAL);
++		pwm_set_default_polarity(pwm, PWM_POLARITY_NORMAL);
+ 
+ 	return pwm;
+ }
+@@ -172,7 +172,7 @@ of_pwm_simple_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
+ 	if (IS_ERR(pwm))
+ 		return pwm;
+ 
+-	pwm_set_period(pwm, args->args[1]);
++	pwm_set_default_period(pwm, args->args[1]);
+ 
+ 	return pwm;
+ }
+@@ -268,7 +268,7 @@ int pwmchip_add_with_polarity(struct pwm_chip *chip,
+ 		pwm->chip = chip;
+ 		pwm->pwm = chip->base + i;
+ 		pwm->hwpwm = i;
+-		pwm->polarity = polarity;
++		pwm_set_default_polarity(pwm, polarity);
  		mutex_init(&pwm->lock);
  
-+		if (chip->ops->reset_state)
-+			chip->ops->reset_state(chip, pwm);
-+
  		radix_tree_insert(&pwm_tree, pwm->pwm, pwm);
- 	}
+@@ -751,8 +751,8 @@ struct pwm_device *pwm_get(struct device *dev, const char *con_id)
+ 	if (IS_ERR(pwm))
+ 		goto out;
  
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 292e7da..caa0ffe 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -182,6 +182,9 @@ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
-  * @set_polarity: configure the polarity of this PWM
-  * @enable: enable PWM output toggling
-  * @disable: disable PWM output toggling
-+ * @reset_state: reset the current PWM state (pwm->state) to the actual
-+ *		 hardware state. This function is only called once per
-+ *		 PWM device when the PWM chip is registered.
-  * @dbg_show: optional routine to show contents in debugfs
-  * @owner: helps prevent removal of modules exporting active PWMs
-  */
-@@ -194,6 +197,7 @@ struct pwm_ops {
- 			    enum pwm_polarity polarity);
- 	int (*enable)(struct pwm_chip *chip, struct pwm_device *pwm);
- 	void (*disable)(struct pwm_chip *chip, struct pwm_device *pwm);
-+	void (*reset_state)(struct pwm_chip *chip, struct pwm_device *pwm);
- #ifdef CONFIG_DEBUG_FS
- 	void (*dbg_show)(struct pwm_chip *chip, struct seq_file *s);
- #endif
+-	pwm_set_period(pwm, chosen->period);
+-	pwm_set_polarity(pwm, chosen->polarity);
++	pwm_set_default_period(pwm, chosen->period);
++	pwm_set_default_polarity(pwm, chosen->polarity);
+ 
+ out:
+ 	mutex_unlock(&pwm_lookup_lock);
+diff --git a/drivers/pwm/pwm-pxa.c b/drivers/pwm/pwm-pxa.c
+index cb2f702..65b80aa 100644
+--- a/drivers/pwm/pwm-pxa.c
++++ b/drivers/pwm/pwm-pxa.c
+@@ -160,7 +160,7 @@ pxa_pwm_of_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
+ 	if (IS_ERR(pwm))
+ 		return pwm;
+ 
+-	pwm_set_period(pwm, args->args[0]);
++	pwm_set_default_period(pwm, args->args[0]);
+ 
+ 	return pwm;
+ }
+diff --git a/drivers/pwm/pwm-sun4i.c b/drivers/pwm/pwm-sun4i.c
+index 67af9f6..f6a7451 100644
+--- a/drivers/pwm/pwm-sun4i.c
++++ b/drivers/pwm/pwm-sun4i.c
+@@ -354,7 +354,8 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
+ 	val = sun4i_pwm_readl(pwm, PWM_CTRL_REG);
+ 	for (i = 0; i < pwm->chip.npwm; i++)
+ 		if (!(val & BIT_CH(PWM_ACT_STATE, i)))
+-			pwm->chip.pwms[i].polarity = PWM_POLARITY_INVERSED;
++			pwm_set_default_polarity(&pwm->chip.pwms[i],
++						 PWM_POLARITY_INVERSED);
+ 	clk_disable_unprepare(pwm->clk);
+ 
+ 	return 0;
 -- 
 2.1.4
 

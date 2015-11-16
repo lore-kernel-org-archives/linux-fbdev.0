@@ -1,63 +1,93 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Mon, 30 Nov 2015 21:09:09 +0000
-Subject: Re: [RFC PATCH 1/2] drm: add support for for clk and de polarity
-Message-Id: <1448917749.3890.42.camel@pengutronix.de>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:23 +0000
+Subject: [PATCH v4 00/24] pwm: add support for atomic update
+Message-Id: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <55A67FDB.8010602@gmx.at> <55A6813A.8090706@gmx.at>
- <1448472141.3390.17.camel@pengutronix.de> <56571543.20701@gmx.at>
- <5658084E.7040007@ti.com>
-In-Reply-To: <5658084E.7040007@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Steve Longerbeam <slongerbeam@gmail.com>, Deepak Das <deepak_das@mentor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Am Freitag, den 27.11.2015, 09:37 +0200 schrieb Tomi Valkeinen:
-> On 26/11/15 16:20, Manfred Schlaegl wrote:
-> > Good to see that this discussion is triggered.
-> 
-> I seem to have missed this one. This is important for omapdrm also.
-> We've had similar patch in TI's linux for a while, but I have never had
-> time to start upstreaming it.
-> 
-> Two comments:
-> 
-> The "pixclock polarity" could be explained a bit, as it's not really
-> about polarity. This was discussed when the display-timings stuff was
-> worked on, and display-timings.txt explains what the "pixelclk-active"
-> property means.
+Hello,
 
-Yes, the relevant part of this setting is whether the panel will sample
-the data bus on the falling or rising edge of the pixel clock signal.
-The display interface has guarantee that the data bus is stable around
-that time.
+This series adds support for atomic PWM update, or IOW, the capability
+to update all the parameters of a PWM device (enabled/disabled, period,
+duty and polarity) in one go.
 
-> So here I think you could maybe have a comment pointing to
-> display-timings.txt, or perhaps a short comment about what the flag is.
-> Or if you come up with a great name for the define, that's good too =).
+Best Regards,
 
-We have the choice of describing the flag from point of view of the
-display controller (as the DISPLAY_FLAGS do), from point of view of the
-panel, or using a somewhat neutral description like in the device tree.
-Which choice I'd prefer depends on whether the flags go into
-drm_display_mode / drm_mode_modeinfo or in drm_display_info.
+Boris
 
-In any case, I think that it'd be better to talk about driving or
-sampling data on rising or falling edges instead of clock polarity.
+Changes since v3:
+- rebased on pwm/for-next after pulling 4.4-rc1
+- replace direct access to pwm fields by pwm_get/set_xxx() helpers, thus
+  fixing some build errors
+- split changes to allow each maintainer to review/ack or take the
+  modification through its subsystem
 
-> The other comment is not about this patch as such, but similar flags
-> that OMAP has, and possibly some other platforms too:
-> 
-> 1) sync signals driven on rising or falling edge of pixel clock
-> 2) hsync and vsync happen at the same time or hsync happens first,
-> followed by vsync
-> 
-> Any other platforms have similar features?
+Changes since v2:
+- rebased on top of 4.3-rc2
+- reintroduced pwm-regulator patches
 
-The i.MX6 display interface consists of a number of rather freely
-configurable signal generators, so all of this should be possible to do.
+Changes since v1:
+- dropped applied patches
+- squashed Heiko's fixes into the rockchip driver changes
+- made a few cosmetic changes
+- added kerneldoc comments
+- added Heiko's patch to display more information in debugfs
+- dropped pwm-regulator patches (should be submitted separately)
 
-regards
-Philipp
+Boris Brezillon (23):
+  pwm: rcar: make use of pwm_is_enabled()
+  pwm: use pwm_get_xxx() helpers where appropriate
+  clk: pwm: use pwm_get_xxx() helpers where appropriate
+  hwmon: pwm-fan: use pwm_get_xxx() helpers where appropriate
+  misc: max77693-haptic: use pwm_get_xxx() helpers where appropriate
+  pwm: introduce default period and polarity concepts
+  pwm: use pwm_get/set_default_xxx() helpers where appropriate
+  leds: pwm: use pwm_get/set_default_xxx() helpers where appropriate
+  regulator: pwm: use pwm_get/set_default_xxx() helpers where
+    appropriate
+  backlight: pwm: use pwm_get/set_default_xxx() helpers where
+    appropriate
+  fbdev: use pwm_get/set_default_xxx() helpers where appropriate
+  misc: max77693: use pwm_get/set_default_xxx() helpers where
+    appropriate
+  hwmon: pwm-fan: use pwm_get/set_default_xxx() helpers where
+    appropriate
+  clk: pwm: use pwm_get/set_default_xxx() helpers where appropriate
+  pwm: define a new pwm_state struct
+  pwm: move the enabled/disabled info to pwm_state struct
+  backlight: pwm_bl: remove useless call to pwm_set_period
+  pwm: declare a default PWM state
+  pwm: add the PWM initial state retrieval infra
+  pwm: add the core infrastructure to allow atomic update
+  pwm: rockchip: add initial state retrieval
+  pwm: rockchip: add support for atomic update
+  regulator: pwm: properly initialize the ->state field
+
+Heiko St=C3=BCbner (1):
+  pwm: add information about polarity, duty cycle and period to debugfs
+
+ drivers/clk/clk-pwm.c                |  11 +--
+ drivers/hwmon/pwm-fan.c              |  16 ++--
+ drivers/input/misc/max77693-haptic.c |   9 +-
+ drivers/leds/leds-pwm.c              |   2 +-
+ drivers/pwm/core.c                   | 169 +++++++++++++++++++++++++++++++=
+----
+ drivers/pwm/pwm-crc.c                |   2 +-
+ drivers/pwm/pwm-lpc18xx-sct.c        |   2 +-
+ drivers/pwm/pwm-pxa.c                |   2 +-
+ drivers/pwm/pwm-rcar.c               |   2 +-
+ drivers/pwm/pwm-rockchip.c           | 119 +++++++++++++++++++-----
+ drivers/pwm/pwm-sun4i.c              |   3 +-
+ drivers/regulator/pwm-regulator.c    |  30 ++++++-
+ drivers/video/backlight/lm3630a_bl.c |   4 +-
+ drivers/video/backlight/pwm_bl.c     |  10 ++-
+ drivers/video/fbdev/ssd1307fb.c      |   2 +-
+ include/linux/pwm.h                  |  89 +++++++++++++++---
+ 16 files changed, 386 insertions(+), 86 deletions(-)
+
+--=20
+2.1.4
 

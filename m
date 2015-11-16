@@ -1,105 +1,94 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 16 Nov 2015 18:06:46 +0000
-Subject: Re: [PATCH v4 02/24] pwm: use pwm_get_xxx() helpers where appropriate
-Message-Id: <20151116190646.1d5ba16e@bbrezillon>
+Date: Mon, 16 Nov 2015 08:56:27 +0000
+Subject: [PATCH v4 04/24] hwmon: pwm-fan: use pwm_get_xxx() helpers where appropriate
+Message-Id: <1447664207-24370-5-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
- <1447664207-24370-3-git-send-email-boris.brezillon@free-electrons.com>
- <CAGhQ9VwEuwazF5Kdw=9R60EovVoiwen6fXiVjL+=EddXPYVGAg@mail.gmail.com>
-In-Reply-To: <CAGhQ9VwEuwazF5Kdw=9R60EovVoiwen6fXiVjL+=EddXPYVGAg@mail.gmail.com>
+In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Joachim,
+Use pwm_get_xxx() helpers instead of directly accessing the pwm->xxx field.
+Doing that will ease adaptation of the PWM framework to support atomic
+update.
 
-On Mon, 16 Nov 2015 18:46:44 +0100
-Joachim  Eastwood <manabian@gmail.com> wrote:
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+Patch generated with the following coccinelle script:
 
-> Hi Boris
-> 
-> (Adding Ariel for pwm-lpc18xx-sct)
-> 
-> On 16 November 2015 at 09:56, Boris Brezillon
-> <boris.brezillon@free-electrons.com> wrote:
-> > Use pwm_get_xxx() helpers instead of directly accessing the pwm->xxx field.
-> > Doing that will ease adaptation of the PWM framework to support atomic
-> > update.
-> >
-> > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > ---
-> > Patch generated with the following coccinelle script:
-> >
-> > --->8---
-> > virtual patch
-> >
-> > @@
-> > struct pwm_device *p;
-> > expression e;
-> > @@
-> > (
-> > -(p)->polarity = e;
-> > +pwm_set_polarity((p), e);
-> > |
-> > -(p)->polarity
-> > +pwm_get_polarity((p))
-> > |
-> > -(p)->period = e;
-> > +pwm_set_period((p), e);
-> > |
-> > -(p)->period
-> > +pwm_get_period((p))
-> > |
-> > -(p)->duty_cycle = e;
-> > +pwm_set_duty_cycle((p), e);
-> > |
-> > -(p)->duty_cycle
-> > +pwm_get_duty_cycle((p))
-> > )
-> > --->8---
-> > ---
-> >  drivers/pwm/pwm-crc.c         | 2 +-
-> >  drivers/pwm/pwm-lpc18xx-sct.c | 2 +-
-> >  2 files changed, 2 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/pwm/pwm-crc.c b/drivers/pwm/pwm-crc.c
-> > index 7101c70..2f88543 100644
-> > --- a/drivers/pwm/pwm-crc.c
-> > +++ b/drivers/pwm/pwm-crc.c
-> > @@ -75,7 +75,7 @@ static int crc_pwm_config(struct pwm_chip *c, struct pwm_device *pwm,
-> >                 return -EINVAL;
-> >         }
-> >
-> > -       if (pwm->period != period_ns) {
-> > +       if (pwm_get_period((pwm)) != period_ns) {
-> >                 int clk_div;
-> >
-> >                 /* changing the clk divisor, need to disable fisrt */
-> > diff --git a/drivers/pwm/pwm-lpc18xx-sct.c b/drivers/pwm/pwm-lpc18xx-sct.c
-> > index 9163085..091fa13 100644
-> > --- a/drivers/pwm/pwm-lpc18xx-sct.c
-> > +++ b/drivers/pwm/pwm-lpc18xx-sct.c
-> > @@ -249,7 +249,7 @@ static int lpc18xx_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
-> >                            LPC18XX_PWM_EVSTATEMSK(lpc18xx_data->duty_event),
-> >                            LPC18XX_PWM_EVSTATEMSK_ALL);
-> >
-> > -       if (pwm->polarity = PWM_POLARITY_NORMAL) {
-> > +       if (pwm_get_polarity((pwm)) = PWM_POLARITY_NORMAL) {
-> 
-> What is the deal with the double parentheses?
-> 
-> Think I saw that in some of the other patches as well.
+--->8---
+virtual patch
 
-It comes from a typo in my coccinelle script. I already fixed it and
-regenerated the faulty patches, so please ignore this aspect while
-reviewing (this will be addressed in the next version).
+@@
+struct pwm_device *p;
+expression e;
+@@
+(
+-(p)->polarity = e;
++pwm_set_polarity((p), e);
+|
+-(p)->polarity
++pwm_get_polarity((p))
+|
+-(p)->period = e;
++pwm_set_period((p), e);
+|
+-(p)->period
++pwm_get_period((p))
+|
+-(p)->duty_cycle = e;
++pwm_set_duty_cycle((p), e);
+|
+-(p)->duty_cycle
++pwm_get_duty_cycle((p))
+)
+--->8---
+---
+ drivers/hwmon/pwm-fan.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Thanks,
-
-Boris
-
+diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
+index 3e23003..105b964 100644
+--- a/drivers/hwmon/pwm-fan.c
++++ b/drivers/hwmon/pwm-fan.c
+@@ -47,8 +47,8 @@ static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+ 	if (ctx->pwm_value = pwm)
+ 		goto exit_set_pwm_err;
+ 
+-	duty = DIV_ROUND_UP(pwm * (ctx->pwm->period - 1), MAX_PWM);
+-	ret = pwm_config(ctx->pwm, duty, ctx->pwm->period);
++	duty = DIV_ROUND_UP(pwm * (pwm_get_period((ctx->pwm)) - 1), MAX_PWM);
++	ret = pwm_config(ctx->pwm, duty, pwm_get_period((ctx->pwm)));
+ 	if (ret)
+ 		goto exit_set_pwm_err;
+ 
+@@ -234,10 +234,10 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, ctx);
+ 
+ 	/* Set duty cycle to maximum allowed */
+-	duty_cycle = ctx->pwm->period - 1;
++	duty_cycle = pwm_get_period((ctx->pwm)) - 1;
+ 	ctx->pwm_value = MAX_PWM;
+ 
+-	ret = pwm_config(ctx->pwm, duty_cycle, ctx->pwm->period);
++	ret = pwm_config(ctx->pwm, duty_cycle, pwm_get_period((ctx->pwm)));
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to configure PWM\n");
+ 		return ret;
+@@ -309,8 +309,9 @@ static int pwm_fan_resume(struct device *dev)
+ 	if (ctx->pwm_value = 0)
+ 		return 0;
+ 
+-	duty = DIV_ROUND_UP(ctx->pwm_value * (ctx->pwm->period - 1), MAX_PWM);
+-	ret = pwm_config(ctx->pwm, duty, ctx->pwm->period);
++	duty = DIV_ROUND_UP(ctx->pwm_value * (pwm_get_period((ctx->pwm)) - 1),
++			    MAX_PWM);
++	ret = pwm_config(ctx->pwm, duty, pwm_get_period((ctx->pwm)));
+ 	if (ret)
+ 		return ret;
+ 	return pwm_enable(ctx->pwm);
 -- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+2.1.4
+

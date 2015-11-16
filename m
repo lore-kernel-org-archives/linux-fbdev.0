@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 16 Nov 2015 08:56:31 +0000
-Subject: [PATCH v4 08/24] leds: pwm: use pwm_get/set_default_xxx() helpers where appropriate
-Message-Id: <1447664207-24370-9-git-send-email-boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:47 +0000
+Subject: [PATCH v4 24/24] regulator: pwm: properly initialize the ->state field
+Message-Id: <1447664207-24370-25-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
@@ -10,30 +10,67 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-pwm_set/get_default_xxx() helpers have been introduced to differentiate
-the default PWM states (those retrieved through DT, PWM lookup table or
-statically assigned by the driver) and the current ones.
-Make use of those helpers where appropriate.
+The ->state field is currently initialized to 0, thus referencing the
+voltage selector at index 0, which might not reflect the current voltage
+value.
+If possible, retrieve the current voltage selector from the PWM state, else
+return -EINVAL.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-Acked-by: Jacek Anaszewski <j.anaszewski@samsung.com>
+Tested-by: Heiko Stuebner <heiko@sntech.de>
+Acked-by: Mark Brown <broonie@kernel.org>
 ---
- drivers/leds/leds-pwm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/regulator/pwm-regulator.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
-index 1d07e3e..2c564d1 100644
---- a/drivers/leds/leds-pwm.c
-+++ b/drivers/leds/leds-pwm.c
-@@ -125,7 +125,7 @@ static int led_pwm_add(struct device *dev, struct led_pwm_priv *priv,
- 	if (led_data->can_sleep)
- 		INIT_WORK(&led_data->work, led_pwm_work);
+diff --git a/drivers/regulator/pwm-regulator.c b/drivers/regulator/pwm-regulator.c
+index 9ffdbd6..449e3b3 100644
+--- a/drivers/regulator/pwm-regulator.c
++++ b/drivers/regulator/pwm-regulator.c
+@@ -41,10 +41,35 @@ struct pwm_voltages {
+ /**
+  * Voltage table call-backs
+  */
++static void pwm_regulator_init_state(struct regulator_dev *rdev)
++{
++	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
++	struct pwm_state pwm_state;
++	unsigned int dutycycle;
++	int i;
++
++	pwm_get_state(drvdata->pwm, &pwm_state);
++
++	if (!pwm_state.period)
++		return;
++
++	dutycycle = (pwm_state.duty_cycle * 100) / pwm_state.period;
++
++	for (i = 0; i < rdev->desc->n_voltages; i++) {
++		if (dutycycle = drvdata->duty_cycle_table[i].dutycycle) {
++			drvdata->state = i;
++			return;
++		}
++	}
++}
++
+ static int pwm_regulator_get_voltage_sel(struct regulator_dev *rdev)
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
  
--	led_data->period = pwm_get_period(led_data->pwm);
-+	led_data->period = pwm_get_default_period(led_data->pwm);
- 	if (!led_data->period && (led->pwm_period_ns > 0))
- 		led_data->period = led->pwm_period_ns;
++	if (drvdata->state < 0)
++		pwm_regulator_init_state(rdev);
++
+ 	return drvdata->state;
+ }
  
+@@ -211,6 +236,7 @@ static int pwm_regulator_init_table(struct platform_device *pdev,
+ 		return ret;
+ 	}
+ 
++	drvdata->state			= -EINVAL;
+ 	drvdata->duty_cycle_table	= duty_cycle_table;
+ 	pwm_regulator_desc.ops		= &pwm_regulator_voltage_table_ops;
+ 	pwm_regulator_desc.n_voltages	= length / sizeof(*duty_cycle_table);
 -- 
 2.1.4
 

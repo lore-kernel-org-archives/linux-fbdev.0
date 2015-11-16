@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 16 Nov 2015 08:56:33 +0000
-Subject: [PATCH v4 10/24] backlight: pwm: use pwm_get/set_default_xxx() helpers where appropriate
-Message-Id: <1447664207-24370-11-git-send-email-boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:37 +0000
+Subject: [PATCH v4 14/24] clk: pwm: use pwm_get/set_default_xxx() helpers where appropriate
+Message-Id: <1447664207-24370-15-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
@@ -16,47 +16,44 @@ statically assigned by the driver) and the current ones.
 Make use of those helpers where appropriate.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/video/backlight/lm3630a_bl.c | 4 ++--
- drivers/video/backlight/pwm_bl.c     | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/clk/clk-pwm.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index 35fe482..449ebc3 100644
---- a/drivers/video/backlight/lm3630a_bl.c
-+++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -162,7 +162,7 @@ static int lm3630a_intr_config(struct lm3630a_chip *pchip)
+diff --git a/drivers/clk/clk-pwm.c b/drivers/clk/clk-pwm.c
+index b6306a2..642a49a 100644
+--- a/drivers/clk/clk-pwm.c
++++ b/drivers/clk/clk-pwm.c
+@@ -71,23 +71,23 @@ static int clk_pwm_probe(struct platform_device *pdev)
+ 	if (IS_ERR(pwm))
+ 		return PTR_ERR(pwm);
  
- static void lm3630a_pwm_ctrl(struct lm3630a_chip *pchip, int br, int br_max)
- {
--	unsigned int period = pwm_get_period(pchip->pwmd);
-+	unsigned int period = pwm_get_default_period(pchip->pwmd);
- 	unsigned int duty = br * period / br_max;
- 
- 	pwm_config(pchip->pwmd, duty, period);
-@@ -425,7 +425,7 @@ static int lm3630a_probe(struct i2c_client *client,
- 			return PTR_ERR(pchip->pwmd);
- 		}
+-	if (!pwm_get_period((pwm))) {
++	if (!pwm_get_default_period((pwm))) {
+ 		dev_err(&pdev->dev, "invalid PWM period\n");
+ 		return -EINVAL;
  	}
--	pchip->pwmd->period = pdata->pwm_period;
-+	pwm_set_default_period(pchip->pwmd, pdata->pwm_period);
  
- 	/* interrupt enable  : irq 0 is not allowed */
- 	pchip->irq = client->irq;
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index ae3c6b6..54d5a03 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -293,7 +293,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	 * set the period from platform data if it has not already been set
- 	 * via the PWM lookup table.
- 	 */
--	pb->period = pwm_get_period(pb->pwm);
-+	pb->period = pwm_get_default_period(pb->pwm);
- 	if (!pb->period && (data->pwm_period_ns > 0)) {
- 		pb->period = data->pwm_period_ns;
- 		pwm_set_period(pb->pwm, data->pwm_period_ns);
+ 	if (of_property_read_u32(node, "clock-frequency", &clk_pwm->fixed_rate))
+-		clk_pwm->fixed_rate = NSEC_PER_SEC / pwm_get_period((pwm));
++		clk_pwm->fixed_rate = NSEC_PER_SEC / pwm_get_default_period((pwm));
+ 
+-	if (pwm_get_period((pwm)) != NSEC_PER_SEC / clk_pwm->fixed_rate &&
+-	    pwm_get_period((pwm)) != DIV_ROUND_UP(NSEC_PER_SEC, clk_pwm->fixed_rate)) {
++	if (pwm_get_default_period((pwm)) != NSEC_PER_SEC / clk_pwm->fixed_rate &&
++	    pwm_get_default_period((pwm)) != DIV_ROUND_UP(NSEC_PER_SEC, clk_pwm->fixed_rate)) {
+ 		dev_err(&pdev->dev,
+ 			"clock-frequency does not match PWM period\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	ret = pwm_config(pwm, (pwm_get_period((pwm)) + 1) >> 1,
+-			 pwm_get_period((pwm)));
++	ret = pwm_config(pwm, (pwm_get_default_period((pwm)) + 1) >> 1,
++			 pwm_get_default_period((pwm)));
+ 	if (ret < 0)
+ 		return ret;
+ 
 -- 
 2.1.4
 

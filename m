@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 16 Nov 2015 08:56:38 +0000
-Subject: [PATCH v4 15/24] pwm: define a new pwm_state struct
-Message-Id: <1447664207-24370-16-git-send-email-boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:26 +0000
+Subject: [PATCH v4 03/24] clk: pwm: use pwm_get_xxx() helpers where appropriate
+Message-Id: <1447664207-24370-4-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
@@ -10,128 +10,78 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-The PWM state, represented by its period, duty_cycle and polarity,
-is currently directly stored in the PWM device.
-Declare a pwm_state structure embedding those field so that we can later
-use this struct to atomically update all the PWM parameters at once.
+Use pwm_get_xxx() helpers instead of directly accessing the pwm->xxx field.
+Doing that will ease adaptation of the PWM framework to support atomic
+update.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/pwm/core.c  |  6 +++---
- include/linux/pwm.h | 30 +++++++++++++++++++-----------
- 2 files changed, 22 insertions(+), 14 deletions(-)
+Patch generated with the following coccinelle script:
 
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index 59073a1..f1c6769 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -447,8 +447,8 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
- 	if (err)
- 		return err;
+--->8---
+virtual patch
+
+@@
+struct pwm_device *p;
+expression e;
+@@
+(
+-(p)->polarity = e;
++pwm_set_polarity((p), e);
+|
+-(p)->polarity
++pwm_get_polarity((p))
+|
+-(p)->period = e;
++pwm_set_period((p), e);
+|
+-(p)->period
++pwm_get_period((p))
+|
+-(p)->duty_cycle = e;
++pwm_set_duty_cycle((p), e);
+|
+-(p)->duty_cycle
++pwm_get_duty_cycle((p))
+)
+--->8---
+---
+ drivers/clk/clk-pwm.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/clk/clk-pwm.c b/drivers/clk/clk-pwm.c
+index 328fcfc..b6306a2 100644
+--- a/drivers/clk/clk-pwm.c
++++ b/drivers/clk/clk-pwm.c
+@@ -71,22 +71,23 @@ static int clk_pwm_probe(struct platform_device *pdev)
+ 	if (IS_ERR(pwm))
+ 		return PTR_ERR(pwm);
  
--	pwm->duty_cycle = duty_ns;
--	pwm->period = period_ns;
-+	pwm->state.duty_cycle = duty_ns;
-+	pwm->state.period = period_ns;
+-	if (!pwm->period) {
++	if (!pwm_get_period((pwm))) {
+ 		dev_err(&pdev->dev, "invalid PWM period\n");
+ 		return -EINVAL;
+ 	}
  
- 	return 0;
- }
-@@ -485,7 +485,7 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity)
- 	if (err)
- 		goto unlock;
+ 	if (of_property_read_u32(node, "clock-frequency", &clk_pwm->fixed_rate))
+-		clk_pwm->fixed_rate = NSEC_PER_SEC / pwm->period;
++		clk_pwm->fixed_rate = NSEC_PER_SEC / pwm_get_period((pwm));
  
--	pwm->polarity = polarity;
-+	pwm->state.polarity = polarity;
+-	if (pwm->period != NSEC_PER_SEC / clk_pwm->fixed_rate &&
+-	    pwm->period != DIV_ROUND_UP(NSEC_PER_SEC, clk_pwm->fixed_rate)) {
++	if (pwm_get_period((pwm)) != NSEC_PER_SEC / clk_pwm->fixed_rate &&
++	    pwm_get_period((pwm)) != DIV_ROUND_UP(NSEC_PER_SEC, clk_pwm->fixed_rate)) {
+ 		dev_err(&pdev->dev,
+ 			"clock-frequency does not match PWM period\n");
+ 		return -EINVAL;
+ 	}
  
- unlock:
- 	mutex_unlock(&pwm->lock);
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 8ba57fc..af42299 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -80,6 +80,18 @@ enum {
- 	PWMF_EXPORTED = 1 << 2,
- };
+-	ret = pwm_config(pwm, (pwm->period + 1) >> 1, pwm->period);
++	ret = pwm_config(pwm, (pwm_get_period((pwm)) + 1) >> 1,
++			 pwm_get_period((pwm)));
+ 	if (ret < 0)
+ 		return ret;
  
-+/*
-+ * struct pwm_state - state of a PWM channel
-+ * @period: PWM period (in nanoseconds)
-+ * @duty_cycle: PWM duty cycle (in nanoseconds)
-+ * @polarity: PWM polarity
-+ */
-+struct pwm_state {
-+	unsigned int period;
-+	unsigned int duty_cycle;
-+	enum pwm_polarity polarity;
-+};
-+
- /**
-  * struct pwm_device - PWM channel object
-  * @label: name of the PWM device
-@@ -89,9 +101,7 @@ enum {
-  * @chip: PWM chip providing this PWM device
-  * @chip_data: chip-private data associated with the PWM device
-  * @lock: used to serialize accesses to the PWM device where necessary
-- * @period: period of the PWM signal (in nanoseconds)
-- * @duty_cycle: duty cycle of the PWM signal (in nanoseconds)
-- * @polarity: polarity of the PWM signal
-+ * @state: curent PWM channel state
-  */
- struct pwm_device {
- 	const char *label;
-@@ -102,9 +112,7 @@ struct pwm_device {
- 	void *chip_data;
- 	struct mutex lock;
- 
--	unsigned int period;
--	unsigned int duty_cycle;
--	enum pwm_polarity polarity;
-+	struct pwm_state state;
- };
- 
- static inline bool pwm_is_enabled(const struct pwm_device *pwm)
-@@ -115,7 +123,7 @@ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
- static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
- {
- 	if (pwm)
--		pwm->period = period;
-+		pwm->state.period = period;
- }
- 
- static inline void pwm_set_default_period(struct pwm_device *pwm,
-@@ -126,7 +134,7 @@ static inline void pwm_set_default_period(struct pwm_device *pwm,
- 
- static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
- {
--	return pwm ? pwm->period : 0;
-+	return pwm ? pwm->state.period : 0;
- }
- 
- static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
-@@ -137,12 +145,12 @@ static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
- static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
- {
- 	if (pwm)
--		pwm->duty_cycle = duty;
-+		pwm->state.duty_cycle = duty;
- }
- 
- static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
- {
--	return pwm ? pwm->duty_cycle : 0;
-+	return pwm ? pwm->state.duty_cycle : 0;
- }
- 
- /*
-@@ -158,7 +166,7 @@ static inline void pwm_set_default_polarity(struct pwm_device *pwm,
- 
- static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
- {
--	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
-+	return pwm ? pwm->state.polarity : PWM_POLARITY_NORMAL;
- }
- 
- /**
 -- 
 2.1.4
 

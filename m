@@ -1,76 +1,81 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 20 Nov 2015 21:47:41 +0000
-Subject: [PATCH] fbdev: auo_k190x: avoid unused function warnings
-Message-Id: <3917686.rD8ezhD468@wuerfel>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:25 +0000
+Subject: [PATCH v4 02/24] pwm: use pwm_get_xxx() helpers where appropriate
+Message-Id: <1447664207-24370-3-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-The auo_k190x framebuffer driver encloses the power-management
-functions in #ifdef CONFIG_PM, but the auok190x_suspend/resume
-functions are only really used when CONFIG_PM_SLEEP is also
-set, as a frequent gcc warning shows:
+Use pwm_get_xxx() helpers instead of directly accessing the pwm->xxx field.
+Doing that will ease adaptation of the PWM framework to support atomic
+update.
 
-drivers/video/fbdev/auo_k190x.c:859:12: warning: 'auok190x_suspend' defined but not used
-drivers/video/fbdev/auo_k190x.c:899:12: warning: 'auok190x_resume' defined but not used
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+Patch generated with the following coccinelle script:
 
-This changes the driver to remove the #ifdef and instead mark
-the functions as __maybe_unused, which is a nicer anyway, as it
-provides build testing for all the code in all configurations
-and is harder to get wrong.
+--->8---
+virtual patch
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+@@
+struct pwm_device *p;
+expression e;
+@@
+(
+-(p)->polarity = e;
++pwm_set_polarity((p), e);
+|
+-(p)->polarity
++pwm_get_polarity((p))
+|
+-(p)->period = e;
++pwm_set_period((p), e);
+|
+-(p)->period
++pwm_get_period((p))
+|
+-(p)->duty_cycle = e;
++pwm_set_duty_cycle((p), e);
+|
+-(p)->duty_cycle
++pwm_get_duty_cycle((p))
+)
+--->8---
+---
+ drivers/pwm/pwm-crc.c         | 2 +-
+ drivers/pwm/pwm-lpc18xx-sct.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/auo_k190x.c b/drivers/video/fbdev/auo_k190x.c
-index 8d2499d1cafb..9580374667ba 100644
---- a/drivers/video/fbdev/auo_k190x.c
-+++ b/drivers/video/fbdev/auo_k190x.c
-@@ -773,9 +773,7 @@ static void auok190x_recover(struct auok190xfb_par *par)
- /*
-  * Power-management
-  */
--
--#ifdef CONFIG_PM
--static int auok190x_runtime_suspend(struct device *dev)
-+static int __maybe_unused auok190x_runtime_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct fb_info *info = platform_get_drvdata(pdev);
-@@ -822,7 +820,7 @@ finish:
- 	return 0;
- }
+diff --git a/drivers/pwm/pwm-crc.c b/drivers/pwm/pwm-crc.c
+index 7101c70..2f88543 100644
+--- a/drivers/pwm/pwm-crc.c
++++ b/drivers/pwm/pwm-crc.c
+@@ -75,7 +75,7 @@ static int crc_pwm_config(struct pwm_chip *c, struct pwm_device *pwm,
+ 		return -EINVAL;
+ 	}
  
--static int auok190x_runtime_resume(struct device *dev)
-+static int __maybe_unused auok190x_runtime_resume(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct fb_info *info = platform_get_drvdata(pdev);
-@@ -856,7 +854,7 @@ static int auok190x_runtime_resume(struct device *dev)
- 	return 0;
- }
+-	if (pwm->period != period_ns) {
++	if (pwm_get_period((pwm)) != period_ns) {
+ 		int clk_div;
  
--static int auok190x_suspend(struct device *dev)
-+static int __maybe_unused auok190x_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct fb_info *info = platform_get_drvdata(pdev);
-@@ -896,7 +894,7 @@ static int auok190x_suspend(struct device *dev)
- 	return 0;
- }
+ 		/* changing the clk divisor, need to disable fisrt */
+diff --git a/drivers/pwm/pwm-lpc18xx-sct.c b/drivers/pwm/pwm-lpc18xx-sct.c
+index 9163085..091fa13 100644
+--- a/drivers/pwm/pwm-lpc18xx-sct.c
++++ b/drivers/pwm/pwm-lpc18xx-sct.c
+@@ -249,7 +249,7 @@ static int lpc18xx_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
+ 			   LPC18XX_PWM_EVSTATEMSK(lpc18xx_data->duty_event),
+ 			   LPC18XX_PWM_EVSTATEMSK_ALL);
  
--static int auok190x_resume(struct device *dev)
-+static int __maybe_unused auok190x_resume(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct fb_info *info = platform_get_drvdata(pdev);
-@@ -933,7 +931,6 @@ static int auok190x_resume(struct device *dev)
- 
- 	return 0;
- }
--#endif
- 
- const struct dev_pm_ops auok190x_pm = {
- 	SET_RUNTIME_PM_OPS(auok190x_runtime_suspend, auok190x_runtime_resume,
+-	if (pwm->polarity = PWM_POLARITY_NORMAL) {
++	if (pwm_get_polarity((pwm)) = PWM_POLARITY_NORMAL) {
+ 		set_event = lpc18xx_pwm->period_event;
+ 		clear_event = lpc18xx_data->duty_event;
+ 		res_action = LPC18XX_PWM_RES_SET;
+-- 
+2.1.4
 

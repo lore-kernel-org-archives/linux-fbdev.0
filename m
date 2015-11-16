@@ -1,204 +1,149 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sun, 01 Nov 2015 10:42:19 +0000
-Subject: [PATCH v7 17/26] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvram_w
-Message-Id: <20151101104206.531667409@telegraphics.com.au>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:45 +0000
+Subject: [PATCH v4 22/24] pwm: rockchip: add initial state retrieval
+Message-Id: <1447664207-24370-23-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20151101104202.301856132@telegraphics.com.au>
+References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Make use of arch_nvram_ops in device drivers so that the nvram_* function
-exports can be removed.
+Implement the ->reset_state() function to expose initial state.
 
-Since they are no longer global symbols, rename the PPC32 nvram_* functions
-appropriately.
-
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+Tested-by: Heiko Stuebner <heiko@sntech.de>
 ---
+ drivers/pwm/pwm-rockchip.c | 66 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-Changed since v4:
-- Split off the CONFIG_PPC32, CONFIG_PPC_PMAC and CONFIG_NVRAM tests into
-a separate patch.
-
----
- arch/powerpc/kernel/setup_32.c             |    8 ++++----
- drivers/char/generic_nvram.c               |    4 ++--
- drivers/video/fbdev/controlfb.c            |    4 ++--
- drivers/video/fbdev/imsttfb.c              |    4 ++--
- drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
- drivers/video/fbdev/platinumfb.c           |    4 ++--
- drivers/video/fbdev/valkyriefb.c           |    4 ++--
- 7 files changed, 15 insertions(+), 15 deletions(-)
-
-Index: linux/arch/powerpc/kernel/setup_32.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-=
-11-01 21:41:42.000000000 +1100
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-11-01 21:41:45.000000000 +1100
-@@ -176,20 +176,18 @@ __setup("l3cr=3D", ppc_setup_l3cr);
-=20
- #ifdef CONFIG_GENERIC_NVRAM
-=20
--unsigned char nvram_read_byte(int addr)
-+static unsigned char ppc_nvram_read_byte(int addr)
- {
- 	if (ppc_md.nvram_read_val)
- 		return ppc_md.nvram_read_val(addr);
- 	return 0xff;
- }
--EXPORT_SYMBOL(nvram_read_byte);
-=20
--void nvram_write_byte(unsigned char val, int addr)
-+static void ppc_nvram_write_byte(unsigned char val, int addr)
- {
- 	if (ppc_md.nvram_write_val)
- 		ppc_md.nvram_write_val(addr, val);
- }
--EXPORT_SYMBOL(nvram_write_byte);
-=20
- static ssize_t ppc_nvram_get_size(void)
- {
-@@ -206,6 +204,8 @@ static long ppc_nvram_sync(void)
- }
-=20
- const struct nvram_ops arch_nvram_ops =3D {
-+	.read_byte      =3D ppc_nvram_read_byte,
-+	.write_byte     =3D ppc_nvram_write_byte,
- 	.get_size       =3D ppc_nvram_get_size,
- 	.sync           =3D ppc_nvram_sync,
+diff --git a/drivers/pwm/pwm-rockchip.c b/drivers/pwm/pwm-rockchip.c
+index 7d9cc90..6eab25c 100644
+--- a/drivers/pwm/pwm-rockchip.c
++++ b/drivers/pwm/pwm-rockchip.c
+@@ -51,6 +51,7 @@ struct rockchip_pwm_data {
+ 
+ 	void (*set_enable)(struct pwm_chip *chip,
+ 			   struct pwm_device *pwm, bool enable);
++	void (*reset_state)(struct pwm_chip *chip, struct pwm_device *pwm);
  };
-Index: linux/drivers/char/generic_nvram.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/char/generic_nvram.c	2015-11=
--01 21:41:42.000000000 +1100
-+++ linux/drivers/char/generic_nvram.c	2015-11-01 21:41:45.000000000 +1100
-@@ -63,7 +63,7 @@ static ssize_t read_nvram(struct file *f
- 	if (*ppos >=3D nvram_len)
- 		return 0;
- 	for (i =3D *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
--		if (__put_user(nvram_read_byte(i), p))
-+		if (__put_user(arch_nvram_ops.read_byte(i), p))
- 			return -EFAULT;
- 	*ppos =3D i;
- 	return p - buf;
-@@ -83,7 +83,7 @@ static ssize_t write_nvram(struct file *
- 	for (i =3D *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
- 		if (__get_user(c, p))
- 			return -EFAULT;
--		nvram_write_byte(c, i);
-+		arch_nvram_ops.write_byte(c, i);
- 	}
- 	*ppos =3D i;
- 	return p - buf;
-Index: linux/drivers/video/fbdev/controlfb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/controlfb.c	2015=
--11-01 21:41:23.000000000 +1100
-+++ linux/drivers/video/fbdev/controlfb.c	2015-11-01 21:41:45.000000000 +11=
-00
-@@ -415,7 +415,7 @@ static int __init init_control(struct fb
- 	/* Try to pick a video mode out of NVRAM if we have one. */
- #ifdef CONFIG_NVRAM
- 	if (default_cmode =3D CMODE_NVRAM) {
--		cmode =3D nvram_read_byte(NV_CMODE);
-+		cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- 		if(cmode < CMODE_8 || cmode > CMODE_32)
- 			cmode =3D CMODE_8;
- 	} else
-@@ -423,7 +423,7 @@ static int __init init_control(struct fb
- 		cmode=DEfault_cmode;
- #ifdef CONFIG_NVRAM
- 	if (default_vmode =3D VMODE_NVRAM) {
--		vmode =3D nvram_read_byte(NV_VMODE);
-+		vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 		if (vmode < 1 || vmode > VMODE_MAX ||
- 		    control_mac_modes[vmode - 1].m[full] < cmode) {
- 			sense =3D read_control_sense(p);
-Index: linux/drivers/video/fbdev/imsttfb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-1=
-1-01 21:41:43.000000000 +1100
-+++ linux/drivers/video/fbdev/imsttfb.c	2015-11-01 21:41:45.000000000 +1100
-@@ -1393,12 +1393,12 @@ static void init_imstt(struct fb_info *i
- 		int vmode =3D init_vmode, cmode =3D init_cmode;
-=20
- 		if (vmode =3D -1) {
--			vmode =3D nvram_read_byte(NV_VMODE);
-+			vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 			if (vmode <=3D 0 || vmode > VMODE_MAX)
- 				vmode =3D VMODE_640_480_67;
- 		}
- 		if (cmode =3D -1) {
--			cmode =3D nvram_read_byte(NV_CMODE);
-+			cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- 			if (cmode < CMODE_8 || cmode > CMODE_32)
- 				cmode =3D CMODE_8;
- 		}
-Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/matrox/matroxfb_=
-base.c	2015-11-01 21:41:43.000000000 +1100
-+++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-11-01 21:41:45.00=
-0000000 +1100
-@@ -1878,7 +1878,7 @@ static int initMatrox2(struct matrox_fb_
- 			default_vmode =3D VMODE_640_480_60;
- #if defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
- 		if (default_cmode =3D CMODE_NVRAM)
--			default_cmode =3D nvram_read_byte(NV_CMODE);
-+			default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- #endif
- 		if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
- 			default_cmode =3D CMODE_8;
-Index: linux/drivers/video/fbdev/platinumfb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/platinumfb.c	201=
-5-11-01 21:41:23.000000000 +1100
-+++ linux/drivers/video/fbdev/platinumfb.c	2015-11-01 21:41:45.000000000 +1=
-100
-@@ -349,7 +349,7 @@ static int platinum_init_fb(struct fb_in
- 	printk(KERN_INFO "platinumfb: Monitor sense value =3D 0x%x, ", sense);
- 	if (default_vmode =3D VMODE_NVRAM) {
- #ifdef CONFIG_NVRAM
--		default_vmode =3D nvram_read_byte(NV_VMODE);
-+		default_vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 		if (default_vmode <=3D 0 || default_vmode > VMODE_MAX ||
- 		    !platinum_reg_init[default_vmode-1])
- #endif
-@@ -362,7 +362,7 @@ static int platinum_init_fb(struct fb_in
- 		default_vmode =3D VMODE_640_480_60;
- #ifdef CONFIG_NVRAM
- 	if (default_cmode =3D CMODE_NVRAM)
--		default_cmode =3D nvram_read_byte(NV_CMODE);
-+		default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- #endif
- 	if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
- 		default_cmode =3D CMODE_8;
-Index: linux/drivers/video/fbdev/valkyriefb.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D--- linux.orig/drivers/video/fbdev/valkyriefb.c	201=
-5-11-01 21:41:43.000000000 +1100
-+++ linux/drivers/video/fbdev/valkyriefb.c	2015-11-01 21:41:45.000000000 +1=
-100
-@@ -285,7 +285,7 @@ static void __init valkyrie_choose_mode(
- 	/* Try to pick a video mode out of NVRAM if we have one. */
- #if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
- 	if (default_vmode =3D VMODE_NVRAM) {
--		default_vmode =3D nvram_read_byte(NV_VMODE);
-+		default_vmode =3D arch_nvram_ops.read_byte(NV_VMODE);
- 		if (default_vmode <=3D 0
- 		 || default_vmode > VMODE_MAX
- 		 || !valkyrie_reg_init[default_vmode - 1])
-@@ -298,7 +298,7 @@ static void __init valkyrie_choose_mode(
- 		default_vmode =3D VMODE_640_480_67;
- #if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
- 	if (default_cmode =3D CMODE_NVRAM)
--		default_cmode =3D nvram_read_byte(NV_CMODE);
-+		default_cmode =3D arch_nvram_ops.read_byte(NV_CMODE);
- #endif
-=20
- 	/*
-
+ 
+ static inline struct rockchip_pwm_chip *to_rockchip_pwm_chip(struct pwm_chip *c)
+@@ -75,6 +76,18 @@ static void rockchip_pwm_set_enable_v1(struct pwm_chip *chip,
+ 	writel_relaxed(val, pc->base + pc->data->regs.ctrl);
+ }
+ 
++static void rockchip_pwm_reset_state_v1(struct pwm_chip *chip,
++					struct pwm_device *pwm)
++{
++	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
++	u32 enable_conf = PWM_CTRL_OUTPUT_EN | PWM_CTRL_TIMER_EN;
++	u32 val;
++
++	val = readl(pc->base + pc->data->regs.ctrl);
++	if ((val & enable_conf) = enable_conf)
++		pwm->state.enabled = true;
++}
++
+ static void rockchip_pwm_set_enable_v2(struct pwm_chip *chip,
+ 				       struct pwm_device *pwm, bool enable)
+ {
+@@ -98,6 +111,54 @@ static void rockchip_pwm_set_enable_v2(struct pwm_chip *chip,
+ 	writel_relaxed(val, pc->base + pc->data->regs.ctrl);
+ }
+ 
++static void rockchip_pwm_reset_state_v2(struct pwm_chip *chip,
++					struct pwm_device *pwm)
++{
++	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
++	u32 enable_conf = PWM_OUTPUT_LEFT | PWM_LP_DISABLE | PWM_ENABLE |
++			  PWM_CONTINUOUS;
++	u32 val;
++
++	val = readl(pc->base + pc->data->regs.ctrl);
++	if ((val & enable_conf) != enable_conf)
++		return;
++
++	pwm->state.enabled = true;
++
++	if (!(val & PWM_DUTY_POSITIVE))
++		pwm->state.polarity = PWM_POLARITY_INVERSED;
++}
++
++static void rockchip_pwm_reset_state(struct pwm_chip *chip,
++				     struct pwm_device *pwm)
++{
++	struct rockchip_pwm_chip *pc = to_rockchip_pwm_chip(chip);
++	unsigned long clk_rate;
++	u64 tmp;
++	int ret;
++
++	ret = clk_enable(pc->clk);
++	if (ret)
++		return;
++
++	clk_rate = clk_get_rate(pc->clk);
++
++	tmp = readl(pc->base + pc->data->regs.period);
++	tmp *= pc->data->prescaler * NSEC_PER_SEC;
++	do_div(tmp, clk_rate);
++	pwm->state.period = tmp;
++
++	tmp = readl(pc->base + pc->data->regs.duty);
++	tmp *= pc->data->prescaler * NSEC_PER_SEC;
++	do_div(tmp, clk_rate);
++	pwm->state.duty_cycle = tmp;
++
++	pc->data->reset_state(chip, chip->pwms);
++
++	if (!pwm_is_enabled(pwm))
++		clk_disable(pc->clk);
++}
++
+ static int rockchip_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
+ 			       int duty_ns, int period_ns)
+ {
+@@ -171,6 +232,7 @@ static void rockchip_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
+ }
+ 
+ static const struct pwm_ops rockchip_pwm_ops_v1 = {
++	.reset_state = rockchip_pwm_reset_state,
+ 	.config = rockchip_pwm_config,
+ 	.enable = rockchip_pwm_enable,
+ 	.disable = rockchip_pwm_disable,
+@@ -178,6 +240,7 @@ static const struct pwm_ops rockchip_pwm_ops_v1 = {
+ };
+ 
+ static const struct pwm_ops rockchip_pwm_ops_v2 = {
++	.reset_state = rockchip_pwm_reset_state,
+ 	.config = rockchip_pwm_config,
+ 	.set_polarity = rockchip_pwm_set_polarity,
+ 	.enable = rockchip_pwm_enable,
+@@ -195,6 +258,7 @@ static const struct rockchip_pwm_data pwm_data_v1 = {
+ 	.prescaler = 2,
+ 	.ops = &rockchip_pwm_ops_v1,
+ 	.set_enable = rockchip_pwm_set_enable_v1,
++	.reset_state = rockchip_pwm_reset_state_v1,
+ };
+ 
+ static const struct rockchip_pwm_data pwm_data_v2 = {
+@@ -207,6 +271,7 @@ static const struct rockchip_pwm_data pwm_data_v2 = {
+ 	.prescaler = 1,
+ 	.ops = &rockchip_pwm_ops_v2,
+ 	.set_enable = rockchip_pwm_set_enable_v2,
++	.reset_state = rockchip_pwm_reset_state_v2,
+ };
+ 
+ static const struct rockchip_pwm_data pwm_data_vop = {
+@@ -219,6 +284,7 @@ static const struct rockchip_pwm_data pwm_data_vop = {
+ 	.prescaler = 1,
+ 	.ops = &rockchip_pwm_ops_v2,
+ 	.set_enable = rockchip_pwm_set_enable_v2,
++	.reset_state = rockchip_pwm_reset_state_v2,
+ };
+ 
+ static const struct of_device_id rockchip_pwm_dt_ids[] = {
+-- 
+2.1.4
 

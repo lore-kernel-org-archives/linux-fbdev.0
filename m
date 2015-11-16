@@ -1,308 +1,137 @@
-From: Rongrong Zou <rongrongchau@outlook.com>
-Date: Tue, 03 Nov 2015 13:54:57 +0000
-Subject: [PATCH 2/3] Hisilicon graphic driver: add hardware cursor support to hisilicon hi1710 graphi chip
-Message-Id: <BLU437-SMTP24E693DA7F7317CF67053AC32B0@phx.gbl>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:38 +0000
+Subject: [PATCH v4 15/24] pwm: define a new pwm_state struct
+Message-Id: <1447664207-24370-16-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Rongrong Zou <zourongrong@huawei.com>
+The PWM state, represented by its period, duty_cycle and polarity,
+is currently directly stored in the PWM device.
+Declare a pwm_state structure embedding those field so that we can later
+use this struct to atomically update all the PWM parameters at once.
 
-This patch implements hardware cursor.
-
-Signed-off-by: Rongrong Zou <zourongrong@huawei.com>
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/video/fbdev/hisilicon/Makefile      |   2 +-
- drivers/video/fbdev/hisilicon/hisi_cursor.c | 121 ++++++++++++++++++++++++++++
- drivers/video/fbdev/hisilicon/hisi_cursor.h |  11 +++
- drivers/video/fbdev/hisilicon/hisi_drv.c    |  88 ++++++++++++++++++++
- 4 files changed, 221 insertions(+), 1 deletion(-)
- create mode 100644 drivers/video/fbdev/hisilicon/hisi_cursor.c
- create mode 100644 drivers/video/fbdev/hisilicon/hisi_cursor.h
+ drivers/pwm/core.c  |  6 +++---
+ include/linux/pwm.h | 30 +++++++++++++++++++-----------
+ 2 files changed, 22 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/fbdev/hisilicon/Makefile b/drivers/video/fbdev/hisilicon/Makefile
-index 540b6d2..5f478ed 100644
---- a/drivers/video/fbdev/hisilicon/Makefile
-+++ b/drivers/video/fbdev/hisilicon/Makefile
-@@ -1,6 +1,6 @@
- obj-$(CONFIG_FB_HISILICON) += hisiliconfb.o
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index 59073a1..f1c6769 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -447,8 +447,8 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
+ 	if (err)
+ 		return err;
  
--hisiliconfb-y := hisi_drv.o hisi_hw.o hisi_chip.o
-+hisiliconfb-y := hisi_drv.o hisi_hw.o hisi_cursor.o hisi_chip.o
- hisiliconfb-y += hisi_mode.o hisi_power.o
+-	pwm->duty_cycle = duty_ns;
+-	pwm->period = period_ns;
++	pwm->state.duty_cycle = duty_ns;
++	pwm->state.period = period_ns;
  
- hisiliconfb-objs := $(hisiliconfb-y)
-diff --git a/drivers/video/fbdev/hisilicon/hisi_cursor.c b/drivers/video/fbdev/hisilicon/hisi_cursor.c
-new file mode 100644
-index 0000000..84b0156
---- /dev/null
-+++ b/drivers/video/fbdev/hisilicon/hisi_cursor.c
-@@ -0,0 +1,121 @@
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/errno.h>
-+#include <linux/fb.h>
-+#include <linux/ioport.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/pagemap.h>
-+#include <linux/pci.h>
-+#include <linux/platform_device.h>
-+#include <linux/screen_info.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/vmalloc.h>
-+#include "hisi_drv.h"
-+#include "hisi_cursor.h"
-+#include "hisi_help.h"
-+#include "hisi_reg.h"
-+
-+
-+#define WRITE_REG(addr, data) writel((data), cursor->mmio + (addr))
-+
-+
-+void hw_cursor_enable(struct hisi_cursor *cursor)
-+{
-+	u32 reg;
-+
-+	reg = FIELD_VALUE(0, HWC_ADDRESS, ADDRESS, cursor->offset) |
-+		FIELD_SET(0, HWC_ADDRESS, EXT, LOCAL) |
-+		FIELD_SET(0, HWC_ADDRESS, ENABLE, ENABLE);
-+	WRITE_REG(HWC_ADDRESS, reg);
-+}
-+
-+void hw_cursor_disable(struct hisi_cursor *cursor)
-+{
-+	WRITE_REG(HWC_ADDRESS, 0);
-+}
-+
-+void hw_cursor_set_size(struct hisi_cursor *cursor, int w, int h)
-+{
-+	cursor->w = w;
-+	cursor->h = h;
-+}
-+
-+void hw_cursor_set_pos(struct hisi_cursor *cursor, int x, int y)
-+{
-+	u32 reg;
-+
-+	reg = FIELD_VALUE(0, HWC_LOCATION, Y, y) |
-+		FIELD_VALUE(0, HWC_LOCATION, X, x);
-+	WRITE_REG(HWC_LOCATION, reg);
-+}
-+
-+void hw_cursor_set_color(struct hisi_cursor *cursor, u32 fg,  u32 bg)
-+{
-+	WRITE_REG(HWC_COLOR_12, (fg << 16)|(bg & 0xffff));
-+	WRITE_REG(HWC_COLOR_3, 0xffe0);
-+}
-+
-+void hw_cursor_set_data(struct hisi_cursor *cursor,
-+			u16 rop, const u8 *pcol, const u8 *pmsk)
-+{
-+	struct hisifb_crtc *crtc;
-+
-+	int i, j, count, pitch, offset;
-+	u8 color, mask, opr;
-+	u16 data;
-+	u16  *pbuffer, *pstart;
-+
-+	crtc = container_of(cursor, struct hisifb_crtc, cursor);
-+	/*  in byte*/
-+	pitch = cursor->w >> 3;
-+
-+	/* in byte	*/
-+	count = pitch * cursor->h;
-+
-+	/* in ushort */
-+	offset = cursor->maxW * 2 / 8 / 2;
-+
-+	data = 0;
-+	pstart = (u16 *)cursor->vstart;
-+	pbuffer = pstart;
-+
-+
-+	for (i = 0; i < count; i++) {
-+		color = *pcol++;
-+		mask = *pmsk++;
-+		data = 0;
-+
-+		/* either method below works well,
-+		 * but method 2 shows no lag
-+		 * and method 1 seems a bit wrong
-+		 */
-+
-+		for (j = 0; j < 8; j++) {
-+			if (mask & (0x80 >> j)) {
-+				if (rop = ROP_XOR)
-+					opr = mask ^ color;
-+				else
-+					opr = mask & color;
-+
-+				/* 2 stands for forecolor and 1 for backcolor */
-+				data |= ((opr & (0x80 >> j)) ? 2 : 1) <<
-+					(j * 2);
-+			}
-+		}
-+
-+		*pbuffer = data;
-+
-+		/* assume pitch is 1,2,4,8,...*/
-+		if ((i+1) % pitch = 0) {
-+			/* need a return */
-+			pstart += offset;
-+			pbuffer = pstart;
-+		} else {
-+			pbuffer++;
-+		}
-+	}
-+}
-diff --git a/drivers/video/fbdev/hisilicon/hisi_cursor.h b/drivers/video/fbdev/hisilicon/hisi_cursor.h
-new file mode 100644
-index 0000000..551b743
---- /dev/null
-+++ b/drivers/video/fbdev/hisilicon/hisi_cursor.h
-@@ -0,0 +1,11 @@
-+#ifndef HISI_CURSOR_H__
-+#define HISI_CURSOR_H__
-+
-+void hw_cursor_enable(struct hisi_cursor *cursor);
-+void hw_cursor_disable(struct hisi_cursor *cursor);
-+void hw_cursor_set_size(struct hisi_cursor *cursor, int w, int h);
-+void hw_cursor_set_pos(struct hisi_cursor *cursor, int x, int y);
-+void hw_cursor_set_color(struct hisi_cursor *cursor, u32 fg, u32 bg);
-+void hw_cursor_set_data(struct hisi_cursor *cursor, u16 rop,
-+						const u8 *data, const u8 *mask);
-+#endif
-diff --git a/drivers/video/fbdev/hisilicon/hisi_drv.c b/drivers/video/fbdev/hisilicon/hisi_drv.c
-index 521a279..54231d3 100644
---- a/drivers/video/fbdev/hisilicon/hisi_drv.c
-+++ b/drivers/video/fbdev/hisilicon/hisi_drv.c
-@@ -18,6 +18,7 @@
- #include <linux/string.h>
- #include <linux/vmalloc.h>
- #include "hisi_drv.h"
-+#include "hisi_cursor.h"
- #include "hisi_hw.h"
+ 	return 0;
+ }
+@@ -485,7 +485,7 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity)
+ 	if (err)
+ 		goto unlock;
  
+-	pwm->polarity = polarity;
++	pwm->state.polarity = polarity;
  
-@@ -37,6 +38,7 @@ static int hisifb_ops_set_par(struct fb_info *);
- static int hisifb_ops_setcolreg(unsigned, unsigned, unsigned,
- 	unsigned, unsigned, struct fb_info *);
- static int hisifb_ops_blank(int, struct fb_info *);
-+static int hisifb_ops_cursor(struct fb_info *, struct fb_cursor *);
- 
- typedef void (*PROC_SPEC_SETUP)(struct hisi_share *, char *);
- typedef int (*PROC_SPEC_MAP)(struct hisi_share *, struct pci_dev *);
-@@ -128,6 +130,63 @@ static struct pci_driver hisifb_driver = {
- #endif
+ unlock:
+ 	mutex_unlock(&pwm->lock);
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index 8ba57fc..af42299 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -80,6 +80,18 @@ enum {
+ 	PWMF_EXPORTED = 1 << 2,
  };
  
-+static int hisifb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
-+{
-+	struct hisifb_par *par;
-+	struct hisifb_crtc *crtc;
-+	struct hisi_cursor *cursor;
++/*
++ * struct pwm_state - state of a PWM channel
++ * @period: PWM period (in nanoseconds)
++ * @duty_cycle: PWM duty cycle (in nanoseconds)
++ * @polarity: PWM polarity
++ */
++struct pwm_state {
++	unsigned int period;
++	unsigned int duty_cycle;
++	enum pwm_polarity polarity;
++};
 +
-+	par = info->par;
-+	crtc = &par->crtc;
-+	cursor = &crtc->cursor;
-+
-+	if (fbcursor->image.width > cursor->maxW ||
-+		fbcursor->image.height > cursor->maxH ||
-+		 fbcursor->image.depth > 1){
-+		return -ENXIO;
-+	}
-+
-+	cursor->disable(cursor);
-+	if (fbcursor->set & FB_CUR_SETSIZE)
-+		cursor->set_size(cursor, fbcursor->image.width,
-+				 fbcursor->image.height);
-+
-+
-+	if (fbcursor->set & FB_CUR_SETPOS)
-+		cursor->set_pos(cursor, fbcursor->image.dx - info->var.xoffset,
-+				fbcursor->image.dy - info->var.yoffset);
-+
-+	if (fbcursor->set & FB_CUR_SETCMAP) {
-+		/* get the 16bit color of kernel means */
-+		u16 fg, bg;
-+
-+		fg +		((info->cmap.red[fbcursor->image.fg_color] & 0xf800)) |
-+		((info->cmap.green[fbcursor->image.fg_color] & 0xfc00) >> 5)|
-+		((info->cmap.blue[fbcursor->image.fg_color] & 0xf800) >> 11);
-+
-+		bg +		((info->cmap.red[fbcursor->image.bg_color] & 0xf800))|
-+		((info->cmap.green[fbcursor->image.bg_color] & 0xfc00) >> 5)|
-+		((info->cmap.blue[fbcursor->image.bg_color] & 0xf800) >> 11);
-+
-+		cursor->set_color(cursor, fg, bg);
-+	}
-+
-+
-+	if (fbcursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
-+		cursor->set_data(cursor,
-+				 fbcursor->rop,
-+				 fbcursor->image.data,
-+				 fbcursor->mask);
-+	}
-+
-+	if (fbcursor->enable)
-+		cursor->enable(cursor);
-+
-+	return 0;
-+}
-+
- static struct fb_ops hisifb_ops = {
- 	.owner = THIS_MODULE,
- 	.fb_check_var =  hisifb_ops_check_var,
-@@ -138,6 +197,8 @@ static struct fb_ops hisifb_ops = {
- 	.fb_fillrect = cfb_fillrect,
- 	.fb_imageblit = cfb_imageblit,
- 	.fb_copyarea = cfb_copyarea,
-+	/* cursor */
-+	.fb_cursor = hisifb_ops_cursor,
+ /**
+  * struct pwm_device - PWM channel object
+  * @label: name of the PWM device
+@@ -89,9 +101,7 @@ enum {
+  * @chip: PWM chip providing this PWM device
+  * @chip_data: chip-private data associated with the PWM device
+  * @lock: used to serialize accesses to the PWM device where necessary
+- * @period: period of the PWM signal (in nanoseconds)
+- * @duty_cycle: duty cycle of the PWM signal (in nanoseconds)
+- * @polarity: polarity of the PWM signal
++ * @state: curent PWM channel state
+  */
+ struct pwm_device {
+ 	const char *label;
+@@ -102,9 +112,7 @@ struct pwm_device {
+ 	void *chip_data;
+ 	struct mutex lock;
+ 
+-	unsigned int period;
+-	unsigned int duty_cycle;
+-	enum pwm_polarity polarity;
++	struct pwm_state state;
  };
  
- #ifdef CONFIG_PM
-@@ -621,6 +682,33 @@ static int hisifb_set_fbinfo(struct fb_info *info, int index)
- 	output->channel = &crtc->channel;
- 	hisifb_set_drv(par);
+ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
+@@ -115,7 +123,7 @@ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
+ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
+ {
+ 	if (pwm)
+-		pwm->period = period;
++		pwm->state.period = period;
+ }
  
-+	/*
-+	 * Set current cursor variable and proc pointer,
-+	 * must be set after crtc member initialized.
-+	 */
-+	crtc->cursor.offset = crtc->oscreen +
-+		crtc->vidmem_size - 1024;
-+	crtc->cursor.mmio = share->pvreg + 0x800f0 +
-+		(int)crtc->channel * 0x140;
-+
-+	inf_msg("crtc->cursor.mmio = %p\n", crtc->cursor.mmio);
-+	crtc->cursor.maxH = crtc->cursor.maxW = 64;
-+	crtc->cursor.size = crtc->cursor.maxH *
-+		crtc->cursor.maxW * 2 / 8;
-+	crtc->cursor.disable = hw_cursor_disable;
-+	crtc->cursor.enable = hw_cursor_enable;
-+	crtc->cursor.set_color = hw_cursor_set_color;
-+	crtc->cursor.set_pos = hw_cursor_set_pos;
-+	crtc->cursor.set_size = hw_cursor_set_size;
-+	crtc->cursor.set_data = hw_cursor_set_data;
-+	crtc->cursor.vstart = crtc->vscreen + crtc->cursor.offset;
-+
-+	crtc->cursor.share = share;
-+	if (!g_hwcursor) {
-+		hisifb_ops.fb_cursor = NULL;
-+		crtc->cursor.disable(&crtc->cursor);
-+	}
-+
- 	/* set info->fbops, must be set before fb_find_mode */
+ static inline void pwm_set_default_period(struct pwm_device *pwm,
+@@ -126,7 +134,7 @@ static inline void pwm_set_default_period(struct pwm_device *pwm,
  
- 	info->fbops = &hisifb_ops;
+ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
+ {
+-	return pwm ? pwm->period : 0;
++	return pwm ? pwm->state.period : 0;
+ }
+ 
+ static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
+@@ -137,12 +145,12 @@ static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
+ static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
+ {
+ 	if (pwm)
+-		pwm->duty_cycle = duty;
++		pwm->state.duty_cycle = duty;
+ }
+ 
+ static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
+ {
+-	return pwm ? pwm->duty_cycle : 0;
++	return pwm ? pwm->state.duty_cycle : 0;
+ }
+ 
+ /*
+@@ -158,7 +166,7 @@ static inline void pwm_set_default_polarity(struct pwm_device *pwm,
+ 
+ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+ {
+-	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
++	return pwm ? pwm->state.polarity : PWM_POLARITY_NORMAL;
+ }
+ 
+ /**
 -- 
-1.9.1
+2.1.4
 

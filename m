@@ -1,46 +1,45 @@
-From: Shailendra Verma <shailendra.v@samung.com>
-Date: Mon, 09 Nov 2015 08:18:13 +0000
-Subject: [PATCH] video:fbdev:core:Calculate the size for colormap only after the validation of length for col
-Message-Id: <1447056373-28633-1-git-send-email-shailendra.v@samung.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:44 +0000
+Subject: [PATCH v4 21/24] pwm: add information about polarity, duty cycle and period to debugfs
+Message-Id: <1447664207-24370-22-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, vidushi.koul@samsung.com, shailendra.v@samsung.com
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-From: Shailendra Verma <shailendra.v@samsung.com>
+From: Heiko St=C3=BCbner <heiko@sntech.de>
 
-While allocating the memory for color map, the memory size for colors
-is being calculated before the validation of length for color map.
-Moved the size calculation part after the validation of color map length.
+The pwm-states make it possible to also output the polarity, duty cycle
+and period information in the debugfs pwm summary-outout.
+This makes it easier to gather overview information about pwms without
+needing to walk through the sysfs attributes of every pwm.
 
-Signed-off-by: Shailendra Verma <shailendra.v@samsung.com>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/video/fbdev/core/fbcmap.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/pwm/core.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
-index f89245b..45ad567 100644
---- a/drivers/video/fbdev/core/fbcmap.c
-+++ b/drivers/video/fbdev/core/fbcmap.c
-@@ -91,7 +91,7 @@ static const struct fb_cmap default_16_colors = {
- 
- int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
- {
--	int size = len * sizeof(u16);
-+	int size;
- 	int ret = -ENOMEM;
- 
- 	if (cmap->len != len) {
-@@ -99,6 +99,7 @@ int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
- 		if (!len)
- 			return 0;
- 
-+		size = len * sizeof(u16);
- 		cmap->red = kmalloc(size, flags);
- 		if (!cmap->red)
- 			goto fail;
--- 
-1.9.1
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index fbc71d3..1619101 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -1035,6 +1035,11 @@ static void pwm_dbg_show(struct pwm_chip *chip, stru=
+ct seq_file *s)
+ 		if (pwm_is_enabled(pwm))
+ 			seq_puts(s, " enabled");
+=20
++		seq_printf(s, " period:%uns", pwm_get_period(pwm));
++		seq_printf(s, " duty:%uns", pwm_get_duty_cycle(pwm));
++		seq_printf(s, " polarity:%s", pwm_get_polarity(pwm) ? "inverse"
++								    : "normal");
++
+ 		seq_puts(s, "\n");
+ 	}
+ }
+--=20
+2.1.4
 

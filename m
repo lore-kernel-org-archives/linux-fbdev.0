@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 16 Nov 2015 08:56:35 +0000
-Subject: [PATCH v4 12/24] misc: max77693: use pwm_get/set_default_xxx() helpers where appropriate
-Message-Id: <1447664207-24370-13-git-send-email-boris.brezillon@free-electrons.com>
+Date: Mon, 16 Nov 2015 08:56:29 +0000
+Subject: [PATCH v4 06/24] pwm: introduce default period and polarity concepts
+Message-Id: <1447664207-24370-7-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
@@ -10,45 +10,67 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-pwm_set/get_default_xxx() helpers have been introduced to differentiate
-the default PWM states (those retrieved through DT, PWM lookup table or
-statically assigned by the driver) and the current ones.
-Make use of those helpers where appropriate.
+When requested by a user, the PWM is assigned a default period and polarity
+extracted from the DT, the platform data or statically set by the driver.
+Those default values are currently stored in the period and polarity
+fields of the pwm_device struct, but they will be stored somewhere else
+once we have introduced the architecture allowing for hardware state
+retrieval.
+
+The pwm_set_default_polarity and pwm_set_default_period should only be
+used by PWM drivers or the PWM core infrastructure to specify the
+default period and polarity values.
+
+PWM users might call the pwm_get_default_period to query the default
+period value. There is currently no helper to query the default
+polarity, but it might be added later on if there is a need for it.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+Tested-by: Heiko Stuebner <heiko@sntech.de>
 ---
- drivers/input/misc/max77693-haptic.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ include/linux/pwm.h | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/drivers/input/misc/max77693-haptic.c b/drivers/input/misc/max77693-haptic.c
-index a038fb3..89f5055 100644
---- a/drivers/input/misc/max77693-haptic.c
-+++ b/drivers/input/misc/max77693-haptic.c
-@@ -70,11 +70,12 @@ struct max77693_haptic {
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index cfc3ed4..8ba57fc 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -118,11 +118,22 @@ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
+ 		pwm->period = period;
+ }
  
- static int max77693_haptic_set_duty_cycle(struct max77693_haptic *haptic)
++static inline void pwm_set_default_period(struct pwm_device *pwm,
++					  unsigned int period)
++{
++	pwm_set_period(pwm, period);
++}
++
+ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
  {
--	int delta = (pwm_get_period((haptic->pwm_dev)) + haptic->pwm_duty) / 2;
-+	int delta = (pwm_get_default_period((haptic->pwm_dev)) +
-+		     haptic->pwm_duty) / 2;
- 	int error;
+ 	return pwm ? pwm->period : 0;
+ }
  
- 	error = pwm_config(haptic->pwm_dev, delta,
--			   pwm_get_period((haptic->pwm_dev)));
-+			   pwm_get_default_period((haptic->pwm_dev)));
- 	if (error) {
- 		dev_err(haptic->dev, "failed to configure pwm: %d\n", error);
- 		return error;
-@@ -246,7 +247,8 @@ static int max77693_haptic_play_effect(struct input_dev *dev, void *data,
- 	 * The formula to convert magnitude to pwm_duty as follows:
- 	 * - pwm_duty = (magnitude * pwm_period) / MAX_MAGNITUDE(0xFFFF)
- 	 */
--	period_mag_multi = (u64)pwm_get_period((haptic->pwm_dev)) * haptic->magnitude;
-+	period_mag_multi = (u64)pwm_get_default_period((haptic->pwm_dev)) *
-+			   haptic->magnitude;
- 	haptic->pwm_duty = (unsigned int)(period_mag_multi >>
- 						MAX_MAGNITUDE_SHIFT);
++static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
++{
++	return pwm_get_period(pwm);
++}
++
+ static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
+ {
+ 	if (pwm)
+@@ -139,6 +150,12 @@ static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
+  */
+ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
  
++static inline void pwm_set_default_polarity(struct pwm_device *pwm,
++					    enum pwm_polarity polarity)
++{
++	pwm_set_polarity(pwm, polarity);
++}
++
+ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+ {
+ 	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
 -- 
 2.1.4
 

@@ -1,36 +1,33 @@
-From: Othmar Pasteka <pasteka@kabsi.at>
-Date: Sun, 08 Nov 2015 00:43:30 +0000
-Subject: [PATCH 1/2] staging: sm750fb: move opening brace to previous line
-Message-Id: <e426148688caace0a5083b379c1eaab85e424c74.1446942955.git.pasteka@kabsi.at>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Tue, 17 Nov 2015 01:38:15 +0000
+Subject: [PATCH] video: fbdev: rivafb: unlock chip before probiding EDID
+Message-Id: <1447724295-1954-1-git-send-email-dbaryshkov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, sudip@vectorindia.org, greg@kroah.com
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Othmar Pasteka <pasteka@kabsi.at>
+To: linux-fbdev@vger.kernel.org
 
-Fixes the checkpatch.pl error:
-ERROR: that open brace { should be on the previous line
+At least NV3 requires for chip to be unlocked before it is possible to
+access I2C registers. Without it, it is not possible to read EDID.
 
-Signed-off-by: Othmar Pasteka <pasteka@kabsi.at>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- drivers/staging/sm750fb/sm750_cursor.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/riva/fbdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 3b7ce92..cab891c 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -143,8 +143,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
- 		iowrite16(data, pbuffer);
+diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riva/fbdev.c
+index f1ad274..2ef26ad 100644
+--- a/drivers/video/fbdev/riva/fbdev.c
++++ b/drivers/video/fbdev/riva/fbdev.c
+@@ -1765,6 +1765,7 @@ static int riva_get_EDID_i2c(struct fb_info *info)
+ 	int i;
  
- 		/* assume pitch is 1,2,4,8,...*/
--		if ((i+1) % pitch = 0)
--		{
-+		if ((i+1) % pitch = 0) {
- 			/* need a return */
- 			pstart += offset;
- 			pbuffer = pstart;
+ 	NVTRACE_ENTER();
++	par->riva.LockUnlock(&par->riva, 0);
+ 	riva_create_i2c_busses(par);
+ 	for (i = 0; i < 3; i++) {
+ 		if (!par->chan[i].par)
 -- 
-2.5.3
+2.6.2
 

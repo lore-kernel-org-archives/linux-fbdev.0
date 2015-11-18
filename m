@@ -1,46 +1,90 @@
-From: Scott Wood <scottwood@freescale.com>
-Date: Tue, 24 Nov 2015 17:17:54 +0000
-Subject: Re: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
-Message-Id: <1448385474.27264.354.camel@freescale.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Wed, 18 Nov 2015 17:12:25 +0000
+Subject: [PATCH v5] pwm-backlight: Avoid backlight flicker when probed from DT
+Message-Id: <1447866745-21567-1-git-send-email-p.zabel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Tue, 2015-11-24 at 12:16 -0500, Timur Tabi wrote:
-> On Tue, Nov 24, 2015 at 12:05 PM, Scott Wood <scottwood@freescale.com>
-> wrote:
-> 
-> > I asked Dongsheng to put it in probe() during internal review because at
-> > the
-> > time he was printing an error, and I didn't want the error to be printed
-> > if
-> > the device wasn't present.  Again, there's another non-bugfix patch
-> > pending
-> > that moves all the rest into probe() where it belongs.
-> 
-> I think it should be in _init, and not display an error.
+If the driver is probed from the device tree, and there is a phandle
+property set on it, and the enable GPIO is already configured as output,
+and the backlight is currently disabled, keep it disabled.
+If all these conditions are met, assume there will be some other driver
+that can enable the backlight at the appropriate time.
 
-As long as it doesn't display anything I don't care much either way.
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Christian Gmeiner <christian.gmeiner@gmail.com>
+Tested-by: Heiko Stuebner <heiko@sntech.de>
+---
+ - Rebased onto v4.4-rc1
+ - Added Heiko's Tested-by
+---
+ drivers/video/backlight/pwm_bl.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-> > > Third, you should probably add a boolean field
-> > > to platform_diu_data_ops that gets set to True if/when the platform
-> > > code initializes the rest of the structure.
-> > 
-> > Why do you want to complicate a simple bugfix with a requirement to modify
-> > all
-> > platforms that use the driver, introducing a possible regression if one is
-> > missed?
-> 
-> Fair enough, but I think it should at least be documented by saying
-> something about set_pixel_clock must be defined, so if it isn't, then
-> that means the platform code does not support DIU at all, so just
-> abort.
-
-Sure.
-
--Scott
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index ae3c6b6..3daf9cc 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -199,6 +199,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	struct backlight_properties props;
+ 	struct backlight_device *bl;
+ 	struct pwm_bl_data *pb;
++	phandle phandle = pdev->dev.of_node->phandle;
++	int initial_blank = FB_BLANK_UNBLANK;
+ 	int ret;
+ 
+ 	if (!data) {
+@@ -242,7 +244,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->enabled = false;
+ 
+ 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
+-						  GPIOD_OUT_HIGH);
++						  GPIOD_ASIS);
+ 	if (IS_ERR(pb->enable_gpio)) {
+ 		ret = PTR_ERR(pb->enable_gpio);
+ 		goto err_alloc;
+@@ -264,12 +266,30 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+ 	}
+ 
++	if (pb->enable_gpio) {
++		/*
++		 * If the driver is probed from the device tree and there is a
++		 * phandle link pointing to the backlight node, it is safe to
++		 * assume that another driver will enable the backlight at the
++		 * appropriate time. Therefore, if it is disabled, keep it so.
++		 */
++		if (phandle &&
++		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
++		    gpiod_get_value(pb->enable_gpio) = 0)
++			initial_blank = FB_BLANK_POWERDOWN;
++		else
++			gpiod_direction_output(pb->enable_gpio, 1);
++	}
++
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
+ 		ret = PTR_ERR(pb->power_supply);
+ 		goto err_alloc;
+ 	}
+ 
++	if (phandle && !regulator_is_enabled(pb->power_supply))
++		initial_blank = FB_BLANK_POWERDOWN;
++
+ 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+ 	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) != -EPROBE_DEFER
+ 	    && !pdev->dev.of_node) {
+@@ -320,6 +340,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	bl->props.brightness = data->dft_brightness;
++	bl->props.power = initial_blank;
+ 	backlight_update_status(bl);
+ 
+ 	platform_set_drvdata(pdev, bl);
+-- 
+2.6.2
 

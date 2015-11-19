@@ -1,87 +1,101 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 23 Nov 2015 16:22:49 +0000
-Subject: Re: [PATCH] backlight: adp88x0: fix uninitialized variable use
-Message-Id: <20151123162159.GC807@x1>
+From: Michael =?UTF-8?B?QsO8c2No?= <m@bues.ch>
+Date: Thu, 19 Nov 2015 20:10:06 +0000
+Subject: [PATCH] nvidia/noveau: Fix color mask
+Message-Id: <20151119211006.75c1d924@wiggum>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Sig_/qCmxywae_StwrZ/CjoJqX6B"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <3850346.cL1ocQLBvP@wuerfel>
-In-Reply-To: <3850346.cL1ocQLBvP@wuerfel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+References: <20150617190508.5205e8af@wiggum>
+In-Reply-To: <20150617190508.5205e8af@wiggum>
+To: dri-devel@lists.freedesktop.org, David Airlie <airlied@linux.ie>, Antonino Daplas <adaplas@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+
+--Sig_/qCmxywae_StwrZ/CjoJqX6B
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
 
-On Mon, 23 Nov 2015, Arnd Bergmann wrote:
+The expression (~0 >> x) will always yield all-ones, because the right
+shift is an arithmetic right shift that will always shift ones in.
+Accordingly ~(~0 >> x) will always be zero.
+Hence 'mask' will always be zero in this case.
 
-> gcc correctly warns about both the adp8860 and adp8870 backlight
-> drivers using an uninitialized variable in their error handling
-> path:
->=20
-> drivers/video/backlight/adp8870_bl.c: In function 'adp8870_bl_ambient_lig=
-ht_zone_store':
-> drivers/video/backlight/adp8870_bl.c:811:11: warning: 'reg_val' may be us=
-ed uninitialized in this function
->=20
-> This changes the code to only write back the data if it was
-> correctly read to start with.
->=20
-> As a side-note, the drivers are mostly identical, so I think they
-> should really be merged into one file to avoid having to fix every
-> bug twice.
->=20
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Fix this by forcing a logical right shift instead of an arithmetic
+right shift by using an unsigned int constant.
 
-Applied with the $SUBJECT line fixed.
+Signed-off-by: Michael Buesch <m@bues.ch>
 
-> diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlig=
-ht/adp8860_bl.c
-> index 98ffe71e8af2..f0d4c0324580 100644
-> --- a/drivers/video/backlight/adp8860_bl.c
-> +++ b/drivers/video/backlight/adp8860_bl.c
-> @@ -621,10 +621,12 @@ static ssize_t adp8860_bl_ambient_light_zone_store(=
-struct device *dev,
-> =20
->  		/* Set user supplied ambient light zone */
->  		mutex_lock(&data->lock);
-> -		adp8860_read(data->client, ADP8860_CFGR, &reg_val);
-> -		reg_val &=3D ~(CFGR_BLV_MASK << CFGR_BLV_SHIFT);
-> -		reg_val |=3D (val - 1) << CFGR_BLV_SHIFT;
-> -		adp8860_write(data->client, ADP8860_CFGR, reg_val);
-> +		ret =3D adp8860_read(data->client, ADP8860_CFGR, &reg_val);
-> +		if (!ret) {
-> +			reg_val &=3D ~(CFGR_BLV_MASK << CFGR_BLV_SHIFT);
-> +			reg_val |=3D (val - 1) << CFGR_BLV_SHIFT;
-> +			adp8860_write(data->client, ADP8860_CFGR, reg_val);
-> +		}
->  		mutex_unlock(&data->lock);
->  	}
-> =20
-> diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlig=
-ht/adp8870_bl.c
-> index 9d738352d7d4..21acac90fd77 100644
-> --- a/drivers/video/backlight/adp8870_bl.c
-> +++ b/drivers/video/backlight/adp8870_bl.c
-> @@ -807,10 +807,12 @@ static ssize_t adp8870_bl_ambient_light_zone_store(=
-struct device *dev,
-> =20
->  		/* Set user supplied ambient light zone */
->  		mutex_lock(&data->lock);
-> -		adp8870_read(data->client, ADP8870_CFGR, &reg_val);
-> -		reg_val &=3D ~(CFGR_BLV_MASK << CFGR_BLV_SHIFT);
-> -		reg_val |=3D (val - 1) << CFGR_BLV_SHIFT;
-> -		adp8870_write(data->client, ADP8870_CFGR, reg_val);
-> +		ret =3D adp8870_read(data->client, ADP8870_CFGR, &reg_val);
-> +		if (!ret) {
-> +			reg_val &=3D ~(CFGR_BLV_MASK << CFGR_BLV_SHIFT);
-> +			reg_val |=3D (val - 1) << CFGR_BLV_SHIFT;
-> +			adp8870_write(data->client, ADP8870_CFGR, reg_val);
-> +		}
->  		mutex_unlock(&data->lock);
->  	}
-> =20
->=20
+---
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+This patch is untested, because I do not have the hardware.
+
+Resend: Patch was originally sent on Wed, 17 Jun 2015.
+
+
+Index: linux/drivers/gpu/drm/nouveau/nv50_fbcon.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/drivers/gpu/drm/nouveau/nv50_fbcon.c
++++ linux/drivers/gpu/drm/nouveau/nv50_fbcon.c
+@@ -96,7 +96,7 @@ nv50_fbcon_imageblit(struct fb_info *inf
+ 	struct nouveau_drm *drm =3D nouveau_drm(nfbdev->dev);
+ 	struct nouveau_channel *chan =3D drm->channel;
+ 	uint32_t width, dwords, *data =3D (uint32_t *)image->data;
+-	uint32_t mask =3D ~(~0 >> (32 - info->var.bits_per_pixel));
++	uint32_t mask =3D ~(~0U >> (32 - info->var.bits_per_pixel));
+ 	uint32_t *palette =3D info->pseudo_palette;
+ 	int ret;
+=20
+Index: linux/drivers/gpu/drm/nouveau/nvc0_fbcon.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/drivers/gpu/drm/nouveau/nvc0_fbcon.c
++++ linux/drivers/gpu/drm/nouveau/nvc0_fbcon.c
+@@ -96,7 +96,7 @@ nvc0_fbcon_imageblit(struct fb_info *inf
+ 	struct nouveau_drm *drm =3D nouveau_drm(nfbdev->dev);
+ 	struct nouveau_channel *chan =3D drm->channel;
+ 	uint32_t width, dwords, *data =3D (uint32_t *)image->data;
+-	uint32_t mask =3D ~(~0 >> (32 - info->var.bits_per_pixel));
++	uint32_t mask =3D ~(~0U >> (32 - info->var.bits_per_pixel));
+ 	uint32_t *palette =3D info->pseudo_palette;
+ 	int ret;
+=20
+Index: linux/drivers/video/fbdev/nvidia/nv_accel.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/drivers/video/fbdev/nvidia/nv_accel.c
++++ linux/drivers/video/fbdev/nvidia/nv_accel.c
+@@ -351,7 +351,7 @@ static void nvidiafb_mono_color_expand(s
+ 				       const struct fb_image *image)
+ {
+ 	struct nvidia_par *par =3D info->par;
+-	u32 fg, bg, mask =3D ~(~0 >> (32 - info->var.bits_per_pixel));
++	u32 fg, bg, mask =3D ~(~0U >> (32 - info->var.bits_per_pixel));
+ 	u32 dsize, width, *data =3D (u32 *) image->data, tmp;
+ 	int j, k =3D 0;
+=20
+
+--Sig_/qCmxywae_StwrZ/CjoJqX6B
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWTiyeAAoJEPUyvh2QjYsOJzsP/1k1EQkgvf4Tj0KW/KryJz67
+N52haBVDAvcYqExhLaBkl4ok7GGZFJ6MBiwHwNTRuBAl4Enr7K6wgiNKl209bGLS
+qTpqTpgTmZ5a4fiTMhGUr9VE74wX5JX1TyclVSl7kBr+6RlgXSxKCvAPlTsie/4y
+j9jQIPqpTNluASCF5rXUZdyPeLZD5yb9IetfUQWrxkGY+4E0xSC/C2V67mHrxbbh
+ySJ0KeI28lhsOaT6siEEs5ObrmBE5aotvqcGtDw0rTq8/c+kaGvIpMeyPph8SJfP
+aVCdUbjTqknXmZWrCYGbRL/hDtxjM594UDZZ++/aeT74XH0Qa5tMXXQfp3qegO41
+0kTU41kwns/6qLO7UFFo6gU7/r4wAH6ECz93BxHc8m98VxEPFeOzVkuVyxlnda3A
+4PXdmerS58dca7p8dukRvb0hK+7waMauOmXku2yoK/mZQM1YNpzZj7/ohDWVjAlH
+NEskTUMXIyLRJtR3T2gfyAJ19fMnLIfsaVM8xLsxaGtUNVzQ2vQz/KLglkbqXj0x
+HGWikADSitO/LCme4lqLjRBlIKQVLg0wesFiI2iDF2ywaahTUuMJO69qwq4gZAbg
+b5fiLij4VE5cmoqCqpmo41iwk/ttMv8kXTihZ8tfxe95lsoE5LpVCa2Rt6C0I+zf
+317GZe8G4+yrl3Yzhe7L
+=mlRF
+-----END PGP SIGNATURE-----
+
+--Sig_/qCmxywae_StwrZ/CjoJqX6B--

@@ -1,101 +1,76 @@
-From: Michael =?UTF-8?B?QsO8c2No?= <m@bues.ch>
-Date: Thu, 19 Nov 2015 20:10:06 +0000
-Subject: [PATCH] nvidia/noveau: Fix color mask
-Message-Id: <20151119211006.75c1d924@wiggum>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Sig_/qCmxywae_StwrZ/CjoJqX6B"
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 20 Nov 2015 21:47:41 +0000
+Subject: [PATCH] fbdev: auo_k190x: avoid unused function warnings
+Message-Id: <3917686.rD8ezhD468@wuerfel>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20150617190508.5205e8af@wiggum>
-In-Reply-To: <20150617190508.5205e8af@wiggum>
-To: dri-devel@lists.freedesktop.org, David Airlie <airlied@linux.ie>, Antonino Daplas <adaplas@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---Sig_/qCmxywae_StwrZ/CjoJqX6B
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+The auo_k190x framebuffer driver encloses the power-management
+functions in #ifdef CONFIG_PM, but the auok190x_suspend/resume
+functions are only really used when CONFIG_PM_SLEEP is also
+set, as a frequent gcc warning shows:
 
-The expression (~0 >> x) will always yield all-ones, because the right
-shift is an arithmetic right shift that will always shift ones in.
-Accordingly ~(~0 >> x) will always be zero.
-Hence 'mask' will always be zero in this case.
+drivers/video/fbdev/auo_k190x.c:859:12: warning: 'auok190x_suspend' defined but not used
+drivers/video/fbdev/auo_k190x.c:899:12: warning: 'auok190x_resume' defined but not used
 
-Fix this by forcing a logical right shift instead of an arithmetic
-right shift by using an unsigned int constant.
+This changes the driver to remove the #ifdef and instead mark
+the functions as __maybe_unused, which is a nicer anyway, as it
+provides build testing for all the code in all configurations
+and is harder to get wrong.
 
-Signed-off-by: Michael Buesch <m@bues.ch>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
----
-
-This patch is untested, because I do not have the hardware.
-
-Resend: Patch was originally sent on Wed, 17 Jun 2015.
-
-
-Index: linux/drivers/gpu/drm/nouveau/nv50_fbcon.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux.orig/drivers/gpu/drm/nouveau/nv50_fbcon.c
-+++ linux/drivers/gpu/drm/nouveau/nv50_fbcon.c
-@@ -96,7 +96,7 @@ nv50_fbcon_imageblit(struct fb_info *inf
- 	struct nouveau_drm *drm =3D nouveau_drm(nfbdev->dev);
- 	struct nouveau_channel *chan =3D drm->channel;
- 	uint32_t width, dwords, *data =3D (uint32_t *)image->data;
--	uint32_t mask =3D ~(~0 >> (32 - info->var.bits_per_pixel));
-+	uint32_t mask =3D ~(~0U >> (32 - info->var.bits_per_pixel));
- 	uint32_t *palette =3D info->pseudo_palette;
- 	int ret;
-=20
-Index: linux/drivers/gpu/drm/nouveau/nvc0_fbcon.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux.orig/drivers/gpu/drm/nouveau/nvc0_fbcon.c
-+++ linux/drivers/gpu/drm/nouveau/nvc0_fbcon.c
-@@ -96,7 +96,7 @@ nvc0_fbcon_imageblit(struct fb_info *inf
- 	struct nouveau_drm *drm =3D nouveau_drm(nfbdev->dev);
- 	struct nouveau_channel *chan =3D drm->channel;
- 	uint32_t width, dwords, *data =3D (uint32_t *)image->data;
--	uint32_t mask =3D ~(~0 >> (32 - info->var.bits_per_pixel));
-+	uint32_t mask =3D ~(~0U >> (32 - info->var.bits_per_pixel));
- 	uint32_t *palette =3D info->pseudo_palette;
- 	int ret;
-=20
-Index: linux/drivers/video/fbdev/nvidia/nv_accel.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux.orig/drivers/video/fbdev/nvidia/nv_accel.c
-+++ linux/drivers/video/fbdev/nvidia/nv_accel.c
-@@ -351,7 +351,7 @@ static void nvidiafb_mono_color_expand(s
- 				       const struct fb_image *image)
+diff --git a/drivers/video/fbdev/auo_k190x.c b/drivers/video/fbdev/auo_k190x.c
+index 8d2499d1cafb..9580374667ba 100644
+--- a/drivers/video/fbdev/auo_k190x.c
++++ b/drivers/video/fbdev/auo_k190x.c
+@@ -773,9 +773,7 @@ static void auok190x_recover(struct auok190xfb_par *par)
+ /*
+  * Power-management
+  */
+-
+-#ifdef CONFIG_PM
+-static int auok190x_runtime_suspend(struct device *dev)
++static int __maybe_unused auok190x_runtime_suspend(struct device *dev)
  {
- 	struct nvidia_par *par =3D info->par;
--	u32 fg, bg, mask =3D ~(~0 >> (32 - info->var.bits_per_pixel));
-+	u32 fg, bg, mask =3D ~(~0U >> (32 - info->var.bits_per_pixel));
- 	u32 dsize, width, *data =3D (u32 *) image->data, tmp;
- 	int j, k =3D 0;
-=20
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+@@ -822,7 +820,7 @@ finish:
+ 	return 0;
+ }
+ 
+-static int auok190x_runtime_resume(struct device *dev)
++static int __maybe_unused auok190x_runtime_resume(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+@@ -856,7 +854,7 @@ static int auok190x_runtime_resume(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int auok190x_suspend(struct device *dev)
++static int __maybe_unused auok190x_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+@@ -896,7 +894,7 @@ static int auok190x_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int auok190x_resume(struct device *dev)
++static int __maybe_unused auok190x_resume(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+@@ -933,7 +931,6 @@ static int auok190x_resume(struct device *dev)
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ const struct dev_pm_ops auok190x_pm = {
+ 	SET_RUNTIME_PM_OPS(auok190x_runtime_suspend, auok190x_runtime_resume,
 
---Sig_/qCmxywae_StwrZ/CjoJqX6B
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWTiyeAAoJEPUyvh2QjYsOJzsP/1k1EQkgvf4Tj0KW/KryJz67
-N52haBVDAvcYqExhLaBkl4ok7GGZFJ6MBiwHwNTRuBAl4Enr7K6wgiNKl209bGLS
-qTpqTpgTmZ5a4fiTMhGUr9VE74wX5JX1TyclVSl7kBr+6RlgXSxKCvAPlTsie/4y
-j9jQIPqpTNluASCF5rXUZdyPeLZD5yb9IetfUQWrxkGY+4E0xSC/C2V67mHrxbbh
-ySJ0KeI28lhsOaT6siEEs5ObrmBE5aotvqcGtDw0rTq8/c+kaGvIpMeyPph8SJfP
-aVCdUbjTqknXmZWrCYGbRL/hDtxjM594UDZZ++/aeT74XH0Qa5tMXXQfp3qegO41
-0kTU41kwns/6qLO7UFFo6gU7/r4wAH6ECz93BxHc8m98VxEPFeOzVkuVyxlnda3A
-4PXdmerS58dca7p8dukRvb0hK+7waMauOmXku2yoK/mZQM1YNpzZj7/ohDWVjAlH
-NEskTUMXIyLRJtR3T2gfyAJ19fMnLIfsaVM8xLsxaGtUNVzQ2vQz/KLglkbqXj0x
-HGWikADSitO/LCme4lqLjRBlIKQVLg0wesFiI2iDF2ywaahTUuMJO69qwq4gZAbg
-b5fiLij4VE5cmoqCqpmo41iwk/ttMv8kXTihZ8tfxe95lsoE5LpVCa2Rt6C0I+zf
-317GZe8G4+yrl3Yzhe7L
-=mlRF
------END PGP SIGNATURE-----
-
---Sig_/qCmxywae_StwrZ/CjoJqX6B--

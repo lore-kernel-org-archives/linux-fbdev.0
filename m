@@ -1,58 +1,28 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Nov 2015 11:35:41 +0000
-Subject: Re: [PATCH] OMAPDSS: DISPC: Remove boolean comparisons
-Message-Id: <56544B8D.3050700@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="MiktKm7JvouoUIqnsPTKfD4PL1pKElAjB"
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 23 Nov 2015 18:22:36 +0000
+Subject: [patch] OMAPDSS: DSI: cleanup DSI_IRQ_ERROR_MASK define
+Message-Id: <20151123182235.GA2825@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1444912178-15989-1-git-send-email-luisbg@osg.samsung.com>
-In-Reply-To: <1444912178-15989-1-git-send-email-luisbg@osg.samsung.com>
-To: Luis de Bethencourt <luisbg@osg.samsung.com>, linux-kernel@vger.kernel.org
-Cc: plagnioj@jcrosoft.com, laurent.pinchart@ideasonboard.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org
 
---MiktKm7JvouoUIqnsPTKfD4PL1pKElAjB
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+DSI_IRQ_SYNC_LOST was ORed twice so we can remove one.
 
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-
-On 15/10/15 15:29, Luis de Bethencourt wrote:
-> Boolean tests do not need explicit comparison to true or false.
->=20
-> Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
-> ---
->  drivers/video/fbdev/omap2/dss/dispc-compat.c | 6 +++---
->  drivers/video/fbdev/omap2/dss/dispc.c        | 6 +++---
->  drivers/video/fbdev/omap2/dss/manager.c      | 2 +-
->  3 files changed, 7 insertions(+), 7 deletions(-)
->=20
-
-Thanks, queued for 4.5.
-
- Tomi
-
-
---MiktKm7JvouoUIqnsPTKfD4PL1pKElAjB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWVEuNAAoJEPo9qoy8lh71l94P/1UwJOyozQgLPBK0585V34+d
-W5nJ9efwjEANvRZmDOexmbz+66QZj/20x7opHa7dv5Se1+xGdPTzWxiAol7Xo7f/
-+CFWrJz1d4KF9rzlK0njgV+S2fVFCDnEolWcq8Zki8tNiUP+A9KNpxi/uaolGg0Q
-aua8Ny/Fea3U/jwAHQqJTkFTJoKwYdxpQ416AtlAdj+qQJSbQ15LDAyPXYBx/IBa
-9342CVY8F0Bh1ajXWRuDVp5AOy9NutbrZAMf+OR4u6tEgwqsqGl0o1oLG1h1tyGa
-BI848UTfbsh/EYq9hQGUwrlGqowFUBUIN+wl/+GwRrBQzR/d6EFfl+CNzINQpCd/
-ArIpSBuCuYvJCCQYGvqdGL7peYPZvnxzld7iTMwAut7TIEntQjgncXyPDMM8P4r2
-rAc1R3jDdBRv0TINVUlT5fIWFgSLcCDwfoaxfNQ4ptt3coNAa7pg9NZjPHxwz5HS
-U8Df6OmK5BoAt5u73Ti2LinQL5cNq1ckDxhl1T86k11kASkKf0uB3ua8+0MmKr4j
-qxVO1mG40vD6jn9J/VMnop/y+cD+MFIIaswYcctTrJk/CItjilSaFHVZhOdRVgbn
-ve30d7bqX27/I5ZrPcVuiHD+8Mi1gwPiJmusVv58TanujB2eCUiAHsWusyaPXs5y
-1MqkK17tHtmbCq2QAthp
-=KYjM
------END PGP SIGNATURE-----
-
---MiktKm7JvouoUIqnsPTKfD4PL1pKElAjB--
+diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
+index b3606de..e86df6d 100644
+--- a/drivers/video/fbdev/omap2/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/dss/dsi.c
+@@ -144,7 +144,7 @@ struct dsi_reg { u16 module; u16 idx; };
+ #define DSI_IRQ_TA_TIMEOUT	(1 << 20)
+ #define DSI_IRQ_ERROR_MASK \
+ 	(DSI_IRQ_HS_TX_TIMEOUT | DSI_IRQ_LP_RX_TIMEOUT | DSI_IRQ_SYNC_LOST | \
+-	DSI_IRQ_TA_TIMEOUT | DSI_IRQ_SYNC_LOST)
++	DSI_IRQ_TA_TIMEOUT)
+ #define DSI_IRQ_CHANNEL_MASK	0xf
+ 
+ /* Virtual channel interrupts */

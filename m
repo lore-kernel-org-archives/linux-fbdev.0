@@ -1,7 +1,7 @@
 From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 23 Nov 2015 14:39:00 +0000
+Date: Mon, 23 Nov 2015 16:22:49 +0000
 Subject: Re: [PATCH] backlight: adp88x0: fix uninitialized variable use
-Message-Id: <20151123143900.GB31376@x1>
+Message-Id: <20151123162159.GC807@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <3850346.cL1ocQLBvP@wuerfel>
 In-Reply-To: <3850346.cL1ocQLBvP@wuerfel>
@@ -30,7 +30,7 @@ ed uninitialized in this function
 >=20
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Applied, thanks.
+Applied with the $SUBJECT line fixed.
 
 > diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlig=
 ht/adp8860_bl.c

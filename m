@@ -1,86 +1,35 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Nov 2015 10:46:14 +0000
-Subject: Re: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
-Message-Id: <56543FF6.2050807@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="bDhXVAa061n4fdPI335Xb2luuENHenFDH"
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Date: Tue, 24 Nov 2015 11:01:59 +0000
+Subject: RE: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
+Message-Id: <SN1PR0301MB161665F68B51B864EB704F249D060@SN1PR0301MB1616.namprd03.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
 In-Reply-To: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
---bDhXVAa061n4fdPI335Xb2luuENHenFDH
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-
-
-On 24/11/15 08:27, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->=20
-> If diu_ops is not implemented on platform, kernel will access a null
-> pointer. we need to check this pointer in diu initialization.
->=20
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
->=20
-> diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl=
--diu-fb.c
-> index b335c1a..288b5e4 100644
-> --- a/drivers/video/fbdev/fsl-diu-fb.c
-> +++ b/drivers/video/fbdev/fsl-diu-fb.c
-> @@ -479,7 +479,10 @@ static enum fsl_diu_monitor_port fsl_diu_name_to_p=
-ort(const char *s)
->  			port =3D FSL_DIU_PORT_DLVDS;
->  	}
-> =20
-> -	return diu_ops.valid_monitor_port(port);
-> +	if (diu_ops.valid_monitor_port)
-> +		port =3D diu_ops.valid_monitor_port(port);
-> +
-> +	return port;
->  }
-> =20
->  /*
-> @@ -1697,6 +1700,9 @@ static int fsl_diu_probe(struct platform_device *=
-pdev)
->  	unsigned int i;
->  	int ret;
-> =20
-> +	if (!diu_ops.set_pixel_clock)
-> +		return -ENODEV;
-> +
->  	data =3D dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),=
-
->  				   &dma_addr, GFP_DMA | __GFP_ZERO);
->  	if (!data)
->=20
-
-Thanks, queued for 4.5.
-
- Tomi
-
-
---bDhXVAa061n4fdPI335Xb2luuENHenFDH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWVD/2AAoJEPo9qoy8lh71AFAQAKjSJWDDKtrtzlHUcZY2vZJK
-yM/FDSK4u1E53sEerUWKolyyGnSLdqT4yPd2h7mA/tWuBsngvvXvfl1P8rnfPKLo
-0584A8JkRVYOruCRxhfg9uN2kCCCgdQEddJGsYwEqf1DmJCS2oq0Ybbp4svfLXQ2
-5LWgKg8V3HF8a2UFRKB2Z8vmmCHEokIymx4aKfVWiHmFlpYUlwSWDdWvrrbB6xBy
-NcdTMPOKpt5Ja3MVX0VU3/k1lZs3O+qPF5XHGSR7dgEhILAgbB04mS5iiYNqxymC
-K/qP9QUiefCaQmNo6ZOOR0qF53pTQVanoV9mbQt6jGjr4vsgcy/vfXWQGBrjFek7
-Ds4amwdRvEP5oQLl+CRU8ZlTCVvxX4iTeKpijP2Fc6bXjWvLvSnbUoloFla+pKUw
-NdHX7zLax+KTkqZxv5aS5h/ugQRk/bI1xInaKL7FfHmlRar9vUIysA7CZKmNXlYz
-bpJqvlECtRmQQG/fy4AtT6S95uuQmnyc9uVmbHreOCMO6wtHIkjbjkP/QdYtrqDB
-sakNBQsSXnqX7/eYXLnWj6tX3mKRf3SpGXxOsLP24dGHfw/mV6eQRMep/kLLLeyZ
-DWifbHE5Nhrb9URSw//zhiV6ICo4Xj5vMhCBri/rggmelaRmXzHldvKrL55GEDA8
-xBkGngld73HaF+CqLdeJ
-=Nn/k
------END PGP SIGNATURE-----
-
---bDhXVAa061n4fdPI335Xb2luuENHenFDH--
+VGhhbmtzIFRvbWkuDQoNClJlZ2FyZHMsDQotRG9uZ3NoZW5nDQoNCj4gDQo+IE9uIDI0LzExLzE1
+IDA4OjI3LCBEb25nc2hlbmcgV2FuZyB3cm90ZToNCj4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZyA8
+ZG9uZ3NoZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IElmIGRpdV9vcHMgaXMgbm90
+IGltcGxlbWVudGVkIG9uIHBsYXRmb3JtLCBrZXJuZWwgd2lsbCBhY2Nlc3MgYSBudWxsDQo+ID4g
+cG9pbnRlci4gd2UgbmVlZCB0byBjaGVjayB0aGlzIHBvaW50ZXIgaW4gZGl1IGluaXRpYWxpemF0
+aW9uLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53
+YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9m
+YmRldi9mc2wtZGl1LWZiLmMNCj4gPiBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvZnNsLWRpdS1mYi5j
+DQo+ID4gaW5kZXggYjMzNWMxYS4uMjg4YjVlNCAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL3Zp
+ZGVvL2ZiZGV2L2ZzbC1kaXUtZmIuYw0KPiA+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvZnNs
+LWRpdS1mYi5jDQo+ID4gQEAgLTQ3OSw3ICs0NzksMTAgQEAgc3RhdGljIGVudW0gZnNsX2RpdV9t
+b25pdG9yX3BvcnQNCj4gZnNsX2RpdV9uYW1lX3RvX3BvcnQoY29uc3QgY2hhciAqcykNCj4gPiAg
+CQkJcG9ydCA9IEZTTF9ESVVfUE9SVF9ETFZEUzsNCj4gPiAgCX0NCj4gPg0KPiA+IC0JcmV0dXJu
+IGRpdV9vcHMudmFsaWRfbW9uaXRvcl9wb3J0KHBvcnQpOw0KPiA+ICsJaWYgKGRpdV9vcHMudmFs
+aWRfbW9uaXRvcl9wb3J0KQ0KPiA+ICsJCXBvcnQgPSBkaXVfb3BzLnZhbGlkX21vbml0b3JfcG9y
+dChwb3J0KTsNCj4gPiArDQo+ID4gKwlyZXR1cm4gcG9ydDsNCj4gPiAgfQ0KPiA+DQo+ID4gIC8q
+DQo+ID4gQEAgLTE2OTcsNiArMTcwMCw5IEBAIHN0YXRpYyBpbnQgZnNsX2RpdV9wcm9iZShzdHJ1
+Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+ICAJdW5zaWduZWQgaW50IGk7DQo+ID4gIAlp
+bnQgcmV0Ow0KPiA+DQo+ID4gKwlpZiAoIWRpdV9vcHMuc2V0X3BpeGVsX2Nsb2NrKQ0KPiA+ICsJ
+CXJldHVybiAtRU5PREVWOw0KPiA+ICsNCj4gPiAgCWRhdGEgPSBkbWFtX2FsbG9jX2NvaGVyZW50
+KCZwZGV2LT5kZXYsIHNpemVvZihzdHJ1Y3QgZnNsX2RpdV9kYXRhKSwNCj4gPiAgCQkJCSAgICZk
+bWFfYWRkciwgR0ZQX0RNQSB8IF9fR0ZQX1pFUk8pOw0KPiA+ICAJaWYgKCFkYXRhKQ0KPiA+DQo+
+IA0KPiBUaGFua3MsIHF1ZXVlZCBmb3IgNC41Lg0KPiANCj4gIFRvbWkNCg0K

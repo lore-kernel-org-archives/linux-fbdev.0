@@ -1,7 +1,7 @@
-From: Timur Tabi <timur@tabi.org>
-Date: Tue, 24 Nov 2015 17:06:28 +0000
+From: Scott Wood <scottwood@freescale.com>
+Date: Tue, 24 Nov 2015 17:10:53 +0000
 Subject: Re: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
-Message-Id: <CAOZdJXX0XSN4mNrBGLvzywKs_1XGEi-A27CJ--TcLWJZ8Nizdw@mail.gmail.com>
+Message-Id: <1448385053.27264.352.camel@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
 In-Reply-To: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
@@ -10,13 +10,45 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Tue, Nov 24, 2015 at 12:02 PM, Wang Dongsheng
-<Dongsheng.Wang@freescale.com> wrote:
->
-> Here are not friendly for kernel, because if we lost the clock we cannot
-> to display. We do so much things in kernel but we still cannot to display that
-> is before we can know it...So still think we need to check the hook in initialization
-> flow.
+On Tue, 2015-11-24 at 10:59 -0600, Scott Wood wrote:
+> On Tue, 2015-11-24 at 18:15 +0200, Tomi Valkeinen wrote:
+> > 
+> > On 24/11/15 18:04, Timur Tabi wrote:
+> > > On Tue, Nov 24, 2015 at 5:46 AM, Tomi Valkeinen <tomi.valkeinen@ti.com>
+> > > wrote:
+> > > > On 24/11/15 08:27, Dongsheng Wang wrote:
+> > > > > @@ -1697,6 +1700,9 @@ static int fsl_diu_probe(struct
+> > > > > platform_device
+> > > > > *pdev)
+> > > > >       unsigned int i;
+> > > > >       int ret;
+> > > > > 
+> > > > > +     if (!diu_ops.set_pixel_clock)
+> > > > > +             return -ENODEV;
+> > > > > +
+> > > > >       data = dmam_alloc_coherent(&pdev->dev, sizeof(struct
+> > > > > fsl_diu_data),
+> > > > >                                  &dma_addr, GFP_DMA | __GFP_ZERO);
+> > > > >       if (!data)
+> > > > > 
+> > > > 
+> > > > Thanks, queued for 4.5.
+> > > 
+> > > Could you please wait for me to review the patch first?  I am the
+> > > maintainer for the driver, and I see a problem with it.
+> > 
+> > Sorry, I was too hasty (and tired). I thought I was looking at a patch
+> > that's been on the list for a while, but apparently it was only posted
+> > today...
+> > 
+> > Anyway, dropped this.
+> 
+> Also, this is a bugfix (certain platforms are currently crashing on boot)
+> and
+> once review is settled should go into 4.4.
 
-Ok, I agree with that.  But the check has to be more obvious, and I
-think it should be done in the _init code.
+...and stable, since the defconfig changes that enabled this driver on the
+problematic platforms went into 4.3.
+
+-Scott
+

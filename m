@@ -1,7 +1,7 @@
-From: Scott Wood <scottwood@freescale.com>
-Date: Tue, 24 Nov 2015 17:00:45 +0000
+From: Timur Tabi <timur@tabi.org>
+Date: Tue, 24 Nov 2015 17:02:12 +0000
 Subject: Re: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
-Message-Id: <1448384445.27264.345.camel@freescale.com>
+Message-Id: <CAOZdJXXp-Bs4=1sfThmGquVs1mWXEHYb8rgB6muRWCnoniEeZg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
 In-Reply-To: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
@@ -10,27 +10,22 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Tue, 2015-11-24 at 11:56 -0500, Timur Tabi wrote:
-> On Tue, Nov 24, 2015 at 11:54 AM, Timur Tabi <timur@tabi.org> wrote:
-> > Well, if you're concern is that there's no platform code, then there
-> > should be a check that says, "see if there's any platform code", not
-> > "let's check this obscure function and abort without explanation if
-> > it's not initialized."
-> > 
-> > Alternatively, why can't you just do this, in update_lcdc():
-> 
-> [Stupid gmail sent my message before I was done typing]
-> 
-> if (diu_ops.set_pixel_clock)
->    diu_ops.set_pixel_clock(var->pixclock);
+On Tue, Nov 24, 2015 at 11:55 AM, Scott Wood <scottwood@freescale.com> wrote:
 
-Because it's more obviously correct to abort the probe than to continue with
-some operations nooped.  This is meant to be a quick and obvious fix to the
-crashing bug.  There's another patch pending to reorganize the init of this
-driver.
+>> Well, if you're concern is that there's no platform code, then there
+>> should be a check that says, "see if there's any platform code", not
+>> "let's check this obscure function and abort without explanation if
+>> it's not initialized."
+>
+> Do you have a *specific* better way to "see if there's any platform code"?
 
-FWIW, I don't like the fact that this driver requires "platform code" at all. 
- Why isn't it self-contained, with knowledge of the relevant boards?
+Well, for one thing, the check should be done in the _init function,
+not the _probe.  Secondly, it should be documented as such, e.g. "/*
+Check to see that we have platform code that initializes diu_ops.  If
+not, then abort. */".  Third, you should probably add a boolean field
+to platform_diu_data_ops that gets set to True if/when the platform
+code initializes the rest of the structure.
 
--Scott
-
+Of course, an even better solution would be to get rid of the global
+structure altogether and come up with something more robust, but I
+understand that that's overkill.

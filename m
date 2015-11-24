@@ -1,60 +1,58 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Date: Fri, 13 Nov 2015 10:29:07 +0000
-Subject: [PATCH 1/2] video:omap2:dss: fix timings for VENC to match what omapdrm expects
-Message-Id: <20ebf7491377ccba18c734c22ae9f361d7fdc165.1447410544.git.hns@goldelico.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 24 Nov 2015 11:35:41 +0000
+Subject: Re: [PATCH] OMAPDSS: DISPC: Remove boolean comparisons
+Message-Id: <56544B8D.3050700@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="MiktKm7JvouoUIqnsPTKfD4PL1pKElAjB"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1447410543.git.hns@goldelico.com>
-In-Reply-To: <cover.1447410543.git.hns@goldelico.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: David Airlie <airlied@linux.ie>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, gta04-owner@goldelico.com, notasas@gmail.com, "H. Nikolaus Schaller" <hns@goldelico.com>
+References: <1444912178-15989-1-git-send-email-luisbg@osg.samsung.com>
+In-Reply-To: <1444912178-15989-1-git-send-email-luisbg@osg.samsung.com>
+To: Luis de Bethencourt <luisbg@osg.samsung.com>, linux-kernel@vger.kernel.org
+Cc: plagnioj@jcrosoft.com, laurent.pinchart@ideasonboard.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Otherwise check_timings fails and we get a "has no modes" message
-from xrandr.
+--MiktKm7JvouoUIqnsPTKfD4PL1pKElAjB
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-This fix makes the venc assume PAL and NTSC timings that match the
-timings synthetized by copy_timings_drm_to_omap() from omapdrm
-mode settings so that check_timings() succeeds.
 
-Tested on: BeagleBoard XM, GTA04 and OpenPandora
 
-Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
----
- drivers/video/fbdev/omap2/dss/venc.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+On 15/10/15 15:29, Luis de Bethencourt wrote:
+> Boolean tests do not need explicit comparison to true or false.
+>=20
+> Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
+> ---
+>  drivers/video/fbdev/omap2/dss/dispc-compat.c | 6 +++---
+>  drivers/video/fbdev/omap2/dss/dispc.c        | 6 +++---
+>  drivers/video/fbdev/omap2/dss/manager.c      | 2 +-
+>  3 files changed, 7 insertions(+), 7 deletions(-)
+>=20
 
-diff --git a/drivers/video/fbdev/omap2/dss/venc.c b/drivers/video/fbdev/omap2/dss/venc.c
-index 99ca268..d05a549 100644
---- a/drivers/video/fbdev/omap2/dss/venc.c
-+++ b/drivers/video/fbdev/omap2/dss/venc.c
-@@ -275,6 +275,12 @@ const struct omap_video_timings omap_dss_pal_timings = {
- 	.vbp		= 41,
- 
- 	.interlace	= true,
-+
-+	.hsync_level = OMAPDSS_SIG_ACTIVE_LOW,
-+	.vsync_level = OMAPDSS_SIG_ACTIVE_LOW,
-+	.data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE,
-+	.de_level = OMAPDSS_SIG_ACTIVE_HIGH,
-+	.sync_pclk_edge = OMAPDSS_DRIVE_SIG_FALLING_EDGE,
- };
- EXPORT_SYMBOL(omap_dss_pal_timings);
- 
-@@ -290,6 +296,12 @@ const struct omap_video_timings omap_dss_ntsc_timings = {
- 	.vbp		= 31,
- 
- 	.interlace	= true,
-+
-+	.hsync_level = OMAPDSS_SIG_ACTIVE_LOW,
-+	.vsync_level = OMAPDSS_SIG_ACTIVE_LOW,
-+	.data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE,
-+	.de_level = OMAPDSS_SIG_ACTIVE_HIGH,
-+	.sync_pclk_edge = OMAPDSS_DRIVE_SIG_FALLING_EDGE,
- };
- EXPORT_SYMBOL(omap_dss_ntsc_timings);
- 
--- 
-2.5.1
+Thanks, queued for 4.5.
 
+ Tomi
+
+
+--MiktKm7JvouoUIqnsPTKfD4PL1pKElAjB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWVEuNAAoJEPo9qoy8lh71l94P/1UwJOyozQgLPBK0585V34+d
+W5nJ9efwjEANvRZmDOexmbz+66QZj/20x7opHa7dv5Se1+xGdPTzWxiAol7Xo7f/
++CFWrJz1d4KF9rzlK0njgV+S2fVFCDnEolWcq8Zki8tNiUP+A9KNpxi/uaolGg0Q
+aua8Ny/Fea3U/jwAHQqJTkFTJoKwYdxpQ416AtlAdj+qQJSbQ15LDAyPXYBx/IBa
+9342CVY8F0Bh1ajXWRuDVp5AOy9NutbrZAMf+OR4u6tEgwqsqGl0o1oLG1h1tyGa
+BI848UTfbsh/EYq9hQGUwrlGqowFUBUIN+wl/+GwRrBQzR/d6EFfl+CNzINQpCd/
+ArIpSBuCuYvJCCQYGvqdGL7peYPZvnxzld7iTMwAut7TIEntQjgncXyPDMM8P4r2
+rAc1R3jDdBRv0TINVUlT5fIWFgSLcCDwfoaxfNQ4ptt3coNAa7pg9NZjPHxwz5HS
+U8Df6OmK5BoAt5u73Ti2LinQL5cNq1ckDxhl1T86k11kASkKf0uB3ua8+0MmKr4j
+qxVO1mG40vD6jn9J/VMnop/y+cD+MFIIaswYcctTrJk/CItjilSaFHVZhOdRVgbn
+ve30d7bqX27/I5ZrPcVuiHD+8Mi1gwPiJmusVv58TanujB2eCUiAHsWusyaPXs5y
+1MqkK17tHtmbCq2QAthp
+=KYjM
+-----END PGP SIGNATURE-----
+
+--MiktKm7JvouoUIqnsPTKfD4PL1pKElAjB--

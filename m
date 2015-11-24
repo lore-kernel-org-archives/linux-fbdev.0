@@ -1,7 +1,7 @@
-From: Timur Tabi <timur@tabi.org>
-Date: Tue, 24 Nov 2015 16:56:07 +0000
-Subject: Re: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
-Message-Id: <CAOZdJXU9JZd3U1r7Hxwy+6Yx7Tiu4=WpXHX9Rbbw51rJ1irkNA@mail.gmail.com>
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Date: Tue, 24 Nov 2015 16:57:54 +0000
+Subject: RE: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
+Message-Id: <SN1PR0301MB1616D6BBBA9C8519B4D416949D060@SN1PR0301MB1616.namprd03.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
 In-Reply-To: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
@@ -10,15 +10,23 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Tue, Nov 24, 2015 at 11:54 AM, Timur Tabi <timur@tabi.org> wrote:
-> Well, if you're concern is that there's no platform code, then there
-> should be a check that says, "see if there's any platform code", not
-> "let's check this obscure function and abort without explanation if
-> it's not initialized."
->
-> Alternatively, why can't you just do this, in update_lcdc():
-
-[Stupid gmail sent my message before I was done typing]
-
-if (diu_ops.set_pixel_clock)
-   diu_ops.set_pixel_clock(var->pixclock);
+SGkgVGltdXIsDQoNClRoYW5rcyBmb3IgeW91ciByZXZpZXcuDQoNCj4gIE9uIFR1ZSwgTm92IDI0
+LCAyMDE1IGF0IDE6MjcgQU0sIERvbmdzaGVuZyBXYW5nDQo+IDxkb25nc2hlbmcud2FuZ0BmcmVl
+c2NhbGUuY29tPiB3cm90ZToNCj4gPiBAQCAtMTY5Nyw2ICsxNzAwLDkgQEAgc3RhdGljIGludCBm
+c2xfZGl1X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gICAgICAgICB1
+bnNpZ25lZCBpbnQgaTsNCj4gPiAgICAgICAgIGludCByZXQ7DQo+ID4NCj4gPiArICAgICAgIGlm
+ICghZGl1X29wcy5zZXRfcGl4ZWxfY2xvY2spDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVybiAt
+RU5PREVWOw0KPiA+ICsNCj4gPiAgICAgICAgIGRhdGEgPSBkbWFtX2FsbG9jX2NvaGVyZW50KCZw
+ZGV2LT5kZXYsIHNpemVvZihzdHJ1Y3QgZnNsX2RpdV9kYXRhKSwNCj4gPiAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICZkbWFfYWRkciwgR0ZQX0RNQSB8IF9fR0ZQX1pFUk8pOw0K
+PiA+ICAgICAgICAgaWYgKCFkYXRhKQ0KPiANCj4gVGhpcyBkb2Vzbid0IG1ha2UgYW55IHNlbnNl
+LiAgSWYgc2V0X3BpeGVsX2Nsb2NrKCkgaXMgbm90IGRlZmluZWQsDQo+IHRoZW4gdGhlIHdob2xl
+IGRyaXZlciBhYm9ydHMgdGhlIHByb2JlLiAgV2hlbiBjb3VsZCB0aGF0IGV2ZXIgaGFwcGVuPw0K
+PiBJZiB0aGUgcGxhdGZvcm0gY29kZSBkb2VzIG5vdCBleGlzdCwgdGhlbiBkb24ndCBsZXQgdGhl
+IGRyaXZlciBiZQ0KPiBwcm9iZWQuDQoNCkFub3RoZXIgcGF0Y2ggdmlkZW86IGZiZGV2OiBmc2w6
+IFNwbGl0IERJVSBpbml0aWFsaXphdGlvbiBlbnRyeTpbaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVs
+Lm9yZy9wYXRjaC83MzgxMzUxL10NCm1vZHVsZV9pbml0KGZzbF9kaXVfaW5pdCkgd2lsbCBiZSBy
+ZXBsYWNlLCBhbmQgYWxsIG9mIHRoZSBpbml0aWFsaXphdGlvbiB3aWxsIGJlIGNvbXBsZXRlZCBp
+biB0aGUgcHJvYmUNCmluY2x1ZGUgdGhpcyBjaGVjay4gU28ganVzdCBkbyBhIHF1aWNrIGZpeCBm
+b3IgdGhpcyBib290IGtlcm5lbCBjcmFzaCBpc3N1ZS4NCg0KUmVnYXJkcywNCi1Eb25nc2hlbmcN
+Cg=

@@ -1,7 +1,7 @@
-From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-Date: Tue, 24 Nov 2015 16:57:54 +0000
-Subject: RE: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
-Message-Id: <SN1PR0301MB1616D6BBBA9C8519B4D416949D060@SN1PR0301MB1616.namprd03.prod.outlook.com>
+From: Scott Wood <scottwood@freescale.com>
+Date: Tue, 24 Nov 2015 16:59:37 +0000
+Subject: Re: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
+Message-Id: <1448384377.27264.342.camel@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
 In-Reply-To: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
@@ -10,23 +10,39 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-SGkgVGltdXIsDQoNClRoYW5rcyBmb3IgeW91ciByZXZpZXcuDQoNCj4gIE9uIFR1ZSwgTm92IDI0
-LCAyMDE1IGF0IDE6MjcgQU0sIERvbmdzaGVuZyBXYW5nDQo+IDxkb25nc2hlbmcud2FuZ0BmcmVl
-c2NhbGUuY29tPiB3cm90ZToNCj4gPiBAQCAtMTY5Nyw2ICsxNzAwLDkgQEAgc3RhdGljIGludCBm
-c2xfZGl1X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gICAgICAgICB1
-bnNpZ25lZCBpbnQgaTsNCj4gPiAgICAgICAgIGludCByZXQ7DQo+ID4NCj4gPiArICAgICAgIGlm
-ICghZGl1X29wcy5zZXRfcGl4ZWxfY2xvY2spDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVybiAt
-RU5PREVWOw0KPiA+ICsNCj4gPiAgICAgICAgIGRhdGEgPSBkbWFtX2FsbG9jX2NvaGVyZW50KCZw
-ZGV2LT5kZXYsIHNpemVvZihzdHJ1Y3QgZnNsX2RpdV9kYXRhKSwNCj4gPiAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICZkbWFfYWRkciwgR0ZQX0RNQSB8IF9fR0ZQX1pFUk8pOw0K
-PiA+ICAgICAgICAgaWYgKCFkYXRhKQ0KPiANCj4gVGhpcyBkb2Vzbid0IG1ha2UgYW55IHNlbnNl
-LiAgSWYgc2V0X3BpeGVsX2Nsb2NrKCkgaXMgbm90IGRlZmluZWQsDQo+IHRoZW4gdGhlIHdob2xl
-IGRyaXZlciBhYm9ydHMgdGhlIHByb2JlLiAgV2hlbiBjb3VsZCB0aGF0IGV2ZXIgaGFwcGVuPw0K
-PiBJZiB0aGUgcGxhdGZvcm0gY29kZSBkb2VzIG5vdCBleGlzdCwgdGhlbiBkb24ndCBsZXQgdGhl
-IGRyaXZlciBiZQ0KPiBwcm9iZWQuDQoNCkFub3RoZXIgcGF0Y2ggdmlkZW86IGZiZGV2OiBmc2w6
-IFNwbGl0IERJVSBpbml0aWFsaXphdGlvbiBlbnRyeTpbaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVs
-Lm9yZy9wYXRjaC83MzgxMzUxL10NCm1vZHVsZV9pbml0KGZzbF9kaXVfaW5pdCkgd2lsbCBiZSBy
-ZXBsYWNlLCBhbmQgYWxsIG9mIHRoZSBpbml0aWFsaXphdGlvbiB3aWxsIGJlIGNvbXBsZXRlZCBp
-biB0aGUgcHJvYmUNCmluY2x1ZGUgdGhpcyBjaGVjay4gU28ganVzdCBkbyBhIHF1aWNrIGZpeCBm
-b3IgdGhpcyBib290IGtlcm5lbCBjcmFzaCBpc3N1ZS4NCg0KUmVnYXJkcywNCi1Eb25nc2hlbmcN
-Cg=
+On Tue, 2015-11-24 at 18:15 +0200, Tomi Valkeinen wrote:
+> 
+> On 24/11/15 18:04, Timur Tabi wrote:
+> > On Tue, Nov 24, 2015 at 5:46 AM, Tomi Valkeinen <tomi.valkeinen@ti.com>
+> > wrote:
+> > > On 24/11/15 08:27, Dongsheng Wang wrote:
+> > > > @@ -1697,6 +1700,9 @@ static int fsl_diu_probe(struct platform_device
+> > > > *pdev)
+> > > >       unsigned int i;
+> > > >       int ret;
+> > > > 
+> > > > +     if (!diu_ops.set_pixel_clock)
+> > > > +             return -ENODEV;
+> > > > +
+> > > >       data = dmam_alloc_coherent(&pdev->dev, sizeof(struct
+> > > > fsl_diu_data),
+> > > >                                  &dma_addr, GFP_DMA | __GFP_ZERO);
+> > > >       if (!data)
+> > > > 
+> > > 
+> > > Thanks, queued for 4.5.
+> > 
+> > Could you please wait for me to review the patch first?  I am the
+> > maintainer for the driver, and I see a problem with it.
+> 
+> Sorry, I was too hasty (and tired). I thought I was looking at a patch
+> that's been on the list for a while, but apparently it was only posted
+> today...
+> 
+> Anyway, dropped this.
+
+Also, this is a bugfix (certain platforms are currently crashing on boot) and
+once review is settled should go into 4.4.
+
+-Scott
+

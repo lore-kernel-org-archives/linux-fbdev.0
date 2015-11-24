@@ -1,78 +1,55 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 16 Nov 2015 08:56:41 +0000
-Subject: [PATCH v4 18/24] pwm: declare a default PWM state
-Message-Id: <1447664207-24370-19-git-send-email-boris.brezillon@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 24 Nov 2015 10:38:27 +0000
+Subject: Re: [PATCH] drivers/video/fbdev/i740fb: remove unused variable
+Message-Id: <56543E23.9000302@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="oiCkLUlMx2Qqm4liebxbxVVpabeF0GUdp"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+References: <1443870991-10836-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1443870991-10836-1-git-send-email-sudipm.mukherjee@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Prepare the addition of the PWM initial state retrieval by adding a default
-state where all the parameters retrieved from DT, platform data or
-statically forced by the hardware will be stored.
-Once done we will be able to store the initial state in the ->state field
-without risking to loose the default parameters.
+--oiCkLUlMx2Qqm4liebxbxVVpabeF0GUdp
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Update the pwm_set/get_default_xxx helpers accordingly.
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-Tested-by: Heiko Stuebner <heiko@sntech.de>
----
- include/linux/pwm.h | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 398c58c..292e7da 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -103,6 +103,7 @@ struct pwm_state {
-  * @chip_data: chip-private data associated with the PWM device
-  * @lock: used to serialize accesses to the PWM device where necessary
-  * @state: curent PWM channel state
-+ * @default_state: default PWM channel state
-  */
- struct pwm_device {
- 	const char *label;
-@@ -114,6 +115,7 @@ struct pwm_device {
- 	struct mutex lock;
- 
- 	struct pwm_state state;
-+	struct pwm_state default_state;
- };
- 
- static inline bool pwm_is_enabled(const struct pwm_device *pwm)
-@@ -130,7 +132,8 @@ static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
- static inline void pwm_set_default_period(struct pwm_device *pwm,
- 					  unsigned int period)
- {
--	pwm_set_period(pwm, period);
-+	if (pwm)
-+		pwm->default_state.period = period;
- }
- 
- static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
-@@ -140,7 +143,7 @@ static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
- 
- static inline unsigned int pwm_get_default_period(const struct pwm_device *pwm)
- {
--	return pwm_get_period(pwm);
-+	return pwm ? pwm->default_state.period : 0;
- }
- 
- static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
-@@ -162,7 +165,8 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
- static inline void pwm_set_default_polarity(struct pwm_device *pwm,
- 					    enum pwm_polarity polarity)
- {
--	pwm_set_polarity(pwm, polarity);
-+	if (pwm)
-+		pwm->default_state.polarity = polarity;
- }
- 
- static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
--- 
-2.1.4
+On 03/10/15 14:16, Sudip Mukherjee wrote:
+> The value of d_best is always 0 and never changes.
+>=20
+> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> ---
+>  drivers/video/fbdev/i740fb.c | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
 
+Thanks, queued for 4.5.
+
+ Tomi
+
+
+--oiCkLUlMx2Qqm4liebxbxVVpabeF0GUdp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWVD4jAAoJEPo9qoy8lh71A9MQAIWnNRqBO0wQ4CjGelnXGtgz
+4EJzHMJJoja1v0HnOx+7+zwRzxGLVD9yhySNV1pWe5qFE/biHG9f6gDD1E/Fx0PG
+rhpSiU1cD4YKLimyNnJyyIyrNnmELArzbd9zaz5/2RFNnIK9yfZa7sD/2J+nMUBX
+oU4XQ/7RzwIAW5gnD+G2aKSAAeNQMgKrCRpgaC38alt72JU7hVWNdfFCZp1kgR1v
+6RioYYqdbplsjPSnzqW+uLyBXlz33Gr6y30AZTUdx2Fzs+q/2tuht5BrxvxNpcj9
+8p7uzl+yOBTCGl2FgGr/kGywQM+8xuZC2ozEEi1vGM7R1l1UmtU3tdfUVKOYK57E
+UK3YBXdMOtrdmUXDcMOKifXQnflCJJtu9fmrsnEwCRVGkw7mpPPiOJqBJU4CxFHg
+QpwLRBFk+IPhIQPbEWW9Cx6VHKuru4VAiOyWZgvIRPpRSYybNEq59Z5d4CCoGcz/
+65IJjQjI+/qTOayORwdsH5EaSwSLECKKDwoMApaNtANTkTTMRVGgPNUaJSmsQCw2
+A6f1WMcc8YkORqCV0EZ0YC/IgSM3bYAzDpg1l/XiRVwM74Sht945Nwfkn7Ao22rD
+EGzo+FuwCD3z9KyzCryPkWzrDZNP3UhP8eP1mmOpA3N4RgCTByI0KuaW2lpgI7dO
+LLadysUtzR/fAGZJ3OC7
+=wNFN
+-----END PGP SIGNATURE-----
+
+--oiCkLUlMx2Qqm4liebxbxVVpabeF0GUdp--

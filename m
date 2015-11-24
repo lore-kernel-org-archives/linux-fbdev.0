@@ -1,48 +1,46 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 30 Nov 2015 11:24:23 +0000
-Subject: [PATCH] backlight: adp8860: fix another uninitialized variable use
-Message-Id: <3284846.T0rzz6n1As@wuerfel>
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+Date: Tue, 24 Nov 2015 06:27:30 +0000
+Subject: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
+Message-Id: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-A recent patch I did fixed two potential uses of uninitialized
-variables in the adp8870 and adp8860 drivers. Unfortunately,
-I missed another one:
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-drivers/video/backlight/adp8860_bl.c: In function 'adp8860_bl_ambient_light_level_show':
-drivers/video/backlight/adp8860_bl.c:570:11: warning: 'reg_val' may be used uninitialized in this function
+If diu_ops is not implemented on platform, kernel will access a null
+pointer. we need to check this pointer in diu initialization.
 
-This does the same change as before in one additional function,
-and also changes the check for the return value in a way that
-avoids another false positive warning with a similar message.
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Fixes: 6be3a5a9cd91 ("backlight: adp88x0: Fix uninitialized variable use")
----
-Sorry for missing this third hunk the first time around.
-
-diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlight/adp8860_bl.c
-index f0d4c0324580..510e559c060e 100644
---- a/drivers/video/backlight/adp8860_bl.c
-+++ b/drivers/video/backlight/adp8860_bl.c
-@@ -566,11 +566,13 @@ static ssize_t adp8860_bl_ambient_light_level_show(struct device *dev,
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index b335c1a..288b5e4 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -479,7 +479,10 @@ static enum fsl_diu_monitor_port fsl_diu_name_to_port(const char *s)
+ 			port = FSL_DIU_PORT_DLVDS;
+ 	}
  
- 	mutex_lock(&data->lock);
- 	error = adp8860_read(data->client, ADP8860_PH1LEVL, &reg_val);
--	ret_val = reg_val;
--	error |= adp8860_read(data->client, ADP8860_PH1LEVH, &reg_val);
-+	if (!error) {
-+		ret_val = reg_val;
-+		error = adp8860_read(data->client, ADP8860_PH1LEVH, &reg_val);
-+	}
- 	mutex_unlock(&data->lock);
+-	return diu_ops.valid_monitor_port(port);
++	if (diu_ops.valid_monitor_port)
++		port = diu_ops.valid_monitor_port(port);
++
++	return port;
+ }
  
--	if (error < 0)
-+	if (error)
- 		return error;
+ /*
+@@ -1697,6 +1700,9 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 	unsigned int i;
+ 	int ret;
  
- 	/* Return 13-bit conversion value for the first light sensor */
++	if (!diu_ops.set_pixel_clock)
++		return -ENODEV;
++
+ 	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
+ 				   &dma_addr, GFP_DMA | __GFP_ZERO);
+ 	if (!data)
+-- 
+2.1.0.27.g96db324
 

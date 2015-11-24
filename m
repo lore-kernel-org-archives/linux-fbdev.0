@@ -1,7 +1,7 @@
-From: Timur Tabi <timur@tabi.org>
-Date: Tue, 24 Nov 2015 17:02:12 +0000
-Subject: Re: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
-Message-Id: <CAOZdJXXp-Bs4=1sfThmGquVs1mWXEHYb8rgB6muRWCnoniEeZg@mail.gmail.com>
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Date: Tue, 24 Nov 2015 17:02:38 +0000
+Subject: RE: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
+Message-Id: <SN1PR0301MB1616CDA08A2C9482FCCFB3CA9D060@SN1PR0301MB1616.namprd03.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
 In-Reply-To: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
@@ -10,22 +10,18 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Tue, Nov 24, 2015 at 11:55 AM, Scott Wood <scottwood@freescale.com> wrote:
-
->> Well, if you're concern is that there's no platform code, then there
->> should be a check that says, "see if there's any platform code", not
->> "let's check this obscure function and abort without explanation if
->> it's not initialized."
->
-> Do you have a *specific* better way to "see if there's any platform code"?
-
-Well, for one thing, the check should be done in the _init function,
-not the _probe.  Secondly, it should be documented as such, e.g. "/*
-Check to see that we have platform code that initializes diu_ops.  If
-not, then abort. */".  Third, you should probably add a boolean field
-to platform_diu_data_ops that gets set to True if/when the platform
-code initializes the rest of the structure.
-
-Of course, an even better solution would be to get rid of the global
-structure altogether and come up with something more robust, but I
-understand that that's overkill.
+PiBPbiBUdWUsIE5vdiAyNCwgMjAxNSBhdCAxMTo1NCBBTSwgVGltdXIgVGFiaSA8dGltdXJAdGFi
+aS5vcmc+IHdyb3RlOg0KPiA+IFdlbGwsIGlmIHlvdSdyZSBjb25jZXJuIGlzIHRoYXQgdGhlcmUn
+cyBubyBwbGF0Zm9ybSBjb2RlLCB0aGVuIHRoZXJlDQo+ID4gc2hvdWxkIGJlIGEgY2hlY2sgdGhh
+dCBzYXlzLCAic2VlIGlmIHRoZXJlJ3MgYW55IHBsYXRmb3JtIGNvZGUiLCBub3QNCj4gPiAibGV0
+J3MgY2hlY2sgdGhpcyBvYnNjdXJlIGZ1bmN0aW9uIGFuZCBhYm9ydCB3aXRob3V0IGV4cGxhbmF0
+aW9uIGlmDQo+ID4gaXQncyBub3QgaW5pdGlhbGl6ZWQuIg0KPiA+DQo+ID4gQWx0ZXJuYXRpdmVs
+eSwgd2h5IGNhbid0IHlvdSBqdXN0IGRvIHRoaXMsIGluIHVwZGF0ZV9sY2RjKCk6DQo+IA0KPiBb
+U3R1cGlkIGdtYWlsIHNlbnQgbXkgbWVzc2FnZSBiZWZvcmUgSSB3YXMgZG9uZSB0eXBpbmddDQo+
+IA0KPiBpZiAoZGl1X29wcy5zZXRfcGl4ZWxfY2xvY2spDQo+ICAgIGRpdV9vcHMuc2V0X3BpeGVs
+X2Nsb2NrKHZhci0+cGl4Y2xvY2spOw0KDQpIZXJlIGFyZSBub3QgZnJpZW5kbHkgZm9yIGtlcm5l
+bCwgYmVjYXVzZSBpZiB3ZSBsb3N0IHRoZSBjbG9jayB3ZSBjYW5ub3QNCnRvIGRpc3BsYXkuIFdl
+IGRvIHNvIG11Y2ggdGhpbmdzIGluIGtlcm5lbCBidXQgd2Ugc3RpbGwgY2Fubm90IHRvIGRpc3Bs
+YXkgdGhhdA0KaXMgYmVmb3JlIHdlIGNhbiBrbm93IGl0Li4uU28gc3RpbGwgdGhpbmsgd2UgbmVl
+ZCB0byBjaGVjayB0aGUgaG9vayBpbiBpbml0aWFsaXphdGlvbg0KZmxvdy4NCg0KUmVnYXJkcywN
+Ci1Eb25nc2hlbmcNCg=

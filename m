@@ -1,63 +1,90 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Nov 2015 11:28:09 +0000
-Subject: Re: [PATCH] video: constify geode ops structures
-Message-Id: <565449C9.10206@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="enVrx1qFpvJ1Isc08Iv4b2ioIFAED6pAU"
+From: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+Date: Wed, 25 Nov 2015 03:11:48 +0000
+Subject: [PATCH RESEND] fbdev: Make fb-notify a no-op if CONFIG_FB=n
+Message-Id: <1448421108-3437-1-git-send-email-ezequiel@vanguardiasur.com.ar>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1447018493-20631-1-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1447018493-20631-1-git-send-email-Julia.Lawall@lip6.fr>
-To: Julia Lawall <Julia.Lawall@lip6.fr>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: kernel-janitors@vger.kernel.org, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---enVrx1qFpvJ1Isc08Iv4b2ioIFAED6pAU
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+There's no point in having support for framebuffer notifications
+is CONFIG_FB is disabled. This commit adds the necessary stubs
+for code to link properly when CONFIG_FB=n and moves fb-notify.o
+to be built only when CONFIG_FB=y.
 
+Signed-off-by: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+---
+ drivers/video/fbdev/Kconfig       |  4 ++++
+ drivers/video/fbdev/core/Makefile |  2 +-
+ include/linux/fb.h                | 18 ++++++++++++++++++
+ 3 files changed, 23 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index e6d16d65e4e6..6d881260856e 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -5,6 +5,7 @@
+ menuconfig FB
+ 	tristate "Support for frame buffer devices"
+ 	select FB_CMDLINE
++	select FB_NOTIFY
+ 	---help---
+ 	  The frame buffer device provides an abstraction for the graphics
+ 	  hardware. It represents the frame buffer of some video hardware and
+@@ -56,6 +57,9 @@ config FIRMWARE_EDID
+ config FB_CMDLINE
+ 	bool
+ 
++config FB_NOTIFY
++	bool
++
+ config FB_DDC
+        tristate
+        depends on FB
+diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+index 23d86a8b7d7b..9e3ddf225393 100644
+--- a/drivers/video/fbdev/core/Makefile
++++ b/drivers/video/fbdev/core/Makefile
+@@ -1,5 +1,5 @@
+-obj-y                             += fb_notify.o
+ obj-$(CONFIG_FB_CMDLINE)          += fb_cmdline.o
++obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
+ obj-$(CONFIG_FB)                  += fb.o
+ fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
+                                      modedb.o fbcvt.o
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 3d003805aac3..55433f86f0a3 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -175,9 +175,27 @@ struct fb_blit_caps {
+ 	u32 flags;
+ };
+ 
++#ifdef CONFIG_FB_NOTIFY
+ extern int fb_register_client(struct notifier_block *nb);
+ extern int fb_unregister_client(struct notifier_block *nb);
+ extern int fb_notifier_call_chain(unsigned long val, void *v);
++#else
++static inline int fb_register_client(struct notifier_block *nb)
++{
++	return 0;
++};
++
++static inline int fb_unregister_client(struct notifier_block *nb)
++{
++	return 0;
++};
++
++static inline int fb_notifier_call_chain(unsigned long val, void *v)
++{
++	return 0;
++};
++#endif
++
+ /*
+  * Pixmap structure definition
+  *
+-- 
+2.6.2
 
-On 08/11/15 23:34, Julia Lawall wrote:
-> These geode ops structures are never modified, so declare them as const=
-=2E
->=20
-> Done with the help of Coccinelle.
->=20
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
-> ---
->  drivers/video/fbdev/geode/display_gx1.c  |    2 +-
->  drivers/video/fbdev/geode/display_gx1.h  |    2 +-
->  drivers/video/fbdev/geode/geodefb.h      |    4 ++--
->  drivers/video/fbdev/geode/video_cs5530.c |    2 +-
->  drivers/video/fbdev/geode/video_cs5530.h |    2 +-
->  5 files changed, 6 insertions(+), 6 deletions(-)
-
-Thanks, queued for 4.5.
-
- Tomi
-
-
---enVrx1qFpvJ1Isc08Iv4b2ioIFAED6pAU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWVEnJAAoJEPo9qoy8lh71mlYQAKaCCYWg3W+w71nV8K7Ivt3Y
-NjfP07ApN31g8gqXpAVhTWP990BD5JTx1KtN4oJnFuiKU7OZwC3XaACYs3kF67w8
-7uhdk+npN6AQ2wC0nEq+iOeZrqKLu44YB6Vk7l10zbT1Or3GmtbcrZnwLCA/bqaK
-fPV6MBSPdtJMVhatZJyRv1aodmb8vEq86PLC97zXsSyP5qLD4Kcc6hlhBfRSgEEo
-FdUL5muRA/C7ZkY3tTY7vEMBSDvG+eY+nS50VRttOo09QsBDhNNUbmd9g3yszPnX
-1eezWz33vIvjp8zZ44TOaIfgPTpnZKzPiti0pUxYtQIYOppxPPl5148KcPBbyMT5
-mfLAAN6eWAfMyrA9QwrK0bVnWThH+VlguE1LJ+Db00Xrv3zxMST1tH/k/kuZgh9C
-li1TCCQfH5g8KHhVfAaNmj+rlz665uxedSztX2I1pasX1vfHpMo6nR+8KamkGN3X
-kdBAzVdDFjuqbVxrDvxsNoqK5/hjZEwm38OWuAOATFqC0Sb9EnFJDyhSutUBGRyh
-AlkiD2bzTPPGJkweLvsbpybdEWJjjPy3Ii2VpNlPl4TLpULJKubcOnMkwvFRjSJy
-PEhYDFvzdwEoGJpQMor5YKZOKNNTTQXhAkjG0/HGh9cjCSV44vyZRce1PcfYFsIV
-dGLq+TdKMPRqSVTk7/m3
-=APHw
------END PGP SIGNATURE-----
-
---enVrx1qFpvJ1Isc08Iv4b2ioIFAED6pAU--

@@ -1,106 +1,96 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 16 Nov 2015 08:56:30 +0000
-Subject: [PATCH v4 07/24] pwm: use pwm_get/set_default_xxx() helpers where appropriate
-Message-Id: <1447664207-24370-8-git-send-email-boris.brezillon@free-electrons.com>
+From: Bogicevic Sasa <brutallesale@gmail.com>
+Date: Wed, 25 Nov 2015 21:56:30 +0000
+Subject: [PATCH] drivers:staging:sm750fb Fix all space preferred around messages
+Message-Id: <1448488590-1533-1-git-send-email-brutallesale@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Bogicevic Sasa <brutallesale@gmail.com>
 
-pwm_set/get_default_xxx() helpers have been introduced to differentiate
-the default PWM states (those retrieved through DT, PWM lookup table or
-statically assigned by the driver) and the current PWM ones.
-Make use of those helpers where appropriate.
+This fixes all messages from checkpatch.pl about space preferred
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-Tested-by: Heiko Stuebner <heiko@sntech.de>
-Reviewed-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Signed-off-by: Bogicevic Sasa <brutallesale@gmail.com>
 ---
- drivers/pwm/core.c      | 14 +++++++-------
- drivers/pwm/pwm-pxa.c   |  2 +-
- drivers/pwm/pwm-sun4i.c |  3 ++-
- 3 files changed, 10 insertions(+), 9 deletions(-)
+ drivers/staging/sm750fb/ddk750_mode.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index d24ca5f..59073a1 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -146,12 +146,12 @@ of_pwm_xlate_with_flags(struct pwm_chip *pc, const struct of_phandle_args *args)
- 	if (IS_ERR(pwm))
- 		return pwm;
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index fa35926..0fd34fa 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -30,8 +30,8 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
+ 	| FIELD_VALUE(0, CRT_AUTO_CENTERING_TL, LEFT, 0));
  
--	pwm_set_period(pwm, args->args[1]);
-+	pwm_set_default_period(pwm, args->args[1]);
+ 	POKE32(CRT_AUTO_CENTERING_BR,
+-	FIELD_VALUE(0, CRT_AUTO_CENTERING_BR, BOTTOM, y-1)
+-	| FIELD_VALUE(0, CRT_AUTO_CENTERING_BR, RIGHT, x-1));
++	FIELD_VALUE(0, CRT_AUTO_CENTERING_BR, BOTTOM, y - 1)
++	| FIELD_VALUE(0, CRT_AUTO_CENTERING_BR, RIGHT, x - 1));
  
- 	if (args->args[2] & PWM_POLARITY_INVERTED)
--		pwm_set_polarity(pwm, PWM_POLARITY_INVERSED);
-+		pwm_set_default_polarity(pwm, PWM_POLARITY_INVERSED);
- 	else
--		pwm_set_polarity(pwm, PWM_POLARITY_NORMAL);
-+		pwm_set_default_polarity(pwm, PWM_POLARITY_NORMAL);
+ 	/* Assume common fields in dispControl have been properly set before
+ 	   calling this function.
+@@ -101,9 +101,9 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ 		| FIELD_VALUE(0, CRT_VERTICAL_SYNC, START, pModeParam->vertical_sync_start - 1));
  
- 	return pwm;
- }
-@@ -172,7 +172,7 @@ of_pwm_simple_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
- 	if (IS_ERR(pwm))
- 		return pwm;
  
--	pwm_set_period(pwm, args->args[1]);
-+	pwm_set_default_period(pwm, args->args[1]);
+-		ulTmpValue = FIELD_VALUE(0, CRT_DISPLAY_CTRL, VSYNC_PHASE, pModeParam->vertical_sync_polarity)|
+-					  FIELD_VALUE(0, CRT_DISPLAY_CTRL, HSYNC_PHASE, pModeParam->horizontal_sync_polarity)|
+-					  FIELD_SET(0, CRT_DISPLAY_CTRL, TIMING, ENABLE)|
++		ulTmpValue = FIELD_VALUE(0, CRT_DISPLAY_CTRL, VSYNC_PHASE, pModeParam->vertical_sync_polarity) |
++					  FIELD_VALUE(0, CRT_DISPLAY_CTRL, HSYNC_PHASE, pModeParam->horizontal_sync_polarity) |
++					  FIELD_SET(0, CRT_DISPLAY_CTRL, TIMING, ENABLE) |
+ 					  FIELD_SET(0, CRT_DISPLAY_CTRL, PLANE, ENABLE);
  
- 	return pwm;
- }
-@@ -268,7 +268,7 @@ int pwmchip_add_with_polarity(struct pwm_chip *chip,
- 		pwm->chip = chip;
- 		pwm->pwm = chip->base + i;
- 		pwm->hwpwm = i;
--		pwm->polarity = polarity;
-+		pwm_set_default_polarity(pwm, polarity);
- 		mutex_init(&pwm->lock);
  
- 		radix_tree_insert(&pwm_tree, pwm->pwm, pwm);
-@@ -751,8 +751,8 @@ struct pwm_device *pwm_get(struct device *dev, const char *con_id)
- 	if (IS_ERR(pwm))
- 		goto out;
+@@ -116,7 +116,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ 					& FIELD_CLEAR(CRT_DISPLAY_CTRL, TIMING)
+ 					& FIELD_CLEAR(CRT_DISPLAY_CTRL, PLANE);
  
--	pwm_set_period(pwm, chosen->period);
--	pwm_set_polarity(pwm, chosen->polarity);
-+	pwm_set_default_period(pwm, chosen->period);
-+	pwm_set_default_polarity(pwm, chosen->polarity);
+-			 POKE32(CRT_DISPLAY_CTRL, ulTmpValue|ulReg);
++			 POKE32(CRT_DISPLAY_CTRL, ulTmpValue | ulReg);
+ 		}
  
- out:
- 	mutex_unlock(&pwm_lookup_lock);
-diff --git a/drivers/pwm/pwm-pxa.c b/drivers/pwm/pwm-pxa.c
-index cb2f702..65b80aa 100644
---- a/drivers/pwm/pwm-pxa.c
-+++ b/drivers/pwm/pwm-pxa.c
-@@ -160,7 +160,7 @@ pxa_pwm_of_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
- 	if (IS_ERR(pwm))
- 		return pwm;
+ 	} else if (pll->clockType = PRIMARY_PLL) {
+@@ -140,15 +140,15 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ 		FIELD_VALUE(0, PANEL_VERTICAL_SYNC, HEIGHT, pModeParam->vertical_sync_height)
+ 		| FIELD_VALUE(0, PANEL_VERTICAL_SYNC, START, pModeParam->vertical_sync_start - 1));
  
--	pwm_set_period(pwm, args->args[0]);
-+	pwm_set_default_period(pwm, args->args[0]);
+-		ulTmpValue = FIELD_VALUE(0, PANEL_DISPLAY_CTRL, VSYNC_PHASE, pModeParam->vertical_sync_polarity)|
+-			     FIELD_VALUE(0, PANEL_DISPLAY_CTRL, HSYNC_PHASE, pModeParam->horizontal_sync_polarity)|
+-			     FIELD_VALUE(0, PANEL_DISPLAY_CTRL, CLOCK_PHASE, pModeParam->clock_phase_polarity)|
+-			     FIELD_SET(0, PANEL_DISPLAY_CTRL, TIMING, ENABLE)|
++		ulTmpValue = FIELD_VALUE(0, PANEL_DISPLAY_CTRL, VSYNC_PHASE, pModeParam->vertical_sync_polarity) |
++			     FIELD_VALUE(0, PANEL_DISPLAY_CTRL, HSYNC_PHASE, pModeParam->horizontal_sync_polarity) |
++			     FIELD_VALUE(0, PANEL_DISPLAY_CTRL, CLOCK_PHASE, pModeParam->clock_phase_polarity) |
++			     FIELD_SET(0, PANEL_DISPLAY_CTRL, TIMING, ENABLE) |
+ 			     FIELD_SET(0, PANEL_DISPLAY_CTRL, PLANE, ENABLE);
  
- 	return pwm;
- }
-diff --git a/drivers/pwm/pwm-sun4i.c b/drivers/pwm/pwm-sun4i.c
-index 67af9f6..f6a7451 100644
---- a/drivers/pwm/pwm-sun4i.c
-+++ b/drivers/pwm/pwm-sun4i.c
-@@ -354,7 +354,8 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
- 	val = sun4i_pwm_readl(pwm, PWM_CTRL_REG);
- 	for (i = 0; i < pwm->chip.npwm; i++)
- 		if (!(val & BIT_CH(PWM_ACT_STATE, i)))
--			pwm->chip.pwms[i].polarity = PWM_POLARITY_INVERSED;
-+			pwm_set_default_polarity(&pwm->chip.pwms[i],
-+						 PWM_POLARITY_INVERSED);
- 	clk_disable_unprepare(pwm->clk);
+ 		ulReservedBits = FIELD_SET(0, PANEL_DISPLAY_CTRL, RESERVED_1_MASK, ENABLE) |
+ 				 FIELD_SET(0, PANEL_DISPLAY_CTRL, RESERVED_2_MASK, ENABLE) |
+-				 FIELD_SET(0, PANEL_DISPLAY_CTRL, RESERVED_3_MASK, ENABLE)|
++				 FIELD_SET(0, PANEL_DISPLAY_CTRL, RESERVED_3_MASK, ENABLE) |
+ 				 FIELD_SET(0, PANEL_DISPLAY_CTRL, VSYNC, ACTIVE_LOW);
  
- 	return 0;
+ 		ulReg = (PEEK32(PANEL_DISPLAY_CTRL) & ~ulReservedBits)
+@@ -167,13 +167,13 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
+ 		*       next vertical sync to turn on/off the plane.
+ 		*/
+ 
+-		POKE32(PANEL_DISPLAY_CTRL, ulTmpValue|ulReg);
++		POKE32(PANEL_DISPLAY_CTRL, ulTmpValue | ulReg);
+ 
+-		while ((PEEK32(PANEL_DISPLAY_CTRL) & ~ulReservedBits) != (ulTmpValue|ulReg)) {
++		while ((PEEK32(PANEL_DISPLAY_CTRL) & ~ulReservedBits) != (ulTmpValue | ulReg)) {
+ 			cnt++;
+ 			if (cnt > 1000)
+ 				break;
+-			POKE32(PANEL_DISPLAY_CTRL, ulTmpValue|ulReg);
++			POKE32(PANEL_DISPLAY_CTRL, ulTmpValue | ulReg);
+ 		}
+ 	} else {
+ 		ret = -1;
 -- 
 2.1.4
 

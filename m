@@ -1,58 +1,59 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Tue, 10 Nov 2015 18:26:59 +0000
-Subject: Re: [PATCH v3 00/12] pwm: add support for atomic update
-Message-Id: <20151110192659.3eaa800c@bbrezillon>
+From: Ran Shalit <ranshalit@gmail.com>
+Date: Wed, 25 Nov 2015 20:02:16 +0000
+Subject: image disappear
+Message-Id: <CAJ2oMhJ+4N2hKH7PUT02pVRZLS32+pvWg9CYszy7iyX5pbLitQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
- <2341981.a79ioYM9Es@diego> <20151110173416.GB21727@ulmo>
-In-Reply-To: <20151110173416.GB21727@ulmo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-Hi Thierry,
+Hello,
 
-On Tue, 10 Nov 2015 18:34:16 +0100
-Thierry Reding <thierry.reding@gmail.com> wrote:
+I am working on embedded project with LCD 240x320 (width is 240)
+When I render image to framebuffer, I see for a split of a second and
+than it disappear.
+Is there any explanation for such behaviour ?
 
-> On Mon, Oct 19, 2015 at 12:12:12PM +0200, Heiko St=C3=BCbner wrote:
-> > Hi Thierry,
-> >=20
-> > Am Montag, 21. September 2015, 11:33:17 schrieb Boris Brezillon:
-> > > Hello,
-> > >=20
-> > > This series adds support for atomic PWM update, or IOW, the capability
-> > > to update all the parameters of a PWM device (enabled/disabled, perio=
-d,
-> > > duty and polarity) in one go.
-> >=20
-> > is anything more blocking this series? It's now sitting on the lists fo=
-r=20
-> > nearly a month and everybody seems happy with it, so it would be really=
- nice=20
-> > to have in mainline :-) .
-> >=20
-> > Especially as this also makes it possible for Rockchip Chromebooks to a=
-ctually=20
-> > control the logic-regulator that is implemented as pwm-regulator there.
->=20
-> Last time I tried to put this into linux-next I got immediately
-> bombarded by a number of build failures, so I backed things out. The
-> current plan is to give this another try after v4.4-rc1.
+I first suspected the timing parameters which I've configured.
+But when I use test bar color from the cpu it is seen stable , and
+clear on the screen. I guess it means that timing are OK ?
 
-Could you paste the build failures (I didn't receive any notification)?
-BTW, I just rebased my branch on pwm/for-next and it seems to compile
-correctly, but maybe you're compiling on more platforms (or different
-drivers than I do).
+Another project (different cpu, kernel) with the same lcd, and the
+same (Expected) timing, gives the following:
+mode "240x320-0"
+# D: 0.000 MHz, H: 0.000 kHz, V: 0.000 Hz
+geometry 240 320 240 320 16
+timings 0 0 0 0 0 0 0
+accel false
+rgba 5/11,6/5,5/0,0/0
+endmode
 
-Best Regards,
+In that project there is no issue when rendering an image (the image
+does not disapear).
 
-Boris
+But In my cpu, kernel I see the following:
 
 
+root@dm814x:/opt/dvr_rdk/ti814x# fbset -fb /dev/fb0
 
---=20
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+mode "240x320-782"
+
+   # D: 148.500 MHz, H: 285.577 kHz, V: 782.403 Hz
+
+   geometry 240 320 240 320 16
+
+   timings 6734 148 88 36 4 44 5
+
+   rgba 5/11,6/5,5/0,0/0
+
+endmode
+
+Can any of the above differences explain this behaviour ? Hiw can I
+fix it (I tried to use fbset with -t 0 0 0 ... but it did not help)
+
+The images on my board can be seen here:
+https://drive.google.com/drive/folders/0B22GsWueReZTR1IxYzEteDNpUGc
+
+Regards,
+Ran

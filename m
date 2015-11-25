@@ -1,104 +1,47 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 24 Nov 2015 16:26:58 +0000
-Subject: Re: [PATCH v5] pwm-backlight: Avoid backlight flicker when probed from DT
-Message-Id: <20151124162658.GJ807@x1>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Wed, 25 Nov 2015 17:22:21 +0000
+Subject: Re: [RFC PATCH 1/2] drm: add support for for clk and de polarity
+Message-Id: <1448472141.3390.17.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1447866745-21567-1-git-send-email-p.zabel@pengutronix.de>
-In-Reply-To: <1447866745-21567-1-git-send-email-p.zabel@pengutronix.de>
+References: <55A67FDB.8010602@gmx.at> <55A6813A.8090706@gmx.at>
+In-Reply-To: <55A6813A.8090706@gmx.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Manfred Schlaegl <manfred.schlaegl@gmx.at>
+Cc: linux-fbdev@vger.kernel.org, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Steve Longerbeam <slongerbeam@gmail.com>, Deepak Das <deepak_das@mentor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-On Wed, 18 Nov 2015, Philipp Zabel wrote:
+Am Mittwoch, den 15.07.2015, 17:50 +0200 schrieb Manfred Schlaegl:
+> To get full support for parallel and LVDS displays with drm:
+> Add representation for clock and data enable polarity in drm_display_mode
+> flags (similar to HSYNC/VSYNC polarity) and update conversion functions
+> from/to videomode accordingly.
+> 
+> This is especially important for embedded devices where parallel(RGB) and
+> LVDS displays are still widely used and drm already plays an important
+> role.
+> 
+> Tested on Freescale i.MX53(parallel) and i.MX6(LVDS).
+> 
+> Background:
+> There was the ability to set polarity of clock and data enable signals
+> in devicetree(display-timing), struct display_timing and struct videomode,
+> but there was no representation for this in struct drm_display_mode.
+> Example on Freescale i.MX53/i.MX6 SoC's:
+>  * A parallel display using different clock polarity is set up using
+>    display-timing in devicetree
+>  * ipuv3 parallel outputs clock with wrong polarity
+> 
+> Signed-off-by: Manfred Schlaegl <manfred.schlaegl@gmx.at>
 
-> If the driver is probed from the device tree, and there is a phandle
-> property set on it, and the enable GPIO is already configured as output,
-> and the backlight is currently disabled, keep it disabled.
-> If all these conditions are met, assume there will be some other driver
-> that can enable the backlight at the appropriate time.
->=20
-> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> Reviewed-by: Christian Gmeiner <christian.gmeiner@gmail.com>
-> Tested-by: Heiko Stuebner <heiko@sntech.de>
-> ---
->  - Rebased onto v4.4-rc1
->  - Added Heiko's Tested-by
-> ---
->  drivers/video/backlight/pwm_bl.c | 23 ++++++++++++++++++++++-
->  1 file changed, 22 insertions(+), 1 deletion(-)
+Any comments on whether data enable and pixel clock polarity flags can
+be added to the visible DRM_MODE_FLAGs, and if not, where else this
+information should be kept? struct drm_display_info?
 
-Applied, thanks.
+This patch and the following IPUv3 patch are useful and necessary for
+quite some panels connected to i.MX SoCs, but adding DRM_MODE_FLAGs is
+somewhat out of my jurisdiction.
 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
-wm_bl.c
-> index ae3c6b6..3daf9cc 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -199,6 +199,8 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	struct backlight_properties props;
->  	struct backlight_device *bl;
->  	struct pwm_bl_data *pb;
-> +	phandle phandle =3D pdev->dev.of_node->phandle;
-> +	int initial_blank =3D FB_BLANK_UNBLANK;
->  	int ret;
-> =20
->  	if (!data) {
-> @@ -242,7 +244,7 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	pb->enabled =3D false;
-> =20
->  	pb->enable_gpio =3D devm_gpiod_get_optional(&pdev->dev, "enable",
-> -						  GPIOD_OUT_HIGH);
-> +						  GPIOD_ASIS);
->  	if (IS_ERR(pb->enable_gpio)) {
->  		ret =3D PTR_ERR(pb->enable_gpio);
->  		goto err_alloc;
-> @@ -264,12 +266,30 @@ static int pwm_backlight_probe(struct platform_devi=
-ce *pdev)
->  		pb->enable_gpio =3D gpio_to_desc(data->enable_gpio);
->  	}
-> =20
-> +	if (pb->enable_gpio) {
-> +		/*
-> +		 * If the driver is probed from the device tree and there is a
-> +		 * phandle link pointing to the backlight node, it is safe to
-> +		 * assume that another driver will enable the backlight at the
-> +		 * appropriate time. Therefore, if it is disabled, keep it so.
-> +		 */
-> +		if (phandle &&
-> +		    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
-> +		    gpiod_get_value(pb->enable_gpio) =3D 0)
-> +			initial_blank =3D FB_BLANK_POWERDOWN;
-> +		else
-> +			gpiod_direction_output(pb->enable_gpio, 1);
-> +	}
-> +
->  	pb->power_supply =3D devm_regulator_get(&pdev->dev, "power");
->  	if (IS_ERR(pb->power_supply)) {
->  		ret =3D PTR_ERR(pb->power_supply);
->  		goto err_alloc;
->  	}
-> =20
-> +	if (phandle && !regulator_is_enabled(pb->power_supply))
-> +		initial_blank =3D FB_BLANK_POWERDOWN;
-> +
->  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
->  	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) !=3D -EPROBE_DEFER
->  	    && !pdev->dev.of_node) {
-> @@ -320,6 +340,7 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	}
-> =20
->  	bl->props.brightness =3D data->dft_brightness;
-> +	bl->props.power =3D initial_blank;
->  	backlight_update_status(bl);
-> =20
->  	platform_set_drvdata(pdev, bl);
+best regards
+Philipp
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

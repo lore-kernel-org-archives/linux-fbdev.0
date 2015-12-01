@@ -1,7 +1,7 @@
-From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-Date: Tue, 01 Dec 2015 08:43:10 +0000
-Subject: RE: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
-Message-Id: <SN1PR0301MB1616CCC726F0F6135CE6B00A9D0F0@SN1PR0301MB1616.namprd03.prod.outlook.com>
+From: Timur Tabi <timur@tabi.org>
+Date: Tue, 01 Dec 2015 14:53:09 +0000
+Subject: Re: [PATCH] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
+Message-Id: <565DB455.8090103@tabi.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
 In-Reply-To: <1448346450-47403-1-git-send-email-dongsheng.wang@freescale.com>
@@ -10,16 +10,8 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-PiBPbiBUdWUsIDIwMTUtMTEtMjQgYXQgMTI6MTYgLTA1MDAsIFRpbXVyIFRhYmkgd3JvdGU6DQo+
-ID4gT24gVHVlLCBOb3YgMjQsIDIwMTUgYXQgMTI6MDUgUE0sIFNjb3R0IFdvb2QgPHNjb3R0d29v
-ZEBmcmVlc2NhbGUuY29tPg0KPiA+IHdyb3RlOg0KPiA+DQo+ID4gPiBJIGFza2VkIERvbmdzaGVu
-ZyB0byBwdXQgaXQgaW4gcHJvYmUoKSBkdXJpbmcgaW50ZXJuYWwgcmV2aWV3DQo+ID4gPiBiZWNh
-dXNlIGF0IHRoZSB0aW1lIGhlIHdhcyBwcmludGluZyBhbiBlcnJvciwgYW5kIEkgZGlkbid0IHdh
-bnQgdGhlDQo+ID4gPiBlcnJvciB0byBiZSBwcmludGVkIGlmIHRoZSBkZXZpY2Ugd2Fzbid0IHBy
-ZXNlbnQuICBBZ2FpbiwgdGhlcmUncw0KPiA+ID4gYW5vdGhlciBub24tYnVnZml4IHBhdGNoIHBl
-bmRpbmcgdGhhdCBtb3ZlcyBhbGwgdGhlIHJlc3QgaW50bw0KPiA+ID4gcHJvYmUoKSB3aGVyZSBp
-dCBiZWxvbmdzLg0KPiA+DQo+ID4gSSB0aGluayBpdCBzaG91bGQgYmUgaW4gX2luaXQsIGFuZCBu
-b3QgZGlzcGxheSBhbiBlcnJvci4NCj4gDQo+IEFzIGxvbmcgYXMgaXQgZG9lc24ndCBkaXNwbGF5
-IGFueXRoaW5nIEkgZG9uJ3QgY2FyZSBtdWNoIGVpdGhlciB3YXkuDQo+IA0KDQpTbyB3ZSBtb3Zl
-IHRoZSBjb2RlIHRvIF9pbml0PyBJZiB3ZSBhcmUgY29uc2lzdGVudCBJIHdpbGwgbW92ZSB0byBf
-aW5pdA0KYW5kIHNlbmQgdjIgcGF0Y2guDQoNClJlZ2FyZHMsDQotRG9uZ3NoZW5nDQo
+Wang Dongsheng wrote:
+> So we move the code to _init? If we are consistent I will move to _init
+> and send v2 patch.
+
+Yes, please.

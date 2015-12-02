@@ -1,38 +1,50 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Fri, 18 Dec 2015 20:41:46 +0000
-Subject: Re: [PATCH v6 1/2] video: fbdev: pxafb: loosen the platform data bond
-Message-Id: <871tajij5h.fsf@belgarion.home>
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+Date: Wed, 02 Dec 2015 13:20:16 +0000
+Subject: [PATCH v2] video: fbdev: fsl: fix kernel crash when diu_ops is not implemented
+Message-Id: <1449062416-12245-1-git-send-email-dongsheng.wang@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1449955631-14955-1-git-send-email-robert.jarzmik@free.fr>
-	<56701430.9050100@ti.com>
-In-Reply-To: <56701430.9050100@ti.com> (Tomi Valkeinen's message of "Tue, 15
-	Dec 2015 15:22:56 +0200")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Tomi Valkeinen <tomi.valkeinen@ti.com> writes:
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-> On 12/12/15 23:27, Robert Jarzmik wrote:
->> In order to prepare the transition to a mixed platform data and
->> device-tree initialization, remove all the platform data references all
->> over the driver.
->> 
->> Copy the platform data into the internal structure of the pxafb, and
->> only use this afterward.
->> 
->> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
->> ---
->>  drivers/video/fbdev/pxafb.c | 54 ++++++++++++++++++++++++++++-----------------
->>  drivers/video/fbdev/pxafb.h |  2 ++
->>  2 files changed, 36 insertions(+), 20 deletions(-)
->
-> Thanks, I've queued this and the second patch for 4.5.
-Excellent, thank you.
+If diu_ops is not implemented on platform, kernel will access a null
+pointer. we need to check this pointer in diu initialization.
 
-Cheers.
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+v2:
+- Move set_pixel_clock judgement to fsl_diu_init.
 
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index b335c1a..7052200 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -479,7 +479,10 @@ static enum fsl_diu_monitor_port fsl_diu_name_to_port(const char *s)
+ 			port = FSL_DIU_PORT_DLVDS;
+ 	}
+ 
+-	return diu_ops.valid_monitor_port(port);
++	if (diu_ops.valid_monitor_port)
++		port = diu_ops.valid_monitor_port(port);
++
++	return port;
+ }
+ 
+ /*
+@@ -1915,6 +1918,10 @@ static int __init fsl_diu_init(void)
+ #else
+ 	monitor_port = fsl_diu_name_to_port(monitor_string);
+ #endif
++
++	if (!diu_ops.set_pixel_clock)
++		return -ENODEV;
++
+ 	pr_info("Freescale Display Interface Unit (DIU) framebuffer driver\n");
+ 
+ #ifdef CONFIG_NOT_COHERENT_CACHE
 -- 
-Robert
+2.1.0.27.g96db324
+

@@ -1,121 +1,110 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 29 Dec 2015 09:06:05 +0000
-Subject: Re: [PATCH 3/7] omapfb: fix error return code
-Message-Id: <56824CFD.9000903@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="cvg86PeD51S1v7qU08DhSheNwM37EuFjK"
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Wed, 02 Dec 2015 10:37:20 +0000
+Subject: Re: [PATCH v4 09/24] regulator: pwm: use pwm_get/set_default_xxx() helpers where appropriate
+Message-Id: <20151202113720.0a6517b1@bbrezillon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1451143726-28195-1-git-send-email-Julia.Lawall@lip6.fr>
- <1451143726-28195-4-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1451143726-28195-4-git-send-email-Julia.Lawall@lip6.fr>
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
+ <1447664207-24370-10-git-send-email-boris.brezillon@free-electrons.com>
+ <20151116105558.GB31303@sirena.org.uk>
+ <20151116132359.39d84279@bbrezillon>
+ <20151116184238.GJ31303@sirena.org.uk>
+In-Reply-To: <20151116184238.GJ31303@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---cvg86PeD51S1v7qU08DhSheNwM37EuFjK
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
+On Mon, 16 Nov 2015 18:42:38 +0000
+Mark Brown <broonie@kernel.org> wrote:
 
-On 26/12/15 17:28, Julia Lawall wrote:
-> Return a negative error code on failure.
->=20
-> A simplified version of the semantic match that finds this problem is a=
-s
-> follows: (http://coccinelle.lip6.fr/)
->=20
-> // <smpl>
-> @@
-> identifier ret; expression e1,e2;
-> @@
-> (
-> if (\(ret < 0\|ret !=3D 0\))
->  { ... return ret; }
-> |
-> ret =3D 0
-> )
-> ... when !=3D ret =3D e1
->     when !=3D &ret
-> *if(...)
-> {
->   ... when !=3D ret =3D e2
->       when forall
->  return ret;
-> }
-> // </smpl>
->=20
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
-> ---
->  drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c |   12 +=
-++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s01=
-5.c b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c
-> index 677e254..fc4cfa9 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c
-> @@ -241,22 +241,28 @@ static int tpd_probe(struct platform_device *pdev=
-)
-> =20
->  	gpio =3D devm_gpiod_get_index_optional(&pdev->dev, NULL, 0,
->  		GPIOD_OUT_LOW);
-> -	if (IS_ERR(gpio))
-> +	if (IS_ERR(gpio)) {
-> +		r =3D PTR_ERR(gpio);
->  		goto err_gpio;
-> +	}
-> =20
->  	ddata->ct_cp_hpd_gpio =3D gpio;
-> =20
->  	gpio =3D devm_gpiod_get_index_optional(&pdev->dev, NULL, 1,
->  		GPIOD_OUT_LOW);
-> -	if (IS_ERR(gpio))
-> +	if (IS_ERR(gpio)) {
-> +		r =3D PTR_ERR(gpio);
->  		goto err_gpio;
-> +	}
-> =20
->  	ddata->ls_oe_gpio =3D gpio;
-> =20
->  	gpio =3D devm_gpiod_get_index(&pdev->dev, NULL, 2,
->  		GPIOD_IN);
-> -	if (IS_ERR(gpio))
-> +	if (IS_ERR(gpio)) {
-> +		r =3D PTR_ERR(gpio);
->  		goto err_gpio;
-> +	}
-> =20
->  	ddata->hpd_gpio =3D gpio;
+> On Mon, Nov 16, 2015 at 01:23:59PM +0100, Boris Brezillon wrote:
+> > Mark Brown <broonie@kernel.org> wrote:
+> > > On Mon, Nov 16, 2015 at 09:56:32AM +0100, Boris Brezillon wrote:
+> 
+> > > > -	pwm_reg_period = pwm_get_period(drvdata->pwm);
+> > > > +	pwm_reg_period = pwm_get_default_period(drvdata->pwm);
+> 
+> > > It's not clear to me that we're not looking for the current period here
+> > > or in the other use.  Won't configuring based on a period other than the
+> > > one that has been set give the wrong answer?
+> 
+> > Hm, maybe that's naming problem. What I call the 'default' period here
+> > is actually the period configured in your board file (using a PWM lookup
+> > table) or your DT. This value represent the period requested by the PWM
+> > user not a default value specified by the PWM chip driver.
+> 
+> > The reason we're not using the 'current' period value is because it may
+> > have been set by the bootloader, and may be inappropriate for our use
+> > case (ie. the period may be to small to represent the different
+> > voltages).
+> 
+> > ITOH, we're using the current period value when calculating the current
+> > voltage, because we want to get the correct voltage value, and the PWM
+> > device may still use the configuration set by the bootloader (not the
+> > default one specified in your board or DT files).
+> 
+> > I hope this clarifies the differences between the current and default
+> > period, and why we should use the default value here.
+> 
+> To be honest I'm still a bit confused here.  When do we actually apply
+> the default setting and why do we keep on having to constantly override
+> it rather than doing this once at boot?  It feels wrong to be using it
+> every time we set anything.  I'd expect it to be something we only need
+> to do at probe time or which would automatically be handled by the PWM
+> framework (but that'd have issues changing the state and potentially
+> breaking things if done in an uncoordiated fashion).
 
-Thanks. Looks like recent changes to the driver break the error
-handling. I'll just drop those patches from my for-next branch, and let
-the author fix the patches.
+Thierry, I didn't hear from you after the long discussion we had on IRC
+a few weeks ago.
+The conclusion of this discussion was that using
+pwm_get_default_period() was not acceptable (even after renaming it
+differently, like pwm_get_reference_period()), because it was
+disturbing to get the default/reference period each time we wanted to
+configure the PWM differently.
+Another suggestion was to automatically reconfigure the PWM duty_ns
+value based on the initial PWM state (retrieved through hardware
+readout) and the default period value (specified in the PWM lookup table
+or the DT). But this implied supporting hardware readout in all PWM
+drivers, which prevents a smooth migration to this new approach.
 
- Tomi
+I also proposed to provide helpers to hide the duty cycle to active
+time calculation in the PWM core, so that PWM users just have to choose
+their scale (percent, or any other custom scale) and set their duty
+cycle based on this scale instead of specifying an active/on time in
+nanosecond. You didn't seem to like this idea, but I gave it a try
+(see here [1]), and think it might be worth looking at it.
 
+The commit you should look at are [2], [3] and [4], and the idea is to
+clarify the notion of duty-cycle, which, according to wikipedia [5]
+(and a lot of other references) is supposed to be expressed in a
+relative unit (percent, or any other scale as said earlier).
+After renaming the pwm_set/get_duty_cycle() helpers into
+pwm_set/get_active_time() we can define a new pwm_set_duty_cycle()
+helper to let the PWM user configure its PWM device relatively to a
+chosen scale, without asking him to choose the PWM period (the
+conversion is done based on the default/reference period).
+The pwm_get_duty_cycle() is doing the reverse conversion: it returns the
+duty-cycle expressed relatively to the scale (here the current PWM
+period is used to handle the case where the PWM user hasn't configure
+the PWM yet, but want to retrieve the current duty-cycle extracted from
+hardware readout).
 
---cvg86PeD51S1v7qU08DhSheNwM37EuFjK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Please let me know what you think of this approach, and if you're happy
+with it I'll rework my series accordingly.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Best Regards,
 
-iQIcBAEBCAAGBQJWgkz9AAoJEPo9qoy8lh71lYYP/3YRheuEU2oITNUejw4dBIAL
-MaDt4Jep36e0qMXCkeDxfxV9cMT5sEyHGPL2Llsj1XDWc/4uR28vJ+FXF+Gjg2rp
-boALoHeMPmkP/8Hu5qmn/Rc9K59qyNW8/DOCyIOADNlqkn2O+Cn9Aoa5IvJhQafA
-nXlcKMJcWnXXrmDFt235vAGqELDBdZbfJxUlgWVlEbUZCa4B2eTvgHw9kkKcMeZv
-LhlZIvjN7dOwtJFwDQlqJZbdumKZhl730lSNflYtcXli8dL6Wi3Rqn+QHQ8qRNmP
-r0lIDpzT789i6NO/z866wLOXzpAn/TudVl7ZljgRPiYAJK0l6Lmv/OBIP3GM9AqE
-aWqK5HpSp9O4hvy5u/eOq3734OZ5Y9pGO8pqY5g/eAldFocbKBLC17sEyC71BUFX
-GhM+KkE35sa4ZxZnGw9prSr1S+unzpDn3MGnauQTMHlGExofAzt+TPCTHG6o3CBW
-va1KMGG5+OkPtG6yV1N9uLuT71LD1WNrhn0mfhJfJpM1CpTLOWvVn9OpD4/VSsVq
-UiEUWXKjJp5lmz16ly50z4qeVLUYon9anqXG0LqMtEGRHsGPOOVooR7eSZlw5p1A
-VC0nkTtnMVJ9VUGEPneXhW3zmJpKX/n9tb/cSYXD6MkjBUus7Zewk2lTqGi1g/zp
-rAm6sPZZXhAhGidMMjM0
-=Agko
------END PGP SIGNATURE-----
+Boris
 
---cvg86PeD51S1v7qU08DhSheNwM37EuFjK--
+[1]https://github.com/bbrezillon/linux-rk/commits/atomic-pwm-alt
+[2]https://github.com/bbrezillon/linux-rk/commit/d7d4d04e147d4ec349c59f70e141877661930c6d
+[3]https://github.com/bbrezillon/linux-rk/commit/66ce78f308f3eb1a9c536689352f208fd51c9030
+[4]https://github.com/bbrezillon/linux-rk/commit/07882a2dd21f0d17d83640ff55204cc7a7d4c8f7
+[5]https://en.wikipedia.org/wiki/Duty_cycle
+
+-- 
+Boris Brezillon, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com

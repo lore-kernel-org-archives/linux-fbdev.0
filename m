@@ -1,68 +1,64 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 07 Dec 2015 09:35:07 +0000
-Subject: Re: [PATCH v5] pwm-backlight: Avoid backlight flicker when probed from DT
-Message-Id: <20151207093507.GA3384@x1>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 07 Dec 2015 16:01:12 +0000
+Subject: Re: [PATCH RESEND] fbdev: Make fb-notify a no-op if CONFIG_FB=n
+Message-Id: <5665AD48.6000602@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="WshMS16vpidpjpK7gUVt9LhsO0TMS1Ncp"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1447866745-21567-1-git-send-email-p.zabel@pengutronix.de>
- <20151124162658.GJ807@x1>
- <CAGS+omCD3MLB+hf4R1aD+YZuB4SV8nu71oAm6V_bkfoE2im49A@mail.gmail.com>
-In-Reply-To: <CAGS+omCD3MLB+hf4R1aD+YZuB4SV8nu71oAm6V_bkfoE2im49A@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+References: <1448421108-3437-1-git-send-email-ezequiel@vanguardiasur.com.ar>
+In-Reply-To: <1448421108-3437-1-git-send-email-ezequiel@vanguardiasur.com.ar>
+To: linux-fbdev@vger.kernel.org
+
+--WshMS16vpidpjpK7gUVt9LhsO0TMS1Ncp
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
 
-On Mon, 07 Dec 2015, Daniel Kurtz wrote:
 
-> Hi Lee,
->=20
-> On Wed, Nov 25, 2015 at 12:26 AM, Lee Jones <lee.jones@linaro.org> wrote:
-> > On Wed, 18 Nov 2015, Philipp Zabel wrote:
-> >
-> >> If the driver is probed from the device tree, and there is a phandle
-> >> property set on it, and the enable GPIO is already configured as outpu=
-t,
-> >> and the backlight is currently disabled, keep it disabled.
-> >> If all these conditions are met, assume there will be some other driver
-> >> that can enable the backlight at the appropriate time.
-> >>
-> >> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> >> Reviewed-by: Christian Gmeiner <christian.gmeiner@gmail.com>
-> >> Tested-by: Heiko Stuebner <heiko@sntech.de>
-> >> ---
-> >>  - Rebased onto v4.4-rc1
-> >>  - Added Heiko's Tested-by
-> >> ---
-> >>  drivers/video/backlight/pwm_bl.c | 23 ++++++++++++++++++++++-
-> >>  1 file changed, 22 insertions(+), 1 deletion(-)
-> >
-> > Applied, thanks.
->=20
-> Hmm, where was this applied?  I do not see it in:
->  * v4.4-rc4
->  * linux-next next-20151203 (dcccebc - Add linux-next specific files
-> for 20151203)
->=20
-> Nor do I see it in any branch in:
->  * git://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight
-> Is this the right git?
+On 25/11/15 05:11, Ezequiel Garcia wrote:
+> There's no point in having support for framebuffer notifications
+> is CONFIG_FB is disabled. This commit adds the necessary stubs
+> for code to link properly when CONFIG_FB=3Dn and moves fb-notify.o
+> to be built only when CONFIG_FB=3Dy.
 
-Yes, that's right.  When I say "applied", it means I applied it to my
-local repository.  I am careful not to allude to the patch being
-"pushed".  There is no guarantee when this will happen, since it
-completly depends how busy the subsystem is.  For Backlight, as the
-churn is low, the impetus for pushing is pretty low.
+Why do you add CONFIG_FB_NOTIFY, isn't plain CONFIG_FB enough? Oh,
+right, to have it built-in even if FB is a module.
 
-It has been "pushed" now though.
+But this makes me wonder, why is fb_notify in obj-y list currently.
+Nobody just bothered to make it build only when needed, or has there
+been some use for it earlier... The commit descriptions in git history
+suggest the former.
 
-> By the way this repository has a git tag called "HEAD", which is a bit
-> annoying since every time I "git remote update" from here, git gets
-> confused until I manually delete it (git tag -d HEAD).
+Actually, looks like fb_notify.c was originally made to solve the same
+problem as your patch solves, but by separating the notify code from the
+main fbdev code. So I still wonder, was there some reason to keep the
+notification code built instead of having stub functions.
 
-Thanks for letting me know.  I have now removed this tag.
+Any thoughts?
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+ Tomi
+
+
+--WshMS16vpidpjpK7gUVt9LhsO0TMS1Ncp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWZa1IAAoJEPo9qoy8lh71yxIP/isQMR4oMjTgSRbWJpxsNUY9
+guAKH4vXAglhAENr2O8whUR8et1M4tLbF+nfrD7fZDTVhdZjBGNQh2EiNEHEll97
+9bVgoZeO84nODTa5MErOluOVbNiRJZpweqnHagwDGPLUGr0icwNwza04KUUvMgqG
+Dp4wjdYicFl2V5JhIJyZ12VukUESqNlbbWtQx2ecRRGAZadNHKLbxRKp+5oOXfbb
+qiXgkdjKyGchmyUGKuvL7dvofcoprFclHmU1TIN6SMMl0o/pLk9g5poAs2OjwFmC
+ctGOvp3lecOEwt9RRuzgw1pVBxSNswmhhcfGVPymNHvXrHdAqlomH4Ov+CxQOoYZ
+dRgAu/AGrgBjd1HiPL271dy4qAou00BDXqps/iZw0FtBgkwjOiv6N/9NrhNgRHN3
+e0K/dcVBUTO/QyQpEXlD5xAJKGrgwSZEC+6Ri+Rc45GEXc/05zhS5M6pPQ2cxmLW
++3rS/VDGkUPuD/yplRNiYibiG0VnzFuU1YMvxjGWShWiI8EMkz2DT0mo9E9a59u/
+m2b4BkBWeLiBcm/7EXNr4H0E8LvmlXZ4WgAFDJjijke5IIg5ymBbglMyVwOyIvUR
+6rfXXj416w3QiGkeinXtcWvgxFreeRhL0GAGL7bZR11i1poRJIyn+WFMck7yClzD
+VPHz0Xta/yEuqUD6zyRD
+=/0E9
+-----END PGP SIGNATURE-----
+
+--WshMS16vpidpjpK7gUVt9LhsO0TMS1Ncp--

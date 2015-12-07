@@ -1,42 +1,47 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 14 Dec 2015 07:14:06 +0000
-Subject: Re: [PATCH RFC 7/9] omapfb: move vrfb into omapfb
-Message-Id: <566E6C3E.1080805@ti.com>
+Date: Mon, 07 Dec 2015 16:11:54 +0000
+Subject: Re: [PATCH] fbdev: sm712fb: avoid unused function warnings
+Message-Id: <5665AFCA.7090800@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="sOpa5ldHmJvN6jJihx6T219g4thBvT0L2"
+Content-Type: multipart/mixed; boundary="j4EL6rNIQkARcS6knj2kCrNKKq5uHm2vB"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1449757535-5674-1-git-send-email-tomi.valkeinen@ti.com>
- <1449757535-5674-8-git-send-email-tomi.valkeinen@ti.com>
- <26366528.DG0zY3a8a2@avalon>
-In-Reply-To: <26366528.DG0zY3a8a2@avalon>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <4240710.SWINpxTKzN@wuerfel>
+In-Reply-To: <4240710.SWINpxTKzN@wuerfel>
+To: linux-arm-kernel@lists.infradead.org
 
---sOpa5ldHmJvN6jJihx6T219g4thBvT0L2
+--j4EL6rNIQkARcS6knj2kCrNKKq5uHm2vB
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
 
 
-On 13/12/15 21:13, Laurent Pinchart wrote:
-> Hi Tomi,
+On 20/11/15 23:48, Arnd Bergmann wrote:
+> The sm712fb framebuffer driver encloses the power-management
+> functions in #ifdef CONFIG_PM, but the smtcfb_pci_suspend/resume
+> functions are only really used when CONFIG_PM_SLEEP is also
+> set, as a frequent gcc warning shows:
 >=20
-> Thank you for the patch.
+> fbdev/sm712fb.c:1549:12: warning: 'smtcfb_pci_suspend' defined but not =
+used
+> fbdev/sm712fb.c:1572:12: warning: 'smtcfb_pci_resume' defined but not u=
+sed
 >=20
-> On Thursday 10 December 2015 16:25:33 Tomi Valkeinen wrote:
->> VRFB is only used by omapfb, so we can move it under omapfb's director=
-y.
+> The driver also avoids using the SIMPLE_DEV_PM_OPS macro when
+> CONFIG_PM is unset, which is redundant.
 >=20
-> Do you see any specific blocker for support of vrfb in omapdss, apart f=
-rom=20
-> finding time (and a reason) to implement it ?
+> This changes the driver to remove the #ifdef and instead mark
+> the functions as __maybe_unused, which is a nicer anyway, as it
+> provides build testing for all the code in all configurations
+> and is harder to get wrong.
+>=20
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-You probably mean omapdrm. No, no other reasons.
+Thanks, applied for 4.5.
 
  Tomi
 
 
---sOpa5ldHmJvN6jJihx6T219g4thBvT0L2
+--j4EL6rNIQkARcS6knj2kCrNKKq5uHm2vB
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -44,19 +49,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWbmw+AAoJEPo9qoy8lh71FusQAJhX1Z5iTpXoTPEDzDC3LM9I
-kfYvLwCIPQIegOX1N0x3xdnnQ8yBp8zfGEJmYav7eaL2ScjaX51EklLYY8sQHPOL
-4PvC6wfKPXn7ffyRLXmGVWjZiLo+qPP4Y7fhDcr+qsIfhhg+9VHBh92Vn0DBUyjM
-IOCH1OWr97wGqENnnIrF3a4NGpwAA7amkhi74HBI6NZ62P8pinUTA+8v2ijNiydf
-X0+qQ9AhegGcv10YpwUrP3AEWLfJEF3fCLTGFoX8K9eFD+Q7dGCn+ubJy+2cL6/k
-leLonPkoMPfVLi3uk6r97iIvhuqSeoq9dBLF/98zhYKicjxHijfb6cSEsPwI5+yO
-3cbwujoeHcqGfOBz8LMBgOa8plfNjZSVVN1vW/8GxuX0vsyVu6DSat0KVygSCC2o
-mZ+G+s6hwmFOA2dx6ntmUpcmwgP9o3bnFDLUCmw2iKPPO/OrrvsRvHEALUsHQYTV
-E2VdrRGolCCsB2GsmrryTqbdWwau1lkmrDfoxNoJWodxMG8Uwz0Mn89HBa7v6HvQ
-0FYvxnqMNWP+e4AkXW16MXomlzbHbLaeVoLnV096UR1gvBDCp2lRbvBHANbZc9C4
-eWLYIagPFxqCHx9yYil+x66Z04CFySZoUI8YjQy+XPIpG1xxrdFjVo5JojqsZ9Sf
-zAQ5vuI9LV1MK7PxJ4uP
-=81sU
+iQIcBAEBCAAGBQJWZa/KAAoJEPo9qoy8lh71H2sQAJ6BUkW5QDDXZhfzUCIY8zoH
+2t/3wOaHvU/SNVesbTX0QcLjtK6q64vvfmi5EkTGSMUjUtK3bz2u5rbC2GIaqqy1
+xBuU9UHiITrugIuuuSUQ5JXkmUs20L3OPbN7pY1J7bD6XMzWBXRTdJzulctoO0LP
+nYYYP2Bl/1unuRmdBCdcHgqTXd0FfnCRzDfYOJDQtW2uFT5dip3GWq5pME1nIsu3
+yYkJRkxDw76yfyaHcMi/jfseX+f4o/t0hcCMWttaaEiCVDKyCbVdIleiS+LI5DJN
+pe+rce1jrTN4IRsmhfoPiK+ufMBR/y93tqGbYGiosacu9XSD2QHaUxeA3M3XGoCe
+Fc6oY+PYVGPVujvVyo6nBJvxpoAHAen19vvLQriA7UqNrV4bRhutib6j2ABrhd/I
+OhxxLwiLfizEq6/lHoJ1XcQwIsSmKyjeepJ9HrtGz6JkJL7ionlM/AEPxg5fCeZ6
+id/z8DBHfAJ6D7qRGFMZq30k/oIEv5qJk5rFQxTfL7Sej11MVbFM7faMlIoIelpz
+hMuu7xAC/KD9XvZQVr0rGj0xGM/NriTr2vxnDoD7ceZa/Op5lVAncHfuHcTToMsP
+tC1GZ+oxYJWUXWWwalteeAjRk2iKi/yuy7TRZ3IUoIFiCQwn2SMBd6gAkYiuz201
+SUF43wErC9UrTSucbJJC
+=g1MW
 -----END PGP SIGNATURE-----
 
---sOpa5ldHmJvN6jJihx6T219g4thBvT0L2--
+--j4EL6rNIQkARcS6knj2kCrNKKq5uHm2vB--

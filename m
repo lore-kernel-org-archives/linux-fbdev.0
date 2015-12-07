@@ -1,83 +1,50 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Sun, 13 Dec 2015 20:13:29 +0000
-Subject: Re: [PATCH 05/23] OMAPDSS: tpd12s015: CT_CP_HPD as optional gpio
-Message-Id: <4679814.all2lyUxDr@avalon>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Date: Mon, 07 Dec 2015 04:20:26 +0000
+Subject: Re: [PATCH v5] pwm-backlight: Avoid backlight flicker when probed from DT
+Message-Id: <CAGS+omCD3MLB+hf4R1aD+YZuB4SV8nu71oAm6V_bkfoE2im49A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1449676791-26304-6-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1449676791-26304-6-git-send-email-tomi.valkeinen@ti.com>
+References: <1447866745-21567-1-git-send-email-p.zabel@pengutronix.de>
+ <20151124162658.GJ807@x1>
+In-Reply-To: <20151124162658.GJ807@x1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Tomi,
+Hi Lee,
 
-Thank you for the patch.
+On Wed, Nov 25, 2015 at 12:26 AM, Lee Jones <lee.jones@linaro.org> wrote:
+> On Wed, 18 Nov 2015, Philipp Zabel wrote:
+>
+>> If the driver is probed from the device tree, and there is a phandle
+>> property set on it, and the enable GPIO is already configured as output,
+>> and the backlight is currently disabled, keep it disabled.
+>> If all these conditions are met, assume there will be some other driver
+>> that can enable the backlight at the appropriate time.
+>>
+>> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+>> Reviewed-by: Christian Gmeiner <christian.gmeiner@gmail.com>
+>> Tested-by: Heiko Stuebner <heiko@sntech.de>
+>> ---
+>>  - Rebased onto v4.4-rc1
+>>  - Added Heiko's Tested-by
+>> ---
+>>  drivers/video/backlight/pwm_bl.c | 23 ++++++++++++++++++++++-
+>>  1 file changed, 22 insertions(+), 1 deletion(-)
+>
+> Applied, thanks.
 
-On Wednesday 09 December 2015 17:59:33 Tomi Valkeinen wrote:
-> From: Manisha Agrawal <manisha.agrawal@ti.com>
-> 
-> tpd12s015 HW has LS_OE, CT_CP_HPD and HPD gpios. Out of these gpios,
-> driver only handled LS_OE as optional. The CT_CP_HPD gpio should also
-> be treated as optional gpio as it is just a power saving feature. Some
-> boards hardwire this gpio to be always enable. In this patch, all access
-> to CT_CP_HPD gpio is made optional.
-> 
-> Signed-off-by: Manisha Agrawal <manisha.agrawal@ti.com>
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->  drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c | 13 ++++++-----
->  1 file changed, 8 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
-> b/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c index
-> 93f95eaeadad..45a0b8e8d320 100644
-> --- a/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
-> +++ b/drivers/video/fbdev/omap2/displays-new/encoder-tpd12s015.c
-> @@ -46,9 +46,11 @@ static int tpd_connect(struct omap_dss_device *dssdev,
->  	dst->src = dssdev;
->  	dssdev->dst = dst;
-> 
-> -	gpiod_set_value_cansleep(ddata->ct_cp_hpd_gpio, 1);
-> -	/* DC-DC converter needs at max 300us to get to 90% of 5V */
-> -	udelay(300);
-> +	if (ddata->ct_cp_hpd_gpio) {
-> +		gpiod_set_value_cansleep(ddata->ct_cp_hpd_gpio, 1);
-> +		/* DC-DC converter needs at max 300us to get to 90% of 5V */
-> +		udelay(300);
-> +	}
-> 
->  	return 0;
->  }
-> @@ -64,7 +66,8 @@ static void tpd_disconnect(struct omap_dss_device *dssdev,
-> if (dst != dssdev->dst)
->  		return;
-> 
-> -	gpiod_set_value_cansleep(ddata->ct_cp_hpd_gpio, 0);
-> +	if (ddata->ct_cp_hpd_gpio)
-> +		gpiod_set_value_cansleep(ddata->ct_cp_hpd_gpio, 0);
+Hmm, where was this applied?  I do not see it in:
+ * v4.4-rc4
+ * linux-next next-20151203 (dcccebc - Add linux-next specific files
+for 20151203)
 
-gpiod_set_value_cansleep() includes a NULL check so you could remove it from 
-here.
+Nor do I see it in any branch in:
+ * git://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight
+Is this the right git?
+By the way this repository has a git tag called "HEAD", which is a bit
+annoying since every time I "git remote update" from here, git gets
+confused until I manually delete it (git tag -d HEAD).
 
-Apart from that the patch looks good to me.
-
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
->  	dst->src = NULL;
->  	dssdev->dst = NULL;
-> @@ -240,7 +243,7 @@ static int tpd_probe(struct platform_device *pdev)
->  	}
-> 
-> 
-> -	gpio = devm_gpiod_get_index(&pdev->dev, NULL, 0,
-> +	gpio = devm_gpiod_get_index_optional(&pdev->dev, NULL, 0,
->  		GPIOD_OUT_LOW);
->  	if (IS_ERR(gpio))
->  		goto err_gpio;
-
--- 
-Regards,
-
-Laurent Pinchart
-
+Thanks,
+-Dan

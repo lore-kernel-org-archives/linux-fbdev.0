@@ -1,55 +1,78 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 30 Dec 2015 14:44:27 +0000
-Subject: Re: [PATCH v2 1/3] devicetree/bindings: add reset-gpios and vcc-supply for panel-dpi
-Message-Id: <CAL_JsqLEO9Z3kL4WEOS0_vhAHAWGKOLq1ZLse5cSU_zhwH5QBw@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 07 Dec 2015 16:28:49 +0000
+Subject: Re: [PATCH v5 2/2] video: fbdev: pxafb: initial devicetree conversion
+Message-Id: <5665B3C1.1080005@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="STMlCbxDcL00kB19v1T4VnVUbRrnjJ0RN"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1450610002-10531-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1450610002-10531-2-git-send-email-u.kleine-koenig@pengutronix.de>
- <20151229205458.GA31241@rob-hp-laptop> <CAMuHMdUJPUeyhtM3=S4dOgevpnyd0TgkJy7QchPewO4KOxsWvA@mail.gmail.com>
-In-Reply-To: <CAMuHMdUJPUeyhtM3=S4dOgevpnyd0TgkJy7QchPewO4KOxsWvA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Cc: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+References: <1447792337-13876-1-git-send-email-robert.jarzmik@free.fr>
+ <1447792337-13876-2-git-send-email-robert.jarzmik@free.fr>
+In-Reply-To: <1447792337-13876-2-git-send-email-robert.jarzmik@free.fr>
+To: Robert Jarzmik <robert.jarzmik@free.fr>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2015 at 4:29 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> On Tue, Dec 29, 2015 at 9:54 PM, Rob Herring <robh@kernel.org> wrote:
->> On Sun, Dec 20, 2015 at 12:13:20PM +0100, Uwe Kleine-König wrote:
->>> Some displays have a reset input and/or need a regulator to function
->>> properly. Allow to specify them for panel-dpi devices.
->>>
->>> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
->>> ---
->>>  Documentation/devicetree/bindings/display/panel/panel-dpi.txt | 2 ++
->>>  1 file changed, 2 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/display/panel/panel-dpi.txt b/Documentation/devicetree/bindings/display/panel/panel-dpi.txt
->>> index 216c894d4f99..b52ac52757df 100644
->>> --- a/Documentation/devicetree/bindings/display/panel/panel-dpi.txt
->>> +++ b/Documentation/devicetree/bindings/display/panel/panel-dpi.txt
->>> @@ -7,6 +7,8 @@ Required properties:
->>>  Optional properties:
->>>  - label: a symbolic name for the panel
->>>  - enable-gpios: panel enable gpio
->>> +- reset-gpios: GPIO to control the RESET pin
->>
->> The problem with this in a generic binding is what if the panel has
->> ordering requirements like enable gpio has to be inactive when reset
->> is deasserted?
->>
->>> +- vcc-supply: phandle of regulator that will be used to enable power to the display
->>
->> What if there are 2 supplies?
->
-> So it should be "vcc-supplies". Most properties containing phandles use plural
-> naming, even if Linux supports a single phandle only (e.g. "power-domains").
-> You also may want to add an optional "vcc-supply-names" property to
-> differentiate.
+--STMlCbxDcL00kB19v1T4VnVUbRrnjJ0RN
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-True, but the regulator binding is an exception and we don't do that
-with it. The prefix is the name and other supplies are not going to be
-called Vcc.
 
-Rob
+On 17/11/15 22:32, Robert Jarzmik wrote:
+> This patch brings a first support of pxa framebuffer devices to a
+> devicetree pxa platform, as was before platform data.
+>=20
+> There are restrictions with this port, the biggest one being the lack o=
+f
+> support of smart panels. Moreover the conversion doesn't provide a way
+> to declare multiple framebuffer configurations with different bits per
+> pixel, only the LCD hardware bus width is used.
+>=20
+> The patch was tested on both pxa25x, pxa27x and pxa3xx platform (namely=
+
+> lubbock, mainstone and zylonite).
+>=20
+> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+> ---
+> Since v1: Philipp's review: of_graph usage
+> Since v3: of_device_id sentinel, and all compatible ids added
+> Since v4: fixed of_device_id table : rebase error on my side, with
+>           braces which were incorrectly added
+> ---
+>  drivers/video/fbdev/Kconfig |   2 +
+>  drivers/video/fbdev/pxafb.c | 163 ++++++++++++++++++++++++++++++++++++=
++++++++-
+>  2 files changed, 162 insertions(+), 3 deletions(-)
+
+I see we already have
+Documentation/devicetree/bindings/display/marvell,pxa2xx-lcdc.txt in the
+mainline. I think the patch adding the binding doc should have been kept
+in this series.
+
+It seems that at least "depth" is missing from the binding document.
+
+ Tomi
+
+
+--STMlCbxDcL00kB19v1T4VnVUbRrnjJ0RN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWZbPCAAoJEPo9qoy8lh71FeUQAI8qPBlnc4nBmJCfFfzTHRrp
+uu4cp0QrDGz3YfkdeI6xI3fPKzT1J67C1cXsO22PcmIbHU2tqMrUBVyGPmSIwIaW
+iaEeEEScRmOmtwQq1lVCaqwikFJkCNRbEdKuxgqFFQ78wH3dDPjKXDvNcwpHyj3F
+PNuBzUFYQ4Z9cyz1zqKwEXNLwKGfmW6cCKtPjjrgT0a3NljEKmvh8cgcWsXQ0SbP
+s5fjGur2mAuPeAnRtRe74L7JiqZWuvsdLdkqWZPkKrTDpC3dBdUXnIuivsw9vm5N
+DNKct6old17/PvMeOlhc7+4kI8qku86nEQa/yLp+kzwiAXWTbRdmXWF3D8HBjOgE
+4eQBjZz4yLAlrFf0TcenRne72uQUop9XD5jLcX2ZLacR7+ODvis8e7OmLfdTUXGG
+tXGeZ5WaY6JwtQ4OHzpnSL8zHWh0Tt97CRggYs9yj6Y4JyI6xGwafbk2W/is7sYR
+mr0ZMkQ6uHAohUNF8HdD1Rkdp1oQT1Acm/AumlDJhQM/DeqpO4X4XciTZZsC4fRX
+VhONWdaPvh+eSU7yXYqqG1+ccnHcuzQ3+mlRlH9Wjeo7kDaG/6hmz6/vIasb9m89
+HRJatWm427Ye15M2hEIbXsNssz9dDn9lJhZ9FQYaQGPDdS8dSsR5azxLp1DeVOp+
+9OvbgSYGaF9xFk68tJ+I
+=uvMZ
+-----END PGP SIGNATURE-----
+
+--STMlCbxDcL00kB19v1T4VnVUbRrnjJ0RN--

@@ -1,41 +1,51 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Date: Wed, 30 Dec 2015 21:05:11 +0000
-Subject: Re: [PATCH v4 14/24] clk: pwm: use pwm_get/set_default_xxx() helpers where appropriate
-Message-Id: <20151230210511.19557.73321@quark.deferred.io>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 09 Dec 2015 15:59:43 +0000
+Subject: [PATCH 15/23] OMAPDSS: configure WB mflag threshold
+Message-Id: <1449676791-26304-16-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
- <1447664207-24370-15-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1447664207-24370-15-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Hi Boris,
+Mflag thresholds for all pipelines are set in dispc_init_mflag(), but we
+are missing that for WB pipeline. Add WB configuration.
 
-Quoting Boris Brezillon (2015-11-16 00:56:37)
-> pwm_set/get_default_xxx() helpers have been introduced to differentiate
-> the default PWM states (those retrieved through DT, PWM lookup table or
-> statically assigned by the driver) and the current ones.
-> Make use of those helpers where appropriate.
-> 
-> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> ---
->  drivers/clk/clk-pwm.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/clk/clk-pwm.c b/drivers/clk/clk-pwm.c
-> index b6306a2..642a49a 100644
-> --- a/drivers/clk/clk-pwm.c
-> +++ b/drivers/clk/clk-pwm.c
-> @@ -71,23 +71,23 @@ static int clk_pwm_probe(struct platform_device *pdev)
->         if (IS_ERR(pwm))
->                 return PTR_ERR(pwm);
->  
-> -       if (!pwm_get_period((pwm))) {
-> +       if (!pwm_get_default_period((pwm))) {
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dispc.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-The change itself looks fine, but the semantic patch added extra parens.
-Can you remove them? After doing so feel free to add:
+diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
+index 22b6e0f3e657..3cd78dcfefc5 100644
+--- a/drivers/video/fbdev/omap2/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/dss/dispc.c
+@@ -1384,6 +1384,25 @@ static void dispc_init_mflag(void)
+ 
+ 		dispc_ovl_set_mflag_threshold(i, low, high);
+ 	}
++
++	if (dispc.feat->has_writeback) {
++		u32 size = dispc_ovl_get_fifo_size(OMAP_DSS_WB);
++		u32 unit = dss_feat_get_buffer_size_unit();
++		u32 low, high;
++
++		dispc_ovl_set_mflag(OMAP_DSS_WB, true);
++
++		/*
++		 * Simulation team suggests below thesholds:
++		 * HT = fifosize * 5 / 8;
++		 * LT = fifosize * 4 / 8;
++		 */
++
++		low = size * 4 / 8 / unit;
++		high = size * 5 / 8 / unit;
++
++		dispc_ovl_set_mflag_threshold(OMAP_DSS_WB, low, high);
++	}
+ }
+ 
+ static void dispc_ovl_set_fir(enum omap_plane plane,
+-- 
+2.5.0
 
-Acked-by: Michael Turquette <mturquette@baylibre.com>

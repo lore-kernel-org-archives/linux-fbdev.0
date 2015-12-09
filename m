@@ -1,53 +1,67 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Dec 2015 15:59:47 +0000
-Subject: [PATCH 19/23] OMAPDSS: add setup for WB capture mode in dispc_wb_setup()
-Message-Id: <1449676791-26304-20-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 09 Dec 2015 15:59:35 +0000
+Subject: [PATCH 07/23] OMAPDSS: add WB to register dump
+Message-Id: <1449676791-26304-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-dispc_wb_setup() handles configuration only for mem-to-mem case. This
-patch adds the necessary configuration to handle also display capture
-mode.
-
-We need to set CAPTUREMODE to 0 (continuous capture), and WBDELAYCOUNT
-according to the vertical timings of the display, so that the WB FIFO
-has time to flush before the next frame starts.
+Add dumping of the writeback registers to the register dump function.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dispc.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/video/fbdev/omap2/dss/dispc.c | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
 diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index 6018518c1b25..c3ba555737b8 100644
+index ced6050666cc..0cccff2ffd4e 100644
 --- a/drivers/video/fbdev/omap2/dss/dispc.c
 +++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -2859,8 +2859,23 @@ int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
- 	l = FLD_MOD(l, mem_to_mem, 19, 19);	/* WRITEBACKMODE */
- 	if (mem_to_mem)
- 		l = FLD_MOD(l, 1, 26, 24);	/* CAPTUREMODE */
-+	else
-+		l = FLD_MOD(l, 0, 26, 24);	/* CAPTUREMODE */
- 	dispc_write_reg(DISPC_OVL_ATTRIBUTES(plane), l);
+@@ -3455,6 +3455,7 @@ static void dispc_dump_regs(struct seq_file *s)
+ 		[OMAP_DSS_VIDEO1]	= "VID1",
+ 		[OMAP_DSS_VIDEO2]	= "VID2",
+ 		[OMAP_DSS_VIDEO3]	= "VID3",
++		[OMAP_DSS_WB]		= "WB",
+ 	};
+ 	const char **p_names;
  
-+	if (mem_to_mem) {
-+		/* WBDELAYCOUNT */
-+		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES2(plane), 0, 7, 0);
-+	} else {
-+		int wbdelay;
+@@ -3561,6 +3562,35 @@ static void dispc_dump_regs(struct seq_file *s)
+ 			DUMPREG(i, DISPC_OVL_ATTRIBUTES2);
+ 	}
+ 
++	if (dss_feat_get_num_wbs()) {
++		i = OMAP_DSS_WB;
++		DUMPREG(i, DISPC_OVL_BA0);
++		DUMPREG(i, DISPC_OVL_BA1);
++		DUMPREG(i, DISPC_OVL_SIZE);
++		DUMPREG(i, DISPC_OVL_ATTRIBUTES);
++		DUMPREG(i, DISPC_OVL_FIFO_THRESHOLD);
++		DUMPREG(i, DISPC_OVL_FIFO_SIZE_STATUS);
++		DUMPREG(i, DISPC_OVL_ROW_INC);
++		DUMPREG(i, DISPC_OVL_PIXEL_INC);
 +
-+		wbdelay = min(mgr_timings->vfp + mgr_timings->vsw +
-+			mgr_timings->vbp, 255);
++		if (dss_has_feature(FEAT_MFLAG))
++			DUMPREG(i, DISPC_OVL_MFLAG_THRESHOLD);
 +
-+		/* WBDELAYCOUNT */
-+		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES2(plane), wbdelay, 7, 0);
++		DUMPREG(i, DISPC_OVL_FIR);
++		DUMPREG(i, DISPC_OVL_PICTURE_SIZE);
++		DUMPREG(i, DISPC_OVL_ACCU0);
++		DUMPREG(i, DISPC_OVL_ACCU1);
++		if (dss_has_feature(FEAT_HANDLE_UV_SEPARATE)) {
++			DUMPREG(i, DISPC_OVL_BA0_UV);
++			DUMPREG(i, DISPC_OVL_BA1_UV);
++			DUMPREG(i, DISPC_OVL_FIR2);
++			DUMPREG(i, DISPC_OVL_ACCU2_0);
++			DUMPREG(i, DISPC_OVL_ACCU2_1);
++		}
++		if (dss_has_feature(FEAT_ATTR2))
++			DUMPREG(i, DISPC_OVL_ATTRIBUTES2);
 +	}
 +
- 	return r;
- }
+ #undef DISPC_REG
+ #undef DUMPREG
  
 -- 
 2.5.0

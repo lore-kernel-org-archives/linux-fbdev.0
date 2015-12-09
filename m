@@ -1,78 +1,118 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 15 Dec 2015 15:01:26 +0000
-Subject: [GIT PULL] fbdev fixes for 4.4
-Message-Id: <56702B46.6060302@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="0akCO3W25Wih95ejRebmusO6nIVVRnM7c"
+Date: Wed, 09 Dec 2015 15:59:51 +0000
+Subject: [PATCH 23/23] OMAPDSS: remove extra out == NULL checks
+Message-Id: <1449676791-26304-24-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---0akCO3W25Wih95ejRebmusO6nIVVRnM7c
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+All the output drivers check for 'out' being NULL, but it can never be
+NULL. Remove the check.
 
-Hi Linus,
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/omap2/dss/dpi.c   | 2 +-
+ drivers/video/fbdev/omap2/dss/dsi.c   | 2 +-
+ drivers/video/fbdev/omap2/dss/hdmi4.c | 2 +-
+ drivers/video/fbdev/omap2/dss/hdmi5.c | 2 +-
+ drivers/video/fbdev/omap2/dss/rfbi.c  | 2 +-
+ drivers/video/fbdev/omap2/dss/sdi.c   | 2 +-
+ drivers/video/fbdev/omap2/dss/venc.c  | 2 +-
+ 7 files changed, 7 insertions(+), 7 deletions(-)
 
-Please pull two fbdev fixes for 4.4.
+diff --git a/drivers/video/fbdev/omap2/dss/dpi.c b/drivers/video/fbdev/omap2/dss/dpi.c
+index fb45b6432968..7953e6a52346 100644
+--- a/drivers/video/fbdev/omap2/dss/dpi.c
++++ b/drivers/video/fbdev/omap2/dss/dpi.c
+@@ -395,7 +395,7 @@ static int dpi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err_no_reg;
+ 	}
+ 
+-	if (out = NULL || out->manager = NULL) {
++	if (out->manager = NULL) {
+ 		DSSERR("failed to enable display: no output/manager\n");
+ 		r = -ENODEV;
+ 		goto err_no_out_mgr;
+diff --git a/drivers/video/fbdev/omap2/dss/dsi.c b/drivers/video/fbdev/omap2/dss/dsi.c
+index b3606def5b7b..59065e18444d 100644
+--- a/drivers/video/fbdev/omap2/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/dss/dsi.c
+@@ -3833,7 +3833,7 @@ static int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
+ 	u16 word_count;
+ 	int r;
+ 
+-	if (out = NULL || out->manager = NULL) {
++	if (out->manager = NULL) {
+ 		DSSERR("failed to enable display: no output/manager\n");
+ 		return -ENODEV;
+ 	}
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi4.c b/drivers/video/fbdev/omap2/dss/hdmi4.c
+index 94c8d5549b4c..7103c659a534 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi4.c
+@@ -343,7 +343,7 @@ static int hdmi_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&hdmi.lock);
+ 
+-	if (out = NULL || out->manager = NULL) {
++	if (out->manager = NULL) {
+ 		DSSERR("failed to enable display: no output/manager\n");
+ 		r = -ENODEV;
+ 		goto err0;
+diff --git a/drivers/video/fbdev/omap2/dss/hdmi5.c b/drivers/video/fbdev/omap2/dss/hdmi5.c
+index b59ba7902be1..a955a2c4c061 100644
+--- a/drivers/video/fbdev/omap2/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/dss/hdmi5.c
+@@ -373,7 +373,7 @@ static int hdmi_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&hdmi.lock);
+ 
+-	if (out = NULL || out->manager = NULL) {
++	if (out->manager = NULL) {
+ 		DSSERR("failed to enable display: no output/manager\n");
+ 		r = -ENODEV;
+ 		goto err0;
+diff --git a/drivers/video/fbdev/omap2/dss/rfbi.c b/drivers/video/fbdev/omap2/dss/rfbi.c
+index 1525a494d057..aea6a1d0fb20 100644
+--- a/drivers/video/fbdev/omap2/dss/rfbi.c
++++ b/drivers/video/fbdev/omap2/dss/rfbi.c
+@@ -880,7 +880,7 @@ static int rfbi_display_enable(struct omap_dss_device *dssdev)
+ 	struct omap_dss_device *out = &rfbi.output;
+ 	int r;
+ 
+-	if (out = NULL || out->manager = NULL) {
++	if (out->manager = NULL) {
+ 		DSSERR("failed to enable display: no output/manager\n");
+ 		return -ENODEV;
+ 	}
+diff --git a/drivers/video/fbdev/omap2/dss/sdi.c b/drivers/video/fbdev/omap2/dss/sdi.c
+index 5843580a1deb..d747cc6b59e1 100644
+--- a/drivers/video/fbdev/omap2/dss/sdi.c
++++ b/drivers/video/fbdev/omap2/dss/sdi.c
+@@ -136,7 +136,7 @@ static int sdi_display_enable(struct omap_dss_device *dssdev)
+ 	unsigned long pck;
+ 	int r;
+ 
+-	if (out = NULL || out->manager = NULL) {
++	if (out->manager = NULL) {
+ 		DSSERR("failed to enable display: no output/manager\n");
+ 		return -ENODEV;
+ 	}
+diff --git a/drivers/video/fbdev/omap2/dss/venc.c b/drivers/video/fbdev/omap2/dss/venc.c
+index 99ca268c1cdd..c9260a451ca6 100644
+--- a/drivers/video/fbdev/omap2/dss/venc.c
++++ b/drivers/video/fbdev/omap2/dss/venc.c
+@@ -503,7 +503,7 @@ static int venc_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&venc.venc_lock);
+ 
+-	if (out = NULL || out->manager = NULL) {
++	if (out->manager = NULL) {
+ 		DSSERR("Failed to enable display: no output/manager\n");
+ 		r = -ENODEV;
+ 		goto err0;
+-- 
+2.5.0
 
- Tomi
-
-The following changes since commit 527e9316f8ec44bd53d90fb9f611fa7ffff52b=
-b9:
-
-  Linux 4.4-rc4 (2015-12-06 15:43:12 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-4.4
-
-for you to fetch changes up to a54c1ddbe3bc07eadb0096c4abe6224e7f363b66:
-
-  OMAPDSS: fix timings for VENC to match what omapdrm expects (2015-12-09=
- 12:57:13 +0200)
-
-----------------------------------------------------------------
-fbdev fixes for 4.4
-
-* OMAP: fix analog tv-out when using omapdrm
-* fsl: Fix kernel crash when diu_ops is not implemented
-
-----------------------------------------------------------------
-H. Nikolaus Schaller (1):
-      OMAPDSS: fix timings for VENC to match what omapdrm expects
-
-Wang Dongsheng (1):
-      video: fbdev: fsl: Fix kernel crash when diu_ops is not implemented=
-
-
- drivers/video/fbdev/fsl-diu-fb.c     | 13 ++++++++++++-
- drivers/video/fbdev/omap2/dss/venc.c | 12 ++++++++++++
- 2 files changed, 24 insertions(+), 1 deletion(-)
-
-
---0akCO3W25Wih95ejRebmusO6nIVVRnM7c
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWcCtGAAoJEPo9qoy8lh717c8P/R6ezHod++Ecnjvkcm5iIYrX
-VQQ2FOxQ4vU4SYQ5f0HGWHk6ei1oUWQ7rXFRH0kj7LNQObK81mt2nkeoVdQHRVrt
-ChvNh9zZ+/1i8lte4w5kum8Y8QbsoiWiLg7cF0UUt0zJ8b3S1Kahr1UhX3Qne5+a
-zqmWfP/ZNUAGZVNn6T8m6fWsWflfjt/Fu4Knimk9IUbYOTBGtu0M1szYM4tYUABF
-zV/fhbfX/VlW4v0l8jvEJny4SYkfSOSawj+a/Wly/i5rSRuxePVE/sZhUtmB+9xU
-bULHthjDoLfh3yOCprq6tRwiBKiQ+7qDtPDOm2YX+H9qtlILGUOa0+MLgpilJ+1n
-vdnhGH6MMjRaaDn8H/vRFx9LbExtknRrupKsHQRpQg4NV8QcQ2bjl2tYzPTbB1SD
-flh9EQkw08Rhrm+ALbcQ8p4zgr+/SL64AVWzdY7Fc+ayWGsT6xW9Hj3SehUw+zDm
-5WrIufXYCNd6cVzG963usvFFXI2KfZ20bJBeAM78g/LghdwhHXuwSoUrLKjpcVtM
-OFWSkoe5DLI4JJkDuYXLSmAfxAhPEKC8xkOqZKa/hP0wW8S5ZurWxKmb7vwa27CJ
-2aKQH842pXOz268fNPSsNDngGgOs/1aG1FplMd2yOou0umNAFspE9zf3wjIMUKvE
-Ry4nm6dx/Jkcx1dHdLul
-=GRp6
------END PGP SIGNATURE-----
-
---0akCO3W25Wih95ejRebmusO6nIVVRnM7c--

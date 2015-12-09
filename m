@@ -1,71 +1,80 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Dec 2015 15:59:39 +0000
-Subject: [PATCH 11/23] OMAPDSS: refactor dispc_ovl_get_channel_out
-Message-Id: <1449676791-26304-12-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 09 Dec 2015 15:59:30 +0000
+Subject: [PATCH 02/23] OMAPDSS: DISPC: always set ALIGN when available
+Message-Id: <1449676791-26304-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Refactor dispc_ovl_get_channel_out() to a bit cleaner form, which makes
-it easier to add support for writeback in the following patch.
+By default DISPC asserts hsync and vsync sequentially, i.e. there's
+first hsync and that is immediately followed by vsync. This is the only
+available behaviour on OMAP2/3, and default behaviour on OMAP4+.
+
+OMAP4+ has ALIGN bit in POL_FREQ register, which makes DISPC assert both
+syncs at the same time.
+
+It has been observed that some panels don't like sequential syncs (AM5
+EVM's panel). After studying the datasheets for multiple panels and
+encoders, and MIPI DPI spec, it looks like there is no standard way to
+handle this.
+
+Sometimes the datasheets don't mention the required syncs behaviour at
+all, sometimes the datasheets have images that hint towards simultaneous
+syncs, and sometimes it is explicitly mentioned that simultaneous syncs
+are needed. No panels or encoders requiring sequential sync was found.
+
+It thus seems to be safe to default to simultaneous syncs when the ALIGN
+bit is available. This fixed AM5 EVM's panel, and no side effects have
+been observed on other panels or encoders.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dispc.c | 31 ++++++++++++++-----------------
- 1 file changed, 14 insertions(+), 17 deletions(-)
+ drivers/video/fbdev/omap2/dss/dispc.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index aa74b3da3718..678a1928a9b5 100644
+index be716c9ffb88..ced6050666cc 100644
 --- a/drivers/video/fbdev/omap2/dss/dispc.c
 +++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -992,7 +992,6 @@ static enum omap_channel dispc_ovl_get_channel_out(enum omap_plane plane)
- {
- 	int shift;
- 	u32 val;
--	enum omap_channel channel;
+@@ -99,6 +99,9 @@ struct dispc_features {
  
- 	switch (plane) {
- 	case OMAP_DSS_GFX:
-@@ -1010,23 +1009,21 @@ static enum omap_channel dispc_ovl_get_channel_out(enum omap_plane plane)
- 
- 	val = dispc_read_reg(DISPC_OVL_ATTRIBUTES(plane));
- 
--	if (dss_has_feature(FEAT_MGR_LCD3)) {
--		if (FLD_GET(val, 31, 30) = 0)
--			channel = FLD_GET(val, shift, shift);
--		else if (FLD_GET(val, 31, 30) = 1)
--			channel = OMAP_DSS_CHANNEL_LCD2;
--		else
--			channel = OMAP_DSS_CHANNEL_LCD3;
--	} else if (dss_has_feature(FEAT_MGR_LCD2)) {
--		if (FLD_GET(val, 31, 30) = 0)
--			channel = FLD_GET(val, shift, shift);
--		else
--			channel = OMAP_DSS_CHANNEL_LCD2;
--	} else {
--		channel = FLD_GET(val, shift, shift);
--	}
-+	if (FLD_GET(val, shift, shift) = 1)
-+		return OMAP_DSS_CHANNEL_DIGIT;
+ 	/* PIXEL_INC is not added to the last pixel of a line */
+ 	bool last_pixel_inc_missing:1;
 +
-+	if (!dss_has_feature(FEAT_MGR_LCD2))
-+		return OMAP_DSS_CHANNEL_LCD;
++	/* POL_FREQ has ALIGN bit */
++	bool supports_sync_align:1;
+ };
  
--	return channel;
-+	switch (FLD_GET(val, 31, 30)) {
-+	case 0:
-+	default:
-+		return OMAP_DSS_CHANNEL_LCD;
-+	case 1:
-+		return OMAP_DSS_CHANNEL_LCD2;
-+	case 2:
-+		return OMAP_DSS_CHANNEL_LCD3;
-+	}
- }
+ #define DISPC_MAX_NR_FIFOS 5
+@@ -3163,6 +3166,10 @@ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
+ 		FLD_VAL(hs, 13, 13) |
+ 		FLD_VAL(vs, 12, 12);
  
- void dispc_wb_set_channel_in(enum dss_writeback_channel channel)
++	/* always set ALIGN bit when available */
++	if (dispc.feat->supports_sync_align)
++		l |= (1 << 18);
++
+ 	dispc_write_reg(DISPC_POL_FREQ(channel), l);
+ 
+ 	if (dispc.syscon_pol) {
+@@ -3854,6 +3861,7 @@ static const struct dispc_features omap44xx_dispc_feats = {
+ 	.num_fifos		=	5,
+ 	.gfx_fifo_workaround	=	true,
+ 	.set_max_preload	=	true,
++	.supports_sync_align	=	true,
+ };
+ 
+ static const struct dispc_features omap54xx_dispc_feats = {
+@@ -3875,6 +3883,7 @@ static const struct dispc_features omap54xx_dispc_feats = {
+ 	.gfx_fifo_workaround	=	true,
+ 	.mstandby_workaround	=	true,
+ 	.set_max_preload	=	true,
++	.supports_sync_align	=	true,
+ };
+ 
+ static int dispc_init_features(struct platform_device *pdev)
 -- 
 2.5.0
 

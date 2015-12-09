@@ -1,61 +1,72 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 10 Dec 2015 15:24:10 +0000
-Subject: Re: [PATCH RESEND] fbdev: Make fb-notify a no-op if CONFIG_FB=n
-Message-Id: <5669991A.3050301@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="MI0pQWR7pogOhTrjNBLaoCE5t3tFllqWJ"
+Date: Wed, 09 Dec 2015 15:59:28 +0000
+Subject: [PATCH 00/23] OMAPDSS: misc patches
+Message-Id: <1449676791-26304-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1448421108-3437-1-git-send-email-ezequiel@vanguardiasur.com.ar>
-In-Reply-To: <1448421108-3437-1-git-send-email-ezequiel@vanguardiasur.com.ar>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
---MI0pQWR7pogOhTrjNBLaoCE5t3tFllqWJ
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
+Here is a pile of smallish patches for omapdss, forward ported from TI's
+product kernel (which means they have had some testing).
 
-On 07/12/15 18:14, Ezequiel Garcia wrote:
-
->> Actually, looks like fb_notify.c was originally made to solve the same=
-
->> problem as your patch solves, but by separating the notify code from t=
-he
->> main fbdev code. So I still wonder, was there some reason to keep the
->> notification code built instead of having stub functions.
->>
->> Any thoughts?
->>
->=20
-> I can't see any valid reason to keep the code around, since there's no
-> way it can be used.
-> Let's see if Ccing Antonino and Andrew -as per that commit- helps.
-
-Ok. This looks fine to me, so I'll queue it for 4.5.
+Many of these patches prepare the omapdss driver for writeback by cleaning up
+writeback related code, and adding bits here and there for register level
+writeback support. The patch to add writeback support itself is missing, as
+it's still not in a stable state.
 
  Tomi
 
+Dave Gerlach (1):
+  OMAPDSS: adopt pinctrl support
 
---MI0pQWR7pogOhTrjNBLaoCE5t3tFllqWJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Manisha Agrawal (3):
+  OMAPDSS: tpd12s015: remove platform data support
+  OMAPDSS: tpd12s015: gpio descriptor API
+  OMAPDSS: tpd12s015: CT_CP_HPD as optional gpio
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Tomi Valkeinen (19):
+  OMAPDSS: DISPC: always set ALIGN when available
+  OMAPDSS: fix DISPC_MFLAG_THRESHOLD_OFFSET for WB
+  OMAPDSS: add WB to register dump
+  OMAPDSS: add num_wbs=1 to omap5 dss features
+  OMAPDSS: add 'has_writeback' flag
+  OMAPDSS: add OMAP_DSS_CHANNEL_WB to 'enum omap_channel'
+  OMAPDSS: refactor dispc_ovl_get_channel_out
+  OMAPDSS: handle WB channel in dispc_set/get_channel_out
+  OMAPDSS: configure burst size for WB
+  OMAPDSS: configure WB fifo thresholds
+  OMAPDSS: configure WB mflag threshold
+  OMAPDSS: skip pclk check for WB mem2mem
+  OMAPDSS: fix rgb-to-yuv color conv coefs
+  OMAPDSS: set WB capturemode for m2m mode
+  OMAPDSS: add setup for WB capture mode in dispc_wb_setup()
+  OMAPDSS: remove extra EXPORT_SYMBOLs
+  OMAPDSS: make a two dss feat funcs internal to omapdss
+  OMAPDSS: change internal dispc functions to static
+  OMAPDSS: remove extra out = NULL checks
 
-iQIcBAEBCAAGBQJWaZkaAAoJEPo9qoy8lh71qsoQAI2WW2jXaRslhEMbMnVSdN9t
-oT9hi4UDp5K/y9hJC6s2zmfpPgSQG1w2yZtCmNM2of3rkZbE3m9rwW4qMH3u/9Ul
-SOSa4PvMWpB0DD2d0ty2NPMNjQfmJKnpFKu3uzRsEn1Hvw4cn8xQMLZ0AWKQitPG
-NtpCfvLsSnmsmwWmiQQovYDWc3aGDli7d4fTq8IwJVpms9G/VKevhCXv6QyMWJMD
-Y9Bx1H9Xp7Yu95qE8B7rvGokvWgIHaX81FL6/pbXuZdkhJJ6xx5Go9MBn9J5s0wI
-SDQdjDD4SS+zq2S/XBmUIweDfJ58O4+FunSRpkYc2GzMk236TuVou16DYwLWdCEq
-wPd2pHJRhTWPgYc2awC1re+FhI+8IH0U/PDWz/3O9A0QfChAM0TYPIb/koDNa6di
-xVtmfkwQjOYZZxUuVGt7FF41WZfYZ4cZo/w/P9lffZH1fqDDP4n1LWSJ9n8rYCj1
-QqIWSm3eT1Ls0QoIFfUmPW0wloul38d3hQo5ec8IzL/Lxh2vk6aK8DBgqmh5u0S9
-vBAfbpfyb+soQ4ir89AgupqYEJwm6bVRPQzERlbBihjPnOFu9Jgj/2RX15xyGGSd
-d7AzI9TmNiEDKfqUmpDgcdLdvLylS5O0C8DMhCPygLZC0/Wx6SyVaOxNzvkIWoZd
-jZVTHcUk+xjurlZ9fFKo
-=vOhX
------END PGP SIGNATURE-----
+ .../fbdev/omap2/displays-new/encoder-tpd12s015.c   | 119 +++++-----------
+ drivers/video/fbdev/omap2/dss/dispc.c              | 157 +++++++++++++++++----
+ drivers/video/fbdev/omap2/dss/dispc.h              |   2 +
+ drivers/video/fbdev/omap2/dss/dpi.c                |   2 +-
+ drivers/video/fbdev/omap2/dss/dsi.c                |   2 +-
+ drivers/video/fbdev/omap2/dss/dss.c                |   6 +
+ drivers/video/fbdev/omap2/dss/dss.h                |   5 -
+ drivers/video/fbdev/omap2/dss/dss_features.c       |  11 --
+ drivers/video/fbdev/omap2/dss/dss_features.h       |   5 +-
+ drivers/video/fbdev/omap2/dss/hdmi4.c              |   2 +-
+ drivers/video/fbdev/omap2/dss/hdmi5.c              |   2 +-
+ drivers/video/fbdev/omap2/dss/rfbi.c               |   2 +-
+ drivers/video/fbdev/omap2/dss/sdi.c                |   2 +-
+ drivers/video/fbdev/omap2/dss/venc.c               |   2 +-
+ include/video/omap-panel-data.h                    |  15 --
+ include/video/omapdss.h                            |   3 +-
+ 16 files changed, 184 insertions(+), 153 deletions(-)
 
---MI0pQWR7pogOhTrjNBLaoCE5t3tFllqWJ--
+-- 
+2.5.0
+

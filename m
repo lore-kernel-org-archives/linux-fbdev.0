@@ -1,37 +1,32 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Sat, 19 Dec 2015 12:14:31 +0000
-Subject: [PATCH] video: fbdev: pxafb: fix out of memory error path
-Message-Id: <1450527271-21841-1-git-send-email-robert.jarzmik@free.fr>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 09 Dec 2015 15:59:38 +0000
+Subject: [PATCH 10/23] OMAPDSS: add OMAP_DSS_CHANNEL_WB to 'enum omap_channel'
+Message-Id: <1449676791-26304-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>, Robert Jarzmik <robert.jarzmik@free.fr>
+To: linux-fbdev@vger.kernel.org
 
-As seen by Julia, the initial allocation memory is not checked anymore
-after commit "video: fbdev: pxafb: initial devicetree conversion".
-Introduce back the removed test.
+'enum omap_channel' is missing the channel for writeback. Add that.
 
-Reported-by: Julia Lawall <julia.lawall@lip6.fr>
-Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/pxafb.c | 2 ++
- 1 file changed, 2 insertions(+)
+ include/video/omapdss.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-index 8588dd683105..54666424a720 100644
---- a/drivers/video/fbdev/pxafb.c
-+++ b/drivers/video/fbdev/pxafb.c
-@@ -2252,6 +2252,8 @@ static int pxafb_probe(struct platform_device *dev)
- 	ret = -ENOMEM;
- 	pdata = dev_get_platdata(&dev->dev);
- 	inf = devm_kmalloc(&dev->dev, sizeof(*inf), GFP_KERNEL);
-+	if (!inf)
-+		goto failed;
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index f001a356fd98..0fedd93a639d 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -87,6 +87,7 @@ enum omap_channel {
+ 	OMAP_DSS_CHANNEL_DIGIT	= 1,
+ 	OMAP_DSS_CHANNEL_LCD2	= 2,
+ 	OMAP_DSS_CHANNEL_LCD3	= 3,
++	OMAP_DSS_CHANNEL_WB	= 4,
+ };
  
- 	if (pdata) {
- 		*inf = *pdata;
+ enum omap_color_mode {
 -- 
-2.1.4
+2.5.0
 

@@ -1,150 +1,129 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Dec 2015 11:01:25 +0000
-Subject: Re: [PATCH v4 09/24] regulator: pwm: use pwm_get/set_default_xxx() helpers where appropriate
-Message-Id: <20151230120125.3ab6e0bd@bbrezillon>
+From: Alison Wang <b18965@freescale.com>
+Date: Wed, 09 Dec 2015 08:41:39 +0000
+Subject: [PATCH v2] ARM: multi_v7_defconfig: Enable some drivers for LS1021A
+Message-Id: <1449650499-28660-1-git-send-email-b18965@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1447664207-24370-1-git-send-email-boris.brezillon@free-electrons.com>
- <1447664207-24370-10-git-send-email-boris.brezillon@free-electrons.com>
- <20151116105558.GB31303@sirena.org.uk>
- <20151116132359.39d84279@bbrezillon>
- <20151116184238.GJ31303@sirena.org.uk>
- <20151202113720.0a6517b1@bbrezillon>
-In-Reply-To: <20151202113720.0a6517b1@bbrezillon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Thierry,
+This patch enables some drivers for LS1021A, such as
+GIANFAR, WATCHDOG, AUDIO, QSPI, I2C, ESDHC, EDMA, FTM.
+QorIQ Clock Framework and Ramdisk support is also enabled.
 
-I'm trying to get these "atomic PWM config" and "initial PWM state
-retrieval" stuff in for at least 3 releases. I can understand that some
-things have to be discussed and reworked in order to be good enough for
-mainline, but that's not what I'm seeing here.
+Signed-off-by: Alison Wang <alison.wang@freescale.com>
+---
+Changes since v1:
+- Make some drivers as loadable modules.
 
-You and Mark raised some concerns about the usage of the
-pwm_{get,set}_default_xxx() helpers which I tried to address by
-proposing something else. I asked you to comment on it a few weeks ago,
-but you never did.
-You also told me that you would search for an alternative solution, but
-never came back to me.
+ arch/arm/configs/multi_v7_defconfig | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-So I think it's now time to take a decision, whether you want to take
-this series with some minor reworks (changing function names to clarify
-what is a default and current PWM state), or decide that you expect
-something else (but in that case I'd like you to explain what you want).
-
-And by the way, the behavior you're complaining about is already
-currently in place: even if the pwm_get_period() function does not
-contain the 'default' word in its name, what's actually returned is the
-default (or reference) period (the one retrieved from the DT or the PWM
-lookup table) not the period currently in use on the PWM device (the
-same goes for other helpers).
-
-Can we please settle on something for 4.6 so that I can repost a series
-when 4.5-rc1 is out?
-
-Thanks,
-
-Boris
-
-On Wed, 2 Dec 2015 11:37:20 +0100
-Boris Brezillon <boris.brezillon@free-electrons.com> wrote:
-
-> Hi,
-> 
-> On Mon, 16 Nov 2015 18:42:38 +0000
-> Mark Brown <broonie@kernel.org> wrote:
-> 
-> > On Mon, Nov 16, 2015 at 01:23:59PM +0100, Boris Brezillon wrote:
-> > > Mark Brown <broonie@kernel.org> wrote:
-> > > > On Mon, Nov 16, 2015 at 09:56:32AM +0100, Boris Brezillon wrote:
-> > 
-> > > > > -	pwm_reg_period = pwm_get_period(drvdata->pwm);
-> > > > > +	pwm_reg_period = pwm_get_default_period(drvdata->pwm);
-> > 
-> > > > It's not clear to me that we're not looking for the current period here
-> > > > or in the other use.  Won't configuring based on a period other than the
-> > > > one that has been set give the wrong answer?
-> > 
-> > > Hm, maybe that's naming problem. What I call the 'default' period here
-> > > is actually the period configured in your board file (using a PWM lookup
-> > > table) or your DT. This value represent the period requested by the PWM
-> > > user not a default value specified by the PWM chip driver.
-> > 
-> > > The reason we're not using the 'current' period value is because it may
-> > > have been set by the bootloader, and may be inappropriate for our use
-> > > case (ie. the period may be to small to represent the different
-> > > voltages).
-> > 
-> > > ITOH, we're using the current period value when calculating the current
-> > > voltage, because we want to get the correct voltage value, and the PWM
-> > > device may still use the configuration set by the bootloader (not the
-> > > default one specified in your board or DT files).
-> > 
-> > > I hope this clarifies the differences between the current and default
-> > > period, and why we should use the default value here.
-> > 
-> > To be honest I'm still a bit confused here.  When do we actually apply
-> > the default setting and why do we keep on having to constantly override
-> > it rather than doing this once at boot?  It feels wrong to be using it
-> > every time we set anything.  I'd expect it to be something we only need
-> > to do at probe time or which would automatically be handled by the PWM
-> > framework (but that'd have issues changing the state and potentially
-> > breaking things if done in an uncoordiated fashion).
-> 
-> Thierry, I didn't hear from you after the long discussion we had on IRC
-> a few weeks ago.
-> The conclusion of this discussion was that using
-> pwm_get_default_period() was not acceptable (even after renaming it
-> differently, like pwm_get_reference_period()), because it was
-> disturbing to get the default/reference period each time we wanted to
-> configure the PWM differently.
-> Another suggestion was to automatically reconfigure the PWM duty_ns
-> value based on the initial PWM state (retrieved through hardware
-> readout) and the default period value (specified in the PWM lookup table
-> or the DT). But this implied supporting hardware readout in all PWM
-> drivers, which prevents a smooth migration to this new approach.
-> 
-> I also proposed to provide helpers to hide the duty cycle to active
-> time calculation in the PWM core, so that PWM users just have to choose
-> their scale (percent, or any other custom scale) and set their duty
-> cycle based on this scale instead of specifying an active/on time in
-> nanosecond. You didn't seem to like this idea, but I gave it a try
-> (see here [1]), and think it might be worth looking at it.
-> 
-> The commit you should look at are [2], [3] and [4], and the idea is to
-> clarify the notion of duty-cycle, which, according to wikipedia [5]
-> (and a lot of other references) is supposed to be expressed in a
-> relative unit (percent, or any other scale as said earlier).
-> After renaming the pwm_set/get_duty_cycle() helpers into
-> pwm_set/get_active_time() we can define a new pwm_set_duty_cycle()
-> helper to let the PWM user configure its PWM device relatively to a
-> chosen scale, without asking him to choose the PWM period (the
-> conversion is done based on the default/reference period).
-> The pwm_get_duty_cycle() is doing the reverse conversion: it returns the
-> duty-cycle expressed relatively to the scale (here the current PWM
-> period is used to handle the case where the PWM user hasn't configure
-> the PWM yet, but want to retrieve the current duty-cycle extracted from
-> hardware readout).
-> 
-> Please let me know what you think of this approach, and if you're happy
-> with it I'll rework my series accordingly.
-> 
-> Best Regards,
-> 
-> Boris
-> 
-> [1]https://github.com/bbrezillon/linux-rk/commits/atomic-pwm-alt
-> [2]https://github.com/bbrezillon/linux-rk/commit/d7d4d04e147d4ec349c59f70e141877661930c6d
-> [3]https://github.com/bbrezillon/linux-rk/commit/66ce78f308f3eb1a9c536689352f208fd51c9030
-> [4]https://github.com/bbrezillon/linux-rk/commit/07882a2dd21f0d17d83640ff55204cc7a7d4c8f7
-> [5]https://en.wikipedia.org/wiki/Duty_cycle
-> 
-
-
-
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index f6a2557..fb2159d 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -128,6 +128,7 @@ CONFIG_KEXEC=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_STAT_DETAILS=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
++CONFIG_QORIQ_CPUFREQ=y
+ CONFIG_CPU_IDLE=y
+ CONFIG_ARM_CPUIDLE=y
+ CONFIG_NEON=y
+@@ -182,8 +183,11 @@ CONFIG_MTD_NAND_ATMEL=y
+ CONFIG_MTD_NAND_BRCMNAND=y
+ CONFIG_MTD_NAND_DAVINCI=y
+ CONFIG_MTD_SPI_NOR=y
++CONFIG_SPI_FSL_QUADSPI=m
+ CONFIG_MTD_UBI=y
+ CONFIG_BLK_DEV_LOOP=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_SIZEe536
+ CONFIG_AD525X_DPOT=y
+ CONFIG_AD525X_DPOT_I2C=y
+ CONFIG_ATMEL_TCLIB=y
+@@ -210,6 +214,7 @@ CONFIG_HIX5HD2_GMAC=y
+ CONFIG_SUN4I_EMAC=y
+ CONFIG_MACB=y
+ CONFIG_NET_CALXEDA_XGMAC=y
++CONFIG_GIANFAR=y
+ CONFIG_IGB=y
+ CONFIG_MV643XX_ETH=y
+ CONFIG_MVNETA=y
+@@ -226,6 +231,7 @@ CONFIG_MARVELL_PHY=y
+ CONFIG_SMSC_PHY=y
+ CONFIG_BROADCOM_PHY=y
+ CONFIG_ICPLUS_PHY=y
++CONFIG_REALTEK_PHY=y
+ CONFIG_MICREL_PHY=y
+ CONFIG_FIXED_PHY=y
+ CONFIG_USB_PEGASUS=y
+@@ -312,6 +318,7 @@ CONFIG_I2C_DESIGNWARE_PLATFORM=y
+ CONFIG_I2C_DIGICOLOR=m
+ CONFIG_I2C_GPIO=m
+ CONFIG_I2C_EXYNOS5=y
++CONFIG_I2C_IMX=m
+ CONFIG_I2C_MV64XXX=y
+ CONFIG_I2C_RIIC=y
+ CONFIG_I2C_RK3X=y
+@@ -330,6 +337,7 @@ CONFIG_SPI=y
+ CONFIG_SPI_ATMEL=m
+ CONFIG_SPI_CADENCE=y
+ CONFIG_SPI_DAVINCI=y
++CONFIG_SPI_FSL_DSPI=m
+ CONFIG_SPI_OMAP24XX=y
+ CONFIG_SPI_ORION=y
+ CONFIG_SPI_PL022=y
+@@ -405,6 +413,7 @@ CONFIG_ARM_SP805_WATCHDOG=y
+ CONFIG_ORION_WATCHDOG=y
+ CONFIG_ST_LPC_WATCHDOG=y
+ CONFIG_SUNXI_WATCHDOG=y
++CONFIG_IMX2_WDT=y
+ CONFIG_TEGRA_WATCHDOG=m
+ CONFIG_MESON_WATCHDOG=y
+ CONFIG_DIGICOLOR_WATCHDOG=y
+@@ -525,6 +534,7 @@ CONFIG_SND_USB_AUDIO=y
+ CONFIG_SND_SOC=m
+ CONFIG_SND_ATMEL_SOC=m
+ CONFIG_SND_ATMEL_SOC_WM8904=m
++CONFIG_SND_SOC_FSL_SAI=m
+ CONFIG_SND_SOC_SH4_FSI=m
+ CONFIG_SND_SOC_RCAR=m
+ CONFIG_SND_SOC_RSRC_CARD=m
+@@ -537,6 +547,7 @@ CONFIG_SND_SOC_TEGRA_TRIMSLICE=m
+ CONFIG_SND_SOC_TEGRA_ALC5632=m
+ CONFIG_SND_SOC_TEGRA_MAX98090=m
+ CONFIG_SND_SOC_AK4642=m
++CONFIG_SND_SOC_SGTL5000=m
+ CONFIG_SND_SOC_WM8978=m
+ CONFIG_USB=y
+ CONFIG_USB_XHCI_HCD=y
+@@ -577,6 +588,7 @@ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_PLTFM=y
+ CONFIG_MMC_SDHCI_OF_ARASAN=y
+ CONFIG_MMC_SDHCI_OF_AT91=y
++CONFIG_MMC_SDHCI_OF_ESDHC=m
+ CONFIG_MMC_SDHCI_ESDHC_IMX=y
+ CONFIG_MMC_SDHCI_DOVE=y
+ CONFIG_MMC_SDHCI_TEGRA=y
+@@ -653,6 +665,7 @@ CONFIG_DMADEVICES=y
+ CONFIG_DW_DMAC=y
+ CONFIG_AT_HDMAC=y
+ CONFIG_AT_XDMAC=y
++CONFIG_FSL_EDMA=m
+ CONFIG_MV_XOR=y
+ CONFIG_TEGRA20_APB_DMA=y
+ CONFIG_SH_DMAE=y
+@@ -712,6 +725,7 @@ CONFIG_AK8975=y
+ CONFIG_PWM=y
+ CONFIG_PWM_ATMEL=m
+ CONFIG_PWM_ATMEL_TCB=m
++CONFIG_PWM_FSL_FTM=m
+ CONFIG_PWM_RENESAS_TPU=y
+ CONFIG_PWM_ROCKCHIP=m
+ CONFIG_PWM_SAMSUNG=m
 -- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+2.1.0.27.g96db324
+

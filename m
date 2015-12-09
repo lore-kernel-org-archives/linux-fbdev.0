@@ -1,35 +1,71 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Dec 2015 15:59:44 +0000
-Subject: [PATCH 16/23] OMAPDSS: skip pclk check for WB mem2mem
-Message-Id: <1449676791-26304-17-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 09 Dec 2015 15:59:39 +0000
+Subject: [PATCH 11/23] OMAPDSS: refactor dispc_ovl_get_channel_out
+Message-Id: <1449676791-26304-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-When doing mem-to-mem writeback, there's no pixelclock. However, the
-code that calculates scaling factors check that there is a pixel clock.
-We can just skip the check when doing mem-to-mem writeback.
+Refactor dispc_ovl_get_channel_out() to a bit cleaner form, which makes
+it easier to add support for writeback in the following patch.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap2/dss/dispc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/dss/dispc.c | 31 ++++++++++++++-----------------
+ 1 file changed, 14 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index 3cd78dcfefc5..837b1f508d79 100644
+index aa74b3da3718..678a1928a9b5 100644
 --- a/drivers/video/fbdev/omap2/dss/dispc.c
 +++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -2477,7 +2477,7 @@ static int dispc_ovl_calc_scaling(unsigned long pclk, unsigned long lclk,
- 	if (width = out_width && height = out_height)
- 		return 0;
+@@ -992,7 +992,6 @@ static enum omap_channel dispc_ovl_get_channel_out(enum omap_plane plane)
+ {
+ 	int shift;
+ 	u32 val;
+-	enum omap_channel channel;
  
--	if (pclk = 0 || mgr_timings->pixelclock = 0) {
-+	if (!mem_to_mem && (pclk = 0 || mgr_timings->pixelclock = 0)) {
- 		DSSERR("cannot calculate scaling settings: pclk is zero\n");
- 		return -EINVAL;
- 	}
+ 	switch (plane) {
+ 	case OMAP_DSS_GFX:
+@@ -1010,23 +1009,21 @@ static enum omap_channel dispc_ovl_get_channel_out(enum omap_plane plane)
+ 
+ 	val = dispc_read_reg(DISPC_OVL_ATTRIBUTES(plane));
+ 
+-	if (dss_has_feature(FEAT_MGR_LCD3)) {
+-		if (FLD_GET(val, 31, 30) = 0)
+-			channel = FLD_GET(val, shift, shift);
+-		else if (FLD_GET(val, 31, 30) = 1)
+-			channel = OMAP_DSS_CHANNEL_LCD2;
+-		else
+-			channel = OMAP_DSS_CHANNEL_LCD3;
+-	} else if (dss_has_feature(FEAT_MGR_LCD2)) {
+-		if (FLD_GET(val, 31, 30) = 0)
+-			channel = FLD_GET(val, shift, shift);
+-		else
+-			channel = OMAP_DSS_CHANNEL_LCD2;
+-	} else {
+-		channel = FLD_GET(val, shift, shift);
+-	}
++	if (FLD_GET(val, shift, shift) = 1)
++		return OMAP_DSS_CHANNEL_DIGIT;
++
++	if (!dss_has_feature(FEAT_MGR_LCD2))
++		return OMAP_DSS_CHANNEL_LCD;
+ 
+-	return channel;
++	switch (FLD_GET(val, 31, 30)) {
++	case 0:
++	default:
++		return OMAP_DSS_CHANNEL_LCD;
++	case 1:
++		return OMAP_DSS_CHANNEL_LCD2;
++	case 2:
++		return OMAP_DSS_CHANNEL_LCD3;
++	}
+ }
+ 
+ void dispc_wb_set_channel_in(enum dss_writeback_channel channel)
 -- 
 2.5.0
 

@@ -1,68 +1,73 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 23 Dec 2015 08:32:16 +0000
-Subject: Re: [PATCH 5/5] fbdev: omap2: panel-dpi: allow specification of a vcc regulator
-Message-Id: <567A5C10.4030001@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="lgjSUPAXhpjQ4kI947keUfv1fJpEOWLSB"
+Date: Thu, 10 Dec 2015 14:25:33 +0000
+Subject: [PATCH RFC 7/9] omapfb: move vrfb into omapfb
+Message-Id: <1449757535-5674-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1449753107-11410-5-git-send-email-uwe@kleine-koenig.org>
-In-Reply-To: <1449753107-11410-5-git-send-email-uwe@kleine-koenig.org>
-To: linux-fbdev@vger.kernel.org
+References: <1449757535-5674-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1449757535-5674-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---lgjSUPAXhpjQ4kI947keUfv1fJpEOWLSB
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+VRFB is only used by omapfb, so we can move it under omapfb's directory.
 
-Hi,
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbdev/omap2/Kconfig             | 3 ---
+ drivers/video/fbdev/omap2/Makefile            | 2 --
+ drivers/video/fbdev/omap2/omapfb/Kconfig      | 3 +++
+ drivers/video/fbdev/omap2/omapfb/Makefile     | 1 +
+ drivers/video/fbdev/omap2/{ => omapfb}/vrfb.c | 0
+ 5 files changed, 4 insertions(+), 5 deletions(-)
+ rename drivers/video/fbdev/omap2/{ => omapfb}/vrfb.c (100%)
 
-On 19/12/15 22:41, Adam Ford wrote:
-> Tomi,
->=20
-> Do you have any thought on how to approach adding sleep/delay
-> functions?  I have a display that requires a small delay before and
-> after the enable gpio toggle.  I assume that some may require a delay
-> after the regulator starts for it to be be ready.  For now I have a
-> temp hack that just inserts a blanket 300mS wait, but I'd rather have
-> something mainstreamed in the device tree, but I don't want to walk
-> over someone else's work either.
+diff --git a/drivers/video/fbdev/omap2/Kconfig b/drivers/video/fbdev/omap2/Kconfig
+index c22955d2de9a..7fbdb583de8c 100644
+--- a/drivers/video/fbdev/omap2/Kconfig
++++ b/drivers/video/fbdev/omap2/Kconfig
+@@ -1,6 +1,3 @@
+-config OMAP2_VRFB
+-	bool
+-
+ if ARCH_OMAP2PLUS
+ 
+ source "drivers/video/fbdev/omap2/dss/Kconfig"
+diff --git a/drivers/video/fbdev/omap2/Makefile b/drivers/video/fbdev/omap2/Makefile
+index c73a1e864ae8..a52b716a40c1 100644
+--- a/drivers/video/fbdev/omap2/Makefile
++++ b/drivers/video/fbdev/omap2/Makefile
+@@ -1,5 +1,3 @@
+-obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
+-
+ obj-y += dss/
+ obj-y += displays-new/
+ obj-y += omapfb/
+diff --git a/drivers/video/fbdev/omap2/omapfb/Kconfig b/drivers/video/fbdev/omap2/omapfb/Kconfig
+index 13d99a9e6198..e6226aeed17e 100644
+--- a/drivers/video/fbdev/omap2/omapfb/Kconfig
++++ b/drivers/video/fbdev/omap2/omapfb/Kconfig
+@@ -1,3 +1,6 @@
++config OMAP2_VRFB
++	bool
++
+ menuconfig FB_OMAP2
+         tristate "OMAP2+ frame buffer support"
+         depends on FB
+diff --git a/drivers/video/fbdev/omap2/omapfb/Makefile b/drivers/video/fbdev/omap2/omapfb/Makefile
+index 0490951f95b3..ad68ecf141af 100644
+--- a/drivers/video/fbdev/omap2/omapfb/Makefile
++++ b/drivers/video/fbdev/omap2/omapfb/Makefile
+@@ -1,3 +1,4 @@
++obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
+ obj-y += dss/
+ obj-y += displays/
+ obj-$(CONFIG_FB_OMAP2) += omapfb.o
+diff --git a/drivers/video/fbdev/omap2/vrfb.c b/drivers/video/fbdev/omap2/omapfb/vrfb.c
+similarity index 100%
+rename from drivers/video/fbdev/omap2/vrfb.c
+rename to drivers/video/fbdev/omap2/omapfb/vrfb.c
+-- 
+2.5.0
 
-I don't think it makes sense to add explicit entries for these, as we'd
-just end up with lots of entries in the DT files for "wait-before-vcc",
-"wait-after-vcc", etc.
-
-There was a patch series some time ago, trying to add generic power
-up/down sequences defined in DT. I don't think that ever got merged, as
-there wasn't a consensus on the DT side. I can't find the series right
-now, as I don't remember the author or the subject...
-
-I think that kind of generic sequence framework would make sense, and
-getting it merged without the DT side should be easier. Then the drivers
-could have built-in sequences for certain panels.
-
- Tomi
-
-
---lgjSUPAXhpjQ4kI947keUfv1fJpEOWLSB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWelwQAAoJEPo9qoy8lh71WFMQAI78YuQQFbCeNo5Zl+TOmUxz
-eegVFumJd4/GsYT5B1RINpUjrECUW7DzZgEnQ8mD6CJsF/RZ74T1rmuuEU1ChilE
-TbryvbjtbIdlRS3Nz9RaDUDYxzbUG7X9ouTnpDJWgUXnCaY0tcvuISfDgcKDPblU
-L1UKivptMGMwOLVqMX/pZBYpx9NBbiDNjl/8/pKHv6bfqZ5NZnd6lXJpgA++9gE/
-3ZgrhmYw46qwW+eJm3ZBIViHO8QGWFFT+dZuiLTTaVZhhJ2I5g4/ykp+dz/qd+it
-vcQ9pgVCWQOGM0nA4HDUdfPHoPt6jMfxfms3DcVJDerwKpYU3PU0jUn1H7lhoxZl
-T3/u1E4Ou970ntE8U951+wv4iL7Eai1I0F2Gcuhpm8JTvmKxdv+X1okPx1Kkc8NZ
-SqqNj5dJktq+w6IRze+5oJInF9pwlbnADXmq6QdyXIp7sJw/mXlXWjEOClpuY/Me
-2FEKRwK4F2CPiVB3W2VyXgMhMj9IS1IUT3lqhYrTaAphFF/wLRbcqL9wjHPHhM6x
-4FD8an+bpvle7jtkWVGlIdhwew/3+UcH5WCc3XkywYN0b++f/eT1ulFUBbAt+R08
-zGH8AXqNhIqSzkyLZtZER0Z0gG95+vEMvcnQNoQbatdRiGMUa5PlsVXCUISBMMWI
-sLZyCcrhtNnmQdN/uwgw
-=Oc4M
------END PGP SIGNATURE-----
-
---lgjSUPAXhpjQ4kI947keUfv1fJpEOWLSB--

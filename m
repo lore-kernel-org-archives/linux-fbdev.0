@@ -1,69 +1,48 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 16 Dec 2015 15:36:04 +0000
-Subject: Re: [PATCH 00/23] OMAPDSS: misc patches
-Message-Id: <567184E4.4090703@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="7JgT6VVStQg2umH2toFwKkUr3o0gFSRGG"
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>
+Date: Thu, 10 Dec 2015 13:11:45 +0000
+Subject: [PATCH 3/5] fbdev: omap2: panel-dpi: drop assignment to local variable
+Message-Id: <1449753107-11410-3-git-send-email-uwe@kleine-koenig.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1449676791-26304-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1449676791-26304-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-fbdev@vger.kernel.org
 
---7JgT6VVStQg2umH2toFwKkUr3o0gFSRGG
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
+The variable gpio is only used to store the return value of
+devm_gpiod_get_optional just to assign it to a member of the driver
+data.
 
+Get rid of this local variable and assign to driver data directly.
 
-On 13/12/15 22:24, Laurent Pinchart wrote:
-> Hi Tomi,
->=20
-> Thank you for the patches.
->=20
-> On Wednesday 09 December 2015 17:59:28 Tomi Valkeinen wrote:
->> Hi,
->>
->> Here is a pile of smallish patches for omapdss, forward ported from TI=
-'s
->> product kernel (which means they have had some testing).
->>
->> Many of these patches prepare the omapdss driver for writeback by clea=
-ning
->> up writeback related code, and adding bits here and there for register=
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/video/fbdev/omap2/displays-new/panel-dpi.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
->> level writeback support. The patch to add writeback support itself is
->> missing, as it's still not in a stable state.
->=20
-> For 1/23, 2/13, 20/23, 21/23 and 23/23,
->=20
-> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-dpi.c b/drivers/video/fbdev/omap2/displays-new/panel-dpi.c
+index e780fd4f8b46..1216341a0d19 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-dpi.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-dpi.c
+@@ -205,13 +205,11 @@ static int panel_dpi_probe_of(struct platform_device *pdev)
+ 	int r;
+ 	struct display_timing timing;
+ 	struct videomode vm;
+-	struct gpio_desc *gpio;
+ 
+-	gpio = devm_gpiod_get_optional(&pdev->dev, "enable", GPIOD_OUT_LOW);
+-	if (IS_ERR(gpio))
+-		return PTR_ERR(gpio);
+-
+-	ddata->enable_gpio = gpio;
++	ddata->enable_gpio = devm_gpiod_get_optional(&pdev->dev,
++						     "enable", GPIOD_OUT_LOW);
++	if (IS_ERR(ddata->enable_gpio))
++		return PTR_ERR(ddata->enable_gpio);
+ 
+ 	ddata->backlight_gpio = -ENOENT;
+ 
+-- 
+2.6.2
 
-Thanks for the review!
-
- Tomi
-
-
---7JgT6VVStQg2umH2toFwKkUr3o0gFSRGG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWcYTkAAoJEPo9qoy8lh71XJUP/jjWifE0qz+iwHWI17zYxNmN
-Rkj4rgiXH2MrauLuosbT2YFjQ3YLSDyhrWIofVr1+PuVRwbq43DQxDtE1HmbT2YZ
-jjqS+29PqihM/xLBn2lL1KtmCbpB4jrL14fR7eGif5HSxcVpFYYNqzVghbjjFIB0
-cbWPjso1ivUnejpHt4yqw85A/RiCe4iPmX5JqDm2oxeA9kj8Cn2C3KINCBcPOfcQ
-CSbjA1ilrI+HEHIrRm1LAtbgVMHz94g3KfVwS/8hWqZ4IEvGGTE+P7NEdWIXUQ/F
-Av/7Pxv6QPcBvrNCb+G8LCHz7rPjeFeuIcZ+/hZ40+zKbRCJFGDXgceKJdg+GMyb
-S8Jxf7gkgmO5Ol43+tRtK0zqg7Asx5ay9jaxXgm5f2SGcadWVFsjbUQ3XpCOWNF6
-IeheSBsUHSpAAU/5hd/V2E3RNGLgkXxnL0ptgQ2GEwpM8u2uMzw7rmm+BB6LC6cK
-tAh+kdFOATn+AR/MpMl0juZsK/vdl/5RITQdhzIJfXCZFu5FYabQaQFCk9UGb8/g
-4Mo+JRtB+ipC6gwSLTWq+rO06y/x+HwNb5f70X1Tji1Psa+fsRb0Snz241RiCWHJ
-hbX6R42/8PUBAiOe3BNvenjzucYetkmpWpDJpnAGNwQAr8DPhZ5Xj3WCvApceN4M
-TxGIhFdvdShMJaOhcz6A
-=FOpm
------END PGP SIGNATURE-----
-
---7JgT6VVStQg2umH2toFwKkUr3o0gFSRGG--

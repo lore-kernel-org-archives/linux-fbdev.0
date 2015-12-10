@@ -1,71 +1,61 @@
-From: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
-Date: Mon, 07 Dec 2015 16:14:15 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 10 Dec 2015 15:24:10 +0000
 Subject: Re: [PATCH RESEND] fbdev: Make fb-notify a no-op if CONFIG_FB=n
-Message-Id: <CAAEAJfCOWm4zOZ-cu40bR0o8O4QBZeMzrJyQiLoR85510QZP5g@mail.gmail.com>
+Message-Id: <5669991A.3050301@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="MI0pQWR7pogOhTrjNBLaoCE5t3tFllqWJ"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1448421108-3437-1-git-send-email-ezequiel@vanguardiasur.com.ar>
 In-Reply-To: <1448421108-3437-1-git-send-email-ezequiel@vanguardiasur.com.ar>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-Tomi,
-
-Thanks for looking at this patch.
-
-On 7 December 2015 at 13:01, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->
-> On 25/11/15 05:11, Ezequiel Garcia wrote:
->> There's no point in having support for framebuffer notifications
->> is CONFIG_FB is disabled. This commit adds the necessary stubs
->> for code to link properly when CONFIG_FB=3Dn and moves fb-notify.o
->> to be built only when CONFIG_FB=3Dy.
->
-> Why do you add CONFIG_FB_NOTIFY, isn't plain CONFIG_FB enough? Oh,
-> right, to have it built-in even if FB is a module.
->
-
-Right.
-
-> But this makes me wonder, why is fb_notify in obj-y list currently.
-> Nobody just bothered to make it build only when needed, or has there
-> been some use for it earlier... The commit descriptions in git history
-> suggest the former.
->
-
-Here's the patch that created fb_notify.c and put it in obj-y.
-
-    [PATCH] fbdev: statically link the framebuffer notification functions
-
-    The backlight and lcd subsystems can be notified by the framebuffer lay=
-er
-    of blanking events.  However, these subsystems, as a whole, can function
-    independently from the framebuffer layer.  But in order to enable to the
-    lcd and backlight subsystems, the framebuffer has to be compiled also,
-    effectively sucking in a huge amount of unneeded code.
-
-    To prevent dependency problems, separate out the framebuffer notificati=
-on
-    mechanism from the framebuffer layer and permanently link it to the ker=
-nel.
-
-    Signed-off-by: Antonino Daplas <adaplas@pol.net>
-    Signed-off-by: Andrew Morton <akpm@osdl.org>
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+--MI0pQWR7pogOhTrjNBLaoCE5t3tFllqWJ
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
 
-> Actually, looks like fb_notify.c was originally made to solve the same
-> problem as your patch solves, but by separating the notify code from the
-> main fbdev code. So I still wonder, was there some reason to keep the
-> notification code built instead of having stub functions.
->
-> Any thoughts?
->
+On 07/12/15 18:14, Ezequiel Garcia wrote:
 
-I can't see any valid reason to keep the code around, since there's no
-way it can be used.
-Let's see if Ccing Antonino and Andrew -as per that commit- helps.
---=20
-Ezequiel Garc=C3=ADa, VanguardiaSur
-www.vanguardiasur.com.ar
+>> Actually, looks like fb_notify.c was originally made to solve the same=
+
+>> problem as your patch solves, but by separating the notify code from t=
+he
+>> main fbdev code. So I still wonder, was there some reason to keep the
+>> notification code built instead of having stub functions.
+>>
+>> Any thoughts?
+>>
+>=20
+> I can't see any valid reason to keep the code around, since there's no
+> way it can be used.
+> Let's see if Ccing Antonino and Andrew -as per that commit- helps.
+
+Ok. This looks fine to me, so I'll queue it for 4.5.
+
+ Tomi
+
+
+--MI0pQWR7pogOhTrjNBLaoCE5t3tFllqWJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWaZkaAAoJEPo9qoy8lh71qsoQAI2WW2jXaRslhEMbMnVSdN9t
+oT9hi4UDp5K/y9hJC6s2zmfpPgSQG1w2yZtCmNM2of3rkZbE3m9rwW4qMH3u/9Ul
+SOSa4PvMWpB0DD2d0ty2NPMNjQfmJKnpFKu3uzRsEn1Hvw4cn8xQMLZ0AWKQitPG
+NtpCfvLsSnmsmwWmiQQovYDWc3aGDli7d4fTq8IwJVpms9G/VKevhCXv6QyMWJMD
+Y9Bx1H9Xp7Yu95qE8B7rvGokvWgIHaX81FL6/pbXuZdkhJJ6xx5Go9MBn9J5s0wI
+SDQdjDD4SS+zq2S/XBmUIweDfJ58O4+FunSRpkYc2GzMk236TuVou16DYwLWdCEq
+wPd2pHJRhTWPgYc2awC1re+FhI+8IH0U/PDWz/3O9A0QfChAM0TYPIb/koDNa6di
+xVtmfkwQjOYZZxUuVGt7FF41WZfYZ4cZo/w/P9lffZH1fqDDP4n1LWSJ9n8rYCj1
+QqIWSm3eT1Ls0QoIFfUmPW0wloul38d3hQo5ec8IzL/Lxh2vk6aK8DBgqmh5u0S9
+vBAfbpfyb+soQ4ir89AgupqYEJwm6bVRPQzERlbBihjPnOFu9Jgj/2RX15xyGGSd
+d7AzI9TmNiEDKfqUmpDgcdLdvLylS5O0C8DMhCPygLZC0/Wx6SyVaOxNzvkIWoZd
+jZVTHcUk+xjurlZ9fFKo
+=vOhX
+-----END PGP SIGNATURE-----
+
+--MI0pQWR7pogOhTrjNBLaoCE5t3tFllqWJ--

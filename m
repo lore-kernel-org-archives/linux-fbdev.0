@@ -1,163 +1,78 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 10 Dec 2015 14:25:31 +0000
-Subject: [PATCH RFC 5/9] omapfb/displays: change CONFIG_DISPLAY_* to CONFIG_FB_OMAP2_*
-Message-Id: <1449757535-5674-6-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 15 Dec 2015 15:01:26 +0000
+Subject: [GIT PULL] fbdev fixes for 4.4
+Message-Id: <56702B46.6060302@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="0akCO3W25Wih95ejRebmusO6nIVVRnM7c"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1449757535-5674-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1449757535-5674-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-We need to change the config symbols of omapfb's private copy of the
-panel and encoder drivers so that we won't have config symbol conflicts.
+--0akCO3W25Wih95ejRebmusO6nIVVRnM7c
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-This patch changes the symbols from the panel and encoder drivers using
-simple replacement of DISPLAY_* to FB_OMAP2*.
+Hi Linus,
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/omapfb/displays/Kconfig  | 32 +++++++++++-----------
- drivers/video/fbdev/omap2/omapfb/displays/Makefile | 28 +++++++++----------
- 2 files changed, 30 insertions(+), 30 deletions(-)
+Please pull two fbdev fixes for 4.4.
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/Kconfig b/drivers/video/fbdev/omap2/omapfb/displays/Kconfig
-index 574710141a61..08f12039dd02 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/Kconfig
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/Kconfig
-@@ -1,81 +1,81 @@
--menu "OMAP Display Device Drivers (new device model)"
--        depends on OMAP2_DSS
-+menu "OMAPFB Panel and Encoder Drivers"
-+        depends on FB_OMAP2_DSS
- 
--config DISPLAY_ENCODER_OPA362
-+config FB_OMAP2_ENCODER_OPA362
- 	tristate "OPA362 external analog amplifier"
- 	help
- 	  Driver for OPA362 external analog TV amplifier controlled
- 	  through a GPIO.
- 
--config DISPLAY_ENCODER_TFP410
-+config FB_OMAP2_ENCODER_TFP410
-         tristate "TFP410 DPI to DVI Encoder"
- 	help
- 	  Driver for TFP410 DPI to DVI encoder.
- 
--config DISPLAY_ENCODER_TPD12S015
-+config FB_OMAP2_ENCODER_TPD12S015
-         tristate "TPD12S015 HDMI ESD protection and level shifter"
- 	help
- 	  Driver for TPD12S015, which offers HDMI ESD protection and level
- 	  shifting.
- 
--config DISPLAY_CONNECTOR_DVI
-+config FB_OMAP2_CONNECTOR_DVI
-         tristate "DVI Connector"
- 	depends on I2C
- 	help
- 	  Driver for a generic DVI connector.
- 
--config DISPLAY_CONNECTOR_HDMI
-+config FB_OMAP2_CONNECTOR_HDMI
-         tristate "HDMI Connector"
- 	help
- 	  Driver for a generic HDMI connector.
- 
--config DISPLAY_CONNECTOR_ANALOG_TV
-+config FB_OMAP2_CONNECTOR_ANALOG_TV
-         tristate "Analog TV Connector"
- 	help
- 	  Driver for a generic analog TV connector.
- 
--config DISPLAY_PANEL_DPI
-+config FB_OMAP2_PANEL_DPI
- 	tristate "Generic DPI panel"
- 	help
- 	  Driver for generic DPI panels.
- 
--config DISPLAY_PANEL_DSI_CM
-+config FB_OMAP2_PANEL_DSI_CM
- 	tristate "Generic DSI Command Mode Panel"
- 	depends on BACKLIGHT_CLASS_DEVICE
- 	help
- 	  Driver for generic DSI command mode panels.
- 
--config DISPLAY_PANEL_SONY_ACX565AKM
-+config FB_OMAP2_PANEL_SONY_ACX565AKM
- 	tristate "ACX565AKM Panel"
- 	depends on SPI && BACKLIGHT_CLASS_DEVICE
- 	help
- 	  This is the LCD panel used on Nokia N900
- 
--config DISPLAY_PANEL_LGPHILIPS_LB035Q02
-+config FB_OMAP2_PANEL_LGPHILIPS_LB035Q02
- 	tristate "LG.Philips LB035Q02 LCD Panel"
- 	depends on SPI
- 	help
- 	  LCD Panel used on the Gumstix Overo Palo35
- 
--config DISPLAY_PANEL_SHARP_LS037V7DW01
-+config FB_OMAP2_PANEL_SHARP_LS037V7DW01
-         tristate "Sharp LS037V7DW01 LCD Panel"
-         depends on BACKLIGHT_CLASS_DEVICE
-         help
-           LCD Panel used in TI's SDP3430 and EVM boards
- 
--config DISPLAY_PANEL_TPO_TD028TTEC1
-+config FB_OMAP2_PANEL_TPO_TD028TTEC1
-         tristate "TPO TD028TTEC1 LCD Panel"
-         depends on SPI
-         help
-           LCD panel used in Openmoko.
- 
--config DISPLAY_PANEL_TPO_TD043MTEA1
-+config FB_OMAP2_PANEL_TPO_TD043MTEA1
-         tristate "TPO TD043MTEA1 LCD Panel"
-         depends on SPI
-         help
-           LCD Panel used in OMAP3 Pandora
- 
--config DISPLAY_PANEL_NEC_NL8048HL11
-+config FB_OMAP2_PANEL_NEC_NL8048HL11
- 	tristate "NEC NL8048HL11 Panel"
- 	depends on SPI
- 	depends on BACKLIGHT_CLASS_DEVICE
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/Makefile b/drivers/video/fbdev/omap2/omapfb/displays/Makefile
-index 9aa176bfbf2e..4f7459272256 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/Makefile
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/Makefile
-@@ -1,14 +1,14 @@
--obj-$(CONFIG_DISPLAY_ENCODER_OPA362) += encoder-opa362.o
--obj-$(CONFIG_DISPLAY_ENCODER_TFP410) += encoder-tfp410.o
--obj-$(CONFIG_DISPLAY_ENCODER_TPD12S015) += encoder-tpd12s015.o
--obj-$(CONFIG_DISPLAY_CONNECTOR_DVI) += connector-dvi.o
--obj-$(CONFIG_DISPLAY_CONNECTOR_HDMI) += connector-hdmi.o
--obj-$(CONFIG_DISPLAY_CONNECTOR_ANALOG_TV) += connector-analog-tv.o
--obj-$(CONFIG_DISPLAY_PANEL_DPI) += panel-dpi.o
--obj-$(CONFIG_DISPLAY_PANEL_DSI_CM) += panel-dsi-cm.o
--obj-$(CONFIG_DISPLAY_PANEL_SONY_ACX565AKM) += panel-sony-acx565akm.o
--obj-$(CONFIG_DISPLAY_PANEL_LGPHILIPS_LB035Q02) += panel-lgphilips-lb035q02.o
--obj-$(CONFIG_DISPLAY_PANEL_SHARP_LS037V7DW01) += panel-sharp-ls037v7dw01.o
--obj-$(CONFIG_DISPLAY_PANEL_TPO_TD028TTEC1) += panel-tpo-td028ttec1.o
--obj-$(CONFIG_DISPLAY_PANEL_TPO_TD043MTEA1) += panel-tpo-td043mtea1.o
--obj-$(CONFIG_DISPLAY_PANEL_NEC_NL8048HL11) += panel-nec-nl8048hl11.o
-+obj-$(CONFIG_FB_OMAP2_ENCODER_OPA362) += encoder-opa362.o
-+obj-$(CONFIG_FB_OMAP2_ENCODER_TFP410) += encoder-tfp410.o
-+obj-$(CONFIG_FB_OMAP2_ENCODER_TPD12S015) += encoder-tpd12s015.o
-+obj-$(CONFIG_FB_OMAP2_CONNECTOR_DVI) += connector-dvi.o
-+obj-$(CONFIG_FB_OMAP2_CONNECTOR_HDMI) += connector-hdmi.o
-+obj-$(CONFIG_FB_OMAP2_CONNECTOR_ANALOG_TV) += connector-analog-tv.o
-+obj-$(CONFIG_FB_OMAP2_PANEL_DPI) += panel-dpi.o
-+obj-$(CONFIG_FB_OMAP2_PANEL_DSI_CM) += panel-dsi-cm.o
-+obj-$(CONFIG_FB_OMAP2_PANEL_SONY_ACX565AKM) += panel-sony-acx565akm.o
-+obj-$(CONFIG_FB_OMAP2_PANEL_LGPHILIPS_LB035Q02) += panel-lgphilips-lb035q02.o
-+obj-$(CONFIG_FB_OMAP2_PANEL_SHARP_LS037V7DW01) += panel-sharp-ls037v7dw01.o
-+obj-$(CONFIG_FB_OMAP2_PANEL_TPO_TD028TTEC1) += panel-tpo-td028ttec1.o
-+obj-$(CONFIG_FB_OMAP2_PANEL_TPO_TD043MTEA1) += panel-tpo-td043mtea1.o
-+obj-$(CONFIG_FB_OMAP2_PANEL_NEC_NL8048HL11) += panel-nec-nl8048hl11.o
--- 
-2.5.0
+ Tomi
 
+The following changes since commit 527e9316f8ec44bd53d90fb9f611fa7ffff52b=
+b9:
+
+  Linux 4.4-rc4 (2015-12-06 15:43:12 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-fixes-4.4
+
+for you to fetch changes up to a54c1ddbe3bc07eadb0096c4abe6224e7f363b66:
+
+  OMAPDSS: fix timings for VENC to match what omapdrm expects (2015-12-09=
+ 12:57:13 +0200)
+
+----------------------------------------------------------------
+fbdev fixes for 4.4
+
+* OMAP: fix analog tv-out when using omapdrm
+* fsl: Fix kernel crash when diu_ops is not implemented
+
+----------------------------------------------------------------
+H. Nikolaus Schaller (1):
+      OMAPDSS: fix timings for VENC to match what omapdrm expects
+
+Wang Dongsheng (1):
+      video: fbdev: fsl: Fix kernel crash when diu_ops is not implemented=
+
+
+ drivers/video/fbdev/fsl-diu-fb.c     | 13 ++++++++++++-
+ drivers/video/fbdev/omap2/dss/venc.c | 12 ++++++++++++
+ 2 files changed, 24 insertions(+), 1 deletion(-)
+
+
+--0akCO3W25Wih95ejRebmusO6nIVVRnM7c
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWcCtGAAoJEPo9qoy8lh717c8P/R6ezHod++Ecnjvkcm5iIYrX
+VQQ2FOxQ4vU4SYQ5f0HGWHk6ei1oUWQ7rXFRH0kj7LNQObK81mt2nkeoVdQHRVrt
+ChvNh9zZ+/1i8lte4w5kum8Y8QbsoiWiLg7cF0UUt0zJ8b3S1Kahr1UhX3Qne5+a
+zqmWfP/ZNUAGZVNn6T8m6fWsWflfjt/Fu4Knimk9IUbYOTBGtu0M1szYM4tYUABF
+zV/fhbfX/VlW4v0l8jvEJny4SYkfSOSawj+a/Wly/i5rSRuxePVE/sZhUtmB+9xU
+bULHthjDoLfh3yOCprq6tRwiBKiQ+7qDtPDOm2YX+H9qtlILGUOa0+MLgpilJ+1n
+vdnhGH6MMjRaaDn8H/vRFx9LbExtknRrupKsHQRpQg4NV8QcQ2bjl2tYzPTbB1SD
+flh9EQkw08Rhrm+ALbcQ8p4zgr+/SL64AVWzdY7Fc+ayWGsT6xW9Hj3SehUw+zDm
+5WrIufXYCNd6cVzG963usvFFXI2KfZ20bJBeAM78g/LghdwhHXuwSoUrLKjpcVtM
+OFWSkoe5DLI4JJkDuYXLSmAfxAhPEKC8xkOqZKa/hP0wW8S5ZurWxKmb7vwa27CJ
+2aKQH842pXOz268fNPSsNDngGgOs/1aG1FplMd2yOou0umNAFspE9zf3wjIMUKvE
+Ry4nm6dx/Jkcx1dHdLul
+=GRp6
+-----END PGP SIGNATURE-----
+
+--0akCO3W25Wih95ejRebmusO6nIVVRnM7c--

@@ -1,50 +1,68 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 10 Dec 2015 14:25:29 +0000
-Subject: [PATCH RFC 3/9] omapdss: remove CONFIG_OMAP2_DSS_VENC from omapdss.h
-Message-Id: <1449757535-5674-4-git-send-email-tomi.valkeinen@ti.com>
+From: Stefan Agner <stefan@agner.ch>
+Date: Thu, 17 Dec 2015 05:08:37 +0000
+Subject: Re: [PATCH] backlight: gpio-backlight: use default-on on GPIO request
+Message-Id: <147193eb17eabe97602b85bc88ad4206@agner.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1449757535-5674-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1449757535-5674-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1445643883-30726-1-git-send-email-stefan@agner.ch>
+In-Reply-To: <1445643883-30726-1-git-send-email-stefan@agner.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: jingoohan1@gmail.com, lee.jones@linaro.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-We are about to make a private copy of omapdss for omapfb and for
-omapdrm. The omapdss.h file will still be shared for the time being. The
-copy will need to change the config symbols, and we happen to have one
-use of these config symbols in omapdss.h which needs to be removed.
+Hi,
 
-Luckily we can just delete the use of CONFIG_OMAP2_DSS_VENC from
-omapdss, as it's used only to hide extern declarations, and there's no
-harm to have those declarations even if CONFIG_OMAP2_DSS_VENC is not
-set.
+Any comment on this? I still think it is a valuable change...
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- include/video/omapdss.h | 2 --
- 1 file changed, 2 deletions(-)
+--
+Stefan
 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index f001a356fd98..67f0d67001dc 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -367,14 +367,12 @@ struct omap_video_timings {
- 	enum omap_dss_signal_edge sync_pclk_edge;
- };
- 
--#ifdef CONFIG_OMAP2_DSS_VENC
- /* Hardcoded timings for tv modes. Venc only uses these to
-  * identify the mode, and does not actually use the configs
-  * itself. However, the configs should be something that
-  * a normal monitor can also show */
- extern const struct omap_video_timings omap_dss_pal_timings;
- extern const struct omap_video_timings omap_dss_ntsc_timings;
--#endif
- 
- struct omap_dss_cpr_coefs {
- 	s16 rr, rg, rb;
--- 
-2.5.0
-
+On 2015-10-23 16:44, Stefan Agner wrote:
+> There are situations where the backlight should be on at boot time
+> (e.g. if the boot loader already turned the display on). The DT
+> bindings specify the "default-on" property for that purpose.
+> Currently, the initial state of the GPIO at request time is always
+> set to logical off (high or low depending on whether it is an
+> active high or low GPIO). Since the GPIO is requested as an output,
+> the GPIO will be driven low for a short period of time, which leads
+> to a flickering display in the above use-case.
+> 
+> Initialize the GPIO depending on the default-on property to be
+> logical on or off.
+> 
+> Signed-off-by: Stefan Agner <stefan@agner.ch>
+> ---
+>  drivers/video/backlight/gpio_backlight.c | 10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/gpio_backlight.c
+> b/drivers/video/backlight/gpio_backlight.c
+> index 5fbbc2e..1813441 100644
+> --- a/drivers/video/backlight/gpio_backlight.c
+> +++ b/drivers/video/backlight/gpio_backlight.c
+> @@ -89,6 +89,7 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+>  	struct backlight_device *bl;
+>  	struct gpio_backlight *gbl;
+>  	struct device_node *np = pdev->dev.of_node;
+> +	unsigned long flags = GPIOF_DIR_OUT;
+>  	int ret;
+>  
+>  	if (!pdata && !np) {
+> @@ -114,9 +115,12 @@ static int gpio_backlight_probe(struct
+> platform_device *pdev)
+>  		gbl->def_value = pdata->def_value;
+>  	}
+>  
+> -	ret = devm_gpio_request_one(gbl->dev, gbl->gpio, GPIOF_DIR_OUT |
+> -				    (gbl->active ? GPIOF_INIT_LOW
+> -						 : GPIOF_INIT_HIGH),
+> +	if (gbl->active)
+> +		flags |= gbl->def_value ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW;
+> +	else
+> +		flags |= gbl->def_value ? GPIOF_INIT_LOW : GPIOF_INIT_HIGH;
+> +
+> +	ret = devm_gpio_request_one(gbl->dev, gbl->gpio, flags,
+>  				    pdata ? pdata->name : "backlight");
+>  	if (ret < 0) {
+>  		dev_err(&pdev->dev, "unable to request GPIO\n");

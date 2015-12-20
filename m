@@ -1,67 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 07 Dec 2015 16:11:54 +0000
-Subject: Re: [PATCH] fbdev: sm712fb: avoid unused function warnings
-Message-Id: <5665AFCA.7090800@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="j4EL6rNIQkARcS6knj2kCrNKKq5uHm2vB"
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Sun, 20 Dec 2015 11:13:21 +0000
+Subject: [PATCH v2 2/3] fbdev: omap2: panel-dpi: make (limited) use of a reset gpio
+Message-Id: <1450610002-10531-3-git-send-email-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4240710.SWINpxTKzN@wuerfel>
-In-Reply-To: <4240710.SWINpxTKzN@wuerfel>
-To: linux-arm-kernel@lists.infradead.org
-
---j4EL6rNIQkARcS6knj2kCrNKKq5uHm2vB
-Content-Type: text/plain; charset=utf-8
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
+Some displays have a reset input. To assert that the display is
+functional the reset gpio must be deasserted.
 
+Teach the driver to get and drive such a gpio accordingly.
 
-On 20/11/15 23:48, Arnd Bergmann wrote:
-> The sm712fb framebuffer driver encloses the power-management
-> functions in #ifdef CONFIG_PM, but the smtcfb_pci_suspend/resume
-> functions are only really used when CONFIG_PM_SLEEP is also
-> set, as a frequent gcc warning shows:
->=20
-> fbdev/sm712fb.c:1549:12: warning: 'smtcfb_pci_suspend' defined but not =
-used
-> fbdev/sm712fb.c:1572:12: warning: 'smtcfb_pci_resume' defined but not u=
-sed
->=20
-> The driver also avoids using the SIMPLE_DEV_PM_OPS macro when
-> CONFIG_PM is unset, which is redundant.
->=20
-> This changes the driver to remove the #ifdef and instead mark
-> the functions as __maybe_unused, which is a nicer anyway, as it
-> provides build testing for all the code in all configurations
-> and is harder to get wrong.
->=20
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+--
+Changes since (implicit) v1, sent with
+Message-Id: 1449753107-11410-4-git-send-email-uwe@kleine-koenig.org :
 
-Thanks, applied for 4.5.
+ - never assert reset because there are too many different panels with
+   too many different needs for their reset.
+ - split out dt binding changes
+ - reword commit log
+---
+ drivers/video/fbdev/omap2/displays-new/panel-dpi.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
- Tomi
+diff --git a/drivers/video/fbdev/omap2/displays-new/panel-dpi.c b/drivers/v=
+ideo/fbdev/omap2/displays-new/panel-dpi.c
+index e780fd4f8b46..201a1c1a6f42 100644
+--- a/drivers/video/fbdev/omap2/displays-new/panel-dpi.c
++++ b/drivers/video/fbdev/omap2/displays-new/panel-dpi.c
+@@ -213,6 +213,16 @@ static int panel_dpi_probe_of(struct platform_device *=
+pdev)
+=20
+ 	ddata->enable_gpio =3D gpio;
+=20
++	/*
++	 * Many different panels are supported by this driver and there are
++	 * probably very different needs for their reset pins in regards to
++	 * timing and order relative to the enable gpio. So for now it's just
++	 * ensured that the reset line isn't active.
++	 */
++	gpio =3D devm_gpiod_get_optional(&pdev->dev, "reset", GPIOD_OUT_LOW);
++	if (IS_ERR(gpio))
++		return PTR_ERR(gpio);
++
+ 	ddata->backlight_gpio =3D -ENOENT;
+=20
+ 	r =3D of_get_display_timing(node, "panel-timing", &timing);
+--=20
+2.6.2
 
-
---j4EL6rNIQkARcS6knj2kCrNKKq5uHm2vB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWZa/KAAoJEPo9qoy8lh71H2sQAJ6BUkW5QDDXZhfzUCIY8zoH
-2t/3wOaHvU/SNVesbTX0QcLjtK6q64vvfmi5EkTGSMUjUtK3bz2u5rbC2GIaqqy1
-xBuU9UHiITrugIuuuSUQ5JXkmUs20L3OPbN7pY1J7bD6XMzWBXRTdJzulctoO0LP
-nYYYP2Bl/1unuRmdBCdcHgqTXd0FfnCRzDfYOJDQtW2uFT5dip3GWq5pME1nIsu3
-yYkJRkxDw76yfyaHcMi/jfseX+f4o/t0hcCMWttaaEiCVDKyCbVdIleiS+LI5DJN
-pe+rce1jrTN4IRsmhfoPiK+ufMBR/y93tqGbYGiosacu9XSD2QHaUxeA3M3XGoCe
-Fc6oY+PYVGPVujvVyo6nBJvxpoAHAen19vvLQriA7UqNrV4bRhutib6j2ABrhd/I
-OhxxLwiLfizEq6/lHoJ1XcQwIsSmKyjeepJ9HrtGz6JkJL7ionlM/AEPxg5fCeZ6
-id/z8DBHfAJ6D7qRGFMZq30k/oIEv5qJk5rFQxTfL7Sej11MVbFM7faMlIoIelpz
-hMuu7xAC/KD9XvZQVr0rGj0xGM/NriTr2vxnDoD7ceZa/Op5lVAncHfuHcTToMsP
-tC1GZ+oxYJWUXWWwalteeAjRk2iKi/yuy7TRZ3IUoIFiCQwn2SMBd6gAkYiuz201
-SUF43wErC9UrTSucbJJC
-=g1MW
------END PGP SIGNATURE-----
-
---j4EL6rNIQkARcS6knj2kCrNKKq5uHm2vB--

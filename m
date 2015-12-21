@@ -1,57 +1,100 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 15 Dec 2015 12:53:24 +0000
-Subject: Re: [PATCH 1/2] video:omap2:dss: fix timings for VENC to match what omapdrm expects
-Message-Id: <56700D44.9090100@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="rDqGeTDugsOv0hFqEdQcn49XIh3vInNfK"
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Date: Mon, 21 Dec 2015 18:26:24 +0000
+Subject: [PATCH] OMAPDSS: fix omapfb build error due missing feat functions declaration
+Message-Id: <1450722384-4606-1-git-send-email-javier@osg.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1447410543.git.hns@goldelico.com>
- <20ebf7491377ccba18c734c22ae9f361d7fdc165.1447410544.git.hns@goldelico.com>
- <5667E3D0.8010600@ti.com>
- <5BB301DB-5429-422E-B672-E7A508441C45@goldelico.com>
-In-Reply-To: <5BB301DB-5429-422E-B672-E7A508441C45@goldelico.com>
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, gta04-owner@goldelico.com, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-fbdev@vger.kernel.org, Dave Airlie <airlied@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Rob Clark <robdclark@gmail.com>, linux-omap@vger.kernel.org
 
---rDqGeTDugsOv0hFqEdQcn49XIh3vInNfK
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+The omapfb is failing to build in -next due missing declarations for
+dss_feat_get_supported_displays() and dss_feat_get_supported_outputs():
 
+ CC [M]  drivers/video/fbdev/omap2//omapfb/dss/dss.o
+drivers/video/fbdev/omap2//omapfb/dss/dss.c: In function 'dss_save_context':
+drivers/video/fbdev/omap2//omapfb/dss/dss.c:144:2: error: implicit declaration of function 'dss_feat_get_supported_displays' [-Werror=implicit-function-declaration]
 
-On 13/12/15 20:41, H. Nikolaus Schaller wrote:
+Add the declaration for these functions in the dss_features.h header
+file to fix this compile error.
 
-> Great that you did find the real reason of the problem.
->=20
-> I have tested it on the GTA04 and it also works.
->=20
-> Will the patches arrive in 4.5?
+Also, remove the functions export since are not used outside the driver.
 
-4.4, I hope.
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
 
- Tomi
+---
 
+Hello Tomi,
 
---rDqGeTDugsOv0hFqEdQcn49XIh3vInNfK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+This seems to be caused by a wrong order in which some commits from
+the omapdss tree [0] were merged, or rather a wrong base used for
+the dss-drm-merge (4.4.0-rc4) and the for-next (4.4.0-rc5) branches.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+The problem is that commit 2ea164a9af9c ("drm/omap: move omapdss &
+displays under omapdrm") moves the dss_features.h header from the
+drivers/video/fbdev/omap2/dss/ dir to drivers/gpu/drm/omapdrm}/dss.
 
-iQIcBAEBCAAGBQJWcA1EAAoJEPo9qoy8lh71KKIP/0RfkcDhQKcpS0iv4ScZA7Aq
-w82/MlC3d+Tu76Yv3uFAcE1zIZVgDs1+5oyVgi9cWnNdn++FHJi+iOgG80dymVE0
-3ZqYbd1V5085UIuyxwoeZvziVxCctduXVQMPsHPA2XIULFOu065vECx/lT/BAJaf
-323Au7fLuyPRWJT9GjjwfhpCI0XmptKp8SkXixRKVKUYOfhohLaK6GqT3aVMpmLc
-pEH9Gcf0zYplglIgHsM10JEHmxny/YbNN7JC6R/QoB9Lb3MsNQ6qXDk0CbOTIRsd
-+jAY5aycXAxoUFfcjSLCDyavA7uboKakH7Q9BdOs849aHZ/oa7MbJf11fbeuN07B
-PFlFiQMiLC2zl4P/GXd0aYBrhGyR/x22+O5JHQP4eGD/2noVbRP6s5t9jAfHJ+jh
-KNe8zYxZJdT0WoHdZMCVdXsvGMictMbuTV4z/BzG4FXIFZGjQEHJWYz5A20yaMDS
-5gix0MPtS9kDfhDrEuxxZxx0tYDYOmA/OYC5VoMQbjKoOjG9QPi8BFXdZuce0W+x
-ImpuAfI4oMokg3xmzKcTSsGGhOF2PPafeLmFMhSH9AyO8BBG+uy+ytxJMXi/9PWE
-TEE73ikCGe+egZp/ECsAXPm9iI7IwB5y3gnnO7LHEMamZBp0AYTVSa6vsC/vM5CQ
-z37yEwAXH2ylaVU6sR/L
-=l3Ap
------END PGP SIGNATURE-----
+And then commit 8b987a111b1a ("omapfb: copy omapdss & displays for
+omapfb" copies the hader from the omapdrm dir to the omapfb one.
 
---rDqGeTDugsOv0hFqEdQcn49XIh3vInNfK--
+Now, since commit 66c78ddd7a2e ("OMAPDSS: make a two dss feat funcs
+internal to omapdss") is the one that moves the function declaration
+from the public include/video/omapdss.h header to the internal one,
+this means that git will be smart enough to identify that the header
+that was drivers/video/fbdev/omap2/dss/dss_features.h now is the one
+in the omapdrm directory but that means that the omapfb files won't
+get the changes since the move & copy happened before.
+
+This happens AFAIU because dss-drm-merge having an older base so the
+patches in for-next are rebased on top of dss-drm-merge when merging.
+
+The issue can easily be avoided by first merging the patch that does
+the feat funcs declaration move and then merging the ones that do the
+per driver omapdss refactoring.
+
+But I'm posting this patch anyways in case you can't redo your branches
+and need a fix to apply on top of your current for-next.
+
+[0]: git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git
+
+Best regards,
+Javier
+
+ drivers/video/fbdev/omap2/omapfb/dss/dss_features.c | 2 --
+ drivers/video/fbdev/omap2/omapfb/dss/dss_features.h | 3 +++
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss_features.c b/drivers/video/fbdev/omap2/omapfb/dss/dss_features.c
+index b0b6dfd657bf..a2e26b8d6ded 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss_features.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss_features.c
+@@ -844,13 +844,11 @@ enum omap_display_type dss_feat_get_supported_displays(enum omap_channel channel
+ {
+ 	return omap_current_dss_features->supported_displays[channel];
+ }
+-EXPORT_SYMBOL(dss_feat_get_supported_displays);
+ 
+ enum omap_dss_output_id dss_feat_get_supported_outputs(enum omap_channel channel)
+ {
+ 	return omap_current_dss_features->supported_outputs[channel];
+ }
+-EXPORT_SYMBOL(dss_feat_get_supported_outputs);
+ 
+ enum omap_color_mode dss_feat_get_supported_color_modes(enum omap_plane plane)
+ {
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss_features.h b/drivers/video/fbdev/omap2/omapfb/dss/dss_features.h
+index 100f7a2d0638..4474ebff8607 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss_features.h
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss_features.h
+@@ -102,4 +102,7 @@ bool dss_feat_rotation_type_supported(enum omap_dss_rotation_type rot_type);
+ bool dss_has_feature(enum dss_feat_id id);
+ void dss_feat_get_reg_field(enum dss_feat_reg_field id, u8 *start, u8 *end);
+ void dss_features_init(enum omapdss_version version);
++
++enum omap_display_type dss_feat_get_supported_displays(enum omap_channel channel);
++enum omap_dss_output_id dss_feat_get_supported_outputs(enum omap_channel channel);
+ #endif
+-- 
+2.4.3
+

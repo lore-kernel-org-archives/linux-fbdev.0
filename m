@@ -1,51 +1,17 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Dec 2015 15:59:43 +0000
-Subject: [PATCH 15/23] OMAPDSS: configure WB mflag threshold
-Message-Id: <1449676791-26304-16-git-send-email-tomi.valkeinen@ti.com>
+From: "Jeff Skoll" <verna.viajar@icdd.uni-kassel.de>
+Date: Tue, 29 Dec 2015 01:16:28 +0000
+Subject: Charity/Donation
+Message-Id: <auto-000005559739@mailadmin.uni-kassel.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-fbdev@vger.kernel.org
 
-Mflag thresholds for all pipelines are set in dispc_init_mflag(), but we
-are missing that for WB pipeline. Add WB configuration.
+Hi,
+My name is Jeffrey Skoll, a philanthropist and the founder of one of the largest private foundations in the world. I believe strongly in ‘giving while living.’ I had one idea that never changed in my mind — that you should use your wealth to help people and I have decided to secretly give USD2.498 Million to a randomly selected individual. On receipt of this email, you should count yourself as the individual. Kindly get back to me at your earliest convenience, so I know your email address is valid.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/fbdev/omap2/dss/dispc.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+Visit the web page to know more about me: http://www.theglobeandmail.com/news/national/meet-the-canadian-billionaire-whos-giving-it-all-away/article4209888/ or you can read an article of me on Wikipedia.
 
-diff --git a/drivers/video/fbdev/omap2/dss/dispc.c b/drivers/video/fbdev/omap2/dss/dispc.c
-index 22b6e0f3e657..3cd78dcfefc5 100644
---- a/drivers/video/fbdev/omap2/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/dss/dispc.c
-@@ -1384,6 +1384,25 @@ static void dispc_init_mflag(void)
- 
- 		dispc_ovl_set_mflag_threshold(i, low, high);
- 	}
-+
-+	if (dispc.feat->has_writeback) {
-+		u32 size = dispc_ovl_get_fifo_size(OMAP_DSS_WB);
-+		u32 unit = dss_feat_get_buffer_size_unit();
-+		u32 low, high;
-+
-+		dispc_ovl_set_mflag(OMAP_DSS_WB, true);
-+
-+		/*
-+		 * Simulation team suggests below thesholds:
-+		 * HT = fifosize * 5 / 8;
-+		 * LT = fifosize * 4 / 8;
-+		 */
-+
-+		low = size * 4 / 8 / unit;
-+		high = size * 5 / 8 / unit;
-+
-+		dispc_ovl_set_mflag_threshold(OMAP_DSS_WB, low, high);
-+	}
- }
- 
- static void dispc_ovl_set_fir(enum omap_plane plane,
--- 
-2.5.0
-
+Regards,
+Jeffrey Skoll.

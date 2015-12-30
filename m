@@ -1,73 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 14 Dec 2015 07:12:56 +0000
-Subject: Re: [PATCH RFC 8/9] drm/omap: move omapdss & displays under omapdrm
-Message-Id: <566E6BF8.40707@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="etGFt2aubFx6M78X0eCU7rCGNIeUbeDT1"
+From: Carlos Palminha <CARLOS.PALMINHA@synopsys.com>
+Date: Wed, 30 Dec 2015 18:46:38 +0000
+Subject: Whats missing in my new FB DRM driver... "No connectors reported connected with modes"?
+Message-Id: <5684268E.2000607@synopsys.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1449757535-5674-1-git-send-email-tomi.valkeinen@ti.com>
- <1449757535-5674-9-git-send-email-tomi.valkeinen@ti.com>
- <13812119.EOZzmrY4TL@avalon>
-In-Reply-To: <13812119.EOZzmrY4TL@avalon>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---etGFt2aubFx6M78X0eCU7rCGNIeUbeDT1
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hi guys,
 
+I'm writing a DRM driver for a framebuffer embedded hardware that uses 
+an i2c encoder (adv7511), following the basic steps suggested by Laurent 
+in "anatomy of an embedded KMS driver": 
+https://www.youtube.com/watch?v=Ja8fM7rTae4
 
+After initiliazing all kms, crtc, encoder, i2c, connector functions and 
+structures i'm calling drm_fbdev_cma_init to create a fbdev.
 
-On 13/12/15 21:08, Laurent Pinchart wrote:
-> Hi Tomi,
->=20
-> Thank you for the patch.
->=20
-> On Thursday 10 December 2015 16:25:34 Tomi Valkeinen wrote:
->> Now that omapfb has its own copy of omapdss and display drivers, we ca=
-n
->> move omapdss and display drivers which omapdrm uses to omapdrm's
->> directory.
->>
->> We also need to change the main drm Makefile so that omapdrm directory=
+When booting i'm getting an error message saying "No connectors reported 
+connected with modes", but the driver init is ok and i can find the 
+/dev/dri/* and /dev/fb0 devices.
 
->> is always entered, because omapdss has a file that always needs to be
->> built-in.
->=20
-> Which file is that ? omapdss-boot-init.c ? I would say "that can't be b=
-uilt as=20
-> a module' instead of 'that always needs to be built-in' as the later im=
-plies=20
-> (at least for me) that the file always have to be built-in regardless o=
-f=20
-> whether omapdss support is enabled or not.
+Any clue what i might be missing during the driver load?
 
-Yes, ompadss-boot-init.c. I'll change the wording.
+Thanks...
 
- Tomi
+Regards,
+C.Palminha
 
-
---etGFt2aubFx6M78X0eCU7rCGNIeUbeDT1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWbmv4AAoJEPo9qoy8lh71O2MP/2hPJUSQRkSm6UEM6XxMgwqg
-D/UOB2RmhJbE65dStLsqQJIWd54fGwoXiiyDGz8vWj78A57grH3MmTBTu8MyHJ6i
-fpVeObqO0IYGpynju9xJU9i1NesVDwFRoQzpf0+tw5ib2DcDu/g6BkLTsqmqGSMU
-iN2pzBpyLE1osuNL1n6l5dj9QkS9Vcg/mYUPmj+LQH/LTKHpe6XhZuwhQo013RBI
-vwvv1edyCUCRvm/K3kILmShFBsLXVkn8GKIsFjOxQf8xZNt5hY73JYzMSKbLKspf
-YPw1Mx6JrtsmVdSEtMLF28tH+4WLcOXNLyq7GFy4dR7Lg+DXRo7hFZUTXwbDHfRN
-W4Pjm7ZTNqA8cLTIoAKkPX6zmVo6RDS66Tg/qT2WHjUBvuBVYscx1aniBIZVPjlD
-DmR8BTV3V3H2tkpwjbEPYqf/Plsoj25at30rEXloalD2ESd7ZdZtYEOyBOsEzTGG
-/7R82KqSXrbpQC/QX7nOW0zhp+mK/CLpv2d/QDEcZ3y5E2qyAfy9LxeOmV0hkrfb
-wOYjwXaMWZrhJw8yGzbdZaEAXTObPZ2c6Xne6n7jdiafHgphqsbDtA1/TmaHhXSj
-ugyUvfgDNctv2xo8OpxTOlOkyKsljKBQnv7CHm4Yy8azj8od71jfjg6kxCtPKE8x
-QCwE5zsOil++WOiflKvt
-=fiGU
------END PGP SIGNATURE-----
-
---etGFt2aubFx6M78X0eCU7rCGNIeUbeDT1--
+--- boot log snippet ---
+[drm] Initialized drm 1.1.0 20060810
+drm-arcpgu e0017000.pgu: No connectors reported connected with modes
+[drm] Cannot find any crtc or sizes - going 1024x768
+Console: switching to colour frame buffer device 128x48
+drm-arcpgu e0017000.pgu: fb0:  frame buffer device
+[drm] Initialized drm-arcpgu 1.0.0 20151127 on minor 0
+--- boot log snippet ---

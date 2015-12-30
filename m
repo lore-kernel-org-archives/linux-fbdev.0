@@ -1,12 +1,15 @@
 From: Carlos Palminha <CARLOS.PALMINHA@synopsys.com>
-Date: Wed, 30 Dec 2015 18:46:38 +0000
+Date: Wed, 30 Dec 2015 18:53:14 +0000
 Subject: Whats missing in my new FB DRM driver... "No connectors reported connected with modes"?
-Message-Id: <5684268E.2000607@synopsys.com>
+Message-Id: <5684281A.7040300@synopsys.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <5684268E.2000607@synopsys.com>
+In-Reply-To: <5684268E.2000607@synopsys.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, CARLOS.PALMINHA@synopsys.com
 
 Hi guys,
 

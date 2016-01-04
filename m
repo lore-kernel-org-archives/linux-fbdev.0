@@ -1,64 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 29 Jan 2016 11:43:35 +0000
-Subject: Re: [PATCH] fbdev: mmp: print IRQ resource using %pR format string
-Message-Id: <56AB5067.4010405@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="x2jQHTsdhc2Hxf0BtGcO0f8Df9bG9lTK0"
+From: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+Date: Mon, 04 Jan 2016 15:20:42 +0000
+Subject: Re: [PATCH] backlight: pwm: free pwm requested by legacy API on error path
+Message-Id: <568A8DCA.6010301@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1453734191-1958245-1-git-send-email-arnd@arndb.de>
-In-Reply-To: <1453734191-1958245-1-git-send-email-arnd@arndb.de>
-To: linux-arm-kernel@lists.infradead.org
+References: <1434292334-22312-1-git-send-email-vladimir_zapolskiy@mentor.com>
+ <20150921232338.GG11284@x1>
+In-Reply-To: <20150921232338.GG11284@x1>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Jingoo Han <jg1.han@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org
 
---x2jQHTsdhc2Hxf0BtGcO0f8Df9bG9lTK0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hi Lee,
 
+On 22.09.2015 02:23, Lee Jones wrote:
+> On Sun, 14 Jun 2015, Vladimir Zapolskiy wrote:
+> 
+>> If pwm is requested by legacy pwm_request() and if the following
+>> backlight_device_register() call fails, add pwm_free() clean-up.
+>>
+>> Signed-off-by: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
+>> ---
+>>  drivers/video/backlight/pwm_bl.c | 2 ++
+>>  1 file changed, 2 insertions(+)
+> 
+> Applied, thanks.
+> 
 
+I've just encountered that this change is not present in v4.4-rc, also it is
+not in yours for-backlight-next branch, could you please double check the
+status of the change?
 
-On 25/01/16 17:03, Arnd Bergmann wrote:
-> resource_size_t cannot be printed using the %x format string
-> when we it is defined as u64:
->=20
-> drivers/video/fbdev/mmp/hw/mmp_ctrl.c: In function 'mmphw_probe':
-> drivers/video/fbdev/mmp/hw/mmp_ctrl.c:506:22: error: format '%x' expect=
-s argument of type 'unsigned int', but argument 4 has type 'resource_size=
-_t {aka long long unsigned int}' [-Werror=3Dformat=3D]
->    dev_err(ctrl->dev, "%s: res %x - %x map failed\n", __func__,
->                       ^
-> drivers/video/fbdev/mmp/hw/mmp_ctrl.c:506:22: error: format '%x' expect=
-s argument of type 'unsigned int', but argument 5 has type 'resource_size=
-_t {aka long long unsigned int}' [-Werror=3Dformat=3D]
->=20
-> This changes the format string to %pR, which is interpreted
-> by the printk implementation to pretty-print a resource
-> structure.
+Thank you in advance.
 
-Thanks, queued for 4.5 fixes.
+Best wishes,
+Vladimir
 
- Tomi
+>> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+>> index 9991cdb..a691247 100644
+>> --- a/drivers/video/backlight/pwm_bl.c
+>> +++ b/drivers/video/backlight/pwm_bl.c
+>> @@ -307,6 +307,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+>>  	if (IS_ERR(bl)) {
+>>  		dev_err(&pdev->dev, "failed to register backlight\n");
+>>  		ret = PTR_ERR(bl);
+>> +		if (pb->legacy)
+>> +			pwm_free(pb->pwm);
+>>  		goto err_alloc;
+>>  	}
+>>  
+> 
 
-
---x2jQHTsdhc2Hxf0BtGcO0f8Df9bG9lTK0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWq1BnAAoJEPo9qoy8lh71Vg8P/jFXyTyoXg/BJnnanquugr0u
-7JxD0e7oHj33FZ+HOznsy41f8kAeFxWLsM7SoTPSuz1RFDgmjoMFaD1WkMbRGwDp
-8ReQnNb42abVt68VPsa1FaMIvWIoW+2z7nHlGR0SzUdeXdeA2xS/HlCWsLEzSLyR
-EBny+sMvaqVW1m1EIlLqT7CYsg7Ph8Puuyr3M/U2dsUL5gZe29zHPisRdmnSTNuK
-Kxi068TpnNA2EMFgkE0oosXwgB9wFF4iJhH0jLgEI5HS4xEX1VvI/z+5MT1IYgBG
-8i0HEoIRdVFlykZ3x+BkCZOslIuAKlE+dJfr+V76ZbuJBXo/+QZ+PU4crZfUGIPl
-gyHF79BmE1odOSBbIGXVpnHvZkNOnUFN0WtbDie2aO4ZhKSxrFtY1Rvn3FtEEeU7
-Iqp/tIyqL8V3AQ68K83FEseH2BvC4LKY6PXZl6OpP2sZDtLDNAjBtVc915ueJddB
-z2fYYmnIEBLek33uG0JpbtKe0HQCjhjHIGe3mcK4pyw7GM7lRKQNcI4GCEuu/3rU
-fGQjTrStWb6Pq2bqIe22UEOFj6/gCRzLhLSYc1hOPzWDUoEvwS3Ti/4TlbOOXued
-pEl1RE2qey7S56DTTWgR/a9HsV/VtLjvsTqFMt/5xWj+78cIsIaL3V64iddCD/54
-2khgq42tviubfNTyE6mK
-=Jr6u
------END PGP SIGNATURE-----
-
---x2jQHTsdhc2Hxf0BtGcO0f8Df9bG9lTK0--

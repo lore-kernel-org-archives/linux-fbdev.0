@@ -1,31 +1,96 @@
-From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
-Date: Fri, 01 Jan 2016 12:25:43 +0000
-Subject: Re: [PATCH v2] ARM: OMAPFB: panel-sony-acx565akm: fix missing mutex unlocks
-Message-Id: <56867047.8000501@gmail.com>
+From: Carlos Soto <csotoalonso@gmail.com>
+Date: Fri, 08 Jan 2016 20:18:41 +0000
+Subject: Re: imxfb does not turn on automatically
+Message-Id: <CAD7j7Q8gANUxM5zGmn3YyhUr9yZv02x4oxi_WWLnxCYemBRYZA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <52C956E9.2030008@gmail.com>
- <1388927585-5640-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
- <52CFD1ED.7010302@ti.com> <52D1113C.8020807@gmail.com>
- <52D3BE08.9040508@ti.com> <567D44B3.6090309@gmail.com>
- <56823A49.7080508@ti.com>
-In-Reply-To: <56823A49.7080508@ti.com>
+References: <CAOMZO5CZ3aFGbfb39XoXpFvbn4TTrCbTHOXtQKruruCis3Ptvw@mail.gmail.com>
+In-Reply-To: <CAOMZO5CZ3aFGbfb39XoXpFvbn4TTrCbTHOXtQKruruCis3Ptvw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: plagnioj@jcrosoft.com, pali.rohar@gmail.com, pavel@ucw.cz, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <freemangordon@abv.bg>, Aaro Koskinen <aaro.koskinen@iki.fi>
+To: linux-arm-kernel@lists.infradead.org
 
-
-
-On 29.12.2015 09:46, Tomi Valkeinen wrote:
+2015-02-21 16:18 GMT+01:00 Fabio Estevam <festevam@gmail.com>:
 >
-> Oh, I'm sorry, I must have forgotten about that. Please, send a new patch.
+> Hi,
 >
->   Tomi
+> Carlos Soto uses a Karo mx25 and he noticed that the LCD only works if we do:
 >
+> echo 1 > /sys/class/graphics/fb0/blank
+> echo 0 > /sys/class/graphics/fb0/blank
+>
+> I can confirm the same on mx25pdk running 3.19 [1], but I could not
+> understand why the display does not start turned on by default.
+>
+> [1] http://www.spinics.net/lists/arm-kernel/msg399949.html
+>
+> Any ideas?
+>
+> Thanks,
+>
+> Fabio Estevam
 
-Actually it is me to be sorry for making noise, I've missed 
-0eb0dafb674cd6bfac2e3204b2f8b907e26b1138 with all those patches moving 
-files around.
 
-Ivo
+
+Hi,
+I know it's been a long time since Fabio posted the issue but recently
+I had some time to work on it again, and I've narrowed it down a
+little.
+
+The problem seems to be related to the IPG clock used by the iMX25
+framebuffer. All clocks used by the fb are enabled in
+imxfb_enable_controller(...)
+
+...
+clk_prepare_enable(fbi->clk_ipg);
+clk_prepare_enable(fbi->clk_ahb);
+clk_prepare_enable(fbi->clk_per);
+fbi->enabled = true;
+
+...
+
+
+But if the IPG clock is disabled and enabled right after, the LCD
+works fine.
+
+The changes made in imxfb.c were:
+...
+
+clk_prepare_enable(fbi->clk_ipg);
+clk_disable_unprepare(fbi->clk_ipg);
+clk_prepare_enable(fbi->clk_ipg);
+
+clk_prepare_enable(fbi->clk_ahb);
+clk_prepare_enable(fbi->clk_per);
+fbi->enabled = true;
+
+...
+
+It was suggested by Fabio that this could be caused by a wrong clock
+reference count which prevented the IPG fb clock to be enabled, but
+I've checked in debugfs, and both enable_cnt  and prepare_cnt seem OK
+for all three FB clocks.
+
+So, I'm really stuck here. Any hints would be greatly appreciated.
+
+Thanks,
+Carlos Soto
+
+2015-02-21 16:18 GMT+01:00 Fabio Estevam <festevam@gmail.com>:
+> Hi,
+>
+> Carlos Soto uses a Karo mx25 and he noticed that the LCD only works if we do:
+>
+> echo 1 > /sys/class/graphics/fb0/blank
+> echo 0 > /sys/class/graphics/fb0/blank
+>
+> I can confirm the same on mx25pdk running 3.19 [1], but I could not
+> understand why the display does not start turned on by default.
+>
+> [1] http://www.spinics.net/lists/arm-kernel/msg399949.html
+>
+> Any ideas?
+>
+> Thanks,
+>
+> Fabio Estevam

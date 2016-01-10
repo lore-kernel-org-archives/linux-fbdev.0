@@ -1,61 +1,47 @@
-From: Daniel Wagner <daniel.wagner@bmw-carit.de>
-Date: Fri, 29 Jan 2016 13:23:25 +0000
-Subject: [PATCH] video: Use bool instead int pointer for get_opt_bool() argument
-Message-Id: <1454073805-14443-1-git-send-email-daniel.wagner@bmw-carit.de>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Sun, 10 Jan 2016 20:27:56 +0000
+Subject: Re: [PATCH] video: fbdev: pxafb: fix out of memory error path
+Message-Id: <87io31dvsj.fsf@belgarion.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1453992270-4688-1-git-send-email-daniel.wagner@bmw-carit.de>
-In-Reply-To: <1453992270-4688-1-git-send-email-daniel.wagner@bmw-carit.de>
+References: <1450527271-21841-1-git-send-email-robert.jarzmik@free.fr>
+In-Reply-To: <1450527271-21841-1-git-send-email-robert.jarzmik@free.fr>
+	(Robert Jarzmik's message of "Sat, 19 Dec 2015 13:14:31 +0100")
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Maik Broemme <mbroemme@plusserver.de>, Daniel Wagner <daniel.wagner@bmw-carit.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-As the function name already indicates that get_opt_bool() parses
-for a bool. It is not a surprise that compiler is complaining
-about it when -Werror=incompatible-pointer-types is used:
+Robert Jarzmik <robert.jarzmik@free.fr> writes:
 
-drivers/video/fbdev/intelfb/intelfbdrv.c: In function ‘intelfb_setup’:
-drivers/video/fbdev/intelfb/intelfbdrv.c:353:39: error: passing argument 3 of ‘get_opt_bool’ from incompatible pointer type [-Werror=incompatible-pointer-types]
-   if (get_opt_bool(this_opt, "accel", &accel))
+> As seen by Julia, the initial allocation memory is not checked anymore
+> after commit "video: fbdev: pxafb: initial devicetree conversion".
+> Introduce back the removed test.
+>
+> Reported-by: Julia Lawall <julia.lawall@lip6.fr>
+> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+> ---
+>  drivers/video/fbdev/pxafb.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+> index 8588dd683105..54666424a720 100644
+> --- a/drivers/video/fbdev/pxafb.c
+> +++ b/drivers/video/fbdev/pxafb.c
+> @@ -2252,6 +2252,8 @@ static int pxafb_probe(struct platform_device *dev)
+>  	ret = -ENOMEM;
+>  	pdata = dev_get_platdata(&dev->dev);
+>  	inf = devm_kmalloc(&dev->dev, sizeof(*inf), GFP_KERNEL);
+> +	if (!inf)
+> +		goto failed;
+>  
+>  	if (pdata) {
+>  		*inf = *pdata;
+Tomi, Jean-Christophe,
 
-Signed-off-by: Daniel Wagner <daniel.wagner@bmw-carit.de>
-Reported-by: Fengguang Wu <fengguang.wu@intel.com>
----
-Hi,
+Can you carry out this fix please ?
 
-In the 'simple wait queue support' series is a patch
-which turns on -Werror=incompatible-pointer-types which will
-result in a compile error for intelfb.
+Cheers.
 
-https://lkml.org/lkml/2016/1/28/462
-
-Even if that patch wont make it, this one makes sense (at least
-for me :))
-
-I'll prepend this patch to the next version of the series in order
-to see if I got rid of all incompatible pointer types errors caught
-by the kbuild test robot.
-
-cheers,
-daniel
-
-drivers/video/fbdev/intelfb/intelfbdrv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/intelfb/intelfbdrv.c b/drivers/video/fbdev/intelfb/intelfbdrv.c
-index bbec737..bf20744 100644
---- a/drivers/video/fbdev/intelfb/intelfbdrv.c
-+++ b/drivers/video/fbdev/intelfb/intelfbdrv.c
-@@ -302,7 +302,7 @@ static __inline__ int get_opt_int(const char *this_opt, const char *name,
- }
- 
- static __inline__ int get_opt_bool(const char *this_opt, const char *name,
--				   int *ret)
-+				   bool *ret)
- {
- 	if (!ret)
- 		return 0;
 -- 
-2.5.0
-
+Robert

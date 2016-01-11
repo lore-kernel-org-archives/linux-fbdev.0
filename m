@@ -1,155 +1,59 @@
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-Date: Mon, 11 Jan 2016 14:38:53 +0000
-Subject: Re: [PATCH 2/2] video: mxsfb: manage LCD_RESET signal according to reset-active property
-Message-Id: <yw1xtwmkw58i.fsf@unicorn.mansr.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 11 Jan 2016 06:08:34 +0000
+Subject: Re: [PATCH v2] backlight: tps65217_bl: Add MODULE_DEVICE_TABLE.
+Message-Id: <20160111060834.GM3331@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1450200297-19243-1-git-send-email-mans@mansr.com>
-	<1450200297-19243-2-git-send-email-mans@mansr.com>
-In-Reply-To: <1450200297-19243-2-git-send-email-mans@mansr.com> (Mans
-	Rullgard's message of "Tue, 15 Dec 2015 17:24:57 +0000")
+References: <1448814586-17117-1-git-send-email-enric.balletbo@collabora.com>
+In-Reply-To: <1448814586-17117-1-git-send-email-enric.balletbo@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, marex@denx.de
+To: Enric Balletbo i Serra <eballetbo@gmail.com>
+Cc: devicetree@vger.kernel.org, jingoohan1@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Mans Rullgard <mans@mansr.com> writes:
+On Sun, 29 Nov 2015, Enric Balletbo i Serra wrote:
 
-> Activate/deactivate the LCD_RESET signal as specified by the
-> reset-active DT property when the controller is disabled/enabled.
-> If the property is missing, leave the signal unchanged.
->
-> Signed-off-by: Mans Rullgard <mans@mansr.com>
+> The device table is required to load modules based on modaliases.
+>=20
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > ---
+> Changes since last version:
+> - Use of_match_ptr (Lee Jones)
+>=20
+>  drivers/video/backlight/tps65217_bl.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 
-Any comments on this?
+Applied, thanks.
 
->  drivers/video/fbdev/mxsfb.c | 28 +++++++++++++++++++++++++---
->  1 file changed, 25 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
-> index 4e6608c..0200a0f 100644
-> --- a/drivers/video/fbdev/mxsfb.c
-> +++ b/drivers/video/fbdev/mxsfb.c
-> @@ -99,6 +99,7 @@
->  #define CTRL1_FIFO_CLEAR		(1 << 21)
->  #define CTRL1_SET_BYTE_PACKAGING(x)	(((x) & 0xf) << 16)
->  #define CTRL1_GET_BYTE_PACKAGING(x)	(((x) >> 16) & 0xf)
-> +#define CTRL1_RESET			(1 << 0)
->
->  #define TRANSFER_COUNT_SET_VCOUNT(x)	(((x) & 0xffff) << 16)
->  #define TRANSFER_COUNT_GET_VCOUNT(x)	(((x) >> 16) & 0xffff)
-> @@ -152,6 +153,9 @@
->  #define MXSFB_SYNC_DATA_ENABLE_HIGH_ACT	(1 << 6)
->  #define MXSFB_SYNC_DOTCLK_FALLING_ACT	(1 << 7) /* negtive edge sampling =
-*/
->
-> +#define MXSFB_RESET_LOW			1
-> +#define MXSFB_RESET_HIGH		2
-> +
->  enum mxsfb_devtype {
->  	MXSFB_V3,
->  	MXSFB_V4,
-> @@ -181,6 +185,7 @@ struct mxsfb_info {
->  	unsigned dotclk_delay;
->  	const struct mxsfb_devdata *devdata;
->  	u32 sync;
-> +	u32 reset;
->  	struct regulator *reg_lcd;
->  };
->
-> @@ -362,6 +367,11 @@ static void mxsfb_enable_controller(struct fb_info *=
-fb_info)
->
->  	writel(CTRL_RUN, host->base + LCDC_CTRL + REG_SET);
->
-> +	if (host->reset =3D MXSFB_RESET_HIGH)
-> +		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_CLR);
-> +	else if (host->reset =3D MXSFB_RESET_LOW)
-> +		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_SET);
-> +
->  	host->enabled =3D 1;
+> diff --git a/drivers/video/backlight/tps65217_bl.c b/drivers/video/backli=
+ght/tps65217_bl.c
+> index 61d72bf..fd524ad 100644
+> --- a/drivers/video/backlight/tps65217_bl.c
+> +++ b/drivers/video/backlight/tps65217_bl.c
+> @@ -320,10 +320,19 @@ static int tps65217_bl_probe(struct platform_device=
+ *pdev)
+>  	return 0;
 >  }
->
-> @@ -388,6 +398,11 @@ static void mxsfb_disable_controller(struct fb_info =
-*fb_info)
->  		loop--;
->  	}
->
-> +	if (host->reset =3D MXSFB_RESET_HIGH)
-> +		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_SET);
-> +	else if (host->reset =3D MXSFB_RESET_LOW)
-> +		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_CLR);
+> =20
+> +#ifdef CONFIG_OF
+> +static const struct of_device_id tps65217_bl_of_match[] =3D {
+> +	{ .compatible =3D "ti,tps65217-bl", },
+> +	{ /* sentinel */ },
+> +};
+> +MODULE_DEVICE_TABLE(of, tps65217_bl_of_match);
+> +#endif
 > +
->  	reg =3D readl(host->base + LCDC_VDCTRL4);
->  	writel(reg & ~VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4);
->
-> @@ -410,7 +425,7 @@ static void mxsfb_disable_controller(struct fb_info *=
-fb_info)
->  static int mxsfb_set_par(struct fb_info *fb_info)
->  {
->  	struct mxsfb_info *host =3D to_imxfb_host(fb_info);
-> -	u32 ctrl, vdctrl0, vdctrl4;
-> +	u32 ctrl, ctrl1, vdctrl0, vdctrl4;
->  	int line_size, fb_size;
->  	int reenable =3D 0;
->
-> @@ -439,12 +454,13 @@ static int mxsfb_set_par(struct fb_info *fb_info)
->
->  	ctrl =3D CTRL_BYPASS_COUNT | CTRL_MASTER |
->  		CTRL_SET_BUS_WIDTH(host->ld_intf_width);
-> +	ctrl1 =3D readl(host->base + LCDC_CTRL1) & CTRL1_RESET;
->
->  	switch (fb_info->var.bits_per_pixel) {
->  	case 16:
->  		dev_dbg(&host->pdev->dev, "Setting up RGB565 mode\n");
->  		ctrl |=3D CTRL_SET_WORD_LENGTH(0);
-> -		writel(CTRL1_SET_BYTE_PACKAGING(0xf), host->base + LCDC_CTRL1);
-> +		ctrl1 |=3D CTRL1_SET_BYTE_PACKAGING(0xf);
->  		break;
->  	case 32:
->  		dev_dbg(&host->pdev->dev, "Setting up RGB888/666 mode\n");
-> @@ -462,7 +478,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
->  			break;
->  		}
->  		/* do not use packed pixels =3D one pixel per word instead */
-> -		writel(CTRL1_SET_BYTE_PACKAGING(0x7), host->base + LCDC_CTRL1);
-> +		ctrl1 |=3D CTRL1_SET_BYTE_PACKAGING(0x7);
->  		break;
->  	default:
->  		mxsfb_disable_axi_clk(host);
-> @@ -472,6 +488,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
->  	}
->
->  	writel(ctrl, host->base + LCDC_CTRL);
-> +	writel(ctrl1, host->base + LCDC_CTRL1);
->
->  	writel(TRANSFER_COUNT_SET_VCOUNT(fb_info->var.yres) |
->  			TRANSFER_COUNT_SET_HCOUNT(fb_info->var.xres),
-> @@ -736,6 +753,7 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *ho=
-st,
->  	struct device_node *display_np;
->  	struct videomode vm;
->  	u32 width;
-> +	u32 reset;
->  	int ret;
->
->  	display_np =3D of_parse_phandle(np, "display", 0);
-> @@ -776,6 +794,10 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *h=
-ost,
->  		goto put_display_node;
->  	}
->
-> +	ret =3D of_property_read_u32(display_np, "reset-active", &reset);
-> +	if (!ret)
-> +		host->reset =3D reset ? MXSFB_RESET_HIGH : MXSFB_RESET_LOW;
-> +
->  	ret =3D of_get_videomode(display_np, &vm, OF_USE_NATIVE_MODE);
->  	if (ret) {
->  		dev_err(dev, "failed to get videomode from DT\n");
-> --=20
-> 2.6.3
->
+>  static struct platform_driver tps65217_bl_driver =3D {
+>  	.probe		=3D tps65217_bl_probe,
+>  	.driver		=3D {
+>  		.name	=3D "tps65217-bl",
+> +		.of_match_table =3D of_match_ptr(tps65217_bl_of_match),
+>  	},
+>  };
+> =20
 
 --=20
-M=E5ns Rullg=E5rd
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

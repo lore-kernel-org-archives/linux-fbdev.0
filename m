@@ -1,139 +1,66 @@
-From: Mans Rullgard <mans@mansr.com>
-Date: Tue, 15 Dec 2015 17:24:57 +0000
-Subject: [PATCH 2/2] video: mxsfb: manage LCD_RESET signal according to reset-active property
-Message-Id: <1450200297-19243-2-git-send-email-mans@mansr.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 11 Jan 2016 07:57:40 +0000
+Subject: Re: [PATCH] backlight: adp8860: fix another uninitialized variable use
+Message-Id: <20160111075740.GP3331@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1450200297-19243-1-git-send-email-mans@mansr.com>
-In-Reply-To: <1450200297-19243-1-git-send-email-mans@mansr.com>
+References: <3284846.T0rzz6n1As@wuerfel>
+In-Reply-To: <3284846.T0rzz6n1As@wuerfel>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: marex@denx.de
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Activate/deactivate the LCD_RESET signal as specified by the
-reset-active DT property when the controller is disabled/enabled.
-If the property is missing, leave the signal unchanged.
+On Mon, 30 Nov 2015, Arnd Bergmann wrote:
 
-Signed-off-by: Mans Rullgard <mans@mansr.com>
----
- drivers/video/fbdev/mxsfb.c | 28 +++++++++++++++++++++++++---
- 1 file changed, 25 insertions(+), 3 deletions(-)
+> A recent patch I did fixed two potential uses of uninitialized
+> variables in the adp8870 and adp8860 drivers. Unfortunately,
+> I missed another one:
+>=20
+> drivers/video/backlight/adp8860_bl.c: In function 'adp8860_bl_ambient_lig=
+ht_level_show':
+> drivers/video/backlight/adp8860_bl.c:570:11: warning: 'reg_val' may be us=
+ed uninitialized in this function
+>=20
+> This does the same change as before in one additional function,
+> and also changes the check for the return value in a way that
+> avoids another false positive warning with a similar message.
+>=20
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Fixes: 6be3a5a9cd91 ("backlight: adp88x0: Fix uninitialized variable use")
+> ---
+> Sorry for missing this third hunk the first time around.
 
-diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
-index 4e6608c..0200a0f 100644
---- a/drivers/video/fbdev/mxsfb.c
-+++ b/drivers/video/fbdev/mxsfb.c
-@@ -99,6 +99,7 @@
- #define CTRL1_FIFO_CLEAR		(1 << 21)
- #define CTRL1_SET_BYTE_PACKAGING(x)	(((x) & 0xf) << 16)
- #define CTRL1_GET_BYTE_PACKAGING(x)	(((x) >> 16) & 0xf)
-+#define CTRL1_RESET			(1 << 0)
- 
- #define TRANSFER_COUNT_SET_VCOUNT(x)	(((x) & 0xffff) << 16)
- #define TRANSFER_COUNT_GET_VCOUNT(x)	(((x) >> 16) & 0xffff)
-@@ -152,6 +153,9 @@
- #define MXSFB_SYNC_DATA_ENABLE_HIGH_ACT	(1 << 6)
- #define MXSFB_SYNC_DOTCLK_FALLING_ACT	(1 << 7) /* negtive edge sampling */
- 
-+#define MXSFB_RESET_LOW			1
-+#define MXSFB_RESET_HIGH		2
-+
- enum mxsfb_devtype {
- 	MXSFB_V3,
- 	MXSFB_V4,
-@@ -181,6 +185,7 @@ struct mxsfb_info {
- 	unsigned dotclk_delay;
- 	const struct mxsfb_devdata *devdata;
- 	u32 sync;
-+	u32 reset;
- 	struct regulator *reg_lcd;
- };
- 
-@@ -362,6 +367,11 @@ static void mxsfb_enable_controller(struct fb_info *fb_info)
- 
- 	writel(CTRL_RUN, host->base + LCDC_CTRL + REG_SET);
- 
-+	if (host->reset = MXSFB_RESET_HIGH)
-+		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_CLR);
-+	else if (host->reset = MXSFB_RESET_LOW)
-+		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_SET);
-+
- 	host->enabled = 1;
- }
- 
-@@ -388,6 +398,11 @@ static void mxsfb_disable_controller(struct fb_info *fb_info)
- 		loop--;
- 	}
- 
-+	if (host->reset = MXSFB_RESET_HIGH)
-+		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_SET);
-+	else if (host->reset = MXSFB_RESET_LOW)
-+		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_CLR);
-+
- 	reg = readl(host->base + LCDC_VDCTRL4);
- 	writel(reg & ~VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4);
- 
-@@ -410,7 +425,7 @@ static void mxsfb_disable_controller(struct fb_info *fb_info)
- static int mxsfb_set_par(struct fb_info *fb_info)
- {
- 	struct mxsfb_info *host = to_imxfb_host(fb_info);
--	u32 ctrl, vdctrl0, vdctrl4;
-+	u32 ctrl, ctrl1, vdctrl0, vdctrl4;
- 	int line_size, fb_size;
- 	int reenable = 0;
- 
-@@ -439,12 +454,13 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- 
- 	ctrl = CTRL_BYPASS_COUNT | CTRL_MASTER |
- 		CTRL_SET_BUS_WIDTH(host->ld_intf_width);
-+	ctrl1 = readl(host->base + LCDC_CTRL1) & CTRL1_RESET;
- 
- 	switch (fb_info->var.bits_per_pixel) {
- 	case 16:
- 		dev_dbg(&host->pdev->dev, "Setting up RGB565 mode\n");
- 		ctrl |= CTRL_SET_WORD_LENGTH(0);
--		writel(CTRL1_SET_BYTE_PACKAGING(0xf), host->base + LCDC_CTRL1);
-+		ctrl1 |= CTRL1_SET_BYTE_PACKAGING(0xf);
- 		break;
- 	case 32:
- 		dev_dbg(&host->pdev->dev, "Setting up RGB888/666 mode\n");
-@@ -462,7 +478,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- 			break;
- 		}
- 		/* do not use packed pixels = one pixel per word instead */
--		writel(CTRL1_SET_BYTE_PACKAGING(0x7), host->base + LCDC_CTRL1);
-+		ctrl1 |= CTRL1_SET_BYTE_PACKAGING(0x7);
- 		break;
- 	default:
- 		mxsfb_disable_axi_clk(host);
-@@ -472,6 +488,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- 	}
- 
- 	writel(ctrl, host->base + LCDC_CTRL);
-+	writel(ctrl1, host->base + LCDC_CTRL1);
- 
- 	writel(TRANSFER_COUNT_SET_VCOUNT(fb_info->var.yres) |
- 			TRANSFER_COUNT_SET_HCOUNT(fb_info->var.xres),
-@@ -736,6 +753,7 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host,
- 	struct device_node *display_np;
- 	struct videomode vm;
- 	u32 width;
-+	u32 reset;
- 	int ret;
- 
- 	display_np = of_parse_phandle(np, "display", 0);
-@@ -776,6 +794,10 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host,
- 		goto put_display_node;
- 	}
- 
-+	ret = of_property_read_u32(display_np, "reset-active", &reset);
-+	if (!ret)
-+		host->reset = reset ? MXSFB_RESET_HIGH : MXSFB_RESET_LOW;
-+
- 	ret = of_get_videomode(display_np, &vm, OF_USE_NATIVE_MODE);
- 	if (ret) {
- 		dev_err(dev, "failed to get videomode from DT\n");
--- 
-2.6.3
+Where's your diff?
 
+Applied anyway, thanks.
+
+> diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlig=
+ht/adp8860_bl.c
+> index f0d4c0324580..510e559c060e 100644
+> --- a/drivers/video/backlight/adp8860_bl.c
+> +++ b/drivers/video/backlight/adp8860_bl.c
+> @@ -566,11 +566,13 @@ static ssize_t adp8860_bl_ambient_light_level_show(=
+struct device *dev,
+> =20
+>  	mutex_lock(&data->lock);
+>  	error =3D adp8860_read(data->client, ADP8860_PH1LEVL, &reg_val);
+> -	ret_val =3D reg_val;
+> -	error |=3D adp8860_read(data->client, ADP8860_PH1LEVH, &reg_val);
+> +	if (!error) {
+> +		ret_val =3D reg_val;
+> +		error =3D adp8860_read(data->client, ADP8860_PH1LEVH, &reg_val);
+> +	}
+>  	mutex_unlock(&data->lock);
+> =20
+> -	if (error < 0)
+> +	if (error)
+>  		return error;
+> =20
+>  	/* Return 13-bit conversion value for the first light sensor */
+>=20
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

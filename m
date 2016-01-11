@@ -1,139 +1,155 @@
-From: Daniel Wagner <daniel.wagner@bmw-carit.de>
-Date: Fri, 29 Jan 2016 14:03:23 +0000
-Subject: [PATCH tip v7 2/7] MIPS: Differentiate between 32 and 64 bit ELF header
-Message-Id: <1454076208-28354-3-git-send-email-daniel.wagner@bmw-carit.de>
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Date: Mon, 11 Jan 2016 14:38:53 +0000
+Subject: Re: [PATCH 2/2] video: mxsfb: manage LCD_RESET signal according to reset-active property
+Message-Id: <yw1xtwmkw58i.fsf@unicorn.mansr.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1454076208-28354-1-git-send-email-daniel.wagner@bmw-carit.de>
-In-Reply-To: <1454076208-28354-1-git-send-email-daniel.wagner@bmw-carit.de>
+References: <1450200297-19243-1-git-send-email-mans@mansr.com>
+	<1450200297-19243-2-git-send-email-mans@mansr.com>
+In-Reply-To: <1450200297-19243-2-git-send-email-mans@mansr.com> (Mans
+	Rullgard's message of "Tue, 15 Dec 2015 17:24:57 +0000")
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-mips@linux-mips.org, Marcelo Tosatti <mtosatti@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>, Boqun Feng <boqun.feng@gmail.com>, Maik Broemme <mbroemme@plusserver.de>, Ralf Baechle <ralf@linux-mips.org>, Daniel Wagner <daniel.wagner@bmw-carit.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, marex@denx.de
 
-Depending on the configuration either the 32 or 64 bit version of
-elf_check_arch() is defined. parse_crash_elf32_headers() does
-some basic verification of the ELF header via elf_check_arch().
-parse_crash_elf64_headers() does it via vmcore_elf64_check_arch()
-which expands to the same elf_check_check().
+Mans Rullgard <mans@mansr.com> writes:
 
-   In file included from include/linux/elf.h:4:0,
-                    from fs/proc/vmcore.c:13:
-   fs/proc/vmcore.c: In function 'parse_crash_elf64_headers':
->> arch/mips/include/asm/elf.h:228:23: error: initialization from incompatible pointer type [-Werror=incompatible-pointer-types]
-     struct elfhdr *__h = (hdr);     \
-                          ^
-   include/linux/crash_dump.h:41:37: note: in expansion of macro 'elf_check_arch'
-    #define vmcore_elf64_check_arch(x) (elf_check_arch(x) || vmcore_elf_check_arch_cross(x))
-                                        ^
-   fs/proc/vmcore.c:1015:4: note: in expansion of macro 'vmcore_elf64_check_arch'
-      !vmcore_elf64_check_arch(&ehdr) ||
-       ^
+> Activate/deactivate the LCD_RESET signal as specified by the
+> reset-active DT property when the controller is disabled/enabled.
+> If the property is missing, leave the signal unchanged.
+>
+> Signed-off-by: Mans Rullgard <mans@mansr.com>
+> ---
 
-Since the MIPS ELF header for 32 bit and 64 bit differ we need
-to check accordingly.
+Any comments on this?
 
-Signed-off-by: Daniel Wagner <daniel.wagner@bmw-carit.de>
-Reported-by: Fengguang Wu <fengguang.wu@intel.com>
----
- arch/mips/include/asm/elf.h | 68 ++++++++++++++++++++++++---------------------
- 1 file changed, 37 insertions(+), 31 deletions(-)
+>  drivers/video/fbdev/mxsfb.c | 28 +++++++++++++++++++++++++---
+>  1 file changed, 25 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
+> index 4e6608c..0200a0f 100644
+> --- a/drivers/video/fbdev/mxsfb.c
+> +++ b/drivers/video/fbdev/mxsfb.c
+> @@ -99,6 +99,7 @@
+>  #define CTRL1_FIFO_CLEAR		(1 << 21)
+>  #define CTRL1_SET_BYTE_PACKAGING(x)	(((x) & 0xf) << 16)
+>  #define CTRL1_GET_BYTE_PACKAGING(x)	(((x) >> 16) & 0xf)
+> +#define CTRL1_RESET			(1 << 0)
+>
+>  #define TRANSFER_COUNT_SET_VCOUNT(x)	(((x) & 0xffff) << 16)
+>  #define TRANSFER_COUNT_GET_VCOUNT(x)	(((x) >> 16) & 0xffff)
+> @@ -152,6 +153,9 @@
+>  #define MXSFB_SYNC_DATA_ENABLE_HIGH_ACT	(1 << 6)
+>  #define MXSFB_SYNC_DOTCLK_FALLING_ACT	(1 << 7) /* negtive edge sampling =
+*/
+>
+> +#define MXSFB_RESET_LOW			1
+> +#define MXSFB_RESET_HIGH		2
+> +
+>  enum mxsfb_devtype {
+>  	MXSFB_V3,
+>  	MXSFB_V4,
+> @@ -181,6 +185,7 @@ struct mxsfb_info {
+>  	unsigned dotclk_delay;
+>  	const struct mxsfb_devdata *devdata;
+>  	u32 sync;
+> +	u32 reset;
+>  	struct regulator *reg_lcd;
+>  };
+>
+> @@ -362,6 +367,11 @@ static void mxsfb_enable_controller(struct fb_info *=
+fb_info)
+>
+>  	writel(CTRL_RUN, host->base + LCDC_CTRL + REG_SET);
+>
+> +	if (host->reset =3D MXSFB_RESET_HIGH)
+> +		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_CLR);
+> +	else if (host->reset =3D MXSFB_RESET_LOW)
+> +		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_SET);
+> +
+>  	host->enabled =3D 1;
+>  }
+>
+> @@ -388,6 +398,11 @@ static void mxsfb_disable_controller(struct fb_info =
+*fb_info)
+>  		loop--;
+>  	}
+>
+> +	if (host->reset =3D MXSFB_RESET_HIGH)
+> +		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_SET);
+> +	else if (host->reset =3D MXSFB_RESET_LOW)
+> +		writel(CTRL1_RESET, host->base + LCDC_CTRL1 + REG_CLR);
+> +
+>  	reg =3D readl(host->base + LCDC_VDCTRL4);
+>  	writel(reg & ~VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4);
+>
+> @@ -410,7 +425,7 @@ static void mxsfb_disable_controller(struct fb_info *=
+fb_info)
+>  static int mxsfb_set_par(struct fb_info *fb_info)
+>  {
+>  	struct mxsfb_info *host =3D to_imxfb_host(fb_info);
+> -	u32 ctrl, vdctrl0, vdctrl4;
+> +	u32 ctrl, ctrl1, vdctrl0, vdctrl4;
+>  	int line_size, fb_size;
+>  	int reenable =3D 0;
+>
+> @@ -439,12 +454,13 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+>
+>  	ctrl =3D CTRL_BYPASS_COUNT | CTRL_MASTER |
+>  		CTRL_SET_BUS_WIDTH(host->ld_intf_width);
+> +	ctrl1 =3D readl(host->base + LCDC_CTRL1) & CTRL1_RESET;
+>
+>  	switch (fb_info->var.bits_per_pixel) {
+>  	case 16:
+>  		dev_dbg(&host->pdev->dev, "Setting up RGB565 mode\n");
+>  		ctrl |=3D CTRL_SET_WORD_LENGTH(0);
+> -		writel(CTRL1_SET_BYTE_PACKAGING(0xf), host->base + LCDC_CTRL1);
+> +		ctrl1 |=3D CTRL1_SET_BYTE_PACKAGING(0xf);
+>  		break;
+>  	case 32:
+>  		dev_dbg(&host->pdev->dev, "Setting up RGB888/666 mode\n");
+> @@ -462,7 +478,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+>  			break;
+>  		}
+>  		/* do not use packed pixels =3D one pixel per word instead */
+> -		writel(CTRL1_SET_BYTE_PACKAGING(0x7), host->base + LCDC_CTRL1);
+> +		ctrl1 |=3D CTRL1_SET_BYTE_PACKAGING(0x7);
+>  		break;
+>  	default:
+>  		mxsfb_disable_axi_clk(host);
+> @@ -472,6 +488,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+>  	}
+>
+>  	writel(ctrl, host->base + LCDC_CTRL);
+> +	writel(ctrl1, host->base + LCDC_CTRL1);
+>
+>  	writel(TRANSFER_COUNT_SET_VCOUNT(fb_info->var.yres) |
+>  			TRANSFER_COUNT_SET_HCOUNT(fb_info->var.xres),
+> @@ -736,6 +753,7 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *ho=
+st,
+>  	struct device_node *display_np;
+>  	struct videomode vm;
+>  	u32 width;
+> +	u32 reset;
+>  	int ret;
+>
+>  	display_np =3D of_parse_phandle(np, "display", 0);
+> @@ -776,6 +794,10 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *h=
+ost,
+>  		goto put_display_node;
+>  	}
+>
+> +	ret =3D of_property_read_u32(display_np, "reset-active", &reset);
+> +	if (!ret)
+> +		host->reset =3D reset ? MXSFB_RESET_HIGH : MXSFB_RESET_LOW;
+> +
+>  	ret =3D of_get_videomode(display_np, &vm, OF_USE_NATIVE_MODE);
+>  	if (ret) {
+>  		dev_err(dev, "failed to get videomode from DT\n");
+> --=20
+> 2.6.3
+>
 
-diff --git a/arch/mips/include/asm/elf.h b/arch/mips/include/asm/elf.h
-index b01a6ff..e311d60 100644
---- a/arch/mips/include/asm/elf.h
-+++ b/arch/mips/include/asm/elf.h
-@@ -205,27 +205,10 @@ struct mips_elf_abiflags_v0 {
- #define MIPS_ABI_FP_64		6	/* -mips32r2 -mfp64 */
- #define MIPS_ABI_FP_64A		7	/* -mips32r2 -mfp64 -mno-odd-spreg */
- 
--#ifdef CONFIG_32BIT
--
--/*
-- * In order to be sure that we don't attempt to execute an O32 binary which
-- * requires 64 bit FP (FR=1) on a system which does not support it we refuse
-- * to execute any binary which has bits specified by the following macro set
-- * in its ELF header flags.
-- */
--#ifdef CONFIG_MIPS_O32_FP64_SUPPORT
--# define __MIPS_O32_FP64_MUST_BE_ZERO	0
--#else
--# define __MIPS_O32_FP64_MUST_BE_ZERO	EF_MIPS_FP64
--#endif
--
--/*
-- * This is used to ensure we don't load something for the wrong architecture.
-- */
--#define elf_check_arch(hdr)						\
-+#define elf_check_arch_32(hdr)						\
- ({									\
- 	int __res = 1;							\
--	struct elfhdr *__h = (hdr);					\
-+	Elf32_Ehdr *__h = (hdr);					\
- 									\
- 	if (__h->e_machine != EM_MIPS)					\
- 		__res = 0;						\
-@@ -242,6 +225,40 @@ struct mips_elf_abiflags_v0 {
- 	__res;								\
- })
- 
-+#define elf_check_arch_64(hdr)						\
-+({									\
-+	int __res = 1;							\
-+	Elf64_Ehdr *__h = (hdr);					\
-+									\
-+	if (__h->e_machine != EM_MIPS)					\
-+		__res = 0;						\
-+	if (__h->e_ident[EI_CLASS] != ELFCLASS64)			\
-+		__res = 0;						\
-+									\
-+	__res;								\
-+})
-+
-+#define vmcore_elf64_check_arch(x)	(elf_check_arch_64(x) || vmcore_elf_check_arch_cross(x))
-+
-+#ifdef CONFIG_32BIT
-+
-+/*
-+ * In order to be sure that we don't attempt to execute an O32 binary which
-+ * requires 64 bit FP (FR=1) on a system which does not support it we refuse
-+ * to execute any binary which has bits specified by the following macro set
-+ * in its ELF header flags.
-+ */
-+#ifdef CONFIG_MIPS_O32_FP64_SUPPORT
-+# define __MIPS_O32_FP64_MUST_BE_ZERO	0
-+#else
-+# define __MIPS_O32_FP64_MUST_BE_ZERO	EF_MIPS_FP64
-+#endif
-+
-+/*
-+ * This is used to ensure we don't load something for the wrong architecture.
-+ */
-+#define elf_check_arch(x)	elf_check_arch_32(x)
-+
- /*
-  * These are used to set parameters in the core dumps.
-  */
-@@ -253,18 +270,7 @@ struct mips_elf_abiflags_v0 {
- /*
-  * This is used to ensure we don't load something for the wrong architecture.
-  */
--#define elf_check_arch(hdr)						\
--({									\
--	int __res = 1;							\
--	struct elfhdr *__h = (hdr);					\
--									\
--	if (__h->e_machine != EM_MIPS)					\
--		__res = 0;						\
--	if (__h->e_ident[EI_CLASS] != ELFCLASS64)			\
--		__res = 0;						\
--									\
--	__res;								\
--})
-+#define elf_check_arch(x)	elf_check_arch_64(x)
- 
- /*
-  * These are used to set parameters in the core dumps.
--- 
-2.5.0
-
+--=20
+M=E5ns Rullg=E5rd

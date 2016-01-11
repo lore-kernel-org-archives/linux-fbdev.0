@@ -1,58 +1,71 @@
-From: Daniel Wagner <daniel.wagner@bmw-carit.de>
-Date: Fri, 29 Jan 2016 14:03:25 +0000
-Subject: [PATCH tip v7 4/7] kbuild: Add option to turn incompatible pointer check into error
-Message-Id: <1454076208-28354-5-git-send-email-daniel.wagner@bmw-carit.de>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 11 Jan 2016 06:40:05 +0000
+Subject: Re: [PATCH] backlight: gpio-backlight: use default-on on GPIO request
+Message-Id: <20160111064005.GU3331@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1454076208-28354-1-git-send-email-daniel.wagner@bmw-carit.de>
-In-Reply-To: <1454076208-28354-1-git-send-email-daniel.wagner@bmw-carit.de>
+References: <1445643883-30726-1-git-send-email-stefan@agner.ch>
+In-Reply-To: <1445643883-30726-1-git-send-email-stefan@agner.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-mips@linux-mips.org, Marcelo Tosatti <mtosatti@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>, Boqun Feng <boqun.feng@gmail.com>, Maik Broemme <mbroemme@plusserver.de>, Ralf Baechle <ralf@linux-mips.org>, Daniel Wagner <daniel.wagner@bmw-carit.de>
+To: Stefan Agner <stefan@agner.ch>
+Cc: jingoohan1@gmail.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-With the introduction of the simple wait API we have two very
-similar APIs in the kernel. For example wake_up() and swake_up()
-is only one character away. Although the compiler will warn
-happily the wrong usage it keeps on going an even links the kernel.
-Thomas and Peter would rather like to see early missuses reported
-as error early on.
+On Fri, 23 Oct 2015, Stefan Agner wrote:
 
-In a first attempt we tried to wrap all swait and wait calls
-into a macro which has an compile time type assertion. The result
-was pretty ugly and wasn't able to catch all wrong usages.
-woken_wake_function(), autoremove_wake_function() and wake_bit_function()
-are assigned as function pointers. Wrapping them with a macro around is
-not possible. Prefixing them with '_' was also not a real option
-because there some users in the kernel which do use them as well.
-All in all this attempt looked to intrusive and too ugly.
+> There are situations where the backlight should be on at boot time
+> (e.g. if the boot loader already turned the display on). The DT
+> bindings specify the "default-on" property for that purpose.
+> Currently, the initial state of the GPIO at request time is always
+> set to logical off (high or low depending on whether it is an
+> active high or low GPIO). Since the GPIO is requested as an output,
+> the GPIO will be driven low for a short period of time, which leads
+> to a flickering display in the above use-case.
+>=20
+> Initialize the GPIO depending on the default-on property to be
+> logical on or off.
+>=20
+> Signed-off-by: Stefan Agner <stefan@agner.ch>
+> ---
+>  drivers/video/backlight/gpio_backlight.c | 10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
 
-An alternative is to turn the pointer type check into an error which
-catches wrong type uses. Obviously not only the swait/wait ones. That
-isn't a bad thing either.
+Applied, thanks.
 
-Signed-off-by: Daniel Wagner <daniel.wagner@bmw-carit.de>
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- Makefile | 3 +++
- 1 file changed, 3 insertions(+)
+> diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/bac=
+klight/gpio_backlight.c
+> index 5fbbc2e..1813441 100644
+> --- a/drivers/video/backlight/gpio_backlight.c
+> +++ b/drivers/video/backlight/gpio_backlight.c
+> @@ -89,6 +89,7 @@ static int gpio_backlight_probe(struct platform_device =
+*pdev)
+>  	struct backlight_device *bl;
+>  	struct gpio_backlight *gbl;
+>  	struct device_node *np =3D pdev->dev.of_node;
+> +	unsigned long flags =3D GPIOF_DIR_OUT;
+>  	int ret;
+> =20
+>  	if (!pdata && !np) {
+> @@ -114,9 +115,12 @@ static int gpio_backlight_probe(struct platform_devi=
+ce *pdev)
+>  		gbl->def_value =3D pdata->def_value;
+>  	}
+> =20
+> -	ret =3D devm_gpio_request_one(gbl->dev, gbl->gpio, GPIOF_DIR_OUT |
+> -				    (gbl->active ? GPIOF_INIT_LOW
+> -						 : GPIOF_INIT_HIGH),
+> +	if (gbl->active)
+> +		flags |=3D gbl->def_value ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW;
+> +	else
+> +		flags |=3D gbl->def_value ? GPIOF_INIT_LOW : GPIOF_INIT_HIGH;
+> +
+> +	ret =3D devm_gpio_request_one(gbl->dev, gbl->gpio, flags,
+>  				    pdata ? pdata->name : "backlight");
+>  	if (ret < 0) {
+>  		dev_err(&pdev->dev, "unable to request GPIO\n");
 
-diff --git a/Makefile b/Makefile
-index 9d94ade..adfb6a08 100644
---- a/Makefile
-+++ b/Makefile
-@@ -767,6 +767,9 @@ KBUILD_CFLAGS   +=3D $(call cc-option,-Werror=3Dstrict-=
-prototypes)
- # Prohibit date/time macros, which would make the build non-deterministic
- KBUILD_CFLAGS   +=3D $(call cc-option,-Werror=DAte-time)
-=20
-+# enforce correct pointer usage
-+KBUILD_CFLAGS   +=3D $(call cc-option,-Werror=3Dincompatible-pointer-types)
-+
- # use the deterministic mode of AR if available
- KBUILD_ARFLAGS :=3D $(call ar-option,D)
-=20
 --=20
-2.5.0
-
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

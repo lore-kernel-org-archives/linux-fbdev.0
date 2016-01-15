@@ -1,59 +1,52 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 11 Jan 2016 06:08:34 +0000
-Subject: Re: [PATCH v2] backlight: tps65217_bl: Add MODULE_DEVICE_TABLE.
-Message-Id: <20160111060834.GM3331@x1>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Fri, 15 Jan 2016 18:24:52 +0000
+Subject: Re: [PATCH v4 10/11] dma: rename dma_*_writecombine() to dma_*_wc()
+Message-Id: <CAB=NE6UucJOwy3O58Oydoy_yR_05k0ebbBXpFVcNWM_g6ez-aA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1448814586-17117-1-git-send-email-enric.balletbo@collabora.com>
-In-Reply-To: <1448814586-17117-1-git-send-email-enric.balletbo@collabora.com>
+References: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
+ <1440443613-13696-11-git-send-email-mcgrof@do-not-panic.com>
+ <20150825075318.GA2735@gmail.com> <20150825154837.GL8051@wotan.suse.de>
+ <20150825134358.990073a55012c60a638b3144@linux-foundation.org>
+ <20150825231912.GW8051@wotan.suse.de> <20150825162540.0591c8c8276b1ff279785e49@linux-foundation.org>
+ <20150826042136.GA14584@gmail.com>
+In-Reply-To: <20150826042136.GA14584@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Enric Balletbo i Serra <eballetbo@gmail.com>
-Cc: devicetree@vger.kernel.org, jingoohan1@gmail.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Ingo Molnar <mingo@kernel.org>, Julia Lawall <julia.lawall@lip6.fr>
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Howells <dhowells@redhat.com>, Borislav Petkov <bp@suse.de>, Bjorn Helgaas <bhelgaas@google.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Airlie <airlied@linux.ie>, linux-fbdev <linux-fbdev@vger.kernel.org>, Andy Lutomirski <luto@amacapital.net>, vinod.koul@intel.com, Dan Williams <dan.j.williams@intel.com>, Toshi Kani <toshi.kani@hp.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Michael S. Tsirkin" <mst@redhat.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, X86 ML <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>
 
-On Sun, 29 Nov 2015, Enric Balletbo i Serra wrote:
+On Tue, Aug 25, 2015 at 9:21 PM, Ingo Molnar <mingo@kernel.org> wrote:
+>
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>> > There's a catch-22 issue here either way, for instance this rename patch has
+>> > been being baked for probably 2 releases already but the difficulty has been
+>> > trying to find the appropriate time to merge it without conflict.
+>> >
+>> > If you do it in the beginning of the merge window, you have to ask yourself in
+>> > what tree it will be done. Since subsystems are topic specific that means that
+>> > subsystem will end up having a conflict at the end of the merge window.
+>>
+>> Yes it's a special case.  I think the best way of handling such things is to get
+>> them in to Linus either right at the end of the merge window or the day after he
+>> releases -rc1.  This is when most people's trees are mostly empty.
+>
+> Yes, that was the plan last time around as well - but the end of the merge window
+> is when we have the least maintainer bandwidth as well ...
+>
+> Anyway, I applied most of the patches (sans the rename), so the rename patch
+> should be a lot simpler to execute at the right moment this time around.
 
-> The device table is required to load modules based on modaliases.
->=20
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
-> Changes since last version:
-> - Use of_match_ptr (Lee Jones)
->=20
->  drivers/video/backlight/tps65217_bl.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
+Ingo, should we try this again some time? I have some ideas on how to
+make these sorts of changes easier to manage in the future, it
+involves having an automatic git rebase option to use Coccinelle for
+you if a patch is annotated to have been completely done with
+Coccinelle, but future tooling is needed for that [0]. In the meantime
+I (or you) can simply run the script at any point in time to catch all
+the names as-is in the kernel / point in time we decide to merge this
+simple rename.
 
-Applied, thanks.
+[0] http://kernelnewbies.org/KernelProjects/linux-oven
 
-> diff --git a/drivers/video/backlight/tps65217_bl.c b/drivers/video/backli=
-ght/tps65217_bl.c
-> index 61d72bf..fd524ad 100644
-> --- a/drivers/video/backlight/tps65217_bl.c
-> +++ b/drivers/video/backlight/tps65217_bl.c
-> @@ -320,10 +320,19 @@ static int tps65217_bl_probe(struct platform_device=
- *pdev)
->  	return 0;
->  }
-> =20
-> +#ifdef CONFIG_OF
-> +static const struct of_device_id tps65217_bl_of_match[] =3D {
-> +	{ .compatible =3D "ti,tps65217-bl", },
-> +	{ /* sentinel */ },
-> +};
-> +MODULE_DEVICE_TABLE(of, tps65217_bl_of_match);
-> +#endif
-> +
->  static struct platform_driver tps65217_bl_driver =3D {
->  	.probe		=3D tps65217_bl_probe,
->  	.driver		=3D {
->  		.name	=3D "tps65217-bl",
-> +		.of_match_table =3D of_match_ptr(tps65217_bl_of_match),
->  	},
->  };
-> =20
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+ Luis

@@ -1,40 +1,44 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Sun, 24 Jan 2016 20:50:46 +0000
-Subject: Re: [PATCH] staging: sm750fb: cleanup: fix brace placement
-Message-Id: <20160124205046.GA8292@kroah.com>
+From: Julian Scheel <julian@jusst.de>
+Date: Mon, 18 Jan 2016 20:20:10 +0000
+Subject: Re: [PATCH] fbdev: ssd1307fb: Fix chargepump setting
+Message-Id: <569D48FA.8080307@jusst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1453246935-5037-1-git-send-email-charles.rose.linux@gmail.com>
-In-Reply-To: <1453246935-5037-1-git-send-email-charles.rose.linux@gmail.com>
+References: <1447337257-31232-1-git-send-email-julian@jusst.de>
+In-Reply-To: <1447337257-31232-1-git-send-email-julian@jusst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Fri, Jan 22, 2016 at 01:45:18PM -0500, Charles Rose wrote:
-> On 01/19/2016 06:42 PM, Charles Rose wrote:
-> >Fix brace placement warnings caught by checkpatch.pl.
-> >
-> >Signed-off-by: Charles Rose <charles.rose.linux@gmail.com>
-> >---
-> >  drivers/staging/sm750fb/sm750_cursor.c | 3 +--
-> >  1 file changed, 1 insertion(+), 2 deletions(-)
-> >
-> >diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-> >index 3b7ce92..cab891c 100644
-> >--- a/drivers/staging/sm750fb/sm750_cursor.c
-> >+++ b/drivers/staging/sm750fb/sm750_cursor.c
-> >@@ -143,8 +143,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
-> >  		iowrite16(data, pbuffer);
-> >
-> >  		/* assume pitch is 1,2,4,8,...*/
-> >-		if ((i+1) % pitch = 0)
-> >-		{
-> >+		if ((i+1) % pitch = 0) {
-> >  			/* need a return */
-> >  			pstart += offset;
-> >  			pbuffer = pstart;
-> >
-> 
-> Missed copying Greg KH on this.
+On 15.11.15 14:36, Julian Scheel wrote:
+> The charge pump setting must have bit D4 set all time according to the SSD1306
+> App Note. Instead of doing an logical and off shifted setting bit with 0x14 it
+> must be an logical or with 0x10 to ensure D4 is set.
+>
+> Signed-off-by: Julian Scheel <julian@jusst.de>
+> ---
+>   drivers/video/fbdev/ssd1307fb.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+> index 1611215..5965a9b 100644
+> --- a/drivers/video/fbdev/ssd1307fb.c
+> +++ b/drivers/video/fbdev/ssd1307fb.c
+> @@ -389,7 +389,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+>   		return ret;
+>
+>   	ret = ssd1307fb_write_cmd(par->client,
+> -		(par->device_info->need_chargepump & 0x1 << 2) & 0x14);
+> +		0x10 | ((par->device_info->need_chargepump & 0x01) << 2));
+>   	if (ret < 0)
+>   		return ret;
+>
+>
 
-I can't do anything with a forwarded patch like this :(
++ Adding Jean-Christophe and Tomi in CC as maintainers and Thomas as the 
+one who did last major changes to the driver.
+
+Any objections on this patch?
+
+Regards,
+Julian

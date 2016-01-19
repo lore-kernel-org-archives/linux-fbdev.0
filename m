@@ -1,73 +1,65 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 12 Jan 2016 13:39:06 +0000
-Subject: Re: [RESEND PATCH 1/2] devicetree: mxsfb: add reset-active property
-Message-Id: <569501FA.2060304@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Xef7RdBgTfRQcRS1LiGXW07UaemInVVR6"
+From: Ingo Molnar <mingo@kernel.org>
+Date: Tue, 19 Jan 2016 11:13:45 +0000
+Subject: Re: [PATCH v4 10/11] dma: rename dma_*_writecombine() to dma_*_wc()
+Message-Id: <20160119111345.GA16880@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1452594141-26073-1-git-send-email-mans@mansr.com>
- <5694F51C.7040107@ti.com> <yw1x7fjfuenu.fsf@unicorn.mansr.com>
-In-Reply-To: <yw1x7fjfuenu.fsf-OEaqT8BN2ezZK2NkWkPsZwC/G2K4zDHf@public.gmane.org>
-To: =?UTF-8?B?TcOlbnMgUnVsbGfDpXJk?= <mans-2StjZFpD7GcAvxtiuMwx3w@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-
---Xef7RdBgTfRQcRS1LiGXW07UaemInVVR6
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-
-
-On 12/01/16 15:10, M=C3=A5ns Rullg=C3=A5rd wrote:
-
->> I don't see any sleeps related to reset in the code. If reset is
->> asserted when the display is blanked, is it guaranteed that the reset
->> stays asserted long enough until the display is enabled again?
->=20
-> In the datasheet for the panel I'm dealing with, there's some vague
-> mention of 10 us (I missed it last time I looked), and my patch indeed
-> fails to ensure this is met.  Other panels will obviously have differen=
-t
-> requirements.  To handle all cases properly, I suppose a configurable
-> delay after changing the reset pin should be added.
-
-Right. And then you need to ensure the powers are enabled in the right
-order, the pixel clock is started at the right time (some need pix clock
-before reset), and so on and so on =3D).
-
-> I could also take the lazy way out, pinmux this signal high and leave i=
-t
-> at that.
-
-I've seen panels that require a reset after powers have been off, or
-similar, but I hope those are minority.
-
-So yes, probably just making sure the reset is not asserted is the most
-generic and easy way forward.
-
- Tomi
+References: <1440443613-13696-1-git-send-email-mcgrof@do-not-panic.com>
+ <1440443613-13696-11-git-send-email-mcgrof@do-not-panic.com>
+ <20150825075318.GA2735@gmail.com>
+ <20150825154837.GL8051@wotan.suse.de>
+ <20150825134358.990073a55012c60a638b3144@linux-foundation.org>
+ <20150825231912.GW8051@wotan.suse.de>
+ <20150825162540.0591c8c8276b1ff279785e49@linux-foundation.org>
+ <20150826042136.GA14584@gmail.com>
+ <CAB=NE6UucJOwy3O58Oydoy_yR_05k0ebbBXpFVcNWM_g6ez-aA@mail.gmail.com>
+In-Reply-To: <CAB=NE6UucJOwy3O58Oydoy_yR_05k0ebbBXpFVcNWM_g6ez-aA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Cc: Julia Lawall <julia.lawall@lip6.fr>, Andrew Morton <akpm@linux-foundation.org>, David Howells <dhowells@redhat.com>, Borislav Petkov <bp@suse.de>, Bjorn Helgaas <bhelgaas@google.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Airlie <airlied@linux.ie>, linux-fbdev <linux-fbdev@vger.kernel.org>, Andy Lutomirski <luto@amacapital.net>, vinod.koul@intel.com, Dan Williams <dan.j.williams@intel.com>, Toshi Kani <toshi.kani@hp.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Michael S. Tsirkin" <mst@redhat.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, X86 ML <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>
 
 
---Xef7RdBgTfRQcRS1LiGXW07UaemInVVR6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+* Luis R. Rodriguez <mcgrof@do-not-panic.com> wrote:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+> On Tue, Aug 25, 2015 at 9:21 PM, Ingo Molnar <mingo@kernel.org> wrote:
+> >
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> >> > There's a catch-22 issue here either way, for instance this rename patch has
+> >> > been being baked for probably 2 releases already but the difficulty has been
+> >> > trying to find the appropriate time to merge it without conflict.
+> >> >
+> >> > If you do it in the beginning of the merge window, you have to ask yourself in
+> >> > what tree it will be done. Since subsystems are topic specific that means that
+> >> > subsystem will end up having a conflict at the end of the merge window.
+> >>
+> >> Yes it's a special case.  I think the best way of handling such things is to get
+> >> them in to Linus either right at the end of the merge window or the day after he
+> >> releases -rc1.  This is when most people's trees are mostly empty.
+> >
+> > Yes, that was the plan last time around as well - but the end of the merge window
+> > is when we have the least maintainer bandwidth as well ...
+> >
+> > Anyway, I applied most of the patches (sans the rename), so the rename patch
+> > should be a lot simpler to execute at the right moment this time around.
+> 
+> Ingo, should we try this again some time? I have some ideas on how to
+> make these sorts of changes easier to manage in the future, it
+> involves having an automatic git rebase option to use Coccinelle for
+> you if a patch is annotated to have been completely done with
+> Coccinelle, but future tooling is needed for that [0]. In the meantime
+> I (or you) can simply run the script at any point in time to catch all
+> the names as-is in the kernel / point in time we decide to merge this
+> simple rename.
+> 
+> [0] http://kernelnewbies.org/KernelProjects/linux-oven
 
-iQIcBAEBCAAGBQJWlQH6AAoJEPo9qoy8lh71sogP/3frrmFZkgzKymU1ki3l0KM4
-fG7NlbfLUz+2666JEEyJUb9AEyg4UMqWfVF5O09A1UkKx50lKrNBmee1YpA40SpB
-uQ+O080o4OpafZ34sOej/eaG00+wwCDh8U8mDMtu5h+ckiEaHD4eZNih5mgaxBA9
-ScsQRB7QBSBopePnNv15sB+AjheEeGF9dT9YCy7WrjwQleMnZAEXxRBaeBhXAaHZ
-WXiK7a5xOZ1nUQCiBMJP9fN+fHIpvCPdPgfZweBc2xyC5RGBKCCL0972Ddhoz3VB
-ODZEN+TRckBTIJW2RTeYbkwy5LYbcqlxjkqU69XIbpnTWD+iSTGuF1hHiolPR7LX
-urN2F5Cj4TqOcN9nb6611XzWOaOb6aimU7Wvh84dfqaHRQLsrboB+T2b4KN157t6
-319MbXvx/vwRHmNPUx/3Ubk7wosVA5W+WGp+OeClSyP7N+LPHRwRy8mxKBryCIV/
-fNk77ny4UFxYfauUFAUcDll8h0QFhbzZ9I6LTtJlC8ad0b/i5Hm5gMdZ04MA9AjH
-Pgk0VkxvwifNgp7KHpXB+ehqzxo3o897Z0usZJQA+92GGPuE5hTKbOFWjmUfLoK/
-kwL5Wf5WSM52i3EUlmfxwZtBg46MDQRBt2Q7XUv7fZdcDrkH+qYEibyDN0Wqevb+
-0jkMi7TvX/ZRD3FXNbZV
-=vxC0
------END PGP SIGNATURE-----
+So beyond the rename, can we also keep the old names as compatibility helpers, 
+with a #define mapping them to the new names?
 
---Xef7RdBgTfRQcRS1LiGXW07UaemInVVR6--
+If so then please (re-)send the changes.
+
+Thanks,
+
+	Ingo

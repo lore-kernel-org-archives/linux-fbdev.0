@@ -1,17 +1,37 @@
-From: "Mrs Machiko Kumiko" <mrsmachiko_kumiko@excite.co.jp>
-Date: Fri, 29 Jan 2016 11:59:04 +0000
-Subject: Yours Truely Mrs Machiko Kumiko
-Message-Id: <1454068744.8221001440.email@email.excite.co.jp>
+From: Charles Rose <charles.rose.linux@gmail.com>
+Date: Sun, 24 Jan 2016 22:36:43 +0000
+Subject: [RESEND PATCH] staging: sm750fb: cleanup: fix brace placement
+Message-Id: <1453675003-3688-1-git-send-email-charles.rose.linux@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: mrsmachiko_kumiko@excite.co.jp
+To: linux-fbdev@vger.kernel.org
 
-Hi Dear, 
+Fix brace placement warnings caught by checkpatch.pl.
 
-I am Mrs Machiko Kumiko, from Japan, I Have Been Diagnosed with esophageal Cancer. 
-I Have Chosen you to distribute my Funds to Charities homes in your Country, 
-so if you wish to Carry out this humanitarian Work kindly Get back to me for FURTHER details. 
+Signed-off-by: Charles Rose <charles.rose.linux@gmail.com>
+---
+This is a resend of the original patch posted on 20160119 where my
+recepient list was incomplete.
 
-Yours Truely Mrs Machiko Kumiko
+ drivers/staging/sm750fb/sm750_cursor.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 3b7ce92..cab891c 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -143,8 +143,7 @@ void hw_cursor_setData(struct lynx_cursor *cursor,
+ 		iowrite16(data, pbuffer);
+ 
+ 		/* assume pitch is 1,2,4,8,...*/
+-		if ((i+1) % pitch = 0)
+-		{
++		if ((i+1) % pitch = 0) {
+ 			/* need a return */
+ 			pstart += offset;
+ 			pbuffer = pstart;
+-- 
+2.5.0
+

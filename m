@@ -1,66 +1,58 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 11 Jan 2016 07:57:40 +0000
-Subject: Re: [PATCH] backlight: adp8860: fix another uninitialized variable use
-Message-Id: <20160111075740.GP3331@x1>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 25 Jan 2016 15:05:18 +0000
+Subject: [PATCH] fbdev: da8xx-fb: remove incorrect type cast
+Message-Id: <1453734351-1958373-1-git-send-email-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <3284846.T0rzz6n1As@wuerfel>
-In-Reply-To: <3284846.T0rzz6n1As@wuerfel>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Mon, 30 Nov 2015, Arnd Bergmann wrote:
+The probe function correct passes a dma_addr_t pointer into
+dma_alloc_coherent(), but has a cast to resource_size_t, which
+might be different from dma_addr_t:
 
-> A recent patch I did fixed two potential uses of uninitialized
-> variables in the adp8870 and adp8860 drivers. Unfortunately,
-> I missed another one:
->=20
-> drivers/video/backlight/adp8860_bl.c: In function 'adp8860_bl_ambient_lig=
-ht_level_show':
-> drivers/video/backlight/adp8860_bl.c:570:11: warning: 'reg_val' may be us=
-ed uninitialized in this function
->=20
-> This does the same change as before in one additional function,
-> and also changes the check for the return value in a way that
-> avoids another false positive warning with a similar message.
->=20
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 6be3a5a9cd91 ("backlight: adp88x0: Fix uninitialized variable use")
-> ---
-> Sorry for missing this third hunk the first time around.
+drivers/video/fbdev/da8xx-fb.c: In function 'fb_probe':
+drivers/video/fbdev/da8xx-fb.c:1431:10: error: passing argument 3 of 'dma_alloc_coherent' from incompatible pointer type [-Werror=incompatible-pointer-types]
 
-Where's your diff?
+This removes the cast, which avoids the warning.
 
-Applied anyway, thanks.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/da8xx-fb.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlig=
-ht/adp8860_bl.c
-> index f0d4c0324580..510e559c060e 100644
-> --- a/drivers/video/backlight/adp8860_bl.c
-> +++ b/drivers/video/backlight/adp8860_bl.c
-> @@ -566,11 +566,13 @@ static ssize_t adp8860_bl_ambient_light_level_show(=
-struct device *dev,
-> =20
->  	mutex_lock(&data->lock);
->  	error =3D adp8860_read(data->client, ADP8860_PH1LEVL, &reg_val);
-> -	ret_val =3D reg_val;
-> -	error |=3D adp8860_read(data->client, ADP8860_PH1LEVH, &reg_val);
-> +	if (!error) {
-> +		ret_val =3D reg_val;
-> +		error =3D adp8860_read(data->client, ADP8860_PH1LEVH, &reg_val);
-> +	}
->  	mutex_unlock(&data->lock);
-> =20
-> -	if (error < 0)
-> +	if (error)
->  		return error;
-> =20
->  	/* Return 13-bit conversion value for the first light sensor */
->=20
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index 0081725c6b5b..6b2a06d09f2b 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -152,7 +152,7 @@ static void lcdc_write(unsigned int val, unsigned int addr)
+ 
+ struct da8xx_fb_par {
+ 	struct device		*dev;
+-	resource_size_t p_palette_base;
++	dma_addr_t		p_palette_base;
+ 	unsigned char *v_palette_base;
+ 	dma_addr_t		vram_phys;
+ 	unsigned long		vram_size;
+@@ -1428,7 +1428,7 @@ static int fb_probe(struct platform_device *device)
+ 
+ 	par->vram_virt = dma_alloc_coherent(NULL,
+ 					    par->vram_size,
+-					    (resource_size_t *) &par->vram_phys,
++					    &par->vram_phys,
+ 					    GFP_KERNEL | GFP_DMA);
+ 	if (!par->vram_virt) {
+ 		dev_err(&device->dev,
+@@ -1448,7 +1448,7 @@ static int fb_probe(struct platform_device *device)
+ 
+ 	/* allocate palette buffer */
+ 	par->v_palette_base = dma_zalloc_coherent(NULL, PALETTE_SIZE,
+-						  (resource_size_t *)&par->p_palette_base,
++						  &par->p_palette_base,
+ 						  GFP_KERNEL | GFP_DMA);
+ 	if (!par->v_palette_base) {
+ 		dev_err(&device->dev,
+-- 
+2.7.0
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

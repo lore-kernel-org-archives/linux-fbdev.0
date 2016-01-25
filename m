@@ -1,41 +1,67 @@
-From: Rob Clark <robdclark@gmail.com>
-Date: Thu, 28 Jan 2016 15:42:18 +0000
-Subject: Re: Whats missing in my new FB DRM driver in ARC... waiting for console_lock to return
-Message-Id: <CAF6AEGuKyDY29V-3Kx4Fbs1ODubuoW4M9uLjPgXiWgy=P03ZKw@mail.gmail.com>
+From: Doug Anderson <dianders@google.com>
+Date: Mon, 25 Jan 2016 16:28:31 +0000
+Subject: Re: [PATCH v3 00/12] pwm: add support for atomic update
+Message-Id: <CAD=FV=WL3jYEgVe-m6QcAyQwfJgdX4J5OtKisKwyoKOrTSpEQA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5684268E.2000607@synopsys.com>
- <CAGd==071hzpQKjLU715tc004NN0d8Z01XdLAhg-DBx1FxtWb2w@mail.gmail.com>
- <569CF78F.7050303@synopsys.com> <569CFA9B.4060108@synopsys.com>
- <CAGd==07ffJAfAtzirALR3OF7f4UDVu_fJbbZ0ZiEa3F5-hLfyw@mail.gmail.com>
- <569E5E51.8000303@synopsys.com> <569E69EB.3010003@synopsys.com>
- <CAGd==04VMKUvb6hZkeNw3kAQt04y0d_Ry7oCtC8=2SWcfWG25A@mail.gmail.com>
- <56A11EF1.3070004@synopsys.com> <56A123CD.1060706@synopsys.com>
- <1453990837.4304.15.camel@synopsys.com>
-In-Reply-To: <1453990837.4304.15.camel@synopsys.com>
+References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
+ <2341981.a79ioYM9Es@diego> <20151110173416.GB21727@ulmo>
+In-Reply-To: <20151110173416.GB21727@ulmo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alexey Brodkin <Alexey.Brodkin@synopsys.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Vineet Gupta <Vineet.Gupta1@synopsys.com>, Carlos Palminha <CARLOS.PALMINHA@synopsys.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "tomi.valkeinen@ti.com" <tomi.valkeinen@ti.com>, "laurent.pinchart@ideasonboard.com" <laurent.pinchart@ideasonboard.com>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Jan 28, 2016 at 9:20 AM, Alexey Brodkin
-<Alexey.Brodkin@synopsys.com> wrote:
-> Hi Carlos,
->
-> On Thu, 2016-01-21 at 18:30 +0000, Carlos Palminha wrote:
->> hi...
+Thierry and Boris,
+
+On Tue, Nov 10, 2015 at 9:34 AM, Thierry Reding
+<thierry.reding@gmail.com> wrote:
+> On Mon, Oct 19, 2015 at 12:12:12PM +0200, Heiko St=C3=BCbner wrote:
+>> Hi Thierry,
 >>
->> i just found that its blocking waiting for console_lock...
->> @vineet, alexey: i think that console_lock is architecture dependent right? Do you know any issue with console_lock
->> for ARC?
+>> Am Montag, 21. September 2015, 11:33:17 schrieb Boris Brezillon:
+>> > Hello,
+>> >
+>> > This series adds support for atomic PWM update, or IOW, the capability
+>> > to update all the parameters of a PWM device (enabled/disabled, period,
+>> > duty and polarity) in one go.
+>>
+>> is anything more blocking this series? It's now sitting on the lists for
+>> nearly a month and everybody seems happy with it, so it would be really =
+nice
+>> to have in mainline :-) .
+>>
+>> Especially as this also makes it possible for Rockchip Chromebooks to ac=
+tually
+>> control the logic-regulator that is implemented as pwm-regulator there.
 >
-> I'm not really sure "console_lock" has something to do with ARC architecture.
-> At least "git grep bconsole_lock" doesn't find anything in "arch/arc".
->
-> So I'd assume this is a generic thing.
->
+> Last time I tried to put this into linux-next I got immediately
+> bombarded by a number of build failures, so I backed things out. The
+> current plan is to give this another try after v4.4-rc1.
 
-it is a generic thing..  all arch's are afflicted by console_lock..
+We're now into the 4.5 timeframe.  Does anyone have a concrete set of
+things that need to happen before this patch series makes it into
+mainline?
 
-BR,
--R
+From searching I see that the latest version of this series is v4 and
+there are a smattering of comments on the 24-patch series.  Presumably
+a v5 needs to be posted to address those things.
+
+...but it looks like the big sticking point is that Boris is waiting
+for a response to his questions in
+<https://patchwork.kernel.org/patch/7622881/>.  Thierry: can you give
+Boris some direction for what else he needs to do?  We need to come up
+with _some_ solution since this series gets us much better support for
+PWM regulators.  Without this series or some other solution, PWM
+regulators aren't usable in mainline on any system that uses them for
+system-critical rails.  Nearly all Rockchip reference boards and
+shipping devices uses a PWM regulator for the system-critidal "logic"
+rail.  That means any patches which need to change this rail in Linux
+are blocked.
+
+If there's already been off-list discussion and Boris already knows
+what the next steps are then my apologies and I'll wait patiently for
+the next series.  ;)
+
+Thanks!
+
+-Doug

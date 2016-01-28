@@ -1,7 +1,7 @@
-From: Daniel Stone <daniel@fooishbar.org>
-Date: Fri, 22 Jan 2016 08:32:13 +0000
+From: Alexey Brodkin <Alexey.Brodkin@synopsys.com>
+Date: Thu, 28 Jan 2016 14:20:37 +0000
 Subject: Re: Whats missing in my new FB DRM driver in ARC... waiting for console_lock to return
-Message-Id: <CAPj87rMTLYiEG=4=P9D9kS1eC2BU5dL-4XjKncXanz79E-EutQ@mail.gmail.com>
+Message-Id: <1453990837.4304.15.camel@synopsys.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <5684268E.2000607@synopsys.com>
  <CAGd==071hzpQKjLU715tc004NN0d8Z01XdLAhg-DBx1FxtWb2w@mail.gmail.com>
@@ -15,20 +15,14 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Carlos Palminha <CARLOS.PALMINHA@synopsys.com>
-Cc: linux-fbdev@vger.kernel.org, Vineet Gupta <Vineet.Gupta1@synopsys.com>, Alexey Brodkin <Alexey.Brodkin@synopsys.com>, dri-devel <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "xinliang.liu@linaro.org" <xinliang.liu@linaro.org>, Vineet Gupta <Vineet.Gupta1@synopsys.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "tomi.valkeinen@ti.com" <tomi.valkeinen@ti.com>, "laurent.pinchart@ideasonboard.com" <laurent.pinchart@ideasonboard.com>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>
 
-Hi,
-
-On 21 January 2016 at 18:30, Carlos Palminha
-<CARLOS.PALMINHA@synopsys.com> wrote:
-> i just found that its blocking waiting for console_lock...
-> @vineet, alexey: i think that console_lock is architecture dependent right? Do you know any issue with console_lock for ARC?
-
-Once console_lock is acquired, you will not see any further prints
-whilst it is held. Likely your driver is hanging/crashing whilst
-holding console_lock, which you don't see. See the patch just sent to
-the list to document how to debug issues which happen under
-console_lock.
-
-Cheers,
-Daniel
+SGkgQ2FybG9zLA0KDQpPbiBUaHUsIDIwMTYtMDEtMjEgYXQgMTg6MzAgKzAwMDAsIENhcmxvcyBQ
+YWxtaW5oYSB3cm90ZToNCj4gaGkuLi4NCj4gDQo+IGkganVzdCBmb3VuZCB0aGF0IGl0cyBibG9j
+a2luZyB3YWl0aW5nIGZvciBjb25zb2xlX2xvY2suLi4NCj4gQHZpbmVldCwgYWxleGV5OiBpIHRo
+aW5rIHRoYXQgY29uc29sZV9sb2NrIGlzIGFyY2hpdGVjdHVyZSBkZXBlbmRlbnQgcmlnaHQ/IERv
+IHlvdSBrbm93IGFueSBpc3N1ZSB3aXRoIGNvbnNvbGVfbG9jaw0KPiBmb3IgQVJDPw0KDQpJJ20g
+bm90IHJlYWxseSBzdXJlICJjb25zb2xlX2xvY2siIGhhcyBzb21ldGhpbmcgdG8gZG8gd2l0aCBB
+UkMgYXJjaGl0ZWN0dXJlLg0KQXQgbGVhc3QgImdpdCBncmVwIGJjb25zb2xlX2xvY2siIGRvZXNu
+J3QgZmluZCBhbnl0aGluZyBpbiAiYXJjaC9hcmMiLg0KDQpTbyBJJ2QgYXNzdW1lIHRoaXMgaXMg
+YSBnZW5lcmljIHRoaW5nLg0KDQotQWxleGV5

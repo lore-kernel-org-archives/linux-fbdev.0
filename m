@@ -1,58 +1,63 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 25 Jan 2016 15:05:18 +0000
-Subject: [PATCH] fbdev: da8xx-fb: remove incorrect type cast
-Message-Id: <1453734351-1958373-1-git-send-email-arnd@arndb.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 29 Jan 2016 11:42:40 +0000
+Subject: Re: [PATCH] fbdev: da8xx-fb: remove incorrect type cast
+Message-Id: <56AB5030.5040203@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="qoQGWTxVrrKd8ESPkFqvB958xkF6dXWmD"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1453734351-1958373-1-git-send-email-arnd@arndb.de>
+In-Reply-To: <1453734351-1958373-1-git-send-email-arnd@arndb.de>
 To: linux-arm-kernel@lists.infradead.org
 
-The probe function correct passes a dma_addr_t pointer into
-dma_alloc_coherent(), but has a cast to resource_size_t, which
-might be different from dma_addr_t:
+--qoQGWTxVrrKd8ESPkFqvB958xkF6dXWmD
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-drivers/video/fbdev/da8xx-fb.c: In function 'fb_probe':
-drivers/video/fbdev/da8xx-fb.c:1431:10: error: passing argument 3 of 'dma_alloc_coherent' from incompatible pointer type [-Werror=incompatible-pointer-types]
 
-This removes the cast, which avoids the warning.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/video/fbdev/da8xx-fb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On 25/01/16 17:05, Arnd Bergmann wrote:
+> The probe function correct passes a dma_addr_t pointer into
+> dma_alloc_coherent(), but has a cast to resource_size_t, which
+> might be different from dma_addr_t:
+>=20
+> drivers/video/fbdev/da8xx-fb.c: In function 'fb_probe':
+> drivers/video/fbdev/da8xx-fb.c:1431:10: error: passing argument 3 of 'd=
+ma_alloc_coherent' from incompatible pointer type [-Werror=3Dincompatible=
+-pointer-types]
+>=20
+> This removes the cast, which avoids the warning.
+>=20
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/video/fbdev/da8xx-fb.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
-index 0081725c6b5b..6b2a06d09f2b 100644
---- a/drivers/video/fbdev/da8xx-fb.c
-+++ b/drivers/video/fbdev/da8xx-fb.c
-@@ -152,7 +152,7 @@ static void lcdc_write(unsigned int val, unsigned int addr)
- 
- struct da8xx_fb_par {
- 	struct device		*dev;
--	resource_size_t p_palette_base;
-+	dma_addr_t		p_palette_base;
- 	unsigned char *v_palette_base;
- 	dma_addr_t		vram_phys;
- 	unsigned long		vram_size;
-@@ -1428,7 +1428,7 @@ static int fb_probe(struct platform_device *device)
- 
- 	par->vram_virt = dma_alloc_coherent(NULL,
- 					    par->vram_size,
--					    (resource_size_t *) &par->vram_phys,
-+					    &par->vram_phys,
- 					    GFP_KERNEL | GFP_DMA);
- 	if (!par->vram_virt) {
- 		dev_err(&device->dev,
-@@ -1448,7 +1448,7 @@ static int fb_probe(struct platform_device *device)
- 
- 	/* allocate palette buffer */
- 	par->v_palette_base = dma_zalloc_coherent(NULL, PALETTE_SIZE,
--						  (resource_size_t *)&par->p_palette_base,
-+						  &par->p_palette_base,
- 						  GFP_KERNEL | GFP_DMA);
- 	if (!par->v_palette_base) {
- 		dev_err(&device->dev,
--- 
-2.7.0
+Thanks, queued for 4.5 fixes.
 
+ Tomi
+
+
+--qoQGWTxVrrKd8ESPkFqvB958xkF6dXWmD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWq1AxAAoJEPo9qoy8lh71uZYP/2vk/dSiy/p/QzQKuFkOlM/h
+h924d4gDltsbKsNb+V/4HL1xm3a37N+11tmpKcyCnAcpTIXHT1CL/0HtwiyjeMHH
+GZ9BYEKSCSTsdLL4+Nc2vE6l8JMhHpCtTin+fW2FM19QxH0gRfVfv0PHIbdzA5lh
+5X7C6Pm6a3dOEYBpYuOWyJgBabYKfAs94zwbAL0oDXraHQoqS9Txj+Ga7LcP8wRy
++rlgaCUj1Y70OjFxbrG7TekmmkN8w57ekTJyp9mjOa2OThuaRro3xAt2AJ6L58y2
+1nzXvpFSDu5nTtXWRy/li8zSaDY9xNKWL8T7HJ7N0weMkHf8qZcC/asIObXMpbSj
+JpKjJjawsau1NHuuWnH19PJxN5UNsGzdILKYscLEkjfPHUx/m2kXoOsVQjdQCmMD
+AsyEslFei3lgv9FJf6W4W+uUQRNfoPrJybHKTKovIBMGtVJbwFlUzAWmqijnmpK5
+IiNkF4dIr1fEzK3U8/ZItnB/Y8vXgsmYV90uKgqqoUYinMXeMYU6KkWFwRgD9q9a
+yrzNDhfHLr0R3zUVIcM40ibRcYl85wVyODJQ6yBAa3ETGG4oUkWUs60DEmqkZoiA
+moH34d9+CBC4D2OC5tMIKx6ieetBP1TFNd8fnEeD2cNx05vak+a/WA4mJhv6xEhi
+c1hSpV5zQex3MmG63AzP
+=8AGI
+-----END PGP SIGNATURE-----
+
+--qoQGWTxVrrKd8ESPkFqvB958xkF6dXWmD--

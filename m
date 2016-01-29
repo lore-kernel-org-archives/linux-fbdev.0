@@ -1,76 +1,126 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 29 Jan 2016 12:20:47 +0000
-Subject: Re: [PATCH] video: fbdev: imxfb: Provide a reset mechanism
-Message-Id: <56AB591F.2030400@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="dlvbbgSO4M4hLXK8P3EpvANq7jvGO2L99"
+From: Daniel Wagner <daniel.wagner@bmw-carit.de>
+Date: Fri, 29 Jan 2016 14:03:21 +0000
+Subject: [PATCH tip v7 0/7] Simple wait queue support
+Message-Id: <1454076208-28354-1-git-send-email-daniel.wagner@bmw-carit.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1453209057-16444-1-git-send-email-festevam@gmail.com>
-In-Reply-To: <1453209057-16444-1-git-send-email-festevam@gmail.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-mips@linux-mips.org, Marcelo Tosatti <mtosatti@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>, Boqun Feng <boqun.feng@gmail.com>, Maik Broemme <mbroemme@plusserver.de>, Ralf Baechle <ralf@linux-mips.org>, Daniel Wagner <daniel.wagner@bmw-carit.de>
 
---dlvbbgSO4M4hLXK8P3EpvANq7jvGO2L99
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
+As it turns out I missed a few incompatible-pointer-types errors.
+Furthermore I even missed to update one calling side on wait in the ARM KVM
+code base. Luckily the kbuild test robot found them all.
 
+These patches are against
 
-On 19/01/16 15:10, Fabio Estevam wrote:
-> From: Fabio Estevam <fabio.estevam@nxp.com>
->=20
-> Currently when we boot the kernel on a mx25pdk the LCDC controller
-> does not show the Linux logo on boot.
->=20
-> This problem is well explained by Sascha Hauer:
->=20
-> "Unfortunately this LCD controller does not have an enable bit. The
-> controller starts directly when the clocks are enabled. If the clocks
-> are enabled when the controller is not yet programmed with proper
-> register values then it just goes into some undefined state. What I
-> suspect is that the clocks already were enabled before driver probe,
-> presumably by the bootloader, so the controller is already in undefined=
+  tip/sched/core 0905f04eb21fc1c2e690bed5d0418a061d56c225
 
-> state when entering Linux. Now by dis/enabling the ipg clock you
-> effectively reset the controller. Since you have programmed it with
-> valid register values in the mean time it starts working after this
-> reset."
->=20
-> So do as suggested and force a reset of the LCDC hardware by=20
-> enabling and disabling the IPG clock.
->=20
-> With this change the Linux logo can be seen on boot on a mx25pdk.
->=20
-> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
-> ---
->  drivers/video/fbdev/imxfb.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
+also available as git tree:
 
-Thanks. Queued for 4.5 fixes.
+  git://git.kernel.org/pub/scm/linux/kernel/git/wagi/linux.git tip-swait
 
- Tomi
+cheers,
+daniel
 
+changes since v6:
+ - fixed a couple of incompatible-pointer-types errors
+ - fixed a missing KVM ARM wait -> swait update
 
---dlvbbgSO4M4hLXK8P3EpvANq7jvGO2L99
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+changes since v5:
+ - unconditionally add -Werror=incompatible-pointer-types
+ - updated KVM statistics in commit message
+ - rebased on tip/sched/core 
+ - added ack-by PeterZ
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+changes since v4:
+ - replaced patch #2 which tried to force to compiler to
+   exit with an error by using compile time assertion type
+   check macros. Instead use -Werror=incompatible-pointer-types
+   to tell the compiler to barf loudly.
+ - fixed wrong API usage in patch 4 as reported by Boqun.
 
-iQIcBAEBCAAGBQJWq1kfAAoJEPo9qoy8lh714WMP/3irfTUzlSnludBvmmXRPf6I
-j4BoJhEy5gNbAI5akXWwVzpHVnda3+yGmPeW5FdIwKMzuIGY4X02RQh01TPjUg4/
-P/VltCqQMzW7UcLmRGeg/WSrMJMTg7AAqjnUFQ1T79wQ+JVu1bo+PlYJPuP01s1Q
-RymX/uXqvx6i8fy22p800sMWsHy3c5DnJbKr71VFRA6ukKIMKidLwFQdczQFK47z
-I3Zd60sOojZ3xe82ZoZP0hwtVKGj9rgmgZMsy4ODEdM6ZCkY0Uh0vsN1Kk9f8aj1
-xleMinPeLh31WHHui1j0HAOaOsdh+iMFAaF2TPRidO20xHApOeSL/tkcu/PeBMqN
-tvOTeV8Y3YwTqL0ZRHeV6L1cUzh59+mr9lTi38YI48YxUxWAeXFYMimgtJVkmllQ
-5ir4wTyXDeBVX35r9lOei0nlW76UYsSpLjzr96sdmEqYLzFPtk5ljsTtr8EV4NeZ
-WjQk4j7/FrUVRPStQUrJ7PWD3bCr3e5o1M2JdbF7+m38Jql1xE5akQyEl6SuYrRe
-4h7aHONfc0afIMMvYsTg8v0L04J1lOuEC7q3rw7cdw6BbIr/79Fc1B9q2xAYXubn
-hjvRPdPiQfhUNiKriTE4a2MJAl1Plh4fPzNchkdsJ9CMWeQjmRpDzDI52+6KUU4A
-CimNDu09papZkOPN/YWC
-=sfXC
------END PGP SIGNATURE-----
+changes since v3
+ - rebased it on tip/sched/core (KVM bits have changed slightly)
+ - added compile time type check assertion
+ - added non lazy version of swake_up_locked()
 
---dlvbbgSO4M4hLXK8P3EpvANq7jvGO2L99--
+changes since v2
+ - rebased again on tip/master. The patches apply
+   cleanly on v4.3-rc6 too.
+ - fixed up mips
+ - reordered patches to avoid lockdep warning when doing bissect.
+ - remove unnecessary initialization of rsp->rda in rcu_init_one().
+
+changes since v1 (PATCH v0)
+ - rebased and fixed some typos found by cross building
+   for S390, ARM and powerpc. For some unknown reason didn't catch
+   them last time.
+ - dropped completion patches because it is not clear yet
+   how to handle complete_all() calls hard-irq/atomic contexts
+   and swake_up_all.
+
+changes since v0 (RFC v0)
+ - promoted the series to PATCH state instead of RFC
+ - fixed a few fallouts with build all and some cross compilers
+   such ARM, PowerPC, S390.
+ - Added the simple waitqueue transformation for KVM from -rt
+   including some numbers requested by Paolo.
+ - Added a commit message to PeterZ's patch. Hope he likes it.
+
+[I got the numbering wrong in v1, so instead 'PATCH v1' you find it
+ as 'PATCH v0' series]
+
+v6: https://lkml.org/lkml/2016/1/28/462
+v5: https://lkml.org/lkml/2015/11/30/318
+v4: https://lwn.net/Articles/665655/
+v3: https://lwn.net/Articles/661415/
+v2: https://lwn.net/Articles/660628/
+v1: https://lwn.net/Articles/656942/
+v0: https://lwn.net/Articles/653586/
+
+Daniel Wagner (4):
+  video: Use bool instead int pointer for get_opt_bool() argument
+  MIPS: Differentiate between 32 and 64 bit ELF header
+  kbuild: Add option to turn incompatible pointer check into error
+  rcu: Do not call rcu_nocb_gp_cleanup() while holding rnp->lock
+
+Marcelo Tosatti (1):
+  KVM: use simple waitqueue for vcpu->wq
+
+Paul Gortmaker (1):
+  rcu: use simple wait queues where possible in rcutree
+
+Peter Zijlstra (Intel) (1):
+  wait.[ch]: Introduce the simple waitqueue (swait) implementation
+
+ Makefile                                 |   3 +
+ arch/arm/kvm/arm.c                       |   8 +-
+ arch/arm/kvm/psci.c                      |   4 +-
+ arch/mips/include/asm/elf.h              |  68 ++++++------
+ arch/mips/kvm/mips.c                     |   8 +-
+ arch/powerpc/include/asm/kvm_host.h      |   4 +-
+ arch/powerpc/kvm/book3s_hv.c             |  23 ++---
+ arch/s390/include/asm/kvm_host.h         |   2 +-
+ arch/s390/kvm/interrupt.c                |   4 +-
+ arch/x86/kvm/lapic.c                     |   6 +-
+ drivers/video/fbdev/intelfb/intelfbdrv.c |   2 +-
+ include/linux/kvm_host.h                 |   5 +-
+ include/linux/swait.h                    | 172 +++++++++++++++++++++++++++++++
+ kernel/rcu/tree.c                        |  24 +++--
+ kernel/rcu/tree.h                        |  12 ++-
+ kernel/rcu/tree_plugin.h                 |  32 ++++--
+ kernel/sched/Makefile                    |   2 +-
+ kernel/sched/swait.c                     | 123 ++++++++++++++++++++++
+ virt/kvm/async_pf.c                      |   4 +-
+ virt/kvm/kvm_main.c                      |  17 ++-
+ 20 files changed, 420 insertions(+), 103 deletions(-)
+ create mode 100644 include/linux/swait.h
+ create mode 100644 kernel/sched/swait.c
+
+-- 
+2.5.0
+

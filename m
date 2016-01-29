@@ -1,71 +1,139 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 11 Jan 2016 06:40:05 +0000
-Subject: Re: [PATCH] backlight: gpio-backlight: use default-on on GPIO request
-Message-Id: <20160111064005.GU3331@x1>
+From: Daniel Wagner <daniel.wagner@bmw-carit.de>
+Date: Fri, 29 Jan 2016 14:03:23 +0000
+Subject: [PATCH tip v7 2/7] MIPS: Differentiate between 32 and 64 bit ELF header
+Message-Id: <1454076208-28354-3-git-send-email-daniel.wagner@bmw-carit.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1445643883-30726-1-git-send-email-stefan@agner.ch>
-In-Reply-To: <1445643883-30726-1-git-send-email-stefan@agner.ch>
+References: <1454076208-28354-1-git-send-email-daniel.wagner@bmw-carit.de>
+In-Reply-To: <1454076208-28354-1-git-send-email-daniel.wagner@bmw-carit.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Stefan Agner <stefan@agner.ch>
-Cc: jingoohan1@gmail.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-mips@linux-mips.org, Marcelo Tosatti <mtosatti@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>, Boqun Feng <boqun.feng@gmail.com>, Maik Broemme <mbroemme@plusserver.de>, Ralf Baechle <ralf@linux-mips.org>, Daniel Wagner <daniel.wagner@bmw-carit.de>
 
-On Fri, 23 Oct 2015, Stefan Agner wrote:
+Depending on the configuration either the 32 or 64 bit version of
+elf_check_arch() is defined. parse_crash_elf32_headers() does
+some basic verification of the ELF header via elf_check_arch().
+parse_crash_elf64_headers() does it via vmcore_elf64_check_arch()
+which expands to the same elf_check_check().
 
-> There are situations where the backlight should be on at boot time
-> (e.g. if the boot loader already turned the display on). The DT
-> bindings specify the "default-on" property for that purpose.
-> Currently, the initial state of the GPIO at request time is always
-> set to logical off (high or low depending on whether it is an
-> active high or low GPIO). Since the GPIO is requested as an output,
-> the GPIO will be driven low for a short period of time, which leads
-> to a flickering display in the above use-case.
->=20
-> Initialize the GPIO depending on the default-on property to be
-> logical on or off.
->=20
-> Signed-off-by: Stefan Agner <stefan@agner.ch>
-> ---
->  drivers/video/backlight/gpio_backlight.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
+   In file included from include/linux/elf.h:4:0,
+                    from fs/proc/vmcore.c:13:
+   fs/proc/vmcore.c: In function 'parse_crash_elf64_headers':
+>> arch/mips/include/asm/elf.h:228:23: error: initialization from incompatible pointer type [-Werror=incompatible-pointer-types]
+     struct elfhdr *__h = (hdr);     \
+                          ^
+   include/linux/crash_dump.h:41:37: note: in expansion of macro 'elf_check_arch'
+    #define vmcore_elf64_check_arch(x) (elf_check_arch(x) || vmcore_elf_check_arch_cross(x))
+                                        ^
+   fs/proc/vmcore.c:1015:4: note: in expansion of macro 'vmcore_elf64_check_arch'
+      !vmcore_elf64_check_arch(&ehdr) ||
+       ^
 
-Applied, thanks.
+Since the MIPS ELF header for 32 bit and 64 bit differ we need
+to check accordingly.
 
-> diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/bac=
-klight/gpio_backlight.c
-> index 5fbbc2e..1813441 100644
-> --- a/drivers/video/backlight/gpio_backlight.c
-> +++ b/drivers/video/backlight/gpio_backlight.c
-> @@ -89,6 +89,7 @@ static int gpio_backlight_probe(struct platform_device =
-*pdev)
->  	struct backlight_device *bl;
->  	struct gpio_backlight *gbl;
->  	struct device_node *np =3D pdev->dev.of_node;
-> +	unsigned long flags =3D GPIOF_DIR_OUT;
->  	int ret;
-> =20
->  	if (!pdata && !np) {
-> @@ -114,9 +115,12 @@ static int gpio_backlight_probe(struct platform_devi=
-ce *pdev)
->  		gbl->def_value =3D pdata->def_value;
->  	}
-> =20
-> -	ret =3D devm_gpio_request_one(gbl->dev, gbl->gpio, GPIOF_DIR_OUT |
-> -				    (gbl->active ? GPIOF_INIT_LOW
-> -						 : GPIOF_INIT_HIGH),
-> +	if (gbl->active)
-> +		flags |=3D gbl->def_value ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW;
-> +	else
-> +		flags |=3D gbl->def_value ? GPIOF_INIT_LOW : GPIOF_INIT_HIGH;
-> +
-> +	ret =3D devm_gpio_request_one(gbl->dev, gbl->gpio, flags,
->  				    pdata ? pdata->name : "backlight");
->  	if (ret < 0) {
->  		dev_err(&pdev->dev, "unable to request GPIO\n");
+Signed-off-by: Daniel Wagner <daniel.wagner@bmw-carit.de>
+Reported-by: Fengguang Wu <fengguang.wu@intel.com>
+---
+ arch/mips/include/asm/elf.h | 68 ++++++++++++++++++++++++---------------------
+ 1 file changed, 37 insertions(+), 31 deletions(-)
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+diff --git a/arch/mips/include/asm/elf.h b/arch/mips/include/asm/elf.h
+index b01a6ff..e311d60 100644
+--- a/arch/mips/include/asm/elf.h
++++ b/arch/mips/include/asm/elf.h
+@@ -205,27 +205,10 @@ struct mips_elf_abiflags_v0 {
+ #define MIPS_ABI_FP_64		6	/* -mips32r2 -mfp64 */
+ #define MIPS_ABI_FP_64A		7	/* -mips32r2 -mfp64 -mno-odd-spreg */
+ 
+-#ifdef CONFIG_32BIT
+-
+-/*
+- * In order to be sure that we don't attempt to execute an O32 binary which
+- * requires 64 bit FP (FR=1) on a system which does not support it we refuse
+- * to execute any binary which has bits specified by the following macro set
+- * in its ELF header flags.
+- */
+-#ifdef CONFIG_MIPS_O32_FP64_SUPPORT
+-# define __MIPS_O32_FP64_MUST_BE_ZERO	0
+-#else
+-# define __MIPS_O32_FP64_MUST_BE_ZERO	EF_MIPS_FP64
+-#endif
+-
+-/*
+- * This is used to ensure we don't load something for the wrong architecture.
+- */
+-#define elf_check_arch(hdr)						\
++#define elf_check_arch_32(hdr)						\
+ ({									\
+ 	int __res = 1;							\
+-	struct elfhdr *__h = (hdr);					\
++	Elf32_Ehdr *__h = (hdr);					\
+ 									\
+ 	if (__h->e_machine != EM_MIPS)					\
+ 		__res = 0;						\
+@@ -242,6 +225,40 @@ struct mips_elf_abiflags_v0 {
+ 	__res;								\
+ })
+ 
++#define elf_check_arch_64(hdr)						\
++({									\
++	int __res = 1;							\
++	Elf64_Ehdr *__h = (hdr);					\
++									\
++	if (__h->e_machine != EM_MIPS)					\
++		__res = 0;						\
++	if (__h->e_ident[EI_CLASS] != ELFCLASS64)			\
++		__res = 0;						\
++									\
++	__res;								\
++})
++
++#define vmcore_elf64_check_arch(x)	(elf_check_arch_64(x) || vmcore_elf_check_arch_cross(x))
++
++#ifdef CONFIG_32BIT
++
++/*
++ * In order to be sure that we don't attempt to execute an O32 binary which
++ * requires 64 bit FP (FR=1) on a system which does not support it we refuse
++ * to execute any binary which has bits specified by the following macro set
++ * in its ELF header flags.
++ */
++#ifdef CONFIG_MIPS_O32_FP64_SUPPORT
++# define __MIPS_O32_FP64_MUST_BE_ZERO	0
++#else
++# define __MIPS_O32_FP64_MUST_BE_ZERO	EF_MIPS_FP64
++#endif
++
++/*
++ * This is used to ensure we don't load something for the wrong architecture.
++ */
++#define elf_check_arch(x)	elf_check_arch_32(x)
++
+ /*
+  * These are used to set parameters in the core dumps.
+  */
+@@ -253,18 +270,7 @@ struct mips_elf_abiflags_v0 {
+ /*
+  * This is used to ensure we don't load something for the wrong architecture.
+  */
+-#define elf_check_arch(hdr)						\
+-({									\
+-	int __res = 1;							\
+-	struct elfhdr *__h = (hdr);					\
+-									\
+-	if (__h->e_machine != EM_MIPS)					\
+-		__res = 0;						\
+-	if (__h->e_ident[EI_CLASS] != ELFCLASS64)			\
+-		__res = 0;						\
+-									\
+-	__res;								\
+-})
++#define elf_check_arch(x)	elf_check_arch_64(x)
+ 
+ /*
+  * These are used to set parameters in the core dumps.
+-- 
+2.5.0
+

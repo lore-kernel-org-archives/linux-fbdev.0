@@ -1,67 +1,76 @@
-From: Fabio Estevam <festevam@gmail.com>
-Date: Tue, 19 Jan 2016 13:10:57 +0000
-Subject: [PATCH] video: fbdev: imxfb: Provide a reset mechanism
-Message-Id: <1453209057-16444-1-git-send-email-festevam@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 29 Jan 2016 12:20:47 +0000
+Subject: Re: [PATCH] video: fbdev: imxfb: Provide a reset mechanism
+Message-Id: <56AB591F.2030400@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="dlvbbgSO4M4hLXK8P3EpvANq7jvGO2L99"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1453209057-16444-1-git-send-email-festevam@gmail.com>
+In-Reply-To: <1453209057-16444-1-git-send-email-festevam@gmail.com>
 To: linux-fbdev@vger.kernel.org
 
-From: Fabio Estevam <fabio.estevam@nxp.com>
+--dlvbbgSO4M4hLXK8P3EpvANq7jvGO2L99
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Currently when we boot the kernel on a mx25pdk the LCDC controller
-does not show the Linux logo on boot.
 
-This problem is well explained by Sascha Hauer:
 
-"Unfortunately this LCD controller does not have an enable bit. The
-controller starts directly when the clocks are enabled. If the clocks
-are enabled when the controller is not yet programmed with proper
-register values then it just goes into some undefined state. What I
-suspect is that the clocks already were enabled before driver probe,
-presumably by the bootloader, so the controller is already in undefined
-state when entering Linux. Now by dis/enabling the ipg clock you
-effectively reset the controller. Since you have programmed it with
-valid register values in the mean time it starts working after this
-reset."
+On 19/01/16 15:10, Fabio Estevam wrote:
+> From: Fabio Estevam <fabio.estevam@nxp.com>
+>=20
+> Currently when we boot the kernel on a mx25pdk the LCDC controller
+> does not show the Linux logo on boot.
+>=20
+> This problem is well explained by Sascha Hauer:
+>=20
+> "Unfortunately this LCD controller does not have an enable bit. The
+> controller starts directly when the clocks are enabled. If the clocks
+> are enabled when the controller is not yet programmed with proper
+> register values then it just goes into some undefined state. What I
+> suspect is that the clocks already were enabled before driver probe,
+> presumably by the bootloader, so the controller is already in undefined=
 
-So do as suggested and force a reset of the LCDC hardware by 
-enabling and disabling the IPG clock.
+> state when entering Linux. Now by dis/enabling the ipg clock you
+> effectively reset the controller. Since you have programmed it with
+> valid register values in the mean time it starts working after this
+> reset."
+>=20
+> So do as suggested and force a reset of the LCDC hardware by=20
+> enabling and disabling the IPG clock.
+>=20
+> With this change the Linux logo can be seen on boot on a mx25pdk.
+>=20
+> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
+> ---
+>  drivers/video/fbdev/imxfb.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
 
-With this change the Linux logo can be seen on boot on a mx25pdk.
+Thanks. Queued for 4.5 fixes.
 
-Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
----
- drivers/video/fbdev/imxfb.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ Tomi
 
-diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-index cee8860..bb2f1e8 100644
---- a/drivers/video/fbdev/imxfb.c
-+++ b/drivers/video/fbdev/imxfb.c
-@@ -902,6 +902,21 @@ static int imxfb_probe(struct platform_device *pdev)
- 		goto failed_getclock;
- 	}
- 
-+	/*
-+	 * The LCDC controller does not have an enable bit. The
-+	 * controller starts directly when the clocks are enabled.
-+	 * If the clocks are enabled when the controller is not yet
-+	 * programmed with proper register values (enabled at the
-+	 * bootloader, for example) then it just goes into some undefined
-+	 * state.
-+	 * To avoid this issue, let's enable and disable LCDC IPG clock
-+	 * so that we force some kind of 'reset' to the LCDC block.
-+	 */
-+	ret = clk_prepare_enable(fbi->clk_ipg);
-+	if (ret)
-+		goto failed_getclock;
-+	clk_disable_unprepare(fbi->clk_ipg);
-+
- 	fbi->clk_ahb = devm_clk_get(&pdev->dev, "ahb");
- 	if (IS_ERR(fbi->clk_ahb)) {
- 		ret = PTR_ERR(fbi->clk_ahb);
--- 
-1.9.1
 
+--dlvbbgSO4M4hLXK8P3EpvANq7jvGO2L99
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWq1kfAAoJEPo9qoy8lh714WMP/3irfTUzlSnludBvmmXRPf6I
+j4BoJhEy5gNbAI5akXWwVzpHVnda3+yGmPeW5FdIwKMzuIGY4X02RQh01TPjUg4/
+P/VltCqQMzW7UcLmRGeg/WSrMJMTg7AAqjnUFQ1T79wQ+JVu1bo+PlYJPuP01s1Q
+RymX/uXqvx6i8fy22p800sMWsHy3c5DnJbKr71VFRA6ukKIMKidLwFQdczQFK47z
+I3Zd60sOojZ3xe82ZoZP0hwtVKGj9rgmgZMsy4ODEdM6ZCkY0Uh0vsN1Kk9f8aj1
+xleMinPeLh31WHHui1j0HAOaOsdh+iMFAaF2TPRidO20xHApOeSL/tkcu/PeBMqN
+tvOTeV8Y3YwTqL0ZRHeV6L1cUzh59+mr9lTi38YI48YxUxWAeXFYMimgtJVkmllQ
+5ir4wTyXDeBVX35r9lOei0nlW76UYsSpLjzr96sdmEqYLzFPtk5ljsTtr8EV4NeZ
+WjQk4j7/FrUVRPStQUrJ7PWD3bCr3e5o1M2JdbF7+m38Jql1xE5akQyEl6SuYrRe
+4h7aHONfc0afIMMvYsTg8v0L04J1lOuEC7q3rw7cdw6BbIr/79Fc1B9q2xAYXubn
+hjvRPdPiQfhUNiKriTE4a2MJAl1Plh4fPzNchkdsJ9CMWeQjmRpDzDI52+6KUU4A
+CimNDu09papZkOPN/YWC
+=sfXC
+-----END PGP SIGNATURE-----
+
+--dlvbbgSO4M4hLXK8P3EpvANq7jvGO2L99--

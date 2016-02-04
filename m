@@ -1,98 +1,81 @@
-From: Kai Ruhnau <kai.ruhnau@target-sg.com>
-Date: Tue, 02 Feb 2016 08:43:04 +0000
-Subject: RE: [PATCH] fbdev: ssd1307fb: Fix activating the charge pump on ssd1306
-Message-Id: <AM2PR02MB037110CD69158B142DD396E1C5DF0@AM2PR02MB0371.eurprd02.prod.outlook.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 04 Feb 2016 14:04:09 +0000
+Subject: [PATCH 00/11] CLCD Nomadik+Versatile support
+Message-Id: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1454339039-4976-1-git-send-email-kai.ruhnau@target-sg.com>
-In-Reply-To: <1454339039-4976-1-git-send-email-kai.ruhnau@target-sg.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+This is the result of some tiresome work to adopt the CLCD
+driver to use device tree properly for Nomadik, Integrator,
+Versatile and RealView.
 
-I just saw that the same thing was already fixed by Julian in November, sor=
-ry for doubling this.
+The Nomadik support basically just adds some vendor data stuff
+similar to what we have done for other drivers, but also add
+as per-vendor .board_init() and .panel_init() hook.
 
-Best regards
-Kai
+These hooks are then used to handle panels on these boards.
+Versatile is the most elaborate and took the most time, as it
+is doing autodetection of the panel at runtime, and thus we
+encode all possible panels in the DT and select the detected
+panel at .panel_init() time.
 
+The patches have been tested quite extensively on my Nomadik
+NHK8815 and the ARM Integrator, Versatile, and RealView
+reference designs, as well as on the more forgiving QEMU
+emulation of Versatile.
 
------Original Message-----
-From: Kai Ruhnau
-Sent: Montag, 1. Februar 2016 16:04
-To: plagnioj@jcrosoft.com; tomi.valkeinen@ti.com
-Cc: niederp@physik.uni-kl.de; linux-fbdev@vger.kernel.org; Kai Ruhnau <kai.=
-ruhnau@target-sg.com>
-Subject: [PATCH] fbdev: ssd1307fb: Fix activating the charge pump on ssd1306
+Eventually I would like to have patches 1 thru 8 (those with
+patches to CLCD or the DT bindings) applied through the FBDEV
+subsystem, while I will take the SoC specifics (patches 9 thru 11,
+and some non-included Nomadik patches) separately as it affects
+multiple ARM SoC files.
 
-The charge pump is activated by sending 0x14 where the higher bit is
-always 1 and the lower bit actually toggles it.
+Linus Walleij (11):
+  video: ARM CLCD: backlight support for OF
+  video: ARM CLCD: support DT signal inversion flags
+  video: ARM CLCD: support pads connected in reverse order
+  video: ARM CLCD: support Nomadik variant
+  video: ARM CLCD: add special board and panel hooks for Nomadik
+  Documentation/DT: add blurb for IB2 syscon to Versatile
+  Documentation/DT: add Versatile display bindings
+  video: ARM CLCD: add special panel hook for Versatiles
+  ARM: PB11MPCore: define a standard VGA panel
+  ARM: PB1176: define a standard VGA panel
+  ARM: versatile: move CLCD configuration to device tree
 
-Signed-off-by: Kai Ruhnau <kai.ruhnau@target-sg.com>
----
- drivers/video/fbdev/ssd1307fb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/arm/arm-boards   |   8 +
+ .../bindings/display/panel/epson,l2f50113t00.txt   |   7 +
+ .../bindings/display/panel/sanyo,alr252rgt.txt     |   7 +
+ .../bindings/display/panel/sanyo,tm38qv67a02a.txt  |   7 +
+ .../bindings/display/panel/sharp,lq084v1dg21.txt   |   7 +
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ arch/arm/boot/dts/Makefile                         |   1 +
+ arch/arm/boot/dts/arm-realview-pb1176.dts          |  40 ++
+ arch/arm/boot/dts/arm-realview-pb11mp.dts          |  19 +-
+ arch/arm/boot/dts/versatile-ab-ib2.dts             |  20 +
+ arch/arm/boot/dts/versatile-ab.dts                 | 203 ++++++++++-
+ arch/arm/mach-versatile/versatile_dt.c             | 162 --------
+ drivers/video/fbdev/Kconfig                        |   6 +-
+ drivers/video/fbdev/Makefile                       |   1 +
+ drivers/video/fbdev/amba-clcd-nomadik.c            | 263 +++++++++++++
+ drivers/video/fbdev/amba-clcd-nomadik.h            |  24 ++
+ drivers/video/fbdev/amba-clcd-versatile.c          | 406 +++++++++++++++++++++
+ drivers/video/fbdev/amba-clcd-versatile.h          |  17 +
+ drivers/video/fbdev/amba-clcd.c                    | 205 ++++++++++-
+ include/linux/amba/clcd.h                          |  76 +++-
+ 20 files changed, 1279 insertions(+), 201 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/display/panel/epson,l2f50113t00.txt
+ create mode 100644 Documentation/devicetree/bindings/display/panel/sanyo,alr252rgt.txt
+ create mode 100644 Documentation/devicetree/bindings/display/panel/sanyo,tm38qv67a02a.txt
+ create mode 100644 Documentation/devicetree/bindings/display/panel/sharp,lq084v1dg21.txt
+ create mode 100644 arch/arm/boot/dts/versatile-ab-ib2.dts
+ create mode 100644 drivers/video/fbdev/amba-clcd-nomadik.c
+ create mode 100644 drivers/video/fbdev/amba-clcd-nomadik.h
+ create mode 100644 drivers/video/fbdev/amba-clcd-versatile.h
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307f=
-b.c
-index fa34808..20d249f 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -285,7 +285,7 @@ static void ssd1307fb_deferred_io(struct fb_info *info,
- static int ssd1307fb_init(struct ssd1307fb_par *par)
- {
-        int ret;
--       u32 precharge, dclk, com_invdir, compins;
-+       u32 precharge, dclk, com_invdir, compins, chargepump;
-
-        if (par->device_info->need_pwm) {
-                par->pwm =3D pwm_get(&par->client->dev, NULL);
-@@ -388,8 +388,8 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
-        if (ret < 0)
-                return ret;
-
--       ret =3D ssd1307fb_write_cmd(par->client,
--               (par->device_info->need_chargepump & 0x1 << 2) & 0x14);
-+       chargepump =3D 0x10 | (par->device_info->need_chargepump & 0x1) << =
-2;
-+       ret =3D ssd1307fb_write_cmd(par->client, chargepump);
-        if (ret < 0)
-                return ret;
-
---
+-- 
 2.4.3
 
---
-Kai Ruhnau
-Software Manager
-T:+49 202 769302 19
-
-Target Systemelektronik GmbH & Co. KG
-Heinz-Fangman-Stra=DFe 4
-42287 Wuppertal
-
-Amtsgericht Wuppertal HRA 23898
-Pers=F6nlich haftende Gesellschafterin
-Target Systemelektronik Beteiligungs GmbH
-Heinz-Fangman-Stra=DFe 4, 42287 Wuppertal
-Amtsgericht Wuppertal HRB 25346
-Gesch=E4ftsf=FChrer: J=FCrgen Stein
---
---
-Kai Ruhnau
-Software Manager
-T:+49 202 769302 19
-
-Target Systemelektronik GmbH & Co. KG
-Heinz-Fangman-Stra=DFe 4
-42287 Wuppertal
-
-Amtsgericht Wuppertal HRA 23898
-Pers=F6nlich haftende Gesellschafterin
-Target Systemelektronik Beteiligungs GmbH
-Heinz-Fangman-Stra=DFe 4, 42287 Wuppertal
-Amtsgericht Wuppertal HRB 25346
-Gesch=E4ftsf=FChrer: J=FCrgen Stein
---

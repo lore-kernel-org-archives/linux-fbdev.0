@@ -1,9 +1,7 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Thu, 04 Feb 2016 11:02:03 +0000
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 04 Feb 2016 14:01:50 +0000
 Subject: Re: [PATCH v3 00/12] pwm: add support for atomic update
-Message-Id: <20160204110203.GL4455@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="LR9UEBmNK407lwl9"
+Message-Id: <20160204150150.553d36df@bbrezillon>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com>
  <2341981.a79ioYM9Es@diego> <20151110173416.GB21727@ulmo>
@@ -12,38 +10,76 @@ References: <1442828009-6241-1-git-send-email-boris.brezillon@free-electrons.com
  <CAD=FV=Xvxeqo3imUmjukC5iYk3EZkrJ04G7C1B-w4xyr-r6-2Q@mail.gmail.com>
  <20160203145337.GD9650@ulmo>
  <CAD=FV=U_x1cxx6RrHuVgVV8GbOwm9DXXJcyiArbbQySUOaxrvQ@mail.gmail.com>
-In-Reply-To: <CAD=FV=U_x1cxx6RrHuVgVV8GbOwm9DXXJcyiArbbQySUOaxrvQ@mail.gmail.com>
+ <20160204110203.GL4455@sirena.org.uk>
+In-Reply-To: <20160204110203.GL4455@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
+Hi Mark, Thierry,
 
---LR9UEBmNK407lwl9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Thu, 4 Feb 2016 11:02:03 +0000
+Mark Brown <broonie@kernel.org> wrote:
 
-On Wed, Feb 03, 2016 at 11:04:20AM -0800, Doug Anderson wrote:
+> On Wed, Feb 03, 2016 at 11:04:20AM -0800, Doug Anderson wrote:
+> 
+> > Sure.  ...but you agree that somehow you need a new API call for this,
+> > right?  Somehow the PWM regulator needs to be able to say that it
+> > wants the hardware state, not the initial state as specified in the
+> > device tree.
+> 
+> Wouldn't the most direct way to do that be to just not specify anything
+> in the DT?  If there *is* something in DT but we ignore it that's a bit
+> weird.
 
-> Sure.  ...but you agree that somehow you need a new API call for this,
-> right?  Somehow the PWM regulator needs to be able to say that it
-> wants the hardware state, not the initial state as specified in the
-> device tree.
+Just adding some inputs on this specific aspect. The reason we have to
+specify a period (and, to a lesser extent, the polarity) in the DT or
+PWM lookup table is because what most PWM users want is to specify a
+dutycycle relatively to a predefined period value.
+If we decide to remove those information from the DT, then you'll need
+a way to define it somewhere else, and then the is question is 'where?'.
 
-Wouldn't the most direct way to do that be to just not specify anything
-in the DT?  If there *is* something in DT but we ignore it that's a bit
-weird.
+Users that really want to control their period (this could the case for
+the clk-pwm driver) could completely ignore DT/lookup-table information
+and set the period and absolute dutycycle directly.
 
---LR9UEBmNK407lwl9
-Content-Type: application/pgp-signature; name="signature.asc"
+Now, from what I seen, what most PWM users want to do is:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+	pwm_set_rel_duty_scale(pwm, rel_value, scale);
+or 
+	rel_duty = pwm_get_rel_duty_cycle(pwm, scale);
 
-iQEcBAEBCAAGBQJWsy+qAAoJECTWi3JdVIfQasQH/jly2TuqsSN80W79jFE40xcP
-EjcALazQvBo6F7kQRHkoN7oOkWy296LiyTlZwmDsbTZ9B+LK9UEKXEbXIwVlLQwl
-eEa+15AX+Ie3hadCAesTlNu53xBD7tSgmSnDuW8KZOhA0muY3pXphZ7ALzf5YbjJ
-dOXSegG8NkdfoIpf0WUn9Q77BlH+ElKY/bqUu+qa486oGf4WNXqRBxnvUjQON8jG
-wnWeWpSTRJLv2NHh/dE1FpTtLGySioUEUsQGa9A4/AgL4eABrHkyVQ8UPdcOTjtC
-2D6RCtFzyPCPwaiOd2MgKWE2eIrPU+rFTH6Fytb0Q01k29XPB5SeqjEMDzaOKNM=
-=TeUF
------END PGP SIGNATURE-----
+where scale depends on the precision you need for your use case (most
+of the time it's expressed in percent).
 
---LR9UEBmNK407lwl9--
+So, how about providing this kind of API (this is what I proposed in
+one of my previous email)?
+
+This would not only solve our problem (say you have a period at
+boot-time that differs from the one you'll set when first applying a
+new relative duty cycle, then the resulting relative value would still
+be correct), but it would also remove a lot of boiler plate code from
+PWM users code (if you take a look at pwm-regulator, pwm-leds, pwm-fan
+and probably others, you'll see that they are all doing this conversion
+manually).
+
+Now, the last blocking point is, what if the PWM driver does not
+implement HW-readout. In this case, the pwm-regulator will probably
+expose a 0V output (IIRC, dutycycle is set to 0 by default) when it's
+actually providing something else. But is this really important? I
+mean, if the user really wants to have a reliable information, then he
+will implement initial-state retrieval in its PWM controller driver.
+Alternatively, we could put a flag specifying whether the PWM chip
+supports initial state retrieval.
+
+Am I missing something?
+
+Best Regards,
+
+Boris
+
+-- 
+Boris Brezillon, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com

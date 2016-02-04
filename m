@@ -1,122 +1,109 @@
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-Date: Mon, 22 Feb 2016 01:55:27 +0000
-Subject: [PATCH 6/7] video: fbdev: pmag-ba-fb: Optimize Bt455 colormap addressing
-Message-Id: <alpine.LFD.2.20.1602220140470.7431@eddie.linux-mips.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 04 Feb 2016 14:04:12 +0000
+Subject: [PATCH 03/11] video: ARM CLCD: support pads connected in reverse order
+Message-Id: <1454594660-7532-4-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
-In-Reply-To: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
+References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
+In-Reply-To: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Use the address autoincrement feature when accessing successive palette 
-entries and also skip loading a palette address in overlay register 
-assesses which do not use that address.  Provide a red/green/blue 
-register sequencer reset helper for use in overlay register assesses 
-where the state of the sequencer is not known.
+There are CLCDs connected with the pads in BGR rather than RGB
+order. It really doesn't matter since the CLCD has a flag and
+a bit to switch the position of the RGB and BGR components.
+This is needed to put something logical into the
+arm,pl11x,tft-r0g0b0-pads property of the device tree on the
+Nomadik which will then be <16 8 0>.
 
-References:
-
-[1] "Bt454 Bt455 170 MHz Monolithic CMOS 16 Color Palette RAMDAC",
-    Brooktree Corporation, Document Number: L454001, Rev. I
-
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Rob Herring <robh@kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
-linux-bt455-cmap-addr.diff
-Index: linux-20160211-4maxp64/drivers/video/fbdev/bt455.h
-=================================--- linux-20160211-4maxp64.orig/drivers/video/fbdev/bt455.h
-+++ linux-20160211-4maxp64/drivers/video/fbdev/bt455.h
-@@ -30,13 +30,17 @@ static inline void bt455_select_reg(stru
- 	regs->addr_cmap = ir & 0x0f;
- }
- 
-+static inline void bt455_reset_reg(struct bt455_regs *regs)
-+{
-+	mb();
-+	regs->addr_clr = 0;
-+}
-+
- /*
-  * Read/write to a Bt455 color map register.
-  */
--static inline void bt455_read_cmap_entry(struct bt455_regs *regs,
--					 int cr, u8 *grey)
-+static inline void bt455_read_cmap_next(struct bt455_regs *regs, u8 *grey)
- {
--	bt455_select_reg(regs, cr);
- 	mb();
- 	regs->addr_cmap_data;
- 	rmb();
-@@ -45,10 +49,8 @@ static inline void bt455_read_cmap_entry
- 	regs->addr_cmap_data;
- }
- 
--static inline void bt455_write_cmap_entry(struct bt455_regs *regs,
--					  int cr, u8 grey)
-+static inline void bt455_write_cmap_next(struct bt455_regs *regs, u8 grey)
- {
--	bt455_select_reg(regs, cr);
- 	wmb();
- 	regs->addr_cmap_data = 0x0;
- 	wmb();
-@@ -57,10 +59,8 @@ static inline void bt455_write_cmap_entr
- 	regs->addr_cmap_data = 0x0;
- }
- 
--static inline void bt455_write_ovly_entry(struct bt455_regs *regs,
--					  int cr, u8 grey)
-+static inline void bt455_write_ovly_next(struct bt455_regs *regs, u8 grey)
- {
--	bt455_select_reg(regs, cr);
- 	wmb();
- 	regs->addr_ovly = 0x0;
- 	wmb();
-@@ -68,3 +68,23 @@ static inline void bt455_write_ovly_entr
- 	wmb();
- 	regs->addr_ovly = 0x0;
- }
-+
-+static inline void bt455_read_cmap_entry(struct bt455_regs *regs,
-+					 int cr, u8 *grey)
-+{
-+	bt455_select_reg(regs, cr);
-+	bt455_read_cmap_next(regs, grey);
-+}
-+
-+static inline void bt455_write_cmap_entry(struct bt455_regs *regs,
-+					  int cr, u8 grey)
-+{
-+	bt455_select_reg(regs, cr);
-+	bt455_write_cmap_next(regs, grey);
-+}
-+
-+static inline void bt455_write_ovly_entry(struct bt455_regs *regs, u8 grey)
-+{
-+	bt455_reset_reg(regs);
-+	bt455_write_ovly_next(regs, grey);
-+}
-Index: linux-20160211-4maxp64/drivers/video/fbdev/pmag-aa-fb.c
-=================================--- linux-20160211-4maxp64.orig/drivers/video/fbdev/pmag-aa-fb.c
-+++ linux-20160211-4maxp64/drivers/video/fbdev/pmag-aa-fb.c
-@@ -122,8 +122,8 @@ static int aafb_cursor(struct fb_info *i
- 		u8 bg = cursor->image.bg_color ? 0xf : 0x0;
- 
- 		bt455_write_cmap_entry(par->bt455, 8, bg);
--		bt455_write_cmap_entry(par->bt455, 9, bg);
--		bt455_write_ovly_entry(par->bt455, 0, fg);
-+		bt455_write_cmap_next(par->bt455, bg);
-+		bt455_write_ovly_next(par->bt455, fg);
+ drivers/video/fbdev/amba-clcd.c |  8 ++++++++
+ include/linux/amba/clcd.h       | 31 ++++++++++++++++++++++++-------
+ 2 files changed, 32 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index 8903a42c4122..9a631a8e2c04 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -681,6 +681,7 @@ static int clcdfb_of_init_tft_panel(struct clcd_fb *fb, u32 r0, u32 g0, u32 b0)
+ 	} panels[] = {
+ 		{ 0x110, 1,  7, 13, CLCD_CAP_5551 },
+ 		{ 0x110, 0,  8, 16, CLCD_CAP_888 },
++		{ 0x110, 16, 8, 0,  CLCD_CAP_888 },
+ 		{ 0x111, 4, 14, 20, CLCD_CAP_444 },
+ 		{ 0x111, 3, 11, 19, CLCD_CAP_444 | CLCD_CAP_5551 },
+ 		{ 0x111, 3, 10, 19, CLCD_CAP_444 | CLCD_CAP_5551 |
+@@ -708,6 +709,13 @@ static int clcdfb_of_init_tft_panel(struct clcd_fb *fb, u32 r0, u32 g0, u32 b0)
+ 			fb->panel->caps = panels[i].caps;
  	}
- 	if (cursor->set & (FB_CUR_SETSIZE | FB_CUR_SETSHAPE | FB_CUR_SETIMAGE))
- 		bt431_set_cursor(par->bt431,
-@@ -212,7 +212,7 @@ static int pmagaafb_probe(struct device 
  
- 	/* Init colormap. */
- 	bt455_write_cmap_entry(par->bt455, 0, 0x0);
--	bt455_write_cmap_entry(par->bt455, 1, 0xf);
-+	bt455_write_cmap_next(par->bt455, 0xf);
++	/*
++	 * If we actually physically connected the R lines to B and
++	 * vice versa
++	 */
++	if (r0 != 0 && b0 = 0)
++		fb->panel->bgr_connection = true;
++
+ 	return fb->panel->caps ? 0 : -EINVAL;
+ }
  
- 	/* Init hardware cursor. */
- 	bt431_erase_cursor(par->bt431);
+diff --git a/include/linux/amba/clcd.h b/include/linux/amba/clcd.h
+index e64c1ccebb76..c60f32e23a83 100644
+--- a/include/linux/amba/clcd.h
++++ b/include/linux/amba/clcd.h
+@@ -108,6 +108,12 @@ struct clcd_panel {
+ 				grayscale:1;
+ 	unsigned int		connector;
+ 	struct backlight_device	*backlight;
++	/*
++	 * If the B/R lines are switched between the CLCD
++	 * and the panel we need to know this and not try to
++	 * compensate with the BGR bit in the control register.
++	 */
++	bool			bgr_connection;
+ };
+ 
+ struct clcd_regs {
+@@ -234,16 +240,27 @@ static inline void clcdfb_decode(struct clcd_fb *fb, struct clcd_regs *regs)
+ 	if (var->grayscale)
+ 		val |= CNTL_LCDBW;
+ 
+-	if (fb->panel->caps && fb->board->caps &&
+-	    var->bits_per_pixel >= 16) {
++	if (fb->panel->caps && fb->board->caps && var->bits_per_pixel >= 16) {
+ 		/*
+ 		 * if board and panel supply capabilities, we can support
+-		 * changing BGR/RGB depending on supplied parameters
++		 * changing BGR/RGB depending on supplied parameters. Here
++		 * we switch to what the framebuffer is providing if need
++		 * be, so if the framebuffer is BGR but the display connection
++		 * is RGB (first case) we switch it around. Vice versa mutatis
++		 * mutandis if the framebuffer is RGB but the display connection
++		 * is BGR, we flip it around.
+ 		 */
+-		if (var->red.offset = 0)
+-			val &= ~CNTL_BGR;
+-		else
+-			val |= CNTL_BGR;
++		if (!fb->panel->bgr_connection) {
++			if (var->red.offset = 0)
++				val &= ~CNTL_BGR;
++			else
++				val |= CNTL_BGR;
++		} else {
++			if (var->blue.offset = 0)
++				val &= ~CNTL_BGR;
++			else
++				val |= CNTL_BGR;
++		}
+ 	}
+ 
+ 	switch (var->bits_per_pixel) {
+-- 
+2.4.3
+

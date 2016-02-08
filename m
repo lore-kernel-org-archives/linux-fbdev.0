@@ -1,8 +1,10 @@
 From: <gregkh@linuxfoundation.org>
-Date: Mon, 08 Feb 2016 02:54:30 +0000
-Subject: patch "staging: sm750fb, fix typos" added to staging-testing
-Message-Id: <14549000707369@kroah.com>
+Date: Mon, 08 Feb 2016 06:09:23 +0000
+Subject: patch "staging: sm750fb, fix typos" added to staging-next
+Message-Id: <145491176366145@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <14549000707369@kroah.com>
+In-Reply-To: <14549000707369@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,13 +17,13 @@ This is a note to let you know that I've just added the patch titled
 
 to my staging git tree which can be found at
     git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging.git
-in the staging-testing branch.
+in the staging-next branch.
 
 The patch will show up in the next release of the linux-next tree
 (usually sometime within the next 24 hours during the week.)
 
-The patch will be merged to the staging-next branch sometime soon,
-after it passes testing, and the merge window is open.
+The patch will also be merged in the next major kernel release
+during the merge window.
 
 If you have any questions about this process, please let me know.
 

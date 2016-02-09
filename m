@@ -1,137 +1,216 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 26 Feb 2016 10:47:04 +0000
-Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <56D02D28.9080109@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="3VhLwuJptRENgWd9QQ3xd8SuQ9A24i4MQ"
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Tue, 09 Feb 2016 18:56:11 +0000
+Subject: [PATCH] fbdev: kill fb_rotate
+Message-Id: <1455044172-17488-1-git-send-email-linux@rasmusvillemoes.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
- <3695074.sKSIyOjpjD@wuerfel>
- <CACRpkdZjfjOCFUucF1U5yVZBxSwa41GKEMv-HHQE=ymF2NZ21g@mail.gmail.com>
- <6859810.tb1t0IEONi@wuerfel> <56CC57FC.20707@ti.com>
- <CACRpkdYNaNtQQJ-tsBe5ksa4-z380ZQj-zN8ZnK0ED2kNPUwvg@mail.gmail.com>
- <56CC60C4.6040908@ti.com>
- <CACRpkdZd8TLdsi7_cOrqzcqWKJrfdp4Vz2sx5ozpwJXOj0fa+Q@mail.gmail.com>
- <56CF2FB1.106@ti.com>
- <CACRpkdYowXJinONTd2qREfCtEDCon+HSQtdd6t1QQA91f6PJdw@mail.gmail.com>
-In-Reply-To: <CACRpkdYowXJinONTd2qREfCtEDCon+HSQtdd6t1QQA91f6PJdw@mail.gmail.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <87d1swdk90.fsf@rasmusvillemoes.dk>
+In-Reply-To: <87d1swdk90.fsf@rasmusvillemoes.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
 
---3VhLwuJptRENgWd9QQ3xd8SuQ9A24i4MQ
-Content-Type: multipart/mixed; boundary="Ai5rwpjqHvpssBuIHBnmeOmdCu3CQ6KRB"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Joachim Eastwood <manabian@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh@kernel.org>,
- Russell King <linux@arm.linux.org.uk>
-Message-ID: <56D02D28.9080109@ti.com>
-Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device
- tree
-References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
- <3695074.sKSIyOjpjD@wuerfel>
- <CACRpkdZjfjOCFUucF1U5yVZBxSwa41GKEMv-HHQE=ymF2NZ21g@mail.gmail.com>
- <6859810.tb1t0IEONi@wuerfel> <56CC57FC.20707@ti.com>
- <CACRpkdYNaNtQQJ-tsBe5ksa4-z380ZQj-zN8ZnK0ED2kNPUwvg@mail.gmail.com>
- <56CC60C4.6040908@ti.com>
- <CACRpkdZd8TLdsi7_cOrqzcqWKJrfdp4Vz2sx5ozpwJXOj0fa+Q@mail.gmail.com>
- <56CF2FB1.106@ti.com>
- <CACRpkdYowXJinONTd2qREfCtEDCon+HSQtdd6t1QQA91f6PJdw@mail.gmail.com>
-In-Reply-To: <CACRpkdYowXJinONTd2qREfCtEDCon+HSQtdd6t1QQA91f6PJdw@mail.gmail.com>
+The fb_rotate method in struct fb_ops is never actually invoked, and
+it's been that way in the entire history of git (in fact, the last
+occurrence of the string '->fb_rotate' vanished over 10 years ago,
+with b4d8aea6d6, and that merely tested whether the callback
+existed). So remove some dead code and make struct fb_obs a little
+smaller.
 
---Ai5rwpjqHvpssBuIHBnmeOmdCu3CQ6KRB
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+ drivers/video/fbdev/atafb.c            |  3 ---
+ drivers/video/fbdev/au1100fb.c         | 22 ----------------------
+ drivers/video/fbdev/bf537-lq035.c      | 23 -----------------------
+ drivers/video/fbdev/omap/omapfb_main.c | 22 ----------------------
+ drivers/video/fbdev/skeletonfb.c       | 17 -----------------
+ include/linux/fb.h                     |  3 ---
+ 6 files changed, 90 deletions(-)
 
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index d6ce613e12ad..fcd2dd670a65 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -313,9 +313,6 @@ extern unsigned char fontdata_8x16[];
+  *	* Draws cursor *
+  *	int (*fb_cursor) (struct fb_info *info, struct fb_cursor *cursor);
+  *
+- *	* Rotates the display *
+- *	void (*fb_rotate)(struct fb_info *info, int angle);
+- *
+  *	* wait for blit idle, optional *
+  *	int (*fb_sync)(struct fb_info *info);
+  *
+diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
+index 59560189b24a..35df2c1a8a63 100644
+--- a/drivers/video/fbdev/au1100fb.c
++++ b/drivers/video/fbdev/au1100fb.c
+@@ -334,27 +334,6 @@ int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *fbi)
+ 	return 0;
+ }
+ 
+-/* fb_rotate
+- * Rotate the display of this angle. This doesn't seems to be used by the core,
+- * but as our hardware supports it, so why not implementing it...
+- */
+-void au1100fb_fb_rotate(struct fb_info *fbi, int angle)
+-{
+-	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
+-
+-	print_dbg("fb_rotate %p %d", fbi, angle);
+-
+-	if (fbdev && (angle > 0) && !(angle % 90)) {
+-
+-		fbdev->regs->lcd_control &= ~LCD_CONTROL_GO;
+-
+-		fbdev->regs->lcd_control &= ~(LCD_CONTROL_SM_MASK);
+-		fbdev->regs->lcd_control |= ((angle/90) << LCD_CONTROL_SM_BIT);
+-
+-		fbdev->regs->lcd_control |= LCD_CONTROL_GO;
+-	}
+-}
+-
+ /* fb_mmap
+  * Map video memory in user space. We don't use the generic fb_mmap method mainly
+  * to allow the use of the TLB streaming flag (CCA=6)
+@@ -380,7 +359,6 @@ static struct fb_ops au1100fb_ops  	.fb_fillrect		= cfb_fillrect,
+ 	.fb_copyarea		= cfb_copyarea,
+ 	.fb_imageblit		= cfb_imageblit,
+-	.fb_rotate		= au1100fb_fb_rotate,
+ 	.fb_mmap		= au1100fb_fb_mmap,
+ };
+ 
+diff --git a/drivers/video/fbdev/bf537-lq035.c b/drivers/video/fbdev/bf537-lq035.c
+index 7db3052b471d..ef29fb425122 100644
+--- a/drivers/video/fbdev/bf537-lq035.c
++++ b/drivers/video/fbdev/bf537-lq035.c
+@@ -554,28 +554,6 @@ static int bfin_lq035_fb_check_var(struct fb_var_screeninfo *var,
+ 	return 0;
+ }
+ 
+-/* fb_rotate
+- * Rotate the display of this angle. This doesn't seems to be used by the core,
+- * but as our hardware supports it, so why not implementing it...
+- */
+-static void bfin_lq035_fb_rotate(struct fb_info *fbi, int angle)
+-{
+-	pr_debug("%s: %p %d", __func__, fbi, angle);
+-#if (defined(UD) && defined(LBR))
+-	switch (angle) {
+-
+-	case 180:
+-		gpio_set_value(LBR, 0);
+-		gpio_set_value(UD, 1);
+-		break;
+-	default:
+-		gpio_set_value(LBR, 1);
+-		gpio_set_value(UD, 0);
+-		break;
+-	}
+-#endif
+-}
+-
+ static int bfin_lq035_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	if (nocursor)
+@@ -623,7 +601,6 @@ static struct fb_ops bfin_lq035_fb_ops = {
+ 	.fb_open		= bfin_lq035_fb_open,
+ 	.fb_release		= bfin_lq035_fb_release,
+ 	.fb_check_var		= bfin_lq035_fb_check_var,
+-	.fb_rotate		= bfin_lq035_fb_rotate,
+ 	.fb_fillrect		= cfb_fillrect,
+ 	.fb_copyarea		= cfb_copyarea,
+ 	.fb_imageblit		= cfb_imageblit,
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 393ae1bc07e8..6429f33167f5 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -594,27 +594,6 @@ static int set_fb_var(struct fb_info *fbi,
+ }
+ 
+ 
+-/* Set rotation (0, 90, 180, 270 degree), and switch to the new mode. */
+-static void omapfb_rotate(struct fb_info *fbi, int rotate)
+-{
+-	struct omapfb_plane_struct *plane = fbi->par;
+-	struct omapfb_device *fbdev = plane->fbdev;
+-
+-	omapfb_rqueue_lock(fbdev);
+-	if (rotate != fbi->var.rotate) {
+-		struct fb_var_screeninfo *new_var = &fbdev->new_var;
+-
+-		memcpy(new_var, &fbi->var, sizeof(*new_var));
+-		new_var->rotate = rotate;
+-		if (set_fb_var(fbi, new_var) = 0 &&
+-		    memcmp(new_var, &fbi->var, sizeof(*new_var))) {
+-			memcpy(&fbi->var, new_var, sizeof(*new_var));
+-			ctrl_change_mode(fbi);
+-		}
+-	}
+-	omapfb_rqueue_unlock(fbdev);
+-}
+-
+ /*
+  * Set new x,y offsets in the virtual display for the visible area and switch
+  * to the new mode.
+@@ -1256,7 +1235,6 @@ static struct fb_ops omapfb_ops = {
+ 	.fb_ioctl	= omapfb_ioctl,
+ 	.fb_check_var	= omapfb_check_var,
+ 	.fb_set_par	= omapfb_set_par,
+-	.fb_rotate	= omapfb_rotate,
+ 	.fb_pan_display = omapfb_pan_display,
+ };
+ 
+diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skeletonfb.c
+index fefde7c6add7..f948baa16d82 100644
+--- a/drivers/video/fbdev/skeletonfb.c
++++ b/drivers/video/fbdev/skeletonfb.c
+@@ -614,22 +614,6 @@ int xxxfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ }
+ 
+ /**
+- *	xxxfb_rotate -  NOT a required function. If your hardware
+- *			supports rotation the whole screen then 
+- *			you would provide a hook for this. 
+- *
+- *      @info: frame buffer structure that represents a single frame buffer
+- *	@angle: The angle we rotate the screen.   
+- *
+- *      This operation is used to set or alter the properities of the
+- *	cursor.
+- */
+-void xxxfb_rotate(struct fb_info *info, int angle)
+-{
+-/* Will be deprecated */
+-}
+-
+-/**
+  *	xxxfb_sync - NOT a required function. Normally the accel engine 
+  *		     for a graphics card take a specific amount of time.
+  *		     Often we have to wait for the accelerator to finish
+@@ -665,7 +649,6 @@ static struct fb_ops xxxfb_ops = {
+ 	.fb_copyarea	= xxxfb_copyarea,	/* Needed !!! */
+ 	.fb_imageblit	= xxxfb_imageblit,	/* Needed !!! */
+ 	.fb_cursor	= xxxfb_cursor,		/* Optional !!! */
+-	.fb_rotate	= xxxfb_rotate,
+ 	.fb_sync	= xxxfb_sync,
+ 	.fb_ioctl	= xxxfb_ioctl,
+ 	.fb_mmap	= xxxfb_mmap,
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 55433f86f0a3..dfe88351341f 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -296,9 +296,6 @@ struct fb_ops {
+ 	/* Draws cursor */
+ 	int (*fb_cursor) (struct fb_info *info, struct fb_cursor *cursor);
+ 
+-	/* Rotates the display */
+-	void (*fb_rotate)(struct fb_info *info, int angle);
+-
+ 	/* wait for blit idle, optional */
+ 	int (*fb_sync)(struct fb_info *info);
+ 
+-- 
+2.1.4
 
-
-On 25/02/16 21:30, Linus Walleij wrote:
-> On Thu, Feb 25, 2016 at 5:45 PM, Tomi Valkeinen <tomi.valkeinen@ti.com>=
- wrote:
->> On 25/02/16 16:04, Linus Walleij wrote:
->=20
->>> *All* the others
->>> will be very happy with *ONE* display defined as panel in the
->>> device tree, and off they go. Usually VGA. And that will look
->>
->> You keep mentioning VGA. So is there are VGA output? Or do you just me=
-an
->> MIPI DPI panels, which happen to take the same video timings as VGA?
->=20
-> Russell beat me to it, yes there is an external VGA encoder.
-> It needs some bits set up through the "misc registers" system
-> controller as indicated. From the CLCD hardware point of view
-> it's no different than any other panel. So the DTS fragment looks
-> like so:
->=20
->                         panel {
->                                 compatible =3D "panel-dpi";
->=20
->                                 port {
->                                         clcd_panel: endpoint {
->                                                 remote-endpoint =3D <&c=
-lcd_pads>;
->                                         };
->                                 };
->=20
->                                 /* Standard 640x480 VGA timings */
->                                 panel-timing {
->                                         clock-frequency =3D <25175000>;=
-
->                                         hactive =3D <640>;
->                                         hback-porch =3D <48>;
->                                         hfront-porch =3D <16>;
->                                         hsync-len =3D <96>;
->                                         vactive =3D <480>;
->                                         vback-porch =3D <33>;
->                                         vfront-porch =3D <10>;
->                                         vsync-len =3D <2>;
->                                 };
->                         };
->=20
->=20
-> This is reported as the default display type if no LCD panel
-> is connected.
->=20
-> If a LCD panel is also connected, it take precedence.
-
-Ok. Well... It's all wrong, but I don't know how much time we want to
-spend on fixing that.
-
-Although one thing to consider is that if there is ever going to be a
-DRM driver for CLCD, it would be good to have the device tree parts
-correctly representing the hardware, so that the DRM driver could be
-implemented in a cleaner, more generic way.
-
- Tomi
-
-
---Ai5rwpjqHvpssBuIHBnmeOmdCu3CQ6KRB--
-
---3VhLwuJptRENgWd9QQ3xd8SuQ9A24i4MQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJW0C0oAAoJEPo9qoy8lh71QJQP/A7E8z8pjiG6r2oQgJOx4cSI
-HWqXvGI3c8OOQ/7dnS6ejXX5/RHuXLGDEPbuYppj5FE4cj/KwdyIUkUq83q+CNEF
-pzltoZ5SJwaxCl1pSk09UgKz/jtFPhJT91mzZx+Qkkg28OrhzibTh4r5OHAIQ2qx
-63g6lexdpxsK6Ba8llQHVX1DQLf34wlB1F9jMYPFvH7FU2/vzc5PBq3l018mN+gK
-5sYPC+BazpZlPY4KAkgZZDI7UskcCf42FCudtnBLyPcnl2/VR3DtQRaRTJzekpoQ
-YzWuAQoINvy9i53PnCCycTz/8RPmMvhSC+cpyTIwmImtXl+KNpoW1s0iAB+wXZLQ
-viFySFBTBWsrs2jG/zsLcyUIATmSyDjNKWTcgrbMU44sEaqfbc7oOIsWmsO3z7uQ
-GV06GSAxeDupxd/QF45YMkabV04TT3fydXcfeVuGyyEbIbi3r9G72ln7q+/Bznj6
-R35vBwsJAzfEfLw/mm5LGdqw7PgI65lksZtscYSevpKJYgbIwzBX1Qu4+9ix6FPa
-i0tipss0i1k998oCDrQQFz0a/h2Wo5V7g3r0PgJ3d+HnPJ325JTVaUWwqN/FvQND
-OHf+tr9mLuFqAz5xFVsXjUzvLDl1mhXkpz6EBDPi0N1KUackCPB2+NM9FQ42/6Ku
-GHXwmlGGqRCNTE+GOSi/
-=Wn79
------END PGP SIGNATURE-----
-
---3VhLwuJptRENgWd9QQ3xd8SuQ9A24i4MQ--

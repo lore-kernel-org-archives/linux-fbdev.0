@@ -1,69 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 26 Feb 2016 10:18:00 +0000
-Subject: Re: [PATCH] fbdev: n411: check return value
-Message-Id: <56D02658.2060401@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ws15SUTqLr6w8wcQ9ghDviiPoTurGFL2m"
+From: Fabio Estevam <festevam@gmail.com>
+Date: Wed, 10 Feb 2016 19:52:51 +0000
+Subject: Re: [PATCH] video: fbdev: imxfb: Provide a reset mechanism
+Message-Id: <CAOMZO5AaJjQ-JMTzgqLFFE+YSV-sftZe8=zMxLygvToMd4DfsA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1456231457-20806-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1456231457-20806-1-git-send-email-sudipm.mukherjee@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <1453209057-16444-1-git-send-email-festevam@gmail.com>
+In-Reply-To: <1453209057-16444-1-git-send-email-festevam@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---ws15SUTqLr6w8wcQ9ghDviiPoTurGFL2m
-Content-Type: multipart/mixed; boundary="ibPc9N0GctlcrJuffRKhaPINCowPR8eTn"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Message-ID: <56D02658.2060401@ti.com>
-Subject: Re: [PATCH] fbdev: n411: check return value
-References: <1456231457-20806-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1456231457-20806-1-git-send-email-sudipm.mukherjee@gmail.com>
+Hi Tomi,
 
---ibPc9N0GctlcrJuffRKhaPINCowPR8eTn
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jan 29, 2016 at 10:20 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+>
+>
+> On 19/01/16 15:10, Fabio Estevam wrote:
+>> From: Fabio Estevam <fabio.estevam@nxp.com>
+>>
+>> Currently when we boot the kernel on a mx25pdk the LCDC controller
+>> does not show the Linux logo on boot.
+>>
+>> This problem is well explained by Sascha Hauer:
+>>
+>> "Unfortunately this LCD controller does not have an enable bit. The
+>> controller starts directly when the clocks are enabled. If the clocks
+>> are enabled when the controller is not yet programmed with proper
+>> register values then it just goes into some undefined state. What I
+>> suspect is that the clocks already were enabled before driver probe,
+>> presumably by the bootloader, so the controller is already in undefined
+>> state when entering Linux. Now by dis/enabling the ipg clock you
+>> effectively reset the controller. Since you have programmed it with
+>> valid register values in the mean time it starts working after this
+>> reset."
+>>
+>> So do as suggested and force a reset of the LCDC hardware by
+>> enabling and disabling the IPG clock.
+>>
+>> With this change the Linux logo can be seen on boot on a mx25pdk.
+>>
+>> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
+>> ---
+>>  drivers/video/fbdev/imxfb.c | 15 +++++++++++++++
+>>  1 file changed, 15 insertions(+)
+>
+> Thanks. Queued for 4.5 fixes.
 
-
-
-On 23/02/16 14:44, Sudip Mukherjee wrote:
-> We were not checking the return value of platform_device_add_data()
-> which can fail.
->=20
-> Signed-off-by: Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
-> ---
->  drivers/video/fbdev/n411.c | 12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
-
-Thanks, queued for 4.6.
-
- Tomi
-
-
---ibPc9N0GctlcrJuffRKhaPINCowPR8eTn--
-
---ws15SUTqLr6w8wcQ9ghDviiPoTurGFL2m
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJW0CZYAAoJEPo9qoy8lh71ZNcP/1Jm+ychdxt/TVJaCNdpV/4D
-J9/ux+ip+I5BVpj3D9AyIHi6cQbn+PzvGAy10nE8GrbP28tbBVHP6FAF/JcDaHPD
-c1YDJg/b06/ebEJtxodEoq1N4kolF9cfZpki6dV86R4r8qyHDwemt3MJrZ/mxIcK
-voFJnJYHqK5ejEehwdQ/LJ/bqnuIxFTPdbC+mF1pPDe6O/kxIg2WyIzvInhgFTbn
-xqhcelQATJAooV1/s4274ugdNhPlXu6v+5pOa2dfz2Q5iXmYl+QJ3VuR08Dz3TXN
-AjGDm77z7hfPm0d8uYtv0m2qFQB4uVfJhyO2DMiKr52zUK/amY/9xGh/33msC6+9
-xtKc6e1WkxcC4gUeKdpw6XOWTBQk1f2z8WRKLxqEFGPjNfN4izDrvKJRk66k5kBy
-hzSempxqN80oQVDF0+876tIRTOIgixLT91c27y1PmsIyRJsSXR3OFf3FXmoJ8hrL
-///1zx+/LLbPcNeJvV7ajTPNwCua2GCh/hE33CCIEIHkUsfljHAzPzJtYo7wARIG
-WsfnryV+xPxOmtOrYq1h7F5RFNRCutYQiNrZUjoPidVqYAh3C+G0p3MBVZSVEDKc
-OOuMcpeCwZvHjdQLrembkDZabkefqtjkAcWVAVRZJXPb49CLo3Ew9aLSc78icbF9
-uWsjP6nCWBBg9dxpVYf9
-=4cld
------END PGP SIGNATURE-----
-
---ws15SUTqLr6w8wcQ9ghDviiPoTurGFL2m--
+Still don't see this one applied in Linus nor linux-next tree yet.

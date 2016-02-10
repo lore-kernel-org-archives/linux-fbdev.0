@@ -1,86 +1,35 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 16 Feb 2016 13:06:33 +0000
-Subject: Re: [PATCH v2 1/3] devicetree/bindings: add reset-gpios and vcc-supply for panel-dpi
-Message-Id: <56C31ED9.7070405@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="OoO5RHFw32qrgCIbrW4iaMWw92d7TRTLb"
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 10 Feb 2016 13:58:55 +0000
+Subject: Re: [PATCH] video: ARM CLCD: Added dt support to set tim2 register
+Message-Id: <CACRpkdZZBQUc4oPTPb+67C9A2r7qRV3zXRC7uusvDpNnM=i1eg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1450610002-10531-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1450610002-10531-2-git-send-email-u.kleine-koenig@pengutronix.de>
- <20151229205458.GA31241@rob-hp-laptop>
-In-Reply-To: <20151229205458.GA31241@rob-hp-laptop>
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+References: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com>
+In-Reply-To: <1424898082-1522-1-git-send-email-arun.ramamurthy@broadcom.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Dmitry Torokhov <dtor@google.com>, Anatol Pomazau <anatol@google.com>, Jonathan Richardson <jonathar@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, bcm-kernel-feedback-list <bcm-kernel-feedback-list@broadcom.com>
 
---OoO5RHFw32qrgCIbrW4iaMWw92d7TRTLb
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, Feb 25, 2015 at 10:01 PM, Arun Ramamurthy
+<arun.ramamurthy@broadcom.com> wrote:
 
+> Added code based on linaro tree:
+> http://git.linaro.org/kernel/linux-linaro-stable.git
+> with commit id:6846e7822c4cab5a84672baace3b768c2d0db142
+> at drivers/video/amba-clcd.c. This lets the driver set
+> certain tim2 register bits after reading them from
+> device tree.
+>
+> Reviewed-by: Ray Jui <rjui@broadcom.com>
+> Reviewed-by: Scott Branden <sbranden@broadcom.com>
+> Signed-off-by: Arun Ramamurthy <arun.ramamurthy@broadcom.com>
 
+I have now implemented this properly in this patch:
+http://marc.info/?l=linux-fbdev&m5459469913983&w=2
 
-On 29/12/15 22:54, Rob Herring wrote:
-> On Sun, Dec 20, 2015 at 12:13:20PM +0100, Uwe Kleine-K=C3=B6nig wrote:
->> Some displays have a reset input and/or need a regulator to function
->> properly. Allow to specify them for panel-dpi devices.
->>
->> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
->> ---
->>  Documentation/devicetree/bindings/display/panel/panel-dpi.txt | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/display/panel/panel-dpi=
-=2Etxt b/Documentation/devicetree/bindings/display/panel/panel-dpi.txt
->> index 216c894d4f99..b52ac52757df 100644
->> --- a/Documentation/devicetree/bindings/display/panel/panel-dpi.txt
->> +++ b/Documentation/devicetree/bindings/display/panel/panel-dpi.txt
->> @@ -7,6 +7,8 @@ Required properties:
->>  Optional properties:
->>  - label: a symbolic name for the panel
->>  - enable-gpios: panel enable gpio
->> +- reset-gpios: GPIO to control the RESET pin
->=20
-> The problem with this in a generic binding is what if the panel has=20
-> ordering requirements like enable gpio has to be inactive when reset=20
-> is deasserted?
->=20
->> +- vcc-supply: phandle of regulator that will be used to enable power =
-to the display
->=20
-> What if there are 2 supplies?
+Please provide your Tested-by/Reviewed-by/Ack if you're
+still working on this.
 
-Yes, I think it's an impossible task to create a really generic driver
-wrt. gpios and supplies. There may be a bunch of them, and a particular
-sequence to enable/disable needed, and even particular delays required
-in between.
-
-So I think the best we can do is to support (hopefully) most of the
-panels by defining one sequence panel-dpi uses. If a particular panel
-falls outside that, a separate driver is needed.
-
- Tomi
-
-
---OoO5RHFw32qrgCIbrW4iaMWw92d7TRTLb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWwx7ZAAoJEPo9qoy8lh71p/kP/2h+X1M1ph11MrlYMJepjbG2
-m2G940at+2EqSOzXm+NgJUCLOb+GYipPpAY8gx0IP17nEFzD8JJkjZ8YH6oT12NF
-AyxVGge2270CdRjqBrRCzSk4FEI0rE/GEgSKqFF+KDRevTvGpvYgGLacjeHAWKT9
-nleeGjiO3dD0CD2nI+jy5mneasz28dgzYMG7d2FgRl6MOmGfpPPu/M0GmXpN+xg6
-LBOSmJ3QTxwwHgrdcj3DmLvCu0frDykl0xH9HDYNeeP2nUglSJkzZksfKqxKVY2K
-GCGEWFQGIkmN/dWLb0vRIy+ZpkDiYRGappn58qEobK3fMvXwZvvVLsVJe2oWhp6+
-ClvoFIbCA84MmeZC8qfwkJoz4ZRu5Nh5cnvtVPpQlk402VJddt9DU5K1ps212gcc
-FhWVfm8Z6qupnvhm+GelASWdngZowl3ZLWfhjWkCj30uPz1Mk/i3e9PNCytCr4WE
-BdMefbhUSe4cGBWb60FIHMmKDP26DeOhRrpB4qpmPvhUG25cxKtWo8hwRgui8lDK
-1OgR005E1/ETfTCZT+8IoHEGk75XuLKYbZcE9W4f89pV5VXftpjFVRf6Ki0FrgnF
-0nAL9gT1lDbyCmIHjuEultLaMqjf74VeVAuStcjPYp8iLVCJygmiTU4qE5PCyyLb
-v/9s8/mVYpRXSv/JgMwQ
-=BP+Y
------END PGP SIGNATURE-----
-
---OoO5RHFw32qrgCIbrW4iaMWw92d7TRTLb--
+Yours,
+Linus Walleij

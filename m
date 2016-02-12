@@ -1,157 +1,89 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 23 Feb 2016 10:01:39 +0000
-Subject: [PATCH 2/7 v2] video: ARM CLCD: backlight support for OF
-Message-Id: <1456221704-5792-3-git-send-email-linus.walleij@linaro.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 12 Feb 2016 11:15:43 +0000
+Subject: [GIT PULL] fbdev fixes for 4.5
+Message-Id: <56BDBEDF.5080603@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="wXC2x7wFfEnabsptAwiSCxawFeePjPg90"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1456221704-5792-1-git-send-email-linus.walleij@linaro.org>
-In-Reply-To: <1456221704-5792-1-git-send-email-linus.walleij@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-If the device is probed from device tree, we can support
-backlight. This is used with some systems such as the
-ST Microelectronics Nomadik.
+--wXC2x7wFfEnabsptAwiSCxawFeePjPg90
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-We have to add HAS_IOMEM to the dependencies of CLCD since
-the backlight class device will now be selected, and if it
-gets selected on an arch that does not have IOMEM,
-compilation will fail.
+Hi Linus,
 
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
-ChangeLog v1->v2:
-- No changes. Just reposting.
----
- drivers/video/fbdev/Kconfig     |  4 +++-
- drivers/video/fbdev/amba-clcd.c | 40 ++++++++++++++++++++++++++++++++++++++++
- include/linux/amba/clcd.h       |  3 +++
- 3 files changed, 46 insertions(+), 1 deletion(-)
+The following changes since commit 92e963f50fc74041b5e9e744c330dca48e04f0=
+8d:
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 8ea45a5cd806..6dcd91237551 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -284,12 +284,14 @@ config FB_PM2_FIFO_DISCONNECT
- config FB_ARMCLCD
- 	tristate "ARM PrimeCell PL110 support"
- 	depends on ARM || ARM64 || COMPILE_TEST
--	depends on FB && ARM_AMBA
-+	depends on FB && ARM_AMBA && HAS_IOMEM
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_MODE_HELPERS if OF
- 	select VIDEOMODE_HELPERS if OF
-+	select BACKLIGHT_LCD_SUPPORT if OF
-+	select BACKLIGHT_CLASS_DEVICE if OF
- 	help
- 	  This framebuffer device driver is for the ARM PrimeCell PL110
- 	  Colour LCD controller.  ARM PrimeCells provide the building
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index f9ef06d0cd48..c5d1e9ca81ab 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -30,6 +30,7 @@
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_graph.h>
-+#include <linux/backlight.h>
- #include <video/display_timing.h>
- #include <video/of_display_timing.h>
- #include <video/videomode.h>
-@@ -73,6 +74,11 @@ static void clcdfb_disable(struct clcd_fb *fb)
- 	if (fb->board->disable)
- 		fb->board->disable(fb);
- 
-+	if (fb->panel->backlight) {
-+		fb->panel->backlight->props.power = FB_BLANK_POWERDOWN;
-+		backlight_update_status(fb->panel->backlight);
-+	}
-+
- 	val = readl(fb->regs + fb->off_cntl);
- 	if (val & CNTL_LCDPWR) {
- 		val &= ~CNTL_LCDPWR;
-@@ -119,6 +125,14 @@ static void clcdfb_enable(struct clcd_fb *fb, u32 cntl)
- 	writel(cntl, fb->regs + fb->off_cntl);
- 
- 	/*
-+	 * Turn on backlight
-+	 */
-+	if (fb->panel->backlight) {
-+		fb->panel->backlight->props.power = FB_BLANK_UNBLANK;
-+		backlight_update_status(fb->panel->backlight);
-+	}
-+
-+	/*
- 	 * finally, enable the interface.
- 	 */
- 	if (fb->board->enable)
-@@ -578,6 +592,28 @@ static int clcdfb_snprintf_mode(char *buf, int size, struct fb_videomode *mode)
- 			mode->refresh);
- }
- 
-+static int clcdfb_of_get_backlight(struct device_node *endpoint,
-+				   struct clcd_panel *clcd_panel)
-+{
-+	struct device_node *panel;
-+	struct device_node *backlight;
-+
-+	panel = of_graph_get_remote_port_parent(endpoint);
-+	if (!panel)
-+		return -ENODEV;
-+
-+	/* Look up the optional backlight phandle */
-+	backlight = of_parse_phandle(panel, "backlight", 0);
-+	if (backlight) {
-+		clcd_panel->backlight = of_find_backlight_by_node(backlight);
-+		of_node_put(backlight);
-+
-+		if (!clcd_panel->backlight)
-+			return -EPROBE_DEFER;
-+	}
-+	return 0;
-+}
-+
- static int clcdfb_of_get_mode(struct device *dev, struct device_node *endpoint,
- 		struct fb_videomode *mode)
- {
-@@ -664,6 +700,10 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
- 	if (!endpoint)
- 		return -ENODEV;
- 
-+	err = clcdfb_of_get_backlight(endpoint, fb->panel);
-+	if (err)
-+		return err;
-+
- 	err = clcdfb_of_get_mode(&fb->dev->dev, endpoint, &fb->panel->mode);
- 	if (err)
- 		return err;
-diff --git a/include/linux/amba/clcd.h b/include/linux/amba/clcd.h
-index e82e3ee2c54a..e64c1ccebb76 100644
---- a/include/linux/amba/clcd.h
-+++ b/include/linux/amba/clcd.h
-@@ -93,6 +93,8 @@ enum {
- 	CLCD_CAP_ALL		= CLCD_CAP_BGR | CLCD_CAP_RGB,
- };
- 
-+struct backlight_device;
-+
- struct clcd_panel {
- 	struct fb_videomode	mode;
- 	signed short		width;	/* width in mm */
-@@ -105,6 +107,7 @@ struct clcd_panel {
- 				fixedtimings:1,
- 				grayscale:1;
- 	unsigned int		connector;
-+	struct backlight_device	*backlight;
- };
- 
- struct clcd_regs {
--- 
-2.4.3
+  Linux 4.5-rc1 (2016-01-24 13:06:47 -0800)
 
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-fixes-4.5
+
+for you to fetch changes up to b82fe6ddd782f847332aeabf8cab980852f61629:
+
+  video: fbdev: imxfb: Provide a reset mechanism (2016-01-29 14:20:16 +02=
+00)
+
+----------------------------------------------------------------
+fbdev fixes for v4.5
+
+* fix omap2plus_defconfig to enable omapfb as it was in v4.4
+* ocfb: fix timings for margins
+* s6e8ax0, da8xx-fb: fix compile warnings
+* mmp: fix build failure caused by bad printk parameters
+* imxfb: fix clock issue which kept the display off
+
+----------------------------------------------------------------
+Andrea Merello (1):
+      ocfb: fix tgdel and tvdel timing parameters
+
+Arnd Bergmann (3):
+      fbdev: s6e8ax0: avoid unused function warnings
+      fbdev: da8xx-fb: remove incorrect type cast
+      fbdev: mmp: print IRQ resource using %pR format string
+
+Fabio Estevam (1):
+      video: fbdev: imxfb: Provide a reset mechanism
+
+Tomi Valkeinen (1):
+      ARM: omap2plus_defconfig: update display configs
+
+ arch/arm/configs/omap2plus_defconfig  | 33 ++++++++++++++++-------------=
+----
+ drivers/video/fbdev/da8xx-fb.c        |  6 +++---
+ drivers/video/fbdev/exynos/s6e8ax0.c  | 13 ++++---------
+ drivers/video/fbdev/imxfb.c           | 15 +++++++++++++++
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c |  3 +--
+ drivers/video/fbdev/ocfb.c            |  4 ++--
+ 6 files changed, 41 insertions(+), 33 deletions(-)
+
+
+--wXC2x7wFfEnabsptAwiSCxawFeePjPg90
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWvb7fAAoJEPo9qoy8lh71MjcP/RfrJvpPsWuSVAxQg5sD9gIV
+ThCn3huYpoO5GA88btqyeIp5rD5t4FPRleKuEeN68GdLPBV8MO4aEfooAuyaUgnH
+IVju4pfe3NUF2Yh4ij7iMx0vOBTB+PYRylyPjaKR1v7IW/F6meBkBt1e4z1NxhDX
+Aba33bq5LjQroC+MN9H7KtmKhtzLcYHYR+b2zqBAw2GKqkd9igAR+Sv3DlAnxgBZ
+16Uzu3Sk8MbS5vfn5EBbZEq5t6RGwU1MJCLPru6lY+T/V8kc+tlbLP68VMJWc0vI
+93vSlYS/aifa+DzOxT9isFxuVV2s5wCOnzG3nqG+vhs9An9WRPtd35FyJOuvWgqG
+jvtqyejBX9KiZ76BLpqz/HJpgNRtVsb3EcwsoFiunIBlQ076//GU3+8ODuBzqR50
+prt0wRYLQyD0EMErICActgUBAX677dSZc8g26XqQ3lv9GxXjzrE++3usd8bE7uaO
+rWn2AC1YE7NL7Eqo+mRnVv6UsMEpGSu1HXwd8QXcPDOfoDvUmPWt6hCBOCp6RTFs
+PnVFaHfwT6Bp6y6+lUw5mFwuILENG1xxFbVN7MKNfbbmi/XwCKMGY4DM8qbDZid4
+HOv5MhCSUIvVPOklu+cBHJMMg4HZCmuCpGQ5htBr3qX5mw3H7OTZv40lQNiWr4pl
+QT+sTXUWYXlwYCdmvclw
+=4Nie
+-----END PGP SIGNATURE-----
+
+--wXC2x7wFfEnabsptAwiSCxawFeePjPg90--

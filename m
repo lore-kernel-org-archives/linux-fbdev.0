@@ -1,77 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 26 Feb 2016 10:20:33 +0000
-Subject: Re: [PATCH 0/7] video: ARM CLCD: non-controversial parts
-Message-Id: <56D026F1.1080009@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="RcDePFxUfw0KVlDmEOqbsx4paH3VLweuX"
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 12 Feb 2016 12:04:40 +0000
+Subject: [PATCH] xen kconfig: clarify INPUT_XEN_KBDDEV_FRONTEND select
+Message-Id: <1455278707-2008263-1-git-send-email-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1456221704-5792-1-git-send-email-linus.walleij@linaro.org>
- <CACRpkdbGDXTbenOY_bsiuGqS3oBP3CKyjsOJuMPStaMFi=u3hw@mail.gmail.com>
-In-Reply-To: <CACRpkdbGDXTbenOY_bsiuGqS3oBP3CKyjsOJuMPStaMFi=u3hw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---RcDePFxUfw0KVlDmEOqbsx4paH3VLweuX
-Content-Type: multipart/mixed; boundary="7a8oKcEg5JN7Lm0qLfMiv5h8rfJLwJTJP"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Linus Walleij <linus.walleij@linaro.org>,
- "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh@kernel.org>,
- Russell King <linux@arm.linux.org.uk>
-Cc: "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, Arnd Bergmann <arnd@arndb.de>,
- Ray Jui <ray.jui@broadcom.com>
-Message-ID: <56D026F1.1080009@ti.com>
-Subject: Re: [PATCH 0/7] video: ARM CLCD: non-controversial parts
-References: <1456221704-5792-1-git-send-email-linus.walleij@linaro.org>
- <CACRpkdbGDXTbenOY_bsiuGqS3oBP3CKyjsOJuMPStaMFi=u3hw@mail.gmail.com>
-In-Reply-To: <CACRpkdbGDXTbenOY_bsiuGqS3oBP3CKyjsOJuMPStaMFi=u3hw@mail.gmail.com>
+The Xen framebuffer driver selects the xen keyboard driver, so the latter
+will be built-in if XEN_FBDEV_FRONTEND=y. However, when CONFIG_INPUT
+is a loadable module, this configuration cannot work. On mainline kernels,
+the symbol will be enabled but not used, while in combination with
+a patch I have to detect such useless configurations, we get the
+expected link failure:
 
---7a8oKcEg5JN7Lm0qLfMiv5h8rfJLwJTJP
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+drivers/input/built-in.o: In function `xenkbd_remove':
+xen-kbdfront.c:(.text+0x2f0): undefined reference to `input_unregister_device'
+xen-kbdfront.c:(.text+0x30e): undefined reference to `input_unregister_device'
 
+This changes the dependencies of XEN_FBDEV_FRONTEND so it cannot be
+built-in if CONFIG_INPUT=m && CONFIG_INPUT_MISC=y, as that would result
+in the broken select.
 
+As usual, we would be much better off without the 'select', but removing
+it now would likely break existing user configurations that depend on
+it, so this adds another hack on top to get it working.
 
-On 25/02/16 21:35, Linus Walleij wrote:
-> On Tue, Feb 23, 2016 at 11:01 AM, Linus Walleij
-> <linus.walleij@linaro.org> wrote:
->=20
->> This is a redux version of the previous patch set that strips out
->> any attempts to auto-switch or rewrite the device tree to match
->> the CLCD Versatile panel.
->=20
-> It seems patch #4 didn't make it out so I re-sent it.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Fixes: 36c1132e34bd ("xen kconfig: fix select INPUT_XEN_KBDDEV_FRONTEND")
+---
+ drivers/video/fbdev/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-Hmm, it was there in the series... Russell had comments to it, to which
-you didn't reply.
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 8ea45a5cd806..fd3d6fd290a9 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2241,6 +2241,7 @@ config FB_VIRTUAL
+ config XEN_FBDEV_FRONTEND
+ 	tristate "Xen virtual frame buffer support"
+ 	depends on FB && XEN
++	depends on INPUT || !INPUT_MISC
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_IMAGEBLIT
+-- 
+2.7.0
 
- Tomi
-
-
---7a8oKcEg5JN7Lm0qLfMiv5h8rfJLwJTJP--
-
---RcDePFxUfw0KVlDmEOqbsx4paH3VLweuX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJW0CbxAAoJEPo9qoy8lh71fKQP/0S2gjsH8HqmTF0SjI9NUjpp
-rGd19Iwr8NJE9uc5bG75X2HnuHubS9blZkqPzvqok83cZkitaI+7Fruu1kvO2APG
-RvQQ5Ba9Tv7/d8pfuWEa6hfM8odbkYanZbAOVfZ6XKVFuRCpdQBnVK7+692HpAh7
-gt+LhtDwYxPNot5f1eGJsohmm9laH7ZRCR66BKSkDgKc2nkikk0VeVCq1FIrelFU
-g9JM53gcOVV0WBf1mPcWZTFaOgZIF7aa6LHcJvtwUhSpuXeI3mFdpVrFvPqGxdmB
-9Xz3BJzgMlAGZHca8qDnFJgEDob6bl5y76/QVl4XuOgHJ8UMBDx3wLDsjy07otsP
-/c2GOHLUr9XbaDaMSRkJuTd3cSIgLBYm3UCGpX7+YuvBJDx2ZUkHwWkuz6lEt3G5
-NBiTf9hqkR+GRxh/FFWNbFdo03hchfxwOEOKVW1ro0reCPvHrOLyxaa3BfboFZzc
-Ew8eQJwKkPrPPihF1787ZTuqhDWtnOQ9KqwjbMtwxo9iKAdThiwT/qDVH1KACm10
-wxtvNWomDe8ILgEhN5bt2pmd24atuVd+5Ct1QOI+AU567HClmpX1mp7iwvRIjnk9
-N4I8GPZoaYydDS5hSNgRqAXF2iLYUDU0hl+4hLVGDyIOdqOXY67Z9tdEpH3usovv
-JJoUPaPO3fL1gIZSwYQE
-=Gh0M
------END PGP SIGNATURE-----
-
---RcDePFxUfw0KVlDmEOqbsx4paH3VLweuX--

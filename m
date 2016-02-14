@@ -1,389 +1,99 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 08 Feb 2016 09:13:08 +0000
-Subject: [PATCH 05/11 v2] video: ARM CLCD: add special board and panel hooks for Nomadik
-Message-Id: <1454922788-10174-1-git-send-email-linus.walleij@linaro.org>
+From: Lars =?ISO-8859-1?Q?D=F6lle?= <lars.doelle@on-line.de>
+Date: Sun, 14 Feb 2016 15:59:58 +0000
+Subject: RADEON/4.3.0 sets non-native screen resolution for the console
+Message-Id: <2076177.cEDS1jCEQG@x64.localnet>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-In the .board_init() callback will set up a mux register in
-the Nomadik system controller. It so happens that the platform
-has two display output engines, and we have to poke a bit in
-a special register to make sure the right engine is muxed in
-as they are mutually exclusive.
+Hi All,
 
-The Nomadik CLCD variant is instantiated on a platform where
-it is combined with a 800x480 TPO WVGA display. In the
-.panel_init() hook we will detect this display from the
-compatible string and set it up. We also add .enable() and
-.disable() callbacks for it as the sleep state is software
-controlled.
+since quite a while, the RADEON frame buffer driver does not longer initially
+sets the native screen resolution for the console, which is 1920x1200 here, 
+but decides on 1024x768 instead. The display uses a display-port connector, 
+which might be the particularity.
 
-The display is connected with a special 3-wire serial bus
-(this is sadly neither I2C or SPI) using three GPIO lines that
-we bitbang to detect the display and enable/disable sleep
-state.
+As you see, this is a stock debian kernel, but I have the same effect with
+locally compiled kernels. Earlier kernels up to late 3.x worked well in this
+respect, so do drivers for other hardware. Thus I assume that the effect is
+unwanted. I can not work around the problem, since mode setting is not longer
+available.
 
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
-ChangeLog v1->v2:
-- Removed unused "var" pointer variable
-- Follow *endpoint, not endpoint, as that gives us a **
-  rather than a *
----
- drivers/video/fbdev/Makefile            |   1 +
- drivers/video/fbdev/amba-clcd-nomadik.c | 262 ++++++++++++++++++++++++++++++++
- drivers/video/fbdev/amba-clcd-nomadik.h |  24 +++
- drivers/video/fbdev/amba-clcd.c         |   6 +-
- 4 files changed, 292 insertions(+), 1 deletion(-)
- create mode 100644 drivers/video/fbdev/amba-clcd-nomadik.c
- create mode 100644 drivers/video/fbdev/amba-clcd-nomadik.h
+I'm not sure what information you'd need beside the ones included below, but
+I would gladly provide them on request and/or could try out a patch if 
+necessary.
 
-diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
-index 65fb15075c8f..f0aec3aa213c 100644
---- a/drivers/video/fbdev/Makefile
-+++ b/drivers/video/fbdev/Makefile
-@@ -79,6 +79,7 @@ obj-$(CONFIG_FB_ATMEL)		  += atmel_lcdfb.o
- obj-$(CONFIG_FB_PVR2)             += pvr2fb.o
- obj-$(CONFIG_FB_VOODOO1)          += sstfb.o
- obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o
-+obj-$(CONFIG_ARCH_NOMADIK)	  += amba-clcd-nomadik.o
- obj-$(CONFIG_PLAT_VERSATILE_CLCD) += amba-clcd-versatile.o
- obj-$(CONFIG_FB_GOLDFISH)         += goldfishfb.o
- obj-$(CONFIG_FB_68328)            += 68328fb.o
-diff --git a/drivers/video/fbdev/amba-clcd-nomadik.c b/drivers/video/fbdev/amba-clcd-nomadik.c
-new file mode 100644
-index 000000000000..863b568859b6
---- /dev/null
-+++ b/drivers/video/fbdev/amba-clcd-nomadik.c
-@@ -0,0 +1,262 @@
-+#include <linux/amba/bus.h>
-+#include <linux/amba/clcd.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/of.h>
-+#include <linux/of_graph.h>
-+#include <linux/delay.h>
-+#include <linux/bitops.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/regmap.h>
-+
-+#include "amba-clcd-nomadik.h"
-+
-+static struct gpio_desc *grestb;
-+static struct gpio_desc *scen;
-+static struct gpio_desc *scl;
-+static struct gpio_desc *sda;
-+
-+static u8 tpg110_readwrite_reg(bool write, u8 address, u8 outval)
-+{
-+	int i;
-+	u8 inval = 0;
-+
-+	/* Assert SCEN */
-+	gpiod_set_value_cansleep(scen, 1);
-+	ndelay(150);
-+	/* Hammer out the address */
-+	for (i = 5; i >= 0; i--) {
-+		if (address & BIT(i))
-+			gpiod_set_value_cansleep(sda, 1);
-+		else
-+			gpiod_set_value_cansleep(sda, 0);
-+		ndelay(150);
-+		/* Send an SCL pulse */
-+		gpiod_set_value_cansleep(scl, 1);
-+		ndelay(160);
-+		gpiod_set_value_cansleep(scl, 0);
-+		ndelay(160);
-+	}
-+
-+	if (write) {
-+		/* WRITE */
-+		gpiod_set_value_cansleep(sda, 0);
-+	} else {
-+		/* READ */
-+		gpiod_set_value_cansleep(sda, 1);
-+	}
-+	ndelay(150);
-+	/* Send an SCL pulse */
-+	gpiod_set_value_cansleep(scl, 1);
-+	ndelay(160);
-+	gpiod_set_value_cansleep(scl, 0);
-+	ndelay(160);
-+
-+	if (!write)
-+		/* HiZ turn-around cycle */
-+		gpiod_direction_input(sda);
-+	ndelay(150);
-+	/* Send an SCL pulse */
-+	gpiod_set_value_cansleep(scl, 1);
-+	ndelay(160);
-+	gpiod_set_value_cansleep(scl, 0);
-+	ndelay(160);
-+
-+	/* Hammer in/out the data */
-+	for (i = 7; i >= 0; i--) {
-+		int value;
-+
-+		if (write) {
-+			value = !!(outval & BIT(i));
-+			gpiod_set_value_cansleep(sda, value);
-+		} else {
-+			value = gpiod_get_value(sda);
-+			if (value)
-+				inval |= BIT(i);
-+		}
-+		ndelay(150);
-+		/* Send an SCL pulse */
-+		gpiod_set_value_cansleep(scl, 1);
-+		ndelay(160);
-+		gpiod_set_value_cansleep(scl, 0);
-+		ndelay(160);
-+	}
-+
-+	gpiod_direction_output(sda, 0);
-+	/* Deassert SCEN */
-+	gpiod_set_value_cansleep(scen, 0);
-+	/* Satisfies SCEN pulse width */
-+	udelay(1);
-+
-+	return inval;
-+}
-+
-+static u8 tpg110_read_reg(u8 address)
-+{
-+	return tpg110_readwrite_reg(false, address, 0);
-+}
-+
-+static void tpg110_write_reg(u8 address, u8 outval)
-+{
-+	tpg110_readwrite_reg(true, address, outval);
-+}
-+
-+static void tpg110_startup(struct device *dev)
-+{
-+	u8 val;
-+
-+	dev_info(dev, "TPG110 display enable\n");
-+	/* De-assert the reset signal */
-+	gpiod_set_value_cansleep(grestb, 0);
-+	mdelay(1);
-+	dev_info(dev, "de-asserted GRESTB\n");
-+
-+	/* Test display communication */
-+	tpg110_write_reg(0x00, 0x55);
-+	val = tpg110_read_reg(0x00);
-+	if (val = 0x55)
-+		dev_info(dev, "passed communication test\n");
-+	val = tpg110_read_reg(0x01);
-+	dev_info(dev, "TPG110 chip ID: %d version: %d\n",
-+		val>>4, val&0x0f);
-+
-+	/* Show display resolution */
-+	val = tpg110_read_reg(0x02);
-+	val &= 7;
-+	switch (val) {
-+	case 0x0:
-+		dev_info(dev, "IN 400x240 RGB -> OUT 800x480 RGB (dual scan)");
-+		break;
-+	case 0x1:
-+		dev_info(dev, "IN 480x272 RGB -> OUT 800x480 RGB (dual scan)");
-+		break;
-+	case 0x4:
-+		dev_info(dev, "480x640 RGB");
-+		break;
-+	case 0x5:
-+		dev_info(dev, "480x272 RGB");
-+		break;
-+	case 0x6:
-+		dev_info(dev, "640x480 RGB");
-+		break;
-+	case 0x7:
-+		dev_info(dev, "800x480 RGB");
-+		break;
-+	default:
-+		dev_info(dev, "ILLEGAL RESOLUTION");
-+		break;
-+	}
-+
-+	val = tpg110_read_reg(0x03);
-+	dev_info(dev, "resolution is controlled by %s\n",
-+		(val & BIT(7)) ? "software" : "hardware");
-+}
-+
-+static void tpg110_enable(struct clcd_fb *fb)
-+{
-+	struct device *dev = &fb->dev->dev;
-+	static bool startup;
-+	u8 val;
-+
-+	if (!startup) {
-+		tpg110_startup(dev);
-+		startup = true;
-+	}
-+
-+	/* Take chip out of standby */
-+	val = tpg110_read_reg(0x03);
-+	val |= BIT(0);
-+	tpg110_write_reg(0x03, val);
-+}
-+
-+static void tpg110_disable(struct clcd_fb *fb)
-+{
-+	u8 val;
-+
-+	dev_info(&fb->dev->dev, "TPG110 display disable\n");
-+	val = tpg110_read_reg(0x03);
-+	/* Put into standby */
-+	val &= ~BIT(0);
-+	tpg110_write_reg(0x03, val);
-+}
-+
-+static void tpg110_init(struct device *dev, struct device_node *np,
-+			struct clcd_board *board)
-+{
-+	dev_info(dev, "TPG110 display init\n");
-+
-+	grestb = devm_get_gpiod_from_child(dev, "grestb", &np->fwnode);
-+	if (IS_ERR(grestb)) {
-+		dev_err(dev, "no GRESTB GPIO\n");
-+		return;
-+	}
-+	/* This asserts the GRESTB signal, putting the display into reset */
-+	gpiod_direction_output(grestb, 1);
-+
-+	scen = devm_get_gpiod_from_child(dev, "scen", &np->fwnode);
-+	if (IS_ERR(scen)) {
-+		dev_err(dev, "no SCEN GPIO\n");
-+		return;
-+	}
-+	gpiod_direction_output(scen, 0);
-+	scl = devm_get_gpiod_from_child(dev, "scl", &np->fwnode);
-+	if (IS_ERR(scl)) {
-+		dev_err(dev, "no SCL GPIO\n");
-+		return;
-+	}
-+	gpiod_direction_output(scl, 0);
-+	sda = devm_get_gpiod_from_child(dev, "sda", &np->fwnode);
-+	if (IS_ERR(sda)) {
-+		dev_err(dev, "no SDA GPIO\n");
-+		return;
-+	}
-+	gpiod_direction_output(sda, 0);
-+	board->enable = tpg110_enable;
-+	board->disable = tpg110_disable;
-+}
-+
-+int nomadik_clcd_init_panel(struct clcd_fb *fb,
-+			    struct device_node **endpoint)
-+{
-+	struct device_node *panel;
-+
-+	*endpoint = of_graph_get_next_endpoint(fb->dev->dev.of_node,
-+					       NULL);
-+	if (!*endpoint)
-+		return -ENODEV;
-+
-+	panel = of_graph_get_remote_port_parent(*endpoint);
-+	if (!panel)
-+		return -ENODEV;
-+
-+	if (of_device_is_compatible(panel, "tpo,tpg110"))
-+		tpg110_init(&fb->dev->dev, panel, fb->board);
-+	else
-+		dev_info(&fb->dev->dev, "unknown panel\n");
-+
-+	/* Unknown panel, fall through */
-+	return 0;
-+}
-+
-+#define PMU_CTRL_OFFSET 0x0000
-+#define PMU_CTRL_LCDNDIF BIT(26)
-+
-+int nomadik_clcd_init_board(struct amba_device *adev,
-+			    struct clcd_board *board)
-+{
-+	struct regmap *pmu_regmap;
-+
-+	dev_info(&adev->dev, "Nomadik CLCD board init\n");
-+	pmu_regmap +		syscon_regmap_lookup_by_compatible("stericsson,nomadik-pmu");
-+	if (IS_ERR(pmu_regmap)) {
-+		dev_err(&adev->dev, "could not find PMU syscon regmap\n");
-+		return PTR_ERR(pmu_regmap);
-+	}
-+	regmap_update_bits(pmu_regmap,
-+			   PMU_CTRL_OFFSET,
-+			   PMU_CTRL_LCDNDIF,
-+			   0);
-+	dev_info(&adev->dev, "set PMU mux to CLCD mode\n");
-+
-+	return 0;
-+}
-diff --git a/drivers/video/fbdev/amba-clcd-nomadik.h b/drivers/video/fbdev/amba-clcd-nomadik.h
-new file mode 100644
-index 000000000000..b34dbf3061bf
---- /dev/null
-+++ b/drivers/video/fbdev/amba-clcd-nomadik.h
-@@ -0,0 +1,24 @@
-+#ifndef _AMBA_CLCD_NOMADIK_H
-+#define _AMBA_CLCD_NOMADIK_H
-+
-+#include <linux/amba/bus.h>
-+
-+#ifdef CONFIG_ARCH_NOMADIK
-+int nomadik_clcd_init_board(struct amba_device *adev,
-+			     struct clcd_board *board);
-+int nomadik_clcd_init_panel(struct clcd_fb *fb,
-+			    struct device_node **endpoint);
-+#else
-+static inline int nomadik_clcd_init_board(struct amba_device *adev,
-+					  struct clcd_board *board)
-+{
-+	return 0;
-+}
-+static inline int nomadik_clcd_init_panel(struct clcd_fb *fb,
-+					  struct device_node **endpoint)
-+{
-+	return 0;
-+}
-+#endif
-+
-+#endif /* inclusion guard */
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index 77fb50e00670..53c5ec31168d 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -37,6 +37,8 @@
- 
- #include <asm/sizes.h>
- 
-+#include "amba-clcd-nomadik.h"
-+
- #define to_clcd(info)	container_of(info, struct clcd_fb, fb)
- 
- /* This is limited to 16 characters when displayed by X startup */
-@@ -1003,7 +1005,7 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
- 	if (ret)
- 		goto free_fb;
- 
--	ret = clcdfb_register(fb); 
-+	ret = clcdfb_register(fb);
- 	if (ret = 0) {
- 		amba_set_drvdata(dev, fb);
- 		goto out;
-@@ -1047,6 +1049,8 @@ static struct clcd_vendor_data vendor_nomadik = {
- 	.clock_timregs = true,
- 	.packed_24_bit_pixels = true,
- 	.st_bitmux_control = true,
-+	.init_board = nomadik_clcd_init_board,
-+	.init_panel = nomadik_clcd_init_panel,
- };
- 
- static struct amba_id clcdfb_id_table[] = {
--- 
-2.4.3
+Kind regards
+
+  Lars
+
+-- ---
+
+$ lspci
+
+01:00.0 VGA compatible controller: Advanced Micro Devices, Inc.[AMD/ATI] RV620 
+GL [FirePro 2260]
+
+$ journalctl -b | grep radeon|drm|fbcon
+
+: Linux version 4.3.0-1-amd64 (debian-kernel@lists.debian.org)
+: [drm] Initialized drm 1.1.0 20060810
+: [drm] radeon kernel modesetting enabled.
+: [drm] initializing kernel modesetting (RV620 0x1002:0x95CF 0x1002:0x2143).
+: [drm] register mmio base: 0xE0200000
+: [drm] register mmio size: 65536
+: radeon 0000:01:00.0: VRAM: 256M 0x0000000000000000 - 0x000000000FFFFFFF 
+(256M used)
+: radeon 0000:01:00.0: GTT: 512M 0x0000000010000000 - 0x000000002FFFFFFF
+: [drm] Detected VRAM RAM%6M, BAR%6M
+: [drm] RAM width 64bits DDR
+: [drm] radeon: 256M of VRAM memory ready
+: [drm] radeon: 512M of GTT memory ready.
+: [drm] Loading RV620 Microcode
+: radeon 0000:01:00.0: firmware: direct-loading firmware radeon/RV620_pfp.bin
+: radeon 0000:01:00.0: firmware: direct-loading firmware radeon/RV620_me.bin
+: radeon 0000:01:00.0: firmware: direct-loading firmware radeon/R600_rlc.bin
+: [drm] Internal thermal controller with fan control
+: [drm] radeon: power management initialized
+: radeon 0000:01:00.0: firmware: direct-loading firmware radeon/R600_uvd.bin
+: [drm] GART: num cpu pages 131072, num gpu pages 131072
+: [drm] PCIE GART of 512M enabled (table at 0x0000000000254000).
+: radeon 0000:01:00.0: WB enabled
+: radeon 0000:01:00.0: fence driver on ring 0 use gpu addr 0x0000000010000c00 
+and cpu addr 0xffff8800c9c81c00
+: radeon 0000:01:00.0: fence driver on ring 5 use gpu addr 0x00000000000521d0 
+and cpu addr 0xffffc900010121d0
+: [drm] Supports vblank timestamp caching Rev 2 (21.10.2013).
+: [drm] Driver supports precise vblank timestamp query.
+: radeon 0000:01:00.0: radeon: MSI limited to 32-bit
+: radeon 0000:01:00.0: radeon: using MSI.
+: [drm] radeon: irq initialized.
+: [drm] ring test on 0 succeeded in 1 usecs
+: [drm] ring test on 5 succeeded in 1 usecs
+: [drm] UVD initialized successfully.
+: [drm] ib test on ring 0 succeeded in 0 usecs
+: [drm] ib test on ring 5 succeeded
+: [drm] Radeon Display Connectors
+: [drm] Connector 0:
+: [drm]   DP-1
+: [drm]   HPD2
+: [drm]   DDC: 0x7e60 0x7e60 0x7e64 0x7e64 0x7e68 0x7e68 0x7e6c 0x7e6c
+: [drm]   Encoders:
+: [drm]     DFP1: INTERNAL_UNIPHY
+: [drm] Connector 1:
+: [drm]   DP-2
+: [drm]   HPD4
+: [drm]   DDC: 0x7e20 0x7e20 0x7e24 0x7e24 0x7e28 0x7e28 0x7e2c 0x7e2c
+: [drm]   Encoders:
+: [drm]     DFP2: INTERNAL_UNIPHY
+: [drm] fb mappable at 0xD0355000
+: [drm] vram apper at 0xD0000000
+: [drm] size 3145728
+: [drm] fb depth is 24
+: [drm]    pitch is 4096
+: fbcon: radeondrmfb (fb0) is primary device
+: radeon 0000:01:00.0: fb0: radeondrmfb frame buffer device
+: [drm] Initialized radeon 2.43.0 20080528 for 0000:01:00.0 on minor 0
 

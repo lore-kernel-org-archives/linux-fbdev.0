@@ -1,70 +1,34 @@
-From: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>
-Date: Mon, 15 Feb 2016 18:41:33 +0000
-Subject: [PATCH] fbcon: set a default value to blink interval
-Message-Id: <1455561693-28615-1-git-send-email-jean-philippe.brucker@arm.com>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Mon, 15 Feb 2016 21:12:43 +0000
+Subject: Re: [PATCH] fbcon: set a default value to blink interval
+Message-Id: <alpine.DEB.2.10.1602151500060.14844@laptop>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1455561693-28615-1-git-send-email-jean-philippe.brucker@arm.com>
+In-Reply-To: <1455561693-28615-1-git-send-email-jean-philippe.brucker@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Scot Doyle <lkml14@scotdoyle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Thierry Reding <treding@nvidia.com>, stable@vger.kernel.org
+To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>
+Cc: linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Thierry Reding <treding@nvidia.com>, stable@vger.kernel.org
 
-Since commit 27a4c827c34ac4256a190cc9d24607f953c1c459
-	fbcon: use the cursor blink interval provided by vt
+On Mon, 15 Feb 2016, Jean-Philippe Brucker wrote:
+> Since commit 27a4c827c34ac4256a190cc9d24607f953c1c459
+> 	fbcon: use the cursor blink interval provided by vt
+> 
+> two attempts have been made at fixing a possible hang caused by
+> cursor_timer_handler. That function registers a timer to be triggered at
+> "jiffies + fbcon_ops.cur_blink_jiffies".
+...
+> Instead of patching all possible paths that lead to this case one at a
+> time, fix the issue at the source and initialise cur_blink_jiffies to
+> 200ms when allocating fbcon_ops. This was its default value before
+> aforesaid commit. fbcon_cursor or fbcon_init will refine this value
+> downstream.
+> 
+> Signed-off-by: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>
+> Cc: <stable@vger.kernel.org> # v4.2
 
-two attempts have been made at fixing a possible hang caused by
-cursor_timer_handler. That function registers a timer to be triggered at
-"jiffies + fbcon_ops.cur_blink_jiffies".
+I agree with the approach and the patch works on my x86_64.
 
-A new case had been encountered during initialisation of clcd-pl11x:
-
-    fbcon_fb_registered
-    do_fbcon_takeover
-
-    ->  do_register_con_driver
-        fbcon_startup
-    (A) add_cursor_timer (with cur_blink_jiffies = 0)
-
-    ->  do_bind_con_driver
-        visual_init
-        fbcon_init
-    (B) cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
-
-If we take an softirq anywhere between A and B (and we do),
-cursor_timer_handler executes indefinitely.
-
-Instead of patching all possible paths that lead to this case one at a
-time, fix the issue at the source and initialise cur_blink_jiffies to
-200ms when allocating fbcon_ops. This was its default value before
-aforesaid commit. fbcon_cursor or fbcon_init will refine this value
-downstream.
-
-Signed-off-by: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>
-Cc: <stable@vger.kernel.org> # v4.2
----
- drivers/video/console/fbcon.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 92f3949..6e92917 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -709,6 +709,7 @@ static int con2fb_acquire_newinfo(struct vc_data *vc, struct fb_info *info,
- 	}
- 
- 	if (!err) {
-+		ops->cur_blink_jiffies = HZ / 5;
- 		info->fbcon_par = ops;
- 
- 		if (vc)
-@@ -956,6 +957,7 @@ static const char *fbcon_startup(void)
- 	ops->currcon = -1;
- 	ops->graphics = 1;
- 	ops->cur_rotate = -1;
-+	ops->cur_blink_jiffies = HZ / 5;
- 	info->fbcon_par = ops;
- 	p->con_rotate = initial_rotation;
- 	set_blitting_type(vc, info);
--- 
-1.7.9.5
+Tested-by: Scot Doyle <lkml14@scotdoyle.com>
 

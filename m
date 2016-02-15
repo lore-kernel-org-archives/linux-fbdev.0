@@ -1,73 +1,79 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 16 Feb 2016 13:33:17 +0000
-Subject: Re: [PATCH v2 2/3] fbdev: omap2: panel-dpi: make (limited) use of a reset gpio
-Message-Id: <56C3251D.2030104@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="d5u0WJAkCegUB4Xc2Pqc0U3xRSjCCFMhH"
+From: Andrzej Hajda <a.hajda@samsung.com>
+Date: Mon, 15 Feb 2016 14:35:18 +0000
+Subject: [PATCH 0/7] fix IS_ERR_VALUE usage
+Message-Id: <1455546925-22119-1-git-send-email-a.hajda@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1450610002-10531-3-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1450610002-10531-3-git-send-email-u.kleine-koenig@pengutronix.de>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---d5u0WJAkCegUB4Xc2Pqc0U3xRSjCCFMhH
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hi,
+
+This small set of independent patches tries to fix incorrect
+IS_ERR_VALUE macro usage. It fixes most usages leading to errors
+as described in [1]. It also follows conclusion from the discussion
+[1][2] - IS_ERR_VALUE should be used only with unsigned long type,
+signed types should use comparison 'ret < 0'.
+
+The patchset does not fix errors present in net/ethernet/freescale
+and soc/fsq/qe drivers - these drivers mixes different types:
+dma_addr_t, u32, unsigned long, fixing it properly seems to me more
+challenging, maybe maintainers or brave volunteers can look it.
+
+The list of missing fixes:
+drivers/net/ethernet/freescale/fs_enet/mac-scc.c:149:36-37: WARNING: incorrect argument type in IS_ERR_VALUE(fep -> ring_mem_addr)
+drivers/net/ethernet/freescale/ucc_geth.c:2237:48-49: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> tx_bd_ring_offset [ j ])
+drivers/net/ethernet/freescale/ucc_geth.c:2314:48-49: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> rx_bd_ring_offset [ j ])
+drivers/net/ethernet/freescale/ucc_geth.c:2524:44-45: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> tx_glbl_pram_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2544:45-46: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> thread_dat_tx_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2571:46-47: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> send_q_mem_reg_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2612:42-43: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> scheduler_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2659:54-55: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> tx_fw_statistics_pram_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2696:44-45: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> rx_glbl_pram_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2715:45-46: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> thread_dat_rx_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2736:54-55: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> rx_fw_statistics_pram_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2756:53-54: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> rx_irq_coalescing_tbl_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2822:44-45: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> rx_bd_qs_tbl_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:2908:47-48: WARNING: incorrect argument type in IS_ERR_VALUE(ugeth -> exf_glbl_param_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:292:36-37: WARNING: incorrect argument type in IS_ERR_VALUE(init_enet_offset)
+drivers/net/ethernet/freescale/ucc_geth.c:3042:39-40: WARNING: incorrect argument type in IS_ERR_VALUE(init_enet_pram_offset)
+drivers/soc/fsl/qe/ucc_fast.c:271:60-61: WARNING: incorrect argument type in IS_ERR_VALUE(uccf -> ucc_fast_tx_virtual_fifo_base_offset)
+drivers/soc/fsl/qe/ucc_fast.c:284:60-61: WARNING: incorrect argument type in IS_ERR_VALUE(uccf -> ucc_fast_rx_virtual_fifo_base_offset)
+drivers/soc/fsl/qe/ucc_slow.c:186:38-39: WARNING: incorrect argument type in IS_ERR_VALUE(uccs -> us_pram_offset)
+drivers/soc/fsl/qe/ucc_slow.c:213:38-39: WARNING: incorrect argument type in IS_ERR_VALUE(uccs -> rx_base_offset)
+drivers/soc/fsl/qe/ucc_slow.c:224:38-39: WARNING: incorrect argument type in IS_ERR_VALUE(uccs -> tx_base_offset)
+drivers/net/ethernet/freescale/fs_enet/mac-fcc.c:110:35-36: WARNING: unknown argument type in IS_ERR_VALUE(fpi -> dpram_offset)
+
+[1]: http://permalink.gmane.org/gmane.linux.kernel/2120927
+[2]: http://permalink.gmane.org/gmane.linux.kernel/2150581
+
+Regards
+Andrzej
 
 
-On 16/02/16 15:31, Uwe Kleine-K=C3=B6nig wrote:
-> On Tue, Feb 16, 2016 at 03:01:55PM +0200, Tomi Valkeinen wrote:
->>
->> On 20/12/15 13:13, Uwe Kleine-K=C3=B6nig wrote:
->>> Some displays have a reset input. To assert that the display is
->>> functional the reset gpio must be deasserted.
->>>
->>> Teach the driver to get and drive such a gpio accordingly.
->>>
->>> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>=
+Andrzej Hajda (7):
+  netfilter: fix IS_ERR_VALUE usage
+  MIPS: module: fix incorrect IS_ERR_VALUE macro usages
+  drivers: char: mem: fix IS_ERROR_VALUE usage
+  atmel-isi: fix IS_ERR_VALUE usage
+  serial: clps711x: fix IS_ERR_VALUE usage
+  fbdev: exynos: fix IS_ERR_VALUE usage
+  usb: gadget: fsl_qe_udc: fix IS_ERR_VALUE usage
 
->>> --
->>> Changes since (implicit) v1, sent with
->>> Message-Id: 1449753107-11410-4-git-send-email-uwe@kleine-koenig.org :=
+ arch/mips/kernel/module-rela.c                |  2 +-
+ arch/mips/kernel/module.c                     |  2 +-
+ drivers/char/mem.c                            |  2 +-
+ drivers/media/platform/soc_camera/atmel-isi.c |  4 ++--
+ drivers/tty/serial/clps711x.c                 | 14 ++++++++------
+ drivers/usb/gadget/udc/fsl_qe_udc.c           |  2 +-
+ drivers/video/fbdev/exynos/exynos_mipi_dsi.c  |  6 +++---
+ include/linux/netfilter/x_tables.h            |  6 +++---
+ net/ipv4/netfilter/arp_tables.c               | 11 +++++++----
+ net/ipv4/netfilter/ip_tables.c                | 12 ++++++++----
+ net/ipv6/netfilter/ip6_tables.c               | 13 +++++++++----
+ 11 files changed, 44 insertions(+), 30 deletions(-)
 
->>>
->>>  - never assert reset because there are too many different panels wit=
-h
->>>    too many different needs for their reset.
->>>  - split out dt binding changes
->>>  - reword commit log
->>
->> Please add these extra texts below the --- line below. Otherwise they
->> end up in the commit description.
->=20
-> This was an accident. Should I resend for that one?
+-- 
+1.9.1
 
-If there are other changes to other patches, resend the series. If there
-are no other changes, I can just snip it out.
-
- Tomi
-
-
---d5u0WJAkCegUB4Xc2Pqc0U3xRSjCCFMhH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWwyUdAAoJEPo9qoy8lh71miUP/2AK1Icrzq9087cnK5qiHt9+
-KexrAHTj0C8uQ9hmi1jbi50slHXN+jpKnzawfRU+Zers36E6TLJqZF0TO7FE1/qA
-xGXVmt3kXVoIvrw11qFf1uo/DTHWUljx4V306BPI+Ydl/8CSH88Px6cXbvC8Nk9E
-PAfO99WC7odi8ycYYyRAcW6sybhBt2C/XOcvLwgG4pgEnWIlAEr3FoPoxCa4JuA6
-2ChLekInZJjBGgTNH98igteTeCK1Xsjyfy5derrgPhH4mGuFfMrBa1wt7lh+PO30
-W5bheKO2y8U2+Ej8q+vWCeXn1WNr8F12x/dyTswgtHB6RaYE8QA6vHkpOv5UcZRB
-XVxK7TkKv+2MzOpWFmJ/fnfmcME0NOP/+hTJpmU2tpgITAP6P772WGMnymZoV+qI
-4damQbmCCLVnz5i++T4xligtWJwzflAOU+vXIq5Vo7vaFVeZDLOn2JIA4LX+UtB8
-StTX0spUwc9dQ4+LGwttdIAeaFvEM3PkvL6HIG80L1NmYbox0+uIi/XnMwqWQSqp
-cIfRO2JHM5PiTo2t0wlcMyVibpCzsTB5yxFX0Su738SRxeBlZhqJF/vLUGZSRIgQ
-GatbvGEda1s8TegqnOqn0yGFtyG491dlUPpT1c1ua00YVY00l7duGYUL4AmoUZe4
-o/CT0U3+j0XNy7uVEvGj
-=tZlX
------END PGP SIGNATURE-----
-
---d5u0WJAkCegUB4Xc2Pqc0U3xRSjCCFMhH--

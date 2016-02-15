@@ -1,7 +1,7 @@
-From: Andrew Jones <drjones@redhat.com>
-Date: Fri, 12 Feb 2016 13:56:45 +0000
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Date: Mon, 15 Feb 2016 16:51:08 +0000
 Subject: Re: [PATCH] xen kconfig: clarify INPUT_XEN_KBDDEV_FRONTEND select
-Message-Id: <20160212135645.ouppx4ijselfomjy@hawk.localdomain>
+Message-Id: <alpine.DEB.2.02.1602151643150.27008@kaball.uk.xensource.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1455278707-2008263-1-git-send-email-arnd@arndb.de>
 In-Reply-To: <1455278707-2008263-1-git-send-email-arnd@arndb.de>
@@ -10,7 +10,9 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Fri, Feb 12, 2016 at 01:04:40PM +0100, Arnd Bergmann wrote:
+CC'ing a few others.
+
+On Fri, 12 Feb 2016, Arnd Bergmann wrote:
 > The Xen framebuffer driver selects the xen keyboard driver, so the latter
 > will be built-in if XEN_FBDEV_FRONTEND=y. However, when CONFIG_INPUT
 > is a loadable module, this configuration cannot work. On mainline kernels,
@@ -48,11 +50,19 @@ On Fri, Feb 12, 2016 at 01:04:40PM +0100, Arnd Bergmann wrote:
 >  	select FB_SYS_FILLRECT
 >  	select FB_SYS_COPYAREA
 >  	select FB_SYS_IMAGEBLIT
-> -- 
-> 2.7.0
->
 
-Reviewed-by: Andrew Jones <drjones@redhat.com>
+This looks very hackish. Couldn't we just do the following?
 
-Thanks,
-drew 
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 8ea45a5..3c15f6d 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2246,7 +2246,7 @@ config XEN_FBDEV_FRONTEND
+ 	select FB_SYS_IMAGEBLIT
+ 	select FB_SYS_FOPS
+ 	select FB_DEFERRED_IO
+-	select INPUT_XEN_KBDDEV_FRONTEND if INPUT_MISC
++	select INPUT_XEN_KBDDEV_FRONTEND if (INPUT && INPUT_MISC)
+ 	select XEN_XENBUS_FRONTEND
+ 	default y
+ 	help

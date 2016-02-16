@@ -1,75 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Feb 2016 16:30:19 +0000
-Subject: Re: [PATCH] fbdev: da8xx-fb: fix videomodes of lcd panels
-Message-Id: <56D4721B.3010508@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="7Vm68KgfWoMbFUaKH2tK2L3IJEdf03SCf"
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 16 Feb 2016 15:03:23 +0000
+Subject: [PATCH v2] xen kconfig: don't "select INPUT_XEN_KBDDEV_FRONTEND"
+Message-Id: <2479546.WgivMO2bp2@wuerfel>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1456751539-19298-1-git-send-email-sushaanth.s@ti.com>
-In-Reply-To: <1456751539-19298-1-git-send-email-sushaanth.s@ti.com>
-To: Sushaanth Srirangapathi <sushaanth.s@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Sekhar Nori <nsekhar@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+References: <1455278707-2008263-1-git-send-email-arnd@arndb.de>
+ <56C20552.8030305@citrix.com>
+ <alpine.DEB.2.02.1602151708110.27008@kaball.uk.xensource.com>
+In-Reply-To: <alpine.DEB.2.02.1602151708110.27008@kaball.uk.xensource.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---7Vm68KgfWoMbFUaKH2tK2L3IJEdf03SCf
-Content-Type: multipart/mixed; boundary="MpxGvXDM7L0p4q79e7pwIsnv6RTaGw0OW"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Sushaanth Srirangapathi <sushaanth.s@ti.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Sekhar Nori <nsekhar@ti.com>, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Message-ID: <56D4721B.3010508@ti.com>
-Subject: Re: [PATCH] fbdev: da8xx-fb: fix videomodes of lcd panels
-References: <1456751539-19298-1-git-send-email-sushaanth.s@ti.com>
-In-Reply-To: <1456751539-19298-1-git-send-email-sushaanth.s@ti.com>
+The Xen framebuffer driver selects the xen keyboard driver, so the latter
+will be built-in if XEN_FBDEV_FRONTEND=y. However, when CONFIG_INPUT
+is a loadable module, this configuration cannot work. On mainline kernels,
+the symbol will be enabled but not used, while in combination with
+a patch I have to detect such useless configurations, we get the
+expected link failure:
 
---MpxGvXDM7L0p4q79e7pwIsnv6RTaGw0OW
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+drivers/input/built-in.o: In function `xenkbd_remove':
+xen-kbdfront.c:(.text+0x2f0): undefined reference to `input_unregister_device'
+xen-kbdfront.c:(.text+0x30e): undefined reference to `input_unregister_device'
 
-On 29/02/16 15:12, Sushaanth Srirangapathi wrote:
-> Commit 028cd86b794f4a ("video: da8xx-fb: fix the polarities of the
-> hsync/vsync pulse") fixes polarities of HSYNC/VSYNC pulse but
-> forgot to update known_lcd_panels[] which had sync values
-> according to old logic. This breaks LCD at least on DA850 EVM.
->=20
-> This patch fixes this issue and I have tested this for panel
-> "Sharp_LK043T1DG01" using DA850 EVM board.
->=20
-> Fixes: 028cd86b794f4a ("video: da8xx-fb: fix the polarities of the
-> hsync/vsync pulse")
-> Signed-off-by: Sushaanth Srirangapathi <sushaanth.s@ti.com>
-> ---
->  drivers/video/fbdev/da8xx-fb.c |    7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
+This removes the extra "select", as it just causes more trouble than
+it helps. In theory, some defconfig file might break if it has
+XEN_FBDEV_FRONTEND in it but not INPUT_XEN_KBDDEV_FRONTEND. The Kconfig
+fragment we ship in the kernel (kernel/configs/xen.config) however
+already enables both, and anyone using an old .config file would
+keep having both enabled.
 
-Thanks, queued for 4.6.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Suggested-by: David Vrabel <david.vrabel@citrix.com>
+Fixes: 36c1132e34bd ("xen kconfig: fix select INPUT_XEN_KBDDEV_FRONTEND")
 
- Tomi
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 8ea45a5cd806..d889ef2048df 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2246,7 +2246,6 @@ config XEN_FBDEV_FRONTEND
+ 	select FB_SYS_IMAGEBLIT
+ 	select FB_SYS_FOPS
+ 	select FB_DEFERRED_IO
+-	select INPUT_XEN_KBDDEV_FRONTEND if INPUT_MISC
+ 	select XEN_XENBUS_FRONTEND
+ 	default y
+ 	help
 
-
---MpxGvXDM7L0p4q79e7pwIsnv6RTaGw0OW--
-
---7Vm68KgfWoMbFUaKH2tK2L3IJEdf03SCf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJW1HIcAAoJEPo9qoy8lh71MkkQAKKJCSQBGTaT9zSYSxwNL3gl
-YPVIXKJnnTUAU5F+QSwGfU/lOkIJz8BkM5+z3BkQI5658avrozTozr1gaV1p7y6Z
-rdEmkM5gPQ0focdkiA+ELMnylM0/CIAaifYCQ6bIzH5Z4fkimZjMktPzHnRPH/rX
-looLXT+uz6yHgUPb3wVNE7wuCxjpPHjogy57B2oInLINeJsBU2sIR9qbXUSxlf/m
-UH5eYja+Dh+FLGJVuXAGW3gGzj1ekBg00v3vcoYD8ahUa/YLUhjAYoSUYZUVXa/D
-UCwiQ46L39wd2zpEy9+ylHHXz1l4WKCxsF38ZhQua9WBevraIweTFhkCNav1mXxR
-s8WDEQ4GOaTZu08g1+0tTJnce0/q1soA4PyDmj5niew1IraUBnbfRIPHUpSY3xWn
-ovAIMVnlHKaKYWUrcEoWwwHiGii5DXQCzUcQUf++hLwK7iU8SXj3PkHhoZjhcJ9r
-bi6vesFds/daAn89svmy+XsSsVZYkZYxK4EdpqCWAaKKL709j7T1bCdmTGxaSKZ0
-10Qt7iexSAK6R0SqTO3MJFj18c/xL5k9lXb1CmQqwr1zuD6yQd7lj+MscLxrOc+v
-J4PShbDZ/dk+dA23BxZHx3X9GSNm5S9bk0RAk3yYBR/j1kqK0GnfvAl/k8kr15jA
-ZYcJjVMBUks8wKeoeNd/
-=/6yN
------END PGP SIGNATURE-----
-
---7Vm68KgfWoMbFUaKH2tK2L3IJEdf03SCf--

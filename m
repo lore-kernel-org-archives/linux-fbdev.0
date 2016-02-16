@@ -1,187 +1,118 @@
-From: <gregkh@linuxfoundation.org>
-Date: Mon, 08 Feb 2016 06:09:23 +0000
-Subject: patch "staging: sm750fb, fix typos" added to staging-next
-Message-Id: <145491176366145@kroah.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 16 Feb 2016 13:00:00 +0000
+Subject: Re: [PATCH v2 3/3] fbdev: omap2: panel-dpi: implement support for a vcc regulator
+Message-Id: <56C31D50.1070501@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="xLKcG8hCqMpCoCPxUOhifVL174OnBrgkD"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <14549000707369@kroah.com>
-In-Reply-To: <14549000707369@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1450610002-10531-4-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1450610002-10531-4-git-send-email-u.kleine-koenig@pengutronix.de>
 To: linux-fbdev@vger.kernel.org
 
-
-This is a note to let you know that I've just added the patch titled
-
-    staging: sm750fb, fix typos
-
-to my staging git tree which can be found at
-    git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging.git
-in the staging-next branch.
-
-The patch will show up in the next release of the linux-next tree
-(usually sometime within the next 24 hours during the week.)
-
-The patch will also be merged in the next major kernel release
-during the merge window.
-
-If you have any questions about this process, please let me know.
+--xLKcG8hCqMpCoCPxUOhifVL174OnBrgkD
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
 
-From fbb8c963573926bceb5c59e2a7d74e5ce7669e78 Mon Sep 17 00:00:00 2001
-From: Matej Vasek <xvasek1@fi.muni.cz>
-Date: Mon, 25 Jan 2016 16:02:33 +0100
-Subject: staging: sm750fb, fix typos
 
-The code contained typos like "structur", "fointers", etc. Fix that.
+On 20/12/15 13:13, Uwe Kleine-K=C3=B6nig wrote:
+> To allow supporting displays that need some logic to enable power to th=
+e
+> display try to get a vcc-supply property from the device tree and drive=
 
-No code change, only comments.
+> the resulting regulator accordingly.
+>=20
+> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+> ---
+> Changes since (implicit) v1, sent with
+> Message-Id: 1449753107-11410-5-git-send-email-uwe@kleine-koenig.org:
+>=20
+>  - split out dt binding changes
+>  - reword commit log
+> ---
+>  drivers/video/fbdev/omap2/displays-new/panel-dpi.c | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+>=20
+> diff --git a/drivers/video/fbdev/omap2/displays-new/panel-dpi.c b/drive=
+rs/video/fbdev/omap2/displays-new/panel-dpi.c
+> index 201a1c1a6f42..8c3f31ebff00 100644
+> --- a/drivers/video/fbdev/omap2/displays-new/panel-dpi.c
+> +++ b/drivers/video/fbdev/omap2/displays-new/panel-dpi.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/of.h>
+>  #include <linux/of_gpio.h>
+> +#include <linux/regulator/consumer.h>
+> =20
+>  #include <video/omapdss.h>
+>  #include <video/omap-panel-data.h>
+> @@ -32,6 +33,7 @@ struct panel_drv_data {
+>  	int backlight_gpio;
+> =20
+>  	struct gpio_desc *enable_gpio;
+> +	struct regulator *vcc_supply;
+>  };
+> =20
+>  #define to_panel_data(p) container_of(p, struct panel_drv_data, dssdev=
+)
+> @@ -83,6 +85,12 @@ static int panel_dpi_enable(struct omap_dss_device *=
+dssdev)
+>  	if (r)
+>  		return r;
+> =20
+> +	r =3D regulator_enable(ddata->vcc_supply);
+> +	if (r) {
+> +		in->ops.dpi->disable(in);
+> +		return r;
+> +	}
+> +
+>  	gpiod_set_value_cansleep(ddata->enable_gpio, 1);
+> =20
+>  	if (gpio_is_valid(ddata->backlight_gpio))
+> @@ -105,6 +113,7 @@ static void panel_dpi_disable(struct omap_dss_devic=
+e *dssdev)
+>  		gpio_set_value_cansleep(ddata->backlight_gpio, 0);
+> =20
+>  	gpiod_set_value_cansleep(ddata->enable_gpio, 0);
+> +	regulator_disable(ddata->vcc_supply);
+> =20
+>  	in->ops.dpi->disable(in);
+> =20
+> @@ -223,6 +232,10 @@ static int panel_dpi_probe_of(struct platform_devi=
+ce *pdev)
+>  	if (IS_ERR(gpio))
+>  		return PTR_ERR(gpio);
+> =20
+> +	ddata->vcc_supply =3D devm_regulator_get(&pdev->dev, "vcc");
+> +	if (IS_ERR(ddata->vcc_supply))
+> +		return PTR_ERR(ddata->vcc_supply);
 
-Signed-off-by: Matej Vasek <xvasek1@fi.muni.cz>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: <linux-fbdev@vger.kernel.org>
-Cc: <devel@driverdev.osuosl.org>
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/staging/sm750fb/ddk750_hwi2c.c  | 4 ++--
- drivers/staging/sm750fb/ddk750_mode.c   | 2 +-
- drivers/staging/sm750fb/ddk750_sii164.h | 5 ++++-
- drivers/staging/sm750fb/sm750.c         | 2 +-
- drivers/staging/sm750fb/sm750.h         | 2 +-
- drivers/staging/sm750fb/sm750_accel.c   | 4 ++--
- drivers/staging/sm750fb/sm750_accel.h   | 2 +-
- drivers/staging/sm750fb/sm750_hw.c      | 2 +-
- 8 files changed, 13 insertions(+), 10 deletions(-)
+devm_regulator_get_optional()?
 
-diff --git a/drivers/staging/sm750fb/ddk750_hwi2c.c b/drivers/staging/sm750fb/ddk750_hwi2c.c
-index b824681e55a7..40253bd8cf2a 100644
---- a/drivers/staging/sm750fb/ddk750_hwi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_hwi2c.c
-@@ -127,7 +127,7 @@ static unsigned int hw_i2c_write_data(
- 		if (hw_i2c_wait_tx_done() != 0)
- 			break;
- 
--		/* Substract length */
-+		/* Subtract length */
- 		length -= (count + 1);
- 
- 		/* Total byte written */
-@@ -194,7 +194,7 @@ static unsigned int hw_i2c_read_data(
- 		for (i = 0; i <= count; i++)
- 			*buf++ = PEEK32(I2C_DATA0 + i);
- 
--		/* Substract length by 16 */
-+		/* Subtract length by 16 */
- 		length -= (count + 1);
- 
- 		/* Number of bytes read. */
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index 0fd34fa93a41..d0e3935654ff 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -42,7 +42,7 @@ static unsigned long displayControlAdjust_SM750LE(mode_parameter_t *pModeParam,
- 	dispControl &= FIELD_CLEAR(CRT_DISPLAY_CTRL, CLK);
- 
- 	/* Set bit 29:27 of display control register for the right clock */
--	/* Note that SM750LE only need to supported 7 resoluitons. */
-+	/* Note that SM750LE only need to supported 7 resolutions. */
- 	if (x = 800 && y = 600)
- 		dispControl = FIELD_SET(dispControl, CRT_DISPLAY_CTRL, CLK, PLL41);
- 	else if (x = 1024 && y = 768)
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
-index f2610c90eeb4..664ad089f753 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.h
-+++ b/drivers/staging/sm750fb/ddk750_sii164.h
-@@ -39,7 +39,10 @@ unsigned char sii164IsConnected(void);
- unsigned char sii164CheckInterrupt(void);
- void sii164ClearInterrupt(void);
- #endif
--/* below register definination is used for Silicon Image SiI164 DVI controller chip */
-+/*
-+ * below register definition is used for
-+ * Silicon Image SiI164 DVI controller chip
-+ */
- /*
-  * Vendor ID registers
-  */
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 2ae2a522136f..c9d4871cd62d 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -319,7 +319,7 @@ static int lynxfb_ops_set_par(struct fb_info *info)
- 	var = &info->var;
- 	fix = &info->fix;
- 
--	/* fix structur is not so FIX ... */
-+	/* fix structure is not so FIX ... */
- 	line_length = var->xres_virtual * var->bits_per_pixel / 8;
- 	line_length = ALIGN(line_length, crtc->line_pad);
- 	fix->line_length = line_length;
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index fddffac6930f..8e70ce0d6da4 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -53,7 +53,7 @@ struct lynx_accel {
- 	/* base virtual address of de data port */
- 	volatile unsigned char __iomem *dpPortBase;
- 
--	/* function fointers */
-+	/* function pointers */
- 	void (*de_init)(struct lynx_accel *);
- 
- 	int (*de_wait)(void);/* see if hardware ready to work */
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 43e59725920c..e150680a8cd1 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -53,7 +53,7 @@ void hw_de_init(struct lynx_accel *accel)
- 		FIELD_CLEAR(DE_STRETCH_FORMAT, ADDRESSING)&
- 		FIELD_CLEAR(DE_STRETCH_FORMAT, SOURCE_HEIGHT);
- 
--	/* DE_STRETCH bpp format need be initilized in setMode routine */
-+	/* DE_STRETCH bpp format need be initialized in setMode routine */
- 	write_dpr(accel, DE_STRETCH_FORMAT, (read_dpr(accel, DE_STRETCH_FORMAT) & clr) | reg);
- 
- 	/* disable clipping and transparent */
-@@ -305,7 +305,7 @@ int hw_imageblit(struct lynx_accel *accel,
- 		 u32 dx,
- 		 u32 dy,       /* Starting coordinate of destination surface */
- 		 u32 width,
--		 u32 height,   /* width and height of rectange in pixel value */
-+		 u32 height,   /* width and height of rectangle in pixel value */
- 		 u32 fColor,   /* Foreground color (corresponding to a 1 in the monochrome data */
- 		 u32 bColor,   /* Background color (corresponding to a 0 in the monochrome data */
- 		 u32 rop2)     /* ROP value */
-diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
-index f252e47d5ee9..1ec66d28f456 100644
---- a/drivers/staging/sm750fb/sm750_accel.h
-+++ b/drivers/staging/sm750fb/sm750_accel.h
-@@ -268,7 +268,7 @@ int hw_imageblit(struct lynx_accel *accel,
- 		 u32 dx,
- 		 u32 dy,       /* Starting coordinate of destination surface */
- 		 u32 width,
--		 u32 height,   /* width and height of rectange in pixel value */
-+		 u32 height,   /* width and height of rectangle in pixel value */
- 		 u32 fColor,   /* Foreground color (corresponding to a 1 in the monochrome data */
- 		 u32 bColor,   /* Background color (corresponding to a 0 in the monochrome data */
- 		 u32 rop2);
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index b33ec076f3f5..c0c2f1c4de82 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -142,7 +142,7 @@ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 		break;
- 		}
- 	} else {
--		/* for 750LE ,no DVI chip initilization makes Monitor no signal */
-+		/* for 750LE ,no DVI chip initialization makes Monitor no signal */
- 		/* Set up GPIO for software I2C to program DVI chip in the
- 		   Xilinx SP605 board, in order to have video signal.
- 		 */
--- 
-2.7.1
+ Tomi
 
 
+--xLKcG8hCqMpCoCPxUOhifVL174OnBrgkD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWwx1QAAoJEPo9qoy8lh71P3cP/jfNKLXXSz+4TYOy6BEsH15Z
+mdCcyMsRztvlCLRHBT7AL5kxJkd1WJZG/Y73hWwuQQc1l3mVJHTOWQZZKNsOnIEf
+dHR16QxKu+YboibAca5OUH9NPDtKucr4Zsc263EnUtSs1DeS8DBhfNaX60PVo0RX
+/5y2vEMomraRDspEPZOt4ZndSZUxt2NAnAjQV4WEHWcHFP0P++AekFGAdrb73oIX
+xoiObr4g5fCB2L+VSs5gLLcdjm16ASlpQHdCd/E1HEFlRqtXtb/f3K5Al5ykCJBk
+NdnZvoXhgjzUTtkn8xIOpLtnqIT+ShFEWZoQzlcPAJOucGNHUSGyJWYiJ5/MULy5
+8Bq7JPCniU86ZZbMQvToC/byORh8rXoxOCHCyh4JhrJaKDYonckP19xoR1vcu5HB
+xGiKebWsCKK7pQgZb/gllFufk8eHtQVoF7uy8p7cd2JNTu0uyxSOWFVuHfuc+IYW
+C1aFobMh1oBPnmzx5gADbdKkkpRDpgahFo/XTPoY0alimynff6DwrvELrYtqCIkn
+wTe4/1wIvK6M0Ja0lakRzPvdtLAKyQGiG6L2eZoPkidMj2Rg82H6Z4A/4ZzMLpsF
+QFkDlHslczSDhfCVFMIprO3c5DxgmszQIggHkOdYuhx9dpOF7jHFmE17Mo+0Ui1a
+yJZL6hUwzNngwB/li1yy
+=qIIY
+-----END PGP SIGNATURE-----
+
+--xLKcG8hCqMpCoCPxUOhifVL174OnBrgkD--

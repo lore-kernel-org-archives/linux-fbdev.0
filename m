@@ -1,70 +1,66 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Feb 2016 08:51:29 +0000
-Subject: Re: [PATCH 0/3] video/fbdev: avoid module usage in non-modular sparc code,Re: [PATCH 0/3] video/fbde
-Message-Id: <56D40691.6030002@ti.com>
+Date: Tue, 16 Feb 2016 13:06:33 +0000
+Subject: Re: [PATCH v2 1/3] devicetree/bindings: add reset-gpios and vcc-supply for panel-dpi
+Message-Id: <56C31ED9.7070405@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="tm63m6t9h9xjDofsvDsVwOcL8ccTrhKDG"
+Content-Type: multipart/mixed; boundary="OoO5RHFw32qrgCIbrW4iaMWw92d7TRTLb"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1456110792-21771-1-git-send-email-paul.gortmaker@windriver.com>
- <1456110792-21771-1-git-send-email-paul.gortmaker@windriver.com>
- <56D02FB8.90803@ti.com>
- <20160226.122112.1169840448330570848.davem@davemloft.net>
-In-Reply-To: <20160226.122112.1169840448330570848.davem@davemloft.net>
-To: David Miller <davem@davemloft.net>
-Cc: paul.gortmaker@windriver.com, linux-kernel@vger.kernel.org, plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, sparclinux@vger.kernel.org
+References: <1450610002-10531-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1450610002-10531-2-git-send-email-u.kleine-koenig@pengutronix.de>
+ <20151229205458.GA31241@rob-hp-laptop>
+In-Reply-To: <20151229205458.GA31241@rob-hp-laptop>
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
---tm63m6t9h9xjDofsvDsVwOcL8ccTrhKDG
-Content-Type: multipart/mixed; boundary="6ukDhQ3aGS2soHdhnwofaxEC03hE59ima"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: David Miller <davem@davemloft.net>
-Cc: paul.gortmaker@windriver.com, linux-kernel@vger.kernel.org,
- plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org,
- sparclinux@vger.kernel.org
-Message-ID: <56D40691.6030002@ti.com>
-Subject: Re: [PATCH 0/3] video/fbdev: avoid module usage in non-modular sparc
- code,Re: [PATCH 0/3] video/fbdev: avoid module usage in non-modular sparc
- code
-References: <1456110792-21771-1-git-send-email-paul.gortmaker@windriver.com>
- <1456110792-21771-1-git-send-email-paul.gortmaker@windriver.com>
- <56D02FB8.90803@ti.com>
- <20160226.122112.1169840448330570848.davem@davemloft.net>
-In-Reply-To: <20160226.122112.1169840448330570848.davem@davemloft.net>
-
---6ukDhQ3aGS2soHdhnwofaxEC03hE59ima
+--OoO5RHFw32qrgCIbrW4iaMWw92d7TRTLb
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On 26/02/16 19:21, David Miller wrote:
-> From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Date: Fri, 26 Feb 2016 12:58:00 +0200
+
+
+On 29/12/15 22:54, Rob Herring wrote:
+> On Sun, Dec 20, 2015 at 12:13:20PM +0100, Uwe Kleine-K=C3=B6nig wrote:
+>> Some displays have a reset input and/or need a regulator to function
+>> properly. Allow to specify them for panel-dpi devices.
+>>
+>> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+>> ---
+>>  Documentation/devicetree/bindings/display/panel/panel-dpi.txt | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/display/panel/panel-dpi=
+=2Etxt b/Documentation/devicetree/bindings/display/panel/panel-dpi.txt
+>> index 216c894d4f99..b52ac52757df 100644
+>> --- a/Documentation/devicetree/bindings/display/panel/panel-dpi.txt
+>> +++ b/Documentation/devicetree/bindings/display/panel/panel-dpi.txt
+>> @@ -7,6 +7,8 @@ Required properties:
+>>  Optional properties:
+>>  - label: a symbolic name for the panel
+>>  - enable-gpios: panel enable gpio
+>> +- reset-gpios: GPIO to control the RESET pin
 >=20
->> While doing this, did you just go forward removing the module support,=
-
->> or did you check if it would be trivial to make the driver build as a
->> module? I wouldn't be surprised if in some cases all that would need t=
-o
->> be done is change the Kconfig's bool to tristate.
+> The problem with this in a generic binding is what if the panel has=20
+> ordering requirements like enable gpio has to be inactive when reset=20
+> is deasserted?
 >=20
-> I think what he is doing is reasonable, and none of these sparc drivers=
+>> +- vcc-supply: phandle of regulator that will be used to enable power =
+to the display
+>=20
+> What if there are 2 supplies?
 
-> have any reason to be built modular.  You need them to have any bootup
-> console whatsoever, so they have to be built in statically to be
-> usable at all.
+Yes, I think it's an impossible task to create a really generic driver
+wrt. gpios and supplies. There may be a bunch of them, and a particular
+sequence to enable/disable needed, and even particular delays required
+in between.
 
-I disagree. Having drivers buildable as modules is always good, even if
-the normal use case would be to have them as built-in.
-
-> I plan to apply this patch series to my sparc tree as-is.
-
-They are fbdev patches without any dependency to sparc afaics. So let's
-apply them via fbdev tree.
+So I think the best we can do is to support (hopefully) most of the
+panels by defining one sequence panel-dpi uses. If a particular panel
+falls outside that, a separate driver is needed.
 
  Tomi
 
 
---6ukDhQ3aGS2soHdhnwofaxEC03hE59ima--
-
---tm63m6t9h9xjDofsvDsVwOcL8ccTrhKDG
+--OoO5RHFw32qrgCIbrW4iaMWw92d7TRTLb
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -72,19 +68,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJW1AaRAAoJEPo9qoy8lh71UygP/jf4TLfp63mxTsCDIeD11pX5
-26XL0PikiNhS+I30fO5El8C3fPRIdrCGkTk/z9foT5LIneRjYl4catVZOhd0vTlw
-RiaLUuXSs57bQH4U0fJA9Ch3umtgbzs0x/290lppGfzFgmjZsqOc2WkEF3PgtftL
-RWDDCJbRNFKtP4DxX8eVBg7jnAJsxHwGyvuM7O0NkNUlqBrkcO3x/9AiAYC2cbQ3
-/9F6LPMj0ZBRBlZiNzdKym6OQUWo0H57j3v05X2rNRKhWekZZ1bEqpuh5mewPogg
-068FVExXtIKW/VwGc4Zj1Zv73j7gnypleDajSHNETiwwU7afMc+Wi1p/7PLjfR/i
-CcfeaQrwTicDC/BAS+1GFVr7oaBovtgFxgdHpWONhSdOnqWtF8rWz+mDksx1IiLS
-yh+U2ctVeH0CZNWRW1nB9ahFCWIuRBfPf+H9l6tn5ETs//I0IcxBKrLvcnV+Tyeu
-uS4bhL/+eFojMCiJS/Ty5on5CviBszRpk3CJYWhn/Szmt2mhkX8lzMnWCKbWBic9
-OtNjg+0CVF1+peDNiSpF/6ufWkOMgzhB7gGmlwyLcKUAE9UKhAYIrF59nVycZ+Dz
-CqIdvOQEYATe9OTffNGDfB/OW2hE+yVkYC/VDOOdys2l2aSsPEqNcCGxNcij5lJa
-JSu14Mh35jFnB8xvrAut
-=IYBC
+iQIcBAEBCAAGBQJWwx7ZAAoJEPo9qoy8lh71p/kP/2h+X1M1ph11MrlYMJepjbG2
+m2G940at+2EqSOzXm+NgJUCLOb+GYipPpAY8gx0IP17nEFzD8JJkjZ8YH6oT12NF
+AyxVGge2270CdRjqBrRCzSk4FEI0rE/GEgSKqFF+KDRevTvGpvYgGLacjeHAWKT9
+nleeGjiO3dD0CD2nI+jy5mneasz28dgzYMG7d2FgRl6MOmGfpPPu/M0GmXpN+xg6
+LBOSmJ3QTxwwHgrdcj3DmLvCu0frDykl0xH9HDYNeeP2nUglSJkzZksfKqxKVY2K
+GCGEWFQGIkmN/dWLb0vRIy+ZpkDiYRGappn58qEobK3fMvXwZvvVLsVJe2oWhp6+
+ClvoFIbCA84MmeZC8qfwkJoz4ZRu5Nh5cnvtVPpQlk402VJddt9DU5K1ps212gcc
+FhWVfm8Z6qupnvhm+GelASWdngZowl3ZLWfhjWkCj30uPz1Mk/i3e9PNCytCr4WE
+BdMefbhUSe4cGBWb60FIHMmKDP26DeOhRrpB4qpmPvhUG25cxKtWo8hwRgui8lDK
+1OgR005E1/ETfTCZT+8IoHEGk75XuLKYbZcE9W4f89pV5VXftpjFVRf6Ki0FrgnF
+0nAL9gT1lDbyCmIHjuEultLaMqjf74VeVAuStcjPYp8iLVCJygmiTU4qE5PCyyLb
+v/9s8/mVYpRXSv/JgMwQ
+=BP+Y
 -----END PGP SIGNATURE-----
 
---tm63m6t9h9xjDofsvDsVwOcL8ccTrhKDG--
+--OoO5RHFw32qrgCIbrW4iaMWw92d7TRTLb--

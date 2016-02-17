@@ -1,7 +1,7 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Wed, 17 Feb 2016 09:41:47 +0000
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 17 Feb 2016 16:17:33 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <20160217094147.GG19428@n2100.arm.linux.org.uk>
+Message-Id: <CACRpkdZ+G17hmVP8AejL7NTqg7k0SBC5kgF55ASjD+kfuGFJhQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
  <1454594660-7532-12-git-send-email-linus.walleij@linaro.org>
@@ -12,37 +12,37 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Feb 17, 2016 at 11:09:46AM +0200, Tomi Valkeinen wrote:
+On Wed, Feb 17, 2016 at 10:09 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+
+>> Tested on Versatile AB with just VGA with the default device tree,
+>> and with the IB2 daughterboard with the custom IB2 device tree.
+>> Tested to shunt in XVGA by modifying the device tree and this works
+>> too. Also tested on QEMU for Versatile in both VGA and Sanyo 2.5"
+>> mode. I don't have the IB1 daughterboard and its add-on displays,
+>> but it should work as long as the detection mechanism and device
+>> tree parameters are sound.
+>
+> Well... I don't like this very much. The .dts should contain
+> descriptions for hardware that is connected. Have you looked at DT
+> overlays? I think they would be a much better match for this.
+
+I'll look into it. I don't know how good those are. They must be overlaid
+at runtime and anyways exist somewhere in memory so they can be
+overlaid in there.
+
 > What's the SYS_CLCD register? An EEPROM or such, programmed when the
 > board is manufactured? Is the panel meant to be switchable by the user,
 > possibly to a panel that's not "standard"?
 
-If you read this bit of the patch, which describes the bits in the
-register, it gives some clues:
+As Russell points out: it's a register that contains a number saying what
+panel is connected.
 
--#define SYS_CLCD_MODE_MASK     (3 << 0)
--#define SYS_CLCD_MODE_888      (0 << 0)
--#define SYS_CLCD_MODE_5551     (1 << 0)
--#define SYS_CLCD_MODE_565_RLSB (2 << 0)
--#define SYS_CLCD_MODE_565_BLSB (3 << 0)
--#define SYS_CLCD_NLCDIOON      (1 << 2)
--#define SYS_CLCD_VDDPOSSWITCH  (1 << 3)
--#define SYS_CLCD_PWR3V5SWITCH  (1 << 4)
--#define SYS_CLCD_ID_MASK       (0x1f << 8)
--#define SYS_CLCD_ID_SANYO_3_8  (0x00 << 8)
--#define SYS_CLCD_ID_UNKNOWN_8_4        (0x01 << 8)
--#define SYS_CLCD_ID_EPSON_2_2  (0x02 << 8)
--#define SYS_CLCD_ID_SANYO_2_5  (0x07 << 8)
--#define SYS_CLCD_ID_VGA                (0x1f << 8)
+So it is plug-n-play and I want to preserve this in the patch.
 
-The LCD panels plug-in to the board, and they have a 5-bit hard-wired
-ID, which is signalled through five ID lines into the FPGA.
+The alternative is to make one DTS per display type connected, but that is
+loosing all the nice plug'n'play :(
 
-The register is also writable, which is used to control power supplies
-to the LCD and an external MUX which changes the RGB format outside of
-the capabilities of the CLCD itself.
+But if an overlay can do the same, I'm game for it.
 
--- 
-RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+Yours,
+Linus Walleij

@@ -1,128 +1,39 @@
-From: Doug Anderson <dianders@google.com>
-Date: Thu, 25 Feb 2016 23:14:03 +0000
-Subject: Re: [PATCH v3 00/12] pwm: add support for atomic update
-Message-Id: <CAD=FV=VckTVD8b1g+f0G2kMeoTjvY0pAGhoDnWQN_dAmqSxBxg@mail.gmail.com>
+From: Simon Horman <horms+renesas@verge.net.au>
+Date: Mon, 22 Feb 2016 01:59:51 +0000
+Subject: [PATCH] fbdev: sh_mobile_lcdc: Use ARCH_RENESAS
+Message-Id: <1456106391-10353-1-git-send-email-horms+renesas@verge.net.au>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20151110173416.GB21727@ulmo>
- <CAD=FV=WL3jYEgVe-m6QcAyQwfJgdX4J5OtKisKwyoKOrTSpEQA@mail.gmail.com>
- <20160125170855.GA10182@ulmo>
- <CAD=FV=Xvxeqo3imUmjukC5iYk3EZkrJ04G7C1B-w4xyr-r6-2Q@mail.gmail.com>
- <20160203145337.GD9650@ulmo>
- <CAD=FV=U_x1cxx6RrHuVgVV8GbOwm9DXXJcyiArbbQySUOaxrvQ@mail.gmail.com>
- <20160222175929.GA23899@ulmo>
- <CAD=FV=UCErW3EjYRtwt49_ztNR7cyY4U0o4R_dxdomer-Ac2Dg@mail.gmail.com>
- <20160223143859.GA27656@ulmo>
- <CAD=FV=UvxG3MYD4MKQJqN7W68uMjd-s+FH-e8tkrLCpS0RLmZQ@mail.gmail.com>
- <20160223181448.GA14754@ulmo.nvidia.com>
- <CAD=FV=VM3cOQ0HqwLANBw9MVBCyFTrSyPe_dGzgPucuMUEWRKA@mail.gmail.com>
-In-Reply-To: <CAD=FV=VM3cOQ0HqwLANBw9MVBCyFTrSyPe_dGzgPucuMUEWRKA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Thierry,
+Make use of ARCH_RENESAS in place of ARCH_SHMOBILE.
 
-On Tue, Feb 23, 2016 at 10:42 AM, Doug Anderson <dianders@google.com> wrote:
-> Thierry,
->
-> On Tue, Feb 23, 2016 at 10:14 AM, Thierry Reding
-> <thierry.reding@gmail.com> wrote:
->>> pwm_get_period(): get the period of the PWM; if the PWM has not yet
->>> been configured by software this gets the default period (possibly
->>> specified by the device tree).
->>
->> No. I think we'll need a different construct for the period defined by
->> DT or board files. pwm_get_period() is the legacy API to retrieve the
->> "current" period, even if it was lying a little before the atomic API.
->
-> Ah, got it.  I think I missed that you considered pwm_get_period()
-> legacy and that you eventually wanted to get rid of it.  OK, then what
-> you say makes sense.
->
->
->>> That should work with one minor problem.  If HW readout isn't
->>> supported then pwm_get_state() in probe will presumably return 0 for
->>> the duty cycle.  That means it will change the voltage.  That's in
->>> contrast to how I think things work today where the voltage isn't
->>> changed until the first set_voltage() call.  At least the last time I
->>> tested things get_voltage() would simply report an incorrect value
->>> until the first set_voltage().  I think existing behavior (reporting
->>> the wrong value) is better than new behavior (change the value at
->>> probe).
->>
->> That's exactly the point. Reporting a wrong value isn't really a good
->> option. Changing the voltage on boot is the only way to make the logical
->> state match the hardware state on boot. Chances are that if you don't
->> have hardware readout support you probably don't care what state your
->> regulator will be in.
->>
->> Then again, if we don't support hardware readout, setting up the logical
->> state with data from DT (or board files) and defaulting the duty cycle
->> to 0, we end up with exactly what we had before, even with the atomic
->> API, right? Maybe that's okay, too.
->
-> IMHO this is a change in behavior that will break existing users.
-> Anyone using a PWM regulator will suddenly find their voltage changing
-> at bootup.  Certainly today all users of the PWM regulator don't seem
-> to mind (apparently) the the voltage is reported incorrectly at bootup
-> but I bet they'd mind if the voltage suddenly started changing for
-> them at bootup.
->
-> It seems better to preserve existing behavior and print a warning that
-> the voltage will be reported incorrectly until HW Readout is
-> supported.
->
-> Of course, we're only talking about two real users in mainline here:
-> Rockchip boards and the "stih407-family".  If we just fix both of
-> those to support HW Readout before landing the change then I'm fine
-> with doing what you say.
->
->
->>> ...and if set_voltage() remains untouched then we can solve my probe
->>> problem by renaming pwm_get_state() to pwm_get_hw_state() and having
->>> it return an error if HW readout is not supported.  Then we only call
->>> pwm_get_args() / pwm_apply_state() when we support HW readout.
->>
->> The problem is that we make the API clumsy to use. If we don't sync the
->> "initial" state (as defined by DT or board files) to hardware at any
->> point, then we need to add the pwm_args construct and always stick to
->> it. I think it weird to have to use the pwm_args.period instead of the
->> current period.
->>
->> So we're back to square one, really. That's exactly what Mark brought up
->> originally.
->
-> I had missed the part where you wanted to deprecate pwm_get_period().
-> Thus my points here aren't really valid.
->
-> In my mind the old API was perfectly fine (and actually quite clean /
-> simple to use) except in the special case of avoiding the PWM
-> regulator glitches.  With that mindset I think my previous email make
-> sense.  However, this is your subsystem to maintain and if you think
-> moving everyone to a new atomic API makes more sense then you're in
-> the best position to make that decision.  :)
+This is part of an ongoing process to migrate from ARCH_SHMOBILE to
+ARCH_RENESAS the motivation for which being that RENESAS seems to be a more
+appropriate name than SHMOBILE for the majority of Renesas ARM based SoCs.
 
-So just to summarize:
+Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+---
+ drivers/video/fbdev/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-* Add pwm_get_state(), pwm_apply_state(), pwm_get_args().
-pwm_get_state() initially returns 0 for duty cycle if driver doesn't
-support readout.
+ Based on v4.5-rc1
 
-* Re-implement pwm_get_period() (and maybe other similar functions)
-atop pwm_get_state() as you describe earlier in the thread.
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 8ea45a5cd806..936ebd4bcf73 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1985,7 +1985,7 @@ config FB_W100
+ 
+ config FB_SH_MOBILE_LCDC
+ 	tristate "SuperH Mobile LCDC framebuffer support"
+-	depends on FB && (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
++	depends on FB && (SUPERH || ARCH_RENESAS) && HAVE_CLK
+ 	depends on FB_SH_MOBILE_MERAM || !FB_SH_MOBILE_MERAM
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+-- 
+2.1.4
 
-* Document pwm_get_period() (and maybe other similar functions) as deprecated.
-
-* Fix drivers for all current 2 users of PWM regulator to support
-hardware readout.
-
-* Update PWM regulator as you described earlier in the thread (Feb 23).
-
-* If PWM regulator is ever used on a new board whose PWM doesn't
-support hardware readout, the voltage will change at probe time.
-
-
-Did I get all that right?  Thanks!
-
--Doug

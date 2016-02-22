@@ -1,79 +1,119 @@
-From: Alan <alan@linux.intel.com>
-Date: Fri, 26 Feb 2016 18:42:30 +0000
-Subject: [PATCH 5/5] Subject: goldfishfb: simplify framebuffer format selection.
-Message-Id: <20160226184230.2731.4181.stgit@localhost.localdomain>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Mon, 22 Feb 2016 03:13:12 +0000
+Subject: [PATCH 3/3] drivers/video: make fbdev/sunxvr2500.c explicitly non-modular
+Message-Id: <1456110792-21771-4-git-send-email-paul.gortmaker@windriver.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1456110792-21771-1-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1456110792-21771-1-git-send-email-paul.gortmaker@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-From: Nicolas Capens <capn@google.com>
+The Kconfig currently controlling compilation of this code is:
 
-Signed-off-by: Nicolas Capens <capn@google.com>
-Signed-off-by: Jin Qian <jinqian@android.com>
-Signed-off-by: Alan Cox <alan@linux.intel.com>
+config FB_XVR2500
+        bool "Sun XVR-2500 3DLABS Wildcat support"
+
+...meaning that it currently is not being built as a module by anyone.
+Lets remove the modular code that is essentially orphaned, so that
+when reading the driver there is no doubt it is builtin-only.
+
+Since module_init translates to device_initcall in the non-modular
+case, the init ordering remains unchanged with this commit.
+
+We explicitly disallow a driver unbind, since that doesn't have a
+sensible use case anyway, and it allows us to drop the ".remove"
+code for non-modular drivers.
+
+We don't replace module.h with init.h since the file already has that.
+
+We also delete the MODULE_LICENSE tag etc. since all that information
+was (or is now) contained at the top of the file in the comments.
+
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- drivers/video/fbdev/goldfishfb.c |   34 +++++++++++++++-------------------
- 1 file changed, 15 insertions(+), 19 deletions(-)
+ drivers/video/fbdev/sunxvr2500.c | 39 +++++++--------------------------------
+ 1 file changed, 7 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
-index cddc91d..2a5fe71 100644
---- a/drivers/video/fbdev/goldfishfb.c
-+++ b/drivers/video/fbdev/goldfishfb.c
-@@ -53,39 +53,35 @@ enum {
- 	HAL_PIXEL_FORMAT_RGB_888            = 3,
- 	HAL_PIXEL_FORMAT_RGB_565            = 4,
- 	HAL_PIXEL_FORMAT_BGRA_8888          = 5,
--	HAL_PIXEL_FORMAT_RGBA_5551          = 6,
--	HAL_PIXEL_FORMAT_RGBA_4444          = 7,
- };
+diff --git a/drivers/video/fbdev/sunxvr2500.c b/drivers/video/fbdev/sunxvr2500.c
+index 843b6bab0483..1a053292f2eb 100644
+--- a/drivers/video/fbdev/sunxvr2500.c
++++ b/drivers/video/fbdev/sunxvr2500.c
+@@ -1,9 +1,10 @@
+-/* s3d.c: Sun 3DLABS XVR-2500 et al. driver for sparc64 systems
++/* sunxvr2500.c: Sun 3DLABS XVR-2500 et al. fb driver for sparc64 systems
++ *
++ * License: GPL
+  *
+  * Copyright (C) 2007 David S. Miller (davem@davemloft.net)
+  */
  
- struct framebuffer_config {
--	u8 format;
- 	u8 bytes_per_pixel;
--	u8 transp_offset;
--	u8 transp_length;
- 	u8 red_offset;
- 	u8 red_length;
- 	u8 green_offset;
- 	u8 green_length;
- 	u8 blue_offset;
- 	u8 blue_length;
-+	u8 transp_offset;
-+	u8 transp_length;
-+};
-+
-+static const struct framebuffer_config fb_configs[] = {
-+	{ 0, 0,  0, 0, 0, 0,  0, 0,  0 }, /* Invalid, assume RGB_565 */
-+	{ 4, 0,  8, 8, 8, 16, 8, 24, 8 }, /* HAL_PIXEL_FORMAT_RGBA_8888 */
-+	{ 4, 0,  8, 8, 8, 16, 8, 0,  0 }, /* HAL_PIXEL_FORMAT_RGBX_8888 */
-+	{ 3, 0,  8, 8, 8, 16, 8, 0,  0 }, /* HAL_PIXEL_FORMAT_RGB_888 */
-+	{ 2, 11, 5, 5, 6, 0,  5, 0,  0 }, /* HAL_PIXEL_FORMAT_RGB_565 */
-+	{ 4, 16, 8, 8, 8, 0,  8, 24, 8 }, /* HAL_PIXEL_FORMAT_BGRA_8888 */
- };
- 
- static const struct framebuffer_config *get_fb_config_from_format(int format)
- {
--	/* Only configurations supported by the emulator. */
--	static const struct framebuffer_config fb_configs[] = {
--		{ HAL_PIXEL_FORMAT_RGB_565, 2, 0, 0, 11, 5, 5, 6, 0, 5 },
--		{ HAL_PIXEL_FORMAT_RGBX_8888, 4, 0, 0, 16, 8, 8, 8, 0, 8 },
--		{ HAL_PIXEL_FORMAT_RGBA_8888, 4, 24, 8, 16, 8, 8, 8, 0, 8 },
--	};
--	const int fb_configs_size = ARRAY_SIZE(fb_configs);
--	int n;
--
--	for (n = 0; n < fb_configs_size; ++n) {
--		if (format = fb_configs[n].format)
--			return &fb_configs[n];
--	}
--	return &fb_configs[0]; /* default to RGB565 */
-+	if (format > 0 && format < ARRAY_SIZE(fb_configs))
-+		return &fb_configs[format];
-+
-+	return &fb_configs[HAL_PIXEL_FORMAT_RGB_565]; /* legacy default */
+-#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/fb.h>
+ #include <linux/pci.h>
+@@ -219,22 +220,6 @@ err_out:
+ 	return err;
  }
  
- struct goldfish_fb {
+-static void s3d_pci_unregister(struct pci_dev *pdev)
+-{
+-	struct fb_info *info = pci_get_drvdata(pdev);
+-	struct s3d_info *sp = info->par;
+-
+-	unregister_framebuffer(info);
+-
+-	iounmap(sp->fb_base);
+-
+-	pci_release_region(pdev, 1);
+-
+-        framebuffer_release(info);
+-
+-	pci_disable_device(pdev);
+-}
+-
+ static struct pci_device_id s3d_pci_table[] = {
+ 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x002c),	},
+ 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x002d),	},
+@@ -248,10 +233,12 @@ static struct pci_device_id s3d_pci_table[] = {
+ };
+ 
+ static struct pci_driver s3d_driver = {
++	.driver = {
++		.suppress_bind_attrs = true,
++	},
+ 	.name		= "s3d",
+ 	.id_table	= s3d_pci_table,
+ 	.probe		= s3d_pci_register,
+-	.remove		= s3d_pci_unregister,
+ };
+ 
+ static int __init s3d_init(void)
+@@ -261,16 +248,4 @@ static int __init s3d_init(void)
+ 
+ 	return pci_register_driver(&s3d_driver);
+ }
+-
+-static void __exit s3d_exit(void)
+-{
+-	pci_unregister_driver(&s3d_driver);
+-}
+-
+-module_init(s3d_init);
+-module_exit(s3d_exit);
+-
+-MODULE_DESCRIPTION("framebuffer driver for Sun XVR-2500 graphics");
+-MODULE_AUTHOR("David S. Miller <davem@davemloft.net>");
+-MODULE_VERSION("1.0");
+-MODULE_LICENSE("GPL");
++device_initcall(s3d_init);
+-- 
+2.6.1
 

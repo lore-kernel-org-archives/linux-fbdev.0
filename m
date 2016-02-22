@@ -1,387 +1,132 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 04 Feb 2016 14:04:14 +0000
-Subject: [PATCH 05/11] video: ARM CLCD: add special board and panel hooks for Nomadik
-Message-Id: <1454594660-7532-6-git-send-email-linus.walleij@linaro.org>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Date: Mon, 22 Feb 2016 01:55:21 +0000
+Subject: [PATCH 5/7] video: fbdev: pmag-ba-fb: Fix and rework Bt455 colormap handling
+Message-Id: <alpine.LFD.2.20.1602220140120.7431@eddie.linux-mips.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
-In-Reply-To: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
+References: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
+In-Reply-To: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-In the .board_init() callback will set up a mux register in
-the Nomadik system controller. It so happens that the platform
-has two display output engines, and we have to poke a bit in
-a special register to make sure the right engine is muxed in
-as they are mutually exclusive.
+The Bt455 is a greyscale RAMDAC, using the green color palette entries 
+only while still providing registers for the red and blue components, 
+all the three of which have to be loaded on palette updates.  Chip 
+documentation [1] mandates that the unused red and blue registers are 
+written with 0.
 
-The Nomadik CLCD variant is instantiated on a platform where
-it is combined with a 800x480 TPO WVGA display. In the
-.panel_init() hook we will detect this display from the
-compatible string and set it up. We also add .enable() and
-.disable() callbacks for it as the sleep state is software
-controlled.
+Therefore update code to follow this requirement and given that it makes 
+the red and blue components unusable remove them from internal API calls 
+altogether.
 
-The display is connected with a special 3-wire serial bus
-(this is sadly neither I2C or SPI) using three GPIO lines that
-we bitbang to detect the display and enable/disable sleep
-state.
+References:
 
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+[1] "Bt454 Bt455 170 MHz Monolithic CMOS 16 Color Palette RAMDAC",
+    Brooktree Corporation, Document Number: L454001, Rev. I
+
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 ---
- drivers/video/fbdev/Makefile            |   1 +
- drivers/video/fbdev/amba-clcd-nomadik.c | 263 ++++++++++++++++++++++++++++++++
- drivers/video/fbdev/amba-clcd-nomadik.h |  24 +++
- drivers/video/fbdev/amba-clcd.c         |   6 +-
- 4 files changed, 293 insertions(+), 1 deletion(-)
- create mode 100644 drivers/video/fbdev/amba-clcd-nomadik.c
- create mode 100644 drivers/video/fbdev/amba-clcd-nomadik.h
-
-diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
-index 65fb15075c8f..f0aec3aa213c 100644
---- a/drivers/video/fbdev/Makefile
-+++ b/drivers/video/fbdev/Makefile
-@@ -79,6 +79,7 @@ obj-$(CONFIG_FB_ATMEL)		  += atmel_lcdfb.o
- obj-$(CONFIG_FB_PVR2)             += pvr2fb.o
- obj-$(CONFIG_FB_VOODOO1)          += sstfb.o
- obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o
-+obj-$(CONFIG_ARCH_NOMADIK)	  += amba-clcd-nomadik.o
- obj-$(CONFIG_PLAT_VERSATILE_CLCD) += amba-clcd-versatile.o
- obj-$(CONFIG_FB_GOLDFISH)         += goldfishfb.o
- obj-$(CONFIG_FB_68328)            += 68328fb.o
-diff --git a/drivers/video/fbdev/amba-clcd-nomadik.c b/drivers/video/fbdev/amba-clcd-nomadik.c
-new file mode 100644
-index 000000000000..bc3519d1b5c0
---- /dev/null
-+++ b/drivers/video/fbdev/amba-clcd-nomadik.c
-@@ -0,0 +1,263 @@
-+#include <linux/amba/bus.h>
-+#include <linux/amba/clcd.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/of.h>
-+#include <linux/of_graph.h>
-+#include <linux/delay.h>
-+#include <linux/bitops.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/regmap.h>
-+
-+#include "amba-clcd-nomadik.h"
-+
-+static struct gpio_desc *grestb;
-+static struct gpio_desc *scen;
-+static struct gpio_desc *scl;
-+static struct gpio_desc *sda;
-+
-+static u8 tpg110_readwrite_reg(bool write, u8 address, u8 outval)
-+{
-+	int i;
-+	u8 inval = 0;
-+
-+	/* Assert SCEN */
-+	gpiod_set_value_cansleep(scen, 1);
-+	ndelay(150);
-+	/* Hammer out the address */
-+	for (i = 5; i >= 0; i--) {
-+		if (address & BIT(i))
-+			gpiod_set_value_cansleep(sda, 1);
-+		else
-+			gpiod_set_value_cansleep(sda, 0);
-+		ndelay(150);
-+		/* Send an SCL pulse */
-+		gpiod_set_value_cansleep(scl, 1);
-+		ndelay(160);
-+		gpiod_set_value_cansleep(scl, 0);
-+		ndelay(160);
-+	}
-+
-+	if (write) {
-+		/* WRITE */
-+		gpiod_set_value_cansleep(sda, 0);
-+	} else {
-+		/* READ */
-+		gpiod_set_value_cansleep(sda, 1);
-+	}
-+	ndelay(150);
-+	/* Send an SCL pulse */
-+	gpiod_set_value_cansleep(scl, 1);
-+	ndelay(160);
-+	gpiod_set_value_cansleep(scl, 0);
-+	ndelay(160);
-+
-+	if (!write)
-+		/* HiZ turn-around cycle */
-+		gpiod_direction_input(sda);
-+	ndelay(150);
-+	/* Send an SCL pulse */
-+	gpiod_set_value_cansleep(scl, 1);
-+	ndelay(160);
-+	gpiod_set_value_cansleep(scl, 0);
-+	ndelay(160);
-+
-+	/* Hammer in/out the data */
-+	for (i = 7; i >= 0; i--) {
-+		int value;
-+
-+		if (write) {
-+			value = !!(outval & BIT(i));
-+			gpiod_set_value_cansleep(sda, value);
-+		} else {
-+			value = gpiod_get_value(sda);
-+			if (value)
-+				inval |= BIT(i);
-+		}
-+		ndelay(150);
-+		/* Send an SCL pulse */
-+		gpiod_set_value_cansleep(scl, 1);
-+		ndelay(160);
-+		gpiod_set_value_cansleep(scl, 0);
-+		ndelay(160);
-+	}
-+
-+	gpiod_direction_output(sda, 0);
-+	/* Deassert SCEN */
-+	gpiod_set_value_cansleep(scen, 0);
-+	/* Satisfies SCEN pulse width */
-+	udelay(1);
-+
-+	return inval;
-+}
-+
-+static u8 tpg110_read_reg(u8 address)
-+{
-+	return tpg110_readwrite_reg(false, address, 0);
-+}
-+
-+static void tpg110_write_reg(u8 address, u8 outval)
-+{
-+	tpg110_readwrite_reg(true, address, outval);
-+}
-+
-+static void tpg110_startup(struct device *dev)
-+{
-+	u8 val;
-+
-+	dev_info(dev, "TPG110 display enable\n");
-+	/* De-assert the reset signal */
-+	gpiod_set_value_cansleep(grestb, 0);
-+	mdelay(1);
-+	dev_info(dev, "de-asserted GRESTB\n");
-+
-+	/* Test display communication */
-+	tpg110_write_reg(0x00, 0x55);
-+	val = tpg110_read_reg(0x00);
-+	if (val = 0x55)
-+		dev_info(dev, "passed communication test\n");
-+	val = tpg110_read_reg(0x01);
-+	dev_info(dev, "TPG110 chip ID: %d version: %d\n",
-+		val>>4, val&0x0f);
-+
-+	/* Show display resolution */
-+	val = tpg110_read_reg(0x02);
-+	val &= 7;
-+	switch (val) {
-+	case 0x0:
-+		dev_info(dev, "IN 400x240 RGB -> OUT 800x480 RGB (dual scan)");
-+		break;
-+	case 0x1:
-+		dev_info(dev, "IN 480x272 RGB -> OUT 800x480 RGB (dual scan)");
-+		break;
-+	case 0x4:
-+		dev_info(dev, "480x640 RGB");
-+		break;
-+	case 0x5:
-+		dev_info(dev, "480x272 RGB");
-+		break;
-+	case 0x6:
-+		dev_info(dev, "640x480 RGB");
-+		break;
-+	case 0x7:
-+		dev_info(dev, "800x480 RGB");
-+		break;
-+	default:
-+		dev_info(dev, "ILLEGAL RESOLUTION");
-+		break;
-+	}
-+
-+	val = tpg110_read_reg(0x03);
-+	dev_info(dev, "resolution is controlled by %s\n",
-+		(val & BIT(7)) ? "software" : "hardware");
-+}
-+
-+static void tpg110_enable(struct clcd_fb *fb)
-+{
-+	struct fb_var_screeninfo *var = &fb->fb.var;
-+	struct device *dev = &fb->dev->dev;
-+	static bool startup;
-+	u8 val;
-+
-+	if (!startup) {
-+		tpg110_startup(dev);
-+		startup = true;
-+	}
-+
-+	/* Take chip out of standby */
-+	val = tpg110_read_reg(0x03);
-+	val |= BIT(0);
-+	tpg110_write_reg(0x03, val);
-+}
-+
-+static void tpg110_disable(struct clcd_fb *fb)
-+{
-+	u8 val;
-+
-+	dev_info(&fb->dev->dev, "TPG110 display disable\n");
-+	val = tpg110_read_reg(0x03);
-+	/* Put into standby */
-+	val &= ~BIT(0);
-+	tpg110_write_reg(0x03, val);
-+}
-+
-+static void tpg110_init(struct device *dev, struct device_node *np,
-+			struct clcd_board *board)
-+{
-+	dev_info(dev, "TPG110 display init\n");
-+
-+	grestb = devm_get_gpiod_from_child(dev, "grestb", &np->fwnode);
-+	if (IS_ERR(grestb)) {
-+		dev_err(dev, "no GRESTB GPIO\n");
-+		return;
-+	}
-+	/* This asserts the GRESTB signal, putting the display into reset */
-+	gpiod_direction_output(grestb, 1);
-+
-+	scen = devm_get_gpiod_from_child(dev, "scen", &np->fwnode);
-+	if (IS_ERR(scen)) {
-+		dev_err(dev, "no SCEN GPIO\n");
-+		return;
-+	}
-+	gpiod_direction_output(scen, 0);
-+	scl = devm_get_gpiod_from_child(dev, "scl", &np->fwnode);
-+	if (IS_ERR(scl)) {
-+		dev_err(dev, "no SCL GPIO\n");
-+		return;
-+	}
-+	gpiod_direction_output(scl, 0);
-+	sda = devm_get_gpiod_from_child(dev, "sda", &np->fwnode);
-+	if (IS_ERR(sda)) {
-+		dev_err(dev, "no SDA GPIO\n");
-+		return;
-+	}
-+	gpiod_direction_output(sda, 0);
-+	board->enable = tpg110_enable;
-+	board->disable = tpg110_disable;
-+}
-+
-+int nomadik_clcd_init_panel(struct clcd_fb *fb,
-+			    struct device_node **endpoint)
-+{
-+	struct device_node *panel;
-+
-+	*endpoint = of_graph_get_next_endpoint(fb->dev->dev.of_node,
-+					       NULL);
-+	if (!*endpoint)
-+		return -ENODEV;
-+
-+	panel = of_graph_get_remote_port_parent(endpoint);
-+	if (!panel)
-+		return -ENODEV;
-+
-+	if (of_device_is_compatible(panel, "tpo,tpg110"))
-+		tpg110_init(&fb->dev->dev, panel, fb->board);
-+	else
-+		dev_info(&fb->dev->dev, "unknown panel\n");
-+
-+	/* Unknown panel, fall through */
-+	return 0;
-+}
-+
-+#define PMU_CTRL_OFFSET 0x0000
-+#define PMU_CTRL_LCDNDIF BIT(26)
-+
-+int nomadik_clcd_init_board(struct amba_device *adev,
-+			    struct clcd_board *board)
-+{
-+	struct regmap *pmu_regmap;
-+
-+	dev_info(&adev->dev, "Nomadik CLCD board init\n");
-+	pmu_regmap +		syscon_regmap_lookup_by_compatible("stericsson,nomadik-pmu");
-+	if (IS_ERR(pmu_regmap)) {
-+		dev_err(&adev->dev, "could not find PMU syscon regmap\n");
-+		return PTR_ERR(pmu_regmap);
-+	}
-+	regmap_update_bits(pmu_regmap,
-+			   PMU_CTRL_OFFSET,
-+			   PMU_CTRL_LCDNDIF,
-+			   0);
-+	dev_info(&adev->dev, "set PMU mux to CLCD mode\n");
-+
-+	return 0;
-+}
-diff --git a/drivers/video/fbdev/amba-clcd-nomadik.h b/drivers/video/fbdev/amba-clcd-nomadik.h
-new file mode 100644
-index 000000000000..b34dbf3061bf
---- /dev/null
-+++ b/drivers/video/fbdev/amba-clcd-nomadik.h
-@@ -0,0 +1,24 @@
-+#ifndef _AMBA_CLCD_NOMADIK_H
-+#define _AMBA_CLCD_NOMADIK_H
-+
-+#include <linux/amba/bus.h>
-+
-+#ifdef CONFIG_ARCH_NOMADIK
-+int nomadik_clcd_init_board(struct amba_device *adev,
-+			     struct clcd_board *board);
-+int nomadik_clcd_init_panel(struct clcd_fb *fb,
-+			    struct device_node **endpoint);
-+#else
-+static inline int nomadik_clcd_init_board(struct amba_device *adev,
-+					  struct clcd_board *board)
-+{
-+	return 0;
-+}
-+static inline int nomadik_clcd_init_panel(struct clcd_fb *fb,
-+					  struct device_node **endpoint)
-+{
-+	return 0;
-+}
-+#endif
-+
-+#endif /* inclusion guard */
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index 77fb50e00670..53c5ec31168d 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -37,6 +37,8 @@
+linux-bt455-cmap-grey.diff
+Index: linux-20160211-4maxp64/drivers/video/fbdev/bt455.h
+=================================--- linux-20160211-4maxp64.orig/drivers/video/fbdev/bt455.h
++++ linux-20160211-4maxp64/drivers/video/fbdev/bt455.h
+@@ -2,6 +2,7 @@
+  *	linux/drivers/video/bt455.h
+  *
+  *	Copyright 2003  Thiemo Seufer <seufer@csv.ica.uni-stuttgart.de>
++ *	Copyright 2016  Maciej W. Rozycki <macro@linux-mips.org>
+  *
+  *	This file is subject to the terms and conditions of the GNU General
+  *	Public License. See the file COPYING in the main directory of this
+@@ -32,38 +33,38 @@ static inline void bt455_select_reg(stru
+ /*
+  * Read/write to a Bt455 color map register.
+  */
+-static inline void bt455_read_cmap_entry(struct bt455_regs *regs, int cr,
+-					 u8* red, u8* green, u8* blue)
++static inline void bt455_read_cmap_entry(struct bt455_regs *regs,
++					 int cr, u8 *grey)
+ {
+ 	bt455_select_reg(regs, cr);
+ 	mb();
+-	*red = regs->addr_cmap_data & 0x0f;
++	regs->addr_cmap_data;
+ 	rmb();
+-	*green = regs->addr_cmap_data & 0x0f;
++	*grey = regs->addr_cmap_data & 0xf;
+ 	rmb();
+-	*blue = regs->addr_cmap_data & 0x0f;
++	regs->addr_cmap_data;
+ }
  
- #include <asm/sizes.h>
+-static inline void bt455_write_cmap_entry(struct bt455_regs *regs, int cr,
+-					  u8 red, u8 green, u8 blue)
++static inline void bt455_write_cmap_entry(struct bt455_regs *regs,
++					  int cr, u8 grey)
+ {
+ 	bt455_select_reg(regs, cr);
+ 	wmb();
+-	regs->addr_cmap_data = red & 0x0f;
++	regs->addr_cmap_data = 0x0;
+ 	wmb();
+-	regs->addr_cmap_data = green & 0x0f;
++	regs->addr_cmap_data = grey & 0xf;
+ 	wmb();
+-	regs->addr_cmap_data = blue & 0x0f;
++	regs->addr_cmap_data = 0x0;
+ }
  
-+#include "amba-clcd-nomadik.h"
-+
- #define to_clcd(info)	container_of(info, struct clcd_fb, fb)
+-static inline void bt455_write_ovly_entry(struct bt455_regs *regs, int cr,
+-					  u8 red, u8 green, u8 blue)
++static inline void bt455_write_ovly_entry(struct bt455_regs *regs,
++					  int cr, u8 grey)
+ {
+ 	bt455_select_reg(regs, cr);
+ 	wmb();
+-	regs->addr_ovly = red & 0x0f;
++	regs->addr_ovly = 0x0;
+ 	wmb();
+-	regs->addr_ovly = green & 0x0f;
++	regs->addr_ovly = grey & 0xf;
+ 	wmb();
+-	regs->addr_ovly = blue & 0x0f;
++	regs->addr_ovly = 0x0;
+ }
+Index: linux-20160211-4maxp64/drivers/video/fbdev/pmag-aa-fb.c
+=================================--- linux-20160211-4maxp64.orig/drivers/video/fbdev/pmag-aa-fb.c
++++ linux-20160211-4maxp64/drivers/video/fbdev/pmag-aa-fb.c
+@@ -121,9 +121,9 @@ static int aafb_cursor(struct fb_info *i
+ 		u8 fg = cursor->image.fg_color ? 0xf : 0x0;
+ 		u8 bg = cursor->image.bg_color ? 0xf : 0x0;
  
- /* This is limited to 16 characters when displayed by X startup */
-@@ -1003,7 +1005,7 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
- 	if (ret)
- 		goto free_fb;
+-		bt455_write_cmap_entry(par->bt455, 8, 0, bg, 0);
+-		bt455_write_cmap_entry(par->bt455, 9, 0, bg, 0);
+-		bt455_write_ovly_entry(par->bt455, 0, 0, fg, 0);
++		bt455_write_cmap_entry(par->bt455, 8, bg);
++		bt455_write_cmap_entry(par->bt455, 9, bg);
++		bt455_write_ovly_entry(par->bt455, 0, fg);
+ 	}
+ 	if (cursor->set & (FB_CUR_SETSIZE | FB_CUR_SETSHAPE | FB_CUR_SETIMAGE))
+ 		bt431_set_cursor(par->bt431,
+@@ -143,7 +143,7 @@ static int aafb_blank(int blank, struct 
+ 	struct aafb_par *par = info->par;
+ 	u8 val = blank ? 0x00 : 0x0f;
  
--	ret = clcdfb_register(fb); 
-+	ret = clcdfb_register(fb);
- 	if (ret = 0) {
- 		amba_set_drvdata(dev, fb);
- 		goto out;
-@@ -1047,6 +1049,8 @@ static struct clcd_vendor_data vendor_nomadik = {
- 	.clock_timregs = true,
- 	.packed_24_bit_pixels = true,
- 	.st_bitmux_control = true,
-+	.init_board = nomadik_clcd_init_board,
-+	.init_panel = nomadik_clcd_init_panel,
- };
+-	bt455_write_cmap_entry(par->bt455, 1, val, val, val);
++	bt455_write_cmap_entry(par->bt455, 1, val);
+ 	return 0;
+ }
  
- static struct amba_id clcdfb_id_table[] = {
--- 
-2.4.3
-
+@@ -211,8 +211,8 @@ static int pmagaafb_probe(struct device 
+ 	info->screen_size = info->fix.smem_len;
+ 
+ 	/* Init colormap. */
+-	bt455_write_cmap_entry(par->bt455, 0, 0x00, 0x00, 0x00);
+-	bt455_write_cmap_entry(par->bt455, 1, 0x0f, 0x0f, 0x0f);
++	bt455_write_cmap_entry(par->bt455, 0, 0x0);
++	bt455_write_cmap_entry(par->bt455, 1, 0xf);
+ 
+ 	/* Init hardware cursor. */
+ 	bt431_erase_cursor(par->bt431);

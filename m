@@ -1,123 +1,39 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Mon, 22 Feb 2016 03:13:11 +0000
-Subject: [PATCH 2/3] drivers/video: make fbdev/sunxvr1000.c explicitly non-modular
-Message-Id: <1456110792-21771-3-git-send-email-paul.gortmaker@windriver.com>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Date: Mon, 22 Feb 2016 01:55:34 +0000
+Subject: [PATCH 7/7] video: fbdev: bt431: Correct cursor format control macro
+Message-Id: <alpine.LFD.2.20.1602220141110.7431@eddie.linux-mips.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1456110792-21771-1-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <1456110792-21771-1-git-send-email-paul.gortmaker@windriver.com>
+References: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
+In-Reply-To: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The Kconfig currently controlling compilation of this code is:
+The Bt431 cursor generator supports simultaneous generation of a 64 x 64
+and a cross hair cursor in which the cursor format control bit (bit D4)
+of the command register "specifies whether the contents of the cursor
+RAM are to be logically exclusive-ORed (logical zero) or ORed (logical
+one) with the cross hair cursor".  Rename the relevant macro accordingly.
 
-config FB_XVR1000
-        bool "Sun XVR-1000 support"
+References:
 
-...meaning that it currently is not being built as a module by anyone.
-Lets remove the modular code that is essentially orphaned, so that
-when reading the driver there is no doubt it is builtin-only.
+[1] "Bt431 Monolithic CMOS 64 x 64 Pixel Cursor Generator", Brooktree
+    Corporation, Document Number: L431001, Rev. J
 
-Since module_init translates to device_initcall in the non-modular
-case, the init ordering remains unchanged with this commit.
-
-We explicitly disallow a driver unbind, since that doesn't have a
-sensible use case anyway, and it allows us to drop the ".remove"
-code for non-modular drivers.
-
-We don't replace module.h with init.h since the file already has that.
-Also note that MODULE_DEVICE_TABLE is a no-op for non-modular code.
-
-We also delete the MODULE_LICENSE tag etc. since all that information
-was (or is now) contained at the top of the file in the comments.
-
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 ---
- drivers/video/fbdev/sunxvr1000.c | 42 +++++++---------------------------------
- 1 file changed, 7 insertions(+), 35 deletions(-)
-
-diff --git a/drivers/video/fbdev/sunxvr1000.c b/drivers/video/fbdev/sunxvr1000.c
-index 08879bdfad35..fb37f6e05391 100644
---- a/drivers/video/fbdev/sunxvr1000.c
-+++ b/drivers/video/fbdev/sunxvr1000.c
-@@ -1,9 +1,10 @@
--/* sunxvr1000.c: Sun XVR-1000 driver for sparc64 systems
-+/* sunxvr1000.c: Sun XVR-1000 fb driver for sparc64 systems
-+ *
-+ * License: GPL
-  *
-  * Copyright (C) 2010 David S. Miller (davem@davemloft.net)
-  */
- 
--#include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/fb.h>
- #include <linux/init.h>
-@@ -173,36 +174,19 @@ err_out:
- 	return err;
- }
- 
--static int gfb_remove(struct platform_device *op)
--{
--	struct fb_info *info = dev_get_drvdata(&op->dev);
--	struct gfb_info *gp = info->par;
--
--	unregister_framebuffer(info);
--
--	iounmap(gp->fb_base);
--
--	of_iounmap(&op->resource[6], gp->fb_base, gp->fb_size);
--
--        framebuffer_release(info);
--
--	return 0;
--}
--
- static const struct of_device_id gfb_match[] = {
- 	{
- 		.name = "SUNW,gfb",
- 	},
- 	{},
- };
--MODULE_DEVICE_TABLE(of, ffb_match);
- 
- static struct platform_driver gfb_driver = {
- 	.probe		= gfb_probe,
--	.remove		= gfb_remove,
- 	.driver = {
--		.name		= "gfb",
--		.of_match_table	= gfb_match,
-+		.name			= "gfb",
-+		.of_match_table		= gfb_match,
-+		.suppress_bind_attrs	= true,
- 	},
- };
- 
-@@ -213,16 +197,4 @@ static int __init gfb_init(void)
- 
- 	return platform_driver_register(&gfb_driver);
- }
--
--static void __exit gfb_exit(void)
--{
--	platform_driver_unregister(&gfb_driver);
--}
--
--module_init(gfb_init);
--module_exit(gfb_exit);
--
--MODULE_DESCRIPTION("framebuffer driver for Sun XVR-1000 graphics");
--MODULE_AUTHOR("David S. Miller <davem@davemloft.net>");
--MODULE_VERSION("1.0");
--MODULE_LICENSE("GPL");
-+device_initcall(gfb_init);
--- 
-2.6.1
-
+linux-bt431-cmd-xor.diff
+Index: linux-20160211-4maxp64/drivers/video/fbdev/bt431.h
+=================================--- linux-20160211-4maxp64.orig/drivers/video/fbdev/bt431.h
++++ linux-20160211-4maxp64/drivers/video/fbdev/bt431.h
+@@ -63,7 +63,7 @@ static inline u8 bt431_get_value(u16 val
+ #define BT431_CMD_CURS_ENABLE	0x40
+ #define BT431_CMD_XHAIR_ENABLE	0x20
+ #define BT431_CMD_OR_CURSORS	0x10
+-#define BT431_CMD_AND_CURSORS	0x00
++#define BT431_CMD_XOR_CURSORS	0x00
+ #define BT431_CMD_1_1_MUX	0x00
+ #define BT431_CMD_4_1_MUX	0x04
+ #define BT431_CMD_5_1_MUX	0x08

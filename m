@@ -1,53 +1,38 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 16 Feb 2016 15:05:20 +0000
-Subject: Re: [PATCH] xen kconfig: clarify INPUT_XEN_KBDDEV_FRONTEND select
-Message-Id: <2697712.W9djLKoMG1@wuerfel>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Date: Mon, 22 Feb 2016 01:54:46 +0000
+Subject: [PATCH] video: fbdev: pmag-ba-fb: Fix the lower margin size
+Message-Id: <alpine.LFD.2.20.1602220109160.7431@eddie.linux-mips.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1455278707-2008263-1-git-send-email-arnd@arndb.de>
- <2801550.oZPkqjv8nW@wuerfel>
- <alpine.DEB.2.02.1602161156160.27008@kaball.uk.xensource.com>
-In-Reply-To: <alpine.DEB.2.02.1602161156160.27008@kaball.uk.xensource.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday 16 February 2016 12:14:14 Stefano Stabellini wrote:
-> > at all.
-> 
-> Please correct me if I am wrong, but the difference is that with this
-> change if INPUT=m, then the build system would ask the user whether she
-> wants to select INPUT_XEN_KBDDEV_FRONTEND as m or y, instead of
-> unconditionally set INPUT_XEN_KBDDEV_FRONTEND=y.
+According to the board specification[1] the width of the vertical sync 
+front porch is 12 pixels or the same as the width of the horizontal sync 
+front porch.  This in turn means the size of the lower margin is 0, 
+because the vertical sync starts as soon as the start of the horizontal 
+sync terminates the last line.
 
-INPUT_XEN_KBDDEV_FRONTEND cannot be set by the user to 'y' if
-INPUT=m, because of an implied dependency around the input/misc/Kconfig
-file.
+References:
 
-> However it is true that if the users chooses
-> INPUT_XEN_KBDDEV_FRONTEND=y, then the problem persists.
-> Maybe we also need:
-> 
-> diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
-> index 1f2337a..303df24 100644
-> --- a/drivers/input/misc/Kconfig
-> +++ b/drivers/input/misc/Kconfig
-> @@ -721,7 +721,7 @@ config INPUT_CMA3000_I2C
->  
->  config INPUT_XEN_KBDDEV_FRONTEND
->         tristate "Xen virtual keyboard and mouse support"
-> -       depends on XEN
-> +       depends on XEN && INPUT
->         default y
->         select XEN_XENBUS_FRONTEND
->         help
-> 
-> 
-> Do you have a kernel config with INPUT=m that I can use to test with?
+[1] "PMAG-BA TURBOchannel Color Frame Buffer Functional Specification",
+    Revision 1.2, Workstation Systems Engineering, Digital Equipment
+    Corporation, August 27, 1990, Table 3-5: "Video Timing"
 
-You can easily set that in any config if you disable CONFIG_VT. I don't
-think it's worth spending more time on that, as everyone seems to be
-happy with just removing the 'select', and I've sent a replacement
-patch to do that.
-
-	Arnd
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+linux-pmag-ba-lower.patch
+Index: linux-20150524-4maxp64/drivers/video/fbdev/pmag-ba-fb.c
+=================================--- linux-20150524-4maxp64.orig/drivers/video/fbdev/pmag-ba-fb.c
++++ linux-20150524-4maxp64/drivers/video/fbdev/pmag-ba-fb.c
+@@ -60,7 +60,7 @@ static struct fb_var_screeninfo pmagbafb
+ 	.left_margin	= 116,
+ 	.right_margin	= 12,
+ 	.upper_margin	= 34,
+-	.lower_margin	= 12,
++	.lower_margin	= 0,
+ 	.hsync_len	= 128,
+ 	.vsync_len	= 3,
+ 	.sync		= FB_SYNC_ON_GREEN,

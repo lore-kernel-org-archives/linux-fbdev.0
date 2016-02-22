@@ -1,58 +1,32 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 04 Feb 2016 14:04:18 +0000
-Subject: [PATCH 09/11] ARM: PB11MPCore: define a standard VGA panel
-Message-Id: <1454594660-7532-10-git-send-email-linus.walleij@linaro.org>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Date: Mon, 22 Feb 2016 01:55:07 +0000
+Subject: [PATCH 2/7] video: fbdev: pmag-aa-fb: Enable building as a module
+Message-Id: <alpine.LFD.2.20.1602220137520.7431@eddie.linux-mips.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
-In-Reply-To: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
+References: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
+In-Reply-To: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Let's supply a standard VGA panel by default on the PB11MPCore,
-this will work with most monitors. If more screen real estate is
-desired, users can update the DPI definition.
+With the current TURBOchannel API support is automagical.
 
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 ---
- arch/arm/boot/dts/arm-realview-pb11mp.dts | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
-
-diff --git a/arch/arm/boot/dts/arm-realview-pb11mp.dts b/arch/arm/boot/dts/arm-realview-pb11mp.dts
-index 3d9b1b0f4ffc..9e744c83f5ee 100644
---- a/arch/arm/boot/dts/arm-realview-pb11mp.dts
-+++ b/arch/arm/boot/dts/arm-realview-pb11mp.dts
-@@ -629,16 +629,17 @@
- 					};
- 				};
+linux-pmag-aa-module.patch
+Index: linux-20160211-4maxp64/drivers/video/fbdev/Kconfig
+=================================--- linux-20160211-4maxp64.orig/drivers/video/fbdev/Kconfig
++++ linux-20160211-4maxp64/drivers/video/fbdev/Kconfig
+@@ -1808,8 +1808,8 @@ config FB_HIT
+ 	  frame buffer card.
  
-+				/* Standard 640x480 VGA timings */
- 				panel-timing {
--					clock-frequency = <63500127>;
--					hactive = <1024>;
--					hback-porch = <152>;
--					hfront-porch = <48>;
--					hsync-len = <104>;
--					vactive = <768>;
--					vback-porch = <23>;
--					vfront-porch = <3>;
--					vsync-len = <4>;
-+					clock-frequency = <25175000>;
-+					hactive = <640>;
-+					hback-porch = <48>;
-+					hfront-porch = <16>;
-+					hsync-len = <96>;
-+					vactive = <480>;
-+					vback-porch = <33>;
-+					vfront-porch = <10>;
-+					vsync-len = <2>;
- 				};
- 			};
- 		};
--- 
-2.4.3
-
+ config FB_PMAG_AA
+-	bool "PMAG-AA TURBOchannel framebuffer support"
+-	depends on (FB = y) && TC
++	tristate "PMAG-AA TURBOchannel framebuffer support"
++	depends on FB && TC
+  	select FB_CFB_FILLRECT
+  	select FB_CFB_COPYAREA
+  	select FB_CFB_IMAGEBLIT

@@ -1,299 +1,104 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Sun, 21 Feb 2016 22:39:24 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 22 Feb 2016 15:41:37 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <CACRpkdaXFUCR5=5mS28_4Dx_LfzqV13zwT=vVeJwuOzm_rGRBQ@mail.gmail.com>
+Message-Id: <56CB2C31.5040703@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="2ARonUXH6IC3cCgeD5a84xSnXduRC8wLa"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
  <1454594660-7532-12-git-send-email-linus.walleij@linaro.org>
  <56C438DA.5040109@ti.com>
  <CACRpkdZ+G17hmVP8AejL7NTqg7k0SBC5kgF55ASjD+kfuGFJhQ@mail.gmail.com>
- <20160217213250.GK19428@n2100.arm.linux.org.uk>
- <56C5B080.9090007@ti.com>
-In-Reply-To: <56C5B080.9090007@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <20160217213250.GK19428@n2100.arm.linux.org.uk> <56C5B080.9090007@ti.com>
+ <CACRpkdaXFUCR5=5mS28_4Dx_LfzqV13zwT=vVeJwuOzm_rGRBQ@mail.gmail.com>
+In-Reply-To: <CACRpkdaXFUCR5=5mS28_4Dx_LfzqV13zwT=vVeJwuOzm_rGRBQ@mail.gmail.com>
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Feb 18, 2016 at 12:52 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+--2ARonUXH6IC3cCgeD5a84xSnXduRC8wLa
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-> For panels we need DT fragments. The question is where these fragments
-> are and, possibly, who who loads them.
+On 22/02/16 00:39, Linus Walleij wrote:
+> On Thu, Feb 18, 2016 at 12:52 PM, Tomi Valkeinen <tomi.valkeinen@ti.com=
+> wrote:
+>=20
+>> For panels we need DT fragments. The question is where these fragments=
 
-I hacked something up that augments the device tree from the kernel,
-given you have a node with all the props you want to augment, tell me
-what you think of this and whether I should continue in this direction...
-also the DT people need to be involved:
+>> are and, possibly, who who loads them.
+>=20
+> I hacked something up that augments the device tree from the kernel,
+> given you have a node with all the props you want to augment, tell me
+> what you think of this and whether I should continue in this direction.=
+=2E.
+> also the DT people need to be involved:
 
-#include "../../drivers/of/of_private.h"
-/* Obviously make the property duplication function public instead,
-it's a test */
+What you have there is almost like a legacy board file, isn't it? It's
+just passing DT data forward, instead of device platform data. In fact,
+if the driver in question supports platform data too, you could as well
+generate platform data for it (but I'm not saying that's a better option)=
+=2E
 
-struct versatile_panel {
-    u32 id;
-    char *compatible;
-    u32 clock_frequency;
-    u32 pixelclk_active;
-    u32 hsync_active;
-    u32 vsync_active;
-    u32 de_active;
-    u32 hactive;
-    u32 hback_porch;
-    u32 hfront_porch;
-    u32 hsync_len;
-    u32 vactive;
-    u32 vback_porch;
-    u32 vfront_porch;
-    u32 vsync_len;
-    bool ib2;
-};
+After thinking this a bit and discussing it with Laurent P., generally
+speaking I still think that the only sane option is that the bootloader
+does any detection needed and provides the kernel a .dtb that contains
+the HW that is connected. No board specific drivers are needed on the
+kernel side.
 
-static const struct versatile_panel versatile_panels[] = {
-    {
-        .id = SYS_CLCD_ID_VGA,
-        .compatible = "VGA",
-        .clock_frequency = 25175000,
-        .pixelclk_active = 0,
-        .hsync_active = 1,
-        .vsync_active = 1,
-        .de_active = 1,
-        .hactive = 640,
-        .hback_porch = 48,
-        .hfront_porch = 16,
-        .hsync_len = 96,
-        .vactive = 480,
-        .vback_porch = 33,
-        .vfront_porch = 10,
-        .vsync_len = 2,
-    },
-    {
-        .id = SYS_CLCD_ID_SANYO_3_8,
-        .compatible = "sanyo,tm38qv67a02a",
-        .clock_frequency = 10000000,
-        .pixelclk_active = 1,
-        .hsync_active = 1,
-        .vsync_active = 1,
-        .de_active = 1,
-        .hactive = 320,
-        .hback_porch = 6,
-        .hfront_porch = 6,
-        .hsync_len = 6,
-        .vactive = 240,
-        .vback_porch = 6,
-        .vfront_porch = 6,
-        .vsync_len = 0,
-    },
-    {
-        .id = SYS_CLCD_ID_SHARP_8_4,
-        .compatible = "sharp,lq084v1dg21",
-        .clock_frequency = 25175000,
-        .pixelclk_active = 0,
-        .hsync_active = 1,
-        .vsync_active = 1,
-        .de_active = 1,
-        .hactive = 640,
-        .hback_porch = 48,
-        .hfront_porch = 16,
-        .hsync_len = 96,
-        .vactive = 480,
-        .vback_porch = 33,
-        .vfront_porch = 10,
-        .vsync_len = 2,
-    },
-    {
-        .id = SYS_CLCD_ID_EPSON_2_2,
-        .compatible = "epson,l2f50113t00",
-        .clock_frequency = 16000000,
-        .pixelclk_active = 0,
-        .hsync_active = 1,
-        .vsync_active = 1,
-        .de_active = 1,
-        .hactive = 176,
-        .hback_porch = 3,
-        .hfront_porch = 2,
-        .hsync_len = 3,
-        .vactive = 220,
-        .vback_porch = 1,
-        .vfront_porch = 0,
-        .vsync_len = 2,
-    },
-    {
-        .id = SYS_CLCD_ID_SANYO_2_5,
-        .compatible = "sanyo,alr252rgt",
-        .ib2 = true,
-        .clock_frequency = 5440000,
-        .pixelclk_active = 0,
-        .hsync_active = 0,
-        .vsync_active = 0,
-        .de_active = 1,
-        .hactive = 240,
-        .hback_porch = 20,
-        .hfront_porch = 10,
-        .hsync_len = 10,
-        .vactive = 320,
-        .vback_porch = 2,
-        .vfront_porch = 2,
-        .vsync_len = 2,
-    },
-};
+In some cases userspace loaded DT overlays may be fine, if the userspace
+can do the detection and the device in question is not somehow critical
+to operation. But I think displays are critical, and afaik in Versatile
+case the userspace can't even do the detection (?).
 
-static void update_timings_prop(struct device *dev,
-                struct of_changeset *cset,
-                struct device_node *timings,
-                const char *propname,
-                u32 val)
-{
-    struct property *prop, *new;
-    __be32 *dt_val;
+The third option is to have board specific display handling code and the
+display HW data in the kernel, as you've done in the patches.
 
-    prop = of_find_property(timings, propname, NULL);
-    if (!prop) {
-        dev_err(dev, "could not find property \"%s\" - skipping\n",
-            propname);
-        return;
-    }
-    new = __of_prop_dup(prop, GFP_KERNEL);
-    if (!new) {
-        dev_err(dev, "could not copy property \"%s\" - skipping\n",
-            propname);
-        return;
-    }
+But, of course, which option should be used for which board is not
+always clear...
 
-    dt_val = new->value;
-    *dt_val = cpu_to_be32(val);
+What bootloader is used on Versatile? If it's some proprietary loader
+which can't be changed, then the bootloader option is out, and I guess
+it points to the third option, i.e. either the version in this patch or
+the earlier version. If it's u-boot, I would suggest going for the
+bootloader option.
 
-    of_changeset_update_property(cset, timings, new);
-}
+Afaik u-boot doesn't support combining DT fragments yet. But (also
+afaik) the u-boot maintainer is ok with the idea. And I know there are
+others (for example TI) interested in the same functionality.
 
-static int versatile_overwrite_of_panel(struct device *dev,
-                    struct device_node *panel,
-                    const struct versatile_panel *vpanel)
-{
-    struct of_changeset cset;
-    struct device_node *timings;
-    int ret;
+Now, adding that support might take some time, and in the meantime it'd
+be good to get the HW working with kernel with a temporary solution. To
+do that, my suggestion is basically "any solution which requires no
+(temporary) changes to .dts".
 
-    dev_info(dev, "CLCD: overwriting device tree\n");
+While I don't like too much the solution in the patch here, it's all
+inside kernel code and can be dropped easily, right? If we would merge
+the the multi-endpoint solution you had in the earlier patch, you would
+have to support that .dts in the future too.
 
-    of_changeset_init(&cset);
-    /* Find the timings node */
-    timings = of_get_child_by_name(panel, "panel-timing");
-    if (!timings) {
-        dev_err(dev, "could not find panel timing node\n");
-        goto err_destroy_cs;
-    }
-    update_timings_prop(dev, &cset, timings, "clock-frequency",
-                vpanel->clock_frequency);
-    update_timings_prop(dev, &cset, timings, "pixelclk-active",
-                vpanel->pixelclk_active);
-    update_timings_prop(dev, &cset, timings, "hsync-active",
-                vpanel->hsync_active);
-    update_timings_prop(dev, &cset, timings, "vsync-active",
-                vpanel->vsync_active);
-    update_timings_prop(dev, &cset, timings, "de-active",
-                vpanel->de_active);
-    update_timings_prop(dev, &cset, timings, "hactive",
-                vpanel->hactive);
-    update_timings_prop(dev, &cset, timings, "hback-porch",
-                vpanel->hback_porch);
-    update_timings_prop(dev, &cset, timings, "hsync-len",
-                vpanel->hsync_len);
-    update_timings_prop(dev, &cset, timings, "vactive",
-                vpanel->vactive);
-    update_timings_prop(dev, &cset, timings, "vback-porch",
-                vpanel->vback_porch);
-    update_timings_prop(dev, &cset, timings, "vfront-porch",
-                vpanel->vfront_porch);
-    update_timings_prop(dev, &cset, timings, "vsync-len",
-                vpanel->hsync_len);
-
-    ret = of_changeset_apply(&cset);
-    if (ret) {
-        dev_err(dev, "could not apply device tree changeset\n");
-        goto err_destroy_cs;
-    }
-    return ret;
-
-err_destroy_cs:
-    of_changeset_destroy(&cset);
-    return ret;
-}
-
-static void versatile_panel_probe(struct device *dev,
-                  struct device_node *endpoint)
-{
-    struct versatile_panel const *vpanel = NULL;
-    struct device_node *panel = NULL;
-    u32 val;
-    int ret;
-    int i;
-
-    /*
-     * The Versatile CLCD has a panel auto-detection mechanism.
-     * We use this and look for the compatible panel in the
-     * device tree.
-     */
-    ret = regmap_read(versatile_syscon_map, SYS_CLCD, &val);
-    if (ret) {
-        dev_err(dev, "cannot read CLCD syscon register\n");
-        return;
-    }
-    val &= SYS_CLCD_CLCDID_MASK;
-    dev_info(dev, "SYS_CLCD=%08x\n", val);
-
-    /* First find corresponding panel information */
-    for (i = 0; i < ARRAY_SIZE(versatile_panels); i++) {
-        vpanel = &versatile_panels[i];
-
-        if (val = vpanel->id) {
-            dev_err(dev, "autodetected panel \"%s\"\n",
-                vpanel->compatible);
-            break;
-        }
-    }
-    if (i = ARRAY_SIZE(versatile_panels)) {
-        dev_err(dev, "could not auto-detect panel\n");
-        return;
-    }
-
-    /* This is the default panel node in the device tree */
-    panel = of_graph_get_remote_port_parent(endpoint);
-    if (!panel) {
-        dev_err(dev, "could not locate remote port for panel\n");
-        return;
-    }
-
-    /*
-     * So now we dynamically update the display properties of the
-     * panel in accordance to what was detected..
-     */
-    ret = versatile_overwrite_of_panel(dev, panel, vpanel);
-    if (ret) {
-        dev_err(dev, "cannot overwrite devicetree panel\n");
-        return;
-    }
-
-    /*
-     * If we have a Sanyo 2.5" port
-     * that we're running on an IB2 and proceed to look for the
-     * IB2 syscon regmap.
-     */
-    if (!vpanel->ib2)
-        return;
-
-    versatile_ib2_map = syscon_regmap_lookup_by_compatible(
-        "arm,versatile-ib2-syscon");
-    if (IS_ERR(versatile_ib2_map)) {
-        dev_err(dev, "could not locate IB2 control register\n");
-        versatile_ib2_map = NULL;
-        return;
-    }
-}
+ Tomi
 
 
-This actually works. But would need some public device tree
-property augmentation API instead of the hacks. Should I pursue
-it?
+--2ARonUXH6IC3cCgeD5a84xSnXduRC8wLa
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Yours,
-Linus Walleij
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWyywxAAoJEPo9qoy8lh71g/MQAK4KebDkTAHQ6c+TmQ0f8tLA
+G9F+zcBkqNlfMY0YFBVl3vM3duSV9r5JCz9Wo9MEAGLHjYpUBkyw6Rh67wETJffg
+ujCiBGJsHjyFfFLl/g+24naaF2sSin8JJLt3p7znkxmkQo1grOkwSl7BAyuaMikX
+lSR1IpTSnR3z+fkzewWwBG9Fdo8WT5behu4FYUj4J94628nPSJY/SqSrGITTmdm4
+1gWGETcoQeUpFnDpl/bpJm0aVUl3p6HKmMmh6BDOq1xXF8B5YIQjyLw3pzQbUGH1
+45Grkra4LQFWfSZhyH6mlSlqqlzgqo3oDdaBz/cMYg1EtbtQJrIoocYSUs8XY3wd
+cLPGqC4rmQKKAr2o8kL/ED52r8K99lnt1Nq3QnjK61QJjWjuK1GPdVjqDzIiT82f
+Cnq9aR2bCWy3kmnKSAOfFb/hqqskMrltRMycoFPXB+Nl5YjvraN+9ZTsdsLLUQTK
+0HlhQ2kpoaucdJUwgMEaj4o3TgGyoziEZoU/1VR1Y0ZdXRe57gbVqqYQlFQmynI+
+Kr3c0LWv2LxX75sGJMqNZ52fsB9Q3CnUm29VhAmurbkleZ3bs0CeDejXfco0hkxa
+sac/uY9Cw+qD5gr8KyHHS5E6QF22Hhdi2mXGKEo896BAgQc7aQ6kG2vJ9OBbBAtf
+3si4XRMMDHfByQmewcH6
+=aa5t
+-----END PGP SIGNATURE-----
+
+--2ARonUXH6IC3cCgeD5a84xSnXduRC8wLa--

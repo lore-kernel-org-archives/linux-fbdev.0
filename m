@@ -1,116 +1,99 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 23 Feb 2016 13:38:12 +0000
+From: Tom Rini <trini@konsulko.com>
+Date: Tue, 23 Feb 2016 13:45:20 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <56CC60C4.6040908@ti.com>
+Message-Id: <20160223134520.GJ23166@bill-the-cat>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="lwFWxpcnbDIFOVskxQEfh7k9JKi91AKCd"
+Content-Type: multipart/mixed; boundary="3fX2G+AJpfl5sqva"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
- <3695074.sKSIyOjpjD@wuerfel>
- <CACRpkdZjfjOCFUucF1U5yVZBxSwa41GKEMv-HHQE=ymF2NZ21g@mail.gmail.com>
- <6859810.tb1t0IEONi@wuerfel> <56CC57FC.20707@ti.com>
- <CACRpkdYNaNtQQJ-tsBe5ksa4-z380ZQj-zN8ZnK0ED2kNPUwvg@mail.gmail.com>
-In-Reply-To: <CACRpkdYNaNtQQJ-tsBe5ksa4-z380ZQj-zN8ZnK0ED2kNPUwvg@mail.gmail.com>
+ <1454594660-7532-12-git-send-email-linus.walleij@linaro.org>
+ <CACRpkdbnLgVsrSAu87wxSwktK3ftJzbQLXjU8y65tq=9Ynxicw@mail.gmail.com>
+ <56CC2D39.80909@ti.com>
+ <CAFEAcA9U3V04o2_93bS5G7+k=UT7kTWt4=v7t1Ju0X9W=5oo9A@mail.gmail.com>
+ <20160223120101.GJ19428@n2100.arm.linux.org.uk>
+In-Reply-To: <20160223120101.GJ19428@n2100.arm.linux.org.uk>
 To: linux-arm-kernel@lists.infradead.org
 
---lwFWxpcnbDIFOVskxQEfh7k9JKi91AKCd
-Content-Type: text/plain; charset=utf-8
+
+--3fX2G+AJpfl5sqva
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-
-
-On 23/02/16 15:16, Linus Walleij wrote:
-> On Tue, Feb 23, 2016 at 2:00 PM, Tomi Valkeinen <tomi.valkeinen@ti.com>=
- wrote:
+On Tue, Feb 23, 2016 at 12:01:01PM +0000, Russell King - ARM Linux wrote:
+> On Tue, Feb 23, 2016 at 11:56:34AM +0000, Peter Maydell wrote:
+> > On 23 February 2016 at 09:58, Tomi Valkeinen <tomi.valkeinen@ti.com> wr=
+ote:
+> > > I'm not quite sure how it works if, as in versatile display case, the=
+re
+> > > are multiple DT overlays of which one has to be enabled. I hope there=
+'s
+> > > support to choose which one to use via kernel cmdline or similar.
+> > >
+> > > I would personally like it much more if the bootloader would either
+> > > compose a final dtb from DT fragments and pass it to the kernel, or
+> > > alternatively the bootloader would pass the base dtb image and a bunch
+> > > of DT overlays to the kernel, and the kernel would deal with the DT
+> > > overlays.
+> >=20
+> > Speaking as somebody who's written the "bootloader" code that's
+> > used for what I guess are the majority of versatile kernel boots,
+> > i.e. the one in QEMU, I think that requiring the bootloader to do this
+> > would be a significant worsening from the current state.
+> >=20
+> > Right now the bootloader doesn't need to do much at all with device
+> > trees, except pass the kernel the DT that the user gave us, which
+> > is just the kernel's own data structures in a separate file for
+> > convenience. You need to do some very minor tweaks to the /chosen
+> > node, but these can be handled the same way for any board and aren't
+> > hardware specific. There's no need to worry about dt fragments
+> > either for the bootloader or for the user. Imposing a new requirement
+> > for the bootloader to have to probe hardware which it otherwise
+> > has no need to even care about, and then edit and update the DT
+> > in a board-specific manner, or have board-specific DT fragments,
+> > seems like a totally unnecessary imposition on both bootloader
+> > authors and end-users, and of course it would break booting newer
+> > kernels on the great mass of already existing boot loaders and
+> > QEMU installs.
+> >=20
+> > The kernel is in a position to probe the display hardware and determine
+> > what is there, and do the right thing, and that's exactly what it
+> > does today. The kernel should continue to do this.
+> > The advantage of DT is that it allows moving information about
+> > non-probeable hardware that was previously hardwired in the kernel
+> > C sources into a separate data structure, but the versatile displays
+> > are not non-probeable. I can see no benefit at all from hardwiring into
+> > the dt something which the kernel has previously been successfully
+> > dynamically getting right without any bootloader intervention -- it just
+> > makes the kernel less flexible and less user-friendly.
 >=20
->> That would be almost the same as what's already in this patch, except
->> (if I'm not mistaken) the detection part could be in platform code, an=
-d
->> the fbdev driver itself would know nothing about board specific
->> detection or board specific panel lists.
->=20
-> In this patch set the board/platform-specific plugins are separated
-> out adding the opaque .board_init() and .panel_init() to the driver.
-> The platform-specific code is in completely separate files this way,
-> and the CLCD driver itself just handles various versions of that
-> IP block.
+> +1.
 
-I see. Yes, it's in separate files but still part of the fbdev driver.
++1 from me too.
 
-One thing to mention is that I'm looking at this maybe from a slightly
-different perspective.
+--=20
+Tom
 
-TI makes SoCs which may be used on a lot of different boards from
-different vendors. I will not allow any solution on TI display subsystem
-that would contain any board specific data, as that would quickly expand
-to an unmaintainable mess. All the display data has to come from the
-bootloader.
-
-Maybe Versatile is different. If CLCD is only used on that board, or a
-small family of boards, from one vendor, I guess it is maintainable to
-have board specific driver parts for CLCD. But if CLCD can be used by
-many vendors in many different boards, I'd steer clear of board specific
-driver code.
-
->> So maybe that would be a bit cleaner. Still ugly, I think =3D). I real=
-ly
->> don't like having possible-panels in the Schr=C3=B6dinger's DT data
->> (http://www.angryflower.com/387.html).
->=20
-> OK I will focus my work on the DT-augment code instead.
-
-Yeah, I don't know if that will fly either, so I think it's better to
-see if these discussion go somewhere first.
-
->> That said, maybe this is the best way to deal with Versatile, without
->> requiring any change to the bootloader or the boot mechanism.
->=20
-> Depends on if the OF core maintainers will accept my patches to
-> dynamically alter DT properties at runtime. If I can't do that then
-> I have to go back to the Schr=C3=B6dinger patch.
->=20
->> What is the current status of Versatile? Have we had working display
->> with Versatile when booting with device tree? Or has the display been
->> supported only with legacy boot?
->=20
-> Versatile is DT only as of kernel v4.5. The DT boot uses AUXDATA
-> which is the Frankenstein solution, bolting on a boardfile piece
-> to the DT boot and ignoring the existing panel bindings, and of
-> course standing in the way of cleaning things up.
-
-Ok. I feel everyone is trying to push the ugly part out of their domain.
-I want the board specific hacks out of fbdev. Bootloader people don't
-want it there. arch/arm/ people don't want it there. =3D)
-
-So what you're saying is that Versatile boots now with DT, and supports
-display without any panel info in the DT data? If so, it means that when
-you add panel data to the .dts, the old .dts will not support display
-anymore, except if you leave all the current boardfile stuff there.
-
- Tomi
-
-
---lwFWxpcnbDIFOVskxQEfh7k9JKi91AKCd
+--3fX2G+AJpfl5sqva
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAEBCAAGBQJWzGDEAAoJEPo9qoy8lh71JDYQAJBB6jctTUWOoMMeb8YkT+5n
-VDnhcwaHkWJAEpOQO5zY65rc+NShfcCvuHkiW6GNSXuKq8r1Tx1DRcwElikrCAPI
-j+aleu/DakAozjzICSnXnM8iKi/GpgQR8bDBvLaxqkLiWTZXLuEkGOSP+kHR+OZ/
-XO5J4SPX7JSAhQFKlDbWh/XowNU+AZxtFTAcCSxbzZmPuc0lVhl/x18g3kjmV9tl
-lsJNfaCdfpHs1jsgqyXwgHAP5mkXTj37ixdvkSc6RoMXsm1ZVDXgRsRWx4Pye3Mj
-XXSoaQddjA4W7xpRIsYd0R94Thr81biXVIlOpvprrIp23TWS9wyTgKqA79j6u8ea
-RTgYfj/YlDAQBa8CWBY0/7dzXq14eDFbbnQKOqsga0p6GeDrQng4S60sphQ7BgjB
-JefZQkz/dfNgRc+X9OUsl2rk22pET1WPH5gyQJ8gedslHokfhx4CckzvvrT03izB
-w3hSpjYFuM4PbbavrL5rAXQEdfzvAJsHFirNIalmq9dtkGCBPjXGCXzKdcTUxm3y
-/CIuarDqLXLIaViT3xvRNl9k2vJ05QC34nDqReKiAUcCdnysAbVhEgMIqTTq8c1w
-67NtfhnHl+vUoHXZS2BuREXbKNK0lknNDHMJ1mbvvP675jFOkojESoSbsZLae5DO
-1zhBIwxw2Zc5DfJA8U+3
-=+izl
+iQIcBAEBAgAGBQJWzGJvAAoJEIf59jXTHXZSiNAQAKkAVpu1C0rkFIdWaC+bAK7N
+6Tyyko/fDXJHmMAekl7bNNWtBoJ8PyIbBmRgCWlz2FI/NyF3USBWS/O66j7gG7me
+JMO8JRM4CUZKsg9hNaORqkkuk5hQ7mDm/sbILEq79U+/17Mx8qluoSiaTQSlkdzG
++7qZ0QpZLVbEsBXimPvCA6wNyzHtpw5eyk/zpJ00ip8n4YK1rriLhmLcPVjbtFxd
+2o7G20g8QRwmqeDRM/H3UuZ4Od3ZfFedX4v9ru5vW5e1hickZCsmpL/FG7xg2fOh
+YIyMUKDewOEAtFVudmGBujJyIk6QBFPwcDRlkWtGdke0LT0T58tNkF6m4r1jO1Je
+5H8MK/KNBCZStPsoyoZ76p3jDdUJ7C6hafJ9mQWM9l1V8ZwaaFGH1RaFza55JOlo
+ffHc4f71HGw5yP2EN4fg0Mk3/wLmVE+fKg99WG0vdU/HbEuNmDGszcNpTUE3ydiH
+5OlD/u8/uxfLFXkza4fKdK9IBE/1S3Lxi4ZZiilknLJ+wOwSzG8+ErP9gVNpyrpY
+z0/r67wKzWMAN+19gjPbhvye1MB2JTolBVvS/Lgvl51h6LVo212LEIswvwcNS6QJ
+FZqThtaI/Fia7ksNOj0ZXi2NGSPUronbJ7RRqLBG/iVq9iSIT6dfxHJveZ/OGTy3
+aJQeFcz/1sD5snL6Uwn7
+=N7bG
 -----END PGP SIGNATURE-----
 
---lwFWxpcnbDIFOVskxQEfh7k9JKi91AKCd--
+--3fX2G+AJpfl5sqva--

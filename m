@@ -1,100 +1,142 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 26 Feb 2016 11:21:33 +0000
-Subject: Re: [PATCH] fbcon: set a default value to blink interval
-Message-Id: <56D0353D.3090304@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="xFGqFkswQ0s3E7iwDiLKF00ALgNceVVMm"
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 23 Feb 2016 10:01:40 +0000
+Subject: [PATCH 3/7 v2] video: ARM CLCD: support DT signal inversion flags
+Message-Id: <1456221704-5792-4-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1455561693-28615-1-git-send-email-jean-philippe.brucker@arm.com>
-In-Reply-To: <1455561693-28615-1-git-send-email-jean-philippe.brucker@arm.com>
-To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, linux-fbdev@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Scot Doyle <lkml14@scotdoyle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Thierry Reding <treding@nvidia.com>, stable@vger.kernel.org
+References: <1456221704-5792-1-git-send-email-linus.walleij@linaro.org>
+In-Reply-To: <1456221704-5792-1-git-send-email-linus.walleij@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---xFGqFkswQ0s3E7iwDiLKF00ALgNceVVMm
-Content-Type: multipart/mixed; boundary="unmlHq0vVLJ0845ONKcAX5l4paeGRBr8g"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
- linux-fbdev@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Scot Doyle <lkml14@scotdoyle.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek
- <pavel@ucw.cz>, Thierry Reding <treding@nvidia.com>, stable@vger.kernel.org
-Message-ID: <56D0353D.3090304@ti.com>
-Subject: Re: [PATCH] fbcon: set a default value to blink interval
-References: <1455561693-28615-1-git-send-email-jean-philippe.brucker@arm.com>
-In-Reply-To: <1455561693-28615-1-git-send-email-jean-philippe.brucker@arm.com>
+The device tree bindings from display-timing.txt allows us to
+specify if data enable, hsync, vsync or the pixed clock should be
+inverted on the way to the display. The driver does not currently
+handle this so add support for those flags as it is needed for
+the Versatile Sanyo LCD display.
 
---unmlHq0vVLJ0845ONKcAX5l4paeGRBr8g
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Note that the previous behaviour was to invert the pixel clock
+for all displays, so unless the pixel clock polarity is
+explicitly defined in the device tree (i.e. the timings node
+has the "pixelclk-active" property) we fall back to inverting
+the pixel clock. This needs some extra compatibility code.
 
+Since the timing flags have to be set up inside the struct
+clcd_panel, we need to refactor the code a bit to pass around
+the panel rather than just the mode.
 
-On 15/02/16 20:41, Jean-Philippe Brucker wrote:
-> Since commit 27a4c827c34ac4256a190cc9d24607f953c1c459
-> 	fbcon: use the cursor blink interval provided by vt
->=20
-> two attempts have been made at fixing a possible hang caused by
-> cursor_timer_handler. That function registers a timer to be triggered a=
-t
-> "jiffies + fbcon_ops.cur_blink_jiffies".
->=20
-> A new case had been encountered during initialisation of clcd-pl11x:
->=20
->     fbcon_fb_registered
->     do_fbcon_takeover
->=20
->     ->  do_register_con_driver
->         fbcon_startup
->     (A) add_cursor_timer (with cur_blink_jiffies =3D 0)
->=20
->     ->  do_bind_con_driver
->         visual_init
->         fbcon_init
->     (B) cur_blink_jiffies =3D msecs_to_jiffies(vc->vc_cur_blink_ms);
->=20
-> If we take an softirq anywhere between A and B (and we do),
-> cursor_timer_handler executes indefinitely.
->=20
-> Instead of patching all possible paths that lead to this case one at a
-> time, fix the issue at the source and initialise cur_blink_jiffies to
-> 200ms when allocating fbcon_ops. This was its default value before
-> aforesaid commit. fbcon_cursor or fbcon_init will refine this value
-> downstream.
->=20
-> Signed-off-by: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>
-> Cc: <stable@vger.kernel.org> # v4.2
-> ---
->  drivers/video/console/fbcon.c |    2 ++
->  1 file changed, 2 insertions(+)
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Rob Herring <robh@kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ChangeLog v1->v2:
+- No changes. Just reposting.
+---
+ drivers/video/fbdev/amba-clcd.c | 41 ++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 34 insertions(+), 7 deletions(-)
 
-Thanks, queued for 4.5 fixes.
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index c5d1e9ca81ab..8903a42c4122 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -567,10 +567,11 @@ static int clcdfb_register(struct clcd_fb *fb)
+ 
+ #ifdef CONFIG_OF
+ static int clcdfb_of_get_dpi_panel_mode(struct device_node *node,
+-		struct fb_videomode *mode)
++		struct clcd_panel *clcd_panel)
+ {
+ 	int err;
+ 	struct display_timing timing;
++	struct device_node *timnp;
+ 	struct videomode video;
+ 
+ 	err = of_get_display_timing(node, "panel-timing", &timing);
+@@ -579,10 +580,34 @@ static int clcdfb_of_get_dpi_panel_mode(struct device_node *node,
+ 
+ 	videomode_from_timing(&timing, &video);
+ 
+-	err = fb_videomode_from_videomode(&video, mode);
++	err = fb_videomode_from_videomode(&video, &clcd_panel->mode);
+ 	if (err)
+ 		return err;
+ 
++	/* Set up some inversion flags */
++	timnp = of_get_child_by_name(node, "panel-timing");
++	if (timnp && of_property_read_bool(timnp, "pixelclk-active")) {
++		if (timing.flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
++			clcd_panel->tim2 |= TIM2_IPC;
++	} else {
++		/*
++		 * To preserve backwards compatibility, the IPC (inverted
++		 * pixel clock) flag needs to be set on any display that
++		 * doesn't explicitly specify that the pixel clock is
++		 * active on the negative edge.
++		 */
++		clcd_panel->tim2 |= TIM2_IPC;
++	}
++
++	if (timing.flags & DISPLAY_FLAGS_HSYNC_LOW)
++		clcd_panel->tim2 |= TIM2_IHS;
++
++	if (timing.flags & DISPLAY_FLAGS_VSYNC_LOW)
++		clcd_panel->tim2 |= TIM2_IVS;
++
++	if (timing.flags & DISPLAY_FLAGS_DE_LOW)
++		clcd_panel->tim2 |= TIM2_IOE;
++
+ 	return 0;
+ }
+ 
+@@ -615,10 +640,11 @@ static int clcdfb_of_get_backlight(struct device_node *endpoint,
+ }
+ 
+ static int clcdfb_of_get_mode(struct device *dev, struct device_node *endpoint,
+-		struct fb_videomode *mode)
++		struct clcd_panel *clcd_panel)
+ {
+ 	int err;
+ 	struct device_node *panel;
++	struct fb_videomode *mode;
+ 	char *name;
+ 	int len;
+ 
+@@ -628,11 +654,12 @@ static int clcdfb_of_get_mode(struct device *dev, struct device_node *endpoint,
+ 
+ 	/* Only directly connected DPI panels supported for now */
+ 	if (of_device_is_compatible(panel, "panel-dpi"))
+-		err = clcdfb_of_get_dpi_panel_mode(panel, mode);
++		err = clcdfb_of_get_dpi_panel_mode(panel, clcd_panel);
+ 	else
+ 		err = -ENOENT;
+ 	if (err)
+ 		return err;
++	mode = &clcd_panel->mode;
+ 
+ 	len = clcdfb_snprintf_mode(NULL, 0, mode);
+ 	name = devm_kzalloc(dev, len + 1, GFP_KERNEL);
+@@ -663,8 +690,8 @@ static int clcdfb_of_init_tft_panel(struct clcd_fb *fb, u32 r0, u32 g0, u32 b0)
+ 	};
+ 	int i;
+ 
+-	/* Bypass pixel clock divider, data output on the falling edge */
+-	fb->panel->tim2 = TIM2_BCD | TIM2_IPC;
++	/* Bypass pixel clock divider */
++	fb->panel->tim2 |= TIM2_BCD;
+ 
+ 	/* TFT display, vert. comp. interrupt at the start of the back porch */
+ 	fb->panel->cntl |= CNTL_LCDTFT | CNTL_LCDVCOMP(1);
+@@ -704,7 +731,7 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
+ 	if (err)
+ 		return err;
+ 
+-	err = clcdfb_of_get_mode(&fb->dev->dev, endpoint, &fb->panel->mode);
++	err = clcdfb_of_get_mode(&fb->dev->dev, endpoint, fb->panel);
+ 	if (err)
+ 		return err;
+ 
+-- 
+2.4.3
 
- Tomi
-
-
---unmlHq0vVLJ0845ONKcAX5l4paeGRBr8g--
-
---xFGqFkswQ0s3E7iwDiLKF00ALgNceVVMm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJW0DU9AAoJEPo9qoy8lh71cRAP/1x+kpDwh8pIlGXEbMwgmcHs
-hfL0zMf3oY6cylEN8EspBb/MU0PS/esobtOBEzB+IE9r3qiA2QTImj+NtDVqJyAK
-RUyjWlSDwxNaRbha5Iw9BukJb8pOfgT8Yg/fevG/i2tQSeAypQNoKq71V+nZdje1
-rzGDCj2dgkSdt08EmguCLVCfLCU/7l1YFONv5oCBlqenTt28E/Yw87t6SMFaki2p
-Lu1rGPpS/jPGvkNArmLZyytC2hsqFv+aqYDOsjmr8Msu9W6DghPUj1BlmBssa/Jp
-7m7gJqKlqZBnDiFmDzlFECd41VADFTYRlRtjbe9TQgY8/FwTewAXGrMRrAJcK0in
-eLqiBpgaH3DCQqoyY31k+op6OHXYQEt1aeV+/nZaV53Us9G5VzroEXXG1spZolmC
-GI3eVJyW7RVlWUNqg7ORdL+/BmW7iR8CQ6ifPSWxvMvG0l1G/a4VfPHiMQQ0J6Ro
-5RF4d7peu6NcSwA4wIamNWOmbBjh2wSSj5MVGrcNmDMoFx5tHCn/OG+gD6XTEl+v
-PCpnk/6Nt+ml0BWsm6jFSjsuq5Qv6fSOOl8T+E6AoijTAV4RYxkugRf4hndslkwT
-GBRL3UgBc0AHPKuVBcWrKuEkYIhLAZQ5Y2s5vEPDuIitr/HT99eW3QBrBmWUjc8S
-nG+TqtU3WjFU8WCIclCp
-=vMA7
------END PGP SIGNATURE-----
-
---xFGqFkswQ0s3E7iwDiLKF00ALgNceVVMm--

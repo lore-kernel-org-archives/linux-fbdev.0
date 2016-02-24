@@ -1,7 +1,7 @@
-From: Peter Maydell <peter.maydell@linaro.org>
-Date: Tue, 23 Feb 2016 13:49:23 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Wed, 24 Feb 2016 10:46:38 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <CAFEAcA-Y7rE_9CiOphgmae3FDApRznoBS7vsVN_+9hBqvAzEEA@mail.gmail.com>
+Message-Id: <20160224104638.GL19428@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
  <1454594660-7532-12-git-send-email-linus.walleij@linaro.org>
@@ -15,31 +15,36 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 23 February 2016 at 12:45, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> So, true, there's probing going on, but it's all board specific,
-> requiring a board specific driver to support it in the kernel. And I
-> think that makes the bootloader much better place for supporting it.
+On Tue, Feb 23, 2016 at 02:45:30PM +0200, Tomi Valkeinen wrote:
+> My opinion is that the bootloader should be responsible for telling the
+> kernel what hardware there is on the board. For busses like PCI we have
+> proper probing mechanism with global unique identifiers for the devices,
+> and nothing is needed from the bootloader.
 
-This doesn't seem to me like a reason to put the requirement
-in the bootloader. A huge part of the purpose of the kernel
-is to support the hardware (whether that's completely generic
-and probeable, like PCI, or generic but not probeable, or
-completely specific to a particular board). The kernel has to
-support the hardware, and just because it happens to be board
-specific hardware rather than generic hardware doesn't seem to
-me to imply that the kernel gets to drop part of its core purpose.
+Exactly, but that is _NOT_ the case here, because we're not talking
+about an on-board display.
+
+> In the Versatile case the panels are kind of probeable, but not in the
+> same sense as PCI: all that can be probed on Versatile is a board
+> specific ID, which in itself doesn't tell what kind of panel there is.
+> In addition to the ID we need board specific tables listing the details
+> of the panels.
+
+That argument does not stack up.  Just because you've plugged in a
+network device does not mean that the kernel can drive it: the kernel
+needs a device specific driver, which is determined by looking at the
+IDs.  There is no standard network driver PCI interface.
 
 > I think one of the core questions here is: do we want to start adding
 > board specific drivers to the kernel, instead of dealing with it in the
 > bootloader when possible? My understanding is that we've been trying to
 > reduce board specific code from the kernel.
 
-I think there's a difference between "reduce board specific code
-in the kernel by replacing it with the combination of generic
-or parameterisable code in the kernel plus a kernel data structure
-(DT) that supplies the parameterisation needed", and "reduce
-board specific code in the kernel by forcing the bootloader to
-do the kernel's job for it".
+That's not really the question, because that question assumes that it
+isn't already present, which is not true.  The code is already present.
+The question is how to deal with this from the DT perspective.
 
-thanks
--- PMM
+-- 
+RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.

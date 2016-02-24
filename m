@@ -1,82 +1,100 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Wed, 24 Feb 2016 11:35:49 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 24 Feb 2016 11:35:56 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <20160224113549.GN19428@n2100.arm.linux.org.uk>
+Message-Id: <56CD959C.9050007@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="1jk1tWFO7HDKwK3C8w4nKVOGQ23cfcSwH"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
- <1454594660-7532-12-git-send-email-linus.walleij@linaro.org>
- <CACRpkdbnLgVsrSAu87wxSwktK3ftJzbQLXjU8y65tq=9Ynxicw@mail.gmail.com>
- <56CC2D39.80909@ti.com>
- <CAFEAcA9U3V04o2_93bS5G7+k=UT7kTWt4=v7t1Ju0X9W=5oo9A@mail.gmail.com>
- <56CC546A.9070705@ti.com>
- <20160224104638.GL19428@n2100.arm.linux.org.uk>
- <56CD924F.50108@ti.com>
-In-Reply-To: <56CD924F.50108@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <3695074.sKSIyOjpjD@wuerfel>
+ <CACRpkdZjfjOCFUucF1U5yVZBxSwa41GKEMv-HHQE=ymF2NZ21g@mail.gmail.com>
+ <6859810.tb1t0IEONi@wuerfel> <56CC57FC.20707@ti.com>
+ <CACRpkdYNaNtQQJ-tsBe5ksa4-z380ZQj-zN8ZnK0ED2kNPUwvg@mail.gmail.com>
+ <56CC60C4.6040908@ti.com> <20160224105304.GM19428@n2100.arm.linux.org.uk>
+In-Reply-To: <20160224105304.GM19428@n2100.arm.linux.org.uk>
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Feb 24, 2016 at 01:21:51PM +0200, Tomi Valkeinen wrote:
-> On 24/02/16 12:46, Russell King - ARM Linux wrote:
-> > On Tue, Feb 23, 2016 at 02:45:30PM +0200, Tomi Valkeinen wrote:
-> >> My opinion is that the bootloader should be responsible for telling the
-> >> kernel what hardware there is on the board. For busses like PCI we have
-> >> proper probing mechanism with global unique identifiers for the devices,
-> >> and nothing is needed from the bootloader.
-> > 
-> > Exactly, but that is _NOT_ the case here, because we're not talking
-> > about an on-board display.
-> 
-> Ok, what is it then? I'm not familiar with the boards in question.
-> 
-> When does a display become an on-board display? All the panels I have
-> can be disconnected quite easily, but I still consider them as on-board
-> displays.
+--1jk1tWFO7HDKwK3C8w4nKVOGQ23cfcSwH
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-The difference to me is quite clear.
+On 24/02/16 12:53, Russell King - ARM Linux wrote:
+> On Tue, Feb 23, 2016 at 03:38:12PM +0200, Tomi Valkeinen wrote:
+>> Ok. I feel everyone is trying to push the ugly part out of their domai=
+n.
+>> I want the board specific hacks out of fbdev. Bootloader people don't
+>> want it there. arch/arm/ people don't want it there. =3D)
+>=20
+> I think that is really really unfair.  No one is trying to push ugly
+> bits out of their domain - this is being driven by Linus, who is
+> trying to convert Versatile to DT.  There is no other agenda here.
+>=20
+> Remember, I was the one who wrote the CLCD driver, and it was written
+> to support the boards at the time using the best methods at the time.
+> Things change, people's ideas of what's acceptable change.  What was
+> acceptable when classes of boards were separate is no longer acceptable=
 
-If the connector is a flexi-strip or LVDS connector designed to be
-connected directly to a panel, it is not designed as a user connector,
-and the display can be regarded as part of the board: the connector
-probably isn't rated for a large number of mating cycles.
+> with single zImage.
 
-If the connector is a board-edge external-unit connector, then the
-panel is not part of the board.
+That's fine. I've done the same. The point here is where should we aim
+for with today's kernel? What's the good solution for the future boards?
 
-In the case of Versatile, it's the latter: the connector is situated
-at the board edge, next to the serial port connectors, and is designed
-to connect to an external box housing the display.
+> The board specific parts of CLCD were in arch/arm for a very long time,=
 
-> > That argument does not stack up.  Just because you've plugged in a
-> > network device does not mean that the kernel can drive it: the kernel
-> > needs a device specific driver, which is determined by looking at the
-> > IDs.  There is no standard network driver PCI interface.
-> 
-> Yes, but you can connect the network device to any board with a PCI bus
-> and it works. Here, if I'm not mistaken, the displays are built for this
-> single board, making them board specific.
+> but that gets in the way of single zImage, and the solution adopted by
+> the newly interested parties has been to move them to drivers/video
+> to keep things working.
 
-It only works because Linux has a rich array of network drivers supporting
-all that hardware, and the appropriate network driver is bound depending
-on the hardware ID of the card.  If a new PCI network device comes out,
-it'll more likely than not require an update to a network driver to make
-it work.
+And I'm fine with having board specific parts in drivers/video when
+needed. That's the only option when we really need a driver for the
+board specific parts, i.e. we need to do something with the board
+specific HW at runtime.
 
-The displays are not built for "this single board" but for a family of
-boards: not only Versatile PB/AB, but also the Realview family of boards
-too.
+But that's not really the case with Versatile. Correct me if I'm wrong,
+but there's just one panel connected to the board at a time and the
+panel cannot be changed at runtime. We need to do the board specific
+panel probing once at boot time, but other than that, there's no
+difference to a single on-board panel.
 
-> But I cannot accept that as a general solution for all similar cases
-> going forward, especially when moving to DRM world, that's just bad SW
-> design.
+To me it sounds that the cleanest solution to this is that the
+bootloader does the detection (it's a trivial detection, isn't it? no
+complex busses need to be used?), and just passes the kernel the correct
+HW setup with DT.
 
-I think that's a matter of personal opinion, perspective and situation.
-What is good design today is not necessary good design yesterday or
-tomorrow.  I thought we already ascertained that earlier in this
-discussion. :)
+Again, I understand there are lots of board out there without bootloader
+doing that, so we may not get there with Versatile. But if someone comes
+with patches for a new board, I'd like to have a good suggestion how to
+handle similar cases the best way.
 
--- 
-RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+> That's how we're here: there isn't a conspiracy as you seem to be
+> thinking.
+
+I wasn't exactly serious there, as the smiley tried to imply...
+
+ Tomi
+
+
+--1jk1tWFO7HDKwK3C8w4nKVOGQ23cfcSwH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWzZWdAAoJEPo9qoy8lh71VmwP/j2Ws4dpKBfsSBwH5HCZ11yV
+OvZ40mloC/vdU5fLsmsmd/6Gq8MKRXDfPUwf/pPQ4jS7MPjVsgT1VBAnPucEA7IM
+VvmL7d79XRaKG5+i3LyUmG+NZqWRiGCnHhpcCYkl7uo7sTiIFfP0WW2qbYpfre67
+YA2dtOSu92hs8HP1p56RHU8a+3O2FRKgRzsm17QyemeydkBqIMyCI5sgubBKZskJ
+L/nIAfI3msm8lMijPnU2lGfikUA2YEKIG5W3ZUF6kuT1eCNJbCxzgBCsKV8pwIqz
+rc3glQKq0t1VnVOWmujYP6Q2iSbhyyJjCewhzbrv/lNfbZTRLyDHzWRvVz/xLnx9
+U0EYZiz/Dx394u2hkwszOs4kppvUWEDJ4FtP27gVvPu70LaC/g5GHdgM+Wz/8pQD
+MS3T2VrefyNixogC5pUW0wmiIeA3qDdyldNuT20yEuLmOk0esr+fGjWVWFzaKUcw
+kXpLHRNBK1/341aaFZGUP5gO3jolhdomiJxu6j0NXZmVm/f/vYbY4KH0dRg9hi2K
+iZMxhrVAxlomw5Y4bENyWA8xQY9GRiLjBT7fjiyb48ybiMR/E20N4OlC+A038wXh
+mhnXeKyGG2/iECMJAYtUWg9EUMkzgajQ26DAdMpTgx2hAGern+3eI0Vvc9iaNKko
+tZn6eVYXVurrPpkedJp1
+=2rq0
+-----END PGP SIGNATURE-----
+
+--1jk1tWFO7HDKwK3C8w4nKVOGQ23cfcSwH--

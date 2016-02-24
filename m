@@ -1,95 +1,96 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Feb 2016 12:06:21 +0000
+From: Pantelis Antoniou <pantelis.antoniou@konsulko.com>
+Date: Wed, 24 Feb 2016 12:13:49 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <56CD9CBD.5010106@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="wXpvOkmhSpCdcksQXGons5PjwM7EfDlHb"
+Message-Id: <B8A82546-46C7-4A21-92D8-62418E49FBB6@konsulko.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
  <1454594660-7532-12-git-send-email-linus.walleij@linaro.org>
  <CACRpkdbnLgVsrSAu87wxSwktK3ftJzbQLXjU8y65tq=9Ynxicw@mail.gmail.com>
  <56CC2D39.80909@ti.com>
  <CAFEAcA9U3V04o2_93bS5G7+k=UT7kTWt4=v7t1Ju0X9W=5oo9A@mail.gmail.com>
- <56CC546A.9070705@ti.com>
- <CAFEAcA-Y7rE_9CiOphgmae3FDApRznoBS7vsVN_+9hBqvAzEEA@mail.gmail.com>
-In-Reply-To: <CAFEAcA-Y7rE_9CiOphgmae3FDApRznoBS7vsVN_+9hBqvAzEEA@mail.gmail.com>
+ <56CC546A.9070705@ti.com> <20160224104638.GL19428@n2100.arm.linux.org.uk>
+ <56CD924F.50108@ti.com>
+In-Reply-To: <56CD924F.50108@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-arm-kernel@lists.infradead.org
 
---wXpvOkmhSpCdcksQXGons5PjwM7EfDlHb
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hi Tomi,
 
-On 23/02/16 15:49, Peter Maydell wrote:
-> On 23 February 2016 at 12:45, Tomi Valkeinen <tomi.valkeinen@ti.com> wr=
-ote:
->> So, true, there's probing going on, but it's all board specific,
->> requiring a board specific driver to support it in the kernel. And I
->> think that makes the bootloader much better place for supporting it.
->=20
-> This doesn't seem to me like a reason to put the requirement
-> in the bootloader. A huge part of the purpose of the kernel
-> is to support the hardware (whether that's completely generic
-> and probeable, like PCI, or generic but not probeable, or
-> completely specific to a particular board). The kernel has to
-> support the hardware, and just because it happens to be board
-> specific hardware rather than generic hardware doesn't seem to
-> me to imply that the kernel gets to drop part of its core purpose.
+> On Feb 24, 2016, at 13:21 , Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> 
 
-The thing here is, the kernel doesn't have to support the hardware (the
-probing method). The kernel _has_ to support the display controller and
-the panels, but the probing could as well be done in the bootloader. It
-would work fine, and it would be a cleaner solution that what's being
-proposed so far.
+[snip]
 
->> I think one of the core questions here is: do we want to start adding
->> board specific drivers to the kernel, instead of dealing with it in th=
-e
->> bootloader when possible? My understanding is that we've been trying t=
-o
->> reduce board specific code from the kernel.
->=20
-> I think there's a difference between "reduce board specific code
-> in the kernel by replacing it with the combination of generic
-> or parameterisable code in the kernel plus a kernel data structure
-> (DT) that supplies the parameterisation needed", and "reduce
-> board specific code in the kernel by forcing the bootloader to
-> do the kernel's job for it".
+>> 
+>> That argument does not stack up.  Just because you've plugged in a
+>> network device does not mean that the kernel can drive it: the kernel
+>> needs a device specific driver, which is determined by looking at the
+>> IDs.  There is no standard network driver PCI interface.
+> 
+> Yes, but you can connect the network device to any board with a PCI bus
+> and it works. Here, if I'm not mistaken, the displays are built for this
+> single board, making them board specific.
+> 
+> So sure, someone could build boards with the same connector, allowing
+> you to connect the same displays. If that's the case, then CLCD should
+> be taken out of this picture, as the board could have something else
+> than CLCD as the display controller.
+> 
+>>> I think one of the core questions here is: do we want to start adding
+>>> board specific drivers to the kernel, instead of dealing with it in the
+>>> bootloader when possible? My understanding is that we've been trying to
+>>> reduce board specific code from the kernel.
+>> 
+>> That's not really the question, because that question assumes that it
+>> isn't already present, which is not true.  The code is already present.
+>> The question is how to deal with this from the DT perspective.
+> 
+> Yes. As I commented in this (or the other thread), I'm looking for a
+> proper generic solution which can be recommended for all new boards.
+> When we know what that is, we can see if and how that could fit into
+> Versatile's case. Versatile is not the only board with the exact same
+> problem.
+> 
+> I wouldn't be at all surprised if the final solution is to just go with
+> Linus' current patches for Versatile, as everything else would break
+> compatibility or be overly complex.
+> 
+> But I cannot accept that as a general solution for all similar cases
+> going forward, especially when moving to DRM world, that's just bad SW
+> design.
+> 
 
-Perhaps my phone background affects here, but I see the vendor provided
-bootloader as the place for board specific custom solutions, and then
-the kernel doesn't have to deal with those if at all possible.
+IMHO DT+overlays handle all your cases just fine.
 
-With an open source generic bootloader like u-boot that doesn't exactly
-hold, though, as the custom solutions will still pile up in a common
-project.
+As far as I see these are the cases which we need to handle:
 
-Anyway, as discussed in the thread, I'm fine with having a kernel driver
-for this, as the display boards for Versatile are an external device.
+1) The expansion board in question has some means of identification, whether it’s an
+EEPROM or a GPIO keying combination etc. In that case it is the kernel’s job to match this
+id value with a dtbo firmware file and apply it. The blob is located via means of request_firmware().
 
- Tomi
+2) The expansion board in question has no means of identification. In that case the bootloader’s
+job is to provide user-configured means to the kernel to use the expansion board.
 
+We talked about two basic schemes.
 
---wXpvOkmhSpCdcksQXGons5PjwM7EfDlHb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+2.1) The kernel command line contains information about the extra overlays to apply upon booting.
+Something like “applyoverlays=foo.dtbo,bar.dtbo” is sufficient. The problem with this approach is that
+if the firmware files must be present in the initrd/rootfs/builtin-kernel-image. For some this is a
+problem.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+2.2) The base DTB provided to the kernel from the bootloader is augmented with extra DTBOs that describe
+the extra hardware. The concatenation is as simple as performing a ‘$ cat base.dtb foo.dtbo bar.dtbo’, which
+can be done either by the bootloader or offline.  At the moment this is not being done, but it’s easy enough
+to add it and other people expressed interest for it.
 
-iQIcBAEBCAAGBQJWzZy9AAoJEPo9qoy8lh712Q0P/0FAECC4IFXVhXVGfARdyBSS
-W35cqBKFFtheUl6QL1WUqlKGEr+8gDeV4kMyowGQtABaE2t7huTUbOrPKBXcDyIE
-sapI/ebdJII9oFcIehV8e7m90k71A2iknl2pDo1g5vdYnoD81D8jdjH3XQ68hWva
-lgou7//75+oq6rlwk8hMoY+8MRzSHVWSO3WXUrZMY+yQTKcKXMWKvqitIjHKFusj
-0qkoXis+NkuOQg3QvwklaLc/e6wu3T2RQ6xtbbdj9OdT5hwSSKjPwJjnw9JwAUYY
-mkj1yk/tmb7FoekjQfDdeeZVhBTOvfonU0YC8qSJ7E7IM0faYDPx/mk295RgSEod
-O9xSdPuPYXJrlZ3J9HV395pPn4KJmZ21gdV3xXEYfTjelE7BjslEaiMbyoFwIxKg
-OCr8AlVyfZvy18AVFzP8TaZyZOl7c0xA9SccbrAuetgfHLRSFenRT9NEoSbC5kHY
-YNMU8B3SfGshVKKSWQmUqNGj0ztSaHOmPh4QmRvQaKmJSajPqE1yJy5/eeN+eTt9
-999VRAy57XMrMYgZYnbf7YXprdD/60rhxaae2U0i+fSPjOw8bhZ1ToHd0jfVYPQ0
-6642ATO6gNOcC/5/uIHQCT/vGdQOuAUCBlkZwpj43STmm+cBXHC7bRjPnxZJCgFh
-8zY5W7iAmfnGJRTIB4np
-=KUxH
------END PGP SIGNATURE-----
+Am I missing something here?
 
---wXpvOkmhSpCdcksQXGons5PjwM7EfDlHb--
+> Tomi
+> 
+
+Regards
+
+— Pantelis
+

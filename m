@@ -1,80 +1,85 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Feb 2016 11:35:56 +0000
+Date: Wed, 24 Feb 2016 11:47:36 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <56CD959C.9050007@ti.com>
+Message-Id: <56CD9858.40104@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="1jk1tWFO7HDKwK3C8w4nKVOGQ23cfcSwH"
+Content-Type: multipart/mixed; boundary="3jb4dx1J7KmXxJb9HW2s84SP0FvRL8nTA"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
- <3695074.sKSIyOjpjD@wuerfel>
- <CACRpkdZjfjOCFUucF1U5yVZBxSwa41GKEMv-HHQE=ymF2NZ21g@mail.gmail.com>
- <6859810.tb1t0IEONi@wuerfel> <56CC57FC.20707@ti.com>
- <CACRpkdYNaNtQQJ-tsBe5ksa4-z380ZQj-zN8ZnK0ED2kNPUwvg@mail.gmail.com>
- <56CC60C4.6040908@ti.com> <20160224105304.GM19428@n2100.arm.linux.org.uk>
-In-Reply-To: <20160224105304.GM19428@n2100.arm.linux.org.uk>
+ <1454594660-7532-12-git-send-email-linus.walleij@linaro.org>
+ <CACRpkdbnLgVsrSAu87wxSwktK3ftJzbQLXjU8y65tq=9Ynxicw@mail.gmail.com>
+ <56CC2D39.80909@ti.com>
+ <CAFEAcA9U3V04o2_93bS5G7+k=UT7kTWt4=v7t1Ju0X9W=5oo9A@mail.gmail.com>
+ <56CC546A.9070705@ti.com> <20160224104638.GL19428@n2100.arm.linux.org.uk>
+ <56CD924F.50108@ti.com> <20160224113549.GN19428@n2100.arm.linux.org.uk>
+In-Reply-To: <20160224113549.GN19428@n2100.arm.linux.org.uk>
 To: linux-arm-kernel@lists.infradead.org
 
---1jk1tWFO7HDKwK3C8w4nKVOGQ23cfcSwH
+--3jb4dx1J7KmXxJb9HW2s84SP0FvRL8nTA
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On 24/02/16 12:53, Russell King - ARM Linux wrote:
-> On Tue, Feb 23, 2016 at 03:38:12PM +0200, Tomi Valkeinen wrote:
->> Ok. I feel everyone is trying to push the ugly part out of their domai=
-n.
->> I want the board specific hacks out of fbdev. Bootloader people don't
->> want it there. arch/arm/ people don't want it there. =3D)
+On 24/02/16 13:35, Russell King - ARM Linux wrote:
+
+> If the connector is a flexi-strip or LVDS connector designed to be
+> connected directly to a panel, it is not designed as a user connector,
+> and the display can be regarded as part of the board: the connector
+> probably isn't rated for a large number of mating cycles.
 >=20
-> I think that is really really unfair.  No one is trying to push ugly
-> bits out of their domain - this is being driven by Linus, who is
-> trying to convert Versatile to DT.  There is no other agenda here.
+> If the connector is a board-edge external-unit connector, then the
+> panel is not part of the board.
+
+Ok, I see. I presumed the display-board was attached directly to the
+mainboard. Of course, we could still argue about the difference, with
+the exact same pins used with an external connector and with an on-board
+connector, but lets not go there.
+
+I agree in this case the panels are external devices =3D).
+
+However, I would still be interested in opinions how to implement the
+exact same case, but for boards where the panels were considered
+on-board panels.
+
+> The displays are not built for "this single board" but for a family of
+> boards: not only Versatile PB/AB, but also the Realview family of board=
+s
+> too.
+
+Alright.
+
+So, if this is to be done correctly, we need to disconnect the display
+board code from the CLCD code, as they really have nothing to do with
+each other.
+
+Perhaps a panel driver which covers the display boards used here, which
+does the probing and contains the video timings for the panels in questio=
+n?
+
+One could then use that panel driver with other display controllers too.
+Although the probing part is perhaps difficult to make generic, but that
+board specific code should still be part of the panel-board driver, not
+CLCD driver.
+
+>> But I cannot accept that as a general solution for all similar cases
+>> going forward, especially when moving to DRM world, that's just bad SW=
+
+>> design.
 >=20
-> Remember, I was the one who wrote the CLCD driver, and it was written
-> to support the boards at the time using the best methods at the time.
-> Things change, people's ideas of what's acceptable change.  What was
-> acceptable when classes of boards were separate is no longer acceptable=
+> I think that's a matter of personal opinion, perspective and situation.=
 
-> with single zImage.
+> What is good design today is not necessary good design yesterday or
+> tomorrow.  I thought we already ascertained that earlier in this
+> discussion. :)
 
-That's fine. I've done the same. The point here is where should we aim
-for with today's kernel? What's the good solution for the future boards?
-
-> The board specific parts of CLCD were in arch/arm for a very long time,=
-
-> but that gets in the way of single zImage, and the solution adopted by
-> the newly interested parties has been to move them to drivers/video
-> to keep things working.
-
-And I'm fine with having board specific parts in drivers/video when
-needed. That's the only option when we really need a driver for the
-board specific parts, i.e. we need to do something with the board
-specific HW at runtime.
-
-But that's not really the case with Versatile. Correct me if I'm wrong,
-but there's just one panel connected to the board at a time and the
-panel cannot be changed at runtime. We need to do the board specific
-panel probing once at boot time, but other than that, there's no
-difference to a single on-board panel.
-
-To me it sounds that the cleanest solution to this is that the
-bootloader does the detection (it's a trivial detection, isn't it? no
-complex busses need to be used?), and just passes the kernel the correct
-HW setup with DT.
-
-Again, I understand there are lots of board out there without bootloader
-doing that, so we may not get there with Versatile. But if someone comes
-with patches for a new board, I'd like to have a good suggestion how to
-handle similar cases the best way.
-
-> That's how we're here: there isn't a conspiracy as you seem to be
-> thinking.
-
-I wasn't exactly serious there, as the smiley tried to imply...
+Well, I was mostly referring to combining separate devices into single
+driver. CLCD and the external displays, in this case. Then again,
+"complexity" is part of the SW design, and splitting the devices drivers
+into independent pieces often increases complexity, so...
 
  Tomi
 
 
---1jk1tWFO7HDKwK3C8w4nKVOGQ23cfcSwH
+--3jb4dx1J7KmXxJb9HW2s84SP0FvRL8nTA
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -82,19 +87,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWzZWdAAoJEPo9qoy8lh71VmwP/j2Ws4dpKBfsSBwH5HCZ11yV
-OvZ40mloC/vdU5fLsmsmd/6Gq8MKRXDfPUwf/pPQ4jS7MPjVsgT1VBAnPucEA7IM
-VvmL7d79XRaKG5+i3LyUmG+NZqWRiGCnHhpcCYkl7uo7sTiIFfP0WW2qbYpfre67
-YA2dtOSu92hs8HP1p56RHU8a+3O2FRKgRzsm17QyemeydkBqIMyCI5sgubBKZskJ
-L/nIAfI3msm8lMijPnU2lGfikUA2YEKIG5W3ZUF6kuT1eCNJbCxzgBCsKV8pwIqz
-rc3glQKq0t1VnVOWmujYP6Q2iSbhyyJjCewhzbrv/lNfbZTRLyDHzWRvVz/xLnx9
-U0EYZiz/Dx394u2hkwszOs4kppvUWEDJ4FtP27gVvPu70LaC/g5GHdgM+Wz/8pQD
-MS3T2VrefyNixogC5pUW0wmiIeA3qDdyldNuT20yEuLmOk0esr+fGjWVWFzaKUcw
-kXpLHRNBK1/341aaFZGUP5gO3jolhdomiJxu6j0NXZmVm/f/vYbY4KH0dRg9hi2K
-iZMxhrVAxlomw5Y4bENyWA8xQY9GRiLjBT7fjiyb48ybiMR/E20N4OlC+A038wXh
-mhnXeKyGG2/iECMJAYtUWg9EUMkzgajQ26DAdMpTgx2hAGern+3eI0Vvc9iaNKko
-tZn6eVYXVurrPpkedJp1
-=2rq0
+iQIcBAEBCAAGBQJWzZhYAAoJEPo9qoy8lh71a3YP/0+g7sXV42QRt0wHT+d4pO5X
+d++txhXeKB+h/SXbLiXpno+R0qTWY5YpvXSmAzJbo0AbRGaa8oWXmhOUlpVFeW6t
+BFst/9Zfg3f0oboSRMXx/DD8jwbZlNI4YAp6ZTiCY/8tWCbrjqFV1zz2ye8+lTF8
+ZQLzatDzB3JpWC8D2XwKzBbeJaQhU0Tuz+6oT+5ljPe5XSuleU7TRNlWhvUQkXCI
+peg0dxPo2NtkMfd/VCH9h2rmM6pyrggZi8wU/RDNF6dCHXUlCKsCtGDecD8wH//g
+pYGB5vgYm8Z5a/4PSq3QN4eHPwt3WxJinaIhq1NP9+5jLk1uM+GF07AkQa5gdAXy
+9DYwKuJUPs35xll8RjD+3CTaG2PnluqaMSxx+NvxzpbfsY5Fl5FQX/U1CO2gY0zd
+NehyZkJoJ+IkisQRZuBB1ZfPwlatd2j7tph4egwqGclbO2cPwlxKOVbjZ36uj/Y+
+DH4JHlothDXi41ZvryUfcmaeO5mkIT3TLvq5wAa7mk8MN2imSRf2vpPcFhzigNAO
+T3+iPRD8U3+gQOlzxS8rx3R0qwm+60T+UHeIwkwCGuwyXGqDCy8AHZ5IBrgDaznB
+29K9/aShWw/+OtlzANAtdykKzdH3vTGhKYrRrJ51G86dQ2HB2jcWgTQy7DZvqLL6
+s6rkwzJW5DV4SoHBGkm/
+=nDGK
 -----END PGP SIGNATURE-----
 
---1jk1tWFO7HDKwK3C8w4nKVOGQ23cfcSwH--
+--3jb4dx1J7KmXxJb9HW2s84SP0FvRL8nTA--

@@ -1,85 +1,75 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Feb 2016 11:47:36 +0000
+Date: Wed, 24 Feb 2016 12:06:21 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <56CD9858.40104@ti.com>
+Message-Id: <56CD9CBD.5010106@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="3jb4dx1J7KmXxJb9HW2s84SP0FvRL8nTA"
+Content-Type: multipart/mixed; boundary="wXpvOkmhSpCdcksQXGons5PjwM7EfDlHb"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
  <1454594660-7532-12-git-send-email-linus.walleij@linaro.org>
  <CACRpkdbnLgVsrSAu87wxSwktK3ftJzbQLXjU8y65tq=9Ynxicw@mail.gmail.com>
  <56CC2D39.80909@ti.com>
  <CAFEAcA9U3V04o2_93bS5G7+k=UT7kTWt4=v7t1Ju0X9W=5oo9A@mail.gmail.com>
- <56CC546A.9070705@ti.com> <20160224104638.GL19428@n2100.arm.linux.org.uk>
- <56CD924F.50108@ti.com> <20160224113549.GN19428@n2100.arm.linux.org.uk>
-In-Reply-To: <20160224113549.GN19428@n2100.arm.linux.org.uk>
+ <56CC546A.9070705@ti.com>
+ <CAFEAcA-Y7rE_9CiOphgmae3FDApRznoBS7vsVN_+9hBqvAzEEA@mail.gmail.com>
+In-Reply-To: <CAFEAcA-Y7rE_9CiOphgmae3FDApRznoBS7vsVN_+9hBqvAzEEA@mail.gmail.com>
 To: linux-arm-kernel@lists.infradead.org
 
---3jb4dx1J7KmXxJb9HW2s84SP0FvRL8nTA
+--wXpvOkmhSpCdcksQXGons5PjwM7EfDlHb
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On 24/02/16 13:35, Russell King - ARM Linux wrote:
-
-> If the connector is a flexi-strip or LVDS connector designed to be
-> connected directly to a panel, it is not designed as a user connector,
-> and the display can be regarded as part of the board: the connector
-> probably isn't rated for a large number of mating cycles.
+On 23/02/16 15:49, Peter Maydell wrote:
+> On 23 February 2016 at 12:45, Tomi Valkeinen <tomi.valkeinen@ti.com> wr=
+ote:
+>> So, true, there's probing going on, but it's all board specific,
+>> requiring a board specific driver to support it in the kernel. And I
+>> think that makes the bootloader much better place for supporting it.
 >=20
-> If the connector is a board-edge external-unit connector, then the
-> panel is not part of the board.
+> This doesn't seem to me like a reason to put the requirement
+> in the bootloader. A huge part of the purpose of the kernel
+> is to support the hardware (whether that's completely generic
+> and probeable, like PCI, or generic but not probeable, or
+> completely specific to a particular board). The kernel has to
+> support the hardware, and just because it happens to be board
+> specific hardware rather than generic hardware doesn't seem to
+> me to imply that the kernel gets to drop part of its core purpose.
 
-Ok, I see. I presumed the display-board was attached directly to the
-mainboard. Of course, we could still argue about the difference, with
-the exact same pins used with an external connector and with an on-board
-connector, but lets not go there.
+The thing here is, the kernel doesn't have to support the hardware (the
+probing method). The kernel _has_ to support the display controller and
+the panels, but the probing could as well be done in the bootloader. It
+would work fine, and it would be a cleaner solution that what's being
+proposed so far.
 
-I agree in this case the panels are external devices =3D).
-
-However, I would still be interested in opinions how to implement the
-exact same case, but for boards where the panels were considered
-on-board panels.
-
-> The displays are not built for "this single board" but for a family of
-> boards: not only Versatile PB/AB, but also the Realview family of board=
-s
-> too.
-
-Alright.
-
-So, if this is to be done correctly, we need to disconnect the display
-board code from the CLCD code, as they really have nothing to do with
-each other.
-
-Perhaps a panel driver which covers the display boards used here, which
-does the probing and contains the video timings for the panels in questio=
-n?
-
-One could then use that panel driver with other display controllers too.
-Although the probing part is perhaps difficult to make generic, but that
-board specific code should still be part of the panel-board driver, not
-CLCD driver.
-
->> But I cannot accept that as a general solution for all similar cases
->> going forward, especially when moving to DRM world, that's just bad SW=
-
->> design.
+>> I think one of the core questions here is: do we want to start adding
+>> board specific drivers to the kernel, instead of dealing with it in th=
+e
+>> bootloader when possible? My understanding is that we've been trying t=
+o
+>> reduce board specific code from the kernel.
 >=20
-> I think that's a matter of personal opinion, perspective and situation.=
+> I think there's a difference between "reduce board specific code
+> in the kernel by replacing it with the combination of generic
+> or parameterisable code in the kernel plus a kernel data structure
+> (DT) that supplies the parameterisation needed", and "reduce
+> board specific code in the kernel by forcing the bootloader to
+> do the kernel's job for it".
 
-> What is good design today is not necessary good design yesterday or
-> tomorrow.  I thought we already ascertained that earlier in this
-> discussion. :)
+Perhaps my phone background affects here, but I see the vendor provided
+bootloader as the place for board specific custom solutions, and then
+the kernel doesn't have to deal with those if at all possible.
 
-Well, I was mostly referring to combining separate devices into single
-driver. CLCD and the external displays, in this case. Then again,
-"complexity" is part of the SW design, and splitting the devices drivers
-into independent pieces often increases complexity, so...
+With an open source generic bootloader like u-boot that doesn't exactly
+hold, though, as the custom solutions will still pile up in a common
+project.
+
+Anyway, as discussed in the thread, I'm fine with having a kernel driver
+for this, as the display boards for Versatile are an external device.
 
  Tomi
 
 
---3jb4dx1J7KmXxJb9HW2s84SP0FvRL8nTA
+--wXpvOkmhSpCdcksQXGons5PjwM7EfDlHb
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -87,19 +77,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWzZhYAAoJEPo9qoy8lh71a3YP/0+g7sXV42QRt0wHT+d4pO5X
-d++txhXeKB+h/SXbLiXpno+R0qTWY5YpvXSmAzJbo0AbRGaa8oWXmhOUlpVFeW6t
-BFst/9Zfg3f0oboSRMXx/DD8jwbZlNI4YAp6ZTiCY/8tWCbrjqFV1zz2ye8+lTF8
-ZQLzatDzB3JpWC8D2XwKzBbeJaQhU0Tuz+6oT+5ljPe5XSuleU7TRNlWhvUQkXCI
-peg0dxPo2NtkMfd/VCH9h2rmM6pyrggZi8wU/RDNF6dCHXUlCKsCtGDecD8wH//g
-pYGB5vgYm8Z5a/4PSq3QN4eHPwt3WxJinaIhq1NP9+5jLk1uM+GF07AkQa5gdAXy
-9DYwKuJUPs35xll8RjD+3CTaG2PnluqaMSxx+NvxzpbfsY5Fl5FQX/U1CO2gY0zd
-NehyZkJoJ+IkisQRZuBB1ZfPwlatd2j7tph4egwqGclbO2cPwlxKOVbjZ36uj/Y+
-DH4JHlothDXi41ZvryUfcmaeO5mkIT3TLvq5wAa7mk8MN2imSRf2vpPcFhzigNAO
-T3+iPRD8U3+gQOlzxS8rx3R0qwm+60T+UHeIwkwCGuwyXGqDCy8AHZ5IBrgDaznB
-29K9/aShWw/+OtlzANAtdykKzdH3vTGhKYrRrJ51G86dQ2HB2jcWgTQy7DZvqLL6
-s6rkwzJW5DV4SoHBGkm/
-=nDGK
+iQIcBAEBCAAGBQJWzZy9AAoJEPo9qoy8lh712Q0P/0FAECC4IFXVhXVGfARdyBSS
+W35cqBKFFtheUl6QL1WUqlKGEr+8gDeV4kMyowGQtABaE2t7huTUbOrPKBXcDyIE
+sapI/ebdJII9oFcIehV8e7m90k71A2iknl2pDo1g5vdYnoD81D8jdjH3XQ68hWva
+lgou7//75+oq6rlwk8hMoY+8MRzSHVWSO3WXUrZMY+yQTKcKXMWKvqitIjHKFusj
+0qkoXis+NkuOQg3QvwklaLc/e6wu3T2RQ6xtbbdj9OdT5hwSSKjPwJjnw9JwAUYY
+mkj1yk/tmb7FoekjQfDdeeZVhBTOvfonU0YC8qSJ7E7IM0faYDPx/mk295RgSEod
+O9xSdPuPYXJrlZ3J9HV395pPn4KJmZ21gdV3xXEYfTjelE7BjslEaiMbyoFwIxKg
+OCr8AlVyfZvy18AVFzP8TaZyZOl7c0xA9SccbrAuetgfHLRSFenRT9NEoSbC5kHY
+YNMU8B3SfGshVKKSWQmUqNGj0ztSaHOmPh4QmRvQaKmJSajPqE1yJy5/eeN+eTt9
+999VRAy57XMrMYgZYnbf7YXprdD/60rhxaae2U0i+fSPjOw8bhZ1ToHd0jfVYPQ0
+6642ATO6gNOcC/5/uIHQCT/vGdQOuAUCBlkZwpj43STmm+cBXHC7bRjPnxZJCgFh
+8zY5W7iAmfnGJRTIB4np
+=KUxH
 -----END PGP SIGNATURE-----
 
---3jb4dx1J7KmXxJb9HW2s84SP0FvRL8nTA--
+--wXpvOkmhSpCdcksQXGons5PjwM7EfDlHb--

@@ -1,66 +1,64 @@
-From: Pantelis Antoniou <pantelis.antoniou@konsulko.com>
-Date: Thu, 25 Feb 2016 15:40:21 +0000
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 25 Feb 2016 16:08:24 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <35045C01-7051-4589-894E-A3C1C31E5550@konsulko.com>
+Message-Id: <3564059.gK0TOyJAie@wuerfel>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
- <1454594660-7532-12-git-send-email-linus.walleij@linaro.org>
- <CACRpkdbnLgVsrSAu87wxSwktK3ftJzbQLXjU8y65tq=9Ynxicw@mail.gmail.com>
- <56CC2D39.80909@ti.com>
- <CAFEAcA9U3V04o2_93bS5G7+k=UT7kTWt4=v7t1Ju0X9W=5oo9A@mail.gmail.com>
- <56CC546A.9070705@ti.com> <20160224104638.GL19428@n2100.arm.linux.org.uk>
- <56CD924F.50108@ti.com> <B8A82546-46C7-4A21-92D8-62418E49FBB6@konsulko.com>
- <CACRpkdZ=PR6O28NQusUEipCYwRZyuhbeAJO_ZK80+4H7Zakt=g@mail.gmail.com>
- <DF3259B0-8A3A-4AB0-A805-F5A8F7295E5C@konsulko.com>
- <CACRpkdbi+cJFP8gUvuLKEWVVU_LScZDvnWH59RC7ug-xt2PK4Q@mail.gmail.com>
-In-Reply-To: <CACRpkdbi+cJFP8gUvuLKEWVVU_LScZDvnWH59RC7ug-xt2PK4Q@mail.gmail.com>
+ <56CC60C4.6040908@ti.com>
+ <CACRpkdZd8TLdsi7_cOrqzcqWKJrfdp4Vz2sx5ozpwJXOj0fa+Q@mail.gmail.com>
+In-Reply-To: <CACRpkdZd8TLdsi7_cOrqzcqWKJrfdp4Vz2sx5ozpwJXOj0fa+Q@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Linus,
-
-> On Feb 25, 2016, at 17:36 , Linus Walleij <linus.walleij@linaro.org> wrote:
+On Thursday 25 February 2016 15:04:52 Linus Walleij wrote:
 > 
-> On Thu, Feb 25, 2016 at 3:35 PM, Pantelis Antoniou
-> <pantelis.antoniou@konsulko.com> wrote:
->>> On Feb 25, 2016, at 15:43 , Linus Walleij <linus.walleij@linaro.org> wrote:
+> I add support for doing this for the Integrator and RealView in
+> the patch set, by grabbing a handle to the system controller
+> where they have a few "misc registers". However if you look at
+> it:
 > 
->>> It also means there is no way to get the console up without the right
->>> firmware files in the filesystem. I think that is really crap compared
->>> to what we have today where the display will always come up, and
->>> basically a regression.
->>> 
->>> I understand the stance with respect to things like add-on hardware
->>> like a Bluetooth board or WLAN or whatnot. But the fbdev console
->>> is just too basic, like a serial port IMO.
->>> 
->>> Sure in the ARM world we usually have a serial console, but this is
->>> seriously breaking current practice.
->> 
->> As Tomi mentioned firmware files can be located in the kernel image; there is no
->> requirement to be in a filesystem, and that application can be performed really
->> early, before even early init.
+> static void integrator_clcd_enable(struct clcd_fb *fb)
+> {
+>         struct fb_var_screeninfo *var = &fb->fb.var;
+>         u32 val;
 > 
-> Are you thinking about exploiting an appended DT with
-> CONFIG_ARM_APPENDED_DTB or something else?
+>         dev_info(&fb->dev->dev, "enable Integrator CLCD connectors\n");
 > 
+>         val = INTEGRATOR_CLCD_LCD_STATIC1 | INTEGRATOR_CLCD_LCD_STATIC2 |
+>                 INTEGRATOR_CLCD_LCD0_EN | INTEGRATOR_CLCD_LCD1_EN;
+>         if (var->bits_per_pixel <= 8 ||
+>             (var->bits_per_pixel = 16 && var->green.length = 5))
+>                 /* Pseudocolor, RGB555, BGR555 */
+>                 val |= INTEGRATOR_CLCD_LCDMUX_VGA555;
+>         else if (fb->fb.var.bits_per_pixel <= 16)
+>                 /* truecolor RGB565 */
+>                 val |= INTEGRATOR_CLCD_LCDMUX_VGA565;
+>         else
+>                 val = 0; /* no idea for this, don't trust the docs */
+> 
+>         regmap_update_bits(versatile_syscon_map,
+>                            INTEGRATOR_HDR_CTRL_OFFSET,
+>                            0,
+>                            INTEGRATOR_CLCD_MASK);
+> }
+> 
+> This is stuff that is so closely tied in to the fbdev driver that even
+> if it is SoC-specific (and reside in arch/arm/mach-integrator etc
+> today) it would be hard to argument that it should not be part
+> of the fbdev driver: what it does is connect the lines out of the
+> CLCD block to the physical VGA encode chip in different ways
+> depending on how the pixels were set up.
 
-It’s not much of a problem to scan for extra blobs appended to the booting blob.
+I think the nicest approach here would be to make this a layered
+driver, where you have a separate platform_driver instance
+that contains all the versatile specific add-ons, and this calls
+into the common driver that handles everything that is not specific
+to versatile.
 
-If found, you just apply them and that’s it.
+It may not be worth investing much into a rework to get there
+though, so simply putting it all into one module sounds like
+a reasonable compromise.
 
-The concatenation operation can either be made off-line on the host, or by the bootloader
-if it’s capable of doing so.
-
-If the bootloader is not smart enough to do it, just put the concatenated dtb in place
-of the original.
-
-> Yours,
-> Linus Walleij
-
-Regards
-
-— Pantelis
-
+	Arnd

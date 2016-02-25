@@ -1,7 +1,7 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 25 Feb 2016 19:30:35 +0000
+Date: Thu, 25 Feb 2016 19:32:18 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <CACRpkdYowXJinONTd2qREfCtEDCon+HSQtdd6t1QQA91f6PJdw@mail.gmail.com>
+Message-Id: <CACRpkdZdGzxgZHAHwoSXZUSZGPf4MC+LUN0a97pyDyR4qxsS_g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
  <3695074.sKSIyOjpjD@wuerfel>
@@ -18,49 +18,15 @@ Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
 On Thu, Feb 25, 2016 at 5:45 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 25/02/16 16:04, Linus Walleij wrote:
 
->> *All* the others
->> will be very happy with *ONE* display defined as panel in the
->> device tree, and off they go. Usually VGA. And that will look
->
-> You keep mentioning VGA. So is there are VGA output? Or do you just mean
-> MIPI DPI panels, which happen to take the same video timings as VGA?
+> Anyway, if it's likely that we're not seeing new CLCD boards, I think
+> it's fine if we don't go to any great lengths to clean things up there.
+> Let's just get it working.
 
-Russell beat me to it, yes there is an external VGA encoder.
-It needs some bits set up through the "misc registers" system
-controller as indicated. From the CLCD hardware point of view
-it's no different than any other panel. So the DTS fragment looks
-like so:
+Do you think you could merge the other patch set I made, that doesn't
+even deal with this plug-n-play-panel issue?
 
-                        panel {
-                                compatible = "panel-dpi";
-
-                                port {
-                                        clcd_panel: endpoint {
-                                                remote-endpoint = <&clcd_pads>;
-                                        };
-                                };
-
-                                /* Standard 640x480 VGA timings */
-                                panel-timing {
-                                        clock-frequency = <25175000>;
-                                        hactive = <640>;
-                                        hback-porch = <48>;
-                                        hfront-porch = <16>;
-                                        hsync-len = <96>;
-                                        vactive = <480>;
-                                        vback-porch = <33>;
-                                        vfront-porch = <10>;
-                                        vsync-len = <2>;
-                                };
-                        };
-
-
-This is reported as the default display type if no LCD panel
-is connected.
-
-If a LCD panel is also connected, it take precedence.
+I have rebased the two approaches to autodetection on top of that.
 
 Yours,
 Linus Walleij

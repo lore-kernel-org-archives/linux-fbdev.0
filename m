@@ -1,7 +1,7 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Thu, 25 Feb 2016 16:57:23 +0000
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 25 Feb 2016 19:30:35 +0000
 Subject: Re: [PATCH 11/11] ARM: versatile: move CLCD configuration to device tree
-Message-Id: <20160225165723.GT19428@n2100.arm.linux.org.uk>
+Message-Id: <CACRpkdYowXJinONTd2qREfCtEDCon+HSQtdd6t1QQA91f6PJdw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
  <3695074.sKSIyOjpjD@wuerfel>
@@ -17,17 +17,50 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Feb 25, 2016 at 06:45:37PM +0200, Tomi Valkeinen wrote:
-> > *All* the others
-> > will be very happy with *ONE* display defined as panel in the
-> > device tree, and off they go. Usually VGA. And that will look
-> 
+On Thu, Feb 25, 2016 at 5:45 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> On 25/02/16 16:04, Linus Walleij wrote:
+
+>> *All* the others
+>> will be very happy with *ONE* display defined as panel in the
+>> device tree, and off they go. Usually VGA. And that will look
+>
 > You keep mentioning VGA. So is there are VGA output? Or do you just mean
 > MIPI DPI panels, which happen to take the same video timings as VGA?
 
-There is a 15-pin VGA connector too.  No DDC though.
+Russell beat me to it, yes there is an external VGA encoder.
+It needs some bits set up through the "misc registers" system
+controller as indicated. From the CLCD hardware point of view
+it's no different than any other panel. So the DTS fragment looks
+like so:
 
--- 
-RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+                        panel {
+                                compatible = "panel-dpi";
+
+                                port {
+                                        clcd_panel: endpoint {
+                                                remote-endpoint = <&clcd_pads>;
+                                        };
+                                };
+
+                                /* Standard 640x480 VGA timings */
+                                panel-timing {
+                                        clock-frequency = <25175000>;
+                                        hactive = <640>;
+                                        hback-porch = <48>;
+                                        hfront-porch = <16>;
+                                        hsync-len = <96>;
+                                        vactive = <480>;
+                                        vback-porch = <33>;
+                                        vfront-porch = <10>;
+                                        vsync-len = <2>;
+                                };
+                        };
+
+
+This is reported as the default display type if no LCD panel
+is connected.
+
+If a LCD panel is also connected, it take precedence.
+
+Yours,
+Linus Walleij

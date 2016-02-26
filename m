@@ -1,49 +1,74 @@
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-Date: Mon, 22 Feb 2016 01:54:54 +0000
-Subject: [PATCH 0/7] PMAG-AA frame buffer driver rework
-Message-Id: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 26 Feb 2016 11:15:55 +0000
+Subject: Re: [PATCH 0/7] PMAG-AA frame buffer driver rework
+Message-Id: <56D033EB.7010506@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="9gwIag0MJ8rRs23O8McvFxIKNhf90wowf"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>
+References: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
+In-Reply-To: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+--9gwIag0MJ8rRs23O8McvFxIKNhf90wowf
+Content-Type: multipart/mixed; boundary="C8qRAUQkEexOBKDbvObTje6kCHDVWgHdo"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <56D033EB.7010506@ti.com>
+Subject: Re: [PATCH 0/7] PMAG-AA frame buffer driver rework
+References: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
+In-Reply-To: <alpine.LFD.2.20.1602220110330.7431@eddie.linux-mips.org>
 
- This is an update to the PMAG-AA frame buffer driver to adapt it to our 
-current APIs, which I promised a while ago (too much of a while, which I 
-apologise for).
+--C8qRAUQkEexOBKDbvObTje6kCHDVWgHdo
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
- This series starts with a change that makes the driver build and retains 
-its previous functionality.  A bunch of further clean-ups follow, each of 
-which is explained individually.  There's a potential in this code for 
-further clean-ups and improvements, but the weekend is running out quick 
-now, so I had to stop somewhere.  Next time then.
+On 22/02/16 03:54, Maciej W. Rozycki wrote:
+> Hi,
+>=20
+>  This is an update to the PMAG-AA frame buffer driver to adapt it to ou=
+r=20
+> current APIs, which I promised a while ago (too much of a while, which =
+I=20
+> apologise for).
 
- A couple of checkpatch.pl warnings are noted.
+Interesting hardware. I like the names of these things. "Monolithic CMOS
+64 x 64 Pixel Cursor Generator", "TURBOchannel Color Frame Buffer".
 
- First on using `printk(KERN_ERR ...' rather tha `pr_err'.  I could 
-probably fix it, but I think it's not worth it by itself, the interface is 
-not wrong and the issue is mainly cosmetical.  I think I'll just go across 
-all the pmag* drivers at once and bulk convert these calls sometime.
+Also interesting to see the git history of a file going almost directly
+to the initial git commit.
 
- Second on using `mb()' (without a comment).  This is not a new problem as 
-the driver has lots of these calls throughout.  Fixing them is blocked on 
-the unavailability of generic cross-platform MMIO synchronisation and 
-completion barriers.  See the discussion at: 
-<http://www.linux-mips.org/cgi-bin/mesg.cgi?a=linux-mips&i=alpine.LFD.2.11.1404280048540.11598%40eddie.linux-mips.org> 
-for details.  Most TURBOchannel drivers suffer from this problem due to 
-the complexities around many MIPS processors being weakly ordered, 
-including in particular those used in TURBOchannel systems.  Once the 
-generic issue of MMIO barriers has been sorted out the hacks to use memory 
-barriers (which just happen to DTRT on the MIPS platform, because there's 
-just a single underlying mechanism for all kinds of barriers in the MIPS
-architecture) in their place can be removed.
+Thanks, queued for 4.6.
 
- All of these pieces have been visually tested with a live specimen.  VT 
-only however at this point, no X11.
+ Tomi
 
- Please apply,
 
-  Maciej
+--C8qRAUQkEexOBKDbvObTje6kCHDVWgHdo--
+
+--9gwIag0MJ8rRs23O8McvFxIKNhf90wowf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJW0DPsAAoJEPo9qoy8lh71r/EQAJgA5dhgU8o+j0yd8sOJuOfc
+T8+D/BlIzGrDPuxA8tucEfvIdD58Q0YK4432tAb/17Ras1rtfmsjPV4w8gaK1n4w
+PwRspC6jZSad7faxsn4Q9XbnduorY95qYS4v5ASMguugCRQW+SenCut/5pi/H8jL
+W6Bdv3EWCUbADclloJTW/jnGQGR8XgyiXb4ceREfeQ3fnQDUGVAHQVUcvwNqfT+6
+pNDSVirnDCnPJAM41kzzTHF8+yl1aUvFft6v2QNWxUAC2RyydkVJgTsQZhij/hqD
+fvu4Ltk2NJj16ZfLpf8zxjbzebQLQZS0SbPfyUpgjV+2Wzo/VUKldrkapv3Lk12a
+YIa4Z+40lHTTWr2wCWjD8rsdIAIbhr0IFQi3avZFyedZBUeJZZEKkVwY5DSUtJTr
+tpWy0PKn8nNwYq+OZ/enSxJVx2+Z3tTT6lt55lqOl6xr9IkBljmNh/XrUKs+uEY1
+LaNKpeN5az4j09zktMZMz/6MCGv8HhTLlELA0Zm+oxaNFB3eF+mCi4XTRS1TE7bt
+4+EAguDbCTqAx2KCiwKaovkAA9XkpARJnGL75y12oMxWrG4ZrfUger2Mu0cDX6vs
+ZxVeuBSNxro5tB60JqbMvmuCRE1UosRzsvGrjrLX6JiS/CFjTSjgUZu1eXUP5DmZ
+3Xsaa3XcvAAKM1g5q/J2
+=1o8c
+-----END PGP SIGNATURE-----
+
+--9gwIag0MJ8rRs23O8McvFxIKNhf90wowf--

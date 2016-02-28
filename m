@@ -1,33 +1,32 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Sat, 20 Feb 2016 11:46:35 +0000
-Subject: Re: [02/11] video: ARM CLCD: support DT signal inversion flags
-Message-Id: <CACRpkdZjmP+XxZiM+o+AYaz4NMNJxzyQHD1no-fK4AG45CEuMQ@mail.gmail.com>
+From: "Mr. DOUGLAS" <douglascontact6048@live.com>
+Date: Sun, 28 Feb 2016 12:37:02 +0000
+Subject: =?utf-8?q?INFORMA=C3=87=C3=83O_IMPORTANTE__RE=3A_Consultoria_de_Investime?= =?utf-8?q?nto_em_sua_Loc
+Message-Id: <20160228133600.041758FAEA5@webmail.cefet-rj.br>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1454594660-7532-3-git-send-email-linus.walleij@linaro.org>
- <0cebf93a-ee0a-3637-3242-8aed266df091@broadcom.com>
- <CACRpkdbGCidu_3qbTYf7WSoAhafU4Z5W0jDs4CGtH5XwSf14aA@mail.gmail.com>
- <ac0739e5-4339-7fc5-1179-73af722beb08@broadcom.com>
-In-Reply-To: <ac0739e5-4339-7fc5-1179-73af722beb08@broadcom.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-On Sat, Feb 20, 2016 at 2:23 AM, Ray Jui <ray.jui@broadcom.com> wrote:
+Oi,
 
->> Do you have a system that needs this?
->
-> Yah, we have a system (Cygnus) that can either use the HCLK, or an external
-> clock generated from a PLL. To get certain pixel clock frequencies
-> (depending on the LCD panel we use), we need to use the external clock
-> source with the PLL configured to a particular VCO frequency.
->
-> We have not enabled full LCD/video support on that platform in the mainline
-> kernel, but we'll eventually get to it.
+Temos planejado investir alguns fundos no seu pa=EDs.
 
-OK I hope to finish these patches soon so you have some nice stuff
-to build upon. I guess it will need the same per-vendor plug-in that
-I supplied for the ARMs and the Nomadik.
+Responder se voc=EA estiver interessado.
 
-Yours,
-Linus Walleij
+Sauda=E7=F5es,
+Sir Henry Neville Lindley Keswick
+Presidente da Jardine Matheson Holdings Ltd
+https://en.wikipedia.org/wiki/Keswick_family
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+Hi friend,
+
+Our family is interested in investing funds in your locality.
+
+More information for you interest .
+
+Greetings,
+Sir Henry Neville Lindley Keswick
+Chairman of Jardine Matheson Holdings Ltd
+https://en.wikipedia.org/wiki/Keswick_family

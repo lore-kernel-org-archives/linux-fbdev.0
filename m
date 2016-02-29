@@ -1,58 +1,61 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Fri, 26 Feb 2016 12:22:48 +0000
-Subject: Re: [PATCH v2 3/3] fbdev: omap2: panel-dpi: implement support for a vcc regulator
-Message-Id: <20160226122248.GQ18327@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nBU79UIGV2yWqiI+"
+From: Sushaanth Srirangapathi <sushaanth.s@ti.com>
+Date: Mon, 29 Feb 2016 13:24:19 +0000
+Subject: [PATCH] fbdev: da8xx-fb: fix videomodes of lcd panels
+Message-Id: <1456751539-19298-1-git-send-email-sushaanth.s@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1450610002-10531-4-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1450610002-10531-4-git-send-email-u.kleine-koenig@pengutronix.de>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Sekhar Nori <nsekhar@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, Sushaanth Srirangapathi <sushaanth.s@ti.com>
 
+Commit 028cd86b794f4a ("video: da8xx-fb: fix the polarities of the
+hsync/vsync pulse") fixes polarities of HSYNC/VSYNC pulse but
+forgot to update known_lcd_panels[] which had sync values
+according to old logic. This breaks LCD at least on DA850 EVM.
 
---nBU79UIGV2yWqiI+
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch fixes this issue and I have tested this for panel
+"Sharp_LK043T1DG01" using DA850 EVM board.
 
-On Fri, Feb 26, 2016 at 01:10:08PM +0100, Uwe Kleine-K=F6nig wrote:
-> On Fri, Feb 26, 2016 at 12:13:07PM +0200, Tomi Valkeinen wrote:
+Fixes: 028cd86b794f4a ("video: da8xx-fb: fix the polarities of the
+hsync/vsync pulse")
+Signed-off-by: Sushaanth Srirangapathi <sushaanth.s@ti.com>
+---
+ drivers/video/fbdev/da8xx-fb.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-> > > That would make the specification of a vcc supply obligatory IIUC. (Y=
-es,
-> > > the semantic difference between regulator_get vs. regulator_get_optio=
-nal
-> > > is reversed when comparing to gpio_get vs. gpio_get_optional.)
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index 6b2a06d..d8d583d 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -209,8 +209,7 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.lower_margin   = 2,
+ 		.hsync_len      = 0,
+ 		.vsync_len      = 0,
+-		.sync           = FB_SYNC_CLK_INVERT |
+-			FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++		.sync           = FB_SYNC_CLK_INVERT,
+ 	},
+ 	/* Sharp LK043T1DG01 */
+ 	[1] = {
+@@ -224,7 +223,7 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.lower_margin   = 2,
+ 		.hsync_len      = 41,
+ 		.vsync_len      = 10,
+-		.sync           = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++		.sync           = 0,
+ 		.flag           = 0,
+ 	},
+ 	[2] = {
+@@ -239,7 +238,7 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.lower_margin   = 10,
+ 		.hsync_len      = 10,
+ 		.vsync_len      = 10,
+-		.sync           = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++		.sync           = 0,
+ 		.flag           = 0,
+ 	},
+ 	[3] = {
+-- 
+1.7.9.5
 
-Not really, in both cases the _optional() case is for the case where the
-requested resource may reasonably be absent.
-
-> > So, is regulator_get_optional() meant for cases where the device can
-> > truly function without the supply in question? And regulator_get()
-> > should be used when the device needs the supply, even if the supply
-> > cannot be controlled via SW, and thus we may not even have the supply
-> > visible in the SW side (leading to using dummy regulator)?
-
-> Yeah, I think this is the right picture.
-
-Yes, exactly.  Even in cases where supplies could potentially be
-software controlled frequently system constraints make it impossible to
-actually change their state so the consumer should not normally assume
-that a disable will actually happen.
-
---nBU79UIGV2yWqiI+
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJW0EOPAAoJECTWi3JdVIfQVf0H/0tQoSxbRCVeF/SqY3W/evEh
-UjeISwSG1Ne0XEiCTULz0vvJmzcsg24orjYVeI8zvJjT6Vz5lEQDcHwrgwg5qiTv
-i88UD/Zy3TlUf+hOPp1Ui8Ai0rRyEvS8Q/czr1TWdbb8Ot651s4+f1x//xaoR5rE
-J/hzQhylAZCv8VyKrdG1eOGMmKOeXQUubY7MSI8vDnlJ2zy/t1iHwKedQ6j8EHm0
-UME4+DMqCc607w8JxQAUeMkztnVL6M/Ar6VAPiAjc+O1ZQ1p9up4r38rDY+NcMZ4
-QAT/QO7CREjMyOxo17mWjpXaoc1V0fKC+m3cQvVjQBQuixBwQrnNqj+qiCyPNlI=
-=Ie+z
------END PGP SIGNATURE-----
-
---nBU79UIGV2yWqiI+--

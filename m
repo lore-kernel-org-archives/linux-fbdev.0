@@ -1,99 +1,109 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 26 Feb 2016 12:38:08 +0000
-Subject: [PATCH v2] video: exynos: fix modular build
-Message-Id: <1456490307-823812-1-git-send-email-arnd@arndb.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 29 Feb 2016 16:12:45 +0000
+Subject: Re: [PATCH v2] video: exynos: fix modular build
+Message-Id: <56D46DFD.6090706@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="cmpMNOOl0mkiQVIMi5SrmjX9GsRAQ1JqX"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1456490307-823812-1-git-send-email-arnd@arndb.de>
+In-Reply-To: <1456490307-823812-1-git-send-email-arnd@arndb.de>
 To: linux-arm-kernel@lists.infradead.org
 
-The s6e8ax0 driver has a dependency on BACKLIGHT_CLASS_DEVICE,
-which can be configured as a loadable module, so we have to
-make the driver a tristate symbol as well, to avoid this error:
+--cmpMNOOl0mkiQVIMi5SrmjX9GsRAQ1JqX
+Content-Type: multipart/mixed; boundary="3DGaVpHrLiXEvAJ6BLRw6RarGVMtiASkf"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arm-kernel@lists.infradead.org, Paul Bolle <pebolle@tiscali.nl>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski
+ <k.kozlowski@samsung.com>, Inki Dae <inki.dae@samsung.com>,
+ Donghwa Lee <dh09.lee@samsung.com>, Kyungmin Park
+ <kyungmin.park@samsung.com>, linux-fbdev@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <56D46DFD.6090706@ti.com>
+Subject: Re: [PATCH v2] video: exynos: fix modular build
+References: <1456490307-823812-1-git-send-email-arnd@arndb.de>
+In-Reply-To: <1456490307-823812-1-git-send-email-arnd@arndb.de>
 
-drivers/built-in.o: In function `s6e8ax0_probe':
-:(.text+0x23a48): undefined reference to `devm_backlight_device_register'
+--3DGaVpHrLiXEvAJ6BLRw6RarGVMtiASkf
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-This also means we get another error from a missing export, which
-this fixes as well:
+Hi,
 
-ERROR: "exynos_mipi_dsi_register_lcd_driver" [drivers/video/fbdev/exynos/s6e8ax0.ko] undefined!
+On 26/02/16 14:38, Arnd Bergmann wrote:
+> The s6e8ax0 driver has a dependency on BACKLIGHT_CLASS_DEVICE,
+> which can be configured as a loadable module, so we have to
+> make the driver a tristate symbol as well, to avoid this error:
+>=20
+> drivers/built-in.o: In function `s6e8ax0_probe':
+> :(.text+0x23a48): undefined reference to `devm_backlight_device_registe=
+r'
 
-The drivers are all written to be loadable modules already,
-except the Kconfig options for that are missing, which makes
-the patch really easy.
+If a 'bool' Kconfig option depends on BACKLIGHT_CLASS_DEVICE, shouldn't
+the Kconfig dependency take care of having BACKLIGHT_CLASS_DEVICE as
+built-in?
 
-Finally, the EXYNOS_VIDEO option is turned into tristate as well
-for good measure, as all framebuffer drivers should be configurable
-as modules, though this change is not strictly necessary.
+> This also means we get another error from a missing export, which
+> this fixes as well:
+>=20
+> ERROR: "exynos_mipi_dsi_register_lcd_driver" [drivers/video/fbdev/exyno=
+s/s6e8ax0.ko] undefined!
+>=20
+> The drivers are all written to be loadable modules already,
+> except the Kconfig options for that are missing, which makes
+> the patch really easy.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- drivers/video/fbdev/exynos/Kconfig           | 6 +++---
- drivers/video/fbdev/exynos/Makefile          | 6 ++++--
- drivers/video/fbdev/exynos/exynos_mipi_dsi.c | 1 +
- 3 files changed, 8 insertions(+), 5 deletions(-)
+Looks and sound fine, except doesn't this tell that the drivers have
+never been tested as modules? Did you or someone else actually test these=
+?
 
-v2: improved changelog after feedback from Paul Bolle
+> diff --git a/drivers/video/fbdev/exynos/Makefile b/drivers/video/fbdev/=
+exynos/Makefile
+> index b5b1bd228abb..02d8dc522fea 100644
+> --- a/drivers/video/fbdev/exynos/Makefile
+> +++ b/drivers/video/fbdev/exynos/Makefile
+> @@ -2,6 +2,8 @@
+>  # Makefile for the exynos video drivers.
+>  #
+> =20
+> -obj-$(CONFIG_EXYNOS_MIPI_DSI)		+=3D exynos_mipi_dsi.o exynos_mipi_dsi_=
+common.o \
+> -				     	exynos_mipi_dsi_lowlevel.o
+> +obj-$(CONFIG_EXYNOS_MIPI_DSI)		+=3D exynos-mipi-dsi-mod.o
+> +
+> +exynos-mipi-dsi-mod-objs		+=3D exynos_mipi_dsi.o exynos_mipi_dsi_commo=
+n.o \
+> +					   exynos_mipi_dsi_lowlevel.o
 
-diff --git a/drivers/video/fbdev/exynos/Kconfig b/drivers/video/fbdev/exynos/Kconfig
-index 1f16b4678c71..d916bef94f25 100644
---- a/drivers/video/fbdev/exynos/Kconfig
-+++ b/drivers/video/fbdev/exynos/Kconfig
-@@ -3,7 +3,7 @@
- #
- 
- menuconfig EXYNOS_VIDEO
--	bool "Exynos Video driver support"
-+	tristate "Exynos Video driver support"
- 	depends on ARCH_S5PV210 || ARCH_EXYNOS
- 	help
- 	  This enables support for EXYNOS Video device.
-@@ -15,13 +15,13 @@ if EXYNOS_VIDEO
- #
- 
- config EXYNOS_MIPI_DSI
--	bool "EXYNOS MIPI DSI driver support."
-+	tristate "EXYNOS MIPI DSI driver support."
- 	select GENERIC_PHY
- 	help
- 	  This enables support for MIPI-DSI device.
- 
- config EXYNOS_LCD_S6E8AX0
--	bool "S6E8AX0 MIPI AMOLED LCD Driver"
-+	tristate "S6E8AX0 MIPI AMOLED LCD Driver"
- 	depends on EXYNOS_MIPI_DSI && BACKLIGHT_CLASS_DEVICE
- 	depends on (LCD_CLASS_DEVICE = y)
- 	default n
-diff --git a/drivers/video/fbdev/exynos/Makefile b/drivers/video/fbdev/exynos/Makefile
-index b5b1bd228abb..02d8dc522fea 100644
---- a/drivers/video/fbdev/exynos/Makefile
-+++ b/drivers/video/fbdev/exynos/Makefile
-@@ -2,6 +2,8 @@
- # Makefile for the exynos video drivers.
- #
- 
--obj-$(CONFIG_EXYNOS_MIPI_DSI)		+= exynos_mipi_dsi.o exynos_mipi_dsi_common.o \
--				     	exynos_mipi_dsi_lowlevel.o
-+obj-$(CONFIG_EXYNOS_MIPI_DSI)		+= exynos-mipi-dsi-mod.o
-+
-+exynos-mipi-dsi-mod-objs		+= exynos_mipi_dsi.o exynos_mipi_dsi_common.o \
-+					   exynos_mipi_dsi_lowlevel.o
- obj-$(CONFIG_EXYNOS_LCD_S6E8AX0)	+= s6e8ax0.o
-diff --git a/drivers/video/fbdev/exynos/exynos_mipi_dsi.c b/drivers/video/fbdev/exynos/exynos_mipi_dsi.c
-index 951b592794e3..92e4af3caaf8 100644
---- a/drivers/video/fbdev/exynos/exynos_mipi_dsi.c
-+++ b/drivers/video/fbdev/exynos/exynos_mipi_dsi.c
-@@ -263,6 +263,7 @@ int exynos_mipi_dsi_register_lcd_driver(struct mipi_dsim_lcd_driver *lcd_drv)
- 	return 0;
- 
- }
-+EXPORT_SYMBOL_GPL(exynos_mipi_dsi_register_lcd_driver);
- 
- static struct mipi_dsim_ddi *exynos_mipi_dsi_bind_lcd_ddi(
- 						struct mipi_dsim_device *dsim,
--- 
-2.7.0
+Hmm, why is this makefile change needed?
 
+ Tomi
+
+
+--3DGaVpHrLiXEvAJ6BLRw6RarGVMtiASkf--
+
+--cmpMNOOl0mkiQVIMi5SrmjX9GsRAQ1JqX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJW1G39AAoJEPo9qoy8lh712JgP/jYTWjUEW3L6dDEiIXtE2PMZ
+dWfLn9sv0wCobfT9p7fnAPd3rJXKQxDZt7tAUx22jyZKi1W1HpyPYxKvOhWL0nyA
+DU3sWF+6AGM+yGl1pZdXTRT3hNQbFUpmVWYQY7Be9okW5KWnXvaFeSFlEiYooZc1
+1wZUiRIvI94RjrfZP/oszM34nqn/v/eQfontrmceyDFhJ656EdciCwCKXhNt6pYP
+yDoOFYkQke9Vn3q0nkZh9RwS5n+lzOiMKuL21Ko9rNgEKoPQ1cMbw65ibnr/f77B
+dqENn44pjMDmBP0ryn0/fZgA/HtlR0oZqh3AJa0EJbEWvk4E1kCB/QDGGZlLZFIr
+YVaZ/Zm9F4lM/gbdM2LP/MPArxZ60U8cF3hFXRs34vdRQEkfF5Ijidn0aDALs9ki
+DA7M/q/lCsVtGrmyG7c7VJmpMbvAjFulNDTJ9xKN/b8uNLLQkwwgRUq4V/7MUJd+
+ljFYl5jyShhEQkET+bTJx1TxKFkJShFW+h92Rg77epltJ6BKQCM/5TIOePbKj1nK
+ToRxtxZM35IcuEszbI8dnDGEdIOFI+7r7lO17IF+dGICVR0Rd9splxeubTstG+MT
+WxmiuDbORw05q2ispnHvThQsNgG63RDNn6qs3yWl15TBJI9e7jFUY58OEzX/rth5
+F6+bR+iCDaBggwCbnG08
+=zXn8
+-----END PGP SIGNATURE-----
+
+--cmpMNOOl0mkiQVIMi5SrmjX9GsRAQ1JqX--

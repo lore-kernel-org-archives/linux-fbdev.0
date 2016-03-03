@@ -1,109 +1,64 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 04 Feb 2016 14:04:12 +0000
-Subject: [PATCH 03/11] video: ARM CLCD: support pads connected in reverse order
-Message-Id: <1454594660-7532-4-git-send-email-linus.walleij@linaro.org>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Date: Thu, 03 Mar 2016 21:21:48 +0000
+Subject: [PATCH] x86: PAT: Documentation: update overlapping ioremap hack recommendation
+Message-Id: <1457040108-27358-1-git-send-email-mcgrof@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
-In-Reply-To: <1454594660-7532-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: bp@alien8.de, mingo@kernel.org, tglx@linutronix.de, hpa@zytor.com
+Cc: toshi.kani@hp.com, paulmck@linux.vnet.ibm.com, airlied@redhat.com, benh@kernel.crashing.org, mst@redhat.com, vinod.koul@intel.com, jgross@suse.com, daniel.vetter@ffwll.ch, luto@amacapital.net, linux-fbdev@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, x86@kernel.org, linux-doc@vger.kernel.org, corbet@lwn.net, "Luis R. Rodriguez" <mcgrof@kernel.org>
 
-There are CLCDs connected with the pads in BGR rather than RGB
-order. It really doesn't matter since the CLCD has a flag and
-a bit to switch the position of the RGB and BGR components.
-This is needed to put something logical into the
-arm,pl11x,tft-r0g0b0-pads property of the device tree on the
-Nomadik which will then be <16 8 0>.
+The current documentation refers to using set_memor_wc() as a
+possible hole strategy when you have overlapping ioremap() regions,
+that's incorrect as set_memory_*() helpers can only be used on RAM,
+not IO memory. This fixes that, and updates the documention to
+*strongly* discourage overlapping ioremap() memory uses, but also
+documents a possible solution should there really be no other
+option.
 
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
 ---
- drivers/video/fbdev/amba-clcd.c |  8 ++++++++
- include/linux/amba/clcd.h       | 31 ++++++++++++++++++++++++-------
- 2 files changed, 32 insertions(+), 7 deletions(-)
+ Documentation/x86/pat.txt | 25 ++++++++++++++-----------
+ 1 file changed, 14 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index 8903a42c4122..9a631a8e2c04 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -681,6 +681,7 @@ static int clcdfb_of_init_tft_panel(struct clcd_fb *fb, u32 r0, u32 g0, u32 b0)
- 	} panels[] = {
- 		{ 0x110, 1,  7, 13, CLCD_CAP_5551 },
- 		{ 0x110, 0,  8, 16, CLCD_CAP_888 },
-+		{ 0x110, 16, 8, 0,  CLCD_CAP_888 },
- 		{ 0x111, 4, 14, 20, CLCD_CAP_444 },
- 		{ 0x111, 3, 11, 19, CLCD_CAP_444 | CLCD_CAP_5551 },
- 		{ 0x111, 3, 10, 19, CLCD_CAP_444 | CLCD_CAP_5551 |
-@@ -708,6 +709,13 @@ static int clcdfb_of_init_tft_panel(struct clcd_fb *fb, u32 r0, u32 g0, u32 b0)
- 			fb->panel->caps = panels[i].caps;
- 	}
+diff --git a/Documentation/x86/pat.txt b/Documentation/x86/pat.txt
+index 54944c71b819..8a26b4cdccf6 100644
+--- a/Documentation/x86/pat.txt
++++ b/Documentation/x86/pat.txt
+@@ -113,18 +113,21 @@ MTRR effects on PAT / non-PAT systems
+ -------------------------------------
  
-+	/*
-+	 * If we actually physically connected the R lines to B and
-+	 * vice versa
-+	 */
-+	if (r0 != 0 && b0 = 0)
-+		fb->panel->bgr_connection = true;
+ The following table provides the effects of using write-combining MTRRs when
+-using ioremap*() calls on x86 for both non-PAT and PAT systems. Ideally
+-mtrr_add() usage will be phased out in favor of arch_phys_wc_add() which will
+-be a no-op on PAT enabled systems. The region over which a arch_phys_wc_add()
++using ioremap*() calls on x86 for both non-PAT and PAT systems. As of v4.3
++mtrr_add() has been phased out in favor of arch_phys_wc_add(), these calls are
++a no-op on PAT enabled systems. The region over which an arch_phys_wc_add()
+ is made, should already have been ioremapped with WC attributes or PAT entries,
+-this can be done by using ioremap_wc() / set_memory_wc().  Devices which
+-combine areas of IO memory desired to remain uncacheable with areas where
+-write-combining is desirable should consider use of ioremap_uc() followed by
+-set_memory_wc() to white-list effective write-combined areas.  Such use is
+-nevertheless discouraged as the effective memory type is considered
+-implementation defined, yet this strategy can be used as last resort on devices
+-with size-constrained regions where otherwise MTRR write-combining would
+-otherwise not be effective.
++this can be done by using ioremap_wc(). Devices which combine areas of IO
++memory desired to remain uncacheable with areas where write-combining is
++desirable should consider use of ioremap_wc() followed by an overlapping
++ioremap_uc() "hole". For an example of this strategy refer to commit 3cc2dac5be
++("drivers/video/fbdev/atyfb: Replace MTRR UC hole with strong UC").
++Such use is nevertheless heavily discouraged as the effective memory type is
++considered implementation defined. This strategy should only be used used as a
++last resort measure.
 +
- 	return fb->panel->caps ? 0 : -EINVAL;
- }
++Note you cannot use set_memory_*() helpers on ioremap'd regions, even though
++its use currently gives no hint of an error.
  
-diff --git a/include/linux/amba/clcd.h b/include/linux/amba/clcd.h
-index e64c1ccebb76..c60f32e23a83 100644
---- a/include/linux/amba/clcd.h
-+++ b/include/linux/amba/clcd.h
-@@ -108,6 +108,12 @@ struct clcd_panel {
- 				grayscale:1;
- 	unsigned int		connector;
- 	struct backlight_device	*backlight;
-+	/*
-+	 * If the B/R lines are switched between the CLCD
-+	 * and the panel we need to know this and not try to
-+	 * compensate with the BGR bit in the control register.
-+	 */
-+	bool			bgr_connection;
- };
- 
- struct clcd_regs {
-@@ -234,16 +240,27 @@ static inline void clcdfb_decode(struct clcd_fb *fb, struct clcd_regs *regs)
- 	if (var->grayscale)
- 		val |= CNTL_LCDBW;
- 
--	if (fb->panel->caps && fb->board->caps &&
--	    var->bits_per_pixel >= 16) {
-+	if (fb->panel->caps && fb->board->caps && var->bits_per_pixel >= 16) {
- 		/*
- 		 * if board and panel supply capabilities, we can support
--		 * changing BGR/RGB depending on supplied parameters
-+		 * changing BGR/RGB depending on supplied parameters. Here
-+		 * we switch to what the framebuffer is providing if need
-+		 * be, so if the framebuffer is BGR but the display connection
-+		 * is RGB (first case) we switch it around. Vice versa mutatis
-+		 * mutandis if the framebuffer is RGB but the display connection
-+		 * is BGR, we flip it around.
- 		 */
--		if (var->red.offset = 0)
--			val &= ~CNTL_BGR;
--		else
--			val |= CNTL_BGR;
-+		if (!fb->panel->bgr_connection) {
-+			if (var->red.offset = 0)
-+				val &= ~CNTL_BGR;
-+			else
-+				val |= CNTL_BGR;
-+		} else {
-+			if (var->blue.offset = 0)
-+				val &= ~CNTL_BGR;
-+			else
-+				val |= CNTL_BGR;
-+		}
- 	}
- 
- 	switch (var->bits_per_pixel) {
+ ----------------------------------------------------------------------
+ MTRR Non-PAT   PAT    Linux ioremap value        Effective memory type
 -- 
-2.4.3
+2.7.2
 

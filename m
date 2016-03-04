@@ -1,31 +1,35 @@
-From: Simon Horman <horms+renesas@verge.net.au>
-Date: Fri, 11 Mar 2016 02:28:16 +0000
-Subject: [PATCH 0/2] fbdev: sh_mobile_meram: use ARCH_RENESAS
-Message-Id: <1457663298-31973-1-git-send-email-horms+renesas@verge.net.au>
+From: Wang Hongcheng <annie.wang@amd.com>
+Date: Fri, 04 Mar 2016 02:10:06 +0000
+Subject: [PATCH] video: AMBA CLCD: Remove duplicated include in amba-clcd.c
+Message-Id: <1457057406-4069-1-git-send-email-annie.wang@amd.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Borislav Petkov <bp@suse.de>, SPG_Linux_Kernel <SPG_Linux_Kernel@amd.com>
+Cc: Wang Hongcheng <annie.wang@amd.com>
 
-Use ARCH_RENESAS in place of ARCH_SHMOBILE.
+The header file asm/sizes.h is unnecessary.
+And it can also be compiled under X86 arch after the removal.
 
-This is part of an ongoing process to migrate from ARCH_SHMOBILE to
-ARCH_RENESAS the motivation for which being that RENESAS seems to be a more
-appropriate name than SHMOBILE for the majority of Renesas ARM based SoCs.
+Signed-off-by: Wang Hongcheng <annie.wang@amd.com>
+---
+ drivers/video/fbdev/amba-clcd.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-As a follow-up also depend on COMPILE_TEST to provided for increased
-compile testing.
-
-Based on v4.5-rc1
-
-Simon Horman (2):
-  fbdev: sh_mobile_meram: use ARCH_RENESAS
-  fbdev: sh_mobile_meram: depend on COMPILE_TEST
-
- drivers/video/fbdev/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index 9362424..1a1ed80 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -34,8 +34,6 @@
+ #include <video/of_display_timing.h>
+ #include <video/videomode.h>
+ 
+-#include <asm/sizes.h>
+-
+ #define to_clcd(info)	container_of(info, struct clcd_fb, fb)
+ 
+ /* This is limited to 16 characters when displayed by X startup */
 -- 
-2.7.0.rc3.207.g0ac5344
+1.9.1
 
